@@ -373,7 +373,7 @@ X11_CreateWindow(_THIS, SDL_Window * window)
 #if SDL_VIDEO_OPENGL_GLX            
             && ( !_this->gl_data || ! _this->gl_data->HAS_GLX_EXT_create_context_es2_profile )
 #endif
-        ){
+        ) {
             vinfo = X11_GLES_GetVisual(_this, display, screen);
         } else
 #endif

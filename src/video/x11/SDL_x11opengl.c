@@ -511,17 +511,16 @@ X11_GL_GetAttributes(_THIS, Display * display, int screen, int * attribs, int si
 XVisualInfo *
 X11_GL_GetVisual(_THIS, Display * display, int screen)
 {
-    XVisualInfo *vinfo;
-
     /* 64 seems nice. */
     int attribs[64];
-    X11_GL_GetAttributes(_this,display,screen,attribs,64,SDL_FALSE);
+    XVisualInfo *vinfo;
 
     if (!_this->gl_data) {
         /* The OpenGL library wasn't loaded, SDL_GetError() should have info */
         return NULL;
     }
 
+    X11_GL_GetAttributes(_this, display, screen, attribs, 64, SDL_FALSE);
     vinfo = _this->gl_data->glXChooseVisual(display, screen, attribs);
     if (!vinfo) {
         SDL_SetError("Couldn't find matching GLX visual");
