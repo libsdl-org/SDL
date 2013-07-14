@@ -32,6 +32,7 @@
 #include "SDL_windowsvideo.h"
 #include "SDL_windowsframebuffer.h"
 #include "SDL_windowsshape.h"
+#include "SDL_windowsmessagebox.h"
 
 /* Initialization/Query functions */
 static int WIN_VideoInit(_THIS);
@@ -144,6 +145,8 @@ WIN_CreateDevice(int devindex)
     device->SetClipboardText = WIN_SetClipboardText;
     device->GetClipboardText = WIN_GetClipboardText;
     device->HasClipboardText = WIN_HasClipboardText;
+
+    device->ShowMessageBox = WIN_ShowMessageBox;
 
     device->free = WIN_DeleteDevice;
 
