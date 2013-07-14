@@ -33,6 +33,7 @@
 #include "SDL_endian.h"
 #include "SDL_cocoavideo.h"
 #include "SDL_cocoashape.h"
+#include "SDL_cocoamessagebox.h"
 #include "SDL_assert.h"
 
 /* Initialization/Query functions */
@@ -133,6 +134,8 @@ Cocoa_CreateDevice(int devindex)
     device->SetClipboardText = Cocoa_SetClipboardText;
     device->GetClipboardText = Cocoa_GetClipboardText;
     device->HasClipboardText = Cocoa_HasClipboardText;
+
+    device->ShowMessageBox = Cocoa_ShowMessageBox;
 
     device->free = Cocoa_DeleteDevice;
 
