@@ -1047,9 +1047,11 @@ Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
         [nswindow setLevel:kCGNormalWindowLevel];
     }
 
-    [data->listener pauseVisibleObservation];
-    [nswindow makeKeyAndOrderFront:nil];
-    [data->listener resumeVisibleObservation];
+    if ([nswindow isVisible] || fullscreen) {
+        [data->listener pauseVisibleObservation];
+        [nswindow makeKeyAndOrderFront:nil];
+        [data->listener resumeVisibleObservation];
+    }
 
     ScheduleContextUpdates(data);
 
