@@ -695,11 +695,6 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
             SDLActivity.mSDLThread = new Thread(new SDLMain(), "SDLThread");
             enableSensor(Sensor.TYPE_ACCELEROMETER, true);
             SDLActivity.mSDLThread.start();
-        } else {
-            // The app already exists, we resume via handleResume
-            // Multiple sequential calls to surfaceChanged are handled internally by handleResume
-
-            SDLActivity.handleResume();
         }
     }
 

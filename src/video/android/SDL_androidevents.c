@@ -64,9 +64,9 @@ Android_PumpEvents(_THIS)
     else {
 #if SDL_ANDROID_BLOCK_ON_PAUSE
         if( isPausing || SDL_SemTryWait(Android_PauseSem) == 0 ) {
-            /* We've been signaled to pause, but before we block ourselves, we need to make sure that
-            SDL_WINDOWEVENT_FOCUS_LOST and SDL_WINDOWEVENT_MINIMIZED have reached the app */
-            if (SDL_HasEvent(SDL_WINDOWEVENT)) {
+            /* We've been signaled to pause, but before we block ourselves, 
+            we need to make sure that certain key events have reached the app */
+            if (SDL_HasEvent(SDL_WINDOWEVENT) || SDL_HasEvent(SDL_APP_WILLENTERBACKGROUND) || SDL_HasEvent(SDL_APP_DIDENTERBACKGROUND) ) {
                 isPausing = 1;
             }
             else {
