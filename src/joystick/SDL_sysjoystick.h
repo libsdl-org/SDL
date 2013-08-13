@@ -108,7 +108,7 @@ extern SDL_JoystickGUID SDL_SYS_JoystickGetDeviceGUID(int device_index);
 /* Function to return the stable GUID for a opened joystick */
 extern SDL_JoystickGUID SDL_SYS_JoystickGetGUID(SDL_Joystick * joystick);
 
-#ifdef SDL_JOYSTICK_DINPUT
+#if defined(SDL_JOYSTICK_DINPUT) || defined(SDL_JOYSTICK_XINPUT)
 /* Function to get the current instance id of the joystick located at device_index */
 extern SDL_bool SDL_SYS_IsXInputDeviceIndex( int device_index );
 #endif

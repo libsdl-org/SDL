@@ -25,7 +25,7 @@
 #include "SDL_timer.h"
 
 /* Don't do the check for Visual Studio 2005, it's safe here */
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__WINRT__)
 #include "../core/windows/SDL_windows.h"
 #endif
 

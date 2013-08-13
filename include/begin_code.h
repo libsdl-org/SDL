@@ -41,7 +41,7 @@
 #  else
 #   define DECLSPEC __declspec(export)
 #  endif
-# elif defined(__WIN32__)
+# elif defined(__WIN32__) || defined(__WINRT__)
 #  ifdef __BORLANDC__
 #   ifdef BUILD_SDL
 #    define DECLSPEC
@@ -62,7 +62,7 @@
 
 /* By default SDL uses the C calling convention */
 #ifndef SDLCALL
-#if defined(__WIN32__) && !defined(__GNUC__)
+#if (defined(__WIN32__) || defined(__WINRT__)) && !defined(__GNUC__)
 #define SDLCALL __cdecl
 #else
 #define SDLCALL
