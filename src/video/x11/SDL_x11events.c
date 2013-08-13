@@ -440,7 +440,7 @@ X11_DispatchEvent(_THIS)
 #endif
             SDL_SendKeyboardKey(SDL_PRESSED, videodata->key_layout[keycode]);
 #if 1
-            if (videodata->key_layout[keycode] == SDL_SCANCODE_UNKNOWN) {
+            if (videodata->key_layout[keycode] == SDL_SCANCODE_UNKNOWN && keycode) {
                 int min_keycode, max_keycode;
                 XDisplayKeycodes(display, &min_keycode, &max_keycode);
 #if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
