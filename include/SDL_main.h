@@ -39,6 +39,16 @@
  */
 #define SDL_MAIN_AVAILABLE
 
+#elif defined(__WINRT__)
+/* On Windows RT, SDL provides a main function that initializes CoreApplication,
+   creating an instance of IFrameworkView in the process.
+
+   Please note that #include'ing SDL_main.h is not enough to get a main()
+   function working.  The file, src/main/windowsrt/SDL_WinRT_main.cpp, or a copy
+   of it, must be compiled into the app itself.
+*/
+#define SDL_MAIN_NEEDED
+
 #elif defined(__IPHONEOS__)
 /* On iOS SDL provides a main function that creates an application delegate
    and starts the iOS application run loop.
