@@ -69,6 +69,7 @@ static int D3D11_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
 static void D3D11_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture);
 static int D3D11_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture);
 static int D3D11_UpdateViewport(SDL_Renderer * renderer);
+static int D3D11_UpdateClipRect(SDL_Renderer * renderer);
 static int D3D11_RenderClear(SDL_Renderer * renderer);
 static int D3D11_RenderDrawPoints(SDL_Renderer * renderer,
                                   const SDL_FPoint * points, int count);
@@ -176,6 +177,7 @@ D3D11_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->UnlockTexture = D3D11_UnlockTexture;
     renderer->SetRenderTarget = D3D11_SetRenderTarget;
     renderer->UpdateViewport = D3D11_UpdateViewport;
+    renderer->UpdateClipRect = D3D11_UpdateClipRect;
     renderer->RenderClear = D3D11_RenderClear;
     renderer->RenderDrawPoints = D3D11_RenderDrawPoints;
     renderer->RenderDrawLines = D3D11_RenderDrawLines;
@@ -1251,6 +1253,13 @@ D3D11_UpdateViewport(SDL_Renderer * renderer)
         data->renderTargetSize.y);
 #endif
 
+    return 0;
+}
+
+static int
+D3D11_UpdateClipRect(SDL_Renderer * renderer)
+{
+    // TODO, WinRT: implement D3D11_UpdateClipRect
     return 0;
 }
 
