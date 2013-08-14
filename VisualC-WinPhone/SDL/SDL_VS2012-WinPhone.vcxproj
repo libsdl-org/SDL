@@ -315,11 +315,11 @@
     <ClCompile Include="..\..\src\SDL.c" />
     <ClCompile Include="..\..\src\SDL_assert.c" />
     <ClCompile Include="..\..\src\SDL_error.c" />
-    <ClCompile Include="..\..\src\SDL_fatal.c" />
     <ClCompile Include="..\..\src\SDL_hints.c" />
     <ClCompile Include="..\..\src\SDL_log.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_getenv.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_iconv.c" />
+    <ClCompile Include="..\..\src\stdlib\SDL_malloc.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_qsort.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_stdlib.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_string.c" />

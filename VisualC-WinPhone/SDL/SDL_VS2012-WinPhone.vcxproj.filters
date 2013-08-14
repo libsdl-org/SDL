@@ -467,9 +467,6 @@
     <ClCompile Include="..\..\src\SDL_error.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\SDL_fatal.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\SDL_hints.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -591,6 +588,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\SDL_gamecontroller.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\stdlib\SDL_malloc.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
