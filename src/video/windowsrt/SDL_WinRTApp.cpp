@@ -10,6 +10,7 @@ extern "C" {
 #include "SDL_events.h"
 #include "SDL_hints.h"
 #include "SDL_log.h"
+#include "SDL_main.h"
 #include "SDL_stdinc.h"
 #include "SDL_render.h"
 #include "../SDL_sysvideo.h"
@@ -93,18 +94,20 @@ static void WINRT_SetDisplayOrientationsPreference(void *userdata, const char *n
     // Start with no orientation flags, then add each in as they're parsed
     // from newValue.
     unsigned int orientationFlags = 0;
-    std::istringstream tokenizer(newValue);
-    while (!tokenizer.eof()) {
-        std::string orientationName;
-        std::getline(tokenizer, orientationName, ' ');
-        if (orientationName == "LandscapeLeft") {
-            orientationFlags |= (unsigned int) DisplayOrientations::LandscapeFlipped;
-        } else if (orientationName == "LandscapeRight") {
-            orientationFlags |= (unsigned int) DisplayOrientations::Landscape;
-        } else if (orientationName == "Portrait") {
-            orientationFlags |= (unsigned int) DisplayOrientations::Portrait;
-        } else if (orientationName == "PortraitUpsideDown") {
-            orientationFlags |= (unsigned int) DisplayOrientations::PortraitFlipped;
+    if (newValue) {
+        std::istringstream tokenizer(newValue);
+        while (!tokenizer.eof()) {
+            std::string orientationName;
+            std::getline(tokenizer, orientationName, ' ');
+            if (orientationName == "LandscapeLeft") {
+                orientationFlags |= (unsigned int) DisplayOrientations::LandscapeFlipped;
+            } else if (orientationName == "LandscapeRight") {
+                orientationFlags |= (unsigned int) DisplayOrientations::Landscape;
+            } else if (orientationName == "Portrait") {
+                orientationFlags |= (unsigned int) DisplayOrientations::Portrait;
+            } else if (orientationName == "PortraitUpsideDown") {
+                orientationFlags |= (unsigned int) DisplayOrientations::PortraitFlipped;
+            }
         }
     }
 
@@ -245,6 +248,7 @@ void SDL_WinRTApp::Load(Platform::String^ entryPoint)
 
 void SDL_WinRTApp::Run()
 {
+    SDL_SetMainReady();
     if (SDL_WinRT_main)
     {
         // TODO, WinRT: pass the C-style main() a reasonably realistic
