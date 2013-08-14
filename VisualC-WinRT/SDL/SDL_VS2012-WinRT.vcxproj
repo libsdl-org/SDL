@@ -100,11 +100,11 @@
     <ClCompile Include="..\..\src\SDL.c" />
     <ClCompile Include="..\..\src\SDL_assert.c" />
     <ClCompile Include="..\..\src\SDL_error.c" />
-    <ClCompile Include="..\..\src\SDL_fatal.c" />
     <ClCompile Include="..\..\src\SDL_hints.c" />
     <ClCompile Include="..\..\src\SDL_log.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_getenv.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_iconv.c" />
+    <ClCompile Include="..\..\src\stdlib\SDL_malloc.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_qsort.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_stdlib.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_string.c" />
@@ -239,6 +239,7 @@
     <ClInclude Include="..\..\src\events\SDL_windowevents_c.h" />
     <ClInclude Include="..\..\src\haptic\SDL_haptic_c.h" />
     <ClInclude Include="..\..\src\haptic\SDL_syshaptic.h" />
+    <ClInclude Include="..\..\src\joystick\SDL_gamecontrollerdb.h" />
     <ClInclude Include="..\..\src\joystick\SDL_joystick_c.h" />
     <ClInclude Include="..\..\src\joystick\SDL_sysjoystick.h" />
     <ClInclude Include="..\..\src\render\direct3d11\SDL_render_d3d11_cpp.h" />

@@ -24,8 +24,8 @@
 
 extern "C" {
 #include "SDL_thread.h"
-#include "../SDL_systhread.h"
 #include "../SDL_thread_c.h"
+#include "../SDL_systhread.h"
 #include "SDL_log.h"
 }
 
@@ -119,6 +119,20 @@ SDL_SYS_WaitThread(SDL_Thread * thread)
         // Report nothing, as SDL_WaitThread does not seem to offer a means
         // to report errors to its callers.
     }
+}
+
+extern "C"
+SDL_TLSData *
+SDL_SYS_GetTLSData()
+{
+    return SDL_Generic_GetTLSData();
+}
+
+extern "C"
+int
+SDL_SYS_SetTLSData(SDL_TLSData *data)
+{
+    return SDL_Generic_SetTLSData(data);
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

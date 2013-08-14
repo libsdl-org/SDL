@@ -80,6 +80,9 @@
 # endif
 # include <math.h>
 #endif
+#ifdef HAVE_FLOAT_H
+# include <float.h>
+#endif
 #if defined(HAVE_ICONV) && defined(HAVE_ICONV_H)
 # include <iconv.h>
 #endif

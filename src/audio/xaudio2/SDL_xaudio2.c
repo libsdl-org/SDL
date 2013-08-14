@@ -91,15 +91,11 @@ extern "C" {
 }
 #endif
 
-#if defined(__WINRT__)
-#  define SDL_XAUDIO2_HAS_SDK 1
-#endif
-#if defined(__WIN32__)
 #ifdef __GNUC__
 /* The configure script already did any necessary checking */
 #  define SDL_XAUDIO2_HAS_SDK 1
 #elif defined(__WINRT__)
-/* WinRT always has access to the .the XAudio 2 SD
+/* WinRT always has access to the .the XAudio 2 SDK */
 #  define SDL_XAUDIO2_HAS_SDK
 #else
 #include <dxsdkver.h> /* XAudio2 exists as of the March 2008 DirectX SDK */

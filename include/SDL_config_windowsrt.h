@@ -83,6 +83,7 @@ typedef unsigned int uintptr_t;
 #define HAVE_STRING_H 1
 #define HAVE_CTYPE_H 1
 #define HAVE_MATH_H 1
+#define HAVE_FLOAT_H 1
 #define HAVE_SIGNAL_H 1
 
 /* C library functions */
@@ -123,7 +124,7 @@ typedef unsigned int uintptr_t;
 #define HAVE_ATAN 1
 #define HAVE_ATAN2 1
 #define HAVE_CEIL 1
-//#define HAVE_COPYSIGN 1   // TODO, WinRT: consider using _copysign instead
+#define HAVE__COPYSIGN 1
 #define HAVE_COS 1
 #define HAVE_COSF 1
 #define HAVE_FABS 1
@@ -131,6 +132,7 @@ typedef unsigned int uintptr_t;
 #define HAVE_LOG 1
 #define HAVE_POW 1
 //#define HAVE_SCALBN 1
+#define HAVE__SCALB 1
 #define HAVE_SIN 1
 #define HAVE_SINF 1
 #define HAVE_SQRT 1

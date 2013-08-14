@@ -13,7 +13,7 @@ extern "C" {
 #include "SDL_stdinc.h"
 #include "SDL_render.h"
 #include "../SDL_sysvideo.h"
-#include "../../SDL_hints_c.h"
+//#include "../../SDL_hints_c.h"
 #include "../../events/scancodes_windows.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_keyboard_c.h"
@@ -86,7 +86,7 @@ __declspec(dllexport) int SDL_WinRT_RunApplication(SDL_WinRT_MainFunction mainFu
     return 0;
 }
 
-static void WINRT_SetDisplayOrientationsPreference(const char *name, const char *oldValue, const char *newValue)
+static void WINRT_SetDisplayOrientationsPreference(void *userdata, const char *name, const char *oldValue, const char *newValue)
 {
     SDL_assert(SDL_strcmp(name, SDL_HINT_ORIENTATIONS) == 0);
 
@@ -163,8 +163,8 @@ void SDL_WinRTApp::Initialize(CoreApplicationView^ applicationView)
     // otherwise the hint callback won't get registered.
     //
     // WinRT, TODO: see if an app's default orientation can be found out via WinRT API(s), then set the initial value of SDL_HINT_ORIENTATIONS accordingly.
-    SDL_SetHint(SDL_HINT_ORIENTATIONS, "LandscapeLeft LandscapeRight Portrait PortraitUpsideDown");
-    SDL_RegisterHintChangedCb(SDL_HINT_ORIENTATIONS, WINRT_SetDisplayOrientationsPreference);
+    //SDL_SetHint(SDL_HINT_ORIENTATIONS, "LandscapeLeft LandscapeRight Portrait PortraitUpsideDown");   // DavidL: this is no longer needed (for SDL_AddHintCallback)
+    SDL_AddHintCallback(SDL_HINT_ORIENTATIONS, WINRT_SetDisplayOrientationsPreference, NULL);
 }
 
 void SDL_WinRTApp::OnOrientationChanged(Object^ sender)
@@ -316,15 +316,19 @@ void SDL_WinRTApp::OnWindowSizeChanged(CoreWindow^ sender, WindowSizeChangedEven
         // Windows device.
         //
         // Commencing hack in 3... 2... 1...
-        SDL_Renderer * rendererForMainWindow = SDL_GetRenderer(m_sdlWindowData->sdlWindow);
+        //
+        // UPDATE, SDL 2.0.0 update: the 'resized' flag is now gone.  This
+        // hack might not be necessary any more.
+        //
+        //SDL_Renderer * rendererForMainWindow = SDL_GetRenderer(m_sdlWindowData->sdlWindow);
         // For now, limit the hack to when the Direct3D 11.1 is getting used:
-        const bool usingD3D11Renderer = \
-            (rendererForMainWindow != NULL) &&
-            (SDL_strcmp(rendererForMainWindow->info.name, "direct3d 11.1") == 0);
-        SDL_bool wasD3D11RendererResized = SDL_FALSE;
-        if (usingD3D11Renderer) {
-            wasD3D11RendererResized = rendererForMainWindow->resized;
-        }
+        //const bool usingD3D11Renderer = \
+        //    (rendererForMainWindow != NULL) &&
+        //    (SDL_strcmp(rendererForMainWindow->info.name, "direct3d 11.1") == 0);
+        //SDL_bool wasD3D11RendererResized = SDL_FALSE;
+        //if (usingD3D11Renderer) {
+        //    wasD3D11RendererResized = rendererForMainWindow->resized;
+        //}
 
         // Send the window-resize event to the rest of SDL, and to apps:
         const int windowWidth = (int) ceil(args->Size.Width);
@@ -335,10 +339,10 @@ void SDL_WinRTApp::OnWindowSizeChanged(CoreWindow^ sender, WindowSizeChangedEven
             windowWidth,
             windowHeight);
 
-        // Viewport hack, part two:
-        if (usingD3D11Renderer) {
-            rendererForMainWindow->resized = wasD3D11RendererResized;
-        }
+        //// Viewport hack, part two:
+        //if (usingD3D11Renderer) {
+        //    rendererForMainWindow->resized = wasD3D11RendererResized;
+        //}
     }
 }
 
