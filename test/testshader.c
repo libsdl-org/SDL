@@ -11,7 +11,6 @@
 */
 /* This is a simple example of using GLSL shaders with SDL */
 
-#include <stdio.h> /* for printf() */
 #include "SDL.h"
 
 #ifdef HAVE_OPENGL
@@ -139,7 +138,7 @@ static SDL_bool CompileShader(GLhandleARB shader, const char *source)
         glGetObjectParameterivARB(shader, GL_OBJECT_INFO_LOG_LENGTH_ARB, &length);
         info = SDL_stack_alloc(char, length+1);
         glGetInfoLogARB(shader, length, NULL, info);
-        fprintf(stderr, "Failed to compile shader:\n%s\n%s", source, info);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to compile shader:\n%s\n%s", source, info);
         SDL_stack_free(info);
 
         return SDL_FALSE;
@@ -245,7 +244,7 @@ static SDL_bool InitShaders()
     /* Compile all the shaders */
     for (i = 0; i < NUM_SHADERS; ++i) {
         if (!CompileShaderProgram(&shaders[i])) {
-            fprintf(stderr, "Unable to compile shader!\n");
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to compile shader!\n");
             return SDL_FALSE;
         }
     }
@@ -422,29 +421,32 @@ int main(int argc, char **argv)
     GLuint texture;
     GLfloat texcoords[4];
 
+	/* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
     /* Initialize SDL for video output */
     if ( SDL_Init(SDL_INIT_VIDEO) < 0 ) {
-        fprintf(stderr, "Unable to initialize SDL: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to initialize SDL: %s\n", SDL_GetError());
         exit(1);
     }
 
     /* Create a 640x480 OpenGL screen */
     window = SDL_CreateWindow( "Shader Demo", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 480, SDL_WINDOW_OPENGL );
     if ( !window ) {
-        fprintf(stderr, "Unable to create OpenGL window: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to create OpenGL window: %s\n", SDL_GetError());
         SDL_Quit();
         exit(2);
     }
 
     if ( !SDL_GL_CreateContext(window)) {
-        fprintf(stderr, "Unable to create OpenGL context: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to create OpenGL context: %s\n", SDL_GetError());
         SDL_Quit();
         exit(2);
     }
 
     surface = SDL_LoadBMP("icon.bmp");
     if ( ! surface ) {
-        fprintf(stderr, "Unable to load icon.bmp: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to load icon.bmp: %s\n", SDL_GetError());
         SDL_Quit();
         exit(3);
     }
@@ -454,9 +456,9 @@ int main(int argc, char **argv)
     /* Loop, drawing and checking events */
     InitGL(640, 480);
     if (InitShaders()) {
-        printf("Shaders supported, press SPACE to cycle them.\n");
+        SDL_Log("Shaders supported, press SPACE to cycle them.\n");
     } else {
-        printf("Shaders not supported!\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Shaders not supported!\n");
     }
     done = 0;
     while ( ! done ) {
@@ -489,7 +491,7 @@ int main(int argc, char **argv)
 int
 main(int argc, char *argv[])
 {
-    printf("No OpenGL support on this system\n");
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "No OpenGL support on this system\n");
     return 1;
 }
 

@@ -109,7 +109,8 @@
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(SolutionDir)\SDL\$(Platform)\$(Configuration)\SDL2.dll" "$(TargetDir)\SDL2.dll"</Command>
+      <Command>copy "$(SolutionDir)\SDL\$(Platform)\$(Configuration)\SDL2.dll" "$(TargetDir)\SDL2.dll"
+copy "$(SolutionDir)\..\test\sample.wav" "$(TargetDir)\sample.wav"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copy SDL</Message>
@@ -143,7 +144,8 @@
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(SolutionDir)\SDL\$(Platform)\$(Configuration)\SDL2.dll" "$(TargetDir)\SDL2.dll"</Command>
+      <Command>copy "$(SolutionDir)\SDL\$(Platform)\$(Configuration)\SDL2.dll" "$(TargetDir)\SDL2.dll"
+copy "$(SolutionDir)\..\test\sample.wav" "$(TargetDir)\sample.wav"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copy SDL</Message>
@@ -178,7 +180,8 @@
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(SolutionDir)\SDL\$(Platform)\$(Configuration)\SDL2.dll" "$(TargetDir)\SDL2.dll"</Command>
+      <Command>copy "$(SolutionDir)\SDL\$(Platform)\$(Configuration)\SDL2.dll" "$(TargetDir)\SDL2.dll"
+copy "$(SolutionDir)\..\test\sample.wav" "$(TargetDir)\sample.wav"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copy SDL</Message>
@@ -212,7 +215,8 @@
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>copy "$(SolutionDir)\SDL\$(Platform)\$(Configuration)\SDL2.dll" "$(TargetDir)\SDL2.dll"</Command>
+      <Command>copy "$(SolutionDir)\SDL\$(Platform)\$(Configuration)\SDL2.dll" "$(TargetDir)\SDL2.dll"
+copy "$(SolutionDir)\..\test\sample.wav" "$(TargetDir)\sample.wav"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
       <Message>Copy SDL</Message>

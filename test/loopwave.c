@@ -80,9 +80,12 @@ main(int argc, char *argv[])
 {
     int i;
 
+	/* Enable standard application logging */
+	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
     /* Load the SDL library */
     if (SDL_Init(SDL_INIT_AUDIO) < 0) {
-        fprintf(stderr, "Couldn't initialize SDL: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         return (1);
     }
 
@@ -91,7 +94,7 @@ main(int argc, char *argv[])
     }
     /* Load the wave file into memory */
     if (SDL_LoadWAV(argv[1], &wave.spec, &wave.sound, &wave.soundlen) == NULL) {
-        fprintf(stderr, "Couldn't load %s: %s\n", argv[1], SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s\n", argv[1], SDL_GetError());
         quit(1);
     }
 
@@ -109,24 +112,19 @@ main(int argc, char *argv[])
 #endif /* HAVE_SIGNAL_H */
 
     /* Show the list of available drivers */
-    printf("Available audio drivers: ");
+    SDL_Log("Available audio drivers:");
     for (i = 0; i < SDL_GetNumAudioDrivers(); ++i) {
-        if (i == 0) {
-            printf("%s", SDL_GetAudioDriver(i));
-        } else {
-            printf(", %s", SDL_GetAudioDriver(i));
-        }
+		SDL_Log("%i: %s", i, SDL_GetAudioDriver(i));
     }
-    printf("\n");
 
     /* Initialize fillerup() variables */
     if (SDL_OpenAudio(&wave.spec, NULL) < 0) {
-        fprintf(stderr, "Couldn't open audio: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open audio: %s\n", SDL_GetError());
         SDL_FreeWAV(wave.sound);
         quit(2);
     }
 
-    printf("Using audio driver: %s\n", SDL_GetCurrentAudioDriver());
+    SDL_Log("Using audio driver: %s\n", SDL_GetCurrentAudioDriver());
 
     /* Let the audio run */
     SDL_PauseAudio(0);

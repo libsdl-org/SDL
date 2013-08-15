@@ -18,18 +18,18 @@ print_devices(int iscapture)
     const char *typestr = ((iscapture) ? "capture" : "output");
     int n = SDL_GetNumAudioDevices(iscapture);
 
-    printf("%s devices:\n", typestr);
+    SDL_Log("%s devices:\n", typestr);
 
     if (n == -1)
-        printf("  Driver can't detect specific %s devices.\n\n", typestr);
+        SDL_Log("  Driver can't detect specific %s devices.\n\n", typestr);
     else if (n == 0)
-        printf("  No %s devices found.\n\n", typestr);
+        SDL_Log("  No %s devices found.\n\n", typestr);
     else {
         int i;
         for (i = 0; i < n; i++) {
-            printf("  %s\n", SDL_GetAudioDeviceName(i, iscapture));
+            SDL_Log("  %s\n", SDL_GetAudioDeviceName(i, iscapture));
         }
-        printf("\n");
+        SDL_Log("\n");
     }
 }
 
@@ -38,26 +38,29 @@ main(int argc, char **argv)
 {
     int n;
 
+    /* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
     /* Load the SDL library */
     if (SDL_Init(SDL_INIT_AUDIO) < 0) {
-        fprintf(stderr, "Couldn't initialize SDL: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         return (1);
     }
 
     /* Print available audio drivers */
     n = SDL_GetNumAudioDrivers();
     if (n == 0) {
-        printf("No built-in audio drivers\n\n");
+        SDL_Log("No built-in audio drivers\n\n");
     } else {
         int i;
-        printf("Built-in audio drivers:\n");
+        SDL_Log("Built-in audio drivers:\n");
         for (i = 0; i < n; ++i) {
-            printf("  %s\n", SDL_GetAudioDriver(i));
+            SDL_Log("  %s\n", SDL_GetAudioDriver(i));
         }
-        printf("\n");
+        SDL_Log("\n");
     }
 
-    printf("Using audio driver: %s\n\n", SDL_GetCurrentAudioDriver());
+    SDL_Log("Using audio driver: %s\n\n", SDL_GetCurrentAudioDriver());
 
     print_devices(0);
     print_devices(1);

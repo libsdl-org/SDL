@@ -209,19 +209,18 @@ ConvertRGBtoYV12(Uint8 *rgb, Uint8 *out, int w, int h,
 static void
 PrintUsage(char *argv0)
 {
-    fprintf(stderr, "Usage: %s [arg] [arg] [arg] ...\n", argv0);
-    fprintf(stderr, "\n");
-    fprintf(stderr, "Where 'arg' is any of the following options:\n");
-    fprintf(stderr, "\n");
-    fprintf(stderr, "    -fps <frames per second>\n");
-    fprintf(stderr, "    -nodelay\n");
-    fprintf(stderr, "    -format <fmt> (one of the: YV12, IYUV, YUY2, UYVY, YVYU)\n");
-    fprintf(stderr, "    -scale <scale factor> (initial scale of the overlay)\n");
-    fprintf(stderr, "    -help (shows this help)\n");
-    fprintf(stderr, "\n");
-    fprintf(stderr,
-            "Press ESC to exit, or SPACE to freeze the movie while application running.\n");
-    fprintf(stderr, "\n");
+    SDL_Log("Usage: %s [arg] [arg] [arg] ...\n", argv0);
+    SDL_Log("\n");
+    SDL_Log("Where 'arg' is any of the following options:\n");
+    SDL_Log("\n");
+    SDL_Log("    -fps <frames per second>\n");
+    SDL_Log("    -nodelay\n");
+    SDL_Log("    -format <fmt> (one of the: YV12, IYUV, YUY2, UYVY, YVYU)\n");
+    SDL_Log("    -scale <scale factor> (initial scale of the overlay)\n");
+    SDL_Log("    -help (shows this help)\n");
+    SDL_Log("\n");
+    SDL_Log("Press ESC to exit, or SPACE to freeze the movie while application running.\n");
+    SDL_Log("\n");
 }
 
 int
@@ -246,8 +245,11 @@ main(int argc, char **argv)
     int scale = 5;
     SDL_bool done = SDL_FALSE;
 
+    /* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
-        fprintf(stderr, "Couldn't initialize SDL: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         return 3;
     }
 
@@ -256,19 +258,19 @@ main(int argc, char **argv)
             if (argv[2]) {
                 fps = atoi(argv[2]);
                 if (fps == 0) {
-                    fprintf(stderr,
+                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                             "The -fps option requires an argument [from 1 to 1000], default is 12.\n");
                     quit(10);
                 }
                 if ((fps < 0) || (fps > 1000)) {
-                    fprintf(stderr,
+                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                             "The -fps option must be in range from 1 to 1000, default is 12.\n");
                     quit(10);
                 }
                 argv += 2;
                 argc -= 2;
             } else {
-                fprintf(stderr,
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                         "The -fps option requires an argument [from 1 to 1000], default is 12.\n");
                 quit(10);
             }
@@ -280,19 +282,19 @@ main(int argc, char **argv)
             if (argv[2]) {
                 scale = atoi(argv[2]);
                 if (scale == 0) {
-                    fprintf(stderr,
+                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                             "The -scale option requires an argument [from 1 to 50], default is 5.\n");
                     quit(10);
                 }
                 if ((scale < 0) || (scale > 50)) {
-                    fprintf(stderr,
+                    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                             "The -scale option must be in range from 1 to 50, default is 5.\n");
                     quit(10);
                 }
                 argv += 2;
                 argc -= 2;
             } else {
-                fprintf(stderr,
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                         "The -fps option requires an argument [from 1 to 1000], default is 12.\n");
                 quit(10);
             }
@@ -301,7 +303,7 @@ main(int argc, char **argv)
             PrintUsage(argv[0]);
             quit(0);
         } else {
-            fprintf(stderr, "Unrecognized option: %s.\n", argv[1]);
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unrecognized option: %s.\n", argv[1]);
             quit(10);
         }
         break;
@@ -309,7 +311,7 @@ main(int argc, char **argv)
 
     RawMooseData = (Uint8 *) malloc(MOOSEFRAME_SIZE * MOOSEFRAMES_COUNT);
     if (RawMooseData == NULL) {
-        fprintf(stderr, "Can't allocate memory for movie !\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Can't allocate memory for movie !\n");
         free(RawMooseData);
         quit(1);
     }
@@ -317,7 +319,7 @@ main(int argc, char **argv)
     /* load the trojan moose images */
     handle = SDL_RWFromFile("moose.dat", "rb");
     if (handle == NULL) {
-        fprintf(stderr, "Can't find the file moose.dat !\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Can't find the file moose.dat !\n");
         free(RawMooseData);
         quit(2);
     }
@@ -335,21 +337,21 @@ main(int argc, char **argv)
                               window_w, window_h,
                               SDL_WINDOW_RESIZABLE);
     if (!window) {
-        fprintf(stderr, "Couldn't set create window: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create window: %s\n", SDL_GetError());
         free(RawMooseData);
         quit(4);
     }
 
     renderer = SDL_CreateRenderer(window, -1, 0);
     if (!renderer) {
-        fprintf(stderr, "Couldn't set create renderer: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create renderer: %s\n", SDL_GetError());
         free(RawMooseData);
         quit(4);
     }
 
     MooseTexture = SDL_CreateTexture(renderer, pixel_format, SDL_TEXTUREACCESS_STREAMING, MOOSEPIC_W, MOOSEPIC_H);
     if (!MooseTexture) {
-        fprintf(stderr, "Couldn't set create texture: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create texture: %s\n", SDL_GetError());
         free(RawMooseData);
         quit(5);
     }

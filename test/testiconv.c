@@ -49,12 +49,15 @@ main(int argc, char *argv[])
     FILE *file;
     int errors = 0;
 
+    /* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
     if (!argv[1]) {
         argv[1] = "utf8.txt";
     }
     file = fopen(argv[1], "rb");
     if (!file) {
-        fprintf(stderr, "Unable to open %s\n", argv[1]);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to open %s\n", argv[1]);
         return (1);
     }
 
@@ -69,7 +72,7 @@ main(int argc, char *argv[])
             test[0] = SDL_iconv_string(formats[i], "UCS-4", ucs4, len);
             test[1] = SDL_iconv_string("UCS-4", formats[i], test[0], len);
             if (!test[1] || SDL_memcmp(test[1], ucs4, len) != 0) {
-                fprintf(stderr, "FAIL: %s\n", formats[i]);
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "FAIL: %s\n", formats[i]);
                 ++errors;
             }
             if (test[0]) {

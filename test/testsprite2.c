@@ -64,7 +64,7 @@ LoadSprite(const char *file)
     /* Load the sprite image */
     temp = SDL_LoadBMP(file);
     if (temp == NULL) {
-        fprintf(stderr, "Couldn't load %s: %s", file, SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s", file, SDL_GetError());
         return (-1);
     }
     sprite_w = temp->w;
@@ -95,7 +95,7 @@ LoadSprite(const char *file)
         SDL_Renderer *renderer = state->renderers[i];
         sprites[i] = SDL_CreateTextureFromSurface(renderer, temp);
         if (!sprites[i]) {
-            fprintf(stderr, "Couldn't create texture: %s\n", SDL_GetError());
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create texture: %s\n", SDL_GetError());
             SDL_FreeSurface(temp);
             return (-1);
         }
@@ -299,8 +299,7 @@ main(int argc, char *argv[])
             }
         }
         if (consumed < 0) {
-            fprintf(stderr,
-                    "Usage: %s %s [--blend none|blend|add|mod] [--cyclecolor] [--cyclealpha] [--iterations N] [num_sprites] [icon.bmp]\n",
+            SDL_Log("Usage: %s %s [--blend none|blend|add|mod] [--cyclecolor] [--cyclealpha] [--iterations N] [num_sprites] [icon.bmp]\n",
                     argv[0], SDLTest_CommonUsage(state));
             quit(1);
         }
@@ -314,7 +313,7 @@ main(int argc, char *argv[])
     sprites =
         (SDL_Texture **) SDL_malloc(state->num_windows * sizeof(*sprites));
     if (!sprites) {
-        fprintf(stderr, "Out of memory!\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
         quit(2);
     }
     for (i = 0; i < state->num_windows; ++i) {
@@ -330,7 +329,7 @@ main(int argc, char *argv[])
     positions = (SDL_Rect *) SDL_malloc(num_sprites * sizeof(SDL_Rect));
     velocities = (SDL_Rect *) SDL_malloc(num_sprites * sizeof(SDL_Rect));
     if (!positions || !velocities) {
-        fprintf(stderr, "Out of memory!\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
         quit(2);
     }
 
@@ -375,7 +374,7 @@ main(int argc, char *argv[])
     now = SDL_GetTicks();
     if (now > then) {
         double fps = ((double) frames * 1000) / (now - then);
-        printf("%2.2f frames per second\n", fps);
+        SDL_Log("%2.2f frames per second\n", fps);
     }
     quit(0);
     return 0;

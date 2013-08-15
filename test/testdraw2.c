@@ -176,6 +176,9 @@ main(int argc, char *argv[])
     SDL_Event event;
     Uint32 then, now, frames;
 
+	/* Enable standard application logging */
+	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
     /* Initialize parameters */
     num_objects = NUM_OBJECTS;
 
@@ -218,8 +221,7 @@ main(int argc, char *argv[])
             }
         }
         if (consumed < 0) {
-            fprintf(stderr,
-                    "Usage: %s %s [--blend none|blend|add|mod] [--cyclecolor] [--cyclealpha]\n",
+            SDL_Log("Usage: %s %s [--blend none|blend|add|mod] [--cyclecolor] [--cyclealpha]\n",
                     argv[0], SDLTest_CommonUsage(state));
             return 1;
         }
@@ -268,7 +270,7 @@ main(int argc, char *argv[])
     now = SDL_GetTicks();
     if (now > then) {
         double fps = ((double) frames * 1000) / (now - then);
-        printf("%2.2f frames per second\n", fps);
+        SDL_Log("%2.2f frames per second\n", fps);
     }
     return 0;
 }

@@ -84,7 +84,7 @@ add_line(int x1, int y1, int x2, int y2)
     if ((x1 == x2) && (y1 == y2))
         return 0;
 
-    printf("adding line (%d, %d), (%d, %d)\n", x1, y1, x2, y2);
+    SDL_Log("adding line (%d, %d), (%d, %d)\n", x1, y1, x2, y2);
     lines[num_lines].x = x1;
     lines[num_lines].y = y1;
     lines[num_lines].w = x2;
@@ -133,7 +133,7 @@ add_rect(int x1, int y1, int x2, int y2)
     if (y1 > y2)
         SWAP(int, y1, y2);
 
-    printf("adding rect (%d, %d), (%d, %d) [%dx%d]\n", x1, y1, x2, y2,
+    SDL_Log("adding rect (%d, %d), (%d, %d) [%dx%d]\n", x1, y1, x2, y2,
            x2 - x1, y2 - y1);
 
     rects[num_rects].x = x1;
@@ -199,6 +199,9 @@ main(int argc, char *argv[])
     SDL_Event event;
     Uint32 then, now, frames;
 
+    /* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
     /* Initialize parameters */
     num_objects = NUM_OBJECTS;
 
@@ -241,8 +244,7 @@ main(int argc, char *argv[])
             }
         }
         if (consumed < 0) {
-            fprintf(stderr,
-                    "Usage: %s %s [--blend none|blend|add|mod] [--cyclecolor] [--cyclealpha]\n",
+            SDL_Log("Usage: %s %s [--blend none|blend|add|mod] [--cyclecolor] [--cyclealpha]\n",
                     argv[0], SDLTest_CommonUsage(state));
             return 1;
         }
@@ -327,7 +329,7 @@ main(int argc, char *argv[])
     now = SDL_GetTicks();
     if (now > then) {
         double fps = ((double) frames * 1000) / (now - then);
-        printf("%2.2f frames per second\n", fps);
+        SDL_Log("%2.2f frames per second\n", fps);
     }
     return 0;
 }
