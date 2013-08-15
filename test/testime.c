@@ -80,7 +80,7 @@ char *utf8_advance(char *p, size_t distance)
 
 void usage()
 {
-    printf("usage: testime [--font fontfile]\n");
+    SDL_Log("usage: testime [--font fontfile]\n");
     exit(0);
 }
 
@@ -210,6 +210,9 @@ int main(int argc, char *argv[]) {
     SDL_Event event;
     const char *fontname = DEFAULT_FONT;
 
+    /* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
     if (!state) {
@@ -251,12 +254,12 @@ int main(int argc, char *argv[]) {
     font = TTF_OpenFont(fontname, DEFAULT_PTSIZE);
     if (! font)
     {
-        fprintf(stderr, "Failed to find font: %s\n", TTF_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to find font: %s\n", TTF_GetError());
         exit(-1);
     }
 #endif
 
-    printf("Using font: %s\n", fontname);
+    SDL_Log("Using font: %s\n", fontname);
     atexit(SDL_Quit);
 
     InitInput();
@@ -321,8 +324,7 @@ int main(int argc, char *argv[]) {
                         break;
                     }
 
-                    fprintf(stderr,
-                            "Keyboard: scancode 0x%08X = %s, keycode 0x%08X = %s\n",
+                    SDL_Log("Keyboard: scancode 0x%08X = %s, keycode 0x%08X = %s\n",
                             event.key.keysym.scancode,
                             SDL_GetScancodeName(event.key.keysym.scancode),
                             event.key.keysym.sym, SDL_GetKeyName(event.key.keysym.sym));
@@ -333,12 +335,12 @@ int main(int argc, char *argv[]) {
                         markedRect.w < 0)
                         break;
 
-                    fprintf(stderr, "Keyboard: text input \"%s\"\n", event.text.text);
+                    SDL_Log("Keyboard: text input \"%s\"\n", event.text.text);
 
                     if (SDL_strlen(text) + SDL_strlen(event.text.text) < sizeof(text))
                         SDL_strlcat(text, event.text.text, sizeof(text));
 
-                    fprintf(stderr, "text inputed: %s\n", text);
+                    SDL_Log("text inputed: %s\n", text);
 
                     // After text inputed, we can clear up markedText because it
                     // is committed
@@ -347,7 +349,7 @@ int main(int argc, char *argv[]) {
                     break;
 
                 case SDL_TEXTEDITING:
-                    fprintf(stderr, "text editing \"%s\", selected range (%d, %d)\n",
+                    SDL_Log("text editing \"%s\", selected range (%d, %d)\n",
                             event.edit.text, event.edit.start, event.edit.length);
 
                     strcpy(markedText, event.edit.text);

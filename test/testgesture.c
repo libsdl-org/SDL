@@ -207,6 +207,9 @@ int main(int argc, char* argv[])
   SDL_bool quitting = SDL_FALSE;
   SDL_RWops *src;
 
+  /* Enable standard application logging */
+  SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
   //gesture variables
   knob.r = .1f;
   knob.ang = 0;

@@ -26,17 +26,20 @@ main(int argc, char *argv[])
     SDL_version compiled;
     SDL_version linked;
 
+	/* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
 #if SDL_VERSION_ATLEAST(2, 0, 0)
-    printf("Compiled with SDL 2.0 or newer\n");
+    SDL_Log("Compiled with SDL 2.0 or newer\n");
 #else
-    printf("Compiled with SDL older than 2.0\n");
+    SDL_Log("Compiled with SDL older than 2.0\n");
 #endif
     SDL_VERSION(&compiled);
-    printf("Compiled version: %d.%d.%d.%d (%s)\n",
+    SDL_Log("Compiled version: %d.%d.%d.%d (%s)\n",
            compiled.major, compiled.minor, compiled.patch,
            SDL_REVISION_NUMBER, SDL_REVISION);
     SDL_GetVersion(&linked);
-    printf("Linked version: %d.%d.%d.%d (%s)\n",
+    SDL_Log("Linked version: %d.%d.%d.%d (%s)\n",
            linked.major, linked.minor, linked.patch,
            SDL_GetRevisionNumber(), SDL_GetRevision());
     SDL_Quit();

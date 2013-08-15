@@ -360,8 +360,6 @@ surface_testCompleteSurfaceConversion(void *arg)
 
     for ( i = 0; i < SDL_arraysize(pixel_formats); ++i ) {
         for ( j = 0; j < SDL_arraysize(pixel_formats); ++j ) {
-            /*printf("Converting %s -> %s\n", SDL_GetPixelFormatName(pixel_formats[i]), SDL_GetPixelFormatName(pixel_formats[j]));*/
-
             fmt1 = SDL_AllocFormat(pixel_formats[i]);
             SDL_assert(fmt1 != NULL);
             cvt1 = SDL_ConvertSurface(face, fmt1, 0);

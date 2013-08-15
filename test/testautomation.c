@@ -80,8 +80,7 @@ main(int argc, char *argv[])
             }
         }
         if (consumed < 0) {
-            fprintf(stderr,
-                    "Usage: %s %s [--iterations #] [--execKey #] [--seed string] [--filter suite_name|test_name]\n",
+            SDL_Log("Usage: %s %s [--iterations #] [--execKey #] [--seed string] [--filter suite_name|test_name]\n",
                     argv[0], SDLTest_CommonUsage(state));
             quit(1);
         }

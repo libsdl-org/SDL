@@ -58,7 +58,7 @@ LoadSprite(SDL_Renderer *renderer, char *file)
     /* Load the sprite image */
     temp = SDL_LoadBMP(file);
     if (temp == NULL) {
-        fprintf(stderr, "Couldn't load %s: %s", file, SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s", file, SDL_GetError());
         return 0;
     }
 
@@ -70,7 +70,7 @@ LoadSprite(SDL_Renderer *renderer, char *file)
     /* Create textures from the image */
     sprite = SDL_CreateTextureFromSurface(renderer, temp);
     if (!sprite) {
-        fprintf(stderr, "Couldn't create texture: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create texture: %s\n", SDL_GetError());
         SDL_FreeSurface(temp);
         return 0;
     }
@@ -131,8 +131,11 @@ main(int argc, char *argv[])
     int sprite_w, sprite_h;
     SDL_Event event;
 
+	/* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
     if (SDL_VideoInit(NULL) < 0) {
-        fprintf(stderr, "Couldn't initialize SDL video: %s\n",
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL video: %s\n",
                 SDL_GetError());
         exit(1);
     }
@@ -146,19 +149,19 @@ main(int argc, char *argv[])
         }
     }
     if (!factory) {
-        fprintf(stderr, "Couldn't find native window code for %s driver\n",
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find native window code for %s driver\n",
                 driver);
         quit(2);
     }
-    printf("Creating native window for %s driver\n", driver);
+    SDL_Log("Creating native window for %s driver\n", driver);
     native_window = factory->CreateNativeWindow(WINDOW_W, WINDOW_H);
     if (!native_window) {
-        fprintf(stderr, "Couldn't create native window\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create native window\n");
         quit(3);
     }
     window = SDL_CreateWindowFrom(native_window);
     if (!window) {
-        fprintf(stderr, "Couldn't create SDL window: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create SDL window: %s\n", SDL_GetError());
         quit(4);
     }
     SDL_SetWindowTitle(window, "SDL Native Window Test");
@@ -166,7 +169,7 @@ main(int argc, char *argv[])
     /* Create the renderer */
     renderer = SDL_CreateRenderer(window, -1, 0);
     if (!renderer) {
-        fprintf(stderr, "Couldn't create renderer: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create renderer: %s\n", SDL_GetError());
         quit(5);
     }
 
@@ -185,7 +188,7 @@ main(int argc, char *argv[])
     positions = (SDL_Rect *) SDL_malloc(NUM_SPRITES * sizeof(SDL_Rect));
     velocities = (SDL_Rect *) SDL_malloc(NUM_SPRITES * sizeof(SDL_Rect));
     if (!positions || !velocities) {
-        fprintf(stderr, "Out of memory!\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory!\n");
         quit(2);
     }
     srand(time(NULL));

@@ -34,20 +34,20 @@ int SDLCALL
 ThreadFunc(void *data)
 {
     SDL_TLSSet(tls, "baby thread", NULL);
-    printf("Started thread %s: My thread id is %lu, thread data = %s\n",
+    SDL_Log("Started thread %s: My thread id is %lu, thread data = %s\n",
            (char *) data, SDL_ThreadID(), (const char *)SDL_TLSGet(tls));
     while (alive) {
-        printf("Thread '%s' is alive!\n", (char *) data);
+        SDL_Log("Thread '%s' is alive!\n", (char *) data);
         SDL_Delay(1 * 1000);
     }
-    printf("Thread '%s' exiting!\n", (char *) data);
+    SDL_Log("Thread '%s' exiting!\n", (char *) data);
     return (0);
 }
 
 static void
 killed(int sig)
 {
-    printf("Killed with SIGTERM, waiting 5 seconds to exit\n");
+    SDL_Log("Killed with SIGTERM, waiting 5 seconds to exit\n");
     SDL_Delay(5 * 1000);
     alive = 0;
     quit(0);
@@ -58,35 +58,38 @@ main(int argc, char *argv[])
 {
     SDL_Thread *thread;
 
+	/* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
     /* Load the SDL library */
     if (SDL_Init(0) < 0) {
-        fprintf(stderr, "Couldn't initialize SDL: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         return (1);
     }
 
     tls = SDL_TLSCreate();
     SDL_assert(tls);
     SDL_TLSSet(tls, "main thread", NULL);
-    printf("Main thread data initially: %s\n", (const char *)SDL_TLSGet(tls));
+    SDL_Log("Main thread data initially: %s\n", (const char *)SDL_TLSGet(tls));
 
     alive = 1;
     thread = SDL_CreateThread(ThreadFunc, "One", "#1");
     if (thread == NULL) {
-        fprintf(stderr, "Couldn't create thread: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create thread: %s\n", SDL_GetError());
         quit(1);
     }
     SDL_Delay(5 * 1000);
-    printf("Waiting for thread #1\n");
+    SDL_Log("Waiting for thread #1\n");
     alive = 0;
     SDL_WaitThread(thread, NULL);
 
-    printf("Main thread data finally: %s\n", (const char *)SDL_TLSGet(tls));
+    SDL_Log("Main thread data finally: %s\n", (const char *)SDL_TLSGet(tls));
 
     alive = 1;
     signal(SIGTERM, killed);
     thread = SDL_CreateThread(ThreadFunc, "Two", "#2");
     if (thread == NULL) {
-        fprintf(stderr, "Couldn't create thread: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create thread: %s\n", SDL_GetError());
         quit(1);
     }
     raise(SIGTERM);
