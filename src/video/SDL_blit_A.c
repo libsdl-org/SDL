@@ -352,7 +352,7 @@ BlitRGBtoRGBPixelAlphaMMX(SDL_BlitInfo * info)
 		Uint32 alpha = *srcp & amask;
 		if (alpha == 0) {
 			/* do nothing */
-		} else if (alpha == amask || (*dstp & amask) == 0) {
+		} else if (alpha == amask) {
 			*dstp = *srcp;
 		} else {
 			src1 = _mm_cvtsi32_si64(*srcp); /* src(ARGB) -> src1 (0000ARGB)*/
@@ -545,7 +545,7 @@ BlitRGBtoRGBPixelAlphaMMX3DNOW(SDL_BlitInfo * info)
 		alpha = *srcp & amask;
 		if (alpha == 0) {
 			/* do nothing */
-		} else if (alpha == amask || (*dstp & amask) == 0) {
+		} else if (alpha == amask) {
 			*dstp = *srcp;
 		} else {
 			src1 = _mm_cvtsi32_si64(*srcp); /* src(ARGB) -> src1 (0000ARGB)*/
