@@ -185,6 +185,7 @@ static int GLES_LoadFunctions(GLES_RenderData * data)
 
 #ifdef __SDL_NOGETPROCADDR__
 #define SDL_PROC(ret,func,params) data->func=func;
+#define SDL_PROC_OES(ret,func,params) data->func=func;
 #else
 #define SDL_PROC(ret,func,params) \
     do { \
