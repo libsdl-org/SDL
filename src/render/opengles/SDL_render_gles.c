@@ -96,7 +96,7 @@ SDL_RenderDriver GLES_RenderDriver = {
     GLES_CreateRenderer,
     {
      "opengles",
-     (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE),
+     (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC ),
      1,
      {SDL_PIXELFORMAT_ABGR8888},
      0,
@@ -113,8 +113,10 @@ typedef struct
     } current;
 
 #define SDL_PROC(ret,func,params) ret (APIENTRY *func) params;
+#define SDL_PROC_OES SDL_PROC
 #include "SDL_glesfuncs.h"
 #undef SDL_PROC
+#undef SDL_PROC_OES
     SDL_bool GL_OES_framebuffer_object_supported;
     GLES_FBOList *framebuffers;
     GLuint window_framebuffer;
@@ -191,10 +193,15 @@ static int GLES_LoadFunctions(GLES_RenderData * data)
             return SDL_SetError("Couldn't load GLES function %s: %s\n", #func, SDL_GetError()); \
         } \
     } while ( 0 );
+#define SDL_PROC_OES(ret,func,params) \
+    do { \
+        data->func = SDL_GL_GetProcAddress(#func); \
+    } while ( 0 );    
 #endif /* _SDL_NOGETPROCADDR_ */
 
 #include "SDL_glesfuncs.h"
 #undef SDL_PROC
+#undef SDL_PROC_OES
     return 0;
 }
 
@@ -465,12 +472,17 @@ GLES_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         }
     }
 
-    texture->driverdata = data;
+    
     if (texture->access == SDL_TEXTUREACCESS_TARGET) {
-       data->fbo = GLES_GetFBO(renderer->driverdata, texture->w, texture->h);
+        if (!renderdata->GL_OES_framebuffer_object_supported) {
+            SDL_free(data);
+            return SDL_SetError("GL_OES_framebuffer_object not supported");
+        }
+        data->fbo = GLES_GetFBO(renderer->driverdata, texture->w, texture->h);
     } else {
-       data->fbo = NULL;
+        data->fbo = NULL;
     }
+    
 
     renderdata->glGetError();
     renderdata->glEnable(GL_TEXTURE_2D);
@@ -503,8 +515,11 @@ GLES_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 
     result = renderdata->glGetError();
     if (result != GL_NO_ERROR) {
+        SDL_free(data);
         return GLES_SetError("glTexImage2D()", result);
     }
+    
+    texture->driverdata = data;
     return 0;
 }
 
@@ -602,6 +617,10 @@ GLES_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
     GLenum status;
 
     GLES_ActivateRenderer(renderer);
+    
+    if (!data->GL_OES_framebuffer_object_supported) {
+        return SDL_SetError("Can't enable render target support in this renderer");
+    }
 
     if (texture == NULL) {
         data->glBindFramebufferOES(GL_FRAMEBUFFER_OES, data->window_framebuffer);
