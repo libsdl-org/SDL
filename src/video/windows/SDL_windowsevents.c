@@ -487,7 +487,14 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 #endif /* WM_MOUSELEAVE */
 
     case WM_KEYDOWN:
+    case WM_SYSKEYDOWN:
         {
+            SDL_Scancode code = WindowsScanCodeToSDLScanCode( lParam, wParam );
+            if ( code != SDL_SCANCODE_UNKNOWN ) {
+                SDL_SendKeyboardKey(SDL_PRESSED, code );
+            }
+        }
+        if (msg == WM_KEYDOWN) {
             BYTE keyboardState[256];
             char text[5];
             UINT32 utf32 = 0;
@@ -499,14 +506,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     WIN_ConvertUTF32toUTF8(utf32, text);
                     SDL_SendKeyboardText(text);
                 }
-            }
-        }
-        // no break
-    case WM_SYSKEYDOWN:
-        {
-            SDL_Scancode code = WindowsScanCodeToSDLScanCode( lParam, wParam );
-            if ( code != SDL_SCANCODE_UNKNOWN ) {
-                SDL_SendKeyboardKey(SDL_PRESSED, code );
             }
         }
         returnCode = 0;
