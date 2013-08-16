@@ -375,7 +375,8 @@ GLES_CreateRenderer(SDL_Window * window, Uint32 flags)
     data->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &value);
     renderer->info.max_texture_height = value;
 
-    if (SDL_GL_ExtensionSupported("GL_OES_framebuffer_object")) {
+    /* Android does not report GL_OES_framebuffer_object but the functionality seems to be there anyway */
+    if (SDL_GL_ExtensionSupported("GL_OES_framebuffer_object") || data->glGenFramebuffersOES) {
         data->GL_OES_framebuffer_object_supported = SDL_TRUE;
         renderer->info.flags |= SDL_RENDERER_TARGETTEXTURE;
 
