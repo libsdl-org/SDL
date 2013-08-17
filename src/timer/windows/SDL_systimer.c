@@ -29,6 +29,7 @@
 #include "SDL_hints.h"
 
 
+static BOOL ticks_started = FALSE; 
 /* The first (low-resolution) ticks value of the application */
 static DWORD start;
 
@@ -76,8 +77,13 @@ SDL_TimerResolutionChanged(void *userdata, const char *name, const char *oldValu
 }
 
 void
-SDL_StartTicks(void)
+SDL_InitTicks(void)
 {
+    if (ticks_started) {
+        return;
+    }
+    ticks_started = TRUE;
+
     /* Set first ticks value */
 #ifdef USE_GETTICKCOUNT
     start = GetTickCount();
@@ -102,6 +108,8 @@ SDL_StartTicks(void)
 Uint32
 SDL_GetTicks(void)
 {
+    if (!ticks_started) SDL_InitTicks();
+
     DWORD now;
 #ifndef USE_GETTICKCOUNT
     LARGE_INTEGER hires_now;
