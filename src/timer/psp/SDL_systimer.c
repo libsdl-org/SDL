@@ -29,14 +29,24 @@
 #include <pspthreadman.h>
 
 static struct timeval start;
+static SDL_bool ticks_started = SDL_FALSE;
 
-void SDL_StartTicks(void)
+void SDL_InitTicks(void)
 {
+    if (ticks_started) {
+        return;
+    }
+    ticks_started = SDL_TRUE;
+
     gettimeofday(&start, NULL);
 }
 
 Uint32 SDL_GetTicks(void)
 {
+    if (!ticks_started) {
+        SDL_InitTicks();
+    }
+
     struct timeval now;
     Uint32 ticks;
 
