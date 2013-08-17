@@ -256,7 +256,7 @@ WIN_CheckRawMouseButtons( ULONG rawButtons, SDL_WindowData *data )
     }
 }
 
-static SDL_FORCE_INLINE BOOL
+SDL_FORCE_INLINE BOOL
 WIN_ConvertUTF32toUTF8(UINT32 codepoint, char * text)
 {
     if (codepoint <= 0x7F) {
