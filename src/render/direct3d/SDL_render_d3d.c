@@ -395,6 +395,71 @@ D3DFMTToPixelFormat(D3DFORMAT format)
     }
 }
 
+static void
+D3D_InitRenderState(D3D_RenderData *data)
+{
+    Direct3DDevice9 *device = data->device;
+
+    IDirect3DDevice9_SetVertexShader(device, NULL);
+    IDirect3DDevice9_SetFVF(device, D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1);
+    IDirect3DDevice9_SetRenderState(device, D3DRS_ZENABLE, D3DZB_FALSE);
+    IDirect3DDevice9_SetRenderState(device, D3DRS_CULLMODE, D3DCULL_NONE);
+    IDirect3DDevice9_SetRenderState(device, D3DRS_LIGHTING, FALSE);
+
+    /* Enable color modulation by diffuse color */
+    IDirect3DDevice9_SetTextureStageState(device, 0, D3DTSS_COLOROP,
+                                          D3DTOP_MODULATE);
+    IDirect3DDevice9_SetTextureStageState(device, 0, D3DTSS_COLORARG1,
+                                          D3DTA_TEXTURE);
+    IDirect3DDevice9_SetTextureStageState(device, 0, D3DTSS_COLORARG2,
+                                          D3DTA_DIFFUSE);
+
+    /* Enable alpha modulation by diffuse alpha */
+    IDirect3DDevice9_SetTextureStageState(device, 0, D3DTSS_ALPHAOP,
+                                          D3DTOP_MODULATE);
+    IDirect3DDevice9_SetTextureStageState(device, 0, D3DTSS_ALPHAARG1,
+                                          D3DTA_TEXTURE);
+    IDirect3DDevice9_SetTextureStageState(device, 0, D3DTSS_ALPHAARG2,
+                                          D3DTA_DIFFUSE);
+
+    /* Enable separate alpha blend function, if possible */
+    if (data->enableSeparateAlphaBlend) {
+        IDirect3DDevice9_SetRenderState(device, D3DRS_SEPARATEALPHABLENDENABLE, TRUE);
+    }
+
+    /* Disable second texture stage, since we're done */
+    IDirect3DDevice9_SetTextureStageState(device, 1, D3DTSS_COLOROP,
+                                          D3DTOP_DISABLE);
+    IDirect3DDevice9_SetTextureStageState(device, 1, D3DTSS_ALPHAOP,
+                                          D3DTOP_DISABLE);
+
+    /* Set an identity world and view matrix */
+    matrix.m[0][0] = 1.0f;
+    matrix.m[0][1] = 0.0f;
+    matrix.m[0][2] = 0.0f;
+    matrix.m[0][3] = 0.0f;
+    matrix.m[1][0] = 0.0f;
+    matrix.m[1][1] = 1.0f;
+    matrix.m[1][2] = 0.0f;
+    matrix.m[1][3] = 0.0f;
+    matrix.m[2][0] = 0.0f;
+    matrix.m[2][1] = 0.0f;
+    matrix.m[2][2] = 1.0f;
+    matrix.m[2][3] = 0.0f;
+    matrix.m[3][0] = 0.0f;
+    matrix.m[3][1] = 0.0f;
+    matrix.m[3][2] = 0.0f;
+    matrix.m[3][3] = 1.0f;
+    IDirect3DDevice9_SetTransform(device, D3DTS_WORLD, &matrix);
+    IDirect3DDevice9_SetTransform(device, D3DTS_VIEW, &matrix);
+
+    /* Reset our current scale mode */
+    SDL_memset(data->scaleMode, 0xFF, sizeof(data->scaleMode));
+
+    /* Start the render with beginScene */
+    data->beginScene = SDL_TRUE;
+}
+
 static int
 D3D_Reset(SDL_Renderer * renderer)
 {
@@ -416,14 +481,9 @@ D3D_Reset(SDL_Renderer * renderer)
             return D3D_SetError("Reset()", result);
         }
     }
-    IDirect3DDevice9_SetVertexShader(data->device, NULL);
-    IDirect3DDevice9_SetFVF(data->device,
-                            D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1);
-    IDirect3DDevice9_SetRenderState(data->device, D3DRS_CULLMODE,
-                                    D3DCULL_NONE);
-    IDirect3DDevice9_SetRenderState(data->device, D3DRS_LIGHTING, FALSE);
+
     IDirect3DDevice9_GetRenderTarget(data->device, 0, &data->defaultRenderTarget);
-    SDL_memset(data->scaleMode, 0xFF, sizeof(data->scaleMode));
+    D3D_InitRenderState(data);
     D3D_UpdateViewport(renderer);
     return 0;
 }
@@ -624,8 +684,6 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
         D3D_SetError("CreateDevice()", result);
         return NULL;
     }
-    data->beginScene = SDL_TRUE;
-    SDL_memset(data->scaleMode, 0xFF, sizeof(data->scaleMode));
 
     /* Get presentation parameters to fill info */
     result = IDirect3DDevice9_GetSwapChain(data->device, 0, &chain);
@@ -658,61 +716,12 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
         data->enableSeparateAlphaBlend = SDL_TRUE;
     }
 
-    /* Set up parameters for rendering */
-    IDirect3DDevice9_SetVertexShader(data->device, NULL);
-    IDirect3DDevice9_SetFVF(data->device,
-                            D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1);
-    IDirect3DDevice9_SetRenderState(data->device, D3DRS_ZENABLE, D3DZB_FALSE);
-    IDirect3DDevice9_SetRenderState(data->device, D3DRS_CULLMODE,
-                                    D3DCULL_NONE);
-    IDirect3DDevice9_SetRenderState(data->device, D3DRS_LIGHTING, FALSE);
-    /* Enable color modulation by diffuse color */
-    IDirect3DDevice9_SetTextureStageState(data->device, 0, D3DTSS_COLOROP,
-                                          D3DTOP_MODULATE);
-    IDirect3DDevice9_SetTextureStageState(data->device, 0, D3DTSS_COLORARG1,
-                                          D3DTA_TEXTURE);
-    IDirect3DDevice9_SetTextureStageState(data->device, 0, D3DTSS_COLORARG2,
-                                          D3DTA_DIFFUSE);
-    /* Enable alpha modulation by diffuse alpha */
-    IDirect3DDevice9_SetTextureStageState(data->device, 0, D3DTSS_ALPHAOP,
-                                          D3DTOP_MODULATE);
-    IDirect3DDevice9_SetTextureStageState(data->device, 0, D3DTSS_ALPHAARG1,
-                                          D3DTA_TEXTURE);
-    IDirect3DDevice9_SetTextureStageState(data->device, 0, D3DTSS_ALPHAARG2,
-                                          D3DTA_DIFFUSE);
-    /* Enable separate alpha blend function, if possible */
-    if (data->enableSeparateAlphaBlend) {
-        IDirect3DDevice9_SetRenderState(data->device, D3DRS_SEPARATEALPHABLENDENABLE, TRUE);
-    }
-    /* Disable second texture stage, since we're done */
-    IDirect3DDevice9_SetTextureStageState(data->device, 1, D3DTSS_COLOROP,
-                                          D3DTOP_DISABLE);
-    IDirect3DDevice9_SetTextureStageState(data->device, 1, D3DTSS_ALPHAOP,
-                                          D3DTOP_DISABLE);
-
     /* Store the default render target */
     IDirect3DDevice9_GetRenderTarget(data->device, 0, &data->defaultRenderTarget );
     data->currentRenderTarget = NULL;
 
-    /* Set an identity world and view matrix */
-    matrix.m[0][0] = 1.0f;
-    matrix.m[0][1] = 0.0f;
-    matrix.m[0][2] = 0.0f;
-    matrix.m[0][3] = 0.0f;
-    matrix.m[1][0] = 0.0f;
-    matrix.m[1][1] = 1.0f;
-    matrix.m[1][2] = 0.0f;
-    matrix.m[1][3] = 0.0f;
-    matrix.m[2][0] = 0.0f;
-    matrix.m[2][1] = 0.0f;
-    matrix.m[2][2] = 1.0f;
-    matrix.m[2][3] = 0.0f;
-    matrix.m[3][0] = 0.0f;
-    matrix.m[3][1] = 0.0f;
-    matrix.m[3][2] = 0.0f;
-    matrix.m[3][3] = 1.0f;
-    IDirect3DDevice9_SetTransform(data->device, D3DTS_WORLD, &matrix);
-    IDirect3DDevice9_SetTransform(data->device, D3DTS_VIEW, &matrix);
+    /* Set up parameters for rendering */
+    D3D_InitRenderState(data);
 
     if (caps.MaxSimultaneousTextures >= 3)
     {
