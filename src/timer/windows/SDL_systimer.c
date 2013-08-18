@@ -29,9 +29,9 @@
 #include "SDL_hints.h"
 
 
-static BOOL ticks_started = FALSE; 
 /* The first (low-resolution) ticks value of the application */
 static DWORD start;
+static BOOL ticks_started = FALSE; 
 
 #ifndef USE_GETTICKCOUNT
 /* Store if a high-resolution performance counter exists on the system */
@@ -108,7 +108,9 @@ SDL_InitTicks(void)
 Uint32
 SDL_GetTicks(void)
 {
-    if (!ticks_started) SDL_InitTicks();
+    if (!ticks_started) {
+        SDL_InitTicks();
+    }
 
     DWORD now;
 #ifndef USE_GETTICKCOUNT
