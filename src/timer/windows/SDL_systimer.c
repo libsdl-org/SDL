@@ -108,14 +108,14 @@ SDL_InitTicks(void)
 Uint32
 SDL_GetTicks(void)
 {
-    if (!ticks_started) {
-        SDL_InitTicks();
-    }
-
     DWORD now;
 #ifndef USE_GETTICKCOUNT
     LARGE_INTEGER hires_now;
 #endif
+
+    if (!ticks_started) {
+        SDL_InitTicks();
+    }
 
 #ifdef USE_GETTICKCOUNT
     now = GetTickCount();
