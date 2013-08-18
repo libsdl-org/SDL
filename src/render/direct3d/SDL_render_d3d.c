@@ -398,7 +398,9 @@ D3DFMTToPixelFormat(D3DFORMAT format)
 static void
 D3D_InitRenderState(D3D_RenderData *data)
 {
-    Direct3DDevice9 *device = data->device;
+    D3DMATRIX matrix;
+
+    IDirect3DDevice9 *device = data->device;
 
     IDirect3DDevice9_SetVertexShader(device, NULL);
     IDirect3DDevice9_SetFVF(device, D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1);
@@ -542,7 +544,6 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
     Uint32 window_flags;
     int w, h;
     SDL_DisplayMode fullscreen_mode;
-    D3DMATRIX matrix;
     int d3dxVersion;
     char d3dxDLLFile[50];
 
