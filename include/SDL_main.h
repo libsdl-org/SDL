@@ -94,7 +94,7 @@ extern C_LINKAGE int SDL_main(int argc, char *argv[]);
 extern "C" {
 #endif
 
-/*
+/**
  *  This is called by the real SDL main function to let the rest of the
  *  library know that initialization was done properly.
  *
