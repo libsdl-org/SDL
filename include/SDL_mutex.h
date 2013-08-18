@@ -54,7 +54,7 @@ extern "C" {
  */
 /*@{*/
 
-/* The SDL mutex structure, defined in SDL_mutex.c */
+/* The SDL mutex structure, defined in SDL_sysmutex.c */
 struct SDL_mutex;
 typedef struct SDL_mutex SDL_mutex;
 
@@ -102,7 +102,7 @@ extern DECLSPEC void SDLCALL SDL_DestroyMutex(SDL_mutex * mutex);
  */
 /*@{*/
 
-/* The SDL semaphore structure, defined in SDL_sem.c */
+/* The SDL semaphore structure, defined in SDL_syssem.c */
 struct SDL_semaphore;
 typedef struct SDL_semaphore SDL_sem;
 
@@ -162,7 +162,7 @@ extern DECLSPEC Uint32 SDLCALL SDL_SemValue(SDL_sem * sem);
  */
 /*@{*/
 
-/* The SDL condition variable structure, defined in SDL_cond.c */
+/* The SDL condition variable structure, defined in SDL_syscond.c */
 struct SDL_cond;
 typedef struct SDL_cond SDL_cond;
 
