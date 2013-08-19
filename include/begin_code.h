@@ -35,13 +35,7 @@
 
 /* Some compilers use a special export keyword */
 #ifndef DECLSPEC
-# if defined(__BEOS__) || defined(__HAIKU__)
-#  if defined(__GNUC__)
-#   define DECLSPEC __declspec(dllexport)
-#  else
-#   define DECLSPEC __declspec(export)
-#  endif
-# elif defined(__WIN32__)
+# if defined(__WIN32__)
 #  ifdef __BORLANDC__
 #   ifdef BUILD_SDL
 #    define DECLSPEC
@@ -54,6 +48,8 @@
 # else
 #  if defined(__GNUC__) && __GNUC__ >= 4
 #   define DECLSPEC __attribute__ ((visibility("default")))
+#  elif defined(__GNUC__) && __GNUC__ >= 2
+#   define DECLSPEC __declspec(dllexport)
 #  else
 #   define DECLSPEC
 #  endif
