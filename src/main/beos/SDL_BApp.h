@@ -371,7 +371,7 @@ private:
 
 
     /* Members */
-    vector<SDL_Window*> _window_map; /* Keeps track of SDL_Windows by index-id*/
+    std::vector<SDL_Window*> _window_map; /* Keeps track of SDL_Windows by index-id */
 
     display_mode *_saved_mode;
     BGLView      *_current_context;
