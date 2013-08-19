@@ -1835,7 +1835,9 @@ D3D_DestroyRenderer(SDL_Renderer * renderer)
             IDirect3DSurface9_Release(data->currentRenderTarget);
             data->currentRenderTarget = NULL;
         }
-
+        if (data->ps_yuv) {
+            IDirect3DPixelShader9_Release(data->ps_yuv);
+        }
         if (data->device) {
             IDirect3DDevice9_Release(data->device);
         }
