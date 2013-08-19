@@ -1,11 +1,5 @@
 package org.libsdl.app;
 
-import javax.microedition.khronos.egl.EGL10;
-import javax.microedition.khronos.egl.EGLConfig;
-import javax.microedition.khronos.egl.EGLContext;
-import javax.microedition.khronos.egl.EGLDisplay;
-import javax.microedition.khronos.egl.EGLSurface;
-
 import android.app.*;
 import android.content.*;
 import android.view.*;
@@ -43,13 +37,6 @@ public class SDLActivity extends Activity {
     protected static Thread mAudioThread;
     protected static AudioTrack mAudioTrack;
 
-    // EGL objects
-    protected static EGLContext  mEGLContext;
-    protected static EGLSurface  mEGLSurface;
-    protected static EGLDisplay  mEGLDisplay;
-    protected static EGLConfig   mEGLConfig;
-    protected static int mGLMajor, mGLMinor;
-
     // Load the .so
     static {
         System.loadLibrary("SDL2");
@@ -70,9 +57,7 @@ public class SDLActivity extends Activity {
         mSingleton = this;
 
         // Set up the surface
-        mEGLSurface = EGL10.EGL_NO_SURFACE;
         mSurface = new SDLSurface(getApplication());
-        mEGLContext = EGL10.EGL_NO_CONTEXT;
 
         mLayout = new AbsoluteLayout(this);
         mLayout.addView(mSurface);
@@ -252,29 +237,12 @@ public class SDLActivity extends Activity {
                                             int action, float x, 
                                             float y, float p);
     public static native void onNativeAccel(float x, float y, float z);
-
-    // Java functions called from C
-
-    public static boolean createGLContext(int majorVersion, int minorVersion, int[] attribs) {
-        return initEGL(majorVersion, minorVersion, attribs);
-    }
-    
-    public static void deleteGLContext() {
-        if (SDLActivity.mEGLDisplay != null && SDLActivity.mEGLContext != EGL10.EGL_NO_CONTEXT) {
-            EGL10 egl = (EGL10)EGLContext.getEGL();
-            egl.eglMakeCurrent(SDLActivity.mEGLDisplay, EGL10.EGL_NO_SURFACE, EGL10.EGL_NO_SURFACE, EGL10.EGL_NO_CONTEXT);
-            egl.eglDestroyContext(SDLActivity.mEGLDisplay, SDLActivity.mEGLContext);
-            SDLActivity.mEGLContext = EGL10.EGL_NO_CONTEXT;
-
-            if (SDLActivity.mEGLSurface != EGL10.EGL_NO_SURFACE) {
-                egl.eglDestroySurface(SDLActivity.mEGLDisplay, SDLActivity.mEGLSurface);
-                SDLActivity.mEGLSurface = EGL10.EGL_NO_SURFACE;
-            }
-        }
-    }
+    public static native void onNativeSurfaceChanged();
+    public static native void onNativeSurfaceDestroyed();
+    public static native void nativeFlipBuffers();
 
     public static void flipBuffers() {
-        flipEGL();
+        SDLActivity.nativeFlipBuffers();
     }
 
     public static boolean setActivityTitle(String title) {
@@ -332,147 +300,9 @@ public class SDLActivity extends Activity {
         // Transfer the task to the main thread as a Runnable
         return mSingleton.commandHandler.post(new ShowTextInputTask(x, y, w, h));
     }
-
-
-    // EGL functions
-    public static boolean initEGL(int majorVersion, int minorVersion, int[] attribs) {
-        try {
-            EGL10 egl = (EGL10)EGLContext.getEGL();
             
-            if (SDLActivity.mEGLDisplay == null) {
-                SDLActivity.mEGLDisplay = egl.eglGetDisplay(EGL10.EGL_DEFAULT_DISPLAY);
-                int[] version = new int[2];
-                egl.eglInitialize(SDLActivity.mEGLDisplay, version);
-            }
-            
-            if (SDLActivity.mEGLDisplay != null && SDLActivity.mEGLContext == EGL10.EGL_NO_CONTEXT) {
-                // No current GL context exists, we will create a new one.
-                Log.v("SDL", "Starting up OpenGL ES " + majorVersion + "." + minorVersion);
-                EGLConfig[] configs = new EGLConfig[128];
-                int[] num_config = new int[1];
-                if (!egl.eglChooseConfig(SDLActivity.mEGLDisplay, attribs, configs, 1, num_config) || num_config[0] == 0) {
-                    Log.e("SDL", "No EGL config available");
-                    return false;
-                }
-                EGLConfig config = null;
-                int bestdiff = -1, bitdiff;
-                int[] value = new int[1];
-                
-                // eglChooseConfig returns a number of configurations that match or exceed the requested attribs.
-                // From those, we select the one that matches our requirements more closely
-                Log.v("SDL", "Got " + num_config[0] + " valid modes from egl");
-                for(int i = 0; i < num_config[0]; i++) {
-                    bitdiff = 0;
-                    // Go through some of the attributes and compute the bit difference between what we want and what we get.
-                    for (int j = 0; ; j += 2) {
-                        if (attribs[j] == EGL10.EGL_NONE)
-                            break;
-
-                        if (attribs[j+1] != EGL10.EGL_DONT_CARE && (attribs[j] == EGL10.EGL_RED_SIZE ||
-                            attribs[j] == EGL10.EGL_GREEN_SIZE ||
-                            attribs[j] == EGL10.EGL_BLUE_SIZE ||
-                            attribs[j] == EGL10.EGL_ALPHA_SIZE ||
-                            attribs[j] == EGL10.EGL_DEPTH_SIZE ||
-                            attribs[j] == EGL10.EGL_STENCIL_SIZE)) {
-                            egl.eglGetConfigAttrib(SDLActivity.mEGLDisplay, configs[i], attribs[j], value);
-                            bitdiff += value[0] - attribs[j + 1]; // value is always >= attrib
-                        }
-                    }
-                    
-                    if (bitdiff < bestdiff || bestdiff == -1) {
-                        config = configs[i];
-                        bestdiff = bitdiff;
-                    }
-                    
-                    if (bitdiff == 0) break; // we found an exact match!
-                }
-                
-                Log.d("SDL", "Selected mode with a total bit difference of " + bestdiff);
-
-                SDLActivity.mEGLConfig = config;
-                SDLActivity.mGLMajor = majorVersion;
-                SDLActivity.mGLMinor = minorVersion;
-            }
-            
-            return SDLActivity.createEGLSurface();
-
-        } catch(Exception e) {
-            Log.v("SDL", e + "");
-            for (StackTraceElement s : e.getStackTrace()) {
-                Log.v("SDL", s.toString());
-            }
-            return false;
-        }
-    }
-
-    public static boolean createEGLContext() {
-        EGL10 egl = (EGL10)EGLContext.getEGL();
-        int EGL_CONTEXT_CLIENT_VERSION=0x3098;
-        int contextAttrs[] = new int[] { EGL_CONTEXT_CLIENT_VERSION, SDLActivity.mGLMajor, EGL10.EGL_NONE };
-        SDLActivity.mEGLContext = egl.eglCreateContext(SDLActivity.mEGLDisplay, SDLActivity.mEGLConfig, EGL10.EGL_NO_CONTEXT, contextAttrs);
-        if (SDLActivity.mEGLContext == EGL10.EGL_NO_CONTEXT) {
-            Log.e("SDL", "Couldn't create context");
-            return false;
-        }
-        return true;
-    }
-
-    public static boolean createEGLSurface() {
-        if (SDLActivity.mEGLDisplay != null && SDLActivity.mEGLConfig != null) {
-            EGL10 egl = (EGL10)EGLContext.getEGL();
-            if (SDLActivity.mEGLContext == EGL10.EGL_NO_CONTEXT) createEGLContext();
-
-            if (SDLActivity.mEGLSurface == EGL10.EGL_NO_SURFACE) {
-                Log.v("SDL", "Creating new EGL Surface");
-                SDLActivity.mEGLSurface = egl.eglCreateWindowSurface(SDLActivity.mEGLDisplay, SDLActivity.mEGLConfig, SDLActivity.mSurface, null);
-                if (SDLActivity.mEGLSurface == EGL10.EGL_NO_SURFACE) {
-                    Log.e("SDL", "Couldn't create surface");
-                    return false;
-                }
-            }
-            else Log.v("SDL", "EGL Surface remains valid");
-
-            if (egl.eglGetCurrentContext() != SDLActivity.mEGLContext) {
-                if (!egl.eglMakeCurrent(SDLActivity.mEGLDisplay, SDLActivity.mEGLSurface, SDLActivity.mEGLSurface, SDLActivity.mEGLContext)) {
-                    Log.e("SDL", "Old EGL Context doesnt work, trying with a new one");
-                    // TODO: Notify the user via a message that the old context could not be restored, and that textures need to be manually restored.
-                    createEGLContext();
-                    if (!egl.eglMakeCurrent(SDLActivity.mEGLDisplay, SDLActivity.mEGLSurface, SDLActivity.mEGLSurface, SDLActivity.mEGLContext)) {
-                        Log.e("SDL", "Failed making EGL Context current");
-                        return false;
-                    }
-                }
-                else Log.v("SDL", "EGL Context made current");
-            }
-            else Log.v("SDL", "EGL Context remains current");
-
-            return true;
-        } else {
-            Log.e("SDL", "Surface creation failed, display = " + SDLActivity.mEGLDisplay + ", config = " + SDLActivity.mEGLConfig);
-            return false;
-        }
-    }
-
-    // EGL buffer flip
-    public static void flipEGL() {
-        try {
-            EGL10 egl = (EGL10)EGLContext.getEGL();
-
-            egl.eglWaitNative(EGL10.EGL_CORE_NATIVE_ENGINE, null);
-
-            // drawing here
-
-            egl.eglWaitGL();
-
-            egl.eglSwapBuffers(SDLActivity.mEGLDisplay, SDLActivity.mEGLSurface);
-
-
-        } catch(Exception e) {
-            Log.v("SDL", "flipEGL(): " + e);
-            for (StackTraceElement s : e.getStackTrace()) {
-                Log.v("SDL", s.toString());
-            }
-        }
+    public static Surface getNativeSurface() {
+        return SDLActivity.mSurface.getNativeSurface();
     }
 
     // Audio
@@ -600,14 +430,16 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         mWidth = 1.0f;
         mHeight = 1.0f;
     }
+    
+    public Surface getNativeSurface() {
+        return getHolder().getSurface();
+    }
 
     // Called when we have a valid drawing surface
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         Log.v("SDL", "surfaceCreated()");
         holder.setType(SurfaceHolder.SURFACE_TYPE_GPU);
-        // Set mIsSurfaceReady to 'true' *before* any call to handleResume
-        SDLActivity.mIsSurfaceReady = true;
     }
 
     // Called when we lose the surface
@@ -617,16 +449,7 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         // Call this *before* setting mIsSurfaceReady to 'false'
         SDLActivity.handlePause();
         SDLActivity.mIsSurfaceReady = false;
-
-        /* We have to clear the current context and destroy the egl surface here
-         * Otherwise there's BAD_NATIVE_WINDOW errors coming from eglCreateWindowSurface on resume
-         * Ref: http://stackoverflow.com/questions/8762589/eglcreatewindowsurface-on-ics-and-switching-from-2d-to-3d
-         */
-        
-        EGL10 egl = (EGL10)EGLContext.getEGL();
-        egl.eglMakeCurrent(SDLActivity.mEGLDisplay, EGL10.EGL_NO_SURFACE, EGL10.EGL_NO_SURFACE, EGL10.EGL_NO_CONTEXT);
-        egl.eglDestroySurface(SDLActivity.mEGLDisplay, SDLActivity.mEGLSurface);
-        SDLActivity.mEGLSurface = EGL10.EGL_NO_SURFACE;
+        SDLActivity.onNativeSurfaceDestroyed();
     }
 
     // Called when the surface is resized
@@ -687,6 +510,8 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
 
         // Set mIsSurfaceReady to 'true' *before* making a call to handleResume
         SDLActivity.mIsSurfaceReady = true;
+        SDLActivity.onNativeSurfaceChanged();
+
 
         if (SDLActivity.mSDLThread == null) {
             // This is the entry point to the C app.

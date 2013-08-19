@@ -44,17 +44,17 @@
 static int Android_VideoInit(_THIS);
 static void Android_VideoQuit(_THIS);
 
+#include "../SDL_egl.h"
 /* GL functions (SDL_androidgl.c) */
-extern int Android_GL_LoadLibrary(_THIS, const char *path);
-extern void *Android_GL_GetProcAddress(_THIS, const char *proc);
-extern void Android_GL_UnloadLibrary(_THIS);
-extern SDL_GLContext Android_GL_CreateContext(_THIS, SDL_Window * window);
-extern int Android_GL_MakeCurrent(_THIS, SDL_Window * window,
-                              SDL_GLContext context);
-extern int Android_GL_SetSwapInterval(_THIS, int interval);
-extern int Android_GL_GetSwapInterval(_THIS);
-extern void Android_GL_SwapWindow(_THIS, SDL_Window * window);
-extern void Android_GL_DeleteContext(_THIS, SDL_GLContext context);
+extern SDL_GLContext Android_GLES_CreateContext(_THIS, SDL_Window * window);
+extern int Android_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context);
+extern void Android_GLES_SwapWindow(_THIS, SDL_Window * window);
+extern int Android_GLES_LoadLibrary(_THIS, const char *path);
+#define Android_GLES_GetProcAddress SDL_EGL_GetProcAddress
+#define Android_GLES_UnloadLibrary SDL_EGL_UnloadLibrary
+#define Android_GLES_SetSwapInterval SDL_EGL_SetSwapInterval
+#define Android_GLES_GetSwapInterval SDL_EGL_GetSwapInterval
+#define Android_GLES_DeleteContext SDL_EGL_DeleteContext
 
 /* Android driver bootstrap functions */
 
@@ -114,15 +114,15 @@ Android_CreateDevice(int devindex)
     device->free = Android_DeleteDevice;
 
     /* GL pointers */
-    device->GL_LoadLibrary = Android_GL_LoadLibrary;
-    device->GL_GetProcAddress = Android_GL_GetProcAddress;
-    device->GL_UnloadLibrary = Android_GL_UnloadLibrary;
-    device->GL_CreateContext = Android_GL_CreateContext;
-    device->GL_MakeCurrent = Android_GL_MakeCurrent;
-    device->GL_SetSwapInterval = Android_GL_SetSwapInterval;
-    device->GL_GetSwapInterval = Android_GL_GetSwapInterval;
-    device->GL_SwapWindow = Android_GL_SwapWindow;
-    device->GL_DeleteContext = Android_GL_DeleteContext;
+    device->GL_LoadLibrary = Android_GLES_LoadLibrary;
+    device->GL_GetProcAddress = Android_GLES_GetProcAddress;
+    device->GL_UnloadLibrary = Android_GLES_UnloadLibrary;
+    device->GL_CreateContext = Android_GLES_CreateContext;
+    device->GL_MakeCurrent = Android_GLES_MakeCurrent;
+    device->GL_SetSwapInterval = Android_GLES_SetSwapInterval;
+    device->GL_GetSwapInterval = Android_GLES_GetSwapInterval;
+    device->GL_SwapWindow = Android_GLES_SwapWindow;
+    device->GL_DeleteContext = Android_GLES_DeleteContext;
 
     /* Text input */
     device->StartTextInput = Android_StartTextInput;

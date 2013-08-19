@@ -33,6 +33,7 @@
 #include "../../video/android/SDL_androidkeyboard.h"
 #include "../../video/android/SDL_androidtouch.h"
 #include "../../video/android/SDL_androidvideo.h"
+#include "../../video/android/SDL_androidwindow.h"
 
 #include <android/log.h>
 #include <pthread.h>
@@ -67,8 +68,7 @@ static JavaVM* mJavaVM;
 static jclass mActivityClass;
 
 // method signatures
-static jmethodID midCreateGLContext;
-static jmethodID midDeleteGLContext;
+static jmethodID midGetNativeSurface;
 static jmethodID midFlipBuffers;
 static jmethodID midAudioInit;
 static jmethodID midAudioWriteShortBuffer;
@@ -116,10 +116,8 @@ void SDL_Android_Init(JNIEnv* mEnv, jclass cls)
 
     mActivityClass = (jclass)((*mEnv)->NewGlobalRef(mEnv, cls));
 
-    midCreateGLContext = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
-                                "createGLContext","(II[I)Z");
-    midDeleteGLContext = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
-                                "deleteGLContext","()V");
+    midGetNativeSurface = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
+                                "getNativeSurface","()Landroid/view/Surface;");
     midFlipBuffers = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
                                 "flipBuffers","()V");
     midAudioInit = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
@@ -133,7 +131,7 @@ void SDL_Android_Init(JNIEnv* mEnv, jclass cls)
 
     bHasNewData = false;
 
-    if(!midCreateGLContext || !midFlipBuffers || !midAudioInit ||
+    if(!midGetNativeSurface || !midFlipBuffers || !midAudioInit ||
        !midAudioWriteShortBuffer || !midAudioWriteByteBuffer || !midAudioQuit) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "SDL: Couldn't locate Java callbacks, check that they're named and typed correctly");
     }
@@ -146,6 +144,65 @@ void Java_org_libsdl_app_SDLActivity_onNativeResize(
                                     jint width, jint height, jint format)
 {
     Android_SetScreenResolution(width, height, format);
+}
+
+
+// Surface Created
+void Java_org_libsdl_app_SDLActivity_onNativeSurfaceChanged(JNIEnv* env, jclass jcls)
+{
+    SDL_WindowData *data;
+    SDL_VideoDevice *_this;
+
+    if (Android_Window == NULL || Android_Window->driverdata == NULL ) {
+        return;
+    }
+    
+    _this =  SDL_GetVideoDevice();
+    data =  (SDL_WindowData *) Android_Window->driverdata;
+    
+    /* If the surface has been previously destroyed by onNativeSurfaceDestroyed, recreate it here */
+    if (data->egl_surface == EGL_NO_SURFACE) {
+        if(data->native_window) {
+            ANativeWindow_release(data->native_window);
+        }
+        data->native_window = Android_JNI_GetNativeWindow();
+        data->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType) data->native_window);
+    }
+    
+    /* GL Context handling is done in the event loop because this function is run from the Java thread */
+    
+}
+
+// Surface Destroyed
+void Java_org_libsdl_app_SDLActivity_onNativeSurfaceDestroyed(JNIEnv* env, jclass jcls)
+{
+    /* We have to clear the current context and destroy the egl surface here
+     * Otherwise there's BAD_NATIVE_WINDOW errors coming from eglCreateWindowSurface on resume
+     * Ref: http://stackoverflow.com/questions/8762589/eglcreatewindowsurface-on-ics-and-switching-from-2d-to-3d
+     */
+    SDL_WindowData *data;
+    SDL_VideoDevice *_this;
+    
+    if (Android_Window == NULL || Android_Window->driverdata == NULL ) {
+        return;
+    }
+    
+    _this =  SDL_GetVideoDevice();
+    data = (SDL_WindowData *) Android_Window->driverdata;
+    
+    if (data->egl_surface != EGL_NO_SURFACE) {
+        SDL_EGL_MakeCurrent(_this, NULL, NULL);
+        SDL_EGL_DestroySurface(_this, data->egl_surface);
+        data->egl_surface = EGL_NO_SURFACE;
+    }
+    
+    /* GL Context handling is done in the event loop because this function is run from the Java thread */
+
+}
+
+void Java_org_libsdl_app_SDLActivity_nativeFlipBuffers(JNIEnv* env, jclass jcls)
+{
+    SDL_GL_SwapWindow(Android_Window);
 }
 
 // Keydown
@@ -317,47 +374,17 @@ static SDL_bool LocalReferenceHolder_IsActive()
     return s_active > 0;    
 }
 
-
-SDL_bool Android_JNI_CreateContext(int majorVersion, int minorVersion,
-                                int red, int green, int blue, int alpha,
-                                int buffer, int depth, int stencil,
-                                int buffers, int samples)
+ANativeWindow* Android_JNI_GetNativeWindow(void)
 {
+    ANativeWindow* anw;
+    jobject s;
     JNIEnv *env = Android_JNI_GetEnv();
 
-    jint attribs[] = {
-        EGL_RED_SIZE, red,
-        EGL_GREEN_SIZE, green,
-        EGL_BLUE_SIZE, blue,
-        EGL_ALPHA_SIZE, alpha,
-        EGL_BUFFER_SIZE, buffer,
-        EGL_DEPTH_SIZE, depth,
-        EGL_STENCIL_SIZE, stencil,
-        EGL_SAMPLE_BUFFERS, buffers,
-        EGL_SAMPLES, samples,
-        EGL_RENDERABLE_TYPE, (majorVersion == 1 ? EGL_OPENGL_ES_BIT : EGL_OPENGL_ES2_BIT),
-        EGL_NONE
-    };
-    int len = SDL_arraysize(attribs);
-
-    jintArray array;
-
-    array = (*env)->NewIntArray(env, len);
-    (*env)->SetIntArrayRegion(env, array, 0, len, attribs);
-
-    jboolean success = (*env)->CallStaticBooleanMethod(env, mActivityClass, midCreateGLContext, majorVersion, minorVersion, array);
-
-    (*env)->DeleteLocalRef(env, array);
-
-    return success ? SDL_TRUE : SDL_FALSE;
-}
-
-SDL_bool Android_JNI_DeleteContext(void)
-{
-    /* There's only one context, so no parameter for now */
-    JNIEnv *env = Android_JNI_GetEnv();
-    (*env)->CallStaticVoidMethod(env, mActivityClass, midDeleteGLContext);
-    return SDL_TRUE;
+    s = (*env)->CallStaticObjectMethod(env, mActivityClass, midGetNativeSurface);
+    anw = ANativeWindow_fromSurface(env, s);
+    (*env)->DeleteLocalRef(env, s);
+  
+    return anw;
 }
 
 void Android_JNI_SwapWindow()

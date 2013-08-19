@@ -1681,44 +1681,47 @@ dnl Find OpenGL ES
 CheckOpenGLESX11()
 {
     if test x$enable_video = xyes -a x$enable_video_opengles = xyes; then
-        AC_MSG_CHECKING(for OpenGL ES (EGL) support)
-        video_opengles=no
+        AC_MSG_CHECKING(for EGL support)
+        video_opengl_egl=no
         AC_TRY_COMPILE([
          #include <EGL/egl.h>
         ],[
         ],[
-        video_opengles=yes
+        video_opengl_egl=yes
         ])
-        AC_MSG_RESULT($video_opengles)
-        if test x$video_opengles = xyes; then
-            AC_MSG_CHECKING(for OpenGL ES v1 headers)
-            video_opengles_v1=no
-            AC_TRY_COMPILE([
-             #include <GLES/gl.h>
-             #include <GLES/glext.h>
-            ],[
-            ],[
-            video_opengles_v1=yes
-            ])
-            AC_MSG_RESULT($video_opengles_v1)
-            if test x$video_opengles_v1 = xyes; then
-                AC_DEFINE(SDL_VIDEO_OPENGL_ES, 1, [ ])
-                AC_DEFINE(SDL_VIDEO_RENDER_OGL_ES, 1, [ ])
-            fi
-            AC_MSG_CHECKING(for OpenGL ES v2 headers)
-            video_opengles_v2=no
-            AC_TRY_COMPILE([
-             #include <GLES2/gl2.h>
-             #include <GLES2/gl2ext.h>
-            ],[
-            ],[
-            video_opengles_v2=yes
-            ])
-            AC_MSG_RESULT($video_opengles_v2)
-            if test x$video_opengles_v2 = xyes; then
-                AC_DEFINE(SDL_VIDEO_OPENGL_ES2, 1, [ ])
-                AC_DEFINE(SDL_VIDEO_RENDER_OGL_ES2, 1, [ ])
-            fi
+        AC_MSG_RESULT($video_opengl_egl)
+        if test x$video_opengl_egl = xyes; then
+            AC_DEFINE(SDL_VIDEO_OPENGL_EGL, 1, [ ])
+        fi
+            
+        AC_MSG_CHECKING(for OpenGL ES v1 headers)
+        video_opengles_v1=no
+        AC_TRY_COMPILE([
+         #include <GLES/gl.h>
+         #include <GLES/glext.h>
+        ],[
+        ],[
+        video_opengles_v1=yes
+        ])
+        AC_MSG_RESULT($video_opengles_v1)
+        if test x$video_opengles_v1 = xyes; then
+            AC_DEFINE(SDL_VIDEO_OPENGL_ES, 1, [ ])
+            AC_DEFINE(SDL_VIDEO_RENDER_OGL_ES, 1, [ ])
+        fi
+        
+        AC_MSG_CHECKING(for OpenGL ES v2 headers)
+        video_opengles_v2=no
+        AC_TRY_COMPILE([
+         #include <GLES2/gl2.h>
+         #include <GLES2/gl2ext.h>
+        ],[
+        ],[
+        video_opengles_v2=yes
+        ])
+        AC_MSG_RESULT($video_opengles_v2)
+        if test x$video_opengles_v2 = xyes; then
+            AC_DEFINE(SDL_VIDEO_OPENGL_ES2, 1, [ ])
+            AC_DEFINE(SDL_VIDEO_RENDER_OGL_ES2, 1, [ ])
         fi
     fi
 }

@@ -487,11 +487,16 @@ SDL_VideoInit(const char *driver_name)
 #elif SDL_VIDEO_OPENGL_ES
     _this->gl_config.major_version = 1;
     _this->gl_config.minor_version = 1;
+#if SDL_VIDEO_OPENGL_EGL    
     _this->gl_config.use_egl = 1;
+#endif    
 #elif SDL_VIDEO_OPENGL_ES2
     _this->gl_config.major_version = 2;
     _this->gl_config.minor_version = 0;
+#if SDL_VIDEO_OPENGL_EGL    
     _this->gl_config.use_egl = 1;
+#endif
+    
 #endif
     _this->gl_config.flags = 0;
     _this->gl_config.profile_mask = 0;
