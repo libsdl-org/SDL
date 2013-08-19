@@ -27,6 +27,32 @@
 
 #include "SDL_androidevents.h"
 #include "SDL_events.h"
+#include "SDL_androidwindow.h"
+
+void android_egl_context_backup();
+void android_egl_context_restore();
+
+void 
+android_egl_context_restore() 
+{
+    SDL_WindowData *data = (SDL_WindowData *) Android_Window->driverdata;
+    if (SDL_GL_MakeCurrent(Android_Window, (SDL_GLContext) data->egl_context) < 0) {
+        /* The context is no longer valid, create a new one */
+        /* FIXME: Notify the user that the context changed and textures need to be re created*/
+        data->egl_context = (EGLContext) SDL_GL_CreateContext(Android_Window);
+        SDL_GL_MakeCurrent(Android_Window, (SDL_GLContext) data->egl_context);
+    }
+}
+
+void 
+android_egl_context_backup() 
+{
+    /* Keep a copy of the EGL Context so we can try to restore it when we resume */
+    SDL_WindowData *data = (SDL_WindowData *) Android_Window->driverdata;
+    data->egl_context = SDL_GL_GetCurrentContext();
+    /* We need to do this so the EGLSurface can be freed */
+    SDL_GL_MakeCurrent(Android_Window, NULL);
+}
 
 void
 Android_PumpEvents(_THIS)
@@ -52,13 +78,9 @@ Android_PumpEvents(_THIS)
         if(SDL_SemTryWait(Android_ResumeSem) == 0) {
 #endif
             isPaused = 0;
-            /* TODO: Should we double check if we are on the same thread as the one that made the original GL context?
-             * This call will go through the following chain of calls in Java:
-             * SDLActivity::createGLContext -> SDLActivity:: initEGL -> SDLActivity::createEGLSurface -> SDLActivity::createEGLContext
-             * SDLActivity::createEGLContext will attempt to restore the GL context first, and if that fails it will create a new one
-             * If a new GL context is created, the user needs to restore the textures manually (TODO: notify the user that this happened with a message)
-             */
-            SDL_GL_CreateContext(Android_Window);
+            
+            /* Restore the GL Context from here, as this operation is thread dependent */
+            android_egl_context_restore();
         }
     }
     else {
@@ -70,13 +92,14 @@ Android_PumpEvents(_THIS)
                 isPausing = 1;
             }
             else {
+                android_egl_context_backup();
                 isPausing = 0;
                 isPaused = 1;
             }
         }
 #else
         if(SDL_SemTryWait(Android_PauseSem) == 0) {
-            /* If we fall in here, the system is/was paused */
+            android_egl_context_backup();
             isPaused = 1;
         }
 #endif

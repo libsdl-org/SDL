@@ -23,9 +23,20 @@
 #ifndef _SDL_androidwindow_h
 #define _SDL_androidwindow_h
 
+#include "../../core/android/SDL_android.h"
+#include "../SDL_egl.h"
+
 extern int Android_CreateWindow(_THIS, SDL_Window * window);
 extern void Android_SetWindowTitle(_THIS, SDL_Window * window);
 extern void Android_DestroyWindow(_THIS, SDL_Window * window);
+
+typedef struct
+{
+    EGLSurface egl_surface;
+    EGLContext egl_context; /* We use this to preserve the context when losing focus */
+    ANativeWindow* native_window;
+    
+} SDL_WindowData;
 
 #endif /* _SDL_androidwindow_h */
 

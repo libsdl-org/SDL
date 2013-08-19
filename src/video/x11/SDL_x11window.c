@@ -34,7 +34,7 @@
 #include "SDL_x11shape.h"
 #include "SDL_x11xinput2.h"
 
-#if SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+#if SDL_VIDEO_OPENGL_EGL
 #include "SDL_x11opengles.h"
 #endif
 
@@ -363,11 +363,11 @@ X11_CreateWindow(_THIS, SDL_Window * window)
     Atom XdndAware, xdnd_version = 5;
     Uint32 fevent = 0;
 
-#if SDL_VIDEO_OPENGL_GLX || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+#if SDL_VIDEO_OPENGL_GLX || SDL_VIDEO_OPENGL_EGL
     if (window->flags & SDL_WINDOW_OPENGL) {
         XVisualInfo *vinfo;
 
-#if SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+#if SDL_VIDEO_OPENGL_EGL
         if (_this->gl_config.use_egl == 1) {
             vinfo = X11_GLES_GetVisual(_this, display, screen);
         } else
@@ -481,26 +481,6 @@ X11_CreateWindow(_THIS, SDL_Window * window)
     if (!w) {
         return SDL_SetError("Couldn't create window");
     }
-#if SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
-    if ((window->flags & SDL_WINDOW_OPENGL) && (_this->gl_config.use_egl == 1)) {
-        if (!_this->gles_data) {
-            XDestroyWindow(display, w);
-            return -1;
-        }
-
-        /* Create the GLES window surface */
-        _this->gles_data->egl_surface =
-            _this->gles_data->eglCreateWindowSurface(_this->gles_data->
-                                                 egl_display,
-                                                 _this->gles_data->egl_config,
-                                                 (NativeWindowType) w, NULL);
-
-        if (_this->gles_data->egl_surface == EGL_NO_SURFACE) {
-            XDestroyWindow(display, w);
-            return SDL_SetError("Could not create GLES window surface");
-        }
-    }
-#endif
 
     SetWindowBordered(display, screen, w,
                       (window->flags & SDL_WINDOW_BORDERLESS) == 0);
@@ -567,6 +547,24 @@ X11_CreateWindow(_THIS, SDL_Window * window)
         XDestroyWindow(display, w);
         return -1;
     }
+
+#if SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+    if ((window->flags & SDL_WINDOW_OPENGL) && (_this->gl_config.use_egl == 1)) {
+        if (!_this->egl_data) {
+            XDestroyWindow(display, w);
+            return -1;
+        }
+
+        /* Create the GLES window surface */
+        ((SDL_WindowData *) window->driverdata)->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType) w);
+
+        if (((SDL_WindowData *) window->driverdata)->egl_surface == EGL_NO_SURFACE) {
+            XDestroyWindow(display, w);
+            return SDL_SetError("Could not create GLES window surface");
+        }
+    }
+#endif
+    
 
 #ifdef X_HAVE_UTF8_STRING
     if (SDL_X11_HAVE_UTF8) {

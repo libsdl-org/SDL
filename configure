@@ -20547,9 +20547,9 @@ fi
 CheckOpenGLESX11()
 {
     if test x$enable_video = xyes -a x$enable_video_opengles = xyes; then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenGL ES (EGL) support" >&5
-$as_echo_n "checking for OpenGL ES (EGL) support... " >&6; }
-        video_opengles=no
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for EGL support" >&5
+$as_echo_n "checking for EGL support... " >&6; }
+        video_opengl_egl=no
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -20566,21 +20566,26 @@ main ()
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
 
-        video_opengles=yes
+        video_opengl_egl=yes
 
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengles" >&5
-$as_echo "$video_opengles" >&6; }
-        if test x$video_opengles = xyes; then
-            { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenGL ES v1 headers" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengl_egl" >&5
+$as_echo "$video_opengl_egl" >&6; }
+        if test x$video_opengl_egl = xyes; then
+
+$as_echo "#define SDL_VIDEO_OPENGL_EGL 1" >>confdefs.h
+
+        fi
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenGL ES v1 headers" >&5
 $as_echo_n "checking for OpenGL ES v1 headers... " >&6; }
-            video_opengles_v1=no
-            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+        video_opengles_v1=no
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-             #include <GLES/gl.h>
-             #include <GLES/glext.h>
+         #include <GLES/gl.h>
+         #include <GLES/glext.h>
 
 int
 main ()
@@ -20593,28 +20598,29 @@ main ()
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
 
-            video_opengles_v1=yes
+        video_opengles_v1=yes
 
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-            { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengles_v1" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengles_v1" >&5
 $as_echo "$video_opengles_v1" >&6; }
-            if test x$video_opengles_v1 = xyes; then
+        if test x$video_opengles_v1 = xyes; then
 
 $as_echo "#define SDL_VIDEO_OPENGL_ES 1" >>confdefs.h
 
 
 $as_echo "#define SDL_VIDEO_RENDER_OGL_ES 1" >>confdefs.h
 
-            fi
-            { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenGL ES v2 headers" >&5
+        fi
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenGL ES v2 headers" >&5
 $as_echo_n "checking for OpenGL ES v2 headers... " >&6; }
-            video_opengles_v2=no
-            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+        video_opengles_v2=no
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-             #include <GLES2/gl2.h>
-             #include <GLES2/gl2ext.h>
+         #include <GLES2/gl2.h>
+         #include <GLES2/gl2ext.h>
 
 int
 main ()
@@ -20627,20 +20633,19 @@ main ()
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
 
-            video_opengles_v2=yes
+        video_opengles_v2=yes
 
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-            { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengles_v2" >&5
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengles_v2" >&5
 $as_echo "$video_opengles_v2" >&6; }
-            if test x$video_opengles_v2 = xyes; then
+        if test x$video_opengles_v2 = xyes; then
 
 $as_echo "#define SDL_VIDEO_OPENGL_ES2 1" >>confdefs.h
 
 
 $as_echo "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
 
-            fi
         fi
     fi
 }
