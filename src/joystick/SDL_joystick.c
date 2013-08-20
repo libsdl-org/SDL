@@ -488,14 +488,14 @@ SDL_PrivateJoystickShouldIgnoreEvent()
 
     if (SDL_WasInit(SDL_INIT_VIDEO)) {
         if (SDL_GetKeyboardFocus() == NULL) {
-            // Video is initialized and we don't have focus, ignore the event.
+            /* Video is initialized and we don't have focus, ignore the event.*/
             return SDL_TRUE;
         } else {
             return SDL_FALSE;
         }
     }
 
-    // Video subsystem wasn't initialized, always allow the event
+    /* Video subsystem wasn't initialized, always allow the event*/
     return SDL_FALSE;
 }
 

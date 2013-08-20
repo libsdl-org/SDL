@@ -1761,7 +1761,7 @@ SDL_MaximizeWindow(SDL_Window * window)
         return;
     }
 
-    // !!! FIXME: should this check if the window is resizable?
+    /* !!! FIXME: should this check if the window is resizable? */
 
     if (_this->MaximizeWindow) {
         _this->MaximizeWindow(_this, window);
