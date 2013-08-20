@@ -1008,7 +1008,7 @@ endif(NOT HAVE_SDL_HAPTIC)
 if(NOT HAVE_SDL_LOADSO)
   set(SDL_LOADSO_DISABLED 1)
   file(GLOB LOADSO_SOURCES ${SDL2_SOURCE_DIR}/src/loadso/dummy/*.c)
-  set(SOURCE_FILES ${SOURCE_FILES} ${JOYSTICK_SOURCES})
+  set(SOURCE_FILES ${SOURCE_FILES} ${LOADSO_SOURCES})
 endif(NOT HAVE_SDL_LOADSO)
 
 # We always need to have threads and timers around
