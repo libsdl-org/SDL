@@ -46,12 +46,12 @@ button_messagebox(void *eventNumber)
 
     SDL_MessageBoxData data = {
         SDL_MESSAGEBOX_INFORMATION,
-        NULL, // no parent window
+        NULL, /* no parent window */
         "Custom MessageBox",
         "This is a custom messagebox",
         2,
         buttons,
-        NULL // Default color scheme
+        NULL /* Default color scheme */
     };
 
     int button = -1;

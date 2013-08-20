@@ -127,7 +127,7 @@ Draw(DrawState *s)
 
     /* Update the screen! */
     SDL_RenderPresent(s->renderer);
-    //SDL_Delay(10);
+    /*SDL_Delay(10);*/
 }
 
 int

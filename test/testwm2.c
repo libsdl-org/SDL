@@ -132,7 +132,7 @@ main(int argc, char *argv[])
     SDL_FreeCursor(cursor);
 
     quit(0);
-    // keep the compiler happy ...
+    /* keep the compiler happy ... */
     return(0);
 }
 

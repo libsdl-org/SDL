@@ -135,7 +135,7 @@ void _Redraw(SDL_Renderer * renderer) {
     markedRect.w = textRect.w - w;
     if (markedRect.w < 0)
     {
-        // Stop text input because we cannot hold any more characters
+        /* Stop text input because we cannot hold any more characters */
         SDL_StopTextInput();
         return;
     }
@@ -342,8 +342,8 @@ int main(int argc, char *argv[]) {
 
                     SDL_Log("text inputed: %s\n", text);
 
-                    // After text inputed, we can clear up markedText because it
-                    // is committed
+                    /* After text inputed, we can clear up markedText because it */
+                    /* is committed*/
                     markedText[0] = 0;
                     Redraw();
                     break;

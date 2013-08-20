@@ -433,8 +433,8 @@ BOOL IsXInputDevice( const GUID* pGuidProductFromDirectInput )
         return SDL_FALSE;
     }
 
-    // Check for well known XInput device GUIDs
-    // We need to do this for the Valve Streaming Gamepad because it's virtualized and doesn't show up in the device list.
+    /* Check for well known XInput device GUIDs */
+    /* We need to do this for the Valve Streaming Gamepad because it's virtualized and doesn't show up in the device list. */
     for ( iDevice = 0; iDevice < SDL_arraysize(s_XInputProductGUID); ++iDevice ) {
         if (SDL_memcmp(pGuidProductFromDirectInput, s_XInputProductGUID[iDevice], sizeof(GUID)) == 0) {
             return SDL_TRUE;

@@ -1033,7 +1033,7 @@ D3D_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     HRESULT result;
 
     if (data->yuv) {
-        // It's more efficient to upload directly...
+        /* It's more efficient to upload directly... */
         if (!data->pixels) {
             data->pitch = texture->w;
             data->pixels = (Uint8 *)SDL_malloc((texture->h * data->pitch * 3) / 2);
