@@ -184,6 +184,7 @@
 #undef SDL_TIMERS_DISABLED
 #undef SDL_VIDEO_DISABLED
 #undef SDL_POWER_DISABLED
+#undef SDL_FILESYSTEM_DISABLED
 
 /* Enable various audio drivers */
 #undef SDL_AUDIO_DRIVER_ALSA
@@ -302,6 +303,13 @@
 #undef SDL_POWER_MACOSX
 #undef SDL_POWER_BEOS
 #undef SDL_POWER_HARDWIRED
+
+/* Enable system filesystem support */
+#undef SDL_FILESYSTEM_BEOS
+#undef SDL_FILESYSTEM_COCOA
+#undef SDL_FILESYSTEM_DUMMY
+#undef SDL_FILESYSTEM_UNIX
+#undef SDL_FILESYSTEM_WINDOWS
 
 /* Enable assembly routines */
 #undef SDL_ASSEMBLY_ROUTINES

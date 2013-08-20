@@ -76,6 +76,7 @@ test/testnative
 test/testoverlay2
 test/testplatform
 test/testpower
+test/testfilesystem
 test/testrelative
 test/testrendercopyex
 test/testrendertarget

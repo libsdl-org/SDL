@@ -126,6 +126,9 @@
 
 #define SDL_POWER_PSP          1
 
+/* !!! FIXME: what does PSP do for filesystem stuff? */
+#define SDL_FILESYSTEM_DUMMY   1
+
 /* PSP doesn't have haptic device (src/haptic/dummy/\*.c) */
 #define SDL_HAPTIC_DISABLED    1
 

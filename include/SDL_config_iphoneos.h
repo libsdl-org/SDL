@@ -148,4 +148,7 @@
  */
 #define SDL_IPHONE_MAX_GFORCE 5.0
 
+/* enable filesystem support */
+#define SDL_FILESYSTEM_COCOA   1
+
 #endif /* _SDL_config_iphoneos_h */
