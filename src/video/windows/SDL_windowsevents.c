@@ -533,7 +533,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 break;
             }
         }
-        // no break
+        /* no break */
     case WM_CHAR:
         {
             char text[5];

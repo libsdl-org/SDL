@@ -510,7 +510,7 @@ DSOUND_OpenDevice(_THIS, const char *devname, int iscapture)
     if (!valid_format) {
         DSOUND_CloseDevice(this);
         if (tried_format) {
-            return -1;  // CreateSecondary() should have called SDL_SetError().
+            return -1;  /* CreateSecondary() should have called SDL_SetError(). */
         }
         return SDL_SetError("DirectSound: Unsupported audio format");
     }

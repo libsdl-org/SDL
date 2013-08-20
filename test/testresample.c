@@ -107,12 +107,12 @@ main(int argc, char **argv)
         SDL_FreeWAV(data);
         SDL_Quit();
         return 8;
-    }                           // if
+    }                           /* if */
 
     SDL_free(cvt.buf);
     SDL_FreeWAV(data);
     SDL_Quit();
     return 0;
-}                               // main
+}                               /* main */
 
-// end of resample_test.c ...
+/* end of resample_test.c ... */

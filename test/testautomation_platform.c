@@ -168,7 +168,7 @@ int platform_testHasFunctions (void *arg)
 {
    int ret;
 
-   // TODO: independently determine and compare values as well
+   /* TODO: independently determine and compare values as well */
 
    ret = SDL_HasRDTSC();
    SDLTest_AssertPass("SDL_HasRDTSC()");
@@ -315,7 +315,7 @@ int platform_testGetSetClearError(void *arg)
              lastError);
    }
 
-   // Clean up
+   /* Clean up */
    SDL_ClearError();
    SDLTest_AssertPass("SDL_ClearError()");
 
@@ -351,7 +351,7 @@ int platform_testSetErrorEmptyInput(void *arg)
              lastError);
    }
 
-   // Clean up
+   /* Clean up */
    SDL_ClearError();
    SDLTest_AssertPass("SDL_ClearError()");
 
@@ -370,11 +370,11 @@ int platform_testSetErrorInvalidInput(void *arg)
    char *lastError;
    int len;
 
-   // Reset
+   /* Reset */
    SDL_ClearError();
    SDLTest_AssertPass("SDL_ClearError()");
 
-   // Check for no-op
+   /* Check for no-op */
    SDL_SetError(testError);
    SDLTest_AssertPass("SDL_SetError()");
    lastError = (char *)SDL_GetError();
@@ -392,11 +392,11 @@ int platform_testSetErrorInvalidInput(void *arg)
              lastError);
    }
 
-   // Set
+   /* Set */
    SDL_SetError(probeError);
    SDLTest_AssertPass("SDL_SetError()");
 
-   // Check for no-op
+   /* Check for no-op */
    SDL_SetError(testError);
    SDLTest_AssertPass("SDL_SetError()");
    lastError = (char *)SDL_GetError();
@@ -415,7 +415,7 @@ int platform_testSetErrorInvalidInput(void *arg)
              lastError);
    }
 
-   // Clean up
+   /* Clean up */
    SDL_ClearError();
    SDLTest_AssertPass("SDL_ClearError()");
 
@@ -472,7 +472,7 @@ int platform_testGetPowerInfo(void *arg)
          pct);
    }
 
-   // Partial return value variations
+   /* Partial return value variations */
    stateAgain = SDL_GetPowerInfo(&secsAgain, NULL);
    SDLTest_AssertCheck(
         state==stateAgain,

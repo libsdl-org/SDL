@@ -40,13 +40,13 @@
 #include <sys/types.h>
 #include <unistd.h>
 #define LOG_TAG "SDL_android"
-//#define LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
-//#define LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
+/*#define LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)*/
+/*#define LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)*/
 #define LOGI(...) do {} while (false)
 #define LOGE(...) do {} while (false)
 
 /* Uncomment this to log messages entering and exiting methods in this file */
-//#define DEBUG_JNI
+/*#define DEBUG_JNI */
 
 static void Android_JNI_ThreadDestroyed(void*);
 
@@ -64,10 +64,10 @@ static void Android_JNI_ThreadDestroyed(void*);
 static pthread_key_t mThreadKey;
 static JavaVM* mJavaVM;
 
-// Main activity
+/* Main activity */
 static jclass mActivityClass;
 
-// method signatures
+/* method signatures */
 static jmethodID midGetNativeSurface;
 static jmethodID midFlipBuffers;
 static jmethodID midAudioInit;
@@ -75,7 +75,7 @@ static jmethodID midAudioWriteShortBuffer;
 static jmethodID midAudioWriteByteBuffer;
 static jmethodID midAudioQuit;
 
-// Accelerometer data storage
+/* Accelerometer data storage */
 static float fLastAccelerometer[3];
 static bool bHasNewData;
 
@@ -83,7 +83,7 @@ static bool bHasNewData;
                  Functions called by JNI
 *******************************************************************************/
 
-// Library init
+/* Library init */
 jint JNI_OnLoad(JavaVM* vm, void* reserved)
 {
     JNIEnv *env;
@@ -107,7 +107,7 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved)
     return JNI_VERSION_1_4;
 }
 
-// Called before SDL_main() to initialize JNI bindings
+/* Called before SDL_main() to initialize JNI bindings */
 void SDL_Android_Init(JNIEnv* mEnv, jclass cls)
 {
     __android_log_print(ANDROID_LOG_INFO, "SDL", "SDL_Android_Init()");
@@ -138,7 +138,7 @@ void SDL_Android_Init(JNIEnv* mEnv, jclass cls)
     __android_log_print(ANDROID_LOG_INFO, "SDL", "SDL_Android_Init() finished!");
 }
 
-// Resize
+/* Resize */
 void Java_org_libsdl_app_SDLActivity_onNativeResize(
                                     JNIEnv* env, jclass jcls,
                                     jint width, jint height, jint format)
@@ -147,7 +147,7 @@ void Java_org_libsdl_app_SDLActivity_onNativeResize(
 }
 
 
-// Surface Created
+/* Surface Created */
 void Java_org_libsdl_app_SDLActivity_onNativeSurfaceChanged(JNIEnv* env, jclass jcls)
 {
     SDL_WindowData *data;
@@ -173,7 +173,7 @@ void Java_org_libsdl_app_SDLActivity_onNativeSurfaceChanged(JNIEnv* env, jclass 
     
 }
 
-// Surface Destroyed
+/* Surface Destroyed */
 void Java_org_libsdl_app_SDLActivity_onNativeSurfaceDestroyed(JNIEnv* env, jclass jcls)
 {
     /* We have to clear the current context and destroy the egl surface here
@@ -205,21 +205,21 @@ void Java_org_libsdl_app_SDLActivity_nativeFlipBuffers(JNIEnv* env, jclass jcls)
     SDL_GL_SwapWindow(Android_Window);
 }
 
-// Keydown
+/* Keydown */
 void Java_org_libsdl_app_SDLActivity_onNativeKeyDown(
                                     JNIEnv* env, jclass jcls, jint keycode)
 {
     Android_OnKeyDown(keycode);
 }
 
-// Keyup
+/* Keyup */
 void Java_org_libsdl_app_SDLActivity_onNativeKeyUp(
                                     JNIEnv* env, jclass jcls, jint keycode)
 {
     Android_OnKeyUp(keycode);
 }
 
-// Keyboard Focus Lost
+/* Keyboard Focus Lost */
 void Java_org_libsdl_app_SDLActivity_onNativeKeyboardFocusLost(
                                     JNIEnv* env, jclass jcls)
 {
@@ -228,7 +228,7 @@ void Java_org_libsdl_app_SDLActivity_onNativeKeyboardFocusLost(
 }
 
 
-// Touch
+/* Touch */
 void Java_org_libsdl_app_SDLActivity_onNativeTouch(
                                     JNIEnv* env, jclass jcls,
                                     jint touch_device_id_in, jint pointer_finger_id_in,
@@ -237,7 +237,7 @@ void Java_org_libsdl_app_SDLActivity_onNativeTouch(
     Android_OnTouch(touch_device_id_in, pointer_finger_id_in, action, x, y, p);
 }
 
-// Accelerometer
+/* Accelerometer */
 void Java_org_libsdl_app_SDLActivity_onNativeAccel(
                                     JNIEnv* env, jclass jcls,
                                     jfloat x, jfloat y, jfloat z)
@@ -248,23 +248,23 @@ void Java_org_libsdl_app_SDLActivity_onNativeAccel(
     bHasNewData = true;
 }
 
-// Low memory
+/* Low memory */
 void Java_org_libsdl_app_SDLActivity_nativeLowMemory(
                                     JNIEnv* env, jclass cls)
 {
     SDL_SendAppEvent(SDL_APP_LOWMEMORY);
 }
 
-// Quit
+/* Quit */
 void Java_org_libsdl_app_SDLActivity_nativeQuit(
                                     JNIEnv* env, jclass cls)
 {
-    // Inject a SDL_QUIT event
+    /* Inject a SDL_QUIT event */
     SDL_SendQuit();
     SDL_SendAppEvent(SDL_APP_TERMINATING);
 }
 
-// Pause
+/* Pause */
 void Java_org_libsdl_app_SDLActivity_nativePause(
                                     JNIEnv* env, jclass cls)
 {
@@ -280,7 +280,7 @@ void Java_org_libsdl_app_SDLActivity_nativePause(
     SDL_SendAppEvent(SDL_APP_DIDENTERBACKGROUND);
 }
 
-// Resume
+/* Resume */
 void Java_org_libsdl_app_SDLActivity_nativeResume(
                                     JNIEnv* env, jclass cls)
 {
@@ -468,9 +468,9 @@ int Android_JNI_SetupThread(void) {
     return 1;
 }
 
-//
-// Audio support
-//
+/*
+ * Audio support
+ */
 static jboolean audioBuffer16Bit = JNI_FALSE;
 static jboolean audioBufferStereo = JNI_FALSE;
 static jobject audioBuffer = NULL;
@@ -568,8 +568,8 @@ void Android_JNI_CloseAudioDevice()
     }
 }
 
-// Test for an exception and call SDL_SetError with its detail if one occurs
-// If the parameter silent is truthy then SDL_SetError() will not be called.
+/* Test for an exception and call SDL_SetError with its detail if one occurs */
+/* If the parameter silent is truthy then SDL_SetError() will not be called. */
 static bool Android_JNI_ExceptionOccurred(bool silent)
 {
     SDL_assert(LocalReferenceHolder_IsActive());
@@ -579,7 +579,7 @@ static bool Android_JNI_ExceptionOccurred(bool silent)
     if (exception != NULL) {
         jmethodID mid;
 
-        // Until this happens most JNI operations have undefined behaviour
+        /* Until this happens most JNI operations have undefined behaviour */
         (*mEnv)->ExceptionClear(mEnv);
 
         if (!silent) {
@@ -635,13 +635,13 @@ static int Internal_Android_JNI_FileOpen(SDL_RWops* ctx)
     fileNameJString = (jstring)ctx->hidden.androidio.fileNameRef;
     ctx->hidden.androidio.position = 0;
 
-    // context = SDLActivity.getContext();
+    /* context = SDLActivity.getContext(); */
     mid = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
             "getContext","()Landroid/content/Context;");
     context = (*mEnv)->CallStaticObjectMethod(mEnv, mActivityClass, mid);
 
 
-    // assetManager = context.getAssets();
+    /* assetManager = context.getAssets(); */
     mid = (*mEnv)->GetMethodID(mEnv, (*mEnv)->GetObjectClass(mEnv, context),
             "getAssets", "()Landroid/content/res/AssetManager;");
     assetManager = (*mEnv)->CallObjectMethod(mEnv, context, mid);
@@ -674,18 +674,18 @@ static int Internal_Android_JNI_FileOpen(SDL_RWops* ctx)
     ctx->hidden.androidio.fd = (*mEnv)->GetIntField(mEnv, fd, descriptor);
     ctx->hidden.androidio.assetFileDescriptorRef = (*mEnv)->NewGlobalRef(mEnv, inputStream);
 
-    // Seek to the correct offset in the file.
+    /* Seek to the correct offset in the file. */
     lseek(ctx->hidden.androidio.fd, (off_t)ctx->hidden.androidio.offset, SEEK_SET);
 
     if (false) {
 fallback:
-        // Disabled log message because of spam on the Nexus 7
-        //__android_log_print(ANDROID_LOG_DEBUG, "SDL", "Falling back to legacy InputStream method for opening file");
+        /* Disabled log message because of spam on the Nexus 7 */
+        /*__android_log_print(ANDROID_LOG_DEBUG, "SDL", "Falling back to legacy InputStream method for opening file");*/
 
         /* Try the old method using InputStream */
         ctx->hidden.androidio.assetFileDescriptorRef = NULL;
 
-        // inputStream = assetManager.open(<filename>);
+        /* inputStream = assetManager.open(<filename>); */
         mid = (*mEnv)->GetMethodID(mEnv, (*mEnv)->GetObjectClass(mEnv, assetManager),
                 "open", "(Ljava/lang/String;I)Ljava/io/InputStream;");
         inputStream = (*mEnv)->CallObjectMethod(mEnv, assetManager, mid, fileNameJString, 1 /*ACCESS_RANDOM*/);
@@ -695,13 +695,14 @@ fallback:
 
         ctx->hidden.androidio.inputStreamRef = (*mEnv)->NewGlobalRef(mEnv, inputStream);
 
-        // Despite all the visible documentation on [Asset]InputStream claiming
-        // that the .available() method is not guaranteed to return the entire file
-        // size, comments in <sdk>/samples/<ver>/ApiDemos/src/com/example/ ...
-        // android/apis/content/ReadAsset.java imply that Android's
-        // AssetInputStream.available() /will/ always return the total file size
-
-        // size = inputStream.available();
+        /* Despite all the visible documentation on [Asset]InputStream claiming
+         * that the .available() method is not guaranteed to return the entire file
+         * size, comments in <sdk>/samples/<ver>/ApiDemos/src/com/example/ ...
+         * android/apis/content/ReadAsset.java imply that Android's
+         * AssetInputStream.available() /will/ always return the total file size
+        */
+        
+        /* size = inputStream.available(); */
         mid = (*mEnv)->GetMethodID(mEnv, (*mEnv)->GetObjectClass(mEnv, inputStream),
                 "available", "()I");
         ctx->hidden.androidio.size = (long)(*mEnv)->CallIntMethod(mEnv, inputStream, mid);
@@ -709,7 +710,7 @@ fallback:
             goto failure;
         }
 
-        // readableByteChannel = Channels.newChannel(inputStream);
+        /* readableByteChannel = Channels.newChannel(inputStream); */
         channels = (*mEnv)->FindClass(mEnv, "java/nio/channels/Channels");
         mid = (*mEnv)->GetStaticMethodID(mEnv, channels,
                 "newChannel",
@@ -723,7 +724,7 @@ fallback:
         ctx->hidden.androidio.readableByteChannelRef =
             (*mEnv)->NewGlobalRef(mEnv, readableByteChannel);
 
-        // Store .read id for reading purposes
+        /* Store .read id for reading purposes */
         mid = (*mEnv)->GetMethodID(mEnv, (*mEnv)->GetObjectClass(mEnv, readableByteChannel),
                 "read", "(Ljava/nio/ByteBuffer;)I");
         ctx->hidden.androidio.readMethod = mid;
@@ -819,7 +820,7 @@ size_t Android_JNI_FileRead(SDL_RWops* ctx, void* buffer,
         jobject byteBuffer = (*mEnv)->NewDirectByteBuffer(mEnv, buffer, bytesRemaining);
 
         while (bytesRemaining > 0) {
-            // result = readableByteChannel.read(...);
+            /* result = readableByteChannel.read(...); */
             int result = (*mEnv)->CallIntMethod(mEnv, readableByteChannel, readMethod, byteBuffer);
 
             if (Android_JNI_ExceptionOccurred(false)) {
@@ -877,7 +878,7 @@ static int Internal_Android_JNI_FileClose(SDL_RWops* ctx, bool release)
         else {
             jobject inputStream = (jobject)ctx->hidden.androidio.inputStreamRef;
 
-            // inputStream.close();
+            /* inputStream.close();*/
             jmethodID mid = (*mEnv)->GetMethodID(mEnv, (*mEnv)->GetObjectClass(mEnv, inputStream),
                     "close", "()V");
             (*mEnv)->CallVoidMethod(mEnv, inputStream, mid);
@@ -956,7 +957,7 @@ Sint64 Android_JNI_FileSeek(SDL_RWops* ctx, Sint64 offset, int whence)
         if (movement > 0) {
             unsigned char buffer[4096];
 
-            // The easy case where we're seeking forwards
+            /* The easy case where we're seeking forwards */
             while (movement > 0) {
                 Sint64 amount = sizeof (buffer);
                 if (amount > movement) {
@@ -964,7 +965,7 @@ Sint64 Android_JNI_FileSeek(SDL_RWops* ctx, Sint64 offset, int whence)
                 }
                 size_t result = Android_JNI_FileRead(ctx, buffer, 1, amount);
                 if (result <= 0) {
-                    // Failed to read/skip the required amount, so fail
+                    /* Failed to read/skip the required amount, so fail */
                     return -1;
                 }
 
@@ -972,8 +973,8 @@ Sint64 Android_JNI_FileSeek(SDL_RWops* ctx, Sint64 offset, int whence)
             }
 
         } else if (movement < 0) {
-            // We can't seek backwards so we have to reopen the file and seek
-            // forwards which obviously isn't very efficient
+            /* We can't seek backwards so we have to reopen the file and seek */
+            /* forwards which obviously isn't very efficient */
             Internal_Android_JNI_FileClose(ctx, false);
             Internal_Android_JNI_FileOpen(ctx);
             Android_JNI_FileSeek(ctx, newPosition, RW_SEEK_SET);
@@ -989,7 +990,7 @@ int Android_JNI_FileClose(SDL_RWops* ctx)
     return Internal_Android_JNI_FileClose(ctx, true);
 }
 
-// returns a new global reference which needs to be released later
+/* returns a new global reference which needs to be released later */
 static jobject Android_JNI_GetSystemServiceObject(const char* name)
 {
     struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
@@ -1089,9 +1090,10 @@ SDL_bool Android_JNI_HasClipboardText()
 }
 
 
-// returns 0 on success or -1 on error (others undefined then)
-// returns truthy or falsy value in plugged, charged and battery
-// returns the value in seconds and percent or -1 if not available
+/* returns 0 on success or -1 on error (others undefined then)
+ * returns truthy or falsy value in plugged, charged and battery
+ * returns the value in seconds and percent or -1 if not available
+ */
 int Android_JNI_GetPowerInfo(int* plugged, int* charged, int* battery, int* seconds, int* percent)
 {
     struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
@@ -1139,38 +1141,38 @@ int Android_JNI_GetPowerInfo(int* plugged, int* charged, int* battery, int* seco
     (*env)->DeleteLocalRef(env, bname);
 
     if (plugged) {
-        GET_INT_EXTRA(plug, "plugged") // == BatteryManager.EXTRA_PLUGGED (API 5)
+        GET_INT_EXTRA(plug, "plugged") /* == BatteryManager.EXTRA_PLUGGED (API 5) */
         if (plug == -1) {
             LocalReferenceHolder_Cleanup(&refs);
             return -1;
         }
-        // 1 == BatteryManager.BATTERY_PLUGGED_AC
-        // 2 == BatteryManager.BATTERY_PLUGGED_USB
+        /* 1 == BatteryManager.BATTERY_PLUGGED_AC */
+        /* 2 == BatteryManager.BATTERY_PLUGGED_USB */
         *plugged = (0 < plug) ? 1 : 0;
     }
 
     if (charged) {
-        GET_INT_EXTRA(status, "status") // == BatteryManager.EXTRA_STATUS (API 5)
+        GET_INT_EXTRA(status, "status") /* == BatteryManager.EXTRA_STATUS (API 5) */
         if (status == -1) {
             LocalReferenceHolder_Cleanup(&refs);
             return -1;
         }
-        // 5 == BatteryManager.BATTERY_STATUS_FULL
+        /* 5 == BatteryManager.BATTERY_STATUS_FULL */
         *charged = (status == 5) ? 1 : 0;
     }
 
     if (battery) {
-        GET_BOOL_EXTRA(present, "present") // == BatteryManager.EXTRA_PRESENT (API 5)
+        GET_BOOL_EXTRA(present, "present") /* == BatteryManager.EXTRA_PRESENT (API 5) */
         *battery = present ? 1 : 0;
     }
 
     if (seconds) {
-        *seconds = -1; // not possible
+        *seconds = -1; /* not possible */
     }
 
     if (percent) {
-        GET_INT_EXTRA(level, "level") // == BatteryManager.EXTRA_LEVEL (API 5)
-        GET_INT_EXTRA(scale, "scale") // == BatteryManager.EXTRA_SCALE (API 5)
+        GET_INT_EXTRA(level, "level") /* == BatteryManager.EXTRA_LEVEL (API 5) */
+        GET_INT_EXTRA(scale, "scale") /* == BatteryManager.EXTRA_SCALE (API 5) */
         if ((level == -1) || (scale == -1)) {
             LocalReferenceHolder_Cleanup(&refs);
             return -1;
@@ -1184,7 +1186,7 @@ int Android_JNI_GetPowerInfo(int* plugged, int* charged, int* battery, int* seco
     return 0;
 }
 
-// sends message to be handled on the UI event dispatch thread
+/* sends message to be handled on the UI event dispatch thread */
 int Android_JNI_SendMessage(int command, int param)
 {
     JNIEnv *env = Android_JNI_GetEnv();
@@ -1219,15 +1221,17 @@ void Android_JNI_ShowTextInput(SDL_Rect *inputRect)
 
 void Android_JNI_HideTextInput()
 {
-    // has to match Activity constant
+    /* has to match Activity constant */
     const int COMMAND_TEXTEDIT_HIDE = 3;
     Android_JNI_SendMessage(COMMAND_TEXTEDIT_HIDE, 0);
 }
 
+/*
 //////////////////////////////////////////////////////////////////////////////
 //
 // Functions exposed to SDL applications in SDL_system.h
-//
+//////////////////////////////////////////////////////////////////////////////
+*/
 
 void *SDL_AndroidGetJNIEnv()
 {
@@ -1247,7 +1251,7 @@ void *SDL_AndroidGetActivity()
         return NULL;
     }
 
-    // return SDLActivity.getContext();
+    /* return SDLActivity.getContext(); */
     mid = (*env)->GetStaticMethodID(env, mActivityClass,
             "getContext","()Landroid/content/Context;");
     return (*env)->CallStaticObjectMethod(env, mActivityClass, mid);
@@ -1271,12 +1275,12 @@ const char * SDL_AndroidGetInternalStoragePath()
             return NULL;
         }
 
-        // context = SDLActivity.getContext();
+        /* context = SDLActivity.getContext(); */
         mid = (*env)->GetStaticMethodID(env, mActivityClass,
                 "getContext","()Landroid/content/Context;");
         context = (*env)->CallStaticObjectMethod(env, mActivityClass, mid);
 
-        // fileObj = context.getFilesDir();
+        /* fileObj = context.getFilesDir(); */
         mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, context),
                 "getFilesDir", "()Ljava/io/File;");
         fileObject = (*env)->CallObjectMethod(env, context, mid);
@@ -1286,7 +1290,7 @@ const char * SDL_AndroidGetInternalStoragePath()
             return NULL;
         }
 
-        // path = fileObject.getAbsolutePath();
+        /* path = fileObject.getAbsolutePath(); */
         mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, fileObject),
                 "getAbsolutePath", "()Ljava/lang/String;");
         pathString = (jstring)(*env)->CallObjectMethod(env, fileObject, mid);
@@ -1322,7 +1326,7 @@ int SDL_AndroidGetExternalStorageState()
 
     state = (*env)->GetStringUTFChars(env, stateString, NULL);
 
-    // Print an info message so people debugging know the storage state
+    /* Print an info message so people debugging know the storage state */
     __android_log_print(ANDROID_LOG_INFO, "SDL", "external storage state: %s", state);
 
     if (SDL_strcmp(state, "mounted") == 0) {
@@ -1357,12 +1361,12 @@ const char * SDL_AndroidGetExternalStoragePath()
             return NULL;
         }
 
-        // context = SDLActivity.getContext();
+        /* context = SDLActivity.getContext(); */
         mid = (*env)->GetStaticMethodID(env, mActivityClass,
                 "getContext","()Landroid/content/Context;");
         context = (*env)->CallStaticObjectMethod(env, mActivityClass, mid);
 
-        // fileObj = context.getExternalFilesDir();
+        /* fileObj = context.getExternalFilesDir(); */
         mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, context),
                 "getExternalFilesDir", "(Ljava/lang/String;)Ljava/io/File;");
         fileObject = (*env)->CallObjectMethod(env, context, mid, NULL);
@@ -1372,7 +1376,7 @@ const char * SDL_AndroidGetExternalStoragePath()
             return NULL;
         }
 
-        // path = fileObject.getAbsolutePath();
+        /* path = fileObject.getAbsolutePath(); */
         mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, fileObject),
                 "getAbsolutePath", "()Ljava/lang/String;");
         pathString = (jstring)(*env)->CallObjectMethod(env, fileObject, mid);
