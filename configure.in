@@ -325,6 +325,7 @@ SOURCES="$SOURCES $srcdir/src/haptic/*.c"
 SOURCES="$SOURCES $srcdir/src/joystick/*.c"
 SOURCES="$SOURCES $srcdir/src/libm/*.c"
 SOURCES="$SOURCES $srcdir/src/power/*.c"
+#SOURCES="$SOURCES $srcdir/src/filesystem/*.c"
 SOURCES="$SOURCES $srcdir/src/render/*.c"
 SOURCES="$SOURCES $srcdir/src/render/*/*.c"
 SOURCES="$SOURCES $srcdir/src/stdlib/*.c"
@@ -381,6 +382,12 @@ AC_HELP_STRING([--enable-power], [Enable the power subsystem [[default=yes]]]),
               , enable_power=yes)
 if test x$enable_power != xyes; then
     AC_DEFINE(SDL_POWER_DISABLED, 1, [ ])
+fi
+AC_ARG_ENABLE(filesystem,
+AC_HELP_STRING([--enable-filesystem], [Enable the filesystem subsystem [[default=yes]]]),
+              , enable_filesystem=yes)
+if test x$enable_filesystem != xyes; then
+    AC_DEFINE(SDL_FILESYSTEM_DISABLED, 1, [ ])
 fi
 AC_ARG_ENABLE(threads,
 AC_HELP_STRING([--enable-threads], [Enable the threading subsystem [[default=yes]]]),
@@ -2431,6 +2438,12 @@ case "$host" in
                ;;
              esac
         fi
+        # Set up files for the filesystem library
+        if test x$enable_filesystem = xyes; then
+            AC_DEFINE(SDL_FILESYSTEM_UNIX, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/filesystem/unix/*.c"
+            have_filesystem=yes
+        fi
         # Set up files for the timer library
         if test x$enable_timers = xyes; then
             AC_DEFINE(SDL_TIMER_UNIX, 1, [ ])
@@ -2508,6 +2521,11 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
             AC_DEFINE(SDL_POWER_WINDOWS, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/power/windows/SDL_syspower.c"
             have_power=yes
+        fi
+        if test x$enable_filesystem = xyes; then
+            AC_DEFINE(SDL_FILESYSTEM_WINDOWS, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/filesystem/windows/SDL_sysfilesystem.c"
+            have_filesystem=yes
         fi
         # Set up files for the thread library
         if test x$enable_threads = xyes; then
@@ -2591,6 +2609,12 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
             SOURCES="$SOURCES $srcdir/src/power/beos/*.c"
             have_power=yes
         fi
+        # Set up files for the system filesystem library
+        if test x$enable_filesystem = xyes; then
+            AC_DEFINE(SDL_FILESYSTEM_BEOS, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/power/beos/*.cc"
+            have_filesystem=yes
+        fi
         # The BeOS platform requires special setup.
         SOURCES="$srcdir/src/main/beos/*.cc $SOURCES"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lroot -lbe -lmedia -lgame -ldevice -ltextencoding"
@@ -2629,6 +2653,11 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         if test x$enable_power = xyes; then
             SOURCES="$SOURCES $srcdir/src/power/uikit/*.m"
             have_power=yes
+        fi
+        # Set up files for the filesystem library
+        if test x$enable_filesystem = xyes; then
+            SOURCES="$SOURCES $srcdir/src/filesystem/cocoa/*.m"
+            have_filesystem=yes
         fi
         # Set up files for the timer library
         if test x$enable_timers = xyes; then
@@ -2703,6 +2732,12 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
             SOURCES="$SOURCES $srcdir/src/power/macosx/*.c"
             have_power=yes
         fi
+        # Set up files for the filesystem library
+        if test x$enable_filesystem = xyes; then
+            AC_DEFINE(SDL_FILESYSTEM_COCOA, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/filesystem/cocoa/*.m"
+            have_filesystem=yes
+        fi
         # Set up files for the timer library
         if test x$enable_timers = xyes; then
             AC_DEFINE(SDL_TIMER_UNIX, 1, [ ])
@@ -2759,6 +2794,12 @@ if test x$have_timers != xyes; then
         AC_DEFINE(SDL_TIMERS_DISABLED, 1, [ ])
     fi
     SOURCES="$SOURCES $srcdir/src/timer/dummy/*.c"
+fi
+if test x$have_filesystem != xyes; then
+    if test x$enable_filesystem = xyes; then
+        AC_DEFINE(SDL_FILESYSTEM_DISABLED, 1, [ ])
+    fi
+    SOURCES="$SOURCES $srcdir/src/filesystem/dummy/*.c"
 fi
 if test x$have_loadso != xyes; then
     if test x$enable_loadso = xyes; then

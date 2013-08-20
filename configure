@@ -783,6 +783,7 @@ enable_events
 enable_joystick
 enable_haptic
 enable_power
+enable_filesystem
 enable_threads
 enable_timers
 enable_file
@@ -1496,6 +1497,7 @@ Optional Features:
   --enable-haptic         Enable the haptic (force feedback) subsystem
                           [[default=yes]]
   --enable-power          Enable the power subsystem [[default=yes]]
+  --enable-filesystem     Enable the filesystem subsystem [[default=yes]]
   --enable-threads        Enable the threading subsystem [[default=yes]]
   --enable-timers         Enable the timer subsystem [[default=yes]]
   --enable-file           Enable the file subsystem [[default=yes]]
@@ -16767,6 +16769,7 @@ SOURCES="$SOURCES $srcdir/src/haptic/*.c"
 SOURCES="$SOURCES $srcdir/src/joystick/*.c"
 SOURCES="$SOURCES $srcdir/src/libm/*.c"
 SOURCES="$SOURCES $srcdir/src/power/*.c"
+#SOURCES="$SOURCES $srcdir/src/filesystem/*.c"
 SOURCES="$SOURCES $srcdir/src/render/*.c"
 SOURCES="$SOURCES $srcdir/src/render/*/*.c"
 SOURCES="$SOURCES $srcdir/src/stdlib/*.c"
@@ -16869,6 +16872,18 @@ fi
 if test x$enable_power != xyes; then
 
 $as_echo "#define SDL_POWER_DISABLED 1" >>confdefs.h
+
+fi
+# Check whether --enable-filesystem was given.
+if test "${enable_filesystem+set}" = set; then :
+  enableval=$enable_filesystem;
+else
+  enable_filesystem=yes
+fi
+
+if test x$enable_filesystem != xyes; then
+
+$as_echo "#define SDL_FILESYSTEM_DISABLED 1" >>confdefs.h
 
 fi
 # Check whether --enable-threads was given.
@@ -22120,6 +22135,14 @@ $as_echo "#define SDL_POWER_LINUX 1" >>confdefs.h
                ;;
              esac
         fi
+        # Set up files for the filesystem library
+        if test x$enable_filesystem = xyes; then
+
+$as_echo "#define SDL_FILESYSTEM_UNIX 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/filesystem/unix/*.c"
+            have_filesystem=yes
+        fi
         # Set up files for the timer library
         if test x$enable_timers = xyes; then
 
@@ -22221,6 +22244,13 @@ $as_echo "#define SDL_POWER_WINDOWS 1" >>confdefs.h
 
             SOURCES="$SOURCES $srcdir/src/power/windows/SDL_syspower.c"
             have_power=yes
+        fi
+        if test x$enable_filesystem = xyes; then
+
+$as_echo "#define SDL_FILESYSTEM_WINDOWS 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/filesystem/windows/SDL_sysfilesystem.c"
+            have_filesystem=yes
         fi
         # Set up files for the thread library
         if test x$enable_threads = xyes; then
@@ -22355,6 +22385,14 @@ $as_echo "#define SDL_POWER_BEOS 1" >>confdefs.h
             SOURCES="$SOURCES $srcdir/src/power/beos/*.c"
             have_power=yes
         fi
+        # Set up files for the system filesystem library
+        if test x$enable_filesystem = xyes; then
+
+$as_echo "#define SDL_FILESYSTEM_BEOS 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/power/beos/*.cc"
+            have_filesystem=yes
+        fi
         # The BeOS platform requires special setup.
         SOURCES="$srcdir/src/main/beos/*.cc $SOURCES"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lroot -lbe -lmedia -lgame -ldevice -ltextencoding"
@@ -22389,10 +22427,10 @@ $as_echo "#define SDL_POWER_BEOS 1" >>confdefs.h
         #    have_haptic=yes
         #    EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,ForceFeedback"
         #fi
-        # Set up files for the power library
-        if test x$enable_power = xyes; then
-            SOURCES="$SOURCES $srcdir/src/power/uikit/*.m"
-            have_power=yes
+        # Set up files for the filesystem library
+        if test x$enable_filesystem = xyes; then
+            SOURCES="$SOURCES $srcdir/src/filesystem/cocoa/*.m"
+            have_filesystem=yes
         fi
         # Set up files for the timer library
         if test x$enable_timers = xyes; then
@@ -22475,6 +22513,14 @@ $as_echo "#define SDL_POWER_MACOSX 1" >>confdefs.h
             SOURCES="$SOURCES $srcdir/src/power/macosx/*.c"
             have_power=yes
         fi
+        # Set up files for the filesystem library
+        if test x$enable_filesystem = xyes; then
+
+$as_echo "#define SDL_FILESYSTEM_COCOA 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/filesystem/cocoa/*.m"
+            have_filesystem=yes
+        fi
         # Set up files for the timer library
         if test x$enable_timers = xyes; then
 
@@ -22540,6 +22586,14 @@ $as_echo "#define SDL_TIMERS_DISABLED 1" >>confdefs.h
 
     fi
     SOURCES="$SOURCES $srcdir/src/timer/dummy/*.c"
+fi
+if test x$have_filesystem != xyes; then
+    if test x$enable_filesystem = xyes; then
+
+$as_echo "#define SDL_FILESYSTEM_DISABLED 1" >>confdefs.h
+
+    fi
+    SOURCES="$SOURCES $srcdir/src/filesystem/dummy/*.c"
 fi
 if test x$have_loadso != xyes; then
     if test x$enable_loadso = xyes; then

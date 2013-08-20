@@ -74,6 +74,7 @@
 #include "SDL_endian.h"
 #include "SDL_error.h"
 #include "SDL_events.h"
+#include "SDL_filesystem.h"
 #include "SDL_joystick.h"
 #include "SDL_gamecontroller.h"
 #include "SDL_haptic.h"

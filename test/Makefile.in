@@ -36,6 +36,7 @@ TARGETS = \
 	testoverlay2$(EXE) \
 	testplatform$(EXE) \
 	testpower$(EXE) \
+	testfilesystem$(EXE) \
 	testrendertarget$(EXE) \
 	testresample$(EXE) \
 	testscale$(EXE) \
@@ -178,6 +179,9 @@ testplatform$(EXE): $(srcdir)/testplatform.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testpower$(EXE): $(srcdir)/testpower.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testfilesystem$(EXE): $(srcdir)/testfilesystem.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testrendertarget$(EXE): $(srcdir)/testrendertarget.c
