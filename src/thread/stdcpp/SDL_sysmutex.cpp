@@ -65,8 +65,6 @@ extern "C"
 int
 SDL_mutexP(SDL_mutex * mutex)
 {
-    SDL_threadID threadID = SDL_ThreadID();
-    DWORD realThreadID = GetCurrentThreadId();
     if (mutex == NULL) {
         SDL_SetError("Passed a NULL mutex");
         return -1;
@@ -86,8 +84,6 @@ extern "C"
 int
 SDL_mutexV(SDL_mutex * mutex)
 {
-    SDL_threadID threadID = SDL_ThreadID();
-    DWORD realThreadID = GetCurrentThreadId();
     if (mutex == NULL) {
         SDL_SetError("Passed a NULL mutex");
         return -1;
