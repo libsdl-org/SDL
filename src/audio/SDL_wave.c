@@ -61,7 +61,7 @@ InitMS_ADPCM(WaveFMT * format)
         SDL_SwapLE16(format->bitspersample);
     rogue_feel = (Uint8 *) format + sizeof(*format);
     if (sizeof(*format) == 16) {
-        /*const Uint16 extra_info = ((rogue_feel[1] << 8) | rogue_feel[0]); */
+        /* const Uint16 extra_info = ((rogue_feel[1] << 8) | rogue_feel[0]); */
         rogue_feel += sizeof(Uint16);
     }
     MS_ADPCM_state.wSamplesPerBlock = ((rogue_feel[1] << 8) | rogue_feel[0]);
@@ -242,7 +242,7 @@ InitIMA_ADPCM(WaveFMT * format)
         SDL_SwapLE16(format->bitspersample);
     rogue_feel = (Uint8 *) format + sizeof(*format);
     if (sizeof(*format) == 16) {
-        /*const Uint16 extra_info = ((rogue_feel[1] << 8) | rogue_feel[0]); */
+        /* const Uint16 extra_info = ((rogue_feel[1] << 8) | rogue_feel[0]); */
         rogue_feel += sizeof(Uint16);
     }
     IMA_ADPCM_state.wSamplesPerBlock = ((rogue_feel[1] << 8) | rogue_feel[0]);

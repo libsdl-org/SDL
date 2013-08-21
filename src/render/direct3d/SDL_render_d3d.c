@@ -874,7 +874,7 @@ GetScaleQuality(void)
 
     if (!hint || *hint == '0' || SDL_strcasecmp(hint, "nearest") == 0) {
         return D3DTEXF_POINT;
-    } else /*if (*hint == '1' || SDL_strcasecmp(hint, "linear") == 0) */ {
+    } else /* if (*hint == '1' || SDL_strcasecmp(hint, "linear") == 0) */ {
         return D3DTEXF_LINEAR;
     }
 }

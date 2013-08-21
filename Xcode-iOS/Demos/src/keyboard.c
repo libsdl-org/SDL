@@ -80,7 +80,7 @@ fontMapping map[TABLE_SIZE] = {
     {SDL_SCANCODE_7, 1, 0, 23}, /* 7 */
     {SDL_SCANCODE_8, 1, 0, 24}, /* 8 */
     {SDL_SCANCODE_9, 1, 0, 25}, /* 9 */
-    {SDL_SCANCODE_SPACE, 1, 0, 0},      /*' ' */
+    {SDL_SCANCODE_SPACE, 1, 0, 0},      /* ' ' */
     {SDL_SCANCODE_1, 0, KMOD_SHIFT, 1}, /* ! */
     {SDL_SCANCODE_SLASH, 0, KMOD_SHIFT, 31},    /* ? */
     {SDL_SCANCODE_SLASH, 1, 0, 15},     /* / */

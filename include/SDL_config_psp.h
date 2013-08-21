@@ -99,8 +99,8 @@
 #define HAVE_SQRT   1
 #define HAVE_SETJMP 1
 #define HAVE_NANOSLEEP  1
-/*#define HAVE_SYSCONF  1 */
-/*#define HAVE_SIGACTION    1 */
+/* #define HAVE_SYSCONF  1 */
+/* #define HAVE_SIGACTION    1 */
 
 
 /* PSP isn't that sophisticated */

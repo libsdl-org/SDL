@@ -92,7 +92,7 @@ main(int argc, char *argv[])
                                 SDL_WINDOW_BORDERLESS);
     renderer = SDL_CreateRenderer(window, 0, 0);
 
-    /*load brush texture */
+    /* load brush texture */
     initializeTexture(renderer);
 
     /* fill canvass initially with all black */

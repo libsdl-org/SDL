@@ -131,7 +131,7 @@ X11_SetNetWMState(_THIS, Window xwindow, Uint32 flags)
     SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
     Display *display = videodata->display;
     Atom _NET_WM_STATE = videodata->_NET_WM_STATE;
-    /*Atom _NET_WM_STATE_HIDDEN = videodata->_NET_WM_STATE_HIDDEN; */
+    /* Atom _NET_WM_STATE_HIDDEN = videodata->_NET_WM_STATE_HIDDEN; */
     Atom _NET_WM_STATE_FOCUSED = videodata->_NET_WM_STATE_FOCUSED;
     Atom _NET_WM_STATE_MAXIMIZED_VERT = videodata->_NET_WM_STATE_MAXIMIZED_VERT;
     Atom _NET_WM_STATE_MAXIMIZED_HORZ = videodata->_NET_WM_STATE_MAXIMIZED_HORZ;
@@ -213,7 +213,7 @@ X11_GetNetWMState(_THIS, Window xwindow)
     }
 
     /* FIXME, check the size hints for resizable */
-    /*flags |= SDL_WINDOW_RESIZABLE; */
+    /* flags |= SDL_WINDOW_RESIZABLE; */
 
     return flags;
 }

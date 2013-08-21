@@ -155,7 +155,7 @@ DirectFB_CreateWindow(_THIS, SDL_Window * window)
     SDL_DFB_CHECK(windata->dfbwin->RaiseToTop(windata->dfbwin));
 
     /* remember parent */
-    /*windata->sdlwin = window; */
+    /* windata->sdlwin = window; */
 
     /* Add to list ... */
 

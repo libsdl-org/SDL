@@ -1,7 +1,7 @@
 /**
  * Automated SDL subsystems management test.
  *
- * Written by Jørgen Tjernø "jorgenpt"
+ * Written by Jï¿½rgen Tjernï¿½ "jorgenpt"
  *
  * Released under Public Domain.
  */
@@ -10,7 +10,7 @@
 #include "SDL_test.h"
 
 
-/*!
+/* !
  * \brief Tests SDL_Init() and SDL_Quit() of Joystick and Haptic subsystems
  * \sa
  * http://wiki.libsdl.org/moin.cgi/SDL_Init
@@ -38,7 +38,7 @@ static int main_testInitQuitJoystickHaptic (void *arg)
 #endif
 }
 
-/*!
+/* !
  * \brief Tests SDL_InitSubSystem() and SDL_QuitSubSystem()
  * \sa
  * http://wiki.libsdl.org/moin.cgi/SDL_Init

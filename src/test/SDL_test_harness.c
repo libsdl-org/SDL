@@ -37,7 +37,7 @@ const char *SDLTest_LogSummaryFormat = "%s Summary: Total=%d Passed=%d Failed=%d
 /* Final result message format */
 const char *SDLTest_FinalResultFormat = ">>> %s '%s': %s\n";
 
-/*! \brief Timeout for single test case execution */
+/* ! \brief Timeout for single test case execution */
 static Uint32 SDLTest_TestCaseTimeout = 3600;
 
 /**

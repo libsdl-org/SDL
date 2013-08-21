@@ -28,7 +28,7 @@
 #include "default_cursor.h"
 #include "../video/SDL_sysvideo.h"
 
-/*#define DEBUG_MOUSE */
+/* #define DEBUG_MOUSE */
 
 /* The mouse state */
 static SDL_Mouse SDL_mouse;

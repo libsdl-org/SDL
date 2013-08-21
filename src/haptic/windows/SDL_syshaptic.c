@@ -304,7 +304,7 @@ DI_EffectCallback(LPCDIEFFECTINFO pei, LPVOID pv)
     EFFECT_TEST(GUID_CustomForce, SDL_HAPTIC_CUSTOM);
     EFFECT_TEST(GUID_Sine, SDL_HAPTIC_SINE);
     /* !!! FIXME: put this back when we have more bits in 2.1 */
-    /*EFFECT_TEST(GUID_Square, SDL_HAPTIC_SQUARE); */
+    /* EFFECT_TEST(GUID_Square, SDL_HAPTIC_SQUARE); */
     EFFECT_TEST(GUID_Triangle, SDL_HAPTIC_TRIANGLE);
     EFFECT_TEST(GUID_SawtoothUp, SDL_HAPTIC_SAWTOOTHUP);
     EFFECT_TEST(GUID_SawtoothDown, SDL_HAPTIC_SAWTOOTHDOWN);
@@ -936,7 +936,7 @@ SDL_SYS_ToDIEFFECT(SDL_Haptic * haptic, DIEFFECT * dest,
 
     case SDL_HAPTIC_SINE:
     /* !!! FIXME: put this back when we have more bits in 2.1 */
-    /*case SDL_HAPTIC_SQUARE: */
+    /* case SDL_HAPTIC_SQUARE: */
     case SDL_HAPTIC_TRIANGLE:
     case SDL_HAPTIC_SAWTOOTHUP:
     case SDL_HAPTIC_SAWTOOTHDOWN:
@@ -1165,7 +1165,7 @@ SDL_SYS_HapticEffectType(SDL_HapticEffect * effect)
         return &GUID_RampForce;
 
     /* !!! FIXME: put this back when we have more bits in 2.1 */
-    /*case SDL_HAPTIC_SQUARE:
+    /* case SDL_HAPTIC_SQUARE:
         return &GUID_Square; */
 
     case SDL_HAPTIC_SINE:

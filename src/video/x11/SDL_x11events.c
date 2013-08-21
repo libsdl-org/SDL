@@ -97,7 +97,7 @@ static Atom X11_PickTargetFromAtoms(Display *disp, Atom a0, Atom a1, Atom a2)
     if (a2 != None) atom[count++] = a2;
     return X11_PickTarget(disp, atom, count);
 }
-/*#define DEBUG_XEVENTS */
+/* #define DEBUG_XEVENTS */
 
 struct KeyRepeatCheckData
 {
@@ -384,7 +384,7 @@ X11_DispatchEvent(_THIS)
                    I think it's better to think the ALT key is held down
                    when it's not, then always lose the ALT modifier on Unity.
                  */
-                /*SDL_ResetKeyboard(); */
+                /* SDL_ResetKeyboard(); */
             }
             data->pending_focus = PENDING_FOCUS_IN;
             data->pending_focus_time = SDL_GetTicks() + PENDING_FOCUS_IN_TIME;

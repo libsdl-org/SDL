@@ -165,7 +165,7 @@ _testGenericRWopsValidations(SDL_RWops *rw, int write)
        i);
 }
 
-/*!
+/* !
  * Negative test for SDL_RWFromFile parameters
  *
  * \sa http://wiki.libsdl.org/moin.cgi/SDL_RWFromFile

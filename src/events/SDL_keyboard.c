@@ -28,7 +28,7 @@
 #include "../video/SDL_sysvideo.h"
 
 
-/*#define DEBUG_KEYBOARD */
+/* #define DEBUG_KEYBOARD */
 
 /* Global keyboard information */
 

@@ -35,10 +35,10 @@ const char *SDLTest_AssertCheckFormat = "Assert '%s': %s";
 /* Assert summary message format */
 const char *SDLTest_AssertSummaryFormat = "Assert Summary: Total=%d Passed=%d Failed=%d";
 
-/*! \brief counts the failed asserts */
+/* ! \brief counts the failed asserts */
 static Uint32 SDLTest_AssertsFailed = 0;
 
-/*! \brief counts the passed asserts */
+/* ! \brief counts the passed asserts */
 static Uint32 SDLTest_AssertsPassed = 0;
 
 /*

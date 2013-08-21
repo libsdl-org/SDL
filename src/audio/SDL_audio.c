@@ -419,7 +419,7 @@ SDL_RunAudio(void *devicep)
                     if (istream == NULL) {
                         istream = device->fake_stream;
                     }
-                    /*SDL_memcpy(istream, device->convert.buf, device->convert.len_cvt); */
+                    /* SDL_memcpy(istream, device->convert.buf, device->convert.len_cvt); */
                     SDL_StreamWrite(&device->streamer, device->convert.buf,
                                     device->convert.len_cvt);
                 } else {

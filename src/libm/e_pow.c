@@ -178,7 +178,7 @@ libm_hidden_proto(scalbn)
          /* special value of x */
          if (lx == 0) {
              if (ix == 0x7ff00000 || ix == 0 || ix == 0x3ff00000) {
-                 z = ax;        /*x is +-0,+-inf,+-1 */
+                 z = ax;        /* x is +-0,+-inf,+-1 */
                  if (hy < 0)
                      z = one / z;       /* z = (1/|x|) */
                  if (hx < 0) {

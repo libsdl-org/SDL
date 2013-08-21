@@ -176,9 +176,9 @@ SDL_X11_SYM(KeySym,XKeycodeToKeysym,(Display* a,KeyCode b,int c),(a,b,c),return)
 SDL_X11_MODULE(UTF8)
 SDL_X11_SYM(int,Xutf8TextListToTextProperty,(Display* a,char** b,int c,XICCEncodingStyle d,XTextProperty* e),(a,b,c,d,e),return)
 SDL_X11_SYM(int,Xutf8LookupString,(XIC a,XKeyPressedEvent* b,char* c,int d,KeySym* e,Status* f),(a,b,c,d,e,f),return)
-/*SDL_X11_SYM(XIC,XCreateIC,(XIM, ...),return)  !!! ARGH! */
+/* SDL_X11_SYM(XIC,XCreateIC,(XIM, ...),return)  !!! ARGH! */
 SDL_X11_SYM(void,XDestroyIC,(XIC a),(a),)
-/*SDL_X11_SYM(char*,XGetICValues,(XIC, ...),return)  !!! ARGH! */
+/* SDL_X11_SYM(char*,XGetICValues,(XIC, ...),return)  !!! ARGH! */
 SDL_X11_SYM(void,XSetICFocus,(XIC a),(a),)
 SDL_X11_SYM(void,XUnsetICFocus,(XIC a),(a),)
 SDL_X11_SYM(XIM,XOpenIM,(Display* a,struct _XrmHashBucketRec* b,char* c,char* d),(a,b,c,d),return)

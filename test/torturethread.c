@@ -36,7 +36,7 @@ int SDLCALL
 SubThreadFunc(void *data)
 {
     while (!*(int volatile *) data) {
-        ;                       /*SDL_Delay(10); *//* do nothing */
+        ;                       /* SDL_Delay(10); *//* do nothing */
     }
     return 0;
 }

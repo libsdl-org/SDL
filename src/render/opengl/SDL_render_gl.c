@@ -310,7 +310,7 @@ GL_ResetState(SDL_Renderer *renderer)
     data->glDisable(GL_DEPTH_TEST);
     data->glDisable(GL_CULL_FACE);
     /* This ended up causing video discrepancies between OpenGL and Direct3D */
-    /*data->glEnable(GL_LINE_SMOOTH); */
+    /* data->glEnable(GL_LINE_SMOOTH); */
 
     data->glMatrixMode(GL_MODELVIEW);
     data->glLoadIdentity();
@@ -638,7 +638,7 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         return -1;
     }
     if ((renderdata->GL_ARB_texture_rectangle_supported)
-        /*&& texture->access != SDL_TEXTUREACCESS_TARGET */){
+        /* && texture->access != SDL_TEXTUREACCESS_TARGET */){
         data->type = GL_TEXTURE_RECTANGLE_ARB;
         texture_w = texture->w;
         texture_h = texture->h;
