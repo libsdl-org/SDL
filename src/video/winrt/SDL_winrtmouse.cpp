@@ -29,7 +29,7 @@ extern "C" {
 #include "../SDL_sysvideo.h"
 }
 
-#include "SDL_WinRTApp.h"
+#include "../../core/winrt/SDL_winrtapp.h"
 #include "SDL_winrtmouse.h"
 
 using namespace Windows::UI::Core;

@@ -13,7 +13,7 @@ extern "C" {
 #include "SDL_main.h"
 #include "SDL_stdinc.h"
 #include "SDL_render.h"
-#include "../SDL_sysvideo.h"
+#include "../../video/SDL_sysvideo.h"
 //#include "../../SDL_hints_c.h"
 #include "../../events/scancodes_windows.h"
 #include "../../events/SDL_mouse_c.h"
@@ -22,8 +22,8 @@ extern "C" {
 #include "../../render/SDL_sysrender.h"
 }
 
-#include "SDL_winrtvideo.h"
-#include "SDL_WinRTApp.h"
+#include "../../video/winrt/SDL_winrtvideo.h"
+#include "SDL_winrtapp.h"
 
 using namespace concurrency;
 using namespace std;

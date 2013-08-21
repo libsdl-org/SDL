@@ -26,7 +26,7 @@
 
 #include "SDL_winrtvideo.h"
 #include "SDL_winrtevents_c.h"
-#include "SDL_WinRTApp.h"
+#include "../../core/winrt/SDL_winrtapp.h"
 
 extern SDL_WinRTApp ^ SDL_WinRTGlobalApp;
 
