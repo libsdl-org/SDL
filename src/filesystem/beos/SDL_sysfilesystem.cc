@@ -27,6 +27,7 @@
 
 #include <os/kernel/image.h>
 #include <os/storage/Directory.h>
+#include <os/storage/Entry.h>
 #include <os/storage/Path.h>
 
 #include "SDL_error.h"
@@ -62,7 +63,7 @@ SDL_GetBasePath(void)
         return NULL;
     }
 
-    SDL_strcpy(retval, str);
+    strcpy(retval, str);
     retval[len] = '/';
     retval[len+1] = '\0';
     return retval;
