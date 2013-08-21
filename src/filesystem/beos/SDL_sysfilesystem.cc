@@ -63,7 +63,7 @@ SDL_GetBasePath(void)
         return NULL;
     }
 
-    strcpy(retval, str);
+    SDL_memcpy(retval, str, len);
     retval[len] = '/';
     retval[len+1] = '\0';
     return retval;
