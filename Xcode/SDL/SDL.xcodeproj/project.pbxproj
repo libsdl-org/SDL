@@ -391,6 +391,8 @@
 		04F7805F12FB74A200FC43C0 /* SDL_drawpoint.h in Headers */ = {isa = PBXBuildFile; fileRef = 04F7804712FB74A200FC43C0 /* SDL_drawpoint.h */; };
 		566CDE8F148F0AC200C5A9BB /* SDL_dropevents_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 566CDE8D148F0AC200C5A9BB /* SDL_dropevents_c.h */; };
 		566CDE90148F0AC200C5A9BB /* SDL_dropevents.c in Sources */ = {isa = PBXBuildFile; fileRef = 566CDE8E148F0AC200C5A9BB /* SDL_dropevents.c */; };
+		567E2F1C17C44BB2005F1892 /* SDL_sysfilesystem.m in Sources */ = {isa = PBXBuildFile; fileRef = 567E2F1B17C44BB2005F1892 /* SDL_sysfilesystem.m */; };
+		567E2F2117C44C35005F1892 /* SDL_filesystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 567E2F2017C44C35005F1892 /* SDL_filesystem.h */; };
 		A77E6EB4167AB0A90010E40B /* SDL_gamecontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = A77E6EB3167AB0A90010E40B /* SDL_gamecontroller.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A77E6EB5167AB0A90010E40B /* SDL_gamecontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = A77E6EB3167AB0A90010E40B /* SDL_gamecontroller.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		AA0AD09D16648D1700CE5896 /* SDL_gamecontroller.c in Sources */ = {isa = PBXBuildFile; fileRef = BBFC088A164C6514003E6A99 /* SDL_gamecontroller.c */; };
@@ -986,6 +988,8 @@
 		04F7804712FB74A200FC43C0 /* SDL_drawpoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_drawpoint.h; sourceTree = "<group>"; };
 		566CDE8D148F0AC200C5A9BB /* SDL_dropevents_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_dropevents_c.h; sourceTree = "<group>"; };
 		566CDE8E148F0AC200C5A9BB /* SDL_dropevents.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_dropevents.c; sourceTree = "<group>"; };
+		567E2F1B17C44BB2005F1892 /* SDL_sysfilesystem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SDL_sysfilesystem.m; path = ../../src/filesystem/cocoa/SDL_sysfilesystem.m; sourceTree = "<group>"; };
+		567E2F2017C44C35005F1892 /* SDL_filesystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_filesystem.h; sourceTree = "<group>"; };
 		A77E6EB3167AB0A90010E40B /* SDL_gamecontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_gamecontroller.h; sourceTree = "<group>"; };
 		AA0F8490178D5ECC00823F9D /* SDL_systls.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_systls.c; sourceTree = "<group>"; };
 		AA628AC8159367B7005138DD /* SDL_rotate.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_rotate.c; sourceTree = "<group>"; };
@@ -1135,6 +1139,7 @@
 				AA7557D21595D4D800BBD41B /* SDL_endian.h */,
 				AA7557D31595D4D800BBD41B /* SDL_error.h */,
 				AA7557D41595D4D800BBD41B /* SDL_events.h */,
+				567E2F2017C44C35005F1892 /* SDL_filesystem.h */,
 				A77E6EB3167AB0A90010E40B /* SDL_gamecontroller.h */,
 				AA7557D51595D4D800BBD41B /* SDL_gesture.h */,
 				AA7557D61595D4D800BBD41B /* SDL_haptic.h */,
@@ -1643,6 +1648,7 @@
 				04BDFD7612E6671700899322 /* audio */,
 				04BDFDD312E6671700899322 /* cpuinfo */,
 				04BDFDD512E6671700899322 /* events */,
+				567E2F1F17C44BBB005F1892 /* filesystem */,
 				04BDFDEC12E6671700899322 /* file */,
 				04BDFDF112E6671700899322 /* haptic */,
 				04BDFDFF12E6671700899322 /* joystick */,
@@ -1662,6 +1668,14 @@
 				04BDFE5C12E6671700899322 /* SDL.c */,
 			);
 			name = "Library Source";
+			sourceTree = "<group>";
+		};
+		567E2F1F17C44BBB005F1892 /* filesystem */ = {
+			isa = PBXGroup;
+			children = (
+				567E2F1B17C44BB2005F1892 /* SDL_sysfilesystem.m */,
+			);
+			name = filesystem;
 			sourceTree = "<group>";
 		};
 		BEC562FE0761C0E800A33029 /* Linked Frameworks */ = {
@@ -1858,6 +1872,7 @@
 				AA628AD3159367F2005138DD /* SDL_x11xinput2.h in Headers */,
 				AABCC38D164063D200AB8930 /* SDL_cocoamessagebox.h in Headers */,
 				D55A1B81179F262300625D7C /* SDL_cocoamousetap.h in Headers */,
+				567E2F2117C44C35005F1892 /* SDL_filesystem.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2003,6 +2018,7 @@
 				AA628AD4159367F2005138DD /* SDL_x11xinput2.h in Headers */,
 				AABCC38E164063D200AB8930 /* SDL_cocoamessagebox.h in Headers */,
 				D55A1B85179F278E00625D7C /* SDL_cocoamousetap.h in Headers */,
+				567E2F2217C44C35005F1892 /* SDL_filesystem.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2148,6 +2164,7 @@
 				DB313FC717554B71006C0E22 /* SDL_x11xinput2.h in Headers */,
 				DB313FFA17554B71006C0E22 /* SDL_cocoamessagebox.h in Headers */,
 				D55A1B86179F278F00625D7C /* SDL_cocoamousetap.h in Headers */,
+				567E2F2317C44C35005F1892 /* SDL_filesystem.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2431,6 +2448,7 @@
 				AA0AD09D16648D1700CE5896 /* SDL_gamecontroller.c in Sources */,
 				AA0F8491178D5ECC00823F9D /* SDL_systls.c in Sources */,
 				D55A1B82179F262300625D7C /* SDL_cocoamousetap.m in Sources */,
+				567E2F1C17C44BB2005F1892 /* SDL_sysfilesystem.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2548,6 +2566,7 @@
 				AABCC390164063D200AB8930 /* SDL_cocoamessagebox.m in Sources */,
 				AA0F8492178D5ECC00823F9D /* SDL_systls.c in Sources */,
 				D55A1B84179F263600625D7C /* SDL_cocoamousetap.m in Sources */,
+				567E2F1D17C44BB2005F1892 /* SDL_sysfilesystem.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2665,6 +2684,7 @@
 				DB31406A17554B71006C0E22 /* SDL_cocoamessagebox.m in Sources */,
 				AA0F8493178D5ECC00823F9D /* SDL_systls.c in Sources */,
 				D55A1B83179F263500625D7C /* SDL_cocoamousetap.m in Sources */,
+				567E2F1E17C44BB2005F1892 /* SDL_sysfilesystem.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
