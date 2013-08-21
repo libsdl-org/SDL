@@ -86,11 +86,11 @@ SDL_InitTicks(void)
 Uint32
 SDL_GetTicks(void)
 {
+    Uint32 ticks;
     if (!ticks_started) {
         SDL_InitTicks();
     }
 
-    Uint32 ticks;
     if (has_monotonic_time) {
 #if HAVE_CLOCK_GETTIME
         struct timespec now;
@@ -115,11 +115,11 @@ SDL_GetTicks(void)
 Uint64
 SDL_GetPerformanceCounter(void)
 {
+    Uint64 ticks;
     if (!ticks_started) {
         SDL_InitTicks();
     }
 
-    Uint64 ticks;
     if (has_monotonic_time) {
 #if HAVE_CLOCK_GETTIME
         struct timespec now;

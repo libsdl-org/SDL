@@ -864,6 +864,8 @@ GLES_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
     GLES_TextureData *texturedata = (GLES_TextureData *) texture->driverdata;
     GLfloat minx, miny, maxx, maxy;
     GLfloat minu, maxu, minv, maxv;
+    GLfloat vertices[8];
+    GLfloat texCoords[8];
 
     GLES_ActivateRenderer(renderer);
 
@@ -924,9 +926,6 @@ GLES_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
         maxv = (GLfloat) (srcrect->y + srcrect->h) / texture->h;
         maxv *= texturedata->texh;
 
-        GLfloat vertices[8];
-        GLfloat texCoords[8];
-
         vertices[0] = minx;
         vertices[1] = miny;
         vertices[2] = maxx;
@@ -965,6 +964,9 @@ GLES_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
     GLfloat minx, miny, maxx, maxy;
     GLfloat minu, maxu, minv, maxv;
     GLfloat centerx, centery;
+    GLfloat vertices[8];
+    GLfloat texCoords[8];
+
 
     GLES_ActivateRenderer(renderer);
 
@@ -1014,9 +1016,6 @@ GLES_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
     minv *= texturedata->texh;
     maxv = (GLfloat) (srcrect->y + srcrect->h) / texture->h;
     maxv *= texturedata->texh;
-
-    GLfloat vertices[8];
-    GLfloat texCoords[8];
 
     vertices[0] = minx;
     vertices[1] = miny;

@@ -206,14 +206,17 @@ void
 X11_Xinput2SelectTouch(_THIS, SDL_Window *window)
 {
 #if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
+    SDL_VideoData *data = NULL;
+    XIEventMask eventmask;
+    unsigned char mask[3] = { 0,0,0 };
+    SDL_WindowData *window_data = NULL;
+    
     if (!X11_Xinput2IsMultitouchSupported()) {
         return;
     }
 
-    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
-    XIEventMask eventmask;
-    unsigned char mask[3] = { 0,0,0 };
-    SDL_WindowData *window_data = (SDL_WindowData*)window->driverdata;
+    data = (SDL_VideoData *) _this->driverdata;
+    window_data = (SDL_WindowData*)window->driverdata;
 
     eventmask.deviceid = XIAllMasterDevices;
     eventmask.mask_len = sizeof(mask);

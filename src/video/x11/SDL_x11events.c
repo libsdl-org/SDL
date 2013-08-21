@@ -173,11 +173,12 @@ static SDL_bool X11_IsWheelEvent(Display * display,XEvent * event,int * ticks)
 */
 static char* X11_URIToLocal(char* uri) {
     char *file = NULL;
+    SDL_bool local;
 
     if (memcmp(uri,"file:/",6) == 0) uri += 6;      /* local file? */
     else if (strstr(uri,":/") != NULL) return file; /* wrong scheme */
 
-    SDL_bool local = uri[0] != '/' || ( uri[0] != '\0' && uri[1] == '/' );
+    local = uri[0] != '/' || ( uri[0] != '\0' && uri[1] == '/' );
 
     /* got a hostname? */
     if ( !local && uri[0] == '/' && uri[2] != '/' ) {
@@ -267,6 +268,7 @@ X11_DispatchEvent(_THIS)
     SDL_WindowData *data;
     XEvent xevent;
     int i;
+    XClientMessageEvent m;
 
     SDL_zero(xevent);           /* valgrind fix. --ryan. */
     XNextEvent(display, &xevent);
@@ -549,7 +551,6 @@ X11_DispatchEvent(_THIS)
             else if (xevent.xclient.message_type == videodata->XdndPosition) {
 
                 /* reply with status */
-                XClientMessageEvent m;
                 memset(&m, 0, sizeof(XClientMessageEvent));
                 m.type = ClientMessage;
                 m.display = xevent.xclient.display;
@@ -568,7 +569,6 @@ X11_DispatchEvent(_THIS)
             else if(xevent.xclient.message_type == videodata->XdndDrop) {
                 if (data->xdnd_req == None) {
                     /* say again - not interested! */
-                    XClientMessageEvent m;
                     memset(&m, 0, sizeof(XClientMessageEvent));
                     m.type = ClientMessage;
                     m.display = xevent.xclient.display;
@@ -841,7 +841,6 @@ X11_DispatchEvent(_THIS)
                 XFree(p.data);
 
                 /* send reply */
-                XClientMessageEvent m;
                 SDL_memset(&m, 0, sizeof(XClientMessageEvent));
                 m.type = ClientMessage;
                 m.display = display;

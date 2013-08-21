@@ -305,11 +305,11 @@ SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
 int
 SDL_EGL_MakeCurrent(_THIS, EGLSurface egl_surface, SDL_GLContext context)
 {
+    EGLContext egl_context = (EGLContext) context;
+
     if (!_this->egl_data) {
         return SDL_SetError("OpenGL not initialized");
     }
-    
-    EGLContext egl_context = (EGLContext) context;
     
     /* The android emulator crashes badly if you try to eglMakeCurrent 
      * with a valid context and invalid surface, so we have to check for both here.
@@ -330,11 +330,12 @@ SDL_EGL_MakeCurrent(_THIS, EGLSurface egl_surface, SDL_GLContext context)
 int
 SDL_EGL_SetSwapInterval(_THIS, int interval)
 {
+    EGLBoolean status;
+    
     if (_this->egl_data) {
         return SDL_SetError("OpenGL ES context not active");
     }
     
-    EGLBoolean status;
     status = _this->egl_data->eglSwapInterval(_this->egl_data->egl_display, interval);
     if (status == EGL_TRUE) {
         _this->egl_data->egl_swapinterval = interval;
@@ -363,12 +364,12 @@ SDL_EGL_SwapBuffers(_THIS, EGLSurface egl_surface)
 void
 SDL_EGL_DeleteContext(_THIS, SDL_GLContext context)
 {
+    EGLContext egl_context = (EGLContext) context;
+
     /* Clean up GLES and EGL */
     if (!_this->egl_data) {
         return;
     }
-    
-    EGLContext egl_context = (EGLContext) context;
     
     if (!egl_context && egl_context != EGL_NO_CONTEXT) {
         SDL_EGL_MakeCurrent(_this, NULL, NULL);

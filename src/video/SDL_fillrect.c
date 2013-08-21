@@ -36,12 +36,13 @@
     c128.m128_u32[3] = color;
 #else
 #define SSE_BEGIN \
+    __m128 c128; \
     DECLARE_ALIGNED(Uint32, cccc[4], 16); \
     cccc[0] = color; \
     cccc[1] = color; \
     cccc[2] = color; \
     cccc[3] = color; \
-    __m128 c128 = *(__m128 *)cccc;
+    c128 = *(__m128 *)cccc;
 #endif
 
 #define SSE_WORK \
@@ -59,11 +60,14 @@
 static void \
 SDL_FillRect##bpp##SSE(Uint8 *pixels, int pitch, Uint32 color, int w, int h) \
 { \
+    int i, n; \
+    Uint8 *p = NULL; \
+ \
     SSE_BEGIN; \
  \
     while (h--) { \
-        int i, n = w * bpp; \
-        Uint8 *p = pixels; \
+        n = w * bpp; \
+        p = pixels; \
  \
         if (n > 63) { \
             int adjust = 16 - ((uintptr_t)p & 15); \
@@ -94,11 +98,13 @@ SDL_FillRect##bpp##SSE(Uint8 *pixels, int pitch, Uint32 color, int w, int h) \
 static void
 SDL_FillRect1SSE(Uint8 *pixels, int pitch, Uint32 color, int w, int h)
 {
+    int i, n;
+    Uint8 *p = NULL;
+    
     SSE_BEGIN;
-
     while (h--) {
-        int i, n = w;
-        Uint8 *p = pixels;
+        n = w;
+        p = pixels;
 
         if (n > 63) {
             int adjust = 16 - ((uintptr_t)p & 15);
@@ -152,11 +158,14 @@ DEFINE_SSE_FILLRECT(4, Uint32)
 static void \
 SDL_FillRect##bpp##MMX(Uint8 *pixels, int pitch, Uint32 color, int w, int h) \
 { \
+    int i, n; \
+    Uint8 *p = NULL; \
+ \
     MMX_BEGIN; \
  \
     while (h--) { \
-        int i, n = w * bpp; \
-        Uint8 *p = pixels; \
+        n = w * bpp; \
+        p = pixels; \
  \
         if (n > 63) { \
             int adjust = 8 - ((uintptr_t)p & 7); \
