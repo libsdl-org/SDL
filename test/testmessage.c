@@ -10,7 +10,7 @@
   freely.
 */
 
-/* Simple test of the SDL MessageBox API*/
+/* Simple test of the SDL MessageBox API */
 
 #include <stdio.h>
 #include <stdlib.h>

@@ -876,7 +876,7 @@ video_getWindowId(void *arg)
   /* Clean up */
   _destroyVideoSuiteTestWindow(window);
 
-  /* Get window from ID for closed window*/
+  /* Get window from ID for closed window */
   result = SDL_GetWindowFromID(id);
   SDLTest_AssertPass("Call to SDL_GetWindowID(%d/closed_window)", id);
   SDLTest_AssertCheck(result == NULL, "Verify result is NULL");

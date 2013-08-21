@@ -357,7 +357,7 @@ SDL_Surface *_rotateSurface(SDL_Surface * src, double angle, int centerx, int ce
     if (src == NULL)
         return (NULL);
 
-    if (src->flags & SDL_TRUE/*SDL_SRCCOLORKEY*/)
+    if (src->flags & SDL_TRUE/*SDL_SRCCOLORKEY */)
     {
         colorkey = _colorkey(src);
         SDL_GetRGB(colorkey, src->format, &r, &g, &b);
@@ -391,7 +391,7 @@ SDL_Surface *_rotateSurface(SDL_Surface * src, double angle, int centerx, int ce
         SDL_BlitSurface(src, NULL, rz_src, NULL);
 
         if(colorKeyAvailable)
-            SDL_SetColorKey(src, SDL_TRUE /*SDL_SRCCOLORKEY*/, colorkey);
+            SDL_SetColorKey(src, SDL_TRUE /*SDL_SRCCOLORKEY */, colorkey);
         src_converted = 1;
         is32bit = 1;
     }
@@ -459,8 +459,8 @@ SDL_Surface *_rotateSurface(SDL_Surface * src, double angle, int centerx, int ce
         /*
         * Turn on source-alpha support
         */
-        /*SDL_SetAlpha(rz_dst, SDL_SRCALPHA, 255);*/
-        SDL_SetColorKey(rz_dst, /*SDL_SRCCOLORKEY*/ SDL_TRUE | SDL_RLEACCEL, _colorkey(rz_src));
+        /*SDL_SetAlpha(rz_dst, SDL_SRCALPHA, 255); */
+        SDL_SetColorKey(rz_dst, /*SDL_SRCCOLORKEY */ SDL_TRUE | SDL_RLEACCEL, _colorkey(rz_src));
     } else {
         /*
         * Copy palette and colorkey info
@@ -475,7 +475,7 @@ SDL_Surface *_rotateSurface(SDL_Surface * src, double angle, int centerx, int ce
         transformSurfaceY(rz_src, rz_dst, centerx, centery,
             (int) (sangleinv), (int) (cangleinv),
             flipx, flipy);
-        SDL_SetColorKey(rz_dst, /*SDL_SRCCOLORKEY*/ SDL_TRUE | SDL_RLEACCEL, _colorkey(rz_src));
+        SDL_SetColorKey(rz_dst, /*SDL_SRCCOLORKEY */ SDL_TRUE | SDL_RLEACCEL, _colorkey(rz_src));
     }
     /*
     * Unlock source surface

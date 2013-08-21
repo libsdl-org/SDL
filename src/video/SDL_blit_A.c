@@ -355,18 +355,18 @@ BlitRGBtoRGBPixelAlphaMMX(SDL_BlitInfo * info)
 		} else if (alpha == amask) {
 			*dstp = *srcp;
 		} else {
-			src1 = _mm_cvtsi32_si64(*srcp); /* src(ARGB) -> src1 (0000ARGB)*/
+			src1 = _mm_cvtsi32_si64(*srcp); /* src(ARGB) -> src1 (0000ARGB) */
 			src1 = _mm_unpacklo_pi8(src1, mm_zero); /* 0A0R0G0B -> src1 */
 
-			dst1 = _mm_cvtsi32_si64(*dstp); /* dst(ARGB) -> dst1 (0000ARGB)*/
+			dst1 = _mm_cvtsi32_si64(*dstp); /* dst(ARGB) -> dst1 (0000ARGB) */
 			dst1 = _mm_unpacklo_pi8(dst1, mm_zero); /* 0A0R0G0B -> dst1 */
 
 			mm_alpha = _mm_cvtsi32_si64(alpha); /* alpha -> mm_alpha (0000000A) */
 			mm_alpha = _mm_srli_si64(mm_alpha, ashift); /* mm_alpha >> ashift -> mm_alpha(0000000A) */
 			mm_alpha = _mm_unpacklo_pi16(mm_alpha, mm_alpha); /* 00000A0A -> mm_alpha */
 			mm_alpha2 = _mm_unpacklo_pi32(mm_alpha, mm_alpha); /* 0A0A0A0A -> mm_alpha2 */
-			mm_alpha = _mm_or_si64(mm_alpha2, *(__m64 *) & multmask);	/* 0F0A0A0A -> mm_alpha*/
-			mm_alpha2 = _mm_xor_si64(mm_alpha2, *(__m64 *) & multmask2);	/* 255 - mm_alpha -> mm_alpha*/
+			mm_alpha = _mm_or_si64(mm_alpha2, *(__m64 *) & multmask);	/* 0F0A0A0A -> mm_alpha */
+			mm_alpha2 = _mm_xor_si64(mm_alpha2, *(__m64 *) & multmask2);	/* 255 - mm_alpha -> mm_alpha */
 
 			/* blend */		    
 			src1 = _mm_mullo_pi16(src1, mm_alpha);
@@ -548,18 +548,18 @@ BlitRGBtoRGBPixelAlphaMMX3DNOW(SDL_BlitInfo * info)
 		} else if (alpha == amask) {
 			*dstp = *srcp;
 		} else {
-			src1 = _mm_cvtsi32_si64(*srcp); /* src(ARGB) -> src1 (0000ARGB)*/
+			src1 = _mm_cvtsi32_si64(*srcp); /* src(ARGB) -> src1 (0000ARGB) */
 			src1 = _mm_unpacklo_pi8(src1, mm_zero); /* 0A0R0G0B -> src1 */
 
-			dst1 = _mm_cvtsi32_si64(*dstp); /* dst(ARGB) -> dst1 (0000ARGB)*/
+			dst1 = _mm_cvtsi32_si64(*dstp); /* dst(ARGB) -> dst1 (0000ARGB) */
 			dst1 = _mm_unpacklo_pi8(dst1, mm_zero); /* 0A0R0G0B -> dst1 */
 
 			mm_alpha = _mm_cvtsi32_si64(alpha); /* alpha -> mm_alpha (0000000A) */
 			mm_alpha = _mm_srli_si64(mm_alpha, ashift); /* mm_alpha >> ashift -> mm_alpha(0000000A) */
 			mm_alpha = _mm_unpacklo_pi16(mm_alpha, mm_alpha); /* 00000A0A -> mm_alpha */
 			mm_alpha2 = _mm_unpacklo_pi32(mm_alpha, mm_alpha); /* 0A0A0A0A -> mm_alpha2 */
-			mm_alpha = _mm_or_si64(mm_alpha2, *(__m64 *) & multmask);	/* 0F0A0A0A -> mm_alpha*/
-			mm_alpha2 = _mm_xor_si64(mm_alpha2, *(__m64 *) & multmask2);	/* 255 - mm_alpha -> mm_alpha*/
+			mm_alpha = _mm_or_si64(mm_alpha2, *(__m64 *) & multmask);	/* 0F0A0A0A -> mm_alpha */
+			mm_alpha2 = _mm_xor_si64(mm_alpha2, *(__m64 *) & multmask2);	/* 255 - mm_alpha -> mm_alpha */
 
 
 			/* blend */		    

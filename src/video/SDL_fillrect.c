@@ -119,7 +119,7 @@ SDL_FillRect1SSE(Uint8 *pixels, int pitch, Uint32 color, int w, int h)
 
     SSE_END;
 }
-/*DEFINE_SSE_FILLRECT(1, Uint8)*/
+/*DEFINE_SSE_FILLRECT(1, Uint8) */
 DEFINE_SSE_FILLRECT(2, Uint16)
 DEFINE_SSE_FILLRECT(4, Uint32)
 
@@ -212,7 +212,7 @@ SDL_FillRect1MMX(Uint8 *pixels, int pitch, Uint32 color, int w, int h)
 
     MMX_END;
 }
-/*DEFINE_MMX_FILLRECT(1, Uint8)*/
+/*DEFINE_MMX_FILLRECT(1, Uint8) */
 DEFINE_MMX_FILLRECT(2, Uint16)
 DEFINE_MMX_FILLRECT(4, Uint32)
 

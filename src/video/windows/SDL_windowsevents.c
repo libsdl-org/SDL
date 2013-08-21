@@ -36,7 +36,7 @@
 /* For GET_X_LPARAM, GET_Y_LPARAM. */
 #include <windowsx.h>
 
-/*#define WMMSG_DEBUG*/
+/*#define WMMSG_DEBUG */
 #ifdef WMMSG_DEBUG
 #include <stdio.h>
 #include "wmmsg.h"

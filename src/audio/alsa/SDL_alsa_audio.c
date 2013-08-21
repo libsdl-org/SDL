@@ -304,7 +304,7 @@ ALSA_PlayDevice(_THIS)
 
     while ( frames_left > 0 && this->enabled ) {
         /* !!! FIXME: This works, but needs more testing before going live */
-        /*ALSA_snd_pcm_wait(this->hidden->pcm_handle, -1);*/
+        /*ALSA_snd_pcm_wait(this->hidden->pcm_handle, -1); */
         status = ALSA_snd_pcm_writei(this->hidden->pcm_handle,
                                      sample_buf, frames_left);
 

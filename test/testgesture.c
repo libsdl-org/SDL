@@ -49,7 +49,7 @@
 #define BPP 4
 #define DEPTH 32
 
-/*MUST BE A POWER OF 2!*/
+/*MUST BE A POWER OF 2! */
 #define EVENT_BUF_SIZE 256
 
 
@@ -102,9 +102,9 @@ void setpix(SDL_Surface *screen, float _x, float _y, unsigned int col)
   SDL_memcpy(&colour,pixmem32,screen->format->BytesPerPixel);
 
   SDL_GetRGB(colour,screen->format,&r,&g,&b);
-  /*r = 0;g = 0; b = 0;*/
+  /*r = 0;g = 0; b = 0; */
   a = (float)((col>>24)&0xFF);
-  if(a == 0) a = 0xFF; /*Hack, to make things easier.*/
+  if(a == 0) a = 0xFF; /*Hack, to make things easier. */
   a /= 0xFF;
   r = (Uint8)(r*(1-a) + ((col>>16)&0xFF)*(a));
   g = (Uint8)(g*(1-a) + ((col>> 8)&0xFF)*(a));
@@ -127,7 +127,7 @@ void drawCircle(SDL_Surface* screen,float x,float y,float r,unsigned int c)
   float xr;
   for(ty = (float)-SDL_fabs(r);ty <= (float)SDL_fabs((int)r);ty++) {
     xr = (float)sqrt(r*r - ty*ty);
-    if(r > 0) { /*r > 0 ==> filled circle*/
+    if(r > 0) { /*r > 0 ==> filled circle */
       for(tx=-xr+.5f;tx<=xr-.5;tx++) {
     setpix(screen,x+tx,y+ty,c);
       }
@@ -157,7 +157,7 @@ void DrawScreen(SDL_Surface* screen)
     setpix(screen,(float)x,(float)y,((x%255)<<16) + ((y%255)<<8) + (x+y)%255);
 #endif
 
-  /*draw Touch History*/
+  /*draw Touch History */
   for(i = eventWrite; i < eventWrite+EVENT_BUF_SIZE; ++i) {
     const SDL_Event *event = &events[i&(EVENT_BUF_SIZE-1)];
     float age = (float)(i - eventWrite) / EVENT_BUF_SIZE;
@@ -170,7 +170,7 @@ void DrawScreen(SDL_Surface* screen)
       x = event->tfinger.x;
       y = event->tfinger.y;
 
-      /*draw the touch:*/
+      /*draw the touch: */
       c = colors[event->tfinger.fingerId%7];
       col = ((unsigned int)(c*(.1+.85))) | (unsigned int)(0xFF*age)<<24;
 
@@ -210,7 +210,7 @@ int main(int argc, char* argv[])
   /* Enable standard application logging */
   SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
-  /*gesture variables*/
+  /*gesture variables */
   knob.r = .1f;
   knob.ang = 0;
 
@@ -225,7 +225,7 @@ int main(int argc, char* argv[])
   while(!quitting) {
     while(SDL_PollEvent(&event))
       {
-    /*Record _all_ events*/
+    /*Record _all_ events */
     events[eventWrite & (EVENT_BUF_SIZE-1)] = event;
     eventWrite++;
 

@@ -26,7 +26,7 @@
 #include "SDL_x11video.h"
 #include "edid.h"
 
-/*#define X11MODES_DEBUG*/
+/*#define X11MODES_DEBUG */
 
 /* I'm becoming more and more convinced that the application should never
  * use XRandR, and it's the window manager's responsibility to track and
@@ -38,7 +38,7 @@
  *
  * However, many people swear by it, so let them swear at it. :)
 */
-/*#define XRANDR_DISABLED_BY_DEFAULT*/
+/*#define XRANDR_DISABLED_BY_DEFAULT */
 
 
 static int

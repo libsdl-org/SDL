@@ -351,7 +351,7 @@ DirectFB_WM_ProcessEvent(_THIS, SDL_Window * window, DFBWindowEvent * evt)
                         dy = 0;
                     SDL_DFB_CHECK(dfbwin->GetSize(dfbwin, &cw, &ch));
 
-                    /* necessary to trigger an event - ugly*/
+                    /* necessary to trigger an event - ugly */
                     SDL_DFB_CHECK(dfbwin->DisableEvents(dfbwin, DWET_ALL));
                     SDL_DFB_CHECK(dfbwin->Resize(dfbwin, cw + dx + 1, ch + dy));
                     SDL_DFB_CHECK(dfbwin->EnableEvents(dfbwin, DWET_ALL));

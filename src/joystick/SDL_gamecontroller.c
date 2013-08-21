@@ -52,7 +52,7 @@ struct _SDL_HatMapping
  */
 #define k_nMaxHatEntries 0x3f + 1
 
-/* our in memory mapping db between joystick objects and controller mappings*/
+/* our in memory mapping db between joystick objects and controller mappings */
 struct _SDL_ControllerMapping
 {
     SDL_JoystickGUID guid;

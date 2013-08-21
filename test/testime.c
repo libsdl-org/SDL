@@ -343,7 +343,7 @@ int main(int argc, char *argv[]) {
                     SDL_Log("text inputed: %s\n", text);
 
                     /* After text inputed, we can clear up markedText because it */
-                    /* is committed*/
+                    /* is committed */
                     markedText[0] = 0;
                     Redraw();
                     break;
