@@ -90,7 +90,7 @@ int
 X11_SetWindowShape(SDL_WindowShaper *shaper,SDL_Surface *shape,SDL_WindowShapeMode *shape_mode) {
     SDL_ShapeData *data = NULL;
     SDL_WindowData *windowdata = NULL;
-    Pixmap shapemask = NULL;
+    Pixmap shapemask;
     
     if(shaper == NULL || shape == NULL || shaper->driverdata == NULL)
         return -1;
