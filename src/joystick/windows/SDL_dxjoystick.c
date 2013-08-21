@@ -1776,6 +1776,12 @@ SDL_bool SDL_SYS_IsXInputDeviceIndex(int device_index)
     return device->bXInputDevice;
 }
 
+/* return SDL_TRUE if this device was opened with XInput */
+SDL_bool SDL_SYS_IsXInputJoystick(SDL_Joystick * joystick)
+{
+	return joystick->hwdata->bXInputDevice;
+}
+
 #endif /* SDL_JOYSTICK_DINPUT */
 
 /* vi: set ts=4 sw=4 expandtab: */
