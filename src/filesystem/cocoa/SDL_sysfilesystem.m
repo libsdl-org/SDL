@@ -27,6 +27,7 @@
 
 #include <Cocoa/Cocoa.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 
 #include "SDL_error.h"
 #include "SDL_stdinc.h"

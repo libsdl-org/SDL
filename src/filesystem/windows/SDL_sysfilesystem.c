@@ -26,7 +26,7 @@
 /* System dependent filesystem routines                                */
 
 #include "SDL_error.h"
-#include "SDL_windows.h"
+#include "../../core/windows/SDL_windows.h"
 #include "SDL_stdinc.h"
 #include "SDL_filesystem.h"
 
