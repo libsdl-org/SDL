@@ -346,6 +346,7 @@ X11_CreateWindow(_THIS, SDL_Window * window)
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
     SDL_DisplayData *displaydata =
         (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
+    SDL_WindowData *windowdata;
     Display *display = data->display;
     int screen = displaydata->screen;
     Visual *visual;
@@ -547,6 +548,7 @@ X11_CreateWindow(_THIS, SDL_Window * window)
         XDestroyWindow(display, w);
         return -1;
     }
+    windowdata = (SDL_WindowData *) window->driverdata;
 
 #if SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
     if ((window->flags & SDL_WINDOW_OPENGL) && (_this->gl_config.use_egl == 1)) {
@@ -556,9 +558,9 @@ X11_CreateWindow(_THIS, SDL_Window * window)
         }
 
         /* Create the GLES window surface */
-        ((SDL_WindowData *) window->driverdata)->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType) w);
+        windowdata->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType) w);
 
-        if (((SDL_WindowData *) window->driverdata)->egl_surface == EGL_NO_SURFACE) {
+        if (windowdata->egl_surface == EGL_NO_SURFACE) {
             XDestroyWindow(display, w);
             return SDL_SetError("Could not create GLES window surface");
         }
@@ -567,9 +569,8 @@ X11_CreateWindow(_THIS, SDL_Window * window)
     
 
 #ifdef X_HAVE_UTF8_STRING
-    if (SDL_X11_HAVE_UTF8) {
-        pXGetICValues(((SDL_WindowData *) window->driverdata)->ic,
-                      XNFilterEvents, &fevent, NULL);
+    if (SDL_X11_HAVE_UTF8 && windowdata->ic) {
+        pXGetICValues(windowdata->ic, XNFilterEvents, &fevent, NULL);
     }
 #endif
 
