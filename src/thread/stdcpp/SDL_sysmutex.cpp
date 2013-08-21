@@ -26,7 +26,7 @@ extern "C" {
 #include "SDL_log.h"
 }
 
-#include <exception>
+#include <system_error>
 
 #include "SDL_sysmutex_c.h"
 #include <Windows.h>
@@ -41,11 +41,11 @@ SDL_CreateMutex(void)
     try {
         SDL_mutex * mutex = new SDL_mutex;
         return mutex;
-    } catch (std::exception & ex) {
-        SDL_SetError("unable to create C++ mutex: %s", ex.what());
+    } catch (std::system_error & ex) {
+        SDL_SetError("unable to create a C++ mutex: code=%d; %s", ex.code(), ex.what());
         return NULL;
-    } catch (...) {
-        SDL_SetError("unable to create C++ mutex due to an unknown exception");
+    } catch (std::bad_alloc &) {
+        SDL_OutOfMemory();
         return NULL;
     }
 }
@@ -56,11 +56,7 @@ void
 SDL_DestroyMutex(SDL_mutex * mutex)
 {
     if (mutex) {
-        try {
-            delete mutex;
-        } catch (...) {
-            // catch any and all exceptions, just in case something happens
-        }
+        delete mutex;
     }
 }
 
@@ -79,11 +75,8 @@ SDL_mutexP(SDL_mutex * mutex)
     try {
         mutex->cpp_mutex.lock();
         return 0;
-    } catch (std::exception & ex) {
-        SDL_SetError("unable to lock C++ mutex: %s", ex.what());
-        return -1;
-    } catch (...) {
-        SDL_SetError("unable to lock C++ mutex due to an unknown exception");
+    } catch (std::system_error & ex) {
+        SDL_SetError("unable to lock a C++ mutex: code=%d; %s", ex.code(), ex.what());
         return -1;
     }
 }
@@ -100,14 +93,8 @@ SDL_mutexV(SDL_mutex * mutex)
         return -1;
     }
 
-    try {
-        mutex->cpp_mutex.unlock();
-        return 0;
-    } catch (...) {
-        // catch any and all exceptions, just in case something happens.
-        SDL_SetError("unable to unlock C++ mutex due to an unknown exception");
-        return -1;
-    }
+    mutex->cpp_mutex.unlock();
+    return 0;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

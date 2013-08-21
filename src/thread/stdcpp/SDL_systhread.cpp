@@ -31,6 +31,7 @@ extern "C" {
 
 #include <mutex>
 #include <thread>
+#include <system_error>
 
 // HACK: Mimic C++11's thread_local keyword on Visual C++ 2012 (aka. VC++ 11)
 // TODO: make sure this hack doesn't get used if and when Visual C++ supports
@@ -55,11 +56,11 @@ SDL_SYS_CreateThread(SDL_Thread * thread, void *args)
         std::thread cpp_thread(RunThread, args);
         thread->handle = (void *) new std::thread(std::move(cpp_thread));
         return 0;
-    } catch (std::exception & ex) {
-        SDL_SetError("unable to create a C++ thread: %s", ex.what());
+    } catch (std::system_error & ex) {
+        SDL_SetError("unable to start a C++ thread: code=%d; %s", ex.code(), ex.what());
         return -1;
-    } catch (...) {
-        SDL_SetError("unable to create a C++ thread due to an unknown exception");
+    } catch (std::bad_alloc &) {
+        SDL_OutOfMemory();
         return -1;
     }
 }
@@ -114,10 +115,10 @@ SDL_SYS_WaitThread(SDL_Thread * thread)
         if (cpp_thread->joinable()) {
             cpp_thread->join();
         }
-    } catch (...) {
-        // Catch any exceptions, just in case.
-        // Report nothing, as SDL_WaitThread does not seem to offer a means
-        // to report errors to its callers.
+    } catch (std::system_error &) {
+        // An error occurred when joining the thread.  SDL_WaitThread does not,
+        // however, seem to provide a means to report errors to its callers
+        // though!
     }
 }
 

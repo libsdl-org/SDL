@@ -26,8 +26,8 @@ extern "C" {
 
 #include <chrono>
 #include <condition_variable>
-#include <exception>
 #include <ratio>
+#include <system_error>
 
 #include "SDL_sysmutex_c.h"
 
@@ -45,11 +45,11 @@ SDL_CreateCond(void)
     try {
         SDL_cond * cond = new SDL_cond;
         return cond;
-    } catch (std::exception & ex) {
-        SDL_SetError("unable to create C++ condition variable: %s", ex.what());
+    } catch (std::system_error & ex) {
+        SDL_SetError("unable to create a C++ condition variable: code=%d; %s", ex.code(), ex.what());
         return NULL;
-    } catch (...) {
-        SDL_SetError("unable to create C++ condition variable due to an unknown exception");
+    } catch (std::bad_alloc &) {
+        SDL_OutOfMemory();
         return NULL;
     }
 }
@@ -60,11 +60,7 @@ void
 SDL_DestroyCond(SDL_cond * cond)
 {
     if (cond) {
-        try {
-            delete cond;
-        } catch (...) {
-            // catch any and all exceptions, just in case something happens
-        }
+        delete cond;
     }
 }
 
@@ -78,14 +74,8 @@ SDL_CondSignal(SDL_cond * cond)
         return -1;
     }
 
-    try {
-        cond->cpp_cond.notify_one();
-        return 0;
-    } catch (...) {
-        // catch any and all exceptions, just in case something happens
-        SDL_SetError("unable to signal C++ condition variable due to an unknown exception");
-        return -1;
-    }
+    cond->cpp_cond.notify_one();
+    return 0;
 }
 
 /* Restart all threads that are waiting on the condition variable */
@@ -98,14 +88,8 @@ SDL_CondBroadcast(SDL_cond * cond)
         return -1;
     }
 
-    try {
-        cond->cpp_cond.notify_all();
-        return 0;
-    } catch (...) {
-        // catch any and all exceptions, just in case something happens
-        SDL_SetError("unable to broadcast C++ condition variable due to an unknown exception");
-        return -1;
-    }
+    cond->cpp_cond.notify_all();
+    return 0;
 }
 
 /* Wait on the condition variable for at most 'ms' milliseconds.
@@ -163,11 +147,8 @@ SDL_CondWaitTimeout(SDL_cond * cond, SDL_mutex * mutex, Uint32 ms)
                 return 0;
             }
         }
-    } catch (std::exception & ex) {
-        SDL_SetError("unable to wait on C++ condition variable: %s", ex.what());
-        return -1;
-    } catch (...) {
-        SDL_SetError("unable to lock wait on C++ condition variable due to an unknown exception");
+    } catch (std::system_error & ex) {
+        SDL_SetError("unable to wait on a C++ condition variable: code=%d; %s", ex.code(), ex.what());
         return -1;
     }
 }
