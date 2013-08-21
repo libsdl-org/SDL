@@ -564,6 +564,7 @@ X11_GL_CreateContext(_THIS, SDL_Window * window)
     XVisualInfo v, *vinfo;
     int n;
     GLXContext context = NULL, share_context;
+    PFNGLXCREATECONTEXTATTRIBSARBPROC glXCreateContextAttribs = NULL;
 
     if (_this->gl_config.share_with_current_context) {
         share_context = (GLXContext)SDL_GL_GetCurrentContext();
@@ -617,7 +618,7 @@ X11_GL_CreateContext(_THIS, SDL_Window * window)
                 attribs[iattr++] = 0;
 
                 /* Get a pointer to the context creation function for GL 3.0 */
-                PFNGLXCREATECONTEXTATTRIBSARBPROC glXCreateContextAttribs =
+                glXCreateContextAttribs =
                     (PFNGLXCREATECONTEXTATTRIBSARBPROC) _this->gl_data->
                     glXGetProcAddress((GLubyte *)
                                       "glXCreateContextAttribsARB");

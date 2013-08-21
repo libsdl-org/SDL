@@ -259,10 +259,11 @@ static int (*orig_x11_errhandler) (Display *, XErrorEvent *) = NULL;
 static int
 X11_SafetyNetErrHandler(Display * d, XErrorEvent * e)
 {
+    SDL_VideoDevice *device = NULL;
     /* if we trigger an error in our error handler, don't try again. */
     if (!safety_net_triggered) {
         safety_net_triggered = SDL_TRUE;
-        SDL_VideoDevice *device = SDL_GetVideoDevice();
+        device = SDL_GetVideoDevice();
         if (device != NULL) {
             int i;
             for (i = 0; i < device->num_displays; i++) {
