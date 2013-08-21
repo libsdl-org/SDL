@@ -99,6 +99,14 @@ SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
     // interface, at least as of this writing (Nov 2012).  std::thread does
     // provide access to the OS' native handle, however, and some form of
     // priority-setting could, in theory, be done through this interface.
+    //
+    // WinRT: UPDATE (Aug 20, 2013): thread priorities cannot be changed
+    // on WinRT, at least not for any thread that's already been created.
+    // WinRT threads appear to be based off of the WinRT class,
+    // ThreadPool, more info on which can be found at:
+    // http://msdn.microsoft.com/en-us/library/windows/apps/windows.system.threading.threadpool.aspx
+    //
+    // For compatibility sake, 0 will be returned here.
     return (0);
 }
 
