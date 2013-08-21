@@ -26,12 +26,15 @@
 /* System dependent filesystem routines                                */
 
 #include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
 
 #include "SDL_error.h"
 #include "SDL_stdinc.h"
 #include "SDL_filesystem.h"
 
-static char *readSymLink(const char *path)
+static char *
+readSymLink(const char *path)
 {
     char *retval = NULL;
     ssize_t len = 64;
@@ -71,7 +74,7 @@ SDL_GetBasePath(void)
     char *retval = NULL;
 
     /* is a Linux-style /proc filesystem available? */
-    if (access("/proc", F_OK) {
+    if (access("/proc", F_OK) == 0) {
         retval = readSymLink("/proc/self/exe");
         if (retval == NULL) {
             /* older kernels don't have /proc/self ... try PID version... */
