@@ -274,7 +274,7 @@ static void
 SDL_FillRect2(Uint8 * pixels, int pitch, Uint32 color, int w, int h)
 {
     int n;
-    Uint8 *p = NULL;
+    Uint16 *p = NULL;
     
     while (h--) {
         n = w;
