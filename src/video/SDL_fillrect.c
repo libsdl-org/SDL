@@ -196,11 +196,14 @@ SDL_FillRect##bpp##MMX(Uint8 *pixels, int pitch, Uint32 color, int w, int h) \
 static void
 SDL_FillRect1MMX(Uint8 *pixels, int pitch, Uint32 color, int w, int h)
 {
+    int i, n;
+    Uint8 *p = NULL;
+    
     MMX_BEGIN;
 
     while (h--) {
-        int i, n = w;
-        Uint8 *p = pixels;
+        n = w;
+        p = pixels;
 
         if (n > 63) {
             int adjust = 8 - ((uintptr_t)p & 7);
@@ -231,9 +234,12 @@ DEFINE_MMX_FILLRECT(4, Uint32)
 static void
 SDL_FillRect1(Uint8 * pixels, int pitch, Uint32 color, int w, int h)
 {
+    int n;
+    Uint8 *p = NULL;
+    
     while (h--) {
-        int n = w;
-        Uint8 *p = pixels;
+        n = w;
+        p = pixels;
 
         if (n > 3) {
             switch ((uintptr_t) p & 3) {
@@ -267,9 +273,12 @@ SDL_FillRect1(Uint8 * pixels, int pitch, Uint32 color, int w, int h)
 static void
 SDL_FillRect2(Uint8 * pixels, int pitch, Uint32 color, int w, int h)
 {
+    int n;
+    Uint8 *p = NULL;
+    
     while (h--) {
-        int n = w;
-        Uint16 *p = (Uint16 *) pixels;
+        n = w;
+        p = (Uint16 *) pixels;
 
         if (n > 1) {
             if ((uintptr_t) p & 2) {
@@ -291,10 +300,12 @@ SDL_FillRect3(Uint8 * pixels, int pitch, Uint32 color, int w, int h)
     Uint8 r = (Uint8) ((color >> 16) & 0xFF);
     Uint8 g = (Uint8) ((color >> 8) & 0xFF);
     Uint8 b = (Uint8) (color & 0xFF);
+    int n;
+    Uint8 *p = NULL;
 
     while (h--) {
-        int n = w;
-        Uint8 *p = pixels;
+        n = w;
+        p = pixels;
 
         while (n--) {
             *p++ = r;
