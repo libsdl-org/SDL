@@ -25,7 +25,7 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* System dependent filesystem routines                                */
 
-#include <Cocoa/Cocoa.h>
+#include <Foundation/Foundation.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 
