@@ -33,13 +33,8 @@ extern "C" {
 #include <thread>
 #include <system_error>
 
-// HACK: Mimic C++11's thread_local keyword on Visual C++ 2012 (aka. VC++ 11)
-// TODO: make sure this hack doesn't get used if and when Visual C++ supports
-// the official, 'thread_local' keyword.
-#ifdef _MSC_VER
-#define thread_local __declspec(thread)
-// Documentation for __declspec(thread) can be found online at:
-// http://msdn.microsoft.com/en-us/library/2s9wt68x.aspx
+#ifdef __WINRT__
+#include <Windows.h>
 #endif
 
 static void
@@ -78,6 +73,10 @@ extern "C"
 SDL_threadID
 SDL_ThreadID(void)
 {
+#ifdef __WINRT__
+    return GetCurrentThreadId();
+#else
+    // HACK: Mimick a thread ID, if one isn't otherwise available.
     static thread_local SDL_threadID current_thread_id = 0;
     static SDL_threadID next_thread_id = 1;
     static std::mutex next_thread_id_mutex;
@@ -89,6 +88,7 @@ SDL_ThreadID(void)
     }
 
     return current_thread_id;
+#endif
 }
 
 extern "C"
