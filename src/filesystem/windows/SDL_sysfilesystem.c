@@ -25,8 +25,11 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* System dependent filesystem routines                                */
 
-#include "SDL_error.h"
 #include "../../core/windows/SDL_windows.h"
+#include <shlobj.h>
+
+#include "SDL_assert.h"
+#include "SDL_error.h"
 #include "SDL_stdinc.h"
 #include "SDL_filesystem.h"
 
