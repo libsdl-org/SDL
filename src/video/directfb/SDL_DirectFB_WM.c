@@ -131,7 +131,7 @@ DirectFB_WM_RedrawLayout(_THIS, SDL_Window * window)
     SDL_DFB_CHECK(s->SetBlittingFlags(s, DSBLIT_NOFX));
 
     LoadFont(_this, window);
-    /*s->SetDrawingFlags(s, DSDRAW_BLEND); */
+    /* s->SetDrawingFlags(s, DSDRAW_BLEND); */
     s->SetColor(s, COLOR_EXPAND(t->frame_color));
     /* top */
     for (i = 0; i < t->top_size; i++)
@@ -203,7 +203,7 @@ DirectFB_WM_AdjustWindowLayout(SDL_Window * window, int flags, int w, int h)
     if (!windata->is_managed)
         windata->theme = theme_none;
     else if (flags & SDL_WINDOW_BORDERLESS)
-        /*desc.caps |= DWCAPS_NODECORATION;) */
+        /* desc.caps |= DWCAPS_NODECORATION;) */
         windata->theme = theme_none;
     else if (flags & SDL_WINDOW_FULLSCREEN) {
         windata->theme = theme_none;

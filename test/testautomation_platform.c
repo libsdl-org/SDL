@@ -102,7 +102,7 @@ int platform_testEndianessAndSwap(void *arg)
    return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Tests SDL_GetXYZ() functions
  * \sa
  * http://wiki.libsdl.org/moin.cgi/SDL_GetPlatform
@@ -151,7 +151,7 @@ int platform_testGetFunctions (void *arg)
    return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Tests SDL_HasXYZ() functions
  * \sa
  * http://wiki.libsdl.org/moin.cgi/SDL_Has3DNow
@@ -200,7 +200,7 @@ int platform_testHasFunctions (void *arg)
    return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Tests SDL_GetVersion
  * \sa
  * http://wiki.libsdl.org/moin.cgi/SDL_GetVersion
@@ -225,7 +225,7 @@ int platform_testGetVersion(void *arg)
 }
 
 
-/*!
+/* !
  * \brief Tests SDL_VERSION macro
  */
 int platform_testSDLVersion(void *arg)
@@ -248,7 +248,7 @@ int platform_testSDLVersion(void *arg)
 }
 
 
-/*!
+/* !
  * \brief Tests default SDL_Init
  */
 int platform_testDefaultInit(void *arg)
@@ -270,7 +270,7 @@ int platform_testDefaultInit(void *arg)
    return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Tests SDL_Get/Set/ClearError
  * \sa
  * http://wiki.libsdl.org/moin.cgi/SDL_GetError
@@ -322,7 +322,7 @@ int platform_testGetSetClearError(void *arg)
    return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Tests SDL_SetError with empty input
  * \sa
  * http://wiki.libsdl.org/moin.cgi/SDL_SetError
@@ -358,7 +358,7 @@ int platform_testSetErrorEmptyInput(void *arg)
    return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Tests SDL_SetError with invalid input
  * \sa
  * http://wiki.libsdl.org/moin.cgi/SDL_SetError
@@ -422,7 +422,7 @@ int platform_testSetErrorInvalidInput(void *arg)
    return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Tests SDL_GetPowerInfo
  * \sa
  * http://wiki.libsdl.org/moin.cgi/SDL_GetPowerInfo

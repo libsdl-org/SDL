@@ -326,8 +326,8 @@ DirectFB_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
 
     if (event->event == SDL_WINDOWEVENT_SIZE_CHANGED) {
         /* Rebind the context to the window area and update matrices */
-        /*SDL_CurrentContext = NULL; */
-        /*data->updateSize = SDL_TRUE; */
+        /* SDL_CurrentContext = NULL; */
+        /* data->updateSize = SDL_TRUE; */
         renddata->size_changed = SDL_TRUE;
    }
 }
@@ -379,7 +379,7 @@ DirectFB_CreateRenderer(SDL_Window * window, Uint32 flags)
 
     /* FIXME: Yet to be tested */
     renderer->RenderReadPixels = DirectFB_RenderReadPixels;
-    /*renderer->RenderWritePixels = DirectFB_RenderWritePixels; */
+    /* renderer->RenderWritePixels = DirectFB_RenderWritePixels; */
 
     renderer->DestroyTexture = DirectFB_DestroyTexture;
     renderer->DestroyRenderer = DirectFB_DestroyRenderer;
@@ -450,7 +450,7 @@ DirectFB_ActivateRenderer(SDL_Renderer * renderer)
     SDL_Window *window = renderer->window;
     SDL_DFB_WINDOWDATA(window);
 
-    if (renddata->size_changed /*|| windata->wm_needs_redraw */) {
+    if (renddata->size_changed /* || windata->wm_needs_redraw */) {
         renddata->size_changed = SDL_FALSE;
     }
 }
@@ -701,7 +701,7 @@ DirectFB_SetTextureBlendMode(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     switch (texture->blendMode) {
     case SDL_BLENDMODE_NONE:
-    /*case SDL_BLENDMODE_MASK: */
+    /* case SDL_BLENDMODE_MASK: */
     case SDL_BLENDMODE_BLEND:
     case SDL_BLENDMODE_ADD:
     case SDL_BLENDMODE_MOD:
@@ -717,7 +717,7 @@ DirectFB_SetDrawBlendMode(SDL_Renderer * renderer)
 {
     switch (renderer->blendMode) {
     case SDL_BLENDMODE_NONE:
-    /*case SDL_BLENDMODE_MASK: */
+    /* case SDL_BLENDMODE_MASK: */
     case SDL_BLENDMODE_BLEND:
     case SDL_BLENDMODE_ADD:
     case SDL_BLENDMODE_MOD:
@@ -916,7 +916,7 @@ PrepareDraw(SDL_Renderer * renderer)
 
     switch (renderer->blendMode) {
     case SDL_BLENDMODE_NONE:
-    /*case SDL_BLENDMODE_MASK: */
+    /* case SDL_BLENDMODE_MASK: */
     case SDL_BLENDMODE_BLEND:
         break;
     case SDL_BLENDMODE_ADD:

@@ -93,7 +93,7 @@ FFStrError(HRESULT err)
     case FFERR_DEVICEFULL:
         return "device full";
         /* This should be valid, but for some reason isn't defined... */
-        /*case FFERR_DEVICENOTREG:
+        /* case FFERR_DEVICENOTREG:
            return "device not registered"; */
     case FFERR_DEVICEPAUSED:
         return "device paused";
@@ -343,7 +343,7 @@ GetSupportedFeatures(SDL_Haptic * haptic)
     FF_TEST(FFCAP_ET_CONSTANTFORCE, SDL_HAPTIC_CONSTANT);
     FF_TEST(FFCAP_ET_RAMPFORCE, SDL_HAPTIC_RAMP);
     /* !!! FIXME: put this back when we have more bits in 2.1 */
-    /*FF_TEST(FFCAP_ET_SQUARE, SDL_HAPTIC_SQUARE); */
+    /* FF_TEST(FFCAP_ET_SQUARE, SDL_HAPTIC_SQUARE); */
     FF_TEST(FFCAP_ET_SINE, SDL_HAPTIC_SINE);
     FF_TEST(FFCAP_ET_TRIANGLE, SDL_HAPTIC_TRIANGLE);
     FF_TEST(FFCAP_ET_SAWTOOTHUP, SDL_HAPTIC_SAWTOOTHUP);
@@ -752,7 +752,7 @@ SDL_SYS_ToFFEFFECT(SDL_Haptic * haptic, FFEFFECT * dest,
 
     case SDL_HAPTIC_SINE:
     /* !!! FIXME: put this back when we have more bits in 2.1 */
-    /*case SDL_HAPTIC_SQUARE: */
+    /* case SDL_HAPTIC_SQUARE: */
     case SDL_HAPTIC_TRIANGLE:
     case SDL_HAPTIC_SAWTOOTHUP:
     case SDL_HAPTIC_SAWTOOTHDOWN:
@@ -981,7 +981,7 @@ SDL_SYS_HapticEffectType(Uint16 type)
         return kFFEffectType_RampForce_ID;
 
     /* !!! FIXME: put this back when we have more bits in 2.1 */
-    /*case SDL_HAPTIC_SQUARE:
+    /* case SDL_HAPTIC_SQUARE:
         return kFFEffectType_Square_ID; */
 
     case SDL_HAPTIC_SINE:

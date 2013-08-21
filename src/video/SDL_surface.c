@@ -963,7 +963,7 @@ SDL_CreateSurfaceOnStack(int width, int height, Uint32 pixel_format,
     surface->h = height;
     surface->pitch = pitch;
     /* We don't actually need to set up the clip rect for our purposes */
-    /*SDL_SetClipRect(surface, NULL); */
+    /* SDL_SetClipRect(surface, NULL); */
 
     /* Allocate an empty mapping */
     SDL_zerop(blitmap);

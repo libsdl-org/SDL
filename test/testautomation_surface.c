@@ -262,7 +262,7 @@ surface_testSaveLoadBitmap(void *arg)
     return TEST_COMPLETED;
 }
 
-/*!
+/* !
  *  Tests surface conversion.
  */
 int
@@ -307,7 +307,7 @@ surface_testSurfaceConversion(void *arg)
 }
 
 
-/*!
+/* !
  *  Tests surface conversion across all pixel formats.
  */
 int

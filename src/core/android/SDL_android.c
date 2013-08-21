@@ -40,13 +40,13 @@
 #include <sys/types.h>
 #include <unistd.h>
 #define LOG_TAG "SDL_android"
-/*#define LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__) */
-/*#define LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__) */
+/* #define LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__) */
+/* #define LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__) */
 #define LOGI(...) do {} while (false)
 #define LOGE(...) do {} while (false)
 
 /* Uncomment this to log messages entering and exiting methods in this file */
-/*#define DEBUG_JNI */
+/* #define DEBUG_JNI */
 
 static void Android_JNI_ThreadDestroyed(void*);
 
@@ -680,7 +680,7 @@ static int Internal_Android_JNI_FileOpen(SDL_RWops* ctx)
     if (false) {
 fallback:
         /* Disabled log message because of spam on the Nexus 7 */
-        /*__android_log_print(ANDROID_LOG_DEBUG, "SDL", "Falling back to legacy InputStream method for opening file"); */
+        /* __android_log_print(ANDROID_LOG_DEBUG, "SDL", "Falling back to legacy InputStream method for opening file"); */
 
         /* Try the old method using InputStream */
         ctx->hidden.androidio.assetFileDescriptorRef = NULL;
@@ -688,7 +688,7 @@ fallback:
         /* inputStream = assetManager.open(<filename>); */
         mid = (*mEnv)->GetMethodID(mEnv, (*mEnv)->GetObjectClass(mEnv, assetManager),
                 "open", "(Ljava/lang/String;I)Ljava/io/InputStream;");
-        inputStream = (*mEnv)->CallObjectMethod(mEnv, assetManager, mid, fileNameJString, 1 /*ACCESS_RANDOM */);
+        inputStream = (*mEnv)->CallObjectMethod(mEnv, assetManager, mid, fileNameJString, 1 /* ACCESS_RANDOM */);
         if (Android_JNI_ExceptionOccurred(false)) {
             goto failure;
         }
@@ -790,7 +790,7 @@ size_t Android_JNI_FileRead(SDL_RWops* ctx, void* buffer,
 
     if (ctx->hidden.androidio.assetFileDescriptorRef) {
         size_t bytesMax = size * maxnum;
-        if (ctx->hidden.androidio.size != -1 /*UNKNOWN_LENGTH */ && ctx->hidden.androidio.position + bytesMax > ctx->hidden.androidio.size) {
+        if (ctx->hidden.androidio.size != -1 /* UNKNOWN_LENGTH */ && ctx->hidden.androidio.position + bytesMax > ctx->hidden.androidio.size) {
             bytesMax = ctx->hidden.androidio.size - ctx->hidden.androidio.position;
         }
         size_t result = read(ctx->hidden.androidio.fd, buffer, bytesMax );
@@ -909,12 +909,12 @@ Sint64 Android_JNI_FileSeek(SDL_RWops* ctx, Sint64 offset, int whence)
     if (ctx->hidden.androidio.assetFileDescriptorRef) {
         switch (whence) {
             case RW_SEEK_SET:
-                if (ctx->hidden.androidio.size != -1 /*UNKNOWN_LENGTH */ && offset > ctx->hidden.androidio.size) offset = ctx->hidden.androidio.size;
+                if (ctx->hidden.androidio.size != -1 /* UNKNOWN_LENGTH */ && offset > ctx->hidden.androidio.size) offset = ctx->hidden.androidio.size;
                 offset += ctx->hidden.androidio.offset;
                 break;
             case RW_SEEK_CUR:
                 offset += ctx->hidden.androidio.position;
-                if (ctx->hidden.androidio.size != -1 /*UNKNOWN_LENGTH */ && offset > ctx->hidden.androidio.size) offset = ctx->hidden.androidio.size;
+                if (ctx->hidden.androidio.size != -1 /* UNKNOWN_LENGTH */ && offset > ctx->hidden.androidio.size) offset = ctx->hidden.androidio.size;
                 offset += ctx->hidden.androidio.offset;
                 break;
             case RW_SEEK_END:

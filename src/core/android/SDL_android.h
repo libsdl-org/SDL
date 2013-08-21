@@ -33,7 +33,7 @@ extern "C" {
 #include "SDL_rect.h"
 
 /* Interface from the SDL library into the Android Java activity */
-/*extern SDL_bool Android_JNI_CreateContext(int majorVersion, int minorVersion, int red, int green, int blue, int alpha, int buffer, int depth, int stencil, int buffers, int samples);
+/* extern SDL_bool Android_JNI_CreateContext(int majorVersion, int minorVersion, int red, int green, int blue, int alpha, int buffer, int depth, int stencil, int buffers, int samples);
 extern SDL_bool Android_JNI_DeleteContext(void); */
 extern void Android_JNI_SwapWindow();
 extern void Android_JNI_SetActivityTitle(const char *title);

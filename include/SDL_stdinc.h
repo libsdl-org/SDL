@@ -89,7 +89,7 @@
  *  Use proper C++ casts when compiled as C++ to be compatible with the option
  *  -Wold-style-cast of GCC (and -Werror=old-style-cast in GCC 4.2 and above).
  */
-/*@{ */
+/* @{ */
 #ifdef __cplusplus
 #define SDL_reinterpret_cast(type, expression) reinterpret_cast<type>(expression)
 #define SDL_static_cast(type, expression) static_cast<type>(expression)
@@ -99,7 +99,7 @@
 #define SDL_static_cast(type, expression) ((type)(expression))
 #define SDL_const_cast(type, expression) ((type)(expression))
 #endif
-/*@} *//*Cast operators */
+/* @} *//* Cast operators */
 
 /* Define a four character code as a Uint32 */
 #define SDL_FOURCC(A, B, C, D) \
@@ -111,7 +111,7 @@
 /**
  *  \name Basic data types
  */
-/*@{ */
+/* @{ */
 
 typedef enum
 {
@@ -153,7 +153,7 @@ typedef int64_t Sint64;
  */
 typedef uint64_t Uint64;
 
-/*@} *//*Basic data types */
+/* @} *//* Basic data types */
 
 
 #define SDL_COMPILE_TIME_ASSERT(name, x)               \

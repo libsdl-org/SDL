@@ -76,7 +76,7 @@ PSPAUD_OpenDevice(_THIS, const char *devname, int iscapture)
     this->spec.size *= this->spec.channels;
     this->spec.size *= this->spec.samples;
 
-/*========================================== */
+/* ========================================== */
 
     /* Allocate the mixing buffer.  Its size and starting address must
        be a multiple of 64 bytes.  Our sample count is already a multiple of
@@ -171,7 +171,7 @@ PSPAUD_Init(SDL_AudioDriverImpl * impl)
     impl->CloseDevice = PSPAUD_CloseDevice;
     impl->ThreadInit = PSPAUD_ThreadInit;
 
-    /*PSP audio device */
+    /* PSP audio device */
     impl->OnlyHasDefaultOutputDevice = 1;
 /*
     impl->HasCaptureSupport = 1;
