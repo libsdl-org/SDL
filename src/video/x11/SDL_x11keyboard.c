@@ -197,7 +197,8 @@ int
 X11_InitKeyboard(_THIS)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
-    int i, j;
+    int i = 0;
+    int j = 0;
     int min_keycode, max_keycode;
     struct {
         SDL_Scancode scancode;
