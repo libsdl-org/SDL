@@ -2612,7 +2612,7 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         # Set up files for the system filesystem library
         if test x$enable_filesystem = xyes; then
             AC_DEFINE(SDL_FILESYSTEM_BEOS, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/power/beos/*.cc"
+            SOURCES="$SOURCES $srcdir/src/filesystem/beos/*.cc"
             have_filesystem=yes
         fi
         # The BeOS platform requires special setup.
