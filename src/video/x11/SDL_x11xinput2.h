@@ -25,7 +25,7 @@
 
 #ifndef SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS
 /*Define XGenericEventCookie as forward declaration when
- *xinput2 is not available in order to compile*/
+ *xinput2 is not available in order to compile */
 struct XGenericEventCookie;
 typedef struct XGenericEventCookie XGenericEventCookie;
 #endif

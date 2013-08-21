@@ -43,30 +43,30 @@ extern "C" {
 #endif
 
 
-/*! Definitions for test case structures*/
+/*! Definitions for test case structures */
 #define TEST_ENABLED  1
 #define TEST_DISABLED 0
 
-/*! Definition of all the possible test return values of the test case method*/
+/*! Definition of all the possible test return values of the test case method */
 #define TEST_ABORTED        -1
 #define TEST_STARTED         0
 #define TEST_COMPLETED       1
 #define TEST_SKIPPED         2
 
-/*! Definition of all the possible test results for the harness*/
+/*! Definition of all the possible test results for the harness */
 #define TEST_RESULT_PASSED              0
 #define TEST_RESULT_FAILED              1
 #define TEST_RESULT_NO_ASSERT           2
 #define TEST_RESULT_SKIPPED             3
 #define TEST_RESULT_SETUP_FAILURE       4
 
-/*!< Function pointer to a test case setup function (run before every test)*/
+/*!< Function pointer to a test case setup function (run before every test) */
 typedef void (*SDLTest_TestCaseSetUpFp)(void *arg);
 
-/*!< Function pointer to a test case function*/
+/*!< Function pointer to a test case function */
 typedef int (*SDLTest_TestCaseFp)(void *arg);
 
-/*!< Function pointer to a test case teardown function (run after every test)*/
+/*!< Function pointer to a test case teardown function (run after every test) */
 typedef void  (*SDLTest_TestCaseTearDownFp)(void *arg);
 
 /**

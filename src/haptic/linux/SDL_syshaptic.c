@@ -100,7 +100,7 @@ EV_IsHaptic(int fd)
     EV_TEST(FF_CONSTANT, SDL_HAPTIC_CONSTANT);
     EV_TEST(FF_SINE, SDL_HAPTIC_SINE);
     /* !!! FIXME: put this back when we have more bits in 2.1 */
-    /*EV_TEST(FF_SQUARE, SDL_HAPTIC_SQUARE);*/
+    /*EV_TEST(FF_SQUARE, SDL_HAPTIC_SQUARE); */
     EV_TEST(FF_TRIANGLE, SDL_HAPTIC_TRIANGLE);
     EV_TEST(FF_SAW_UP, SDL_HAPTIC_SAWTOOTHUP);
     EV_TEST(FF_SAW_DOWN, SDL_HAPTIC_SAWTOOTHDOWN);
@@ -600,7 +600,7 @@ SDL_SYS_ToFFEffect(struct ff_effect *dest, SDL_HapticEffect * src)
 
     case SDL_HAPTIC_SINE:
     /* !!! FIXME: put this back when we have more bits in 2.1 */
-    /*case SDL_HAPTIC_SQUARE:*/
+    /*case SDL_HAPTIC_SQUARE: */
     case SDL_HAPTIC_TRIANGLE:
     case SDL_HAPTIC_SAWTOOTHUP:
     case SDL_HAPTIC_SAWTOOTHDOWN:
@@ -626,7 +626,7 @@ SDL_SYS_ToFFEffect(struct ff_effect *dest, SDL_HapticEffect * src)
             dest->u.periodic.waveform = FF_SINE;
         /* !!! FIXME: put this back when we have more bits in 2.1 */
         /*else if (periodic->type == SDL_HAPTIC_SQUARE)
-            dest->u.periodic.waveform = FF_SQUARE;*/
+            dest->u.periodic.waveform = FF_SQUARE; */
         else if (periodic->type == SDL_HAPTIC_TRIANGLE)
             dest->u.periodic.waveform = FF_TRIANGLE;
         else if (periodic->type == SDL_HAPTIC_SAWTOOTHUP)

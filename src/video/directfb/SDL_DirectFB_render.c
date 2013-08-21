@@ -131,7 +131,7 @@ SDL_RenderDriver DirectFB_RenderDriver = {
       (SDL_BLENDMODE_NONE | SDL_BLENDMODE_MASK | SDL_BLENDMODE_BLEND |
       SDL_BLENDMODE_ADD | SDL_BLENDMODE_MOD),
      (SDL_SCALEMODE_NONE | SDL_SCALEMODE_FAST |
-      SDL_SCALEMODE_SLOW | SDL_SCALEMODE_BEST),*/
+      SDL_SCALEMODE_SLOW | SDL_SCALEMODE_BEST), */
      0,
      {
              /* formats filled in later */
@@ -450,7 +450,7 @@ DirectFB_ActivateRenderer(SDL_Renderer * renderer)
     SDL_Window *window = renderer->window;
     SDL_DFB_WINDOWDATA(window);
 
-    if (renddata->size_changed /*|| windata->wm_needs_redraw*/) {
+    if (renddata->size_changed /*|| windata->wm_needs_redraw */) {
         renddata->size_changed = SDL_FALSE;
     }
 }

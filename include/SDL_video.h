@@ -821,7 +821,7 @@ extern DECLSPEC void SDLCALL SDL_DisableScreenSaver(void);
 /**
  *  \name OpenGL support functions
  */
-/*@{*/
+/*@{ */
 
 /**
  *  \brief Dynamically load an OpenGL library.
@@ -939,7 +939,7 @@ extern DECLSPEC void SDLCALL SDL_GL_SwapWindow(SDL_Window * window);
  */
 extern DECLSPEC void SDLCALL SDL_GL_DeleteContext(SDL_GLContext context);
 
-/*@}*//*OpenGL support functions*/
+/*@} *//*OpenGL support functions */
 
 
 /* Ends C function definitions when using C++ */

@@ -411,7 +411,7 @@ pixels_calcGammaRamp(void *arg)
   int changed;
   Uint16 magic = 0xbeef;
 
-  /* Allocate temp ramp array and fill with some value*/
+  /* Allocate temp ramp array and fill with some value */
   ramp = (Uint16 *)SDL_malloc(256 * sizeof(Uint16));
   SDLTest_AssertCheck(ramp != NULL, "Validate temp ramp array could be allocated");
   if (ramp == NULL) return TEST_ABORTED;

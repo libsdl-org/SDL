@@ -643,7 +643,7 @@ int audio_lockUnlockOpenAudioDevice()
          SDL_Delay(10);
          SDLTest_Log("Simulate callback processing - delay");
 
-         /* Unlock again*/
+         /* Unlock again */
          SDL_UnlockAudioDevice(id);
          SDLTest_AssertPass("SDL_UnlockAudioDevice(%i)", id);
 

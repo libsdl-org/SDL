@@ -66,7 +66,7 @@
 #endif
 #if defined(ANDROID)
 #undef __ANDROID__
-#undef __LINUX__ /*do we need to do this?*/
+#undef __LINUX__ /*do we need to do this? */
 #define __ANDROID__ 1
 #endif
 

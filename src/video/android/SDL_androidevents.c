@@ -38,7 +38,7 @@ android_egl_context_restore()
     SDL_WindowData *data = (SDL_WindowData *) Android_Window->driverdata;
     if (SDL_GL_MakeCurrent(Android_Window, (SDL_GLContext) data->egl_context) < 0) {
         /* The context is no longer valid, create a new one */
-        /* FIXME: Notify the user that the context changed and textures need to be re created*/
+        /* FIXME: Notify the user that the context changed and textures need to be re created */
         data->egl_context = (EGLContext) SDL_GL_CreateContext(Android_Window);
         SDL_GL_MakeCurrent(Android_Window, (SDL_GLContext) data->egl_context);
     }

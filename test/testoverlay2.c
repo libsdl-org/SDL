@@ -356,7 +356,7 @@ main(int argc, char **argv)
         quit(5);
     }
     /* Uncomment this to check vertex color with a YUV texture */
-    /*SDL_SetTextureColorMod(MooseTexture, 0xff, 0x80, 0x80);*/
+    /*SDL_SetTextureColorMod(MooseTexture, 0xff, 0x80, 0x80); */
 
     for (i = 0; i < MOOSEFRAMES_COUNT; i++) {
         Uint8 MooseFrameRGB[MOOSEFRAME_SIZE*3];

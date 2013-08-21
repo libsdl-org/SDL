@@ -106,7 +106,7 @@ extern "C" {
  *  These are the flags which may be passed to SDL_Init().  You should
  *  specify the subsystems which you will be using in your application.
  */
-/*@{*/
+/*@{ */
 #define SDL_INIT_TIMER          0x00000001
 #define SDL_INIT_AUDIO          0x00000010
 #define SDL_INIT_VIDEO          0x00000020  /**< SDL_INIT_VIDEO implies SDL_INIT_EVENTS */
@@ -119,7 +119,7 @@ extern "C" {
                 SDL_INIT_TIMER | SDL_INIT_AUDIO | SDL_INIT_VIDEO | SDL_INIT_EVENTS | \
                 SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_GAMECONTROLLER \
             )
-/*@}*/
+/*@} */
 
 /**
  *  This function initializes  the subsystems specified by \c flags

@@ -17,9 +17,9 @@
 #ifndef _MATH_PRIVATE_H_
 #define _MATH_PRIVATE_H_
 
-/*#include <endian.h>*/
+/*#include <endian.h> */
 #include "SDL_endian.h"
-/*#include <sys/types.h>*/
+/*#include <sys/types.h> */
 
 #define attribute_hidden
 #define libm_hidden_proto(x)

@@ -30,7 +30,7 @@ void Java_org_libsdl_app_SDLActivity_nativeInit(JNIEnv* env, jclass cls, jobject
     status = SDL_main(1, argv);
 
     /* Do not issue an exit or the whole application will terminate instead of just the SDL thread */
-    /*exit(status);*/
+    /*exit(status); */
 }
 
 #endif /* __ANDROID__ */

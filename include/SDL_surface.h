@@ -48,12 +48,12 @@ extern "C" {
  *  \internal
  *  Used internally (read-only).
  */
-/*@{*/
+/*@{ */
 #define SDL_SWSURFACE       0           /**< Just here for compatibility */
 #define SDL_PREALLOC        0x00000001  /**< Surface uses preallocated memory */
 #define SDL_RLEACCEL        0x00000002  /**< Surface is RLE encoded */
 #define SDL_DONTFREE        0x00000004  /**< Surface is referenced internally */
-/*@}*//*Surface flags*/
+/*@} *//*Surface flags */
 
 /**
  *  Evaluates to true if the surface needs to be locked before access.
