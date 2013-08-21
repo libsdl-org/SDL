@@ -771,7 +771,7 @@ SDL_SYS_JoystickInit(void)
             ("Joystick: Failed to get HID CFMutableDictionaryRef via IOServiceMatching.");
     }
 
-    / */ Now search I/O Registry for matching devices. */
+    /* Now search I/O Registry for matching devices. */
     result =
         IOServiceGetMatchingServices(masterPort, hidMatchDictionary,
                                      &hidObjectIterator);
