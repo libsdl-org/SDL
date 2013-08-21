@@ -1014,40 +1014,66 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
 
         if ( s_bXInputEnabled && XINPUTGETCAPABILITIES )
         {
-            result = XINPUTGETCAPABILITIES( userId, XINPUT_FLAG_GAMEPAD, &capabilities );
-            if ( result == ERROR_SUCCESS )
-            {
-                const SDL_bool bIs14OrLater = (SDL_XInputVersion >= ((1<<16)|4));
-                SDL_bool bIsSupported = SDL_FALSE;
-                /* Current version of XInput mistakenly returns 0 as the Type. Ignore it and ensure the subtype is a gamepad. */
-                bIsSupported = ( capabilities.SubType == XINPUT_DEVSUBTYPE_GAMEPAD );
+			while ( 1 )
+			{
+				result = XINPUTGETCAPABILITIES( userId, XINPUT_FLAG_GAMEPAD, &capabilities );
+				if ( result == ERROR_SUCCESS )
+				{
+					const SDL_bool bIs14OrLater = (SDL_XInputVersion >= ((1<<16)|4));
+					SDL_bool bIsSupported = SDL_FALSE;
+					/* Current version of XInput mistakenly returns 0 as the Type. Ignore it and ensure the subtype is a gamepad. */
+					bIsSupported = ( capabilities.SubType == XINPUT_DEVSUBTYPE_GAMEPAD );
 
-                if ( !bIsSupported )
-                {
-                    joystickdevice->bXInputDevice = SDL_FALSE;
-                }
-                else
-                {
-                    /* valid */
-                    joystick->hwdata->bXInputDevice = SDL_TRUE;
-                    if ((!bIs14OrLater) || (capabilities.Flags & XINPUT_CAPS_FFB_SUPPORTED)) {
-                        joystick->hwdata->bXInputHaptic = SDL_TRUE;
-                    }
-                    SDL_memset( joystick->hwdata->XInputState, 0x0, sizeof(joystick->hwdata->XInputState) );
-                    joystickdevice->XInputUserId = userId;
-                    joystick->hwdata->userid = userId;
-                    joystick->hwdata->currentXInputSlot = 0;
-                    /* The XInput API has a hard coded button/axis mapping, so we just match it */
-                    joystick->naxes = 6;
-                    joystick->nbuttons = 15;
-                    joystick->nballs = 0;
-                    joystick->nhats = 0;
-                }
-            }
-            else
-            {
-                joystickdevice->bXInputDevice = SDL_FALSE;
-            }
+					if ( !bIsSupported )
+					{
+						joystickdevice->bXInputDevice = SDL_FALSE;
+					}
+					else
+					{
+						/* valid */
+						joystick->hwdata->bXInputDevice = SDL_TRUE;
+						if ((!bIs14OrLater) || (capabilities.Flags & XINPUT_CAPS_FFB_SUPPORTED)) {
+							joystick->hwdata->bXInputHaptic = SDL_TRUE;
+						}
+						SDL_memset( joystick->hwdata->XInputState, 0x0, sizeof(joystick->hwdata->XInputState) );
+						joystickdevice->XInputUserId = userId;
+						joystick->hwdata->userid = userId;
+						joystick->hwdata->currentXInputSlot = 0;
+						/* The XInput API has a hard coded button/axis mapping, so we just match it */
+						joystick->naxes = 6;
+						joystick->nbuttons = 15;
+						joystick->nballs = 0;
+						joystick->nhats = 0;
+					}
+					break;
+				}
+				else
+				{
+					if ( userId < XUSER_MAX_COUNT && result == ERROR_DEVICE_NOT_CONNECTED )
+					{
+						/* scan the opened joysticks and pick the next free xinput userid for this one */
+						++userId;
+
+						joysticklist = SYS_Joystick;
+						for( ; joysticklist; joysticklist = joysticklist->pNext)
+						{
+							if ( joysticklist->bXInputDevice && joysticklist->XInputUserId == userId )
+								userId++;
+						}
+
+						if ( userId >= XUSER_MAX_COUNT )
+						{
+							joystickdevice->bXInputDevice = SDL_FALSE;
+							break;
+						}
+					}
+					else
+					{
+						joystickdevice->bXInputDevice = SDL_FALSE;
+						break;
+					}
+				}
+			}
         }
         else
         {
