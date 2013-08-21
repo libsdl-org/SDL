@@ -22390,7 +22390,7 @@ $as_echo "#define SDL_POWER_BEOS 1" >>confdefs.h
 
 $as_echo "#define SDL_FILESYSTEM_BEOS 1" >>confdefs.h
 
-            SOURCES="$SOURCES $srcdir/src/power/beos/*.cc"
+            SOURCES="$SOURCES $srcdir/src/filesystem/beos/*.cc"
             have_filesystem=yes
         fi
         # The BeOS platform requires special setup.
@@ -22427,6 +22427,11 @@ $as_echo "#define SDL_FILESYSTEM_BEOS 1" >>confdefs.h
         #    have_haptic=yes
         #    EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,ForceFeedback"
         #fi
+        # Set up files for the power library
+        if test x$enable_power = xyes; then
+            SOURCES="$SOURCES $srcdir/src/power/uikit/*.m"
+            have_power=yes
+        fi
         # Set up files for the filesystem library
         if test x$enable_filesystem = xyes; then
             SOURCES="$SOURCES $srcdir/src/filesystem/cocoa/*.m"
