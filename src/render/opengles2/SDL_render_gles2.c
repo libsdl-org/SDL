@@ -1174,7 +1174,7 @@ GLES2_RenderCopy(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect *s
 {
     GLES2_DriverContext *rdata = (GLES2_DriverContext *)renderer->driverdata;
     GLES2_TextureData *tdata = (GLES2_TextureData *)texture->driverdata;
-    GLES2_ImageSource sourceType;
+    GLES2_ImageSource sourceType = GLES2_IMAGESOURCE_TEXTURE_ABGR;
     SDL_BlendMode blendMode;
     GLfloat vertices[8];
     GLfloat texCoords[8];
@@ -1330,7 +1330,7 @@ GLES2_RenderCopyEx(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect 
 {
     GLES2_DriverContext *rdata = (GLES2_DriverContext *)renderer->driverdata;
     GLES2_TextureData *tdata = (GLES2_TextureData *)texture->driverdata;
-    GLES2_ImageSource sourceType;
+    GLES2_ImageSource sourceType = GLES2_IMAGESOURCE_TEXTURE_ABGR;
     SDL_BlendMode blendMode;
     GLfloat vertices[8];
     GLfloat texCoords[8];
