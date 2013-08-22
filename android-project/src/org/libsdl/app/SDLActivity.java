@@ -122,9 +122,13 @@ public class SDLActivity extends Activity {
     @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
         int keyCode = event.getKeyCode();
-        // Ignore volume keys so they're handled by Android
+        // Ignore certain special keys so they're handled by Android
         if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN ||
-            keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
+            keyCode == KeyEvent.KEYCODE_VOLUME_UP ||
+            keyCode == KeyEvent.KEYCODE_CAMERA ||
+            keyCode == 168 || /* API 11: KeyEvent.KEYCODE_ZOOM_IN */
+            keyCode == 169 /* API 11: KeyEvent.KEYCODE_ZOOM_OUT */
+            ) {
             return false;
         }
         return super.dispatchKeyEvent(event);
