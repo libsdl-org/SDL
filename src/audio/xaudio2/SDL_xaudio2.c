@@ -60,14 +60,6 @@ struct SDL_PrivateAudioData
 };
 
 
-static __inline__ char *
-utf16_to_utf8(const WCHAR *S)
-{
-    /* !!! FIXME: this should be UTF-16, not UCS-2! */
-    return SDL_iconv_string("UTF-8", "UCS-2", (char *)(S),
-                            (SDL_wcslen(S)+1)*sizeof(WCHAR));
-}
-
 static void
 XAUDIO2_DetectDevices(int iscapture, SDL_AddAudioDevice addfn)
 {
@@ -90,7 +82,7 @@ XAUDIO2_DetectDevices(int iscapture, SDL_AddAudioDevice addfn)
     for (i = 0; i < devcount; i++) {
         XAUDIO2_DEVICE_DETAILS details;
         if (IXAudio2_GetDeviceDetails(ixa2, i, &details) == S_OK) {
-            char *str = utf16_to_utf8(details.DisplayName);
+            char *str = WIN_StringToUTF8(details.DisplayName);
             if (str != NULL) {
                 addfn(str);
                 SDL_free(str);  /* addfn() made a copy of the string. */
@@ -265,7 +257,7 @@ XAUDIO2_OpenDevice(_THIS, const char *devname, int iscapture)
         for (i = 0; i < devcount; i++) {
             XAUDIO2_DEVICE_DETAILS details;
             if (IXAudio2_GetDeviceDetails(ixa2, i, &details) == S_OK) {
-                char *str = utf16_to_utf8(details.DisplayName);
+                char *str = WIN_StringToUTF8(details.DisplayName);
                 if (str != NULL) {
                     const int match = (SDL_strcmp(str, devname) == 0);
                     SDL_free(str);
