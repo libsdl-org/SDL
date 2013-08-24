@@ -74,13 +74,13 @@ extern DECLSPEC char *SDLCALL SDL_GetBasePath(void);
  *  path to the directory in UTF-8 encoding.
  *
  * On Windows, the string might look like:
- *  "C:\\Users\\bob\\AppData\\Roaming\\My Company\\My Program Name"
+ *  "C:\\Users\\bob\\AppData\\Roaming\\My Company\\My Program Name\\"
  *
  * On Linux, the string might look like:
- *  "/home/bob/.local/share/My Program Name"
+ *  "/home/bob/.local/share/My Program Name/"
  *
  * On Mac OS X, the string might look like:
- *  "/Users/bob/Library/Application Support/My Program Name"
+ *  "/Users/bob/Library/Application Support/My Program Name/"
  *
  * (etc.)
  *
