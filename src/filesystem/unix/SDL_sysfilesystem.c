@@ -29,6 +29,7 @@
 #include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+#include <limits.h>
 
 #ifdef __FREEBSD__
 #include <sys/sysctl.h>
