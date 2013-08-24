@@ -97,7 +97,7 @@ SDL_GetBasePath(void)
 #elif defined(__SOLARIS__)
     const char *path = getexecname();
     if ((path != NULL) && (path[0] == '/')) { /* must be absolute path... */
-        retval = SDL_strdup(fullpath);
+        retval = SDL_strdup(path);
         if (!retval) {
             SDL_OutOfMemory();
             return NULL;
