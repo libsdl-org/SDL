@@ -26,8 +26,13 @@
 /* System dependent filesystem routines                                */
 
 #include <unistd.h>
+#include <stdlib.h>
 #include <sys/stat.h>
 #include <sys/types.h>
+
+#ifdef __FREEBSD__
+#include <sys/sysctl.h>
+#endif
 
 #include "SDL_error.h"
 #include "SDL_stdinc.h"
@@ -73,9 +78,41 @@ SDL_GetBasePath(void)
 {
     char *retval = NULL;
 
+#if defined(__FREEBSD__)
+    char fullpath[PATH_MAX];
+    size_t buflen = sizeof (fullpath);
+    int mib[4];
+    mib[0] = CTL_KERN;
+    mib[1] = KERN_PROC;
+    mib[2] = KERN_PROC_PATHNAME;
+    mib[3] = -1;
+    if (sysctl(mib, 4, fullpath, &buflen, NULL, 0) != -1) {
+        retval = SDL_strdup(fullpath);
+        if (!retval) {
+            SDL_OutOfMemory();
+            return NULL;
+        }
+    }
+#elif defined(__SOLARIS__)
+    const char *path = getexecname();
+    if ((path != NULL) && (path[0] == '/')) { /* must be absolute path... */
+        retval = SDL_strdup(fullpath);
+        if (!retval) {
+            SDL_OutOfMemory();
+            return NULL;
+        }
+    }
+#endif
+
     /* is a Linux-style /proc filesystem available? */
-    if (access("/proc", F_OK) == 0) {
-        retval = readSymLink("/proc/self/exe");
+    if (!retval && (access("/proc", F_OK) == 0)) {
+        #if defined(__FREEBSD__)
+        retval = readSymLink("/proc/curproc/file");
+        #elif defined(__NETBSD__)
+        retval = readSymLink("/proc/curproc/exe");
+        #else
+        retval = readSymLink("/proc/self/exe");  /* linux. */
+        #endif
         if (retval == NULL) {
             /* older kernels don't have /proc/self ... try PID version... */
             char path[64];
