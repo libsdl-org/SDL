@@ -526,6 +526,10 @@
 		D55A1B86179F278F00625D7C /* SDL_cocoamousetap.h in Headers */ = {isa = PBXBuildFile; fileRef = D55A1B7F179F262300625D7C /* SDL_cocoamousetap.h */; };
 		DB0F489317C400E6008798C5 /* SDL_messagebox.h in Headers */ = {isa = PBXBuildFile; fileRef = AA9FF9591637CBF9000DF050 /* SDL_messagebox.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DB0F489417C400ED008798C5 /* SDL_messagebox.h in Headers */ = {isa = PBXBuildFile; fileRef = AA9FF9591637CBF9000DF050 /* SDL_messagebox.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		DB0F490817CA5292008798C5 /* SDL_sysfilesystem.m in Sources */ = {isa = PBXBuildFile; fileRef = 567E2F1B17C44BB2005F1892 /* SDL_sysfilesystem.m */; };
+		DB0F490A17CA5293008798C5 /* SDL_sysfilesystem.m in Sources */ = {isa = PBXBuildFile; fileRef = 567E2F1B17C44BB2005F1892 /* SDL_sysfilesystem.m */; };
+		DB0F490B17CA57ED008798C5 /* SDL_filesystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 567E2F2017C44C35005F1892 /* SDL_filesystem.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		DB0F490C17CA57ED008798C5 /* SDL_filesystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 567E2F2017C44C35005F1892 /* SDL_filesystem.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		DB313F7417554B71006C0E22 /* SDL_diskaudio.h in Headers */ = {isa = PBXBuildFile; fileRef = 04BDFD8912E6671700899322 /* SDL_diskaudio.h */; };
 		DB313F7517554B71006C0E22 /* SDL_dummyaudio.h in Headers */ = {isa = PBXBuildFile; fileRef = 04BDFD9512E6671700899322 /* SDL_dummyaudio.h */; };
 		DB313F7617554B71006C0E22 /* SDL_coreaudio.h in Headers */ = {isa = PBXBuildFile; fileRef = 04BDFDA112E6671700899322 /* SDL_coreaudio.h */; };
@@ -1880,6 +1884,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DB0F490B17CA57ED008798C5 /* SDL_filesystem.h in Headers */,
 				AA7557FB1595D4D800BBD41B /* begin_code.h in Headers */,
 				AA7557FD1595D4D800BBD41B /* close_code.h in Headers */,
 				AA75585F1595D4D800BBD41B /* SDL.h in Headers */,
@@ -2018,7 +2023,6 @@
 				AA628AD4159367F2005138DD /* SDL_x11xinput2.h in Headers */,
 				AABCC38E164063D200AB8930 /* SDL_cocoamessagebox.h in Headers */,
 				D55A1B85179F278E00625D7C /* SDL_cocoamousetap.h in Headers */,
-				567E2F2217C44C35005F1892 /* SDL_filesystem.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2026,6 +2030,7 @@
 			isa = PBXHeadersBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				DB0F490C17CA57ED008798C5 /* SDL_filesystem.h in Headers */,
 				DB313FC817554B71006C0E22 /* begin_code.h in Headers */,
 				DB313FC917554B71006C0E22 /* close_code.h in Headers */,
 				DB313FF917554B71006C0E22 /* SDL.h in Headers */,
@@ -2164,7 +2169,6 @@
 				DB313FC717554B71006C0E22 /* SDL_x11xinput2.h in Headers */,
 				DB313FFA17554B71006C0E22 /* SDL_cocoamessagebox.h in Headers */,
 				D55A1B86179F278F00625D7C /* SDL_cocoamousetap.h in Headers */,
-				567E2F2317C44C35005F1892 /* SDL_filesystem.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2566,7 +2570,7 @@
 				AABCC390164063D200AB8930 /* SDL_cocoamessagebox.m in Sources */,
 				AA0F8492178D5ECC00823F9D /* SDL_systls.c in Sources */,
 				D55A1B84179F263600625D7C /* SDL_cocoamousetap.m in Sources */,
-				567E2F1D17C44BB2005F1892 /* SDL_sysfilesystem.m in Sources */,
+				DB0F490817CA5292008798C5 /* SDL_sysfilesystem.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2684,7 +2688,7 @@
 				DB31406A17554B71006C0E22 /* SDL_cocoamessagebox.m in Sources */,
 				AA0F8493178D5ECC00823F9D /* SDL_systls.c in Sources */,
 				D55A1B83179F263500625D7C /* SDL_cocoamousetap.m in Sources */,
-				567E2F1E17C44BB2005F1892 /* SDL_sysfilesystem.m in Sources */,
+				DB0F490A17CA5293008798C5 /* SDL_sysfilesystem.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
