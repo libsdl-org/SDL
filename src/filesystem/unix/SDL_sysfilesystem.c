@@ -82,11 +82,7 @@ SDL_GetBasePath(void)
 #if defined(__FREEBSD__)
     char fullpath[PATH_MAX];
     size_t buflen = sizeof (fullpath);
-    int mib[4];
-    mib[0] = CTL_KERN;
-    mib[1] = KERN_PROC;
-    mib[2] = KERN_PROC_PATHNAME;
-    mib[3] = -1;
+    const int mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1 };
     if (sysctl(mib, 4, fullpath, &buflen, NULL, 0) != -1) {
         retval = SDL_strdup(fullpath);
         if (!retval) {
