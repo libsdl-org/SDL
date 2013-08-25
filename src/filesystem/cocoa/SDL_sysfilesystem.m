@@ -37,8 +37,21 @@ char *
 SDL_GetBasePath(void)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    const char *base = [[[NSBundle mainBundle] bundlePath] UTF8String];
+    NSBundle *bundle = [NSBundle mainBundle];
+    const char* baseType = [[[bundle infoDictionary] objectForKey:@"SDL_FILESYSTEM_BASE_DIR_TYPE"] UTF8String];
+    const char *base = NULL;
     char *retval = NULL;
+    if (baseType == NULL) {
+        baseType = "resource";
+    }
+    if (SDL_strcasecmp(baseType, "bundle")==0) {
+        base = [[bundle bundlePath] UTF8String];
+    } else if (SDL_strcasecmp(baseType, "parent")==0) {
+        base = [[[bundle bundlePath] stringByDeletingLastPathComponent] UTF8String];
+    } else {
+        /* this returns the exedir for non-bundled  and the resourceDir for bundled apps */
+        base = [[bundle resourcePath] UTF8String];
+    }
     if (base) {
         const size_t len = SDL_strlen(base) + 2;
         retval = (char *) SDL_malloc(len);
