@@ -332,8 +332,8 @@ SDL_EGL_SetSwapInterval(_THIS, int interval)
 {
     EGLBoolean status;
     
-    if (_this->egl_data) {
-        return SDL_SetError("OpenGL ES context not active");
+    if (!_this->egl_data) {
+        return SDL_SetError("EGL not initialized");
     }
     
     status = _this->egl_data->eglSwapInterval(_this->egl_data->egl_display, interval);
@@ -348,8 +348,8 @@ SDL_EGL_SetSwapInterval(_THIS, int interval)
 int
 SDL_EGL_GetSwapInterval(_THIS)
 {
-    if (_this->egl_data) {
-        return SDL_SetError("OpenGL ES context not active");
+    if (!_this->egl_data) {
+        return SDL_SetError("EGL not initialized");
     }
     
     return _this->egl_data->egl_swapinterval;
