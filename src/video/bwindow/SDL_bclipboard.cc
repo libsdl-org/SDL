@@ -89,7 +89,7 @@ SDL_bool BE_HasClipboardText(_THIS) {
 }
 
 #ifdef __cplusplus
-}					/* Extern C */
+}
 #endif
 
 #endif /* SDL_VIDEO_DRIVER_BWINDOW */
