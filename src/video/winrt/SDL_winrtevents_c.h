@@ -19,9 +19,39 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_config.h"
-
 #include "SDL_winrtvideo.h"
 
+/*
+ * Internal-use, C-style functions:
+ */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 extern void WINRT_PumpEvents(_THIS);
+
+#ifdef __cplusplus
+}
+#endif
+
+
+/*
+ * Internal-use, C++/CX functions:
+ */
+#ifdef __cplusplus_winrt
+
+/* Keyboard */
+extern void WINRT_ProcessKeyDownEvent(Windows::UI::Core::KeyEventArgs ^args);
+extern void WINRT_ProcessKeyUpEvent(Windows::UI::Core::KeyEventArgs ^args);
+
+/* Pointers (Mice, Touch, etc.) */
+extern void WINRT_ProcessMouseMovedEvent(SDL_Window * window, Windows::Devices::Input::MouseEventArgs ^args);
+extern void WINRT_ProcessPointerMovedEvent(SDL_Window *window, Windows::UI::Core::PointerEventArgs ^args);
+extern void WINRT_ProcessPointerWheelChangedEvent(SDL_Window *window, Windows::UI::Core::PointerEventArgs ^args);
+extern void WINRT_ProcessPointerReleasedEvent(SDL_Window *window, Windows::UI::Core::PointerEventArgs ^args);
+extern void WINRT_ProcessPointerPressedEvent(SDL_Window *window, Windows::UI::Core::PointerEventArgs ^args);
+
+#endif
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -267,6 +267,9 @@
     <ClCompile Include="..\..\src\core\winrt\SDL_winrtpaths.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\video\winrt\SDL_winrtkeyboard.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\begin_code.h">
