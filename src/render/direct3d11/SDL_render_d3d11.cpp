@@ -247,7 +247,7 @@ D3D11_ReadShaderContents(const wstring & shaderName, vector<char> & out)
     fileName = SDL_WinRTGetFSPathUNICODE(SDL_WINRT_PATH_INSTALLED_LOCATION);
     fileName += L"\\";
 #endif
-    // WinRT, TODO: test Direct3D 11.1 shader loading on Win32
+    // TODO, WinRT: test Direct3D 11.1 shader loading on Win32
     fileName += shaderName;
     return D3D11_ReadFileContents(fileName, out);
 }
@@ -609,7 +609,7 @@ D3D11_ConvertDipsToPixels(float dips)
 #endif
 
 // Initialize all resources that change when the window's size changes.
-// WinRT, TODO: get D3D11_CreateWindowSizeDependentResources working on Win32
+// TODO, WinRT: get D3D11_CreateWindowSizeDependentResources working on Win32
 HRESULT
 D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
 {
@@ -1230,7 +1230,7 @@ D3D11_UpdateViewport(SDL_Renderer * renderer)
         orientationAlignedViewport.w = (float) renderer->viewport.w;
         orientationAlignedViewport.h = (float) renderer->viewport.h;
     }
-    // WinRT, TODO: get custom viewports working with non-Landscape modes (Portrait, PortraitFlipped, and LandscapeFlipped)
+    // TODO, WinRT: get custom viewports working with non-Landscape modes (Portrait, PortraitFlipped, and LandscapeFlipped)
 
     D3D11_VIEWPORT viewport;
     memset(&viewport, 0, sizeof(viewport));

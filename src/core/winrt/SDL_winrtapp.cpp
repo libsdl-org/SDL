@@ -169,7 +169,7 @@ void SDL_WinRTApp::Initialize(CoreApplicationView^ applicationView)
     // done before the hint's callback is registered (as of Feb 22, 2013),
     // otherwise the hint callback won't get registered.
     //
-    // WinRT, TODO: see if an app's default orientation can be found out via WinRT API(s), then set the initial value of SDL_HINT_ORIENTATIONS accordingly.
+    // TODO, WinRT: see if an app's default orientation can be found out via WinRT API(s), then set the initial value of SDL_HINT_ORIENTATIONS accordingly.
     //SDL_SetHint(SDL_HINT_ORIENTATIONS, "LandscapeLeft LandscapeRight Portrait PortraitUpsideDown");   // DavidL: this is no longer needed (for SDL_AddHintCallback)
     SDL_AddHintCallback(SDL_HINT_ORIENTATIONS, WINRT_SetDisplayOrientationsPreference, NULL);
 }
