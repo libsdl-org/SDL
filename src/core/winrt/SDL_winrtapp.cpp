@@ -41,6 +41,7 @@ extern "C" {
 
 extern SDL_Window * WINRT_GlobalSDLWindow;
 extern SDL_VideoDevice * WINRT_GlobalSDLVideoDevice;
+extern SDL_DisplayMode WINRT_CalcDisplayModeUsingNativeWindow();
 
 
 // Compile-time debugging options:
@@ -305,7 +306,7 @@ void SDL_WinRTApp::OnWindowSizeChanged(CoreWindow^ sender, WindowSizeChangedEven
         // window-resize event as it appeared the SDL window didn't change
         // size, and the Direct3D 11.1 renderer wouldn't resize its swap
         // chain.
-        SDL_DisplayMode resizedDisplayMode = CalcCurrentDisplayMode();
+        SDL_DisplayMode resizedDisplayMode = WINRT_CalcDisplayModeUsingNativeWindow();
         WINRT_GlobalSDLVideoDevice->displays[0].current_mode = resizedDisplayMode;
         WINRT_GlobalSDLVideoDevice->displays[0].desktop_mode = resizedDisplayMode;
         WINRT_GlobalSDLVideoDevice->displays[0].display_modes[0] = resizedDisplayMode;
@@ -465,25 +466,4 @@ void SDL_WinRTApp::OnResuming(Platform::Object^ sender, Platform::Object^ args)
         // processed immediately.
         SDL_FilterEvents(RemoveAppSuspendAndResumeEvents, 0);
     }
-}
-
-SDL_DisplayMode SDL_WinRTApp::CalcCurrentDisplayMode()
-{
-    // Create an empty, zeroed-out display mode:
-    SDL_DisplayMode mode;
-    SDL_zero(mode);
-
-    // Fill in most fields:
-    mode.format = SDL_PIXELFORMAT_RGB888;
-    mode.refresh_rate = 0;  // TODO, WinRT: see if refresh rate data is available, or relevant (for WinRT apps)
-    mode.driverdata = NULL;
-
-    // Calculate the display size given the window size, taking into account
-    // the current display's DPI:
-    const float currentDPI = Windows::Graphics::Display::DisplayProperties::LogicalDpi; 
-    const float dipsPerInch = 96.0f;
-    mode.w = (int) ((CoreWindow::GetForCurrentThread()->Bounds.Width * currentDPI) / dipsPerInch);
-    mode.h = (int) ((CoreWindow::GetForCurrentThread()->Bounds.Height * currentDPI) / dipsPerInch);
-
-    return mode;
 }

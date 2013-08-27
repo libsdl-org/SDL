@@ -14,7 +14,6 @@ public:
 
 internal:
     // SDL-specific methods
-    SDL_DisplayMode CalcCurrentDisplayMode();
     void PumpEvents();
     Windows::Foundation::Point TransformCursor(Windows::Foundation::Point rawPosition);
 

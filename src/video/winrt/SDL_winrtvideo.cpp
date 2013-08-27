@@ -147,10 +147,33 @@ WINRT_VideoInit(_THIS)
     return 0;
 }
 
+SDL_DisplayMode
+WINRT_CalcDisplayModeUsingNativeWindow()
+{
+    // Create an empty, zeroed-out display mode:
+    SDL_DisplayMode mode;
+    SDL_zero(mode);
+
+    // Fill in most fields:
+    mode.format = SDL_PIXELFORMAT_RGB888;
+    mode.refresh_rate = 0;  // TODO, WinRT: see if refresh rate data is available, or relevant (for WinRT apps)
+    mode.driverdata = NULL;
+
+    // Calculate the display size given the window size, taking into account
+    // the current display's DPI:
+    const float currentDPI = Windows::Graphics::Display::DisplayProperties::LogicalDpi; 
+    const float dipsPerInch = 96.0f;
+    mode.w = (int) ((CoreWindow::GetForCurrentThread()->Bounds.Width * currentDPI) / dipsPerInch);
+    mode.h = (int) ((CoreWindow::GetForCurrentThread()->Bounds.Height * currentDPI) / dipsPerInch);
+
+    return mode;
+}
+
+
 static int
 WINRT_InitModes(_THIS)
 {
-    SDL_DisplayMode mode = SDL_WinRTGlobalApp->CalcCurrentDisplayMode();
+    SDL_DisplayMode mode = WINRT_CalcDisplayModeUsingNativeWindow();
     if (SDL_AddBasicVideoDisplay(&mode) < 0) {
         return -1;
     }
