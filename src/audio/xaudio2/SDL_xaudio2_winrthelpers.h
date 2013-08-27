@@ -2,7 +2,7 @@
 #pragma once
 
 //
-// Re-implementation of methods removed from XAudio2 (in Windows RT):
+// Re-implementation of methods removed from XAudio2 (in WinRT):
 //
 
 typedef struct XAUDIO2_DEVICE_DETAILS

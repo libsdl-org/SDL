@@ -131,7 +131,7 @@ WINRT_InitMouse(_THIS)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
-    /* DLudwig, Dec 3, 2012: Windows RT does not currently provide APIs for
+    /* DLudwig, Dec 3, 2012: WinRT does not currently provide APIs for
        the following features, AFAIK:
         - custom cursors  (multiple system cursors are, however, available)
         - programmatically moveable cursors
@@ -228,7 +228,7 @@ WINRT_ProcessMouseMovedEvent(SDL_Window * window, Windows::Devices::Input::Mouse
     //
     // One possible workaround would be to programmatically set the cursor's
     // position to the screen's center (when SDL's relative mouse mode is enabled),
-    // however Windows RT does not yet seem to have the ability to set the cursor's
+    // however WinRT does not yet seem to have the ability to set the cursor's
     // position via a public API.  Win32 did this via an API call, SetCursorPos,
     // however WinRT makes this function be private.  Apps that use it won't get
     // approved for distribution in the Windows Store.  I've yet to be able to find

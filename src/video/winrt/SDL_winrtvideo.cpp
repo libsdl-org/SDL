@@ -132,7 +132,7 @@ WINRT_CreateDevice(int devindex)
 
 #define WINRTVID_DRIVER_NAME "winrt"
 VideoBootStrap WINRT_bootstrap = {
-    WINRTVID_DRIVER_NAME, "SDL Windows RT video driver",
+    WINRTVID_DRIVER_NAME, "SDL WinRT video driver",
     WINRT_Available, WINRT_CreateDevice
 };
 

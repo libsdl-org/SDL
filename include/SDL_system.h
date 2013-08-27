@@ -94,11 +94,11 @@ extern DECLSPEC const char * SDLCALL SDL_AndroidGetExternalStoragePath();
 #endif /* __ANDROID__ */
 
 
-/* Platform specific functions for Windows RT */
+/* Platform specific functions for WinRT */
 #if defined(__WINRT__) && __WINRT__
 
 /**
- *  \brief Windows RT / Windows Phone path types
+ *  \brief WinRT / Windows Phone path types
  */
 typedef enum
 {
@@ -122,9 +122,9 @@ typedef enum
 
 
 /**
- *  \brief Retrieves a Windows RT defined path on the local file system
+ *  \brief Retrieves a WinRT defined path on the local file system
  *
- *  \note Documentation on most app-specific path types on Windows RT
+ *  \note Documentation on most app-specific path types on WinRT
  *      can be found on MSDN, at the URL:
  *      http://msdn.microsoft.com/en-us/library/windows/apps/hh464917.aspx
  *
@@ -139,9 +139,9 @@ typedef enum
 extern DECLSPEC const wchar_t * SDLCALL SDL_WinRTGetFSPathUNICODE(SDL_WinRT_Path pathType);
 
 /**
- *  \brief Retrieves a Windows RT defined path on the local file system
+ *  \brief Retrieves a WinRT defined path on the local file system
  *
- *  \note Documentation on most app-specific path types on Windows RT
+ *  \note Documentation on most app-specific path types on WinRT
  *      can be found on MSDN, at the URL:
  *      http://msdn.microsoft.com/en-us/library/windows/apps/hh464917.aspx
  *

@@ -177,7 +177,7 @@ struct SDL_SysWMinfo
 #if defined(SDL_VIDEO_DRIVER_WINRT)
         struct
         {
-            IUnknown * window;          /**< The Windows RT CoreWindow */
+            IUnknown * window;          /**< The WinRT CoreWindow */
         } winrt;
 #endif
 #if defined(SDL_VIDEO_DRIVER_X11)

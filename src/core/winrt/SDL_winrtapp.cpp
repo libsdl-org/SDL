@@ -56,7 +56,7 @@ extern SDL_VideoDevice * WINRT_GlobalSDLVideoDevice;
 typedef int (*SDL_WinRT_MainFunction)(int, char **);
 static SDL_WinRT_MainFunction SDL_WinRT_main = nullptr;
 
-// HACK, DLudwig: record a reference to the global, Windows RT 'app'/view.
+// HACK, DLudwig: record a reference to the global, WinRT 'app'/view.
 // SDL/WinRT will use this throughout its code.
 //
 // TODO, WinRT: consider replacing SDL_WinRTGlobalApp with something
@@ -129,7 +129,7 @@ static void WINRT_SetDisplayOrientationsPreference(void *userdata, const char *n
 
     // Set the orientation/rotation preferences.  Please note that this does
     // not constitute a 100%-certain lock of a given set of possible
-    // orientations.  According to Microsoft's documentation on Windows RT [1]
+    // orientations.  According to Microsoft's documentation on WinRT [1]
     // when a device is not capable of being rotated, Windows may ignore
     // the orientation preferences, and stick to what the device is capable of
     // displaying.

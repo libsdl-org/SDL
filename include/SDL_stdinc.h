@@ -73,7 +73,7 @@
 #ifdef HAVE_MATH_H
 # if defined(__WINRT__)
 /* Defining _USE_MATH_DEFINES is required to get M_PI to be defined on
-   Windows RT.  See http://msdn.microsoft.com/en-us/library/4hwaceh6.aspx
+   WinRT.  See http://msdn.microsoft.com/en-us/library/4hwaceh6.aspx
    for more information.
 */
 #  define _USE_MATH_DEFINES

@@ -22,7 +22,7 @@
 /* WinRT NOTICE:
 
    A number of changes were warranted to SDL's XAudio2 backend in order to
-   get it compiling for Windows RT.
+   get it compiling for WinRT.
 
    When compiling for WinRT, XAudio2.h requires that it be compiled in a C++
    file, and not a straight C file.  Trying to compile it as C leads to lots
@@ -57,13 +57,13 @@
    http://blogs.msdn.com/b/chuckw/archive/2012/04/02/xaudio2-and-windows-8-consumer-preview.aspx
 
    1. Windows' thread synchronization function, CreateSemaphore, was removed
-      from Windows RT.  SDL's semaphore API was substituted instead.
+      from WinRT.  SDL's semaphore API was substituted instead.
    2. The method calls, IXAudio2::GetDeviceCount and IXAudio2::GetDeviceDetails
       were removed from the XAudio2 API.  Microsoft is telling developers to
       use APIs in Windows::Foundation instead.
       For SDL, the missing methods were reimplemented using the APIs Microsoft
       said to use.
-   3. CoInitialize and CoUninitialize are not available in Windows RT.
+   3. CoInitialize and CoUninitialize are not available in WinRT.
       These calls were removed, as COM will have been initialized earlier,
       at least by the call to the WinRT app's main function
       (aka 'int main(Platform::Array<Platform::String^>^)).  (DLudwig:
@@ -71,7 +71,7 @@
       a tag of [MTAThread], which should initialize COM.  My understanding
       of COM is somewhat limited, and I may be incorrect here.)
    4. IXAudio2::CreateMasteringVoice changed its integer-based 'DeviceIndex'
-      argument to a string-based one, 'szDeviceId'.  In Windows RT, the
+      argument to a string-based one, 'szDeviceId'.  In WinRT, the
       string-based argument will be used.
 */
 
