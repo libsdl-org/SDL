@@ -583,7 +583,7 @@ D3D11_GetCoreWindowFromSDLRenderer(SDL_Renderer * renderer)
         return nullptr;
     }
 
-    if (sdlWindowInfo.subsystem != SDL_SYSWM_WINDOWSRT) {
+    if (sdlWindowInfo.subsystem != SDL_SYSWM_WINRT) {
         return nullptr;
     }
 

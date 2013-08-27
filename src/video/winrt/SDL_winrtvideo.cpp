@@ -230,7 +230,7 @@ WINRT_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
     SDL_WindowData * data = (SDL_WindowData *) window->driverdata;
 
     if (info->version.major <= SDL_MAJOR_VERSION) {
-        info->subsystem = SDL_SYSWM_WINDOWSRT;
+        info->subsystem = SDL_SYSWM_WINRT;
         info->info.winrt.window = reinterpret_cast<IUnknown *>(data->coreWindow.Get());
         return SDL_TRUE;
     } else {
