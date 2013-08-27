@@ -302,35 +302,8 @@ void SDL_WinRTApp::OnWindowSizeChanged(CoreWindow^ sender, WindowSizeChangedEven
         // chain.
         //
         // TODO, WinRT: consider dropping old display modes after the fullscreen window changes size (from rotations, etc.)
-        m_sdlWindowData->sdlWindow->fullscreen_mode = SDL_WinRTGlobalApp->GetMainDisplayMode();
+        m_sdlWindowData->sdlWindow->fullscreen_mode = GetMainDisplayMode();
         SDL_AddDisplayMode(&m_sdlVideoDevice->displays[0], &m_sdlWindowData->sdlWindow->fullscreen_mode);
-
-        // HACK, Feb 19, 2013: SDL_WINDOWEVENT_RESIZED events, when sent,
-        // will attempt to fix the values of the main window's renderer's
-        // viewport.  While this can be good, it does appear to be buggy,
-        // and can cause a fullscreen viewport to become corrupted.  This
-        // behavior was noticed on a Surface RT while rotating the device
-        // from landscape to portrait.  Oddly enough, this did not occur
-        // in the Windows Simulator.
-        //
-        // Backing up, then restoring, the main renderer's 'resized' flag
-        // seems to fix fullscreen viewport problems when rotating a
-        // Windows device.
-        //
-        // Commencing hack in 3... 2... 1...
-        //
-        // UPDATE, SDL 2.0.0 update: the 'resized' flag is now gone.  This
-        // hack might not be necessary any more.
-        //
-        //SDL_Renderer * rendererForMainWindow = SDL_GetRenderer(m_sdlWindowData->sdlWindow);
-        // For now, limit the hack to when the Direct3D 11.1 is getting used:
-        //const bool usingD3D11Renderer = \
-        //    (rendererForMainWindow != NULL) &&
-        //    (SDL_strcmp(rendererForMainWindow->info.name, "direct3d 11.1") == 0);
-        //SDL_bool wasD3D11RendererResized = SDL_FALSE;
-        //if (usingD3D11Renderer) {
-        //    wasD3D11RendererResized = rendererForMainWindow->resized;
-        //}
 
         // Send the window-resize event to the rest of SDL, and to apps:
         const int windowWidth = (int) ceil(args->Size.Width);
@@ -340,11 +313,6 @@ void SDL_WinRTApp::OnWindowSizeChanged(CoreWindow^ sender, WindowSizeChangedEven
             SDL_WINDOWEVENT_RESIZED,
             windowWidth,
             windowHeight);
-
-        //// Viewport hack, part two:
-        //if (usingD3D11Renderer) {
-        //    rendererForMainWindow->resized = wasD3D11RendererResized;
-        //}
     }
 }
 
