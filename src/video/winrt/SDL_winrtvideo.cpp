@@ -139,8 +139,6 @@ VideoBootStrap WINRT_bootstrap = {
 int
 WINRT_VideoInit(_THIS)
 {
-    // TODO, WinRT: consider adding a hack to wait (here) for the app's orientation to finish getting set (before the initial display mode is set up)
-
     if (WINRT_InitModes(_this) < 0) {
         return -1;
     }
