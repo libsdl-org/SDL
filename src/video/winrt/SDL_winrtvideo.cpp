@@ -187,31 +187,14 @@ WINRT_CreateWindow(_THIS, SDL_Window * window)
         SDL_WINDOW_MAXIMIZED |
         SDL_WINDOW_INPUT_GRABBED;
 
-    /* HACK from DLudwig: The following line of code prevents
-       SDL_CreateWindow and SDL_UpdateFullscreenMode from trying to resize
-       the window after the call to WINRT_CreateWindow returns.
-       
-       This hack should allow a window to be created in virtually any size,
-       and more importantly, it allows a window's framebuffer, as created and
-       retrieved via SDL_GetWindowSurface, to be in any size.  This can be
-       utilized by apps centered around software rendering, such as ports
-       of older apps.  The app can have SDL create a framebuffer in any size
-       it chooses.  SDL will scale the framebuffer to the native
-       screen size on the GPU (via SDL_UpdateWindowSurface).
-    */
-    _this->displays[0].fullscreen_window = window;
+    /* WinRT does not, as of this writing, appear to support app-adjustable
+       window sizes.  Set the window size to whatever the native WinRT
+       CoreWindow is set at.
 
-    /* Further prevent any display resizing, and make sure SDL_GetWindowDisplayMode
-       can report the correct size of windows, by creating a new display
-       mode in the requested size.  To note, if the window is being created in
-       the device's native screen size, SDL_AddDisplayMode will do nothing.
+       TODO, WinRT: if and when non-fullscreen XAML control support is added to SDL, consider making those resizable via SDL_Window's interfaces.
     */
-    window->fullscreen_mode = SDL_WinRTGlobalApp->GetMainDisplayMode();
-    window->fullscreen_mode.w = window->w;
-    window->fullscreen_mode.h = window->h;
-    SDL_AddDisplayMode(&_this->displays[0], &window->fullscreen_mode);
-
-    /* TODO: Consider removing custom display modes in WINRT_DestroyWindow. */
+    window->w = _this->displays[0].current_mode.w;
+    window->h = _this->displays[0].current_mode.h;
  
     /* Make sure the WinRT app's IFramworkView can post events on
        behalf of SDL:
