@@ -79,6 +79,11 @@ struct SDL_WindowData
 SDL_Window * WINRT_GlobalSDLWindow = NULL;
 
 
+/* The global, WinRT, video device.
+*/
+SDL_VideoDevice * WINRT_GlobalSDLVideoDevice = NULL;
+
+
 /* WinRT driver bootstrap functions */
 
 static int
@@ -90,7 +95,9 @@ WINRT_Available(void)
 static void
 WINRT_DeleteDevice(SDL_VideoDevice * device)
 {
-    SDL_WinRTGlobalApp->SetSDLVideoDevice(NULL);
+    if (device == WINRT_GlobalSDLVideoDevice) {
+        WINRT_GlobalSDLVideoDevice = NULL;
+    }
     SDL_free(device);
 }
 
@@ -118,7 +125,7 @@ WINRT_CreateDevice(int devindex)
     device->PumpEvents = WINRT_PumpEvents;
     device->GetWindowWMInfo = WINRT_GetWindowWMInfo;
     device->free = WINRT_DeleteDevice;
-    SDL_WinRTGlobalApp->SetSDLVideoDevice(device);
+    WINRT_GlobalSDLVideoDevice = NULL;
 
     return device;
 }

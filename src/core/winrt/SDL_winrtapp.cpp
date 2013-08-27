@@ -40,6 +40,7 @@ extern "C" {
 #include "SDL_winrtapp.h"
 
 extern SDL_Window * WINRT_GlobalSDLWindow;
+extern SDL_VideoDevice * WINRT_GlobalSDLVideoDevice;
 
 
 // Compile-time debugging options:
@@ -145,8 +146,7 @@ static void WINRT_SetDisplayOrientationsPreference(void *userdata, const char *n
 
 SDL_WinRTApp::SDL_WinRTApp() :
     m_windowClosed(false),
-    m_windowVisible(true),
-    m_sdlVideoDevice(NULL)
+    m_windowVisible(true)
 {
 }
 
@@ -306,9 +306,9 @@ void SDL_WinRTApp::OnWindowSizeChanged(CoreWindow^ sender, WindowSizeChangedEven
         // size, and the Direct3D 11.1 renderer wouldn't resize its swap
         // chain.
         SDL_DisplayMode resizedDisplayMode = CalcCurrentDisplayMode();
-        m_sdlVideoDevice->displays[0].current_mode = resizedDisplayMode;
-        m_sdlVideoDevice->displays[0].desktop_mode = resizedDisplayMode;
-        m_sdlVideoDevice->displays[0].display_modes[0] = resizedDisplayMode;
+        WINRT_GlobalSDLVideoDevice->displays[0].current_mode = resizedDisplayMode;
+        WINRT_GlobalSDLVideoDevice->displays[0].desktop_mode = resizedDisplayMode;
+        WINRT_GlobalSDLVideoDevice->displays[0].display_modes[0] = resizedDisplayMode;
 
         // Send the window-resize event to the rest of SDL, and to apps:
         const int windowWidth = (int) ceil(args->Size.Width);
@@ -486,9 +486,4 @@ SDL_DisplayMode SDL_WinRTApp::CalcCurrentDisplayMode()
     mode.h = (int) ((CoreWindow::GetForCurrentThread()->Bounds.Height * currentDPI) / dipsPerInch);
 
     return mode;
-}
-
-void SDL_WinRTApp::SetSDLVideoDevice(const SDL_VideoDevice * videoDevice)
-{
-    m_sdlVideoDevice = videoDevice;
 }

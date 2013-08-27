@@ -16,7 +16,6 @@ internal:
     // SDL-specific methods
     SDL_DisplayMode CalcCurrentDisplayMode();
     void PumpEvents();
-    void SetSDLVideoDevice(const SDL_VideoDevice * videoDevice);
     Windows::Foundation::Point TransformCursor(Windows::Foundation::Point rawPosition);
 
 protected:
@@ -40,5 +39,4 @@ protected:
 private:
     bool m_windowClosed;
     bool m_windowVisible;
-    const SDL_VideoDevice* m_sdlVideoDevice;
 };
