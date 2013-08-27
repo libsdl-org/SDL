@@ -125,7 +125,7 @@ WINRT_CreateDevice(int devindex)
     device->PumpEvents = WINRT_PumpEvents;
     device->GetWindowWMInfo = WINRT_GetWindowWMInfo;
     device->free = WINRT_DeleteDevice;
-    WINRT_GlobalSDLVideoDevice = NULL;
+    WINRT_GlobalSDLVideoDevice = device;
 
     return device;
 }
