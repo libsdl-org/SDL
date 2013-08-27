@@ -39,6 +39,8 @@ extern "C" {
 #include "../../video/winrt/SDL_winrtevents_c.h"
 #include "SDL_winrtapp.h"
 
+extern SDL_Window * WINRT_GlobalSDLWindow;
+
 
 // Compile-time debugging options:
 // To enable, uncomment; to disable, comment them out.
@@ -144,7 +146,6 @@ static void WINRT_SetDisplayOrientationsPreference(void *userdata, const char *n
 SDL_WinRTApp::SDL_WinRTApp() :
     m_windowClosed(false),
     m_windowVisible(true),
-    m_sdlWindow(NULL),
     m_sdlVideoDevice(NULL)
 {
 }
@@ -283,16 +284,16 @@ void SDL_WinRTApp::Uninitialize()
 void SDL_WinRTApp::OnWindowSizeChanged(CoreWindow^ sender, WindowSizeChangedEventArgs^ args)
 {
 #if LOG_WINDOW_EVENTS==1
-    SDL_Log("%s, size={%f,%f}, current orientation=%d, native orientation=%d, auto rot. pref=%d, m_sdlWindow?=%s\n",
+    SDL_Log("%s, size={%f,%f}, current orientation=%d, native orientation=%d, auto rot. pref=%d, WINRT_GlobalSDLWindow?=%s\n",
         __FUNCTION__,
         args->Size.Width, args->Size.Height,
         (int)DisplayProperties::CurrentOrientation,
         (int)DisplayProperties::NativeOrientation,
         (int)DisplayProperties::AutoRotationPreferences,
-        (m_sdlWindow ? "yes" : "no"));
+        (WINRT_GlobalSDLWindow ? "yes" : "no"));
 #endif
 
-    if (m_sdlWindow) {
+    if (WINRT_GlobalSDLWindow) {
         // Make the new window size be the one true fullscreen mode.
         // This change was initially done, in part, to allow the Direct3D 11.1
         // renderer to receive window-resize events as a device rotates.
@@ -313,7 +314,7 @@ void SDL_WinRTApp::OnWindowSizeChanged(CoreWindow^ sender, WindowSizeChangedEven
         const int windowWidth = (int) ceil(args->Size.Width);
         const int windowHeight = (int) ceil(args->Size.Height);
         SDL_SendWindowEvent(
-            m_sdlWindow,
+            WINRT_GlobalSDLWindow,
             SDL_WINDOWEVENT_RESIZED,
             windowWidth,
             windowHeight);
@@ -323,20 +324,20 @@ void SDL_WinRTApp::OnWindowSizeChanged(CoreWindow^ sender, WindowSizeChangedEven
 void SDL_WinRTApp::OnVisibilityChanged(CoreWindow^ sender, VisibilityChangedEventArgs^ args)
 {
 #if LOG_WINDOW_EVENTS==1
-    SDL_Log("%s, visible?=%s, m_sdlWindow?=%s\n",
+    SDL_Log("%s, visible?=%s, WINRT_GlobalSDLWindow?=%s\n",
         __FUNCTION__,
         (args->Visible ? "yes" : "no"),
-        (m_sdlWindow ? "yes" : "no"));
+        (WINRT_GlobalSDLWindow ? "yes" : "no"));
 #endif
 
     m_windowVisible = args->Visible;
-    if (m_sdlWindow) {
-        SDL_bool wasSDLWindowSurfaceValid = m_sdlWindow->surface_valid;
+    if (WINRT_GlobalSDLWindow) {
+        SDL_bool wasSDLWindowSurfaceValid = WINRT_GlobalSDLWindow->surface_valid;
 
         if (args->Visible) {
-            SDL_SendWindowEvent(m_sdlWindow, SDL_WINDOWEVENT_SHOWN, 0, 0);
+            SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_WINDOWEVENT_SHOWN, 0, 0);
         } else {
-            SDL_SendWindowEvent(m_sdlWindow, SDL_WINDOWEVENT_HIDDEN, 0, 0);
+            SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_WINDOWEVENT_HIDDEN, 0, 0);
         }
 
         // HACK: Prevent SDL's window-hide handling code, which currently
@@ -345,7 +346,7 @@ void SDL_WinRTApp::OnVisibilityChanged(CoreWindow^ sender, VisibilityChangedEven
         //
         // A better solution to this probably involves figuring out if the
         // fake window resize can be prevented.
-        m_sdlWindow->surface_valid = wasSDLWindowSurfaceValid;
+        WINRT_GlobalSDLWindow->surface_valid = wasSDLWindowSurfaceValid;
     }
 }
 
@@ -359,27 +360,27 @@ void SDL_WinRTApp::OnWindowClosed(CoreWindow^ sender, CoreWindowEventArgs^ args)
 
 void SDL_WinRTApp::OnPointerPressed(CoreWindow^ sender, PointerEventArgs^ args)
 {
-    WINRT_ProcessPointerPressedEvent(m_sdlWindow, args);
+    WINRT_ProcessPointerPressedEvent(WINRT_GlobalSDLWindow, args);
 }
 
 void SDL_WinRTApp::OnPointerReleased(CoreWindow^ sender, PointerEventArgs^ args)
 {
-    WINRT_ProcessPointerReleasedEvent(m_sdlWindow, args);
+    WINRT_ProcessPointerReleasedEvent(WINRT_GlobalSDLWindow, args);
 }
 
 void SDL_WinRTApp::OnPointerWheelChanged(CoreWindow^ sender, PointerEventArgs^ args)
 {
-    WINRT_ProcessPointerWheelChangedEvent(m_sdlWindow, args);
+    WINRT_ProcessPointerWheelChangedEvent(WINRT_GlobalSDLWindow, args);
 }
 
 void SDL_WinRTApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
 {
-    WINRT_ProcessMouseMovedEvent(m_sdlWindow, args);
+    WINRT_ProcessMouseMovedEvent(WINRT_GlobalSDLWindow, args);
 }
 
 void SDL_WinRTApp::OnPointerMoved(CoreWindow^ sender, PointerEventArgs^ args)
 {
-    WINRT_ProcessPointerMovedEvent(m_sdlWindow, args);
+    WINRT_ProcessPointerMovedEvent(WINRT_GlobalSDLWindow, args);
 }
 
 void SDL_WinRTApp::OnKeyDown(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args)
@@ -438,9 +439,9 @@ void SDL_WinRTApp::OnSuspending(Platform::Object^ sender, SuspendingEventArgs^ a
         // first via a callback passed to SDL_AddEventWatch, and second via
         // SDL's event queue, the event will be sent to SDL, then immediately
         // removed from the queue.
-        if (m_sdlWindow)
+        if (WINRT_GlobalSDLWindow)
         {
-            SDL_SendWindowEvent(m_sdlWindow, SDL_WINDOWEVENT_MINIMIZED, 0, 0);   // TODO: see if SDL_WINDOWEVENT_SIZE_CHANGED should be getting triggered here (it is, currently)
+            SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_WINDOWEVENT_MINIMIZED, 0, 0);   // TODO: see if SDL_WINDOWEVENT_SIZE_CHANGED should be getting triggered here (it is, currently)
             SDL_FilterEvents(RemoveAppSuspendAndResumeEvents, 0);
         }
         deferral->Complete();
@@ -452,9 +453,9 @@ void SDL_WinRTApp::OnResuming(Platform::Object^ sender, Platform::Object^ args)
     // Restore any data or state that was unloaded on suspend. By default, data
     // and state are persisted when resuming from suspend. Note that this event
     // does not occur if the app was previously terminated.
-    if (m_sdlWindow)
+    if (WINRT_GlobalSDLWindow)
     {
-        SDL_SendWindowEvent(m_sdlWindow, SDL_WINDOWEVENT_RESTORED, 0, 0);    // TODO: see if SDL_WINDOWEVENT_SIZE_CHANGED should be getting triggered here (it is, currently)
+        SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_WINDOWEVENT_RESTORED, 0, 0);    // TODO: see if SDL_WINDOWEVENT_SIZE_CHANGED should be getting triggered here (it is, currently)
 
         // Remove the app-resume event from the queue, as is done with the
         // app-suspend event.
@@ -485,16 +486,6 @@ SDL_DisplayMode SDL_WinRTApp::CalcCurrentDisplayMode()
     mode.h = (int) ((CoreWindow::GetForCurrentThread()->Bounds.Height * currentDPI) / dipsPerInch);
 
     return mode;
-}
-
-SDL_Window * SDL_WinRTApp::GetSDLWindow()
-{
-    return m_sdlWindow;
-}
-
-void SDL_WinRTApp::SetSDLWindow(SDL_Window * window)
-{
-    m_sdlWindow = window;
 }
 
 void SDL_WinRTApp::SetSDLVideoDevice(const SDL_VideoDevice * videoDevice)

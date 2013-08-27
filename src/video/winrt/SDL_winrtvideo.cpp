@@ -72,6 +72,13 @@ struct SDL_WindowData
 };
 
 
+/* The global, WinRT, SDL Window.
+   For now, SDL/WinRT only supports one window (due to platform limitations of
+   WinRT.
+*/
+SDL_Window * WINRT_GlobalSDLWindow = NULL;
+
+
 /* WinRT driver bootstrap functions */
 
 static int
@@ -164,7 +171,7 @@ WINRT_CreateWindow(_THIS, SDL_Window * window)
 {
     // Make sure that only one window gets created, at least until multimonitor
     // support is added.
-    if (SDL_WinRTGlobalApp->GetSDLWindow() != NULL) {
+    if (WINRT_GlobalSDLWindow != NULL) {
         SDL_SetError("WinRT only supports one window");
         return -1;
     }
@@ -202,7 +209,7 @@ WINRT_CreateWindow(_THIS, SDL_Window * window)
     /* Make sure the WinRT app's IFramworkView can post events on
        behalf of SDL:
     */
-    SDL_WinRTGlobalApp->SetSDLWindow(window);
+    WINRT_GlobalSDLWindow = window;
 
     /* All done! */
     return 0;
@@ -213,8 +220,8 @@ WINRT_DestroyWindow(_THIS, SDL_Window * window)
 {
     SDL_WindowData * data = (SDL_WindowData *) window->driverdata;
 
-    if (SDL_WinRTGlobalApp->GetSDLWindow() == window) {
-        SDL_WinRTGlobalApp->SetSDLWindow(NULL);
+    if (WINRT_GlobalSDLWindow == window) {
+        WINRT_GlobalSDLWindow = NULL;
     }
 
     if (data) {
