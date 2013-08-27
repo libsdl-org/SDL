@@ -133,7 +133,7 @@
     <None Include="loopwave_VS2012_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\src\main\windowsrt\SDL_winrt_main.cpp" />
+    <ClCompile Include="..\..\..\src\main\winrt\SDL_winrt_main.cpp" />
     <ClCompile Include="..\..\..\test\loopwave.c">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">false</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">false</CompileAsWinRT>
