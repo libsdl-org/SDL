@@ -290,8 +290,8 @@ void SDL_WinRTApp::OnWindowSizeChanged(CoreWindow^ sender, WindowSizeChangedEven
 
     if (m_sdlWindowData) {
         // Make the new window size be the one true fullscreen mode.
-        // This change was done, in part, to allow the Direct3D 11.1 renderer
-        // to receive window-resize events as a device rotates.
+        // This change was initially done, in part, to allow the Direct3D 11.1
+        // renderer to receive window-resize events as a device rotates.
         // Before, rotating a device from landscape, to portrait, and then
         // back to landscape would cause the Direct3D 11.1 swap buffer to
         // not get resized appropriately.  SDL would, on the rotation from
@@ -304,8 +304,6 @@ void SDL_WinRTApp::OnWindowSizeChanged(CoreWindow^ sender, WindowSizeChangedEven
         m_sdlVideoDevice->displays[0].current_mode = resizedDisplayMode;
         m_sdlVideoDevice->displays[0].desktop_mode = resizedDisplayMode;
         m_sdlVideoDevice->displays[0].display_modes[0] = resizedDisplayMode;
-
-        m_sdlWindowData->sdlWindow->fullscreen_mode = resizedDisplayMode;
 
         // Send the window-resize event to the rest of SDL, and to apps:
         const int windowWidth = (int) ceil(args->Size.Width);
