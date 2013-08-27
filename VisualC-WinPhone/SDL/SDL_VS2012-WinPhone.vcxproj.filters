@@ -333,9 +333,6 @@
     <ClInclude Include="..\..\src\video\winrt\SDL_winrtmouse.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\video\winrt\SDL_winrtvideo.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\atomic\SDL_atomic.c">
