@@ -22,15 +22,16 @@
 
 #if SDL_VIDEO_DRIVER_WINRT
 
-// Standard C++11 headers:
+/* Standard C++11 includes */
 #include <unordered_map>
 
 
-// Windows-specific headers:
+/* Windows-specific includes */
 #include <Windows.h>
+#include <agile.h>
 
 
-// SDL-specific headers:
+/* SDL-specific includes */
 #include <SDL.h>
 #include "SDL_winrtevents_c.h"
 

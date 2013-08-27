@@ -22,13 +22,19 @@
 
 #if SDL_VIDEO_DRIVER_WINRT
 
-#include "../../events/SDL_events_c.h"
-
-#include "SDL_winrtvideo.h"
+/* SDL includes */
 #include "SDL_winrtevents_c.h"
 #include "../../core/winrt/SDL_winrtapp.h"
 
+extern "C" {
+#include "../SDL_sysvideo.h"
+#include "../../events/SDL_events_c.h"
+}
+
 extern SDL_WinRTApp ^ SDL_WinRTGlobalApp;
+
+
+/* General event-management function(s) */
 
 void
 WINRT_PumpEvents(_THIS)

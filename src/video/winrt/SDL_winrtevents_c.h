@@ -19,7 +19,10 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL_config.h"
-#include "SDL_winrtvideo.h"
+
+extern "C" {
+#include "../SDL_sysvideo.h"
+}
 
 /*
  * Internal-use, C-style functions:

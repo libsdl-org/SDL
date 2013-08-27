@@ -1,7 +1,5 @@
 ﻿#pragma once
 
-struct SDL_WindowData;
-
 ref class SDL_WinRTApp sealed : public Windows::ApplicationModel::Core::IFrameworkView
 {
 public:
@@ -18,9 +16,8 @@ internal:
     // SDL-specific methods
     SDL_DisplayMode CalcCurrentDisplayMode();
     void PumpEvents();
-    const SDL_WindowData * GetSDLWindowData() const;
-    bool HasSDLWindowData() const;
-    void SetSDLWindowData(const SDL_WindowData * windowData);
+    SDL_Window * GetSDLWindow();
+    void SetSDLWindow(SDL_Window * window);
     void SetSDLVideoDevice(const SDL_VideoDevice * videoDevice);
     Windows::Foundation::Point TransformCursor(Windows::Foundation::Point rawPosition);
 
@@ -45,6 +42,6 @@ protected:
 private:
     bool m_windowClosed;
     bool m_windowVisible;
-    const SDL_WindowData* m_sdlWindowData;
+    SDL_Window* m_sdlWindow;
     const SDL_VideoDevice* m_sdlVideoDevice;
 };

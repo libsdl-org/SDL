@@ -28,6 +28,12 @@
    was based off of SDL's "dummy" video driver.
  */
 
+/* Windows includes */
+#include <agile.h>
+using namespace Windows::UI::Core;
+
+
+/* SDL includes */
 extern "C" {
 #include "SDL_video.h"
 #include "SDL_mouse.h"
@@ -39,20 +45,11 @@ extern "C" {
 }
 
 #include "../../core/winrt/SDL_winrtapp.h"
-#include "SDL_winrtvideo.h"
 #include "SDL_winrtevents_c.h"
 #include "SDL_winrtmouse.h"
 
-using namespace Windows::UI::Core;
-
-/* On Windows, windows.h defines CreateWindow */
-#ifdef CreateWindow
-#undef CreateWindow
-#endif
-
 extern SDL_WinRTApp ^ SDL_WinRTGlobalApp;
 
-#define WINRTVID_DRIVER_NAME "winrt"
 
 /* Initialization/Query functions */
 static int WINRT_VideoInit(_THIS);
@@ -60,10 +57,20 @@ static int WINRT_InitModes(_THIS);
 static int WINRT_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode);
 static void WINRT_VideoQuit(_THIS);
 
+
 /* Window functions */
 static int WINRT_CreateWindow(_THIS, SDL_Window * window);
 static void WINRT_DestroyWindow(_THIS, SDL_Window * window);
 static SDL_bool WINRT_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info);
+
+
+/* Internal window data */
+struct SDL_WindowData
+{
+    SDL_Window *sdlWindow;
+    Platform::Agile<Windows::UI::Core::CoreWindow> coreWindow;
+};
+
 
 /* WinRT driver bootstrap functions */
 
@@ -102,17 +109,14 @@ WINRT_CreateDevice(int devindex)
     device->DestroyWindow = WINRT_DestroyWindow;
     device->SetDisplayMode = WINRT_SetDisplayMode;
     device->PumpEvents = WINRT_PumpEvents;
-    //device->CreateWindowFramebuffer = SDL_WINRT_CreateWindowFramebuffer;
-    //device->UpdateWindowFramebuffer = SDL_WINRT_UpdateWindowFramebuffer;
-    //device->DestroyWindowFramebuffer = SDL_WINRT_DestroyWindowFramebuffer;
     device->GetWindowWMInfo = WINRT_GetWindowWMInfo;
     device->free = WINRT_DeleteDevice;
-
     SDL_WinRTGlobalApp->SetSDLVideoDevice(device);
 
     return device;
 }
 
+#define WINRTVID_DRIVER_NAME "winrt"
 VideoBootStrap WINRT_bootstrap = {
     WINRTVID_DRIVER_NAME, "SDL Windows RT video driver",
     WINRT_Available, WINRT_CreateDevice
@@ -160,8 +164,7 @@ WINRT_CreateWindow(_THIS, SDL_Window * window)
 {
     // Make sure that only one window gets created, at least until multimonitor
     // support is added.
-    if (SDL_WinRTGlobalApp->HasSDLWindowData())
-    {
+    if (SDL_WinRTGlobalApp->GetSDLWindow() != NULL) {
         SDL_SetError("WinRT only supports one window");
         return -1;
     }
@@ -199,7 +202,7 @@ WINRT_CreateWindow(_THIS, SDL_Window * window)
     /* Make sure the WinRT app's IFramworkView can post events on
        behalf of SDL:
     */
-    SDL_WinRTGlobalApp->SetSDLWindowData(data);
+    SDL_WinRTGlobalApp->SetSDLWindow(window);
 
     /* All done! */
     return 0;
@@ -210,10 +213,8 @@ WINRT_DestroyWindow(_THIS, SDL_Window * window)
 {
     SDL_WindowData * data = (SDL_WindowData *) window->driverdata;
 
-    if (SDL_WinRTGlobalApp->HasSDLWindowData() &&
-        SDL_WinRTGlobalApp->GetSDLWindowData()->sdlWindow == window)
-    {
-        SDL_WinRTGlobalApp->SetSDLWindowData(NULL);
+    if (SDL_WinRTGlobalApp->GetSDLWindow() == window) {
+        SDL_WinRTGlobalApp->SetSDLWindow(NULL);
     }
 
     if (data) {
