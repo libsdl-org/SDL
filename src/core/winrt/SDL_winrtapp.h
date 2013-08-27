@@ -16,7 +16,7 @@ public:
 
 internal:
     // SDL-specific methods
-    SDL_DisplayMode GetMainDisplayMode();
+    SDL_DisplayMode CalcCurrentDisplayMode();
     void PumpEvents();
     const SDL_WindowData * GetSDLWindowData() const;
     bool HasSDLWindowData() const;

@@ -134,7 +134,7 @@ WINRT_VideoInit(_THIS)
 static int
 WINRT_InitModes(_THIS)
 {
-    SDL_DisplayMode mode = SDL_WinRTGlobalApp->GetMainDisplayMode();
+    SDL_DisplayMode mode = SDL_WinRTGlobalApp->CalcCurrentDisplayMode();
     if (SDL_AddBasicVideoDisplay(&mode) < 0) {
         return -1;
     }

@@ -300,12 +300,12 @@ void SDL_WinRTApp::OnWindowSizeChanged(CoreWindow^ sender, WindowSizeChangedEven
         // window-resize event as it appeared the SDL window didn't change
         // size, and the Direct3D 11.1 renderer wouldn't resize its swap
         // chain.
-        SDL_DisplayMode newDisplayMode = GetMainDisplayMode();
-        m_sdlVideoDevice->displays[0].current_mode = newDisplayMode;
-        m_sdlVideoDevice->displays[0].desktop_mode = newDisplayMode;
-        m_sdlVideoDevice->displays[0].display_modes[0] = newDisplayMode;
+        SDL_DisplayMode resizedDisplayMode = CalcCurrentDisplayMode();
+        m_sdlVideoDevice->displays[0].current_mode = resizedDisplayMode;
+        m_sdlVideoDevice->displays[0].desktop_mode = resizedDisplayMode;
+        m_sdlVideoDevice->displays[0].display_modes[0] = resizedDisplayMode;
 
-        m_sdlWindowData->sdlWindow->fullscreen_mode = newDisplayMode;
+        m_sdlWindowData->sdlWindow->fullscreen_mode = resizedDisplayMode;
 
         // Send the window-resize event to the rest of SDL, and to apps:
         const int windowWidth = (int) ceil(args->Size.Width);
@@ -469,7 +469,7 @@ void SDL_WinRTApp::OnResuming(Platform::Object^ sender, Platform::Object^ args)
     }
 }
 
-SDL_DisplayMode SDL_WinRTApp::GetMainDisplayMode()
+SDL_DisplayMode SDL_WinRTApp::CalcCurrentDisplayMode()
 {
     // Create an empty, zeroed-out display mode:
     SDL_DisplayMode mode;
