@@ -793,6 +793,9 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
 #if WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP
     // Set the proper orientation for the swap chain, and generate the
     // 3D matrix transformation for rendering to the rotated swap chain.
+    //
+    // To note, his operation is not necessary on Windows Phone, nor is it
+    // even supported there.  It's only needed in Windows 8/RT.
     DXGI_MODE_ROTATION rotation = DXGI_MODE_ROTATION_UNSPECIFIED;
     switch (data->orientation)
     {
@@ -816,7 +819,6 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
             throw ref new Platform::FailureException();
     }
 
-    // TODO, WinRT: Windows Phone does not have the IDXGISwapChain1::SetRotation method.  Check if an alternative is available, or needed.
     result = data->swapChain->SetRotation(rotation);
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(__FUNCTION__, result);
