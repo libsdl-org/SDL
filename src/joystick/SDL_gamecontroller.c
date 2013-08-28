@@ -851,9 +851,6 @@ SDL_GameControllerOpen(int device_index)
     SDL_GameController *gamecontroller;
     SDL_GameController *gamecontrollerlist;
     ControllerMapping_t *pSupportedController = NULL;
-#ifdef SDL_JOYSTICK_DINPUT
-	SDL_bool bIsXinputDevice;
-#endif
 
     if ((device_index < 0) || (device_index >= SDL_NumJoysticks())) {
         SDL_SetError("There are %d joysticks available", SDL_NumJoysticks());
@@ -886,30 +883,12 @@ SDL_GameControllerOpen(int device_index)
         return NULL;
     }
 
-#ifdef SDL_JOYSTICK_DINPUT
-	/* check if we think we should open this device in XInput mode */
-	bIsXinputDevice = SDL_SYS_IsXInputDeviceIndex(device_index);
-#endif
-
     SDL_memset(gamecontroller, 0, (sizeof *gamecontroller));
     gamecontroller->joystick = SDL_JoystickOpen(device_index);
     if ( !gamecontroller->joystick ) {
         SDL_free(gamecontroller);
         return NULL;
     }
-
-#ifdef SDL_JOYSTICK_DINPUT
-	if ( !SDL_SYS_IsXInputJoystick( gamecontroller->joystick ) && bIsXinputDevice )
-	{
-		/* we tried to open the controller in XInput mode and failed, so get the mapping again for the direct input variant if possible */
-		SDL_JoystickGUID jGUID = SDL_JoystickGetDeviceGUID( device_index );
-		pSupportedController = SDL_PrivateGetControllerMappingForGUID(&jGUID);
-		if ( !pSupportedController ) {
-			SDL_SetError("Failed to open device in XInput mode (%d)", device_index );
-			return (NULL);
-		}
-	}
-#endif
 
     SDL_PrivateLoadButtonMapping( &gamecontroller->mapping, pSupportedController->guid, pSupportedController->name, pSupportedController->mapping );
 

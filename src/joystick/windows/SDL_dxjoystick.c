@@ -55,7 +55,6 @@
 
 
 #define INPUT_QSIZE 32      /* Buffer up to 32 input messages */
-#define MAX_JOYSTICKS 8
 #define AXIS_MIN    -32768  /* minimum value for axis coordinate */
 #define AXIS_MAX    32767   /* maximum value for axis coordinate */
 #define JOY_AXIS_THRESHOLD  (((AXIS_MAX)-(AXIS_MIN))/100)   /* 1% motion */
@@ -70,7 +69,6 @@ static LPDIRECTINPUT8 dinput = NULL;
 static SDL_bool s_bDeviceAdded = SDL_FALSE;
 static SDL_bool s_bDeviceRemoved = SDL_FALSE;
 static SDL_JoystickID s_nInstanceID = -1;
-static GUID *s_pKnownJoystickGUIDs = NULL;
 static SDL_cond *s_condJoystickThread = NULL;
 static SDL_mutex *s_mutexJoyStickEnum = NULL;
 static SDL_Thread *s_threadJoystick = NULL;
@@ -481,10 +479,10 @@ SDL_JoystickThread(void *_data)
     HWND messageWindow = 0;
     HDEVNOTIFY hNotify = 0;
     DEV_BROADCAST_DEVICEINTERFACE dbh;
-    SDL_bool bOpenedXInputDevices[4];
+    SDL_bool bOpenedXInputDevices[SDL_XINPUT_MAX_DEVICES];
     WNDCLASSEX wincl;
 
-    SDL_memset( bOpenedXInputDevices, 0x0, sizeof(bOpenedXInputDevices) );
+    SDL_zero(bOpenedXInputDevices);
 
     WIN_CoInitialize();
 
@@ -505,7 +503,7 @@ SDL_JoystickThread(void *_data)
         return SDL_SetError("Failed to create message window for joystick autodetect.", GetLastError());
     }
 
-    SDL_memset(&dbh, 0x0, sizeof(dbh));
+    SDL_zero(dbh);
 
     dbh.dbcc_size = sizeof(dbh);
     dbh.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
@@ -521,9 +519,8 @@ SDL_JoystickThread(void *_data)
     while ( s_bJoystickThreadQuit == SDL_FALSE )
     {
         MSG messages;
-        Uint8 userId;
-        int nCurrentOpenedXInputDevices = 0;
-        int nNewOpenedXInputDevices = 0;
+        SDL_bool bXInputChanged = SDL_FALSE;
+
         SDL_CondWaitTimeout( s_condJoystickThread, s_mutexJoyStickEnum, 300 );
 
         while ( s_bJoystickThreadQuit == SDL_FALSE && PeekMessage(&messages, messageWindow, 0, 0, PM_NOREMOVE) )
@@ -534,33 +531,24 @@ SDL_JoystickThread(void *_data)
             }
         }
 
-        if ( s_bXInputEnabled && XINPUTGETCAPABILITIES )
-        {
+        if ( s_bXInputEnabled && XINPUTGETCAPABILITIES ) {
             /* scan for any change in XInput devices */
-            for ( userId = 0; userId < 4; userId++ )
-            {
+            Uint8 userId;
+            for (userId = 0; userId < SDL_XINPUT_MAX_DEVICES; userId++) {
                 XINPUT_CAPABILITIES capabilities;
-                DWORD result;
-
-                if ( bOpenedXInputDevices[userId] == SDL_TRUE )
-                    nCurrentOpenedXInputDevices++;
-
-                result = XINPUTGETCAPABILITIES( userId, XINPUT_FLAG_GAMEPAD, &capabilities );
-                if ( result == ERROR_SUCCESS )
-                {
-                    bOpenedXInputDevices[userId] = SDL_TRUE;
-                    nNewOpenedXInputDevices++;
-                }
-                else
-                {
-                    bOpenedXInputDevices[userId] = SDL_FALSE;
+                const DWORD result = XINPUTGETCAPABILITIES( userId, XINPUT_FLAG_GAMEPAD, &capabilities );
+                const SDL_bool available = (result == ERROR_SUCCESS);
+                if (bOpenedXInputDevices[userId] != available) {
+                    bXInputChanged = SDL_TRUE;
+                    bOpenedXInputDevices[userId] = available;
                 }
             }
         }
 
-        if ( s_pKnownJoystickGUIDs && ( s_bWindowsDeviceChanged || nNewOpenedXInputDevices != nCurrentOpenedXInputDevices ) )
-        {
+        if (s_bWindowsDeviceChanged || bXInputChanged) {
+            SDL_UnlockMutex( s_mutexJoyStickEnum );  /* let main thread go while we SDL_Delay(). */
             SDL_Delay( 300 ); /* wait for direct input to find out about this device */
+            SDL_LockMutex( s_mutexJoyStickEnum );
 
             s_bDeviceRemoved = SDL_TRUE;
             s_bDeviceAdded = SDL_TRUE;
@@ -625,14 +613,15 @@ SDL_SYS_JoystickInit(void)
         return SetDIerror("IDirectInput::Initialize", result);
     }
 
-    s_mutexJoyStickEnum = SDL_CreateMutex();
-    s_condJoystickThread = SDL_CreateCond();
-    s_bDeviceAdded = SDL_TRUE; /* force a scan of the system for joysticks this first time */
-    SDL_SYS_JoystickDetect();
-
     if ((s_bXInputEnabled) && (WIN_LoadXInputDLL() == -1)) {
         s_bXInputEnabled = SDL_FALSE;  /* oh well. */
     }
+
+    s_mutexJoyStickEnum = SDL_CreateMutex();
+    s_condJoystickThread = SDL_CreateCond();
+    s_bDeviceAdded = SDL_TRUE; /* force a scan of the system for joysticks this first time */
+
+    SDL_SYS_JoystickDetect();
 
     if ( !s_threadJoystick )
     {
@@ -662,15 +651,17 @@ int SDL_SYS_NumJoysticks()
     return nJoysticks;
 }
 
-static int s_iNewGUID = 0;
-
 /* helper function for direct input, gets called for each connected joystick */
 static BOOL CALLBACK
     EnumJoysticksCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext)
 {
     JoyStick_DeviceData *pNewJoystick;
     JoyStick_DeviceData *pPrevJoystick = NULL;
-    SDL_bool bXInputDevice;
+
+    if (SDL_IsXInputDevice( &pdidInstance->guidProduct )) {
+        return DIENUM_CONTINUE;  /* ignore XInput devices here, keep going. */
+    }
+
     pNewJoystick = *(JoyStick_DeviceData **)pContext;
     while ( pNewJoystick )
     {
@@ -689,57 +680,106 @@ static BOOL CALLBACK
             pNewJoystick->pNext = SYS_Joystick;
             SYS_Joystick = pNewJoystick;
 
-            s_pKnownJoystickGUIDs[ s_iNewGUID ] = pdidInstance->guidInstance;
-            s_iNewGUID++;
-            if ( s_iNewGUID < MAX_JOYSTICKS )
-                return DIENUM_CONTINUE; /* already have this joystick loaded, just keep going */
-            else
-                return DIENUM_STOP;
+            return DIENUM_CONTINUE; /* already have this joystick loaded, just keep going */
         }
 
         pPrevJoystick = pNewJoystick;
         pNewJoystick = pNewJoystick->pNext;
     }
 
-    s_bDeviceAdded = SDL_TRUE;
-
-    bXInputDevice = SDL_IsXInputDevice( &pdidInstance->guidProduct );
-
     pNewJoystick = (JoyStick_DeviceData *)SDL_malloc( sizeof(JoyStick_DeviceData) );
-
-    if ( bXInputDevice )
-    {
-        pNewJoystick->bXInputDevice = SDL_TRUE;
-        pNewJoystick->XInputUserId = INVALID_XINPUT_USERID;
+    if (!pNewJoystick) {
+        return DIENUM_CONTINUE; /* better luck next time? */
     }
-    else
-    {
-        pNewJoystick->bXInputDevice = SDL_FALSE;
+
+    SDL_zerop(pNewJoystick);
+    pNewJoystick->joystickname = WIN_StringToUTF8(pdidInstance->tszProductName);
+    if (!pNewJoystick->joystickname) {
+        SDL_free(pNewJoystick);
+        return DIENUM_CONTINUE; /* better luck next time? */
     }
 
     SDL_memcpy(&(pNewJoystick->dxdevice), pdidInstance,
         sizeof(DIDEVICEINSTANCE));
 
-    pNewJoystick->joystickname = WIN_StringToUTF8(pdidInstance->tszProductName);
+    pNewJoystick->XInputUserId = INVALID_XINPUT_USERID;
     pNewJoystick->send_add_event = 1;
     pNewJoystick->nInstanceID = ++s_nInstanceID;
     SDL_memcpy( &pNewJoystick->guid, &pdidInstance->guidProduct, sizeof(pNewJoystick->guid) );
-    pNewJoystick->pNext = NULL;
-
-    if ( SYS_Joystick )
-    {
-        pNewJoystick->pNext = SYS_Joystick;
-    }
+    pNewJoystick->pNext = SYS_Joystick;
     SYS_Joystick = pNewJoystick;
 
-    s_pKnownJoystickGUIDs[ s_iNewGUID ] = pdidInstance->guidInstance;
-    s_iNewGUID++;
+    s_bDeviceAdded = SDL_TRUE;
 
-    if ( s_iNewGUID < MAX_JOYSTICKS )
-        return DIENUM_CONTINUE; /* already have this joystick loaded, just keep going */
-    else
-        return DIENUM_STOP;
+    return DIENUM_CONTINUE; /* get next device, please */
 }
+
+static void
+AddXInputDevice(const Uint8 userid, JoyStick_DeviceData **pContext)
+{
+    char name[32];
+    JoyStick_DeviceData *pPrevJoystick = NULL;
+    JoyStick_DeviceData *pNewJoystick = *pContext;
+
+    while (pNewJoystick) {
+        if ((pNewJoystick->bXInputDevice) && (pNewJoystick->XInputUserId == userid)) {
+            /* if we are replacing the front of the list then update it */
+            if (pNewJoystick == *pContext) {
+                *pContext = pNewJoystick->pNext;
+            } else if (pPrevJoystick) {
+                pPrevJoystick->pNext = pNewJoystick->pNext;
+            }
+
+            pNewJoystick->pNext = SYS_Joystick;
+            SYS_Joystick = pNewJoystick;
+        }
+
+        pPrevJoystick = pNewJoystick;
+        pNewJoystick = pNewJoystick->pNext;
+        return;   /* already in the list. */
+    }
+
+    pNewJoystick = (JoyStick_DeviceData *) SDL_malloc(sizeof (JoyStick_DeviceData));
+    if (!pNewJoystick) {
+        return; /* better luck next time? */
+    }
+    SDL_zerop(pNewJoystick);
+
+    SDL_snprintf(name, sizeof (name), "XInput Controller #%d", (int) userid);
+    pNewJoystick->joystickname = SDL_strdup(name);
+    if (!pNewJoystick->joystickname) {
+        SDL_free(pNewJoystick);
+        return; /* better luck next time? */
+    }
+
+    pNewJoystick->bXInputDevice = SDL_TRUE;
+    pNewJoystick->XInputUserId = userid;
+    pNewJoystick->send_add_event = 1;
+    pNewJoystick->nInstanceID = ++s_nInstanceID;
+    pNewJoystick->pNext = SYS_Joystick;
+    SYS_Joystick = pNewJoystick;
+
+    s_bDeviceAdded = SDL_TRUE;
+}
+
+static void
+EnumXInputDevices(JoyStick_DeviceData **pContext)
+{
+    if (s_bXInputEnabled) {
+        Uint8 userid;
+        for (userid = 0; userid < SDL_XINPUT_MAX_DEVICES; userid++) {
+            XINPUT_CAPABILITIES capabilities;
+            if (XINPUTGETCAPABILITIES(userid, XINPUT_FLAG_GAMEPAD, &capabilities) == ERROR_SUCCESS) {
+                /* Current version of XInput mistakenly returns 0 as the Type. Ignore it and ensure the subtype is a gamepad. */
+                /* !!! FIXME: we might want to support steering wheels or guitars or whatever laster. */
+                if (capabilities.SubType == XINPUT_DEVSUBTYPE_GAMEPAD) {
+                    AddXInputDevice(userid, pContext);
+                }
+            }
+        }
+    }
+}
+
 
 /* detect any new joysticks being inserted into the system */
 void SDL_SYS_JoystickDetect()
@@ -748,27 +788,26 @@ void SDL_SYS_JoystickDetect()
     /* only enum the devices if the joystick thread told us something changed */
     if ( s_bDeviceAdded || s_bDeviceRemoved )
     {
+        SDL_LockMutex( s_mutexJoyStickEnum );
+
         s_bDeviceAdded = SDL_FALSE;
         s_bDeviceRemoved = SDL_FALSE;
 
         pCurList = SYS_Joystick;
         SYS_Joystick = NULL;
-        s_iNewGUID = 0;
-        SDL_LockMutex( s_mutexJoyStickEnum );
 
-        if ( !s_pKnownJoystickGUIDs )
-            s_pKnownJoystickGUIDs = SDL_malloc( sizeof(GUID)*MAX_JOYSTICKS );
+        /* Look for XInput devices... */
+        EnumXInputDevices(&pCurList);
 
-        SDL_memset( s_pKnownJoystickGUIDs, 0x0, sizeof(GUID)*MAX_JOYSTICKS );
-
-        /* Look for joysticks, wheels, head trackers, gamepads, etc.. */
+        /* Look for DirectInput joysticks, wheels, head trackers, gamepads, etc.. */
         IDirectInput8_EnumDevices(dinput,
             DI8DEVCLASS_GAMECTRL,
             EnumJoysticksCallback,
             &pCurList, DIEDFL_ATTACHEDONLY);
 
-        SDL_free(SDL_RawDevList);  /* in case we used this. */
+        SDL_free(SDL_RawDevList);  /* in case we used this in DirectInput enumerator. */
         SDL_RawDevList = NULL;
+        SDL_RawDevListCount = 0;
 
         SDL_UnlockMutex( s_mutexJoyStickEnum );
     }
@@ -872,16 +911,10 @@ int
 SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
 {
     HRESULT result;
-    LPDIRECTINPUTDEVICE8 device;
-    DIPROPDWORD dipdw;
     JoyStick_DeviceData *joystickdevice = SYS_Joystick;
 
     for (; device_index > 0; device_index--)
         joystickdevice = joystickdevice->pNext;
-
-    SDL_memset(&dipdw, 0, sizeof(DIPROPDWORD));
-    dipdw.diph.dwSize = sizeof(DIPROPDWORD);
-    dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER);
 
     /* allocate memory for system specific hardware data */
     joystick->instance_id = joystickdevice->nInstanceID;
@@ -891,97 +924,50 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
     if (joystick->hwdata == NULL) {
         return SDL_OutOfMemory();
     }
-    SDL_memset(joystick->hwdata, 0, sizeof(struct joystick_hwdata));
-    joystick->hwdata->buffered = 1;
-    joystick->hwdata->removed = 0;
-    joystick->hwdata->Capabilities.dwSize = sizeof(DIDEVCAPS);
-    joystick->hwdata->guid = joystickdevice->guid;
+    SDL_zerop(joystick->hwdata);
 
-    if ( joystickdevice->bXInputDevice )
-    {
+    if (joystickdevice->bXInputDevice) {
+        const SDL_bool bIs14OrLater = (SDL_XInputVersion >= ((1<<16)|4));
+        const Uint8 userId = joystickdevice->XInputUserId;
         XINPUT_CAPABILITIES capabilities;
-        Uint8 userId = 0;
-        DWORD result;
-        JoyStick_DeviceData *joysticklist = SYS_Joystick;
-        /* scan the opened joysticks and pick the next free xinput userid for this one */
-        for( ; joysticklist; joysticklist = joysticklist->pNext)
-        {
-            if ( joysticklist->bXInputDevice && joysticklist->XInputUserId == userId )
-                userId++;
-        }
 
-        if ( s_bXInputEnabled && XINPUTGETCAPABILITIES )
-        {
-			while ( 1 )
-			{
-				result = XINPUTGETCAPABILITIES( userId, XINPUT_FLAG_GAMEPAD, &capabilities );
-				if ( result == ERROR_SUCCESS )
-				{
-					const SDL_bool bIs14OrLater = (SDL_XInputVersion >= ((1<<16)|4));
-					SDL_bool bIsSupported = SDL_FALSE;
-					/* Current version of XInput mistakenly returns 0 as the Type. Ignore it and ensure the subtype is a gamepad. */
-					bIsSupported = ( capabilities.SubType == XINPUT_DEVSUBTYPE_GAMEPAD );
+        SDL_assert(s_bXInputEnabled);
+        SDL_assert(XINPUTGETCAPABILITIES);
+        SDL_assert(userId >= 0);
+        SDL_assert(userId < SDL_XINPUT_MAX_DEVICES);
 
-					if ( !bIsSupported )
-					{
-						joystickdevice->bXInputDevice = SDL_FALSE;
-					}
-					else
-					{
-						/* valid */
-						joystick->hwdata->bXInputDevice = SDL_TRUE;
-						if ((!bIs14OrLater) || (capabilities.Flags & XINPUT_CAPS_FFB_SUPPORTED)) {
-							joystick->hwdata->bXInputHaptic = SDL_TRUE;
-						}
-						SDL_memset( joystick->hwdata->XInputState, 0x0, sizeof(joystick->hwdata->XInputState) );
-						joystickdevice->XInputUserId = userId;
-						joystick->hwdata->userid = userId;
-						joystick->hwdata->currentXInputSlot = 0;
-						/* The XInput API has a hard coded button/axis mapping, so we just match it */
-						joystick->naxes = 6;
-						joystick->nbuttons = 15;
-						joystick->nballs = 0;
-						joystick->nhats = 0;
-					}
-					break;
-				}
-				else
-				{
-					if ( userId < XUSER_MAX_COUNT && result == ERROR_DEVICE_NOT_CONNECTED )
-					{
-						/* scan the opened joysticks and pick the next free xinput userid for this one */
-						++userId;
+        joystick->hwdata->bXInputDevice = SDL_TRUE;
 
-						joysticklist = SYS_Joystick;
-						for( ; joysticklist; joysticklist = joysticklist->pNext)
-						{
-							if ( joysticklist->bXInputDevice && joysticklist->XInputUserId == userId )
-								userId++;
-						}
+        if (XINPUTGETCAPABILITIES(userId, XINPUT_FLAG_GAMEPAD, &capabilities) != ERROR_SUCCESS) {
+            SDL_free(joystick->hwdata);
+            joystick->hwdata = NULL;
+            return SDL_SetError("Failed to obtain XInput device capabilities. Device disconnected?");
+        } else {
+            /* Current version of XInput mistakenly returns 0 as the Type. Ignore it and ensure the subtype is a gamepad. */
+            SDL_assert(capabilities.SubType == XINPUT_DEVSUBTYPE_GAMEPAD);
+            if ((!bIs14OrLater) || (capabilities.Flags & XINPUT_CAPS_FFB_SUPPORTED)) {
+                joystick->hwdata->bXInputHaptic = SDL_TRUE;
+            }
+            joystick->hwdata->userid = userId;
 
-						if ( userId >= XUSER_MAX_COUNT )
-						{
-							joystickdevice->bXInputDevice = SDL_FALSE;
-							break;
-						}
-					}
-					else
-					{
-						joystickdevice->bXInputDevice = SDL_FALSE;
-						break;
-					}
-				}
-			}
-        }
-        else
-        {
-            joystickdevice->bXInputDevice = SDL_FALSE;
-        }
-    }
+            /* The XInput API has a hard coded button/axis mapping, so we just match it */
+            joystick->naxes = 6;
+            joystick->nbuttons = 15;
+            joystick->nballs = 0;
+            joystick->nhats = 0;
+		}
+    } else {  /* use DirectInput, not XInput. */
+        LPDIRECTINPUTDEVICE8 device;
+        DIPROPDWORD dipdw;
 
-    if ( joystickdevice->bXInputDevice == SDL_FALSE )
-    {
-        joystick->hwdata->bXInputDevice = SDL_FALSE;
+        joystick->hwdata->buffered = 1;
+        joystick->hwdata->removed = 0;
+        joystick->hwdata->Capabilities.dwSize = sizeof(DIDEVCAPS);
+        joystick->hwdata->guid = joystickdevice->guid;
+
+        SDL_zero(dipdw);
+        dipdw.diph.dwSize = sizeof(DIPROPDWORD);
+        dipdw.diph.dwHeaderSize = sizeof(DIPROPHEADER);
 
         result =
             IDirectInput8_CreateDevice(dinput,
@@ -1633,17 +1619,10 @@ SDL_SYS_JoystickQuit(void)
         coinitialized = SDL_FALSE;
     }
 
-    if ( s_pKnownJoystickGUIDs )
-    {
-        SDL_free( s_pKnownJoystickGUIDs );
-        s_pKnownJoystickGUIDs = NULL;
-    }
-
     if (s_bXInputEnabled) {
         WIN_UnloadXInputDLL();
     }
 }
-
 
 /* return the stable device guid for this device index */
 SDL_JoystickGUID SDL_SYS_JoystickGetDeviceGUID( int device_index )
