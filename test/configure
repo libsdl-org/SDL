@@ -3794,7 +3794,11 @@ if test x$have_x = xyes; then
         :
     else
         XPATH="-L$ac_x_libraries"
-        XLIB="-lX11"
+        if test "x$ac_x_libraries" = x; then
+            XLIB="-lX11"
+        else
+            XLIB="-L$ac_x_libraries -lX11"
+        fi
     fi
 fi
 
