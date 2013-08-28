@@ -46,32 +46,8 @@
 #include "../../events/SDL_events_c.h"
 #endif
 
-/* The latest version of mingw-w64 defines IID_IWbemLocator in wbemcli.h
-   instead of declaring it like Visual Studio and other mingw32 compilers.
-   So, we need to take care of this here before we define INITGUID.
-*/
-#ifdef __MINGW32__
-#define __IWbemLocator_INTERFACE_DEFINED__
-#endif /* __MINGW32__ */
-
 #define INITGUID /* Only set here, if set twice will cause mingw32 to break. */
 #include "SDL_dxjoystick_c.h"
-
-#ifdef __MINGW32__
-/* And now that we've included wbemcli.h we need to declare these interfaces */
-typedef struct IWbemLocatorVtbl {
-  BEGIN_INTERFACE
-    HRESULT (WINAPI *QueryInterface)(IWbemLocator *This,REFIID riid,void **ppvObject);
-    ULONG (WINAPI *AddRef)(IWbemLocator *This);
-    ULONG (WINAPI *Release)(IWbemLocator *This);
-    HRESULT (WINAPI *ConnectServer)(IWbemLocator *This,const BSTR strNetworkResource,const BSTR strUser,const BSTR strPassword,const BSTR strLocale,LONG lSecurityFlags,const BSTR strAuthority,IWbemContext *pCtx,IWbemServices **ppNamespace);
-  END_INTERFACE
-} IWbemLocatorVtbl;
-struct IWbemLocator {
-  CONST_VTBL struct IWbemLocatorVtbl *lpVtbl;
-};
-#define IWbemLocator_ConnectServer(This,strNetworkResource,strUser,strPassword,strLocale,lSecurityFlags,strAuthority,pCtx,ppNamespace) (This)->lpVtbl->ConnectServer(This,strNetworkResource,strUser,strPassword,strLocale,lSecurityFlags,strAuthority,pCtx,ppNamespace)
-#endif /* __MINGW32__ */
 
 #ifndef DIDFT_OPTIONAL
 #define DIDFT_OPTIONAL      0x80000000
@@ -396,156 +372,75 @@ SetDIerror(const char *function, HRESULT code)
     }                                               \
 }
 
-DEFINE_GUID(CLSID_WbemLocator,   0x4590f811,0x1d3a,0x11d0,0x89,0x1F,0x00,0xaa,0x00,0x4b,0x2e,0x24);
-DEFINE_GUID(IID_IWbemLocator,    0xdc12a687,0x737f,0x11cf,0x88,0x4d,0x00,0xaa,0x00,0x4b,0x2e,0x24);
-
 DEFINE_GUID(IID_ValveStreamingGamepad,  MAKELONG( 0x28DE, 0x11FF ),0x0000,0x0000,0x00,0x00,0x50,0x49,0x44,0x56,0x49,0x44);
+DEFINE_GUID(IID_X360WiredGamepad,  MAKELONG( 0x045E, 0x02A1 ),0x0000,0x0000,0x00,0x00,0x50,0x49,0x44,0x56,0x49,0x44);
+DEFINE_GUID(IID_X360WirelessGamepad,  MAKELONG( 0x045E, 0x028E ),0x0000,0x0000,0x00,0x00,0x50,0x49,0x44,0x56,0x49,0x44);
 
-/*-----------------------------------------------------------------------------
- *
- * code from MSDN: http://msdn.microsoft.com/en-us/library/windows/desktop/ee417014(v=vs.85).aspx
- *
- * Enum each PNP device using WMI and check each device ID to see if it contains
- * "IG_" (ex. "VID_045E&PID_028E&IG_00").  If it does, then it's an XInput device
- * Unfortunately this information can not be found by just using DirectInput
- *-----------------------------------------------------------------------------*/
-BOOL IsXInputDevice( const GUID* pGuidProductFromDirectInput )
+static PRAWINPUTDEVICELIST SDL_RawDevList = NULL;
+static UINT SDL_RawDevListCount = 0;
+
+static SDL_bool
+SDL_IsXInputDevice( const GUID* pGuidProductFromDirectInput )
 {
     static const GUID *s_XInputProductGUID[] = {
-        &IID_ValveStreamingGamepad
+        &IID_ValveStreamingGamepad,
+        &IID_X360WiredGamepad,   /* Microsoft's wired X360 controller for Windows. */
+        &IID_X360WirelessGamepad /* Microsoft's wireless X360 controller for Windows. */
     };
-    IWbemLocator*           pIWbemLocator  = NULL;
-    IEnumWbemClassObject*   pEnumDevices   = NULL;
-    IWbemClassObject*       pDevices[20];
-    IWbemServices*          pIWbemServices = NULL;
-    DWORD                   uReturned      = 0;
-    BSTR                    bstrNamespace  = NULL;
-    BSTR                    bstrDeviceID   = NULL;
-    BSTR                    bstrClassName  = NULL;
-    SDL_bool                bIsXinputDevice= SDL_FALSE;
-    UINT                    iDevice        = 0;
-    VARIANT                 var;
-    HRESULT                 hr;
-    DWORD bCleanupCOM;
 
-    if (!s_bXInputEnabled)
-    {
+    size_t iDevice;
+    SDL_bool retval = SDL_FALSE;
+    UINT i;
+
+    if (!s_bXInputEnabled) {
         return SDL_FALSE;
     }
 
     /* Check for well known XInput device GUIDs */
-    /* We need to do this for the Valve Streaming Gamepad because it's virtualized and doesn't show up in the device list. */
+    /* This lets us skip RAWINPUT for popular devices. Also, we need to do this for the Valve Streaming Gamepad because it's virtualized and doesn't show up in the device list. */
     for ( iDevice = 0; iDevice < SDL_arraysize(s_XInputProductGUID); ++iDevice ) {
         if (SDL_memcmp(pGuidProductFromDirectInput, s_XInputProductGUID[iDevice], sizeof(GUID)) == 0) {
             return SDL_TRUE;
         }
     }
 
-    SDL_memset( pDevices, 0x0, sizeof(pDevices) );
+    /* Go through RAWINPUT (WinXP and later) to find HID devices. */
+    /* Cache this if we end up using it. */
+    if (SDL_RawDevList == NULL) {
+        if ((GetRawInputDeviceList(NULL, &SDL_RawDevListCount, sizeof (RAWINPUTDEVICELIST)) == -1) || (!SDL_RawDevListCount)) {
+            return SDL_FALSE;  /* oh well. */
+        }
 
-    /* CoInit if needed */
-    hr = CoInitialize(NULL);
-    bCleanupCOM = SUCCEEDED(hr);
+        SDL_RawDevList = (PRAWINPUTDEVICELIST) SDL_malloc(sizeof (RAWINPUTDEVICELIST) * SDL_RawDevListCount);
+        if (SDL_RawDevList == NULL) {
+            SDL_OutOfMemory();
+            return SDL_FALSE;
+        }
 
-    /* Create WMI */
-    hr = CoCreateInstance( &CLSID_WbemLocator,
-        NULL,
-        CLSCTX_INPROC_SERVER,
-        &IID_IWbemLocator,
-        (LPVOID*) &pIWbemLocator);
-    if( FAILED(hr) || pIWbemLocator == NULL )
-        goto LCleanup;
-
-    bstrNamespace = SysAllocString( L"\\\\.\\root\\cimv2" );if( bstrNamespace == NULL ) goto LCleanup;
-    bstrClassName = SysAllocString( L"Win32_PNPEntity" );   if( bstrClassName == NULL ) goto LCleanup;
-    bstrDeviceID  = SysAllocString( L"DeviceID" );          if( bstrDeviceID == NULL )  goto LCleanup;
-
-    /* Connect to WMI */
-    hr = IWbemLocator_ConnectServer( pIWbemLocator, bstrNamespace, NULL, NULL, 0L,
-        0L, NULL, NULL, &pIWbemServices );
-    if( FAILED(hr) || pIWbemServices == NULL )
-        goto LCleanup;
-
-    /* Switch security level to IMPERSONATE. */
-    CoSetProxyBlanket( (IUnknown *)pIWbemServices, RPC_C_AUTHN_WINNT, RPC_C_AUTHZ_NONE, NULL,
-        RPC_C_AUTHN_LEVEL_CALL, RPC_C_IMP_LEVEL_IMPERSONATE, NULL, EOAC_NONE );
-
-    hr = IWbemServices_CreateInstanceEnum( pIWbemServices, bstrClassName, 0, NULL, &pEnumDevices );
-    if( FAILED(hr) || pEnumDevices == NULL )
-        goto LCleanup;
-
-    /* Loop over all devices */
-    for( ;; )
-    {
-        /* Get 20 at a time */
-        hr = IEnumWbemClassObject_Next( pEnumDevices, 10000, 20, pDevices, &uReturned );
-        if( FAILED(hr) )
-            goto LCleanup;
-        if( uReturned == 0 )
-            break;
-
-        for( iDevice=0; iDevice<uReturned; iDevice++ )
-        {
-            /* For each device, get its device ID */
-            hr = IWbemClassObject_Get( pDevices[iDevice], bstrDeviceID, 0L, &var, NULL, NULL );
-            if(  SUCCEEDED( hr ) && var.vt == VT_BSTR && var.bstrVal != NULL )
-            {
-                /* Check if the device ID contains "IG_".  If it does, then it's an XInput device */
-                /* This information can not be found from DirectInput */
-                char *pDeviceString = WIN_StringToUTF8( var.bstrVal );
-                if( SDL_strstr( pDeviceString, "IG_" ) )
-                {
-                    /* If it does, then get the VID/PID from var.bstrVal */
-                    long dwPid = 0, dwVid = 0;
-                    char * strPid = NULL;
-                    DWORD dwVidPid = 0;
-                    char * strVid = SDL_strstr( pDeviceString, "VID_" );
-                    if( strVid )
-                    {
-                        dwVid = SDL_strtol( strVid + 4, NULL, 16 );
-                    }
-                    strPid = SDL_strstr( pDeviceString, "PID_" );
-                    if( strPid  )
-                    {
-                        dwPid = SDL_strtol( strPid + 4, NULL, 16 );
-                    }
-
-                    /* Compare the VID/PID to the DInput device */
-                    dwVidPid = MAKELONG( dwVid, dwPid );
-                    if( dwVidPid == pGuidProductFromDirectInput->Data1 )
-                    {
-                        bIsXinputDevice = SDL_TRUE;
-                    }
-                }
-                if ( pDeviceString )
-                    SDL_free( pDeviceString );
-
-                if ( bIsXinputDevice )
-                    break;
-            }
-            SAFE_RELEASE( pDevices[iDevice] );
+        if (GetRawInputDeviceList(SDL_RawDevList, &SDL_RawDevListCount, sizeof (RAWINPUTDEVICELIST)) == -1) {
+             SDL_free(SDL_RawDevList);
+             SDL_RawDevList = NULL;
+             return SDL_FALSE;  /* oh well. */
         }
     }
 
-LCleanup:
+    for (i = 0; i < SDL_RawDevListCount; i++) {
+        RID_DEVICE_INFO rdi;
+        char devName[128];
+        UINT rdiSize = sizeof (rdi);
+        UINT nameSize = SDL_arraysize(devName);
 
-    for( iDevice=0; iDevice<20; iDevice++ )
-        SAFE_RELEASE( pDevices[iDevice] );
-    SAFE_RELEASE( pEnumDevices );
-    SAFE_RELEASE( pIWbemLocator );
-    SAFE_RELEASE( pIWbemServices );
+        rdi.cbSize = sizeof (rdi);
+        if ( (SDL_RawDevList[i].dwType == RIM_TYPEHID) &&
+             (GetRawInputDeviceInfoA(SDL_RawDevList[i].hDevice, RIDI_DEVICEINFO, &rdi, &rdiSize) != ((UINT)-1)) &&
+             (MAKELONG(rdi.hid.dwVendorId, rdi.hid.dwProductId) == ((LONG)pGuidProductFromDirectInput->Data1)) &&
+             (GetRawInputDeviceInfoA(SDL_RawDevList[i].hDevice, RIDI_DEVICENAME, devName, &nameSize) != ((UINT)-1)) &&
+             (SDL_strstr(devName, "IG_") != NULL) ) {
+             return SDL_TRUE;
+        }
+    }
 
-    if ( bstrNamespace )
-        SysFreeString( bstrNamespace );
-    if ( bstrClassName )
-        SysFreeString( bstrClassName );
-    if ( bstrDeviceID )
-        SysFreeString( bstrDeviceID );
-
-    if( bCleanupCOM )
-        CoUninitialize();
-
-    return bIsXinputDevice;
+    return SDL_FALSE;
 }
 
 
@@ -808,7 +703,7 @@ static BOOL CALLBACK
 
     s_bDeviceAdded = SDL_TRUE;
 
-    bXInputDevice = IsXInputDevice( &pdidInstance->guidProduct );
+    bXInputDevice = SDL_IsXInputDevice( &pdidInstance->guidProduct );
 
     pNewJoystick = (JoyStick_DeviceData *)SDL_malloc( sizeof(JoyStick_DeviceData) );
 
@@ -871,6 +766,9 @@ void SDL_SYS_JoystickDetect()
             DI8DEVCLASS_GAMECTRL,
             EnumJoysticksCallback,
             &pCurList, DIEDFL_ATTACHEDONLY);
+
+        SDL_free(SDL_RawDevList);  /* in case we used this. */
+        SDL_RawDevList = NULL;
 
         SDL_UnlockMutex( s_mutexJoyStickEnum );
     }
