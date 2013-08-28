@@ -154,6 +154,8 @@ WINRT_VideoInit(_THIS)
 SDL_DisplayMode
 WINRT_CalcDisplayModeUsingNativeWindow()
 {
+    using namespace Windows::Graphics::Display;
+
     // Create an empty, zeroed-out display mode:
     SDL_DisplayMode mode;
     SDL_zero(mode);
@@ -168,7 +170,7 @@ WINRT_CalcDisplayModeUsingNativeWindow()
     // Fill in most fields:
     mode.format = SDL_PIXELFORMAT_RGB888;
     mode.refresh_rate = 0;  // TODO, WinRT: see if refresh rate data is available, or relevant (for WinRT apps)
-    mode.driverdata = NULL;
+    mode.driverdata = (void *) DisplayProperties::CurrentOrientation;
 
     // Calculate the display size given the window size, taking into account
     // the current display's DPI:
@@ -176,6 +178,30 @@ WINRT_CalcDisplayModeUsingNativeWindow()
     const float dipsPerInch = 96.0f;
     mode.w = (int) ((CoreWindow::GetForCurrentThread()->Bounds.Width * currentDPI) / dipsPerInch);
     mode.h = (int) ((CoreWindow::GetForCurrentThread()->Bounds.Height * currentDPI) / dipsPerInch);
+
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+    // On Windows Phone, the native window's size is always in portrait,
+    // regardless of the device's orientation.  This is in contrast to
+    // Windows 8/RT, which will resize the native window as the device's
+    // orientation changes.  In order to compensate for this behavior,
+    // on Windows Phone, the mode's width and height will be swapped when
+    // the device is in a landscape (non-portrait) mode.
+    switch (DisplayProperties::CurrentOrientation) {
+        case DisplayOrientations::Landscape:
+        case DisplayOrientations::LandscapeFlipped:
+        {
+            const int tmp = mode.h;
+            mode.h = mode.w;
+            mode.w = tmp;
+            break;
+        }
+
+        default:
+            break;
+    }
+
+    // Attach the mode to te
+#endif
 
     return mode;
 }

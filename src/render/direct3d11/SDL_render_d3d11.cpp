@@ -920,7 +920,7 @@ D3D11_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
 {
     //D3D11_RenderData *data = (D3D11_RenderData *) renderer->driverdata;
 
-    if (event->event == SDL_WINDOWEVENT_RESIZED) {
+    if (event->event == SDL_WINDOWEVENT_SIZE_CHANGED) {
         D3D11_UpdateForWindowSizeChange(renderer);
     }
 }
@@ -1215,16 +1215,16 @@ D3D11_UpdateViewport(SDL_Renderer * renderer)
         // Windows Phone rotations
         //
         case DisplayOrientations::Landscape:
-            // 90-degree Z-rotation
-            XMStoreFloat4x4(&data->vertexShaderConstantsData.projection, XMMatrixRotationZ(XM_PIDIV2));
+            // 270-degree (-90 degree) Z-rotation
+            XMStoreFloat4x4(&data->vertexShaderConstantsData.projection, XMMatrixRotationZ(-XM_PIDIV2));
             break;
         case DisplayOrientations::Portrait:
             // 0-degree Z-rotation
             XMStoreFloat4x4(&data->vertexShaderConstantsData.projection, XMMatrixIdentity());
             break;
         case DisplayOrientations::LandscapeFlipped:
-            // 270-degree (-90 degree) Z-rotation
-            XMStoreFloat4x4(&data->vertexShaderConstantsData.projection, XMMatrixRotationZ(-XM_PIDIV2));
+            // 90-degree Z-rotation
+            XMStoreFloat4x4(&data->vertexShaderConstantsData.projection, XMMatrixRotationZ(XM_PIDIV2));
             break;
         case DisplayOrientations::PortraitFlipped:
             // 180-degree Z-rotation
@@ -1280,11 +1280,15 @@ D3D11_UpdateViewport(SDL_Renderer * renderer)
 
     //
     // Update the Direct3D viewport, which seems to be aligned to the
-    // swap buffer's coordinate space, which is always in landscape:
+    // swap buffer's coordinate space, which is always in either
+    // a landscape mode, for all Windows 8/RT devices, or a portrait mode,
+    // for Windows Phone devices.
     //
     SDL_FRect orientationAlignedViewport;
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
-    const bool swapDimensions = false;
+    const bool swapDimensions =
+        data->orientation == DisplayOrientations::Landscape ||
+        data->orientation == DisplayOrientations::LandscapeFlipped;
 #else
     const bool swapDimensions =
         data->orientation == DisplayOrientations::Portrait ||

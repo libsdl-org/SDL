@@ -145,6 +145,77 @@ static void WINRT_SetDisplayOrientationsPreference(void *userdata, const char *n
     DisplayProperties::AutoRotationPreferences = (DisplayOrientations) orientationFlags;
 }
 
+static void
+WINRT_ProcessWindowSizeChange()
+{
+    // Make the new window size be the one true fullscreen mode.
+    // This change was initially done, in part, to allow the Direct3D 11.1
+    // renderer to receive window-resize events as a device rotates.
+    // Before, rotating a device from landscape, to portrait, and then
+    // back to landscape would cause the Direct3D 11.1 swap buffer to
+    // not get resized appropriately.  SDL would, on the rotation from
+    // landscape to portrait, re-resize the SDL window to it's initial
+    // size (landscape).  On the subsequent rotation, SDL would drop the
+    // window-resize event as it appeared the SDL window didn't change
+    // size, and the Direct3D 11.1 renderer wouldn't resize its swap
+    // chain.
+    SDL_DisplayMode resizedDisplayMode = WINRT_CalcDisplayModeUsingNativeWindow();
+    if (resizedDisplayMode.w == 0 || resizedDisplayMode.h == 0) {
+        return;
+    }
+
+    SDL_DisplayMode oldDisplayMode;
+    SDL_zero(oldDisplayMode);
+    if (WINRT_GlobalSDLVideoDevice) {
+        oldDisplayMode = WINRT_GlobalSDLVideoDevice->displays[0].desktop_mode;
+        WINRT_GlobalSDLVideoDevice->displays[0].current_mode = resizedDisplayMode;
+        WINRT_GlobalSDLVideoDevice->displays[0].desktop_mode = resizedDisplayMode;
+        WINRT_GlobalSDLVideoDevice->displays[0].display_modes[0] = resizedDisplayMode;
+    }
+
+    if (WINRT_GlobalSDLWindow) {
+        // Send a window-resize event to the rest of SDL, and to apps:
+        SDL_SendWindowEvent(
+            WINRT_GlobalSDLWindow,
+            SDL_WINDOWEVENT_RESIZED,
+            resizedDisplayMode.w,
+            resizedDisplayMode.h);
+
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+        // HACK: On Windows Phone, make sure that orientation changes from
+        // Landscape to LandscapeFlipped, Portrait to PortraitFlipped,
+        // or vice-versa on either of those two, lead to the Direct3D renderer
+        // getting updated.
+        const DisplayOrientations oldOrientation = (DisplayOrientations) (unsigned int) oldDisplayMode.driverdata;
+        const DisplayOrientations newOrientation = (DisplayOrientations) (unsigned int) resizedDisplayMode.driverdata;
+
+        if ((oldOrientation == DisplayOrientations::Landscape && newOrientation == DisplayOrientations::LandscapeFlipped) ||
+            (oldOrientation == DisplayOrientations::LandscapeFlipped && newOrientation == DisplayOrientations::Landscape) ||
+            (oldOrientation == DisplayOrientations::Portrait && newOrientation == DisplayOrientations::PortraitFlipped) ||
+            (oldOrientation == DisplayOrientations::PortraitFlipped && newOrientation == DisplayOrientations::Portrait))
+        {
+            // One of the reasons this event is getting sent out is because SDL
+            // will ignore requests to send out SDL_WINDOWEVENT_RESIZED events
+            // if and when the event size doesn't change (and the Direct3D 11.1
+            // renderer doesn't get the memo).
+            //
+            // Make sure that the display/window size really didn't change.  If
+            // it did, then a SDL_WINDOWEVENT_SIZE_CHANGED event got sent, and
+            // the Direct3D 11.1 renderer picked it up, presumably.
+            if (oldDisplayMode.w == resizedDisplayMode.w &&
+                oldDisplayMode.h == resizedDisplayMode.h)
+            {
+                SDL_SendWindowEvent(
+                    WINRT_GlobalSDLWindow,
+                    SDL_WINDOWEVENT_SIZE_CHANGED,
+                    resizedDisplayMode.w,
+                    resizedDisplayMode.h);
+            }
+        }
+#endif
+    }
+}
+
 SDL_WinRTApp::SDL_WinRTApp() :
     m_windowClosed(false),
     m_windowVisible(true)
@@ -193,6 +264,13 @@ void SDL_WinRTApp::OnOrientationChanged(Object^ sender)
             (int)DisplayProperties::NativeOrientation,
             (int)DisplayProperties::AutoRotationPreferences);
     }
+#endif
+
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+    // On Windows Phone, treat an orientation change as a change in window size.
+    // The native window's size doesn't seem to change, however SDL will simulate
+    // a window size change.
+    WINRT_ProcessWindowSizeChange();
 #endif
 }
 
@@ -294,32 +372,7 @@ void SDL_WinRTApp::OnWindowSizeChanged(CoreWindow^ sender, WindowSizeChangedEven
         (WINRT_GlobalSDLWindow ? "yes" : "no"));
 #endif
 
-    if (WINRT_GlobalSDLWindow) {
-        // Make the new window size be the one true fullscreen mode.
-        // This change was initially done, in part, to allow the Direct3D 11.1
-        // renderer to receive window-resize events as a device rotates.
-        // Before, rotating a device from landscape, to portrait, and then
-        // back to landscape would cause the Direct3D 11.1 swap buffer to
-        // not get resized appropriately.  SDL would, on the rotation from
-        // landscape to portrait, re-resize the SDL window to it's initial
-        // size (landscape).  On the subsequent rotation, SDL would drop the
-        // window-resize event as it appeared the SDL window didn't change
-        // size, and the Direct3D 11.1 renderer wouldn't resize its swap
-        // chain.
-        SDL_DisplayMode resizedDisplayMode = WINRT_CalcDisplayModeUsingNativeWindow();
-        WINRT_GlobalSDLVideoDevice->displays[0].current_mode = resizedDisplayMode;
-        WINRT_GlobalSDLVideoDevice->displays[0].desktop_mode = resizedDisplayMode;
-        WINRT_GlobalSDLVideoDevice->displays[0].display_modes[0] = resizedDisplayMode;
-
-        // Send the window-resize event to the rest of SDL, and to apps:
-        const int windowWidth = (int) ceil(args->Size.Width);
-        const int windowHeight = (int) ceil(args->Size.Height);
-        SDL_SendWindowEvent(
-            WINRT_GlobalSDLWindow,
-            SDL_WINDOWEVENT_RESIZED,
-            windowWidth,
-            windowHeight);
-    }
+    WINRT_ProcessWindowSizeChange();
 }
 
 void SDL_WinRTApp::OnVisibilityChanged(CoreWindow^ sender, VisibilityChangedEventArgs^ args)
