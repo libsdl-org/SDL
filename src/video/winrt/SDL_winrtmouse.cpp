@@ -160,8 +160,8 @@ WINRT_QuitMouse(_THIS)
 }
 
 // Applies necessary geometric transformations to raw cursor positions:
-static Windows::Foundation::Point
-TransformCursor(SDL_Window * window, Windows::Foundation::Point rawPosition)
+Windows::Foundation::Point
+WINRT_TransformCursorPosition(SDL_Window * window, Windows::Foundation::Point rawPosition)
 {
     if (!window) {
         return rawPosition;
@@ -247,7 +247,7 @@ WINRT_ProcessMouseMovedEvent(SDL_Window * window, Windows::Devices::Input::Mouse
     // to SDL window coordinates.
     //
     const Windows::Foundation::Point mouseDeltaInDIPs((float)args->MouseDelta.X, (float)args->MouseDelta.Y);
-    const Windows::Foundation::Point mouseDeltaInSDLWindowCoords = TransformCursor(window, mouseDeltaInDIPs);
+    const Windows::Foundation::Point mouseDeltaInSDLWindowCoords = WINRT_TransformCursorPosition(window, mouseDeltaInDIPs);
     SDL_SendMouseMotion(
         window,
         0,
@@ -256,11 +256,14 @@ WINRT_ProcessMouseMovedEvent(SDL_Window * window, Windows::Devices::Input::Mouse
         _lround(mouseDeltaInSDLWindowCoords.Y));
 }
 
-static Uint8
+Uint8
 WINRT_GetSDLButtonForPointerPoint(Windows::UI::Input::PointerPoint ^pt)
 {
     using namespace Windows::UI::Input;
 
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+    return SDL_BUTTON_LEFT;
+#else
     switch (pt->Properties->PointerUpdateKind)
     {
         case PointerUpdateKind::LeftButtonPressed:
@@ -286,80 +289,59 @@ WINRT_GetSDLButtonForPointerPoint(Windows::UI::Input::PointerPoint ^pt)
         default:
             break;
     }
+#endif
 
     return 0;
 }
 
-static const char *
-WINRT_ConvertPointerUpdateKindToString(Windows::UI::Input::PointerUpdateKind kind)
-{
-    using namespace Windows::UI::Input;
-
-    switch (kind)
-    {
-        case PointerUpdateKind::Other:
-            return "Other";
-        case PointerUpdateKind::LeftButtonPressed:
-            return "LeftButtonPressed";
-        case PointerUpdateKind::LeftButtonReleased:
-            return "LeftButtonReleased";
-        case PointerUpdateKind::RightButtonPressed:
-            return "RightButtonPressed";
-        case PointerUpdateKind::RightButtonReleased:
-            return "RightButtonReleased";
-        case PointerUpdateKind::MiddleButtonPressed:
-            return "MiddleButtonPressed";
-        case PointerUpdateKind::MiddleButtonReleased:
-            return "MiddleButtonReleased";
-        case PointerUpdateKind::XButton1Pressed:
-            return "XButton1Pressed";
-        case PointerUpdateKind::XButton1Released:
-            return "XButton1Released";
-        case PointerUpdateKind::XButton2Pressed:
-            return "XButton2Pressed";
-        case PointerUpdateKind::XButton2Released:
-            return "XButton2Released";
-    }
-
-    return "";
-}
-
-static void
-WINRT_LogPointerEvent(const char * header, PointerEventArgs ^ args, Windows::Foundation::Point transformedPoint)
-{
-    Windows::UI::Input::PointerPoint ^ pt = args->CurrentPoint;
-    SDL_Log("%s: Position={%f,%f}, Transformed Pos={%f, %f}, MouseWheelDelta=%d, FrameId=%d, PointerId=%d, PointerUpdateKind=%s\n",
-        header,
-        pt->Position.X, pt->Position.Y,
-        transformedPoint.X, transformedPoint.Y,
-        pt->Properties->MouseWheelDelta,
-        pt->FrameId,
-        pt->PointerId,
-        WINRT_ConvertPointerUpdateKindToString(args->CurrentPoint->Properties->PointerUpdateKind));
-}
+//const char *
+//WINRT_ConvertPointerUpdateKindToString(Windows::UI::Input::PointerUpdateKind kind)
+//{
+//    using namespace Windows::UI::Input;
+//
+//    switch (kind)
+//    {
+//        case PointerUpdateKind::Other:
+//            return "Other";
+//        case PointerUpdateKind::LeftButtonPressed:
+//            return "LeftButtonPressed";
+//        case PointerUpdateKind::LeftButtonReleased:
+//            return "LeftButtonReleased";
+//        case PointerUpdateKind::RightButtonPressed:
+//            return "RightButtonPressed";
+//        case PointerUpdateKind::RightButtonReleased:
+//            return "RightButtonReleased";
+//        case PointerUpdateKind::MiddleButtonPressed:
+//            return "MiddleButtonPressed";
+//        case PointerUpdateKind::MiddleButtonReleased:
+//            return "MiddleButtonReleased";
+//        case PointerUpdateKind::XButton1Pressed:
+//            return "XButton1Pressed";
+//        case PointerUpdateKind::XButton1Released:
+//            return "XButton1Released";
+//        case PointerUpdateKind::XButton2Pressed:
+//            return "XButton2Pressed";
+//        case PointerUpdateKind::XButton2Released:
+//            return "XButton2Released";
+//    }
+//
+//    return "";
+//}
 
 void
 WINRT_ProcessPointerMovedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint)
 {
-#if LOG_POINTER_EVENTS
-    WINRT_LogPointerEvent("pointer moved", args, TransformCursor(pointerPoint->Position));
-#endif
-
     if (!window || WINRT_UseRelativeMouseMode) {
         return;
     }
 
-    Windows::Foundation::Point transformedPoint = TransformCursor(window, pointerPoint->Position);
+    Windows::Foundation::Point transformedPoint = WINRT_TransformCursorPosition(window, pointerPoint->Position);
     SDL_SendMouseMotion(window, 0, 0, (int)transformedPoint.X, (int)transformedPoint.Y);
 }
 
 void
 WINRT_ProcessPointerWheelChangedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint)
 {
-#if LOG_POINTER_EVENTS
-    WINRT_LogPointerEvent("wheel changed", args, TransformCursor(pointerPoint->Position));
-#endif
-
     if (!window) {
         return;
     }
@@ -371,10 +353,6 @@ WINRT_ProcessPointerWheelChangedEvent(SDL_Window *window, Windows::UI::Input::Po
 
 void WINRT_ProcessPointerReleasedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint)
 {
-#if LOG_POINTER_EVENTS
-    WINRT_LogPointerEvent("mouse up", args, TransformCursor(args->CurrentPoint->Position));
-#endif
-
     if (!window) {
         return;
     }
@@ -387,16 +365,16 @@ void WINRT_ProcessPointerReleasedEvent(SDL_Window *window, Windows::UI::Input::P
 
 void WINRT_ProcessPointerPressedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint)
 {
-#if LOG_POINTER_EVENTS
-    WINRT_LogPointerEvent("mouse down", args, TransformCursor(args->CurrentPoint->Position));
-#endif
-
     if (!window) {
         return;
     }
 
     Uint8 button = WINRT_GetSDLButtonForPointerPoint(pointerPoint);
     if (button) {
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+        Windows::Foundation::Point transformedPoint = WINRT_TransformCursorPosition(window, pointerPoint->Position);
+        SDL_SendMouseMotion(window, 0, 0, (int)transformedPoint.X, (int)transformedPoint.Y);
+#endif
         SDL_SendMouseButton(window, 0, SDL_PRESSED, button);
     }
 }

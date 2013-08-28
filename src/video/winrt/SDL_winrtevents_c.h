@@ -54,6 +54,8 @@ extern void WINRT_ProcessPointerMovedEvent(SDL_Window *window, Windows::UI::Inpu
 extern void WINRT_ProcessPointerWheelChangedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint);
 extern void WINRT_ProcessPointerReleasedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint);
 extern void WINRT_ProcessPointerPressedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint);
+extern Uint8 WINRT_GetSDLButtonForPointerPoint(Windows::UI::Input::PointerPoint ^pt);
+extern Windows::Foundation::Point WINRT_TransformCursorPosition(SDL_Window * window, Windows::Foundation::Point rawPosition);
 
 /* XAML Thread Management */
 extern void WINRT_CycleXAMLThread();

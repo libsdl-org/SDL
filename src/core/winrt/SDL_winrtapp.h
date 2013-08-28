@@ -15,7 +15,6 @@ public:
 internal:
     // SDL-specific methods
     void PumpEvents();
-    Windows::Foundation::Point TransformCursor(Windows::Foundation::Point rawPosition);
 
 protected:
     // Event Handlers.
