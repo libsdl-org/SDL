@@ -1474,16 +1474,16 @@ D3D11_RenderDrawPoints(SDL_Renderer * renderer,
     b = (float)(renderer->b / 255.0f);
     a = (float)(renderer->a / 255.0f);
 
-    vector<VertexPositionColor> vertices;
-    vertices.reserve(count);
-    for (int i = 0; i < count; ++i) {
-        VertexPositionColor v = {XMFLOAT3(points[i].x, points[i].y, 0.0f),  XMFLOAT2(0.0f, 0.0f), XMFLOAT4(r, g, b, a)};
-        vertices.push_back(v);
+    VertexPositionColor * vertices = SDL_stack_alloc(VertexPositionColor, count);
+    for (int i = 0; i < min(count, 128); ++i) {
+        const VertexPositionColor v = {XMFLOAT3(points[i].x, points[i].y, 0.0f),  XMFLOAT2(0.0f, 0.0f), XMFLOAT4(r, g, b, a)};
+        vertices[i] = v;
     }
 
     D3D11_RenderStartDrawOp(renderer);
     D3D11_RenderSetBlendMode(renderer, renderer->blendMode);
-    if (D3D11_UpdateVertexBuffer(renderer, &vertices[0], vertices.size() * sizeof(VertexPositionColor)) != 0) {
+    if (D3D11_UpdateVertexBuffer(renderer, vertices, (unsigned int)count * sizeof(VertexPositionColor)) != 0) {
+        SDL_stack_free(vertices);
         return -1;
     }
 
@@ -1493,8 +1493,8 @@ D3D11_RenderDrawPoints(SDL_Renderer * renderer,
         nullptr,
         nullptr);
 
-    D3D11_RenderFinishDrawOp(renderer, D3D11_PRIMITIVE_TOPOLOGY_POINTLIST, vertices.size());
-
+    D3D11_RenderFinishDrawOp(renderer, D3D11_PRIMITIVE_TOPOLOGY_POINTLIST, count);
+    SDL_stack_free(vertices);
     return 0;
 }
 
@@ -1510,16 +1510,16 @@ D3D11_RenderDrawLines(SDL_Renderer * renderer,
     b = (float)(renderer->b / 255.0f);
     a = (float)(renderer->a / 255.0f);
 
-    vector<VertexPositionColor> vertices;
-    vertices.reserve(count);
+    VertexPositionColor * vertices = SDL_stack_alloc(VertexPositionColor, count);
     for (int i = 0; i < count; ++i) {
-        VertexPositionColor v = {XMFLOAT3(points[i].x, points[i].y, 0.0f),  XMFLOAT2(0.0f, 0.0f), XMFLOAT4(r, g, b, a)};
-        vertices.push_back(v);
+        const VertexPositionColor v = {XMFLOAT3(points[i].x, points[i].y, 0.0f),  XMFLOAT2(0.0f, 0.0f), XMFLOAT4(r, g, b, a)};
+        vertices[i] = v;
     }
 
     D3D11_RenderStartDrawOp(renderer);
     D3D11_RenderSetBlendMode(renderer, renderer->blendMode);
-    if (D3D11_UpdateVertexBuffer(renderer, &vertices[0], vertices.size() * sizeof(VertexPositionColor)) != 0) {
+    if (D3D11_UpdateVertexBuffer(renderer,&vertices, (unsigned int)count * sizeof(VertexPositionColor)) != 0) {
+        SDL_stack_free(vertices);
         return -1;
     }
 
@@ -1529,8 +1529,8 @@ D3D11_RenderDrawLines(SDL_Renderer * renderer,
         nullptr,
         nullptr);
 
-    D3D11_RenderFinishDrawOp(renderer, D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP, vertices.size());
-
+    D3D11_RenderFinishDrawOp(renderer, D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP, count);
+    SDL_stack_free(vertices);
     return 0;
 }
 
