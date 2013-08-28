@@ -745,7 +745,7 @@ AddXInputDevice(const Uint8 userid, JoyStick_DeviceData **pContext)
     }
     SDL_zerop(pNewJoystick);
 
-    SDL_snprintf(name, sizeof (name), "XInput Controller #%d", (int) userid);
+    SDL_snprintf(name, sizeof (name), "XInput Controller #%u", ((unsigned int) userid) + 1);
     pNewJoystick->joystickname = SDL_strdup(name);
     if (!pNewJoystick->joystickname) {
         SDL_free(pNewJoystick);
