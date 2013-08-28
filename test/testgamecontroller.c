@@ -229,7 +229,7 @@ main(int argc, char *argv[])
     /* Print information about the controller */
     for (i = 0; i < SDL_NumJoysticks(); ++i) {
         const char *name;
-        const char *description = "Joystick (not recognized as game controller)";
+        const char *description;
 
         SDL_JoystickGetGUIDString(SDL_JoystickGetDeviceGUID(i),
                                   guid, sizeof (guid));
@@ -238,8 +238,10 @@ main(int argc, char *argv[])
         {
             nController++;
             name = SDL_GameControllerNameForIndex(i);
+            description = "Controller";
         } else {
             name = SDL_JoystickNameForIndex(i);
+            description = "Joystick";
         }
         SDL_Log("%s %d: %s (guid %s)\n", description, i, name ? name : "Unknown", guid);
     }
