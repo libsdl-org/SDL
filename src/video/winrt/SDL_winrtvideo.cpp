@@ -45,6 +45,7 @@ extern "C" {
 }
 
 #include "../../core/winrt/SDL_winrtapp.h"
+#include "SDL_winrtvideo_cpp.h"
 #include "SDL_winrtevents_c.h"
 #include "SDL_winrtmouse.h"
 #include "SDL_main.h"
@@ -65,14 +66,6 @@ static void WINRT_VideoQuit(_THIS);
 static int WINRT_CreateWindow(_THIS, SDL_Window * window);
 static void WINRT_DestroyWindow(_THIS, SDL_Window * window);
 static SDL_bool WINRT_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info);
-
-
-/* Internal window data */
-struct SDL_WindowData
-{
-    SDL_Window *sdlWindow;
-    Platform::Agile<Windows::UI::Core::CoreWindow> coreWindow;
-};
 
 
 /* The global, WinRT, SDL Window.

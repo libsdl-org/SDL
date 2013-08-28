@@ -42,6 +42,7 @@ extern "C" {
 }
 
 #include "../../core/winrt/SDL_winrtapp.h"
+#include "SDL_winrtvideo_cpp.h"
 #include "SDL_winrtmouse.h"
 
 
@@ -163,13 +164,54 @@ WINRT_QuitMouse(_THIS)
 Windows::Foundation::Point
 WINRT_TransformCursorPosition(SDL_Window * window, Windows::Foundation::Point rawPosition)
 {
+    using namespace Windows::Graphics::Display;
+
     if (!window) {
         return rawPosition;
     }
-    CoreWindow ^ nativeWindow = CoreWindow::GetForCurrentThread();
+
+    SDL_WindowData * windowData = (SDL_WindowData *) window->driverdata;
+    if (windowData->coreWindow == nullptr) {
+        // For some reason, the window isn't associated with a CoreWindow.
+        // This might end up being the case as XAML support is extended.
+        // For now, if there's no CoreWindow attached to the SDL_Window,
+        // don't do any transforms.
+        return rawPosition;
+    }
+
+    // The CoreWindow can only be accessed on certain thread(s).
+    SDL_assert(CoreWindow::GetForCurrentThread() != nullptr);
+
+    CoreWindow ^ nativeWindow = windowData->coreWindow.Get();
     Windows::Foundation::Point outputPosition;
+
+#if WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP
     outputPosition.X = rawPosition.X * (((float32)window->w) / nativeWindow->Bounds.Width);
     outputPosition.Y = rawPosition.Y * (((float32)window->h) / nativeWindow->Bounds.Height);
+#else
+    switch (DisplayProperties::CurrentOrientation)
+    {
+        case DisplayOrientations::Portrait:
+            outputPosition.X = rawPosition.X * (((float32)window->w) / nativeWindow->Bounds.Width);
+            outputPosition.Y = rawPosition.Y * (((float32)window->h) / nativeWindow->Bounds.Height);
+            break;
+        case DisplayOrientations::PortraitFlipped:
+            outputPosition.X = (float32)window->w - rawPosition.X * (((float32)window->w) / nativeWindow->Bounds.Width);
+            outputPosition.Y = (float32)window->h - rawPosition.Y * (((float32)window->h) / nativeWindow->Bounds.Height);
+            break;
+        case DisplayOrientations::Landscape:
+            outputPosition.X = rawPosition.Y * (((float32)window->w) / nativeWindow->Bounds.Height);
+            outputPosition.Y = (float32)window->h - rawPosition.X * (((float32)window->h) / nativeWindow->Bounds.Width);
+            break;
+        case DisplayOrientations::LandscapeFlipped:
+            outputPosition.X = (float32)window->w - rawPosition.Y * (((float32)window->w) / nativeWindow->Bounds.Height);
+            outputPosition.Y = rawPosition.X * (((float32)window->h) / nativeWindow->Bounds.Width);
+            break;
+        default:
+            break;
+    }
+#endif
+
     return outputPosition;
 }
 
