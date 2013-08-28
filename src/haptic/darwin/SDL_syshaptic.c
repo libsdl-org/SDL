@@ -506,7 +506,7 @@ SDL_SYS_JoystickIsHaptic(SDL_Joystick * joystick)
 
 
 /*
- * Checks to see if the haptic device and joystick and in reality the same.
+ * Checks to see if the haptic device and joystick are in reality the same.
  */
 int
 SDL_SYS_JoystickSameHaptic(SDL_Haptic * haptic, SDL_Joystick * joystick)
