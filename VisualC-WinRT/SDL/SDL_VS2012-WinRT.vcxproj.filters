@@ -270,6 +270,9 @@
     <ClCompile Include="..\..\src\joystick\winrt\SDL_xinputjoystick.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\core\winrt\SDL_winrtxaml.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\begin_code.h">

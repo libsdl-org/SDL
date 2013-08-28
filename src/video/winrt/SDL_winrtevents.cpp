@@ -25,22 +25,116 @@
 /* SDL includes */
 #include "SDL_winrtevents_c.h"
 #include "../../core/winrt/SDL_winrtapp.h"
+#include "SDL_assert.h"
+#include "SDL_system.h"
 
 extern "C" {
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_events_c.h"
 }
 
+
+/* Forward declarations and globals */
 extern SDL_WinRTApp ^ SDL_WinRTGlobalApp;
+extern int (*WINRT_XAMLAppMainFunction)(int, char **);
+extern void WINRT_YieldXAMLThread();
 
 
-/* General event-management function(s) */
+/* Global event management */
 
 void
 WINRT_PumpEvents(_THIS)
 {
-    SDL_WinRTGlobalApp->PumpEvents();
+    if (SDL_WinRTGlobalApp) {
+        SDL_WinRTGlobalApp->PumpEvents();
+    } else if (WINRT_XAMLAppMainFunction) {
+        WINRT_YieldXAMLThread();
+    }
 }
+
+
+/* XAML Thread management */
+
+enum SDL_XAMLAppThreadState
+{
+    ThreadState_NotLaunched = 0,
+    ThreadState_Running,
+    ThreadState_Yielding
+};
+
+static SDL_XAMLAppThreadState _threadState = ThreadState_NotLaunched;
+static SDL_Thread * _XAMLThread = nullptr;
+static SDL_mutex * _mutex = nullptr;
+static SDL_cond * _cond = nullptr;
+
+static void
+WINRT_YieldXAMLThread()
+{
+    SDL_LockMutex(_mutex);
+    SDL_assert(_threadState == ThreadState_Running);
+    _threadState = ThreadState_Yielding;
+    SDL_UnlockMutex(_mutex);
+
+    SDL_CondSignal(_cond);
+
+    SDL_LockMutex(_mutex);
+    while (_threadState != ThreadState_Running) {
+        SDL_CondWait(_cond, _mutex);
+    }
+    SDL_UnlockMutex(_mutex);
+}
+
+static int
+WINRT_XAMLThreadMain(void * userdata)
+{
+    return WINRT_XAMLAppMainFunction(0, NULL);
+}
+
+void
+WINRT_CycleXAMLThread()
+{
+    switch (_threadState) {
+        case ThreadState_NotLaunched:
+        {
+            _cond = SDL_CreateCond();
+
+            _mutex = SDL_CreateMutex();
+            _threadState = ThreadState_Running;
+            _XAMLThread = SDL_CreateThread(WINRT_XAMLThreadMain, "SDL/XAML App Thread", nullptr);
+
+            SDL_LockMutex(_mutex);
+            while (_threadState != ThreadState_Yielding) {
+                SDL_CondWait(_cond, _mutex);
+            }
+            SDL_UnlockMutex(_mutex);
+
+            break;
+        }
+
+        case ThreadState_Running:
+        {
+            SDL_assert(false);
+            break;
+        }
+
+        case ThreadState_Yielding:
+        {
+            SDL_LockMutex(_mutex);
+            SDL_assert(_threadState == ThreadState_Yielding);
+            _threadState = ThreadState_Running;
+            SDL_UnlockMutex(_mutex);
+
+            SDL_CondSignal(_cond);
+
+            SDL_LockMutex(_mutex);
+            while (_threadState != ThreadState_Yielding) {
+                SDL_CondWait(_cond, _mutex);
+            }
+            SDL_UnlockMutex(_mutex);
+        }
+    }
+}
+
 
 #endif /* SDL_VIDEO_DRIVER_WINRT */
 

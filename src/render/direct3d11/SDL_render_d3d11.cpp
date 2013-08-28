@@ -26,6 +26,11 @@
 #ifdef __WINRT__
 #include <windows.ui.core.h>
 #include <windows.foundation.h>
+
+#if WINAPI_FAMILY == WINAPI_FAMILY_APP
+#include <windows.ui.xaml.media.dxinterop.h>
+#endif
+
 #endif
 
 extern "C" {
@@ -608,6 +613,13 @@ D3D11_ConvertDipsToPixels(float dips)
 }
 #endif
 
+
+#if WINAPI_FAMILY == WINAPI_FAMILY_APP
+// TODO, WinRT, XAML: get the ISwapChainBackgroundPanelNative from something other than a global var
+extern ISwapChainBackgroundPanelNative * WINRT_GlobalSwapChainBackgroundPanelNative;
+#endif
+
+
 // Initialize all resources that change when the window's size changes.
 // TODO, WinRT: get D3D11_CreateWindowSizeDependentResources working on Win32
 HRESULT
@@ -619,15 +631,28 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
 
     // Store the window bounds so the next time we get a SizeChanged event we can
     // avoid rebuilding everything if the size is identical.
-    ABI::Windows::Foundation::Rect coreWindowBounds;
-    result = coreWindow->get_Bounds(&coreWindowBounds);
-    if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(__FUNCTION__", Get Window Bounds", result);
-        return result;
+    ABI::Windows::Foundation::Rect nativeWindowBounds;
+    if (coreWindow) {
+        result = coreWindow->get_Bounds(&nativeWindowBounds);
+        if (FAILED(result)) {
+            WIN_SetErrorFromHRESULT(__FUNCTION__", Get Window Bounds", result);
+            return result;
+        }
+    } else {
+        // TODO, WinRT, XAML: clean up window-bounds code in D3D11_CreateWindowSizeDependentResources
+        SDL_DisplayMode displayMode;
+        if (SDL_GetDesktopDisplayMode(0, &displayMode) < 0) {
+            SDL_SetError(__FUNCTION__", Get Window Bounds (XAML): Unable to retrieve the native window's size");
+            return E_FAIL;
+        }
+
+        nativeWindowBounds.Width = (FLOAT) displayMode.w;
+        nativeWindowBounds.Height = (FLOAT) displayMode.h;
     }
 
-    data->windowSizeInDIPs.x = coreWindowBounds.Width;
-    data->windowSizeInDIPs.y = coreWindowBounds.Height;
+    // TODO, WinRT, XAML: see if window/control sizes are in DIPs, or something else.  If something else, then adjust renderer size tracking accordingly.
+    data->windowSizeInDIPs.x = nativeWindowBounds.Width;
+    data->windowSizeInDIPs.y = nativeWindowBounds.Height;
 
     // Calculate the necessary swap chain and render target size in pixels.
     float windowWidth = D3D11_ConvertDipsToPixels(data->windowSizeInDIPs.x);
@@ -660,6 +685,8 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
     }
     else
     {
+        const bool usingXAML = (coreWindow == nullptr);
+
         // Otherwise, create a new one using the same adapter as the existing Direct3D device.
         DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {0};
         swapChainDesc.Width = static_cast<UINT>(data->renderTargetSize.x); // Match the size of the window.
@@ -674,7 +701,11 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
         swapChainDesc.Scaling = DXGI_SCALING_STRETCH; // On phone, only stretch and aspect-ratio stretch scaling are allowed.
         swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD; // On phone, no swap effects are supported.
 #else
-        swapChainDesc.Scaling = DXGI_SCALING_NONE;
+        if (usingXAML) {
+            swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
+        } else {
+            swapChainDesc.Scaling = DXGI_SCALING_NONE;
+        }
         swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL; // All Windows Store apps must use this SwapEffect.
 #endif
         swapChainDesc.Flags = 0;
@@ -703,25 +734,48 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
             return result;
         }
 
-        IUnknown * coreWindowAsIUnknown = nullptr;
-        result = coreWindow->QueryInterface(&coreWindowAsIUnknown);
-        if (FAILED(result)) {
-            WIN_SetErrorFromHRESULT(__FUNCTION__ ", CoreWindow to IUnknown", result);
-            return result;
-        }
+        if (usingXAML) {
+            result = dxgiFactory->CreateSwapChainForComposition(
+                data->d3dDevice.Get(),
+                &swapChainDesc,
+                nullptr,
+                &data->swapChain);
+            if (FAILED(result)) {
+                WIN_SetErrorFromHRESULT(__FUNCTION__ ", CreateSwapChainForComposition", result);
+                return result;
+            }
 
-        result = dxgiFactory->CreateSwapChainForCoreWindow(
-            data->d3dDevice.Get(),
-            coreWindowAsIUnknown,
-            &swapChainDesc,
-            nullptr, // Allow on all displays.
-            &data->swapChain
-            );
-        if (FAILED(result)) {
-            WIN_SetErrorFromHRESULT(__FUNCTION__, result);
-            return result;
+#if WINAPI_FAMILY == WINAPI_FAMILY_APP
+            result = WINRT_GlobalSwapChainBackgroundPanelNative->SetSwapChain(data->swapChain.Get());
+            if (FAILED(result)) {
+                WIN_SetErrorFromHRESULT(__FUNCTION__ ", ISwapChainBackgroundPanelNative::SetSwapChain", result);
+                return result;
+            }
+#else
+            SDL_SetError(__FUNCTION__ ", XAML support is not yet available for Windows Phone");
+            return E_FAIL;
+#endif
+        } else {
+            IUnknown * coreWindowAsIUnknown = nullptr;
+            result = coreWindow->QueryInterface(&coreWindowAsIUnknown);
+            if (FAILED(result)) {
+                WIN_SetErrorFromHRESULT(__FUNCTION__ ", CoreWindow to IUnknown", result);
+                return result;
+            }
+
+            result = dxgiFactory->CreateSwapChainForCoreWindow(
+                data->d3dDevice.Get(),
+                coreWindowAsIUnknown,
+                &swapChainDesc,
+                nullptr, // Allow on all displays.
+                &data->swapChain
+                );
+            if (FAILED(result)) {
+                WIN_SetErrorFromHRESULT(__FUNCTION__, result);
+                return result;
+            }
         }
-            
+        
         // Ensure that DXGI does not queue more than one frame at a time. This both reduces latency and
         // ensures that the application will only render after each VSync, minimizing power consumption.
         result = dxgiDevice->SetMaximumFrameLatency(1);

@@ -50,10 +50,13 @@ extern void WINRT_ProcessKeyUpEvent(Windows::UI::Core::KeyEventArgs ^args);
 
 /* Pointers (Mice, Touch, etc.) */
 extern void WINRT_ProcessMouseMovedEvent(SDL_Window * window, Windows::Devices::Input::MouseEventArgs ^args);
-extern void WINRT_ProcessPointerMovedEvent(SDL_Window *window, Windows::UI::Core::PointerEventArgs ^args);
-extern void WINRT_ProcessPointerWheelChangedEvent(SDL_Window *window, Windows::UI::Core::PointerEventArgs ^args);
-extern void WINRT_ProcessPointerReleasedEvent(SDL_Window *window, Windows::UI::Core::PointerEventArgs ^args);
-extern void WINRT_ProcessPointerPressedEvent(SDL_Window *window, Windows::UI::Core::PointerEventArgs ^args);
+extern void WINRT_ProcessPointerMovedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint);
+extern void WINRT_ProcessPointerWheelChangedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint);
+extern void WINRT_ProcessPointerReleasedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint);
+extern void WINRT_ProcessPointerPressedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint);
+
+/* XAML Thread Management */
+extern void WINRT_CycleXAMLThread();
 
 #endif
 

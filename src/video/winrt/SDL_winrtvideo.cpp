@@ -47,8 +47,11 @@ extern "C" {
 #include "../../core/winrt/SDL_winrtapp.h"
 #include "SDL_winrtevents_c.h"
 #include "SDL_winrtmouse.h"
+#include "SDL_main.h"
+#include "SDL_system.h"
 
 extern SDL_WinRTApp ^ SDL_WinRTGlobalApp;
+extern SDL_bool WINRT_XAMLWasEnabled;
 
 
 /* Initialization/Query functions */
@@ -82,6 +85,7 @@ SDL_Window * WINRT_GlobalSDLWindow = NULL;
 /* The global, WinRT, video device.
 */
 SDL_VideoDevice * WINRT_GlobalSDLVideoDevice = NULL;
+
 
 
 /* WinRT driver bootstrap functions */
@@ -154,6 +158,13 @@ WINRT_CalcDisplayModeUsingNativeWindow()
     SDL_DisplayMode mode;
     SDL_zero(mode);
 
+    // Go no further if a native window cannot be accessed.  This can happen,
+    // for example, if this function is called from certain threads, such as
+    // the SDL/XAML thread.
+    if (!CoreWindow::GetForCurrentThread()) {
+        return mode;
+    }
+
     // Fill in most fields:
     mode.format = SDL_PIXELFORMAT_RGB888;
     mode.refresh_rate = 0;  // TODO, WinRT: see if refresh rate data is available, or relevant (for WinRT apps)
@@ -169,11 +180,15 @@ WINRT_CalcDisplayModeUsingNativeWindow()
     return mode;
 }
 
-
-static int
+int
 WINRT_InitModes(_THIS)
 {
+    // Retrieve the display mode:
     SDL_DisplayMode mode = WINRT_CalcDisplayModeUsingNativeWindow();
+    if (mode.w == 0 || mode.h == 0) {
+        return SDL_SetError("Unable to calculate the WinRT window/display's size");
+    }
+
     if (SDL_AddBasicVideoDisplay(&mode) < 0) {
         return -1;
     }
@@ -211,7 +226,16 @@ WINRT_CreateWindow(_THIS, SDL_Window * window)
     }
     window->driverdata = data;
     data->sdlWindow = window;
-    data->coreWindow = CoreWindow::GetForCurrentThread();
+
+    /* To note, when XAML support is enabled, access to the CoreWindow will not
+       be possible, at least not via the SDL/XAML thread.  Attempts to access it
+       from there will throw exceptions.  As such, the SDL_WindowData's
+       'coreWindow' field will only be set (to a non-null value) if XAML isn't
+       enabled.
+    */
+    if (!WINRT_XAMLWasEnabled) {
+        data->coreWindow = CoreWindow::GetForCurrentThread();
+    }
 
     /* Make sure the window is considered to be positioned at {0,0},
        and is considered fullscreen, shown, and the like.

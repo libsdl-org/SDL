@@ -155,6 +155,20 @@ extern DECLSPEC const wchar_t * SDLCALL SDL_WinRTGetFSPathUNICODE(SDL_WinRT_Path
  */
 extern DECLSPEC const char * SDLCALL SDL_WinRTGetFSPathUTF8(SDL_WinRT_Path pathType);
 
+#ifdef __cplusplus_winrt
+/**
+ *  \brief Initializes a WinRT and XAML based application.
+ *
+ *  \param backgroundPanel The XAML background panel to draw onto and receive
+ *      events from.
+ *  \param mainFunction The SDL app's C-style main().
+ *  \ret 0 on success, -1 on failure.  On failure, use SDL_GetError to retrieve more
+ *      information on the failure.
+ */
+/* TODO, WinRT: consider making SDL_WinRTInitXAMLApp accept a void pointer to IUnknown, rather than a C++/CX reference */
+extern DECLSPEC int SDLCALL SDL_WinRTInitXAMLApp(Platform::Object^ backgroundPanel, int (*mainFunction)(int, char **));
+
+#endif // ifdef __cplusplus_winrt
 
 #endif /* __WINRT__ */
 

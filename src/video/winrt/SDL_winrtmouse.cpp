@@ -110,6 +110,11 @@ WINRT_FreeCursor(SDL_Cursor * cursor)
 static int
 WINRT_ShowCursor(SDL_Cursor * cursor)
 {
+    // TODO, WinRT, XAML: make WINRT_ShowCursor work when XAML support is enabled.
+    if ( ! CoreWindow::GetForCurrentThread()) {
+        return 0;
+    }
+
     if (cursor) {
         CoreCursor ^* theCursor = (CoreCursor ^*) cursor->driverdata;
         CoreWindow::GetForCurrentThread()->PointerCursor = *theCursor;
@@ -334,25 +339,25 @@ WINRT_LogPointerEvent(const char * header, PointerEventArgs ^ args, Windows::Fou
 }
 
 void
-WINRT_ProcessPointerMovedEvent(SDL_Window *window, Windows::UI::Core::PointerEventArgs ^args)
+WINRT_ProcessPointerMovedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint)
 {
 #if LOG_POINTER_EVENTS
-    WINRT_LogPointerEvent("pointer moved", args, TransformCursor(args->CurrentPoint->Position));
+    WINRT_LogPointerEvent("pointer moved", args, TransformCursor(pointerPoint->Position));
 #endif
 
     if (!window || WINRT_UseRelativeMouseMode) {
         return;
     }
 
-    Windows::Foundation::Point transformedPoint = TransformCursor(window, args->CurrentPoint->Position);
+    Windows::Foundation::Point transformedPoint = TransformCursor(window, pointerPoint->Position);
     SDL_SendMouseMotion(window, 0, 0, (int)transformedPoint.X, (int)transformedPoint.Y);
 }
 
 void
-WINRT_ProcessPointerWheelChangedEvent(SDL_Window *window, Windows::UI::Core::PointerEventArgs ^args)
+WINRT_ProcessPointerWheelChangedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint)
 {
 #if LOG_POINTER_EVENTS
-    WINRT_LogPointerEvent("wheel changed", args, TransformCursor(args->CurrentPoint->Position));
+    WINRT_LogPointerEvent("wheel changed", args, TransformCursor(pointerPoint->Position));
 #endif
 
     if (!window) {
@@ -360,11 +365,11 @@ WINRT_ProcessPointerWheelChangedEvent(SDL_Window *window, Windows::UI::Core::Poi
     }
 
     // FIXME: This may need to accumulate deltas up to WHEEL_DELTA
-    short motion = args->CurrentPoint->Properties->MouseWheelDelta / WHEEL_DELTA;
+    short motion = pointerPoint->Properties->MouseWheelDelta / WHEEL_DELTA;
     SDL_SendMouseWheel(window, 0, 0, motion);
 }
 
-void WINRT_ProcessPointerReleasedEvent(SDL_Window *window, Windows::UI::Core::PointerEventArgs ^args)
+void WINRT_ProcessPointerReleasedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint)
 {
 #if LOG_POINTER_EVENTS
     WINRT_LogPointerEvent("mouse up", args, TransformCursor(args->CurrentPoint->Position));
@@ -374,13 +379,13 @@ void WINRT_ProcessPointerReleasedEvent(SDL_Window *window, Windows::UI::Core::Po
         return;
     }
 
-    Uint8 button = WINRT_GetSDLButtonForPointerPoint(args->CurrentPoint);
+    Uint8 button = WINRT_GetSDLButtonForPointerPoint(pointerPoint);
     if (button) {
         SDL_SendMouseButton(window, 0, SDL_RELEASED, button);
     }
 }
 
-void WINRT_ProcessPointerPressedEvent(SDL_Window *window, Windows::UI::Core::PointerEventArgs ^args)
+void WINRT_ProcessPointerPressedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint)
 {
 #if LOG_POINTER_EVENTS
     WINRT_LogPointerEvent("mouse down", args, TransformCursor(args->CurrentPoint->Position));
@@ -390,7 +395,7 @@ void WINRT_ProcessPointerPressedEvent(SDL_Window *window, Windows::UI::Core::Poi
         return;
     }
 
-    Uint8 button = WINRT_GetSDLButtonForPointerPoint(args->CurrentPoint);
+    Uint8 button = WINRT_GetSDLButtonForPointerPoint(pointerPoint);
     if (button) {
         SDL_SendMouseButton(window, 0, SDL_PRESSED, button);
     }
