@@ -86,21 +86,21 @@ AM_PATH_SDL2($SDL_VERSION,
 	    AC_MSG_ERROR([*** SDL version $SDL_VERSION not found!])
 )
 CFLAGS="$CFLAGS $SDL_CFLAGS"
-LIBS="$LIBS -lSDL2_test $SDL_LIBS"
+LIBS="$LIBS  $SDL_LIBS -lSDL2_test"
 
 dnl Check for X11 path, needed for OpenGL on some systems
 AC_PATH_X
 if test x$have_x = xyes; then
-    if test x$ac_x_includes = xno || test x$ac_x_includes = x; then
+    if test x$ac_x_includes = xno || test "x$ac_x_includes" = xNone; then
         :
     else
         CFLAGS="$CFLAGS -I$ac_x_includes"
     fi
-    if test x$ac_x_libraries = xno || test x$ac_x_libraries = x; then
+    if test x$ac_x_libraries = xno || test "x$ac_x_libraries" = xNone; then
         :
     else
         XPATH="-L$ac_x_libraries"
-        XLIB="-L$ac_x_libraries -lX11"
+        XLIB="-lX11"
     fi
 fi
 
