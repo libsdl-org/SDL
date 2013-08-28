@@ -662,9 +662,14 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
     // landscape-oriented width and height. If the window is in a portrait
     // orientation, the dimensions must be reversed.
     data->orientation = DisplayProperties::CurrentOrientation;
+
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+    const bool swapDimensions = false;
+#else
     const bool swapDimensions =
         data->orientation == DisplayOrientations::Portrait ||
         data->orientation == DisplayOrientations::PortraitFlipped;
+#endif
     data->renderTargetSize.x = swapDimensions ? windowHeight : windowWidth;
     data->renderTargetSize.y = swapDimensions ? windowWidth : windowHeight;
 
@@ -785,6 +790,7 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
         }
     }
     
+#if WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP
     // Set the proper orientation for the swap chain, and generate the
     // 3D matrix transformation for rendering to the rotated swap chain.
     DXGI_MODE_ROTATION rotation = DXGI_MODE_ROTATION_UNSPECIFIED;
@@ -810,7 +816,6 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
             throw ref new Platform::FailureException();
     }
 
-#if WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP
     // TODO, WinRT: Windows Phone does not have the IDXGISwapChain1::SetRotation method.  Check if an alternative is available, or needed.
     result = data->swapChain->SetRotation(rotation);
     if (FAILED(result)) {
@@ -1203,41 +1208,47 @@ D3D11_UpdateViewport(SDL_Renderer * renderer)
 
     switch (data->orientation)
     {
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+        //
+        // Windows Phone rotations
+        //
         case DisplayOrientations::Landscape:
-            data->vertexShaderConstantsData.projection = XMFLOAT4X4( // 0-degree Z-rotation
-                1.0f, 0.0f, 0.0f, 0.0f,
-                0.0f, 1.0f, 0.0f, 0.0f,
-                0.0f, 0.0f, 1.0f, 0.0f,
-                0.0f, 0.0f, 0.0f, 1.0f
-                );
+            // 90-degree Z-rotation
+            XMStoreFloat4x4(&data->vertexShaderConstantsData.projection, XMMatrixRotationZ(XM_PIDIV2));
             break;
-
         case DisplayOrientations::Portrait:
-            data->vertexShaderConstantsData.projection = XMFLOAT4X4( // 90-degree Z-rotation
-                0.0f, 1.0f, 0.0f, 0.0f,
-                -1.0f, 0.0f, 0.0f, 0.0f,
-                0.0f, 0.0f, 1.0f, 0.0f,
-                0.0f, 0.0f, 0.0f, 1.0f
-                );
+            // 0-degree Z-rotation
+            XMStoreFloat4x4(&data->vertexShaderConstantsData.projection, XMMatrixIdentity());
             break;
-
         case DisplayOrientations::LandscapeFlipped:
-            data->vertexShaderConstantsData.projection = XMFLOAT4X4( // 180-degree Z-rotation
-                -1.0f, 0.0f, 0.0f, 0.0f,
-                0.0f, -1.0f, 0.0f, 0.0f,
-                0.0f, 0.0f, 1.0f, 0.0f,
-                0.0f, 0.0f, 0.0f, 1.0f
-                );
+            // 270-degree (-90 degree) Z-rotation
+            XMStoreFloat4x4(&data->vertexShaderConstantsData.projection, XMMatrixRotationZ(-XM_PIDIV2));
             break;
-
         case DisplayOrientations::PortraitFlipped:
-            data->vertexShaderConstantsData.projection = XMFLOAT4X4( // 270-degree Z-rotation
-                0.0f, -1.0f, 0.0f, 0.0f,
-                1.0f, 0.0f, 0.0f, 0.0f,
-                0.0f, 0.0f, 1.0f, 0.0f,
-                0.0f, 0.0f, 0.0f, 1.0f
-                );
+            // 180-degree Z-rotation
+            XMStoreFloat4x4(&data->vertexShaderConstantsData.projection, XMMatrixRotationZ(XM_PI));
             break;
+#else
+        //
+        // Non-Windows-Phone rotations (ex: Windows 8, Windows RT)
+        //
+        case DisplayOrientations::Landscape:
+            // 0-degree Z-rotation
+            XMStoreFloat4x4(&data->vertexShaderConstantsData.projection, XMMatrixIdentity());
+            break;
+        case DisplayOrientations::Portrait:
+            // 90-degree Z-rotation
+            XMStoreFloat4x4(&data->vertexShaderConstantsData.projection, XMMatrixRotationZ(XM_PIDIV2));
+            break;
+        case DisplayOrientations::LandscapeFlipped:
+            // 180-degree Z-rotation
+            XMStoreFloat4x4(&data->vertexShaderConstantsData.projection, XMMatrixRotationZ(XM_PI));
+            break;
+        case DisplayOrientations::PortraitFlipped:
+            // 270-degree (-90 degree) Z-rotation
+            XMStoreFloat4x4(&data->vertexShaderConstantsData.projection, XMMatrixRotationZ(-XM_PIDIV2));
+            break;
+#endif // WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
 
         default:
             SDL_SetError("An unknown DisplayOrientation is being used");
@@ -1270,9 +1281,13 @@ D3D11_UpdateViewport(SDL_Renderer * renderer)
     // swap buffer's coordinate space, which is always in landscape:
     //
     SDL_FRect orientationAlignedViewport;
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+    const bool swapDimensions = false;
+#else
     const bool swapDimensions =
         data->orientation == DisplayOrientations::Portrait ||
         data->orientation == DisplayOrientations::PortraitFlipped;
+#endif
     if (swapDimensions) {
         orientationAlignedViewport.x = (float) renderer->viewport.y;
         orientationAlignedViewport.y = (float) renderer->viewport.x;
