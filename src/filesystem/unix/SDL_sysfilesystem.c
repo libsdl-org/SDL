@@ -25,6 +25,8 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* System dependent filesystem routines                                */
 
+#include <errno.h>
+#include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -190,11 +192,17 @@ SDL_GetPrefPath(const char *org, const char *app)
     for (ptr = retval+1; *ptr; ptr++) {
         if (*ptr == '/') {
             *ptr = '\0';
-            mkdir(retval, 0700);
+            if (mkdir(retval, 0700) != 0 && errno != EEXIST)
+                goto error;
             *ptr = '/';
         }
     }
-    mkdir(retval, 0700);
+    if (mkdir(retval, 0700) != 0 && errno != EEXIST) {
+error:
+        SDL_SetError("Couldn't create directory '%s': ", retval, strerror(errno));
+        SDL_free(retval);
+        return NULL;
+    }
 
     return retval;
 }
