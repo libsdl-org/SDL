@@ -766,8 +766,10 @@ static void
 EnumXInputDevices(JoyStick_DeviceData **pContext)
 {
     if (s_bXInputEnabled) {
-        Uint8 userid;
-        for (userid = 0; userid < SDL_XINPUT_MAX_DEVICES; userid++) {
+        int iuserid;
+        /* iterate in reverse, so these are in the final list in ascending numeric order. */
+        for (iuserid = SDL_XINPUT_MAX_DEVICES-1; iuserid >= 0; iuserid--) {
+            const Uint8 userid = (Uint8) iuserid;
             XINPUT_CAPABILITIES capabilities;
             if (XINPUTGETCAPABILITIES(userid, XINPUT_FLAG_GAMEPAD, &capabilities) == ERROR_SUCCESS) {
                 /* Current version of XInput mistakenly returns 0 as the Type. Ignore it and ensure the subtype is a gamepad. */
@@ -796,9 +798,6 @@ void SDL_SYS_JoystickDetect()
         pCurList = SYS_Joystick;
         SYS_Joystick = NULL;
 
-        /* Look for XInput devices... */
-        EnumXInputDevices(&pCurList);
-
         /* Look for DirectInput joysticks, wheels, head trackers, gamepads, etc.. */
         IDirectInput8_EnumDevices(dinput,
             DI8DEVCLASS_GAMECTRL,
@@ -808,6 +807,9 @@ void SDL_SYS_JoystickDetect()
         SDL_free(SDL_RawDevList);  /* in case we used this in DirectInput enumerator. */
         SDL_RawDevList = NULL;
         SDL_RawDevListCount = 0;
+
+        /* Look for XInput devices. Do this last, so they're first in the final list. */
+        EnumXInputDevices(&pCurList);
 
         SDL_UnlockMutex( s_mutexJoyStickEnum );
     }
