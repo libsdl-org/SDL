@@ -366,10 +366,11 @@ X11_CreateWindow(_THIS, SDL_Window * window)
 
 #if SDL_VIDEO_OPENGL_GLX || SDL_VIDEO_OPENGL_EGL
     if (window->flags & SDL_WINDOW_OPENGL) {
-        XVisualInfo *vinfo;
+        XVisualInfo *vinfo = NULL;
 
 #if SDL_VIDEO_OPENGL_EGL
-        if (_this->gl_config.use_egl == 1) {
+        if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES && 
+            ( !_this->gl_data || ! _this->gl_data->HAS_GLX_EXT_create_context_es2_profile )) {
             vinfo = X11_GLES_GetVisual(_this, display, screen);
         } else
 #endif
@@ -378,6 +379,7 @@ X11_CreateWindow(_THIS, SDL_Window * window)
             vinfo = X11_GL_GetVisual(_this, display, screen);
 #endif
         }
+
         if (!vinfo) {
             return -1;
         }
@@ -551,7 +553,9 @@ X11_CreateWindow(_THIS, SDL_Window * window)
     windowdata = (SDL_WindowData *) window->driverdata;
 
 #if SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
-    if ((window->flags & SDL_WINDOW_OPENGL) && (_this->gl_config.use_egl == 1)) {
+    if ((window->flags & SDL_WINDOW_OPENGL) && 
+        _this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES && 
+        (!_this->gl_data || ! _this->gl_data->HAS_GLX_EXT_create_context_es2_profile) ) {
         if (!_this->egl_data) {
             XDestroyWindow(display, w);
             return -1;

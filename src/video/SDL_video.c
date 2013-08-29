@@ -477,26 +477,21 @@ SDL_VideoInit(const char *driver_name)
     _this->gl_config.multisamplesamples = 0;
     _this->gl_config.retained_backing = 1;
     _this->gl_config.accelerated = -1;  /* accelerated or not, both are fine */
+    _this->gl_config.profile_mask = 0;
 #if SDL_VIDEO_OPENGL
     _this->gl_config.major_version = 2;
     _this->gl_config.minor_version = 1;
-    _this->gl_config.use_egl = 0;
 #elif SDL_VIDEO_OPENGL_ES
     _this->gl_config.major_version = 1;
     _this->gl_config.minor_version = 1;
-#if SDL_VIDEO_OPENGL_EGL    
-    _this->gl_config.use_egl = 1;
-#endif    
+    _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
 #elif SDL_VIDEO_OPENGL_ES2
     _this->gl_config.major_version = 2;
     _this->gl_config.minor_version = 0;
-#if SDL_VIDEO_OPENGL_EGL    
-    _this->gl_config.use_egl = 1;
-#endif
-    
+    _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;   
 #endif
     _this->gl_config.flags = 0;
-    _this->gl_config.profile_mask = 0;
+    
     _this->gl_config.share_with_current_context = 0;
 
     _this->current_glwin_tls = SDL_TLSCreate();
@@ -2516,7 +2511,12 @@ SDL_GL_SetAttribute(SDL_GLattr attr, int value)
         _this->gl_config.minor_version = value;
         break;
     case SDL_GL_CONTEXT_EGL:
-        _this->gl_config.use_egl = value;
+        /* FIXME: SDL_GL_CONTEXT_EGL to be deprecated in SDL 2.1 */
+        if (value != 0) {
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
+        } else {
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, 0);
+        };
         break;
     case SDL_GL_CONTEXT_FLAGS:
         if( value & ~(SDL_GL_CONTEXT_DEBUG_FLAG |
@@ -2686,8 +2686,14 @@ SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
             return 0;
         }
     case SDL_GL_CONTEXT_EGL:
+        /* FIXME: SDL_GL_CONTEXT_EGL to be deprecated in SDL 2.1 */
         {
-            *value = _this->gl_config.use_egl;
+            if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) {
+                *value = 1;
+            }
+            else {
+                *value = 0;
+            }
             return 0;
         }
     case SDL_GL_CONTEXT_FLAGS:
