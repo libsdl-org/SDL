@@ -267,10 +267,8 @@ X11_GL_UnloadLibrary(_THIS)
 #endif
 
     /* Free OpenGL memory */
-    if (_this->gl_data) {
-        SDL_free(_this->gl_data);
-        _this->gl_data = NULL;
-    }
+    SDL_free(_this->gl_data);
+    _this->gl_data = NULL;
 }
 
 static SDL_bool

@@ -75,12 +75,8 @@ main(int argc, char *argv[])
                 SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "FAIL: %s\n", formats[i]);
                 ++errors;
             }
-            if (test[0]) {
-                SDL_free(test[0]);
-            }
-            if (test[1]) {
-                SDL_free(test[1]);
-            }
+            SDL_free(test[0]);
+            SDL_free(test[1]);
         }
         test[0] = SDL_iconv_string("UTF-8", "UCS-4", ucs4, len);
         SDL_free(ucs4);

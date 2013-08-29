@@ -747,11 +747,9 @@ int audio_convertAudio()
             SDLTest_AssertCheck(cvt.len_ratio > 0.0, "Verify conversion length ratio; expected: >0; got: %f", cvt.len_ratio);
 
             /* Free converted buffer */
-            if (cvt.buf != NULL) {
             SDL_free(cvt.buf);
             cvt.buf = NULL;
-        }
-      }
+          }
         }
       }
     }

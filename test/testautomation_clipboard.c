@@ -41,7 +41,7 @@ clipboard_testGetClipboardText(void *arg)
     charResult = SDL_GetClipboardText();
     SDLTest_AssertPass("Call to SDL_GetClipboardText succeeded");
 
-    if (charResult) SDL_free(charResult);
+    SDL_free(charResult);
 
     return TEST_COMPLETED;
 }
@@ -69,8 +69,8 @@ clipboard_testSetClipboardText(void *arg)
         textRef, text);
 
     /* Cleanup */
-    if (textRef) SDL_free(textRef);
-    if (text) SDL_free(text);
+    SDL_free(textRef);
+    SDL_free(text);
 
    return TEST_COMPLETED;
 }
@@ -145,9 +145,9 @@ clipboard_testClipboardTextFunctions(void *arg)
         textRef, charResult);
 
     /* Cleanup */
-    if (textRef) SDL_free(textRef);
-    if (text) SDL_free(text);
-    if (charResult) SDL_free(charResult);
+    SDL_free(textRef);
+    SDL_free(text);
+    SDL_free(charResult);
 
    return TEST_COMPLETED;
 }

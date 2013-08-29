@@ -834,7 +834,7 @@ void SDL_SYS_JoystickDetect()
 
             pListNext = pCurList->pNext;
             SDL_free(pCurList->joystickname);
-            SDL_free( pCurList );
+            SDL_free(pCurList);
             pCurList = pListNext;
         }
 
@@ -1559,10 +1559,8 @@ SDL_SYS_JoystickClose(SDL_Joystick * joystick)
         IDirectInputDevice8_Release(joystick->hwdata->InputDevice);
     }
 
-    if (joystick->hwdata != NULL) {
-        /* free system specific hardware data */
-        SDL_free(joystick->hwdata);
-    }
+    /* free system specific hardware data */
+    SDL_free(joystick->hwdata);
 
     joystick->closed = 1;
 }

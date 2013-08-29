@@ -319,9 +319,7 @@ WIN_SetWindowTitle(_THIS, SDL_Window * window)
         title = NULL;
     }
     SetWindowText(hwnd, title ? title : TEXT(""));
-    if (title) {
-        SDL_free(title);
-    }
+    SDL_free(title);
 }
 
 void

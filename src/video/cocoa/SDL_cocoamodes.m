@@ -281,7 +281,7 @@ Cocoa_InitModes(_THIS)
             display.name = (char *)Cocoa_GetDisplayName(displays[i]);
             if (!GetDisplayMode (_this, moderef, &mode)) {
                 Cocoa_ReleaseDisplayMode(_this, moderef);
-                if (display.name) SDL_free(display.name);
+                SDL_free(display.name);
                 SDL_free(displaydata);
                 continue;
             }
@@ -290,7 +290,7 @@ Cocoa_InitModes(_THIS)
             display.current_mode = mode;
             display.driverdata = displaydata;
             SDL_AddVideoDisplay(&display);
-            if (display.name) SDL_free(display.name);
+            SDL_free(display.name);
         }
     }
     SDL_stack_free(displays);

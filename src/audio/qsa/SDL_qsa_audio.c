@@ -328,10 +328,8 @@ QSA_CloseDevice(_THIS)
             this->hidden->audio_handle = NULL;
         }
 
-        if (this->hidden->pcm_buf != NULL) {
-            SDL_FreeAudioMem(this->hidden->pcm_buf);
-            this->hidden->pcm_buf = NULL;
-        }
+        SDL_FreeAudioMem(this->hidden->pcm_buf);
+        this->hidden->pcm_buf = NULL;
 
         SDL_free(this->hidden);
         this->hidden = NULL;

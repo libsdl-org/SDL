@@ -233,9 +233,7 @@ static SDL_bool AddDialogButton(WIN_DialogData *dialog, int x, int y, int w, int
 
 static void FreeDialogData(WIN_DialogData *dialog)
 {
-    if (dialog->data) {
-        SDL_free(dialog->data);
-    }
+    SDL_free(dialog->data);
     SDL_free(dialog);
 }
 

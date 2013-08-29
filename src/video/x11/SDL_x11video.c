@@ -565,9 +565,7 @@ X11_VideoQuit(_THIS)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
 
-    if (data->classname) {
-        SDL_free(data->classname);
-    }
+    SDL_free(data->classname);
 #ifdef X_HAVE_UTF8_STRING
     if (data->im) {
         XCloseIM(data->im);

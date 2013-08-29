@@ -204,10 +204,8 @@ static void
 ARTS_CloseDevice(_THIS)
 {
     if (this->hidden != NULL) {
-        if (this->hidden->mixbuf != NULL) {
-            SDL_FreeAudioMem(this->hidden->mixbuf);
-            this->hidden->mixbuf = NULL;
-        }
+        SDL_FreeAudioMem(this->hidden->mixbuf);
+        this->hidden->mixbuf = NULL;
         if (this->hidden->stream) {
             SDL_NAME(arts_close_stream) (this->hidden->stream);
             this->hidden->stream = 0;

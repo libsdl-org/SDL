@@ -69,9 +69,7 @@ readSymLink(const char *path)
         len *= 2;  /* grow buffer, try again. */
     }
 
-    if (retval != NULL) {
-        SDL_free(retval);
-    }
+    SDL_free(retval);
     return NULL;
 }
 

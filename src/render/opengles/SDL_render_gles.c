@@ -573,9 +573,7 @@ GLES_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                     data->format,
                     data->formattype,
                     src);
-    if (blob) {
-        SDL_free(blob);
-    }
+    SDL_free(blob);
 
     if (renderdata->glGetError() != GL_NO_ERROR)
     {
@@ -1116,9 +1114,7 @@ GLES_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     if (data->texture) {
         renderdata->glDeleteTextures(1, &data->texture);
     }
-    if (data->pixels) {
-        SDL_free(data->pixels);
-    }
+    SDL_free(data->pixels);
     SDL_free(data);
     texture->driverdata = NULL;
 }

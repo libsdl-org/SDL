@@ -1388,9 +1388,7 @@ SDLTest_CommonQuit(SDLTest_CommonState * state)
 {
     int i;
 
-    if (state->windows) {
-        SDL_free(state->windows);
-    }
+    SDL_free(state->windows);
     if (state->renderers) {
         for (i = 0; i < state->num_windows; ++i) {
             if (state->renderers[i]) {

@@ -1226,9 +1226,7 @@ DirectFB_DestroyRenderer(SDL_Renderer * renderer)
     }
 #endif
 
-    if (data) {
-        SDL_free(data);
-    }
+    SDL_free(data);
     SDL_free(renderer);
 }
 

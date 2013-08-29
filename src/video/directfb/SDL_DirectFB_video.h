@@ -76,7 +76,7 @@
 #define DFBENV_USE_WM               "SDL_DIRECTFB_WM"       /* Default: off  */
 
 #define SDL_DFB_RELEASE(x) do { if ( (x) != NULL ) { SDL_DFB_CHECK(x->Release(x)); x = NULL; } } while (0)
-#define SDL_DFB_FREE(x) do { if ( (x) != NULL ) { SDL_free(x); x = NULL; } } while (0)
+#define SDL_DFB_FREE(x) do { SDL_free((x)); (x) = NULL; } while (0)
 #define SDL_DFB_UNLOCK(x) do { if ( (x) != NULL ) { x->Unlock(x); } } while (0)
 
 #define SDL_DFB_CONTEXT "SDL_DirectFB"

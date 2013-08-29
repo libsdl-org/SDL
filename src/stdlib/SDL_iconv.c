@@ -843,7 +843,7 @@ SDL_iconv(SDL_iconv_t cd,
 int
 SDL_iconv_close(SDL_iconv_t cd)
 {
-    if (cd && cd != (SDL_iconv_t) - 1) {
+    if (cd != (SDL_iconv_t)-1) {
         SDL_free(cd);
     }
     return 0;

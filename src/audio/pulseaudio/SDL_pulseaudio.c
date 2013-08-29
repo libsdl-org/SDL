@@ -300,10 +300,8 @@ static void
 PULSEAUDIO_CloseDevice(_THIS)
 {
     if (this->hidden != NULL) {
-        if (this->hidden->mixbuf != NULL) {
-            SDL_FreeAudioMem(this->hidden->mixbuf);
-            this->hidden->mixbuf = NULL;
-        }
+        SDL_FreeAudioMem(this->hidden->mixbuf);
+        this->hidden->mixbuf = NULL;
         if (this->hidden->stream) {
             PULSEAUDIO_pa_stream_disconnect(this->hidden->stream);
             PULSEAUDIO_pa_stream_unref(this->hidden->stream);

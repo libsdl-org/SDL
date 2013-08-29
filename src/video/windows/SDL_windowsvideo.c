@@ -75,9 +75,7 @@ WIN_CreateDevice(int devindex)
         data = NULL;
     }
     if (!data) {
-        if (device) {
-            SDL_free(device);
-        }
+        SDL_free(device);
         SDL_OutOfMemory();
         return NULL;
     }

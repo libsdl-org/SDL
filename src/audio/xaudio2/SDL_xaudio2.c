@@ -205,9 +205,7 @@ XAUDIO2_CloseDevice(_THIS)
         if (ixa2 != NULL) {
             IXAudio2_Release(ixa2);
         }
-        if (this->hidden->mixbuf != NULL) {
-            SDL_free(this->hidden->mixbuf);
-        }
+        SDL_free(this->hidden->mixbuf);
         if (this->hidden->semaphore != NULL) {
             CloseHandle(this->hidden->semaphore);
         }

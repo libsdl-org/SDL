@@ -995,9 +995,7 @@ _compare(SDL_Surface *referenceSurface, int allowable_error)
    SDLTest_AssertCheck(result == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", result);
 
    /* Clean up. */
-   if (pixels != NULL) {
-       SDL_free(pixels);
-   }
+   SDL_free(pixels);
    if (testSurface != NULL) {
        SDL_FreeSurface(testSurface);
    }
