@@ -1552,21 +1552,7 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
 void
 SDL_SYS_JoystickClose(SDL_Joystick * joystick)
 {
-    if ( joystick->hwdata->bXInputDevice )
-    {
-        JoyStick_DeviceData *joysticklist = SYS_Joystick;
-        /* scan the opened joysticks and clear the userid for this instance */
-        for( ; joysticklist; joysticklist = joysticklist->pNext)
-        {
-            if ( joysticklist->bXInputDevice && joysticklist->nInstanceID == joystick->instance_id )
-            {
-                joysticklist->XInputUserId = INVALID_XINPUT_USERID;
-            }
-        }
-
-    }
-    else
-    {
+    if (!joystick->hwdata->bXInputDevice) {
         IDirectInputDevice8_Unacquire(joystick->hwdata->InputDevice);
         IDirectInputDevice8_Release(joystick->hwdata->InputDevice);
     }
