@@ -84,8 +84,8 @@ SDL_GetBasePath(void)
 #if defined(__FREEBSD__)
     char fullpath[PATH_MAX];
     size_t buflen = sizeof (fullpath);
-    const int mib[4] = { CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1 };
-    if (sysctl(mib, 4, fullpath, &buflen, NULL, 0) != -1) {
+    const int mib[] = { CTL_KERN, KERN_PROC, KERN_PROC_PATHNAME, -1 };
+    if (sysctl(mib, SDL_arraysize(mib), fullpath, &buflen, NULL, 0) != -1) {
         retval = SDL_strdup(fullpath);
         if (!retval) {
             SDL_OutOfMemory();
