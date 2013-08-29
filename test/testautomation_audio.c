@@ -77,7 +77,7 @@ int audio_initQuitAudio()
             audioDriver = SDL_GetAudioDriver(i);
             SDLTest_AssertPass("Call to SDL_GetAudioDriver(%d)", i);
             SDLTest_AssertCheck(audioDriver != NULL, "Audio driver name is not NULL");
-            SDLTest_AssertCheck(SDL_strlen(audioDriver) > 0, "Audio driver name is not empty; got: %s", audioDriver);
+            SDLTest_AssertCheck(audioDriver[0] != '\0', "Audio driver name is not empty; got: %s", audioDriver);
 
             /* Call Init */
             result = SDL_AudioInit(audioDriver);
@@ -134,7 +134,7 @@ int audio_initOpenCloseQuitAudio()
             audioDriver = SDL_GetAudioDriver(i);
             SDLTest_AssertPass("Call to SDL_GetAudioDriver(%d)", i);
             SDLTest_AssertCheck(audioDriver != NULL, "Audio driver name is not NULL");
-            SDLTest_AssertCheck(SDL_strlen(audioDriver) > 0, "Audio driver name is not empty; got: %s", audioDriver);
+            SDLTest_AssertCheck(audioDriver[0] != '\0', "Audio driver name is not empty; got: %s", audioDriver);
 
             /* Change specs */
             for (j = 0; j < 2; j++) {
@@ -226,14 +226,14 @@ int audio_enumerateAndNameAudioDevices()
             SDLTest_AssertPass("Call to SDL_GetAudioDeviceName(%i, %i)", i, t);
             SDLTest_AssertCheck(name != NULL, "Verify result from SDL_GetAudioDeviceName(%i, %i) is not NULL", i, t);
             if (name != NULL) {
-              SDLTest_AssertCheck(SDL_strlen(name)>0, "verify result from SDL_GetAudioDeviceName(%i, %i) is not empty, got: '%s'", i, t, name);
+              SDLTest_AssertCheck(name[0] != '\0', "verify result from SDL_GetAudioDeviceName(%i, %i) is not empty, got: '%s'", i, t, name);
               if (t==1) {
                   /* Also try non-zero type */
                   tt = t + SDLTest_RandomIntegerInRange(1,10);
                   nameAgain = SDL_GetAudioDeviceName(i, tt);
                   SDLTest_AssertCheck(nameAgain != NULL, "Verify result from SDL_GetAudioDeviceName(%i, %i) is not NULL", i, tt);
                   if (nameAgain != NULL) {
-                    SDLTest_AssertCheck(SDL_strlen(nameAgain)>0, "Verify result from SDL_GetAudioDeviceName(%i, %i) is not empty, got: '%s'", i, tt, nameAgain);
+                    SDLTest_AssertCheck(nameAgain[0] != '\0', "Verify result from SDL_GetAudioDeviceName(%i, %i) is not empty, got: '%s'", i, tt, nameAgain);
                     SDLTest_AssertCheck(SDL_strcmp(name, nameAgain)==0,
                       "Verify SDL_GetAudioDeviceName(%i, %i) and SDL_GetAudioDeviceName(%i %i) return the same string",
                       i, t, i, tt);
@@ -318,7 +318,7 @@ int audio_printAudioDrivers()
          SDLTest_AssertPass("Call to SDL_GetAudioDriver(%i)", i);
          SDLTest_AssertCheck(name != NULL, "Verify returned name is not NULL");
          if (name != NULL) {
-            SDLTest_AssertCheck(SDL_strlen(name)>0, "Verify returned name is not empty, got: '%s'", name);
+            SDLTest_AssertCheck(name[0] != '\0', "Verify returned name is not empty, got: '%s'", name);
          }
       }
    }
@@ -339,7 +339,7 @@ int audio_printCurrentAudioDriver()
    SDLTest_AssertPass("Call to SDL_GetCurrentAudioDriver()");
    SDLTest_AssertCheck(name != NULL, "Verify returned name is not NULL");
    if (name != NULL) {
-      SDLTest_AssertCheck(SDL_strlen(name)>0, "Verify returned name is not empty, got: '%s'", name);
+      SDLTest_AssertCheck(name[0] != '\0', "Verify returned name is not empty, got: '%s'", name);
    }
 
    return TEST_COMPLETED;
@@ -509,7 +509,7 @@ int audio_buildAudioCVTNegative()
     SDLTest_AssertCheck(result == -1, "Verify result value; expected: -1, got: %i", result);
     error = SDL_GetError();
     SDLTest_AssertPass("Call to SDL_GetError()");
-    SDLTest_AssertCheck(error != NULL && SDL_strlen(error)>0, "Validate that error message was not NULL or empty");
+    SDLTest_AssertCheck(error != NULL && error[0] != '\0', "Validate that error message was not NULL or empty");
   }
 
   SDL_ClearError();

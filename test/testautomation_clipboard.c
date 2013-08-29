@@ -118,7 +118,7 @@ clipboard_testClipboardTextFunctions(void *arg)
         charResult != NULL,
         "Verify SDL_GetClipboardText did not return NULL");
     SDLTest_AssertCheck(
-        SDL_strlen(charResult) == 0,
+        charResult[0] == '\0',
         "Verify SDL_GetClipboardText returned string with length 0, got length %i",
         SDL_strlen(charResult));
     intResult = SDL_SetClipboardText((const char *)text);

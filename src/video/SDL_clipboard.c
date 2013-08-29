@@ -65,7 +65,7 @@ SDL_HasClipboardText(void)
     if (_this->HasClipboardText) {
         return _this->HasClipboardText(_this);
     } else {
-        if ((_this->clipboard_text) && (SDL_strlen(_this->clipboard_text)>0)) {
+        if (_this->clipboard_text && _this->clipboard_text[0] != '\0') {
             return SDL_TRUE;
         } else {
             return SDL_FALSE;

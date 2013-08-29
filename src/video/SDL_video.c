@@ -1453,7 +1453,7 @@ SDL_SetWindowData(SDL_Window * window, const char *name, void *userdata)
     CHECK_WINDOW_MAGIC(window, NULL);
 
     /* Input validation */
-    if (name == NULL || SDL_strlen(name) == 0) {
+    if (name == NULL || name[0] == '\0') {
       SDL_InvalidParamError("name");
       return NULL;
     }
@@ -1500,7 +1500,7 @@ SDL_GetWindowData(SDL_Window * window, const char *name)
     CHECK_WINDOW_MAGIC(window, NULL);
 
     /* Input validation */
-    if (name == NULL || SDL_strlen(name) == 0) {
+    if (name == NULL || name[0] == '\0') {
       SDL_InvalidParamError("name");
       return NULL;
     }

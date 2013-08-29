@@ -165,7 +165,7 @@ X11_HasClipboardText(_THIS)
     SDL_bool result = SDL_FALSE;
     char *text = X11_GetClipboardText(_this);
     if (text) {
-        result = (SDL_strlen(text)>0) ? SDL_TRUE : SDL_FALSE;
+        result = text[0] != '\0' ? SDL_TRUE : SDL_FALSE;
         SDL_free(text);
     }
     return result;

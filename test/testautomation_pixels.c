@@ -242,7 +242,7 @@ pixels_getPixelFormatName(void *arg)
   SDLTest_AssertPass("Call to SDL_GetPixelFormatName()");
   SDLTest_AssertCheck(result != NULL, "Verify result is not NULL");
   if (result != NULL) {
-      SDLTest_AssertCheck(SDL_strlen(result) > 0, "Verify result is non-empty");
+      SDLTest_AssertCheck(result[0] != '\0', "Verify result is non-empty");
       SDLTest_AssertCheck(SDL_strcmp(result, unknownFormat) == 0,
         "Verify result text; expected: %s, got %s", unknownFormat, result);
   }
@@ -257,7 +257,7 @@ pixels_getPixelFormatName(void *arg)
     SDLTest_AssertPass("Call to SDL_GetPixelFormatName()");
     SDLTest_AssertCheck(result != NULL, "Verify result is not NULL");
     if (result != NULL) {
-      SDLTest_AssertCheck(SDL_strlen(result) > 0, "Verify result is non-empty");
+      SDLTest_AssertCheck(result[0] != '\0', "Verify result is non-empty");
       SDLTest_AssertCheck(SDL_strcmp(result, _RGBPixelFormatsVerbose[i]) == 0,
         "Verify result text; expected: %s, got %s", _RGBPixelFormatsVerbose[i], result);
     }
@@ -273,7 +273,7 @@ pixels_getPixelFormatName(void *arg)
     SDLTest_AssertPass("Call to SDL_GetPixelFormatName()");
     SDLTest_AssertCheck(result != NULL, "Verify result is not NULL");
     if (result != NULL) {
-      SDLTest_AssertCheck(SDL_strlen(result) > 0, "Verify result is non-empty");
+      SDLTest_AssertCheck(result[0] != '\0', "Verify result is non-empty");
       SDLTest_AssertCheck(SDL_strcmp(result, _nonRGBPixelFormatsVerbose[i]) == 0,
         "Verify result text; expected: %s, got %s", _nonRGBPixelFormatsVerbose[i], result);
     }
@@ -290,14 +290,14 @@ pixels_getPixelFormatName(void *arg)
     SDLTest_AssertPass("Call to SDL_GetPixelFormatName(%u)", format);
     SDLTest_AssertCheck(result != NULL, "Verify result is not NULL");
     if (result != NULL) {
-      SDLTest_AssertCheck(SDL_strlen(result) > 0,
+      SDLTest_AssertCheck(result[0] != '\0',
         "Verify result is non-empty; got: %s", result);
       SDLTest_AssertCheck(SDL_strcmp(result, _invalidPixelFormatsVerbose[i]) == 0,
         "Validate name is UNKNOWN, expected: '%s', got: '%s'", _invalidPixelFormatsVerbose[i], result);
     }
     error = SDL_GetError();
     SDLTest_AssertPass("Call to SDL_GetError()");
-    SDLTest_AssertCheck(error != NULL && SDL_strlen(error) == 0, "Validate that error message is empty");
+    SDLTest_AssertCheck(error != NULL && error[0] != '\0', "Validate that error message is empty");
   }
 
   return TEST_COMPLETED;
