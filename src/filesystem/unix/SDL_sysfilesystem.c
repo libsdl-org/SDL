@@ -172,7 +172,7 @@ SDL_GetPrefPath(const char *org, const char *app)
         append = "/.local/share/";
     } else {
         append = "/";
-    } /* if */
+    }
 
     len = SDL_strlen(envr);
     if (envr[len - 1] == '/')
