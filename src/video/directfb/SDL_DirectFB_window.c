@@ -237,8 +237,7 @@ DirectFB_SetWindowIcon(_THIS, SDL_Window * window, SDL_Surface * icon)
     }
     return;
   error:
-    if (surface)
-        SDL_FreeSurface(surface);
+    SDL_FreeSurface(surface);
     SDL_DFB_RELEASE(windata->icon);
     return;
 }

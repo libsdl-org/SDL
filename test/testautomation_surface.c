@@ -63,14 +63,10 @@ _surfaceSetUp(void *arg)
 void
 _surfaceTearDown(void *arg)
 {
-    if (referenceSurface != NULL) {
-        SDL_FreeSurface(referenceSurface);
-        referenceSurface = NULL;
-    }
-    if (testSurface != NULL) {
-        SDL_FreeSurface(testSurface);
-        testSurface = NULL;
-    }
+    SDL_FreeSurface(referenceSurface);
+    referenceSurface = NULL;
+    SDL_FreeSurface(testSurface);
+    testSurface = NULL;
 }
 
 /**
@@ -193,10 +189,8 @@ void _testBlitBlendMode(int mode)
     SDLTest_AssertCheck(checkFailCount4 == 0, "Validate results from calls to SDL_SetSurfaceBlendMode, expected: 0, got: %i", checkFailCount4);
 
     /* Clean up */
-    if (face != NULL) {
-        SDL_FreeSurface(face);
-        face = NULL;
-    }
+    SDL_FreeSurface(face);
+    face = NULL;
 }
 
 /* Helper to check that a file exists */
@@ -250,14 +244,10 @@ surface_testSaveLoadBitmap(void *arg)
     unlink(sampleFilename);
 
     /* Clean up */
-    if (face != NULL) {
     SDL_FreeSurface(face);
     face = NULL;
-    }
-    if (rface != NULL) {
     SDL_FreeSurface(rface);
     rface = NULL;
-    }
 
     return TEST_COMPLETED;
 }
@@ -294,14 +284,10 @@ surface_testSurfaceConversion(void *arg)
     SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
 
     /* Clean up. */
-    if (face != NULL) {
-        SDL_FreeSurface( face );
-        face = NULL;
-    }
-    if (rface != NULL) {
-        SDL_FreeSurface( rface );
-        rface = NULL;
-    }
+    SDL_FreeSurface(face);
+    face = NULL;
+    SDL_FreeSurface(rface);
+    rface = NULL;
 
     return TEST_COMPLETED;
 }
@@ -427,9 +413,7 @@ surface_testBlit(void *arg)
    SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
 
    /* Clean up. */
-   if (compareSurface != NULL) {
-    SDL_FreeSurface( compareSurface );
-   }
+   SDL_FreeSurface(compareSurface);
 
    return TEST_COMPLETED;
 }
@@ -452,9 +436,7 @@ surface_testBlitColorMod(void *arg)
    SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
 
    /* Clean up. */
-   if (compareSurface != NULL) {
-    SDL_FreeSurface( compareSurface );
-   }
+   SDL_FreeSurface(compareSurface);
 
    return TEST_COMPLETED;
 }
@@ -477,9 +459,7 @@ surface_testBlitAlphaMod(void *arg)
    SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
 
    /* Clean up. */
-   if (compareSurface != NULL) {
-    SDL_FreeSurface( compareSurface );
-   }
+   SDL_FreeSurface(compareSurface);
 
    return TEST_COMPLETED;
 }
@@ -503,9 +483,7 @@ surface_testBlitBlendNone(void *arg)
    SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
 
    /* Clean up. */
-   if (compareSurface != NULL) {
-    SDL_FreeSurface( compareSurface );
-   }
+   SDL_FreeSurface(compareSurface);
 
    return TEST_COMPLETED;
 }
@@ -528,9 +506,7 @@ surface_testBlitBlendBlend(void *arg)
    SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
 
    /* Clean up. */
-   if (compareSurface != NULL) {
-    SDL_FreeSurface( compareSurface );
-   }
+   SDL_FreeSurface(compareSurface);
 
    return TEST_COMPLETED;
 }
@@ -553,9 +529,7 @@ surface_testBlitBlendAdd(void *arg)
    SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
 
    /* Clean up. */
-   if (compareSurface != NULL) {
-    SDL_FreeSurface( compareSurface );
-   }
+   SDL_FreeSurface(compareSurface);
 
    return TEST_COMPLETED;
 }
@@ -578,9 +552,7 @@ surface_testBlitBlendMod(void *arg)
    SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
 
    /* Clean up. */
-   if (compareSurface != NULL) {
-      SDL_FreeSurface( compareSurface );
-   }
+   SDL_FreeSurface(compareSurface);
 
    return TEST_COMPLETED;
 }
@@ -603,9 +575,7 @@ surface_testBlitBlendLoop(void *arg) {
    SDLTest_AssertCheck(ret == 0, "Validate result from SDLTest_CompareSurfaces, expected: 0, got: %i", ret);
 
    /* Clean up. */
-   if (compareSurface != NULL) {
-     SDL_FreeSurface(compareSurface);
-   }
+   SDL_FreeSurface(compareSurface);
 
    return TEST_COMPLETED;
 

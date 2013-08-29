@@ -38,9 +38,7 @@ int SDL_DUMMY_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * forma
 
     /* Free the old framebuffer surface */
     surface = (SDL_Surface *) SDL_GetWindowData(window, DUMMY_SURFACE);
-    if (surface) {
-        SDL_FreeSurface(surface);
-    }
+    SDL_FreeSurface(surface);
 
     /* Create a new one */
     SDL_PixelFormatEnumToMasks(surface_format, &bpp, &Rmask, &Gmask, &Bmask, &Amask);
@@ -83,9 +81,7 @@ void SDL_DUMMY_DestroyWindowFramebuffer(_THIS, SDL_Window * window)
     SDL_Surface *surface;
 
     surface = (SDL_Surface *) SDL_SetWindowData(window, DUMMY_SURFACE, NULL);
-    if (surface) {
-        SDL_FreeSurface(surface);
-    }
+    SDL_FreeSurface(surface);
 }
 
 #endif /* SDL_VIDEO_DRIVER_DUMMY */

@@ -1012,10 +1012,8 @@ SDL_SW_SetupYUVDisplay(SDL_SW_YUVTexture * swdata, Uint32 target_format)
         break;
     }
 
-    if (swdata->display) {
-        SDL_FreeSurface(swdata->display);
-        swdata->display = NULL;
-    }
+    SDL_FreeSurface(swdata->display);
+    swdata->display = NULL;
     return 0;
 }
 
@@ -1338,12 +1336,8 @@ SDL_SW_DestroyYUVTexture(SDL_SW_YUVTexture * swdata)
         SDL_free(swdata->pixels);
         SDL_free(swdata->colortab);
         SDL_free(swdata->rgb_2_pix);
-        if (swdata->stretch) {
-            SDL_FreeSurface(swdata->stretch);
-        }
-        if (swdata->display) {
-            SDL_FreeSurface(swdata->display);
-        }
+        SDL_FreeSurface(swdata->stretch);
+        SDL_FreeSurface(swdata->display);
         SDL_free(swdata);
     }
 }
