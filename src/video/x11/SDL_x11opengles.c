@@ -33,8 +33,8 @@ X11_GLES_LoadLibrary(_THIS, const char *path) {
         
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
 
-    /* If SDL_GL_CONTEXT_EGL has been changed to 0, switch over to X11_GL functions  */
-    if (_this->gl_config.use_egl == 0) {
+    /* If the profile requested is not GL ES, switch over to X11_GL functions  */
+    if (_this->gl_config.profile_mask != SDL_GL_CONTEXT_PROFILE_ES) {
         #if SDL_VIDEO_OPENGL_GLX
         _this->GL_LoadLibrary = X11_GL_LoadLibrary;
         _this->GL_GetProcAddress = X11_GL_GetProcAddress;

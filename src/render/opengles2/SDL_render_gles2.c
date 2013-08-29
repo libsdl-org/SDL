@@ -1628,7 +1628,7 @@ GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
     Uint32 windowFlags;
     GLint window_framebuffer;
 
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
 
