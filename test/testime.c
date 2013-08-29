@@ -331,7 +331,7 @@ int main(int argc, char *argv[]) {
                     break;
 
                 case SDL_TEXTINPUT:
-                    if (SDL_strlen(event.text.text) == 0 || event.text.text[0] == '\n' ||
+                    if (event.text.text[0] == '\0' || event.text.text[0] == '\n' ||
                         markedRect.w < 0)
                         break;
 

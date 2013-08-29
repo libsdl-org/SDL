@@ -109,17 +109,17 @@ SDLTest_GenerateExecKey(char *runSeed, char *suiteName, char *testName, int iter
     Uint32 entireStringLength;
     char *buffer;
 
-    if (runSeed == NULL || SDL_strlen(runSeed)==0) {
+    if (runSeed == NULL || runSeed[0] == '\0') {
         SDLTest_LogError("Invalid runSeed string.");
         return -1;
     }
 
-    if (suiteName == NULL || SDL_strlen(suiteName)==0) {
+    if (suiteName == NULL || suiteName[0] == '\0') {
         SDLTest_LogError("Invalid suiteName string.");
         return -1;
     }
 
-    if (testName == NULL || SDL_strlen(testName)==0) {
+    if (testName == NULL || testName[0] == '\0') {
         SDLTest_LogError("Invalid testName string.");
         return -1;
     }
@@ -399,7 +399,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
     }
 
     /* Generate run see if we don't have one already */
-    if (userRunSeed == NULL || SDL_strlen(userRunSeed) == 0) {
+    if (userRunSeed == NULL || userRunSeed[0] == '\0') {
         runSeed = SDLTest_GenerateRunSeed(16);
         if (runSeed == NULL) {
             SDLTest_LogError("Generating a random seed failed");
@@ -422,7 +422,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
     SDLTest_Log("::::: Test Run /w seed '%s' started\n", runSeed);
 
     /* Initialize filtering */
-    if (filter != NULL && SDL_strlen(filter) > 0) {
+    if (filter != NULL && filter[0] != '\0') {
         /* Loop over all suites to check if we have a filter match */
         suiteCounter = 0;
         while (testSuites[suiteCounter] && suiteFilter == 0) {
@@ -521,7 +521,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
                         suiteCounter,
                         testCounter,
                         currentTestName);
-                    if (testCase->description != NULL && SDL_strlen(testCase->description)>0) {
+                    if (testCase->description != NULL && testCase->description[0] != '\0') {
                         SDLTest_Log("Test Description: '%s'",
                             (testCase->description) ? testCase->description : SDLTest_InvalidNameFormat);
                     }
