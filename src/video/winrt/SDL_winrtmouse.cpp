@@ -36,6 +36,7 @@ using Windows::UI::Core::CoreCursor;
 extern "C" {
 #include "SDL_assert.h"
 #include "../../events/SDL_mouse_c.h"
+#include "../../events/SDL_touch_c.h"
 #include "../SDL_sysvideo.h"
 #include "SDL_events.h"
 #include "SDL_log.h"
@@ -47,6 +48,8 @@ extern "C" {
 
 
 static SDL_bool WINRT_UseRelativeMouseMode = SDL_FALSE;
+static SDL_TouchID WINRT_TouchID = 1;
+static unsigned int WINRT_LeftFingerDown = 0;
 
 
 static SDL_Cursor *
@@ -152,6 +155,11 @@ WINRT_InitMouse(_THIS)
     mouse->SetRelativeMouseMode = WINRT_SetRelativeMouseMode;
 
     SDL_SetDefaultCursor(WINRT_CreateDefaultCursor());
+#endif
+
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+    /* Init touch: */
+    SDL_AddTouch(WINRT_TouchID, "");
 #endif
 }
 
@@ -378,7 +386,20 @@ WINRT_ProcessPointerMovedEvent(SDL_Window *window, Windows::UI::Input::PointerPo
     }
 
     Windows::Foundation::Point transformedPoint = WINRT_TransformCursorPosition(window, pointerPoint->Position);
-    SDL_SendMouseMotion(window, 0, 0, (int)transformedPoint.X, (int)transformedPoint.Y);
+
+    if (pointerPoint->PointerId == WINRT_LeftFingerDown) {
+        SDL_SendMouseMotion(window, 0, 0, (int)transformedPoint.X, (int)transformedPoint.Y);
+    }
+
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+    // TODO, WinRT: make touch input work with Windows 8/RT, seeing if touches can be distinguished from mouse input.
+    SDL_SendTouchMotion(
+        WINRT_TouchID,
+        (SDL_FingerID) pointerPoint->PointerId,
+        transformedPoint.X,
+        transformedPoint.Y,
+        pointerPoint->Properties->Pressure);
+#endif
 }
 
 void
@@ -399,10 +420,25 @@ void WINRT_ProcessPointerReleasedEvent(SDL_Window *window, Windows::UI::Input::P
         return;
     }
 
-    Uint8 button = WINRT_GetSDLButtonForPointerPoint(pointerPoint);
-    if (button) {
-        SDL_SendMouseButton(window, 0, SDL_RELEASED, button);
+    Windows::Foundation::Point transformedPoint = WINRT_TransformCursorPosition(window, pointerPoint->Position);
+
+    if (WINRT_LeftFingerDown == pointerPoint->PointerId) {
+        Uint8 button = WINRT_GetSDLButtonForPointerPoint(pointerPoint);
+        if (button) {
+            SDL_SendMouseButton(window, 0, SDL_RELEASED, button);
+        }
+        WINRT_LeftFingerDown = 0;
     }
+
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+    SDL_SendTouch(
+        WINRT_TouchID,
+        (SDL_FingerID) pointerPoint->PointerId,
+        SDL_FALSE,
+        transformedPoint.X,
+        transformedPoint.Y,
+        pointerPoint->Properties->Pressure);
+#endif
 }
 
 void WINRT_ProcessPointerPressedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint)
@@ -411,14 +447,29 @@ void WINRT_ProcessPointerPressedEvent(SDL_Window *window, Windows::UI::Input::Po
         return;
     }
 
-    Uint8 button = WINRT_GetSDLButtonForPointerPoint(pointerPoint);
-    if (button) {
+    Windows::Foundation::Point transformedPoint = WINRT_TransformCursorPosition(window, pointerPoint->Position);
+
+    if (!WINRT_LeftFingerDown) {
+        Uint8 button = WINRT_GetSDLButtonForPointerPoint(pointerPoint);
+        if (button) {
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
-        Windows::Foundation::Point transformedPoint = WINRT_TransformCursorPosition(window, pointerPoint->Position);
-        SDL_SendMouseMotion(window, 0, 0, (int)transformedPoint.X, (int)transformedPoint.Y);
+            SDL_SendMouseMotion(window, 0, 0, (int)transformedPoint.X, (int)transformedPoint.Y);
 #endif
-        SDL_SendMouseButton(window, 0, SDL_PRESSED, button);
+            SDL_SendMouseButton(window, 0, SDL_PRESSED, button);
+        }
+
+        WINRT_LeftFingerDown = pointerPoint->PointerId;
     }
+
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+    SDL_SendTouch(
+        WINRT_TouchID,
+        (SDL_FingerID) pointerPoint->PointerId,
+        SDL_TRUE,
+        transformedPoint.X,
+        transformedPoint.Y,
+        pointerPoint->Properties->Pressure);
+#endif
 }
 
 #endif /* SDL_VIDEO_DRIVER_WINRT */
