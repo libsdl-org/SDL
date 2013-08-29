@@ -42,15 +42,9 @@ static int iterations = -1;
 static void
 quit(int rc)
 {
-    if (sprites) {
-        SDL_free(sprites);
-    }
-    if (positions) {
-        SDL_free(positions);
-    }
-    if (velocities) {
-        SDL_free(velocities);
-    }
+    SDL_free(sprites);
+    SDL_free(positions);
+    SDL_free(velocities);
     SDLTest_CommonQuit(state);
     exit(rc);
 }

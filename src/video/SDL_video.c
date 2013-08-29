@@ -263,10 +263,8 @@ SDL_CreateWindowTexture(_THIS, SDL_Window * window, Uint32 * format, void ** pix
         SDL_DestroyTexture(data->texture);
         data->texture = NULL;
     }
-    if (data->pixels) {
-        SDL_free(data->pixels);
-        data->pixels = NULL;
-    }
+    SDL_free(data->pixels);
+    data->pixels = NULL;
 
     if (SDL_GetRendererInfo(data->renderer, &info) < 0) {
         return -1;
@@ -351,9 +349,7 @@ SDL_DestroyWindowTexture(_THIS, SDL_Window * window)
     if (data->renderer) {
         SDL_DestroyRenderer(data->renderer);
     }
-    if (data->pixels) {
-        SDL_free(data->pixels);
-    }
+    SDL_free(data->pixels);
     SDL_free(data);
 }
 
@@ -1407,9 +1403,7 @@ SDL_SetWindowTitle(SDL_Window * window, const char *title)
     if (title == window->title) {
         return;
     }
-    if (window->title) {
-        SDL_free(window->title);
-    }
+    SDL_free(window->title);
     if (title && *title) {
         window->title = SDL_strdup(title);
     } else {
@@ -2188,15 +2182,11 @@ SDL_DestroyWindow(SDL_Window * window)
     window->magic = NULL;
 
     /* Free memory associated with the window */
-    if (window->title) {
-        SDL_free(window->title);
-    }
+    SDL_free(window->title);
     if (window->icon) {
         SDL_FreeSurface(window->icon);
     }
-    if (window->gamma) {
-        SDL_free(window->gamma);
-    }
+    SDL_free(window->gamma);
     while (window->data) {
         SDL_WindowUserData *data = window->data;
 
@@ -2283,23 +2273,15 @@ SDL_VideoQuit(void)
     for (i = 0; i < _this->num_displays; ++i) {
         SDL_VideoDisplay *display = &_this->displays[i];
         for (j = display->num_display_modes; j--;) {
-            if (display->display_modes[j].driverdata) {
-                SDL_free(display->display_modes[j].driverdata);
-                display->display_modes[j].driverdata = NULL;
-            }
+            SDL_free(display->display_modes[j].driverdata);
+            display->display_modes[j].driverdata = NULL;
         }
-        if (display->display_modes) {
-            SDL_free(display->display_modes);
-            display->display_modes = NULL;
-        }
-        if (display->desktop_mode.driverdata) {
-            SDL_free(display->desktop_mode.driverdata);
-            display->desktop_mode.driverdata = NULL;
-        }
-        if (display->driverdata) {
-            SDL_free(display->driverdata);
-            display->driverdata = NULL;
-        }
+        SDL_free(display->display_modes);
+        display->display_modes = NULL;
+        SDL_free(display->desktop_mode.driverdata);
+        display->desktop_mode.driverdata = NULL;
+        SDL_free(display->driverdata);
+        display->driverdata = NULL;
     }
     if (_this->displays) {
         for (i = 0; i < _this->num_displays; ++i) {
@@ -2309,10 +2291,8 @@ SDL_VideoQuit(void)
         _this->displays = NULL;
         _this->num_displays = 0;
     }
-    if (_this->clipboard_text) {
-        SDL_free(_this->clipboard_text);
-        _this->clipboard_text = NULL;
-    }
+    SDL_free(_this->clipboard_text);
+    _this->clipboard_text = NULL;
     _this->free(_this);
     _this = NULL;
 }

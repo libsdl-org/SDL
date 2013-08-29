@@ -275,10 +275,8 @@ windows_file_close(SDL_RWops * context)
             CloseHandle(context->hidden.windowsio.h);
             context->hidden.windowsio.h = INVALID_HANDLE_VALUE;   /* to be sure */
         }
-        if (context->hidden.windowsio.buffer.data) {
-            SDL_free(context->hidden.windowsio.buffer.data);
-            context->hidden.windowsio.buffer.data = NULL;
-        }
+        SDL_free(context->hidden.windowsio.buffer.data);
+        context->hidden.windowsio.buffer.data = NULL;
         SDL_FreeRW(context);
     }
     return (0);

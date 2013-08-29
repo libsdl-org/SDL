@@ -336,9 +336,7 @@ GLES2_DestroyRenderer(SDL_Renderer *renderer)
             }
             SDL_GL_DeleteContext(rdata->context);
         }
-        if (rdata->shader_formats) {
-            SDL_free(rdata->shader_formats);
-        }
+        SDL_free(rdata->shader_formats);
         SDL_free(rdata);
     }
     SDL_free(renderer);
@@ -541,9 +539,7 @@ GLES2_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect
                     tdata->pixel_format,
                     tdata->pixel_type,
                     src);
-    if (blob) {
-        SDL_free(blob);
-    }
+    SDL_free(blob);
 
     if (rdata->glGetError() != GL_NO_ERROR) {
         return SDL_SetError("Failed to update texture");

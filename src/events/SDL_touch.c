@@ -355,10 +355,8 @@ SDL_TouchQuit(void)
     }
     SDL_assert(SDL_num_touch == 0);
 
-    if (SDL_touchDevices) {
-        SDL_free(SDL_touchDevices);
-        SDL_touchDevices = NULL;
-    }
+    SDL_free(SDL_touchDevices);
+    SDL_touchDevices = NULL;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

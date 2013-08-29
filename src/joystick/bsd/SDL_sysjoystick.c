@@ -577,10 +577,8 @@ SDL_SYS_JoystickQuit(void)
     int i;
 
     for (i = 0; i < MAX_JOYS; i++) {
-        if (joynames[i] != NULL)
-            SDL_free(joynames[i]);
-        if (joydevnames[i] != NULL)
-            SDL_free(joydevnames[i]);
+        SDL_free(joynames[i]);
+        SDL_free(joydevnames[i]);
     }
 
     return;
@@ -657,9 +655,7 @@ report_alloc(struct report *r, struct report_desc *rd, int repind)
 static void
 report_free(struct report *r)
 {
-    if (r->buf != NULL) {
-        SDL_free(r->buf);
-    }
+    SDL_free(r->buf);
     r->status = SREPORT_UNINIT;
 }
 

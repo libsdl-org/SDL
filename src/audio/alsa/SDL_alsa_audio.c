@@ -340,10 +340,8 @@ static void
 ALSA_CloseDevice(_THIS)
 {
     if (this->hidden != NULL) {
-        if (this->hidden->mixbuf != NULL) {
-            SDL_FreeAudioMem(this->hidden->mixbuf);
-            this->hidden->mixbuf = NULL;
-        }
+        SDL_FreeAudioMem(this->hidden->mixbuf);
+        this->hidden->mixbuf = NULL;
         if (this->hidden->pcm_handle) {
             ALSA_snd_pcm_drain(this->hidden->pcm_handle);
             ALSA_snd_pcm_close(this->hidden->pcm_handle);

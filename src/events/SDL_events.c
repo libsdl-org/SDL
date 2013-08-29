@@ -141,10 +141,8 @@ SDL_StopEventLoop(void)
 
     /* Clear disabled event state */
     for (i = 0; i < SDL_arraysize(SDL_disabled_events); ++i) {
-        if (SDL_disabled_events[i]) {
-            SDL_free(SDL_disabled_events[i]);
-            SDL_disabled_events[i] = NULL;
-        }
+        SDL_free(SDL_disabled_events[i]);
+        SDL_disabled_events[i] = NULL;
     }
 
     while (SDL_event_watchers) {

@@ -988,10 +988,7 @@ PSP_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     if(psp_texture == 0)
         return;
 
-    if(psp_texture->data != 0)
-    {
-        SDL_free(psp_texture->data);
-    }
+    SDL_free(psp_texture->data);
     SDL_free(psp_texture);
     texture->driverdata = NULL;
 }

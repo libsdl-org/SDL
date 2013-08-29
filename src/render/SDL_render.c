@@ -1712,9 +1712,7 @@ SDL_DestroyTexture(SDL_Texture * texture)
     if (texture->yuv) {
         SDL_SW_DestroyYUVTexture(texture->yuv);
     }
-    if (texture->pixels) {
-        SDL_free(texture->pixels);
-    }
+    SDL_free(texture->pixels);
 
     renderer->DestroyTexture(renderer, texture);
     SDL_free(texture);

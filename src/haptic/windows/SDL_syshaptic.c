@@ -751,10 +751,8 @@ SDL_SYS_HapticQuit(void)
     }
 
     for (i = 0; i < SDL_arraysize(SDL_hapticlist); ++i) {
-        if (SDL_hapticlist[i].name) {
-            SDL_free(SDL_hapticlist[i].name);
-            SDL_hapticlist[i].name = NULL;
-        }
+        SDL_free(SDL_hapticlist[i].name);
+        SDL_hapticlist[i].name = NULL;
     }
 
     if (dinput != NULL) {
@@ -1127,14 +1125,10 @@ SDL_SYS_HapticFreeDIEFFECT(DIEFFECT * effect, int type)
 {
     DICUSTOMFORCE *custom;
 
-    if (effect->lpEnvelope != NULL) {
-        SDL_free(effect->lpEnvelope);
-        effect->lpEnvelope = NULL;
-    }
-    if (effect->rgdwAxes != NULL) {
-        SDL_free(effect->rgdwAxes);
-        effect->rgdwAxes = NULL;
-    }
+    SDL_free(effect->lpEnvelope);
+    effect->lpEnvelope = NULL;
+    SDL_free(effect->rgdwAxes);
+    effect->rgdwAxes = NULL;
     if (effect->lpvTypeSpecificParams != NULL) {
         if (type == SDL_HAPTIC_CUSTOM) {        /* Must free the custom data. */
             custom = (DICUSTOMFORCE *) effect->lpvTypeSpecificParams;
@@ -1144,10 +1138,8 @@ SDL_SYS_HapticFreeDIEFFECT(DIEFFECT * effect, int type)
         SDL_free(effect->lpvTypeSpecificParams);
         effect->lpvTypeSpecificParams = NULL;
     }
-    if (effect->rglDirection != NULL) {
-        SDL_free(effect->rglDirection);
-        effect->rglDirection = NULL;
-    }
+    SDL_free(effect->rglDirection);
+    effect->rglDirection = NULL;
 }
 
 
@@ -1250,10 +1242,8 @@ SDL_SYS_HapticNewEffect(SDL_Haptic * haptic, struct haptic_effect *effect,
   err_effectdone:
     SDL_SYS_HapticFreeDIEFFECT(&effect->hweffect->effect, base->type);
   err_hweffect:
-    if (effect->hweffect != NULL) {
-        SDL_free(effect->hweffect);
-        effect->hweffect = NULL;
-    }
+    SDL_free(effect->hweffect);
+    effect->hweffect = NULL;
     return -1;
 }
 

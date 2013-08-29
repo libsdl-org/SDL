@@ -1813,9 +1813,7 @@ D3D_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     if (data->vtexture) {
         IDirect3DTexture9_Release(data->vtexture);
     }
-    if (data->pixels) {
-        SDL_free(data->pixels);
-    }
+    SDL_free(data->pixels);
     SDL_free(data);
     texture->driverdata = NULL;
 }

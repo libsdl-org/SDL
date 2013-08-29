@@ -1714,10 +1714,10 @@ video_getSetWindowData(void *arg)
   _destroyVideoSuiteTestWindow(window);
 
   cleanup:
-  if (referenceUserdata != NULL) SDL_free(referenceUserdata);
-  if (referenceUserdata2 != NULL) SDL_free(referenceUserdata2);
-  if (userdata != NULL) SDL_free(userdata);
-  if (userdata2 != NULL) SDL_free(userdata2);
+  SDL_free(referenceUserdata);
+  SDL_free(referenceUserdata2);
+  SDL_free(userdata);
+  SDL_free(userdata2);
 
   return returnValue;
 }

@@ -71,9 +71,7 @@ Cocoa_CreateDevice(int devindex)
     }
     if (!data) {
         SDL_OutOfMemory();
-        if (device) {
-            SDL_free(device);
-        }
+        SDL_free(device);
         return NULL;
     }
     device->driverdata = data;

@@ -113,12 +113,8 @@ main(int argc, char *argv[])
     }
 
     /* Clean up */
-    if (userRunSeed != NULL) {
-        SDL_free(userRunSeed);
-    }
-    if (filter != NULL) {
-        SDL_free(filter);
-    }
+    SDL_free(userRunSeed);
+    SDL_free(filter);
 
     /* Shutdown everything */
     quit(result);

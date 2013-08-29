@@ -437,22 +437,13 @@ SDL_JoystickClose(SDL_Joystick * joystick)
         joysticklist = joysticklist->next;
     }
 
-    if (joystick->name)
-        SDL_free(joystick->name);
+    SDL_free(joystick->name);
 
     /* Free the data associated with this joystick */
-    if (joystick->axes) {
-        SDL_free(joystick->axes);
-    }
-    if (joystick->hats) {
-        SDL_free(joystick->hats);
-    }
-    if (joystick->balls) {
-        SDL_free(joystick->balls);
-    }
-    if (joystick->buttons) {
-        SDL_free(joystick->buttons);
-    }
+    SDL_free(joystick->axes);
+    SDL_free(joystick->hats);
+    SDL_free(joystick->balls);
+    SDL_free(joystick->buttons);
     SDL_free(joystick);
 }
 

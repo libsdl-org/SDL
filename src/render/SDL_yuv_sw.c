@@ -1335,15 +1335,9 @@ void
 SDL_SW_DestroyYUVTexture(SDL_SW_YUVTexture * swdata)
 {
     if (swdata) {
-        if (swdata->pixels) {
-            SDL_free(swdata->pixels);
-        }
-        if (swdata->colortab) {
-            SDL_free(swdata->colortab);
-        }
-        if (swdata->rgb_2_pix) {
-            SDL_free(swdata->rgb_2_pix);
-        }
+        SDL_free(swdata->pixels);
+        SDL_free(swdata->colortab);
+        SDL_free(swdata->rgb_2_pix);
         if (swdata->stretch) {
             SDL_FreeSurface(swdata->stretch);
         }
