@@ -105,13 +105,13 @@ SDL_GetBasePath(void)
 
     /* is a Linux-style /proc filesystem available? */
     if (!retval && (access("/proc", F_OK) == 0)) {
-        #if defined(__FREEBSD__)
+#if defined(__FREEBSD__)
         retval = readSymLink("/proc/curproc/file");
-        #elif defined(__NETBSD__)
+#elif defined(__NETBSD__)
         retval = readSymLink("/proc/curproc/exe");
-        #else
+#else
         retval = readSymLink("/proc/self/exe");  /* linux. */
-        #endif
+#endif
         if (retval == NULL) {
             /* older kernels don't have /proc/self ... try PID version... */
             char path[64];
