@@ -75,11 +75,7 @@ SDL_SetHintWithPriority(const char *name, const char *value,
                 if (hint->value) {
                     SDL_free(hint->value);
                 }
-                if (value) {
-                    hint->value = SDL_strdup(value);
-                } else {
-                    hint->value = NULL;
-                }
+                hint->value = value ? SDL_strdup(value) : NULL;
             }
             hint->priority = priority;
             return SDL_TRUE;
