@@ -1432,9 +1432,7 @@ SDL_SetWindowIcon(SDL_Window * window, SDL_Surface * icon)
         return;
     }
 
-    if (window->icon) {
-        SDL_FreeSurface(window->icon);
-    }
+    SDL_FreeSurface(window->icon);
 
     /* Convert the icon into ARGB8888 */
     window->icon = SDL_ConvertSurfaceFormat(icon, SDL_PIXELFORMAT_ARGB8888, 0);
@@ -2183,9 +2181,7 @@ SDL_DestroyWindow(SDL_Window * window)
 
     /* Free memory associated with the window */
     SDL_free(window->title);
-    if (window->icon) {
-        SDL_FreeSurface(window->icon);
-    }
+    SDL_FreeSurface(window->icon);
     SDL_free(window->gamma);
     while (window->data) {
         SDL_WindowUserData *data = window->data;

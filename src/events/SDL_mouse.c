@@ -571,9 +571,7 @@ SDL_CreateColorCursor(SDL_Surface *surface, int hot_x, int hot_y)
         mouse->cursors = cursor;
     }
 
-    if (temp) {
-        SDL_FreeSurface(temp);
-    }
+    SDL_FreeSurface(temp);
 
     return cursor;
 }

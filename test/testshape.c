@@ -90,8 +90,7 @@ int main(int argc,char** argv)
         if(pictures[i].surface == NULL) {
             j = 0;
             for(j=0;j<num_pictures;j++)
-                if(pictures[j].surface != NULL)
-                    SDL_FreeSurface(pictures[j].surface);
+                SDL_FreeSurface(pictures[j].surface);
             SDL_free(pictures);
             SDL_VideoQuit();
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not load surface from named bitmap file.");

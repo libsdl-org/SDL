@@ -398,9 +398,7 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
         if (src) {
             SDL_RWseek(src, fp_offset, RW_SEEK_SET);
         }
-        if (surface) {
-            SDL_FreeSurface(surface);
-        }
+        SDL_FreeSurface(surface);
         surface = NULL;
     }
     if (freesrc && src) {
