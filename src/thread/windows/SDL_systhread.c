@@ -146,6 +146,7 @@ SDL_SYS_CreateThread(SDL_Thread * thread, void *args)
 }
 
 #ifdef _MSC_VER
+#pragma warning(disable : 4733)
 #pragma pack(push,8)
 typedef struct tagTHREADNAME_INFO
 {
@@ -155,30 +156,45 @@ typedef struct tagTHREADNAME_INFO
     DWORD dwFlags; /* reserved for future use, must be zero */
 } THREADNAME_INFO;
 #pragma pack(pop)
+
+static EXCEPTION_DISPOSITION
+ignore_exception(void *a, void *b, void *c, void *d)
+{
+    return ExceptionContinueExecution;
+}
 #endif
 
 void
 SDL_SYS_SetupThread(const char *name)
 {
     if (name != NULL) {
-        #if 0  /* !!! FIXME: __except needs C runtime, which we don't link against. */
-        #ifdef _MSC_VER  /* !!! FIXME: can we do SEH on other compilers yet? */
-        /* This magic tells the debugger to name a thread if it's listening. */
+        #ifdef _MSC_VER
+        /* This magic tells the debugger to name a thread if it's listening.
+            The inline asm sets up SEH (__try/__except) without C runtime
+            support. See Microsoft Systems Journal, January 1997:
+            http://www.microsoft.com/msj/0197/exception/exception.aspx */
+        INT_PTR handler = (INT_PTR) ignore_exception;
         THREADNAME_INFO inf;
+
         inf.dwType = 0x1000;
         inf.szName = name;
         inf.dwThreadID = (DWORD) -1;
         inf.dwFlags = 0;
 
-        __try
-        {
-            RaiseException(0x406D1388, 0, sizeof(inf)/sizeof(DWORD), (DWORD*)&inf);
+        __asm {   /* set up SEH */
+            push handler
+            push fs:[0]
+            mov fs:[0],esp
         }
-        __except(EXCEPTION_CONTINUE_EXECUTION)
-        {
-            /* The program itself should ignore this bogus exception. */
+
+        /* The program itself should ignore this bogus exception. */
+        RaiseException(0x406D1388, 0, sizeof(inf)/sizeof(DWORD), (DWORD*)&inf);
+
+        __asm {  /* tear down SEH. */
+            mov eax,[esp]
+            mov fs:[0], eax
+            add esp, 8
         }
-        #endif
         #endif
     }
 }
