@@ -32,6 +32,7 @@ extern "C" {
 extern "C" {
 #endif
 
+extern void WINRT_InitTouch(_THIS);
 extern void WINRT_PumpEvents(_THIS);
 
 #ifdef __cplusplus
@@ -60,6 +61,6 @@ extern Windows::Foundation::Point WINRT_TransformCursorPosition(SDL_Window * win
 /* XAML Thread Management */
 extern void WINRT_CycleXAMLThread();
 
-#endif
+#endif // ifdef __cplusplus_winrt
 
 /* vi: set ts=4 sw=4 expandtab: */

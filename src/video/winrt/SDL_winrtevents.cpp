@@ -22,9 +22,19 @@
 
 #if SDL_VIDEO_DRIVER_WINRT
 
-/* SDL includes */
+/*
+ * Windows includes:
+ */
+#include <Windows.h>
+using namespace Windows::UI::Core;
+using Windows::UI::Core::CoreCursor;
+
+/*
+ * SDL includes:
+ */
 #include "SDL_winrtevents_c.h"
 #include "../../core/winrt/SDL_winrtapp.h"
+#include "../../core/winrt/SDL_winrtxaml_cpp.h"
 #include "SDL_assert.h"
 #include "SDL_system.h"
 
@@ -34,10 +44,8 @@ extern "C" {
 }
 
 
-/* Forward declarations and globals */
-extern SDL_WinRTApp ^ SDL_WinRTGlobalApp;
-extern int (*WINRT_XAMLAppMainFunction)(int, char **);
-extern void WINRT_YieldXAMLThread();
+/* Forward declarations */
+static void WINRT_YieldXAMLThread();
 
 
 /* Global event management */
@@ -134,7 +142,6 @@ WINRT_CycleXAMLThread()
         }
     }
 }
-
 
 #endif /* SDL_VIDEO_DRIVER_WINRT */
 

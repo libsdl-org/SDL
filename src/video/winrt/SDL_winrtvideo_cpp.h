@@ -29,6 +29,19 @@
 #include "SDL_events.h"
 
 
+/* The global, WinRT, SDL Window.
+   For now, SDL/WinRT only supports one window (due to platform limitations of
+   WinRT.
+*/
+extern SDL_Window * WINRT_GlobalSDLWindow;
+
+/* The global, WinRT, video device. */
+extern SDL_VideoDevice * WINRT_GlobalSDLVideoDevice;
+
+/* Computes the current display mode for Plain Direct3D (non-XAML) apps */
+extern SDL_DisplayMode WINRT_CalcDisplayModeUsingNativeWindow();
+
+
 #ifdef __cplusplus_winrt
 
 /* Internal window data */

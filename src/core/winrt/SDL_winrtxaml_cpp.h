@@ -20,21 +20,14 @@
 */
 #include "SDL_config.h"
 
-#ifndef _SDL_winrtmouse_h
-#define _SDL_winrtmouse_h
+#ifndef _SDL_winrtxaml_h
+#define _SDL_winrtxaml_h
+
+#include "SDL_types.h"
 
 #ifdef __cplusplus
-extern "C" {
-#endif
+extern SDL_bool WINRT_XAMLWasEnabled;
+extern int (*WINRT_XAMLAppMainFunction)(int, char **);
+#endif // ifdef __cplusplus
 
-extern void WINRT_InitMouse(_THIS);
-extern void WINRT_QuitMouse(_THIS);
-extern SDL_bool WINRT_UsingRelativeMouseMode;
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* _SDL_windowsmouse_h */
-
-/* vi: set ts=4 sw=4 expandtab: */
+#endif // ifndef _SDL_winrtxaml_h

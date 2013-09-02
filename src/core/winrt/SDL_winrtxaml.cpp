@@ -30,18 +30,13 @@
 
 /* SDL includes */
 #include "SDL.h"
-//#include "SDL_error.h"
-//#include "SDL_log.h"
-//#include "SDL_main.h"
-//#include "SDL_system.h"
 #include "../../video/winrt/SDL_winrtevents_c.h"
+#include "../../video/winrt/SDL_winrtvideo_cpp.h"
+#include "SDL_winrtxaml_cpp.h"
 
 
-/* External globals: */
-extern SDL_Window * WINRT_GlobalSDLWindow;
 
-
-/* Internal globals: */
+/* SDL-internal globals: */
 SDL_bool WINRT_XAMLWasEnabled = SDL_FALSE;
 int (*WINRT_XAMLAppMainFunction)(int, char **) = NULL;
 

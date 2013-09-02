@@ -37,11 +37,8 @@ extern "C" {
 }
 
 #include "../../video/winrt/SDL_winrtevents_c.h"
+#include "../../video/winrt/SDL_winrtvideo_cpp.h"
 #include "SDL_winrtapp.h"
-
-extern SDL_Window * WINRT_GlobalSDLWindow;
-extern SDL_VideoDevice * WINRT_GlobalSDLVideoDevice;
-extern SDL_DisplayMode WINRT_CalcDisplayModeUsingNativeWindow();
 
 
 // Compile-time debugging options:

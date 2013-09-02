@@ -45,14 +45,12 @@ extern "C" {
 }
 
 #include "../../core/winrt/SDL_winrtapp.h"
+#include "../../core/winrt/SDL_winrtxaml_cpp.h"
 #include "SDL_winrtvideo_cpp.h"
 #include "SDL_winrtevents_c.h"
 #include "SDL_winrtmouse.h"
 #include "SDL_main.h"
 #include "SDL_system.h"
-
-extern SDL_WinRTApp ^ SDL_WinRTGlobalApp;
-extern SDL_bool WINRT_XAMLWasEnabled;
 
 
 /* Initialization/Query functions */
@@ -68,17 +66,9 @@ static void WINRT_DestroyWindow(_THIS, SDL_Window * window);
 static SDL_bool WINRT_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info);
 
 
-/* The global, WinRT, SDL Window.
-   For now, SDL/WinRT only supports one window (due to platform limitations of
-   WinRT.
-*/
+/* SDL-internal globals: */
 SDL_Window * WINRT_GlobalSDLWindow = NULL;
-
-
-/* The global, WinRT, video device.
-*/
 SDL_VideoDevice * WINRT_GlobalSDLVideoDevice = NULL;
-
 
 
 /* WinRT driver bootstrap functions */
@@ -140,6 +130,7 @@ WINRT_VideoInit(_THIS)
         return -1;
     }
     WINRT_InitMouse(_this);
+    WINRT_InitTouch(_this);
 
     return 0;
 }

@@ -336,6 +336,9 @@
     <ClInclude Include="..\..\src\video\winrt\SDL_winrtvideo_cpp.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\core\winrt\SDL_winrtxaml_cpp.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\atomic\SDL_atomic.c">
@@ -597,6 +600,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\core\winrt\SDL_winrtxaml.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\video\winrt\SDL_winrtpointerinput.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

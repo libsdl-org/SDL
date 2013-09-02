@@ -198,6 +198,7 @@
     <ClInclude Include="..\..\src\audio\xaudio2\SDL_xaudio2_winrthelpers.h" />
     <ClInclude Include="..\..\src\core\windows\SDL_windows.h" />
     <ClInclude Include="..\..\src\core\winrt\SDL_winrtapp.h" />
+    <ClInclude Include="..\..\src\core\winrt\SDL_winrtxaml_cpp.h" />
     <ClInclude Include="..\..\src\events\blank_cursor.h" />
     <ClInclude Include="..\..\src\events\default_cursor.h" />
     <ClInclude Include="..\..\src\events\SDL_clipboardevents_c.h" />
@@ -376,6 +377,12 @@
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
     </ClCompile>
     <ClCompile Include="..\..\src\video\winrt\SDL_winrtmouse.cpp">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\src\video\winrt\SDL_winrtpointerinput.cpp">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>

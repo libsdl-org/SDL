@@ -38,3 +38,5 @@ private:
     bool m_windowClosed;
     bool m_windowVisible;
 };
+
+extern SDL_WinRTApp ^ SDL_WinRTGlobalApp;
