@@ -596,9 +596,6 @@
     <ClInclude Include="..\..\src\video\winrt\SDL_winrtevents_c.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\video\winrt\SDL_winrtmouse.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\core\winrt\SDL_winrtapp.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -606,6 +603,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\core\winrt\SDL_winrtxaml_cpp.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\winrt\SDL_winrtmouse_c.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

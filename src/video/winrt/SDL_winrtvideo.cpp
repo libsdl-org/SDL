@@ -48,7 +48,7 @@ extern "C" {
 #include "../../core/winrt/SDL_winrtxaml_cpp.h"
 #include "SDL_winrtvideo_cpp.h"
 #include "SDL_winrtevents_c.h"
-#include "SDL_winrtmouse.h"
+#include "SDL_winrtmouse_c.h"
 #include "SDL_main.h"
 #include "SDL_system.h"
 

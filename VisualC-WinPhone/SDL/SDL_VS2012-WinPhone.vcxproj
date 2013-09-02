@@ -247,7 +247,7 @@
     <ClInclude Include="..\..\src\video\SDL_shape_internals.h" />
     <ClInclude Include="..\..\src\video\SDL_sysvideo.h" />
     <ClInclude Include="..\..\src\video\winrt\SDL_winrtevents_c.h" />
-    <ClInclude Include="..\..\src\video\winrt\SDL_winrtmouse.h" />
+    <ClInclude Include="..\..\src\video\winrt\SDL_winrtmouse_c.h" />
     <ClInclude Include="..\..\src\video\winrt\SDL_winrtvideo_cpp.h" />
   </ItemGroup>
   <ItemGroup>
