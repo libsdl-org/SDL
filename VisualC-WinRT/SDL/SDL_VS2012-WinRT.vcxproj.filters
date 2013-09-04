@@ -410,9 +410,6 @@
     <ClInclude Include="..\..\include\SDL_config_minimal.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\SDL_config_windowsrt.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\SDL_copying.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -607,6 +604,9 @@
     </ClInclude>
     <ClInclude Include="..\..\src\video\winrt\SDL_winrtmouse_c.h">
       <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL_config_winrt.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

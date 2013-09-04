@@ -32,7 +32,7 @@
 #if defined(__WIN32__)
 #include "SDL_config_windows.h"
 #elif defined(__WINRT__)
-#include "SDL_config_windowsrt.h"
+#include "SDL_config_winrt.h"
 #elif defined(__MACOSX__)
 #include "SDL_config_macosx.h"
 #elif defined(__IPHONEOS__)

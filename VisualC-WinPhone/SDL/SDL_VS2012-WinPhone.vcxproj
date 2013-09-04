@@ -150,7 +150,7 @@
     <ClInclude Include="..\..\include\SDL_clipboard.h" />
     <ClInclude Include="..\..\include\SDL_config.h" />
     <ClInclude Include="..\..\include\SDL_config_minimal.h" />
-    <ClInclude Include="..\..\include\SDL_config_windowsrt.h" />
+    <ClInclude Include="..\..\include\SDL_config_winrt.h" />
     <ClInclude Include="..\..\include\SDL_copying.h" />
     <ClInclude Include="..\..\include\SDL_cpuinfo.h" />
     <ClInclude Include="..\..\include\SDL_endian.h" />
