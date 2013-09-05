@@ -325,7 +325,6 @@ XAUDIO2_OpenDevice(_THIS, const char *devname, int iscapture)
     IXAudio2 *ixa2 = NULL;
     IXAudio2SourceVoice *source = NULL;
 #if defined(__WINRT__)
-    WCHAR devIdBuffer[256];
     LPCWSTR devId = 0;
 #else
     UINT32 devId = 0;  /* 0 == system default device. */
@@ -347,15 +346,12 @@ XAUDIO2_OpenDevice(_THIS, const char *devname, int iscapture)
 	static IXAudio2VoiceCallback callbacks = { &callbacks_vtable };
 #endif // ! defined(__cplusplus)
 
-#if defined(__WINRT__)
-    SDL_zero(devIdBuffer);
-#endif
-
     if (iscapture) {
         return SDL_SetError("XAudio2: capture devices unsupported.");
     } else if (XAudio2Create(&ixa2, 0, XAUDIO2_DEFAULT_PROCESSOR) != S_OK) {
         return SDL_SetError("XAudio2: XAudio2Create() failed at open.");
     }
+
     /*
     XAUDIO2_DEBUG_CONFIGURATION debugConfig;
     debugConfig.TraceMask = XAUDIO2_LOG_ERRORS; //XAUDIO2_LOG_WARNINGS | XAUDIO2_LOG_DETAIL | XAUDIO2_LOG_FUNC_CALLS | XAUDIO2_LOG_TIMING | XAUDIO2_LOG_LOCKS | XAUDIO2_LOG_MEMORY | XAUDIO2_LOG_STREAMING;
@@ -367,7 +363,7 @@ XAUDIO2_OpenDevice(_THIS, const char *devname, int iscapture)
     ixa2->SetDebugConfiguration(&debugConfig);
     */
 
-#if ! defined(__WINRT__) || WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP
+#if ! defined(__WINRT__)
     if (devname != NULL) {
         UINT32 devcount = 0;
         UINT32 i = 0;
@@ -384,12 +380,7 @@ XAUDIO2_OpenDevice(_THIS, const char *devname, int iscapture)
                     const int match = (SDL_strcmp(str, devname) == 0);
                     SDL_free(str);
                     if (match) {
-#if defined(__WINRT__)
-                        wcsncpy_s(devIdBuffer, ARRAYSIZE(devIdBuffer), details.DeviceID, _TRUNCATE);
-                        devId = (LPCWSTR) &devIdBuffer;
-#else
                         devId = i;
-#endif
                         break;
                     }
                 }
