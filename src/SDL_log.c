@@ -84,6 +84,7 @@ static const char *SDL_category_prefixes[SDL_LOG_CATEGORY_RESERVED1] = {
 };
 
 static int SDL_android_priority[SDL_NUM_LOG_PRIORITIES] = {
+    ANDROID_LOG_UNKNOWN,
     ANDROID_LOG_VERBOSE,
     ANDROID_LOG_DEBUG,
     ANDROID_LOG_INFO,
