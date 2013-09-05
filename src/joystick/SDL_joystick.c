@@ -776,7 +776,7 @@ void SDL_JoystickGetGUIDString( SDL_JoystickGUID guid, char *pszGUID, int cbGUID
         return;
     }
 
-    for ( i = 0; i < sizeof(guid.data) && i < (cbGUID-1); i++ )
+    for ( i = 0; i < sizeof(guid.data) && i < (cbGUID-1)/2; i++ )
     {
         /* each input byte writes 2 ascii chars, and might write a null byte. */
         /* If we don't have room for next input byte, stop */
