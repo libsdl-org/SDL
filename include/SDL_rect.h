@@ -44,7 +44,7 @@ extern "C" {
  *
  *  \sa SDL_EnclosePoints
  */
-typedef struct
+typedef struct SDL_Point
 {
     int x;
     int y;
