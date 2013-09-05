@@ -1293,13 +1293,20 @@ int SDL_vsnprintf(char *text, size_t maxlen, const char *fmt, va_list ap)
 }
 #else
  /* FIXME: implement more of the format specifiers */
+typedef enum
+{
+    SDL_CASE_NOCHANGE,
+    SDL_CASE_LOWER,
+    SDL_CASE_UPPER
+} SDL_letter_case;
+
 typedef struct
 {
     SDL_bool left_justify;
     SDL_bool force_sign;
     SDL_bool force_type;
     SDL_bool pad_zeroes;
-    SDL_bool do_lowercase;
+    SDL_letter_case force_case;
     int width;
     int radix;
     int precision;
@@ -1322,8 +1329,12 @@ SDL_PrintString(char *text, size_t maxlen, SDL_FormatInfo *info, const char *str
 
     length += SDL_strlcpy(text, string, maxlen);
 
-    if (info && info->do_lowercase) {
-        SDL_strlwr(text);
+    if (info) {
+        if (info->force_case == SDL_CASE_LOWER) {
+            SDL_strlwr(text);
+        } else if (info->force_case == SDL_CASE_UPPER) {
+            SDL_strupr(text);
+        }
     }
     return length;
 }
@@ -1573,9 +1584,12 @@ SDL_vsnprintf(char *text, size_t maxlen, const char *fmt, va_list ap)
                     break;
                 case 'p':
                 case 'x':
-                    info.do_lowercase = SDL_TRUE;
+                    info.force_case = SDL_CASE_LOWER;
                     /* Fall through to 'X' handling */
                 case 'X':
+                    if (info.force_case == SDL_CASE_NOCHANGE) {
+                        info.force_case = SDL_CASE_UPPER;
+                    }
                     if (info.radix == 10) {
                         info.radix = 16;
                     }
