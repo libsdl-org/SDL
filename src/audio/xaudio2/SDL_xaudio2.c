@@ -21,37 +21,7 @@
 
 /* WinRT NOTICE:
 
-   A number of changes were warranted to SDL's XAudio2 backend in order to
-   get it compiling for WinRT.
-
-   When compiling for WinRT, XAudio2.h requires that it be compiled in a C++
-   file, and not a straight C file.  Trying to compile it as C leads to lots
-   of errors, at least with MSVC 2012 and Windows SDK 8.0, as of Nov 22, 2012.
-   To address this specific issue, a few changes were made to SDL_xaudio2.c:
-   
-   1. SDL_xaudio2.c is compiled as a C++ file in WinRT builds.  Exported
-      symbols, namely XAUDIO2_bootstrap, uses 'extern "C"' to make sure the
-      rest of SDL can access it.  Non-WinRT builds continue to compile
-      SDL_xaudio2.c as a C file.
-   2. A macro redefines variables named 'this' to '_this', to prevent compiler
-      errors (C2355 in Visual C++) related to 'this' being a reserverd keyword.
-      This hack may need to be altered in the future, particularly if C++'s
-      'this' keyword needs to be used (within SDL_xaudio2.c).  At the time
-      WinRT support was initially added to SDL's XAudio2 backend, this
-      capability was not needed.
-   3. The C-style macros to invoke XAudio2's COM-based methods were
-      rewritten to be C++-friendly.  These are provided in the file,
-      SDL_xaudio2_winrthelpers.h.
-   4. IXAudio2::CreateSourceVoice, when used in C++, requires its callbacks to
-      be specified via a C++ class.  SDL's XAudio2 backend was written with
-      C-style callbacks.  A class to bridge these two interfaces,
-      SDL_XAudio2VoiceCallback, was written to make XAudio2 happy.  Its methods
-      just call SDL's existing, C-style callbacks.
-   5. Multiple checks for the __cplusplus macro were made, in appropriate
-      places.  
-
-
-   A few additional changes to SDL's XAudio2 backend were warranted by API
+   A few changes to SDL's XAudio2 backend were warranted by API
    changes to Windows.  Many, but not all of these are documented by Microsoft
    at:
    http://blogs.msdn.com/b/chuckw/archive/2012/04/02/xaudio2-and-windows-8-consumer-preview.aspx
@@ -108,14 +78,29 @@ extern "C" {
 
 #ifdef SDL_XAUDIO2_HAS_SDK
 
+/* Check to see if we're compiling for XAudio 2.8, or higher. */
+#ifdef WINVER
+#if WINVER >= 0x0602  /* Windows 8 SDK or higher? */
+#define SDL_XAUDIO2_2_8 1
+#endif
+#endif
+
+/* The XAudio header file, when #include'd on WinRT, will only compile in C++
+   files, but not C.  A few preprocessor-based hacks are defined below in order
+   to get xaudio2.h to compile in the C/non-C++ file, SDL_xaudio2.c.
+ */
+#ifdef __WINRT__
+#define uuid(x)
+#define DX_BUILD
+#endif
+
 #define INITGUID 1
 #include <xaudio2.h>
 
 /* Hidden "this" pointer for the audio functions */
 #define _THIS   SDL_AudioDevice *this
 
-#ifdef __cplusplus
-#define this _this
+#ifdef __WINRT__
 #include "SDL_xaudio2_winrthelpers.h"
 #endif
 
@@ -273,10 +258,18 @@ XAUDIO2_WaitDone(_THIS)
     XAUDIO2_VOICE_STATE state;
     SDL_assert(!this->enabled);  /* flag that stops playing. */
     IXAudio2SourceVoice_Discontinuity(source);
+#if SDL_XAUDIO2_2_8
+    IXAudio2SourceVoice_GetState(source, &state, 0);
+#else
     IXAudio2SourceVoice_GetState(source, &state);
+#endif
     while (state.BuffersQueued > 0) {
         SDL_SemWait(this->hidden->semaphore);
+#if SDL_XAUDIO2_2_8
+        IXAudio2SourceVoice_GetState(source, &state, 0);
+#else
         IXAudio2SourceVoice_GetState(source, &state);
+#endif
     }
 }
 
@@ -447,9 +440,15 @@ XAUDIO2_OpenDevice(_THIS, const char *devname, int iscapture)
        stereo output to appropriate surround sound configurations
        instead of clamping to 2 channels, even though we'll configure the
        Source Voice for whatever number of channels you supply. */
+#if SDL_XAUDIO2_2_8
+    result = IXAudio2_CreateMasteringVoice(ixa2, &this->hidden->mastering,
+                                           XAUDIO2_DEFAULT_CHANNELS,
+                                           this->spec.freq, 0, devId, NULL, AudioCategory_GameEffects);
+#else
     result = IXAudio2_CreateMasteringVoice(ixa2, &this->hidden->mastering,
                                            XAUDIO2_DEFAULT_CHANNELS,
                                            this->spec.freq, 0, devId, NULL);
+#endif
     if (result != S_OK) {
         XAUDIO2_CloseDevice(this);
         return SDL_SetError("XAudio2: Couldn't create mastering voice");

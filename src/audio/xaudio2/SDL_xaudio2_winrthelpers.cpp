@@ -8,7 +8,7 @@ using Windows::Devices::Enumeration::DeviceInformation;
 using Windows::Devices::Enumeration::DeviceInformationCollection;
 #endif
 
-HRESULT IXAudio2_GetDeviceCount(IXAudio2 * ixa2, UINT32 * devcount)
+extern "C" HRESULT __cdecl IXAudio2_GetDeviceCount(IXAudio2 * ixa2, UINT32 * devcount)
 {
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
     // There doesn't seem to be any audio device enumeration on Windows Phone.
@@ -29,7 +29,7 @@ HRESULT IXAudio2_GetDeviceCount(IXAudio2 * ixa2, UINT32 * devcount)
 #endif
 }
 
-HRESULT IXAudio2_GetDeviceDetails(IXAudio2 * unused, UINT32 index, XAUDIO2_DEVICE_DETAILS * details)
+extern "C" HRESULT IXAudio2_GetDeviceDetails(IXAudio2 * unused, UINT32 index, XAUDIO2_DEVICE_DETAILS * details)
 {
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
     // Windows Phone doesn't seem to have the same device enumeration APIs that

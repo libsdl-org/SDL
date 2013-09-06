@@ -14,14 +14,24 @@ typedef struct XAUDIO2_DEVICE_DETAILS
     */
 } XAUDIO2_DEVICE_DETAILS;
 
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 HRESULT IXAudio2_GetDeviceCount(IXAudio2 * unused, UINT32 * devcount);
 HRESULT IXAudio2_GetDeviceDetails(IXAudio2 * unused, UINT32 index, XAUDIO2_DEVICE_DETAILS * details);
+
+#ifdef __cplusplus
+}
+#endif
 
 
 //
 // C-style macros to call XAudio2's methods in C++:
 //
-
+#ifdef __cplusplus
+/*
 #define IXAudio2_CreateMasteringVoice(A, B, C, D, E, F, G) (A)->CreateMasteringVoice((B), (C), (D), (E), (F), (G))
 #define IXAudio2_CreateSourceVoice(A, B, C, D, E, F, G, H) (A)->CreateSourceVoice((B), (C), (D), (E), (F), (G), (H))
 #define IXAudio2_QueryInterface(A, B, C) (A)->QueryInterface((B), (C))
@@ -38,3 +48,5 @@ HRESULT IXAudio2_GetDeviceDetails(IXAudio2 * unused, UINT32 index, XAUDIO2_DEVIC
 #define IXAudio2SourceVoice_Start(A, B, C) (A)->Start((B), (C))
 #define IXAudio2SourceVoice_Stop(A, B, C) (A)->Stop((B), (C))
 #define IXAudio2SourceVoice_SubmitSourceBuffer(A, B, C) (A)->SubmitSourceBuffer((B), (C))
+*/
+#endif // ifdef __cplusplus

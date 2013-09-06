@@ -37,14 +37,7 @@
     <ClCompile Include="..\..\src\audio\SDL_audiotypecvt.c" />
     <ClCompile Include="..\..\src\audio\SDL_mixer.c" />
     <ClCompile Include="..\..\src\audio\SDL_wave.c" />
-    <ClCompile Include="..\..\src\audio\xaudio2\SDL_xaudio2.c">
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">CompileAsCpp</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">CompileAsCpp</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">CompileAsCpp</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">CompileAsCpp</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">CompileAsCpp</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">CompileAsCpp</CompileAs>
-    </ClCompile>
+    <ClCompile Include="..\..\src\audio\xaudio2\SDL_xaudio2.c" />
     <ClCompile Include="..\..\src\audio\xaudio2\SDL_xaudio2_winrthelpers.cpp">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
