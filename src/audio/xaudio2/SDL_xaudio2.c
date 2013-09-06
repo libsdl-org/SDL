@@ -49,17 +49,11 @@
 
 #if SDL_AUDIO_DRIVER_XAUDIO2
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 #include "../../core/windows/SDL_windows.h"
 #include "SDL_audio.h"
 #include "../SDL_audio_c.h"
 #include "../SDL_sysaudio.h"
 #include "SDL_assert.h"
-#ifdef __cplusplus
-}
-#endif
 
 #ifdef __GNUC__
 /* The configure script already did any necessary checking */
@@ -81,7 +75,7 @@ extern "C" {
 /* Check to see if we're compiling for XAudio 2.8, or higher. */
 #ifdef WINVER
 #if WINVER >= 0x0602  /* Windows 8 SDK or higher? */
-#define SDL_XAUDIO2_2_8 1
+#define SDL_XAUDIO2_WIN8 1
 #endif
 #endif
 
@@ -171,33 +165,6 @@ static void STDMETHODCALLTYPE VoiceCBOnVoiceProcessPassEnd(THIS) {}
 static void STDMETHODCALLTYPE VoiceCBOnBufferStart(THIS_ void *data) {}
 static void STDMETHODCALLTYPE VoiceCBOnLoopEnd(THIS_ void *data) {}
 
-#if defined(__cplusplus)
-class SDL_XAudio2VoiceCallback : public IXAudio2VoiceCallback
-{
-public:
-    STDMETHOD_(void, OnBufferEnd)(void *pBufferContext) {
-        VoiceCBOnBufferEnd(pBufferContext);
-    }
-    STDMETHOD_(void, OnBufferStart)(void *pBufferContext) {
-        VoiceCBOnBufferStart(pBufferContext);
-    }
-    STDMETHOD_(void, OnLoopEnd)(void *pBufferContext) {
-        VoiceCBOnLoopEnd(pBufferContext);
-    }
-    STDMETHOD_(void, OnStreamEnd)() {
-        VoiceCBOnStreamEnd();
-    }
-    STDMETHOD_(void, OnVoiceError)(void *pBufferContext, HRESULT Error) {
-        VoiceCBOnVoiceError(pBufferContext, Error);
-    }
-    STDMETHOD_(void, OnVoiceProcessingPassEnd)() {
-        VoiceCBOnVoiceProcessPassEnd();
-    }
-    STDMETHOD_(void, OnVoiceProcessingPassStart)(UINT32 BytesRequired) {
-        VoiceCBOnVoiceProcessPassStart(BytesRequired);
-    }
-};
-#endif
 
 static Uint8 *
 XAUDIO2_GetDeviceBuf(_THIS)
@@ -258,14 +225,14 @@ XAUDIO2_WaitDone(_THIS)
     XAUDIO2_VOICE_STATE state;
     SDL_assert(!this->enabled);  /* flag that stops playing. */
     IXAudio2SourceVoice_Discontinuity(source);
-#if SDL_XAUDIO2_2_8
+#if SDL_XAUDIO2_WIN8
     IXAudio2SourceVoice_GetState(source, &state, 0);
 #else
     IXAudio2SourceVoice_GetState(source, &state);
 #endif
     while (state.BuffersQueued > 0) {
         SDL_SemWait(this->hidden->semaphore);
-#if SDL_XAUDIO2_2_8
+#if SDL_XAUDIO2_WIN8
         IXAudio2SourceVoice_GetState(source, &state, 0);
 #else
         IXAudio2SourceVoice_GetState(source, &state);
@@ -317,17 +284,14 @@ XAUDIO2_OpenDevice(_THIS, const char *devname, int iscapture)
     SDL_AudioFormat test_format = SDL_FirstAudioFormat(this->spec.format);
     IXAudio2 *ixa2 = NULL;
     IXAudio2SourceVoice *source = NULL;
-#if defined(__WINRT__)
-    LPCWSTR devId = 0;
+#if defined(SDL_XAUDIO2_WIN8)
+    LPCWSTR devId = NULL;
 #else
     UINT32 devId = 0;  /* 0 == system default device. */
 #endif
 
-#if defined(__cplusplus)
-    static SDL_XAudio2VoiceCallback callbacks;
-#else
-	static IXAudio2VoiceCallbackVtbl callbacks_vtable = {
-	    VoiceCBOnVoiceProcessPassStart,
+    static IXAudio2VoiceCallbackVtbl callbacks_vtable = {
+        VoiceCBOnVoiceProcessPassStart,
         VoiceCBOnVoiceProcessPassEnd,
         VoiceCBOnStreamEnd,
         VoiceCBOnBufferStart,
@@ -336,8 +300,7 @@ XAUDIO2_OpenDevice(_THIS, const char *devname, int iscapture)
         VoiceCBOnVoiceError
     };
 
-	static IXAudio2VoiceCallback callbacks = { &callbacks_vtable };
-#endif // ! defined(__cplusplus)
+    static IXAudio2VoiceCallback callbacks = { &callbacks_vtable };
 
     if (iscapture) {
         return SDL_SetError("XAudio2: capture devices unsupported.");
@@ -440,7 +403,7 @@ XAUDIO2_OpenDevice(_THIS, const char *devname, int iscapture)
        stereo output to appropriate surround sound configurations
        instead of clamping to 2 channels, even though we'll configure the
        Source Voice for whatever number of channels you supply. */
-#if SDL_XAUDIO2_2_8
+#if SDL_XAUDIO2_WIN8
     result = IXAudio2_CreateMasteringVoice(ixa2, &this->hidden->mastering,
                                            XAUDIO2_DEFAULT_CHANNELS,
                                            this->spec.freq, 0, devId, NULL, AudioCategory_GameEffects);
@@ -557,9 +520,6 @@ XAUDIO2_Init(SDL_AudioDriverImpl * impl)
 #endif
 }
 
-#if defined(__cplusplus)
-extern "C"
-#endif
 AudioBootStrap XAUDIO2_bootstrap = {
     "xaudio2", "XAudio2", XAUDIO2_Init, 0
 };
