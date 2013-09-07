@@ -58,6 +58,12 @@ WINRT_OnPointerPressedViaXAML(Platform::Object^ sender, Windows::UI::Xaml::Input
 }
 
 static void
+WINRT_OnPointerMovedViaXAML(Platform::Object^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs^ args)
+{
+    WINRT_ProcessPointerMovedEvent(WINRT_GlobalSDLWindow, args->GetCurrentPoint(nullptr));
+}
+
+static void
 WINRT_OnPointerReleasedViaXAML(Platform::Object^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs^ args)
 {
     WINRT_ProcessPointerReleasedEvent(WINRT_GlobalSDLWindow, args->GetCurrentPoint(nullptr));
@@ -67,12 +73,6 @@ static void
 WINRT_OnPointerWheelChangedViaXAML(Platform::Object^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs^ args)
 {
     WINRT_ProcessPointerWheelChangedEvent(WINRT_GlobalSDLWindow, args->GetCurrentPoint(nullptr));
-}
-
-static void
-WINRT_OnPointerMovedViaXAML(Platform::Object^ sender, Windows::UI::Xaml::Input::PointerRoutedEventArgs^ args)
-{
-    WINRT_ProcessPointerMovedEvent(WINRT_GlobalSDLWindow, args->GetCurrentPoint(nullptr));
 }
 
 #endif // WINAPI_FAMILY == WINAPI_FAMILY_APP

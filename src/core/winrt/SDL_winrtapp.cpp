@@ -299,14 +299,14 @@ void SDL_WinRTApp::SetWindow(CoreWindow^ window)
     window->PointerPressed +=
         ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &SDL_WinRTApp::OnPointerPressed);
 
+    window->PointerMoved +=
+        ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &SDL_WinRTApp::OnPointerMoved);
+
     window->PointerReleased +=
         ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &SDL_WinRTApp::OnPointerReleased);
 
     window->PointerWheelChanged +=
         ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &SDL_WinRTApp::OnPointerWheelChanged);
-
-    window->PointerMoved +=
-        ref new TypedEventHandler<CoreWindow^, PointerEventArgs^>(this, &SDL_WinRTApp::OnPointerMoved);
 
 #if WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP
     // Retrieves relative-only mouse movements:
@@ -409,71 +409,6 @@ void SDL_WinRTApp::OnWindowClosed(CoreWindow^ sender, CoreWindowEventArgs^ args)
     m_windowClosed = true;
 }
 
-static void
-WINRT_LogPointerEvent(const char * header, Windows::UI::Core::PointerEventArgs ^ args, Windows::Foundation::Point transformedPoint)
-{
-    Windows::UI::Input::PointerPoint ^ pt = args->CurrentPoint;
-    SDL_Log("%s: Position={%f,%f}, Transformed Pos={%f, %f}, MouseWheelDelta=%d, FrameId=%d, PointerId=%d, SDL button=%d\n",
-        header,
-        pt->Position.X, pt->Position.Y,
-        transformedPoint.X, transformedPoint.Y,
-        pt->Properties->MouseWheelDelta,
-        pt->FrameId,
-        pt->PointerId,
-        WINRT_GetSDLButtonForPointerPoint(pt));
-}
-
-void SDL_WinRTApp::OnPointerPressed(CoreWindow^ sender, PointerEventArgs^ args)
-{
-#if LOG_POINTER_EVENTS
-    WINRT_LogPointerEvent("pointer pressed", args, WINRT_TransformCursorPosition(WINRT_GlobalSDLWindow, args->CurrentPoint->Position));
-#endif
-
-    WINRT_ProcessPointerPressedEvent(WINRT_GlobalSDLWindow, args->CurrentPoint);
-}
-
-void SDL_WinRTApp::OnPointerReleased(CoreWindow^ sender, PointerEventArgs^ args)
-{
-#if LOG_POINTER_EVENTS
-    WINRT_LogPointerEvent("pointer released", args, WINRT_TransformCursorPosition(WINRT_GlobalSDLWindow, args->CurrentPoint->Position));
-#endif
-
-    WINRT_ProcessPointerReleasedEvent(WINRT_GlobalSDLWindow, args->CurrentPoint);
-}
-
-void SDL_WinRTApp::OnPointerWheelChanged(CoreWindow^ sender, PointerEventArgs^ args)
-{
-#if LOG_POINTER_EVENTS
-    WINRT_LogPointerEvent("pointer wheel changed", args, WINRT_TransformCursorPosition(WINRT_GlobalSDLWindow, args->CurrentPoint->Position));
-#endif
-
-    WINRT_ProcessPointerWheelChangedEvent(WINRT_GlobalSDLWindow, args->CurrentPoint);
-}
-
-void SDL_WinRTApp::OnPointerMoved(CoreWindow^ sender, PointerEventArgs^ args)
-{
-#if LOG_POINTER_EVENTS
-    WINRT_LogPointerEvent("pointer moved", args, WINRT_TransformCursorPosition(WINRT_GlobalSDLWindow, args->CurrentPoint->Position));
-#endif
-
-    WINRT_ProcessPointerMovedEvent(WINRT_GlobalSDLWindow, args->CurrentPoint);
-}
-
-void SDL_WinRTApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
-{
-    WINRT_ProcessMouseMovedEvent(WINRT_GlobalSDLWindow, args);
-}
-
-void SDL_WinRTApp::OnKeyDown(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args)
-{
-    WINRT_ProcessKeyDownEvent(args);
-}
-
-void SDL_WinRTApp::OnKeyUp(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args)
-{
-    WINRT_ProcessKeyUpEvent(args);
-}
-
 void SDL_WinRTApp::OnActivated(CoreApplicationView^ applicationView, IActivatedEventArgs^ args)
 {
     CoreWindow::GetForCurrentThread()->Activate();
@@ -546,4 +481,69 @@ void SDL_WinRTApp::OnResuming(Platform::Object^ sender, Platform::Object^ args)
         // processed immediately.
         SDL_FilterEvents(RemoveAppSuspendAndResumeEvents, 0);
     }
+}
+
+static void
+WINRT_LogPointerEvent(const char * header, Windows::UI::Core::PointerEventArgs ^ args, Windows::Foundation::Point transformedPoint)
+{
+    Windows::UI::Input::PointerPoint ^ pt = args->CurrentPoint;
+    SDL_Log("%s: Position={%f,%f}, Transformed Pos={%f, %f}, MouseWheelDelta=%d, FrameId=%d, PointerId=%d, SDL button=%d\n",
+        header,
+        pt->Position.X, pt->Position.Y,
+        transformedPoint.X, transformedPoint.Y,
+        pt->Properties->MouseWheelDelta,
+        pt->FrameId,
+        pt->PointerId,
+        WINRT_GetSDLButtonForPointerPoint(pt));
+}
+
+void SDL_WinRTApp::OnPointerPressed(CoreWindow^ sender, PointerEventArgs^ args)
+{
+#if LOG_POINTER_EVENTS
+    WINRT_LogPointerEvent("pointer pressed", args, WINRT_TransformCursorPosition(WINRT_GlobalSDLWindow, args->CurrentPoint->Position));
+#endif
+
+    WINRT_ProcessPointerPressedEvent(WINRT_GlobalSDLWindow, args->CurrentPoint);
+}
+
+void SDL_WinRTApp::OnPointerMoved(CoreWindow^ sender, PointerEventArgs^ args)
+{
+#if LOG_POINTER_EVENTS
+    WINRT_LogPointerEvent("pointer moved", args, WINRT_TransformCursorPosition(WINRT_GlobalSDLWindow, args->CurrentPoint->Position));
+#endif
+
+    WINRT_ProcessPointerMovedEvent(WINRT_GlobalSDLWindow, args->CurrentPoint);
+}
+
+void SDL_WinRTApp::OnPointerReleased(CoreWindow^ sender, PointerEventArgs^ args)
+{
+#if LOG_POINTER_EVENTS
+    WINRT_LogPointerEvent("pointer released", args, WINRT_TransformCursorPosition(WINRT_GlobalSDLWindow, args->CurrentPoint->Position));
+#endif
+
+    WINRT_ProcessPointerReleasedEvent(WINRT_GlobalSDLWindow, args->CurrentPoint);
+}
+
+void SDL_WinRTApp::OnPointerWheelChanged(CoreWindow^ sender, PointerEventArgs^ args)
+{
+#if LOG_POINTER_EVENTS
+    WINRT_LogPointerEvent("pointer wheel changed", args, WINRT_TransformCursorPosition(WINRT_GlobalSDLWindow, args->CurrentPoint->Position));
+#endif
+
+    WINRT_ProcessPointerWheelChangedEvent(WINRT_GlobalSDLWindow, args->CurrentPoint);
+}
+
+void SDL_WinRTApp::OnMouseMoved(MouseDevice^ mouseDevice, MouseEventArgs^ args)
+{
+    WINRT_ProcessMouseMovedEvent(WINRT_GlobalSDLWindow, args);
+}
+
+void SDL_WinRTApp::OnKeyDown(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args)
+{
+    WINRT_ProcessKeyDownEvent(args);
+}
+
+void SDL_WinRTApp::OnKeyUp(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args)
+{
+    WINRT_ProcessKeyUpEvent(args);
 }
