@@ -168,7 +168,7 @@ void
 SDL_SYS_SetupThread(const char *name)
 {
     if (name != NULL) {
-        #ifdef _MSC_VER
+        #if (defined(_MSC_VER) && defined(_M_IX86))
         /* This magic tells the debugger to name a thread if it's listening.
             The inline asm sets up SEH (__try/__except) without C runtime
             support. See Microsoft Systems Journal, January 1997:
