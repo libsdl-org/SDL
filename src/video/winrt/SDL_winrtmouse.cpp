@@ -42,7 +42,7 @@ extern "C" {
 #include "SDL_log.h"
 }
 
-#include "../../core/winrt/SDL_winrtapp.h"
+#include "../../core/winrt/SDL_winrtapp_direct3d.h"
 #include "SDL_winrtvideo_cpp.h"
 #include "SDL_winrtmouse_c.h"
 

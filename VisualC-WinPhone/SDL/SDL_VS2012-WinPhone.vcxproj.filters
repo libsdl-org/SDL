@@ -321,16 +321,10 @@
     <ClInclude Include="..\..\src\render\direct3d11\SDL_render_d3d11_cpp.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\core\winrt\SDL_winrtapp.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\video\winrt\SDL_winrtevents_c.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\video\winrt\SDL_winrtvideo_cpp.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\core\winrt\SDL_winrtxaml_cpp.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\video\winrt\SDL_winrtmouse_c.h">
@@ -338,6 +332,12 @@
     </ClInclude>
     <ClInclude Include="..\..\include\SDL_config_winrt.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\core\winrt\SDL_winrtapp_direct3d.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\core\winrt\SDL_winrtapp_xaml.h">
+      <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -581,9 +581,6 @@
     <ClCompile Include="..\..\src\stdlib\SDL_malloc.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\core\winrt\SDL_winrtapp.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\core\winrt\SDL_winrtpaths.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -599,10 +596,13 @@
     <ClCompile Include="..\..\src\video\winrt\SDL_winrtkeyboard.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\core\winrt\SDL_winrtxaml.cpp">
+    <ClCompile Include="..\..\src\video\winrt\SDL_winrtpointerinput.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\video\winrt\SDL_winrtpointerinput.cpp">
+    <ClCompile Include="..\..\src\core\winrt\SDL_winrtapp_direct3d.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\core\winrt\SDL_winrtapp_xaml.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -32,7 +32,7 @@
 #include "SDL.h"
 #include "../../video/winrt/SDL_winrtevents_c.h"
 #include "../../video/winrt/SDL_winrtvideo_cpp.h"
-#include "SDL_winrtxaml_cpp.h"
+#include "SDL_winrtapp_xaml.h"
 
 
 

@@ -20,8 +20,8 @@
 */
 #include "SDL_config.h"
 
-#ifndef _SDL_winrtxaml_h
-#define _SDL_winrtxaml_h
+#ifndef _SDL_winrtapp_xaml_h
+#define _SDL_winrtapp_xaml_h
 
 #include "SDL_types.h"
 
@@ -30,4 +30,4 @@ extern SDL_bool WINRT_XAMLWasEnabled;
 extern int (*WINRT_XAMLAppMainFunction)(int, char **);
 #endif // ifdef __cplusplus
 
-#endif // ifndef _SDL_winrtxaml_h
+#endif // ifndef _SDL_winrtapp_xaml_h

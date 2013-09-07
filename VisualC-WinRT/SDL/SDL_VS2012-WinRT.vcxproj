@@ -47,7 +47,15 @@
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
     </ClCompile>
     <ClCompile Include="..\..\src\core\windows\SDL_windows.c" />
-    <ClCompile Include="..\..\src\core\winrt\SDL_winrtapp.cpp">
+    <ClCompile Include="..\..\src\core\winrt\SDL_winrtapp_direct3d.cpp">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="..\..\src\core\winrt\SDL_winrtapp_xaml.cpp">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
@@ -56,14 +64,6 @@
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
     </ClCompile>
     <ClCompile Include="..\..\src\core\winrt\SDL_winrtpaths.cpp">
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>
-      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
-    </ClCompile>
-    <ClCompile Include="..\..\src\core\winrt\SDL_winrtxaml.cpp">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
@@ -244,8 +244,8 @@
     <ClInclude Include="..\..\src\audio\SDL_wave.h" />
     <ClInclude Include="..\..\src\audio\xaudio2\SDL_xaudio2_winrthelpers.h" />
     <ClInclude Include="..\..\src\core\windows\SDL_windows.h" />
-    <ClInclude Include="..\..\src\core\winrt\SDL_winrtapp.h" />
-    <ClInclude Include="..\..\src\core\winrt\SDL_winrtxaml_cpp.h" />
+    <ClInclude Include="..\..\src\core\winrt\SDL_winrtapp_direct3d.h" />
+    <ClInclude Include="..\..\src\core\winrt\SDL_winrtapp_xaml.h" />
     <ClInclude Include="..\..\src\events\blank_cursor.h" />
     <ClInclude Include="..\..\src\events\default_cursor.h" />
     <ClInclude Include="..\..\src\events\SDL_clipboardevents_c.h" />

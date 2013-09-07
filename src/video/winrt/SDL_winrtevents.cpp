@@ -33,8 +33,8 @@ using Windows::UI::Core::CoreCursor;
  * SDL includes:
  */
 #include "SDL_winrtevents_c.h"
-#include "../../core/winrt/SDL_winrtapp.h"
-#include "../../core/winrt/SDL_winrtxaml_cpp.h"
+#include "../../core/winrt/SDL_winrtapp_direct3d.h"
+#include "../../core/winrt/SDL_winrtapp_xaml.h"
 #include "SDL_assert.h"
 #include "SDL_system.h"
 
