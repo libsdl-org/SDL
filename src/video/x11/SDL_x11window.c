@@ -365,7 +365,8 @@ X11_CreateWindow(_THIS, SDL_Window * window)
     Uint32 fevent = 0;
 
 #if SDL_VIDEO_OPENGL_GLX || SDL_VIDEO_OPENGL_EGL
-    if (window->flags & SDL_WINDOW_OPENGL) {
+    if ((window->flags & SDL_WINDOW_OPENGL) &&
+        !SDL_getenv("SDL_VIDEO_X11_VISUALID")) {
         XVisualInfo *vinfo = NULL;
 
 #if SDL_VIDEO_OPENGL_EGL
