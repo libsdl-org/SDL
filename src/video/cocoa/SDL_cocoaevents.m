@@ -231,6 +231,9 @@ Cocoa_RegisterApp(void)
             CreateApplicationMenus();
         }
         [NSApp finishLaunching];
+        NSDictionary *appDefaults = [NSDictionary dictionaryWithObject:@"NO" forKey:@"AppleMomentumScrollSupported"];
+        [[NSUserDefaults standardUserDefaults] registerDefaults:appDefaults];
+
     }
     if (NSApp && ![NSApp delegate]) {
         [NSApp setDelegate:[[SDLAppDelegate alloc] init]];
