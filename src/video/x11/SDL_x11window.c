@@ -935,6 +935,34 @@ X11_HideWindow(_THIS, SDL_Window * window)
     }
 }
 
+static void
+SetWindowActive(_THIS, SDL_Window * window)
+{
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    SDL_DisplayData *displaydata =
+        (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
+    Display *display = data->videodata->display;
+    Atom _NET_ACTIVE_WINDOW = data->videodata->_NET_ACTIVE_WINDOW;
+
+    if (X11_IsWindowMapped(_this, window)) {
+        XEvent e;
+
+        SDL_zero(e);
+        e.xany.type = ClientMessage;
+        e.xclient.message_type = _NET_ACTIVE_WINDOW;
+        e.xclient.format = 32;
+        e.xclient.window = data->xwindow;
+        e.xclient.data.l[0] = 1;  /* source indication. 1 = application */
+        e.xclient.data.l[1] = CurrentTime;
+        e.xclient.data.l[2] = 0;
+
+        XSendEvent(display, RootWindow(display, displaydata->screen), 0,
+                   SubstructureNotifyMask | SubstructureRedirectMask, &e);
+
+        XFlush(display);
+    }
+}
+
 void
 X11_RaiseWindow(_THIS, SDL_Window * window)
 {
@@ -942,6 +970,7 @@ X11_RaiseWindow(_THIS, SDL_Window * window)
     Display *display = data->videodata->display;
 
     XRaiseWindow(display, data->xwindow);
+    SetWindowActive(_this, window);
     XFlush(display);
 }
 
@@ -1002,40 +1031,12 @@ X11_MinimizeWindow(_THIS, SDL_Window * window)
     XFlush(display);
 }
 
-static void
-SetWindowActive(_THIS, SDL_Window * window)
-{
-    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-    SDL_DisplayData *displaydata =
-        (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
-    Display *display = data->videodata->display;
-    Atom _NET_ACTIVE_WINDOW = data->videodata->_NET_ACTIVE_WINDOW;
-
-    if (X11_IsWindowMapped(_this, window)) {
-        XEvent e;
-
-        SDL_zero(e);
-        e.xany.type = ClientMessage;
-        e.xclient.message_type = _NET_ACTIVE_WINDOW;
-        e.xclient.format = 32;
-        e.xclient.window = data->xwindow;
-        e.xclient.data.l[0] = 1;  /* source indication. 1 = application */
-        e.xclient.data.l[1] = CurrentTime;
-        e.xclient.data.l[2] = 0;
-
-        XSendEvent(display, RootWindow(display, displaydata->screen), 0,
-                   SubstructureNotifyMask | SubstructureRedirectMask, &e);
-
-        XFlush(display);
-    }
-}
-
 void
 X11_RestoreWindow(_THIS, SDL_Window * window)
 {
     SetWindowMaximized(_this, window, SDL_FALSE);
-    SetWindowActive(_this, window);
     X11_ShowWindow(_this, window);
+    SetWindowActive(_this, window);
 }
 
 /* This asks the Window Manager to handle fullscreen for us. Most don't do it right, though. */
