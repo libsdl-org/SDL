@@ -344,7 +344,7 @@ Cocoa_GL_SwapWindow(_THIS, SDL_Window * window)
 
     pool = [[NSAutoreleasePool alloc] init];
 
-    SDLOpenGLContext* nscontext = (NSOpenGLContext*)SDL_GL_GetCurrentContext();
+    SDLOpenGLContext* nscontext = (SDLOpenGLContext*)SDL_GL_GetCurrentContext();
     [nscontext flushBuffer];
     [nscontext updateIfNeeded];
 
