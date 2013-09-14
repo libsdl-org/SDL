@@ -266,7 +266,7 @@ SetBlendMode(DirectFB_RenderData * data, int blendMode,
         case SDL_BLENDMODE_ADD:
             data->blitFlags = DSBLIT_BLEND_ALPHACHANNEL;
             data->drawFlags = DSDRAW_BLEND;
-            /* FIXME: SRCALPHA kills performance on radeon ... */
+            /* FIXME: SRCALPHA kills performance on radeon ...
              * It will be cheaper to copy the surface to a temporary surface and premultiply
              */
             if (source && TextureHasAlpha(source))
