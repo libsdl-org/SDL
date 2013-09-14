@@ -62,6 +62,7 @@ static void ScheduleContextUpdates(SDL_WindowData *data)
 
     _data = data;
     observingVisible = YES;
+    wasCtrlLeft = NO;
     wasVisible = [window isVisible];
 
     center = [NSNotificationCenter defaultCenter];
@@ -333,7 +334,13 @@ static void ScheduleContextUpdates(SDL_WindowData *data)
 
     switch ([theEvent buttonNumber]) {
     case 0:
-        button = SDL_BUTTON_LEFT;
+        if ([theEvent modifierFlags] & NSControlKeyMask) {
+            wasCtrlLeft = YES;
+            button = SDL_BUTTON_RIGHT;
+        } else {
+            wasCtrlLeft = NO;
+            button = SDL_BUTTON_LEFT;
+        }
         break;
     case 1:
         button = SDL_BUTTON_RIGHT;
@@ -364,7 +371,12 @@ static void ScheduleContextUpdates(SDL_WindowData *data)
 
     switch ([theEvent buttonNumber]) {
     case 0:
-        button = SDL_BUTTON_LEFT;
+        if (wasCtrlLeft) {
+            button = SDL_BUTTON_RIGHT;
+            wasCtrlLeft = NO;
+        } else {
+            button = SDL_BUTTON_LEFT;
+        }
         break;
     case 1:
         button = SDL_BUTTON_RIGHT;
