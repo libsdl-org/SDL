@@ -41,6 +41,19 @@
 extern "C" {
 #endif
 
+
+/* Platform specific functions for Windows */
+#ifdef __WIN32__
+
+/* Returns the D3D9 adapter index that matches the specified display index.
+   This adapter index can be passed to IDirect3D9::CreateDevice and controls
+   on which monitor a full screen application will appear.
+*/
+extern DECLSPEC int SDLCALL SDL_Direct3D9GetAdapterIndex( int displayIndex );
+
+#endif /* __WIN32__ */
+
+
 /* Platform specific functions for iOS */
 #if defined(__IPHONEOS__) && __IPHONEOS__
 
@@ -92,7 +105,6 @@ extern DECLSPEC int SDLCALL SDL_AndroidGetExternalStorageState();
 extern DECLSPEC const char * SDLCALL SDL_AndroidGetExternalStoragePath();
 
 #endif /* __ANDROID__ */
-
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

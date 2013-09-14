@@ -615,6 +615,14 @@ SDL_GetIndexOfDisplay(SDL_VideoDisplay *display)
     return 0;
 }
 
+void *
+SDL_GetDisplayDriverData( int displayIndex )
+{
+	CHECK_DISPLAY_INDEX( displayIndex, NULL );
+
+	return _this->displays[displayIndex].driverdata;
+}
+
 const char *
 SDL_GetDisplayName(int displayIndex)
 {

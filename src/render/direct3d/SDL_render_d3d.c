@@ -29,6 +29,8 @@
 #include "SDL_loadso.h"
 #include "SDL_syswm.h"
 #include "../SDL_sysrender.h"
+#include "../../video/SDL_sysvideo.h"
+#include "../../video/windows/SDL_windowsmodes.h"
 #include <stdio.h>
 
 #if SDL_VIDEO_RENDER_D3D
@@ -531,6 +533,72 @@ D3D_ActivateRenderer(SDL_Renderer * renderer)
     return 0;
 }
 
+SDL_bool 
+D3D_LoadDLL( void **pD3DDLL, IDirect3D9 **pDirect3D9Interface )
+{
+	*pD3DDLL = SDL_LoadObject("D3D9.DLL");
+	if (*pD3DDLL) {
+		IDirect3D9 *(WINAPI * D3DCreate) (UINT SDKVersion);
+
+		D3DCreate =
+			(IDirect3D9 * (WINAPI *) (UINT)) SDL_LoadFunction(*pD3DDLL,
+			"Direct3DCreate9");
+		if (D3DCreate) {
+			*pDirect3D9Interface = D3DCreate(D3D_SDK_VERSION);
+		}
+		if (!*pDirect3D9Interface) {
+			SDL_UnloadObject(*pD3DDLL);
+			*pD3DDLL = NULL;
+			return SDL_FALSE;
+		}
+
+		return SDL_TRUE;
+	} else {
+		*pDirect3D9Interface = NULL;
+		return SDL_FALSE;
+	}
+}
+
+
+int 
+SDL_Direct3D9GetAdapterIndex( int displayIndex )
+{
+	void *pD3DDLL;
+	IDirect3D9 *pD3D;
+	if (!D3D_LoadDLL( &pD3DDLL, &pD3D)) {
+		SDL_SetError("Unable to create Direct3D interface");
+		return D3DADAPTER_DEFAULT;
+	} else {
+		SDL_DisplayData *pData = (SDL_DisplayData *)SDL_GetDisplayDriverData( displayIndex );
+		int adapterIndex = D3DADAPTER_DEFAULT;
+
+		if (!pData) {
+			SDL_SetError( "Invalid display index" );
+		} else {
+			char *displayName = WIN_StringToUTF8( pData->DeviceName );
+			unsigned int count = IDirect3D9_GetAdapterCount( pD3D );
+			unsigned int i;
+			for (i=0; i<count; i++) {
+				D3DADAPTER_IDENTIFIER9 id;
+				IDirect3D9_GetAdapterIdentifier(pD3D, i, 0, &id);
+
+				if (SDL_strcmp(id.DeviceName, displayName) == 0) {
+					adapterIndex = i;
+					break;
+				}
+			}
+			SDL_free( displayName );
+		}
+
+		/* free up the D3D stuff we inited */
+		IDirect3D9_Release(pD3D);
+		SDL_UnloadObject(pD3DDLL);
+
+		return adapterIndex;
+	}
+}
+
+
 SDL_Renderer *
 D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
 {
@@ -546,6 +614,7 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
     SDL_DisplayMode fullscreen_mode;
     int d3dxVersion;
     char d3dxDLLFile[50];
+	int displayIndex;
 
     renderer = (SDL_Renderer *) SDL_calloc(1, sizeof(*renderer));
     if (!renderer) {
@@ -560,21 +629,7 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
         return NULL;
     }
 
-    data->d3dDLL = SDL_LoadObject("D3D9.DLL");
-    if (data->d3dDLL) {
-        IDirect3D9 *(WINAPI * D3DCreate) (UINT SDKVersion);
-
-        D3DCreate =
-            (IDirect3D9 * (WINAPI *) (UINT)) SDL_LoadFunction(data->d3dDLL,
-                                                            "Direct3DCreate9");
-        if (D3DCreate) {
-            data->d3d = D3DCreate(D3D_SDK_VERSION);
-        }
-        if (!data->d3d) {
-            SDL_UnloadObject(data->d3dDLL);
-            data->d3dDLL = NULL;
-        }
-
+	if( D3D_LoadDLL( &data->d3dDLL, &data->d3d ) ) {
         for (d3dxVersion=50;d3dxVersion>0;d3dxVersion--) {
             LPTSTR dllName;
             SDL_snprintf(d3dxDLLFile, sizeof(d3dxDLLFile), "D3DX9_%02d.dll", d3dxVersion);
@@ -667,8 +722,10 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
         pparams.PresentationInterval = D3DPRESENT_INTERVAL_IMMEDIATE;
     }
 
-    /* FIXME: Which adapter? */
-    data->adapter = D3DADAPTER_DEFAULT;
+    /* Get the adapter for the display that the window is on */
+	displayIndex = SDL_GetWindowDisplayIndex( window );
+    data->adapter = SDL_Direct3D9GetAdapterIndex( displayIndex );
+
     IDirect3D9_GetDeviceCaps(data->d3d, data->adapter, D3DDEVTYPE_HAL, &caps);
 
     result = IDirect3D9_CreateDevice(data->d3d, data->adapter,
