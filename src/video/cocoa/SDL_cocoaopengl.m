@@ -302,6 +302,10 @@ Cocoa_GL_SetSwapInterval(_THIS, int interval)
     GLint value;
     int status;
 
+    if (interval < 0) {  /* no extension for this on Mac OS X at the moment. */
+        return SDL_SetError("Late swap tearing currently unsupported");
+    }
+
     pool = [[NSAutoreleasePool alloc] init];
 
     nscontext = (NSOpenGLContext*)SDL_GL_GetCurrentContext();
