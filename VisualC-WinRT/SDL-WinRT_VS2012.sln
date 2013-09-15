@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Express 2012 for Windows 8
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDL_VS2012-WinRT", "SDL\SDL_VS2012-WinRT.vcxproj", "{AEAEA3A2-D4E6-45B1-8EC6-53D84287FC14}"
+# Visual Studio 2012
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDL-WinRT", "SDL\SDL-WinRT_VS2012.vcxproj", "{AEAEA3A2-D4E6-45B1-8EC6-53D84287FC14}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
