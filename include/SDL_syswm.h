@@ -57,7 +57,7 @@ struct SDL_SysWMinfo;
 #endif
 
 #if defined(SDL_VIDEO_DRIVER_WINRT)
-#include <Unknwn.h>
+#include <Inspectable.h>
 #endif
 
 /* This is the structure for custom window manager events */
@@ -177,7 +177,7 @@ struct SDL_SysWMinfo
 #if defined(SDL_VIDEO_DRIVER_WINRT)
         struct
         {
-            IUnknown * window;          /**< The WinRT CoreWindow */
+            IInspectable * window;      /**< The WinRT CoreWindow */
         } winrt;
 #endif
 #if defined(SDL_VIDEO_DRIVER_X11)

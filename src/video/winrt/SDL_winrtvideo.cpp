@@ -300,7 +300,7 @@ WINRT_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
 
     if (info->version.major <= SDL_MAJOR_VERSION) {
         info->subsystem = SDL_SYSWM_WINRT;
-        info->info.winrt.window = reinterpret_cast<IUnknown *>(data->coreWindow.Get());
+        info->info.winrt.window = reinterpret_cast<IInspectable *>(data->coreWindow.Get());
         return SDL_TRUE;
     } else {
         SDL_SetError("Application not compiled with SDL %d.%d\n",
