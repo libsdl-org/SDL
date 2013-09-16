@@ -1539,7 +1539,7 @@ D3D11_RenderDrawLines(SDL_Renderer * renderer,
 
     D3D11_RenderStartDrawOp(renderer);
     D3D11_RenderSetBlendMode(renderer, renderer->blendMode);
-    if (D3D11_UpdateVertexBuffer(renderer,&vertices, (unsigned int)count * sizeof(VertexPositionColor)) != 0) {
+    if (D3D11_UpdateVertexBuffer(renderer, vertices, (unsigned int)count * sizeof(VertexPositionColor)) != 0) {
         SDL_stack_free(vertices);
         return -1;
     }
