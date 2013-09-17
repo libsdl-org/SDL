@@ -24,7 +24,7 @@ extern "C" int SDL_main(int, char **);
 #pragma comment(lib, "runtimeobject.lib")
 #endif
 
-int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+int CALLBACK  WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
     if (FAILED(Windows::Foundation::Initialize(RO_INIT_MULTITHREADED))) {
         return 1;
@@ -33,3 +33,4 @@ int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
     SDL_WinRT_RunApplication(SDL_main);
     return 0;
 }
+
