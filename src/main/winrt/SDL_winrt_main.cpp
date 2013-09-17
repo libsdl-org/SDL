@@ -4,8 +4,7 @@
 /* The app's C-style main will be passed into SDL.dll as a function
    pointer, and called at the appropriate time.
 */
-typedef int (*SDLmain_MainFunction)(int, char **);
-extern __declspec(dllimport) int SDL_WinRT_RunApplication(SDLmain_MainFunction mainFunction);
+extern __declspec(dllimport) int SDL_WinRT_RunApplication(int (*)(int, char **));
 extern "C" int SDL_main(int, char **);
 
 /* Prevent MSVC++ from warning about threading models when defining our
