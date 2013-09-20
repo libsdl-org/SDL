@@ -34,6 +34,13 @@
 #include "SDL_cocoamouse.h"
 #include "SDL_cocoaopengl.h"
 
+#if MAC_OS_X_VERSION_MAX_ALLOWED < 1070
+/* Taken from AppKit/NSOpenGLView.h in 10.8 SDK. */
+@interface NSView (NSOpenGLSurfaceResolution)
+- (BOOL)wantsBestResolutionOpenGLSurface;
+- (void)setWantsBestResolutionOpenGLSurface:(BOOL)flag;
+@end
+#endif
 
 static Uint32 s_moveHack;
 
@@ -739,6 +746,13 @@ Cocoa_CreateWindow(_THIS, SDL_Window * window)
     /* Create a default view for this window */
     rect = [nswindow contentRectForFrameRect:[nswindow frame]];
     NSView *contentView = [[SDLView alloc] initWithFrame:rect];
+
+    if ((window->flags & SDL_WINDOW_ALLOW_HIGHDPI) > 0) {
+        if ([contentView respondsToSelector:@selector(setWantsBestResolutionOpenGLSurface:)]) {
+            [contentView setWantsBestResolutionOpenGLSurface:YES];
+        }
+    }
+
     [nswindow setContentView: contentView];
     [contentView release];
 

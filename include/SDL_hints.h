@@ -257,6 +257,11 @@ extern "C" {
 #define SDL_HINT_TIMER_RESOLUTION "SDL_TIMER_RESOLUTION"
 
 
+/**
+ *  \brief If set to 1, then do not allow high-DPI windows. ("Retina" on Mac)
+ */
+#define SDL_HINT_VIDEO_HIGHDPI_DISABLED "SDL_HIGHDPI_DISABLED"
+
 
 /**
  *  \brief  An enumeration of hint priorities

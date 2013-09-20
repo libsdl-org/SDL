@@ -180,6 +180,7 @@ main(int argc, char *argv[])
     SDL_Event event;
     Uint32 then, now, frames;
     int status;
+    int dw, dh;
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
@@ -254,6 +255,10 @@ main(int argc, char *argv[])
     SDL_GetCurrentDisplayMode(0, &mode);
     SDL_Log("Screen BPP    : %d\n", SDL_BITSPERPIXEL(mode.format));
     SDL_Log("Swap Interval : %d\n", SDL_GL_GetSwapInterval());
+    SDL_GetWindowSize(state->windows[0], &dw, &dh);
+    SDL_Log("Window Size   : %d,%d\n", dw, dh);
+    SDL_GL_GetDrawableSize(state->windows[0], &dw, &dh);
+    SDL_Log("Draw Size     : %d,%d\n", dw, dh);
     SDL_Log("\n");
     SDL_Log("Vendor        : %s\n", glGetString(GL_VENDOR));
     SDL_Log("Renderer      : %s\n", glGetString(GL_RENDERER));
@@ -322,7 +327,7 @@ main(int argc, char *argv[])
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glShadeModel(GL_SMOOTH);
-
+    
     /* Main render loop */
     frames = 0;
     then = SDL_GetTicks();
@@ -336,7 +341,7 @@ main(int argc, char *argv[])
         for (i = 0; i < state->num_windows; ++i) {
             int w, h;
             SDL_GL_MakeCurrent(state->windows[i], context);
-            SDL_GetWindowSize(state->windows[i], &w, &h);
+            SDL_GL_GetDrawableSize(state->windows[i], &w, &h);
             glViewport(0, 0, w, h);
             Render();
             SDL_GL_SwapWindow(state->windows[i]);

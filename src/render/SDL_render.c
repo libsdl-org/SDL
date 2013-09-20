@@ -117,7 +117,12 @@ SDL_RendererEventWatch(void *userdata, SDL_Event *event)
                     /* Window was resized, reset viewport */
                     int w, h;
 
-                    SDL_GetWindowSize(window, &w, &h);
+                    if (renderer->GetOutputSize) {
+                        renderer->GetOutputSize(renderer, &w, &h);
+                    } else {
+                        SDL_GetWindowSize(renderer->window, &w, &h);
+                    }
+
                     if (renderer->target) {
                         renderer->viewport_backup.x = 0;
                         renderer->viewport_backup.y = 0;
@@ -335,11 +340,11 @@ SDL_GetRendererOutputSize(SDL_Renderer * renderer, int *w, int *h)
 
     if (renderer->target) {
         return SDL_QueryTexture(renderer->target, NULL, NULL, w, h);
+    } else if (renderer->GetOutputSize) {
+        return renderer->GetOutputSize(renderer, w, h);
     } else if (renderer->window) {
         SDL_GetWindowSize(renderer->window, w, h);
         return 0;
-    } else if (renderer->GetOutputSize) {
-        return renderer->GetOutputSize(renderer, w, h);
     } else {
         /* This should never happen */
         SDL_SetError("Renderer doesn't support querying output size");
