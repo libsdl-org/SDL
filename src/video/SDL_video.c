@@ -1187,6 +1187,7 @@ SDL_Window *
 SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
 {
     SDL_Window *window;
+    const char *hint;
 
     if (!_this) {
         /* Initialize the video system if needed */
@@ -1245,6 +1246,17 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
     window->flags = ((flags & CREATE_FLAGS) | SDL_WINDOW_HIDDEN);
     window->brightness = 1.0f;
     window->next = _this->windows;
+
+    /* Unless the user has specified the high-DPI disabling hint, respect the
+     * SDL_WINDOW_ALLOW_HIGHDPI flag.
+     */
+    hint = SDL_GetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED);
+    if (!hint || *hint != '1') {
+        if ((flags & SDL_WINDOW_ALLOW_HIGHDPI)) {
+            window->flags |= SDL_WINDOW_ALLOW_HIGHDPI;
+        }
+    }
+
     if (_this->windows) {
         _this->windows->prev = window;
     }
@@ -2811,6 +2823,17 @@ SDL_GL_GetCurrentContext(void)
         return NULL;
     }
     return (SDL_GLContext)SDL_TLSGet(_this->current_glctx_tls);
+}
+
+void SDL_GL_GetDrawableSize(SDL_Window * window, int *w, int *h)
+{
+    CHECK_WINDOW_MAGIC(window, );
+
+    if (_this->GL_GetDrawableSize) {
+        _this->GL_GetDrawableSize(_this, window, w, h);
+    } else {
+        SDL_GetWindowSize(window, w, h);
+    }
 }
 
 int

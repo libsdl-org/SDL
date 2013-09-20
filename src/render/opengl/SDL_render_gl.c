@@ -47,6 +47,7 @@ static const float inv255f = 1.0f / 255.0f;
 static SDL_Renderer *GL_CreateRenderer(SDL_Window * window, Uint32 flags);
 static void GL_WindowEvent(SDL_Renderer * renderer,
                            const SDL_WindowEvent *event);
+static int GL_GetOutputSize(SDL_Renderer * renderer, int *w, int *h);
 static int GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture);
 static int GL_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                             const SDL_Rect * rect, const void *pixels,
@@ -399,6 +400,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     }
 
     renderer->WindowEvent = GL_WindowEvent;
+    renderer->GetOutputSize = GL_GetOutputSize;
     renderer->CreateTexture = GL_CreateTexture;
     renderer->UpdateTexture = GL_UpdateTexture;
     renderer->LockTexture = GL_LockTexture;
@@ -537,6 +539,14 @@ GL_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
         /* Rebind the context to the window area and update matrices */
         SDL_CurrentContext = NULL;
     }
+}
+
+static int
+GL_GetOutputSize(SDL_Renderer * renderer, int *w, int *h)
+{
+    SDL_GL_GetDrawableSize(renderer->window, w, h);
+
+    return 0;
 }
 
 SDL_FORCE_INLINE int

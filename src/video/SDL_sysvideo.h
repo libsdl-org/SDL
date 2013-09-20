@@ -224,6 +224,7 @@ struct SDL_VideoDevice
     void (*GL_UnloadLibrary) (_THIS);
       SDL_GLContext(*GL_CreateContext) (_THIS, SDL_Window * window);
     int (*GL_MakeCurrent) (_THIS, SDL_Window * window, SDL_GLContext context);
+    void (*GL_GetDrawableSize) (_THIS, SDL_Window * window, int *w, int *h);
     int (*GL_SetSwapInterval) (_THIS, int interval);
     int (*GL_GetSwapInterval) (_THIS);
     void (*GL_SwapWindow) (_THIS, SDL_Window * window);

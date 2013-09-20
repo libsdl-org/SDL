@@ -107,7 +107,8 @@ typedef enum
     SDL_WINDOW_INPUT_FOCUS = 0x00000200,        /**< window has input focus */
     SDL_WINDOW_MOUSE_FOCUS = 0x00000400,        /**< window has mouse focus */
     SDL_WINDOW_FULLSCREEN_DESKTOP = ( SDL_WINDOW_FULLSCREEN | 0x00001000 ),
-    SDL_WINDOW_FOREIGN = 0x00000800             /**< window not created by SDL */
+    SDL_WINDOW_FOREIGN = 0x00000800,            /**< window not created by SDL */
+    SDL_WINDOW_ALLOW_HIGHDPI = 0x00002000,      /**< window should be created in high-DPI mode if supported */
 } SDL_WindowFlags;
 
 /**
@@ -393,10 +394,11 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window * window);
  *  \param w     The width of the window.
  *  \param h     The height of the window.
  *  \param flags The flags for the window, a mask of any of the following:
- *               ::SDL_WINDOW_FULLSCREEN, ::SDL_WINDOW_OPENGL,
- *               ::SDL_WINDOW_HIDDEN,     ::SDL_WINDOW_BORDERLESS,
- *               ::SDL_WINDOW_RESIZABLE,  ::SDL_WINDOW_MAXIMIZED,
- *               ::SDL_WINDOW_MINIMIZED,  ::SDL_WINDOW_INPUT_GRABBED.
+ *               ::SDL_WINDOW_FULLSCREEN,    ::SDL_WINDOW_OPENGL,
+ *               ::SDL_WINDOW_HIDDEN,        ::SDL_WINDOW_BORDERLESS,
+ *               ::SDL_WINDOW_RESIZABLE,     ::SDL_WINDOW_MAXIMIZED,
+ *               ::SDL_WINDOW_MINIMIZED,     ::SDL_WINDOW_INPUT_GRABBED,
+ *               ::SDL_WINDOW_ALLOW_HIGHDPI.
  *
  *  \return The id of the window created, or zero if window creation failed.
  *
@@ -898,6 +900,23 @@ extern DECLSPEC SDL_Window* SDLCALL SDL_GL_GetCurrentWindow(void);
  *  \brief Get the currently active OpenGL context.
  */
 extern DECLSPEC SDL_GLContext SDLCALL SDL_GL_GetCurrentContext(void);
+
+/**
+ *  \brief Get the size of a window's underlying drawable (for use with glViewport).
+ *
+ *  \param w        Pointer to variable for storing the width, may be NULL
+ *  \param h        Pointer to variable for storing the height, may be NULL
+ *
+ * This may differ from SDL_GetWindowSize if we're rendering to a high-DPI
+ * drawable, i.e. the window was created with SDL_WINDOW_ALLOW_HIGHDPI on a
+ * platform with high-DPI support (Apple calls this "Retina"), and not disabled
+ * by the SDL_HINT_VIDEO_HIGHDPI_DISABLED hint.
+ *
+ *  \sa SDL_GetWindowSize()
+ *  \sa SDL_CreateWindow()
+ */
+extern DECLSPEC void SDLCALL SDL_GL_GetDrawableSize(SDL_Window * window, int *w,
+                                                    int *h);
 
 /**
  *  \brief Set the swap interval for the current OpenGL context.

@@ -35,6 +35,18 @@
 
 #define DEFAULT_OPENGL  "/System/Library/Frameworks/OpenGL.framework/Libraries/libGL.dylib"
 
+#if MAC_OS_X_VERSION_MAX_ALLOWED < 1070
+/* New methods for converting to and from backing store pixels, taken from
+ * AppKite/NSView.h in 10.8 SDK. */
+@interface NSView (Backing)
+- (NSPoint)convertPointToBacking:(NSPoint)aPoint;
+- (NSPoint)convertPointFromBacking:(NSPoint)aPoint;
+- (NSSize)convertSizeToBacking:(NSSize)aSize;
+- (NSSize)convertSizeFromBacking:(NSSize)aSize;
+- (NSRect)convertRectToBacking:(NSRect)aRect;
+- (NSRect)convertRectFromBacking:(NSRect)aRect;
+@end
+#endif
 
 #ifndef kCGLPFAOpenGLProfile
 #define kCGLPFAOpenGLProfile 99
@@ -292,6 +304,28 @@ Cocoa_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
 
     [pool release];
     return 0;
+}
+
+void
+Cocoa_GL_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h)
+{
+    SDL_WindowData *windata = (SDL_WindowData *) window->driverdata;
+    NSView *contentView = [windata->nswindow contentView];
+    NSRect viewport = [contentView bounds];
+
+    /* This gives us the correct viewport for a Retina-enabled view, only
+     * supported on 10.7+. */
+    if ([contentView respondsToSelector:@selector(convertRectToBacking:)]) {
+        viewport = [contentView convertRectToBacking:viewport];
+    }
+
+    if (w) {
+        *w = viewport.size.width;
+    }
+
+    if (h) {
+        *h = viewport.size.height;
+    }
 }
 
 int

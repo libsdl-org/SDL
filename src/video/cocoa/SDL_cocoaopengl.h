@@ -54,6 +54,8 @@ extern void Cocoa_GL_UnloadLibrary(_THIS);
 extern SDL_GLContext Cocoa_GL_CreateContext(_THIS, SDL_Window * window);
 extern int Cocoa_GL_MakeCurrent(_THIS, SDL_Window * window,
                                 SDL_GLContext context);
+extern void Cocoa_GL_GetDrawableSize(_THIS, SDL_Window * window,
+                                     int * w, int * h);
 extern int Cocoa_GL_SetSwapInterval(_THIS, int interval);
 extern int Cocoa_GL_GetSwapInterval(_THIS);
 extern void Cocoa_GL_SwapWindow(_THIS, SDL_Window * window);
