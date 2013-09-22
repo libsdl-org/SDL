@@ -32,13 +32,13 @@
 #include "SDL.h"
 #include "../../video/winrt/SDL_winrtevents_c.h"
 #include "../../video/winrt/SDL_winrtvideo_cpp.h"
+#include "SDL_winrtapp_common.h"
 #include "SDL_winrtapp_xaml.h"
 
 
 
 /* SDL-internal globals: */
 SDL_bool WINRT_XAMLWasEnabled = SDL_FALSE;
-int (*WINRT_XAMLAppMainFunction)(int, char **) = NULL;
 
 #if WINAPI_FAMILY == WINAPI_FAMILY_APP
 ISwapChainBackgroundPanelNative * WINRT_GlobalSwapChainBackgroundPanelNative = NULL;
@@ -96,8 +96,8 @@ WINRT_OnRenderViaXAML(_In_ Platform::Object^ sender, _In_ Platform::Object^ args
  * SDL + XAML Initialization
  */
 
-extern "C" int
-SDL_WinRTInitXAMLApp(Platform::Object ^backgroundPanel, int (*mainFunction)(int, char **))
+int
+SDL_WinRTInitXAMLApp(int (*mainFunction)(int, char **), void * backgroundPanelAsIInspectable)
 {
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
     return SDL_SetError("XAML support is not yet available in Windows Phone.");
@@ -112,10 +112,11 @@ SDL_WinRTInitXAMLApp(Platform::Object ^backgroundPanel, int (*mainFunction)(int,
     using namespace Windows::UI::Xaml::Media;
 
     // Make sure we have a valid XAML element (to draw onto):
-    if ( ! backgroundPanel) {
-        return SDL_SetError("'backgroundPanel' can't be NULL");
+    if ( ! backgroundPanelAsIInspectable) {
+        return SDL_SetError("'backgroundPanelAsIInspectable' can't be NULL");
     }
 
+    Platform::Object ^ backgroundPanel = reinterpret_cast<Object ^>((IInspectable *) backgroundPanelAsIInspectable);
     SwapChainBackgroundPanel ^swapChainBackgroundPanel = dynamic_cast<SwapChainBackgroundPanel ^>(backgroundPanel);
     if ( ! swapChainBackgroundPanel) {
         return SDL_SetError("An unknown or unsupported type of XAML control was specified.");
@@ -134,7 +135,7 @@ SDL_WinRTInitXAMLApp(Platform::Object ^backgroundPanel, int (*mainFunction)(int,
     WINRT_XAMLAppEventToken = CompositionTarget::Rendering::add(ref new EventHandler<Object^>(WINRT_OnRenderViaXAML));
 
     // Make sure the app is ready to call the SDL-centric main() function:
-    WINRT_XAMLAppMainFunction = mainFunction;
+    WINRT_SDLAppEntryPoint = mainFunction;
     SDL_SetMainReady();
 
     // Make sure video-init knows that we're initializing XAML:

@@ -38,6 +38,7 @@ extern "C" {
 
 #include "../../video/winrt/SDL_winrtevents_c.h"
 #include "../../video/winrt/SDL_winrtvideo_cpp.h"
+#include "SDL_winrtapp_common.h"
 #include "SDL_winrtapp_direct3d.h"
 
 
@@ -47,12 +48,6 @@ extern "C" {
 //#define LOG_WINDOW_EVENTS 1
 //#define LOG_ORIENTATION_EVENTS 1
 
-
-// HACK, DLudwig: The C-style main() will get loaded via the app's
-// WinRT-styled main(), which is part of SDLmain_for_WinRT.cpp.
-// This seems wrong on some level, but does seem to work.
-typedef int (*SDL_WinRT_MainFunction)(int, char **);
-static SDL_WinRT_MainFunction SDL_WinRT_main = nullptr;
 
 // HACK, DLudwig: record a reference to the global, WinRT 'app'/view.
 // SDL/WinRT will use this throughout its code.
@@ -83,9 +78,9 @@ IFrameworkView^ SDLApplicationSource::CreateView()
     return app;
 }
 
-__declspec(dllexport) int SDL_WinRT_RunApplication(SDL_WinRT_MainFunction mainFunction)
+int SDL_WinRTInitNonXAMLApp(int (*mainFunction)(int, char **))
 {
-    SDL_WinRT_main = mainFunction;
+    WINRT_SDLAppEntryPoint = mainFunction;
     auto direct3DApplicationSource = ref new SDLApplicationSource();
     CoreApplication::Run(direct3DApplicationSource);
     return 0;
@@ -328,13 +323,13 @@ void SDL_WinRTApp::Load(Platform::String^ entryPoint)
 void SDL_WinRTApp::Run()
 {
     SDL_SetMainReady();
-    if (SDL_WinRT_main)
+    if (WINRT_SDLAppEntryPoint)
     {
         // TODO, WinRT: pass the C-style main() a reasonably realistic
         // representation of command line arguments.
         int argc = 0;
         char **argv = NULL;
-        SDL_WinRT_main(argc, argv);
+        WINRT_SDLAppEntryPoint(argc, argv);
     }
 }
 

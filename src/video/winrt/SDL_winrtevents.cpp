@@ -33,6 +33,7 @@ using Windows::UI::Core::CoreCursor;
  * SDL includes:
  */
 #include "SDL_winrtevents_c.h"
+#include "../../core/winrt/SDL_winrtapp_common.h"
 #include "../../core/winrt/SDL_winrtapp_direct3d.h"
 #include "../../core/winrt/SDL_winrtapp_xaml.h"
 #include "SDL_assert.h"
@@ -55,7 +56,7 @@ WINRT_PumpEvents(_THIS)
 {
     if (SDL_WinRTGlobalApp) {
         SDL_WinRTGlobalApp->PumpEvents();
-    } else if (WINRT_XAMLAppMainFunction) {
+    } else if (WINRT_XAMLWasEnabled) {
         WINRT_YieldXAMLThread();
     }
 }
@@ -95,7 +96,11 @@ WINRT_YieldXAMLThread()
 static int
 WINRT_XAMLThreadMain(void * userdata)
 {
-    return WINRT_XAMLAppMainFunction(0, NULL);
+    // TODO, WinRT: pass the C-style main() a reasonably realistic
+    // representation of command line arguments.
+    int argc = 0;
+    char **argv = NULL;
+    return WINRT_SDLAppEntryPoint(argc, argv);
 }
 
 void

@@ -276,6 +276,9 @@
     <ClCompile Include="..\..\src\core\winrt\SDL_winrtapp_xaml.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\core\winrt\SDL_winrtapp_common.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\begin_code.h">
@@ -606,6 +609,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\core\winrt\SDL_winrtapp_xaml.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\core\winrt\SDL_winrtapp_common.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

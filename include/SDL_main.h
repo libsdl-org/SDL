@@ -44,8 +44,10 @@
    creating an instance of IFrameworkView in the process.
 
    Please note that #include'ing SDL_main.h is not enough to get a main()
-   function working.  The file, src/main/winrt/SDL_WinRT_main.cpp, or a copy
-   of it, must be compiled into the app itself.
+   function working.  In non-XAML apps, the file,
+   src/main/winrt/SDL_WinRT_main_NonXAML.cpp, or a copy of it, must be compiled
+   into the app itself.  In XAML apps, the function, SDL_WinRTRunApp must be
+   called, with a pointer to the Direct3D-hosted XAML control passed in.
 */
 #define SDL_MAIN_NEEDED
 
@@ -123,6 +125,24 @@ extern DECLSPEC int SDLCALL SDL_RegisterApp(char *name, Uint32 style,
 extern DECLSPEC void SDLCALL SDL_UnregisterApp(void);
 
 #endif /* __WIN32__ */
+
+
+#ifdef __WINRT__
+
+/**
+ *  \brief Initializes and launches an SDL/WinRT application.
+ *
+ *  \param mainFunction The SDL app's C-style main().
+ *  \param xamlBackgroundPanel An optional, XAML-based, background panel.
+ *     For Non-XAML apps, this value must be set to NULL.  For XAML apps,
+ *     pass in a pointer to a SwapChainBackgroundPanel, casted to an
+ *     IInspectable (via reinterpret_cast).
+ *  \ret 0 on success, -1 on failure.  On failure, use SDL_GetError to retrieve more
+ *      information on the failure.
+ */
+extern DECLSPEC int SDLCALL SDL_WinRTRunApp(int (*mainFunction)(int, char **), void * xamlBackgroundPanel);
+
+#endif /* __WINRT__ */
 
 
 #ifdef __cplusplus

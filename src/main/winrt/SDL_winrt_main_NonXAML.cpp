@@ -1,4 +1,5 @@
 
+#include <SDL_main.h>
 #include <wrl.h>
 
 /* At least one file in any SDL/WinRT app appears to require compilation
@@ -27,13 +28,6 @@
 #endif
 #endif
 
-
-/* The app's C-style main will be passed into SDL.dll as a function
-   pointer, and called at the appropriate time.
-*/
-extern __declspec(dllimport) int SDL_WinRT_RunApplication(int (*)(int, char **));
-extern "C" int SDL_main(int, char **);
-
 /* Prevent MSVC++ from warning about threading models when defining our
    custom WinMain.  The threading model will instead be set via a direct
    call to Windows::Foundation::Initialize (rather than via an attributed
@@ -51,13 +45,12 @@ extern "C" int SDL_main(int, char **);
 #pragma comment(lib, "runtimeobject.lib")
 #endif
 
-int CALLBACK  WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
+int CALLBACK WinMain(HINSTANCE, HINSTANCE, LPSTR, int)
 {
     if (FAILED(Windows::Foundation::Initialize(RO_INIT_MULTITHREADED))) {
         return 1;
     }
 
-    SDL_WinRT_RunApplication(SDL_main);
+    SDL_WinRTRunApp(SDL_main, NULL);
     return 0;
 }
-
