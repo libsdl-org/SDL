@@ -260,7 +260,7 @@ extern "C" {
 /**
  *  \brief If set to 1, then do not allow high-DPI windows. ("Retina" on Mac)
  */
-#define SDL_HINT_VIDEO_HIGHDPI_DISABLED "SDL_HIGHDPI_DISABLED"
+#define SDL_HINT_VIDEO_HIGHDPI_DISABLED "SDL_VIDEO_HIGHDPI_DISABLED"
 
 
 /**
