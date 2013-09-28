@@ -395,7 +395,7 @@ X11_CreateWindow(_THIS, SDL_Window * window)
     }
 
     xattr.override_redirect = False;
-    xattr.background_pixel = 0;
+    xattr.background_pixmap = None;
     xattr.border_pixel = 0;
 
     if (visual->class == DirectColor) {
@@ -480,7 +480,7 @@ X11_CreateWindow(_THIS, SDL_Window * window)
     w = XCreateWindow(display, RootWindow(display, screen),
                       window->x, window->y, window->w, window->h,
                       0, depth, InputOutput, visual,
-                      (CWOverrideRedirect | CWBackPixel | CWBorderPixel |
+                      (CWOverrideRedirect | CWBackPixmap | CWBorderPixel |
                        CWColormap), &xattr);
     if (!w) {
         return SDL_SetError("Couldn't create window");
