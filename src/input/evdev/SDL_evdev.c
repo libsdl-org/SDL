@@ -55,9 +55,9 @@ static _THIS = NULL;
 
 static SDL_Scancode SDL_EVDEV_translate_keycode(int keycode);
 static void SDL_EVDEV_sync_device(SDL_evdevlist_item *item);
+static int SDL_EVDEV_device_removed(const char *devpath);
 
 #if SDL_USE_LIBUDEV
-static int SDL_EVDEV_device_removed(const char *devpath);
 static int SDL_EVDEV_device_added(const SDL_UDEV_deviceclass devclass, const char *devpath);
 void SDL_EVDEV_udev_callback(SDL_UDEV_deviceevent udev_type, SDL_UDEV_deviceclass udev_class, const char *devpath);
 #endif /* SDL_USE_LIBUDEV */
@@ -615,7 +615,7 @@ SDL_EVDEV_device_added(const SDL_UDEV_deviceclass devclass, const char *devpath)
     
     return _this->numdevices++;
 }
-
+#endif /* SDL_USE_LIBUDEV */
 
 static int
 SDL_EVDEV_device_removed(const char *devpath)
@@ -646,7 +646,7 @@ SDL_EVDEV_device_removed(const char *devpath)
 
     return -1;
 }
-#endif /* SDL_USE_LIBUDEV */
+
 
 #endif /* SDL_INPUT_LINUXEV */
 
