@@ -29,11 +29,9 @@
 #define _SDL_system_h
 
 #include "SDL_stdinc.h"
-
-#if defined(__IPHONEOS__) && __IPHONEOS__
-#include "SDL_video.h"
 #include "SDL_keyboard.h"
-#endif
+#include "SDL_render.h"
+#include "SDL_video.h"
 
 #include "begin_code.h"
 /* Set up for C function definitions, even when using C++ */
@@ -50,6 +48,10 @@ extern "C" {
    on which monitor a full screen application will appear.
 */
 extern DECLSPEC int SDLCALL SDL_Direct3D9GetAdapterIndex( int displayIndex );
+
+/* Returns the D3D device associated with a renderer, or NULL if it's not a D3D renderer. */
+typedef struct IDirect3DDevice9 IDirect3DDevice9;
+extern DECLSPEC IDirect3DDevice9* SDLCALL SDL_RenderGetD3DDevice(SDL_Renderer * renderer);
 
 #endif /* __WIN32__ */
 
