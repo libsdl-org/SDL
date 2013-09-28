@@ -53,12 +53,14 @@ static _THIS = NULL;
 #define SYN_DROPPED 3
 #endif
 
-
-static int SDL_EVDEV_device_removed(const char *devpath);
-static int SDL_EVDEV_device_added(const SDL_UDEV_deviceclass devclass, const char *devpath);
 static SDL_Scancode SDL_EVDEV_translate_keycode(int keycode);
 static void SDL_EVDEV_sync_device(SDL_evdevlist_item *item);
+
+#if SDL_USE_LIBUDEV
+static int SDL_EVDEV_device_removed(const char *devpath);
+static int SDL_EVDEV_device_added(const SDL_UDEV_deviceclass devclass, const char *devpath);
 void SDL_EVDEV_udev_callback(SDL_UDEV_deviceevent udev_type, SDL_UDEV_deviceclass udev_class, const char *devpath);
+#endif /* SDL_USE_LIBUDEV */
 
 static SDL_Scancode EVDEV_Keycodes[] = {
     SDL_SCANCODE_UNKNOWN,       /*  KEY_RESERVED        0 */
@@ -390,6 +392,7 @@ SDL_EVDEV_Quit(void)
     }
 }
 
+#if SDL_USE_LIBUDEV
 void SDL_EVDEV_udev_callback(SDL_UDEV_deviceevent udev_type, SDL_UDEV_deviceclass udev_class, const char *devpath)
 {
     SDL_EVDEV_deviceclass devclass;
@@ -428,6 +431,8 @@ void SDL_EVDEV_udev_callback(SDL_UDEV_deviceevent udev_type, SDL_UDEV_deviceclas
     }
     
 }
+
+#endif /* SDL_USE_LIBUDEV */
 
 void 
 SDL_EVDEV_Poll(void)
@@ -562,6 +567,7 @@ SDL_EVDEV_sync_device(SDL_evdevlist_item *item)
     /* TODO: get full state of device and report whatever is required */
 }
 
+#if SDL_USE_LIBUDEV
 static int
 SDL_EVDEV_device_added(const SDL_UDEV_deviceclass devclass, const char *devpath)
 {
@@ -640,6 +646,7 @@ SDL_EVDEV_device_removed(const char *devpath)
 
     return -1;
 }
+#endif /* SDL_USE_LIBUDEV */
 
 #endif /* SDL_INPUT_LINUXEV */
 
