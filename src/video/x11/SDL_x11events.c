@@ -135,7 +135,9 @@ static Bool X11_IsWheelCheckIfEvent(Display *display, XEvent *chkev,
     XPointer arg)
 {
     XEvent *event = (XEvent *) arg;
+    /* we only handle buttons 4 and 5 - false positive avoidance */
     if (chkev->type == ButtonRelease &&
+        (event->xbutton.button == Button4 || event->xbutton.button == Button5) &&
         chkev->xbutton.button == event->xbutton.button &&
         chkev->xbutton.time == event->xbutton.time)
         return True;
@@ -150,7 +152,12 @@ static SDL_bool X11_IsWheelEvent(Display * display,XEvent * event,int * ticks)
            however, mouse wheel events trigger a button press and a button release
            immediately. thus, checking if the same button was released at the same
            time as it was pressed, should be an adequate hack to derive a mouse
-           wheel event. */
+           wheel event.
+           However, there is broken and unusual hardware out there...
+           - False positive: a button for which a release event is
+             generated (or synthesised) immediately.
+           - False negative: a wheel which, when rolled, doesn't have
+             a release event generated immediately. */
         if (XCheckIfEvent(display, &relevent, X11_IsWheelCheckIfEvent,
             (XPointer) event)) {
 
