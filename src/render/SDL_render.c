@@ -805,6 +805,106 @@ SDL_UpdateTexture(SDL_Texture * texture, const SDL_Rect * rect,
 }
 
 static int
+SDL_UpdateTextureYUVPlanar(SDL_Texture * texture, const SDL_Rect * rect,
+                           const Uint8 *Yplane, int Ypitch,
+                           const Uint8 *Uplane, int Upitch,
+                           const Uint8 *Vplane, int Vpitch)
+{
+    SDL_Texture *native = texture->native;
+    SDL_Rect full_rect;
+
+    if (SDL_SW_UpdateYUVTexturePlanar(texture->yuv, rect, Yplane, Ypitch, Uplane, Upitch, Vplane, Vpitch) < 0) {
+        return -1;
+    }
+
+    full_rect.x = 0;
+    full_rect.y = 0;
+    full_rect.w = texture->w;
+    full_rect.h = texture->h;
+    rect = &full_rect;
+
+    if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
+        /* We can lock the texture and copy to it */
+        void *native_pixels;
+        int native_pitch;
+
+        if (SDL_LockTexture(native, rect, &native_pixels, &native_pitch) < 0) {
+            return -1;
+        }
+        SDL_SW_CopyYUVToRGB(texture->yuv, rect, native->format,
+                            rect->w, rect->h, native_pixels, native_pitch);
+        SDL_UnlockTexture(native);
+    } else {
+        /* Use a temporary buffer for updating */
+        void *temp_pixels;
+        int temp_pitch;
+
+        temp_pitch = (((rect->w * SDL_BYTESPERPIXEL(native->format)) + 3) & ~3);
+        temp_pixels = SDL_malloc(rect->h * temp_pitch);
+        if (!temp_pixels) {
+            return SDL_OutOfMemory();
+        }
+        SDL_SW_CopyYUVToRGB(texture->yuv, rect, native->format,
+                            rect->w, rect->h, temp_pixels, temp_pitch);
+        SDL_UpdateTexture(native, rect, temp_pixels, temp_pitch);
+        SDL_free(temp_pixels);
+    }
+    return 0;
+}
+
+int SDL_UpdateYUVTexture(SDL_Texture * texture, const SDL_Rect * rect,
+                         const Uint8 *Yplane, int Ypitch,
+                         const Uint8 *Uplane, int Upitch,
+                         const Uint8 *Vplane, int Vpitch)
+{
+    SDL_Renderer *renderer;
+    SDL_Rect full_rect;
+
+    CHECK_TEXTURE_MAGIC(texture, -1);
+
+    if (!Yplane) {
+        return SDL_InvalidParamError("Yplane");
+    }
+    if (!Ypitch) {
+        return SDL_InvalidParamError("Ypitch");
+    }
+    if (!Uplane) {
+        return SDL_InvalidParamError("Uplane");
+    }
+    if (!Upitch) {
+        return SDL_InvalidParamError("Upitch");
+    }
+    if (!Vplane) {
+        return SDL_InvalidParamError("Vplane");
+    }
+    if (!Vpitch) {
+        return SDL_InvalidParamError("Vpitch");
+    }
+
+    if (texture->format != SDL_PIXELFORMAT_YV12 &&
+        texture->format != SDL_PIXELFORMAT_IYUV) {
+        return SDL_SetError("Texture format must by YV12 or IYUV");
+    }
+
+    if (!rect) {
+        full_rect.x = 0;
+        full_rect.y = 0;
+        full_rect.w = texture->w;
+        full_rect.h = texture->h;
+        rect = &full_rect;
+    }
+
+    if (texture->yuv) {
+        return SDL_UpdateTextureYUVPlanar(texture, rect, Yplane, Ypitch, Uplane, Upitch, Vplane, Vpitch);
+    } else {
+        SDL_assert(!texture->native);
+        renderer = texture->renderer;
+        SDL_assert(renderer->UpdateTextureYUV);
+        return renderer->UpdateTextureYUV(renderer, texture, rect, Yplane, Ypitch, Uplane, Upitch, Vplane, Vpitch);
+    }
+}
+
+static int
 SDL_LockTextureYUV(SDL_Texture * texture, const SDL_Rect * rect,
                    void **pixels, int *pitch)
 {

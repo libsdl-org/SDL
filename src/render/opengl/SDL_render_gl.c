@@ -52,6 +52,11 @@ static int GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture);
 static int GL_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                             const SDL_Rect * rect, const void *pixels,
                             int pitch);
+static int GL_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
+                               const SDL_Rect * rect,
+                               const Uint8 *Yplane, int Ypitch,
+                               const Uint8 *Uplane, int Upitch,
+                               const Uint8 *Vplane, int Vpitch);
 static int GL_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                           const SDL_Rect * rect, void **pixels, int *pitch);
 static void GL_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture);
@@ -403,6 +408,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->GetOutputSize = GL_GetOutputSize;
     renderer->CreateTexture = GL_CreateTexture;
     renderer->UpdateTexture = GL_UpdateTexture;
+    renderer->UpdateTextureYUV = GL_UpdateTextureYUV;
     renderer->LockTexture = GL_LockTexture;
     renderer->UnlockTexture = GL_UnlockTexture;
     renderer->SetRenderTarget = GL_SetRenderTarget;
@@ -797,6 +803,41 @@ GL_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                                     rect->w/2, rect->h/2,
                                     data->format, data->formattype, pixels);
     }
+    renderdata->glDisable(data->type);
+    return GL_CheckError("glTexSubImage2D()", renderer);
+}
+
+static int
+GL_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
+                    const SDL_Rect * rect,
+                    const Uint8 *Yplane, int Ypitch,
+                    const Uint8 *Uplane, int Upitch,
+                    const Uint8 *Vplane, int Vpitch)
+{
+    GL_RenderData *renderdata = (GL_RenderData *) renderer->driverdata;
+    GL_TextureData *data = (GL_TextureData *) texture->driverdata;
+
+    GL_ActivateRenderer(renderer);
+
+    renderdata->glEnable(data->type);
+    renderdata->glBindTexture(data->type, data->texture);
+    renderdata->glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    renderdata->glPixelStorei(GL_UNPACK_ROW_LENGTH, Ypitch);
+    renderdata->glTexSubImage2D(data->type, 0, rect->x, rect->y, rect->w,
+                                rect->h, data->format, data->formattype,
+                                Yplane);
+
+    renderdata->glPixelStorei(GL_UNPACK_ROW_LENGTH, Upitch);
+    renderdata->glBindTexture(data->type, data->utexture);
+    renderdata->glTexSubImage2D(data->type, 0, rect->x/2, rect->y/2,
+                                rect->w/2, rect->h/2,
+                                data->format, data->formattype, Uplane);
+
+    renderdata->glPixelStorei(GL_UNPACK_ROW_LENGTH, Vpitch);
+    renderdata->glBindTexture(data->type, data->vtexture);
+    renderdata->glTexSubImage2D(data->type, 0, rect->x/2, rect->y/2,
+                                rect->w/2, rect->h/2,
+                                data->format, data->formattype, Vplane);
     renderdata->glDisable(data->type);
     return GL_CheckError("glTexSubImage2D()", renderer);
 }
