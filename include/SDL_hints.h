@@ -95,6 +95,17 @@ extern "C" {
 #define SDL_HINT_RENDER_OPENGL_SHADERS      "SDL_RENDER_OPENGL_SHADERS"
 
 /**
+ *  \brief  A variable controlling whether the Direct3D device is initialized for thread-safe operations.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Thread-safety is not enabled (faster)
+ *    "1"       - Thread-safety is enabled
+ *
+ *  By default the Direct3D device is created with thread-safety disabled.
+ */
+#define SDL_HINT_RENDER_DIRECT3D_THREADSAFE "SDL_RENDER_DIRECT3D_THREADSAFE"
+
+/**
  *  \brief  A variable controlling the scaling quality
  *
  *  This variable can be set to the following values:
