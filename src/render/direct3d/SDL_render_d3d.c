@@ -544,9 +544,11 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
     D3D_RenderData *data;
     SDL_SysWMinfo windowinfo;
     HRESULT result;
+	const char *hint;
     D3DPRESENT_PARAMETERS pparams;
     IDirect3DSwapChain9 *chain;
     D3DCAPS9 caps;
+	DWORD device_flags;
     Uint32 window_flags;
     int w, h;
     SDL_DisplayMode fullscreen_mode;
@@ -588,8 +590,6 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
             if (data->d3dxDLL) SDL_UnloadObject(data->d3dxDLL);
         }
     }
-
-
 
     if (!data->d3d || !data->matrixStack) {
         SDL_free(renderer);
@@ -667,14 +667,22 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
 
     IDirect3D9_GetDeviceCaps(data->d3d, data->adapter, D3DDEVTYPE_HAL, &caps);
 
+	device_flags = D3DCREATE_FPU_PRESERVE;
+	if (caps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT) {
+		device_flags |= D3DCREATE_HARDWARE_VERTEXPROCESSING;
+	} else {
+		device_flags |= D3DCREATE_SOFTWARE_VERTEXPROCESSING;
+	}
+
+	hint = SDL_GetHint(SDL_HINT_RENDER_DIRECT3D_THREADSAFE);
+	if (hint && SDL_atoi(hint)) {
+		device_flags |= D3DCREATE_MULTITHREADED;
+	}
+
     result = IDirect3D9_CreateDevice(data->d3d, data->adapter,
                                      D3DDEVTYPE_HAL,
                                      pparams.hDeviceWindow,
-                                     D3DCREATE_FPU_PRESERVE | ((caps.
-                                      DevCaps &
-                                      D3DDEVCAPS_HWTRANSFORMANDLIGHT) ?
-                                     D3DCREATE_HARDWARE_VERTEXPROCESSING :
-                                     D3DCREATE_SOFTWARE_VERTEXPROCESSING),
+                                     device_flags,
                                      &pparams, &data->device);
     if (FAILED(result)) {
         D3D_DestroyRenderer(renderer);
