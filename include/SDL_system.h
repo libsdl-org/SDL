@@ -49,7 +49,9 @@ extern "C" {
 */
 extern DECLSPEC int SDLCALL SDL_Direct3D9GetAdapterIndex( int displayIndex );
 
-/* Returns the D3D device associated with a renderer, or NULL if it's not a D3D renderer. */
+/* Returns the D3D device associated with a renderer, or NULL if it's not a D3D renderer.
+   Once you are done using the device, you should release it to avoid a resource leak.
+ */
 typedef struct IDirect3DDevice9 IDirect3DDevice9;
 extern DECLSPEC IDirect3DDevice9* SDLCALL SDL_RenderGetD3D9Device(SDL_Renderer * renderer);
 

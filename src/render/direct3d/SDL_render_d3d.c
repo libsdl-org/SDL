@@ -1887,13 +1887,19 @@ IDirect3DDevice9 *
 SDL_RenderGetD3D9Device(SDL_Renderer * renderer)
 {
 	D3D_RenderData *data = (D3D_RenderData *) renderer->driverdata;
+	IDirect3DDevice9 *device;
 
 	// Make sure that this is a D3D renderer
 	if (renderer->DestroyRenderer != D3D_DestroyRenderer) {
 		SDL_SetError("Renderer is not a D3D renderer");
 		return NULL;
 	}
-	return data->device;
+
+	device = data->device;
+	if (device) {
+		IDirect3DDevice9_AddRef( device );
+	}
+	return device;
 }
 
 #endif /* SDL_VIDEO_RENDER_D3D && !SDL_RENDER_DISABLED */
