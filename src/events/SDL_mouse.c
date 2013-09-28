@@ -246,13 +246,11 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
     mouse->xdelta += xrel;
     mouse->ydelta += yrel;
 
-#if 0 /* FIXME */
     /* Move the mouse cursor, if needed */
     if (mouse->cursor_shown && !mouse->relative_mode &&
         mouse->MoveCursor && mouse->cur_cursor) {
         mouse->MoveCursor(mouse->cur_cursor);
     }
-#endif
 
     /* Post the event, if desired */
     posted = 0;
