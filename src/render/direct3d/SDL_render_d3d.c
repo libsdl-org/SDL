@@ -211,6 +211,11 @@ static int D3D_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture);
 static int D3D_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                              const SDL_Rect * rect, const void *pixels,
                              int pitch);
+static int D3D_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
+                                const SDL_Rect * rect,
+                                const Uint8 *Yplane, int Ypitch,
+                                const Uint8 *Uplane, int Upitch,
+                                const Uint8 *Vplane, int Vpitch);
 static int D3D_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                            const SDL_Rect * rect, void **pixels, int *pitch);
 static void D3D_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture);
@@ -599,6 +604,7 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->WindowEvent = D3D_WindowEvent;
     renderer->CreateTexture = D3D_CreateTexture;
     renderer->UpdateTexture = D3D_UpdateTexture;
+	renderer->UpdateTextureYUV = D3D_UpdateTextureYUV;
     renderer->LockTexture = D3D_LockTexture;
     renderer->UnlockTexture = D3D_UnlockTexture;
     renderer->SetRenderTarget = D3D_SetRenderTarget;
@@ -1014,6 +1020,36 @@ D3D_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
         }
     }
     return 0;
+}
+
+static int
+D3D_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
+                     const SDL_Rect * rect,
+                     const Uint8 *Yplane, int Ypitch,
+                     const Uint8 *Uplane, int Upitch,
+                     const Uint8 *Vplane, int Vpitch)
+{
+	D3D_TextureData *data = (D3D_TextureData *) texture->driverdata;
+	SDL_bool full_texture = SDL_FALSE;
+
+#ifdef USE_DYNAMIC_TEXTURE
+	if (texture->access == SDL_TEXTUREACCESS_STREAMING &&
+		rect->x == 0 && rect->y == 0 &&
+		rect->w == texture->w && rect->h == texture->h) {
+			full_texture = SDL_TRUE;
+	}
+#endif
+
+	if (D3D_UpdateTextureInternal(data->texture, texture->format, full_texture, rect->x, rect->y, rect->w, rect->h, Yplane, Ypitch) < 0) {
+		return -1;
+	}
+	if (D3D_UpdateTextureInternal(data->utexture, texture->format, full_texture, rect->x / 2, rect->y / 2, rect->w / 2, rect->h / 2, Uplane, Upitch) < 0) {
+		return -1;
+	}
+	if (D3D_UpdateTextureInternal(data->vtexture, texture->format, full_texture, rect->x / 2, rect->y / 2, rect->w / 2, rect->h / 2, Vplane, Vpitch) < 0) {
+		return -1;
+	}
+	return 0;
 }
 
 static int
