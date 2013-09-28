@@ -1875,6 +1875,19 @@ D3D_DestroyRenderer(SDL_Renderer * renderer)
     SDL_free(renderer);
 }
 
+IDirect3DDevice9 *
+SDL_RenderGetD3DDevice(SDL_Renderer * renderer)
+{
+	D3D_RenderData *data = (D3D_RenderData *) renderer->driverdata;
+
+	// Make sure that this is a D3D renderer
+	if (renderer->DestroyRenderer != D3D_DestroyRenderer) {
+		SDL_SetError("Renderer is not a D3D renderer");
+		return NULL;
+	}
+	return data->device;
+}
+
 #endif /* SDL_VIDEO_RENDER_D3D && !SDL_RENDER_DISABLED */
 
 /* vi: set ts=4 sw=4 expandtab: */
