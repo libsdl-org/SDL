@@ -34,19 +34,6 @@ SDL_LoadObject(const char *sofile)
 {
     LPTSTR tstr = WIN_UTF8ToString(sofile);
     void *handle = (void *) LoadLibrary(tstr);
-
-	/* By default LoadLibrary uses the current working directory 
-	* as the first item on the search path for implicit dependencies
-	* of whatever it's loading. That is somewhat inconsistent with
-	* what dlopen does on other platforms, so we will try again
-	* with LoadLibraryEx and a slightly different search path. This
-	* causes Windows to search for dependencies in the directory 
-	* that the module itself lives in. */
-	if(handle == NULL)
-	{
-		handle = (void *) LoadLibraryEx(tstr, NULL, LOAD_WITH_ALTERED_SEARCH_PATH);
-	}
-
     SDL_free(tstr);
 
     /* Generate an error message if all loads failed */
