@@ -904,6 +904,7 @@ extern DECLSPEC SDL_GLContext SDLCALL SDL_GL_GetCurrentContext(void);
 /**
  *  \brief Get the size of a window's underlying drawable (for use with glViewport).
  *
+ *  \param window   Window from which the drawable size should be queried
  *  \param w        Pointer to variable for storing the width, may be NULL
  *  \param h        Pointer to variable for storing the height, may be NULL
  *
