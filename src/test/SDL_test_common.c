@@ -701,7 +701,9 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
             SDL_DisplayMode mode;
             int bpp;
             Uint32 Rmask, Gmask, Bmask, Amask;
-
+#if SDL_VIDEO_DRIVER_WINDOWS
+			int adapterIndex = 0;
+#endif
             n = SDL_GetNumVideoDisplays();
             fprintf(stderr, "Number of displays: %d\n", n);
             for (i = 0; i < n; ++i) {
@@ -754,6 +756,12 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
                         }
                     }
                 }
+
+#if SDL_VIDEO_DRIVER_WINDOWS
+				/* Print the adapter index */
+				adapterIndex = SDL_Direct3D9GetAdapterIndex( i );
+				fprintf( stderr, "Adapter Index: %d", adapterIndex );
+#endif
             }
         }
 
