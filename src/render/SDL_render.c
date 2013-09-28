@@ -22,6 +22,7 @@
 
 /* The SDL 2D rendering system */
 
+#include "SDL_assert.h"
 #include "SDL_hints.h"
 #include "SDL_log.h"
 #include "SDL_render.h"
