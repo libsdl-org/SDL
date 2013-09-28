@@ -51,7 +51,7 @@ extern DECLSPEC int SDLCALL SDL_Direct3D9GetAdapterIndex( int displayIndex );
 
 /* Returns the D3D device associated with a renderer, or NULL if it's not a D3D renderer. */
 typedef struct IDirect3DDevice9 IDirect3DDevice9;
-extern DECLSPEC IDirect3DDevice9* SDLCALL SDL_RenderGetD3DDevice(SDL_Renderer * renderer);
+extern DECLSPEC IDirect3DDevice9* SDLCALL SDL_RenderGetD3D9Device(SDL_Renderer * renderer);
 
 #endif /* __WIN32__ */
 
