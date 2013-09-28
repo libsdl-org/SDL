@@ -30,10 +30,7 @@
 #include "SDL_syswm.h"
 #include "SDL_system.h"
 #include "../SDL_sysrender.h"
-#include <stdio.h>
-
-#include "../../video/SDL_sysvideo.h"
-#include "../../video/windows/SDL_windowswindow.h"
+#include "../../video/windows/SDL_windowsvideo.h"
 
 #if SDL_VIDEO_RENDER_D3D
 #define D3D_DEBUG_INFO
