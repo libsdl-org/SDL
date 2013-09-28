@@ -1884,7 +1884,7 @@ D3D_DestroyRenderer(SDL_Renderer * renderer)
 }
 
 IDirect3DDevice9 *
-SDL_RenderGetD3DDevice(SDL_Renderer * renderer)
+SDL_RenderGetD3D9Device(SDL_Renderer * renderer)
 {
 	D3D_RenderData *data = (D3D_RenderData *) renderer->driverdata;
 
