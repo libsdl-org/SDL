@@ -674,7 +674,7 @@ DirectFB_GetTexturePalette(SDL_Renderer * renderer,
             colors[i].r = entries[i].r;
             colors[i].g = entries[i].g;
             colors[i].b = entries[i].b;
-            colors[i].unused = SDL_ALPHA_OPAQUE;
+            colors[i].a = SDL_ALPHA_OPAQUE;
         }
         return 0;
     } else {
