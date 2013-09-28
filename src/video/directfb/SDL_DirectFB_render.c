@@ -308,7 +308,7 @@ DisplayPaletteChanged(void *userdata, SDL_Palette * palette)
         entries[i].r = palette->colors[i].r;
         entries[i].g = palette->colors[i].g;
         entries[i].b = palette->colors[i].b;
-        entries[i].a = palette->colors[i].unused;
+        entries[i].a = palette->colors[i].a;
     }
     SDL_DFB_CHECKERR(surfpal->SetEntries(surfpal, entries, ncolors, 0));
     return 0;
