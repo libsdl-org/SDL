@@ -1627,6 +1627,7 @@ GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
 #endif
     Uint32 windowFlags;
     GLint window_framebuffer;
+    GLint value;
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
@@ -1684,6 +1685,13 @@ GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
     if (SDL_GL_GetSwapInterval() > 0) {
         renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
     }
+
+    value = 0;
+    rdata->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &value);
+    renderer->info.max_texture_width = value;
+    value = 0;
+    rdata->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &value);
+    renderer->info.max_texture_height = value;
 
     /* Determine supported shader formats */
     /* HACK: glGetInteger is broken on the Zune HD's compositor, so we just hardcode this */
