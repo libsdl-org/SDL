@@ -52,124 +52,13 @@
 #define SYN_DROPPED 3
 #endif
 
-/*
- * !!! FIXME: move all the udev stuff to src/core/linux, so I can reuse it
- * !!! FIXME:  for audio hardware disconnects.
- */
-#ifdef HAVE_LIBUDEV_H
-#define SDL_USE_LIBUDEV 1
-#include "SDL_loadso.h"
-#include <libudev.h>
-#include <sys/time.h>
-#include <sys/types.h>
+#include "../../core/linux/SDL_udev.h"
 
-/* we never link directly to libudev. */
-/* !!! FIXME: can we generalize this? ALSA, etc, do the same things. */
-static const char *udev_library = "libudev.so.0";
-static void *udev_handle = NULL;
-
-/* !!! FIXME: this is kinda ugly. */
-static SDL_bool
-load_udev_sym(const char *fn, void **addr)
-{
-    *addr = SDL_LoadFunction(udev_handle, fn);
-    if (*addr == NULL) {
-        /* Don't call SDL_SetError(): SDL_LoadFunction already did. */
-        return SDL_FALSE;
-    }
-
-    return SDL_TRUE;
-}
-
-/* libudev entry points... */
-static const char *(*UDEV_udev_device_get_action)(struct udev_device *) = NULL;
-static const char *(*UDEV_udev_device_get_devnode)(struct udev_device *) = NULL;
-static const char *(*UDEV_udev_device_get_property_value)(struct udev_device *, const char *) = NULL;
-static struct udev_device *(*UDEV_udev_device_new_from_syspath)(struct udev *, const char *) = NULL;
-static void (*UDEV_udev_device_unref)(struct udev_device *) = NULL;
-static int (*UDEV_udev_enumerate_add_match_property)(struct udev_enumerate *, const char *, const char *) = NULL;
-static int (*UDEV_udev_enumerate_add_match_subsystem)(struct udev_enumerate *, const char *) = NULL;
-static struct udev_list_entry *(*UDEV_udev_enumerate_get_list_entry)(struct udev_enumerate *) = NULL;
-static struct udev_enumerate *(*UDEV_udev_enumerate_new)(struct udev *) = NULL;
-static int (*UDEV_udev_enumerate_scan_devices)(struct udev_enumerate *) = NULL;
-static void (*UDEV_udev_enumerate_unref)(struct udev_enumerate *) = NULL;
-static const char *(*UDEV_udev_list_entry_get_name)(struct udev_list_entry *) = NULL;
-static struct udev_list_entry *(*UDEV_udev_list_entry_get_next)(struct udev_list_entry *) = NULL;
-static int (*UDEV_udev_monitor_enable_receiving)(struct udev_monitor *) = NULL;
-static int (*UDEV_udev_monitor_filter_add_match_subsystem_devtype)(struct udev_monitor *, const char *, const char *) = NULL;
-static int (*UDEV_udev_monitor_get_fd)(struct udev_monitor *) = NULL;
-static struct udev_monitor *(*UDEV_udev_monitor_new_from_netlink)(struct udev *, const char *) = NULL;
-static struct udev_device *(*UDEV_udev_monitor_receive_device)(struct udev_monitor *) = NULL;
-static void (*UDEV_udev_monitor_unref)(struct udev_monitor *) = NULL;
-static struct udev *(*UDEV_udev_new)(void) = NULL;
-static void (*UDEV_udev_unref)(struct udev *) = NULL;
-
-static int
-load_udev_syms(void)
-{
-    /* cast funcs to char* first, to please GCC's strict aliasing rules. */
-    #define SDL_UDEV_SYM(x) \
-        if (!load_udev_sym(#x, (void **) (char *) &UDEV_##x)) return -1
-
-    SDL_UDEV_SYM(udev_device_get_action);
-    SDL_UDEV_SYM(udev_device_get_devnode);
-    SDL_UDEV_SYM(udev_device_get_property_value);
-    SDL_UDEV_SYM(udev_device_new_from_syspath);
-    SDL_UDEV_SYM(udev_device_unref);
-    SDL_UDEV_SYM(udev_enumerate_add_match_property);
-    SDL_UDEV_SYM(udev_enumerate_add_match_subsystem);
-    SDL_UDEV_SYM(udev_enumerate_get_list_entry);
-    SDL_UDEV_SYM(udev_enumerate_new);
-    SDL_UDEV_SYM(udev_enumerate_scan_devices);
-    SDL_UDEV_SYM(udev_enumerate_unref);
-    SDL_UDEV_SYM(udev_list_entry_get_name);
-    SDL_UDEV_SYM(udev_list_entry_get_next);
-    SDL_UDEV_SYM(udev_monitor_enable_receiving);
-    SDL_UDEV_SYM(udev_monitor_filter_add_match_subsystem_devtype);
-    SDL_UDEV_SYM(udev_monitor_get_fd);
-    SDL_UDEV_SYM(udev_monitor_new_from_netlink);
-    SDL_UDEV_SYM(udev_monitor_receive_device);
-    SDL_UDEV_SYM(udev_monitor_unref);
-    SDL_UDEV_SYM(udev_new);
-    SDL_UDEV_SYM(udev_unref);
-
-    #undef SDL_UDEV_SYM
-
-    return 0;
-}
-
-static void
-UnloadUDEVLibrary(void)
-{
-    if (udev_handle != NULL) {
-        SDL_UnloadObject(udev_handle);
-        udev_handle = NULL;
-    }
-}
-
-static int
-LoadUDEVLibrary(void)
-{
-    int retval = 0;
-    if (udev_handle == NULL) {
-        udev_handle = SDL_LoadObject(udev_library);
-        if (udev_handle == NULL) {
-            retval = -1;
-            /* Don't call SDL_SetError(): SDL_LoadObject already did. */
-        } else {
-            retval = load_udev_syms();
-            if (retval < 0) {
-                UnloadUDEVLibrary();
-            }
-        }
-    }
-
-    return retval;
-}
-
-static struct udev *udev = NULL;
-static struct udev_monitor *udev_mon = NULL;
-#endif
+static int MaybeAddDevice(const char *path);
+#if SDL_USE_LIBUDEV
+static int MaybeRemoveDevice(const char *path);
+void joystick_udev_callback(SDL_UDEV_deviceevent udev_type, SDL_UDEV_deviceclass udev_class, const char *devpath);
+#endif /* SDL_USE_LIBUDEV */
 
 
 /* A linked list of available joysticks */
@@ -245,6 +134,62 @@ IsJoystick(int fd, char *namebuf, const size_t namebuflen, SDL_JoystickGUID *gui
 
     return 1;
 }
+
+#if SDL_USE_LIBUDEV
+void joystick_udev_callback(SDL_UDEV_deviceevent udev_type, SDL_UDEV_deviceclass udev_class, const char *devpath)
+{
+    int instance;
+    
+    if (devpath == NULL || udev_class != SDL_UDEV_DEVICE_JOYSTICK) {
+        return;
+    }
+    
+    switch( udev_type )
+    {
+        case SDL_UDEV_DEVICEADDED:
+            instance = MaybeAddDevice(devpath);
+            if (instance != -1) {
+                /* !!! FIXME: Move this to an SDL_PrivateJoyDeviceAdded() function? */
+                #if !SDL_EVENTS_DISABLED
+                SDL_Event event;
+                event.type = SDL_JOYDEVICEADDED;
+
+                if (SDL_GetEventState(event.type) == SDL_ENABLE) {
+                    event.jdevice.which = instance;
+                    if ( (SDL_EventOK == NULL) ||
+                         (*SDL_EventOK) (SDL_EventOKParam, &event) ) {
+                        SDL_PushEvent(&event);
+                    }
+                }
+                #endif /* !SDL_EVENTS_DISABLED */
+            }
+            break;
+            
+        case SDL_UDEV_DEVICEREMOVED:
+            instance = MaybeRemoveDevice(devpath);
+            if (instance != -1) {
+                /* !!! FIXME: Move this to an SDL_PrivateJoyDeviceRemoved() function? */
+                #if !SDL_EVENTS_DISABLED
+                SDL_Event event;
+                event.type = SDL_JOYDEVICEREMOVED;
+
+                if (SDL_GetEventState(event.type) == SDL_ENABLE) {
+                    event.jdevice.which = instance;
+                    if ( (SDL_EventOK == NULL) ||
+                         (*SDL_EventOK) (SDL_EventOKParam, &event) ) {
+                        SDL_PushEvent(&event);
+                    }
+                }
+                #endif /* !SDL_EVENTS_DISABLED */
+            }
+            break;
+            
+        default:
+            break;
+    }
+    
+}
+#endif /* SDL_USE_LIBUDEV */
 
 
 /* !!! FIXME: I would love to dump this code and use libudev instead. */
@@ -380,40 +325,19 @@ JoystickInitWithoutUdev(void)
 static int
 JoystickInitWithUdev(void)
 {
-    struct udev_enumerate *enumerate = NULL;
-    struct udev_list_entry *devs = NULL;
-    struct udev_list_entry *item = NULL;
 
-    SDL_assert(udev == NULL);
-    udev = UDEV_udev_new();
-    if (udev == NULL) {
-        return SDL_SetError("udev_new() failed");
+    if (SDL_UDEV_Init() < 0) {
+        return SDL_SetError("Could not initialize UDEV");
     }
 
-    udev_mon = UDEV_udev_monitor_new_from_netlink(udev, "udev");
-    if (udev_mon != NULL) {  /* okay if it's NULL, we just lose hotplugging. */
-        UDEV_udev_monitor_filter_add_match_subsystem_devtype(udev_mon,
-                                                             "input", NULL);
-        UDEV_udev_monitor_enable_receiving(udev_mon);
+    /* Set up the udev callback */
+    if ( SDL_UDEV_AddCallback(joystick_udev_callback) < 0) {
+        SDL_UDEV_Quit();
+        return SDL_SetError("Could not set up joystick <-> udev callback");
     }
-
-    enumerate = UDEV_udev_enumerate_new(udev);
-    if (enumerate == NULL) {
-        return SDL_SetError("udev_enumerate_new() failed");
-    }
-
-    UDEV_udev_enumerate_add_match_subsystem(enumerate, "input");
-    UDEV_udev_enumerate_add_match_property(enumerate, "ID_INPUT_JOYSTICK", "1");
-    UDEV_udev_enumerate_scan_devices(enumerate);
-    devs = UDEV_udev_enumerate_get_list_entry(enumerate);
-    for (item = devs; item; item = UDEV_udev_list_entry_get_next(item)) {
-        const char *path = UDEV_udev_list_entry_get_name(item);
-        struct udev_device *dev = UDEV_udev_device_new_from_syspath(udev, path);
-        MaybeAddDevice(UDEV_udev_device_get_devnode(dev));
-        UDEV_udev_device_unref(dev);
-    }
-
-    UDEV_udev_enumerate_unref(enumerate);
+    
+    /* Force a scan to build the initial device list */
+    SDL_UDEV_Scan();
 
     return numjoysticks;
 }
@@ -439,9 +363,7 @@ SDL_SYS_JoystickInit(void)
     }
 
 #if SDL_USE_LIBUDEV
-    if (LoadUDEVLibrary() == 0) {   /* okay if this fails, FOR NOW. */
-        return JoystickInitWithUdev();
-    }
+    return JoystickInitWithUdev();
 #endif
 
     return JoystickInitWithoutUdev();
@@ -452,99 +374,21 @@ int SDL_SYS_NumJoysticks()
     return numjoysticks;
 }
 
-static SDL_bool
-HotplugUpdateAvailable(void)
-{
-#if SDL_USE_LIBUDEV
-    if (udev_mon != NULL) {
-        const int fd = UDEV_udev_monitor_get_fd(udev_mon);
-        fd_set fds;
-        struct timeval tv;
-
-        FD_ZERO(&fds);
-        FD_SET(fd, &fds);
-        tv.tv_sec = 0;
-        tv.tv_usec = 0;
-        if ((select(fd+1, &fds, NULL, NULL, &tv) > 0) && (FD_ISSET(fd, &fds))) {
-            return SDL_TRUE;
-        }
-    }
-#endif
-
-    return SDL_FALSE;
-}
-
 void SDL_SYS_JoystickDetect()
 {
 #if SDL_USE_LIBUDEV
-    struct udev_device *dev = NULL;
-    const char *devnode = NULL;
-    const char *action = NULL;
-    const char *val = NULL;
-
-    while (HotplugUpdateAvailable()) {
-        dev = UDEV_udev_monitor_receive_device(udev_mon);
-        if (dev == NULL) {
-            break;
-        }
-        val = UDEV_udev_device_get_property_value(dev, "ID_INPUT_JOYSTICK");
-        if ((!val) || (SDL_strcmp(val, "1") != 0)) {
-            continue;
-        }
-
-        action = UDEV_udev_device_get_action(dev);
-        devnode = UDEV_udev_device_get_devnode(dev);
-
-        if (SDL_strcmp(action, "add") == 0) {
-            const int device_index = MaybeAddDevice(devnode);
-            if (device_index != -1) {
-                /* !!! FIXME: Move this to an SDL_PrivateJoyDeviceAdded() function? */
-                #if !SDL_EVENTS_DISABLED
-                SDL_Event event;
-                event.type = SDL_JOYDEVICEADDED;
-
-                if (SDL_GetEventState(event.type) == SDL_ENABLE) {
-                    event.jdevice.which = device_index;
-                    if ( (SDL_EventOK == NULL) ||
-                         (*SDL_EventOK) (SDL_EventOKParam, &event) ) {
-                        SDL_PushEvent(&event);
-                    }
-                }
-                #endif /* !SDL_EVENTS_DISABLED */
-            }
-        } else if (SDL_strcmp(action, "remove") == 0) {
-            const int inst = MaybeRemoveDevice(devnode);
-            if (inst != -1) {
-                /* !!! FIXME: Move this to an SDL_PrivateJoyDeviceRemoved() function? */
-                #if !SDL_EVENTS_DISABLED
-                SDL_Event event;
-                event.type = SDL_JOYDEVICEREMOVED;
-
-                if (SDL_GetEventState(event.type) == SDL_ENABLE) {
-                    event.jdevice.which = inst;
-                    if ( (SDL_EventOK == NULL) ||
-                         (*SDL_EventOK) (SDL_EventOKParam, &event) ) {
-                        SDL_PushEvent(&event);
-                    }
-                }
-                #endif /* !SDL_EVENTS_DISABLED */
-            }
-        }
-        UDEV_udev_device_unref(dev);
-    }
+    SDL_UDEV_Poll();
 #endif
+    
 }
 
 SDL_bool SDL_SYS_JoystickNeedsPolling()
 {
-    /*
-     * This results in a select() call, so technically we're polling to
-     *  decide if we should poll, but I think this function is here because
-     *  Windows has to do an enormous amount of work to detect new sticks,
-     *  whereas libudev just needs to see if there's more data available on
-     *  a socket...so this should be acceptable, I hope.
-     */
-    return HotplugUpdateAvailable();
+#if SDL_USE_LIBUDEV
+    return SDL_TRUE;
+#endif
+    
+    return SDL_FALSE;
 }
 
 static SDL_joylist_item *
@@ -1011,15 +855,8 @@ SDL_SYS_JoystickQuit(void)
     instance_counter = 0;
 
 #if SDL_USE_LIBUDEV
-    if (udev_mon != NULL) {
-        UDEV_udev_monitor_unref(udev_mon);
-        udev_mon = NULL;
-    }
-    if (udev != NULL) {
-        UDEV_udev_unref(udev);
-        udev = NULL;
-    }
-    UnloadUDEVLibrary();
+    SDL_UDEV_DelCallback(joystick_udev_callback);
+    SDL_UDEV_Quit();
 #endif
 }
 
