@@ -44,7 +44,7 @@
 
 static Uint32 s_moveHack;
 
-static __inline__ void ConvertNSRect(NSRect *r)
+static void ConvertNSRect(NSRect *r)
 {
     r->origin.y = CGDisplayPixelsHigh(kCGDirectMainDisplay) - r->origin.y - r->size.height;
 }
@@ -920,8 +920,9 @@ Cocoa_RaiseWindow(_THIS, SDL_Window * window)
     SDL_WindowData *windowData = ((SDL_WindowData *) window->driverdata);
     NSWindow *nswindow = windowData->nswindow;
 
-    // makeKeyAndOrderFront: has the side-effect of deminiaturizing and showing
-    // a minimized or hidden window, so check for that before showing it.
+    /* makeKeyAndOrderFront: has the side-effect of deminiaturizing and showing
+       a minimized or hidden window, so check for that before showing it.
+     */
     [windowData->listener pauseVisibleObservation];
     if (![nswindow isMiniaturized] && [nswindow isVisible]) {
         [nswindow makeKeyAndOrderFront:nil];

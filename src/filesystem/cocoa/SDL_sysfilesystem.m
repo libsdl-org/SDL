@@ -73,9 +73,9 @@ SDL_GetPrefPath(const char *org, const char *app)
     NSArray *array = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
     char *retval = NULL;
 
-    (void) org;  // unused on Mac OS X and iOS.
+    (void) org;  /* unused on Mac OS X and iOS. */
 
-    if ([array count] > 0) {  // we only want the first item in the list.
+    if ([array count] > 0) {  /* we only want the first item in the list. */
         NSString *str = [array objectAtIndex:0];
         const char *base = [str UTF8String];
         if (base) {
