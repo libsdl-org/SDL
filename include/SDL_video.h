@@ -108,7 +108,7 @@ typedef enum
     SDL_WINDOW_MOUSE_FOCUS = 0x00000400,        /**< window has mouse focus */
     SDL_WINDOW_FULLSCREEN_DESKTOP = ( SDL_WINDOW_FULLSCREEN | 0x00001000 ),
     SDL_WINDOW_FOREIGN = 0x00000800,            /**< window not created by SDL */
-    SDL_WINDOW_ALLOW_HIGHDPI = 0x00002000,      /**< window should be created in high-DPI mode if supported */
+    SDL_WINDOW_ALLOW_HIGHDPI = 0x00002000       /**< window should be created in high-DPI mode if supported */
 } SDL_WindowFlags;
 
 /**
