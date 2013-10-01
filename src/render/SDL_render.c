@@ -410,6 +410,11 @@ SDL_CreateTexture(SDL_Renderer * renderer, Uint32 format, int access, int w, int
         SDL_SetError("Texture dimensions can't be 0");
         return NULL;
     }
+    if ((renderer->info.max_texture_width && w > renderer->info.max_texture_width) ||
+        (renderer->info.max_texture_height && h > renderer->info.max_texture_height)) {
+        SDL_SetError("Texture dimensions are limited to %dx%d", renderer->info.max_texture_width, renderer->info.max_texture_height);
+        return NULL;
+    }
     texture = (SDL_Texture *) SDL_calloc(1, sizeof(*texture));
     if (!texture) {
         SDL_OutOfMemory();
