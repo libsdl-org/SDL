@@ -1791,6 +1791,28 @@ CheckInputEvents()
         fi
 }
 
+dnl See if we can use the kernel kd.h header
+CheckInputKD()
+{
+
+    AC_MSG_CHECKING(for Linux kd.h)
+    use_input_kd=no
+    AC_TRY_COMPILE([
+      #include <linux/kd.h>
+      #include <linux/keyboard.h>
+    ],[
+        struct kbentry kbe;
+        kbe.kb_table = KG_CTRL;
+        ioctl(0, KDGKBENT, &kbe);
+    ],[
+    use_input_kd=yes
+    ])
+    AC_MSG_RESULT($use_input_kd)
+    if test x$use_input_kd = xyes; then
+        AC_DEFINE(SDL_INPUT_LINUXKD, 1, [ ])
+    fi
+}
+
 dnl See if the platform offers libudev for device enumeration and hotplugging.
 CheckLibUDev()
 {
@@ -2395,6 +2417,7 @@ case "$host" in
         CheckLibUDev
         CheckDBus
         CheckInputEvents
+        CheckInputKD
         CheckTslib
         CheckUSBHID
         CheckPTHREAD

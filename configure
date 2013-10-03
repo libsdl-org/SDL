@@ -20754,6 +20754,45 @@ $as_echo "#define SDL_INPUT_LINUXEV 1" >>confdefs.h
         fi
 }
 
+CheckInputKD()
+{
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Linux kd.h" >&5
+$as_echo_n "checking for Linux kd.h... " >&6; }
+    use_input_kd=no
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+      #include <linux/kd.h>
+      #include <linux/keyboard.h>
+
+int
+main ()
+{
+
+        struct kbentry kbe;
+        kbe.kb_table = KG_CTRL;
+        ioctl(0, KDGKBENT, &kbe);
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+    use_input_kd=yes
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $use_input_kd" >&5
+$as_echo "$use_input_kd" >&6; }
+    if test x$use_input_kd = xyes; then
+
+$as_echo "#define SDL_INPUT_LINUXKD 1" >>confdefs.h
+
+    fi
+}
+
 CheckLibUDev()
 {
     # Check whether --enable-libudev was given.
@@ -22080,6 +22119,7 @@ case "$host" in
         CheckLibUDev
         CheckDBus
         CheckInputEvents
+        CheckInputKD
         CheckTslib
         CheckUSBHID
         CheckPTHREAD

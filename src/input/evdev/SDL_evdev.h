@@ -19,8 +19,6 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include <linux/input.h>
-
 #include "SDL_config.h"
 
 #ifndef _SDL_evdev_h
@@ -42,7 +40,7 @@ typedef struct SDL_evdevlist_item
     char *path;
     int fd;
     SDL_EVDEV_deviceclass devclass;
-    struct SDL_evdevlist_item *next;   
+    struct SDL_evdevlist_item *next;
 } SDL_evdevlist_item;
 
 typedef struct SDL_EVDEV_PrivateData
@@ -51,6 +49,7 @@ typedef struct SDL_EVDEV_PrivateData
     SDL_evdevlist_item *last;
     int numdevices;
     int ref_count;
+    int console_fd;
 } SDL_EVDEV_PrivateData;
 
 extern int SDL_EVDEV_Init(void);

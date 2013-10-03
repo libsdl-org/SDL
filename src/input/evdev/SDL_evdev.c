@@ -39,7 +39,11 @@ static _THIS = NULL;
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <limits.h>             /* For the definition of PATH_MAX */
-
+#include <linux/input.h>
+#ifdef SDL_INPUT_LINUXKD
+#include <linux/kd.h>
+#include <linux/keyboard.h>
+#endif
 
 #include "SDL.h"
 #include "SDL_assert.h"
@@ -325,12 +329,54 @@ static Uint8 EVDEV_MouseButtons[] = {
     SDL_BUTTON_X2 + 3           /*  BTN_TASK        0x117 */
 };
 
+static char* EVDEV_consoles[] = {
+    "/proc/self/fd/0",
+    "/dev/tty",
+    "/dev/tty0",
+    "/dev/tty1",
+    "/dev/tty2",
+    "/dev/tty3",
+    "/dev/tty4",
+    "/dev/tty5",
+    "/dev/tty6",
+    "/dev/vc/0",
+    "/dev/console"
+};
+
+#define IS_CONSOLE(fd) isatty (fd) && ioctl(fd, KDGKBTYPE, &arg) == 0 && ((arg == KB_101) || (arg == KB_84))
+
+static int SDL_EVDEV_get_console_fd(void)
+{
+    int fd, i;
+    char arg = 0;
+    
+    /* Try a few consoles to see which one we have read access to */
+    
+    for( i = 0; i < SDL_arraysize(EVDEV_consoles); i++) {
+        fd = open(EVDEV_consoles[i], O_RDONLY);
+        if (fd >= 0) {
+            if (IS_CONSOLE(fd)) return fd;
+            close(fd);
+        }
+    }
+    
+    /* Try stdin, stdout, stderr */
+    
+    for( fd = 0; fd < 3; fd++) {
+        if (IS_CONSOLE(fd)) return fd;
+    }
+    
+    /* We won't be able to send SDL_TEXTINPUT events */
+    return -1;
+}
+
 int
 SDL_EVDEV_Init(void)
 {
     int retval = 0;
     
     if (_this == NULL) {
+        
         _this = (SDL_EVDEV_PrivateData *) SDL_calloc(1, sizeof(*_this));
         if(_this == NULL) {
             return SDL_OutOfMemory();
@@ -354,6 +400,9 @@ SDL_EVDEV_Init(void)
 #else
         /* TODO: Scan the devices manually, like a caveman */
 #endif /* SDL_USE_LIBUDEV */
+        
+        /* We need a physical terminal (not PTS) to be able to translate key code to symbols via the kernel tables */
+        _this->console_fd = SDL_EVDEV_get_console_fd();
 
     }
     
@@ -378,6 +427,9 @@ SDL_EVDEV_Quit(void)
         SDL_UDEV_Quit();
 #endif /* SDL_USE_LIBUDEV */
        
+        if (_this->console_fd >= 0) {
+            close(_this->console_fd);
+        }
         /* Remove existing devices */
         while(_this->first != NULL) {
             SDL_EVDEV_device_removed(_this->first->path);
@@ -443,11 +495,18 @@ SDL_EVDEV_Poll(void)
     SDL_Scancode scan_code;
     int mouse_button;
     SDL_Mouse *mouse;
-    
+#ifdef SDL_INPUT_LINUXKD
+    Uint16 modstate;
+    struct kbentry kbe;
+    static char keysym[8];
+    char *end;
+    Uint32 kval;
+#endif
+
 #if SDL_USE_LIBUDEV
     SDL_UDEV_Poll();
 #endif
-    
+
     for (item = _this->first; item != NULL; item = item->next) {
         while ((len = read(item->fd, events, (sizeof events))) > 0) {
             len /= sizeof(events[0]);
@@ -455,20 +514,57 @@ SDL_EVDEV_Poll(void)
                 switch(item->devclass) {
                     case SDL_EVDEV_DEVICE_KEYBOARD:
                         switch (events[i].type) {
-                            case EV_KEY:
-                                scan_code = SDL_EVDEV_translate_keycode(events[i].code);
-                                if (scan_code != SDL_SCANCODE_UNKNOWN) {
-                                    if (events[i].value == 0) {
-                                        SDL_SendKeyboardKey(SDL_RELEASED, scan_code);
-                                    }
-                                    else if (events[i].value == 1) {
-                                        SDL_SendKeyboardKey(SDL_PRESSED, scan_code);
-                                    }
-                                    else if (events[i].value == 2) {
-                                        /* Key repeated */
-                                        SDL_SendKeyboardKey(SDL_PRESSED, scan_code);
-                                    }
+                        case EV_KEY:
+                            scan_code = SDL_EVDEV_translate_keycode(events[i].code);
+                            if (scan_code != SDL_SCANCODE_UNKNOWN) {
+                                if (events[i].value == 0) {
+                                    SDL_SendKeyboardKey(SDL_RELEASED, scan_code);
                                 }
+                                else if (events[i].value == 1 || events[i].value == 2 /* Key repeated */ ) {
+                                    SDL_SendKeyboardKey(SDL_PRESSED, scan_code);
+#ifdef SDL_INPUT_LINUXKD
+                                    if (_this->console_fd >= 0) {
+                                        kbe.kb_index = events[i].code;
+                                        /* Convert the key to an UTF-8 char */
+                                        /* Ref: http://www.linuxjournal.com/article/2783 */
+                                        modstate = SDL_GetModState();
+                                        kbe.kb_table = 0;
+                                        
+                                        /* Ref: http://graphics.stanford.edu/~seander/bithacks.html#ConditionalSetOrClearBitsWithoutBranching */
+                                        kbe.kb_table |= -( (modstate & KMOD_LCTRL) != 0) & (1 << KG_CTRLL | 1 << KG_CTRL);
+                                        kbe.kb_table |= -( (modstate & KMOD_RCTRL) != 0) & (1 << KG_CTRLR | 1 << KG_CTRL);
+                                        kbe.kb_table |= -( (modstate & KMOD_LSHIFT) != 0) & (1 << KG_SHIFTL | 1 << KG_SHIFT);
+                                        kbe.kb_table |= -( (modstate & KMOD_RSHIFT) != 0) & (1 << KG_SHIFTR | 1 << KG_SHIFT);
+                                        kbe.kb_table |= -( (modstate & KMOD_LALT) != 0) & (1 << KG_ALT);
+                                        kbe.kb_table |= -( (modstate & KMOD_RALT) != 0) & (1 << KG_ALTGR);
+
+                                        if(ioctl(_this->console_fd, KDGKBENT, (unsigned long)&kbe) == 0 && 
+                                            ( (KTYP(kbe.kb_value) == KT_LATIN) || (KTYP(kbe.kb_value) == KT_ASCII) || (KTYP(kbe.kb_value) == KT_LETTER) )) 
+                                        {
+                                            kval = KVAL(kbe.kb_value);
+                                            
+                                            /* While there's a KG_CAPSSHIFT symbol, it's not useful to build the table index with it
+                                             * because 1 << KG_CAPSSHIFT overflows the 8 bits of kb_table 
+                                             * So, we do the CAPS LOCK logic here. Note that isalpha depends on the locale!
+                                             */
+                                            if ( modstate & KMOD_CAPS && isalpha(kval) ) {
+                                                if ( isupper(kval) ) {
+                                                    kval = tolower(kval);
+                                                }
+                                                else {
+                                                    kval = toupper(kval);
+                                                }
+                                            }
+                                             
+                                            /* Convert to UTF-8 and send */
+                                            end = SDL_UCS4ToUTF8( kval, keysym);
+                                            *end = '\0';
+                                            SDL_SendKeyboardText(keysym);
+                                        }
+                                    }
+#endif    
+                                }
+                            }
                                 break;
 
                             default:
@@ -651,3 +747,4 @@ SDL_EVDEV_device_removed(const char *devpath)
 #endif /* SDL_INPUT_LINUXEV */
 
 /* vi: set ts=4 sw=4 expandtab: */
+

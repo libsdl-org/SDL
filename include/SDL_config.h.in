@@ -217,6 +217,7 @@
 
 /* Enable various input drivers */
 #undef SDL_INPUT_LINUXEV
+#undef SDL_INPUT_LINUXKD
 #undef SDL_INPUT_TSLIB
 #undef SDL_JOYSTICK_BEOS
 #undef SDL_JOYSTICK_DINPUT
