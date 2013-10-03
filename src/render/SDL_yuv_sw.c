@@ -1190,7 +1190,8 @@ SDL_SW_UpdateYUVTexturePlanar(SDL_SW_YUVTexture * swdata, const SDL_Rect * rect,
                               const Uint8 *Uplane, int Upitch,
                               const Uint8 *Vplane, int Vpitch)
 {
-    Uint8 *src, *dst;
+    const Uint8 *src;
+    Uint8 *dst;
     int row;
     size_t length;
 
