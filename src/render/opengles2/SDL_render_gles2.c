@@ -122,8 +122,7 @@ typedef enum
     GLES2_UNIFORM_PROJECTION,
     GLES2_UNIFORM_TEXTURE,
     GLES2_UNIFORM_MODULATION,
-    GLES2_UNIFORM_COLOR,
-    GLES2_UNIFORM_COLORTABLE
+    GLES2_UNIFORM_COLOR
 } GLES2_Uniform;
 
 typedef enum
@@ -721,9 +720,7 @@ GLES2_CacheProgram(SDL_Renderer *renderer, GLES2_ShaderCacheEntry *vertex,
     entry->uniform_locations[GLES2_UNIFORM_MODULATION] =
         data->glGetUniformLocation(entry->id, "u_modulation");
     entry->uniform_locations[GLES2_UNIFORM_COLOR] =
-        data->glGetUniformLocation(entry->id, "u_color");
-    entry->uniform_locations[GLES2_UNIFORM_COLORTABLE] =
-        data->glGetUniformLocation(entry->id, "u_colorTable");
+        rdata->glGetUniformLocation(entry->id, "u_color");
 
     /* Cache the linked program */
     if (data->program_cache.head)
