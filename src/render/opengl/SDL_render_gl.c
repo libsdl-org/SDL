@@ -639,8 +639,6 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         }
     }
 
-    texture->driverdata = data;
-
     if (texture->access == SDL_TEXTUREACCESS_TARGET) {
         data->fbo = GL_GetFBO(renderdata, texture->w, texture->h);
     } else {
@@ -653,6 +651,8 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         SDL_free(data);
         return -1;
     }
+    texture->driverdata = data;
+
     if ((renderdata->GL_ARB_texture_rectangle_supported)
         /* && texture->access != SDL_TEXTUREACCESS_TARGET */){
         data->type = GL_TEXTURE_RECTANGLE_ARB;
@@ -804,6 +804,7 @@ GL_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                                     data->format, data->formattype, pixels);
     }
     renderdata->glDisable(data->type);
+
     return GL_CheckError("glTexSubImage2D()", renderer);
 }
 
@@ -839,6 +840,7 @@ GL_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
                                 rect->w/2, rect->h/2,
                                 data->format, data->formattype, Vplane);
     renderdata->glDisable(data->type);
+
     return GL_CheckError("glTexSubImage2D()", renderer);
 }
 
@@ -1318,7 +1320,9 @@ GL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     data->glReadPixels(rect->x, (h-rect->y)-rect->h, rect->w, rect->h,
                        format, type, temp_pixels);
 
-    GL_CheckError("", renderer);
+    if (GL_CheckError("glReadPixels()", renderer) < 0) {
+        return -1;
+    }
 
     /* Flip the rows to be top-down */
     length = rect->w * SDL_BYTESPERPIXEL(temp_format);
