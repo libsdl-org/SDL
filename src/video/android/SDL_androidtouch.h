@@ -22,6 +22,7 @@
 
 #include "SDL_androidvideo.h"
 
+extern void Android_InitTouch(void);
 extern void Android_OnTouch( int touch_device_id_in, int pointer_finger_id_in, int action, float x, float y, float p);
 
 /* vi: set ts=4 sw=4 expandtab: */

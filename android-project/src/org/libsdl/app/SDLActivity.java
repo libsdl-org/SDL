@@ -1,5 +1,7 @@
 package org.libsdl.app;
 
+import java.util.Arrays;
+
 import android.app.*;
 import android.content.*;
 import android.view.*;
@@ -385,6 +387,24 @@ public class SDLActivity extends Activity {
             mAudioTrack.stop();
             mAudioTrack = null;
         }
+    }
+
+    // Input
+
+    /**
+     * @return an array which may be empty but is never null.
+     */
+    public static int[] inputGetInputDeviceIds(int sources) {
+        int[] ids = InputDevice.getDeviceIds();
+        int[] filtered = new int[ids.length];
+        int used = 0;
+        for (int i = 0; i < ids.length; ++i) {
+            InputDevice device = InputDevice.getDevice(ids[i]);
+            if ((device != null) && ((device.getSources() & sources) != 0)) {
+                filtered[used++] = device.getId();
+            }
+        }
+        return Arrays.copyOf(filtered, used);
     }
 }
 

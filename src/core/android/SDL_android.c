@@ -1186,6 +1186,32 @@ int Android_JNI_GetPowerInfo(int* plugged, int* charged, int* battery, int* seco
     return 0;
 }
 
+/* returns number of found touch devices as return value and ids in parameter ids */
+int Android_JNI_GetTouchDeviceIds(int **ids) {
+    JNIEnv *env = Android_JNI_GetEnv();
+    jint sources = 4098; /* == InputDevice.SOURCE_TOUCHSCREEN */
+    jmethodID mid = (*env)->GetStaticMethodID(env, mActivityClass, "inputGetInputDeviceIds", "(I)[I");
+    jintArray array = (jintArray) (*env)->CallStaticObjectMethod(env, mActivityClass, mid, sources);
+    int number = 0;
+    *ids = NULL;
+    if (array) {
+        number = (int) (*env)->GetArrayLength(env, array);
+        if (0 < number) {
+            jint* elements = (*env)->GetIntArrayElements(env, array, NULL);
+            if (elements) {
+                int i;
+                *ids = SDL_malloc(number * sizeof (*ids[0]));
+                for (i = 0; i < number; ++i) { /* not assuming sizeof (jint) == sizeof (int) */
+                    *ids[i] = elements[i];
+                }
+                (*env)->ReleaseIntArrayElements(env, array, elements, JNI_ABORT);
+            }
+        }
+        (*env)->DeleteLocalRef(env, array);
+    }
+    return number;
+}
+
 /* sends message to be handled on the UI event dispatch thread */
 int Android_JNI_SendMessage(int command, int param)
 {
