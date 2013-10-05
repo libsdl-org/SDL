@@ -25,6 +25,7 @@
 #include "SDL_hints.h"
 #include "SDL_opengles2.h"
 #include "../SDL_sysrender.h"
+#include "../../video/SDL_blit.h"
 #include "SDL_shaders_gles2.h"
 
 /* Used to re-create the window with OpenGL ES capability */
@@ -1029,6 +1030,15 @@ static int GLES2_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect
                     Uint32 pixel_format, void * pixels, int pitch);
 static void GLES2_RenderPresent(SDL_Renderer *renderer);
 
+static SDL_bool
+CompareColors(Uint8 r1, Uint8 g1, Uint8 b1, Uint8 a1,
+              Uint8 r2, Uint8 g2, Uint8 b2, Uint8 a2)
+{
+    Uint32 Pixel1, Pixel2;
+    RGBA8888_FROM_RGBA(Pixel1, r1, g1, b1, a1);
+    RGBA8888_FROM_RGBA(Pixel2, r2, g2, b2, a2);
+    return (Pixel1 == Pixel2);
+}
 
 static int
 GLES2_RenderClear(SDL_Renderer * renderer)
@@ -1037,9 +1047,8 @@ GLES2_RenderClear(SDL_Renderer * renderer)
 
     GLES2_ActivateRenderer(renderer);
 
-    /* !!! FIXME: it'd be nice to do a single 32-bit compare here. */
-    if ( (data->clear_r != renderer->r) || (data->clear_g != renderer->g) ||
-         (data->clear_b != renderer->b) || (data->clear_a != renderer->a) ) {
+    if (!CompareColors(data->clear_r, data->clear_g, data->clear_b, data->clear_a,
+                        renderer->r, renderer->g, renderer->b, renderer->a)) {
         data->glClearColor((GLfloat) renderer->r * inv255f,
                      (GLfloat) renderer->g * inv255f,
                      (GLfloat) renderer->b * inv255f,
@@ -1128,8 +1137,7 @@ GLES2_SetDrawingState(SDL_Renderer * renderer)
      }
 
     program = data->current_program;
-    /* !!! FIXME: it'd be nice to do a single 32-bit compare here. */
-    if ( (program->color_r != r) || (program->color_g != g) || (program->color_b != b) || (program->color_a != a) ) {
+    if (!CompareColors(program->color_r, program->color_g, program->color_b, program->color_a, r, g, b, a)) {
         /* Select the color to draw with */
         data->glUniform4f(program->uniform_locations[GLES2_UNIFORM_COLOR], r * inv255f, g * inv255f, b * inv255f, a * inv255f);
         program->color_r = r;
@@ -1355,8 +1363,7 @@ GLES2_RenderCopy(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect *s
 
     program = data->current_program;
 
-    /* !!! FIXME: it'd be nice to do a single 32-bit compare here. */
-    if ( (program->modulation_r != r) || (program->modulation_g != g) || (program->modulation_b != b) || (program->modulation_a != a) ) {
+    if (!CompareColors(program->modulation_r, program->modulation_g, program->modulation_b, program->modulation_a, r, g, b, a)) {
         data->glUniform4f(program->uniform_locations[GLES2_UNIFORM_MODULATION], r * inv255f, g * inv255f, b * inv255f, a * inv255f);
         program->modulation_r = r;
         program->modulation_g = g;
@@ -1523,8 +1530,7 @@ GLES2_RenderCopyEx(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect 
 
     program = data->current_program;
 
-    /* !!! FIXME: it'd be nice to do a single 32-bit compare here. */
-    if ( (program->modulation_r != r) || (program->modulation_g != g) || (program->modulation_b != b) || (program->modulation_a != a) ) {
+    if (!CompareColors(program->modulation_r, program->modulation_g, program->modulation_b, program->modulation_a, r, g, b, a)) {
         data->glUniform4f(program->uniform_locations[GLES2_UNIFORM_MODULATION], r * inv255f, g * inv255f, b * inv255f, a * inv255f);
         program->modulation_r = r;
         program->modulation_g = g;
