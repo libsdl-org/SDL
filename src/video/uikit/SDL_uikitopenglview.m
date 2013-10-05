@@ -121,6 +121,8 @@
         if (glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES) {
             return NO;
         }
+
+        glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
         /* end create buffers */
 
         self.autoresizingMask = (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
@@ -148,6 +150,8 @@
         glBindRenderbufferOES(GL_RENDERBUFFER_OES, depthRenderbuffer);
         glRenderbufferStorageOES(GL_RENDERBUFFER_OES, depthBufferFormat, backingWidth, backingHeight);
     }
+
+    glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
 }
 
 - (void)setAnimationCallback:(int)interval
@@ -197,7 +201,9 @@
 
 - (void)swapBuffers
 {
-    glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
+    /* viewRenderbuffer should always be bound here. Code that binds something
+        else is responsible for rebinding viewRenderbuffer, to reduce
+        duplicate state changes. */
     [context presentRenderbuffer:GL_RENDERBUFFER_OES];
 }
 
