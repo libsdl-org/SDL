@@ -36,6 +36,7 @@
 #include "SDL_androidclipboard.h"
 #include "SDL_androidevents.h"
 #include "SDL_androidkeyboard.h"
+#include "SDL_androidtouch.h"
 #include "SDL_androidwindow.h"
 
 #define ANDROID_VID_DRIVER_NAME "Android"
@@ -164,6 +165,8 @@ Android_VideoInit(_THIS)
     SDL_AddDisplayMode(&_this->displays[0], &mode);
 
     Android_InitKeyboard();
+
+    Android_InitTouch();
 
     /* We're done! */
     return 0;

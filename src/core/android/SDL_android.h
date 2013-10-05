@@ -65,6 +65,9 @@ SDL_bool Android_JNI_HasClipboardText();
 /* Power support */
 int Android_JNI_GetPowerInfo(int* plugged, int* charged, int* battery, int* seconds, int* percent);
 
+/* Touch support */
+int Android_JNI_GetTouchDeviceIds(int **ids);
+
 /* Threads */
 #include <jni.h>
 JNIEnv *Android_JNI_GetEnv(void);
