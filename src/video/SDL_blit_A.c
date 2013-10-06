@@ -334,7 +334,6 @@ BlitRGBtoRGBPixelAlphaMMX(SDL_BlitInfo * info)
     Uint32 *dstp = (Uint32 *) info->dst;
     int dstskip = info->dst_skip >> 2;
     SDL_PixelFormat *sf = info->src_fmt;
-    Uint32 chanmask = sf->Rmask | sf->Gmask | sf->Bmask;
     Uint32 amask = sf->Amask;
     Uint32 ashift = sf->Ashift;
     Uint64 multmask, multmask2;
@@ -522,7 +521,6 @@ BlitRGBtoRGBPixelAlphaMMX3DNOW(SDL_BlitInfo * info)
     Uint32 *dstp = (Uint32 *) info->dst;
     int dstskip = info->dst_skip >> 2;
     SDL_PixelFormat *sf = info->src_fmt;
-    Uint32 chanmask = sf->Rmask | sf->Gmask | sf->Bmask;
     Uint32 amask = sf->Amask;
     Uint32 ashift = sf->Ashift;
     Uint64 multmask, multmask2;
