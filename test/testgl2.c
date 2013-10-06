@@ -340,6 +340,8 @@ main(int argc, char *argv[])
         }
         for (i = 0; i < state->num_windows; ++i) {
             int w, h;
+            if (state->windows[i] == NULL)
+                continue;
             SDL_GL_MakeCurrent(state->windows[i], context);
             SDL_GL_GetDrawableSize(state->windows[i], &w, &h);
             glViewport(0, 0, w, h);

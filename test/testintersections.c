@@ -310,6 +310,8 @@ main(int argc, char *argv[])
         }
         for (i = 0; i < state->num_windows; ++i) {
             SDL_Renderer *renderer = state->renderers[i];
+            if (state->windows[i] == NULL)
+                continue;
             SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
             SDL_RenderClear(renderer);
 

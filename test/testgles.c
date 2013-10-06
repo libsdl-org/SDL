@@ -312,6 +312,8 @@ main(int argc, char *argv[])
             SDLTest_CommonEvent(state, &event, &done);
         }
         for (i = 0; i < state->num_windows; ++i) {
+            if (state->windows[i] == NULL)
+                continue;
             status = SDL_GL_MakeCurrent(state->windows[i], context[i]);
             if (status) {
                 SDL_Log("SDL_GL_MakeCurrent(): %s\n", SDL_GetError());
