@@ -29,17 +29,10 @@
 #include "SDL_events.h"
 #include <sys/stat.h>
 
-typedef enum
-{
-    SDL_EVDEV_DEVICE_MOUSE = 0x0001,
-    SDL_EVDEV_DEVICE_KEYBOARD
-} SDL_EVDEV_deviceclass;
-
 typedef struct SDL_evdevlist_item
 {
     char *path;
     int fd;
-    SDL_EVDEV_deviceclass devclass;
     struct SDL_evdevlist_item *next;
 } SDL_evdevlist_item;
 
