@@ -279,7 +279,7 @@ device_event(SDL_UDEV_deviceevent type, struct udev_device *dev)
 {
     const char *subsystem;
     const char *val = NULL;
-    SDL_UDEV_deviceclass devclass = 0;
+    int devclass = 0;
     const char *path;
     SDL_UDEV_CallbackList *item;
     
@@ -291,32 +291,26 @@ device_event(SDL_UDEV_deviceevent type, struct udev_device *dev)
     subsystem = _this->udev_device_get_subsystem(dev);
     if (SDL_strcmp(subsystem, "sound") == 0) {
         devclass = SDL_UDEV_DEVICE_SOUND;
-    }
-    else if (SDL_strcmp(subsystem, "input") == 0) {
+    } else if (SDL_strcmp(subsystem, "input") == 0) {
         val = _this->udev_device_get_property_value(dev, "ID_INPUT_JOYSTICK");
         if (val != NULL && SDL_strcmp(val, "1") == 0 ) {
-            devclass = SDL_UDEV_DEVICE_JOYSTICK;
+            devclass |= SDL_UDEV_DEVICE_JOYSTICK;
         }
         
-        if (devclass == 0) {
-            val = _this->udev_device_get_property_value(dev, "ID_INPUT_MOUSE");
-            if (val != NULL && SDL_strcmp(val, "1") == 0 ) {
-                devclass = SDL_UDEV_DEVICE_MOUSE;
-            }
+        val = _this->udev_device_get_property_value(dev, "ID_INPUT_MOUSE");
+        if (val != NULL && SDL_strcmp(val, "1") == 0 ) {
+            devclass |= SDL_UDEV_DEVICE_MOUSE;
         }
-        
-        if (devclass == 0) {
-            val = _this->udev_device_get_property_value(dev, "ID_INPUT_KEYBOARD");
-            if (val != NULL && SDL_strcmp(val, "1") == 0 ) {
-                devclass = SDL_UDEV_DEVICE_KEYBOARD;
-            }
+
+        val = _this->udev_device_get_property_value(dev, "ID_INPUT_KEYBOARD");
+        if (val != NULL && SDL_strcmp(val, "1") == 0 ) {
+            devclass |= SDL_UDEV_DEVICE_KEYBOARD;
         }
-        
+
         if (devclass == 0) {
             return;
         }
-    }
-    else {
+    } else {
         return;
     }
     

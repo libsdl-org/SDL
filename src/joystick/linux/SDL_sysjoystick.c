@@ -57,7 +57,7 @@
 static int MaybeAddDevice(const char *path);
 #if SDL_USE_LIBUDEV
 static int MaybeRemoveDevice(const char *path);
-void joystick_udev_callback(SDL_UDEV_deviceevent udev_type, SDL_UDEV_deviceclass udev_class, const char *devpath);
+void joystick_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class, const char *devpath);
 #endif /* SDL_USE_LIBUDEV */
 
 
@@ -136,11 +136,11 @@ IsJoystick(int fd, char *namebuf, const size_t namebuflen, SDL_JoystickGUID *gui
 }
 
 #if SDL_USE_LIBUDEV
-void joystick_udev_callback(SDL_UDEV_deviceevent udev_type, SDL_UDEV_deviceclass udev_class, const char *devpath)
+void joystick_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class, const char *devpath)
 {
     int instance;
     
-    if (devpath == NULL || udev_class != SDL_UDEV_DEVICE_JOYSTICK) {
+    if (devpath == NULL || !(udev_class & SDL_UDEV_DEVICE_JOYSTICK)) {
         return;
     }
     

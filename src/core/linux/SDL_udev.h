@@ -46,15 +46,16 @@ typedef enum
     SDL_UDEV_DEVICEREMOVED
 } SDL_UDEV_deviceevent;
 
+/* A device can be any combination of these classes */
 typedef enum
 {
-    SDL_UDEV_DEVICE_MOUSE = 0x0001,
-    SDL_UDEV_DEVICE_KEYBOARD,
-    SDL_UDEV_DEVICE_JOYSTICK,
-    SDL_UDEV_DEVICE_SOUND
+    SDL_UDEV_DEVICE_MOUSE       = 0x0001,
+    SDL_UDEV_DEVICE_KEYBOARD    = 0x0002,
+    SDL_UDEV_DEVICE_JOYSTICK    = 0x0004,
+    SDL_UDEV_DEVICE_SOUND       = 0x0008
 } SDL_UDEV_deviceclass;
 
-typedef void (*SDL_UDEV_Callback)(SDL_UDEV_deviceevent udev_type, SDL_UDEV_deviceclass udev_class, const char *devpath);
+typedef void (*SDL_UDEV_Callback)(SDL_UDEV_deviceevent udev_type, int udev_class, const char *devpath);
 
 typedef struct SDL_UDEV_CallbackList {
     SDL_UDEV_Callback callback;
