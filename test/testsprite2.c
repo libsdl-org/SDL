@@ -360,6 +360,8 @@ main(int argc, char *argv[])
             SDLTest_CommonEvent(state, &event, &done);
         }
         for (i = 0; i < state->num_windows; ++i) {
+            if (state->windows[i] == NULL)
+                continue;
             MoveSprites(state->renderers[i], sprites[i]);
         }
     }

@@ -1200,6 +1200,12 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
                 SDL_Window *window = SDL_GetWindowFromID(event->window.windowID);
                 if (window) {
                     SDL_DestroyWindow(window);
+                    for (i = 0; i < state->num_windows; ++i) {
+                        if (window == state->windows[i]) {
+                            state->windows[i] = NULL;
+                            break;
+                        }
+                    }
                 }
             }
             break;
