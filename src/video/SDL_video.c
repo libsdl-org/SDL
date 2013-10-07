@@ -1551,14 +1551,21 @@ SDL_SetWindowPosition(SDL_Window * window, int x, int y)
         }
     }
 
-    if (!SDL_WINDOWPOS_ISUNDEFINED(x)) {
-        window->x = x;
-    }
-    if (!SDL_WINDOWPOS_ISUNDEFINED(y)) {
-        window->y = y;
-    }
+    if ((window->flags & SDL_WINDOW_FULLSCREEN)) {
+        if (!SDL_WINDOWPOS_ISUNDEFINED(x)) {
+            window->windowed.x = x;
+        }
+        if (!SDL_WINDOWPOS_ISUNDEFINED(y)) {
+            window->windowed.y = y;
+        }
+    } else {
+        if (!SDL_WINDOWPOS_ISUNDEFINED(x)) {
+            window->x = x;
+        }
+        if (!SDL_WINDOWPOS_ISUNDEFINED(y)) {
+            window->y = y;
+        }
 
-    if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
         if (_this->SetWindowPosition) {
             _this->SetWindowPosition(_this, window);
         }
