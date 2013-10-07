@@ -30,6 +30,42 @@ To use the library once it's built, you essential have two possibilities:
 use the traditional autoconf/automake/make method, or use Xcode.
 
 ==============================================================================
+Caveats for using SDL with Mac OS X
+==============================================================================
+
+Some things you have to be aware of when using SDL on Mac OS X:
+
+- If you register your own NSApplicationDelegate (using [NSApp setDelegate:]),
+  SDL will not register its own. This means that SDL will not terminate using
+  SDL_Quit if it receives a termination request, it will terminate like a 
+  normal app, and it will not send a SDL_DROPFILE when you request to open a
+  file with the app. To solve these issues, put the following code in your 
+  NSApplicationDelegate implementation:
+
+  - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
+  {
+      if (SDL_GetEventState(SDL_QUIT) == SDL_ENABLE) {
+          SDL_Event event;
+          event.type = SDL_QUIT;
+          SDL_PushEvent(&event);
+      }
+
+      return NSTerminateCancel;
+  }
+
+  - (BOOL)application:(NSApplication *)theApplication openFile:(NSString *)filename
+  {
+      if (SDL_GetEventState(SDL_DROPFILE) == SDL_ENABLE) {
+          SDL_Event event;
+          event.type = SDL_DROPFILE;
+          event.drop.file = SDL_strdup([filename UTF8String]);
+          return (SDL_PushEvent(&event) > 0);
+      }
+
+      return NO;
+  }
+
+==============================================================================
 Using the Simple DirectMedia Layer with a traditional Makefile
 ==============================================================================
 
