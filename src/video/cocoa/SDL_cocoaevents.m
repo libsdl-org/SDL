@@ -42,12 +42,11 @@
 @end
 
 @interface SDLAppDelegate : NSObject {
+@public
     BOOL seenFirstActivate;
 }
 
 - (id)init;
-- (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender;
-- (void)applicationDidBecomeActive:(NSNotification *)aNotification;
 @end
 
 @implementation SDLAppDelegate : NSObject
@@ -57,9 +56,19 @@
 
     if (self) {
         seenFirstActivate = NO;
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(focusSomeWindow:)
+                                                     name:NSApplicationDidBecomeActiveNotification
+                                                   object:nil];
     }
 
     return self;
+}
+
+- (void)dealloc
+{
+    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    [super dealloc];
 }
 
 - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
@@ -68,7 +77,7 @@
     return NSTerminateCancel;
 }
 
-- (void)applicationDidBecomeActive:(NSNotification *)aNotification
+- (void)focusSomeWindow:(NSNotification *)aNotification
 {
     /* HACK: Ignore the first call. The application gets a
      * applicationDidBecomeActive: a little bit after the first window is
@@ -110,6 +119,8 @@
     return (BOOL)SDL_SendDropFile([filename UTF8String]);
 }
 @end
+
+static SDLAppDelegate *appDelegate = nil;
 
 static NSString *
 GetApplicationName(void)
@@ -235,8 +246,17 @@ Cocoa_RegisterApp(void)
         [[NSUserDefaults standardUserDefaults] registerDefaults:appDefaults];
 
     }
-    if (NSApp && ![NSApp delegate]) {
-        [NSApp setDelegate:[[SDLAppDelegate alloc] init]];
+    if (NSApp && !appDelegate) {
+        appDelegate = [[SDLAppDelegate alloc] init];
+
+        /* If someone else has an app delegate, it means we can't turn a
+         * termination into SDL_Quit, and we can't handle application:openFile:
+         */
+        if (![NSApp delegate]) {
+            [NSApp setDelegate:appDelegate];
+        } else {
+            appDelegate->seenFirstActivate = YES;
+        }
     }
     [pool release];
 }
