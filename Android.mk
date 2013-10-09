@@ -42,7 +42,8 @@ LOCAL_SRC_FILES := \
 	$(wildcard $(LOCAL_PATH)/src/timer/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/timer/unix/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/video/*.c) \
-	$(wildcard $(LOCAL_PATH)/src/video/android/*.c))
+	$(wildcard $(LOCAL_PATH)/src/video/android/*.c) \
+    $(wildcard $(LOCAL_PATH)/src/test/*.c))
 
 LOCAL_CFLAGS += -DGL_GLEXT_PROTOTYPES
 LOCAL_LDLIBS := -ldl -lGLESv1_CM -lGLESv2 -llog -landroid
