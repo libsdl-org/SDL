@@ -91,7 +91,7 @@ LIBS="$LIBS  $SDL_LIBS -lSDL2_test"
 dnl Check for X11 path, needed for OpenGL on some systems
 AC_PATH_X
 if test x$have_x = xyes; then
-    if test x$ac_x_includes = xno || test "x$ac_x_includes" = xNone; then
+    if test x$ac_x_includes = xno || test "x$ac_x_includes" = xNone || test "x$ac_x_includes" = x; then
         :
     else
         CFLAGS="$CFLAGS -I$ac_x_includes"
@@ -99,10 +99,11 @@ if test x$have_x = xyes; then
     if test x$ac_x_libraries = xno || test "x$ac_x_libraries" = xNone; then
         :
     else
-        XPATH="-L$ac_x_libraries"
         if test "x$ac_x_libraries" = x; then
+            XPATH=""
             XLIB="-lX11"
         else
+            XPATH="-L$ac_x_libraries"
             XLIB="-L$ac_x_libraries -lX11"
         fi
     fi
@@ -135,17 +136,18 @@ have_opengles=yes
 AC_MSG_RESULT($have_opengles)
 
 GLLIB=""
+GLESLIB=""
 if test x$have_opengles = xyes; then
     CFLAGS="$CFLAGS -DHAVE_OPENGLES"
-    GLLIB="$XPATH -lGLESv1_CM"
-elif test x$have_opengl = xyes; then
+    GLESLIB="$XPATH -lGLESv1_CM"
+fi
+if test x$have_opengl = xyes; then
     CFLAGS="$CFLAGS -DHAVE_OPENGL"
     GLLIB="$XPATH $SYS_GL_LIBS"
-else
-    GLLIB=""
 fi
 
 AC_SUBST(GLLIB)
+AC_SUBST(GLESLIB)
 AC_SUBST(XLIB)
 
 dnl Check for SDL_ttf
