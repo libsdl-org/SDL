@@ -72,6 +72,8 @@ Android_PumpEvents(_THIS)
 
 #if SDL_ANDROID_BLOCK_ON_PAUSE
     if (isPaused && !isPausing) {
+        /* Make sure this is the last thing we do before pausing */
+        android_egl_context_backup();
         if(SDL_SemWait(Android_ResumeSem) == 0) {
 #else
     if (isPaused) {
@@ -92,7 +94,6 @@ Android_PumpEvents(_THIS)
                 isPausing = 1;
             }
             else {
-                android_egl_context_backup();
                 isPausing = 0;
                 isPaused = 1;
             }
