@@ -144,6 +144,7 @@ RPI_VideoInit(_THIS)
 {
     SDL_VideoDisplay display;
     SDL_DisplayMode current_mode;
+    SDL_DisplayData *data;
     uint32_t w,h;
 
     /* Initialize BCM Host */
@@ -167,8 +168,6 @@ RPI_VideoInit(_THIS)
     SDL_zero(display);
     display.desktop_mode = current_mode;
     display.current_mode = current_mode;
-
-    SDL_DisplayData *data;
 
     /* Allocate display internal data */
     data = (SDL_DisplayData *) SDL_calloc(1, sizeof(SDL_DisplayData));
