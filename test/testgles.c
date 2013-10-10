@@ -161,6 +161,7 @@ main(int argc, char *argv[])
     state->gl_depth_size = depth;
     state->gl_major_version = 1;
     state->gl_minor_version = 1;
+    state->gl_profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
     if (fsaa) {
         state->gl_multisamplebuffers=1;
         state->gl_multisamplesamples=fsaa;
@@ -179,8 +180,6 @@ main(int argc, char *argv[])
     }
 
     /* Create OpenGL ES contexts */
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-
     for (i = 0; i < state->num_windows; i++) {
         context[i] = SDL_GL_CreateContext(state->windows[i]);
         if (!context[i]) {
