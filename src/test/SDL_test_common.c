@@ -695,6 +695,9 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
         if (state->gl_debug) {
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
         }
+        if (state->gl_profile_mask) {
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, state->gl_profile_mask);
+        }
 
         if (state->verbose & VERBOSE_MODES) {
             SDL_Rect bounds;
