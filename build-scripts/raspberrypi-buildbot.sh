@@ -10,7 +10,10 @@
 #  build against it, and sdl2-config should work correctly on the
 #  actual device.
 
-TARBALL=sdl-raspberrypi-`hg tip --template '{rev}'`.tar.bz2
+TARBALL="$1"
+if [ -z $1 ]; then
+    TARBALL=sdl-raspberrypi.tar.bz2
+fi
 
 OSTYPE=`uname -s`
 if [ "$OSTYPE" != "Linux" ]; then
@@ -45,8 +48,8 @@ perl -w -pi -e "s#$PWD/rpi-sdl2-installed#/usr/local#g;" ./rpi-sdl2-installed/li
 mkdir -p ./usr
 mv ./rpi-sdl2-installed ./usr/local
 
-tar -cjvvf $PARENTDIR/$TARBALL usr
 popd
+tar -cjvvf $TARBALL -C $BUILDBOTDIR usr
 rm -rf $BUILDBOTDIR
 
 set +x
