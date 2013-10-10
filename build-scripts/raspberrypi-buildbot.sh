@@ -10,7 +10,7 @@
 #  build against it, and sdl2-config should work correctly on the
 #  actual device.
 
-TARBALL=sdl2-raspberrypi-`hg tip --template '{rev}'`.tar.bz2
+TARBALL=sdl-raspberrypi-`hg tip --template '{rev}'`.tar.bz2
 
 OSTYPE=`uname -s`
 if [ "$OSTYPE" != "Linux" ]; then
