@@ -111,6 +111,28 @@ android-project/
 
 
 ================================================================================
+ Build an app with static linking of libSDL
+================================================================================
+
+This build uses the Android NDK module system.
+
+Instructions:
+1. Copy the android-project directory wherever you want to keep your projects
+   and rename it to the name of your project.
+2. Rename <project>/jni/src/Android_static.mk to <project>/jni/src/Android.mk
+   (overwrite the existing one)
+3. Edit <project>/jni/src/Android.mk to include your source files
+4. create and export an environment variable named NDK_MODULE_PATH that points
+   to the parent directory of this SDL directory. e.g.:
+
+   export NDK_MODULE_PATH="$PWD"/..
+
+5. Edit <project>/src/org/libsdl/app/SDLActivity.java and remove the call to
+   System.loadLibrary("SDL2") line 42.
+6. Run 'ndk-build' (a script provided by the NDK). This compiles the C source
+
+
+================================================================================
  Customizing your application name
 ================================================================================
 
