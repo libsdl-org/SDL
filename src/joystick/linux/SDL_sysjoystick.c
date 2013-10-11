@@ -138,8 +138,6 @@ IsJoystick(int fd, char *namebuf, const size_t namebuflen, SDL_JoystickGUID *gui
 #if SDL_USE_LIBUDEV
 void joystick_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class, const char *devpath)
 {
-    int instance;
-    
     if (devpath == NULL || !(udev_class & SDL_UDEV_DEVICE_JOYSTICK)) {
         return;
     }
@@ -147,41 +145,11 @@ void joystick_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class, cons
     switch( udev_type )
     {
         case SDL_UDEV_DEVICEADDED:
-            instance = MaybeAddDevice(devpath);
-            if (instance != -1) {
-                /* !!! FIXME: Move this to an SDL_PrivateJoyDeviceAdded() function? */
-                #if !SDL_EVENTS_DISABLED
-                SDL_Event event;
-                event.type = SDL_JOYDEVICEADDED;
-
-                if (SDL_GetEventState(event.type) == SDL_ENABLE) {
-                    event.jdevice.which = instance;
-                    if ( (SDL_EventOK == NULL) ||
-                         (*SDL_EventOK) (SDL_EventOKParam, &event) ) {
-                        SDL_PushEvent(&event);
-                    }
-                }
-                #endif /* !SDL_EVENTS_DISABLED */
-            }
+            MaybeAddDevice(devpath);
             break;
             
         case SDL_UDEV_DEVICEREMOVED:
-            instance = MaybeRemoveDevice(devpath);
-            if (instance != -1) {
-                /* !!! FIXME: Move this to an SDL_PrivateJoyDeviceRemoved() function? */
-                #if !SDL_EVENTS_DISABLED
-                SDL_Event event;
-                event.type = SDL_JOYDEVICEREMOVED;
-
-                if (SDL_GetEventState(event.type) == SDL_ENABLE) {
-                    event.jdevice.which = instance;
-                    if ( (SDL_EventOK == NULL) ||
-                         (*SDL_EventOK) (SDL_EventOKParam, &event) ) {
-                        SDL_PushEvent(&event);
-                    }
-                }
-                #endif /* !SDL_EVENTS_DISABLED */
-            }
+            MaybeRemoveDevice(devpath);
             break;
             
         default:
@@ -202,6 +170,9 @@ MaybeAddDevice(const char *path)
     char namebuf[128];
     SDL_JoystickGUID guid;
     SDL_joylist_item *item;
+#if !SDL_EVENTS_DISABLED
+    SDL_Event event;
+#endif
 
     if (path == NULL) {
         return -1;
@@ -259,6 +230,19 @@ MaybeAddDevice(const char *path)
         SDL_joylist_tail = item;
     }
 
+    /* !!! FIXME: Move this to an SDL_PrivateJoyDeviceAdded() function? */
+#if !SDL_EVENTS_DISABLED
+    event.type = SDL_JOYDEVICEADDED;
+
+    if (SDL_GetEventState(event.type) == SDL_ENABLE) {
+        event.jdevice.which = numjoysticks;
+        if ( (SDL_EventOK == NULL) ||
+             (*SDL_EventOK) (SDL_EventOKParam, &event) ) {
+            SDL_PushEvent(&event);
+        }
+    }
+#endif /* !SDL_EVENTS_DISABLED */
+
     return numjoysticks++;
 }
 
@@ -269,6 +253,9 @@ MaybeRemoveDevice(const char *path)
 {
     SDL_joylist_item *item;
     SDL_joylist_item *prev = NULL;
+#if !SDL_EVENTS_DISABLED
+    SDL_Event event;
+#endif
 
     if (path == NULL) {
         return -1;
@@ -290,6 +277,20 @@ MaybeRemoveDevice(const char *path)
             if (item == SDL_joylist_tail) {
                 SDL_joylist_tail = prev;
             }
+
+            /* !!! FIXME: Move this to an SDL_PrivateJoyDeviceRemoved() function? */
+#if !SDL_EVENTS_DISABLED
+            event.type = SDL_JOYDEVICEREMOVED;
+
+            if (SDL_GetEventState(event.type) == SDL_ENABLE) {
+                event.jdevice.which = item->device_instance;
+                if ( (SDL_EventOK == NULL) ||
+                     (*SDL_EventOK) (SDL_EventOKParam, &event) ) {
+                    SDL_PushEvent(&event);
+                }
+            }
+#endif /* !SDL_EVENTS_DISABLED */
+
             SDL_free(item->path);
             SDL_free(item->name);
             SDL_free(item);
