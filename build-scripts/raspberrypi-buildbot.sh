@@ -38,9 +38,11 @@ rm -rf $BUILDBOTDIR
 mkdir -p $BUILDBOTDIR
 pushd $BUILDBOTDIR
 
-export CC=/opt/rpi-tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian/bin/arm-linux-gnueabihf-gcc
+SYSROOT="/opt/rpi-sysroot"
+export CC="/opt/rpi-tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian/bin/arm-linux-gnueabihf-gcc --sysroot=$SYSROOT -I$SYSROOT/opt/vc/include -I$SYSROOT/usr/include -I$SYSROOT/opt/vc/include/interface/vcos/pthreads -I$SYSROOT/opt/vc/include/interface/vmcs_host/linux"
+# -L$SYSROOT/usr/lib/arm-linux-gnueabihf"
 # !!! FIXME: shouldn't have to --disable-* things here.
-../configure --host=arm-raspberry-linux-gnueabihf --disable-pulseaudio --disable-esd --prefix="$PWD/rpi-sdl2-installed"
+../configure --with-sysroot=$SYSROOT --host=arm-raspberry-linux-gnueabihf --prefix=$PWD/rpi-sdl2-installed --disable-pulseaudio --disable-esd
 $MAKE
 $MAKE install
 # Fix up a few things to a real install path on a real Raspberry Pi...
