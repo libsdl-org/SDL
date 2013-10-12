@@ -4,7 +4,7 @@ srcdir  = @srcdir@
 
 CC      = @CC@
 EXE	= @EXE@
-CFLAGS  = @CFLAGS@
+CFLAGS  = @CFLAGS@ -g
 LIBS	= @LIBS@
 
 TARGETS = \
@@ -14,6 +14,7 @@ TARGETS = \
 	testautomation$(EXE) \
 	testdraw2$(EXE) \
 	testdrawchessboard$(EXE) \
+	testdropfile$(EXE) \
 	testerror$(EXE) \
 	testfile$(EXE) \
 	testgamecontroller$(EXE) \
@@ -106,6 +107,9 @@ testdraw2$(EXE): $(srcdir)/testdraw2.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testdrawchessboard$(EXE): $(srcdir)/testdrawchessboard.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testdropfile$(EXE): $(srcdir)/testdropfile.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testerror$(EXE): $(srcdir)/testerror.c
