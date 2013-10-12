@@ -28,6 +28,65 @@ OpenGL ES 2.x, it usually comes pre installed, but in any case:
 sudo apt-get install libraspberrypi0 libraspberrypi-bin libraspberrypi-dev
 
 ================================================================================
+ Cross compiling from x86 Linux
+================================================================================
+
+To cross compile SDL for Raspbian from your desktop machine, you'll need a
+Raspbian system root and the cross compilation tools. We'll assume these tools
+will be placed in /opt/rpi-tools
+
+    sudo git clone --depth 1 https://github.com/raspberrypi/tools /opt/rpi-tools
+
+You'll also need a Rasbian binary image.
+Get it from: http://downloads.raspberrypi.org/raspbian_latest 
+After unzipping, you'll get file with a name like: <date>-wheezy-raspbian.img
+Let's assume the sysroot will be built in /opt/rpi-sysroot.
+
+    export SYSROOT=/opt/rpi-sysroot
+    sudo kpartx -a -v <path_to_raspbian_image>.img
+    sudo mount -o loop /dev/mapper/loop0p2 /mnt
+    sudo cp -r /mnt $SYSROOT
+    sudo apt-get install qemu binfmt-support qemu-user-static
+    sudo cp /usr/bin/qemu-arm-static $SYSROOT/usr/bin
+    sudo mount --bind /dev $SYSROOT/dev
+    sudo mount --bind /proc $SYSROOT/proc
+    sudo mount --bind /sys $SYSROOT/sys
+
+Now, before chrooting into the ARM sysroot, you'll need to apply a workaround,
+edit $SYSROOT/etc/ld.so.preload and comment out all lines in it.
+
+    sudo chroot $SYSROOT
+    apt-get install libudev-dev libasound2-dev libdbus-1-dev libraspberrypi0 libraspberrypi-bin libraspberrypi-dev libx11-dev libxext-dev libxrandr-dev libxcursor-dev libxi-dev libxinerama-dev libxxf86vm-dev libxss-dev
+    exit
+    sudo umount $SYSROOT/dev
+    sudo umount $SYSROOT/proc
+    sudo umount $SYSROOT/sys
+    sudo umount /mnt
+
+The final step is compiling SDL itself.
+
+    export CC="/opt/rpi-tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian/bin/arm-linux-gnueabihf-gcc --sysroot=$SYSROOT -I$SYSROOT/opt/vc/include -I$SYSROOT/usr/include -I$SYSROOT/opt/vc/include/interface/vcos/pthreads -I$SYSROOT/opt/vc/include/interface/vmcs_host/linux"
+    cd <SDL SOURCE>
+    mkdir -p build;cd build
+    ../configure --with-sysroot=$SYSROOT --host=arm-raspberry-linux-gnueabihf --prefix=$PWD/rpi-sdl2-installed --disable-pulseaudio --disable-esd
+
+================================================================================
+ Apps don't work or poor video/audio performance
+================================================================================
+
+If you get sound problems, buffer underruns, etc, run "sudo rpi-update" to 
+update the RPi's firmware. Note that doing so will fix these problems, but it
+will also render the CMA - Dynamic Memory Split functionality useless.
+
+Also, by default the Raspbian distro configures the GPU RAM at 64MB, this is too
+low in general, specially if a 1080p TV is hooked up.
+
+See here how to configure this setting: http://elinux.org/RPiconfig
+
+Using a fixed gpu_mem=128 is the best option (specially if you updated the 
+firmware, using CMA probably won't work, at least it's the current case).
+
+================================================================================
  No input
 ================================================================================
 
@@ -83,5 +142,5 @@ this determining the CAPS LOCK behavior:
  Notes
 ================================================================================
 
-* Building has only been tested natively (i.e. not cross compiled). Cross
-  compilation might work though, feedback is welcome!
+* Input events from the keyboard leak through to the console
+
