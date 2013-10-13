@@ -43,6 +43,8 @@ typedef struct SDL_EVDEV_PrivateData
     int numdevices;
     int ref_count;
     int console_fd;
+    int kb_mode;
+    int tty;
 } SDL_EVDEV_PrivateData;
 
 extern int SDL_EVDEV_Init(void);
