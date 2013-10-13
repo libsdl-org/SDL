@@ -45,6 +45,18 @@ static _THIS = NULL;
 #include <linux/keyboard.h>
 #endif
 
+
+/* We need this to prevent keystrokes from appear in the console */
+#ifndef KDSKBMUTE
+#define KDSKBMUTE 0x4B51
+#endif
+#ifndef KDSKBMODE
+#define KDSKBMODE 0x4B45
+#endif
+#ifndef K_OFF
+#define K_OFF 0x04
+#endif
+
 #include "SDL.h"
 #include "SDL_assert.h"
 #include "SDL_endian.h"
@@ -370,6 +382,72 @@ static int SDL_EVDEV_get_console_fd(void)
     return -1;
 }
 
+/* Prevent keystrokes from reaching the tty */
+static int SDL_EVDEV_mute_keyboard(int tty, int *kb_mode)
+{
+    char arg;
+    
+    *kb_mode = 0; /* FIXME: Is this a sane default in case KDGKBMODE fails? */
+    if (!IS_CONSOLE(tty)) {
+        return SDL_SetError("Tried to mute an invalid tty");
+    }
+    ioctl(tty, KDGKBMODE, kb_mode); /* It's not fatal if this fails */
+    if (ioctl(tty, KDSKBMUTE, 1) && ioctl(tty, KDSKBMODE, K_OFF)) {
+        return SDL_SetError("EVDEV: Failed muting keyboard");
+    }
+    
+    return 0;  
+}
+
+/* Restore the keyboard mode for given tty */
+static void SDL_EVDEV_unmute_keyboard(int tty, int kb_mode)
+{
+    if (ioctl(tty, KDSKBMUTE, 0) && ioctl(tty, KDSKBMODE, kb_mode)) {
+        SDL_Log("EVDEV: Failed restoring keyboard mode");
+    }
+}
+
+/* Read /sys/class/tty/tty0/active and open the tty */
+static int SDL_EVDEV_get_active_tty()
+{
+    int fd, len;
+    char ttyname[NAME_MAX + 1];
+    char ttypath[PATH_MAX+1] = "/dev/";
+    char arg;
+    
+    fd = open("/sys/class/tty/tty0/active", O_RDONLY);
+    if (fd < 0) {
+        return SDL_SetError("Could not determine which tty is active");
+    }
+    
+    len = read(fd, ttyname, NAME_MAX);
+    close(fd);
+    
+    if (len <= 0) {
+        return SDL_SetError("Could not read which tty is active");
+    }
+    
+    if (ttyname[len-1] == '\n') {
+        ttyname[len-1] = '\0';
+    }
+    else {
+        ttyname[len] = '\0';
+    }
+    
+    SDL_strlcat(ttypath, ttyname, PATH_MAX);
+    fd = open(ttypath, O_RDWR | O_NOCTTY);
+    if (fd < 0) {
+        return SDL_SetError("Could not open tty: %s", ttypath);
+    }
+    
+    if (!IS_CONSOLE(fd)) {
+        close(fd);
+        return SDL_SetError("Invalid tty obtained: %s", ttypath);
+    }
+
+    return fd;  
+}
+
 int
 SDL_EVDEV_Init(void)
 {
@@ -403,6 +481,19 @@ SDL_EVDEV_Init(void)
         
         /* We need a physical terminal (not PTS) to be able to translate key code to symbols via the kernel tables */
         _this->console_fd = SDL_EVDEV_get_console_fd();
+        
+        /* Mute the keyboard so keystrokes only generate evdev events and do not leak through to the console */
+        _this->tty = STDIN_FILENO;
+        if (SDL_EVDEV_mute_keyboard(_this->tty, &_this->kb_mode) < 0) {
+            /* stdin is not a tty, probably we were launched remotely, so we try to disable the active tty */
+            _this->tty = SDL_EVDEV_get_active_tty();
+            if (_this->tty >= 0) {
+                if (SDL_EVDEV_mute_keyboard(_this->tty, &_this->kb_mode) < 0) {
+                    close(_this->tty);
+                    _this->tty = -1;
+                }
+            }
+        }
     }
     
     _this->ref_count += 1;
@@ -429,6 +520,12 @@ SDL_EVDEV_Quit(void)
         if (_this->console_fd >= 0) {
             close(_this->console_fd);
         }
+        
+        if (_this->tty >= 0) {
+            SDL_EVDEV_unmute_keyboard(_this->tty, _this->kb_mode);
+            close(_this->tty);
+        }
+        
         /* Remove existing devices */
         while(_this->first != NULL) {
             SDL_EVDEV_device_removed(_this->first->path);
