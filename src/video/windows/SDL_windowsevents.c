@@ -309,18 +309,16 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     }
 
 #ifdef WMMSG_DEBUG
-    {
-        FILE *log = fopen("wmmsg.txt", "a");
-        fprintf(log, "Received windows message: %p ", hwnd);
-        if (msg > MAX_WMMSG) {
-            fprintf(log, "%d", msg);
-        } else {
-            fprintf(log, "%s", wmtab[msg]);
-        }
-        fprintf(log, " -- 0x%X, 0x%X\n", wParam, lParam);
-        fclose(log);
-    }
-#endif
+	{
+		char message[1024];
+		if (msg > MAX_WMMSG) {
+			SDL_snprintf(message, sizeof(message), "Received windows message: %p UNKNOWN (%d) -- 0x%X, 0x%X\n", hwnd, msg, wParam, lParam);
+		} else {
+			SDL_snprintf(message, sizeof(message), "Received windows message: %p %s -- 0x%X, 0x%X\n", hwnd, wmtab[msg], wParam, lParam);
+		}
+		OutputDebugStringA(message);
+	}
+#endif /* WMMSG_DEBUG */
 
     if (IME_HandleMessage(hwnd, msg, wParam, &lParam, data->videodata))
         return 0;
