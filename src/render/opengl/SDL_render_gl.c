@@ -514,6 +514,10 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
         renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_IYUV;
     }
 
+#ifdef __MACOSX__
+    renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_UYVY;
+#endif
+
     if (SDL_GL_ExtensionSupported("GL_EXT_framebuffer_object")) {
         data->GL_EXT_framebuffer_object_supported = SDL_TRUE;
         data->glGenFramebuffersEXT = (PFNGLGENFRAMEBUFFERSEXTPROC)
@@ -582,6 +586,13 @@ convert_format(GL_RenderData *renderdata, Uint32 pixel_format,
         *format = GL_LUMINANCE;
         *type = GL_UNSIGNED_BYTE;
         break;
+#ifdef __MACOSX__
+    case SDL_PIXELFORMAT_UYVY:
+		*internalFormat = GL_RGB8;
+		*format = GL_YCBCR_422_APPLE;
+		*type = GL_UNSIGNED_SHORT_8_8_APPLE;
+		break;
+#endif
     default:
         return SDL_FALSE;
     }
