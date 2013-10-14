@@ -35,7 +35,6 @@
 #include "SDL_uikitmodes.h"
 #include "SDL_uikitwindow.h"
 #include "SDL_uikitopengles.h"
-#include "SDL_uikitmessagebox.h"
 
 #define UIKITVID_DRIVER_NAME "uikit"
 
@@ -99,9 +98,6 @@ UIKit_CreateDevice(int devindex)
     device->GL_DeleteContext    = UIKit_GL_DeleteContext;
     device->GL_GetProcAddress   = UIKit_GL_GetProcAddress;
     device->GL_LoadLibrary        = UIKit_GL_LoadLibrary;
-
-    device->ShowMessageBox = UIKit_ShowMessageBox;
-
     device->free = UIKit_DeleteDevice;
 
     device->gl_config.accelerated = 1;
