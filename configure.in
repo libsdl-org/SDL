@@ -2189,138 +2189,142 @@ AC_HELP_STRING([--enable-sdl-dlopen], [use dlopen for shared object loading [[de
 dnl Check for the usbhid(3) library on *BSD
 CheckUSBHID()
 {
-    if test x$enable_joystick = xyes; then
-        AC_CHECK_LIB(usbhid, hid_init, have_libusbhid=yes)
-        if test x$have_libusbhid = xyes; then
-            AC_CHECK_HEADER(usbhid.h, [USB_CFLAGS="-DHAVE_USBHID_H"])
-            AC_CHECK_HEADER(libusbhid.h, [USB_CFLAGS="-DHAVE_LIBUSBHID_H"])
-            USB_LIBS="$USB_LIBS -lusbhid"
-        else
-            AC_CHECK_HEADER(usb.h, [USB_CFLAGS="-DHAVE_USB_H"])
-            AC_CHECK_HEADER(libusb.h, [USB_CFLAGS="-DHAVE_LIBUSB_H"])
-            AC_CHECK_LIB(usb, hid_init, [USB_LIBS="$USB_LIBS -lusb"])
-        fi
-            
-        save_CFLAGS="$CFLAGS"
-        CFLAGS="$CFLAGS $USB_CFLAGS"
+    case "$host" in
+        *-*-*bsd*)
+            if test x$enable_joystick = xyes; then
+                AC_CHECK_LIB(usbhid, hid_init, have_libusbhid=yes)
+                if test x$have_libusbhid = xyes; then
+                    AC_CHECK_HEADER(usbhid.h, [USB_CFLAGS="-DHAVE_USBHID_H"])
+                    AC_CHECK_HEADER(libusbhid.h, [USB_CFLAGS="-DHAVE_LIBUSBHID_H"])
+                    USB_LIBS="$USB_LIBS -lusbhid"
+                else
+                    AC_CHECK_HEADER(usb.h, [USB_CFLAGS="-DHAVE_USB_H"])
+                    AC_CHECK_HEADER(libusb.h, [USB_CFLAGS="-DHAVE_LIBUSB_H"])
+                    AC_CHECK_LIB(usb, hid_init, [USB_LIBS="$USB_LIBS -lusb"])
+                fi
+                    
+                save_CFLAGS="$CFLAGS"
+                CFLAGS="$CFLAGS $USB_CFLAGS"
 
-        AC_MSG_CHECKING(for usbhid)
-        have_usbhid=no
-        AC_TRY_COMPILE([
-          #include <sys/types.h>
-          #if defined(HAVE_USB_H)
-          #include <usb.h>
-          #endif
-          #ifdef __DragonFly__
-          # include <bus/usb/usb.h>
-          # include <bus/usb/usbhid.h>
-          #else
-          # include <dev/usb/usb.h>
-          # include <dev/usb/usbhid.h>
-          #endif
-          #if defined(HAVE_USBHID_H)
-          #include <usbhid.h>
-          #elif defined(HAVE_LIBUSB_H)
-          #include <libusb.h>
-          #elif defined(HAVE_LIBUSBHID_H)
-          #include <libusbhid.h>
-          #endif
-        ],[
-          struct report_desc *repdesc;
-          struct usb_ctl_report *repbuf;
-          hid_kind_t hidkind;
-        ],[
-        have_usbhid=yes
-        ])
-        AC_MSG_RESULT($have_usbhid)
+                AC_MSG_CHECKING(for usbhid)
+                have_usbhid=no
+                AC_TRY_COMPILE([
+                  #include <sys/types.h>
+                  #if defined(HAVE_USB_H)
+                  #include <usb.h>
+                  #endif
+                  #ifdef __DragonFly__
+                  # include <bus/usb/usb.h>
+                  # include <bus/usb/usbhid.h>
+                  #else
+                  # include <dev/usb/usb.h>
+                  # include <dev/usb/usbhid.h>
+                  #endif
+                  #if defined(HAVE_USBHID_H)
+                  #include <usbhid.h>
+                  #elif defined(HAVE_LIBUSB_H)
+                  #include <libusb.h>
+                  #elif defined(HAVE_LIBUSBHID_H)
+                  #include <libusbhid.h>
+                  #endif
+                ],[
+                  struct report_desc *repdesc;
+                  struct usb_ctl_report *repbuf;
+                  hid_kind_t hidkind;
+                ],[
+                have_usbhid=yes
+                ])
+                AC_MSG_RESULT($have_usbhid)
 
-        if test x$have_usbhid = xyes; then
-            AC_MSG_CHECKING(for ucr_data member of usb_ctl_report)
-            have_usbhid_ucr_data=no
-            AC_TRY_COMPILE([
-              #include <sys/types.h>
-              #if defined(HAVE_USB_H)
-              #include <usb.h>
-              #endif
-              #ifdef __DragonFly__
-              # include <bus/usb/usb.h>
-              # include <bus/usb/usbhid.h>
-              #else
-              # include <dev/usb/usb.h>
-              # include <dev/usb/usbhid.h>
-              #endif
-              #if defined(HAVE_USBHID_H)
-              #include <usbhid.h>
-              #elif defined(HAVE_LIBUSB_H)
-              #include <libusb.h>
-              #elif defined(HAVE_LIBUSBHID_H)
-              #include <libusbhid.h>
-              #endif
-            ],[
-              struct usb_ctl_report buf;
-              if (buf.ucr_data) { }
-            ],[
-            have_usbhid_ucr_data=yes
-            ])
-            if test x$have_usbhid_ucr_data = xyes; then
-                USB_CFLAGS="$USB_CFLAGS -DUSBHID_UCR_DATA"
+                if test x$have_usbhid = xyes; then
+                    AC_MSG_CHECKING(for ucr_data member of usb_ctl_report)
+                    have_usbhid_ucr_data=no
+                    AC_TRY_COMPILE([
+                      #include <sys/types.h>
+                      #if defined(HAVE_USB_H)
+                      #include <usb.h>
+                      #endif
+                      #ifdef __DragonFly__
+                      # include <bus/usb/usb.h>
+                      # include <bus/usb/usbhid.h>
+                      #else
+                      # include <dev/usb/usb.h>
+                      # include <dev/usb/usbhid.h>
+                      #endif
+                      #if defined(HAVE_USBHID_H)
+                      #include <usbhid.h>
+                      #elif defined(HAVE_LIBUSB_H)
+                      #include <libusb.h>
+                      #elif defined(HAVE_LIBUSBHID_H)
+                      #include <libusbhid.h>
+                      #endif
+                    ],[
+                      struct usb_ctl_report buf;
+                      if (buf.ucr_data) { }
+                    ],[
+                    have_usbhid_ucr_data=yes
+                    ])
+                    if test x$have_usbhid_ucr_data = xyes; then
+                        USB_CFLAGS="$USB_CFLAGS -DUSBHID_UCR_DATA"
+                    fi
+                    AC_MSG_RESULT($have_usbhid_ucr_data)
+                    
+                    AC_MSG_CHECKING(for new usbhid API)
+                    have_usbhid_new=no
+                    AC_TRY_COMPILE([
+                      #include <sys/types.h>
+                      #if defined(HAVE_USB_H)
+                      #include <usb.h>
+                      #endif
+                      #ifdef __DragonFly__
+                      #include <bus/usb/usb.h>
+                      #include <bus/usb/usbhid.h>
+                      #else
+                      #include <dev/usb/usb.h>
+                      #include <dev/usb/usbhid.h>
+                      #endif
+                      #if defined(HAVE_USBHID_H)
+                      #include <usbhid.h>
+                      #elif defined(HAVE_LIBUSB_H)
+                      #include <libusb.h>
+                      #elif defined(HAVE_LIBUSBHID_H)
+                      #include <libusbhid.h>
+                      #endif
+                    ],[
+                      report_desc_t d;
+                      hid_start_parse(d, 1, 1);
+                    ],[
+                    have_usbhid_new=yes
+                    ])
+                    if test x$have_usbhid_new = xyes; then
+                        USB_CFLAGS="$USB_CFLAGS -DUSBHID_NEW"
+                    fi
+                    AC_MSG_RESULT($have_usbhid_new)
+
+                    AC_MSG_CHECKING(for struct joystick in machine/joystick.h)
+                    have_machine_joystick=no
+                    AC_TRY_COMPILE([
+                      #include <machine/joystick.h>
+                    ],[
+                      struct joystick t;
+                    ],[
+                    have_machine_joystick=yes
+                    ])
+                    if test x$have_machine_joystick = xyes; then
+                        AC_DEFINE(SDL_JOYSTICK_USBHID_MACHINE_JOYSTICK_H, 1, [ ])
+                    fi
+                    AC_MSG_RESULT($have_machine_joystick)
+
+                    AC_DEFINE(SDL_JOYSTICK_USBHID, 1, [ ])
+                    SOURCES="$SOURCES $srcdir/src/joystick/bsd/*.c"
+                    EXTRA_CFLAGS="$EXTRA_CFLAGS $USB_CFLAGS"
+                    EXTRA_LDFLAGS="$EXTRA_LDFLAGS $USB_LIBS"
+                    have_joystick=yes
+                fi
+                CFLAGS="$save_CFLAGS"
             fi
-            AC_MSG_RESULT($have_usbhid_ucr_data)
-            
-            AC_MSG_CHECKING(for new usbhid API)
-            have_usbhid_new=no
-            AC_TRY_COMPILE([
-              #include <sys/types.h>
-              #if defined(HAVE_USB_H)
-              #include <usb.h>
-              #endif
-              #ifdef __DragonFly__
-              #include <bus/usb/usb.h>
-              #include <bus/usb/usbhid.h>
-              #else
-              #include <dev/usb/usb.h>
-              #include <dev/usb/usbhid.h>
-              #endif
-              #if defined(HAVE_USBHID_H)
-              #include <usbhid.h>
-              #elif defined(HAVE_LIBUSB_H)
-              #include <libusb.h>
-              #elif defined(HAVE_LIBUSBHID_H)
-              #include <libusbhid.h>
-              #endif
-            ],[
-              report_desc_t d;
-              hid_start_parse(d, 1, 1);
-            ],[
-            have_usbhid_new=yes
-            ])
-            if test x$have_usbhid_new = xyes; then
-                USB_CFLAGS="$USB_CFLAGS -DUSBHID_NEW"
-            fi
-            AC_MSG_RESULT($have_usbhid_new)
-
-            AC_MSG_CHECKING(for struct joystick in machine/joystick.h)
-            have_machine_joystick=no
-            AC_TRY_COMPILE([
-              #include <machine/joystick.h>
-            ],[
-              struct joystick t;
-            ],[
-            have_machine_joystick=yes
-            ])
-            if test x$have_machine_joystick = xyes; then
-                AC_DEFINE(SDL_JOYSTICK_USBHID_MACHINE_JOYSTICK_H, 1, [ ])
-            fi
-            AC_MSG_RESULT($have_machine_joystick)
-
-            AC_DEFINE(SDL_JOYSTICK_USBHID, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/joystick/bsd/*.c"
-            EXTRA_CFLAGS="$EXTRA_CFLAGS $USB_CFLAGS"
-            EXTRA_LDFLAGS="$EXTRA_LDFLAGS $USB_LIBS"
-            have_joystick=yes
-        fi
-        CFLAGS="$save_CFLAGS"
-    fi
+        ;;
+    esac
 }
 
 dnl Check for clock_gettime()
