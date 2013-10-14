@@ -34,7 +34,6 @@
 #include "SDL_x11shape.h"
 #include "SDL_x11touch.h"
 #include "SDL_x11xinput2.h"
-#include "SDL_x11messagebox.h"
 
 #if SDL_VIDEO_OPENGL_EGL
 #include "SDL_x11opengles.h"
@@ -411,8 +410,6 @@ X11_CreateDevice(int devindex)
     device->SetClipboardText = X11_SetClipboardText;
     device->GetClipboardText = X11_GetClipboardText;
     device->HasClipboardText = X11_HasClipboardText;
-
-    device->ShowMessageBox = X11_ShowMessageBox;
 
     device->free = X11_DeleteDevice;
 
