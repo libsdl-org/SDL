@@ -128,8 +128,7 @@ typedef unsigned int uintptr_t;
 #define HAVE_SIN 1
 #define HAVE_SINF 1
 #define HAVE_SQRT 1
-#if _MSC_VER >= 1700
-#define HAVE_ITOA 1
+#if _MSC_VER >= 1800
 #define HAVE_STRTOLL 1
 #define HAVE_SSCANF 1
 #define HAVE_COPYSIGN 1
