@@ -466,10 +466,20 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     case WM_MOUSEWHEEL:
         {
-            /* FIXME: This may need to accumulate deltas up to WHEEL_DELTA */
-            short motion = GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA;
+            static short s_AccumulatedMotion;
 
-            SDL_SendMouseWheel(data->window, 0, 0, motion);
+            s_AccumulatedMotion += GET_WHEEL_DELTA_WPARAM(wParam);
+            if (s_AccumulatedMotion > 0) {
+                while (s_AccumulatedMotion >= WHEEL_DELTA) {
+                    SDL_SendMouseWheel(data->window, 0, 0, 1);
+                    s_AccumulatedMotion -= WHEEL_DELTA;
+                }
+            } else {
+                while (s_AccumulatedMotion <= -WHEEL_DELTA) {
+                    SDL_SendMouseWheel(data->window, 0, 0, -1);
+                    s_AccumulatedMotion += WHEEL_DELTA;
+                }
+            }
             break;
         }
 
