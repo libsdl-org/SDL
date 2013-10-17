@@ -607,6 +607,60 @@ SDL_HasSSE42(void)
     return SDL_FALSE;
 }
 
+static int SDL_SystemRAM = 0;
+
+int
+SDL_GetSystemRAM(void)
+{
+    if (!SDL_SystemRAM) {
+#if defined(HAVE_SYSCONF) && defined(_SC_PHYS_PAGES) && defined(_SC_PAGESIZE)
+        if (SDL_SystemRAM <= 0) {
+            SDL_SystemRAM = (int)((Sint64)sysconf(_SC_PHYS_PAGES) * sysconf(_SC_PAGESIZE) / (1024*1024));
+        }
+#endif
+#ifdef HAVE_SYSCTLBYNAME
+        if (SDL_SystemRAM <= 0) {
+            int mib[2] = {CTL_HW, HW_MEMSIZE};
+            uint64 memsize = 0;
+            size_t len = sizeof(memsize);
+            
+            if (sysctl(mib, 2, &memsize, &len, NULL, 0) == 0) {
+                SDL_SystemRAM = (int)(memsize / (1024*1024));
+            }
+        }
+#endif
+#ifdef __WIN32__
+        if (SDL_SystemRAM <= 0) {
+            MEMORYSTATUSEX stat;
+            if (GlobalMemoryStatusEx(&stat)) {
+                SDL_SystemRAM = (int)(stat.ullTotalPhys / (1024 * 1024));
+            }
+        }
+#endif
+#if 0 //def __LINUX__
+        FILE *fpMemInfo = fopen("/proc/meminfo", "r");
+        if (fpMemInfo) {
+            char line[1024];
+            const char *search = "MemTotal:";
+            const size_t searchlen = SDL_strlen(search);
+            while (fgets(line, sizeof(line), fpMemInfo)) {
+                if (SDL_strncasecmp(search, line, searchlen) == 0) {
+                    char *val = line+searchlen;
+                    while (SDL_isspace(*val)) {
+                        ++val;
+                    }
+                    SDL_SystemRAM = SDL_atoi(val) / 1024; /* convert from kB to MB */
+                    break;
+                }
+            }
+            fclose(fpMemInfo);
+        }
+#endif
+    }
+    return SDL_SystemRAM;
+}
+
+
 #ifdef TEST_MAIN
 
 #include <stdio.h>
@@ -627,6 +681,7 @@ main()
     printf("SSE3: %d\n", SDL_HasSSE3());
     printf("SSE4.1: %d\n", SDL_HasSSE41());
     printf("SSE4.2: %d\n", SDL_HasSSE42());
+    printf("RAM: %d MB\n", SDL_GetSystemRAM());
     return 0;
 }
 
