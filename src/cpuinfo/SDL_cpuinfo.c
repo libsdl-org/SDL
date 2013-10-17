@@ -637,25 +637,6 @@ SDL_GetSystemRAM(void)
             }
         }
 #endif
-#if 0 //def __LINUX__
-        FILE *fpMemInfo = fopen("/proc/meminfo", "r");
-        if (fpMemInfo) {
-            char line[1024];
-            const char *search = "MemTotal:";
-            const size_t searchlen = SDL_strlen(search);
-            while (fgets(line, sizeof(line), fpMemInfo)) {
-                if (SDL_strncasecmp(search, line, searchlen) == 0) {
-                    char *val = line+searchlen;
-                    while (SDL_isspace(*val)) {
-                        ++val;
-                    }
-                    SDL_SystemRAM = SDL_atoi(val) / 1024; /* convert from kB to MB */
-                    break;
-                }
-            }
-            fclose(fpMemInfo);
-        }
-#endif
     }
     return SDL_SystemRAM;
 }
