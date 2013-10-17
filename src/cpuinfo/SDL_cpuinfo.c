@@ -621,7 +621,7 @@ SDL_GetSystemRAM(void)
 #ifdef HAVE_SYSCTLBYNAME
         if (SDL_SystemRAM <= 0) {
             int mib[2] = {CTL_HW, HW_MEMSIZE};
-            uint64 memsize = 0;
+            Uint64 memsize = 0;
             size_t len = sizeof(memsize);
             
             if (sysctl(mib, 2, &memsize, &len, NULL, 0) == 0) {
