@@ -153,6 +153,7 @@ TestCPUInfo(SDL_bool verbose)
         SDL_Log("SSE3 %s\n", SDL_HasSSE3()? "detected" : "not detected");
         SDL_Log("SSE4.1 %s\n", SDL_HasSSE41()? "detected" : "not detected");
         SDL_Log("SSE4.2 %s\n", SDL_HasSSE42()? "detected" : "not detected");
+        SDL_Log("System RAM %d MB\n", SDL_GetSystemRAM());
     }
     return (0);
 }
