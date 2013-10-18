@@ -620,7 +620,16 @@ SDL_GetSystemRAM(void)
 #endif
 #ifdef HAVE_SYSCTLBYNAME
         if (SDL_SystemRAM <= 0) {
+#ifdef __FreeBSD__
+#ifdef HW_REALMEM
+            int mib[2] = {CTL_HW, HW_REALMEM};
+#else
+            /* might only report up to 2 GiB */
+            int mib[2] = {CTL_HW, HW_PHYSMEM};
+#endif /* HW_REALMEM */
+#else
             int mib[2] = {CTL_HW, HW_MEMSIZE};
+#endif /* __FreeBSD__ */
             Uint64 memsize = 0;
             size_t len = sizeof(memsize);
             
