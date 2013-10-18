@@ -20,10 +20,13 @@
 */
 #include "SDL_config.h"
 
+#if defined(__WIN32__)
+#include "../core/windows/SDL_windows.h"
+#endif
+
 #include "SDL_stdinc.h"
 
 #if !defined(SDL_setenv) && defined(__WIN32__)
-#include "../core/windows/SDL_windows.h"
 /* Note this isn't thread-safe! */
 static char *SDL_envmem = NULL; /* Ugh, memory leak */
 static size_t SDL_envmemlen = 0;

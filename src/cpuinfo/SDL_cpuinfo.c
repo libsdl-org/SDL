@@ -20,6 +20,10 @@
 */
 #include "SDL_config.h"
 
+#if defined(__WIN32__)
+#include "../core/windows/SDL_windows.h"
+#endif
+
 /* CPU feature detection for SDL */
 
 #include "SDL_cpuinfo.h"
@@ -40,9 +44,6 @@
 #elif SDL_ALTIVEC_BLITTERS && HAVE_SETJMP
 #include <signal.h>
 #include <setjmp.h>
-#endif
-#ifdef __WIN32__
-#include "../core/windows/SDL_windows.h"
 #endif
 
 #define CPU_HAS_RDTSC   0x00000001

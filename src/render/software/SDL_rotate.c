@@ -30,8 +30,8 @@ Andreas Schiffler -- aschiffler at ferzkopp dot net
 */
 #include "SDL_config.h"
 
-#ifdef WIN32
-#include <windows.h>
+#if defined(__WIN32__)
+#include "../../core/windows/SDL_windows.h"
 #endif
 
 #include <stdlib.h>

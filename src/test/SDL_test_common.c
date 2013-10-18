@@ -1107,10 +1107,10 @@ SDLTest_PrintEvent(SDL_Event * event)
 
     case SDL_FINGERDOWN:
     case SDL_FINGERUP:
-        fprintf(stderr, "Finger: %s touch=%lld, finger=%lld, x=%f, y=%f, dx=%f, dy=%f, pressure=%f",
+        fprintf(stderr, "Finger: %s touch=%ld, finger=%ld, x=%f, y=%f, dx=%f, dy=%f, pressure=%f",
                 (event->type == SDL_FINGERDOWN) ? "down" : "up",
-                (long long) event->tfinger.touchId,
-                (long long) event->tfinger.fingerId,
+                (long) event->tfinger.touchId,
+                (long) event->tfinger.fingerId,
                 event->tfinger.x, event->tfinger.y,
                 event->tfinger.dx, event->tfinger.dy, event->tfinger.pressure);
         break;

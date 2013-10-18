@@ -20,6 +20,10 @@
 */
 #include "SDL_config.h"
 
+#if defined(__WIN32__)
+#include "core/windows/SDL_windows.h"
+#endif
+
 /* Simple log messages in SDL */
 
 #include "SDL_log.h"
@@ -28,9 +32,7 @@
 #include <stdio.h>
 #endif
 
-#if defined(__WIN32__)
-#include "core/windows/SDL_windows.h"
-#elif defined(__ANDROID__)
+#if defined(__ANDROID__)
 #include <android/log.h>
 #endif
 
