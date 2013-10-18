@@ -320,16 +320,16 @@ X11_GL_InitExtensions(_THIS)
     xattr.background_pixel = 0;
     xattr.border_pixel = 0;
     xattr.colormap =
-        XCreateColormap(display, RootWindow(display, screen), vinfo->visual,
+        X11_XCreateColormap(display, RootWindow(display, screen), vinfo->visual,
                         AllocNone);
-    w = XCreateWindow(display, RootWindow(display, screen), 0, 0, 32, 32, 0,
+    w = X11_XCreateWindow(display, RootWindow(display, screen), 0, 0, 32, 32, 0,
                       vinfo->depth, InputOutput, vinfo->visual,
                       (CWBackPixel | CWBorderPixel | CWColormap), &xattr);
     context = _this->gl_data->glXCreateContext(display, vinfo, NULL, True);
     if (context) {
         _this->gl_data->glXMakeCurrent(display, w, context);
     }
-    XFree(vinfo);
+    X11_XFree(vinfo);
 
     glXQueryExtensionsStringFunc =
         (const char *(*)(Display *, int)) X11_GL_GetProcAddress(_this,
@@ -385,7 +385,7 @@ X11_GL_InitExtensions(_THIS)
         _this->gl_data->glXMakeCurrent(display, None, NULL);
         _this->gl_data->glXDestroyContext(display, context);
     }
-    XDestroyWindow(display, w);
+    X11_XDestroyWindow(display, w);
     X11_PumpEvents(_this);
 }
 
@@ -566,13 +566,13 @@ X11_GL_CreateContext(_THIS, SDL_Window * window)
     }
 
     /* We do this to create a clean separation between X and GLX errors. */
-    XSync(display, False);
+    X11_XSync(display, False);
     errorBase = _this->gl_data->errorBase;
-    handler = XSetErrorHandler(X11_GL_CreateContextErrorHandler);
-    XGetWindowAttributes(display, data->xwindow, &xattr);
+    handler = X11_XSetErrorHandler(X11_GL_CreateContextErrorHandler);
+    X11_XGetWindowAttributes(display, data->xwindow, &xattr);
     v.screen = screen;
-    v.visualid = XVisualIDFromVisual(xattr.visual);
-    vinfo = XGetVisualInfo(display, VisualScreenMask | VisualIDMask, &v, &n);
+    v.visualid = X11_XVisualIDFromVisual(xattr.visual);
+    vinfo = X11_XGetVisualInfo(display, VisualScreenMask | VisualIDMask, &v, &n);
     if (vinfo) {
         if (_this->gl_config.major_version < 3 &&
             _this->gl_config.profile_mask == 0 &&
@@ -656,10 +656,10 @@ X11_GL_CreateContext(_THIS, SDL_Window * window)
                 }
             }
         }
-        XFree(vinfo);
+        X11_XFree(vinfo);
     }
-    XSync(display, False);
-    XSetErrorHandler(handler);
+    X11_XSync(display, False);
+    X11_XSetErrorHandler(handler);
 
     if (!context) {
         SDL_SetError("Could not create GL context");
@@ -801,7 +801,7 @@ X11_GL_DeleteContext(_THIS, SDL_GLContext context)
         return;
     }
     _this->gl_data->glXDestroyContext(display, glx_context);
-    XSync(display, False);
+    X11_XSync(display, False);
 }
 
 #endif /* SDL_VIDEO_OPENGL_GLX */

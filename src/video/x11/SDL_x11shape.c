@@ -106,12 +106,12 @@ X11_SetWindowShape(SDL_WindowShaper *shaper,SDL_Surface *shape,SDL_WindowShapeMo
     SDL_CalculateShapeBitmap(shaper->mode,shape,data->bitmap,8);
 
     windowdata = (SDL_WindowData*)(shaper->window->driverdata);
-    shapemask = XCreateBitmapFromData(windowdata->videodata->display,windowdata->xwindow,data->bitmap,shaper->window->w,shaper->window->h);
+    shapemask = X11_XCreateBitmapFromData(windowdata->videodata->display,windowdata->xwindow,data->bitmap,shaper->window->w,shaper->window->h);
 
-    XShapeCombineMask(windowdata->videodata->display,windowdata->xwindow, ShapeBounding, 0, 0,shapemask, ShapeSet);
-    XSync(windowdata->videodata->display,False);
+    X11_XShapeCombineMask(windowdata->videodata->display,windowdata->xwindow, ShapeBounding, 0, 0,shapemask, ShapeSet);
+    X11_XSync(windowdata->videodata->display,False);
 
-    XFreePixmap(windowdata->videodata->display,shapemask);
+    X11_XFreePixmap(windowdata->videodata->display,shapemask);
 #endif
 
     return 0;

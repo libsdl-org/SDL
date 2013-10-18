@@ -48,7 +48,7 @@ typedef struct {
 } SDL_x11Prop;
 
 /* Reads property
-   Must call XFree on results
+   Must call X11_XFree on results
  */
 static void X11_ReadProperty(SDL_x11Prop *p, Display *disp, Window w, Atom prop)
 {
@@ -60,8 +60,8 @@ static void X11_ReadProperty(SDL_x11Prop *p, Display *disp, Window w, Atom prop)
     int bytes_fetch = 0;
 
     do {
-        if (ret != 0) XFree(ret);
-        XGetWindowProperty(disp, w, prop, 0, bytes_fetch, False, AnyPropertyType, &type, &fmt, &count, &bytes_left, &ret);
+        if (ret != 0) X11_XFree(ret);
+        X11_XGetWindowProperty(disp, w, prop, 0, bytes_fetch, False, AnyPropertyType, &type, &fmt, &count, &bytes_left, &ret);
         bytes_fetch += bytes_left;
     } while (bytes_left != 0);
 
@@ -79,9 +79,9 @@ static Atom X11_PickTarget(Display *disp, Atom list[], int list_count)
     char *name;
     int i;
     for (i=0; i < list_count && request == None; i++) {
-        name = XGetAtomName(disp, list[i]);
+        name = X11_XGetAtomName(disp, list[i]);
         if (strcmp("text/uri-list", name)==0) request = list[i];
-        XFree(name);
+        X11_XFree(name);
     }
     return request;
 }
@@ -125,8 +125,8 @@ static SDL_bool X11_KeyRepeat(Display *display, XEvent *event)
     struct KeyRepeatCheckData d;
     d.event = event;
     d.found = SDL_FALSE;
-    if (XPending(display))
-        XCheckIfEvent(display, &dummyev, X11_KeyRepeatCheckIfEvent,
+    if (X11_XPending(display))
+        X11_XCheckIfEvent(display, &dummyev, X11_KeyRepeatCheckIfEvent,
             (XPointer) &d);
     return d.found;
 }
@@ -147,7 +147,7 @@ static Bool X11_IsWheelCheckIfEvent(Display *display, XEvent *chkev,
 static SDL_bool X11_IsWheelEvent(Display * display,XEvent * event,int * ticks)
 {
     XEvent relevent;
-    if (XPending(display)) {
+    if (X11_XPending(display)) {
         /* according to the xlib docs, no specific mouse wheel events exist.
            however, mouse wheel events trigger a button press and a button release
            immediately. thus, checking if the same button was released at the same
@@ -158,7 +158,7 @@ static SDL_bool X11_IsWheelEvent(Display * display,XEvent * event,int * ticks)
              generated (or synthesised) immediately.
            - False negative: a wheel which, when rolled, doesn't have
              a release event generated immediately. */
-        if (XCheckIfEvent(display, &relevent, X11_IsWheelCheckIfEvent,
+        if (X11_XCheckIfEvent(display, &relevent, X11_IsWheelCheckIfEvent,
             (XPointer) event)) {
 
             /* by default, X11 only knows 5 buttons. on most 3 button + wheel mouse,
@@ -217,9 +217,9 @@ static void X11_HandleGenericEvent(SDL_VideoData *videodata,XEvent event)
 {
     /* event is a union, so cookie == &event, but this is type safe. */
     XGenericEventCookie *cookie = &event.xcookie;
-    if (XGetEventData(videodata->display, cookie)) {
+    if (X11_XGetEventData(videodata->display, cookie)) {
         X11_HandleXinput2Event(videodata, cookie);
-        XFreeEventData(videodata->display, cookie);
+        X11_XFreeEventData(videodata->display, cookie);
     }
 }
 #endif /* SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS */
@@ -234,7 +234,7 @@ X11_DispatchFocusIn(SDL_WindowData *data)
     SDL_SetKeyboardFocus(data->window);
 #ifdef X_HAVE_UTF8_STRING
     if (data->ic) {
-        XSetICFocus(data->ic);
+        X11_XSetICFocus(data->ic);
     }
 #endif
 }
@@ -248,7 +248,7 @@ X11_DispatchFocusOut(SDL_WindowData *data)
     SDL_SetKeyboardFocus(NULL);
 #ifdef X_HAVE_UTF8_STRING
     if (data->ic) {
-        XUnsetICFocus(data->ic);
+        X11_XUnsetICFocus(data->ic);
     }
 #endif
 }
@@ -278,11 +278,11 @@ X11_DispatchEvent(_THIS)
     XClientMessageEvent m;
 
     SDL_zero(xevent);           /* valgrind fix. --ryan. */
-    XNextEvent(display, &xevent);
+    X11_XNextEvent(display, &xevent);
 
     /* filter events catchs XIM events and sends them to the correct
        handler */
-    if (XFilterEvent(&xevent, None) == True) {
+    if (X11_XFilterEvent(&xevent, None) == True) {
 #if 0
         printf("Filtered event type = %d display = %d window = %d\n",
                xevent.type, xevent.xany.display, xevent.xany.window);
@@ -451,23 +451,23 @@ X11_DispatchEvent(_THIS)
 #if 1
             if (videodata->key_layout[keycode] == SDL_SCANCODE_UNKNOWN && keycode) {
                 int min_keycode, max_keycode;
-                XDisplayKeycodes(display, &min_keycode, &max_keycode);
+                X11_XDisplayKeycodes(display, &min_keycode, &max_keycode);
 #if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
-                keysym = XkbKeycodeToKeysym(display, keycode, 0, 0);
+                keysym = X11_XkbKeycodeToKeysym(display, keycode, 0, 0);
 #else
                 keysym = XKeycodeToKeysym(display, keycode, 0);
 #endif
                 fprintf(stderr,
                         "The key you just pressed is not recognized by SDL. To help get this fixed, please report this to the SDL mailing list <sdl@libsdl.org> X11 KeyCode %d (%d), X11 KeySym 0x%lX (%s).\n",
                         keycode, keycode - min_keycode, keysym,
-                        XKeysymToString(keysym));
+                        X11_XKeysymToString(keysym));
             }
 #endif
             /* */
             SDL_zero(text);
 #ifdef X_HAVE_UTF8_STRING
             if (data->ic) {
-                Xutf8LookupString(data->ic, &xevent.xkey, text, sizeof(text),
+                X11_Xutf8LookupString(data->ic, &xevent.xkey, text, sizeof(text),
                                   &keysym, &status);
             }
 #else
@@ -549,7 +549,7 @@ X11_DispatchEvent(_THIS)
                     X11_ReadProperty(&p, display, data->xdnd_source, videodata->XdndTypeList);
                     /* pick one */
                     data->xdnd_req = X11_PickTarget(display, (Atom*)p.data, p.count);
-                    XFree(p.data);
+                    X11_XFree(p.data);
                 } else {
                     /* pick from list of three */
                     data->xdnd_req = X11_PickTargetFromAtoms(display, xevent.xclient.data.l[2], xevent.xclient.data.l[3], xevent.xclient.data.l[4]);
@@ -570,8 +570,8 @@ X11_DispatchEvent(_THIS)
                 m.data.l[3] = 0;
                 m.data.l[4] = videodata->XdndActionCopy; /* we only accept copying anyway */
 
-                XSendEvent(display, xevent.xclient.data.l[0], False, NoEventMask, (XEvent*)&m);
-                XFlush(display);
+                X11_XSendEvent(display, xevent.xclient.data.l[0], False, NoEventMask, (XEvent*)&m);
+                X11_XFlush(display);
             }
             else if(xevent.xclient.message_type == videodata->XdndDrop) {
                 if (data->xdnd_req == None) {
@@ -585,13 +585,13 @@ X11_DispatchEvent(_THIS)
                     m.data.l[0] = data->xwindow;
                     m.data.l[1] = 0;
                     m.data.l[2] = None; /* fail! */
-                    XSendEvent(display, xevent.xclient.data.l[0], False, NoEventMask, (XEvent*)&m);
+                    X11_XSendEvent(display, xevent.xclient.data.l[0], False, NoEventMask, (XEvent*)&m);
                 } else {
                     /* convert */
                     if(xdnd_version >= 1) {
-                        XConvertSelection(display, videodata->XdndSelection, data->xdnd_req, videodata->PRIMARY, data->xwindow, xevent.xclient.data.l[2]);
+                        X11_XConvertSelection(display, videodata->XdndSelection, data->xdnd_req, videodata->PRIMARY, data->xwindow, xevent.xclient.data.l[2]);
                     } else {
-                        XConvertSelection(display, videodata->XdndSelection, data->xdnd_req, videodata->PRIMARY, data->xwindow, CurrentTime);
+                        X11_XConvertSelection(display, videodata->XdndSelection, data->xdnd_req, videodata->PRIMARY, data->xwindow, CurrentTime);
                     }
                 }
             }
@@ -604,7 +604,7 @@ X11_DispatchEvent(_THIS)
                 printf("window %p: _NET_WM_PING\n", data);
 #endif
                 xevent.xclient.window = root;
-                XSendEvent(display, root, False, SubstructureRedirectMask | SubstructureNotifyMask, &xevent);
+                X11_XSendEvent(display, root, False, SubstructureRedirectMask | SubstructureNotifyMask, &xevent);
                 break;
             }
 
@@ -664,13 +664,13 @@ X11_DispatchEvent(_THIS)
             Atom real_type;
             unsigned long items_read, items_left, i;
 
-            char *name = XGetAtomName(display, xevent.xproperty.atom);
+            char *name = X11_XGetAtomName(display, xevent.xproperty.atom);
             if (name) {
                 printf("window %p: PropertyNotify: %s %s\n", data, name, (xevent.xproperty.state == PropertyDelete) ? "deleted" : "changed");
-                XFree(name);
+                X11_XFree(name);
             }
 
-            status = XGetWindowProperty(display, data->xwindow, xevent.xproperty.atom, 0L, 8192L, False, AnyPropertyType, &real_type, &real_format, &items_read, &items_left, &propdata);
+            status = X11_XGetWindowProperty(display, data->xwindow, xevent.xproperty.atom, 0L, 8192L, False, AnyPropertyType, &real_type, &real_format, &items_read, &items_left, &propdata);
             if (status == Success && items_read > 0) {
                 if (real_type == XA_INTEGER) {
                     int *values = (int *)propdata;
@@ -714,23 +714,23 @@ X11_DispatchEvent(_THIS)
 
                     printf("{");
                     for (i = 0; i < items_read; i++) {
-                        char *name = XGetAtomName(display, atoms[i]);
+                        char *name = X11_XGetAtomName(display, atoms[i]);
                         if (name) {
                             printf(" %s", name);
-                            XFree(name);
+                            X11_XFree(name);
                         }
                     }
                     printf(" }\n");
                 } else {
-                    char *name = XGetAtomName(display, real_type);
+                    char *name = X11_XGetAtomName(display, real_type);
                     printf("Unknown type: %ld (%s)\n", real_type, name ? name : "UNKNOWN");
                     if (name) {
-                        XFree(name);
+                        X11_XFree(name);
                     }
                 }
             }
             if (status == Success) {
-                XFree(propdata);
+                X11_XFree(propdata);
             }
 #endif /* DEBUG_XEVENTS */
 
@@ -774,28 +774,28 @@ X11_DispatchEvent(_THIS)
             sevent.xselection.property = None;
             sevent.xselection.requestor = req->requestor;
             sevent.xselection.time = req->time;
-            if (XGetWindowProperty(display, DefaultRootWindow(display),
+            if (X11_XGetWindowProperty(display, DefaultRootWindow(display),
                     XA_CUT_BUFFER0, 0, INT_MAX/4, False, req->target,
                     &sevent.xselection.target, &seln_format, &nbytes,
                     &overflow, &seln_data) == Success) {
-                Atom XA_TARGETS = XInternAtom(display, "TARGETS", 0);
+                Atom XA_TARGETS = X11_XInternAtom(display, "TARGETS", 0);
                 if (sevent.xselection.target == req->target) {
-                    XChangeProperty(display, req->requestor, req->property,
+                    X11_XChangeProperty(display, req->requestor, req->property,
                         sevent.xselection.target, seln_format, PropModeReplace,
                         seln_data, nbytes);
                     sevent.xselection.property = req->property;
                 } else if (XA_TARGETS == req->target) {
                     Atom SupportedFormats[] = { sevent.xselection.target, XA_TARGETS };
-                    XChangeProperty(display, req->requestor, req->property,
+                    X11_XChangeProperty(display, req->requestor, req->property,
                         XA_ATOM, 32, PropModeReplace,
                         (unsigned char*)SupportedFormats,
                         sizeof(SupportedFormats)/sizeof(*SupportedFormats));
                     sevent.xselection.property = req->property;
                 }
-                XFree(seln_data);
+                X11_XFree(seln_data);
             }
-            XSendEvent(display, req->requestor, False, 0, &sevent);
-            XSync(display, False);
+            X11_XSendEvent(display, req->requestor, False, 0, &sevent);
+            X11_XSync(display, False);
         }
         break;
 
@@ -845,7 +845,7 @@ X11_DispatchEvent(_THIS)
                     }
                 }
 
-                XFree(p.data);
+                X11_XFree(p.data);
 
                 /* send reply */
                 SDL_memset(&m, 0, sizeof(XClientMessageEvent));
@@ -857,9 +857,9 @@ X11_DispatchEvent(_THIS)
                 m.data.l[0] = data->xwindow;
                 m.data.l[1] = 1;
                 m.data.l[2] = videodata->XdndActionCopy;
-                XSendEvent(display, data->xdnd_source, False, NoEventMask, (XEvent*)&m);
+                X11_XSendEvent(display, data->xdnd_source, False, NoEventMask, (XEvent*)&m);
 
-                XSync(display, False);
+                X11_XSync(display, False);
 
             } else {
                 videodata->selection_waiting = SDL_FALSE;
@@ -899,13 +899,13 @@ X11_HandleFocusChanges(_THIS)
         }
     }
 }
-/* Ack!  XPending() actually performs a blocking read if no events available */
+/* Ack!  X11_XPending() actually performs a blocking read if no events available */
 static int
 X11_Pending(Display * display)
 {
     /* Flush the display connection and look to see if events are queued */
-    XFlush(display);
-    if (XEventsQueued(display, QueuedAlready)) {
+    X11_XFlush(display);
+    if (X11_XEventsQueued(display, QueuedAlready)) {
         return (1);
     }
 
@@ -919,7 +919,7 @@ X11_Pending(Display * display)
         FD_ZERO(&fdset);
         FD_SET(x11_fd, &fdset);
         if (select(x11_fd + 1, &fdset, NULL, NULL, &zero_time) == 1) {
-            return (XPending(display));
+            return (X11_XPending(display));
         }
     }
 
@@ -942,7 +942,7 @@ X11_PumpEvents(_THIS)
         Uint32 now = SDL_GetTicks();
         if (!data->screensaver_activity ||
             (int) (now - data->screensaver_activity) >= 30000) {
-            XResetScreenSaver(data->display);
+            X11_XResetScreenSaver(data->display);
 
             #if SDL_USE_LIBDBUS
             SDL_dbus_screensaver_tickle(_this);
@@ -971,16 +971,16 @@ X11_SuspendScreenSaver(_THIS)
     int major_version, minor_version;
 
     if (SDL_X11_HAVE_XSS) {
-        /* XScreenSaverSuspend was introduced in MIT-SCREEN-SAVER 1.1 */
-        if (!XScreenSaverQueryExtension(data->display, &dummy, &dummy) ||
-            !XScreenSaverQueryVersion(data->display,
+        /* X11_XScreenSaverSuspend was introduced in MIT-SCREEN-SAVER 1.1 */
+        if (!X11_XScreenSaverQueryExtension(data->display, &dummy, &dummy) ||
+            !X11_XScreenSaverQueryVersion(data->display,
                                       &major_version, &minor_version) ||
             major_version < 1 || (major_version == 1 && minor_version < 1)) {
             return;
         }
 
-        XScreenSaverSuspend(data->display, _this->suspend_screensaver);
-        XResetScreenSaver(data->display);
+        X11_XScreenSaverSuspend(data->display, _this->suspend_screensaver);
+        X11_XResetScreenSaver(data->display);
     }
 #endif
 
