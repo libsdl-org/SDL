@@ -53,6 +53,8 @@
 #define DIDFT_OPTIONAL      0x80000000
 #endif
 
+DEFINE_GUID(GUID_DEVINTERFACE_HID, 0x4D1E55B2L, 0xF16F, 0x11CF, 0x88, 0xCB, 0x00, 0x11, 0x11, 0x00, 0x00, 0x30);
+
 
 #define INPUT_QSIZE 32      /* Buffer up to 32 input messages */
 #define AXIS_MIN    -32768  /* minimum value for axis coordinate */
@@ -387,7 +389,6 @@ SDL_IsXInputDevice( const GUID* pGuidProductFromDirectInput )
     };
 
     size_t iDevice;
-    SDL_bool retval = SDL_FALSE;
     UINT i;
 
     if (!s_bXInputEnabled) {
@@ -507,7 +508,7 @@ SDL_JoystickThread(void *_data)
 
     dbh.dbcc_size = sizeof(dbh);
     dbh.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
-    dbh.dbcc_classguid = GUID_DEVINTERFACE_USB_DEVICE;
+    dbh.dbcc_classguid = GUID_DEVINTERFACE_HID;
 
     hNotify = RegisterDeviceNotification( messageWindow, &dbh, DEVICE_NOTIFY_WINDOW_HANDLE );
     if ( !hNotify )
