@@ -23,9 +23,9 @@
 #ifndef _SDL_windowsvideo_h
 #define _SDL_windowsvideo_h
 
-#include "../SDL_sysvideo.h"
-
 #include "../../core/windows/SDL_windows.h"
+
+#include "../SDL_sysvideo.h"
 
 #if defined(_MSC_VER)
 #include <msctf.h>

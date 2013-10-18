@@ -116,8 +116,8 @@ SDL_SYS_CreateThread(SDL_Thread * thread, void *args)
 int
 SDL_SYS_CreateThread(SDL_Thread * thread, void *args)
 {
-    pfnSDL_CurrentBeginThread pfnBeginThread = _beginthreadex;
-    pfnSDL_CurrentEndThread pfnEndThread = _endthreadex;
+    pfnSDL_CurrentBeginThread pfnBeginThread = (pfnSDL_CurrentBeginThread)_beginthreadex;
+    pfnSDL_CurrentEndThread pfnEndThread = (pfnSDL_CurrentEndThread)_endthreadex;
 #endif /* SDL_PASSED_BEGINTHREAD_ENDTHREAD */
     pThreadStartParms pThreadParms =
         (pThreadStartParms) SDL_malloc(sizeof(tThreadStartParms));

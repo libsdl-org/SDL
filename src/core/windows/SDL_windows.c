@@ -22,8 +22,8 @@
 
 #ifdef __WIN32__
 
-#include "SDL_error.h"
 #include "SDL_windows.h"
+#include "SDL_error.h"
 #include "SDL_assert.h"
 
 #include <objbase.h>  /* for CoInitialize/CoUninitialize */

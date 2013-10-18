@@ -22,7 +22,6 @@
 
 #if SDL_VIDEO_RENDER_D3D && !SDL_RENDER_DISABLED
 
-
 #include "../../core/windows/SDL_windows.h"
 
 #include "SDL_hints.h"

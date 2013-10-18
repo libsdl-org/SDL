@@ -3452,7 +3452,7 @@ rm -f core conftest.err conftest.$ac_objext \
   rm -f conf.sdltest
 
 CFLAGS="$CFLAGS $SDL_CFLAGS"
-LIBS="$LIBS  $SDL_LIBS -lSDL2_test"
+LIBS="$LIBS -lSDL2_test $SDL_LIBS"
 
 ac_ext=c
 ac_cpp='$CPP $CPPFLAGS'
