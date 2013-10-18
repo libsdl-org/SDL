@@ -596,6 +596,12 @@ SDL_UpperBlit(SDL_Surface * src, const SDL_Rect * srcrect,
             h -= dy;
     }
 
+    /* Switch back to a fast blit if we were previously stretching */
+    if (src->map->info.flags & SDL_COPY_NEAREST) {
+        src->map->info.flags &= ~SDL_COPY_NEAREST;
+        SDL_InvalidateMap(src->map);
+    }
+
     if (w > 0 && h > 0) {
         SDL_Rect sr;
         sr.x = srcx;
@@ -747,7 +753,10 @@ SDL_LowerBlitScaled(SDL_Surface * src, SDL_Rect * srcrect,
         return 0;
     }
 
-    src->map->info.flags |= SDL_COPY_NEAREST;
+    if (!(src->map->info.flags & SDL_COPY_NEAREST)) {
+        src->map->info.flags |= SDL_COPY_NEAREST;
+        SDL_InvalidateMap(src->map);
+    }
 
     if ( !(src->map->info.flags & complex_copy_flags) &&
          src->format->format == dst->format->format &&
