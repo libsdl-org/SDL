@@ -48,6 +48,18 @@
 /* Hidden "this" pointer for the audio functions */
 #define _THIS   SDL_AudioDevice *this
 
+/* Fixes bug 1210 where some versions of gcc need named parameters */
+#ifdef __GNUC__
+#ifdef THIS
+#undef THIS
+#endif
+#define THIS    INTERFACE *p
+#ifdef THIS_
+#undef THIS_
+#endif
+#define THIS_   INTERFACE *p,
+#endif
+
 struct SDL_PrivateAudioData
 {
     IXAudio2 *ixa2;
