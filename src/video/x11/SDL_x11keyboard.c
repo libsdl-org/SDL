@@ -271,7 +271,7 @@ X11_InitKeyboard(_THIS)
                 if (scancode == SDL_SCANCODE_UNKNOWN) {
                     printf("scancode not found\n");
                 } else {
-                    printf("scancode = %d (%s)\n", j, SDL_GetScancodeName(j));
+                    printf("scancode = %d (%s)\n", scancode, SDL_GetScancodeName(scancode));
                 }
             }
         }
