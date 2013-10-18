@@ -131,7 +131,9 @@ SDL_DYNX11FN_XGetICValues pXGetICValues = NULL;
 #undef SDL_X11_SYM
 
 
+#ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC
 static int x11_load_refcount = 0;
+#endif
 
 void
 SDL_X11_UnloadSymbols(void)
