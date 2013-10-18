@@ -42,7 +42,7 @@
 #include <xinput.h>
 #include <devguid.h>
 #include <dbt.h>
-#include <xinput.h>
+
 
 #ifndef XUSER_MAX_COUNT
 #define XUSER_MAX_COUNT 4
