@@ -230,9 +230,9 @@ X11_Available(void)
 {
     Display *display = NULL;
     if (SDL_X11_LoadSymbols()) {
-        display = XOpenDisplay(NULL);
+        display = X11_XOpenDisplay(NULL);
         if (display != NULL) {
-            XCloseDisplay(display);
+            X11_XCloseDisplay(display);
         }
         SDL_X11_UnloadSymbols();
     }
@@ -244,7 +244,7 @@ X11_DeleteDevice(SDL_VideoDevice * device)
 {
     SDL_VideoData *data = (SDL_VideoData *) device->driverdata;
     if (data->display) {
-        XCloseDisplay(data->display);
+        X11_XCloseDisplay(data->display);
     }
     SDL_free(data->windowlist);
     SDL_free(device->driverdata);
@@ -296,7 +296,7 @@ X11_CreateDevice(int devindex)
 
     /* Need for threading gl calls. This is also required for the proprietary
         nVidia driver to be threaded. */
-    XInitThreads();
+    X11_XInitThreads();
 
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
@@ -313,14 +313,14 @@ X11_CreateDevice(int devindex)
     device->driverdata = data;
 
     /* FIXME: Do we need this?
-       if ( (SDL_strncmp(XDisplayName(display), ":", 1) == 0) ||
-       (SDL_strncmp(XDisplayName(display), "unix:", 5) == 0) ) {
+       if ( (SDL_strncmp(X11_XDisplayName(display), ":", 1) == 0) ||
+       (SDL_strncmp(X11_XDisplayName(display), "unix:", 5) == 0) ) {
        local_X11 = 1;
        } else {
        local_X11 = 0;
        }
      */
-    data->display = XOpenDisplay(display);
+    data->display = X11_XOpenDisplay(display);
 #if defined(__osf__) && defined(SDL_VIDEO_DRIVER_X11_DYNAMIC)
     /* On Tru64 if linking without -lX11, it fails and you get following message.
      * Xlib: connection to ":0.0" refused by server
@@ -331,7 +331,7 @@ X11_CreateDevice(int devindex)
      */
     if (data->display == NULL) {
         SDL_Delay(1000);
-        data->display = XOpenDisplay(display);
+        data->display = X11_XOpenDisplay(display);
     }
 #endif
     if (data->display == NULL) {
@@ -341,12 +341,12 @@ X11_CreateDevice(int devindex)
         return NULL;
     }
 #ifdef X11_DEBUG
-    XSynchronize(data->display, True);
+    X11_XSynchronize(data->display, True);
 #endif
 
     /* Hook up an X11 error handler to recover the desktop resolution. */
     safety_net_triggered = SDL_FALSE;
-    orig_x11_errhandler = XSetErrorHandler(X11_SafetyNetErrHandler);
+    orig_x11_errhandler = X11_XSetErrorHandler(X11_SafetyNetErrHandler);
 
     /* Set the function pointers */
     device->VideoInit = X11_VideoInit;
@@ -448,31 +448,31 @@ X11_CheckWindowManager(_THIS)
 #endif
 
     /* Set up a handler to gracefully catch errors */
-    XSync(display, False);
-    handler = XSetErrorHandler(X11_CheckWindowManagerErrorHandler);
+    X11_XSync(display, False);
+    handler = X11_XSetErrorHandler(X11_CheckWindowManagerErrorHandler);
 
-    _NET_SUPPORTING_WM_CHECK = XInternAtom(display, "_NET_SUPPORTING_WM_CHECK", False);
-    status = XGetWindowProperty(display, DefaultRootWindow(display), _NET_SUPPORTING_WM_CHECK, 0L, 1L, False, XA_WINDOW, &real_type, &real_format, &items_read, &items_left, &propdata);
+    _NET_SUPPORTING_WM_CHECK = X11_XInternAtom(display, "_NET_SUPPORTING_WM_CHECK", False);
+    status = X11_XGetWindowProperty(display, DefaultRootWindow(display), _NET_SUPPORTING_WM_CHECK, 0L, 1L, False, XA_WINDOW, &real_type, &real_format, &items_read, &items_left, &propdata);
     if (status == Success && items_read) {
         wm_window = ((Window*)propdata)[0];
     }
     if (propdata) {
-        XFree(propdata);
+        X11_XFree(propdata);
     }
 
     if (wm_window) {
-        status = XGetWindowProperty(display, wm_window, _NET_SUPPORTING_WM_CHECK, 0L, 1L, False, XA_WINDOW, &real_type, &real_format, &items_read, &items_left, &propdata);
+        status = X11_XGetWindowProperty(display, wm_window, _NET_SUPPORTING_WM_CHECK, 0L, 1L, False, XA_WINDOW, &real_type, &real_format, &items_read, &items_left, &propdata);
         if (status != Success || !items_read || wm_window != ((Window*)propdata)[0]) {
             wm_window = None;
         }
         if (propdata) {
-            XFree(propdata);
+            X11_XFree(propdata);
         }
     }
 
     /* Reset the error handler, we're done checking */
-    XSync(display, False);
-    XSetErrorHandler(handler);
+    X11_XSync(display, False);
+    X11_XSetErrorHandler(handler);
 
     if (!wm_window) {
 #ifdef DEBUG_WINDOW_MANAGER
@@ -505,12 +505,12 @@ X11_VideoInit(_THIS)
 #ifdef X_HAVE_UTF8_STRING
     if (SDL_X11_HAVE_UTF8) {
         data->im =
-            XOpenIM(data->display, NULL, data->classname, data->classname);
+            X11_XOpenIM(data->display, NULL, data->classname, data->classname);
     }
 #endif
 
     /* Look up some useful Atoms */
-#define GET_ATOM(X) data->X = XInternAtom(data->display, #X, False)
+#define GET_ATOM(X) data->X = X11_XInternAtom(data->display, #X, False)
     GET_ATOM(WM_PROTOCOLS);
     GET_ATOM(WM_DELETE_WINDOW);
     GET_ATOM(_NET_WM_STATE);
@@ -568,7 +568,7 @@ X11_VideoQuit(_THIS)
     SDL_free(data->classname);
 #ifdef X_HAVE_UTF8_STRING
     if (data->im) {
-        XCloseIM(data->im);
+        X11_XCloseIM(data->im);
     }
 #endif
 

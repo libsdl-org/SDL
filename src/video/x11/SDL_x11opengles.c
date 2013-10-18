@@ -74,13 +74,13 @@ X11_GLES_GetVisual(_THIS, Display * display, int screen)
                                             &visual_id) == EGL_FALSE || !visual_id) {
         /* Use the default visual when all else fails */
         vi_in.screen = screen;
-        egl_visualinfo = XGetVisualInfo(display,
+        egl_visualinfo = X11_XGetVisualInfo(display,
                                         VisualScreenMask,
                                         &vi_in, &out_count);
     } else {
         vi_in.screen = screen;
         vi_in.visualid = visual_id;
-        egl_visualinfo = XGetVisualInfo(display, VisualScreenMask | VisualIDMask, &vi_in, &out_count);
+        egl_visualinfo = X11_XGetVisualInfo(display, VisualScreenMask | VisualIDMask, &vi_in, &out_count);
     }
 
     return egl_visualinfo;
@@ -93,9 +93,9 @@ X11_GLES_CreateContext(_THIS, SDL_Window * window)
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     Display *display = data->videodata->display;
 
-    XSync(display, False);
+    X11_XSync(display, False);
     context = SDL_EGL_CreateContext(_this, data->egl_surface);
-    XSync(display, False);
+    X11_XSync(display, False);
 
     return context;
 }

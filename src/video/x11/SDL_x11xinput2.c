@@ -36,7 +36,7 @@ static int xinput2_initialized = 0;
 static int xinput2_multitouch_supported = 0;
 #endif
 
-/* Opcode returned XQueryExtension
+/* Opcode returned X11_XQueryExtension
  * It will be used in event processing
  * to know that the event came from
  * this extension */
@@ -82,16 +82,16 @@ X11_InitXinput2(_THIS)
     * "As XI2 progresses it becomes important that you use this call as the server may treat the client
     * differently depending on the supported version".
     *
-    * FIXME:event and err are not needed but if not passed XQueryExtension returns SegmentationFault
+    * FIXME:event and err are not needed but if not passed X11_XQueryExtension returns SegmentationFault
     */
     if (!SDL_X11_HAVE_XINPUT2 ||
-        !XQueryExtension(data->display, "XInputExtension", &xinput2_opcode, &event, &err)) {
+        !X11_XQueryExtension(data->display, "XInputExtension", &xinput2_opcode, &event, &err)) {
         return;
     }
 
     outmajor = major;
     outminor = minor;
-    if (XIQueryVersion(data->display, &outmajor, &outminor) != Success) {
+    if (X11_XIQueryVersion(data->display, &outmajor, &outminor) != Success) {
         return;
     }
 
@@ -115,7 +115,7 @@ X11_InitXinput2(_THIS)
 
     XISetMask(mask, XI_RawMotion);
 
-    if (XISelectEvents(data->display,DefaultRootWindow(data->display),&eventmask,1) != Success) {
+    if (X11_XISelectEvents(data->display,DefaultRootWindow(data->display),&eventmask,1) != Success) {
         return;
     }
 #endif
@@ -226,7 +226,7 @@ X11_Xinput2SelectTouch(_THIS, SDL_Window *window)
     XISetMask(mask, XI_TouchUpdate);
     XISetMask(mask, XI_TouchEnd);
 
-    XISelectEvents(data->display,window_data->xwindow,&eventmask,1);
+    X11_XISelectEvents(data->display,window_data->xwindow,&eventmask,1);
 #endif
 }
 
