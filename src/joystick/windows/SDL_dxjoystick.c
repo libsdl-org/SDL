@@ -733,11 +733,11 @@ AddXInputDevice(const Uint8 userid, JoyStick_DeviceData **pContext)
 
             pNewJoystick->pNext = SYS_Joystick;
             SYS_Joystick = pNewJoystick;
+            return;   /* already in the list. */
         }
 
         pPrevJoystick = pNewJoystick;
         pNewJoystick = pNewJoystick->pNext;
-        return;   /* already in the list. */
     }
 
     pNewJoystick = (JoyStick_DeviceData *) SDL_malloc(sizeof (JoyStick_DeviceData));
