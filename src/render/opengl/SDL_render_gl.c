@@ -1048,15 +1048,17 @@ GL_RenderDrawPoints(SDL_Renderer * renderer, const SDL_FPoint * points,
                     int count)
 {
     GL_RenderData *data = (GL_RenderData *) renderer->driverdata;
-    int i;
 
     GL_SetDrawingState(renderer);
 
-    data->glBegin(GL_POINTS);
-    for (i = 0; i < count; ++i) {
-        data->glVertex2f(0.5f + points[i].x, 0.5f + points[i].y);
-    }
-    data->glEnd();
+    data->glTranslatef(0.5f, 0.5f, 0.0f);
+    data->glVertexPointer(2, GL_FLOAT, 0, points);
+    data->glEnableClientState(GL_VERTEX_ARRAY);
+
+    data->glDrawArrays(GL_POINTS, 0, count);
+
+    data->glDisableClientState(GL_VERTEX_ARRAY);
+    data->glTranslatef(-0.5f, -0.5f, 0.0f);
 
     return 0;
 }
