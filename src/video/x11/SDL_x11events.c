@@ -524,12 +524,12 @@ X11_DispatchEvent(_THIS)
             long border_top = 0;
             long border_bottom = 0;
             if (data->xwindow) {
-                Atom _net_frame_extents = XInternAtom(display, "_NET_FRAME_EXTENTS", 0);
+                Atom _net_frame_extents = X11_XInternAtom(display, "_NET_FRAME_EXTENTS", 0);
                 Atom type;
                 int format;
                 unsigned long nitems, bytes_after;
                 unsigned char *property;
-                XGetWindowProperty(display, data->xwindow,
+                X11_XGetWindowProperty(display, data->xwindow,
                     _net_frame_extents, 0, 16, 0,
                     XA_CARDINAL, &type, &format,
                     &nitems, &bytes_after, &property);
