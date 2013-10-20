@@ -1202,10 +1202,13 @@ SDL_SYS_HapticNewEffect(SDL_Haptic * haptic, struct haptic_effect *effect,
                         SDL_HapticEffect * base)
 {
     HRESULT ret;
-    REFGUID type = SDL_SYS_HapticEffectType(base);
+    REFGUID type = NULL;
 
-    if ((type == NULL) && (!haptic->hwdata->bXInputHaptic)) {
-        goto err_hweffect;
+    if (!haptic->hwdata->bXInputHaptic) {
+        type = SDL_SYS_HapticEffectType(base);
+        if (type == NULL) {
+            goto err_hweffect;
+        }
     }
 
     /* Alloc the effect. */
