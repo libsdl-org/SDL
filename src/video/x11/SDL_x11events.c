@@ -519,10 +519,32 @@ X11_DispatchEvent(_THIS)
                    xevent.xconfigure.x, xevent.xconfigure.y,
                    xevent.xconfigure.width, xevent.xconfigure.height);
 #endif
+            long border_left = 0;
+            long border_right = 0;
+            long border_top = 0;
+            long border_bottom = 0;
+            if (data->xwindow) {
+                Atom _net_frame_extents = XInternAtom(display, "_NET_FRAME_EXTENTS", 0);
+                Atom type;
+                int format;
+                unsigned long nitems, bytes_after;
+                unsigned char *property;
+                XGetWindowProperty(display, data->xwindow,
+                    _net_frame_extents, 0, 16, 0,
+                    XA_CARDINAL, &type, &format,
+                    &nitems, &bytes_after, &property);
+
+                border_left = ((long*)property)[0];
+                border_right = ((long*)property)[1];
+                border_top = ((long*)property)[2];
+                border_bottom = ((long*)property)[3];
+            }
+
             if (xevent.xconfigure.x != data->last_xconfigure.x ||
                 xevent.xconfigure.y != data->last_xconfigure.y) {
                 SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MOVED,
-                                    xevent.xconfigure.x, xevent.xconfigure.y);
+                                    xevent.xconfigure.x - border_left,
+                                    xevent.xconfigure.y - border_top);
             }
             if (xevent.xconfigure.width != data->last_xconfigure.width ||
                 xevent.xconfigure.height != data->last_xconfigure.height) {
