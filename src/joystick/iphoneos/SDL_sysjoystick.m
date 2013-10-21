@@ -106,7 +106,7 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
         [[SDLUIAccelerationDelegate sharedDelegate] setHasNewData: NO];
 
         SDL_PrivateJoystickAxis(joystick, 0, orientation[0]);
-        SDL_PrivateJoystickAxis(joystick, 1, orientation[1]);
+        SDL_PrivateJoystickAxis(joystick, 1, -orientation[1]);
         SDL_PrivateJoystickAxis(joystick, 2, orientation[2]);
 
     }

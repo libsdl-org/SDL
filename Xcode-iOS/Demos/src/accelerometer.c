@@ -31,19 +31,19 @@ static SDL_Texture *ship = 0;        /* texture for spaceship */
 static SDL_Texture *space = 0;       /* texture for space (background */
 
 void
-render(SDL_Renderer *renderer)
+render(SDL_Renderer *renderer, int w, int h)
 {
 
 
     /* get joystick (accelerometer) axis values and normalize them */
     float ax = SDL_JoystickGetAxis(accelerometer, 0);
-    float ay = -SDL_JoystickGetAxis(accelerometer, 1);
+    float ay = SDL_JoystickGetAxis(accelerometer, 1);
 
     /* ship screen constraints */
     Uint32 minx = 0.0f;
-    Uint32 maxx = SCREEN_WIDTH - shipData.rect.w;
+    Uint32 maxx = w - shipData.rect.w;
     Uint32 miny = 0.0f;
-    Uint32 maxy = SCREEN_HEIGHT - shipData.rect.h;
+    Uint32 maxy = h - shipData.rect.h;
 
 #define SINT16_MAX ((float)(0x7FFF))
 
@@ -162,8 +162,9 @@ main(int argc, char *argv[])
     SDL_Renderer *renderer;
     Uint32 startFrame;          /* time frame began to process */
     Uint32 endFrame;            /* time frame ended processing */
-    Uint32 delay;               /* time to pause waiting to draw next frame */
+    Sint32 delay;               /* time to pause waiting to draw next frame */
     int done;                   /* should we clean up and exit? */
+    int w, h;
 
     /* initialize SDL */
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK) < 0) {
@@ -175,6 +176,8 @@ main(int argc, char *argv[])
                                 SDL_WINDOW_OPENGL |
                                 SDL_WINDOW_BORDERLESS);
     renderer = SDL_CreateRenderer(window, 0, 0);
+    
+    SDL_GetWindowSize(window, &w, &h);
 
     /* print out some info about joysticks and try to open accelerometer for use */
     printf("There are %d joysticks available\n", SDL_NumJoysticks());
@@ -196,8 +199,8 @@ main(int argc, char *argv[])
     initializeTextures(renderer);
 
     /* setup ship */
-    shipData.x = (SCREEN_WIDTH - shipData.rect.w) / 2;
-    shipData.y = (SCREEN_HEIGHT - shipData.rect.h) / 2;
+    shipData.x = (w - shipData.rect.w) / 2;
+    shipData.y = (h - shipData.rect.h) / 2;
     shipData.vx = 0.0f;
     shipData.vy = 0.0f;
 
@@ -211,7 +214,7 @@ main(int argc, char *argv[])
                 done = 1;
             }
         }
-        render(renderer);
+        render(renderer, w, h);
         endFrame = SDL_GetTicks();
 
         /* figure out how much time we have left, and then sleep */
