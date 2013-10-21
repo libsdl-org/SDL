@@ -758,7 +758,7 @@ SDL_GameControllerLoadHints()
 {
     const char *hint = SDL_GetHint(SDL_HINT_GAMECONTROLLERCONFIG);
     if ( hint && hint[0] ) {
-        int nchHints = SDL_strlen( hint );
+        size_t nchHints = SDL_strlen( hint );
         char *pUserMappings = SDL_malloc( nchHints + 1 );
         char *pTempMappings = pUserMappings;
         SDL_memcpy( pUserMappings, hint, nchHints );
