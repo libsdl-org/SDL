@@ -758,10 +758,10 @@ IME_GetCandidateList(HIMC himc, SDL_VideoData *videodata)
                 if (LANG() == LANG_CHS && IME_GetId(videodata, 0)) {
                     const UINT maxcandchar = 18;
                     UINT i = 0;
-                    UINT cchars = 0;
+                    size_t cchars = 0;
 
                     for (; i < videodata->ime_candcount; ++i) {
-                        UINT len = SDL_wcslen((LPWSTR)((DWORD_PTR)cand_list + cand_list->dwOffset[i])) + 1;
+                        size_t len = SDL_wcslen((LPWSTR)((DWORD_PTR)cand_list + cand_list->dwOffset[i])) + 1;
                         if (len + cchars > maxcandchar) {
                             if (i > cand_list->dwSelection)
                                 break;
