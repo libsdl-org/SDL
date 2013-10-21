@@ -1058,8 +1058,8 @@ Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
     }
 
     s_moveHack = 0;
-    [nswindow setFrameOrigin:rect.origin];
     [nswindow setContentSize:rect.size];
+    [nswindow setFrameOrigin:rect.origin];
     s_moveHack = SDL_GetTicks();
 
     /* When the window style changes the title is cleared */
