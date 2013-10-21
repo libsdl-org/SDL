@@ -121,8 +121,12 @@
 #define __SOLARIS__ 1
 #endif
 #if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)
+#undef __WINDOWS__
+#define __WINDOWS__   1
+#endif
+#if defined(__WINDOWS__)
 #undef __WIN32__
-#define __WIN32__   1
+#define __WIN32__ 1
 #endif
 #if defined(__PSP__)
 #undef __PSP__
