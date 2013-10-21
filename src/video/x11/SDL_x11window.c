@@ -66,7 +66,7 @@ X11_XIfEventTimeout(Display *display, XEvent *event_return, Bool (*predicate)(),
     Uint32 start = SDL_GetTicks();
 
     while (!X11_XCheckIfEvent(display, event_return, predicate, arg)) {
-        if ((SDL_GetTicks() - start) >= timeoutMS) {
+        if (SDL_TICKS_PASSED(SDL_GetTicks(), start + timeoutMS)) {
             return False;
         }
     }

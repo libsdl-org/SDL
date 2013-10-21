@@ -156,7 +156,7 @@ SDL_SemWaitTimeout(SDL_sem * sem, Uint32 timeout)
 #else
     end = SDL_GetTicks() + timeout;
     while ((retval = SDL_SemTryWait(sem)) == SDL_MUTEX_TIMEDOUT) {
-        if ((Sint32)(SDL_GetTicks() - end) >= 0) {
+        if (SDL_TICKS_PASSED(SDL_GetTicks(), end)) {
             break;
         }
         SDL_Delay(1);

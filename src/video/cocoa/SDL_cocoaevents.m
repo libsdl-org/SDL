@@ -271,7 +271,7 @@ Cocoa_PumpEvents(_THIS)
         SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
         Uint32 now = SDL_GetTicks();
         if (!data->screensaver_activity ||
-            (int)(now-data->screensaver_activity) >= 30000) {
+            SDL_TICKS_PASSED(now, data->screensaver_activity + 30000)) {
             UpdateSystemActivity(UsrActivity);
             data->screensaver_activity = now;
         }

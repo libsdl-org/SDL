@@ -1567,7 +1567,7 @@ SDL_RunXInputHaptic(void *arg)
         SDL_LockMutex(hwdata->mutex);
         /* If we're currently running and need to stop... */
         if (hwdata->stopTicks) {
-            if ((hwdata->stopTicks != SDL_HAPTIC_INFINITY) && (hwdata->stopTicks < SDL_GetTicks())) {
+            if ((hwdata->stopTicks != SDL_HAPTIC_INFINITY) && SDL_TIMESTAMP_PASSED(SDL_GetTicks(), hwdata->stopTicks)) {
                 XINPUT_VIBRATION vibration = { 0, 0 };
                 hwdata->stopTicks = 0;
                 XINPUTSETSTATE(hwdata->userid, &vibration);

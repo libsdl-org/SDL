@@ -133,9 +133,7 @@ PAUDIO_WaitDevice(_THIS)
         /* Use timer for general audio synchronization */
         Sint32 ticks;
 
-        ticks =
-            ((Sint32) (this->hidden->next_frame - SDL_GetTicks())) -
-            FUDGE_TICKS;
+        ticks = ((Sint32) (this->hidden->next_frame - SDL_GetTicks())) - FUDGE_TICKS;
         if (ticks > 0) {
             SDL_Delay(ticks);
         }
