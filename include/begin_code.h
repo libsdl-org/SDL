@@ -100,31 +100,23 @@
 #endif /* Compiler needs structure packing set */
 
 #ifndef SDL_INLINE
-/* Set up compiler-specific options for inlining functions */
-#if defined(_MSC_VER) || defined(__BORLANDC__) || \
-    defined(__DMC__) || defined(__SC__) || \
-    defined(__WATCOMC__) || defined(__LCC__) || \
-    defined(__DECC)
-#define SDL_INLINE  __inline
+#if defined(__GNUC__)
+#define SDL_INLINE __inline__
+#elif defined(_MSC_VER) || defined(__BORLANDC__) || \
+      defined(__DMC__) || defined(__SC__) || \
+      defined(__WATCOMC__) || defined(__LCC__) || \
+      defined(__DECC)
+#define SDL_INLINE __inline
 #else
 #define SDL_INLINE inline
-#endif /* Visual C++ */
-#endif /* SDL_INLINE not defined */
-
-/* If inlining isn't supported, remove SDL_INLINE, turning static
-   inlined functions into static functions (potentially resulting in
-   code bloat in all files which include the offending header files)
-*/
-#if __STRICT_ANSI__
-#undef SDL_INLINE
-#define SDL_INLINE
 #endif
+#endif /* SDL_INLINE not defined */
 
 #ifndef SDL_FORCE_INLINE
 #if defined(_MSC_VER)
 #define SDL_FORCE_INLINE __forceinline
 #elif ( (defined(__GNUC__) && (__GNUC__ >= 4)) || defined(__clang__) )
-#define SDL_FORCE_INLINE __attribute__((always_inline)) static SDL_INLINE
+#define SDL_FORCE_INLINE __attribute__((always_inline)) static __inline__
 #else
 #define SDL_FORCE_INLINE static SDL_INLINE
 #endif
