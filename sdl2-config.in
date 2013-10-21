@@ -45,7 +45,7 @@ while test $# -gt 0; do
       echo -I@includedir@/SDL2 @SDL_CFLAGS@
       ;;
 @ENABLE_SHARED_TRUE@    --libs)
-@ENABLE_SHARED_TRUE@      echo -L@libdir@ @SDL_RLD_FLAGS@ -lSDL2
+@ENABLE_SHARED_TRUE@      echo -L@libdir@ @SDL_RLD_FLAGS@ @SDL_LIBS@
 @ENABLE_SHARED_TRUE@      ;;
 @ENABLE_STATIC_TRUE@@ENABLE_SHARED_TRUE@    --static-libs)
 @ENABLE_STATIC_TRUE@@ENABLE_SHARED_FALSE@    --libs|--static-libs)
