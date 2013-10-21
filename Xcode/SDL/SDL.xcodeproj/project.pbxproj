@@ -1752,6 +1752,7 @@
 				AA7558101595D4D800BBD41B /* SDL_endian.h in Headers */,
 				AA7558121595D4D800BBD41B /* SDL_error.h in Headers */,
 				AA7558141595D4D800BBD41B /* SDL_events.h in Headers */,
+				567E2F2117C44C35005F1892 /* SDL_filesystem.h in Headers */,
 				A77E6EB4167AB0A90010E40B /* SDL_gamecontroller.h in Headers */,
 				AA7558161595D4D800BBD41B /* SDL_gesture.h in Headers */,
 				AA7558181595D4D800BBD41B /* SDL_haptic.h in Headers */,
@@ -1876,7 +1877,6 @@
 				AA628AD3159367F2005138DD /* SDL_x11xinput2.h in Headers */,
 				AABCC38D164063D200AB8930 /* SDL_cocoamessagebox.h in Headers */,
 				D55A1B81179F262300625D7C /* SDL_cocoamousetap.h in Headers */,
-				567E2F2117C44C35005F1892 /* SDL_filesystem.h in Headers */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
