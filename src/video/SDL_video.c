@@ -2570,7 +2570,10 @@ SDL_GL_SetAttribute(SDL_GLattr attr, int value)
         break;
     case SDL_GL_SHARE_WITH_CURRENT_CONTEXT:
         _this->gl_config.share_with_current_context = value;
-    break;
+        break;
+    case SDL_GL_FRAMEBUFFER_SRGB_CAPABLE:
+        _this->gl_config.framebuffer_srgb_capable = value;
+        break;
     default:
         retval = SDL_SetError("Unknown OpenGL attribute");
         break;
@@ -2739,6 +2742,11 @@ SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
     case SDL_GL_SHARE_WITH_CURRENT_CONTEXT:
         {
             *value = _this->gl_config.share_with_current_context;
+            return 0;
+        }
+    case SDL_GL_FRAMEBUFFER_SRGB_CAPABLE:
+        {
+            *value = _this->gl_config.framebuffer_srgb_capable;
             return 0;
         }
     default:

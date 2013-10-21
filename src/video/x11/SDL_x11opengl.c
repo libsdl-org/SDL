@@ -106,6 +106,13 @@ typedef GLXContext(*PFNGLXCREATECONTEXTATTRIBSARBPROC) (Display * dpy,
 #endif
 #endif
 
+#ifndef GLX_ARB_framebuffer_sRGB
+#define GLX_ARB_framebuffer_sRGB
+#ifndef GLX_FRAMEBUFFER_SRGB_CAPABLE_ARB
+#define GLX_FRAMEBUFFER_SRGB_CAPABLE_ARB                0x20B2
+#endif
+#endif
+
 #ifndef GLX_EXT_swap_control
 #define GLX_SWAP_INTERVAL_EXT              0x20F1
 #define GLX_MAX_SWAP_INTERVAL_EXT          0x20F2
@@ -470,6 +477,13 @@ X11_GL_GetAttributes(_THIS, Display * display, int screen, int * attribs, int si
     if (_this->gl_config.multisamplesamples) {
         attribs[i++] = GLX_SAMPLES_ARB;
         attribs[i++] = _this->gl_config.multisamplesamples;
+    }
+
+    if (_this->gl_config.framebuffer_srgb_capable) {
+        attribs[i++] = GLX_FRAMEBUFFER_SRGB_CAPABLE_ARB;
+        if( for_FBConfig ) {
+            attribs[i++] = True;
+        }
     }
 
     if (_this->gl_config.accelerated >= 0 &&
