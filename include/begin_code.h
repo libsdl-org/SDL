@@ -99,49 +99,36 @@
 #endif
 #endif /* Compiler needs structure packing set */
 
-#ifndef __inline__
+#ifndef SDL_INLINE
 /* Set up compiler-specific options for inlining functions */
-#ifndef SDL_INLINE_OKAY
-/* Add any special compiler-specific cases here */
 #if defined(_MSC_VER) || defined(__BORLANDC__) || \
     defined(__DMC__) || defined(__SC__) || \
     defined(__WATCOMC__) || defined(__LCC__) || \
     defined(__DECC)
-#ifndef __inline__
-#define __inline__  __inline
-#endif
-#define SDL_INLINE_OKAY 1
+#define SDL_INLINE  __inline
 #else
-#if !defined(__MRC__) && !defined(_SGI_SOURCE)
-#ifndef __inline__
-#define __inline__ inline
-#endif
-#define SDL_INLINE_OKAY 1
-#endif /* Not a funky compiler */
+#define SDL_INLINE inline
 #endif /* Visual C++ */
-#endif /* SDL_INLINE_OKAY */
+#endif /* SDL_INLINE not defined */
 
-/* If inlining isn't supported, remove "__inline__", turning static
-   inlined functions into static functions (resulting in code bloat
-   in all files which include the offending header files)
+/* If inlining isn't supported, remove SDL_INLINE, turning static
+   inlined functions into static functions (potentially resulting in
+   code bloat in all files which include the offending header files)
 */
-#if !SDL_INLINE_OKAY || __STRICT_ANSI__
-#ifdef __inline__
-#undef __inline__
+#if __STRICT_ANSI__
+#undef SDL_INLINE
+#define SDL_INLINE
 #endif
-#define __inline__
-#endif
-#endif /* __inline__ not defined */
 
 #ifndef SDL_FORCE_INLINE
 #if defined(_MSC_VER)
 #define SDL_FORCE_INLINE __forceinline
 #elif ( (defined(__GNUC__) && (__GNUC__ >= 4)) || defined(__clang__) )
-#define SDL_FORCE_INLINE __attribute__((always_inline)) static __inline__
+#define SDL_FORCE_INLINE __attribute__((always_inline)) static SDL_INLINE
 #else
-#define SDL_FORCE_INLINE static __inline__
+#define SDL_FORCE_INLINE static SDL_INLINE
 #endif
-#endif
+#endif /* SDL_FORCE_INLINE not defined */
 
 /* Apparently this is needed by several Windows compilers */
 #if !defined(__MACH__)

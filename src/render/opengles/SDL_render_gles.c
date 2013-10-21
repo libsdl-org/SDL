@@ -414,7 +414,7 @@ GLES_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
     }
 }
 
-static __inline__ int
+static SDL_INLINE int
 power_of_2(int input)
 {
     int value = 1;

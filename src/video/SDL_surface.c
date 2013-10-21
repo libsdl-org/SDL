@@ -951,7 +951,7 @@ SDL_ConvertSurfaceFormat(SDL_Surface * surface, Uint32 pixel_format,
 /*
  * Create a surface on the stack for quick blit operations
  */
-static __inline__ SDL_bool
+static SDL_INLINE SDL_bool
 SDL_CreateSurfaceOnStack(int width, int height, Uint32 pixel_format,
                          void * pixels, int pitch, SDL_Surface * surface,
                          SDL_PixelFormat * format, SDL_BlitMap * blitmap)

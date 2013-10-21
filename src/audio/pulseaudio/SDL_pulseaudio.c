@@ -49,7 +49,7 @@
 
 #if (PA_API_VERSION < 12)
 /** Return non-zero if the passed state is one of the connected states */
-static __inline__ int PA_CONTEXT_IS_GOOD(pa_context_state_t x) {
+static SDL_INLINE int PA_CONTEXT_IS_GOOD(pa_context_state_t x) {
     return
         x == PA_CONTEXT_CONNECTING ||
         x == PA_CONTEXT_AUTHORIZING ||
@@ -57,7 +57,7 @@ static __inline__ int PA_CONTEXT_IS_GOOD(pa_context_state_t x) {
         x == PA_CONTEXT_READY;
 }
 /** Return non-zero if the passed state is one of the connected states */
-static __inline__ int PA_STREAM_IS_GOOD(pa_stream_state_t x) {
+static SDL_INLINE int PA_STREAM_IS_GOOD(pa_stream_state_t x) {
     return
         x == PA_STREAM_CREATING ||
         x == PA_STREAM_READY;
@@ -322,7 +322,7 @@ PULSEAUDIO_CloseDevice(_THIS)
 }
 
 
-static __inline__ int
+static SDL_INLINE int
 squashVersion(const int major, const int minor, const int patch)
 {
     return ((major & 0xFF) << 16) | ((minor & 0xFF) << 8) | (patch & 0xFF);

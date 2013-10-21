@@ -68,7 +68,7 @@ illegal_instruction(int sig)
 }
 #endif /* HAVE_SETJMP */
 
-static __inline__ int
+static SDL_INLINE int
 CPU_haveCPUID(void)
 {
     int has_CPUID = 0;
@@ -192,7 +192,7 @@ done:
     a = b = c = d = 0
 #endif
 
-static __inline__ int
+static SDL_INLINE int
 CPU_getCPUIDFeatures(void)
 {
     int features = 0;
@@ -206,7 +206,7 @@ CPU_getCPUIDFeatures(void)
     return features;
 }
 
-static __inline__ int
+static SDL_INLINE int
 CPU_haveRDTSC(void)
 {
     if (CPU_haveCPUID()) {
@@ -215,7 +215,7 @@ CPU_haveRDTSC(void)
     return 0;
 }
 
-static __inline__ int
+static SDL_INLINE int
 CPU_haveAltiVec(void)
 {
     volatile int altivec = 0;
@@ -242,7 +242,7 @@ CPU_haveAltiVec(void)
     return altivec;
 }
 
-static __inline__ int
+static SDL_INLINE int
 CPU_haveMMX(void)
 {
     if (CPU_haveCPUID()) {
@@ -251,7 +251,7 @@ CPU_haveMMX(void)
     return 0;
 }
 
-static __inline__ int
+static SDL_INLINE int
 CPU_have3DNow(void)
 {
     if (CPU_haveCPUID()) {
@@ -266,7 +266,7 @@ CPU_have3DNow(void)
     return 0;
 }
 
-static __inline__ int
+static SDL_INLINE int
 CPU_haveSSE(void)
 {
     if (CPU_haveCPUID()) {
@@ -275,7 +275,7 @@ CPU_haveSSE(void)
     return 0;
 }
 
-static __inline__ int
+static SDL_INLINE int
 CPU_haveSSE2(void)
 {
     if (CPU_haveCPUID()) {
@@ -284,7 +284,7 @@ CPU_haveSSE2(void)
     return 0;
 }
 
-static __inline__ int
+static SDL_INLINE int
 CPU_haveSSE3(void)
 {
     if (CPU_haveCPUID()) {
@@ -299,7 +299,7 @@ CPU_haveSSE3(void)
     return 0;
 }
 
-static __inline__ int
+static SDL_INLINE int
 CPU_haveSSE41(void)
 {
     if (CPU_haveCPUID()) {
@@ -314,7 +314,7 @@ CPU_haveSSE41(void)
     return 0;
 }
 
-static __inline__ int
+static SDL_INLINE int
 CPU_haveSSE42(void)
 {
     if (CPU_haveCPUID()) {

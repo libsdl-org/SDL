@@ -83,7 +83,7 @@ static struct
 } SDL_EventQ = { NULL, SDL_TRUE };
 
 
-static __inline__ SDL_bool
+static SDL_INLINE SDL_bool
 SDL_ShouldPollJoystick()
 {
 #if !SDL_JOYSTICK_DISABLED
