@@ -7,9 +7,6 @@
 
 #ifdef __WIN32__
 
-sdfsdfdsf
-
-
 /* Include this so we define UNICODE properly */
 #include "../../core/windows/SDL_windows.h"
 
