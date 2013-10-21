@@ -91,17 +91,23 @@ SDL_EGL_GetProcAddress(_THIS, const char *proc)
 void
 SDL_EGL_UnloadLibrary(_THIS)
 {
-    if ((_this->egl_data) && (_this->gl_config.driver_loaded)) {
-        _this->egl_data->eglTerminate(_this->egl_data->egl_display);
-        
-        dlclose(_this->gl_config.dll_handle);
-        dlclose(_this->egl_data->egl_dll_handle);
+    if (_this->egl_data) {
+        if (_this->egl_data->egl_display) {
+            _this->egl_data->eglTerminate(_this->egl_data->egl_display);
+            _this->egl_data->egl_display = NULL;
+        }
+
+        if (_this->gl_config.dll_handle) {
+            dlclose(_this->gl_config.dll_handle);
+            _this->gl_config.dll_handle = NULL;
+        }
+        if (_this->egl_data->egl_dll_handle) {
+            dlclose(_this->egl_data->egl_dll_handle);
+            _this->egl_data->egl_dll_handle = NULL;
+        }
         
         SDL_free(_this->egl_data);
         _this->egl_data = NULL;
-        
-        _this->gl_config.dll_handle = NULL;
-        _this->gl_config.driver_loaded = 0;
     }
 }
 
@@ -115,16 +121,18 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
     if (_this->egl_data) {
         return SDL_SetError("OpenGL ES context already created");
     }
-    
-    /* Unload the old driver and reset the pointers */
-    SDL_EGL_UnloadLibrary(_this);
-    
-    #ifdef RTLD_GLOBAL
+
+    _this->egl_data = (struct SDL_EGL_VideoData *) SDL_calloc(1, sizeof(SDL_EGL_VideoData));
+    if (!_this->egl_data) {
+        return SDL_OutOfMemory();
+    }
+
+#ifdef RTLD_GLOBAL
     dlopen_flags = RTLD_LAZY | RTLD_GLOBAL;
-    #else
+#else
     dlopen_flags = RTLD_LAZY;
-    #endif
-    
+#endif
+
     /* A funny thing, loading EGL.so first does not work on the Raspberry, so we load libGL* first */
     path = getenv("SDL_VIDEO_GL_DRIVER");
     egl_dll_handle = dlopen(path, dlopen_flags);
@@ -141,6 +149,7 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
             }
         }
     }
+    _this->egl_data->egl_dll_handle = egl_dll_handle;
 
     if (egl_dll_handle == NULL) {
         return SDL_SetError("Could not initialize OpenGL ES library: %s", dlerror());
@@ -157,16 +166,12 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
         }
         dll_handle = dlopen(path, dlopen_flags);
     }
-    
+    _this->gl_config.dll_handle = dll_handle;
+
     if (dll_handle == NULL) {
         return SDL_SetError("Could not load EGL library: %s", dlerror());
     }
 
-    _this->egl_data = (struct SDL_EGL_VideoData *) SDL_calloc(1, sizeof(SDL_EGL_VideoData));
-    if (!_this->egl_data) {
-        return SDL_OutOfMemory();
-    }
-    
     /* Load new function pointers */
     LOAD_FUNC(eglGetDisplay);
     LOAD_FUNC(eglInitialize);
@@ -185,7 +190,6 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
     LOAD_FUNC(eglWaitGL);
     
     _this->egl_data->egl_display = _this->egl_data->eglGetDisplay(native_display);
-    
     if (!_this->egl_data->egl_display) {
         return SDL_SetError("Could not get EGL display");
     }
