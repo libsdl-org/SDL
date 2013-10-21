@@ -35,5 +35,6 @@
 - (void)viewDidLayoutSubviews;
 - (NSUInteger)supportedInterfaceOrientations;
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)orient;
+- (BOOL)prefersStatusBarHidden;
 
 @end
