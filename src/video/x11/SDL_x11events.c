@@ -909,7 +909,7 @@ X11_HandleFocusChanges(_THIS)
             SDL_WindowData *data = videodata->windowlist[i];
             if (data && data->pending_focus != PENDING_FOCUS_NONE) {
                 Uint32 now = SDL_GetTicks();
-                if ( (int)(data->pending_focus_time-now) <= 0 ) {
+                if (SDL_TICKS_PASSED(now, data->pending_focus_time)) {
                     if ( data->pending_focus == PENDING_FOCUS_IN ) {
                         X11_DispatchFocusIn(data);
                     } else {
@@ -963,7 +963,7 @@ X11_PumpEvents(_THIS)
     if (_this->suspend_screensaver) {
         Uint32 now = SDL_GetTicks();
         if (!data->screensaver_activity ||
-            (int) (now - data->screensaver_activity) >= 30000) {
+            SDL_TICKS_PASSED(now, data->screensaver_activity + 30000)) {
             X11_XResetScreenSaver(data->display);
 
             #if SDL_USE_LIBDBUS

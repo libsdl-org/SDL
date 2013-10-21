@@ -443,7 +443,7 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
                 /* Polling and no events, just return */
                 return 0;
             }
-            if (timeout > 0 && ((int) (SDL_GetTicks() - expiration) >= 0)) {
+            if (timeout > 0 && SDL_TICKS_PASSED(SDL_GetTicks(), expiration)) {
                 /* Timeout expired and no events */
                 return 0;
             }

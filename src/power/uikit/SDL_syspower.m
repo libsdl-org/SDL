@@ -38,11 +38,7 @@ void
 SDL_UIKit_UpdateBatteryMonitoring(void)
 {
     if (SDL_UIKitLastPowerInfoQuery) {
-        const Uint32 prev = SDL_UIKitLastPowerInfoQuery;
-        const UInt32 now = SDL_GetTicks();
-        const UInt32 ticks = now - prev;
-        /* if timer wrapped (now < prev), shut down, too. */
-        if ((now < prev) || (ticks >= BATTERY_MONITORING_TIMEOUT)) {
+        if (SDL_TICKS_PASSED(SDL_GetTicks(), SDL_UIKitLastPowerInfoQuery + BATTERY_MONITORING_TIMEOUT)) {
             UIDevice *uidev = [UIDevice currentDevice];
             SDL_assert([uidev isBatteryMonitoringEnabled] == YES);
             [uidev setBatteryMonitoringEnabled:NO];
