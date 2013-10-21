@@ -1,3 +1,5 @@
 
 This is a list of API changes in SDL's version history.
 
+2.0.1
+* 
