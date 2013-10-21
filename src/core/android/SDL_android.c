@@ -1200,9 +1200,9 @@ int Android_JNI_GetTouchDeviceIds(int **ids) {
             jint* elements = (*env)->GetIntArrayElements(env, array, NULL);
             if (elements) {
                 int i;
-                *ids = SDL_malloc(number * sizeof (*ids[0]));
+                *ids = SDL_malloc(number * sizeof (**ids));
                 for (i = 0; i < number; ++i) { /* not assuming sizeof (jint) == sizeof (int) */
-                    *ids[i] = elements[i];
+                    (*ids)[i] = elements[i];
                 }
                 (*env)->ReleaseIntArrayElements(env, array, elements, JNI_ABORT);
             }
