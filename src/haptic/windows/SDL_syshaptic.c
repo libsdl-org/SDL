@@ -1326,8 +1326,13 @@ SDL_SYS_HapticRunEffect(SDL_Haptic * haptic, struct haptic_effect *effect,
         SDL_LockMutex(haptic->hwdata->mutex);
         if(effect->effect.leftright.length == SDL_HAPTIC_INFINITY || iterations == SDL_HAPTIC_INFINITY) {
             haptic->hwdata->stopTicks = SDL_HAPTIC_INFINITY;
+        } else if ((!effect->effect.leftright.length) || (!iterations)) {
+            /* do nothing. Effect runs for zero milliseconds. */
         } else {
             haptic->hwdata->stopTicks = SDL_GetTicks() + (effect->effect.leftright.length * iterations);
+            if ((haptic->hwdata->stopTicks == SDL_HAPTIC_INFINITY) || (haptic->hwdata->stopTicks == 0)) {
+                haptic->hwdata->stopTicks = 1;  /* fix edge cases. */
+            }
         }
         SDL_UnlockMutex(haptic->hwdata->mutex);
         return (XINPUTSETSTATE(haptic->hwdata->userid, vib) == ERROR_SUCCESS) ? 0 : -1;
