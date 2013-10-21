@@ -392,7 +392,7 @@
 		566CDE8F148F0AC200C5A9BB /* SDL_dropevents_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 566CDE8D148F0AC200C5A9BB /* SDL_dropevents_c.h */; };
 		566CDE90148F0AC200C5A9BB /* SDL_dropevents.c in Sources */ = {isa = PBXBuildFile; fileRef = 566CDE8E148F0AC200C5A9BB /* SDL_dropevents.c */; };
 		567E2F1C17C44BB2005F1892 /* SDL_sysfilesystem.m in Sources */ = {isa = PBXBuildFile; fileRef = 567E2F1B17C44BB2005F1892 /* SDL_sysfilesystem.m */; };
-		567E2F2117C44C35005F1892 /* SDL_filesystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 567E2F2017C44C35005F1892 /* SDL_filesystem.h */; };
+		567E2F2117C44C35005F1892 /* SDL_filesystem.h in Headers */ = {isa = PBXBuildFile; fileRef = 567E2F2017C44C35005F1892 /* SDL_filesystem.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A77E6EB4167AB0A90010E40B /* SDL_gamecontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = A77E6EB3167AB0A90010E40B /* SDL_gamecontroller.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		A77E6EB5167AB0A90010E40B /* SDL_gamecontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = A77E6EB3167AB0A90010E40B /* SDL_gamecontroller.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		AA0AD09D16648D1700CE5896 /* SDL_gamecontroller.c in Sources */ = {isa = PBXBuildFile; fileRef = BBFC088A164C6514003E6A99 /* SDL_gamecontroller.c */; };
