@@ -84,7 +84,8 @@ to a situation where the program can segfault.
 /* !
 \brief Returns colorkey info for a surface
 */
-Uint32 _colorkey(SDL_Surface *src)
+static Uint32
+_colorkey(SDL_Surface *src)
 {
     Uint32 key = 0;
     SDL_GetColorKey(src, &key);
@@ -104,9 +105,10 @@ Uint32 _colorkey(SDL_Surface *src)
 \param sangle The cosine of the angle
 
 */
-void _rotozoomSurfaceSizeTrig(int width, int height, double angle,
-                              int *dstwidth, int *dstheight,
-                              double *cangle, double *sangle)
+void
+SDLgfx_rotozoomSurfaceSizeTrig(int width, int height, double angle,
+                               int *dstwidth, int *dstheight,
+                               double *cangle, double *sangle)
 {
     double x, y, cx, cy, sx, sy;
     double radangle;
@@ -153,7 +155,8 @@ Assumes dst surface was allocated with the correct dimensions.
 \param flipy Flag indicating vertical mirroring should be applied.
 \param smooth Flag indicating anti-aliasing should be used.
 */
-void _transformSurfaceRGBA(SDL_Surface * src, SDL_Surface * dst, int cx, int cy, int isin, int icos, int flipx, int flipy, int smooth)
+static void
+_transformSurfaceRGBA(SDL_Surface * src, SDL_Surface * dst, int cx, int cy, int isin, int icos, int flipx, int flipy, int smooth)
 {
     int x, y, t1, t2, dx, dy, xd, yd, sdx, sdy, ax, ay, ex, ey, sw, sh;
     tColorRGBA c00, c01, c10, c11, cswap;
@@ -270,7 +273,8 @@ Assumes dst surface was allocated with the correct dimensions.
 \param flipx Flag indicating horizontal mirroring should be applied.
 \param flipy Flag indicating vertical mirroring should be applied.
 */
-void transformSurfaceY(SDL_Surface * src, SDL_Surface * dst, int cx, int cy, int isin, int icos, int flipx, int flipy)
+static void
+transformSurfaceY(SDL_Surface * src, SDL_Surface * dst, int cx, int cy, int isin, int icos, int flipx, int flipy)
 {
     int x, y, dx, dy, xd, yd, sdx, sdy, ax, ay;
     tColorY *pc, *sp;
@@ -315,8 +319,6 @@ void transformSurfaceY(SDL_Surface * src, SDL_Surface * dst, int cx, int cy, int
 }
 
 
-
-
 /* !
 \brief Rotates and zooms a surface with different horizontal and vertival scaling factors and optional anti-aliasing.
 
@@ -340,7 +342,8 @@ or 32bit RGBA/ABGR it will be converted into a 32bit RGBA format on the fly.
 
 */
 
-SDL_Surface *_rotateSurface(SDL_Surface * src, double angle, int centerx, int centery, int smooth, int flipx, int flipy, int dstwidth, int dstheight, double cangle, double sangle)
+SDL_Surface *
+SDLgfx_rotateSurface(SDL_Surface * src, double angle, int centerx, int centery, int smooth, int flipx, int flipy, int dstwidth, int dstheight, double cangle, double sangle)
 {
     SDL_Surface *rz_src;
     SDL_Surface *rz_dst;
@@ -496,4 +499,3 @@ SDL_Surface *_rotateSurface(SDL_Surface * src, double angle, int centerx, int ce
     */
     return (rz_dst);
 }
-
