@@ -99,11 +99,13 @@ static int SetupWindowData(_THIS, SDL_Window *window, UIWindow *uiwindow, SDL_bo
     if (displaydata->uiscreen == [UIScreen mainScreen]) {
         window->flags |= SDL_WINDOW_INPUT_FOCUS;  /* always has input focus */
 
+        /* This was setup earlier for our window, and in iOS 7 is controlled by the view, not the application
         if ([UIApplication sharedApplication].statusBarHidden) {
             window->flags |= SDL_WINDOW_BORDERLESS;
         } else {
             window->flags &= ~SDL_WINDOW_BORDERLESS;
         }
+        */
     } else {
         window->flags &= ~SDL_WINDOW_RESIZABLE;  /* window is NEVER resizeable */
         window->flags &= ~SDL_WINDOW_INPUT_FOCUS;  /* never has input focus */
