@@ -46,7 +46,7 @@
 #define _PATH_DEV_AUDIO "/dev/audio"
 #endif
 
-static inline void
+static SDL_INLINE void
 test_device(const char *fname, int flags, int (*test) (int fd),
             SDL_AddAudioDevice addfn)
 {

@@ -2382,7 +2382,7 @@ SDL_GL_UnloadLibrary(void)
     }
 }
 
-static __inline__ SDL_bool
+static SDL_INLINE SDL_bool
 isAtLeastGL3(const char *verstr)
 {
     return ( verstr && (SDL_atoi(verstr) >= 3) );

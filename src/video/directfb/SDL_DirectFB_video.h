@@ -88,7 +88,7 @@
 
 #define SDL_DFB_DEBUG(x...) SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, x)
 
-static inline DFBResult sdl_dfb_check(DFBResult ret, const char *src_file, int src_line) {
+static SDL_INLINE DFBResult sdl_dfb_check(DFBResult ret, const char *src_file, int src_line) {
     if (ret != DFB_OK) {
         SDL_DFB_LOG("%s (%d):%s", src_file, src_line, DirectFBErrorString (ret) );
         SDL_SetError("%s:%s", SDL_DFB_CONTEXT, DirectFBErrorString (ret) );

@@ -167,7 +167,7 @@ typedef struct
 #endif
 } DirectFB_TextureData;
 
-static __inline__ void
+static SDL_INLINE void
 SDLtoDFBRect(const SDL_Rect * sr, DFBRectangle * dr)
 {
     dr->x = sr->x;
@@ -175,7 +175,7 @@ SDLtoDFBRect(const SDL_Rect * sr, DFBRectangle * dr)
     dr->h = sr->h;
     dr->w = sr->w;
 }
-static __inline__ void
+static SDL_INLINE void
 SDLtoDFBRect_Float(const SDL_FRect * sr, DFBRectangle * dr)
 {
     dr->x = sr->x;
@@ -211,7 +211,7 @@ TextureHasAlpha(DirectFB_TextureData * data)
 #endif
 }
 
-static inline IDirectFBSurface *get_dfb_surface(SDL_Window *window)
+static SDL_INLINE IDirectFBSurface *get_dfb_surface(SDL_Window *window)
 {
     SDL_SysWMinfo wm_info;
     SDL_memset(&wm_info, 0, sizeof(SDL_SysWMinfo));
@@ -222,7 +222,7 @@ static inline IDirectFBSurface *get_dfb_surface(SDL_Window *window)
     return wm_info.info.dfb.surface;
 }
 
-static inline IDirectFBWindow *get_dfb_window(SDL_Window *window)
+static SDL_INLINE IDirectFBWindow *get_dfb_window(SDL_Window *window)
 {
     SDL_SysWMinfo wm_info;
     SDL_memset(&wm_info, 0, sizeof(SDL_SysWMinfo));

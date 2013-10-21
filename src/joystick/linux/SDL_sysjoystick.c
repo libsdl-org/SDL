@@ -617,7 +617,7 @@ SDL_bool SDL_SYS_JoystickAttached(SDL_Joystick *joystick)
     return !joystick->closed && (joystick->hwdata->item != NULL);
 }
 
-static __inline__ void
+static SDL_INLINE void
 HandleHat(SDL_Joystick * stick, Uint8 hat, int axis, int value)
 {
     struct hwdata_hat *the_hat;
@@ -643,14 +643,14 @@ HandleHat(SDL_Joystick * stick, Uint8 hat, int axis, int value)
     }
 }
 
-static __inline__ void
+static SDL_INLINE void
 HandleBall(SDL_Joystick * stick, Uint8 ball, int axis, int value)
 {
     stick->hwdata->balls[ball].axis[axis] += value;
 }
 
 
-static __inline__ int
+static SDL_INLINE int
 AxisCorrect(SDL_Joystick * joystick, int which, int value)
 {
     struct axis_correct *correct;
@@ -679,7 +679,7 @@ AxisCorrect(SDL_Joystick * joystick, int which, int value)
     return value;
 }
 
-static __inline__ void
+static SDL_INLINE void
 PollAllValues(SDL_Joystick * joystick)
 {
     struct input_absinfo absinfo;
@@ -717,7 +717,7 @@ PollAllValues(SDL_Joystick * joystick)
     }
 }
 
-static __inline__ void
+static SDL_INLINE void
 HandleInputEvents(SDL_Joystick * joystick)
 {
     struct input_event events[32];

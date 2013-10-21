@@ -83,7 +83,7 @@ uint32_t qsa_playback_devices;
 QSA_Device qsa_capture_device[QSA_MAX_DEVICES];
 uint32_t qsa_capture_devices;
 
-static inline int
+static SDL_INLINE int
 QSA_SetError(const char *fn, int status)
 {
     return SDL_SetError("QSA: %s() failed: %s", fn, snd_strerror(status));

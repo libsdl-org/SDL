@@ -112,7 +112,7 @@ typedef struct SDL_MessageBoxDataX11
 } SDL_MessageBoxDataX11;
 
 /* Maximum helper for ints. */
-static __inline__ int
+static SDL_INLINE int
 IntMax( int a, int b )
 {
     return ( a > b  ) ? a : b;
