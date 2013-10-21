@@ -1154,11 +1154,13 @@ SDLTest_ScreenShot(SDL_Renderer *renderer)
     if (SDL_RenderReadPixels(renderer, NULL, surface->format->format,
                              surface->pixels, surface->pitch) < 0) {
         fprintf(stderr, "Couldn't read screen: %s\n", SDL_GetError());
+        SDL_free(surface);
         return;
     }
 
     if (SDL_SaveBMP(surface, "screenshot.bmp") < 0) {
         fprintf(stderr, "Couldn't save screenshot.bmp: %s\n", SDL_GetError());
+        SDL_free(surface);
         return;
     }
 }
