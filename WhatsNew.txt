@@ -1,3 +1,57 @@
 
-This is a list of API changes in SDL's version history.
+This is a list of major changes in SDL's version history.
 
+---------------------------------------------------------------------------
+2.0.1:
+---------------------------------------------------------------------------
+
+General:
+* Added an API to get common filesystem paths in SDL_filesystem.h:
+    SDL_GetBasePath(), SDL_GetPrefPath()
+* Added an API to do optimized YV12 and IYUV texture updates:
+    SDL_UpdateYUVTexture()
+* Added an API to get the amount of RAM on the system:
+    SDL_GetSystemRAM()
+* Added a macro to perform timestamp comparisons with SDL_GetTicks():
+    SDL_TICKS_PASSED()
+* Dramatically improved OpenGL ES 2.0 rendering performance
+* Added OpenGL attribute SDL_GL_FRAMEBUFFER_SRGB_CAPABLE
+
+Windows:
+* Created a static library configuration for the Visual Studio 2010 project
+* Added a hint to create the Direct3D device with support for multi-threading:
+    SDL_HINT_RENDER_DIRECT3D_THREADSAFE
+* Added a function to get the D3D9 adapter index for a display:
+    SDL_Direct3D9GetAdapterIndex()
+* Added a function to get the D3D9 device for a D3D9 renderer:
+    SDL_RenderGetD3D9Device()
+* Fixed building SDL with the mingw32 toolchain (mingw-w64 is preferred)
+* Fixed crash when using two XInput controllers at the same time
+* Fixed detecting a mixture of XInput and DirectInput controllers
+* Fixed clearing a D3D render target larger than the window
+* Improved support for format specifiers in SDL_snprintf()
+
+Mac OS X:
+* Added support for retina displays:
+  Create your window with the SDL_WINDOW_ALLOW_HIGHDPI flag, and then use SDL_GL_GetDrawableSize() to find the actual drawable size. You are responsible for scaling mouse and drawing coordinates appropriately.
+* Fixed mouse warping in fullscreen mode
+* Right mouse click is emulated by holding the Ctrl key while left clicking
+
+Linux:
+* Fixed float audio support with the PulseAudio driver
+* Fixed missing line endpoints in the OpenGL renderer on some drivers
+* X11 symbols are no longer defined to avoid collisions when linking statically
+
+iOS:
+* Fixed status bar visibility on iOS 7
+* Flipped the accelerometer Y axis to match expected values
+
+Android:
+IMPORTANT: You MUST get the updated SDLActivity.java to match C code
+* Moved EGL initialization to native code 
+* Fixed the accelerometer axis rotation relative to the device rotation
+* Fixed race conditions when handling the EGL context on pause/resume
+* Touch devices are available for enumeration immediately after init
+
+Raspberry Pi:
+* Added support for the Raspberry Pi, see README-raspberrypi.txt for details
