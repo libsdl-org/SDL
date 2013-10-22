@@ -297,7 +297,7 @@ pixels_getPixelFormatName(void *arg)
     }
     error = SDL_GetError();
     SDLTest_AssertPass("Call to SDL_GetError()");
-    SDLTest_AssertCheck(error != NULL && error[0] != '\0', "Validate that error message is empty");
+    SDLTest_AssertCheck(error == NULL || error[0] == '\0', "Validate that error message is empty");
   }
 
   return TEST_COMPLETED;
