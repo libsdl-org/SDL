@@ -525,19 +525,22 @@ X11_DispatchEvent(_THIS)
             long border_bottom = 0;
             if (data->xwindow) {
                 Atom _net_frame_extents = X11_XInternAtom(display, "_NET_FRAME_EXTENTS", 0);
-                Atom type;
+                Atom type = None;
                 int format;
-                unsigned long nitems, bytes_after;
+                unsigned long nitems = 0, bytes_after;
                 unsigned char *property;
                 X11_XGetWindowProperty(display, data->xwindow,
                     _net_frame_extents, 0, 16, 0,
                     XA_CARDINAL, &type, &format,
                     &nitems, &bytes_after, &property);
 
-                border_left = ((long*)property)[0];
-                border_right = ((long*)property)[1];
-                border_top = ((long*)property)[2];
-                border_bottom = ((long*)property)[3];
+                if (type != None && nitems == 4)
+                {
+                    border_left = ((long*)property)[0];
+                    border_right = ((long*)property)[1];
+                    border_top = ((long*)property)[2];
+                    border_bottom = ((long*)property)[3];
+                }
             }
 
             if (xevent.xconfigure.x != data->last_xconfigure.x ||
