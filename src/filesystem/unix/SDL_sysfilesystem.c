@@ -178,14 +178,14 @@ SDL_GetPrefPath(const char *org, const char *app)
     if (envr[len - 1] == '/')
         append += 1;
 
-    len += SDL_strlen(append) + SDL_strlen(app) + 2;
+    len += SDL_strlen(append) + SDL_strlen(org) + SDL_strlen(app) + 3;
     retval = (char *) SDL_malloc(len);
     if (!retval) {
         SDL_OutOfMemory();
         return NULL;
     }
 
-    SDL_snprintf(retval, len, "%s%s%s/", envr, append, app);
+    SDL_snprintf(retval, len, "%s%s%s/%s/", envr, append, org, app);
 
     for (ptr = retval+1; *ptr; ptr++) {
         if (*ptr == '/') {

@@ -76,12 +76,12 @@ SDL_GetPrefPath(const char *org, const char *app)
     // !!! FIXME: is there a better way to do this?
     const char *home = SDL_getenv("HOME");
     const char *append = "config/settings/";
-    const size_t len = SDL_strlen(home) + SDL_strlen(append) + SDL_strlen(app) + 2;
+    const size_t len = SDL_strlen(home) + SDL_strlen(append) + SDL_strlen(org) + SDL_strlen(app) + 3;
     char *retval = (char *) SDL_malloc(len);
     if (!retval) {
         SDL_OutOfMemory();
     } else {
-        SDL_snprintf(retval, len, "%s%s%s/", home, append, app);
+        SDL_snprintf(retval, len, "%s%s%s/%s/", home, append, org, app);
         create_directory(retval, 0700);  // BeOS api: creates missing dirs
     }
 
