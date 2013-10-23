@@ -642,6 +642,7 @@ SDL_GetSystemRAM(void)
 #ifdef __WIN32__
         if (SDL_SystemRAM <= 0) {
             MEMORYSTATUSEX stat;
+            stat.dwLength = sizeof(stat);
             if (GlobalMemoryStatusEx(&stat)) {
                 SDL_SystemRAM = (int)(stat.ullTotalPhys / (1024 * 1024));
             }
