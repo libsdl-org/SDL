@@ -1190,7 +1190,6 @@ SDL_SYS_HapticEffectType(SDL_HapticEffect * effect)
         return &GUID_CustomForce;
 
     default:
-        SDL_SetError("Haptic: Unknown effect type.");
         return NULL;
     }
 }
@@ -1207,6 +1206,7 @@ SDL_SYS_HapticNewEffect(SDL_Haptic * haptic, struct haptic_effect *effect,
     REFGUID type = SDL_SYS_HapticEffectType(base);
 
     if ((type == NULL) && (!haptic->hwdata->bXInputHaptic)) {
+        SDL_SetError("Haptic: Unknown effect type.");
         goto err_hweffect;
     }
 
