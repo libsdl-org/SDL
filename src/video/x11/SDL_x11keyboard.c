@@ -135,7 +135,7 @@ static const struct {
 
 static const struct
 {
-    const SDL_Scancode const *table;
+    SDL_Scancode const *table;
     int table_size;
 } scancode_set[] = {
     { darwin_scancode_table, SDL_arraysize(darwin_scancode_table) },
