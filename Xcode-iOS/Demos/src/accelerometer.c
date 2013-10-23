@@ -174,7 +174,7 @@ main(int argc, char *argv[])
     /* create main window and renderer */
     window = SDL_CreateWindow(NULL, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT,
                                 SDL_WINDOW_OPENGL |
-                                SDL_WINDOW_BORDERLESS);
+                                SDL_WINDOW_FULLSCREEN);
     renderer = SDL_CreateRenderer(window, 0, 0);
     
     SDL_GetWindowSize(window, &w, &h);
