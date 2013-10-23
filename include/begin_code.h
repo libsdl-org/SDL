@@ -107,8 +107,14 @@
       defined(__WATCOMC__) || defined(__LCC__) || \
       defined(__DECC)
 #define SDL_INLINE __inline
+#ifndef __inline__
+#define __inline__ __inline
+#endif
 #else
 #define SDL_INLINE inline
+#ifndef __inline__
+#define __inline__ inline
+#endif
 #endif
 #endif /* SDL_INLINE not defined */
 
