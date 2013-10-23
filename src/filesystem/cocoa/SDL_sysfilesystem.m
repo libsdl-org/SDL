@@ -73,19 +73,17 @@ SDL_GetPrefPath(const char *org, const char *app)
     NSArray *array = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
     char *retval = NULL;
 
-    (void) org;  /* unused on Mac OS X and iOS. */
-
     if ([array count] > 0) {  /* we only want the first item in the list. */
         NSString *str = [array objectAtIndex:0];
         const char *base = [str fileSystemRepresentation];
         if (base) {
-            const size_t len = SDL_strlen(base) + SDL_strlen(app) + 3;
+            const size_t len = SDL_strlen(base) + SDL_strlen(app) + 4;
             retval = (char *) SDL_malloc(len);
             if (retval == NULL) {
                 SDL_OutOfMemory();
             } else {
                 char *ptr;
-                SDL_snprintf(retval, len, "%s/%s/", base, app);
+                SDL_snprintf(retval, len, "%s/%s/%s/", base, org, app);
                 for (ptr = retval+1; *ptr; ptr++) {
                     if (*ptr == '/') {
                         *ptr = '\0';
