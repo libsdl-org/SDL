@@ -118,6 +118,20 @@ extern "C" {
 #define SDL_HINT_RENDER_VSYNC               "SDL_RENDER_VSYNC"
 
 /**
+ *  \brief  A variable controlling whether to enable Direct3D 11+'s Debug Layer.
+ *
+ *  This variable does not have any effect on the Direct3D 9 based renderer,
+ *  which is used in Win32-based (aka Windows Desktop) apps.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Disable Debug Layer use
+ *    "1"       - Enable Debug Lyaer use
+ *
+ *  By default, SDL does not use Direct3D Debug Layer.
+ */
+#define SDL_HINT_RENDER_DIRECT3D11_DEBUG    "SDL_HINT_RENDER_DIRECT3D11_DEBUG"
+
+/**
  *  \brief  A variable controlling whether the X11 VidMode extension should be used.
  *
  *  This variable can be set to the following values:
