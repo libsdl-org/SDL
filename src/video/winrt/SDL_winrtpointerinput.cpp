@@ -209,20 +209,20 @@ void WINRT_ProcessPointerPressedEvent(SDL_Window *window, Windows::UI::Input::Po
     }
 
     Windows::Foundation::Point transformedPoint = WINRT_TransformCursorPosition(window, pointerPoint->Position);
+    Uint8 button = WINRT_GetSDLButtonForPointerPoint(pointerPoint);
 
-    if (!WINRT_LeftFingerDown) {
-        Uint8 button = WINRT_GetSDLButtonForPointerPoint(pointerPoint);
-        if (button) {
-#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
-            SDL_SendMouseMotion(window, 0, 0, (int)transformedPoint.X, (int)transformedPoint.Y);
-#endif
-            SDL_SendMouseButton(window, 0, SDL_PRESSED, button);
+    if (!WINRT_IsTouchEvent(pointerPoint)) {
+        SDL_SendMouseButton(window, 0, SDL_PRESSED, button);
+    } else {
+        if (!WINRT_LeftFingerDown) {
+            if (button) {
+                SDL_SendMouseMotion(window, 0, 0, (int)transformedPoint.X, (int)transformedPoint.Y);
+                SDL_SendMouseButton(window, 0, SDL_PRESSED, button);
+            }
+
+            WINRT_LeftFingerDown = pointerPoint->PointerId;
         }
 
-        WINRT_LeftFingerDown = pointerPoint->PointerId;
-    }
-
-    if (WINRT_IsTouchEvent(pointerPoint)) {
         SDL_SendTouch(
             WINRT_TouchID,
             (SDL_FingerID) pointerPoint->PointerId,
@@ -242,11 +242,13 @@ WINRT_ProcessPointerMovedEvent(SDL_Window *window, Windows::UI::Input::PointerPo
 
     Windows::Foundation::Point transformedPoint = WINRT_TransformCursorPosition(window, pointerPoint->Position);
 
-    if (pointerPoint->PointerId == WINRT_LeftFingerDown) {
+    if (!WINRT_IsTouchEvent(pointerPoint)) {
         SDL_SendMouseMotion(window, 0, 0, (int)transformedPoint.X, (int)transformedPoint.Y);
-    }
+    } else if (pointerPoint->PointerId == WINRT_LeftFingerDown) {
+        if (pointerPoint->PointerId == WINRT_LeftFingerDown) {
+            SDL_SendMouseMotion(window, 0, 0, (int)transformedPoint.X, (int)transformedPoint.Y);
+        }
 
-    if (WINRT_IsTouchEvent(pointerPoint)) {
         SDL_SendTouchMotion(
             WINRT_TouchID,
             (SDL_FingerID) pointerPoint->PointerId,
@@ -263,16 +265,18 @@ void WINRT_ProcessPointerReleasedEvent(SDL_Window *window, Windows::UI::Input::P
     }
 
     Windows::Foundation::Point transformedPoint = WINRT_TransformCursorPosition(window, pointerPoint->Position);
+    Uint8 button = WINRT_GetSDLButtonForPointerPoint(pointerPoint);
 
-    if (WINRT_LeftFingerDown == pointerPoint->PointerId) {
-        Uint8 button = WINRT_GetSDLButtonForPointerPoint(pointerPoint);
-        if (button) {
-            SDL_SendMouseButton(window, 0, SDL_RELEASED, button);
+    if (!WINRT_IsTouchEvent(pointerPoint)) {
+        SDL_SendMouseButton(window, 0, SDL_RELEASED, button);
+    } else {
+        if (WINRT_LeftFingerDown == pointerPoint->PointerId) {
+            if (button) {
+                SDL_SendMouseButton(window, 0, SDL_RELEASED, button);
+            }
+            WINRT_LeftFingerDown = 0;
         }
-        WINRT_LeftFingerDown = 0;
-    }
-
-    if (WINRT_IsTouchEvent(pointerPoint)) {
+    
         SDL_SendTouch(
             WINRT_TouchID,
             (SDL_FingerID) pointerPoint->PointerId,
