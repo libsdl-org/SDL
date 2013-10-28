@@ -39,7 +39,7 @@
 
 #include "SDL_test.h"
 
-/*!
+/* !
  * Converts unix timestamp to its ascii representation in localtime
  *
  * Note: Uses a static buffer internally, so the return value

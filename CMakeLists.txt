@@ -29,9 +29,9 @@ include(${SDL2_SOURCE_DIR}/cmake/sdlchecks.cmake)
 # set SDL_BINARY_AGE and SDL_INTERFACE_AGE to 0.
 set(SDL_MAJOR_VERSION 2)
 set(SDL_MINOR_VERSION 0)
-set(SDL_MICRO_VERSION 0)
+set(SDL_MICRO_VERSION 1)
 set(SDL_INTERFACE_AGE 0)
-set(SDL_BINARY_AGE 0)
+set(SDL_BINARY_AGE 1)
 set(SDL_VERSION "${SDL_MAJOR_VERSION}.${SDL_MINOR_VERSION}.${SDL_MICRO_VERSION}")
 
 # Calculate a libtool-like version number
@@ -172,7 +172,7 @@ include_directories(${SDL2_BINARY_DIR}/include ${SDL2_SOURCE_DIR}/include)
 
 set(SDL_SUBSYSTEMS
     Atomic Audio Video Render Events Joystick Haptic Power Threads Timers
-    File Loadso CPUinfo)
+    File Loadso CPUinfo Filesystem)
 foreach(_SUB ${SDL_SUBSYSTEMS})
   string(TOUPPER ${_SUB} _OPT)
   option(SDL_${_OPT} "Enable the ${_SUB} subsystem" ON)
@@ -714,6 +714,13 @@ if(UNIX AND NOT APPLE)
     endif(LINUX)
   endif(SDL_POWER)
 
+  if(SDL_FILESYSTEM)
+    set(SDL_FILESYSTEM_UNIX 1)
+    file(GLOB FILESYSTEM_SOURCES ${SDL2_SOURCE_DIR}/src/filesystem/unix/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${FILESYSTEM_SOURCES})
+    set(HAVE_SDL_FILESYSTEM TRUE)
+  endif(SDL_FILESYSTEM)
+
   if(SDL_TIMERS)
     set(SDL_TIMER_UNIX 1)
     file(GLOB TIMER_SOURCES ${SDL2_SOURCE_DIR}/src/timer/unix/*.c)
@@ -813,6 +820,13 @@ elseif(WINDOWS)
     set(SOURCE_FILES ${SOURCE_FILES} ${SDL2_SOURCE_DIR}/src/power/windows/SDL_syspower.c)
     set(HAVE_SDL_POWER TRUE)
   endif(SDL_POWER)
+
+  if(SDL_FILESYSTEM)
+    set(SDL_FILESYSTEM_WINDOWS 1)
+    file(GLOB FILESYSTEM_SOURCES ${SDL2_SOURCE_DIR}/src/filesytem/windows/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${FILESYSTEM_SOURCES})
+    set(HAVE_SDL_FILESYSTEM TRUE)
+  endif(SDL_FILESYSTEM)
 
   # Libraries for Win32 native and MinGW
   list(APPEND EXTRA_LIBS user32 gdi32 winmm imm32 ole32 oleaut32 version uuid)
@@ -924,6 +938,13 @@ elseif(APPLE)
     set(SDL_FRAMEWORK_IOKIT 1)
   endif()
 
+  if(SDL_FILESYSTEM)
+    set(SDL_FILESYSTEM_COCOA 1)
+    file(GLOB FILESYSTEM_SOURCES ${SDL2_SOURCE_DIR}/src/filesystem/cocoa/*.m)
+    set(SOURCE_FILES ${SOURCE_FILES} ${FILESYSTEM_SOURCES})
+    set(HAVE_SDL_FILESYSTEM TRUE)
+  endif()
+
   # Actually load the frameworks at the end so we don't duplicate include.
   if(SDL_FRAMEWORK_COCOA)
     find_library(COCOA_LIBRARY Cocoa)
@@ -973,6 +994,11 @@ elseif(BEOS)
     set(SOURCE_FILES ${SOURCE_FILES} ${BWINDOW_SOURCES})
     set(HAVE_SDL_VIDEO TRUE)
 
+    set(SDL_FILESYSTEM_BEOS 1)
+    file(GLOB FILESYSTEM_SOURCES ${SDL2_SOURCE_DIR}/src/filesystem/beos/*.cc)
+    set(SOURCE_FILES ${SOURCE_FILES} ${FILESYSTEM_SOURCES})
+    set(HAVE_SDL_FILESYSTEM TRUE)
+
     if(VIDEO_OPENGL)
       # TODO: Use FIND_PACKAGE(OpenGL) instead
       set(SDL_VIDEO_OPENGL 1)
@@ -1008,8 +1034,13 @@ endif(NOT HAVE_SDL_HAPTIC)
 if(NOT HAVE_SDL_LOADSO)
   set(SDL_LOADSO_DISABLED 1)
   file(GLOB LOADSO_SOURCES ${SDL2_SOURCE_DIR}/src/loadso/dummy/*.c)
-  set(SOURCE_FILES ${SOURCE_FILES} ${JOYSTICK_SOURCES})
+  set(SOURCE_FILES ${SOURCE_FILES} ${LOADSO_SOURCES})
 endif(NOT HAVE_SDL_LOADSO)
+if(NOT HAVE_SDL_FILESYSTEM)
+  set(SDL_FILESYSTEM_DISABLED 1)
+  file(GLOB FILESYSTEM_SOURCES ${SDL2_SOURCE_DIR}/src/filesystem/dummy/*.c)
+  set(SOURCE_FILES ${SOURCE_FILES} ${FILESYSTEM_SOURCES})
+endif(NOT HAVE_SDL_FILESYSTEM)
 
 # We always need to have threads and timers around
 if(NOT HAVE_SDL_THREADS)

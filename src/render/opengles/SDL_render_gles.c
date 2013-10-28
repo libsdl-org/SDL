@@ -96,7 +96,7 @@ SDL_RenderDriver GLES_RenderDriver = {
     GLES_CreateRenderer,
     {
      "opengles",
-     (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE),
+     (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC ),
      1,
      {SDL_PIXELFORMAT_ABGR8888},
      0,
@@ -113,8 +113,10 @@ typedef struct
     } current;
 
 #define SDL_PROC(ret,func,params) ret (APIENTRY *func) params;
+#define SDL_PROC_OES SDL_PROC
 #include "SDL_glesfuncs.h"
 #undef SDL_PROC
+#undef SDL_PROC_OES
     SDL_bool GL_OES_framebuffer_object_supported;
     GLES_FBOList *framebuffers;
     GLuint window_framebuffer;
@@ -183,6 +185,7 @@ static int GLES_LoadFunctions(GLES_RenderData * data)
 
 #ifdef __SDL_NOGETPROCADDR__
 #define SDL_PROC(ret,func,params) data->func=func;
+#define SDL_PROC_OES(ret,func,params) data->func=func;
 #else
 #define SDL_PROC(ret,func,params) \
     do { \
@@ -191,10 +194,15 @@ static int GLES_LoadFunctions(GLES_RenderData * data)
             return SDL_SetError("Couldn't load GLES function %s: %s\n", #func, SDL_GetError()); \
         } \
     } while ( 0 );
+#define SDL_PROC_OES(ret,func,params) \
+    do { \
+        data->func = SDL_GL_GetProcAddress(#func); \
+    } while ( 0 );    
 #endif /* _SDL_NOGETPROCADDR_ */
 
 #include "SDL_glesfuncs.h"
 #undef SDL_PROC
+#undef SDL_PROC_OES
     return 0;
 }
 
@@ -272,7 +280,7 @@ GLES_CreateRenderer(SDL_Window * window, Uint32 flags)
     GLint value;
     Uint32 windowFlags;
 
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_EGL, 1);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 1);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 
@@ -367,7 +375,8 @@ GLES_CreateRenderer(SDL_Window * window, Uint32 flags)
     data->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &value);
     renderer->info.max_texture_height = value;
 
-    if (SDL_GL_ExtensionSupported("GL_OES_framebuffer_object")) {
+    /* Android does not report GL_OES_framebuffer_object but the functionality seems to be there anyway */
+    if (SDL_GL_ExtensionSupported("GL_OES_framebuffer_object") || data->glGenFramebuffersOES) {
         data->GL_OES_framebuffer_object_supported = SDL_TRUE;
         renderer->info.flags |= SDL_RENDERER_TARGETTEXTURE;
 
@@ -405,7 +414,7 @@ GLES_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
     }
 }
 
-static __inline__ int
+static SDL_INLINE int
 power_of_2(int input)
 {
     int value = 1;
@@ -465,12 +474,17 @@ GLES_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         }
     }
 
-    texture->driverdata = data;
+    
     if (texture->access == SDL_TEXTUREACCESS_TARGET) {
-       data->fbo = GLES_GetFBO(renderer->driverdata, texture->w, texture->h);
+        if (!renderdata->GL_OES_framebuffer_object_supported) {
+            SDL_free(data);
+            return SDL_SetError("GL_OES_framebuffer_object not supported");
+        }
+        data->fbo = GLES_GetFBO(renderer->driverdata, texture->w, texture->h);
     } else {
-       data->fbo = NULL;
+        data->fbo = NULL;
     }
+    
 
     renderdata->glGetError();
     renderdata->glEnable(GL_TEXTURE_2D);
@@ -503,8 +517,11 @@ GLES_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 
     result = renderdata->glGetError();
     if (result != GL_NO_ERROR) {
+        SDL_free(data);
         return GLES_SetError("glTexImage2D()", result);
     }
+    
+    texture->driverdata = data;
     return 0;
 }
 
@@ -556,9 +573,7 @@ GLES_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                     data->format,
                     data->formattype,
                     src);
-    if (blob) {
-        SDL_free(blob);
-    }
+    SDL_free(blob);
 
     if (renderdata->glGetError() != GL_NO_ERROR)
     {
@@ -602,6 +617,10 @@ GLES_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
     GLenum status;
 
     GLES_ActivateRenderer(renderer);
+    
+    if (!data->GL_OES_framebuffer_object_supported) {
+        return SDL_SetError("Can't enable render target support in this renderer");
+    }
 
     if (texture == NULL) {
         data->glBindFramebufferOES(GL_FRAMEBUFFER_OES, data->window_framebuffer);
@@ -843,6 +862,8 @@ GLES_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
     GLES_TextureData *texturedata = (GLES_TextureData *) texture->driverdata;
     GLfloat minx, miny, maxx, maxy;
     GLfloat minu, maxu, minv, maxv;
+    GLfloat vertices[8];
+    GLfloat texCoords[8];
 
     GLES_ActivateRenderer(renderer);
 
@@ -903,9 +924,6 @@ GLES_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
         maxv = (GLfloat) (srcrect->y + srcrect->h) / texture->h;
         maxv *= texturedata->texh;
 
-        GLfloat vertices[8];
-        GLfloat texCoords[8];
-
         vertices[0] = minx;
         vertices[1] = miny;
         vertices[2] = maxx;
@@ -944,6 +962,9 @@ GLES_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
     GLfloat minx, miny, maxx, maxy;
     GLfloat minu, maxu, minv, maxv;
     GLfloat centerx, centery;
+    GLfloat vertices[8];
+    GLfloat texCoords[8];
+
 
     GLES_ActivateRenderer(renderer);
 
@@ -993,9 +1014,6 @@ GLES_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
     minv *= texturedata->texh;
     maxv = (GLfloat) (srcrect->y + srcrect->h) / texture->h;
     maxv *= texturedata->texh;
-
-    GLfloat vertices[8];
-    GLfloat texCoords[8];
 
     vertices[0] = minx;
     vertices[1] = miny;
@@ -1096,9 +1114,7 @@ GLES_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     if (data->texture) {
         renderdata->glDeleteTextures(1, &data->texture);
     }
-    if (data->pixels) {
-        SDL_free(data->pixels);
-    }
+    SDL_free(data->pixels);
     SDL_free(data);
     texture->driverdata = NULL;
 }

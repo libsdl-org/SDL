@@ -192,7 +192,7 @@ sdltest_randomBoundaryNumberUint8(void *arg)
     "Validate result value for parameters (1,255,SDL_FALSE); expected: 0, got: %lld", uresult);
   lastError = (char *)SDL_GetError();
   SDLTest_AssertPass("SDL_GetError()");
-  SDLTest_AssertCheck(lastError == NULL || SDL_strlen(lastError) == 0, "Validate no error message was set");
+  SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
 
   /* RandomUintXBoundaryValue(0, 0xfe, SDL_FALSE) returns 0xff (no error) */
   uresult = (Uint64)SDLTest_RandomUint8BoundaryValue(0, 254, SDL_FALSE);
@@ -202,7 +202,7 @@ sdltest_randomBoundaryNumberUint8(void *arg)
     "Validate result value for parameters (0,254,SDL_FALSE); expected: 0xff, got: %lld", uresult);
   lastError = (char *)SDL_GetError();
   SDLTest_AssertPass("SDL_GetError()");
-  SDLTest_AssertCheck(lastError == NULL || SDL_strlen(lastError) == 0, "Validate no error message was set");
+  SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
 
   /* RandomUintXBoundaryValue(0, 0xff, SDL_FALSE) returns 0 (sets error) */
   uresult = (Uint64)SDLTest_RandomUint8BoundaryValue(0, 255, SDL_FALSE);
@@ -302,7 +302,7 @@ sdltest_randomBoundaryNumberUint16(void *arg)
     "Validate result value for parameters (1,0xffff,SDL_FALSE); expected: 0, got: %lld", uresult);
   lastError = (char *)SDL_GetError();
   SDLTest_AssertPass("SDL_GetError()");
-  SDLTest_AssertCheck(lastError == NULL || SDL_strlen(lastError) == 0, "Validate no error message was set");
+  SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
 
   /* RandomUintXBoundaryValue(0, 0xfffe, SDL_FALSE) returns 0xffff (no error) */
   uresult = (Uint64)SDLTest_RandomUint16BoundaryValue(0, 0xfffe, SDL_FALSE);
@@ -312,7 +312,7 @@ sdltest_randomBoundaryNumberUint16(void *arg)
     "Validate result value for parameters (0,0xfffe,SDL_FALSE); expected: 0xffff, got: %lld", uresult);
   lastError = (char *)SDL_GetError();
   SDLTest_AssertPass("SDL_GetError()");
-  SDLTest_AssertCheck(lastError == NULL || SDL_strlen(lastError) == 0, "Validate no error message was set");
+  SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
 
   /* RandomUintXBoundaryValue(0, 0xffff, SDL_FALSE) returns 0 (sets error) */
   uresult = (Uint64)SDLTest_RandomUint16BoundaryValue(0, 0xffff, SDL_FALSE);
@@ -412,7 +412,7 @@ sdltest_randomBoundaryNumberUint32(void *arg)
     "Validate result value for parameters (1,0xffffffff,SDL_FALSE); expected: 0, got: %lld", uresult);
   lastError = (char *)SDL_GetError();
   SDLTest_AssertPass("SDL_GetError()");
-  SDLTest_AssertCheck(lastError == NULL || SDL_strlen(lastError) == 0, "Validate no error message was set");
+  SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
 
   /* RandomUintXBoundaryValue(0, 0xfffffffe, SDL_FALSE) returns 0xffffffff (no error) */
   uresult = (Uint64)SDLTest_RandomUint32BoundaryValue(0, 0xfffffffe, SDL_FALSE);
@@ -422,7 +422,7 @@ sdltest_randomBoundaryNumberUint32(void *arg)
     "Validate result value for parameters (0,0xfffffffe,SDL_FALSE); expected: 0xffffffff, got: %lld", uresult);
   lastError = (char *)SDL_GetError();
   SDLTest_AssertPass("SDL_GetError()");
-  SDLTest_AssertCheck(lastError == NULL || SDL_strlen(lastError) == 0, "Validate no error message was set");
+  SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
 
   /* RandomUintXBoundaryValue(0, 0xffffffff, SDL_FALSE) returns 0 (sets error) */
   uresult = (Uint64)SDLTest_RandomUint32BoundaryValue(0, 0xffffffff, SDL_FALSE);
@@ -522,7 +522,7 @@ sdltest_randomBoundaryNumberUint64(void *arg)
     "Validate result value for parameters (1,0xffffffffffffffff,SDL_FALSE); expected: 0, got: %lld", uresult);
   lastError = (char *)SDL_GetError();
   SDLTest_AssertPass("SDL_GetError()");
-  SDLTest_AssertCheck(lastError == NULL || SDL_strlen(lastError) == 0, "Validate no error message was set");
+  SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
 
   /* RandomUintXBoundaryValue(0, 0xfffffffffffffffe, SDL_FALSE) returns 0xffffffffffffffff (no error) */
   uresult = (Uint64)SDLTest_RandomUint64BoundaryValue(0, (Uint64)0xfffffffffffffffeULL, SDL_FALSE);
@@ -532,7 +532,7 @@ sdltest_randomBoundaryNumberUint64(void *arg)
     "Validate result value for parameters (0,0xfffffffffffffffe,SDL_FALSE); expected: 0xffffffffffffffff, got: %lld", uresult);
   lastError = (char *)SDL_GetError();
   SDLTest_AssertPass("SDL_GetError()");
-  SDLTest_AssertCheck(lastError == NULL || SDL_strlen(lastError) == 0, "Validate no error message was set");
+  SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
 
   /* RandomUintXBoundaryValue(0, 0xffffffffffffffff, SDL_FALSE) returns 0 (sets error) */
   uresult = (Uint64)SDLTest_RandomUint64BoundaryValue(0, (Uint64)0xffffffffffffffffULL, SDL_FALSE);
@@ -632,7 +632,7 @@ sdltest_randomBoundaryNumberSint8(void *arg)
     "Validate result value for parameters (SCHAR_MIN + 1,SCHAR_MAX,SDL_FALSE); expected: %d, got: %lld", SCHAR_MIN, sresult);
   lastError = (char *)SDL_GetError();
   SDLTest_AssertPass("SDL_GetError()");
-  SDLTest_AssertCheck(lastError == NULL || SDL_strlen(lastError) == 0, "Validate no error message was set");
+  SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
 
   /* RandomSintXBoundaryValue(SCHAR_MIN, SCHAR_MAX - 1, SDL_FALSE) returns SCHAR_MAX (no error) */
   sresult = (Sint64)SDLTest_RandomSint8BoundaryValue(SCHAR_MIN, SCHAR_MAX -1, SDL_FALSE);
@@ -642,7 +642,7 @@ sdltest_randomBoundaryNumberSint8(void *arg)
     "Validate result value for parameters (SCHAR_MIN,SCHAR_MAX - 1,SDL_FALSE); expected: %d, got: %lld", SCHAR_MAX, sresult);
   lastError = (char *)SDL_GetError();
   SDLTest_AssertPass("SDL_GetError()");
-  SDLTest_AssertCheck(lastError == NULL || SDL_strlen(lastError) == 0, "Validate no error message was set");
+  SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
 
   /* RandomSintXBoundaryValue(SCHAR_MIN, SCHAR_MAX, SDL_FALSE) returns SCHAR_MIN (sets error) */
   sresult = (Sint64)SDLTest_RandomSint8BoundaryValue(SCHAR_MIN, SCHAR_MAX, SDL_FALSE);
@@ -742,7 +742,7 @@ sdltest_randomBoundaryNumberSint16(void *arg)
     "Validate result value for parameters (SHRT_MIN+1,SHRT_MAX,SDL_FALSE); expected: %d, got: %lld", SHRT_MIN, sresult);
   lastError = (char *)SDL_GetError();
   SDLTest_AssertPass("SDL_GetError()");
-  SDLTest_AssertCheck(lastError == NULL || SDL_strlen(lastError) == 0, "Validate no error message was set");
+  SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
 
   /* RandomSintXBoundaryValue(SHRT_MIN, SHRT_MAX - 1, SDL_FALSE) returns SHRT_MAX (no error) */
   sresult = (Sint64)SDLTest_RandomSint16BoundaryValue(SHRT_MIN, SHRT_MAX - 1, SDL_FALSE);
@@ -752,7 +752,7 @@ sdltest_randomBoundaryNumberSint16(void *arg)
     "Validate result value for parameters (SHRT_MIN,SHRT_MAX - 1,SDL_FALSE); expected: %d, got: %lld", SHRT_MAX, sresult);
   lastError = (char *)SDL_GetError();
   SDLTest_AssertPass("SDL_GetError()");
-  SDLTest_AssertCheck(lastError == NULL || SDL_strlen(lastError) == 0, "Validate no error message was set");
+  SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
 
   /* RandomSintXBoundaryValue(SHRT_MIN, SHRT_MAX, SDL_FALSE) returns 0 (sets error) */
   sresult = (Sint64)SDLTest_RandomSint16BoundaryValue(SHRT_MIN, SHRT_MAX, SDL_FALSE);
@@ -859,7 +859,7 @@ sdltest_randomBoundaryNumberSint32(void *arg)
     "Validate result value for parameters (LONG_MIN+1,LONG_MAX,SDL_FALSE); expected: %d, got: %lld", long_min, sresult);
   lastError = (char *)SDL_GetError();
   SDLTest_AssertPass("SDL_GetError()");
-  SDLTest_AssertCheck(lastError == NULL || SDL_strlen(lastError) == 0, "Validate no error message was set");
+  SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
 
   /* RandomSintXBoundaryValue(LONG_MIN, LONG_MAX - 1, SDL_FALSE) returns LONG_MAX (no error) */
   sresult = (Sint64)SDLTest_RandomSint32BoundaryValue(long_min, long_max - 1, SDL_FALSE);
@@ -869,7 +869,7 @@ sdltest_randomBoundaryNumberSint32(void *arg)
     "Validate result value for parameters (LONG_MIN,LONG_MAX - 1,SDL_FALSE); expected: %d, got: %lld", long_max, sresult);
   lastError = (char *)SDL_GetError();
   SDLTest_AssertPass("SDL_GetError()");
-  SDLTest_AssertCheck(lastError == NULL || SDL_strlen(lastError) == 0, "Validate no error message was set");
+  SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
 
   /* RandomSintXBoundaryValue(LONG_MIN, LONG_MAX, SDL_FALSE) returns 0 (sets error) */
   sresult = (Sint64)SDLTest_RandomSint32BoundaryValue(long_min, long_max, SDL_FALSE);
@@ -969,7 +969,7 @@ sdltest_randomBoundaryNumberSint64(void *arg)
     "Validate result value for parameters (LLONG_MIN+1,LLONG_MAX,SDL_FALSE); expected: %lld, got: %lld", LLONG_MIN, sresult);
   lastError = (char *)SDL_GetError();
   SDLTest_AssertPass("SDL_GetError()");
-  SDLTest_AssertCheck(lastError == NULL || SDL_strlen(lastError) == 0, "Validate no error message was set");
+  SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
 
   /* RandomSintXBoundaryValue(LLONG_MIN, LLONG_MAX - 1, SDL_FALSE) returns LLONG_MAX (no error) */
   sresult = (Sint64)SDLTest_RandomSint64BoundaryValue(LLONG_MIN, LLONG_MAX - 1, SDL_FALSE);
@@ -979,7 +979,7 @@ sdltest_randomBoundaryNumberSint64(void *arg)
     "Validate result value for parameters (LLONG_MIN,LLONG_MAX - 1,SDL_FALSE); expected: %lld, got: %lld", LLONG_MAX, sresult);
   lastError = (char *)SDL_GetError();
   SDLTest_AssertPass("SDL_GetError()");
-  SDLTest_AssertCheck(lastError == NULL || SDL_strlen(lastError) == 0, "Validate no error message was set");
+  SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
 
   /* RandomSintXBoundaryValue(LLONG_MIN, LLONG_MAX, SDL_FALSE) returns 0 (sets error) */
   sresult = (Sint64)SDLTest_RandomSint64BoundaryValue(LLONG_MIN, LLONG_MAX, SDL_FALSE);

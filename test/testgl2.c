@@ -180,6 +180,10 @@ main(int argc, char *argv[])
     SDL_Event event;
     Uint32 then, now, frames;
     int status;
+    int dw, dh;
+
+    /* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Initialize parameters */
     fsaa = 0;
@@ -206,7 +210,7 @@ main(int argc, char *argv[])
             }
         }
         if (consumed < 0) {
-            fprintf(stderr, "Usage: %s %s [--fsaa n] [--accel n]\n", argv[0],
+            SDL_Log("Usage: %s %s [--fsaa n] [--accel n]\n", argv[0],
                     SDLTest_CommonUsage(state));
             quit(1);
         }
@@ -235,7 +239,7 @@ main(int argc, char *argv[])
     /* Create OpenGL context */
     context = SDL_GL_CreateContext(state->windows[0]);
     if (!context) {
-        fprintf(stderr, "SDL_GL_CreateContext(): %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_GL_CreateContext(): %s\n", SDL_GetError());
         quit(2);
     }
 
@@ -249,63 +253,67 @@ main(int argc, char *argv[])
     }
 
     SDL_GetCurrentDisplayMode(0, &mode);
-    printf("Screen BPP    : %d\n", SDL_BITSPERPIXEL(mode.format));
-    printf("Swap Interval : %d\n", SDL_GL_GetSwapInterval());
-    printf("\n");
-    printf("Vendor        : %s\n", glGetString(GL_VENDOR));
-    printf("Renderer      : %s\n", glGetString(GL_RENDERER));
-    printf("Version       : %s\n", glGetString(GL_VERSION));
-    printf("Extensions    : %s\n", glGetString(GL_EXTENSIONS));
-    printf("\n");
+    SDL_Log("Screen BPP    : %d\n", SDL_BITSPERPIXEL(mode.format));
+    SDL_Log("Swap Interval : %d\n", SDL_GL_GetSwapInterval());
+    SDL_GetWindowSize(state->windows[0], &dw, &dh);
+    SDL_Log("Window Size   : %d,%d\n", dw, dh);
+    SDL_GL_GetDrawableSize(state->windows[0], &dw, &dh);
+    SDL_Log("Draw Size     : %d,%d\n", dw, dh);
+    SDL_Log("\n");
+    SDL_Log("Vendor        : %s\n", glGetString(GL_VENDOR));
+    SDL_Log("Renderer      : %s\n", glGetString(GL_RENDERER));
+    SDL_Log("Version       : %s\n", glGetString(GL_VERSION));
+    SDL_Log("Extensions    : %s\n", glGetString(GL_EXTENSIONS));
+    SDL_Log("\n");
 
     status = SDL_GL_GetAttribute(SDL_GL_RED_SIZE, &value);
     if (!status) {
-        printf("SDL_GL_RED_SIZE: requested %d, got %d\n", 5, value);
+        SDL_Log("SDL_GL_RED_SIZE: requested %d, got %d\n", 5, value);
     } else {
-        printf("Failed to get SDL_GL_RED_SIZE: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to get SDL_GL_RED_SIZE: %s\n", SDL_GetError());
     }
     status = SDL_GL_GetAttribute(SDL_GL_GREEN_SIZE, &value);
     if (!status) {
-        printf("SDL_GL_GREEN_SIZE: requested %d, got %d\n", 5, value);
+        SDL_Log("SDL_GL_GREEN_SIZE: requested %d, got %d\n", 5, value);
     } else {
-        printf("Failed to get SDL_GL_GREEN_SIZE: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to get SDL_GL_GREEN_SIZE: %s\n", SDL_GetError());
     }
     status = SDL_GL_GetAttribute(SDL_GL_BLUE_SIZE, &value);
     if (!status) {
-        printf("SDL_GL_BLUE_SIZE: requested %d, got %d\n", 5, value);
+        SDL_Log("SDL_GL_BLUE_SIZE: requested %d, got %d\n", 5, value);
     } else {
-        printf("Failed to get SDL_GL_BLUE_SIZE: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to get SDL_GL_BLUE_SIZE: %s\n", SDL_GetError());
     }
     status = SDL_GL_GetAttribute(SDL_GL_DEPTH_SIZE, &value);
     if (!status) {
-        printf("SDL_GL_DEPTH_SIZE: requested %d, got %d\n", 16, value);
+        SDL_Log("SDL_GL_DEPTH_SIZE: requested %d, got %d\n", 16, value);
     } else {
-        printf("Failed to get SDL_GL_DEPTH_SIZE: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to get SDL_GL_DEPTH_SIZE: %s\n", SDL_GetError());
     }
     if (fsaa) {
         status = SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &value);
         if (!status) {
-            printf("SDL_GL_MULTISAMPLEBUFFERS: requested 1, got %d\n", value);
+            SDL_Log("SDL_GL_MULTISAMPLEBUFFERS: requested 1, got %d\n", value);
         } else {
-            printf("Failed to get SDL_GL_MULTISAMPLEBUFFERS: %s\n",
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to get SDL_GL_MULTISAMPLEBUFFERS: %s\n",
                    SDL_GetError());
         }
         status = SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &value);
         if (!status) {
-            printf("SDL_GL_MULTISAMPLESAMPLES: requested %d, got %d\n", fsaa,
+            SDL_Log("SDL_GL_MULTISAMPLESAMPLES: requested %d, got %d\n", fsaa,
                    value);
         } else {
-            printf("Failed to get SDL_GL_MULTISAMPLESAMPLES: %s\n",
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to get SDL_GL_MULTISAMPLESAMPLES: %s\n",
                    SDL_GetError());
         }
     }
     if (accel >= 0) {
         status = SDL_GL_GetAttribute(SDL_GL_ACCELERATED_VISUAL, &value);
         if (!status) {
-            printf("SDL_GL_ACCELERATED_VISUAL: requested %d, got %d\n", accel,
+            SDL_Log("SDL_GL_ACCELERATED_VISUAL: requested %d, got %d\n", accel,
                    value);
         } else {
-            printf("Failed to get SDL_GL_ACCELERATED_VISUAL: %s\n",
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to get SDL_GL_ACCELERATED_VISUAL: %s\n",
                    SDL_GetError());
         }
     }
@@ -319,7 +327,7 @@ main(int argc, char *argv[])
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glShadeModel(GL_SMOOTH);
-
+    
     /* Main render loop */
     frames = 0;
     then = SDL_GetTicks();
@@ -332,8 +340,10 @@ main(int argc, char *argv[])
         }
         for (i = 0; i < state->num_windows; ++i) {
             int w, h;
+            if (state->windows[i] == NULL)
+                continue;
             SDL_GL_MakeCurrent(state->windows[i], context);
-            SDL_GetWindowSize(state->windows[i], &w, &h);
+            SDL_GL_GetDrawableSize(state->windows[i], &w, &h);
             glViewport(0, 0, w, h);
             Render();
             SDL_GL_SwapWindow(state->windows[i]);
@@ -343,7 +353,7 @@ main(int argc, char *argv[])
     /* Print out some timing information */
     now = SDL_GetTicks();
     if (now > then) {
-        printf("%2.2f frames per second\n",
+        SDL_Log("%2.2f frames per second\n",
                ((double) frames * 1000) / (now - then));
     }
     quit(0);
@@ -355,7 +365,7 @@ main(int argc, char *argv[])
 int
 main(int argc, char *argv[])
 {
-    printf("No OpenGL support on this system\n");
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "No OpenGL support on this system\n");
     return 1;
 }
 

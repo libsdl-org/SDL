@@ -91,7 +91,7 @@ extern "C" {
  * The spin lock functions and type are required and can not be
  * emulated because they are used in the atomic emulation code.
  */
-/*@{*/
+/* @{ */
 
 typedef int SDL_SpinLock;
 
@@ -118,7 +118,7 @@ extern DECLSPEC void SDLCALL SDL_AtomicLock(SDL_SpinLock *lock);
  */
 extern DECLSPEC void SDLCALL SDL_AtomicUnlock(SDL_SpinLock *lock);
 
-/*@}*//*SDL AtomicLock*/
+/* @} *//* SDL AtomicLock */
 
 
 /**

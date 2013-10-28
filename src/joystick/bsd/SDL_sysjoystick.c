@@ -446,48 +446,47 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joy)
     static int x, y, xmin = 0xffff, ymin = 0xffff, xmax = 0, ymax = 0;
 
     if (joy->hwdata->type == BSDJOY_JOY) {
-        if (read(joy->hwdata->fd, &gameport, sizeof gameport) !=
-            sizeof gameport)
-            return;
-        if (abs(x - gameport.x) > 8) {
-            x = gameport.x;
-            if (x < xmin) {
-                xmin = x;
+        while (read(joy->hwdata->fd, &gameport, sizeof gameport) == sizeof gameport) {
+            if (abs(x - gameport.x) > 8) {
+                x = gameport.x;
+                if (x < xmin) {
+                    xmin = x;
+                }
+                if (x > xmax) {
+                    xmax = x;
+                }
+                if (xmin == xmax) {
+                    xmin--;
+                    xmax++;
+                }
+                v = (Sint32) x;
+                v -= (xmax + xmin + 1) / 2;
+                v *= 32768 / ((xmax - xmin + 1) / 2);
+                SDL_PrivateJoystickAxis(joy, 0, v);
             }
-            if (x > xmax) {
-                xmax = x;
+            if (abs(y - gameport.y) > 8) {
+                y = gameport.y;
+                if (y < ymin) {
+                    ymin = y;
+                }
+                if (y > ymax) {
+                    ymax = y;
+                }
+                if (ymin == ymax) {
+                    ymin--;
+                    ymax++;
+                }
+                v = (Sint32) y;
+                v -= (ymax + ymin + 1) / 2;
+                v *= 32768 / ((ymax - ymin + 1) / 2);
+                SDL_PrivateJoystickAxis(joy, 1, v);
             }
-            if (xmin == xmax) {
-                xmin--;
-                xmax++;
+            if (gameport.b1 != joy->buttons[0]) {
+                SDL_PrivateJoystickButton(joy, 0, gameport.b1);
             }
-            v = (Sint32) x;
-            v -= (xmax + xmin + 1) / 2;
-            v *= 32768 / ((xmax - xmin + 1) / 2);
-            SDL_PrivateJoystickAxis(joy, 0, v);
-        }
-        if (abs(y - gameport.y) > 8) {
-            y = gameport.y;
-            if (y < ymin) {
-                ymin = y;
+            if (gameport.b2 != joy->buttons[1]) {
+                SDL_PrivateJoystickButton(joy, 1, gameport.b2);
             }
-            if (y > ymax) {
-                ymax = y;
-            }
-            if (ymin == ymax) {
-                ymin--;
-                ymax++;
-            }
-            v = (Sint32) y;
-            v -= (ymax + ymin + 1) / 2;
-            v *= 32768 / ((ymax - ymin + 1) / 2);
-            SDL_PrivateJoystickAxis(joy, 1, v);
-        }
-        if (gameport.b1 != joy->buttons[0]) {
-            SDL_PrivateJoystickButton(joy, 0, gameport.b1);
-        }
-        if (gameport.b2 != joy->buttons[1]) {
-            SDL_PrivateJoystickButton(joy, 1, gameport.b2);
         }
         return;
     }
@@ -495,65 +494,62 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joy)
 
     rep = &joy->hwdata->inreport;
 
-    if (read(joy->hwdata->fd, REP_BUF_DATA(rep), rep->size) != rep->size) {
-        return;
-    }
+    while (read(joy->hwdata->fd, REP_BUF_DATA(rep), rep->size) == rep->size) {
 #if defined(USBHID_NEW) || (defined(__FREEBSD__) && __FreeBSD_kernel_version >= 500111) || defined(__FreeBSD_kernel__)
-    hdata = hid_start_parse(joy->hwdata->repdesc, 1 << hid_input, rep->rid);
+        hdata = hid_start_parse(joy->hwdata->repdesc, 1 << hid_input, rep->rid);
 #else
-    hdata = hid_start_parse(joy->hwdata->repdesc, 1 << hid_input);
+        hdata = hid_start_parse(joy->hwdata->repdesc, 1 << hid_input);
 #endif
-    if (hdata == NULL) {
-        fprintf(stderr, "%s: Cannot start HID parser\n", joy->hwdata->path);
-        return;
-    }
+        if (hdata == NULL) {
+            /*fprintf(stderr, "%s: Cannot start HID parser\n", joy->hwdata->path);*/
+            continue;
+        }
 
-    for (nbutton = 0; hid_get_item(hdata, &hitem) > 0;) {
-        switch (hitem.kind) {
-        case hid_input:
-            switch (HID_PAGE(hitem.usage)) {
-            case HUP_GENERIC_DESKTOP:
-                {
-                    unsigned usage = HID_USAGE(hitem.usage);
-                    int joyaxe = usage_to_joyaxe(usage);
-                    if (joyaxe >= 0) {
-                        naxe = joy->hwdata->axis_map[joyaxe];
-                        /* scaleaxe */
-                        v = (Sint32) hid_get_data(REP_BUF_DATA(rep), &hitem);
-                        v -= (hitem.logical_maximum +
-                              hitem.logical_minimum + 1) / 2;
-                        v *= 32768 /
-                            ((hitem.logical_maximum -
-                              hitem.logical_minimum + 1) / 2);
-                        if (v != joy->axes[naxe]) {
-                            SDL_PrivateJoystickAxis(joy, naxe, v);
+        for (nbutton = 0; hid_get_item(hdata, &hitem) > 0;) {
+            switch (hitem.kind) {
+            case hid_input:
+                switch (HID_PAGE(hitem.usage)) {
+                case HUP_GENERIC_DESKTOP:
+                    {
+                        unsigned usage = HID_USAGE(hitem.usage);
+                        int joyaxe = usage_to_joyaxe(usage);
+                        if (joyaxe >= 0) {
+                            naxe = joy->hwdata->axis_map[joyaxe];
+                            /* scaleaxe */
+                            v = (Sint32) hid_get_data(REP_BUF_DATA(rep), &hitem);
+                            v -= (hitem.logical_maximum +
+                                  hitem.logical_minimum + 1) / 2;
+                            v *= 32768 /
+                                ((hitem.logical_maximum -
+                                  hitem.logical_minimum + 1) / 2);
+                            if (v != joy->axes[naxe]) {
+                                SDL_PrivateJoystickAxis(joy, naxe, v);
+                            }
+                        } else if (usage == HUG_HAT_SWITCH) {
+                            v = (Sint32) hid_get_data(REP_BUF_DATA(rep), &hitem);
+                            SDL_PrivateJoystickHat(joy, 0,
+                                                   hatval_to_sdl(v) -
+                                                   hitem.logical_minimum);
                         }
-                    } else if (usage == HUG_HAT_SWITCH) {
-                        v = (Sint32) hid_get_data(REP_BUF_DATA(rep), &hitem);
-                        SDL_PrivateJoystickHat(joy, 0,
-                                               hatval_to_sdl(v) -
-                                               hitem.logical_minimum);
+                        break;
                     }
+                case HUP_BUTTON:
+                    v = (Sint32) hid_get_data(REP_BUF_DATA(rep), &hitem);
+                    if (joy->buttons[nbutton] != v) {
+                        SDL_PrivateJoystickButton(joy, nbutton, v);
+                    }
+                    nbutton++;
                     break;
+                default:
+                    continue;
                 }
-            case HUP_BUTTON:
-                v = (Sint32) hid_get_data(REP_BUF_DATA(rep), &hitem);
-                if (joy->buttons[nbutton] != v) {
-                    SDL_PrivateJoystickButton(joy, nbutton, v);
-                }
-                nbutton++;
                 break;
             default:
-                continue;
+                break;
             }
-            break;
-        default:
-            break;
         }
+        hid_end_parse(hdata);
     }
-    hid_end_parse(hdata);
-
-    return;
 }
 
 /* Function to close a joystick after use */
@@ -577,10 +573,8 @@ SDL_SYS_JoystickQuit(void)
     int i;
 
     for (i = 0; i < MAX_JOYS; i++) {
-        if (joynames[i] != NULL)
-            SDL_free(joynames[i]);
-        if (joydevnames[i] != NULL)
-            SDL_free(joydevnames[i]);
+        SDL_free(joynames[i]);
+        SDL_free(joydevnames[i]);
     }
 
     return;
@@ -657,9 +651,7 @@ report_alloc(struct report *r, struct report_desc *rd, int repind)
 static void
 report_free(struct report *r)
 {
-    if (r->buf != NULL) {
-        SDL_free(r->buf);
-    }
+    SDL_free(r->buf);
     r->status = SREPORT_UNINIT;
 }
 

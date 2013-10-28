@@ -30,8 +30,8 @@ Andreas Schiffler -- aschiffler at ferzkopp dot net
 */
 #include "SDL_config.h"
 
-#ifdef WIN32
-#include <windows.h>
+#if defined(__WIN32__)
+#include "../../core/windows/SDL_windows.h"
 #endif
 
 #include <stdlib.h>
@@ -42,7 +42,7 @@ Andreas Schiffler -- aschiffler at ferzkopp dot net
 
 /* ---- Internally used structures */
 
-/*!
+/* !
 \brief A 32 bit RGBA pixel.
 */
 typedef struct tColorRGBA {
@@ -52,19 +52,19 @@ typedef struct tColorRGBA {
     Uint8 a;
 } tColorRGBA;
 
-/*!
+/* !
 \brief A 8bit Y/palette pixel.
 */
 typedef struct tColorY {
     Uint8 y;
 } tColorY;
 
-/*!
+/* !
 \brief Returns maximum of two numbers a and b.
 */
 #define MAX(a,b)    (((a) > (b)) ? (a) : (b))
 
-/*!
+/* !
 \brief Number of guard rows added to destination surfaces.
 
 This is a simple but effective workaround for observed issues.
@@ -76,15 +76,16 @@ to a situation where the program can segfault.
 */
 #define GUARD_ROWS (2)
 
-/*!
+/* !
 \brief Lower limit of absolute zoom factor or rotation degrees.
 */
 #define VALUE_LIMIT 0.001
 
-/*!
+/* !
 \brief Returns colorkey info for a surface
 */
-Uint32 _colorkey(SDL_Surface *src)
+static Uint32
+_colorkey(SDL_Surface *src)
 {
     Uint32 key = 0;
     SDL_GetColorKey(src, &key);
@@ -92,7 +93,7 @@ Uint32 _colorkey(SDL_Surface *src)
 }
 
 
-/*!
+/* !
 \brief Internal target surface sizing function for rotations with trig result return.
 
 \param width The source surface width.
@@ -104,9 +105,10 @@ Uint32 _colorkey(SDL_Surface *src)
 \param sangle The cosine of the angle
 
 */
-void _rotozoomSurfaceSizeTrig(int width, int height, double angle,
-                              int *dstwidth, int *dstheight,
-                              double *cangle, double *sangle)
+void
+SDLgfx_rotozoomSurfaceSizeTrig(int width, int height, double angle,
+                               int *dstwidth, int *dstheight,
+                               double *cangle, double *sangle)
 {
     double x, y, cx, cy, sx, sy;
     double radangle;
@@ -134,7 +136,7 @@ void _rotozoomSurfaceSizeTrig(int width, int height, double angle,
 }
 
 
-/*!
+/* !
 \brief Internal 32 bit rotozoomer with optional anti-aliasing.
 
 Rotates and zooms 32 bit RGBA/ABGR 'src' surface to 'dst' surface based on the control
@@ -153,7 +155,8 @@ Assumes dst surface was allocated with the correct dimensions.
 \param flipy Flag indicating vertical mirroring should be applied.
 \param smooth Flag indicating anti-aliasing should be used.
 */
-void _transformSurfaceRGBA(SDL_Surface * src, SDL_Surface * dst, int cx, int cy, int isin, int icos, int flipx, int flipy, int smooth)
+static void
+_transformSurfaceRGBA(SDL_Surface * src, SDL_Surface * dst, int cx, int cy, int isin, int icos, int flipx, int flipy, int smooth)
 {
     int x, y, t1, t2, dx, dy, xd, yd, sdx, sdy, ax, ay, ex, ey, sw, sh;
     tColorRGBA c00, c01, c10, c11, cswap;
@@ -252,7 +255,7 @@ void _transformSurfaceRGBA(SDL_Surface * src, SDL_Surface * dst, int cx, int cy,
     }
 }
 
-/*!
+/* !
 
 \brief Rotates and zooms 8 bit palette/Y 'src' surface to 'dst' surface without smoothing.
 
@@ -270,7 +273,8 @@ Assumes dst surface was allocated with the correct dimensions.
 \param flipx Flag indicating horizontal mirroring should be applied.
 \param flipy Flag indicating vertical mirroring should be applied.
 */
-void transformSurfaceY(SDL_Surface * src, SDL_Surface * dst, int cx, int cy, int isin, int icos, int flipx, int flipy)
+static void
+transformSurfaceY(SDL_Surface * src, SDL_Surface * dst, int cx, int cy, int isin, int icos, int flipx, int flipy)
 {
     int x, y, dx, dy, xd, yd, sdx, sdy, ax, ay;
     tColorY *pc, *sp;
@@ -315,9 +319,7 @@ void transformSurfaceY(SDL_Surface * src, SDL_Surface * dst, int cx, int cy, int
 }
 
 
-
-
-/*!
+/* !
 \brief Rotates and zooms a surface with different horizontal and vertival scaling factors and optional anti-aliasing.
 
 Rotates a 32bit or 8bit 'src' surface to newly created 'dst' surface.
@@ -340,7 +342,8 @@ or 32bit RGBA/ABGR it will be converted into a 32bit RGBA format on the fly.
 
 */
 
-SDL_Surface *_rotateSurface(SDL_Surface * src, double angle, int centerx, int centery, int smooth, int flipx, int flipy, int dstwidth, int dstheight, double cangle, double sangle)
+SDL_Surface *
+SDLgfx_rotateSurface(SDL_Surface * src, double angle, int centerx, int centery, int smooth, int flipx, int flipy, int dstwidth, int dstheight, double cangle, double sangle)
 {
     SDL_Surface *rz_src;
     SDL_Surface *rz_dst;
@@ -357,7 +360,7 @@ SDL_Surface *_rotateSurface(SDL_Surface * src, double angle, int centerx, int ce
     if (src == NULL)
         return (NULL);
 
-    if (src->flags & SDL_TRUE/*SDL_SRCCOLORKEY*/)
+    if (src->flags & SDL_TRUE/* SDL_SRCCOLORKEY */)
     {
         colorkey = _colorkey(src);
         SDL_GetRGB(colorkey, src->format, &r, &g, &b);
@@ -391,14 +394,14 @@ SDL_Surface *_rotateSurface(SDL_Surface * src, double angle, int centerx, int ce
         SDL_BlitSurface(src, NULL, rz_src, NULL);
 
         if(colorKeyAvailable)
-            SDL_SetColorKey(src, SDL_TRUE /*SDL_SRCCOLORKEY*/, colorkey);
+            SDL_SetColorKey(src, SDL_TRUE /* SDL_SRCCOLORKEY */, colorkey);
         src_converted = 1;
         is32bit = 1;
     }
 
 
     /* Determine target size */
-    /*_rotozoomSurfaceSizeTrig(rz_src->w, rz_src->h, angle, &dstwidth, &dstheight, &cangle, &sangle); */
+    /* _rotozoomSurfaceSizeTrig(rz_src->w, rz_src->h, angle, &dstwidth, &dstheight, &cangle, &sangle); */
 
     /*
     * Calculate target factors from sin/cos and zoom
@@ -459,8 +462,8 @@ SDL_Surface *_rotateSurface(SDL_Surface * src, double angle, int centerx, int ce
         /*
         * Turn on source-alpha support
         */
-        /*SDL_SetAlpha(rz_dst, SDL_SRCALPHA, 255);*/
-        SDL_SetColorKey(rz_dst, /*SDL_SRCCOLORKEY*/ SDL_TRUE | SDL_RLEACCEL, _colorkey(rz_src));
+        /* SDL_SetAlpha(rz_dst, SDL_SRCALPHA, 255); */
+        SDL_SetColorKey(rz_dst, /* SDL_SRCCOLORKEY */ SDL_TRUE | SDL_RLEACCEL, _colorkey(rz_src));
     } else {
         /*
         * Copy palette and colorkey info
@@ -475,7 +478,7 @@ SDL_Surface *_rotateSurface(SDL_Surface * src, double angle, int centerx, int ce
         transformSurfaceY(rz_src, rz_dst, centerx, centery,
             (int) (sangleinv), (int) (cangleinv),
             flipx, flipy);
-        SDL_SetColorKey(rz_dst, /*SDL_SRCCOLORKEY*/ SDL_TRUE | SDL_RLEACCEL, _colorkey(rz_src));
+        SDL_SetColorKey(rz_dst, /* SDL_SRCCOLORKEY */ SDL_TRUE | SDL_RLEACCEL, _colorkey(rz_src));
     }
     /*
     * Unlock source surface
@@ -496,4 +499,3 @@ SDL_Surface *_rotateSurface(SDL_Surface * src, double angle, int centerx, int ce
     */
     return (rz_dst);
 }
-

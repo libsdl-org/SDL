@@ -306,7 +306,7 @@ PSP_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info)
 }
 
 
-/* TO Write Me*/
+/* TO Write Me */
 SDL_bool PSP_HasScreenKeyboardSupport(_THIS)
 {
     return SDL_FALSE;

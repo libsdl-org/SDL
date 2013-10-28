@@ -58,9 +58,12 @@ main(int argc, char *argv[])
 {
     SDL_Thread *thread;
 
+	/* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
     /* Load the SDL library */
     if (SDL_Init(0) < 0) {
-        SDL_Log("Couldn't initialize SDL: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         return (1);
     }
 
@@ -72,7 +75,7 @@ main(int argc, char *argv[])
     alive = 1;
     thread = SDL_CreateThread(ThreadFunc, "One", "#1");
     if (thread == NULL) {
-        SDL_Log("Couldn't create thread: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create thread: %s\n", SDL_GetError());
         quit(1);
     }
     SDL_Delay(5 * 1000);
@@ -86,7 +89,7 @@ main(int argc, char *argv[])
     signal(SIGTERM, killed);
     thread = SDL_CreateThread(ThreadFunc, "Two", "#2");
     if (thread == NULL) {
-        SDL_Log("Couldn't create thread: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create thread: %s\n", SDL_GetError());
         quit(1);
     }
     raise(SIGTERM);

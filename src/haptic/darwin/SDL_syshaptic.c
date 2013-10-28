@@ -93,7 +93,7 @@ FFStrError(HRESULT err)
     case FFERR_DEVICEFULL:
         return "device full";
         /* This should be valid, but for some reason isn't defined... */
-        /*case FFERR_DEVICENOTREG:
+        /* case FFERR_DEVICENOTREG:
            return "device not registered"; */
     case FFERR_DEVICEPAUSED:
         return "device paused";
@@ -343,7 +343,7 @@ GetSupportedFeatures(SDL_Haptic * haptic)
     FF_TEST(FFCAP_ET_CONSTANTFORCE, SDL_HAPTIC_CONSTANT);
     FF_TEST(FFCAP_ET_RAMPFORCE, SDL_HAPTIC_RAMP);
     /* !!! FIXME: put this back when we have more bits in 2.1 */
-    /*FF_TEST(FFCAP_ET_SQUARE, SDL_HAPTIC_SQUARE);*/
+    /* FF_TEST(FFCAP_ET_SQUARE, SDL_HAPTIC_SQUARE); */
     FF_TEST(FFCAP_ET_SINE, SDL_HAPTIC_SINE);
     FF_TEST(FFCAP_ET_TRIANGLE, SDL_HAPTIC_TRIANGLE);
     FF_TEST(FFCAP_ET_SAWTOOTHUP, SDL_HAPTIC_SAWTOOTHUP);
@@ -506,7 +506,7 @@ SDL_SYS_JoystickIsHaptic(SDL_Joystick * joystick)
 
 
 /*
- * Checks to see if the haptic device and joystick and in reality the same.
+ * Checks to see if the haptic device and joystick are in reality the same.
  */
 int
 SDL_SYS_JoystickSameHaptic(SDL_Haptic * haptic, SDL_Joystick * joystick)
@@ -752,7 +752,7 @@ SDL_SYS_ToFFEFFECT(SDL_Haptic * haptic, FFEFFECT * dest,
 
     case SDL_HAPTIC_SINE:
     /* !!! FIXME: put this back when we have more bits in 2.1 */
-    /*case SDL_HAPTIC_SQUARE:*/
+    /* case SDL_HAPTIC_SQUARE: */
     case SDL_HAPTIC_TRIANGLE:
     case SDL_HAPTIC_SAWTOOTHUP:
     case SDL_HAPTIC_SAWTOOTHDOWN:
@@ -943,14 +943,10 @@ SDL_SYS_HapticFreeFFEFFECT(FFEFFECT * effect, int type)
 {
     FFCUSTOMFORCE *custom;
 
-    if (effect->lpEnvelope != NULL) {
-        SDL_free(effect->lpEnvelope);
-        effect->lpEnvelope = NULL;
-    }
-    if (effect->rgdwAxes != NULL) {
-        SDL_free(effect->rgdwAxes);
-        effect->rgdwAxes = NULL;
-    }
+    SDL_free(effect->lpEnvelope);
+    effect->lpEnvelope = NULL;
+    SDL_free(effect->rgdwAxes);
+    effect->rgdwAxes = NULL;
     if (effect->lpvTypeSpecificParams != NULL) {
         if (type == SDL_HAPTIC_CUSTOM) {        /* Must free the custom data. */
             custom = (FFCUSTOMFORCE *) effect->lpvTypeSpecificParams;
@@ -960,10 +956,8 @@ SDL_SYS_HapticFreeFFEFFECT(FFEFFECT * effect, int type)
         SDL_free(effect->lpvTypeSpecificParams);
         effect->lpvTypeSpecificParams = NULL;
     }
-    if (effect->rglDirection != NULL) {
-        SDL_free(effect->rglDirection);
-        effect->rglDirection = NULL;
-    }
+    SDL_free(effect->rglDirection);
+    effect->rglDirection = NULL;
 }
 
 
@@ -981,8 +975,8 @@ SDL_SYS_HapticEffectType(Uint16 type)
         return kFFEffectType_RampForce_ID;
 
     /* !!! FIXME: put this back when we have more bits in 2.1 */
-    /*case SDL_HAPTIC_SQUARE:
-        return kFFEffectType_Square_ID;*/
+    /* case SDL_HAPTIC_SQUARE:
+        return kFFEffectType_Square_ID; */
 
     case SDL_HAPTIC_SINE:
         return kFFEffectType_Sine_ID;
@@ -1061,10 +1055,8 @@ SDL_SYS_HapticNewEffect(SDL_Haptic * haptic, struct haptic_effect *effect,
   err_effectdone:
     SDL_SYS_HapticFreeFFEFFECT(&effect->hweffect->effect, base->type);
   err_hweffect:
-    if (effect->hweffect != NULL) {
-        SDL_free(effect->hweffect);
-        effect->hweffect = NULL;
-    }
+    SDL_free(effect->hweffect);
+    effect->hweffect = NULL;
     return -1;
 }
 

@@ -38,7 +38,7 @@
      (defined(__GNUC__) && defined(__i386__))) && SDL_ASSEMBLY_ROUTINES
 /* There's a bug with gcc 4.4.1 and -O2 where srcp doesn't get the correct
  * value after the first scanline.  FIXME? */
-/*#define USE_ASM_STRETCH*/
+/* #define USE_ASM_STRETCH */
 #endif
 
 #ifdef USE_ASM_STRETCH

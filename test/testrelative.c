@@ -35,6 +35,8 @@ main(int argc, char *argv[])
     int i, done;
     SDL_Event event;
 
+	/* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
@@ -74,16 +76,16 @@ main(int argc, char *argv[])
             switch(event.type) {
                 case SDL_MOUSEMOTION:
                 {
-                    /*printf("mouse motion ABS x %d y %d REL x %d y %d\n",event.motion.x,event.motion.y,event.motion.xrel,event.motion.yrel);*/
                     rect.x += event.motion.xrel;
                     rect.y += event.motion.yrel;
-
                 }
                 break;
             }
         }
         for (i = 0; i < state->num_windows; ++i) {
             SDL_Renderer *renderer = state->renderers[i];
+            if (state->windows[i] == NULL)
+                continue;
             SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
             SDL_RenderClear(renderer);
 

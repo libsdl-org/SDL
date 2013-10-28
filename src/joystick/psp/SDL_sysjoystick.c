@@ -60,7 +60,7 @@ static point c = { 78, 32767 };
 static point d = { 128, 32767 };
 
 /* simple linear interpolation between two points */
-static __inline__ void lerp (point *dest, point *a, point *b, float t)
+static SDL_INLINE void lerp (point *dest, point *a, point *b, float t)
 {
     dest->x = a->x + (b->x - a->x)*t;
     dest->y = a->y + (b->y - a->y)*t;

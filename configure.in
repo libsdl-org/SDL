@@ -20,9 +20,9 @@ dnl Set various version strings - taken gratefully from the GTk sources
 #
 SDL_MAJOR_VERSION=2
 SDL_MINOR_VERSION=0
-SDL_MICRO_VERSION=0
+SDL_MICRO_VERSION=1
 SDL_INTERFACE_AGE=0
-SDL_BINARY_AGE=0
+SDL_BINARY_AGE=1
 SDL_VERSION=$SDL_MAJOR_VERSION.$SDL_MINOR_VERSION.$SDL_MICRO_VERSION
 
 AC_SUBST(SDL_MAJOR_VERSION)
@@ -325,6 +325,7 @@ SOURCES="$SOURCES $srcdir/src/haptic/*.c"
 SOURCES="$SOURCES $srcdir/src/joystick/*.c"
 SOURCES="$SOURCES $srcdir/src/libm/*.c"
 SOURCES="$SOURCES $srcdir/src/power/*.c"
+#SOURCES="$SOURCES $srcdir/src/filesystem/*.c"
 SOURCES="$SOURCES $srcdir/src/render/*.c"
 SOURCES="$SOURCES $srcdir/src/render/*/*.c"
 SOURCES="$SOURCES $srcdir/src/stdlib/*.c"
@@ -381,6 +382,12 @@ AC_HELP_STRING([--enable-power], [Enable the power subsystem [[default=yes]]]),
               , enable_power=yes)
 if test x$enable_power != xyes; then
     AC_DEFINE(SDL_POWER_DISABLED, 1, [ ])
+fi
+AC_ARG_ENABLE(filesystem,
+AC_HELP_STRING([--enable-filesystem], [Enable the filesystem subsystem [[default=yes]]]),
+              , enable_filesystem=yes)
+if test x$enable_filesystem != xyes; then
+    AC_DEFINE(SDL_FILESYSTEM_DISABLED, 1, [ ])
 fi
 AC_ARG_ENABLE(threads,
 AC_HELP_STRING([--enable-threads], [Enable the threading subsystem [[default=yes]]]),
@@ -1681,44 +1688,47 @@ dnl Find OpenGL ES
 CheckOpenGLESX11()
 {
     if test x$enable_video = xyes -a x$enable_video_opengles = xyes; then
-        AC_MSG_CHECKING(for OpenGL ES (EGL) support)
-        video_opengles=no
+        AC_MSG_CHECKING(for EGL support)
+        video_opengl_egl=no
         AC_TRY_COMPILE([
          #include <EGL/egl.h>
         ],[
         ],[
-        video_opengles=yes
+        video_opengl_egl=yes
         ])
-        AC_MSG_RESULT($video_opengles)
-        if test x$video_opengles = xyes; then
-            AC_MSG_CHECKING(for OpenGL ES v1 headers)
-            video_opengles_v1=no
-            AC_TRY_COMPILE([
-             #include <GLES/gl.h>
-             #include <GLES/glext.h>
-            ],[
-            ],[
-            video_opengles_v1=yes
-            ])
-            AC_MSG_RESULT($video_opengles_v1)
-            if test x$video_opengles_v1 = xyes; then
-                AC_DEFINE(SDL_VIDEO_OPENGL_ES, 1, [ ])
-                AC_DEFINE(SDL_VIDEO_RENDER_OGL_ES, 1, [ ])
-            fi
-            AC_MSG_CHECKING(for OpenGL ES v2 headers)
-            video_opengles_v2=no
-            AC_TRY_COMPILE([
-             #include <GLES2/gl2.h>
-             #include <GLES2/gl2ext.h>
-            ],[
-            ],[
-            video_opengles_v2=yes
-            ])
-            AC_MSG_RESULT($video_opengles_v2)
-            if test x$video_opengles_v2 = xyes; then
-                AC_DEFINE(SDL_VIDEO_OPENGL_ES2, 1, [ ])
-                AC_DEFINE(SDL_VIDEO_RENDER_OGL_ES2, 1, [ ])
-            fi
+        AC_MSG_RESULT($video_opengl_egl)
+        if test x$video_opengl_egl = xyes; then
+            AC_DEFINE(SDL_VIDEO_OPENGL_EGL, 1, [ ])
+        fi
+            
+        AC_MSG_CHECKING(for OpenGL ES v1 headers)
+        video_opengles_v1=no
+        AC_TRY_COMPILE([
+         #include <GLES/gl.h>
+         #include <GLES/glext.h>
+        ],[
+        ],[
+        video_opengles_v1=yes
+        ])
+        AC_MSG_RESULT($video_opengles_v1)
+        if test x$video_opengles_v1 = xyes; then
+            AC_DEFINE(SDL_VIDEO_OPENGL_ES, 1, [ ])
+            AC_DEFINE(SDL_VIDEO_RENDER_OGL_ES, 1, [ ])
+        fi
+        
+        AC_MSG_CHECKING(for OpenGL ES v2 headers)
+        video_opengles_v2=no
+        AC_TRY_COMPILE([
+         #include <GLES2/gl2.h>
+         #include <GLES2/gl2ext.h>
+        ],[
+        ],[
+        video_opengles_v2=yes
+        ])
+        AC_MSG_RESULT($video_opengles_v2)
+        if test x$video_opengles_v2 = xyes; then
+            AC_DEFINE(SDL_VIDEO_OPENGL_ES2, 1, [ ])
+            AC_DEFINE(SDL_VIDEO_RENDER_OGL_ES2, 1, [ ])
         fi
     fi
 }
@@ -1779,6 +1789,28 @@ CheckInputEvents()
         if test x$use_input_events = xyes; then
             AC_DEFINE(SDL_INPUT_LINUXEV, 1, [ ])
         fi
+}
+
+dnl See if we can use the kernel kd.h header
+CheckInputKD()
+{
+
+    AC_MSG_CHECKING(for Linux kd.h)
+    use_input_kd=no
+    AC_TRY_COMPILE([
+      #include <linux/kd.h>
+      #include <linux/keyboard.h>
+    ],[
+        struct kbentry kbe;
+        kbe.kb_table = KG_CTRL;
+        ioctl(0, KDGKBENT, &kbe);
+    ],[
+    use_input_kd=yes
+    ])
+    AC_MSG_RESULT($use_input_kd)
+    if test x$use_input_kd = xyes; then
+        AC_DEFINE(SDL_INPUT_LINUXKD, 1, [ ])
+    fi
 }
 
 dnl See if the platform offers libudev for device enumeration and hotplugging.
@@ -2157,138 +2189,142 @@ AC_HELP_STRING([--enable-sdl-dlopen], [use dlopen for shared object loading [[de
 dnl Check for the usbhid(3) library on *BSD
 CheckUSBHID()
 {
-    if test x$enable_joystick = xyes; then
-        AC_CHECK_LIB(usbhid, hid_init, have_libusbhid=yes)
-        if test x$have_libusbhid = xyes; then
-            AC_CHECK_HEADER(usbhid.h, [USB_CFLAGS="-DHAVE_USBHID_H"])
-            AC_CHECK_HEADER(libusbhid.h, [USB_CFLAGS="-DHAVE_LIBUSBHID_H"])
-            USB_LIBS="$USB_LIBS -lusbhid"
-        else
-            AC_CHECK_HEADER(usb.h, [USB_CFLAGS="-DHAVE_USB_H"])
-            AC_CHECK_HEADER(libusb.h, [USB_CFLAGS="-DHAVE_LIBUSB_H"])
-            AC_CHECK_LIB(usb, hid_init, [USB_LIBS="$USB_LIBS -lusb"])
-        fi
-            
-        save_CFLAGS="$CFLAGS"
-        CFLAGS="$CFLAGS $USB_CFLAGS"
+    case "$host" in
+        *-*-*bsd*)
+            if test x$enable_joystick = xyes; then
+                AC_CHECK_LIB(usbhid, hid_init, have_libusbhid=yes)
+                if test x$have_libusbhid = xyes; then
+                    AC_CHECK_HEADER(usbhid.h, [USB_CFLAGS="-DHAVE_USBHID_H"])
+                    AC_CHECK_HEADER(libusbhid.h, [USB_CFLAGS="-DHAVE_LIBUSBHID_H"])
+                    USB_LIBS="$USB_LIBS -lusbhid"
+                else
+                    AC_CHECK_HEADER(usb.h, [USB_CFLAGS="-DHAVE_USB_H"])
+                    AC_CHECK_HEADER(libusb.h, [USB_CFLAGS="-DHAVE_LIBUSB_H"])
+                    AC_CHECK_LIB(usb, hid_init, [USB_LIBS="$USB_LIBS -lusb"])
+                fi
+                    
+                save_CFLAGS="$CFLAGS"
+                CFLAGS="$CFLAGS $USB_CFLAGS"
 
-        AC_MSG_CHECKING(for usbhid)
-        have_usbhid=no
-        AC_TRY_COMPILE([
-          #include <sys/types.h>
-          #if defined(HAVE_USB_H)
-          #include <usb.h>
-          #endif
-          #ifdef __DragonFly__
-          # include <bus/usb/usb.h>
-          # include <bus/usb/usbhid.h>
-          #else
-          # include <dev/usb/usb.h>
-          # include <dev/usb/usbhid.h>
-          #endif
-          #if defined(HAVE_USBHID_H)
-          #include <usbhid.h>
-          #elif defined(HAVE_LIBUSB_H)
-          #include <libusb.h>
-          #elif defined(HAVE_LIBUSBHID_H)
-          #include <libusbhid.h>
-          #endif
-        ],[
-          struct report_desc *repdesc;
-          struct usb_ctl_report *repbuf;
-          hid_kind_t hidkind;
-        ],[
-        have_usbhid=yes
-        ])
-        AC_MSG_RESULT($have_usbhid)
+                AC_MSG_CHECKING(for usbhid)
+                have_usbhid=no
+                AC_TRY_COMPILE([
+                  #include <sys/types.h>
+                  #if defined(HAVE_USB_H)
+                  #include <usb.h>
+                  #endif
+                  #ifdef __DragonFly__
+                  # include <bus/usb/usb.h>
+                  # include <bus/usb/usbhid.h>
+                  #else
+                  # include <dev/usb/usb.h>
+                  # include <dev/usb/usbhid.h>
+                  #endif
+                  #if defined(HAVE_USBHID_H)
+                  #include <usbhid.h>
+                  #elif defined(HAVE_LIBUSB_H)
+                  #include <libusb.h>
+                  #elif defined(HAVE_LIBUSBHID_H)
+                  #include <libusbhid.h>
+                  #endif
+                ],[
+                  struct report_desc *repdesc;
+                  struct usb_ctl_report *repbuf;
+                  hid_kind_t hidkind;
+                ],[
+                have_usbhid=yes
+                ])
+                AC_MSG_RESULT($have_usbhid)
 
-        if test x$have_usbhid = xyes; then
-            AC_MSG_CHECKING(for ucr_data member of usb_ctl_report)
-            have_usbhid_ucr_data=no
-            AC_TRY_COMPILE([
-              #include <sys/types.h>
-              #if defined(HAVE_USB_H)
-              #include <usb.h>
-              #endif
-              #ifdef __DragonFly__
-              # include <bus/usb/usb.h>
-              # include <bus/usb/usbhid.h>
-              #else
-              # include <dev/usb/usb.h>
-              # include <dev/usb/usbhid.h>
-              #endif
-              #if defined(HAVE_USBHID_H)
-              #include <usbhid.h>
-              #elif defined(HAVE_LIBUSB_H)
-              #include <libusb.h>
-              #elif defined(HAVE_LIBUSBHID_H)
-              #include <libusbhid.h>
-              #endif
-            ],[
-              struct usb_ctl_report buf;
-              if (buf.ucr_data) { }
-            ],[
-            have_usbhid_ucr_data=yes
-            ])
-            if test x$have_usbhid_ucr_data = xyes; then
-                USB_CFLAGS="$USB_CFLAGS -DUSBHID_UCR_DATA"
+                if test x$have_usbhid = xyes; then
+                    AC_MSG_CHECKING(for ucr_data member of usb_ctl_report)
+                    have_usbhid_ucr_data=no
+                    AC_TRY_COMPILE([
+                      #include <sys/types.h>
+                      #if defined(HAVE_USB_H)
+                      #include <usb.h>
+                      #endif
+                      #ifdef __DragonFly__
+                      # include <bus/usb/usb.h>
+                      # include <bus/usb/usbhid.h>
+                      #else
+                      # include <dev/usb/usb.h>
+                      # include <dev/usb/usbhid.h>
+                      #endif
+                      #if defined(HAVE_USBHID_H)
+                      #include <usbhid.h>
+                      #elif defined(HAVE_LIBUSB_H)
+                      #include <libusb.h>
+                      #elif defined(HAVE_LIBUSBHID_H)
+                      #include <libusbhid.h>
+                      #endif
+                    ],[
+                      struct usb_ctl_report buf;
+                      if (buf.ucr_data) { }
+                    ],[
+                    have_usbhid_ucr_data=yes
+                    ])
+                    if test x$have_usbhid_ucr_data = xyes; then
+                        USB_CFLAGS="$USB_CFLAGS -DUSBHID_UCR_DATA"
+                    fi
+                    AC_MSG_RESULT($have_usbhid_ucr_data)
+                    
+                    AC_MSG_CHECKING(for new usbhid API)
+                    have_usbhid_new=no
+                    AC_TRY_COMPILE([
+                      #include <sys/types.h>
+                      #if defined(HAVE_USB_H)
+                      #include <usb.h>
+                      #endif
+                      #ifdef __DragonFly__
+                      #include <bus/usb/usb.h>
+                      #include <bus/usb/usbhid.h>
+                      #else
+                      #include <dev/usb/usb.h>
+                      #include <dev/usb/usbhid.h>
+                      #endif
+                      #if defined(HAVE_USBHID_H)
+                      #include <usbhid.h>
+                      #elif defined(HAVE_LIBUSB_H)
+                      #include <libusb.h>
+                      #elif defined(HAVE_LIBUSBHID_H)
+                      #include <libusbhid.h>
+                      #endif
+                    ],[
+                      report_desc_t d;
+                      hid_start_parse(d, 1, 1);
+                    ],[
+                    have_usbhid_new=yes
+                    ])
+                    if test x$have_usbhid_new = xyes; then
+                        USB_CFLAGS="$USB_CFLAGS -DUSBHID_NEW"
+                    fi
+                    AC_MSG_RESULT($have_usbhid_new)
+
+                    AC_MSG_CHECKING(for struct joystick in machine/joystick.h)
+                    have_machine_joystick=no
+                    AC_TRY_COMPILE([
+                      #include <machine/joystick.h>
+                    ],[
+                      struct joystick t;
+                    ],[
+                    have_machine_joystick=yes
+                    ])
+                    if test x$have_machine_joystick = xyes; then
+                        AC_DEFINE(SDL_JOYSTICK_USBHID_MACHINE_JOYSTICK_H, 1, [ ])
+                    fi
+                    AC_MSG_RESULT($have_machine_joystick)
+
+                    AC_DEFINE(SDL_JOYSTICK_USBHID, 1, [ ])
+                    SOURCES="$SOURCES $srcdir/src/joystick/bsd/*.c"
+                    EXTRA_CFLAGS="$EXTRA_CFLAGS $USB_CFLAGS"
+                    EXTRA_LDFLAGS="$EXTRA_LDFLAGS $USB_LIBS"
+                    have_joystick=yes
+                fi
+                CFLAGS="$save_CFLAGS"
             fi
-            AC_MSG_RESULT($have_usbhid_ucr_data)
-            
-            AC_MSG_CHECKING(for new usbhid API)
-            have_usbhid_new=no
-            AC_TRY_COMPILE([
-              #include <sys/types.h>
-              #if defined(HAVE_USB_H)
-              #include <usb.h>
-              #endif
-              #ifdef __DragonFly__
-              #include <bus/usb/usb.h>
-              #include <bus/usb/usbhid.h>
-              #else
-              #include <dev/usb/usb.h>
-              #include <dev/usb/usbhid.h>
-              #endif
-              #if defined(HAVE_USBHID_H)
-              #include <usbhid.h>
-              #elif defined(HAVE_LIBUSB_H)
-              #include <libusb.h>
-              #elif defined(HAVE_LIBUSBHID_H)
-              #include <libusbhid.h>
-              #endif
-            ],[
-              report_desc_t d;
-              hid_start_parse(d, 1, 1);
-            ],[
-            have_usbhid_new=yes
-            ])
-            if test x$have_usbhid_new = xyes; then
-                USB_CFLAGS="$USB_CFLAGS -DUSBHID_NEW"
-            fi
-            AC_MSG_RESULT($have_usbhid_new)
-
-            AC_MSG_CHECKING(for struct joystick in machine/joystick.h)
-            have_machine_joystick=no
-            AC_TRY_COMPILE([
-              #include <machine/joystick.h>
-            ],[
-              struct joystick t;
-            ],[
-            have_machine_joystick=yes
-            ])
-            if test x$have_machine_joystick = xyes; then
-                AC_DEFINE(SDL_JOYSTICK_USBHID_MACHINE_JOYSTICK_H, 1, [ ])
-            fi
-            AC_MSG_RESULT($have_machine_joystick)
-
-            AC_DEFINE(SDL_JOYSTICK_USBHID, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/joystick/bsd/*.c"
-            EXTRA_CFLAGS="$EXTRA_CFLAGS $USB_CFLAGS"
-            EXTRA_LDFLAGS="$EXTRA_LDFLAGS $USB_LIBS"
-            have_joystick=yes
-        fi
-        CFLAGS="$save_CFLAGS"
-    fi
+        ;;
+    esac
 }
 
 dnl Check for clock_gettime()
@@ -2333,6 +2369,21 @@ dnl Set up the configuration based on the host platform!
 case "$host" in
     *-*-linux*|*-*-uclinux*|*-*-gnu*|*-*-k*bsd*-gnu|*-*-bsdi*|*-*-freebsd*|*-*-dragonfly*|*-*-netbsd*|*-*-openbsd*|*-*-sysv5*|*-*-solaris*|*-*-hpux*|*-*-aix*|*-*-minix*)
         case "$host" in
+            *-raspberry-linux*)
+                # Raspberry Pi
+                ARCH=linux
+                RPI_CFLAGS="-I/opt/vc/include -I/opt/vc/include/interface/vcos/pthreads -I/opt/vc/include/interface/vmcs_host/linux"
+                RPI_LDFLAGS="-L/opt/vc/lib -lbcm_host"
+                CFLAGS="$CFLAGS $RPI_CFLAGS"
+                SDL_CFLAGS="$SDL_CFLAGS $RPI_CFLAGS"
+                EXTRA_CFLAGS="$EXTRA_CFLAGS $RPI_CFLAGS"
+                SDL_LIBS="$SDL_LIBS $RPI_LDFLAGS"
+
+                if test x$enable_video = xyes; then
+                    SOURCES="$SOURCES $srcdir/src/video/raspberry/*.c"
+                    $as_echo "#define SDL_VIDEO_DRIVER_RPI 1" >>confdefs.h
+                fi
+                ;;
             *-*-linux*)         ARCH=linux ;;
             *-*-uclinux*)       ARCH=linux ;;
             *-*-kfreebsd*-gnu)  ARCH=kfreebsd-gnu ;;
@@ -2370,6 +2421,7 @@ case "$host" in
         CheckLibUDev
         CheckDBus
         CheckInputEvents
+        CheckInputKD
         CheckTslib
         CheckUSBHID
         CheckPTHREAD
@@ -2428,11 +2480,25 @@ case "$host" in
                ;;
              esac
         fi
+        # Set up files for the filesystem library
+        if test x$enable_filesystem = xyes; then
+            AC_DEFINE(SDL_FILESYSTEM_UNIX, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/filesystem/unix/*.c"
+            have_filesystem=yes
+        fi
         # Set up files for the timer library
         if test x$enable_timers = xyes; then
             AC_DEFINE(SDL_TIMER_UNIX, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/timer/unix/*.c"
             have_timers=yes
+        fi
+        # Set up files for udev hotplugging support
+        if test x$enable_libudev = xyes && test x$have_libudev_h_hdr = xyes; then
+            SOURCES="$SOURCES $srcdir/src/core/linux/SDL_udev.c"               
+        fi
+        # Set up files for evdev input
+        if test x$use_input_events = xyes; then
+            SOURCES="$SOURCES $srcdir/src/input/evdev/*.c"               
         fi
         ;;
     *-*-cygwin* | *-*-mingw32*)
@@ -2505,6 +2571,11 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
             AC_DEFINE(SDL_POWER_WINDOWS, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/power/windows/SDL_syspower.c"
             have_power=yes
+        fi
+        if test x$enable_filesystem = xyes; then
+            AC_DEFINE(SDL_FILESYSTEM_WINDOWS, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/filesystem/windows/SDL_sysfilesystem.c"
+            have_filesystem=yes
         fi
         # Set up files for the thread library
         if test x$enable_threads = xyes; then
@@ -2588,6 +2659,12 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
             SOURCES="$SOURCES $srcdir/src/power/beos/*.c"
             have_power=yes
         fi
+        # Set up files for the system filesystem library
+        if test x$enable_filesystem = xyes; then
+            AC_DEFINE(SDL_FILESYSTEM_BEOS, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/filesystem/beos/*.cc"
+            have_filesystem=yes
+        fi
         # The BeOS platform requires special setup.
         SOURCES="$srcdir/src/main/beos/*.cc $SOURCES"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lroot -lbe -lmedia -lgame -ldevice -ltextencoding"
@@ -2626,6 +2703,11 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         if test x$enable_power = xyes; then
             SOURCES="$SOURCES $srcdir/src/power/uikit/*.m"
             have_power=yes
+        fi
+        # Set up files for the filesystem library
+        if test x$enable_filesystem = xyes; then
+            SOURCES="$SOURCES $srcdir/src/filesystem/cocoa/*.m"
+            have_filesystem=yes
         fi
         # Set up files for the timer library
         if test x$enable_timers = xyes; then
@@ -2700,6 +2782,12 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
             SOURCES="$SOURCES $srcdir/src/power/macosx/*.c"
             have_power=yes
         fi
+        # Set up files for the filesystem library
+        if test x$enable_filesystem = xyes; then
+            AC_DEFINE(SDL_FILESYSTEM_COCOA, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/filesystem/cocoa/*.m"
+            have_filesystem=yes
+        fi
         # Set up files for the timer library
         if test x$enable_timers = xyes; then
             AC_DEFINE(SDL_TIMER_UNIX, 1, [ ])
@@ -2756,6 +2844,12 @@ if test x$have_timers != xyes; then
         AC_DEFINE(SDL_TIMERS_DISABLED, 1, [ ])
     fi
     SOURCES="$SOURCES $srcdir/src/timer/dummy/*.c"
+fi
+if test x$have_filesystem != xyes; then
+    if test x$enable_filesystem = xyes; then
+        AC_DEFINE(SDL_FILESYSTEM_DISABLED, 1, [ ])
+    fi
+    SOURCES="$SOURCES $srcdir/src/filesystem/dummy/*.c"
 fi
 if test x$have_loadso != xyes; then
     if test x$enable_loadso = xyes; then

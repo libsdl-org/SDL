@@ -541,7 +541,7 @@ typedef union SDL_Event
  */
 extern DECLSPEC void SDLCALL SDL_PumpEvents(void);
 
-/*@{*/
+/* @{ */
 typedef enum
 {
     SDL_ADDEVENT,
@@ -570,7 +570,7 @@ typedef enum
 extern DECLSPEC int SDLCALL SDL_PeepEvents(SDL_Event * events, int numevents,
                                            SDL_eventaction action,
                                            Uint32 minType, Uint32 maxType);
-/*@}*/
+/* @} */
 
 /**
  *  Checks to see if certain event types are in the event queue.
@@ -681,7 +681,7 @@ extern DECLSPEC void SDLCALL SDL_DelEventWatch(SDL_EventFilter filter,
 extern DECLSPEC void SDLCALL SDL_FilterEvents(SDL_EventFilter filter,
                                               void *userdata);
 
-/*@{*/
+/* @{ */
 #define SDL_QUERY   -1
 #define SDL_IGNORE   0
 #define SDL_DISABLE  0
@@ -697,7 +697,7 @@ extern DECLSPEC void SDLCALL SDL_FilterEvents(SDL_EventFilter filter,
  *     current processing state of the specified event.
  */
 extern DECLSPEC Uint8 SDLCALL SDL_EventState(Uint32 type, int state);
-/*@}*/
+/* @} */
 #define SDL_GetEventState(type) SDL_EventState(type, SDL_QUERY)
 
 /**

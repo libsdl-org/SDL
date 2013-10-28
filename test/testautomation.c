@@ -80,8 +80,7 @@ main(int argc, char *argv[])
             }
         }
         if (consumed < 0) {
-            fprintf(stderr,
-                    "Usage: %s %s [--iterations #] [--execKey #] [--seed string] [--filter suite_name|test_name]\n",
+            SDL_Log("Usage: %s %s [--iterations #] [--execKey #] [--seed string] [--filter suite_name|test_name]\n",
                     argv[0], SDLTest_CommonUsage(state));
             quit(1);
         }
@@ -114,12 +113,8 @@ main(int argc, char *argv[])
     }
 
     /* Clean up */
-    if (userRunSeed != NULL) {
-        SDL_free(userRunSeed);
-    }
-    if (filter != NULL) {
-        SDL_free(filter);
-    }
+    SDL_free(userRunSeed);
+    SDL_free(filter);
 
     /* Shutdown everything */
     quit(result);

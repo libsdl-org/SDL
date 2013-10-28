@@ -876,7 +876,7 @@ video_getWindowId(void *arg)
   /* Clean up */
   _destroyVideoSuiteTestWindow(window);
 
-  /* Get window from ID for closed window*/
+  /* Get window from ID for closed window */
   result = SDL_GetWindowFromID(id);
   SDLTest_AssertPass("Call to SDL_GetWindowID(%d/closed_window)", id);
   SDLTest_AssertCheck(result == NULL, "Verify result is NULL");
@@ -1714,10 +1714,10 @@ video_getSetWindowData(void *arg)
   _destroyVideoSuiteTestWindow(window);
 
   cleanup:
-  if (referenceUserdata != NULL) SDL_free(referenceUserdata);
-  if (referenceUserdata2 != NULL) SDL_free(referenceUserdata2);
-  if (userdata != NULL) SDL_free(userdata);
-  if (userdata2 != NULL) SDL_free(userdata2);
+  SDL_free(referenceUserdata);
+  SDL_free(referenceUserdata2);
+  SDL_free(userdata);
+  SDL_free(userdata2);
 
   return returnValue;
 }

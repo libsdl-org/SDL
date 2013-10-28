@@ -353,7 +353,7 @@ class SDL_BWin:public BDirectWindow
                - CTRL+Q to close window (and other shortcuts)
                - PrintScreen to make screenshot into /boot/home
                - etc.. */
-            //BDirectWindow::DispatchMessage(msg, target);
+            /* BDirectWindow::DispatchMessage(msg, target); */
             break;
         }
 
@@ -461,9 +461,9 @@ private:
         msg.AddBool("focusGained", focusGained);
         _PostWindowEvent(msg);
 
-//FIXME: Why were these here?
-// if false: be_app->SetCursor(B_HAND_CURSOR);
-// if true:  SDL_SetCursor(NULL);
+/* FIXME: Why were these here?
+ if false: be_app->SetCursor(B_HAND_CURSOR);
+ if true:  SDL_SetCursor(NULL); */
     }
 
     void _MouseButtonEvent(int32 buttons) {

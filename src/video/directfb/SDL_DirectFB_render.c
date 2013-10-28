@@ -131,7 +131,7 @@ SDL_RenderDriver DirectFB_RenderDriver = {
       (SDL_BLENDMODE_NONE | SDL_BLENDMODE_MASK | SDL_BLENDMODE_BLEND |
       SDL_BLENDMODE_ADD | SDL_BLENDMODE_MOD),
      (SDL_SCALEMODE_NONE | SDL_SCALEMODE_FAST |
-      SDL_SCALEMODE_SLOW | SDL_SCALEMODE_BEST),*/
+      SDL_SCALEMODE_SLOW | SDL_SCALEMODE_BEST), */
      0,
      {
              /* formats filled in later */
@@ -167,7 +167,7 @@ typedef struct
 #endif
 } DirectFB_TextureData;
 
-static __inline__ void
+static SDL_INLINE void
 SDLtoDFBRect(const SDL_Rect * sr, DFBRectangle * dr)
 {
     dr->x = sr->x;
@@ -175,7 +175,7 @@ SDLtoDFBRect(const SDL_Rect * sr, DFBRectangle * dr)
     dr->h = sr->h;
     dr->w = sr->w;
 }
-static __inline__ void
+static SDL_INLINE void
 SDLtoDFBRect_Float(const SDL_FRect * sr, DFBRectangle * dr)
 {
     dr->x = sr->x;
@@ -211,7 +211,7 @@ TextureHasAlpha(DirectFB_TextureData * data)
 #endif
 }
 
-static inline IDirectFBSurface *get_dfb_surface(SDL_Window *window)
+static SDL_INLINE IDirectFBSurface *get_dfb_surface(SDL_Window *window)
 {
     SDL_SysWMinfo wm_info;
     SDL_memset(&wm_info, 0, sizeof(SDL_SysWMinfo));
@@ -222,7 +222,7 @@ static inline IDirectFBSurface *get_dfb_surface(SDL_Window *window)
     return wm_info.info.dfb.surface;
 }
 
-static inline IDirectFBWindow *get_dfb_window(SDL_Window *window)
+static SDL_INLINE IDirectFBWindow *get_dfb_window(SDL_Window *window)
 {
     SDL_SysWMinfo wm_info;
     SDL_memset(&wm_info, 0, sizeof(SDL_SysWMinfo));
@@ -266,7 +266,7 @@ SetBlendMode(DirectFB_RenderData * data, int blendMode,
         case SDL_BLENDMODE_ADD:
             data->blitFlags = DSBLIT_BLEND_ALPHACHANNEL;
             data->drawFlags = DSDRAW_BLEND;
-            /* FIXME: SRCALPHA kills performance on radeon ... */
+            /* FIXME: SRCALPHA kills performance on radeon ...
              * It will be cheaper to copy the surface to a temporary surface and premultiply
              */
             if (source && TextureHasAlpha(source))
@@ -308,7 +308,7 @@ DisplayPaletteChanged(void *userdata, SDL_Palette * palette)
         entries[i].r = palette->colors[i].r;
         entries[i].g = palette->colors[i].g;
         entries[i].b = palette->colors[i].b;
-        entries[i].a = palette->colors[i].unused;
+        entries[i].a = palette->colors[i].a;
     }
     SDL_DFB_CHECKERR(surfpal->SetEntries(surfpal, entries, ncolors, 0));
     return 0;
@@ -326,8 +326,8 @@ DirectFB_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
 
     if (event->event == SDL_WINDOWEVENT_SIZE_CHANGED) {
         /* Rebind the context to the window area and update matrices */
-        /*SDL_CurrentContext = NULL; */
-        /*data->updateSize = SDL_TRUE; */
+        /* SDL_CurrentContext = NULL; */
+        /* data->updateSize = SDL_TRUE; */
         renddata->size_changed = SDL_TRUE;
    }
 }
@@ -379,7 +379,7 @@ DirectFB_CreateRenderer(SDL_Window * window, Uint32 flags)
 
     /* FIXME: Yet to be tested */
     renderer->RenderReadPixels = DirectFB_RenderReadPixels;
-    /*renderer->RenderWritePixels = DirectFB_RenderWritePixels; */
+    /* renderer->RenderWritePixels = DirectFB_RenderWritePixels; */
 
     renderer->DestroyTexture = DirectFB_DestroyTexture;
     renderer->DestroyRenderer = DirectFB_DestroyRenderer;
@@ -450,7 +450,7 @@ DirectFB_ActivateRenderer(SDL_Renderer * renderer)
     SDL_Window *window = renderer->window;
     SDL_DFB_WINDOWDATA(window);
 
-    if (renddata->size_changed /*|| windata->wm_needs_redraw*/) {
+    if (renddata->size_changed /* || windata->wm_needs_redraw */) {
         renddata->size_changed = SDL_FALSE;
     }
 }
@@ -674,7 +674,7 @@ DirectFB_GetTexturePalette(SDL_Renderer * renderer,
             colors[i].r = entries[i].r;
             colors[i].g = entries[i].g;
             colors[i].b = entries[i].b;
-            colors[i].unused = SDL_ALPHA_OPAQUE;
+            colors[i].a = SDL_ALPHA_OPAQUE;
         }
         return 0;
     } else {
@@ -701,7 +701,7 @@ DirectFB_SetTextureBlendMode(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     switch (texture->blendMode) {
     case SDL_BLENDMODE_NONE:
-    /*case SDL_BLENDMODE_MASK: */
+    /* case SDL_BLENDMODE_MASK: */
     case SDL_BLENDMODE_BLEND:
     case SDL_BLENDMODE_ADD:
     case SDL_BLENDMODE_MOD:
@@ -717,7 +717,7 @@ DirectFB_SetDrawBlendMode(SDL_Renderer * renderer)
 {
     switch (renderer->blendMode) {
     case SDL_BLENDMODE_NONE:
-    /*case SDL_BLENDMODE_MASK: */
+    /* case SDL_BLENDMODE_MASK: */
     case SDL_BLENDMODE_BLEND:
     case SDL_BLENDMODE_ADD:
     case SDL_BLENDMODE_MOD:
@@ -916,7 +916,7 @@ PrepareDraw(SDL_Renderer * renderer)
 
     switch (renderer->blendMode) {
     case SDL_BLENDMODE_NONE:
-    /*case SDL_BLENDMODE_MASK: */
+    /* case SDL_BLENDMODE_MASK: */
     case SDL_BLENDMODE_BLEND:
         break;
     case SDL_BLENDMODE_ADD:
@@ -1226,9 +1226,7 @@ DirectFB_DestroyRenderer(SDL_Renderer * renderer)
     }
 #endif
 
-    if (data) {
-        SDL_free(data);
-    }
+    SDL_free(data);
     SDL_free(renderer);
 }
 

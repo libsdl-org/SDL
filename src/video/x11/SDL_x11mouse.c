@@ -50,12 +50,12 @@ X11_CreateEmptyCursor()
 
         SDL_zero(data);
         color.red = color.green = color.blue = 0;
-        pixmap = XCreateBitmapFromData(display, DefaultRootWindow(display),
+        pixmap = X11_XCreateBitmapFromData(display, DefaultRootWindow(display),
                                        data, 1, 1);
         if (pixmap) {
-            x11_empty_cursor = XCreatePixmapCursor(display, pixmap, pixmap,
+            x11_empty_cursor = X11_XCreatePixmapCursor(display, pixmap, pixmap,
                                                    &color, &color, 0, 0);
-            XFreePixmap(display, pixmap);
+            X11_XFreePixmap(display, pixmap);
         }
     }
     return x11_empty_cursor;
@@ -65,7 +65,7 @@ static void
 X11_DestroyEmptyCursor(void)
 {
     if (x11_empty_cursor != None) {
-        XFreeCursor(GetDisplay(), x11_empty_cursor);
+        X11_XFreeCursor(GetDisplay(), x11_empty_cursor);
         x11_empty_cursor = None;
     }
 }
@@ -94,7 +94,7 @@ X11_CreateXCursorCursor(SDL_Surface * surface, int hot_x, int hot_y)
     Cursor cursor = None;
     XcursorImage *image;
 
-    image = XcursorImageCreate(surface->w, surface->h);
+    image = X11_XcursorImageCreate(surface->w, surface->h);
     if (!image) {
         SDL_OutOfMemory();
         return None;
@@ -107,9 +107,9 @@ X11_CreateXCursorCursor(SDL_Surface * surface, int hot_x, int hot_y)
     SDL_assert(surface->pitch == surface->w * 4);
     SDL_memcpy(image->pixels, surface->pixels, surface->h * surface->pitch);
 
-    cursor = XcursorImageLoadCursor(display, image);
+    cursor = X11_XcursorImageLoadCursor(display, image);
 
-    XcursorImageDestroy(image);
+    X11_XcursorImageDestroy(image);
 
     return cursor;
 }
@@ -186,16 +186,16 @@ X11_CreatePixmapCursor(SDL_Surface * surface, int hot_x, int hot_y)
     }
     else bg.red = bg.green = bg.blue = 0;
 
-    data_pixmap = XCreateBitmapFromData(display, DefaultRootWindow(display),
+    data_pixmap = X11_XCreateBitmapFromData(display, DefaultRootWindow(display),
                                         (char*)data_bits,
                                         surface->w, surface->h);
-    mask_pixmap = XCreateBitmapFromData(display, DefaultRootWindow(display),
+    mask_pixmap = X11_XCreateBitmapFromData(display, DefaultRootWindow(display),
                                         (char*)mask_bits,
                                         surface->w, surface->h);
-    cursor = XCreatePixmapCursor(display, data_pixmap, mask_pixmap,
+    cursor = X11_XCreatePixmapCursor(display, data_pixmap, mask_pixmap,
                                  &fg, &bg, hot_x, hot_y);
-    XFreePixmap(display, data_pixmap);
-    XFreePixmap(display, mask_pixmap);
+    X11_XFreePixmap(display, data_pixmap);
+    X11_XFreePixmap(display, mask_pixmap);
 
     return cursor;
 }
@@ -256,7 +256,7 @@ X11_CreateSystemCursor(SDL_SystemCursor id)
     if (cursor) {
         Cursor x11_cursor;
 
-        x11_cursor = XCreateFontCursor(GetDisplay(), shape);
+        x11_cursor = X11_XCreateFontCursor(GetDisplay(), shape);
 
         cursor->driverdata = (void*)x11_cursor;
     } else {
@@ -272,7 +272,7 @@ X11_FreeCursor(SDL_Cursor * cursor)
     Cursor x11_cursor = (Cursor)cursor->driverdata;
 
     if (x11_cursor != None) {
-        XFreeCursor(GetDisplay(), x11_cursor);
+        X11_XFreeCursor(GetDisplay(), x11_cursor);
     }
     SDL_free(cursor);
 }
@@ -298,12 +298,12 @@ X11_ShowCursor(SDL_Cursor * cursor)
         for (window = video->windows; window; window = window->next) {
             data = (SDL_WindowData *)window->driverdata;
             if (x11_cursor != None) {
-                XDefineCursor(display, data->xwindow, x11_cursor);
+                X11_XDefineCursor(display, data->xwindow, x11_cursor);
             } else {
-                XUndefineCursor(display, data->xwindow);
+                X11_XUndefineCursor(display, data->xwindow);
             }
         }
-        XFlush(display);
+        X11_XFlush(display);
     }
     return 0;
 }
@@ -314,8 +314,8 @@ X11_WarpMouse(SDL_Window * window, int x, int y)
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     Display *display = data->videodata->display;
 
-    XWarpPointer(display, None, data->xwindow, 0, 0, 0, 0, x, y);
-    XSync(display, False);
+    X11_XWarpPointer(display, None, data->xwindow, 0, 0, 0, 0, x, y);
+    X11_XSync(display, False);
 }
 
 static int

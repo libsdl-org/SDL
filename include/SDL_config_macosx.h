@@ -171,6 +171,9 @@
 /* Enable system power support */
 #define SDL_POWER_MACOSX 1
 
+/* enable filesystem support */
+#define SDL_FILESYSTEM_COCOA   1
+
 /* Enable assembly routines */
 #define SDL_ASSEMBLY_ROUTINES   1
 #ifdef __ppc__

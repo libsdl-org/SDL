@@ -39,10 +39,10 @@ extern "C" {
  *
  *  These define alpha as the opacity of a surface.
  */
-/*@{*/
+/* @{ */
 #define SDL_ALPHA_OPAQUE 255
 #define SDL_ALPHA_TRANSPARENT 0
-/*@}*/
+/* @} */
 
 /** Pixel type. */
 enum

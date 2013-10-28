@@ -63,7 +63,7 @@ PSPAUD_OpenDevice(_THIS, const char *devname, int iscapture)
     this->spec.freq = 44100;
 
     /* Update the fragment size as size in bytes. */
-//  SDL_CalculateAudioSpec(this->spec); MOD
+/*  SDL_CalculateAudioSpec(this->spec); MOD */
     switch (this->spec.format) {
     case AUDIO_U8:
         this->spec.silence = 0x80;
@@ -76,7 +76,7 @@ PSPAUD_OpenDevice(_THIS, const char *devname, int iscapture)
     this->spec.size *= this->spec.channels;
     this->spec.size *= this->spec.samples;
 
-//==========================================
+/* ========================================== */
 
     /* Allocate the mixing buffer.  Its size and starting address must
        be a multiple of 64 bytes.  Our sample count is already a multiple of
@@ -162,7 +162,7 @@ static int
 PSPAUD_Init(SDL_AudioDriverImpl * impl)
 {
 
-    // Set the function pointers
+    /* Set the function pointers */
     impl->OpenDevice = PSPAUD_OpenDevice;
     impl->PlayDevice = PSPAUD_PlayDevice;
     impl->WaitDevice = PSPAUD_WaitDevice;
@@ -171,7 +171,7 @@ PSPAUD_Init(SDL_AudioDriverImpl * impl)
     impl->CloseDevice = PSPAUD_CloseDevice;
     impl->ThreadInit = PSPAUD_ThreadInit;
 
-    //PSP audio device
+    /* PSP audio device */
     impl->OnlyHasDefaultOutputDevice = 1;
 /*
     impl->HasCaptureSupport = 1;
@@ -189,7 +189,7 @@ AudioBootStrap PSPAUD_bootstrap = {
     "psp", "PSP audio driver", PSPAUD_Init, 0
 };
 
- /* SDL_AUDI*/
+ /* SDL_AUDI */
 
 
 

@@ -34,7 +34,7 @@ struct _DFB_WindowData
     IDirectFBSurface        *surface;           /* client drawing surface */
     IDirectFBWindow         *dfbwin;
     IDirectFBEventBuffer    *eventbuffer;
-    /*SDL_Window                *sdlwin; */
+    /* SDL_Window                *sdlwin; */
     SDL_Window              *next;
     Uint8                   opacity;
     DFBRectangle            client;

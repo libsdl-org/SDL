@@ -22,6 +22,8 @@
 
 #if SDL_VIDEO_DRIVER_WINDOWS
 
+#include "../../core/windows/SDL_windows.h"
+
 #include "SDL_assert.h"
 #include "../SDL_sysvideo.h"
 #include "../SDL_pixels_c.h"
@@ -113,7 +115,7 @@ SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, SDL_bool created)
     SDL_WindowData *data;
 
     /* Allocate the window data */
-    data = (SDL_WindowData *) SDL_malloc(sizeof(*data));
+    data = (SDL_WindowData *) SDL_calloc(1, sizeof(*data));
     if (!data) {
         return SDL_OutOfMemory();
     }
@@ -157,7 +159,7 @@ SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, SDL_bool created)
             int w = rect.right;
             int h = rect.bottom;
             if ((window->w && window->w != w) || (window->h && window->h != h)) {
-                // We tried to create a window larger than the desktop and Windows didn't allow it.  Override!
+                /* We tried to create a window larger than the desktop and Windows didn't allow it.  Override! */
                 WIN_SetWindowPositionInternal(_this, window, SWP_NOCOPYBITS | SWP_NOZORDER | SWP_NOACTIVATE);
             } else {
                 window->w = w;
@@ -319,9 +321,7 @@ WIN_SetWindowTitle(_THIS, SDL_Window * window)
         title = NULL;
     }
     SetWindowText(hwnd, title ? title : TEXT(""));
-    if (title) {
-        SDL_free(title);
-    }
+    SDL_free(title);
 }
 
 void
@@ -405,6 +405,9 @@ void
 WIN_RaiseWindow(_THIS, SDL_Window * window)
 {
     WIN_SetWindowPositionInternal(_this, window, SWP_NOCOPYBITS | SWP_NOMOVE | SWP_NOSIZE);
+
+    /* Raising the window while alt-tabbed can cause it to be minimized for some reason? */
+    WIN_RestoreWindow(_this, window);
 }
 
 void

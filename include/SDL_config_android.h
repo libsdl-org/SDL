@@ -129,10 +129,14 @@
 
 /* Enable OpenGL ES */
 #define SDL_VIDEO_OPENGL_ES 1
+#define SDL_VIDEO_OPENGL_EGL 1
 #define SDL_VIDEO_RENDER_OGL_ES 1
 #define SDL_VIDEO_RENDER_OGL_ES2    1
 
 /* Enable system power support */
 #define SDL_POWER_ANDROID 1
+
+/* !!! FIXME: what does Android do for filesystem stuff? */
+#define SDL_FILESYSTEM_DUMMY   1
 
 #endif /* _SDL_config_android_h */

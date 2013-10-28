@@ -11,7 +11,6 @@
 */
 /* This is a simple example of using GLSL shaders with SDL */
 
-#include <stdio.h> /* for printf() */
 #include "SDL.h"
 
 #ifdef HAVE_OPENGL
@@ -139,7 +138,7 @@ static SDL_bool CompileShader(GLhandleARB shader, const char *source)
         glGetObjectParameterivARB(shader, GL_OBJECT_INFO_LOG_LENGTH_ARB, &length);
         info = SDL_stack_alloc(char, length+1);
         glGetInfoLogARB(shader, length, NULL, info);
-        fprintf(stderr, "Failed to compile shader:\n%s\n%s", source, info);
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to compile shader:\n%s\n%s", source, info);
         SDL_stack_free(info);
 
         return SDL_FALSE;
@@ -245,7 +244,7 @@ static SDL_bool InitShaders()
     /* Compile all the shaders */
     for (i = 0; i < NUM_SHADERS; ++i) {
         if (!CompileShaderProgram(&shaders[i])) {
-            fprintf(stderr, "Unable to compile shader!\n");
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to compile shader!\n");
             return SDL_FALSE;
         }
     }
@@ -333,19 +332,19 @@ SDL_GL_LoadTexture(SDL_Surface * surface, GLfloat * texcoord)
 }
 
 /* A general OpenGL initialization function.    Sets all of the initial parameters. */
-void InitGL(int Width, int Height)                    // We call this right after our OpenGL window is created.
+void InitGL(int Width, int Height)                    /* We call this right after our OpenGL window is created. */
 {
     GLdouble aspect;
 
     glViewport(0, 0, Width, Height);
-    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);        // This Will Clear The Background Color To Black
-    glClearDepth(1.0);                // Enables Clearing Of The Depth Buffer
-    glDepthFunc(GL_LESS);                // The Type Of Depth Test To Do
-    glEnable(GL_DEPTH_TEST);            // Enables Depth Testing
-    glShadeModel(GL_SMOOTH);            // Enables Smooth Color Shading
+    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);        /* This Will Clear The Background Color To Black */
+    glClearDepth(1.0);                /* Enables Clearing Of The Depth Buffer */
+    glDepthFunc(GL_LESS);                /* The Type Of Depth Test To Do */
+    glEnable(GL_DEPTH_TEST);            /* Enables Depth Testing */
+    glShadeModel(GL_SMOOTH);            /* Enables Smooth Color Shading */
 
     glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();                // Reset The Projection Matrix
+    glLoadIdentity();                /* Reset The Projection Matrix */
 
     aspect = (GLdouble)Width / Height;
     glOrtho(-3.0, 3.0, -3.0 / aspect, 3.0 / aspect, 0.0, 1.0);
@@ -364,29 +363,29 @@ void DrawGLScene(SDL_Window *window, GLuint texture, GLfloat * texcoord)
         MAXY
     };
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);        // Clear The Screen And The Depth Buffer
-    glLoadIdentity();                // Reset The View
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);        /* Clear The Screen And The Depth Buffer */
+    glLoadIdentity();                /* Reset The View */
 
-    glTranslatef(-1.5f,0.0f,0.0f);        // Move Left 1.5 Units
+    glTranslatef(-1.5f,0.0f,0.0f);        /* Move Left 1.5 Units */
 
-    // draw a triangle (in smooth coloring mode)
-    glBegin(GL_POLYGON);                // start drawing a polygon
-    glColor3f(1.0f,0.0f,0.0f);            // Set The Color To Red
-    glVertex3f( 0.0f, 1.0f, 0.0f);        // Top
-    glColor3f(0.0f,1.0f,0.0f);            // Set The Color To Green
-    glVertex3f( 1.0f,-1.0f, 0.0f);        // Bottom Right
-    glColor3f(0.0f,0.0f,1.0f);            // Set The Color To Blue
-    glVertex3f(-1.0f,-1.0f, 0.0f);        // Bottom Left
-    glEnd();                    // we're done with the polygon (smooth color interpolation)
+    /* draw a triangle (in smooth coloring mode) */
+    glBegin(GL_POLYGON);                /* start drawing a polygon */
+    glColor3f(1.0f,0.0f,0.0f);            /* Set The Color To Red */
+    glVertex3f( 0.0f, 1.0f, 0.0f);        /* Top */
+    glColor3f(0.0f,1.0f,0.0f);            /* Set The Color To Green */
+    glVertex3f( 1.0f,-1.0f, 0.0f);        /* Bottom Right */
+    glColor3f(0.0f,0.0f,1.0f);            /* Set The Color To Blue */
+    glVertex3f(-1.0f,-1.0f, 0.0f);        /* Bottom Left */
+    glEnd();                    /* we're done with the polygon (smooth color interpolation) */
 
-    glTranslatef(3.0f,0.0f,0.0f);         // Move Right 3 Units
+    glTranslatef(3.0f,0.0f,0.0f);         /* Move Right 3 Units */
 
-    // Enable blending
+    /* Enable blending */
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    // draw a textured square (quadrilateral)
+    /* draw a textured square (quadrilateral) */
     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, texture);
     glColor3f(1.0f,1.0f,1.0f);
@@ -394,23 +393,23 @@ void DrawGLScene(SDL_Window *window, GLuint texture, GLfloat * texcoord)
         glUseProgramObjectARB(shaders[current_shader].program);
     }
 
-    glBegin(GL_QUADS);                // start drawing a polygon (4 sided)
+    glBegin(GL_QUADS);                /* start drawing a polygon (4 sided) */
     glTexCoord2f(texcoord[MINX], texcoord[MINY]);
-    glVertex3f(-1.0f, 1.0f, 0.0f);        // Top Left
+    glVertex3f(-1.0f, 1.0f, 0.0f);        /* Top Left */
     glTexCoord2f(texcoord[MAXX], texcoord[MINY]);
-    glVertex3f( 1.0f, 1.0f, 0.0f);        // Top Right
+    glVertex3f( 1.0f, 1.0f, 0.0f);        /* Top Right */
     glTexCoord2f(texcoord[MAXX], texcoord[MAXY]);
-    glVertex3f( 1.0f,-1.0f, 0.0f);        // Bottom Right
+    glVertex3f( 1.0f,-1.0f, 0.0f);        /* Bottom Right */
     glTexCoord2f(texcoord[MINX], texcoord[MAXY]);
-    glVertex3f(-1.0f,-1.0f, 0.0f);        // Bottom Left
-    glEnd();                    // done with the polygon
+    glVertex3f(-1.0f,-1.0f, 0.0f);        /* Bottom Left */
+    glEnd();                    /* done with the polygon */
 
     if (shaders_supported) {
         glUseProgramObjectARB(0);
     }
     glDisable(GL_TEXTURE_2D);
 
-    // swap buffers to display, since we're double buffered.
+    /* swap buffers to display, since we're double buffered. */
     SDL_GL_SwapWindow(window);
 }
 
@@ -422,29 +421,32 @@ int main(int argc, char **argv)
     GLuint texture;
     GLfloat texcoords[4];
 
+	/* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
     /* Initialize SDL for video output */
     if ( SDL_Init(SDL_INIT_VIDEO) < 0 ) {
-        fprintf(stderr, "Unable to initialize SDL: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to initialize SDL: %s\n", SDL_GetError());
         exit(1);
     }
 
     /* Create a 640x480 OpenGL screen */
     window = SDL_CreateWindow( "Shader Demo", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 480, SDL_WINDOW_OPENGL );
     if ( !window ) {
-        fprintf(stderr, "Unable to create OpenGL window: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to create OpenGL window: %s\n", SDL_GetError());
         SDL_Quit();
         exit(2);
     }
 
     if ( !SDL_GL_CreateContext(window)) {
-        fprintf(stderr, "Unable to create OpenGL context: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to create OpenGL context: %s\n", SDL_GetError());
         SDL_Quit();
         exit(2);
     }
 
     surface = SDL_LoadBMP("icon.bmp");
     if ( ! surface ) {
-        fprintf(stderr, "Unable to load icon.bmp: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to load icon.bmp: %s\n", SDL_GetError());
         SDL_Quit();
         exit(3);
     }
@@ -454,9 +456,9 @@ int main(int argc, char **argv)
     /* Loop, drawing and checking events */
     InitGL(640, 480);
     if (InitShaders()) {
-        printf("Shaders supported, press SPACE to cycle them.\n");
+        SDL_Log("Shaders supported, press SPACE to cycle them.\n");
     } else {
-        printf("Shaders not supported!\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Shaders not supported!\n");
     }
     done = 0;
     while ( ! done ) {
@@ -489,7 +491,7 @@ int main(int argc, char **argv)
 int
 main(int argc, char *argv[])
 {
-    printf("No OpenGL support on this system\n");
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "No OpenGL support on this system\n");
     return 1;
 }
 

@@ -204,13 +204,7 @@ static void
 Cocoa_WarpMouse(SDL_Window * window, int x, int y)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
-    CGPoint point = CGPointMake(x, y);
-
-    if (!(window->flags & SDL_WINDOW_FULLSCREEN))
-    {
-        point.x += window->x;
-        point.y += window->y;
-    }
+    CGPoint point = CGPointMake(x + (float)window->x, y + (float)window->y);
 
     {
         /* This makes Cocoa_HandleMouseEvent ignore this delta in the next

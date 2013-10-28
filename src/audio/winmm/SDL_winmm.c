@@ -176,11 +176,9 @@ WINMM_CloseDevice(_THIS)
             }
         }
 
-        if (this->hidden->mixbuf != NULL) {
-            /* Free raw mixing buffer */
-            SDL_free(this->hidden->mixbuf);
-            this->hidden->mixbuf = NULL;
-        }
+        /* Free raw mixing buffer */
+        SDL_free(this->hidden->mixbuf);
+        this->hidden->mixbuf = NULL;
 
         if (this->hidden->hin) {
             waveInClose(this->hidden->hin);

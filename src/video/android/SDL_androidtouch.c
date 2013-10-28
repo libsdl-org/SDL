@@ -31,6 +31,7 @@
 
 #include "SDL_androidtouch.h"
 
+#include "../../core/android/SDL_android.h"
 
 #define ACTION_DOWN 0
 #define ACTION_UP 1
@@ -51,6 +52,19 @@ static void Android_GetWindowCoordinates(float x, float y,
     SDL_GetWindowSize(Android_Window, &window_w, &window_h);
     *window_x = (int)(x * window_w);
     *window_y = (int)(y * window_h);
+}
+
+void Android_InitTouch(void)
+{
+    int i;
+    int* ids;
+    int number = Android_JNI_GetTouchDeviceIds(&ids);
+    if (0 < number) {
+        for (i = 0; i < number; ++i) {
+            SDL_AddTouch((SDL_TouchID) ids[i], ""); /* no error handling */
+        }
+        SDL_free(ids);
+    }
 }
 
 void Android_OnTouch(int touch_device_id_in, int pointer_finger_id_in, int action, float x, float y, float p)

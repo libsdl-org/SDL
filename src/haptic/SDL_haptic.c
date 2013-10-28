@@ -379,10 +379,8 @@ void
 SDL_HapticQuit(void)
 {
     SDL_SYS_HapticQuit();
-    if (SDL_haptics != NULL) {
-        SDL_free(SDL_haptics);
-        SDL_haptics = NULL;
-    }
+    SDL_free(SDL_haptics);
+    SDL_haptics = NULL;
     SDL_numhaptics = 0;
 }
 

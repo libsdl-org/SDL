@@ -231,12 +231,8 @@ extern "C"
         if (joystick->hwdata) {
             joystick->hwdata->stick->Close();
             delete joystick->hwdata->stick;
-            if (joystick->hwdata->new_hats) {
-                SDL_free(joystick->hwdata->new_hats);
-            }
-            if (joystick->hwdata->new_axes) {
-                SDL_free(joystick->hwdata->new_axes);
-            }
+            SDL_free(joystick->hwdata->new_hats);
+            SDL_free(joystick->hwdata->new_axes);
             SDL_free(joystick->hwdata);
             joystick->hwdata = NULL;
         }

@@ -22,6 +22,7 @@
 
 /* The SDL 2D rendering system */
 
+#include "SDL_assert.h"
 #include "SDL_hints.h"
 #include "SDL_log.h"
 #include "SDL_render.h"
@@ -120,7 +121,12 @@ SDL_RendererEventWatch(void *userdata, SDL_Event *event)
                     /* Window was resized, reset viewport */
                     int w, h;
 
-                    SDL_GetWindowSize(window, &w, &h);
+                    if (renderer->GetOutputSize) {
+                        renderer->GetOutputSize(renderer, &w, &h);
+                    } else {
+                        SDL_GetWindowSize(renderer->window, &w, &h);
+                    }
+
                     if (renderer->target) {
                         renderer->viewport_backup.x = 0;
                         renderer->viewport_backup.y = 0;
@@ -338,11 +344,11 @@ SDL_GetRendererOutputSize(SDL_Renderer * renderer, int *w, int *h)
 
     if (renderer->target) {
         return SDL_QueryTexture(renderer->target, NULL, NULL, w, h);
+    } else if (renderer->GetOutputSize) {
+        return renderer->GetOutputSize(renderer, w, h);
     } else if (renderer->window) {
         SDL_GetWindowSize(renderer->window, w, h);
         return 0;
-    } else if (renderer->GetOutputSize) {
-        return renderer->GetOutputSize(renderer, w, h);
     } else {
         /* This should never happen */
         SDL_SetError("Renderer doesn't support querying output size");
@@ -405,6 +411,11 @@ SDL_CreateTexture(SDL_Renderer * renderer, Uint32 format, int access, int w, int
     }
     if (w <= 0 || h <= 0) {
         SDL_SetError("Texture dimensions can't be 0");
+        return NULL;
+    }
+    if ((renderer->info.max_texture_width && w > renderer->info.max_texture_width) ||
+        (renderer->info.max_texture_height && h > renderer->info.max_texture_height)) {
+        SDL_SetError("Texture dimensions are limited to %dx%d", renderer->info.max_texture_width, renderer->info.max_texture_height);
         return NULL;
     }
     texture = (SDL_Texture *) SDL_calloc(1, sizeof(*texture));
@@ -800,6 +811,110 @@ SDL_UpdateTexture(SDL_Texture * texture, const SDL_Rect * rect,
         renderer = texture->renderer;
         return renderer->UpdateTexture(renderer, texture, rect, pixels, pitch);
     }
+}
+
+static int
+SDL_UpdateTextureYUVPlanar(SDL_Texture * texture, const SDL_Rect * rect,
+                           const Uint8 *Yplane, int Ypitch,
+                           const Uint8 *Uplane, int Upitch,
+                           const Uint8 *Vplane, int Vpitch)
+{
+    SDL_Texture *native = texture->native;
+    SDL_Rect full_rect;
+
+    if (SDL_SW_UpdateYUVTexturePlanar(texture->yuv, rect, Yplane, Ypitch, Uplane, Upitch, Vplane, Vpitch) < 0) {
+        return -1;
+    }
+
+    full_rect.x = 0;
+    full_rect.y = 0;
+    full_rect.w = texture->w;
+    full_rect.h = texture->h;
+    rect = &full_rect;
+
+    if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
+        /* We can lock the texture and copy to it */
+        void *native_pixels;
+        int native_pitch;
+
+        if (SDL_LockTexture(native, rect, &native_pixels, &native_pitch) < 0) {
+            return -1;
+        }
+        SDL_SW_CopyYUVToRGB(texture->yuv, rect, native->format,
+                            rect->w, rect->h, native_pixels, native_pitch);
+        SDL_UnlockTexture(native);
+    } else {
+        /* Use a temporary buffer for updating */
+        void *temp_pixels;
+        int temp_pitch;
+
+        temp_pitch = (((rect->w * SDL_BYTESPERPIXEL(native->format)) + 3) & ~3);
+        temp_pixels = SDL_malloc(rect->h * temp_pitch);
+        if (!temp_pixels) {
+            return SDL_OutOfMemory();
+        }
+        SDL_SW_CopyYUVToRGB(texture->yuv, rect, native->format,
+                            rect->w, rect->h, temp_pixels, temp_pitch);
+        SDL_UpdateTexture(native, rect, temp_pixels, temp_pitch);
+        SDL_free(temp_pixels);
+    }
+    return 0;
+}
+
+int SDL_UpdateYUVTexture(SDL_Texture * texture, const SDL_Rect * rect,
+                         const Uint8 *Yplane, int Ypitch,
+                         const Uint8 *Uplane, int Upitch,
+                         const Uint8 *Vplane, int Vpitch)
+{
+    SDL_Renderer *renderer;
+    SDL_Rect full_rect;
+
+    CHECK_TEXTURE_MAGIC(texture, -1);
+
+    if (!Yplane) {
+        return SDL_InvalidParamError("Yplane");
+    }
+    if (!Ypitch) {
+        return SDL_InvalidParamError("Ypitch");
+    }
+    if (!Uplane) {
+        return SDL_InvalidParamError("Uplane");
+    }
+    if (!Upitch) {
+        return SDL_InvalidParamError("Upitch");
+    }
+    if (!Vplane) {
+        return SDL_InvalidParamError("Vplane");
+    }
+    if (!Vpitch) {
+        return SDL_InvalidParamError("Vpitch");
+    }
+
+    if (texture->format != SDL_PIXELFORMAT_YV12 &&
+        texture->format != SDL_PIXELFORMAT_IYUV) {
+        return SDL_SetError("Texture format must by YV12 or IYUV");
+    }
+
+    if (!rect) {
+        full_rect.x = 0;
+        full_rect.y = 0;
+        full_rect.w = texture->w;
+        full_rect.h = texture->h;
+        rect = &full_rect;
+    }
+
+    if (texture->yuv) {
+        return SDL_UpdateTextureYUVPlanar(texture, rect, Yplane, Ypitch, Uplane, Upitch, Vplane, Vpitch);
+    } else {
+        SDL_assert(!texture->native);
+        renderer = texture->renderer;
+        SDL_assert(renderer->UpdateTextureYUV);
+		if (renderer->UpdateTextureYUV) {
+			return renderer->UpdateTextureYUV(renderer, texture, rect, Yplane, Ypitch, Uplane, Upitch, Vplane, Vpitch);
+		} else {
+			return SDL_Unsupported();
+		}
+	}
 }
 
 static int
@@ -1715,9 +1830,7 @@ SDL_DestroyTexture(SDL_Texture * texture)
     if (texture->yuv) {
         SDL_SW_DestroyYUVTexture(texture->yuv);
     }
-    if (texture->pixels) {
-        SDL_free(texture->pixels);
-    }
+    SDL_free(texture->pixels);
 
     renderer->DestroyTexture(renderer, texture);
     SDL_free(texture);

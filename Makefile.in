@@ -54,6 +54,7 @@ HDRS = \
 	SDL_endian.h \
 	SDL_error.h \
 	SDL_events.h \
+	SDL_filesystem.h \
 	SDL_gamecontroller.h \
 	SDL_gesture.h \
 	SDL_haptic.h \

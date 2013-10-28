@@ -4,6 +4,8 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>English</string>
+	<key>CFBundleExecutable</key>
+	<string>${EXECUTABLE_NAME}</string>
 	<key>CFBundleGetInfoString</key>
 	<string>http://www.libsdl.org</string>
 	<key>CFBundleIconFile</key>
@@ -17,12 +19,10 @@
 	<key>CFBundlePackageType</key>
 	<string>FMWK</string>
 	<key>CFBundleShortVersionString</key>
-	<string>2.0.0</string>
+	<string>2.0.1</string>
 	<key>CFBundleSignature</key>
 	<string>SDLX</string>
 	<key>CFBundleVersion</key>
-	<string>2.0.0</string>
-    <key>CFBundleExecutable</key>
-    <string>${EXECUTABLE_NAME}</string>
+	<string>2.0.1</string>
 </dict>
 </plist>

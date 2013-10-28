@@ -36,7 +36,7 @@ static int xinput2_initialized = 0;
 static int xinput2_multitouch_supported = 0;
 #endif
 
-/* Opcode returned XQueryExtension
+/* Opcode returned X11_XQueryExtension
  * It will be used in event processing
  * to know that the event came from
  * this extension */
@@ -82,40 +82,40 @@ X11_InitXinput2(_THIS)
     * "As XI2 progresses it becomes important that you use this call as the server may treat the client
     * differently depending on the supported version".
     *
-    * FIXME:event and err are not needed but if not passed XQueryExtension returns SegmentationFault
+    * FIXME:event and err are not needed but if not passed X11_XQueryExtension returns SegmentationFault
     */
     if (!SDL_X11_HAVE_XINPUT2 ||
-        !XQueryExtension(data->display, "XInputExtension", &xinput2_opcode, &event, &err)) {
+        !X11_XQueryExtension(data->display, "XInputExtension", &xinput2_opcode, &event, &err)) {
         return;
     }
 
     outmajor = major;
     outminor = minor;
-    if (XIQueryVersion(data->display, &outmajor, &outminor) != Success) {
+    if (X11_XIQueryVersion(data->display, &outmajor, &outminor) != Success) {
         return;
     }
 
-    /*Check supported version*/
+    /* Check supported version */
     if(outmajor * 1000 + outminor < major * 1000 + minor) {
-        /*X server does not support the version we want*/
+        /* X server does not support the version we want */
         return;
     }
     xinput2_initialized = 1;
 #if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
-    /*XInput 2.2*/
+    /* XInput 2.2 */
     if(outmajor * 1000 + outminor >= major * 1000 + minor) {
         xinput2_multitouch_supported = 1;
     }
 #endif
 
-    /*Enable  Raw motion events for this display*/
+    /* Enable  Raw motion events for this display */
     eventmask.deviceid = XIAllMasterDevices;
     eventmask.mask_len = sizeof(mask);
     eventmask.mask = mask;
 
     XISetMask(mask, XI_RawMotion);
 
-    if (XISelectEvents(data->display,DefaultRootWindow(data->display),&eventmask,1) != Success) {
+    if (X11_XISelectEvents(data->display,DefaultRootWindow(data->display),&eventmask,1) != Success) {
         return;
     }
 #endif
@@ -179,7 +179,7 @@ X11_InitXinput2Multitouch(_THIS)
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
     XIDeviceInfo *info;
     int ndevices,i,j;
-    info = XIQueryDevice(data->display, XIAllMasterDevices, &ndevices);
+    info = X11_XIQueryDevice(data->display, XIAllMasterDevices, &ndevices);
 
     for (i = 0; i < ndevices; i++) {
         XIDeviceInfo *dev = &info[i];
@@ -188,7 +188,7 @@ X11_InitXinput2Multitouch(_THIS)
             XIAnyClassInfo *class = dev->classes[j];
             XITouchClassInfo *t = (XITouchClassInfo*)class;
 
-            /*Only touch devices*/
+            /* Only touch devices */
             if (class->type != XITouchClass)
                 continue;
 
@@ -198,7 +198,7 @@ X11_InitXinput2Multitouch(_THIS)
             }
         }
     }
-    XIFreeDeviceInfo(info);
+    X11_XIFreeDeviceInfo(info);
 #endif
 }
 
@@ -206,14 +206,17 @@ void
 X11_Xinput2SelectTouch(_THIS, SDL_Window *window)
 {
 #if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
+    SDL_VideoData *data = NULL;
+    XIEventMask eventmask;
+    unsigned char mask[3] = { 0,0,0 };
+    SDL_WindowData *window_data = NULL;
+    
     if (!X11_Xinput2IsMultitouchSupported()) {
         return;
     }
 
-    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
-    XIEventMask eventmask;
-    unsigned char mask[3] = { 0,0,0 };
-    SDL_WindowData *window_data = (SDL_WindowData*)window->driverdata;
+    data = (SDL_VideoData *) _this->driverdata;
+    window_data = (SDL_WindowData*)window->driverdata;
 
     eventmask.deviceid = XIAllMasterDevices;
     eventmask.mask_len = sizeof(mask);
@@ -223,7 +226,7 @@ X11_Xinput2SelectTouch(_THIS, SDL_Window *window)
     XISetMask(mask, XI_TouchUpdate);
     XISetMask(mask, XI_TouchEnd);
 
-    XISelectEvents(data->display,window_data->xwindow,&eventmask,1);
+    X11_XISelectEvents(data->display,window_data->xwindow,&eventmask,1);
 #endif
 }
 

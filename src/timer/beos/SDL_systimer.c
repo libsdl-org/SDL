@@ -27,10 +27,16 @@
 #include "SDL_timer.h"
 
 static bigtime_t start;
+static SDL_bool ticks_started = SDL_FALSE;
 
 void
-SDL_StartTicks(void)
+SDL_InitTicks(void)
 {
+    if (ticks_started) {
+        return;
+    }
+    ticks_started = SDL_TRUE;
+
     /* Set first ticks value */
     start = system_time();
 }
@@ -38,6 +44,10 @@ SDL_StartTicks(void)
 Uint32
 SDL_GetTicks(void)
 {
+    if (!ticks_started) {
+        SDL_InitTicks();
+    }
+
     return ((system_time() - start) / 1000);
 }
 

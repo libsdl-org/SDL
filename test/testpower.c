@@ -21,7 +21,7 @@ report_power(void)
     const SDL_PowerState state = SDL_GetPowerInfo(&seconds, &percent);
     char *statestr = NULL;
 
-    printf("SDL-reported power info...\n");
+    SDL_Log("SDL-reported power info...\n");
     switch (state) {
     case SDL_POWERSTATE_UNKNOWN:
         statestr = "Unknown";
@@ -43,18 +43,18 @@ report_power(void)
         break;
     }
 
-    printf("State: %s\n", statestr);
+    SDL_Log("State: %s\n", statestr);
 
     if (percent == -1) {
-        printf("Percent left: unknown\n");
+        SDL_Log("Percent left: unknown\n");
     } else {
-        printf("Percent left: %d%%\n", percent);
+        SDL_Log("Percent left: %d%%\n", percent);
     }
 
     if (seconds == -1) {
-        printf("Time left: unknown\n");
+        SDL_Log("Time left: unknown\n");
     } else {
-        printf("Time left: %d minutes, %d seconds\n", (int) (seconds / 60),
+        SDL_Log("Time left: %d minutes, %d seconds\n", (int) (seconds / 60),
                (int) (seconds % 60));
     }
 }
@@ -63,8 +63,11 @@ report_power(void)
 int
 main(int argc, char *argv[])
 {
+    /* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
     if (SDL_Init(0) == -1) {
-        fprintf(stderr, "SDL_Init() failed: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Init() failed: %s\n", SDL_GetError());
         return 1;
     }
 

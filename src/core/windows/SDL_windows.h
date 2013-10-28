@@ -38,9 +38,10 @@
 
 /* Routines to convert from UTF8 to native Windows text */
 #if UNICODE
-#define WIN_StringToUTF8(S) SDL_iconv_string("UTF-8", "UCS-2-INTERNAL", (char *)(S), (SDL_wcslen(S)+1)*sizeof(WCHAR))
-#define WIN_UTF8ToString(S) (WCHAR *)SDL_iconv_string("UCS-2-INTERNAL", "UTF-8", (char *)(S), SDL_strlen(S)+1)
+#define WIN_StringToUTF8(S) SDL_iconv_string("UTF-8", "UTF-16LE", (char *)(S), (SDL_wcslen(S)+1)*sizeof(WCHAR))
+#define WIN_UTF8ToString(S) (WCHAR *)SDL_iconv_string("UTF-16LE", "UTF-8", (char *)(S), SDL_strlen(S)+1)
 #else
+/* !!! FIXME: UTF8ToString() can just be a SDL_strdup() here. */
 #define WIN_StringToUTF8(S) SDL_iconv_string("UTF-8", "ASCII", (char *)(S), (SDL_strlen(S)+1))
 #define WIN_UTF8ToString(S) SDL_iconv_string("ASCII", "UTF-8", (char *)(S), SDL_strlen(S)+1)
 #endif

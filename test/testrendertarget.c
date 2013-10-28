@@ -46,7 +46,7 @@ LoadTexture(SDL_Renderer *renderer, char *file, SDL_bool transparent)
     /* Load the sprite image */
     temp = SDL_LoadBMP(file);
     if (temp == NULL) {
-        fprintf(stderr, "Couldn't load %s: %s", file, SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s", file, SDL_GetError());
         return NULL;
     }
 
@@ -77,7 +77,7 @@ LoadTexture(SDL_Renderer *renderer, char *file, SDL_bool transparent)
     /* Create textures from the image */
     texture = SDL_CreateTextureFromSurface(renderer, temp);
     if (!texture) {
-        fprintf(stderr, "Couldn't create texture: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create texture: %s\n", SDL_GetError());
         SDL_FreeSurface(temp);
         return NULL;
     }
@@ -87,7 +87,7 @@ LoadTexture(SDL_Renderer *renderer, char *file, SDL_bool transparent)
     return texture;
 }
 
-void
+SDL_bool
 DrawComposite(DrawState *s)
 {
     SDL_Rect viewport, R;
@@ -114,7 +114,7 @@ DrawComposite(DrawState *s)
         SDL_RenderCopy(s->renderer, A, NULL, NULL);
         SDL_RenderReadPixels(s->renderer, NULL, SDL_PIXELFORMAT_ARGB8888, &P, sizeof(P));
 
-        printf("Blended pixel: 0x%8.8X\n", P);
+        SDL_Log("Blended pixel: 0x%8.8X\n", P);
 
         SDL_DestroyTexture(A);
         SDL_DestroyTexture(B);
@@ -167,9 +167,10 @@ DrawComposite(DrawState *s)
 
     /* Update the screen! */
     SDL_RenderPresent(s->renderer);
+    return SDL_TRUE;
 }
 
-void
+SDL_bool
 Draw(DrawState *s)
 {
     SDL_Rect viewport;
@@ -178,6 +179,10 @@ Draw(DrawState *s)
     SDL_RenderGetViewport(s->renderer, &viewport);
 
     target = SDL_CreateTexture(s->renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_TARGET, viewport.w, viewport.h);
+    if (!target) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create render target texture: %s\n", SDL_GetError());
+        return SDL_FALSE;
+    }
     SDL_SetRenderTarget(s->renderer, target);
 
     /* Draw the background */
@@ -206,6 +211,7 @@ Draw(DrawState *s)
 
     /* Update the screen! */
     SDL_RenderPresent(s->renderer);
+    return SDL_TRUE;
 }
 
 int
@@ -217,6 +223,9 @@ main(int argc, char *argv[])
     int frames;
     Uint32 then, now;
     SDL_bool test_composite = SDL_FALSE;
+
+    /* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
@@ -235,8 +244,7 @@ main(int argc, char *argv[])
             }
         }
         if (consumed < 0) {
-            fprintf(stderr,
-                    "Usage: %s %s [--composite]\n",
+            SDL_Log("Usage: %s %s [--composite]\n",
                     argv[0], SDLTest_CommonUsage(state));
             quit(1);
         }
@@ -277,10 +285,12 @@ main(int argc, char *argv[])
             SDLTest_CommonEvent(state, &event, &done);
         }
         for (i = 0; i < state->num_windows; ++i) {
+            if (state->windows[i] == NULL)
+                continue;
             if (test_composite) {
-                DrawComposite(&drawstates[i]);
+                if (!DrawComposite(&drawstates[i])) done = 1;
             } else {
-                Draw(&drawstates[i]);
+                if (!Draw(&drawstates[i])) done = 1;
             }
         }
     }
@@ -289,7 +299,7 @@ main(int argc, char *argv[])
     now = SDL_GetTicks();
     if (now > then) {
         double fps = ((double) frames * 1000) / (now - then);
-        printf("%2.2f frames per second\n", fps);
+        SDL_Log("%2.2f frames per second\n", fps);
     }
 
     SDL_stack_free(drawstates);

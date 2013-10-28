@@ -52,9 +52,9 @@ extern "C" {
 /**
  *  \name Mutex functions
  */
-/*@{*/
+/* @{ */
 
-/* The SDL mutex structure, defined in SDL_mutex.c */
+/* The SDL mutex structure, defined in SDL_sysmutex.c */
 struct SDL_mutex;
 typedef struct SDL_mutex SDL_mutex;
 
@@ -94,15 +94,15 @@ extern DECLSPEC int SDLCALL SDL_UnlockMutex(SDL_mutex * mutex);
  */
 extern DECLSPEC void SDLCALL SDL_DestroyMutex(SDL_mutex * mutex);
 
-/*@}*//*Mutex functions*/
+/* @} *//* Mutex functions */
 
 
 /**
  *  \name Semaphore functions
  */
-/*@{*/
+/* @{ */
 
-/* The SDL semaphore structure, defined in SDL_sem.c */
+/* The SDL semaphore structure, defined in SDL_syssem.c */
 struct SDL_semaphore;
 typedef struct SDL_semaphore SDL_sem;
 
@@ -154,15 +154,15 @@ extern DECLSPEC int SDLCALL SDL_SemPost(SDL_sem * sem);
  */
 extern DECLSPEC Uint32 SDLCALL SDL_SemValue(SDL_sem * sem);
 
-/*@}*//*Semaphore functions*/
+/* @} *//* Semaphore functions */
 
 
 /**
  *  \name Condition variable functions
  */
-/*@{*/
+/* @{ */
 
-/* The SDL condition variable structure, defined in SDL_cond.c */
+/* The SDL condition variable structure, defined in SDL_syscond.c */
 struct SDL_cond;
 typedef struct SDL_cond SDL_cond;
 
@@ -237,7 +237,7 @@ extern DECLSPEC int SDLCALL SDL_CondWait(SDL_cond * cond, SDL_mutex * mutex);
 extern DECLSPEC int SDLCALL SDL_CondWaitTimeout(SDL_cond * cond,
                                                 SDL_mutex * mutex, Uint32 ms);
 
-/*@}*//*Condition variable functions*/
+/* @} *//* Condition variable functions */
 
 
 /* Ends C function definitions when using C++ */

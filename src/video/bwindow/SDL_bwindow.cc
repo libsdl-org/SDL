@@ -31,11 +31,11 @@
 extern "C" {
 #endif
 
-static inline SDL_BWin *_ToBeWin(SDL_Window *window) {
+static SDL_INLINE SDL_BWin *_ToBeWin(SDL_Window *window) {
 	return ((SDL_BWin*)(window->driverdata));
 }
 
-static inline SDL_BApp *_GetBeApp() {
+static SDL_INLINE SDL_BApp *_GetBeApp() {
 	return ((SDL_BApp*)be_app);
 }
 

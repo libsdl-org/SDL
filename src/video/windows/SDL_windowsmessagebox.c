@@ -22,7 +22,9 @@
 
 #if SDL_VIDEO_DRIVER_WINDOWS
 
-#include "SDL.h"
+#include "../../core/windows/SDL_windows.h"
+
+#include "SDL_assert.h"
 #include "SDL_windowsvideo.h"
 
 
@@ -233,9 +235,7 @@ static SDL_bool AddDialogButton(WIN_DialogData *dialog, int x, int y, int w, int
 
 static void FreeDialogData(WIN_DialogData *dialog)
 {
-    if (dialog->data) {
-        SDL_free(dialog->data);
-    }
+    SDL_free(dialog->data);
     SDL_free(dialog);
 }
 
@@ -342,7 +342,8 @@ int
 WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 {
     WIN_DialogData *dialog;
-    int i, x, y, which;
+    int i, x, y;
+    UINT_PTR which;
     const SDL_MessageBoxButtonData *buttons = messageboxdata->buttons;
     HFONT DialogFont;
     SIZE Size;

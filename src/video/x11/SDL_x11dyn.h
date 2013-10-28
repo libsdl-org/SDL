@@ -69,35 +69,34 @@
 #include <X11/extensions/xf86vmode.h>
 #endif
 
-/*
- * When using the "dynamic X11" functionality, we duplicate all the Xlib
- *  symbols that would be referenced by SDL inside of SDL itself.
- *  These duplicated symbols just serve as passthroughs to the functions
- *  in Xlib, that was dynamically loaded.
- *
- * This allows us to use Xlib as-is when linking against it directly, but
- *  also handles all the strange cases where there was code in the Xlib
- *  headers that may or may not exist or vary on a given platform.
- */
 #ifdef __cplusplus
 extern "C"
 {
 #endif
 
 /* evil function signatures... */
-    typedef Bool(*SDL_X11_XESetWireToEventRetType) (Display *, XEvent *,
-                                                    xEvent *);
-    typedef int (*SDL_X11_XSynchronizeRetType) (Display *);
-    typedef Status(*SDL_X11_XESetEventToWireRetType) (Display *, XEvent *,
-                                                      xEvent *);
+typedef Bool(*SDL_X11_XESetWireToEventRetType) (Display *, XEvent *, xEvent *);
+typedef int (*SDL_X11_XSynchronizeRetType) (Display *);
+typedef Status(*SDL_X11_XESetEventToWireRetType) (Display *, XEvent *, xEvent *);
 
-    int SDL_X11_LoadSymbols(void);
-    void SDL_X11_UnloadSymbols(void);
+int SDL_X11_LoadSymbols(void);
+void SDL_X11_UnloadSymbols(void);
 
-/* That's really annoying...make these function pointers no matter what. */
+/* Declare all the function pointers and wrappers... */
+#define SDL_X11_MODULE(modname)
+#define SDL_X11_SYM(rc,fn,params,args,ret) \
+    typedef rc (*SDL_DYNX11FN_##fn) params; \
+    extern SDL_DYNX11FN_##fn X11_##fn;
+#include "SDL_x11sym.h"
+#undef SDL_X11_MODULE
+#undef SDL_X11_SYM
+
+/* Annoying varargs entry point... */
 #ifdef X_HAVE_UTF8_STRING
-    extern XIC(*pXCreateIC) (XIM, ...);
-    extern char *(*pXGetICValues) (XIC, ...);
+typedef XIC(*SDL_DYNX11FN_XCreateIC) (XIM,...);
+typedef char *(*SDL_DYNX11FN_XGetICValues) (XIC, ...);
+extern SDL_DYNX11FN_XCreateIC X11_XCreateIC;
+extern SDL_DYNX11FN_XGetICValues X11_XGetICValues;
 #endif
 
 /* These SDL_X11_HAVE_* flags are here whether you have dynamic X11 or not. */
@@ -106,7 +105,6 @@ extern "C"
 #include "SDL_x11sym.h"
 #undef SDL_X11_MODULE
 #undef SDL_X11_SYM
-
 
 #ifdef __cplusplus
 }

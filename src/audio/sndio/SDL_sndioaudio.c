@@ -181,10 +181,8 @@ static void
 SNDIO_CloseDevice(_THIS)
 {
     if (this->hidden != NULL) {
-        if (this->hidden->mixbuf != NULL) {
-            SDL_FreeAudioMem(this->hidden->mixbuf);
-            this->hidden->mixbuf = NULL;
-        }
+        SDL_FreeAudioMem(this->hidden->mixbuf);
+        this->hidden->mixbuf = NULL;
         if ( this->hidden->dev != NULL ) {
             SNDIO_sio_close(this->hidden->dev);
             this->hidden->dev = NULL;

@@ -165,7 +165,7 @@ _testGenericRWopsValidations(SDL_RWops *rw, int write)
        i);
 }
 
-/*!
+/* !
  * Negative test for SDL_RWFromFile parameters
  *
  * \sa http://wiki.libsdl.org/moin.cgi/SDL_RWFromFile
@@ -305,7 +305,7 @@ rwops_testFileRead(void)
    SDLTest_AssertPass("Call to SDL_RWFromFile(..,\"r\") succeeded");
    SDLTest_AssertCheck(rw != NULL, "Verify opening file with SDL_RWFromFile in read mode does not return NULL");
 
-   // Bail out if NULL
+   /* Bail out if NULL */
    if (rw == NULL) return TEST_ABORTED;
 
    /* Check type */
@@ -352,7 +352,7 @@ rwops_testFileWrite(void)
    SDLTest_AssertPass("Call to SDL_RWFromFile(..,\"w+\") succeeded");
    SDLTest_AssertCheck(rw != NULL, "Verify opening file with SDL_RWFromFile in write mode does not return NULL");
 
-   // Bail out if NULL
+   /* Bail out if NULL */
    if (rw == NULL) return TEST_ABORTED;
 
    /* Check type */
@@ -642,7 +642,7 @@ rwops_testFileWriteReadEndian(void)
      SDLTest_AssertPass("Call to SDL_RWFromFile(..,\"w+\")");
      SDLTest_AssertCheck(rw != NULL, "Verify opening file with SDL_RWFromFile in write mode does not return NULL");
 
-     // Bail out if NULL
+     /* Bail out if NULL */
      if (rw == NULL) return TEST_ABORTED;
 
      /* Write test data */

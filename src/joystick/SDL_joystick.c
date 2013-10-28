@@ -437,22 +437,13 @@ SDL_JoystickClose(SDL_Joystick * joystick)
         joysticklist = joysticklist->next;
     }
 
-    if (joystick->name)
-        SDL_free(joystick->name);
+    SDL_free(joystick->name);
 
     /* Free the data associated with this joystick */
-    if (joystick->axes) {
-        SDL_free(joystick->axes);
-    }
-    if (joystick->hats) {
-        SDL_free(joystick->hats);
-    }
-    if (joystick->balls) {
-        SDL_free(joystick->balls);
-    }
-    if (joystick->buttons) {
-        SDL_free(joystick->buttons);
-    }
+    SDL_free(joystick->axes);
+    SDL_free(joystick->hats);
+    SDL_free(joystick->balls);
+    SDL_free(joystick->buttons);
     SDL_free(joystick);
 }
 
@@ -488,14 +479,14 @@ SDL_PrivateJoystickShouldIgnoreEvent()
 
     if (SDL_WasInit(SDL_INIT_VIDEO)) {
         if (SDL_GetKeyboardFocus() == NULL) {
-            // Video is initialized and we don't have focus, ignore the event.
+            /* Video is initialized and we don't have focus, ignore the event. */
             return SDL_TRUE;
         } else {
             return SDL_FALSE;
         }
     }
 
-    // Video subsystem wasn't initialized, always allow the event
+    /* Video subsystem wasn't initialized, always allow the event */
     return SDL_FALSE;
 }
 
@@ -772,6 +763,11 @@ SDL_JoystickGUID SDL_JoystickGetDeviceGUID(int device_index)
 /* return the guid for this opened device */
 SDL_JoystickGUID SDL_JoystickGetGUID(SDL_Joystick * joystick)
 {
+    if (!SDL_PrivateJoystickValid(joystick)) {
+        SDL_JoystickGUID emptyGUID;
+        SDL_zero( emptyGUID );
+        return emptyGUID;
+    }
     return SDL_SYS_JoystickGetGUID( joystick );
 }
 
@@ -785,7 +781,7 @@ void SDL_JoystickGetGUIDString( SDL_JoystickGUID guid, char *pszGUID, int cbGUID
         return;
     }
 
-    for ( i = 0; i < sizeof(guid.data) && i < (cbGUID-1); i++ )
+    for ( i = 0; i < sizeof(guid.data) && i < (cbGUID-1)/2; i++ )
     {
         /* each input byte writes 2 ascii chars, and might write a null byte. */
         /* If we don't have room for next input byte, stop */
@@ -834,7 +830,7 @@ SDL_JoystickGUID SDL_JoystickGetGUIDFromString(const char *pchGUID)
 {
     SDL_JoystickGUID guid;
     int maxoutputbytes= sizeof(guid);
-    int len = SDL_strlen( pchGUID );
+    size_t len = SDL_strlen( pchGUID );
     Uint8 *p;
     int i;
 

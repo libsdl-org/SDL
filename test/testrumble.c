@@ -26,7 +26,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
  * includes
  */
 #include <stdlib.h>
-#include <stdio.h>              /* printf */
 #include <string.h>             /* strstr */
 #include <ctype.h>              /* isdigit */
 
@@ -51,12 +50,15 @@ main(int argc, char **argv)
     char *name;
     int index;
 
+	/* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
     name = NULL;
     index = -1;
     if (argc > 1) {
         name = argv[1];
         if ((strcmp(name, "--help") == 0) || (strcmp(name, "-h") == 0)) {
-            printf("USAGE: %s [device]\n"
+            SDL_Log("USAGE: %s [device]\n"
                    "If device is a two-digit number it'll use it as an index, otherwise\n"
                    "it'll use it as if it were part of the device's name.\n",
                    argv[0]);
@@ -73,7 +75,7 @@ main(int argc, char **argv)
     /* Initialize the force feedbackness */
     SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_JOYSTICK |
              SDL_INIT_HAPTIC);
-    printf("%d Haptic devices detected.\n", SDL_NumHaptics());
+    SDL_Log("%d Haptic devices detected.\n", SDL_NumHaptics());
     if (SDL_NumHaptics() > 0) {
         /* We'll just use index or the first force feedback device found */
         if (name == NULL) {
@@ -87,7 +89,7 @@ main(int argc, char **argv)
             }
 
             if (i >= SDL_NumHaptics()) {
-                printf("Unable to find device matching '%s', aborting.\n",
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to find device matching '%s', aborting.\n",
                        name);
                 return 1;
             }
@@ -95,13 +97,13 @@ main(int argc, char **argv)
 
         haptic = SDL_HapticOpen(i);
         if (haptic == NULL) {
-            printf("Unable to create the haptic device: %s\n",
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unable to create the haptic device: %s\n",
                    SDL_GetError());
             return 1;
         }
-        printf("Device: %s\n", SDL_HapticName(i));
+        SDL_Log("Device: %s\n", SDL_HapticName(i));
     } else {
-        printf("No Haptic devices found!\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "No Haptic devices found!\n");
         return 1;
     }
 
@@ -109,25 +111,25 @@ main(int argc, char **argv)
     SDL_ClearError();
 
     if (SDL_HapticRumbleSupported(haptic) == SDL_FALSE) {
-        printf("\nRumble not supported!\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Rumble not supported!\n");
         return 1;
     }
     if (SDL_HapticRumbleInit(haptic) != 0) {
-        printf("\nFailed to initialize rumble: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to initialize rumble: %s\n", SDL_GetError());
         return 1;
     }
-    printf("Playing 2 second rumble at 0.5 magnitude.\n");
+    SDL_Log("Playing 2 second rumble at 0.5 magnitude.\n");
     if (SDL_HapticRumblePlay(haptic, 0.5, 5000) != 0) {
-       printf("\nFailed to play rumble: %s\n", SDL_GetError() );
+       SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to play rumble: %s\n", SDL_GetError() );
        return 1;
     }
     SDL_Delay(2000);
-    printf("Stopping rumble.\n");
+    SDL_Log("Stopping rumble.\n");
     SDL_HapticRumbleStop(haptic);
     SDL_Delay(2000);
-    printf("Playing 2 second rumble at 0.3 magnitude.\n");
+    SDL_Log("Playing 2 second rumble at 0.3 magnitude.\n");
     if (SDL_HapticRumblePlay(haptic, 0.3f, 5000) != 0) {
-       printf("\nFailed to play rumble: %s\n", SDL_GetError() );
+       SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to play rumble: %s\n", SDL_GetError() );
        return 1;
     }
     SDL_Delay(2000);
@@ -145,7 +147,7 @@ main(int argc, char **argv)
 int
 main(int argc, char *argv[])
 {
-    fprintf(stderr, "SDL compiled without Haptic support.\n");
+    SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL compiled without Haptic support.\n");
     exit(1);
 }
 

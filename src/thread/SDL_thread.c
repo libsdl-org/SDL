@@ -125,6 +125,7 @@ SDL_Generic_GetTLSData()
     SDL_TLSEntry *entry;
     SDL_TLSData *storage = NULL;
 
+#if !SDL_THREADS_DISABLED
     if (!SDL_generic_TLS_mutex) {
         static SDL_SpinLock tls_lock;
         SDL_AtomicLock(&tls_lock);
@@ -139,6 +140,7 @@ SDL_Generic_GetTLSData()
         }
         SDL_AtomicUnlock(&tls_lock);
     }
+#endif /* SDL_THREADS_DISABLED */
 
     SDL_MemoryBarrierAcquire();
     SDL_LockMutex(SDL_generic_TLS_mutex);
@@ -148,7 +150,9 @@ SDL_Generic_GetTLSData()
             break;
         }
     }
+#if !SDL_THREADS_DISABLED
     SDL_UnlockMutex(SDL_generic_TLS_mutex);
+#endif
 
     return storage;
 }

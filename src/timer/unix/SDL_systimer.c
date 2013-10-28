@@ -56,10 +56,16 @@ mach_timebase_info_data_t mach_base_info;
 #endif
 static SDL_bool has_monotonic_time = SDL_FALSE;
 static struct timeval start_tv;
+static SDL_bool ticks_started = SDL_FALSE;
 
 void
-SDL_StartTicks(void)
+SDL_InitTicks(void)
 {
+    if (ticks_started) {
+        return;
+    }
+    ticks_started = SDL_TRUE;
+
     /* Set first ticks value */
 #if HAVE_CLOCK_GETTIME
     if (clock_gettime(CLOCK_MONOTONIC, &start_ts) == 0) {
@@ -81,6 +87,10 @@ Uint32
 SDL_GetTicks(void)
 {
     Uint32 ticks;
+    if (!ticks_started) {
+        SDL_InitTicks();
+    }
+
     if (has_monotonic_time) {
 #if HAVE_CLOCK_GETTIME
         struct timespec now;
@@ -106,6 +116,10 @@ Uint64
 SDL_GetPerformanceCounter(void)
 {
     Uint64 ticks;
+    if (!ticks_started) {
+        SDL_InitTicks();
+    }
+
     if (has_monotonic_time) {
 #if HAVE_CLOCK_GETTIME
         struct timespec now;
@@ -131,6 +145,10 @@ SDL_GetPerformanceCounter(void)
 Uint64
 SDL_GetPerformanceFrequency(void)
 {
+    if (!ticks_started) {
+        SDL_InitTicks();
+    }
+
     if (has_monotonic_time) {
 #if HAVE_CLOCK_GETTIME
         return 1000000000;
@@ -140,9 +158,9 @@ SDL_GetPerformanceFrequency(void)
         freq /= mach_base_info.numer;
         return freq;
 #endif
-    } else {
-        return 1000000;
-    }
+    } 
+        
+    return 1000000;
 }
 
 void

@@ -112,7 +112,7 @@ typedef struct SDL_MessageBoxDataX11
 } SDL_MessageBoxDataX11;
 
 /* Maximum helper for ints. */
-static __inline__ int
+static SDL_INLINE int
 IntMax( int a, int b )
 {
     return ( a > b  ) ? a : b;
@@ -124,13 +124,13 @@ GetTextWidthHeight( SDL_MessageBoxDataX11 *data, const char *str, int nbytes, in
 {
     if (SDL_X11_HAVE_UTF8) {
         XRectangle overall_ink, overall_logical;
-        Xutf8TextExtents(data->font_set, str, nbytes, &overall_ink, &overall_logical);
+        X11_Xutf8TextExtents(data->font_set, str, nbytes, &overall_ink, &overall_logical);
         *pwidth = overall_logical.width;
         *pheight = overall_logical.height;
     } else {
         XCharStruct text_structure;
         int font_direction, font_ascent, font_descent;
-        XTextExtents( data->font_struct, str, nbytes,
+        X11_XTextExtents( data->font_struct, str, nbytes,
                       &font_direction, &font_ascent, &font_descent,
                       &text_structure );
         *pwidth = text_structure.width;
@@ -180,7 +180,7 @@ X11_MessageBoxInit( SDL_MessageBoxDataX11 *data, const SDL_MessageBoxData * mess
     data->numbuttons = numbuttons;
     data->pbuttonid = pbuttonid;
 
-    data->display = XOpenDisplay( NULL );
+    data->display = X11_XOpenDisplay( NULL );
     if ( !data->display ) {
         return SDL_SetError("Couldn't open X11 display");
     }
@@ -188,16 +188,16 @@ X11_MessageBoxInit( SDL_MessageBoxDataX11 *data, const SDL_MessageBoxData * mess
     if (SDL_X11_HAVE_UTF8) {
         char **missing = NULL;
         int num_missing = 0;
-        data->font_set = XCreateFontSet(data->display, g_MessageBoxFont,
+        data->font_set = X11_XCreateFontSet(data->display, g_MessageBoxFont,
                                         &missing, &num_missing, NULL);
         if ( missing != NULL ) {
-            XFreeStringList(missing);
+            X11_XFreeStringList(missing);
         }
         if ( data->font_set == NULL ) {
             return SDL_SetError("Couldn't load font %s", g_MessageBoxFont);
         }
     } else {
-        data->font_struct = XLoadQueryFont( data->display, g_MessageBoxFontLatin1 );
+        data->font_struct = X11_XLoadQueryFont( data->display, g_MessageBoxFontLatin1 );
         if ( data->font_struct == NULL ) {
             return SDL_SetError("Couldn't load font %s", g_MessageBoxFontLatin1);
         }
@@ -338,23 +338,23 @@ static void
 X11_MessageBoxShutdown( SDL_MessageBoxDataX11 *data )
 {
     if ( data->font_set != NULL ) {
-        XFreeFontSet( data->display, data->font_set );
+        X11_XFreeFontSet( data->display, data->font_set );
         data->font_set = NULL;
     }
 
     if ( data->font_struct != NULL ) {
-        XFreeFont( data->display, data->font_struct );
+        X11_XFreeFont( data->display, data->font_struct );
         data->font_struct = NULL;
     }
 
     if ( data->display ) {
         if ( data->window != None ) {
-            XWithdrawWindow( data->display, data->window, data->screen );
-            XDestroyWindow( data->display, data->window );
+            X11_XWithdrawWindow( data->display, data->window, data->screen );
+            X11_XDestroyWindow( data->display, data->window );
             data->window = None;
         }
 
-        XCloseDisplay( data->display );
+        X11_XCloseDisplay( data->display );
         data->display = NULL;
     }
 }
@@ -384,7 +384,7 @@ X11_MessageBoxCreateWindow( SDL_MessageBoxDataX11 *data )
                        StructureNotifyMask | FocusChangeMask | PointerMotionMask;
     wnd_attr.event_mask = data->event_mask;
 
-    data->window = XCreateWindow(
+    data->window = X11_XCreateWindow(
                        display, RootWindow(display, data->screen),
                        0, 0,
                        data->dialog_width, data->dialog_height,
@@ -396,31 +396,31 @@ X11_MessageBoxCreateWindow( SDL_MessageBoxDataX11 *data )
 
     if ( windowdata ) {
         /* http://tronche.com/gui/x/icccm/sec-4.html#WM_TRANSIENT_FOR */
-        XSetTransientForHint( display, data->window, windowdata->xwindow );
+        X11_XSetTransientForHint( display, data->window, windowdata->xwindow );
     }
 
-    XStoreName( display, data->window, messageboxdata->title );
+    X11_XStoreName( display, data->window, messageboxdata->title );
 
     /* Allow the window to be deleted by the window manager */
-    data->wm_protocols = XInternAtom( display, "WM_PROTOCOLS", False );
-    data->wm_delete_message = XInternAtom( display, "WM_DELETE_WINDOW", False );
-    XSetWMProtocols( display, data->window, &data->wm_delete_message, 1 );
+    data->wm_protocols = X11_XInternAtom( display, "WM_PROTOCOLS", False );
+    data->wm_delete_message = X11_XInternAtom( display, "WM_DELETE_WINDOW", False );
+    X11_XSetWMProtocols( display, data->window, &data->wm_delete_message, 1 );
 
     if ( windowdata ) {
         XWindowAttributes attrib;
         Window dummy;
 
-        XGetWindowAttributes(display, windowdata->xwindow, &attrib);
+        X11_XGetWindowAttributes(display, windowdata->xwindow, &attrib);
         x = attrib.x + ( attrib.width - data->dialog_width ) / 2;
         y = attrib.y + ( attrib.height - data->dialog_height ) / 3 ;
-        XTranslateCoordinates(display, windowdata->xwindow, RootWindow(display, data->screen), x, y, &x, &y, &dummy);
+        X11_XTranslateCoordinates(display, windowdata->xwindow, RootWindow(display, data->screen), x, y, &x, &y, &dummy);
     } else {
         x = ( DisplayWidth( display, data->screen ) - data->dialog_width ) / 2;
         y = ( DisplayHeight( display, data->screen ) - data->dialog_height ) / 3 ;
     }
-    XMoveWindow( display, data->window, x, y );
+    X11_XMoveWindow( display, data->window, x, y );
 
-    sizehints = XAllocSizeHints();
+    sizehints = X11_XAllocSizeHints();
     if ( sizehints ) {
         sizehints->flags = USPosition | USSize | PMaxSize | PMinSize;
         sizehints->x = x;
@@ -431,12 +431,12 @@ X11_MessageBoxCreateWindow( SDL_MessageBoxDataX11 *data )
         sizehints->min_width = sizehints->max_width = data->dialog_width;
         sizehints->min_height = sizehints->max_height = data->dialog_height;
 
-        XSetWMNormalHints( display, data->window, sizehints );
+        X11_XSetWMNormalHints( display, data->window, sizehints );
 
-        XFree( sizehints );
+        X11_XFree( sizehints );
     }
 
-    XMapRaised( display, data->window );
+    X11_XMapRaised( display, data->window );
     return 0;
 }
 
@@ -448,19 +448,19 @@ X11_MessageBoxDraw( SDL_MessageBoxDataX11 *data, GC ctx )
     Window window = data->window;
     Display *display = data->display;
 
-    XSetForeground( display, ctx, data->color[ SDL_MESSAGEBOX_COLOR_BACKGROUND ] );
-    XFillRectangle( display, window, ctx, 0, 0, data->dialog_width, data->dialog_height );
+    X11_XSetForeground( display, ctx, data->color[ SDL_MESSAGEBOX_COLOR_BACKGROUND ] );
+    X11_XFillRectangle( display, window, ctx, 0, 0, data->dialog_width, data->dialog_height );
 
-    XSetForeground( display, ctx, data->color[ SDL_MESSAGEBOX_COLOR_TEXT ] );
+    X11_XSetForeground( display, ctx, data->color[ SDL_MESSAGEBOX_COLOR_TEXT ] );
     for ( i = 0; i < data->numlines; i++ ) {
         TextLineData *plinedata = &data->linedata[ i ];
 
         if (SDL_X11_HAVE_UTF8) {
-            Xutf8DrawString( display, window, data->font_set, ctx,
+            X11_Xutf8DrawString( display, window, data->font_set, ctx,
                              data->xtext, data->ytext + i * data->text_height,
                              plinedata->text, plinedata->length );
         } else {
-            XDrawString( display, window, ctx,
+            X11_XDrawString( display, window, ctx,
                          data->xtext, data->ytext + i * data->text_height,
                          plinedata->text, plinedata->length );
         }
@@ -472,27 +472,27 @@ X11_MessageBoxDraw( SDL_MessageBoxDataX11 *data, GC ctx )
         int border = ( buttondata->flags & SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT ) ? 2 : 0;
         int offset = ( ( data->mouse_over_index == i ) && ( data->button_press_index == data->mouse_over_index ) ) ? 1 : 0;
 
-        XSetForeground( display, ctx, data->color[ SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND ] );
-        XFillRectangle( display, window, ctx,
+        X11_XSetForeground( display, ctx, data->color[ SDL_MESSAGEBOX_COLOR_BUTTON_BACKGROUND ] );
+        X11_XFillRectangle( display, window, ctx,
                         buttondatax11->rect.x - border, buttondatax11->rect.y - border,
                         buttondatax11->rect.w + 2 * border, buttondatax11->rect.h + 2 * border );
 
-        XSetForeground( display, ctx, data->color[ SDL_MESSAGEBOX_COLOR_BUTTON_BORDER ] );
-        XDrawRectangle( display, window, ctx,
+        X11_XSetForeground( display, ctx, data->color[ SDL_MESSAGEBOX_COLOR_BUTTON_BORDER ] );
+        X11_XDrawRectangle( display, window, ctx,
                         buttondatax11->rect.x, buttondatax11->rect.y,
                         buttondatax11->rect.w, buttondatax11->rect.h );
 
-        XSetForeground( display, ctx, ( data->mouse_over_index == i ) ?
+        X11_XSetForeground( display, ctx, ( data->mouse_over_index == i ) ?
                         data->color[ SDL_MESSAGEBOX_COLOR_BUTTON_SELECTED ] :
                         data->color[ SDL_MESSAGEBOX_COLOR_TEXT ] );
 
         if (SDL_X11_HAVE_UTF8) {
-            Xutf8DrawString( display, window, data->font_set, ctx,
+            X11_Xutf8DrawString( display, window, data->font_set, ctx,
                              buttondatax11->x + offset,
                              buttondatax11->y + offset,
                              buttondata->text, buttondatax11->length );
         } else {
-            XDrawString( display, window, ctx,
+            X11_XDrawString( display, window, ctx,
                          buttondatax11->x + offset, buttondatax11->y + offset,
                          buttondata->text, buttondatax11->length );
         }
@@ -519,7 +519,7 @@ X11_MessageBoxLoop( SDL_MessageBoxDataX11 *data )
         ctx_vals.font = data->font_struct->fid;
     }
 
-    ctx = XCreateGC( data->display, data->window, gcflags, &ctx_vals );
+    ctx = X11_XCreateGC( data->display, data->window, gcflags, &ctx_vals );
     if ( ctx == None ) {
         return SDL_SetError("Couldn't create graphics context");
     }
@@ -531,11 +531,11 @@ X11_MessageBoxLoop( SDL_MessageBoxDataX11 *data )
         XEvent e;
         SDL_bool draw = SDL_TRUE;
 
-        XWindowEvent( data->display, data->window, data->event_mask, &e );
+        X11_XWindowEvent( data->display, data->window, data->event_mask, &e );
 
-        /* If XFilterEvent returns True, then some input method has filtered the
+        /* If X11_XFilterEvent returns True, then some input method has filtered the
            event, and the client should discard the event. */
-        if ( ( e.type != Expose ) && XFilterEvent( &e, None ) )
+        if ( ( e.type != Expose ) && X11_XFilterEvent( &e, None ) )
             continue;
 
         switch( e.type ) {
@@ -574,12 +574,12 @@ X11_MessageBoxLoop( SDL_MessageBoxDataX11 *data )
 
         case KeyPress:
             /* Store key press - we make sure in key release that we got both. */
-            last_key_pressed = XLookupKeysym( &e.xkey, 0 );
+            last_key_pressed = X11_XLookupKeysym( &e.xkey, 0 );
             break;
 
         case KeyRelease: {
             Uint32 mask = 0;
-            KeySym key = XLookupKeysym( &e.xkey, 0 );
+            KeySym key = X11_XLookupKeysym( &e.xkey, 0 );
 
             /* If this is a key release for something we didn't get the key down for, then bail. */
             if ( key != last_key_pressed )
@@ -637,7 +637,7 @@ X11_MessageBoxLoop( SDL_MessageBoxDataX11 *data )
         }
     }
 
-    XFreeGC( data->display, ctx );
+    X11_XFreeGC( data->display, ctx );
     return 0;
 }
 
@@ -667,7 +667,7 @@ X11_ShowMessageBoxImpl(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 #endif
 
     /* This code could get called from multiple threads maybe? */
-    XInitThreads();
+    X11_XInitThreads();
 
     /* Initialize the return buttonid value to -1 (for error or dialogbox closed). */
     *buttonid = -1;
@@ -707,7 +707,7 @@ X11_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     int status = 0;
 
     /* Need to flush here in case someone has turned grab off and it hasn't gone through yet, etc. */
-    XFlush(data->display);
+    X11_XFlush(data->display);
 
     if (pipe(fds) == -1) {
         return X11_ShowMessageBoxImpl(messageboxdata, buttonid); /* oh well. */

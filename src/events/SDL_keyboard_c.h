@@ -59,6 +59,9 @@ extern int SDL_SendEditingText(const char *text, int start, int end);
 /* Shutdown the keyboard subsystem */
 extern void SDL_KeyboardQuit(void);
 
+/* Convert to UTF-8 */
+extern char *SDL_UCS4ToUTF8(Uint32 ch, char *dst);
+
 #endif /* _SDL_keyboard_c_h */
 
 /* vi: set ts=4 sw=4 expandtab: */

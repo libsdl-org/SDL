@@ -27,7 +27,7 @@
 #include <stdio.h>
 
 #define VIDEO_USAGE \
-"[--video driver] [--renderer driver] [--gldebug] [--info all|video|modes|render|event] [--log all|error|system|audio|video|render|input] [--display N] [--fullscreen | --fullscreen-desktop | --windows N] [--title title] [--icon icon.bmp] [--center | --position X,Y] [--geometry WxH] [--min-geometry WxH] [--max-geometry WxH] [--logical WxH] [--scale N] [--depth N] [--refresh R] [--vsync] [--noframe] [--resize] [--minimize] [--maximize] [--grab]"
+"[--video driver] [--renderer driver] [--gldebug] [--info all|video|modes|render|event] [--log all|error|system|audio|video|render|input] [--display N] [--fullscreen | --fullscreen-desktop | --windows N] [--title title] [--icon icon.bmp] [--center | --position X,Y] [--geometry WxH] [--min-geometry WxH] [--max-geometry WxH] [--logical WxH] [--scale N] [--depth N] [--refresh R] [--vsync] [--noframe] [--resize] [--minimize] [--maximize] [--grab] [--allow-hidpi]"
 
 #define AUDIO_USAGE \
 "[--rate N] [--format U8|S8|U16|U16LE|U16BE|S16|S16LE|S16BE] [--channels N] [--samples N]"
@@ -192,6 +192,10 @@ SDLTest_CommonArg(SDLTest_CommonState * state, int index)
     if (SDL_strcasecmp(argv[index], "--fullscreen-desktop") == 0) {
         state->window_flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
         state->num_windows = 1;
+        return 1;
+    }
+    if (SDL_strcasecmp(argv[index], "--allow-highdpi") == 0) {
+        state->window_flags |= SDL_WINDOW_ALLOW_HIGHDPI;
         return 1;
     }
     if (SDL_strcasecmp(argv[index], "--windows") == 0) {
@@ -691,13 +695,18 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
         if (state->gl_debug) {
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
         }
+        if (state->gl_profile_mask) {
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, state->gl_profile_mask);
+        }
 
         if (state->verbose & VERBOSE_MODES) {
             SDL_Rect bounds;
             SDL_DisplayMode mode;
             int bpp;
             Uint32 Rmask, Gmask, Bmask, Amask;
-
+#if SDL_VIDEO_DRIVER_WINDOWS
+			int adapterIndex = 0;
+#endif
             n = SDL_GetNumVideoDisplays();
             fprintf(stderr, "Number of displays: %d\n", n);
             for (i = 0; i < n; ++i) {
@@ -750,6 +759,12 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
                         }
                     }
                 }
+
+#if SDL_VIDEO_DRIVER_WINDOWS
+				/* Print the adapter index */
+				adapterIndex = SDL_Direct3D9GetAdapterIndex( i );
+				fprintf( stderr, "Adapter Index: %d", adapterIndex );
+#endif
             }
         }
 
@@ -1092,10 +1107,10 @@ SDLTest_PrintEvent(SDL_Event * event)
 
     case SDL_FINGERDOWN:
     case SDL_FINGERUP:
-        fprintf(stderr, "Finger: %s touch=%lld, finger=%lld, x=%f, y=%f, dx=%f, dy=%f, pressure=%f",
+        fprintf(stderr, "Finger: %s touch=%ld, finger=%ld, x=%f, y=%f, dx=%f, dy=%f, pressure=%f",
                 (event->type == SDL_FINGERDOWN) ? "down" : "up",
-                (long long) event->tfinger.touchId,
-                (long long) event->tfinger.fingerId,
+                (long) event->tfinger.touchId,
+                (long) event->tfinger.fingerId,
                 event->tfinger.x, event->tfinger.y,
                 event->tfinger.dx, event->tfinger.dy, event->tfinger.pressure);
         break;
@@ -1139,11 +1154,13 @@ SDLTest_ScreenShot(SDL_Renderer *renderer)
     if (SDL_RenderReadPixels(renderer, NULL, surface->format->format,
                              surface->pixels, surface->pitch) < 0) {
         fprintf(stderr, "Couldn't read screen: %s\n", SDL_GetError());
+        SDL_free(surface);
         return;
     }
 
     if (SDL_SaveBMP(surface, "screenshot.bmp") < 0) {
         fprintf(stderr, "Couldn't save screenshot.bmp: %s\n", SDL_GetError());
+        SDL_free(surface);
         return;
     }
 }
@@ -1188,6 +1205,12 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
                 SDL_Window *window = SDL_GetWindowFromID(event->window.windowID);
                 if (window) {
                     SDL_DestroyWindow(window);
+                    for (i = 0; i < state->num_windows; ++i) {
+                        if (window == state->windows[i]) {
+                            state->windows[i] = NULL;
+                            break;
+                        }
+                    }
                 }
             }
             break;
@@ -1388,9 +1411,7 @@ SDLTest_CommonQuit(SDLTest_CommonState * state)
 {
     int i;
 
-    if (state->windows) {
-        SDL_free(state->windows);
-    }
+    SDL_free(state->windows);
     if (state->renderers) {
         for (i = 0; i < state->num_windows; ++i) {
             if (state->renderers[i]) {

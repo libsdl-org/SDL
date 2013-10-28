@@ -135,8 +135,7 @@ ESD_WaitDevice(_THIS)
     }
 
     /* Use timer for general audio synchronization */
-    ticks =
-        ((Sint32) (this->hidden->next_frame - SDL_GetTicks())) - FUDGE_TICKS;
+    ticks = ((Sint32) (this->hidden->next_frame - SDL_GetTicks())) - FUDGE_TICKS;
     if (ticks > 0) {
         SDL_Delay(ticks);
     }
@@ -176,10 +175,8 @@ static void
 ESD_CloseDevice(_THIS)
 {
     if (this->hidden != NULL) {
-        if (this->hidden->mixbuf != NULL) {
-            SDL_FreeAudioMem(this->hidden->mixbuf);
-            this->hidden->mixbuf = NULL;
-        }
+        SDL_FreeAudioMem(this->hidden->mixbuf);
+        this->hidden->mixbuf = NULL;
         if (this->hidden->audio_fd >= 0) {
             SDL_NAME(esd_close) (this->hidden->audio_fd);
             this->hidden->audio_fd = -1;
