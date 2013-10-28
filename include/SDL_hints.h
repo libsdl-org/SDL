@@ -136,7 +136,7 @@ extern "C" {
  *
  *  This variable can be set to the following values:
  *    "0"       - Disable Debug Layer use
- *    "1"       - Enable Debug Lyaer use
+ *    "1"       - Enable Debug Layer use
  *
  *  By default, SDL does not use Direct3D Debug Layer.
  */
