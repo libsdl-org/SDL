@@ -118,6 +118,12 @@ SDL_GetBasePath(void)
 extern "C" char *
 SDL_GetPrefPath(const char *org, const char *app)
 {
+    /* WinRT note: The 'SHGetFolderPath' API that is used in Windows 7 and
+     * earlier is not available on WinRT or Windows Phone.  WinRT provides
+     * a similar API, but SHGetFolderPath can't be called, at least not
+     * without violating Microsoft's app-store requirements.
+     */
+
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
     /* A 'Roaming' folder is not available in Windows Phone 8, however a 'Local' folder is. */
     const char * srcPath = SDL_WinRTGetFSPathUTF8(SDL_WINRT_PATH_LOCAL_FOLDER);
