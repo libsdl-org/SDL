@@ -20,7 +20,7 @@
 */
 #include "SDL_config.h"
 
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__WINRT__)
 #include "../core/windows/SDL_windows.h"
 #endif
 
