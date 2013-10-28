@@ -42,7 +42,7 @@ LoadSprite(char *file, SDL_Renderer *renderer)
     /* Load the sprite image */
     temp = SDL_LoadBMP(file);
     if (temp == NULL) {
-        fprintf(stderr, "Couldn't load %s: %s\n", file, SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't load %s: %s\n", file, SDL_GetError());
         return (-1);
     }
     sprite_w = temp->w;
@@ -73,7 +73,7 @@ LoadSprite(char *file, SDL_Renderer *renderer)
     /* Create textures from the image */
     sprite = SDL_CreateTextureFromSurface(renderer, temp);
     if (!sprite) {
-        fprintf(stderr, "Couldn't create texture: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create texture: %s\n", SDL_GetError());
         SDL_FreeSurface(temp);
         return (-1);
     }
@@ -125,6 +125,9 @@ main(int argc, char *argv[])
     SDL_Renderer *renderer;
     int i, done;
     SDL_Event event;
+
+	/* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     if (SDL_CreateWindowAndRenderer(WINDOW_WIDTH, WINDOW_HEIGHT, 0, &window, &renderer) < 0) {
         quit(2);

@@ -296,15 +296,16 @@ SDL_EnclosePoints(const SDL_Point * points, int count, const SDL_Rect * clip,
 #define CODE_LEFT   4
 #define CODE_RIGHT  8
 
-static int ComputeOutCode(const SDL_Rect * rect, int x, int y)
+static int
+ComputeOutCode(const SDL_Rect * rect, int x, int y)
 {
     int code = 0;
-    if (y < 0) {
+    if (y < rect->y) {
         code |= CODE_TOP;
     } else if (y >= rect->y + rect->h) {
         code |= CODE_BOTTOM;
     }
-    if (x < 0) {
+    if (x < rect->x) {
         code |= CODE_LEFT;
     } else if (x >= rect->x + rect->w) {
         code |= CODE_RIGHT;

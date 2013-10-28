@@ -30,7 +30,7 @@
 
 /* OpenGL shader implementation */
 
-/*#define DEBUG_SHADERS*/
+/* #define DEBUG_SHADERS */
 
 typedef struct
 {

@@ -26,6 +26,7 @@
 #define _SDL_systhread_h
 
 #include "SDL_thread.h"
+#include "SDL_thread_c.h"
 
 /* This function creates a thread, passing args to SDL_RunThread(),
    saves a system-dependent thread id in thread->id, and returns 0

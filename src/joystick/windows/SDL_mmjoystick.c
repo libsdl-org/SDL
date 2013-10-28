@@ -33,6 +33,11 @@
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
 
+#ifdef REGSTR_VAL_JOYOEMNAME 
+#undef REGSTR_VAL_JOYOEMNAME 
+#endif
+#define REGSTR_VAL_JOYOEMNAME "OEMName"
+
 #define MAX_JOYSTICKS   16
 #define MAX_AXES    6       /* each joystick can have up to 6 axes */
 #define MAX_BUTTONS 32      /* and 32 buttons                      */
@@ -45,7 +50,7 @@
 
 /* array to hold joystick ID values */
 static UINT SYS_JoystickID[MAX_JOYSTICKS];
-static JOYCAPS SYS_Joystick[MAX_JOYSTICKS];
+static JOYCAPSA SYS_Joystick[MAX_JOYSTICKS];
 static char *SYS_JoystickName[MAX_JOYSTICKS];
 
 /* The private structure used to keep track of a joystick */
@@ -148,7 +153,7 @@ SDL_SYS_JoystickInit(void)
     int i;
     int maxdevs;
     JOYINFOEX joyinfo;
-    JOYCAPS joycaps;
+    JOYCAPSA joycaps;
     MMRESULT result;
 
     /* Reset the joystick ID & name mapping tables */
@@ -166,7 +171,7 @@ SDL_SYS_JoystickInit(void)
         joyinfo.dwFlags = JOY_RETURNALL;
         result = joyGetPosEx(i, &joyinfo);
         if (result == JOYERR_NOERROR) {
-            result = joyGetDevCaps(i, &joycaps, sizeof(joycaps));
+            result = joyGetDevCapsA(i, &joycaps, sizeof(joycaps));
             if (result == JOYERR_NOERROR) {
                 SYS_JoystickID[SDL_SYS_numjoysticks] = i;
                 SYS_Joystick[SDL_SYS_numjoysticks] = joycaps;
@@ -384,11 +389,9 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
 void
 SDL_SYS_JoystickClose(SDL_Joystick * joystick)
 {
-    if (joystick->hwdata != NULL) {
-        /* free system specific hardware data */
-        SDL_free(joystick->hwdata);
-        joystick->hwdata = NULL;
-    }
+    /* free system specific hardware data */
+    SDL_free(joystick->hwdata);
+    joystick->hwdata = NULL;
 }
 
 /* Function to perform any system-specific joystick related cleanup */
@@ -397,10 +400,8 @@ SDL_SYS_JoystickQuit(void)
 {
     int i;
     for (i = 0; i < MAX_JOYSTICKS; i++) {
-        if (SYS_JoystickName[i] != NULL) {
-            SDL_free(SYS_JoystickName[i]);
-            SYS_JoystickName[i] = NULL;
-        }
+        SDL_free(SYS_JoystickName[i]);
+        SYS_JoystickName[i] = NULL;
     }
 }
 

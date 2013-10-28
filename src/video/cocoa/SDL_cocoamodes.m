@@ -33,7 +33,9 @@
 /* This gets us MAC_OS_X_VERSION_MIN_REQUIRED... */
 #include <AvailabilityMacros.h>
 
-static inline void Cocoa_ToggleMenuBar(const BOOL show)
+
+static void
+Cocoa_ToggleMenuBar(const BOOL show)
 {
     /* !!! FIXME: keep an eye on this.
      * ShowMenuBar/HideMenuBar is officially unavailable for 64-bit binaries.
@@ -57,7 +59,7 @@ static inline void Cocoa_ToggleMenuBar(const BOOL show)
 #define MAC_OS_X_VERSION_MIN_REQUIRED 1050
 #endif
 
-static inline BOOL
+static BOOL
 IS_SNOW_LEOPARD_OR_LATER(_THIS)
 {
 #if FORCE_OLD_API
@@ -179,7 +181,7 @@ GetDisplayMode(_THIS, const void *moderef, SDL_DisplayMode *mode)
     return SDL_TRUE;
 }
 
-static inline void
+static void
 Cocoa_ReleaseDisplayMode(_THIS, const void *moderef)
 {
     if (IS_SNOW_LEOPARD_OR_LATER(_this)) {
@@ -187,7 +189,7 @@ Cocoa_ReleaseDisplayMode(_THIS, const void *moderef)
     }
 }
 
-static inline void
+static void
 Cocoa_ReleaseDisplayModeList(_THIS, CFArrayRef modelist)
 {
     if (IS_SNOW_LEOPARD_OR_LATER(_this)) {
@@ -281,7 +283,7 @@ Cocoa_InitModes(_THIS)
             display.name = (char *)Cocoa_GetDisplayName(displays[i]);
             if (!GetDisplayMode (_this, moderef, &mode)) {
                 Cocoa_ReleaseDisplayMode(_this, moderef);
-                if (display.name) SDL_free(display.name);
+                SDL_free(display.name);
                 SDL_free(displaydata);
                 continue;
             }
@@ -290,7 +292,7 @@ Cocoa_InitModes(_THIS)
             display.current_mode = mode;
             display.driverdata = displaydata;
             SDL_AddVideoDisplay(&display);
-            if (display.name) SDL_free(display.name);
+            SDL_free(display.name);
         }
     }
     SDL_stack_free(displays);

@@ -22,8 +22,8 @@
 
 #if defined(__WIN32__) || defined(__WINRT__)
 
-#include "SDL_error.h"
 #include "SDL_windows.h"
+#include "SDL_error.h"
 #include "SDL_assert.h"
 
 #include <objbase.h>  /* for CoInitialize/CoUninitialize (Win32 only) */

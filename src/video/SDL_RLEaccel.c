@@ -1558,10 +1558,8 @@ SDL_UnRLESurface(SDL_Surface * surface, int recode)
         surface->map->info.flags &=
             ~(SDL_COPY_RLE_COLORKEY | SDL_COPY_RLE_ALPHAKEY);
 
-        if (surface->map->data) {
-            SDL_free(surface->map->data);
-            surface->map->data = NULL;
-        }
+        SDL_free(surface->map->data);
+        surface->map->data = NULL;
     }
 }
 

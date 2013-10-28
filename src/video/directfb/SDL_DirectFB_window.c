@@ -155,7 +155,7 @@ DirectFB_CreateWindow(_THIS, SDL_Window * window)
     SDL_DFB_CHECK(windata->dfbwin->RaiseToTop(windata->dfbwin));
 
     /* remember parent */
-    /*windata->sdlwin = window; */
+    /* windata->sdlwin = window; */
 
     /* Add to list ... */
 
@@ -237,8 +237,7 @@ DirectFB_SetWindowIcon(_THIS, SDL_Window * window, SDL_Surface * icon)
     }
     return;
   error:
-    if (surface)
-        SDL_FreeSurface(surface);
+    SDL_FreeSurface(surface);
     SDL_DFB_RELEASE(windata->icon);
     return;
 }

@@ -66,7 +66,7 @@ typedef Uint16 SDL_AudioFormat;
 /**
  *  \name Audio flags
  */
-/*@{*/
+/* @{ */
 
 #define SDL_AUDIO_MASK_BITSIZE       (0xFF)
 #define SDL_AUDIO_MASK_DATATYPE      (1<<8)
@@ -85,7 +85,7 @@ typedef Uint16 SDL_AudioFormat;
  *
  *  Defaults to LSB byte order.
  */
-/*@{*/
+/* @{ */
 #define AUDIO_U8        0x0008  /**< Unsigned 8-bit samples */
 #define AUDIO_S8        0x8008  /**< Signed 8-bit samples */
 #define AUDIO_U16LSB    0x0010  /**< Unsigned 16-bit samples */
@@ -94,30 +94,30 @@ typedef Uint16 SDL_AudioFormat;
 #define AUDIO_S16MSB    0x9010  /**< As above, but big-endian byte order */
 #define AUDIO_U16       AUDIO_U16LSB
 #define AUDIO_S16       AUDIO_S16LSB
-/*@}*/
+/* @} */
 
 /**
  *  \name int32 support
  */
-/*@{*/
+/* @{ */
 #define AUDIO_S32LSB    0x8020  /**< 32-bit integer samples */
 #define AUDIO_S32MSB    0x9020  /**< As above, but big-endian byte order */
 #define AUDIO_S32       AUDIO_S32LSB
-/*@}*/
+/* @} */
 
 /**
  *  \name float32 support
  */
-/*@{*/
+/* @{ */
 #define AUDIO_F32LSB    0x8120  /**< 32-bit floating point samples */
 #define AUDIO_F32MSB    0x9120  /**< As above, but big-endian byte order */
 #define AUDIO_F32       AUDIO_F32LSB
-/*@}*/
+/* @} */
 
 /**
  *  \name Native audio byte ordering
  */
-/*@{*/
+/* @{ */
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 #define AUDIO_U16SYS    AUDIO_U16LSB
 #define AUDIO_S16SYS    AUDIO_S16LSB
@@ -129,21 +129,21 @@ typedef Uint16 SDL_AudioFormat;
 #define AUDIO_S32SYS    AUDIO_S32MSB
 #define AUDIO_F32SYS    AUDIO_F32MSB
 #endif
-/*@}*/
+/* @} */
 
 /**
  *  \name Allow change flags
  *
  *  Which audio format changes are allowed when opening a device.
  */
-/*@{*/
+/* @{ */
 #define SDL_AUDIO_ALLOW_FREQUENCY_CHANGE    0x00000001
 #define SDL_AUDIO_ALLOW_FORMAT_CHANGE       0x00000002
 #define SDL_AUDIO_ALLOW_CHANNELS_CHANGE     0x00000004
 #define SDL_AUDIO_ALLOW_ANY_CHANGE          (SDL_AUDIO_ALLOW_FREQUENCY_CHANGE|SDL_AUDIO_ALLOW_FORMAT_CHANGE|SDL_AUDIO_ALLOW_CHANNELS_CHANGE)
-/*@}*/
+/* @} */
 
-/*@}*//*Audio flags*/
+/* @} *//* Audio flags */
 
 /**
  *  This function is called when the audio device needs more data.
@@ -218,10 +218,10 @@ typedef struct SDL_AudioCVT
  *  These functions return the list of built in audio drivers, in the
  *  order that they are normally initialized by default.
  */
-/*@{*/
+/* @{ */
 extern DECLSPEC int SDLCALL SDL_GetNumAudioDrivers(void);
 extern DECLSPEC const char *SDLCALL SDL_GetAudioDriver(int index);
-/*@}*/
+/* @} */
 
 /**
  *  \name Initialization and cleanup
@@ -230,10 +230,10 @@ extern DECLSPEC const char *SDLCALL SDL_GetAudioDriver(int index);
  *            you have a specific need to specify the audio driver you want to
  *            use.  You should normally use SDL_Init() or SDL_InitSubSystem().
  */
-/*@{*/
+/* @{ */
 extern DECLSPEC int SDLCALL SDL_AudioInit(const char *driver_name);
 extern DECLSPEC void SDLCALL SDL_AudioQuit(void);
-/*@}*/
+/* @} */
 
 /**
  *  This function returns the name of the current audio driver, or NULL
@@ -359,7 +359,7 @@ extern DECLSPEC SDL_AudioDeviceID SDLCALL SDL_OpenAudioDevice(const char
  *
  *  Get the current audio state.
  */
-/*@{*/
+/* @{ */
 typedef enum
 {
     SDL_AUDIO_STOPPED = 0,
@@ -370,7 +370,7 @@ extern DECLSPEC SDL_AudioStatus SDLCALL SDL_GetAudioStatus(void);
 
 extern DECLSPEC SDL_AudioStatus SDLCALL
 SDL_GetAudioDeviceStatus(SDL_AudioDeviceID dev);
-/*@}*//*Audio State*/
+/* @} *//* Audio State */
 
 /**
  *  \name Pause audio functions
@@ -381,11 +381,11 @@ SDL_GetAudioDeviceStatus(SDL_AudioDeviceID dev);
  *  data for your callback function after opening the audio device.
  *  Silence will be written to the audio device during the pause.
  */
-/*@{*/
+/* @{ */
 extern DECLSPEC void SDLCALL SDL_PauseAudio(int pause_on);
 extern DECLSPEC void SDLCALL SDL_PauseAudioDevice(SDL_AudioDeviceID dev,
                                                   int pause_on);
-/*@}*//*Pause audio functions*/
+/* @} *//* Pause audio functions */
 
 /**
  *  This function loads a WAVE from the data source, automatically freeing
@@ -482,12 +482,12 @@ extern DECLSPEC void SDLCALL SDL_MixAudioFormat(Uint8 * dst,
  *  the callback function is not running.  Do not call these from the callback
  *  function or you will cause deadlock.
  */
-/*@{*/
+/* @{ */
 extern DECLSPEC void SDLCALL SDL_LockAudio(void);
 extern DECLSPEC void SDLCALL SDL_LockAudioDevice(SDL_AudioDeviceID dev);
 extern DECLSPEC void SDLCALL SDL_UnlockAudio(void);
 extern DECLSPEC void SDLCALL SDL_UnlockAudioDevice(SDL_AudioDeviceID dev);
-/*@}*//*Audio lock functions*/
+/* @} *//* Audio lock functions */
 
 /**
  *  This function shuts down audio processing and closes the audio device.

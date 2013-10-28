@@ -27,7 +27,7 @@
 
 #ifdef __SSE__
 /* This assumes 16-byte aligned src and dst */
-static __inline__ void
+static SDL_INLINE void
 SDL_memcpySSE(Uint8 * dst, const Uint8 * src, int len)
 {
     int i;
@@ -56,7 +56,7 @@ SDL_memcpySSE(Uint8 * dst, const Uint8 * src, int len)
 #ifdef _MSC_VER
 #pragma warning(disable:4799)
 #endif
-static __inline__ void
+static SDL_INLINE void
 SDL_memcpyMMX(Uint8 * dst, const Uint8 * src, int len)
 {
     const int remain = (len & 63);

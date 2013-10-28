@@ -66,7 +66,7 @@
 #endif
 #if defined(ANDROID)
 #undef __ANDROID__
-#undef __LINUX__ /*do we need to do this?*/
+#undef __LINUX__ /* do we need to do this? */
 #define __ANDROID__ 1
 #endif
 
@@ -122,18 +122,18 @@
 #endif
 
 #if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)
-/* Try to find out what version of Windows we are compiling for */
+/* Try to find out if we're compiling for WinRT or non-WinRT */
 #if defined(_MSC_VER) && (_MSC_VER >= 1700)	/* _MSC_VER==1700 for MSVC 2012 */
 #include <winapifamily.h>
-#endif
-/* Default to classic, Win32 / Desktop compilation either if:
+#endif /* _MSC_VER >= 1700 */
+/* Default to classic, Win32/Win64/Desktop compilation either if:
      1. the version of Windows is explicity set to a 'Desktop' (non-Metro) app
      2. the version of Windows cannot be determined via winapifamily.h
-   If neither is true, see if we're compiling for WinRT.
+   If neither is true, then see if we're compiling for WinRT.
  */
 #if ! defined(WINAPI_FAMILY_PARTITION) || WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
-#undef __WIN32__
-#define __WIN32__   1
+#undef __WINDOWS__
+#define __WINDOWS__   1
 /* See if we're compiling for WinRT: */
 #elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
 #undef __WINRT__
@@ -141,6 +141,10 @@
 #endif /* ! defined(WINAPI_FAMILY_PARTITION) */
 #endif /* defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__) */
 
+#if defined(__WINDOWS__)
+#undef __WIN32__
+#define __WIN32__ 1
+#endif
 #if defined(__PSP__)
 #undef __PSP__
 #define __PSP__ 1

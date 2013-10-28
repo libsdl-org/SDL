@@ -33,15 +33,17 @@
 #endif
 #define _begin_code_h
 
+#ifndef SDL_DEPRECATED
+#  if (__GNUC__ >= 4)  /* technically, this arrived in gcc 3.1, but oh well. */
+#    define SDL_DEPRECATED __attribute__((deprecated))
+#  else
+#    define SDL_DEPRECATED
+#  endif
+#endif
+
 /* Some compilers use a special export keyword */
 #ifndef DECLSPEC
-# if defined(__BEOS__) || defined(__HAIKU__)
-#  if defined(__GNUC__)
-#   define DECLSPEC __declspec(dllexport)
-#  else
-#   define DECLSPEC __declspec(export)
-#  endif
-# elif defined(__WIN32__) || defined(__WINRT__)
+# if defined(__WIN32__) || defined(__WINRT__)
 #  ifdef __BORLANDC__
 #   ifdef BUILD_SDL
 #    define DECLSPEC
@@ -54,6 +56,8 @@
 # else
 #  if defined(__GNUC__) && __GNUC__ >= 4
 #   define DECLSPEC __attribute__ ((visibility("default")))
+#  elif defined(__GNUC__) && __GNUC__ >= 2
+#   define DECLSPEC __declspec(dllexport)
 #  else
 #   define DECLSPEC
 #  endif
@@ -95,48 +99,34 @@
 #endif
 #endif /* Compiler needs structure packing set */
 
-/* Set up compiler-specific options for inlining functions */
-#ifndef SDL_INLINE_OKAY
-#ifdef __GNUC__
-#define SDL_INLINE_OKAY
-#else
-/* Add any special compiler-specific cases here */
-#if defined(_MSC_VER) || defined(__BORLANDC__) || \
-    defined(__DMC__) || defined(__SC__) || \
-    defined(__WATCOMC__) || defined(__LCC__) || \
-    defined(__DECC)
+#ifndef SDL_INLINE
+#if defined(__GNUC__)
+#define SDL_INLINE __inline__
+#elif defined(_MSC_VER) || defined(__BORLANDC__) || \
+      defined(__DMC__) || defined(__SC__) || \
+      defined(__WATCOMC__) || defined(__LCC__) || \
+      defined(__DECC)
+#define SDL_INLINE __inline
 #ifndef __inline__
-#define __inline__  __inline
+#define __inline__ __inline
 #endif
-#define SDL_INLINE_OKAY
 #else
-#if !defined(__MRC__) && !defined(_SGI_SOURCE)
+#define SDL_INLINE inline
 #ifndef __inline__
 #define __inline__ inline
 #endif
-#define SDL_INLINE_OKAY
-#endif /* Not a funky compiler */
-#endif /* Visual C++ */
-#endif /* GNU C */
-#endif /* SDL_INLINE_OKAY */
-
-/* If inlining isn't supported, remove "__inline__", turning static
-   inlined functions into static functions (resulting in code bloat
-   in all files which include the offending header files)
-*/
-#ifndef SDL_INLINE_OKAY
-#define __inline__
 #endif
+#endif /* SDL_INLINE not defined */
 
 #ifndef SDL_FORCE_INLINE
 #if defined(_MSC_VER)
 #define SDL_FORCE_INLINE __forceinline
 #elif ( (defined(__GNUC__) && (__GNUC__ >= 4)) || defined(__clang__) )
-#define SDL_FORCE_INLINE __attribute__((always_inline)) static inline
+#define SDL_FORCE_INLINE __attribute__((always_inline)) static __inline__
 #else
-#define SDL_FORCE_INLINE static __inline__
+#define SDL_FORCE_INLINE static SDL_INLINE
 #endif
-#endif
+#endif /* SDL_FORCE_INLINE not defined */
 
 /* Apparently this is needed by several Windows compilers */
 #if !defined(__MACH__)

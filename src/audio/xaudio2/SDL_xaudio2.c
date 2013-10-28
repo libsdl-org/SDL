@@ -98,6 +98,18 @@
 #include "SDL_xaudio2_winrthelpers.h"
 #endif
 
+/* Fixes bug 1210 where some versions of gcc need named parameters */
+#ifdef __GNUC__
+#ifdef THIS
+#undef THIS
+#endif
+#define THIS    INTERFACE *p
+#ifdef THIS_
+#undef THIS_
+#endif
+#define THIS_   INTERFACE *p,
+#endif
+
 struct SDL_PrivateAudioData
 {
     IXAudio2 *ixa2;
@@ -263,9 +275,7 @@ XAUDIO2_CloseDevice(_THIS)
         if (ixa2 != NULL) {
             IXAudio2_Release(ixa2);
         }
-        if (this->hidden->mixbuf != NULL) {
-            SDL_free(this->hidden->mixbuf);
-        }
+        SDL_free(this->hidden->mixbuf);
         if (this->hidden->semaphore != NULL) {
             SDL_DestroySemaphore(this->hidden->semaphore);
         }

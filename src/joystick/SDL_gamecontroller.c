@@ -52,7 +52,7 @@ struct _SDL_HatMapping
  */
 #define k_nMaxHatEntries 0x3f + 1
 
-/* our in memory mapping db between joystick objects and controller mappings*/
+/* our in memory mapping db between joystick objects and controller mappings */
 struct _SDL_ControllerMapping
 {
     SDL_JoystickGUID guid;
@@ -758,7 +758,7 @@ SDL_GameControllerLoadHints()
 {
     const char *hint = SDL_GetHint(SDL_HINT_GAMECONTROLLERCONFIG);
     if ( hint && hint[0] ) {
-        int nchHints = SDL_strlen( hint );
+        size_t nchHints = SDL_strlen( hint );
         char *pUserMappings = SDL_malloc( nchHints + 1 );
         char *pTempMappings = pUserMappings;
         SDL_memcpy( pUserMappings, hint, nchHints );

@@ -34,6 +34,7 @@ struct SDL_GLDriverData
     SDL_bool HAS_GLX_EXT_visual_rating;
     SDL_bool HAS_GLX_EXT_visual_info;
     SDL_bool HAS_GLX_EXT_swap_control_tear;
+    SDL_bool HAS_GLX_EXT_create_context_es2_profile;
 
     Bool (*glXQueryExtension) (Display*,int*,int*);
     void *(*glXGetProcAddress) (const GLubyte*);

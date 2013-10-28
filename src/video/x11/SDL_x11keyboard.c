@@ -135,7 +135,7 @@ static const struct {
 
 static const struct
 {
-    const SDL_Scancode const *table;
+    SDL_Scancode const *table;
     int table_size;
 } scancode_set[] = {
     { darwin_scancode_table, SDL_arraysize(darwin_scancode_table) },
@@ -152,7 +152,7 @@ X11_KeyCodeToSDLScancode(Display *display, KeyCode keycode)
     int i;
 
 #if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
-    keysym = XkbKeycodeToKeysym(display, keycode, 0, 0);
+    keysym = X11_XkbKeycodeToKeysym(display, keycode, 0, 0);
 #else
     keysym = XKeycodeToKeysym(display, keycode, 0);
 #endif
@@ -182,7 +182,7 @@ X11_KeyCodeToUcs4(Display *display, KeyCode keycode)
     KeySym keysym;
 
 #if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
-    keysym = XkbKeycodeToKeysym(display, keycode, 0, 0);
+    keysym = X11_XkbKeycodeToKeysym(display, keycode, 0, 0);
 #else
     keysym = XKeycodeToKeysym(display, keycode, 0);
 #endif
@@ -197,7 +197,8 @@ int
 X11_InitKeyboard(_THIS)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
-    int i, j;
+    int i = 0;
+    int j = 0;
     int min_keycode, max_keycode;
     struct {
         SDL_Scancode scancode;
@@ -210,14 +211,14 @@ X11_InitKeyboard(_THIS)
     };
     SDL_bool fingerprint_detected;
 
-    XAutoRepeatOn(data->display);
+    X11_XAutoRepeatOn(data->display);
 
     /* Try to determine which scancodes are being used based on fingerprint */
     fingerprint_detected = SDL_FALSE;
-    XDisplayKeycodes(data->display, &min_keycode, &max_keycode);
+    X11_XDisplayKeycodes(data->display, &min_keycode, &max_keycode);
     for (i = 0; i < SDL_arraysize(fingerprint); ++i) {
         fingerprint[i].value =
-            XKeysymToKeycode(data->display, fingerprint[i].keysym) -
+            X11_XKeysymToKeycode(data->display, fingerprint[i].keysym) -
             min_keycode;
     }
     for (i = 0; i < SDL_arraysize(scancode_set); ++i) {
@@ -257,20 +258,20 @@ X11_InitKeyboard(_THIS)
         for (i = min_keycode; i <= max_keycode; ++i) {
             KeySym sym;
 #if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
-            sym = XkbKeycodeToKeysym(data->display, i, 0, 0);
+            sym = X11_XkbKeycodeToKeysym(data->display, i, 0, 0);
 #else
             sym = XKeycodeToKeysym(data->display, i, 0);
 #endif
             if (sym != NoSymbol) {
                 SDL_Scancode scancode;
                 printf("code = %d, sym = 0x%X (%s) ", i - min_keycode,
-                       (unsigned int) sym, XKeysymToString(sym));
+                       (unsigned int) sym, X11_XKeysymToString(sym));
                 scancode = X11_KeyCodeToSDLScancode(data->display, i);
                 data->key_layout[i] = scancode;
                 if (scancode == SDL_SCANCODE_UNKNOWN) {
                     printf("scancode not found\n");
                 } else {
-                    printf("scancode = %d (%s)\n", j, SDL_GetScancodeName(j));
+                    printf("scancode = %d (%s)\n", scancode, SDL_GetScancodeName(scancode));
                 }
             }
         }

@@ -31,6 +31,7 @@
 
 /* The first (low-resolution) ticks value of the application */
 static DWORD start;
+static BOOL ticks_started = FALSE; 
 
 #ifndef USE_GETTICKCOUNT
 /* Store if a high-resolution performance counter exists on the system */
@@ -78,8 +79,13 @@ SDL_TimerResolutionChanged(void *userdata, const char *name, const char *oldValu
 #endif /* ifndef __WINRT__ */
 
 void
-SDL_StartTicks(void)
+SDL_InitTicks(void)
 {
+    if (ticks_started) {
+        return;
+    }
+    ticks_started = TRUE;
+
     /* Set first ticks value */
 #ifdef USE_GETTICKCOUNT
     start = GetTickCount();
@@ -114,6 +120,10 @@ SDL_GetTicks(void)
 #ifndef USE_GETTICKCOUNT
     LARGE_INTEGER hires_now;
 #endif
+
+    if (!ticks_started) {
+        SDL_InitTicks();
+    }
 
 #ifdef USE_GETTICKCOUNT
     now = GetTickCount();

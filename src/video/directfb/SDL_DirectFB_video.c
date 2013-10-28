@@ -258,7 +258,7 @@ DirectFB_VideoInit(_THIS)
                                                      &devdata->events));
     } else {
         SDL_DFB_CHECKERR(dfb->CreateInputEventBuffer(dfb, DICAPS_AXES
-                                                     /*DICAPS_ALL */ ,
+                                                     /* DICAPS_ALL */ ,
                                                      DFB_TRUE,
                                                      &devdata->events));
     }

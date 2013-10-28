@@ -20,6 +20,10 @@
 */
 #include "SDL_config.h"
 
+#if defined(__WIN32__)
+#include "../core/windows/SDL_windows.h"
+#endif
+
 /* CPU feature detection for SDL */
 
 #include "SDL_cpuinfo.h"
@@ -40,9 +44,6 @@
 #elif SDL_ALTIVEC_BLITTERS && HAVE_SETJMP
 #include <signal.h>
 #include <setjmp.h>
-#endif
-#ifdef __WIN32__
-#include "../core/windows/SDL_windows.h"
 #endif
 
 #define CPU_HAS_RDTSC   0x00000001
@@ -67,7 +68,7 @@ illegal_instruction(int sig)
 }
 #endif /* HAVE_SETJMP */
 
-static __inline__ int
+static SDL_INLINE int
 CPU_haveCPUID(void)
 {
     int has_CPUID = 0;
@@ -191,7 +192,7 @@ done:
     a = b = c = d = 0
 #endif
 
-static __inline__ int
+static SDL_INLINE int
 CPU_getCPUIDFeatures(void)
 {
     int features = 0;
@@ -205,7 +206,7 @@ CPU_getCPUIDFeatures(void)
     return features;
 }
 
-static __inline__ int
+static SDL_INLINE int
 CPU_haveRDTSC(void)
 {
     if (CPU_haveCPUID()) {
@@ -214,7 +215,7 @@ CPU_haveRDTSC(void)
     return 0;
 }
 
-static __inline__ int
+static SDL_INLINE int
 CPU_haveAltiVec(void)
 {
     volatile int altivec = 0;
@@ -241,7 +242,7 @@ CPU_haveAltiVec(void)
     return altivec;
 }
 
-static __inline__ int
+static SDL_INLINE int
 CPU_haveMMX(void)
 {
     if (CPU_haveCPUID()) {
@@ -250,7 +251,7 @@ CPU_haveMMX(void)
     return 0;
 }
 
-static __inline__ int
+static SDL_INLINE int
 CPU_have3DNow(void)
 {
     if (CPU_haveCPUID()) {
@@ -265,7 +266,7 @@ CPU_have3DNow(void)
     return 0;
 }
 
-static __inline__ int
+static SDL_INLINE int
 CPU_haveSSE(void)
 {
     if (CPU_haveCPUID()) {
@@ -274,7 +275,7 @@ CPU_haveSSE(void)
     return 0;
 }
 
-static __inline__ int
+static SDL_INLINE int
 CPU_haveSSE2(void)
 {
     if (CPU_haveCPUID()) {
@@ -283,7 +284,7 @@ CPU_haveSSE2(void)
     return 0;
 }
 
-static __inline__ int
+static SDL_INLINE int
 CPU_haveSSE3(void)
 {
     if (CPU_haveCPUID()) {
@@ -298,7 +299,7 @@ CPU_haveSSE3(void)
     return 0;
 }
 
-static __inline__ int
+static SDL_INLINE int
 CPU_haveSSE41(void)
 {
     if (CPU_haveCPUID()) {
@@ -313,7 +314,7 @@ CPU_haveSSE41(void)
     return 0;
 }
 
-static __inline__ int
+static SDL_INLINE int
 CPU_haveSSE42(void)
 {
     if (CPU_haveCPUID()) {
@@ -607,6 +608,51 @@ SDL_HasSSE42(void)
     return SDL_FALSE;
 }
 
+static int SDL_SystemRAM = 0;
+
+int
+SDL_GetSystemRAM(void)
+{
+    if (!SDL_SystemRAM) {
+#if defined(HAVE_SYSCONF) && defined(_SC_PHYS_PAGES) && defined(_SC_PAGESIZE)
+        if (SDL_SystemRAM <= 0) {
+            SDL_SystemRAM = (int)((Sint64)sysconf(_SC_PHYS_PAGES) * sysconf(_SC_PAGESIZE) / (1024*1024));
+        }
+#endif
+#ifdef HAVE_SYSCTLBYNAME
+        if (SDL_SystemRAM <= 0) {
+#ifdef __FreeBSD__
+#ifdef HW_REALMEM
+            int mib[2] = {CTL_HW, HW_REALMEM};
+#else
+            /* might only report up to 2 GiB */
+            int mib[2] = {CTL_HW, HW_PHYSMEM};
+#endif /* HW_REALMEM */
+#else
+            int mib[2] = {CTL_HW, HW_MEMSIZE};
+#endif /* __FreeBSD__ */
+            Uint64 memsize = 0;
+            size_t len = sizeof(memsize);
+            
+            if (sysctl(mib, 2, &memsize, &len, NULL, 0) == 0) {
+                SDL_SystemRAM = (int)(memsize / (1024*1024));
+            }
+        }
+#endif
+#ifdef __WIN32__
+        if (SDL_SystemRAM <= 0) {
+            MEMORYSTATUSEX stat;
+            stat.dwLength = sizeof(stat);
+            if (GlobalMemoryStatusEx(&stat)) {
+                SDL_SystemRAM = (int)(stat.ullTotalPhys / (1024 * 1024));
+            }
+        }
+#endif
+    }
+    return SDL_SystemRAM;
+}
+
+
 #ifdef TEST_MAIN
 
 #include <stdio.h>
@@ -627,6 +673,7 @@ main()
     printf("SSE3: %d\n", SDL_HasSSE3());
     printf("SSE4.1: %d\n", SDL_HasSSE41());
     printf("SSE4.2: %d\n", SDL_HasSSE42());
+    printf("RAM: %d MB\n", SDL_GetSystemRAM());
     return 0;
 }
 

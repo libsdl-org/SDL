@@ -24,14 +24,24 @@
 
 #include "SDL_timer.h"
 
+static SDL_bool ticks_started = SDL_FALSE;
+
 void
-SDL_StartTicks(void)
+SDL_InitTicks(void)
 {
+    if (ticks_started) {
+        return;
+    }
+    ticks_started = SDL_TRUE;
 }
 
 Uint32
 SDL_GetTicks(void)
 {
+    if (!ticks_started) {
+        SDL_InitTicks();
+    }
+
     SDL_Unsupported();
     return 0;
 }

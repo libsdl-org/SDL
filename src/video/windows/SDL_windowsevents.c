@@ -36,7 +36,7 @@
 /* For GET_X_LPARAM, GET_Y_LPARAM. */
 #include <windowsx.h>
 
-/*#define WMMSG_DEBUG*/
+/* #define WMMSG_DEBUG */
 #ifdef WMMSG_DEBUG
 #include <stdio.h>
 #include "wmmsg.h"
@@ -256,6 +256,33 @@ WIN_CheckRawMouseButtons( ULONG rawButtons, SDL_WindowData *data )
     }
 }
 
+SDL_FORCE_INLINE BOOL
+WIN_ConvertUTF32toUTF8(UINT32 codepoint, char * text)
+{
+    if (codepoint <= 0x7F) {
+        text[0] = (char) codepoint;
+        text[1] = '\0';
+    } else if (codepoint <= 0x7FF) {
+        text[0] = 0xC0 | (char) ((codepoint >> 6) & 0x1F);
+        text[1] = 0x80 | (char) (codepoint & 0x3F);
+        text[2] = '\0';
+    } else if (codepoint <= 0xFFFF) {
+        text[0] = 0xE0 | (char) ((codepoint >> 12) & 0x0F);
+        text[1] = 0x80 | (char) ((codepoint >> 6) & 0x3F);
+        text[2] = 0x80 | (char) (codepoint & 0x3F);
+        text[3] = '\0';
+    } else if (codepoint <= 0x10FFFF) {
+        text[0] = 0xF0 | (char) ((codepoint >> 18) & 0x0F);
+        text[1] = 0x80 | (char) ((codepoint >> 12) & 0x3F);
+        text[2] = 0x80 | (char) ((codepoint >> 6) & 0x3F);
+        text[3] = 0x80 | (char) (codepoint & 0x3F);
+        text[4] = '\0';
+    } else {
+        return SDL_FALSE;
+    }
+    return SDL_TRUE;
+}
+
 LRESULT CALLBACK
 WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -282,18 +309,16 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     }
 
 #ifdef WMMSG_DEBUG
-    {
-        FILE *log = fopen("wmmsg.txt", "a");
-        fprintf(log, "Received windows message: %p ", hwnd);
-        if (msg > MAX_WMMSG) {
-            fprintf(log, "%d", msg);
-        } else {
-            fprintf(log, "%s", wmtab[msg]);
-        }
-        fprintf(log, " -- 0x%X, 0x%X\n", wParam, lParam);
-        fclose(log);
-    }
-#endif
+	{
+		char message[1024];
+		if (msg > MAX_WMMSG) {
+			SDL_snprintf(message, sizeof(message), "Received windows message: %p UNKNOWN (%d) -- 0x%X, 0x%X\n", hwnd, msg, wParam, lParam);
+		} else {
+			SDL_snprintf(message, sizeof(message), "Received windows message: %p %s -- 0x%X, 0x%X\n", hwnd, wmtab[msg], wParam, lParam);
+		}
+		OutputDebugStringA(message);
+	}
+#endif /* WMMSG_DEBUG */
 
     if (IME_HandleMessage(hwnd, msg, wParam, &lParam, data->videodata))
         return 0;
@@ -439,10 +464,20 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     case WM_MOUSEWHEEL:
         {
-            /* FIXME: This may need to accumulate deltas up to WHEEL_DELTA */
-            short motion = GET_WHEEL_DELTA_WPARAM(wParam) / WHEEL_DELTA;
+            static short s_AccumulatedMotion;
 
-            SDL_SendMouseWheel(data->window, 0, 0, motion);
+            s_AccumulatedMotion += GET_WHEEL_DELTA_WPARAM(wParam);
+            if (s_AccumulatedMotion > 0) {
+                while (s_AccumulatedMotion >= WHEEL_DELTA) {
+                    SDL_SendMouseWheel(data->window, 0, 0, 1);
+                    s_AccumulatedMotion -= WHEEL_DELTA;
+                }
+            } else {
+                while (s_AccumulatedMotion <= -WHEEL_DELTA) {
+                    SDL_SendMouseWheel(data->window, 0, 0, -1);
+                    s_AccumulatedMotion += WHEEL_DELTA;
+                }
+            }
             break;
         }
 
@@ -459,12 +494,26 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         break;
 #endif /* WM_MOUSELEAVE */
 
-    case WM_SYSKEYDOWN:
     case WM_KEYDOWN:
+    case WM_SYSKEYDOWN:
         {
             SDL_Scancode code = WindowsScanCodeToSDLScanCode( lParam, wParam );
             if ( code != SDL_SCANCODE_UNKNOWN ) {
                 SDL_SendKeyboardKey(SDL_PRESSED, code );
+            }
+        }
+        if (msg == WM_KEYDOWN) {
+            BYTE keyboardState[256];
+            char text[5];
+            UINT32 utf32 = 0;
+
+            GetKeyboardState(keyboardState);
+            if (ToUnicode(wParam, (lParam >> 16) & 0xff, keyboardState, (LPWSTR)&utf32, 1, 0) > 0) {
+                WORD repitition;
+                for (repitition = lParam & 0xffff; repitition > 0; repitition--) {
+                    WIN_ConvertUTF32toUTF8(utf32, text);
+                    SDL_SendKeyboardText(text);
+                }
             }
         }
         returnCode = 0;
@@ -485,24 +534,19 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         returnCode = 0;
         break;
 
+    case WM_UNICHAR:
+        {
+            if (wParam == UNICODE_NOCHAR) {
+                returnCode = 1;
+                break;
+            }
+        }
+        /* no break */
     case WM_CHAR:
         {
-            char text[4];
+            char text[5];
 
-            /* Convert to UTF-8 and send it on... */
-            if (wParam <= 0x7F) {
-                text[0] = (char) wParam;
-                text[1] = '\0';
-            } else if (wParam <= 0x7FF) {
-                text[0] = 0xC0 | (char) ((wParam >> 6) & 0x1F);
-                text[1] = 0x80 | (char) (wParam & 0x3F);
-                text[2] = '\0';
-            } else {
-                text[0] = 0xE0 | (char) ((wParam >> 12) & 0x0F);
-                text[1] = 0x80 | (char) ((wParam >> 6) & 0x3F);
-                text[2] = 0x80 | (char) (wParam & 0x3F);
-                text[3] = '\0';
-            }
+            WIN_ConvertUTF32toUTF8(wParam, text);
             SDL_SendKeyboardText(text);
         }
         returnCode = 0;
@@ -772,7 +816,6 @@ WIN_PumpEvents(_THIS)
     const Uint8 *keystate;
     MSG msg;
     while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-        TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
 

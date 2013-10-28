@@ -28,4 +28,4 @@ Project.
 
 extern unsigned int X11_KeySymToUcs4(KeySym keysym);
 
-#endif /*_imKStoUCS_h */
+#endif /* _imKStoUCS_h */

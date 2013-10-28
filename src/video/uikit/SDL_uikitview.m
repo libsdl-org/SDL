@@ -246,8 +246,8 @@
 {
     if ([string length] == 0) {
         /* it wants to replace text with nothing, ie a delete */
-        SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_DELETE);
-        SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_DELETE);
+        SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_BACKSPACE);
+        SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_BACKSPACE);
     }
     else {
         /* go through all the characters in the string we've been sent

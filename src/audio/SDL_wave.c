@@ -61,7 +61,7 @@ InitMS_ADPCM(WaveFMT * format)
         SDL_SwapLE16(format->bitspersample);
     rogue_feel = (Uint8 *) format + sizeof(*format);
     if (sizeof(*format) == 16) {
-        /*const Uint16 extra_info = ((rogue_feel[1] << 8) | rogue_feel[0]);*/
+        /* const Uint16 extra_info = ((rogue_feel[1] << 8) | rogue_feel[0]); */
         rogue_feel += sizeof(Uint16);
     }
     MS_ADPCM_state.wSamplesPerBlock = ((rogue_feel[1] << 8) | rogue_feel[0]);
@@ -242,7 +242,7 @@ InitIMA_ADPCM(WaveFMT * format)
         SDL_SwapLE16(format->bitspersample);
     rogue_feel = (Uint8 *) format + sizeof(*format);
     if (sizeof(*format) == 16) {
-        /*const Uint16 extra_info = ((rogue_feel[1] << 8) | rogue_feel[0]);*/
+        /* const Uint16 extra_info = ((rogue_feel[1] << 8) | rogue_feel[0]); */
         rogue_feel += sizeof(Uint16);
     }
     IMA_ADPCM_state.wSamplesPerBlock = ((rogue_feel[1] << 8) | rogue_feel[0]);
@@ -449,10 +449,8 @@ SDL_LoadWAV_RW(SDL_RWops * src, int freesrc,
     /* Read the audio data format chunk */
     chunk.data = NULL;
     do {
-        if (chunk.data != NULL) {
-            SDL_free(chunk.data);
-            chunk.data = NULL;
-        }
+        SDL_free(chunk.data);
+        chunk.data = NULL;
         lenread = ReadChunk(src, &chunk);
         if (lenread < 0) {
             was_error = 1;
@@ -549,10 +547,8 @@ SDL_LoadWAV_RW(SDL_RWops * src, int freesrc,
     /* Read the audio data chunk */
     *audio_buf = NULL;
     do {
-        if (*audio_buf != NULL) {
-            SDL_free(*audio_buf);
-            *audio_buf = NULL;
-        }
+        SDL_free(*audio_buf);
+        *audio_buf = NULL;
         lenread = ReadChunk(src, &chunk);
         if (lenread < 0) {
             was_error = 1;
@@ -583,9 +579,7 @@ SDL_LoadWAV_RW(SDL_RWops * src, int freesrc,
     *audio_len &= ~(samplesize - 1);
 
   done:
-    if (format != NULL) {
-        SDL_free(format);
-    }
+    SDL_free(format);
     if (src) {
         if (freesrc) {
             SDL_RWclose(src);
@@ -606,9 +600,7 @@ SDL_LoadWAV_RW(SDL_RWops * src, int freesrc,
 void
 SDL_FreeWAV(Uint8 * audio_buf)
 {
-    if (audio_buf != NULL) {
-        SDL_free(audio_buf);
-    }
+    SDL_free(audio_buf);
 }
 
 static int

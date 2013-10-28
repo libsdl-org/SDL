@@ -29,17 +29,34 @@
 #define _SDL_system_h
 
 #include "SDL_stdinc.h"
-
-#if defined(__IPHONEOS__) && __IPHONEOS__
-#include "SDL_video.h"
 #include "SDL_keyboard.h"
-#endif
+#include "SDL_render.h"
+#include "SDL_video.h"
 
 #include "begin_code.h"
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+
+/* Platform specific functions for Windows */
+#ifdef __WIN32__
+
+/* Returns the D3D9 adapter index that matches the specified display index.
+   This adapter index can be passed to IDirect3D9::CreateDevice and controls
+   on which monitor a full screen application will appear.
+*/
+extern DECLSPEC int SDLCALL SDL_Direct3D9GetAdapterIndex( int displayIndex );
+
+/* Returns the D3D device associated with a renderer, or NULL if it's not a D3D renderer.
+   Once you are done using the device, you should release it to avoid a resource leak.
+ */
+typedef struct IDirect3DDevice9 IDirect3DDevice9;
+extern DECLSPEC IDirect3DDevice9* SDLCALL SDL_RenderGetD3D9Device(SDL_Renderer * renderer);
+
+#endif /* __WIN32__ */
+
 
 /* Platform specific functions for iOS */
 #if defined(__IPHONEOS__) && __IPHONEOS__
@@ -92,7 +109,6 @@ extern DECLSPEC int SDLCALL SDL_AndroidGetExternalStorageState();
 extern DECLSPEC const char * SDLCALL SDL_AndroidGetExternalStoragePath();
 
 #endif /* __ANDROID__ */
-
 
 /* Platform specific functions for WinRT */
 #if defined(__WINRT__) && __WINRT__

@@ -596,6 +596,12 @@ SDL_UpperBlit(SDL_Surface * src, const SDL_Rect * srcrect,
             h -= dy;
     }
 
+    /* Switch back to a fast blit if we were previously stretching */
+    if (src->map->info.flags & SDL_COPY_NEAREST) {
+        src->map->info.flags &= ~SDL_COPY_NEAREST;
+        SDL_InvalidateMap(src->map);
+    }
+
     if (w > 0 && h > 0) {
         SDL_Rect sr;
         sr.x = srcx;
@@ -747,7 +753,10 @@ SDL_LowerBlitScaled(SDL_Surface * src, SDL_Rect * srcrect,
         return 0;
     }
 
-    src->map->info.flags |= SDL_COPY_NEAREST;
+    if (!(src->map->info.flags & SDL_COPY_NEAREST)) {
+        src->map->info.flags |= SDL_COPY_NEAREST;
+        SDL_InvalidateMap(src->map);
+    }
 
     if ( !(src->map->info.flags & complex_copy_flags) &&
          src->format->format == dst->format->format &&
@@ -801,7 +810,7 @@ SDL_UnlockSurface(SDL_Surface * surface)
  * Convert a surface into the specified pixel format.
  */
 SDL_Surface *
-SDL_ConvertSurface(SDL_Surface * surface, SDL_PixelFormat * format,
+SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
                    Uint32 flags)
 {
     SDL_Surface *convert;
@@ -942,7 +951,7 @@ SDL_ConvertSurfaceFormat(SDL_Surface * surface, Uint32 pixel_format,
 /*
  * Create a surface on the stack for quick blit operations
  */
-static __inline__ SDL_bool
+static SDL_INLINE SDL_bool
 SDL_CreateSurfaceOnStack(int width, int height, Uint32 pixel_format,
                          void * pixels, int pitch, SDL_Surface * surface,
                          SDL_PixelFormat * format, SDL_BlitMap * blitmap)
@@ -963,7 +972,7 @@ SDL_CreateSurfaceOnStack(int width, int height, Uint32 pixel_format,
     surface->h = height;
     surface->pitch = pitch;
     /* We don't actually need to set up the clip rect for our purposes */
-    /*SDL_SetClipRect(surface, NULL);*/
+    /* SDL_SetClipRect(surface, NULL); */
 
     /* Allocate an empty mapping */
     SDL_zerop(blitmap);
@@ -1076,7 +1085,7 @@ SDL_FreeSurface(SDL_Surface * surface)
         SDL_FreeBlitMap(surface->map);
         surface->map = NULL;
     }
-    if (surface->pixels && ((surface->flags & SDL_PREALLOC) != SDL_PREALLOC)) {
+    if (!(surface->flags & SDL_PREALLOC)) {
         SDL_free(surface->pixels);
     }
     SDL_free(surface);

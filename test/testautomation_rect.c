@@ -12,7 +12,7 @@
 
 /* Helper functions */
 
-/*!
+/* !
  * \brief Private helper to check SDL_IntersectRectAndLine results
  */
 void _validateIntersectRectAndLineResults(
@@ -39,7 +39,7 @@ void _validateIntersectRectAndLineResults(
 
 /* Test case functions */
 
-/*!
+/* !
  * \brief Tests SDL_IntersectRectAndLine() clipping cases
  *
  * \sa
@@ -110,7 +110,7 @@ rect_testIntersectRectAndLine (void *arg)
     return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Tests SDL_IntersectRectAndLine() non-clipping case line inside
  *
  * \sa
@@ -177,7 +177,7 @@ rect_testIntersectRectAndLineInside (void *arg)
     return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Tests SDL_IntersectRectAndLine() non-clipping cases outside
  *
  * \sa
@@ -232,7 +232,7 @@ rect_testIntersectRectAndLineOutside (void *arg)
     return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Tests SDL_IntersectRectAndLine() with empty rectangle
  *
  * \sa
@@ -267,7 +267,7 @@ rect_testIntersectRectAndLineEmpty (void *arg)
     return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Negative tests against SDL_IntersectRectAndLine() with invalid parameters
  *
  * \sa
@@ -302,7 +302,7 @@ rect_testIntersectRectAndLineParam (void *arg)
     return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Private helper to check SDL_HasIntersection results
  */
 void _validateHasIntersectionResults(
@@ -325,7 +325,7 @@ void _validateHasIntersectionResults(
         refRectB->x, refRectB->y, refRectB->w, refRectB->h);
 }
 
-/*!
+/* !
  * \brief Private helper to check SDL_IntersectRect results
  */
 void _validateIntersectRectResults(
@@ -344,7 +344,7 @@ void _validateIntersectRectResults(
     }
 }
 
-/*!
+/* !
  * \brief Private helper to check SDL_UnionRect results
  */
 void _validateUnionRectResults(
@@ -367,7 +367,7 @@ void _validateUnionRectResults(
         expectedResult->x, expectedResult->y, expectedResult->w, expectedResult->h);
 }
 
-/*!
+/* !
  * \brief Private helper to check SDL_RectEmpty results
  */
 void _validateRectEmptyResults(
@@ -385,7 +385,7 @@ void _validateRectEmptyResults(
         refRect->x, refRect->y, refRect->w, refRect->h);
 }
 
-/*!
+/* !
  * \brief Private helper to check SDL_RectEquals results
  */
 void _validateRectEqualsResults(
@@ -408,7 +408,7 @@ void _validateRectEqualsResults(
         refRectB->x, refRectB->y, refRectB->w, refRectB->h);
 }
 
-/*!
+/* !
  * \brief Tests SDL_IntersectRect() with B fully inside A
  *
  * \sa
@@ -423,7 +423,7 @@ int rect_testIntersectRectInside (void *arg)
     SDL_Rect result;
     SDL_bool intersection;
 
-    // rectB fully contained in rectA
+    /* rectB fully contained in rectA */
     refRectB.x = 0;
     refRectB.y = 0;
     refRectB.w = SDLTest_RandomIntegerInRange(refRectA.x + 1, refRectA.x + refRectA.w - 1);
@@ -436,7 +436,7 @@ int rect_testIntersectRectInside (void *arg)
     return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Tests SDL_IntersectRect() with B fully outside A
  *
  * \sa
@@ -451,7 +451,7 @@ int rect_testIntersectRectOutside (void *arg)
     SDL_Rect result;
     SDL_bool intersection;
 
-    // rectB fully outside of rectA
+    /* rectB fully outside of rectA */
     refRectB.x = refRectA.x + refRectA.w + SDLTest_RandomIntegerInRange(1, 10);
     refRectB.y = refRectA.y + refRectA.h + SDLTest_RandomIntegerInRange(1, 10);
     refRectB.w = refRectA.w;
@@ -464,7 +464,7 @@ int rect_testIntersectRectOutside (void *arg)
     return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Tests SDL_IntersectRect() with B partially intersecting A
  *
  * \sa
@@ -480,7 +480,7 @@ int rect_testIntersectRectPartial (void *arg)
     SDL_Rect expectedResult;
     SDL_bool intersection;
 
-    // rectB partially contained in rectA
+    /* rectB partially contained in rectA */
     refRectB.x = SDLTest_RandomIntegerInRange(refRectA.x + 1, refRectA.x + refRectA.w - 1);
     refRectB.y = SDLTest_RandomIntegerInRange(refRectA.y + 1, refRectA.y + refRectA.h - 1);
     refRectB.w = refRectA.w;
@@ -494,7 +494,7 @@ int rect_testIntersectRectPartial (void *arg)
     intersection = SDL_IntersectRect(&rectA, &rectB, &result);
     _validateIntersectRectResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB, &result, &expectedResult);
 
-    // rectB right edge
+    /* rectB right edge */
     refRectB.x = rectA.w - 1;
     refRectB.y = rectA.y;
     refRectB.w = SDLTest_RandomIntegerInRange(1, refRectA.w - 1);
@@ -508,7 +508,7 @@ int rect_testIntersectRectPartial (void *arg)
     intersection = SDL_IntersectRect(&rectA, &rectB, &result);
     _validateIntersectRectResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB, &result, &expectedResult);
 
-    // rectB left edge
+    /* rectB left edge */
     refRectB.x = 1 - rectA.w;
     refRectB.y = rectA.y;
     refRectB.w = refRectA.w;
@@ -522,7 +522,7 @@ int rect_testIntersectRectPartial (void *arg)
     intersection = SDL_IntersectRect(&rectA, &rectB, &result);
     _validateIntersectRectResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB, &result, &expectedResult);
 
-    // rectB bottom edge
+    /* rectB bottom edge */
     refRectB.x = rectA.x;
     refRectB.y = rectA.h - 1;
     refRectB.w = SDLTest_RandomIntegerInRange(1, refRectA.w - 1);
@@ -536,7 +536,7 @@ int rect_testIntersectRectPartial (void *arg)
     intersection = SDL_IntersectRect(&rectA, &rectB, &result);
     _validateIntersectRectResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB, &result, &expectedResult);
 
-    // rectB top edge
+    /* rectB top edge */
     refRectB.x = rectA.x;
     refRectB.y = 1 - rectA.h;
     refRectB.w = SDLTest_RandomIntegerInRange(1, refRectA.w - 1);
@@ -553,7 +553,7 @@ int rect_testIntersectRectPartial (void *arg)
     return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Tests SDL_IntersectRect() with 1x1 pixel sized rectangles
  *
  * \sa
@@ -569,7 +569,7 @@ int rect_testIntersectRectPoint (void *arg)
     SDL_bool intersection;
     int offsetX, offsetY;
 
-    // intersecting pixels
+    /* intersecting pixels */
     refRectA.x = SDLTest_RandomIntegerInRange(1, 100);
     refRectA.y = SDLTest_RandomIntegerInRange(1, 100);
     refRectB.x = refRectA.x;
@@ -579,7 +579,7 @@ int rect_testIntersectRectPoint (void *arg)
     intersection = SDL_IntersectRect(&rectA, &rectB, &result);
     _validateIntersectRectResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB, &result, &refRectA);
 
-    // non-intersecting pixels cases
+    /* non-intersecting pixels cases */
     for (offsetX = -1; offsetX <= 1; offsetX++) {
         for (offsetY = -1; offsetY <= 1; offsetY++) {
             if (offsetX != 0 || offsetY != 0) {
@@ -600,7 +600,7 @@ int rect_testIntersectRectPoint (void *arg)
     return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Tests SDL_IntersectRect() with empty rectangles
  *
  * \sa
@@ -616,7 +616,7 @@ int rect_testIntersectRectEmpty (void *arg)
     SDL_bool intersection;
     SDL_bool empty;
 
-    // Rect A empty
+    /* Rect A empty */
     result.w = SDLTest_RandomIntegerInRange(1, 100);
     result.h = SDLTest_RandomIntegerInRange(1, 100);
     refRectA.x = SDLTest_RandomIntegerInRange(1, 100);
@@ -633,7 +633,7 @@ int rect_testIntersectRectEmpty (void *arg)
     empty = (SDL_bool)SDL_RectEmpty(&result);
     SDLTest_AssertCheck(empty == SDL_TRUE, "Validate result is empty Rect; got: %s", (empty == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE");
 
-    // Rect B empty
+    /* Rect B empty */
     result.w = SDLTest_RandomIntegerInRange(1, 100);
     result.h = SDLTest_RandomIntegerInRange(1, 100);
     refRectA.x = SDLTest_RandomIntegerInRange(1, 100);
@@ -650,7 +650,7 @@ int rect_testIntersectRectEmpty (void *arg)
     empty = (SDL_bool)SDL_RectEmpty(&result);
     SDLTest_AssertCheck(empty == SDL_TRUE, "Validate result is empty Rect; got: %s", (empty == SDL_TRUE) ? "SDL_TRUE" : "SDL_FALSE");
 
-    // Rect A and B empty
+    /* Rect A and B empty */
     result.w = SDLTest_RandomIntegerInRange(1, 100);
     result.h = SDLTest_RandomIntegerInRange(1, 100);
     refRectA.x = SDLTest_RandomIntegerInRange(1, 100);
@@ -672,7 +672,7 @@ int rect_testIntersectRectEmpty (void *arg)
     return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Negative tests against SDL_IntersectRect() with invalid parameters
  *
  * \sa
@@ -685,7 +685,7 @@ int rect_testIntersectRectParam(void *arg)
     SDL_Rect result;
     SDL_bool intersection;
 
-    // invalid parameter combinations
+    /* invalid parameter combinations */
     intersection = SDL_IntersectRect((SDL_Rect *)NULL, &rectB, &result);
     SDLTest_AssertCheck(intersection == SDL_FALSE, "Check that function returns SDL_FALSE when 1st parameter is NULL");
     intersection = SDL_IntersectRect(&rectA, (SDL_Rect *)NULL, &result);
@@ -702,7 +702,7 @@ int rect_testIntersectRectParam(void *arg)
     return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Tests SDL_HasIntersection() with B fully inside A
  *
  * \sa
@@ -716,7 +716,7 @@ int rect_testHasIntersectionInside (void *arg)
     SDL_Rect rectB;
     SDL_bool intersection;
 
-    // rectB fully contained in rectA
+    /* rectB fully contained in rectA */
     refRectB.x = 0;
     refRectB.y = 0;
     refRectB.w = SDLTest_RandomIntegerInRange(refRectA.x + 1, refRectA.x + refRectA.w - 1);
@@ -729,7 +729,7 @@ int rect_testHasIntersectionInside (void *arg)
     return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Tests SDL_HasIntersection() with B fully outside A
  *
  * \sa
@@ -743,7 +743,7 @@ int rect_testHasIntersectionOutside (void *arg)
     SDL_Rect rectB;
     SDL_bool intersection;
 
-    // rectB fully outside of rectA
+    /* rectB fully outside of rectA */
     refRectB.x = refRectA.x + refRectA.w + SDLTest_RandomIntegerInRange(1, 10);
     refRectB.y = refRectA.y + refRectA.h + SDLTest_RandomIntegerInRange(1, 10);
     refRectB.w = refRectA.w;
@@ -756,7 +756,7 @@ int rect_testHasIntersectionOutside (void *arg)
     return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Tests SDL_HasIntersection() with B partially intersecting A
  *
  * \sa
@@ -770,7 +770,7 @@ int rect_testHasIntersectionPartial (void *arg)
     SDL_Rect rectB;
     SDL_bool intersection;
 
-    // rectB partially contained in rectA
+    /* rectB partially contained in rectA */
     refRectB.x = SDLTest_RandomIntegerInRange(refRectA.x + 1, refRectA.x + refRectA.w - 1);
     refRectB.y = SDLTest_RandomIntegerInRange(refRectA.y + 1, refRectA.y + refRectA.h - 1);
     refRectB.w = refRectA.w;
@@ -780,7 +780,7 @@ int rect_testHasIntersectionPartial (void *arg)
     intersection = SDL_HasIntersection(&rectA, &rectB);
     _validateHasIntersectionResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB);
 
-    // rectB right edge
+    /* rectB right edge */
     refRectB.x = rectA.w - 1;
     refRectB.y = rectA.y;
     refRectB.w = SDLTest_RandomIntegerInRange(1, refRectA.w - 1);
@@ -790,7 +790,7 @@ int rect_testHasIntersectionPartial (void *arg)
     intersection = SDL_HasIntersection(&rectA, &rectB);
     _validateHasIntersectionResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB);
 
-    // rectB left edge
+    /* rectB left edge */
     refRectB.x = 1 - rectA.w;
     refRectB.y = rectA.y;
     refRectB.w = refRectA.w;
@@ -800,7 +800,7 @@ int rect_testHasIntersectionPartial (void *arg)
     intersection = SDL_HasIntersection(&rectA, &rectB);
     _validateHasIntersectionResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB);
 
-    // rectB bottom edge
+    /* rectB bottom edge */
     refRectB.x = rectA.x;
     refRectB.y = rectA.h - 1;
     refRectB.w = SDLTest_RandomIntegerInRange(1, refRectA.w - 1);
@@ -810,7 +810,7 @@ int rect_testHasIntersectionPartial (void *arg)
     intersection = SDL_HasIntersection(&rectA, &rectB);
     _validateHasIntersectionResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB);
 
-    // rectB top edge
+    /* rectB top edge */
     refRectB.x = rectA.x;
     refRectB.y = 1 - rectA.h;
     refRectB.w = SDLTest_RandomIntegerInRange(1, refRectA.w - 1);
@@ -823,7 +823,7 @@ int rect_testHasIntersectionPartial (void *arg)
     return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Tests SDL_HasIntersection() with 1x1 pixel sized rectangles
  *
  * \sa
@@ -838,7 +838,7 @@ int rect_testHasIntersectionPoint (void *arg)
     SDL_bool intersection;
     int offsetX, offsetY;
 
-    // intersecting pixels
+    /* intersecting pixels */
     refRectA.x = SDLTest_RandomIntegerInRange(1, 100);
     refRectA.y = SDLTest_RandomIntegerInRange(1, 100);
     refRectB.x = refRectA.x;
@@ -848,7 +848,7 @@ int rect_testHasIntersectionPoint (void *arg)
     intersection = SDL_HasIntersection(&rectA, &rectB);
     _validateHasIntersectionResults(intersection, SDL_TRUE, &rectA, &rectB, &refRectA, &refRectB);
 
-    // non-intersecting pixels cases
+    /* non-intersecting pixels cases */
     for (offsetX = -1; offsetX <= 1; offsetX++) {
         for (offsetY = -1; offsetY <= 1; offsetY++) {
             if (offsetX != 0 || offsetY != 0) {
@@ -869,7 +869,7 @@ int rect_testHasIntersectionPoint (void *arg)
     return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Tests SDL_HasIntersection() with empty rectangles
  *
  * \sa
@@ -883,7 +883,7 @@ int rect_testHasIntersectionEmpty (void *arg)
     SDL_Rect rectB;
     SDL_bool intersection;
 
-    // Rect A empty
+    /* Rect A empty */
     refRectA.x = SDLTest_RandomIntegerInRange(1, 100);
     refRectA.y = SDLTest_RandomIntegerInRange(1, 100);
     refRectA.w = SDLTest_RandomIntegerInRange(1, 100);
@@ -896,7 +896,7 @@ int rect_testHasIntersectionEmpty (void *arg)
     intersection = SDL_HasIntersection(&rectA, &rectB);
     _validateHasIntersectionResults(intersection, SDL_FALSE, &rectA, &rectB, &refRectA, &refRectB);
 
-    // Rect B empty
+    /* Rect B empty */
     refRectA.x = SDLTest_RandomIntegerInRange(1, 100);
     refRectA.y = SDLTest_RandomIntegerInRange(1, 100);
     refRectA.w = SDLTest_RandomIntegerInRange(1, 100);
@@ -909,7 +909,7 @@ int rect_testHasIntersectionEmpty (void *arg)
     intersection = SDL_HasIntersection(&rectA, &rectB);
     _validateHasIntersectionResults(intersection, SDL_FALSE, &rectA, &rectB, &refRectA, &refRectB);
 
-    // Rect A and B empty
+    /* Rect A and B empty */
     refRectA.x = SDLTest_RandomIntegerInRange(1, 100);
     refRectA.y = SDLTest_RandomIntegerInRange(1, 100);
     refRectA.w = SDLTest_RandomIntegerInRange(1, 100);
@@ -927,7 +927,7 @@ int rect_testHasIntersectionEmpty (void *arg)
     return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Negative tests against SDL_HasIntersection() with invalid parameters
  *
  * \sa
@@ -939,7 +939,7 @@ int rect_testHasIntersectionParam(void *arg)
     SDL_Rect rectB;
     SDL_bool intersection;
 
-    // invalid parameter combinations
+    /* invalid parameter combinations */
     intersection = SDL_HasIntersection((SDL_Rect *)NULL, &rectB);
     SDLTest_AssertCheck(intersection == SDL_FALSE, "Check that function returns SDL_FALSE when 1st parameter is NULL");
     intersection = SDL_HasIntersection(&rectA, (SDL_Rect *)NULL);
@@ -950,7 +950,7 @@ int rect_testHasIntersectionParam(void *arg)
     return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Test SDL_EnclosePoints() without clipping
  *
  * \sa
@@ -969,7 +969,7 @@ int rect_testEnclosePoints(void *arg)
     int minx = 0, maxx = 0, miny = 0, maxy = 0;
     int i;
 
-    // Create input data, tracking result
+    /* Create input data, tracking result */
     for (i=0; i<numPoints; i++) {
         newx = SDLTest_RandomIntegerInRange(-1024, 1024);
         newy = SDLTest_RandomIntegerInRange(-1024, 1024);
@@ -990,7 +990,7 @@ int rect_testEnclosePoints(void *arg)
         }
     }
 
-    // Call function and validate - special case: no result requested
+    /* Call function and validate - special case: no result requested */
     anyEnclosedNoResult = SDL_EnclosePoints((const SDL_Point *)points, numPoints, (const SDL_Rect *)NULL, (SDL_Rect *)NULL);
     SDLTest_AssertCheck(expectedEnclosed==anyEnclosedNoResult,
         "Check expected return value %s, got %s",
@@ -1002,7 +1002,7 @@ int rect_testEnclosePoints(void *arg)
             i, refPoints[i].x, refPoints[i].y, points[i].x, points[i].y);
     }
 
-    // Call function and validate
+    /* Call function and validate */
     anyEnclosed = SDL_EnclosePoints((const SDL_Point *)points, numPoints, (const SDL_Rect *)NULL, &result);
     SDLTest_AssertCheck(expectedEnclosed==anyEnclosed,
         "Check return value %s, got %s",
@@ -1020,7 +1020,7 @@ int rect_testEnclosePoints(void *arg)
     return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Test SDL_EnclosePoints() with repeated input points
  *
  * \sa
@@ -1040,7 +1040,7 @@ int rect_testEnclosePointsRepeatedInput(void *arg)
     int minx = 0, maxx = 0, miny = 0, maxy = 0;
     int i;
 
-    // Create input data, tracking result
+    /* Create input data, tracking result */
     for (i=0; i<numPoints; i++) {
         if (i < halfPoints) {
             newx = SDLTest_RandomIntegerInRange(-1024, 1024);
@@ -1066,7 +1066,7 @@ int rect_testEnclosePointsRepeatedInput(void *arg)
         }
     }
 
-    // Call function and validate - special case: no result requested
+    /* Call function and validate - special case: no result requested */
     anyEnclosedNoResult = SDL_EnclosePoints((const SDL_Point *)points, numPoints, (const SDL_Rect *)NULL, (SDL_Rect *)NULL);
     SDLTest_AssertCheck(expectedEnclosed==anyEnclosedNoResult,
         "Check return value %s, got %s",
@@ -1078,7 +1078,7 @@ int rect_testEnclosePointsRepeatedInput(void *arg)
             i, refPoints[i].x, refPoints[i].y, points[i].x, points[i].y);
     }
 
-    // Call function and validate
+    /* Call function and validate */
     anyEnclosed = SDL_EnclosePoints((const SDL_Point *)points, numPoints, (const SDL_Rect *)NULL, &result);
     SDLTest_AssertCheck(expectedEnclosed==anyEnclosed,
         "Check return value %s, got %s",
@@ -1096,7 +1096,7 @@ int rect_testEnclosePointsRepeatedInput(void *arg)
     return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Test SDL_EnclosePoints() with clipping
  *
  * \sa
@@ -1117,13 +1117,13 @@ int rect_testEnclosePointsWithClipping(void *arg)
     int minx = 0, maxx = 0, miny = 0, maxy = 0;
     int i;
 
-    // Setup clipping rectangle
+    /* Setup clipping rectangle */
     refClip.x = SDLTest_RandomIntegerInRange(-1024, 1024);
     refClip.y = SDLTest_RandomIntegerInRange(-1024, 1024);
     refClip.w = SDLTest_RandomIntegerInRange(1, 1024);
     refClip.h = SDLTest_RandomIntegerInRange(1, 1024);
 
-    // Create input data, tracking result
+    /* Create input data, tracking result */
     for (i=0; i<numPoints; i++) {
         newx = SDLTest_RandomIntegerInRange(-1024, 1024);
         newy = SDLTest_RandomIntegerInRange(-1024, 1024);
@@ -1148,7 +1148,7 @@ int rect_testEnclosePointsWithClipping(void *arg)
         }
     }
 
-    // Call function and validate - special case: no result requested
+    /* Call function and validate - special case: no result requested */
     clip = refClip;
     anyEnclosedNoResult = SDL_EnclosePoints((const SDL_Point *)points, numPoints, (const SDL_Rect *)&clip, (SDL_Rect *)NULL);
     SDLTest_AssertCheck(expectedEnclosed==anyEnclosedNoResult,
@@ -1163,7 +1163,7 @@ int rect_testEnclosePointsWithClipping(void *arg)
     SDLTest_AssertCheck(refClip.x==clip.x && refClip.y==clip.y && refClip.w==clip.w && refClip.h==clip.h,
         "Check that source clipping rectangle was not modified");
 
-    // Call function and validate
+    /* Call function and validate */
     anyEnclosed = SDL_EnclosePoints((const SDL_Point *)points, numPoints, (const SDL_Rect *)&clip, &result);
     SDLTest_AssertCheck(expectedEnclosed==anyEnclosed,
         "Check return value %s, got %s",
@@ -1195,7 +1195,7 @@ int rect_testEnclosePointsWithClipping(void *arg)
     return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Negative tests against SDL_EnclosePoints() with invalid parameters
  *
  * \sa
@@ -1209,7 +1209,7 @@ int rect_testEnclosePointsParam(void *arg)
     SDL_Rect result;
     SDL_bool anyEnclosed;
 
-    // invalid parameter combinations
+    /* invalid parameter combinations */
     anyEnclosed = SDL_EnclosePoints((SDL_Point *)NULL, 1, (const SDL_Rect *)&clip, &result);
     SDLTest_AssertCheck(anyEnclosed == SDL_FALSE, "Check that functions returns SDL_FALSE when 1st parameter is NULL");
     anyEnclosed = SDL_EnclosePoints((const SDL_Point *)points, 0, (const SDL_Rect *)&clip, &result);
@@ -1223,7 +1223,7 @@ int rect_testEnclosePointsParam(void *arg)
     return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Tests SDL_UnionRect() where rect B is outside rect A
  *
  * \sa
@@ -1294,7 +1294,7 @@ int rect_testUnionRectOutside(void *arg)
     return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Tests SDL_UnionRect() where rect A or rect B are empty
  *
  * \sa
@@ -1359,7 +1359,7 @@ int rect_testUnionRectEmpty(void *arg)
     return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Tests SDL_UnionRect() where rect B is inside rect A
  *
  * \sa
@@ -1423,7 +1423,7 @@ int rect_testUnionRectInside(void *arg)
     return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Negative tests against SDL_UnionRect() with invalid parameters
  *
  * \sa
@@ -1434,7 +1434,7 @@ int rect_testUnionRectParam(void *arg)
     SDL_Rect rectA, rectB;
     SDL_Rect result;
 
-    // invalid parameter combinations
+    /* invalid parameter combinations */
     SDL_UnionRect((SDL_Rect *)NULL, &rectB, &result);
     SDLTest_AssertPass("Check that function returns when 1st parameter is NULL");
     SDL_UnionRect(&rectA, (SDL_Rect *)NULL, &result);
@@ -1451,7 +1451,7 @@ int rect_testUnionRectParam(void *arg)
     return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Tests SDL_RectEmpty() with various inputs
  *
  * \sa
@@ -1465,7 +1465,7 @@ int rect_testRectEmpty(void *arg)
     SDL_bool result;
     int w, h;
 
-    // Non-empty case
+    /* Non-empty case */
     refRect.x=SDLTest_RandomIntegerInRange(-1024, 1024);
     refRect.y=SDLTest_RandomIntegerInRange(-1024, 1024);
     refRect.w=SDLTest_RandomIntegerInRange(256, 1024);
@@ -1475,7 +1475,7 @@ int rect_testRectEmpty(void *arg)
     result = (SDL_bool)SDL_RectEmpty((const SDL_Rect *)&rect);
     _validateRectEmptyResults(result, expectedResult, &rect, &refRect);
 
-    // Empty case
+    /* Empty case */
     for (w=-1; w<2; w++) {
         for (h=-1; h<2; h++) {
             if ((w != 1) || (h != 1)) {
@@ -1494,7 +1494,7 @@ int rect_testRectEmpty(void *arg)
     return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Negative tests against SDL_RectEmpty() with invalid parameters
  *
  * \sa
@@ -1504,14 +1504,14 @@ int rect_testRectEmptyParam(void *arg)
 {
     SDL_bool result;
 
-    // invalid parameter combinations
+    /* invalid parameter combinations */
     result = (SDL_bool)SDL_RectEmpty((const SDL_Rect *)NULL);
     SDLTest_AssertCheck(result == SDL_TRUE, "Check that function returns TRUE when 1st parameter is NULL");
 
     return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Tests SDL_RectEquals() with various inputs
  *
  * \sa
@@ -1526,7 +1526,7 @@ int rect_testRectEquals(void *arg)
     SDL_bool expectedResult;
     SDL_bool result;
 
-    // Equals
+    /* Equals */
     refRectA.x=SDLTest_RandomIntegerInRange(-1024, 1024);
     refRectA.y=SDLTest_RandomIntegerInRange(-1024, 1024);
     refRectA.w=SDLTest_RandomIntegerInRange(1, 1024);
@@ -1541,7 +1541,7 @@ int rect_testRectEquals(void *arg)
     return TEST_COMPLETED;
 }
 
-/*!
+/* !
  * \brief Negative tests against SDL_RectEquals() with invalid parameters
  *
  * \sa
@@ -1563,7 +1563,7 @@ int rect_testRectEqualsParam(void *arg)
     rectB.w=SDLTest_RandomIntegerInRange(1, 1024);
     rectB.h=SDLTest_RandomIntegerInRange(1, 1024);
 
-    // invalid parameter combinations
+    /* invalid parameter combinations */
     result = (SDL_bool)SDL_RectEquals((const SDL_Rect *)NULL, (const SDL_Rect *)&rectB);
     SDLTest_AssertCheck(result == SDL_FALSE, "Check that function returns SDL_FALSE when 1st parameter is NULL");
     result = (SDL_bool)SDL_RectEquals((const SDL_Rect *)&rectA, (const SDL_Rect *)NULL);
@@ -1674,7 +1674,7 @@ static const SDLTest_TestCaseReference rectTest29 =
         { (SDLTest_TestCaseFp)rect_testRectEqualsParam, "rect_testRectEqualsParam", "Negative tests against SDL_RectEquals with invalid parameters", TEST_ENABLED };
 
 
-/*!
+/* !
  * \brief Sequence of Rect test cases; functions that handle simple rectangles including overlaps and merges.
  *
  * \sa

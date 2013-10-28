@@ -896,12 +896,16 @@ EOF
 	then
 	    echo ${UNAME_MACHINE}-unknown-linux-gnu
 	else
+        case `sed -n '/^Hardware/s/^.*: \(.*\)/\1/p' < /proc/cpuinfo` in
+        BCM2708) MANUFACTURER=raspberry;;
+        *) MANUFACTURER=unknown;;
+        esac
 	    if echo __ARM_PCS_VFP | $CC_FOR_BUILD -E - 2>/dev/null \
 		| grep -q __ARM_PCS_VFP
 	    then
-		echo ${UNAME_MACHINE}-unknown-linux-gnueabi
+		echo ${UNAME_MACHINE}-${MANUFACTURER}-linux-gnueabi
 	    else
-		echo ${UNAME_MACHINE}-unknown-linux-gnueabihf
+		echo ${UNAME_MACHINE}-${MANUFACTURER}-linux-gnueabihf
 	    fi
 	fi
 	exit ;;

@@ -34,10 +34,17 @@
 #include "SDL_cocoamouse.h"
 #include "SDL_cocoaopengl.h"
 
+#if MAC_OS_X_VERSION_MAX_ALLOWED < 1070
+/* Taken from AppKit/NSOpenGLView.h in 10.8 SDK. */
+@interface NSView (NSOpenGLSurfaceResolution)
+- (BOOL)wantsBestResolutionOpenGLSurface;
+- (void)setWantsBestResolutionOpenGLSurface:(BOOL)flag;
+@end
+#endif
 
 static Uint32 s_moveHack;
 
-static __inline__ void ConvertNSRect(NSRect *r)
+static void ConvertNSRect(NSRect *r)
 {
     r->origin.y = CGDisplayPixelsHigh(kCGDirectMainDisplay) - r->origin.y - r->size.height;
 }
@@ -62,6 +69,7 @@ static void ScheduleContextUpdates(SDL_WindowData *data)
 
     _data = data;
     observingVisible = YES;
+    wasCtrlLeft = NO;
     wasVisible = [window isVisible];
 
     center = [NSNotificationCenter defaultCenter];
@@ -333,7 +341,13 @@ static void ScheduleContextUpdates(SDL_WindowData *data)
 
     switch ([theEvent buttonNumber]) {
     case 0:
-        button = SDL_BUTTON_LEFT;
+        if ([theEvent modifierFlags] & NSControlKeyMask) {
+            wasCtrlLeft = YES;
+            button = SDL_BUTTON_RIGHT;
+        } else {
+            wasCtrlLeft = NO;
+            button = SDL_BUTTON_LEFT;
+        }
         break;
     case 1:
         button = SDL_BUTTON_RIGHT;
@@ -364,7 +378,12 @@ static void ScheduleContextUpdates(SDL_WindowData *data)
 
     switch ([theEvent buttonNumber]) {
     case 0:
-        button = SDL_BUTTON_LEFT;
+        if (wasCtrlLeft) {
+            button = SDL_BUTTON_RIGHT;
+            wasCtrlLeft = NO;
+        } else {
+            button = SDL_BUTTON_LEFT;
+        }
         break;
     case 1:
         button = SDL_BUTTON_RIGHT;
@@ -727,6 +746,13 @@ Cocoa_CreateWindow(_THIS, SDL_Window * window)
     /* Create a default view for this window */
     rect = [nswindow contentRectForFrameRect:[nswindow frame]];
     NSView *contentView = [[SDLView alloc] initWithFrame:rect];
+
+    if ((window->flags & SDL_WINDOW_ALLOW_HIGHDPI) > 0) {
+        if ([contentView respondsToSelector:@selector(setWantsBestResolutionOpenGLSurface:)]) {
+            [contentView setWantsBestResolutionOpenGLSurface:YES];
+        }
+    }
+
     [nswindow setContentView: contentView];
     [contentView release];
 
@@ -894,8 +920,9 @@ Cocoa_RaiseWindow(_THIS, SDL_Window * window)
     SDL_WindowData *windowData = ((SDL_WindowData *) window->driverdata);
     NSWindow *nswindow = windowData->nswindow;
 
-    // makeKeyAndOrderFront: has the side-effect of deminiaturizing and showing
-    // a minimized or hidden window, so check for that before showing it.
+    /* makeKeyAndOrderFront: has the side-effect of deminiaturizing and showing
+       a minimized or hidden window, so check for that before showing it.
+     */
     [windowData->listener pauseVisibleObservation];
     if (![nswindow isMiniaturized] && [nswindow isVisible]) {
         [nswindow makeKeyAndOrderFront:nil];
@@ -1031,8 +1058,8 @@ Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
     }
 
     s_moveHack = 0;
-    [nswindow setFrameOrigin:rect.origin];
     [nswindow setContentSize:rect.size];
+    [nswindow setFrameOrigin:rect.origin];
     s_moveHack = SDL_GetTicks();
 
     /* When the window style changes the title is cleared */
@@ -1047,9 +1074,11 @@ Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
         [nswindow setLevel:kCGNormalWindowLevel];
     }
 
-    [data->listener pauseVisibleObservation];
-    [nswindow makeKeyAndOrderFront:nil];
-    [data->listener resumeVisibleObservation];
+    if ([nswindow isVisible] || fullscreen) {
+        [data->listener pauseVisibleObservation];
+        [nswindow makeKeyAndOrderFront:nil];
+        [data->listener resumeVisibleObservation];
+    }
 
     ScheduleContextUpdates(data);
 

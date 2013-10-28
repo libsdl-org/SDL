@@ -119,6 +119,15 @@
     return (orientationMask & (1 << orient));
 }
 
+- (BOOL)prefersStatusBarHidden
+{
+    if (self->window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_BORDERLESS)) {
+        return YES;
+    } else {
+        return NO;
+    }
+}
+
 @end
 
 #endif /* SDL_VIDEO_DRIVER_UIKIT */

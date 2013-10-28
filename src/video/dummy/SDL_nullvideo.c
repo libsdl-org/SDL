@@ -82,9 +82,7 @@ DUMMY_CreateDevice(int devindex)
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
         SDL_OutOfMemory();
-        if (device) {
-            SDL_free(device);
-        }
+        SDL_free(device);
         return (0);
     }
 

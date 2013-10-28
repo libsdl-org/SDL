@@ -49,7 +49,7 @@ typedef enum
      *
      *  These values are from usage page 0x07 (USB keyboard page).
      */
-    /*@{*/
+    /* @{ */
 
     SDL_SCANCODE_A = 4,
     SDL_SCANCODE_B = 5,
@@ -339,14 +339,14 @@ typedef enum
                                  *   special KMOD_MODE for it I'm adding it here
                                  */
 
-    /*@}*//*Usage page 0x07*/
+    /* @} *//* Usage page 0x07 */
 
     /**
      *  \name Usage page 0x0C
      *
      *  These values are mapped from usage page 0x0C (USB consumer page).
      */
-    /*@{*/
+    /* @{ */
 
     SDL_SCANCODE_AUDIONEXT = 258,
     SDL_SCANCODE_AUDIOPREV = 259,
@@ -366,14 +366,14 @@ typedef enum
     SDL_SCANCODE_AC_REFRESH = 273,
     SDL_SCANCODE_AC_BOOKMARKS = 274,
 
-    /*@}*//*Usage page 0x0C*/
+    /* @} *//* Usage page 0x0C */
 
     /**
      *  \name Walther keys
      *
      *  These are values that Christian Walther added (for mac keyboard?).
      */
-    /*@{*/
+    /* @{ */
 
     SDL_SCANCODE_BRIGHTNESSDOWN = 275,
     SDL_SCANCODE_BRIGHTNESSUP = 276,
@@ -388,7 +388,7 @@ typedef enum
     SDL_SCANCODE_APP1 = 283,
     SDL_SCANCODE_APP2 = 284,
 
-    /*@}*//*Walther keys*/
+    /* @} *//* Walther keys */
 
     /* Add any other keys here. */
 

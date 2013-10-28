@@ -20,6 +20,10 @@
 */
 #include "SDL_config.h"
 
+#if defined(__WIN32__)
+#include "core/windows/SDL_windows.h"
+#endif
+
 #include "SDL.h"
 #include "SDL_atomic.h"
 #include "SDL_messagebox.h"
@@ -29,8 +33,6 @@
 #include "video/SDL_sysvideo.h"
 
 #ifdef __WIN32__
-#include "core/windows/SDL_windows.h"
-
 #ifndef WS_OVERLAPPEDWINDOW
 #define WS_OVERLAPPEDWINDOW 0
 #endif

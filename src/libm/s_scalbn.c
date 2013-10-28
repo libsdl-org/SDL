@@ -54,7 +54,7 @@ libm_hidden_proto(scalbn)
         GET_HIGH_WORD(hx, x);
         k = ((hx & 0x7ff00000) >> 20) - 54;
         if (n < -50000)
-            return tiny * x;    /*underflow */
+            return tiny * x;    /* underflow */
     }
     if (k == 0x7ff)
         return x + x;           /* NaN or Inf */
@@ -67,9 +67,9 @@ libm_hidden_proto(scalbn)
     }
     if (k <= -54) {
         if (n > 50000)          /* in case integer overflow in n+k */
-            return huge_val * copysign(huge_val, x);    /*overflow */
+            return huge_val * copysign(huge_val, x);    /* overflow */
         else
-            return tiny * copysign(tiny, x);    /*underflow */
+            return tiny * copysign(tiny, x);    /* underflow */
     }
     k += 54;                    /* subnormal result */
     SET_HIGH_WORD(x, (hx & 0x800fffff) | (k << 20));

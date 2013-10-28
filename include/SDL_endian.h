@@ -33,10 +33,10 @@
 /**
  *  \name The two types of endianness
  */
-/*@{*/
+/* @{ */
 #define SDL_LIL_ENDIAN  1234
 #define SDL_BIG_ENDIAN  4321
-/*@}*/
+/* @} */
 
 #ifndef SDL_BYTEORDER           /* Not defined in SDL_config.h? */
 #ifdef __linux__
@@ -206,7 +206,7 @@ SDL_SwapFloat(float x)
  *  \name Swap to native
  *  Byteswap item from the specified endianness to the native endianness.
  */
-/*@{*/
+/* @{ */
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
 #define SDL_SwapLE16(X) (X)
 #define SDL_SwapLE32(X) (X)
@@ -226,7 +226,7 @@ SDL_SwapFloat(float x)
 #define SDL_SwapBE64(X) (X)
 #define SDL_SwapFloatBE(X)  (X)
 #endif
-/*@}*//*Swap to native*/
+/* @} *//* Swap to native */
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

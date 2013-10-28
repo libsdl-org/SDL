@@ -43,43 +43,43 @@ extern "C" {
 #endif
 
 
-//! Definitions for test case structures
+/* ! Definitions for test case structures */
 #define TEST_ENABLED  1
 #define TEST_DISABLED 0
 
-//! Definition of all the possible test return values of the test case method
+/* ! Definition of all the possible test return values of the test case method */
 #define TEST_ABORTED        -1
 #define TEST_STARTED         0
 #define TEST_COMPLETED       1
 #define TEST_SKIPPED         2
 
-//! Definition of all the possible test results for the harness
+/* ! Definition of all the possible test results for the harness */
 #define TEST_RESULT_PASSED              0
 #define TEST_RESULT_FAILED              1
 #define TEST_RESULT_NO_ASSERT           2
 #define TEST_RESULT_SKIPPED             3
 #define TEST_RESULT_SETUP_FAILURE       4
 
-//!< Function pointer to a test case setup function (run before every test)
+/* !< Function pointer to a test case setup function (run before every test) */
 typedef void (*SDLTest_TestCaseSetUpFp)(void *arg);
 
-//!< Function pointer to a test case function
+/* !< Function pointer to a test case function */
 typedef int (*SDLTest_TestCaseFp)(void *arg);
 
-//!< Function pointer to a test case teardown function (run after every test)
+/* !< Function pointer to a test case teardown function (run after every test) */
 typedef void  (*SDLTest_TestCaseTearDownFp)(void *arg);
 
 /**
  * Holds information about a single test case.
  */
 typedef struct SDLTest_TestCaseReference {
-    /*!< Func2Stress */
+    /* !< Func2Stress */
     SDLTest_TestCaseFp testCase;
-    /*!< Short name (or function name) "Func2Stress" */
+    /* !< Short name (or function name) "Func2Stress" */
     char *name;
-    /*!< Long name or full description "This test pushes func2() to the limit." */
+    /* !< Long name or full description "This test pushes func2() to the limit." */
     char *description;
-    /*!< Set to TEST_ENABLED or TEST_DISABLED (test won't be run) */
+    /* !< Set to TEST_ENABLED or TEST_DISABLED (test won't be run) */
     int enabled;
 } SDLTest_TestCaseReference;
 
@@ -87,13 +87,13 @@ typedef struct SDLTest_TestCaseReference {
  * Holds information about a test suite (multiple test cases).
  */
 typedef struct SDLTest_TestSuiteReference {
-    /*!< "PlatformSuite" */
+    /* !< "PlatformSuite" */
     char *name;
-    /*!< The function that is run before each test. NULL skips. */
+    /* !< The function that is run before each test. NULL skips. */
     SDLTest_TestCaseSetUpFp testSetUp;
-    /*!< The test cases that are run as part of the suite. Last item should be NULL. */
+    /* !< The test cases that are run as part of the suite. Last item should be NULL. */
     const SDLTest_TestCaseReference **testCases;
-    /*!< The function that is run after each test. NULL skips. */
+    /* !< The function that is run after each test. NULL skips. */
     SDLTest_TestCaseTearDownFp testTearDown;
 } SDLTest_TestSuiteReference;
 

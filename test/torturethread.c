@@ -36,7 +36,7 @@ int SDLCALL
 SubThreadFunc(void *data)
 {
     while (!*(int volatile *) data) {
-        ;                       /*SDL_Delay(10); *//* do nothing */
+        ;                       /* SDL_Delay(10); *//* do nothing */
     }
     return 0;
 }
@@ -49,7 +49,7 @@ ThreadFunc(void *data)
     int i;
     int tid = (int) (uintptr_t) data;
 
-    fprintf(stderr, "Creating Thread %d\n", tid);
+    SDL_Log("Creating Thread %d\n", tid);
 
     for (i = 0; i < NUMTHREADS; i++) {
         char name[64];
@@ -58,18 +58,18 @@ ThreadFunc(void *data)
         sub_threads[i] = SDL_CreateThread(SubThreadFunc, name, &flags[i]);
     }
 
-    printf("Thread '%d' waiting for signal\n", tid);
+    SDL_Log("Thread '%d' waiting for signal\n", tid);
     while (time_for_threads_to_die[tid] != 1) {
         ;                       /* do nothing */
     }
 
-    printf("Thread '%d' sending signals to subthreads\n", tid);
+    SDL_Log("Thread '%d' sending signals to subthreads\n", tid);
     for (i = 0; i < NUMTHREADS; i++) {
         flags[i] = 1;
         SDL_WaitThread(sub_threads[i], NULL);
     }
 
-    printf("Thread '%d' exiting!\n", tid);
+    SDL_Log("Thread '%d' exiting!\n", tid);
 
     return 0;
 }
@@ -80,9 +80,12 @@ main(int argc, char *argv[])
     SDL_Thread *threads[NUMTHREADS];
     int i;
 
+	/* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
     /* Load the SDL library */
     if (SDL_Init(0) < 0) {
-        fprintf(stderr, "Couldn't initialize SDL: %s\n", SDL_GetError());
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         return (1);
     }
 
@@ -94,7 +97,7 @@ main(int argc, char *argv[])
         threads[i] = SDL_CreateThread(ThreadFunc, name, (void*) (uintptr_t) i);
 
         if (threads[i] == NULL) {
-            fprintf(stderr, "Couldn't create thread: %s\n", SDL_GetError());
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create thread: %s\n", SDL_GetError());
             quit(1);
         }
     }

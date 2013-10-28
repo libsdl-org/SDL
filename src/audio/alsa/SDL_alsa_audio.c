@@ -241,25 +241,25 @@ ALSA_WaitDevice(_THIS)
         tmp = ptr[3]; ptr[3] = ptr[5]; ptr[5] = tmp; \
     }
 
-static __inline__ void
+static SDL_INLINE void
 swizzle_alsa_channels_6_64bit(_THIS)
 {
     SWIZ6(Uint64);
 }
 
-static __inline__ void
+static SDL_INLINE void
 swizzle_alsa_channels_6_32bit(_THIS)
 {
     SWIZ6(Uint32);
 }
 
-static __inline__ void
+static SDL_INLINE void
 swizzle_alsa_channels_6_16bit(_THIS)
 {
     SWIZ6(Uint16);
 }
 
-static __inline__ void
+static SDL_INLINE void
 swizzle_alsa_channels_6_8bit(_THIS)
 {
     SWIZ6(Uint8);
@@ -272,7 +272,7 @@ swizzle_alsa_channels_6_8bit(_THIS)
  * Called right before feeding this->hidden->mixbuf to the hardware. Swizzle
  *  channels from Windows/Mac order to the format alsalib will want.
  */
-static __inline__ void
+static SDL_INLINE void
 swizzle_alsa_channels(_THIS)
 {
     if (this->spec.channels == 6) {
@@ -304,7 +304,7 @@ ALSA_PlayDevice(_THIS)
 
     while ( frames_left > 0 && this->enabled ) {
         /* !!! FIXME: This works, but needs more testing before going live */
-        /*ALSA_snd_pcm_wait(this->hidden->pcm_handle, -1);*/
+        /* ALSA_snd_pcm_wait(this->hidden->pcm_handle, -1); */
         status = ALSA_snd_pcm_writei(this->hidden->pcm_handle,
                                      sample_buf, frames_left);
 
@@ -340,10 +340,8 @@ static void
 ALSA_CloseDevice(_THIS)
 {
     if (this->hidden != NULL) {
-        if (this->hidden->mixbuf != NULL) {
-            SDL_FreeAudioMem(this->hidden->mixbuf);
-            this->hidden->mixbuf = NULL;
-        }
+        SDL_FreeAudioMem(this->hidden->mixbuf);
+        this->hidden->mixbuf = NULL;
         if (this->hidden->pcm_handle) {
             ALSA_snd_pcm_drain(this->hidden->pcm_handle);
             ALSA_snd_pcm_close(this->hidden->pcm_handle);

@@ -707,9 +707,7 @@ SDL_FreePalette(SDL_Palette * palette)
     if (--palette->refcount > 0) {
         return;
     }
-    if (palette->colors) {
-        SDL_free(palette->colors);
-    }
+    SDL_free(palette->colors);
     SDL_free(palette);
 }
 
@@ -985,10 +983,8 @@ SDL_InvalidateMap(SDL_BlitMap * map)
     map->dst = NULL;
     map->src_palette_version = 0;
     map->dst_palette_version = 0;
-    if (map->info.table) {
-        SDL_free(map->info.table);
-        map->info.table = NULL;
-    }
+    SDL_free(map->info.table);
+    map->info.table = NULL;
 }
 
 int

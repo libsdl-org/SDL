@@ -33,6 +33,7 @@ LOCAL_SRC_FILES := \
 	$(wildcard $(LOCAL_PATH)/src/loadso/dlopen/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/power/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/power/android/*.c) \
+	$(wildcard $(LOCAL_PATH)/src/filesystem/dummy/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/render/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/render/*/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/stdlib/*.c) \
@@ -41,9 +42,27 @@ LOCAL_SRC_FILES := \
 	$(wildcard $(LOCAL_PATH)/src/timer/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/timer/unix/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/video/*.c) \
-	$(wildcard $(LOCAL_PATH)/src/video/android/*.c))
+	$(wildcard $(LOCAL_PATH)/src/video/android/*.c) \
+    $(wildcard $(LOCAL_PATH)/src/test/*.c))
 
 LOCAL_CFLAGS += -DGL_GLEXT_PROTOTYPES
-LOCAL_LDLIBS := -ldl -lGLESv1_CM -lGLESv2 -llog
+LOCAL_LDLIBS := -ldl -lGLESv1_CM -lGLESv2 -llog -landroid
 
 include $(BUILD_SHARED_LIBRARY)
+
+###########################
+#
+# SDL static library
+#
+###########################
+
+LOCAL_MODULE := SDL2_static
+
+LOCAL_MODULE_FILENAME := libSDL2
+
+LOCAL_SRC_FILES += $(LOCAL_PATH)/src/main/android/SDL_android_main.c
+
+LOCAL_LDLIBS := 
+LOCAL_EXPORT_LDLIBS := -Wl,--undefined=Java_org_libsdl_app_SDLActivity_nativeInit -ldl -lGLESv1_CM -lGLESv2 -llog -landroid
+
+include $(BUILD_STATIC_LIBRARY)

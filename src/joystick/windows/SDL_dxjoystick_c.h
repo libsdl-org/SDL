@@ -42,7 +42,18 @@
 #include <xinput.h>
 #include <devguid.h>
 #include <dbt.h>
-#include <xinput.h>
+
+
+#ifndef XUSER_MAX_COUNT
+#define XUSER_MAX_COUNT 4
+#endif
+#ifndef XUSER_INDEX_ANY
+#define XUSER_INDEX_ANY     0x000000FF
+#endif
+#ifndef XINPUT_CAPS_FFB_SUPPORTED
+#define XINPUT_CAPS_FFB_SUPPORTED 0x0001
+#endif
+
 
 /* typedef's for XInput structs we use */
 typedef struct
@@ -94,13 +105,8 @@ extern DWORD SDL_XInputVersion;  /* ((major << 16) & 0xFF00) | (minor & 0xFF) */
 #define XINPUTGETSTATE          SDL_XInputGetState
 #define XINPUTSETSTATE          SDL_XInputSetState
 #define XINPUTGETCAPABILITIES   SDL_XInputGetCapabilities
-#define INVALID_XINPUT_USERID 255
-#define SDL_XINPUT_MAX_DEVICES 4
-
-#ifndef XINPUT_CAPS_FFB_SUPPORTED
-#define XINPUT_CAPS_FFB_SUPPORTED 0x0001
-#endif
-
+#define INVALID_XINPUT_USERID   XUSER_INDEX_ANY
+#define SDL_XINPUT_MAX_DEVICES  XUSER_MAX_COUNT
 
 #define MAX_INPUTS  256     /* each joystick can have up to 256 inputs */
 

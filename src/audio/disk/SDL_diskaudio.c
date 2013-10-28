@@ -88,10 +88,8 @@ static void
 DISKAUD_CloseDevice(_THIS)
 {
     if (this->hidden != NULL) {
-        if (this->hidden->mixbuf != NULL) {
-            SDL_FreeAudioMem(this->hidden->mixbuf);
-            this->hidden->mixbuf = NULL;
-        }
+        SDL_FreeAudioMem(this->hidden->mixbuf);
+        this->hidden->mixbuf = NULL;
         if (this->hidden->output != NULL) {
             SDL_RWclose(this->hidden->output);
             this->hidden->output = NULL;

@@ -334,18 +334,16 @@ BlitRGBtoRGBPixelAlphaMMX(SDL_BlitInfo * info)
     Uint32 *dstp = (Uint32 *) info->dst;
     int dstskip = info->dst_skip >> 2;
     SDL_PixelFormat *sf = info->src_fmt;
-    Uint32 chanmask = sf->Rmask | sf->Gmask | sf->Bmask;
     Uint32 amask = sf->Amask;
     Uint32 ashift = sf->Ashift;
-    Uint64 multmask;
+    Uint64 multmask, multmask2;
 
-    __m64 src1, dst1, mm_alpha, mm_zero, dmask;
+    __m64 src1, dst1, mm_alpha, mm_zero, mm_alpha2;
 
     mm_zero = _mm_setzero_si64();       /* 0 -> mm_zero */
-    multmask = 0xFFFF;
-    multmask <<= (ashift * 2);
-    multmask = ~multmask;
-    dmask = *(__m64 *) & multmask;      /* dst alpha mask -> dmask */
+    multmask = 0x00FF;
+	multmask <<= (ashift * 2);
+	multmask2 = 0x00FF00FF00FF00FF;
 
     while (height--) {
 		/* *INDENT-OFF* */
@@ -354,27 +352,28 @@ BlitRGBtoRGBPixelAlphaMMX(SDL_BlitInfo * info)
 		if (alpha == 0) {
 			/* do nothing */
 		} else if (alpha == amask) {
-			/* opaque alpha -- copy RGB, keep dst alpha */
-			*dstp = (*srcp & chanmask) | (*dstp & ~chanmask);
+			*dstp = *srcp;
 		} else {
-			src1 = _mm_cvtsi32_si64(*srcp); /* src(ARGB) -> src1 (0000ARGB)*/
+			src1 = _mm_cvtsi32_si64(*srcp); /* src(ARGB) -> src1 (0000ARGB) */
 			src1 = _mm_unpacklo_pi8(src1, mm_zero); /* 0A0R0G0B -> src1 */
 
-			dst1 = _mm_cvtsi32_si64(*dstp); /* dst(ARGB) -> dst1 (0000ARGB)*/
+			dst1 = _mm_cvtsi32_si64(*dstp); /* dst(ARGB) -> dst1 (0000ARGB) */
 			dst1 = _mm_unpacklo_pi8(dst1, mm_zero); /* 0A0R0G0B -> dst1 */
 
 			mm_alpha = _mm_cvtsi32_si64(alpha); /* alpha -> mm_alpha (0000000A) */
 			mm_alpha = _mm_srli_si64(mm_alpha, ashift); /* mm_alpha >> ashift -> mm_alpha(0000000A) */
 			mm_alpha = _mm_unpacklo_pi16(mm_alpha, mm_alpha); /* 00000A0A -> mm_alpha */
-			mm_alpha = _mm_unpacklo_pi32(mm_alpha, mm_alpha); /* 0A0A0A0A -> mm_alpha */
-			mm_alpha = _mm_and_si64(mm_alpha, dmask); /* 000A0A0A -> mm_alpha, preserve dst alpha on add */
+			mm_alpha2 = _mm_unpacklo_pi32(mm_alpha, mm_alpha); /* 0A0A0A0A -> mm_alpha2 */
+			mm_alpha = _mm_or_si64(mm_alpha2, *(__m64 *) & multmask);	/* 0F0A0A0A -> mm_alpha */
+			mm_alpha2 = _mm_xor_si64(mm_alpha2, *(__m64 *) & multmask2);	/* 255 - mm_alpha -> mm_alpha */
 
 			/* blend */		    
-			src1 = _mm_sub_pi16(src1, dst1);/* src1 - dst1 -> src1 */
-			src1 = _mm_mullo_pi16(src1, mm_alpha); /* (src1 - dst1) * alpha -> src1 */
-			src1 = _mm_srli_pi16(src1, 8); /* src1 >> 8 -> src1(000R0G0B) */
-			dst1 = _mm_add_pi8(src1, dst1); /* src1 + dst1 -> dst1(0A0R0G0B) */
-			dst1 = _mm_packs_pu16(dst1, mm_zero);  /* 0000ARGB -> dst1 */
+			src1 = _mm_mullo_pi16(src1, mm_alpha);
+			src1 = _mm_srli_pi16(src1, 8);
+			dst1 = _mm_mullo_pi16(dst1, mm_alpha2);
+			dst1 = _mm_srli_pi16(dst1, 8);
+			dst1 = _mm_add_pi16(src1, dst1);
+			dst1 = _mm_packs_pu16(dst1, mm_zero);
 			
 			*dstp = _mm_cvtsi64_si32(dst1); /* dst1 -> pixel */
 		}
@@ -481,23 +480,24 @@ BlitRGBtoRGBPixelAlpha(SDL_BlitInfo * info)
 		   compositioning used (>>8 instead of /255) doesn't handle
 		   it correctly. Also special-case alpha=0 for speed?
 		   Benchmark this! */
-		if(alpha) {   
-		  if(alpha == SDL_ALPHA_OPAQUE) {
-		    *dstp = (s & 0x00ffffff) | (*dstp & 0xff000000);
+		if (alpha) {
+		  if (alpha == SDL_ALPHA_OPAQUE) {
+			  *dstp = *srcp;
 		  } else {
 		    /*
 		     * take out the middle component (green), and process
 		     * the other two in parallel. One multiply less.
 		     */
 		    d = *dstp;
-		    dalpha = d & 0xff000000;
+			dalpha = d >> 24;
 		    s1 = s & 0xff00ff;
 		    d1 = d & 0xff00ff;
 		    d1 = (d1 + ((s1 - d1) * alpha >> 8)) & 0xff00ff;
 		    s &= 0xff00;
 		    d &= 0xff00;
 		    d = (d + ((s - d) * alpha >> 8)) & 0xff00;
-		    *dstp = d1 | d | dalpha;
+			dalpha = alpha + (dalpha * (alpha ^ 0xFF) >> 8);
+		    *dstp = d1 | d | (dalpha << 24);
 		  }
 		}
 		++srcp;
@@ -521,18 +521,16 @@ BlitRGBtoRGBPixelAlphaMMX3DNOW(SDL_BlitInfo * info)
     Uint32 *dstp = (Uint32 *) info->dst;
     int dstskip = info->dst_skip >> 2;
     SDL_PixelFormat *sf = info->src_fmt;
-    Uint32 chanmask = sf->Rmask | sf->Gmask | sf->Bmask;
     Uint32 amask = sf->Amask;
     Uint32 ashift = sf->Ashift;
-    Uint64 multmask;
+    Uint64 multmask, multmask2;
 
-    __m64 src1, dst1, mm_alpha, mm_zero, dmask;
+    __m64 src1, dst1, mm_alpha, mm_zero, mm_alpha2;
 
     mm_zero = _mm_setzero_si64();       /* 0 -> mm_zero */
-    multmask = 0xFFFF;
+    multmask = 0x00FF;
     multmask <<= (ashift * 2);
-    multmask = ~multmask;
-    dmask = *(__m64 *) & multmask;      /* dst alpha mask -> dmask */
+    multmask2 = 0x00FF00FF00FF00FF;
 
     while (height--) {
 	    /* *INDENT-OFF* */
@@ -546,27 +544,29 @@ BlitRGBtoRGBPixelAlphaMMX3DNOW(SDL_BlitInfo * info)
 		if (alpha == 0) {
 			/* do nothing */
 		} else if (alpha == amask) {
-			/* copy RGB, keep dst alpha */
-			*dstp = (*srcp & chanmask) | (*dstp & ~chanmask);
+			*dstp = *srcp;
 		} else {
-			src1 = _mm_cvtsi32_si64(*srcp); /* src(ARGB) -> src1 (0000ARGB)*/
+			src1 = _mm_cvtsi32_si64(*srcp); /* src(ARGB) -> src1 (0000ARGB) */
 			src1 = _mm_unpacklo_pi8(src1, mm_zero); /* 0A0R0G0B -> src1 */
 
-			dst1 = _mm_cvtsi32_si64(*dstp); /* dst(ARGB) -> dst1 (0000ARGB)*/
+			dst1 = _mm_cvtsi32_si64(*dstp); /* dst(ARGB) -> dst1 (0000ARGB) */
 			dst1 = _mm_unpacklo_pi8(dst1, mm_zero); /* 0A0R0G0B -> dst1 */
 
 			mm_alpha = _mm_cvtsi32_si64(alpha); /* alpha -> mm_alpha (0000000A) */
 			mm_alpha = _mm_srli_si64(mm_alpha, ashift); /* mm_alpha >> ashift -> mm_alpha(0000000A) */
 			mm_alpha = _mm_unpacklo_pi16(mm_alpha, mm_alpha); /* 00000A0A -> mm_alpha */
-			mm_alpha = _mm_unpacklo_pi32(mm_alpha, mm_alpha); /* 0A0A0A0A -> mm_alpha */
-			mm_alpha = _mm_and_si64(mm_alpha, dmask); /* 000A0A0A -> mm_alpha, preserve dst alpha on add */
+			mm_alpha2 = _mm_unpacklo_pi32(mm_alpha, mm_alpha); /* 0A0A0A0A -> mm_alpha2 */
+			mm_alpha = _mm_or_si64(mm_alpha2, *(__m64 *) & multmask);	/* 0F0A0A0A -> mm_alpha */
+			mm_alpha2 = _mm_xor_si64(mm_alpha2, *(__m64 *) & multmask2);	/* 255 - mm_alpha -> mm_alpha */
+
 
 			/* blend */		    
-			src1 = _mm_sub_pi16(src1, dst1);/* src - dst -> src1 */
-			src1 = _mm_mullo_pi16(src1, mm_alpha); /* (src - dst) * alpha -> src1 */
-			src1 = _mm_srli_pi16(src1, 8); /* src1 >> 8 -> src1(000R0G0B) */
-			dst1 = _mm_add_pi8(src1, dst1); /* src1 + dst1(dst) -> dst1(0A0R0G0B) */
-			dst1 = _mm_packs_pu16(dst1, mm_zero);  /* 0000ARGB -> dst1 */
+			src1 = _mm_mullo_pi16(src1, mm_alpha);
+			src1 = _mm_srli_pi16(src1, 8);
+			dst1 = _mm_mullo_pi16(dst1, mm_alpha2);
+			dst1 = _mm_srli_pi16(dst1, 8);
+			dst1 = _mm_add_pi16(src1, dst1);
+			dst1 = _mm_packs_pu16(dst1, mm_zero);
 			
 			*dstp = _mm_cvtsi64_si32(dst1); /* dst1 -> pixel */
 		}

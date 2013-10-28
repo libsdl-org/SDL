@@ -29,11 +29,11 @@ typedef struct LoadedPicture {
 
 void render(SDL_Renderer *renderer,SDL_Texture *texture,SDL_Rect texture_dimensions)
 {
-    //Clear render-target to blue.
+    /* Clear render-target to blue. */
     SDL_SetRenderDrawColor(renderer,0x00,0x00,0xff,0xff);
     SDL_RenderClear(renderer);
 
-    //Render the texture.
+    /* Render the texture. */
     SDL_RenderCopy(renderer,texture,&texture_dimensions,&texture_dimensions);
 
     SDL_RenderPresent(renderer);
@@ -68,13 +68,16 @@ int main(int argc,char** argv)
     int access = 0;
     SDL_Rect texture_dimensions;;
 
+    /* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
     if(argc < 2) {
-        printf("SDL_Shape requires at least one bitmap file as argument.\n");
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "SDL_Shape requires at least one bitmap file as argument.");
         exit(-1);
     }
 
     if(SDL_VideoInit(NULL) == -1) {
-        printf("Could not initialize SDL video.\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not initialize SDL video.");
         exit(-2);
     }
 
@@ -87,11 +90,10 @@ int main(int argc,char** argv)
         if(pictures[i].surface == NULL) {
             j = 0;
             for(j=0;j<num_pictures;j++)
-                if(pictures[j].surface != NULL)
-                    SDL_FreeSurface(pictures[j].surface);
+                SDL_FreeSurface(pictures[j].surface);
             SDL_free(pictures);
             SDL_VideoQuit();
-            printf("Could not load surface from named bitmap file.\n");
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not load surface from named bitmap file.");
             exit(-3);
         }
 
@@ -112,7 +114,7 @@ int main(int argc,char** argv)
             SDL_FreeSurface(pictures[i].surface);
         SDL_free(pictures);
         SDL_VideoQuit();
-        printf("Could not create shaped window for SDL_Shape.\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not create shaped window for SDL_Shape.");
         exit(-4);
     }
     renderer = SDL_CreateRenderer(window,-1,0);
@@ -122,7 +124,7 @@ int main(int argc,char** argv)
             SDL_FreeSurface(pictures[i].surface);
         SDL_free(pictures);
         SDL_VideoQuit();
-        printf("Could not create rendering context for SDL_Shape window.\n");
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not create rendering context for SDL_Shape window.");
         exit(-5);
     }
 
@@ -141,7 +143,7 @@ int main(int argc,char** argv)
             SDL_DestroyRenderer(renderer);
             SDL_DestroyWindow(window);
             SDL_VideoQuit();
-            printf("Could not create texture for SDL_shape.\n");
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not create texture for SDL_shape.");
             exit(-6);
         }
     }
@@ -185,17 +187,17 @@ int main(int argc,char** argv)
         next_time += TICK_INTERVAL;
     }
 
-    //Free the textures.
+    /* Free the textures. */
     for(i=0;i<num_pictures;i++)
         SDL_DestroyTexture(pictures[i].texture);
     SDL_DestroyRenderer(renderer);
-    //Destroy the window.
+    /* Destroy the window. */
     SDL_DestroyWindow(window);
-    //Free the original surfaces backing the textures.
+    /* Free the original surfaces backing the textures. */
     for(i=0;i<num_pictures;i++)
         SDL_FreeSurface(pictures[i].surface);
     SDL_free(pictures);
-    //Call SDL_VideoQuit() before quitting.
+    /* Call SDL_VideoQuit() before quitting. */
     SDL_VideoQuit();
 
     return 0;

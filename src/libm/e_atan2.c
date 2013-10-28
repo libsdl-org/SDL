@@ -81,8 +81,8 @@ double attribute_hidden __ieee754_atan2(double y, double x)
 		switch(m) {
 		    case 0: return  pi_o_4+tiny;/* atan(+INF,+INF) */
 		    case 1: return -pi_o_4-tiny;/* atan(-INF,+INF) */
-		    case 2: return  3.0*pi_o_4+tiny;/*atan(+INF,-INF)*/
-		    case 3: return -3.0*pi_o_4-tiny;/*atan(-INF,-INF)*/
+		    case 2: return  3.0*pi_o_4+tiny;/* atan(+INF,-INF) */
+		    case 3: return -3.0*pi_o_4-tiny;/* atan(-INF,-INF) */
 		}
 	    } else {
 		switch(m) {

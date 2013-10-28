@@ -55,7 +55,7 @@
 
 static SDL_SpinLock locks[32];
 
-static __inline__ void
+static SDL_INLINE void
 enterLock(void *a)
 {
     uintptr_t index = ((((uintptr_t)a) >> 3) & 0x1f);
@@ -63,7 +63,7 @@ enterLock(void *a)
     SDL_AtomicLock(&locks[index]);
 }
 
-static __inline__ void
+static SDL_INLINE void
 leaveLock(void *a)
 {
     uintptr_t index = ((((uintptr_t)a) >> 3) & 0x1f);

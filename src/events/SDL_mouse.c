@@ -28,7 +28,7 @@
 #include "default_cursor.h"
 #include "../video/SDL_sysvideo.h"
 
-/*#define DEBUG_MOUSE*/
+/* #define DEBUG_MOUSE */
 
 /* The mouse state */
 static SDL_Mouse SDL_mouse;
@@ -246,13 +246,11 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
     mouse->xdelta += xrel;
     mouse->ydelta += yrel;
 
-#if 0 /* FIXME */
     /* Move the mouse cursor, if needed */
     if (mouse->cursor_shown && !mouse->relative_mode &&
         mouse->MoveCursor && mouse->cur_cursor) {
         mouse->MoveCursor(mouse->cur_cursor);
     }
-#endif
 
     /* Post the event, if desired */
     posted = 0;
@@ -571,9 +569,7 @@ SDL_CreateColorCursor(SDL_Surface *surface, int hot_x, int hot_y)
         mouse->cursors = cursor;
     }
 
-    if (temp) {
-        SDL_FreeSurface(temp);
-    }
+    SDL_FreeSurface(temp);
 
     return cursor;
 }

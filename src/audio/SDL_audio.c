@@ -300,9 +300,7 @@ SDL_StreamInit(SDL_AudioStreamer * stream, int max_len, Uint8 silence)
 static void
 SDL_StreamDeinit(SDL_AudioStreamer * stream)
 {
-    if (stream->buffer != NULL) {
-        SDL_free(stream->buffer);
-    }
+    SDL_free(stream->buffer);
 }
 
 #if defined(ANDROID)
@@ -419,7 +417,7 @@ SDL_RunAudio(void *devicep)
                     if (istream == NULL) {
                         istream = device->fake_stream;
                     }
-                    /*SDL_memcpy(istream, device->convert.buf, device->convert.len_cvt); */
+                    /* SDL_memcpy(istream, device->convert.buf, device->convert.len_cvt); */
                     SDL_StreamWrite(&device->streamer, device->convert.buf,
                                     device->convert.len_cvt);
                 } else {
@@ -632,9 +630,7 @@ free_device_list(char ***devices, int *devCount)
         }
     }
 
-    if (*devices != NULL) {
-        SDL_free(*devices);
-    }
+    SDL_free(*devices);
 
     *devices = NULL;
     *devCount = 0;
@@ -761,9 +757,7 @@ close_audio_device(SDL_AudioDevice * device)
     if (device->mixer_lock != NULL) {
         SDL_DestroyMutex(device->mixer_lock);
     }
-    if (device->fake_stream != NULL) {
-        SDL_FreeAudioMem(device->fake_stream);
-    }
+    SDL_FreeAudioMem(device->fake_stream);
     if (device->convert.needed) {
         SDL_FreeAudioMem(device->convert.buf);
     }

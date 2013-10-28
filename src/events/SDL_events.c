@@ -83,7 +83,7 @@ static struct
 } SDL_EventQ = { NULL, SDL_TRUE };
 
 
-static __inline__ SDL_bool
+static SDL_INLINE SDL_bool
 SDL_ShouldPollJoystick()
 {
 #if !SDL_JOYSTICK_DISABLED
@@ -141,10 +141,8 @@ SDL_StopEventLoop(void)
 
     /* Clear disabled event state */
     for (i = 0; i < SDL_arraysize(SDL_disabled_events); ++i) {
-        if (SDL_disabled_events[i]) {
-            SDL_free(SDL_disabled_events[i]);
-            SDL_disabled_events[i] = NULL;
-        }
+        SDL_free(SDL_disabled_events[i]);
+        SDL_disabled_events[i] = NULL;
     }
 
     while (SDL_event_watchers) {
@@ -445,7 +443,7 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
                 /* Polling and no events, just return */
                 return 0;
             }
-            if (timeout > 0 && ((int) (SDL_GetTicks() - expiration) >= 0)) {
+            if (timeout > 0 && SDL_TICKS_PASSED(SDL_GetTicks(), expiration)) {
                 /* Timeout expired and no events */
                 return 0;
             }
