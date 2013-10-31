@@ -394,7 +394,7 @@ SDL_EGL_DeleteContext(_THIS, SDL_GLContext context)
         return;
     }
     
-    if (!egl_context && egl_context != EGL_NO_CONTEXT) {
+    if (egl_context != NULL && egl_context != EGL_NO_CONTEXT) {
         SDL_EGL_MakeCurrent(_this, NULL, NULL);
         _this->egl_data->eglDestroyContext(_this->egl_data->egl_display, egl_context);
     }
