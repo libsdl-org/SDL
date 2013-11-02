@@ -60,6 +60,10 @@ using namespace Windows::Graphics::Display;
 using namespace Windows::UI::Core;
 #endif
 
+/* Texture sampling types */
+static const D3D11_FILTER SDL_D3D11_NEAREST_PIXEL_FILTER = D3D11_FILTER_MIN_MAG_MIP_POINT;
+static const D3D11_FILTER SDL_D3D11_LINEAR_FILTER = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+
 /* Direct3D 11.1 renderer implementation */
 
 static SDL_Renderer *D3D11_CreateRenderer(SDL_Window * window, Uint32 flags);
@@ -487,10 +491,10 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
     data->vertexBuffer = nullptr;
 
     //
-    // Create a sampler to use when drawing textures:
+    // Create samplers to use when drawing textures:
     //
     D3D11_SAMPLER_DESC samplerDesc;
-    samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
+    samplerDesc.Filter = SDL_D3D11_NEAREST_PIXEL_FILTER;
     samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
     samplerDesc.AddressV = D3D11_TEXTURE_ADDRESS_CLAMP;
     samplerDesc.AddressW = D3D11_TEXTURE_ADDRESS_CLAMP;
@@ -505,7 +509,17 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
     samplerDesc.MaxLOD = D3D11_FLOAT32_MAX;
     result = data->d3dDevice->CreateSamplerState(
         &samplerDesc,
-        &data->mainSampler
+        &data->nearestPixelSampler
+        );
+    if (FAILED(result)) {
+        WIN_SetErrorFromHRESULT(__FUNCTION__, result);
+        return result;
+    }
+
+    samplerDesc.Filter = SDL_D3D11_LINEAR_FILTER;
+    result = data->d3dDevice->CreateSamplerState(
+        &samplerDesc,
+        &data->linearSampler
         );
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(__FUNCTION__, result);
@@ -928,6 +942,17 @@ D3D11_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
     }
 }
 
+static D3D11_FILTER
+GetScaleQuality(void)
+{
+    const char *hint = SDL_GetHint(SDL_HINT_RENDER_SCALE_QUALITY);
+    if (!hint || *hint == '0' || SDL_strcasecmp(hint, "nearest") == 0) {
+        return SDL_D3D11_NEAREST_PIXEL_FILTER;
+    } else /* if (*hint == '1' || SDL_strcasecmp(hint, "linear") == 0) */ {
+        return SDL_D3D11_LINEAR_FILTER;
+    }
+}
+
 static int
 D3D11_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
@@ -948,6 +973,7 @@ D3D11_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     }
     textureData->pixelFormat = SDL_AllocFormat(texture->format);
     textureData->lockedTexturePosition = XMINT2(0, 0);
+    textureData->scaleMode = GetScaleQuality();
 
     texture->driverdata = textureData;
 
@@ -1621,6 +1647,22 @@ D3D11_RenderFillRects(SDL_Renderer * renderer,
     return 0;
 }
 
+static ID3D11SamplerState *
+D3D11_RenderGetSampler(SDL_Renderer * renderer, SDL_Texture * texture)
+{
+    D3D11_RenderData *rendererData = (D3D11_RenderData *) renderer->driverdata;
+    D3D11_TextureData *textureData = (D3D11_TextureData *) texture->driverdata;
+
+    switch (textureData->scaleMode) {
+        case SDL_D3D11_NEAREST_PIXEL_FILTER:
+            return rendererData->nearestPixelSampler.Get();
+        case SDL_D3D11_LINEAR_FILTER:
+            return rendererData->linearSampler.Get();
+        default:
+            return NULL;
+    }
+}
+
 static int
 D3D11_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
                  const SDL_Rect * srcrect, const SDL_FRect * dstrect)
@@ -1659,11 +1701,12 @@ D3D11_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
         return -1;
     }
 
+    ID3D11SamplerState *textureSampler = D3D11_RenderGetSampler(renderer, texture);
     D3D11_SetPixelShader(
         renderer,
         rendererData->texturePixelShader.Get(),
         textureData->mainTextureResourceView.Get(),
-        rendererData->mainSampler.Get());
+        textureSampler);
 
     D3D11_RenderFinishDrawOp(renderer, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, sizeof(vertices) / sizeof(VertexPositionColor));
 
@@ -1733,11 +1776,12 @@ D3D11_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
         return -1;
     }
 
+    ID3D11SamplerState *textureSampler = D3D11_RenderGetSampler(renderer, texture);
     D3D11_SetPixelShader(
         renderer,
         rendererData->texturePixelShader.Get(),
         textureData->mainTextureResourceView.Get(),
-        rendererData->mainSampler.Get());
+        textureSampler);
 
     D3D11_RenderFinishDrawOp(renderer, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, sizeof(vertices) / sizeof(VertexPositionColor));
 

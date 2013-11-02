@@ -47,7 +47,8 @@ typedef struct
     Microsoft::WRL::ComPtr<ID3D11BlendState> blendModeBlend;
     Microsoft::WRL::ComPtr<ID3D11BlendState> blendModeAdd;
     Microsoft::WRL::ComPtr<ID3D11BlendState> blendModeMod;
-    Microsoft::WRL::ComPtr<ID3D11SamplerState> mainSampler;
+    Microsoft::WRL::ComPtr<ID3D11SamplerState> nearestPixelSampler;
+    Microsoft::WRL::ComPtr<ID3D11SamplerState> linearSampler;
     Microsoft::WRL::ComPtr<ID3D11RasterizerState> mainRasterizer;
     D3D_FEATURE_LEVEL featureLevel;
 
@@ -72,6 +73,7 @@ typedef struct
     SDL_PixelFormat * pixelFormat;
     Microsoft::WRL::ComPtr<ID3D11Texture2D> stagingTexture;
     DirectX::XMINT2 lockedTexturePosition;
+    D3D11_FILTER scaleMode;
 } D3D11_TextureData;
 
 struct VertexPositionColor
