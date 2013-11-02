@@ -198,10 +198,8 @@ static int SDL_AddDollarGesture(SDL_GestureTouch* inTouch, SDL_FloatPoint* path)
         }
         /* Use the index of the last one added. */
         return index;
-    } else {
-        return SDL_AddDollarGesture_one(inTouch, path);
     }
-    return -1;
+    return SDL_AddDollarGesture_one(inTouch, path);
 }
 
 int SDL_LoadDollarTemplates(SDL_TouchID touchId, SDL_RWops *src)
