@@ -37,7 +37,7 @@
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED < 1070
 /* New methods for converting to and from backing store pixels, taken from
- * AppKite/NSView.h in 10.8 SDK. */
+ * AppKit/NSView.h in 10.8 SDK. */
 @interface NSView (Backing)
 - (NSPoint)convertPointToBacking:(NSPoint)aPoint;
 - (NSPoint)convertPointFromBacking:(NSPoint)aPoint;
