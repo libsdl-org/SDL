@@ -245,7 +245,13 @@ X11_DispatchFocusOut(SDL_WindowData *data)
 #ifdef DEBUG_XEVENTS
     printf("window %p: Dispatching FocusOut\n", data);
 #endif
-    SDL_SetKeyboardFocus(NULL);
+    /* If another window has already processed a focus in, then don't try to
+     * remove focus here.  Doing so will incorrectly remove focus from that
+     * window, and the focus lost event for this window will have already
+     * been dispatched anyway. */
+    if (data->window == SDL_GetKeyboardFocus()) {
+        SDL_SetKeyboardFocus(NULL);
+    }
 #ifdef X_HAVE_UTF8_STRING
     if (data->ic) {
         X11_XUnsetICFocus(data->ic);
