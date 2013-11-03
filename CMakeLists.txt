@@ -648,6 +648,10 @@ if(UNIX AND NOT APPLE)
         #error EVIOCGNAME() ioctl not available
         #endif
         int main(int argc, char** argv) {}" HAVE_INPUT_EVENTS)
+
+    file(GLOB CORE_SOURCES ${SDL2_SOURCE_DIR}/src/core/linux/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${CORE_SOURCES})
+
     if(HAVE_INPUT_EVENTS)
       set(SDL_INPUT_LINUXEV 1)
     endif(HAVE_INPUT_EVENTS)
@@ -746,8 +750,8 @@ elseif(WINDOWS)
     #include <windows.h>
     int main(int argc, char **argv) { }" HAVE_WIN32_CC)
 
-  file(GLOB WIN_SOURCES ${SDL2_SOURCE_DIR}/src/core/windows/*.c)
-  set(SOURCE_FILES ${SOURCE_FILES} ${WIN_SOURCES})
+  file(GLOB CORE_SOURCES ${SDL2_SOURCE_DIR}/src/core/windows/*.c)
+  set(SOURCE_FILES ${SOURCE_FILES} ${CORE_SOURCES})
 
   # Check for DirectX
   if(DIRECTX)
