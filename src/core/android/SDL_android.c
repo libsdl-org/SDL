@@ -146,6 +146,30 @@ void Java_org_libsdl_app_SDLActivity_onNativeResize(
     Android_SetScreenResolution(width, height, format);
 }
 
+// Paddown
+void Java_org_libsdl_app_SDLActivity_onNativePadDown(
+                                    JNIEnv* env, jclass jcls,
+                                    jint padId, jint keycode)
+{
+    Android_OnPadDown(padId, keycode);
+}
+
+// Padup
+void Java_org_libsdl_app_SDLActivity_onNativePadUp(
+                                   JNIEnv* env, jclass jcls,
+                                   jint padId, jint keycode)
+{
+    Android_OnPadUp(padId, keycode);
+}
+
+// Padup
+void Java_org_libsdl_app_SDLActivity_onNativeJoy(
+                                    JNIEnv* env, jclass jcls,
+                                    jint joyId, jint axis, jfloat value)
+{
+    Android_OnJoy(joyId, axis, value);
+}
+
 
 /* Surface Created */
 void Java_org_libsdl_app_SDLActivity_onNativeSurfaceChanged(JNIEnv* env, jclass jcls)
@@ -1211,6 +1235,62 @@ int Android_JNI_GetTouchDeviceIds(int **ids) {
     }
     return number;
 }
+
+/* return the total number of plugged in joysticks */
+int Android_JNI_GetNumJoysticks()
+{
+    JNIEnv* env = Android_JNI_GetEnv();
+    if (!env) {
+        return -1;
+    }
+    
+    jmethodID mid = (*env)->GetStaticMethodID(env, mActivityClass, "getNumJoysticks", "()I");
+    if (!mid) {
+        return -1;
+    }
+    
+    return (int)(*env)->CallStaticIntMethod(env, mActivityClass, mid);
+}
+
+/* Return the name of joystick number "i" */
+char* Android_JNI_GetJoystickName(int i)
+{
+    JNIEnv* env = Android_JNI_GetEnv();
+    if (!env) {
+        return SDL_strdup("");
+    }
+    
+    jmethodID mid = (*env)->GetStaticMethodID(env, mActivityClass, "getJoystickName", "(I)Ljava/lang/String;");
+    if (!mid) {
+        return SDL_strdup("");
+    }
+    jstring string = (jstring)((*env)->CallStaticObjectMethod(env, mActivityClass, mid, i));
+    const char* utf = (*env)->GetStringUTFChars(env, string, 0);
+    if (!utf) {
+        return SDL_strdup("");
+    }
+    
+    char* text = SDL_strdup(utf);
+    (*env)->ReleaseStringUTFChars(env, string, utf);
+    return text;
+}
+
+/* return the number of axes in the given joystick */
+int Android_JNI_GetJoystickAxes(int joy)
+{
+    JNIEnv* env = Android_JNI_GetEnv();
+    if (!env) {
+        return -1;
+    }
+    
+    jmethodID mid = (*env)->GetStaticMethodID(env, mActivityClass, "getJoystickAxes", "(I)I");
+    if (!mid) {
+        return -1;
+    }
+    
+    return (int)(*env)->CallIntMethod(env, mActivityClass, mid, joy);
+}
+
 
 /* sends message to be handled on the UI event dispatch thread */
 int Android_JNI_SendMessage(int command, int param)

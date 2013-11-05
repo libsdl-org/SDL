@@ -4,13 +4,14 @@ Simple DirectMedia Layer for Android
 
 Requirements:
 
-Android SDK (version 10 or later)
+Android SDK (version 12 or later)
 http://developer.android.com/sdk/index.html
 
 Android NDK r7 or later
 http://developer.android.com/sdk/ndk/index.html
 
 Minimum API level supported by SDL: 10 (Android 2.3.3)
+Joystick support is available for API level >=12 devices.
 
 ================================================================================
  How the port works
@@ -396,8 +397,11 @@ When you're done instrumenting with valgrind, you can disable the wrapper:
  Why is API level 10 the minimum required?
 ================================================================================
 
-API level 10 is required because SDL requires some functionality for running not
-available on older devices and some for building which is not in older NDK/SDKs.
+API level 10 is the minimum required level at runtime (that is, on the device) 
+because SDL requires some functionality for running not
+available on older devices. Since the incorporation of joystick support into SDL,
+the minimum SDK required to *build* SDL is version 12. Devices running API levels
+10-11 are still supported, only with the joystick functionality disabled.
 
 Support for native OpenGL ES and ES2 applications was introduced in the NDK for
 API level 4 and 8. EGL was made a stable API in the NDK for API level 9, which
