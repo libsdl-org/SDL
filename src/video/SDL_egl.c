@@ -40,6 +40,13 @@
 #define DEFAULT_OGL_ES_PVR "libGLES_CM.so"
 #define DEFAULT_OGL_ES "libGLESv1_CM.so"
 
+#elif SDL_VIDEO_DRIVER_WINRT
+/* WinRT (via a modified version of Google's ANGLE library) */
+#define DEFAULT_EGL "libEGL.dll"
+#define DEFAULT_OGL_ES2 "libGLESv2.dll"
+#define DEFAULT_OGL_ES_PVR NULL
+#define DEFAULT_OGL_ES NULL
+
 #else
 /* Desktop Linux */
 #define DEFAULT_EGL "libEGL.so.1"
@@ -134,8 +141,13 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
 #endif
 
     /* A funny thing, loading EGL.so first does not work on the Raspberry, so we load libGL* first */
+#ifdef __WINRT__
+    path = NULL;
+    egl_dll_handle = NULL;
+#else
     path = getenv("SDL_VIDEO_GL_DRIVER");
     egl_dll_handle = dlopen(path, dlopen_flags);
+#endif
     if ((path == NULL) | (egl_dll_handle == NULL)) {
         if (_this->gl_config.major_version > 1) {
             path = DEFAULT_OGL_ES2;
@@ -160,7 +172,11 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
     /* Catch the case where the application isn't linked with EGL */
     if ((dlsym(dll_handle, "eglChooseConfig") == NULL) && (egl_path == NULL)) {
         dlclose(dll_handle);
+#ifdef __WINRT__
+        path = NULL;
+#else
         path = getenv("SDL_VIDEO_EGL_DRIVER");
+#endif
         if (path == NULL) {
             path = DEFAULT_EGL;
         }

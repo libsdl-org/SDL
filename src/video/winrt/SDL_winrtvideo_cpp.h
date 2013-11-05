@@ -26,7 +26,13 @@
 #endif
 
 /* SDL includes: */
+#include "SDL_video.h"
 #include "SDL_events.h"
+
+extern "C" {
+#include "../SDL_sysvideo.h"
+#include "SDL_winrtegl.h"
+}
 
 
 /* The global, WinRT, SDL Window.
@@ -49,6 +55,9 @@ struct SDL_WindowData
 {
     SDL_Window *sdlWindow;
     Platform::Agile<Windows::UI::Core::CoreWindow> coreWindow;
+#ifdef SDL_VIDEO_OPENGL_EGL
+    EGLSurface egl_surface;
+#endif
 };
 
 #endif // ifdef __cplusplus_winrt

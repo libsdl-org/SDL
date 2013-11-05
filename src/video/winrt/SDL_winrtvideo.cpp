@@ -42,6 +42,7 @@ extern "C" {
 #include "../../events/SDL_events_c.h"
 #include "../../render/SDL_sysrender.h"
 #include "SDL_syswm.h"
+#include "SDL_winrtopengles.h"
 }
 
 #include "../../core/winrt/SDL_winrtapp_direct3d.h"
@@ -111,6 +112,17 @@ WINRT_CreateDevice(int devindex)
     device->SetDisplayMode = WINRT_SetDisplayMode;
     device->PumpEvents = WINRT_PumpEvents;
     device->GetWindowWMInfo = WINRT_GetWindowWMInfo;
+#ifdef SDL_VIDEO_OPENGL_EGL
+    device->GL_LoadLibrary = WINRT_GLES_LoadLibrary;
+    device->GL_GetProcAddress = WINRT_GLES_GetProcAddress;
+    device->GL_UnloadLibrary = WINRT_GLES_UnloadLibrary;
+    device->GL_CreateContext = WINRT_GLES_CreateContext;
+    device->GL_MakeCurrent = WINRT_GLES_MakeCurrent;
+    device->GL_SetSwapInterval = WINRT_GLES_SetSwapInterval;
+    device->GL_GetSwapInterval = WINRT_GLES_GetSwapInterval;
+    device->GL_SwapWindow = WINRT_GLES_SwapWindow;
+    device->GL_DeleteContext = WINRT_GLES_DeleteContext;
+#endif
     device->free = WINRT_DeleteDevice;
     WINRT_GlobalSDLVideoDevice = device;
 
@@ -247,6 +259,22 @@ WINRT_CreateWindow(_THIS, SDL_Window * window)
         data->coreWindow = CoreWindow::GetForCurrentThread();
     }
 
+#if SDL_VIDEO_OPENGL_EGL
+    /* Setup the EGL surface, but only if OpenGL ES 2 was requested. */
+    if (!(window->flags & SDL_WINDOW_OPENGL)) {
+        /* OpenGL ES 2 wasn't requested.  Don't set up an EGL surface. */
+        data->egl_surface = EGL_NO_SURFACE;
+    } else {
+        /* OpenGL ES 2 was reuqested.  Set up an EGL surface. */
+        IUnknown * nativeWindow = reinterpret_cast<IUnknown *>(data->coreWindow.Get());
+        data->egl_surface = SDL_EGL_CreateSurface(_this, nativeWindow);
+        if (data->egl_surface == NULL) {
+            // TODO, WinRT: see if SDL_EGL_CreateSurface, or its callee(s), sets an error message.  If so, attach it to the SDL error.
+            return SDL_SetError("SDL_EGL_CreateSurface failed");
+        }
+    }
+#endif
+
     /* Make sure the window is considered to be positioned at {0,0},
        and is considered fullscreen, shown, and the like.
     */
@@ -258,6 +286,12 @@ WINRT_CreateWindow(_THIS, SDL_Window * window)
         SDL_WINDOW_BORDERLESS |
         SDL_WINDOW_MAXIMIZED |
         SDL_WINDOW_INPUT_GRABBED;
+
+#if SDL_VIDEO_OPENGL_EGL
+    if (data->egl_surface) {
+        window->flags |= SDL_WINDOW_OPENGL;
+    }
+#endif
 
     /* WinRT does not, as of this writing, appear to support app-adjustable
        window sizes.  Set the window size to whatever the native WinRT

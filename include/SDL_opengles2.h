@@ -33,6 +33,8 @@
 #include <GLES2/gl2ext.h>
 #endif
 
+#ifndef __WINRT__
 #ifndef APIENTRY
 #define APIENTRY
+#endif
 #endif
