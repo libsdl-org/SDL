@@ -279,6 +279,12 @@
     <ClCompile Include="..\..\src\filesystem\winrt\SDL_sysfilesystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\video\SDL_egl.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\video\winrt\SDL_winrtopengles.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\begin_code.h">
@@ -615,6 +621,18 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\SDL_filesystem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\winrt\SDL_winrtopengles.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\SDL_egl.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\winrt\SDL_winrtegl.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL_opengles2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
