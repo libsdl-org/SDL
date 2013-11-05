@@ -24,6 +24,7 @@ fi
 if [ -z "$1" ] || [ -z "$SOURCES" ]; then
     echo "Usage: androidbuild.sh com.yourcompany.yourapp < sources.list"
     echo "Usage: androidbuild.sh com.yourcompany.yourapp source1.c source2.c ...sourceN.c"
+    echo "To copy SDL source instead of symlinking: COPYSOURCE=1 androidbuild.sh ... "
     exit 1
 fi
 
@@ -63,9 +64,15 @@ cp -r $SDLPATH/android-project/* $BUILDPATH
 
 # Copy SDL sources
 mkdir -p $BUILDPATH/jni/SDL
-cp -r $SDLPATH/src $BUILDPATH/jni/SDL
-cp -r $SDLPATH/include $BUILDPATH/jni/SDL
-cp $SDLPATH/Android.mk $BUILDPATH/jni/SDL
+if [ -z "$COPYSOURCE" ]; then
+    ln -s $SDLPATH/src $BUILDPATH/jni/SDL
+    ln -s $SDLPATH/include $BUILDPATH/jni/SDL
+else
+    cp -r $SDLPATH/src $BUILDPATH/jni/SDL
+    cp -r $SDLPATH/include $BUILDPATH/jni/SDL
+fi
+
+cp -r $SDLPATH/Android.mk $BUILDPATH/jni/SDL
 sed -i "s|YourSourceHere.c|$MKSOURCES|g" $BUILDPATH/jni/src/Android.mk
 sed -i "s|org\.libsdl\.app|$APP|g" $BUILDPATH/AndroidManifest.xml
 

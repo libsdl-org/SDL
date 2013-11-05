@@ -2,6 +2,16 @@
 This is a list of major changes in SDL's version history.
 
 ---------------------------------------------------------------------------
+2.0.2:
+---------------------------------------------------------------------------
+
+Android:
+* Joystick support (minimum SDK version required to build SDL is now 12, 
+  the required runtime version remains at 10, but on such devices joystick 
+  support won't be available).
+
+
+---------------------------------------------------------------------------
 2.0.1:
 ---------------------------------------------------------------------------
 

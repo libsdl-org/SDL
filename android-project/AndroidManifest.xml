@@ -31,7 +31,7 @@
     </application>
 
     <!-- Android 2.3.3 -->
-    <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="10" />
+    <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="12" />
 
     <!-- OpenGL ES 2.0 -->
     <uses-feature android:glEsVersion="0x00020000" /> 
