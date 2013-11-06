@@ -283,9 +283,16 @@ void Java_org_libsdl_app_SDLActivity_nativeLowMemory(
 void Java_org_libsdl_app_SDLActivity_nativeQuit(
                                     JNIEnv* env, jclass cls)
 {
+    /* Discard previous events. The user should have handled state storage
+     * in SDL_APP_WILLENTERBACKGROUND. After nativeQuit() is called, no
+     * events other than SDL_QUIT and SDL_APP_TERMINATING should fire */
+    SDL_FlushEvents(SDL_FIRSTEVENT, SDL_LASTEVENT);
     /* Inject a SDL_QUIT event */
     SDL_SendQuit();
     SDL_SendAppEvent(SDL_APP_TERMINATING);
+    /* Resume the event loop so that the app can catch SDL_QUIT which
+     * should now be the top event in the event queue. */
+    if (!SDL_SemValue(Android_ResumeSem)) SDL_SemPost(Android_ResumeSem);
 }
 
 /* Pause */
