@@ -85,11 +85,14 @@ static int instance_counter = 0;
 static int
 IsJoystick(int fd, char *namebuf, const size_t namebuflen, SDL_JoystickGUID *guid)
 {
+    struct input_id inpid;
+    Uint16 *guid16 = (Uint16 *) ((char *) &guid->data);
+
+#if !SDL_USE_LIBUDEV
+    /* When udev is enabled we only get joystick devices here, so there's no need to test them */
     unsigned long evbit[NBITS(EV_MAX)] = { 0 };
     unsigned long keybit[NBITS(KEY_MAX)] = { 0 };
     unsigned long absbit[NBITS(ABS_MAX)] = { 0 };
-    struct input_id inpid;
-    Uint16 *guid16 = (Uint16 *) ((char *) &guid->data);
 
     if ((ioctl(fd, EVIOCGBIT(0, sizeof(evbit)), evbit) < 0) ||
         (ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(keybit)), keybit) < 0) ||
@@ -101,6 +104,7 @@ IsJoystick(int fd, char *namebuf, const size_t namebuflen, SDL_JoystickGUID *gui
           test_bit(ABS_X, absbit) && test_bit(ABS_Y, absbit))) {
         return 0;
     }
+#endif
 
     if (ioctl(fd, EVIOCGNAME(namebuflen), namebuf) < 0) {
         return 0;
