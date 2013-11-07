@@ -67,6 +67,9 @@
 #ifndef WM_TOUCH
 #define WM_TOUCH 0x0240
 #endif
+#ifndef WM_MOUSEHWHEEL
+#define WM_MOUSEHWHEEL 0x020E
+#endif
 
 static SDL_Scancode
 WindowsScanCodeToSDLScanCode( LPARAM lParam, WPARAM wParam )
@@ -475,6 +478,25 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             } else {
                 while (s_AccumulatedMotion <= -WHEEL_DELTA) {
                     SDL_SendMouseWheel(data->window, 0, 0, -1);
+                    s_AccumulatedMotion += WHEEL_DELTA;
+                }
+            }
+            break;
+        }
+
+    case WM_MOUSEHWHEEL:
+        {
+            static short s_AccumulatedMotion;
+
+            s_AccumulatedMotion += GET_WHEEL_DELTA_WPARAM(wParam);
+            if (s_AccumulatedMotion > 0) {
+                while (s_AccumulatedMotion >= WHEEL_DELTA) {
+                    SDL_SendMouseWheel(data->window, 0, 1, 0, timestamp);
+                    s_AccumulatedMotion -= WHEEL_DELTA;
+                }
+            } else {
+                while (s_AccumulatedMotion <= -WHEEL_DELTA) {
+                    SDL_SendMouseWheel(data->window, 0, -1, 0, timestamp);
                     s_AccumulatedMotion += WHEEL_DELTA;
                 }
             }
