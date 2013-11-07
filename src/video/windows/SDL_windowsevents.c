@@ -491,12 +491,12 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             s_AccumulatedMotion += GET_WHEEL_DELTA_WPARAM(wParam);
             if (s_AccumulatedMotion > 0) {
                 while (s_AccumulatedMotion >= WHEEL_DELTA) {
-                    SDL_SendMouseWheel(data->window, 0, 1, 0, timestamp);
+                    SDL_SendMouseWheel(data->window, 0, 1, 0);
                     s_AccumulatedMotion -= WHEEL_DELTA;
                 }
             } else {
                 while (s_AccumulatedMotion <= -WHEEL_DELTA) {
-                    SDL_SendMouseWheel(data->window, 0, -1, 0, timestamp);
+                    SDL_SendMouseWheel(data->window, 0, -1, 0);
                     s_AccumulatedMotion += WHEEL_DELTA;
                 }
             }
