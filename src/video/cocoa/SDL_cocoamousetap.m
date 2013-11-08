@@ -60,7 +60,7 @@ static const CGEventMask allGrabbedEventsMask =
 static CGEventRef
 Cocoa_MouseTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event, void *refcon)
 {
-    SDL_MouseData *driverdata = (SDL_MouseData*)refcon;
+    SDL_MouseEventTapData *tapdata = (SDL_MouseEventTapData*)refcon;
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_Window *window = SDL_GetKeyboardFocus();
     NSRect windowRect;
@@ -71,7 +71,7 @@ Cocoa_MouseTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event
         case kCGEventTapDisabledByTimeout:
         case kCGEventTapDisabledByUserInput:
             {
-                CGEventTapEnable(((SDL_MouseEventTapData*)(driverdata->tapdata))->tap, true);
+                CGEventTapEnable(tapdata->tap, true);
                 return NULL;
             }
         default:
