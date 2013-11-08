@@ -234,12 +234,15 @@ MaybeAddDevice(const char *path)
         SDL_joylist_tail = item;
     }
 
+    /* Need to increment the joystick count before we post the event */
+    ++numjoysticks;
+
     /* !!! FIXME: Move this to an SDL_PrivateJoyDeviceAdded() function? */
 #if !SDL_EVENTS_DISABLED
     event.type = SDL_JOYDEVICEADDED;
 
     if (SDL_GetEventState(event.type) == SDL_ENABLE) {
-        event.jdevice.which = numjoysticks;
+        event.jdevice.which = (numjoysticks - 1);
         if ( (SDL_EventOK == NULL) ||
              (*SDL_EventOK) (SDL_EventOKParam, &event) ) {
             SDL_PushEvent(&event);
@@ -247,7 +250,7 @@ MaybeAddDevice(const char *path)
     }
 #endif /* !SDL_EVENTS_DISABLED */
 
-    return numjoysticks++;
+    return numjoysticks;
 }
 
 #if SDL_USE_LIBUDEV
@@ -282,6 +285,9 @@ MaybeRemoveDevice(const char *path)
                 SDL_joylist_tail = prev;
             }
 
+            /* Need to decrement the joystick count before we post the event */
+            --numjoysticks;
+
             /* !!! FIXME: Move this to an SDL_PrivateJoyDeviceRemoved() function? */
 #if !SDL_EVENTS_DISABLED
             event.type = SDL_JOYDEVICEREMOVED;
@@ -298,7 +304,6 @@ MaybeRemoveDevice(const char *path)
             SDL_free(item->path);
             SDL_free(item->name);
             SDL_free(item);
-            numjoysticks--;
             return retval;
         }
         prev = item;
