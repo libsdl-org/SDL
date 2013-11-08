@@ -283,6 +283,14 @@ extern "C" {
  */
 #define SDL_HINT_VIDEO_HIGHDPI_DISABLED "SDL_VIDEO_HIGHDPI_DISABLED"
 
+/**
+ *  \brief A variable that determines whether ctrl+click should generate a right-click event on Mac
+ *  
+ *  If present, holding ctrl while left clicking will generate a right click
+ *  event when on Mac.
+ */
+#define SDL_HINT_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK "SDL_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK"
+
 
 /**
  *  \brief  An enumeration of hint priorities

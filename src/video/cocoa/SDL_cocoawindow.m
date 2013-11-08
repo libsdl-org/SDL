@@ -24,6 +24,7 @@
 
 #include "SDL_syswm.h"
 #include "SDL_timer.h"  /* For SDL_GetTicks() */
+#include "SDL_hints.h"
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/SDL_mouse_c.h"
@@ -57,6 +58,12 @@ static void ScheduleContextUpdates(SDL_WindowData *data)
             [context scheduleUpdate];
         }
     }
+}
+
+static int GetHintCtrlClickEmulateRightClick()
+{
+	const char *hint = SDL_GetHint( SDL_HINT_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK );
+	return hint != NULL && *hint != '0';
 }
 
 @implementation Cocoa_WindowListener
@@ -341,7 +348,8 @@ static void ScheduleContextUpdates(SDL_WindowData *data)
 
     switch ([theEvent buttonNumber]) {
     case 0:
-        if ([theEvent modifierFlags] & NSControlKeyMask) {
+        if (([theEvent modifierFlags] & NSControlKeyMask) &&
+		    GetHintCtrlClickEmulateRightClick()) {
             wasCtrlLeft = YES;
             button = SDL_BUTTON_RIGHT;
         } else {
