@@ -832,7 +832,7 @@ SDL_JoystickGUID SDL_JoystickGetGUIDFromString(const char *pchGUID)
     int maxoutputbytes= sizeof(guid);
     size_t len = SDL_strlen( pchGUID );
     Uint8 *p;
-    int i;
+    size_t i;
 
     /* Make sure it's even */
     len = ( len ) & ~0x1;
