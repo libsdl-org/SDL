@@ -150,7 +150,7 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
         biBitCount = SDL_ReadLE16(src);
         biCompression = BI_RGB;
     } else {
-        const int headerSize = 40;
+        const unsigned int headerSize = 40;
 
         biWidth = SDL_ReadLE32(src);
         biHeight = SDL_ReadLE32(src);
