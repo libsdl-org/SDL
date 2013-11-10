@@ -170,8 +170,7 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
         SYS_Joysticks[device_index] = joystick;
         return 0;
     } else {
-        SDL_SetError("No joystick available with that index");
-        return (-1);
+        return SDL_SetError("No joystick available with that index");
     }
 }
 
