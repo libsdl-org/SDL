@@ -34,6 +34,7 @@
 #include "../../video/android/SDL_androidtouch.h"
 #include "../../video/android/SDL_androidvideo.h"
 #include "../../video/android/SDL_androidwindow.h"
+#include "../../joystick/android/SDL_sysjoystick.h"
 
 #include <android/log.h>
 #include <pthread.h>
