@@ -853,22 +853,26 @@ class SDLJoystickHandler_API12 extends SDLJoystickHandler {
         }
     }
     
+    @Override
     public int getNumJoysticks() {
         createJoystickList();
         
         return mJoyIdList.size();
     }
     
+    @Override
     public String getJoystickName(int joy) {
         createJoystickList();
         return InputDevice.getDevice(mJoyIdList.get(joy)).getName();
     }
     
+    @Override
     public int getJoystickAxes(int joy) {
         createJoystickList();
         return InputDevice.getDevice(mJoyIdList.get(joy)).getMotionRanges().size();
     }
     
+    @Override
     public int getJoyId(int devId) {
         int i=0;
         
