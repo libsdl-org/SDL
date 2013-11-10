@@ -890,10 +890,9 @@ class SDLGenericMotionHandler_API12 extends Activity implements View.OnGenericMo
     // We only have joysticks yet
     @Override
     public boolean onGenericMotion(View v, MotionEvent event) {
-        int actionPointerIndex = event.getActionIndex();
-        int action = event.getActionMasked();
-        
         if ( (event.getSource() & InputDevice.SOURCE_JOYSTICK) != 0) {
+            int actionPointerIndex = event.getActionIndex();
+            int action = event.getActionMasked();
             switch(action) {
                 case MotionEvent.ACTION_MOVE:
                     int id = SDLActivity.getJoyId( event.getDeviceId() );
