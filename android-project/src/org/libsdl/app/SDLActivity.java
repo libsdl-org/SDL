@@ -845,7 +845,7 @@ class SDLJoystickHandler_API12 extends SDLJoystickHandler {
         int[] deviceIds = InputDevice.getDeviceIds();
         for(int i=0; i<deviceIds.length; i++) {
             if( (InputDevice.getDevice(deviceIds[i]).getSources() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0) {
-                mJoyIdList.add(deviceIds[i]);
+                mJoyIdList.add(Integer.valueOf(deviceIds[i]));
             }
         }
     }
@@ -860,13 +860,13 @@ class SDLJoystickHandler_API12 extends SDLJoystickHandler {
     @Override
     public String getJoystickName(int joy) {
         createJoystickList();
-        return InputDevice.getDevice(mJoyIdList.get(joy)).getName();
+        return InputDevice.getDevice(mJoyIdList.get(joy).intValue()).getName();
     }
     
     @Override
     public int getJoystickAxes(int joy) {
         createJoystickList();
-        return InputDevice.getDevice(mJoyIdList.get(joy)).getMotionRanges().size();
+        return InputDevice.getDevice(mJoyIdList.get(joy).intValue()).getMotionRanges().size();
     }
     
     @Override
@@ -876,7 +876,7 @@ class SDLJoystickHandler_API12 extends SDLJoystickHandler {
         createJoystickList();
         
         for(i=0; i<mJoyIdList.size(); i++) {
-            if(mJoyIdList.get(i) == devId) {
+            if(mJoyIdList.get(i).intValue() == devId) {
                 return i;
             }
         }
