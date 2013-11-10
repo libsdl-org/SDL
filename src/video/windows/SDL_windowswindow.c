@@ -79,7 +79,8 @@ GetWindowStyle(SDL_Window * window)
 static void
 WIN_SetWindowPositionInternal(_THIS, SDL_Window * window, UINT flags)
 {
-    HWND hwnd = ((SDL_WindowData *) window->driverdata)->hwnd;
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    HWND hwnd = data->hwnd;
     RECT rect;
     DWORD style;
     HWND top;
@@ -105,7 +106,9 @@ WIN_SetWindowPositionInternal(_THIS, SDL_Window * window, UINT flags)
     x = window->x + rect.left;
     y = window->y + rect.top;
 
+    data->expected_resize = TRUE;
     SetWindowPos(hwnd, top, x, y, w, h, flags);
+    data->expected_resize = FALSE;
 }
 
 static int
@@ -410,8 +413,11 @@ WIN_RaiseWindow(_THIS, SDL_Window * window)
 void
 WIN_MaximizeWindow(_THIS, SDL_Window * window)
 {
-    HWND hwnd = ((SDL_WindowData *) window->driverdata)->hwnd;
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    HWND hwnd = data->hwnd;
+    data->expected_resize = TRUE;
     ShowWindow(hwnd, SW_MAXIMIZE);
+    data->expected_resize = FALSE;
 }
 
 void
@@ -442,9 +448,11 @@ WIN_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
 void
 WIN_RestoreWindow(_THIS, SDL_Window * window)
 {
-    HWND hwnd = ((SDL_WindowData *) window->driverdata)->hwnd;
-
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    HWND hwnd = data->hwnd;
+    data->expected_resize = TRUE;
     ShowWindow(hwnd, SW_RESTORE);
+    data->expected_resize = FALSE;
 }
 
 void
@@ -490,7 +498,9 @@ WIN_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, 
         y = window->windowed.y + rect.top;
     }
     SetWindowLong(hwnd, GWL_STYLE, style);
+    data->expected_resize = TRUE;
     SetWindowPos(hwnd, top, x, y, w, h, SWP_NOCOPYBITS);
+    data->expected_resize = FALSE;
 }
 
 int

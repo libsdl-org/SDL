@@ -621,9 +621,9 @@ SDL_GetIndexOfDisplay(SDL_VideoDisplay *display)
 void *
 SDL_GetDisplayDriverData( int displayIndex )
 {
-	CHECK_DISPLAY_INDEX( displayIndex, NULL );
+    CHECK_DISPLAY_INDEX( displayIndex, NULL );
 
-	return _this->displays[displayIndex].driverdata;
+    return _this->displays[displayIndex].driverdata;
 }
 
 const char *
@@ -1627,8 +1627,29 @@ SDL_SetWindowSize(SDL_Window * window, int w, int h)
         return;
     }
 
+    /* Make sure we don't exceed any window size limits */
+    if (window->min_w && w < window->min_w)
+    {
+        w = window->min_w;
+    }
+    if (window->max_w && w > window->max_w)
+    {
+        w = window->max_w;
+    }
+    if (window->min_h && h < window->min_h)
+    {
+        h = window->min_h;
+    }
+    if (window->max_h && h > window->max_h)
+    {
+        h = window->max_h;
+    }
+
     /* FIXME: Should this change fullscreen modes? */
-    if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
+    if (window->flags & SDL_WINDOW_FULLSCREEN) {
+        window->windowed.w = w;
+        window->windowed.h = h;
+    } else {
         window->w = w;
         window->h = h;
         if (_this->SetWindowSize) {

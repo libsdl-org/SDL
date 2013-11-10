@@ -33,6 +33,7 @@ typedef struct
     WNDPROC wndproc;
     SDL_bool created;
     WPARAM mouse_button_flags;
+    BOOL expected_resize;
     struct SDL_VideoData *videodata;
 } SDL_WindowData;
 
