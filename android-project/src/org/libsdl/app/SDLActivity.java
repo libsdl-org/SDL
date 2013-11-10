@@ -853,7 +853,6 @@ class SDLJoystickHandler_API12 extends SDLJoystickHandler {
     @Override
     public int getNumJoysticks() {
         createJoystickList();
-        
         return mJoyIdList.size();
     }
     
@@ -871,17 +870,8 @@ class SDLJoystickHandler_API12 extends SDLJoystickHandler {
     
     @Override
     public int getJoyId(int devId) {
-        int i=0;
-        
         createJoystickList();
-        
-        for(i=0; i<mJoyIdList.size(); i++) {
-            if(mJoyIdList.get(i).intValue() == devId) {
-                return i;
-            }
-        }
-        
-        return -1;
+        return mJoyIdList.indexOf(Integer.valueOf(devId));
     }
     
 }
