@@ -1,0 +1,350 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		3E683D8F380B72331D966705 /* common.c in Sources */ = {isa = PBXBuildFile; fileRef = 2813245205F14A8C59584160 /* common.c */; };
+		6C1A3816543D7795144223E1 /* rectangles.c in Sources */ = {isa = PBXBuildFile; fileRef = 1A6027E7619B1FF276F1647F /* rectangles.c */; };
+		538E114C2E7E62F427035765 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 34F76EF742501A5342D32B4D /* AudioToolbox.framework */; };
+		541C7B547AFB75F808F11178 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 39BB5FD3409327B862A33D0D /* QuartzCore.framework */; };
+		3ADA65AC17A56E470D723A3C /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00C104A979ED6C3F551705B5 /* OpenGLES.framework */; };
+		2DB765A563272C8C413C7066 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 49F32DF021A1011108AA6CFA /* CoreGraphics.framework */; };
+		1B941B1F31474FB121373844 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 628A573103CA605A5BC832E0 /* UIKit.framework */; };
+		73672D2A32625F0C346242FA /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D9D37B445D828F112A73D2F /* Foundation.framework */; };
+		04FB3B665FEE29384B9B42F1 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 342B2F6F3B5B137C31E424CE /* CoreAudio.framework */; };
+		28C530DA667726EB4DF6727F /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 45EF5D8025B92F4F04680040 /* libSDL2.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		368972B01B321F625EDD3C27 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0436345602702CD6400A6247 /* SDL2.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 224D2C85085A7BA60E532655;
+			remoteInfo = "libSDL2.a";
+		};
+		4D7C0BD571B740A9497C22A5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0436345602702CD6400A6247 /* SDL2.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 515D4C462ACD2DA8180E7783;
+			remoteInfo = "libSDL2.a";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		5227088F1D3F252018614672 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Info.plist"; path = "../../../../Xcode-iOS/Demos/Info.plist"; sourceTree = "<group>"; };
+		2813245205F14A8C59584160 /* common.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "common.c"; path = "../../../../Xcode-iOS/Demos/src/common.c"; sourceTree = "<group>"; };
+		36B01E185907089C3F291E5B /* common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "common.h"; path = "../../../../Xcode-iOS/Demos/src/common.h"; sourceTree = "<group>"; };
+		1A6027E7619B1FF276F1647F /* rectangles.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "rectangles.c"; path = "../../../../Xcode-iOS/Demos/src/rectangles.c"; sourceTree = "<group>"; };
+		34F76EF742501A5342D32B4D /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "AudioToolbox.framework"; path = "System/Library/Frameworks/AudioToolbox.framework"; sourceTree = "SDKROOT"; };
+		39BB5FD3409327B862A33D0D /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "QuartzCore.framework"; path = "System/Library/Frameworks/QuartzCore.framework"; sourceTree = "SDKROOT"; };
+		00C104A979ED6C3F551705B5 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "OpenGLES.framework"; path = "System/Library/Frameworks/OpenGLES.framework"; sourceTree = "SDKROOT"; };
+		49F32DF021A1011108AA6CFA /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "CoreGraphics.framework"; path = "System/Library/Frameworks/CoreGraphics.framework"; sourceTree = "SDKROOT"; };
+		628A573103CA605A5BC832E0 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "UIKit.framework"; path = "System/Library/Frameworks/UIKit.framework"; sourceTree = "SDKROOT"; };
+		1D9D37B445D828F112A73D2F /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "Foundation.framework"; path = "System/Library/Frameworks/Foundation.framework"; sourceTree = "SDKROOT"; };
+		342B2F6F3B5B137C31E424CE /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "CoreAudio.framework"; path = "System/Library/Frameworks/CoreAudio.framework"; sourceTree = "SDKROOT"; };
+		7332796826E47C595AC15526 /* rectangles */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = "rectangles"; path = "rectangles"; sourceTree = BUILT_PRODUCTS_DIR; };
+		0436345602702CD6400A6247 /* SDL2.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "SDL2.xcodeproj"; path = "../../SDL2/SDL2.xcodeproj"; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		57DD0560107127536F5B5B69 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				538E114C2E7E62F427035765 /* AudioToolbox.framework in Frameworks */,
+				541C7B547AFB75F808F11178 /* QuartzCore.framework in Frameworks */,
+				3ADA65AC17A56E470D723A3C /* OpenGLES.framework in Frameworks */,
+				2DB765A563272C8C413C7066 /* CoreGraphics.framework in Frameworks */,
+				1B941B1F31474FB121373844 /* UIKit.framework in Frameworks */,
+				73672D2A32625F0C346242FA /* Foundation.framework in Frameworks */,
+				04FB3B665FEE29384B9B42F1 /* CoreAudio.framework in Frameworks */,
+				28C530DA667726EB4DF6727F /* libSDL2.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		288A2F3007DA183E3DA11892 /* rectangles */ = {
+			isa = PBXGroup;
+			children = (
+				483D233459853EE340090F93 /* Xcode-iOS */,
+				2792239319A468A14CAA48C7 /* Frameworks */,
+				6F89456E4C5C59BF2F18556B /* Products */,
+				6546611D6AF04A5720535BA8 /* Projects */,
+			);
+			name = "rectangles";
+			sourceTree = "<group>";
+		};
+		483D233459853EE340090F93 /* Xcode-iOS */ = {
+			isa = PBXGroup;
+			children = (
+				38DD5DD6376F629A6DED1DE9 /* Demos */,
+			);
+			name = "Xcode-iOS";
+			sourceTree = "<group>";
+		};
+		38DD5DD6376F629A6DED1DE9 /* Demos */ = {
+			isa = PBXGroup;
+			children = (
+				5227088F1D3F252018614672 /* Info.plist */,
+				6CF216180B8F014E40C62052 /* src */,
+			);
+			name = "Demos";
+			sourceTree = "<group>";
+		};
+		6CF216180B8F014E40C62052 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				2813245205F14A8C59584160 /* common.c */,
+				36B01E185907089C3F291E5B /* common.h */,
+				1A6027E7619B1FF276F1647F /* rectangles.c */,
+			);
+			name = "src";
+			sourceTree = "<group>";
+		};
+		2792239319A468A14CAA48C7 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				34F76EF742501A5342D32B4D /* AudioToolbox.framework */,
+				39BB5FD3409327B862A33D0D /* QuartzCore.framework */,
+				00C104A979ED6C3F551705B5 /* OpenGLES.framework */,
+				49F32DF021A1011108AA6CFA /* CoreGraphics.framework */,
+				628A573103CA605A5BC832E0 /* UIKit.framework */,
+				1D9D37B445D828F112A73D2F /* Foundation.framework */,
+				342B2F6F3B5B137C31E424CE /* CoreAudio.framework */,
+			);
+			name = "Frameworks";
+			sourceTree = "<group>";
+		};
+		6F89456E4C5C59BF2F18556B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				7332796826E47C595AC15526 /* rectangles */,
+			);
+			name = "Products";
+			sourceTree = "<group>";
+		};
+		6546611D6AF04A5720535BA8 /* Projects */ = {
+			isa = PBXGroup;
+			children = (
+				0436345602702CD6400A6247 /* SDL2.xcodeproj */,
+			);
+			name = "Projects";
+			sourceTree = "<group>";
+		};
+		0DC524DC289165A2096A1B8A /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				45EF5D8025B92F4F04680040 /* libSDL2.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		4F6855E4129920DC7A9153FC /* rectangles */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 79D259543EB15FB103D110D7 /* Build configuration list for PBXNativeTarget "rectangles" */;
+			buildPhases = (
+				3CAC6B4F48AA464B710068C1 /* Resources */,
+				0BE0523D5BE05C0B02A52BA6 /* Sources */,
+				57DD0560107127536F5B5B69 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1B3B41B9731B1B0D007A7AC1 /* PBXTargetDependency */,
+			);
+			name = "rectangles";
+			productInstallPath = "$(HOME)/Applications";
+			productName = "rectangles";
+			productReference = 7332796826E47C595AC15526 /* rectangles */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		08FB7793FE84155DC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "rectangles" */;
+			compatibilityVersion = "Xcode 3.2";
+			hasScannedForEncodings = 1;
+			mainGroup = 288A2F3007DA183E3DA11892 /* rectangles */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 0DC524DC289165A2096A1B8A /* Products */;
+					ProjectRef = 0436345602702CD6400A6247 /* SDL2.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				4F6855E4129920DC7A9153FC /* rectangles */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		45EF5D8025B92F4F04680040 /* libSDL2.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "Build/Debug/libSDL2.a";
+			remoteRef = 368972B01B321F625EDD3C27 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXResourcesBuildPhase section */
+		3CAC6B4F48AA464B710068C1 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		0BE0523D5BE05C0B02A52BA6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				3E683D8F380B72331D966705 /* common.c in Sources */,
+				6C1A3816543D7795144223E1 /* rectangles.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+/* End PBXVariantGroup section */
+
+/* Begin PBXTargetDependency section */
+		1B3B41B9731B1B0D007A7AC1 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "libSDL2.a";
+			targetProxy = 4D7C0BD571B740A9497C22A5 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		241D072A6F2D0EA442E9032F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CONFIGURATION_BUILD_DIR = Build/Debug;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				INFOPLIST_FILE = "../../../../Xcode-iOS/Demos/Info.plist";
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = "rectangles";
+			};
+			name = "Debug";
+		};
+		29F11E745BAF53647A9017A1 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				CONFIGURATION_BUILD_DIR = Build/Release;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				INFOPLIST_FILE = "../../../../Xcode-iOS/Demos/Info.plist";
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = "rectangles";
+			};
+			name = "Release";
+		};
+		2CD758AE2ACB76894D9F26D0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_UNIVERSAL_IPHONE_OS)";
+				SDKROOT = iphoneos;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USING_PREMAKE_CONFIG_H",
+					"_DEBUG",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"../..",
+					"../../../../include",
+				);
+				OBJROOT = "obj/iOS/Debug";
+				ONLY_ACTIVE_ARCH = YES;
+				SYMROOT = "Build/Debug";
+			};
+			name = "Debug";
+		};
+		743958EA264E002121B2360E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_UNIVERSAL_IPHONE_OS)";
+				SDKROOT = iphoneos;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USING_PREMAKE_CONFIG_H",
+					"NDEBUG",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"../..",
+					"../../../../include",
+				);
+				OBJROOT = "obj/iOS/Release";
+				ONLY_ACTIVE_ARCH = NO;
+				SYMROOT = "Build/Release";
+			};
+			name = "Release";
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		79D259543EB15FB103D110D7 /* Build configuration list for PBXNativeTarget "rectangles" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				241D072A6F2D0EA442E9032F /* Debug */,
+				29F11E745BAF53647A9017A1 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Debug";
+		};
+		1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "rectangles" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				2CD758AE2ACB76894D9F26D0 /* Debug */,
+				743958EA264E002121B2360E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Debug";
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
+}

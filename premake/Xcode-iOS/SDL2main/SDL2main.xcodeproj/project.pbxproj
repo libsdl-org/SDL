@@ -1,0 +1,241 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		6A47770C5EF950855C473DE4 /* SDL_dummy_main.c in Sources */ = {isa = PBXBuildFile; fileRef = 548E78363EA76CBB7C9D647D /* SDL_dummy_main.c */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		548E78363EA76CBB7C9D647D /* SDL_dummy_main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "SDL_dummy_main.c"; path = "../../../src/main/dummy/SDL_dummy_main.c"; sourceTree = "<group>"; };
+		5E5C7A9A4A341C0E5B2D6CDA /* libSDL2main.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; name = "libSDL2main.a"; path = "libSDL2main.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		450B55DB505267192316799F /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		24A248A70B67298D6C2C6433 /* SDL2main */ = {
+			isa = PBXGroup;
+			children = (
+				0F4A74990FAF59563DCE2840 /* src */,
+				4DF93DED3B1F1CF603EE2961 /* Products */,
+			);
+			name = "SDL2main";
+			sourceTree = "<group>";
+		};
+		0F4A74990FAF59563DCE2840 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				23932A2D1F2210D87B842AED /* main */,
+			);
+			name = "src";
+			sourceTree = "<group>";
+		};
+		23932A2D1F2210D87B842AED /* main */ = {
+			isa = PBXGroup;
+			children = (
+				38FB10B773C32C6E1FD240A6 /* dummy */,
+			);
+			name = "main";
+			sourceTree = "<group>";
+		};
+		38FB10B773C32C6E1FD240A6 /* dummy */ = {
+			isa = PBXGroup;
+			children = (
+				548E78363EA76CBB7C9D647D /* SDL_dummy_main.c */,
+			);
+			name = "dummy";
+			sourceTree = "<group>";
+		};
+		4DF93DED3B1F1CF603EE2961 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				5E5C7A9A4A341C0E5B2D6CDA /* libSDL2main.a */,
+			);
+			name = "Products";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		03EA2B934468123B74107F68 /* SDL2main */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 253743B11B001E914B5D598A /* Build configuration list for PBXNativeTarget "SDL2main" */;
+			buildPhases = (
+				2478641F57CA13393B9D590C /* Resources */,
+				2646786734062B0C5FFE3108 /* Sources */,
+				450B55DB505267192316799F /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = "SDL2main";
+			productName = "SDL2main";
+			productReference = 5E5C7A9A4A341C0E5B2D6CDA /* libSDL2main.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		08FB7793FE84155DC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "SDL2main" */;
+			compatibilityVersion = "Xcode 3.2";
+			hasScannedForEncodings = 1;
+			mainGroup = 24A248A70B67298D6C2C6433 /* SDL2main */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				03EA2B934468123B74107F68 /* libSDL2main.a */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		2478641F57CA13393B9D590C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		2646786734062B0C5FFE3108 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				6A47770C5EF950855C473DE4 /* SDL_dummy_main.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+/* End PBXVariantGroup section */
+
+/* Begin XCBuildConfiguration section */
+		25220E52501602BA417227AC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CONFIGURATION_BUILD_DIR = Build/Debug;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/lib;
+				PRODUCT_NAME = "SDL2main";
+			};
+			name = "Debug";
+		};
+		7EE30A225C264A274EA54353 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				CONFIGURATION_BUILD_DIR = Build/Release;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/lib;
+				PRODUCT_NAME = "SDL2main";
+			};
+			name = "Release";
+		};
+		25A70ED1565647744E791094 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_UNIVERSAL_IPHONE_OS)";
+				SDKROOT = iphoneos;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USING_PREMAKE_CONFIG_H",
+					"_DEBUG",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"..",
+					"../../../include",
+				);
+				OBJROOT = "obj/iOS/Debug";
+				ONLY_ACTIVE_ARCH = YES;
+				SYMROOT = "Build/Debug";
+			};
+			name = "Debug";
+		};
+		1A8A11CE1AAA3BF8562F4099 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_UNIVERSAL_IPHONE_OS)";
+				SDKROOT = iphoneos;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USING_PREMAKE_CONFIG_H",
+					"NDEBUG",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"..",
+					"../../../include",
+				);
+				OBJROOT = "obj/iOS/Release";
+				ONLY_ACTIVE_ARCH = NO;
+				SYMROOT = "Build/Release";
+			};
+			name = "Release";
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		253743B11B001E914B5D598A /* Build configuration list for PBXNativeTarget "libSDL2main.a" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				25220E52501602BA417227AC /* Debug */,
+				7EE30A225C264A274EA54353 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Debug";
+		};
+		1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "SDL2main" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				25A70ED1565647744E791094 /* Debug */,
+				1A8A11CE1AAA3BF8562F4099 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Debug";
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
+}

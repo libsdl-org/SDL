@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+	version = "1.0">
+	<FileRef
+		location = "group:Demos/keyboard/keyboard.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:Demos/touch/touch.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:SDL2test/SDL2test.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:SDL2/SDL2.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:SDL2main/SDL2main.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:Demos/mixer/mixer.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:Demos/fireworks/fireworks.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:Demos/accelerometer/accelerometer.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:Demos/rectangles/rectangles.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:Demos/happy/happy.xcodeproj">
+	</FileRef>
+</Workspace>
