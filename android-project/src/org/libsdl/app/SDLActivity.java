@@ -1,5 +1,6 @@
 package org.libsdl.app;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 
 import android.app.*;
@@ -15,10 +16,6 @@ import android.util.Log;
 import android.graphics.*;
 import android.media.*;
 import android.hardware.*;
-
-import java.lang.*;
-import java.util.List;
-import java.util.ArrayList;
 
 
 /**
@@ -836,7 +833,7 @@ class SDLJoystickHandler {
 
 /* Actual joystick functionality available for API >= 12 devices */
 class SDLJoystickHandler_API12 extends SDLJoystickHandler {
-    private List<Integer> mJoyIdList;
+    private ArrayList<Integer> mJoyIdList;
     
     // Create a list of valid ID's the first time this function is called
     private void createJoystickList() {
