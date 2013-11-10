@@ -433,4 +433,6 @@ Reference: http://www.khronos.org/registry/egl/specs/EGLTechNote0001.html
  Known issues
 ================================================================================
 
-- TODO. I'm sure there's a bunch more stuff I haven't thought of 
+- The number of buttons reported for each joystick is hardcoded to be 36, which
+is the current maximum number of buttons Android can report.
+
