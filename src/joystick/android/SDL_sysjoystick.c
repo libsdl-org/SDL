@@ -48,7 +48,6 @@ static SDL_bool SYS_accelAsJoy;
 int
 keycode_to_SDL(int keycode)
 {
-    int final = 0;
     /* D-Pad key codes (API 1):
      * KEYCODE_DPAD_UP=19, KEYCODE_DPAD_DOWN
      * KEYCODE_DPAD_LEFT, KEYCODE_DPAD_RIGHT, KEYCODE_DPAD_CENTER
