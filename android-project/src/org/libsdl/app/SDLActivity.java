@@ -433,6 +433,10 @@ public class SDLActivity extends Activity {
         return mJoystickHandler.getJoystickAxes(joy);
     }
     
+    /**
+     * @param devId the device id to get opened joystick id for.
+     * @return joystick id for device id or -1 if there is none.
+     */
     public static int getJoyId(int devId) {
         return mJoystickHandler.getJoyId(devId);
     }
@@ -606,11 +610,14 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         } else if ( (event.getSource() & 0x00000401) != 0 || /* API 12: SOURCE_GAMEPAD */
                    (event.getSource() & InputDevice.SOURCE_DPAD) != 0 ) {
             int id = SDLActivity.getJoyId( event.getDeviceId() );
-            if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                SDLActivity.onNativePadDown(id, keyCode);
-            } else if (event.getAction() == KeyEvent.ACTION_UP) {
-                SDLActivity.onNativePadUp(id, keyCode);
+            if (id != -1) {
+                if (event.getAction() == KeyEvent.ACTION_DOWN) {
+                    SDLActivity.onNativePadDown(id, keyCode);
+                } else if (event.getAction() == KeyEvent.ACTION_UP) {
+                    SDLActivity.onNativePadUp(id, keyCode);
+                }
             }
+            return true;
         }
         
         return false;
@@ -826,8 +833,12 @@ class SDLJoystickHandler {
         return 0;
     }
     
+    /**
+     * @param devId the device id to get opened joystick id for.
+     * @return joystick id for device id or -1 if there is none.
+     */
     public int getJoyId(int devId) {
-        return 0;
+        return -1;
     }
 }
 
@@ -887,10 +898,12 @@ class SDLGenericMotionListener_API12 implements View.OnGenericMotionListener {
             switch(action) {
                 case MotionEvent.ACTION_MOVE:
                     int id = SDLActivity.getJoyId( event.getDeviceId() );
-                    float x = event.getAxisValue(MotionEvent.AXIS_X, actionPointerIndex);
-                    float y = event.getAxisValue(MotionEvent.AXIS_Y, actionPointerIndex);
-                    SDLActivity.onNativeJoy(id, 0, x);
-                    SDLActivity.onNativeJoy(id, 1, y);
+                    if (id != -1) {
+                        float x = event.getAxisValue(MotionEvent.AXIS_X, actionPointerIndex);
+                        float y = event.getAxisValue(MotionEvent.AXIS_Y, actionPointerIndex);
+                        SDLActivity.onNativeJoy(id, 0, x);
+                        SDLActivity.onNativeJoy(id, 1, y);
+                    }
                     break;
             }
         }
