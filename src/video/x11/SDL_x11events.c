@@ -408,6 +408,13 @@ X11_DispatchEvent(_THIS)
 
         /* Losing input focus? */
     case FocusOut:{
+            if (xevent.xfocus.mode == NotifyGrab) {
+                /* Someone is handling a global hotkey, ignore it */
+#ifdef DEBUG_XEVENTS
+                printf("window %p: FocusOut (NotifyGrab, ignoring)\n", data);
+#endif
+                break;
+            }
             if (xevent.xfocus.detail == NotifyInferior) {
                 /* We still have focus if a child gets focus */
 #ifdef DEBUG_XEVENTS
