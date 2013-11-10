@@ -885,7 +885,7 @@ class SDLJoystickHandler_API12 extends SDLJoystickHandler {
     
 }
 
-class SDLGenericMotionHandler_API12 extends Activity implements View.OnGenericMotionListener {
+class SDLGenericMotionHandler_API12 implements View.OnGenericMotionListener {
     // Generic Motion (mouse hover, joystick...) events go here
     // We only have joysticks yet
     @Override
