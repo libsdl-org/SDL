@@ -30,12 +30,35 @@
 #include "SDL_events.h"
 #include "SDL_joystick.h"
 #include "SDL_hints.h"
+#include "SDL_assert.h"
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
 #include "../../core/android/SDL_android.h"
+#include "android/keycodes.h"
+
+/* As of platform android-14, android/keycodes.h is missing these defines */
+#ifndef AKEYCODE_BUTTON_1
+#define AKEYCODE_BUTTON_1 188
+#define AKEYCODE_BUTTON_2 189
+#define AKEYCODE_BUTTON_3 190
+#define AKEYCODE_BUTTON_4 191
+#define AKEYCODE_BUTTON_5 192
+#define AKEYCODE_BUTTON_6 193
+#define AKEYCODE_BUTTON_7 194
+#define AKEYCODE_BUTTON_8 195
+#define AKEYCODE_BUTTON_9 196
+#define AKEYCODE_BUTTON_10 197
+#define AKEYCODE_BUTTON_11 198
+#define AKEYCODE_BUTTON_12 199
+#define AKEYCODE_BUTTON_13 200
+#define AKEYCODE_BUTTON_14 201
+#define AKEYCODE_BUTTON_15 202
+#define AKEYCODE_BUTTON_16 203
+#endif
 
 #define ANDROID_ACCELEROMETER_INDEX (SYS_numjoysticks - 1)
 #define ANDROID_ACCELEROMETER_NAME "Android Accelerometer"
+#define ANDROID_MAX_NBUTTONS 36
 
 static SDL_Joystick **SYS_Joysticks;
 static char **SYS_JoystickNames;
@@ -44,31 +67,76 @@ static SDL_bool SYS_accelAsJoy;
 
 /* Function to convert Android keyCodes into SDL ones.
  * This code manipulation is done to get a sequential list of codes.
+ * FIXME: This is only suited for the case where we use a fixed number of buttons determined by ANDROID_MAX_NBUTTONS
  */
 static int
 keycode_to_SDL(int keycode)
 {
-    /* D-Pad key codes (API 1):
-     * KEYCODE_DPAD_UP=19, KEYCODE_DPAD_DOWN
-     * KEYCODE_DPAD_LEFT, KEYCODE_DPAD_RIGHT, KEYCODE_DPAD_CENTER
+    /* FIXME: If this function gets too unwiedly in the future, replace with a lookup table */
+    int button = 0;
+    switch(keycode) 
+    {
+        /* D-Pad key codes (API 1), these get mapped to 0...4 */
+        case AKEYCODE_DPAD_UP:
+        case AKEYCODE_DPAD_DOWN:
+        case AKEYCODE_DPAD_LEFT:
+        case AKEYCODE_DPAD_RIGHT:
+        case AKEYCODE_DPAD_CENTER:
+            button = keycode - AKEYCODE_DPAD_UP;
+            break;
+        
+        /* Some gamepad buttons (API 9), these get mapped to 5...19*/
+        case AKEYCODE_BUTTON_A:
+        case AKEYCODE_BUTTON_B:
+        case AKEYCODE_BUTTON_C:
+        case AKEYCODE_BUTTON_X:
+        case AKEYCODE_BUTTON_Y:
+        case AKEYCODE_BUTTON_Z:
+        case AKEYCODE_BUTTON_L1:
+        case AKEYCODE_BUTTON_L2:
+        case AKEYCODE_BUTTON_R1:
+        case AKEYCODE_BUTTON_R2:
+        case AKEYCODE_BUTTON_THUMBL:
+        case AKEYCODE_BUTTON_THUMBR:
+        case AKEYCODE_BUTTON_START:
+        case AKEYCODE_BUTTON_SELECT:
+        case AKEYCODE_BUTTON_MODE:
+            button = keycode - AKEYCODE_BUTTON_A + 5;
+            break;
+            
+        
+        /* More gamepad buttons (API 12), these get mapped to 20...35*/
+        case AKEYCODE_BUTTON_1:
+        case AKEYCODE_BUTTON_2:
+        case AKEYCODE_BUTTON_3:
+        case AKEYCODE_BUTTON_4:
+        case AKEYCODE_BUTTON_5:
+        case AKEYCODE_BUTTON_6:
+        case AKEYCODE_BUTTON_7:
+        case AKEYCODE_BUTTON_8:
+        case AKEYCODE_BUTTON_9:
+        case AKEYCODE_BUTTON_10:
+        case AKEYCODE_BUTTON_11:
+        case AKEYCODE_BUTTON_12:
+        case AKEYCODE_BUTTON_13:
+        case AKEYCODE_BUTTON_14:
+        case AKEYCODE_BUTTON_15:
+        case AKEYCODE_BUTTON_16:
+            button = keycode - AKEYCODE_BUTTON_1 + 20;
+            break;
+            
+        default:
+            SDL_Log("The button you just pressed is not recognized by SDL. To help get this fixed, please report this to the SDL mailing list <sdl@libsdl.org> Android KeyCode %d", keycode);
+            return -1;
+            break;
+    }
+    
+    /* This is here in case future generations, probably with six fingers per hand, 
+     * happily add new cases up above and forget to update the max number of buttons. 
      */
-    if(keycode < 96)
-        return keycode-19;
-    /* Some gamepad buttons (API 9):
-     * KEYCODE_BUTTON_A=96, KEYCODE_BUTTON_B, KEYCODE_BUTTON_C,
-     * KEYCODE_BUTTON_X, KEYCODE_BUTTON_Y, KEYCODE_BUTTON_Z,
-     * KEYCODE_BUTTON_L1, KEYCODE_BUTTON_L2,
-     * KEYCODE_BUTTON_R1, KEYCODE_BUTTON_R2,
-     * KEYCODE_BUTTON_THUMBL, KEYCODE_BUTTON_THUMBR,
-     * KEYCODE_BUTTON_START, KEYCODE_BUTTON_SELECT, KEYCODE_BUTTON_MODE
-     */
-    else if(keycode < 188)
-        return keycode-91;
-    /* More gamepad buttons (API 12):
-     * KEYCODE_BUTTON_1=188 to KEYCODE_BUTTON_16
-     */
-    else
-        return keycode-168;
+    SDL_assert(button < ANDROID_MAX_NBUTTONS);
+    return button;
+    
 }
 
 /* Function to scan the system for joysticks.
@@ -162,8 +230,8 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
             joystick->nbuttons = 0;
             joystick->naxes = 3;
         } else {
-            /* TODO: Get the real number of buttons in the device */
-            joystick->nbuttons = 36;
+            /* FIXME: Get the real number of buttons in the device? */
+            joystick->nbuttons = ANDROID_MAX_NBUTTONS;
             joystick->naxes = Android_JNI_GetJoystickAxes(device_index);
         }
         
