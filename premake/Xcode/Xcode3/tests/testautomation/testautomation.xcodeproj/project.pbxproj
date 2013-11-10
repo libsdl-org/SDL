@@ -1,0 +1,570 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		2F335BE80DE0020E203E5DD8 /* testautomation.c in Sources */ = {isa = PBXBuildFile; fileRef = 794762FD04D1549934E159CD /* testautomation.c */; };
+		653716B97F514F1115D6458F /* testautomation_audio.c in Sources */ = {isa = PBXBuildFile; fileRef = 471E0D47498B7B5274FB14FE /* testautomation_audio.c */; };
+		7C22594E259C512B68C3074A /* testautomation_clipboard.c in Sources */ = {isa = PBXBuildFile; fileRef = 4F3953A43A3A4F8F4C8E36A4 /* testautomation_clipboard.c */; };
+		0D0C2F586E93033058EB4F2D /* testautomation_events.c in Sources */ = {isa = PBXBuildFile; fileRef = 2786614254EC5FB566462683 /* testautomation_events.c */; };
+		0EF101106870459C05C777E5 /* testautomation_keyboard.c in Sources */ = {isa = PBXBuildFile; fileRef = 3D67397E3717790131435254 /* testautomation_keyboard.c */; };
+		4473155D1CA524123B156875 /* testautomation_main.c in Sources */ = {isa = PBXBuildFile; fileRef = 5BEC6F3916D7143614DF3D74 /* testautomation_main.c */; };
+		2C2A04F453191DD549990B38 /* testautomation_mouse.c in Sources */ = {isa = PBXBuildFile; fileRef = 6D017E6145BD211645712A51 /* testautomation_mouse.c */; };
+		174141BE560F099B2C951FF6 /* testautomation_pixels.c in Sources */ = {isa = PBXBuildFile; fileRef = 435E6BF81AB9117F68EB441C /* testautomation_pixels.c */; };
+		15E2389B6AB717B517F50AA9 /* testautomation_platform.c in Sources */ = {isa = PBXBuildFile; fileRef = 0055527C0684494769333104 /* testautomation_platform.c */; };
+		4E710EFA4F50233E3BB50A17 /* testautomation_rect.c in Sources */ = {isa = PBXBuildFile; fileRef = 0DC13053355641975EF14CFC /* testautomation_rect.c */; };
+		07001C17388A1B8604CF33C9 /* testautomation_render.c in Sources */ = {isa = PBXBuildFile; fileRef = 7EE110555956273251AE02BD /* testautomation_render.c */; };
+		115828D60DF755371C7E4B6F /* testautomation_rwops.c in Sources */ = {isa = PBXBuildFile; fileRef = 05F752B051CB188A1FA10AE0 /* testautomation_rwops.c */; };
+		17E762DE07227FFC234A7E9B /* testautomation_sdltest.c in Sources */ = {isa = PBXBuildFile; fileRef = 140F10664DCC4A491D2D06DB /* testautomation_sdltest.c */; };
+		3A1421F37C845F1F1A9A1691 /* testautomation_stdlib.c in Sources */ = {isa = PBXBuildFile; fileRef = 26AF4A18290748D322B947F5 /* testautomation_stdlib.c */; };
+		491B449B228565596C3C6841 /* testautomation_surface.c in Sources */ = {isa = PBXBuildFile; fileRef = 5F0C25EE376B02EA064B50F6 /* testautomation_surface.c */; };
+		4EE3570C11213BFA50727385 /* testautomation_syswm.c in Sources */ = {isa = PBXBuildFile; fileRef = 1267615F52DF35C27BFC749A /* testautomation_syswm.c */; };
+		15C3490D20032CC168A5510A /* testautomation_timer.c in Sources */ = {isa = PBXBuildFile; fileRef = 30EA083B11207D622DDB12FC /* testautomation_timer.c */; };
+		0D3D4F4B7C2244F36B98001A /* testautomation_video.c in Sources */ = {isa = PBXBuildFile; fileRef = 799007AB7FD4531345B703C3 /* testautomation_video.c */; };
+		634F703209AF4BF432C670FF /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 525D58370F4C52CF3B2C6C24 /* AudioToolbox.framework */; };
+		2FD209F3507D70B84CE97341 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1CA133CE381F37C11A1B0BEB /* AudioUnit.framework */; };
+		701A5D0F305059164EA22D84 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 69CB409266666CB01DB03008 /* Cocoa.framework */; };
+		3FD61CBC1F3C541624184811 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6448343A600A31F50A122DE9 /* CoreAudio.framework */; };
+		472C522A706B317850BA6C51 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 11861357591E56A023ED491D /* IOKit.framework */; };
+		054B18C7468D589C15E05FCA /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3B20422947087C5367012759 /* Carbon.framework */; };
+		22AD0BEA6F4E275414225D5D /* ForceFeedback.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 58C11BD2221C785317CF3370 /* ForceFeedback.framework */; };
+		3B8A7FF62F4A2D17470C080E /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3A682EF21FA87CBA3C2B3F7D /* CoreFoundation.framework */; };
+		14960DFD058B085471CB4AB3 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 77D94DCC4A8B73683E874CF3 /* OpenGL.framework */; };
+		7C8926195FA63E4B429155D2 /* libSDL2main.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 65657808084F160069055C6D /* libSDL2main.a */; };
+		77A0414679C77DF659307C2A /* libSDL2test.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 30744F3724232CC61005573B /* libSDL2test.a */; };
+		667727B43C5E63914EDD2933 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 51F53A75641962D9541A7DD9 /* libSDL2.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		1DCE473D01537CA077766F74 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6906495449E9743407E812AA /* SDL2main.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 58DC62993160374E09FF7AD6;
+			remoteInfo = "libSDL2main.a";
+		};
+		4570617838BB3896391D43EC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6906495449E9743407E812AA /* SDL2main.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 0E7126A94A11494963D3548B;
+			remoteInfo = "libSDL2main.a";
+		};
+		4893660C40505DFE57DA4601 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0058171435E569F359901CA9 /* SDL2test.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 1E1175156F97314C291323CB;
+			remoteInfo = "libSDL2test.a";
+		};
+		19D24173024D0FC63B313020 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0058171435E569F359901CA9 /* SDL2test.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 7CD70F5D43DA554D66287CFC;
+			remoteInfo = "libSDL2test.a";
+		};
+		2B800D747BF326C622B92D93 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29FC6095786D7CDA66E54FA2 /* SDL2.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 07D004B11E733F1F0EA93105;
+			remoteInfo = "libSDL2.a";
+		};
+		2325525D7B406481596F1ACA /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 29FC6095786D7CDA66E54FA2 /* SDL2.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 58C10ED14175754444033E0E;
+			remoteInfo = "libSDL2.a";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		794762FD04D1549934E159CD /* testautomation.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "testautomation.c"; path = "../../../../../test/testautomation.c"; sourceTree = "<group>"; };
+		471E0D47498B7B5274FB14FE /* testautomation_audio.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "testautomation_audio.c"; path = "../../../../../test/testautomation_audio.c"; sourceTree = "<group>"; };
+		4F3953A43A3A4F8F4C8E36A4 /* testautomation_clipboard.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "testautomation_clipboard.c"; path = "../../../../../test/testautomation_clipboard.c"; sourceTree = "<group>"; };
+		2786614254EC5FB566462683 /* testautomation_events.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "testautomation_events.c"; path = "../../../../../test/testautomation_events.c"; sourceTree = "<group>"; };
+		3D67397E3717790131435254 /* testautomation_keyboard.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "testautomation_keyboard.c"; path = "../../../../../test/testautomation_keyboard.c"; sourceTree = "<group>"; };
+		5BEC6F3916D7143614DF3D74 /* testautomation_main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "testautomation_main.c"; path = "../../../../../test/testautomation_main.c"; sourceTree = "<group>"; };
+		6D017E6145BD211645712A51 /* testautomation_mouse.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "testautomation_mouse.c"; path = "../../../../../test/testautomation_mouse.c"; sourceTree = "<group>"; };
+		435E6BF81AB9117F68EB441C /* testautomation_pixels.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "testautomation_pixels.c"; path = "../../../../../test/testautomation_pixels.c"; sourceTree = "<group>"; };
+		0055527C0684494769333104 /* testautomation_platform.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "testautomation_platform.c"; path = "../../../../../test/testautomation_platform.c"; sourceTree = "<group>"; };
+		0DC13053355641975EF14CFC /* testautomation_rect.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "testautomation_rect.c"; path = "../../../../../test/testautomation_rect.c"; sourceTree = "<group>"; };
+		7EE110555956273251AE02BD /* testautomation_render.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "testautomation_render.c"; path = "../../../../../test/testautomation_render.c"; sourceTree = "<group>"; };
+		05F752B051CB188A1FA10AE0 /* testautomation_rwops.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "testautomation_rwops.c"; path = "../../../../../test/testautomation_rwops.c"; sourceTree = "<group>"; };
+		140F10664DCC4A491D2D06DB /* testautomation_sdltest.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "testautomation_sdltest.c"; path = "../../../../../test/testautomation_sdltest.c"; sourceTree = "<group>"; };
+		26AF4A18290748D322B947F5 /* testautomation_stdlib.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "testautomation_stdlib.c"; path = "../../../../../test/testautomation_stdlib.c"; sourceTree = "<group>"; };
+		3F19057030C97AB601CD4266 /* testautomation_suites.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "testautomation_suites.h"; path = "../../../../../test/testautomation_suites.h"; sourceTree = "<group>"; };
+		5F0C25EE376B02EA064B50F6 /* testautomation_surface.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "testautomation_surface.c"; path = "../../../../../test/testautomation_surface.c"; sourceTree = "<group>"; };
+		1267615F52DF35C27BFC749A /* testautomation_syswm.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "testautomation_syswm.c"; path = "../../../../../test/testautomation_syswm.c"; sourceTree = "<group>"; };
+		30EA083B11207D622DDB12FC /* testautomation_timer.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "testautomation_timer.c"; path = "../../../../../test/testautomation_timer.c"; sourceTree = "<group>"; };
+		799007AB7FD4531345B703C3 /* testautomation_video.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "testautomation_video.c"; path = "../../../../../test/testautomation_video.c"; sourceTree = "<group>"; };
+		525D58370F4C52CF3B2C6C24 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "AudioToolbox.framework"; path = "/System/Library/Frameworks/AudioToolbox.framework"; sourceTree = "<absolute>"; };
+		1CA133CE381F37C11A1B0BEB /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "AudioUnit.framework"; path = "/System/Library/Frameworks/AudioUnit.framework"; sourceTree = "<absolute>"; };
+		69CB409266666CB01DB03008 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "Cocoa.framework"; path = "/System/Library/Frameworks/Cocoa.framework"; sourceTree = "<absolute>"; };
+		6448343A600A31F50A122DE9 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "CoreAudio.framework"; path = "/System/Library/Frameworks/CoreAudio.framework"; sourceTree = "<absolute>"; };
+		11861357591E56A023ED491D /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "IOKit.framework"; path = "/System/Library/Frameworks/IOKit.framework"; sourceTree = "<absolute>"; };
+		3B20422947087C5367012759 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "Carbon.framework"; path = "/System/Library/Frameworks/Carbon.framework"; sourceTree = "<absolute>"; };
+		58C11BD2221C785317CF3370 /* ForceFeedback.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "ForceFeedback.framework"; path = "/System/Library/Frameworks/ForceFeedback.framework"; sourceTree = "<absolute>"; };
+		3A682EF21FA87CBA3C2B3F7D /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "CoreFoundation.framework"; path = "/System/Library/Frameworks/CoreFoundation.framework"; sourceTree = "<absolute>"; };
+		77D94DCC4A8B73683E874CF3 /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "OpenGL.framework"; path = "/System/Library/Frameworks/OpenGL.framework"; sourceTree = "<absolute>"; };
+		75027F0E24CC623E719313AB /* testautomation */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = "testautomation"; path = "testautomation"; sourceTree = BUILT_PRODUCTS_DIR; };
+		6906495449E9743407E812AA /* SDL2main.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "SDL2main.xcodeproj"; path = "../../SDL2main/SDL2main.xcodeproj"; sourceTree = SOURCE_ROOT; };
+		0058171435E569F359901CA9 /* SDL2test.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "SDL2test.xcodeproj"; path = "../../SDL2test/SDL2test.xcodeproj"; sourceTree = SOURCE_ROOT; };
+		29FC6095786D7CDA66E54FA2 /* SDL2.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "SDL2.xcodeproj"; path = "../../SDL2/SDL2.xcodeproj"; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		5D6A013F76D150BA04E85B78 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				634F703209AF4BF432C670FF /* AudioToolbox.framework in Frameworks */,
+				2FD209F3507D70B84CE97341 /* AudioUnit.framework in Frameworks */,
+				701A5D0F305059164EA22D84 /* Cocoa.framework in Frameworks */,
+				3FD61CBC1F3C541624184811 /* CoreAudio.framework in Frameworks */,
+				472C522A706B317850BA6C51 /* IOKit.framework in Frameworks */,
+				054B18C7468D589C15E05FCA /* Carbon.framework in Frameworks */,
+				22AD0BEA6F4E275414225D5D /* ForceFeedback.framework in Frameworks */,
+				3B8A7FF62F4A2D17470C080E /* CoreFoundation.framework in Frameworks */,
+				14960DFD058B085471CB4AB3 /* OpenGL.framework in Frameworks */,
+				7C8926195FA63E4B429155D2 /* libSDL2main.a in Frameworks */,
+				77A0414679C77DF659307C2A /* libSDL2test.a in Frameworks */,
+				667727B43C5E63914EDD2933 /* libSDL2.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		202F2A541FD450F927A57FBC /* testautomation */ = {
+			isa = PBXGroup;
+			children = (
+				1B64500B363640606F5E14E5 /* test */,
+				363D69995B857A2815A13DC6 /* Frameworks */,
+				60B1254425E50F951FCA074B /* Products */,
+				0A2C78C572E328E306C02744 /* Projects */,
+			);
+			name = "testautomation";
+			sourceTree = "<group>";
+		};
+		1B64500B363640606F5E14E5 /* test */ = {
+			isa = PBXGroup;
+			children = (
+				794762FD04D1549934E159CD /* testautomation.c */,
+				471E0D47498B7B5274FB14FE /* testautomation_audio.c */,
+				4F3953A43A3A4F8F4C8E36A4 /* testautomation_clipboard.c */,
+				2786614254EC5FB566462683 /* testautomation_events.c */,
+				3D67397E3717790131435254 /* testautomation_keyboard.c */,
+				5BEC6F3916D7143614DF3D74 /* testautomation_main.c */,
+				6D017E6145BD211645712A51 /* testautomation_mouse.c */,
+				435E6BF81AB9117F68EB441C /* testautomation_pixels.c */,
+				0055527C0684494769333104 /* testautomation_platform.c */,
+				0DC13053355641975EF14CFC /* testautomation_rect.c */,
+				7EE110555956273251AE02BD /* testautomation_render.c */,
+				05F752B051CB188A1FA10AE0 /* testautomation_rwops.c */,
+				140F10664DCC4A491D2D06DB /* testautomation_sdltest.c */,
+				26AF4A18290748D322B947F5 /* testautomation_stdlib.c */,
+				3F19057030C97AB601CD4266 /* testautomation_suites.h */,
+				5F0C25EE376B02EA064B50F6 /* testautomation_surface.c */,
+				1267615F52DF35C27BFC749A /* testautomation_syswm.c */,
+				30EA083B11207D622DDB12FC /* testautomation_timer.c */,
+				799007AB7FD4531345B703C3 /* testautomation_video.c */,
+			);
+			name = "test";
+			sourceTree = "<group>";
+		};
+		363D69995B857A2815A13DC6 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				525D58370F4C52CF3B2C6C24 /* AudioToolbox.framework */,
+				1CA133CE381F37C11A1B0BEB /* AudioUnit.framework */,
+				69CB409266666CB01DB03008 /* Cocoa.framework */,
+				6448343A600A31F50A122DE9 /* CoreAudio.framework */,
+				11861357591E56A023ED491D /* IOKit.framework */,
+				3B20422947087C5367012759 /* Carbon.framework */,
+				58C11BD2221C785317CF3370 /* ForceFeedback.framework */,
+				3A682EF21FA87CBA3C2B3F7D /* CoreFoundation.framework */,
+				77D94DCC4A8B73683E874CF3 /* OpenGL.framework */,
+			);
+			name = "Frameworks";
+			sourceTree = "<group>";
+		};
+		60B1254425E50F951FCA074B /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				75027F0E24CC623E719313AB /* testautomation */,
+			);
+			name = "Products";
+			sourceTree = "<group>";
+		};
+		0A2C78C572E328E306C02744 /* Projects */ = {
+			isa = PBXGroup;
+			children = (
+				6906495449E9743407E812AA /* SDL2main.xcodeproj */,
+				0058171435E569F359901CA9 /* SDL2test.xcodeproj */,
+				29FC6095786D7CDA66E54FA2 /* SDL2.xcodeproj */,
+			);
+			name = "Projects";
+			sourceTree = "<group>";
+		};
+		0BDA2B645FDD3BEE211A6954 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				65657808084F160069055C6D /* libSDL2main.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		7829072B1E387FAA7F1D6362 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				30744F3724232CC61005573B /* libSDL2test.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		6E4E53E23BE56BD653904C40 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				51F53A75641962D9541A7DD9 /* libSDL2.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		586C3E63152630904E4344B7 /* testautomation */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5BA144AB73752BB233B15E56 /* Build configuration list for PBXNativeTarget "testautomation" */;
+			buildPhases = (
+				602B2E997588500D28BF3D9C /* Resources */,
+				5E6E466B254968535F104F95 /* Sources */,
+				5D6A013F76D150BA04E85B78 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				5E91187E198B10230A423327 /* PBXTargetDependency */,
+				34B918CE0EB26C3E7E5A4A83 /* PBXTargetDependency */,
+				74B40BD2278E0624550E1B92 /* PBXTargetDependency */,
+			);
+			name = "testautomation";
+			productInstallPath = "$(HOME)/bin";
+			productName = "testautomation";
+			productReference = 75027F0E24CC623E719313AB /* testautomation */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		08FB7793FE84155DC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "testautomation" */;
+			compatibilityVersion = "Xcode 3.2";
+			hasScannedForEncodings = 1;
+			mainGroup = 202F2A541FD450F927A57FBC /* testautomation */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 0BDA2B645FDD3BEE211A6954 /* Products */;
+					ProjectRef = 6906495449E9743407E812AA /* SDL2main.xcodeproj */;
+				},
+				{
+					ProductGroup = 7829072B1E387FAA7F1D6362 /* Products */;
+					ProjectRef = 0058171435E569F359901CA9 /* SDL2test.xcodeproj */;
+				},
+				{
+					ProductGroup = 6E4E53E23BE56BD653904C40 /* Products */;
+					ProjectRef = 29FC6095786D7CDA66E54FA2 /* SDL2.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				586C3E63152630904E4344B7 /* testautomation */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		65657808084F160069055C6D /* libSDL2main.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "Build/Debug/libSDL2main.a";
+			remoteRef = 1DCE473D01537CA077766F74 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		30744F3724232CC61005573B /* libSDL2test.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "Build/Debug/libSDL2test.a";
+			remoteRef = 4893660C40505DFE57DA4601 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		51F53A75641962D9541A7DD9 /* libSDL2.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "Build/Debug/libSDL2.a";
+			remoteRef = 2B800D747BF326C622B92D93 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXResourcesBuildPhase section */
+		602B2E997588500D28BF3D9C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		5E6E466B254968535F104F95 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2F335BE80DE0020E203E5DD8 /* testautomation.c in Sources */,
+				653716B97F514F1115D6458F /* testautomation_audio.c in Sources */,
+				7C22594E259C512B68C3074A /* testautomation_clipboard.c in Sources */,
+				0D0C2F586E93033058EB4F2D /* testautomation_events.c in Sources */,
+				0EF101106870459C05C777E5 /* testautomation_keyboard.c in Sources */,
+				4473155D1CA524123B156875 /* testautomation_main.c in Sources */,
+				2C2A04F453191DD549990B38 /* testautomation_mouse.c in Sources */,
+				174141BE560F099B2C951FF6 /* testautomation_pixels.c in Sources */,
+				15E2389B6AB717B517F50AA9 /* testautomation_platform.c in Sources */,
+				4E710EFA4F50233E3BB50A17 /* testautomation_rect.c in Sources */,
+				07001C17388A1B8604CF33C9 /* testautomation_render.c in Sources */,
+				115828D60DF755371C7E4B6F /* testautomation_rwops.c in Sources */,
+				17E762DE07227FFC234A7E9B /* testautomation_sdltest.c in Sources */,
+				3A1421F37C845F1F1A9A1691 /* testautomation_stdlib.c in Sources */,
+				491B449B228565596C3C6841 /* testautomation_surface.c in Sources */,
+				4EE3570C11213BFA50727385 /* testautomation_syswm.c in Sources */,
+				15C3490D20032CC168A5510A /* testautomation_timer.c in Sources */,
+				0D3D4F4B7C2244F36B98001A /* testautomation_video.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+/* End PBXVariantGroup section */
+
+/* Begin PBXTargetDependency section */
+		5E91187E198B10230A423327 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "libSDL2main.a";
+			targetProxy = 4570617838BB3896391D43EC /* PBXContainerItemProxy */;
+		};
+		34B918CE0EB26C3E7E5A4A83 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "libSDL2test.a";
+			targetProxy = 19D24173024D0FC63B313020 /* PBXContainerItemProxy */;
+		};
+		74B40BD2278E0624550E1B92 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "libSDL2.a";
+			targetProxy = 2325525D7B406481596F1ACA /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		530A5E2B6C51709625A378DA /* Debug Universal */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CONFIGURATION_BUILD_DIR = Build/Debug;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = "testautomation";
+			};
+			name = "Debug Universal";
+		};
+		3959435D388F69171D142D41 /* Debug Native */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CONFIGURATION_BUILD_DIR = Build/Debug;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = "testautomation";
+			};
+			name = "Debug Native";
+		};
+		273E09722ABB6C217CC7119E /* Release Universal */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				CONFIGURATION_BUILD_DIR = Build/Release;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = "testautomation";
+			};
+			name = "Release Universal";
+		};
+		320B04BC782D7AB87BAD2323 /* Release Native */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				CONFIGURATION_BUILD_DIR = Build/Release;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = "testautomation";
+			};
+			name = "Release Native";
+		};
+		605F7F38404C55F0155D47FF /* Debug Universal */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USING_PREMAKE_CONFIG_H",
+					"_DEBUG",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"../..",
+					"../../../../../include",
+				);
+				OBJROOT = "obj/Universal/Debug";
+				ONLY_ACTIVE_ARCH = YES;
+				SYMROOT = "Build/Debug";
+			};
+			name = "Debug Universal";
+		};
+		39A135251D9001C821A36BFA /* Debug Native */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(NATIVE_ARCH_ACTUAL)";
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USING_PREMAKE_CONFIG_H",
+					"_DEBUG",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"../..",
+					"../../../../../include",
+				);
+				OBJROOT = "obj/Debug";
+				ONLY_ACTIVE_ARCH = YES;
+				SYMROOT = "Build/Debug";
+			};
+			name = "Debug Native";
+		};
+		55770DCA779C47491C7B5963 /* Release Universal */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USING_PREMAKE_CONFIG_H",
+					"NDEBUG",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"../..",
+					"../../../../../include",
+				);
+				OBJROOT = "obj/Universal/Release";
+				ONLY_ACTIVE_ARCH = NO;
+				SYMROOT = "Build/Release";
+			};
+			name = "Release Universal";
+		};
+		77191B3A2E603070399E514A /* Release Native */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(NATIVE_ARCH_ACTUAL)";
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USING_PREMAKE_CONFIG_H",
+					"NDEBUG",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"../..",
+					"../../../../../include",
+				);
+				OBJROOT = "obj/Release";
+				ONLY_ACTIVE_ARCH = NO;
+				SYMROOT = "Build/Release";
+			};
+			name = "Release Native";
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		5BA144AB73752BB233B15E56 /* Build configuration list for PBXNativeTarget "testautomation" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				530A5E2B6C51709625A378DA /* Debug Universal */,
+				3959435D388F69171D142D41 /* Debug Native */,
+				273E09722ABB6C217CC7119E /* Release Universal */,
+				320B04BC782D7AB87BAD2323 /* Release Native */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Debug Universal";
+		};
+		1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "testautomation" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				605F7F38404C55F0155D47FF /* Debug Universal */,
+				39A135251D9001C821A36BFA /* Debug Native */,
+				55770DCA779C47491C7B5963 /* Release Universal */,
+				77191B3A2E603070399E514A /* Release Native */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Debug Universal";
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
+}
