@@ -45,7 +45,7 @@ static SDL_bool SYS_accelAsJoy;
 /* Function to convert Android keyCodes into SDL ones.
  * This code manipulation is done to get a sequential list of codes.
  */
-int
+static int
 keycode_to_SDL(int keycode)
 {
     /* D-Pad key codes (API 1):
