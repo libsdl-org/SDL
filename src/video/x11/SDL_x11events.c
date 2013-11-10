@@ -280,19 +280,39 @@ X11_DispatchEvent(_THIS)
     Display *display = videodata->display;
     SDL_WindowData *data;
     XEvent xevent;
-    int i;
+    int orig_event_type;
+    KeyCode orig_keycode;
     XClientMessageEvent m;
+    int i;
 
     SDL_zero(xevent);           /* valgrind fix. --ryan. */
     X11_XNextEvent(display, &xevent);
 
-    /* filter events catchs XIM events and sends them to the correct
-       handler */
+    /* Save the original keycode for dead keys, which are filtered out by
+       the XFilterEvent() call below.
+    */
+    orig_event_type = xevent.type;
+    if (orig_event_type == KeyPress || orig_event_type == KeyRelease) {
+        orig_keycode = xevent.xkey.keycode;
+    } else {
+        orig_keycode = 0;
+    }
+
+    /* filter events catchs XIM events and sends them to the correct handler */
     if (X11_XFilterEvent(&xevent, None) == True) {
 #if 0
         printf("Filtered event type = %d display = %d window = %d\n",
                xevent.type, xevent.xany.display, xevent.xany.window);
 #endif
+        if (orig_keycode) {
+            /* Make sure dead key press/release events are sent */
+            SDL_Scancode scancode = videodata->key_layout[orig_keycode];
+            if (orig_event_type == KeyPress) {
+                SDL_SendKeyboardKey(SDL_PRESSED, scancode);
+            } else {
+                SDL_SendKeyboardKey(SDL_RELEASED, scancode);
+            }
+        }
         return;
     }
 
