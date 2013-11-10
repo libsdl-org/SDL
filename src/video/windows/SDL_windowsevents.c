@@ -312,15 +312,15 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     }
 
 #ifdef WMMSG_DEBUG
-	{
-		char message[1024];
-		if (msg > MAX_WMMSG) {
-			SDL_snprintf(message, sizeof(message), "Received windows message: %p UNKNOWN (%d) -- 0x%X, 0x%X\n", hwnd, msg, wParam, lParam);
-		} else {
-			SDL_snprintf(message, sizeof(message), "Received windows message: %p %s -- 0x%X, 0x%X\n", hwnd, wmtab[msg], wParam, lParam);
-		}
-		OutputDebugStringA(message);
-	}
+    {
+        char message[1024];
+        if (msg > MAX_WMMSG) {
+            SDL_snprintf(message, sizeof(message), "Received windows message: %p UNKNOWN (%d) -- 0x%X, 0x%X\n", hwnd, msg, wParam, lParam);
+        } else {
+            SDL_snprintf(message, sizeof(message), "Received windows message: %p %s -- 0x%X, 0x%X\n", hwnd, wmtab[msg], wParam, lParam);
+        }
+        OutputDebugStringA(message);
+    }
 #endif /* WMMSG_DEBUG */
 
     if (IME_HandleMessage(hwnd, msg, wParam, &lParam, data->videodata))
@@ -348,12 +348,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 SHORT keyState;
 
                 SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_SHOWN, 0, 0);
-                SDL_SendWindowEvent(data->window,
-                                    SDL_WINDOWEVENT_RESTORED, 0, 0);
-                if (IsZoomed(hwnd)) {
-                    SDL_SendWindowEvent(data->window,
-                                        SDL_WINDOWEVENT_MAXIMIZED, 0, 0);
-                }
                 if (SDL_GetKeyboardFocus() != data->window) {
                     SDL_SetKeyboardFocus(data->window);
                 }
@@ -399,10 +393,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             } else {
                 if (SDL_GetKeyboardFocus() == data->window) {
                     SDL_SetKeyboardFocus(NULL);
-                }
-                if (minimized) {
-                    SDL_SendWindowEvent(data->window,
-                                        SDL_WINDOWEVENT_MINIMIZED, 0, 0);
                 }
             }
         }
@@ -596,9 +586,13 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             BOOL menu;
             BOOL constrain_max_size;
 
-            /* If we allow resizing, let the resize happen naturally */
             if (SDL_IsShapedWindow(data->window))
                 Win32_ResizeWindowShape(data->window);
+
+            /* If this is an expected size change, allow it */
+            if (data->expected_resize) {
+                break;
+            }
 
             /* Get the current position of our window */
             GetWindowRect(hwnd, &size);
@@ -690,6 +684,26 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             h = rect.bottom - rect.top;
             SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_RESIZED, w,
                                 h);
+        }
+        break;
+
+    case WM_SIZE:
+        {
+            switch (wParam)
+            {
+            case SIZE_MAXIMIZED:
+                SDL_SendWindowEvent(data->window,
+                    SDL_WINDOWEVENT_MAXIMIZED, 0, 0);
+                break;
+            case SIZE_MINIMIZED:
+                SDL_SendWindowEvent(data->window,
+                    SDL_WINDOWEVENT_MINIMIZED, 0, 0);
+                break;
+            default:
+                SDL_SendWindowEvent(data->window,
+                    SDL_WINDOWEVENT_RESTORED, 0, 0);
+                break;
+            }
         }
         break;
 
