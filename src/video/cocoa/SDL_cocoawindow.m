@@ -754,6 +754,7 @@ Cocoa_CreateWindow(_THIS, SDL_Window * window)
     }
     @catch (NSException *e) {
         SDL_SetError("%s", [[e reason] UTF8String]);
+        [pool release];
         return -1;
     }
     [nswindow setBackgroundColor:[NSColor blackColor]];
