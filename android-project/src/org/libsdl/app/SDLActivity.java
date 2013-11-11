@@ -825,6 +825,17 @@ class SDLInputConnection extends BaseInputConnection {
 
     public native void nativeSetComposingText(String text, int newCursorPosition);
 
+    @Override
+    public boolean deleteSurroundingText(int beforeLength, int afterLength) {       
+        // Workaround to capture backspace key. Ref: http://stackoverflow.com/questions/14560344/android-backspace-in-webview-baseinputconnection
+        if (beforeLength == 1 && afterLength == 0) {
+            // backspace
+            return super.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL))
+                && super.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL));
+        }
+
+        return super.deleteSurroundingText(beforeLength, afterLength);
+    }
 }
 
 /* A null joystick handler for API level < 12 devices (the accelerometer is handled separately) */
