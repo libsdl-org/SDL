@@ -2138,6 +2138,7 @@ static SDL_bool
 ShouldMinimizeOnFocusLoss(SDL_Window * window)
 {
     SDL_bool default_minimize;
+    const char *hint;
 
     if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
         return SDL_FALSE;
@@ -2150,7 +2151,7 @@ ShouldMinimizeOnFocusLoss(SDL_Window * window)
         default_minimize = SDL_TRUE;
     }
 
-    const char *hint = SDL_GetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS);
+    hint = SDL_GetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS);
     if (hint) {
         if (*hint == '0') {
             return SDL_FALSE;
