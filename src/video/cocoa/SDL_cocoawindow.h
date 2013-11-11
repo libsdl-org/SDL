@@ -32,11 +32,14 @@ typedef struct SDL_WindowData SDL_WindowData;
     BOOL observingVisible;
     BOOL wasCtrlLeft;
     BOOL wasVisible;
+    BOOL isFullscreen;
+    BOOL inFullscreenTransition;
 }
 
 -(void) listen:(SDL_WindowData *) data;
 -(void) pauseVisibleObservation;
 -(void) resumeVisibleObservation;
+-(BOOL) isToggledFullscreen;
 -(void) close;
 
 /* Window delegate functionality */
@@ -48,6 +51,10 @@ typedef struct SDL_WindowData SDL_WindowData;
 -(void) windowDidDeminiaturize:(NSNotification *) aNotification;
 -(void) windowDidBecomeKey:(NSNotification *) aNotification;
 -(void) windowDidResignKey:(NSNotification *) aNotification;
+-(void) windowWillEnterFullScreen:(NSNotification *) aNotification;
+-(void) windowDidEnterFullScreen:(NSNotification *) aNotification;
+-(void) windowWillExitFullScreen:(NSNotification *) aNotification;
+-(void) windowDidExitFullScreen:(NSNotification *) aNotification;
 
 /* Window event handling */
 -(void) mouseDown:(NSEvent *) theEvent;
