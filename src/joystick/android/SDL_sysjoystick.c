@@ -308,7 +308,10 @@ SDL_JoystickGUID SDL_SYS_JoystickGetGUID(SDL_Joystick * joystick)
 int
 Android_OnPadDown(int padId, int keycode)
 {
-    SDL_PrivateJoystickButton(SYS_Joysticks[padId], keycode_to_SDL(keycode), SDL_PRESSED);
+    int button = keycode_to_SDL(keycode);
+    if (button >= 0) {
+        SDL_PrivateJoystickButton(SYS_Joysticks[padId], button , SDL_PRESSED);
+    }
     
     return 0;
 }
@@ -316,7 +319,10 @@ Android_OnPadDown(int padId, int keycode)
 int
 Android_OnPadUp(int padId, int keycode)
 {
-    SDL_PrivateJoystickButton(SYS_Joysticks[padId], keycode_to_SDL(keycode), SDL_RELEASED);
+    int button = keycode_to_SDL(keycode);
+    if (button >= 0) {
+        SDL_PrivateJoystickButton(SYS_Joysticks[padId], button, SDL_RELEASED);
+    }
     
     return 0;
 }
