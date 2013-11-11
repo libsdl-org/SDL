@@ -748,7 +748,14 @@ Cocoa_CreateWindow(_THIS, SDL_Window * window)
             rect.origin.y -= screenRect.origin.y;
         }
     }
-    nswindow = [[SDLWindow alloc] initWithContentRect:rect styleMask:style backing:NSBackingStoreBuffered defer:NO screen:screen];
+
+    @try {
+        nswindow = [[SDLWindow alloc] initWithContentRect:rect styleMask:style backing:NSBackingStoreBuffered defer:NO screen:screen];
+    }
+    @catch (NSException *e) {
+        SDL_SetError("%s", [[e reason] UTF8String]);
+        return -1;
+    }
     [nswindow setBackgroundColor:[NSColor blackColor]];
 
     /* Create a default view for this window */
