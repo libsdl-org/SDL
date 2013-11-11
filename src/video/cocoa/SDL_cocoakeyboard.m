@@ -198,45 +198,6 @@
 
 @end
 
-/* This is the original behavior, before support was added for
- * differentiating between left and right versions of the keys.
- */
-static void
-DoUnsidedModifiers(unsigned short scancode,
-                   unsigned int oldMods, unsigned int newMods)
-{
-    const int mapping[] = {
-        SDL_SCANCODE_CAPSLOCK,
-        SDL_SCANCODE_LSHIFT,
-        SDL_SCANCODE_LCTRL,
-        SDL_SCANCODE_LALT,
-        SDL_SCANCODE_LGUI
-    };
-    unsigned int i, bit;
-
-    /* Iterate through the bits, testing each against the current modifiers */
-    for (i = 0, bit = NSAlphaShiftKeyMask; bit <= NSCommandKeyMask; bit <<= 1, ++i) {
-        unsigned int oldMask, newMask;
-
-        oldMask = oldMods & bit;
-        newMask = newMods & bit;
-
-        if (oldMask && oldMask != newMask) {        /* modifier up event */
-            /* If this was Caps Lock, we need some additional voodoo to make SDL happy */
-            if (bit == NSAlphaShiftKeyMask) {
-                SDL_SendKeyboardKey(SDL_PRESSED, mapping[i]);
-            }
-            SDL_SendKeyboardKey(SDL_RELEASED, mapping[i]);
-        } else if (newMask && oldMask != newMask) { /* modifier down event */
-            SDL_SendKeyboardKey(SDL_PRESSED, mapping[i]);
-            /* If this was Caps Lock, we need some additional voodoo to make SDL happy */
-            if (bit == NSAlphaShiftKeyMask) {
-                SDL_SendKeyboardKey(SDL_RELEASED, mapping[i]);
-            }
-        }
-    }
-}
-
 /* This is a helper function for HandleModifierSide. This
  * function reverts back to behavior before the distinction between
  * sides was made.
@@ -458,15 +419,7 @@ HandleModifiers(_THIS, unsigned short scancode, unsigned int modifierFlags)
         return;
     }
 
-    /*
-     * Starting with Panther (10.3.0), the ability to distinguish between
-     * left side and right side modifiers is available.
-     */
-    if (data->osversion >= 0x1030) {
-        DoSidedModifiers(scancode, data->modifierFlags, modifierFlags);
-    } else {
-        DoUnsidedModifiers(scancode, data->modifierFlags, modifierFlags);
-    }
+    DoSidedModifiers(scancode, data->modifierFlags, modifierFlags);
     data->modifierFlags = modifierFlags;
 }
 
