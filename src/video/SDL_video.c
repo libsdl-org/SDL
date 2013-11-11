@@ -2134,8 +2134,22 @@ SDL_OnWindowFocusGained(SDL_Window * window)
     SDL_UpdateWindowGrab(window);
 }
 
-static SDL_bool ShouldMinimizeOnFocusLoss()
+static SDL_bool
+ShouldMinimizeOnFocusLoss(SDL_Window * window)
 {
+    SDL_bool default_minimize;
+
+    if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
+        return SDL_FALSE;
+    }
+
+    if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) {
+        /* We're not doing a mode switch, so it's okay to stay around */
+        default_minimize = SDL_FALSE;
+    } else {
+        default_minimize = SDL_TRUE;
+    }
+
     const char *hint = SDL_GetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS);
     if (hint) {
         if (*hint == '0') {
@@ -2144,7 +2158,8 @@ static SDL_bool ShouldMinimizeOnFocusLoss()
             return SDL_TRUE;
         }
     }
-    return SDL_TRUE;
+
+    return default_minimize;
 }
 
 void
@@ -2156,8 +2171,7 @@ SDL_OnWindowFocusLost(SDL_Window * window)
 
     SDL_UpdateWindowGrab(window);
 
-    /* If we're fullscreen and lose focus, minimize unless the hint tells us otherwise */
-    if ((window->flags & SDL_WINDOW_FULLSCREEN) && ShouldMinimizeOnFocusLoss()) {
+    if (ShouldMinimizeOnFocusLoss(window)) {
         SDL_MinimizeWindow(window);
     }
 }
