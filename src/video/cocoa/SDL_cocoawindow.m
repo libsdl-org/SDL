@@ -114,10 +114,12 @@ GetWindowStyle(SDL_Window * window)
         [center addObserver:self selector:@selector(windowDidDeminiaturize:) name:NSWindowDidDeminiaturizeNotification object:window];
         [center addObserver:self selector:@selector(windowDidBecomeKey:) name:NSWindowDidBecomeKeyNotification object:window];
         [center addObserver:self selector:@selector(windowDidResignKey:) name:NSWindowDidResignKeyNotification object:window];
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
         [center addObserver:self selector:@selector(windowWillEnterFullScreen:) name:NSWindowWillEnterFullScreenNotification object:window];
         [center addObserver:self selector:@selector(windowDidEnterFullScreen:) name:NSWindowDidEnterFullScreenNotification object:window];
         [center addObserver:self selector:@selector(windowWillExitFullScreen:) name:NSWindowWillExitFullScreenNotification object:window];
         [center addObserver:self selector:@selector(windowDidExitFullScreen:) name:NSWindowDidExitFullScreenNotification object:window];
+#endif /* Mac OS X 10.7+ */
     } else {
         [window setDelegate:self];
     }
@@ -203,10 +205,12 @@ GetWindowStyle(SDL_Window * window)
         [center removeObserver:self name:NSWindowDidDeminiaturizeNotification object:window];
         [center removeObserver:self name:NSWindowDidBecomeKeyNotification object:window];
         [center removeObserver:self name:NSWindowDidResignKeyNotification object:window];
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
         [center removeObserver:self name:NSWindowWillEnterFullScreenNotification object:window];
         [center removeObserver:self name:NSWindowDidEnterFullScreenNotification object:window];
         [center removeObserver:self name:NSWindowWillExitFullScreenNotification object:window];
         [center removeObserver:self name:NSWindowDidExitFullScreenNotification object:window];
+#endif /* Mac OS X 10.7+ */
     } else {
         [window setDelegate:nil];
     }
@@ -823,13 +827,17 @@ Cocoa_CreateWindow(_THIS, SDL_Window * window)
         return -1;
     }
     [nswindow setBackgroundColor:[NSColor blackColor]];
-    [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
+    if ([nswindow respondsToSelector:@selector(setCollectionBehavior:)]) {
+        [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+    }
+#endif
 
     /* Create a default view for this window */
     rect = [nswindow contentRectForFrameRect:[nswindow frame]];
     NSView *contentView = [[SDLView alloc] initWithFrame:rect];
 
-    if ((window->flags & SDL_WINDOW_ALLOW_HIGHDPI) > 0) {
+    if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
         if ([contentView respondsToSelector:@selector(setWantsBestResolutionOpenGLSurface:)]) {
             [contentView setWantsBestResolutionOpenGLSurface:YES];
         }
@@ -1117,7 +1125,7 @@ Cocoa_SetWindowFullscreen_NewStyle(_THIS, SDL_Window * window, SDL_VideoDisplay 
     NSWindow *nswindow = data->nswindow;
  
     if (fullscreen != [data->listener isToggledFullscreen]) {
-        [nswindow toggleFullScreen:nil];
+        [nswindow performSelector: @selector(toggleFullScreen:) withObject:nswindow];
     }
     ScheduleContextUpdates(data);
 }
