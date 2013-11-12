@@ -1175,7 +1175,7 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
 }
 
 #define CREATE_FLAGS \
-    (SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE)
+    (SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI)
 
 static void
 SDL_FinishWindowCreation(SDL_Window *window, Uint32 flags)
@@ -1236,6 +1236,17 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
             return NULL;
         }
     }
+
+    /* Unless the user has specified the high-DPI disabling hint, respect the
+     * SDL_WINDOW_ALLOW_HIGHDPI flag.
+     */
+    if (flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+        hint = SDL_GetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED);
+        if (hint && SDL_atoi(hint) > 0) {
+            flags &= ~SDL_WINDOW_ALLOW_HIGHDPI;
+        }
+    }
+
     window = (SDL_Window *)SDL_calloc(1, sizeof(*window));
     if (!window) {
         SDL_OutOfMemory();
@@ -1265,16 +1276,6 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
     window->flags = ((flags & CREATE_FLAGS) | SDL_WINDOW_HIDDEN);
     window->brightness = 1.0f;
     window->next = _this->windows;
-
-    /* Unless the user has specified the high-DPI disabling hint, respect the
-     * SDL_WINDOW_ALLOW_HIGHDPI flag.
-     */
-    hint = SDL_GetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED);
-    if (!hint || *hint != '1') {
-        if ((flags & SDL_WINDOW_ALLOW_HIGHDPI)) {
-            window->flags |= SDL_WINDOW_ALLOW_HIGHDPI;
-        }
-    }
 
     if (_this->windows) {
         _this->windows->prev = window;
