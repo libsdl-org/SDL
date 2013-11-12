@@ -40,7 +40,7 @@ typedef enum
     BOOL observingVisible;
     BOOL wasCtrlLeft;
     BOOL wasVisible;
-    BOOL isFullscreen;
+    BOOL isFullscreenSpace;
     BOOL inFullscreenTransition;
     PendingWindowOperation pendingWindowOperation;
 }
@@ -48,7 +48,7 @@ typedef enum
 -(void) listen:(SDL_WindowData *) data;
 -(void) pauseVisibleObservation;
 -(void) resumeVisibleObservation;
--(BOOL) setFullscreenState:(BOOL) state;
+-(BOOL) setFullscreenSpace:(BOOL) state;
 -(BOOL) isInFullscreenTransition;
 -(void) addPendingWindowOperation:(PendingWindowOperation) operation;
 -(void) close;
