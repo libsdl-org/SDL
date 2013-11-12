@@ -221,7 +221,7 @@ GetWindowStyle(SDL_Window * window)
     [nswindow performSelectorOnMainThread: @selector(toggleFullScreen:) withObject:nswindow waitUntilDone:NO];
     return YES;
 #else
-    return NO
+    return NO;
 #endif /* SDK >= 10.7 */
 }
 
