@@ -452,18 +452,21 @@ GetWindowStyle(SDL_Window * window)
 
 - (void)windowWillExitFullScreen:(NSNotification *)aNotification
 {
-    isFullscreen = NO;
-    inFullscreenTransition = YES;
-}
-
-- (void)windowDidExitFullScreen:(NSNotification *)aNotification
-{
     SDL_Window *window = _data->window;
     NSWindow *nswindow = _data->nswindow;
 
     if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
         [nswindow setStyleMask:GetWindowStyle(window)];
     }
+
+    isFullscreen = NO;
+    inFullscreenTransition = YES;
+}
+
+- (void)windowDidExitFullScreen:(NSNotification *)aNotification
+{
+    NSWindow *nswindow = _data->nswindow;
+
     inFullscreenTransition = NO;
 
     if (pendingWindowOperation == PENDING_OPERATION_ENTER_FULLSCREEN) {
