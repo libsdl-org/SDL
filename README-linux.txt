@@ -22,4 +22,11 @@ libxrandr-dev libxcursor-dev libxi-dev libxinerama-dev libxxf86vm-dev \
 libxss-dev libgl1-mesa-dev libesd0-dev libdbus-1-dev libudev-dev \
 libgles1-mesa-dev libgles2-mesa-dev libegl1-mesa-dev
 
+NOTES:
+- This includes all the audio targets except arts, because Ubuntu pulled the 
+  artsc0-dev package, but in theory SDL still supports it.
+- DirectFB isn't included because the configure script (currently) fails to find
+  it at all. You can do "sudo apt-get install libdirectfb-dev" and fix the 
+  configure script to include DirectFB support. Send patches.  :)
+
 
