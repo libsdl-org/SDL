@@ -35,6 +35,8 @@
 #include "SDL_uikitmodes.h"
 #include "SDL_uikitwindow.h"
 
+void _uikit_keyboard_init() ;
+
 @implementation SDL_uikitview
 
 - (void)dealloc
@@ -197,6 +199,9 @@
 */
 #if SDL_IPHONE_KEYBOARD
 
+@synthesize textInputRect = textInputRect;
+@synthesize keyboardHeight = keyboardHeight;
+
 /* Is the iPhone virtual keyboard visible onscreen? */
 - (BOOL)keyboardVisible
 {
@@ -225,6 +230,8 @@
     /* add the UITextField (hidden) to our view */
     [self addSubview: textField];
     [textField release];
+    
+    _uikit_keyboard_init();
 }
 
 /* reveal onscreen virtual keyboard */
@@ -351,6 +358,103 @@ SDL_bool UIKit_IsScreenKeyboardShown(_THIS, SDL_Window *window)
 
     return view.keyboardVisible;
 }
+
+
+void _uikit_keyboard_update() {
+    SDL_Window *window = SDL_GetFocusWindow();
+    if (!window) { return; }
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    if (!data) { return; }
+    SDL_uikitview *view = data->view;
+    if (!view) { return; }
+    
+    SDL_Rect r = view.textInputRect;
+    int height = view.keyboardHeight;
+    int offsetx = 0;
+    int offsety = 0;
+    if (height) {
+        int sw,sh;
+        SDL_GetWindowSize(window,&sw,&sh);
+        int bottom = (r.y + r.h);
+        int kbottom = sh - height;
+        if (kbottom < bottom) {
+            offsety = kbottom-bottom;
+        }
+    }
+    UIInterfaceOrientation ui_orient = [[UIApplication sharedApplication] statusBarOrientation];
+    if (ui_orient == UIInterfaceOrientationLandscapeLeft) {
+        int tmp = offsetx; offsetx = offsety; offsety = tmp;
+    }
+    if (ui_orient == UIInterfaceOrientationLandscapeRight) {
+        offsety = -offsety;
+        int tmp = offsetx; offsetx = offsety; offsety = tmp;
+    }
+    if (ui_orient == UIInterfaceOrientationPortraitUpsideDown) {
+        offsety = -offsety;
+    }
+    if ([[UIScreen mainScreen] respondsToSelector:@selector(displayLinkWithTarget:selector:)]) {
+        float scale = [UIScreen mainScreen].scale;
+        offsetx /= scale;
+        offsety /= scale;
+    }
+    view.frame = CGRectMake(offsetx,offsety,view.frame.size.width,view.frame.size.height);
+}
+
+void _uikit_keyboard_set_height(int height) {
+    SDL_uikitview *view = getWindowView(SDL_GetFocusWindow());
+    if (view == nil) {
+        return ;
+    }
+    
+    view.keyboardHeight = height;
+    _uikit_keyboard_update();
+}
+
+void _uikit_keyboard_init() {
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+    NSOperationQueue *queue = [NSOperationQueue mainQueue];
+    [center addObserverForName:UIKeyboardWillShowNotification
+                        object:nil
+                         queue:queue
+                    usingBlock:^(NSNotification *notification) {
+                        int height = 0;
+                        CGSize keyboardSize = [[[notification userInfo] objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue].size;
+                        height = keyboardSize.height;
+                        UIInterfaceOrientation ui_orient = [[UIApplication sharedApplication] statusBarOrientation];
+                        if (ui_orient == UIInterfaceOrientationLandscapeRight || ui_orient == UIInterfaceOrientationLandscapeLeft) {
+                            height = keyboardSize.width;
+                        }
+                        if ([[UIScreen mainScreen] respondsToSelector:@selector(displayLinkWithTarget:selector:)]) {
+                            height *= [UIScreen mainScreen].scale;
+                        }
+                        _uikit_keyboard_set_height(height);
+                    }
+     ];
+    [center addObserverForName:UIKeyboardDidHideNotification
+                        object:nil
+                         queue:queue
+                    usingBlock:^(NSNotification *notification) {
+                        _uikit_keyboard_set_height(0);
+                    }
+     ];
+}
+
+void
+UIKit_SetTextInputRect(_THIS, SDL_Rect *rect)
+{
+    if (!rect) {
+        SDL_InvalidParamError("rect");
+        return;
+    }
+    
+    SDL_uikitview *view = getWindowView(SDL_GetFocusWindow());
+    if (view == nil) {
+        return ;
+    }
+
+    view.textInputRect = *rect;
+}
+
 
 #endif /* SDL_IPHONE_KEYBOARD */
 
