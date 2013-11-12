@@ -189,29 +189,11 @@ GetWindowStyle(SDL_Window * window)
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
     SDL_Window *window = _data->window;
     NSWindow *nswindow = _data->nswindow;
-    BOOL canSetSpace = NO;
 
-    /* Make sure the window supports switching to fullscreen spaces */
     if (![nswindow respondsToSelector: @selector(collectionBehavior)]) {
         return NO;
     }
     if ([nswindow collectionBehavior] != NSWindowCollectionBehaviorFullScreenPrimary) {
-        return NO;
-    }
-
-    pendingWindowOperation = PENDING_OPERATION_NONE;
-
-    /* We can enter fullscreen spaces for "fullscreen desktop" */
-    if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) {
-        canSetSpace = YES;
-    }
-
-    /* We can always leave fullscreen spaces */
-    if (!state && isFullscreenSpace) {
-        canSetSpace = YES;
-    }
-
-    if (!canSetSpace) {
         return NO;
     }
 
@@ -227,6 +209,14 @@ GetWindowStyle(SDL_Window * window)
         }
         return YES;
     }
+    inFullscreenTransition = YES;
+
+    /* Update the flags here so the state change is available immediately */
+    if (state) {
+        window->flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+    } else {
+        window->flags &= ~SDL_WINDOW_FULLSCREEN_DESKTOP;
+    }
 
     [nswindow performSelectorOnMainThread: @selector(toggleFullScreen:) withObject:nswindow waitUntilDone:NO];
     return YES;
@@ -235,7 +225,12 @@ GetWindowStyle(SDL_Window * window)
 #endif /* SDK >= 10.7 */
 }
 
--(BOOL) isInFullscreenTransition
+-(BOOL) isInFullscreenSpace
+{
+    return isFullscreenSpace;
+}
+
+-(BOOL) isInFullscreenSpaceTransition
 {
     return inFullscreenTransition;
 }
@@ -429,13 +424,8 @@ GetWindowStyle(SDL_Window * window)
     SDL_Window *window = _data->window;
     NSWindow *nswindow = _data->nswindow;
 
-    if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
-        if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) {
-            [nswindow setStyleMask:(NSTitledWindowMask|NSClosableWindowMask|NSMiniaturizableWindowMask|NSResizableWindowMask)];
-        } else {
-            [nswindow setStyleMask:NSBorderlessWindowMask];
-        }
-    }
+    window->flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
+    [nswindow setStyleMask:(NSTitledWindowMask|NSClosableWindowMask|NSMiniaturizableWindowMask|NSResizableWindowMask)];
 
     isFullscreenSpace = YES;
     inFullscreenTransition = YES;
@@ -444,7 +434,6 @@ GetWindowStyle(SDL_Window * window)
 - (void)windowDidEnterFullScreen:(NSNotification *)aNotification
 {
     SDL_Window *window = _data->window;
-    NSWindow *nswindow = _data->nswindow;
 
     inFullscreenTransition = NO;
 
@@ -467,12 +456,8 @@ GetWindowStyle(SDL_Window * window)
     SDL_Window *window = _data->window;
     NSWindow *nswindow = _data->nswindow;
 
-    if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
-        Uint32 flags = window->flags;
-        window->flags &= ~SDL_WINDOW_FULLSCREEN_DESKTOP;
-        [nswindow setStyleMask:GetWindowStyle(window)];
-        window->flags = flags;
-    }
+    window->flags &= ~SDL_WINDOW_FULLSCREEN_DESKTOP;
+    [nswindow setStyleMask:GetWindowStyle(window)];
 
     isFullscreenSpace = NO;
     inFullscreenTransition = YES;
@@ -925,7 +910,10 @@ Cocoa_CreateWindow(_THIS, SDL_Window * window)
     [nswindow setBackgroundColor:[NSColor blackColor]];
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
     if ([nswindow respondsToSelector:@selector(setCollectionBehavior:)]) {
-        [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+        const char *hint = SDL_GetHint(SDL_HINT_VIDEO_FULLSCREEN_SPACES);
+        if (hint && SDL_atoi(hint) > 0) {
+            [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+        }
     }
 #endif
 
@@ -1139,7 +1127,7 @@ Cocoa_MinimizeWindow(_THIS, SDL_Window * window)
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     NSWindow *nswindow = data->nswindow;
 
-    if ([data->listener isInFullscreenTransition]) {
+    if ([data->listener isInFullscreenSpaceTransition]) {
         [data->listener addPendingWindowOperation:PENDING_OPERATION_MINIMIZE];
     } else {
         [nswindow miniaturize:nil];
@@ -1196,9 +1184,10 @@ Cocoa_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
 }
 
 
-static void
-Cocoa_SetWindowFullscreen_OldStyle(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen)
+void
+Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen)
 {
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     NSWindow *nswindow = data->nswindow;
     NSRect rect;
@@ -1272,17 +1261,6 @@ Cocoa_SetWindowFullscreen_OldStyle(_THIS, SDL_Window * window, SDL_VideoDisplay 
     }
 
     ScheduleContextUpdates(data);
-}
-
-void
-Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen)
-{
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-
-    if (![data->listener setFullscreenSpace:(fullscreen ? YES : NO)]) {
-        Cocoa_SetWindowFullscreen_OldStyle(_this, window, display, fullscreen);
-    }
 
     [pool release];
 }
@@ -1402,6 +1380,24 @@ Cocoa_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
                      SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
         return SDL_FALSE;
     }
+}
+
+SDL_bool
+Cocoa_SetWindowFullscreenSpace(SDL_Window * window, SDL_bool state)
+{
+    SDL_bool succeeded = SDL_FALSE;
+#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
+    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+
+    if ([data->listener setFullscreenSpace:(state ? YES : NO)]) {
+        succeeded = SDL_TRUE;
+    }
+
+    [pool release];
+#endif /* SDK 10.7+ */
+
+    return succeeded;
 }
 
 #endif /* SDL_VIDEO_DRIVER_COCOA */
