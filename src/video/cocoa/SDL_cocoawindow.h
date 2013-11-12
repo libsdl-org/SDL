@@ -27,6 +27,14 @@
 
 typedef struct SDL_WindowData SDL_WindowData;
 
+typedef enum
+{
+    PENDING_OPERATION_NONE,
+    PENDING_OPERATION_ENTER_FULLSCREEN,
+    PENDING_OPERATION_LEAVE_FULLSCREEN,
+    PENDING_OPERATION_MINIMIZE
+} PendingWindowOperation;
+
 @interface Cocoa_WindowListener : NSResponder <NSWindowDelegate> {
     SDL_WindowData *_data;
     BOOL observingVisible;
@@ -34,19 +42,15 @@ typedef struct SDL_WindowData SDL_WindowData;
     BOOL wasVisible;
     BOOL isFullscreen;
     BOOL inFullscreenTransition;
-
-    enum
-    {
-        PENDING_TRANSITION_NONE,
-        PENDING_TRANSITION_ENTER_FULLSCREEN,
-        PENDING_TRANSITION_LEAVE_FULLSCREEN
-    } pendingFullscreenTransition;
+    PendingWindowOperation pendingWindowOperation;
 }
 
 -(void) listen:(SDL_WindowData *) data;
 -(void) pauseVisibleObservation;
 -(void) resumeVisibleObservation;
 -(BOOL) setFullscreenState:(BOOL) state;
+-(BOOL) isInFullscreenTransition;
+-(void) addPendingWindowOperation:(PendingWindowOperation) operation;
 -(void) close;
 
 /* Window delegate functionality */
