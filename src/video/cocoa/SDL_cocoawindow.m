@@ -103,6 +103,7 @@ GetWindowStyle(SDL_Window * window)
     wasVisible = [window isVisible];
     isFullscreen = NO;
     inFullscreenTransition = NO;
+    pendingFullscreenTransition = PENDING_TRANSITION_NONE;
 
     center = [NSNotificationCenter defaultCenter];
 
@@ -183,9 +184,52 @@ GetWindowStyle(SDL_Window * window)
     }
 }
 
-- (BOOL) isToggledFullscreen
+-(BOOL) canSetFullscreenState:(BOOL) state;
 {
-    return isFullscreen;
+}
+
+-(BOOL) setFullscreenState:(BOOL) state;
+{
+    SDL_Window *window = _data->window;
+    NSWindow *nswindow = _data->nswindow;
+    BOOL canSetState = NO;
+
+    /* Make sure we can support this fullscreen style */
+    if (![nswindow respondsToSelector: @selector(toggleFullScreen:)]) {
+        return NO;
+    }
+
+    pendingFullscreenTransition = PENDING_TRANSITION_NONE;
+
+    /* We can enter new style fullscreen mode for "fullscreen desktop" */
+    if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) {
+        canSetState = YES;
+    }
+
+    /* We can always leave new style fullscreen mode */
+    if (!state && isFullscreen) {
+        canSetState = YES;
+    }
+
+    if (!canSetState) {
+        return NO;
+    }
+
+    if (state == isFullscreen) {
+        return YES;
+    }
+
+    if (inFullscreenTransition) {
+        if (state) {
+            pendingFullscreenTransition = PENDING_TRANSITION_ENTER_FULLSCREEN;
+        } else {
+            pendingFullscreenTransition = PENDING_TRANSITION_LEAVE_FULLSCREEN;
+        }
+        return YES;
+    }
+
+    [nswindow performSelector: @selector(toggleFullScreen:) withObject:nswindow];
+    return YES;
 }
 
 - (void)close
@@ -215,8 +259,7 @@ GetWindowStyle(SDL_Window * window)
         [window setDelegate:nil];
     }
 
-    [window removeObserver:self
-                forKeyPath:@"visible"];
+    [window removeObserver:self forKeyPath:@"visible"];
 
     if ([window nextResponder] == self) {
         [window setNextResponder:nil];
@@ -385,11 +428,18 @@ GetWindowStyle(SDL_Window * window)
 - (void)windowDidEnterFullScreen:(NSNotification *)aNotification
 {
     inFullscreenTransition = NO;
-    [self windowDidResize:aNotification];
+
+    if (pendingFullscreenTransition != PENDING_TRANSITION_NONE) {
+        pendingFullscreenTransition = PENDING_TRANSITION_NONE;
+        [self setFullscreenState:NO];
+    } else {
+        [self windowDidResize:aNotification];
+    }
 }
 
 - (void)windowWillExitFullScreen:(NSNotification *)aNotification
 {
+    isFullscreen = NO;
     inFullscreenTransition = YES;
 }
 
@@ -401,9 +451,14 @@ GetWindowStyle(SDL_Window * window)
     if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
         [nswindow setStyleMask:GetWindowStyle(window)];
     }
-    isFullscreen = NO;
     inFullscreenTransition = NO;
-    [self windowDidResize:aNotification];
+
+    if (pendingFullscreenTransition != PENDING_TRANSITION_NONE) {
+        pendingFullscreenTransition = PENDING_TRANSITION_NONE;
+        [self setFullscreenState:YES];
+    } else {
+        [self windowDidResize:aNotification];
+    }
 }
 
 /* We'll respond to key events by doing nothing so we don't beep.
@@ -1094,41 +1149,6 @@ Cocoa_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
     [pool release];
 }
 
-static SDL_bool
-Cocoa_CanToggleFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen)
-{
-    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-    NSWindow *nswindow = data->nswindow;
-
-    if (![nswindow respondsToSelector: @selector(toggleFullScreen:)]) {
-        return SDL_FALSE;
-    }
-
-    /* We can enter new style fullscreen mode for "fullscreen desktop" */
-    if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) {
-        return SDL_TRUE;
-    }
-
-    /* We can always leave new style fullscreen mode */
-    if (!fullscreen && [data->listener isToggledFullscreen]) {
-        return SDL_TRUE;
-    }
-
-    /* Requesting a mode switched fullscreen mode */
-    return SDL_FALSE;
-}
-
-static void
-Cocoa_SetWindowFullscreen_NewStyle(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen)
-{
-    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-    NSWindow *nswindow = data->nswindow;
- 
-    if (fullscreen != [data->listener isToggledFullscreen]) {
-        [nswindow performSelector: @selector(toggleFullScreen:) withObject:nswindow];
-    }
-    ScheduleContextUpdates(data);
-}
 
 static void
 Cocoa_SetWindowFullscreen_OldStyle(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen)
@@ -1212,10 +1232,9 @@ void
 Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
 
-    if (Cocoa_CanToggleFullscreen(_this, window, display, fullscreen)) {
-        Cocoa_SetWindowFullscreen_NewStyle(_this, window, display, fullscreen);
-    } else {
+    if (![data->listener setFullscreenState:(fullscreen ? YES : NO)]) {
         Cocoa_SetWindowFullscreen_OldStyle(_this, window, display, fullscreen);
     }
 

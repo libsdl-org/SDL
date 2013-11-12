@@ -34,12 +34,19 @@ typedef struct SDL_WindowData SDL_WindowData;
     BOOL wasVisible;
     BOOL isFullscreen;
     BOOL inFullscreenTransition;
+
+    enum
+    {
+        PENDING_TRANSITION_NONE,
+        PENDING_TRANSITION_ENTER_FULLSCREEN,
+        PENDING_TRANSITION_LEAVE_FULLSCREEN
+    } pendingFullscreenTransition;
 }
 
 -(void) listen:(SDL_WindowData *) data;
 -(void) pauseVisibleObservation;
 -(void) resumeVisibleObservation;
--(BOOL) isToggledFullscreen;
+-(BOOL) setFullscreenState:(BOOL) state;
 -(void) close;
 
 /* Window delegate functionality */
