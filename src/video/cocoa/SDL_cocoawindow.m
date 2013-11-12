@@ -184,10 +184,6 @@ GetWindowStyle(SDL_Window * window)
     }
 }
 
--(BOOL) canSetFullscreenState:(BOOL) state;
-{
-}
-
 -(BOOL) setFullscreenState:(BOOL) state;
 {
     SDL_Window *window = _data->window;
@@ -228,7 +224,7 @@ GetWindowStyle(SDL_Window * window)
         return YES;
     }
 
-    [nswindow performSelector: @selector(toggleFullScreen:) withObject:nswindow];
+    [nswindow performSelectorOnMainThread: @selector(toggleFullScreen:) withObject:nswindow waitUntilDone:NO];
     return YES;
 }
 
@@ -433,12 +429,15 @@ GetWindowStyle(SDL_Window * window)
             [nswindow setStyleMask:NSBorderlessWindowMask];
         }
     }
+
     isFullscreen = YES;
     inFullscreenTransition = YES;
 }
 
 - (void)windowDidEnterFullScreen:(NSNotification *)aNotification
 {
+    SDL_Window *window = _data->window;
+
     inFullscreenTransition = NO;
 
     if (pendingWindowOperation == PENDING_OPERATION_LEAVE_FULLSCREEN) {
@@ -446,6 +445,11 @@ GetWindowStyle(SDL_Window * window)
         [self setFullscreenState:NO];
     } else {
         pendingWindowOperation = PENDING_OPERATION_NONE;
+        /* Force the size change event in case it was delivered earlier
+           while the window was still animating into place.
+         */
+        window->w = 0;
+        window->h = 0;
         [self windowDidResize:aNotification];
     }
 }
@@ -465,6 +469,7 @@ GetWindowStyle(SDL_Window * window)
 
 - (void)windowDidExitFullScreen:(NSNotification *)aNotification
 {
+    SDL_Window *window = _data->window;
     NSWindow *nswindow = _data->nswindow;
 
     inFullscreenTransition = NO;
@@ -477,6 +482,11 @@ GetWindowStyle(SDL_Window * window)
         [nswindow miniaturize:nil];
     } else {
         pendingWindowOperation = PENDING_OPERATION_NONE;
+        /* Force the size change event in case it was delivered earlier
+           while the window was still animating into place.
+         */
+        window->w = 0;
+        window->h = 0;
         [self windowDidResize:aNotification];
     }
 }
