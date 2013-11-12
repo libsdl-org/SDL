@@ -115,6 +115,7 @@ static SDL_VideoDevice *_this = NULL;
 
 #ifdef __MACOSX__
 /* Support for Mac OS X fullscreen spaces */
+extern SDL_bool Cocoa_IsWindowInFullscreenSpace(SDL_Window * window);
 extern SDL_bool Cocoa_SetWindowFullscreenSpace(SDL_Window * window, SDL_bool state);
 #endif
 
@@ -2152,19 +2153,17 @@ SDL_OnWindowFocusGained(SDL_Window * window)
 static SDL_bool
 ShouldMinimizeOnFocusLoss(SDL_Window * window)
 {
-    SDL_bool default_minimize;
     const char *hint;
 
     if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
         return SDL_FALSE;
     }
 
-    if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) {
-        /* We're not doing a mode switch, so it's okay to stay around */
-        default_minimize = SDL_FALSE;
-    } else {
-        default_minimize = SDL_TRUE;
+#ifdef __MACOSX__
+    if (Cocoa_IsWindowInFullscreenSpace(window)) {
+        return SDL_FALSE;
     }
+#endif
 
     hint = SDL_GetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS);
     if (hint) {
@@ -2175,7 +2174,7 @@ ShouldMinimizeOnFocusLoss(SDL_Window * window)
         }
     }
 
-    return default_minimize;
+    return SDL_TRUE;
 }
 
 void

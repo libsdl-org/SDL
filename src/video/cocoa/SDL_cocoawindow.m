@@ -1383,6 +1383,18 @@ Cocoa_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
 }
 
 SDL_bool
+Cocoa_IsWindowInFullscreenSpace(SDL_Window * window)
+{
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+
+    if ([data->listener isInFullscreenSpace]) {
+        return SDL_TRUE;
+    } else {
+        return SDL_FALSE;
+    }
+}
+
+SDL_bool
 Cocoa_SetWindowFullscreenSpace(SDL_Window * window, SDL_bool state)
 {
     SDL_bool succeeded = SDL_FALSE;
