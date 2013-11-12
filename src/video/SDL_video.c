@@ -112,6 +112,13 @@ static SDL_VideoDevice *_this = NULL;
         return retval; \
     }
 
+
+#ifdef __MACOSX__
+/* Support for Mac OS X fullscreen spaces */
+extern SDL_bool Cocoa_SetWindowFullscreenSpace(SDL_Window * window, SDL_bool state);
+#endif
+
+
 /* Support for framebuffer emulation using an accelerated renderer */
 
 #define SDL_WINDOWTEXTUREDATA   "_SDL_WindowTextureData"
@@ -1080,8 +1087,16 @@ SDL_RestoreMousePosition(SDL_Window *window)
 static void
 SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
 {
-    SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
+    SDL_VideoDisplay *display;
     SDL_Window *other;
+
+#ifdef __MACOSX__
+    if (Cocoa_SetWindowFullscreenSpace(window, fullscreen)) {
+        return;
+    }
+#endif
+
+    display = SDL_GetDisplayForWindow(window);
 
     if (fullscreen) {
         /* Hide any other fullscreen windows */

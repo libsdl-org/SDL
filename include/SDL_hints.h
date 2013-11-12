@@ -178,6 +178,16 @@ extern "C" {
  */
 #define SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS   "SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS"
 
+/**
+ *  \brief Set whether windows go fullscreen in their own spaces on Mac OS X
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Fullscreen windows will use the classic fullscreen mode
+ *    "1"       - Fullscreen windows will use fullscreen spaces
+ *
+ *  By default SDL will use the classic fullscreen mode.
+ */
+#define SDL_HINT_VIDEO_FULLSCREEN_SPACES   "SDL_VIDEO_FULLSCREEN_SPACES"
 
 /**
  *  \brief  A variable controlling whether the idle timer is disabled on iOS.

@@ -49,7 +49,8 @@ typedef enum
 -(void) pauseVisibleObservation;
 -(void) resumeVisibleObservation;
 -(BOOL) setFullscreenSpace:(BOOL) state;
--(BOOL) isInFullscreenTransition;
+-(BOOL) isInFullscreenSpace;
+-(BOOL) isInFullscreenSpaceTransition;
 -(void) addPendingWindowOperation:(PendingWindowOperation) operation;
 -(void) close;
 
