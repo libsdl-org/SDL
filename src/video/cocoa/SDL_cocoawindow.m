@@ -103,7 +103,7 @@ GetWindowStyle(SDL_Window * window)
     wasVisible = [window isVisible];
     isFullscreen = NO;
     inFullscreenTransition = NO;
-    pendingFullscreenTransition = PENDING_TRANSITION_NONE;
+    pendingWindowOperation = PENDING_OPERATION_NONE;
 
     center = [NSNotificationCenter defaultCenter];
 
@@ -199,7 +199,7 @@ GetWindowStyle(SDL_Window * window)
         return NO;
     }
 
-    pendingFullscreenTransition = PENDING_TRANSITION_NONE;
+    pendingWindowOperation = PENDING_OPERATION_NONE;
 
     /* We can enter new style fullscreen mode for "fullscreen desktop" */
     if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) {
@@ -221,15 +221,25 @@ GetWindowStyle(SDL_Window * window)
 
     if (inFullscreenTransition) {
         if (state) {
-            pendingFullscreenTransition = PENDING_TRANSITION_ENTER_FULLSCREEN;
+            [self addPendingWindowOperation:PENDING_OPERATION_ENTER_FULLSCREEN];
         } else {
-            pendingFullscreenTransition = PENDING_TRANSITION_LEAVE_FULLSCREEN;
+            [self addPendingWindowOperation:PENDING_OPERATION_LEAVE_FULLSCREEN];
         }
         return YES;
     }
 
     [nswindow performSelector: @selector(toggleFullScreen:) withObject:nswindow];
     return YES;
+}
+
+-(BOOL) isInFullscreenTransition
+{
+    return inFullscreenTransition;
+}
+
+-(void) addPendingWindowOperation:(PendingWindowOperation) operation
+{
+    pendingWindowOperation = operation;
 }
 
 - (void)close
@@ -328,8 +338,10 @@ GetWindowStyle(SDL_Window * window)
 
 - (void)windowDidResize:(NSNotification *)aNotification
 {
+    SDL_Window *window = _data->window;
+    NSWindow *nswindow = _data->nswindow;
     int x, y, w, h;
-    NSRect rect = [_data->nswindow contentRectForFrameRect:[_data->nswindow frame]];
+    NSRect rect = [nswindow contentRectForFrameRect:[nswindow frame]];
     ConvertNSRect(&rect);
     x = (int)rect.origin.x;
     y = (int)rect.origin.y;
@@ -341,22 +353,22 @@ GetWindowStyle(SDL_Window * window)
         return;
     }
 
-    if (SDL_IsShapedWindow(_data->window)) {
-        Cocoa_ResizeWindowShape(_data->window);
+    if (SDL_IsShapedWindow(window)) {
+        Cocoa_ResizeWindowShape(window);
     }
 
     ScheduleContextUpdates(_data);
 
     /* The window can move during a resize event, such as when maximizing
        or resizing from a corner */
-    SDL_SendWindowEvent(_data->window, SDL_WINDOWEVENT_MOVED, x, y);
-    SDL_SendWindowEvent(_data->window, SDL_WINDOWEVENT_RESIZED, w, h);
+    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MOVED, x, y);
+    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, w, h);
 
-    const BOOL zoomed = [_data->nswindow isZoomed];
+    const BOOL zoomed = [nswindow isZoomed];
     if (!zoomed) {
-        SDL_SendWindowEvent(_data->window, SDL_WINDOWEVENT_RESTORED, 0, 0);
+        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESTORED, 0, 0);
     } else if (zoomed) {
-        SDL_SendWindowEvent(_data->window, SDL_WINDOWEVENT_MAXIMIZED, 0, 0);
+        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MAXIMIZED, 0, 0);
     }
 }
 
@@ -429,10 +441,11 @@ GetWindowStyle(SDL_Window * window)
 {
     inFullscreenTransition = NO;
 
-    if (pendingFullscreenTransition != PENDING_TRANSITION_NONE) {
-        pendingFullscreenTransition = PENDING_TRANSITION_NONE;
+    if (pendingWindowOperation == PENDING_OPERATION_LEAVE_FULLSCREEN) {
+        pendingWindowOperation = PENDING_OPERATION_NONE;
         [self setFullscreenState:NO];
     } else {
+        pendingWindowOperation = PENDING_OPERATION_NONE;
         [self windowDidResize:aNotification];
     }
 }
@@ -453,10 +466,14 @@ GetWindowStyle(SDL_Window * window)
     }
     inFullscreenTransition = NO;
 
-    if (pendingFullscreenTransition != PENDING_TRANSITION_NONE) {
-        pendingFullscreenTransition = PENDING_TRANSITION_NONE;
+    if (pendingWindowOperation == PENDING_OPERATION_ENTER_FULLSCREEN) {
+        pendingWindowOperation = PENDING_OPERATION_NONE;
         [self setFullscreenState:YES];
+    } else if (pendingWindowOperation == PENDING_OPERATION_MINIMIZE) {
+        pendingWindowOperation = PENDING_OPERATION_NONE;
+        [nswindow miniaturize:nil];
     } else {
+        pendingWindowOperation = PENDING_OPERATION_NONE;
         [self windowDidResize:aNotification];
     }
 }
@@ -1095,9 +1112,14 @@ void
 Cocoa_MinimizeWindow(_THIS, SDL_Window * window)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    NSWindow *nswindow = ((SDL_WindowData *) window->driverdata)->nswindow;
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    NSWindow *nswindow = data->nswindow;
 
-    [nswindow miniaturize:nil];
+    if ([data->listener isInFullscreenTransition]) {
+        [data->listener addPendingWindowOperation:PENDING_OPERATION_MINIMIZE];
+    } else {
+        [nswindow miniaturize:nil];
+    }
     [pool release];
 }
 
