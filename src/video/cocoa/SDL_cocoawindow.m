@@ -460,7 +460,10 @@ GetWindowStyle(SDL_Window * window)
     NSWindow *nswindow = _data->nswindow;
 
     if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
+        Uint32 flags = window->flags;
+        window->flags &= ~SDL_WINDOW_FULLSCREEN_DESKTOP;
         [nswindow setStyleMask:GetWindowStyle(window)];
+        window->flags = flags;
     }
 
     isFullscreen = NO;
