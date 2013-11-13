@@ -25,6 +25,7 @@ if [ -z "$1" ] || [ -z "$SOURCES" ]; then
     echo "Usage: androidbuild.sh com.yourcompany.yourapp < sources.list"
     echo "Usage: androidbuild.sh com.yourcompany.yourapp source1.c source2.c ...sourceN.c"
     echo "To copy SDL source instead of symlinking: COPYSOURCE=1 androidbuild.sh ... "
+    echo "You can pass additional arguments to ndk-build with the NDKARGS variable: NDKARGS=\"-s\" androidbuild.sh ..."
     exit 1
 fi
 
@@ -50,6 +51,19 @@ if [ -z "$ANT" ];then
     echo "Could not find the ant utility, install Android's SDK and add it to the path"
     exit 1
 fi
+
+NCPUS="1"
+case "$OSTYPE" in
+    darwin*)
+        NCPU=`sysctl -n hw.ncpu`
+        ;; 
+    linux*)
+        if [ -n `which nproc` ]; then
+            NCPUS=`nproc`
+        fi  
+        ;;
+  *);;
+esac
 
 APP="$1"
 APPARR=(${APP//./ })
@@ -102,7 +116,7 @@ echo "public class $ACTIVITY extends SDLActivity {}" >> "$ACTIVITY.java"
 # Update project and build
 cd $BUILDPATH
 android update project --path $BUILDPATH
-$NDKBUILD
+$NDKBUILD -j $NCPUS $NDKARGS
 $ANT debug
 
 cd $CURDIR
