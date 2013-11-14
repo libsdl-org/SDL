@@ -281,6 +281,22 @@ RPI_CreateWindow(_THIS, SDL_Window * window)
     return 0;
 }
 
+void
+RPI_DestroyWindow(_THIS, SDL_Window * window)
+{
+    SDL_WindowData *data;
+        
+    if(window->driverdata) {
+        data = (SDL_WindowData *) window->driverdata;
+        if (data->egl_surface != EGL_NO_SURFACE) {
+            SDL_EGL_DestroySurface(_this, data->egl_surface);
+            data->egl_surface = EGL_NO_SURFACE;
+        }
+        SDL_free(window->driverdata);
+        window->driverdata = NULL;
+    }
+}
+
 int
 RPI_CreateWindowFrom(_THIS, SDL_Window * window, const void *data)
 {
@@ -331,10 +347,6 @@ void
 RPI_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
 
-}
-void
-RPI_DestroyWindow(_THIS, SDL_Window * window)
-{
 }
 
 /*****************************************************************************/
