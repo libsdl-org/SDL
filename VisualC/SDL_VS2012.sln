@@ -115,6 +115,11 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "visualtest", "visualtest", "{68C17E4D-1073-48DB-A96C-C36FE8705F1B}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "testquit", "visualtest\unittest\testquit\testquit_VS2012.vcxproj", "{1D12C737-7C71-45CE-AE2C-AAB47B690BC8}"
+	ProjectSection(ProjectDependencies) = postProject
+		{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68} = {81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}
+		{DA956FD3-E142-46F2-9DD5-C78BEBB56B7A} = {DA956FD3-E142-46F2-9DD5-C78BEBB56B7A}
+		{DA956FD3-E143-46F2-9FE5-C77BEBC56B1A} = {DA956FD3-E143-46F2-9FE5-C77BEBC56B1A}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
