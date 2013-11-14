@@ -1940,6 +1940,10 @@ AC_HELP_STRING([--enable-pthread-sem], [use pthread semaphores [[default=yes]]])
             pthread_cflags="-D_REENTRANT"
             pthread_lib="-L/usr/lib -lpthread"
             ;;
+        *-*-haiku*)
+            pthread_cflags="-D_REENTRANT"
+            pthread_lib=""
+            ;;
         *)
             pthread_cflags="-D_REENTRANT"
             pthread_lib="-lpthread"
@@ -2613,7 +2617,11 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
             SDL_LIBS="-lcygwin $SDL_LIBS"
         fi
         ;;
-    *-*-beos* | *-*-haiku*)
+
+    dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
+    dnl *-*-beos*)
+
+    *-*-haiku*)
         ARCH=beos
         ac_default_prefix=/boot/common
         CheckDummyVideo
@@ -2621,6 +2629,7 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         CheckDummyAudio
         CheckBWINDOW
         CheckBeGL
+        CheckPTHREAD
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
             AC_DEFINE(SDL_AUDIO_DRIVER_BEOSAUDIO, 1, [ ])
@@ -2632,14 +2641,6 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
             AC_DEFINE(SDL_JOYSTICK_BEOS, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/joystick/beos/*.cc"
             have_joystick=yes
-        fi
-        # Set up files for the thread library
-        if test x$enable_threads = xyes; then
-            AC_DEFINE(SDL_THREAD_BEOS, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/thread/beos/*.c"
-            SOURCES="$SOURCES $srcdir/src/thread/generic/SDL_sysmutex.c"
-            SOURCES="$SOURCES $srcdir/src/thread/generic/SDL_syscond.c"
-            have_threads=yes
         fi
         # Set up files for the timer library
         if test x$enable_timers = xyes; then

@@ -28,10 +28,6 @@
 /* Need the definitions of SYS_ThreadHandle */
 #if SDL_THREADS_DISABLED
 #include "generic/SDL_systhread_c.h"
-#elif SDL_THREAD_BEOS
-#include "beos/SDL_systhread_c.h"
-#elif SDL_THREAD_EPOC
-#include "epoc/SDL_systhread_c.h"
 #elif SDL_THREAD_PTHREAD
 #include "pthread/SDL_systhread_c.h"
 #elif SDL_THREAD_WINDOWS

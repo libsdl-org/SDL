@@ -25,6 +25,7 @@
 /* Allow access to the audio stream on BeOS */
 
 #include <SoundPlayer.h>
+#include <signal.h>
 
 #include "../../main/beos/SDL_BeApp.h"
 
@@ -84,6 +85,31 @@ BEOSAUDIO_CloseDevice(_THIS)
         _this->hidden = NULL;
     }
 }
+
+
+static const int sig_list[] = {
+    SIGHUP, SIGINT, SIGQUIT, SIGPIPE, SIGALRM, SIGTERM, SIGWINCH, 0
+};
+
+static inline void
+MaskSignals(sigset_t * omask)
+{
+    sigset_t mask;
+    int i;
+
+    sigemptyset(&mask);
+    for (i = 0; sig_list[i]; ++i) {
+        sigaddset(&mask, sig_list[i]);
+    }
+    sigprocmask(SIG_BLOCK, &mask, omask);
+}
+
+static inline void
+UnmaskSignals(sigset_t * omask)
+{
+    sigprocmask(SIG_SETMASK, omask, NULL);
+}
+
 
 static int
 BEOSAUDIO_OpenDevice(_THIS, const char *devname, int iscapture)
@@ -162,10 +188,10 @@ BEOSAUDIO_OpenDevice(_THIS, const char *devname, int iscapture)
 
     /* Subscribe to the audio stream (creates a new thread) */
     sigset_t omask;
-    SDL_MaskSignals(&omask);
+    MaskSignals(&omask);
     _this->hidden->audio_obj = new BSoundPlayer(&format, "SDL Audio",
                                                 FillSound, NULL, _this);
-    SDL_UnmaskSignals(&omask);
+    UnmaskSignals(&omask);
 
     if (_this->hidden->audio_obj->Start() == B_NO_ERROR) {
         _this->hidden->audio_obj->SetHasData(true);
