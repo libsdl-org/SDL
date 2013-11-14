@@ -83,6 +83,8 @@ class SDL_BWin:public BDirectWindow
         _trash_window_buffer = false;
         _buffer_locker = new BLocker();
         _bitmap = NULL;
+        _clips = NULL;
+
 #ifdef DRAWTHREAD
         _draw_thread_id = spawn_thread(BE_DrawThread, "drawing_thread",
                             B_NORMAL_PRIORITY, (void*) this);
