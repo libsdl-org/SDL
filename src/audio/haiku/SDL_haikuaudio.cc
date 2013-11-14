@@ -20,14 +20,14 @@
 */
 #include "SDL_config.h"
 
-#if SDL_AUDIO_DRIVER_BEOSAUDIO
+#if SDL_AUDIO_DRIVER_HAIKU
 
-/* Allow access to the audio stream on BeOS */
+/* Allow access to the audio stream on Haiku */
 
 #include <SoundPlayer.h>
 #include <signal.h>
 
-#include "../../main/beos/SDL_BeApp.h"
+#include "../../main/haiku/SDL_BeApp.h"
 
 extern "C"
 {
@@ -35,13 +35,13 @@ extern "C"
 #include "SDL_audio.h"
 #include "../SDL_audio_c.h"
 #include "../SDL_sysaudio.h"
-#include "SDL_beaudio.h"
+#include "SDL_haikuaudio.h"
 
 }
 
 
 /* !!! FIXME: have the callback call the higher level to avoid code dupe. */
-/* The BeOS callback for handling the audio buffer */
+/* The Haiku callback for handling the audio buffer */
 static void
 FillSound(void *device, void *stream, size_t len,
           const media_raw_audio_format & format)
@@ -71,7 +71,7 @@ FillSound(void *device, void *stream, size_t len,
 }
 
 static void
-BEOSAUDIO_CloseDevice(_THIS)
+HAIKUAUDIO_CloseDevice(_THIS)
 {
     if (_this->hidden != NULL) {
         if (_this->hidden->audio_obj) {
@@ -111,7 +111,7 @@ UnmaskSignals(sigset_t * omask)
 
 
 static int
-BEOSAUDIO_OpenDevice(_THIS, const char *devname, int iscapture)
+HAIKUAUDIO_OpenDevice(_THIS, const char *devname, int iscapture)
 {
     int valid_datatype = 0;
     media_raw_audio_format format;
@@ -176,7 +176,7 @@ BEOSAUDIO_OpenDevice(_THIS, const char *devname, int iscapture)
     }
 
     if (!valid_datatype) {      /* shouldn't happen, but just in case... */
-        BEOSAUDIO_CloseDevice(_this);
+        HAIKUAUDIO_CloseDevice(_this);
         return SDL_SetError("Unsupported audio format");
     }
 
@@ -195,7 +195,7 @@ BEOSAUDIO_OpenDevice(_THIS, const char *devname, int iscapture)
     if (_this->hidden->audio_obj->Start() == B_NO_ERROR) {
         _this->hidden->audio_obj->SetHasData(true);
     } else {
-        BEOSAUDIO_CloseDevice(_this);
+        HAIKUAUDIO_CloseDevice(_this);
         return SDL_SetError("Unable to start Be audio");
     }
 
@@ -204,13 +204,13 @@ BEOSAUDIO_OpenDevice(_THIS, const char *devname, int iscapture)
 }
 
 static void
-BEOSAUDIO_Deinitialize(void)
+HAIKUAUDIO_Deinitialize(void)
 {
     SDL_QuitBeApp();
 }
 
 static int
-BEOSAUDIO_Init(SDL_AudioDriverImpl * impl)
+HAIKUAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
     /* Initialize the Be Application, if it's not already started */
     if (SDL_InitBeApp() < 0) {
@@ -218,9 +218,9 @@ BEOSAUDIO_Init(SDL_AudioDriverImpl * impl)
     }
 
     /* Set the function pointers */
-    impl->OpenDevice = BEOSAUDIO_OpenDevice;
-    impl->CloseDevice = BEOSAUDIO_CloseDevice;
-    impl->Deinitialize = BEOSAUDIO_Deinitialize;
+    impl->OpenDevice = HAIKUAUDIO_OpenDevice;
+    impl->CloseDevice = HAIKUAUDIO_CloseDevice;
+    impl->Deinitialize = HAIKUAUDIO_Deinitialize;
     impl->ProvidesOwnCallbackThread = 1;
     impl->OnlyHasDefaultOutputDevice = 1;
 
@@ -229,12 +229,12 @@ BEOSAUDIO_Init(SDL_AudioDriverImpl * impl)
 
 extern "C"
 {
-    extern AudioBootStrap BEOSAUDIO_bootstrap;
+    extern AudioBootStrap HAIKUAUDIO_bootstrap;
 }
-AudioBootStrap BEOSAUDIO_bootstrap = {
-    "baudio", "BeOS BSoundPlayer", BEOSAUDIO_Init, 0
+AudioBootStrap HAIKUAUDIO_bootstrap = {
+    "haiku", "Haiku BSoundPlayer", HAIKUAUDIO_Init, 0
 };
 
-#endif /* SDL_AUDIO_DRIVER_BEOSAUDIO */
+#endif /* SDL_AUDIO_DRIVER_HAIKU */
 
 /* vi: set ts=4 sw=4 expandtab: */

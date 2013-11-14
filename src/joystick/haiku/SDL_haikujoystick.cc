@@ -20,12 +20,12 @@
 */
 #include "SDL_config.h"
 
-#ifdef SDL_JOYSTICK_BEOS
+#ifdef SDL_JOYSTICK_HAIKU
 
 /* This is the system specific header for the SDL joystick API */
 
-#include <be/support/String.h>
-#include <be/device/Joystick.h>
+#include <os/support/String.h>
+#include <os/device/Joystick.h>
 
 extern "C"
 {
@@ -276,5 +276,6 @@ extern "C"
 
 };                              // extern "C"
 
-#endif /* SDL_JOYSTICK_BEOS */
+#endif /* SDL_JOYSTICK_HAIKU */
+
 /* vi: set ts=4 sw=4 expandtab: */

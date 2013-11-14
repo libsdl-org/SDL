@@ -2906,7 +2906,7 @@ case "$host" in
         EXTRALIB="-lshlwapi"
         SYS_GL_LIBS="-lopengl32"
         ;;
-    *-*-beos* | *-*-haiku*)
+    *-*-haiku*)
         EXE=""
         MATHLIB=""
         EXTRALIB=""

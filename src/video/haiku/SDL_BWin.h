@@ -43,7 +43,7 @@ extern "C" {
 #include <be/opengl/GLView.h>
 #endif
 #include "SDL_events.h"
-#include "../../main/beos/SDL_BApp.h"
+#include "../../main/haiku/SDL_BApp.h"
 
 
 enum WinCommands {
@@ -349,7 +349,7 @@ class SDL_BWin:public BDirectWindow
 
         default:
             /* move it after switch{} so it's always handled
-               that way we keep BeOS feautures like:
+               that way we keep Haiku features like:
                - CTRL+Q to close window (and other shortcuts)
                - PrintScreen to make screenshot into /boot/home
                - etc.. */

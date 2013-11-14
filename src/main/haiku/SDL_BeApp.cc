@@ -20,7 +20,7 @@
 */
 #include "SDL_config.h"
 
-#if defined(__BEOS__) || defined(__HAIKU__)
+#if defined(__HAIKU__)
 
 /* Handle the BeApp specific portions of the application */
 
@@ -35,7 +35,7 @@
 #include "SDL_timer.h"
 #include "SDL_error.h"
 
-#include "../../video/bwindow/SDL_BWin.h"
+#include "../../video/haiku/SDL_BWin.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -131,6 +131,6 @@ void SDL_BApp::ClearID(SDL_BWin *bwin) {
 	}
 }
 
-#endif /* __BEOS__ */
+#endif /* __HAIKU__ */
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -204,7 +204,7 @@ if test x$enable_dependency_tracking = xyes; then
     fi
 fi
 
-# Actually this doesn't work on OpenBSD and BeOS
+# Actually this doesn't work on OpenBSD
 #AC_MSG_CHECKING(for linker option --no-undefined)
 #have_no_undefined=no
 #save_LDFLAGS="$LDFLAGS"
@@ -1097,7 +1097,7 @@ CheckWarnAll()
         AC_MSG_CHECKING(for necessary GCC -Wno-multichar option)
         need_gcc_Wno_multichar=no
         case "$host" in
-            *-*-beos* | *-*-haiku*)
+            *-*-haiku*)
                 need_gcc_Wno_multichar=yes
                 ;;
         esac
@@ -1474,12 +1474,12 @@ AC_HELP_STRING([--enable-video-x11-vm], [use X11 VM extension for fullscreen [[d
     fi
 }
 
-dnl Set up the BWindow video driver if enabled
-CheckBWINDOW()
+dnl Set up the Haiku video driver if enabled
+CheckHaikuVideo()
 {
     if test x$enable_video = xyes; then
-        AC_DEFINE(SDL_VIDEO_DRIVER_BWINDOW, 1, [ ])
-        SOURCES="$SOURCES $srcdir/src/video/bwindow/*.cc"
+        AC_DEFINE(SDL_VIDEO_DRIVER_HAIKU, 1, [ ])
+        SOURCES="$SOURCES $srcdir/src/video/haiku/*.cc"
         have_video=yes
     fi
 }
@@ -1743,12 +1743,12 @@ CheckWINDOWSGL()
     fi
 }
 
-dnl Check for BeOS OpenGL
-CheckBeGL()
+dnl Check for Haiku OpenGL
+CheckHaikuGL()
 {
     if test x$enable_video = xyes -a x$enable_video_opengl = xyes; then
         AC_DEFINE(SDL_VIDEO_OPENGL, 1, [ ])
-        AC_DEFINE(SDL_VIDEO_OPENGL_BGL, 1, [ ])
+        AC_DEFINE(SDL_VIDEO_OPENGL_HAIKU, 1, [ ])
         AC_DEFINE(SDL_VIDEO_RENDER_OGL, 1, [ ])
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lGL"
     fi
@@ -2619,55 +2619,60 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         ;;
 
     dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
-    dnl *-*-beos*)
+    *-*-beos*)
+        AC_MSG_ERROR([
+*** BeOS support has been removed as of SDL 2.0.2.
+        ])
+        ;;
 
     *-*-haiku*)
-        ARCH=beos
+        ARCH=haiku
         ac_default_prefix=/boot/common
         CheckDummyVideo
         CheckDiskAudio
         CheckDummyAudio
-        CheckBWINDOW
-        CheckBeGL
+        CheckHaikuVideo
+        CheckHaikuGL
         CheckPTHREAD
+
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
-            AC_DEFINE(SDL_AUDIO_DRIVER_BEOSAUDIO, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/audio/baudio/*.cc"
+            AC_DEFINE(SDL_AUDIO_DRIVER_HAIKU, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/audio/haiku/*.cc"
             have_audio=yes
         fi
         # Set up files for the joystick library
         if test x$enable_joystick = xyes; then
-            AC_DEFINE(SDL_JOYSTICK_BEOS, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/joystick/beos/*.cc"
+            AC_DEFINE(SDL_JOYSTICK_HAIKU, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/joystick/haiku/*.cc"
             have_joystick=yes
         fi
         # Set up files for the timer library
         if test x$enable_timers = xyes; then
-            AC_DEFINE(SDL_TIMER_BEOS, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/timer/beos/*.c"
+            AC_DEFINE(SDL_TIMER_HAIKU, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/timer/haiku/*.c"
             have_timers=yes
         fi
         # Set up files for the shared object loading library
         if test x$enable_loadso = xyes; then
-            AC_DEFINE(SDL_LOADSO_BEOS, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/loadso/beos/*.c"
+            AC_DEFINE(SDL_LOADSO_HAIKU, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/loadso/haiku/*.c"
             have_loadso=yes
         fi
         # Set up files for the system power library
         if test x$enable_power = xyes; then
-            AC_DEFINE(SDL_POWER_BEOS, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/power/beos/*.c"
+            AC_DEFINE(SDL_POWER_HAIKU, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/power/haiku/*.c"
             have_power=yes
         fi
         # Set up files for the system filesystem library
         if test x$enable_filesystem = xyes; then
-            AC_DEFINE(SDL_FILESYSTEM_BEOS, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/filesystem/beos/*.cc"
+            AC_DEFINE(SDL_FILESYSTEM_HAIKU, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/filesystem/haiku/*.cc"
             have_filesystem=yes
         fi
-        # The BeOS platform requires special setup.
-        SOURCES="$srcdir/src/main/beos/*.cc $SOURCES"
+        # The Haiku platform requires special setup.
+        SOURCES="$srcdir/src/main/haiku/*.cc $SOURCES"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lroot -lbe -lmedia -lgame -ldevice -ltextencoding"
         ;;
     arm*-apple-darwin*)
