@@ -209,9 +209,7 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
     }
     
     /* We need to select a config here to satisfy some video backends such as X11 */
-    SDL_EGL_ChooseConfig(_this);
-    
-    return 0;
+    return SDL_EGL_ChooseConfig(_this);
 }
 
 int
@@ -399,9 +397,6 @@ SDL_EGL_DeleteContext(_THIS, SDL_GLContext context)
         _this->egl_data->eglDestroyContext(_this->egl_data->egl_display, egl_context);
     }
         
-    /* FIXME: This "crappy fix" comes from the X11 code, 
-     * it's required so you can create a GLX context, destroy it and create a EGL one */
-    SDL_EGL_UnloadLibrary(_this);
 }
 
 EGLSurface *

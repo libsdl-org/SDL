@@ -100,6 +100,19 @@ X11_GLES_CreateContext(_THIS, SDL_Window * window)
     return context;
 }
 
+void
+X11_GLES_DeleteContext(_THIS, SDL_GLContext context)
+{
+    /* FIXME: This "crappy fix" comes from the previous GLES X11 code, 
+     * it's required so you can create a GLX context, destroy it and create a EGL one 
+     * To be able to fix this, we need to add a function SDL_GL_ResetContext and
+     * disallow SDL_GL_MakeCurrent from taking a NULL pointer, thus ensuring we can
+     * determine if it is a GLX or EGL context
+     */
+    SDL_EGL_DeleteContext(_this, context);
+    X11_GLES_UnloadLibrary(_this);
+}
+
 SDL_EGL_SwapWindow_impl(X11)
 SDL_EGL_MakeCurrent_impl(X11)
 

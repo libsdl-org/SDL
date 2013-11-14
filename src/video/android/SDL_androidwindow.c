@@ -72,6 +72,7 @@ Android_CreateWindow(_THIS, SDL_Window * window)
     data->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType) data->native_window);
 
     if (data->egl_surface == EGL_NO_SURFACE) {
+        ANativeWindow_release(data->native_window);
         SDL_free(data);
         return SDL_SetError("Could not create GLES window surface");
     }
@@ -102,6 +103,9 @@ Android_DestroyWindow(_THIS, SDL_Window * window)
         
         if(window->driverdata) {
             data = (SDL_WindowData *) window->driverdata;
+            if (data->egl_surface != EGL_NO_SURFACE) {
+                SDL_EGL_DestroySurface(_this, data->egl_surface);
+            }
             if(data->native_window) {
                 ANativeWindow_release(data->native_window);
             }
