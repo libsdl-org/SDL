@@ -213,4 +213,10 @@ SDL_SYS_WaitThread(SDL_Thread * thread)
     pthread_join(thread->handle, 0);
 }
 
+void
+SDL_SYS_DetachThread(SDL_Thread * thread)
+{
+    pthread_detach(thread->handle);
+}
+
 /* vi: set ts=4 sw=4 expandtab: */
