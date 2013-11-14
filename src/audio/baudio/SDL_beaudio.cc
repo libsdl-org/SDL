@@ -35,7 +35,6 @@ extern "C"
 #include "SDL_audio.h"
 #include "../SDL_audio_c.h"
 #include "../SDL_sysaudio.h"
-#include "../../thread/beos/SDL_systhread_c.h"
 #include "SDL_beaudio.h"
 
 }
