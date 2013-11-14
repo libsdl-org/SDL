@@ -1635,22 +1635,26 @@ D3D_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
     centerx = center->x;
     centery = center->y;
 
-    if (flip & SDL_FLIP_HORIZONTAL) {
-        minx = dstrect->w - centerx - 0.5f;
-        maxx = -centerx - 0.5f;
-    }
-    else {
-        minx = -centerx - 0.5f;
-        maxx = dstrect->w - centerx - 0.5f;
-    }
-
-    if (flip & SDL_FLIP_VERTICAL) {
-        miny = dstrect->h - centery - 0.5f;
-        maxy = -centery - 0.5f;
-    }
-    else {
-        miny = -centery - 0.5f;
-        maxy = dstrect->h - centery - 0.5f;
+    if ((flip & SDL_FLIP_VERTICAL) && (flip & SDL_FLIP_HORIZONTAL)) {
+        miny = dstrect->h - centery;
+        maxy = -centery;
+        minx = dstrect->w - centerx;
+        maxx = -centerx;
+    } else if (flip & SDL_FLIP_HORIZONTAL) {
+        miny = -centery;
+        maxy = dstrect->h - centery;
+        minx = dstrect->w - centerx;
+        maxx = -centerx;
+    } else if (flip & SDL_FLIP_VERTICAL) {
+        miny = dstrect->h - centery;
+        maxy = -centery;
+        minx = -centerx;
+        maxx = dstrect->w - centerx;
+    } else {
+        miny = -centery;
+        maxy = dstrect->h - centery;
+        minx = -centerx;
+        maxx = dstrect->w - centerx;
     }
 
     minu = (float) srcrect->x / texture->w;
