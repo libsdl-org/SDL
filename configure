@@ -22407,7 +22407,7 @@ fi
 
     *-*-haiku*)
         ARCH=haiku
-        ac_default_prefix=/boot/common
+        ac_default_prefix=/boot/system
         CheckDummyVideo
         CheckDiskAudio
         CheckDummyAudio
@@ -22463,7 +22463,7 @@ $as_echo "#define SDL_FILESYSTEM_HAIKU 1" >>confdefs.h
             SOURCES="$SOURCES $srcdir/src/filesystem/haiku/*.cc"
             have_filesystem=yes
         fi
-        # The BeOS platform requires special setup.
+        # The Haiku platform requires special setup.
         SOURCES="$srcdir/src/main/haiku/*.cc $SOURCES"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lroot -lbe -lmedia -lgame -ldevice -ltextencoding"
         ;;

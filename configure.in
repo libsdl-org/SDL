@@ -2627,7 +2627,7 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
 
     *-*-haiku*)
         ARCH=haiku
-        ac_default_prefix=/boot/common
+        ac_default_prefix=/boot/system
         CheckDummyVideo
         CheckDiskAudio
         CheckDummyAudio
