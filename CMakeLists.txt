@@ -1012,6 +1012,8 @@ elseif(BEOS)
       set(HAVE_VIDEO_OPENGL TRUE)
     endif(VIDEO_OPENGL)
   endif(SDL_VIDEO)
+
+  CheckPTHREAD()
 endif()
 
 # Dummies
