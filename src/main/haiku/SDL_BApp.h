@@ -24,7 +24,7 @@
 #include <InterfaceKit.h>
 #include <OpenGLKit.h>
 
-#include "../../video/bwindow/SDL_bkeyboard.h"
+#include "../../video/haiku/SDL_bkeyboard.h"
 
 
 #ifdef __cplusplus
@@ -37,8 +37,8 @@ extern "C" {
 
 /* Local includes */
 #include "../../events/SDL_events_c.h"
-#include "../../video/bwindow/SDL_bkeyboard.h"
-#include "../../video/bwindow/SDL_bframebuffer.h"
+#include "../../video/haiku/SDL_bkeyboard.h"
+#include "../../video/haiku/SDL_bframebuffer.h"
 
 #ifdef __cplusplus
 }

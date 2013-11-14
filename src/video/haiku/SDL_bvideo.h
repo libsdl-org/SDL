@@ -26,7 +26,7 @@
 extern "C" {
 #endif
 
-#include "../../main/beos/SDL_BeApp.h"
+#include "../../main/haiku/SDL_BeApp.h"
 #include "../SDL_sysvideo.h"
 
 
