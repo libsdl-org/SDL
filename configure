@@ -15950,7 +15950,7 @@ $as_echo "$have_gcc_mmd_mt" >&6; }
     fi
 fi
 
-# Actually this doesn't work on OpenBSD and BeOS
+# Actually this doesn't work on OpenBSD
 #AC_MSG_CHECKING(for linker option --no-undefined)
 #have_no_undefined=no
 #save_LDFLAGS="$LDFLAGS"
@@ -18598,7 +18598,7 @@ $as_echo "$have_gcc_Wall" >&6; }
 $as_echo_n "checking for necessary GCC -Wno-multichar option... " >&6; }
         need_gcc_Wno_multichar=no
         case "$host" in
-            *-*-beos* | *-*-haiku*)
+            *-*-haiku*)
                 need_gcc_Wno_multichar=yes
                 ;;
         esac
@@ -20124,13 +20124,13 @@ $as_echo "#define SDL_VIDEO_DRIVER_X11_XVIDMODE 1" >>confdefs.h
     fi
 }
 
-CheckBWINDOW()
+CheckHaikuVideo()
 {
     if test x$enable_video = xyes; then
 
-$as_echo "#define SDL_VIDEO_DRIVER_BWINDOW 1" >>confdefs.h
+$as_echo "#define SDL_VIDEO_DRIVER_HAIKU 1" >>confdefs.h
 
-        SOURCES="$SOURCES $srcdir/src/video/bwindow/*.cc"
+        SOURCES="$SOURCES $srcdir/src/video/haiku/*.cc"
         have_video=yes
     fi
 }
@@ -20680,14 +20680,14 @@ $as_echo "#define SDL_VIDEO_RENDER_OGL 1" >>confdefs.h
     fi
 }
 
-CheckBeGL()
+CheckHaikuGL()
 {
     if test x$enable_video = xyes -a x$enable_video_opengl = xyes; then
 
 $as_echo "#define SDL_VIDEO_OPENGL 1" >>confdefs.h
 
 
-$as_echo "#define SDL_VIDEO_OPENGL_BGL 1" >>confdefs.h
+$as_echo "#define SDL_VIDEO_OPENGL_HAIKU 1" >>confdefs.h
 
 
 $as_echo "#define SDL_VIDEO_RENDER_OGL 1" >>confdefs.h
@@ -22399,66 +22399,72 @@ fi
         fi
         ;;
 
+        *-*-beos*)
+        as_fn_error $? "
+*** BeOS support has been removed as of SDL 2.0.2.
+        " "$LINENO" 5
+        ;;
 
     *-*-haiku*)
-        ARCH=beos
+        ARCH=haiku
         ac_default_prefix=/boot/common
         CheckDummyVideo
         CheckDiskAudio
         CheckDummyAudio
-        CheckBWINDOW
-        CheckBeGL
+        CheckHaikuVideo
+        CheckHaikuGL
         CheckPTHREAD
+
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
 
-$as_echo "#define SDL_AUDIO_DRIVER_BEOSAUDIO 1" >>confdefs.h
+$as_echo "#define SDL_AUDIO_DRIVER_HAIKU 1" >>confdefs.h
 
-            SOURCES="$SOURCES $srcdir/src/audio/baudio/*.cc"
+            SOURCES="$SOURCES $srcdir/src/audio/haiku/*.cc"
             have_audio=yes
         fi
         # Set up files for the joystick library
         if test x$enable_joystick = xyes; then
 
-$as_echo "#define SDL_JOYSTICK_BEOS 1" >>confdefs.h
+$as_echo "#define SDL_JOYSTICK_HAIKU 1" >>confdefs.h
 
-            SOURCES="$SOURCES $srcdir/src/joystick/beos/*.cc"
+            SOURCES="$SOURCES $srcdir/src/joystick/haiku/*.cc"
             have_joystick=yes
         fi
         # Set up files for the timer library
         if test x$enable_timers = xyes; then
 
-$as_echo "#define SDL_TIMER_BEOS 1" >>confdefs.h
+$as_echo "#define SDL_TIMER_HAIKU 1" >>confdefs.h
 
-            SOURCES="$SOURCES $srcdir/src/timer/beos/*.c"
+            SOURCES="$SOURCES $srcdir/src/timer/haiku/*.c"
             have_timers=yes
         fi
         # Set up files for the shared object loading library
         if test x$enable_loadso = xyes; then
 
-$as_echo "#define SDL_LOADSO_BEOS 1" >>confdefs.h
+$as_echo "#define SDL_LOADSO_HAIKU 1" >>confdefs.h
 
-            SOURCES="$SOURCES $srcdir/src/loadso/beos/*.c"
+            SOURCES="$SOURCES $srcdir/src/loadso/haiku/*.c"
             have_loadso=yes
         fi
         # Set up files for the system power library
         if test x$enable_power = xyes; then
 
-$as_echo "#define SDL_POWER_BEOS 1" >>confdefs.h
+$as_echo "#define SDL_POWER_HAIKU 1" >>confdefs.h
 
-            SOURCES="$SOURCES $srcdir/src/power/beos/*.c"
+            SOURCES="$SOURCES $srcdir/src/power/haiku/*.c"
             have_power=yes
         fi
         # Set up files for the system filesystem library
         if test x$enable_filesystem = xyes; then
 
-$as_echo "#define SDL_FILESYSTEM_BEOS 1" >>confdefs.h
+$as_echo "#define SDL_FILESYSTEM_HAIKU 1" >>confdefs.h
 
-            SOURCES="$SOURCES $srcdir/src/filesystem/beos/*.cc"
+            SOURCES="$SOURCES $srcdir/src/filesystem/haiku/*.cc"
             have_filesystem=yes
         fi
         # The BeOS platform requires special setup.
-        SOURCES="$srcdir/src/main/beos/*.cc $SOURCES"
+        SOURCES="$srcdir/src/main/haiku/*.cc $SOURCES"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lroot -lbe -lmedia -lgame -ldevice -ltextencoding"
         ;;
     arm*-apple-darwin*)

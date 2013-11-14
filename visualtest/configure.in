@@ -15,7 +15,7 @@ AC_C_CONST
 
 dnl We only care about this for building testnative at the moment, so these
 dnl  values shouldn't be considered absolute truth.
-dnl  (BeOS, for example, sets none of these.)
+dnl  (Haiku, for example, sets none of these.)
 ISUNIX="false"
 ISWINDOWS="false"
 ISMACOSX="false"
@@ -29,7 +29,7 @@ case "$host" in
         EXTRALIB="-lshlwapi"
         SYS_GL_LIBS="-lopengl32"
         ;;
-    *-*-beos* | *-*-haiku*)
+    *-*-haiku*)
         EXE=""
         MATHLIB=""
         EXTRALIB=""

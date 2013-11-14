@@ -20,7 +20,7 @@
 */
 #include "SDL_config.h"
 
-#ifdef SDL_FILESYSTEM_BEOS
+#ifdef SDL_FILESYSTEM_HAIKU
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* System dependent filesystem routines                                */
@@ -82,12 +82,12 @@ SDL_GetPrefPath(const char *org, const char *app)
         SDL_OutOfMemory();
     } else {
         SDL_snprintf(retval, len, "%s%s%s/%s/", home, append, org, app);
-        create_directory(retval, 0700);  // BeOS api: creates missing dirs
+        create_directory(retval, 0700);  // Haiku api: creates missing dirs
     }
 
     return retval;
 }
 
-#endif /* SDL_FILESYSTEM_BEOS */
+#endif /* SDL_FILESYSTEM_HAIKU */
 
 /* vi: set ts=4 sw=4 expandtab: */

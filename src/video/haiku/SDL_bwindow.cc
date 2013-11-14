@@ -20,7 +20,7 @@
 */
 #include "SDL_config.h"
 
-#if SDL_VIDEO_DRIVER_BWINDOW
+#if SDL_VIDEO_DRIVER_HAIKU
 #include "../SDL_sysvideo.h"
 
 #include "SDL_BWin.h"
@@ -122,7 +122,7 @@ void BE_SetWindowTitle(_THIS, SDL_Window * window) {
 }
 
 void BE_SetWindowIcon(_THIS, SDL_Window * window, SDL_Surface * icon) {
-	/* FIXME: Icons not supported by BeOs/Haiku */
+	/* FIXME: Icons not supported by Haiku */
 }
 
 void BE_SetWindowPosition(_THIS, SDL_Window * window) {
@@ -185,12 +185,12 @@ void BE_SetWindowFullscreen(_THIS, SDL_Window * window,
 }
 
 int BE_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp) {
-	/* FIXME: Not BeOs/Haiku supported */
+	/* FIXME: Not Haiku supported */
 	return -1;
 }
 
 int BE_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp) {
-	/* FIXME: Not BeOs/Haiku supported */
+	/* FIXME: Not Haiku supported */
 	return -1;
 }
 
@@ -220,4 +220,4 @@ SDL_bool BE_GetWindowWMInfo(_THIS, SDL_Window * window,
 }
 #endif
 
-#endif /* SDL_VIDEO_DRIVER_BWINDOW */
+#endif /* SDL_VIDEO_DRIVER_HAIKU */

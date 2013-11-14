@@ -119,7 +119,7 @@ SDL_CreateThread(SDL_ThreadFunction fn, const char *name, void *data,
  *  Create a thread.
  *
  *   Thread naming is a little complicated: Most systems have very small
- *    limits for the string length (BeOS has 32 bytes, Linux currently has 16,
+ *    limits for the string length (Haiku has 32 bytes, Linux currently has 16,
  *    Visual C++ 6.0 has nine!), and possibly other arbitrary rules. You'll
  *    have to see what happens with your system's debugger. The name should be
  *    UTF-8 (but using the naming limits of C identifiers is a better bet).

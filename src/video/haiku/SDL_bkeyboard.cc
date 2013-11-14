@@ -20,7 +20,7 @@
 */
 #include "SDL_config.h"
 
-#if SDL_VIDEO_DRIVER_BWINDOW
+#if SDL_VIDEO_DRIVER_HAIKU
 
 #include <SupportDefs.h>
 #include <support/UTF8.h>
@@ -185,4 +185,4 @@ void BE_SetKeyState(int32 bkey, int8 state) {
 }
 #endif
 
-#endif /* SDL_VIDEO_DRIVER_BWINDOW */
+#endif /* SDL_VIDEO_DRIVER_HAIKU */

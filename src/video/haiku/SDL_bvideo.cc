@@ -20,7 +20,7 @@
 */
 #include "SDL_config.h"
 
-#if SDL_VIDEO_DRIVER_BWINDOW
+#if SDL_VIDEO_DRIVER_HAIKU
 
 
 #ifdef __cplusplus
@@ -119,8 +119,8 @@ BE_CreateDevice(int devindex)
     return device;
 }
 
-VideoBootStrap BWINDOW_bootstrap = {
-	"bwindow", "BDirectWindow graphics",
+VideoBootStrap HAIKU_bootstrap = {
+	"haiku", "Haiku graphics",
 	BE_Available, BE_CreateDevice
 };
 
@@ -171,4 +171,4 @@ void BE_VideoQuit(_THIS)
 }
 #endif
 
-#endif /* SDL_VIDEO_DRIVER_BWINDOW */
+#endif /* SDL_VIDEO_DRIVER_HAIKU */
