@@ -20,7 +20,7 @@
 */
 #include "SDL_config.h"
 
-#if SDL_VIDEO_DRIVER_BWINDOW
+#if SDL_VIDEO_DRIVER_HAIKU
 
 #include "SDL_bopengl.h"
 
@@ -28,7 +28,7 @@
 #include <KernelKit.h>
 #include <OpenGLKit.h>
 #include "SDL_BWin.h"
-#include "../../main/beos/SDL_BApp.h"
+#include "../../main/haiku/SDL_BApp.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -216,4 +216,4 @@ void BE_GL_RebootContexts(_THIS) {
 }
 #endif
 
-#endif /* SDL_VIDEO_DRIVER_BWINDOW */
+#endif /* SDL_VIDEO_DRIVER_HAIKU */

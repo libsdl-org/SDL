@@ -348,8 +348,8 @@ extern VideoBootStrap DirectFB_bootstrap;
 #if SDL_VIDEO_DRIVER_WINDOWS
 extern VideoBootStrap WINDOWS_bootstrap;
 #endif
-#if SDL_VIDEO_DRIVER_BWINDOW
-extern VideoBootStrap BWINDOW_bootstrap;
+#if SDL_VIDEO_DRIVER_HAIKU
+extern VideoBootStrap HAIKU_bootstrap;
 #endif
 #if SDL_VIDEO_DRIVER_PANDORA
 extern VideoBootStrap PND_bootstrap;

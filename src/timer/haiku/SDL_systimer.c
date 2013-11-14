@@ -20,20 +20,55 @@
 */
 #include "SDL_config.h"
 
-#if SDL_VIDEO_DRIVER_BWINDOW
+#ifdef SDL_TIMER_HAIKU
 
-#include "SDL_bevents.h"
+#include <os/kernel/OS.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+#include "SDL_timer.h"
 
-void BE_PumpEvents(_THIS) {
-	/* Since the event thread is its own thread, this isn't really necessary */
+static bigtime_t start;
+static SDL_bool ticks_started = SDL_FALSE;
+
+void
+SDL_InitTicks(void)
+{
+    if (ticks_started) {
+        return;
+    }
+    ticks_started = SDL_TRUE;
+
+    /* Set first ticks value */
+    start = system_time();
 }
 
-#ifdef __cplusplus
-}
-#endif
+Uint32
+SDL_GetTicks(void)
+{
+    if (!ticks_started) {
+        SDL_InitTicks();
+    }
 
-#endif /* SDL_VIDEO_DRIVER_BWINDOW */
+    return ((system_time() - start) / 1000);
+}
+
+Uint64
+SDL_GetPerformanceCounter(void)
+{
+    return system_time();
+}
+
+Uint64
+SDL_GetPerformanceFrequency(void)
+{
+    return 1000000;
+}
+
+void
+SDL_Delay(Uint32 ms)
+{
+    snooze(ms * 1000);
+}
+
+#endif /* SDL_TIMER_HAIKU */
+
+/* vi: set ts=4 sw=4 expandtab: */

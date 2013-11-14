@@ -20,13 +20,13 @@
 */
 #include "SDL_config.h"
 
-#ifdef SDL_LOADSO_BEOS
+#ifdef SDL_LOADSO_HAIKU
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* System dependent library loading routines                           */
 
 #include <stdio.h>
-#include <be/kernel/image.h>
+#include <os/kernel/image.h>
 
 #include "SDL_loadso.h"
 
@@ -66,6 +66,6 @@ SDL_UnloadObject(void *handle)
     }
 }
 
-#endif /* SDL_LOADSO_BEOS */
+#endif /* SDL_LOADSO_HAIKU */
 
 /* vi: set ts=4 sw=4 expandtab: */

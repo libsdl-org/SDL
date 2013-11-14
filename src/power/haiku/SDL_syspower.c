@@ -20,8 +20,9 @@
 */
 #include "SDL_config.h"
 
+/* !!! FIXME: does this thing even work on Haiku? */
 #ifndef SDL_POWER_DISABLED
-#if SDL_POWER_BEOS
+#if SDL_POWER_HAIKU
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,7 +41,7 @@
 #include "SDL_power.h"
 
 SDL_bool
-SDL_GetPowerInfo_BeOS(SDL_PowerState * state, int *seconds, int *percent)
+SDL_GetPowerInfo_Haiku(SDL_PowerState * state, int *seconds, int *percent)
 {
     const int fd = open("/dev/misc/apm", O_RDONLY);
     SDL_bool need_details = SDL_FALSE;
@@ -119,7 +120,7 @@ SDL_GetPowerInfo_BeOS(SDL_PowerState * state, int *seconds, int *percent)
     return SDL_TRUE;            /* the definitive answer if APM driver replied. */
 }
 
-#endif /* SDL_POWER_BEOS */
+#endif /* SDL_POWER_HAIKU */
 #endif /* SDL_POWER_DISABLED */
 
 /* vi: set ts=4 sw=4 expandtab: */

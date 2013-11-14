@@ -20,7 +20,7 @@
 */
 #include "SDL_config.h"
 
-#if SDL_VIDEO_DRIVER_BWINDOW
+#if SDL_VIDEO_DRIVER_HAIKU
 
 #include "SDL_bframebuffer.h"
 
@@ -29,7 +29,7 @@
 #include "SDL_bmodes.h"
 #include "SDL_BWin.h"
 
-#include "../../main/beos/SDL_BApp.h"
+#include "../../main/haiku/SDL_BApp.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -251,4 +251,4 @@ int32 BE_UpdateOnce(SDL_Window *window) {
 }
 #endif
 
-#endif /* SDL_VIDEO_DRIVER_BWINDOW */
+#endif /* SDL_VIDEO_DRIVER_HAIKU */

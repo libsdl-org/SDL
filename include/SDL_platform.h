@@ -32,10 +32,6 @@
 #undef __AIX__
 #define __AIX__     1
 #endif
-#if defined(__BEOS__)
-#undef __BEOS__
-#define __BEOS__    1
-#endif
 #if defined(__HAIKU__)
 #undef __HAIKU__
 #define __HAIKU__   1
