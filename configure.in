@@ -204,19 +204,18 @@ if test x$enable_dependency_tracking = xyes; then
     fi
 fi
 
-# Actually this doesn't work on OpenBSD
-#AC_MSG_CHECKING(for linker option --no-undefined)
-#have_no_undefined=no
-#save_LDFLAGS="$LDFLAGS"
-#LDFLAGS="$LDFLAGS -Wl,--no-undefined"
-#AC_TRY_LINK([
-#],[
-#],[
-#have_no_undefined=yes
-#EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,--no-undefined"
-#])
-#LDFLAGS="$save_LDFLAGS"
-#AC_MSG_RESULT($have_no_undefined)
+AC_MSG_CHECKING(for linker option --no-undefined)
+have_no_undefined=no
+save_LDFLAGS="$LDFLAGS"
+LDFLAGS="$LDFLAGS -Wl,--no-undefined"
+AC_TRY_LINK([
+],[
+],[
+have_no_undefined=yes
+EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,--no-undefined"
+])
+LDFLAGS="$save_LDFLAGS"
+AC_MSG_RESULT($have_no_undefined)
 
 dnl See whether we are allowed to use the system C library
 AC_ARG_ENABLE(libc,
