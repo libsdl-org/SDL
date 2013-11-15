@@ -67,7 +67,7 @@ SDL_InitBeApp(void)
             return SDL_SetError("Couldn't create BApplication thread");
         }
 
-        /* Change working to directory to that of executable */
+        /* Change working directory to that of executable */
         app_info info;
         if (B_OK == be_app->GetAppInfo(&info)) {
             entry_ref ref = info.ref;
