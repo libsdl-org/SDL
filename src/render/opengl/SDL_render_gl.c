@@ -1250,26 +1250,22 @@ GL_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
     centerx = center->x;
     centery = center->y;
 
-    if ((flip & SDL_FLIP_VERTICAL) && (flip & SDL_FLIP_HORIZONTAL)) {
-        miny = dstrect->h - centery;
-        maxy = -centery;
-        minx = dstrect->w - centerx;
+    if (flip & SDL_FLIP_HORIZONTAL) {
+        minx =  dstrect->w - centerx;
         maxx = -centerx;
-    } else if (flip & SDL_FLIP_HORIZONTAL) {
-        miny = -centery;
-        maxy = dstrect->h - centery;
-        minx = dstrect->w - centerx;
-        maxx = -centerx;
-    } else if (flip & SDL_FLIP_VERTICAL) {
-        miny = dstrect->h - centery;
+    }
+    else {
+        minx = -centerx;
+        maxx =  dstrect->w - centerx;
+    }
+
+    if (flip & SDL_FLIP_VERTICAL) {
+        miny =  dstrect->h - centery;
         maxy = -centery;
-        minx = -centerx;
-        maxx = dstrect->w - centerx;
-    } else {
+    }
+    else {
         miny = -centery;
-        maxy = dstrect->h - centery;
-        minx = -centerx;
-        maxx = dstrect->w - centerx;
+        maxy =  dstrect->h - centery;
     }
 
     minu = (GLfloat) srcrect->x / texture->w;
