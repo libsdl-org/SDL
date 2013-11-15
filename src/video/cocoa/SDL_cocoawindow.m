@@ -88,6 +88,31 @@ GetWindowStyle(SDL_Window * window)
     return style;
 }
 
+static SDL_bool
+SetWindowStyle(SDL_Window * window, unsigned int style)
+{
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    NSWindow *nswindow = data->nswindow;
+
+    if (![nswindow respondsToSelector: @selector(setStyleMask:)]) {
+        return SDL_FALSE;
+    }
+
+    /* The view responder chain gets messed with during setStyleMask */
+    if ([[nswindow contentView] nextResponder] == data->listener) {
+        [[nswindow contentView] setNextResponder:nil];
+    }
+
+    [nswindow performSelector: @selector(setStyleMask:) withObject: (id)(uintptr_t)style];
+
+    /* The view responder chain gets messed with during setStyleMask */
+    if ([[nswindow contentView] nextResponder] != data->listener) {
+        [[nswindow contentView] setNextResponder:data->listener];
+    }
+
+    return SDL_TRUE;
+}
+
 
 @implementation Cocoa_WindowListener
 
@@ -422,10 +447,9 @@ GetWindowStyle(SDL_Window * window)
 - (void)windowWillEnterFullScreen:(NSNotification *)aNotification
 {
     SDL_Window *window = _data->window;
-    NSWindow *nswindow = _data->nswindow;
 
     window->flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-    [nswindow setStyleMask:(NSTitledWindowMask|NSClosableWindowMask|NSMiniaturizableWindowMask|NSResizableWindowMask)];
+    SetWindowStyle(window, (NSTitledWindowMask|NSClosableWindowMask|NSMiniaturizableWindowMask|NSResizableWindowMask));
 
     isFullscreenSpace = YES;
     inFullscreenTransition = YES;
@@ -454,10 +478,9 @@ GetWindowStyle(SDL_Window * window)
 - (void)windowWillExitFullScreen:(NSNotification *)aNotification
 {
     SDL_Window *window = _data->window;
-    NSWindow *nswindow = _data->nswindow;
 
     window->flags &= ~SDL_WINDOW_FULLSCREEN_DESKTOP;
-    [nswindow setStyleMask:GetWindowStyle(window)];
+    SetWindowStyle(window, GetWindowStyle(window));
 
     isFullscreenSpace = NO;
     inFullscreenTransition = YES;
@@ -1173,9 +1196,7 @@ void
 Cocoa_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    NSWindow *nswindow = ((SDL_WindowData *) window->driverdata)->nswindow;
-    if ([nswindow respondsToSelector:@selector(setStyleMask:)]) {
-        [nswindow setStyleMask:GetWindowStyle(window)];
+    if (SetWindowStyle(window, GetWindowStyle(window))) {
         if (bordered) {
             Cocoa_SetWindowTitle(_this, window);  /* this got blanked out. */
         }
