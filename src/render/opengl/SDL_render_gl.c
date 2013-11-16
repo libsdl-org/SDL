@@ -919,13 +919,21 @@ GL_UpdateViewport(SDL_Renderer * renderer)
         return 0;
     }
 
-    data->glViewport(renderer->viewport.x, renderer->viewport.y,
-                     renderer->viewport.w, renderer->viewport.h);
+    if (renderer->target) {
+        data->glViewport(renderer->viewport.x, renderer->viewport.y,
+                         renderer->viewport.w, renderer->viewport.h);
+    } else {
+        int w, h;
+
+        SDL_GetRendererOutputSize(renderer, &w, &h);
+        data->glViewport(renderer->viewport.x, (h - renderer->viewport.y - renderer->viewport.h),
+                         renderer->viewport.w, renderer->viewport.h);
+    }
 
     data->glMatrixMode(GL_PROJECTION);
     data->glLoadIdentity();
     if (renderer->viewport.w && renderer->viewport.h) {
-        if (!renderer->target) {
+        if (renderer->target) {
             data->glOrtho((GLdouble) 0,
                           (GLdouble) renderer->viewport.w,
                           (GLdouble) 0,
