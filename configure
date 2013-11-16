@@ -15950,19 +15950,35 @@ $as_echo "$have_gcc_mmd_mt" >&6; }
     fi
 fi
 
-# Actually this doesn't work on OpenBSD
-#AC_MSG_CHECKING(for linker option --no-undefined)
-#have_no_undefined=no
-#save_LDFLAGS="$LDFLAGS"
-#LDFLAGS="$LDFLAGS -Wl,--no-undefined"
-#AC_TRY_LINK([
-#],[
-#],[
-#have_no_undefined=yes
-#EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,--no-undefined"
-#])
-#LDFLAGS="$save_LDFLAGS"
-#AC_MSG_RESULT($have_no_undefined)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for linker option --no-undefined" >&5
+$as_echo_n "checking for linker option --no-undefined... " >&6; }
+have_no_undefined=no
+save_LDFLAGS="$LDFLAGS"
+LDFLAGS="$LDFLAGS -Wl,--no-undefined"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+
+have_no_undefined=yes
+EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,--no-undefined"
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LDFLAGS="$save_LDFLAGS"
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_no_undefined" >&5
+$as_echo "$have_no_undefined" >&6; }
 
 # Check whether --enable-libc was given.
 if test "${enable_libc+set}" = set; then :
@@ -22217,10 +22233,6 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
         # Set up files for udev hotplugging support
         if test x$enable_libudev = xyes && test x$have_libudev_h_hdr = xyes; then
             SOURCES="$SOURCES $srcdir/src/core/linux/SDL_udev.c"
-        fi
-        # Set up files for evdev input
-        if test x$use_input_events = xyes; then
-            SOURCES="$SOURCES $srcdir/src/input/evdev/*.c"
         fi
         ;;
     *-*-cygwin* | *-*-mingw32*)
