@@ -49,6 +49,7 @@ TARGETS = \
 	teststreaming$(EXE) \
 	testtimer$(EXE) \
 	testver$(EXE) \
+	testviewport$(EXE) \
 	testwm2$(EXE) \
 	torturethread$(EXE) \
 	testrendercopyex$(EXE) \
@@ -216,6 +217,9 @@ testtimer$(EXE): $(srcdir)/testtimer.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testver$(EXE): $(srcdir)/testver.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testviewport$(EXE): $(srcdir)/testviewport.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testwm2$(EXE): $(srcdir)/testwm2.c
