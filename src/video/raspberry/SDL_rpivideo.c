@@ -40,7 +40,7 @@
 #include "../../events/SDL_keyboard_c.h"
 
 #ifdef SDL_INPUT_LINUXEV
-#include "../../input/evdev/SDL_evdev.h"
+#include "../../core/linux/SDL_evdev.h"
 #endif
 
 /* RPI declarations */
