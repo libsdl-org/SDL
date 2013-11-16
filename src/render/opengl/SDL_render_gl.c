@@ -925,7 +925,7 @@ GL_UpdateViewport(SDL_Renderer * renderer)
     data->glMatrixMode(GL_PROJECTION);
     data->glLoadIdentity();
     if (renderer->viewport.w && renderer->viewport.h) {
-        if (renderer->target) {
+        if (!renderer->target) {
             data->glOrtho((GLdouble) 0,
                           (GLdouble) renderer->viewport.w,
                           (GLdouble) 0,
