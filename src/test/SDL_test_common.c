@@ -809,6 +809,9 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
         state->renderers =
             (SDL_Renderer **) SDL_malloc(state->num_windows *
                                         sizeof(*state->renderers));
+        state->targets =
+            (SDL_Texture **) SDL_malloc(state->num_windows *
+                                        sizeof(*state->targets));
         if (!state->windows || !state->renderers) {
             fprintf(stderr, "Out of memory!\n");
             return SDL_FALSE;
@@ -861,6 +864,7 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
             SDL_ShowWindow(state->windows[i]);
 
             state->renderers[i] = NULL;
+            state->targets[i] = NULL;
 
             if (!state->skip_renderer
                 && (state->renderdriver
