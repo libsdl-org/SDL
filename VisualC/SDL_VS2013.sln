@@ -1,6 +1,5 @@
-﻿
-Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2012
+﻿Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDL2", "SDL\SDL_VS2013.vcxproj", "{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDL2main", "SDLmain\SDLmain_VS2013.vcxproj", "{DA956FD3-E142-46F2-9DD5-C78BEBB56B7A}"
