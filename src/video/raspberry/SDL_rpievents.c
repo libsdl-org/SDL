@@ -30,7 +30,7 @@
 #include "SDL_rpievents_c.h"
 
 #ifdef SDL_INPUT_LINUXEV
-#include "../../input/evdev/SDL_evdev.h"
+#include "../../core/linux/SDL_evdev.h"
 #endif
 
 void RPI_PumpEvents(_THIS)
