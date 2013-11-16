@@ -266,7 +266,7 @@ endif(ASSERTIONS STREQUAL "auto")
 set(HAVE_ASSERTIONS ${ASSERTIONS})
 
 # Compiler option evaluation
-if(USE_GCC)
+if(USE_GCC OR USE_CLANG)
   if(DEPENDENCY_TRACKING)
     check_c_source_compiles("
         #if !defined(__GNUC__) || __GNUC__ < 3
@@ -314,7 +314,7 @@ if(USE_GCC)
       set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-multichar")
     endif(HAIKU)
   endif(HAVE_GCC_WALL)
-endif(USE_GCC)
+endif(USE_GCC OR USE_CLANG)
 
 if(ASSEMBLY)
   if(USE_GCC OR USE_CLANG)
