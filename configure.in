@@ -2507,6 +2507,10 @@ case "$host" in
         if test x$enable_libudev = xyes && test x$have_libudev_h_hdr = xyes; then
             SOURCES="$SOURCES $srcdir/src/core/linux/SDL_udev.c"               
         fi
+        # Set up files for evdev input
+        if test x$use_input_events = xyes; then
+            SOURCES="$SOURCES $srcdir/src/core/linux/SDL_evdev.c"
+        fi       
         ;;
     *-*-cygwin* | *-*-mingw32*)
         ARCH=win32
