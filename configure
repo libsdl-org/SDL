@@ -15953,9 +15953,14 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for linker option --no-undefined" >&5
 $as_echo_n "checking for linker option --no-undefined... " >&6; }
 have_no_undefined=no
-save_LDFLAGS="$LDFLAGS"
-LDFLAGS="$LDFLAGS -Wl,--no-undefined"
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+case "$host" in
+        *-*-openbsd*)
+        ;;
+
+    *)
+        save_LDFLAGS="$LDFLAGS"
+        LDFLAGS="$LDFLAGS -Wl,--no-undefined"
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
 
@@ -15970,13 +15975,15 @@ main ()
 _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
 
-have_no_undefined=yes
-EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,--no-undefined"
+        have_no_undefined=yes
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,--no-undefined"
 
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
-LDFLAGS="$save_LDFLAGS"
+        LDFLAGS="$save_LDFLAGS"
+        ;;
+esac
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_no_undefined" >&5
 $as_echo "$have_no_undefined" >&6; }
 

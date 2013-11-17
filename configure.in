@@ -206,15 +206,23 @@ fi
 
 AC_MSG_CHECKING(for linker option --no-undefined)
 have_no_undefined=no
-save_LDFLAGS="$LDFLAGS"
-LDFLAGS="$LDFLAGS -Wl,--no-undefined"
-AC_TRY_LINK([
-],[
-],[
-have_no_undefined=yes
-EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,--no-undefined"
-])
-LDFLAGS="$save_LDFLAGS"
+case "$host" in
+    dnl Skip this on platforms where it is just simply busted.
+    *-*-openbsd*)
+        ;;
+
+    *)
+        save_LDFLAGS="$LDFLAGS"
+        LDFLAGS="$LDFLAGS -Wl,--no-undefined"
+        AC_TRY_LINK([
+        ],[
+        ],[
+        have_no_undefined=yes
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,--no-undefined"
+        ])
+        LDFLAGS="$save_LDFLAGS"
+        ;;
+esac
 AC_MSG_RESULT($have_no_undefined)
 
 dnl See whether we are allowed to use the system C library
