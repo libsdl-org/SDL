@@ -2384,11 +2384,10 @@ case "$host" in
                 # Raspberry Pi
                 ARCH=linux
                 RPI_CFLAGS="-I/opt/vc/include -I/opt/vc/include/interface/vcos/pthreads -I/opt/vc/include/interface/vmcs_host/linux"
-                RPI_LDFLAGS="-L/opt/vc/lib -lbcm_host"
                 CFLAGS="$CFLAGS $RPI_CFLAGS"
                 SDL_CFLAGS="$SDL_CFLAGS $RPI_CFLAGS"
                 EXTRA_CFLAGS="$EXTRA_CFLAGS $RPI_CFLAGS"
-                SDL_LIBS="$SDL_LIBS $RPI_LDFLAGS"
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS -L/opt/vc/lib -lbcm_host -ldl"
 
                 if test x$enable_video = xyes; then
                     SOURCES="$SOURCES $srcdir/src/video/raspberry/*.c"
