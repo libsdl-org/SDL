@@ -340,6 +340,8 @@ extern DECLSPEC int SDLCALL SDL_vsnprintf(char *text, size_t maxlen, const char 
 #endif
 #endif
 
+extern DECLSPEC double SDLCALL SDL_acos(double x);
+extern DECLSPEC double SDLCALL SDL_asin(double x);
 extern DECLSPEC double SDLCALL SDL_atan(double x);
 extern DECLSPEC double SDLCALL SDL_atan2(double x, double y);
 extern DECLSPEC double SDLCALL SDL_ceil(double x);
