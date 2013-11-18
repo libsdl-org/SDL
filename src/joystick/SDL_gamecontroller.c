@@ -289,8 +289,6 @@ ControllerMapping_t *SDL_PrivateGetControllerMapping(int device_index)
         SDL_JoystickGUID jGUID = SDL_JoystickGetDeviceGUID( device_index );
         return SDL_PrivateGetControllerMappingForGUID(&jGUID);
     }
-
-    return NULL;
 }
 
 static const char* map_StringForControllerAxis[] = {
