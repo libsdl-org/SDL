@@ -951,7 +951,7 @@ SDLTest_PrintEvent(SDL_Event * event)
 {
     if ((event->type == SDL_MOUSEMOTION) || (event->type == SDL_FINGERMOTION)) {
         /* Mouse and finger motion are really spammy */
-        return;
+        //return;
     }
 
     fprintf(stderr, "SDL EVENT: ");
@@ -1416,14 +1416,6 @@ SDLTest_CommonQuit(SDLTest_CommonState * state)
     int i;
 
     SDL_free(state->windows);
-    if (state->renderers) {
-        for (i = 0; i < state->num_windows; ++i) {
-            if (state->renderers[i]) {
-                SDL_DestroyRenderer(state->renderers[i]);
-            }
-        }
-        SDL_free(state->renderers);
-    }
     if (state->targets) {
         for (i = 0; i < state->num_windows; ++i) {
             if (state->targets[i]) {
@@ -1431,6 +1423,14 @@ SDLTest_CommonQuit(SDLTest_CommonState * state)
             }
         }
         SDL_free(state->targets);
+    }
+    if (state->renderers) {
+        for (i = 0; i < state->num_windows; ++i) {
+            if (state->renderers[i]) {
+                SDL_DestroyRenderer(state->renderers[i]);
+            }
+        }
+        SDL_free(state->renderers);
     }
     if (state->flags & SDL_INIT_VIDEO) {
         SDL_VideoQuit();
