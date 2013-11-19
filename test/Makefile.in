@@ -21,6 +21,7 @@ TARGETS = \
 	testgesture$(EXE) \
 	testgl2$(EXE) \
 	testgles$(EXE) \
+	testgles2$(EXE) \
 	testhaptic$(EXE) \
 	testrumble$(EXE) \
 	testthread$(EXE) \
@@ -130,6 +131,9 @@ testgl2$(EXE): $(srcdir)/testgl2.c
 
 testgles$(EXE): $(srcdir)/testgles.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @GLESLIB@ @MATHLIB@
+
+testgles2$(EXE): $(srcdir)/testgles2.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @GLES2LIB@ @MATHLIB@
 
 testhaptic$(EXE): $(srcdir)/testhaptic.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
