@@ -951,7 +951,7 @@ SDLTest_PrintEvent(SDL_Event * event)
 {
     if ((event->type == SDL_MOUSEMOTION) || (event->type == SDL_FINGERMOTION)) {
         /* Mouse and finger motion are really spammy */
-        //return;
+        return;
     }
 
     fprintf(stderr, "SDL EVENT: ");
