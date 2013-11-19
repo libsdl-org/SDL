@@ -218,7 +218,9 @@ SDL_EGL_ChooseConfig(_THIS)
     /* 64 seems nice. */
     EGLint attribs[64];
     EGLint found_configs = 0;
-    int i;
+    /* 128 seems even nicer here */
+    EGLConfig configs[128];
+    int i, j, best_bitdiff = -1, bitdiff, value;
     
     if (!_this->egl_data) {
         /* The EGL library wasn't loaded, SDL_GetError() should have info */
@@ -273,10 +275,42 @@ SDL_EGL_ChooseConfig(_THIS)
     
     if (_this->egl_data->eglChooseConfig(_this->egl_data->egl_display,
         attribs,
-        &_this->egl_data->egl_config, 1,
+        configs, SDL_arraysize(configs),
         &found_configs) == EGL_FALSE ||
         found_configs == 0) {
         return SDL_SetError("Couldn't find matching EGL config");
+    }
+    
+    /* eglChooseConfig returns a number of configurations that match or exceed the requested attribs. */
+    /* From those, we select the one that matches our requirements more closely via a makeshift algorithm */
+    
+    for ( i=0; i<found_configs; i++ ) {
+        bitdiff = 0;
+        for (j = 0; ; j += 2) {
+            if (attribs[j] == EGL_NONE) {
+               break;
+            }
+            
+            if ( attribs[j+1] != EGL_DONT_CARE && (
+                attribs[j] == EGL_RED_SIZE ||
+                attribs[j] == EGL_GREEN_SIZE ||
+                attribs[j] == EGL_BLUE_SIZE ||
+                attribs[j] == EGL_ALPHA_SIZE ||
+                attribs[j] == EGL_DEPTH_SIZE ||
+                attribs[j] == EGL_STENCIL_SIZE)) {
+                
+                _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display, configs[i], attribs[j], &value);
+                bitdiff += value - attribs[j + 1]; /* value is always >= attrib */
+            }
+        }
+
+        if (bitdiff < best_bitdiff || best_bitdiff == -1) {
+            _this->egl_data->egl_config = configs[i];
+            
+            best_bitdiff = bitdiff;
+        }
+           
+        if (bitdiff == 0) break; /* we found an exact match! */
     }
     
     return 0;
