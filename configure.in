@@ -1140,18 +1140,12 @@ AC_HELP_STRING([--enable-video-x11], [use X11 video driver [[default=yes]]]),
         AC_PATH_X
         AC_PATH_XTRA
         if test x$have_x = xyes; then
-            # Only allow dynamically loaded X11 if the X11 function pointers
-            # will not end up in the global namespace, which causes problems
-            # with other libraries calling X11 functions.
-            x11_symbols_private=$have_gcc_fvisibility
-
             AC_ARG_ENABLE(x11-shared,
 AC_HELP_STRING([--enable-x11-shared], [dynamically load X11 support [[default=maybe]]]),
                           , enable_x11_shared=maybe)
 
             case "$host" in
                 *-*-darwin*)
-                    x11_symbols_private=yes
                     x11_lib='/usr/X11R6/lib/libX11.6.dylib'
                     x11ext_lib='/usr/X11R6/lib/libXext.6.dylib'
                     xcursor_lib='/usr/X11R6/lib/libXcursor.1.dylib'
@@ -1212,19 +1206,13 @@ AC_HELP_STRING([--enable-x11-shared], [dynamically load X11 support [[default=ma
             SDL_CFLAGS="$SDL_CFLAGS $X_CFLAGS"
 
             if test x$enable_x11_shared = xmaybe; then
-                enable_x11_shared=$x11_symbols_private
+                enable_x11_shared=yes
             fi
             if test x$have_loadso != xyes && \
                test x$enable_x11_shared = xyes; then
                 AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic X11 loading])
                 enable_x11_shared=no
             fi
-            if test x$x11_symbols_private != xyes && \
-               test x$enable_x11_shared = xyes; then
-                AC_MSG_WARN([You must have gcc4 (-fvisibility=hidden) for dynamic X11 loading])
-                enable_x11_shared=no
-            fi
-
             if test x$have_loadso = xyes && \
                test x$enable_x11_shared = xyes && test x$x11_lib != x && test x$x11ext_lib != x; then
                 echo "-- dynamic libX11 -> $x11_lib"
