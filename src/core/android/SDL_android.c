@@ -148,19 +148,19 @@ void Java_org_libsdl_app_SDLActivity_onNativeResize(
 }
 
 // Paddown
-void Java_org_libsdl_app_SDLActivity_onNativePadDown(
+int Java_org_libsdl_app_SDLActivity_onNativePadDown(
                                     JNIEnv* env, jclass jcls,
                                     jint padId, jint keycode)
 {
-    Android_OnPadDown(padId, keycode);
+    return Android_OnPadDown(padId, keycode);
 }
 
 // Padup
-void Java_org_libsdl_app_SDLActivity_onNativePadUp(
+int Java_org_libsdl_app_SDLActivity_onNativePadUp(
                                    JNIEnv* env, jclass jcls,
                                    jint padId, jint keycode)
 {
-    Android_OnPadUp(padId, keycode);
+    return Android_OnPadUp(padId, keycode);
 }
 
 /* Joy */

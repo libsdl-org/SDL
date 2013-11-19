@@ -128,7 +128,6 @@ keycode_to_SDL(int keycode)
             break;
             
         default:
-            SDL_Log("The button you just pressed is not recognized by SDL. To help get this fixed, please report this to the SDL mailing list <sdl@libsdl.org> Android KeyCode %d", keycode);
             return -1;
             break;
     }
@@ -313,9 +312,10 @@ Android_OnPadDown(int padId, int keycode)
     int button = keycode_to_SDL(keycode);
     if (button >= 0) {
         SDL_PrivateJoystickButton(SYS_Joysticks[padId], button , SDL_PRESSED);
+        return 0;
     }
     
-    return 0;
+    return -1;
 }
 
 int
@@ -324,9 +324,10 @@ Android_OnPadUp(int padId, int keycode)
     int button = keycode_to_SDL(keycode);
     if (button >= 0) {
         SDL_PrivateJoystickButton(SYS_Joysticks[padId], button, SDL_RELEASED);
+        return 0;
     }
     
-    return 0;
+    return -1;
 }
 
 int
