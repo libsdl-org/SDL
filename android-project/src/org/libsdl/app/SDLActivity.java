@@ -245,8 +245,8 @@ public class SDLActivity extends Activity {
     public static native void nativePause();
     public static native void nativeResume();
     public static native void onNativeResize(int x, int y, int format);
-    public static native void onNativePadDown(int padId, int keycode);
-    public static native void onNativePadUp(int padId, int keycode);
+    public static native int onNativePadDown(int padId, int keycode);
+    public static native int onNativePadUp(int padId, int keycode);
     public static native void onNativeJoy(int joyId, int axis,
                                           float value);
     public static native void onNativeKeyDown(int keycode);
@@ -600,19 +600,22 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
     @Override
     public boolean onKey(View  v, int keyCode, KeyEvent event) {
         // Dispatch the different events depending on where they come from
-        // Some SOURCE_DPAD or SOURCE_GAMEPAD events appear to also be marked as SOURCE_KEYBOARD
-        // So, to avoid problems, we process DPAD or GAMEPAD events first.
+        // Some SOURCE_DPAD or SOURCE_GAMEPAD are also SOURCE_KEYBOARD
+        // So, we try to process them as DPAD or GAMEPAD events first, if that fails we try them as KEYBOARD
         
         if ( (event.getSource() & 0x00000401) != 0 || /* API 12: SOURCE_GAMEPAD */
                    (event.getSource() & InputDevice.SOURCE_DPAD) != 0 ) {
             int id = SDLActivity.getJoyId( event.getDeviceId() );
             if (id != -1) {
                 if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                    SDLActivity.onNativePadDown(id, keyCode);
+                    if (SDLActivity.onNativePadDown(id, keyCode) == 0) {
+                        return true;
+                    }
                 } else if (event.getAction() == KeyEvent.ACTION_UP) {
-                    SDLActivity.onNativePadUp(id, keyCode);
+                    if (SDLActivity.onNativePadUp(id, keyCode) == 0) {
+                        return true;
+                    }
                 }
-                return true;
             }
         }
         
