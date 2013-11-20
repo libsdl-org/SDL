@@ -36,6 +36,7 @@ X11_GLES_LoadLibrary(_THIS, const char *path) {
     /* If the profile requested is not GL ES, switch over to X11_GL functions  */
     if (_this->gl_config.profile_mask != SDL_GL_CONTEXT_PROFILE_ES) {
         #if SDL_VIDEO_OPENGL_GLX
+        X11_GLES_UnloadLibrary(_this);
         _this->GL_LoadLibrary = X11_GL_LoadLibrary;
         _this->GL_GetProcAddress = X11_GL_GetProcAddress;
         _this->GL_UnloadLibrary = X11_GL_UnloadLibrary;
@@ -98,19 +99,6 @@ X11_GLES_CreateContext(_THIS, SDL_Window * window)
     X11_XSync(display, False);
 
     return context;
-}
-
-void
-X11_GLES_DeleteContext(_THIS, SDL_GLContext context)
-{
-    /* FIXME: This "crappy fix" comes from the previous GLES X11 code, 
-     * it's required so you can create a GLX context, destroy it and create a EGL one 
-     * To be able to fix this, we need to add a function SDL_GL_ResetContext and
-     * disallow SDL_GL_MakeCurrent from taking a NULL pointer, thus ensuring we can
-     * determine if it is a GLX or EGL context
-     */
-    SDL_EGL_DeleteContext(_this, context);
-    X11_GLES_UnloadLibrary(_this);
 }
 
 SDL_EGL_SwapWindow_impl(X11)
