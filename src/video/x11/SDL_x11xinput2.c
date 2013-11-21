@@ -59,6 +59,18 @@ static void parse_valuators(const double *input_values,unsigned char *mask,int m
         z++;
     }
 }
+
+static SDL_bool
+xinput2_version_okay(Display *display, const int major, const int minor)
+{
+    int outmajor = major;
+    int outminor = minor;
+    if (X11_XIQueryVersion(display, &outmajor, &outminor) != Success) {
+        return SDL_FALSE;
+    }
+
+    return ( ((outmajor * 1000) + outminor) >= ((major * 1000) + minor) );
+}
 #endif /* SDL_VIDEO_DRIVER_X11_XINPUT2 */
 
 void
@@ -70,11 +82,6 @@ X11_InitXinput2(_THIS)
     XIEventMask eventmask;
     unsigned char mask[3] = { 0,0,0 };
     int event, err;
-    int major = 2, minor = 0;
-    int outmajor,outminor;
-#if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
-    minor = 2;
-#endif
     /*
     * Initialize XInput 2
     * According to http://who-t.blogspot.com/2009/05/xi2-recipes-part-1.html its better
@@ -86,24 +93,17 @@ X11_InitXinput2(_THIS)
     */
     if (!SDL_X11_HAVE_XINPUT2 ||
         !X11_XQueryExtension(data->display, "XInputExtension", &xinput2_opcode, &event, &err)) {
-        return;
+        return; /* X server does not have XInput at all */
     }
 
-    outmajor = major;
-    outminor = minor;
-    if (X11_XIQueryVersion(data->display, &outmajor, &outminor) != Success) {
-        return;
+    if (!xinput2_version_okay(data->display, 2, 0)) {
+        return; /* X server does not support the version we want */
     }
 
-    /* Check supported version */
-    if(outmajor * 1000 + outminor < major * 1000 + minor) {
-        /* X server does not support the version we want */
-        return;
-    }
     xinput2_initialized = 1;
+
 #if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
-    /* XInput 2.2 */
-    if(outmajor * 1000 + outminor >= major * 1000 + minor) {
+    if (xinput2_version_okay(data->display, 2, 2)) {  /* Multitouch needs XInput 2.2 */
         xinput2_multitouch_supported = 1;
     }
 #endif
