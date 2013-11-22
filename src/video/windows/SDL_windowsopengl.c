@@ -585,6 +585,7 @@ WIN_GL_CreateContext(_THIS, SDL_Window * window)
 
     if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES &&
         !_this->gl_data->HAS_WGL_EXT_create_context_es2_profile) {
+#if SDL_VIDEO_OPENGL_EGL        
         /* Switch to EGL based functions */
         WIN_GL_UnloadLibrary(_this);
         _this->GL_LoadLibrary = WIN_GLES_LoadLibrary;
@@ -602,6 +603,9 @@ WIN_GL_CreateContext(_THIS, SDL_Window * window)
         }
         
         return WIN_GLES_CreateContext(_this, window);
+#else
+        return SDL_SetError("SDL not configured with EGL support");
+#endif        
     }
 
     if (_this->gl_config.share_with_current_context) {
