@@ -26,7 +26,7 @@
 #if SDL_VIDEO_OPENGL_EGL
 
 #include "../SDL_sysvideo.h"
-#include "../SDL_egl.h"
+#include "../SDL_egl_c.h"
 
 typedef struct SDL_PrivateGLESData
 {

@@ -24,9 +24,45 @@
 
 #include "SDL_opengles2.h"
 
+typedef struct GLES2_Context
+{
+#define SDL_PROC(ret,func,params) ret (APIENTRY *func) params;
+#include "../src/render/opengles2/SDL_gles2funcs.h"
+#undef SDL_PROC
+} GLES2_Context;
+
+
 static SDLTest_CommonState *state;
 static SDL_GLContext *context = NULL;
 static int depth = 16;
+static GLES2_Context ctx;
+
+static int LoadContext(GLES2_Context * data)
+{
+#if SDL_VIDEO_DRIVER_UIKIT
+#define __SDL_NOGETPROCADDR__
+#elif SDL_VIDEO_DRIVER_ANDROID
+#define __SDL_NOGETPROCADDR__
+#elif SDL_VIDEO_DRIVER_PANDORA
+#define __SDL_NOGETPROCADDR__
+#endif
+
+#if defined __SDL_NOGETPROCADDR__
+#define SDL_PROC(ret,func,params) data->func=func;
+#else
+#define SDL_PROC(ret,func,params) \
+    do { \
+        data->func = SDL_GL_GetProcAddress(#func); \
+        if ( ! data->func ) { \
+            return SDL_SetError("Couldn't load GLES2 function %s: %s\n", #func, SDL_GetError()); \
+        } \
+    } while ( 0 );
+#endif /* _SDL_NOGETPROCADDR_ */
+
+#include "../src/render/opengles2/SDL_gles2funcs.h"
+#undef SDL_PROC
+    return 0;
+}
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -51,9 +87,9 @@ quit(int rc)
 #define GL_CHECK(x) \
         x; \
         { \
-          GLenum glError = glGetError(); \
+          GLenum glError = ctx.glGetError(); \
           if(glError != GL_NO_ERROR) { \
-            fprintf(stderr, "glGetError() = %i (0x%.8x) at line %i\n", glError, glError, __LINE__); \
+            SDL_Log("glGetError() = %i (0x%.8x) at line %i\n", glError, glError, __LINE__); \
             quit(1); \
           } \
         }
@@ -157,25 +193,26 @@ multiply_matrix(float *lhs, float *rhs, float *r)
 void 
 process_shader(GLuint *shader, const char * source, GLint shader_type)
 {
-    GLint status;
+    GLint status = GL_FALSE;
     const char *shaders[1] = { NULL };
 
     /* Create shader and load into GL. */
-    *shader = GL_CHECK(glCreateShader(shader_type));
+    *shader = GL_CHECK(ctx.glCreateShader(shader_type));
 
     shaders[0] = source;
 
-    GL_CHECK(glShaderSource(*shader, 1, shaders, NULL));
+    GL_CHECK(ctx.glShaderSource(*shader, 1, shaders, NULL));
 
     /* Clean up shader source. */
     shaders[0] = NULL;
 
     /* Try compiling the shader. */
-    GL_CHECK(glCompileShader(*shader));
-    GL_CHECK(glGetShaderiv(*shader, GL_COMPILE_STATUS, &status));
+    GL_CHECK(ctx.glCompileShader(*shader));
+    GL_CHECK(ctx.glGetShaderiv(*shader, GL_COMPILE_STATUS, &status));
 
     // Dump debug info (source and log) if compilation failed.
     if(status != GL_TRUE) {
+        SDL_Log("Shader compilation failed");
         quit(-1);
     }
 }
@@ -350,7 +387,7 @@ Render(unsigned int width, unsigned int height, shader_data* data)
     perspective_matrix(45.0, (double)width/(double)height, 0.01, 100.0, matrix_perspective);
     multiply_matrix(matrix_perspective, matrix_modelview, matrix_mvp);
 
-    GL_CHECK(glUniformMatrix4fv(data->attr_mvp, 1, GL_FALSE, matrix_mvp));
+    GL_CHECK(ctx.glUniformMatrix4fv(data->attr_mvp, 1, GL_FALSE, matrix_mvp));
 
     data->angle_x += 3;
     data->angle_y += 2;
@@ -363,8 +400,8 @@ Render(unsigned int width, unsigned int height, shader_data* data)
     if(data->angle_z >= 360) data->angle_z -= 360;
     if(data->angle_z < 0) data->angle_z += 360;
 
-    GL_CHECK(glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
-    GL_CHECK(glDrawArrays(GL_TRIANGLES, 0, 36));
+    GL_CHECK(ctx.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT));
+    GL_CHECK(ctx.glDrawArrays(GL_TRIANGLES, 0, 36));
 }
 
 int
@@ -412,7 +449,7 @@ main(int argc, char *argv[])
             }
         }
         if (consumed < 0) {
-            fprintf(stderr, "Usage: %s %s [--fsaa] [--accel] [--zdepth %%d]\n", argv[0],
+            SDL_Log ("Usage: %s %s [--fsaa] [--accel] [--zdepth %%d]\n", argv[0],
                     SDLTest_CommonUsage(state));
             quit(1);
         }
@@ -437,13 +474,13 @@ main(int argc, char *argv[])
         state->gl_accelerated=1;
     }
     if (!SDLTest_CommonInit(state)) {
-        return;
         quit(2);
+        return 0;
     }
 
     context = SDL_calloc(state->num_windows, sizeof(context));
     if (context == NULL) {
-        fprintf(stderr, "Out of memory!\n");
+        SDL_Log("Out of memory!\n");
         quit(2);
     }
     
@@ -451,10 +488,19 @@ main(int argc, char *argv[])
     for (i = 0; i < state->num_windows; i++) {
         context[i] = SDL_GL_CreateContext(state->windows[i]);
         if (!context[i]) {
-            fprintf(stderr, "SDL_GL_CreateContext(): %s\n", SDL_GetError());
+            SDL_Log("SDL_GL_CreateContext(): %s\n", SDL_GetError());
             quit(2);
         }
     }
+
+    /* Important: call this *after* creating the context */
+    if (LoadContext(&ctx) < 0) {
+        SDL_Log("Could not load GLES2 functions\n");
+        quit(2);
+        return 0;
+    }
+
+
 
     if (state->render_flags & SDL_RENDERER_PRESENTVSYNC) {
         SDL_GL_SetSwapInterval(1);
@@ -463,65 +509,65 @@ main(int argc, char *argv[])
     }
 
     SDL_GetCurrentDisplayMode(0, &mode);
-    printf("Screen bpp: %d\n", SDL_BITSPERPIXEL(mode.format));
-    printf("\n");
-    printf("Vendor     : %s\n", glGetString(GL_VENDOR));
-    printf("Renderer   : %s\n", glGetString(GL_RENDERER));
-    printf("Version    : %s\n", glGetString(GL_VERSION));
-    printf("Extensions : %s\n", glGetString(GL_EXTENSIONS));
-    printf("\n");
+    SDL_Log("Screen bpp: %d\n", SDL_BITSPERPIXEL(mode.format));
+    SDL_Log("\n");
+    SDL_Log("Vendor     : %s\n", ctx.glGetString(GL_VENDOR));
+    SDL_Log("Renderer   : %s\n", ctx.glGetString(GL_RENDERER));
+    SDL_Log("Version    : %s\n", ctx.glGetString(GL_VERSION));
+    SDL_Log("Extensions : %s\n", ctx.glGetString(GL_EXTENSIONS));
+    SDL_Log("\n");
 
     status = SDL_GL_GetAttribute(SDL_GL_RED_SIZE, &value);
     if (!status) {
-        printf("SDL_GL_RED_SIZE: requested %d, got %d\n", 5, value);
+        SDL_Log("SDL_GL_RED_SIZE: requested %d, got %d\n", 5, value);
     } else {
-        fprintf(stderr, "Failed to get SDL_GL_RED_SIZE: %s\n",
+        SDL_Log( "Failed to get SDL_GL_RED_SIZE: %s\n",
                 SDL_GetError());
     }
     status = SDL_GL_GetAttribute(SDL_GL_GREEN_SIZE, &value);
     if (!status) {
-        printf("SDL_GL_GREEN_SIZE: requested %d, got %d\n", 5, value);
+        SDL_Log("SDL_GL_GREEN_SIZE: requested %d, got %d\n", 5, value);
     } else {
-        fprintf(stderr, "Failed to get SDL_GL_GREEN_SIZE: %s\n",
+        SDL_Log( "Failed to get SDL_GL_GREEN_SIZE: %s\n",
                 SDL_GetError());
     }
     status = SDL_GL_GetAttribute(SDL_GL_BLUE_SIZE, &value);
     if (!status) {
-        printf("SDL_GL_BLUE_SIZE: requested %d, got %d\n", 5, value);
+        SDL_Log("SDL_GL_BLUE_SIZE: requested %d, got %d\n", 5, value);
     } else {
-        fprintf(stderr, "Failed to get SDL_GL_BLUE_SIZE: %s\n",
+        SDL_Log( "Failed to get SDL_GL_BLUE_SIZE: %s\n",
                 SDL_GetError());
     }
     status = SDL_GL_GetAttribute(SDL_GL_DEPTH_SIZE, &value);
     if (!status) {
-        printf("SDL_GL_DEPTH_SIZE: requested %d, got %d\n", depth, value);
+        SDL_Log("SDL_GL_DEPTH_SIZE: requested %d, got %d\n", depth, value);
     } else {
-        fprintf(stderr, "Failed to get SDL_GL_DEPTH_SIZE: %s\n",
+        SDL_Log( "Failed to get SDL_GL_DEPTH_SIZE: %s\n",
                 SDL_GetError());
     }
     if (fsaa) {
         status = SDL_GL_GetAttribute(SDL_GL_MULTISAMPLEBUFFERS, &value);
         if (!status) {
-            printf("SDL_GL_MULTISAMPLEBUFFERS: requested 1, got %d\n", value);
+            SDL_Log("SDL_GL_MULTISAMPLEBUFFERS: requested 1, got %d\n", value);
         } else {
-            fprintf(stderr, "Failed to get SDL_GL_MULTISAMPLEBUFFERS: %s\n",
+            SDL_Log( "Failed to get SDL_GL_MULTISAMPLEBUFFERS: %s\n",
                     SDL_GetError());
         }
         status = SDL_GL_GetAttribute(SDL_GL_MULTISAMPLESAMPLES, &value);
         if (!status) {
-            printf("SDL_GL_MULTISAMPLESAMPLES: requested %d, got %d\n", fsaa,
+            SDL_Log("SDL_GL_MULTISAMPLESAMPLES: requested %d, got %d\n", fsaa,
                    value);
         } else {
-            fprintf(stderr, "Failed to get SDL_GL_MULTISAMPLESAMPLES: %s\n",
+            SDL_Log( "Failed to get SDL_GL_MULTISAMPLESAMPLES: %s\n",
                     SDL_GetError());
         }
     }
     if (accel) {
         status = SDL_GL_GetAttribute(SDL_GL_ACCELERATED_VISUAL, &value);
         if (!status) {
-            printf("SDL_GL_ACCELERATED_VISUAL: requested 1, got %d\n", value);
+            SDL_Log("SDL_GL_ACCELERATED_VISUAL: requested 1, got %d\n", value);
         } else {
-            fprintf(stderr, "Failed to get SDL_GL_ACCELERATED_VISUAL: %s\n",
+            SDL_Log( "Failed to get SDL_GL_ACCELERATED_VISUAL: %s\n",
                     SDL_GetError());
         }
     }
@@ -533,12 +579,12 @@ main(int argc, char *argv[])
 
         status = SDL_GL_MakeCurrent(state->windows[i], context[i]);
         if (status) {
-            printf("SDL_GL_MakeCurrent(): %s\n", SDL_GetError());
+            SDL_Log("SDL_GL_MakeCurrent(): %s\n", SDL_GetError());
 
             /* Continue for next window */
             continue;
         }
-        glViewport(0, 0, state->window_w, state->window_h);
+        ctx.glViewport(0, 0, state->window_w, state->window_h);
 
         data = &datas[i];
         data->angle_x = 0; data->angle_y = 0; data->angle_z = 0;
@@ -548,32 +594,32 @@ main(int argc, char *argv[])
         process_shader(&data->shader_frag, _shader_frag_src, GL_FRAGMENT_SHADER);
 
         /* Create shader_program (ready to attach shaders) */
-        data->shader_program = GL_CHECK(glCreateProgram());
+        data->shader_program = GL_CHECK(ctx.glCreateProgram());
 
         /* Attach shaders and link shader_program */
-        GL_CHECK(glAttachShader(data->shader_program, data->shader_vert));
-        GL_CHECK(glAttachShader(data->shader_program, data->shader_frag));
-        GL_CHECK(glLinkProgram(data->shader_program));
+        GL_CHECK(ctx.glAttachShader(data->shader_program, data->shader_vert));
+        GL_CHECK(ctx.glAttachShader(data->shader_program, data->shader_frag));
+        GL_CHECK(ctx.glLinkProgram(data->shader_program));
 
         /* Get attribute locations of non-fixed attributes like color and texture coordinates. */
-        data->attr_position = GL_CHECK(glGetAttribLocation(data->shader_program, "av4position"));
-        data->attr_color = GL_CHECK(glGetAttribLocation(data->shader_program, "av3color"));
+        data->attr_position = GL_CHECK(ctx.glGetAttribLocation(data->shader_program, "av4position"));
+        data->attr_color = GL_CHECK(ctx.glGetAttribLocation(data->shader_program, "av3color"));
 
         /* Get uniform locations */
-        data->attr_mvp = GL_CHECK(glGetUniformLocation(data->shader_program, "mvp"));
+        data->attr_mvp = GL_CHECK(ctx.glGetUniformLocation(data->shader_program, "mvp"));
 
-        GL_CHECK(glUseProgram(data->shader_program));
+        GL_CHECK(ctx.glUseProgram(data->shader_program));
 
         /* Enable attributes for position, color and texture coordinates etc. */
-        GL_CHECK(glEnableVertexAttribArray(data->attr_position));
-        GL_CHECK(glEnableVertexAttribArray(data->attr_color));
+        GL_CHECK(ctx.glEnableVertexAttribArray(data->attr_position));
+        GL_CHECK(ctx.glEnableVertexAttribArray(data->attr_color));
 
         /* Populate attributes for position, color and texture coordinates etc. */
-        GL_CHECK(glVertexAttribPointer(data->attr_position, 3, GL_FLOAT, GL_FALSE, 0, _vertices));
-        GL_CHECK(glVertexAttribPointer(data->attr_color, 3, GL_FLOAT, GL_FALSE, 0, _colors));
+        GL_CHECK(ctx.glVertexAttribPointer(data->attr_position, 3, GL_FLOAT, GL_FALSE, 0, _vertices));
+        GL_CHECK(ctx.glVertexAttribPointer(data->attr_color, 3, GL_FLOAT, GL_FALSE, 0, _colors));
 
-        GL_CHECK(glEnable(GL_CULL_FACE));
-        GL_CHECK(glEnable(GL_DEPTH_TEST));
+        GL_CHECK(ctx.glEnable(GL_CULL_FACE));
+        GL_CHECK(ctx.glEnable(GL_DEPTH_TEST));
     }
 
     /* Main render loop */
@@ -592,11 +638,11 @@ main(int argc, char *argv[])
                             if (event.window.windowID == SDL_GetWindowID(state->windows[i])) {
                                 status = SDL_GL_MakeCurrent(state->windows[i], context[i]);
                                 if (status) {
-                                    printf("SDL_GL_MakeCurrent(): %s\n", SDL_GetError());
+                                    SDL_Log("SDL_GL_MakeCurrent(): %s\n", SDL_GetError());
                                     break;
                                 }
                                 /* Change view port to the new window dimensions */
-                                glViewport(0, 0, event.window.data1, event.window.data2);
+                                ctx.glViewport(0, 0, event.window.data1, event.window.data2);
                                 /* Update window content */
                                 Render(event.window.data1, event.window.data2, &datas[i]);
                                 SDL_GL_SwapWindow(state->windows[i]);
@@ -611,7 +657,7 @@ main(int argc, char *argv[])
         for (i = 0; i < state->num_windows; ++i) {
             status = SDL_GL_MakeCurrent(state->windows[i], context[i]);
             if (status) {
-                printf("SDL_GL_MakeCurrent(): %s\n", SDL_GetError());
+                SDL_Log("SDL_GL_MakeCurrent(): %s\n", SDL_GetError());
 
                 /* Continue for next window */
                 continue;
@@ -624,11 +670,12 @@ main(int argc, char *argv[])
     /* Print out some timing information */
     now = SDL_GetTicks();
     if (now > then) {
-        printf("%2.2f frames per second\n",
+        SDL_Log("%2.2f frames per second\n",
                ((double) frames * 1000) / (now - then));
     }
 #if !defined(__ANDROID__)    
     quit(0);
+    return 0;
 #endif    
     return 0;
 }
@@ -638,7 +685,7 @@ main(int argc, char *argv[])
 int
 main(int argc, char *argv[])
 {
-    printf("No OpenGL ES support on this system\n");
+    SDL_Log("No OpenGL ES support on this system\n");
     return 1;
 }
 

@@ -23,8 +23,9 @@
 #if SDL_VIDEO_OPENGL_EGL
 
 #include "SDL_sysvideo.h"
-#include "SDL_egl.h"
-
+#include "SDL_egl_c.h"
+#include "SDL_loadso.h"
+#include "SDL_hints.h"
 
 #if SDL_VIDEO_DRIVER_RPI
 /* Raspbian places the OpenGL ES/EGL binaries in a non standard path */
@@ -40,6 +41,13 @@
 #define DEFAULT_OGL_ES_PVR "libGLES_CM.so"
 #define DEFAULT_OGL_ES "libGLESv1_CM.so"
 
+#elif SDL_VIDEO_DRIVER_WINDOWS
+/* EGL AND OpenGL ES support via ANGLE */
+#define DEFAULT_EGL "libEGL.dll"
+#define DEFAULT_OGL_ES2 "libGLESv2.dll"
+#define DEFAULT_OGL_ES_PVR "libGLES_CM.dll"
+#define DEFAULT_OGL_ES "libGLESv1_CM.dll"
+
 #else
 /* Desktop Linux */
 #define DEFAULT_EGL "libEGL.so.1"
@@ -49,7 +57,7 @@
 #endif /* SDL_VIDEO_DRIVER_RPI */
 
 #define LOAD_FUNC(NAME) \
-*((void**)&_this->egl_data->NAME) = dlsym(dll_handle, #NAME); \
+*((void**)&_this->egl_data->NAME) = SDL_LoadFunction(_this->egl_data->dll_handle, #NAME); \
 if (!_this->egl_data->NAME) \
 { \
     return SDL_SetError("Could not retrieve EGL function " #NAME); \
@@ -61,12 +69,10 @@ void *
 SDL_EGL_GetProcAddress(_THIS, const char *proc)
 {
     static char procname[1024];
-    void *handle;
     void *retval;
     
     /* eglGetProcAddress is busted on Android http://code.google.com/p/android/issues/detail?id=7681 */
-#if !defined(SDL_VIDEO_DRIVER_ANDROID)
-    handle = _this->egl_data->egl_dll_handle;
+#if !defined(SDL_VIDEO_DRIVER_ANDROID) 
     if (_this->egl_data->eglGetProcAddress) {
         retval = _this->egl_data->eglGetProcAddress(proc);
         if (retval) {
@@ -75,15 +81,11 @@ SDL_EGL_GetProcAddress(_THIS, const char *proc)
     }
 #endif
     
-    handle = _this->gl_config.dll_handle;
-    #if defined(__OpenBSD__) && !defined(__ELF__)
-    #undef dlsym(x,y);
-    #endif
-    retval = dlsym(handle, proc);
-    if (!retval && strlen(proc) <= 1022) {
+    retval = SDL_LoadFunction(_this->egl_data->egl_dll_handle, proc);
+    if (!retval && SDL_strlen(proc) <= 1022) {
         procname[0] = '_';
-        strcpy(procname + 1, proc);
-        retval = dlsym(handle, procname);
+        SDL_strlcpy(procname + 1, proc, 1022);
+        retval = SDL_LoadFunction(_this->egl_data->egl_dll_handle, procname);
     }
     return retval;
 }
@@ -97,12 +99,12 @@ SDL_EGL_UnloadLibrary(_THIS)
             _this->egl_data->egl_display = NULL;
         }
 
-        if (_this->gl_config.dll_handle) {
-            dlclose(_this->gl_config.dll_handle);
-            _this->gl_config.dll_handle = NULL;
+        if (_this->egl_data->dll_handle) {
+            SDL_UnloadObject(_this->egl_data->dll_handle);
+            _this->egl_data->dll_handle = NULL;
         }
         if (_this->egl_data->egl_dll_handle) {
-            dlclose(_this->egl_data->egl_dll_handle);
+            SDL_UnloadObject(_this->egl_data->egl_dll_handle);
             _this->egl_data->egl_dll_handle = NULL;
         }
         
@@ -114,10 +116,12 @@ SDL_EGL_UnloadLibrary(_THIS)
 int
 SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_display)
 {
-    void *dll_handle, *egl_dll_handle; /* The naming is counter intuitive, but hey, I just work here -- Gabriel */
-    char *path;
-    int dlopen_flags;
-    
+    void *dll_handle = NULL, *egl_dll_handle = NULL; /* The naming is counter intuitive, but hey, I just work here -- Gabriel */
+    char *path = NULL;
+#if SDL_VIDEO_DRIVER_WINDOWS
+    const char *d3dcompiler;
+#endif
+
     if (_this->egl_data) {
         return SDL_SetError("OpenGL ES context already created");
     }
@@ -127,50 +131,63 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
         return SDL_OutOfMemory();
     }
 
-#ifdef RTLD_GLOBAL
-    dlopen_flags = RTLD_LAZY | RTLD_GLOBAL;
-#else
-    dlopen_flags = RTLD_LAZY;
+#if SDL_VIDEO_DRIVER_WINDOWS
+    d3dcompiler = SDL_GetHint(SDL_HINT_VIDEO_WIN_D3DCOMPILER);
+    if (!d3dcompiler) {
+        /* By default we load the Vista+ compatible compiler */
+        d3dcompiler = "d3dcompiler_46.dll";
+    }
+    if (SDL_strcasecmp(d3dcompiler, "none") != 0) {
+        SDL_LoadObject(d3dcompiler);
+    }
 #endif
 
     /* A funny thing, loading EGL.so first does not work on the Raspberry, so we load libGL* first */
-    path = getenv("SDL_VIDEO_GL_DRIVER");
-    egl_dll_handle = dlopen(path, dlopen_flags);
-    if ((path == NULL) | (egl_dll_handle == NULL)) {
+    path = SDL_getenv("SDL_VIDEO_GL_DRIVER");
+    if (path != NULL) {
+        egl_dll_handle = SDL_LoadObject(path);
+    }
+
+    if (egl_dll_handle == NULL) {
         if (_this->gl_config.major_version > 1) {
             path = DEFAULT_OGL_ES2;
-            egl_dll_handle = dlopen(path, dlopen_flags);
-        } else {
+            egl_dll_handle = SDL_LoadObject(path);
+        }
+        else {
             path = DEFAULT_OGL_ES;
-            egl_dll_handle = dlopen(path, dlopen_flags);
+            egl_dll_handle = SDL_LoadObject(path);
             if (egl_dll_handle == NULL) {
                 path = DEFAULT_OGL_ES_PVR;
-                egl_dll_handle = dlopen(path, dlopen_flags);
+                egl_dll_handle = SDL_LoadObject(path);
             }
         }
     }
     _this->egl_data->egl_dll_handle = egl_dll_handle;
 
     if (egl_dll_handle == NULL) {
-        return SDL_SetError("Could not initialize OpenGL ES library: %s", dlerror());
+        return SDL_SetError("Could not initialize OpenGL ES library");
     }
-    
+
     /* Loading libGL* in the previous step took care of loading libEGL.so, but we future proof by double checking */
-    dll_handle = dlopen(egl_path, dlopen_flags);
+    if (egl_path != NULL) {
+        dll_handle = SDL_LoadObject(egl_path);
+    }   
     /* Catch the case where the application isn't linked with EGL */
-    if ((dlsym(dll_handle, "eglChooseConfig") == NULL) && (egl_path == NULL)) {
-        dlclose(dll_handle);
-        path = getenv("SDL_VIDEO_EGL_DRIVER");
+    if ((SDL_LoadFunction(dll_handle, "eglChooseConfig") == NULL) && (egl_path == NULL)) {
+        if (dll_handle != NULL) {
+            SDL_UnloadObject(dll_handle);
+        }
+        path = SDL_getenv("SDL_VIDEO_EGL_DRIVER");
         if (path == NULL) {
             path = DEFAULT_EGL;
         }
-        dll_handle = dlopen(path, dlopen_flags);
+        dll_handle = SDL_LoadObject(path);
+        if (dll_handle == NULL) {
+            return SDL_SetError("Could not load EGL library");
+        }
     }
-    _this->gl_config.dll_handle = dll_handle;
 
-    if (dll_handle == NULL) {
-        return SDL_SetError("Could not load EGL library: %s", dlerror());
-    }
+    _this->egl_data->dll_handle = dll_handle;
 
     /* Load new function pointers */
     LOAD_FUNC(eglGetDisplay);
@@ -198,14 +215,14 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
         return SDL_SetError("Could not initialize EGL");
     }
 
-    _this->gl_config.dll_handle = dll_handle;
+    _this->egl_data->dll_handle = dll_handle;
     _this->egl_data->egl_dll_handle = egl_dll_handle;
     _this->gl_config.driver_loaded = 1;
 
     if (path) {
-        strncpy(_this->gl_config.driver_path, path, sizeof(_this->gl_config.driver_path) - 1);
+        SDL_strlcpy(_this->gl_config.driver_path, path, sizeof(_this->gl_config.driver_path) - 1);
     } else {
-        strcpy(_this->gl_config.driver_path, "");
+        *_this->gl_config.driver_path = '\0';
     }
     
     /* We need to select a config here to satisfy some video backends such as X11 */
@@ -217,10 +234,10 @@ SDL_EGL_ChooseConfig(_THIS)
 {
     /* 64 seems nice. */
     EGLint attribs[64];
-    EGLint found_configs = 0;
+    EGLint found_configs = 0, value;
     /* 128 seems even nicer here */
     EGLConfig configs[128];
-    int i, j, best_bitdiff = -1, bitdiff, value;
+    int i, j, best_bitdiff = -1, bitdiff;
     
     if (!_this->egl_data) {
         /* The EGL library wasn't loaded, SDL_GetError() should have info */
@@ -283,10 +300,10 @@ SDL_EGL_ChooseConfig(_THIS)
     
     /* eglChooseConfig returns a number of configurations that match or exceed the requested attribs. */
     /* From those, we select the one that matches our requirements more closely via a makeshift algorithm */
-    
+
     for ( i=0; i<found_configs; i++ ) {
         bitdiff = 0;
-        for (j = 0; ; j += 2) {
+        for (j = 0; j < SDL_arraysize(attribs) - 1; j += 2) {
             if (attribs[j] == EGL_NONE) {
                break;
             }
@@ -298,7 +315,6 @@ SDL_EGL_ChooseConfig(_THIS)
                 attribs[j] == EGL_ALPHA_SIZE ||
                 attribs[j] == EGL_DEPTH_SIZE ||
                 attribs[j] == EGL_STENCIL_SIZE)) {
-                
                 _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display, configs[i], attribs[j], &value);
                 bitdiff += value - attribs[j + 1]; /* value is always >= attrib */
             }
