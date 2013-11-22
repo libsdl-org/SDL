@@ -161,7 +161,7 @@ if test x$have_opengles = xyes; then
 fi
 if test x$have_opengles2 = xyes; then
     CFLAGS="$CFLAGS -DHAVE_OPENGLES2"
-    GLES2LIB="$XPATH -lGLESv2"
+    #GLES2LIB="$XPATH -lGLESv2"
 fi
 if test x$have_opengl = xyes; then
     CFLAGS="$CFLAGS -DHAVE_OPENGL"

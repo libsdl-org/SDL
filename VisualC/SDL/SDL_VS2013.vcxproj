@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="12.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -232,6 +232,7 @@
     <ClInclude Include="..\..\include\SDL_config_windows.h" />
     <ClInclude Include="..\..\include\SDL_copying.h" />
     <ClInclude Include="..\..\include\SDL_cpuinfo.h" />
+    <ClInclude Include="..\..\include\SDL_egl.h" />
     <ClInclude Include="..\..\include\SDL_endian.h" />
     <ClInclude Include="..\..\include\SDL_error.h" />
     <ClInclude Include="..\..\include\SDL_events.h" />
@@ -301,6 +302,7 @@
     <ClInclude Include="..\..\src\video\SDL_blit_auto.h" />
     <ClInclude Include="..\..\src\video\SDL_blit_copy.h" />
     <ClInclude Include="..\..\src\video\SDL_blit_slow.h" />
+    <ClInclude Include="..\..\src\video\sdl_egl_c.h" />
     <ClInclude Include="..\..\src\video\SDL_shape_internals.h" />
     <ClInclude Include="..\..\src\audio\winmm\SDL_winmm.h" />
     <ClInclude Include="..\..\src\audio\disk\SDL_diskaudio.h" />
@@ -340,6 +342,7 @@
     <ClInclude Include="..\..\src\video\windows\SDL_windowsmodes.h" />
     <ClInclude Include="..\..\src\video\windows\SDL_windowsmouse.h" />
     <ClInclude Include="..\..\src\video\windows\SDL_windowsopengl.h" />
+    <ClInclude Include="..\..\src\video\windows\SDL_windowsopengles.h" />
     <ClInclude Include="..\..\src\video\windows\SDL_windowsshape.h" />
     <ClInclude Include="..\..\src\video\windows\SDL_windowsvideo.h" />
     <ClInclude Include="..\..\src\video\windows\SDL_windowswindow.h" />
@@ -368,6 +371,8 @@
     <ClCompile Include="..\..\src\libm\s_scalbn.c" />
     <ClCompile Include="..\..\src\libm\s_sin.c" />
     <ClCompile Include="..\..\src\render\direct3d\SDL_render_d3d.c" />
+    <ClCompile Include="..\..\src\render\opengles2\SDL_render_gles2.c" />
+    <ClCompile Include="..\..\src\render\opengles2\SDL_shaders_gles2.c" />
     <ClCompile Include="..\..\src\render\opengl\SDL_render_gl.c" />
     <ClCompile Include="..\..\src\render\opengl\SDL_shaders_gl.c" />
     <ClCompile Include="..\..\src\render\SDL_render.c" />
@@ -402,6 +407,7 @@
     <ClCompile Include="..\..\src\video\SDL_bmp.c" />
     <ClCompile Include="..\..\src\cpuinfo\SDL_cpuinfo.c" />
     <ClCompile Include="..\..\src\video\SDL_clipboard.c" />
+    <ClCompile Include="..\..\src\video\SDL_egl.c" />
     <ClCompile Include="..\..\src\video\SDL_shape.c" />
     <ClCompile Include="..\..\src\audio\winmm\SDL_winmm.c" />
     <ClCompile Include="..\..\src\audio\disk\SDL_diskaudio.c" />
@@ -457,6 +463,7 @@
     <ClCompile Include="..\..\src\video\windows\SDL_windowsmodes.c" />
     <ClCompile Include="..\..\src\video\windows\SDL_windowsmouse.c" />
     <ClCompile Include="..\..\src\video\windows\SDL_windowsopengl.c" />
+    <ClCompile Include="..\..\src\video\windows\SDL_windowsopengles.c" />
     <ClCompile Include="..\..\src\video\windows\SDL_windowsshape.c" />
     <ClCompile Include="..\..\src\video\windows\SDL_windowsvideo.c" />
     <ClCompile Include="..\..\src\video\windows\SDL_windowswindow.c" />

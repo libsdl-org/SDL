@@ -25,6 +25,7 @@
 #include "SDL_assert.h"
 #include "SDL_loadso.h"
 #include "SDL_windowsvideo.h"
+#include "SDL_windowsopengles.h"
 
 /* WGL implementation of SDL OpenGL support */
 
@@ -323,11 +324,35 @@ HasExtension(const char *extension, const char *extensions)
     return SDL_FALSE;
 }
 
-static void
-WIN_GL_InitExtensions(_THIS, HDC hdc)
+void
+WIN_GL_InitExtensions(_THIS)
 {
     const char *(WINAPI * wglGetExtensionsStringARB) (HDC) = 0;
     const char *extensions;
+    HWND hwnd;
+    HDC hdc;
+    HGLRC hglrc;
+    PIXELFORMATDESCRIPTOR pfd;
+
+    hwnd =
+        CreateWindow(SDL_Appname, SDL_Appname, (WS_POPUP | WS_DISABLED), 0, 0,
+        10, 10, NULL, NULL, SDL_Instance, NULL);
+    if (!hwnd) {
+        return;
+    }
+    WIN_PumpEvents(_this);
+
+    hdc = GetDC(hwnd);
+
+    WIN_GL_SetupPixelFormat(_this, &pfd);
+
+    SetPixelFormat(hdc, ChoosePixelFormat(hdc, &pfd), &pfd);
+
+    hglrc = _this->gl_data->wglCreateContext(hdc);
+    if (!hglrc) {
+        return;
+    }
+    _this->gl_data->wglMakeCurrent(hdc, hglrc);
 
     wglGetExtensionsStringARB = (const char *(WINAPI *) (HDC))
         _this->gl_data->wglGetProcAddress("wglGetExtensionsStringARB");
@@ -369,6 +394,18 @@ WIN_GL_InitExtensions(_THIS, HDC hdc)
         _this->gl_data->wglSwapIntervalEXT = NULL;
         _this->gl_data->wglGetSwapIntervalEXT = NULL;
     }
+
+    /* Check for WGL_EXT_create_context_es2_profile */
+    _this->gl_data->HAS_WGL_EXT_create_context_es2_profile = SDL_FALSE;
+    if (HasExtension("WGL_EXT_create_context_es2_profile", extensions)) {
+        _this->gl_data->HAS_WGL_EXT_create_context_es2_profile = SDL_TRUE;
+    }
+
+    _this->gl_data->wglMakeCurrent(hdc, NULL);
+    _this->gl_data->wglDeleteContext(hglrc);
+    ReleaseDC(hwnd, hdc);
+    DestroyWindow(hwnd);
+    WIN_PumpEvents(_this);
 }
 
 static int
@@ -395,8 +432,6 @@ WIN_GL_ChoosePixelFormatARB(_THIS, int *iAttribs, float *fAttribs)
     hglrc = _this->gl_data->wglCreateContext(hdc);
     if (hglrc) {
         _this->gl_data->wglMakeCurrent(hdc, hglrc);
-
-        WIN_GL_InitExtensions(_this, hdc);
 
         if (_this->gl_data->HAS_WGL_ARB_pixel_format) {
             _this->gl_data->wglChoosePixelFormatARB(hdc, iAttribs, fAttribs,
@@ -548,6 +583,27 @@ WIN_GL_CreateContext(_THIS, SDL_Window * window)
     HDC hdc = ((SDL_WindowData *) window->driverdata)->hdc;
     HGLRC context, share_context;
 
+    if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES &&
+        !_this->gl_data->HAS_WGL_EXT_create_context_es2_profile) {
+        /* Switch to EGL based functions */
+        WIN_GL_UnloadLibrary(_this);
+        _this->GL_LoadLibrary = WIN_GLES_LoadLibrary;
+        _this->GL_GetProcAddress = WIN_GLES_GetProcAddress;
+        _this->GL_UnloadLibrary = WIN_GLES_UnloadLibrary;
+        _this->GL_CreateContext = WIN_GLES_CreateContext;
+        _this->GL_MakeCurrent = WIN_GLES_MakeCurrent;
+        _this->GL_SetSwapInterval = WIN_GLES_SetSwapInterval;
+        _this->GL_GetSwapInterval = WIN_GLES_GetSwapInterval;
+        _this->GL_SwapWindow = WIN_GLES_SwapWindow;
+        _this->GL_DeleteContext = WIN_GLES_DeleteContext;
+        
+        if (WIN_GLES_LoadLibrary(_this, NULL) != 0) {
+            return NULL;
+        }
+        
+        return WIN_GLES_CreateContext(_this, window);
+    }
+
     if (_this->gl_config.share_with_current_context) {
         share_context = (HGLRC)SDL_GL_GetCurrentContext();
     } else {
@@ -621,8 +677,6 @@ WIN_GL_CreateContext(_THIS, SDL_Window * window)
         WIN_GL_DeleteContext(_this, context);
         return NULL;
     }
-
-    WIN_GL_InitExtensions(_this, hdc);
 
     return context;
 }

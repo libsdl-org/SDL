@@ -301,6 +301,21 @@ extern "C" {
  */
 #define SDL_HINT_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK "SDL_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK"
 
+/**
+*  \brief  A variable specifying which shader compiler to preload when using the Chrome ANGLE binaries
+*
+*  SDL has EGL and OpenGL ES2 support on Windows via the ANGLE project. It
+*  can use two different sets of binaries, those compiled by the user from source
+*  or those provided by the Chrome browser. In the later case, these binaries require
+*  that SDL loads 
+*
+*  This variable can be set to the following values:
+*    "d3dcompiler_46.dll" - default, best for Vista or later.
+*    "d3dcompiler_43.dll" - for XP support.
+*    "none" - do not load any library, useful if you compiled ANGLE from source and included the compiler in your binaries.
+*
+*/
+#define SDL_HINT_VIDEO_WIN_D3DCOMPILER              "SDL_VIDEO_WIN_D3DCOMPILER"
 
 /**
  *  \brief  An enumeration of hint priorities
