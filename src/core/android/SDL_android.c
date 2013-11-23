@@ -1041,7 +1041,7 @@ static jobject Android_JNI_GetSystemServiceObject(const char* name)
     mid = (*env)->GetStaticMethodID(env, mActivityClass, "getContext", "()Landroid/content/Context;");
     jobject context = (*env)->CallStaticObjectMethod(env, mActivityClass, mid);
 
-    mid = (*env)->GetMethodID(env, mActivityClass, "getSystemService", "(Ljava/lang/String;)Ljava/lang/Object;");
+    mid = (*env)->GetMethodID(env, mActivityClass, "getSystemServiceFromUiThread", "(Ljava/lang/String;)Ljava/lang/Object;");
     jobject manager = (*env)->CallObjectMethod(env, context, mid, service);
 
     (*env)->DeleteLocalRef(env, service);
