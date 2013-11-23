@@ -675,7 +675,6 @@ main(int argc, char *argv[])
     }
 #if !defined(__ANDROID__)    
     quit(0);
-    return 0;
 #endif    
     return 0;
 }
