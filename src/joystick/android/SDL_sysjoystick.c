@@ -31,7 +31,6 @@
 #include "SDL_joystick.h"
 #include "SDL_hints.h"
 #include "SDL_assert.h"
-#include "SDL_log.h"
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
 #include "../../core/android/SDL_android.h"
