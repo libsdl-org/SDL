@@ -115,7 +115,7 @@ extern DECLSPEC SDL_JoystickGUID SDLCALL SDL_JoystickGetGUID(SDL_Joystick * joys
  *  Return a string representation for this guid. pszGUID must point to at least 33 bytes
  *  (32 for the string plus a NULL terminator).
  */
-extern DECLSPEC void SDL_JoystickGetGUIDString(SDL_JoystickGUID guid, char *pszGUID, int cbGUID);
+extern DECLSPEC void SDLCALL SDL_JoystickGetGUIDString(SDL_JoystickGUID guid, char *pszGUID, int cbGUID);
 
 /**
  *  convert a string into a joystick formatted guid
