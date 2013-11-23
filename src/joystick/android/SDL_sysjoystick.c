@@ -161,20 +161,18 @@ SDL_SYS_JoystickInit(void)
     if (SYS_accelAsJoy) {
         SYS_numjoysticks++;
     }
-    SYS_Joysticks = (SDL_Joystick **)SDL_malloc(SYS_numjoysticks*sizeof(SDL_Joystick *));
+    SYS_Joysticks = (SDL_Joystick **)SDL_calloc(1, SYS_numjoysticks*sizeof(SDL_Joystick *));
     if (SYS_Joysticks == NULL)
     {
         return SDL_OutOfMemory();
     }
-    SYS_JoystickNames = (char **)SDL_malloc(SYS_numjoysticks*sizeof(char *));
+    SYS_JoystickNames = (char **)SDL_calloc(1, SYS_numjoysticks*sizeof(char *));
     if (SYS_JoystickNames == NULL)
     {
         SDL_free(SYS_Joysticks);
         SYS_Joysticks = NULL;
         return SDL_OutOfMemory();
     }
-    SDL_memset(SYS_JoystickNames, 0, (SYS_numjoysticks*sizeof(char *)));
-    SDL_memset(SYS_Joysticks, 0, (SYS_numjoysticks*sizeof(SDL_Joystick *)));
     
     for (i = 0; i < SYS_numjoysticks; i++)
     {
@@ -274,6 +272,15 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
 void
 SDL_SYS_JoystickClose(SDL_Joystick * joystick)
 {
+    int device_index;
+    
+    for (device_index = 0; device_index < SYS_numjoysticks; device_index++) {
+        if ( SYS_Joysticks[device_index] == joystick ) {
+            SYS_Joysticks[device_index] = NULL;
+        }
+    }
+    
+    joystick->closed = 1;
 }
 
 /* Function to perform any system-specific joystick related cleanup */
@@ -311,7 +318,9 @@ Android_OnPadDown(int padId, int keycode)
 {
     int button = keycode_to_SDL(keycode);
     if (button >= 0) {
-        SDL_PrivateJoystickButton(SYS_Joysticks[padId], button , SDL_PRESSED);
+        if (SYS_Joysticks[padId]) {
+            SDL_PrivateJoystickButton(SYS_Joysticks[padId], button , SDL_PRESSED);
+        }
         return 0;
     }
     
@@ -323,7 +332,9 @@ Android_OnPadUp(int padId, int keycode)
 {
     int button = keycode_to_SDL(keycode);
     if (button >= 0) {
-        SDL_PrivateJoystickButton(SYS_Joysticks[padId], button, SDL_RELEASED);
+        if (SYS_Joysticks[padId]) {
+            SDL_PrivateJoystickButton(SYS_Joysticks[padId], button, SDL_RELEASED);
+        }
         return 0;
     }
     
@@ -335,7 +346,9 @@ Android_OnJoy(int joyId, int axis, float value)
 {
     /* Android gives joy info normalized as [-1.0, 1.0] or [0.0, 1.0] */
     /* TODO: Are the reported values right? */
-    SDL_PrivateJoystickAxis(SYS_Joysticks[joyId], axis, (Sint16) (32767.*value) );
+    if (SYS_Joysticks[joyId]) {
+        SDL_PrivateJoystickAxis(SYS_Joysticks[joyId], axis, (Sint16) (32767.*value) );
+    }
     
     return 0;
 }
