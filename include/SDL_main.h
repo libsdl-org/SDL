@@ -101,7 +101,7 @@ extern "C" {
  *  Calling this yourself without knowing what you're doing can cause
  *  crashes and hard to diagnose problems with your application.
  */
-extern DECLSPEC void SDL_SetMainReady(void);
+extern DECLSPEC void SDLCALL SDL_SetMainReady(void);
 
 #ifdef __WIN32__
 
