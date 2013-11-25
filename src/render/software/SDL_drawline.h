@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_config.h"
+#include "../../SDL_internal.h"
 
 
 extern int SDL_DrawLine(SDL_Surface * dst, int x1, int y1, int x2, int y2, Uint32 color);

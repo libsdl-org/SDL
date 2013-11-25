@@ -28,7 +28,7 @@ freely, subject to the following restrictions:
 Andreas Schiffler -- aschiffler at ferzkopp dot net
 
 */
-#include "SDL_config.h"
+#include "../../SDL_internal.h"
 
 #if defined(__WIN32__)
 #include "../../core/windows/SDL_windows.h"

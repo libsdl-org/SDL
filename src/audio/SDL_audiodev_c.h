@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "SDL.h"
-#include "SDL_config.h"
+#include "../SDL_internal.h"
 #include "SDL_sysaudio.h"
 
 /* Open the audio device for playback, and don't block if busy */

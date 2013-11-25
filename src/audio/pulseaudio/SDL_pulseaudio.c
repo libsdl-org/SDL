@@ -25,7 +25,7 @@
    was the cleanest way to move it to 1.3. The 1.2 target was written by
    Stéphan Kochen: stephan .a.t. kochen.nl
 */
-#include "SDL_config.h"
+#include "../../SDL_internal.h"
 
 #if SDL_AUDIO_DRIVER_PULSEAUDIO
 

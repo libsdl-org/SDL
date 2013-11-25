@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_config.h"
+#include "../SDL_internal.h"
 
 /* This a stretch blit implementation based on ideas given to me by
    Tomasz Cejner - thanks! :)

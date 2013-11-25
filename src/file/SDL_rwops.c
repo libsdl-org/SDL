@@ -20,7 +20,7 @@
 */
 /* Need this so Linux systems define fseek64o, ftell64o and off64_t */
 #define _LARGEFILE64_SOURCE
-#include "SDL_config.h"
+#include "../SDL_internal.h"
 
 #if defined(__WIN32__)
 #include "../core/windows/SDL_windows.h"

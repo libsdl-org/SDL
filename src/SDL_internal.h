@@ -18,44 +18,11 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#ifndef _SDL_internal_h
+#define _SDL_internal_h
 
-#ifndef _SDL_cocoavideo_h
-#define _SDL_cocoavideo_h
+#include "SDL_config.h"
 
-#include "SDL_opengl.h"
-
-#include <ApplicationServices/ApplicationServices.h>
-#include <Cocoa/Cocoa.h>
-
-#include "SDL_keycode.h"
-#include "../SDL_sysvideo.h"
-
-#include "SDL_cocoaclipboard.h"
-#include "SDL_cocoaevents.h"
-#include "SDL_cocoakeyboard.h"
-#include "SDL_cocoamodes.h"
-#include "SDL_cocoamouse.h"
-#include "SDL_cocoaopengl.h"
-#include "SDL_cocoawindow.h"
-
-/* Private display data */
-
-@class SDLTranslatorResponder;
-
-typedef struct SDL_VideoData
-{
-    SInt32 osversion;
-    unsigned int modifierFlags;
-    void *key_layout;
-    SDLTranslatorResponder *fieldEdit;
-    NSInteger clipboard_count;
-    Uint32 screensaver_activity;
-} SDL_VideoData;
-
-/* Utility functions */
-extern NSImage * Cocoa_CreateImage(SDL_Surface * surface);
-
-#endif /* _SDL_cocoavideo_h */
+#endif
 
 /* vi: set ts=4 sw=4 expandtab: */
