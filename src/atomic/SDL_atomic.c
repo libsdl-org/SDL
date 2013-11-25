@@ -22,13 +22,14 @@
 
 #include "SDL_atomic.h"
 
-/* Note that we undefine the atomic operations here, in case they are
-   defined as compiler intrinsics while building SDL but the library user
-   doesn't have that compiler.  That way we always have a working set of
-   atomic operations built into the library.
-*/
-#undef SDL_AtomicCAS
-#undef SDL_AtomicCASPtr
+#if defined(_MSC_VER) && (_MSC_VER >= 1500)
+#include <intrin.h>
+#define HAVE_MSC_ATOMICS 1
+#endif
+
+#if defined(__MACOSX__)  /* !!! FIXME: should we favor gcc atomics? */
+#include <libkern/OSAtomic.h>
+#endif
 
 /*
   If any of the operations are not provided then we must emulate some
@@ -53,6 +54,11 @@
   Contributed by Bob Pendleton, bob@pendleton.com
 */
 
+#if !defined(HAVE_MSC_ATOMICS) && !defined(HAVE_GCC_ATOMICS) && !defined(__MACOSX__)
+#define EMULATE_CAS 1
+#endif
+
+#if EMULATE_CAS
 static SDL_SpinLock locks[32];
 
 static SDL_INLINE void
@@ -70,10 +76,19 @@ leaveLock(void *a)
 
     SDL_AtomicUnlock(&locks[index]);
 }
+#endif
 
-DECLSPEC SDL_bool SDLCALL
+
+SDL_bool
 SDL_AtomicCAS(SDL_atomic_t *a, int oldval, int newval)
 {
+#ifdef HAVE_MSC_ATOMICS
+    return (_InterlockedCompareExchange((long*)&a->value, (long)newval, (long)oldval) == (long)oldval);
+#elif defined(__MACOSX__)  /* !!! FIXME: should we favor gcc atomics? */
+    return (SDL_bool) OSAtomicCompareAndSwap32Barrier(oldval, newval, &a->value);
+#elif defined(HAVE_GCC_ATOMICS)
+    return (SDL_bool) __sync_bool_compare_and_swap(&a->value, oldval, newval);
+#elif EMULATE_CAS
     SDL_bool retval = SDL_FALSE;
 
     enterLock(a);
@@ -84,11 +99,25 @@ SDL_AtomicCAS(SDL_atomic_t *a, int oldval, int newval)
     leaveLock(a);
 
     return retval;
+#else
+    #error Please define your platform.
+#endif
 }
 
-DECLSPEC SDL_bool SDLCALL
+SDL_bool
 SDL_AtomicCASPtr(void **a, void *oldval, void *newval)
 {
+#if defined(HAVE_MSC_ATOMICS) && (_M_IX86)
+    return (_InterlockedCompareExchange((long*)a, (long)newval, (long)oldval) == (long)oldval);
+#elif defined(HAVE_MSC_ATOMICS) && (!_M_IX86)
+    return (_InterlockedCompareExchangePointer(a, newval, oldval) == oldval);
+#elif defined(__MACOSX__) && defined(__LP64__)   /* !!! FIXME: should we favor gcc atomics? */
+    return (SDL_bool) OSAtomicCompareAndSwap64Barrier((int64_t)oldval, (int64_t)newval, (int64_t*) a);
+#elif defined(__MACOSX__) && !defined(__LP64__)  /* !!! FIXME: should we favor gcc atomics? */
+    return (SDL_bool) OSAtomicCompareAndSwap32Barrier((int32_t)oldval, (int32_t)newval, (int32_t*) a);
+#elif defined(HAVE_GCC_ATOMICS)
+    return __sync_bool_compare_and_swap(a, oldval, newval);
+#elif EMULATE_CAS
     SDL_bool retval = SDL_FALSE;
 
     enterLock(a);
@@ -99,10 +128,80 @@ SDL_AtomicCASPtr(void **a, void *oldval, void *newval)
     leaveLock(a);
 
     return retval;
+#else
+    #error Please define your platform.
+#endif
 }
 
-#if defined(__GNUC__) && defined(__arm__) && \
-   (defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6T2__) || defined(__ARM_ARCH_6Z__) || defined(__ARM_ARCH_6ZK__))
+int
+SDL_AtomicSet(SDL_atomic_t *a, int v)
+{
+#ifdef HAVE_MSC_ATOMICS
+    return _InterlockedExchange((long*)&a->value, v);
+#elif defined(HAVE_GCC_ATOMICS)
+    return __sync_lock_test_and_set(&a->value, v);
+#else
+    int value;
+    do {
+        value = a->value;
+    } while (!SDL_AtomicCAS(a, value, v));
+    return value;
+#endif
+}
+
+void*
+SDL_AtomicSetPtr(void **a, void *v)
+{
+#ifdef HAVE_MSC_ATOMICS
+    return _InterlockedExchangePointer(a, v);
+#elif defined(HAVE_GCC_ATOMICS)
+    return __sync_lock_test_and_set(a, v);
+#else
+    void *value;
+    do {
+        value = *a;
+    } while (!SDL_AtomicCASPtr(a, value, v));
+    return value;
+#endif
+}
+
+int
+SDL_AtomicAdd(SDL_atomic_t *a, int v)
+{
+#ifdef HAVE_MSC_ATOMICS
+    return _InterlockedExchangeAdd((long*)&a->value, v);
+#elif defined(HAVE_GCC_ATOMICS)
+    return __sync_fetch_and_add(&a->value, v);
+#else
+    int value;
+    do {
+        value = a->value;
+    } while (!SDL_AtomicCAS(a, value, (value + v)));
+    return value;
+#endif
+}
+
+int
+SDL_AtomicGet(SDL_atomic_t *a)
+{
+    int value;
+    do {
+        value = a->value;
+    } while (!SDL_AtomicCAS(a, value, value));
+    return value;
+}
+
+void *
+SDL_AtomicGetPtr(void **a)
+{
+    void *value;
+    do {
+        value = *a;
+    } while (!SDL_AtomicCASPtr(a, value, value));
+    return value;
+}
+
+#ifdef __thumb__
 __asm__(
 "   .align 2\n"
 "   .globl _SDL_MemoryBarrierRelease\n"
@@ -113,6 +212,6 @@ __asm__(
 "   mcr p15, 0, r0, c7, c10, 5\n"
 "   bx lr\n"
 );
-#endif /* __GNUC__ && __arm__ && ARMV6 */
+#endif
 
 /* vi: set ts=4 sw=4 expandtab: */
