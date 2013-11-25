@@ -503,13 +503,14 @@ if(LIBC)
     check_c_source_compiles("#include <sys/types.h>
                              #include <sys/mman.h>
                              int main() { }" HAVE_MPROTECT)
+    # FIXME: we don't care if you have snprintf, etc, any more. We only care if you have vsnprintf. Clean this up.
     foreach(_FN
             strtod malloc calloc realloc free getenv setenv putenv unsetenv
             qsort abs bcopy memset memcpy memmove memcmp strlen strlcpy strlcat
             strdup _strrev _strupr _strlwr strchr strrchr strstr itoa _ltoa
             _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull
             atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp
-            sscanf snprintf vsnprintf fseeko fseeko64 sigaction setjmp
+            vsscanf snprintf vsnprintf fseeko fseeko64 sigaction setjmp
             nanosleep sysconf sysctlbyname
             )
       string(TOUPPER ${_FN} _UPPER)
