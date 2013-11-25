@@ -38,11 +38,8 @@
 #define ACTION_MOVE 2
 #define ACTION_CANCEL 3
 #define ACTION_OUTSIDE 4
-/* The following two are deprecated but it seems they are still emitted (instead the corresponding ACTION_UP/DOWN) as of Android 3.2 */
-#define ACTION_POINTER_1_DOWN 5
-#define ACTION_POINTER_1_UP 6
-
-static SDL_FingerID leftFingerDown = 0;
+#define ACTION_POINTER_DOWN 5
+#define ACTION_POINTER_UP 6
 
 static void Android_GetWindowCoordinates(float x, float y,
                                          int *window_x, int *window_y)
@@ -72,6 +69,7 @@ void Android_OnTouch(int touch_device_id_in, int pointer_finger_id_in, int actio
     SDL_TouchID touchDeviceId = 0;
     SDL_FingerID fingerId = 0;
     int window_x, window_y;
+    static SDL_FingerID pointerFingerID = 0;
 
     if (!Android_Window) {
         return;
@@ -85,22 +83,20 @@ void Android_OnTouch(int touch_device_id_in, int pointer_finger_id_in, int actio
     fingerId = (SDL_FingerID)pointer_finger_id_in;
     switch (action) {
         case ACTION_DOWN:
-        case ACTION_POINTER_1_DOWN:
-            if (!leftFingerDown) {
-                Android_GetWindowCoordinates(x, y, &window_x, &window_y);
-
-                /* send moved event */
-                SDL_SendMouseMotion(NULL, SDL_TOUCH_MOUSEID, 0, window_x, window_y);
-
-                /* send mouse down event */
-                SDL_SendMouseButton(NULL, SDL_TOUCH_MOUSEID, SDL_PRESSED, SDL_BUTTON_LEFT);
-
-                leftFingerDown = fingerId;
-            }
+            /* Primary pointer down */
+            Android_GetWindowCoordinates(x, y, &window_x, &window_y);
+            /* send moved event */
+            SDL_SendMouseMotion(NULL, SDL_TOUCH_MOUSEID, 0, window_x, window_y);
+            /* send mouse down event */
+            SDL_SendMouseButton(NULL, SDL_TOUCH_MOUSEID, SDL_PRESSED, SDL_BUTTON_LEFT);
+            pointerFingerID = fingerId;
+        case ACTION_POINTER_DOWN:
+            /* Non primary pointer down */
             SDL_SendTouch(touchDeviceId, fingerId, SDL_TRUE, x, y, p);
             break;
+            
         case ACTION_MOVE:
-            if (!leftFingerDown) {
+            if (!pointerFingerID) {
                 Android_GetWindowCoordinates(x, y, &window_x, &window_y);
 
                 /* send moved event */
@@ -108,15 +104,17 @@ void Android_OnTouch(int touch_device_id_in, int pointer_finger_id_in, int actio
             }
             SDL_SendTouchMotion(touchDeviceId, fingerId, x, y, p);
             break;
+            
         case ACTION_UP:
-        case ACTION_POINTER_1_UP:
-            if (fingerId == leftFingerDown) {
-                /* send mouse up */
-                SDL_SendMouseButton(NULL, SDL_TOUCH_MOUSEID, SDL_RELEASED, SDL_BUTTON_LEFT);
-                leftFingerDown = 0;
-            }
+            /* Primary pointer up */
+            /* send mouse up */
+            pointerFingerID = (SDL_FingerID) 0;
+            SDL_SendMouseButton(NULL, SDL_TOUCH_MOUSEID, SDL_RELEASED, SDL_BUTTON_LEFT);
+        case ACTION_POINTER_UP:
+            /* Non primary pointer up */
             SDL_SendTouch(touchDeviceId, fingerId, SDL_FALSE, x, y, p);
             break;
+            
         default:
             break;
     }
