@@ -41,7 +41,7 @@
  *
  * Gareth McCaughan   Peterhouse   Cambridge   1998
  */
-#include "SDL_config.h"
+#include "../SDL_internal.h"
 
 /*
 #include <assert.h>

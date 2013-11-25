@@ -22,7 +22,7 @@
 #ifndef __SDL_RPIVIDEO_H__
 #define __SDL_RPIVIDEO_H__
 
-#include "SDL_config.h"
+#include "../../SDL_internal.h"
 #include "../SDL_sysvideo.h"
 
 #include "bcm_host.h"

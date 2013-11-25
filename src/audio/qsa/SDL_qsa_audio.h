@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_config.h"
+#include "../../SDL_internal.h"
 
 #ifndef __SDL_QSA_AUDIO_H__
 #define __SDL_QSA_AUDIO_H__

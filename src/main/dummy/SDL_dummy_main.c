@@ -1,6 +1,6 @@
 
 /* Include the SDL main definition header */
-#include "SDL_config.h"
+#include "../../SDL_internal.h"
 #include "SDL_main.h"
 
 #ifdef main
