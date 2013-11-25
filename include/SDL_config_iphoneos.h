@@ -80,7 +80,6 @@
 #define HAVE_STRCASECMP 1
 #define HAVE_STRNCASECMP 1
 #define HAVE_VSSCANF 1
-#define HAVE_SNPRINTF   1
 #define HAVE_VSNPRINTF  1
 #define HAVE_M_PI   1
 #define HAVE_ATAN   1
