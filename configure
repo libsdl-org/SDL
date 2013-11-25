@@ -16581,7 +16581,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 
-        for ac_func in malloc calloc realloc free getenv setenv putenv unsetenv qsort abs bcopy memset memcpy memmove strlen strlcpy strlcat strdup _strrev _strupr _strlwr strchr strrchr strstr itoa _ltoa _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp vsscanf snprintf vsnprintf fseeko fseeko64 sigaction setjmp nanosleep sysconf sysctlbyname
+    for ac_func in malloc calloc realloc free getenv setenv putenv unsetenv qsort abs bcopy memset memcpy memmove strlen strlcpy strlcat strdup _strrev _strupr _strlwr strchr strrchr strstr itoa _ltoa _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp vsscanf vsnprintf fseeko fseeko64 sigaction setjmp nanosleep sysconf sysctlbyname
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -16792,6 +16792,7 @@ SOURCES="$SOURCES $srcdir/src/*.c"
 SOURCES="$SOURCES $srcdir/src/atomic/*.c"
 SOURCES="$SOURCES $srcdir/src/audio/*.c"
 SOURCES="$SOURCES $srcdir/src/cpuinfo/*.c"
+SOURCES="$SOURCES $srcdir/src/dynapi/*.c"
 SOURCES="$SOURCES $srcdir/src/events/*.c"
 SOURCES="$SOURCES $srcdir/src/file/*.c"
 SOURCES="$SOURCES $srcdir/src/haptic/*.c"
@@ -19437,11 +19438,6 @@ fi
 fi
 
         if test x$have_x = xyes; then
-            # Only allow dynamically loaded X11 if the X11 function pointers
-            # will not end up in the global namespace, which causes problems
-            # with other libraries calling X11 functions.
-            x11_symbols_private=$have_gcc_fvisibility
-
             # Check whether --enable-x11-shared was given.
 if test "${enable_x11_shared+set}" = set; then :
   enableval=$enable_x11_shared;
@@ -19452,7 +19448,6 @@ fi
 
             case "$host" in
                 *-*-darwin*)
-                    x11_symbols_private=yes
                     x11_lib='/usr/X11R6/lib/libX11.6.dylib'
                     x11ext_lib='/usr/X11R6/lib/libXext.6.dylib'
                     xcursor_lib='/usr/X11R6/lib/libXcursor.1.dylib'
@@ -19520,7 +19515,7 @@ $as_echo "#define SDL_VIDEO_DRIVER_X11 1" >>confdefs.h
             SDL_CFLAGS="$SDL_CFLAGS $X_CFLAGS"
 
             if test x$enable_x11_shared = xmaybe; then
-                enable_x11_shared=$x11_symbols_private
+                enable_x11_shared=yes
             fi
             if test x$have_loadso != xyes && \
                test x$enable_x11_shared = xyes; then
@@ -19528,13 +19523,6 @@ $as_echo "#define SDL_VIDEO_DRIVER_X11 1" >>confdefs.h
 $as_echo "$as_me: WARNING: You must have SDL_LoadObject() support for dynamic X11 loading" >&2;}
                 enable_x11_shared=no
             fi
-            if test x$x11_symbols_private != xyes && \
-               test x$enable_x11_shared = xyes; then
-                { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: You must have gcc4 (-fvisibility=hidden) for dynamic X11 loading" >&5
-$as_echo "$as_me: WARNING: You must have gcc4 (-fvisibility=hidden) for dynamic X11 loading" >&2;}
-                enable_x11_shared=no
-            fi
-
             if test x$have_loadso = xyes && \
                test x$enable_x11_shared = xyes && test x$x11_lib != x && test x$x11ext_lib != x; then
                 echo "-- dynamic libX11 -> $x11_lib"
@@ -22745,9 +22733,6 @@ $as_echo "#define SDL_FILESYSTEM_HAIKU 1" >>confdefs.h
         CheckMacGL
         CheckOpenGLX11
         CheckPTHREAD
-
-        # Good optimization on Mac OS X, yes...
-        EXTRA_CFLAGS="$EXTRA_CFLAGS -falign-loops=16"
 
         # Need this or things might misbuild on a G3.
         EXTRA_CFLAGS="$EXTRA_CFLAGS -force_cpusubtype_ALL"

@@ -586,8 +586,8 @@ ac_subst_vars='LTLIBOBJS
 LIBOBJS
 SDL_TTF_LIB
 XLIB
-GLESLIB
 GLES2LIB
+GLESLIB
 GLLIB
 CPP
 XMKMF
@@ -3908,6 +3908,7 @@ if test x$have_opengl = xyes; then
     CFLAGS="$CFLAGS -DHAVE_OPENGL"
     GLLIB="$XPATH $SYS_GL_LIBS"
 fi
+
 
 
 
