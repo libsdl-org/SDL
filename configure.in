@@ -2827,9 +2827,6 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         CheckOpenGLX11
         CheckPTHREAD
 
-        # Good optimization on Mac OS X, yes...
-        EXTRA_CFLAGS="$EXTRA_CFLAGS -falign-loops=16"
-
         # Need this or things might misbuild on a G3.
         EXTRA_CFLAGS="$EXTRA_CFLAGS -force_cpusubtype_ALL"
 
