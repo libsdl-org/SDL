@@ -125,7 +125,6 @@
 #cmakedefine HAVE__STRNICMP 1
 #cmakedefine HAVE_STRNCASECMP 1
 #cmakedefine HAVE_VSSCANF 1
-#cmakedefine HAVE_SNPRINTF 1
 #cmakedefine HAVE_VSNPRINTF 1
 #cmakedefine HAVE_M_PI 1
 #cmakedefine HAVE_ATAN 1
