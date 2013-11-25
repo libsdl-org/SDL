@@ -132,7 +132,7 @@ typedef unsigned int uintptr_t;
 #define HAVE_SQRT 1
 #if _MSC_VER >= 1800
 #define HAVE_STRTOLL 1
-#define HAVE_SSCANF 1
+#define HAVE_VSSCANF 1
 #define HAVE_COPYSIGN 1
 #define HAVE_SCALBN 1
 #endif
