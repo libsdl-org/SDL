@@ -651,6 +651,17 @@ if(UNIX AND NOT APPLE)
         #endif
         int main(int argc, char** argv) {}" HAVE_INPUT_EVENTS)
 
+    check_c_source_compiles("
+        #include <linux/kd.h>
+        #include <linux/keyboard.h>
+
+        int main(int argc, char **argv) 
+        {
+            struct kbentry kbe;
+            kbe.kb_table = KG_CTRL;
+            ioctl(0, KDGKBENT, &kbe);
+        }" HAVE_INPUT_KD)
+
     file(GLOB CORE_SOURCES ${SDL2_SOURCE_DIR}/src/core/linux/*.c)
     set(SOURCE_FILES ${SOURCE_FILES} ${CORE_SOURCES})
 
@@ -664,6 +675,10 @@ if(UNIX AND NOT APPLE)
       set(SOURCE_FILES ${SOURCE_FILES} ${HAPTIC_SOURCES})
       set(HAVE_SDL_HAPTIC TRUE)
     endif(SDL_HAPTIC AND HAVE_INPUT_EVENTS)
+
+    if(HAVE_INPUT_KD)
+      set(SDL_INPUT_LINUXKD 1)
+    endif(HAVE_INPUT_KD)
 
     check_include_file("libudev.h" HAVE_LIBUDEV_H)
 
