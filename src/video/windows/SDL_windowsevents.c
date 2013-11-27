@@ -286,6 +286,45 @@ WIN_ConvertUTF32toUTF8(UINT32 codepoint, char * text)
     return SDL_TRUE;
 }
 
+static void
+WIN_UpdateClipCursor(SDL_Window *window)
+{
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+
+    /* Don't clip the cursor while we're in the modal resize or move loop */
+    if (data->in_modal_loop) {
+        ClipCursor(NULL);
+        return;
+    }
+        
+    if (SDL_GetMouse()->relative_mode) {
+        LONG cx, cy;
+        RECT rect;
+        GetWindowRect(data->hwnd, &rect);
+
+        cx = (rect.left + rect.right) / 2;
+        cy = (rect.top + rect.bottom) / 2;
+
+        /* Make an absurdly small clip rect */
+        rect.left = cx-1;
+        rect.right = cx+1;
+        rect.top = cy-1;
+        rect.bottom = cy+1;
+
+        ClipCursor(&rect);
+    } else if ((window->flags & SDL_WINDOW_INPUT_GRABBED) &&
+               (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
+        RECT rect;
+        if (GetClientRect(data->hwnd, &rect) && !IsRectEmpty(&rect)) {
+            ClientToScreen(data->hwnd, (LPPOINT) & rect);
+            ClientToScreen(data->hwnd, (LPPOINT) & rect + 1);
+            ClipCursor(&rect);
+        }
+    } else {
+        ClipCursor(NULL);
+    }
+}
+
 LRESULT CALLBACK
 WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -369,22 +408,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 WIN_CheckWParamMouseButton( ( keyState & 0x8000 ), (mouseFlags & SDL_BUTTON_X2MASK), data, SDL_BUTTON_X2 );
                 data->mouse_button_flags = 0;
 
-                if(SDL_GetMouse()->relative_mode) {
-                    LONG cx, cy;
-                    RECT rect;
-                    GetWindowRect(hwnd, &rect);
-
-                    cx = (rect.left + rect.right) / 2;
-                    cy = (rect.top + rect.bottom) / 2;
-
-                    /* Make an absurdly small clip rect */
-                    rect.left = cx-1;
-                    rect.right = cx+1;
-                    rect.top = cy-1;
-                    rect.bottom = cy+1;
-
-                    ClipCursor(&rect);
-                }
+                WIN_UpdateClipCursor(data->window);
 
                 /*
                  * FIXME: Update keyboard state
@@ -585,6 +609,22 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         break;
 #endif /* WM_INPUTLANGCHANGE */
 
+    case WM_ENTERSIZEMOVE:
+    case WM_ENTERMENULOOP:
+        {
+            data->in_modal_loop = SDL_TRUE;
+            WIN_UpdateClipCursor(data->window);
+        }
+        break;
+
+    case WM_EXITSIZEMOVE:
+    case WM_EXITMENULOOP:
+        {
+            data->in_modal_loop = SDL_FALSE;
+            WIN_UpdateClipCursor(data->window);
+        }
+        break;
+
 #ifdef WM_GETMINMAXINFO
     case WM_GETMINMAXINFO:
         {
@@ -673,20 +713,14 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             RECT rect;
             int x, y;
             int w, h;
-            Uint32 window_flags;
 
-            if (!GetClientRect(hwnd, &rect) ||
-                (rect.right == rect.left && rect.bottom == rect.top)) {
+            if (!GetClientRect(hwnd, &rect) || IsRectEmpty(&rect)) {
                 break;
             }
             ClientToScreen(hwnd, (LPPOINT) & rect);
             ClientToScreen(hwnd, (LPPOINT) & rect + 1);
 
-            window_flags = SDL_GetWindowFlags(data->window);
-            if ((window_flags & SDL_WINDOW_INPUT_GRABBED) &&
-                (window_flags & SDL_WINDOW_INPUT_FOCUS)) {
-                ClipCursor(&rect);
-            }
+            WIN_UpdateClipCursor(data->window);
 
             x = rect.left;
             y = rect.top;
