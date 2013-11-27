@@ -52,7 +52,12 @@ SDL_ceil(double x)
 #ifdef HAVE_CEIL
     return ceil(x);
 #else
-    return (double)(int)((x)+0.5);
+    double integer = SDL_floor(x);
+    double fraction = x - integer;
+    if (fraction > 0.0) {
+        integer += 1.0;
+    }
+    return integer;
 #endif /* HAVE_CEIL */
 }
 
