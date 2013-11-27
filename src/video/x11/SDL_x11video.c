@@ -440,8 +440,8 @@ X11_CheckWindowManager(_THIS)
     Atom _NET_SUPPORTING_WM_CHECK;
     int status, real_format;
     Atom real_type;
-    unsigned long items_read, items_left;
-    unsigned char *propdata;
+    unsigned long items_read = 0, items_left = 0;
+    unsigned char *propdata = NULL;
     Window wm_window = 0;
 #ifdef DEBUG_WINDOW_MANAGER
     char *wm_name;
@@ -453,11 +453,14 @@ X11_CheckWindowManager(_THIS)
 
     _NET_SUPPORTING_WM_CHECK = X11_XInternAtom(display, "_NET_SUPPORTING_WM_CHECK", False);
     status = X11_XGetWindowProperty(display, DefaultRootWindow(display), _NET_SUPPORTING_WM_CHECK, 0L, 1L, False, XA_WINDOW, &real_type, &real_format, &items_read, &items_left, &propdata);
-    if (status == Success && items_read) {
-        wm_window = ((Window*)propdata)[0];
-    }
-    if (propdata) {
-        X11_XFree(propdata);
+    if (status == Success) {
+        if (items_read) {
+            wm_window = ((Window*)propdata)[0];
+        }
+        if (propdata) {
+            X11_XFree(propdata);
+            propdata = NULL;
+        }
     }
 
     if (wm_window) {
@@ -465,8 +468,9 @@ X11_CheckWindowManager(_THIS)
         if (status != Success || !items_read || wm_window != ((Window*)propdata)[0]) {
             wm_window = None;
         }
-        if (propdata) {
+        if (status == Success && propdata) {
             X11_XFree(propdata);
+            propdata = NULL;
         }
     }
 
