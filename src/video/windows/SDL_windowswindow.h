@@ -38,6 +38,7 @@ typedef struct
     SDL_bool created;
     WPARAM mouse_button_flags;
     BOOL expected_resize;
+    SDL_bool in_modal_loop;
     struct SDL_VideoData *videodata;
 #if SDL_VIDEO_OPENGL_EGL  
     EGLSurface egl_surface;
