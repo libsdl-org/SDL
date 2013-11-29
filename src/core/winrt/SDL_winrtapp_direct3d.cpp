@@ -495,7 +495,7 @@ WINRT_LogPointerEvent(const char * header, Windows::UI::Core::PointerEventArgs ^
 void SDL_WinRTApp::OnPointerPressed(CoreWindow^ sender, PointerEventArgs^ args)
 {
 #if LOG_POINTER_EVENTS
-    WINRT_LogPointerEvent("pointer pressed", args, WINRT_TransformCursorPosition(WINRT_GlobalSDLWindow, args->CurrentPoint->Position));
+    WINRT_LogPointerEvent("pointer pressed", args, WINRT_TransformCursorPosition(WINRT_GlobalSDLWindow, args->CurrentPoint->Position, TransformToSDLWindowSize));
 #endif
 
     WINRT_ProcessPointerPressedEvent(WINRT_GlobalSDLWindow, args->CurrentPoint);
@@ -504,7 +504,7 @@ void SDL_WinRTApp::OnPointerPressed(CoreWindow^ sender, PointerEventArgs^ args)
 void SDL_WinRTApp::OnPointerMoved(CoreWindow^ sender, PointerEventArgs^ args)
 {
 #if LOG_POINTER_EVENTS
-    WINRT_LogPointerEvent("pointer moved", args, WINRT_TransformCursorPosition(WINRT_GlobalSDLWindow, args->CurrentPoint->Position));
+    WINRT_LogPointerEvent("pointer moved", args, WINRT_TransformCursorPosition(WINRT_GlobalSDLWindow, args->CurrentPoint->Position, TransformToSDLWindowSize));
 #endif
 
     WINRT_ProcessPointerMovedEvent(WINRT_GlobalSDLWindow, args->CurrentPoint);
@@ -513,7 +513,7 @@ void SDL_WinRTApp::OnPointerMoved(CoreWindow^ sender, PointerEventArgs^ args)
 void SDL_WinRTApp::OnPointerReleased(CoreWindow^ sender, PointerEventArgs^ args)
 {
 #if LOG_POINTER_EVENTS
-    WINRT_LogPointerEvent("pointer released", args, WINRT_TransformCursorPosition(WINRT_GlobalSDLWindow, args->CurrentPoint->Position));
+    WINRT_LogPointerEvent("pointer released", args, WINRT_TransformCursorPosition(WINRT_GlobalSDLWindow, args->CurrentPoint->Position, TransformToSDLWindowSize));
 #endif
 
     WINRT_ProcessPointerReleasedEvent(WINRT_GlobalSDLWindow, args->CurrentPoint);
@@ -522,7 +522,7 @@ void SDL_WinRTApp::OnPointerReleased(CoreWindow^ sender, PointerEventArgs^ args)
 void SDL_WinRTApp::OnPointerWheelChanged(CoreWindow^ sender, PointerEventArgs^ args)
 {
 #if LOG_POINTER_EVENTS
-    WINRT_LogPointerEvent("pointer wheel changed", args, WINRT_TransformCursorPosition(WINRT_GlobalSDLWindow, args->CurrentPoint->Position));
+    WINRT_LogPointerEvent("pointer wheel changed", args, WINRT_TransformCursorPosition(WINRT_GlobalSDLWindow, args->CurrentPoint->Position, TransformToSDLWindowSize));
 #endif
 
     WINRT_ProcessPointerWheelChangedEvent(WINRT_GlobalSDLWindow, args->CurrentPoint);

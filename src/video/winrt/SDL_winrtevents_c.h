@@ -46,7 +46,13 @@ extern void WINRT_PumpEvents(_THIS);
 #ifdef __cplusplus_winrt
 
 /* Pointers (Mice, Touch, etc.) */
-extern Windows::Foundation::Point WINRT_TransformCursorPosition(SDL_Window * window, Windows::Foundation::Point rawPosition);
+typedef enum {
+    NormalizeZeroToOne,
+    TransformToSDLWindowSize
+} WINRT_CursorNormalizationType;
+extern Windows::Foundation::Point WINRT_TransformCursorPosition(SDL_Window * window,
+                                                                Windows::Foundation::Point rawPosition,
+                                                                WINRT_CursorNormalizationType normalization);
 extern Uint8 WINRT_GetSDLButtonForPointerPoint(Windows::UI::Input::PointerPoint ^pt);
 extern void WINRT_ProcessPointerPressedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint);
 extern void WINRT_ProcessPointerMovedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint);
