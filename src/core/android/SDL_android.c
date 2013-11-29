@@ -300,16 +300,17 @@ void Java_org_libsdl_app_SDLActivity_nativeQuit(
 void Java_org_libsdl_app_SDLActivity_nativePause(
                                     JNIEnv* env, jclass cls)
 {
+    __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativePause()");
     if (Android_Window) {
-        /* Signal the pause semaphore so the event loop knows to pause and (optionally) block itself */
-        if (!SDL_SemValue(Android_PauseSem)) SDL_SemPost(Android_PauseSem);
         SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_FOCUS_LOST, 0, 0);
         SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_MINIMIZED, 0, 0);
+        SDL_SendAppEvent(SDL_APP_WILLENTERBACKGROUND);
+        SDL_SendAppEvent(SDL_APP_DIDENTERBACKGROUND);
+    
+        /* *After* sending the relevant events, signal the pause semaphore 
+         * so the event loop knows to pause and (optionally) block itself */
+        if (!SDL_SemValue(Android_PauseSem)) SDL_SemPost(Android_PauseSem);
     }
-
-    __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativePause()");
-    SDL_SendAppEvent(SDL_APP_WILLENTERBACKGROUND);
-    SDL_SendAppEvent(SDL_APP_DIDENTERBACKGROUND);
 }
 
 /* Resume */
@@ -317,8 +318,6 @@ void Java_org_libsdl_app_SDLActivity_nativeResume(
                                     JNIEnv* env, jclass cls)
 {
     __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeResume()");
-    SDL_SendAppEvent(SDL_APP_WILLENTERFOREGROUND);
-    SDL_SendAppEvent(SDL_APP_DIDENTERFOREGROUND);
 
     if (Android_Window) {
         /* Signal the resume semaphore so the event loop knows to resume and restore the GL Context
@@ -326,6 +325,9 @@ void Java_org_libsdl_app_SDLActivity_nativeResume(
          * and this function will be called from the Java thread instead.
          */
         if (!SDL_SemValue(Android_ResumeSem)) SDL_SemPost(Android_ResumeSem);
+        
+        SDL_SendAppEvent(SDL_APP_WILLENTERFOREGROUND);
+        SDL_SendAppEvent(SDL_APP_DIDENTERFOREGROUND);
         SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_FOCUS_GAINED, 0, 0);
         SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_RESTORED, 0, 0);
     }
