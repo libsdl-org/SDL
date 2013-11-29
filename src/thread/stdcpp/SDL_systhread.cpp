@@ -131,6 +131,26 @@ SDL_SYS_WaitThread(SDL_Thread * thread)
 }
 
 extern "C"
+void
+SDL_SYS_DetachThread(SDL_Thread * thread)
+{
+    if ( ! thread) {
+        return;
+    }
+
+    try {
+        std::thread * cpp_thread = (std::thread *) thread->handle;
+        if (cpp_thread->joinable()) {
+            cpp_thread->detach();
+        }
+    } catch (std::system_error &) {
+        // An error occurred when detaching the thread.  SDL_DetachThread does not,
+        // however, seem to provide a means to report errors to its callers
+        // though!
+    }
+}
+
+extern "C"
 SDL_TLSData *
 SDL_SYS_GetTLSData()
 {
