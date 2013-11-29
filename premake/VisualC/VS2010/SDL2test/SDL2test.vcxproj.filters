@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="src">
+      <UniqueIdentifier>{C34FFA8B-A517-F348-A88F-A091C2A0CE27}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="src\test">
+      <UniqueIdentifier>{78F57D3C-A9F3-134E-B9BC-C73A2E71C6AA}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\src\test\SDL_test_assert.c">
+      <Filter>src\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\test\SDL_test_common.c">
+      <Filter>src\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\test\SDL_test_compare.c">
+      <Filter>src\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\test\SDL_test_crc32.c">
+      <Filter>src\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\test\SDL_test_font.c">
+      <Filter>src\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\test\SDL_test_fuzzer.c">
+      <Filter>src\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\test\SDL_test_harness.c">
+      <Filter>src\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\test\SDL_test_imageBlit.c">
+      <Filter>src\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\test\SDL_test_imageBlitBlend.c">
+      <Filter>src\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\test\SDL_test_imageFace.c">
+      <Filter>src\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\test\SDL_test_imagePrimitives.c">
+      <Filter>src\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\test\SDL_test_imagePrimitivesBlend.c">
+      <Filter>src\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\test\SDL_test_log.c">
+      <Filter>src\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\test\SDL_test_md5.c">
+      <Filter>src\test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\src\test\SDL_test_random.c">
+      <Filter>src\test</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

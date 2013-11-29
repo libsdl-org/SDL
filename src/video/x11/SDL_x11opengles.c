@@ -36,6 +36,7 @@ X11_GLES_LoadLibrary(_THIS, const char *path) {
     /* If the profile requested is not GL ES, switch over to X11_GL functions  */
     if (_this->gl_config.profile_mask != SDL_GL_CONTEXT_PROFILE_ES) {
         #if SDL_VIDEO_OPENGL_GLX
+        X11_GLES_UnloadLibrary(_this);
         _this->GL_LoadLibrary = X11_GL_LoadLibrary;
         _this->GL_GetProcAddress = X11_GL_GetProcAddress;
         _this->GL_UnloadLibrary = X11_GL_UnloadLibrary;

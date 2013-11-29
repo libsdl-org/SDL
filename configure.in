@@ -204,19 +204,26 @@ if test x$enable_dependency_tracking = xyes; then
     fi
 fi
 
-# Actually this doesn't work on OpenBSD and BeOS
-#AC_MSG_CHECKING(for linker option --no-undefined)
-#have_no_undefined=no
-#save_LDFLAGS="$LDFLAGS"
-#LDFLAGS="$LDFLAGS -Wl,--no-undefined"
-#AC_TRY_LINK([
-#],[
-#],[
-#have_no_undefined=yes
-#EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,--no-undefined"
-#])
-#LDFLAGS="$save_LDFLAGS"
-#AC_MSG_RESULT($have_no_undefined)
+AC_MSG_CHECKING(for linker option --no-undefined)
+have_no_undefined=no
+case "$host" in
+    dnl Skip this on platforms where it is just simply busted.
+    *-*-openbsd*)
+        ;;
+
+    *)
+        save_LDFLAGS="$LDFLAGS"
+        LDFLAGS="$LDFLAGS -Wl,--no-undefined"
+        AC_TRY_LINK([
+        ],[
+        ],[
+        have_no_undefined=yes
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,--no-undefined"
+        ])
+        LDFLAGS="$save_LDFLAGS"
+        ;;
+esac
+AC_MSG_RESULT($have_no_undefined)
 
 dnl See whether we are allowed to use the system C library
 AC_ARG_ENABLE(libc,
@@ -1097,7 +1104,7 @@ CheckWarnAll()
         AC_MSG_CHECKING(for necessary GCC -Wno-multichar option)
         need_gcc_Wno_multichar=no
         case "$host" in
-            *-*-beos* | *-*-haiku*)
+            *-*-haiku*)
                 need_gcc_Wno_multichar=yes
                 ;;
         esac
@@ -1133,18 +1140,12 @@ AC_HELP_STRING([--enable-video-x11], [use X11 video driver [[default=yes]]]),
         AC_PATH_X
         AC_PATH_XTRA
         if test x$have_x = xyes; then
-            # Only allow dynamically loaded X11 if the X11 function pointers
-            # will not end up in the global namespace, which causes problems
-            # with other libraries calling X11 functions.
-            x11_symbols_private=$have_gcc_fvisibility
-
             AC_ARG_ENABLE(x11-shared,
 AC_HELP_STRING([--enable-x11-shared], [dynamically load X11 support [[default=maybe]]]),
                           , enable_x11_shared=maybe)
 
             case "$host" in
                 *-*-darwin*)
-                    x11_symbols_private=yes
                     x11_lib='/usr/X11R6/lib/libX11.6.dylib'
                     x11ext_lib='/usr/X11R6/lib/libXext.6.dylib'
                     xcursor_lib='/usr/X11R6/lib/libXcursor.1.dylib'
@@ -1205,19 +1206,13 @@ AC_HELP_STRING([--enable-x11-shared], [dynamically load X11 support [[default=ma
             SDL_CFLAGS="$SDL_CFLAGS $X_CFLAGS"
 
             if test x$enable_x11_shared = xmaybe; then
-                enable_x11_shared=$x11_symbols_private
+                enable_x11_shared=yes
             fi
             if test x$have_loadso != xyes && \
                test x$enable_x11_shared = xyes; then
                 AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic X11 loading])
                 enable_x11_shared=no
             fi
-            if test x$x11_symbols_private != xyes && \
-               test x$enable_x11_shared = xyes; then
-                AC_MSG_WARN([You must have gcc4 (-fvisibility=hidden) for dynamic X11 loading])
-                enable_x11_shared=no
-            fi
-
             if test x$have_loadso = xyes && \
                test x$enable_x11_shared = xyes && test x$x11_lib != x && test x$x11ext_lib != x; then
                 echo "-- dynamic libX11 -> $x11_lib"
@@ -1474,12 +1469,12 @@ AC_HELP_STRING([--enable-video-x11-vm], [use X11 VM extension for fullscreen [[d
     fi
 }
 
-dnl Set up the BWindow video driver if enabled
-CheckBWINDOW()
+dnl Set up the Haiku video driver if enabled
+CheckHaikuVideo()
 {
     if test x$enable_video = xyes; then
-        AC_DEFINE(SDL_VIDEO_DRIVER_BWINDOW, 1, [ ])
-        SOURCES="$SOURCES $srcdir/src/video/bwindow/*.cc"
+        AC_DEFINE(SDL_VIDEO_DRIVER_HAIKU, 1, [ ])
+        SOURCES="$SOURCES $srcdir/src/video/haiku/*.cc"
         have_video=yes
     fi
 }
@@ -1743,12 +1738,49 @@ CheckWINDOWSGL()
     fi
 }
 
-dnl Check for BeOS OpenGL
-CheckBeGL()
+dnl Check for Windows OpenGL
+CheckWINDOWSGLES()
+{
+    if test x$enable_video = xyes -a x$enable_video_opengles = xyes; then
+
+        AC_MSG_CHECKING(for EGL support)
+        video_opengl_egl=no
+        AC_TRY_COMPILE([
+         #include <EGL/egl.h>
+        ],[
+        ],[
+        video_opengl_egl=yes
+        ])
+        AC_MSG_RESULT($video_opengl_egl)
+        if test x$video_opengl_egl = xyes; then
+            AC_DEFINE(SDL_VIDEO_OPENGL, 1, [ ])
+            AC_DEFINE(SDL_VIDEO_OPENGL_EGL, 1, [ ])
+        fi
+       
+        AC_MSG_CHECKING(for OpenGL ES v2 headers)
+        video_opengles_v2=no
+        AC_TRY_COMPILE([
+         #include <GLES2/gl2.h>
+         #include <GLES2/gl2ext.h>
+        ],[
+        ],[
+        video_opengles_v2=yes
+        ])
+        AC_MSG_RESULT($video_opengles_v2)
+        if test x$video_opengles_v2 = xyes; then
+            AC_DEFINE(SDL_VIDEO_OPENGL, 1, [ ])
+            AC_DEFINE(SDL_VIDEO_OPENGL_ES2, 1, [ ])
+            AC_DEFINE(SDL_VIDEO_RENDER_OGL_ES2, 1, [ ])
+        fi
+    fi
+}
+
+dnl Check for Haiku OpenGL
+CheckHaikuGL()
 {
     if test x$enable_video = xyes -a x$enable_video_opengl = xyes; then
         AC_DEFINE(SDL_VIDEO_OPENGL, 1, [ ])
-        AC_DEFINE(SDL_VIDEO_OPENGL_BGL, 1, [ ])
+        AC_DEFINE(SDL_VIDEO_OPENGL_HAIKU, 1, [ ])
         AC_DEFINE(SDL_VIDEO_RENDER_OGL, 1, [ ])
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lGL"
     fi
@@ -1939,6 +1971,10 @@ AC_HELP_STRING([--enable-pthread-sem], [use pthread semaphores [[default=yes]]])
         *-*-hpux11*)
             pthread_cflags="-D_REENTRANT"
             pthread_lib="-L/usr/lib -lpthread"
+            ;;
+        *-*-haiku*)
+            pthread_cflags="-D_REENTRANT"
+            pthread_lib=""
             ;;
         *)
             pthread_cflags="-D_REENTRANT"
@@ -2373,11 +2409,10 @@ case "$host" in
                 # Raspberry Pi
                 ARCH=linux
                 RPI_CFLAGS="-I/opt/vc/include -I/opt/vc/include/interface/vcos/pthreads -I/opt/vc/include/interface/vmcs_host/linux"
-                RPI_LDFLAGS="-L/opt/vc/lib -lbcm_host"
                 CFLAGS="$CFLAGS $RPI_CFLAGS"
                 SDL_CFLAGS="$SDL_CFLAGS $RPI_CFLAGS"
                 EXTRA_CFLAGS="$EXTRA_CFLAGS $RPI_CFLAGS"
-                SDL_LIBS="$SDL_LIBS $RPI_LDFLAGS"
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS -L/opt/vc/lib -lbcm_host -ldl"
 
                 if test x$enable_video = xyes; then
                     SOURCES="$SOURCES $srcdir/src/video/raspberry/*.c"
@@ -2498,8 +2533,8 @@ case "$host" in
         fi
         # Set up files for evdev input
         if test x$use_input_events = xyes; then
-            SOURCES="$SOURCES $srcdir/src/input/evdev/*.c"               
-        fi
+            SOURCES="$SOURCES $srcdir/src/core/linux/SDL_evdev.c"
+        fi       
         ;;
     *-*-cygwin* | *-*-mingw32*)
         ARCH=win32
@@ -2517,6 +2552,7 @@ case "$host" in
         CheckDummyAudio
         CheckWINDOWS
         CheckWINDOWSGL
+        CheckWINDOWSGLES
         CheckDIRECTX
 
         # Set up the core platform files
@@ -2613,60 +2649,62 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
             SDL_LIBS="-lcygwin $SDL_LIBS"
         fi
         ;;
-    *-*-beos* | *-*-haiku*)
-        ARCH=beos
-        ac_default_prefix=/boot/common
+
+    dnl BeOS support removed after SDL 2.0.1. Haiku still works.  --ryan.
+    *-*-beos*)
+        AC_MSG_ERROR([
+*** BeOS support has been removed as of SDL 2.0.2.
+        ])
+        ;;
+
+    *-*-haiku*)
+        ARCH=haiku
+        ac_default_prefix=/boot/system
         CheckDummyVideo
         CheckDiskAudio
         CheckDummyAudio
-        CheckBWINDOW
-        CheckBeGL
+        CheckHaikuVideo
+        CheckHaikuGL
+        CheckPTHREAD
+
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
-            AC_DEFINE(SDL_AUDIO_DRIVER_BEOSAUDIO, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/audio/baudio/*.cc"
+            AC_DEFINE(SDL_AUDIO_DRIVER_HAIKU, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/audio/haiku/*.cc"
             have_audio=yes
         fi
         # Set up files for the joystick library
         if test x$enable_joystick = xyes; then
-            AC_DEFINE(SDL_JOYSTICK_BEOS, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/joystick/beos/*.cc"
+            AC_DEFINE(SDL_JOYSTICK_HAIKU, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/joystick/haiku/*.cc"
             have_joystick=yes
-        fi
-        # Set up files for the thread library
-        if test x$enable_threads = xyes; then
-            AC_DEFINE(SDL_THREAD_BEOS, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/thread/beos/*.c"
-            SOURCES="$SOURCES $srcdir/src/thread/generic/SDL_sysmutex.c"
-            SOURCES="$SOURCES $srcdir/src/thread/generic/SDL_syscond.c"
-            have_threads=yes
         fi
         # Set up files for the timer library
         if test x$enable_timers = xyes; then
-            AC_DEFINE(SDL_TIMER_BEOS, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/timer/beos/*.c"
+            AC_DEFINE(SDL_TIMER_HAIKU, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/timer/haiku/*.c"
             have_timers=yes
         fi
         # Set up files for the shared object loading library
         if test x$enable_loadso = xyes; then
-            AC_DEFINE(SDL_LOADSO_BEOS, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/loadso/beos/*.c"
+            AC_DEFINE(SDL_LOADSO_HAIKU, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/loadso/haiku/*.c"
             have_loadso=yes
         fi
         # Set up files for the system power library
         if test x$enable_power = xyes; then
-            AC_DEFINE(SDL_POWER_BEOS, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/power/beos/*.c"
+            AC_DEFINE(SDL_POWER_HAIKU, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/power/haiku/*.c"
             have_power=yes
         fi
         # Set up files for the system filesystem library
         if test x$enable_filesystem = xyes; then
-            AC_DEFINE(SDL_FILESYSTEM_BEOS, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/filesystem/beos/*.cc"
+            AC_DEFINE(SDL_FILESYSTEM_HAIKU, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/filesystem/haiku/*.cc"
             have_filesystem=yes
         fi
-        # The BeOS platform requires special setup.
-        SOURCES="$srcdir/src/main/beos/*.cc $SOURCES"
+        # The Haiku platform requires special setup.
+        SOURCES="$srcdir/src/main/haiku/*.cc $SOURCES"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lroot -lbe -lmedia -lgame -ldevice -ltextencoding"
         ;;
     arm*-apple-darwin*)

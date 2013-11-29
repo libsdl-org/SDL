@@ -1,0 +1,59 @@
+\hypertarget{union_s_d_l_visual_test___s_u_t_option_value}{\section{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option\-Value Union Reference}
+\label{union_s_d_l_visual_test___s_u_t_option_value}\index{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option\-Value@{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option\-Value}}
+}
+
+
+{\ttfamily \#include $<$S\-D\-L\-\_\-visualtest\-\_\-variator\-\_\-common.\-h$>$}
+
+\subsection*{Data Fields}
+\begin{DoxyCompactItemize}
+\item 
+S\-D\-L\-\_\-bool \hyperlink{union_s_d_l_visual_test___s_u_t_option_value_ace8ec6519c056e35443a6c401f3d0941}{bool\-\_\-value}
+\item 
+\begin{tabbing}
+xx\=xx\=xx\=xx\=xx\=xx\=xx\=xx\=xx\=\kill
+struct \{\\
+\>int {\bfseries value}\\
+\>SDL\_bool {\bfseries on}\\
+\} \hyperlink{union_s_d_l_visual_test___s_u_t_option_value_a4291d9ad3cfb3fe1645ea2732e11d68a}{integer}\\
+
+\end{tabbing}\item 
+\begin{tabbing}
+xx\=xx\=xx\=xx\=xx\=xx\=xx\=xx\=xx\=\kill
+struct \{\\
+\>int {\bfseries index}\\
+\>SDL\_bool {\bfseries on}\\
+\} \hyperlink{union_s_d_l_visual_test___s_u_t_option_value_ad40e26afd4b8532327b61897d5b009e3}{enumerated}\\
+
+\end{tabbing}\item 
+\begin{tabbing}
+xx\=xx\=xx\=xx\=xx\=xx\=xx\=xx\=xx\=\kill
+struct \{\\
+\>char $\ast$ {\bfseries value}\\
+\>SDL\_bool {\bfseries on}\\
+\} \hyperlink{union_s_d_l_visual_test___s_u_t_option_value_a2bf4b969ff9633c937e4d15118d1edc6}{string}\\
+
+\end{tabbing}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+One possible value for a command line option to the S\-U\-T. 
+
+\subsection{Field Documentation}
+\hypertarget{union_s_d_l_visual_test___s_u_t_option_value_ace8ec6519c056e35443a6c401f3d0941}{\index{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option\-Value@{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option\-Value}!bool\-\_\-value@{bool\-\_\-value}}
+\index{bool\-\_\-value@{bool\-\_\-value}!SDLVisualTest_SUTOptionValue@{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option\-Value}}
+\subsubsection[{bool\-\_\-value}]{\setlength{\rightskip}{0pt plus 5cm}S\-D\-L\-\_\-bool bool\-\_\-value}}\label{union_s_d_l_visual_test___s_u_t_option_value_ace8ec6519c056e35443a6c401f3d0941}
+Value if the option is of type boolean \hypertarget{union_s_d_l_visual_test___s_u_t_option_value_ad40e26afd4b8532327b61897d5b009e3}{\index{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option\-Value@{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option\-Value}!enumerated@{enumerated}}
+\index{enumerated@{enumerated}!SDLVisualTest_SUTOptionValue@{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option\-Value}}
+\subsubsection[{enumerated}]{\setlength{\rightskip}{0pt plus 5cm}struct \{ ... \}   enumerated}}\label{union_s_d_l_visual_test___s_u_t_option_value_ad40e26afd4b8532327b61897d5b009e3}
+Index of the string in the enum\-\_\-values field of the corresponding \hyperlink{struct_s_d_l_visual_test___s_u_t_option}{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option} object. If on is true the option will passed to the S\-U\-T, otherwise it will be ignored. \hypertarget{union_s_d_l_visual_test___s_u_t_option_value_a4291d9ad3cfb3fe1645ea2732e11d68a}{\index{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option\-Value@{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option\-Value}!integer@{integer}}
+\index{integer@{integer}!SDLVisualTest_SUTOptionValue@{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option\-Value}}
+\subsubsection[{integer}]{\setlength{\rightskip}{0pt plus 5cm}struct \{ ... \}   integer}}\label{union_s_d_l_visual_test___s_u_t_option_value_a4291d9ad3cfb3fe1645ea2732e11d68a}
+Value if the option is of type integer. If on is true then the option will be passed to the S\-U\-T, otherwise it will be ignored. \hypertarget{union_s_d_l_visual_test___s_u_t_option_value_a2bf4b969ff9633c937e4d15118d1edc6}{\index{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option\-Value@{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option\-Value}!string@{string}}
+\index{string@{string}!SDLVisualTest_SUTOptionValue@{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option\-Value}}
+\subsubsection[{string}]{\setlength{\rightskip}{0pt plus 5cm}struct \{ ... \}   string}}\label{union_s_d_l_visual_test___s_u_t_option_value_a2bf4b969ff9633c937e4d15118d1edc6}
+Value if the option is of type string. If on is true the option will be passed to the S\-U\-T, otherwise it will be ignored. 
+
+The documentation for this union was generated from the following file\-:\begin{DoxyCompactItemize}
+\item 
+C\-:/\-Users/\-D\-E\-L\-L/\-Work/sdlvisualtest/visualtest/include/\hyperlink{_s_d_l__visualtest__variator__common_8h}{S\-D\-L\-\_\-visualtest\-\_\-variator\-\_\-common.\-h}\end{DoxyCompactItemize}

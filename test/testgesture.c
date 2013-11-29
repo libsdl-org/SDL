@@ -205,7 +205,7 @@ int main(int argc, char* argv[])
   SDL_Surface *screen;
   SDL_Event event;
   SDL_bool quitting = SDL_FALSE;
-  SDL_RWops *src;
+  SDL_RWops *stream;
 
   /* Enable standard application logging */
   SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
@@ -241,14 +241,14 @@ int main(int argc, char* argv[])
         SDL_RecordGesture(-1);
         break;
           case SDLK_s:
-        src = SDL_RWFromFile("gestureSave","w");
-        SDL_Log("Wrote %i templates",SDL_SaveAllDollarTemplates(src));
-        SDL_RWclose(src);
+        stream = SDL_RWFromFile("gestureSave", "w");
+        SDL_Log("Wrote %i templates", SDL_SaveAllDollarTemplates(stream));
+        SDL_RWclose(stream);
         break;
           case SDLK_l:
-        src = SDL_RWFromFile("gestureSave","r");
-        SDL_Log("Loaded: %i",SDL_LoadDollarTemplates(-1,src));
-        SDL_RWclose(src);
+        stream = SDL_RWFromFile("gestureSave", "r");
+        SDL_Log("Loaded: %i", SDL_LoadDollarTemplates(-1, stream));
+        SDL_RWclose(stream);
         break;
           case SDLK_ESCAPE:
         quitting = SDL_TRUE;

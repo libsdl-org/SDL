@@ -34,9 +34,9 @@ Most programs will want to define an appropriate error threshold and check to be
 
 Saving:
 -------
-To save a template, call SDL_SaveDollarTemplate(gestureId, src) where gestureId is the id of the gesture you want to save, and src is an SDL_RWops pointer to the file where the gesture will be stored.
+To save a template, call SDL_SaveDollarTemplate(gestureId, dst) where gestureId is the id of the gesture you want to save, and dst is an SDL_RWops pointer to the file where the gesture will be stored.
 
-To save all currently loaded templates, call SDL_SaveAllDollarTemplates(src) where source is an SDL_RWops pointer to the file where the gesture will be stored.
+To save all currently loaded templates, call SDL_SaveAllDollarTemplates(dst) where dst is an SDL_RWops pointer to the file where the gesture will be stored.
 
 Both functions return the number of gestures successfully saved.
 

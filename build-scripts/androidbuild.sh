@@ -24,6 +24,8 @@ fi
 if [ -z "$1" ] || [ -z "$SOURCES" ]; then
     echo "Usage: androidbuild.sh com.yourcompany.yourapp < sources.list"
     echo "Usage: androidbuild.sh com.yourcompany.yourapp source1.c source2.c ...sourceN.c"
+    echo "To copy SDL source instead of symlinking: COPYSOURCE=1 androidbuild.sh ... "
+    echo "You can pass additional arguments to ndk-build with the NDKARGS variable: NDKARGS=\"-s\" androidbuild.sh ..."
     exit 1
 fi
 
@@ -50,6 +52,19 @@ if [ -z "$ANT" ];then
     exit 1
 fi
 
+NCPUS="1"
+case "$OSTYPE" in
+    darwin*)
+        NCPU=`sysctl -n hw.ncpu`
+        ;; 
+    linux*)
+        if [ -n `which nproc` ]; then
+            NCPUS=`nproc`
+        fi  
+        ;;
+  *);;
+esac
+
 APP="$1"
 APPARR=(${APP//./ })
 BUILDPATH="$SDLPATH/build/$APP"
@@ -63,9 +78,15 @@ cp -r $SDLPATH/android-project/* $BUILDPATH
 
 # Copy SDL sources
 mkdir -p $BUILDPATH/jni/SDL
-cp -r $SDLPATH/src $BUILDPATH/jni/SDL
-cp -r $SDLPATH/include $BUILDPATH/jni/SDL
-cp $SDLPATH/Android.mk $BUILDPATH/jni/SDL
+if [ -z "$COPYSOURCE" ]; then
+    ln -s $SDLPATH/src $BUILDPATH/jni/SDL
+    ln -s $SDLPATH/include $BUILDPATH/jni/SDL
+else
+    cp -r $SDLPATH/src $BUILDPATH/jni/SDL
+    cp -r $SDLPATH/include $BUILDPATH/jni/SDL
+fi
+
+cp -r $SDLPATH/Android.mk $BUILDPATH/jni/SDL
 sed -i "s|YourSourceHere.c|$MKSOURCES|g" $BUILDPATH/jni/src/Android.mk
 sed -i "s|org\.libsdl\.app|$APP|g" $BUILDPATH/AndroidManifest.xml
 
@@ -95,7 +116,7 @@ echo "public class $ACTIVITY extends SDLActivity {}" >> "$ACTIVITY.java"
 # Update project and build
 cd $BUILDPATH
 android update project --path $BUILDPATH
-$NDKBUILD
+$NDKBUILD -j $NCPUS $NDKARGS
 $ANT debug
 
 cd $CURDIR

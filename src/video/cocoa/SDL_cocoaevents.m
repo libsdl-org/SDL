@@ -147,6 +147,7 @@ CreateApplicationMenus(void)
     NSMenu *appleMenu;
     NSMenu *serviceMenu;
     NSMenu *windowMenu;
+    NSMenu *viewMenu;
     NSMenuItem *menuItem;
 
     if (NSApp == nil) {
@@ -220,6 +221,25 @@ CreateApplicationMenus(void)
     /* Tell the application object that this is now the window menu */
     [NSApp setWindowsMenu:windowMenu];
     [windowMenu release];
+
+
+    /* Add the fullscreen view toggle menu option, if supported */
+    if ([NSApp respondsToSelector:@selector(setPresentationOptions:)]) {
+        /* Create the view menu */
+        viewMenu = [[NSMenu alloc] initWithTitle:@"View"];
+
+        /* Add menu items */
+        menuItem = [viewMenu addItemWithTitle:@"Toggle Full Screen" action:@selector(toggleFullScreen:) keyEquivalent:@"f"];
+        [menuItem setKeyEquivalentModifierMask:NSControlKeyMask | NSCommandKeyMask];
+
+        /* Put menu into the menubar */
+        menuItem = [[NSMenuItem alloc] initWithTitle:@"View" action:nil keyEquivalent:@""];
+        [menuItem setSubmenu:viewMenu];
+        [[NSApp mainMenu] addItem:menuItem];
+        [menuItem release];
+
+        [viewMenu release];
+    }
 }
 
 void

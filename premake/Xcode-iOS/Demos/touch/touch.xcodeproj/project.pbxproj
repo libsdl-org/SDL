@@ -1,0 +1,362 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		44A5650B6BCF70612F3A3EED /* stroke.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 102B12A4027156F83A0D40AB /* stroke.bmp */; };
+		31906B8700A178D233233F36 /* common.c in Sources */ = {isa = PBXBuildFile; fileRef = 02F347371F52568E12CF75FA /* common.c */; };
+		2DAD6F6C37366013402423CD /* touch.c in Sources */ = {isa = PBXBuildFile; fileRef = 6D5059D32C6D47053C146426 /* touch.c */; };
+		1FCF7B9250267C474FFF1317 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5EB40C466A044452147954FE /* AudioToolbox.framework */; };
+		3F8614FA2BB9118010E402BD /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 65156B5F67D37E3634D1353B /* QuartzCore.framework */; };
+		4DE269AF156A670F15C76C20 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4B790E684F1661FD3CDE50BD /* OpenGLES.framework */; };
+		1B9025D4163C6DF452CB4B15 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2BFD013C2EC12CDF6D7213E4 /* CoreGraphics.framework */; };
+		1067012C0CF4170C465A4732 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0D4E119A347A3D9916C6457B /* UIKit.framework */; };
+		250771553F7A720752E02B11 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 37FD4C8345287A1C74820723 /* Foundation.framework */; };
+		57E9417D75CB142C653E02C3 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 059525A845FC5C9E20953252 /* CoreAudio.framework */; };
+		6B1F7AF166A178AA61071706 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D931F88425701C078B07720 /* libSDL2.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		33B14F0C4EDF4A8D301C10A8 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 73C70F1E01C8127431B70DD1 /* SDL2.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 224D2C85085A7BA60E532655;
+			remoteInfo = "libSDL2.a";
+		};
+		1C2D50527874154867FC7A7A /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 73C70F1E01C8127431B70DD1 /* SDL2.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 515D4C462ACD2DA8180E7783;
+			remoteInfo = "libSDL2.a";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		5D7268702730733A7D936748 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Info.plist"; path = "../../../../Xcode-iOS/Demos/Info.plist"; sourceTree = "<group>"; };
+		102B12A4027156F83A0D40AB /* stroke.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = "stroke.bmp"; path = "../../../../Xcode-iOS/Demos/data/stroke.bmp"; sourceTree = "<group>"; };
+		02F347371F52568E12CF75FA /* common.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "common.c"; path = "../../../../Xcode-iOS/Demos/src/common.c"; sourceTree = "<group>"; };
+		278274AA7EA5160202BE0835 /* common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "common.h"; path = "../../../../Xcode-iOS/Demos/src/common.h"; sourceTree = "<group>"; };
+		6D5059D32C6D47053C146426 /* touch.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "touch.c"; path = "../../../../Xcode-iOS/Demos/src/touch.c"; sourceTree = "<group>"; };
+		5EB40C466A044452147954FE /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "AudioToolbox.framework"; path = "System/Library/Frameworks/AudioToolbox.framework"; sourceTree = "SDKROOT"; };
+		65156B5F67D37E3634D1353B /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "QuartzCore.framework"; path = "System/Library/Frameworks/QuartzCore.framework"; sourceTree = "SDKROOT"; };
+		4B790E684F1661FD3CDE50BD /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "OpenGLES.framework"; path = "System/Library/Frameworks/OpenGLES.framework"; sourceTree = "SDKROOT"; };
+		2BFD013C2EC12CDF6D7213E4 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "CoreGraphics.framework"; path = "System/Library/Frameworks/CoreGraphics.framework"; sourceTree = "SDKROOT"; };
+		0D4E119A347A3D9916C6457B /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "UIKit.framework"; path = "System/Library/Frameworks/UIKit.framework"; sourceTree = "SDKROOT"; };
+		37FD4C8345287A1C74820723 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "Foundation.framework"; path = "System/Library/Frameworks/Foundation.framework"; sourceTree = "SDKROOT"; };
+		059525A845FC5C9E20953252 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "CoreAudio.framework"; path = "System/Library/Frameworks/CoreAudio.framework"; sourceTree = "SDKROOT"; };
+		79DA5CF10F7848015B0E7B10 /* touch */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = "touch"; path = "touch"; sourceTree = BUILT_PRODUCTS_DIR; };
+		73C70F1E01C8127431B70DD1 /* SDL2.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "SDL2.xcodeproj"; path = "../../SDL2/SDL2.xcodeproj"; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		1DAD583D4ABE25DC3C232F7A /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1FCF7B9250267C474FFF1317 /* AudioToolbox.framework in Frameworks */,
+				3F8614FA2BB9118010E402BD /* QuartzCore.framework in Frameworks */,
+				4DE269AF156A670F15C76C20 /* OpenGLES.framework in Frameworks */,
+				1B9025D4163C6DF452CB4B15 /* CoreGraphics.framework in Frameworks */,
+				1067012C0CF4170C465A4732 /* UIKit.framework in Frameworks */,
+				250771553F7A720752E02B11 /* Foundation.framework in Frameworks */,
+				57E9417D75CB142C653E02C3 /* CoreAudio.framework in Frameworks */,
+				6B1F7AF166A178AA61071706 /* libSDL2.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		492E166D57477FA478990772 /* touch */ = {
+			isa = PBXGroup;
+			children = (
+				5C73413941CE7C1842690DE9 /* Xcode-iOS */,
+				01AA4ABB3DF9507B6FCA472B /* Frameworks */,
+				604E40BE080514F15A952943 /* Products */,
+				05931ED004651CC60E5C655D /* Projects */,
+			);
+			name = "touch";
+			sourceTree = "<group>";
+		};
+		5C73413941CE7C1842690DE9 /* Xcode-iOS */ = {
+			isa = PBXGroup;
+			children = (
+				3D7B6D34290A516832BD26C9 /* Demos */,
+			);
+			name = "Xcode-iOS";
+			sourceTree = "<group>";
+		};
+		3D7B6D34290A516832BD26C9 /* Demos */ = {
+			isa = PBXGroup;
+			children = (
+				5D7268702730733A7D936748 /* Info.plist */,
+				32253DCA52F637CC52874AE1 /* data */,
+				61A878F7300F30FB49712375 /* src */,
+			);
+			name = "Demos";
+			sourceTree = "<group>";
+		};
+		32253DCA52F637CC52874AE1 /* data */ = {
+			isa = PBXGroup;
+			children = (
+				102B12A4027156F83A0D40AB /* stroke.bmp */,
+			);
+			name = "data";
+			sourceTree = "<group>";
+		};
+		61A878F7300F30FB49712375 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				02F347371F52568E12CF75FA /* common.c */,
+				278274AA7EA5160202BE0835 /* common.h */,
+				6D5059D32C6D47053C146426 /* touch.c */,
+			);
+			name = "src";
+			sourceTree = "<group>";
+		};
+		01AA4ABB3DF9507B6FCA472B /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				5EB40C466A044452147954FE /* AudioToolbox.framework */,
+				65156B5F67D37E3634D1353B /* QuartzCore.framework */,
+				4B790E684F1661FD3CDE50BD /* OpenGLES.framework */,
+				2BFD013C2EC12CDF6D7213E4 /* CoreGraphics.framework */,
+				0D4E119A347A3D9916C6457B /* UIKit.framework */,
+				37FD4C8345287A1C74820723 /* Foundation.framework */,
+				059525A845FC5C9E20953252 /* CoreAudio.framework */,
+			);
+			name = "Frameworks";
+			sourceTree = "<group>";
+		};
+		604E40BE080514F15A952943 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				79DA5CF10F7848015B0E7B10 /* touch */,
+			);
+			name = "Products";
+			sourceTree = "<group>";
+		};
+		05931ED004651CC60E5C655D /* Projects */ = {
+			isa = PBXGroup;
+			children = (
+				73C70F1E01C8127431B70DD1 /* SDL2.xcodeproj */,
+			);
+			name = "Projects";
+			sourceTree = "<group>";
+		};
+		7BDA644C79FE323076F70739 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				1D931F88425701C078B07720 /* libSDL2.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		7E3B5FEB754A0B5520235C50 /* touch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 371D55C1257826A923E4771B /* Build configuration list for PBXNativeTarget "touch" */;
+			buildPhases = (
+				160D35EC4E82653C03C52EAD /* Resources */,
+				193B23AC765E2C585B1560FD /* Sources */,
+				1DAD583D4ABE25DC3C232F7A /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				7BF075F418D41E8C1DD347F7 /* PBXTargetDependency */,
+			);
+			name = "touch";
+			productInstallPath = "$(HOME)/Applications";
+			productName = "touch";
+			productReference = 79DA5CF10F7848015B0E7B10 /* touch */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		08FB7793FE84155DC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "touch" */;
+			compatibilityVersion = "Xcode 3.2";
+			hasScannedForEncodings = 1;
+			mainGroup = 492E166D57477FA478990772 /* touch */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 7BDA644C79FE323076F70739 /* Products */;
+					ProjectRef = 73C70F1E01C8127431B70DD1 /* SDL2.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				7E3B5FEB754A0B5520235C50 /* touch */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		1D931F88425701C078B07720 /* libSDL2.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "Build/Debug/libSDL2.a";
+			remoteRef = 33B14F0C4EDF4A8D301C10A8 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXResourcesBuildPhase section */
+		160D35EC4E82653C03C52EAD /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				44A5650B6BCF70612F3A3EED /* stroke.bmp in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		193B23AC765E2C585B1560FD /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				31906B8700A178D233233F36 /* common.c in Sources */,
+				2DAD6F6C37366013402423CD /* touch.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+/* End PBXVariantGroup section */
+
+/* Begin PBXTargetDependency section */
+		7BF075F418D41E8C1DD347F7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "libSDL2.a";
+			targetProxy = 1C2D50527874154867FC7A7A /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		551D11A047DA4F2C7C7D0823 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CONFIGURATION_BUILD_DIR = Build/Debug;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				INFOPLIST_FILE = "../../../../Xcode-iOS/Demos/Info.plist";
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = "touch";
+			};
+			name = "Debug";
+		};
+		623B2822705365B569AE5529 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				CONFIGURATION_BUILD_DIR = Build/Release;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				INFOPLIST_FILE = "../../../../Xcode-iOS/Demos/Info.plist";
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = "touch";
+			};
+			name = "Release";
+		};
+		5BBE2AC31114434E5C1F7758 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_UNIVERSAL_IPHONE_OS)";
+				SDKROOT = iphoneos;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USING_PREMAKE_CONFIG_H",
+					"_DEBUG",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"../..",
+					"../../../../include",
+				);
+				OBJROOT = "obj/iOS/Debug";
+				ONLY_ACTIVE_ARCH = YES;
+				SYMROOT = "Build/Debug";
+			};
+			name = "Debug";
+		};
+		7C575288033B53977BD57638 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_UNIVERSAL_IPHONE_OS)";
+				SDKROOT = iphoneos;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USING_PREMAKE_CONFIG_H",
+					"NDEBUG",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"../..",
+					"../../../../include",
+				);
+				OBJROOT = "obj/iOS/Release";
+				ONLY_ACTIVE_ARCH = NO;
+				SYMROOT = "Build/Release";
+			};
+			name = "Release";
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		371D55C1257826A923E4771B /* Build configuration list for PBXNativeTarget "touch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				551D11A047DA4F2C7C7D0823 /* Debug */,
+				623B2822705365B569AE5529 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Debug";
+		};
+		1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "touch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5BBE2AC31114434E5C1F7758 /* Debug */,
+				7C575288033B53977BD57638 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Debug";
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
+}

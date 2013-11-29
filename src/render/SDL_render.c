@@ -351,8 +351,7 @@ SDL_GetRendererOutputSize(SDL_Renderer * renderer, int *w, int *h)
         return 0;
     } else {
         /* This should never happen */
-        SDL_SetError("Renderer doesn't support querying output size");
-        return -1;
+        return SDL_SetError("Renderer doesn't support querying output size");
     }
 }
 

@@ -79,7 +79,8 @@ GetWindowStyle(SDL_Window * window)
 static void
 WIN_SetWindowPositionInternal(_THIS, SDL_Window * window, UINT flags)
 {
-    HWND hwnd = ((SDL_WindowData *) window->driverdata)->hwnd;
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    HWND hwnd = data->hwnd;
     RECT rect;
     DWORD style;
     HWND top;
@@ -105,7 +106,9 @@ WIN_SetWindowPositionInternal(_THIS, SDL_Window * window, UINT flags)
     x = window->x + rect.left;
     y = window->y + rect.top;
 
+    data->expected_resize = TRUE;
     SetWindowPos(hwnd, top, x, y, w, h, flags);
+    data->expected_resize = FALSE;
 }
 
 static int
@@ -270,6 +273,32 @@ WIN_CreateWindow(_THIS, SDL_Window * window)
         DestroyWindow(hwnd);
         return -1;
     }
+
+#if SDL_VIDEO_OPENGL_WGL
+    /* We need to initialize the extensions before deciding how to create ES profiles */
+    if (window->flags & SDL_WINDOW_OPENGL) {
+        WIN_GL_InitExtensions(_this);
+    }
+#endif
+
+#if SDL_VIDEO_OPENGL_ES2
+    if ((window->flags & SDL_WINDOW_OPENGL) &&
+        _this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES
+#if SDL_VIDEO_OPENGL_WGL           
+        && (!_this->gl_data || !_this->gl_data->HAS_WGL_EXT_create_context_es2_profile)
+#endif  
+        ) {
+#if SDL_VIDEO_OPENGL_EGL  
+        if (WIN_GLES_SetupWindow(_this, window) < 0) {
+            WIN_DestroyWindow(_this, window);
+            return -1;
+        }
+#else
+        return SDL_SetError("Could not create GLES window surface (no EGL support available)");
+#endif /* SDL_VIDEO_OPENGL_EGL */
+    } else 
+#endif /* SDL_VIDEO_OPENGL_ES2 */
+
 #if SDL_VIDEO_OPENGL_WGL
     if (window->flags & SDL_WINDOW_OPENGL) {
         if (WIN_GL_SetupWindow(_this, window) < 0) {
@@ -278,6 +307,7 @@ WIN_CreateWindow(_THIS, SDL_Window * window)
         }
     }
 #endif
+
     return 0;
 }
 
@@ -405,16 +435,16 @@ void
 WIN_RaiseWindow(_THIS, SDL_Window * window)
 {
     WIN_SetWindowPositionInternal(_this, window, SWP_NOCOPYBITS | SWP_NOMOVE | SWP_NOSIZE);
-
-    /* Raising the window while alt-tabbed can cause it to be minimized for some reason? */
-    WIN_RestoreWindow(_this, window);
 }
 
 void
 WIN_MaximizeWindow(_THIS, SDL_Window * window)
 {
-    HWND hwnd = ((SDL_WindowData *) window->driverdata)->hwnd;
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    HWND hwnd = data->hwnd;
+    data->expected_resize = TRUE;
     ShowWindow(hwnd, SW_MAXIMIZE);
+    data->expected_resize = FALSE;
 }
 
 void
@@ -445,9 +475,11 @@ WIN_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
 void
 WIN_RestoreWindow(_THIS, SDL_Window * window)
 {
-    HWND hwnd = ((SDL_WindowData *) window->driverdata)->hwnd;
-
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    HWND hwnd = data->hwnd;
+    data->expected_resize = TRUE;
     ShowWindow(hwnd, SW_RESTORE);
+    data->expected_resize = FALSE;
 }
 
 void
@@ -493,7 +525,9 @@ WIN_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, 
         y = window->windowed.y + rect.top;
     }
     SetWindowLong(hwnd, GWL_STYLE, style);
+    data->expected_resize = TRUE;
     SetWindowPos(hwnd, top, x, y, w, h, SWP_NOCOPYBITS);
+    data->expected_resize = FALSE;
 }
 
 int

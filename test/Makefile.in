@@ -21,6 +21,7 @@ TARGETS = \
 	testgesture$(EXE) \
 	testgl2$(EXE) \
 	testgles$(EXE) \
+	testgles2$(EXE) \
 	testhaptic$(EXE) \
 	testrumble$(EXE) \
 	testthread$(EXE) \
@@ -49,6 +50,7 @@ TARGETS = \
 	teststreaming$(EXE) \
 	testtimer$(EXE) \
 	testver$(EXE) \
+	testviewport$(EXE) \
 	testwm2$(EXE) \
 	torturethread$(EXE) \
 	testrendercopyex$(EXE) \
@@ -129,6 +131,9 @@ testgl2$(EXE): $(srcdir)/testgl2.c
 
 testgles$(EXE): $(srcdir)/testgles.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @GLESLIB@ @MATHLIB@
+
+testgles2$(EXE): $(srcdir)/testgles2.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @GLES2LIB@ @MATHLIB@
 
 testhaptic$(EXE): $(srcdir)/testhaptic.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
@@ -216,6 +221,9 @@ testtimer$(EXE): $(srcdir)/testtimer.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testver$(EXE): $(srcdir)/testver.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testviewport$(EXE): $(srcdir)/testviewport.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testwm2$(EXE): $(srcdir)/testwm2.c

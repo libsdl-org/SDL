@@ -415,6 +415,18 @@
 				RelativePath="..\..\include\SDL_cpuinfo.h"
 				>
 			</File>
+			<File 
+				RelativePath="..\..\include\\SDL_egl.h" 
+				>
+			</File>
+			<File 
+				RelativePath="..\..\src\video\sdl_egl_c.h" 
+				>
+			</File>
+			<File 
+				RelativePath="..\..\src\video\windows\SDL_windowsopengles.h" 
+				>
+			</File>
 			<File
 				RelativePath="..\..\include\SDL_endian.h"
 				>
@@ -1270,6 +1282,22 @@
 		</File>
 		<File
 			RelativePath="..\..\src\video\windows\SDL_windowsopengl.c"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\render\opengles2\SDL_render_gles2.c" 
+			>
+		</File>
+		<File 
+			RelativePath="..\..\src\render\opengles2\SDL_shaders_gles2.c" 
+			>
+		</File>
+		<File 
+			RelativePath="..\..\src\video\SDL_egl.c" 
+			>
+		</File>
+		<File 
+			RelativePath="..\..\src\video\windows\SDL_windowsopengles.c" 
 			>
 		</File>
 		<File

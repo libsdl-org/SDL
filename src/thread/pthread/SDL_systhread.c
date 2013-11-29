@@ -51,6 +51,10 @@
 #include "../../core/android/SDL_android.h"
 #endif
 
+#ifdef __HAIKU__
+#include <be/kernel/OS.h>
+#endif
+
 #include "SDL_assert.h"
 
 /* List of signals to mask in the subthreads */
@@ -58,7 +62,6 @@ static const int sig_list[] = {
     SIGHUP, SIGINT, SIGQUIT, SIGPIPE, SIGALRM, SIGTERM, SIGCHLD, SIGWINCH,
     SIGVTALRM, SIGPROF, 0
 };
-
 
 static void *
 RunThread(void *data)
@@ -129,6 +132,12 @@ SDL_SYS_SetupThread(const char *name)
             pthread_setname_np(pthread_self(), name);
         #elif HAVE_PTHREAD_SET_NAME_NP
             pthread_set_name_np(pthread_self(), name);
+        #elif defined(__HAIKU__)
+            /* The docs say the thread name can't be longer than B_OS_NAME_LENGTH. */
+            char namebuf[B_OS_NAME_LENGTH];
+            SDL_snprintf(namebuf, sizeof (namebuf), "%s", name);
+            namebuf[sizeof (namebuf) - 1] = '\0';
+            rename_thread(find_thread(NULL), namebuf);
         #endif
     }
 
@@ -202,6 +211,12 @@ void
 SDL_SYS_WaitThread(SDL_Thread * thread)
 {
     pthread_join(thread->handle, 0);
+}
+
+void
+SDL_SYS_DetachThread(SDL_Thread * thread)
+{
+    pthread_detach(thread->handle);
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

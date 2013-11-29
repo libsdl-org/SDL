@@ -1,0 +1,123 @@
+\hypertarget{action__configparser_8c}{\section{C\-:/\-Users/\-D\-E\-L\-L/\-Work/sdlvisualtest/visualtest/src/action\-\_\-configparser.c File Reference}
+\label{action__configparser_8c}\index{C\-:/\-Users/\-D\-E\-L\-L/\-Work/sdlvisualtest/visualtest/src/action\-\_\-configparser.\-c@{C\-:/\-Users/\-D\-E\-L\-L/\-Work/sdlvisualtest/visualtest/src/action\-\_\-configparser.\-c}}
+}
+{\ttfamily \#include $<$S\-D\-L\-\_\-stdinc.\-h$>$}\\*
+{\ttfamily \#include $<$S\-D\-L\-\_\-test.\-h$>$}\\*
+{\ttfamily \#include $<$string.\-h$>$}\\*
+{\ttfamily \#include \char`\"{}S\-D\-L\-\_\-visualtest\-\_\-action\-\_\-configparser.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}S\-D\-L\-\_\-visualtest\-\_\-rwhelper.\-h\char`\"{}}\\*
+{\ttfamily \#include \char`\"{}S\-D\-L\-\_\-visualtest\-\_\-parsehelper.\-h\char`\"{}}\\*
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{action__configparser_8c_a647d1be8f0f27af2fb1e5d4da2100596}{S\-D\-L\-Visual\-Test\-\_\-\-Enqueue\-Action} (\hyperlink{struct_s_d_l_visual_test___action_queue}{S\-D\-L\-Visual\-Test\-\_\-\-Action\-Queue} $\ast$queue, \hyperlink{struct_s_d_l_visual_test___action}{S\-D\-L\-Visual\-Test\-\_\-\-Action} action)
+\item 
+int \hyperlink{action__configparser_8c_a0e7998533e6e10590612a8d5dee7ec0b}{S\-D\-L\-Visual\-Test\-\_\-\-Dequeue\-Action} (\hyperlink{struct_s_d_l_visual_test___action_queue}{S\-D\-L\-Visual\-Test\-\_\-\-Action\-Queue} $\ast$queue)
+\item 
+void \hyperlink{action__configparser_8c_ae68c1c80f728e125869882139bec2c9e}{S\-D\-L\-Visual\-Test\-\_\-\-Init\-Action\-Queue} (\hyperlink{struct_s_d_l_visual_test___action_queue}{S\-D\-L\-Visual\-Test\-\_\-\-Action\-Queue} $\ast$queue)
+\item 
+\hyperlink{struct_s_d_l_visual_test___action}{S\-D\-L\-Visual\-Test\-\_\-\-Action} $\ast$ \hyperlink{action__configparser_8c_afb508801942e7c74084480bcdb6f8613}{S\-D\-L\-Visual\-Test\-\_\-\-Get\-Queue\-Front} (\hyperlink{struct_s_d_l_visual_test___action_queue}{S\-D\-L\-Visual\-Test\-\_\-\-Action\-Queue} $\ast$queue)
+\item 
+int \hyperlink{action__configparser_8c_a8484ee36f78952192d4193c85fca2f17}{S\-D\-L\-Visual\-Test\-\_\-\-Is\-Action\-Queue\-Empty} (\hyperlink{struct_s_d_l_visual_test___action_queue}{S\-D\-L\-Visual\-Test\-\_\-\-Action\-Queue} $\ast$queue)
+\item 
+void \hyperlink{action__configparser_8c_a677da0d0e4793df342f91974b4559efa}{S\-D\-L\-Visual\-Test\-\_\-\-Empty\-Action\-Queue} (\hyperlink{struct_s_d_l_visual_test___action_queue}{S\-D\-L\-Visual\-Test\-\_\-\-Action\-Queue} $\ast$queue)
+\item 
+int \hyperlink{action__configparser_8c_ace5374ef7509e95383929ff185aaf7e6}{S\-D\-L\-Visual\-Test\-\_\-\-Insert\-Into\-Action\-Queue} (\hyperlink{struct_s_d_l_visual_test___action_queue}{S\-D\-L\-Visual\-Test\-\_\-\-Action\-Queue} $\ast$queue, \hyperlink{struct_s_d_l_visual_test___action}{S\-D\-L\-Visual\-Test\-\_\-\-Action} action)
+\item 
+int \hyperlink{action__configparser_8c_a8ef9dce4d464d6994596deeace6ffa2d}{S\-D\-L\-Visual\-Test\-\_\-\-Parse\-Action\-Config} (char $\ast$file, \hyperlink{struct_s_d_l_visual_test___action_queue}{S\-D\-L\-Visual\-Test\-\_\-\-Action\-Queue} $\ast$queue)
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Source file for the parser for action config files. 
+
+\subsection{Function Documentation}
+\hypertarget{action__configparser_8c_a0e7998533e6e10590612a8d5dee7ec0b}{\index{action\-\_\-configparser.\-c@{action\-\_\-configparser.\-c}!S\-D\-L\-Visual\-Test\-\_\-\-Dequeue\-Action@{S\-D\-L\-Visual\-Test\-\_\-\-Dequeue\-Action}}
+\index{S\-D\-L\-Visual\-Test\-\_\-\-Dequeue\-Action@{S\-D\-L\-Visual\-Test\-\_\-\-Dequeue\-Action}!action_configparser.c@{action\-\_\-configparser.\-c}}
+\subsubsection[{S\-D\-L\-Visual\-Test\-\_\-\-Dequeue\-Action}]{\setlength{\rightskip}{0pt plus 5cm}int S\-D\-L\-Visual\-Test\-\_\-\-Dequeue\-Action (
+\begin{DoxyParamCaption}
+\item[{{\bf S\-D\-L\-Visual\-Test\-\_\-\-Action\-Queue} $\ast$}]{queue}
+\end{DoxyParamCaption}
+)}}\label{action__configparser_8c_a0e7998533e6e10590612a8d5dee7ec0b}
+Remove an action from the front of the action queue pointed to by {\ttfamily queue}.
+
+\begin{DoxyReturn}{Returns}
+1 on success, 0 on failure. 
+\end{DoxyReturn}
+\hypertarget{action__configparser_8c_a677da0d0e4793df342f91974b4559efa}{\index{action\-\_\-configparser.\-c@{action\-\_\-configparser.\-c}!S\-D\-L\-Visual\-Test\-\_\-\-Empty\-Action\-Queue@{S\-D\-L\-Visual\-Test\-\_\-\-Empty\-Action\-Queue}}
+\index{S\-D\-L\-Visual\-Test\-\_\-\-Empty\-Action\-Queue@{S\-D\-L\-Visual\-Test\-\_\-\-Empty\-Action\-Queue}!action_configparser.c@{action\-\_\-configparser.\-c}}
+\subsubsection[{S\-D\-L\-Visual\-Test\-\_\-\-Empty\-Action\-Queue}]{\setlength{\rightskip}{0pt plus 5cm}void S\-D\-L\-Visual\-Test\-\_\-\-Empty\-Action\-Queue (
+\begin{DoxyParamCaption}
+\item[{{\bf S\-D\-L\-Visual\-Test\-\_\-\-Action\-Queue} $\ast$}]{queue}
+\end{DoxyParamCaption}
+)}}\label{action__configparser_8c_a677da0d0e4793df342f91974b4559efa}
+Dequeues all the elements in the queque pointed to by {\ttfamily queue}. \hypertarget{action__configparser_8c_a647d1be8f0f27af2fb1e5d4da2100596}{\index{action\-\_\-configparser.\-c@{action\-\_\-configparser.\-c}!S\-D\-L\-Visual\-Test\-\_\-\-Enqueue\-Action@{S\-D\-L\-Visual\-Test\-\_\-\-Enqueue\-Action}}
+\index{S\-D\-L\-Visual\-Test\-\_\-\-Enqueue\-Action@{S\-D\-L\-Visual\-Test\-\_\-\-Enqueue\-Action}!action_configparser.c@{action\-\_\-configparser.\-c}}
+\subsubsection[{S\-D\-L\-Visual\-Test\-\_\-\-Enqueue\-Action}]{\setlength{\rightskip}{0pt plus 5cm}int S\-D\-L\-Visual\-Test\-\_\-\-Enqueue\-Action (
+\begin{DoxyParamCaption}
+\item[{{\bf S\-D\-L\-Visual\-Test\-\_\-\-Action\-Queue} $\ast$}]{queue, }
+\item[{{\bf S\-D\-L\-Visual\-Test\-\_\-\-Action}}]{action}
+\end{DoxyParamCaption}
+)}}\label{action__configparser_8c_a647d1be8f0f27af2fb1e5d4da2100596}
+Add an action pointed to by {\ttfamily action} to the rear of the action queue pointed to by {\ttfamily queue}.
+
+\begin{DoxyReturn}{Returns}
+1 on success, 0 on failure. 
+\end{DoxyReturn}
+\hypertarget{action__configparser_8c_afb508801942e7c74084480bcdb6f8613}{\index{action\-\_\-configparser.\-c@{action\-\_\-configparser.\-c}!S\-D\-L\-Visual\-Test\-\_\-\-Get\-Queue\-Front@{S\-D\-L\-Visual\-Test\-\_\-\-Get\-Queue\-Front}}
+\index{S\-D\-L\-Visual\-Test\-\_\-\-Get\-Queue\-Front@{S\-D\-L\-Visual\-Test\-\_\-\-Get\-Queue\-Front}!action_configparser.c@{action\-\_\-configparser.\-c}}
+\subsubsection[{S\-D\-L\-Visual\-Test\-\_\-\-Get\-Queue\-Front}]{\setlength{\rightskip}{0pt plus 5cm}{\bf S\-D\-L\-Visual\-Test\-\_\-\-Action}$\ast$ S\-D\-L\-Visual\-Test\-\_\-\-Get\-Queue\-Front (
+\begin{DoxyParamCaption}
+\item[{{\bf S\-D\-L\-Visual\-Test\-\_\-\-Action\-Queue} $\ast$}]{queue}
+\end{DoxyParamCaption}
+)}}\label{action__configparser_8c_afb508801942e7c74084480bcdb6f8613}
+Get the action at the front of the action queue pointed to by {\ttfamily queue}. The returned action pointer may become invalid after subsequent dequeues.
+
+\begin{DoxyReturn}{Returns}
+pointer to the action on success, N\-U\-L\-L on failure. 
+\end{DoxyReturn}
+\hypertarget{action__configparser_8c_ae68c1c80f728e125869882139bec2c9e}{\index{action\-\_\-configparser.\-c@{action\-\_\-configparser.\-c}!S\-D\-L\-Visual\-Test\-\_\-\-Init\-Action\-Queue@{S\-D\-L\-Visual\-Test\-\_\-\-Init\-Action\-Queue}}
+\index{S\-D\-L\-Visual\-Test\-\_\-\-Init\-Action\-Queue@{S\-D\-L\-Visual\-Test\-\_\-\-Init\-Action\-Queue}!action_configparser.c@{action\-\_\-configparser.\-c}}
+\subsubsection[{S\-D\-L\-Visual\-Test\-\_\-\-Init\-Action\-Queue}]{\setlength{\rightskip}{0pt plus 5cm}void S\-D\-L\-Visual\-Test\-\_\-\-Init\-Action\-Queue (
+\begin{DoxyParamCaption}
+\item[{{\bf S\-D\-L\-Visual\-Test\-\_\-\-Action\-Queue} $\ast$}]{queue}
+\end{DoxyParamCaption}
+)}}\label{action__configparser_8c_ae68c1c80f728e125869882139bec2c9e}
+Initialize the action queue pointed to by {\ttfamily queue}. \hypertarget{action__configparser_8c_ace5374ef7509e95383929ff185aaf7e6}{\index{action\-\_\-configparser.\-c@{action\-\_\-configparser.\-c}!S\-D\-L\-Visual\-Test\-\_\-\-Insert\-Into\-Action\-Queue@{S\-D\-L\-Visual\-Test\-\_\-\-Insert\-Into\-Action\-Queue}}
+\index{S\-D\-L\-Visual\-Test\-\_\-\-Insert\-Into\-Action\-Queue@{S\-D\-L\-Visual\-Test\-\_\-\-Insert\-Into\-Action\-Queue}!action_configparser.c@{action\-\_\-configparser.\-c}}
+\subsubsection[{S\-D\-L\-Visual\-Test\-\_\-\-Insert\-Into\-Action\-Queue}]{\setlength{\rightskip}{0pt plus 5cm}int S\-D\-L\-Visual\-Test\-\_\-\-Insert\-Into\-Action\-Queue (
+\begin{DoxyParamCaption}
+\item[{{\bf S\-D\-L\-Visual\-Test\-\_\-\-Action\-Queue} $\ast$}]{queue, }
+\item[{{\bf S\-D\-L\-Visual\-Test\-\_\-\-Action}}]{action}
+\end{DoxyParamCaption}
+)}}\label{action__configparser_8c_ace5374ef7509e95383929ff185aaf7e6}
+Inserts an action {\ttfamily action} into the queue pointed to by {\ttfamily queue} such that the times of actions in the queue increase as we move from the front to the rear.
+
+\begin{DoxyReturn}{Returns}
+1 on success, 0 on failure. 
+\end{DoxyReturn}
+\hypertarget{action__configparser_8c_a8484ee36f78952192d4193c85fca2f17}{\index{action\-\_\-configparser.\-c@{action\-\_\-configparser.\-c}!S\-D\-L\-Visual\-Test\-\_\-\-Is\-Action\-Queue\-Empty@{S\-D\-L\-Visual\-Test\-\_\-\-Is\-Action\-Queue\-Empty}}
+\index{S\-D\-L\-Visual\-Test\-\_\-\-Is\-Action\-Queue\-Empty@{S\-D\-L\-Visual\-Test\-\_\-\-Is\-Action\-Queue\-Empty}!action_configparser.c@{action\-\_\-configparser.\-c}}
+\subsubsection[{S\-D\-L\-Visual\-Test\-\_\-\-Is\-Action\-Queue\-Empty}]{\setlength{\rightskip}{0pt plus 5cm}int S\-D\-L\-Visual\-Test\-\_\-\-Is\-Action\-Queue\-Empty (
+\begin{DoxyParamCaption}
+\item[{{\bf S\-D\-L\-Visual\-Test\-\_\-\-Action\-Queue} $\ast$}]{queue}
+\end{DoxyParamCaption}
+)}}\label{action__configparser_8c_a8484ee36f78952192d4193c85fca2f17}
+Check if the queue pointed to by {\ttfamily queue} is empty or not.
+
+\begin{DoxyReturn}{Returns}
+1 if the queue is empty, 0 otherwise. 
+\end{DoxyReturn}
+\hypertarget{action__configparser_8c_a8ef9dce4d464d6994596deeace6ffa2d}{\index{action\-\_\-configparser.\-c@{action\-\_\-configparser.\-c}!S\-D\-L\-Visual\-Test\-\_\-\-Parse\-Action\-Config@{S\-D\-L\-Visual\-Test\-\_\-\-Parse\-Action\-Config}}
+\index{S\-D\-L\-Visual\-Test\-\_\-\-Parse\-Action\-Config@{S\-D\-L\-Visual\-Test\-\_\-\-Parse\-Action\-Config}!action_configparser.c@{action\-\_\-configparser.\-c}}
+\subsubsection[{S\-D\-L\-Visual\-Test\-\_\-\-Parse\-Action\-Config}]{\setlength{\rightskip}{0pt plus 5cm}int S\-D\-L\-Visual\-Test\-\_\-\-Parse\-Action\-Config (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{file, }
+\item[{{\bf S\-D\-L\-Visual\-Test\-\_\-\-Action\-Queue} $\ast$}]{queue}
+\end{DoxyParamCaption}
+)}}\label{action__configparser_8c_a8ef9dce4d464d6994596deeace6ffa2d}
+Parses an action config file with path {\ttfamily file} and populates an action queue pointed to by {\ttfamily queue} with actions.
+
+\begin{DoxyReturn}{Returns}
+1 on success, 0 on failure. 
+\end{DoxyReturn}

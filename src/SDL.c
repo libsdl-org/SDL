@@ -115,9 +115,11 @@ SDL_InitSubSystem(Uint32 flags)
     SDL_ClearError();
 
 #if SDL_VIDEO_DRIVER_WINDOWS
-    if (SDL_HelperWindowCreate() < 0) {
-        return -1;
-    }
+	if ((flags & (SDL_INIT_HAPTIC|SDL_INIT_JOYSTICK))) {
+		if (SDL_HelperWindowCreate() < 0) {
+			return -1;
+		}
+	}
 #endif
 
 #if !SDL_TIMERS_DISABLED
@@ -394,8 +396,6 @@ SDL_GetPlatform()
     return "AIX";
 #elif __ANDROID__
     return "Android";
-#elif __BEOS__
-    return "BeOS";
 #elif __BSDI__
     return "BSDI";
 #elif __DREAMCAST__

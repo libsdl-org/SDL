@@ -62,6 +62,12 @@ edit $SYSROOT/etc/ld.so.preload and comment out all lines in it.
     sudo umount $SYSROOT/proc
     sudo umount $SYSROOT/sys
     sudo umount /mnt
+    
+There's one more fix required, as the libdl.so symlink uses an absolute path 
+which doesn't quite work in our setup.
+
+    sudo rm -rf $SYSROOT/usr/lib/arm-linux-gnueabihf/libdl.so
+    sudo ln -s ../../../lib/arm-linux-gnueabihf/libdl.so.2 $SYSROOT/usr/lib/arm-linux-gnueabihf/libdl.so
 
 The final step is compiling SDL itself.
 

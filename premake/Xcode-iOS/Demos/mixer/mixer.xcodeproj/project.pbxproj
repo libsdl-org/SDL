@@ -1,0 +1,382 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0B6859393B9143B32E541E7E /* ds_brush_snare.wav in Resources */ = {isa = PBXBuildFile; fileRef = 422733DF08FD31034D304460 /* ds_brush_snare.wav */; };
+		1D620E24175E3BDC68B364CC /* ds_china.wav in Resources */ = {isa = PBXBuildFile; fileRef = 79E53A83260455FE38C33693 /* ds_china.wav */; };
+		0CFA1EA63AE91AEB435040F4 /* ds_kick_big_amb.wav in Resources */ = {isa = PBXBuildFile; fileRef = 1F722A62118969EF6675146F /* ds_kick_big_amb.wav */; };
+		3C721D7F0BE567BA03824EC3 /* ds_loose_skin_mute.wav in Resources */ = {isa = PBXBuildFile; fileRef = 7FFF7D0619C10C5C2CDB1303 /* ds_loose_skin_mute.wav */; };
+		562A04E23F4F62DB1A77086F /* common.c in Sources */ = {isa = PBXBuildFile; fileRef = 10786FA134B253174C941340 /* common.c */; };
+		6BEA7CEB63D02B4D066E34E5 /* mixer.c in Sources */ = {isa = PBXBuildFile; fileRef = 687637245A2B505F4A160613 /* mixer.c */; };
+		081C234807FF0C5C139957D8 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 203A4FD6274F474708165F11 /* AudioToolbox.framework */; };
+		5B59651D06310F6C10D32C9D /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 32982470375E18A1721C3319 /* QuartzCore.framework */; };
+		4CB53808503156A666854E29 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 19A945435C744703450D6DB4 /* OpenGLES.framework */; };
+		4B5D5AA06F9A6DDF6E6955BE /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 06A616C9757B111D082B6699 /* CoreGraphics.framework */; };
+		660D132301FE4FC469482A6A /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 68A35894181D26234E8906BB /* UIKit.framework */; };
+		40135577196C0B49113E1344 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4F39495026702A5475264C60 /* Foundation.framework */; };
+		5DE82D615C365F4C08B4227B /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 102040E91CCC47744B866018 /* CoreAudio.framework */; };
+		42B32C7E1256594210637026 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 387D44E21004100A08F954C0 /* libSDL2.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		3DF962F5699217AC4FE77606 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4FC72EC24B0D47FF42BB412E /* SDL2.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 224D2C85085A7BA60E532655;
+			remoteInfo = "libSDL2.a";
+		};
+		0BD816BC3B2176BC65117275 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4FC72EC24B0D47FF42BB412E /* SDL2.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 515D4C462ACD2DA8180E7783;
+			remoteInfo = "libSDL2.a";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		65434775530A460B247312EC /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Info.plist"; path = "../../../../Xcode-iOS/Demos/Info.plist"; sourceTree = "<group>"; };
+		422733DF08FD31034D304460 /* ds_brush_snare.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = "ds_brush_snare.wav"; path = "../../../../Xcode-iOS/Demos/data/drums/ds_brush_snare.wav"; sourceTree = "<group>"; };
+		79E53A83260455FE38C33693 /* ds_china.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = "ds_china.wav"; path = "../../../../Xcode-iOS/Demos/data/drums/ds_china.wav"; sourceTree = "<group>"; };
+		1F722A62118969EF6675146F /* ds_kick_big_amb.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = "ds_kick_big_amb.wav"; path = "../../../../Xcode-iOS/Demos/data/drums/ds_kick_big_amb.wav"; sourceTree = "<group>"; };
+		7FFF7D0619C10C5C2CDB1303 /* ds_loose_skin_mute.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; name = "ds_loose_skin_mute.wav"; path = "../../../../Xcode-iOS/Demos/data/drums/ds_loose_skin_mute.wav"; sourceTree = "<group>"; };
+		10786FA134B253174C941340 /* common.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "common.c"; path = "../../../../Xcode-iOS/Demos/src/common.c"; sourceTree = "<group>"; };
+		61A137E9413B20467DD00CE4 /* common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "common.h"; path = "../../../../Xcode-iOS/Demos/src/common.h"; sourceTree = "<group>"; };
+		687637245A2B505F4A160613 /* mixer.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "mixer.c"; path = "../../../../Xcode-iOS/Demos/src/mixer.c"; sourceTree = "<group>"; };
+		203A4FD6274F474708165F11 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "AudioToolbox.framework"; path = "System/Library/Frameworks/AudioToolbox.framework"; sourceTree = "SDKROOT"; };
+		32982470375E18A1721C3319 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "QuartzCore.framework"; path = "System/Library/Frameworks/QuartzCore.framework"; sourceTree = "SDKROOT"; };
+		19A945435C744703450D6DB4 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "OpenGLES.framework"; path = "System/Library/Frameworks/OpenGLES.framework"; sourceTree = "SDKROOT"; };
+		06A616C9757B111D082B6699 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "CoreGraphics.framework"; path = "System/Library/Frameworks/CoreGraphics.framework"; sourceTree = "SDKROOT"; };
+		68A35894181D26234E8906BB /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "UIKit.framework"; path = "System/Library/Frameworks/UIKit.framework"; sourceTree = "SDKROOT"; };
+		4F39495026702A5475264C60 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "Foundation.framework"; path = "System/Library/Frameworks/Foundation.framework"; sourceTree = "SDKROOT"; };
+		102040E91CCC47744B866018 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "CoreAudio.framework"; path = "System/Library/Frameworks/CoreAudio.framework"; sourceTree = "SDKROOT"; };
+		17915AFB41DD5216489A7D9D /* mixer */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = "mixer"; path = "mixer"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4FC72EC24B0D47FF42BB412E /* SDL2.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "SDL2.xcodeproj"; path = "../../SDL2/SDL2.xcodeproj"; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		3F9F772D4BEA703C31557097 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				081C234807FF0C5C139957D8 /* AudioToolbox.framework in Frameworks */,
+				5B59651D06310F6C10D32C9D /* QuartzCore.framework in Frameworks */,
+				4CB53808503156A666854E29 /* OpenGLES.framework in Frameworks */,
+				4B5D5AA06F9A6DDF6E6955BE /* CoreGraphics.framework in Frameworks */,
+				660D132301FE4FC469482A6A /* UIKit.framework in Frameworks */,
+				40135577196C0B49113E1344 /* Foundation.framework in Frameworks */,
+				5DE82D615C365F4C08B4227B /* CoreAudio.framework in Frameworks */,
+				42B32C7E1256594210637026 /* libSDL2.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		64F72912178E0E0A529D547E /* mixer */ = {
+			isa = PBXGroup;
+			children = (
+				30E07F1023C3109F689531C0 /* Xcode-iOS */,
+				447E63AC35FA5F3B5457493C /* Frameworks */,
+				56F83BF965B964C63D7C584C /* Products */,
+				6BBD4CDF46EE53A457CF775A /* Projects */,
+			);
+			name = "mixer";
+			sourceTree = "<group>";
+		};
+		30E07F1023C3109F689531C0 /* Xcode-iOS */ = {
+			isa = PBXGroup;
+			children = (
+				5687680358D406927F8D3122 /* Demos */,
+			);
+			name = "Xcode-iOS";
+			sourceTree = "<group>";
+		};
+		5687680358D406927F8D3122 /* Demos */ = {
+			isa = PBXGroup;
+			children = (
+				65434775530A460B247312EC /* Info.plist */,
+				4525302B7F940E66616B446F /* data */,
+				682F19D924A4152E215F01F1 /* src */,
+			);
+			name = "Demos";
+			sourceTree = "<group>";
+		};
+		4525302B7F940E66616B446F /* data */ = {
+			isa = PBXGroup;
+			children = (
+				69E5397630F2065F749834A8 /* drums */,
+			);
+			name = "data";
+			sourceTree = "<group>";
+		};
+		69E5397630F2065F749834A8 /* drums */ = {
+			isa = PBXGroup;
+			children = (
+				422733DF08FD31034D304460 /* ds_brush_snare.wav */,
+				79E53A83260455FE38C33693 /* ds_china.wav */,
+				1F722A62118969EF6675146F /* ds_kick_big_amb.wav */,
+				7FFF7D0619C10C5C2CDB1303 /* ds_loose_skin_mute.wav */,
+			);
+			name = "drums";
+			sourceTree = "<group>";
+		};
+		682F19D924A4152E215F01F1 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				10786FA134B253174C941340 /* common.c */,
+				61A137E9413B20467DD00CE4 /* common.h */,
+				687637245A2B505F4A160613 /* mixer.c */,
+			);
+			name = "src";
+			sourceTree = "<group>";
+		};
+		447E63AC35FA5F3B5457493C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				203A4FD6274F474708165F11 /* AudioToolbox.framework */,
+				32982470375E18A1721C3319 /* QuartzCore.framework */,
+				19A945435C744703450D6DB4 /* OpenGLES.framework */,
+				06A616C9757B111D082B6699 /* CoreGraphics.framework */,
+				68A35894181D26234E8906BB /* UIKit.framework */,
+				4F39495026702A5475264C60 /* Foundation.framework */,
+				102040E91CCC47744B866018 /* CoreAudio.framework */,
+			);
+			name = "Frameworks";
+			sourceTree = "<group>";
+		};
+		56F83BF965B964C63D7C584C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				17915AFB41DD5216489A7D9D /* mixer */,
+			);
+			name = "Products";
+			sourceTree = "<group>";
+		};
+		6BBD4CDF46EE53A457CF775A /* Projects */ = {
+			isa = PBXGroup;
+			children = (
+				4FC72EC24B0D47FF42BB412E /* SDL2.xcodeproj */,
+			);
+			name = "Projects";
+			sourceTree = "<group>";
+		};
+		14184545582D7FB768DA7DD1 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				387D44E21004100A08F954C0 /* libSDL2.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		5D8A3C36241715841B63245E /* mixer */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 071B02257AE01E935E8D1379 /* Build configuration list for PBXNativeTarget "mixer" */;
+			buildPhases = (
+				0DD66F6149F315524B87203F /* Resources */,
+				241A48291BAC50147F677AD3 /* Sources */,
+				3F9F772D4BEA703C31557097 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				1C743B7F1E84122F06736C69 /* PBXTargetDependency */,
+			);
+			name = "mixer";
+			productInstallPath = "$(HOME)/Applications";
+			productName = "mixer";
+			productReference = 17915AFB41DD5216489A7D9D /* mixer */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		08FB7793FE84155DC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "mixer" */;
+			compatibilityVersion = "Xcode 3.2";
+			hasScannedForEncodings = 1;
+			mainGroup = 64F72912178E0E0A529D547E /* mixer */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 14184545582D7FB768DA7DD1 /* Products */;
+					ProjectRef = 4FC72EC24B0D47FF42BB412E /* SDL2.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				5D8A3C36241715841B63245E /* mixer */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		387D44E21004100A08F954C0 /* libSDL2.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "Build/Debug/libSDL2.a";
+			remoteRef = 3DF962F5699217AC4FE77606 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXResourcesBuildPhase section */
+		0DD66F6149F315524B87203F /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0B6859393B9143B32E541E7E /* ds_brush_snare.wav in Resources */,
+				1D620E24175E3BDC68B364CC /* ds_china.wav in Resources */,
+				0CFA1EA63AE91AEB435040F4 /* ds_kick_big_amb.wav in Resources */,
+				3C721D7F0BE567BA03824EC3 /* ds_loose_skin_mute.wav in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		241A48291BAC50147F677AD3 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				562A04E23F4F62DB1A77086F /* common.c in Sources */,
+				6BEA7CEB63D02B4D066E34E5 /* mixer.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+/* End PBXVariantGroup section */
+
+/* Begin PBXTargetDependency section */
+		1C743B7F1E84122F06736C69 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "libSDL2.a";
+			targetProxy = 0BD816BC3B2176BC65117275 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		6BF263503A1012B07427361E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CONFIGURATION_BUILD_DIR = Build/Debug;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				INFOPLIST_FILE = "../../../../Xcode-iOS/Demos/Info.plist";
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = "mixer";
+			};
+			name = "Debug";
+		};
+		004C079411BA6B4276C04983 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				CONFIGURATION_BUILD_DIR = Build/Release;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				INFOPLIST_FILE = "../../../../Xcode-iOS/Demos/Info.plist";
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = "mixer";
+			};
+			name = "Release";
+		};
+		010032F924AD1A8604875C13 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_UNIVERSAL_IPHONE_OS)";
+				SDKROOT = iphoneos;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USING_PREMAKE_CONFIG_H",
+					"_DEBUG",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"../..",
+					"../../../../include",
+				);
+				OBJROOT = "obj/iOS/Debug";
+				ONLY_ACTIVE_ARCH = YES;
+				SYMROOT = "Build/Debug";
+			};
+			name = "Debug";
+		};
+		62BE3AE0053C3D574C260D65 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_UNIVERSAL_IPHONE_OS)";
+				SDKROOT = iphoneos;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USING_PREMAKE_CONFIG_H",
+					"NDEBUG",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"../..",
+					"../../../../include",
+				);
+				OBJROOT = "obj/iOS/Release";
+				ONLY_ACTIVE_ARCH = NO;
+				SYMROOT = "Build/Release";
+			};
+			name = "Release";
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		071B02257AE01E935E8D1379 /* Build configuration list for PBXNativeTarget "mixer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6BF263503A1012B07427361E /* Debug */,
+				004C079411BA6B4276C04983 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Debug";
+		};
+		1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "mixer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				010032F924AD1A8604875C13 /* Debug */,
+				62BE3AE0053C3D574C260D65 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Debug";
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
+}

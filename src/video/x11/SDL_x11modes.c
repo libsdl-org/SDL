@@ -552,7 +552,8 @@ X11_InitModes(_THIS)
                    in all cases.  Anybody want to give this some love?
                  */
                 crtc = X11_XRRGetCrtcInfo(data->display, res, output_info->crtc);
-                if (!crtc || crtc->x != displaydata->x || crtc->y != displaydata->y) {
+                if (!crtc || crtc->x != displaydata->x || crtc->y != displaydata->y ||
+                    crtc->width != mode.w || crtc->height != mode.h) {
                     X11_XRRFreeOutputInfo(output_info);
                     X11_XRRFreeCrtcInfo(crtc);
                     continue;

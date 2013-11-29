@@ -112,3 +112,29 @@ double atan(double x)
 	}
 }
 libm_hidden_def(atan)
+
+double SDL_acos(double val)
+{
+    double result;
+    if (val == -1.0) {
+        result = M_PI;
+    } else {
+        result = SDL_atan(SDL_sqrt(1.0 - val * val) / val);
+        if (result < 0.0)
+        {
+            result += M_PI;
+        }
+    }
+    return result;
+}
+
+double SDL_asin(double val)
+{
+    double result;
+    if (val == -1.0) {
+        result = -(M_PI / 2.0);
+    } else {
+        result = (M_PI / 2.0) - SDL_acos(val);
+    }
+    return result;
+}

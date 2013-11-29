@@ -58,14 +58,14 @@ extern DECLSPEC int SDLCALL SDL_RecordGesture(SDL_TouchID touchId);
  *
  *
  */
-extern DECLSPEC int SDLCALL SDL_SaveAllDollarTemplates(SDL_RWops *src);
+extern DECLSPEC int SDLCALL SDL_SaveAllDollarTemplates(SDL_RWops *dst);
 
 /**
  *  \brief Save a currently loaded Dollar Gesture template
  *
  *
  */
-extern DECLSPEC int SDLCALL SDL_SaveDollarTemplate(SDL_GestureID gestureId,SDL_RWops *src);
+extern DECLSPEC int SDLCALL SDL_SaveDollarTemplate(SDL_GestureID gestureId,SDL_RWops *dst);
 
 
 /**

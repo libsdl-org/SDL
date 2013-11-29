@@ -56,7 +56,7 @@ extern AudioBootStrap XAUDIO2_bootstrap;
 extern AudioBootStrap DSOUND_bootstrap;
 extern AudioBootStrap WINMM_bootstrap;
 extern AudioBootStrap PAUDIO_bootstrap;
-extern AudioBootStrap BEOSAUDIO_bootstrap;
+extern AudioBootStrap HAIKUAUDIO_bootstrap;
 extern AudioBootStrap COREAUDIO_bootstrap;
 extern AudioBootStrap SNDMGR_bootstrap;
 extern AudioBootStrap DISKAUD_bootstrap;
@@ -113,8 +113,8 @@ static const AudioBootStrap *const bootstrap[] = {
 #if SDL_AUDIO_DRIVER_PAUDIO
     &PAUDIO_bootstrap,
 #endif
-#if SDL_AUDIO_DRIVER_BEOSAUDIO
-    &BEOSAUDIO_bootstrap,
+#if SDL_AUDIO_DRIVER_HAIKU
+    &HAIKUAUDIO_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_COREAUDIO
     &COREAUDIO_bootstrap,
@@ -722,10 +722,16 @@ SDL_GetAudioDeviceName(int index, int iscapture)
     }
 
     if ((iscapture) && (current_audio.impl.OnlyHasDefaultInputDevice)) {
+        if (index > 0) {
+            goto no_such_device;
+        }
         return DEFAULT_INPUT_DEVNAME;
     }
 
     if ((!iscapture) && (current_audio.impl.OnlyHasDefaultOutputDevice)) {
+        if (index > 0) {
+            goto no_such_device;
+        }
         return DEFAULT_OUTPUT_DEVNAME;
     }
 

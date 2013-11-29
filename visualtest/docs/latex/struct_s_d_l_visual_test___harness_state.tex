@@ -1,0 +1,71 @@
+\hypertarget{struct_s_d_l_visual_test___harness_state}{\section{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State Struct Reference}
+\label{struct_s_d_l_visual_test___harness_state}\index{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State@{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State}}
+}
+
+
+{\ttfamily \#include $<$S\-D\-L\-\_\-visualtest\-\_\-harness\-\_\-argparser.\-h$>$}
+
+\subsection*{Data Fields}
+\begin{DoxyCompactItemize}
+\item 
+char \hyperlink{struct_s_d_l_visual_test___harness_state_af277bbb5c712eb89e92337dd583a8b74}{sutapp} \mbox{[}\hyperlink{_s_d_l__visualtest__harness__argparser_8h_abdd33f362ae3bbdacb5de76473aa8a2f}{M\-A\-X\-\_\-\-P\-A\-T\-H\-\_\-\-L\-E\-N}\mbox{]}
+\item 
+char \hyperlink{struct_s_d_l_visual_test___harness_state_a00fab9c7cf802b96b6b29e098292d24d}{sutargs} \mbox{[}\hyperlink{_s_d_l__visualtest__harness__argparser_8h_a8485cbda108eca56406d67aaa685fcc5}{M\-A\-X\-\_\-\-S\-U\-T\-\_\-\-A\-R\-G\-S\-\_\-\-L\-E\-N}\mbox{]}
+\item 
+int \hyperlink{struct_s_d_l_visual_test___harness_state_a493b57f443cc38b3d3df9c1e584d9d82}{timeout}
+\item 
+\hyperlink{struct_s_d_l_visual_test___s_u_t_config}{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Config} \hyperlink{struct_s_d_l_visual_test___harness_state_a42657080015a96da836e1640bbdf870e}{sut\-\_\-config}
+\item 
+\hyperlink{_s_d_l__visualtest__variator__common_8h_a04bfc880abe6940d69a63c06a33acdbd}{S\-D\-L\-Visual\-Test\-\_\-\-Variator\-Type} \hyperlink{struct_s_d_l_visual_test___harness_state_aaaa989ae89caee6d39c722cfe6907466}{variator\-\_\-type}
+\item 
+int \hyperlink{struct_s_d_l_visual_test___harness_state_a0bd4e04c0c6be7b94e68501bb31dd62c}{num\-\_\-variations}
+\item 
+S\-D\-L\-\_\-bool \hyperlink{struct_s_d_l_visual_test___harness_state_a091c0d08290b73216a736ff42ac8fa99}{no\-\_\-launch}
+\item 
+\hyperlink{struct_s_d_l_visual_test___action_queue}{S\-D\-L\-Visual\-Test\-\_\-\-Action\-Queue} \hyperlink{struct_s_d_l_visual_test___harness_state_ae25567527563fbd7373fa1cf7cdede61}{action\-\_\-queue}
+\item 
+char \hyperlink{struct_s_d_l_visual_test___harness_state_aafa9a2fb15490380b6c2edd704f4fcf0}{output\-\_\-dir} \mbox{[}\hyperlink{_s_d_l__visualtest__harness__argparser_8h_abdd33f362ae3bbdacb5de76473aa8a2f}{M\-A\-X\-\_\-\-P\-A\-T\-H\-\_\-\-L\-E\-N}\mbox{]}
+\item 
+char \hyperlink{struct_s_d_l_visual_test___harness_state_adc871112f24f61e2fff74a7a7fb9794f}{verify\-\_\-dir} \mbox{[}\hyperlink{_s_d_l__visualtest__harness__argparser_8h_abdd33f362ae3bbdacb5de76473aa8a2f}{M\-A\-X\-\_\-\-P\-A\-T\-H\-\_\-\-L\-E\-N}\mbox{]}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Stores the state of the test harness. 
+
+\subsection{Field Documentation}
+\hypertarget{struct_s_d_l_visual_test___harness_state_ae25567527563fbd7373fa1cf7cdede61}{\index{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State@{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State}!action\-\_\-queue@{action\-\_\-queue}}
+\index{action\-\_\-queue@{action\-\_\-queue}!SDLVisualTest_HarnessState@{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State}}
+\subsubsection[{action\-\_\-queue}]{\setlength{\rightskip}{0pt plus 5cm}{\bf S\-D\-L\-Visual\-Test\-\_\-\-Action\-Queue} action\-\_\-queue}}\label{struct_s_d_l_visual_test___harness_state_ae25567527563fbd7373fa1cf7cdede61}
+A queue with actions to be performed while the S\-U\-T is running \hypertarget{struct_s_d_l_visual_test___harness_state_a091c0d08290b73216a736ff42ac8fa99}{\index{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State@{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State}!no\-\_\-launch@{no\-\_\-launch}}
+\index{no\-\_\-launch@{no\-\_\-launch}!SDLVisualTest_HarnessState@{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State}}
+\subsubsection[{no\-\_\-launch}]{\setlength{\rightskip}{0pt plus 5cm}S\-D\-L\-\_\-bool no\-\_\-launch}}\label{struct_s_d_l_visual_test___harness_state_a091c0d08290b73216a736ff42ac8fa99}
+If true, the test harness will just print the different variations without launching the S\-U\-T for each one \hypertarget{struct_s_d_l_visual_test___harness_state_a0bd4e04c0c6be7b94e68501bb31dd62c}{\index{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State@{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State}!num\-\_\-variations@{num\-\_\-variations}}
+\index{num\-\_\-variations@{num\-\_\-variations}!SDLVisualTest_HarnessState@{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State}}
+\subsubsection[{num\-\_\-variations}]{\setlength{\rightskip}{0pt plus 5cm}int num\-\_\-variations}}\label{struct_s_d_l_visual_test___harness_state_a0bd4e04c0c6be7b94e68501bb31dd62c}
+The number of variations to generate \hypertarget{struct_s_d_l_visual_test___harness_state_aafa9a2fb15490380b6c2edd704f4fcf0}{\index{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State@{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State}!output\-\_\-dir@{output\-\_\-dir}}
+\index{output\-\_\-dir@{output\-\_\-dir}!SDLVisualTest_HarnessState@{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State}}
+\subsubsection[{output\-\_\-dir}]{\setlength{\rightskip}{0pt plus 5cm}char output\-\_\-dir\mbox{[}{\bf M\-A\-X\-\_\-\-P\-A\-T\-H\-\_\-\-L\-E\-N}\mbox{]}}}\label{struct_s_d_l_visual_test___harness_state_aafa9a2fb15490380b6c2edd704f4fcf0}
+Output directory to save the screenshots \hypertarget{struct_s_d_l_visual_test___harness_state_a42657080015a96da836e1640bbdf870e}{\index{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State@{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State}!sut\-\_\-config@{sut\-\_\-config}}
+\index{sut\-\_\-config@{sut\-\_\-config}!SDLVisualTest_HarnessState@{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State}}
+\subsubsection[{sut\-\_\-config}]{\setlength{\rightskip}{0pt plus 5cm}{\bf S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Config} sut\-\_\-config}}\label{struct_s_d_l_visual_test___harness_state_a42657080015a96da836e1640bbdf870e}
+Configuration object for the S\-U\-T \hypertarget{struct_s_d_l_visual_test___harness_state_af277bbb5c712eb89e92337dd583a8b74}{\index{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State@{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State}!sutapp@{sutapp}}
+\index{sutapp@{sutapp}!SDLVisualTest_HarnessState@{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State}}
+\subsubsection[{sutapp}]{\setlength{\rightskip}{0pt plus 5cm}char sutapp\mbox{[}{\bf M\-A\-X\-\_\-\-P\-A\-T\-H\-\_\-\-L\-E\-N}\mbox{]}}}\label{struct_s_d_l_visual_test___harness_state_af277bbb5c712eb89e92337dd583a8b74}
+Path to the System Under Test (S\-U\-T) executable \hypertarget{struct_s_d_l_visual_test___harness_state_a00fab9c7cf802b96b6b29e098292d24d}{\index{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State@{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State}!sutargs@{sutargs}}
+\index{sutargs@{sutargs}!SDLVisualTest_HarnessState@{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State}}
+\subsubsection[{sutargs}]{\setlength{\rightskip}{0pt plus 5cm}char sutargs\mbox{[}{\bf M\-A\-X\-\_\-\-S\-U\-T\-\_\-\-A\-R\-G\-S\-\_\-\-L\-E\-N}\mbox{]}}}\label{struct_s_d_l_visual_test___harness_state_a00fab9c7cf802b96b6b29e098292d24d}
+Command line arguments to be passed to the S\-U\-T \hypertarget{struct_s_d_l_visual_test___harness_state_a493b57f443cc38b3d3df9c1e584d9d82}{\index{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State@{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State}!timeout@{timeout}}
+\index{timeout@{timeout}!SDLVisualTest_HarnessState@{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State}}
+\subsubsection[{timeout}]{\setlength{\rightskip}{0pt plus 5cm}int timeout}}\label{struct_s_d_l_visual_test___harness_state_a493b57f443cc38b3d3df9c1e584d9d82}
+Time in milliseconds after which to kill the S\-U\-T \hypertarget{struct_s_d_l_visual_test___harness_state_aaaa989ae89caee6d39c722cfe6907466}{\index{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State@{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State}!variator\-\_\-type@{variator\-\_\-type}}
+\index{variator\-\_\-type@{variator\-\_\-type}!SDLVisualTest_HarnessState@{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State}}
+\subsubsection[{variator\-\_\-type}]{\setlength{\rightskip}{0pt plus 5cm}{\bf S\-D\-L\-Visual\-Test\-\_\-\-Variator\-Type} variator\-\_\-type}}\label{struct_s_d_l_visual_test___harness_state_aaaa989ae89caee6d39c722cfe6907466}
+What type of variator to use to generate argument strings \hypertarget{struct_s_d_l_visual_test___harness_state_adc871112f24f61e2fff74a7a7fb9794f}{\index{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State@{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State}!verify\-\_\-dir@{verify\-\_\-dir}}
+\index{verify\-\_\-dir@{verify\-\_\-dir}!SDLVisualTest_HarnessState@{S\-D\-L\-Visual\-Test\-\_\-\-Harness\-State}}
+\subsubsection[{verify\-\_\-dir}]{\setlength{\rightskip}{0pt plus 5cm}char verify\-\_\-dir\mbox{[}{\bf M\-A\-X\-\_\-\-P\-A\-T\-H\-\_\-\-L\-E\-N}\mbox{]}}}\label{struct_s_d_l_visual_test___harness_state_adc871112f24f61e2fff74a7a7fb9794f}
+Path to directory with the verification images 
+
+The documentation for this struct was generated from the following file\-:\begin{DoxyCompactItemize}
+\item 
+C\-:/\-Users/\-D\-E\-L\-L/\-Work/sdlvisualtest/visualtest/include/\hyperlink{_s_d_l__visualtest__harness__argparser_8h}{S\-D\-L\-\_\-visualtest\-\_\-harness\-\_\-argparser.\-h}\end{DoxyCompactItemize}

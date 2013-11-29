@@ -82,6 +82,7 @@ typedef struct
     Uint32 render_flags;
     SDL_bool skip_renderer;
     SDL_Renderer **renderers;
+    SDL_Texture **targets;
 
     /* Audio info */
     const char *audiodriver;
