@@ -175,7 +175,6 @@ typedef unsigned int uintptr_t;
 //#define SDL_VIDEO_OPENGL_EGL 1
 #endif
 
-// TODO, WinRT: Get a Direct3D 11 based renderer working in SDL.
 /* Enable appropriate renderer(s) */
 #define SDL_VIDEO_RENDER_D3D11  1
 
