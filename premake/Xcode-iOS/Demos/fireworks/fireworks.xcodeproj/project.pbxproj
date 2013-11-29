@@ -1,0 +1,362 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		10E2774011786F995B805C7F /* stroke.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 6730111A6BFB5F5C14DD4871 /* stroke.bmp */; };
+		79D87D07048610C3209314C6 /* common.c in Sources */ = {isa = PBXBuildFile; fileRef = 0EBB33113E847AA430B96B69 /* common.c */; };
+		71A12A290ADF47D43590019A /* fireworks.c in Sources */ = {isa = PBXBuildFile; fileRef = 596447B07498655C0C243381 /* fireworks.c */; };
+		79C17D3407632C1F2E3E0E60 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 123376C8576F65BC595A6307 /* AudioToolbox.framework */; };
+		73360C2A26FB4CA511D62254 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 60711C343D703F8D4C67108C /* QuartzCore.framework */; };
+		527D0CDF1702119E424E4A1F /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 633F528E066847D70E7013C4 /* OpenGLES.framework */; };
+		098672276FAD7A58464B0720 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 5E802A784A7A29545AD836CD /* CoreGraphics.framework */; };
+		5FA3503D55AC13E211914909 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7B22322B31D5351E536A0626 /* UIKit.framework */; };
+		25665D894EE1308D14544C71 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 230B36B52E4826A148913E3B /* Foundation.framework */; };
+		4C2479ED4E2C5193217C6EC9 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4CE031D65AB00DD264007083 /* CoreAudio.framework */; };
+		0A231ED87C3D466409B42038 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 36533B8A10B0217136B82153 /* libSDL2.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		21963BEC278D360D2CC829A9 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 460E547038C062D10E9E3D5F /* SDL2.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 224D2C85085A7BA60E532655;
+			remoteInfo = "libSDL2.a";
+		};
+		50E70FB957213B36609376FC /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 460E547038C062D10E9E3D5F /* SDL2.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 515D4C462ACD2DA8180E7783;
+			remoteInfo = "libSDL2.a";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		0671155E7F8E65FF744F0C39 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Info.plist"; path = "../../../../Xcode-iOS/Demos/Info.plist"; sourceTree = "<group>"; };
+		6730111A6BFB5F5C14DD4871 /* stroke.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = "stroke.bmp"; path = "../../../../Xcode-iOS/Demos/data/stroke.bmp"; sourceTree = "<group>"; };
+		0EBB33113E847AA430B96B69 /* common.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "common.c"; path = "../../../../Xcode-iOS/Demos/src/common.c"; sourceTree = "<group>"; };
+		5E933B3601CB6D550A35284B /* common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "common.h"; path = "../../../../Xcode-iOS/Demos/src/common.h"; sourceTree = "<group>"; };
+		596447B07498655C0C243381 /* fireworks.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "fireworks.c"; path = "../../../../Xcode-iOS/Demos/src/fireworks.c"; sourceTree = "<group>"; };
+		123376C8576F65BC595A6307 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "AudioToolbox.framework"; path = "System/Library/Frameworks/AudioToolbox.framework"; sourceTree = "SDKROOT"; };
+		60711C343D703F8D4C67108C /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "QuartzCore.framework"; path = "System/Library/Frameworks/QuartzCore.framework"; sourceTree = "SDKROOT"; };
+		633F528E066847D70E7013C4 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "OpenGLES.framework"; path = "System/Library/Frameworks/OpenGLES.framework"; sourceTree = "SDKROOT"; };
+		5E802A784A7A29545AD836CD /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "CoreGraphics.framework"; path = "System/Library/Frameworks/CoreGraphics.framework"; sourceTree = "SDKROOT"; };
+		7B22322B31D5351E536A0626 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "UIKit.framework"; path = "System/Library/Frameworks/UIKit.framework"; sourceTree = "SDKROOT"; };
+		230B36B52E4826A148913E3B /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "Foundation.framework"; path = "System/Library/Frameworks/Foundation.framework"; sourceTree = "SDKROOT"; };
+		4CE031D65AB00DD264007083 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "CoreAudio.framework"; path = "System/Library/Frameworks/CoreAudio.framework"; sourceTree = "SDKROOT"; };
+		30200E315CB6417F29DA5065 /* fireworks */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = "fireworks"; path = "fireworks"; sourceTree = BUILT_PRODUCTS_DIR; };
+		460E547038C062D10E9E3D5F /* SDL2.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "SDL2.xcodeproj"; path = "../../SDL2/SDL2.xcodeproj"; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		00003F873C025B1226283799 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				79C17D3407632C1F2E3E0E60 /* AudioToolbox.framework in Frameworks */,
+				73360C2A26FB4CA511D62254 /* QuartzCore.framework in Frameworks */,
+				527D0CDF1702119E424E4A1F /* OpenGLES.framework in Frameworks */,
+				098672276FAD7A58464B0720 /* CoreGraphics.framework in Frameworks */,
+				5FA3503D55AC13E211914909 /* UIKit.framework in Frameworks */,
+				25665D894EE1308D14544C71 /* Foundation.framework in Frameworks */,
+				4C2479ED4E2C5193217C6EC9 /* CoreAudio.framework in Frameworks */,
+				0A231ED87C3D466409B42038 /* libSDL2.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		792F068F49A57B4638B70EC5 /* fireworks */ = {
+			isa = PBXGroup;
+			children = (
+				49E04FED520F68E0695A1DB6 /* Xcode-iOS */,
+				501A0CA8227D64CE52083875 /* Frameworks */,
+				07354BC83E791D3F4F231D23 /* Products */,
+				6E052C166223126769C05956 /* Projects */,
+			);
+			name = "fireworks";
+			sourceTree = "<group>";
+		};
+		49E04FED520F68E0695A1DB6 /* Xcode-iOS */ = {
+			isa = PBXGroup;
+			children = (
+				31BA2F820B3B5C9778AE27A2 /* Demos */,
+			);
+			name = "Xcode-iOS";
+			sourceTree = "<group>";
+		};
+		31BA2F820B3B5C9778AE27A2 /* Demos */ = {
+			isa = PBXGroup;
+			children = (
+				0671155E7F8E65FF744F0C39 /* Info.plist */,
+				142A121F4562529546B6158D /* data */,
+				30930BB2673975194C004BD3 /* src */,
+			);
+			name = "Demos";
+			sourceTree = "<group>";
+		};
+		142A121F4562529546B6158D /* data */ = {
+			isa = PBXGroup;
+			children = (
+				6730111A6BFB5F5C14DD4871 /* stroke.bmp */,
+			);
+			name = "data";
+			sourceTree = "<group>";
+		};
+		30930BB2673975194C004BD3 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				0EBB33113E847AA430B96B69 /* common.c */,
+				5E933B3601CB6D550A35284B /* common.h */,
+				596447B07498655C0C243381 /* fireworks.c */,
+			);
+			name = "src";
+			sourceTree = "<group>";
+		};
+		501A0CA8227D64CE52083875 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				123376C8576F65BC595A6307 /* AudioToolbox.framework */,
+				60711C343D703F8D4C67108C /* QuartzCore.framework */,
+				633F528E066847D70E7013C4 /* OpenGLES.framework */,
+				5E802A784A7A29545AD836CD /* CoreGraphics.framework */,
+				7B22322B31D5351E536A0626 /* UIKit.framework */,
+				230B36B52E4826A148913E3B /* Foundation.framework */,
+				4CE031D65AB00DD264007083 /* CoreAudio.framework */,
+			);
+			name = "Frameworks";
+			sourceTree = "<group>";
+		};
+		07354BC83E791D3F4F231D23 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				30200E315CB6417F29DA5065 /* fireworks */,
+			);
+			name = "Products";
+			sourceTree = "<group>";
+		};
+		6E052C166223126769C05956 /* Projects */ = {
+			isa = PBXGroup;
+			children = (
+				460E547038C062D10E9E3D5F /* SDL2.xcodeproj */,
+			);
+			name = "Projects";
+			sourceTree = "<group>";
+		};
+		69CE07AB71092E5823634CFF /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				36533B8A10B0217136B82153 /* libSDL2.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		449B2B3766C40168684F5081 /* fireworks */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 6476261C1F55185646DD5A1D /* Build configuration list for PBXNativeTarget "fireworks" */;
+			buildPhases = (
+				602E226C0419148750F91DB2 /* Resources */,
+				376F64A66D4239294A6949B6 /* Sources */,
+				00003F873C025B1226283799 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				39CF02464D5053C66EA47AC0 /* PBXTargetDependency */,
+			);
+			name = "fireworks";
+			productInstallPath = "$(HOME)/Applications";
+			productName = "fireworks";
+			productReference = 30200E315CB6417F29DA5065 /* fireworks */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		08FB7793FE84155DC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "fireworks" */;
+			compatibilityVersion = "Xcode 3.2";
+			hasScannedForEncodings = 1;
+			mainGroup = 792F068F49A57B4638B70EC5 /* fireworks */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 69CE07AB71092E5823634CFF /* Products */;
+					ProjectRef = 460E547038C062D10E9E3D5F /* SDL2.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				449B2B3766C40168684F5081 /* fireworks */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		36533B8A10B0217136B82153 /* libSDL2.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "Build/Debug/libSDL2.a";
+			remoteRef = 21963BEC278D360D2CC829A9 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXResourcesBuildPhase section */
+		602E226C0419148750F91DB2 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				10E2774011786F995B805C7F /* stroke.bmp in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		376F64A66D4239294A6949B6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				79D87D07048610C3209314C6 /* common.c in Sources */,
+				71A12A290ADF47D43590019A /* fireworks.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+/* End PBXVariantGroup section */
+
+/* Begin PBXTargetDependency section */
+		39CF02464D5053C66EA47AC0 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "libSDL2.a";
+			targetProxy = 50E70FB957213B36609376FC /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		670D1D77032D31C655C83E60 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CONFIGURATION_BUILD_DIR = Build/Debug;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				INFOPLIST_FILE = "../../../../Xcode-iOS/Demos/Info.plist";
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = "fireworks";
+			};
+			name = "Debug";
+		};
+		3777705C388527704EAB5951 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				CONFIGURATION_BUILD_DIR = Build/Release;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				INFOPLIST_FILE = "../../../../Xcode-iOS/Demos/Info.plist";
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = "fireworks";
+			};
+			name = "Release";
+		};
+		11105FF3697A04D35F3C1869 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_UNIVERSAL_IPHONE_OS)";
+				SDKROOT = iphoneos;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USING_PREMAKE_CONFIG_H",
+					"_DEBUG",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"../..",
+					"../../../../include",
+				);
+				OBJROOT = "obj/iOS/Debug";
+				ONLY_ACTIVE_ARCH = YES;
+				SYMROOT = "Build/Debug";
+			};
+			name = "Debug";
+		};
+		75EF49955C93529475B6356E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_UNIVERSAL_IPHONE_OS)";
+				SDKROOT = iphoneos;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USING_PREMAKE_CONFIG_H",
+					"NDEBUG",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"../..",
+					"../../../../include",
+				);
+				OBJROOT = "obj/iOS/Release";
+				ONLY_ACTIVE_ARCH = NO;
+				SYMROOT = "Build/Release";
+			};
+			name = "Release";
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		6476261C1F55185646DD5A1D /* Build configuration list for PBXNativeTarget "fireworks" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				670D1D77032D31C655C83E60 /* Debug */,
+				3777705C388527704EAB5951 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Debug";
+		};
+		1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "fireworks" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				11105FF3697A04D35F3C1869 /* Debug */,
+				75EF49955C93529475B6356E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Debug";
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
+}

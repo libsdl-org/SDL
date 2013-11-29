@@ -335,7 +335,9 @@ main(int argc, char *argv[])
         SDL_Log("%2.2f frames per second\n",
                ((double) frames * 1000) / (now - then));
     }
+#if !defined(__ANDROID__)
     quit(0);
+#endif        
     return 0;
 }
 

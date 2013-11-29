@@ -34,6 +34,7 @@
 #include "../../video/android/SDL_androidtouch.h"
 #include "../../video/android/SDL_androidvideo.h"
 #include "../../video/android/SDL_androidwindow.h"
+#include "../../joystick/android/SDL_sysjoystick.h"
 
 #include <android/log.h>
 #include <pthread.h>
@@ -144,6 +145,30 @@ void Java_org_libsdl_app_SDLActivity_onNativeResize(
                                     jint width, jint height, jint format)
 {
     Android_SetScreenResolution(width, height, format);
+}
+
+// Paddown
+int Java_org_libsdl_app_SDLActivity_onNativePadDown(
+                                    JNIEnv* env, jclass jcls,
+                                    jint padId, jint keycode)
+{
+    return Android_OnPadDown(padId, keycode);
+}
+
+// Padup
+int Java_org_libsdl_app_SDLActivity_onNativePadUp(
+                                   JNIEnv* env, jclass jcls,
+                                   jint padId, jint keycode)
+{
+    return Android_OnPadUp(padId, keycode);
+}
+
+/* Joy */
+void Java_org_libsdl_app_SDLActivity_onNativeJoy(
+                                    JNIEnv* env, jclass jcls,
+                                    jint joyId, jint axis, jfloat value)
+{
+    Android_OnJoy(joyId, axis, value);
 }
 
 
@@ -259,9 +284,16 @@ void Java_org_libsdl_app_SDLActivity_nativeLowMemory(
 void Java_org_libsdl_app_SDLActivity_nativeQuit(
                                     JNIEnv* env, jclass cls)
 {
+    /* Discard previous events. The user should have handled state storage
+     * in SDL_APP_WILLENTERBACKGROUND. After nativeQuit() is called, no
+     * events other than SDL_QUIT and SDL_APP_TERMINATING should fire */
+    SDL_FlushEvents(SDL_FIRSTEVENT, SDL_LASTEVENT);
     /* Inject a SDL_QUIT event */
     SDL_SendQuit();
     SDL_SendAppEvent(SDL_APP_TERMINATING);
+    /* Resume the event loop so that the app can catch SDL_QUIT which
+     * should now be the top event in the event queue. */
+    if (!SDL_SemValue(Android_ResumeSem)) SDL_SemPost(Android_ResumeSem);
 }
 
 /* Pause */
@@ -1009,7 +1041,7 @@ static jobject Android_JNI_GetSystemServiceObject(const char* name)
     mid = (*env)->GetStaticMethodID(env, mActivityClass, "getContext", "()Landroid/content/Context;");
     jobject context = (*env)->CallStaticObjectMethod(env, mActivityClass, mid);
 
-    mid = (*env)->GetMethodID(env, mActivityClass, "getSystemService", "(Ljava/lang/String;)Ljava/lang/Object;");
+    mid = (*env)->GetMethodID(env, mActivityClass, "getSystemServiceFromUiThread", "(Ljava/lang/String;)Ljava/lang/Object;");
     jobject manager = (*env)->CallObjectMethod(env, context, mid, service);
 
     (*env)->DeleteLocalRef(env, service);
@@ -1211,6 +1243,62 @@ int Android_JNI_GetTouchDeviceIds(int **ids) {
     }
     return number;
 }
+
+/* return the total number of plugged in joysticks */
+int Android_JNI_GetNumJoysticks()
+{
+    JNIEnv* env = Android_JNI_GetEnv();
+    if (!env) {
+        return -1;
+    }
+    
+    jmethodID mid = (*env)->GetStaticMethodID(env, mActivityClass, "getNumJoysticks", "()I");
+    if (!mid) {
+        return -1;
+    }
+    
+    return (int)(*env)->CallStaticIntMethod(env, mActivityClass, mid);
+}
+
+/* Return the name of joystick number "i" */
+char* Android_JNI_GetJoystickName(int i)
+{
+    JNIEnv* env = Android_JNI_GetEnv();
+    if (!env) {
+        return SDL_strdup("");
+    }
+    
+    jmethodID mid = (*env)->GetStaticMethodID(env, mActivityClass, "getJoystickName", "(I)Ljava/lang/String;");
+    if (!mid) {
+        return SDL_strdup("");
+    }
+    jstring string = (jstring)((*env)->CallStaticObjectMethod(env, mActivityClass, mid, i));
+    const char* utf = (*env)->GetStringUTFChars(env, string, 0);
+    if (!utf) {
+        return SDL_strdup("");
+    }
+    
+    char* text = SDL_strdup(utf);
+    (*env)->ReleaseStringUTFChars(env, string, utf);
+    return text;
+}
+
+/* return the number of axes in the given joystick */
+int Android_JNI_GetJoystickAxes(int joy)
+{
+    JNIEnv* env = Android_JNI_GetEnv();
+    if (!env) {
+        return -1;
+    }
+    
+    jmethodID mid = (*env)->GetStaticMethodID(env, mActivityClass, "getJoystickAxes", "(I)I");
+    if (!mid) {
+        return -1;
+    }
+    
+    return (int)(*env)->CallIntMethod(env, mActivityClass, mid, joy);
+}
+
 
 /* sends message to be handled on the UI event dispatch thread */
 int Android_JNI_SendMessage(int command, int param)

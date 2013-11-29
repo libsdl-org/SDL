@@ -89,6 +89,7 @@ UIKit_CreateDevice(int devindex)
     device->ShowScreenKeyboard = UIKit_ShowScreenKeyboard;
     device->HideScreenKeyboard = UIKit_HideScreenKeyboard;
     device->IsScreenKeyboardShown = UIKit_IsScreenKeyboardShown;
+    device->SetTextInputRect = UIKit_SetTextInputRect;
 #endif
 
     /* OpenGL (ES) functions */

@@ -27,7 +27,7 @@
 #include <stdio.h>
 
 #define VIDEO_USAGE \
-"[--video driver] [--renderer driver] [--gldebug] [--info all|video|modes|render|event] [--log all|error|system|audio|video|render|input] [--display N] [--fullscreen | --fullscreen-desktop | --windows N] [--title title] [--icon icon.bmp] [--center | --position X,Y] [--geometry WxH] [--min-geometry WxH] [--max-geometry WxH] [--logical WxH] [--scale N] [--depth N] [--refresh R] [--vsync] [--noframe] [--resize] [--minimize] [--maximize] [--grab] [--allow-hidpi]"
+"[--video driver] [--renderer driver] [--gldebug] [--info all|video|modes|render|event] [--log all|error|system|audio|video|render|input] [--display N] [--fullscreen | --fullscreen-desktop | --windows N] [--title title] [--icon icon.bmp] [--center | --position X,Y] [--geometry WxH] [--min-geometry WxH] [--max-geometry WxH] [--logical WxH] [--scale N] [--depth N] [--refresh R] [--vsync] [--noframe] [--resize] [--minimize] [--maximize] [--grab] [--allow-highdpi]"
 
 #define AUDIO_USAGE \
 "[--rate N] [--format U8|S8|U16|U16LE|U16BE|S16|S16LE|S16BE] [--channels N] [--samples N]"
@@ -809,6 +809,9 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
         state->renderers =
             (SDL_Renderer **) SDL_malloc(state->num_windows *
                                         sizeof(*state->renderers));
+        state->targets =
+            (SDL_Texture **) SDL_malloc(state->num_windows *
+                                        sizeof(*state->targets));
         if (!state->windows || !state->renderers) {
             fprintf(stderr, "Out of memory!\n");
             return SDL_FALSE;
@@ -861,6 +864,7 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
             SDL_ShowWindow(state->windows[i]);
 
             state->renderers[i] = NULL;
+            state->targets[i] = NULL;
 
             if (!state->skip_renderer
                 && (state->renderdriver
@@ -1338,7 +1342,7 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
                     if (flags & SDL_WINDOW_FULLSCREEN) {
                         SDL_SetWindowFullscreen(window, SDL_FALSE);
                     } else {
-                        SDL_SetWindowFullscreen(window, SDL_TRUE);
+                        SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
                     }
                 }
             } else if (event->key.keysym.mod & KMOD_ALT) {
@@ -1412,6 +1416,14 @@ SDLTest_CommonQuit(SDLTest_CommonState * state)
     int i;
 
     SDL_free(state->windows);
+    if (state->targets) {
+        for (i = 0; i < state->num_windows; ++i) {
+            if (state->targets[i]) {
+                SDL_DestroyTexture(state->targets[i]);
+            }
+        }
+        SDL_free(state->targets);
+    }
     if (state->renderers) {
         for (i = 0; i < state->num_windows; ++i) {
             if (state->renderers[i]) {

@@ -596,7 +596,7 @@ extern DECLSPEC void SDLCALL SDL_RenderGetScale(SDL_Renderer * renderer,
  *
  *  \return 0 on success, or -1 on error
  */
-extern DECLSPEC int SDL_SetRenderDrawColor(SDL_Renderer * renderer,
+extern DECLSPEC int SDLCALL SDL_SetRenderDrawColor(SDL_Renderer * renderer,
                                            Uint8 r, Uint8 g, Uint8 b,
                                            Uint8 a);
 
@@ -612,7 +612,7 @@ extern DECLSPEC int SDL_SetRenderDrawColor(SDL_Renderer * renderer,
  *
  *  \return 0 on success, or -1 on error
  */
-extern DECLSPEC int SDL_GetRenderDrawColor(SDL_Renderer * renderer,
+extern DECLSPEC int SDLCALL SDL_GetRenderDrawColor(SDL_Renderer * renderer,
                                            Uint8 * r, Uint8 * g, Uint8 * b,
                                            Uint8 * a);
 

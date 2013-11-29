@@ -44,6 +44,7 @@
 #include "SDL_windowsmodes.h"
 #include "SDL_windowsmouse.h"
 #include "SDL_windowsopengl.h"
+#include "SDL_windowsopengles.h"
 #include "SDL_windowswindow.h"
 #include "SDL_events.h"
 #include "SDL_loadso.h"

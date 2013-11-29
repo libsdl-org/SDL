@@ -15950,19 +15950,42 @@ $as_echo "$have_gcc_mmd_mt" >&6; }
     fi
 fi
 
-# Actually this doesn't work on OpenBSD and BeOS
-#AC_MSG_CHECKING(for linker option --no-undefined)
-#have_no_undefined=no
-#save_LDFLAGS="$LDFLAGS"
-#LDFLAGS="$LDFLAGS -Wl,--no-undefined"
-#AC_TRY_LINK([
-#],[
-#],[
-#have_no_undefined=yes
-#EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,--no-undefined"
-#])
-#LDFLAGS="$save_LDFLAGS"
-#AC_MSG_RESULT($have_no_undefined)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for linker option --no-undefined" >&5
+$as_echo_n "checking for linker option --no-undefined... " >&6; }
+have_no_undefined=no
+case "$host" in
+        *-*-openbsd*)
+        ;;
+
+    *)
+        save_LDFLAGS="$LDFLAGS"
+        LDFLAGS="$LDFLAGS -Wl,--no-undefined"
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+
+        have_no_undefined=yes
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,--no-undefined"
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+        LDFLAGS="$save_LDFLAGS"
+        ;;
+esac
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_no_undefined" >&5
+$as_echo "$have_no_undefined" >&6; }
 
 # Check whether --enable-libc was given.
 if test "${enable_libc+set}" = set; then :
@@ -18598,7 +18621,7 @@ $as_echo "$have_gcc_Wall" >&6; }
 $as_echo_n "checking for necessary GCC -Wno-multichar option... " >&6; }
         need_gcc_Wno_multichar=no
         case "$host" in
-            *-*-beos* | *-*-haiku*)
+            *-*-haiku*)
                 need_gcc_Wno_multichar=yes
                 ;;
         esac
@@ -20124,13 +20147,13 @@ $as_echo "#define SDL_VIDEO_DRIVER_X11_XVIDMODE 1" >>confdefs.h
     fi
 }
 
-CheckBWINDOW()
+CheckHaikuVideo()
 {
     if test x$enable_video = xyes; then
 
-$as_echo "#define SDL_VIDEO_DRIVER_BWINDOW 1" >>confdefs.h
+$as_echo "#define SDL_VIDEO_DRIVER_HAIKU 1" >>confdefs.h
 
-        SOURCES="$SOURCES $srcdir/src/video/bwindow/*.cc"
+        SOURCES="$SOURCES $srcdir/src/video/haiku/*.cc"
         have_video=yes
     fi
 }
@@ -20680,14 +20703,92 @@ $as_echo "#define SDL_VIDEO_RENDER_OGL 1" >>confdefs.h
     fi
 }
 
-CheckBeGL()
+CheckWINDOWSGLES()
+{
+    if test x$enable_video = xyes -a x$enable_video_opengles = xyes; then
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for EGL support" >&5
+$as_echo_n "checking for EGL support... " >&6; }
+        video_opengl_egl=no
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+         #include <EGL/egl.h>
+
+int
+main ()
+{
+
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+        video_opengl_egl=yes
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengl_egl" >&5
+$as_echo "$video_opengl_egl" >&6; }
+        if test x$video_opengl_egl = xyes; then
+
+$as_echo "#define SDL_VIDEO_OPENGL 1" >>confdefs.h
+
+
+$as_echo "#define SDL_VIDEO_OPENGL_EGL 1" >>confdefs.h
+
+        fi
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenGL ES v2 headers" >&5
+$as_echo_n "checking for OpenGL ES v2 headers... " >&6; }
+        video_opengles_v2=no
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+         #include <GLES2/gl2.h>
+         #include <GLES2/gl2ext.h>
+
+int
+main ()
+{
+
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+        video_opengles_v2=yes
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengles_v2" >&5
+$as_echo "$video_opengles_v2" >&6; }
+        if test x$video_opengles_v2 = xyes; then
+
+$as_echo "#define SDL_VIDEO_OPENGL 1" >>confdefs.h
+
+
+$as_echo "#define SDL_VIDEO_OPENGL_ES2 1" >>confdefs.h
+
+
+$as_echo "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
+
+        fi
+    fi
+}
+
+CheckHaikuGL()
 {
     if test x$enable_video = xyes -a x$enable_video_opengl = xyes; then
 
 $as_echo "#define SDL_VIDEO_OPENGL 1" >>confdefs.h
 
 
-$as_echo "#define SDL_VIDEO_OPENGL_BGL 1" >>confdefs.h
+$as_echo "#define SDL_VIDEO_OPENGL_HAIKU 1" >>confdefs.h
 
 
 $as_echo "#define SDL_VIDEO_RENDER_OGL 1" >>confdefs.h
@@ -21005,6 +21106,10 @@ fi
         *-*-hpux11*)
             pthread_cflags="-D_REENTRANT"
             pthread_lib="-L/usr/lib -lpthread"
+            ;;
+        *-*-haiku*)
+            pthread_cflags="-D_REENTRANT"
+            pthread_lib=""
             ;;
         *)
             pthread_cflags="-D_REENTRANT"
@@ -22075,11 +22180,10 @@ case "$host" in
                 # Raspberry Pi
                 ARCH=linux
                 RPI_CFLAGS="-I/opt/vc/include -I/opt/vc/include/interface/vcos/pthreads -I/opt/vc/include/interface/vmcs_host/linux"
-                RPI_LDFLAGS="-L/opt/vc/lib -lbcm_host"
                 CFLAGS="$CFLAGS $RPI_CFLAGS"
                 SDL_CFLAGS="$SDL_CFLAGS $RPI_CFLAGS"
                 EXTRA_CFLAGS="$EXTRA_CFLAGS $RPI_CFLAGS"
-                SDL_LIBS="$SDL_LIBS $RPI_LDFLAGS"
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS -L/opt/vc/lib -lbcm_host -ldl"
 
                 if test x$enable_video = xyes; then
                     SOURCES="$SOURCES $srcdir/src/video/raspberry/*.c"
@@ -22216,7 +22320,7 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
         fi
         # Set up files for evdev input
         if test x$use_input_events = xyes; then
-            SOURCES="$SOURCES $srcdir/src/input/evdev/*.c"
+            SOURCES="$SOURCES $srcdir/src/core/linux/SDL_evdev.c"
         fi
         ;;
     *-*-cygwin* | *-*-mingw32*)
@@ -22235,6 +22339,7 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
         CheckDummyAudio
         CheckWINDOWS
         CheckWINDOWSGL
+        CheckWINDOWSGLES
         CheckDIRECTX
 
         # Set up the core platform files
@@ -22394,74 +22499,73 @@ fi
             SDL_LIBS="-lcygwin $SDL_LIBS"
         fi
         ;;
-    *-*-beos* | *-*-haiku*)
-        ARCH=beos
-        ac_default_prefix=/boot/common
+
+        *-*-beos*)
+        as_fn_error $? "
+*** BeOS support has been removed as of SDL 2.0.2.
+        " "$LINENO" 5
+        ;;
+
+    *-*-haiku*)
+        ARCH=haiku
+        ac_default_prefix=/boot/system
         CheckDummyVideo
         CheckDiskAudio
         CheckDummyAudio
-        CheckBWINDOW
-        CheckBeGL
+        CheckHaikuVideo
+        CheckHaikuGL
+        CheckPTHREAD
+
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
 
-$as_echo "#define SDL_AUDIO_DRIVER_BEOSAUDIO 1" >>confdefs.h
+$as_echo "#define SDL_AUDIO_DRIVER_HAIKU 1" >>confdefs.h
 
-            SOURCES="$SOURCES $srcdir/src/audio/baudio/*.cc"
+            SOURCES="$SOURCES $srcdir/src/audio/haiku/*.cc"
             have_audio=yes
         fi
         # Set up files for the joystick library
         if test x$enable_joystick = xyes; then
 
-$as_echo "#define SDL_JOYSTICK_BEOS 1" >>confdefs.h
+$as_echo "#define SDL_JOYSTICK_HAIKU 1" >>confdefs.h
 
-            SOURCES="$SOURCES $srcdir/src/joystick/beos/*.cc"
+            SOURCES="$SOURCES $srcdir/src/joystick/haiku/*.cc"
             have_joystick=yes
-        fi
-        # Set up files for the thread library
-        if test x$enable_threads = xyes; then
-
-$as_echo "#define SDL_THREAD_BEOS 1" >>confdefs.h
-
-            SOURCES="$SOURCES $srcdir/src/thread/beos/*.c"
-            SOURCES="$SOURCES $srcdir/src/thread/generic/SDL_sysmutex.c"
-            SOURCES="$SOURCES $srcdir/src/thread/generic/SDL_syscond.c"
-            have_threads=yes
         fi
         # Set up files for the timer library
         if test x$enable_timers = xyes; then
 
-$as_echo "#define SDL_TIMER_BEOS 1" >>confdefs.h
+$as_echo "#define SDL_TIMER_HAIKU 1" >>confdefs.h
 
-            SOURCES="$SOURCES $srcdir/src/timer/beos/*.c"
+            SOURCES="$SOURCES $srcdir/src/timer/haiku/*.c"
             have_timers=yes
         fi
         # Set up files for the shared object loading library
         if test x$enable_loadso = xyes; then
 
-$as_echo "#define SDL_LOADSO_BEOS 1" >>confdefs.h
+$as_echo "#define SDL_LOADSO_HAIKU 1" >>confdefs.h
 
-            SOURCES="$SOURCES $srcdir/src/loadso/beos/*.c"
+            SOURCES="$SOURCES $srcdir/src/loadso/haiku/*.c"
             have_loadso=yes
         fi
         # Set up files for the system power library
         if test x$enable_power = xyes; then
 
-$as_echo "#define SDL_POWER_BEOS 1" >>confdefs.h
+$as_echo "#define SDL_POWER_HAIKU 1" >>confdefs.h
 
-            SOURCES="$SOURCES $srcdir/src/power/beos/*.c"
+            SOURCES="$SOURCES $srcdir/src/power/haiku/*.c"
             have_power=yes
         fi
         # Set up files for the system filesystem library
         if test x$enable_filesystem = xyes; then
 
-$as_echo "#define SDL_FILESYSTEM_BEOS 1" >>confdefs.h
+$as_echo "#define SDL_FILESYSTEM_HAIKU 1" >>confdefs.h
 
-            SOURCES="$SOURCES $srcdir/src/filesystem/beos/*.cc"
+            SOURCES="$SOURCES $srcdir/src/filesystem/haiku/*.cc"
             have_filesystem=yes
         fi
-        # The BeOS platform requires special setup.
-        SOURCES="$srcdir/src/main/beos/*.cc $SOURCES"
+        # The Haiku platform requires special setup.
+        SOURCES="$srcdir/src/main/haiku/*.cc $SOURCES"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lroot -lbe -lmedia -lgame -ldevice -ltextencoding"
         ;;
     arm*-apple-darwin*)

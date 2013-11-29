@@ -234,6 +234,12 @@ SDL_SYS_WaitThread(SDL_Thread * thread)
     CloseHandle(thread->handle);
 }
 
+void
+SDL_SYS_DetachThread(SDL_Thread * thread)
+{
+    CloseHandle(thread->handle);
+}
+
 #endif /* SDL_THREAD_WINDOWS */
 
 /* vi: set ts=4 sw=4 expandtab: */

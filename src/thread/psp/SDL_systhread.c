@@ -77,6 +77,12 @@ void SDL_SYS_WaitThread(SDL_Thread *thread)
     sceKernelDeleteThread(thread->handle);
 }
 
+void SDL_SYS_DetachThread(SDL_Thread *thread)
+{
+    /* !!! FIXME: is this correct? */
+    sceKernelDeleteThread(thread->handle);
+}
+
 void SDL_SYS_KillThread(SDL_Thread *thread)
 {
     sceKernelTerminateDeleteThread(thread->handle);

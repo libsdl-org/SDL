@@ -351,8 +351,8 @@ extern VideoBootStrap WINDOWS_bootstrap;
 #if SDL_VIDEO_DRIVER_WINRT
 extern VideoBootStrap WINRT_bootstrap;
 #endif
-#if SDL_VIDEO_DRIVER_BWINDOW
-extern VideoBootStrap BWINDOW_bootstrap;
+#if SDL_VIDEO_DRIVER_HAIKU
+extern VideoBootStrap HAIKU_bootstrap;
 #endif
 #if SDL_VIDEO_DRIVER_PANDORA
 extern VideoBootStrap PND_bootstrap;

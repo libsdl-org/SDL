@@ -67,6 +67,9 @@
 #ifndef WM_TOUCH
 #define WM_TOUCH 0x0240
 #endif
+#ifndef WM_MOUSEHWHEEL
+#define WM_MOUSEHWHEEL 0x020E
+#endif
 
 static SDL_Scancode
 WindowsScanCodeToSDLScanCode( LPARAM lParam, WPARAM wParam )
@@ -283,6 +286,45 @@ WIN_ConvertUTF32toUTF8(UINT32 codepoint, char * text)
     return SDL_TRUE;
 }
 
+static void
+WIN_UpdateClipCursor(SDL_Window *window)
+{
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+
+    /* Don't clip the cursor while we're in the modal resize or move loop */
+    if (data->in_modal_loop) {
+        ClipCursor(NULL);
+        return;
+    }
+        
+    if (SDL_GetMouse()->relative_mode) {
+        LONG cx, cy;
+        RECT rect;
+        GetWindowRect(data->hwnd, &rect);
+
+        cx = (rect.left + rect.right) / 2;
+        cy = (rect.top + rect.bottom) / 2;
+
+        /* Make an absurdly small clip rect */
+        rect.left = cx-1;
+        rect.right = cx+1;
+        rect.top = cy-1;
+        rect.bottom = cy+1;
+
+        ClipCursor(&rect);
+    } else if ((window->flags & SDL_WINDOW_INPUT_GRABBED) &&
+               (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
+        RECT rect;
+        if (GetClientRect(data->hwnd, &rect) && !IsRectEmpty(&rect)) {
+            ClientToScreen(data->hwnd, (LPPOINT) & rect);
+            ClientToScreen(data->hwnd, (LPPOINT) & rect + 1);
+            ClipCursor(&rect);
+        }
+    } else {
+        ClipCursor(NULL);
+    }
+}
+
 LRESULT CALLBACK
 WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -309,15 +351,15 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     }
 
 #ifdef WMMSG_DEBUG
-	{
-		char message[1024];
-		if (msg > MAX_WMMSG) {
-			SDL_snprintf(message, sizeof(message), "Received windows message: %p UNKNOWN (%d) -- 0x%X, 0x%X\n", hwnd, msg, wParam, lParam);
-		} else {
-			SDL_snprintf(message, sizeof(message), "Received windows message: %p %s -- 0x%X, 0x%X\n", hwnd, wmtab[msg], wParam, lParam);
-		}
-		OutputDebugStringA(message);
-	}
+    {
+        char message[1024];
+        if (msg > MAX_WMMSG) {
+            SDL_snprintf(message, sizeof(message), "Received windows message: %p UNKNOWN (%d) -- 0x%X, 0x%X\n", hwnd, msg, wParam, lParam);
+        } else {
+            SDL_snprintf(message, sizeof(message), "Received windows message: %p %s -- 0x%X, 0x%X\n", hwnd, wmtab[msg], wParam, lParam);
+        }
+        OutputDebugStringA(message);
+    }
 #endif /* WMMSG_DEBUG */
 
     if (IME_HandleMessage(hwnd, msg, wParam, &lParam, data->videodata))
@@ -345,12 +387,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 SHORT keyState;
 
                 SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_SHOWN, 0, 0);
-                SDL_SendWindowEvent(data->window,
-                                    SDL_WINDOWEVENT_RESTORED, 0, 0);
-                if (IsZoomed(hwnd)) {
-                    SDL_SendWindowEvent(data->window,
-                                        SDL_WINDOWEVENT_MAXIMIZED, 0, 0);
-                }
                 if (SDL_GetKeyboardFocus() != data->window) {
                     SDL_SetKeyboardFocus(data->window);
                 }
@@ -372,22 +408,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 WIN_CheckWParamMouseButton( ( keyState & 0x8000 ), (mouseFlags & SDL_BUTTON_X2MASK), data, SDL_BUTTON_X2 );
                 data->mouse_button_flags = 0;
 
-                if(SDL_GetMouse()->relative_mode) {
-                    LONG cx, cy;
-                    RECT rect;
-                    GetWindowRect(hwnd, &rect);
-
-                    cx = (rect.left + rect.right) / 2;
-                    cy = (rect.top + rect.bottom) / 2;
-
-                    /* Make an absurdly small clip rect */
-                    rect.left = cx-1;
-                    rect.right = cx+1;
-                    rect.top = cy-1;
-                    rect.bottom = cy+1;
-
-                    ClipCursor(&rect);
-                }
+                WIN_UpdateClipCursor(data->window);
 
                 /*
                  * FIXME: Update keyboard state
@@ -396,10 +417,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             } else {
                 if (SDL_GetKeyboardFocus() == data->window) {
                     SDL_SetKeyboardFocus(NULL);
-                }
-                if (minimized) {
-                    SDL_SendWindowEvent(data->window,
-                                        SDL_WINDOWEVENT_MINIMIZED, 0, 0);
                 }
             }
         }
@@ -481,13 +498,34 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             break;
         }
 
+    case WM_MOUSEHWHEEL:
+        {
+            static short s_AccumulatedMotion;
+
+            s_AccumulatedMotion += GET_WHEEL_DELTA_WPARAM(wParam);
+            if (s_AccumulatedMotion > 0) {
+                while (s_AccumulatedMotion >= WHEEL_DELTA) {
+                    SDL_SendMouseWheel(data->window, 0, 1, 0);
+                    s_AccumulatedMotion -= WHEEL_DELTA;
+                }
+            } else {
+                while (s_AccumulatedMotion <= -WHEEL_DELTA) {
+                    SDL_SendMouseWheel(data->window, 0, -1, 0);
+                    s_AccumulatedMotion += WHEEL_DELTA;
+                }
+            }
+            break;
+        }
+
 #ifdef WM_MOUSELEAVE
     case WM_MOUSELEAVE:
         if (SDL_GetMouseFocus() == data->window && !SDL_GetMouse()->relative_mode) {
-            POINT cursorPos;
-            GetCursorPos(&cursorPos);
-            ScreenToClient(hwnd, &cursorPos);
-            SDL_SendMouseMotion(data->window, 0, 0, cursorPos.x, cursorPos.y);
+            if (!IsIconic(hwnd)) {
+                POINT cursorPos;
+                GetCursorPos(&cursorPos);
+                ScreenToClient(hwnd, &cursorPos);
+                SDL_SendMouseMotion(data->window, 0, 0, cursorPos.x, cursorPos.y);
+            }
             SDL_SetMouseFocus(NULL);
         }
         returnCode = 0;
@@ -523,9 +561,19 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_KEYUP:
         {
             SDL_Scancode code = WindowsScanCodeToSDLScanCode( lParam, wParam );
+            const Uint8 *keyboardState = SDL_GetKeyboardState(NULL);
+
+            /* Detect relevant keyboard shortcuts */
+            if (keyboardState[SDL_SCANCODE_LALT] == SDL_PRESSED || keyboardState[SDL_SCANCODE_RALT] == SDL_PRESSED ) {
+	            /* ALT+F4: Close window */
+	            if (code == SDL_SCANCODE_F4) {
+		            SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_CLOSE, 0, 0);
+	            }
+            }
+
             if ( code != SDL_SCANCODE_UNKNOWN ) {
                 if (code == SDL_SCANCODE_PRINTSCREEN &&
-                    SDL_GetKeyboardState(NULL)[code] == SDL_RELEASED) {
+                    keyboardState[code] == SDL_RELEASED) {
                     SDL_SendKeyboardKey(SDL_PRESSED, code);
                 }
                 SDL_SendKeyboardKey(SDL_RELEASED, code);
@@ -561,6 +609,22 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         break;
 #endif /* WM_INPUTLANGCHANGE */
 
+    case WM_ENTERSIZEMOVE:
+    case WM_ENTERMENULOOP:
+        {
+            data->in_modal_loop = SDL_TRUE;
+            WIN_UpdateClipCursor(data->window);
+        }
+        break;
+
+    case WM_EXITSIZEMOVE:
+    case WM_EXITMENULOOP:
+        {
+            data->in_modal_loop = SDL_FALSE;
+            WIN_UpdateClipCursor(data->window);
+        }
+        break;
+
 #ifdef WM_GETMINMAXINFO
     case WM_GETMINMAXINFO:
         {
@@ -574,9 +638,13 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             BOOL menu;
             BOOL constrain_max_size;
 
-            /* If we allow resizing, let the resize happen naturally */
             if (SDL_IsShapedWindow(data->window))
                 Win32_ResizeWindowShape(data->window);
+
+            /* If this is an expected size change, allow it */
+            if (data->expected_resize) {
+                break;
+            }
 
             /* Get the current position of our window */
             GetWindowRect(hwnd, &size);
@@ -645,20 +713,14 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             RECT rect;
             int x, y;
             int w, h;
-            Uint32 window_flags;
 
-            if (!GetClientRect(hwnd, &rect) ||
-                (rect.right == rect.left && rect.bottom == rect.top)) {
+            if (!GetClientRect(hwnd, &rect) || IsRectEmpty(&rect)) {
                 break;
             }
             ClientToScreen(hwnd, (LPPOINT) & rect);
             ClientToScreen(hwnd, (LPPOINT) & rect + 1);
 
-            window_flags = SDL_GetWindowFlags(data->window);
-            if ((window_flags & SDL_WINDOW_INPUT_GRABBED) &&
-                (window_flags & SDL_WINDOW_INPUT_FOCUS)) {
-                ClipCursor(&rect);
-            }
+            WIN_UpdateClipCursor(data->window);
 
             x = rect.left;
             y = rect.top;
@@ -668,6 +730,26 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             h = rect.bottom - rect.top;
             SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_RESIZED, w,
                                 h);
+        }
+        break;
+
+    case WM_SIZE:
+        {
+            switch (wParam)
+            {
+            case SIZE_MAXIMIZED:
+                SDL_SendWindowEvent(data->window,
+                    SDL_WINDOWEVENT_MAXIMIZED, 0, 0);
+                break;
+            case SIZE_MINIMIZED:
+                SDL_SendWindowEvent(data->window,
+                    SDL_WINDOWEVENT_MINIMIZED, 0, 0);
+                break;
+            default:
+                SDL_SendWindowEvent(data->window,
+                    SDL_WINDOWEVENT_RESTORED, 0, 0);
+                break;
+            }
         }
         break;
 

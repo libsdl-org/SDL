@@ -85,11 +85,14 @@ static int instance_counter = 0;
 static int
 IsJoystick(int fd, char *namebuf, const size_t namebuflen, SDL_JoystickGUID *guid)
 {
+    struct input_id inpid;
+    Uint16 *guid16 = (Uint16 *) ((char *) &guid->data);
+
+#if !SDL_USE_LIBUDEV
+    /* When udev is enabled we only get joystick devices here, so there's no need to test them */
     unsigned long evbit[NBITS(EV_MAX)] = { 0 };
     unsigned long keybit[NBITS(KEY_MAX)] = { 0 };
     unsigned long absbit[NBITS(ABS_MAX)] = { 0 };
-    struct input_id inpid;
-    Uint16 *guid16 = (Uint16 *) ((char *) &guid->data);
 
     if ((ioctl(fd, EVIOCGBIT(0, sizeof(evbit)), evbit) < 0) ||
         (ioctl(fd, EVIOCGBIT(EV_KEY, sizeof(keybit)), keybit) < 0) ||
@@ -101,6 +104,7 @@ IsJoystick(int fd, char *namebuf, const size_t namebuflen, SDL_JoystickGUID *gui
           test_bit(ABS_X, absbit) && test_bit(ABS_Y, absbit))) {
         return 0;
     }
+#endif
 
     if (ioctl(fd, EVIOCGNAME(namebuflen), namebuf) < 0) {
         return 0;
@@ -230,12 +234,15 @@ MaybeAddDevice(const char *path)
         SDL_joylist_tail = item;
     }
 
+    /* Need to increment the joystick count before we post the event */
+    ++numjoysticks;
+
     /* !!! FIXME: Move this to an SDL_PrivateJoyDeviceAdded() function? */
 #if !SDL_EVENTS_DISABLED
     event.type = SDL_JOYDEVICEADDED;
 
     if (SDL_GetEventState(event.type) == SDL_ENABLE) {
-        event.jdevice.which = numjoysticks;
+        event.jdevice.which = (numjoysticks - 1);
         if ( (SDL_EventOK == NULL) ||
              (*SDL_EventOK) (SDL_EventOKParam, &event) ) {
             SDL_PushEvent(&event);
@@ -243,7 +250,7 @@ MaybeAddDevice(const char *path)
     }
 #endif /* !SDL_EVENTS_DISABLED */
 
-    return numjoysticks++;
+    return numjoysticks;
 }
 
 #if SDL_USE_LIBUDEV
@@ -278,6 +285,9 @@ MaybeRemoveDevice(const char *path)
                 SDL_joylist_tail = prev;
             }
 
+            /* Need to decrement the joystick count before we post the event */
+            --numjoysticks;
+
             /* !!! FIXME: Move this to an SDL_PrivateJoyDeviceRemoved() function? */
 #if !SDL_EVENTS_DISABLED
             event.type = SDL_JOYDEVICEREMOVED;
@@ -294,7 +304,6 @@ MaybeRemoveDevice(const char *path)
             SDL_free(item->path);
             SDL_free(item->name);
             SDL_free(item);
-            numjoysticks--;
             return retval;
         }
         prev = item;

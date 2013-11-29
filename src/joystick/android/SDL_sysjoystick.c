@@ -29,11 +29,115 @@
 #include "SDL_error.h"
 #include "SDL_events.h"
 #include "SDL_joystick.h"
+#include "SDL_hints.h"
+#include "SDL_assert.h"
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
 #include "../../core/android/SDL_android.h"
 
-static const char *accelerometerName = "Android accelerometer";
+#include "android/keycodes.h"
+
+/* As of platform android-14, android/keycodes.h is missing these defines */
+#ifndef AKEYCODE_BUTTON_1
+#define AKEYCODE_BUTTON_1 188
+#define AKEYCODE_BUTTON_2 189
+#define AKEYCODE_BUTTON_3 190
+#define AKEYCODE_BUTTON_4 191
+#define AKEYCODE_BUTTON_5 192
+#define AKEYCODE_BUTTON_6 193
+#define AKEYCODE_BUTTON_7 194
+#define AKEYCODE_BUTTON_8 195
+#define AKEYCODE_BUTTON_9 196
+#define AKEYCODE_BUTTON_10 197
+#define AKEYCODE_BUTTON_11 198
+#define AKEYCODE_BUTTON_12 199
+#define AKEYCODE_BUTTON_13 200
+#define AKEYCODE_BUTTON_14 201
+#define AKEYCODE_BUTTON_15 202
+#define AKEYCODE_BUTTON_16 203
+#endif
+
+#define ANDROID_ACCELEROMETER_INDEX (SYS_numjoysticks - 1)
+#define ANDROID_ACCELEROMETER_NAME "Android Accelerometer"
+#define ANDROID_MAX_NBUTTONS 36
+
+static SDL_Joystick **SYS_Joysticks;
+static char **SYS_JoystickNames;
+static int SYS_numjoysticks;
+static SDL_bool SYS_accelAsJoy;
+
+/* Function to convert Android keyCodes into SDL ones.
+ * This code manipulation is done to get a sequential list of codes.
+ * FIXME: This is only suited for the case where we use a fixed number of buttons determined by ANDROID_MAX_NBUTTONS
+ */
+static int
+keycode_to_SDL(int keycode)
+{
+    /* FIXME: If this function gets too unwiedly in the future, replace with a lookup table */
+    int button = 0;
+    switch(keycode) 
+    {
+        /* D-Pad key codes (API 1), these get mapped to 0...4 */
+        case AKEYCODE_DPAD_UP:
+        case AKEYCODE_DPAD_DOWN:
+        case AKEYCODE_DPAD_LEFT:
+        case AKEYCODE_DPAD_RIGHT:
+        case AKEYCODE_DPAD_CENTER:
+            button = keycode - AKEYCODE_DPAD_UP;
+            break;
+        
+        /* Some gamepad buttons (API 9), these get mapped to 5...19*/
+        case AKEYCODE_BUTTON_A:
+        case AKEYCODE_BUTTON_B:
+        case AKEYCODE_BUTTON_C:
+        case AKEYCODE_BUTTON_X:
+        case AKEYCODE_BUTTON_Y:
+        case AKEYCODE_BUTTON_Z:
+        case AKEYCODE_BUTTON_L1:
+        case AKEYCODE_BUTTON_L2:
+        case AKEYCODE_BUTTON_R1:
+        case AKEYCODE_BUTTON_R2:
+        case AKEYCODE_BUTTON_THUMBL:
+        case AKEYCODE_BUTTON_THUMBR:
+        case AKEYCODE_BUTTON_START:
+        case AKEYCODE_BUTTON_SELECT:
+        case AKEYCODE_BUTTON_MODE:
+            button = keycode - AKEYCODE_BUTTON_A + 5;
+            break;
+            
+        
+        /* More gamepad buttons (API 12), these get mapped to 20...35*/
+        case AKEYCODE_BUTTON_1:
+        case AKEYCODE_BUTTON_2:
+        case AKEYCODE_BUTTON_3:
+        case AKEYCODE_BUTTON_4:
+        case AKEYCODE_BUTTON_5:
+        case AKEYCODE_BUTTON_6:
+        case AKEYCODE_BUTTON_7:
+        case AKEYCODE_BUTTON_8:
+        case AKEYCODE_BUTTON_9:
+        case AKEYCODE_BUTTON_10:
+        case AKEYCODE_BUTTON_11:
+        case AKEYCODE_BUTTON_12:
+        case AKEYCODE_BUTTON_13:
+        case AKEYCODE_BUTTON_14:
+        case AKEYCODE_BUTTON_15:
+        case AKEYCODE_BUTTON_16:
+            button = keycode - AKEYCODE_BUTTON_1 + 20;
+            break;
+            
+        default:
+            return -1;
+            break;
+    }
+    
+    /* This is here in case future generations, probably with six fingers per hand, 
+     * happily add new cases up above and forget to update the max number of buttons. 
+     */
+    SDL_assert(button < ANDROID_MAX_NBUTTONS);
+    return button;
+    
+}
 
 /* Function to scan the system for joysticks.
  * This function should set SDL_numjoysticks to the number of available
@@ -43,18 +147,54 @@ static const char *accelerometerName = "Android accelerometer";
 int
 SDL_SYS_JoystickInit(void)
 {
-    return (1);
+    int i = 0;
+    const char *env;
+    
+    env = SDL_GetHint(SDL_HINT_ACCEL_AS_JOY);
+    if (env && !SDL_atoi(env))
+        SYS_accelAsJoy = SDL_FALSE;
+    else
+        SYS_accelAsJoy = SDL_TRUE; /* Default behavior */
+    
+    SYS_numjoysticks = Android_JNI_GetNumJoysticks();
+    if (SYS_accelAsJoy) {
+        SYS_numjoysticks++;
+    }
+    SYS_Joysticks = (SDL_Joystick **)SDL_calloc(1, SYS_numjoysticks*sizeof(SDL_Joystick *));
+    if (SYS_Joysticks == NULL)
+    {
+        return SDL_OutOfMemory();
+    }
+    SYS_JoystickNames = (char **)SDL_calloc(1, SYS_numjoysticks*sizeof(char *));
+    if (SYS_JoystickNames == NULL)
+    {
+        SDL_free(SYS_Joysticks);
+        SYS_Joysticks = NULL;
+        return SDL_OutOfMemory();
+    }
+    
+    for (i = 0; i < SYS_numjoysticks; i++)
+    {
+        if ( SYS_accelAsJoy && i == ANDROID_ACCELEROMETER_INDEX ) {
+            SYS_JoystickNames[i] = ANDROID_ACCELEROMETER_NAME;
+        } else {
+            SYS_JoystickNames[i] = Android_JNI_GetJoystickName(i);
+        }
+    }
+   
+    return (SYS_numjoysticks);
 }
 
 int SDL_SYS_NumJoysticks()
 {
-    return 1;
+    return SYS_numjoysticks;
 }
 
 void SDL_SYS_JoystickDetect()
 {
 }
 
+/* TODO: Hotplugging support */
 SDL_bool SDL_SYS_JoystickNeedsPolling()
 {
     return SDL_FALSE;
@@ -64,7 +204,7 @@ SDL_bool SDL_SYS_JoystickNeedsPolling()
 const char *
 SDL_SYS_JoystickNameForDeviceIndex(int device_index)
 {
-    return accelerometerName;
+    return SYS_JoystickNames[device_index];
 }
 
 /* Function to perform the mapping from device index to the instance id for this index */
@@ -81,15 +221,22 @@ SDL_JoystickID SDL_SYS_GetInstanceIdOfDeviceIndex(int device_index)
 int
 SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
 {
-    if (device_index == 0) {
-        joystick->nbuttons = 0;
+    if (device_index < SYS_numjoysticks) {
         joystick->nhats = 0;
         joystick->nballs = 0;
-        joystick->naxes = 3;
+        if (SYS_accelAsJoy && device_index == ANDROID_ACCELEROMETER_INDEX) {
+            joystick->nbuttons = 0;
+            joystick->naxes = 3;
+        } else {
+            /* FIXME: Get the real number of buttons in the device? */
+            joystick->nbuttons = ANDROID_MAX_NBUTTONS;
+            joystick->naxes = Android_JNI_GetJoystickAxes(device_index);
+        }
+        
+        SYS_Joysticks[device_index] = joystick;
         return 0;
     } else {
-        SDL_SetError("No joystick available with that index");
-        return (-1);
+        return SDL_SetError("No joystick available with that index");
     }
 }
 
@@ -111,7 +258,8 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
     Sint16 value;
     float values[3];
 
-    if (Android_JNI_GetAccelerometerValues(values)) {
+    if (SYS_accelAsJoy && Android_JNI_GetAccelerometerValues(values) &&
+        joystick->instance_id == ANDROID_ACCELEROMETER_INDEX) {
         for ( i = 0; i < 3; i++ ) {
             value = (Sint16)(values[i] * 32767.0f);
             SDL_PrivateJoystickAxis(joystick, i, value);
@@ -123,12 +271,25 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
 void
 SDL_SYS_JoystickClose(SDL_Joystick * joystick)
 {
+    int device_index;
+    
+    for (device_index = 0; device_index < SYS_numjoysticks; device_index++) {
+        if ( SYS_Joysticks[device_index] == joystick ) {
+            SYS_Joysticks[device_index] = NULL;
+        }
+    }
+    
+    joystick->closed = 1;
 }
 
 /* Function to perform any system-specific joystick related cleanup */
 void
 SDL_SYS_JoystickQuit(void)
 {
+    SDL_free(SYS_JoystickNames);
+    SDL_free(SYS_Joysticks);
+    SYS_JoystickNames = NULL;
+    SYS_Joysticks = NULL;
 }
 
 SDL_JoystickGUID SDL_SYS_JoystickGetDeviceGUID( int device_index )
@@ -149,6 +310,46 @@ SDL_JoystickGUID SDL_SYS_JoystickGetGUID(SDL_Joystick * joystick)
     SDL_zero( guid );
     SDL_memcpy( &guid, name, SDL_min( sizeof(guid), SDL_strlen( name ) ) );
     return guid;
+}
+
+int
+Android_OnPadDown(int padId, int keycode)
+{
+    int button = keycode_to_SDL(keycode);
+    if (button >= 0) {
+        if (SYS_Joysticks[padId]) {
+            SDL_PrivateJoystickButton(SYS_Joysticks[padId], button , SDL_PRESSED);
+        }
+        return 0;
+    }
+    
+    return -1;
+}
+
+int
+Android_OnPadUp(int padId, int keycode)
+{
+    int button = keycode_to_SDL(keycode);
+    if (button >= 0) {
+        if (SYS_Joysticks[padId]) {
+            SDL_PrivateJoystickButton(SYS_Joysticks[padId], button, SDL_RELEASED);
+        }
+        return 0;
+    }
+    
+    return -1;
+}
+
+int
+Android_OnJoy(int joyId, int axis, float value)
+{
+    /* Android gives joy info normalized as [-1.0, 1.0] or [0.0, 1.0] */
+    /* TODO: Are the reported values right? */
+    if (SYS_Joysticks[joyId]) {
+        SDL_PrivateJoystickAxis(SYS_Joysticks[joyId], axis, (Sint16) (32767.*value) );
+    }
+    
+    return 0;
 }
 
 #endif /* SDL_JOYSTICK_ANDROID */

@@ -28,10 +28,6 @@
 /* Need the definitions of SYS_ThreadHandle */
 #if SDL_THREADS_DISABLED
 #include "generic/SDL_systhread_c.h"
-#elif SDL_THREAD_BEOS
-#include "beos/SDL_systhread_c.h"
-#elif SDL_THREAD_EPOC
-#include "epoc/SDL_systhread_c.h"
 #elif SDL_THREAD_PTHREAD
 #include "pthread/SDL_systhread_c.h"
 #elif SDL_THREAD_WINDOWS
@@ -46,12 +42,21 @@
 #endif
 #include "../SDL_error_c.h"
 
+typedef enum SDL_ThreadState
+{
+    SDL_THREAD_STATE_ALIVE,
+    SDL_THREAD_STATE_DETACHED,
+    SDL_THREAD_STATE_ZOMBIE,
+    SDL_THREAD_STATE_CLEANED,
+} SDL_ThreadState;
+
 /* This is the system-independent thread info structure */
 struct SDL_Thread
 {
     SDL_threadID threadid;
     SYS_ThreadHandle handle;
     int status;
+    SDL_atomic_t state;  /* SDL_THREAD_STATE_* */
     SDL_error errbuf;
     char *name;
     void *data;

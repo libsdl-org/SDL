@@ -82,7 +82,9 @@ Android_PumpEvents(_THIS)
             isPaused = 0;
             
             /* Restore the GL Context from here, as this operation is thread dependent */
-            android_egl_context_restore();
+            if (!SDL_HasEvent(SDL_QUIT)) {
+                android_egl_context_restore();
+            }
         }
     }
     else {
