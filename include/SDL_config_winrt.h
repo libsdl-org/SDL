@@ -179,6 +179,10 @@ typedef unsigned int uintptr_t;
 /* Enable appropriate renderer(s) */
 #define SDL_VIDEO_RENDER_D3D11  1
 
+#if SDL_VIDEO_OPENGL_ES2
+#define SDL_VIDEO_RENDER_OGL_ES2 1
+#endif
+
 /* Enable system power support */
 // TODO, WinRT: investigate system power support.  The Win32-based APIs don't work on WinRT.
 #define SDL_POWER_DISABLED  1
