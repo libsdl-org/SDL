@@ -629,10 +629,10 @@
     <ClInclude Include="..\..\src\video\SDL_egl.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\video\winrt\SDL_winrtegl.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\SDL_opengles2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\SDL_egl.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

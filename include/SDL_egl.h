@@ -391,9 +391,16 @@ typedef enum {
 #endif
 #include <windows.h>
 
+#if __WINRT__
+#include <Unknwn.h>
+typedef IUnknown * EGLNativeWindowType;
+typedef int EGLNativeDisplayType;
+typedef HBITMAP EGLNativePixmapType;
+#else
 typedef HDC     EGLNativeDisplayType;
 typedef HBITMAP EGLNativePixmapType;
 typedef HWND    EGLNativeWindowType;
+#endif
 
 #elif defined(__WINSCW__) || defined(__SYMBIAN32__)  /* Symbian */
 

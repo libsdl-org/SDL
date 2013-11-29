@@ -31,7 +31,7 @@
 
 extern "C" {
 #include "../SDL_sysvideo.h"
-#include "SDL_winrtegl.h"
+#include "../SDL_egl_c.h"
 }
 
 
