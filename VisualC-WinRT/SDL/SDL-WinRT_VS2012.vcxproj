@@ -217,6 +217,7 @@
     <ClInclude Include="..\..\include\SDL_config_winrt.h" />
     <ClInclude Include="..\..\include\SDL_copying.h" />
     <ClInclude Include="..\..\include\SDL_cpuinfo.h" />
+    <ClInclude Include="..\..\include\SDL_egl.h" />
     <ClInclude Include="..\..\include\SDL_endian.h" />
     <ClInclude Include="..\..\include\SDL_error.h" />
     <ClInclude Include="..\..\include\SDL_events.h" />
@@ -315,7 +316,6 @@
     <ClInclude Include="..\..\src\video\SDL_RLEaccel_c.h" />
     <ClInclude Include="..\..\src\video\SDL_shape_internals.h" />
     <ClInclude Include="..\..\src\video\SDL_sysvideo.h" />
-    <ClInclude Include="..\..\src\video\winrt\SDL_winrtegl.h" />
     <ClInclude Include="..\..\src\video\winrt\SDL_winrtevents_c.h" />
     <ClInclude Include="..\..\src\video\winrt\SDL_winrtmouse_c.h" />
     <ClInclude Include="..\..\src\video\winrt\SDL_winrtopengles.h" />

@@ -26,7 +26,7 @@
 #if SDL_VIDEO_DRIVER_WINRT && SDL_VIDEO_OPENGL_EGL
 
 #include "../SDL_sysvideo.h"
-#include "../SDL_egl.h"
+#include "../SDL_egl_c.h"
 
 /* OpenGLES functions */
 #define WINRT_GLES_GetAttribute SDL_EGL_GetAttribute
