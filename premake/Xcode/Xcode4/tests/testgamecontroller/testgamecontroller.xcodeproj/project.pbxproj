@@ -1,0 +1,455 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		59AD1EAF01EC6AEB1C7B5074 /* testgamecontroller.c in Sources */ = {isa = PBXBuildFile; fileRef = 48F355B62CA92CD960274AC1 /* testgamecontroller.c */; };
+		565F3431259112804AA32F99 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 639F1AD07BC614055E4B4BEF /* AudioToolbox.framework */; };
+		67CA2BDD6A8427EA0FFD477D /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7774150327CE5B4341311BA2 /* AudioUnit.framework */; };
+		001B0178066014ED54BB7624 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 15C56C9162624511738950C4 /* Cocoa.framework */; };
+		7CDF4E4316217800025F2FC2 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 70974CCE092D75E31B6659C4 /* CoreAudio.framework */; };
+		01AA68493002010C71842908 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00267C710FC1666C58AC1600 /* IOKit.framework */; };
+		0DF9622C522326C973225ECB /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 74B20CD506C43F592B6A4131 /* Carbon.framework */; };
+		0C1C3C646C933C042DB3554D /* ForceFeedback.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7560112E76563F017A354A97 /* ForceFeedback.framework */; };
+		6A6118D426B12FA30FA73D70 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 422B1BF2412116DE6F2D7ECF /* CoreFoundation.framework */; };
+		4EA62A4A072542AE528A7116 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 40EF30E9301B6096308E73FC /* OpenGL.framework */; };
+		5C59016854B35296046D46E3 /* libSDL2main.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 027574146203476B541C0127 /* libSDL2main.a */; };
+		711722C97B6C14AF751C3447 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 17EF57FF6417423C2AE144CD /* libSDL2.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		78836EE2654D23445E1A0CB0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5CDE76704306652C66C6757D /* SDL2main.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 0FF7291B375C79BC57696B66;
+			remoteInfo = "libSDL2main.a";
+		};
+		085B22E10005062E75451D34 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 5CDE76704306652C66C6757D /* SDL2main.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 1BAE4A0A77462FDC330812A3;
+			remoteInfo = "libSDL2main.a";
+		};
+		7E6D286F30E32A114225393C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6F9E23337C115CE22C5C036F /* SDL2.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 5E6D56F6655337845A3C44C3;
+			remoteInfo = "libSDL2.a";
+		};
+		3D175864491D1E04458F4B6B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 6F9E23337C115CE22C5C036F /* SDL2.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 7E6A7BC23CFD134274963645;
+			remoteInfo = "libSDL2.a";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		48F355B62CA92CD960274AC1 /* testgamecontroller.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "testgamecontroller.c"; path = "../../../../../test/testgamecontroller.c"; sourceTree = "<group>"; };
+		639F1AD07BC614055E4B4BEF /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "AudioToolbox.framework"; path = "/System/Library/Frameworks/AudioToolbox.framework"; sourceTree = "<absolute>"; };
+		7774150327CE5B4341311BA2 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "AudioUnit.framework"; path = "/System/Library/Frameworks/AudioUnit.framework"; sourceTree = "<absolute>"; };
+		15C56C9162624511738950C4 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "Cocoa.framework"; path = "/System/Library/Frameworks/Cocoa.framework"; sourceTree = "<absolute>"; };
+		70974CCE092D75E31B6659C4 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "CoreAudio.framework"; path = "/System/Library/Frameworks/CoreAudio.framework"; sourceTree = "<absolute>"; };
+		00267C710FC1666C58AC1600 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "IOKit.framework"; path = "/System/Library/Frameworks/IOKit.framework"; sourceTree = "<absolute>"; };
+		74B20CD506C43F592B6A4131 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "Carbon.framework"; path = "/System/Library/Frameworks/Carbon.framework"; sourceTree = "<absolute>"; };
+		7560112E76563F017A354A97 /* ForceFeedback.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "ForceFeedback.framework"; path = "/System/Library/Frameworks/ForceFeedback.framework"; sourceTree = "<absolute>"; };
+		422B1BF2412116DE6F2D7ECF /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "CoreFoundation.framework"; path = "/System/Library/Frameworks/CoreFoundation.framework"; sourceTree = "<absolute>"; };
+		40EF30E9301B6096308E73FC /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "OpenGL.framework"; path = "/System/Library/Frameworks/OpenGL.framework"; sourceTree = "<absolute>"; };
+		567D61E243EB387F4FDB388A /* testgamecontroller */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = "testgamecontroller"; path = "testgamecontroller"; sourceTree = BUILT_PRODUCTS_DIR; };
+		5CDE76704306652C66C6757D /* SDL2main.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "SDL2main.xcodeproj"; path = "../../SDL2main/SDL2main.xcodeproj"; sourceTree = SOURCE_ROOT; };
+		6F9E23337C115CE22C5C036F /* SDL2.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "SDL2.xcodeproj"; path = "../../SDL2/SDL2.xcodeproj"; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		473B1FDA5EE866B04B5F71BD /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				565F3431259112804AA32F99 /* AudioToolbox.framework in Frameworks */,
+				67CA2BDD6A8427EA0FFD477D /* AudioUnit.framework in Frameworks */,
+				001B0178066014ED54BB7624 /* Cocoa.framework in Frameworks */,
+				7CDF4E4316217800025F2FC2 /* CoreAudio.framework in Frameworks */,
+				01AA68493002010C71842908 /* IOKit.framework in Frameworks */,
+				0DF9622C522326C973225ECB /* Carbon.framework in Frameworks */,
+				0C1C3C646C933C042DB3554D /* ForceFeedback.framework in Frameworks */,
+				6A6118D426B12FA30FA73D70 /* CoreFoundation.framework in Frameworks */,
+				4EA62A4A072542AE528A7116 /* OpenGL.framework in Frameworks */,
+				5C59016854B35296046D46E3 /* libSDL2main.a in Frameworks */,
+				711722C97B6C14AF751C3447 /* libSDL2.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		063100B04D77549E6A9F1112 /* testgamecontroller */ = {
+			isa = PBXGroup;
+			children = (
+				3EA955B63CF038EF091222E8 /* test */,
+				789F24162918123450CF4B74 /* Frameworks */,
+				7A49721B04EA5855508368C9 /* Products */,
+				0250726E45B86DD8261538F8 /* Projects */,
+			);
+			name = "testgamecontroller";
+			sourceTree = "<group>";
+		};
+		3EA955B63CF038EF091222E8 /* test */ = {
+			isa = PBXGroup;
+			children = (
+				48F355B62CA92CD960274AC1 /* testgamecontroller.c */,
+			);
+			name = "test";
+			sourceTree = "<group>";
+		};
+		789F24162918123450CF4B74 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				639F1AD07BC614055E4B4BEF /* AudioToolbox.framework */,
+				7774150327CE5B4341311BA2 /* AudioUnit.framework */,
+				15C56C9162624511738950C4 /* Cocoa.framework */,
+				70974CCE092D75E31B6659C4 /* CoreAudio.framework */,
+				00267C710FC1666C58AC1600 /* IOKit.framework */,
+				74B20CD506C43F592B6A4131 /* Carbon.framework */,
+				7560112E76563F017A354A97 /* ForceFeedback.framework */,
+				422B1BF2412116DE6F2D7ECF /* CoreFoundation.framework */,
+				40EF30E9301B6096308E73FC /* OpenGL.framework */,
+			);
+			name = "Frameworks";
+			sourceTree = "<group>";
+		};
+		7A49721B04EA5855508368C9 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				567D61E243EB387F4FDB388A /* testgamecontroller */,
+			);
+			name = "Products";
+			sourceTree = "<group>";
+		};
+		0250726E45B86DD8261538F8 /* Projects */ = {
+			isa = PBXGroup;
+			children = (
+				5CDE76704306652C66C6757D /* SDL2main.xcodeproj */,
+				6F9E23337C115CE22C5C036F /* SDL2.xcodeproj */,
+			);
+			name = "Projects";
+			sourceTree = "<group>";
+		};
+		08767CDD2DA222DE36584C82 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				027574146203476B541C0127 /* libSDL2main.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		33E47EDE42C32D6347BD7088 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				17EF57FF6417423C2AE144CD /* libSDL2.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		7B3032395DA51920424A258D /* testgamecontroller */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2B550415327F3FCB3EF824AC /* Build configuration list for PBXNativeTarget "testgamecontroller" */;
+			buildPhases = (
+				397953C5567E7D2048DD2FAF /* Resources */,
+				13E941C92B555CA163AD7DCB /* Sources */,
+				473B1FDA5EE866B04B5F71BD /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				475149D56CFA4036302A4202 /* PBXTargetDependency */,
+				1A2B35F31041572804F92BB3 /* PBXTargetDependency */,
+			);
+			name = "testgamecontroller";
+			productInstallPath = "$(HOME)/bin";
+			productName = "testgamecontroller";
+			productReference = 567D61E243EB387F4FDB388A /* testgamecontroller */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		08FB7793FE84155DC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "testgamecontroller" */;
+			compatibilityVersion = "Xcode 3.2";
+			hasScannedForEncodings = 1;
+			mainGroup = 063100B04D77549E6A9F1112 /* testgamecontroller */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 08767CDD2DA222DE36584C82 /* Products */;
+					ProjectRef = 5CDE76704306652C66C6757D /* SDL2main.xcodeproj */;
+				},
+				{
+					ProductGroup = 33E47EDE42C32D6347BD7088 /* Products */;
+					ProjectRef = 6F9E23337C115CE22C5C036F /* SDL2.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				7B3032395DA51920424A258D /* testgamecontroller */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		027574146203476B541C0127 /* libSDL2main.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "Build/Debug/libSDL2main.a";
+			remoteRef = 78836EE2654D23445E1A0CB0 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		17EF57FF6417423C2AE144CD /* libSDL2.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "Build/Debug/libSDL2.a";
+			remoteRef = 7E6D286F30E32A114225393C /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXResourcesBuildPhase section */
+		397953C5567E7D2048DD2FAF /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		13E941C92B555CA163AD7DCB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				59AD1EAF01EC6AEB1C7B5074 /* testgamecontroller.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+/* End PBXVariantGroup section */
+
+/* Begin PBXTargetDependency section */
+		475149D56CFA4036302A4202 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "libSDL2main.a";
+			targetProxy = 085B22E10005062E75451D34 /* PBXContainerItemProxy */;
+		};
+		1A2B35F31041572804F92BB3 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "libSDL2.a";
+			targetProxy = 3D175864491D1E04458F4B6B /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		6FA35D3D7B0A73C6698A0408 /* Debug Universal */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CONFIGURATION_BUILD_DIR = Build/Debug;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = "testgamecontroller";
+			};
+			name = "Debug Universal";
+		};
+		4D804E61624543AF39A5003F /* Debug Native */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CONFIGURATION_BUILD_DIR = Build/Debug;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = "testgamecontroller";
+			};
+			name = "Debug Native";
+		};
+		339937CD35543FEA59C141E8 /* Release Universal */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				CONFIGURATION_BUILD_DIR = Build/Release;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = "testgamecontroller";
+			};
+			name = "Release Universal";
+		};
+		5E0928A929C2154035565034 /* Release Native */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				CONFIGURATION_BUILD_DIR = Build/Release;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = "testgamecontroller";
+			};
+			name = "Release Native";
+		};
+		31BC3603012209364D2826C1 /* Debug Universal */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USING_PREMAKE_CONFIG_H",
+					"_DEBUG",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"../..",
+					"../../../../../include",
+				);
+				OBJROOT = "obj/Universal/Debug";
+				ONLY_ACTIVE_ARCH = YES;
+				SYMROOT = "Build/Debug";
+			};
+			name = "Debug Universal";
+		};
+		4C625A152EE955F75FDC052C /* Debug Native */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(NATIVE_ARCH_ACTUAL)";
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USING_PREMAKE_CONFIG_H",
+					"_DEBUG",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"../..",
+					"../../../../../include",
+				);
+				OBJROOT = "obj/Debug";
+				ONLY_ACTIVE_ARCH = YES;
+				SYMROOT = "Build/Debug";
+			};
+			name = "Debug Native";
+		};
+		180C43BC1D4944DB1279702A /* Release Universal */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USING_PREMAKE_CONFIG_H",
+					"NDEBUG",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"../..",
+					"../../../../../include",
+				);
+				OBJROOT = "obj/Universal/Release";
+				ONLY_ACTIVE_ARCH = NO;
+				SYMROOT = "Build/Release";
+			};
+			name = "Release Universal";
+		};
+		3DE24EE2789D4BDD49E441F0 /* Release Native */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(NATIVE_ARCH_ACTUAL)";
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USING_PREMAKE_CONFIG_H",
+					"NDEBUG",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"../..",
+					"../../../../../include",
+				);
+				OBJROOT = "obj/Release";
+				ONLY_ACTIVE_ARCH = NO;
+				SYMROOT = "Build/Release";
+			};
+			name = "Release Native";
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2B550415327F3FCB3EF824AC /* Build configuration list for PBXNativeTarget "testgamecontroller" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6FA35D3D7B0A73C6698A0408 /* Debug Universal */,
+				4D804E61624543AF39A5003F /* Debug Native */,
+				339937CD35543FEA59C141E8 /* Release Universal */,
+				5E0928A929C2154035565034 /* Release Native */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Debug Universal";
+		};
+		1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "testgamecontroller" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				31BC3603012209364D2826C1 /* Debug Universal */,
+				4C625A152EE955F75FDC052C /* Debug Native */,
+				180C43BC1D4944DB1279702A /* Release Universal */,
+				3DE24EE2789D4BDD49E441F0 /* Release Native */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Debug Universal";
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
+}

@@ -1,0 +1,58 @@
+\hypertarget{_s_d_l__visualtest__screenshot_8h}{\section{C\-:/\-Users/\-D\-E\-L\-L/\-Work/sdlvisualtest/visualtest/include/\-S\-D\-L\-\_\-visualtest\-\_\-screenshot.h File Reference}
+\label{_s_d_l__visualtest__screenshot_8h}\index{C\-:/\-Users/\-D\-E\-L\-L/\-Work/sdlvisualtest/visualtest/include/\-S\-D\-L\-\_\-visualtest\-\_\-screenshot.\-h@{C\-:/\-Users/\-D\-E\-L\-L/\-Work/sdlvisualtest/visualtest/include/\-S\-D\-L\-\_\-visualtest\-\_\-screenshot.\-h}}
+}
+{\ttfamily \#include \char`\"{}S\-D\-L\-\_\-visualtest\-\_\-process.\-h\char`\"{}}\\*
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{_s_d_l__visualtest__screenshot_8h_aefe6b7dbca1fbfb7aef081545c3ca66d}{S\-D\-L\-Visual\-Test\-\_\-\-Screenshot\-Process} (\hyperlink{struct_s_d_l___process_info}{S\-D\-L\-\_\-\-Process\-Info} $\ast$pinfo, char $\ast$prefix)
+\item 
+int \hyperlink{_s_d_l__visualtest__screenshot_8h_a812c545e97db11a756145d43b3a8e5ee}{S\-D\-L\-Visual\-Test\-\_\-\-Screenshot\-Desktop} (char $\ast$filename)
+\item 
+int \hyperlink{_s_d_l__visualtest__screenshot_8h_ac7b5335651144961676abc2116c38299}{S\-D\-L\-Visual\-Test\-\_\-\-Verify\-Screenshots} (char $\ast$args, char $\ast$test\-\_\-dir, char $\ast$verify\-\_\-dir)
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Header for the screenshot A\-P\-I. 
+
+\subsection{Function Documentation}
+\hypertarget{_s_d_l__visualtest__screenshot_8h_a812c545e97db11a756145d43b3a8e5ee}{\index{S\-D\-L\-\_\-visualtest\-\_\-screenshot.\-h@{S\-D\-L\-\_\-visualtest\-\_\-screenshot.\-h}!S\-D\-L\-Visual\-Test\-\_\-\-Screenshot\-Desktop@{S\-D\-L\-Visual\-Test\-\_\-\-Screenshot\-Desktop}}
+\index{S\-D\-L\-Visual\-Test\-\_\-\-Screenshot\-Desktop@{S\-D\-L\-Visual\-Test\-\_\-\-Screenshot\-Desktop}!SDL_visualtest_screenshot.h@{S\-D\-L\-\_\-visualtest\-\_\-screenshot.\-h}}
+\subsubsection[{S\-D\-L\-Visual\-Test\-\_\-\-Screenshot\-Desktop}]{\setlength{\rightskip}{0pt plus 5cm}int S\-D\-L\-Visual\-Test\-\_\-\-Screenshot\-Desktop (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{filename}
+\end{DoxyParamCaption}
+)}}\label{_s_d_l__visualtest__screenshot_8h_a812c545e97db11a756145d43b3a8e5ee}
+Takes a screenshot of the desktop and saves it into the file with path {\ttfamily filename}.
+
+\begin{DoxyReturn}{Returns}
+1 on success, 0 on failure. 
+\end{DoxyReturn}
+\hypertarget{_s_d_l__visualtest__screenshot_8h_aefe6b7dbca1fbfb7aef081545c3ca66d}{\index{S\-D\-L\-\_\-visualtest\-\_\-screenshot.\-h@{S\-D\-L\-\_\-visualtest\-\_\-screenshot.\-h}!S\-D\-L\-Visual\-Test\-\_\-\-Screenshot\-Process@{S\-D\-L\-Visual\-Test\-\_\-\-Screenshot\-Process}}
+\index{S\-D\-L\-Visual\-Test\-\_\-\-Screenshot\-Process@{S\-D\-L\-Visual\-Test\-\_\-\-Screenshot\-Process}!SDL_visualtest_screenshot.h@{S\-D\-L\-\_\-visualtest\-\_\-screenshot.\-h}}
+\subsubsection[{S\-D\-L\-Visual\-Test\-\_\-\-Screenshot\-Process}]{\setlength{\rightskip}{0pt plus 5cm}int S\-D\-L\-Visual\-Test\-\_\-\-Screenshot\-Process (
+\begin{DoxyParamCaption}
+\item[{{\bf S\-D\-L\-\_\-\-Process\-Info} $\ast$}]{pinfo, }
+\item[{char $\ast$}]{prefix}
+\end{DoxyParamCaption}
+)}}\label{_s_d_l__visualtest__screenshot_8h_aefe6b7dbca1fbfb7aef081545c3ca66d}
+Takes a screenshot of each window owned by the process {\ttfamily pinfo} and saves it in a file {\ttfamily prefix-\/i.\-png} where {\ttfamily prefix} is the full path to the file along with a prefix given to each screenshot.
+
+\begin{DoxyReturn}{Returns}
+1 on success, 0 on failure. 
+\end{DoxyReturn}
+\hypertarget{_s_d_l__visualtest__screenshot_8h_ac7b5335651144961676abc2116c38299}{\index{S\-D\-L\-\_\-visualtest\-\_\-screenshot.\-h@{S\-D\-L\-\_\-visualtest\-\_\-screenshot.\-h}!S\-D\-L\-Visual\-Test\-\_\-\-Verify\-Screenshots@{S\-D\-L\-Visual\-Test\-\_\-\-Verify\-Screenshots}}
+\index{S\-D\-L\-Visual\-Test\-\_\-\-Verify\-Screenshots@{S\-D\-L\-Visual\-Test\-\_\-\-Verify\-Screenshots}!SDL_visualtest_screenshot.h@{S\-D\-L\-\_\-visualtest\-\_\-screenshot.\-h}}
+\subsubsection[{S\-D\-L\-Visual\-Test\-\_\-\-Verify\-Screenshots}]{\setlength{\rightskip}{0pt plus 5cm}int S\-D\-L\-Visual\-Test\-\_\-\-Verify\-Screenshots (
+\begin{DoxyParamCaption}
+\item[{char $\ast$}]{args, }
+\item[{char $\ast$}]{test\-\_\-dir, }
+\item[{char $\ast$}]{verify\-\_\-dir}
+\end{DoxyParamCaption}
+)}}\label{_s_d_l__visualtest__screenshot_8h_ac7b5335651144961676abc2116c38299}
+Compare a screenshot taken previously with S\-U\-T arguments {\ttfamily args} that is located in {\ttfamily test\-\_\-dir} with a verification image that is located in {\ttfamily verify\-\_\-dir}.
+
+\begin{DoxyReturn}{Returns}
+-\/1 on failure, 0 if the images were not equal, 1 if the images are equal and 2 if the verification image is not present. 
+\end{DoxyReturn}

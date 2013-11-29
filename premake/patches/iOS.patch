@@ -1,0 +1,71 @@
+# HG changeset patch
+# User Guido Lorenz <guido@superquadratic.net>
+# Date 1314134634 -7200
+# Node ID 5552b57a6b3e541edac2cf0ef3f66a361e9c774e
+# Parent  60bda91095e1b823134fc7341e2c34ca7c198341
+Added iOS platform (Xcode only).
+
+diff -r 60bda91095e1 -r 5552b57a6b3e src/actions/xcode/_xcode.lua
+--- a/src/actions/xcode/_xcode.lua	Fri Aug 19 08:58:23 2011 -0400
++++ b/src/actions/xcode/_xcode.lua	Tue Aug 23 23:23:54 2011 +0200
+@@ -28,6 +28,7 @@
+ 			Universal32 = "32-bit Universal", 
+ 			Universal64 = "64-bit Universal", 
+ 			Universal = "Universal",
++			iOS = "iOS",
+ 		},
+ 		
+ 		default_platform = "Universal",
+@@ -79,6 +80,7 @@
+ 			Universal32 = "32-bit Universal", 
+ 			Universal64 = "64-bit Universal", 
+ 			Universal = "Universal",
++			iOS = "iOS",
+ 		},
+ 		
+ 		default_platform = "Universal",
+diff -r 60bda91095e1 -r 5552b57a6b3e src/actions/xcode/xcode_common.lua
+--- a/src/actions/xcode/xcode_common.lua	Fri Aug 19 08:58:23 2011 -0400
++++ b/src/actions/xcode/xcode_common.lua	Tue Aug 23 23:23:54 2011 +0200
+@@ -724,9 +724,15 @@
+ 			Universal32 = "$(ARCHS_STANDARD_32_BIT)",
+ 			Universal64 = "$(ARCHS_STANDARD_64_BIT)",
+ 			Universal = "$(ARCHS_STANDARD_32_64_BIT)",
++			iOS    = "$(ARCHS_UNIVERSAL_IPHONE_OS)",
+ 		}
+ 		_p(4,'ARCHS = "%s";', archs[cfg.platform])
+ 		
++		if cfg.platform == "iOS" then
++			_p(4,'SDKROOT = %s;', "iphoneos")
++			_p(4,'CODE_SIGN_IDENTITY = "%s";', "iPhone Developer")
++		end
++		
+ 		local targetdir = path.getdirectory(cfg.buildtarget.bundlepath)
+ 		if targetdir ~= "." then
+ 			_p(4,'CONFIGURATION_BUILD_DIR = "$(SYMROOT)";');
+diff -r 60bda91095e1 -r 5552b57a6b3e src/base/cmdline.lua
+--- a/src/base/cmdline.lua	Fri Aug 19 08:58:23 2011 -0400
++++ b/src/base/cmdline.lua	Tue Aug 23 23:23:54 2011 +0200
+@@ -71,6 +71,7 @@
+ 			{ "universal",   "Mac OS X Universal, 32- and 64-bit" },
+ 			{ "universal32", "Mac OS X Universal, 32-bit only" },
+ 			{ "universal64", "Mac OS X Universal, 64-bit only" },
++			{ "ios",         "iOS" },
+ 			{ "ps3",         "Playstation 3 (experimental)" },
+ 			{ "xbox360",     "Xbox 360 (experimental)" },
+ 		}
+diff -r 60bda91095e1 -r 5552b57a6b3e src/base/globals.lua
+--- a/src/base/globals.lua	Fri Aug 19 08:58:23 2011 -0400
++++ b/src/base/globals.lua	Tue Aug 23 23:23:54 2011 +0200
+@@ -38,6 +38,11 @@
+ 		{ 
+ 			cfgsuffix       = "univ64",
+ 		},
++		iOS = 
++		{ 
++			cfgsuffix       = "ios",
++			iscrosscompiler = true,
++		},
+ 		PS3 = 
+ 		{ 
+ 			cfgsuffix       = "ps3",

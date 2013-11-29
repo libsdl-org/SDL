@@ -1,0 +1,457 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		17F36FF223D577CE040E342A /* testerror.c in Sources */ = {isa = PBXBuildFile; fileRef = 2AD528C05907077E1C980084 /* testerror.c */; };
+		5C7C76636FB4225049E30962 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 242A7ADB51E93AC8229B297F /* AudioToolbox.framework */; };
+		55D31CE04107687A523138C1 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3F58459D51D43F875ECB6AE2 /* AudioUnit.framework */; };
+		16EF544D14414BCD300959E8 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 334320CD2EB329612B4952EC /* Cocoa.framework */; };
+		312528E57525045D04E55E0B /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1C6C31CF3E812DF0797A394C /* CoreAudio.framework */; };
+		6164728C6E8851A346A928C0 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4BD852F43C7D329A4EAD7B6D /* IOKit.framework */; };
+		699B65297DDF6A1E0BF665EE /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 60376BCC588668CC65617410 /* Carbon.framework */; };
+		52D806B15DBA758E50A26743 /* ForceFeedback.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1F297A542691370563C318DE /* ForceFeedback.framework */; };
+		187A22356B9F324B076D2730 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0F607DB43672788F25274B0E /* CoreFoundation.framework */; };
+		3A0353607DF115A314423754 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 584A07DE2AED5FCA73C606FC /* OpenGL.framework */; };
+		767523933EAB5BCB243518EE /* libSDL2main.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 079A33B1695D0E942AC90EB2 /* libSDL2main.a */; };
+		3CBF24FE282A7770718F7C28 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 540A66CB408E504F2D473B0C /* libSDL2.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		5F116C1E4AB736B349E440B2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 668C7E30376F65E65FF57724 /* SDL2main.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 58DC62993160374E09FF7AD6;
+			remoteInfo = "libSDL2main.a";
+		};
+		0B9E63E70B65163F112B279B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 668C7E30376F65E65FF57724 /* SDL2main.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 0E7126A94A11494963D3548B;
+			remoteInfo = "libSDL2main.a";
+		};
+		5EAC27E67852613A48610EB5 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 473904A730CA33A056813A82 /* SDL2.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 07D004B11E733F1F0EA93105;
+			remoteInfo = "libSDL2.a";
+		};
+		453405F92872773764857EEE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 473904A730CA33A056813A82 /* SDL2.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 58C10ED14175754444033E0E;
+			remoteInfo = "libSDL2.a";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		2AD528C05907077E1C980084 /* testerror.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "testerror.c"; path = "../../../../../test/testerror.c"; sourceTree = "<group>"; };
+		242A7ADB51E93AC8229B297F /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "AudioToolbox.framework"; path = "/System/Library/Frameworks/AudioToolbox.framework"; sourceTree = "<absolute>"; };
+		3F58459D51D43F875ECB6AE2 /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "AudioUnit.framework"; path = "/System/Library/Frameworks/AudioUnit.framework"; sourceTree = "<absolute>"; };
+		334320CD2EB329612B4952EC /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "Cocoa.framework"; path = "/System/Library/Frameworks/Cocoa.framework"; sourceTree = "<absolute>"; };
+		1C6C31CF3E812DF0797A394C /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "CoreAudio.framework"; path = "/System/Library/Frameworks/CoreAudio.framework"; sourceTree = "<absolute>"; };
+		4BD852F43C7D329A4EAD7B6D /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "IOKit.framework"; path = "/System/Library/Frameworks/IOKit.framework"; sourceTree = "<absolute>"; };
+		60376BCC588668CC65617410 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "Carbon.framework"; path = "/System/Library/Frameworks/Carbon.framework"; sourceTree = "<absolute>"; };
+		1F297A542691370563C318DE /* ForceFeedback.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "ForceFeedback.framework"; path = "/System/Library/Frameworks/ForceFeedback.framework"; sourceTree = "<absolute>"; };
+		0F607DB43672788F25274B0E /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "CoreFoundation.framework"; path = "/System/Library/Frameworks/CoreFoundation.framework"; sourceTree = "<absolute>"; };
+		584A07DE2AED5FCA73C606FC /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "OpenGL.framework"; path = "/System/Library/Frameworks/OpenGL.framework"; sourceTree = "<absolute>"; };
+		430B280B15A10042050C5C68 /* testerror */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; name = "testerror"; path = "testerror"; sourceTree = BUILT_PRODUCTS_DIR; };
+		668C7E30376F65E65FF57724 /* SDL2main.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "SDL2main.xcodeproj"; path = "../../SDL2main/SDL2main.xcodeproj"; sourceTree = SOURCE_ROOT; };
+		473904A730CA33A056813A82 /* SDL2.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "SDL2.xcodeproj"; path = "../../SDL2/SDL2.xcodeproj"; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		508430F81E4545FA3FA63BC6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				5C7C76636FB4225049E30962 /* AudioToolbox.framework in Frameworks */,
+				55D31CE04107687A523138C1 /* AudioUnit.framework in Frameworks */,
+				16EF544D14414BCD300959E8 /* Cocoa.framework in Frameworks */,
+				312528E57525045D04E55E0B /* CoreAudio.framework in Frameworks */,
+				6164728C6E8851A346A928C0 /* IOKit.framework in Frameworks */,
+				699B65297DDF6A1E0BF665EE /* Carbon.framework in Frameworks */,
+				52D806B15DBA758E50A26743 /* ForceFeedback.framework in Frameworks */,
+				187A22356B9F324B076D2730 /* CoreFoundation.framework in Frameworks */,
+				3A0353607DF115A314423754 /* OpenGL.framework in Frameworks */,
+				767523933EAB5BCB243518EE /* libSDL2main.a in Frameworks */,
+				3CBF24FE282A7770718F7C28 /* libSDL2.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		247065CB755213A014F11B43 /* testerror */ = {
+			isa = PBXGroup;
+			children = (
+				65F6185108DB0AF171803A14 /* test */,
+				3BA77DEF0897734D5B676A5D /* Frameworks */,
+				6D166C097CD736C220776C40 /* Products */,
+				1B7606265B0A10D479DE6F2C /* Projects */,
+			);
+			name = "testerror";
+			sourceTree = "<group>";
+		};
+		65F6185108DB0AF171803A14 /* test */ = {
+			isa = PBXGroup;
+			children = (
+				2AD528C05907077E1C980084 /* testerror.c */,
+			);
+			name = "test";
+			sourceTree = "<group>";
+		};
+		3BA77DEF0897734D5B676A5D /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				242A7ADB51E93AC8229B297F /* AudioToolbox.framework */,
+				3F58459D51D43F875ECB6AE2 /* AudioUnit.framework */,
+				334320CD2EB329612B4952EC /* Cocoa.framework */,
+				1C6C31CF3E812DF0797A394C /* CoreAudio.framework */,
+				4BD852F43C7D329A4EAD7B6D /* IOKit.framework */,
+				60376BCC588668CC65617410 /* Carbon.framework */,
+				1F297A542691370563C318DE /* ForceFeedback.framework */,
+				0F607DB43672788F25274B0E /* CoreFoundation.framework */,
+				584A07DE2AED5FCA73C606FC /* OpenGL.framework */,
+			);
+			name = "Frameworks";
+			sourceTree = "<group>";
+		};
+		6D166C097CD736C220776C40 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				430B280B15A10042050C5C68 /* testerror */,
+			);
+			name = "Products";
+			sourceTree = "<group>";
+		};
+		1B7606265B0A10D479DE6F2C /* Projects */ = {
+			isa = PBXGroup;
+			children = (
+				668C7E30376F65E65FF57724 /* SDL2main.xcodeproj */,
+				473904A730CA33A056813A82 /* SDL2.xcodeproj */,
+			);
+			name = "Projects";
+			sourceTree = "<group>";
+		};
+		6D721818606B463A25996043 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				079A33B1695D0E942AC90EB2 /* libSDL2main.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		1D7F044B59CF3F423066168C /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				540A66CB408E504F2D473B0C /* libSDL2.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		6FD078CA32E570E62FAC7B55 /* testerror */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 34B560ED7D9E21AD23582503 /* Build configuration list for PBXNativeTarget "testerror" */;
+			buildPhases = (
+				164938B91D941AD539E636C6 /* Resources */,
+				425B7E6F62BF27286A180D2C /* Sources */,
+				508430F81E4545FA3FA63BC6 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				69FF1BE85A7C0EE716D2443B /* PBXTargetDependency */,
+				4FEA117D4965295E6AD34DD2 /* PBXTargetDependency */,
+			);
+			name = "testerror";
+			productInstallPath = "$(HOME)/bin";
+			productName = "testerror";
+			productReference = 430B280B15A10042050C5C68 /* testerror */;
+			productType = "com.apple.product-type.tool";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		08FB7793FE84155DC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "testerror" */;
+			compatibilityVersion = "Xcode 3.2";
+			hasScannedForEncodings = 1;
+			mainGroup = 247065CB755213A014F11B43 /* testerror */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 6D721818606B463A25996043 /* Products */;
+					ProjectRef = 668C7E30376F65E65FF57724 /* SDL2main.xcodeproj */;
+				},
+				{
+					ProductGroup = 1D7F044B59CF3F423066168C /* Products */;
+					ProjectRef = 473904A730CA33A056813A82 /* SDL2.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				6FD078CA32E570E62FAC7B55 /* testerror */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		079A33B1695D0E942AC90EB2 /* libSDL2main.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "Build/Debug/libSDL2main.a";
+			remoteRef = 5F116C1E4AB736B349E440B2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		540A66CB408E504F2D473B0C /* libSDL2.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "Build/Debug/libSDL2.a";
+			remoteRef = 5EAC27E67852613A48610EB5 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXResourcesBuildPhase section */
+		164938B91D941AD539E636C6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		425B7E6F62BF27286A180D2C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				17F36FF223D577CE040E342A /* testerror.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+/* End PBXVariantGroup section */
+
+/* Begin PBXTargetDependency section */
+		69FF1BE85A7C0EE716D2443B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "libSDL2main.a";
+			targetProxy = 0B9E63E70B65163F112B279B /* PBXContainerItemProxy */;
+		};
+		4FEA117D4965295E6AD34DD2 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "libSDL2.a";
+			targetProxy = 453405F92872773764857EEE /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		24386F3E596918DA291C2E96 /* Debug Universal */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CONFIGURATION_BUILD_DIR = Build/Debug;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = "testerror";
+			};
+			name = "Debug Universal";
+		};
+		118B4516471538C5115921AE /* Debug Native */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CONFIGURATION_BUILD_DIR = Build/Debug;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = "testerror";
+			};
+			name = "Debug Native";
+		};
+		354A3B710CF9568C3616645B /* Release Universal */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				CONFIGURATION_BUILD_DIR = Build/Release;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = "testerror";
+			};
+			name = "Release Universal";
+		};
+		51115E5604C07F0C6F3A08E8 /* Release Native */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				CONFIGURATION_BUILD_DIR = Build/Release;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				INSTALL_PATH = /usr/local/bin;
+				PRODUCT_NAME = "testerror";
+			};
+			name = "Release Native";
+		};
+		06B76729458605591CCB7F37 /* Debug Universal */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USING_PREMAKE_CONFIG_H",
+					"_DEBUG",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"../..",
+					"../../../../../include",
+				);
+				OBJROOT = "obj/Universal/Debug";
+				ONLY_ACTIVE_ARCH = YES;
+				SYMROOT = "Build/Debug";
+			};
+			name = "Debug Universal";
+		};
+		63456C690D7B2EF152151B6D /* Debug Native */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(NATIVE_ARCH_ACTUAL)";
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_FIX_AND_CONTINUE = YES;
+				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USING_PREMAKE_CONFIG_H",
+					"_DEBUG",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"../..",
+					"../../../../../include",
+				);
+				OBJROOT = "obj/Debug";
+				ONLY_ACTIVE_ARCH = YES;
+				SYMROOT = "Build/Debug";
+			};
+			name = "Debug Native";
+		};
+		477F178808E30A7279936349 /* Release Universal */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USING_PREMAKE_CONFIG_H",
+					"NDEBUG",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"../..",
+					"../../../../../include",
+				);
+				OBJROOT = "obj/Universal/Release";
+				ONLY_ACTIVE_ARCH = NO;
+				SYMROOT = "Build/Release";
+			};
+			name = "Release Universal";
+		};
+		38F85370614A015F42246EB5 /* Release Native */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(NATIVE_ARCH_ACTUAL)";
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USING_PREMAKE_CONFIG_H",
+					"NDEBUG",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"../..",
+					"../../../../../include",
+				);
+				OBJROOT = "obj/Release";
+				ONLY_ACTIVE_ARCH = NO;
+				SYMROOT = "Build/Release";
+			};
+			name = "Release Native";
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		34B560ED7D9E21AD23582503 /* Build configuration list for PBXNativeTarget "testerror" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				24386F3E596918DA291C2E96 /* Debug Universal */,
+				118B4516471538C5115921AE /* Debug Native */,
+				354A3B710CF9568C3616645B /* Release Universal */,
+				51115E5604C07F0C6F3A08E8 /* Release Native */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Debug Universal";
+		};
+		1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "testerror" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				06B76729458605591CCB7F37 /* Debug Universal */,
+				63456C690D7B2EF152151B6D /* Debug Native */,
+				477F178808E30A7279936349 /* Release Universal */,
+				38F85370614A015F42246EB5 /* Release Native */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Debug Universal";
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
+}

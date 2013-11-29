@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+	version = "1.0">
+	<FileRef
+		location = "group:tests/testjoystick/testjoystick.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testfilesystem/testfilesystem.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testsem/testsem.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testnative/testnative.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testscale/testscale.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testgamecontroller/testgamecontroller.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testrendertarget/testrendertarget.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testver/testver.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testkeys/testkeys.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testloadso/testloadso.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testtimer/testtimer.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testoverlay2/testoverlay2.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/torturethread/torturethread.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testplatform/testplatform.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testgesture/testgesture.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testaudioinfo/testaudioinfo.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/loopwave/loopwave.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testthread/testthread.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/teststreaming/teststreaming.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/checkkeys/checkkeys.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testspriteminimal/testspriteminimal.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testsprite2/testsprite2.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testgles/testgles.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testatomic/testatomic.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:SDL2test/SDL2test.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testhaptic/testhaptic.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testgl2/testgl2.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:SDL2/SDL2.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testerror/testerror.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testrumble/testrumble.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testresample/testresample.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testrendercopyex/testrendercopyex.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testpower/testpower.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testchessboard/testchessboard.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:SDL2main/SDL2main.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testrelative/testrelative.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testlock/testlock.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testmultiaudio/testmultiaudio.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testmessage/testmessage.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testdraw2/testdraw2.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testshape/testshape.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testwm2/testwm2.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testautomation/testautomation.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testiconv/testiconv.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testfile/testfile.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testime/testime.xcodeproj">
+	</FileRef>
+	<FileRef
+		location = "group:tests/testshader/testshader.xcodeproj">
+	</FileRef>
+</Workspace>
