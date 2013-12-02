@@ -225,8 +225,7 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
         *_this->gl_config.driver_path = '\0';
     }
     
-    /* We need to select a config here to satisfy some video backends such as X11 */
-    return SDL_EGL_ChooseConfig(_this);
+    return 0;
 }
 
 int
@@ -452,6 +451,10 @@ SDL_EGL_DeleteContext(_THIS, SDL_GLContext context)
 EGLSurface *
 SDL_EGL_CreateSurface(_THIS, NativeWindowType nw) 
 {
+    if (SDL_EGL_ChooseConfig(_this) != 0) {
+        return -1;
+    }
+    
     return _this->egl_data->eglCreateWindowSurface(
             _this->egl_data->egl_display,
             _this->egl_data->egl_config,
