@@ -55,7 +55,8 @@ TARGETS = \
 	torturethread$(EXE) \
 	testrendercopyex$(EXE) \
 	testmessage$(EXE) \
-
+	controllermap$(EXE) \
+	
 all: Makefile $(TARGETS)
 
 Makefile: $(srcdir)/Makefile.in
@@ -237,6 +238,10 @@ testrendercopyex$(EXE): $(srcdir)/testrendercopyex.c
 
 testmessage$(EXE): $(srcdir)/testmessage.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+controllermap$(EXE): $(srcdir)/controllermap.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
 
 clean:
 	rm -f $(TARGETS)
