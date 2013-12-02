@@ -109,6 +109,14 @@ typedef struct SDL_GameControllerButtonBind
  */
 
 /**
+ *  Load a set of mappings from a file, filtered by the current SDL_GetPlatform()
+ *  A community sourced database of controllers is available at https://raw.github.com/gabomdq/SDL_GameControllerDB/master/gamecontrollerdb.txt
+ *
+ * \return number of mappings added, -1 on error
+ */
+extern DECLSPEC int SDLCALL SDL_GameControllerAddMappingsFromFile( const char* mapDB );
+
+/**
  *  Add or update an existing mapping configuration
  *
  * \return 1 if mapping is added, 0 if updated, -1 on error
