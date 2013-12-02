@@ -4,11 +4,21 @@ This is a list of major changes in SDL's version history.
 ---------------------------------------------------------------------------
 2.0.2:
 ---------------------------------------------------------------------------
+General:
+* Added an API to load a database of Game Controller mappings from a file:    
+    SDL_GameControllerAddMappingsFromFile
+    
+Windows:
+* Support for OpenGL ES 2.x contexts using either WGL or EGL (natively via
+  the driver or emulated through ANGLE)
 
 Android:
 * Joystick support (minimum SDK version required to build SDL is now 12, 
   the required runtime version remains at 10, but on such devices joystick 
   support won't be available).
+
+Linux:
+* Fixed fullscreen and focused behavior when receiving NotifyGrab events
 
 
 ---------------------------------------------------------------------------
