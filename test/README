@@ -25,3 +25,6 @@ These are test programs for the SDL library:
 	testver		Check the version and dynamic loading and endianness
 	testwm2		Test window manager -- title, icon, events
 	torturethread	Simple test for thread creation/destruction
+	controllermap   Useful to generate Game Controller API compatible maps
+
+

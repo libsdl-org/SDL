@@ -26,6 +26,8 @@
    The easiest way to generate a new mapping is to start Steam in Big Picture
    mode, configure your joystick and then look in config/config.vdf in your
    Steam installation directory for the "SDL_GamepadBind" entry.
+   
+   Alternatively, you can use the app located in test/controllermap
  */
 static const char *s_ControllerMappings [] =
 {
