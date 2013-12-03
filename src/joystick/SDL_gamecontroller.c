@@ -658,32 +658,37 @@ void SDL_PrivateGameControllerRefreshMapping( ControllerMapping_t *pControllerMa
  * Add or update an entry into the Mappings Database
  */
 int
-SDL_GameControllerAddMappingsFromFile( const char* mapDB )
+SDL_GameControllerAddMappingsFromRW( SDL_RWops * rw, int freerw )
 {
     const char *platform = SDL_GetPlatform();
-    SDL_RWops *rw;
     int controllers = 0;
     char *buf, *line, *line_end, *tmp, *comma, line_platform[64];
     size_t db_size, platform_len;
     
-    rw = SDL_RWFromFile(mapDB, "rb");
     if (rw == NULL) {
-        return SDL_SetError("Could not open %s", mapDB);
+        return SDL_SetError("Invalid RWops");
     }
     db_size = SDL_RWsize(rw);
     
     buf = (char *) SDL_malloc(db_size + 1);
     if (buf == NULL) {
-        SDL_RWclose(rw);
+        if (freerw) {
+            SDL_RWclose(rw);
+        }
         return SDL_SetError("Could allocate space to not read DB into memory");
     }
     
     if (SDL_RWread(rw, buf, db_size, 1) != 1) {
-        SDL_RWclose(rw);
+        if (freerw) {
+            SDL_RWclose(rw);
+        }
         SDL_free(buf);
         return SDL_SetError("Could not read DB");
     }
-    SDL_RWclose(rw);
+    
+    if (freerw) {
+        SDL_RWclose(rw);
+    }
     
     buf[db_size] = '\0';
     line = buf;
