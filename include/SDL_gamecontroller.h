@@ -109,12 +109,21 @@ typedef struct SDL_GameControllerButtonBind
  */
 
 /**
- *  Load a set of mappings from a file, filtered by the current SDL_GetPlatform()
+ *  Load a set of mappings from a seekable SDL data stream (memory or file), filtered by the current SDL_GetPlatform()
  *  A community sourced database of controllers is available at https://raw.github.com/gabomdq/SDL_GameControllerDB/master/gamecontrollerdb.txt
  *
+ *  If \c freerw is non-zero, the stream will be closed after being read.
+ * 
  * \return number of mappings added, -1 on error
  */
-extern DECLSPEC int SDLCALL SDL_GameControllerAddMappingsFromFile( const char* mapDB );
+extern DECLSPEC int SDLCALL SDL_GameControllerAddMappingsFromRW( SDL_RWops * rw, int freerw );
+
+/**
+ *  Load a set of mappings from a file, filtered by the current SDL_GetPlatform()
+ *
+ *  Convenience macro.
+ */
+#define SDL_GameControllerAddMappingsFromFile(file)   SDL_GameControllerAddMappingsFromRW(SDL_RWFromFile(file, "rb"), 1)
 
 /**
  *  Add or update an existing mapping configuration

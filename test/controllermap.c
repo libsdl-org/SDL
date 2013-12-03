@@ -144,7 +144,7 @@ WatchJoystick(SDL_Joystick * joystick)
     };
 
     /* Create a window to display joystick axis position */
-    window = SDL_CreateWindow("Joystick Test", SDL_WINDOWPOS_CENTERED,
+    window = SDL_CreateWindow("Game Controller Map", SDL_WINDOWPOS_CENTERED,
                               SDL_WINDOWPOS_CENTERED, SCREEN_WIDTH,
                               SCREEN_HEIGHT, 0);
     if (window == NULL) {
@@ -178,6 +178,7 @@ WatchJoystick(SDL_Joystick * joystick)
     Press the buttons on your controller when indicated\n\
     (Your controller may look different than the picture)\n\
     If you want to correct a mistake, press backspace or the back button on your device\n\
+    To skip a button, press SPACE or click/touch the screen\n\
     To exit, press ESC\n\
     ====================================================================================\n");
     
@@ -287,6 +288,12 @@ WatchJoystick(SDL_Joystick * joystick)
                         next=SDL_TRUE;
                     }
                     break;
+                case SDL_FINGERDOWN:
+                case SDL_MOUSEBUTTONDOWN:
+                    /* Skip this step */
+                    s++;
+                    next=SDL_TRUE;
+                    break;
                 case SDL_KEYDOWN:
                     if (event.key.keysym.sym == SDLK_BACKSPACE || event.key.keysym.sym == SDLK_AC_BACK) {
                         /* Undo! */
@@ -297,12 +304,17 @@ WatchJoystick(SDL_Joystick * joystick)
                         }
                         break;
                     }
+                    if (event.key.keysym.sym == SDLK_SPACE) {
+                        /* Skip this step */
+                        s++;
+                        next=SDL_TRUE;
+                        break;
+                    }
+                    
                     if ((event.key.keysym.sym != SDLK_ESCAPE)) {
                         break;
                     }
                     /* Fall through to signal quit */
-                case SDL_FINGERDOWN:
-                case SDL_MOUSEBUTTONDOWN:
                 case SDL_QUIT:
                     done = SDL_TRUE;
                     break;
