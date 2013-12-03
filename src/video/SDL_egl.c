@@ -452,7 +452,7 @@ EGLSurface *
 SDL_EGL_CreateSurface(_THIS, NativeWindowType nw) 
 {
     if (SDL_EGL_ChooseConfig(_this) != 0) {
-        return -1;
+        return EGL_NO_SURFACE;
     }
     
     return _this->egl_data->eglCreateWindowSurface(
