@@ -30,6 +30,7 @@
 
 #include "SDL_stdinc.h"
 #include "SDL_error.h"
+#include "SDL_rwops.h"
 #include "SDL_joystick.h"
 
 #include "begin_code.h"
