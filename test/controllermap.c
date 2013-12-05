@@ -425,11 +425,7 @@ main(int argc, char *argv[])
     }
     SDL_QuitSubSystem(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
 
-#ifdef ANDROID
-    exit(0);
-#else
     return 0;
-#endif
 }
 
 #else
