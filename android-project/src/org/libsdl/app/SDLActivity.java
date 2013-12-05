@@ -26,6 +26,7 @@ public class SDLActivity extends Activity {
 
     // Keep track of the paused state
     public static boolean mIsPaused = false, mIsSurfaceReady = false, mHasFocus = true;
+    public static boolean mExitCalledFromJava;
 
     // Main components
     protected static SDLActivity mSingleton;
@@ -62,6 +63,9 @@ public class SDLActivity extends Activity {
 
         // Set up the surface
         mSurface = new SDLSurface(getApplication());
+        
+        // Make sure this variable is initialized here!
+        mExitCalledFromJava = false;
         
         if(Build.VERSION.SDK_INT >= 12) {
             mJoystickHandler = new SDLJoystickHandler_API12();
@@ -115,6 +119,7 @@ public class SDLActivity extends Activity {
         super.onDestroy();
         Log.v("SDL", "onDestroy()");
         // Send a quit message to the application
+        SDLActivity.mExitCalledFromJava = true;
         SDLActivity.nativeQuit();
 
         // Now wait for the SDL thread to quit
@@ -167,6 +172,12 @@ public class SDLActivity extends Activity {
             SDLActivity.nativeResume();
             mSurface.enableSensor(Sensor.TYPE_ACCELEROMETER, true);
         }
+    }
+        
+    /* The native thread has finished */
+    public static void handleNativeExit() {
+        SDLActivity.mSDLThread = null;
+        mSingleton.finish();
     }
 
 
@@ -616,6 +627,22 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
             SDLActivity.mSDLThread = new Thread(new SDLMain(), "SDLThread");
             enableSensor(Sensor.TYPE_ACCELEROMETER, true);
             SDLActivity.mSDLThread.start();
+            
+            // Set up a listener thread to catch when the native thread ends
+            new Thread(new Runnable(){
+                public void run(){
+                    try {
+                        SDLActivity.mSDLThread.join();
+                    }
+                    catch(Exception e){}
+                    finally{ 
+                        // Native thread has finished
+                        if (! SDLActivity.mExitCalledFromJava) {
+                            SDLActivity.handleNativeExit();
+                        }
+                    }
+                }
+            }).start();
         }
     }
 
