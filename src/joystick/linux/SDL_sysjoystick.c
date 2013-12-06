@@ -509,10 +509,11 @@ ConfigJoystick(SDL_Joystick * joystick, int fd)
             if (test_bit(i, absbit)) {
                 struct input_absinfo absinfo;
 
-                if (ioctl(fd, EVIOCGABS(i), &absinfo) < 0)
+                if (ioctl(fd, EVIOCGABS(i), &absinfo) < 0) {
                     continue;
+                }
 #ifdef DEBUG_INPUT_EVENTS
-                printf("Joystick has absolute axis: %x\n", i);
+                printf("Joystick has absolute axis: 0x%.2x\n", i);
                 printf("Values = { %d, %d, %d, %d, %d }\n",
                        absinfo.value, absinfo.minimum, absinfo.maximum,
                        absinfo.fuzz, absinfo.flat);
@@ -539,9 +540,17 @@ ConfigJoystick(SDL_Joystick * joystick, int fd)
         }
         for (i = ABS_HAT0X; i <= ABS_HAT3Y; i += 2) {
             if (test_bit(i, absbit) || test_bit(i + 1, absbit)) {
+                struct input_absinfo absinfo;
+
+                if (ioctl(fd, EVIOCGABS(i), &absinfo) < 0) {
+                    continue;
+                }
 #ifdef DEBUG_INPUT_EVENTS
                 printf("Joystick has hat %d\n", (i - ABS_HAT0X) / 2);
-#endif
+                printf("Values = { %d, %d, %d, %d, %d }\n",
+                       absinfo.value, absinfo.minimum, absinfo.maximum,
+                       absinfo.fuzz, absinfo.flat);
+#endif /* DEBUG_INPUT_EVENTS */
                 ++joystick->nhats;
             }
         }
