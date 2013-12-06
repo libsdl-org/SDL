@@ -743,6 +743,7 @@ SDL_GameControllerAddMapping( const char *mappingString )
 
     pchGUID = SDL_PrivateGetControllerGUIDFromMappingString( mappingString );
     if (!pchGUID) {
+        SDL_SetError("Couldn't parse GUID from %s", mappingString);
         return -1;
     }
 #ifdef SDL_JOYSTICK_DINPUT
@@ -753,16 +754,20 @@ SDL_GameControllerAddMapping( const char *mappingString )
     jGUID = SDL_JoystickGetGUIDFromString(pchGUID);
     SDL_free(pchGUID);
 
-    pControllerMapping = SDL_PrivateGetControllerMappingForGUID(&jGUID);
-
     pchName = SDL_PrivateGetControllerNameFromMappingString( mappingString );
-    if (!pchName) return -1;
+    if (!pchName) {
+        SDL_SetError("Couldn't parse name from %s", mappingString);
+        return -1;
+    }
 
     pchMapping = SDL_PrivateGetControllerMappingFromMappingString( mappingString );
     if (!pchMapping) {
+        SDL_SetError("Couldn't parse %s", mappingString);
         SDL_free( pchName );
         return -1;
     }
+
+    pControllerMapping = SDL_PrivateGetControllerMappingForGUID(&jGUID);
 
     if (pControllerMapping) {
         /* Update existing mapping */
