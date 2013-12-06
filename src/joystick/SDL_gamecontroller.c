@@ -668,9 +668,9 @@ SDL_GameControllerAddMappingsFromRW( SDL_RWops * rw, int freerw )
     if (rw == NULL) {
         return SDL_SetError("Invalid RWops");
     }
-    db_size = SDL_RWsize(rw);
+    db_size = (size_t)SDL_RWsize(rw);
     
-    buf = (char *) SDL_malloc(db_size + 1);
+    buf = (char *)SDL_malloc(db_size + 1);
     if (buf == NULL) {
         if (freerw) {
             SDL_RWclose(rw);
