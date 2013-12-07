@@ -63,7 +63,7 @@ Cocoa_MouseTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event
     SDL_MouseEventTapData *tapdata = (SDL_MouseEventTapData*)refcon;
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_Window *window = SDL_GetKeyboardFocus();
-    NSWindow *nswindow = ((SDL_WindowData *) window->driverdata)->nswindow;
+    NSWindow *nswindow;
     NSRect windowRect;
     CGPoint eventLocation;
 
@@ -93,6 +93,7 @@ Cocoa_MouseTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event
     }
 
     /* This is the same coordinate system as Cocoa uses. */
+    nswindow = ((SDL_WindowData *) window->driverdata)->nswindow;
     eventLocation = CGEventGetUnflippedLocation(event);
     windowRect = [nswindow contentRectForFrameRect:[nswindow frame]];
 
