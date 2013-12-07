@@ -98,12 +98,10 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved)
      * Create mThreadKey so we can keep track of the JNIEnv assigned to each thread
      * Refer to http://developer.android.com/guide/practices/design/jni.html for the rationale behind this
      */
-    if (pthread_key_create(&mThreadKey, Android_JNI_ThreadDestroyed)) {
+    if (pthread_key_create(&mThreadKey, Android_JNI_ThreadDestroyed) != 0) {
         __android_log_print(ANDROID_LOG_ERROR, "SDL", "Error initializing pthread key");
     }
-    else {
-        Android_JNI_SetupThread();
-    }
+    Android_JNI_SetupThread();
 
     return JNI_VERSION_1_4;
 }
@@ -454,7 +452,8 @@ SDL_bool Android_JNI_GetAccelerometerValues(float values[3])
     return retval;
 }
 
-static void Android_JNI_ThreadDestroyed(void* value) {
+static void Android_JNI_ThreadDestroyed(void* value)
+{
     /* The thread is being destroyed, detach it from the Java VM and set the mThreadKey value to NULL as required */
     JNIEnv *env = (JNIEnv*) value;
     if (env != NULL) {
@@ -463,7 +462,8 @@ static void Android_JNI_ThreadDestroyed(void* value) {
     }
 }
 
-JNIEnv* Android_JNI_GetEnv(void) {
+JNIEnv* Android_JNI_GetEnv(void)
+{
     /* From http://developer.android.com/guide/practices/jni.html
      * All threads are Linux threads, scheduled by the kernel.
      * They're usually started from managed code (using Thread.start), but they can also be created elsewhere and then
@@ -483,10 +483,6 @@ JNIEnv* Android_JNI_GetEnv(void) {
         return 0;
     }
 
-    return env;
-}
-
-int Android_JNI_SetupThread(void) {
     /* From http://developer.android.com/guide/practices/jni.html
      * Threads attached through JNI must call DetachCurrentThread before they exit. If coding this directly is awkward,
      * in Android 2.0 (Eclair) and higher you can use pthread_key_create to define a destructor function that will be
@@ -496,8 +492,14 @@ int Android_JNI_SetupThread(void) {
      * Note: You can call this function any number of times for the same thread, there's no harm in it
      *       (except for some lost CPU cycles)
      */
-    JNIEnv *env = Android_JNI_GetEnv();
     pthread_setspecific(mThreadKey, (void*) env);
+
+    return env;
+}
+
+int Android_JNI_SetupThread(void)
+{
+    Android_JNI_GetEnv();
     return 1;
 }
 
