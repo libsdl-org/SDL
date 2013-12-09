@@ -986,7 +986,7 @@ SDL_vsscanf(const char *text, const char *fmt, va_list ap)
 }
 #else
 int
-SDL_vsscanf(const char *text, const char *fmt, ...)
+SDL_vsscanf(const char *text, const char *fmt, va_list ap)
 {
     int retval = 0;
 

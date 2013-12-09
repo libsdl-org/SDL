@@ -152,7 +152,9 @@ SDL_AtomicSet(SDL_atomic_t *a, int v)
 void*
 SDL_AtomicSetPtr(void **a, void *v)
 {
-#ifdef HAVE_MSC_ATOMICS
+#if defined(HAVE_MSC_ATOMICS) && (_M_IX86)
+    return (void *) _InterlockedExchange((long *)a, (long) v);
+#elif defined(HAVE_MSC_ATOMICS) && (!_M_IX86)
     return _InterlockedExchangePointer(a, v);
 #elif defined(HAVE_GCC_ATOMICS)
     return __sync_lock_test_and_set(a, v);
