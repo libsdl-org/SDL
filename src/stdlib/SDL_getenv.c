@@ -26,12 +26,11 @@
 
 #include "SDL_stdinc.h"
 
-#if !defined(SDL_setenv) && defined(__WIN32__)
+#if defined(__WIN32__) && (!defined(HAVE_SETENV) || !defined(HAVE_GETENV))
 /* Note this isn't thread-safe! */
 static char *SDL_envmem = NULL; /* Ugh, memory leak */
 static size_t SDL_envmemlen = 0;
 #endif
-
 
 /* Put a variable into the environment */
 #if defined(HAVE_SETENV)
