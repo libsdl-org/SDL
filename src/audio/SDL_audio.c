@@ -1036,7 +1036,11 @@ open_audio_device(const char *devname, int iscapture,
 /* !!! FIXME: this is nasty. */
 #if defined(__WIN32__) && !defined(HAVE_LIBC)
 #undef SDL_CreateThread
+#if SDL_DYNAMIC_API
+        device->thread = SDL_CreateThread_REAL(SDL_RunAudio, name, device, NULL, NULL);
+#else
         device->thread = SDL_CreateThread(SDL_RunAudio, name, device, NULL, NULL);
+#endif
 #else
         device->thread = SDL_CreateThread(SDL_RunAudio, name, device);
 #endif

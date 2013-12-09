@@ -21,6 +21,16 @@
 #ifndef _SDL_internal_h
 #define _SDL_internal_h
 
+#include "dynapi/SDL_dynapi.h"
+
+#if SDL_DYNAMIC_API
+#include "dynapi/SDL_dynapi_overrides.h"
+/* force DECLSPEC and SDLCALL off...it's all internal symbols now.
+   These will have actual #defines during SDL_dynapi.c only */
+#define DECLSPEC
+#define SDLCALL
+#endif
+
 #include "SDL_config.h"
 
 #endif

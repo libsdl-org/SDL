@@ -479,6 +479,9 @@
     <ClInclude Include="..\..\include\SDL_version.h" />
     <ClInclude Include="..\..\include\SDL_video.h" />
     <ClInclude Include="..\..\src\core\windows\SDL_windows.h" />
+    <ClInclude Include="..\..\src\dynapi\SDL_dynapi.h" />
+    <ClInclude Include="..\..\src\dynapi\SDL_dynapi_overrides.h" />
+    <ClInclude Include="..\..\src\dynapi\SDL_dynapi_procs.h" />
     <ClInclude Include="..\..\src\events\blank_cursor.h" />
     <ClInclude Include="..\..\src\events\default_cursor.h" />
     <ClInclude Include="..\..\src\audio\directsound\directx.h" />
@@ -559,6 +562,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\core\windows\SDL_windows.c" />
+    <ClCompile Include="..\..\src\dynapi\SDL_dynapi.c" />
     <ClCompile Include="..\..\src\events\SDL_clipboardevents.c" />
     <ClCompile Include="..\..\src\events\SDL_gesture.c" />
     <ClCompile Include="..\..\src\events\SDL_touch.c" />

@@ -240,6 +240,7 @@ file(GLOB SOURCE_FILES
   ${SDL2_SOURCE_DIR}/src/atomic/*.c
   ${SDL2_SOURCE_DIR}/src/audio/*.c
   ${SDL2_SOURCE_DIR}/src/cpuinfo/*.c
+  ${SDL2_SOURCE_DIR}/src/dynapi/*.c
   ${SDL2_SOURCE_DIR}/src/events/*.c
   ${SDL2_SOURCE_DIR}/src/file/*.c
   ${SDL2_SOURCE_DIR}/src/libm/*.c

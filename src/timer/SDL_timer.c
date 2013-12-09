@@ -224,7 +224,11 @@ SDL_TimerInit(void)
         /* !!! FIXME: this is nasty. */
 #if defined(__WIN32__) && !defined(HAVE_LIBC)
 #undef SDL_CreateThread
+#if SDL_DYNAMIC_API
+        data->thread = SDL_CreateThread_REAL(SDL_TimerThread, name, data, NULL, NULL);
+#else
         data->thread = SDL_CreateThread(SDL_TimerThread, name, data, NULL, NULL);
+#endif
 #else
         data->thread = SDL_CreateThread(SDL_TimerThread, name, data);
 #endif
