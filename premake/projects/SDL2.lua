@@ -69,6 +69,7 @@ SDL_project "SDL2"
 		"/audio/disk/",
 		"/audio/dummy/",
 		"/cpuinfo/",
+		"/dynapi/",
 		"/events/",
 		"/file/",
 		"/haptic/",

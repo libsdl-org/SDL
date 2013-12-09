@@ -296,8 +296,14 @@ SDL_RunThread(void *data)
     }
 }
 
-#ifdef SDL_PASSED_BEGINTHREAD_ENDTHREAD
+#ifdef SDL_CreateThread
 #undef SDL_CreateThread
+#endif
+#if SDL_DYNAMIC_API
+#define SDL_CreateThread SDL_CreateThread_REAL
+#endif
+
+#ifdef SDL_PASSED_BEGINTHREAD_ENDTHREAD
 DECLSPEC SDL_Thread *SDLCALL
 SDL_CreateThread(int (SDLCALL * fn) (void *),
                  const char *name, void *data,

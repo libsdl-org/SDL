@@ -1225,6 +1225,22 @@
 			>
 		</File>
 		<File
+			RelativePath="..\..\src\dynapi\SDL_dynapi.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\dynapi\SDL_dynapi_overrides.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\dynapi\SDL_dynapi_procs.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\dynapi\SDL_dynapi.c"
+			>
+		</File>
+		<File
 			RelativePath="..\..\src\video\windows\SDL_windowsclipboard.c"
 			>
 		</File>
