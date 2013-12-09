@@ -104,6 +104,8 @@
 #define HAVE_SYSCTLBYNAME 1
 #define HAVE_ATAN 1
 #define HAVE_ATAN2 1
+#define HAVE_ACOS 1
+#define HAVE_ASIN 1
 
 /* Enable various audio drivers */
 #define SDL_AUDIO_DRIVER_COREAUDIO  1
