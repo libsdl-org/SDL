@@ -133,6 +133,8 @@
 #undef HAVE_M_PI
 #undef HAVE_ATAN
 #undef HAVE_ATAN2
+#undef HAVE_ACOS
+#undef HAVE_ASIN
 #undef HAVE_CEIL
 #undef HAVE_COPYSIGN
 #undef HAVE_COS

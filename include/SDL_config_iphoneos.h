@@ -85,6 +85,8 @@
 #define HAVE_M_PI   1
 #define HAVE_ATAN   1
 #define HAVE_ATAN2  1
+#define HAVE_ACOS  1
+#define HAVE_ASIN  1
 #define HAVE_CEIL   1
 #define HAVE_COPYSIGN   1
 #define HAVE_COS    1

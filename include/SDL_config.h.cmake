@@ -130,6 +130,8 @@
 #cmakedefine HAVE_M_PI 1
 #cmakedefine HAVE_ATAN 1
 #cmakedefine HAVE_ATAN2 1
+#cmakedefine HAVE_ACOS 1
+#cmakedefine HAVE_ASIN 1
 #cmakedefine HAVE_CEIL 1
 #cmakedefine HAVE_COPYSIGN 1
 #cmakedefine HAVE_COS 1
