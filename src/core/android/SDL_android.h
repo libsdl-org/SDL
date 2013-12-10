@@ -66,9 +66,8 @@ SDL_bool Android_JNI_HasClipboardText();
 int Android_JNI_GetPowerInfo(int* plugged, int* charged, int* battery, int* seconds, int* percent);
     
 /* Joystick support */
-int Android_JNI_GetNumJoysticks();
-char* Android_JNI_GetJoystickName(int i);
-int Android_JNI_GetJoystickAxes(int joy);
+void Android_JNI_PollInputDevices();
+
 
 /* Touch support */
 int Android_JNI_GetTouchDeviceIds(int **ids);

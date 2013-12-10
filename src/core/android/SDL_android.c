@@ -34,7 +34,7 @@
 #include "../../video/android/SDL_androidtouch.h"
 #include "../../video/android/SDL_androidvideo.h"
 #include "../../video/android/SDL_androidwindow.h"
-#include "../../joystick/android/SDL_sysjoystick.h"
+#include "../../joystick/android/SDL_sysjoystick_c.h"
 
 #include <android/log.h>
 #include <pthread.h>
@@ -75,6 +75,7 @@ static jmethodID midAudioInit;
 static jmethodID midAudioWriteShortBuffer;
 static jmethodID midAudioWriteByteBuffer;
 static jmethodID midAudioQuit;
+static jmethodID midPollInputDevices;
 
 /* Accelerometer data storage */
 static float fLastAccelerometer[3];
@@ -127,11 +128,13 @@ void SDL_Android_Init(JNIEnv* mEnv, jclass cls)
                                 "audioWriteByteBuffer", "([B)V");
     midAudioQuit = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
                                 "audioQuit", "()V");
+    midPollInputDevices = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
+                                "pollInputDevices", "()V");
 
     bHasNewData = false;
 
     if(!midGetNativeSurface || !midFlipBuffers || !midAudioInit ||
-       !midAudioWriteShortBuffer || !midAudioWriteByteBuffer || !midAudioQuit) {
+       !midAudioWriteShortBuffer || !midAudioWriteByteBuffer || !midAudioQuit || !midPollInputDevices) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "SDL: Couldn't locate Java callbacks, check that they're named and typed correctly");
     }
     __android_log_print(ANDROID_LOG_INFO, "SDL", "SDL_Android_Init() finished!");
@@ -148,25 +151,47 @@ void Java_org_libsdl_app_SDLActivity_onNativeResize(
 // Paddown
 int Java_org_libsdl_app_SDLActivity_onNativePadDown(
                                     JNIEnv* env, jclass jcls,
-                                    jint padId, jint keycode)
+                                    jint device_id, jint keycode)
 {
-    return Android_OnPadDown(padId, keycode);
+    return Android_OnPadDown(device_id, keycode);
 }
 
 // Padup
 int Java_org_libsdl_app_SDLActivity_onNativePadUp(
                                    JNIEnv* env, jclass jcls,
-                                   jint padId, jint keycode)
+                                   jint device_id, jint keycode)
 {
-    return Android_OnPadUp(padId, keycode);
+    return Android_OnPadUp(device_id, keycode);
 }
 
 /* Joy */
 void Java_org_libsdl_app_SDLActivity_onNativeJoy(
                                     JNIEnv* env, jclass jcls,
-                                    jint joyId, jint axis, jfloat value)
+                                    jint device_id, jint axis, jfloat value)
 {
-    Android_OnJoy(joyId, axis, value);
+    Android_OnJoy(device_id, axis, value);
+}
+
+
+int Java_org_libsdl_app_SDLActivity_nativeAddJoystick(
+    JNIEnv* env, jclass jcls,
+    jint device_id, jstring device_name, jint is_accelerometer, 
+    jint nbuttons, jint naxes, jint nhats, jint nballs)
+{
+    int retval;
+    const char *name = (*env)->GetStringUTFChars(env, device_name, NULL);
+
+    retval = Android_AddJoystick(device_id, name, (SDL_bool) is_accelerometer, nbuttons, naxes, nhats, nballs);
+
+    (*env)->ReleaseStringUTFChars(env, device_name, name);
+    
+    return retval;
+}
+
+int Java_org_libsdl_app_SDLActivity_nativeRemoveJoystick(
+    JNIEnv* env, jclass jcls, jint device_id)
+{
+    return Android_RemoveJoystick(device_id);
 }
 
 
@@ -1247,61 +1272,11 @@ int Android_JNI_GetTouchDeviceIds(int **ids) {
     return number;
 }
 
-/* return the total number of plugged in joysticks */
-int Android_JNI_GetNumJoysticks()
+void Android_JNI_PollInputDevices()
 {
-    JNIEnv* env = Android_JNI_GetEnv();
-    if (!env) {
-        return -1;
-    }
-    
-    jmethodID mid = (*env)->GetStaticMethodID(env, mActivityClass, "getNumJoysticks", "()I");
-    if (!mid) {
-        return -1;
-    }
-    
-    return (int)(*env)->CallStaticIntMethod(env, mActivityClass, mid);
+    JNIEnv *env = Android_JNI_GetEnv();
+    (*env)->CallStaticVoidMethod(env, mActivityClass, midPollInputDevices);    
 }
-
-/* Return the name of joystick number "i" */
-char* Android_JNI_GetJoystickName(int i)
-{
-    JNIEnv* env = Android_JNI_GetEnv();
-    if (!env) {
-        return SDL_strdup("");
-    }
-    
-    jmethodID mid = (*env)->GetStaticMethodID(env, mActivityClass, "getJoystickName", "(I)Ljava/lang/String;");
-    if (!mid) {
-        return SDL_strdup("");
-    }
-    jstring string = (jstring)((*env)->CallStaticObjectMethod(env, mActivityClass, mid, i));
-    const char* utf = (*env)->GetStringUTFChars(env, string, 0);
-    if (!utf) {
-        return SDL_strdup("");
-    }
-    
-    char* text = SDL_strdup(utf);
-    (*env)->ReleaseStringUTFChars(env, string, utf);
-    return text;
-}
-
-/* return the number of axes in the given joystick */
-int Android_JNI_GetJoystickAxes(int joy)
-{
-    JNIEnv* env = Android_JNI_GetEnv();
-    if (!env) {
-        return -1;
-    }
-    
-    jmethodID mid = (*env)->GetStaticMethodID(env, mActivityClass, "getJoystickAxes", "(I)I");
-    if (!mid) {
-        return -1;
-    }
-    
-    return (int)(*env)->CallIntMethod(env, mActivityClass, mid, joy);
-}
-
 
 /* sends message to be handled on the UI event dispatch thread */
 int Android_JNI_SendMessage(int command, int param)

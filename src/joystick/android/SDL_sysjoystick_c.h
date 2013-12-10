@@ -21,8 +21,31 @@
 
 #include "SDL_config.h"
 
-extern int Android_OnPadDown(int padId, int keycode);
-extern int Android_OnPadUp(int padId, int keycode);
-extern int Android_OnJoy(int joyId, int axisnum, float value);
+#ifdef SDL_JOYSTICK_ANDROID
+#include "../SDL_sysjoystick.h"
+
+extern int Android_OnPadDown(int device_id, int keycode);
+extern int Android_OnPadUp(int device_id, int keycode);
+extern int Android_OnJoy(int device_id, int axisnum, float value);
+extern int Android_AddJoystick(int device_id, const char *name, SDL_bool is_accelerometer, int nbuttons, int naxes, int nhats, int nballs);
+extern int Android_RemoveJoystick(int device_id);
+
+/* A linked list of available joysticks */
+typedef struct SDL_joylist_item
+{
+    int device_instance;
+    int device_id; /* Android's device id */
+    char *name;   /* "SideWinder 3D Pro" or whatever */
+    SDL_JoystickGUID guid;
+    SDL_bool is_accelerometer;
+    SDL_Joystick *joystick;
+    int nbuttons, naxes, nhats, nballs;
+    
+    struct SDL_joylist_item *next;
+} SDL_joylist_item;
+
+typedef SDL_joylist_item joystick_hwdata;
+
+#endif /* SDL_JOYSTICK_ANDROID */
 
 /* vi: set ts=4 sw=4 expandtab: */
