@@ -630,12 +630,46 @@ D3D11_ConvertDipsToPixels(float dips)
 }
 #endif
 
-
 #if WINAPI_FAMILY == WINAPI_FAMILY_APP
 // TODO, WinRT, XAML: get the ISwapChainBackgroundPanelNative from something other than a global var
 extern ISwapChainBackgroundPanelNative * WINRT_GlobalSwapChainBackgroundPanelNative;
 #endif
 
+static DXGI_MODE_ROTATION
+D3D11_GetRotationForOrientation(Windows::Graphics::Display::DisplayOrientations orientation)
+{
+    switch (orientation)
+    {
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+        //
+        // Windows Phone rotations
+        //
+        case DisplayOrientations::Landscape:
+            return DXGI_MODE_ROTATION_ROTATE90;
+        case DisplayOrientations::Portrait:
+            return DXGI_MODE_ROTATION_IDENTITY;
+        case DisplayOrientations::LandscapeFlipped:
+            return DXGI_MODE_ROTATION_ROTATE270;
+        case DisplayOrientations::PortraitFlipped:
+            return DXGI_MODE_ROTATION_ROTATE180;
+#else
+        //
+        // Non-Windows-Phone rotations (ex: Windows 8, Windows RT)
+        //
+        case DisplayOrientations::Landscape:
+            return DXGI_MODE_ROTATION_IDENTITY;
+        case DisplayOrientations::Portrait:
+            return DXGI_MODE_ROTATION_ROTATE270;
+        case DisplayOrientations::LandscapeFlipped:
+            return DXGI_MODE_ROTATION_ROTATE180;
+        case DisplayOrientations::PortraitFlipped:
+            return DXGI_MODE_ROTATION_ROTATE90;
+#endif // WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+
+        default:
+            return DXGI_MODE_ROTATION_UNSPECIFIED;
+    }
+}
 
 // Initialize all resources that change when the window's size changes.
 // TODO, WinRT: get D3D11_CreateWindowSizeDependentResources working on Win32
@@ -811,31 +845,9 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
     // Set the proper orientation for the swap chain, and generate the
     // 3D matrix transformation for rendering to the rotated swap chain.
     //
-    // To note, his operation is not necessary on Windows Phone, nor is it
-    // even supported there.  It's only needed in Windows 8/RT.
-    DXGI_MODE_ROTATION rotation = DXGI_MODE_ROTATION_UNSPECIFIED;
-    switch (data->orientation)
-    {
-        case DisplayOrientations::Landscape:
-            rotation = DXGI_MODE_ROTATION_IDENTITY;
-            break;
-
-        case DisplayOrientations::Portrait:
-            rotation = DXGI_MODE_ROTATION_ROTATE270;
-            break;
-
-        case DisplayOrientations::LandscapeFlipped:
-            rotation = DXGI_MODE_ROTATION_ROTATE180;
-            break;
-
-        case DisplayOrientations::PortraitFlipped:
-            rotation = DXGI_MODE_ROTATION_ROTATE90;
-            break;
-
-        default:
-            throw ref new Platform::FailureException();
-    }
-
+    // To note, the call for this, IDXGISwapChain1::SetRotation, is not necessary
+    // on Windows Phone, nor is it supported there.  It's only needed in Windows 8/RT.
+    DXGI_MODE_ROTATION rotation = D3D11_GetRotationForOrientation(data->orientation);
     result = data->swapChain->SetRotation(rotation);
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(__FUNCTION__, result);
@@ -1237,50 +1249,24 @@ D3D11_UpdateViewport(SDL_Renderer * renderer)
         return 0;
     }
 
-    switch (data->orientation)
+    // Make sure the SDL viewport gets rotated to that of the physical display's orientation.
+    // Keep in mind here that the Y-axis will be been inverted (from Direct3D's
+    // default coordinate system) so rotations will be done in the opposite
+    // direction of the DXGI_MODE_ROTATION enumeration.
+    switch (D3D11_GetRotationForOrientation(data->orientation))
     {
-#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
-        //
-        // Windows Phone rotations
-        //
-        case DisplayOrientations::Landscape:
-            // 270-degree (-90 degree) Z-rotation
-            XMStoreFloat4x4(&data->vertexShaderConstantsData.projection, XMMatrixRotationZ(-XM_PIDIV2));
-            break;
-        case DisplayOrientations::Portrait:
-            // 0-degree Z-rotation
+        case DXGI_MODE_ROTATION_IDENTITY:
             XMStoreFloat4x4(&data->vertexShaderConstantsData.projection, XMMatrixIdentity());
             break;
-        case DisplayOrientations::LandscapeFlipped:
-            // 90-degree Z-rotation
+        case DXGI_MODE_ROTATION_ROTATE270:
             XMStoreFloat4x4(&data->vertexShaderConstantsData.projection, XMMatrixRotationZ(XM_PIDIV2));
             break;
-        case DisplayOrientations::PortraitFlipped:
-            // 180-degree Z-rotation
+        case DXGI_MODE_ROTATION_ROTATE180:
             XMStoreFloat4x4(&data->vertexShaderConstantsData.projection, XMMatrixRotationZ(XM_PI));
             break;
-#else
-        //
-        // Non-Windows-Phone rotations (ex: Windows 8, Windows RT)
-        //
-        case DisplayOrientations::Landscape:
-            // 0-degree Z-rotation
-            XMStoreFloat4x4(&data->vertexShaderConstantsData.projection, XMMatrixIdentity());
-            break;
-        case DisplayOrientations::Portrait:
-            // 90-degree Z-rotation
-            XMStoreFloat4x4(&data->vertexShaderConstantsData.projection, XMMatrixRotationZ(XM_PIDIV2));
-            break;
-        case DisplayOrientations::LandscapeFlipped:
-            // 180-degree Z-rotation
-            XMStoreFloat4x4(&data->vertexShaderConstantsData.projection, XMMatrixRotationZ(XM_PI));
-            break;
-        case DisplayOrientations::PortraitFlipped:
-            // 270-degree (-90 degree) Z-rotation
+        case DXGI_MODE_ROTATION_ROTATE90:
             XMStoreFloat4x4(&data->vertexShaderConstantsData.projection, XMMatrixRotationZ(-XM_PIDIV2));
             break;
-#endif // WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
-
         default:
             SDL_SetError("An unknown DisplayOrientation is being used");
             return -1;
@@ -1314,6 +1300,7 @@ D3D11_UpdateViewport(SDL_Renderer * renderer)
     // for Windows Phone devices.
     //
     SDL_FRect orientationAlignedViewport;
+
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
     const bool swapDimensions =
         data->orientation == DisplayOrientations::Landscape ||
@@ -1830,10 +1817,34 @@ D3D11_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
 
     // Copy the desired portion of the back buffer to the staging texture:
     D3D11_BOX srcBox;
-    srcBox.left = rect->x;
-    srcBox.right = rect->x + rect->w;
-    srcBox.top = rect->y;
-    srcBox.bottom = rect->y + rect->h;
+    switch (D3D11_GetRotationForOrientation(data->orientation)) {
+        case DXGI_MODE_ROTATION_IDENTITY:
+            srcBox.left = rect->x;
+            srcBox.right = rect->x + rect->w;
+            srcBox.top = rect->y;
+            srcBox.bottom = rect->y + rect->h;
+            break;
+        case DXGI_MODE_ROTATION_ROTATE270:
+            srcBox.left = rect->y;
+            srcBox.right = rect->y + rect->h;
+            srcBox.top = renderer->viewport.w - rect->x - rect->w;
+            srcBox.bottom = renderer->viewport.w - rect->x;
+            break;
+        case DXGI_MODE_ROTATION_ROTATE180:
+            srcBox.left = renderer->viewport.w - rect->x - rect->w;
+            srcBox.right = renderer->viewport.w - rect->x;
+            srcBox.top = renderer->viewport.h - rect->y - rect->h;
+            srcBox.bottom = renderer->viewport.h - rect->y;
+            break;
+        case DXGI_MODE_ROTATION_ROTATE90:
+            srcBox.left = renderer->viewport.h - rect->y - rect->h;
+            srcBox.right = renderer->viewport.h - rect->y;
+            srcBox.top = rect->x;
+            srcBox.bottom = rect->x + rect->h;
+            break;
+        default:
+            return SDL_SetError("The physical display is in an unknown or unsupported orientation");
+    }
     srcBox.front = 0;
     srcBox.back = 1;
     data->d3dContext->CopySubresourceRegion(
