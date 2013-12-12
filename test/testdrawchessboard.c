@@ -34,7 +34,7 @@ DrawChessBoard(SDL_Renderer * renderer)
 		x = x + coloum;
 		for(coloum; coloum < 4+(row%2); coloum++)
 		{
-			SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0);
+			SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
 
 			rect.w = darea.w/8;
 			rect.h = darea.h/8;
@@ -81,7 +81,7 @@ main(int argc, char *argv[])
 	}
 
 	/* Clear the rendering surface with the specified color */
-	SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0);
+	SDL_SetRenderDrawColor(renderer, 0xFF, 0xFF, 0xFF, 0xFF);
 	SDL_RenderClear(renderer);
 
 
