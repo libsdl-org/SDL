@@ -34,6 +34,7 @@
 #include "SDL_joystick.h"
 #include "SDL_hints.h"
 #include "SDL_assert.h"
+#include "SDL_timer.h"
 #include "SDL_sysjoystick_c.h"
 #include "../SDL_joystick_c.h"
 #include "../../core/android/SDL_android.h"
@@ -339,10 +340,14 @@ int SDL_SYS_NumJoysticks()
 void SDL_SYS_JoystickDetect()
 {
     /* Support for device connect/disconnect is API >= 16 only,
-     * so we have to poll ever few seconds.
+     * so we poll every three seconds
      * Ref: http://developer.android.com/reference/android/hardware/input/InputManager.InputDeviceListener.html
      */
-    Android_JNI_PollInputDevices();   
+    static Uint32 timeout = 0;
+    if (SDL_TICKS_PASSED(SDL_GetTicks(), timeout)) {
+        timeout = SDL_GetTicks() + 3000;
+        Android_JNI_PollInputDevices();
+    }
 }
 
 SDL_bool SDL_SYS_JoystickNeedsPolling()
