@@ -665,23 +665,9 @@ SDL_ltoa(long value, char *string, int radix)
 
     if (value < 0) {
         *bufp++ = '-';
-        value = -value;
-    }
-    if (value) {
-        while (value > 0) {
-            *bufp++ = ntoa_table[value % radix];
-            value /= radix;
-        }
+        SDL_ultoa(-value, bufp, radix);
     } else {
-        *bufp++ = '0';
-    }
-    *bufp = '\0';
-
-    /* The numbers went into the string backwards. :) */
-    if (*string == '-') {
-        SDL_strrev(string + 1);
-    } else {
-        SDL_strrev(string);
+        SDL_ultoa(value, bufp, radix);
     }
 
     return string;
@@ -723,23 +709,9 @@ SDL_lltoa(Sint64 value, char *string, int radix)
 
     if (value < 0) {
         *bufp++ = '-';
-        value = -value;
-    }
-    if (value) {
-        while (value > 0) {
-            *bufp++ = ntoa_table[value % radix];
-            value /= radix;
-        }
+        SDL_ulltoa(-value, bufp, radix);
     } else {
-        *bufp++ = '0';
-    }
-    *bufp = '\0';
-
-    /* The numbers went into the string backwards. :) */
-    if (*string == '-') {
-        SDL_strrev(string + 1);
-    } else {
-        SDL_strrev(string);
+        SDL_ulltoa(value, bufp, radix);
     }
 
     return string;
