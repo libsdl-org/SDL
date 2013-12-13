@@ -340,7 +340,7 @@ SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
         EGL_NONE
     };
     
-    EGLContext egl_context;
+    EGLContext egl_context, share_context = EGL_NO_CONTEXT;
     
     if (!_this->egl_data) {
         /* The EGL library wasn't loaded, SDL_GetError() should have info */
@@ -350,11 +350,15 @@ SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
     if (_this->gl_config.major_version) {
         context_attrib_list[1] = _this->gl_config.major_version;
     }
+    
+    if (_this->gl_config.share_with_current_context) {
+        share_context = (EGLContext)SDL_GL_GetCurrentContext();
+    }
 
     egl_context =
     _this->egl_data->eglCreateContext(_this->egl_data->egl_display,
                                       _this->egl_data->egl_config,
-                                      EGL_NO_CONTEXT, context_attrib_list);
+                                      share_context, context_attrib_list);
     
     if (egl_context == EGL_NO_CONTEXT) {
         SDL_SetError("Could not create EGL context");
