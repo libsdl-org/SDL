@@ -101,6 +101,7 @@ typedef enum
     SDL_SYSWM_UNKNOWN,
     SDL_SYSWM_WINDOWS,
     SDL_SYSWM_X11,
+    SDL_SYSWM_WAYLAND,
     SDL_SYSWM_DIRECTFB,
     SDL_SYSWM_COCOA,
     SDL_SYSWM_UIKIT,
@@ -174,6 +175,14 @@ struct SDL_SysWMinfo
             Display *display;           /**< The X11 display */
             Window window;              /**< The X11 window */
         } x11;
+#endif
+#if defined(SDL_VIDEO_DRIVER_WAYLAND)
+        struct
+        {
+            struct wl_display *display;            /**< Wayland display */
+            struct wl_surface *surface;            /**< Wayland surface */
+            struct wl_shell_surface *shell_surface; /**< Wayland shell_surface (window manager handle) */
+        } wl;
 #endif
 #if defined(SDL_VIDEO_DRIVER_DIRECTFB)
         struct

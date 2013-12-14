@@ -128,13 +128,13 @@ testgesture$(EXE): $(srcdir)/testgesture.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @MATHLIB@
  
 testgl2$(EXE): $(srcdir)/testgl2.c
-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @GLLIB@ @MATHLIB@
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @MATHLIB@
 
 testgles$(EXE): $(srcdir)/testgles.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @GLESLIB@ @MATHLIB@
 
 testgles2$(EXE): $(srcdir)/testgles2.c
-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @GLES2LIB@ @MATHLIB@
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @MATHLIB@
 
 testhaptic$(EXE): $(srcdir)/testhaptic.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)

@@ -76,6 +76,9 @@ typedef struct SDL_EGL_VideoData
     EGLBoolean(EGLAPIENTRY *eglWaitNative) (EGLint  engine);
 
     EGLBoolean(EGLAPIENTRY *eglWaitGL)(void);
+    
+    EGLBoolean(EGLAPIENTRY *eglBindAPI)(EGLenum);
+
 } SDL_EGL_VideoData;
 
 /* OpenGLES functions */

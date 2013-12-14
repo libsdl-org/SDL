@@ -506,6 +506,29 @@ macro(CheckX11)
 endmacro(CheckX11)
 
 # Requires:
+# - EGL
+macro(CheckWayland)
+  if(VIDEO_WAYLAND)
+    pkg_check_modules(WAYLAND wayland-client wayland-cursor wayland-egl egl xkbcommon)
+    if(WAYLAND_FOUND)
+      link_directories(
+          ${WAYLAND_LIBRARY_DIRS}
+      )
+      include_directories(
+          ${WAYLAND_INCLUDE_DIRS}
+      )
+      set(EXTRA_LIBS ${WAYLAND_LIBRARIES} ${EXTRA_LIBS})
+      set(HAVE_VIDEO_WAYLAND TRUE)
+      set(HAVE_SDL_VIDEO TRUE)
+
+      file(GLOB WAYLAND_SOURCES ${SDL2_SOURCE_DIR}/src/video/wayland/*.c)
+      set(SOURCE_FILES ${SOURCE_FILES} ${WAYLAND_SOURCES})
+      set(SDL_VIDEO_DRIVER_WAYLAND 1)
+    endif(WAYLAND_FOUND)
+  endif(VIDEO_WAYLAND)
+endmacro(CheckWayland)
+
+# Requires:
 # - n/a
 #
 macro(CheckCOCOA)

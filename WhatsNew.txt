@@ -7,7 +7,10 @@ This is a list of major changes in SDL's version history.
 General:
 * Added an API to load a database of Game Controller mappings from a file:    
     SDL_GameControllerAddMappingsFromFile
-    
+* EGL can now create/manage OpenGL and OpenGL ES 1.x/2.x contexts, and share
+  them using SDL_GL_SHARE_WITH_CURRENT_CONTEXT
+* Added testgles2. testgl2 does not need to link with libGL anymore.
+  
 Windows:
 * Support for OpenGL ES 2.x contexts using either WGL or EGL (natively via
   the driver or emulated through ANGLE)
@@ -20,7 +23,7 @@ Android:
 
 Linux:
 * Fixed fullscreen and focused behavior when receiving NotifyGrab events
-
+* Wayland support
 
 ---------------------------------------------------------------------------
 2.0.1:
