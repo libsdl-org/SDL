@@ -50,6 +50,7 @@
 
 #else
 /* Desktop Linux */
+#define DEFAULT_OGL "libGL.so.1"
 #define DEFAULT_EGL "libEGL.so.1"
 #define DEFAULT_OGL_ES2 "libGLESv2.so.2"
 #define DEFAULT_OGL_ES_PVR "libGLES_CM.so.1"
@@ -149,23 +150,31 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
     }
 
     if (egl_dll_handle == NULL) {
-        if (_this->gl_config.major_version > 1) {
-            path = DEFAULT_OGL_ES2;
-            egl_dll_handle = SDL_LoadObject(path);
-        }
-        else {
-            path = DEFAULT_OGL_ES;
-            egl_dll_handle = SDL_LoadObject(path);
-            if (egl_dll_handle == NULL) {
-                path = DEFAULT_OGL_ES_PVR;
+        if(_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) {
+            if (_this->gl_config.major_version > 1) {
+                path = DEFAULT_OGL_ES2;
                 egl_dll_handle = SDL_LoadObject(path);
             }
+            else {
+                path = DEFAULT_OGL_ES;
+                egl_dll_handle = SDL_LoadObject(path);
+                if (egl_dll_handle == NULL) {
+                    path = DEFAULT_OGL_ES_PVR;
+                    egl_dll_handle = SDL_LoadObject(path);
+                }
+            }
         }
+#ifdef DEFAULT_OGL         
+        else {
+            path = DEFAULT_OGL;
+            egl_dll_handle = SDL_LoadObject(path);
+        }
+#endif        
     }
     _this->egl_data->egl_dll_handle = egl_dll_handle;
 
     if (egl_dll_handle == NULL) {
-        return SDL_SetError("Could not initialize OpenGL ES library");
+        return SDL_SetError("Could not initialize OpenGL / GLES library");
     }
 
     /* Loading libGL* in the previous step took care of loading libEGL.so, but we future proof by double checking */
@@ -205,6 +214,7 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
     LOAD_FUNC(eglSwapInterval);
     LOAD_FUNC(eglWaitNative);
     LOAD_FUNC(eglWaitGL);
+    LOAD_FUNC(eglBindAPI);
     
     _this->egl_data->egl_display = _this->egl_data->eglGetDisplay(native_display);
     if (!_this->egl_data->egl_display) {
@@ -281,14 +291,21 @@ SDL_EGL_ChooseConfig(_THIS)
     }
     
     attribs[i++] = EGL_RENDERABLE_TYPE;
-    if (_this->gl_config.major_version == 2) {
-        attribs[i++] = EGL_OPENGL_ES2_BIT;
-    } else {
-        attribs[i++] = EGL_OPENGL_ES_BIT;
+    if(_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) {
+        if (_this->gl_config.major_version == 2) {
+            attribs[i++] = EGL_OPENGL_ES2_BIT;
+        } else {
+            attribs[i++] = EGL_OPENGL_ES_BIT;
+        }
+        _this->egl_data->eglBindAPI(EGL_OPENGL_ES_API);
+    }
+    else {
+        attribs[i++] = EGL_OPENGL_BIT;
+        _this->egl_data->eglBindAPI(EGL_OPENGL_API);
     }
     
     attribs[i++] = EGL_NONE;
-    
+   
     if (_this->egl_data->eglChooseConfig(_this->egl_data->egl_display,
         attribs,
         configs, SDL_arraysize(configs),
@@ -347,18 +364,27 @@ SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
         return NULL;
     }
     
-    if (_this->gl_config.major_version) {
-        context_attrib_list[1] = _this->gl_config.major_version;
-    }
-    
     if (_this->gl_config.share_with_current_context) {
         share_context = (EGLContext)SDL_GL_GetCurrentContext();
     }
+    
+    /* Bind the API */
+    if(_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) {
+        _this->egl_data->eglBindAPI(EGL_OPENGL_ES_API);
+        if (_this->gl_config.major_version) {
+            context_attrib_list[1] = _this->gl_config.major_version;
+        }
 
-    egl_context =
-    _this->egl_data->eglCreateContext(_this->egl_data->egl_display,
-                                      _this->egl_data->egl_config,
-                                      share_context, context_attrib_list);
+        egl_context = _this->egl_data->eglCreateContext(_this->egl_data->egl_display,
+                                          _this->egl_data->egl_config,
+                                          share_context, context_attrib_list);
+    }
+    else {
+        _this->egl_data->eglBindAPI(EGL_OPENGL_API);
+        egl_context = _this->egl_data->eglCreateContext(_this->egl_data->egl_display,
+                                          _this->egl_data->egl_config,
+                                          share_context, NULL);
+    }
     
     if (egl_context == EGL_NO_CONTEXT) {
         SDL_SetError("Could not create EGL context");

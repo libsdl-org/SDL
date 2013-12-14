@@ -817,6 +817,7 @@ enable_sndio
 enable_sndio_shared
 enable_diskaudio
 enable_dummyaudio
+enable_video_wayland
 enable_video_x11
 with_x
 enable_x11_shared
@@ -1532,6 +1533,7 @@ Optional Features:
   --enable-sndio-shared   dynamically load sndio audio support [[default=yes]]
   --enable-diskaudio      support the disk writer audio driver [[default=yes]]
   --enable-dummyaudio     support the dummy audio driver [[default=yes]]
+  --enable-video-wayland  use Wayland video driver [[default=yes]]
   --enable-video-x11      use X11 video driver [[default=yes]]
   --enable-x11-shared     dynamically load X11 support [[default=maybe]]
   --enable-video-x11-xcursor
@@ -18633,6 +18635,82 @@ $as_echo "$need_gcc_Wno_multichar" >&6; }
     fi
 }
 
+CheckWayland()
+{
+    # Check whether --enable-video-wayland was given.
+if test "${enable_video_wayland+set}" = set; then :
+  enableval=$enable_video_wayland;
+else
+  enable_video_wayland=yes
+fi
+
+
+    if test x$enable_video = xyes -a x$enable_video_wayland = xyes; then
+        # Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_PKG_CONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_path_PKG_CONFIG" && ac_cv_path_PKG_CONFIG="no"
+  ;;
+esac
+fi
+PKG_CONFIG=$ac_cv_path_PKG_CONFIG
+if test -n "$PKG_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
+$as_echo "$PKG_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Wayland support" >&5
+$as_echo_n "checking for Wayland support... " >&6; }
+        video_wayland=no
+        if test x$PKG_CONFIG != xno; then
+            if $PKG_CONFIG --exists wayland-client wayland-egl wayland-cursor egl xkbcommon ; then
+                WAYLAND_CFLAGS=`$PKG_CONFIG --cflags wayland-client wayland-egl wayland-cursor egl xkbcommon`
+                WAYLAND_LIBS=`$PKG_CONFIG --libs wayland-client wayland-egl wayland-cursor egl xkbcommon`
+                video_wayland=yes
+            fi
+        fi
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_wayland" >&5
+$as_echo "$video_wayland" >&6; }
+
+        if test x$video_wayland = xyes; then
+
+$as_echo "#define SDL_VIDEO_DRIVER_WAYLAND 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/video/wayland/*.c"
+            EXTRA_CFLAGS="$EXTRA_CFLAGS $WAYLAND_CFLAGS"
+                        EXTRA_LDFLAGS="$EXTRA_LDFLAGS $WAYLAND_LIBS"
+            have_video=yes
+        fi
+    fi
+}
 
 CheckX11()
 {
@@ -22220,6 +22298,7 @@ case "$host" in
         CheckNAS
         CheckSNDIO
         CheckX11
+        CheckWayland
         CheckDirectFB
         CheckFusionSound
         CheckOpenGLX11
