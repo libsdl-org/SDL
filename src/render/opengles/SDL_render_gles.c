@@ -279,15 +279,24 @@ GLES_CreateRenderer(SDL_Window * window, Uint32 flags)
     GLES_RenderData *data;
     GLint value;
     Uint32 windowFlags;
+    int profileMask, majorVersion, minorVersion;
+
+    SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &profileMask);
+    SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &majorVersion);
+    SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minorVersion);
 
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 1);
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 
     windowFlags = SDL_GetWindowFlags(window);
-    if (!(windowFlags & SDL_WINDOW_OPENGL)) {
+    if (!(windowFlags & SDL_WINDOW_OPENGL) ||
+        profileMask != SDL_GL_CONTEXT_PROFILE_ES || majorVersion != 1 || minorVersion != 1) {
         if (SDL_RecreateWindow(window, windowFlags | SDL_WINDOW_OPENGL) < 0) {
             /* Uh oh, better try to put it back... */
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, profileMask);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, majorVersion);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, minorVersion);
             SDL_RecreateWindow(window, windowFlags);
             return NULL;
         }
