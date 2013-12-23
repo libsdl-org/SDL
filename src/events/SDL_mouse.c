@@ -23,6 +23,7 @@
 /* General mouse handling code for SDL */
 
 #include "SDL_assert.h"
+#include "SDL_timer.h"
 #include "SDL_events.h"
 #include "SDL_events_c.h"
 #include "default_cursor.h"
@@ -32,6 +33,8 @@
 
 /* The mouse state */
 static SDL_Mouse SDL_mouse;
+static Uint32 SDL_double_click_time = 500;
+static int SDL_double_click_radius = 1;
 
 static int
 SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relative, int x, int y);
@@ -62,6 +65,12 @@ SDL_Mouse *
 SDL_GetMouse(void)
 {
     return &SDL_mouse;
+}
+
+void
+SDL_SetDoubleClickTime(Uint32 interval)
+{
+    SDL_double_click_time = interval;
 }
 
 SDL_Window *
@@ -272,6 +281,23 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
     return posted;
 }
 
+static SDL_MouseClickState *GetMouseClickState(SDL_Mouse *mouse, Uint8 button)
+{
+    if (button >= mouse->num_clickstates) {
+        int i, count = button + 1;
+        mouse->clickstate = (SDL_MouseClickState *)SDL_realloc(mouse->clickstate, count * sizeof(*mouse->clickstate));
+        if (!mouse->clickstate) {
+            return NULL;
+        }
+
+        for (i = mouse->num_clickstates; i < count; ++i) {
+            SDL_zero(mouse->clickstate[i]);
+        }
+        mouse->num_clickstates = count;
+    }
+    return &mouse->clickstate[button];
+}
+
 int
 SDL_SendMouseButton(SDL_Window * window, SDL_MouseID mouseID, Uint8 state, Uint8 button)
 {
@@ -279,6 +305,8 @@ SDL_SendMouseButton(SDL_Window * window, SDL_MouseID mouseID, Uint8 state, Uint8
     int posted;
     Uint32 type;
     Uint32 buttonstate = mouse->buttonstate;
+    SDL_MouseClickState *clickstate = GetMouseClickState(mouse, button);
+    Uint8 click_count;
 
     /* Figure out which event to perform */
     switch (state) {
@@ -306,6 +334,27 @@ SDL_SendMouseButton(SDL_Window * window, SDL_MouseID mouseID, Uint8 state, Uint8
     }
     mouse->buttonstate = buttonstate;
 
+    if (clickstate) {
+        if (state == SDL_PRESSED) {
+            Uint32 now = SDL_GetTicks();
+
+            if (SDL_TICKS_PASSED(now, clickstate->last_timestamp + SDL_double_click_time) ||
+                SDL_abs(mouse->x - clickstate->last_x) > SDL_double_click_radius ||
+                SDL_abs(mouse->y - clickstate->last_y) > SDL_double_click_radius) {
+                clickstate->click_count = 0;
+            }
+            clickstate->last_timestamp = now;
+            clickstate->last_x = mouse->x;
+            clickstate->last_y = mouse->y;
+            if (clickstate->click_count < 255) {
+                ++clickstate->click_count;
+            }
+        }
+        click_count = clickstate->click_count;
+    } else {
+        click_count = 1;
+    }
+
     /* Post the event, if desired */
     posted = 0;
     if (SDL_GetEventState(type) == SDL_ENABLE) {
@@ -315,6 +364,7 @@ SDL_SendMouseButton(SDL_Window * window, SDL_MouseID mouseID, Uint8 state, Uint8
         event.button.which = mouseID;
         event.button.state = state;
         event.button.button = button;
+        event.button.clicks = click_count;
         event.button.x = mouse->x;
         event.button.y = mouse->y;
         posted = (SDL_PushEvent(&event) > 0);
@@ -374,6 +424,10 @@ SDL_MouseQuit(void)
 
     if (mouse->def_cursor && mouse->FreeCursor) {
         mouse->FreeCursor(mouse->def_cursor);
+    }
+
+    if (mouse->clickstate) {
+        SDL_free(mouse->clickstate);
     }
 
     SDL_zerop(mouse);
