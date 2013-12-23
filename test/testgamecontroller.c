@@ -31,8 +31,6 @@
 #define MAX_NUM_AXES 6
 #define MAX_NUM_HATS 2
 
-static SDL_bool s_ForceQuit = SDL_FALSE;
-
 static void
 DrawRect(SDL_Renderer *r, const int x, const int y, const int w, const int h)
 {
@@ -85,7 +83,7 @@ ControllerButtonName(const SDL_GameControllerButton button)
     }
 }
 
-void
+SDL_bool
 WatchGameController(SDL_GameController * gamecontroller)
 {
     const char *name = SDL_GameControllerName(gamecontroller);
@@ -94,7 +92,8 @@ WatchGameController(SDL_GameController * gamecontroller)
     char *title = (char *)SDL_malloc(titlelen);
     SDL_Window *window = NULL;
     SDL_Renderer *screen = NULL;
-    int done = 0;
+    SDL_bool retval = SDL_FALSE;
+    SDL_bool done = SDL_FALSE;
     SDL_Event event;
     int i;
 
@@ -108,14 +107,14 @@ WatchGameController(SDL_GameController * gamecontroller)
                               SCREEN_HEIGHT, 0);
     if (window == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create window: %s\n", SDL_GetError());
-        return;
+        return SDL_FALSE;
     }
 
     screen = SDL_CreateRenderer(window, -1, 0);
     if (screen == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create renderer: %s\n", SDL_GetError());
         SDL_DestroyWindow(window);
-        return;
+        return SDL_FALSE;
     }
 
     SDL_SetRenderDrawColor(screen, 0x00, 0x00, 0x00, SDL_ALPHA_OPAQUE);
@@ -157,8 +156,7 @@ WatchGameController(SDL_GameController * gamecontroller)
                 }
                 /* Fall through to signal quit */
             case SDL_QUIT:
-                done = 1;
-                s_ForceQuit = SDL_TRUE;
+                done = SDL_TRUE;
                 break;
             default:
                 break;
@@ -200,12 +198,15 @@ WatchGameController(SDL_GameController * gamecontroller)
 
         SDL_RenderPresent(screen);
 
-        if ( !done )
-            done = SDL_GameControllerGetAttached( gamecontroller ) == 0;
+        if (!SDL_GameControllerGetAttached(gamecontroller)) {
+            done = SDL_TRUE;
+            retval = SDL_TRUE;  /* keep going, wait for reattach. */
+        }
     }
 
     SDL_DestroyRenderer(screen);
     SDL_DestroyWindow(window);
+    return retval;
 }
 
 int
@@ -250,6 +251,9 @@ main(int argc, char *argv[])
     SDL_Log("There are %d game controller(s) attached (%d joystick(s))\n", nController, SDL_NumJoysticks());
 
     if (argv[1]) {
+        SDL_bool reportederror = SDL_FALSE;
+        SDL_bool keepGoing = SDL_TRUE;
+        SDL_Event event;
         int device = atoi(argv[1]);
         if (device >= SDL_NumJoysticks()) {
 			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "%i is an invalid joystick index.\n", device);
@@ -259,12 +263,36 @@ main(int argc, char *argv[])
                                       guid, sizeof (guid));
             SDL_Log("Attempting to open device %i, guid %s\n", device, guid);
             gamecontroller = SDL_GameControllerOpen(device);
-            if (gamecontroller == NULL) {
-                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open joystick %d: %s\n", device, SDL_GetError());
-                retcode = 1;
-            } else {
-                WatchGameController(gamecontroller);
-                SDL_GameControllerClose(gamecontroller);
+            while (keepGoing) {
+                if (gamecontroller == NULL) {
+                    if (!reportederror) {
+                        if (gamecontroller == NULL) {
+                            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open gamecontroller %d: %s\n", device, SDL_GetError());
+                            retcode = 1;
+                        }
+                        keepGoing = SDL_FALSE;
+                        reportederror = SDL_TRUE;
+                    }
+                } else {
+                    reportederror = SDL_FALSE;
+                    keepGoing = WatchGameController(gamecontroller);
+                    SDL_GameControllerClose(gamecontroller);
+                }
+
+                gamecontroller = NULL;
+                if (keepGoing) {
+                    SDL_Log("Waiting for attach\n");
+                }
+                while (keepGoing) {
+                    SDL_WaitEvent(&event);
+                    if ((event.type == SDL_QUIT) || (event.type == SDL_FINGERDOWN)
+                        || (event.type == SDL_MOUSEBUTTONDOWN)) {
+                        keepGoing = SDL_FALSE;
+                    } else if (event.type == SDL_CONTROLLERDEVICEADDED) {
+                        gamecontroller = SDL_GameControllerOpen(event.cdevice.which);
+                        break;
+                    }
+                }
             }
         }
     }
