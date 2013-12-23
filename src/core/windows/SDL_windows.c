@@ -45,7 +45,7 @@ WIN_SetError(const char *prefix)
 HRESULT
 WIN_CoInitialize(void)
 {
-    const HRESULT hr = CoInitialize(NULL);
+    const HRESULT hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
 
     /* S_FALSE means success, but someone else already initialized. */
     /* You still need to call CoUninitialize in this case! */
