@@ -1384,7 +1384,7 @@ D3D11_RenderClear(SDL_Renderer * renderer)
 
 static int
 D3D11_UpdateVertexBuffer(SDL_Renderer *renderer,
-                         const void * vertexData, unsigned int dataSizeInBytes)
+                         const void * vertexData, size_t dataSizeInBytes)
 {
     D3D11_RenderData *rendererData = (D3D11_RenderData *) renderer->driverdata;
     HRESULT result = S_OK;
@@ -1397,10 +1397,20 @@ D3D11_UpdateVertexBuffer(SDL_Renderer *renderer,
     }
 
     if (vertexBufferDesc.ByteWidth >= dataSizeInBytes) {
-        rendererData->d3dContext->UpdateSubresource(rendererData->vertexBuffer.Get(), 0, NULL, vertexData, dataSizeInBytes, 0);
+        D3D11_MAPPED_SUBRESOURCE mappedResource;
+        ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
+        result = rendererData->d3dContext->Map(rendererData->vertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
+        if (FAILED(result)) {
+            WIN_SetErrorFromHRESULT(__FUNCTION__, result);
+            return -1;
+        }
+        memcpy(mappedResource.pData, vertexData, dataSizeInBytes);
+        rendererData->d3dContext->Unmap(rendererData->vertexBuffer.Get(), 0);
     } else {
         vertexBufferDesc.ByteWidth = dataSizeInBytes;
+        vertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
         vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+        vertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
         D3D11_SUBRESOURCE_DATA vertexBufferData = {0};
         vertexBufferData.pSysMem = vertexData;
