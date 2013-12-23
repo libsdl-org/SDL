@@ -1042,13 +1042,13 @@ SDLTest_PrintEvent(SDL_Event * event)
                 event->motion.windowID);
         break;
     case SDL_MOUSEBUTTONDOWN:
-        fprintf(stderr, "Mouse: button %d pressed at %d,%d in window %d",
-                event->button.button, event->button.x, event->button.y,
+        fprintf(stderr, "Mouse: button %d pressed at %d,%d with click count %d in window %d",
+                event->button.button, event->button.x, event->button.y, event->button.clicks,
                 event->button.windowID);
         break;
     case SDL_MOUSEBUTTONUP:
-        fprintf(stderr, "Mouse: button %d released at %d,%d in window %d",
-                event->button.button, event->button.x, event->button.y,
+        fprintf(stderr, "Mouse: button %d released at %d,%d with click count %d in window %d",
+                event->button.button, event->button.x, event->button.y, event->button.clicks,
                 event->button.windowID);
         break;
     case SDL_MOUSEWHEEL:

@@ -250,6 +250,8 @@ WIN_InitMouse(_THIS)
     mouse->SetRelativeMouseMode = WIN_SetRelativeMouseMode;
 
     SDL_SetDefaultCursor(WIN_CreateDefaultCursor());
+
+    SDL_SetDoubleClickTime(GetDoubleClickTime());
 }
 
 void
