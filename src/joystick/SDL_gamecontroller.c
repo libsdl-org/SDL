@@ -866,8 +866,7 @@ SDL_GameControllerInit(void)
     const char *pMappingString = NULL;
     s_pSupportedControllers = NULL;
     pMappingString = s_ControllerMappings[i];
-    while ( pMappingString )
-    {
+    while ( pMappingString ) {
         SDL_GameControllerAddMapping( pMappingString );
 
         i++;
@@ -879,6 +878,16 @@ SDL_GameControllerInit(void)
 
     /* watch for joy events and fire controller ones if needed */
     SDL_AddEventWatch( SDL_GameControllerEventWatcher, NULL );
+
+    /* Send added events for controllers currently attached */
+    for (i = 0; i < SDL_NumJoysticks(); ++i) {
+        if (SDL_IsGameController(i)) {
+            SDL_Event deviceevent;
+            deviceevent.type = SDL_CONTROLLERDEVICEADDED;
+            deviceevent.cdevice.which = i;
+            SDL_PushEvent(&deviceevent);
+        }
+    }
 
     return (0);
 }
