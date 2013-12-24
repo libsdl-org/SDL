@@ -287,6 +287,7 @@ main(int argc, char *argv[])
     }
     SDL_QuitSubSystem(SDL_INIT_VIDEO | SDL_INIT_JOYSTICK);
 
+    return 0;
 }
 
 #else
