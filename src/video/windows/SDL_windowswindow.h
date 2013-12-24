@@ -66,6 +66,7 @@ extern void WIN_DestroyWindow(_THIS, SDL_Window * window);
 extern SDL_bool WIN_GetWindowWMInfo(_THIS, SDL_Window * window,
                                     struct SDL_SysWMinfo *info);
 extern void WIN_OnWindowEnter(_THIS, SDL_Window * window);
+extern void WIN_UpdateClipCursor(SDL_Window *window);
 
 #endif /* _SDL_windowswindow_h */
 
