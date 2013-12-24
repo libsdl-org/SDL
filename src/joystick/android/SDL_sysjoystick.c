@@ -421,7 +421,6 @@ int
 SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
 {
     SDL_joylist_item *item = JoystickByDevIndex(device_index);
-    char *fname = NULL;
 
     if (item == NULL ) {
         return SDL_SetError("No such device");
