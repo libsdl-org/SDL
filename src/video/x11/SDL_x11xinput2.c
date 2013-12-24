@@ -134,7 +134,7 @@ X11_HandleXinput2Event(SDL_VideoData *videodata,XGenericEventCookie *cookie)
             SDL_Mouse *mouse = SDL_GetMouse();
             double relative_cords[2];
 
-            if (!mouse->relative_mode) {
+            if (!mouse->relative_mode || mouse->relative_mode_warp) {
                 return 0;
             }
 

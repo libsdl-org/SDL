@@ -698,7 +698,7 @@ X11_DispatchEvent(_THIS)
 
     case MotionNotify:{
             SDL_Mouse *mouse = SDL_GetMouse();
-            if(!mouse->relative_mode) {
+            if(!mouse->relative_mode || mouse->relative_mode_warp) {
 #ifdef DEBUG_MOTION
                 printf("window %p: X11 motion: %d,%d\n", xevent.xmotion.x, xevent.xmotion.y);
 #endif
