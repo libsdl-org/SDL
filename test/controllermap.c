@@ -386,15 +386,18 @@ main(int argc, char *argv[])
         SDL_bool reportederror = SDL_FALSE;
         SDL_bool keepGoing = SDL_TRUE;
         SDL_Event event;
+        int device;
 #ifdef ANDROID
-        joystick = SDL_JoystickOpen(0);
+        device = 0;
 #else
-        joystick = SDL_JoystickOpen(atoi(argv[1]));
+        device = atoi(argv[1]);
 #endif
+        joystick = SDL_JoystickOpen(device);
+
         while ( keepGoing ) {
             if (joystick == NULL) {
                 if ( !reportederror ) {
-                    SDL_Log("Couldn't open joystick %d: %s\n", atoi(argv[1]), SDL_GetError());
+                    SDL_Log("Couldn't open joystick %d: %s\n", device, SDL_GetError());
                     keepGoing = SDL_FALSE;
                     reportederror = SDL_TRUE;
                 }
@@ -414,7 +417,7 @@ main(int argc, char *argv[])
                     || (event.type == SDL_MOUSEBUTTONDOWN)) {
                     keepGoing = SDL_FALSE;
                 } else if (event.type == SDL_JOYDEVICEADDED) {
-                    joystick = SDL_JoystickOpen(atoi(argv[1]));
+                    joystick = SDL_JoystickOpen(device);
                     break;
                 }
             }
