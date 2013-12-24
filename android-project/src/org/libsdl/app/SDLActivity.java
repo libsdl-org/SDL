@@ -621,6 +621,7 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
             
             // Set up a listener thread to catch when the native thread ends
             new Thread(new Runnable(){
+                @Override
                 public void run(){
                     try {
                         SDLActivity.mSDLThread.join();
