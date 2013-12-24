@@ -724,8 +724,8 @@ GLES2_CacheProgram(SDL_Renderer *renderer, GLES2_ShaderCacheEntry *vertex,
     entry->uniform_locations[GLES2_UNIFORM_COLOR] =
         data->glGetUniformLocation(entry->id, "u_color");
 
-    entry->modulation_r = entry->modulation_g = entry->modulation_b = entry->modulation_a = 1.0f;
-    entry->color_r = entry->color_g = entry->color_b = entry->color_a = 1.0f;
+    entry->modulation_r = entry->modulation_g = entry->modulation_b = entry->modulation_a = 255;
+    entry->color_r = entry->color_g = entry->color_b = entry->color_a = 255;
 
     data->glUseProgram(entry->id);
     data->glUniformMatrix4fv(entry->uniform_locations[GLES2_UNIFORM_PROJECTION], 1, GL_FALSE, (GLfloat *)entry->projection);
