@@ -73,8 +73,7 @@ typedef struct
     int last_x, last_y;         /* the last reported x and y coordinates */
     Uint32 buttonstate;
     SDL_bool relative_mode;
-    /* the x and y coordinates when relative mode was activated */
-    int original_x, original_y;
+    SDL_bool relative_mode_warp;
 
     /* Data for double-click tracking */
     int num_clickstates;

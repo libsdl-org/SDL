@@ -173,7 +173,18 @@ extern "C" {
 #define SDL_HINT_GRAB_KEYBOARD              "SDL_GRAB_KEYBOARD"
 
 /**
- *  \brief Minimize your SDL_Window if it loses key focus when in Fullscreen mode. Defaults to true.
+*  \brief  A variable controlling whether relative mouse mode is implemented using mouse warping
+*
+*  This variable can be set to the following values:
+*    "0"       - Relative mouse mode uses raw input
+*    "1"       - Relative mouse mode uses mouse warping
+*
+*  By default SDL will use raw input for relative mouse mode
+*/
+#define SDL_HINT_MOUSE_RELATIVE_MODE_WARP    "SDL_MOUSE_RELATIVE_MODE_WARP"
+
+/**
+ *  \brief Minimize your SDL_Window if it loses key focus when in fullscreen mode. Defaults to true.
  *
  */
 #define SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS   "SDL_VIDEO_MINIMIZE_ON_FOCUS_LOSS"

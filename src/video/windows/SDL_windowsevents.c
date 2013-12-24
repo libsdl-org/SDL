@@ -290,6 +290,7 @@ static void
 WIN_UpdateClipCursor(SDL_Window *window)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    SDL_Mouse *mouse = SDL_GetMouse();
 
     /* Don't clip the cursor while we're in the modal resize or move loop */
     if (data->in_modal_loop) {
@@ -297,7 +298,7 @@ WIN_UpdateClipCursor(SDL_Window *window)
         return;
     }
         
-    if (SDL_GetMouse()->relative_mode) {
+    if (mouse->relative_mode && !mouse->relative_mode_warp) {
         LONG cx, cy;
         RECT rect;
         GetWindowRect(data->hwnd, &rect);
@@ -312,8 +313,9 @@ WIN_UpdateClipCursor(SDL_Window *window)
         rect.bottom = cy+1;
 
         ClipCursor(&rect);
-    } else if ((window->flags & SDL_WINDOW_INPUT_GRABBED) &&
-               (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
+    } else if (mouse->relative_mode_warp ||
+               ((window->flags & SDL_WINDOW_INPUT_GRABBED) &&
+                (window->flags & SDL_WINDOW_INPUT_FOCUS))) {
         RECT rect;
         if (GetClientRect(data->hwnd, &rect) && !IsRectEmpty(&rect)) {
             ClientToScreen(data->hwnd, (LPPOINT) & rect);
@@ -426,8 +428,12 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         break;
 
     case WM_MOUSEMOVE:
-        if( !SDL_GetMouse()->relative_mode )
-            SDL_SendMouseMotion(data->window, 0, 0, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+        {
+            SDL_Mouse *mouse = SDL_GetMouse();
+            if (!mouse->relative_mode || mouse->relative_mode_warp) {
+                SDL_SendMouseMotion(data->window, 0, 0, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+            }
+        }
         /* don't break here, fall through to check the wParam like the button presses */
     case WM_LBUTTONUP:
     case WM_RBUTTONUP:
@@ -437,49 +443,50 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_RBUTTONDOWN:
     case WM_MBUTTONDOWN:
     case WM_XBUTTONDOWN:
-        if( !SDL_GetMouse()->relative_mode )
-            WIN_CheckWParamMouseButtons( wParam, data );
+        {
+            SDL_Mouse *mouse = SDL_GetMouse();
+            if (!mouse->relative_mode || mouse->relative_mode_warp) {
+                WIN_CheckWParamMouseButtons(wParam, data);
+            }
+        }
         break;
 
     case WM_INPUT:
-    {
-        HRAWINPUT hRawInput = (HRAWINPUT)lParam;
-        RAWINPUT inp;
-        UINT size = sizeof(inp);
-
-        if(!SDL_GetMouse()->relative_mode)
-            break;
-
-        GetRawInputData(hRawInput, RID_INPUT, &inp, &size, sizeof(RAWINPUTHEADER));
-
-        /* Mouse data */
-        if(inp.header.dwType == RIM_TYPEMOUSE)
         {
-            RAWMOUSE* mouse = &inp.data.mouse;
+            SDL_Mouse *mouse = SDL_GetMouse();
+            HRAWINPUT hRawInput = (HRAWINPUT)lParam;
+            RAWINPUT inp;
+            UINT size = sizeof(inp);
 
-            if((mouse->usFlags & 0x01) == MOUSE_MOVE_RELATIVE)
-            {
-                SDL_SendMouseMotion(data->window, 0, 1, (int)mouse->lLastX, (int)mouse->lLastY);
+            if (!mouse->relative_mode || mouse->relative_mode_warp) {
+                break;
             }
-            else
-            {
-                /* synthesize relative moves from the abs position */
-                static SDL_Point initialMousePoint;
-                if ( initialMousePoint.x == 0 && initialMousePoint.y == 0 )
-                {
+
+            GetRawInputData(hRawInput, RID_INPUT, &inp, &size, sizeof(RAWINPUTHEADER));
+
+            /* Mouse data */
+            if (inp.header.dwType == RIM_TYPEMOUSE) {
+                RAWMOUSE* mouse = &inp.data.mouse;
+
+                if ((mouse->usFlags & 0x01) == MOUSE_MOVE_RELATIVE) {
+                    SDL_SendMouseMotion(data->window, 0, 1, (int)mouse->lLastX, (int)mouse->lLastY);
+                } else {
+                    /* synthesize relative moves from the abs position */
+                    static SDL_Point initialMousePoint;
+                    if (initialMousePoint.x == 0 && initialMousePoint.y == 0) {
+                        initialMousePoint.x = mouse->lLastX;
+                        initialMousePoint.y = mouse->lLastY;
+                    }
+
+                    SDL_SendMouseMotion(data->window, 0, 1, (int)(mouse->lLastX-initialMousePoint.x), (int)(mouse->lLastY-initialMousePoint.y) );
+
                     initialMousePoint.x = mouse->lLastX;
                     initialMousePoint.y = mouse->lLastY;
                 }
-
-                SDL_SendMouseMotion(data->window, 0, 1, (int)(mouse->lLastX-initialMousePoint.x), (int)(mouse->lLastY-initialMousePoint.y) );
-
-                initialMousePoint.x = mouse->lLastX;
-                initialMousePoint.y = mouse->lLastY;
+                WIN_CheckRawMouseButtons( mouse->usButtonFlags, data );
             }
-            WIN_CheckRawMouseButtons( mouse->usButtonFlags, data );
         }
         break;
-    }
 
     case WM_MOUSEWHEEL:
         {
@@ -497,8 +504,8 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     s_AccumulatedMotion += WHEEL_DELTA;
                 }
             }
-            break;
         }
+        break;
 
     case WM_MOUSEHWHEEL:
         {
@@ -516,8 +523,8 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     s_AccumulatedMotion += WHEEL_DELTA;
                 }
             }
-            break;
         }
+        break;
 
 #ifdef WM_MOUSELEAVE
     case WM_MOUSELEAVE:
@@ -549,8 +556,8 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             GetKeyboardState(keyboardState);
             if (ToUnicode(wParam, (lParam >> 16) & 0xff, keyboardState, (LPWSTR)&utf32, 1, 0) > 0) {
-                WORD repitition;
-                for (repitition = lParam & 0xffff; repitition > 0; repitition--) {
+                WORD repetition;
+                for (repetition = lParam & 0xffff; repetition > 0; repetition--) {
                     WIN_ConvertUTF32toUTF8(utf32, text);
                     SDL_SendKeyboardText(text);
                 }
