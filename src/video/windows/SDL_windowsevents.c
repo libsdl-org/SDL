@@ -286,47 +286,6 @@ WIN_ConvertUTF32toUTF8(UINT32 codepoint, char * text)
     return SDL_TRUE;
 }
 
-static void
-WIN_UpdateClipCursor(SDL_Window *window)
-{
-    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-    SDL_Mouse *mouse = SDL_GetMouse();
-
-    /* Don't clip the cursor while we're in the modal resize or move loop */
-    if (data->in_modal_loop) {
-        ClipCursor(NULL);
-        return;
-    }
-        
-    if (mouse->relative_mode && !mouse->relative_mode_warp) {
-        LONG cx, cy;
-        RECT rect;
-        GetWindowRect(data->hwnd, &rect);
-
-        cx = (rect.left + rect.right) / 2;
-        cy = (rect.top + rect.bottom) / 2;
-
-        /* Make an absurdly small clip rect */
-        rect.left = cx-1;
-        rect.right = cx+1;
-        rect.top = cy-1;
-        rect.bottom = cy+1;
-
-        ClipCursor(&rect);
-    } else if (mouse->relative_mode_warp ||
-               ((window->flags & SDL_WINDOW_INPUT_GRABBED) &&
-                (window->flags & SDL_WINDOW_INPUT_FOCUS))) {
-        RECT rect;
-        if (GetClientRect(data->hwnd, &rect) && !IsRectEmpty(&rect)) {
-            ClientToScreen(data->hwnd, (LPPOINT) & rect);
-            ClientToScreen(data->hwnd, (LPPOINT) & rect + 1);
-            ClipCursor(&rect);
-        }
-    } else {
-        ClipCursor(NULL);
-    }
-}
-
 LRESULT CALLBACK
 WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {

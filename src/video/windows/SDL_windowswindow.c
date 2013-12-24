@@ -28,6 +28,7 @@
 #include "../SDL_sysvideo.h"
 #include "../SDL_pixels_c.h"
 #include "../../events/SDL_keyboard_c.h"
+#include "../../events/SDL_mouse_c.h"
 
 #include "SDL_windowsvideo.h"
 #include "SDL_windowswindow.h"
@@ -571,17 +572,7 @@ WIN_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp)
 void
 WIN_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
-    HWND hwnd = ((SDL_WindowData *) window->driverdata)->hwnd;
-
-    if (grabbed) {
-        RECT rect;
-        GetClientRect(hwnd, &rect);
-        ClientToScreen(hwnd, (LPPOINT) & rect);
-        ClientToScreen(hwnd, (LPPOINT) & rect + 1);
-        ClipCursor(&rect);
-    } else {
-        ClipCursor(NULL);
-    }
+    WIN_UpdateClipCursor(window);
 
     if (window->flags & SDL_WINDOW_FULLSCREEN) {
         UINT flags = SWP_NOCOPYBITS | SWP_NOMOVE | SWP_NOSIZE;
@@ -720,6 +711,48 @@ void WIN_OnWindowEnter(_THIS, SDL_Window * window)
 
     TrackMouseEvent(&trackMouseEvent);
 #endif /* WM_MOUSELEAVE */
+}
+
+void
+WIN_UpdateClipCursor(SDL_Window *window)
+{
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    SDL_Mouse *mouse = SDL_GetMouse();
+
+    /* Don't clip the cursor while we're in the modal resize or move loop */
+    if (data->in_modal_loop) {
+        ClipCursor(NULL);
+        return;
+    }
+
+    if ((mouse->relative_mode || (window->flags & SDL_WINDOW_INPUT_GRABBED)) &&
+        (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
+        if (mouse->relative_mode && !mouse->relative_mode_warp) {
+            LONG cx, cy;
+            RECT rect;
+            GetWindowRect(data->hwnd, &rect);
+
+            cx = (rect.left + rect.right) / 2;
+            cy = (rect.top + rect.bottom) / 2;
+
+            /* Make an absurdly small clip rect */
+            rect.left = cx - 1;
+            rect.right = cx + 1;
+            rect.top = cy - 1;
+            rect.bottom = cy + 1;
+
+            ClipCursor(&rect);
+        } else {
+            RECT rect;
+            if (GetClientRect(data->hwnd, &rect) && !IsRectEmpty(&rect)) {
+                ClientToScreen(data->hwnd, (LPPOINT) & rect);
+                ClientToScreen(data->hwnd, (LPPOINT) & rect + 1);
+                ClipCursor(&rect);
+            }
+        }
+    } else {
+        ClipCursor(NULL);
+    }
 }
 
 #endif /* SDL_VIDEO_DRIVER_WINDOWS */

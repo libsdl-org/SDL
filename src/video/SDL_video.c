@@ -2055,9 +2055,8 @@ SDL_UpdateWindowGrab(SDL_Window * window)
 {
     if (_this->SetWindowGrab) {
         SDL_bool grabbed;
-        if (SDL_GetMouse()->relative_mode_warp ||
-            ((window->flags & SDL_WINDOW_INPUT_GRABBED) &&
-             (window->flags & SDL_WINDOW_INPUT_FOCUS))) {
+        if ((SDL_GetMouse()->relative_mode || (window->flags & SDL_WINDOW_INPUT_GRABBED)) &&
+             (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
             grabbed = SDL_TRUE;
         } else {
             grabbed = SDL_FALSE;
