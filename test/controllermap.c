@@ -114,7 +114,7 @@ WatchJoystick(SDL_Joystick * joystick)
     SDL_bool done = SDL_FALSE, next=SDL_FALSE;
     SDL_Event event;
     SDL_Rect dst;
-    int i, s, _s;
+    int s, _s;
     Uint8 alpha=200, alpha_step = -1;
     Uint32 alpha_ticks;
     char mapping[4096], temp[4096];
