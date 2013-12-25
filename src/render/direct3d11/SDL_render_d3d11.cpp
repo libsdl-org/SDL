@@ -911,7 +911,7 @@ D3D11_UpdateForWindowSizeChange(SDL_Renderer * renderer)
         data->d3dContext->Flush();
         result = D3D11_CreateWindowSizeDependentResources(renderer);
         if (FAILED(result)) {
-            WIN_SetErrorFromHRESULT(__FUNCTION__, result);
+            /* D3D11_CreateWindowSizeDependentResources will set the SDL error */
             return result;
         }
     }
@@ -932,13 +932,13 @@ D3D11_HandleDeviceLost(SDL_Renderer * renderer)
 
     result = D3D11_CreateDeviceResources(renderer);
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(__FUNCTION__, result);
+        /* D3D11_CreateDeviceResources will set the SDL error */
         return result;
     }
 
     result = D3D11_UpdateForWindowSizeChange(renderer);
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(__FUNCTION__, result);
+        /* D3D11_UpdateForWindowSizeChange will set the SDL error */
         return result;
     }
 
@@ -1946,7 +1946,7 @@ D3D11_RenderPresent(SDL_Renderer * renderer)
     {
         hr = D3D11_HandleDeviceLost(renderer);
         if (FAILED(hr)) {
-            WIN_SetErrorFromHRESULT(__FUNCTION__, hr);
+            /* D3D11_HandleDeviceLost will set the SDL error */
         }
     }
     else
