@@ -282,7 +282,7 @@ D3D11_LoadPixelShader(SDL_Renderer * renderer,
         shaderOutput
         );
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(__FUNCTION__, result);
+        WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device1::CreatePixelShader", result);
         return result;
     }
 
@@ -313,7 +313,7 @@ D3D11_CreateBlendMode(SDL_Renderer * renderer,
     blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
     result = data->d3dDevice->CreateBlendState(&blendDesc, blendStateOutput);
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(__FUNCTION__, result);
+        WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device1::CreateBlendState", result);
         return result;
     }
 
@@ -370,7 +370,7 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
         &context // Returns the device immediate context.
         );
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(__FUNCTION__, result);
+        WIN_SetErrorFromHRESULT(__FUNCTION__ ", D3D11CreateDevice", result);
         return result;
     }
 
@@ -378,12 +378,13 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
     Microsoft::WRL::ComPtr<ID3D11Device1> d3dDevice1;
     result = device.As(&(data->d3dDevice));
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(__FUNCTION__, result);
+        WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device to ID3D11Device1", result);
         return result;
     }
 
     result = context.As(&data->d3dContext);
     if (FAILED(result)) {
+        WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11DeviceContext to ID3D11DeviceContext1", result);
         return result;
     }
 
@@ -429,7 +430,7 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
         &data->vertexShader
         );
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(__FUNCTION__, result);
+        WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device1::CreateVertexShader", result);
         return result;
     }
 
@@ -451,7 +452,7 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
         &data->inputLayout
         );
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(__FUNCTION__, result);
+        WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device1::CreateInputLayout", result);
         return result;
     }
 
@@ -480,7 +481,7 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
         &data->vertexShaderConstants
 		);
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(__FUNCTION__, result);
+        WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device1::CreateBuffer [vertex shader constants]", result);
         return result;
     }
 
@@ -512,7 +513,7 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
         &data->nearestPixelSampler
         );
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(__FUNCTION__, result);
+        WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device1::CreateSamplerState [nearest-pixel filter]", result);
         return result;
     }
 
@@ -522,7 +523,7 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
         &data->linearSampler
         );
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(__FUNCTION__, result);
+        WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device1::CreateSamplerState [linear filter]", result);
         return result;
     }
 
@@ -543,7 +544,7 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
 	rasterDesc.SlopeScaledDepthBias = 0.0f;
 	result = data->d3dDevice->CreateRasterizerState(&rasterDesc, &data->mainRasterizer);
 	if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(__FUNCTION__, result);
+        WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device1::CreateRasterizerState", result);
         return result;
     }
 
@@ -686,7 +687,7 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
     if (coreWindow) {
         result = coreWindow->get_Bounds(&nativeWindowBounds);
         if (FAILED(result)) {
-            WIN_SetErrorFromHRESULT(__FUNCTION__", Get Window Bounds", result);
+            WIN_SetErrorFromHRESULT(__FUNCTION__", ICoreWindow::get_Bounds [get native-window bounds]", result);
             return result;
         }
     } else {
@@ -735,7 +736,7 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
             0
             );
         if (FAILED(result)) {
-            WIN_SetErrorFromHRESULT(__FUNCTION__, result);
+            WIN_SetErrorFromHRESULT(__FUNCTION__ ", IDXGISwapChain1::ResizeBuffers", result);
             return result;
         }
     }
@@ -769,14 +770,14 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
         ComPtr<IDXGIDevice1>  dxgiDevice;
         result = data->d3dDevice.As(&dxgiDevice);
         if (FAILED(result)) {
-            WIN_SetErrorFromHRESULT(__FUNCTION__, result);
+            WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device1 to IDXGIDevice1", result);
             return result;
         }
 
         ComPtr<IDXGIAdapter> dxgiAdapter;
         result = dxgiDevice->GetAdapter(&dxgiAdapter);
         if (FAILED(result)) {
-            WIN_SetErrorFromHRESULT(__FUNCTION__, result);
+            WIN_SetErrorFromHRESULT(__FUNCTION__ ", IDXGIDevice1::GetAdapter", result);
             return result;
         }
 
@@ -786,7 +787,7 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
             &dxgiFactory
             );
         if (FAILED(result)) {
-            WIN_SetErrorFromHRESULT(__FUNCTION__, result);
+            WIN_SetErrorFromHRESULT(__FUNCTION__ ", IDXGIAdapter::GetParent", result);
             return result;
         }
 
@@ -797,7 +798,7 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
                 nullptr,
                 &data->swapChain);
             if (FAILED(result)) {
-                WIN_SetErrorFromHRESULT(__FUNCTION__ ", CreateSwapChainForComposition", result);
+                WIN_SetErrorFromHRESULT(__FUNCTION__ ", IDXGIFactory2::CreateSwapChainForComposition", result);
                 return result;
             }
 
@@ -815,7 +816,7 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
             IUnknown * coreWindowAsIUnknown = nullptr;
             result = coreWindow->QueryInterface(&coreWindowAsIUnknown);
             if (FAILED(result)) {
-                WIN_SetErrorFromHRESULT(__FUNCTION__ ", CoreWindow to IUnknown", result);
+                WIN_SetErrorFromHRESULT(__FUNCTION__ ", ICoreWindow to IUnknown", result);
                 return result;
             }
 
@@ -827,7 +828,7 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
                 &data->swapChain
                 );
             if (FAILED(result)) {
-                WIN_SetErrorFromHRESULT(__FUNCTION__, result);
+                WIN_SetErrorFromHRESULT(__FUNCTION__ ", IDXGIFactory2::CreateSwapChainForCoreWindow", result);
                 return result;
             }
         }
@@ -836,7 +837,7 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
         // ensures that the application will only render after each VSync, minimizing power consumption.
         result = dxgiDevice->SetMaximumFrameLatency(1);
         if (FAILED(result)) {
-            WIN_SetErrorFromHRESULT(__FUNCTION__, result);
+            WIN_SetErrorFromHRESULT(__FUNCTION__ ", IDXGIDevice1::SetMaximumFrameLatency", result);
             return result;
         }
     }
@@ -850,7 +851,7 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
     DXGI_MODE_ROTATION rotation = D3D11_GetRotationForOrientation(data->orientation);
     result = data->swapChain->SetRotation(rotation);
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(__FUNCTION__, result);
+        WIN_SetErrorFromHRESULT(__FUNCTION__ ", IDXGISwapChain1::SetRotation" , result);
         return result;
     }
 #endif
@@ -863,7 +864,7 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
         &backBuffer
         );
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(__FUNCTION__, result);
+        WIN_SetErrorFromHRESULT(__FUNCTION__ ", IDXGISwapChain1::GetBuffer [back-buffer]", result);
         return result;
     }
 
@@ -873,7 +874,7 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
         &data->mainRenderTargetView
         );
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(__FUNCTION__, result);
+        WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device1::CreateRenderTargetView", result);
         return result;
     }
 
@@ -896,7 +897,7 @@ D3D11_UpdateForWindowSizeChange(SDL_Renderer * renderer)
 
     result = coreWindow->get_Bounds(&coreWindowBounds);
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(__FUNCTION__ ", Get Window Bounds", result);
+        WIN_SetErrorFromHRESULT(__FUNCTION__ ", ICoreWindow::get_Bounds [get window bounds]", result);
         return result;
     }
 
@@ -1037,7 +1038,7 @@ D3D11_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         );
     if (FAILED(result)) {
         D3D11_DestroyTexture(renderer, texture);
-        WIN_SetErrorFromHRESULT(__FUNCTION__, result);
+        WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device1::CreateTexture2D", result);
         return -1;
     }
 
@@ -1053,7 +1054,7 @@ D3D11_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
             &textureData->mainTextureRenderTargetView);
         if (FAILED(result)) {
             D3D11_DestroyTexture(renderer, texture);
-            WIN_SetErrorFromHRESULT(__FUNCTION__, result);
+            WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device1::CreateRenderTargetView", result);
             return -1;
         }
     }
@@ -1070,7 +1071,7 @@ D3D11_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         );
     if (FAILED(result)) {
         D3D11_DestroyTexture(renderer, texture);
-        WIN_SetErrorFromHRESULT(__FUNCTION__, result);
+        WIN_SetErrorFromHRESULT(__FUNCTION__ "ID3D11Device1::CreateShaderResourceView", result);
         return -1;
     }
 
@@ -1157,7 +1158,7 @@ D3D11_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
         NULL,
         &textureData->stagingTexture);
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(__FUNCTION__ ", Create Staging Texture", result);
+        WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device1::CreateTexture2D [create staging texture]", result);
         return -1;
     }
 
@@ -1171,7 +1172,7 @@ D3D11_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
         &textureMemory
         );
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(__FUNCTION__ ", Map Staging Texture", result);
+        WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11DeviceContext1::Map [map staging texture]", result);
         textureData->stagingTexture = nullptr;
         return -1;
     }
@@ -1401,7 +1402,7 @@ D3D11_UpdateVertexBuffer(SDL_Renderer *renderer,
         ZeroMemory(&mappedResource, sizeof(D3D11_MAPPED_SUBRESOURCE));
         result = rendererData->d3dContext->Map(rendererData->vertexBuffer.Get(), 0, D3D11_MAP_WRITE_DISCARD, 0, &mappedResource);
         if (FAILED(result)) {
-            WIN_SetErrorFromHRESULT(__FUNCTION__, result);
+            WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11DeviceContext1::Map [vertex buffer]", result);
             return -1;
         }
         memcpy(mappedResource.pData, vertexData, dataSizeInBytes);
@@ -1423,7 +1424,7 @@ D3D11_UpdateVertexBuffer(SDL_Renderer *renderer,
             &rendererData->vertexBuffer
             );
         if (FAILED(result)) {
-            WIN_SetErrorFromHRESULT(__FUNCTION__, result);
+            WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device1::CreateBuffer [vertex buffer]", result);
             return -1;
         }
     }
@@ -1802,7 +1803,7 @@ D3D11_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
         &backBuffer
         );
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(__FUNCTION__ ", Get Back Buffer", result);
+        WIN_SetErrorFromHRESULT(__FUNCTION__ ", IDXGISwapChain1::GetBuffer [get back buffer]", result);
         return -1;
     }
 
@@ -1821,7 +1822,7 @@ D3D11_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
         NULL,
         &stagingTexture);
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(__FUNCTION__ ", Create Staging Texture", result);
+        WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device1::CreateTexture2D [create staging texture]", result);
         return -1;
     }
 
@@ -1874,7 +1875,7 @@ D3D11_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
         0,
         &textureMemory);
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(__FUNCTION__ ", Map Staging Texture to CPU Memory", result);
+        WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11DeviceContext1::Map [map staging texture]", result);
         return -1;
     }
 
@@ -1950,7 +1951,7 @@ D3D11_RenderPresent(SDL_Renderer * renderer)
     }
     else
     {
-        WIN_SetErrorFromHRESULT(__FUNCTION__, hr);
+        WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11DeviceContext1::DiscardView", hr);
     }
 }
 
