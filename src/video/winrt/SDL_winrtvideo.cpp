@@ -301,6 +301,12 @@ WINRT_CreateWindow(_THIS, SDL_Window * window)
     */
     window->w = _this->displays[0].current_mode.w;
     window->h = _this->displays[0].current_mode.h;
+
+    /* For now, treat WinRT apps as if they always have focus.
+       TODO, WinRT: try tracking keyboard and mouse focus state with respect to snapped apps
+     */
+    SDL_SetMouseFocus(window);
+    SDL_SetKeyboardFocus(window);
  
     /* Make sure the WinRT app's IFramworkView can post events on
        behalf of SDL:
