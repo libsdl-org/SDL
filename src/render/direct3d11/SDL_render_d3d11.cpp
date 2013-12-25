@@ -49,7 +49,10 @@ extern "C" {
 #include <string>
 #include <vector>
 
-#include "SDL_render_d3d11_cpp.h"
+#include <D3D11_1.h>
+#include <DirectXMath.h>
+#include <wrl/client.h>
+
 
 using namespace DirectX;
 using namespace Microsoft::WRL;
@@ -64,8 +67,70 @@ using namespace Windows::UI::Core;
 static const D3D11_FILTER SDL_D3D11_NEAREST_PIXEL_FILTER = D3D11_FILTER_MIN_MAG_MIP_POINT;
 static const D3D11_FILTER SDL_D3D11_LINEAR_FILTER = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 
-/* Direct3D 11.1 renderer implementation */
+/* Vertex shader, common values */
+struct SDL_VertexShaderConstants
+{
+    DirectX::XMFLOAT4X4 model;
+    DirectX::XMFLOAT4X4 view;
+    DirectX::XMFLOAT4X4 projection;
+};
 
+/* Per-vertex data */
+struct VertexPositionColor
+{
+    DirectX::XMFLOAT3 pos;
+    DirectX::XMFLOAT2 tex;
+    DirectX::XMFLOAT4 color;
+};
+
+/* Per-texture data */
+typedef struct
+{
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> mainTexture;
+    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> mainTextureResourceView;
+    Microsoft::WRL::ComPtr<ID3D11RenderTargetView> mainTextureRenderTargetView;
+    SDL_PixelFormat * pixelFormat;
+    Microsoft::WRL::ComPtr<ID3D11Texture2D> stagingTexture;
+    DirectX::XMINT2 lockedTexturePosition;
+    D3D11_FILTER scaleMode;
+} D3D11_TextureData;
+
+/* Private renderer data */
+typedef struct
+{
+    Microsoft::WRL::ComPtr<ID3D11Device1> d3dDevice;
+    Microsoft::WRL::ComPtr<ID3D11DeviceContext1> d3dContext;
+    Microsoft::WRL::ComPtr<IDXGISwapChain1> swapChain;
+    Microsoft::WRL::ComPtr<ID3D11RenderTargetView> mainRenderTargetView;
+    Microsoft::WRL::ComPtr<ID3D11RenderTargetView> currentOffscreenRenderTargetView;
+    Microsoft::WRL::ComPtr<ID3D11InputLayout> inputLayout;
+    Microsoft::WRL::ComPtr<ID3D11Buffer> vertexBuffer;
+    Microsoft::WRL::ComPtr<ID3D11VertexShader> vertexShader;
+    Microsoft::WRL::ComPtr<ID3D11PixelShader> texturePixelShader;
+    Microsoft::WRL::ComPtr<ID3D11PixelShader> colorPixelShader;
+    Microsoft::WRL::ComPtr<ID3D11BlendState> blendModeBlend;
+    Microsoft::WRL::ComPtr<ID3D11BlendState> blendModeAdd;
+    Microsoft::WRL::ComPtr<ID3D11BlendState> blendModeMod;
+    Microsoft::WRL::ComPtr<ID3D11SamplerState> nearestPixelSampler;
+    Microsoft::WRL::ComPtr<ID3D11SamplerState> linearSampler;
+    Microsoft::WRL::ComPtr<ID3D11RasterizerState> mainRasterizer;
+    D3D_FEATURE_LEVEL featureLevel;
+
+    // Vertex buffer constants:
+    SDL_VertexShaderConstants vertexShaderConstantsData;
+    Microsoft::WRL::ComPtr<ID3D11Buffer> vertexShaderConstants;
+
+    // Cached renderer properties.
+    DirectX::XMFLOAT2 windowSizeInDIPs;
+    DirectX::XMFLOAT2 renderTargetSize;
+    Windows::Graphics::Display::DisplayOrientations orientation;
+
+    // Transform used for display orientation.
+    DirectX::XMFLOAT4X4 orientationTransform3D;
+} D3D11_RenderData;
+
+
+/* Direct3D 11.1 renderer implementation */
 static SDL_Renderer *D3D11_CreateRenderer(SDL_Window * window, Uint32 flags);
 static void D3D11_WindowEvent(SDL_Renderer * renderer,
                             const SDL_WindowEvent *event);

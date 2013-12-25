@@ -318,9 +318,6 @@
     <ClInclude Include="..\..\src\video\SDL_sysvideo.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\render\direct3d11\SDL_render_d3d11_cpp.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\video\winrt\SDL_winrtevents_c.h">
       <Filter>Source Files</Filter>
     </ClInclude>
