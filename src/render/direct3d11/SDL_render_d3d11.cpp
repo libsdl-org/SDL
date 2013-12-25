@@ -1224,8 +1224,7 @@ D3D11_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
     D3D11_TextureData *textureData = (D3D11_TextureData *) texture->driverdata;
 
     if (!textureData->mainTextureRenderTargetView) {
-        std::string errorMessage = string(__FUNCTION__) + ": specified texture is not a render target";
-        return SDL_SetError(errorMessage.c_str());
+        return SDL_SetError(__FUNCTION__ ", specified texture is not a render target");
     }
 
     rendererData->currentOffscreenRenderTargetView = textureData->mainTextureRenderTargetView;
