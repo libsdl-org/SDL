@@ -1206,6 +1206,8 @@ D3D11_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     // have the ability to write a CPU-bound pixel buffer to a rectangular
     // subrect of a texture.  Direct3D 11.1 can, however, write a pixel
     // buffer to an entire texture, hence the use of a staging texture.
+    //
+    // TODO, WinRT: consider avoiding the use of a staging texture in D3D11_LockTexture if/when the entire texture is being updated
     D3D11_TEXTURE2D_DESC stagingTextureDesc;
     textureData->mainTexture->GetDesc(&stagingTextureDesc);
     stagingTextureDesc.Width = rect->w;
