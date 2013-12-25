@@ -8,7 +8,7 @@ Android SDK (version 12 or later)
 http://developer.android.com/sdk/index.html
 
 Android NDK r7 or later
-http://developer.android.com/sdk/ndk/index.html
+http://developer.android.com/tools/sdk/ndk/index.html
 
 Minimum API level supported by SDL: 10 (Android 2.3.3)
 Joystick support is available for API level >=12 devices.
@@ -29,7 +29,7 @@ android-project/src/org/libsdl/app/SDLActivity.java
 
 The Java code loads your game code, the SDL shared library, and
 dispatches to native functions implemented in the SDL library:
-src/SDL_android.c
+src/core/android/SDL_android.c
 
 Your project must include some glue code that starts your main() routine:
 src/main/android/SDL_android_main.c
@@ -260,7 +260,7 @@ The best place to start is with docs/OVERVIEW.TXT
 ================================================================================
 
 First make sure that you've installed Eclipse and the Android extensions as described here:
-	http://developer.android.com/sdk/eclipse-adt.html
+	http://developer.android.com/tools/sdk/eclipse-adt.html
 
 Once you've copied the SDL android project and customized it, you can create an Eclipse project from it:
  * File -> New -> Other
