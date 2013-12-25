@@ -38,6 +38,7 @@
 #include "../SDL_joystick_c.h"
 #include "SDL_events.h"
 #include "../../events/SDL_events_c.h"
+#include "SDL_timer.h"
 
 #include <Windows.h>
 #include <Xinput.h>
@@ -46,14 +47,88 @@ struct joystick_hwdata {
     //Uint8 bXInputHaptic; // Supports force feedback via XInput.
     DWORD userIndex;    // The XInput device index, in the range [0, XUSER_MAX_COUNT-1] (probably [0,3]).
     XINPUT_STATE XInputState;   // the last-read in XInputState, kept around to compare old and new values
-    SDL_bool isDeviceConnected; // was the device connected (on the last polling, or during backend-initialization)?
-    SDL_bool isDeviceRemovalEventPending;   // was the device removed, and is the associated removal event pending?
+    SDL_bool isDeviceConnected; // was the device connected (on the last detection-polling, or during backend-initialization)?
+    SDL_bool isDeviceConnectionEventPending;    // was a device added, and is the associated add-event pending?
+    SDL_bool isDeviceRemovalEventPending;   // was the device removed, and is the associated remove-event pending?
 };
 
 /* Keep track of data on all XInput devices, regardless of whether or not
    they've been opened (via SDL_JoystickOpen).
  */
 static struct joystick_hwdata g_XInputData[XUSER_MAX_COUNT];
+
+/* Device detection can be extremely costly performance-wise, in some cases.
+   In particular, if no devices are connected, calls to detect a single device,
+   via either XInputGetState() or XInputGetCapabilities(), can take upwards of
+   20 ms on a 1st generation Surface RT, more if devices are detected across
+   all of of XInput's four device slots.  WinRT and XInput do not appear to
+   have callback-based APIs to notify an app when a device is connected, at
+   least as of Windows 8.1.  The synchronous XInput calls must be used.
+
+   Once a device is connected, calling XInputGetState() is a much less costly
+   operation, with individual calls costing well under 1 ms, and often under
+   0.1 ms [on a 1st gen Surface RT].
+
+   With XInput's performance limitations in mind, a separate device-detection
+   thread will be utilized (by SDL) to try to move costly XInput calls off the
+   main thread.  Polling of active devices still, however, occurs on the main
+   thread.
+ */
+static SDL_Thread * g_DeviceDetectionThread = NULL;
+static SDL_mutex * g_DeviceInfoLock = NULL;
+static SDL_bool g_DeviceDetectionQuit = SDL_FALSE;
+
+/* Main function for the device-detection thread.
+ */
+static int
+DeviceDetectionThreadMain(void * _data)
+{
+    DWORD result;
+    XINPUT_CAPABILITIES tempXInputCaps;
+    int i;
+
+    while (1) {
+        /* See if the device-detection thread is being asked to shutdown.
+         */
+        SDL_LockMutex(g_DeviceInfoLock);
+        if (g_DeviceDetectionQuit) {
+            SDL_UnlockMutex(g_DeviceInfoLock);
+            break;
+        }
+        SDL_UnlockMutex(g_DeviceInfoLock);
+
+        /* Add a short delay to prevent the device-detection thread from eating
+           up too much CPU time:
+         */
+        SDL_Delay(300);
+
+        /* TODO, WinRT: try making the device-detection thread wakeup sooner from its CPU-preserving SDL_Delay, if the thread was asked to quit.
+         */
+
+        /* See if any new devices are connected. */
+        for (i = 0; i < XUSER_MAX_COUNT; ++i) {
+            if (!g_XInputData[i].isDeviceConnected &&
+                !g_XInputData[i].isDeviceConnectionEventPending &&
+                !g_XInputData[i].isDeviceRemovalEventPending)
+            {
+                result = XInputGetCapabilities(i, 0, &tempXInputCaps);
+                if (result == ERROR_SUCCESS) {
+                    /* Yes, a device is connected.  Mark it as such.
+                       Others will be told about this (via an
+                       SDL_JOYDEVICEADDED event) in the next call to
+                       SDL_SYS_JoystickDetect.
+                     */
+                    SDL_LockMutex(g_DeviceInfoLock);
+                    g_XInputData[i].isDeviceConnected = SDL_TRUE;
+                    g_XInputData[i].isDeviceConnectionEventPending = SDL_TRUE;
+                    SDL_UnlockMutex(g_DeviceInfoLock);
+                }
+            }
+        }
+    }
+
+    return 0;
+}
 
 /* Function to scan the system for joysticks.
  * It should return 0, or -1 on an unrecoverable fatal error.
@@ -76,6 +151,12 @@ SDL_SYS_JoystickInit(void)
         }
     }
 
+    /* Start up the device-detection thread.
+     */
+    g_DeviceDetectionQuit = SDL_FALSE;
+    g_DeviceInfoLock = SDL_CreateMutex();
+    g_DeviceDetectionThread = SDL_CreateThread(DeviceDetectionThreadMain, "SDL_joystick", NULL);
+
     return (0);
 }
 
@@ -87,11 +168,13 @@ int SDL_SYS_NumJoysticks()
     /* Iterate through each possible XInput device and see if something
        was connected (at joystick init, or during the last polling).
      */
+    SDL_LockMutex(g_DeviceInfoLock);
     for (i = 0; i < XUSER_MAX_COUNT; ++i) {
         if (g_XInputData[i].isDeviceConnected) {
             ++joystickCount;
         }
     }
+    SDL_UnlockMutex(g_DeviceInfoLock);
 
     return joystickCount;
 }
@@ -99,36 +182,28 @@ int SDL_SYS_NumJoysticks()
 void SDL_SYS_JoystickDetect()
 {
     DWORD i;
-    XINPUT_STATE tempXInputState;
-    HRESULT result;
     SDL_Event event;
 
     /* Iterate through each possible XInput device, seeing if any devices
        have been connected, or if they were removed.
      */
+    SDL_LockMutex(g_DeviceInfoLock);
     for (i = 0; i < XUSER_MAX_COUNT; ++i) {
         /* See if any new devices are connected. */
-        if (!g_XInputData[i].isDeviceConnected && !g_XInputData[i].isDeviceRemovalEventPending) {
-            result = XInputGetState(i, &tempXInputState);
-            if (result == ERROR_SUCCESS) {
-                /* Yup, a device is connected.  Mark the device as connected,
-                   then tell others about it (via an SDL_JOYDEVICEADDED event.)
-                 */
-                g_XInputData[i].isDeviceConnected = SDL_TRUE;
-
+        if (g_XInputData[i].isDeviceConnectionEventPending) {
 #if !SDL_EVENTS_DISABLED
-                SDL_zero(event);
-                event.type = SDL_JOYDEVICEADDED;
+            SDL_zero(event);
+            event.type = SDL_JOYDEVICEADDED;
                 
-                if (SDL_GetEventState(event.type) == SDL_ENABLE) {
-                    event.jdevice.which = i;
-                    if ((SDL_EventOK == NULL)
-                        || (*SDL_EventOK) (SDL_EventOKParam, &event)) {
-                        SDL_PushEvent(&event);
-                    }
+            if (SDL_GetEventState(event.type) == SDL_ENABLE) {
+                event.jdevice.which = i;
+                if ((SDL_EventOK == NULL)
+                    || (*SDL_EventOK) (SDL_EventOKParam, &event)) {
+                    SDL_PushEvent(&event);
                 }
-#endif
             }
+#endif
+            g_XInputData[i].isDeviceConnectionEventPending = SDL_FALSE;
         } else if (g_XInputData[i].isDeviceRemovalEventPending) {
             /* A device was previously marked as removed (by
                SDL_SYS_JoystickUpdate).  Tell others about the device removal.
@@ -150,6 +225,7 @@ void SDL_SYS_JoystickDetect()
 #endif
         }
     }
+    SDL_UnlockMutex(g_DeviceInfoLock);
 }
 
 SDL_bool SDL_SYS_JoystickNeedsPolling()
@@ -293,7 +369,11 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
 /* Function to determine is this joystick is attached to the system right now */
 SDL_bool SDL_SYS_JoystickAttached(SDL_Joystick *joystick)
 {
-    return joystick->hwdata->isDeviceConnected;
+    SDL_bool isDeviceConnected;
+    SDL_LockMutex(g_DeviceInfoLock);
+    isDeviceConnected = joystick->hwdata->isDeviceConnected;
+    SDL_UnlockMutex(g_DeviceInfoLock);
+    return isDeviceConnected;
 }
 
 /* Function to return > 0 if a bit array of buttons differs after applying a mask
@@ -312,9 +392,12 @@ void
 SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
 {
     HRESULT result;
+    XINPUT_STATE prevXInputState;
+
+    SDL_LockMutex(g_DeviceInfoLock);
 
     /* Before polling for new data, make note of the old data */
-    XINPUT_STATE prevXInputState = joystick->hwdata->XInputState;
+    prevXInputState = joystick->hwdata->XInputState;
 
     /* Poll for new data */
     result = XInputGetState(joystick->hwdata->userIndex, &joystick->hwdata->XInputState);
@@ -324,6 +407,7 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
             joystick->hwdata->isDeviceRemovalEventPending = SDL_TRUE;
             /* TODO, WinRT: make sure isDeviceRemovalEventPending gets cleared as appropriate, and that quick re-plugs don't cause trouble */
         }
+        SDL_UnlockMutex(g_DeviceInfoLock);
         return;
     }
 
@@ -375,6 +459,8 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
         if ( ButtonChanged( pXInputState->Gamepad.wButtons, pXInputStatePrev->Gamepad.wButtons,  0x400 ) )
             SDL_PrivateJoystickButton(joystick, 14, pXInputState->Gamepad.wButtons & 0x400 ? SDL_PRESSED :	SDL_RELEASED ); // 0x400 is the undocumented code for the guide button
     }
+
+    SDL_UnlockMutex(g_DeviceInfoLock);
 }
 
 /* Function to close a joystick after use */
@@ -382,7 +468,9 @@ void
 SDL_SYS_JoystickClose(SDL_Joystick * joystick)
 {
     /* Clear cached button data on the joystick */
+    SDL_LockMutex(g_DeviceInfoLock);
     SDL_zero(joystick->hwdata->XInputState);
+    SDL_UnlockMutex(g_DeviceInfoLock);
 
     /* There's need to free 'hwdata', as it's a pointer to a global array.
        The field will be cleared anyways, just to indicate that it's not
@@ -395,6 +483,18 @@ SDL_SYS_JoystickClose(SDL_Joystick * joystick)
 void
 SDL_SYS_JoystickQuit(void)
 {
+    /* Tell the joystick detection thread to stop, then wait for it to finish */
+    SDL_LockMutex(g_DeviceInfoLock);
+    g_DeviceDetectionQuit = SDL_TRUE;
+    SDL_UnlockMutex(g_DeviceInfoLock);
+    SDL_WaitThread(g_DeviceDetectionThread, NULL);
+
+    /* Clean up device-detection stuff */
+    SDL_DestroyMutex(g_DeviceInfoLock);
+    g_DeviceInfoLock = NULL;
+    g_DeviceDetectionThread = NULL;
+    g_DeviceDetectionQuit = SDL_FALSE;
+
     return;
 }
 
