@@ -375,7 +375,6 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
     }
 
     // Get the Direct3D 11.1 API device and context interfaces.
-    Microsoft::WRL::ComPtr<ID3D11Device1> d3dDevice1;
     result = device.As(&(data->d3dDevice));
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device to ID3D11Device1", result);
@@ -767,7 +766,7 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
 #endif
         swapChainDesc.Flags = 0;
 
-        ComPtr<IDXGIDevice1>  dxgiDevice;
+        ComPtr<IDXGIDevice1> dxgiDevice;
         result = data->d3dDevice.As(&dxgiDevice);
         if (FAILED(result)) {
             WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device1 to IDXGIDevice1", result);
