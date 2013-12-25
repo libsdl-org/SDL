@@ -973,9 +973,8 @@ D3D11_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     HRESULT result;
     DXGI_FORMAT textureFormat = SDLPixelFormatToDXGIFormat(texture->format);
     if (textureFormat == SDL_PIXELFORMAT_UNKNOWN) {
-        SDL_SetError("%s, An unsupported SDL pixel format (0x%x) was specified",
+        return SDL_SetError("%s, An unsupported SDL pixel format (0x%x) was specified",
             __FUNCTION__, texture->format);
-        return -1;
     }
 
     textureData = new D3D11_TextureData;
@@ -1106,8 +1105,7 @@ D3D11_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
         // An error is already set.  Attach some info to it, then return to
         // the caller.
         std::string errorMessage = string(__FUNCTION__ ", Lock Texture Failed: ") + SDL_GetError();
-        SDL_SetError(errorMessage.c_str());
-        return -1;
+        return SDL_SetError(errorMessage.c_str());
     }
 
     // Copy pixel data to the locked texture's memory:
@@ -1135,8 +1133,7 @@ D3D11_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     HRESULT result = S_OK;
 
     if (textureData->stagingTexture) {
-        SDL_SetError("texture is already locked");
-        return -1;
+        return SDL_SetError("texture is already locked");
     }
     
     // Create a 'staging' texture, which will be used to write to a portion
@@ -1228,8 +1225,7 @@ D3D11_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
 
     if (!textureData->mainTextureRenderTargetView) {
         std::string errorMessage = string(__FUNCTION__) + ": specified texture is not a render target";
-        SDL_SetError(errorMessage.c_str());
-        return -1;
+        return SDL_SetError(errorMessage.c_str());
     }
 
     rendererData->currentOffscreenRenderTargetView = textureData->mainTextureRenderTargetView;
@@ -1268,8 +1264,7 @@ D3D11_UpdateViewport(SDL_Renderer * renderer)
             XMStoreFloat4x4(&data->vertexShaderConstantsData.projection, XMMatrixRotationZ(-XM_PIDIV2));
             break;
         default:
-            SDL_SetError("An unknown DisplayOrientation is being used");
-            return -1;
+            return SDL_SetError("An unknown DisplayOrientation is being used");
     }
 
     //
@@ -1892,8 +1887,7 @@ D3D11_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
         // When SDL_ConvertPixels fails, it'll have already set the format.
         // Get the error message, and attach some extra data to it.
         std::string errorMessage = string(__FUNCTION__ ", Convert Pixels failed: ") + SDL_GetError();
-        SDL_SetError(errorMessage.c_str());
-        return -1;
+        return SDL_SetError(errorMessage.c_str());
     }
 
     // Unmap the texture:
