@@ -215,7 +215,6 @@
     <ClInclude Include="..\..\src\haptic\SDL_syshaptic.h" />
     <ClInclude Include="..\..\src\joystick\SDL_joystick_c.h" />
     <ClInclude Include="..\..\src\joystick\SDL_sysjoystick.h" />
-    <ClInclude Include="..\..\src\render\direct3d11\SDL_render_d3d11_cpp.h" />
     <ClInclude Include="..\..\src\render\mmx.h" />
     <ClInclude Include="..\..\src\render\SDL_sysrender.h" />
     <ClInclude Include="..\..\src\render\SDL_yuv_sw_c.h" />

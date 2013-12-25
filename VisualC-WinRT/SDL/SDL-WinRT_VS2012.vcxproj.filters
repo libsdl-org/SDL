@@ -599,9 +599,6 @@
     <ClInclude Include="..\..\include\SDL_system.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\render\direct3d11\SDL_render_d3d11_cpp.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\joystick\SDL_gamecontrollerdb.h">
       <Filter>Header Files</Filter>
     </ClInclude>
