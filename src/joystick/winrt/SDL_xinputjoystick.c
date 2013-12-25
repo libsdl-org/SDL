@@ -106,25 +106,27 @@ DeviceDetectionThreadMain(void * _data)
          */
 
         /* See if any new devices are connected. */
+        SDL_LockMutex(g_DeviceInfoLock);
         for (i = 0; i < XUSER_MAX_COUNT; ++i) {
             if (!g_XInputData[i].isDeviceConnected &&
                 !g_XInputData[i].isDeviceConnectionEventPending &&
                 !g_XInputData[i].isDeviceRemovalEventPending)
             {
+                SDL_UnlockMutex(g_DeviceInfoLock);
                 result = XInputGetCapabilities(i, 0, &tempXInputCaps);
+                SDL_LockMutex(g_DeviceInfoLock);
                 if (result == ERROR_SUCCESS) {
                     /* Yes, a device is connected.  Mark it as such.
                        Others will be told about this (via an
                        SDL_JOYDEVICEADDED event) in the next call to
                        SDL_SYS_JoystickDetect.
                      */
-                    SDL_LockMutex(g_DeviceInfoLock);
                     g_XInputData[i].isDeviceConnected = SDL_TRUE;
                     g_XInputData[i].isDeviceConnectionEventPending = SDL_TRUE;
-                    SDL_UnlockMutex(g_DeviceInfoLock);
                 }
             }
         }
+        SDL_UnlockMutex(g_DeviceInfoLock);
     }
 
     return 0;
