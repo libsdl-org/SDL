@@ -604,8 +604,9 @@ WIN_GL_CreateContext(_THIS, SDL_Window * window)
         
         return WIN_GLES_CreateContext(_this, window);
 #else
-        return SDL_SetError("SDL not configured with EGL support");
-#endif        
+        SDL_SetError("SDL not configured with EGL support");
+        return NULL;
+#endif
     }
 
     if (_this->gl_config.share_with_current_context) {
