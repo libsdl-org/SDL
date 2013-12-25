@@ -1,7 +1,7 @@
 
 #pragma pack_matrix( row_major )
 
-cbuffer SDL_VertexShaderConstants : register(b0)
+cbuffer VertexShaderConstants : register(b0)
 {
     matrix model;
     matrix view;

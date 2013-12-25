@@ -68,7 +68,7 @@ static const D3D11_FILTER SDL_D3D11_NEAREST_PIXEL_FILTER = D3D11_FILTER_MIN_MAG_
 static const D3D11_FILTER SDL_D3D11_LINEAR_FILTER = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
 
 /* Vertex shader, common values */
-struct SDL_VertexShaderConstants
+struct VertexShaderConstants
 {
     DirectX::XMFLOAT4X4 model;
     DirectX::XMFLOAT4X4 view;
@@ -117,7 +117,7 @@ typedef struct
     D3D_FEATURE_LEVEL featureLevel;
 
     // Vertex buffer constants:
-    SDL_VertexShaderConstants vertexShaderConstantsData;
+    VertexShaderConstants vertexShaderConstantsData;
     Microsoft::WRL::ComPtr<ID3D11Buffer> vertexShaderConstants;
 
     // Cached renderer properties.
@@ -538,7 +538,7 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
     //
     // Setup space to hold vertex shader constants:
     //
-    CD3D11_BUFFER_DESC constantBufferDesc(sizeof(SDL_VertexShaderConstants), D3D11_BIND_CONSTANT_BUFFER);
+    CD3D11_BUFFER_DESC constantBufferDesc(sizeof(VertexShaderConstants), D3D11_BIND_CONSTANT_BUFFER);
     result = data->d3dDevice->CreateBuffer(
 		&constantBufferDesc,
 		nullptr,
