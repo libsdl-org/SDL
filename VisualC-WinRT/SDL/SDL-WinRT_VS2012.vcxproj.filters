@@ -1,17 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
-    <FxCompile Include="..\..\src\render\direct3d11\SDL_D3D11_PixelShader_FixedColor.hlsl">
-      <Filter>GPU Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\src\render\direct3d11\SDL_D3D11_VertexShader_Default.hlsl">
-      <Filter>GPU Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\src\render\direct3d11\SDL_D3D11_PixelShader_TextureColored.hlsl">
-      <Filter>GPU Shaders</Filter>
-    </FxCompile>
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="..\..\src\SDL.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -651,9 +640,6 @@
     </Filter>
     <Filter Include="Source Files">
       <UniqueIdentifier>{ddf04d85-6a87-4c5a-bc52-869b38f45a61}</UniqueIdentifier>
-    </Filter>
-    <Filter Include="GPU Shaders">
-      <UniqueIdentifier>{83ed1283-8234-4c77-99a8-ffcfd8ce7381}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

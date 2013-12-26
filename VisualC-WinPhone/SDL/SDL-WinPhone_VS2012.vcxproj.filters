@@ -7,9 +7,6 @@
     <Filter Include="Source Files">
       <UniqueIdentifier>{abc3a7e6-f955-4cb5-8340-fae0f653e9c1}</UniqueIdentifier>
     </Filter>
-    <Filter Include="GPU Shaders">
-      <UniqueIdentifier>{fd67993e-5155-488b-9313-d1eb06a1b67e}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\begin_code.h">
@@ -611,16 +608,5 @@
     <ClCompile Include="..\..\src\filesystem\winrt\SDL_sysfilesystem.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <FxCompile Include="..\..\src\render\direct3d11\SDL_D3D11_PixelShader_FixedColor.hlsl">
-      <Filter>GPU Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\src\render\direct3d11\SDL_D3D11_VertexShader_Default.hlsl">
-      <Filter>GPU Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="..\..\src\render\direct3d11\SDL_D3D11_PixelShader_TextureColored.hlsl">
-      <Filter>GPU Shaders</Filter>
-    </FxCompile>
   </ItemGroup>
 </Project>
