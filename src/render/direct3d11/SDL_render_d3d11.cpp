@@ -603,14 +603,6 @@ SDLPixelFormatToDXGIFormat(Uint32 sdlFormat)
     }
 }
 
-
-//typedef struct
-//{
-//    float x, y, z;
-//    DWORD color;
-//    float u, v;
-//} Vertex;
-
 SDL_Renderer *
 D3D11_CreateRenderer(SDL_Window * window, Uint32 flags)
 {
