@@ -113,8 +113,12 @@ typedef struct
     Microsoft::WRL::ComPtr<ID3D11BlendState> blendModeMod;
     Microsoft::WRL::ComPtr<ID3D11SamplerState> nearestPixelSampler;
     Microsoft::WRL::ComPtr<ID3D11SamplerState> linearSampler;
-    Microsoft::WRL::ComPtr<ID3D11RasterizerState> mainRasterizer;
     D3D_FEATURE_LEVEL featureLevel;
+
+    // Rasterizers:
+    // If this list starts to get unwieldy, then consider using a map<> of them.
+    Microsoft::WRL::ComPtr<ID3D11RasterizerState> mainRasterizer;
+    Microsoft::WRL::ComPtr<ID3D11RasterizerState> clippedRasterizer;
 
     // Vertex buffer constants:
     VertexShaderConstants vertexShaderConstantsData;
@@ -918,7 +922,7 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
     }
 
     //
-    // Setup the Direct3D rasterizer
+    // Setup Direct3D rasterizer states
     //
     D3D11_RASTERIZER_DESC rasterDesc;
     memset(&rasterDesc, 0, sizeof(rasterDesc));
@@ -934,7 +938,14 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
 	rasterDesc.SlopeScaledDepthBias = 0.0f;
 	result = data->d3dDevice->CreateRasterizerState(&rasterDesc, &data->mainRasterizer);
 	if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device1::CreateRasterizerState", result);
+        WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device1::CreateRasterizerState [main rasterizer]", result);
+        return result;
+    }
+
+    rasterDesc.ScissorEnable = true;
+    result = data->d3dDevice->CreateRasterizerState(&rasterDesc, &data->clippedRasterizer);
+	if (FAILED(result)) {
+        WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device1::CreateRasterizerState [clipped rasterizer]", result);
         return result;
     }
 
@@ -1073,6 +1084,42 @@ D3D11_IsDisplayRotated90Degrees(Windows::Graphics::Display::DisplayOrientations 
             return false;
     }
 }
+
+static int
+D3D11_GetViewportAlignedD3DRect(SDL_Renderer * renderer, const SDL_Rect * sdlRect, D3D11_RECT * outRect)
+{
+    D3D11_RenderData *data = (D3D11_RenderData *) renderer->driverdata;
+    switch (D3D11_GetRotationForOrientation(data-> orientation)) {
+        case DXGI_MODE_ROTATION_IDENTITY:
+            outRect->left = sdlRect->x;
+            outRect->right = sdlRect->x + sdlRect->w;
+            outRect->top = sdlRect->y;
+            outRect->bottom = sdlRect->y + sdlRect->h;
+            break;
+        case DXGI_MODE_ROTATION_ROTATE270:
+            outRect->left = sdlRect->y;
+            outRect->right = sdlRect->y + sdlRect->h;
+            outRect->top = renderer->viewport.w - sdlRect->x - sdlRect->w;
+            outRect->bottom = renderer->viewport.w - sdlRect->x;
+            break;
+        case DXGI_MODE_ROTATION_ROTATE180:
+            outRect->left = renderer->viewport.w - sdlRect->x - sdlRect->w;
+            outRect->right = renderer->viewport.w - sdlRect->x;
+            outRect->top = renderer->viewport.h - sdlRect->y - sdlRect->h;
+            outRect->bottom = renderer->viewport.h - sdlRect->y;
+            break;
+        case DXGI_MODE_ROTATION_ROTATE90:
+            outRect->left = renderer->viewport.h - sdlRect->y - sdlRect->h;
+            outRect->right = renderer->viewport.h - sdlRect->y;
+            outRect->top = sdlRect->x;
+            outRect->bottom = sdlRect->x + sdlRect->h;
+            break;
+        default:
+            return SDL_SetError("The physical display is in an unknown or unsupported orientation");
+    }
+    return 0;
+}
+
 
 // Initialize all resources that change when the window's size changes.
 // TODO, WinRT: get D3D11_CreateWindowSizeDependentResources working on Win32
@@ -1738,7 +1785,20 @@ D3D11_UpdateViewport(SDL_Renderer * renderer)
 static int
 D3D11_UpdateClipRect(SDL_Renderer * renderer)
 {
-    // TODO, WinRT: implement D3D11_UpdateClipRect
+    D3D11_RenderData *data = (D3D11_RenderData *) renderer->driverdata;
+    const SDL_Rect *rect = &renderer->clip_rect;
+
+    if (SDL_RectEmpty(rect)) {
+        data->d3dContext->RSSetScissorRects(0, 0);
+    } else {
+        D3D11_RECT scissorRect;
+        if (D3D11_GetViewportAlignedD3DRect(renderer, rect, &scissorRect) != 0) {
+            /* D3D11_GetViewportAlignedD3DRect will have set the SDL error */
+            return -1;
+        }
+        data->d3dContext->RSSetScissorRects(1, &scissorRect);
+    }
+
     return 0;
 }
 
@@ -1893,7 +1953,11 @@ D3D11_RenderFinishDrawOp(SDL_Renderer * renderer,
     rendererData->d3dContext->IASetInputLayout(rendererData->inputLayout.Get());
     rendererData->d3dContext->VSSetShader(rendererData->vertexShader.Get(), nullptr, 0);
     rendererData->d3dContext->VSSetConstantBuffers(0, 1, rendererData->vertexShaderConstants.GetAddressOf());
-    rendererData->d3dContext->RSSetState(rendererData->mainRasterizer.Get());
+    if (SDL_RectEmpty(&(renderer->clip_rect))) {
+        rendererData->d3dContext->RSSetState(rendererData->mainRasterizer.Get());
+    } else {
+        rendererData->d3dContext->RSSetState(rendererData->clippedRasterizer.Get());
+    }
     rendererData->d3dContext->Draw(vertexCount, 0);
 }
 
@@ -2214,35 +2278,17 @@ D3D11_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     }
 
     // Copy the desired portion of the back buffer to the staging texture:
-    D3D11_BOX srcBox;
-    switch (D3D11_GetRotationForOrientation(data->orientation)) {
-        case DXGI_MODE_ROTATION_IDENTITY:
-            srcBox.left = rect->x;
-            srcBox.right = rect->x + rect->w;
-            srcBox.top = rect->y;
-            srcBox.bottom = rect->y + rect->h;
-            break;
-        case DXGI_MODE_ROTATION_ROTATE270:
-            srcBox.left = rect->y;
-            srcBox.right = rect->y + rect->h;
-            srcBox.top = renderer->viewport.w - rect->x - rect->w;
-            srcBox.bottom = renderer->viewport.w - rect->x;
-            break;
-        case DXGI_MODE_ROTATION_ROTATE180:
-            srcBox.left = renderer->viewport.w - rect->x - rect->w;
-            srcBox.right = renderer->viewport.w - rect->x;
-            srcBox.top = renderer->viewport.h - rect->y - rect->h;
-            srcBox.bottom = renderer->viewport.h - rect->y;
-            break;
-        case DXGI_MODE_ROTATION_ROTATE90:
-            srcBox.left = renderer->viewport.h - rect->y - rect->h;
-            srcBox.right = renderer->viewport.h - rect->y;
-            srcBox.top = rect->x;
-            srcBox.bottom = rect->x + rect->h;
-            break;
-        default:
-            return SDL_SetError("The physical display is in an unknown or unsupported orientation");
+    D3D11_RECT srcRect;
+    if (D3D11_GetViewportAlignedD3DRect(renderer, rect, &srcRect) != 0) {
+        /* D3D11_GetViewportAlignedD3DRect will have set the SDL error */
+        return -1;
     }
+
+    D3D11_BOX srcBox;
+    srcBox.left = srcRect.left;
+    srcBox.right = srcRect.right;
+    srcBox.top = srcRect.top;
+    srcBox.bottom = srcRect.bottom;
     srcBox.front = 0;
     srcBox.back = 1;
     data->d3dContext->CopySubresourceRegion(
