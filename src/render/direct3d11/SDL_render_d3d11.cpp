@@ -725,12 +725,12 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
     UINT creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 
     // Make sure Direct3D's debugging feature gets used, if the app requests it.
-    //const char *hint = SDL_GetHint(SDL_HINT_RENDER_DIRECT3D11_DEBUG);
-    //if (hint) {
-    //    if (*hint == '1') {
+    const char *hint = SDL_GetHint(SDL_HINT_RENDER_DIRECT3D11_DEBUG);
+    if (hint) {
+        if (*hint == '1') {
             creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
-    //    }
-    //}
+        }
+    }
 
     // This array defines the set of DirectX hardware feature levels this app will support.
     // Note the ordering should be preserved.
