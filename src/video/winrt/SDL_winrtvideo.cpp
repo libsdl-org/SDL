@@ -288,8 +288,8 @@ WINRT_CreateWindow(_THIS, SDL_Window * window)
             _this->egl_data->egl_config,
             nativeWindow, NULL);
         if (data->egl_surface == NULL) {
-            // TODO, WinRT: see if SDL_EGL_CreateSurface, or its callee(s), sets an error message.  If so, attach it to the SDL error.
-            return SDL_SetError("SDL_EGL_CreateSurface failed");
+            // TODO, WinRT: see if eglCreateWindowSurface, or its callee(s), sets an error message.  If so, attach it to the SDL error.
+            return SDL_SetError("eglCreateWindowSurface failed");
         }
     }
 #endif
