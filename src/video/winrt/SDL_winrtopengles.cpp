@@ -26,11 +26,6 @@
 
 /* EGL implementation of SDL OpenGL support */
 
-// TODO, WinRT: Try to include these here, or via something else (rather than redefining key parts of them)
-//#include <GLES2/gl2.h>
-//#include <EGL/egl.h>
-//#include <EGL/eglext.h>
-
 #include "SDL_winrtvideo_cpp.h"
 extern "C" {
 #include "SDL_winrtopengles.h"
