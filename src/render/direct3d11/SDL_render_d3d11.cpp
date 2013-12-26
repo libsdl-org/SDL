@@ -2341,6 +2341,6 @@ D3D11_RenderPresent(SDL_Renderer * renderer)
     }
 }
 
-#endif /* SDL_VIDEO_RENDER_D3D && !SDL_RENDER_DISABLED */
+#endif /* SDL_VIDEO_RENDER_D3D11 && !SDL_RENDER_DISABLED */
 
 /* vi: set ts=4 sw=4 expandtab: */
