@@ -1062,6 +1062,18 @@ D3D11_GetRotationForOrientation(Windows::Graphics::Display::DisplayOrientations 
     }
 }
 
+static bool
+D3D11_IsDisplayRotated90Degrees(Windows::Graphics::Display::DisplayOrientations orientation)
+{
+    switch (D3D11_GetRotationForOrientation(orientation)) {
+        case DXGI_MODE_ROTATION_ROTATE90:
+        case DXGI_MODE_ROTATION_ROTATE270:
+            return true;
+        default:
+            return false;
+    }
+}
+
 // Initialize all resources that change when the window's size changes.
 // TODO, WinRT: get D3D11_CreateWindowSizeDependentResources working on Win32
 HRESULT
@@ -1108,9 +1120,7 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
     const bool swapDimensions = false;
 #else
-    const bool swapDimensions =
-        data->orientation == DisplayOrientations::Portrait ||
-        data->orientation == DisplayOrientations::PortraitFlipped;
+    const bool swapDimensions = D3D11_IsDisplayRotated90Degrees(data->orientation);
 #endif
     data->renderTargetSize.x = swapDimensions ? windowHeight : windowWidth;
     data->renderTargetSize.y = swapDimensions ? windowWidth : windowHeight;
@@ -1687,16 +1697,7 @@ D3D11_UpdateViewport(SDL_Renderer * renderer)
     // for Windows Phone devices.
     //
     SDL_FRect orientationAlignedViewport;
-
-#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
-    const bool swapDimensions =
-        data->orientation == DisplayOrientations::Landscape ||
-        data->orientation == DisplayOrientations::LandscapeFlipped;
-#else
-    const bool swapDimensions =
-        data->orientation == DisplayOrientations::Portrait ||
-        data->orientation == DisplayOrientations::PortraitFlipped;
-#endif
+    const bool swapDimensions = D3D11_IsDisplayRotated90Degrees(data->orientation);
     if (swapDimensions) {
         orientationAlignedViewport.x = (float) renderer->viewport.y;
         orientationAlignedViewport.y = (float) renderer->viewport.x;
