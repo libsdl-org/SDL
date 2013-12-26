@@ -36,16 +36,12 @@
 extern "C" {
 #include "../../core/windows/SDL_windows.h"
 #include "SDL_hints.h"
-//#include "SDL_loadso.h"
 #include "SDL_system.h"
 #include "SDL_syswm.h"
 #include "../SDL_sysrender.h"
-#include "SDL_log.h"
 #include "../../video/SDL_sysvideo.h"
-//#include "stdio.h"
 }
 
-#include <fstream>
 #include <string>
 #include <vector>
 
