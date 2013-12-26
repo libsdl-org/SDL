@@ -266,8 +266,27 @@ WINRT_CreateWindow(_THIS, SDL_Window * window)
         data->egl_surface = EGL_NO_SURFACE;
     } else {
         /* OpenGL ES 2 was reuqested.  Set up an EGL surface. */
-        IUnknown * nativeWindow = reinterpret_cast<IUnknown *>(data->coreWindow.Get());
-        data->egl_surface = SDL_EGL_CreateSurface(_this, nativeWindow);
+
+        /* HACK: ANGLE/WinRT currently uses non-pointer, C++ objects to represent
+           native windows.  The object only contains a single pointer to a COM
+           interface pointer, which on x86 appears to be castable to the object
+           without apparant problems.  On other platforms, notable ARM and x64,
+           doing so will cause a crash.  To avoid this crash, we'll bypass
+           SDL's normal call to eglCreateWindowSurface, which is invoked from C
+           code, and call it here, where an appropriate C++ object may be
+           passed in.
+         */
+        typedef EGLSurface (*eglCreateWindowSurfaceFunction)(EGLDisplay dpy, EGLConfig config,
+            Microsoft::WRL::ComPtr<IUnknown> win,
+            const EGLint *attrib_list);
+        eglCreateWindowSurfaceFunction WINRT_eglCreateWindowSurface =
+            (eglCreateWindowSurfaceFunction) _this->egl_data->eglCreateWindowSurface;
+
+        Microsoft::WRL::ComPtr<IUnknown> nativeWindow = reinterpret_cast<IUnknown *>(data->coreWindow.Get());
+        data->egl_surface = WINRT_eglCreateWindowSurface(
+            _this->egl_data->egl_display,
+            _this->egl_data->egl_config,
+            nativeWindow, NULL);
         if (data->egl_surface == NULL) {
             // TODO, WinRT: see if SDL_EGL_CreateSurface, or its callee(s), sets an error message.  If so, attach it to the SDL error.
             return SDL_SetError("SDL_EGL_CreateSurface failed");
