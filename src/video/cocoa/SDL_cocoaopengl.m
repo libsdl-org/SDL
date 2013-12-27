@@ -35,19 +35,6 @@
 
 #define DEFAULT_OPENGL  "/System/Library/Frameworks/OpenGL.framework/Libraries/libGL.dylib"
 
-#if MAC_OS_X_VERSION_MAX_ALLOWED < 1070
-/* New methods for converting to and from backing store pixels, taken from
- * AppKit/NSView.h in 10.8 SDK. */
-@interface NSView (Backing)
-- (NSPoint)convertPointToBacking:(NSPoint)aPoint;
-- (NSPoint)convertPointFromBacking:(NSPoint)aPoint;
-- (NSSize)convertSizeToBacking:(NSSize)aSize;
-- (NSSize)convertSizeFromBacking:(NSSize)aSize;
-- (NSRect)convertRectToBacking:(NSRect)aRect;
-- (NSRect)convertRectFromBacking:(NSRect)aRect;
-@end
-#endif
-
 #ifndef kCGLPFAOpenGLProfile
 #define kCGLPFAOpenGLProfile 99
 #endif

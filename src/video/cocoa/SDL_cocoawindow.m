@@ -22,6 +22,10 @@
 
 #if SDL_VIDEO_DRIVER_COCOA
 
+#if MAC_OS_X_VERSION_MAX_ALLOWED < 1070
+# error SDL for Mac OS X must be built with a 10.7 SDK or above.
+#endif /* MAC_OS_X_VERSION_MAX_ALLOWED < 1070 */
+
 #include "SDL_syswm.h"
 #include "SDL_timer.h"  /* For SDL_GetTicks() */
 #include "SDL_hints.h"
@@ -34,14 +38,6 @@
 #include "SDL_cocoashape.h"
 #include "SDL_cocoamouse.h"
 #include "SDL_cocoaopengl.h"
-
-#if MAC_OS_X_VERSION_MAX_ALLOWED < 1070
-/* Taken from AppKit/NSOpenGLView.h in 10.8 SDK. */
-@interface NSView (NSOpenGLSurfaceResolution)
-- (BOOL)wantsBestResolutionOpenGLSurface;
-- (void)setWantsBestResolutionOpenGLSurface:(BOOL)flag;
-@end
-#endif
 
 static Uint32 s_moveHack;
 
@@ -140,12 +136,10 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
         [center addObserver:self selector:@selector(windowDidDeminiaturize:) name:NSWindowDidDeminiaturizeNotification object:window];
         [center addObserver:self selector:@selector(windowDidBecomeKey:) name:NSWindowDidBecomeKeyNotification object:window];
         [center addObserver:self selector:@selector(windowDidResignKey:) name:NSWindowDidResignKeyNotification object:window];
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
         [center addObserver:self selector:@selector(windowWillEnterFullScreen:) name:NSWindowWillEnterFullScreenNotification object:window];
         [center addObserver:self selector:@selector(windowDidEnterFullScreen:) name:NSWindowDidEnterFullScreenNotification object:window];
         [center addObserver:self selector:@selector(windowWillExitFullScreen:) name:NSWindowWillExitFullScreenNotification object:window];
         [center addObserver:self selector:@selector(windowDidExitFullScreen:) name:NSWindowDidExitFullScreenNotification object:window];
-#endif /* Mac OS X 10.7+ */
     } else {
         [window setDelegate:self];
     }
@@ -211,7 +205,6 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 
 -(BOOL) setFullscreenSpace:(BOOL) state;
 {
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
     SDL_Window *window = _data->window;
     NSWindow *nswindow = _data->nswindow;
 
@@ -245,9 +238,6 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 
     [nswindow performSelectorOnMainThread: @selector(toggleFullScreen:) withObject:nswindow waitUntilDone:NO];
     return YES;
-#else
-    return NO;
-#endif /* SDK >= 10.7 */
 }
 
 -(BOOL) isInFullscreenSpace
@@ -282,12 +272,10 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
         [center removeObserver:self name:NSWindowDidDeminiaturizeNotification object:window];
         [center removeObserver:self name:NSWindowDidBecomeKeyNotification object:window];
         [center removeObserver:self name:NSWindowDidResignKeyNotification object:window];
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
         [center removeObserver:self name:NSWindowWillEnterFullScreenNotification object:window];
         [center removeObserver:self name:NSWindowDidEnterFullScreenNotification object:window];
         [center removeObserver:self name:NSWindowWillExitFullScreenNotification object:window];
         [center removeObserver:self name:NSWindowDidExitFullScreenNotification object:window];
-#endif /* Mac OS X 10.7+ */
     } else {
         [window setDelegate:nil];
     }
@@ -931,14 +919,12 @@ Cocoa_CreateWindow(_THIS, SDL_Window * window)
         return -1;
     }
     [nswindow setBackgroundColor:[NSColor blackColor]];
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
     if ([nswindow respondsToSelector:@selector(setCollectionBehavior:)]) {
         const char *hint = SDL_GetHint(SDL_HINT_VIDEO_FULLSCREEN_SPACES);
         if (hint && SDL_atoi(hint) > 0) {
             [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
         }
     }
-#endif
 
     /* Create a default view for this window */
     rect = [nswindow contentRectForFrameRect:[nswindow frame]];
@@ -1419,7 +1405,6 @@ SDL_bool
 Cocoa_SetWindowFullscreenSpace(SDL_Window * window, SDL_bool state)
 {
     SDL_bool succeeded = SDL_FALSE;
-#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
 
@@ -1428,7 +1413,6 @@ Cocoa_SetWindowFullscreenSpace(SDL_Window * window, SDL_bool state)
     }
 
     [pool release];
-#endif /* SDK 10.7+ */
 
     return succeeded;
 }
