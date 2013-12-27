@@ -417,7 +417,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             RAWINPUT inp;
             UINT size = sizeof(inp);
 
-            if (!mouse->relative_mode || mouse->relative_mode_warp) {
+            if (!mouse->relative_mode || mouse->relative_mode_warp || mouse->focus != data->window) {
                 break;
             }
 
