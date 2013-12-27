@@ -45,7 +45,15 @@ WIN_SetError(const char *prefix)
 HRESULT
 WIN_CoInitialize(void)
 {
-    const HRESULT hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+    /* SDL handles any threading model, so initialize with the default, which
+       is compatible with OLE and if that doesn't work, try multi-threaded mode.
+
+       If you need multi-threaded mode, call CoInitializeEx() before SDL_Init()
+    */
+    HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
+    if (hr == RPC_E_CHANGED_MODE) {
+        hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+    }
 
     /* S_FALSE means success, but someone else already initialized. */
     /* You still need to call CoUninitialize in this case! */
