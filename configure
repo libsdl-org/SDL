@@ -818,6 +818,7 @@ enable_sndio_shared
 enable_diskaudio
 enable_dummyaudio
 enable_video_wayland
+enable_video_wayland_qt_touch
 enable_video_x11
 with_x
 enable_x11_shared
@@ -1534,6 +1535,9 @@ Optional Features:
   --enable-diskaudio      support the disk writer audio driver [[default=yes]]
   --enable-dummyaudio     support the dummy audio driver [[default=yes]]
   --enable-video-wayland  use Wayland video driver [[default=yes]]
+  --enable-video-wayland-qt-touch
+                          QtWayland server support for Wayland video driver
+                          [[default=yes]]
   --enable-video-x11      use X11 video driver [[default=yes]]
   --enable-x11-shared     dynamically load X11 support [[default=maybe]]
   --enable-video-x11-xcursor
@@ -18645,6 +18649,14 @@ else
 fi
 
 
+    # Check whether --enable-video-wayland-qt-touch was given.
+if test "${enable_video_wayland_qt_touch+set}" = set; then :
+  enableval=$enable_video_wayland_qt_touch;
+else
+  enable_video_wayland_qt_touch=yes
+fi
+
+
     if test x$enable_video = xyes -a x$enable_video_wayland = xyes; then
         # Extract the first word of "pkg-config", so it can be a program name with args.
 set dummy pkg-config; ac_word=$2
@@ -18704,6 +18716,11 @@ $as_echo "$video_wayland" >&6; }
 
 $as_echo "#define SDL_VIDEO_DRIVER_WAYLAND 1" >>confdefs.h
 
+            if test x$enable_video_wayland_qt_touch = xyes; then
+
+$as_echo "#define SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH 1" >>confdefs.h
+
+            fi
             SOURCES="$SOURCES $srcdir/src/video/wayland/*.c"
             EXTRA_CFLAGS="$EXTRA_CFLAGS $WAYLAND_CFLAGS"
                         EXTRA_LDFLAGS="$EXTRA_LDFLAGS $WAYLAND_LIBS"

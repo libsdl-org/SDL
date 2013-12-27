@@ -30,6 +30,7 @@
 #include "SDL_waylandwindow.h"
 #include "SDL_waylandopengles.h"
 #include "SDL_waylandmouse.h"
+#include "SDL_waylandtouch.h"
 
 #include <fcntl.h>
 #include <xkbcommon/xkbcommon.h>
@@ -202,6 +203,25 @@ static const struct wl_shm_listener shm_listener = {
     shm_handle_format
 };
 
+#ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
+static void
+windowmanager_hints(void *data, struct qt_windowmanager *qt_windowmanager,
+        int32_t show_is_fullscreen)
+{
+}
+
+static void
+windowmanager_quit(void *data, struct qt_windowmanager *qt_windowmanager)
+{
+    SDL_SendQuit();
+}
+
+static const struct qt_windowmanager_listener windowmanager_listener = {
+    windowmanager_hints,
+    windowmanager_quit,
+};
+#endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
+
 static void
 display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
 					const char *interface, uint32_t version)
@@ -222,6 +242,18 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
         d->cursor_theme = wl_cursor_theme_load(NULL, 32, d->shm);
         d->default_cursor = wl_cursor_theme_get_cursor(d->cursor_theme, "left_ptr");
         wl_shm_add_listener(d->shm, &shm_listener, d);
+    
+#ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
+    } else if (strcmp(interface, "qt_touch_extension") == 0) {
+        Wayland_touch_create(d, id);
+    } else if (strcmp(interface, "qt_surface_extension") == 0) {
+        d->surface_extension = wl_registry_bind(registry, id,
+                &qt_surface_extension_interface, 1);
+    } else if (strcmp(interface, "qt_windowmanager") == 0) {
+        d->windowmanager = wl_registry_bind(registry, id,
+                &qt_windowmanager_interface, 1);
+        qt_windowmanager_add_listener(d->windowmanager, &windowmanager_listener, d);
+#endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
     }
 }
 
@@ -334,6 +366,15 @@ Wayland_VideoQuit(_THIS)
         xkb_context_unref(data->xkb_context);
         data->xkb_context = NULL;
     }
+#ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
+    if (data->windowmanager)
+        qt_windowmanager_destroy(data->windowmanager);
+
+    if (data->surface_extension)
+        qt_surface_extension_destroy(data->surface_extension);
+
+    Wayland_touch_destroy(data);
+#endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
 
     if (data->shm)
         wl_shm_destroy(data->shm);

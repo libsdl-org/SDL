@@ -1122,6 +1122,10 @@ CheckWayland()
 AC_HELP_STRING([--enable-video-wayland], [use Wayland video driver [[default=yes]]]),
                   ,enable_video_wayland=yes)
 
+    AC_ARG_ENABLE(video-wayland-qt-touch,
+AC_HELP_STRING([--enable-video-wayland-qt-touch], [QtWayland server support for Wayland video driver [[default=yes]]]),
+                  ,enable_video_wayland_qt_touch=yes)
+
     if test x$enable_video = xyes -a x$enable_video_wayland = xyes; then
         AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
         AC_MSG_CHECKING(for Wayland support)
@@ -1137,6 +1141,9 @@ AC_HELP_STRING([--enable-video-wayland], [use Wayland video driver [[default=yes
 
         if test x$video_wayland = xyes; then
             AC_DEFINE(SDL_VIDEO_DRIVER_WAYLAND, 1, [ ])
+            if test x$enable_video_wayland_qt_touch = xyes; then
+                AC_DEFINE(SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH, 1, [ ])
+            fi
             SOURCES="$SOURCES $srcdir/src/video/wayland/*.c"
             EXTRA_CFLAGS="$EXTRA_CFLAGS $WAYLAND_CFLAGS"
             dnl FIXME do dynamic loading code here.
