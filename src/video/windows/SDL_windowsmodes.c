@@ -50,6 +50,8 @@ WIN_GetDisplayMode(LPCTSTR deviceName, DWORD index, SDL_DisplayMode * mode)
     data->DeviceMode.dmFields =
         (DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFREQUENCY |
          DM_DISPLAYFLAGS);
+	data->ScaleX = 1.0f;
+	data->ScaleY = 1.0f;
 
     /* Fill in the mode information */
     mode->format = SDL_PIXELFORMAT_UNKNOWN;
@@ -63,6 +65,13 @@ WIN_GetDisplayMode(LPCTSTR deviceName, DWORD index, SDL_DisplayMode * mode)
         char bmi_data[sizeof(BITMAPINFOHEADER) + 256 * sizeof(RGBQUAD)];
         LPBITMAPINFO bmi;
         HBITMAP hbm;
+		int logical_width = GetDeviceCaps( hdc, HORZRES );
+		int logical_height = GetDeviceCaps( hdc, VERTRES );
+
+		data->ScaleX = (float)logical_width / devmode.dmPelsWidth;
+		data->ScaleY = (float)logical_height / devmode.dmPelsHeight;
+		mode->w = logical_width;
+		mode->h = logical_height;
 
         SDL_zero(bmi_data);
         bmi = (LPBITMAPINFO) bmi_data;
@@ -93,7 +102,7 @@ WIN_GetDisplayMode(LPCTSTR deviceName, DWORD index, SDL_DisplayMode * mode)
         } else if (bmi->bmiHeader.biBitCount == 4) {
             mode->format = SDL_PIXELFORMAT_INDEX4LSB;
         }
-    } else {
+	} else {
         /* FIXME: Can we tell what this will be? */
         if ((devmode.dmFields & DM_BITSPERPEL) == DM_BITSPERPEL) {
             switch (devmode.dmBitsPerPel) {
@@ -224,10 +233,10 @@ WIN_GetDisplayBounds(_THIS, SDL_VideoDisplay * display, SDL_Rect * rect)
 {
     SDL_DisplayModeData *data = (SDL_DisplayModeData *) display->current_mode.driverdata;
 
-    rect->x = (int)data->DeviceMode.dmPosition.x;
-    rect->y = (int)data->DeviceMode.dmPosition.y;
-    rect->w = data->DeviceMode.dmPelsWidth;
-    rect->h = data->DeviceMode.dmPelsHeight;
+    rect->x = (int)SDL_ceil(data->DeviceMode.dmPosition.x * data->ScaleX);
+    rect->y = (int)SDL_ceil(data->DeviceMode.dmPosition.y * data->ScaleY);
+    rect->w = (int)SDL_ceil(data->DeviceMode.dmPelsWidth * data->ScaleX);
+    rect->h = (int)SDL_ceil(data->DeviceMode.dmPelsHeight * data->ScaleY);
 
     return 0;
 }
@@ -252,8 +261,7 @@ WIN_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
             if (!SDL_AddDisplayMode(display, &mode)) {
                 SDL_free(mode.driverdata);
             }
-        }
-        else {
+        } else {
             SDL_free(mode.driverdata);
         }
     }
