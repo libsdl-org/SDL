@@ -663,6 +663,8 @@ D3D11_CreateBlendMode(SDL_Renderer * renderer,
                       BOOL enableBlending,
                       D3D11_BLEND srcBlend,
                       D3D11_BLEND destBlend,
+                      D3D11_BLEND srcBlendAlpha,
+                      D3D11_BLEND destBlendAlpha,
                       ID3D11BlendState ** blendStateOutput)
 {
     D3D11_RenderData *data = (D3D11_RenderData *) renderer->driverdata;
@@ -676,8 +678,8 @@ D3D11_CreateBlendMode(SDL_Renderer * renderer,
     blendDesc.RenderTarget[0].SrcBlend = srcBlend;
     blendDesc.RenderTarget[0].DestBlend = destBlend;
     blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-    blendDesc.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
-    blendDesc.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+    blendDesc.RenderTarget[0].SrcBlendAlpha = srcBlendAlpha;
+    blendDesc.RenderTarget[0].DestBlendAlpha = destBlendAlpha;
     blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
     blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
     result = data->d3dDevice->CreateBlendState(&blendDesc, blendStateOutput);
@@ -934,8 +936,10 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
     result = D3D11_CreateBlendMode(
         renderer,
         TRUE,
-        D3D11_BLEND_SRC_ALPHA,
-        D3D11_BLEND_INV_SRC_ALPHA,
+        D3D11_BLEND_SRC_ALPHA,          /* srcBlend */
+        D3D11_BLEND_INV_SRC_ALPHA,      /* destBlend */
+        D3D11_BLEND_ONE,                /* srcBlendAlpha */
+        D3D11_BLEND_INV_SRC_ALPHA,      /* destBlendAlpha */
         &data->blendModeBlend);
     if (FAILED(result)) {
         // D3D11_CreateBlendMode will set the SDL error, if it fails
@@ -945,8 +949,10 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
     result = D3D11_CreateBlendMode(
         renderer,
         TRUE,
-        D3D11_BLEND_SRC_ALPHA,
-        D3D11_BLEND_ONE,
+        D3D11_BLEND_SRC_ALPHA,          /* srcBlend */
+        D3D11_BLEND_ONE,                /* destBlend */
+        D3D11_BLEND_ZERO,               /* srcBlendAlpha */
+        D3D11_BLEND_ONE,                /* destBlendAlpha */
         &data->blendModeAdd);
     if (FAILED(result)) {
         // D3D11_CreateBlendMode will set the SDL error, if it fails
@@ -956,8 +962,10 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
     result = D3D11_CreateBlendMode(
         renderer,
         TRUE,
-        D3D11_BLEND_ZERO,
-        D3D11_BLEND_SRC_COLOR,
+        D3D11_BLEND_ZERO,               /* srcBlend */
+        D3D11_BLEND_SRC_COLOR,          /* destBlend */
+        D3D11_BLEND_ZERO,               /* srcBlendAlpha */
+        D3D11_BLEND_ONE,                /* destBlendAlpha */
         &data->blendModeMod);
     if (FAILED(result)) {
         // D3D11_CreateBlendMode will set the SDL error, if it fails
