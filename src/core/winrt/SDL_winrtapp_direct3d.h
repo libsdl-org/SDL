@@ -22,6 +22,13 @@ internal:
 
 protected:
     // Event Handlers.
+
+#if WINAPI_FAMILY == WINAPI_FAMILY_APP  // for Windows 8/8.1/RT apps... (and not Phone apps)
+    void OnSettingsPaneCommandsRequested(
+        Windows::UI::ApplicationSettings::SettingsPane ^p,
+        Windows::UI::ApplicationSettings::SettingsPaneCommandsRequestedEventArgs ^args);
+#endif // if WINAPI_FAMILY == WINAPI_FAMILY_APP
+
     void OnOrientationChanged(Platform::Object^ sender);
     void OnWindowSizeChanged(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::WindowSizeChangedEventArgs^ args);
     void OnLogicalDpiChanged(Platform::Object^ sender);
