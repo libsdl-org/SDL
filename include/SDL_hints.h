@@ -332,6 +332,53 @@ extern "C" {
 #define SDL_HINT_VIDEO_WIN_D3DCOMPILER              "SDL_VIDEO_WIN_D3DCOMPILER"
 
 /**
+ *  \brief A URL to a WinRT app's privacy policy
+ *
+ *  All network-enabled WinRT apps must make a privacy policy available to its
+ *  users.  On Windows 8, 8.1, and RT, Microsoft mandates that this policy be
+ *  be available in the Windows Settings charm, as accessed from within the app.
+ *  SDL provides code to add a URL-based link there, which can point to the app's
+ *  privacy policy.
+ *
+ *  To setup a URL to an app's privacy policy, set SDL_HINT_WINRT_PRIVACY_POLICY_URL
+ *  before calling any SDL_Init functions.  The contents of the hint should
+ *  be a valid URL.  For example, "http://www.example.com".
+ *
+ *  The default value is "", which will prevent SDL from adding a privacy policy
+ *  link to the Settings charm.  This hint should only be set during app init.
+ *
+ *  The label text of an app's "Privacy Policy" link may be customized via another
+ *  hint, SDL_HINT_WINRT_PRIVACY_POLICY_LABEL.
+ *
+ *  Please note that on Windows Phone, Microsoft does not provide standard UI
+ *  for displaying a privacy policy link, and as such, SDL_HINT_WINRT_PRIVACY_POLICY_URL
+ *  will not get used on that platform.  Network-enabled phone apps should display
+ *  their privacy policy through some other, in-app means.
+ */
+#define SDL_HINT_WINRT_PRIVACY_POLICY_URL "SDL_HINT_WINRT_PRIVACY_POLICY_URL"
+
+/** \brief Label text for a WinRT app's privacy policy link
+ *
+ *  Network-enabled WinRT apps must include a privacy policy.  On Windows 8, 8.1, and RT,
+ *  Microsoft mandates that this policy be available via the Windows Settings charm.
+ *  SDL provides code to add a link there, with it's label text being set via the
+ *  optional hint, SDL_HINT_WINRT_PRIVACY_POLICY_LABEL.
+ *
+ *  Please note that a privacy policy's contents are not set via this hint.  A separate
+ *  hint, SDL_HINT_WINRT_PRIVACY_POLICY_URL, is used to link to the actual text of the
+ *  policy.
+ *
+ *  The contents of this hint should be encoded as a UTF8 string.
+ *
+ *  The default value is "Privacy Policy".  This hint should only be set during app
+ *  initialization, preferably before any calls to SDL_Init.
+ *
+ *  For additional information on linking to a privacy policy, see the documentation for
+ *  SDL_HINT_WINRT_PRIVACY_POLICY_URL.
+ */
+#define SDL_HINT_WINRT_PRIVACY_POLICY_LABEL "SDL_HINT_WINRT_PRIVACY_POLICY_LABEL"
+
+/**
  *  \brief  An enumeration of hint priorities
  */
 typedef enum
