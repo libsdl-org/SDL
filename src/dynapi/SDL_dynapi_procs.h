@@ -60,7 +60,8 @@ SDL_DYNAPI_PROC(SDL_RWops*,SDL_RWFromFP,(FILE *a, SDL_bool b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_RWops*,SDL_RWFromFP,(void *a, SDL_bool b),(a,b),return)
 #endif
 
-#ifdef __thumb__  /* so annoying. */
+/* so annoying. */
+#if defined(__thumb__) && (defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6T2__) || defined(__ARM_ARCH_6Z__) || defined(__ARM_ARCH_6ZK__))
 SDL_DYNAPI_PROC(void,SDL_MemoryBarrierRelease,(void),(),)
 SDL_DYNAPI_PROC(void,SDL_MemoryBarrierAcquire,(void),(),)
 #endif
