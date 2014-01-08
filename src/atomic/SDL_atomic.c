@@ -204,6 +204,7 @@ SDL_AtomicGetPtr(void **a)
 }
 
 #ifdef __thumb__
+#if defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6T2__) || defined(__ARM_ARCH_6Z__) || defined(__ARM_ARCH_6ZK__)
 __asm__(
 "   .align 2\n"
 "   .globl _SDL_MemoryBarrierRelease\n"
@@ -214,6 +215,7 @@ __asm__(
 "   mcr p15, 0, r0, c7, c10, 5\n"
 "   bx lr\n"
 );
+#endif
 #endif
 
 /* vi: set ts=4 sw=4 expandtab: */
