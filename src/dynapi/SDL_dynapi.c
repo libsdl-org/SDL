@@ -198,7 +198,7 @@ SDL_DYNAPI_entry(Uint32 apiver, void *table, Uint32 tablesize)
 
 /* Obviously we can't use SDL_LoadObject() to load SDL.  :)  */
 /* Also obviously, we never close the loaded library. */
-#if defined(_WINDOWS) || defined(__CYGWIN__)
+#if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN 1
 #endif
