@@ -48,7 +48,7 @@
 #define MIN_DIALOG_HEIGHT       100     /* Minimum dialog height */
 
 static const char g_MessageBoxFontLatin1[] = "-*-*-medium-r-normal--0-120-*-*-p-0-iso8859-1";
-static const char g_MessageBoxFont[] = "-*-*-*-*-*-*-*-*-*-*-*-*-*-*";
+static const char g_MessageBoxFont[] = "-*-*-*-*-*-*-*-120-*-*-*-*-*-*";
 
 static const SDL_MessageBoxColor g_default_colors[ SDL_MESSAGEBOX_COLOR_MAX ] = {
     { 56,  54,  53  }, /* SDL_MESSAGEBOX_COLOR_BACKGROUND, */
