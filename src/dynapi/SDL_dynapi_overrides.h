@@ -569,3 +569,4 @@
 #define SDL_GL_SwapWindow SDL_GL_SwapWindow_REAL
 #define SDL_GL_DeleteContext SDL_GL_DeleteContext_REAL
 #define SDL_vsscanf SDL_vsscanf_REAL
+#define SDL_GameControllerAddMappingsFromRW SDL_GameControllerAddMappingsFromRW_REAL
