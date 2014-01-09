@@ -1133,8 +1133,8 @@ AC_HELP_STRING([--enable-video-wayland-qt-touch], [QtWayland server support for 
         video_wayland=no
         if test x$PKG_CONFIG != xno; then
             if $PKG_CONFIG --exists wayland-client wayland-egl wayland-cursor egl xkbcommon ; then
-                WAYLAND_CFLAGS=`$PKG_CONFIG --cflags wayland-client wayland-egl wayland-cursor egl xkbcommon`
-                WAYLAND_LIBS=`$PKG_CONFIG --libs wayland-client wayland-egl wayland-cursor egl xkbcommon`
+                WAYLAND_CFLAGS=`$PKG_CONFIG --cflags wayland-client wayland-egl wayland-cursor xkbcommon`
+                WAYLAND_LIBS=`$PKG_CONFIG --libs wayland-client wayland-egl wayland-cursor xkbcommon`
                 video_wayland=yes
             fi
         fi
@@ -1147,8 +1147,50 @@ AC_HELP_STRING([--enable-video-wayland-qt-touch], [QtWayland server support for 
             fi
             SOURCES="$SOURCES $srcdir/src/video/wayland/*.c"
             EXTRA_CFLAGS="$EXTRA_CFLAGS $WAYLAND_CFLAGS"
-            dnl FIXME do dynamic loading code here.
-            EXTRA_LDFLAGS="$EXTRA_LDFLAGS $WAYLAND_LIBS"
+            AC_ARG_ENABLE(wayland-shared,
+AC_HELP_STRING([--enable-wayland-shared], [dynamically load Wayland support [[default=maybe]]]),
+                          , enable_wayland_shared=maybe)
+
+            dnl FIXME: Do BSD and OS X need special cases?
+            case "$host" in
+                *)
+                    wayland_client_lib=[`find_lib "libwayland-client.so.*" "$WAYLAND_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
+                    wayland_egl_lib=[`find_lib "libwayland-egl.so.*" "$WAYLAND_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
+                    if test x$wayland_egl_lib = x; then
+                        dnl This works in Ubuntu 13.10, maybe others
+                        wayland_egl_lib=[`find_lib "mesa-egl/libwayland-egl.so.*" "$WAYLAND_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
+                    fi
+                    wayland_cursor_lib=[`find_lib "libwayland-cursor.so.*" "$WAYLAND_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
+                    xkbcommon_lib=[`find_lib "libxkbcommon.so.*" "$WAYLAND_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
+                    ;;
+            esac
+
+            if test x$enable_wayland_shared = xmaybe; then
+                enable_wayland_shared=yes
+            fi
+            if test x$have_loadso != xyes && \
+               test x$enable_wayland_shared = xyes; then
+                AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic WAYLAND loading])
+                enable_wayland_shared=no
+            fi
+            if test x$have_loadso = xyes && \
+               test x$enable_wayland_shared = xyes && \
+               test x$wayland_client_lib != x && \
+               test x$wayland_egl_lib != x && \
+               test x$wayland_cursor_lib != x && \
+               test x$xkbcommon_lib != x; then
+                echo "-- dynamic libwayland-client -> $wayland_client_lib"
+                echo "-- dynamic libwayland-egl -> $wayland_egl_lib"
+                echo "-- dynamic libwayland-cursor -> $wayland_cursor_lib"
+                echo "-- dynamic xkbcommon -> $xkbcommon_lib"
+                AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC, "$wayland_client_lib", [ ])
+                AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_EGL, "$wayland_egl_lib", [ ])
+                AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_CURSOR, "$wayland_cursor_lib", [ ])
+                AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_XKBCOMMON, "$xkbcommon_lib", [ ])
+            else
+                enable_wayland_shared=no
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS $WAYLAND_LIBS"
+            fi
             have_video=yes
         fi
     fi

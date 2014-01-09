@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#include "SDL_config.h"
+#include "../../SDL_internal.h"
 
 #include "SDL_stdinc.h"
 #include "SDL_assert.h"
@@ -31,6 +31,8 @@
 #include "SDL_waylandvideo.h"
 #include "SDL_waylandevents_c.h"
 #include "SDL_waylandwindow.h"
+
+#include "SDL_waylanddyn.h"
 
 #include <linux/input.h>
 #include <sys/select.h>
@@ -60,14 +62,14 @@ Wayland_PumpEvents(_THIS)
     SDL_VideoData *d = _this->driverdata;
     struct pollfd pfd[1];
 
-    pfd[0].fd = wl_display_get_fd(d->display);
+    pfd[0].fd = WAYLAND_wl_display_get_fd(d->display);
     pfd[0].events = POLLIN;
     poll(pfd, 1, 0);
 
     if (pfd[0].revents & POLLIN)
-        wl_display_dispatch(d->display);
+        WAYLAND_wl_display_dispatch(d->display);
     else
-        wl_display_dispatch_pending(d->display);
+        WAYLAND_wl_display_dispatch_pending(d->display);
 }
 
 static void
@@ -199,7 +201,7 @@ keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
         return;
     }
 
-    input->xkb.keymap = xkb_map_new_from_string(input->display->xkb_context,
+    input->xkb.keymap = WAYLAND_xkb_keymap_new_from_string(input->display->xkb_context,
                                                 map_str,
                                                 XKB_KEYMAP_FORMAT_TEXT_V1,
                                                 0);
@@ -211,10 +213,10 @@ keyboard_handle_keymap(void *data, struct wl_keyboard *keyboard,
         return;
     }
 
-    input->xkb.state = xkb_state_new(input->xkb.keymap);
+    input->xkb.state = WAYLAND_xkb_state_new(input->xkb.keymap);
     if (!input->xkb.state) {
         fprintf(stderr, "failed to create XKB state\n");
-        xkb_map_unref(input->xkb.keymap);
+        WAYLAND_xkb_keymap_unref(input->xkb.keymap);
         input->xkb.keymap = NULL;
         return;
     }
@@ -266,11 +268,11 @@ keyboard_handle_key(void *data, struct wl_keyboard *keyboard,
         return;
 
     // TODO can this happen?
-    if (xkb_key_get_syms(input->xkb.state, key + 8, &syms) != 1)
+    if (WAYLAND_xkb_state_key_get_syms(input->xkb.state, key + 8, &syms) != 1)
         return;
 
     if (state) {
-        size = xkb_keysym_to_utf8(syms[0], text, sizeof text);
+        size = WAYLAND_xkb_keysym_to_utf8(syms[0], text, sizeof text);
 
         if (size > 0) {
             text[size] = 0;
@@ -287,7 +289,7 @@ keyboard_handle_modifiers(void *data, struct wl_keyboard *keyboard,
 {
     struct SDL_WaylandInput *input = data;
 
-    xkb_state_update_mask(input->xkb.state, mods_depressed, mods_latched,
+    WAYLAND_xkb_state_update_mask(input->xkb.state, mods_depressed, mods_latched,
                           mods_locked, 0, 0, group);
 }
 
@@ -349,7 +351,7 @@ Wayland_display_add_input(SDL_VideoData *d, uint32_t id)
     wl_seat_add_listener(input->seat, &seat_listener, input);
     wl_seat_set_user_data(input->seat, input);
 
-    wayland_schedule_write(d);
+    WAYLAND_wl_display_flush(d->display);
 }
 
 void Wayland_display_destroy_input(SDL_VideoData *d)
@@ -369,10 +371,10 @@ void Wayland_display_destroy_input(SDL_VideoData *d)
         wl_seat_destroy(input->seat);
 
     if (input->xkb.state)
-        xkb_state_unref(input->xkb.state);
+        WAYLAND_xkb_state_unref(input->xkb.state);
 
     if (input->xkb.keymap)
-        xkb_map_unref(input->xkb.keymap);
+        WAYLAND_xkb_keymap_unref(input->xkb.keymap);
 
     free(input);
     d->input = NULL;
