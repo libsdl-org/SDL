@@ -31,13 +31,16 @@
 #include <stdlib.h>
 #include <limits.h>
 
+#include "../../SDL_internal.h"
 #include "../SDL_sysvideo.h"
 
-#include "SDL_config.h"
 #include "SDL_mouse.h"
 #include "../../events/SDL_mouse_c.h"
 #include "SDL_waylandvideo.h"
 #include "SDL_waylandevents_c.h"
+
+#include "SDL_waylanddyn.h"
+#include "wayland-cursor.h"
 
 #include "SDL_assert.h"
 
@@ -210,7 +213,7 @@ CreateCursorFromWlCursor(SDL_VideoData *d, struct wl_cursor *wlcursor)
         data->buffer = NULL;
         data->surface = wl_compositor_create_surface(d->compositor);
         wl_surface_attach(data->surface,
-                          wl_cursor_image_get_buffer(wlcursor->images[0]),
+                          WAYLAND_wl_cursor_image_get_buffer(wlcursor->images[0]),
                           0,
                           0);
         wl_surface_damage(data->surface,
@@ -236,7 +239,7 @@ Wayland_CreateDefaultCursor()
     SDL_VideoData *data = device->driverdata;
 
     return CreateCursorFromWlCursor (data,
-                                     wl_cursor_theme_get_cursor(data->cursor_theme,
+                                     WAYLAND_wl_cursor_theme_get_cursor(data->cursor_theme,
                                                                 "left_ptr"));
 }
 
@@ -254,40 +257,40 @@ Wayland_CreateSystemCursor(SDL_SystemCursor id)
         SDL_assert(0);
         return NULL;
     case SDL_SYSTEM_CURSOR_ARROW:
-        cursor = wl_cursor_theme_get_cursor(d->cursor_theme, "left_ptr");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(d->cursor_theme, "left_ptr");
         break;
     case SDL_SYSTEM_CURSOR_IBEAM:
-        cursor = wl_cursor_theme_get_cursor(d->cursor_theme, "xterm");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(d->cursor_theme, "xterm");
         break;
     case SDL_SYSTEM_CURSOR_WAIT:
-        cursor = wl_cursor_theme_get_cursor(d->cursor_theme, "wait");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(d->cursor_theme, "wait");
         break;
     case SDL_SYSTEM_CURSOR_CROSSHAIR:
-        cursor = wl_cursor_theme_get_cursor(d->cursor_theme, "hand1");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(d->cursor_theme, "hand1");
         break;
     case SDL_SYSTEM_CURSOR_WAITARROW:
-        cursor = wl_cursor_theme_get_cursor(d->cursor_theme, "wait");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(d->cursor_theme, "wait");
         break;
     case SDL_SYSTEM_CURSOR_SIZENWSE:
-        cursor = wl_cursor_theme_get_cursor(d->cursor_theme, "hand1");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(d->cursor_theme, "hand1");
         break;
     case SDL_SYSTEM_CURSOR_SIZENESW:
-        cursor = wl_cursor_theme_get_cursor(d->cursor_theme, "hand1");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(d->cursor_theme, "hand1");
         break;
     case SDL_SYSTEM_CURSOR_SIZEWE:
-        cursor = wl_cursor_theme_get_cursor(d->cursor_theme, "hand1");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(d->cursor_theme, "hand1");
         break;
     case SDL_SYSTEM_CURSOR_SIZENS:
-        cursor = wl_cursor_theme_get_cursor(d->cursor_theme, "hand1");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(d->cursor_theme, "hand1");
         break;
     case SDL_SYSTEM_CURSOR_SIZEALL:
-        cursor = wl_cursor_theme_get_cursor(d->cursor_theme, "hand1");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(d->cursor_theme, "hand1");
         break;
     case SDL_SYSTEM_CURSOR_NO:
-        cursor = wl_cursor_theme_get_cursor(d->cursor_theme, "xterm");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(d->cursor_theme, "xterm");
         break;
     case SDL_SYSTEM_CURSOR_HAND:
-        cursor = wl_cursor_theme_get_cursor(d->cursor_theme, "hand1");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(d->cursor_theme, "hand1");
         break;
     }
 

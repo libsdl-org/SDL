@@ -18,7 +18,7 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "SDL_config.h"
+#include "../../SDL_internal.h"
 
 #if SDL_VIDEO_DRIVER_WAYLAND && SDL_VIDEO_OPENGL_EGL
 
@@ -26,6 +26,7 @@
 #include "SDL_waylandopengles.h"
 #include "SDL_waylandwindow.h"
 #include "SDL_waylandevents_c.h"
+#include "SDL_waylanddyn.h"
 
 /* EGL implementation of SDL OpenGL ES support */
 
@@ -37,7 +38,7 @@ Wayland_GLES_LoadLibrary(_THIS, const char *path) {
     ret = SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType) data->display);
 
     Wayland_PumpEvents(_this);
-    wayland_schedule_write(data);
+    WAYLAND_wl_display_flush(data->display);
     
     return ret;
 }
@@ -48,7 +49,7 @@ Wayland_GLES_CreateContext(_THIS, SDL_Window * window)
 {
     SDL_GLContext context;
     context = SDL_EGL_CreateContext(_this, ((SDL_WindowData *) window->driverdata)->egl_surface);
-    wayland_schedule_write(_this->driverdata);
+    WAYLAND_wl_display_flush( ((SDL_VideoData*)_this->driverdata)->display );
     
     return context;
 }
@@ -57,7 +58,7 @@ void
 Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
 {
     SDL_EGL_SwapBuffers(_this, ((SDL_WindowData *) window->driverdata)->egl_surface);
-    wayland_schedule_write(_this->driverdata);
+    WAYLAND_wl_display_flush( ((SDL_VideoData*)_this->driverdata)->display );
 }
 
 
@@ -73,7 +74,7 @@ Wayland_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
         ret = SDL_EGL_MakeCurrent(_this, NULL, NULL);
     }
     
-    wayland_schedule_write(_this->driverdata);
+    WAYLAND_wl_display_flush( ((SDL_VideoData*)_this->driverdata)->display );
     
     return ret;
 }
@@ -82,7 +83,7 @@ void
 Wayland_GLES_DeleteContext(_THIS, SDL_GLContext context)
 {
     SDL_EGL_DeleteContext(_this, context);
-    wayland_schedule_write(_this->driverdata);
+    WAYLAND_wl_display_flush( ((SDL_VideoData*)_this->driverdata)->display );
 }
 
 #endif /* SDL_VIDEO_DRIVER_WAYLAND && SDL_VIDEO_OPENGL_EGL */

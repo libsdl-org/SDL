@@ -819,6 +819,7 @@ enable_diskaudio
 enable_dummyaudio
 enable_video_wayland
 enable_video_wayland_qt_touch
+enable_wayland_shared
 enable_video_x11
 with_x
 enable_x11_shared
@@ -1538,6 +1539,7 @@ Optional Features:
   --enable-video-wayland-qt-touch
                           QtWayland server support for Wayland video driver
                           [[default=yes]]
+  --enable-wayland-shared dynamically load Wayland support [[default=maybe]]
   --enable-video-x11      use X11 video driver [[default=yes]]
   --enable-x11-shared     dynamically load X11 support [[default=maybe]]
   --enable-video-x11-xcursor
@@ -18705,8 +18707,8 @@ $as_echo_n "checking for Wayland support... " >&6; }
         video_wayland=no
         if test x$PKG_CONFIG != xno; then
             if $PKG_CONFIG --exists wayland-client wayland-egl wayland-cursor egl xkbcommon ; then
-                WAYLAND_CFLAGS=`$PKG_CONFIG --cflags wayland-client wayland-egl wayland-cursor egl xkbcommon`
-                WAYLAND_LIBS=`$PKG_CONFIG --libs wayland-client wayland-egl wayland-cursor egl xkbcommon`
+                WAYLAND_CFLAGS=`$PKG_CONFIG --cflags wayland-client wayland-egl wayland-cursor xkbcommon`
+                WAYLAND_LIBS=`$PKG_CONFIG --libs wayland-client wayland-egl wayland-cursor xkbcommon`
                 video_wayland=yes
             fi
         fi
@@ -18724,7 +18726,69 @@ $as_echo "#define SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH 1" >>confdefs.h
             fi
             SOURCES="$SOURCES $srcdir/src/video/wayland/*.c"
             EXTRA_CFLAGS="$EXTRA_CFLAGS $WAYLAND_CFLAGS"
-                        EXTRA_LDFLAGS="$EXTRA_LDFLAGS $WAYLAND_LIBS"
+            # Check whether --enable-wayland-shared was given.
+if test "${enable_wayland_shared+set}" = set; then :
+  enableval=$enable_wayland_shared;
+else
+  enable_wayland_shared=maybe
+fi
+
+
+                        case "$host" in
+                *)
+                    wayland_client_lib=`find_lib "libwayland-client.so.*" "$WAYLAND_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`
+                    wayland_egl_lib=`find_lib "libwayland-egl.so.*" "$WAYLAND_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`
+                    if test x$wayland_egl_lib = x; then
+                                                wayland_egl_lib=`find_lib "mesa-egl/libwayland-egl.so.*" "$WAYLAND_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`
+                    fi
+                    wayland_cursor_lib=`find_lib "libwayland-cursor.so.*" "$WAYLAND_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`
+                    xkbcommon_lib=`find_lib "libxkbcommon.so.*" "$WAYLAND_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`
+                    ;;
+            esac
+
+            if test x$enable_wayland_shared = xmaybe; then
+                enable_wayland_shared=yes
+            fi
+            if test x$have_loadso != xyes && \
+               test x$enable_wayland_shared = xyes; then
+                { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: You must have SDL_LoadObject() support for dynamic WAYLAND loading" >&5
+$as_echo "$as_me: WARNING: You must have SDL_LoadObject() support for dynamic WAYLAND loading" >&2;}
+                enable_wayland_shared=no
+            fi
+            if test x$have_loadso = xyes && \
+               test x$enable_wayland_shared = xyes && \
+               test x$wayland_client_lib != x && \
+               test x$wayland_egl_lib != x && \
+               test x$wayland_cursor_lib != x && \
+               test x$xkbcommon_lib != x; then
+                echo "-- dynamic libwayland-client -> $wayland_client_lib"
+                echo "-- dynamic libwayland-egl -> $wayland_egl_lib"
+                echo "-- dynamic libwayland-cursor -> $wayland_cursor_lib"
+                echo "-- dynamic xkbcommon -> $xkbcommon_lib"
+
+cat >>confdefs.h <<_ACEOF
+#define SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC "$wayland_client_lib"
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_EGL "$wayland_egl_lib"
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_CURSOR "$wayland_cursor_lib"
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_XKBCOMMON "$xkbcommon_lib"
+_ACEOF
+
+            else
+                enable_wayland_shared=no
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS $WAYLAND_LIBS"
+            fi
             have_video=yes
         fi
     fi
