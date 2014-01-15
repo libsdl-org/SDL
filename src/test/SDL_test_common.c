@@ -1293,7 +1293,11 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
             break;
         }
         break;
-    case SDL_KEYDOWN:
+    case SDL_KEYDOWN: {
+        SDL_bool withControl = !!(event->key.keysym.mod & KMOD_CTRL);
+        SDL_bool withShift = !!(event->key.keysym.mod & KMOD_SHIFT);
+        SDL_bool withAlt = !!(event->key.keysym.mod & KMOD_ALT);
+
         switch (event->key.keysym.sym) {
             /* Add hotkeys here */
         case SDLK_PRINTSCREEN: {
@@ -1308,7 +1312,7 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
             }
             break;
         case SDLK_EQUALS:
-            if (event->key.keysym.mod & KMOD_CTRL) {
+            if (withControl) {
                 /* Ctrl-+ double the size of the window */
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 if (window) {
@@ -1319,7 +1323,7 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
             }
             break;
         case SDLK_MINUS:
-            if (event->key.keysym.mod & KMOD_CTRL) {
+            if (withControl) {
                 /* Ctrl-- half the size of the window */
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 if (window) {
@@ -1330,12 +1334,12 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
             }
             break;
         case SDLK_c:
-            if (event->key.keysym.mod & KMOD_CTRL) {
+            if (withControl) {
                 /* Ctrl-C copy awesome text! */
                 SDL_SetClipboardText("SDL rocks!\nYou know it!");
                 printf("Copied text to clipboard\n");
             }
-            if (event->key.keysym.mod & KMOD_ALT) {
+            if (withAlt) {
                 /* Alt-C toggle a render clip rectangle */
                 for (i = 0; i < state->num_windows; ++i) {
                     int w, h;
@@ -1357,7 +1361,7 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
             }
             break;
         case SDLK_v:
-            if (event->key.keysym.mod & KMOD_CTRL) {
+            if (withControl) {
                 /* Ctrl-V paste awesome text! */
                 char *text = SDL_GetClipboardText();
                 if (*text) {
@@ -1369,7 +1373,7 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
             }
             break;
         case SDLK_g:
-            if (event->key.keysym.mod & KMOD_CTRL) {
+            if (withControl) {
                 /* Ctrl-G toggle grab */
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 if (window) {
@@ -1378,7 +1382,7 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
             }
             break;
         case SDLK_m:
-            if (event->key.keysym.mod & KMOD_CTRL) {
+            if (withControl) {
                 /* Ctrl-M maximize */
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 if (window) {
@@ -1392,13 +1396,13 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
             }
             break;
         case SDLK_r:
-            if (event->key.keysym.mod & KMOD_CTRL) {
+            if (withControl) {
                 /* Ctrl-R toggle mouse relative mode */
                 SDL_SetRelativeMouseMode(!SDL_GetRelativeMouseMode() ? SDL_TRUE : SDL_FALSE);
             }
             break;
         case SDLK_z:
-            if (event->key.keysym.mod & KMOD_CTRL) {
+            if (withControl) {
                 /* Ctrl-Z minimize */
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 if (window) {
@@ -1407,7 +1411,7 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
             }
             break;
         case SDLK_RETURN:
-            if (event->key.keysym.mod & KMOD_CTRL) {
+            if (withControl) {
                 /* Ctrl-Enter toggle fullscreen */
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 if (window) {
@@ -1418,7 +1422,7 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
                         SDL_SetWindowFullscreen(window, SDL_WINDOW_FULLSCREEN);
                     }
                 }
-            } else if (event->key.keysym.mod & KMOD_ALT) {
+            } else if (withAlt) {
                 /* Alt-Enter toggle fullscreen desktop */
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 if (window) {
@@ -1432,7 +1436,7 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
             }
             break;
         case SDLK_b:
-            if (event->key.keysym.mod & KMOD_CTRL) {
+            if (withControl) {
                 /* Ctrl-B toggle window border */
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 if (window) {
@@ -1443,18 +1447,18 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
             }
             break;
         case SDLK_0:
-            if (event->key.keysym.mod & KMOD_CTRL) {
+            if (withControl) {
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
                 SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_INFORMATION, "Test Message", "You're awesome!", window);
             }
             break;
         case SDLK_1:
-            if (event->key.keysym.mod & KMOD_CTRL) {
+            if (withControl) {
                 FullscreenTo(0, event->key.windowID);
             }
             break;
         case SDLK_2:
-            if (event->key.keysym.mod & KMOD_CTRL) {
+            if (withControl) {
                 FullscreenTo(1, event->key.windowID);
             }
             break;
@@ -1474,6 +1478,7 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
             break;
         }
         break;
+    }
     case SDL_QUIT:
         *done = 1;
         break;
