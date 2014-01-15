@@ -299,9 +299,14 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
        !!! FIXME:   http://bugzilla.libsdl.org/show_bug.cgi?id=1825
     */
     windows = [NSApp orderedWindows];
-    if ([windows count] > 0) {
-        NSWindow *win = (NSWindow *) [windows objectAtIndex:0];
+    for (NSWindow *win in windows)
+    {
+        if (win == window) {
+            continue;
+        }
+
         [win makeKeyAndOrderFront:self];
+        break;
     }
 }
 
