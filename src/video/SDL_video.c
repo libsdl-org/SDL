@@ -1288,6 +1288,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
     window->last_fullscreen_flags = window->flags;
     window->brightness = 1.0f;
     window->next = _this->windows;
+    window->is_destroying = SDL_FALSE;
 
     if (_this->windows) {
         _this->windows->prev = window;
@@ -1328,6 +1329,7 @@ SDL_CreateWindowFrom(const void *data)
     window->id = _this->next_object_id++;
     window->flags = SDL_WINDOW_FOREIGN;
     window->last_fullscreen_flags = window->flags;
+    window->is_destroying = SDL_FALSE;
     window->brightness = 1.0f;
     window->next = _this->windows;
     if (_this->windows) {
@@ -1389,6 +1391,7 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
     window->icon = NULL;
     window->flags = ((flags & CREATE_FLAGS) | SDL_WINDOW_HIDDEN);
     window->last_fullscreen_flags = window->flags;
+    window->is_destroying = SDL_FALSE;
 
     if (_this->CreateWindow && !(flags & SDL_WINDOW_FOREIGN)) {
         if (_this->CreateWindow(_this, window) < 0) {
@@ -2169,7 +2172,7 @@ ShouldMinimizeOnFocusLoss(SDL_Window * window)
 {
     const char *hint;
 
-    if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
+    if (!(window->flags & SDL_WINDOW_FULLSCREEN) || window->is_destroying) {
         return SDL_FALSE;
     }
 
@@ -2227,6 +2230,8 @@ SDL_DestroyWindow(SDL_Window * window)
     SDL_VideoDisplay *display;
 
     CHECK_WINDOW_MAGIC(window, );
+
+    window->is_destroying = SDL_TRUE;
 
     /* Restore video mode, etc. */
     SDL_HideWindow(window);
