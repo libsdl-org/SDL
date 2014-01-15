@@ -93,6 +93,8 @@ struct SDL_Window
     SDL_Surface *surface;
     SDL_bool surface_valid;
 
+    SDL_bool is_destroying;
+
     SDL_WindowShaper *shaper;
 
     SDL_WindowUserData *data;
