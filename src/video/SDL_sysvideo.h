@@ -79,6 +79,7 @@ struct SDL_Window
     int min_w, min_h;
     int max_w, max_h;
     Uint32 flags;
+    Uint32 last_fullscreen_flags;
 
     /* Stored position and size for windowed mode */
     SDL_Rect windowed;
