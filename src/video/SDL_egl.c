@@ -181,8 +181,8 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
     if (egl_path != NULL) {
         dll_handle = SDL_LoadObject(egl_path);
     }   
-    /* Catch the case where the application isn't linked with EGL */
-    if ((SDL_LoadFunction(dll_handle, "eglChooseConfig") == NULL) && (egl_path == NULL)) {
+    /* Try loading a EGL symbol, if it does not work try the default library paths */
+    if (SDL_LoadFunction(dll_handle, "eglChooseConfig") == NULL) {
         if (dll_handle != NULL) {
             SDL_UnloadObject(dll_handle);
         }
