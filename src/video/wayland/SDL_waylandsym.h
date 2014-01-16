@@ -53,7 +53,7 @@ SDL_WAYLAND_SYM(void, wl_list_insert_list, (struct wl_list *, struct wl_list *))
 
 /* These functions are available in Wayland >= 1.4 */
 SDL_WAYLAND_MODULE(WAYLAND_CLIENT_1_4)
-SDL_WAYLAND_SYM(void, wl_proxy_marshal_constructor, (uint32_t opcode, const struct wl_interface *interface, ...))
+SDL_WAYLAND_SYM(struct wl_proxy *, wl_proxy_marshal_constructor, (struct wl_proxy *, uint32_t opcode, const struct wl_interface *interface, ...))
 
 SDL_WAYLAND_INTERFACE(wl_seat_interface)
 SDL_WAYLAND_INTERFACE(wl_surface_interface)
