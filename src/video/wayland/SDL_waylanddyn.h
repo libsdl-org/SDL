@@ -78,6 +78,7 @@ void SDL_WAYLAND_UnloadSymbols(void);
 #define wl_proxy_set_user_data (*WAYLAND_wl_proxy_set_user_data)
 #define wl_proxy_get_user_data (*WAYLAND_wl_proxy_get_user_data)
 #define wl_proxy_add_listener (*WAYLAND_wl_proxy_add_listener)
+#define wl_proxy_marshal_constructor (*WAYLAND_wl_proxy_marshal_constructor)
 
 #define wl_seat_interface (*WAYLAND_wl_seat_interface)
 #define wl_surface_interface (*WAYLAND_wl_surface_interface)
