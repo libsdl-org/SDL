@@ -1281,9 +1281,17 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
             {
                 SDL_Window *window = SDL_GetWindowFromID(event->window.windowID);
                 if (window) {
-                    SDL_DestroyWindow(window);
                     for (i = 0; i < state->num_windows; ++i) {
                         if (window == state->windows[i]) {
+                            if (state->targets[i]) {
+                                SDL_DestroyTexture(state->targets[i]);
+                                state->targets[i] = NULL;
+                            }
+                            if (state->renderers[i]) {
+                                SDL_DestroyRenderer(state->renderers[i]);
+                                state->renderers[i] = NULL;
+                            }
+                            SDL_DestroyWindow(state->windows[i]);
                             state->windows[i] = NULL;
                             break;
                         }
