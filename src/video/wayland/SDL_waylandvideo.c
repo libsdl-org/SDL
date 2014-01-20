@@ -21,6 +21,8 @@
 
 #include "../../SDL_internal.h"
 
+#if SDL_VIDEO_DRIVER_WAYLAND
+
 #include "SDL_video.h"
 #include "SDL_mouse.h"
 #include "SDL_stdinc.h"
@@ -428,5 +430,7 @@ Wayland_VideoQuit(_THIS)
     free(data);
     _this->driverdata = NULL;
 }
+
+#endif /* SDL_VIDEO_DRIVER_WAYLAND */
 
 /* vi: set ts=4 sw=4 expandtab: */

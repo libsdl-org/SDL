@@ -21,6 +21,8 @@
 
 #include "../../SDL_internal.h"
 
+#if SDL_VIDEO_DRIVER_WAYLAND
+
 #include "SDL_stdinc.h"
 #include "SDL_assert.h"
 
@@ -379,5 +381,7 @@ void Wayland_display_destroy_input(SDL_VideoData *d)
     free(input);
     d->input = NULL;
 }
+
+#endif /* SDL_VIDEO_DRIVER_WAYLAND */
 
 /* vi: set ts=4 sw=4 expandtab: */
