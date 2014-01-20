@@ -19,6 +19,10 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+#include "../../SDL_internal.h"
+
+#if SDL_VIDEO_DRIVER_WAYLAND
+
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
@@ -31,7 +35,6 @@
 #include <stdlib.h>
 #include <limits.h>
 
-#include "../../SDL_internal.h"
 #include "../SDL_sysvideo.h"
 
 #include "SDL_mouse.h"
@@ -44,7 +47,6 @@
 
 #include "SDL_assert.h"
 
-#if SDL_VIDEO_DRIVER_WAYLAND
 
 typedef struct {
     struct wl_buffer   *buffer;
@@ -407,4 +409,4 @@ Wayland_FiniMouse(void)
     mouse->WarpMouse = NULL;
     mouse->SetRelativeMouseMode = NULL;
 }
-#endif
+#endif  /* SDL_VIDEO_DRIVER_WAYLAND */

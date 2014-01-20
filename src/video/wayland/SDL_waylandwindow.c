@@ -21,6 +21,8 @@
 
 #include "../../SDL_internal.h"
 
+#if SDL_VIDEO_DRIVER_WAYLAND && SDL_VIDEO_OPENGL_EGL
+
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_windowevents_c.h"
 #include "../SDL_egl_c.h"
@@ -235,5 +237,7 @@ void Wayland_DestroyWindow(_THIS, SDL_Window *window)
         WAYLAND_wl_display_flush(data->display);
     }
 }
+
+#endif /* SDL_VIDEO_DRIVER_WAYLAND && SDL_VIDEO_OPENGL_EGL */
 
 /* vi: set ts=4 sw=4 expandtab: */
