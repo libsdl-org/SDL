@@ -284,6 +284,10 @@ Android_RemoveJoystick(int device_id)
     }
 
     const int retval = item->device_instance;
+    if (item->joystick) {
+        item->joystick->hwdata = NULL;
+    }
+        
     if (prev != NULL) {
         prev->next = item->next;
     } else {
@@ -507,7 +511,14 @@ SDL_JoystickGUID SDL_SYS_JoystickGetDeviceGUID( int device_index )
 
 SDL_JoystickGUID SDL_SYS_JoystickGetGUID(SDL_Joystick * joystick)
 {
-    return ((SDL_joylist_item*)joystick->hwdata)->guid;
+    SDL_JoystickGUID guid;
+    
+    if (joystick->hwdata != NULL) {
+        return ((SDL_joylist_item*)joystick->hwdata)->guid;
+    }
+    
+    SDL_zero(guid);
+    return guid;
 }
 
 #endif /* SDL_JOYSTICK_ANDROID */
