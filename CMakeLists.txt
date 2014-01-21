@@ -213,6 +213,7 @@ dep_option(PULSEAUDIO_SHARED   "Dynamically load PulseAudio support" ON "PULSEAU
 set_option(ARTS                "Support the Analog Real Time Synthesizer" ${UNIX_SYS})
 dep_option(ARTS_SHARED         "Dynamically load aRts audio support" ON "ARTS" OFF)
 set_option(NAS                 "Support the NAS audio API" ${UNIX_SYS})
+set_option(NAS_SHARED          "Dynamically load NAS audio API" ${UNIX_SYS})
 set_option(SNDIO               "Support the sndio audio API" ${UNIX_SYS})
 set_option(RPATH               "Use an rpath when linking SDL" ${UNIX_SYS})
 set_option(CLOCK_GETTIME       "Use clock_gettime() instead of gettimeofday()" OFF)
