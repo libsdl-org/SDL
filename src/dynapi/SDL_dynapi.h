@@ -39,7 +39,11 @@
 #error Nope, you have to edit this file to force this off.
 #endif
 
-#if defined(__APPLE__) && TARGET_OS_IPHONE  /* probably not useful on iOS. */
+#ifdef __APPLE__
+#include "TargetConditionals.h"
+#endif
+
+#if TARGET_OS_IPHONE  /* probably not useful on iOS. */
 #define SDL_DYNAMIC_API 0
 #else   /* everyone else. */
 #define SDL_DYNAMIC_API 1
