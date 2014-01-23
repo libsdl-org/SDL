@@ -85,35 +85,70 @@ keycode_to_SDL(int keycode)
     int button = 0;
     switch(keycode) 
     {
-        /* D-Pad key codes (API 1), these get mapped to 0...4 */
-        case AKEYCODE_DPAD_UP:
-        case AKEYCODE_DPAD_DOWN:
-        case AKEYCODE_DPAD_LEFT:
-        case AKEYCODE_DPAD_RIGHT:
-        case AKEYCODE_DPAD_CENTER:
-            button = keycode - AKEYCODE_DPAD_UP;
-            break;
-        
-        /* Some gamepad buttons (API 9), these get mapped to 5...19*/
+        /* Some gamepad buttons (API 9) */
         case AKEYCODE_BUTTON_A:
-        case AKEYCODE_BUTTON_B:
-        case AKEYCODE_BUTTON_C:
-        case AKEYCODE_BUTTON_X:
-        case AKEYCODE_BUTTON_Y:
-        case AKEYCODE_BUTTON_Z:
-        case AKEYCODE_BUTTON_L1:
-        case AKEYCODE_BUTTON_L2:
-        case AKEYCODE_BUTTON_R1:
-        case AKEYCODE_BUTTON_R2:
-        case AKEYCODE_BUTTON_THUMBL:
-        case AKEYCODE_BUTTON_THUMBR:
-        case AKEYCODE_BUTTON_START:
-        case AKEYCODE_BUTTON_SELECT:
-        case AKEYCODE_BUTTON_MODE:
-            button = keycode - AKEYCODE_BUTTON_A + 5;
+            button = SDL_CONTROLLER_BUTTON_A;
             break;
-            
-        
+        case AKEYCODE_BUTTON_B:
+            button = SDL_CONTROLLER_BUTTON_B;
+            break;
+        case AKEYCODE_BUTTON_X:
+            button = SDL_CONTROLLER_BUTTON_X;
+            break;
+        case AKEYCODE_BUTTON_Y:
+            button = SDL_CONTROLLER_BUTTON_Y;
+            break;
+        case AKEYCODE_BUTTON_L1:
+            button = SDL_CONTROLLER_BUTTON_LEFTSHOULDER;
+            break;
+        case AKEYCODE_BUTTON_R1:
+            button = SDL_CONTROLLER_BUTTON_RIGHTSHOULDER;
+            break;
+        case AKEYCODE_BUTTON_THUMBL:
+            button = SDL_CONTROLLER_BUTTON_LEFTSTICK;
+            break;
+        case AKEYCODE_BUTTON_THUMBR:
+            button = SDL_CONTROLLER_BUTTON_RIGHTSTICK;
+            break;
+        case AKEYCODE_BUTTON_START:
+            button = SDL_CONTROLLER_BUTTON_START;
+            break;
+        case AKEYCODE_BUTTON_SELECT:
+            button = SDL_CONTROLLER_BUTTON_BACK;
+            break;
+        case AKEYCODE_BUTTON_MODE:
+            button = SDL_CONTROLLER_BUTTON_GUIDE;
+            break;
+        case AKEYCODE_BUTTON_L2:
+            button = SDL_CONTROLLER_BUTTON_MAX; /* Not supported by GameController */
+            break;
+        case AKEYCODE_BUTTON_R2:
+            button = SDL_CONTROLLER_BUTTON_MAX+1; /* Not supported by GameController */
+            break;
+        case AKEYCODE_BUTTON_C:
+            button = SDL_CONTROLLER_BUTTON_MAX+2; /* Not supported by GameController */
+            break;
+        case AKEYCODE_BUTTON_Z:
+            button = SDL_CONTROLLER_BUTTON_MAX+3; /* Not supported by GameController */
+            break;
+                        
+        /* D-Pad key codes (API 1) */
+        case AKEYCODE_DPAD_UP:
+            button = SDL_CONTROLLER_BUTTON_DPAD_UP;
+            break;
+        case AKEYCODE_DPAD_DOWN:
+            button = SDL_CONTROLLER_BUTTON_DPAD_DOWN;
+            break;
+        case AKEYCODE_DPAD_LEFT:
+            button = SDL_CONTROLLER_BUTTON_DPAD_LEFT;
+            break;
+        case AKEYCODE_DPAD_RIGHT:
+            button = SDL_CONTROLLER_BUTTON_DPAD_RIGHT;
+            break;
+        case AKEYCODE_DPAD_CENTER:
+            button = SDL_CONTROLLER_BUTTON_MAX+4; /* Not supported by GameController */
+            break;
+
         /* More gamepad buttons (API 12), these get mapped to 20...35*/
         case AKEYCODE_BUTTON_1:
         case AKEYCODE_BUTTON_2:
@@ -131,7 +166,7 @@ keycode_to_SDL(int keycode)
         case AKEYCODE_BUTTON_14:
         case AKEYCODE_BUTTON_15:
         case AKEYCODE_BUTTON_16:
-            button = keycode - AKEYCODE_BUTTON_1 + 20;
+            button = keycode - AKEYCODE_BUTTON_1 + SDL_CONTROLLER_BUTTON_MAX + 5;
             break;
             
         default:
