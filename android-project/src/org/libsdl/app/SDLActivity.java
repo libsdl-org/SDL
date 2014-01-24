@@ -2,6 +2,9 @@ package org.libsdl.app;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 
 import android.app.*;
 import android.content.*;
@@ -922,6 +925,13 @@ class SDLJoystickHandler_API12 extends SDLJoystickHandler {
         public String name;
         public ArrayList<InputDevice.MotionRange> axes;
     }
+    class RangeComparator implements Comparator<InputDevice.MotionRange>
+    {
+        @Override
+        public int compare(InputDevice.MotionRange arg0, InputDevice.MotionRange arg1) {
+            return arg0.getAxis() - arg1.getAxis();
+        }
+    }
     
     private ArrayList<SDLJoystick> mJoysticks;
     
@@ -948,8 +958,10 @@ class SDLJoystickHandler_API12 extends SDLJoystickHandler {
                     joystick.name = joystickDevice.getName();
                     joystick.axes = new ArrayList<InputDevice.MotionRange>();
                     
-                    for (InputDevice.MotionRange range : joystickDevice.getMotionRanges()) {
-                         if ( (range.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0) {
+                    List<InputDevice.MotionRange> ranges = joystickDevice.getMotionRanges();
+                    Collections.sort(ranges, new RangeComparator());
+                    for (InputDevice.MotionRange range : ranges ) {
+                        if ( (range.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0 ) {
                             joystick.axes.add(range);
                          }
                     }
