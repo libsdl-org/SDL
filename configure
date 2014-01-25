@@ -1507,7 +1507,6 @@ Optional Features:
   --enable-loadso         Enable the shared object loading subsystem
                           [[default=yes]]
   --enable-cpuinfo        Enable the cpuinfo subsystem [[default=yes]]
-  --enable-atomic         Enable the atomic operations [[default=yes]]
   --enable-assembly       Enable assembly routines [[default=yes]]
   --enable-ssemath        Allow GCC to use SSE floating point math
                           [[default=no]]
@@ -16821,6 +16820,8 @@ if test x$enable_atomic != xyes; then
 
 $as_echo "#define SDL_ATOMIC_DISABLED 1" >>confdefs.h
 
+else
+    SUMMARY_modules="${SUMMARY_modules} atomic"
 fi
 # Check whether --enable-audio was given.
 if test "${enable_audio+set}" = set; then :
@@ -16833,6 +16834,8 @@ if test x$enable_audio != xyes; then
 
 $as_echo "#define SDL_AUDIO_DISABLED 1" >>confdefs.h
 
+else
+    SUMMARY_modules="${SUMMARY_modules} audio"
 fi
 # Check whether --enable-video was given.
 if test "${enable_video+set}" = set; then :
@@ -16845,6 +16848,8 @@ if test x$enable_video != xyes; then
 
 $as_echo "#define SDL_VIDEO_DISABLED 1" >>confdefs.h
 
+else
+    SUMMARY_modules="${SUMMARY_modules} video"
 fi
 # Check whether --enable-render was given.
 if test "${enable_render+set}" = set; then :
@@ -16857,6 +16862,8 @@ if test x$enable_render != xyes; then
 
 $as_echo "#define SDL_RENDER_DISABLED 1" >>confdefs.h
 
+else
+    SUMMARY_modules="${SUMMARY_modules} render"
 fi
 # Check whether --enable-events was given.
 if test "${enable_events+set}" = set; then :
@@ -16869,6 +16876,8 @@ if test x$enable_events != xyes; then
 
 $as_echo "#define SDL_EVENTS_DISABLED 1" >>confdefs.h
 
+else
+    SUMMARY_modules="${SUMMARY_modules} events"
 fi
 # Check whether --enable-joystick was given.
 if test "${enable_joystick+set}" = set; then :
@@ -16881,6 +16890,8 @@ if test x$enable_joystick != xyes; then
 
 $as_echo "#define SDL_JOYSTICK_DISABLED 1" >>confdefs.h
 
+else
+    SUMMARY_modules="${SUMMARY_modules} joystick"
 fi
 # Check whether --enable-haptic was given.
 if test "${enable_haptic+set}" = set; then :
@@ -16893,6 +16904,8 @@ if test x$enable_haptic != xyes; then
 
 $as_echo "#define SDL_HAPTIC_DISABLED 1" >>confdefs.h
 
+else
+    SUMMARY_modules="${SUMMARY_modules} haptic"
 fi
 # Check whether --enable-power was given.
 if test "${enable_power+set}" = set; then :
@@ -16905,6 +16918,8 @@ if test x$enable_power != xyes; then
 
 $as_echo "#define SDL_POWER_DISABLED 1" >>confdefs.h
 
+else
+    SUMMARY_modules="${SUMMARY_modules} power"
 fi
 # Check whether --enable-filesystem was given.
 if test "${enable_filesystem+set}" = set; then :
@@ -16917,6 +16932,8 @@ if test x$enable_filesystem != xyes; then
 
 $as_echo "#define SDL_FILESYSTEM_DISABLED 1" >>confdefs.h
 
+else
+    SUMMARY_modules="${SUMMARY_modules} filesystem"
 fi
 # Check whether --enable-threads was given.
 if test "${enable_threads+set}" = set; then :
@@ -16929,6 +16946,8 @@ if test x$enable_threads != xyes; then
 
 $as_echo "#define SDL_THREADS_DISABLED 1" >>confdefs.h
 
+else
+    SUMMARY_modules="${SUMMARY_modules} threads"
 fi
 # Check whether --enable-timers was given.
 if test "${enable_timers+set}" = set; then :
@@ -16941,6 +16960,8 @@ if test x$enable_timers != xyes; then
 
 $as_echo "#define SDL_TIMERS_DISABLED 1" >>confdefs.h
 
+else
+    SUMMARY_modules="${SUMMARY_modules} timers"
 fi
 # Check whether --enable-file was given.
 if test "${enable_file+set}" = set; then :
@@ -16953,6 +16974,8 @@ if test x$enable_file != xyes; then
 
 $as_echo "#define SDL_FILE_DISABLED 1" >>confdefs.h
 
+else
+    SUMMARY_modules="${SUMMARY_modules} file"
 fi
 # Check whether --enable-loadso was given.
 if test "${enable_loadso+set}" = set; then :
@@ -16965,6 +16988,8 @@ if test x$enable_loadso != xyes; then
 
 $as_echo "#define SDL_LOADSO_DISABLED 1" >>confdefs.h
 
+else
+    SUMMARY_modules="${SUMMARY_modules} loadso"
 fi
 # Check whether --enable-cpuinfo was given.
 if test "${enable_cpuinfo+set}" = set; then :
@@ -16977,18 +17002,8 @@ if test x$enable_cpuinfo != xyes; then
 
 $as_echo "#define SDL_CPUINFO_DISABLED 1" >>confdefs.h
 
-fi
-# Check whether --enable-atomic was given.
-if test "${enable_atomic+set}" = set; then :
-  enableval=$enable_atomic;
 else
-  enable_atomic=yes
-fi
-
-if test x$enable_atomic != xyes; then
-
-$as_echo "#define SDL_ATOMIC_DISABLED 1" >>confdefs.h
-
+    SUMMARY_modules="${SUMMARY_modules} cpuinfo"
 fi
 # Check whether --enable-assembly was given.
 if test "${enable_assembly+set}" = set; then :
@@ -16998,6 +17013,8 @@ else
 fi
 
 if test x$enable_assembly = xyes; then
+    SUMMARY_modules="${SUMMARY_modules} assembly"
+
 
 $as_echo "#define SDL_ASSEMBLY_ROUTINES 1" >>confdefs.h
 
@@ -17083,6 +17100,7 @@ $as_echo "$have_gcc_mmx" >&6; }
 
         if test x$have_gcc_mmx = xyes; then
             EXTRA_CFLAGS="$EXTRA_CFLAGS $mmx_CFLAGS"
+            SUMMARY_math="${SUMMARY_math} mmx"
         fi
     fi
 
@@ -17133,6 +17151,7 @@ $as_echo "$have_gcc_3dnow" >&6; }
 
         if test x$have_gcc_3dnow = xyes; then
             EXTRA_CFLAGS="$EXTRA_CFLAGS $amd3dnow_CFLAGS"
+            SUMMARY_math="${SUMMARY_math} 3dnow"
         fi
     fi
 
@@ -17189,6 +17208,7 @@ $as_echo "$have_gcc_sse" >&6; }
 
         if test x$have_gcc_sse = xyes; then
             EXTRA_CFLAGS="$EXTRA_CFLAGS $sse_CFLAGS"
+            SUMMARY_math="${SUMMARY_math} sse"
         fi
     fi
 
@@ -17245,6 +17265,7 @@ $as_echo "$have_gcc_sse2" >&6; }
 
         if test x$have_gcc_sse2 = xyes; then
             EXTRA_CFLAGS="$EXTRA_CFLAGS $sse2_CFLAGS"
+            SUMMARY_math="${SUMMARY_math} sse2"
         fi
     fi
 
@@ -17393,6 +17414,7 @@ $as_echo "#define HAVE_ALTIVEC_H 1" >>confdefs.h
 
             fi
             EXTRA_CFLAGS="$EXTRA_CFLAGS $altivec_CFLAGS"
+            SUMMARY_math="${SUMMARY_math} altivec"
         fi
     fi
 fi
@@ -17474,6 +17496,7 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_oss" >&5
 $as_echo "$have_oss" >&6; }
         if test x$have_oss = xyes; then
+            SUMMARY_audio="${SUMMARY_audio} oss"
 
 $as_echo "#define SDL_AUDIO_DRIVER_OSS 1" >>confdefs.h
 
@@ -17738,8 +17761,10 @@ cat >>confdefs.h <<_ACEOF
 #define SDL_AUDIO_DRIVER_ALSA_DYNAMIC "$alsa_lib"
 _ACEOF
 
+                SUMMARY_audio="${SUMMARY_audio} alsa(dynamic)"
             else
                 EXTRA_LDFLAGS="$EXTRA_LDFLAGS $ALSA_LIBS"
+                SUMMARY_audio="${SUMMARY_audio} alsa"
             fi
             have_audio=yes
         fi
@@ -18021,8 +18046,10 @@ cat >>confdefs.h <<_ACEOF
 #define SDL_AUDIO_DRIVER_ESD_DYNAMIC "$esd_lib"
 _ACEOF
 
+                SUMMARY_audio="${SUMMARY_audio} esd(dynamic)"
             else
                 EXTRA_LDFLAGS="$EXTRA_LDFLAGS $ESD_LIBS"
+                SUMMARY_audio="${SUMMARY_audio} esd"
             fi
             have_audio=yes
         fi
@@ -18124,6 +18151,7 @@ cat >>confdefs.h <<_ACEOF
 #define SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC "$pulseaudio_lib"
 _ACEOF
 
+                SUMMARY_audio="${SUMMARY_audio} pulse(dynamic)"
 
                 case "$host" in
                     # On Solaris, pulseaudio must be linked deferred explicitly
@@ -18134,6 +18162,7 @@ _ACEOF
                 esac
             else
                 EXTRA_LDFLAGS="$EXTRA_LDFLAGS $PULSEAUDIO_LIBS"
+                SUMMARY_audio="${SUMMARY_audio} pulse"
             fi
             have_audio=yes
         fi
@@ -18252,8 +18281,10 @@ cat >>confdefs.h <<_ACEOF
 #define SDL_AUDIO_DRIVER_ARTS_DYNAMIC "$arts_lib"
 _ACEOF
 
+                    SUMMARY_audio="${SUMMARY_audio} arts(dynamic)"
                 else
                     EXTRA_LDFLAGS="$EXTRA_LDFLAGS $ARTS_LIBS"
+                    SUMMARY_audio="${SUMMARY_audio} arts"
                 fi
                 have_audio=yes
             fi
@@ -18359,8 +18390,10 @@ cat >>confdefs.h <<_ACEOF
 #define SDL_AUDIO_DRIVER_NAS_DYNAMIC "$nas_lib"
 _ACEOF
 
+                SUMMARY_audio="${SUMMARY_audio} nas(dynamic)"
             else
                 EXTRA_LDFLAGS="$EXTRA_LDFLAGS $NAS_LIBS"
+                SUMMARY_audio="${SUMMARY_audio} nas"
             fi
 
 
@@ -18465,8 +18498,10 @@ cat >>confdefs.h <<_ACEOF
 #define SDL_AUDIO_DRIVER_SNDIO_DYNAMIC "$sndio_lib"
 _ACEOF
 
+                SUMMARY_audio="${SUMMARY_audio} sndio(dynamic)"
             else
                 EXTRA_LDFLAGS="$EXTRA_LDFLAGS $SNDIO_LIBS"
+                SUMMARY_audio="${SUMMARY_audio} sndio"
             fi
 
 
@@ -18493,6 +18528,7 @@ fi
 $as_echo "#define SDL_AUDIO_DRIVER_DISK 1" >>confdefs.h
 
         SOURCES="$SOURCES $srcdir/src/audio/disk/*.c"
+        SUMMARY_audio="${SUMMARY_audio} disk"
     fi
 }
 
@@ -18510,6 +18546,7 @@ fi
 $as_echo "#define SDL_AUDIO_DRIVER_DUMMY 1" >>confdefs.h
 
         SOURCES="$SOURCES $srcdir/src/audio/dummy/*.c"
+        SUMMARY_audio="${SUMMARY_audio} dummy"
     fi
 }
 
@@ -18785,9 +18822,11 @@ cat >>confdefs.h <<_ACEOF
 #define SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_XKBCOMMON "$xkbcommon_lib"
 _ACEOF
 
+                SUMMARY_video="${SUMMARY_video} wayland(dynamic)"
             else
                 enable_wayland_shared=no
                 EXTRA_LDFLAGS="$EXTRA_LDFLAGS $WAYLAND_LIBS"
+                SUMMARY_video="${SUMMARY_video} wayland"
             fi
             have_video=yes
         fi
@@ -19601,9 +19640,11 @@ cat >>confdefs.h <<_ACEOF
 #define SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT "$x11ext_lib"
 _ACEOF
 
+                SUMMARY_video="${SUMMARY_video} x11(dynamic)"
             else
                 enable_x11_shared=no
                 EXTRA_LDFLAGS="$EXTRA_LDFLAGS $X_LIBS -lX11 -lXext"
+                SUMMARY_video="${SUMMARY_video} x11"
             fi
             have_video=yes
 
@@ -19825,6 +19866,7 @@ fi
 
 $as_echo "#define SDL_VIDEO_DRIVER_X11_XCURSOR 1" >>confdefs.h
 
+                SUMMARY_video_x11="${SUMMARY_video_x11} xcursor"
             fi
             # Check whether --enable-video-x11-xinerama was given.
 if test "${enable_video_x11_xinerama+set}" = set; then :
@@ -19906,6 +19948,7 @@ fi
 
 $as_echo "#define SDL_VIDEO_DRIVER_X11_XINERAMA 1" >>confdefs.h
 
+                SUMMARY_video_x11="${SUMMARY_video_x11} xinerama"
             fi
             # Check whether --enable-video-x11-xinput was given.
 if test "${enable_video_x11_xinput+set}" = set; then :
@@ -19984,6 +20027,7 @@ fi
                 fi
             fi
             if test x$definitely_enable_video_x11_xinput = xyes; then
+                SUMMARY_video_x11="${SUMMARY_video_x11} xinput2"
 
 $as_echo "#define SDL_VIDEO_DRIVER_X11_XINPUT2 1" >>confdefs.h
 
@@ -20018,6 +20062,7 @@ if ac_fn_c_try_compile "$LINENO"; then :
             	have_xinput2_multitouch=yes
             	$as_echo "#define SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH 1" >>confdefs.h
 
+                SUMMARY_video_x11="${SUMMARY_video_x11} xinput2_multitouch"
 
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
@@ -20104,6 +20149,7 @@ fi
 
 $as_echo "#define SDL_VIDEO_DRIVER_X11_XRANDR 1" >>confdefs.h
 
+                SUMMARY_video_x11="${SUMMARY_video_x11} xrandr"
             fi
             # Check whether --enable-video-x11-scrnsaver was given.
 if test "${enable_video_x11_scrnsaver+set}" = set; then :
@@ -20184,6 +20230,7 @@ fi
 
 $as_echo "#define SDL_VIDEO_DRIVER_X11_XSCRNSAVER 1" >>confdefs.h
 
+                SUMMARY_video_x11="${SUMMARY_video_x11} xscrnsaver"
             fi
             # Check whether --enable-video-x11-xshape was given.
 if test "${enable_video_x11_xshape+set}" = set; then :
@@ -20207,6 +20254,7 @@ fi
 
 $as_echo "#define SDL_VIDEO_DRIVER_X11_XSHAPE 1" >>confdefs.h
 
+                    SUMMARY_video_x11="${SUMMARY_video_x11} xshape"
                 fi
             fi
             # Check whether --enable-video-x11-vm was given.
@@ -20289,6 +20337,7 @@ fi
 
 $as_echo "#define SDL_VIDEO_DRIVER_X11_XVIDMODE 1" >>confdefs.h
 
+                SUMMARY_video_x11="${SUMMARY_video_x11} xvidmode"
             fi
         fi
     fi
@@ -20302,6 +20351,7 @@ $as_echo "#define SDL_VIDEO_DRIVER_HAIKU 1" >>confdefs.h
 
         SOURCES="$SOURCES $srcdir/src/video/haiku/*.cc"
         have_video=yes
+        SUMMARY_video="${SUMMARY_video} haiku"
     fi
 }
 
@@ -20348,6 +20398,7 @@ $as_echo "$have_cocoa" >&6; }
 $as_echo "#define SDL_VIDEO_DRIVER_COCOA 1" >>confdefs.h
 
             SOURCES="$SOURCES $srcdir/src/video/cocoa/*.m"
+            SUMMARY_video="${SUMMARY_video} cocoa"
             have_video=yes
         fi
     fi
@@ -20534,8 +20585,10 @@ cat >>confdefs.h <<_ACEOF
 #define SDL_VIDEO_DRIVER_DIRECTFB_DYNAMIC "$directfb_lib"
 _ACEOF
 
+                SUMMARY_video="${SUMMARY_video} directfb(dynamic)"
             else
                 EXTRA_LDFLAGS="$EXTRA_LDFLAGS $DIRECTFB_LIBS"
+                SUMMARY_video="${SUMMARY_video} directfb"
             fi
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: $directfb_shared" >&5
 $as_echo "$directfb_shared" >&6; }
@@ -20641,8 +20694,10 @@ cat >>confdefs.h <<_ACEOF
 _ACEOF
 
                 fusionsound_shared=yes
+                SUMMARY_audio="${SUMMARY_audio} fusionsound(dynamic)"
             else
                 EXTRA_LDFLAGS="$EXTRA_LDFLAGS $FUSIONSOUND_LIBS"
+                SUMMARY_audio="${SUMMARY_audio} fusionsound"
             fi
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: $fusionsound_shared" >&5
 $as_echo "$fusionsound_shared" >&6; }
@@ -20667,6 +20722,7 @@ $as_echo "#define SDL_VIDEO_DRIVER_DUMMY 1" >>confdefs.h
 
         SOURCES="$SOURCES $srcdir/src/video/dummy/*.c"
         have_video=yes
+        SUMMARY_video="${SUMMARY_video} dummy"
     fi
 }
 
@@ -20717,6 +20773,7 @@ $as_echo "#define SDL_VIDEO_OPENGL_GLX 1" >>confdefs.h
 
 $as_echo "#define SDL_VIDEO_RENDER_OGL 1" >>confdefs.h
 
+            SUMMARY_video="${SUMMARY_video} opengl"
         fi
     fi
 }
@@ -20796,6 +20853,7 @@ $as_echo "#define SDL_VIDEO_OPENGL_ES 1" >>confdefs.h
 
 $as_echo "#define SDL_VIDEO_RENDER_OGL_ES 1" >>confdefs.h
 
+            SUMMARY_video="${SUMMARY_video} opengl_es1"
         fi
 
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenGL ES v2 headers" >&5
@@ -20831,6 +20889,7 @@ $as_echo "#define SDL_VIDEO_OPENGL_ES2 1" >>confdefs.h
 
 $as_echo "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
 
+            SUMMARY_video="${SUMMARY_video} opengl_es2"
         fi
     fi
 }
@@ -20847,6 +20906,7 @@ $as_echo "#define SDL_VIDEO_OPENGL_WGL 1" >>confdefs.h
 
 $as_echo "#define SDL_VIDEO_RENDER_OGL 1" >>confdefs.h
 
+        SUMMARY_video="${SUMMARY_video} opengl"
     fi
 }
 
@@ -20886,6 +20946,7 @@ $as_echo "#define SDL_VIDEO_OPENGL 1" >>confdefs.h
 
 $as_echo "#define SDL_VIDEO_OPENGL_EGL 1" >>confdefs.h
 
+            SUMMARY_video="${SUMMARY_video} opengl_es1"
         fi
 
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenGL ES v2 headers" >&5
@@ -20924,6 +20985,7 @@ $as_echo "#define SDL_VIDEO_OPENGL_ES2 1" >>confdefs.h
 
 $as_echo "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
 
+            SUMMARY_video="${SUMMARY_video} opengl_es2"
         fi
     fi
 }
@@ -20941,6 +21003,7 @@ $as_echo "#define SDL_VIDEO_OPENGL_HAIKU 1" >>confdefs.h
 $as_echo "#define SDL_VIDEO_RENDER_OGL 1" >>confdefs.h
 
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lGL"
+        SUMMARY_video="${SUMMARY_video} opengl"
     fi
 }
 
@@ -20956,6 +21019,7 @@ $as_echo "#define SDL_VIDEO_OPENGL_CGL 1" >>confdefs.h
 
 $as_echo "#define SDL_VIDEO_RENDER_OGL 1" >>confdefs.h
 
+        SUMMARY_video="${SUMMARY_video} opengl"
         case "$host" in
             *-*-darwin*)
                 if test x$enable_video_cocoa = xyes; then
@@ -20999,6 +21063,7 @@ $as_echo "$use_input_events" >&6; }
 
 $as_echo "#define SDL_INPUT_LINUXEV 1" >>confdefs.h
 
+            SUMMARY_input="${SUMMARY_input} linuxev"
         fi
 }
 
@@ -21038,6 +21103,7 @@ $as_echo "$use_input_kd" >&6; }
 
 $as_echo "#define SDL_INPUT_LINUXKD 1" >>confdefs.h
 
+        SUMMARY_input="${SUMMARY_input} linuxkd"
     fi
 }
 
@@ -21181,6 +21247,7 @@ $as_echo "$enable_input_tslib" >&6; }
 $as_echo "#define SDL_INPUT_TSLIB 1" >>confdefs.h
 
             EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lts"
+            SUMMARY_input="${SUMMARY_input} ts"
         fi
     fi
 }
@@ -21703,6 +21770,9 @@ if test "x$ac_cv_header_xaudio2_h" = xyes; then :
 fi
 
 
+
+        SUMMARY_video="${SUMMARY_video} directx"
+        SUMMARY_audio="${SUMMARY_audio} directx"
 
         # FIXME: latest Cygwin finds dinput headers, but we die on other win32 headers.
         # FIXME:  ...so force it off for now.
@@ -23024,6 +23094,37 @@ __EOF__
 
 ac_config_files="$ac_config_files Makefile:Makefile.in:Makefile.rules sdl2-config SDL2.spec sdl2.pc"
 
+ac_config_commands="$ac_config_commands sdl2_config"
+
+
+SUMMARY="SDL2 Configure Summary:\n"
+if test x$enable_shared = xyes; then
+    SUMMARY="${SUMMARY}Building Shared Libraries\n"
+fi
+if test x$enable_static = xyes; then
+    SUMMARY="${SUMMARY}Building Static Libraries\n"
+fi
+SUMMARY="${SUMMARY}Enabled modules :${SUMMARY_modules}\n"
+SUMMARY="${SUMMARY}Assembly Math   :${SUMMARY_math}\n"
+SUMMARY="${SUMMARY}Audio drivers   :${SUMMARY_audio}\n"
+SUMMARY="${SUMMARY}Video drivers   :${SUMMARY_video}\n"
+if test x$have_x = xyes; then
+    SUMMARY="${SUMMARY}X11 libraries   :${SUMMARY_video_x11}\n"
+fi
+SUMMARY="${SUMMARY}Input drivers   :${SUMMARY_input}\n"
+if test x$enable_libudev = xyes; then
+    SUMMARY="${SUMMARY}Using libudev   : YES\n"
+else
+    SUMMARY="${SUMMARY}Using libudev   : NO\n"
+fi
+if test x$have_dbus_dbus_h_hdr = xyes; then
+    SUMMARY="${SUMMARY}Using dbus      : YES\n"
+else
+    SUMMARY="${SUMMARY}Using dbus      : NO\n"
+fi
+ac_config_commands="$ac_config_commands summary"
+
+
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -24091,6 +24192,7 @@ fi
 
 
 
+SUMMARY="$SUMMARY"
 
 _ACEOF
 
@@ -24106,6 +24208,8 @@ do
     "sdl2-config") CONFIG_FILES="$CONFIG_FILES sdl2-config" ;;
     "SDL2.spec") CONFIG_FILES="$CONFIG_FILES SDL2.spec" ;;
     "sdl2.pc") CONFIG_FILES="$CONFIG_FILES sdl2.pc" ;;
+    "sdl2_config") CONFIG_COMMANDS="$CONFIG_COMMANDS sdl2_config" ;;
+    "summary") CONFIG_COMMANDS="$CONFIG_COMMANDS summary" ;;
 
   *) as_fn_error $? "invalid argument: \`$ac_config_target'" "$LINENO" 5;;
   esac
@@ -25461,6 +25565,8 @@ compiler_lib_search_path=$lt_compiler_lib_search_path_CXX
 _LT_EOF
 
  ;;
+    "sdl2_config":C) chmod a+x sdl2-config ;;
+    "summary":C) echo -en "$SUMMARY" ;;
 
   esac
 done # for ac_tag
@@ -25499,4 +25605,3 @@ if test -n "$ac_unrecognized_opts" && test "$enable_option_checking" != no; then
 $as_echo "$as_me: WARNING: unrecognized options: $ac_unrecognized_opts" >&2;}
 fi
 
-chmod a+x sdl2-config
