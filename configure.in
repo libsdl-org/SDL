@@ -348,95 +348,119 @@ AC_HELP_STRING([--enable-atomic], [Enable the atomic operations subsystem [[defa
               , enable_atomic=yes)
 if test x$enable_atomic != xyes; then
     AC_DEFINE(SDL_ATOMIC_DISABLED, 1, [ ])
+else
+    SUMMARY_modules="${SUMMARY_modules} atomic"
 fi
 AC_ARG_ENABLE(audio,
 AC_HELP_STRING([--enable-audio], [Enable the audio subsystem [[default=yes]]]),
               , enable_audio=yes)
 if test x$enable_audio != xyes; then
     AC_DEFINE(SDL_AUDIO_DISABLED, 1, [ ])
+else
+    SUMMARY_modules="${SUMMARY_modules} audio"
 fi
 AC_ARG_ENABLE(video,
 AC_HELP_STRING([--enable-video], [Enable the video subsystem [[default=yes]]]),
               , enable_video=yes)
 if test x$enable_video != xyes; then
     AC_DEFINE(SDL_VIDEO_DISABLED, 1, [ ])
+else
+    SUMMARY_modules="${SUMMARY_modules} video"
 fi
 AC_ARG_ENABLE(render,
 AC_HELP_STRING([--enable-render], [Enable the render subsystem [[default=yes]]]),
               , enable_render=yes)
 if test x$enable_render != xyes; then
     AC_DEFINE(SDL_RENDER_DISABLED, 1, [ ])
+else
+    SUMMARY_modules="${SUMMARY_modules} render"
 fi
 AC_ARG_ENABLE(events,
 AC_HELP_STRING([--enable-events], [Enable the events subsystem [[default=yes]]]),
               , enable_events=yes)
 if test x$enable_events != xyes; then
     AC_DEFINE(SDL_EVENTS_DISABLED, 1, [ ])
+else
+    SUMMARY_modules="${SUMMARY_modules} events"
 fi
 AC_ARG_ENABLE(joystick,
 AC_HELP_STRING([--enable-joystick], [Enable the joystick subsystem [[default=yes]]]),
               , enable_joystick=yes)
 if test x$enable_joystick != xyes; then
     AC_DEFINE(SDL_JOYSTICK_DISABLED, 1, [ ])
+else
+    SUMMARY_modules="${SUMMARY_modules} joystick"
 fi
 AC_ARG_ENABLE(haptic,
 AC_HELP_STRING([--enable-haptic], [Enable the haptic (force feedback) subsystem [[default=yes]]]),
               , enable_haptic=yes)
 if test x$enable_haptic != xyes; then
     AC_DEFINE(SDL_HAPTIC_DISABLED, 1, [ ])
+else
+    SUMMARY_modules="${SUMMARY_modules} haptic"
 fi
 AC_ARG_ENABLE(power,
 AC_HELP_STRING([--enable-power], [Enable the power subsystem [[default=yes]]]),
               , enable_power=yes)
 if test x$enable_power != xyes; then
     AC_DEFINE(SDL_POWER_DISABLED, 1, [ ])
+else
+    SUMMARY_modules="${SUMMARY_modules} power"
 fi
 AC_ARG_ENABLE(filesystem,
 AC_HELP_STRING([--enable-filesystem], [Enable the filesystem subsystem [[default=yes]]]),
               , enable_filesystem=yes)
 if test x$enable_filesystem != xyes; then
     AC_DEFINE(SDL_FILESYSTEM_DISABLED, 1, [ ])
+else
+    SUMMARY_modules="${SUMMARY_modules} filesystem"
 fi
 AC_ARG_ENABLE(threads,
 AC_HELP_STRING([--enable-threads], [Enable the threading subsystem [[default=yes]]]),
               , enable_threads=yes)
 if test x$enable_threads != xyes; then
     AC_DEFINE(SDL_THREADS_DISABLED, 1, [ ])
+else
+    SUMMARY_modules="${SUMMARY_modules} threads"
 fi
 AC_ARG_ENABLE(timers,
 AC_HELP_STRING([--enable-timers], [Enable the timer subsystem [[default=yes]]]),
               , enable_timers=yes)
 if test x$enable_timers != xyes; then
     AC_DEFINE(SDL_TIMERS_DISABLED, 1, [ ])
+else
+    SUMMARY_modules="${SUMMARY_modules} timers"
 fi
 AC_ARG_ENABLE(file,
 AC_HELP_STRING([--enable-file], [Enable the file subsystem [[default=yes]]]),
               , enable_file=yes)
 if test x$enable_file != xyes; then
     AC_DEFINE(SDL_FILE_DISABLED, 1, [ ])
+else
+    SUMMARY_modules="${SUMMARY_modules} file"
 fi
 AC_ARG_ENABLE(loadso,
 AC_HELP_STRING([--enable-loadso], [Enable the shared object loading subsystem [[default=yes]]]),
               , enable_loadso=yes)
 if test x$enable_loadso != xyes; then
     AC_DEFINE(SDL_LOADSO_DISABLED, 1, [ ])
+else
+    SUMMARY_modules="${SUMMARY_modules} loadso"
 fi
 AC_ARG_ENABLE(cpuinfo,
 AC_HELP_STRING([--enable-cpuinfo], [Enable the cpuinfo subsystem [[default=yes]]]),
               , enable_cpuinfo=yes)
 if test x$enable_cpuinfo != xyes; then
     AC_DEFINE(SDL_CPUINFO_DISABLED, 1, [ ])
-fi
-AC_ARG_ENABLE(atomic,
-AC_HELP_STRING([--enable-atomic], [Enable the atomic operations [[default=yes]]]),
-              , enable_atomic=yes)
-if test x$enable_atomic != xyes; then
-    AC_DEFINE(SDL_ATOMIC_DISABLED, 1, [ ])
+else
+    SUMMARY_modules="${SUMMARY_modules} cpuinfo"
 fi
 AC_ARG_ENABLE(assembly,
 AC_HELP_STRING([--enable-assembly], [Enable assembly routines [[default=yes]]]),
               , enable_assembly=yes)
 if test x$enable_assembly = xyes; then
+    SUMMARY_modules="${SUMMARY_modules} assembly"
+
     AC_DEFINE(SDL_ASSEMBLY_ROUTINES, 1, [ ])
 
     # Make sure that we don't generate floating point code that would
@@ -497,6 +521,7 @@ AC_HELP_STRING([--enable-mmx], [use MMX assembly routines [[default=yes]]]),
 
         if test x$have_gcc_mmx = xyes; then
             EXTRA_CFLAGS="$EXTRA_CFLAGS $mmx_CFLAGS"
+            SUMMARY_math="${SUMMARY_math} mmx"
         fi
     fi
 
@@ -526,6 +551,7 @@ AC_HELP_STRING([--enable-3dnow], [use 3DNow! assembly routines [[default=yes]]])
 
         if test x$have_gcc_3dnow = xyes; then
             EXTRA_CFLAGS="$EXTRA_CFLAGS $amd3dnow_CFLAGS"
+            SUMMARY_math="${SUMMARY_math} 3dnow"
         fi
     fi
 
@@ -562,6 +588,7 @@ AC_HELP_STRING([--enable-sse], [use SSE assembly routines [[default=yes]]]),
 
         if test x$have_gcc_sse = xyes; then
             EXTRA_CFLAGS="$EXTRA_CFLAGS $sse_CFLAGS"
+            SUMMARY_math="${SUMMARY_math} sse"
         fi
     fi
 
@@ -598,6 +625,7 @@ AC_HELP_STRING([--enable-sse2], [use SSE2 assembly routines [[default=no]]]),
 
         if test x$have_gcc_sse2 = xyes; then
             EXTRA_CFLAGS="$EXTRA_CFLAGS $sse2_CFLAGS"
+            SUMMARY_math="${SUMMARY_math} sse2"
         fi
     fi
 
@@ -674,6 +702,7 @@ AC_HELP_STRING([--enable-altivec], [use Altivec assembly routines [[default=yes]
               AC_DEFINE(HAVE_ALTIVEC_H, 1, [ ])
             fi
             EXTRA_CFLAGS="$EXTRA_CFLAGS $altivec_CFLAGS"
+            SUMMARY_math="${SUMMARY_math} altivec"
         fi
     fi
 fi
@@ -720,6 +749,7 @@ AC_HELP_STRING([--enable-oss], [support the OSS audio API [[default=maybe]]]),
         fi
         AC_MSG_RESULT($have_oss)
         if test x$have_oss = xyes; then
+            SUMMARY_audio="${SUMMARY_audio} oss"
             AC_DEFINE(SDL_AUDIO_DRIVER_OSS, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/audio/dsp/*.c"
             have_audio=yes
@@ -762,8 +792,10 @@ AC_HELP_STRING([--enable-alsa-shared], [dynamically load ALSA audio support [[de
                test x$enable_alsa_shared = xyes && test x$alsa_lib != x; then
                 echo "-- dynamic libasound -> $alsa_lib"
                 AC_DEFINE_UNQUOTED(SDL_AUDIO_DRIVER_ALSA_DYNAMIC, "$alsa_lib", [ ])
+                SUMMARY_audio="${SUMMARY_audio} alsa(dynamic)"
             else
                 EXTRA_LDFLAGS="$EXTRA_LDFLAGS $ALSA_LIBS"
+                SUMMARY_audio="${SUMMARY_audio} alsa"
             fi
             have_audio=yes
         fi
@@ -795,8 +827,10 @@ AC_HELP_STRING([--enable-esd-shared], [dynamically load ESD audio support [[defa
                test x$enable_esd_shared = xyes && test x$esd_lib != x; then
                 echo "-- dynamic libesd -> $esd_lib"
                 AC_DEFINE_UNQUOTED(SDL_AUDIO_DRIVER_ESD_DYNAMIC, "$esd_lib", [ ])
+                SUMMARY_audio="${SUMMARY_audio} esd(dynamic)"
             else
                 EXTRA_LDFLAGS="$EXTRA_LDFLAGS $ESD_LIBS"
+                SUMMARY_audio="${SUMMARY_audio} esd"
             fi
             have_audio=yes
         fi
@@ -842,6 +876,7 @@ AC_HELP_STRING([--enable-pulseaudio-shared], [dynamically load PulseAudio suppor
                test x$enable_pulseaudio_shared = xyes && test x$pulseaudio_lib != x; then
                 echo "-- dynamic libpulse-simple -> $pulseaudio_lib"
                 AC_DEFINE_UNQUOTED(SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC, "$pulseaudio_lib", [ ])
+                SUMMARY_audio="${SUMMARY_audio} pulse(dynamic)"
 
                 case "$host" in
                     # On Solaris, pulseaudio must be linked deferred explicitly
@@ -852,6 +887,7 @@ AC_HELP_STRING([--enable-pulseaudio-shared], [dynamically load PulseAudio suppor
                 esac
             else
                 EXTRA_LDFLAGS="$EXTRA_LDFLAGS $PULSEAUDIO_LIBS"
+                SUMMARY_audio="${SUMMARY_audio} pulse"
             fi
             have_audio=yes
         fi
@@ -900,8 +936,10 @@ AC_HELP_STRING([--enable-arts-shared], [dynamically load aRts audio support [[de
                    test x$enable_arts_shared = xyes && test x$arts_lib != x; then
                     echo "-- dynamic libartsc -> $arts_lib"
                     AC_DEFINE_UNQUOTED(SDL_AUDIO_DRIVER_ARTS_DYNAMIC, "$arts_lib", [ ])
+                    SUMMARY_audio="${SUMMARY_audio} arts(dynamic)"
                 else
                     EXTRA_LDFLAGS="$EXTRA_LDFLAGS $ARTS_LIBS"
+                    SUMMARY_audio="${SUMMARY_audio} arts"
                 fi
                 have_audio=yes
             fi
@@ -949,8 +987,10 @@ AC_HELP_STRING([--enable-nas-shared], [dynamically load NAS audio support [[defa
                test x$enable_nas_shared = xyes && test x$nas_lib != x; then
                 echo "-- dynamic libaudio -> $nas_lib"
                 AC_DEFINE_UNQUOTED(SDL_AUDIO_DRIVER_NAS_DYNAMIC, "$nas_lib", [ ])
+                SUMMARY_audio="${SUMMARY_audio} nas(dynamic)"
             else
                 EXTRA_LDFLAGS="$EXTRA_LDFLAGS $NAS_LIBS"
+                SUMMARY_audio="${SUMMARY_audio} nas"
             fi
 
             AC_DEFINE(SDL_AUDIO_DRIVER_NAS, 1, [ ])
@@ -995,8 +1035,10 @@ AC_HELP_STRING([--enable-sndio-shared], [dynamically load sndio audio support [[
                test x$enable_sndio_shared = xyes && test x$sndio_lib != x; then
                 echo "-- dynamic libsndio -> $sndio_lib"
                 AC_DEFINE_UNQUOTED(SDL_AUDIO_DRIVER_SNDIO_DYNAMIC, "$sndio_lib", [ ])
+                SUMMARY_audio="${SUMMARY_audio} sndio(dynamic)"
             else
                 EXTRA_LDFLAGS="$EXTRA_LDFLAGS $SNDIO_LIBS"
+                SUMMARY_audio="${SUMMARY_audio} sndio"
             fi
 
             AC_DEFINE(SDL_AUDIO_DRIVER_SNDIO, 1, [ ])
@@ -1016,6 +1058,7 @@ AC_HELP_STRING([--enable-diskaudio], [support the disk writer audio driver [[def
     if test x$enable_audio = xyes -a x$enable_diskaudio = xyes; then
         AC_DEFINE(SDL_AUDIO_DRIVER_DISK, 1, [ ])
         SOURCES="$SOURCES $srcdir/src/audio/disk/*.c"
+        SUMMARY_audio="${SUMMARY_audio} disk"
     fi
 }
 
@@ -1028,6 +1071,7 @@ AC_HELP_STRING([--enable-dummyaudio], [support the dummy audio driver [[default=
     if test x$enable_audio = xyes -a x$enable_dummyaudio = xyes; then
         AC_DEFINE(SDL_AUDIO_DRIVER_DUMMY, 1, [ ])
         SOURCES="$SOURCES $srcdir/src/audio/dummy/*.c"
+        SUMMARY_audio="${SUMMARY_audio} dummy"
     fi
 }
 
@@ -1187,9 +1231,11 @@ AC_HELP_STRING([--enable-wayland-shared], [dynamically load Wayland support [[de
                 AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_EGL, "$wayland_egl_lib", [ ])
                 AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_CURSOR, "$wayland_cursor_lib", [ ])
                 AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_XKBCOMMON, "$xkbcommon_lib", [ ])
+                SUMMARY_video="${SUMMARY_video} wayland(dynamic)"
             else
                 enable_wayland_shared=no
                 EXTRA_LDFLAGS="$EXTRA_LDFLAGS $WAYLAND_LIBS"
+                SUMMARY_video="${SUMMARY_video} wayland"
             fi
             have_video=yes
         fi
@@ -1299,9 +1345,11 @@ AC_HELP_STRING([--enable-x11-shared], [dynamically load X11 support [[default=ma
                 echo "-- dynamic libX11ext -> $x11ext_lib"
                 AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_X11_DYNAMIC, "$x11_lib", [ ])
                 AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT, "$x11ext_lib", [ ])
+                SUMMARY_video="${SUMMARY_video} x11(dynamic)"
             else
                 enable_x11_shared=no
                 EXTRA_LDFLAGS="$EXTRA_LDFLAGS $X_LIBS -lX11 -lXext"
+                SUMMARY_video="${SUMMARY_video} x11"
             fi
             have_video=yes
 
@@ -1378,6 +1426,7 @@ AC_HELP_STRING([--enable-video-x11-xcursor], [enable X11 Xcursor support [[defau
             fi
             if test x$definitely_enable_video_x11_xcursor = xyes; then
                 AC_DEFINE(SDL_VIDEO_DRIVER_X11_XCURSOR, 1, [ ])
+                SUMMARY_video_x11="${SUMMARY_video_x11} xcursor"
             fi
             AC_ARG_ENABLE(video-x11-xinerama,
 AC_HELP_STRING([--enable-video-x11-xinerama], [enable X11 Xinerama support [[default=yes]]]),
@@ -1405,6 +1454,7 @@ AC_HELP_STRING([--enable-video-x11-xinerama], [enable X11 Xinerama support [[def
             fi
             if test x$definitely_enable_video_x11_xinerama = xyes; then
                 AC_DEFINE(SDL_VIDEO_DRIVER_X11_XINERAMA, 1, [ ])
+                SUMMARY_video_x11="${SUMMARY_video_x11} xinerama"
             fi
             AC_ARG_ENABLE(video-x11-xinput,
 AC_HELP_STRING([--enable-video-x11-xinput], [enable X11 XInput extension for manymouse, tablets, etc [[default=yes]]]),
@@ -1431,6 +1481,7 @@ AC_HELP_STRING([--enable-video-x11-xinput], [enable X11 XInput extension for man
                 fi
             fi
             if test x$definitely_enable_video_x11_xinput = xyes; then
+                SUMMARY_video_x11="${SUMMARY_video_x11} xinput2"
                 AC_DEFINE(SDL_VIDEO_DRIVER_X11_XINPUT2, 1, [ ])
                 AC_MSG_CHECKING(for xinput2 multitouch)
             	have_xinput2_multitouch=no
@@ -1449,6 +1500,7 @@ XIAllowTouchEvents(Display *a,int b,unsigned int c,Window d,int f)
             	],[
             	have_xinput2_multitouch=yes
             	AC_DEFINE(SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH)
+                SUMMARY_video_x11="${SUMMARY_video_x11} xinput2_multitouch"
             	])
             	AC_MSG_RESULT($have_xinput2_multitouch)
             fi
@@ -1478,6 +1530,7 @@ AC_HELP_STRING([--enable-video-x11-xrandr], [enable X11 Xrandr extension for ful
             fi
             if test x$definitely_enable_video_x11_xrandr = xyes; then
                 AC_DEFINE(SDL_VIDEO_DRIVER_X11_XRANDR, 1, [ ])
+                SUMMARY_video_x11="${SUMMARY_video_x11} xrandr"
             fi
             AC_ARG_ENABLE(video-x11-scrnsaver,
 AC_HELP_STRING([--enable-video-x11-scrnsaver], [enable X11 screensaver extension [[default=yes]]]),
@@ -1504,6 +1557,7 @@ AC_HELP_STRING([--enable-video-x11-scrnsaver], [enable X11 screensaver extension
             fi
             if test x$definitely_enable_video_x11_scrnsaver = xyes; then
                 AC_DEFINE(SDL_VIDEO_DRIVER_X11_XSCRNSAVER, 1, [ ])
+                SUMMARY_video_x11="${SUMMARY_video_x11} xscrnsaver"
             fi
             AC_ARG_ENABLE(video-x11-xshape,
 AC_HELP_STRING([--enable-video-x11-xshape], [enable X11 XShape support [[default=yes]]]),
@@ -1516,6 +1570,7 @@ AC_HELP_STRING([--enable-video-x11-xshape], [enable X11 XShape support [[default
                                 ])
                 if test x$have_shape_h_hdr = xyes; then
                     AC_DEFINE(SDL_VIDEO_DRIVER_X11_XSHAPE, 1, [ ])
+                    SUMMARY_video_x11="${SUMMARY_video_x11} xshape"
                 fi
             fi
             AC_ARG_ENABLE(video-x11-vm,
@@ -1544,6 +1599,7 @@ AC_HELP_STRING([--enable-video-x11-vm], [use X11 VM extension for fullscreen [[d
             fi
             if test x$definitely_enable_video_x11_vm = xyes; then
                 AC_DEFINE(SDL_VIDEO_DRIVER_X11_XVIDMODE, 1, [ ])
+                SUMMARY_video_x11="${SUMMARY_video_x11} xvidmode"
             fi
         fi
     fi
@@ -1556,6 +1612,7 @@ CheckHaikuVideo()
         AC_DEFINE(SDL_VIDEO_DRIVER_HAIKU, 1, [ ])
         SOURCES="$SOURCES $srcdir/src/video/haiku/*.cc"
         have_video=yes
+        SUMMARY_video="${SUMMARY_video} haiku"
     fi
 }
 
@@ -1582,6 +1639,7 @@ AC_HELP_STRING([--enable-video-cocoa], [use Cocoa video driver [[default=yes]]])
         if test x$have_cocoa = xyes; then
             AC_DEFINE(SDL_VIDEO_DRIVER_COCOA, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/video/cocoa/*.m"
+            SUMMARY_video="${SUMMARY_video} cocoa"
             have_video=yes
         fi
     fi
@@ -1655,8 +1713,10 @@ AC_MSG_WARN("directfb $directfb_lib")
                 directfb_shared=yes
                 echo "-- $directfb_lib_spec -> $directfb_lib"
                 AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_DIRECTFB_DYNAMIC, "$directfb_lib", [ ])
+                SUMMARY_video="${SUMMARY_video} directfb(dynamic)"
             else
                 EXTRA_LDFLAGS="$EXTRA_LDFLAGS $DIRECTFB_LIBS"
+                SUMMARY_video="${SUMMARY_video} directfb"
             fi
             AC_MSG_RESULT($directfb_shared)
             have_video=yes
@@ -1704,8 +1764,10 @@ AC_HELP_STRING([--enable-fusionsound-shared], [dynamically load fusionsound audi
                test x$enable_fusionsound_shared = xyes; then
                 AC_DEFINE_UNQUOTED(SDL_AUDIO_DRIVER_FUSIONSOUND_DYNAMIC, "libfusionsound.so", [ ])
                 fusionsound_shared=yes
+                SUMMARY_audio="${SUMMARY_audio} fusionsound(dynamic)"
             else
                 EXTRA_LDFLAGS="$EXTRA_LDFLAGS $FUSIONSOUND_LIBS"
+                SUMMARY_audio="${SUMMARY_audio} fusionsound"
             fi
             AC_MSG_RESULT($fusionsound_shared)
             
@@ -1724,6 +1786,7 @@ AC_HELP_STRING([--enable-video-dummy], [use dummy video driver [[default=yes]]])
         AC_DEFINE(SDL_VIDEO_DRIVER_DUMMY, 1, [ ])
         SOURCES="$SOURCES $srcdir/src/video/dummy/*.c"
         have_video=yes
+        SUMMARY_video="${SUMMARY_video} dummy"
     fi
 }
 
@@ -1750,6 +1813,7 @@ CheckOpenGLX11()
             AC_DEFINE(SDL_VIDEO_OPENGL, 1, [ ])
             AC_DEFINE(SDL_VIDEO_OPENGL_GLX, 1, [ ])
             AC_DEFINE(SDL_VIDEO_RENDER_OGL, 1, [ ])
+            SUMMARY_video="${SUMMARY_video} opengl"
         fi
     fi
 }
@@ -1789,6 +1853,7 @@ CheckOpenGLESX11()
         if test x$video_opengles_v1 = xyes; then
             AC_DEFINE(SDL_VIDEO_OPENGL_ES, 1, [ ])
             AC_DEFINE(SDL_VIDEO_RENDER_OGL_ES, 1, [ ])
+            SUMMARY_video="${SUMMARY_video} opengl_es1"
         fi
         
         AC_MSG_CHECKING(for OpenGL ES v2 headers)
@@ -1804,6 +1869,7 @@ CheckOpenGLESX11()
         if test x$video_opengles_v2 = xyes; then
             AC_DEFINE(SDL_VIDEO_OPENGL_ES2, 1, [ ])
             AC_DEFINE(SDL_VIDEO_RENDER_OGL_ES2, 1, [ ])
+            SUMMARY_video="${SUMMARY_video} opengl_es2"
         fi
     fi
 }
@@ -1815,6 +1881,7 @@ CheckWINDOWSGL()
         AC_DEFINE(SDL_VIDEO_OPENGL, 1, [ ])
         AC_DEFINE(SDL_VIDEO_OPENGL_WGL, 1, [ ])
         AC_DEFINE(SDL_VIDEO_RENDER_OGL, 1, [ ])
+        SUMMARY_video="${SUMMARY_video} opengl"
     fi
 }
 
@@ -1835,6 +1902,7 @@ CheckWINDOWSGLES()
         if test x$video_opengl_egl = xyes; then
             AC_DEFINE(SDL_VIDEO_OPENGL, 1, [ ])
             AC_DEFINE(SDL_VIDEO_OPENGL_EGL, 1, [ ])
+            SUMMARY_video="${SUMMARY_video} opengl_es1"
         fi
        
         AC_MSG_CHECKING(for OpenGL ES v2 headers)
@@ -1851,6 +1919,7 @@ CheckWINDOWSGLES()
             AC_DEFINE(SDL_VIDEO_OPENGL, 1, [ ])
             AC_DEFINE(SDL_VIDEO_OPENGL_ES2, 1, [ ])
             AC_DEFINE(SDL_VIDEO_RENDER_OGL_ES2, 1, [ ])
+            SUMMARY_video="${SUMMARY_video} opengl_es2"
         fi
     fi
 }
@@ -1863,6 +1932,7 @@ CheckHaikuGL()
         AC_DEFINE(SDL_VIDEO_OPENGL_HAIKU, 1, [ ])
         AC_DEFINE(SDL_VIDEO_RENDER_OGL, 1, [ ])
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lGL"
+        SUMMARY_video="${SUMMARY_video} opengl"
     fi
 }
 
@@ -1873,6 +1943,7 @@ CheckMacGL()
         AC_DEFINE(SDL_VIDEO_OPENGL, 1, [ ])
         AC_DEFINE(SDL_VIDEO_OPENGL_CGL, 1, [ ])
         AC_DEFINE(SDL_VIDEO_RENDER_OGL, 1, [ ])
+        SUMMARY_video="${SUMMARY_video} opengl"
         case "$host" in
             *-*-darwin*)
                 if test x$enable_video_cocoa = xyes; then
@@ -1900,6 +1971,7 @@ CheckInputEvents()
         AC_MSG_RESULT($use_input_events)
         if test x$use_input_events = xyes; then
             AC_DEFINE(SDL_INPUT_LINUXEV, 1, [ ])
+            SUMMARY_input="${SUMMARY_input} linuxev"
         fi
 }
 
@@ -1922,6 +1994,7 @@ CheckInputKD()
     AC_MSG_RESULT($use_input_kd)
     if test x$use_input_kd = xyes; then
         AC_DEFINE(SDL_INPUT_LINUXKD, 1, [ ])
+        SUMMARY_input="${SUMMARY_input} linuxkd"
     fi
 }
 
@@ -1984,6 +2057,7 @@ AC_HELP_STRING([--enable-input-tslib], [use the Touchscreen library for input [[
         if test x$enable_input_tslib = xyes; then
             AC_DEFINE(SDL_INPUT_TSLIB, 1, [ ])
             EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lts"
+            SUMMARY_input="${SUMMARY_input} ts"
         fi
     fi
 }
@@ -2261,6 +2335,9 @@ AC_HELP_STRING([--enable-directx], [use DirectX for Windows audio/video [[defaul
         AC_CHECK_HEADER(dsound.h, have_dsound=yes)
         AC_CHECK_HEADER(dinput.h, have_dinput=yes)
         AC_CHECK_HEADER(xaudio2.h, have_xaudio2=yes)
+
+        SUMMARY_video="${SUMMARY_video} directx"
+        SUMMARY_audio="${SUMMARY_audio} directx"
 
         # FIXME: latest Cygwin finds dinput headers, but we die on other win32 headers.
         # FIXME:  ...so force it off for now.
@@ -3076,5 +3153,33 @@ __EOF__
 AC_CONFIG_FILES([
     Makefile:Makefile.in:Makefile.rules sdl2-config SDL2.spec sdl2.pc
 ])
+AC_CONFIG_COMMANDS([sdl2_config],[chmod a+x sdl2-config])
+
+SUMMARY="SDL2 Configure Summary:\n"
+if test x$enable_shared = xyes; then
+    SUMMARY="${SUMMARY}Building Shared Libraries\n"
+fi
+if test x$enable_static = xyes; then
+    SUMMARY="${SUMMARY}Building Static Libraries\n"
+fi
+SUMMARY="${SUMMARY}Enabled modules :${SUMMARY_modules}\n"
+SUMMARY="${SUMMARY}Assembly Math   :${SUMMARY_math}\n" 
+SUMMARY="${SUMMARY}Audio drivers   :${SUMMARY_audio}\n"
+SUMMARY="${SUMMARY}Video drivers   :${SUMMARY_video}\n"
+if test x$have_x = xyes; then
+    SUMMARY="${SUMMARY}X11 libraries   :${SUMMARY_video_x11}\n"
+fi
+SUMMARY="${SUMMARY}Input drivers   :${SUMMARY_input}\n"
+if test x$enable_libudev = xyes; then
+    SUMMARY="${SUMMARY}Using libudev   : YES\n"
+else
+    SUMMARY="${SUMMARY}Using libudev   : NO\n"
+fi
+if test x$have_dbus_dbus_h_hdr = xyes; then
+    SUMMARY="${SUMMARY}Using dbus      : YES\n"
+else
+    SUMMARY="${SUMMARY}Using dbus      : NO\n"
+fi
+AC_CONFIG_COMMANDS([summary], [echo -en "$SUMMARY"], [SUMMARY="$SUMMARY"])
+
 AC_OUTPUT
-chmod a+x sdl2-config
