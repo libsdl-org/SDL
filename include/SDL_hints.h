@@ -378,6 +378,15 @@ extern "C" {
  */
 #define SDL_HINT_WINRT_PRIVACY_POLICY_LABEL "SDL_HINT_WINRT_PRIVACY_POLICY_LABEL"
 
+/** \brief If set to 1, back button press events on Windows Phone 8+ will be marked as handled.
+ *
+ *  TODO, WinRT: document SDL_HINT_WINRT_HANDLE_BACK_BUTTON need and use
+ *  For now, more details on why this is needed can be found at the
+ *  beginning of the following web page:
+ *  http://msdn.microsoft.com/en-us/library/windowsphone/develop/jj247550(v=vs.105).aspx
+ */
+#define SDL_HINT_WINRT_HANDLE_BACK_BUTTON "SDL_HINT_WINRT_HANDLE_BACK_BUTTON"
+
 /**
  *  \brief  An enumeration of hint priorities
  */
