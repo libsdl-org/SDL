@@ -19,6 +19,10 @@ using namespace Windows::System;
 using namespace Windows::UI::Core;
 using namespace Windows::UI::Input;
 
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+using namespace Windows::Phone::UI::Input;
+#endif
+
 
 /* SDL includes */
 extern "C" {
@@ -31,6 +35,7 @@ extern "C" {
 #include "SDL_render.h"
 #include "../../video/SDL_sysvideo.h"
 //#include "../../SDL_hints_c.h"
+#include "../../events/SDL_keyboard_c.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_windowevents_c.h"
 #include "../../render/SDL_sysrender.h"
@@ -316,6 +321,11 @@ void SDL_WinRTApp::SetWindow(CoreWindow^ window)
     window->KeyUp +=
         ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &SDL_WinRTApp::OnKeyUp);
 
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+    HardwareButtons::BackPressed +=
+        ref new EventHandler<BackPressedEventArgs^>(this, &SDL_WinRTApp::OnBackButtonPressed);
+#endif
+
 #if WINAPI_FAMILY == WINAPI_FAMILY_APP  // for Windows 8/8.1/RT apps... (and not Phone apps)
     // Make sure we know when a user has opened the app's settings pane.
     // This is needed in order to display a privacy policy, which needs
@@ -597,3 +607,19 @@ void SDL_WinRTApp::OnKeyUp(Windows::UI::Core::CoreWindow^ sender, Windows::UI::C
 {
     WINRT_ProcessKeyUpEvent(args);
 }
+
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+void SDL_WinRTApp::OnBackButtonPressed(Platform::Object^ sender, Windows::Phone::UI::Input::BackPressedEventArgs^ args)
+{
+    SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_AC_BACK);
+    SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_AC_BACK);
+
+    const char *hint = SDL_GetHint(SDL_HINT_WINRT_HANDLE_BACK_BUTTON);
+    if (hint) {
+        if (*hint == '1') {
+            args->Handled = true;
+        }
+    }
+}
+#endif
+

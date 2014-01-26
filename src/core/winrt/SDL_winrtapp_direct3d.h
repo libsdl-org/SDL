@@ -45,6 +45,10 @@ protected:
     void OnKeyDown(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
     void OnKeyUp(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
 
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+    void OnBackButtonPressed(Platform::Object^ sender, Windows::Phone::UI::Input::BackPressedEventArgs^ args);
+#endif
+
 private:
     bool m_windowClosed;
     bool m_windowVisible;
