@@ -42,7 +42,6 @@ public class SDLActivity extends Activity {
     protected static Thread mSDLThread;
     
     // Audio
-    protected static Thread mAudioThread;
     protected static AudioTrack mAudioTrack;
 
     // Load the .so
