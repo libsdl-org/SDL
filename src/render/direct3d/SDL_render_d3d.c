@@ -1892,7 +1892,8 @@ D3D_DestroyRenderer(SDL_Renderer * renderer)
 }
 #endif /* SDL_VIDEO_RENDER_D3D && !SDL_RENDER_DISABLED */
 
-/* This function needs to always exist for the Dynamic API. */
+#ifdef __WIN32__
+/* This function needs to always exist on Windows, for the Dynamic API. */
 IDirect3DDevice9 *
 SDL_RenderGetD3D9Device(SDL_Renderer * renderer)
 {
@@ -1915,5 +1916,6 @@ SDL_RenderGetD3D9Device(SDL_Renderer * renderer)
 
     return device;
 }
+#endif
 
 /* vi: set ts=4 sw=4 expandtab: */
