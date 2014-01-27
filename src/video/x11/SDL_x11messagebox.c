@@ -560,7 +560,11 @@ X11_MessageBoxLoop( SDL_MessageBoxDataX11 *data )
         case MotionNotify:
             if ( has_focus ) {
                 /* Mouse moved... */
+                int previndex = data->mouse_over_index;
                 data->mouse_over_index = GetHitButtonIndex( data, e.xbutton.x, e.xbutton.y );
+                if (data->mouse_over_index == previndex) {
+                    draw = SDL_FALSE;
+                }
             }
             break;
 
