@@ -262,6 +262,8 @@ public class SDLActivity extends Activity {
     public static native int onNativePadUp(int device_id, int keycode);
     public static native void onNativeJoy(int device_id, int axis,
                                           float value);
+    public static native void onNativeHat(int device_id, int hat_id,
+                                          int x, int y);
     public static native void onNativeKeyDown(int keycode);
     public static native void onNativeKeyUp(int keycode);
     public static native void onNativeKeyboardFocusLost();
@@ -923,6 +925,7 @@ class SDLJoystickHandler_API12 extends SDLJoystickHandler {
         public int device_id;
         public String name;
         public ArrayList<InputDevice.MotionRange> axes;
+        public ArrayList<InputDevice.MotionRange> hats;
     }
     class RangeComparator implements Comparator<InputDevice.MotionRange>
     {
@@ -956,17 +959,25 @@ class SDLJoystickHandler_API12 extends SDLJoystickHandler {
                     joystick.device_id = deviceIds[i];
                     joystick.name = joystickDevice.getName();
                     joystick.axes = new ArrayList<InputDevice.MotionRange>();
+                    joystick.hats = new ArrayList<InputDevice.MotionRange>();
                     
                     List<InputDevice.MotionRange> ranges = joystickDevice.getMotionRanges();
                     Collections.sort(ranges, new RangeComparator());
                     for (InputDevice.MotionRange range : ranges ) {
-                        if ( (range.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0 ) {
-                            joystick.axes.add(range);
-                         }
+                        if ((range.getSource() & InputDevice.SOURCE_CLASS_JOYSTICK) != 0 ) {
+                            if (range.getAxis() == MotionEvent.AXIS_HAT_X ||
+                                range.getAxis() == MotionEvent.AXIS_HAT_Y) {
+                                joystick.hats.add(range);
+                            }
+                            else {
+                                joystick.axes.add(range);
+                            }
+                        }
                     }
                     
                     mJoysticks.add(joystick);
-                    SDLActivity.nativeAddJoystick(joystick.device_id, joystick.name, 0, -1, joystick.axes.size(), 0, 0);
+                    SDLActivity.nativeAddJoystick(joystick.device_id, joystick.name, 0, -1, 
+                                                  joystick.axes.size(), joystick.hats.size()/2, 0);
                 }
             }
         }
@@ -1019,7 +1030,12 @@ class SDLJoystickHandler_API12 extends SDLJoystickHandler {
                             /* Normalize the value to -1...1 */
                             float value = ( event.getAxisValue( range.getAxis(), actionPointerIndex) - range.getMin() ) / range.getRange() * 2.0f - 1.0f;
                             SDLActivity.onNativeJoy(joystick.device_id, i, value );
-                        }                       
+                        }          
+                        for (int i = 0; i < joystick.hats.size(); i+=2) {
+                            int hatX = Math.round(event.getAxisValue( joystick.hats.get(i).getAxis(), actionPointerIndex ) );
+                            int hatY = Math.round(event.getAxisValue( joystick.hats.get(i+1).getAxis(), actionPointerIndex ) );
+                            SDLActivity.onNativeHat(joystick.device_id, i/2, hatX, hatY );
+                        }
                     }
                     break;
                 default:
