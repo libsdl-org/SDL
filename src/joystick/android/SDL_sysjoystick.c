@@ -226,6 +226,26 @@ Android_OnJoy(int device_id, int axis, float value)
     return 0;
 }
 
+int
+Android_OnHat(int device_id, int hat_id, int x, int y)
+{
+    const Uint8 position_map[3][3] = {
+        {SDL_HAT_LEFTUP, SDL_HAT_UP, SDL_HAT_RIGHTUP},
+        {SDL_HAT_LEFT, SDL_HAT_CENTERED, SDL_HAT_RIGHT},
+        {SDL_HAT_LEFTDOWN, SDL_HAT_DOWN, SDL_HAT_RIGHTDOWN}
+    };
+
+    if (x >= -1 && x <=1 && y >= -1 && y <= 1) {
+        SDL_joylist_item *item = JoystickByDeviceId(device_id);
+        if (item && item->joystick) {
+            SDL_PrivateJoystickHat(item->joystick, hat_id, position_map[y+1][x+1] );
+        }
+        return 0;
+    }
+
+    return -1;
+}
+
 
 int
 Android_AddJoystick(int device_id, const char *name, SDL_bool is_accelerometer, int nbuttons, int naxes, int nhats, int nballs)

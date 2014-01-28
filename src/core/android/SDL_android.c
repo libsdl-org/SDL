@@ -172,6 +172,14 @@ void Java_org_libsdl_app_SDLActivity_onNativeJoy(
     Android_OnJoy(device_id, axis, value);
 }
 
+/* POV Hat */
+void Java_org_libsdl_app_SDLActivity_onNativeHat(
+                                    JNIEnv* env, jclass jcls,
+                                    jint device_id, jint hat_id, jint x, jint y)
+{
+    Android_OnHat(device_id, hat_id, x, y);
+}
+
 
 int Java_org_libsdl_app_SDLActivity_nativeAddJoystick(
     JNIEnv* env, jclass jcls,
