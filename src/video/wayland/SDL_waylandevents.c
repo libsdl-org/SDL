@@ -86,10 +86,19 @@ pointer_handle_enter(void *data, struct wl_pointer *pointer,
         /* enter event for a window we've just destroyed */
         return;
     }
+    
+    /* This handler will be called twice in Wayland 1.4
+     * Once for the window surface which has valid user data
+     * and again for the mouse cursor surface which does not have valid user data
+     * We ignore the later
+     */
 
-    input->pointer_focus = wl_surface_get_user_data(surface);
-    window = input->pointer_focus;
-    SDL_SetMouseFocus(window->sdlwindow);
+    window = (SDL_WindowData *)wl_surface_get_user_data(surface);
+    
+    if (window) {
+        input->pointer_focus = window;
+        SDL_SetMouseFocus(window->sdlwindow);
+    }
 }
 
 static void
@@ -98,8 +107,10 @@ pointer_handle_leave(void *data, struct wl_pointer *pointer,
 {
     struct SDL_WaylandInput *input = data;
 
-    SDL_SetMouseFocus(NULL);
-    input->pointer_focus = NULL;
+    if (input->pointer_focus) {
+        SDL_SetMouseFocus(NULL);
+        input->pointer_focus = NULL;
+    }
 }
 
 static void
@@ -110,8 +121,9 @@ pointer_handle_motion(void *data, struct wl_pointer *pointer,
     SDL_WindowData *window = input->pointer_focus;
     int sx = wl_fixed_to_int(sx_w);
     int sy = wl_fixed_to_int(sy_w);
-
-    SDL_SendMouseMotion(window->sdlwindow, 0, 0, sx, sy);
+    if (input->pointer_focus) {
+        SDL_SendMouseMotion(window->sdlwindow, 0, 0, sx, sy);
+    }
 }
 
 static void
@@ -122,29 +134,31 @@ pointer_handle_button(void *data, struct wl_pointer *pointer, uint32_t serial,
     SDL_WindowData *window = input->pointer_focus;
     enum wl_pointer_button_state state = state_w;
     uint32_t sdl_button;
+    
+    if  (input->pointer_focus) {
+        switch (button) {
+            case BTN_LEFT:
+                sdl_button = SDL_BUTTON_LEFT;
+                break;
+            case BTN_MIDDLE:
+                sdl_button = SDL_BUTTON_MIDDLE;
+                break;
+            case BTN_RIGHT:
+                sdl_button = SDL_BUTTON_RIGHT;
+                break;
+            case BTN_SIDE:
+                sdl_button = SDL_BUTTON_X1;
+                break;
+            case BTN_EXTRA:
+                sdl_button = SDL_BUTTON_X2;
+                break;
+            default:
+                return;
+        }
 
-    switch (button) {
-    case BTN_LEFT:
-        sdl_button = SDL_BUTTON_LEFT;
-        break;
-    case BTN_MIDDLE:
-        sdl_button = SDL_BUTTON_MIDDLE;
-        break;
-    case BTN_RIGHT:
-        sdl_button = SDL_BUTTON_RIGHT;
-        break;
-    case BTN_SIDE:
-        sdl_button = SDL_BUTTON_X1;
-        break;
-    case BTN_EXTRA:
-        sdl_button = SDL_BUTTON_X2;
-        break;
-    default:
-        return;
+        SDL_SendMouseButton(window->sdlwindow, 0,
+                            state ? SDL_PRESSED : SDL_RELEASED, sdl_button);
     }
-
-    SDL_SendMouseButton(window->sdlwindow, 0,
-                        state ? SDL_PRESSED : SDL_RELEASED, sdl_button);
 }
 
 static void
@@ -156,20 +170,22 @@ pointer_handle_axis(void *data, struct wl_pointer *pointer,
     enum wl_pointer_axis a = axis;
     int x, y;
 
-    switch (a) {
-    case WL_POINTER_AXIS_VERTICAL_SCROLL:
-        x = 0;
-        y = wl_fixed_to_int(value);
-        break;
-    case WL_POINTER_AXIS_HORIZONTAL_SCROLL:
-        x = wl_fixed_to_int(value);
-        y = 0;
-        break;
-    default:
-        return;
-    }
+    if (input->pointer_focus) {
+        switch (a) {
+            case WL_POINTER_AXIS_VERTICAL_SCROLL:
+                x = 0;
+                y = wl_fixed_to_int(value);
+                break;
+            case WL_POINTER_AXIS_HORIZONTAL_SCROLL:
+                x = wl_fixed_to_int(value);
+                y = 0;
+                break;
+            default:
+                return;
+        }
 
-    SDL_SendMouseWheel(window->sdlwindow, 0, x, y);
+        SDL_SendMouseWheel(window->sdlwindow, 0, x, y);
+    }
 }
 
 static const struct wl_pointer_listener pointer_listener = {
@@ -234,7 +250,9 @@ keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
 
     input->keyboard_focus = window;
     window->keyboard_device = input;
-    SDL_SetKeyboardFocus(window->sdlwindow);
+    if (window) {
+        SDL_SetKeyboardFocus(window->sdlwindow);
+    }
 }
 
 static void
@@ -340,11 +358,10 @@ Wayland_display_add_input(SDL_VideoData *d, uint32_t id)
 {
     struct SDL_WaylandInput *input;
 
-    input = malloc(sizeof *input);
+    input = SDL_calloc(1, sizeof *input);
     if (input == NULL)
         return;
 
-    memset(input, 0, sizeof *input);
     input->display = d;
     input->seat = wl_registry_bind(d->registry, id, &wl_seat_interface, 1);
 
@@ -378,7 +395,7 @@ void Wayland_display_destroy_input(SDL_VideoData *d)
     if (input->xkb.keymap)
         WAYLAND_xkb_keymap_unref(input->xkb.keymap);
 
-    free(input);
+    SDL_free(input);
     d->input = NULL;
 }
 
