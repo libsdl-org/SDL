@@ -101,10 +101,10 @@ typedef enum
     SDL_SYSWM_UNKNOWN,
     SDL_SYSWM_WINDOWS,
     SDL_SYSWM_X11,
-    SDL_SYSWM_WAYLAND,
     SDL_SYSWM_DIRECTFB,
     SDL_SYSWM_COCOA,
     SDL_SYSWM_UIKIT,
+    SDL_SYSWM_WAYLAND,
 } SDL_SYSWM_TYPE;
 
 /**
@@ -176,14 +176,6 @@ struct SDL_SysWMinfo
             Window window;              /**< The X11 window */
         } x11;
 #endif
-#if defined(SDL_VIDEO_DRIVER_WAYLAND)
-        struct
-        {
-            struct wl_display *display;            /**< Wayland display */
-            struct wl_surface *surface;            /**< Wayland surface */
-            struct wl_shell_surface *shell_surface; /**< Wayland shell_surface (window manager handle) */
-        } wl;
-#endif
 #if defined(SDL_VIDEO_DRIVER_DIRECTFB)
         struct
         {
@@ -203,6 +195,14 @@ struct SDL_SysWMinfo
         {
             UIWindow *window;           /* The UIKit window */
         } uikit;
+#endif
+#if defined(SDL_VIDEO_DRIVER_WAYLAND)
+        struct
+        {
+            struct wl_display *display;            /**< Wayland display */
+            struct wl_surface *surface;            /**< Wayland surface */
+            struct wl_shell_surface *shell_surface; /**< Wayland shell_surface (window manager handle) */
+        } wl;
 #endif
         /* Can't have an empty union */
         int dummy;
