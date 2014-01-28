@@ -149,6 +149,19 @@ if(NOT ("$ENV{CFLAGS}" STREQUAL "")) # Hackish, but does the trick on Win32
   list(APPEND EXTRA_LDFLAGS "$ENV{LDFLAGS}")
 endif(NOT ("$ENV{CFLAGS}" STREQUAL ""))
 
+if(MSVC)
+  option(FORCE_STATIC_VCRT "Force /MT for static VC runtimes" OFF)
+  if(FORCE_STATIC_VCRT)
+    foreach(flag_var
+        CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
+        CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
+      if(${flag_var} MATCHES "/MD")
+        string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
+      endif()
+    endforeach(flag_var)
+  endif()
+endif(MSVC)
+
 # Those are used for pkg-config and friends, so that the SDL2.pc, sdl2-config,
 # etc. are created correctly.
 set(SDL_LIBS "-lSDL2")
@@ -1234,8 +1247,14 @@ if(SDL_SHARED)
 endif(SDL_SHARED)
 
 if(SDL_STATIC)
+  set (BUILD_SHARED_LIBS FALSE)
   add_library(SDL2-static STATIC ${SOURCE_FILES})
   set_target_properties(SDL2-static PROPERTIES OUTPUT_NAME "SDL2")
+  if(WINDOWS)
+    set_target_properties(SDL2-static PROPERTIES LINK_FLAGS_RELEASE "/NODEFAULTLIB")
+    set_target_properties(SDL2-static PROPERTIES LINK_FLAGS_DEBUG "/NODEFAULTLIB")
+    set_target_properties(SDL2-static PROPERTIES STATIC_LIBRARY_FLAGS "/NODEFAULTLIB")
+  endif(WINDOWS)
   # TODO: Win32 platforms keep the same suffix .lib for import and static
   # libraries - do we need to consider this?
   set(_INSTALL_LIBS "SDL2-static" ${_INSTALL_LIBS})
