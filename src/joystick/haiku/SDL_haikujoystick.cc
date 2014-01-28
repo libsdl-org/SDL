@@ -22,7 +22,7 @@
 
 #ifdef SDL_JOYSTICK_HAIKU
 
-/* This is the system specific header for the SDL joystick API */
+/* This is the Haiku implementation of the SDL joystick API */
 
 #include <os/support/String.h>
 #include <os/device/Joystick.h>
