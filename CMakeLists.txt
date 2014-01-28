@@ -963,6 +963,13 @@ elseif(APPLE)
     set(SDL_FRAMEWORK_IOKIT 1)
   endif()
 
+  if(SDL_TIMERS)
+    set(SDL_TIMER_UNIX 1)
+    file(GLOB TIMER_SOURCES ${SDL2_SOURCE_DIR}/src/timer/unix/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${TIMER_SOURCES})
+    set(HAVE_SDL_TIMERS TRUE)
+  endif(SDL_TIMERS)
+
   if(SDL_FILESYSTEM)
     set(SDL_FILESYSTEM_COCOA 1)
     file(GLOB FILESYSTEM_SOURCES ${SDL2_SOURCE_DIR}/src/filesystem/cocoa/*.m)
@@ -1023,6 +1030,13 @@ elseif(HAIKU)
     file(GLOB FILESYSTEM_SOURCES ${SDL2_SOURCE_DIR}/src/filesystem/haiku/*.cc)
     set(SOURCE_FILES ${SOURCE_FILES} ${FILESYSTEM_SOURCES})
     set(HAVE_SDL_FILESYSTEM TRUE)
+
+    if(SDL_TIMERS)
+      set(SDL_TIMER_HAIKU 1)
+      file(GLOB TIMER_SOURCES ${SDL2_SOURCE_DIR}/src/timer/haiku/*.c)
+      set(SOURCE_FILES ${SOURCE_FILES} ${TIMER_SOURCES})
+      set(HAVE_SDL_TIMERS TRUE)
+    endif(SDL_TIMERS)
 
     if(VIDEO_OPENGL)
       # TODO: Use FIND_PACKAGE(OpenGL) instead
