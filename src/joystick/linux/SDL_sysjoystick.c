@@ -26,7 +26,7 @@
 #error SDL now requires a Linux 2.4+ kernel with /dev/input/event support.
 #endif
 
-/* This is the system specific header for the SDL joystick API */
+/* This is the Linux implementation of the SDL joystick API */
 
 #include <sys/stat.h>
 #include <unistd.h>

@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/* This is the system specific header for the SDL joystick API */
+/* This is the PSP implementation of the SDL joystick API */
 #include <pspctrl.h>
 #include <pspkernel.h>
 
