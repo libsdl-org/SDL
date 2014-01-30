@@ -20077,17 +20077,33 @@ else
 fi
 
             if test x$enable_video_x11_xrandr = xyes; then
-                definitely_enable_video_x11_xrandr=no
-                ac_fn_c_check_header_compile "$LINENO" "X11/extensions/Xrandr.h" "ac_cv_header_X11_extensions_Xrandr_h" "#include <X11/Xlib.h>
+                                definitely_enable_video_x11_xrandr=no
+                have_xrandr_h_hdr=no
+                cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
 
-"
-if test "x$ac_cv_header_X11_extensions_Xrandr_h" = xyes; then :
-  have_xrandr_h_hdr=yes
-else
-  have_xrandr_h_hdr=no
+                #include <X11/Xlib.h>
+                #include <X11/extensions/Xrandr.h>
+
+int
+main ()
+{
+
+                XRRScreenResources *res = NULL;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+                have_xrandr_h_hdr=yes
+                $as_echo "#define SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH 1" >>confdefs.h
+
+                SUMMARY_video_x11="${SUMMARY_video_x11} xinput2_multitouch"
+
 fi
-
-
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
                 if test x$have_xrandr_h_hdr = xyes; then
                     if test x$enable_x11_shared = xyes && test x$xrandr_lib != x ; then
                         echo "-- dynamic libXrandr -> $xrandr_lib"

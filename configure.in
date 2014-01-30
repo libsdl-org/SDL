@@ -1508,12 +1508,19 @@ XIAllowTouchEvents(Display *a,int b,unsigned int c,Window d,int f)
 AC_HELP_STRING([--enable-video-x11-xrandr], [enable X11 Xrandr extension for fullscreen [[default=yes]]]),
                             , enable_video_x11_xrandr=yes)
             if test x$enable_video_x11_xrandr = xyes; then
+                dnl XRRScreenResources is only present in Xrandr >= 1.2, we use that as a test.
                 definitely_enable_video_x11_xrandr=no
-                AC_CHECK_HEADER(X11/extensions/Xrandr.h,
-                                have_xrandr_h_hdr=yes,
-                                have_xrandr_h_hdr=no,
-                                [#include <X11/Xlib.h>
-                                ])
+                have_xrandr_h_hdr=no
+                AC_TRY_COMPILE([
+                #include <X11/Xlib.h>
+                #include <X11/extensions/Xrandr.h>
+                ],[
+                XRRScreenResources *res = NULL;
+                ],[
+                have_xrandr_h_hdr=yes
+                AC_DEFINE(SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH)
+                SUMMARY_video_x11="${SUMMARY_video_x11} xinput2_multitouch"
+                ])
                 if test x$have_xrandr_h_hdr = xyes; then
                     if test x$enable_x11_shared = xyes && test x$xrandr_lib != x ; then
                         echo "-- dynamic libXrandr -> $xrandr_lib"
