@@ -1518,8 +1518,6 @@ AC_HELP_STRING([--enable-video-x11-xrandr], [enable X11 Xrandr extension for ful
                 XRRScreenResources *res = NULL;
                 ],[
                 have_xrandr_h_hdr=yes
-                AC_DEFINE(SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH)
-                SUMMARY_video_x11="${SUMMARY_video_x11} xinput2_multitouch"
                 ])
                 if test x$have_xrandr_h_hdr = xyes; then
                     if test x$enable_x11_shared = xyes && test x$xrandr_lib != x ; then
