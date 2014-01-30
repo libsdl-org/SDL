@@ -570,3 +570,4 @@
 #define SDL_GL_DeleteContext SDL_GL_DeleteContext_REAL
 #define SDL_vsscanf SDL_vsscanf_REAL
 #define SDL_GameControllerAddMappingsFromRW SDL_GameControllerAddMappingsFromRW_REAL
+#define SDL_GL_ResetAttributes SDL_GL_ResetAttributes_REAL

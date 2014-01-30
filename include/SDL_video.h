@@ -866,6 +866,11 @@ extern DECLSPEC SDL_bool SDLCALL SDL_GL_ExtensionSupported(const char
                                                            *extension);
 
 /**
+ *  \brief Reset all previously set OpenGL context attributes to their default values
+ */
+extern DECLSPEC void SDLCALL SDL_GL_ResetAttributes(void);
+
+/**
  *  \brief Set an OpenGL window attribute before window creation.
  */
 extern DECLSPEC int SDLCALL SDL_GL_SetAttribute(SDL_GLattr attr, int value);
