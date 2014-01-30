@@ -550,6 +550,12 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         returnCode = 0;
         break;
 
+    case WM_UNICHAR:
+    case WM_CHAR:
+        /* Ignore WM_CHAR messages that come from TranslateMessage(), since we handle WM_KEY* messages directly */
+        returnCode = 0;
+        break;
+
 #ifdef WM_INPUTLANGCHANGE
     case WM_INPUTLANGCHANGE:
         {
@@ -848,7 +854,8 @@ WIN_PumpEvents(_THIS)
     const Uint8 *keystate;
     MSG msg;
     while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-		TranslateMessage(&msg);
+        /* Always translate the message in case it's a non-SDL window (e.g. with Qt integration) */
+        TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
 
