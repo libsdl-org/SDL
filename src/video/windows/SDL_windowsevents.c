@@ -550,24 +550,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         returnCode = 0;
         break;
 
-    case WM_UNICHAR:
-        {
-            if (wParam == UNICODE_NOCHAR) {
-                returnCode = 1;
-                break;
-            }
-        }
-        /* no break */
-    case WM_CHAR:
-        {
-            char text[5];
-
-            WIN_ConvertUTF32toUTF8(wParam, text);
-            SDL_SendKeyboardText(text);
-        }
-        returnCode = 0;
-        break;
-
 #ifdef WM_INPUTLANGCHANGE
     case WM_INPUTLANGCHANGE:
         {
@@ -866,6 +848,7 @@ WIN_PumpEvents(_THIS)
     const Uint8 *keystate;
     MSG msg;
     while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+		TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
 
