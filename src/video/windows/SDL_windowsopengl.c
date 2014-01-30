@@ -759,6 +759,26 @@ WIN_GL_DeleteContext(_THIS, SDL_GLContext context)
     _this->gl_data->wglDeleteContext((HGLRC) context);
 }
 
+
+SDL_bool
+WIN_GL_SetPixelFormatFrom(_THIS, SDL_Window * fromWindow, SDL_Window * toWindow)
+{
+    HDC hfromdc = ((SDL_WindowData *) fromWindow->driverdata)->hdc;
+    HDC htodc = ((SDL_WindowData *) toWindow->driverdata)->hdc;
+    BOOL result;
+
+    /* get the pixel format of the fromWindow */
+    int pixel_format = GetPixelFormat(hfromdc);
+    PIXELFORMATDESCRIPTOR pfd;
+    SDL_memset(&pfd, 0, sizeof(pfd));
+    DescribePixelFormat(hfromdc, pixel_format, sizeof(pfd), &pfd);
+
+    /* set the pixel format of the toWindow */
+    result = SetPixelFormat(htodc, pixel_format, &pfd);
+
+    return result ? SDL_TRUE : SDL_FALSE;
+}
+
 #endif /* SDL_VIDEO_OPENGL_WGL */
 
 #endif /* SDL_VIDEO_DRIVER_WINDOWS */

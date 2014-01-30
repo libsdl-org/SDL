@@ -64,6 +64,7 @@ extern int WIN_GL_GetSwapInterval(_THIS);
 extern void WIN_GL_SwapWindow(_THIS, SDL_Window * window);
 extern void WIN_GL_DeleteContext(_THIS, SDL_GLContext context);
 extern void WIN_GL_InitExtensions(_THIS);
+extern SDL_bool WIN_GL_SetPixelFormatFrom(_THIS, SDL_Window * fromWindow, SDL_Window * toWindow);
 
 #ifndef WGL_ARB_pixel_format
 #define WGL_NUMBER_PIXEL_FORMATS_ARB   0x2000
