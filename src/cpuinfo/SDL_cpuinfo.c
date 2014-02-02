@@ -18,7 +18,11 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#ifdef TEST_MAIN
+#include "SDL_config.h"
+#else
 #include "../SDL_internal.h"
+#endif
 
 #if defined(__WIN32__)
 #include "../core/windows/SDL_windows.h"
@@ -55,6 +59,7 @@
 #define CPU_HAS_SSE3    0x00000040
 #define CPU_HAS_SSE41   0x00000100
 #define CPU_HAS_SSE42   0x00000200
+#define CPU_HAS_AVX     0x00000400
 
 #if SDL_ALTIVEC_BLITTERS && HAVE_SETJMP && !__MACOSX__ && !__OpenBSD__
 /* This is the brute force way of detecting instruction sets...
@@ -329,6 +334,21 @@ CPU_haveSSE42(void)
     return 0;
 }
 
+static SDL_INLINE int
+CPU_haveAVX(void)
+{
+    if (CPU_haveCPUID()) {
+        int a, b, c, d;
+
+        cpuid(1, a, b, c, d);
+        if (a >= 1) {
+            cpuid(1, a, b, c, d);
+            return (c & 0x10000000);
+        }
+    }
+    return 0;
+}
+
 static int SDL_CPUCount = 0;
 
 int
@@ -523,6 +543,9 @@ SDL_GetCPUFeatures(void)
         if (CPU_haveSSE42()) {
             SDL_CPUFeatures |= CPU_HAS_SSE42;
         }
+        if (CPU_haveAVX()) {
+            SDL_CPUFeatures |= CPU_HAS_AVX;
+        }
     }
     return SDL_CPUFeatures;
 }
@@ -608,6 +631,15 @@ SDL_HasSSE42(void)
     return SDL_FALSE;
 }
 
+SDL_bool
+SDL_HasAVX(void)
+{
+    if (SDL_GetCPUFeatures() & CPU_HAS_AVX) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
+}
+
 static int SDL_SystemRAM = 0;
 
 int
@@ -673,6 +705,7 @@ main()
     printf("SSE3: %d\n", SDL_HasSSE3());
     printf("SSE4.1: %d\n", SDL_HasSSE41());
     printf("SSE4.2: %d\n", SDL_HasSSE42());
+    printf("AVX: %d\n", SDL_HasAVX());
     printf("RAM: %d MB\n", SDL_GetSystemRAM());
     return 0;
 }
