@@ -35,8 +35,6 @@
 #include "SDL_DirectFB_WM.h"
 
 
-#include "../../SDL_internal.h"
-
 /* DirectFB video driver implementation.
 */
 
