@@ -163,6 +163,7 @@ int platform_testGetFunctions (void *arg)
  * http://wiki.libsdl.org/moin.cgi/SDL_HasSSE3
  * http://wiki.libsdl.org/moin.cgi/SDL_HasSSE41
  * http://wiki.libsdl.org/moin.cgi/SDL_HasSSE42
+ * http://wiki.libsdl.org/moin.cgi/SDL_HasAVX
  */
 int platform_testHasFunctions (void *arg)
 {
@@ -196,6 +197,9 @@ int platform_testHasFunctions (void *arg)
 
    ret = SDL_HasSSE42();
    SDLTest_AssertPass("SDL_HasSSE42()");
+
+   ret = SDL_HasAVX();
+   SDLTest_AssertPass("SDL_HasAVX()");
 
    return TEST_COMPLETED;
 }
