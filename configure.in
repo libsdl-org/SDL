@@ -1124,6 +1124,42 @@ CheckStackBoundary()
     fi
 }
 
+CheckMir()
+{
+    AC_ARG_ENABLE(video-mir,
+    AC_HELP_STRING([--enable-video-mir], [use Mir video driver [[default=yes]]]),
+                   , enable_video_mir=yes)
+
+    if test x$enable_video = xyes -a x$enable_video_mir = xyes; then
+        AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
+
+        if test x$PKG_CONFIG != xno; then
+            AC_MSG_CHECKING(for Mir support)
+            video_mir=no
+            tmp_CFLAGS="$CFLAGS"
+            CFLAGS="$EXTRA_CFLAGS `$PKG_CONFIG --cflags egl mirclient xkbcommon`"
+
+            AC_TRY_COMPILE([
+             #include <EGL/egl.h>
+             #include <xkbcommon/xkbcommon.h>
+             #include <mir_toolkit/mir_client_library.h>
+            ],[
+            ],[
+            video_mir=yes
+            ])
+            CFLAGS="$tmp_CFLAGS"
+            AC_MSG_RESULT($video_mir)
+
+            if test x$video_mir = xyes; then
+                  AC_DEFINE(SDL_VIDEO_DRIVER_MIR)
+                  SOURCES="$SOURCES $srcdir/src/video/mir/*.c"
+                  EXTRA_CFLAGS="$EXTRA_CFLAGS `$PKG_CONFIG --cflags egl mirclient xkbcommon`"
+                  EXTRA_LDFLAGS="$EXTRA_LDFLAGS `$PKG_CONFIG --libs egl mirclient xkbcommon`"
+                  have_video=yes
+            fi
+        fi
+    fi
+}
 
 dnl See if GCC's -Wall is supported.
 CheckWarnAll()
@@ -2612,6 +2648,7 @@ case "$host" in
         CheckSNDIO
         CheckX11
         CheckWayland
+        CheckMir
         CheckDirectFB
         CheckFusionSound
         CheckOpenGLX11

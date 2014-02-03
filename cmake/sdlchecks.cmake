@@ -505,6 +505,27 @@ macro(CheckX11)
   endif(VIDEO_X11)
 endmacro(CheckX11)
 
+macro(CheckMir)
+    if(VIDEO_MIR)
+        find_library(MIR_LIB mirclient mircommon egl)
+        pkg_check_modules(MIR_TOOLKIT mirclient mircommon)
+        pkg_check_modules(EGL egl)
+        pkg_check_modules(XKB xkbcommon)
+
+        if (MIR_LIB AND MIR_TOOLKIT_FOUND AND EGL_FOUND AND XKB_FOUND)
+            set(HAVE_VIDEO_MIR TRUE)
+            set(HAVE_SDL_VIDEO TRUE)
+
+            file(GLOB MIR_SOURCES ${SDL2_SOURCE_DIR}/src/video/mir/*.c)
+            set(SOURCE_FILES ${SOURCE_FILES} ${MIR_SOURCES})
+            set(SDL_VIDEO_DRIVER_MIR 1)
+
+            list(APPEND EXTRA_CFLAGS ${MIR_TOOLKIT_CFLAGS} ${EGL_CLFAGS} ${XKB_CLFLAGS})
+            list(APPEND EXTRA_LDFLAGS ${MIR_TOOLKIT_LDFLAGS} ${EGL_LDLAGS} ${XKB_LDLAGS})
+        endif (MIR_LIB AND MIR_TOOLKIT_FOUND AND EGL_FOUND AND XKB_FOUND)
+    endif(VIDEO_MIR)
+endmacro(CheckMir)
+
 # Requires:
 # - EGL
 macro(CheckWayland)

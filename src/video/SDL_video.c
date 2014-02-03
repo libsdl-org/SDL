@@ -59,6 +59,9 @@ static VideoBootStrap *bootstrap[] = {
 #if SDL_VIDEO_DRIVER_X11
     &X11_bootstrap,
 #endif
+#if SDL_VIDEO_DRIVER_MIR
+    &MIR_bootstrap,
+#endif
 #if SDL_VIDEO_DRIVER_DIRECTFB
     &DirectFB_bootstrap,
 #endif
