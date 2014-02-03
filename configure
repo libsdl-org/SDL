@@ -23008,9 +23008,6 @@ $as_echo "#define SDL_FILESYSTEM_HAIKU 1" >>confdefs.h
         CheckOpenGLX11
         CheckPTHREAD
 
-        # Need this or things might misbuild on a G3.
-        EXTRA_CFLAGS="$EXTRA_CFLAGS -force_cpusubtype_ALL"
-
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
 
