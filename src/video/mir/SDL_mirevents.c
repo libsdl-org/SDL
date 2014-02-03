@@ -37,13 +37,15 @@
 
 #include <xkbcommon/xkbcommon.h>
 
+#include "SDL_mirdyn.h"
+
 static void
 HandleKeyText(int32_t key_code)
 {
     char text[8];
     int size = 0;
 
-    size = xkb_keysym_to_utf8(key_code, text, sizeof text);
+    size = MIR_xkb_keysym_to_utf8(key_code, text, sizeof text);
 
     if (size > 0) {
         text[size] = '\0';

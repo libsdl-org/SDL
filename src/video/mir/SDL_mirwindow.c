@@ -33,11 +33,13 @@
 #include "SDL_mirevents.h"
 #include "SDL_mirwindow.h"
 
+#include "SDL_mirdyn.h"
+
 int
 IsSurfaceValid(MIR_Window* mir_window)
 {
-    if (!mir_surface_is_valid(mir_window->surface)) {
-        const char* error = mir_surface_get_error_message(mir_window->surface);
+    if (!MIR_mir_surface_is_valid(mir_window->surface)) {
+        const char* error = MIR_mir_surface_get_error_message(mir_window->surface);
         return SDL_SetError("Failed to created a mir surface: %s", error);
     }
 
@@ -52,7 +54,7 @@ FindValidPixelFormat(MIR_Data* mir_data)
     unsigned int f;
 
     MirPixelFormat formats[pf_size];
-    mir_connection_get_available_surface_formats(mir_data->connection, formats,
+    MIR_mir_connection_get_available_surface_formats(mir_data->connection, formats,
                                                  pf_size, &valid_formats);
 
     for (f = 0; f < valid_formats; f++) {
@@ -111,15 +113,15 @@ MIR_CreateWindow(_THIS, SDL_Window* window)
         return SDL_SetError("Failed to find a valid pixel format.");
     }
 
-    mir_window->surface = mir_connection_create_surface_sync(mir_data->connection, &surfaceparm);
-    if (!mir_surface_is_valid(mir_window->surface)) {
-        const char* error = mir_surface_get_error_message(mir_window->surface);
+    mir_window->surface = MIR_mir_connection_create_surface_sync(mir_data->connection, &surfaceparm);
+    if (!MIR_mir_surface_is_valid(mir_window->surface)) {
+        const char* error = MIR_mir_surface_get_error_message(mir_window->surface);
         return SDL_SetError("Failed to created a mir surface: %s", error);
     }
 
     if (window->flags & SDL_WINDOW_OPENGL) {
         EGLNativeWindowType egl_native_window =
-                        (EGLNativeWindowType)mir_surface_get_egl_native_window(mir_window->surface);
+                        (EGLNativeWindowType)MIR_mir_surface_get_egl_native_window(mir_window->surface);
 
         mir_window->egl_surface = SDL_EGL_CreateSurface(_this, egl_native_window);
 
@@ -132,7 +134,7 @@ MIR_CreateWindow(_THIS, SDL_Window* window)
         mir_window->egl_surface = EGL_NO_SURFACE;
     }
 
-    mir_surface_set_event_handler(mir_window->surface, &delegate);
+    MIR_mir_surface_set_event_handler(mir_window->surface, &delegate);
 
     return 0;
 }
@@ -147,7 +149,7 @@ MIR_DestroyWindow(_THIS, SDL_Window* window)
 
     if (mir_data) {
         SDL_EGL_DestroySurface(_this, mir_window->egl_surface);
-        mir_surface_release_sync(mir_window->surface);
+        MIR_mir_surface_release_sync(mir_window->surface);
 
         SDL_free(mir_window);
     }
@@ -181,10 +183,9 @@ MIR_SetWindowFullscreen(_THIS, SDL_Window* window,
         return;
 
     if (fullscreen) {
-        mir_surface_set_type(mir_window->surface, mir_surface_state_fullscreen);
-    }
-    else {
-        mir_surface_set_type(mir_window->surface, mir_surface_state_restored);
+        MIR_mir_surface_set_type(mir_window->surface, mir_surface_state_fullscreen);
+    } else {
+        MIR_mir_surface_set_type(mir_window->surface, mir_surface_state_restored);
     }
 }
 
@@ -196,7 +197,7 @@ MIR_MaximizeWindow(_THIS, SDL_Window* window)
     if (IsSurfaceValid(mir_window) < 0)
         return;
 
-    mir_surface_set_type(mir_window->surface, mir_surface_state_maximized);
+    MIR_mir_surface_set_type(mir_window->surface, mir_surface_state_maximized);
 }
 
 void
@@ -207,7 +208,7 @@ MIR_MinimizeWindow(_THIS, SDL_Window* window)
     if (IsSurfaceValid(mir_window) < 0)
         return;
 
-    mir_surface_set_type(mir_window->surface, mir_surface_state_minimized);
+    MIR_mir_surface_set_type(mir_window->surface, mir_surface_state_minimized);
 }
 
 void
@@ -218,7 +219,7 @@ MIR_RestoreWindow(_THIS, SDL_Window * window)
     if (IsSurfaceValid(mir_window) < 0)
         return;
 
-    mir_surface_set_type(mir_window->surface, mir_surface_state_restored);
+    MIR_mir_surface_set_type(mir_window->surface, mir_surface_state_restored);
 }
 
 #endif /* SDL_VIDEO_DRIVER_MIR */

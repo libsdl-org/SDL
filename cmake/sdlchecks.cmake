@@ -506,6 +506,7 @@ macro(CheckX11)
 endmacro(CheckX11)
 
 macro(CheckMir)
+# !!! FIXME: hook up dynamic loading here.
     if(VIDEO_MIR)
         find_library(MIR_LIB mirclient mircommon egl)
         pkg_check_modules(MIR_TOOLKIT mirclient mircommon)
@@ -529,6 +530,7 @@ endmacro(CheckMir)
 # Requires:
 # - EGL
 macro(CheckWayland)
+# !!! FIXME: hook up dynamic loading here.
   if(VIDEO_WAYLAND)
     pkg_check_modules(WAYLAND wayland-client wayland-cursor wayland-egl egl xkbcommon)
     if(WAYLAND_FOUND)
