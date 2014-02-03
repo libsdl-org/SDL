@@ -105,6 +105,7 @@ typedef enum
     SDL_SYSWM_COCOA,
     SDL_SYSWM_UIKIT,
     SDL_SYSWM_WAYLAND,
+    SDL_SYSWM_MIR,
 } SDL_SYSWM_TYPE;
 
 /**
