@@ -23,8 +23,6 @@
   Contributed by Brandon Schaefer, <brandon.schaefer@canonical.com>
 */
 
-#include "SDL_config.h"
-
 #ifndef _SDL_mirvideo_h_
 #define _SDL_mirvideo_h_
 
@@ -34,7 +32,8 @@
 typedef struct
 {
     MirConnection* connection;
-
 } MIR_Data;
 
 #endif /* _SDL_mirvideo_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

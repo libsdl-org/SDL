@@ -23,7 +23,9 @@
   Contributed by Brandon Schaefer, <brandon.schaefer@canonical.com>
 */
 
-#include "SDL_config.h"
+#include "../../SDL_internal.h"
+
+#if SDL_VIDEO_DRIVER_MIR
 
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_keyboard_c.h"
@@ -244,3 +246,7 @@ MIR_HandleInput(MirSurface* surface, MirEvent const* ev, void* context)
             break;
     }
 }
+
+#endif /* SDL_VIDEO_DRIVER_MIR */
+
+/* vi: set ts=4 sw=4 expandtab: */

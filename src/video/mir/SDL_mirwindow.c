@@ -23,7 +23,9 @@
   Contributed by Brandon Schaefer, <brandon.schaefer@canonical.com>
 */
 
-#include "SDL_config.h"
+#include "../../SDL_internal.h"
+
+#if SDL_VIDEO_DRIVER_MIR
 
 #include "../SDL_egl_c.h"
 #include "../SDL_sysvideo.h"
@@ -214,3 +216,7 @@ MIR_RestoreWindow(_THIS, SDL_Window * window)
 
     mir_surface_set_type(mir_window->surface, mir_surface_state_restored);
 }
+
+#endif /* SDL_VIDEO_DRIVER_MIR */
+
+/* vi: set ts=4 sw=4 expandtab: */

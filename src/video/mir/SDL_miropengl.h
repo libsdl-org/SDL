@@ -23,8 +23,6 @@
   Contributed by Brandon Schaefer, <brandon.schaefer@canonical.com>
 */
 
-#include "SDL_config.h"
-
 #ifndef _SDL_miropengl_h
 #define _SDL_miropengl_h
 
@@ -55,3 +53,6 @@ extern void*
 MIR_GL_GetProcAddress(_THIS, const char* proc);
 
 #endif /* _SDL_miropengl_h */
+
+/* vi: set ts=4 sw=4 expandtab: */
+

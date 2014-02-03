@@ -23,8 +23,6 @@
   Contributed by Brandon Schaefer, <brandon.schaefer@canonical.com>
 */
 
-#include "SDL_config.h"
-
 #ifndef _SDL_mirwindow_h
 #define _SDL_mirwindow_h
 
@@ -39,7 +37,6 @@ typedef struct {
 
     MirSurface* surface;
     EGLSurface egl_surface;
-
 } MIR_Window;
 
 
@@ -67,3 +64,6 @@ extern SDL_bool
 MIR_GetWindowWMInfo(_THIS, SDL_Window* window, SDL_SysWMinfo* info);
 
 #endif /* _SDL_mirwindow */
+
+/* vi: set ts=4 sw=4 expandtab: */
+
