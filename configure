@@ -18688,9 +18688,9 @@ CheckWayland()
 if test "${enable_video_wayland+set}" = set; then :
   enableval=$enable_video_wayland;
 else
-  enable_video_wayland=yes
+  enable_video_wayland=no
 fi
-
+ #yes)
 
     # Check whether --enable-video-wayland-qt-touch was given.
 if test "${enable_video_wayland_qt_touch+set}" = set; then :
@@ -18842,9 +18842,9 @@ CheckMir()
 if test "${enable_video_mir+set}" = set; then :
   enableval=$enable_video_mir;
 else
-  enable_video_mir=yes
+  enable_video_mir=no
 fi
-
+ #yes)
 
     if test x$enable_video = xyes -a x$enable_video_mir = xyes; then
         # Extract the first word of "pkg-config", so it can be a program name with args.
