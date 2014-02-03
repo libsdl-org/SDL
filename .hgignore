@@ -96,3 +96,5 @@ test/testwm2
 test/torturethread
 test/*.exe
 test/*.dSYM
+buildbot
+test/buildbot
