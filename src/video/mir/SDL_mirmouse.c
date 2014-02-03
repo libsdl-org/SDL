@@ -32,6 +32,8 @@
 #include "../../events/SDL_mouse_c.h"
 #include "SDL_assert.h"
 
+#include "SDL_mirdyn.h"
+
 static SDL_Cursor*
 MIR_CreateDefaultCursor()
 {

@@ -35,6 +35,8 @@
 #include "SDL_mirvideo.h"
 #include "SDL_mirwindow.h"
 
+#include "SDL_mirdyn.h"
+
 #define MIR_DRIVER_NAME "mir"
 
 static int
@@ -74,13 +76,23 @@ MIR_ResizeWindowShape(SDL_Window* window)
 static int
 MIR_Available()
 {
-    return 1;
+    int available = 0;
+
+    if (SDL_MIR_LoadSymbols()) {
+        /* !!! FIXME: try to make a MirConnection here. */
+        available = 1;
+        SDL_MIR_UnloadSymbols();
+
+    }
+
+    return available;
 }
 
 static void
 MIR_DeleteDevice(SDL_VideoDevice* device)
 {
     SDL_free(device);
+    SDL_MIR_UnloadSymbols();
 }
 
 void
@@ -92,16 +104,24 @@ static SDL_VideoDevice*
 MIR_CreateDevice(int device_index)
 {
     MIR_Data* mir_data;
-    SDL_VideoDevice* device = SDL_calloc(1, sizeof(SDL_VideoDevice));
+    SDL_VideoDevice* device = NULL;
+
+    if (!SDL_MIR_LoadSymbols()) {
+        return NULL;
+    }
+
+    device = SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
+        SDL_MIR_UnloadSymbols();
         SDL_OutOfMemory();
         return NULL;
     }
 
     mir_data = SDL_calloc(1, sizeof(MIR_Data));
     if (!mir_data) {
-        SDL_OutOfMemory();
         SDL_free(device);
+        SDL_MIR_UnloadSymbols();
+        SDL_OutOfMemory();
         return NULL;
     }
 
@@ -225,8 +245,7 @@ MIR_InitDisplays(_THIS)
     MIR_Data* mir_data = _this->driverdata;
     int d;
 
-    MirDisplayConfiguration* display_config =
-            mir_connection_create_display_config(mir_data->connection);
+    MirDisplayConfiguration* display_config = MIR_mir_connection_create_display_config(mir_data->connection);
 
     for (d = 0; d < display_config->num_outputs; d++) {
         MirDisplayOutput const* out = display_config->outputs + d;
@@ -246,7 +265,7 @@ MIR_InitDisplays(_THIS)
         }
     }
 
-    mir_display_config_destroy(display_config);
+    MIR_mir_display_config_destroy(display_config);
 }
 
 int
@@ -254,9 +273,9 @@ MIR_VideoInit(_THIS)
 {
     MIR_Data* mir_data = _this->driverdata;
 
-    mir_data->connection = mir_connect_sync(NULL, __PRETTY_FUNCTION__);
+    mir_data->connection = MIR_mir_connect_sync(NULL, __PRETTY_FUNCTION__);
 
-    if (!mir_connection_is_valid(mir_data->connection))
+    if (!MIR_mir_connection_is_valid(mir_data->connection))
         return SDL_SetError("Failed to connect to the Mir Server");
 
     MIR_InitDisplays(_this);
@@ -275,7 +294,7 @@ MIR_VideoQuit(_THIS)
     MIR_GL_DeleteContext(_this, NULL);
     MIR_GL_UnloadLibrary(_this);
 
-    mir_connection_release(mir_data->connection);
+    MIR_mir_connection_release(mir_data->connection);
 
     SDL_free(mir_data);
     _this->driverdata = NULL;
@@ -287,8 +306,7 @@ MIR_GetDisplayBounds(_THIS, SDL_VideoDisplay* display, SDL_Rect* rect)
     MIR_Data* mir_data = _this->driverdata;
     int d;
 
-    MirDisplayConfiguration* display_config =
-            mir_connection_create_display_config(mir_data->connection);
+    MirDisplayConfiguration* display_config = MIR_mir_connection_create_display_config(mir_data->connection);
 
     for (d = 0; d < display_config->num_outputs; d++) {
         MirDisplayOutput const* out = display_config->outputs + d;
@@ -305,7 +323,7 @@ MIR_GetDisplayBounds(_THIS, SDL_VideoDisplay* display, SDL_Rect* rect)
         }
     }
 
-    mir_display_config_destroy(display_config);
+    MIR_mir_display_config_destroy(display_config);
 
     return 0;
 }

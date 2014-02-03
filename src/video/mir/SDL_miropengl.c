@@ -33,6 +33,8 @@
 
 #define DEFAULT_OGL_ES2 "libGLESv2.so"
 
+#include "SDL_mirdyn.h"
+
 void* MIR_GLHandle = NULL;
 
 void
@@ -70,8 +72,7 @@ MIR_GL_LoadLibrary(_THIS, const char* path)
 {
     MIR_Data* mir_data = _this->driverdata;
 
-    SDL_EGL_LoadLibrary(_this, path,
-                        mir_connection_get_egl_native_display(mir_data->connection));
+    SDL_EGL_LoadLibrary(_this, path, MIR_mir_connection_get_egl_native_display(mir_data->connection));
 
     SDL_EGL_ChooseConfig(_this);
 
@@ -103,7 +104,7 @@ Ensure_GL_HandleOpen()
 void*
 MIR_GL_GetProcAddress(_THIS, const char* proc)
 {
-    void* proc_addr = eglGetProcAddress(proc);
+    void* proc_addr = SDL_EGL_GetProcAddress(_this, proc);
 
     /* FIXME when on the phone/tablet eglGetProcAddress returns NULL through libhybris,
        seems to be a problem in android. Also looks like a problem in the android video driver:

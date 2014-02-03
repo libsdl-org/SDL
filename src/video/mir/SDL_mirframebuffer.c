@@ -31,6 +31,8 @@
 #include "SDL_mirframebuffer.h"
 #include "SDL_mirwindow.h"
 
+#include "SDL_mirdyn.h"
+
 static const Uint32 mir_pixel_format_to_sdl_format[] = {
     SDL_PIXELFORMAT_UNKNOWN,  /* mir_pixel_format_invalid   */
     SDL_PIXELFORMAT_ABGR8888, /* mir_pixel_format_abgr_8888 */
@@ -59,7 +61,7 @@ MIR_CreateWindowFramebuffer(_THIS, SDL_Window* window, Uint32* format,
 
     mir_window = window->driverdata;
 
-    mir_surface_get_parameters(mir_window->surface, &surfaceparm);
+    MIR_mir_surface_get_parameters(mir_window->surface, &surfaceparm);
 
     *format = MIR_GetSDLPixelFormat(surfaceparm.pixel_format);
     if (*format == SDL_PIXELFORMAT_UNKNOWN)
@@ -71,9 +73,9 @@ MIR_CreateWindowFramebuffer(_THIS, SDL_Window* window, Uint32* format,
     if (*pixels == NULL)
         return SDL_OutOfMemory();
 
-    mir_window->surface = mir_connection_create_surface_sync(mir_data->connection, &surfaceparm);
-    if (!mir_surface_is_valid(mir_window->surface)) {
-        const char* error = mir_surface_get_error_message(mir_window->surface);
+    mir_window->surface = MIR_mir_connection_create_surface_sync(mir_data->connection, &surfaceparm);
+    if (!MIR_mir_surface_is_valid(mir_window->surface)) {
+        const char* error = MIR_mir_surface_get_error_message(mir_window->surface);
         return SDL_SetError("Failed to created a mir surface: %s", error);
     }
 
@@ -90,7 +92,7 @@ MIR_UpdateWindowFramebuffer(_THIS, SDL_Window* window,
     int i, j, x, y, w, h, start;
     int bytes_per_pixel, bytes_per_row, s_stride, d_stride;
 
-    mir_surface_get_graphics_region(mir_window->surface, &region);
+    MIR_mir_surface_get_graphics_region(mir_window->surface, &region);
 
     char* s_dest = region.vaddr;
     char* pixels = (char*)window->surface->pixels;
@@ -138,7 +140,7 @@ MIR_UpdateWindowFramebuffer(_THIS, SDL_Window* window,
         }
     }
 
-    mir_surface_swap_buffers_sync(mir_window->surface);
+    MIR_mir_surface_swap_buffers_sync(mir_window->surface);
 
     return 0;
 }

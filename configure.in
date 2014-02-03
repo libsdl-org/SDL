@@ -1124,44 +1124,6 @@ CheckStackBoundary()
     fi
 }
 
-CheckMir()
-{
-    AC_ARG_ENABLE(video-mir,
-    AC_HELP_STRING([--enable-video-mir], [use Mir video driver [[default=yes]]]),
-                   , enable_video_mir=yes)
-
-    if test x$enable_video = xyes -a x$enable_video_mir = xyes; then
-        AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
-
-        if test x$PKG_CONFIG != xno; then
-            AC_MSG_CHECKING(for Mir support)
-            video_mir=no
-            tmp_CFLAGS="$CFLAGS"
-            CFLAGS="$EXTRA_CFLAGS `$PKG_CONFIG --cflags egl mirclient xkbcommon`"
-
-            AC_TRY_COMPILE([
-             #include <EGL/egl.h>
-             #include <xkbcommon/xkbcommon.h>
-             #include <mir_toolkit/mir_client_library.h>
-            ],[
-            ],[
-            video_mir=yes
-            ])
-            CFLAGS="$tmp_CFLAGS"
-            AC_MSG_RESULT($video_mir)
-
-            if test x$video_mir = xyes; then
-                  AC_DEFINE(SDL_VIDEO_DRIVER_MIR)
-                  SOURCES="$SOURCES $srcdir/src/video/mir/*.c"
-                  EXTRA_CFLAGS="$EXTRA_CFLAGS `$PKG_CONFIG --cflags egl mirclient xkbcommon`"
-                  EXTRA_LDFLAGS="$EXTRA_LDFLAGS `$PKG_CONFIG --libs egl mirclient xkbcommon`"
-                  have_video=yes
-                  SUMMARY_video="${SUMMARY_video} mir"
-            fi
-        fi
-    fi
-}
-
 dnl See if GCC's -Wall is supported.
 CheckWarnAll()
 {
@@ -1251,7 +1213,7 @@ AC_HELP_STRING([--enable-wayland-shared], [dynamically load Wayland support [[de
             fi
             if test x$have_loadso != xyes && \
                test x$enable_wayland_shared = xyes; then
-                AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic WAYLAND loading])
+                AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic Wayland loading])
                 enable_wayland_shared=no
             fi
             if test x$have_loadso = xyes && \
@@ -1263,7 +1225,7 @@ AC_HELP_STRING([--enable-wayland-shared], [dynamically load Wayland support [[de
                 echo "-- dynamic libwayland-client -> $wayland_client_lib"
                 echo "-- dynamic libwayland-egl -> $wayland_egl_lib"
                 echo "-- dynamic libwayland-cursor -> $wayland_cursor_lib"
-                echo "-- dynamic xkbcommon -> $xkbcommon_lib"
+                echo "-- dynamic libxkbcommon -> $xkbcommon_lib"
                 AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC, "$wayland_client_lib", [ ])
                 AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_EGL, "$wayland_egl_lib", [ ])
                 AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_CURSOR, "$wayland_cursor_lib", [ ])
@@ -1278,6 +1240,70 @@ AC_HELP_STRING([--enable-wayland-shared], [dynamically load Wayland support [[de
         fi
     fi
 }
+
+dnl Check for Mir
+CheckMir()
+{
+    AC_ARG_ENABLE(video-mir,
+AC_HELP_STRING([--enable-video-mir], [use Mir video driver [[default=yes]]]),
+                  ,enable_video_mir=yes)
+
+    if test x$enable_video = xyes -a x$enable_video_mir = xyes; then
+        AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
+        AC_MSG_CHECKING(for Mir support)
+        video_mir=no
+        if test x$PKG_CONFIG != xno; then
+            if $PKG_CONFIG --exists mirclient egl xkbcommon ; then
+                MIR_CFLAGS=`$PKG_CONFIG --cflags mirclient egl xkbcommon`
+                MIR_LIBS=`$PKG_CONFIG --libs mirclient egl xkbcommon`
+                video_mir=yes
+            fi
+        fi
+        AC_MSG_RESULT($video_mir)
+
+        if test x$video_mir = xyes; then
+            AC_DEFINE(SDL_VIDEO_DRIVER_MIR, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/video/mir/*.c"
+            EXTRA_CFLAGS="$EXTRA_CFLAGS $MIR_CFLAGS"
+            AC_ARG_ENABLE(mir-shared,
+AC_HELP_STRING([--enable-mir-shared], [dynamically load Mir support [[default=maybe]]]),
+                          , enable_mir_shared=maybe)
+
+            dnl FIXME: Do BSD and OS X need special cases?
+            case "$host" in
+                *)
+                    mirclient_lib=[`find_lib "libmirclient.so.*" "$MIR_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
+                    xkbcommon_lib=[`find_lib "libxkbcommon.so.*" "$MIR_LIBS" | sed 's/.*\/\(.*\)/\1/; q'`]
+                    ;;
+            esac
+
+            if test x$enable_mir_shared = xmaybe; then
+                enable_mir_shared=yes
+            fi
+            if test x$have_loadso != xyes && \
+               test x$enable_mir_shared = xyes; then
+                AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic Mir loading])
+                enable_mir_shared=no
+            fi
+            if test x$have_loadso = xyes && \
+               test x$enable_mir_shared = xyes && \
+               test x$mirclient_lib != x && \
+               test x$xkbcommon_lib != x; then
+                echo "-- dynamic libmirclient -> $mirclient_lib"
+                echo "-- dynamic libxkbcommon -> $xkbcommon_lib"
+                AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_MIR_DYNAMIC, "$mirclient_lib", [ ])
+                AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_MIR_DYNAMIC_XKBCOMMON, "$xkbcommon_lib", [ ])
+                SUMMARY_video="${SUMMARY_video} mir(dynamic)"
+            else
+                enable_mir_shared=no
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS $MIR_LIBS"
+                SUMMARY_video="${SUMMARY_video} mir"
+            fi
+            have_video=yes
+        fi
+    fi
+}
+
 
 dnl Find the X11 include and library directories
 CheckX11()
