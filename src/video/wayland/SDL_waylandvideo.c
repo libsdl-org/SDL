@@ -95,6 +95,7 @@ Wayland_CreateDevice(int devindex)
     /* Initialize all variables that we clean on shutdown */
     device = SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
+        SDL_WAYLAND_UnloadSymbols();
         SDL_OutOfMemory();
         return NULL;
     }
