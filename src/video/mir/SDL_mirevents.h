@@ -23,8 +23,6 @@
   Contributed by Brandon Schaefer, <brandon.schaefer@canonical.com>
 */
 
-#include "SDL_config.h"
-
 #ifndef _SDL_mirevents_h
 #define _SDL_mirevents_h
 
@@ -34,3 +32,6 @@ extern void
 MIR_HandleInput(MirSurface* surface, MirEvent const* ev, void* context);
 
 #endif /* _SDL_mirevents_h */
+
+/* vi: set ts=4 sw=4 expandtab: */
+

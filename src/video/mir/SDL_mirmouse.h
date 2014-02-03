@@ -23,8 +23,6 @@
   Contributed by Brandon Schaefer, <brandon.schaefer@canonical.com>
 */
 
-#include "SDL_config.h"
-
 #ifndef _SDL_mirmouse_h
 #define _SDL_mirmouse_h
 
@@ -35,3 +33,5 @@ extern void
 MIR_FiniMouse();
 
 #endif /* _SDL_mirmouse_h */
+
+/* vi: set ts=4 sw=4 expandtab: */

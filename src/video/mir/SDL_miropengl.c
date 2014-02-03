@@ -23,7 +23,10 @@
   Contributed by Brandon Schaefer, <brandon.schaefer@canonical.com>
 */
 
-#include "SDL_config.h"
+#include "../../SDL_internal.h"
+
+#if SDL_VIDEO_DRIVER_MIR
+
 #include "SDL_miropengl.h"
 
 #include <dlfcn.h>
@@ -120,3 +123,7 @@ MIR_GL_GetProcAddress(_THIS, const char* proc)
 
     return proc_addr;
 }
+
+#endif /* SDL_VIDEO_DRIVER_MIR */
+
+/* vi: set ts=4 sw=4 expandtab: */
