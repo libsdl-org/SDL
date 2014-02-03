@@ -18722,6 +18722,7 @@ $as_echo "$video_mir" >&6; }
                   EXTRA_CFLAGS="$EXTRA_CFLAGS `$PKG_CONFIG --cflags egl mirclient xkbcommon`"
                   EXTRA_LDFLAGS="$EXTRA_LDFLAGS `$PKG_CONFIG --libs egl mirclient xkbcommon`"
                   have_video=yes
+                  SUMMARY_video="${SUMMARY_video} mir"
             fi
         fi
     fi
