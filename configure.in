@@ -3016,9 +3016,6 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         CheckOpenGLX11
         CheckPTHREAD
 
-        # Need this or things might misbuild on a G3.
-        EXTRA_CFLAGS="$EXTRA_CFLAGS -force_cpusubtype_ALL"
-
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
             AC_DEFINE(SDL_AUDIO_DRIVER_COREAUDIO, 1, [ ])
