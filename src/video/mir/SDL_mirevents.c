@@ -203,11 +203,13 @@ HandleMouseEvent(MirMotionEvent const motion, int cord_index, SDL_Window* sdl_wi
         case mir_motion_action_outside:
             SDL_SetMouseFocus(NULL);
             break;
+#if 0  /* !!! FIXME: needs a newer set of dev headers than Ubuntu 13.10 is shipping atm. */
         case mir_motion_action_scroll:
             HandleMouseScroll(sdl_window,
                               motion.pointer_coordinates[cord_index].hscroll,
                               motion.pointer_coordinates[cord_index].vscroll);
             break;
+#endif
         case mir_motion_action_cancel:
         case mir_motion_action_hover_enter:
         case mir_motion_action_hover_exit:
@@ -222,12 +224,16 @@ HandleMotionEvent(MirMotionEvent const motion, SDL_Window* sdl_window)
 {
     int cord_index;
     for (cord_index = 0; cord_index < motion.pointer_count; cord_index++) {
+#if 0  /* !!! FIXME: needs a newer set of dev headers than Ubuntu 13.10 is shipping atm. */
         if (motion.pointer_coordinates[cord_index].tool_type == mir_motion_tool_type_mouse) {
             HandleMouseEvent(motion, cord_index, sdl_window);
         }
         else if (motion.pointer_coordinates[cord_index].tool_type == mir_motion_tool_type_finger) {
             HandleTouchEvent(motion, cord_index, sdl_window);
         }
+#else
+        HandleMouseEvent(motion, cord_index, sdl_window);
+#endif
     }
 }
 
