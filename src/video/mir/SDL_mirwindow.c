@@ -158,8 +158,12 @@ MIR_GetWindowWMInfo(_THIS, SDL_Window* window, SDL_SysWMinfo* info)
 {
     if (info->version.major == SDL_MAJOR_VERSION &&
         info->version.minor == SDL_MINOR_VERSION) {
+        MIR_Window* mir_window = window->driverdata;
 
         info->subsystem = SDL_SYSWM_MIR;
+        info->info.mir.connection = mir_window->mir_data->connection;
+        info->info.mir.surface = mir_window->surface;
+
         return SDL_TRUE;
     }
 

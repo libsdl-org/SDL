@@ -93,6 +93,11 @@ typedef struct _UIWindow UIWindow;
 #endif
 #endif
 
+#if defined(SDL_VIDEO_DRIVER_MIR)
+#include <mir_toolkit/mir_client_library.h>
+#endif
+
+
 /**
  *  These are the various supported windowing subsystems
  */
@@ -205,6 +210,14 @@ struct SDL_SysWMinfo
             struct wl_shell_surface *shell_surface; /**< Wayland shell_surface (window manager handle) */
         } wl;
 #endif
+#if defined(SDL_VIDEO_DRIVER_MIR)
+        struct
+        {
+            MirConnection *connection;  /**< Mir display server connection */
+            MirSurface *surface;  /**< Mir surface */
+        } mir;
+#endif
+
         /* Can't have an empty union */
         int dummy;
     } info;
