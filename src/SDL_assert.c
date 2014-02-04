@@ -366,4 +366,17 @@ void SDL_ResetAssertionReport(void)
     triggered_assertions = NULL;
 }
 
+SDL_AssertionHandler SDL_GetDefaultAssertionHandler(void)
+{
+    return SDL_PromptAssertion;
+}
+
+SDL_AssertionHandler SDL_GetAssertionHandler(void **userdata)
+{
+    if (userdata != NULL) {
+        *userdata = assertion_userdata;
+    }
+    return assertion_handler;
+}
+
 /* vi: set ts=4 sw=4 expandtab: */
