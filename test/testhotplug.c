@@ -78,8 +78,12 @@ main(int argc, char *argv[])
                                     haptic = NULL;
                                 }
                             } else {
-                                SDL_Log("Joy haptic FAILED!\n");
+                                SDL_Log("Joy haptic open FAILED!\n");
                             }
+                        }
+                        else
+                        {
+                            SDL_Log("No haptic found\n");
                         }
                     }
                     break;
@@ -91,6 +95,7 @@ main(int argc, char *argv[])
                         if(haptic)
                         {
                             SDL_HapticClose(haptic);
+                            haptic = NULL;
                         }
                         SDL_JoystickClose(joystick);
                         joystick = NULL;
