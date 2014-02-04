@@ -588,6 +588,18 @@
 		DB89957918A19ABA0092407C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
 		DB89957A18A19ABA0092407C /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
 		DB89958418A19B130092407C /* testhotplug.c in Sources */ = {isa = PBXBuildFile; fileRef = DB89958318A19B130092407C /* testhotplug.c */; };
+		DB445EEA18184B7000B306B0 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002F33A709CA188600EBEB88 /* Cocoa.framework */; };
+		DB445EEB18184B7000B306B0 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863B10730545007319AE /* CoreAudio.framework */; };
+		DB445EEC18184B7000B306B0 /* ForceFeedback.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863C10730545007319AE /* ForceFeedback.framework */; };
+		DB445EED18184B7000B306B0 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
+		DB445EEE18184B7000B306B0 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
+		DB445EEF18184B7000B306B0 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
+		DB445EF018184B7000B306B0 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
+		DB445EF118184B7000B306B0 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
+		DB445EF218184B7000B306B0 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
+		DB445EF318184B7000B306B0 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
+		DB445EF418184B7000B306B0 /* libSDL_test.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DB166D7F16A1D12400A1396C /* libSDL_test.a */; };
+		DB445EFB18184BB600B306B0 /* testdropfile.c in Sources */ = {isa = PBXBuildFile; fileRef = DB445EFA18184BB600B306B0 /* testdropfile.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1172,6 +1184,9 @@
 		DB166ECF16A1D87000A1396C /* shapes */ = {isa = PBXFileReference; lastKnownFileType = folder; name = shapes; path = ../../test/shapes; sourceTree = "<group>"; };
 		DB89957E18A19ABA0092407C /* testhotplug */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testhotplug; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB89958318A19B130092407C /* testhotplug.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testhotplug.c; path = ../../test/testhotplug.c; sourceTree = "<group>"; };
+		DB445EF818184B7000B306B0 /* testdropfile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testdropfile.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		DB445EFA18184BB600B306B0 /* testdropfile.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testdropfile.c; path = ../../test/testdropfile.c; sourceTree = "<group>"; };
+		DBBC552C182831D700F3CA8D /* TestDropFile-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "TestDropFile-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1941,6 +1956,24 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		DB445EE918184B7000B306B0 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DB445EEA18184B7000B306B0 /* Cocoa.framework in Frameworks */,
+				DB445EEB18184B7000B306B0 /* CoreAudio.framework in Frameworks */,
+				DB445EEC18184B7000B306B0 /* ForceFeedback.framework in Frameworks */,
+				DB445EED18184B7000B306B0 /* IOKit.framework in Frameworks */,
+				DB445EEE18184B7000B306B0 /* AudioToolbox.framework in Frameworks */,
+				DB445EEF18184B7000B306B0 /* CoreFoundation.framework in Frameworks */,
+				DB445EF018184B7000B306B0 /* OpenGL.framework in Frameworks */,
+				DB445EF118184B7000B306B0 /* AudioUnit.framework in Frameworks */,
+				DB445EF218184B7000B306B0 /* Carbon.framework in Frameworks */,
+				DB445EF318184B7000B306B0 /* libSDL2.a in Frameworks */,
+				DB445EF418184B7000B306B0 /* libSDL_test.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -1974,6 +2007,7 @@
 		00794E4609D207B4003FC8A1 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				DBBC552C182831D700F3CA8D /* TestDropFile-Info.plist */,
 				DB166ECF16A1D87000A1396C /* shapes */,
 				00794E5D09D20839003FC8A1 /* icon.bmp */,
 				00794E5E09D20839003FC8A1 /* moose.dat */,
@@ -2008,6 +2042,7 @@
 				001795B01074222D00F5D044 /* testaudioinfo.c */,
 				001797711074320D00F5D044 /* testdraw2.c */,
 				DB0F48D717CA51D2008798C5 /* testdrawchessboard.c */,
+				DB445EFA18184BB600B306B0 /* testdropfile.c */,
 				083E4878006D85357F000001 /* testerror.c */,
 				002F341709CA1C5B00EBEB88 /* testfile.c */,
 				DB0F48D817CA51D2008798C5 /* testfilesystem.c */,
@@ -2102,6 +2137,7 @@
 				DB0F48EC17CA51E5008798C5 /* testdrawchessboard */,
 				DB0F490117CA5212008798C5 /* testfilesystem */,
 				DB89957E18A19ABA0092407C /* testhotplug */,
+				DB445EF818184B7000B306B0 /* testdropfile.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2837,7 +2873,7 @@
 			dependencies = (
 			);
 			name = testspriteminimal;
-			productName = testsem;
+			productName = testspriteminimal;
 			productReference = DB166E7E16A1D78400A1396C /* testspriteminimal */;
 			productType = "com.apple.product-type.tool";
 		};
@@ -2854,7 +2890,7 @@
 			dependencies = (
 			);
 			name = teststreaming;
-			productName = testsem;
+			productName = teststreaming;
 			productReference = DB166E9116A1D78C00A1396C /* teststreaming */;
 			productType = "com.apple.product-type.tool";
 		};
@@ -2873,6 +2909,22 @@
 			productName = testalpha;
 			productReference = DB89957E18A19ABA0092407C /* testhotplug */;
 			productType = "com.apple.product-type.tool";
+		};
+		DB445EE618184B7000B306B0 /* testdropfile */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DB445EF518184B7000B306B0 /* Build configuration list for PBXNativeTarget "testdropfile" */;
+			buildPhases = (
+				DB445EE718184B7000B306B0 /* Sources */,
+				DB445EE918184B7000B306B0 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = testdropfile;
+			productName = testdropfile;
+			productReference = DB445EF818184B7000B306B0 /* testdropfile.app */;
+			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
@@ -2911,6 +2963,7 @@
 				00179595107421BF00F5D044 /* testaudioinfo */,
 				00179756107431B300F5D044 /* testdraw2 */,
 				DB0F48D917CA51E5008798C5 /* testdrawchessboard */,
+				DB445EE618184B7000B306B0 /* testdropfile */,
 				BEC566FB0761D90300A33029 /* testerror */,
 				002F340109CA1BFF00EBEB88 /* testfile */,
 				DB0F48EF17CA5212008798C5 /* testfilesystem */,
@@ -3358,6 +3411,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				DB89958418A19B130092407C /* testhotplug.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DB445EE718184B7000B306B0 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DB445EFB18184BB600B306B0 /* testdropfile.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4262,6 +4323,22 @@
 			};
 			name = Release;
 		};
+		DB445EF618184B7000B306B0 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = "TestDropFile-Info.plist";
+				PRODUCT_NAME = testdropfile;
+			};
+			name = Debug;
+		};
+		DB445EF718184B7000B306B0 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				INFOPLIST_FILE = "TestDropFile-Info.plist";
+				PRODUCT_NAME = testdropfile;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -4684,6 +4761,15 @@
 			buildConfigurations = (
 				DB89957C18A19ABA0092407C /* Debug */,
 				DB89957D18A19ABA0092407C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		DB445EF518184B7000B306B0 /* Build configuration list for PBXNativeTarget "testdropfile" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DB445EF618184B7000B306B0 /* Debug */,
+				DB445EF718184B7000B306B0 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

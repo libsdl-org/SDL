@@ -44,6 +44,10 @@ main(int argc, char *argv[])
         int consumed;
 
         consumed = SDLTest_CommonArg(state, i);
+        // needed vodoo to allow app to launch via OS X Finder
+        if (SDL_strncmp(argv[i], "-psn", 4)==0) {
+            consumed = 1;
+        }
         if (consumed == 0) {
             consumed = -1;
         }
@@ -63,6 +67,8 @@ main(int argc, char *argv[])
         SDL_RenderClear(renderer);
         SDL_RenderPresent(renderer);
     }
+
+    SDL_EventState(SDL_DROPFILE, SDL_ENABLE);
 
     /* Main render loop */
     done = 0;
