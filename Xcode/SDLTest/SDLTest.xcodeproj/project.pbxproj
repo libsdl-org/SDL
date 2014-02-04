@@ -577,6 +577,17 @@
 		DB166E9A16A1D7F700A1396C /* moose.dat in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E5E09D20839003FC8A1 /* moose.dat */; };
 		DB166E9C16A1D80900A1396C /* icon.bmp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E5D09D20839003FC8A1 /* icon.bmp */; };
 		DB166ED016A1D88100A1396C /* shapes in CopyFiles */ = {isa = PBXBuildFile; fileRef = DB166ECF16A1D87000A1396C /* shapes */; };
+		DB89957118A19ABA0092407C /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002F33A709CA188600EBEB88 /* Cocoa.framework */; };
+		DB89957218A19ABA0092407C /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863B10730545007319AE /* CoreAudio.framework */; };
+		DB89957318A19ABA0092407C /* ForceFeedback.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863C10730545007319AE /* ForceFeedback.framework */; };
+		DB89957418A19ABA0092407C /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
+		DB89957518A19ABA0092407C /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
+		DB89957618A19ABA0092407C /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
+		DB89957718A19ABA0092407C /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
+		DB89957818A19ABA0092407C /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
+		DB89957918A19ABA0092407C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
+		DB89957A18A19ABA0092407C /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
+		DB89958418A19B130092407C /* testhotplug.c in Sources */ = {isa = PBXBuildFile; fileRef = DB89958318A19B130092407C /* testhotplug.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1036,36 +1047,36 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		0017958C10741F7900F5D044 /* testatomic */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = text; path = testatomic; sourceTree = BUILT_PRODUCTS_DIR; };
+		0017958C10741F7900F5D044 /* testatomic */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testatomic; sourceTree = BUILT_PRODUCTS_DIR; };
 		0017958F1074216E00F5D044 /* testatomic.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testatomic.c; path = ../../test/testatomic.c; sourceTree = SOURCE_ROOT; };
-		001795AD107421BF00F5D044 /* testaudioinfo */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = text; path = testaudioinfo; sourceTree = BUILT_PRODUCTS_DIR; };
+		001795AD107421BF00F5D044 /* testaudioinfo */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testaudioinfo; sourceTree = BUILT_PRODUCTS_DIR; };
 		001795B01074222D00F5D044 /* testaudioinfo.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testaudioinfo.c; path = ../../test/testaudioinfo.c; sourceTree = SOURCE_ROOT; };
-		0017972110742F3200F5D044 /* testgl2 */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "compiled.mach-o.executable"; path = testgl2; sourceTree = BUILT_PRODUCTS_DIR; };
+		0017972110742F3200F5D044 /* testgl2 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testgl2; sourceTree = BUILT_PRODUCTS_DIR; };
 		0017972710742FB900F5D044 /* testgl2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testgl2.c; path = ../../test/testgl2.c; sourceTree = SOURCE_ROOT; };
-		00179748107430D600F5D044 /* testhaptic */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "compiled.mach-o.executable"; path = testhaptic; sourceTree = BUILT_PRODUCTS_DIR; };
+		00179748107430D600F5D044 /* testhaptic */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testhaptic; sourceTree = BUILT_PRODUCTS_DIR; };
 		0017974E1074315700F5D044 /* testhaptic.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testhaptic.c; path = ../../test/testhaptic.c; sourceTree = SOURCE_ROOT; };
-		0017976E107431B300F5D044 /* testdraw2 */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = text; path = testdraw2; sourceTree = BUILT_PRODUCTS_DIR; };
+		0017976E107431B300F5D044 /* testdraw2 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testdraw2; sourceTree = BUILT_PRODUCTS_DIR; };
 		001797711074320D00F5D044 /* testdraw2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testdraw2.c; path = ../../test/testdraw2.c; sourceTree = SOURCE_ROOT; };
-		0017978E107432AE00F5D044 /* testime */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "compiled.mach-o.executable"; path = testime; sourceTree = BUILT_PRODUCTS_DIR; };
+		0017978E107432AE00F5D044 /* testime */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testime; sourceTree = BUILT_PRODUCTS_DIR; };
 		00179791107432FA00F5D044 /* testime.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testime.c; path = ../../test/testime.c; sourceTree = SOURCE_ROOT; };
-		001797AE1074334C00F5D044 /* testintersections */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = text; path = testintersections; sourceTree = BUILT_PRODUCTS_DIR; };
+		001797AE1074334C00F5D044 /* testintersections */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testintersections; sourceTree = BUILT_PRODUCTS_DIR; };
 		001797B31074339C00F5D044 /* testintersections.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testintersections.c; path = ../../test/testintersections.c; sourceTree = SOURCE_ROOT; };
-		001797D0107433C600F5D044 /* testloadso */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = text; path = testloadso; sourceTree = BUILT_PRODUCTS_DIR; };
+		001797D0107433C600F5D044 /* testloadso */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testloadso; sourceTree = BUILT_PRODUCTS_DIR; };
 		001797D31074343E00F5D044 /* testloadso.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testloadso.c; path = ../../test/testloadso.c; sourceTree = SOURCE_ROOT; };
-		001798121074355200F5D044 /* testmultiaudio */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = text; path = testmultiaudio; sourceTree = BUILT_PRODUCTS_DIR; };
+		001798121074355200F5D044 /* testmultiaudio */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testmultiaudio; sourceTree = BUILT_PRODUCTS_DIR; };
 		001798151074359B00F5D044 /* testmultiaudio.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testmultiaudio.c; path = ../../test/testmultiaudio.c; sourceTree = SOURCE_ROOT; };
 		0017985A107436ED00F5D044 /* testnative.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testnative.c; path = ../../test/testnative.c; sourceTree = SOURCE_ROOT; };
 		0017985B107436ED00F5D044 /* testnative.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = testnative.h; path = ../../test/testnative.h; sourceTree = SOURCE_ROOT; };
 		0017985C107436ED00F5D044 /* testnativecocoa.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = testnativecocoa.m; path = ../../test/testnativecocoa.m; sourceTree = SOURCE_ROOT; };
 		00179872107438D000F5D044 /* testnativex11.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testnativex11.c; path = ../../test/testnativex11.c; sourceTree = SOURCE_ROOT; };
-		001798941074392D00F5D044 /* testnative */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = text; path = testnative; sourceTree = BUILT_PRODUCTS_DIR; };
-		001798B5107439DF00F5D044 /* testpower */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = text; path = testpower; sourceTree = BUILT_PRODUCTS_DIR; };
+		001798941074392D00F5D044 /* testnative */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testnative; sourceTree = BUILT_PRODUCTS_DIR; };
+		001798B5107439DF00F5D044 /* testpower */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testpower; sourceTree = BUILT_PRODUCTS_DIR; };
 		001798B910743A4900F5D044 /* testpower.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testpower.c; path = ../../test/testpower.c; sourceTree = SOURCE_ROOT; };
-		001798F210743BEC00F5D044 /* testresample */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = text; path = testresample; sourceTree = BUILT_PRODUCTS_DIR; };
+		001798F210743BEC00F5D044 /* testresample */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testresample; sourceTree = BUILT_PRODUCTS_DIR; };
 		001798F910743E9200F5D044 /* testresample.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testresample.c; path = ../../test/testresample.c; sourceTree = SOURCE_ROOT; };
-		0017991610743F1000F5D044 /* testsprite2 */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = text; path = testsprite2; sourceTree = BUILT_PRODUCTS_DIR; };
+		0017991610743F1000F5D044 /* testsprite2 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testsprite2; sourceTree = BUILT_PRODUCTS_DIR; };
 		0017991910743F5300F5D044 /* testsprite2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testsprite2.c; path = ../../test/testsprite2.c; sourceTree = SOURCE_ROOT; };
-		0017993810743FB700F5D044 /* testwm2 */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = text; path = testwm2; sourceTree = BUILT_PRODUCTS_DIR; };
+		0017993810743FB700F5D044 /* testwm2 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testwm2; sourceTree = BUILT_PRODUCTS_DIR; };
 		0017993B10743FEF00F5D044 /* testwm2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testwm2.c; path = ../../test/testwm2.c; sourceTree = SOURCE_ROOT; };
 		002A863B10730545007319AE /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = /System/Library/Frameworks/CoreAudio.framework; sourceTree = "<absolute>"; };
 		002A863C10730545007319AE /* ForceFeedback.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ForceFeedback.framework; path = /System/Library/Frameworks/ForceFeedback.framework; sourceTree = "<absolute>"; };
@@ -1076,13 +1087,13 @@
 		002A871410730623007319AE /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = /System/Library/Frameworks/AudioUnit.framework; sourceTree = "<absolute>"; };
 		002A873910730675007319AE /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
 		002F33A709CA188600EBEB88 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
-		002F341209CA1BFF00EBEB88 /* testfile */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = text; path = testfile; sourceTree = BUILT_PRODUCTS_DIR; };
+		002F341209CA1BFF00EBEB88 /* testfile */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testfile; sourceTree = BUILT_PRODUCTS_DIR; };
 		002F341709CA1C5B00EBEB88 /* testfile.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = testfile.c; path = ../../test/testfile.c; sourceTree = SOURCE_ROOT; };
-		002F343109CA1F0300EBEB88 /* testiconv */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = text; path = testiconv; sourceTree = BUILT_PRODUCTS_DIR; };
+		002F343109CA1F0300EBEB88 /* testiconv */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testiconv; sourceTree = BUILT_PRODUCTS_DIR; };
 		002F343609CA1F6F00EBEB88 /* testiconv.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = testiconv.c; path = ../../test/testiconv.c; sourceTree = SOURCE_ROOT; };
-		002F344D09CA1FB300EBEB88 /* testoverlay2 */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = text; path = testoverlay2; sourceTree = BUILT_PRODUCTS_DIR; };
+		002F344D09CA1FB300EBEB88 /* testoverlay2 */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testoverlay2; sourceTree = BUILT_PRODUCTS_DIR; };
 		002F345209CA201C00EBEB88 /* testoverlay2.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = testoverlay2.c; path = ../../test/testoverlay2.c; sourceTree = SOURCE_ROOT; };
-		002F346A09CA204F00EBEB88 /* testplatform */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = text; path = testplatform; sourceTree = BUILT_PRODUCTS_DIR; };
+		002F346A09CA204F00EBEB88 /* testplatform */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testplatform; sourceTree = BUILT_PRODUCTS_DIR; };
 		002F346F09CA20A600EBEB88 /* testplatform.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = testplatform.c; path = ../../test/testplatform.c; sourceTree = SOURCE_ROOT; };
 		003FA63A093FFD41000C53B3 /* SDL.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL.xcodeproj; path = ../SDL/SDL.xcodeproj; sourceTree = SOURCE_ROOT; };
 		00794E5D09D20839003FC8A1 /* icon.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = icon.bmp; path = ../../test/icon.bmp; sourceTree = SOURCE_ROOT; };
@@ -1105,18 +1116,18 @@
 		4537749212091504002F0F45 /* testshape */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testshape; sourceTree = BUILT_PRODUCTS_DIR; };
 		453774A4120915E3002F0F45 /* testshape.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testshape.c; path = ../../test/testshape.c; sourceTree = SOURCE_ROOT; };
 		BBFC088E164C6820003E6A99 /* testgamecontroller.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testgamecontroller.c; path = ../../test/testgamecontroller.c; sourceTree = "<group>"; };
-		BBFC08CD164C6862003E6A99 /* testgamecontroller */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "compiled.mach-o.executable"; path = testgamecontroller; sourceTree = BUILT_PRODUCTS_DIR; };
-		BEC566B60761D90300A33029 /* checkkeys */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "compiled.mach-o.executable"; path = checkkeys; sourceTree = BUILT_PRODUCTS_DIR; };
-		BEC566D10761D90300A33029 /* loopwave */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = text; path = loopwave; sourceTree = BUILT_PRODUCTS_DIR; };
-		BEC567060761D90400A33029 /* testerror */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = text; path = testerror; sourceTree = BUILT_PRODUCTS_DIR; };
-		BEC5672E0761D90400A33029 /* testthread */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = text; path = testthread; sourceTree = BUILT_PRODUCTS_DIR; };
-		BEC5673B0761D90400A33029 /* testjoystick */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "compiled.mach-o.executable"; path = testjoystick; sourceTree = BUILT_PRODUCTS_DIR; };
-		BEC567480761D90400A33029 /* testkeys */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = "compiled.mach-o.executable"; path = testkeys; sourceTree = BUILT_PRODUCTS_DIR; };
-		BEC567550761D90400A33029 /* testlock */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = text; path = testlock; sourceTree = BUILT_PRODUCTS_DIR; };
-		BEC5677D0761D90500A33029 /* testsem */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = text; path = testsem; sourceTree = BUILT_PRODUCTS_DIR; };
-		BEC567980761D90500A33029 /* testtimer */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = text; path = testtimer; sourceTree = BUILT_PRODUCTS_DIR; };
-		BEC567B20761D90500A33029 /* testversion */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = text; path = testversion; sourceTree = BUILT_PRODUCTS_DIR; };
-		BEC567F50761D90600A33029 /* torturethread */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = text; path = torturethread; sourceTree = BUILT_PRODUCTS_DIR; };
+		BBFC08CD164C6862003E6A99 /* testgamecontroller */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testgamecontroller; sourceTree = BUILT_PRODUCTS_DIR; };
+		BEC566B60761D90300A33029 /* checkkeys */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = checkkeys; sourceTree = BUILT_PRODUCTS_DIR; };
+		BEC566D10761D90300A33029 /* loopwave */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = loopwave; sourceTree = BUILT_PRODUCTS_DIR; };
+		BEC567060761D90400A33029 /* testerror */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testerror; sourceTree = BUILT_PRODUCTS_DIR; };
+		BEC5672E0761D90400A33029 /* testthread */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testthread; sourceTree = BUILT_PRODUCTS_DIR; };
+		BEC5673B0761D90400A33029 /* testjoystick */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testjoystick; sourceTree = BUILT_PRODUCTS_DIR; };
+		BEC567480761D90400A33029 /* testkeys */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testkeys; sourceTree = BUILT_PRODUCTS_DIR; };
+		BEC567550761D90400A33029 /* testlock */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testlock; sourceTree = BUILT_PRODUCTS_DIR; };
+		BEC5677D0761D90500A33029 /* testsem */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testsem; sourceTree = BUILT_PRODUCTS_DIR; };
+		BEC567980761D90500A33029 /* testtimer */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testtimer; sourceTree = BUILT_PRODUCTS_DIR; };
+		BEC567B20761D90500A33029 /* testversion */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testversion; sourceTree = BUILT_PRODUCTS_DIR; };
+		BEC567F50761D90600A33029 /* torturethread */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = torturethread; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB0F48D717CA51D2008798C5 /* testdrawchessboard.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = testdrawchessboard.c; path = ../../test/testdrawchessboard.c; sourceTree = "<group>"; };
 		DB0F48D817CA51D2008798C5 /* testfilesystem.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = testfilesystem.c; path = ../../test/testfilesystem.c; sourceTree = "<group>"; };
 		DB0F48EC17CA51E5008798C5 /* testdrawchessboard */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testdrawchessboard; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1159,6 +1170,8 @@
 		DB166E7E16A1D78400A1396C /* testspriteminimal */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testspriteminimal; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB166E9116A1D78C00A1396C /* teststreaming */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = teststreaming; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB166ECF16A1D87000A1396C /* shapes */ = {isa = PBXFileReference; lastKnownFileType = folder; name = shapes; path = ../../test/shapes; sourceTree = "<group>"; };
+		DB89957E18A19ABA0092407C /* testhotplug */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testhotplug; sourceTree = BUILT_PRODUCTS_DIR; };
+		DB89958318A19B130092407C /* testhotplug.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testhotplug.c; path = ../../test/testhotplug.c; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1911,6 +1924,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		DB89957018A19ABA0092407C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DB89957118A19ABA0092407C /* Cocoa.framework in Frameworks */,
+				DB89957218A19ABA0092407C /* CoreAudio.framework in Frameworks */,
+				DB89957318A19ABA0092407C /* ForceFeedback.framework in Frameworks */,
+				DB89957418A19ABA0092407C /* IOKit.framework in Frameworks */,
+				DB89957518A19ABA0092407C /* AudioToolbox.framework in Frameworks */,
+				DB89957618A19ABA0092407C /* CoreFoundation.framework in Frameworks */,
+				DB89957718A19ABA0092407C /* OpenGL.framework in Frameworks */,
+				DB89957818A19ABA0092407C /* AudioUnit.framework in Frameworks */,
+				DB89957918A19ABA0092407C /* Carbon.framework in Frameworks */,
+				DB89957A18A19ABA0092407C /* libSDL2.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -1986,6 +2016,7 @@
 				0017972710742FB900F5D044 /* testgl2.c */,
 				DB166CBC16A1C74100A1396C /* testgles.c */,
 				0017974E1074315700F5D044 /* testhaptic.c */,
+				DB89958318A19B130092407C /* testhotplug.c */,
 				002F343609CA1F6F00EBEB88 /* testiconv.c */,
 				00179791107432FA00F5D044 /* testime.c */,
 				001797B31074339C00F5D044 /* testintersections.c */,
@@ -2070,6 +2101,7 @@
 				DB166E9116A1D78C00A1396C /* teststreaming */,
 				DB0F48EC17CA51E5008798C5 /* testdrawchessboard */,
 				DB0F490117CA5212008798C5 /* testfilesystem */,
+				DB89957E18A19ABA0092407C /* testhotplug */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2826,6 +2858,22 @@
 			productReference = DB166E9116A1D78C00A1396C /* teststreaming */;
 			productType = "com.apple.product-type.tool";
 		};
+		DB89956D18A19ABA0092407C /* testhotplug */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DB89957B18A19ABA0092407C /* Build configuration list for PBXNativeTarget "testhotplug" */;
+			buildPhases = (
+				DB89956E18A19ABA0092407C /* Sources */,
+				DB89957018A19ABA0092407C /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = testhotplug;
+			productName = testalpha;
+			productReference = DB89957E18A19ABA0092407C /* testhotplug */;
+			productType = "com.apple.product-type.tool";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -2870,6 +2918,7 @@
 				DB166DAD16A1D2F600A1396C /* testgesture */,
 				0017970910742F3200F5D044 /* testgl2 */,
 				00179730107430D600F5D044 /* testhaptic */,
+				DB89956D18A19ABA0092407C /* testhotplug */,
 				002F342009CA1F0300EBEB88 /* testiconv */,
 				00179776107432AE00F5D044 /* testime */,
 				001797961074334C00F5D044 /* testintersections */,
@@ -3301,6 +3350,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				DB166E9416A1D7C700A1396C /* teststreaming.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DB89956E18A19ABA0092407C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DB89958418A19B130092407C /* testhotplug.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -3737,6 +3794,7 @@
 				);
 				GCC_OPTIMIZATION_LEVEL = 0;
 				HEADER_SEARCH_PATHS = ../../include;
+				MACOSX_DEPLOYMENT_TARGET = 10.5;
 			};
 			name = Debug;
 		};
@@ -3862,6 +3920,7 @@
 				);
 				GCC_GENERATE_DEBUGGING_SYMBOLS = NO;
 				HEADER_SEARCH_PATHS = ../../include;
+				MACOSX_DEPLOYMENT_TARGET = 10.5;
 			};
 			name = Release;
 		};
@@ -4186,6 +4245,20 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				PRODUCT_NAME = teststreaming;
+			};
+			name = Release;
+		};
+		DB89957C18A19ABA0092407C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = testhotplug;
+			};
+			name = Debug;
+		};
+		DB89957D18A19ABA0092407C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = testhotplug;
 			};
 			name = Release;
 		};
@@ -4602,6 +4675,15 @@
 			buildConfigurations = (
 				DB166E8F16A1D78C00A1396C /* Debug */,
 				DB166E9016A1D78C00A1396C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		DB89957B18A19ABA0092407C /* Build configuration list for PBXNativeTarget "testhotplug" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DB89957C18A19ABA0092407C /* Debug */,
+				DB89957D18A19ABA0092407C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
