@@ -29,13 +29,7 @@
 
 #include "SDL_miropengl.h"
 
-#include <dlfcn.h>
-
-#define DEFAULT_OGL_ES2 "libGLESv2.so"
-
 #include "SDL_mirdyn.h"
-
-void* MIR_GLHandle = NULL;
 
 void
 MIR_GL_SwapWindow(_THIS, SDL_Window* window)
@@ -83,40 +77,12 @@ void
 MIR_GL_UnloadLibrary(_THIS)
 {
     SDL_EGL_UnloadLibrary(_this);
-
-    if (MIR_GLHandle) {
-        dlclose(MIR_GLHandle);
-        MIR_GLHandle = NULL;
-    }
-}
-
-void
-Ensure_GL_HandleOpen()
-{
-    if (!MIR_GLHandle) {
-        MIR_GLHandle = dlopen(DEFAULT_OGL_ES2, RTLD_GLOBAL);
-        if (!MIR_GLHandle) {
-            SDL_SetError("Failed to dlopen library.");
-        }
-    }
 }
 
 void*
 MIR_GL_GetProcAddress(_THIS, const char* proc)
 {
     void* proc_addr = SDL_EGL_GetProcAddress(_this, proc);
-
-    /* FIXME when on the phone/tablet eglGetProcAddress returns NULL through libhybris,
-       seems to be a problem in android. Also looks like a problem in the android video driver:
-       src/video/android/SDL_androidgl.c
-
-       Workaround, to just get the address ourself
-    */
-
-    if (!proc_addr) {
-        Ensure_GL_HandleOpen();
-        proc_addr = dlsym(MIR_GLHandle, proc);
-    }
 
     if (!proc_addr) {
         SDL_SetError("Failed to find proc address!");
