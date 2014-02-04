@@ -25,8 +25,7 @@
 #include "../joystick/SDL_joystick_c.h" /* For SDL_PrivateJoystickValid */
 #include "SDL_assert.h"
 
-Uint8 SDL_numhaptics = 0;
-SDL_Haptic **SDL_haptics = NULL;
+SDL_Haptic *SDL_haptics = NULL;
 
 
 /*
@@ -35,20 +34,10 @@ SDL_Haptic **SDL_haptics = NULL;
 int
 SDL_HapticInit(void)
 {
-    int arraylen;
     int status;
 
-    SDL_numhaptics = 0;
     status = SDL_SYS_HapticInit();
     if (status >= 0) {
-        arraylen = (status + 1) * sizeof(*SDL_haptics);
-        SDL_haptics = (SDL_Haptic **) SDL_malloc(arraylen);
-        if (SDL_haptics == NULL) {      /* Out of memory. */
-            SDL_numhaptics = 0;
-        } else {
-            SDL_memset(SDL_haptics, 0, arraylen);
-            SDL_numhaptics = status;
-        }
         status = 0;
     }
 
@@ -62,16 +51,19 @@ SDL_HapticInit(void)
 static int
 ValidHaptic(SDL_Haptic * haptic)
 {
-    int i;
     int valid;
+    SDL_Haptic *hapticlist;
 
     valid = 0;
     if (haptic != NULL) {
-        for (i = 0; i < SDL_numhaptics; i++) {
-            if (SDL_haptics[i] == haptic) {
+        hapticlist = SDL_haptics;
+        while ( hapticlist )
+        {
+            if (hapticlist == haptic) {
                 valid = 1;
                 break;
             }
+            hapticlist = hapticlist->next;
         }
     }
 
@@ -90,7 +82,7 @@ ValidHaptic(SDL_Haptic * haptic)
 int
 SDL_NumHaptics(void)
 {
-    return SDL_numhaptics;
+    return SDL_SYS_NumHaptics();
 }
 
 
@@ -100,9 +92,9 @@ SDL_NumHaptics(void)
 const char *
 SDL_HapticName(int device_index)
 {
-    if ((device_index < 0) || (device_index >= SDL_numhaptics)) {
+    if ((device_index < 0) || (device_index >= SDL_NumHaptics())) {
         SDL_SetError("Haptic: There are %d haptic devices available",
-                     SDL_numhaptics);
+                     SDL_NumHaptics());
         return NULL;
     }
     return SDL_SYS_HapticName(device_index);
@@ -115,22 +107,27 @@ SDL_HapticName(int device_index)
 SDL_Haptic *
 SDL_HapticOpen(int device_index)
 {
-    int i;
     SDL_Haptic *haptic;
+    SDL_Haptic *hapticlist;
 
-    if ((device_index < 0) || (device_index >= SDL_numhaptics)) {
+    if ((device_index < 0) || (device_index >= SDL_NumHaptics())) {
         SDL_SetError("Haptic: There are %d haptic devices available",
-                     SDL_numhaptics);
+                     SDL_NumHaptics());
         return NULL;
     }
 
-    /* If the haptic is already open, return it */
-    for (i = 0; SDL_haptics[i]; i++) {
-        if (device_index == SDL_haptics[i]->index) {
-            haptic = SDL_haptics[i];
+    hapticlist = SDL_haptics;
+    /* If the haptic is already open, return it
+    * TODO: Should we create haptic instance IDs like the Joystick API?
+    */
+    while ( hapticlist )
+    {
+        if (device_index == hapticlist->index) {
+            haptic = hapticlist;
             ++haptic->ref_count;
             return haptic;
         }
+        hapticlist = hapticlist->next;
     }
 
     /* Create the haptic device */
@@ -150,15 +147,10 @@ SDL_HapticOpen(int device_index)
     }
 
     /* Add haptic to list */
-    for (i = 0; SDL_haptics[i]; i++)
-        /* Skip to next haptic */ ;
-    if (i >= SDL_numhaptics) {
-        SDL_free(haptic);
-        SDL_SetError("Haptic: Trying to add device past the number originally detected");
-        return NULL;
-    }
-    SDL_haptics[i] = haptic;
     ++haptic->ref_count;
+    /* Link the haptic in the list */
+    haptic->next = SDL_haptics;
+    SDL_haptics = haptic;
 
     /* Disable autocenter and set gain to max. */
     if (haptic->supported & SDL_HAPTIC_GAIN)
@@ -176,21 +168,26 @@ SDL_HapticOpen(int device_index)
 int
 SDL_HapticOpened(int device_index)
 {
-    int i, opened;
+    int opened;
+    SDL_Haptic *hapticlist;
 
     /* Make sure it's valid. */
-    if ((device_index < 0) || (device_index >= SDL_numhaptics)) {
+    if ((device_index < 0) || (device_index >= SDL_NumHaptics())) {
         SDL_SetError("Haptic: There are %d haptic devices available",
-                     SDL_numhaptics);
+                     SDL_NumHaptics());
         return 0;
     }
 
     opened = 0;
-    for (i = 0; SDL_haptics[i]; i++) {
-        if (SDL_haptics[i]->index == (Uint8) device_index) {
+    hapticlist = SDL_haptics;
+    /* TODO Should this use an instance ID? */
+    while ( hapticlist )
+    {
+        if (hapticlist->index == (Uint8) device_index) {
             opened = 1;
             break;
         }
+        hapticlist = hapticlist->next;
     }
     return opened;
 }
@@ -271,13 +268,13 @@ SDL_JoystickIsHaptic(SDL_Joystick * joystick)
 SDL_Haptic *
 SDL_HapticOpenFromJoystick(SDL_Joystick * joystick)
 {
-    int i;
     SDL_Haptic *haptic;
+    SDL_Haptic *hapticlist;
 
     /* Make sure there is room. */
-    if (SDL_numhaptics <= 0) {
+    if (SDL_NumHaptics() <= 0) {
         SDL_SetError("Haptic: There are %d haptic devices available",
-                     SDL_numhaptics);
+                     SDL_NumHaptics());
         return NULL;
     }
 
@@ -293,13 +290,16 @@ SDL_HapticOpenFromJoystick(SDL_Joystick * joystick)
         return NULL;
     }
 
+    hapticlist = SDL_haptics;
     /* Check to see if joystick's haptic is already open */
-    for (i = 0; SDL_haptics[i]; i++) {
-        if (SDL_SYS_JoystickSameHaptic(SDL_haptics[i], joystick)) {
-            haptic = SDL_haptics[i];
+    while ( hapticlist )
+    {
+        if (SDL_SYS_JoystickSameHaptic(hapticlist, joystick)) {
+            haptic = hapticlist;
             ++haptic->ref_count;
             return haptic;
         }
+        hapticlist = hapticlist->next;
     }
 
     /* Create the haptic device */
@@ -318,15 +318,10 @@ SDL_HapticOpenFromJoystick(SDL_Joystick * joystick)
     }
 
     /* Add haptic to list */
-    for (i = 0; SDL_haptics[i]; i++)
-        /* Skip to next haptic */ ;
-    if (i >= SDL_numhaptics) {
-        SDL_free(haptic);
-        SDL_SetError("Haptic: Trying to add device past the number originally detected");
-        return NULL;
-    }
-    SDL_haptics[i] = haptic;
     ++haptic->ref_count;
+    /* Link the haptic in the list */
+    haptic->next = SDL_haptics;
+    SDL_haptics = haptic;
 
     return haptic;
 }
@@ -339,6 +334,8 @@ void
 SDL_HapticClose(SDL_Haptic * haptic)
 {
     int i;
+    SDL_Haptic *hapticlist;
+    SDL_Haptic *hapticlistprev;
 
     /* Must be valid */
     if (!ValidHaptic(haptic)) {
@@ -359,13 +356,26 @@ SDL_HapticClose(SDL_Haptic * haptic)
     SDL_SYS_HapticClose(haptic);
 
     /* Remove from the list */
-    for (i = 0; SDL_haptics[i]; ++i) {
-        if (haptic == SDL_haptics[i]) {
-            SDL_haptics[i] = NULL;
-            SDL_memcpy(&SDL_haptics[i], &SDL_haptics[i + 1],
-                       (SDL_numhaptics - i) * sizeof(haptic));
+    hapticlist = SDL_haptics;
+    hapticlistprev = NULL;
+    while ( hapticlist )
+    {
+        if (haptic == hapticlist)
+        {
+            if ( hapticlistprev )
+            {
+                /* unlink this entry */
+                hapticlistprev->next = hapticlist->next;
+            }
+            else
+            {
+                SDL_haptics = haptic->next;
+            }
+
             break;
         }
+        hapticlistprev = hapticlist;
+        hapticlist = hapticlist->next;
     }
 
     /* Free */
@@ -379,9 +389,8 @@ void
 SDL_HapticQuit(void)
 {
     SDL_SYS_HapticQuit();
-    SDL_free(SDL_haptics);
+    SDL_assert(SDL_haptics == NULL);
     SDL_haptics = NULL;
-    SDL_numhaptics = 0;
 }
 
 /*
