@@ -24,6 +24,7 @@ TARGETS = \
 	testgles2$(EXE) \
 	testhaptic$(EXE) \
 	testrumble$(EXE) \
+	testhotplug$(EXE) \
 	testthread$(EXE) \
 	testiconv$(EXE) \
 	testime$(EXE) \
@@ -137,6 +138,9 @@ testgles2$(EXE): $(srcdir)/testgles2.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @MATHLIB@
 
 testhaptic$(EXE): $(srcdir)/testhaptic.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testhotplug$(EXE): $(srcdir)/testhotplug.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testrumble$(EXE): $(srcdir)/testrumble.c
