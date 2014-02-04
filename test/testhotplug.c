@@ -113,6 +113,10 @@ main(int argc, char *argv[])
                     {
                         SDL_HapticRumblePlay(haptic, 0.2, 250);
                     }
+					if (event.jbutton.button == 0) {
+						SDL_Log("Exiting due to button press of button 0\n");
+						keepGoing = SDL_FALSE;
+					}
                     break;
                 case SDL_JOYBUTTONUP:
                     SDL_Log("Button Release: %d\n", event.jbutton.button);
