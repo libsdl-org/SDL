@@ -73,12 +73,12 @@ main(int argc, char *argv[])
                                 SDL_Log("Joy Haptic Opened\n");
                                 if (SDL_HapticRumbleInit( haptic ) != 0)
                                 {
-                                    SDL_Log("Could not init Rumble!");
+                                    SDL_Log("Could not init Rumble!: %s\n", SDL_GetError());
                                     SDL_HapticClose(haptic);
                                     haptic = NULL;
                                 }
                             } else {
-                                SDL_Log("Joy haptic open FAILED!\n");
+                                SDL_Log("Joy haptic open FAILED!: %s\n", SDL_GetError());
                             }
                         }
                         else
