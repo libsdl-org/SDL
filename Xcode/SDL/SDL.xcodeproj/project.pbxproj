@@ -1083,6 +1083,7 @@
 		D55A1B7F179F262300625D7C /* SDL_cocoamousetap.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_cocoamousetap.h; sourceTree = "<group>"; };
 		D55A1B80179F262300625D7C /* SDL_cocoamousetap.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_cocoamousetap.m; sourceTree = "<group>"; };
 		DB31407717554B71006C0E22 /* libSDL2.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libSDL2.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		DB89958518A1A5C50092407C /* SDL_syshaptic_c.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SDL_syshaptic_c.h; sourceTree = "<group>"; };
 		F59C70FF00D5CB5801000001 /* ReadMe.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = ReadMe.txt; sourceTree = "<group>"; };
 		F59C710000D5CB5801000001 /* Welcome.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = Welcome.txt; sourceTree = "<group>"; };
 		F59C710300D5CB5801000001 /* ReadMe.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = ReadMe.txt; sourceTree = "<group>"; };
@@ -1401,6 +1402,7 @@
 			isa = PBXGroup;
 			children = (
 				04BDFDF312E6671700899322 /* SDL_syshaptic.c */,
+				DB89958518A1A5C50092407C /* SDL_syshaptic_c.h */,
 			);
 			path = darwin;
 			sourceTree = "<group>";

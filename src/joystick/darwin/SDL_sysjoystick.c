@@ -48,6 +48,7 @@
 #include "../SDL_joystick_c.h"
 #include "SDL_sysjoystick_c.h"
 #include "SDL_events.h"
+#include "../../haptic/darwin/SDL_syshaptic_c.h"    /* For haptic hot plugging */
 #if !SDL_EVENTS_DISABLED
 #include "../../events/SDL_events_c.h"
 #endif
@@ -122,6 +123,9 @@ HIDRemovalCallback(void *target, IOReturn result, void *refcon, void *sender)
 {
     recDevice *device = (recDevice *) refcon;
     device->removed = 1;
+#if SDL_HAPTIC_IOKIT
+    PRIVATE_MaybeRemoveDevice(device->ffservice);
+#endif
     s_bDeviceRemoved = SDL_TRUE;
 }
 
@@ -134,6 +138,9 @@ void JoystickDeviceWasRemovedCallback( void * refcon, io_service_t service, natu
     {
         recDevice *device = (recDevice *) refcon;
         device->removed = 1;
+#if SDL_HAPTIC_IOKIT
+        PRIVATE_MaybeRemoveDevice(device->ffservice);
+#endif
         s_bDeviceRemoved = SDL_TRUE;
     }
 }
@@ -679,6 +686,9 @@ AddDeviceHelper( io_object_t ioHIDDeviceObject )
      * SDL_HapticOpenFromJoystick */
     if (FFIsForceFeedback(ioHIDDeviceObject) == FF_OK) {
         device->ffservice = ioHIDDeviceObject;
+#if SDL_HAPTIC_IOKIT
+        PRIVATE_MaybeAddDevice(ioHIDDeviceObject);
+#endif
     } else {
         device->ffservice = 0;
     }
