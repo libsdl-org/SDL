@@ -601,3 +601,5 @@ SDL_DYNAPI_PROC(int,SDL_vsscanf,(const char *a, const char *b, va_list c),(a,b,c
 SDL_DYNAPI_PROC(int,SDL_GameControllerAddMappingsFromRW,(SDL_RWops *a, int b),(a,b),return)
 SDL_DYNAPI_PROC(void,SDL_GL_ResetAttributes,(void),(),)
 SDL_DYNAPI_PROC(SDL_bool,SDL_HasAVX,(void),(),return)
+SDL_DYNAPI_PROC(SDL_AssertionHandler,SDL_GetDefaultAssertionHandler,(void),(),return)
+SDL_DYNAPI_PROC(SDL_AssertionHandler,SDL_GetAssertionHandler,(void **a),(a),return)
