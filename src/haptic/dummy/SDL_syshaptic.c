@@ -39,6 +39,11 @@ SDL_SYS_HapticInit(void)
     return 0;
 }
 
+int
+SDL_SYS_NumHaptics(void)
+{
+	return 0;
+}
 
 const char *
 SDL_SYS_HapticName(int index)
