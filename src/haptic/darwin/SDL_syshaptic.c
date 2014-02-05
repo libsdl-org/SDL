@@ -173,7 +173,7 @@ SDL_SYS_HapticInit(void)
     }
 
     while ((device = IOIteratorNext(iter)) != IO_OBJECT_NULL) {
-        PRIVATE_MaybeAddDevice(device);
+        MacHaptic_MaybeAddDevice(device);
         /* always release as the AddDevice will retain IF it's a forcefeedback device */
         IOObjectRelease(device);
     }
@@ -207,7 +207,7 @@ HapticByDevIndex(int device_index)
 }
 
 int
-PRIVATE_MaybeAddDevice( io_object_t device )
+MacHaptic_MaybeAddDevice( io_object_t device )
 {
     IOReturn result;
     CFMutableDictionaryRef hidProperties;
@@ -283,7 +283,7 @@ PRIVATE_MaybeAddDevice( io_object_t device )
 }
 
 int
-PRIVATE_MaybeRemoveDevice( io_object_t device )
+MacHaptic_MaybeRemoveDevice( io_object_t device )
 {
     SDL_hapticlist_item *item;
     SDL_hapticlist_item *prev = NULL;

@@ -205,3 +205,6 @@ extern int SDL_SYS_HapticUnpause(SDL_Haptic * haptic);
  * Returns 0 on success, -1 on error.
  */
 extern int SDL_SYS_HapticStopAll(SDL_Haptic * haptic);
+
+/* vi: set ts=4 sw=4 expandtab: */
+
