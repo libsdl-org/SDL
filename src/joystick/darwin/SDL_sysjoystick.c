@@ -124,7 +124,7 @@ HIDRemovalCallback(void *target, IOReturn result, void *refcon, void *sender)
     recDevice *device = (recDevice *) refcon;
     device->removed = 1;
 #if SDL_HAPTIC_IOKIT
-    PRIVATE_MaybeRemoveDevice(device->ffservice);
+    MacHaptic_MaybeRemoveDevice(device->ffservice);
 #endif
     s_bDeviceRemoved = SDL_TRUE;
 }
@@ -139,7 +139,7 @@ void JoystickDeviceWasRemovedCallback( void * refcon, io_service_t service, natu
         recDevice *device = (recDevice *) refcon;
         device->removed = 1;
 #if SDL_HAPTIC_IOKIT
-        PRIVATE_MaybeRemoveDevice(device->ffservice);
+        MacHaptic_MaybeRemoveDevice(device->ffservice);
 #endif
         s_bDeviceRemoved = SDL_TRUE;
     }
@@ -687,7 +687,7 @@ AddDeviceHelper( io_object_t ioHIDDeviceObject )
     if (FFIsForceFeedback(ioHIDDeviceObject) == FF_OK) {
         device->ffservice = ioHIDDeviceObject;
 #if SDL_HAPTIC_IOKIT
-        PRIVATE_MaybeAddDevice(ioHIDDeviceObject);
+        MacHaptic_MaybeAddDevice(ioHIDDeviceObject);
 #endif
     } else {
         device->ffservice = 0;
