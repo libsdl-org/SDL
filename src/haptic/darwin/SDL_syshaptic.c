@@ -571,15 +571,15 @@ SDL_SYS_HapticOpen(SDL_Haptic * haptic)
 int
 SDL_SYS_HapticMouse(void)
 {
-    int device_index = 0;
+    int device_index = numhaptics-1;
     SDL_hapticlist_item *item;
 
     for (item = SDL_hapticlist; item; item = item->next) {
         if ((item->usagePage == kHIDPage_GenericDesktop) &&
-            (item->usage == kHIDUsage_GD_Mouse))
+            (item->usage == kHIDUsage_GD_Mouse)) {
             return device_index;
-
-        ++device_index;
+        }
+        device_index--;
     }
 
     return -1;
