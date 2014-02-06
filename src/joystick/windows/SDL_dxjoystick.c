@@ -49,6 +49,10 @@
 #define INITGUID /* Only set here, if set twice will cause mingw32 to break. */
 #include "SDL_dxjoystick_c.h"
 
+#if SDL_HAPTIC_DINPUT
+#include "../../haptic/windows/SDL_syshaptic_c.h"    /* For haptic hot plugging */
+#endif
+
 #ifndef DIDFT_OPTIONAL
 #define DIDFT_OPTIONAL      0x80000000
 #endif
@@ -824,7 +828,17 @@ void SDL_SYS_JoystickDetect()
         while ( pCurList )
         {
             JoyStick_DeviceData *pListNext = NULL;
+
+#if SDL_HAPTIC_DINPUT
+            if (pCurList->bXInputDevice) {
+                XInputHaptic_MaybeRemoveDevice(pCurList->XInputUserId);
+            } else {
+                DirectInputHaptic_MaybeRemoveDevice(&pCurList->dxdevice);
+            }
+#endif
+
 #if !SDL_EVENTS_DISABLED
+            {
             SDL_Event event;
             event.type = SDL_JOYDEVICEREMOVED;
 
@@ -834,6 +848,7 @@ void SDL_SYS_JoystickDetect()
                     || (*SDL_EventOK) (SDL_EventOKParam, &event)) {
                         SDL_PushEvent(&event);
                 }
+            }
             }
 #endif /* !SDL_EVENTS_DISABLED */
 
@@ -855,7 +870,16 @@ void SDL_SYS_JoystickDetect()
         {
             if ( pNewJoystick->send_add_event )
             {
+#if SDL_HAPTIC_DINPUT
+                if (pNewJoystick->bXInputDevice) {
+                    XInputHaptic_MaybeAddDevice(pNewJoystick->XInputUserId);
+                } else {
+                    DirectInputHaptic_MaybeAddDevice(&pNewJoystick->dxdevice);
+                }
+#endif
+
 #if !SDL_EVENTS_DISABLED
+                {
                 SDL_Event event;
                 event.type = SDL_JOYDEVICEADDED;
 
@@ -865,6 +889,7 @@ void SDL_SYS_JoystickDetect()
                         || (*SDL_EventOK) (SDL_EventOKParam, &event)) {
                             SDL_PushEvent(&event);
                     }
+                }
                 }
 #endif /* !SDL_EVENTS_DISABLED */
                 pNewJoystick->send_add_event = 0;
