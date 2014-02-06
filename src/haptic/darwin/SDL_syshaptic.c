@@ -199,7 +199,7 @@ HapticByDevIndex(int device_index)
 
     while (device_index > 0) {
         SDL_assert(item != NULL);
-        device_index--;
+        --device_index;
         item = item->next;
     }
 
@@ -571,7 +571,7 @@ SDL_SYS_HapticOpen(SDL_Haptic * haptic)
 int
 SDL_SYS_HapticMouse(void)
 {
-    int device_index = numhaptics-1;
+    int device_index = 0;
     SDL_hapticlist_item *item;
 
     for (item = SDL_hapticlist; item; item = item->next) {
@@ -579,7 +579,7 @@ SDL_SYS_HapticMouse(void)
             (item->usage == kHIDUsage_GD_Mouse)) {
             return device_index;
         }
-        device_index--;
+        ++device_index;
     }
 
     return -1;
