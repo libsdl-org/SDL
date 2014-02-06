@@ -672,6 +672,7 @@ SDL_SYS_HapticQuit(void)
 
         /* Free the io_service_t */
         IOObjectRelease(item->dev);
+        SDL_free(item);
     }
     numhaptics = 0;
 }
