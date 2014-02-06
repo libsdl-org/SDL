@@ -58,7 +58,7 @@ void haptic_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class, const 
 typedef struct SDL_hapticlist_item
 {
     char *fname;                /* Dev path name (like /dev/input/event1) */
-    SDL_Haptic *haptic;         /* Assosciated haptic. */
+    SDL_Haptic *haptic;         /* Associated haptic. */
     struct SDL_hapticlist_item *next;
 } SDL_hapticlist_item;
 
