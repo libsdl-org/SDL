@@ -192,17 +192,17 @@ static SDL_hapticlist_item *
 HapticByDevIndex(int device_index)
 {
     SDL_hapticlist_item *item = SDL_hapticlist;
-    
+
     if ((device_index < 0) || (device_index >= numhaptics)) {
         return NULL;
     }
-    
+
     while (device_index > 0) {
         SDL_assert(item != NULL);
         device_index--;
         item = item->next;
     }
-    
+
     return item;
 }
 
@@ -232,7 +232,7 @@ MacHaptic_MaybeAddDevice( io_object_t device )
     if (item == NULL) {
         return SDL_SetError("Could not allocate haptic storage");
     }
-    
+
     /* retain it as we are going to keep it around a while */
     IOObjectRetain(device);
 
@@ -240,7 +240,7 @@ MacHaptic_MaybeAddDevice( io_object_t device )
     HIDGetDeviceProduct(device, item->name);
     item->dev = device;
     item->haptic = NULL;
-    
+
     /* Set usage pages. */
     hidProperties = 0;
     refCF = 0;
@@ -268,14 +268,14 @@ MacHaptic_MaybeAddDevice( io_object_t device )
         }
         CFRelease(hidProperties);
     }
-    
+
     if (SDL_hapticlist_tail == NULL) {
         SDL_hapticlist = SDL_hapticlist_tail = item;
     } else {
         SDL_hapticlist_tail->next = item;
         SDL_hapticlist_tail = item;
     }
-    
+
     /* Device has been added. */
     ++numhaptics;
 
@@ -287,7 +287,7 @@ MacHaptic_MaybeRemoveDevice( io_object_t device )
 {
     SDL_hapticlist_item *item;
     SDL_hapticlist_item *prev = NULL;
-    
+
     for (item = SDL_hapticlist; item != NULL; item = item->next) {
         /* found it, remove it. */
         if (IOObjectIsEqualTo((io_object_t) item->dev, device)) {
@@ -306,14 +306,14 @@ MacHaptic_MaybeRemoveDevice( io_object_t device )
             /* Need to decrement the haptic count */
             --numhaptics;
             /* !!! TODO: Send a haptic remove event? */
-            
+
             IOObjectRelease(item->dev);
             SDL_free(item);
             return retval;
         }
         prev = item;
     }
-    
+
     return -1;
 }
 
