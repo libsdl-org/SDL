@@ -59,7 +59,7 @@ typedef struct SDL_hapticlist_item
 {
     char *fname;                /* Dev path name (like /dev/input/event1) */
     SDL_Haptic *haptic;         /* Assosciated haptic. */
-	struct SDL_hapticlist_item *next;
+    struct SDL_hapticlist_item *next;
 } SDL_hapticlist_item;
 
 
@@ -172,16 +172,16 @@ SDL_SYS_HapticInit(void)
     }
 
 #if SDL_USE_LIBUDEV
-	if (SDL_UDEV_Init() < 0) {
+    if (SDL_UDEV_Init() < 0) {
         return SDL_SetError("Could not initialize UDEV");
     }
 
-	if ( SDL_UDEV_AddCallback(haptic_udev_callback) < 0) {
-		SDL_UDEV_Quit();
-		return SDL_SetError("Could not setup haptic <-> udev callback");
-	}
+    if ( SDL_UDEV_AddCallback(haptic_udev_callback) < 0) {
+        SDL_UDEV_Quit();
+        return SDL_SetError("Could not setup haptic <-> udev callback");
+    }
 #endif /* SDL_USE_LIBUDEV */
-	
+
     return numhaptics;
 }
 
@@ -215,21 +215,21 @@ void haptic_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class, const 
     if (devpath == NULL || !(udev_class & SDL_UDEV_DEVICE_JOYSTICK)) {
         return;
     }
-    
+
     switch( udev_type )
     {
         case SDL_UDEV_DEVICEADDED:
             MaybeAddDevice(devpath);
             break;
-            
+
         case SDL_UDEV_DEVICEREMOVED:
             MaybeRemoveDevice(devpath);
             break;
-            
+
         default:
             break;
     }
-    
+
 }
 #endif /* SDL_USE_LIBUDEV */
 
@@ -252,7 +252,7 @@ MaybeAddDevice(const char *path)
     /* check to see if file exists */
     if (stat(path, &sb) != 0) {
         return -1;
-	}
+    }
 
     /* check for duplicates */
     duplicate = 0;
@@ -269,7 +269,7 @@ MaybeAddDevice(const char *path)
     fd = open(path, O_RDWR, 0);
     if (fd < 0) {
         return -1;
-	}
+    }
 
 #ifdef DEBUG_INPUT_EVENTS
     printf("Checking %s\n", path);
@@ -375,11 +375,11 @@ SDL_SYS_HapticNameFromFD(int fd)
 const char *
 SDL_SYS_HapticName(int index)
 {
-	SDL_hapticlist_item *item;
+    SDL_hapticlist_item *item;
     int fd;
     const char *name;
 
-	item = HapticByDevIndex(index);
+    item = HapticByDevIndex(index);
     /* Open the haptic device. */
     name = NULL;
     fd = open(item->fname, O_RDONLY, 0);
@@ -456,9 +456,9 @@ SDL_SYS_HapticOpen(SDL_Haptic * haptic)
 {
     int fd;
     int ret;
-	SDL_hapticlist_item *item;
+    SDL_hapticlist_item *item;
 
-	item = HapticByDevIndex(haptic->index);
+    item = HapticByDevIndex(haptic->index);
     /* Open the character device */
     fd = open(item->fname, O_RDWR, 0);
     if (fd < 0) {
@@ -486,9 +486,8 @@ SDL_SYS_HapticMouse(void)
 {
     int fd;
     int device_index = 0;
-	SDL_hapticlist_item *item;
+    SDL_hapticlist_item *item;
 
-	
     for (item = SDL_hapticlist; item; item = item->next) {
         /* Open the device. */
         fd = open(item->fname, O_RDWR, 0);
@@ -505,7 +504,7 @@ SDL_SYS_HapticMouse(void)
 
         close(fd);
 
-		++device_index;
+        ++device_index;
     }
 
     return -1;
@@ -546,16 +545,16 @@ SDL_SYS_HapticOpenFromJoystick(SDL_Haptic * haptic, SDL_Joystick * joystick)
     int device_index = 0;
     int fd;
     int ret;
-	SDL_hapticlist_item *item;
+    SDL_hapticlist_item *item;
 
 
     /* Find the joystick in the haptic list. */
     for (item = SDL_hapticlist; item; item = item->next) {
-		if (SDL_strcmp(item->fname, joystick->hwdata->fname) == 0) {
-			haptic->index = device_index;
-			break;
-		}
-		++device_index;
+        if (SDL_strcmp(item->fname, joystick->hwdata->fname) == 0) {
+            haptic->index = device_index;
+            break;
+        }
+        ++device_index;
     }
     if (device_index >= MAX_HAPTICS) {
         return SDL_SetError("Haptic: Joystick doesn't have Haptic capabilities");
@@ -609,14 +608,14 @@ void
 SDL_SYS_HapticQuit(void)
 {
     SDL_hapticlist_item *item = NULL;
-	SDL_hapticlist_item *next = NULL;
+    SDL_hapticlist_item *next = NULL;
 
     for (item = SDL_hapticlist; item; item = next) {
-		next = item->next;
+        next = item->next;
         /* Opened and not closed haptics are leaked, this is on purpose.
          * Close your haptic devices after usage. */
-		SDL_free(item->fname);
-		item->fname = NULL;
+        SDL_free(item->fname);
+        item->fname = NULL;
     }
 
 #if SDL_USE_LIBUDEV
@@ -911,7 +910,7 @@ SDL_SYS_ToFFEffect(struct ff_effect *dest, SDL_HapticEffect * src)
         dest->u.rumble.strong_magnitude = leftright->large_magnitude;
         dest->u.rumble.weak_magnitude = leftright->small_magnitude;
 
-	break;
+        break;
 
 
     default:
