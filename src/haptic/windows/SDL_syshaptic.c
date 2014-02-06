@@ -442,7 +442,7 @@ HapticByDevIndex(int device_index)
 
     while (device_index > 0) {
         SDL_assert(item != NULL);
-        device_index--;
+        --device_index;
         item = item->next;
     }
 
@@ -784,7 +784,7 @@ int
 SDL_SYS_HapticMouse(void)
 {
     SDL_hapticlist_item *item;
-    int index = numhaptics-1;
+    int index = 0;
 
     /* Grab the first mouse haptic device we find. */
     for (item = SDL_hapticlist; item != NULL; item = item->next) {
@@ -792,7 +792,7 @@ SDL_SYS_HapticMouse(void)
         if (item->capabilities.dwDevType == DI8DEVCLASS_POINTER ) {
             return index;
         }
-        index--;
+        ++index;
     }
 
     return -1;
@@ -855,7 +855,7 @@ int
 SDL_SYS_HapticOpenFromJoystick(SDL_Haptic * haptic, SDL_Joystick * joystick)
 {
     SDL_hapticlist_item *item;
-    int index = numhaptics-1;
+    int index = 0;
 
     /* Since it comes from a joystick we have to try to match it with a haptic device on our haptic list. */
     if (joystick->hwdata->bXInputDevice) {
@@ -866,7 +866,7 @@ SDL_SYS_HapticOpenFromJoystick(SDL_Haptic * haptic, SDL_Joystick * joystick)
                 haptic->index = index;
                 return SDL_SYS_HapticOpenFromXInput(haptic, userid);
             }
-            index--;
+            ++index;
         }
     } else {
         HRESULT idret;
@@ -883,7 +883,7 @@ SDL_SYS_HapticOpenFromJoystick(SDL_Haptic * haptic, SDL_Joystick * joystick)
                 haptic->index = index;
                 return SDL_SYS_HapticOpenFromDevice8(haptic, joystick->hwdata->InputDevice, SDL_TRUE);
             }
-            index--;
+            ++index;
         }
     }
 
