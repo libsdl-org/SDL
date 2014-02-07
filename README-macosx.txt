@@ -17,14 +17,18 @@ process:
 	sudo make install
 
 You can also build SDL as a Universal library (a single binary for both
-PowerPC and Intel architectures), on Mac OS X 10.4 and newer, by using
+32-bit and 64-bit Intel architectures), on Mac OS X 10.7 and newer, by using
 the fatbuild.sh script in build-scripts:
 	sh build-scripts/fatbuild.sh
 	sudo build-scripts/fatbuild.sh install
-This script builds SDL with 10.2 ABI compatibility on PowerPC and 10.4
-ABI compatibility on Intel architectures.  For best compatibility you
+This script builds SDL with 10.5 ABI compatibility on i386 and 10.6
+ABI compatibility on x86_64 architectures.  For best compatibility you
 should compile your application the same way.  A script which wraps
 gcc to make this easy is provided in test/gcc-fat.sh
+
+Please note that building SDL requires at least the 10.7 SDK (even if you
+target back to 10.5 systems). PowerPC support for Mac OS X has been officially
+dropped as of SDL 2.0.2.
 
 To use the library once it's built, you essential have two possibilities:
 use the traditional autoconf/automake/make method, or use Xcode.
