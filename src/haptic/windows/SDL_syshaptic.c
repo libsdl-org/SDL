@@ -221,6 +221,10 @@ DirectInputHaptic_MaybeAddDevice(const DIDEVICEINSTANCE * pdidInstance)
     DIDEVCAPS capabilities;
     SDL_hapticlist_item *item = NULL;
 
+    if (dinput == NULL) {
+        return -1;  /* not initialized. We'll pick these up on enumeration if we init later. */
+    }
+
     /* Make sure we don't already have it */
     for (item = SDL_hapticlist; item; item = item->next) {
         if ( (!item->bXInputHaptic) && (SDL_memcmp(&item->instance, pdidInstance, sizeof (*pdidInstance)) == 0) ) {
@@ -285,6 +289,10 @@ DirectInputHaptic_MaybeRemoveDevice(const DIDEVICEINSTANCE * pdidInstance)
 {
     SDL_hapticlist_item *item;
     SDL_hapticlist_item *prev = NULL;
+
+    if (dinput == NULL) {
+        return -1;  /* not initialized, ignore this. */
+    }
 
     for (item = SDL_hapticlist; item != NULL; item = item->next) {
         if ( (!item->bXInputHaptic) && (SDL_memcmp(&item->instance, pdidInstance, sizeof (*pdidInstance)) == 0) ) {
