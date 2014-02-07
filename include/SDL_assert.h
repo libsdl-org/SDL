@@ -121,11 +121,13 @@ typedef struct SDL_assert_data
 extern DECLSPEC SDL_assert_state SDLCALL SDL_ReportAssertion(SDL_assert_data *,
                                                              const char *,
                                                              const char *, int)
-#if defined(__clang__) && __has_feature(attribute_analyzer_noreturn)
+#if defined(__clang__)
+#if __has_feature(attribute_analyzer_noreturn)
 /* this tells Clang's static analysis that we're a custom assert function,
    and that the analyzer should assume the condition was always true past this
    SDL_assert test. */
    __attribute__((analyzer_noreturn))
+#endif
 #endif
 ;
 
