@@ -85,7 +85,7 @@ static int HIDGetDeviceProduct(io_service_t dev, char *name);
 
 static SDL_hapticlist_item *SDL_hapticlist = NULL;
 static SDL_hapticlist_item *SDL_hapticlist_tail = NULL;
-static int numhaptics = 0;
+static int numhaptics = -1;
 
 /*
  * Like strerror but for force feedback errors.
@@ -155,6 +155,11 @@ SDL_SYS_HapticInit(void)
     CFDictionaryRef match;
     io_service_t device;
 
+    if (numhaptics != -1) {
+        return SDL_Error("Haptic subsystem already initialized!");
+    }
+    numhaptics = 0;
+
     /* Get HID devices. */
     match = IOServiceMatching(kIOHIDDeviceKey);
     if (match == NULL) {
@@ -213,6 +218,10 @@ MacHaptic_MaybeAddDevice( io_object_t device )
     CFMutableDictionaryRef hidProperties;
     CFTypeRef refCF;
     SDL_hapticlist_item *item;
+
+    if (numhaptics == -1) {
+        return -1; /* not initialized. We'll pick these up on enumeration if we init later. */
+    }
 
     /* Check for force feedback. */
     if (FFIsForceFeedback(device) != FF_OK) {
@@ -287,6 +296,10 @@ MacHaptic_MaybeRemoveDevice( io_object_t device )
 {
     SDL_hapticlist_item *item;
     SDL_hapticlist_item *prev = NULL;
+
+    if (numhaptics == -1) {
+        return -1; /* not initialized. ignore this. */
+    }
 
     for (item = SDL_hapticlist; item != NULL; item = item->next) {
         /* found it, remove it. */
@@ -674,7 +687,7 @@ SDL_SYS_HapticQuit(void)
         IOObjectRelease(item->dev);
         SDL_free(item);
     }
-    numhaptics = 0;
+    numhaptics = -1;
 }
 
 
