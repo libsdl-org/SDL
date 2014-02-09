@@ -1043,16 +1043,33 @@ CompareColors(Uint8 r1, Uint8 g1, Uint8 b1, Uint8 a1,
 static int
 GLES2_RenderClear(SDL_Renderer * renderer)
 {
+    Uint8 r, g, b, a;
+
     GLES2_DriverContext *data = (GLES2_DriverContext *)renderer->driverdata;
 
     GLES2_ActivateRenderer(renderer);
 
     if (!CompareColors(data->clear_r, data->clear_g, data->clear_b, data->clear_a,
                         renderer->r, renderer->g, renderer->b, renderer->a)) {
-        data->glClearColor((GLfloat) renderer->r * inv255f,
-                     (GLfloat) renderer->g * inv255f,
-                     (GLfloat) renderer->b * inv255f,
-                     (GLfloat) renderer->a * inv255f);
+
+       /* Select the color to clear with */
+       g = renderer->g;
+       a = renderer->a;
+   
+       if (renderer->target &&
+            (renderer->target->format == SDL_PIXELFORMAT_ARGB8888 ||
+             renderer->target->format == SDL_PIXELFORMAT_RGB888)) {
+           r = renderer->b;
+           b = renderer->r;
+        } else {
+           r = renderer->r;
+           b = renderer->b;
+        }
+
+        data->glClearColor((GLfloat) r * inv255f,
+                     (GLfloat) g * inv255f,
+                     (GLfloat) b * inv255f,
+                     (GLfloat) a * inv255f);
         data->clear_r = renderer->r;
         data->clear_g = renderer->g;
         data->clear_b = renderer->b;
