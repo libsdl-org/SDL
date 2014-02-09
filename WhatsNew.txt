@@ -5,11 +5,19 @@ This is a list of major changes in SDL's version history.
 2.0.2:
 ---------------------------------------------------------------------------
 General:
+* Added SDL_GL_ResetAttributes() to reset OpenGL attributes to default values
 * Added an API to load a database of Game Controller mappings from a file:    
     SDL_GameControllerAddMappingsFromFile
+* Added game controller mappings for the PS4 and OUYA controllers
+* Added SDL_GetDefaultAssertionHandler() and SDL_GetAssertionHandler()
+* Added SDL_DetachThread()
+* Added SDL_HasAVX() to determine if the CPU has AVX features
+* Added SDL_vsscanf(), SDL_acos(), and SDL_asin() to the stdlib routines
 * EGL can now create/manage OpenGL and OpenGL ES 1.x/2.x contexts, and share
   them using SDL_GL_SHARE_WITH_CURRENT_CONTEXT
-* Added testgles2. testgl2 does not need to link with libGL anymore.
+* testgl2 does not need to link with libGL anymore
+* Added testgles2 test program to demonstrate working with OpenGL ES 2.0
+* Added controllermap test program to visually map a game controller
   
 Windows:
 * Support for OpenGL ES 2.x contexts using either WGL or EGL (natively via
@@ -23,7 +31,8 @@ Android:
 
 Linux:
 * Fixed fullscreen and focused behavior when receiving NotifyGrab events
-* Wayland support
+* Added experimental Wayland and Mir support, disabled by default
+
 
 ---------------------------------------------------------------------------
 2.0.1:
