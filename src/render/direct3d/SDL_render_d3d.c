@@ -20,6 +20,9 @@
 */
 #include "../../SDL_internal.h"
 
+#include "SDL_render.h"
+#include "SDL_system.h"
+
 #if SDL_VIDEO_RENDER_D3D && !SDL_RENDER_DISABLED
 
 #include "../../core/windows/SDL_windows.h"
@@ -27,7 +30,6 @@
 #include "SDL_hints.h"
 #include "SDL_loadso.h"
 #include "SDL_syswm.h"
-#include "SDL_system.h"
 #include "../SDL_sysrender.h"
 #include "../../video/windows/SDL_windowsvideo.h"
 
@@ -1916,6 +1918,6 @@ SDL_RenderGetD3D9Device(SDL_Renderer * renderer)
 
     return device;
 }
-#endif
+#endif /* __WIN32__ */
 
 /* vi: set ts=4 sw=4 expandtab: */
