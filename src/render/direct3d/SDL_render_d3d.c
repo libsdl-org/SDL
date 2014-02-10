@@ -474,11 +474,19 @@ D3D_Reset(SDL_Renderer * renderer)
 {
     D3D_RenderData *data = (D3D_RenderData *) renderer->driverdata;
     HRESULT result;
+    SDL_Texture *texture;
 
     /* Release the default render target before reset */
     if (data->defaultRenderTarget) {
         IDirect3DSurface9_Release(data->defaultRenderTarget);
         data->defaultRenderTarget = NULL;
+    }
+
+    /* Release application render targets */
+    for (texture = renderer->textures; texture; texture = texture->next) {
+        if (texture->access == SDL_TEXTUREACCESS_TARGET) {
+            D3D_DestroyTexture(renderer, texture);
+        }
     }
 
     result = IDirect3DDevice9_Reset(data->device, &data->pparams);
@@ -491,9 +499,24 @@ D3D_Reset(SDL_Renderer * renderer)
         }
     }
 
+    /* Allocate application render targets */
+    for (texture = renderer->textures; texture; texture = texture->next) {
+        if (texture->access == SDL_TEXTUREACCESS_TARGET) {
+            D3D_CreateTexture(renderer, texture);
+        }
+    }
+
     IDirect3DDevice9_GetRenderTarget(data->device, 0, &data->defaultRenderTarget);
     D3D_InitRenderState(data);
     D3D_UpdateViewport(renderer);
+
+    /* Let the application know that render targets were reset */
+    {
+        SDL_Event event;
+        event.type = SDL_RENDER_TARGETS_RESET;
+        SDL_PushEvent(&event);
+    }
+
     return 0;
 }
 
@@ -570,7 +593,7 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
         return NULL;
     }
 
-    if( D3D_LoadDLL( &data->d3dDLL, &data->d3d ) ) {
+    if (D3D_LoadDLL(&data->d3dDLL, &data->d3d)) {
         for (d3dxVersion=50;d3dxVersion>0;d3dxVersion--) {
             LPTSTR dllName;
             SDL_snprintf(d3dxDLLFile, sizeof(d3dxDLLFile), "D3DX9_%02d.dll", d3dxVersion);
@@ -644,13 +667,12 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
     pparams.SwapEffect = D3DSWAPEFFECT_DISCARD;
 
     if (window_flags & SDL_WINDOW_FULLSCREEN) {
-        if ( ( window_flags & SDL_WINDOW_FULLSCREEN_DESKTOP ) == SDL_WINDOW_FULLSCREEN_DESKTOP )  {
+        if ((window_flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP)  {
             pparams.Windowed = TRUE;
             pparams.FullScreen_RefreshRateInHz = 0;
         } else {
-        pparams.Windowed = FALSE;
-        pparams.FullScreen_RefreshRateInHz =
-            fullscreen_mode.refresh_rate;
+            pparams.Windowed = FALSE;
+            pparams.FullScreen_RefreshRateInHz = fullscreen_mode.refresh_rate;
         }
     } else {
         pparams.Windowed = TRUE;
@@ -663,8 +685,8 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
     }
 
     /* Get the adapter for the display that the window is on */
-    displayIndex = SDL_GetWindowDisplayIndex( window );
-    data->adapter = SDL_Direct3D9GetAdapterIndex( displayIndex );
+    displayIndex = SDL_GetWindowDisplayIndex(window);
+    data->adapter = SDL_Direct3D9GetAdapterIndex(displayIndex);
 
     IDirect3D9_GetDeviceCaps(data->d3d, data->adapter, D3DDEVTYPE_HAL, &caps);
 
@@ -1912,7 +1934,7 @@ SDL_RenderGetD3D9Device(SDL_Renderer * renderer)
 
     device = data->device;
     if (device) {
-        IDirect3DDevice9_AddRef( device );
+        IDirect3DDevice9_AddRef(device);
     }
 #endif /* SDL_VIDEO_RENDER_D3D && !SDL_RENDER_DISABLED */
 
