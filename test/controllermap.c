@@ -96,13 +96,6 @@ LoadTexture(SDL_Renderer *renderer, char *file, SDL_bool transparent)
     return texture;
 }
 
-static void
-DrawRect(SDL_Renderer *r, const int x, const int y, const int w, const int h)
-{
-    const SDL_Rect area = { x, y, w, h };
-    SDL_RenderFillRect(r, &area);
-}
-
 static SDL_bool
 WatchJoystick(SDL_Joystick * joystick)
 {
