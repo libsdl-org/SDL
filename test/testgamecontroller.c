@@ -170,6 +170,9 @@ WatchGameController(SDL_GameController * gamecontroller)
     SDL_RenderPresent(screen);
     SDL_RaiseWindow(window);
 
+    /* scale for platforms that don't give you the window size you asked for. */
+    SDL_RenderSetLogicalSize(screen, SCREEN_WIDTH, SCREEN_HEIGHT);
+
     background = LoadTexture(screen, "controllermap.bmp", SDL_FALSE);
     button = LoadTexture(screen, "button.bmp", SDL_TRUE);
     axis = LoadTexture(screen, "axis.bmp", SDL_TRUE);
@@ -191,7 +194,7 @@ WatchGameController(SDL_GameController * gamecontroller)
     /* Loop, getting controller events! */
     while (!done) {
         /* blank screen, set up for drawing this frame. */
-        SDL_SetRenderDrawColor(screen, 0x00, 0x00, 0x00, SDL_ALPHA_OPAQUE);
+        SDL_SetRenderDrawColor(screen, 0xFF, 0xFF, 0xFF, SDL_ALPHA_OPAQUE);
         SDL_RenderClear(screen);
         SDL_RenderCopy(screen, background, NULL, NULL);
 
