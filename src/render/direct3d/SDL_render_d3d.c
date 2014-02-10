@@ -1029,6 +1029,11 @@ D3D_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     }
 #endif
 
+    if (!data) {
+        SDL_SetError("Texture is not currently available");
+        return -1;
+    }
+
     if (D3D_UpdateTextureInternal(data->texture, texture->format, full_texture, rect->x, rect->y, rect->w, rect->h, pixels, pitch) < 0) {
         return -1;
     }
@@ -1068,6 +1073,11 @@ D3D_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
     }
 #endif
 
+    if (!data) {
+        SDL_SetError("Texture is not currently available");
+        return -1;
+    }
+
     if (D3D_UpdateTextureInternal(data->texture, texture->format, full_texture, rect->x, rect->y, rect->w, rect->h, Yplane, Ypitch) < 0) {
         return -1;
     }
@@ -1088,6 +1098,11 @@ D3D_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     RECT d3drect;
     D3DLOCKED_RECT locked;
     HRESULT result;
+
+    if (!data) {
+        SDL_SetError("Texture is not currently available");
+        return -1;
+    }
 
     if (data->yuv) {
         /* It's more efficient to upload directly... */
@@ -1124,6 +1139,10 @@ D3D_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     D3D_TextureData *data = (D3D_TextureData *) texture->driverdata;
 
+    if (!data) {
+        return;
+    }
+
     if (data->yuv) {
         const SDL_Rect *rect = &data->locked_rect;
         void *pixels =
@@ -1155,7 +1174,12 @@ D3D_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
         return 0;
     }
 
-    texturedata = (D3D_TextureData *) texture->driverdata;
+    texturedata = (D3D_TextureData *)texture->driverdata;
+    if (!texturedata) {
+        SDL_SetError("Texture is not currently available");
+        return -1;
+    }
+
     result = IDirect3DTexture9_GetSurfaceLevel(texturedata->texture, 0, &data->currentRenderTarget);
     if(FAILED(result)) {
         return D3D_SetError("GetSurfaceLevel()", result);
@@ -1531,7 +1555,7 @@ D3D_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
                const SDL_Rect * srcrect, const SDL_FRect * dstrect)
 {
     D3D_RenderData *data = (D3D_RenderData *) renderer->driverdata;
-    D3D_TextureData *texturedata = (D3D_TextureData *) texture->driverdata;
+    D3D_TextureData *texturedata;
     LPDIRECT3DPIXELSHADER9 shader = NULL;
     float minx, miny, maxx, maxy;
     float minu, maxu, minv, maxv;
@@ -1540,6 +1564,12 @@ D3D_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
     HRESULT result;
 
     if (D3D_ActivateRenderer(renderer) < 0) {
+        return -1;
+    }
+
+    texturedata = (D3D_TextureData *)texture->driverdata;
+    if (!texturedata) {
+        SDL_SetError("Texture is not currently available");
         return -1;
     }
 
@@ -1643,7 +1673,7 @@ D3D_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
                const double angle, const SDL_FPoint * center, const SDL_RendererFlip flip)
 {
     D3D_RenderData *data = (D3D_RenderData *) renderer->driverdata;
-    D3D_TextureData *texturedata = (D3D_TextureData *) texture->driverdata;
+    D3D_TextureData *texturedata;
     LPDIRECT3DPIXELSHADER9 shader = NULL;
     float minx, miny, maxx, maxy;
     float minu, maxu, minv, maxv;
@@ -1653,6 +1683,12 @@ D3D_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
     HRESULT result;
 
     if (D3D_ActivateRenderer(renderer) < 0) {
+        return -1;
+    }
+
+    texturedata = (D3D_TextureData *)texture->driverdata;
+    if (!texturedata) {
+        SDL_SetError("Texture is not currently available");
         return -1;
     }
 
