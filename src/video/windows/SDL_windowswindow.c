@@ -553,7 +553,7 @@ WIN_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, 
     }
     SetWindowLong(hwnd, GWL_STYLE, style);
     data->expected_resize = TRUE;
-    SetWindowPos(hwnd, top, x, y, w, h, SWP_NOCOPYBITS);
+    SetWindowPos(hwnd, top, x, y, w, h, SWP_NOCOPYBITS | SWP_NOACTIVATE);
     data->expected_resize = FALSE;
 }
 
