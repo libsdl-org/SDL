@@ -28,7 +28,7 @@ public class SDLActivity extends Activity {
     private static final String TAG = "SDL";
 
     // Keep track of the paused state
-    public static boolean mIsPaused = false, mIsSurfaceReady = false, mHasFocus = true;
+    public static boolean mIsPaused, mIsSurfaceReady, mHasFocus;
     public static boolean mExitCalledFromJava;
 
     // Main components
@@ -53,21 +53,36 @@ public class SDLActivity extends Activity {
         //System.loadLibrary("SDL2_ttf");
         System.loadLibrary("main");
     }
+    
+    
+    public static void initialize() {
+        // The static nature of the singleton and Android quirkyness force us to initialize everything here
+        // Otherwise, when exiting the app and returning to it, these variables *keep* their pre exit values
+        mSingleton = null;
+        mSurface = null;
+        mTextEdit = null;
+        mLayout = null;
+        mJoystickHandler = null;
+        mSDLThread = null;
+        mAudioTrack = null;
+        mExitCalledFromJava = false;
+        mIsPaused = false;
+        mIsSurfaceReady = false;
+        mHasFocus = true;
+    }
 
     // Setup
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        //Log.v("SDL", "onCreate()");
+        Log.v("SDL", "onCreate():" + mSingleton);
         super.onCreate(savedInstanceState);
         
+        SDLActivity.initialize();
         // So we can call stuff from static callbacks
         mSingleton = this;
 
         // Set up the surface
         mSurface = new SDLSurface(getApplication());
-        
-        // Make sure this variable is initialized here!
-        mExitCalledFromJava = false;
         
         if(Build.VERSION.SDK_INT >= 12) {
             mJoystickHandler = new SDLJoystickHandler_API12();
@@ -118,7 +133,6 @@ public class SDLActivity extends Activity {
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         Log.v("SDL", "onDestroy()");
         // Send a quit message to the application
         SDLActivity.mExitCalledFromJava = true;
@@ -135,6 +149,10 @@ public class SDLActivity extends Activity {
 
             //Log.v("SDL", "Finished waiting for SDL thread");
         }
+            
+        super.onDestroy();
+        // Reset everything in case the user re opens the app
+        SDLActivity.initialize();
     }
 
     @Override
