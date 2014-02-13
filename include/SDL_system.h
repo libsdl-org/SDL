@@ -55,6 +55,12 @@ extern DECLSPEC int SDLCALL SDL_Direct3D9GetAdapterIndex( int displayIndex );
 typedef struct IDirect3DDevice9 IDirect3DDevice9;
 extern DECLSPEC IDirect3DDevice9* SDLCALL SDL_RenderGetD3D9Device(SDL_Renderer * renderer);
 
+/* Returns the DXGI Adapter and Output indices for the specified display index. 
+   These can be passed to EnumAdapters and EnumOutputs respectively to get the objects
+   required to create a DX10 or DX11 device and swap chain.
+ */
+extern DECLSPEC void SDLCALL SDL_DXGIGetOutputInfo( int displayIndex, int *adapterIndex, int *outputIndex );
+
 #endif /* __WIN32__ */
 
 

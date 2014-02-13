@@ -70,6 +70,7 @@ SDL_DYNAPI_PROC(void,SDL_MemoryBarrierAcquire,(void),(),)
 SDL_DYNAPI_PROC(int,SDL_RegisterApp,(char *a, Uint32 b, void *c),(a,b,c),return)
 SDL_DYNAPI_PROC(void,SDL_UnregisterApp,(void),(),)
 SDL_DYNAPI_PROC(int,SDL_Direct3D9GetAdapterIndex,(int a),(a),return)
+SDL_DYNAPI_PROC(void,SDL_DXGIGetOutputInfo,(int a,int *b, int *c),(a,b,c),)
 SDL_DYNAPI_PROC(IDirect3DDevice9*,SDL_RenderGetD3D9Device,(SDL_Renderer *a),(a),return)
 #endif
 

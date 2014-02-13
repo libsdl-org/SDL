@@ -574,3 +574,4 @@
 #define SDL_HasAVX SDL_HasAVX_REAL
 #define SDL_GetDefaultAssertionHandler SDL_GetDefaultAssertionHandler_REAL
 #define SDL_GetAssertionHandler SDL_GetAssertionHandler_REAL
+#define SDL_DXGIGetOutputInfo SDL_DXGIGetOutputInfo_REAL

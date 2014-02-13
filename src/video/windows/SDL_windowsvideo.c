@@ -245,6 +245,91 @@ SDL_Direct3D9GetAdapterIndex( int displayIndex )
 	}
 }
 
+#define CINTERFACE
+#define COBJMACROS
+#include <DXGI.h>
+
+SDL_bool 
+DXGI_LoadDLL( void **pDXGIDLL , IDXGIFactory **pDXGIFactory )
+{
+	*pDXGIDLL = SDL_LoadObject("DXGI.DLL");
+	if (*pDXGIDLL ) {
+		HRESULT (WINAPI *CreateDXGI)( REFIID riid, void **ppFactory );
+
+		CreateDXGI =
+			(HRESULT (WINAPI *) (REFIID, void**)) SDL_LoadFunction(*pDXGIDLL,
+			"CreateDXGIFactory");
+		if (CreateDXGI) {
+			GUID dxgiGUID = {0x7b7166ec,0x21c7,0x44ae,{0xb2,0x1a,0xc9,0xae,0x32,0x1a,0xe3,0x69}};
+			if( !SUCCEEDED( CreateDXGI( &dxgiGUID, pDXGIFactory ))) {
+				*pDXGIFactory = NULL;
+			}
+		}
+		if (!*pDXGIFactory) {
+			SDL_UnloadObject(*pDXGIDLL);
+			*pDXGIDLL = NULL;
+			return SDL_FALSE;
+		}
+
+		return SDL_TRUE;
+	} else {
+		*pDXGIFactory = NULL;
+		return SDL_FALSE;
+	}
+}
+
+
+void
+SDL_DXGIGetOutputInfo( int displayIndex, int *adapterIndex, int *outputIndex )
+{
+	void *pDXGIDLL;
+	IDXGIFactory *pDXGIFactory;
+
+	*adapterIndex = -1;
+	*outputIndex = -1;
+
+	if (!DXGI_LoadDLL(&pDXGIDLL, &pDXGIFactory)) {
+		SDL_SetError("Unable to create DXGI interface");
+	} else {
+		SDL_DisplayData *pData = (SDL_DisplayData *)SDL_GetDisplayDriverData(displayIndex);
+
+		if (!pData) {
+			SDL_SetError("Invalid display index");
+		} else {
+			char *displayName = WIN_StringToUTF8(pData->DeviceName);
+			int nAdapter = 0, nOutput = 0;
+			IDXGIAdapter* pDXGIAdapter;
+			while ( *adapterIndex == -1 && IDXGIFactory_EnumAdapters(pDXGIFactory, nAdapter, &pDXGIAdapter) != DXGI_ERROR_NOT_FOUND ) {
+				IDXGIOutput* pDXGIOutput;
+				while ( *adapterIndex == -1 && IDXGIAdapter_EnumOutputs(pDXGIAdapter, nOutput, &pDXGIOutput) != DXGI_ERROR_NOT_FOUND ) {
+					DXGI_OUTPUT_DESC outputDesc;
+					if (SUCCEEDED(IDXGIOutput_GetDesc(pDXGIOutput, &outputDesc))) {
+						char *outputName = WIN_StringToUTF8(outputDesc.DeviceName);
+
+						if(!SDL_strcmp(outputName, displayName)) {
+							*adapterIndex = nAdapter;
+							*outputIndex = nOutput;
+						}
+
+						SDL_free( outputName );
+					}
+
+					IDXGIOutput_Release( pDXGIOutput );
+					nOutput++;
+				}
+
+				IDXGIAdapter_Release( pDXGIAdapter );
+				nAdapter++;
+			}
+			SDL_free(displayName);
+		}
+
+		/* free up the D3D stuff we inited */
+		IDXGIFactory_AddRef( pDXGIFactory );
+		SDL_UnloadObject(pDXGIDLL);
+	}
+}
+
 #endif /* SDL_VIDEO_DRIVER_WINDOWS */
 
 /* vim: set ts=4 sw=4 expandtab: */
