@@ -47,22 +47,6 @@ SDL_LoadObject(const char *sofile)
 }
 
 void *
-SDL_GetLoadedObject(const char *sofile)
-{
-    LPTSTR tstr = WIN_UTF8ToString(sofile);
-    void *handle = (void *) GetModuleHandle(tstr);
-
-	/* if we got a handle, call LoadLibrary to get
-	*  it again with the ref count incremented.
-	* We do this to match the dlopen version of this function */
-	handle = (void *)LoadLibrary( tstr );
-
-    SDL_free(tstr);
-
-    return handle;
-}
-
-void *
 SDL_LoadFunction(void *handle, const char *name)
 {
     void *symbol = (void *) GetProcAddress((HMODULE) handle, name);
