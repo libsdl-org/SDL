@@ -55,7 +55,8 @@ SDL_GetLoadedObject(const char *sofile)
 	/* if we got a handle, call LoadLibrary to get
 	*  it again with the ref count incremented.
 	* We do this to match the dlopen version of this function */
-	handle = (void *)LoadLibrary( tstr );
+	if( handle != NULL )
+		handle = (void *)LoadLibrary( tstr );
 
     SDL_free(tstr);
 
