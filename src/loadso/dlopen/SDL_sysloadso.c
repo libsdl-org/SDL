@@ -42,13 +42,6 @@ SDL_LoadObject(const char *sofile)
 }
 
 void *
-SDL_GetLoadedObject(const char *sofile)
-{
-	void *handle = dlopen(sofile, RTLD_NOLOAD);
-	return (handle);
-}
-
-void *
 SDL_LoadFunction(void *handle, const char *name)
 {
     void *symbol = dlsym(handle, name);
