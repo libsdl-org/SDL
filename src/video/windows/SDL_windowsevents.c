@@ -25,6 +25,7 @@
 #include "SDL_windowsvideo.h"
 #include "SDL_windowsshape.h"
 #include "SDL_syswm.h"
+#include "SDL_timer.h"
 #include "SDL_vkeys.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_touch_c.h"
@@ -537,10 +538,10 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             /* Detect relevant keyboard shortcuts */
             if (keyboardState[SDL_SCANCODE_LALT] == SDL_PRESSED || keyboardState[SDL_SCANCODE_RALT] == SDL_PRESSED ) {
-	            /* ALT+F4: Close window */
-	            if (code == SDL_SCANCODE_F4) {
-		            SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_CLOSE, 0, 0);
-	            }
+                /* ALT+F4: Close window */
+                if (code == SDL_SCANCODE_F4) {
+                    SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_CLOSE, 0, 0);
+                }
             }
 
             if ( code != SDL_SCANCODE_UNKNOWN ) {
@@ -860,10 +861,17 @@ WIN_PumpEvents(_THIS)
 {
     const Uint8 *keystate;
     MSG msg;
+    DWORD start_ticks = GetTickCount();
+
     while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
         /* Always translate the message in case it's a non-SDL window (e.g. with Qt integration) */
         TranslateMessage(&msg);
-        DispatchMessage(&msg);
+        DispatchMessage( &msg );
+
+        /* Make sure we don't busy loop here forever if there are lots of events coming in */
+        if (SDL_TICKS_PASSED(msg.time, start_ticks)) {
+            break;
+        }
     }
 
     /* Windows loses a shift KEYUP event when you have both pressed at once and let go of one.
