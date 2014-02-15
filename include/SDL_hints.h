@@ -240,8 +240,8 @@ extern "C" {
  *  \brief  A variable that lets you disable the detection and use of Xinput gamepad devices
  *
  *  The variable can be set to the following values:
- *    "0"       - Disable XInput timer (only uses direct input)
- *    "1"       - Enable XInput timer (the default)
+ *    "0"       - Disable XInput detection (only uses direct input)
+ *    "1"       - Enable XInput detection (the default)
  */
 #define SDL_HINT_XINPUT_ENABLED "SDL_XINPUT_ENABLED"
 
@@ -264,7 +264,7 @@ extern "C" {
  *    "0"       - Disable joystick & gamecontroller input events when the
  *                application is in the background.
  *    "1"       - Enable joystick & gamecontroller input events when the
- *                application is in the backgroumd.
+ *                application is in the background.
  *
  *  The default value is "0".  This hint may be set at any time.
  */
@@ -318,7 +318,7 @@ extern "C" {
 *  SDL has EGL and OpenGL ES2 support on Windows via the ANGLE project. It
 *  can use two different sets of binaries, those compiled by the user from source
 *  or those provided by the Chrome browser. In the later case, these binaries require
-*  that SDL loads 
+*  that SDL loads a DLL providing the shader compiler.
 *
 *  This variable can be set to the following values:
 *    "d3dcompiler_46.dll" - default, best for Vista or later.
