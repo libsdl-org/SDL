@@ -6,8 +6,8 @@ This is a list of major changes in SDL's version history.
 ---------------------------------------------------------------------------
 General:
 * Added SDL_GL_ResetAttributes() to reset OpenGL attributes to default values
-* Added an API to load a database of Game Controller mappings from a file:    
-    SDL_GameControllerAddMappingsFromFile
+* Added an API to load a database of game controller mappings from a file:
+    SDL_GameControllerAddMappingsFromFile()
 * Added game controller mappings for the PS4 and OUYA controllers
 * Added SDL_GetDefaultAssertionHandler() and SDL_GetAssertionHandler()
 * Added SDL_DetachThread()
@@ -18,7 +18,7 @@ General:
 * testgl2 does not need to link with libGL anymore
 * Added testgles2 test program to demonstrate working with OpenGL ES 2.0
 * Added controllermap test program to visually map a game controller
-  
+
 Windows:
 * Support for OpenGL ES 2.x contexts using either WGL or EGL (natively via
   the driver or emulated through ANGLE)
