@@ -32,7 +32,7 @@ d3dcompiler_* DLL at all (for details on this, see their documentation).
 However, by default SDL will try to preload the d3dcompiler_46.dll to
 comply with ANGLE's requirements. If you wish SDL to preload d3dcompiler_43.dll (to
 support Windows XP) or to skip this step at all, you can use the 
-SDL_VIDEO_WIN_D3DCOMPILER hint (see SDL_hints.h for more details).
+SDL_HINT_VIDEO_WIN_D3DCOMPILER hint (see SDL_hints.h for more details).
 
 Known Bugs:
     
