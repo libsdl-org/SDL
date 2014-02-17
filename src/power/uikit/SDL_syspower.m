@@ -87,7 +87,7 @@ SDL_GetPowerInfo_UIKit(SDL_PowerState * state, int *seconds, int *percent)
     }
 
     const float level = [uidev batteryLevel];
-    *percent = ( (level < 0.0f) ? -1 : (((int) (level + 0.5f)) * 100) );
+    *percent = ( (level < 0.0f) ? -1 : ((int) ((level * 100) + 0.5f)) );
     return SDL_TRUE;            /* always the definitive answer on iPhoneOS. */
 }
 
