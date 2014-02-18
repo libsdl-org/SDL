@@ -481,6 +481,10 @@ D3D_Reset(SDL_Renderer * renderer)
         IDirect3DSurface9_Release(data->defaultRenderTarget);
         data->defaultRenderTarget = NULL;
     }
+    if (data->currentRenderTarget != NULL) {
+        IDirect3DSurface9_Release(data->currentRenderTarget);
+        data->currentRenderTarget = NULL;
+    }
 
     /* Release application render targets */
     for (texture = renderer->textures; texture; texture = texture->next) {
@@ -508,6 +512,7 @@ D3D_Reset(SDL_Renderer * renderer)
 
     IDirect3DDevice9_GetRenderTarget(data->device, 0, &data->defaultRenderTarget);
     D3D_InitRenderState(data);
+    D3D_SetRenderTarget(renderer, renderer->target);
     D3D_UpdateViewport(renderer);
 
     /* Let the application know that render targets were reset */
