@@ -629,7 +629,7 @@ main(int argc, char *argv[])
     while (!done) {
         /* Check for events */
         ++frames;
-        while (SDL_PollEvent(&event)) {
+        while (SDL_PollEvent(&event) && !done) {
             switch (event.type) {
             case SDL_WINDOWEVENT:
                 switch (event.window.event) {
@@ -654,16 +654,18 @@ main(int argc, char *argv[])
             }
             SDLTest_CommonEvent(state, &event, &done);
         }
-        for (i = 0; i < state->num_windows; ++i) {
-            status = SDL_GL_MakeCurrent(state->windows[i], context[i]);
-            if (status) {
-                SDL_Log("SDL_GL_MakeCurrent(): %s\n", SDL_GetError());
+        if (!done) {
+          for (i = 0; i < state->num_windows; ++i) {
+              status = SDL_GL_MakeCurrent(state->windows[i], context[i]);
+              if (status) {
+                  SDL_Log("SDL_GL_MakeCurrent(): %s\n", SDL_GetError());
 
-                /* Continue for next window */
-                continue;
-            }
-            Render(state->window_w, state->window_h, &datas[i]);
-            SDL_GL_SwapWindow(state->windows[i]);
+                  /* Continue for next window */
+                  continue;
+              }
+              Render(state->window_w, state->window_h, &datas[i]);
+              SDL_GL_SwapWindow(state->windows[i]);
+          }
         }
     }
 
