@@ -29,7 +29,6 @@
 #include <limits.h> /* For INT_MAX */
 
 #include "SDL_x11video.h"
-#include "SDL_x11video.h"
 #include "SDL_x11touch.h"
 #include "SDL_x11xinput2.h"
 #include "../../events/SDL_events_c.h"
@@ -992,11 +991,6 @@ X11_Pending(Display * display)
     /* Oh well, nothing is ready .. */
     return (0);
 }
-
-
-/* !!! FIXME: this should be exposed in a header, or something. */
-int SDL_GetNumTouch(void);
-void SDL_dbus_screensaver_tickle(_THIS);
 
 void
 X11_PumpEvents(_THIS)
