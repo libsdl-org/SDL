@@ -39,7 +39,9 @@ SDL_ConvertMono(SDL_AudioCVT * cvt, SDL_AudioFormat format)
 #ifdef DEBUG_CONVERT
     fprintf(stderr, "Converting to mono\n");
 #endif
-    switch (format & (SDL_AUDIO_MASK_SIGNED | SDL_AUDIO_MASK_BITSIZE)) {
+	switch (format & (SDL_AUDIO_MASK_SIGNED |
+                      SDL_AUDIO_MASK_BITSIZE |
+                      SDL_AUDIO_MASK_DATATYPE)) {
     case AUDIO_U8:
         {
             Uint8 *src, *dst;
@@ -331,7 +333,9 @@ SDL_ConvertSurround(SDL_AudioCVT * cvt, SDL_AudioFormat format)
     fprintf(stderr, "Converting stereo to surround\n");
 #endif
 
-    switch (format & (SDL_AUDIO_MASK_SIGNED | SDL_AUDIO_MASK_BITSIZE)) {
+    switch (format & (SDL_AUDIO_MASK_SIGNED  |
+                      SDL_AUDIO_MASK_BITSIZE |
+                      SDL_AUDIO_MASK_DATATYPE)) {
     case AUDIO_U8:
         {
             Uint8 *src, *dst, lf, rf, ce;
@@ -499,8 +503,8 @@ SDL_ConvertSurround(SDL_AudioCVT * cvt, SDL_AudioFormat format)
     case AUDIO_S32:
         {
             Sint32 lf, rf, ce;
-            const Uint32 *src = (const Uint32 *) cvt->buf + cvt->len_cvt;
-            Uint32 *dst = (Uint32 *) cvt->buf + cvt->len_cvt * 3;
+            const Uint32 *src = (const Uint32 *) (cvt->buf + cvt->len_cvt);
+            Uint32 *dst = (Uint32 *) (cvt->buf + cvt->len_cvt * 3);
 
             if (SDL_AUDIO_ISBIGENDIAN(format)) {
                 for (i = cvt->len_cvt / 8; i; --i) {
@@ -537,8 +541,8 @@ SDL_ConvertSurround(SDL_AudioCVT * cvt, SDL_AudioFormat format)
     case AUDIO_F32:
         {
             float lf, rf, ce;
-            const float *src = (const float *) cvt->buf + cvt->len_cvt;
-            float *dst = (float *) cvt->buf + cvt->len_cvt * 3;
+            const float *src = (const float *) (cvt->buf + cvt->len_cvt);
+            float *dst = (float *) (cvt->buf + cvt->len_cvt * 3);
 
             if (SDL_AUDIO_ISBIGENDIAN(format)) {
                 for (i = cvt->len_cvt / 8; i; --i) {
@@ -588,7 +592,9 @@ SDL_ConvertSurround_4(SDL_AudioCVT * cvt, SDL_AudioFormat format)
     fprintf(stderr, "Converting stereo to quad\n");
 #endif
 
-    switch (format & (SDL_AUDIO_MASK_SIGNED | SDL_AUDIO_MASK_BITSIZE)) {
+    switch (format & (SDL_AUDIO_MASK_SIGNED |
+                      SDL_AUDIO_MASK_BITSIZE |
+                      SDL_AUDIO_MASK_DATATYPE)) {
     case AUDIO_U8:
         {
             Uint8 *src, *dst, lf, rf, ce;
@@ -758,6 +764,40 @@ SDL_ConvertSurround_4(SDL_AudioCVT * cvt, SDL_AudioFormat format)
                     dst[1] = src[1];
                     dst[2] = SDL_SwapLE32((Uint32) (lf - ce));
                     dst[3] = SDL_SwapLE32((Uint32) (rf - ce));
+                }
+            }
+        }
+        break;
+
+    case AUDIO_F32:
+        {
+            const float *src = (const float *) (cvt->buf + cvt->len_cvt);
+            float *dst = (float *) (cvt->buf + cvt->len_cvt * 2);
+            float lf, rf, ce;
+
+            if (SDL_AUDIO_ISBIGENDIAN(format)) {
+                for (i = cvt->len_cvt / 8; i; --i) {
+                    dst -= 4;
+                    src -= 2;
+                    lf = SDL_SwapFloatBE(src[0]);
+                    rf = SDL_SwapFloatBE(src[1]);
+                    ce = (lf / 2) + (rf / 2);
+                    dst[0] = src[0];
+                    dst[1] = src[1];
+                    dst[2] = SDL_SwapFloatBE(lf - ce);
+                    dst[3] = SDL_SwapFloatBE(rf - ce);
+                }
+            } else {
+                for (i = cvt->len_cvt / 8; i; --i) {
+                    dst -= 4;
+                    src -= 2;
+                    lf = SDL_SwapFloatLE(src[0]);
+                    rf = SDL_SwapFloatLE(src[1]);
+                    ce = (lf / 2) + (rf / 2);
+                    dst[0] = src[0];
+                    dst[1] = src[1];
+                    dst[2] = SDL_SwapFloatLE(lf - ce);
+                    dst[3] = SDL_SwapFloatLE(rf - ce);
                 }
             }
         }
