@@ -503,17 +503,28 @@ SDL_GetEventFilter(SDL_EventFilter * filter, void **userdata)
 void
 SDL_AddEventWatch(SDL_EventFilter filter, void *userdata)
 {
-    SDL_EventWatcher *watcher;
+    SDL_EventWatcher *watcher, *tail;
 
     watcher = (SDL_EventWatcher *)SDL_malloc(sizeof(*watcher));
     if (!watcher) {
         /* Uh oh... */
         return;
     }
+
+    /* create the watcher */
     watcher->callback = filter;
     watcher->userdata = userdata;
-    watcher->next = SDL_event_watchers;
-    SDL_event_watchers = watcher;
+    watcher->next = NULL;
+
+    /* add the watcher to the end of the list */
+    if (SDL_event_watchers) {
+        for (tail = SDL_event_watchers; tail->next; tail = tail->next) {
+            continue;
+        }
+        tail->next = watcher;
+    } else {
+        SDL_event_watchers = watcher;
+    }
 }
 
 /* FIXME: This is not thread-safe yet */
