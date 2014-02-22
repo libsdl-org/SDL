@@ -291,7 +291,7 @@ Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
-    float x = [event deltaX];
+    float x = -[event deltaX];
     float y = [event deltaY];
 
     if (x > 0) {
