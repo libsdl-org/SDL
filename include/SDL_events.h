@@ -257,8 +257,8 @@ typedef struct SDL_MouseWheelEvent
     Uint32 timestamp;
     Uint32 windowID;    /**< The window with mouse focus, if any */
     Uint32 which;       /**< The mouse instance id, or SDL_TOUCH_MOUSEID */
-    Sint32 x;           /**< The amount scrolled horizontally */
-    Sint32 y;           /**< The amount scrolled vertically */
+    Sint32 x;           /**< The amount scrolled horizontally, positive to the right and negative to the left */
+    Sint32 y;           /**< The amount scrolled vertically, positive away from the user and negative toward the user */
 } SDL_MouseWheelEvent;
 
 /**
