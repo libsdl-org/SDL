@@ -278,12 +278,6 @@ void * memcpy ( void * destination, const void * source, size_t num )
 
 #ifdef _M_IX86
 
-void
-__declspec(naked)
-_chkstk()
-{
-}
-
 /* Float to long */
 void
 __declspec(naked)
