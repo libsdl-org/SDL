@@ -22808,7 +22808,12 @@ $as_echo "#define SDL_LOADSO_WINDOWS 1" >>confdefs.h
             have_loadso=yes
         fi
         # Set up the system libraries we need
-        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -luser32 -lgdi32 -lwinmm -limm32 -lole32 -loleaut32 -lshell32 -lversion -luuid -XCClinker -static-libgcc"
+        if  -f /lib/w32api/libuuid.a ; then
+            LIBUUID=/lib/w32api/libuuid.a
+        else
+            LIBUUID=-luuid
+        fi
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -luser32 -lgdi32 -lwinmm -limm32 -lole32 -loleaut32 -lshell32 -lversion $LIBUUID -XCClinker -static-libgcc"
         # The Windows platform requires special setup
         VERSION_SOURCES="$srcdir/src/main/windows/*.rc"
         SDLMAIN_SOURCES="$srcdir/src/main/windows/*.c"
