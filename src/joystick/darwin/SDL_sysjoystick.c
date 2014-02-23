@@ -149,6 +149,17 @@ AddHIDElements(CFArrayRef array, recDevice *pDevice)
     CFArrayApplyFunction(array, range, AddHIDElement, pDevice);
 }
 
+static SDL_bool
+ElementAlreadyAdded(const IOHIDElementCookie cookie, const recElement *listitem) {
+    while (listitem) {
+        if (listitem->cookie == cookie) {
+            return SDL_TRUE;
+        }
+        listitem = listitem->pNext;
+    }
+    return SDL_FALSE;
+}
+
 /* See if we care about this HID element, and if so, note it in our recDevice. */
 static void
 AddHIDElement(const void *value, void *parameter)
@@ -158,6 +169,7 @@ AddHIDElement(const void *value, void *parameter)
     const CFTypeID elementTypeID = refElement ? CFGetTypeID(refElement) : 0;
 
     if (refElement && (elementTypeID == IOHIDElementGetTypeID())) {
+        const IOHIDElementCookie cookie = IOHIDElementGetCookie(refElement);
         const uint32_t usagePage = IOHIDElementGetUsagePage(refElement);
         const uint32_t usage = IOHIDElementGetUsage(refElement);
         recElement *element = NULL;
@@ -180,18 +192,22 @@ AddHIDElement(const void *value, void *parameter)
                             case kHIDUsage_GD_Slider:
                             case kHIDUsage_GD_Dial:
                             case kHIDUsage_GD_Wheel:
-                                element = (recElement *) SDL_calloc(1, sizeof (recElement));
-                                if (element) {
-                                    pDevice->axes++;
-                                    headElement = &(pDevice->firstAxis);
+                                if (!ElementAlreadyAdded(cookie, pDevice->firstAxis)) {
+                                    element = (recElement *) SDL_calloc(1, sizeof (recElement));
+                                    if (element) {
+                                        pDevice->axes++;
+                                        headElement = &(pDevice->firstAxis);
+                                    }
                                 }
                                 break;
 
                             case kHIDUsage_GD_Hatswitch:
-                                element = (recElement *) SDL_calloc(1, sizeof (recElement));
-                                if (element) {
-                                    pDevice->hats++;
-                                    headElement = &(pDevice->firstHat);
+                                if (!ElementAlreadyAdded(cookie, pDevice->firstHat)) {
+                                    element = (recElement *) SDL_calloc(1, sizeof (recElement));
+                                    if (element) {
+                                        pDevice->hats++;
+                                        headElement = &(pDevice->firstHat);
+                                    }
                                 }
                                 break;
                         }
@@ -201,10 +217,12 @@ AddHIDElement(const void *value, void *parameter)
                         switch (usage) {
                             case kHIDUsage_Sim_Rudder:
                             case kHIDUsage_Sim_Throttle:
-                                element = (recElement *) SDL_calloc(1, sizeof (recElement));
-                                if (element) {
-                                    pDevice->axes++;
-                                    headElement = &(pDevice->firstAxis);
+                                if (!ElementAlreadyAdded(cookie, pDevice->firstAxis)) {
+                                    element = (recElement *) SDL_calloc(1, sizeof (recElement));
+                                    if (element) {
+                                        pDevice->axes++;
+                                        headElement = &(pDevice->firstAxis);
+                                    }
                                 }
                                 break;
 
@@ -214,10 +232,12 @@ AddHIDElement(const void *value, void *parameter)
                         break;
 
                     case kHIDPage_Button:
-                        element = (recElement *) SDL_calloc(1, sizeof (recElement));
-                        if (element) {
-                            pDevice->buttons++;
-                            headElement = &(pDevice->firstButton);
+                        if (!ElementAlreadyAdded(cookie, pDevice->firstButton)) {
+                            element = (recElement *) SDL_calloc(1, sizeof (recElement));
+                            if (element) {
+                                pDevice->buttons++;
+                                headElement = &(pDevice->firstButton);
+                            }
                         }
                         break;
 
@@ -227,7 +247,6 @@ AddHIDElement(const void *value, void *parameter)
             }
             break;
 
-            #if 0  /* !!! FIXME: this causes everything to get added twice on a DualShock 4. */
             case kIOHIDElementTypeCollection: {
                 CFArrayRef array = IOHIDElementGetChildren(refElement);
                 if (array) {
@@ -235,7 +254,6 @@ AddHIDElement(const void *value, void *parameter)
                 }
             }
             break;
-            #endif
 
             default:
                 break;
@@ -261,6 +279,7 @@ AddHIDElement(const void *value, void *parameter)
 
             element->minReport = element->min = (SInt32) IOHIDElementGetLogicalMin(refElement);
             element->maxReport = element->max = (SInt32) IOHIDElementGetLogicalMax(refElement);
+            element->cookie = IOHIDElementGetCookie(refElement);
 
             pDevice->elements++;
         }

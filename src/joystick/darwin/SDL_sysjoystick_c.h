@@ -27,6 +27,7 @@
 struct recElement
 {
     IOHIDElementRef elementRef;
+    IOHIDElementCookie cookie;
     uint32_t usagePage, usage;      /* HID usage */
     SInt32 min;                   /* reported min value possible */
     SInt32 max;                   /* reported max value possible */
