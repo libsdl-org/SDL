@@ -461,7 +461,7 @@ CreateHIDDeviceMatchDictionary(const UInt32 page, const UInt32 usage, int *okay)
         CFRelease(pageNumRef);
     }
     if (usageNumRef) {
-        CFRelease(pageNumRef);
+        CFRelease(usageNumRef);
     }
 
     if (!retval) {
