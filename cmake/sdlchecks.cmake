@@ -556,9 +556,9 @@ endmacro(CheckWayland)
 #
 macro(CheckCOCOA)
   if(VIDEO_COCOA)
-    check_objc_source_compiles("
-        #import <Cocoa/Cocoa.h>
-        int main (int argc, char** argv) {}" HAVE_VIDEO_COCOA)
+    if(APPLE) # Apple always has Cocoa.
+      set(HAVE_VIDEO_COCOA TRUE)
+    endif(APPLE)
     if(HAVE_VIDEO_COCOA)
       file(GLOB COCOA_SOURCES ${SDL2_SOURCE_DIR}/src/video/cocoa/*.m)
       set_source_files_properties(${COCOA_SOURCES} PROPERTIES LANGUAGE C)
