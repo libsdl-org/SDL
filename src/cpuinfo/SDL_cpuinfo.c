@@ -98,7 +98,7 @@ CPU_haveCPUID(void)
     );
 #elif defined(__GNUC__) && defined(__x86_64__)
 /* Technically, if this is being compiled under __x86_64__ then it has 
-CPUid by definition.  But it's nice to be able to prove it.  :)      */
+   CPUid by definition.  But it's nice to be able to prove it.  :)      */
     __asm__ (
 "        pushfq                      # Get original EFLAGS             \n"
 "        popq    %%rax                                                 \n"
@@ -131,6 +131,8 @@ CPUid by definition.  But it's nice to be able to prove it.  :)      */
         mov     has_CPUID,1         ; We have CPUID support
 done:
     }
+#elif defined(_MSC_VER) && defined(_M_X64)
+    has_CPUID = 1;
 #elif defined(__sun) && defined(__i386)
     __asm (
 "       pushfl                 \n"
@@ -191,7 +193,17 @@ done:
         __asm mov b, ebx \
         __asm mov c, ecx \
         __asm mov d, edx \
-    }
+}
+#elif defined(_MSC_VER) && defined(_M_X64)
+#define cpuid(func, a, b, c, d) \
+{ \
+    int CPUInfo[4]; \
+    __cpuid(CPUInfo, func); \
+    a = CPUInfo[0]; \
+    b = CPUInfo[1]; \
+    c = CPUInfo[2]; \
+    d = CPUInfo[3]; \
+}
 #else
 #define cpuid(func, a, b, c, d) \
     a = b = c = d = 0
