@@ -125,13 +125,12 @@ static SDLAppDelegate *appDelegate = nil;
 static NSString *
 GetApplicationName(void)
 {
-    NSDictionary *dict;
-    NSString *appName = 0;
+    NSString *appName;
 
     /* Determine the application name */
-    dict = (NSDictionary *)CFBundleGetInfoDictionary(CFBundleGetMainBundle());
-    if (dict)
-        appName = [dict objectForKey: @"CFBundleName"];
+    appName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleDisplayName"];
+    if (!appName)
+        appName = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"CFBundleName"];
 
     if (![appName length])
         appName = [[NSProcessInfo processInfo] processName];
