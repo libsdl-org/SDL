@@ -673,7 +673,7 @@ SDL_HelperWindowCreate(void)
 
     /* Register the class. */
     SDL_HelperWindowClass = RegisterClass(&wce);
-    if (SDL_HelperWindowClass == 0) {
+    if (SDL_HelperWindowClass == 0 && GetLastError() != ERROR_CLASS_ALREADY_EXISTS) {
         return WIN_SetError("Unable to create Helper Window Class");
     }
 
