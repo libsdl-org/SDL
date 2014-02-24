@@ -1223,6 +1223,7 @@ SDL_GameControllerQuit(void)
         pControllerMap = s_pSupportedControllers;
         s_pSupportedControllers = s_pSupportedControllers->next;
         SDL_free( pControllerMap->name );
+        SDL_free( pControllerMap->mapping );
         SDL_free( pControllerMap );
     }
 
