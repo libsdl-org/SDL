@@ -282,11 +282,11 @@ MaybeAddDevice(const char *path)
         return -1;
     }
 
-    item = (SDL_hapticlist_item *) SDL_malloc(sizeof (SDL_hapticlist_item));
+    item = (SDL_hapticlist_item *) SDL_calloc(1, sizeof (SDL_hapticlist_item));
     if (item == NULL) {
         return -1;
     }
-    SDL_zerop(item);
+
     item->fname = SDL_strdup(path);
     if ( (item->fname == NULL) ) {
         SDL_free(item->fname);

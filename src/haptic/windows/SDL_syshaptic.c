@@ -253,12 +253,10 @@ DirectInputHaptic_MaybeAddDevice(const DIDEVICEINSTANCE * pdidInstance)
         return -1;  /* not a device we can use. */
     }
 
-    item = (SDL_hapticlist_item *)SDL_malloc( sizeof(SDL_hapticlist_item));
+    item = (SDL_hapticlist_item *)SDL_calloc(1, sizeof(SDL_hapticlist_item));
     if (item == NULL) {
         return SDL_OutOfMemory();
     }
-
-    SDL_zerop(item);
 
     item->name = WIN_StringToUTF8(pdidInstance->tszProductName);
     if (!item->name) {
