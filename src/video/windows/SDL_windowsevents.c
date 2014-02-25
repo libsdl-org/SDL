@@ -570,6 +570,20 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         break;
 #endif /* WM_INPUTLANGCHANGE */
 
+    case WM_NCLBUTTONDOWN:
+        {
+            data->in_title_click = SDL_TRUE;
+            WIN_UpdateClipCursor(data->window);
+        }
+        break;
+
+    case WM_NCMOUSELEAVE:
+        {
+            data->in_title_click = SDL_FALSE;
+            WIN_UpdateClipCursor(data->window);
+        }
+        break;
+
     case WM_ENTERSIZEMOVE:
     case WM_ENTERMENULOOP:
         {
