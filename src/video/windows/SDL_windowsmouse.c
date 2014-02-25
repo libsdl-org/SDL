@@ -183,8 +183,14 @@ WIN_ShowCursor(SDL_Cursor * cursor)
 static void
 WIN_WarpMouse(SDL_Window * window, int x, int y)
 {
-    HWND hwnd = ((SDL_WindowData *) window->driverdata)->hwnd;
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    HWND hwnd = data->hwnd;
     POINT pt;
+
+    /* Don't warp the mouse while we're doing a modal interaction */
+    if (data->in_title_click || data->in_modal_loop) {
+        return;
+    }
 
     pt.x = x;
     pt.y = y;
