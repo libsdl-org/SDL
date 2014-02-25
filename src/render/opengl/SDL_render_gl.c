@@ -32,6 +32,8 @@
 #include <OpenGL/OpenGL.h>
 #endif
 
+#define RENDERER_CONTEXT_MAJOR 2
+#define RENDERER_CONTEXT_MINOR 0
 
 /* OpenGL renderer implementation */
 
@@ -381,11 +383,24 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     const char *hint;
     GLint value;
     Uint32 window_flags;
+    int profile_mask, major, minor;
+
+    SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &profile_mask);
+    SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
+    SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor);
+    
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, RENDERER_CONTEXT_MAJOR);
+    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, RENDERER_CONTEXT_MINOR);
 
     window_flags = SDL_GetWindowFlags(window);
-    if (!(window_flags & SDL_WINDOW_OPENGL)) {
+    if (!(window_flags & SDL_WINDOW_OPENGL) ||
+        profile_mask != SDL_GL_CONTEXT_PROFILE_CORE || major != RENDERER_CONTEXT_MAJOR || minor != RENDERER_CONTEXT_MINOR) {
         if (SDL_RecreateWindow(window, window_flags | SDL_WINDOW_OPENGL) < 0) {
             /* Uh oh, better try to put it back... */
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, profile_mask);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, major);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, minor);
             SDL_RecreateWindow(window, window_flags);
             return NULL;
         }
