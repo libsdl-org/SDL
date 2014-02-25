@@ -49,10 +49,15 @@ static void ConvertNSRect(NSRect *r)
 static void
 ScheduleContextUpdates(SDL_WindowData *data)
 {
+    NSOpenGLContext *currentContext = [NSOpenGLContext currentContext];
     NSMutableArray *contexts = data->nscontexts;
     @synchronized (contexts) {
         for (SDLOpenGLContext *context in contexts) {
-            [context scheduleUpdate];
+            if (context == currentContext) {
+                [context update];
+            } else {
+                [context scheduleUpdate];
+            }
         }
     }
 }

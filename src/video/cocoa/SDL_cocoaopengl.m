@@ -110,11 +110,19 @@
 
         if ([self view] != [windowdata->nswindow contentView]) {
             [self setView:[windowdata->nswindow contentView]];
-            [self scheduleUpdate];
+            if (self == [NSOpenGLContext currentContext]) {
+                [self update];
+            } else {
+                [self scheduleUpdate];
+            }
         }
     } else {
         [self clearDrawable];
-        [self scheduleUpdate];
+        if (self == [NSOpenGLContext currentContext]) {
+            [self update];
+        } else {
+            [self scheduleUpdate];
+        }
     }
 }
 
