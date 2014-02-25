@@ -1009,6 +1009,12 @@ D3D_UpdateTextureInternal(IDirect3DTexture9 *texture, Uint32 format, SDL_bool fu
     if (length == pitch && length == locked.Pitch) {
         SDL_memcpy(dst, src, length*h);
     } else {
+        if (length > pitch) {
+            length = pitch;
+        }
+        if (length > locked.Pitch) {
+            length = locked.Pitch;
+        }
         for (row = 0; row < h; ++row) {
             SDL_memcpy(dst, src, length);
             src += pitch;
