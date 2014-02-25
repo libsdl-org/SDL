@@ -196,43 +196,19 @@ static int
 WIN_SetRelativeMouseMode(SDL_bool enabled)
 {
     RAWINPUTDEVICE rawMouse = { 0x01, 0x02, 0, NULL }; /* Mouse: UsagePage = 1, Usage = 2 */
-    HWND hWnd;
-    hWnd = GetActiveWindow();
 
-    rawMouse.hwndTarget = hWnd;
-    if(!enabled) {
+    if (!enabled) {
         rawMouse.dwFlags |= RIDEV_REMOVE;
-        rawMouse.hwndTarget = NULL;
     }
-
 
     /* (Un)register raw input for mice */
     if (RegisterRawInputDevices(&rawMouse, 1, sizeof(RAWINPUTDEVICE)) == FALSE) {
 
         /* Only return an error when registering. If we unregister and fail, then
         it's probably that we unregistered twice. That's OK. */
-        if(enabled) {
+        if (enabled) {
             return SDL_Unsupported();
         }
-    }
-
-    if (enabled) {
-        LONG cx, cy;
-        RECT rect;
-        GetWindowRect(hWnd, &rect);
-
-        cx = (rect.left + rect.right) / 2;
-        cy = (rect.top + rect.bottom) / 2;
-
-        /* Make an absurdly small clip rect */
-        rect.left = cx-1;
-        rect.right = cx+1;
-        rect.top = cy-1;
-        rect.bottom = cy+1;
-
-        ClipCursor(&rect);
-    } else {
-        ClipCursor(NULL);
     }
     return 0;
 }
