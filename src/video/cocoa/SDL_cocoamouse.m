@@ -29,6 +29,14 @@
 
 #include "../../events/SDL_mouse_c.h"
 
+/* #define DEBUG_COCOAMOUSE */
+
+#ifdef DEBUG_COCOAMOUSE
+#define DLog(fmt, ...) printf("%s: " fmt "\n", __func__, ##__VA_ARGS__)
+#else
+#define DLog(...) do { } while (0)
+#endif
+
 @implementation NSCursor (InvisibleCursor)
 + (NSCursor *)invisibleCursor
 {
@@ -203,6 +211,15 @@ Cocoa_ShowCursor(SDL_Cursor * cursor)
 static void
 Cocoa_WarpMouse(SDL_Window * window, int x, int y)
 {
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    if ([data->listener isMoving])
+    {
+        DLog("Postponing warp, window being moved.");
+        [data->listener setPendingMoveX:x
+                                      Y:y];
+        return;
+    }
+
     SDL_Mouse *mouse = SDL_GetMouse();
     CGPoint point = CGPointMake(x + (float)window->x, y + (float)window->y);
 
@@ -214,6 +231,7 @@ Cocoa_WarpMouse(SDL_Window * window, int x, int y)
         NSPoint location =  [NSEvent mouseLocation];
         driverdata->deltaXOffset = location.x - point.x;
         driverdata->deltaYOffset = point.y - location.y;
+        DLog("Warp to (%g, %g), offsetting next movement event by (%i, %i)", point.x, point.y, driverdata->deltaXOffset, driverdata->deltaYOffset);
     }
 
     /* According to the docs, this was deprecated in 10.6, but it's still
@@ -238,8 +256,10 @@ Cocoa_SetRelativeMouseMode(SDL_bool enabled)
     CGError result;
 
     if (enabled) {
+        DLog("Turning on.");
         result = CGAssociateMouseAndMouseCursorPosition(NO);
     } else {
+        DLog("Turning off.");
         result = CGAssociateMouseAndMouseCursorPosition(YES);
     }
     if (result != kCGErrorSuccess) {
@@ -272,18 +292,42 @@ Cocoa_HandleMouseEvent(_THIS, NSEvent *event)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
-    if (mouse->relative_mode &&
-        ([event type] == NSMouseMoved ||
-         [event type] == NSLeftMouseDragged ||
-         [event type] == NSRightMouseDragged ||
-         [event type] == NSOtherMouseDragged)) {
-        SDL_MouseData *driverdata = (SDL_MouseData*)mouse->driverdata;
-        float x = [event deltaX] + driverdata->deltaXOffset;
-        float y = [event deltaY] + driverdata->deltaYOffset;
-        driverdata->deltaXOffset = driverdata->deltaYOffset = 0;
-
-        SDL_SendMouseMotion(mouse->focus, mouse->mouseID, 1, (int)x, (int)y);
+    /* Non-relative movement is handled in -[Cocoa_WindowListener mouseMoved:] */
+    if (!mouse->relative_mode) {
+        return;
     }
+
+    switch ([event type])
+    {
+        case NSMouseMoved:
+        case NSLeftMouseDragged:
+        case NSRightMouseDragged:
+        case NSOtherMouseDragged:
+            break;
+
+        default:
+            /* Ignore any other events. */
+            return;
+    }
+
+    /* Ignore events that aren't inside the client area (i.e. title bar.) */
+    if ([event window]) {
+        NSRect windowRect = [[[event window] contentView] frame];
+        if (!NSPointInRect([event locationInWindow], windowRect)) {
+            return;
+        }
+    }
+
+    SDL_MouseData *driverdata = (SDL_MouseData*)mouse->driverdata;
+    float x = [event deltaX] + driverdata->deltaXOffset;
+    float y = [event deltaY] + driverdata->deltaYOffset;
+    driverdata->deltaXOffset = driverdata->deltaYOffset = 0;
+
+    if (driverdata->deltaYOffset > 0 || driverdata->deltaXOffset > 0) {
+        DLog("Relative move was (%g, %g), offset to (%g, %g)", [event deltaX], [event deltaY], x, y);
+    }
+
+    SDL_SendMouseMotion(mouse->focus, mouse->mouseID, 1, (int)x, (int)y);
 }
 
 void

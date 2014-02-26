@@ -39,6 +39,44 @@
 #include "SDL_cocoamouse.h"
 #include "SDL_cocoaopengl.h"
 
+@interface SDLWindow : NSWindow
+/* These are needed for borderless/fullscreen windows */
+- (BOOL)canBecomeKeyWindow;
+- (BOOL)canBecomeMainWindow;
+- (void)sendEvent:(NSEvent *)event;
+@end
+
+@implementation SDLWindow
+- (BOOL)canBecomeKeyWindow
+{
+    return YES;
+}
+
+- (BOOL)canBecomeMainWindow
+{
+    return YES;
+}
+
+- (void)sendEvent:(NSEvent *)event
+{
+  [super sendEvent:event];
+
+  if ([event type] != NSLeftMouseUp) {
+      return;
+  }
+
+  id delegate = [self delegate];
+  if (![delegate isKindOfClass:[Cocoa_WindowListener class]]) {
+      return;
+  }
+
+  if ([delegate isMoving]) {
+      [delegate windowDidFinishMoving];
+  }
+}
+@end
+
+
 static Uint32 s_moveHack;
 
 static void ConvertNSRect(NSRect *r)
@@ -130,6 +168,7 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
     isFullscreenSpace = NO;
     inFullscreenTransition = NO;
     pendingWindowOperation = PENDING_OPERATION_NONE;
+    isMoving = NO;
 
     center = [NSNotificationCenter defaultCenter];
 
@@ -315,6 +354,34 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
     }
 }
 
+- (BOOL)isMoving
+{
+    return isMoving;
+}
+
+-(void) setPendingMoveX:(int)x Y:(int)y
+{
+    pendingWindowWarpX = x;
+    pendingWindowWarpY = y;
+}
+
+- (void)windowDidFinishMoving
+{
+    if ([self isMoving])
+    {
+        isMoving = NO;
+
+        SDL_Mouse *mouse = SDL_GetMouse();
+        if (pendingWindowWarpX >= 0 && pendingWindowWarpY >= 0) {
+            mouse->WarpMouse(_data->window, pendingWindowWarpX, pendingWindowWarpY);
+            pendingWindowWarpX = pendingWindowWarpY = -1;
+        }
+        if (mouse->relative_mode && SDL_GetMouseFocus() == _data->window) {
+            mouse->SetRelativeMouseMode(SDL_TRUE);
+        }
+    }
+}
+
 - (BOOL)windowShouldClose:(id)sender
 {
     SDL_SendWindowEvent(_data->window, SDL_WINDOWEVENT_CLOSE, 0, 0);
@@ -324,6 +391,14 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 - (void)windowDidExpose:(NSNotification *)aNotification
 {
     SDL_SendWindowEvent(_data->window, SDL_WINDOWEVENT_EXPOSED, 0, 0);
+}
+
+- (void)windowWillMove:(NSNotification *)aNotification
+{
+    if ([_data->nswindow isKindOfClass:[SDLWindow class]]) {
+        pendingWindowWarpX = pendingWindowWarpY = -1;
+        isMoving = YES;
+    }
 }
 
 - (void)windowDidMove:(NSNotification *)aNotification
@@ -407,6 +482,9 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 {
     SDL_Window *window = _data->window;
     SDL_Mouse *mouse = SDL_GetMouse();
+    if (mouse->relative_mode && ![self isMoving]) {
+        mouse->SetRelativeMouseMode(SDL_TRUE);
+    }
 
     /* We're going to get keyboard events, since we're key. */
     SDL_SetKeyboardFocus(window);
@@ -431,6 +509,11 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 
 - (void)windowDidResignKey:(NSNotification *)aNotification
 {
+    SDL_Mouse *mouse = SDL_GetMouse();
+    if (mouse->relative_mode) {
+        mouse->SetRelativeMouseMode(SDL_FALSE);
+    }
+
     /* Some other window will get mouse events, since we're not key. */
     if (SDL_GetMouseFocus() == _data->window) {
         SDL_SetMouseFocus(NULL);
@@ -624,8 +707,6 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 
     if (x < 0 || x >= window->w || y < 0 || y >= window->h) {
         if (window->flags & SDL_WINDOW_INPUT_GRABBED) {
-            CGPoint cgpoint;
-
             if (x < 0) {
                 x = 0;
             } else if (x >= window->w) {
@@ -638,6 +719,8 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
             }
 
 #if !SDL_MAC_NO_SANDBOX
+            CGPoint cgpoint;
+
             /* When SDL_MAC_NO_SANDBOX is set, this is handled by
              * SDL_cocoamousetap.m.
              */
@@ -752,24 +835,6 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
     }
 }
 
-@end
-
-@interface SDLWindow : NSWindow
-/* These are needed for borderless/fullscreen windows */
-- (BOOL)canBecomeKeyWindow;
-- (BOOL)canBecomeMainWindow;
-@end
-
-@implementation SDLWindow
-- (BOOL)canBecomeKeyWindow
-{
-    return YES;
-}
-
-- (BOOL)canBecomeMainWindow
-{
-    return YES;
-}
 @end
 
 @interface SDLView : NSView
@@ -1338,7 +1403,8 @@ void
 Cocoa_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
     /* Move the cursor to the nearest point in the window */
-    if (grabbed) {
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    if (grabbed && data && ![data->listener isMoving]) {
         int x, y;
         CGPoint cgpoint;
 
