@@ -39,6 +39,15 @@
 #include "SDL_cocoamouse.h"
 #include "SDL_cocoaopengl.h"
 
+/* #define DEBUG_COCOAWINDOW */
+
+#ifdef DEBUG_COCOAWINDOW
+#define DLog(fmt, ...) printf("%s: " fmt "\n", __func__, ##__VA_ARGS__)
+#else
+#define DLog(...) do { } while (0)
+#endif
+
+
 @interface SDLWindow : NSWindow
 /* These are needed for borderless/fullscreen windows */
 - (BOOL)canBecomeKeyWindow;
@@ -735,6 +744,8 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
             CGSetLocalEventsSuppressionInterval(0.0);
             CGDisplayMoveCursorToPoint(kCGDirectMainDisplay, cgpoint);
             CGSetLocalEventsSuppressionInterval(0.25);
+
+            Cocoa_HandleMouseWarp(cgpoint.x, cgpoint.y);
 #endif
         }
     }
@@ -1411,6 +1422,10 @@ Cocoa_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
         SDL_GetMouseState(&x, &y);
         cgpoint.x = window->x + x;
         cgpoint.y = window->y + y;
+
+        Cocoa_HandleMouseWarp(cgpoint.x, cgpoint.y);
+
+        DLog("Returning cursor to (%g, %g)", cgpoint.x, cgpoint.y);
         CGDisplayMoveCursorToPoint(kCGDirectMainDisplay, cgpoint);
     }
 
