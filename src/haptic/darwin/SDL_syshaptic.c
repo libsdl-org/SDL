@@ -156,7 +156,7 @@ SDL_SYS_HapticInit(void)
     io_service_t device;
 
     if (numhaptics != -1) {
-        return SDL_Error("Haptic subsystem already initialized!");
+        return SDL_SetError("Haptic subsystem already initialized!");
     }
     numhaptics = 0;
 
