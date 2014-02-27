@@ -244,8 +244,23 @@ Cocoa_WarpMouse(SDL_Window * window, int x, int y)
 static int
 Cocoa_SetRelativeMouseMode(SDL_bool enabled)
 {
-    CGError result;
+    /* We will re-apply the relative mode when the window gets focus, if it
+     * doesn't have focus right now.
+     */
+    SDL_Window *window = SDL_GetMouseFocus();
+    if (!window) {
+      return 0;
+    }
 
+    /* We will re-apply the relative mode when the window finishes being moved,
+     * if it is being moved right now.
+     */
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    if ([data->listener isMoving]) {
+        return;
+    }
+
+    CGError result;
     if (enabled) {
         DLog("Turning on.");
         result = CGAssociateMouseAndMouseCursorPosition(NO);
