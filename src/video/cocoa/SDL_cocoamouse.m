@@ -257,7 +257,7 @@ Cocoa_SetRelativeMouseMode(SDL_bool enabled)
      */
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     if ([data->listener isMoving]) {
-        return;
+        return 0;
     }
 
     CGError result;
