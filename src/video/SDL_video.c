@@ -421,8 +421,10 @@ int
 SDL_VideoInit(const char *driver_name)
 {
     SDL_VideoDevice *video;
+    const char *hint;
     int index;
     int i;
+    SDL_bool allow_screensaver;
 
     /* Check to make sure we don't overwrite '_this' */
     if (_this != NULL) {
@@ -510,7 +512,15 @@ SDL_VideoInit(const char *driver_name)
        joystick, or passively watching a movie. Things that use SDL but
        function more like a normal desktop app should explicitly reenable the
        screensaver. */
-    SDL_DisableScreenSaver();
+    hint = SDL_GetHint(SDL_HINT_VIDEO_ALLOW_SCREENSAVER);
+    if (hint) {
+        allow_screensaver = SDL_atoi(hint) ? SDL_TRUE : SDL_FALSE;
+    } else {
+        allow_screensaver = SDL_FALSE;
+    }
+    if (!allow_screensaver) {
+        SDL_DisableScreenSaver();
+    }
 
     /* If we don't use a screen keyboard, turn on text input by default,
        otherwise programs that expect to get text events without enabling
