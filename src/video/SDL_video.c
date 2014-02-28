@@ -504,6 +504,14 @@ SDL_VideoInit(const char *driver_name)
         _this->DestroyWindowFramebuffer = SDL_DestroyWindowTexture;
     }
 
+    /* Disable the screen saver by default. This is a change from <= 2.0.1,
+       but most things using SDL are games or media players; you wouldn't
+       want a screensaver to trigger if you're playing exclusively with a
+       joystick, or passively watching a movie. Things that use SDL but
+       function more like a normal desktop app should explicitly reenable the
+       screensaver. */
+    SDL_DisableScreenSaver();
+
     /* If we don't use a screen keyboard, turn on text input by default,
        otherwise programs that expect to get text events without enabling
        UNICODE input won't get any events.
