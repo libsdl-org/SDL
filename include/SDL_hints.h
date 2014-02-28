@@ -129,6 +129,17 @@ extern "C" {
 #define SDL_HINT_RENDER_VSYNC               "SDL_RENDER_VSYNC"
 
 /**
+ *  \brief  A variable controlling whether the screensaver is enabled. 
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Disable screensaver
+ *    "1"       - Enable screensaver
+ *
+ *  By default SDL will disable the screensaver.
+ */
+#define SDL_HINT_VIDEO_ALLOW_SCREENSAVER    "SDL_VIDEO_ALLOW_SCREENSAVER"
+
+/**
  *  \brief  A variable controlling whether the X11 VidMode extension should be used.
  *
  *  This variable can be set to the following values:
