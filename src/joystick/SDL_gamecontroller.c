@@ -835,6 +835,7 @@ SDL_GameControllerLoadHints()
         char *pUserMappings = SDL_malloc( nchHints + 1 );
         char *pTempMappings = pUserMappings;
         SDL_memcpy( pUserMappings, hint, nchHints );
+        pUserMappings[nchHints] = '\0';
         while ( pUserMappings ) {
             char *pchNewLine = NULL;
 
