@@ -1542,6 +1542,7 @@ SDLTest_CommonQuit(SDLTest_CommonState * state)
         SDL_AudioQuit();
     }
     SDL_free(state);
+    SDL_Quit();
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
