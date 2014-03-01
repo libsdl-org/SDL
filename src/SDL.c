@@ -38,7 +38,8 @@
 #if !SDL_TIMERS_DISABLED
 extern int SDL_TimerInit(void);
 extern void SDL_TimerQuit(void);
-extern void SDL_InitTicks(void);
+extern void SDL_TicksInit(void);
+extern void SDL_TicksQuit(void);
 #endif
 #if SDL_VIDEO_DRIVER_WINDOWS
 extern int SDL_HelperWindowCreate(void);
@@ -123,7 +124,7 @@ SDL_InitSubSystem(Uint32 flags)
 #endif
 
 #if !SDL_TIMERS_DISABLED
-    SDL_InitTicks();
+    SDL_TicksInit();
 #endif
 
     if ((flags & SDL_INIT_GAMECONTROLLER)) {
@@ -354,6 +355,10 @@ SDL_Quit(void)
     SDL_HelperWindowDestroy();
 #endif
     SDL_QuitSubSystem(SDL_INIT_EVERYTHING);
+
+#if !SDL_TIMERS_DISABLED
+    SDL_TicksQuit();
+#endif
 
     SDL_ClearHints();
     SDL_AssertionsQuit();

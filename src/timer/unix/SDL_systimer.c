@@ -59,7 +59,7 @@ static struct timeval start_tv;
 static SDL_bool ticks_started = SDL_FALSE;
 
 void
-SDL_InitTicks(void)
+SDL_TicksInit(void)
 {
     if (ticks_started) {
         return;
@@ -83,12 +83,18 @@ SDL_InitTicks(void)
     }
 }
 
+void
+SDL_TicksQuit(void)
+{
+    ticks_started = SDL_FALSE;
+}
+
 Uint32
 SDL_GetTicks(void)
 {
     Uint32 ticks;
     if (!ticks_started) {
-        SDL_InitTicks();
+        SDL_TicksInit();
     }
 
     if (has_monotonic_time) {
@@ -117,7 +123,7 @@ SDL_GetPerformanceCounter(void)
 {
     Uint64 ticks;
     if (!ticks_started) {
-        SDL_InitTicks();
+        SDL_TicksInit();
     }
 
     if (has_monotonic_time) {
@@ -146,7 +152,7 @@ Uint64
 SDL_GetPerformanceFrequency(void)
 {
     if (!ticks_started) {
-        SDL_InitTicks();
+        SDL_TicksInit();
     }
 
     if (has_monotonic_time) {
