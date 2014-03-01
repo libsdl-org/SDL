@@ -154,14 +154,21 @@ WINRT_CalcDisplayModeUsingNativeWindow(SDL_DisplayMode * mode)
 
     using namespace Windows::Graphics::Display;
 
-    // Initialize the mode to all zeros:
-    SDL_zerop(mode);
-
     // Go no further if a native window cannot be accessed.  This can happen,
     // for example, if this function is called from certain threads, such as
     // the SDL/XAML thread.
     if (!CoreWindow::GetForCurrentThread()) {
         return SDL_SetError("SDL/WinRT display modes cannot be calculated outside of the main thread, such as in SDL's XAML thread");
+    }
+
+    // Calculate the display size given the window size, taking into account
+    // the current display's DPI:
+    const float currentDPI = Windows::Graphics::Display::DisplayProperties::LogicalDpi; 
+    const float dipsPerInch = 96.0f;
+    const int w = (int) ((CoreWindow::GetForCurrentThread()->Bounds.Width * currentDPI) / dipsPerInch);
+    const int h = (int) ((CoreWindow::GetForCurrentThread()->Bounds.Height * currentDPI) / dipsPerInch);
+    if (w == 0 || w == h) {
+        return SDL_SetError("Unable to calculate the WinRT window/display's size");
     }
 
     // Create a driverdata field:
@@ -172,17 +179,13 @@ WINRT_CalcDisplayModeUsingNativeWindow(SDL_DisplayMode * mode)
     SDL_zerop(driverdata);
 
     // Fill in most fields:
+    SDL_zerop(mode);
     mode->format = SDL_PIXELFORMAT_RGB888;
     mode->refresh_rate = 0;  // TODO, WinRT: see if refresh rate data is available, or relevant (for WinRT apps)
+    mode->w = w;
+    mode->h = h;
     mode->driverdata = driverdata;
     driverdata->currentOrientation = DisplayProperties::CurrentOrientation;
-
-    // Calculate the display size given the window size, taking into account
-    // the current display's DPI:
-    const float currentDPI = Windows::Graphics::Display::DisplayProperties::LogicalDpi; 
-    const float dipsPerInch = 96.0f;
-    mode->w = (int) ((CoreWindow::GetForCurrentThread()->Bounds.Width * currentDPI) / dipsPerInch);
-    mode->h = (int) ((CoreWindow::GetForCurrentThread()->Bounds.Height * currentDPI) / dipsPerInch);
 
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
     // On Windows Phone, the native window's size is always in portrait,
@@ -230,11 +233,6 @@ WINRT_InitModes(_THIS)
     SDL_DisplayMode mode, desktop_mode;
     if (WINRT_CalcDisplayModeUsingNativeWindow(&mode) != 0) {
         return -1;	// If WINRT_CalcDisplayModeUsingNativeWindow fails, it'll already have set the SDL error
-    }
-    
-    if (mode.w == 0 || mode.h == 0) {
-        SDL_free(mode.driverdata);
-        return SDL_SetError("Unable to calculate the WinRT window/display's size");
     }
 
     if (WINRT_DuplicateDisplayMode(&desktop_mode, &mode) != 0) {

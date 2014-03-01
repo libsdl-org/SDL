@@ -157,31 +157,39 @@ WINRT_ProcessWindowSizeChange()
     // window-resize event as it appeared the SDL window didn't change
     // size, and the Direct3D 11.1 renderer wouldn't resize its swap
     // chain.
-    SDL_DisplayMode resizedDisplayMode;
-    if (WINRT_CalcDisplayModeUsingNativeWindow(&resizedDisplayMode) != 0) {
-        return;
-    }
-    
-    if (resizedDisplayMode.w == 0 || resizedDisplayMode.h == 0) {
-        if (resizedDisplayMode.driverdata) {
-            SDL_free(resizedDisplayMode.driverdata);
-        }
+    SDL_DisplayMode newDisplayMode;
+    if (WINRT_CalcDisplayModeUsingNativeWindow(&newDisplayMode) != 0) {
         return;
     }
 
+    // Make note of the old display mode, and it's old driverdata.
     SDL_DisplayMode oldDisplayMode;
     SDL_zero(oldDisplayMode);
     if (WINRT_GlobalSDLVideoDevice) {
         oldDisplayMode = WINRT_GlobalSDLVideoDevice->displays[0].desktop_mode;
-        if (WINRT_DuplicateDisplayMode(&(WINRT_GlobalSDLVideoDevice->displays[0].desktop_mode), &resizedDisplayMode) != 0) {
-            SDL_free(resizedDisplayMode.driverdata);
+    }
+
+    // Setup the new display mode in the appropriate spots.
+    if (WINRT_GlobalSDLVideoDevice) {
+        // Make a full copy of the display mode for display_modes[0],
+        // one with with a separately malloced 'driverdata' field.
+        // SDL_VideoQuit(), if called, will attempt to free the driverdata
+        // fields in 'desktop_mode' and each entry in the 'display_modes'
+        // array.
+        if (WINRT_GlobalSDLVideoDevice->displays[0].display_modes[0].driverdata) {
+            // Free the previous mode's memory
+            SDL_free(WINRT_GlobalSDLVideoDevice->displays[0].display_modes[0].driverdata);
+            WINRT_GlobalSDLVideoDevice->displays[0].display_modes[0].driverdata = NULL;
+        }
+        if (WINRT_DuplicateDisplayMode(&(WINRT_GlobalSDLVideoDevice->displays[0].display_modes[0]), &newDisplayMode) != 0) {
+            // Uh oh, something went wrong.  A malloc call probably failed.
+            SDL_free(newDisplayMode.driverdata);
             return;
         }
-        WINRT_GlobalSDLVideoDevice->displays[0].current_mode = resizedDisplayMode;
-        if (WINRT_GlobalSDLVideoDevice->displays[0].display_modes[0].driverdata) {
-            SDL_free(WINRT_GlobalSDLVideoDevice->displays[0].display_modes[0].driverdata);
-        }
-        WINRT_GlobalSDLVideoDevice->displays[0].display_modes[0] = resizedDisplayMode;
+
+        // Install 'newDisplayMode' into 'current_mode' and 'desktop_mode'.
+        WINRT_GlobalSDLVideoDevice->displays[0].current_mode = newDisplayMode;
+        WINRT_GlobalSDLVideoDevice->displays[0].desktop_mode = newDisplayMode;
     }
 
     if (WINRT_GlobalSDLWindow) {
@@ -189,8 +197,8 @@ WINRT_ProcessWindowSizeChange()
         SDL_SendWindowEvent(
             WINRT_GlobalSDLWindow,
             SDL_WINDOWEVENT_RESIZED,
-            resizedDisplayMode.w,
-            resizedDisplayMode.h);
+            newDisplayMode.w,
+            newDisplayMode.h);
 
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
         // HACK: On Windows Phone, make sure that orientation changes from
@@ -198,7 +206,7 @@ WINRT_ProcessWindowSizeChange()
         // or vice-versa on either of those two, lead to the Direct3D renderer
         // getting updated.
         const DisplayOrientations oldOrientation = ((SDL_DisplayModeData *)oldDisplayMode.driverdata)->currentOrientation;
-        const DisplayOrientations newOrientation = ((SDL_DisplayModeData *)resizedDisplayMode.driverdata)->currentOrientation;
+        const DisplayOrientations newOrientation = ((SDL_DisplayModeData *)newDisplayMode.driverdata)->currentOrientation;
 
         if ((oldOrientation == DisplayOrientations::Landscape && newOrientation == DisplayOrientations::LandscapeFlipped) ||
             (oldOrientation == DisplayOrientations::LandscapeFlipped && newOrientation == DisplayOrientations::Landscape) ||
@@ -213,21 +221,23 @@ WINRT_ProcessWindowSizeChange()
             // Make sure that the display/window size really didn't change.  If
             // it did, then a SDL_WINDOWEVENT_SIZE_CHANGED event got sent, and
             // the Direct3D 11.1 renderer picked it up, presumably.
-            if (oldDisplayMode.w == resizedDisplayMode.w &&
-                oldDisplayMode.h == resizedDisplayMode.h)
+            if (oldDisplayMode.w == newDisplayMode.w &&
+                oldDisplayMode.h == newDisplayMode.h)
             {
                 SDL_SendWindowEvent(
                     WINRT_GlobalSDLWindow,
                     SDL_WINDOWEVENT_SIZE_CHANGED,
-                    resizedDisplayMode.w,
-                    resizedDisplayMode.h);
+                    newDisplayMode.w,
+                    newDisplayMode.h);
             }
         }
 #endif
     }
     
+    // Finally, free the 'driverdata' field of the old 'desktop_mode'.
     if (oldDisplayMode.driverdata) {
         SDL_free(oldDisplayMode.driverdata);
+        oldDisplayMode.driverdata = NULL;
     }
 }
 
