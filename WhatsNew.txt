@@ -41,7 +41,7 @@ Android:
   the required runtime version remains at 10, but on such devices joystick 
   support won't be available).
 * Hotplugging support for joysticks
-* Added a hint SDL_HINT_ACCEL_AS_JOY to control whether the accelerometer should be listed as a 3 axis joystick, which it will by default.
+* Added a hint SDL_HINT_ACCELEROMETER_AS_JOYSTICK to control whether the accelerometer should be listed as a 3 axis joystick, which it will by default.
 
 
 ---------------------------------------------------------------------------
