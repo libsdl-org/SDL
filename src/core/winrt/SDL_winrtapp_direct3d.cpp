@@ -157,8 +157,15 @@ WINRT_ProcessWindowSizeChange()
     // window-resize event as it appeared the SDL window didn't change
     // size, and the Direct3D 11.1 renderer wouldn't resize its swap
     // chain.
-    SDL_DisplayMode resizedDisplayMode = WINRT_CalcDisplayModeUsingNativeWindow();
+    SDL_DisplayMode resizedDisplayMode;
+    if (WINRT_CalcDisplayModeUsingNativeWindow(&resizedDisplayMode) != 0) {
+        return;
+    }
+    
     if (resizedDisplayMode.w == 0 || resizedDisplayMode.h == 0) {
+        if (resizedDisplayMode.driverdata) {
+            SDL_free(resizedDisplayMode.driverdata);
+        }
         return;
     }
 
@@ -166,8 +173,14 @@ WINRT_ProcessWindowSizeChange()
     SDL_zero(oldDisplayMode);
     if (WINRT_GlobalSDLVideoDevice) {
         oldDisplayMode = WINRT_GlobalSDLVideoDevice->displays[0].desktop_mode;
+        if (WINRT_DuplicateDisplayMode(&(WINRT_GlobalSDLVideoDevice->displays[0].desktop_mode), &resizedDisplayMode) != 0) {
+            SDL_free(resizedDisplayMode.driverdata);
+            return;
+        }
         WINRT_GlobalSDLVideoDevice->displays[0].current_mode = resizedDisplayMode;
-        WINRT_GlobalSDLVideoDevice->displays[0].desktop_mode = resizedDisplayMode;
+        if (WINRT_GlobalSDLVideoDevice->displays[0].display_modes[0].driverdata) {
+            SDL_free(WINRT_GlobalSDLVideoDevice->displays[0].display_modes[0].driverdata);
+        }
         WINRT_GlobalSDLVideoDevice->displays[0].display_modes[0] = resizedDisplayMode;
     }
 
@@ -184,8 +197,8 @@ WINRT_ProcessWindowSizeChange()
         // Landscape to LandscapeFlipped, Portrait to PortraitFlipped,
         // or vice-versa on either of those two, lead to the Direct3D renderer
         // getting updated.
-        const DisplayOrientations oldOrientation = (DisplayOrientations) (unsigned int) oldDisplayMode.driverdata;
-        const DisplayOrientations newOrientation = (DisplayOrientations) (unsigned int) resizedDisplayMode.driverdata;
+        const DisplayOrientations oldOrientation = ((SDL_DisplayModeData *)oldDisplayMode.driverdata)->currentOrientation;
+        const DisplayOrientations newOrientation = ((SDL_DisplayModeData *)resizedDisplayMode.driverdata)->currentOrientation;
 
         if ((oldOrientation == DisplayOrientations::Landscape && newOrientation == DisplayOrientations::LandscapeFlipped) ||
             (oldOrientation == DisplayOrientations::LandscapeFlipped && newOrientation == DisplayOrientations::Landscape) ||
@@ -211,6 +224,10 @@ WINRT_ProcessWindowSizeChange()
             }
         }
 #endif
+    }
+    
+    if (oldDisplayMode.driverdata) {
+        SDL_free(oldDisplayMode.driverdata);
     }
 }
 
