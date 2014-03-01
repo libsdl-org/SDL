@@ -210,8 +210,8 @@ WIN_SetRelativeMouseMode(SDL_bool enabled)
     /* (Un)register raw input for mice */
     if (RegisterRawInputDevices(&rawMouse, 1, sizeof(RAWINPUTDEVICE)) == FALSE) {
 
-        /* Only return an error when registering. If we unregister and fail, then
-        it's probably that we unregistered twice. That's OK. */
+        /* Only return an error when registering. If we unregister and fail,
+           then it's probably that we unregistered twice. That's OK. */
         if (enabled) {
             return SDL_Unsupported();
         }
