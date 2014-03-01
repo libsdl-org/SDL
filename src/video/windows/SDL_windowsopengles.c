@@ -32,8 +32,6 @@
 int
 WIN_GLES_LoadLibrary(_THIS, const char *path) {
 
-    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
-
     /* If the profile requested is not GL ES, switch over to WIN_GL functions  */
     if (_this->gl_config.profile_mask != SDL_GL_CONTEXT_PROFILE_ES) {
 #if SDL_VIDEO_OPENGL_WGL
