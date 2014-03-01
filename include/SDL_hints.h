@@ -244,7 +244,7 @@ extern "C" {
  *    "0"       - List only real joysticks and accept input from them
  *    "1"       - List real joysticks along with the accelerometer as if it were a 3 axis joystick (the default).
  */
-#define SDL_HINT_ACCEL_AS_JOY "SDL_ACCEL_AS_JOY"
+#define SDL_HINT_ACCELEROMETER_AS_JOYSTICK "SDL_ACCELEROMETER_AS_JOYSTICK"
 
 
 /**

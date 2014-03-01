@@ -379,11 +379,11 @@ Android_RemoveJoystick(int device_id)
 int
 SDL_SYS_JoystickInit(void)
 {
-    const char *env;
+    const char *hint;
     SDL_SYS_JoystickDetect();
     
-    env = SDL_GetHint(SDL_HINT_ACCEL_AS_JOY);
-    if (!env || SDL_atoi(env)) {
+    hint = SDL_GetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK);
+    if (!hint || SDL_atoi(hint)) {
         /* Default behavior, accelerometer as joystick */
         Android_AddJoystick(ANDROID_ACCELEROMETER_DEVICE_ID, ANDROID_ACCELEROMETER_NAME, SDL_TRUE, 0, 3, 0, 0);
     }
