@@ -44,9 +44,25 @@ extern SDL_Window * WINRT_GlobalSDLWindow;
 /* The global, WinRT, video device. */
 extern SDL_VideoDevice * WINRT_GlobalSDLVideoDevice;
 
-/* Computes the current display mode for Plain Direct3D (non-XAML) apps */
-extern SDL_DisplayMode WINRT_CalcDisplayModeUsingNativeWindow();
+/* Creates a display mode for Plain Direct3D (non-XAML) apps, using the lone, native window's settings.
 
+   Pass in an allocated SDL_DisplayMode field to store the data in.
+
+   This function will return 0 on success, -1 on failure.
+
+   If this function succeeds, be sure to call SDL_free on the
+   SDL_DisplayMode's driverdata field.
+*/
+extern int WINRT_CalcDisplayModeUsingNativeWindow(SDL_DisplayMode * mode);
+
+/* Duplicates a display mode, copying over driverdata as necessary */
+extern int WINRT_DuplicateDisplayMode(SDL_DisplayMode * dest, const SDL_DisplayMode * src);
+
+/* Display mode internals */
+typedef struct
+{
+    Windows::Graphics::Display::DisplayOrientations currentOrientation;
+} SDL_DisplayModeData;
 
 #ifdef __cplusplus_winrt
 

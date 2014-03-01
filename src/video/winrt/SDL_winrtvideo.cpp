@@ -147,33 +147,42 @@ WINRT_VideoInit(_THIS)
     return 0;
 }
 
-SDL_DisplayMode
-WINRT_CalcDisplayModeUsingNativeWindow()
+int
+WINRT_CalcDisplayModeUsingNativeWindow(SDL_DisplayMode * mode)
 {
+    SDL_DisplayModeData * driverdata;
+
     using namespace Windows::Graphics::Display;
 
-    // Create an empty, zeroed-out display mode:
-    SDL_DisplayMode mode;
-    SDL_zero(mode);
+    // Initialize the mode to all zeros:
+    SDL_zerop(mode);
 
     // Go no further if a native window cannot be accessed.  This can happen,
     // for example, if this function is called from certain threads, such as
     // the SDL/XAML thread.
     if (!CoreWindow::GetForCurrentThread()) {
-        return mode;
+        return SDL_SetError("SDL/WinRT display modes cannot be calculated outside of the main thread, such as in SDL's XAML thread");
     }
 
+    // Create a driverdata field:
+    driverdata = (SDL_DisplayModeData *) SDL_malloc(sizeof(*driverdata));
+    if (!driverdata) {
+        return SDL_OutOfMemory();
+    }
+    SDL_zerop(driverdata);
+
     // Fill in most fields:
-    mode.format = SDL_PIXELFORMAT_RGB888;
-    mode.refresh_rate = 0;  // TODO, WinRT: see if refresh rate data is available, or relevant (for WinRT apps)
-    mode.driverdata = (void *) DisplayProperties::CurrentOrientation;
+    mode->format = SDL_PIXELFORMAT_RGB888;
+    mode->refresh_rate = 0;  // TODO, WinRT: see if refresh rate data is available, or relevant (for WinRT apps)
+    mode->driverdata = driverdata;
+    driverdata->currentOrientation = DisplayProperties::CurrentOrientation;
 
     // Calculate the display size given the window size, taking into account
     // the current display's DPI:
     const float currentDPI = Windows::Graphics::Display::DisplayProperties::LogicalDpi; 
     const float dipsPerInch = 96.0f;
-    mode.w = (int) ((CoreWindow::GetForCurrentThread()->Bounds.Width * currentDPI) / dipsPerInch);
-    mode.h = (int) ((CoreWindow::GetForCurrentThread()->Bounds.Height * currentDPI) / dipsPerInch);
+    mode->w = (int) ((CoreWindow::GetForCurrentThread()->Bounds.Width * currentDPI) / dipsPerInch);
+    mode->h = (int) ((CoreWindow::GetForCurrentThread()->Bounds.Height * currentDPI) / dipsPerInch);
 
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
     // On Windows Phone, the native window's size is always in portrait,
@@ -186,32 +195,52 @@ WINRT_CalcDisplayModeUsingNativeWindow()
         case DisplayOrientations::Landscape:
         case DisplayOrientations::LandscapeFlipped:
         {
-            const int tmp = mode.h;
-            mode.h = mode.w;
-            mode.w = tmp;
+            const int tmp = mode->h;
+            mode->h = mode->w;
+            mode->w = tmp;
             break;
         }
 
         default:
             break;
     }
-
-    // Attach the mode to te
 #endif
 
-    return mode;
+    return 0;
+}
+
+int
+WINRT_DuplicateDisplayMode(SDL_DisplayMode * dest, const SDL_DisplayMode * src)
+{
+    SDL_DisplayModeData * driverdata;
+    driverdata = (SDL_DisplayModeData *) SDL_malloc(sizeof(*driverdata));
+    if (!driverdata) {
+        return SDL_OutOfMemory();
+    }
+    SDL_memcpy(driverdata, src->driverdata, sizeof(SDL_DisplayModeData));
+    SDL_memcpy(dest, src, sizeof(SDL_DisplayMode));
+    dest->driverdata = driverdata;
+    return 0;
 }
 
 int
 WINRT_InitModes(_THIS)
 {
     // Retrieve the display mode:
-    SDL_DisplayMode mode = WINRT_CalcDisplayModeUsingNativeWindow();
+    SDL_DisplayMode mode, desktop_mode;
+    if (WINRT_CalcDisplayModeUsingNativeWindow(&mode) != 0) {
+        return -1;	// If WINRT_CalcDisplayModeUsingNativeWindow fails, it'll already have set the SDL error
+    }
+    
     if (mode.w == 0 || mode.h == 0) {
+        SDL_free(mode.driverdata);
         return SDL_SetError("Unable to calculate the WinRT window/display's size");
     }
 
-    if (SDL_AddBasicVideoDisplay(&mode) < 0) {
+    if (WINRT_DuplicateDisplayMode(&desktop_mode, &mode) != 0) {
+        return -1;
+    }
+    if (SDL_AddBasicVideoDisplay(&desktop_mode) < 0) {
         return -1;
     }
 
