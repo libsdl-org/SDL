@@ -22808,7 +22808,7 @@ $as_echo "#define SDL_LOADSO_WINDOWS 1" >>confdefs.h
             have_loadso=yes
         fi
         # Set up the system libraries we need
-        if  -f /lib/w32api/libuuid.a ; then
+        if test -f /lib/w32api/libuuid.a; then
             LIBUUID=/lib/w32api/libuuid.a
         else
             LIBUUID=-luuid
