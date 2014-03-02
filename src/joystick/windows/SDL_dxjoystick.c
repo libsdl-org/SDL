@@ -782,7 +782,7 @@ EnumXInputDevices(JoyStick_DeviceData **pContext)
             XINPUT_CAPABILITIES capabilities;
             if (XINPUTGETCAPABILITIES(userid, XINPUT_FLAG_GAMEPAD, &capabilities) == ERROR_SUCCESS) {
                 /* Current version of XInput mistakenly returns 0 as the Type. Ignore it and ensure the subtype is a gamepad. */
-                /* !!! FIXME: we might want to support steering wheels or guitars or whatever laster. */
+                /* !!! FIXME: we might want to support steering wheels or guitars or whatever later. */
                 if (capabilities.SubType == XINPUT_DEVSUBTYPE_GAMEPAD) {
                     AddXInputDevice(userid, pContext);
                 }
