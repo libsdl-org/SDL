@@ -20173,11 +20173,6 @@ main ()
 
 int event_type = XI_TouchBegin;
 XITouchClassInfo *t;
-Status
-XIAllowTouchEvents(Display *a,int b,unsigned int c,Window d,int f)
-{
-    return (Status)0;
-}
 
   ;
   return 0;
