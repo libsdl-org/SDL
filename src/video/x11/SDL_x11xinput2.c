@@ -61,9 +61,10 @@ static void parse_valuators(const double *input_values,unsigned char *mask,int m
 }
 
 static int
-query_xinput2_version(Display *display, int major, int minor)
+query_xinput2_version(Display *display)
 {
     /* We don't care if this fails, so long as it sets major/minor on it's way out the door. */
+    int major = 0, minor = 0;
     X11_XIQueryVersion(display, &major, &minor);
     return ((major * 1000) + minor);
 }
@@ -101,7 +102,7 @@ X11_InitXinput2(_THIS)
     }
 
     /* We need at least 2.2 for Multitouch, 2.0 otherwise. */
-    version = query_xinput2_version(data->display, 2, 2);
+    version = query_xinput2_version(data->display);
     if (!xinput2_version_atleast(version, 2, 0)) {
         return; /* X server does not support the version we want at all. */
     }
