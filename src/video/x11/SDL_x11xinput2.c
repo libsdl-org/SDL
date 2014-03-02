@@ -60,16 +60,18 @@ static void parse_valuators(const double *input_values,unsigned char *mask,int m
     }
 }
 
-static SDL_bool
-xinput2_version_okay(Display *display, const int major, const int minor)
+static int
+query_xinput2_version(Display *display, int major, int minor)
 {
-    int outmajor = major;
-    int outminor = minor;
-    if (X11_XIQueryVersion(display, &outmajor, &outminor) != Success) {
-        return SDL_FALSE;
-    }
+    /* We don't care if this fails, so long as it sets major/minor on it's way out the door. */
+    X11_XIQueryVersion(display, &major, &minor);
+    return ((major * 1000) + minor);
+}
 
-    return ( ((outmajor * 1000) + outminor) >= ((major * 1000) + minor) );
+static SDL_bool
+xinput2_version_atleast(const int version, const int wantmajor, const int wantminor)
+{
+    return ( version >= ((wantmajor * 1000) + wantminor) );
 }
 #endif /* SDL_VIDEO_DRIVER_X11_XINPUT2 */
 
@@ -79,9 +81,11 @@ X11_InitXinput2(_THIS)
 #if SDL_VIDEO_DRIVER_X11_XINPUT2
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
 
+    int version = 0;
     XIEventMask eventmask;
     unsigned char mask[3] = { 0,0,0 };
     int event, err;
+
     /*
     * Initialize XInput 2
     * According to http://who-t.blogspot.com/2009/05/xi2-recipes-part-1.html its better
@@ -96,16 +100,16 @@ X11_InitXinput2(_THIS)
         return; /* X server does not have XInput at all */
     }
 
-    if (!xinput2_version_okay(data->display, 2, 0)) {
-        return; /* X server does not support the version we want */
+    /* We need at least 2.2 for Multitouch, 2.0 otherwise. */
+    version = query_xinput2_version(data->display, 2, 2);
+    if (!xinput2_version_atleast(version, 2, 0)) {
+        return; /* X server does not support the version we want at all. */
     }
 
     xinput2_initialized = 1;
 
-#if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
-    if (xinput2_version_okay(data->display, 2, 2)) {  /* Multitouch needs XInput 2.2 */
-        xinput2_multitouch_supported = 1;
-    }
+#if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH  /* Multitouch needs XInput 2.2 */
+    xinput2_multitouch_supported = xinput2_version_atleast(version, 2, 2);
 #endif
 
     /* Enable  Raw motion events for this display */
