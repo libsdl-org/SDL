@@ -1555,11 +1555,6 @@ AC_HELP_STRING([--enable-video-x11-xinput], [enable X11 XInput extension for man
             	],[
 int event_type = XI_TouchBegin;
 XITouchClassInfo *t;
-Status 
-XIAllowTouchEvents(Display *a,int b,unsigned int c,Window d,int f)
-{
-    return (Status)0;
-}
             	],[
             	have_xinput2_multitouch=yes
             	AC_DEFINE(SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH)
