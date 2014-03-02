@@ -162,6 +162,7 @@ SDL_GLContext
 Cocoa_GL_CreateContext(_THIS, SDL_Window * window)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+    const GLubyte *(APIENTRY * glGetStringFunc)(GLenum) = NULL;
     NSAutoreleasePool *pool;
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
     SDL_DisplayData *displaydata = (SDL_DisplayData *)display->driverdata;
@@ -275,7 +276,14 @@ Cocoa_GL_CreateContext(_THIS, SDL_Window * window)
         return NULL;
     }
 
-    glversion = (const char *)glGetString(GL_VERSION);
+    glGetStringFunc = (const GLubyte *(APIENTRY *)(GLenum)) SDL_GL_GetProcAddress("glGetString");
+    if (!glGetStringFunc) {
+        Cocoa_GL_DeleteContext(_this, context);
+        SDL_SetError ("Failed getting OpenGL glGetString entry point");
+        return NULL;
+    }
+
+    glversion = (const char *)glGetStringFunc(GL_VERSION);
     if (glversion == NULL) {
         Cocoa_GL_DeleteContext(_this, context);
         SDL_SetError ("Failed getting OpenGL context version");
