@@ -26,9 +26,9 @@ ABI compatibility on x86_64 architectures.  For best compatibility you
 should compile your application the same way.  A script which wraps
 gcc to make this easy is provided in test/gcc-fat.sh
 
-Please note that building SDL requires at least the 10.7 SDK (even if you
-target back to 10.5 systems). PowerPC support for Mac OS X has been officially
-dropped as of SDL 2.0.2.
+Please note that building SDL requires at least Xcode 4.6 and the 10.7 SDK
+(even if you target back to 10.5 systems). PowerPC support for Mac OS X has
+been officially dropped as of SDL 2.0.2.
 
 To use the library once it's built, you essential have two possibilities:
 use the traditional autoconf/automake/make method, or use Xcode.
