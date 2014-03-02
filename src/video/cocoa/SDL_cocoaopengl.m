@@ -35,17 +35,14 @@
 
 #define DEFAULT_OPENGL  "/System/Library/Frameworks/OpenGL.framework/Libraries/libGL.dylib"
 
-#ifndef kCGLPFAOpenGLProfile
-#define kCGLPFAOpenGLProfile 99
+#ifndef NSOpenGLPFAOpenGLProfile
+#define NSOpenGLPFAOpenGLProfile 99
 #endif
-#ifndef kCGLOGLPVersion_Legacy
-#define kCGLOGLPVersion_Legacy 0x1000
+#ifndef NSOpenGLProfileVersionLegacy
+#define NSOpenGLProfileVersionLegacy 0x1000
 #endif
-#ifndef kCGLOGLPVersion_GL3_Core
-#define kCGLOGLPVersion_GL3_Core 0x3200
-#endif
-#ifndef kCGLOGLPVersion_GL4_Core
-#define kCGLOGLPVersion_GL4_Core 0x4100
+#ifndef NSOpenGLProfileVersion3_2Core
+#define NSOpenGLProfileVersion3_2Core 0x3200
 #endif
 
 @implementation SDLOpenGLContext : NSOpenGLContext
@@ -164,8 +161,6 @@ Cocoa_GL_UnloadLibrary(_THIS)
 SDL_GLContext
 Cocoa_GL_CreateContext(_THIS, SDL_Window * window)
 {
-    const int wantver = (_this->gl_config.major_version << 8) |
-                        (_this->gl_config.minor_version);
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
     NSAutoreleasePool *pool;
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
@@ -175,16 +170,16 @@ Cocoa_GL_CreateContext(_THIS, SDL_Window * window)
     SDLOpenGLContext *context;
     NSOpenGLContext *share_context = nil;
     int i = 0;
+    const char *glversion;
+    int glversion_major;
+    int glversion_minor;
 
     if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) {
         SDL_SetError ("OpenGL ES is not supported on this platform");
         return NULL;
     }
-
-    /* Sadly, we'll have to update this as life progresses, since we need to
-       set an enum for context profiles, not a context version number */
-    if (wantver > 0x0401) {
-        SDL_SetError ("OpenGL > 4.1 is not supported on this platform");
+    if ((_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_CORE) && (data->osversion < 0x1070)) {
+        SDL_SetError ("OpenGL Core Profile is not supported on this platform version");
         return NULL;
     }
 
@@ -192,19 +187,11 @@ Cocoa_GL_CreateContext(_THIS, SDL_Window * window)
 
     /* specify a profile if we're on Lion (10.7) or later. */
     if (data->osversion >= 0x1070) {
-        NSOpenGLPixelFormatAttribute profile = kCGLOGLPVersion_Legacy;
+        NSOpenGLPixelFormatAttribute profile = NSOpenGLProfileVersionLegacy;
         if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_CORE) {
-            if (wantver == 0x0302) {
-                profile = kCGLOGLPVersion_GL3_Core;
-            } else if ((wantver == 0x0401) && (data->osversion >= 0x1090)) {
-                profile = kCGLOGLPVersion_GL4_Core;
-            } else {
-                SDL_SetError("Requested GL version is not supported on this platform");
-                [pool release];
-                return NULL;
-            }
+            profile = NSOpenGLProfileVersion3_2Core;
         }
-        attr[i++] = kCGLPFAOpenGLProfile;
+        attr[i++] = NSOpenGLPFAOpenGLProfile;
         attr[i++] = profile;
     }
 
@@ -284,8 +271,32 @@ Cocoa_GL_CreateContext(_THIS, SDL_Window * window)
 
     if ( Cocoa_GL_MakeCurrent(_this, window, context) < 0 ) {
         Cocoa_GL_DeleteContext(_this, context);
+        SDL_SetError ("Failed making OpenGL context current");
         return NULL;
     }
+
+    glversion = (const char *)glGetString(GL_VERSION);
+    if (glversion == NULL) {
+        Cocoa_GL_DeleteContext(_this, context);
+        SDL_SetError ("Failed getting OpenGL context version");
+        return NULL;
+    }
+
+    if (SDL_sscanf(glversion, "%d.%d", &glversion_major, &glversion_minor) != 2) {
+        Cocoa_GL_DeleteContext(_this, context);
+        SDL_SetError ("Failed parsing OpenGL context version");
+        return NULL;
+    }
+
+    if ((glversion_major <  _this->gl_config.major_version) ||
+       ((glversion_major == _this->gl_config.major_version) && (glversion_minor < _this->gl_config.minor_version))) {
+        Cocoa_GL_DeleteContext(_this, context);
+        SDL_SetError ("Failed creating OpenGL context at version requested");
+        return NULL;
+    }
+
+    _this->gl_config.major_version = glversion_major;
+    _this->gl_config.minor_version = glversion_minor;
 
     return context;
 }
