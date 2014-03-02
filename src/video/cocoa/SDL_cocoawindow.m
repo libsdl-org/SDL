@@ -265,7 +265,7 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 
     if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP) {
         return NO;  /* we only allow this on FULLSCREEN_DESKTOP windows. */
-    } else if (![nswindow respondsToSelector: @selector(setCollectionBehavior:)]) {
+    } else if (![nswindow respondsToSelector: @selector(toggleFullScreen:)]) {
         return NO;  /* No Spaces support? Older Mac OS X? */
     } else if (state == isFullscreenSpace) {
         return YES;  /* already there. */
@@ -558,8 +558,6 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
         [self setFullscreenSpace:NO];
     } else {
         if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) {
-            /* Remove the fullscreen toggle button and menu now that we're here. */
-            [nswindow setCollectionBehavior:NSWindowCollectionBehaviorManaged];
             [NSMenu setMenuBarVisible:NO];
         }
 
@@ -597,11 +595,14 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
         pendingWindowOperation = PENDING_OPERATION_NONE;
         [nswindow miniaturize:nil];
     } else {
-        if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) {
-            /* Remove the fullscreen toggle button and readd menu now that we're here. */
+        /* Adjust the fullscreen toggle button and readd menu now that we're here. */
+        if (window->flags & SDL_WINDOW_RESIZABLE) {
+            /* resizable windows are Spaces-friendly: they get the "go fullscreen" toggle button on their titlebar. */
+            [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
+        } else {
             [nswindow setCollectionBehavior:NSWindowCollectionBehaviorManaged];
-            [NSMenu setMenuBarVisible:YES];
         }
+        [NSMenu setMenuBarVisible:YES];
 
         pendingWindowOperation = PENDING_OPERATION_NONE;
         /* Force the size change event in case it was delivered earlier
@@ -612,6 +613,16 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
         [self windowDidResize:aNotification];
     }
 }
+
+-(NSApplicationPresentationOptions)window:(NSWindow *)window willUseFullScreenPresentationOptions:(NSApplicationPresentationOptions)proposedOptions
+{
+    if ((_data->window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) {
+        return NSApplicationPresentationFullScreen | NSApplicationPresentationHideDock | NSApplicationPresentationHideMenuBar;
+    } else {
+        return proposedOptions;
+    }
+}
+
 
 /* We'll respond to key events by doing nothing so we don't beep.
  * We could handle key messages here, but we lose some in the NSApp dispatch,
@@ -1021,7 +1032,7 @@ Cocoa_CreateWindow(_THIS, SDL_Window * window)
     }
     [nswindow setBackgroundColor:[NSColor blackColor]];
 
-    if ([nswindow respondsToSelector: @selector(setCollectionBehavior:)]) {
+    if ([nswindow respondsToSelector: @selector(toggleFullScreen:)]) {
         /* we put FULLSCREEN_DESKTOP windows in their own Space, without a toggle button or menubar, later */
         if (window->flags & SDL_WINDOW_RESIZABLE) {
             /* resizable windows are Spaces-friendly: they get the "go fullscreen" toggle button on their titlebar. */

@@ -73,6 +73,7 @@ typedef enum
 -(void) windowDidEnterFullScreen:(NSNotification *) aNotification;
 -(void) windowWillExitFullScreen:(NSNotification *) aNotification;
 -(void) windowDidExitFullScreen:(NSNotification *) aNotification;
+-(NSApplicationPresentationOptions)window:(NSWindow *)window willUseFullScreenPresentationOptions:(NSApplicationPresentationOptions)proposedOptions;
 
 /* Window event handling */
 -(void) mouseDown:(NSEvent *) theEvent;
