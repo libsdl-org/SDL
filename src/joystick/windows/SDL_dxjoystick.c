@@ -1524,6 +1524,7 @@ TranslatePOV(DWORD value)
 
 /* SDL_PrivateJoystick* doesn't discard duplicate events, so we need to
  * do it. */
+/* !!! FIXME: SDL_PrivateJoystickAxis _does_ discard duplicate events now. Ditch this code. */
 static int
 SDL_PrivateJoystickAxis_Int(SDL_Joystick * joystick, Uint8 axis, Sint16 value)
 {
