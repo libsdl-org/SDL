@@ -508,6 +508,10 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 
     /* Check to see if someone updated the clipboard */
     Cocoa_CheckClipboardUpdate(_data->videodata);
+
+    if (isFullscreenSpace) {
+        [NSMenu setMenuBarVisible:NO];
+    }
 }
 
 - (void)windowDidResignKey:(NSNotification *)aNotification
@@ -525,6 +529,10 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
     /* Some other window will get keyboard events, since we're not key. */
     if (SDL_GetKeyboardFocus() == _data->window) {
         SDL_SetKeyboardFocus(NULL);
+    }
+
+    if (isFullscreenSpace) {
+        [NSMenu setMenuBarVisible:YES];
     }
 }
 
