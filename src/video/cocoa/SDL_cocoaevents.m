@@ -271,10 +271,9 @@ Cocoa_RegisterApp(void)
             CreateApplicationMenus();
         }
         [NSApp finishLaunching];
-        NSDictionary *appDefaults = @{
-            @"AppleMomentumScrollSupported": @NO,
-            @"ApplePressAndHoldEnabled": @NO,
-        };
+        NSDictionary *appDefaults = [[NSDictionary alloc] initWithObjectsAndKeys:
+            NO, @"AppleMomentumScrollSupported",
+            NO, @"ApplePressAndHoldEnabled"];
         [[NSUserDefaults standardUserDefaults] registerDefaults:appDefaults];
 
     }
