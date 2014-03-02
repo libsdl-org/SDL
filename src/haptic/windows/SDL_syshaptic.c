@@ -939,18 +939,30 @@ SDL_SYS_HapticQuit(void)
 {
     SDL_hapticlist_item *item;
     SDL_hapticlist_item *next = NULL;
+    SDL_Haptic *hapticitem = NULL;
 
-    if (loaded_xinput) {
-        WIN_UnloadXInputDLL();
-        loaded_xinput = SDL_FALSE;
+    extern SDL_Haptic *SDL_haptics;
+    for (hapticitem = SDL_haptics; hapticitem; hapticitem = hapticitem->next) {
+        if ((hapticitem->hwdata->bXInputHaptic) && (hapticitem->hwdata->thread)) {
+            /* we _have_ to stop the thread before we free the XInput DLL! */
+            hapticitem->hwdata->stopThread = 1;
+            SDL_WaitThread(hapticitem->hwdata->thread, NULL);
+            hapticitem->hwdata->thread = NULL;
+        }
     }
 
     for (item = SDL_hapticlist; item; item = next) {
         /* Opened and not closed haptics are leaked, this is on purpose.
          * Close your haptic devices after usage. */
+        /* !!! FIXME: (...is leaking on purpose a good idea?) */
         next = item->next;
         SDL_free(item->name);
         SDL_free(item);
+    }
+
+    if (loaded_xinput) {
+        WIN_UnloadXInputDLL();
+        loaded_xinput = SDL_FALSE;
     }
 
     if (dinput != NULL) {
