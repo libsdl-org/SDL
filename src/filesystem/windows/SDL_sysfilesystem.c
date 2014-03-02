@@ -69,27 +69,69 @@ SDL_GetPrefPath(const char *org, const char *app)
      *                          NULL, &wszPath);
      */
 
-    TCHAR path[MAX_PATH];
+    WCHAR path[MAX_PATH];
     char *utf8 = NULL;
     char *retval = NULL;
+    WCHAR* worg = NULL;
+    WCHAR* wapp = NULL;
+    size_t new_wpath_len = 0;
+    BOOL api_result = FALSE;
 
-    if (!SUCCEEDED(SHGetFolderPath(NULL, CSIDL_APPDATA | CSIDL_FLAG_CREATE, NULL, 0, path))) {
+    if (!SUCCEEDED(SHGetFolderPathW(NULL, CSIDL_APPDATA | CSIDL_FLAG_CREATE, NULL, 0, path))) {
         WIN_SetError("Couldn't locate our prefpath");
         return NULL;
     }
 
-    utf8 = WIN_StringToUTF8(path);
-    if (utf8) {
-        const size_t len = SDL_strlen(utf8) + SDL_strlen(org) + SDL_strlen(app) + 4;
-        retval = (char *) SDL_malloc(len);
-        if (!retval) {
-            SDL_free(utf8);
-            SDL_OutOfMemory();
+    worg = WIN_UTF8ToString(org);
+    if (worg == NULL) {
+        SDL_OutOfMemory();
+        return NULL;
+    }
+
+    wapp = WIN_UTF8ToString(app);
+    if (wapp == NULL) {
+        SDL_free(worg);
+        SDL_OutOfMemory();
+        return NULL;
+    }
+
+    new_wpath_len = lstrlenW(worg) + lstrlenW(wapp) + lstrlenW(path) + 3;
+
+    if ((new_wpath_len + 1) > MAX_PATH) {
+        SDL_free(worg);
+        SDL_free(wapp);
+        WIN_SetError("Path too long.");
+        return NULL;
+    }
+
+    lstrcatW(path, L"\\");
+    lstrcatW(path, worg);
+    SDL_free(worg);
+
+    api_result = CreateDirectoryW(path, NULL);
+    if (api_result == FALSE) {
+        if (GetLastError() != ERROR_ALREADY_EXISTS) {
+            SDL_free(wapp);
+            WIN_SetError("Couldn't create a prefpath.");
             return NULL;
         }
-        SDL_snprintf(retval, len, "%s\\%s\\%s\\", utf8, org, app);
-        SDL_free(utf8);
     }
+
+    lstrcatW(path, L"\\");
+    lstrcatW(path, wapp);
+    SDL_free(wapp);
+
+    api_result = CreateDirectoryW(path, NULL);
+    if (api_result == FALSE) {
+        if (GetLastError() != ERROR_ALREADY_EXISTS) {
+            WIN_SetError("Couldn't create a prefpath.");
+            return NULL;
+        }
+    }
+
+    lstrcatW(path, L"\\");
+
+    retval = WIN_StringToUTF8(path);
 
     return retval;
 }
