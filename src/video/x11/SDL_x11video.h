@@ -121,6 +121,7 @@ typedef struct SDL_VideoData
 
 extern SDL_bool X11_UseDirectColorVisuals(void);
 
+SDL_bool SDL_dbus_screensaver_inhibit(_THIS);
 void SDL_dbus_screensaver_tickle(_THIS);
 
 #endif /* _SDL_x11video_h */
