@@ -121,7 +121,9 @@ GetWindowStyle(SDL_Window * window)
 {
     unsigned int style;
 
-    if (window->flags & SDL_WINDOW_FULLSCREEN) {
+    if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) {
+        style = (NSTitledWindowMask|NSClosableWindowMask|NSMiniaturizableWindowMask);
+    } else if (window->flags & SDL_WINDOW_FULLSCREEN) {
         style = NSBorderlessWindowMask;
     } else {
         if (window->flags & SDL_WINDOW_BORDERLESS) {
@@ -256,20 +258,17 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
     }
 }
 
--(BOOL) setFullscreenSpace:(BOOL) state;
+-(BOOL) setFullscreenSpace:(BOOL) state
 {
     SDL_Window *window = _data->window;
     NSWindow *nswindow = _data->nswindow;
 
-    if (![nswindow respondsToSelector: @selector(collectionBehavior)]) {
-        return NO;
-    }
-    if ([nswindow collectionBehavior] != NSWindowCollectionBehaviorFullScreenPrimary) {
-        return NO;
-    }
-
-    if (state == isFullscreenSpace) {
-        return YES;
+    if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP) {
+        return NO;  /* we only allow this on FULLSCREEN_DESKTOP windows. */
+    } else if (![nswindow respondsToSelector: @selector(setCollectionBehavior:)]) {
+        return NO;  /* No Spaces support? Older Mac OS X? */
+    } else if (state == isFullscreenSpace) {
+        return YES;  /* already there. */
     }
 
     if (inFullscreenTransition) {
@@ -282,13 +281,8 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
     }
     inFullscreenTransition = YES;
 
-    /* Update the flags here so the state change is available immediately */
-    if (state) {
-        window->flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
-    } else {
-        window->flags &= ~SDL_WINDOW_FULLSCREEN_DESKTOP;
-    }
-
+    /* you need to be FullScreenPrimary, or toggleFullScreen doesn't work. Unset it again in windowDid[Enter|Exit]FullScreen. */
+    [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
     [nswindow performSelectorOnMainThread: @selector(toggleFullScreen:) withObject:nswindow waitUntilDone:NO];
     return YES;
 }
@@ -443,6 +437,11 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 
 - (void)windowDidResize:(NSNotification *)aNotification
 {
+    if (inFullscreenTransition) {
+        /* We'll take care of this at the end of the transition */
+        return;
+    }
+
     SDL_Window *window = _data->window;
     NSWindow *nswindow = _data->nswindow;
     int x, y, w, h;
@@ -452,11 +451,6 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
     y = (int)rect.origin.y;
     w = (int)rect.size.width;
     h = (int)rect.size.height;
-
-    if (inFullscreenTransition) {
-        /* We'll take care of this at the end of the transition */
-        return;
-    }
 
     if (SDL_IsShapedWindow(window)) {
         Cocoa_ResizeWindowShape(window);
@@ -538,7 +532,6 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 {
     SDL_Window *window = _data->window;
 
-    window->flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
     SetWindowStyle(window, (NSTitledWindowMask|NSClosableWindowMask|NSMiniaturizableWindowMask|NSResizableWindowMask));
 
     isFullscreenSpace = YES;
@@ -548,6 +541,7 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 - (void)windowDidEnterFullScreen:(NSNotification *)aNotification
 {
     SDL_Window *window = _data->window;
+    NSWindow *nswindow = _data->nswindow;
 
     inFullscreenTransition = NO;
 
@@ -555,6 +549,12 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
         pendingWindowOperation = PENDING_OPERATION_NONE;
         [self setFullscreenSpace:NO];
     } else {
+        if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) {
+            /* Remove the fullscreen toggle button and menu now that we're here. */
+            [nswindow setCollectionBehavior:NSWindowCollectionBehaviorManaged];
+            [NSMenu setMenuBarVisible:NO];
+        }
+
         pendingWindowOperation = PENDING_OPERATION_NONE;
         /* Force the size change event in case it was delivered earlier
            while the window was still animating into place.
@@ -569,7 +569,6 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 {
     SDL_Window *window = _data->window;
 
-    window->flags &= ~SDL_WINDOW_FULLSCREEN_DESKTOP;
     SetWindowStyle(window, GetWindowStyle(window));
 
     isFullscreenSpace = NO;
@@ -590,6 +589,12 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
         pendingWindowOperation = PENDING_OPERATION_NONE;
         [nswindow miniaturize:nil];
     } else {
+        if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) {
+            /* Remove the fullscreen toggle button and readd menu now that we're here. */
+            [nswindow setCollectionBehavior:NSWindowCollectionBehaviorManaged];
+            [NSMenu setMenuBarVisible:YES];
+        }
+
         pendingWindowOperation = PENDING_OPERATION_NONE;
         /* Force the size change event in case it was delivered earlier
            while the window was still animating into place.
@@ -1007,9 +1012,11 @@ Cocoa_CreateWindow(_THIS, SDL_Window * window)
         return -1;
     }
     [nswindow setBackgroundColor:[NSColor blackColor]];
-    if ([nswindow respondsToSelector:@selector(setCollectionBehavior:)]) {
-        const char *hint = SDL_GetHint(SDL_HINT_VIDEO_FULLSCREEN_SPACES);
-        if (hint && SDL_atoi(hint) > 0) {
+
+    if ([nswindow respondsToSelector: @selector(setCollectionBehavior:)]) {
+        /* we put FULLSCREEN_DESKTOP windows in their own Space, without a toggle button or menubar, later */
+        if (window->flags & SDL_WINDOW_RESIZABLE) {
+            /* resizable windows are Spaces-friendly: they get the "go fullscreen" toggle button on their titlebar. */
             [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
         }
     }
