@@ -263,8 +263,8 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
     SDL_Window *window = _data->window;
     NSWindow *nswindow = _data->nswindow;
 
-    if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP) {
-        return NO;  /* we only allow this on FULLSCREEN_DESKTOP windows. */
+    if (state && ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP)) {
+        return NO;  /* we only allow you to make a Space on FULLSCREEN_DESKTOP windows. */
     } else if (![nswindow respondsToSelector: @selector(toggleFullScreen:)]) {
         return NO;  /* No Spaces support? Older Mac OS X? */
     } else if (state == isFullscreenSpace) {
