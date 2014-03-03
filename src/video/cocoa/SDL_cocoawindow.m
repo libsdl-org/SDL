@@ -509,7 +509,7 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
     /* Check to see if someone updated the clipboard */
     Cocoa_CheckClipboardUpdate(_data->videodata);
 
-    if (isFullscreenSpace) {
+    if ((isFullscreenSpace) && ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP)) {
         [NSMenu setMenuBarVisible:NO];
     }
 }
