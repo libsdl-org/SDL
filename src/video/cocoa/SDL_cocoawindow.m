@@ -549,7 +549,6 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 - (void)windowDidEnterFullScreen:(NSNotification *)aNotification
 {
     SDL_Window *window = _data->window;
-    NSWindow *nswindow = _data->nswindow;
 
     inFullscreenTransition = NO;
 
