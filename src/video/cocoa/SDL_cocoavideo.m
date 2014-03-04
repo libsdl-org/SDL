@@ -148,9 +148,15 @@ VideoBootStrap COCOA_bootstrap = {
 int
 Cocoa_VideoInit(_THIS)
 {
+    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+
     Cocoa_InitModes(_this);
     Cocoa_InitKeyboard(_this);
     Cocoa_InitMouse(_this);
+
+    const char *hint = SDL_GetHint(SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES);
+    data->allow_spaces = ( (data->osversion >= 0x1070) && (!hint || (*hint != '0')) );
+
     return 0;
 }
 

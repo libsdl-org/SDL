@@ -38,6 +38,7 @@
 #include "SDL_cocoashape.h"
 #include "SDL_cocoamouse.h"
 #include "SDL_cocoaopengl.h"
+#include "SDL_assert.h"
 
 /* #define DEBUG_COCOAWINDOW */
 
@@ -121,9 +122,7 @@ GetWindowStyle(SDL_Window * window)
 {
     unsigned int style;
 
-    if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) {
-        style = (NSTitledWindowMask|NSClosableWindowMask|NSMiniaturizableWindowMask);
-    } else if (window->flags & SDL_WINDOW_FULLSCREEN) {
+    if (window->flags & SDL_WINDOW_FULLSCREEN) {
         style = NSBorderlessWindowMask;
     } else {
         if (window->flags & SDL_WINDOW_BORDERLESS) {
@@ -262,11 +261,12 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 {
     SDL_Window *window = _data->window;
     NSWindow *nswindow = _data->nswindow;
+    SDL_VideoData *videodata = ((SDL_WindowData *) window->driverdata)->videodata;
 
-    if (state && ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP)) {
+    if (!videodata->allow_spaces) {
+        return NO;  /* Spaces are forcibly disabled. */
+    } else if (state && ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP)) {
         return NO;  /* we only allow you to make a Space on FULLSCREEN_DESKTOP windows. */
-    } else if (![nswindow respondsToSelector: @selector(toggleFullScreen:)]) {
-        return NO;  /* No Spaces support? Older Mac OS X? */
     } else if (state == isFullscreenSpace) {
         return YES;  /* already there. */
     }
@@ -281,7 +281,7 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
     }
     inFullscreenTransition = YES;
 
-    /* you need to be FullScreenPrimary, or toggleFullScreen doesn't work. Unset it again in windowDid[Enter|Exit]FullScreen. */
+    /* you need to be FullScreenPrimary, or toggleFullScreen doesn't work. Unset it again in windowDidExitFullScreen. */
     [nswindow setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
     [nswindow performSelectorOnMainThread: @selector(toggleFullScreen:) withObject:nswindow waitUntilDone:NO];
     return YES;
@@ -987,6 +987,7 @@ SetupWindowData(_THIS, SDL_Window * window, NSWindow *nswindow, SDL_bool created
 int
 Cocoa_CreateWindow(_THIS, SDL_Window * window)
 {
+    SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     NSWindow *nswindow;
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
@@ -1031,7 +1032,9 @@ Cocoa_CreateWindow(_THIS, SDL_Window * window)
     }
     [nswindow setBackgroundColor:[NSColor blackColor]];
 
-    if ([nswindow respondsToSelector: @selector(toggleFullScreen:)]) {
+    if (videodata->allow_spaces) {
+        SDL_assert(videodata->osversion >= 0x1070);
+        SDL_assert([nswindow respondsToSelector:@selector(toggleFullScreen:)]);
         /* we put FULLSCREEN_DESKTOP windows in their own Space, without a toggle button or menubar, later */
         if (window->flags & SDL_WINDOW_RESIZABLE) {
             /* resizable windows are Spaces-friendly: they get the "go fullscreen" toggle button on their titlebar. */
