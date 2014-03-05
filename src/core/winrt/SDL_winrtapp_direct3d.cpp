@@ -259,6 +259,9 @@ void SDL_WinRTApp::Initialize(CoreApplicationView^ applicationView)
     CoreApplication::Resuming +=
         ref new EventHandler<Platform::Object^>(this, &SDL_WinRTApp::OnResuming);
 
+    CoreApplication::Exiting +=
+        ref new EventHandler<Platform::Object^>(this, &SDL_WinRTApp::OnExiting);
+
     DisplayProperties::OrientationChanged +=
         ref new DisplayPropertiesEventHandler(this, &SDL_WinRTApp::OnOrientationChanged);
 
@@ -576,6 +579,11 @@ void SDL_WinRTApp::OnResuming(Platform::Object^ sender, Platform::Object^ args)
         // processed immediately.
         SDL_FilterEvents(RemoveAppSuspendAndResumeEvents, 0);
     }
+}
+
+void SDL_WinRTApp::OnExiting(Platform::Object^ sender, Platform::Object^ args)
+{
+    SDL_SendAppEvent(SDL_APP_TERMINATING);
 }
 
 static void
