@@ -35,6 +35,7 @@ extern "C" {
 #include "SDL_render.h"
 #include "../../video/SDL_sysvideo.h"
 //#include "../../SDL_hints_c.h"
+#include "../../events/SDL_events_c.h"
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_windowevents_c.h"
@@ -547,12 +548,19 @@ void SDL_WinRTApp::OnSuspending(Platform::Object^ sender, SuspendingEventArgs^ a
             SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_WINDOWEVENT_MINIMIZED, 0, 0);   // TODO: see if SDL_WINDOWEVENT_SIZE_CHANGED should be getting triggered here (it is, currently)
             SDL_FilterEvents(RemoveAppSuspendAndResumeEvents, 0);
         }
+
+        SDL_SendAppEvent(SDL_APP_WILLENTERBACKGROUND);
+        SDL_SendAppEvent(SDL_APP_DIDENTERBACKGROUND);
+
         deferral->Complete();
     });
 }
 
 void SDL_WinRTApp::OnResuming(Platform::Object^ sender, Platform::Object^ args)
 {
+    SDL_SendAppEvent(SDL_APP_WILLENTERFOREGROUND);
+    SDL_SendAppEvent(SDL_APP_DIDENTERFOREGROUND);
+
     // Restore any data or state that was unloaded on suspend. By default, data
     // and state are persisted when resuming from suspend. Note that this event
     // does not occur if the app was previously terminated.
