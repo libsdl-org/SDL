@@ -418,13 +418,8 @@ int SDL_GestureAddTouch(SDL_TouchID touchId)
 
     SDL_gestureTouch = gestureTouch;
 
-    SDL_gestureTouch[SDL_numGestureTouches].numDownFingers = 0;
+    SDL_zero(SDL_gestureTouch[SDL_numGestureTouches]);
     SDL_gestureTouch[SDL_numGestureTouches].id = touchId;
-
-    SDL_gestureTouch[SDL_numGestureTouches].numDollarTemplates = 0;
-
-    SDL_gestureTouch[SDL_numGestureTouches].recording = SDL_FALSE;
-
     SDL_numGestureTouches++;
     return 0;
 }
