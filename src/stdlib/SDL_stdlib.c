@@ -102,6 +102,8 @@ SDL_copysign(double x, double y)
 {
 #if defined(HAVE_COPYSIGN)
     return copysign(x, y);
+#elif defined(HAVE__COPYSIGN)
+    return _copysign(x, y);
 #else
     return SDL_uclibc_copysign(x, y);
 #endif /* HAVE_COPYSIGN */
@@ -172,6 +174,8 @@ SDL_scalbn(double x, int n)
 {
 #if defined(HAVE_SCALBN)
     return scalbn(x, n);
+#elif defined(HAVE__SCALB)
+    return _scalb(x, n);
 #else
     return SDL_uclibc_scalbn(x, n);
 #endif /* HAVE_SCALBN */

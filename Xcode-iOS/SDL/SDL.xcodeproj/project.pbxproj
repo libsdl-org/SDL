@@ -561,6 +561,7 @@
 			);
 			name = CustomTemplate;
 			sourceTree = "<group>";
+			usesTabs = 0;
 		};
 		56A6702F18565E4F0007D20F /* dynapi */ = {
 			isa = PBXGroup;

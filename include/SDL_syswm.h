@@ -56,6 +56,10 @@ struct SDL_SysWMinfo;
 #include <windows.h>
 #endif
 
+#if defined(SDL_VIDEO_DRIVER_WINRT)
+#include <Inspectable.h>
+#endif
+
 /* This is the structure for custom window manager events */
 #if defined(SDL_VIDEO_DRIVER_X11)
 #if defined(__APPLE__) && defined(__MACH__)
@@ -90,6 +94,7 @@ typedef struct _NSWindow NSWindow;
 #include <UIKit/UIKit.h>
 #else
 typedef struct _UIWindow UIWindow;
+typedef struct _UIViewController UIViewController;
 #endif
 #endif
 
@@ -105,6 +110,7 @@ typedef enum
 {
     SDL_SYSWM_UNKNOWN,
     SDL_SYSWM_WINDOWS,
+    SDL_SYSWM_WINRT,
     SDL_SYSWM_X11,
     SDL_SYSWM_DIRECTFB,
     SDL_SYSWM_COCOA,
@@ -174,6 +180,12 @@ struct SDL_SysWMinfo
         {
             HWND window;                /**< The window handle */
         } win;
+#endif
+#if defined(SDL_VIDEO_DRIVER_WINRT)
+        struct
+        {
+            IInspectable * window;      /**< The WinRT CoreWindow */
+        } winrt;
 #endif
 #if defined(SDL_VIDEO_DRIVER_X11)
         struct

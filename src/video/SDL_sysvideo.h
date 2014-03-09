@@ -354,6 +354,9 @@ extern VideoBootStrap DirectFB_bootstrap;
 #if SDL_VIDEO_DRIVER_WINDOWS
 extern VideoBootStrap WINDOWS_bootstrap;
 #endif
+#if SDL_VIDEO_DRIVER_WINRT
+extern VideoBootStrap WINRT_bootstrap;
+#endif
 #if SDL_VIDEO_DRIVER_HAIKU
 extern VideoBootStrap HAIKU_bootstrap;
 #endif

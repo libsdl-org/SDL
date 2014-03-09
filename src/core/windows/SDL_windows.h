@@ -24,6 +24,7 @@
 #ifndef _INCLUDED_WINDOWS_H
 #define _INCLUDED_WINDOWS_H
 
+#if defined(__WIN32__)
 #define WIN32_LEAN_AND_MEAN
 #define STRICT
 #ifndef UNICODE
@@ -31,6 +32,7 @@
 #endif
 #undef _WIN32_WINNT
 #define _WIN32_WINNT  0x501   /* Need 0x410 for AlphaBlend() and 0x500 for EnumDisplayDevices(), 0x501 for raw input */
+#endif
 
 #include <windows.h>
 
@@ -43,6 +45,9 @@
 #define WIN_StringToUTF8(S) SDL_iconv_string("UTF-8", "ASCII", (char *)(S), (SDL_strlen(S)+1))
 #define WIN_UTF8ToString(S) SDL_iconv_string("ASCII", "UTF-8", (char *)(S), SDL_strlen(S)+1)
 #endif
+
+/* Sets an error message based on a given HRESULT */
+extern int WIN_SetErrorFromHRESULT(const char *prefix, HRESULT hr);
 
 /* Sets an error message based on GetLastError(). Always return -1. */
 extern int WIN_SetError(const char *prefix);
