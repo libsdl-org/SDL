@@ -1,3 +1,9 @@
+libsdl2 (2.0.3) UNRELEASED; urgency=low
+
+  * Updated SDL to version 2.0.3
+
+ -- Sam Lantinga <slouken@libsdl.org>  Sun, 9 Mar 2014 10:35:54 -0800
+
 libsdl2 (2.0.2) UNRELEASED; urgency=low
 
   * Updated SDL to version 2.0.2
