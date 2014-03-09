@@ -116,22 +116,20 @@
 
 #if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__)
 /* Try to find out if we're compiling for WinRT or non-WinRT */
-#if defined(_MSC_VER) && (_MSC_VER >= 1700)	/* _MSC_VER==1700 for MSVC 2012 */
+#if defined(__MINGW32__) || (defined(_MSC_VER) && (_MSC_VER >= 1700))	/* _MSC_VER==1700 for MSVC 2012 */
 #include <winapifamily.h>
-#endif /* _MSC_VER >= 1700 */
-/* Default to classic, Win32/Win64/Desktop compilation either if:
-     1. the version of Windows is explicity set to a 'Desktop' (non-Metro) app
-     2. the version of Windows cannot be determined via winapifamily.h
-   If neither is true, then see if we're compiling for WinRT.
- */
-#if ! defined(WINAPI_FAMILY_PARTITION) || WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
+#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
 #undef __WINDOWS__
 #define __WINDOWS__   1
 /* See if we're compiling for WinRT: */
 #elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
 #undef __WINRT__
 #define __WINRT__ 1
-#endif /* ! defined(WINAPI_FAMILY_PARTITION) */
+#endif
+#else
+#undef __WINDOWS__
+#define __WINDOWS__   1
+#endif /* _MSC_VER < 1700 */
 #endif /* defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__) */
 
 #if defined(__WINDOWS__)
