@@ -247,7 +247,7 @@ SDL_Direct3D9GetAdapterIndex( int displayIndex )
 
 #define CINTERFACE
 #define COBJMACROS
-#include <DXGI.h>
+#include <dxgi.h>
 
 SDL_bool 
 DXGI_LoadDLL( void **pDXGIDLL , IDXGIFactory **pDXGIFactory )
