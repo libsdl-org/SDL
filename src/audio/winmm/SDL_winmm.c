@@ -98,12 +98,12 @@ FillSound(HWAVEOUT hwo, UINT uMsg, DWORD_PTR dwInstance,
 static int
 SetMMerror(char *function, MMRESULT code)
 {
-    size_t len;
+    int len;
     char errbuf[MAXERRORLENGTH];
     wchar_t werrbuf[MAXERRORLENGTH];
 
     SDL_snprintf(errbuf, SDL_arraysize(errbuf), "%s: ", function);
-    len = SDL_strlen(errbuf);
+    len = SDL_static_cast(int, SDL_strlen(errbuf));
 
     waveOutGetErrorText(code, werrbuf, MAXERRORLENGTH - len);
     WideCharToMultiByte(CP_ACP, 0, werrbuf, -1, errbuf + len,
@@ -196,7 +196,7 @@ WINMM_CloseDevice(_THIS)
 }
 
 static SDL_bool
-PrepWaveFormat(_THIS, UINT_PTR devId, WAVEFORMATEX *pfmt, const int iscapture)
+PrepWaveFormat(_THIS, UINT devId, WAVEFORMATEX *pfmt, const int iscapture)
 {
     SDL_zerop(pfmt);
 
@@ -226,13 +226,13 @@ WINMM_OpenDevice(_THIS, const char *devname, int iscapture)
     int valid_datatype = 0;
     MMRESULT result;
     WAVEFORMATEX waveformat;
-    UINT_PTR devId = WAVE_MAPPER;  /* WAVE_MAPPER == choose system's default */
+    UINT devId = WAVE_MAPPER;  /* WAVE_MAPPER == choose system's default */
     char *utf8 = NULL;
-    int i;
+    UINT i;
 
     if (devname != NULL) {  /* specific device requested? */
         if (iscapture) {
-            const int devcount = (int) waveInGetNumDevs();
+            const UINT devcount = waveInGetNumDevs();
             WAVEINCAPS caps;
             for (i = 0; (i < devcount) && (devId == WAVE_MAPPER); i++) {
                 result = waveInGetDevCaps(i, &caps, sizeof (caps));
@@ -241,11 +241,11 @@ WINMM_OpenDevice(_THIS, const char *devname, int iscapture)
                 else if ((utf8 = WIN_StringToUTF8(caps.szPname)) == NULL)
                     continue;
                 else if (SDL_strcmp(devname, utf8) == 0)
-                    devId = (UINT_PTR) i;
+                    devId = i;
                 SDL_free(utf8);
             }
         } else {
-            const int devcount = (int) waveOutGetNumDevs();
+            const UINT devcount = waveOutGetNumDevs();
             WAVEOUTCAPS caps;
             for (i = 0; (i < devcount) && (devId == WAVE_MAPPER); i++) {
                 result = waveOutGetDevCaps(i, &caps, sizeof (caps));
@@ -254,7 +254,7 @@ WINMM_OpenDevice(_THIS, const char *devname, int iscapture)
                 else if ((utf8 = WIN_StringToUTF8(caps.szPname)) == NULL)
                     continue;
                 else if (SDL_strcmp(devname, utf8) == 0)
-                    devId = (UINT_PTR) i;
+                    devId = i;
                 SDL_free(utf8);
             }
         }
