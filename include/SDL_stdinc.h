@@ -71,7 +71,17 @@
 # include <ctype.h>
 #endif
 #ifdef HAVE_MATH_H
+# if defined(__WINRT__)
+/* Defining _USE_MATH_DEFINES is required to get M_PI to be defined on
+   WinRT.  See http://msdn.microsoft.com/en-us/library/4hwaceh6.aspx
+   for more information.
+*/
+#  define _USE_MATH_DEFINES
+# endif
 # include <math.h>
+#endif
+#ifdef HAVE_FLOAT_H
+# include <float.h>
 #endif
 #if defined(HAVE_ICONV) && defined(HAVE_ICONV_H)
 # include <iconv.h>

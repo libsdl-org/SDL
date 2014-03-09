@@ -88,7 +88,7 @@ typedef struct _ControllerMapping_t
 } ControllerMapping_t;
 
 static ControllerMapping_t *s_pSupportedControllers = NULL;
-#ifdef SDL_JOYSTICK_DINPUT
+#if defined(SDL_JOYSTICK_DINPUT) || defined(SDL_JOYSTICK_XINPUT)
 static ControllerMapping_t *s_pXInputMapping = NULL;
 #endif
 
@@ -279,7 +279,7 @@ ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickGUID *gu
  */
 ControllerMapping_t *SDL_PrivateGetControllerMapping(int device_index)
 {
-#ifdef SDL_JOYSTICK_DINPUT
+#if defined(SDL_JOYSTICK_DINPUT) || defined(SDL_JOYSTICK_XINPUT)
     if ( SDL_SYS_IsXInputDeviceIndex(device_index) && s_pXInputMapping )
     {
         return s_pXInputMapping;
@@ -737,7 +737,7 @@ SDL_GameControllerAddMapping( const char *mappingString )
     char *pchMapping;
     SDL_JoystickGUID jGUID;
     ControllerMapping_t *pControllerMapping;
-#ifdef SDL_JOYSTICK_DINPUT
+#if defined(SDL_JOYSTICK_DINPUT) || defined(SDL_JOYSTICK_XINPUT)
     SDL_bool is_xinput_mapping = SDL_FALSE;
 #endif
 
@@ -745,7 +745,7 @@ SDL_GameControllerAddMapping( const char *mappingString )
     if (!pchGUID) {
         return SDL_SetError("Couldn't parse GUID from %s", mappingString);
     }
-#ifdef SDL_JOYSTICK_DINPUT
+#if defined(SDL_JOYSTICK_DINPUT) || defined(SDL_JOYSTICK_XINPUT)
     if ( !SDL_strcasecmp( pchGUID, "xinput" ) ) {
         is_xinput_mapping = SDL_TRUE;
     }
@@ -782,7 +782,7 @@ SDL_GameControllerAddMapping( const char *mappingString )
             SDL_free( pchMapping );
             return SDL_OutOfMemory();
         }
-#ifdef SDL_JOYSTICK_DINPUT
+#if defined(SDL_JOYSTICK_DINPUT) || defined(SDL_JOYSTICK_XINPUT)
         if ( is_xinput_mapping )
         {
             s_pXInputMapping = pControllerMapping;

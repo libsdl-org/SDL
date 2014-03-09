@@ -116,6 +116,70 @@ extern DECLSPEC const char * SDLCALL SDL_AndroidGetExternalStoragePath();
 
 #endif /* __ANDROID__ */
 
+/* Platform specific functions for WinRT */
+#if defined(__WINRT__) && __WINRT__
+
+/**
+ *  \brief WinRT / Windows Phone path types
+ */
+typedef enum
+{
+    /** \brief The installed app's root directory.
+        Files here are likely to be read-only. */
+    SDL_WINRT_PATH_INSTALLED_LOCATION,
+
+    /** \brief The app's local data store.  Files may be written here */
+    SDL_WINRT_PATH_LOCAL_FOLDER,
+
+    /** \brief The app's roaming data store.  Unsupported on Windows Phone.
+        Files written here may be copied to other machines via a network
+        connection.
+    */
+    SDL_WINRT_PATH_ROAMING_FOLDER,
+
+    /** \brief The app's temporary data store.  Unsupported on Windows Phone.
+        Files written here may be deleted at any time. */
+    SDL_WINRT_PATH_TEMP_FOLDER
+} SDL_WinRT_Path;
+
+
+/**
+ *  \brief Retrieves a WinRT defined path on the local file system
+ *
+ *  \note Documentation on most app-specific path types on WinRT
+ *      can be found on MSDN, at the URL:
+ *      http://msdn.microsoft.com/en-us/library/windows/apps/hh464917.aspx
+ *
+ *  \param pathType The type of path to retrieve.
+ *  \ret A UCS-2 string (16-bit, wide-char) containing the path, or NULL
+ *      if the path is not available for any reason.  Not all paths are
+ *      available on all versions of Windows.  This is especially true on
+ *      Windows Phone.  Check the documentation for the given
+ *      SDL_WinRT_Path for more information on which path types are
+ *      supported where.
+ */
+extern DECLSPEC const wchar_t * SDLCALL SDL_WinRTGetFSPathUNICODE(SDL_WinRT_Path pathType);
+
+/**
+ *  \brief Retrieves a WinRT defined path on the local file system
+ *
+ *  \note Documentation on most app-specific path types on WinRT
+ *      can be found on MSDN, at the URL:
+ *      http://msdn.microsoft.com/en-us/library/windows/apps/hh464917.aspx
+ *
+ *  \param pathType The type of path to retrieve.
+ *  \ret A UTF-8 string (8-bit, multi-byte) containing the path, or NULL
+ *      if the path is not available for any reason.  Not all paths are
+ *      available on all versions of Windows.  This is especially true on
+ *      Windows Phone.  Check the documentation for the given
+ *      SDL_WinRT_Path for more information on which path types are
+ *      supported where.
+ */
+extern DECLSPEC const char * SDLCALL SDL_WinRTGetFSPathUTF8(SDL_WinRT_Path pathType);
+
+#endif /* __WINRT__ */
+
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }

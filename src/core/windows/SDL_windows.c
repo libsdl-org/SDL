@@ -20,26 +20,33 @@
 */
 #include "../../SDL_internal.h"
 
-#ifdef __WIN32__
+#if defined(__WIN32__) || defined(__WINRT__)
 
 #include "SDL_windows.h"
 #include "SDL_error.h"
 #include "SDL_assert.h"
 
-#include <objbase.h>  /* for CoInitialize/CoUninitialize */
+#include <objbase.h>  /* for CoInitialize/CoUninitialize (Win32 only) */
 
 /* Sets an error message based on GetLastError() */
 int
-WIN_SetError(const char *prefix)
+WIN_SetErrorFromHRESULT(const char *prefix, HRESULT hr)
 {
     TCHAR buffer[1024];
     char *message;
-    FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), 0,
+    FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, hr, 0,
                   buffer, SDL_arraysize(buffer), NULL);
     message = WIN_StringToUTF8(buffer);
     SDL_SetError("%s%s%s", prefix ? prefix : "", prefix ? ": " : "", message);
     SDL_free(message);
     return -1;
+}
+
+/* Sets an error message based on GetLastError() */
+int
+WIN_SetError(const char *prefix)
+{
+    return WIN_SetErrorFromHRESULT(prefix, GetLastError());
 }
 
 HRESULT
@@ -50,6 +57,14 @@ WIN_CoInitialize(void)
 
        If you need multi-threaded mode, call CoInitializeEx() before SDL_Init()
     */
+#ifdef __WINRT__
+    /* DLudwig: On WinRT, it is assumed that COM was initialized in main().
+       CoInitializeEx is available (not CoInitialize though), however
+       on WinRT, main() is typically declared with the [MTAThread]
+       attribute, which, AFAIK, should initialize COM.
+    */
+    return S_OK;
+#else
     HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED);
     if (hr == RPC_E_CHANGED_MODE) {
         hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
@@ -62,12 +77,15 @@ WIN_CoInitialize(void)
     }
 
     return hr;
+#endif
 }
 
 void
 WIN_CoUninitialize(void)
 {
+#ifndef __WINRT__
     CoUninitialize();
+#endif
 }
 
 #endif /* __WIN32__ */

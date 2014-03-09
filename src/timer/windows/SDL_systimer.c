@@ -41,6 +41,7 @@ static LARGE_INTEGER hires_start_ticks;
 /* The number of ticks per second of the high-resolution performance counter */
 static LARGE_INTEGER hires_ticks_per_second;
 
+#ifndef __WINRT__
 static void
 timeSetPeriod(UINT uPeriod)
 {
@@ -74,6 +75,7 @@ SDL_TimerResolutionChanged(void *userdata, const char *name, const char *oldValu
         timeSetPeriod(uPeriod);
     }
 }
+#endif /* ifndef __WINRT__ */
 
 #endif /* !USE_GETTICKCOUNT */
 
@@ -97,13 +99,17 @@ SDL_TicksInit(void)
         QueryPerformanceCounter(&hires_start_ticks);
     } else {
         hires_timer_available = FALSE;
+#ifdef __WINRT__
+        start = 0;            /* the timer failed to start! */
+#else
         timeSetPeriod(1);     /* use 1 ms timer precision */
         start = timeGetTime();
 
         SDL_AddHintCallback(SDL_HINT_TIMER_RESOLUTION,
                             SDL_TimerResolutionChanged, NULL);
+#endif /* __WINRT__ */
     }
-#endif
+#endif /* USE_GETTICKCOUNT */
 }
 
 void
@@ -111,12 +117,14 @@ SDL_TicksQuit(void)
 {
 #ifndef USE_GETTICKCOUNT
     if (!hires_timer_available) {
+#ifndef __WINRT__
         SDL_DelHintCallback(SDL_HINT_TIMER_RESOLUTION,
                             SDL_TimerResolutionChanged, NULL);
 
         timeSetPeriod(0);
+#endif /* __WINRT__ */
     }
-#endif
+#endif /* USE_GETTICKCOUNT */
 
     ticks_started = SDL_FALSE;
 }
@@ -145,7 +153,11 @@ SDL_GetTicks(void)
 
         return (DWORD) hires_now.QuadPart;
     } else {
+#ifdef __WINRT__
+        now = 0;
+#else
         now = timeGetTime();
+#endif /* __WINRT__ */
     }
 #endif
 
@@ -173,6 +185,19 @@ SDL_GetPerformanceFrequency(void)
     }
     return frequency.QuadPart;
 }
+
+#ifdef __WINRT__
+static void
+Sleep(DWORD timeout)
+{
+    static HANDLE mutex = 0;
+    if ( ! mutex )
+    {
+        mutex = CreateEventEx(0, 0, 0, EVENT_ALL_ACCESS);
+    }
+    WaitForSingleObjectEx(mutex, timeout, FALSE);
+}
+#endif
 
 void
 SDL_Delay(Uint32 ms)
