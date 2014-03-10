@@ -105,6 +105,16 @@ typedef struct
     int lockedTexturePositionX;
     int lockedTexturePositionY;
     D3D11_FILTER scaleMode;
+
+    /* YV12 texture support */
+    SDL_bool yuv;
+    ID3D11Texture2D *mainTextureU;
+    ID3D11ShaderResourceView *mainTextureResourceViewU;
+    ID3D11Texture2D *mainTextureV;
+    ID3D11ShaderResourceView *mainTextureResourceViewV;
+    Uint8 *pixels;
+    int pitch;
+    SDL_Rect locked_rect;
 } D3D11_TextureData;
 
 /* Private renderer data */
@@ -120,8 +130,9 @@ typedef struct
     ID3D11InputLayout *inputLayout;
     ID3D11Buffer *vertexBuffer;
     ID3D11VertexShader *vertexShader;
-    ID3D11PixelShader *texturePixelShader;
     ID3D11PixelShader *colorPixelShader;
+    ID3D11PixelShader *texturePixelShader;
+    ID3D11PixelShader *yuvPixelShader;
     ID3D11BlendState *blendModeBlend;
     ID3D11BlendState *blendModeAdd;
     ID3D11BlendState *blendModeMod;
@@ -186,6 +197,79 @@ static const GUID IID_ID3D11Debug = { 0x79cf2233, 0x7536, 0x4948, { 0x9d, 0x36, 
 #define D3D11_USE_SHADER_MODEL_4_0_level_9_3
 #else
 #define D3D11_USE_SHADER_MODEL_4_0_level_9_1
+#endif
+
+/* The color-only-rendering pixel shader:
+
+   --- D3D11_PixelShader_Colors.hlsl ---
+   struct PixelShaderInput
+   {
+       float4 pos : SV_POSITION;
+       float2 tex : TEXCOORD0;
+       float4 color : COLOR0;
+   };
+
+   float4 main(PixelShaderInput input) : SV_TARGET
+   {
+       return input.color;
+   }
+*/
+#if defined(D3D11_USE_SHADER_MODEL_4_0_level_9_1)
+static const DWORD D3D11_PixelShader_Colors[] = {
+    0x43425844, 0xd74c28fe, 0xa1eb8804, 0x269d512a, 0x7699723d, 0x00000001,
+    0x00000240, 0x00000006, 0x00000038, 0x00000084, 0x000000c4, 0x00000140,
+    0x00000198, 0x0000020c, 0x396e6f41, 0x00000044, 0x00000044, 0xffff0200,
+    0x00000020, 0x00000024, 0x00240000, 0x00240000, 0x00240000, 0x00240000,
+    0x00240000, 0xffff0200, 0x0200001f, 0x80000000, 0xb00f0001, 0x02000001,
+    0x800f0800, 0xb0e40001, 0x0000ffff, 0x52444853, 0x00000038, 0x00000040,
+    0x0000000e, 0x03001062, 0x001010f2, 0x00000002, 0x03000065, 0x001020f2,
+    0x00000000, 0x05000036, 0x001020f2, 0x00000000, 0x00101e46, 0x00000002,
+    0x0100003e, 0x54415453, 0x00000074, 0x00000002, 0x00000000, 0x00000000,
+    0x00000002, 0x00000000, 0x00000000, 0x00000000, 0x00000001, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x46454452, 0x00000050, 0x00000000, 0x00000000,
+    0x00000000, 0x0000001c, 0xffff0400, 0x00000100, 0x0000001c, 0x7263694d,
+    0x666f736f, 0x52282074, 0x4c482029, 0x53204c53, 0x65646168, 0x6f432072,
+    0x6c69706d, 0x39207265, 0x2e30332e, 0x30303239, 0x3336312e, 0xab003438,
+    0x4e475349, 0x0000006c, 0x00000003, 0x00000008, 0x00000050, 0x00000000,
+    0x00000001, 0x00000003, 0x00000000, 0x0000000f, 0x0000005c, 0x00000000,
+    0x00000000, 0x00000003, 0x00000001, 0x00000003, 0x00000065, 0x00000000,
+    0x00000000, 0x00000003, 0x00000002, 0x00000f0f, 0x505f5653, 0x5449534f,
+    0x004e4f49, 0x43584554, 0x44524f4f, 0x4c4f4300, 0xab00524f, 0x4e47534f,
+    0x0000002c, 0x00000001, 0x00000008, 0x00000020, 0x00000000, 0x00000000,
+    0x00000003, 0x00000000, 0x0000000f, 0x545f5653, 0x45475241, 0xabab0054
+};
+#elif defined(D3D11_USE_SHADER_MODEL_4_0_level_9_3)
+static const DWORD D3D11_PixelShader_Colors[] = {
+    0x43425844, 0x93f6ccfc, 0x5f919270, 0x7a11aa4f, 0x9148e931, 0x00000001,
+    0x00000240, 0x00000006, 0x00000038, 0x00000084, 0x000000c4, 0x00000140,
+    0x00000198, 0x0000020c, 0x396e6f41, 0x00000044, 0x00000044, 0xffff0200,
+    0x00000020, 0x00000024, 0x00240000, 0x00240000, 0x00240000, 0x00240000,
+    0x00240000, 0xffff0201, 0x0200001f, 0x80000000, 0xb00f0001, 0x02000001,
+    0x800f0800, 0xb0e40001, 0x0000ffff, 0x52444853, 0x00000038, 0x00000040,
+    0x0000000e, 0x03001062, 0x001010f2, 0x00000002, 0x03000065, 0x001020f2,
+    0x00000000, 0x05000036, 0x001020f2, 0x00000000, 0x00101e46, 0x00000002,
+    0x0100003e, 0x54415453, 0x00000074, 0x00000002, 0x00000000, 0x00000000,
+    0x00000002, 0x00000000, 0x00000000, 0x00000000, 0x00000001, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x46454452, 0x00000050, 0x00000000, 0x00000000,
+    0x00000000, 0x0000001c, 0xffff0400, 0x00000100, 0x0000001c, 0x7263694d,
+    0x666f736f, 0x52282074, 0x4c482029, 0x53204c53, 0x65646168, 0x6f432072,
+    0x6c69706d, 0x39207265, 0x2e30332e, 0x30303239, 0x3336312e, 0xab003438,
+    0x4e475349, 0x0000006c, 0x00000003, 0x00000008, 0x00000050, 0x00000000,
+    0x00000001, 0x00000003, 0x00000000, 0x0000000f, 0x0000005c, 0x00000000,
+    0x00000000, 0x00000003, 0x00000001, 0x00000003, 0x00000065, 0x00000000,
+    0x00000000, 0x00000003, 0x00000002, 0x00000f0f, 0x505f5653, 0x5449534f,
+    0x004e4f49, 0x43584554, 0x44524f4f, 0x4c4f4300, 0xab00524f, 0x4e47534f,
+    0x0000002c, 0x00000001, 0x00000008, 0x00000020, 0x00000000, 0x00000000,
+    0x00000003, 0x00000000, 0x0000000f, 0x545f5653, 0x45475241, 0xabab0054
+};
+#else
+#error "An appropriate 'colors' pixel shader is not defined."
 #endif
 
 /* The texture-rendering pixel shader:
@@ -284,77 +368,178 @@ static const DWORD D3D11_PixelShader_Textures[] = {
 #error "An appropriate 'textures' pixel shader is not defined"
 #endif
 
-/* The color-only-rendering pixel shader:
+/* The yuv-rendering pixel shader:
 
-   --- D3D11_PixelShader_Colors.hlsl ---
-   struct PixelShaderInput
-   {
-       float4 pos : SV_POSITION;
-       float2 tex : TEXCOORD0;
-       float4 color : COLOR0;
-   };
+    --- D3D11_PixelShader_YUV.hlsl ---
+    Texture2D theTextureY : register(t0);
+    Texture2D theTextureU : register(t1);
+    Texture2D theTextureV : register(t2);
+    SamplerState theSampler : register(s0);
 
-   float4 main(PixelShaderInput input) : SV_TARGET
-   {
-       return input.color;
-   }
+    struct PixelShaderInput
+    {
+        float4 pos : SV_POSITION;
+        float2 tex : TEXCOORD0;
+        float4 color : COLOR0;
+    };
+
+    float4 main(PixelShaderInput input) : SV_TARGET
+    {
+        const float3 offset = {-0.0625, -0.5, -0.5};
+        const float3 Rcoeff = {1.164,  0.000,  1.596};
+        const float3 Gcoeff = {1.164, -0.391, -0.813};
+        const float3 Bcoeff = {1.164,  2.018,  0.000};
+
+        float4 Output;
+
+        float3 yuv;
+        yuv.x = theTextureY.Sample(theSampler, input.tex).r;
+        yuv.y = theTextureU.Sample(theSampler, input.tex).r;
+        yuv.z = theTextureV.Sample(theSampler, input.tex).r;
+
+        yuv += offset;
+        Output.r = dot(yuv, Rcoeff);
+        Output.g = dot(yuv, Gcoeff);
+        Output.b = dot(yuv, Bcoeff);
+        Output.a = 1.0f;
+
+        return Output * input.color;
+    }
+
 */
 #if defined(D3D11_USE_SHADER_MODEL_4_0_level_9_1)
-static const DWORD D3D11_PixelShader_Colors[] = {
-    0x43425844, 0xd74c28fe, 0xa1eb8804, 0x269d512a, 0x7699723d, 0x00000001,
-    0x00000240, 0x00000006, 0x00000038, 0x00000084, 0x000000c4, 0x00000140,
-    0x00000198, 0x0000020c, 0x396e6f41, 0x00000044, 0x00000044, 0xffff0200,
-    0x00000020, 0x00000024, 0x00240000, 0x00240000, 0x00240000, 0x00240000,
-    0x00240000, 0xffff0200, 0x0200001f, 0x80000000, 0xb00f0001, 0x02000001,
-    0x800f0800, 0xb0e40001, 0x0000ffff, 0x52444853, 0x00000038, 0x00000040,
-    0x0000000e, 0x03001062, 0x001010f2, 0x00000002, 0x03000065, 0x001020f2,
-    0x00000000, 0x05000036, 0x001020f2, 0x00000000, 0x00101e46, 0x00000002,
-    0x0100003e, 0x54415453, 0x00000074, 0x00000002, 0x00000000, 0x00000000,
-    0x00000002, 0x00000000, 0x00000000, 0x00000000, 0x00000001, 0x00000000,
+static const DWORD D3D11_PixelShader_YUV[] = {
+    0x43425844, 0x04e69cba, 0x74ce6dd2, 0x7fcf84cb, 0x3003d677, 0x00000001,
+    0x000005e8, 0x00000006, 0x00000038, 0x000001dc, 0x000003bc, 0x00000438,
+    0x00000540, 0x000005b4, 0x396e6f41, 0x0000019c, 0x0000019c, 0xffff0200,
+    0x0000016c, 0x00000030, 0x00300000, 0x00300000, 0x00300000, 0x00240003,
+    0x00300000, 0x00000000, 0x00010001, 0x00020002, 0xffff0200, 0x05000051,
+    0xa00f0000, 0xbd800000, 0xbf000000, 0xbf000000, 0x3f800000, 0x05000051,
+    0xa00f0001, 0x3f94fdf4, 0x3fcc49ba, 0x00000000, 0x00000000, 0x05000051,
+    0xa00f0002, 0x3f94fdf4, 0xbec83127, 0xbf5020c5, 0x00000000, 0x05000051,
+    0xa00f0003, 0x3f94fdf4, 0x400126e9, 0x00000000, 0x00000000, 0x0200001f,
+    0x80000000, 0xb0030000, 0x0200001f, 0x80000000, 0xb00f0001, 0x0200001f,
+    0x90000000, 0xa00f0800, 0x0200001f, 0x90000000, 0xa00f0801, 0x0200001f,
+    0x90000000, 0xa00f0802, 0x03000042, 0x800f0000, 0xb0e40000, 0xa0e40800,
+    0x03000042, 0x800f0001, 0xb0e40000, 0xa0e40801, 0x03000042, 0x800f0002,
+    0xb0e40000, 0xa0e40802, 0x02000001, 0x80020000, 0x80000001, 0x02000001,
+    0x80040000, 0x80000002, 0x03000002, 0x80070000, 0x80e40000, 0xa0e40000,
+    0x03000005, 0x80080000, 0x80000000, 0xa0000001, 0x04000004, 0x80010001,
+    0x80aa0000, 0xa0550001, 0x80ff0000, 0x03000008, 0x80020001, 0x80e40000,
+    0xa0e40002, 0x0400005a, 0x80040001, 0x80e40000, 0xa0e40003, 0xa0aa0003,
+    0x02000001, 0x80080001, 0xa0ff0000, 0x03000005, 0x800f0000, 0x80e40001,
+    0xb0e40001, 0x02000001, 0x800f0800, 0x80e40000, 0x0000ffff, 0x52444853,
+    0x000001d8, 0x00000040, 0x00000076, 0x0300005a, 0x00106000, 0x00000000,
+    0x04001858, 0x00107000, 0x00000000, 0x00005555, 0x04001858, 0x00107000,
+    0x00000001, 0x00005555, 0x04001858, 0x00107000, 0x00000002, 0x00005555,
+    0x03001062, 0x00101032, 0x00000001, 0x03001062, 0x001010f2, 0x00000002,
+    0x03000065, 0x001020f2, 0x00000000, 0x02000068, 0x00000002, 0x09000045,
+    0x001000f2, 0x00000000, 0x00101046, 0x00000001, 0x00107e46, 0x00000000,
+    0x00106000, 0x00000000, 0x09000045, 0x001000f2, 0x00000001, 0x00101046,
+    0x00000001, 0x00107e46, 0x00000001, 0x00106000, 0x00000000, 0x05000036,
+    0x00100022, 0x00000000, 0x0010000a, 0x00000001, 0x09000045, 0x001000f2,
+    0x00000001, 0x00101046, 0x00000001, 0x00107e46, 0x00000002, 0x00106000,
+    0x00000000, 0x05000036, 0x00100042, 0x00000000, 0x0010000a, 0x00000001,
+    0x0a000000, 0x00100072, 0x00000000, 0x00100246, 0x00000000, 0x00004002,
+    0xbd800000, 0xbf000000, 0xbf000000, 0x00000000, 0x0a00000f, 0x00100012,
+    0x00000001, 0x00100086, 0x00000000, 0x00004002, 0x3f94fdf4, 0x3fcc49ba,
+    0x00000000, 0x00000000, 0x0a000010, 0x00100022, 0x00000001, 0x00100246,
+    0x00000000, 0x00004002, 0x3f94fdf4, 0xbec83127, 0xbf5020c5, 0x00000000,
+    0x0a00000f, 0x00100042, 0x00000001, 0x00100046, 0x00000000, 0x00004002,
+    0x3f94fdf4, 0x400126e9, 0x00000000, 0x00000000, 0x05000036, 0x00100082,
+    0x00000001, 0x00004001, 0x3f800000, 0x07000038, 0x001020f2, 0x00000000,
+    0x00100e46, 0x00000001, 0x00101e46, 0x00000002, 0x0100003e, 0x54415453,
+    0x00000074, 0x0000000c, 0x00000002, 0x00000000, 0x00000003, 0x00000005,
+    0x00000000, 0x00000000, 0x00000001, 0x00000000, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000003, 0x00000000, 0x00000000,
+    0x00000000, 0x00000000, 0x00000003, 0x00000000, 0x00000000, 0x00000000,
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x46454452, 0x00000050, 0x00000000, 0x00000000,
-    0x00000000, 0x0000001c, 0xffff0400, 0x00000100, 0x0000001c, 0x7263694d,
-    0x666f736f, 0x52282074, 0x4c482029, 0x53204c53, 0x65646168, 0x6f432072,
-    0x6c69706d, 0x39207265, 0x2e30332e, 0x30303239, 0x3336312e, 0xab003438,
+    0x46454452, 0x00000100, 0x00000000, 0x00000000, 0x00000004, 0x0000001c,
+    0xffff0400, 0x00000100, 0x000000cb, 0x0000009c, 0x00000003, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000001, 0x00000001, 0x000000a7,
+    0x00000002, 0x00000005, 0x00000004, 0xffffffff, 0x00000000, 0x00000001,
+    0x0000000d, 0x000000b3, 0x00000002, 0x00000005, 0x00000004, 0xffffffff,
+    0x00000001, 0x00000001, 0x0000000d, 0x000000bf, 0x00000002, 0x00000005,
+    0x00000004, 0xffffffff, 0x00000002, 0x00000001, 0x0000000d, 0x53656874,
+    0x6c706d61, 0x74007265, 0x65546568, 0x72757478, 0x74005965, 0x65546568,
+    0x72757478, 0x74005565, 0x65546568, 0x72757478, 0x4d005665, 0x6f726369,
+    0x74666f73, 0x29522820, 0x534c4820, 0x6853204c, 0x72656461, 0x6d6f4320,
+    0x656c6970, 0x2e362072, 0x36392e33, 0x312e3030, 0x34383336, 0xababab00,
     0x4e475349, 0x0000006c, 0x00000003, 0x00000008, 0x00000050, 0x00000000,
     0x00000001, 0x00000003, 0x00000000, 0x0000000f, 0x0000005c, 0x00000000,
-    0x00000000, 0x00000003, 0x00000001, 0x00000003, 0x00000065, 0x00000000,
+    0x00000000, 0x00000003, 0x00000001, 0x00000303, 0x00000065, 0x00000000,
     0x00000000, 0x00000003, 0x00000002, 0x00000f0f, 0x505f5653, 0x5449534f,
     0x004e4f49, 0x43584554, 0x44524f4f, 0x4c4f4300, 0xab00524f, 0x4e47534f,
     0x0000002c, 0x00000001, 0x00000008, 0x00000020, 0x00000000, 0x00000000,
     0x00000003, 0x00000000, 0x0000000f, 0x545f5653, 0x45475241, 0xabab0054
 };
 #elif defined(D3D11_USE_SHADER_MODEL_4_0_level_9_3)
-static const DWORD D3D11_PixelShader_Colors[] = {
-    0x43425844, 0x93f6ccfc, 0x5f919270, 0x7a11aa4f, 0x9148e931, 0x00000001,
-    0x00000240, 0x00000006, 0x00000038, 0x00000084, 0x000000c4, 0x00000140,
-    0x00000198, 0x0000020c, 0x396e6f41, 0x00000044, 0x00000044, 0xffff0200,
-    0x00000020, 0x00000024, 0x00240000, 0x00240000, 0x00240000, 0x00240000,
-    0x00240000, 0xffff0201, 0x0200001f, 0x80000000, 0xb00f0001, 0x02000001,
-    0x800f0800, 0xb0e40001, 0x0000ffff, 0x52444853, 0x00000038, 0x00000040,
-    0x0000000e, 0x03001062, 0x001010f2, 0x00000002, 0x03000065, 0x001020f2,
-    0x00000000, 0x05000036, 0x001020f2, 0x00000000, 0x00101e46, 0x00000002,
-    0x0100003e, 0x54415453, 0x00000074, 0x00000002, 0x00000000, 0x00000000,
-    0x00000002, 0x00000000, 0x00000000, 0x00000000, 0x00000001, 0x00000000,
+static const DWORD D3D11_PixelShader_YUV[] = {
+    0x43425844, 0xe6d969fc, 0x63cac33c, 0xa4926502, 0x5d788135, 0x00000001,
+    0x000005c0, 0x00000006, 0x00000038, 0x000001b4, 0x00000394, 0x00000410,
+    0x00000518, 0x0000058c, 0x396e6f41, 0x00000174, 0x00000174, 0xffff0200,
+    0x00000144, 0x00000030, 0x00300000, 0x00300000, 0x00300000, 0x00240003,
+    0x00300000, 0x00000000, 0x00010001, 0x00020002, 0xffff0201, 0x05000051,
+    0xa00f0000, 0xbd800000, 0xbf000000, 0x3f800000, 0x00000000, 0x05000051,
+    0xa00f0001, 0x3f94fdf4, 0x3fcc49ba, 0x00000000, 0x400126e9, 0x05000051,
+    0xa00f0002, 0x3f94fdf4, 0xbec83127, 0xbf5020c5, 0x00000000, 0x0200001f,
+    0x80000000, 0xb0030000, 0x0200001f, 0x80000000, 0xb00f0001, 0x0200001f,
+    0x90000000, 0xa00f0800, 0x0200001f, 0x90000000, 0xa00f0801, 0x0200001f,
+    0x90000000, 0xa00f0802, 0x03000042, 0x800f0000, 0xb0e40000, 0xa0e40801,
+    0x03000042, 0x800f0001, 0xb0e40000, 0xa0e40800, 0x02000001, 0x80020001,
+    0x80000000, 0x03000042, 0x800f0000, 0xb0e40000, 0xa0e40802, 0x02000001,
+    0x80040001, 0x80000000, 0x03000002, 0x80070000, 0x80e40001, 0xa0d40000,
+    0x0400005a, 0x80010001, 0x80e80000, 0xa0e40001, 0xa0aa0001, 0x03000008,
+    0x80020001, 0x80e40000, 0xa0e40002, 0x0400005a, 0x80040001, 0x80e40000,
+    0xa0ec0001, 0xa0aa0001, 0x02000001, 0x80080001, 0xa0aa0000, 0x03000005,
+    0x800f0000, 0x80e40001, 0xb0e40001, 0x02000001, 0x800f0800, 0x80e40000,
+    0x0000ffff, 0x52444853, 0x000001d8, 0x00000040, 0x00000076, 0x0300005a,
+    0x00106000, 0x00000000, 0x04001858, 0x00107000, 0x00000000, 0x00005555,
+    0x04001858, 0x00107000, 0x00000001, 0x00005555, 0x04001858, 0x00107000,
+    0x00000002, 0x00005555, 0x03001062, 0x00101032, 0x00000001, 0x03001062,
+    0x001010f2, 0x00000002, 0x03000065, 0x001020f2, 0x00000000, 0x02000068,
+    0x00000002, 0x09000045, 0x001000f2, 0x00000000, 0x00101046, 0x00000001,
+    0x00107e46, 0x00000000, 0x00106000, 0x00000000, 0x09000045, 0x001000f2,
+    0x00000001, 0x00101046, 0x00000001, 0x00107e46, 0x00000001, 0x00106000,
+    0x00000000, 0x05000036, 0x00100022, 0x00000000, 0x0010000a, 0x00000001,
+    0x09000045, 0x001000f2, 0x00000001, 0x00101046, 0x00000001, 0x00107e46,
+    0x00000002, 0x00106000, 0x00000000, 0x05000036, 0x00100042, 0x00000000,
+    0x0010000a, 0x00000001, 0x0a000000, 0x00100072, 0x00000000, 0x00100246,
+    0x00000000, 0x00004002, 0xbd800000, 0xbf000000, 0xbf000000, 0x00000000,
+    0x0a00000f, 0x00100012, 0x00000001, 0x00100086, 0x00000000, 0x00004002,
+    0x3f94fdf4, 0x3fcc49ba, 0x00000000, 0x00000000, 0x0a000010, 0x00100022,
+    0x00000001, 0x00100246, 0x00000000, 0x00004002, 0x3f94fdf4, 0xbec83127,
+    0xbf5020c5, 0x00000000, 0x0a00000f, 0x00100042, 0x00000001, 0x00100046,
+    0x00000000, 0x00004002, 0x3f94fdf4, 0x400126e9, 0x00000000, 0x00000000,
+    0x05000036, 0x00100082, 0x00000001, 0x00004001, 0x3f800000, 0x07000038,
+    0x001020f2, 0x00000000, 0x00100e46, 0x00000001, 0x00101e46, 0x00000002,
+    0x0100003e, 0x54415453, 0x00000074, 0x0000000c, 0x00000002, 0x00000000,
+    0x00000003, 0x00000005, 0x00000000, 0x00000000, 0x00000001, 0x00000000,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000003,
+    0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000003, 0x00000000,
     0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000002, 0x00000000,
-    0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000000,
-    0x00000000, 0x00000000, 0x46454452, 0x00000050, 0x00000000, 0x00000000,
-    0x00000000, 0x0000001c, 0xffff0400, 0x00000100, 0x0000001c, 0x7263694d,
-    0x666f736f, 0x52282074, 0x4c482029, 0x53204c53, 0x65646168, 0x6f432072,
-    0x6c69706d, 0x39207265, 0x2e30332e, 0x30303239, 0x3336312e, 0xab003438,
-    0x4e475349, 0x0000006c, 0x00000003, 0x00000008, 0x00000050, 0x00000000,
-    0x00000001, 0x00000003, 0x00000000, 0x0000000f, 0x0000005c, 0x00000000,
-    0x00000000, 0x00000003, 0x00000001, 0x00000003, 0x00000065, 0x00000000,
-    0x00000000, 0x00000003, 0x00000002, 0x00000f0f, 0x505f5653, 0x5449534f,
-    0x004e4f49, 0x43584554, 0x44524f4f, 0x4c4f4300, 0xab00524f, 0x4e47534f,
-    0x0000002c, 0x00000001, 0x00000008, 0x00000020, 0x00000000, 0x00000000,
-    0x00000003, 0x00000000, 0x0000000f, 0x545f5653, 0x45475241, 0xabab0054
+    0x00000000, 0x00000000, 0x46454452, 0x00000100, 0x00000000, 0x00000000,
+    0x00000004, 0x0000001c, 0xffff0400, 0x00000100, 0x000000cb, 0x0000009c,
+    0x00000003, 0x00000000, 0x00000000, 0x00000000, 0x00000000, 0x00000001,
+    0x00000001, 0x000000a7, 0x00000002, 0x00000005, 0x00000004, 0xffffffff,
+    0x00000000, 0x00000001, 0x0000000d, 0x000000b3, 0x00000002, 0x00000005,
+    0x00000004, 0xffffffff, 0x00000001, 0x00000001, 0x0000000d, 0x000000bf,
+    0x00000002, 0x00000005, 0x00000004, 0xffffffff, 0x00000002, 0x00000001,
+    0x0000000d, 0x53656874, 0x6c706d61, 0x74007265, 0x65546568, 0x72757478,
+    0x74005965, 0x65546568, 0x72757478, 0x74005565, 0x65546568, 0x72757478,
+    0x4d005665, 0x6f726369, 0x74666f73, 0x29522820, 0x534c4820, 0x6853204c,
+    0x72656461, 0x6d6f4320, 0x656c6970, 0x2e362072, 0x36392e33, 0x312e3030,
+    0x34383336, 0xababab00, 0x4e475349, 0x0000006c, 0x00000003, 0x00000008,
+    0x00000050, 0x00000000, 0x00000001, 0x00000003, 0x00000000, 0x0000000f,
+    0x0000005c, 0x00000000, 0x00000000, 0x00000003, 0x00000001, 0x00000303,
+    0x00000065, 0x00000000, 0x00000000, 0x00000003, 0x00000002, 0x00000f0f,
+    0x505f5653, 0x5449534f, 0x004e4f49, 0x43584554, 0x44524f4f, 0x4c4f4300,
+    0xab00524f, 0x4e47534f, 0x0000002c, 0x00000001, 0x00000008, 0x00000020,
+    0x00000000, 0x00000000, 0x00000003, 0x00000000, 0x0000000f, 0x545f5653,
+    0x45475241, 0xabab0054
 };
 #else
-#error "An appropriate 'colors' pixel shader is not defined."
+#error "An appropriate 'yuv' pixel shader is not defined."
 #endif
 
 /* The sole vertex shader:
@@ -644,6 +829,11 @@ static int D3D11_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture);
 static int D3D11_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                              const SDL_Rect * rect, const void *srcPixels,
                              int srcPitch);
+static int D3D11_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
+                                  const SDL_Rect * rect,
+                                  const Uint8 *Yplane, int Ypitch,
+                                  const Uint8 *Uplane, int Upitch,
+                                  const Uint8 *Vplane, int Vpitch);
 static int D3D11_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                              const SDL_Rect * rect, void **pixels, int *pitch);
 static void D3D11_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture);
@@ -685,10 +875,12 @@ SDL_RenderDriver D3D11_RenderDriver = {
             SDL_RENDERER_PRESENTVSYNC |
             SDL_RENDERER_TARGETTEXTURE
         ),                          /* flags.  see SDL_RendererFlags */
-        2,                          /* num_texture_formats */
+        4,                          /* num_texture_formats */
         {                           /* texture_formats */
+            SDL_PIXELFORMAT_ARGB8888,
             SDL_PIXELFORMAT_RGB888,
-            SDL_PIXELFORMAT_ARGB8888
+            SDL_PIXELFORMAT_YV12,
+            SDL_PIXELFORMAT_IYUV
         },
         0,                          /* max_texture_width: will be filled in later */
         0                           /* max_texture_height: will be filled in later */
@@ -716,6 +908,9 @@ SDLPixelFormatToDXGIFormat(Uint32 sdlFormat)
             return DXGI_FORMAT_B8G8R8A8_UNORM;
         case SDL_PIXELFORMAT_RGB888:
             return DXGI_FORMAT_B8G8R8X8_UNORM;
+        case SDL_PIXELFORMAT_YV12:
+        case SDL_PIXELFORMAT_IYUV:
+            return DXGI_FORMAT_R8_UNORM;
         default:
             return DXGI_FORMAT_UNKNOWN;
     }
@@ -742,6 +937,7 @@ D3D11_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->WindowEvent = D3D11_WindowEvent;
     renderer->CreateTexture = D3D11_CreateTexture;
     renderer->UpdateTexture = D3D11_UpdateTexture;
+    renderer->UpdateTextureYUV = D3D11_UpdateTextureYUV;
     renderer->LockTexture = D3D11_LockTexture;
     renderer->UnlockTexture = D3D11_UnlockTexture;
     renderer->SetRenderTarget = D3D11_SetRenderTarget;
@@ -797,8 +993,9 @@ D3D11_DestroyRenderer(SDL_Renderer * renderer)
         SAFE_RELEASE(data->inputLayout);
         SAFE_RELEASE(data->vertexBuffer);
         SAFE_RELEASE(data->vertexShader);
-        SAFE_RELEASE(data->texturePixelShader);
         SAFE_RELEASE(data->colorPixelShader);
+        SAFE_RELEASE(data->texturePixelShader);
+        SAFE_RELEASE(data->yuvPixelShader);
         SAFE_RELEASE(data->blendModeBlend);
         SAFE_RELEASE(data->blendModeAdd);
         SAFE_RELEASE(data->blendModeMod);
@@ -996,6 +1193,17 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
 
     /* Load in SDL's pixel shaders */
     result = ID3D11Device_CreatePixelShader(data->d3dDevice,
+        D3D11_PixelShader_Colors,
+        sizeof(D3D11_PixelShader_Colors),
+        NULL,
+        &data->colorPixelShader
+        );
+    if (FAILED(result)) {
+        WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device1::CreatePixelShader ['color' shader]", result);
+        goto done;
+    }
+
+    result = ID3D11Device_CreatePixelShader(data->d3dDevice,
         D3D11_PixelShader_Textures,
         sizeof(D3D11_PixelShader_Textures),
         NULL,
@@ -1007,13 +1215,13 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
     }
 
     result = ID3D11Device_CreatePixelShader(data->d3dDevice,
-        D3D11_PixelShader_Colors,
-        sizeof(D3D11_PixelShader_Colors),
+        D3D11_PixelShader_YUV,
+        sizeof(D3D11_PixelShader_YUV),
         NULL,
-        &data->colorPixelShader
+        &data->yuvPixelShader
         );
     if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device1::CreatePixelShader ['color' shader]", result);
+        WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device1::CreatePixelShader ['yuv' shader]", result);
         goto done;
     }
 
@@ -1606,19 +1814,32 @@ D3D11_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         return -1;
     }
 
-    if (texture->access & SDL_TEXTUREACCESS_TARGET) {
-        D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
-        renderTargetViewDesc.Format = textureDesc.Format;
-        renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
-        renderTargetViewDesc.Texture2D.MipSlice = 0;
+    if (texture->format == SDL_PIXELFORMAT_YV12 ||
+        texture->format == SDL_PIXELFORMAT_IYUV) {
+        textureData->yuv = SDL_TRUE;
 
-        result = ID3D11Device_CreateRenderTargetView(rendererData->d3dDevice,
-            (ID3D11Resource *)textureData->mainTexture,
-            &renderTargetViewDesc,
-            &textureData->mainTextureRenderTargetView);
+        textureDesc.Width /= 2;
+        textureDesc.Height /= 2;
+
+        result = ID3D11Device_CreateTexture2D(rendererData->d3dDevice,
+            &textureDesc,
+            NULL,
+            &textureData->mainTextureU
+            );
         if (FAILED(result)) {
             D3D11_DestroyTexture(renderer, texture);
-            WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device1::CreateRenderTargetView", result);
+            WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device1::CreateTexture2D", result);
+            return -1;
+        }
+
+        result = ID3D11Device_CreateTexture2D(rendererData->d3dDevice,
+            &textureDesc,
+            NULL,
+            &textureData->mainTextureV
+            );
+        if (FAILED(result)) {
+            D3D11_DestroyTexture(renderer, texture);
+            WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device1::CreateTexture2D", result);
             return -1;
         }
     }
@@ -1639,6 +1860,46 @@ D3D11_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         return -1;
     }
 
+    if (textureData->yuv) {
+        result = ID3D11Device_CreateShaderResourceView(rendererData->d3dDevice,
+            (ID3D11Resource *)textureData->mainTextureU,
+            &resourceViewDesc,
+            &textureData->mainTextureResourceViewU
+            );
+        if (FAILED(result)) {
+            D3D11_DestroyTexture(renderer, texture);
+            WIN_SetErrorFromHRESULT(__FUNCTION__ "ID3D11Device1::CreateShaderResourceView", result);
+            return -1;
+        }
+        result = ID3D11Device_CreateShaderResourceView(rendererData->d3dDevice,
+            (ID3D11Resource *)textureData->mainTextureV,
+            &resourceViewDesc,
+            &textureData->mainTextureResourceViewV
+            );
+        if (FAILED(result)) {
+            D3D11_DestroyTexture(renderer, texture);
+            WIN_SetErrorFromHRESULT(__FUNCTION__ "ID3D11Device1::CreateShaderResourceView", result);
+            return -1;
+        }
+    }
+
+    if (texture->access & SDL_TEXTUREACCESS_TARGET) {
+        D3D11_RENDER_TARGET_VIEW_DESC renderTargetViewDesc;
+        renderTargetViewDesc.Format = textureDesc.Format;
+        renderTargetViewDesc.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;
+        renderTargetViewDesc.Texture2D.MipSlice = 0;
+
+        result = ID3D11Device_CreateRenderTargetView(rendererData->d3dDevice,
+            (ID3D11Resource *)textureData->mainTexture,
+            &renderTargetViewDesc,
+            &textureData->mainTextureRenderTargetView);
+        if (FAILED(result)) {
+            D3D11_DestroyTexture(renderer, texture);
+            WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device1::CreateRenderTargetView", result);
+            return -1;
+        }
+    }
+
     return 0;
 }
 
@@ -1656,8 +1917,96 @@ D3D11_DestroyTexture(SDL_Renderer * renderer,
     SAFE_RELEASE(data->mainTextureResourceView);
     SAFE_RELEASE(data->mainTextureRenderTargetView);
     SAFE_RELEASE(data->stagingTexture);
+    SAFE_RELEASE(data->mainTextureU);
+    SAFE_RELEASE(data->mainTextureResourceViewU);
+    SAFE_RELEASE(data->mainTextureV);
+    SAFE_RELEASE(data->mainTextureResourceViewV);
+    SDL_free(data->pixels);
     SDL_free(data);
     texture->driverdata = NULL;
+}
+
+static int
+D3D11_UpdateTextureInternal(D3D11_RenderData *rendererData, ID3D11Texture2D *texture, Uint32 format, int x, int y, int w, int h, const void *pixels, int pitch)
+{
+    ID3D11Texture2D *stagingTexture;
+    const Uint8 *src;
+    Uint8 *dst;
+    int row;
+    UINT length;
+    HRESULT result;
+
+    /* Create a 'staging' texture, which will be used to write to a portion of the main texture. */
+    D3D11_TEXTURE2D_DESC stagingTextureDesc;
+    ID3D11Texture2D_GetDesc(texture, &stagingTextureDesc);
+    stagingTextureDesc.Width = w;
+    stagingTextureDesc.Height = h;
+    stagingTextureDesc.BindFlags = 0;
+    stagingTextureDesc.MiscFlags = 0;
+    stagingTextureDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
+    stagingTextureDesc.Usage = D3D11_USAGE_STAGING;
+    result = ID3D11Device_CreateTexture2D(rendererData->d3dDevice,
+        &stagingTextureDesc,
+        NULL,
+        &stagingTexture);
+    if (FAILED(result)) {
+        WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device1::CreateTexture2D [create staging texture]", result);
+        return -1;
+    }
+
+    /* Get a write-only pointer to data in the staging texture: */
+    D3D11_MAPPED_SUBRESOURCE textureMemory;
+    result = ID3D11DeviceContext_Map(rendererData->d3dContext,
+        (ID3D11Resource *)stagingTexture,
+        0,
+        D3D11_MAP_WRITE,
+        0,
+        &textureMemory
+        );
+    if (FAILED(result)) {
+        WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11DeviceContext1::Map [map staging texture]", result);
+        SAFE_RELEASE(stagingTexture);
+        return -1;
+    }
+
+    src = (const Uint8 *)pixels;
+    dst = textureMemory.pData;
+    length = w * SDL_BYTESPERPIXEL(format);
+    if (length == pitch && length == textureMemory.RowPitch) {
+        SDL_memcpy(dst, src, length*h);
+    } else {
+        if (length > (UINT)pitch) {
+            length = pitch;
+        }
+        if (length > textureMemory.RowPitch) {
+            length = textureMemory.RowPitch;
+        }
+        for (row = 0; row < h; ++row) {
+            SDL_memcpy(dst, src, length);
+            src += pitch;
+            dst += textureMemory.RowPitch;
+        }
+    }
+
+    /* Commit the pixel buffer's changes back to the staging texture: */
+    ID3D11DeviceContext_Unmap(rendererData->d3dContext,
+        (ID3D11Resource *)stagingTexture,
+        0);
+
+    /* Copy the staging texture's contents back to the texture: */
+    ID3D11DeviceContext_CopySubresourceRegion(rendererData->d3dContext,
+        (ID3D11Resource *)texture,
+        0,
+        x,
+        y,
+        0,
+        (ID3D11Resource *)stagingTexture,
+        0,
+        NULL);
+
+    SAFE_RELEASE(stagingTexture);
+
+    return 0;
 }
 
 static int
@@ -1665,28 +2014,59 @@ D3D11_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                     const SDL_Rect * rect, const void * srcPixels,
                     int srcPitch)
 {
-    /* Lock the texture, retrieving a buffer to write pixel data to: */
-    void * destPixels = NULL;
-    int destPitch = 0;
-    if (D3D11_LockTexture(renderer, texture, rect, &destPixels, &destPitch) != 0) {
-        /* An error is already set.  Attach some info to it, then return to the caller. */
-        char errorMessage[1024];
-        SDL_snprintf(errorMessage, sizeof(errorMessage), __FUNCTION__ ", Lock Texture Failed: %s", SDL_GetError());
-        return SDL_SetError(errorMessage);
+    D3D11_RenderData *rendererData = (D3D11_RenderData *)renderer->driverdata;
+    D3D11_TextureData *textureData = (D3D11_TextureData *)texture->driverdata;
+
+    if (!textureData) {
+        SDL_SetError("Texture is not currently available");
+        return -1;
     }
 
-    /* Copy pixel data to the locked texture's memory: */
-    for (int y = 0; y < rect->h; ++y) {
-        SDL_memcpy(
-            ((Uint8 *)destPixels) + (destPitch * y),
-            ((Uint8 *)srcPixels) + (srcPitch * y),
-            srcPitch
-            );
+    if (D3D11_UpdateTextureInternal(rendererData, textureData->mainTexture, texture->format, rect->x, rect->y, rect->w, rect->h, srcPixels, srcPitch) < 0) {
+        return -1;
     }
 
-    /* Commit the texture's memory back to Direct3D: */
-    D3D11_UnlockTexture(renderer, texture);
+    if (textureData->yuv) {
+        /* Skip to the correct offset into the next texture */
+        srcPixels = (const void*)((const Uint8*)srcPixels + rect->h * srcPitch);
 
+        if (D3D11_UpdateTextureInternal(rendererData, texture->format == SDL_PIXELFORMAT_YV12 ? textureData->mainTextureV : textureData->mainTextureU, texture->format, rect->x / 2, rect->y / 2, rect->w / 2, rect->h / 2, srcPixels, srcPitch / 2) < 0) {
+            return -1;
+        }
+
+        /* Skip to the correct offset into the next texture */
+        srcPixels = (const void*)((const Uint8*)srcPixels + (rect->h * srcPitch) / 4);
+        if (D3D11_UpdateTextureInternal(rendererData, texture->format == SDL_PIXELFORMAT_YV12 ? textureData->mainTextureU : textureData->mainTextureV, texture->format, rect->x / 2, rect->y / 2, rect->w / 2, rect->h / 2, srcPixels, srcPitch / 2) < 0) {
+            return -1;
+        }
+    }
+    return 0;
+}
+
+static int
+D3D11_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
+                       const SDL_Rect * rect,
+                       const Uint8 *Yplane, int Ypitch,
+                       const Uint8 *Uplane, int Upitch,
+                       const Uint8 *Vplane, int Vpitch)
+{
+    D3D11_RenderData *rendererData = (D3D11_RenderData *)renderer->driverdata;
+    D3D11_TextureData *textureData = (D3D11_TextureData *)texture->driverdata;
+
+    if (!textureData) {
+        SDL_SetError("Texture is not currently available");
+        return -1;
+    }
+
+    if (D3D11_UpdateTextureInternal(rendererData, textureData->mainTexture, texture->format, rect->x, rect->y, rect->w, rect->h, Yplane, Ypitch) < 0) {
+        return -1;
+    }
+    if (D3D11_UpdateTextureInternal(rendererData, textureData->mainTextureU, texture->format, rect->x / 2, rect->y / 2, rect->w / 2, rect->h / 2, Uplane, Upitch) < 0) {
+        return -1;
+    }
+    if (D3D11_UpdateTextureInternal(rendererData, textureData->mainTextureV, texture->format, rect->x / 2, rect->y / 2, rect->w / 2, rect->h / 2, Vplane, Vpitch) < 0) {
+        return -1;
+    }
     return 0;
 }
 
@@ -1697,6 +2077,28 @@ D3D11_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     D3D11_RenderData *rendererData = (D3D11_RenderData *) renderer->driverdata;
     D3D11_TextureData *textureData = (D3D11_TextureData *) texture->driverdata;
     HRESULT result = S_OK;
+
+    if (!textureData) {
+        SDL_SetError("Texture is not currently available");
+        return -1;
+    }
+
+    if (textureData->yuv) {
+        /* It's more efficient to upload directly... */
+        if (!textureData->pixels) {
+            textureData->pitch = texture->w;
+            textureData->pixels = (Uint8 *)SDL_malloc((texture->h * textureData->pitch * 3) / 2);
+            if (!textureData->pixels) {
+                return SDL_OutOfMemory();
+            }
+        }
+        textureData->locked_rect = *rect;
+        *pixels =
+            (void *)((Uint8 *)textureData->pixels + rect->y * textureData->pitch +
+            rect->x * SDL_BYTESPERPIXEL(texture->format));
+        *pitch = textureData->pitch;
+        return 0;
+    }
 
     if (textureData->stagingTexture) {
         return SDL_SetError("texture is already locked");
@@ -1761,6 +2163,19 @@ D3D11_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     D3D11_RenderData *rendererData = (D3D11_RenderData *) renderer->driverdata;
     D3D11_TextureData *textureData = (D3D11_TextureData *) texture->driverdata;
+    
+    if (!textureData) {
+        return;
+    }
+
+    if (textureData->yuv) {
+        const SDL_Rect *rect = &textureData->locked_rect;
+        void *pixels =
+            (void *) ((Uint8 *) textureData->pixels + rect->y * textureData->pitch +
+                      rect->x * SDL_BYTESPERPIXEL(texture->format));
+        D3D11_UpdateTexture(renderer, texture, rect, pixels, textureData->pitch);
+        return;
+    }
 
     /* Commit the pixel buffer's changes back to the staging texture: */
     ID3D11DeviceContext_Unmap(rendererData->d3dContext,
@@ -2098,16 +2513,23 @@ D3D11_RenderSetBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
 static void
 D3D11_SetPixelShader(SDL_Renderer * renderer,
                      ID3D11PixelShader * shader,
-                     ID3D11ShaderResourceView * shaderResource,
+                     int numShaderResources,
+                     ID3D11ShaderResourceView ** shaderResources,
                      ID3D11SamplerState * sampler)
 {
     D3D11_RenderData *rendererData = (D3D11_RenderData *) renderer->driverdata;
+    ID3D11ShaderResourceView *shaderResource;
     if (shader != rendererData->currentShader) {
         ID3D11DeviceContext_PSSetShader(rendererData->d3dContext, shader, NULL, 0);
         rendererData->currentShader = shader;
     }
+    if (numShaderResources > 0) {
+        shaderResource = shaderResources[0];
+    } else {
+        shaderResource = NULL;
+    }
     if (shaderResource != rendererData->currentShaderResource) {
-        ID3D11DeviceContext_PSSetShaderResources(rendererData->d3dContext, 0, 1, &shaderResource);
+        ID3D11DeviceContext_PSSetShaderResources(rendererData->d3dContext, 0, numShaderResources, shaderResources);
         rendererData->currentShaderResource = shaderResource;
     }
     if (sampler != rendererData->currentSampler) {
@@ -2155,6 +2577,7 @@ D3D11_RenderDrawPoints(SDL_Renderer * renderer,
     D3D11_SetPixelShader(
         renderer,
         rendererData->colorPixelShader,
+        0,
         NULL,
         NULL);
 
@@ -2191,6 +2614,7 @@ D3D11_RenderDrawLines(SDL_Renderer * renderer,
     D3D11_SetPixelShader(
         renderer,
         rendererData->colorPixelShader,
+        0,
         NULL,
         NULL);
 
@@ -2228,6 +2652,7 @@ D3D11_RenderFillRects(SDL_Renderer * renderer,
         D3D11_SetPixelShader(
             renderer,
             rendererData->colorPixelShader,
+            0,
             NULL,
             NULL);
 
@@ -2292,11 +2717,26 @@ D3D11_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
     }
 
     ID3D11SamplerState *textureSampler = D3D11_RenderGetSampler(renderer, texture);
-    D3D11_SetPixelShader(
-        renderer,
-        rendererData->texturePixelShader,
-        textureData->mainTextureResourceView,
-        textureSampler);
+    if (textureData->yuv) {
+        ID3D11ShaderResourceView *shaderResources[] = {
+            textureData->mainTextureResourceView,
+            textureData->mainTextureResourceViewU,
+            textureData->mainTextureResourceViewV
+        };
+        D3D11_SetPixelShader(
+            renderer,
+            rendererData->yuvPixelShader,
+            SDL_arraysize(shaderResources),
+            shaderResources,
+            textureSampler);
+    } else {
+        D3D11_SetPixelShader(
+            renderer,
+            rendererData->texturePixelShader,
+            1,
+            &textureData->mainTextureResourceView,
+            textureSampler);
+    }
 
     D3D11_RenderFinishDrawOp(renderer, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, sizeof(vertices) / sizeof(VertexPositionColor));
 
@@ -2366,11 +2806,26 @@ D3D11_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
     }
 
     ID3D11SamplerState *textureSampler = D3D11_RenderGetSampler(renderer, texture);
-    D3D11_SetPixelShader(
-        renderer,
-        rendererData->texturePixelShader,
-        textureData->mainTextureResourceView,
-        textureSampler);
+    if (textureData->yuv) {
+        ID3D11ShaderResourceView *shaderResources[] = {
+            textureData->mainTextureResourceView,
+            textureData->mainTextureResourceViewU,
+            textureData->mainTextureResourceViewV
+        };
+        D3D11_SetPixelShader(
+            renderer,
+            rendererData->yuvPixelShader,
+            SDL_arraysize(shaderResources),
+            shaderResources,
+            textureSampler);
+    } else {
+        D3D11_SetPixelShader(
+            renderer,
+            rendererData->texturePixelShader,
+            1,
+            &textureData->mainTextureResourceView,
+            textureSampler);
+    }
 
     D3D11_RenderFinishDrawOp(renderer, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, sizeof(vertices) / sizeof(VertexPositionColor));
 
