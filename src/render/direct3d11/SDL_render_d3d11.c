@@ -1130,7 +1130,7 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
         goto done;
     }
 
-    /* Setup render state that doesn't change through the program */
+    /* Setup render state that doesn't change */
     ID3D11DeviceContext_IASetInputLayout(data->d3dContext, data->inputLayout);
     ID3D11DeviceContext_VSSetShader(data->d3dContext, data->vertexShader, NULL, 0);
     ID3D11DeviceContext_VSSetConstantBuffers(data->d3dContext, 0, 1, &data->vertexShaderConstants);
@@ -1185,8 +1185,7 @@ D3D11_GetCoreWindowFromSDLRenderer(SDL_Renderer * renderer)
 static DXGI_MODE_ROTATION
 D3D11_GetCurrentRotation()
 {
-    switch (DisplayProperties::CurrentOrientation)
-    {
+    switch (DisplayProperties::CurrentOrientation) {
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
         /* Windows Phone rotations */
     case DisplayOrientations::Landscape:
@@ -1458,8 +1457,7 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
      * To note, the call for this, IDXGISwapChain1::SetRotation, is not necessary
      * on Windows Phone, nor is it supported there.  It's only needed in Windows 8/RT.
      */
-    if (data->swapEffect == DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL)
-    {
+    if (data->swapEffect == DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL) {
         result = IDXGISwapChain1_SetRotation(data->swapChain, data->rotation);
         if (FAILED(result)) {
             WIN_SetErrorFromHRESULT(__FUNCTION__ ", IDXGISwapChain1::SetRotation", result);
@@ -1515,7 +1513,7 @@ D3D11_HandleDeviceLost(SDL_Renderer * renderer)
     D3D11_RenderData *data = (D3D11_RenderData *) renderer->driverdata;
     HRESULT result = S_OK;
 
-    /* FIXME: Need to release all resources - all texures are invalid! */
+    /* FIXME: Need to release all resources - all textures are invalid! */
 
     result = D3D11_CreateDeviceResources(renderer);
     if (FAILED(result)) {
@@ -1844,8 +1842,7 @@ D3D11_UpdateViewport(SDL_Renderer * renderer)
      * direction of the DXGI_MODE_ROTATION enumeration.
      */
     Float4X4 projection;
-    switch (data->rotation)
-    {
+    switch (data->rotation) {
         case DXGI_MODE_ROTATION_IDENTITY:
             projection = MatrixIdentity();
             break;
@@ -2466,8 +2463,7 @@ D3D11_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
         textureMemory.RowPitch,
         format,
         pixels,
-        pitch) != 0)
-    {
+        pitch) != 0) {
         /* When SDL_ConvertPixels fails, it'll have already set the format.
          * Get the error message, and attach some extra data to it.
          */
