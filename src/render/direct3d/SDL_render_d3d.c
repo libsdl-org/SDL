@@ -648,9 +648,8 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->DestroyTexture = D3D_DestroyTexture;
     renderer->DestroyRenderer = D3D_DestroyRenderer;
     renderer->info = D3D_RenderDriver.info;
+    renderer->info.flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
     renderer->driverdata = data;
-
-    renderer->info.flags = SDL_RENDERER_ACCELERATED;
 
     SDL_VERSION(&windowinfo.version);
     SDL_GetWindowWMInfo(window, &windowinfo);
