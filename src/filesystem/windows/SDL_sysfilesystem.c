@@ -70,7 +70,6 @@ SDL_GetPrefPath(const char *org, const char *app)
      */
 
     WCHAR path[MAX_PATH];
-    char *utf8 = NULL;
     char *retval = NULL;
     WCHAR* worg = NULL;
     WCHAR* wapp = NULL;
