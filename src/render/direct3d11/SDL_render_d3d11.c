@@ -1732,7 +1732,6 @@ static HRESULT
 D3D11_UpdateForWindowSizeChange(SDL_Renderer * renderer)
 {
     D3D11_RenderData *data = (D3D11_RenderData *)renderer->driverdata;
-    /* FIXME: Do we need to release render targets like we do in D3D9? */
     return D3D11_CreateWindowSizeDependentResources(renderer);
 }
 
@@ -3004,8 +3003,11 @@ D3D11_RenderPresent(SDL_Renderer * renderer)
          *
          * TODO, WinRT: consider throwing an exception if D3D11_RenderPresent fails, especially if there is a way to salvage debug info from users' machines
          */
-        if (result == DXGI_ERROR_DEVICE_REMOVED) {
+        if ( result == DXGI_ERROR_DEVICE_REMOVED ) {
             D3D11_HandleDeviceLost(renderer);
+        } else if (result == DXGI_ERROR_INVALID_CALL) {
+            /* We probably went through a fullscreen <-> windowed transition */
+            D3D11_CreateWindowSizeDependentResources(renderer);
         } else {
             WIN_SetErrorFromHRESULT(__FUNCTION__ ", IDXGISwapChain::Present", result);
         }
