@@ -44,7 +44,7 @@ using namespace Windows::Graphics::Display;
 #include <d3d11_1.h>
 
 
-#define SAFE_RELEASE(X) if ( (X) ) { IUnknown_Release( SDL_static_cast(IUnknown*, X ) ); X = NULL; }
+#define SAFE_RELEASE(X) if ((X)) { IUnknown_Release(SDL_static_cast(IUnknown*, X)); X = NULL; }
 
 typedef struct
 {
@@ -120,7 +120,10 @@ typedef struct
 /* Private renderer data */
 typedef struct
 {
+    void *hDXGIMod;
     void *hD3D11Mod;
+    IDXGIFactory2 *dxgiFactory;
+    IDXGIAdapter *dxgiAdapter;
     ID3D11Device1 *d3dDevice;
     ID3D11DeviceContext1 *d3dContext;
     IDXGISwapChain1 *swapChain;
@@ -985,6 +988,8 @@ D3D11_DestroyRenderer(SDL_Renderer * renderer)
     D3D11_RenderData *data = (D3D11_RenderData *) renderer->driverdata;
 
     if (data) {
+        SAFE_RELEASE(data->dxgiFactory);
+        SAFE_RELEASE(data->dxgiAdapter);
         SAFE_RELEASE(data->d3dDevice);
         SAFE_RELEASE(data->d3dContext);
         SAFE_RELEASE(data->swapChain);
@@ -1007,6 +1012,9 @@ D3D11_DestroyRenderer(SDL_Renderer * renderer)
 
         if (data->hD3D11Mod) {
             SDL_UnloadObject(data->hD3D11Mod);
+        }
+        if (data->hDXGIMod) {
+            SDL_UnloadObject(data->hDXGIMod);
         }
         SDL_free(data);
     }
@@ -1050,15 +1058,32 @@ D3D11_CreateBlendMode(SDL_Renderer * renderer,
 static HRESULT
 D3D11_CreateDeviceResources(SDL_Renderer * renderer)
 {
+    typedef HRESULT(WINAPI *PFN_CREATE_DXGI_FACTORY)(REFIID riid, void **ppFactory);
+    PFN_CREATE_DXGI_FACTORY CreateDXGIFactoryFunc;
     D3D11_RenderData *data = (D3D11_RenderData *) renderer->driverdata;
     PFN_D3D11_CREATE_DEVICE D3D11CreateDeviceFunc;
+    IDXGIAdapter *d3dAdapter = NULL;
     ID3D11Device *d3dDevice = NULL;
     ID3D11DeviceContext *d3dContext = NULL;
+    IDXGIDevice1 *dxgiDevice = NULL;
     HRESULT result = S_OK;
 
 #ifdef __WINRT__
+    CreateDXGIFactoryFunc = CreateDXGIFactory;
     D3D11CreateDeviceFunc = D3D11CreateDevice;
 #else
+    data->hDXGIMod = SDL_LoadObject("dxgi.dll");
+    if (!data->hDXGIMod) {
+        result = E_FAIL;
+        goto done;
+    }
+
+    CreateDXGIFactoryFunc = (PFN_CREATE_DXGI_FACTORY)SDL_LoadFunction(data->hDXGIMod, "CreateDXGIFactory");
+    if (!CreateDXGIFactoryFunc) {
+        result = E_FAIL;
+        goto done;
+    }
+
     data->hD3D11Mod = SDL_LoadObject("d3d11.dll");
     if (!data->hD3D11Mod) {
         result = E_FAIL;
@@ -1071,6 +1096,19 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
         goto done;
     }
 #endif /* __WINRT__ */
+
+    result = CreateDXGIFactoryFunc(&IID_IDXGIFactory2, &data->dxgiFactory);
+    if (FAILED(result)) {
+        WIN_SetErrorFromHRESULT(__FUNCTION__ ", CreateDXGIFactory", result);
+        goto done;
+    }
+
+    /* FIXME: Should we use the default adapter? */
+    result = IDXGIFactory2_EnumAdapters(data->dxgiFactory, 0, &data->dxgiAdapter);
+    if (FAILED(result)) {
+        WIN_SetErrorFromHRESULT(__FUNCTION__ ", D3D11CreateDevice", result);
+        goto done;
+    }
 
     /* This flag adds support for surfaces with a different color channel ordering
      * than the API default. It is required for compatibility with Direct2D.
@@ -1101,8 +1139,8 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
 
     /* Create the Direct3D 11 API device object and a corresponding context. */
     result = D3D11CreateDeviceFunc(
-        NULL, /* Specify NULL to use the default adapter */
-        D3D_DRIVER_TYPE_HARDWARE,
+        data->dxgiAdapter,
+        D3D_DRIVER_TYPE_UNKNOWN,
         NULL,
         creationFlags, /* Set set debug and Direct2D compatibility flags. */
         featureLevels, /* List of feature levels this app can support. */
@@ -1126,6 +1164,21 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
     result = ID3D11DeviceContext_QueryInterface(d3dContext, &IID_ID3D11DeviceContext1, &data->d3dContext);
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11DeviceContext to ID3D11DeviceContext1", result);
+        goto done;
+    }
+
+    result = ID3D11Device_QueryInterface(d3dDevice, &IID_IDXGIDevice1, &dxgiDevice);
+    if (FAILED(result)) {
+        WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device to IDXGIDevice1", result);
+        goto done;
+    }
+
+    /* Ensure that DXGI does not queue more than one frame at a time. This both reduces latency and
+     * ensures that the application will only render after each VSync, minimizing power consumption.
+     */
+    result = IDXGIDevice1_SetMaximumFrameLatency(dxgiDevice, 1);
+    if (FAILED(result)) {
+        WIN_SetErrorFromHRESULT(__FUNCTION__ ", IDXGIDevice1::SetMaximumFrameLatency", result);
         goto done;
     }
 
@@ -1232,10 +1285,10 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
     constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
     constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
     result = ID3D11Device_CreateBuffer(data->d3dDevice,
-		&constantBufferDesc,
-		NULL,
+        &constantBufferDesc,
+        NULL,
         &data->vertexShaderConstants
-		);
+        );
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device1::CreateBuffer [vertex shader constants]", result);
         goto done;
@@ -1275,25 +1328,25 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
     /* Setup Direct3D rasterizer states */
     D3D11_RASTERIZER_DESC rasterDesc;
     SDL_zero(rasterDesc);
-	rasterDesc.AntialiasedLineEnable = FALSE;
-	rasterDesc.CullMode = D3D11_CULL_NONE;
-	rasterDesc.DepthBias = 0;
-	rasterDesc.DepthBiasClamp = 0.0f;
-	rasterDesc.DepthClipEnable = TRUE;
-	rasterDesc.FillMode = D3D11_FILL_SOLID;
-	rasterDesc.FrontCounterClockwise = FALSE;
+    rasterDesc.AntialiasedLineEnable = FALSE;
+    rasterDesc.CullMode = D3D11_CULL_NONE;
+    rasterDesc.DepthBias = 0;
+    rasterDesc.DepthBiasClamp = 0.0f;
+    rasterDesc.DepthClipEnable = TRUE;
+    rasterDesc.FillMode = D3D11_FILL_SOLID;
+    rasterDesc.FrontCounterClockwise = FALSE;
     rasterDesc.MultisampleEnable = FALSE;
     rasterDesc.ScissorEnable = FALSE;
-	rasterDesc.SlopeScaledDepthBias = 0.0f;
+    rasterDesc.SlopeScaledDepthBias = 0.0f;
     result = ID3D11Device_CreateRasterizerState(data->d3dDevice, &rasterDesc, &data->mainRasterizer);
-	if (FAILED(result)) {
+    if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device1::CreateRasterizerState [main rasterizer]", result);
         goto done;
     }
 
     rasterDesc.ScissorEnable = TRUE;
     result = ID3D11Device_CreateRasterizerState(data->d3dDevice, &rasterDesc, &data->clippedRasterizer);
-	if (FAILED(result)) {
+    if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device1::CreateRasterizerState [clipped rasterizer]", result);
         goto done;
     }
@@ -1346,6 +1399,7 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
 done:
     SAFE_RELEASE(d3dDevice);
     SAFE_RELEASE(d3dContext);
+    SAFE_RELEASE(dxgiDevice);
     return result;
 }
 
@@ -1360,13 +1414,13 @@ static IUnknown *
 D3D11_GetCoreWindowFromSDLRenderer(SDL_Renderer * renderer)
 {
     SDL_Window * sdlWindow = renderer->window;
-    if ( ! renderer->window ) {
+    if (!renderer->window) {
         return NULL;
     }
 
     SDL_SysWMinfo sdlWindowInfo;
     SDL_VERSION(&sdlWindowInfo.version);
-    if ( ! SDL_GetWindowWMInfo(sdlWindow, &sdlWindowInfo) ) {
+    if (!SDL_GetWindowWMInfo(sdlWindow, &sdlWindowInfo)) {
         return NULL;
     }
 
@@ -1490,9 +1544,6 @@ D3D11_CreateSwapChain(SDL_Renderer * renderer, int w, int h)
     IUnknown *coreWindow = NULL;
     const BOOL usingXAML = FALSE;
 #endif
-    IDXGIDevice1 *dxgiDevice = NULL;
-    IDXGIAdapter *dxgiAdapter = NULL;
-    IDXGIFactory2 *dxgiFactory = NULL;
     HRESULT result = S_OK;
 
     /* Create a swap chain using the same adapter as the existing Direct3D device. */
@@ -1519,26 +1570,8 @@ D3D11_CreateSwapChain(SDL_Renderer * renderer, int w, int h)
 #endif
     swapChainDesc.Flags = 0;
 
-    result = ID3D11Device_QueryInterface(data->d3dDevice, &IID_IDXGIDevice1, &dxgiDevice);
-    if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device to IDXGIDevice1", result);
-        goto done;
-    }
-
-    result = IDXGIDevice1_GetAdapter(dxgiDevice, &dxgiAdapter);
-    if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(__FUNCTION__ ", IDXGIDevice1::GetAdapter", result);
-        goto done;
-    }
-
-    result = IDXGIAdapter_GetParent(dxgiAdapter, &IID_IDXGIFactory2, &dxgiFactory);
-    if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(__FUNCTION__ ", IDXGIAdapter::GetParent", result);
-        goto done;
-    }
-
     if (coreWindow) {
-        result = IDXGIFactory2_CreateSwapChainForCoreWindow(dxgiFactory,
+        result = IDXGIFactory2_CreateSwapChainForCoreWindow(data->dxgiFactory,
             (IUnknown *)data->d3dDevice,
             coreWindow,
             &swapChainDesc,
@@ -1550,7 +1583,7 @@ D3D11_CreateSwapChain(SDL_Renderer * renderer, int w, int h)
             goto done;
         }
     } else if (usingXAML) {
-        result = IDXGIFactory2_CreateSwapChainForComposition(dxgiFactory,
+        result = IDXGIFactory2_CreateSwapChainForComposition(data->dxgiFactory,
             (IUnknown *)data->d3dDevice,
             &swapChainDesc,
             NULL,
@@ -1564,7 +1597,7 @@ D3D11_CreateSwapChain(SDL_Renderer * renderer, int w, int h)
         result = WINRT_GlobalSwapChainBackgroundPanelNative->SetSwapChain(data->swapChain);
         if (FAILED(result)) {
             WIN_SetErrorFromHRESULT(__FUNCTION__ ", ISwapChainBackgroundPanelNative::SetSwapChain", result);
-            return result;
+            goto done;
         }
 #else
         SDL_SetError(__FUNCTION__ ", XAML support is not yet available for Windows Phone");
@@ -1576,7 +1609,7 @@ D3D11_CreateSwapChain(SDL_Renderer * renderer, int w, int h)
         SDL_VERSION(&windowinfo.version);
         SDL_GetWindowWMInfo(renderer->window, &windowinfo);
 
-        result = IDXGIFactory2_CreateSwapChainForHwnd(dxgiFactory,
+        result = IDXGIFactory2_CreateSwapChainForHwnd(data->dxgiFactory,
             (IUnknown *)data->d3dDevice,
             windowinfo.info.win.window,
             &swapChainDesc,
@@ -1591,20 +1624,8 @@ D3D11_CreateSwapChain(SDL_Renderer * renderer, int w, int h)
     }
     data->swapEffect = swapChainDesc.SwapEffect;
 
-    /* Ensure that DXGI does not queue more than one frame at a time. This both reduces latency and
-     * ensures that the application will only render after each VSync, minimizing power consumption.
-     */
-    result = IDXGIDevice1_SetMaximumFrameLatency(dxgiDevice, 1);
-    if (FAILED(result)) {
-        WIN_SetErrorFromHRESULT(__FUNCTION__ ", IDXGIDevice1::SetMaximumFrameLatency", result);
-        goto done;
-    }
-
 done:
     SAFE_RELEASE(coreWindow);
-    SAFE_RELEASE(dxgiDevice);
-    SAFE_RELEASE(dxgiAdapter);
-    SAFE_RELEASE(dxgiFactory);
     return result;
 }
 
