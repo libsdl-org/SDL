@@ -1021,6 +1021,10 @@
 			>
 		</File>
 		<File
+			RelativePath="..\..\src\render\direct3d11\SDL_render_d3d11.c"
+			>
+		</File>
+		<File
 			RelativePath="..\..\src\render\direct3d\SDL_render_d3d.c"
 			>
 		</File>

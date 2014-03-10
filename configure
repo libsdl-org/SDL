@@ -21880,6 +21880,12 @@ if test "x$ac_cv_header_d3d9_h" = xyes; then :
 fi
 
 
+        ac_fn_c_check_header_mongrel "$LINENO" "d3d11_1.h" "ac_cv_header_d3d11_1_h" "$ac_includes_default"
+if test "x$ac_cv_header_d3d11_1_h" = xyes; then :
+  have_d3d11=yes
+fi
+
+
         ac_fn_c_check_header_mongrel "$LINENO" "ddraw.h" "ac_cv_header_ddraw_h" "$ac_includes_default"
 if test "x$ac_cv_header_ddraw_h" = xyes; then :
   have_ddraw=yes
@@ -22715,6 +22721,11 @@ fi
             if test x$enable_render_d3d = xyes -a x$have_d3d = xyes; then
 
 $as_echo "#define SDL_VIDEO_RENDER_D3D 1" >>confdefs.h
+
+            fi
+            if test x$enable_render_d3d = xyes -a x$have_d3d11 = xyes; then
+
+$as_echo "#define SDL_VIDEO_RENDER_D3D11 1" >>confdefs.h
 
             fi
         fi
