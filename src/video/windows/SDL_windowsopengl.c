@@ -616,13 +616,13 @@ WIN_GL_CreateContext(_THIS, SDL_Window * window)
     }
 
     if (_this->gl_config.major_version < 3 &&
-    _this->gl_config.profile_mask == 0 &&
-    _this->gl_config.flags == 0) {
+        _this->gl_config.profile_mask == 0 &&
+        _this->gl_config.flags == 0) {
         /* Create legacy context */
         context = _this->gl_data->wglCreateContext(hdc);
-    if( share_context != 0 ) {
+        if( share_context != 0 ) {
             _this->gl_data->wglShareLists(share_context, context);
-    }
+        }
     } else {
         PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB;
         HGLRC temp_context = _this->gl_data->wglCreateContext(hdc);
