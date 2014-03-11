@@ -26,6 +26,7 @@ using namespace Windows::Phone::UI::Input;
 
 /* SDL includes */
 extern "C" {
+#include "../../SDL_internal.h"
 #include "SDL_assert.h"
 #include "SDL_events.h"
 #include "SDL_hints.h"

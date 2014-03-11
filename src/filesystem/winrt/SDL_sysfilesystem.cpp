@@ -2,7 +2,7 @@
    TODO, WinRT: remove the need to compile this with C++/CX (/ZW) extensions, and if possible, without C++ at all
 */
 
-#include "SDL_config.h"
+#include "../../SDL_internal.h"
 
 #ifdef __WINRT__
 
