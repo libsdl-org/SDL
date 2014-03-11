@@ -40,45 +40,13 @@ using namespace Windows::Graphics::Display;
 #include "SDL_loadso.h"
 #include "SDL_syswm.h"
 #include "../SDL_sysrender.h"
+#include "../SDL_d3dmath.h"
 
 #include <d3d11_1.h>
 
 
 #define SAFE_RELEASE(X) if ((X)) { IUnknown_Release(SDL_static_cast(IUnknown*, X)); X = NULL; }
 
-typedef struct
-{
-    float x;
-    float y;
-} Float2;
-
-typedef struct
-{
-    float x;
-    float y;
-    float z;
-} Float3;
-
-typedef struct
-{
-    float x;
-    float y;
-    float z;
-    float w;
-} Float4;
-
-typedef struct
-{
-    union {
-        struct {
-            float _11, _12, _13, _14;
-            float _21, _22, _23, _24;
-            float _31, _32, _33, _34;
-            float _41, _42, _43, _44;
-        };
-        float m[4][4];
-    };
-} Float4X4;
 
 /* Vertex shader, common values */
 typedef struct
@@ -716,112 +684,6 @@ static const DWORD D3D11_VertexShader[] = {
 #else
 #error "An appropriate vertex shader is not defined."
 #endif
-
-/* Direct3D matrix math functions */
-
-static Float4X4 MatrixIdentity()
-{
-    Float4X4 m;
-    SDL_zero(m);
-    m._11 = 1.0f;
-    m._22 = 1.0f;
-    m._33 = 1.0f;
-    m._44 = 1.0f;
-    return m;
-}
-
-static Float4X4 MatrixMultiply(Float4X4 M1, Float4X4 M2)
-{
-    Float4X4 m;
-    SDL_zero(m);
-    m._11 = M1._11 * M2._11 + M1._12 * M2._21 + M1._13 * M2._31 + M1._14 * M2._41;
-    m._12 = M1._11 * M2._12 + M1._12 * M2._22 + M1._13 * M2._32 + M1._14 * M2._42;
-    m._13 = M1._11 * M2._13 + M1._12 * M2._23 + M1._13 * M2._33 + M1._14 * M2._43;
-    m._14 = M1._11 * M2._14 + M1._12 * M2._24 + M1._13 * M2._34 + M1._14 * M2._44;
-    m._21 = M1._21 * M2._11 + M1._22 * M2._21 + M1._23 * M2._31 + M1._24 * M2._41;
-    m._22 = M1._21 * M2._12 + M1._22 * M2._22 + M1._23 * M2._32 + M1._24 * M2._42;
-    m._23 = M1._21 * M2._13 + M1._22 * M2._23 + M1._23 * M2._33 + M1._24 * M2._43;
-    m._24 = M1._21 * M2._14 + M1._22 * M2._24 + M1._23 * M2._34 + M1._24 * M2._44;
-    m._31 = M1._31 * M2._11 + M1._32 * M2._21 + M1._33 * M2._31 + M1._34 * M2._41;
-    m._32 = M1._31 * M2._12 + M1._32 * M2._22 + M1._33 * M2._32 + M1._34 * M2._42;
-    m._33 = M1._31 * M2._13 + M1._32 * M2._23 + M1._33 * M2._33 + M1._34 * M2._43;
-    m._34 = M1._31 * M2._14 + M1._32 * M2._24 + M1._33 * M2._34 + M1._34 * M2._44;
-    m._41 = M1._41 * M2._11 + M1._42 * M2._21 + M1._43 * M2._31 + M1._44 * M2._41;
-    m._42 = M1._41 * M2._12 + M1._42 * M2._22 + M1._43 * M2._32 + M1._44 * M2._42;
-    m._43 = M1._41 * M2._13 + M1._42 * M2._23 + M1._43 * M2._33 + M1._44 * M2._43;
-    m._44 = M1._41 * M2._14 + M1._42 * M2._24 + M1._43 * M2._34 + M1._44 * M2._44;
-    return m;
-}
-
-static Float4X4 MatrixScaling(float x, float y, float z)
-{
-    Float4X4 m;
-    SDL_zero(m);
-    m._11 = x;
-    m._22 = y;
-    m._33 = z;
-    m._44 = 1.0f;
-    return m;
-}
-
-static Float4X4 MatrixTranslation(float x, float y, float z)
-{
-    Float4X4 m;
-    SDL_zero(m);
-    m._11 = 1.0f;
-    m._22 = 1.0f;
-    m._33 = 1.0f;
-    m._44 = 1.0f;
-    m._41 = x;
-    m._42 = y;
-    m._43 = z;
-    return m;
-}
-
-static Float4X4 MatrixRotationX(float r)
-{
-    float sinR = SDL_sinf(r);
-    float cosR = SDL_cosf(r);
-    Float4X4 m;
-    SDL_zero(m);
-    m._11 = 1.0f;
-    m._22 = cosR;
-    m._23 = sinR;
-    m._32 = -sinR;
-    m._33 = cosR;
-    m._44 = 1.0f;
-    return m;
-}
-
-static Float4X4 MatrixRotationY(float r)
-{
-    float sinR = SDL_sinf(r);
-    float cosR = SDL_cosf(r);
-    Float4X4 m;
-    SDL_zero(m);
-    m._11 = cosR;
-    m._13 = -sinR;
-    m._22 = 1.0f;
-    m._31 = sinR;
-    m._33 = cosR;
-    m._44 = 1.0f;
-    return m;
-}
-
-static Float4X4 MatrixRotationZ(float r)
-{
-    float sinR = SDL_sinf(r);
-    float cosR = SDL_cosf(r);
-    Float4X4 m;
-    SDL_zero(m);
-    m._11 = cosR;
-    m._12 = sinR;
-    m._21 = -sinR;
-    m._22 = cosR;
-    m._33 = 1.0f;
-    m._44 = 1.0f;
-    return m;
-}
 
 
 /* Direct3D 11.1 renderer implementation */
@@ -2803,12 +2665,11 @@ D3D11_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
         minv = tmp;
     }
 
-    Float4X4 oldModelMatrix = rendererData->vertexShaderConstantsData.model;
-    Float4X4 newModelMatrix = MatrixMultiply(
+    Float4X4 modelMatrix = MatrixMultiply(
             MatrixRotationZ((float)(M_PI * (float) angle / 180.0f)),
             MatrixTranslation(dstrect->x + center->x, dstrect->y + center->y, 0)
             );
-    D3D11_SetModelMatrix(renderer, &newModelMatrix);
+    D3D11_SetModelMatrix(renderer, &modelMatrix);
 
     const float minx = -center->x;
     const float maxx = dstrect->w - center->x;
@@ -2849,7 +2710,7 @@ D3D11_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
 
     D3D11_RenderFinishDrawOp(renderer, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, sizeof(vertices) / sizeof(VertexPositionColor));
 
-    D3D11_SetModelMatrix(renderer, &oldModelMatrix);
+    D3D11_SetModelMatrix(renderer, NULL);
 
     return 0;
 }

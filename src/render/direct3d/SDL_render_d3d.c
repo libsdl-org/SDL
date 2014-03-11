@@ -31,6 +31,7 @@
 #include "SDL_loadso.h"
 #include "SDL_syswm.h"
 #include "../SDL_sysrender.h"
+#include "../SDL_d3dmath.h"
 #include "../../video/windows/SDL_windowsvideo.h"
 
 #if SDL_VIDEO_RENDER_D3D
@@ -38,89 +39,6 @@
 #include <d3d9.h>
 #endif
 
-
-typedef interface ID3DXMatrixStack *LPD3DXMATRIXSTACK;
-typedef struct _D3DMATRIX D3DXMATRIX, *LPD3DXMATRIX;
-typedef struct _D3DVECTOR D3DXVECTOR3, *LPD3DXVECTOR3;
-
-DEFINE_GUID(IID_ID3DXMatrixStack,
-0xc7885ba7, 0xf990, 0x4fe7, 0x92, 0x2d, 0x85, 0x15, 0xe4, 0x77, 0xdd, 0x85);
-
-#undef INTERFACE
-#define INTERFACE ID3DXMatrixStack
-
-DECLARE_INTERFACE_(ID3DXMatrixStack, IUnknown)
-{
-    STDMETHOD(QueryInterface)(THIS_ REFIID riid, LPVOID * ppvObj) PURE;
-    STDMETHOD_(ULONG,AddRef)(THIS) PURE;
-    STDMETHOD_(ULONG,Release)(THIS) PURE;
-    STDMETHOD(Pop)(THIS) PURE;
-    STDMETHOD(Push)(THIS) PURE;
-    STDMETHOD(LoadIdentity)(THIS) PURE;
-    STDMETHOD(LoadMatrix)(THIS_ CONST D3DXMATRIX* pM ) PURE;
-    STDMETHOD(MultMatrix)(THIS_ CONST D3DXMATRIX* pM ) PURE;
-    STDMETHOD(MultMatrixLocal)(THIS_ CONST D3DXMATRIX* pM ) PURE;
-    STDMETHOD(RotateAxis)(THIS_ CONST D3DXVECTOR3* pV, FLOAT Angle) PURE;
-    STDMETHOD(RotateAxisLocal)(THIS_ CONST D3DXVECTOR3* pV, FLOAT Angle) PURE;
-    STDMETHOD(RotateYawPitchRoll)(THIS_ FLOAT Yaw, FLOAT Pitch, FLOAT Roll) PURE;
-    STDMETHOD(RotateYawPitchRollLocal)(THIS_ FLOAT Yaw, FLOAT Pitch, FLOAT Roll) PURE;
-    STDMETHOD(Scale)(THIS_ FLOAT x, FLOAT y, FLOAT z) PURE;
-    STDMETHOD(ScaleLocal)(THIS_ FLOAT x, FLOAT y, FLOAT z) PURE;
-    STDMETHOD(Translate)(THIS_ FLOAT x, FLOAT y, FLOAT z ) PURE;
-    STDMETHOD(TranslateLocal)(THIS_ FLOAT x, FLOAT y, FLOAT z) PURE;
-    STDMETHOD_(D3DXMATRIX*, GetTop)(THIS) PURE;
-};
-
-#undef INTERFACE
-
-#if !defined(__cplusplus) || defined(CINTERFACE)
-#define ID3DXMatrixStack_QueryInterface(p,a,b)            (p)->lpVtbl->QueryInterface(p,a,b)
-#define ID3DXMatrixStack_AddRef(p)                        (p)->lpVtbl->AddRef(p)
-#define ID3DXMatrixStack_Release(p)                       (p)->lpVtbl->Release(p)
-#define ID3DXMatrixStack_Pop(p)                           (p)->lpVtbl->Pop(p)
-#define ID3DXMatrixStack_Push(p)                          (p)->lpVtbl->Push(p)
-#define ID3DXMatrixStack_LoadIdentity(p)                  (p)->lpVtbl->LoadIdentity(p)
-#define ID3DXMatrixStack_LoadMatrix(p,a)                  (p)->lpVtbl->LoadMatrix(p,a)
-#define ID3DXMatrixStack_MultMatrix(p,a)                  (p)->lpVtbl->MultMatrix(p,a)
-#define ID3DXMatrixStack_MultMatrixLocal(p,a)             (p)->lpVtbl->MultMatrixLocal(p,a)
-#define ID3DXMatrixStack_RotateAxis(p,a,b)                (p)->lpVtbl->RotateAxis(p,a,b)
-#define ID3DXMatrixStack_RotateAxisLocal(p,a,b)           (p)->lpVtbl->RotateAxisLocal(p,a,b)
-#define ID3DXMatrixStack_RotateYawPitchRoll(p,a,b,c)      (p)->lpVtbl->RotateYawPitchRoll(p,a,b,c)
-#define ID3DXMatrixStack_RotateYawPitchRollLocal(p,a,b,c) (p)->lpVtbl->RotateYawPitchRollLocal(p,a,b,c)
-#define ID3DXMatrixStack_Scale(p,a,b,c)                   (p)->lpVtbl->Scale(p,a,b,c)
-#define ID3DXMatrixStack_ScaleLocal(p,a,b,c)              (p)->lpVtbl->ScaleLocal(p,a,b,c)
-#define ID3DXMatrixStack_Translate(p,a,b,c)               (p)->lpVtbl->Translate(p,a,b,c)
-#define ID3DXMatrixStack_TranslateLocal(p,a,b,c)          (p)->lpVtbl->TranslateLocal(p,a,b,c)
-#define ID3DXMatrixStack_GetTop(p)                        (p)->lpVtbl->GetTop(p)
-#else
-#define ID3DXMatrixStack_QueryInterface(p,a,b)            (p)->QueryInterface(a,b)
-#define ID3DXMatrixStack_AddRef(p)                        (p)->AddRef()
-#define ID3DXMatrixStack_Release(p)                       (p)->Release()
-#define ID3DXMatrixStack_Pop(p)    (p)->Pop()
-#define ID3DXMatrixStack_Push(p)    (p)->Push()
-#define ID3DXMatrixStack_LoadIdentity(p)    (p)->LoadIdentity()
-#define ID3DXMatrixStack_LoadMatrix(p,a)    (p)->LoadMatrix(a)
-#define ID3DXMatrixStack_MultMatrix(p,a)    (p)->MultMatrix(a)
-#define ID3DXMatrixStack_MultMatrixLocal(p,a)    (p)->MultMatrixLocal(a)
-#define ID3DXMatrixStack_RotateAxis(p,a,b)    (p)->RotateAxis(a,b)
-#define ID3DXMatrixStack_RotateAxisLocal(p,a,b)    (p)->RotateAxisLocal(a,b)
-#define ID3DXMatrixStack_RotateYawPitchRoll(p,a,b,c)    (p)->RotateYawPitchRollLocal(a,b,c)
-#define ID3DXMatrixStack_Scale(p,a,b,c)    (p)->Scale(a,b,c)
-#define ID3DXMatrixStack_ScaleLocal(p,a,b,c)    (p)->ScaleLocal(a,b,c)
-#define ID3DXMatrixStack_Translate(p,a,b,c)    (p)->Translate(a,b,c)
-#define ID3DXMatrixStack_TranslateLocal(p,a,b,c)    (p)->TranslateLocal(a,b,c)
-#define ID3DXMatrixStack_GetTop(p)    (p)->GetTop()
-#endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-HRESULT WINAPI D3DXCreateMatrixStack(DWORD flags, LPD3DXMATRIXSTACK* ppstack);
-
-#ifdef __cplusplus
-}
-#endif
 
 #ifdef ASSEMBLE_SHADER
 /**************************************************************************
@@ -266,7 +184,6 @@ typedef struct
     IDirect3DSurface9 *defaultRenderTarget;
     IDirect3DSurface9 *currentRenderTarget;
     void* d3dxDLL;
-    ID3DXMatrixStack *matrixStack;
     LPDIRECT3DPIXELSHADER9 ps_yuv;
 } D3D_RenderData;
 
@@ -582,8 +499,6 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
     Uint32 window_flags;
     int w, h;
     SDL_DisplayMode fullscreen_mode;
-    int d3dxVersion;
-    char d3dxDLLFile[50];
     int displayIndex;
 
     renderer = (SDL_Renderer *) SDL_calloc(1, sizeof(*renderer));
@@ -599,29 +514,7 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
         return NULL;
     }
 
-    if (D3D_LoadDLL(&data->d3dDLL, &data->d3d)) {
-        for (d3dxVersion=50;d3dxVersion>0;d3dxVersion--) {
-            LPTSTR dllName;
-            SDL_snprintf(d3dxDLLFile, sizeof(d3dxDLLFile), "D3DX9_%02d.dll", d3dxVersion);
-            dllName = WIN_UTF8ToString(d3dxDLLFile);
-            data->d3dxDLL = (void *)LoadLibrary(dllName); /* not using SDL_LoadObject() as we want silently fail - no error message */
-            SDL_free(dllName);
-            if (data->d3dxDLL) {
-                HRESULT (WINAPI *D3DXCreateMatrixStack) (DWORD Flags, LPD3DXMATRIXSTACK*  ppStack);
-                D3DXCreateMatrixStack = (HRESULT (WINAPI *) (DWORD, LPD3DXMATRIXSTACK*)) SDL_LoadFunction(data->d3dxDLL, "D3DXCreateMatrixStack");
-                if (D3DXCreateMatrixStack) {
-                    D3DXCreateMatrixStack(0, &data->matrixStack);
-                    break;
-                }
-            }
-        }
-
-        if (!data->matrixStack) {
-            if (data->d3dxDLL) SDL_UnloadObject(data->d3dxDLL);
-        }
-    }
-
-    if (!data->d3d || !data->matrixStack) {
+    if (!D3D_LoadDLL(&data->d3dDLL, &data->d3d)) {
         SDL_free(renderer);
         SDL_free(data);
         SDL_SetError("Unable to create Direct3D interface");
@@ -1697,6 +1590,7 @@ D3D_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
     float centerx, centery;
     DWORD color;
     Vertex vertices[4];
+    Float4X4 modelMatrix;
     HRESULT result;
 
     if (D3D_ActivateRenderer(renderer) < 0) {
@@ -1768,11 +1662,11 @@ D3D_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
     D3D_SetBlendMode(data, texture->blendMode);
 
     /* Rotate and translate */
-    ID3DXMatrixStack_Push(data->matrixStack);
-    ID3DXMatrixStack_LoadIdentity(data->matrixStack);
-    ID3DXMatrixStack_RotateYawPitchRoll(data->matrixStack, 0.0, 0.0, (float)(M_PI * (float) angle / 180.0f));
-    ID3DXMatrixStack_Translate(data->matrixStack, (float)dstrect->x + centerx, (float)dstrect->y + centery, (float)0.0);
-    IDirect3DDevice9_SetTransform(data->device, D3DTS_VIEW, (D3DMATRIX*)ID3DXMatrixStack_GetTop(data->matrixStack));
+    modelMatrix = MatrixMultiply(
+            MatrixRotationZ((float)(M_PI * (float) angle / 180.0f)),
+            MatrixTranslation(dstrect->x + center->x, dstrect->y + center->y, 0)
+            );
+    IDirect3DDevice9_SetTransform(data->device, D3DTS_VIEW, (D3DMATRIX*)&modelMatrix);
 
     D3D_UpdateTextureScaleMode(data, texturedata, 0);
 
@@ -1822,11 +1716,9 @@ D3D_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
             return D3D_SetError("SetShader()", result);
         }
     }
-    ID3DXMatrixStack_Pop(data->matrixStack);
-    ID3DXMatrixStack_Push(data->matrixStack);
-    ID3DXMatrixStack_LoadIdentity(data->matrixStack);
-    IDirect3DDevice9_SetTransform(data->device, D3DTS_VIEW, (D3DMATRIX*)ID3DXMatrixStack_GetTop(data->matrixStack));
-    ID3DXMatrixStack_Pop(data->matrixStack);
+
+    modelMatrix = MatrixIdentity();
+    IDirect3DDevice9_SetTransform(data->device, D3DTS_VIEW, (D3DMATRIX*)&modelMatrix);
     return 0;
 }
 
@@ -1960,7 +1852,6 @@ D3D_DestroyRenderer(SDL_Renderer * renderer)
         }
         if (data->d3d) {
             IDirect3D9_Release(data->d3d);
-            ID3DXMatrixStack_Release(data->matrixStack);
             SDL_UnloadObject(data->d3dDLL);
         }
         SDL_free(data);

@@ -492,6 +492,7 @@
     <ClInclude Include="..\..\src\libm\math_private.h" />
     <ClInclude Include="..\..\src\render\mmx.h" />
     <ClInclude Include="..\..\src\render\opengl\SDL_shaders_gl.h" />
+    <ClInclude Include="..\..\src\render\SDL_d3dmath.h" />
     <ClInclude Include="..\..\src\render\SDL_sysrender.h" />
     <ClInclude Include="..\..\src\render\SDL_yuv_sw_c.h" />
     <ClInclude Include="..\..\src\audio\SDL_audio_c.h" />
@@ -585,6 +586,7 @@
     <ClCompile Include="..\..\src\render\direct3d\SDL_render_d3d.c" />
     <ClCompile Include="..\..\src\render\opengl\SDL_render_gl.c" />
     <ClCompile Include="..\..\src\render\opengl\SDL_shaders_gl.c" />
+    <ClCompile Include="..\..\src\render\SDL_d3dmath.c" />
     <ClCompile Include="..\..\src\render\SDL_render.c" />
     <ClCompile Include="..\..\src\render\SDL_yuv_mmx.c" />
     <ClCompile Include="..\..\src\render\SDL_yuv_sw.c" />
