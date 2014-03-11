@@ -1164,7 +1164,7 @@ CheckWayland()
 {
     AC_ARG_ENABLE(video-wayland,
 AC_HELP_STRING([--enable-video-wayland], [use Wayland video driver [[default=yes]]]),
-                  ,enable_video_wayland=yes)
+                  ,enable_video_wayland=no) #yes)
 
     AC_ARG_ENABLE(video-wayland-qt-touch,
 AC_HELP_STRING([--enable-video-wayland-qt-touch], [QtWayland server support for Wayland video driver [[default=yes]]]),
@@ -1246,7 +1246,7 @@ CheckMir()
 {
     AC_ARG_ENABLE(video-mir,
 AC_HELP_STRING([--enable-video-mir], [use Mir video driver [[default=yes]]]),
-                  ,enable_video_mir=yes)
+                  ,enable_video_mir=no) #yes)
 
     if test x$enable_video = xyes -a x$enable_video_mir = xyes; then
         AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
