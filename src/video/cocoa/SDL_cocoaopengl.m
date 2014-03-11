@@ -162,9 +162,6 @@ SDL_GLContext
 Cocoa_GL_CreateContext(_THIS, SDL_Window * window)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
-/*
-    const GLubyte *(APIENTRY * glGetStringFunc)(GLenum) = NULL;
-*/
     NSAutoreleasePool *pool;
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
     SDL_DisplayData *displaydata = (SDL_DisplayData *)display->driverdata;
@@ -278,49 +275,46 @@ Cocoa_GL_CreateContext(_THIS, SDL_Window * window)
         return NULL;
     }
 
-/* No other backend does this version checking.
-   If we enable it, we should consider whether it should be done at a 
-   higher level for all platforms. We'll have to think through the implications
-   of this.
+    if (_this->gl_config.major_version < 3 &&
+        _this->gl_config.profile_mask == 0 &&
+        _this->gl_config.flags == 0) {
+        /* This is a legacy profile, so to match other backends, we're done. */
+    } else {
+        const GLubyte *(APIENTRY * glGetStringFunc)(GLenum);
 
-   For example, Mac OS X 10.6 will only report OpenGL 2.0, but we ask for 2.1
-   by default. If we don't get 2.1, then the renderer will set the requested
-   version and try to recreate the window, which causes all kinds of problems.
+        glGetStringFunc = (const GLubyte *(APIENTRY *)(GLenum)) SDL_GL_GetProcAddress("glGetString");
+        if (!glGetStringFunc) {
+            Cocoa_GL_DeleteContext(_this, context);
+            SDL_SetError ("Failed getting OpenGL glGetString entry point");
+            return NULL;
+        }
 
-   For now, we'll just disable this code until we can think about it more.
-*/
-#if 0
-    glGetStringFunc = (const GLubyte *(APIENTRY *)(GLenum)) SDL_GL_GetProcAddress("glGetString");
-    if (!glGetStringFunc) {
-        Cocoa_GL_DeleteContext(_this, context);
-        SDL_SetError ("Failed getting OpenGL glGetString entry point");
-        return NULL;
+        glversion = (const char *)glGetStringFunc(GL_VERSION);
+        if (glversion == NULL) {
+            Cocoa_GL_DeleteContext(_this, context);
+            SDL_SetError ("Failed getting OpenGL context version");
+            return NULL;
+        }
+
+        if (SDL_sscanf(glversion, "%d.%d", &glversion_major, &glversion_minor) != 2) {
+            Cocoa_GL_DeleteContext(_this, context);
+            SDL_SetError ("Failed parsing OpenGL context version");
+            return NULL;
+        }
+
+        if ((glversion_major < _this->gl_config.major_version) ||
+           ((glversion_major == _this->gl_config.major_version) && (glversion_minor < _this->gl_config.minor_version))) {
+            Cocoa_GL_DeleteContext(_this, context);
+            SDL_SetError ("Failed creating OpenGL context at version requested");
+            return NULL;
+        }
+
+        /* In the future we'll want to do this, but to match other platforms
+           we'll leave the OpenGL version the way it is for now
+         */
+        /*_this->gl_config.major_version = glversion_major;*/
+        /*_this->gl_config.minor_version = glversion_minor;*/
     }
-
-    glversion = (const char *)glGetStringFunc(GL_VERSION);
-    if (glversion == NULL) {
-        Cocoa_GL_DeleteContext(_this, context);
-        SDL_SetError ("Failed getting OpenGL context version");
-        return NULL;
-    }
-
-    if (SDL_sscanf(glversion, "%d.%d", &glversion_major, &glversion_minor) != 2) {
-        Cocoa_GL_DeleteContext(_this, context);
-        SDL_SetError ("Failed parsing OpenGL context version");
-        return NULL;
-    }
-
-    if ((glversion_major <  _this->gl_config.major_version) ||
-       ((glversion_major == _this->gl_config.major_version) && (glversion_minor < _this->gl_config.minor_version))) {
-        Cocoa_GL_DeleteContext(_this, context);
-        SDL_SetError ("Failed creating OpenGL context at version requested");
-        return NULL;
-    }
-
-    _this->gl_config.major_version = glversion_major;
-    _this->gl_config.minor_version = glversion_minor;
-#endif
-
     return context;
 }
 
