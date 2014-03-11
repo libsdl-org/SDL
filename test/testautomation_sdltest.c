@@ -21,6 +21,39 @@
 
 /* Test case functions */
 
+/* Forward declarations for internal harness functions */
+extern char *SDLTest_GenerateRunSeed(const int length);
+
+/**
+ * @brief Calls to SDLTest_GenerateRunSeed()
+ */
+int
+sdltest_generateRunSeed(void *arg)
+{
+  char* result;
+  int i, l;
+  
+  for (i = 1; i <= 10; i += 3) {   
+     result = SDLTest_GenerateRunSeed((const int)i);
+     SDLTest_AssertPass("Call to SDLTest_GenerateRunSeed()");
+     SDLTest_AssertCheck(result != NULL, "Verify returned value is not NULL");
+     if (result != NULL) {
+       l = SDL_strlen(result);
+       SDLTest_AssertCheck(l == i, "Verify length of returned value is %d, got: %d", i, l);
+       SDL_free(result);
+     }
+  }
+
+  /* Negative cases */
+  for (i = -2; i <= 0; i++) {   
+     result = SDLTest_GenerateRunSeed((const int)i);
+     SDLTest_AssertPass("Call to SDLTest_GenerateRunSeed()");
+     SDLTest_AssertCheck(result == NULL, "Verify returned value is not NULL");
+  }
+  
+  return TEST_COMPLETED;
+}
+
 /**
  * @brief Calls to SDLTest_GetFuzzerInvocationCount()
  */
@@ -1263,11 +1296,14 @@ static const SDLTest_TestCaseReference sdltestTest13 =
 static const SDLTest_TestCaseReference sdltestTest14 =
         { (SDLTest_TestCaseFp)sdltest_randomAsciiStringOfSize, "sdltest_randomAsciiStringOfSize", "Calls to fixed size ASCII string generator", TEST_ENABLED };
 
+static const SDLTest_TestCaseReference sdltestTest15 =
+        { (SDLTest_TestCaseFp)sdltest_generateRunSeed, "sdltest_generateRunSeed", "Checks internal harness function SDLTest_GenerateRunSeed", TEST_ENABLED };
+
 /* Sequence of SDL_test test cases */
 static const SDLTest_TestCaseReference *sdltestTests[] =  {
     &sdltestTest1, &sdltestTest2, &sdltestTest3, &sdltestTest4, &sdltestTest5, &sdltestTest6,
     &sdltestTest7, &sdltestTest8, &sdltestTest9, &sdltestTest10, &sdltestTest11, &sdltestTest12,
-    &sdltestTest13, &sdltestTest14, NULL
+    &sdltestTest13, &sdltestTest14, &sdltestTest15, NULL
 };
 
 /* SDL_test test suite (global) */
