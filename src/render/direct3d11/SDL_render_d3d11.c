@@ -929,6 +929,36 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
     ID3D11DeviceContext *d3dContext = NULL;
     IDXGIDevice1 *dxgiDevice = NULL;
     HRESULT result = S_OK;
+    UINT creationFlags;
+    const char *hint;
+
+    /* This array defines the set of DirectX hardware feature levels this app will support.
+     * Note the ordering should be preserved.
+     * Don't forget to declare your application's minimum required feature level in its
+     * description.  All applications are assumed to support 9.1 unless otherwise stated.
+     */
+    D3D_FEATURE_LEVEL featureLevels[] = 
+    {
+        D3D_FEATURE_LEVEL_11_1,
+        D3D_FEATURE_LEVEL_11_0,
+        D3D_FEATURE_LEVEL_10_1,
+        D3D_FEATURE_LEVEL_10_0,
+        D3D_FEATURE_LEVEL_9_3,
+        D3D_FEATURE_LEVEL_9_2,
+        D3D_FEATURE_LEVEL_9_1
+    };
+
+    /* Declare how the input layout for SDL's vertex shader will be setup: */
+    const D3D11_INPUT_ELEMENT_DESC vertexDesc[] = 
+    {
+        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+    };
+
+    D3D11_BUFFER_DESC constantBufferDesc;
+    D3D11_SAMPLER_DESC samplerDesc;
+    D3D11_RASTERIZER_DESC rasterDesc;
 
 #ifdef __WINRT__
     CreateDXGIFactoryFunc = CreateDXGIFactory;
@@ -975,29 +1005,13 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
     /* This flag adds support for surfaces with a different color channel ordering
      * than the API default. It is required for compatibility with Direct2D.
      */
-    UINT creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
+    creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 
     /* Make sure Direct3D's debugging feature gets used, if the app requests it. */
-    const char *hint = SDL_GetHint(SDL_HINT_RENDER_DIRECT3D11_DEBUG);
+    hint = SDL_GetHint(SDL_HINT_RENDER_DIRECT3D11_DEBUG);
     if (hint && SDL_atoi(hint) > 0) {
         creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
     }
-
-    /* This array defines the set of DirectX hardware feature levels this app will support.
-     * Note the ordering should be preserved.
-     * Don't forget to declare your application's minimum required feature level in its
-     * description.  All applications are assumed to support 9.1 unless otherwise stated.
-     */
-    D3D_FEATURE_LEVEL featureLevels[] = 
-    {
-        D3D_FEATURE_LEVEL_11_1,
-        D3D_FEATURE_LEVEL_11_0,
-        D3D_FEATURE_LEVEL_10_1,
-        D3D_FEATURE_LEVEL_10_0,
-        D3D_FEATURE_LEVEL_9_3,
-        D3D_FEATURE_LEVEL_9_2,
-        D3D_FEATURE_LEVEL_9_1
-    };
 
     /* Create the Direct3D 11 API device object and a corresponding context. */
     result = D3D11CreateDeviceFunc(
@@ -1087,13 +1101,6 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
     }
 
     /* Create an input layout for SDL's vertex shader: */
-    const D3D11_INPUT_ELEMENT_DESC vertexDesc[] = 
-    {
-        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-        { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 20, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-    };
-
     result = ID3D11Device_CreateInputLayout(data->d3dDevice,
         vertexDesc,
         ARRAYSIZE(vertexDesc),
@@ -1141,7 +1148,6 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
     }
 
     /* Setup space to hold vertex shader constants: */
-    D3D11_BUFFER_DESC constantBufferDesc;
     SDL_zero(constantBufferDesc);
     constantBufferDesc.ByteWidth = sizeof(VertexShaderConstants);
     constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
@@ -1157,7 +1163,6 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
     }
 
     /* Create samplers to use when drawing textures: */
-    D3D11_SAMPLER_DESC samplerDesc;
     SDL_zero(samplerDesc);
     samplerDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_POINT;
     samplerDesc.AddressU = D3D11_TEXTURE_ADDRESS_CLAMP;
@@ -1188,7 +1193,6 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
     }
 
     /* Setup Direct3D rasterizer states */
-    D3D11_RASTERIZER_DESC rasterDesc;
     SDL_zero(rasterDesc);
     rasterDesc.AntialiasedLineEnable = FALSE;
     rasterDesc.CullMode = D3D11_CULL_NONE;
@@ -1500,6 +1504,7 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
     ID3D11Texture2D *backBuffer = NULL;
     HRESULT result = S_OK;
     int w, h;
+    BOOL swapDimensions;
 
     /* Release the previous render target view */
     D3D11_ReleaseMainRenderTargetView(renderer);
@@ -1512,9 +1517,9 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
     data->rotation = D3D11_GetCurrentRotation();
 
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
-    const BOOL swapDimensions = FALSE;
+    swapDimensions = FALSE;
 #else
-    const BOOL swapDimensions = D3D11_IsDisplayRotated90Degrees(data->rotation);
+    swapDimensions = D3D11_IsDisplayRotated90Degrees(data->rotation);
 #endif
     if (swapDimensions) {
         int tmp = w;
@@ -1646,6 +1651,9 @@ D3D11_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     D3D11_TextureData *textureData;
     HRESULT result;
     DXGI_FORMAT textureFormat = SDLPixelFormatToDXGIFormat(texture->format);
+    D3D11_TEXTURE2D_DESC textureDesc;
+    D3D11_SHADER_RESOURCE_VIEW_DESC resourceViewDesc;
+
     if (textureFormat == SDL_PIXELFORMAT_UNKNOWN) {
         return SDL_SetError("%s, An unsupported SDL pixel format (0x%x) was specified",
             __FUNCTION__, texture->format);
@@ -1660,7 +1668,6 @@ D3D11_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 
     texture->driverdata = textureData;
 
-    D3D11_TEXTURE2D_DESC textureDesc;
     SDL_zero(textureDesc);
     textureDesc.Width = texture->w;
     textureDesc.Height = texture->h;
@@ -1726,7 +1733,6 @@ D3D11_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         }
     }
 
-    D3D11_SHADER_RESOURCE_VIEW_DESC resourceViewDesc;
     resourceViewDesc.Format = textureDesc.Format;
     resourceViewDesc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
     resourceViewDesc.Texture2D.MostDetailedMip = 0;
@@ -1817,9 +1823,10 @@ D3D11_UpdateTextureInternal(D3D11_RenderData *rendererData, ID3D11Texture2D *tex
     int row;
     UINT length;
     HRESULT result;
+    D3D11_TEXTURE2D_DESC stagingTextureDesc;
+    D3D11_MAPPED_SUBRESOURCE textureMemory;
 
     /* Create a 'staging' texture, which will be used to write to a portion of the main texture. */
-    D3D11_TEXTURE2D_DESC stagingTextureDesc;
     ID3D11Texture2D_GetDesc(texture, &stagingTextureDesc);
     stagingTextureDesc.Width = w;
     stagingTextureDesc.Height = h;
@@ -1837,7 +1844,6 @@ D3D11_UpdateTextureInternal(D3D11_RenderData *rendererData, ID3D11Texture2D *tex
     }
 
     /* Get a write-only pointer to data in the staging texture: */
-    D3D11_MAPPED_SUBRESOURCE textureMemory;
     result = ID3D11DeviceContext_Map(rendererData->d3dContext,
         (ID3D11Resource *)stagingTexture,
         0,
@@ -1959,6 +1965,8 @@ D3D11_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     D3D11_RenderData *rendererData = (D3D11_RenderData *) renderer->driverdata;
     D3D11_TextureData *textureData = (D3D11_TextureData *) texture->driverdata;
     HRESULT result = S_OK;
+    D3D11_TEXTURE2D_DESC stagingTextureDesc;
+    D3D11_MAPPED_SUBRESOURCE textureMemory;
 
     if (!textureData) {
         SDL_SetError("Texture is not currently available");
@@ -1994,7 +2002,6 @@ D3D11_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
      *
      * TODO, WinRT: consider avoiding the use of a staging texture in D3D11_LockTexture if/when the entire texture is being updated
      */
-    D3D11_TEXTURE2D_DESC stagingTextureDesc;
     ID3D11Texture2D_GetDesc(textureData->mainTexture, &stagingTextureDesc);
     stagingTextureDesc.Width = rect->w;
     stagingTextureDesc.Height = rect->h;
@@ -2012,7 +2019,6 @@ D3D11_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     }
 
     /* Get a write-only pointer to data in the staging texture: */
-    D3D11_MAPPED_SUBRESOURCE textureMemory;
     result = ID3D11DeviceContext_Map(rendererData->d3dContext,
         (ID3D11Resource *)textureData->stagingTexture,
         0,
@@ -2082,13 +2088,14 @@ static int
 D3D11_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     D3D11_RenderData *rendererData = (D3D11_RenderData *) renderer->driverdata;
+    D3D11_TextureData *textureData = NULL;
 
     if (texture == NULL) {
         rendererData->currentOffscreenRenderTargetView = NULL;
         return 0;
     }
 
-    D3D11_TextureData *textureData = (D3D11_TextureData *) texture->driverdata;
+    textureData = (D3D11_TextureData *) texture->driverdata;
 
     if (!textureData->mainTextureRenderTargetView) {
         return SDL_SetError("specified texture is not a render target");
@@ -2124,6 +2131,11 @@ static int
 D3D11_UpdateViewport(SDL_Renderer * renderer)
 {
     D3D11_RenderData *data = (D3D11_RenderData *) renderer->driverdata;
+    Float4X4 projection;
+    Float4X4 view;
+    SDL_FRect orientationAlignedViewport;
+    BOOL swapDimensions;
+    D3D11_VIEWPORT viewport;
 
     if (renderer->viewport.w == 0 || renderer->viewport.h == 0) {
         /* If the viewport is empty, assume that it is because
@@ -2138,7 +2150,6 @@ D3D11_UpdateViewport(SDL_Renderer * renderer)
      * default coordinate system) so rotations will be done in the opposite
      * direction of the DXGI_MODE_ROTATION enumeration.
      */
-    Float4X4 projection;
     switch (data->rotation) {
         case DXGI_MODE_ROTATION_IDENTITY:
             projection = MatrixIdentity();
@@ -2157,7 +2168,6 @@ D3D11_UpdateViewport(SDL_Renderer * renderer)
     }
 
     /* Update the view matrix */
-    Float4X4 view;
     view.m[0][0] = 2.0f / renderer->viewport.w;
     view.m[0][1] = 0.0f;
     view.m[0][2] = 0.0f;
@@ -2191,8 +2201,7 @@ D3D11_UpdateViewport(SDL_Renderer * renderer)
      * a landscape mode, for all Windows 8/RT devices, or a portrait mode,
      * for Windows Phone devices.
      */
-    SDL_FRect orientationAlignedViewport;
-    const BOOL swapDimensions = D3D11_IsDisplayRotated90Degrees(data->rotation);
+    swapDimensions = D3D11_IsDisplayRotated90Degrees(data->rotation);
     if (swapDimensions) {
         orientationAlignedViewport.x = (float) renderer->viewport.y;
         orientationAlignedViewport.y = (float) renderer->viewport.x;
@@ -2206,7 +2215,6 @@ D3D11_UpdateViewport(SDL_Renderer * renderer)
     }
     /* TODO, WinRT: get custom viewports working with non-Landscape modes (Portrait, PortraitFlipped, and LandscapeFlipped) */
 
-    D3D11_VIEWPORT viewport;
     viewport.TopLeftX = orientationAlignedViewport.x;
     viewport.TopLeftY = orientationAlignedViewport.y;
     viewport.Width = orientationAlignedViewport.w;
@@ -2281,6 +2289,9 @@ D3D11_UpdateVertexBuffer(SDL_Renderer *renderer,
     D3D11_RenderData *rendererData = (D3D11_RenderData *) renderer->driverdata;
     D3D11_BUFFER_DESC vertexBufferDesc;
     HRESULT result = S_OK;
+    D3D11_SUBRESOURCE_DATA vertexBufferData;
+    const UINT stride = sizeof(VertexPositionColor);
+    const UINT offset = 0;
 
     if (rendererData->vertexBuffer) {
         ID3D11Buffer_GetDesc(rendererData->vertexBuffer, &vertexBufferDesc);
@@ -2311,7 +2322,6 @@ D3D11_UpdateVertexBuffer(SDL_Renderer *renderer,
         vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
         vertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
-        D3D11_SUBRESOURCE_DATA vertexBufferData;
         SDL_zero(vertexBufferData);
         vertexBufferData.pSysMem = vertexData;
         vertexBufferData.SysMemPitch = 0;
@@ -2327,8 +2337,6 @@ D3D11_UpdateVertexBuffer(SDL_Renderer *renderer,
             return -1;
         }
 
-        UINT stride = sizeof(VertexPositionColor);
-        UINT offset = 0;
         ID3D11DeviceContext_IASetVertexBuffers(rendererData->d3dContext,
             0,
             1,
@@ -2345,6 +2353,7 @@ static void
 D3D11_RenderStartDrawOp(SDL_Renderer * renderer)
 {
     D3D11_RenderData *rendererData = (D3D11_RenderData *)renderer->driverdata;
+    ID3D11RasterizerState *rasterizerState;
     ID3D11RenderTargetView *renderTargetView = D3D11_GetCurrentRenderTargetView(renderer);
     if (renderTargetView != rendererData->currentRenderTargetView) {
         ID3D11DeviceContext_OMSetRenderTargets(rendererData->d3dContext,
@@ -2355,7 +2364,6 @@ D3D11_RenderStartDrawOp(SDL_Renderer * renderer)
         rendererData->currentRenderTargetView = renderTargetView;
     }
 
-    ID3D11RasterizerState *rasterizerState;
     if (SDL_RectEmpty(&renderer->clip_rect)) {
         rasterizerState = rendererData->mainRasterizer;
     } else {
@@ -2437,14 +2445,16 @@ D3D11_RenderDrawPoints(SDL_Renderer * renderer,
 {
     D3D11_RenderData *rendererData = (D3D11_RenderData *) renderer->driverdata;
     float r, g, b, a;
+    VertexPositionColor *vertices;
+    int i;
 
     r = (float)(renderer->r / 255.0f);
     g = (float)(renderer->g / 255.0f);
     b = (float)(renderer->b / 255.0f);
     a = (float)(renderer->a / 255.0f);
 
-    VertexPositionColor * vertices = SDL_stack_alloc(VertexPositionColor, count);
-    for (int i = 0; i < min(count, 128); ++i) {
+    vertices = SDL_stack_alloc(VertexPositionColor, count);
+    for (i = 0; i < min(count, 128); ++i) {
         const VertexPositionColor v = { { points[i].x, points[i].y, 0.0f }, { 0.0f, 0.0f }, { r, g, b, a } };
         vertices[i] = v;
     }
@@ -2474,14 +2484,16 @@ D3D11_RenderDrawLines(SDL_Renderer * renderer,
 {
     D3D11_RenderData *rendererData = (D3D11_RenderData *) renderer->driverdata;
     float r, g, b, a;
+    VertexPositionColor *vertices;
+    int i;
 
     r = (float)(renderer->r / 255.0f);
     g = (float)(renderer->g / 255.0f);
     b = (float)(renderer->b / 255.0f);
     a = (float)(renderer->a / 255.0f);
 
-    VertexPositionColor * vertices = SDL_stack_alloc(VertexPositionColor, count);
-    for (int i = 0; i < count; ++i) {
+    vertices = SDL_stack_alloc(VertexPositionColor, count);
+    for (i = 0; i < count; ++i) {
         const VertexPositionColor v = { { points[i].x, points[i].y, 0.0f }, { 0.0f, 0.0f }, { r, g, b, a } };
         vertices[i] = v;
     }
@@ -2511,22 +2523,23 @@ D3D11_RenderFillRects(SDL_Renderer * renderer,
 {
     D3D11_RenderData *rendererData = (D3D11_RenderData *) renderer->driverdata;
     float r, g, b, a;
+    int i;
 
     r = (float)(renderer->r / 255.0f);
     g = (float)(renderer->g / 255.0f);
     b = (float)(renderer->b / 255.0f);
     a = (float)(renderer->a / 255.0f);
 
-    for (int i = 0; i < count; ++i) {
-        D3D11_RenderStartDrawOp(renderer);
-        D3D11_RenderSetBlendMode(renderer, renderer->blendMode);
-
+    for (i = 0; i < count; ++i) {
         VertexPositionColor vertices[] = {
             { { rects[i].x, rects[i].y, 0.0f },                             { 0.0f, 0.0f}, {r, g, b, a} },
             { { rects[i].x, rects[i].y + rects[i].h, 0.0f },                { 0.0f, 0.0f }, { r, g, b, a } },
             { { rects[i].x + rects[i].w, rects[i].y, 0.0f },                { 0.0f, 0.0f }, { r, g, b, a } },
             { { rects[i].x + rects[i].w, rects[i].y + rects[i].h, 0.0f },   { 0.0f, 0.0f }, { r, g, b, a } },
         };
+
+        D3D11_RenderStartDrawOp(renderer);
+        D3D11_RenderSetBlendMode(renderer, renderer->blendMode);
         if (D3D11_UpdateVertexBuffer(renderer, vertices, sizeof(vertices)) != 0) {
             return -1;
         }
@@ -2566,39 +2579,65 @@ D3D11_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
 {
     D3D11_RenderData *rendererData = (D3D11_RenderData *) renderer->driverdata;
     D3D11_TextureData *textureData = (D3D11_TextureData *) texture->driverdata;
+    float minu, maxu, minv, maxv;
+    Float4 color;
+    VertexPositionColor vertices[4];
+    ID3D11SamplerState *textureSampler;
 
     D3D11_RenderStartDrawOp(renderer);
     D3D11_RenderSetBlendMode(renderer, texture->blendMode);
 
-    float minu = (float) srcrect->x / texture->w;
-    float maxu = (float) (srcrect->x + srcrect->w) / texture->w;
-    float minv = (float) srcrect->y / texture->h;
-    float maxv = (float) (srcrect->y + srcrect->h) / texture->h;
+    minu = (float) srcrect->x / texture->w;
+    maxu = (float) (srcrect->x + srcrect->w) / texture->w;
+    minv = (float) srcrect->y / texture->h;
+    maxv = (float) (srcrect->y + srcrect->h) / texture->h;
 
-    float r = 1.0f;
-    float g = 1.0f;
-    float b = 1.0f;
-    float a = 1.0f;
+    color.x = 1.0f;     /* red */
+    color.y = 1.0f;     /* green */
+    color.z = 1.0f;     /* blue */
+    color.w = 1.0f;     /* alpha */
     if (texture->modMode & SDL_TEXTUREMODULATE_COLOR) {
-        r = (float)(texture->r / 255.0f);
-        g = (float)(texture->g / 255.0f);
-        b = (float)(texture->b / 255.0f);
+        color.x = (float)(texture->r / 255.0f);     /* red */
+        color.y = (float)(texture->g / 255.0f);     /* green */
+        color.z = (float)(texture->b / 255.0f);     /* blue */
     }
     if (texture->modMode & SDL_TEXTUREMODULATE_ALPHA) {
-        a = (float)(texture->a / 255.0f);
+        color.w = (float)(texture->a / 255.0f);     /* alpha */
     }
 
-    VertexPositionColor vertices[] = {
-        { { dstrect->x, dstrect->y, 0.0f },                             { minu, minv }, { r, g, b, a } },
-        { { dstrect->x, dstrect->y + dstrect->h, 0.0f },                { minu, maxv }, { r, g, b, a } },
-        { { dstrect->x + dstrect->w, dstrect->y, 0.0f },                { maxu, minv }, { r, g, b, a } },
-        { { dstrect->x + dstrect->w, dstrect->y + dstrect->h, 0.0f },   { maxu, maxv }, { r, g, b, a } },
-    };
+    vertices[0].pos.x = dstrect->x;
+    vertices[0].pos.y = dstrect->y;
+    vertices[0].pos.z = 0.0f;
+    vertices[0].tex.x = minu;
+    vertices[0].tex.y = minv;
+    vertices[0].color = color;
+
+    vertices[1].pos.x = dstrect->x;
+    vertices[1].pos.y = dstrect->y + dstrect->h;
+    vertices[1].pos.z = 0.0f;
+    vertices[1].tex.x = minu;
+    vertices[1].tex.y = maxv;
+    vertices[1].color = color;
+
+    vertices[2].pos.x = dstrect->x + dstrect->w;
+    vertices[2].pos.y = dstrect->y;
+    vertices[2].pos.z = 0.0f;
+    vertices[2].tex.x = maxu;
+    vertices[2].tex.y = minv;
+    vertices[2].color = color;
+
+    vertices[3].pos.x = dstrect->x + dstrect->w;
+    vertices[3].pos.y = dstrect->y + dstrect->h;
+    vertices[3].pos.z = 0.0f;
+    vertices[3].tex.x = maxu;
+    vertices[3].tex.y = maxv;
+    vertices[3].color = color;
+
     if (D3D11_UpdateVertexBuffer(renderer, vertices, sizeof(vertices)) != 0) {
         return -1;
     }
 
-    ID3D11SamplerState *textureSampler = D3D11_RenderGetSampler(renderer, texture);
+    textureSampler = D3D11_RenderGetSampler(renderer, texture);
     if (textureData->yuv) {
         ID3D11ShaderResourceView *shaderResources[] = {
             textureData->mainTextureResourceView,
@@ -2632,26 +2671,32 @@ D3D11_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
 {
     D3D11_RenderData *rendererData = (D3D11_RenderData *) renderer->driverdata;
     D3D11_TextureData *textureData = (D3D11_TextureData *) texture->driverdata;
+    float minu, maxu, minv, maxv;
+    Float4 color;
+    Float4X4 modelMatrix;
+    float minx, maxx, miny, maxy;
+    VertexPositionColor vertices[4];
+    ID3D11SamplerState *textureSampler;
 
     D3D11_RenderStartDrawOp(renderer);
     D3D11_RenderSetBlendMode(renderer, texture->blendMode);
 
-    float minu = (float) srcrect->x / texture->w;
-    float maxu = (float) (srcrect->x + srcrect->w) / texture->w;
-    float minv = (float) srcrect->y / texture->h;
-    float maxv = (float) (srcrect->y + srcrect->h) / texture->h;
+    minu = (float) srcrect->x / texture->w;
+    maxu = (float) (srcrect->x + srcrect->w) / texture->w;
+    minv = (float) srcrect->y / texture->h;
+    maxv = (float) (srcrect->y + srcrect->h) / texture->h;
 
-    float r = 1.0f;
-    float g = 1.0f;
-    float b = 1.0f;
-    float a = 1.0f;
+    color.x = 1.0f;     /* red */
+    color.y = 1.0f;     /* green */
+    color.z = 1.0f;     /* blue */
+    color.w = 1.0f;     /* alpha */
     if (texture->modMode & SDL_TEXTUREMODULATE_COLOR) {
-        r = (float)(texture->r / 255.0f);
-        g = (float)(texture->g / 255.0f);
-        b = (float)(texture->b / 255.0f);
+        color.x = (float)(texture->r / 255.0f);     /* red */
+        color.y = (float)(texture->g / 255.0f);     /* green */
+        color.z = (float)(texture->b / 255.0f);     /* blue */
     }
     if (texture->modMode & SDL_TEXTUREMODULATE_ALPHA) {
-        a = (float)(texture->a / 255.0f);
+        color.w = (float)(texture->a / 255.0f);     /* alpha */
     }
 
     if (flip & SDL_FLIP_HORIZONTAL) {
@@ -2665,28 +2710,50 @@ D3D11_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
         minv = tmp;
     }
 
-    Float4X4 modelMatrix = MatrixMultiply(
+    modelMatrix = MatrixMultiply(
             MatrixRotationZ((float)(M_PI * (float) angle / 180.0f)),
             MatrixTranslation(dstrect->x + center->x, dstrect->y + center->y, 0)
             );
     D3D11_SetModelMatrix(renderer, &modelMatrix);
 
-    const float minx = -center->x;
-    const float maxx = dstrect->w - center->x;
-    const float miny = -center->y;
-    const float maxy = dstrect->h - center->y;
+    minx = -center->x;
+    maxx = dstrect->w - center->x;
+    miny = -center->y;
+    maxy = dstrect->h - center->y;
 
-    VertexPositionColor vertices[] = {
-        {{minx, miny, 0.0f}, {minu, minv}, {r, g, b, a}},
-        {{minx, maxy, 0.0f}, {minu, maxv}, {r, g, b, a}},
-        {{maxx, miny, 0.0f}, {maxu, minv}, {r, g, b, a}},
-        {{maxx, maxy, 0.0f}, {maxu, maxv}, {r, g, b, a}},
-    };
+    vertices[0].pos.x = minx;
+    vertices[0].pos.y = miny;
+    vertices[0].pos.z = 0.0f;
+    vertices[0].tex.x = minu;
+    vertices[0].tex.y = minv;
+    vertices[0].color = color;
+    
+    vertices[1].pos.x = minx;
+    vertices[1].pos.y = maxy;
+    vertices[1].pos.z = 0.0f;
+    vertices[1].tex.x = minu;
+    vertices[1].tex.y = maxv;
+    vertices[1].color = color;
+    
+    vertices[2].pos.x = maxx;
+    vertices[2].pos.y = miny;
+    vertices[2].pos.z = 0.0f;
+    vertices[2].tex.x = maxu;
+    vertices[2].tex.y = minv;
+    vertices[2].color = color;
+    
+    vertices[3].pos.x = maxx;
+    vertices[3].pos.y = maxy;
+    vertices[3].pos.z = 0.0f;
+    vertices[3].tex.x = maxu;
+    vertices[3].tex.y = maxv;
+    vertices[3].color = color;
+
     if (D3D11_UpdateVertexBuffer(renderer, vertices, sizeof(vertices)) != 0) {
         return -1;
     }
 
-    ID3D11SamplerState *textureSampler = D3D11_RenderGetSampler(renderer, texture);
+    textureSampler = D3D11_RenderGetSampler(renderer, texture);
     if (textureData->yuv) {
         ID3D11ShaderResourceView *shaderResources[] = {
             textureData->mainTextureResourceView,
@@ -2724,6 +2791,10 @@ D3D11_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     ID3D11Texture2D *stagingTexture = NULL;
     HRESULT result;
     int status = -1;
+    D3D11_TEXTURE2D_DESC stagingTextureDesc;
+    D3D11_RECT srcRect;
+    D3D11_BOX srcBox;
+    D3D11_MAPPED_SUBRESOURCE textureMemory;
 
     /* Retrieve a pointer to the back buffer: */
     result = IDXGISwapChain_GetBuffer(data->swapChain,
@@ -2737,7 +2808,6 @@ D3D11_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     }
 
     /* Create a staging texture to copy the screen's data to: */
-    D3D11_TEXTURE2D_DESC stagingTextureDesc;
     ID3D11Texture2D_GetDesc(backBuffer, &stagingTextureDesc);
     stagingTextureDesc.Width = rect->w;
     stagingTextureDesc.Height = rect->h;
@@ -2755,13 +2825,11 @@ D3D11_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     }
 
     /* Copy the desired portion of the back buffer to the staging texture: */
-    D3D11_RECT srcRect;
     if (D3D11_GetViewportAlignedD3DRect(renderer, rect, &srcRect) != 0) {
         /* D3D11_GetViewportAlignedD3DRect will have set the SDL error */
         goto done;
     }
 
-    D3D11_BOX srcBox;
     srcBox.left = srcRect.left;
     srcBox.right = srcRect.right;
     srcBox.top = srcRect.top;
@@ -2777,7 +2845,6 @@ D3D11_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
         &srcBox);
 
     /* Map the staging texture's data to CPU-accessible memory: */
-    D3D11_MAPPED_SUBRESOURCE textureMemory;
     result = ID3D11DeviceContext_Map(data->d3dContext,
         (ID3D11Resource *)stagingTexture,
         0,
@@ -2828,6 +2895,8 @@ D3D11_RenderPresent(SDL_Renderer * renderer)
     D3D11_RenderData *data = (D3D11_RenderData *) renderer->driverdata;
     UINT syncInterval;
     UINT presentFlags;
+    HRESULT result;
+    DXGI_PRESENT_PARAMETERS parameters;
 
     if (renderer->info.flags & SDL_RENDERER_PRESENTVSYNC) {
         syncInterval = 1;
@@ -2838,15 +2907,14 @@ D3D11_RenderPresent(SDL_Renderer * renderer)
     }
 
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
-    HRESULT result = IDXGISwapChain_Present(data->swapChain, syncInterval, presentFlags);
+    result = IDXGISwapChain_Present(data->swapChain, syncInterval, presentFlags);
 #else
     /* The application may optionally specify "dirty" or "scroll"
      * rects to improve efficiency in certain scenarios.
      * This option is not available on Windows Phone 8, to note.
      */
-    DXGI_PRESENT_PARAMETERS parameters;
     SDL_zero(parameters);
-    HRESULT result = IDXGISwapChain1_Present1(data->swapChain, syncInterval, presentFlags, &parameters);
+    result = IDXGISwapChain1_Present1(data->swapChain, syncInterval, presentFlags, &parameters);
 #endif
 
     /* Discard the contents of the render target.
