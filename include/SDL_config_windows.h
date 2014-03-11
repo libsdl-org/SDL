@@ -172,7 +172,7 @@ typedef unsigned int uintptr_t;
 #define SDL_VIDEO_RENDER_D3D    1
 #endif
 #ifndef SDL_VIDEO_RENDER_D3D11
-#define SDL_VIDEO_RENDER_D3D11	1
+#define SDL_VIDEO_RENDER_D3D11	0
 #endif
 
 /* Enable OpenGL support */
