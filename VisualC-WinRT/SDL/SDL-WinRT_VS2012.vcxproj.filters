@@ -280,6 +280,9 @@
     <ClCompile Include="..\..\src\render\direct3d11\SDL_render_d3d11.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\render\direct3d11\SDL_render_d3d11_winrthelpers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\begin_code.h">
@@ -634,6 +637,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\SDL_internal.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\direct3d11\SDL_render_d3d11_winrthelpers_cpp.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

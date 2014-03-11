@@ -22,18 +22,6 @@
 
 #if SDL_VIDEO_RENDER_D3D11 && !SDL_RENDER_DISABLED
 
-#ifdef __WINRT__
-#include <windows.ui.core.h>
-#include <windows.foundation.h>
-
-#if WINAPI_FAMILY == WINAPI_FAMILY_APP
-#include <windows.ui.xaml.media.dxinterop.h>
-#endif
-
-using namespace Windows::UI::Core;
-using namespace Windows::Graphics::Display;
-#endif  /* __WINRT__ */
-
 #define COBJMACROS
 #include "../../core/windows/SDL_windows.h"
 #include "SDL_hints.h"
@@ -43,6 +31,19 @@ using namespace Windows::Graphics::Display;
 #include "../SDL_d3dmath.h"
 
 #include <d3d11_1.h>
+
+
+#ifdef __WINRT__
+
+#include "SDL_render_d3d11_winrthelpers_cpp.h"
+
+#if WINAPI_FAMILY == WINAPI_FAMILY_APP
+#include <windows.ui.xaml.media.dxinterop.h>
+/* TODO, WinRT, XAML: get the ISwapChainBackgroundPanelNative from something other than a global var */
+extern ISwapChainBackgroundPanelNative * WINRT_GlobalSwapChainBackgroundPanelNative;
+#endif  /* WINAPI_FAMILY == WINAPI_FAMILY_APP */
+
+#endif  /* __WINRT__ */
 
 
 #define SAFE_RELEASE(X) if ((X)) { IUnknown_Release(SDL_static_cast(IUnknown*, X)); X = NULL; }
@@ -960,10 +961,11 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
     D3D11_SAMPLER_DESC samplerDesc;
     D3D11_RASTERIZER_DESC rasterDesc;
 
-#ifdef __WINRT__
-    CreateDXGIFactoryFunc = CreateDXGIFactory;
-    D3D11CreateDeviceFunc = D3D11CreateDevice;
-#else
+    // TODO, WinRT, Mar 11, 2014: once SDL/WinRT is back up and running, see if D3D11 init functions are loadable (via LoadPackagedLibrary/SDL_LoadObject, etc.)
+//#ifdef __WINRT__
+//    CreateDXGIFactoryFunc = CreateDXGIFactory;
+//    D3D11CreateDeviceFunc = D3D11CreateDevice;
+//#else
     data->hDXGIMod = SDL_LoadObject("dxgi.dll");
     if (!data->hDXGIMod) {
         result = E_FAIL;
@@ -987,7 +989,7 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
         result = E_FAIL;
         goto done;
     }
-#endif /* __WINRT__ */
+//#endif /* __WINRT__ */
 
     result = CreateDXGIFactoryFunc(&IID_IDXGIFactory2, &data->dxgiFactory);
     if (FAILED(result)) {
@@ -1269,79 +1271,7 @@ done:
     return result;
 }
 
-#ifdef __WINRT__
-
-#if WINAPI_FAMILY == WINAPI_FAMILY_APP
-/* TODO, WinRT, XAML: get the ISwapChainBackgroundPanelNative from something other than a global var */
-extern ISwapChainBackgroundPanelNative * WINRT_GlobalSwapChainBackgroundPanelNative;
-#endif
-
-static IUnknown *
-D3D11_GetCoreWindowFromSDLRenderer(SDL_Renderer * renderer)
-{
-    SDL_Window * sdlWindow = renderer->window;
-    if (!renderer->window) {
-        return NULL;
-    }
-
-    SDL_SysWMinfo sdlWindowInfo;
-    SDL_VERSION(&sdlWindowInfo.version);
-    if (!SDL_GetWindowWMInfo(sdlWindow, &sdlWindowInfo)) {
-        return NULL;
-    }
-
-    if (sdlWindowInfo.subsystem != SDL_SYSWM_WINRT) {
-        return NULL;
-    }
-
-    if (!sdlWindowInfo.info.winrt.window) {
-        return NULL;
-    }
-
-    ABI::Windows::UI::Core::ICoreWindow *coreWindow = NULL;
-    if (FAILED(sdlWindowInfo.info.winrt.window->QueryInterface(&coreWindow))) {
-        return NULL;
-    }
-
-    IUnknown *coreWindowAsIUnknown = NULL;
-    coreWindow->QueryInterface(&coreWindowAsIUnknown);
-    coreWindow->Release();
-
-    return coreWindowAsIUnknown;
-}
-
-static DXGI_MODE_ROTATION
-D3D11_GetCurrentRotation()
-{
-    switch (DisplayProperties::CurrentOrientation) {
-#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
-        /* Windows Phone rotations */
-    case DisplayOrientations::Landscape:
-        return DXGI_MODE_ROTATION_ROTATE90;
-    case DisplayOrientations::Portrait:
-        return DXGI_MODE_ROTATION_IDENTITY;
-    case DisplayOrientations::LandscapeFlipped:
-        return DXGI_MODE_ROTATION_ROTATE270;
-    case DisplayOrientations::PortraitFlipped:
-        return DXGI_MODE_ROTATION_ROTATE180;
-#else
-        /* Non-Windows-Phone rotations (ex: Windows 8, Windows RT) */
-    case DisplayOrientations::Landscape:
-        return DXGI_MODE_ROTATION_IDENTITY;
-    case DisplayOrientations::Portrait:
-        return DXGI_MODE_ROTATION_ROTATE270;
-    case DisplayOrientations::LandscapeFlipped:
-        return DXGI_MODE_ROTATION_ROTATE180;
-    case DisplayOrientations::PortraitFlipped:
-        return DXGI_MODE_ROTATION_ROTATE90;
-#endif /* WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP */
-
-    default:
-        return DXGI_MODE_ROTATION_UNSPECIFIED;
-    }
-}
-
-#else
+#ifdef __WIN32__
 
 static DXGI_MODE_ROTATION
 D3D11_GetCurrentRotation()
@@ -1350,7 +1280,7 @@ D3D11_GetCurrentRotation()
     return DXGI_MODE_ROTATION_IDENTITY;
 }
 
-#endif /* __WINRT__ */
+#endif /* __WIN32__ */
 
 static BOOL
 D3D11_IsDisplayRotated90Degrees(DXGI_MODE_ROTATION rotation)
@@ -1460,7 +1390,7 @@ D3D11_CreateSwapChain(SDL_Renderer * renderer, int w, int h)
         }
 
 #if WINAPI_FAMILY == WINAPI_FAMILY_APP
-        result = WINRT_GlobalSwapChainBackgroundPanelNative->SetSwapChain(data->swapChain);
+        result = ISwapChainBackgroundPanelNative_SetSwapChain(WINRT_GlobalSwapChainBackgroundPanelNative, (IDXGISwapChain *) data->swapChain);
         if (FAILED(result)) {
             WIN_SetErrorFromHRESULT(__FUNCTION__ ", ISwapChainBackgroundPanelNative::SetSwapChain", result);
             goto done;
@@ -1471,6 +1401,7 @@ D3D11_CreateSwapChain(SDL_Renderer * renderer, int w, int h)
         goto done;
 #endif
     } else {
+#ifdef __WIN32__
         SDL_SysWMinfo windowinfo;
         SDL_VERSION(&windowinfo.version);
         SDL_GetWindowWMInfo(renderer->window, &windowinfo);
@@ -1487,6 +1418,10 @@ D3D11_CreateSwapChain(SDL_Renderer * renderer, int w, int h)
             WIN_SetErrorFromHRESULT(__FUNCTION__ ", IDXGIFactory2::CreateSwapChainForHwnd", result);
             goto done;
         }
+#else
+        SDL_SetError(__FUNCTION__", Unable to find something to attach a swap chain to");
+        goto done;
+#endif  /* ifdef __WIN32__ / else */
     }
     data->swapEffect = swapChainDesc.SwapEffect;
 
@@ -2379,7 +2314,7 @@ static void
 D3D11_RenderSetBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
 {
     D3D11_RenderData *rendererData = (D3D11_RenderData *)renderer->driverdata;
-    ID3D11BlendState *blendState;
+    ID3D11BlendState *blendState = NULL;
     switch (blendMode) {
     case SDL_BLENDMODE_BLEND:
         blendState = rendererData->blendModeBlend;
