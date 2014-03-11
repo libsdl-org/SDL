@@ -162,7 +162,9 @@ SDL_GLContext
 Cocoa_GL_CreateContext(_THIS, SDL_Window * window)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+/*
     const GLubyte *(APIENTRY * glGetStringFunc)(GLenum) = NULL;
+*/
     NSAutoreleasePool *pool;
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
     SDL_DisplayData *displaydata = (SDL_DisplayData *)display->driverdata;
@@ -249,7 +251,7 @@ Cocoa_GL_CreateContext(_THIS, SDL_Window * window)
 
     fmt = [[NSOpenGLPixelFormat alloc] initWithAttributes:attr];
     if (fmt == nil) {
-        SDL_SetError ("Failed creating OpenGL pixel format");
+        SDL_SetError("Failed creating OpenGL pixel format");
         [pool release];
         return NULL;
     }
@@ -263,7 +265,7 @@ Cocoa_GL_CreateContext(_THIS, SDL_Window * window)
     [fmt release];
 
     if (context == nil) {
-        SDL_SetError ("Failed creating OpenGL context");
+        SDL_SetError("Failed creating OpenGL context");
         [pool release];
         return NULL;
     }
@@ -272,10 +274,22 @@ Cocoa_GL_CreateContext(_THIS, SDL_Window * window)
 
     if ( Cocoa_GL_MakeCurrent(_this, window, context) < 0 ) {
         Cocoa_GL_DeleteContext(_this, context);
-        SDL_SetError ("Failed making OpenGL context current");
+        SDL_SetError("Failed making OpenGL context current");
         return NULL;
     }
 
+/* No other backend does this version checking.
+   If we enable it, we should consider whether it should be done at a 
+   higher level for all platforms. We'll have to think through the implications
+   of this.
+
+   For example, Mac OS X 10.6 will only report OpenGL 2.0, but we ask for 2.1
+   by default. If we don't get 2.1, then the renderer will set the requested
+   version and try to recreate the window, which causes all kinds of problems.
+
+   For now, we'll just disable this code until we can think about it more.
+*/
+#if 0
     glGetStringFunc = (const GLubyte *(APIENTRY *)(GLenum)) SDL_GL_GetProcAddress("glGetString");
     if (!glGetStringFunc) {
         Cocoa_GL_DeleteContext(_this, context);
@@ -305,6 +319,7 @@ Cocoa_GL_CreateContext(_THIS, SDL_Window * window)
 
     _this->gl_config.major_version = glversion_major;
     _this->gl_config.minor_version = glversion_minor;
+#endif
 
     return context;
 }

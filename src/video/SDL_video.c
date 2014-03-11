@@ -2563,10 +2563,10 @@ SDL_GL_ResetAttributes()
     _this->gl_config.multisamplesamples = 0;
     _this->gl_config.retained_backing = 1;
     _this->gl_config.accelerated = -1;  /* accelerated or not, both are fine */
-#if SDL_VIDEO_OPENGL
-    _this->gl_config.major_version = 1;
-    _this->gl_config.minor_version = 2;
     _this->gl_config.profile_mask = 0;
+#if SDL_VIDEO_OPENGL
+    _this->gl_config.major_version = 2;
+    _this->gl_config.minor_version = 1;
 #elif SDL_VIDEO_OPENGL_ES2
     _this->gl_config.major_version = 2;
     _this->gl_config.minor_version = 0;
