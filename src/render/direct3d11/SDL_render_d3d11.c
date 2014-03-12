@@ -35,7 +35,7 @@
 
 #ifdef __WINRT__
 
-#include "SDL_render_d3d11_winrthelpers_cpp.h"
+#include "SDL_render_winrt.h"
 
 #if WINAPI_FAMILY == WINAPI_FAMILY_APP
 #include <windows.ui.xaml.media.dxinterop.h>
