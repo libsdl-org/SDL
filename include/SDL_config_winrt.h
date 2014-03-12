@@ -180,8 +180,7 @@ typedef unsigned int uintptr_t;
 #endif
 
 /* Enable system power support */
-// TODO, WinRT: investigate system power support.  The Win32-based APIs don't work on WinRT.
-#define SDL_POWER_DISABLED  1
+#define SDL_POWER_WINRT 1
 
 /* Enable assembly routines (Win64 doesn't have inline asm) */
 #ifndef _WIN64

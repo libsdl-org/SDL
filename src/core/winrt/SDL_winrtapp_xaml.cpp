@@ -42,7 +42,7 @@
 SDL_bool WINRT_XAMLWasEnabled = SDL_FALSE;
 
 #if WINAPI_FAMILY == WINAPI_FAMILY_APP
-ISwapChainBackgroundPanelNative * WINRT_GlobalSwapChainBackgroundPanelNative = NULL;
+extern "C" ISwapChainBackgroundPanelNative * WINRT_GlobalSwapChainBackgroundPanelNative = NULL;
 static Windows::Foundation::EventRegistrationToken	WINRT_XAMLAppEventToken;
 #endif
 

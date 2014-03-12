@@ -79,6 +79,21 @@ SDL_mutexP(SDL_mutex * mutex)
     }
 }
 
+/* TryLock the mutex */
+int
+SDL_TryLockMutex(SDL_mutex * mutex)
+{
+    int retval = 0;
+    if (mutex == NULL) {
+        return SDL_SetError("Passed a NULL mutex");
+    }
+
+    if (mutex->cpp_mutex.try_lock() == false) {
+        retval = SDL_MUTEX_TIMEDOUT;
+    }
+    return retval;
+}
+
 /* Unlock the mutex */
 extern "C"
 int

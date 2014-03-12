@@ -961,11 +961,10 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
     D3D11_SAMPLER_DESC samplerDesc;
     D3D11_RASTERIZER_DESC rasterDesc;
 
-    // TODO, WinRT, Mar 11, 2014: once SDL/WinRT is back up and running, see if D3D11 init functions are loadable (via LoadPackagedLibrary/SDL_LoadObject, etc.)
-//#ifdef __WINRT__
-//    CreateDXGIFactoryFunc = CreateDXGIFactory;
-//    D3D11CreateDeviceFunc = D3D11CreateDevice;
-//#else
+#ifdef __WINRT__
+    CreateDXGIFactoryFunc = CreateDXGIFactory1;
+    D3D11CreateDeviceFunc = D3D11CreateDevice;
+#else
     data->hDXGIMod = SDL_LoadObject("dxgi.dll");
     if (!data->hDXGIMod) {
         result = E_FAIL;
@@ -989,7 +988,7 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
         result = E_FAIL;
         goto done;
     }
-//#endif /* __WINRT__ */
+#endif /* __WINRT__ */
 
     result = CreateDXGIFactoryFunc(&IID_IDXGIFactory2, &data->dxgiFactory);
     if (FAILED(result)) {
@@ -2833,6 +2832,11 @@ D3D11_RenderPresent(SDL_Renderer * renderer)
     HRESULT result;
     DXGI_PRESENT_PARAMETERS parameters;
 
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+    syncInterval = 1;
+    presentFlags = 0;
+    result = IDXGISwapChain_Present(data->swapChain, syncInterval, presentFlags);
+#else
     if (renderer->info.flags & SDL_RENDERER_PRESENTVSYNC) {
         syncInterval = 1;
         presentFlags = 0;
@@ -2841,9 +2845,6 @@ D3D11_RenderPresent(SDL_Renderer * renderer)
         presentFlags = DXGI_PRESENT_DO_NOT_WAIT;
     }
 
-#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
-    result = IDXGISwapChain_Present(data->swapChain, syncInterval, presentFlags);
-#else
     /* The application may optionally specify "dirty" or "scroll"
      * rects to improve efficiency in certain scenarios.
      * This option is not available on Windows Phone 8, to note.

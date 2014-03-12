@@ -45,6 +45,8 @@
 
 #if TARGET_OS_IPHONE  /* probably not useful on iOS. */
 #define SDL_DYNAMIC_API 0
+#elif SDL_BUILDING_WINRT /* probaly not useful on WinRT, given current .dll loading restrictions */
+#define SDL_DYNAMIC_API 0
 #else   /* everyone else. */
 #define SDL_DYNAMIC_API 1
 #endif

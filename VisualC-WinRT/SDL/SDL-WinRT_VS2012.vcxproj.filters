@@ -283,6 +283,18 @@
     <ClCompile Include="..\..\src\render\direct3d11\SDL_render_d3d11_winrthelpers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\render\SDL_d3dmath.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\dynapi\SDL_dynapi.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\power\winrt\SDL_syspower.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\power\SDL_power.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\begin_code.h">
@@ -640,6 +652,18 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\render\direct3d11\SDL_render_d3d11_winrthelpers_cpp.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\SDL_d3dmath.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\dynapi\SDL_dynapi.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\dynapi\SDL_dynapi_overrides.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\dynapi\SDL_dynapi_procs.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -37,6 +37,8 @@ extern "C" {
 using namespace Windows::UI::Core;
 using namespace Windows::Graphics::Display;
 
+#include <DXGI.h>
+
 
 extern "C" void *
 D3D11_GetCoreWindowFromSDLRenderer(SDL_Renderer * renderer)
