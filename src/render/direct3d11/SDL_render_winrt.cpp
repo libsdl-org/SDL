@@ -28,16 +28,19 @@ extern "C" {
 }
 
 #include <windows.ui.core.h>
-#include <windows.foundation.h>
+#include <windows.graphics.display.h>
 
 #if WINAPI_FAMILY == WINAPI_FAMILY_APP
 #include <windows.ui.xaml.media.dxinterop.h>
 #endif
 
+using namespace ABI;
 using namespace Windows::UI::Core;
 using namespace Windows::Graphics::Display;
 
 #include <DXGI.h>
+
+#include "SDL_render_winrt.h"
 
 
 extern "C" void *
@@ -77,32 +80,32 @@ D3D11_GetCoreWindowFromSDLRenderer(SDL_Renderer * renderer)
 extern "C" DXGI_MODE_ROTATION
 D3D11_GetCurrentRotation()
 {
+#if 0 /* FIXME: This doesn't compile on Visual Studio 2013 */
     switch (DisplayProperties::CurrentOrientation) {
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
-        /* Windows Phone rotations */
-        case DisplayOrientations::Landscape:
-            return DXGI_MODE_ROTATION_ROTATE90;
-        case DisplayOrientations::Portrait:
-            return DXGI_MODE_ROTATION_IDENTITY;
-        case DisplayOrientations::LandscapeFlipped:
-            return DXGI_MODE_ROTATION_ROTATE270;
-        case DisplayOrientations::PortraitFlipped:
-            return DXGI_MODE_ROTATION_ROTATE180;
+    /* Windows Phone rotations */
+    case DisplayOrientations::Landscape:
+        return DXGI_MODE_ROTATION_ROTATE90;
+    case DisplayOrientations::Portrait:
+        return DXGI_MODE_ROTATION_IDENTITY;
+    case DisplayOrientations::LandscapeFlipped:
+        return DXGI_MODE_ROTATION_ROTATE270;
+    case DisplayOrientations::PortraitFlipped:
+        return DXGI_MODE_ROTATION_ROTATE180;
 #else
-        /* Non-Windows-Phone rotations (ex: Windows 8, Windows RT) */
-        case DisplayOrientations::Landscape:
-            return DXGI_MODE_ROTATION_IDENTITY;
-        case DisplayOrientations::Portrait:
-            return DXGI_MODE_ROTATION_ROTATE270;
-        case DisplayOrientations::LandscapeFlipped:
-            return DXGI_MODE_ROTATION_ROTATE180;
-        case DisplayOrientations::PortraitFlipped:
-            return DXGI_MODE_ROTATION_ROTATE90;
+    /* Non-Windows-Phone rotations (ex: Windows 8, Windows RT) */
+    case DisplayOrientations::Landscape:
+        return DXGI_MODE_ROTATION_IDENTITY;
+    case DisplayOrientations::Portrait:
+        return DXGI_MODE_ROTATION_ROTATE270;
+    case DisplayOrientations::LandscapeFlipped:
+        return DXGI_MODE_ROTATION_ROTATE180;
+    case DisplayOrientations::PortraitFlipped:
+        return DXGI_MODE_ROTATION_ROTATE90;
 #endif /* WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP */
-
-    default:
-        return DXGI_MODE_ROTATION_UNSPECIFIED;
     }
+#endif
+    return DXGI_MODE_ROTATION_IDENTITY;
 }
 
 
