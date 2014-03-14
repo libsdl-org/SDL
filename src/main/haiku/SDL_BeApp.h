@@ -20,7 +20,6 @@
 */
 #include "../../SDL_internal.h"
 
-
 #ifdef __cplusplus
 extern "C" {
 #endif

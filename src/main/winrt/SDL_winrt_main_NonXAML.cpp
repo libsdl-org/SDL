@@ -1,5 +1,9 @@
+/*
+    SDL_winrt_main_NonXAML.cpp, placed in the public domain by David Ludwig  3/13/14
+*/
+#include "../../../SDL_internal.h"
 
-#include <SDL_main.h>
+#include "SDL_main.h"
 #include <wrl.h>
 
 /* At least one file in any SDL/WinRT app appears to require compilation
