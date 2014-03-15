@@ -34,7 +34,6 @@ extern "C" {
 #include <windows.ui.xaml.media.dxinterop.h>
 #endif
 
-using namespace ABI;
 using namespace Windows::UI::Core;
 using namespace Windows::Graphics::Display;
 
@@ -80,8 +79,14 @@ D3D11_GetCoreWindowFromSDLRenderer(SDL_Renderer * renderer)
 extern "C" DXGI_MODE_ROTATION
 D3D11_GetCurrentRotation()
 {
-#if 0 /* FIXME: This doesn't compile on Visual Studio 2013 */
-    switch (DisplayProperties::CurrentOrientation) {
+#if NTDDI_VERSION > NTDDI_WIN8
+    const DisplayOrientations currentOrientation = DisplayInformation::GetForCurrentView()->CurrentOrientation;
+#else
+    const DisplayOrientations currentOrientation = DisplayProperties::CurrentOrientation;
+#endif
+
+    switch (currentOrientation) {
+
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
     /* Windows Phone rotations */
     case DisplayOrientations::Landscape:
@@ -104,7 +109,7 @@ D3D11_GetCurrentRotation()
         return DXGI_MODE_ROTATION_ROTATE90;
 #endif /* WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP */
     }
-#endif
+
     return DXGI_MODE_ROTATION_IDENTITY;
 }
 

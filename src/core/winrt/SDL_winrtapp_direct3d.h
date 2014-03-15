@@ -47,7 +47,11 @@ protected:
         Windows::UI::ApplicationSettings::SettingsPaneCommandsRequestedEventArgs ^args);
 #endif // if WINAPI_FAMILY == WINAPI_FAMILY_APP
 
+#if NTDDI_VERSION > NTDDI_WIN8
+    void OnOrientationChanged(Windows::Graphics::Display::DisplayInformation^ sender, Platform::Object^ args);
+#else
     void OnOrientationChanged(Platform::Object^ sender);
+#endif
     void OnWindowSizeChanged(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::WindowSizeChangedEventArgs^ args);
     void OnLogicalDpiChanged(Platform::Object^ sender);
     void OnActivated(Windows::ApplicationModel::Core::CoreApplicationView^ applicationView, Windows::ApplicationModel::Activation::IActivatedEventArgs^ args);
