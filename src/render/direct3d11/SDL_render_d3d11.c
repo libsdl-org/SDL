@@ -1438,30 +1438,24 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
     ID3D11Texture2D *backBuffer = NULL;
     HRESULT result = S_OK;
     int w, h;
-    BOOL swapDimensions;
 
     /* Release the previous render target view */
     D3D11_ReleaseMainRenderTargetView(renderer);
 
-    /* The width and height of the swap chain must be based on the window's
-     * landscape-oriented width and height. If the window is in a portrait
-     * rotation, the dimensions must be reversed.
+    /* The width and height of the swap chain must be based on the display's
+     * non-rotated size.
      */
     SDL_GetWindowSize(renderer->window, &w, &h);
     data->rotation = D3D11_GetCurrentRotation();
-
-#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
-    swapDimensions = FALSE;
-#else
-    swapDimensions = D3D11_IsDisplayRotated90Degrees(data->rotation);
-#endif
-    if (swapDimensions) {
+    if (D3D11_IsDisplayRotated90Degrees(data->rotation)) {
         int tmp = w;
         w = h;
         h = tmp;
     }
 
     if (data->swapChain) {
+        /* IDXGISwapChain::ResizeBuffers is not available on Windows Phone 8. */
+#if !defined(__WINRT__) || (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP)
         /* If the swap chain already exists, resize it. */
         result = IDXGISwapChain_ResizeBuffers(data->swapChain,
             0,
@@ -1473,6 +1467,7 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
             WIN_SetErrorFromHRESULT(__FUNCTION__ ", IDXGISwapChain::ResizeBuffers", result);
             goto done;
         }
+#endif
     } else {
         result = D3D11_CreateSwapChain(renderer, w, h);
         if (FAILED(result)) {
