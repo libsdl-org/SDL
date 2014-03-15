@@ -71,6 +71,9 @@
 #ifndef WM_MOUSEHWHEEL
 #define WM_MOUSEHWHEEL 0x020E
 #endif
+#ifndef WM_UNICHAR
+#define WM_UNICHAR 0x0109
+#endif
 
 static SDL_Scancode
 WindowsScanCodeToSDLScanCode( LPARAM lParam, WPARAM wParam )
