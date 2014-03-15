@@ -587,6 +587,8 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 
     inFullscreenTransition = NO;
 
+    [nswindow setLevel:kCGNormalWindowLevel];
+
     if (pendingWindowOperation == PENDING_OPERATION_ENTER_FULLSCREEN) {
         pendingWindowOperation = PENDING_OPERATION_NONE;
         [self setFullscreenSpace:YES];
