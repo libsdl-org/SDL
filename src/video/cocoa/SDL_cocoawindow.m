@@ -613,7 +613,10 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
         window->h = 0;
         [self windowDidResize:aNotification];
 
-        Cocoa_ShowWindow(SDL_GetVideoDevice(), window);
+        /* FIXME: Why does the window get hidden? */
+        if (window->flags & SDL_WINDOW_SHOWN) {
+            Cocoa_ShowWindow(SDL_GetVideoDevice(), window);
+        }
     }
 }
 
