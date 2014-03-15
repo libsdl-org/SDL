@@ -5,6 +5,9 @@ This is a list of major changes in SDL's version history.
 2.0.3:
 ---------------------------------------------------------------------------
 
+Mac OS X:
+* Fixed creating an OpenGL context by default on Mac OS X 10.6
+
 
 ---------------------------------------------------------------------------
 2.0.2:
