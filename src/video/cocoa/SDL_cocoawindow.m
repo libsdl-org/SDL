@@ -612,6 +612,8 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
         window->w = 0;
         window->h = 0;
         [self windowDidResize:aNotification];
+
+        Cocoa_ShowWindow(SDL_GetVideoDevice(), window);
     }
 }
 
