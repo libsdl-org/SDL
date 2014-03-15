@@ -163,7 +163,11 @@ WINRT_CalcDisplayModeUsingNativeWindow(SDL_DisplayMode * mode)
 
     // Calculate the display size given the window size, taking into account
     // the current display's DPI:
-    const float currentDPI = Windows::Graphics::Display::DisplayProperties::LogicalDpi; 
+#if NTDDI_VERSION > NTDDI_WIN8
+    const float currentDPI = DisplayInformation::GetForCurrentView()->LogicalDpi;
+#else
+    const float currentDPI = Windows::Graphics::Display::DisplayProperties::LogicalDpi;
+#endif
     const float dipsPerInch = 96.0f;
     const int w = (int) ((CoreWindow::GetForCurrentThread()->Bounds.Width * currentDPI) / dipsPerInch);
     const int h = (int) ((CoreWindow::GetForCurrentThread()->Bounds.Height * currentDPI) / dipsPerInch);
@@ -185,7 +189,11 @@ WINRT_CalcDisplayModeUsingNativeWindow(SDL_DisplayMode * mode)
     mode->w = w;
     mode->h = h;
     mode->driverdata = driverdata;
+#if NTDDI_VERSION > NTDDI_WIN8
+    driverdata->currentOrientation = DisplayInformation::GetForCurrentView()->CurrentOrientation;
+#else
     driverdata->currentOrientation = DisplayProperties::CurrentOrientation;
+#endif
 
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
     // On Windows Phone, the native window's size is always in portrait,

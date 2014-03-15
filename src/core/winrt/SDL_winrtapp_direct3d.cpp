@@ -163,7 +163,11 @@ static void WINRT_SetDisplayOrientationsPreference(void *userdata, const char *n
     // for details.  Microsoft's "Display orientation sample" also gives an
     // outline of how Windows treats device rotation
     // (http://code.msdn.microsoft.com/Display-Orientation-Sample-19a58e93).
+#if NTDDI_VERSION > NTDDI_WIN8
+    DisplayInformation::AutoRotationPreferences = (DisplayOrientations) orientationFlags;
+#else
     DisplayProperties::AutoRotationPreferences = (DisplayOrientations) orientationFlags;
+#endif
 }
 
 static void
@@ -283,20 +287,13 @@ void SDL_WinRTApp::Initialize(CoreApplicationView^ applicationView)
 
     CoreApplication::Exiting +=
         ref new EventHandler<Platform::Object^>(this, &SDL_WinRTApp::OnExiting);
-
-    DisplayProperties::OrientationChanged +=
-        ref new DisplayPropertiesEventHandler(this, &SDL_WinRTApp::OnOrientationChanged);
-
-    // Register the hint, SDL_HINT_ORIENTATIONS, with SDL.  This needs to be
-    // done before the hint's callback is registered (as of Feb 22, 2013),
-    // otherwise the hint callback won't get registered.
-    //
-    // TODO, WinRT: see if an app's default orientation can be found out via WinRT API(s), then set the initial value of SDL_HINT_ORIENTATIONS accordingly.
-    //SDL_SetHint(SDL_HINT_ORIENTATIONS, "LandscapeLeft LandscapeRight Portrait PortraitUpsideDown");   // DavidL: this is no longer needed (for SDL_AddHintCallback)
-    SDL_AddHintCallback(SDL_HINT_ORIENTATIONS, WINRT_SetDisplayOrientationsPreference, NULL);
 }
 
+#if NTDDI_VERSION > NTDDI_WIN8
+void SDL_WinRTApp::OnOrientationChanged(DisplayInformation^ sender, Object^ args)
+#else
 void SDL_WinRTApp::OnOrientationChanged(Object^ sender)
+#endif
 {
 #if LOG_ORIENTATION_EVENTS==1
     CoreWindow^ window = CoreWindow::GetForCurrentThread();
@@ -378,6 +375,18 @@ void SDL_WinRTApp::SetWindow(CoreWindow^ window)
     HardwareButtons::BackPressed +=
         ref new EventHandler<BackPressedEventArgs^>(this, &SDL_WinRTApp::OnBackButtonPressed);
 #endif
+
+#if NTDDI_VERSION > NTDDI_WIN8
+    DisplayInformation::GetForCurrentView()->OrientationChanged +=
+        ref new TypedEventHandler<Windows::Graphics::Display::DisplayInformation^, Object^>(this, &SDL_WinRTApp::OnOrientationChanged);
+#else
+    DisplayProperties::OrientationChanged +=
+        ref new DisplayPropertiesEventHandler(this, &SDL_WinRTApp::OnOrientationChanged);
+#endif
+
+    // Register the hint, SDL_HINT_ORIENTATIONS, with SDL.
+    // TODO, WinRT: see if an app's default orientation can be found out via WinRT API(s), then set the initial value of SDL_HINT_ORIENTATIONS accordingly.
+    SDL_AddHintCallback(SDL_HINT_ORIENTATIONS, WINRT_SetDisplayOrientationsPreference, NULL);
 
 #if WINAPI_FAMILY == WINAPI_FAMILY_APP  // for Windows 8/8.1/RT apps... (and not Phone apps)
     // Make sure we know when a user has opened the app's settings pane.
