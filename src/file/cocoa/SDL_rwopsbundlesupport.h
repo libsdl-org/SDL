@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifdef __MACOSX__
+#ifdef __APPLE__
 
 #include <stdio.h>
 

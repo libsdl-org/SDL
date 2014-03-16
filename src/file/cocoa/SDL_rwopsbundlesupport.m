@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#ifdef __MACOSX__
+#ifdef __APPLE__
 #import <Foundation/Foundation.h>
 
 #include "SDL_rwopsbundlesupport.h"
