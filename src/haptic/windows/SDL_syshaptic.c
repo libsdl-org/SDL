@@ -507,8 +507,25 @@ DI_DeviceObjectCallback(LPCDIDEVICEOBJECTINSTANCE dev, LPVOID pvRef)
     SDL_Haptic *haptic = (SDL_Haptic *) pvRef;
 
     if ((dev->dwType & DIDFT_AXIS) && (dev->dwFlags & DIDOI_FFACTUATOR)) {
+        const GUID *guid = &dev->guidType;
+        DWORD offset = 0;
+        if (DI_GUIDIsSame(guid, &GUID_XAxis)) {
+            offset = DIJOFS_X;
+        } else if (DI_GUIDIsSame(guid, &GUID_YAxis)) {
+            offset = DIJOFS_Y;
+        } else if (DI_GUIDIsSame(guid, &GUID_ZAxis)) {
+            offset = DIJOFS_Z;
+        } else if (DI_GUIDIsSame(guid, &GUID_RxAxis)) {
+            offset = DIJOFS_RX;
+        } else if (DI_GUIDIsSame(guid, &GUID_RyAxis)) {
+            offset = DIJOFS_RY;
+        } else if (DI_GUIDIsSame(guid, &GUID_RzAxis)) {
+            offset = DIJOFS_RZ;
+        } else {
+            return DIENUM_CONTINUE;   /* can't use this, go on. */
+        }
 
-        haptic->hwdata->axes[haptic->naxes] = dev->dwOfs;
+        haptic->hwdata->axes[haptic->naxes] = offset;
         haptic->naxes++;
 
         /* Currently using the artificial limit of 3 axes. */
