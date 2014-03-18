@@ -251,6 +251,9 @@ WatchJoystick(SDL_Joystick * joystick)
                     
                     break;
                 case SDL_JOYHATMOTION:
+                        if (event.jhat.value == SDL_HAT_CENTERED) {
+                            break;  /* ignore centering, we're probably just coming back to the center from the previous item we set. */
+                        }
                         for (_s = 0; _s < s; _s++) {
                             if (steps[_s].hat == event.jhat.hat && steps[_s].hat_value == event.jhat.value) {
                                 break;
