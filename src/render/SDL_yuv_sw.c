@@ -1274,10 +1274,15 @@ SDL_SW_CopyYUVToRGB(SDL_SW_YUVTexture * swdata, const SDL_Rect * srcrect,
                     Uint32 target_format, int w, int h, void *pixels,
                     int pitch)
 {
+    const int targetbpp = SDL_BYTESPERPIXEL(target_format);
     int stretch;
     int scale_2x;
     Uint8 *lum, *Cr, *Cb;
     int mod;
+
+    if (targetbpp == 0) {
+        return SDL_SetError("Invalid target pixel format");
+    }
 
     /* Make sure we're set up to display in the desired format */
     if (target_format != swdata->target_format) {
@@ -1366,7 +1371,7 @@ SDL_SW_CopyYUVToRGB(SDL_SW_YUVTexture * swdata, const SDL_Rect * srcrect,
     default:
         return SDL_SetError("Unsupported YUV format in copy");
     }
-    mod = (pitch / SDL_BYTESPERPIXEL(target_format));
+    mod = (pitch / targetbpp);
 
     if (scale_2x) {
         mod -= (swdata->w * 2);
