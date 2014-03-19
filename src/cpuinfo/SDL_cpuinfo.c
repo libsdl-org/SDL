@@ -408,15 +408,17 @@ SDL_GetCPUType(void)
             SDL_CPUType[i++] = (char)(b & 0xff); b >>= 8;
             SDL_CPUType[i++] = (char)(b & 0xff); b >>= 8;
             SDL_CPUType[i++] = (char)(b & 0xff); b >>= 8;
-            SDL_CPUType[i++] = (char)(b & 0xff); b >>= 8;
+            SDL_CPUType[i++] = (char)(b & 0xff);
+
             SDL_CPUType[i++] = (char)(d & 0xff); d >>= 8;
             SDL_CPUType[i++] = (char)(d & 0xff); d >>= 8;
             SDL_CPUType[i++] = (char)(d & 0xff); d >>= 8;
-            SDL_CPUType[i++] = (char)(d & 0xff); d >>= 8;
+            SDL_CPUType[i++] = (char)(d & 0xff);
+
             SDL_CPUType[i++] = (char)(c & 0xff); c >>= 8;
             SDL_CPUType[i++] = (char)(c & 0xff); c >>= 8;
             SDL_CPUType[i++] = (char)(c & 0xff); c >>= 8;
-            SDL_CPUType[i++] = (char)(c & 0xff); c >>= 8;
+            SDL_CPUType[i++] = (char)(c & 0xff);
         }
         if (!SDL_CPUType[0]) {
             SDL_strlcpy(SDL_CPUType, "Unknown", sizeof(SDL_CPUType));
