@@ -60,7 +60,8 @@ fi
 
 mkdir checker-buildbot
 cd checker-buildbot
-cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER="$CHECKERDIR/libexec/ccc-analyzer" -DSDL_STATIC=OFF ..
+#cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER="$CHECKERDIR/libexec/ccc-analyzer" -DSDL_STATIC=OFF ..
+CC="$CHECKERDIR/libexec/ccc-analyzer" CFLAGS="-O0" ../configure --disable-static
 PATH="$CHECKERDIR:$PATH" scan-build -o analysis $MAKE
 mv analysis/* ../analysis
 rmdir analysis   # Make sure this is empty.
