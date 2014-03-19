@@ -10,12 +10,16 @@
 
 # this currently expects a mercurial working copy that it can modify a little.
 
-CHECKERDIR="/usr/local/checker-276"
-
 FINALDIR="$1"
 
+CHECKERDIR="/usr/local/checker-276"
 if [ ! -d "$CHECKERDIR" ]; then
-    echo "$CHECKERDIR not found." 1>&2
+    echo "$CHECKERDIR not found. Trying /usr/share/clang ..." 1>&2
+    CHECKERDIR="/usr/share/clang/scan-build"
+fi
+
+if [ ! -d "$CHECKERDIR" ]; then
+    echo "$CHECKERDIR not found. Giving up." 1>&2
     exit 1
 fi
 
@@ -61,7 +65,9 @@ fi
 mkdir checker-buildbot
 cd checker-buildbot
 #cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER="$CHECKERDIR/libexec/ccc-analyzer" -DSDL_STATIC=OFF ..
-CC="$CHECKERDIR/libexec/ccc-analyzer" CFLAGS="-O0" ../configure
+#CC="$CHECKERDIR/libexec/ccc-analyzer" CFLAGS="-O0" ../configure
+CFLAGS="-O0" PATH="$CHECKERDIR:$PATH" scan-build -o analysis ../configure
+rm -rf analysis
 PATH="$CHECKERDIR:$PATH" scan-build -o analysis $MAKE
 mv analysis/* ../analysis
 rmdir analysis   # Make sure this is empty.
