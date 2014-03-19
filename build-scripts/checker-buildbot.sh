@@ -8,8 +8,6 @@
 # And download checker at http://clang-analyzer.llvm.org/ and unpack it in
 #  /usr/local ... update CHECKERDIR as appropriate.
 
-# this currently expects a mercurial working copy that it can modify a little.
-
 FINALDIR="$1"
 
 CHECKERDIR="/usr/local/checker-276"
@@ -53,10 +51,6 @@ set -e
 cd `dirname "$0"`
 cd ..
 
-# Turn off the dynamic API. Makes the analysis output clearer.
-echo '#pragma once' >src/dynapi/SDL_dynapi.h
-echo '#define SDL_DYNAMIC_API 0' >>src/dynapi/SDL_dynapi.h
-
 rm -rf checker-buildbot analysis
 if [ ! -z "$FINALDIR" ]; then
     rm -rf "$FINALDIR"
@@ -84,7 +78,6 @@ else
 fi
 
 rm -rf checker-buildbot
-hg revert src/dynapi/SDL_dynapi.h
 
 echo "Done. Final output is in '$FINALDIR' ..."
 
