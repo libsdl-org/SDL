@@ -25,6 +25,7 @@
 
 #include "SDL_cocoavideo.h"
 #include "../../events/SDL_events_c.h"
+#include "SDL_assert.h"
 
 #if !defined(UsrActivity) && defined(__LP64__) && !defined(__POWER__)
 /*
@@ -266,6 +267,7 @@ Cocoa_RegisterApp(void)
     pool = [[NSAutoreleasePool alloc] init];
     if (NSApp == nil) {
         [SDLApplication sharedApplication];
+        SDL_assert(NSApp != nil);
 
         if ([NSApp mainMenu] == nil) {
             CreateApplicationMenus();
@@ -276,7 +278,7 @@ Cocoa_RegisterApp(void)
             [NSNumber numberWithBool:NO], @"ApplePressAndHoldEnabled",
             nil];
         [[NSUserDefaults standardUserDefaults] registerDefaults:appDefaults];
-
+        [appDefaults release];
     }
     if (NSApp && !appDelegate) {
         appDelegate = [[SDLAppDelegate alloc] init];
