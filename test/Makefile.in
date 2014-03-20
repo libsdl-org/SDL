@@ -92,7 +92,8 @@ testautomation$(EXE): $(srcdir)/testautomation.c \
 		      $(srcdir)/testautomation_surface.c \
 		      $(srcdir)/testautomation_syswm.c \
 		      $(srcdir)/testautomation_timer.c \
-		      $(srcdir)/testautomation_video.c
+		      $(srcdir)/testautomation_video.c \
+		      $(srcdir)/testautomation_hints.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) 
 
 testmultiaudio$(EXE): $(srcdir)/testmultiaudio.c
