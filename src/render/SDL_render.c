@@ -970,8 +970,8 @@ static void
 SDL_UnlockTextureYUV(SDL_Texture * texture)
 {
     SDL_Texture *native = texture->native;
-    void *native_pixels;
-    int native_pitch;
+    void *native_pixels = NULL;
+    int native_pitch = 0;
     SDL_Rect rect;
 
     rect.x = 0;
@@ -991,8 +991,8 @@ static void
 SDL_UnlockTextureNative(SDL_Texture * texture)
 {
     SDL_Texture *native = texture->native;
-    void *native_pixels;
-    int native_pitch;
+    void *native_pixels = NULL;
+    int native_pitch = 0;
     const SDL_Rect *rect = &texture->locked_rect;
     const void* pixels = (void *) ((Uint8 *) texture->pixels +
                         rect->y * texture->pitch +
