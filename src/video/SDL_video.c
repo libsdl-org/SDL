@@ -1128,6 +1128,8 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
         if (setDisplayMode) {
             SDL_DisplayMode fullscreen_mode;
 
+            SDL_zero(fullscreen_mode);
+
             if (SDL_GetWindowDisplayMode(other, &fullscreen_mode) == 0) {
                 SDL_bool resized = SDL_TRUE;
 
