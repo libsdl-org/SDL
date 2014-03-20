@@ -58,12 +58,22 @@ my %format_type = (
     "BGRA8888" => "Uint32",
 );
 
+my %get_rgba_string_ignore_alpha = (
+    "RGB888" => "_R = (Uint8)(_pixel >> 16); _G = (Uint8)(_pixel >> 8); _B = (Uint8)_pixel;",
+    "BGR888" => "_B = (Uint8)(_pixel >> 16); _G = (Uint8)(_pixel >> 8); _R = (Uint8)_pixel;",
+    "ARGB8888" => "_R = (Uint8)(_pixel >> 16); _G = (Uint8)(_pixel >> 8); _B = (Uint8)_pixel;",
+    "RGBA8888" => "_R = (Uint8)(_pixel >> 24); _G = (Uint8)(_pixel >> 16); _B = (Uint8)(_pixel >> 8);",
+    "ABGR8888" => "_B = (Uint8)(_pixel >> 16); _G = (Uint8)(_pixel >> 8); _R = (Uint8)_pixel;",
+    "BGRA8888" => "_B = (Uint8)(_pixel >> 24); _G = (Uint8)(_pixel >> 16); _R = (Uint8)(_pixel >> 8);",
+);
+
 my %get_rgba_string = (
-    "RGB888" => "_R = (Uint8)(_pixel >> 16); _G = (Uint8)(_pixel >> 8); _B = (Uint8)_pixel; _A = 0xFF;",
-    "BGR888" => "_B = (Uint8)(_pixel >> 16); _G = (Uint8)(_pixel >> 8); _R = (Uint8)_pixel; _A = 0xFF;", "ARGB8888" => "_A = (Uint8)(_pixel >> 24); _R = (Uint8)(_pixel >> 16); _G = (Uint8)(_pixel >> 8); _B = (Uint8)_pixel;",
-    "RGBA8888" => "_R = (Uint8)(_pixel >> 24); _G = (Uint8)(_pixel >> 16); _B = (Uint8)(_pixel >> 8); _A = (Uint8)_pixel;",
-    "ABGR8888" => "_A = (Uint8)(_pixel >> 24); _B = (Uint8)(_pixel >> 16); _G = (Uint8)(_pixel >> 8); _R = (Uint8)_pixel;",
-    "BGRA8888" => "_B = (Uint8)(_pixel >> 24); _G = (Uint8)(_pixel >> 16); _R = (Uint8)(_pixel >> 8); _A = (Uint8)_pixel;",
+    "RGB888" => $get_rgba_string_ignore_alpha{"RGB888"} . " _A = 0xFF;",
+    "BGR888" => $get_rgba_string_ignore_alpha{"BGR888"} . " _A = 0xFF;",
+    "ARGB8888" => $get_rgba_string_ignore_alpha{"ARGB8888"} . " _A = (Uint8)(_pixel >> 24);",
+    "RGBA8888" => $get_rgba_string_ignore_alpha{"RGBA8888"} . " _A = (Uint8)_pixel;",
+    "ABGR8888" => $get_rgba_string_ignore_alpha{"ABGR8888"} . " _A = (Uint8)(_pixel >> 24);",
+    "BGRA8888" => $get_rgba_string_ignore_alpha{"BGRA8888"} . " _A = (Uint8)_pixel;",
 );
 
 my %set_rgba_string = (
@@ -160,7 +170,15 @@ sub get_rgba
 {
     my $prefix = shift;
     my $format = shift;
-    my $string = $get_rgba_string{$format};
+    my $ignore_alpha = shift;
+
+    my $string;
+    if ($ignore_alpha) {
+        $string = $get_rgba_string_ignore_alpha{$format};
+    } else {
+        $string = $get_rgba_string{$format};
+    }
+
     $string =~ s/_/$prefix/g;
     if ( $prefix ne "" ) {
         print FILE <<__EOF__;
@@ -196,6 +214,7 @@ sub output_copycore
     my $blend = shift;
     my $s = "";
     my $d = "";
+    my $ignore_dst_alpha = 0;
 
     # Nice and easy...
     if ( $src eq $dst && !$modulate && !$blend ) {
@@ -205,13 +224,17 @@ __EOF__
         return;
     }
 
+    if (not $dst =~ /A/) {
+        $ignore_dst_alpha = !$blend;
+    }
+
     if ( $blend ) {
-        get_rgba("src", $src);
-        get_rgba("dst", $dst);
+        get_rgba("src", $src, $ignore_dst_alpha);
+        get_rgba("dst", $dst, $ignore_dst_alpha);
         $s = "src";
         $d = "dst";
     } else {
-        get_rgba("", $src);
+        get_rgba("", $src, $ignore_dst_alpha);
     }
 
     if ( $modulate ) {
@@ -221,10 +244,14 @@ __EOF__
                 ${s}G = (${s}G * modulateG) / 255;
                 ${s}B = (${s}B * modulateB) / 255;
             }
+__EOF__
+        if (not $ignore_dst_alpha) {
+            print FILE <<__EOF__;
             if (flags & SDL_COPY_MODULATE_ALPHA) {
                 ${s}A = (${s}A * modulateA) / 255;
             }
 __EOF__
+        }
     }
     if ( $blend ) {
         print FILE <<__EOF__;
@@ -306,6 +333,23 @@ __EOF__
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
+__EOF__
+
+    # !!! FIXME: the script should just exclude in these cases.
+    if ( (!$blend) && ($modulate || $src ne $dst) ) {
+        print FILE <<__EOF__;
+    (void) A;  /* not all formats use alpha. */
+__EOF__
+    }
+
+    # !!! FIXME: the script should just exclude in these cases.
+    if ( $modulate ) {
+        print FILE <<__EOF__;
+    (void) modulateA;  /* not all formats use alpha. */
+__EOF__
+    }
+
+    print FILE <<__EOF__;
 
     srcy = 0;
     posy = 0;
@@ -343,6 +387,20 @@ __EOF__
     }
 __EOF__
     } else {
+        # !!! FIXME: the script should just exclude in these cases.
+        if ( (!$blend) && ($modulate || $src ne $dst) ) {
+            print FILE <<__EOF__;
+    (void) A;  /* not all formats use alpha. */
+__EOF__
+        }
+
+        # !!! FIXME: the script should just exclude in these cases.
+        if ( $modulate ) {
+            print FILE <<__EOF__;
+    (void) modulateA;  /* not all formats use alpha. */
+__EOF__
+        }
+
         print FILE <<__EOF__;
 
     while (info->dst_h--) {
