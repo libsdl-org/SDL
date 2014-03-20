@@ -350,7 +350,7 @@ SDL_GetRendererOutputSize(SDL_Renderer * renderer, int *w, int *h)
         SDL_GetWindowSize(renderer->window, w, h);
         return 0;
     } else {
-        /* This should never happen */
+        SDL_assert(0 && "This should never happen");
         return SDL_SetError("Renderer doesn't support querying output size");
     }
 }
@@ -1117,7 +1117,7 @@ SDL_GetRenderTarget(SDL_Renderer *renderer)
 static int
 UpdateLogicalSize(SDL_Renderer *renderer)
 {
-    int w, h;
+    int w = 1, h = 1;
     float want_aspect;
     float real_aspect;
     float scale;
