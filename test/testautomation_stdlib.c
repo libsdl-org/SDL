@@ -126,9 +126,9 @@ int
 stdlib_getsetenv(void *arg)
 {
   const int nameLen = 16;
+  char name[17];
   int counter;
   int result;
-  char name[nameLen + 1];
   char * value1;
   char * value2;
   char * expected;
