@@ -4,8 +4,9 @@
 #  through Clang's static analyzer and prepare the output to be uploaded
 #  back to the buildmaster. You might find it useful too.
 
-# To use: get CMake from http://cmake.org/ or "apt-get install cmake" or whatever.
-# And download checker at http://clang-analyzer.llvm.org/ and unpack it in
+# Install Clang (you already have it on Mac OS X, apt-get install clang
+#  on Ubuntu, etc),
+# or download checker at http://clang-analyzer.llvm.org/ and unpack it in
 #  /usr/local ... update CHECKERDIR as appropriate.
 
 FINALDIR="$1"
@@ -58,9 +59,16 @@ fi
 
 mkdir checker-buildbot
 cd checker-buildbot
-#cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER="$CHECKERDIR/libexec/ccc-analyzer" -DSDL_STATIC=OFF ..
+
+# You might want to do this for CMake-backed builds instead...
+#cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_C_COMPILER="$CHECKERDIR/libexec/ccc-analyzer" ..
+
+# ...or run configure without the scan-build wrapper...
 #CC="$CHECKERDIR/libexec/ccc-analyzer" CFLAGS="-O0" ../configure
+
+# ...but this works for our buildbots just fine.
 CFLAGS="-O0" PATH="$CHECKERDIR:$PATH" scan-build -o analysis ../configure
+
 rm -rf analysis
 PATH="$CHECKERDIR:$PATH" scan-build -o analysis $MAKE
 mv analysis/* ../analysis
