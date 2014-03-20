@@ -119,6 +119,140 @@ stdlib_snprintf(void *arg)
   return TEST_COMPLETED;
 }
 
+/**
+ * @brief Call to SDL_getenv and SDL_setenv
+ */
+int
+stdlib_getsetenv(void *arg)
+{
+  const int nameLen = 16;
+  int counter;
+  int result;
+  char name[nameLen + 1];
+  char * value1;
+  char * value2;
+  char * expected;
+  int overwrite;
+  char * text;
+
+  /* Create a random name. This tests SDL_getenv, since we need to */
+  /* make sure the variable is not set yet (it shouldn't). */
+  do {
+    for(counter = 0; counter < nameLen; counter++) {
+      name[counter] = (char)SDLTest_RandomIntegerInRange(65, 90);
+    }
+    name[nameLen] = '\0';
+    
+    text = SDL_getenv(name);
+    SDLTest_AssertPass("Call to SDL_getenv('%s')", name);
+    if (text != NULL) {
+      SDLTest_Log("Expected: NULL, Got: '%s' (%i)", text, SDL_strlen(text));
+    }
+  } while (text != NULL);
+   
+  /* Create random values to set */                    
+  value1 = SDLTest_RandomAsciiStringOfSize(10);
+  value2 = SDLTest_RandomAsciiStringOfSize(10);
+
+  /* Set value 1 without overwrite */
+  overwrite = 0;
+  expected = value1;
+  result = SDL_setenv(name, value1, overwrite);
+  SDLTest_AssertPass("Call to SDL_setenv('%s','%s', %i)", name, value1, overwrite);
+  SDLTest_AssertCheck(result == 0, "Check result, expected: 0, got: %i", result);
+
+  /* Check value */
+  text = SDL_getenv(name);
+  SDLTest_AssertPass("Call to SDL_getenv('%s')", name);
+  SDLTest_AssertCheck(text != NULL, "Verify returned text is not NULL");
+  if (text != NULL) {
+    SDLTest_AssertCheck(
+      SDL_strcmp(text, expected) == 0, 
+      "Verify returned text, expected: %s, got: %s",
+      expected,
+      text);
+  }
+  
+  /* Set value 2 with overwrite */
+  overwrite = 1;
+  expected = value2;    
+  result = SDL_setenv(name, value2, overwrite);
+  SDLTest_AssertPass("Call to SDL_setenv('%s','%s', %i)", name, value2, overwrite);
+  SDLTest_AssertCheck(result == 0, "Check result, expected: 0, got: %i", result);
+
+  /* Check value */
+  text = SDL_getenv(name);
+  SDLTest_AssertPass("Call to SDL_getenv('%s')", name);
+  SDLTest_AssertCheck(text != NULL, "Verify returned text is not NULL");
+  if (text != NULL) {
+    SDLTest_AssertCheck(
+      SDL_strcmp(text, expected) == 0, 
+      "Verify returned text, expected: %s, got: %s",
+      expected,
+      text);
+  }
+
+  /* Set value 1 without overwrite */
+  overwrite = 0;
+  expected = value2;    
+  result = SDL_setenv(name, value1, overwrite);
+  SDLTest_AssertPass("Call to SDL_setenv('%s','%s', %i)", name, value1, overwrite);
+  SDLTest_AssertCheck(result == 0, "Check result, expected: 0, got: %i", result);
+
+  /* Check value */
+  text = SDL_getenv(name);
+  SDLTest_AssertPass("Call to SDL_getenv('%s')", name);
+  SDLTest_AssertCheck(text != NULL, "Verify returned text is not NULL");
+  if (text != NULL) {
+    SDLTest_AssertCheck(
+      SDL_strcmp(text, expected) == 0, 
+      "Verify returned text, expected: %s, got: %s",
+      expected,
+      text);
+  }
+  
+  /* Set value 1 without overwrite */
+  overwrite = 1;
+  expected = value1;
+  result = SDL_setenv(name, value1, overwrite);
+  SDLTest_AssertPass("Call to SDL_setenv('%s','%s', %i)", name, value1, overwrite);
+  SDLTest_AssertCheck(result == 0, "Check result, expected: 0, got: %i", result);
+
+  /* Check value */
+  text = SDL_getenv(name);
+  SDLTest_AssertPass("Call to SDL_getenv('%s')", name);
+  SDLTest_AssertCheck(text != NULL, "Verify returned text is not NULL");
+  if (text != NULL) {
+    SDLTest_AssertCheck(
+      SDL_strcmp(text, expected) == 0, 
+      "Verify returned text, expected: %s, got: %s",
+      expected,
+      text);
+  }
+
+  /* Negative cases */
+  for (overwrite=0; overwrite <= 1; overwrite++) { 
+    result = SDL_setenv(NULL, value1, overwrite);
+    SDLTest_AssertPass("Call to SDL_setenv(NULL,'%s', %i)", value1, overwrite);
+    SDLTest_AssertCheck(result == -1, "Check result, expected: -1, got: %i", result);
+    result = SDL_setenv("", value1, overwrite);
+    SDLTest_AssertPass("Call to SDL_setenv('','%s', %i)", value1, overwrite);
+    SDLTest_AssertCheck(result == -1, "Check result, expected: -1, got: %i", result);
+    result = SDL_setenv("=", value1, overwrite);
+    SDLTest_AssertPass("Call to SDL_setenv('=','%s', %i)", value1, overwrite);
+    SDLTest_AssertCheck(result == -1, "Check result, expected: -1, got: %i", result);
+    result = SDL_setenv(name, NULL, overwrite);
+    SDLTest_AssertPass("Call to SDL_setenv('%s', NULL, %i)", name, overwrite);
+    SDLTest_AssertCheck(result == -1, "Check result, expected: -1, got: %i", result);
+  }
+
+  /* Clean up */
+  SDL_free(value1);
+  SDL_free(value2);
+    
+  return TEST_COMPLETED;
+}
+
 /* ================= Test References ================== */
 
 /* Standard C routine test cases */
@@ -128,14 +262,17 @@ static const SDLTest_TestCaseReference stdlibTest1 =
 static const SDLTest_TestCaseReference stdlibTest2 =
         { (SDLTest_TestCaseFp)stdlib_snprintf, "stdlib_snprintf", "Call to SDL_snprintf", TEST_ENABLED };
 
+static const SDLTest_TestCaseReference stdlibTest3 =
+        { (SDLTest_TestCaseFp)stdlib_getsetenv, "stdlib_getsetenv", "Call to SDL_getenv and SDL_setenv", TEST_ENABLED };
+
 /* Sequence of Standard C routine test cases */
 static const SDLTest_TestCaseReference *stdlibTests[] =  {
-    &stdlibTest1, &stdlibTest2, NULL
+    &stdlibTest1, &stdlibTest2, &stdlibTest3, NULL
 };
 
 /* Timer test suite (global) */
 SDLTest_TestSuiteReference stdlibTestSuite = {
-    "Standard C routines",
+    "Stdlib",
     NULL,
     stdlibTests,
     NULL
