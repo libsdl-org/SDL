@@ -92,7 +92,7 @@ Cocoa_SetWindowShape(SDL_WindowShaper *shaper,SDL_Surface *shape,SDL_WindowShape
 
     pool = [[NSAutoreleasePool alloc] init];
     closure.view = [windata->nswindow contentView];
-    closure.path = [[NSBezierPath bezierPath] init];
+    closure.path = [NSBezierPath bezierPath];
     closure.window = shaper->window;
     SDL_TraverseShapeTree(data->shape,&ConvertRects,&closure);
     [closure.path addClip];
