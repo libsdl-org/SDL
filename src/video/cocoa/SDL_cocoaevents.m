@@ -159,13 +159,19 @@ CreateApplicationMenus(void)
     NSMenu *windowMenu;
     NSMenu *viewMenu;
     NSMenuItem *menuItem;
+    NSMenu *mainMenu;
 
     if (NSApp == nil) {
         return;
     }
-    
+
+    mainMenu = [[NSMenu alloc] init];
+
     /* Create the main menu bar */
-    [NSApp setMainMenu:[[NSMenu alloc] init]];
+    [NSApp setMainMenu:mainMenu];
+
+    [mainMenu release];  /* we're done with it, let NSApp own it. */
+    mainMenu = nil;
 
     /* Create the application menu */
     appName = GetApplicationName();
