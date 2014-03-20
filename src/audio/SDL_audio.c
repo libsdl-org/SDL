@@ -367,6 +367,7 @@ SDL_RunAudio(void *devicep)
     delay = ((device->spec.samples * 1000) / device->spec.freq);
 
     /* Determine if the streamer is necessary here */
+#if 0  /* !!! FIXME: rewrite/remove this streamer code. */
     if (device->use_streamer == 1) {
         /* This code is almost the same as the old code. The difference is, instead of reading
            directly from the callback into "stream", then converting and sending the audio off,
@@ -456,6 +457,7 @@ SDL_RunAudio(void *devicep)
 
         }
     } else {
+#endif
         /* Otherwise, do not use the streamer. This is the old code. */
         const int silence = (int) device->spec.silence;
 
@@ -504,14 +506,18 @@ SDL_RunAudio(void *devicep)
                 SDL_Delay(delay);
             }
         }
+#if 0  /* !!! FIXME: rewrite/remove this streamer code. */
     }
+#endif
 
     /* Wait for the audio to drain.. */
     current_audio.impl.WaitDone(device);
 
     /* If necessary, deinit the streamer */
+#if 0  /* !!! FIXME: rewrite/remove this streamer code. */
     if (device->use_streamer == 1)
         SDL_StreamDeinit(&device->streamer);
+#endif
 
     return (0);
 }
