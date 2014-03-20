@@ -404,6 +404,10 @@ SDL_CreateTexture(SDL_Renderer * renderer, Uint32 format, int access, int w, int
     if (!format) {
         format = renderer->info.texture_formats[0];
     }
+    if (SDL_BYTESPERPIXEL(format) == 0) {
+        SDL_SetError("Invalid texture format");
+        return NULL;
+    }
     if (SDL_ISPIXELFORMAT_INDEXED(format)) {
         SDL_SetError("Palettized textures are not supported");
         return NULL;
