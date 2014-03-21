@@ -71,8 +71,7 @@ static void SDL_Blit_RGB888_RGB888_Blend(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
-    (void) dstA;  /* not all formats use alpha. */
+    Uint32 dstR, dstG, dstB;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -82,7 +81,7 @@ static void SDL_Blit_RGB888_RGB888_Blend(SDL_BlitInfo *info)
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel; srcA = 0xFF;
             dstpixel = *dst;
-            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = 0xFF;
+            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
@@ -124,11 +123,10 @@ static void SDL_Blit_RGB888_RGB888_Blend_Scale(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
+    Uint32 dstR, dstG, dstB;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -156,7 +154,7 @@ static void SDL_Blit_RGB888_RGB888_Blend_Scale(SDL_BlitInfo *info)
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel; srcA = 0xFF;
             dstpixel = *dst;
-            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = 0xFF;
+            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
@@ -198,11 +196,8 @@ static void SDL_Blit_RGB888_RGB888_Modulate(SDL_BlitInfo *info)
     const Uint32 modulateR = info->r;
     const Uint32 modulateG = info->g;
     const Uint32 modulateB = info->b;
-    const Uint32 modulateA = info->a;
     Uint32 pixel;
-    Uint32 R, G, B, A;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
+    Uint32 R, G, B;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -232,14 +227,11 @@ static void SDL_Blit_RGB888_RGB888_Modulate_Scale(SDL_BlitInfo *info)
     const Uint32 modulateR = info->r;
     const Uint32 modulateG = info->g;
     const Uint32 modulateB = info->b;
-    const Uint32 modulateA = info->a;
     Uint32 pixel;
-    Uint32 R, G, B, A;
+    Uint32 R, G, B;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -291,9 +283,7 @@ static void SDL_Blit_RGB888_RGB888_Modulate_Blend(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
+    Uint32 dstR, dstG, dstB;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -303,7 +293,7 @@ static void SDL_Blit_RGB888_RGB888_Modulate_Blend(SDL_BlitInfo *info)
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel; srcA = 0xFF;
             dstpixel = *dst;
-            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = 0xFF;
+            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
                 srcR = (srcR * modulateR) / 255;
                 srcG = (srcG * modulateG) / 255;
@@ -357,12 +347,10 @@ static void SDL_Blit_RGB888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
+    Uint32 dstR, dstG, dstB;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -390,7 +378,7 @@ static void SDL_Blit_RGB888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel; srcA = 0xFF;
             dstpixel = *dst;
-            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = 0xFF;
+            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
                 srcR = (srcR * modulateR) / 255;
                 srcG = (srcG * modulateG) / 255;
@@ -437,11 +425,10 @@ static void SDL_Blit_RGB888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
 static void SDL_Blit_RGB888_BGR888_Scale(SDL_BlitInfo *info)
 {
     Uint32 pixel;
-    Uint32 R, G, B, A;
+    Uint32 R, G, B;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) A;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -484,8 +471,7 @@ static void SDL_Blit_RGB888_BGR888_Blend(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
-    (void) dstA;  /* not all formats use alpha. */
+    Uint32 dstR, dstG, dstB;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -495,7 +481,7 @@ static void SDL_Blit_RGB888_BGR888_Blend(SDL_BlitInfo *info)
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel; srcA = 0xFF;
             dstpixel = *dst;
-            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel; dstA = 0xFF;
+            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
@@ -537,11 +523,10 @@ static void SDL_Blit_RGB888_BGR888_Blend_Scale(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
+    Uint32 dstR, dstG, dstB;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -569,7 +554,7 @@ static void SDL_Blit_RGB888_BGR888_Blend_Scale(SDL_BlitInfo *info)
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel; srcA = 0xFF;
             dstpixel = *dst;
-            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel; dstA = 0xFF;
+            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
@@ -611,11 +596,8 @@ static void SDL_Blit_RGB888_BGR888_Modulate(SDL_BlitInfo *info)
     const Uint32 modulateR = info->r;
     const Uint32 modulateG = info->g;
     const Uint32 modulateB = info->b;
-    const Uint32 modulateA = info->a;
     Uint32 pixel;
-    Uint32 R, G, B, A;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
+    Uint32 R, G, B;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -645,14 +627,11 @@ static void SDL_Blit_RGB888_BGR888_Modulate_Scale(SDL_BlitInfo *info)
     const Uint32 modulateR = info->r;
     const Uint32 modulateG = info->g;
     const Uint32 modulateB = info->b;
-    const Uint32 modulateA = info->a;
     Uint32 pixel;
-    Uint32 R, G, B, A;
+    Uint32 R, G, B;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -704,9 +683,7 @@ static void SDL_Blit_RGB888_BGR888_Modulate_Blend(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
+    Uint32 dstR, dstG, dstB;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -716,7 +693,7 @@ static void SDL_Blit_RGB888_BGR888_Modulate_Blend(SDL_BlitInfo *info)
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel; srcA = 0xFF;
             dstpixel = *dst;
-            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel; dstA = 0xFF;
+            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
                 srcR = (srcR * modulateR) / 255;
                 srcG = (srcG * modulateG) / 255;
@@ -770,12 +747,10 @@ static void SDL_Blit_RGB888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
+    Uint32 dstR, dstG, dstB;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -803,7 +778,7 @@ static void SDL_Blit_RGB888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel; srcA = 0xFF;
             dstpixel = *dst;
-            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel; dstA = 0xFF;
+            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
                 srcR = (srcR * modulateR) / 255;
                 srcG = (srcG * modulateG) / 255;
@@ -854,7 +829,6 @@ static void SDL_Blit_RGB888_ARGB8888_Scale(SDL_BlitInfo *info)
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) A;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -898,7 +872,6 @@ static void SDL_Blit_RGB888_ARGB8888_Blend(SDL_BlitInfo *info)
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB, dstA;
-    (void) dstA;  /* not all formats use alpha. */
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -955,7 +928,6 @@ static void SDL_Blit_RGB888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -1029,8 +1001,6 @@ static void SDL_Blit_RGB888_ARGB8888_Modulate(SDL_BlitInfo *info)
     const Uint32 modulateA = info->a;
     Uint32 pixel;
     Uint32 R, G, B, A;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -1069,8 +1039,6 @@ static void SDL_Blit_RGB888_ARGB8888_Modulate_Scale(SDL_BlitInfo *info)
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -1126,8 +1094,6 @@ static void SDL_Blit_RGB888_ARGB8888_Modulate_Blend(SDL_BlitInfo *info)
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB, dstA;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -1196,8 +1162,6 @@ static void SDL_Blit_RGB888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -1273,11 +1237,10 @@ static void SDL_Blit_RGB888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
 static void SDL_Blit_BGR888_RGB888_Scale(SDL_BlitInfo *info)
 {
     Uint32 pixel;
-    Uint32 R, G, B, A;
+    Uint32 R, G, B;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) A;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -1320,8 +1283,7 @@ static void SDL_Blit_BGR888_RGB888_Blend(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
-    (void) dstA;  /* not all formats use alpha. */
+    Uint32 dstR, dstG, dstB;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -1331,7 +1293,7 @@ static void SDL_Blit_BGR888_RGB888_Blend(SDL_BlitInfo *info)
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel; srcA = 0xFF;
             dstpixel = *dst;
-            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = 0xFF;
+            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
@@ -1373,11 +1335,10 @@ static void SDL_Blit_BGR888_RGB888_Blend_Scale(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
+    Uint32 dstR, dstG, dstB;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -1405,7 +1366,7 @@ static void SDL_Blit_BGR888_RGB888_Blend_Scale(SDL_BlitInfo *info)
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel; srcA = 0xFF;
             dstpixel = *dst;
-            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = 0xFF;
+            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
@@ -1447,11 +1408,8 @@ static void SDL_Blit_BGR888_RGB888_Modulate(SDL_BlitInfo *info)
     const Uint32 modulateR = info->r;
     const Uint32 modulateG = info->g;
     const Uint32 modulateB = info->b;
-    const Uint32 modulateA = info->a;
     Uint32 pixel;
-    Uint32 R, G, B, A;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
+    Uint32 R, G, B;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -1481,14 +1439,11 @@ static void SDL_Blit_BGR888_RGB888_Modulate_Scale(SDL_BlitInfo *info)
     const Uint32 modulateR = info->r;
     const Uint32 modulateG = info->g;
     const Uint32 modulateB = info->b;
-    const Uint32 modulateA = info->a;
     Uint32 pixel;
-    Uint32 R, G, B, A;
+    Uint32 R, G, B;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -1540,9 +1495,7 @@ static void SDL_Blit_BGR888_RGB888_Modulate_Blend(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
+    Uint32 dstR, dstG, dstB;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -1552,7 +1505,7 @@ static void SDL_Blit_BGR888_RGB888_Modulate_Blend(SDL_BlitInfo *info)
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel; srcA = 0xFF;
             dstpixel = *dst;
-            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = 0xFF;
+            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
                 srcR = (srcR * modulateR) / 255;
                 srcG = (srcG * modulateG) / 255;
@@ -1606,12 +1559,10 @@ static void SDL_Blit_BGR888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
+    Uint32 dstR, dstG, dstB;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -1639,7 +1590,7 @@ static void SDL_Blit_BGR888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel; srcA = 0xFF;
             dstpixel = *dst;
-            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = 0xFF;
+            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
                 srcR = (srcR * modulateR) / 255;
                 srcG = (srcG * modulateG) / 255;
@@ -1727,8 +1678,7 @@ static void SDL_Blit_BGR888_BGR888_Blend(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
-    (void) dstA;  /* not all formats use alpha. */
+    Uint32 dstR, dstG, dstB;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -1738,7 +1688,7 @@ static void SDL_Blit_BGR888_BGR888_Blend(SDL_BlitInfo *info)
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel; srcA = 0xFF;
             dstpixel = *dst;
-            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel; dstA = 0xFF;
+            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
@@ -1780,11 +1730,10 @@ static void SDL_Blit_BGR888_BGR888_Blend_Scale(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
+    Uint32 dstR, dstG, dstB;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -1812,7 +1761,7 @@ static void SDL_Blit_BGR888_BGR888_Blend_Scale(SDL_BlitInfo *info)
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel; srcA = 0xFF;
             dstpixel = *dst;
-            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel; dstA = 0xFF;
+            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
@@ -1854,11 +1803,8 @@ static void SDL_Blit_BGR888_BGR888_Modulate(SDL_BlitInfo *info)
     const Uint32 modulateR = info->r;
     const Uint32 modulateG = info->g;
     const Uint32 modulateB = info->b;
-    const Uint32 modulateA = info->a;
     Uint32 pixel;
-    Uint32 R, G, B, A;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
+    Uint32 R, G, B;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -1888,14 +1834,11 @@ static void SDL_Blit_BGR888_BGR888_Modulate_Scale(SDL_BlitInfo *info)
     const Uint32 modulateR = info->r;
     const Uint32 modulateG = info->g;
     const Uint32 modulateB = info->b;
-    const Uint32 modulateA = info->a;
     Uint32 pixel;
-    Uint32 R, G, B, A;
+    Uint32 R, G, B;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -1947,9 +1890,7 @@ static void SDL_Blit_BGR888_BGR888_Modulate_Blend(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
+    Uint32 dstR, dstG, dstB;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -1959,7 +1900,7 @@ static void SDL_Blit_BGR888_BGR888_Modulate_Blend(SDL_BlitInfo *info)
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel; srcA = 0xFF;
             dstpixel = *dst;
-            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel; dstA = 0xFF;
+            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
                 srcR = (srcR * modulateR) / 255;
                 srcG = (srcG * modulateG) / 255;
@@ -2013,12 +1954,10 @@ static void SDL_Blit_BGR888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
+    Uint32 dstR, dstG, dstB;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -2046,7 +1985,7 @@ static void SDL_Blit_BGR888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel; srcA = 0xFF;
             dstpixel = *dst;
-            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel; dstA = 0xFF;
+            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
                 srcR = (srcR * modulateR) / 255;
                 srcG = (srcG * modulateG) / 255;
@@ -2097,7 +2036,6 @@ static void SDL_Blit_BGR888_ARGB8888_Scale(SDL_BlitInfo *info)
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) A;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -2141,7 +2079,6 @@ static void SDL_Blit_BGR888_ARGB8888_Blend(SDL_BlitInfo *info)
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB, dstA;
-    (void) dstA;  /* not all formats use alpha. */
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -2198,7 +2135,6 @@ static void SDL_Blit_BGR888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -2272,8 +2208,6 @@ static void SDL_Blit_BGR888_ARGB8888_Modulate(SDL_BlitInfo *info)
     const Uint32 modulateA = info->a;
     Uint32 pixel;
     Uint32 R, G, B, A;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -2312,8 +2246,6 @@ static void SDL_Blit_BGR888_ARGB8888_Modulate_Scale(SDL_BlitInfo *info)
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -2369,8 +2301,6 @@ static void SDL_Blit_BGR888_ARGB8888_Modulate_Blend(SDL_BlitInfo *info)
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB, dstA;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -2439,8 +2369,6 @@ static void SDL_Blit_BGR888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -2516,11 +2444,10 @@ static void SDL_Blit_BGR888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
 static void SDL_Blit_ARGB8888_RGB888_Scale(SDL_BlitInfo *info)
 {
     Uint32 pixel;
-    Uint32 R, G, B, A;
+    Uint32 R, G, B;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) A;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -2563,8 +2490,7 @@ static void SDL_Blit_ARGB8888_RGB888_Blend(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
-    (void) dstA;  /* not all formats use alpha. */
+    Uint32 dstR, dstG, dstB;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -2574,7 +2500,7 @@ static void SDL_Blit_ARGB8888_RGB888_Blend(SDL_BlitInfo *info)
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel; srcA = (Uint8)(srcpixel >> 24);
             dstpixel = *dst;
-            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = 0xFF;
+            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
@@ -2616,11 +2542,10 @@ static void SDL_Blit_ARGB8888_RGB888_Blend_Scale(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
+    Uint32 dstR, dstG, dstB;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -2648,7 +2573,7 @@ static void SDL_Blit_ARGB8888_RGB888_Blend_Scale(SDL_BlitInfo *info)
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel; srcA = (Uint8)(srcpixel >> 24);
             dstpixel = *dst;
-            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = 0xFF;
+            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
@@ -2690,11 +2615,8 @@ static void SDL_Blit_ARGB8888_RGB888_Modulate(SDL_BlitInfo *info)
     const Uint32 modulateR = info->r;
     const Uint32 modulateG = info->g;
     const Uint32 modulateB = info->b;
-    const Uint32 modulateA = info->a;
     Uint32 pixel;
-    Uint32 R, G, B, A;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
+    Uint32 R, G, B;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -2724,14 +2646,11 @@ static void SDL_Blit_ARGB8888_RGB888_Modulate_Scale(SDL_BlitInfo *info)
     const Uint32 modulateR = info->r;
     const Uint32 modulateG = info->g;
     const Uint32 modulateB = info->b;
-    const Uint32 modulateA = info->a;
     Uint32 pixel;
-    Uint32 R, G, B, A;
+    Uint32 R, G, B;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -2783,9 +2702,7 @@ static void SDL_Blit_ARGB8888_RGB888_Modulate_Blend(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
+    Uint32 dstR, dstG, dstB;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -2795,7 +2712,7 @@ static void SDL_Blit_ARGB8888_RGB888_Modulate_Blend(SDL_BlitInfo *info)
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel; srcA = (Uint8)(srcpixel >> 24);
             dstpixel = *dst;
-            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = 0xFF;
+            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
                 srcR = (srcR * modulateR) / 255;
                 srcG = (srcG * modulateG) / 255;
@@ -2849,12 +2766,10 @@ static void SDL_Blit_ARGB8888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
+    Uint32 dstR, dstG, dstB;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -2882,7 +2797,7 @@ static void SDL_Blit_ARGB8888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel; srcA = (Uint8)(srcpixel >> 24);
             dstpixel = *dst;
-            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = 0xFF;
+            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
                 srcR = (srcR * modulateR) / 255;
                 srcG = (srcG * modulateG) / 255;
@@ -2929,11 +2844,10 @@ static void SDL_Blit_ARGB8888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
 static void SDL_Blit_ARGB8888_BGR888_Scale(SDL_BlitInfo *info)
 {
     Uint32 pixel;
-    Uint32 R, G, B, A;
+    Uint32 R, G, B;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) A;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -2976,8 +2890,7 @@ static void SDL_Blit_ARGB8888_BGR888_Blend(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
-    (void) dstA;  /* not all formats use alpha. */
+    Uint32 dstR, dstG, dstB;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -2987,7 +2900,7 @@ static void SDL_Blit_ARGB8888_BGR888_Blend(SDL_BlitInfo *info)
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel; srcA = (Uint8)(srcpixel >> 24);
             dstpixel = *dst;
-            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel; dstA = 0xFF;
+            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
@@ -3029,11 +2942,10 @@ static void SDL_Blit_ARGB8888_BGR888_Blend_Scale(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
+    Uint32 dstR, dstG, dstB;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -3061,7 +2973,7 @@ static void SDL_Blit_ARGB8888_BGR888_Blend_Scale(SDL_BlitInfo *info)
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel; srcA = (Uint8)(srcpixel >> 24);
             dstpixel = *dst;
-            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel; dstA = 0xFF;
+            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
@@ -3103,11 +3015,8 @@ static void SDL_Blit_ARGB8888_BGR888_Modulate(SDL_BlitInfo *info)
     const Uint32 modulateR = info->r;
     const Uint32 modulateG = info->g;
     const Uint32 modulateB = info->b;
-    const Uint32 modulateA = info->a;
     Uint32 pixel;
-    Uint32 R, G, B, A;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
+    Uint32 R, G, B;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -3137,14 +3046,11 @@ static void SDL_Blit_ARGB8888_BGR888_Modulate_Scale(SDL_BlitInfo *info)
     const Uint32 modulateR = info->r;
     const Uint32 modulateG = info->g;
     const Uint32 modulateB = info->b;
-    const Uint32 modulateA = info->a;
     Uint32 pixel;
-    Uint32 R, G, B, A;
+    Uint32 R, G, B;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -3196,9 +3102,7 @@ static void SDL_Blit_ARGB8888_BGR888_Modulate_Blend(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
+    Uint32 dstR, dstG, dstB;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -3208,7 +3112,7 @@ static void SDL_Blit_ARGB8888_BGR888_Modulate_Blend(SDL_BlitInfo *info)
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel; srcA = (Uint8)(srcpixel >> 24);
             dstpixel = *dst;
-            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel; dstA = 0xFF;
+            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
                 srcR = (srcR * modulateR) / 255;
                 srcG = (srcG * modulateG) / 255;
@@ -3262,12 +3166,10 @@ static void SDL_Blit_ARGB8888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
+    Uint32 dstR, dstG, dstB;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -3295,7 +3197,7 @@ static void SDL_Blit_ARGB8888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcB = (Uint8)srcpixel; srcA = (Uint8)(srcpixel >> 24);
             dstpixel = *dst;
-            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel; dstA = 0xFF;
+            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
                 srcR = (srcR * modulateR) / 255;
                 srcG = (srcG * modulateG) / 255;
@@ -3384,7 +3286,6 @@ static void SDL_Blit_ARGB8888_ARGB8888_Blend(SDL_BlitInfo *info)
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB, dstA;
-    (void) dstA;  /* not all formats use alpha. */
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -3441,7 +3342,6 @@ static void SDL_Blit_ARGB8888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -3515,8 +3415,6 @@ static void SDL_Blit_ARGB8888_ARGB8888_Modulate(SDL_BlitInfo *info)
     const Uint32 modulateA = info->a;
     Uint32 pixel;
     Uint32 R, G, B, A;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -3555,8 +3453,6 @@ static void SDL_Blit_ARGB8888_ARGB8888_Modulate_Scale(SDL_BlitInfo *info)
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -3612,8 +3508,6 @@ static void SDL_Blit_ARGB8888_ARGB8888_Modulate_Blend(SDL_BlitInfo *info)
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB, dstA;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -3682,8 +3576,6 @@ static void SDL_Blit_ARGB8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -3759,11 +3651,10 @@ static void SDL_Blit_ARGB8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
 static void SDL_Blit_RGBA8888_RGB888_Scale(SDL_BlitInfo *info)
 {
     Uint32 pixel;
-    Uint32 R, G, B, A;
+    Uint32 R, G, B;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) A;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -3806,8 +3697,7 @@ static void SDL_Blit_RGBA8888_RGB888_Blend(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
-    (void) dstA;  /* not all formats use alpha. */
+    Uint32 dstR, dstG, dstB;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -3817,7 +3707,7 @@ static void SDL_Blit_RGBA8888_RGB888_Blend(SDL_BlitInfo *info)
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 24); srcG = (Uint8)(srcpixel >> 16); srcB = (Uint8)(srcpixel >> 8); srcA = (Uint8)srcpixel;
             dstpixel = *dst;
-            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = 0xFF;
+            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
@@ -3859,11 +3749,10 @@ static void SDL_Blit_RGBA8888_RGB888_Blend_Scale(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
+    Uint32 dstR, dstG, dstB;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -3891,7 +3780,7 @@ static void SDL_Blit_RGBA8888_RGB888_Blend_Scale(SDL_BlitInfo *info)
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 24); srcG = (Uint8)(srcpixel >> 16); srcB = (Uint8)(srcpixel >> 8); srcA = (Uint8)srcpixel;
             dstpixel = *dst;
-            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = 0xFF;
+            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
@@ -3933,11 +3822,8 @@ static void SDL_Blit_RGBA8888_RGB888_Modulate(SDL_BlitInfo *info)
     const Uint32 modulateR = info->r;
     const Uint32 modulateG = info->g;
     const Uint32 modulateB = info->b;
-    const Uint32 modulateA = info->a;
     Uint32 pixel;
-    Uint32 R, G, B, A;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
+    Uint32 R, G, B;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -3967,14 +3853,11 @@ static void SDL_Blit_RGBA8888_RGB888_Modulate_Scale(SDL_BlitInfo *info)
     const Uint32 modulateR = info->r;
     const Uint32 modulateG = info->g;
     const Uint32 modulateB = info->b;
-    const Uint32 modulateA = info->a;
     Uint32 pixel;
-    Uint32 R, G, B, A;
+    Uint32 R, G, B;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -4026,9 +3909,7 @@ static void SDL_Blit_RGBA8888_RGB888_Modulate_Blend(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
+    Uint32 dstR, dstG, dstB;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -4038,7 +3919,7 @@ static void SDL_Blit_RGBA8888_RGB888_Modulate_Blend(SDL_BlitInfo *info)
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 24); srcG = (Uint8)(srcpixel >> 16); srcB = (Uint8)(srcpixel >> 8); srcA = (Uint8)srcpixel;
             dstpixel = *dst;
-            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = 0xFF;
+            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
                 srcR = (srcR * modulateR) / 255;
                 srcG = (srcG * modulateG) / 255;
@@ -4092,12 +3973,10 @@ static void SDL_Blit_RGBA8888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
+    Uint32 dstR, dstG, dstB;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -4125,7 +4004,7 @@ static void SDL_Blit_RGBA8888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 24); srcG = (Uint8)(srcpixel >> 16); srcB = (Uint8)(srcpixel >> 8); srcA = (Uint8)srcpixel;
             dstpixel = *dst;
-            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = 0xFF;
+            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
                 srcR = (srcR * modulateR) / 255;
                 srcG = (srcG * modulateG) / 255;
@@ -4172,11 +4051,10 @@ static void SDL_Blit_RGBA8888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
 static void SDL_Blit_RGBA8888_BGR888_Scale(SDL_BlitInfo *info)
 {
     Uint32 pixel;
-    Uint32 R, G, B, A;
+    Uint32 R, G, B;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) A;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -4219,8 +4097,7 @@ static void SDL_Blit_RGBA8888_BGR888_Blend(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
-    (void) dstA;  /* not all formats use alpha. */
+    Uint32 dstR, dstG, dstB;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -4230,7 +4107,7 @@ static void SDL_Blit_RGBA8888_BGR888_Blend(SDL_BlitInfo *info)
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 24); srcG = (Uint8)(srcpixel >> 16); srcB = (Uint8)(srcpixel >> 8); srcA = (Uint8)srcpixel;
             dstpixel = *dst;
-            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel; dstA = 0xFF;
+            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
@@ -4272,11 +4149,10 @@ static void SDL_Blit_RGBA8888_BGR888_Blend_Scale(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
+    Uint32 dstR, dstG, dstB;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -4304,7 +4180,7 @@ static void SDL_Blit_RGBA8888_BGR888_Blend_Scale(SDL_BlitInfo *info)
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 24); srcG = (Uint8)(srcpixel >> 16); srcB = (Uint8)(srcpixel >> 8); srcA = (Uint8)srcpixel;
             dstpixel = *dst;
-            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel; dstA = 0xFF;
+            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
@@ -4346,11 +4222,8 @@ static void SDL_Blit_RGBA8888_BGR888_Modulate(SDL_BlitInfo *info)
     const Uint32 modulateR = info->r;
     const Uint32 modulateG = info->g;
     const Uint32 modulateB = info->b;
-    const Uint32 modulateA = info->a;
     Uint32 pixel;
-    Uint32 R, G, B, A;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
+    Uint32 R, G, B;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -4380,14 +4253,11 @@ static void SDL_Blit_RGBA8888_BGR888_Modulate_Scale(SDL_BlitInfo *info)
     const Uint32 modulateR = info->r;
     const Uint32 modulateG = info->g;
     const Uint32 modulateB = info->b;
-    const Uint32 modulateA = info->a;
     Uint32 pixel;
-    Uint32 R, G, B, A;
+    Uint32 R, G, B;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -4439,9 +4309,7 @@ static void SDL_Blit_RGBA8888_BGR888_Modulate_Blend(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
+    Uint32 dstR, dstG, dstB;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -4451,7 +4319,7 @@ static void SDL_Blit_RGBA8888_BGR888_Modulate_Blend(SDL_BlitInfo *info)
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 24); srcG = (Uint8)(srcpixel >> 16); srcB = (Uint8)(srcpixel >> 8); srcA = (Uint8)srcpixel;
             dstpixel = *dst;
-            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel; dstA = 0xFF;
+            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
                 srcR = (srcR * modulateR) / 255;
                 srcG = (srcG * modulateG) / 255;
@@ -4505,12 +4373,10 @@ static void SDL_Blit_RGBA8888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
+    Uint32 dstR, dstG, dstB;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -4538,7 +4404,7 @@ static void SDL_Blit_RGBA8888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
             srcpixel = *src;
             srcR = (Uint8)(srcpixel >> 24); srcG = (Uint8)(srcpixel >> 16); srcB = (Uint8)(srcpixel >> 8); srcA = (Uint8)srcpixel;
             dstpixel = *dst;
-            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel; dstA = 0xFF;
+            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
                 srcR = (srcR * modulateR) / 255;
                 srcG = (srcG * modulateG) / 255;
@@ -4589,7 +4455,6 @@ static void SDL_Blit_RGBA8888_ARGB8888_Scale(SDL_BlitInfo *info)
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) A;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -4633,7 +4498,6 @@ static void SDL_Blit_RGBA8888_ARGB8888_Blend(SDL_BlitInfo *info)
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB, dstA;
-    (void) dstA;  /* not all formats use alpha. */
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -4690,7 +4554,6 @@ static void SDL_Blit_RGBA8888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -4764,8 +4627,6 @@ static void SDL_Blit_RGBA8888_ARGB8888_Modulate(SDL_BlitInfo *info)
     const Uint32 modulateA = info->a;
     Uint32 pixel;
     Uint32 R, G, B, A;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -4804,8 +4665,6 @@ static void SDL_Blit_RGBA8888_ARGB8888_Modulate_Scale(SDL_BlitInfo *info)
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -4861,8 +4720,6 @@ static void SDL_Blit_RGBA8888_ARGB8888_Modulate_Blend(SDL_BlitInfo *info)
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB, dstA;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -4931,8 +4788,6 @@ static void SDL_Blit_RGBA8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -5008,11 +4863,10 @@ static void SDL_Blit_RGBA8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
 static void SDL_Blit_ABGR8888_RGB888_Scale(SDL_BlitInfo *info)
 {
     Uint32 pixel;
-    Uint32 R, G, B, A;
+    Uint32 R, G, B;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) A;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -5055,8 +4909,7 @@ static void SDL_Blit_ABGR8888_RGB888_Blend(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
-    (void) dstA;  /* not all formats use alpha. */
+    Uint32 dstR, dstG, dstB;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -5066,7 +4919,7 @@ static void SDL_Blit_ABGR8888_RGB888_Blend(SDL_BlitInfo *info)
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel; srcA = (Uint8)(srcpixel >> 24);
             dstpixel = *dst;
-            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = 0xFF;
+            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
@@ -5108,11 +4961,10 @@ static void SDL_Blit_ABGR8888_RGB888_Blend_Scale(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
+    Uint32 dstR, dstG, dstB;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -5140,7 +4992,7 @@ static void SDL_Blit_ABGR8888_RGB888_Blend_Scale(SDL_BlitInfo *info)
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel; srcA = (Uint8)(srcpixel >> 24);
             dstpixel = *dst;
-            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = 0xFF;
+            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
@@ -5182,11 +5034,8 @@ static void SDL_Blit_ABGR8888_RGB888_Modulate(SDL_BlitInfo *info)
     const Uint32 modulateR = info->r;
     const Uint32 modulateG = info->g;
     const Uint32 modulateB = info->b;
-    const Uint32 modulateA = info->a;
     Uint32 pixel;
-    Uint32 R, G, B, A;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
+    Uint32 R, G, B;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -5216,14 +5065,11 @@ static void SDL_Blit_ABGR8888_RGB888_Modulate_Scale(SDL_BlitInfo *info)
     const Uint32 modulateR = info->r;
     const Uint32 modulateG = info->g;
     const Uint32 modulateB = info->b;
-    const Uint32 modulateA = info->a;
     Uint32 pixel;
-    Uint32 R, G, B, A;
+    Uint32 R, G, B;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -5275,9 +5121,7 @@ static void SDL_Blit_ABGR8888_RGB888_Modulate_Blend(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
+    Uint32 dstR, dstG, dstB;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -5287,7 +5131,7 @@ static void SDL_Blit_ABGR8888_RGB888_Modulate_Blend(SDL_BlitInfo *info)
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel; srcA = (Uint8)(srcpixel >> 24);
             dstpixel = *dst;
-            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = 0xFF;
+            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
                 srcR = (srcR * modulateR) / 255;
                 srcG = (srcG * modulateG) / 255;
@@ -5341,12 +5185,10 @@ static void SDL_Blit_ABGR8888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
+    Uint32 dstR, dstG, dstB;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -5374,7 +5216,7 @@ static void SDL_Blit_ABGR8888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel; srcA = (Uint8)(srcpixel >> 24);
             dstpixel = *dst;
-            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = 0xFF;
+            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
                 srcR = (srcR * modulateR) / 255;
                 srcG = (srcG * modulateG) / 255;
@@ -5421,11 +5263,10 @@ static void SDL_Blit_ABGR8888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
 static void SDL_Blit_ABGR8888_BGR888_Scale(SDL_BlitInfo *info)
 {
     Uint32 pixel;
-    Uint32 R, G, B, A;
+    Uint32 R, G, B;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) A;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -5468,8 +5309,7 @@ static void SDL_Blit_ABGR8888_BGR888_Blend(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
-    (void) dstA;  /* not all formats use alpha. */
+    Uint32 dstR, dstG, dstB;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -5479,7 +5319,7 @@ static void SDL_Blit_ABGR8888_BGR888_Blend(SDL_BlitInfo *info)
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel; srcA = (Uint8)(srcpixel >> 24);
             dstpixel = *dst;
-            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel; dstA = 0xFF;
+            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
@@ -5521,11 +5361,10 @@ static void SDL_Blit_ABGR8888_BGR888_Blend_Scale(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
+    Uint32 dstR, dstG, dstB;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -5553,7 +5392,7 @@ static void SDL_Blit_ABGR8888_BGR888_Blend_Scale(SDL_BlitInfo *info)
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel; srcA = (Uint8)(srcpixel >> 24);
             dstpixel = *dst;
-            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel; dstA = 0xFF;
+            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
@@ -5595,11 +5434,8 @@ static void SDL_Blit_ABGR8888_BGR888_Modulate(SDL_BlitInfo *info)
     const Uint32 modulateR = info->r;
     const Uint32 modulateG = info->g;
     const Uint32 modulateB = info->b;
-    const Uint32 modulateA = info->a;
     Uint32 pixel;
-    Uint32 R, G, B, A;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
+    Uint32 R, G, B;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -5629,14 +5465,11 @@ static void SDL_Blit_ABGR8888_BGR888_Modulate_Scale(SDL_BlitInfo *info)
     const Uint32 modulateR = info->r;
     const Uint32 modulateG = info->g;
     const Uint32 modulateB = info->b;
-    const Uint32 modulateA = info->a;
     Uint32 pixel;
-    Uint32 R, G, B, A;
+    Uint32 R, G, B;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -5688,9 +5521,7 @@ static void SDL_Blit_ABGR8888_BGR888_Modulate_Blend(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
+    Uint32 dstR, dstG, dstB;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -5700,7 +5531,7 @@ static void SDL_Blit_ABGR8888_BGR888_Modulate_Blend(SDL_BlitInfo *info)
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel; srcA = (Uint8)(srcpixel >> 24);
             dstpixel = *dst;
-            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel; dstA = 0xFF;
+            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
                 srcR = (srcR * modulateR) / 255;
                 srcG = (srcG * modulateG) / 255;
@@ -5754,12 +5585,10 @@ static void SDL_Blit_ABGR8888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
+    Uint32 dstR, dstG, dstB;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -5787,7 +5616,7 @@ static void SDL_Blit_ABGR8888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 16); srcG = (Uint8)(srcpixel >> 8); srcR = (Uint8)srcpixel; srcA = (Uint8)(srcpixel >> 24);
             dstpixel = *dst;
-            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel; dstA = 0xFF;
+            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
                 srcR = (srcR * modulateR) / 255;
                 srcG = (srcG * modulateG) / 255;
@@ -5838,7 +5667,6 @@ static void SDL_Blit_ABGR8888_ARGB8888_Scale(SDL_BlitInfo *info)
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) A;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -5882,7 +5710,6 @@ static void SDL_Blit_ABGR8888_ARGB8888_Blend(SDL_BlitInfo *info)
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB, dstA;
-    (void) dstA;  /* not all formats use alpha. */
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -5939,7 +5766,6 @@ static void SDL_Blit_ABGR8888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -6013,8 +5839,6 @@ static void SDL_Blit_ABGR8888_ARGB8888_Modulate(SDL_BlitInfo *info)
     const Uint32 modulateA = info->a;
     Uint32 pixel;
     Uint32 R, G, B, A;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -6053,8 +5877,6 @@ static void SDL_Blit_ABGR8888_ARGB8888_Modulate_Scale(SDL_BlitInfo *info)
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -6110,8 +5932,6 @@ static void SDL_Blit_ABGR8888_ARGB8888_Modulate_Blend(SDL_BlitInfo *info)
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB, dstA;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -6180,8 +6000,6 @@ static void SDL_Blit_ABGR8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -6257,11 +6075,10 @@ static void SDL_Blit_ABGR8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
 static void SDL_Blit_BGRA8888_RGB888_Scale(SDL_BlitInfo *info)
 {
     Uint32 pixel;
-    Uint32 R, G, B, A;
+    Uint32 R, G, B;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) A;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -6304,8 +6121,7 @@ static void SDL_Blit_BGRA8888_RGB888_Blend(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
-    (void) dstA;  /* not all formats use alpha. */
+    Uint32 dstR, dstG, dstB;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -6315,7 +6131,7 @@ static void SDL_Blit_BGRA8888_RGB888_Blend(SDL_BlitInfo *info)
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 24); srcG = (Uint8)(srcpixel >> 16); srcR = (Uint8)(srcpixel >> 8); srcA = (Uint8)srcpixel;
             dstpixel = *dst;
-            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = 0xFF;
+            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
@@ -6357,11 +6173,10 @@ static void SDL_Blit_BGRA8888_RGB888_Blend_Scale(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
+    Uint32 dstR, dstG, dstB;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -6389,7 +6204,7 @@ static void SDL_Blit_BGRA8888_RGB888_Blend_Scale(SDL_BlitInfo *info)
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 24); srcG = (Uint8)(srcpixel >> 16); srcR = (Uint8)(srcpixel >> 8); srcA = (Uint8)srcpixel;
             dstpixel = *dst;
-            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = 0xFF;
+            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
@@ -6431,11 +6246,8 @@ static void SDL_Blit_BGRA8888_RGB888_Modulate(SDL_BlitInfo *info)
     const Uint32 modulateR = info->r;
     const Uint32 modulateG = info->g;
     const Uint32 modulateB = info->b;
-    const Uint32 modulateA = info->a;
     Uint32 pixel;
-    Uint32 R, G, B, A;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
+    Uint32 R, G, B;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -6465,14 +6277,11 @@ static void SDL_Blit_BGRA8888_RGB888_Modulate_Scale(SDL_BlitInfo *info)
     const Uint32 modulateR = info->r;
     const Uint32 modulateG = info->g;
     const Uint32 modulateB = info->b;
-    const Uint32 modulateA = info->a;
     Uint32 pixel;
-    Uint32 R, G, B, A;
+    Uint32 R, G, B;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -6524,9 +6333,7 @@ static void SDL_Blit_BGRA8888_RGB888_Modulate_Blend(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
+    Uint32 dstR, dstG, dstB;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -6536,7 +6343,7 @@ static void SDL_Blit_BGRA8888_RGB888_Modulate_Blend(SDL_BlitInfo *info)
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 24); srcG = (Uint8)(srcpixel >> 16); srcR = (Uint8)(srcpixel >> 8); srcA = (Uint8)srcpixel;
             dstpixel = *dst;
-            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = 0xFF;
+            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
                 srcR = (srcR * modulateR) / 255;
                 srcG = (srcG * modulateG) / 255;
@@ -6590,12 +6397,10 @@ static void SDL_Blit_BGRA8888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
+    Uint32 dstR, dstG, dstB;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -6623,7 +6428,7 @@ static void SDL_Blit_BGRA8888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 24); srcG = (Uint8)(srcpixel >> 16); srcR = (Uint8)(srcpixel >> 8); srcA = (Uint8)srcpixel;
             dstpixel = *dst;
-            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel; dstA = 0xFF;
+            dstR = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstB = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
                 srcR = (srcR * modulateR) / 255;
                 srcG = (srcG * modulateG) / 255;
@@ -6670,11 +6475,10 @@ static void SDL_Blit_BGRA8888_RGB888_Modulate_Blend_Scale(SDL_BlitInfo *info)
 static void SDL_Blit_BGRA8888_BGR888_Scale(SDL_BlitInfo *info)
 {
     Uint32 pixel;
-    Uint32 R, G, B, A;
+    Uint32 R, G, B;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) A;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -6717,8 +6521,7 @@ static void SDL_Blit_BGRA8888_BGR888_Blend(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
-    (void) dstA;  /* not all formats use alpha. */
+    Uint32 dstR, dstG, dstB;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -6728,7 +6531,7 @@ static void SDL_Blit_BGRA8888_BGR888_Blend(SDL_BlitInfo *info)
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 24); srcG = (Uint8)(srcpixel >> 16); srcR = (Uint8)(srcpixel >> 8); srcA = (Uint8)srcpixel;
             dstpixel = *dst;
-            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel; dstA = 0xFF;
+            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
@@ -6770,11 +6573,10 @@ static void SDL_Blit_BGRA8888_BGR888_Blend_Scale(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
+    Uint32 dstR, dstG, dstB;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -6802,7 +6604,7 @@ static void SDL_Blit_BGRA8888_BGR888_Blend_Scale(SDL_BlitInfo *info)
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 24); srcG = (Uint8)(srcpixel >> 16); srcR = (Uint8)(srcpixel >> 8); srcA = (Uint8)srcpixel;
             dstpixel = *dst;
-            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel; dstA = 0xFF;
+            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & (SDL_COPY_BLEND|SDL_COPY_ADD)) {
                 /* This goes away if we ever use premultiplied alpha */
                 if (srcA < 255) {
@@ -6844,11 +6646,8 @@ static void SDL_Blit_BGRA8888_BGR888_Modulate(SDL_BlitInfo *info)
     const Uint32 modulateR = info->r;
     const Uint32 modulateG = info->g;
     const Uint32 modulateB = info->b;
-    const Uint32 modulateA = info->a;
     Uint32 pixel;
-    Uint32 R, G, B, A;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
+    Uint32 R, G, B;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -6878,14 +6677,11 @@ static void SDL_Blit_BGRA8888_BGR888_Modulate_Scale(SDL_BlitInfo *info)
     const Uint32 modulateR = info->r;
     const Uint32 modulateG = info->g;
     const Uint32 modulateB = info->b;
-    const Uint32 modulateA = info->a;
     Uint32 pixel;
-    Uint32 R, G, B, A;
+    Uint32 R, G, B;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -6937,9 +6733,7 @@ static void SDL_Blit_BGRA8888_BGR888_Modulate_Blend(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
+    Uint32 dstR, dstG, dstB;
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -6949,7 +6743,7 @@ static void SDL_Blit_BGRA8888_BGR888_Modulate_Blend(SDL_BlitInfo *info)
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 24); srcG = (Uint8)(srcpixel >> 16); srcR = (Uint8)(srcpixel >> 8); srcA = (Uint8)srcpixel;
             dstpixel = *dst;
-            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel; dstA = 0xFF;
+            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
                 srcR = (srcR * modulateR) / 255;
                 srcG = (srcG * modulateG) / 255;
@@ -7003,12 +6797,10 @@ static void SDL_Blit_BGRA8888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
-    Uint32 dstR, dstG, dstB, dstA;
+    Uint32 dstR, dstG, dstB;
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -7036,7 +6828,7 @@ static void SDL_Blit_BGRA8888_BGR888_Modulate_Blend_Scale(SDL_BlitInfo *info)
             srcpixel = *src;
             srcB = (Uint8)(srcpixel >> 24); srcG = (Uint8)(srcpixel >> 16); srcR = (Uint8)(srcpixel >> 8); srcA = (Uint8)srcpixel;
             dstpixel = *dst;
-            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel; dstA = 0xFF;
+            dstB = (Uint8)(dstpixel >> 16); dstG = (Uint8)(dstpixel >> 8); dstR = (Uint8)dstpixel;
             if (flags & SDL_COPY_MODULATE_COLOR) {
                 srcR = (srcR * modulateR) / 255;
                 srcG = (srcG * modulateG) / 255;
@@ -7087,7 +6879,6 @@ static void SDL_Blit_BGRA8888_ARGB8888_Scale(SDL_BlitInfo *info)
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) A;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -7131,7 +6922,6 @@ static void SDL_Blit_BGRA8888_ARGB8888_Blend(SDL_BlitInfo *info)
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB, dstA;
-    (void) dstA;  /* not all formats use alpha. */
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -7188,7 +6978,6 @@ static void SDL_Blit_BGRA8888_ARGB8888_Blend_Scale(SDL_BlitInfo *info)
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -7262,8 +7051,6 @@ static void SDL_Blit_BGRA8888_ARGB8888_Modulate(SDL_BlitInfo *info)
     const Uint32 modulateA = info->a;
     Uint32 pixel;
     Uint32 R, G, B, A;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -7302,8 +7089,6 @@ static void SDL_Blit_BGRA8888_ARGB8888_Modulate_Scale(SDL_BlitInfo *info)
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) A;  /* not all formats use alpha. */
-    (void) modulateA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
@@ -7359,8 +7144,6 @@ static void SDL_Blit_BGRA8888_ARGB8888_Modulate_Blend(SDL_BlitInfo *info)
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
     Uint32 dstR, dstG, dstB, dstA;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
 
     while (info->dst_h--) {
         Uint32 *src = (Uint32 *)info->src;
@@ -7429,8 +7212,6 @@ static void SDL_Blit_BGRA8888_ARGB8888_Modulate_Blend_Scale(SDL_BlitInfo *info)
     int srcy, srcx;
     int posy, posx;
     int incy, incx;
-    (void) modulateA;  /* not all formats use alpha. */
-    (void) dstA;  /* not all formats use alpha. */
 
     srcy = 0;
     posy = 0;
