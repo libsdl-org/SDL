@@ -214,7 +214,6 @@ sub output_copycore
     my $blend = shift;
     my $s = "";
     my $d = "";
-    my $ignore_dst_alpha = 0;
 
     # Nice and easy...
     if ( $src eq $dst && !$modulate && !$blend ) {
@@ -224,13 +223,12 @@ __EOF__
         return;
     }
 
-    if (not $dst =~ /A/) {
-        $ignore_dst_alpha = !$blend;
-    }
+    my $dst_has_alpha = ($dst =~ /A/) ? 1 : 0;
+    my $ignore_dst_alpha = !$dst_has_alpha && !$blend;
 
     if ( $blend ) {
         get_rgba("src", $src, $ignore_dst_alpha);
-        get_rgba("dst", $dst, $ignore_dst_alpha);
+        get_rgba("dst", $dst, !$dst_has_alpha);
         $s = "src";
         $d = "dst";
     } else {
@@ -270,7 +268,7 @@ __EOF__
                 ${d}B = ${s}B + ((255 - ${s}A) * ${d}B) / 255;
 __EOF__
 
-        if ( $dst =~ /A/ ) {
+        if ( $dst_has_alpha ) {
             print FILE <<__EOF__;
                 ${d}A = ${s}A + ((255 - ${s}A) * ${d}A) / 255;
 __EOF__
@@ -306,6 +304,9 @@ sub output_copyfunc
     my $blend = shift;
     my $scale = shift;
 
+    my $dst_has_alpha = ($dst =~ /A/) ? 1 : 0;
+    my $ignore_dst_alpha = !$dst_has_alpha && !$blend;
+
     output_copyfuncname("static void", $src, $dst, $modulate, $blend, $scale, 1, "\n");
     print FILE <<__EOF__;
 {
@@ -320,21 +321,41 @@ __EOF__
     const Uint32 modulateR = info->r;
     const Uint32 modulateG = info->g;
     const Uint32 modulateB = info->b;
+__EOF__
+        if (!$ignore_dst_alpha) {
+            print FILE <<__EOF__;
     const Uint32 modulateA = info->a;
 __EOF__
+        }
     }
     if ( $blend ) {
         print FILE <<__EOF__;
     Uint32 srcpixel;
     Uint32 srcR, srcG, srcB, srcA;
     Uint32 dstpixel;
+__EOF__
+        if ($dst_has_alpha) {
+            print FILE <<__EOF__;
     Uint32 dstR, dstG, dstB, dstA;
 __EOF__
+        } else {
+            print FILE <<__EOF__;
+    Uint32 dstR, dstG, dstB;
+__EOF__
+        }
     } elsif ( $modulate || $src ne $dst ) {
         print FILE <<__EOF__;
     Uint32 pixel;
+__EOF__
+        if (!$ignore_dst_alpha) {
+            print FILE <<__EOF__;
     Uint32 R, G, B, A;
 __EOF__
+        } else {
+            print FILE <<__EOF__;
+    Uint32 R, G, B;
+__EOF__
+        }
     }
     if ( $scale ) {
         print FILE <<__EOF__;
@@ -342,27 +363,6 @@ __EOF__
     int posy, posx;
     int incy, incx;
 __EOF__
-
-    # !!! FIXME: the script should just exclude in these cases.
-    if ( (!$blend) && ($modulate || $src ne $dst) ) {
-        print FILE <<__EOF__;
-    (void) A;  /* not all formats use alpha. */
-__EOF__
-    }
-
-    # !!! FIXME: the script should just exclude in these cases.
-    if ( $modulate ) {
-        print FILE <<__EOF__;
-    (void) modulateA;  /* not all formats use alpha. */
-__EOF__
-    }
-
-    # !!! FIXME: the script should just exclude in these cases.
-    if ( $blend ) {
-        print FILE <<__EOF__;
-    (void) dstA;  /* not all formats use alpha. */
-__EOF__
-    }
 
     print FILE <<__EOF__;
 
@@ -402,27 +402,6 @@ __EOF__
     }
 __EOF__
     } else {
-        # !!! FIXME: the script should just exclude in these cases.
-        if ( (!$blend) && ($modulate || $src ne $dst) ) {
-            print FILE <<__EOF__;
-    (void) A;  /* not all formats use alpha. */
-__EOF__
-        }
-
-        # !!! FIXME: the script should just exclude in these cases.
-        if ( $modulate ) {
-            print FILE <<__EOF__;
-    (void) modulateA;  /* not all formats use alpha. */
-__EOF__
-        }
-
-        # !!! FIXME: the script should just exclude in these cases.
-        if ( $blend ) {
-            print FILE <<__EOF__;
-    (void) dstA;  /* not all formats use alpha. */
-__EOF__
-        }
-
         print FILE <<__EOF__;
 
     while (info->dst_h--) {
