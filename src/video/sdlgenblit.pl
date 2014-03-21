@@ -268,7 +268,15 @@ __EOF__
                 ${d}R = ${s}R + ((255 - ${s}A) * ${d}R) / 255;
                 ${d}G = ${s}G + ((255 - ${s}A) * ${d}G) / 255;
                 ${d}B = ${s}B + ((255 - ${s}A) * ${d}B) / 255;
+__EOF__
+
+        if ( $dst =~ /A/ ) {
+            print FILE <<__EOF__;
                 ${d}A = ${s}A + ((255 - ${s}A) * ${d}A) / 255;
+__EOF__
+        }
+
+        print FILE <<__EOF__;
                 break;
             case SDL_COPY_ADD:
                 ${d}R = ${s}R + ${d}R; if (${d}R > 255) ${d}R = 255;
@@ -349,6 +357,13 @@ __EOF__
 __EOF__
     }
 
+    # !!! FIXME: the script should just exclude in these cases.
+    if ( $blend ) {
+        print FILE <<__EOF__;
+    (void) dstA;  /* not all formats use alpha. */
+__EOF__
+    }
+
     print FILE <<__EOF__;
 
     srcy = 0;
@@ -398,6 +413,13 @@ __EOF__
         if ( $modulate ) {
             print FILE <<__EOF__;
     (void) modulateA;  /* not all formats use alpha. */
+__EOF__
+        }
+
+        # !!! FIXME: the script should just exclude in these cases.
+        if ( $blend ) {
+            print FILE <<__EOF__;
+    (void) dstA;  /* not all formats use alpha. */
 __EOF__
         }
 
