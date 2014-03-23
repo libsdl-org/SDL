@@ -418,16 +418,62 @@ void SDL_WinRTApp::Run()
     }
 }
 
+static bool IsSDLWindowEventPending(SDL_WindowEventID windowEventID)
+{
+    SDL_Event events[128];
+    const int count = SDL_PeepEvents(events, sizeof(events)/sizeof(SDL_Event), SDL_PEEKEVENT, SDL_WINDOWEVENT, SDL_WINDOWEVENT);
+    for (int i = 0; i < count; ++i) {
+        if (events[i].window.event == windowEventID) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool SDL_WinRTApp::ShouldWaitForAppResumeEvents()
+{
+    /* Don't wait if the app is visible: */
+    if (m_windowVisible) {
+        return false;
+    }
+    
+    /* Don't wait until the window-hide events finish processing.
+     * Do note that if an app-suspend event is sent (as indicated
+     * by SDL_APP_WILLENTERBACKGROUND and SDL_APP_DIDENTERBACKGROUND
+     * events), then this code may be a moot point, as WinRT's
+     * own event pump (aka ProcessEvents()) will pause regardless
+     * of what we do here.  This happens on Windows Phone 8, to note.
+     * Windows 8.x apps, on the other hand, may get a chance to run
+     * these.
+     */
+    if (IsSDLWindowEventPending(SDL_WINDOWEVENT_HIDDEN)) {
+        return false;
+    } else if (IsSDLWindowEventPending(SDL_WINDOWEVENT_FOCUS_LOST)) {
+        return false;
+    } else if (IsSDLWindowEventPending(SDL_WINDOWEVENT_MINIMIZED)) {
+        return false;
+    }
+
+    return true;
+}
+
 void SDL_WinRTApp::PumpEvents()
 {
-    if (!m_windowClosed)
-    {
-        if (m_windowVisible)
-        {
+    if (!m_windowClosed) {
+        if (!ShouldWaitForAppResumeEvents()) {
+            /* This is the normal way in which events should be pumped.
+             * 'ProcessAllIfPresent' will make ProcessEvents() process anywhere
+             * from zero to N events, and will then return.
+             */
             CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessAllIfPresent);
-        }
-        else
-        {
+        } else {
+            /* This style of event-pumping, with 'ProcessOneAndAllPending',
+             * will cause anywhere from one to N events to be processed.  If
+             * at least one event is processed, the call will return.  If
+             * no events are pending, then the call will wait until one is
+             * available, and will not return (to the caller) until this
+             * happens!  This should only occur when the app is hidden.
+             */
             CoreWindow::GetForCurrentThread()->Dispatcher->ProcessEvents(CoreProcessEventsOption::ProcessOneAndAllPending);
         }
     }
@@ -511,8 +557,12 @@ void SDL_WinRTApp::OnVisibilityChanged(CoreWindow^ sender, VisibilityChangedEven
 
         if (args->Visible) {
             SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_WINDOWEVENT_SHOWN, 0, 0);
+            SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_WINDOWEVENT_FOCUS_GAINED, 0, 0);
+            SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_WINDOWEVENT_RESTORED, 0, 0);
         } else {
             SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_WINDOWEVENT_HIDDEN, 0, 0);
+            SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_WINDOWEVENT_FOCUS_LOST, 0, 0);
+            SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_WINDOWEVENT_MINIMIZED, 0, 0);
         }
 
         // HACK: Prevent SDL's window-hide handling code, which currently
@@ -538,26 +588,6 @@ void SDL_WinRTApp::OnActivated(CoreApplicationView^ applicationView, IActivatedE
     CoreWindow::GetForCurrentThread()->Activate();
 }
 
-static int SDLCALL RemoveAppSuspendAndResumeEvents(void * userdata, SDL_Event * event)
-{
-    if (event->type == SDL_WINDOWEVENT)
-    {
-        switch (event->window.event)
-        {
-            case SDL_WINDOWEVENT_MINIMIZED:
-            case SDL_WINDOWEVENT_RESTORED:
-                // Return 0 to indicate that the event should be removed from the
-                // event queue:
-                return 0;
-            default:
-                break;
-        }
-    }
-
-    // Return 1 to indicate that the event should stay in the event queue:
-    return 1;
-}
-
 void SDL_WinRTApp::OnSuspending(Platform::Object^ sender, SuspendingEventArgs^ args)
 {
     // Save app state asynchronously after requesting a deferral. Holding a deferral
@@ -577,24 +607,13 @@ void SDL_WinRTApp::OnSuspending(Platform::Object^ sender, SuspendingEventArgs^ a
     SuspendingDeferral^ deferral = args->SuspendingOperation->GetDeferral();
     create_task([this, deferral]()
     {
-        // Send a window-minimized event immediately to observers.
+        // Send an app did-enter-background event immediately to observers.
         // CoreDispatcher::ProcessEvents, which is the backbone on which
         // SDL_WinRTApp::PumpEvents is built, will not return to its caller
         // once it sends out a suspend event.  Any events posted to SDL's
         // event queue won't get received until the WinRT app is resumed.
         // SDL_AddEventWatch() may be used to receive app-suspend events on
         // WinRT.
-        //
-        // In order to prevent app-suspend events from being received twice:
-        // first via a callback passed to SDL_AddEventWatch, and second via
-        // SDL's event queue, the event will be sent to SDL, then immediately
-        // removed from the queue.
-        if (WINRT_GlobalSDLWindow)
-        {
-            SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_WINDOWEVENT_MINIMIZED, 0, 0);   // TODO: see if SDL_WINDOWEVENT_SIZE_CHANGED should be getting triggered here (it is, currently)
-            SDL_FilterEvents(RemoveAppSuspendAndResumeEvents, 0);
-        }
-
         SDL_SendAppEvent(SDL_APP_DIDENTERBACKGROUND);
 
         deferral->Complete();
@@ -603,24 +622,11 @@ void SDL_WinRTApp::OnSuspending(Platform::Object^ sender, SuspendingEventArgs^ a
 
 void SDL_WinRTApp::OnResuming(Platform::Object^ sender, Platform::Object^ args)
 {
+    // Restore any data or state that was unloaded on suspend. By default, data
+    // and state are persisted when resuming from suspend. Note that these events
+    // do not occur if the app was previously terminated.
     SDL_SendAppEvent(SDL_APP_WILLENTERFOREGROUND);
     SDL_SendAppEvent(SDL_APP_DIDENTERFOREGROUND);
-
-    // Restore any data or state that was unloaded on suspend. By default, data
-    // and state are persisted when resuming from suspend. Note that this event
-    // does not occur if the app was previously terminated.
-    if (WINRT_GlobalSDLWindow)
-    {
-        SDL_SendWindowEvent(WINRT_GlobalSDLWindow, SDL_WINDOWEVENT_RESTORED, 0, 0);    // TODO: see if SDL_WINDOWEVENT_SIZE_CHANGED should be getting triggered here (it is, currently)
-
-        // Remove the app-resume event from the queue, as is done with the
-        // app-suspend event.
-        //
-        // TODO, WinRT: consider posting this event to the queue even though
-        // its counterpart, the app-suspend event, effectively has to be
-        // processed immediately.
-        SDL_FilterEvents(RemoveAppSuspendAndResumeEvents, 0);
-    }
 }
 
 void SDL_WinRTApp::OnExiting(Platform::Object^ sender, Platform::Object^ args)
