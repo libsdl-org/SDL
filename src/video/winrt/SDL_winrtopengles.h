@@ -31,15 +31,33 @@
 /* OpenGLES functions */
 #define WINRT_GLES_GetAttribute SDL_EGL_GetAttribute
 #define WINRT_GLES_GetProcAddress SDL_EGL_GetProcAddress
-#define WINRT_GLES_UnloadLibrary SDL_EGL_UnloadLibrary
 #define WINRT_GLES_SetSwapInterval SDL_EGL_SetSwapInterval
 #define WINRT_GLES_GetSwapInterval SDL_EGL_GetSwapInterval
 #define WINRT_GLES_DeleteContext SDL_EGL_DeleteContext
 
 extern int WINRT_GLES_LoadLibrary(_THIS, const char *path);
+extern void WINRT_GLES_UnloadLibrary(_THIS);
 extern SDL_GLContext WINRT_GLES_CreateContext(_THIS, SDL_Window * window);
 extern void WINRT_GLES_SwapWindow(_THIS, SDL_Window * window);
 extern int WINRT_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context);
+
+
+#ifdef __cplusplus
+
+/* Typedefs for ANGLE/WinRT's C++-based native-display and native-window types,
+ * which are used when calling eglGetDisplay and eglCreateWindowSurface.
+ */
+typedef Microsoft::WRL::ComPtr<IUnknown> WINRT_EGLNativeWindowType;
+typedef WINRT_EGLNativeWindowType WINRT_EGLNativeDisplayType;
+
+/* Function pointer typedefs for ANGLE/WinRT's functions that require
+ * parameter customization [by passing in C++ objects].
+ */
+typedef EGLDisplay (EGLAPIENTRY *eglGetDisplay_Function)(WINRT_EGLNativeWindowType);
+typedef EGLSurface (EGLAPIENTRY *eglCreateWindowSurface_Function)(EGLDisplay, EGLConfig, WINRT_EGLNativeWindowType, const EGLint *);
+typedef HRESULT (EGLAPIENTRY *CreateWinrtEglWindow_Function)(Microsoft::WRL::ComPtr<IUnknown>, int, IUnknown ** result);
+
+#endif /* __cplusplus */
 
 #endif /* SDL_VIDEO_DRIVER_WINRT && SDL_VIDEO_OPENGL_EGL */
 
