@@ -846,9 +846,10 @@ D3D11_CreateRenderer(SDL_Window * window, Uint32 flags)
 }
 
 static void
-D3D11_DestroyRenderer(SDL_Renderer * renderer)
+D3D11_ReleaseAll(SDL_Renderer * renderer)
 {
     D3D11_RenderData *data = (D3D11_RenderData *) renderer->driverdata;
+    SDL_Texture *texture = NULL;
 
     if (data) {
         SAFE_RELEASE(data->dxgiFactory);
@@ -879,6 +880,29 @@ D3D11_DestroyRenderer(SDL_Renderer * renderer)
         if (data->hDXGIMod) {
             SDL_UnloadObject(data->hDXGIMod);
         }
+
+        data->swapEffect = (DXGI_SWAP_EFFECT) 0;
+        data->rotation = DXGI_MODE_ROTATION_UNSPECIFIED;
+        data->currentRenderTargetView = NULL;
+        data->currentRasterizerState = NULL;
+        data->currentBlendState = NULL;
+        data->currentShader = NULL;
+        data->currentShaderResource = NULL;
+        data->currentSampler = NULL;
+    }
+
+    /* Release all textures */
+    for (texture = renderer->textures; texture; texture = texture->next) {
+        D3D11_DestroyTexture(renderer, texture);
+    }
+}
+
+static void
+D3D11_DestroyRenderer(SDL_Renderer * renderer)
+{
+    D3D11_RenderData *data = (D3D11_RenderData *) renderer->driverdata;
+    D3D11_ReleaseAll(renderer);
+    if (data) {
         SDL_free(data);
     }
     SDL_free(renderer);
@@ -1463,7 +1487,15 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
             DXGI_FORMAT_UNKNOWN,
             0
             );
-        if (FAILED(result)) {
+        if (result == DXGI_ERROR_DEVICE_REMOVED) {
+            /* If the device was removed for any reason, a new device and swap chain will need to be created. */
+            D3D11_HandleDeviceLost(renderer);
+
+            /* Everything is set up now. Do not continue execution of this method. HandleDeviceLost will reenter this method 
+             * and correctly set up the new device.
+             */
+            goto done;
+        } else if (FAILED(result)) {
             WIN_SetErrorFromHRESULT(__FUNCTION__ ", IDXGISwapChain::ResizeBuffers", result);
             goto done;
         }
@@ -1537,7 +1569,7 @@ D3D11_HandleDeviceLost(SDL_Renderer * renderer)
     D3D11_RenderData *data = (D3D11_RenderData *) renderer->driverdata;
     HRESULT result = S_OK;
 
-    /* FIXME: Need to release all resources - all textures are invalid! */
+    D3D11_ReleaseAll(renderer);
 
     result = D3D11_CreateDeviceResources(renderer);
     if (FAILED(result)) {
@@ -1549,6 +1581,14 @@ D3D11_HandleDeviceLost(SDL_Renderer * renderer)
     if (FAILED(result)) {
         /* D3D11_UpdateForWindowSizeChange will set the SDL error */
         return result;
+    }
+
+    /* Let the application know that the device has been reset */
+    {
+        /* TODO/FIXME: consider adding a new SDL event to indicate that the entire rendering device has been reset, not just render targets! */
+        SDL_Event event;
+        event.type = SDL_RENDER_TARGETS_RESET;
+        SDL_PushEvent(&event);
     }
 
     return S_OK;
