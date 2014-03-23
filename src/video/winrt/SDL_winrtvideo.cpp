@@ -30,6 +30,7 @@
 
 /* Windows includes */
 #include <agile.h>
+#include <wrl/client.h>
 using namespace Windows::UI::Core;
 
 
@@ -86,6 +87,15 @@ WINRT_DeleteDevice(SDL_VideoDevice * device)
     if (device == WINRT_GlobalSDLVideoDevice) {
         WINRT_GlobalSDLVideoDevice = NULL;
     }
+
+    if (device->driverdata) {
+        SDL_VideoData * video_data = (SDL_VideoData *)device->driverdata;
+        if (video_data->winrtEglWindow) {
+            video_data->winrtEglWindow->Release();
+        }
+        SDL_free(video_data);
+    }
+
     SDL_free(device);
 }
 
@@ -93,6 +103,7 @@ static SDL_VideoDevice *
 WINRT_CreateDevice(int devindex)
 {
     SDL_VideoDevice *device;
+    SDL_VideoData *data;
 
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
@@ -103,6 +114,14 @@ WINRT_CreateDevice(int devindex)
         }
         return (0);
     }
+
+    data = (SDL_VideoData *) SDL_calloc(1, sizeof(SDL_VideoData));
+    if (!data) {
+        SDL_OutOfMemory();
+        return (0);
+    }
+    SDL_zerop(data);
+    device->driverdata = data;
 
     /* Set the function pointers */
     device->VideoInit = WINRT_VideoInit;
@@ -301,29 +320,25 @@ WINRT_CreateWindow(_THIS, SDL_Window * window)
         data->egl_surface = EGL_NO_SURFACE;
     } else {
         /* OpenGL ES 2 was reuqested.  Set up an EGL surface. */
+        SDL_VideoData * video_data = (SDL_VideoData *)_this->driverdata;
 
-        /* HACK: ANGLE/WinRT currently uses non-pointer, C++ objects to represent
-           native windows.  The object only contains a single pointer to a COM
-           interface pointer, which on x86 appears to be castable to the object
-           without apparant problems.  On other platforms, notable ARM and x64,
-           doing so will cause a crash.  To avoid this crash, we'll bypass
-           SDL's normal call to eglCreateWindowSurface, which is invoked from C
-           code, and call it here, where an appropriate C++ object may be
-           passed in.
+        /* Call SDL_EGL_ChooseConfig and eglCreateWindowSurface directly,
+         * rather than via SDL_EGL_CreateSurface, as ANGLE/WinRT requires
+         * a C++ object, ComPtr<IUnknown>, to be passed into
+         * eglCreateWindowSurface.
          */
-        typedef EGLSurface (*eglCreateWindowSurfaceFunction)(EGLDisplay dpy, EGLConfig config,
-            Microsoft::WRL::ComPtr<IUnknown> win,
-            const EGLint *attrib_list);
-        eglCreateWindowSurfaceFunction WINRT_eglCreateWindowSurface =
-            (eglCreateWindowSurfaceFunction) _this->egl_data->eglCreateWindowSurface;
+        if (SDL_EGL_ChooseConfig(_this) != 0) {
+            char buf[512];
+            SDL_snprintf(buf, sizeof(buf), "SDL_EGL_ChooseConfig failed: %s", SDL_GetError());
+            return SDL_SetError(buf);
+        }
 
-        Microsoft::WRL::ComPtr<IUnknown> nativeWindow = reinterpret_cast<IUnknown *>(data->coreWindow.Get());
-        data->egl_surface = WINRT_eglCreateWindowSurface(
+        Microsoft::WRL::ComPtr<IUnknown> cpp_winrtEglWindow = video_data->winrtEglWindow;
+        data->egl_surface = ((eglCreateWindowSurface_Function)_this->egl_data->eglCreateWindowSurface)(
             _this->egl_data->egl_display,
             _this->egl_data->egl_config,
-            nativeWindow, NULL);
+            cpp_winrtEglWindow, NULL);
         if (data->egl_surface == NULL) {
-            // TODO, WinRT: see if eglCreateWindowSurface, or its callee(s), sets an error message.  If so, attach it to the SDL error.
             return SDL_SetError("eglCreateWindowSurface failed");
         }
     }

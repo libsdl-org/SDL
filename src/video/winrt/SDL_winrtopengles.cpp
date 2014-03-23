@@ -20,8 +20,6 @@
 */
 #include "../../SDL_internal.h"
 
-// TODO: WinRT, make this file compile via C code
-
 #if SDL_VIDEO_DRIVER_WINRT && SDL_VIDEO_OPENGL_EGL
 
 /* EGL implementation of SDL OpenGL support */
@@ -29,13 +27,77 @@
 #include "SDL_winrtvideo_cpp.h"
 extern "C" {
 #include "SDL_winrtopengles.h"
+#include "SDL_loadso.h"
 }
 
-#define EGL_D3D11_ONLY_DISPLAY_ANGLE ((NativeDisplayType) -3)
+/* Windows includes */
+#include <wrl/client.h>
+using namespace Windows::UI::Core;
+
+/* ANGLE/WinRT constants */
+static const int ANGLE_D3D_FEATURE_LEVEL_ANY = 0;
+
+
+/*
+ * SDL/EGL top-level implementation
+ */
 
 extern "C" int
-WINRT_GLES_LoadLibrary(_THIS, const char *path) {
-    return SDL_EGL_LoadLibrary(_this, path, EGL_D3D11_ONLY_DISPLAY_ANGLE);
+WINRT_GLES_LoadLibrary(_THIS, const char *path)
+{
+    SDL_VideoData *video_data = (SDL_VideoData *)_this->driverdata;
+
+    if (SDL_EGL_LoadLibrary(_this, path, EGL_DEFAULT_DISPLAY) != 0) {
+        return -1;
+    }
+
+    /* Load ANGLE/WinRT-specific functions */
+    CreateWinrtEglWindow_Function CreateWinrtEglWindow = (CreateWinrtEglWindow_Function) SDL_LoadFunction(_this->egl_data->egl_dll_handle, "CreateWinrtEglWindow");
+    if (!CreateWinrtEglWindow) {
+        return SDL_SetError("Could not retrieve ANGLE/WinRT function CreateWinrtEglWindow");
+    }
+
+    /* Create an ANGLE/WinRT EGL-window */
+    /* TODO, WinRT: check for XAML usage before accessing the CoreWindow, as not doing so could lead to a crash */
+    CoreWindow ^ native_win = CoreWindow::GetForCurrentThread();
+    Microsoft::WRL::ComPtr<IUnknown> cpp_win = reinterpret_cast<IUnknown *>(native_win);
+    HRESULT result = CreateWinrtEglWindow(cpp_win, ANGLE_D3D_FEATURE_LEVEL_ANY, &(video_data->winrtEglWindow));
+    if (FAILED(result)) {
+        return -1;
+    }
+
+    /* Call eglGetDisplay and eglInitialize as appropriate.  On other
+     * platforms, this would probably get done by SDL_EGL_LoadLibrary,
+     * however ANGLE/WinRT's current implementation (as of Mar 22, 2014) of
+     * eglGetDisplay requires that a C++ object be passed into it, so the
+     * call will be made in this file, a C++ file, instead.
+     */
+    Microsoft::WRL::ComPtr<IUnknown> cpp_display = video_data->winrtEglWindow;
+    _this->egl_data->egl_display = ((eglGetDisplay_Function)_this->egl_data->eglGetDisplay)(cpp_display);
+    if (!_this->egl_data->egl_display) {
+        return SDL_SetError("Could not get EGL display");
+    }
+    
+    if (_this->egl_data->eglInitialize(_this->egl_data->egl_display, NULL, NULL) != EGL_TRUE) {
+        return SDL_SetError("Could not initialize EGL");
+    }
+
+    return 0;
+}
+
+extern "C" void
+WINRT_GLES_UnloadLibrary(_THIS)
+{
+    SDL_VideoData *video_data = (SDL_VideoData *)_this->driverdata;
+
+    /* Release SDL's own COM reference to the ANGLE/WinRT IWinrtEglWindow */
+    if (video_data->winrtEglWindow) {
+        video_data->winrtEglWindow->Release();
+        video_data->winrtEglWindow = nullptr;
+    }
+
+    /* Perform the bulk of the unloading */
+    SDL_EGL_UnloadLibrary(_this);
 }
 
 extern "C" {

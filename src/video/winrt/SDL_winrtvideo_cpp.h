@@ -34,6 +34,13 @@ extern "C" {
 #include "../SDL_egl_c.h"
 }
 
+/* Private display data */
+typedef struct SDL_VideoData {
+    /* An object created by ANGLE/WinRT (OpenGL ES 2 for WinRT) that gets
+     * passed to eglGetDisplay and eglCreateWindowSurface:
+     */
+    IUnknown *winrtEglWindow;
+} SDL_VideoData;
 
 /* The global, WinRT, SDL Window.
    For now, SDL/WinRT only supports one window (due to platform limitations of
