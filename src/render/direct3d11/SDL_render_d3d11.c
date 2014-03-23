@@ -851,6 +851,12 @@ D3D11_ReleaseAll(SDL_Renderer * renderer)
     D3D11_RenderData *data = (D3D11_RenderData *) renderer->driverdata;
     SDL_Texture *texture = NULL;
 
+    /* Release all textures */
+    for (texture = renderer->textures; texture; texture = texture->next) {
+        D3D11_DestroyTexture(renderer, texture);
+    }
+
+    /* Release/reset everything else */
     if (data) {
         SAFE_RELEASE(data->dxgiFactory);
         SAFE_RELEASE(data->dxgiAdapter);
@@ -874,13 +880,6 @@ D3D11_ReleaseAll(SDL_Renderer * renderer)
         SAFE_RELEASE(data->clippedRasterizer);
         SAFE_RELEASE(data->vertexShaderConstants);
 
-        if (data->hD3D11Mod) {
-            SDL_UnloadObject(data->hD3D11Mod);
-        }
-        if (data->hDXGIMod) {
-            SDL_UnloadObject(data->hDXGIMod);
-        }
-
         data->swapEffect = (DXGI_SWAP_EFFECT) 0;
         data->rotation = DXGI_MODE_ROTATION_UNSPECIFIED;
         data->currentRenderTargetView = NULL;
@@ -889,11 +888,18 @@ D3D11_ReleaseAll(SDL_Renderer * renderer)
         data->currentShader = NULL;
         data->currentShaderResource = NULL;
         data->currentSampler = NULL;
-    }
 
-    /* Release all textures */
-    for (texture = renderer->textures; texture; texture = texture->next) {
-        D3D11_DestroyTexture(renderer, texture);
+        /* Unload the D3D libraries.  This should be done last, in order
+         * to prevent IUnknown::Release() calls from crashing.
+         */
+        if (data->hD3D11Mod) {
+            SDL_UnloadObject(data->hD3D11Mod);
+            data->hD3D11Mod = NULL;
+        }
+        if (data->hDXGIMod) {
+            SDL_UnloadObject(data->hDXGIMod);
+            data->hDXGIMod = NULL;
+        }
     }
 }
 
