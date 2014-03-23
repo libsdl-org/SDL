@@ -70,7 +70,6 @@ static SDL_bool WINRT_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo 
 
 /* SDL-internal globals: */
 SDL_Window * WINRT_GlobalSDLWindow = NULL;
-SDL_VideoDevice * WINRT_GlobalSDLVideoDevice = NULL;
 
 
 /* WinRT driver bootstrap functions */
@@ -84,10 +83,6 @@ WINRT_Available(void)
 static void
 WINRT_DeleteDevice(SDL_VideoDevice * device)
 {
-    if (device == WINRT_GlobalSDLVideoDevice) {
-        WINRT_GlobalSDLVideoDevice = NULL;
-    }
-
     if (device->driverdata) {
         SDL_VideoData * video_data = (SDL_VideoData *)device->driverdata;
         if (video_data->winrtEglWindow) {
@@ -143,7 +138,6 @@ WINRT_CreateDevice(int devindex)
     device->GL_DeleteContext = WINRT_GLES_DeleteContext;
 #endif
     device->free = WINRT_DeleteDevice;
-    WINRT_GlobalSDLVideoDevice = device;
 
     return device;
 }
