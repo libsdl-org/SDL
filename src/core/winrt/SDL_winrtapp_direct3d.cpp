@@ -564,6 +564,16 @@ void SDL_WinRTApp::OnSuspending(Platform::Object^ sender, SuspendingEventArgs^ a
     // indicates that the application is busy performing suspending operations. Be
     // aware that a deferral may not be held indefinitely. After about five seconds,
     // the app will be forced to exit.
+
+    // ... but first, let the app know it's about to go to the background.
+    // The separation of events may be important, given that the deferral
+    // runs in a separate thread.  This'll make SDL_APP_WILLENTERBACKGROUND
+    // the only event among the two that runs in the main thread.  Given
+    // that a few WinRT operations can only be done from the main thread
+    // (things that access the WinRT CoreWindow are one example of this),
+    // this could be important.
+    SDL_SendAppEvent(SDL_APP_WILLENTERBACKGROUND);
+
     SuspendingDeferral^ deferral = args->SuspendingOperation->GetDeferral();
     create_task([this, deferral]()
     {
@@ -585,7 +595,6 @@ void SDL_WinRTApp::OnSuspending(Platform::Object^ sender, SuspendingEventArgs^ a
             SDL_FilterEvents(RemoveAppSuspendAndResumeEvents, 0);
         }
 
-        SDL_SendAppEvent(SDL_APP_WILLENTERBACKGROUND);
         SDL_SendAppEvent(SDL_APP_DIDENTERBACKGROUND);
 
         deferral->Complete();
