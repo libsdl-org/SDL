@@ -39,6 +39,8 @@ internal:
     void PumpEvents();
 
 protected:
+    bool ShouldWaitForAppResumeEvents();
+
     // Event Handlers.
 
 #if WINAPI_FAMILY == WINAPI_FAMILY_APP  // for Windows 8/8.1/RT apps... (and not Phone apps)
