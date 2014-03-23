@@ -173,6 +173,8 @@ static void WINRT_SetDisplayOrientationsPreference(void *userdata, const char *n
 static void
 WINRT_ProcessWindowSizeChange()
 {
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+
     // Make the new window size be the one true fullscreen mode.
     // This change was initially done, in part, to allow the Direct3D 11.1
     // renderer to receive window-resize events as a device rotates.
@@ -192,31 +194,31 @@ WINRT_ProcessWindowSizeChange()
     // Make note of the old display mode, and it's old driverdata.
     SDL_DisplayMode oldDisplayMode;
     SDL_zero(oldDisplayMode);
-    if (WINRT_GlobalSDLVideoDevice) {
-        oldDisplayMode = WINRT_GlobalSDLVideoDevice->displays[0].desktop_mode;
+    if (_this) {
+        oldDisplayMode = _this->displays[0].desktop_mode;
     }
 
     // Setup the new display mode in the appropriate spots.
-    if (WINRT_GlobalSDLVideoDevice) {
+    if (_this) {
         // Make a full copy of the display mode for display_modes[0],
         // one with with a separately malloced 'driverdata' field.
         // SDL_VideoQuit(), if called, will attempt to free the driverdata
         // fields in 'desktop_mode' and each entry in the 'display_modes'
         // array.
-        if (WINRT_GlobalSDLVideoDevice->displays[0].display_modes[0].driverdata) {
+        if (_this->displays[0].display_modes[0].driverdata) {
             // Free the previous mode's memory
-            SDL_free(WINRT_GlobalSDLVideoDevice->displays[0].display_modes[0].driverdata);
-            WINRT_GlobalSDLVideoDevice->displays[0].display_modes[0].driverdata = NULL;
+            SDL_free(_this->displays[0].display_modes[0].driverdata);
+            _this->displays[0].display_modes[0].driverdata = NULL;
         }
-        if (WINRT_DuplicateDisplayMode(&(WINRT_GlobalSDLVideoDevice->displays[0].display_modes[0]), &newDisplayMode) != 0) {
+        if (WINRT_DuplicateDisplayMode(&(_this->displays[0].display_modes[0]), &newDisplayMode) != 0) {
             // Uh oh, something went wrong.  A malloc call probably failed.
             SDL_free(newDisplayMode.driverdata);
             return;
         }
 
         // Install 'newDisplayMode' into 'current_mode' and 'desktop_mode'.
-        WINRT_GlobalSDLVideoDevice->displays[0].current_mode = newDisplayMode;
-        WINRT_GlobalSDLVideoDevice->displays[0].desktop_mode = newDisplayMode;
+        _this->displays[0].current_mode = newDisplayMode;
+        _this->displays[0].desktop_mode = newDisplayMode;
     }
 
     if (WINRT_GlobalSDLWindow) {

@@ -48,9 +48,6 @@ typedef struct SDL_VideoData {
 */
 extern SDL_Window * WINRT_GlobalSDLWindow;
 
-/* The global, WinRT, video device. */
-extern SDL_VideoDevice * WINRT_GlobalSDLVideoDevice;
-
 /* Creates a display mode for Plain Direct3D (non-XAML) apps, using the lone, native window's settings.
 
    Pass in an allocated SDL_DisplayMode field to store the data in.
