@@ -135,7 +135,8 @@ typedef enum
     SDL_DROPFILE        = 0x1000, /**< The system requests a file open */
 
     /* Render events */
-    SDL_RENDER_TARGETS_RESET = 0x2000, /**< The render targets have been reset */
+    SDL_RENDER_TARGETS_RESET = 0x2000, /**< The render targets have been reset and their contents need to be updated */
+    SDL_RENDER_DEVICE_RESET, /**< The device has been reset and all textures need to be recreated */
 
     /** Events ::SDL_USEREVENT through ::SDL_LASTEVENT are for your use,
      *  and should be allocated with SDL_RegisterEvents()

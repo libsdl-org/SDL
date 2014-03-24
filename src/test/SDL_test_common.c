@@ -1198,6 +1198,13 @@ SDLTest_PrintEvent(SDL_Event * event)
                 event->tfinger.dx, event->tfinger.dy, event->tfinger.pressure);
         break;
 
+    case SDL_RENDER_DEVICE_RESET:
+        SDL_Log("SDL EVENT: render device reset");
+        break;
+    case SDL_RENDER_TARGETS_RESET:
+        SDL_Log("SDL EVENT: render targets reset");
+        break;
+
     case SDL_QUIT:
         SDL_Log("SDL EVENT: Quit requested");
         break;

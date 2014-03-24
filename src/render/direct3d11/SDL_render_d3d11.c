@@ -1593,9 +1593,8 @@ D3D11_HandleDeviceLost(SDL_Renderer * renderer)
 
     /* Let the application know that the device has been reset */
     {
-        /* TODO/FIXME: consider adding a new SDL event to indicate that the entire rendering device has been reset, not just render targets! */
         SDL_Event event;
-        event.type = SDL_RENDER_TARGETS_RESET;
+        event.type = SDL_RENDER_DEVICE_RESET;
         SDL_PushEvent(&event);
     }
 
