@@ -13,6 +13,10 @@
 #include "SDL.h"
 #include "SDL_test.h"
 
+#ifdef __MACOSX__
+#include <unistd.h> /* For unlink() */
+#endif
+
 /* ================= Test Case Implementation ================== */
 
 /* Shared test surface */
