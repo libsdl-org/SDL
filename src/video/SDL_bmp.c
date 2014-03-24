@@ -33,6 +33,7 @@
 */
 
 #include "SDL_video.h"
+#include "SDL_assert.h"
 #include "SDL_endian.h"
 #include "SDL_pixels_c.h"
 
@@ -268,6 +269,7 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
     /* Load the palette, if any */
     palette = (surface->format)->palette;
     if (palette) {
+        SDL_assert(biBitCount <= 8);
         if (biClrUsed == 0) {
             biClrUsed = 1 << biBitCount;
         }
