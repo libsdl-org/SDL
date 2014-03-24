@@ -295,6 +295,9 @@
     <ClCompile Include="..\..\src\power\winrt\SDL_syspower.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\video\winrt\SDL_winrtmessagebox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\begin_code.h">
@@ -664,6 +667,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\video\SDL_egl_c.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\winrt\SDL_winrtmessagebox.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
