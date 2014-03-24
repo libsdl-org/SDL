@@ -111,7 +111,7 @@ WatchJoystick(SDL_Joystick * joystick)
     Uint8 alpha=200, alpha_step = -1;
     Uint32 alpha_ticks;
     char mapping[4096], temp[4096];
-    MappingStep *step;
+    MappingStep *step, *prev_step;
     MappingStep steps[] = {
         {342, 132,  0.0,  MARKER_BUTTON, "x", -1, -1, -1, -1, ""},
         {387, 167,  0.0,  MARKER_BUTTON, "a", -1, -1, -1, -1, ""},
@@ -296,8 +296,8 @@ WatchJoystick(SDL_Joystick * joystick)
                     if (event.key.keysym.sym == SDLK_BACKSPACE || event.key.keysym.sym == SDLK_AC_BACK) {
                         /* Undo! */
                         if (s > 0) {
-                            SDL_strlcpy(mapping, step->mapping, SDL_arraysize(step->mapping));
-                            s--;
+                            prev_step = &steps[--s];
+                            SDL_strlcpy(mapping, prev_step->mapping, SDL_arraysize(prev_step->mapping));
                             next = SDL_TRUE;
                         }
                         break;
