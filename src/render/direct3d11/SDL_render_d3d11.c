@@ -1447,6 +1447,8 @@ D3D11_CreateSwapChain(SDL_Renderer * renderer, int w, int h)
             WIN_SetErrorFromHRESULT(__FUNCTION__ ", IDXGIFactory2::CreateSwapChainForHwnd", result);
             goto done;
         }
+
+        IDXGIFactory_MakeWindowAssociation(data->dxgiFactory, windowinfo.info.win.window, DXGI_MWA_NO_WINDOW_CHANGES);
 #else
         SDL_SetError(__FUNCTION__", Unable to find something to attach a swap chain to");
         goto done;
