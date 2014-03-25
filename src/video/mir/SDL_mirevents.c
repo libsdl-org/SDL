@@ -117,6 +117,13 @@ HandleMouseButton(SDL_Window* sdl_window, Uint8 state, MirMotionButton button_st
 }
 
 static void
+HandleMouseMotion(SDL_Window* sdl_window, int x, int y)
+{
+    SDL_SendMouseMotion(sdl_window, 0, 0, x, y);
+}
+
+#if 0  /* !!! FIXME: needs a newer set of dev headers than Ubuntu 13.10 is shipping atm. */
+static void
 HandleTouchPress(int device_id, int source_id, SDL_bool down, float x, float y, float pressure)
 {
     SDL_SendTouch(device_id, source_id, down, x, y, pressure);
@@ -126,12 +133,6 @@ static void
 HandleTouchMotion(int device_id, int source_id, float x, float y, float pressure)
 {
     SDL_SendTouchMotion(device_id, source_id, x, y, pressure);
-}
-
-static void
-HandleMouseMotion(SDL_Window* sdl_window, int x, int y)
-{
-    SDL_SendMouseMotion(sdl_window, 0, 0, x, y);
 }
 
 static void
@@ -181,6 +182,7 @@ HandleTouchEvent(MirMotionEvent const motion, int cord_index, SDL_Window* sdl_wi
             break;
     }
 }
+#endif
 
 static void
 HandleMouseEvent(MirMotionEvent const motion, int cord_index, SDL_Window* sdl_window)
