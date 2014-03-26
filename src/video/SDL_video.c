@@ -2129,7 +2129,13 @@ SDL_OnWindowMinimized(SDL_Window * window)
 void
 SDL_OnWindowRestored(SDL_Window * window)
 {
-    SDL_RaiseWindow(window);
+    /*
+     * FIXME: Is this fine to just remove this, or should it be preserved just
+     * for the fullscreen case? In principle it seems like just hiding/showing
+     * windows shouldn't affect the stacking order; maybe the right fix is to
+     * re-decouple OnWindowShown and OnWindowRestored.
+     */
+    //SDL_RaiseWindow(window);
 
     if (FULLSCREEN_VISIBLE(window)) {
         SDL_UpdateFullscreenMode(window, SDL_TRUE);
