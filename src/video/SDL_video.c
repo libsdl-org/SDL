@@ -2135,7 +2135,7 @@ SDL_OnWindowRestored(SDL_Window * window)
      * windows shouldn't affect the stacking order; maybe the right fix is to
      * re-decouple OnWindowShown and OnWindowRestored.
      */
-    //SDL_RaiseWindow(window);
+    /*SDL_RaiseWindow(window);*/
 
     if (FULLSCREEN_VISIBLE(window)) {
         SDL_UpdateFullscreenMode(window, SDL_TRUE);
