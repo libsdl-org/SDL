@@ -12,7 +12,7 @@
 
 TARBALL="$1"
 if [ -z $1 ]; then
-    TARBALL=sdl-raspberrypi.tar.bz2
+    TARBALL=sdl-raspberrypi.tar.xz
 fi
 
 OSTYPE=`uname -s`
@@ -51,7 +51,7 @@ mkdir -p ./usr
 mv ./rpi-sdl2-installed ./usr/local
 
 popd
-tar -cjvvf $TARBALL -C $BUILDBOTDIR usr
+tar -cJvvf $TARBALL -C $BUILDBOTDIR usr
 rm -rf $BUILDBOTDIR
 
 set +x
