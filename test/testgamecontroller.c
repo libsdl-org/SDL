@@ -85,9 +85,13 @@ LoadTexture(SDL_Renderer *renderer, char *file, SDL_bool transparent)
     } else {
         /* Set transparent pixel as the pixel at (0,0) */
         if (transparent) {
-            SDL_assert(!temp->format->palette);
-            SDL_assert(temp->format->BitsPerPixel == 24);
-            SDL_SetColorKey(temp, SDL_TRUE, (*(Uint32 *) temp->pixels) & 0x00FFFFFF);
+            if (temp->format->BytesPerPixel == 1) {
+                SDL_SetColorKey(temp, SDL_TRUE, *(Uint8 *)temp->pixels);
+            } else {
+                SDL_assert(!temp->format->palette);
+                SDL_assert(temp->format->BitsPerPixel == 24);
+                SDL_SetColorKey(temp, SDL_TRUE, (*(Uint32 *)temp->pixels) & 0x00FFFFFF);
+            }
         }
 
         texture = SDL_CreateTextureFromSurface(renderer, temp);
