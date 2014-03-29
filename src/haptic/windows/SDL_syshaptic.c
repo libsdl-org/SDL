@@ -321,9 +321,8 @@ int
 XInputHaptic_MaybeAddDevice(const DWORD dwUserid)
 {
     const Uint8 userid = (Uint8) dwUserid;
-    XINPUT_CAPABILITIES caps;
-    const SDL_bool bIs14OrLater = (SDL_XInputVersion >= ((1<<16)|4));
     SDL_hapticlist_item *item;
+    XINPUT_VIBRATION state;
 
     if ((!loaded_xinput) || (dwUserid >= SDL_XINPUT_MAX_DEVICES)) {
         return -1;
@@ -336,13 +335,8 @@ XInputHaptic_MaybeAddDevice(const DWORD dwUserid)
         }
     }
 
-    if (XINPUTGETCAPABILITIES(dwUserid, XINPUT_FLAG_GAMEPAD, &caps) != ERROR_SUCCESS) {
-        return -1;  /* maybe controller isn't plugged in. */
-    }
-
-    /* XInput < 1.4 is probably only for original XBox360 controllers,
-        which don't offer the flag, and always have force feedback */
-    if ( (bIs14OrLater) && ((caps.Flags & XINPUT_CAPS_FFB_SUPPORTED) == 0) ) {
+    SDL_zero(state);
+    if (XINPUTSETSTATE(dwUserid, &state) != ERROR_SUCCESS) {
         return -1;  /* no force feedback on this device. */
     }
 
