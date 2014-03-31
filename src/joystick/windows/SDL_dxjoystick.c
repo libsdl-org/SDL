@@ -959,12 +959,13 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
     SDL_zerop(joystick->hwdata);
 
     if (joystickdevice->bXInputDevice) {
-        const SDL_bool bIs14OrLater = (SDL_XInputVersion >= ((1<<16)|4));
         const Uint8 userId = joystickdevice->XInputUserId;
         XINPUT_CAPABILITIES capabilities;
+        XINPUT_VIBRATION state;
 
         SDL_assert(s_bXInputEnabled);
         SDL_assert(XINPUTGETCAPABILITIES);
+        SDL_assert(XINPUTSETSTATE);
         SDL_assert(userId >= 0);
         SDL_assert(userId < SDL_XINPUT_MAX_DEVICES);
 
@@ -977,9 +978,8 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
         } else {
             /* Current version of XInput mistakenly returns 0 as the Type. Ignore it and ensure the subtype is a gamepad. */
             SDL_assert(capabilities.SubType == XINPUT_DEVSUBTYPE_GAMEPAD);
-            if ((!bIs14OrLater) || (capabilities.Flags & XINPUT_CAPS_FFB_SUPPORTED)) {
-                joystick->hwdata->bXInputHaptic = SDL_TRUE;
-            }
+            SDL_zero(state);
+            joystick->hwdata->bXInputHaptic = (XINPUTSETSTATE(userId, &state) == ERROR_SUCCESS);
             joystick->hwdata->userid = userId;
 
             /* The XInput API has a hard coded button/axis mapping, so we just match it */
@@ -987,7 +987,7 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
             joystick->nbuttons = 15;
             joystick->nballs = 0;
             joystick->nhats = 0;
-		}
+        }
     } else {  /* use DirectInput, not XInput. */
         LPDIRECTINPUTDEVICE8 device;
         DIPROPDWORD dipdw;
@@ -1675,7 +1675,7 @@ SDL_bool SDL_SYS_IsXInputDeviceIndex(int device_index)
 /* return SDL_TRUE if this device was opened with XInput */
 SDL_bool SDL_SYS_IsXInputJoystick(SDL_Joystick * joystick)
 {
-	return joystick->hwdata->bXInputDevice;
+    return joystick->hwdata->bXInputDevice;
 }
 
 #endif /* SDL_JOYSTICK_DINPUT */
