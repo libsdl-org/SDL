@@ -360,7 +360,7 @@ extern "C" {
 */
 #define SDL_HINT_VIDEO_WINDOW_SHARE_PIXEL_FORMAT    "SDL_VIDEO_WINDOW_SHARE_PIXEL_FORMAT"
 
-/*
+/**
  *  \brief A URL to a WinRT app's privacy policy
  *
  *  All network-enabled WinRT apps must make a privacy policy available to its
