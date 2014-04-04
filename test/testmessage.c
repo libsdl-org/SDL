@@ -19,8 +19,6 @@
 #include "SDL.h"
 #include "SDL_thread.h"
 
-static int alive = 0;
-
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
 quit(int rc)
