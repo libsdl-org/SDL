@@ -164,6 +164,18 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
                 c->surface_extension, data->surface);
     }
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
+
+    /**
+     * If the user specified 0x0 as the size (turned to 1x1 by SDL_CreateWindow
+     * in SDL_video.c), we want to make the window fill the whole screen
+     **/
+    if (window->w == 1) {
+        window->w = c->screen_allocation.width;
+    }
+    if (window->h == 1) {
+        window->h = c->screen_allocation.height;
+    }
+
     data->egl_window = WAYLAND_wl_egl_window_create(data->surface,
                                             window->w, window->h);
 
