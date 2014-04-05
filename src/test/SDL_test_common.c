@@ -886,7 +886,7 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
                             break;
                         }
                     }
-                    if (m == n) {
+                    if (m == -1) {
                         fprintf(stderr,
                                 "Couldn't find render driver named %s",
                                 state->renderdriver);
