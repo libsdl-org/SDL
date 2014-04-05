@@ -2139,6 +2139,10 @@ AC_HELP_STRING([--enable-pthreads], [use POSIX threads for multi-threading [[def
 AC_HELP_STRING([--enable-pthread-sem], [use pthread semaphores [[default=yes]]]),
                   , enable_pthread_sem=yes)
     case "$host" in
+	 *-*-androideabi*)
+            pthread_cflags="-D_REENTRANT -D_THREAD_SAFE"
+            pthread_lib=""
+	    ;;
         *-*-linux*|*-*-uclinux*)
             pthread_cflags="-D_REENTRANT"
             pthread_lib="-lpthread"
@@ -2642,6 +2646,20 @@ case "$host" in
                     $as_echo "#define SDL_VIDEO_DRIVER_RPI 1" >>confdefs.h
                 fi
                 ;;
+            *-*-androideabi*)
+                # Android
+                ARCH=android
+                ANDROID_CFLAGS="-DGL_GLEXT_PROTOTYPES"
+                CFLAGS="$CFLAGS $ANDROID_CFLAGS"
+                SDL_CFLAGS="$SDL_CFLAGS $ANDROID_CFLAGS"
+                EXTRA_CFLAGS="$EXTRA_CFLAGS $ANDROID_CFLAGS"
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS -ldl -lGLESv1_CM -lGLESv2 -llog -landroid"
+
+                if test x$enable_video = xyes; then
+                    SOURCES="$SOURCES $srcdir/src/core/android/*.c $srcdir/src/video/android/*.c"
+                    $as_echo "#define SDL_VIDEO_DRIVER_ANDROID 1" >>confdefs.h
+                fi
+                ;;
             *-*-linux*)         ARCH=linux ;;
             *-*-uclinux*)       ARCH=linux ;;
             *-*-kfreebsd*-gnu)  ARCH=kfreebsd-gnu ;;
@@ -2706,6 +2724,11 @@ case "$host" in
                 SOURCES="$SOURCES $srcdir/src/audio/paudio/*.c"
                 have_audio=yes
             ;;
+            android)
+                AC_DEFINE(SDL_AUDIO_DRIVER_ANDROID, 1, [ ])
+                SOURCES="$SOURCES $srcdir/src/audio/android/*.c"
+                have_audio=yes
+            ;;
           esac
         fi
         # Set up files for the joystick library
@@ -2714,6 +2737,11 @@ case "$host" in
             linux)
                 AC_DEFINE(SDL_JOYSTICK_LINUX, 1, [ ])
                 SOURCES="$SOURCES $srcdir/src/joystick/linux/*.c"
+                have_joystick=yes
+            ;;
+            android)
+                AC_DEFINE(SDL_JOYSTICK_ANDROID, 1, [ ])
+                SOURCES="$SOURCES $srcdir/src/joystick/android/*.c"
                 have_joystick=yes
             ;;
           esac
@@ -2736,6 +2764,11 @@ case "$host" in
                linux)
                    AC_DEFINE(SDL_POWER_LINUX, 1, [ ])
                    SOURCES="$SOURCES $srcdir/src/power/linux/*.c"
+                   have_power=yes
+               ;;
+               android)
+                   AC_DEFINE(SDL_POWER_ANDROID, 1, [ ])
+                   SOURCES="$SOURCES $srcdir/src/power/android/*.c"
                    have_power=yes
                ;;
              esac
