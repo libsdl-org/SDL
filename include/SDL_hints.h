@@ -116,7 +116,7 @@ extern "C" {
  *
  *  By default, SDL does not use Direct3D Debug Layer.
  */
-#define SDL_HINT_RENDER_DIRECT3D11_DEBUG    "SDL_HINT_RENDER_DIRECT3D11_DEBUG"
+#define SDL_HINT_RENDER_DIRECT3D11_DEBUG    "SDL_RENDER_DIRECT3D11_DEBUG"
 
 /**
  *  \brief  A variable controlling the scaling quality
@@ -384,7 +384,7 @@ extern "C" {
  *  will not get used on that platform.  Network-enabled phone apps should display
  *  their privacy policy through some other, in-app means.
  */
-#define SDL_HINT_WINRT_PRIVACY_POLICY_URL "SDL_HINT_WINRT_PRIVACY_POLICY_URL"
+#define SDL_HINT_WINRT_PRIVACY_POLICY_URL "SDL_WINRT_PRIVACY_POLICY_URL"
 
 /** \brief Label text for a WinRT app's privacy policy link
  *
@@ -405,7 +405,7 @@ extern "C" {
  *  For additional information on linking to a privacy policy, see the documentation for
  *  SDL_HINT_WINRT_PRIVACY_POLICY_URL.
  */
-#define SDL_HINT_WINRT_PRIVACY_POLICY_LABEL "SDL_HINT_WINRT_PRIVACY_POLICY_LABEL"
+#define SDL_HINT_WINRT_PRIVACY_POLICY_LABEL "SDL_WINRT_PRIVACY_POLICY_LABEL"
 
 /** \brief If set to "1", back button press events on Windows Phone 8+ will be marked as handled.
  *
@@ -414,7 +414,7 @@ extern "C" {
  *  beginning of the following web page:
  *  http://msdn.microsoft.com/en-us/library/windowsphone/develop/jj247550(v=vs.105).aspx
  */
-#define SDL_HINT_WINRT_HANDLE_BACK_BUTTON "SDL_HINT_WINRT_HANDLE_BACK_BUTTON"
+#define SDL_HINT_WINRT_HANDLE_BACK_BUTTON "SDL_WINRT_HANDLE_BACK_BUTTON"
 
 /**
  *  \brief  A variable that dictates policy for fullscreen Spaces on Mac OS X.
