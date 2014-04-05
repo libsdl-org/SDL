@@ -270,7 +270,7 @@ public class SDLActivity extends Activity {
     }
 
     // C functions we call
-    public static native void nativeInit();
+    public static native int nativeInit();
     public static native void nativeLowMemory();
     public static native void nativeQuit();
     public static native void nativePause();
