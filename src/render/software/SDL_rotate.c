@@ -189,7 +189,7 @@ _transformSurfaceRGBA(SDL_Surface * src, SDL_Surface * dst, int cx, int cy, int 
                 if (flipx) dx = sw - dx;
                 if (flipy) dy = sh - dy;
                 if ((dx > -1) && (dy > -1) && (dx < (src->w-1)) && (dy < (src->h-1))) {
-                    sp = (tColorRGBA *)src->pixels;;
+                    sp = (tColorRGBA *)src->pixels;
                     sp += ((src->pitch/4) * dy);
                     sp += dx;
                     c00 = *sp;
