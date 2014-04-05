@@ -54,7 +54,7 @@ int main(int argc,char** argv)
     int button_down;
     Uint32 pixelFormat = 0;
     int access = 0;
-    SDL_Rect texture_dimensions;;
+    SDL_Rect texture_dimensions;
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);

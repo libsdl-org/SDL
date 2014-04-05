@@ -485,7 +485,7 @@ GetSupportedFeatures(SDL_Haptic * haptic)
     supported |= SDL_HAPTIC_STATUS | SDL_HAPTIC_PAUSE;
 
     haptic->supported = supported;
-    return 0;;
+    return 0;
 }
 
 
