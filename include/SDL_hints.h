@@ -435,6 +435,16 @@ extern "C" {
  */
 #define SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES    "SDL_VIDEO_MAC_FULLSCREEN_SPACES"
 
+/**
+ * \brief Android APK expansion main file version. Should be a string number like "1", "2" etc.
+ */
+#define SDL_HINT_ANDROID_APK_EXPANSION_MAIN_FILE_VERSION "SDL_ANDROID_APK_EXPANSION_MAIN_FILE_VERSION"
+ 
+/**
+ * \brief Android APK expansion patch file version. Should be a string number like "1", "2" etc.
+ */
+#define SDL_HINT_ANDROID_APK_EXPANSION_PATCH_FILE_VERSION "SDL_ANDROID_APK_EXPANSION_MAIN_PATCH_VERSION"
+
 
 /**
  *  \brief  An enumeration of hint priorities

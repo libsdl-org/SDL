@@ -1,5 +1,7 @@
 package org.libsdl.app;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -20,6 +22,8 @@ import android.graphics.*;
 import android.media.*;
 import android.hardware.*;
 
+import com.android.vending.expansion.zipfile.APKExpansionSupport;
+import com.android.vending.expansion.zipfile.ZipResourceFile;
 
 /**
     SDL Activity
@@ -296,6 +300,7 @@ public class SDLActivity extends Activity {
                                                int is_accelerometer, int nbuttons, 
                                                int naxes, int nhats, int nballs);
     public static native int nativeRemoveJoystick(int device_id);
+    public static native String getHint(String name);
 
     public static void flipBuffers() {
         SDLActivity.nativeFlipBuffers();
@@ -495,7 +500,28 @@ public class SDLActivity extends Activity {
             mJoystickHandler.pollInputDevices();
         }
     }
-    
+
+    // APK extension files support
+    private ZipResourceFile expansionFile = null;
+
+    public InputStream openAPKExtensionInputStream(String fileName) throws IOException {
+        // Get a ZipResourceFile representing a merger of both the main and patch files
+        if (expansionFile == null) {
+            Integer mainVersion = Integer.parseInt(getHint("SDL_ANDROID_APK_EXPANSION_MAIN_FILE_VERSION"));
+            Integer patchVersion = Integer.parseInt(getHint("SDL_ANDROID_APK_EXPANSION_MAIN_FILE_VERSION"));
+
+            expansionFile = APKExpansionSupport.getAPKExpansionZipFile(this, mainVersion, patchVersion);
+        }
+
+        // Get an input stream for a known file inside the expansion file ZIPs
+        InputStream fileStream = expansionFile.getInputStream(fileName);
+
+        if (fileStream == null) {
+            throw new IOException();
+        }
+
+        return fileStream;
+    }
 }
 
 /**
