@@ -1,0 +1,62 @@
+\hypertarget{struct_s_d_l_visual_test___s_u_t_option}{\section{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option Struct Reference}
+\label{struct_s_d_l_visual_test___s_u_t_option}\index{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option@{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option}}
+}
+
+
+{\ttfamily \#include $<$S\-D\-L\-\_\-visualtest\-\_\-sut\-\_\-configparser.\-h$>$}
+
+\subsection*{Data Fields}
+\begin{DoxyCompactItemize}
+\item 
+char \hyperlink{struct_s_d_l_visual_test___s_u_t_option_ad14ca616d8f7c9b61eff58baaead7f1f}{name} \mbox{[}\hyperlink{_s_d_l__visualtest__sut__configparser_8h_a0a8b0c1f8eee787abf09bf3a840eccc7}{M\-A\-X\-\_\-\-S\-U\-T\-O\-P\-T\-I\-O\-N\-\_\-\-N\-A\-M\-E\-\_\-\-L\-E\-N}\mbox{]}
+\item 
+char $\ast$$\ast$ \hyperlink{struct_s_d_l_visual_test___s_u_t_option_a6744d43d3ad17d06068dba9ee7b78c83}{categories}
+\item 
+\hyperlink{_s_d_l__visualtest__sut__configparser_8h_af9893831d9f79360f57e84a67a90293c}{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option\-Type} \hyperlink{struct_s_d_l_visual_test___s_u_t_option_a857b9e5ccfca26034b47a5f3236d822c}{type}
+\item 
+S\-D\-L\-\_\-bool \hyperlink{struct_s_d_l_visual_test___s_u_t_option_a79305c1b10f7b4defee52e1eefde8fbc}{required}
+\item 
+\begin{tabbing}
+xx\=xx\=xx\=xx\=xx\=xx\=xx\=xx\=xx\=\kill
+union \{\\
+\>\hyperlink{struct_s_d_l_visual_test___s_u_t_int_range}{SDLVisualTest\_SUTIntRange} \hyperlink{struct_s_d_l_visual_test___s_u_t_option_a2bb1301268866e0e41d035ea0a4914e8}{range}\\
+\>char $\ast$$\ast$ \hyperlink{struct_s_d_l_visual_test___s_u_t_option_a596ff3567c4b736561dba1915a2cd38d}{enum\_values}\\
+\} \hyperlink{struct_s_d_l_visual_test___s_u_t_option_aa9545bd4acd476f61533d04d53cdffdc}{data}\\
+
+\end{tabbing}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Struct that defines an option to be passed to the S\-U\-T. 
+
+\subsection{Field Documentation}
+\hypertarget{struct_s_d_l_visual_test___s_u_t_option_a6744d43d3ad17d06068dba9ee7b78c83}{\index{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option@{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option}!categories@{categories}}
+\index{categories@{categories}!SDLVisualTest_SUTOption@{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option}}
+\subsubsection[{categories}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$$\ast$ categories}}\label{struct_s_d_l_visual_test___s_u_t_option_a6744d43d3ad17d06068dba9ee7b78c83}
+An array of categories that the option belongs to. The last element is N\-U\-L\-L. \hypertarget{struct_s_d_l_visual_test___s_u_t_option_aa9545bd4acd476f61533d04d53cdffdc}{\index{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option@{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option}!data@{data}}
+\index{data@{data}!SDLVisualTest_SUTOption@{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option}}
+\subsubsection[{data}]{\setlength{\rightskip}{0pt plus 5cm}union \{ ... \}   data}}\label{struct_s_d_l_visual_test___s_u_t_option_aa9545bd4acd476f61533d04d53cdffdc}
+extra data that is required for certain types \hypertarget{struct_s_d_l_visual_test___s_u_t_option_a596ff3567c4b736561dba1915a2cd38d}{\index{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option@{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option}!enum\-\_\-values@{enum\-\_\-values}}
+\index{enum\-\_\-values@{enum\-\_\-values}!SDLVisualTest_SUTOption@{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option}}
+\subsubsection[{enum\-\_\-values}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$$\ast$ enum\-\_\-values}}\label{struct_s_d_l_visual_test___s_u_t_option_a596ff3567c4b736561dba1915a2cd38d}
+\begin{DoxyVerb}This field is valid only for enum type options; it holds the list of values
+\end{DoxyVerb}
+ that the option can take. The last element is N\-U\-L\-L \hypertarget{struct_s_d_l_visual_test___s_u_t_option_ad14ca616d8f7c9b61eff58baaead7f1f}{\index{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option@{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option}!name@{name}}
+\index{name@{name}!SDLVisualTest_SUTOption@{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option}}
+\subsubsection[{name}]{\setlength{\rightskip}{0pt plus 5cm}char name\mbox{[}{\bf M\-A\-X\-\_\-\-S\-U\-T\-O\-P\-T\-I\-O\-N\-\_\-\-N\-A\-M\-E\-\_\-\-L\-E\-N}\mbox{]}}}\label{struct_s_d_l_visual_test___s_u_t_option_ad14ca616d8f7c9b61eff58baaead7f1f}
+The name of the option. This is what you would pass in the command line along with two leading hyphens. \hypertarget{struct_s_d_l_visual_test___s_u_t_option_a2bb1301268866e0e41d035ea0a4914e8}{\index{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option@{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option}!range@{range}}
+\index{range@{range}!SDLVisualTest_SUTOption@{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option}}
+\subsubsection[{range}]{\setlength{\rightskip}{0pt plus 5cm}{\bf S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Int\-Range} range}}\label{struct_s_d_l_visual_test___s_u_t_option_a2bb1301268866e0e41d035ea0a4914e8}
+\begin{DoxyVerb}This field is valid only for integer type options; it defines the
+\end{DoxyVerb}
+ valid range for such an option \hypertarget{struct_s_d_l_visual_test___s_u_t_option_a79305c1b10f7b4defee52e1eefde8fbc}{\index{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option@{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option}!required@{required}}
+\index{required@{required}!SDLVisualTest_SUTOption@{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option}}
+\subsubsection[{required}]{\setlength{\rightskip}{0pt plus 5cm}S\-D\-L\-\_\-bool required}}\label{struct_s_d_l_visual_test___s_u_t_option_a79305c1b10f7b4defee52e1eefde8fbc}
+Whether the option is required or not \hypertarget{struct_s_d_l_visual_test___s_u_t_option_a857b9e5ccfca26034b47a5f3236d822c}{\index{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option@{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option}!type@{type}}
+\index{type@{type}!SDLVisualTest_SUTOption@{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option}}
+\subsubsection[{type}]{\setlength{\rightskip}{0pt plus 5cm}{\bf S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Option\-Type} type}}\label{struct_s_d_l_visual_test___s_u_t_option_a857b9e5ccfca26034b47a5f3236d822c}
+Type of the option -\/ integer, boolean, etc. 
+
+The documentation for this struct was generated from the following file\-:\begin{DoxyCompactItemize}
+\item 
+C\-:/\-Users/\-D\-E\-L\-L/\-Work/sdlvisualtest/visualtest/include/\hyperlink{_s_d_l__visualtest__sut__configparser_8h}{S\-D\-L\-\_\-visualtest\-\_\-sut\-\_\-configparser.\-h}\end{DoxyCompactItemize}
