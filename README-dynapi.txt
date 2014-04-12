@@ -114,7 +114,7 @@ right one initialize the jump table based on the version. For something that
 must generically catch lots of different versions of SDL over time, like the 
 Steam Client, this isn't a bad option.
 
-Finally, I'm sure some people are reading this and thinking 
+Finally, I'm sure some people are reading this and thinking,
 "I don't want that overhead in my project!"  
 To which I would point out that the extra function call through the jump table 
 probably wouldn't even show up in a profile, but lucky you: this can all be 
