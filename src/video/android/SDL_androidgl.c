@@ -41,9 +41,13 @@ SDL_EGL_MakeCurrent_impl(Android)
 void
 Android_GLES_SwapWindow(_THIS, SDL_Window * window)
 {
-    /* FIXME: These two functions were in the Java code, do we really need them? */
-    _this->egl_data->eglWaitNative(EGL_CORE_NATIVE_ENGINE);
-    _this->egl_data->eglWaitGL();
+    /* The following two calls existed in the original Java code
+     * If you happen to have a device that's affected by their removal,
+     * please report to Bugzilla. -- Gabriel
+     */
+    
+    /*_this->egl_data->eglWaitNative(EGL_CORE_NATIVE_ENGINE);
+    _this->egl_data->eglWaitGL();*/
     SDL_EGL_SwapBuffers(_this, ((SDL_WindowData *) window->driverdata)->egl_surface);
 }
 
