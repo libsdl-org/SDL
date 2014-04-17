@@ -1783,6 +1783,7 @@ AC_MSG_WARN("directfb $directfb_lib")
                 SUMMARY_video="${SUMMARY_video} directfb"
             fi
             AC_MSG_RESULT($directfb_shared)
+            SDL_CFLAGS="$SDL_CFLAGS $DIRECTFB_CFLAGS"
             have_video=yes
         fi
     fi
