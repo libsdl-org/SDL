@@ -208,6 +208,13 @@ static SDL_Scancode WinRT_Official_Keycodes[] = {
     SDL_SCANCODE_RCTRL, // VirtualKey.RightControl -- 163
     SDL_SCANCODE_MENU, // VirtualKey.LeftMenu -- 164
     SDL_SCANCODE_MENU, // VirtualKey.RightMenu -- 165
+    SDL_SCANCODE_AC_BACK, // VirtualKey.GoBack -- 166 : The go back key.
+    SDL_SCANCODE_AC_FORWARD, // VirtualKey.GoForward -- 167 : The go forward key.
+    SDL_SCANCODE_AC_REFRESH, // VirtualKey.Refresh -- 168 : The refresh key.
+    SDL_SCANCODE_AC_STOP, // VirtualKey.Stop -- 169 : The stop key.
+    SDL_SCANCODE_AC_SEARCH, // VirtualKey.Search -- 170 : The search key.
+    SDL_SCANCODE_AC_BOOKMARKS, // VirtualKey.Favorites -- 171 : The favorites key.
+    SDL_SCANCODE_AC_HOME // VirtualKey.GoHome -- 172 : The go home key.
 };
 
 static std::unordered_map<int, SDL_Scancode> WinRT_Unofficial_Keycodes;
@@ -216,11 +223,37 @@ static SDL_Scancode
 TranslateKeycode(int keycode)
 {
     if (WinRT_Unofficial_Keycodes.empty()) {
-        /* Set up a table of undocumented (by Microsoft), WinRT-specific,
-           key codes: */
-        // TODO, WinRT: move content declarations of WinRT_Unofficial_Keycodes into a C++11 initializer list, when possible
-        WinRT_Unofficial_Keycodes[220] = SDL_SCANCODE_GRAVE;
-        WinRT_Unofficial_Keycodes[222] = SDL_SCANCODE_BACKSLASH;
+        /* Set up a table of keycodes that aren't listed in WinRT's
+         * VirtualKey enum.
+         */
+
+        WinRT_Unofficial_Keycodes[173] = SDL_SCANCODE_MUTE;
+        WinRT_Unofficial_Keycodes[174] = SDL_SCANCODE_VOLUMEDOWN;
+        WinRT_Unofficial_Keycodes[175] = SDL_SCANCODE_VOLUMEUP;
+        WinRT_Unofficial_Keycodes[176] = SDL_SCANCODE_AUDIONEXT;
+        WinRT_Unofficial_Keycodes[177] = SDL_SCANCODE_AUDIOPREV;
+        // WinRT_Unofficial_Keycodes[178] = ;
+        WinRT_Unofficial_Keycodes[179] = SDL_SCANCODE_AUDIOPLAY;
+        WinRT_Unofficial_Keycodes[180] = SDL_SCANCODE_MAIL;
+        WinRT_Unofficial_Keycodes[181] = SDL_SCANCODE_MEDIASELECT;
+        // WinRT_Unofficial_Keycodes[182] = ;
+        WinRT_Unofficial_Keycodes[183] = SDL_SCANCODE_CALCULATOR;
+        // WinRT_Unofficial_Keycodes[184] = ;
+        // WinRT_Unofficial_Keycodes[185] = ;
+        WinRT_Unofficial_Keycodes[186] = SDL_SCANCODE_SEMICOLON;
+        WinRT_Unofficial_Keycodes[187] = SDL_SCANCODE_EQUALS;
+        WinRT_Unofficial_Keycodes[188] = SDL_SCANCODE_COMMA;
+        WinRT_Unofficial_Keycodes[189] = SDL_SCANCODE_MINUS;
+        WinRT_Unofficial_Keycodes[190] = SDL_SCANCODE_PERIOD;
+        WinRT_Unofficial_Keycodes[191] = SDL_SCANCODE_SLASH;
+        WinRT_Unofficial_Keycodes[192] = SDL_SCANCODE_GRAVE;
+        // ?
+        // ...
+        // ?
+        WinRT_Unofficial_Keycodes[219] = SDL_SCANCODE_LEFTBRACKET;
+        WinRT_Unofficial_Keycodes[220] = SDL_SCANCODE_BACKSLASH;
+        WinRT_Unofficial_Keycodes[221] = SDL_SCANCODE_RIGHTBRACKET;
+        WinRT_Unofficial_Keycodes[222] = SDL_SCANCODE_APOSTROPHE;
     }
 
     /* Try to get a documented, WinRT, 'VirtualKey' first (as documented at
@@ -236,11 +269,6 @@ TranslateKeycode(int keycode)
     if (scancode == SDL_SCANCODE_UNKNOWN) {
         if (WinRT_Unofficial_Keycodes.find(keycode) != WinRT_Unofficial_Keycodes.end()) {
             scancode = WinRT_Unofficial_Keycodes[keycode];
-        }
-    }
-    if (scancode == SDL_SCANCODE_UNKNOWN) {
-        if (keycode < SDL_arraysize(windows_scancode_table)) {
-            scancode = windows_scancode_table[keycode];
         }
     }
     if (scancode == SDL_SCANCODE_UNKNOWN) {
