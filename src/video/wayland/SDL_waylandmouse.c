@@ -53,6 +53,7 @@ typedef struct {
     struct wl_surface  *surface;
 
     int                hot_x, hot_y;
+    int                w, h;
 
     /* Either a preloaded cursor, or one we created ourselves */
     struct wl_cursor   *cursor;
@@ -182,19 +183,11 @@ Wayland_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
 
         data->surface = wl_compositor_create_surface(wd->compositor);
         wl_surface_set_user_data(data->surface, NULL);
-        wl_surface_attach(data->surface,
-                          data->buffer,
-                          0,
-                          0);
-        wl_surface_damage(data->surface,
-                          0,
-                          0,
-                          surface->w,
-                          surface->h);
-        wl_surface_commit(data->surface);
 
         data->hot_x = hot_x;
         data->hot_y = hot_y;
+        data->w = surface->w;
+        data->h = surface->h;
     }
 
     return cursor;
@@ -210,24 +203,13 @@ CreateCursorFromWlCursor(SDL_VideoData *d, struct wl_cursor *wlcursor)
         Wayland_CursorData *data = calloc (1, sizeof (Wayland_CursorData));
         cursor->driverdata = (void *) data;
 
-        /* The wl_buffer here will be destroyed from wl_cursor_theme_destroy
-         * if we are fetching this from a wl_cursor_theme, so don't store a
-         * reference to it here */
-        data->buffer = NULL;
+        data->buffer = WAYLAND_wl_cursor_image_get_buffer(wlcursor->images[0]);
         data->surface = wl_compositor_create_surface(d->compositor);
         wl_surface_set_user_data(data->surface, NULL);
-        wl_surface_attach(data->surface,
-                          WAYLAND_wl_cursor_image_get_buffer(wlcursor->images[0]),
-                          0,
-                          0);
-        wl_surface_damage(data->surface,
-                          0,
-                          0,
-                          wlcursor->images[0]->width,
-                          wlcursor->images[0]->height);
-        wl_surface_commit(data->surface);
         data->hot_x = wlcursor->images[0]->hotspot_x;
         data->hot_y = wlcursor->images[0]->hotspot_y;
+        data->w = wlcursor->images[0]->width;
+        data->h = wlcursor->images[0]->height;
         data->cursor= wlcursor;
     } else {
         SDL_OutOfMemory ();
@@ -315,7 +297,7 @@ Wayland_FreeCursor(SDL_Cursor *cursor)
     if (!d)
         return;
 
-    if (d->buffer)
+    if (d->buffer && !d->cursor)
         wl_buffer_destroy(d->buffer);
 
     if (d->surface)
@@ -341,6 +323,9 @@ Wayland_ShowCursor(SDL_Cursor *cursor)
     {
         Wayland_CursorData *data = cursor->driverdata;
 
+        wl_surface_attach(data->surface, data->buffer, 0, 0);
+        wl_surface_damage(data->surface, 0, 0, data->w, data->h);
+        wl_surface_commit(data->surface);
         wl_pointer_set_cursor (pointer, 0,
                                data->surface,
                                data->hot_x,
