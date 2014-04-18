@@ -267,13 +267,13 @@ Wayland_CreateSystemCursor(SDL_SystemCursor id)
         cursor = WAYLAND_wl_cursor_theme_get_cursor(d->cursor_theme, "xterm");
         break;
     case SDL_SYSTEM_CURSOR_WAIT:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(d->cursor_theme, "wait");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(d->cursor_theme, "watch");
         break;
     case SDL_SYSTEM_CURSOR_CROSSHAIR:
         cursor = WAYLAND_wl_cursor_theme_get_cursor(d->cursor_theme, "hand1");
         break;
     case SDL_SYSTEM_CURSOR_WAITARROW:
-        cursor = WAYLAND_wl_cursor_theme_get_cursor(d->cursor_theme, "wait");
+        cursor = WAYLAND_wl_cursor_theme_get_cursor(d->cursor_theme, "watch");
         break;
     case SDL_SYSTEM_CURSOR_SIZENWSE:
         cursor = WAYLAND_wl_cursor_theme_get_cursor(d->cursor_theme, "hand1");
