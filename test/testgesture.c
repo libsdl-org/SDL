@@ -266,19 +266,19 @@ int main(int argc, char* argv[])
         break;
       case SDL_FINGERMOTION:
 #if VERBOSE
-        SDL_Log("Finger: %i,x: %i, y: %i",event.tfinger.fingerId,
+        SDL_Log("Finger: %"PRIs64",x: %f, y: %f",event.tfinger.fingerId,
                event.tfinger.x,event.tfinger.y);
 #endif
         break;
       case SDL_FINGERDOWN:
 #if VERBOSE
-        SDL_Log("Finger: %"PRIs64" down - x: %i, y: %i",
+        SDL_Log("Finger: %"PRIs64" down - x: %f, y: %f",
            event.tfinger.fingerId,event.tfinger.x,event.tfinger.y);
 #endif
         break;
       case SDL_FINGERUP:
 #if VERBOSE
-        SDL_Log("Finger: %"PRIs64" up - x: %i, y: %i",
+        SDL_Log("Finger: %"PRIs64" up - x: %f, y: %f",
                event.tfinger.fingerId,event.tfinger.x,event.tfinger.y);
 #endif
         break;
