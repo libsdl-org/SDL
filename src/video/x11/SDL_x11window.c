@@ -239,8 +239,7 @@ SetupWindowData(_THIS, SDL_Window * window, Window w, BOOL created)
         data->ic =
             X11_XCreateIC(videodata->im, XNClientWindow, w, XNFocusWindow, w,
                        XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
-                       XNResourceName, videodata->classname, XNResourceClass,
-                       videodata->classname, NULL);
+                       NULL);
     }
 #endif
     data->created = created;
