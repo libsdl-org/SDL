@@ -407,9 +407,13 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_MBUTTONUP:
     case WM_XBUTTONUP:
     case WM_LBUTTONDOWN:
+    case WM_LBUTTONDBLCLK:
     case WM_RBUTTONDOWN:
+    case WM_RBUTTONDBLCLK:
     case WM_MBUTTONDOWN:
+    case WM_MBUTTONDBLCLK:
     case WM_XBUTTONDOWN:
+    case WM_XBUTTONDBLCLK:
         {
             SDL_Mouse *mouse = SDL_GetMouse();
             if (!mouse->relative_mode || mouse->relative_mode_warp) {
