@@ -1398,6 +1398,9 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
             return -1;
         }
     }
+    if (flags & SDL_WINDOW_FOREIGN) {
+        window->flags |= SDL_WINDOW_FOREIGN;
+    }
 
     if (title) {
         SDL_SetWindowTitle(window, title);
