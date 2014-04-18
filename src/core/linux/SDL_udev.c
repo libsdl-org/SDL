@@ -308,7 +308,21 @@ device_event(SDL_UDEV_deviceevent type, struct udev_device *dev)
         }
 
         if (devclass == 0) {
-            return;
+            // Fall back to old style input classes
+            val = _this->udev_device_get_property_value(dev, "ID_CLASS");
+            if (val != NULL) {
+                if (SDL_strcmp(val, "joystick") == 0) {
+                    devclass = SDL_UDEV_DEVICE_JOYSTICK;
+                } else if (SDL_strcmp(val, "mouse") == 0) {
+                    devclass = SDL_UDEV_DEVICE_MOUSE;
+                } else if (SDL_strcmp(val, "kbd") == 0) {
+                    devclass = SDL_UDEV_DEVICE_KEYBOARD;
+                } else {
+                    return;
+                }
+            } else {
+                return;
+            }
         }
     } else {
         return;
