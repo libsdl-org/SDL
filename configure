@@ -18953,6 +18953,7 @@ _ACEOF
                 EXTRA_LDFLAGS="$EXTRA_LDFLAGS $MIR_LIBS"
                 SUMMARY_video="${SUMMARY_video} mir"
             fi
+            SDL_CFLAGS="$SDL_CFLAGS $MIR_CFLAGS"
             have_video=yes
         fi
     fi
@@ -20726,6 +20727,7 @@ _ACEOF
             fi
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: $directfb_shared" >&5
 $as_echo "$directfb_shared" >&6; }
+            SDL_CFLAGS="$SDL_CFLAGS $DIRECTFB_CFLAGS"
             have_video=yes
         fi
     fi
