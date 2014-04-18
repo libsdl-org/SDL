@@ -253,7 +253,7 @@ SDL_bool
 DXGI_LoadDLL(void **pDXGIDLL, IDXGIFactory **pDXGIFactory)
 {
     *pDXGIDLL = SDL_LoadObject("DXGI.DLL");
-    if (!*pDXGIDLL) {
+    if (*pDXGIDLL) {
         HRESULT (WINAPI *CreateDXGI)( REFIID riid, void **ppFactory );
 
         CreateDXGI =
