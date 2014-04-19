@@ -149,7 +149,7 @@ int SDL_SaveDollarTemplate(SDL_GestureID gestureId, SDL_RWops *dst)
     for (i = 0; i < SDL_numGestureTouches; i++) {
         SDL_GestureTouch* touch = &SDL_gestureTouch[i];
         for (j = 0; j < touch->numDollarTemplates; j++) {
-            if (touch->dollarTemplate[i].hash == gestureId) {
+            if (touch->dollarTemplate[j].hash == gestureId) {
                 return SaveTemplate(&touch->dollarTemplate[j], dst);
             }
         }
