@@ -82,7 +82,6 @@ MIR_Available()
         /* !!! FIXME: try to make a MirConnection here. */
         available = 1;
         SDL_MIR_UnloadSymbols();
-
     }
 
     return available;
