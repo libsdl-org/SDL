@@ -976,10 +976,10 @@ GL_UpdateViewport(SDL_Renderer * renderer)
 static int
 GL_UpdateClipRect(SDL_Renderer * renderer)
 {
-    const SDL_Rect *rect = &renderer->clip_rect;
     GL_RenderData *data = (GL_RenderData *) renderer->driverdata;
 
-    if (!SDL_RectEmpty(rect)) {
+    if (renderer->clipping_enabled) {
+        const SDL_Rect *rect = &renderer->clip_rect;
         data->glEnable(GL_SCISSOR_TEST);
         data->glScissor(rect->x, renderer->viewport.h - rect->y - rect->h, rect->w, rect->h);
     } else {

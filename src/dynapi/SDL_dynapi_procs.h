@@ -606,3 +606,4 @@ SDL_DYNAPI_PROC(SDL_AssertionHandler,SDL_GetAssertionHandler,(void **a),(a),retu
 #ifdef __WIN32__
 SDL_DYNAPI_PROC(SDL_bool,SDL_DXGIGetOutputInfo,(int a,int *b, int *c),(a,b,c),return)
 #endif
+SDL_DYNAPI_PROC(SDL_bool,SDL_RenderIsClipEnabled,(SDL_Renderer *a),(a),return)

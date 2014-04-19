@@ -2232,13 +2232,12 @@ static int
 D3D11_UpdateClipRect(SDL_Renderer * renderer)
 {
     D3D11_RenderData *data = (D3D11_RenderData *) renderer->driverdata;
-    const SDL_Rect *rect = &renderer->clip_rect;
 
-    if (SDL_RectEmpty(rect)) {
+    if (!renderer->clipping_enabled) {
         ID3D11DeviceContext_RSSetScissorRects(data->d3dContext, 0, NULL);
     } else {
         D3D11_RECT scissorRect;
-        if (D3D11_GetViewportAlignedD3DRect(renderer, rect, &scissorRect) != 0) {
+        if (D3D11_GetViewportAlignedD3DRect(renderer, &renderer->clip_rect, &scissorRect) != 0) {
             /* D3D11_GetViewportAlignedD3DRect will have set the SDL error */
             return -1;
         }
@@ -2366,7 +2365,7 @@ D3D11_RenderStartDrawOp(SDL_Renderer * renderer)
         rendererData->currentRenderTargetView = renderTargetView;
     }
 
-    if (SDL_RectEmpty(&renderer->clip_rect)) {
+    if (!renderer->clipping_enabled) {
         rasterizerState = rendererData->mainRasterizer;
     } else {
         rasterizerState = rendererData->clippedRasterizer;

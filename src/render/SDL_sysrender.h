@@ -143,6 +143,10 @@ struct SDL_Renderer
     SDL_Rect clip_rect;
     SDL_Rect clip_rect_backup;
 
+    /* Wether or not the clipping rectangle is used. */
+    SDL_bool clipping_enabled;
+    SDL_bool clipping_enabled_backup;
+
     /* The render output coordinate scale */
     SDL_FPoint scale;
     SDL_FPoint scale_backup;

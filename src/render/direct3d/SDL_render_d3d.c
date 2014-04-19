@@ -1145,12 +1145,13 @@ D3D_UpdateViewport(SDL_Renderer * renderer)
 static int
 D3D_UpdateClipRect(SDL_Renderer * renderer)
 {
-    const SDL_Rect *rect = &renderer->clip_rect;
     D3D_RenderData *data = (D3D_RenderData *) renderer->driverdata;
-    RECT r;
-    HRESULT result;
 
-    if (!SDL_RectEmpty(rect)) {
+    if (renderer->clipping_enabled) {
+        const SDL_Rect *rect = &renderer->clip_rect;
+        RECT r;
+        HRESULT result;
+
         IDirect3DDevice9_SetRenderState(data->device, D3DRS_SCISSORTESTENABLE, TRUE);
         r.left = rect->x;
         r.top = rect->y;
