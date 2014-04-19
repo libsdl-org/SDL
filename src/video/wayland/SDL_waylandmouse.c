@@ -106,6 +106,7 @@ create_buffer_from_shm(Wayland_CursorData *d,
 {
     SDL_VideoDevice *vd = SDL_GetVideoDevice();
     SDL_VideoData *data = (SDL_VideoData *) vd->driverdata;
+    struct wl_shm_pool *shm_pool;
 
     int stride = width * 4;
     int size = stride * height;
@@ -131,9 +132,7 @@ create_buffer_from_shm(Wayland_CursorData *d,
         close (shm_fd);
     }
 
-    struct wl_shm_pool *shm_pool = wl_shm_create_pool(data->shm,
-                                                      shm_fd,
-                                                      size);
+    shm_pool = wl_shm_create_pool(data->shm, shm_fd, size);
     d->buffer = wl_shm_pool_create_buffer(shm_pool,
                                           0,
                                           width,
@@ -280,18 +279,18 @@ Wayland_CreateSystemCursor(SDL_SystemCursor id)
         break;
     }
 
-    SDL_Cursor *sdl_cursor = CreateCursorFromWlCursor (d, cursor);
-
-    return sdl_cursor;
+    return CreateCursorFromWlCursor(d, cursor);
 }
 
 static void
 Wayland_FreeCursor(SDL_Cursor *cursor)
 {
+    Wayland_CursorData *d;
+
     if (!cursor)
         return;
 
-    Wayland_CursorData *d = cursor->driverdata;
+    d = cursor->driverdata;
 
     /* Probably not a cursor we own */
     if (!d)
