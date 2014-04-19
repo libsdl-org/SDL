@@ -20,22 +20,22 @@
 
 
 static SDLTest_CommonState *state;
-static SDL_Rect rect;
 
 static void
-DrawRects(SDL_Renderer * renderer)
+DrawRects(SDL_Renderer * renderer, SDL_Rect * rect)
 {
     SDL_SetRenderDrawColor(renderer, 255, 127, 0, 255);
-    SDL_RenderFillRect(renderer,&rect);
+    SDL_RenderFillRect(renderer, rect);
 }
 
 int
 main(int argc, char *argv[])
 {
     int i, done;
+    SDL_Rect rect;
     SDL_Event event;
 
-	/* Enable standard application logging */
+    /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Initialize test framework */
@@ -43,7 +43,7 @@ main(int argc, char *argv[])
     if (!state) {
         return 1;
     }
-    for (i = 1; i < argc;i++) {
+    for (i = 1; i < argc; ++i) {
         SDLTest_CommonArg(state, i);
     }
     if (!SDLTest_CommonInit(state)) {
@@ -89,7 +89,7 @@ main(int argc, char *argv[])
             SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
             SDL_RenderClear(renderer);
 
-            DrawRects(renderer);
+            DrawRects(renderer, &rect);
 
             SDL_RenderPresent(renderer);
         }
