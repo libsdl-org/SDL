@@ -552,6 +552,16 @@ extern DECLSPEC void SDLCALL SDL_RenderGetClipRect(SDL_Renderer * renderer,
                                                    SDL_Rect * rect);
 
 /**
+ *  \brief Get wether clipping is enabled on the given renderer
+ *
+ *  \param renderer The renderer from which clip state should be queried.
+ *
+ *  \sa SDL_RenderGetClipRect()
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_RenderIsClipEnabled(SDL_Renderer * renderer);
+
+
+/**
  *  \brief Set the drawing scale for rendering on the current target.
  *
  *  \param renderer The renderer for which the drawing scale should be set.

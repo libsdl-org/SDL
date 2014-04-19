@@ -362,14 +362,14 @@ static int
 GLES2_UpdateClipRect(SDL_Renderer * renderer)
 {
     GLES2_DriverContext *data = (GLES2_DriverContext *)renderer->driverdata;
-    const SDL_Rect *rect = &renderer->clip_rect;
 
     if (SDL_CurrentContext != data->context) {
         /* We'll update the clip rect after we rebind the context */
         return 0;
     }
 
-    if (!SDL_RectEmpty(rect)) {
+    if (renderer->clipping_enabled) {
+        const SDL_Rect *rect = &renderer->clip_rect;
         data->glEnable(GL_SCISSOR_TEST);
         data->glScissor(rect->x, renderer->viewport.h - rect->y - rect->h, rect->w, rect->h);
     } else {
