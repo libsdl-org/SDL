@@ -1299,7 +1299,6 @@ AC_HELP_STRING([--enable-mir-shared], [dynamically load Mir support [[default=ma
                 EXTRA_LDFLAGS="$EXTRA_LDFLAGS $MIR_LIBS"
                 SUMMARY_video="${SUMMARY_video} mir"
             fi
-            SDL_CFLAGS="$SDL_CFLAGS $MIR_CFLAGS"
             have_video=yes
         fi
     fi
