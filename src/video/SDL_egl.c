@@ -135,8 +135,11 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
 #if SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_WINRT
     d3dcompiler = SDL_GetHint(SDL_HINT_VIDEO_WIN_D3DCOMPILER);
     if (!d3dcompiler) {
-        /* By default we load the Vista+ compatible compiler */
-        d3dcompiler = "d3dcompiler_46.dll";
+        if (WIN_IsWindowsVistaOrGreater()) {
+            d3dcompiler = "d3dcompiler_46.dll";
+        } else {
+            d3dcompiler = "none";
+        }
     }
     if (SDL_strcasecmp(d3dcompiler, "none") != 0) {
         SDL_LoadObject(d3dcompiler);
