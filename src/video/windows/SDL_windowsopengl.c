@@ -334,6 +334,10 @@ WIN_GL_InitExtensions(_THIS)
     HGLRC hglrc;
     PIXELFORMATDESCRIPTOR pfd;
 
+    if (!_this->gl_data) {
+        return;
+    }
+
     hwnd =
         CreateWindow(SDL_Appname, SDL_Appname, (WS_POPUP | WS_DISABLED), 0, 0,
         10, 10, NULL, NULL, SDL_Instance, NULL);
