@@ -287,8 +287,8 @@ SDL_DXGIGetOutputInfo(int displayIndex, int *adapterIndex, int *outputIndex)
     IDXGIFactory *pDXGIFactory;
     IDXGIAdapter *pDXGIAdapter;
     IDXGIOutput* pDXGIOutput;
-    int nAdapter = 0, nOutput = 0;
     char *displayName;
+    int nAdapter, nOutput;
 
     if (!adapterIndex) {
         SDL_InvalidParamError("adapterIndex");
@@ -314,7 +314,9 @@ SDL_DXGIGetOutputInfo(int displayIndex, int *adapterIndex, int *outputIndex)
     }
 
     displayName = WIN_StringToUTF8(pData->DeviceName);
+    nAdapter = 0;
     while (*adapterIndex == -1 && SUCCEEDED(IDXGIFactory_EnumAdapters(pDXGIFactory, nAdapter, &pDXGIAdapter))) {
+        nOutput = 0;
         while (*adapterIndex == -1 && SUCCEEDED(IDXGIAdapter_EnumOutputs(pDXGIAdapter, nOutput, &pDXGIOutput))) {
             DXGI_OUTPUT_DESC outputDesc;
             if (SUCCEEDED(IDXGIOutput_GetDesc(pDXGIOutput, &outputDesc))) {
