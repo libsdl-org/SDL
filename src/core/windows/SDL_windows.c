@@ -88,6 +88,31 @@ WIN_CoUninitialize(void)
 #endif
 }
 
+static BOOL
+IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WORD wServicePackMajor)
+{
+    OSVERSIONINFOEXW osvi;
+    DWORDLONG const dwlConditionMask = VerSetConditionMask(
+        VerSetConditionMask(
+        VerSetConditionMask(
+        0, VER_MAJORVERSION, VER_GREATER_EQUAL ),
+        VER_MINORVERSION, VER_GREATER_EQUAL ),
+        VER_SERVICEPACKMAJOR, VER_GREATER_EQUAL );
+
+    SDL_zero(osvi);
+    osvi.dwOSVersionInfoSize = sizeof(osvi);
+    osvi.dwMajorVersion = wMajorVersion;
+    osvi.dwMinorVersion = wMinorVersion;
+    osvi.wServicePackMajor = wServicePackMajor;
+
+    return VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_SERVICEPACKMAJOR, dwlConditionMask) != FALSE;
+}
+
+BOOL WIN_IsWindowsVistaOrGreater()
+{
+    return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_VISTA), LOBYTE(_WIN32_WINNT_VISTA), 0);
+}
+
 #endif /* __WIN32__ */
 
 /* vi: set ts=4 sw=4 expandtab: */

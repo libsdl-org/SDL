@@ -56,6 +56,9 @@ extern int WIN_SetError(const char *prefix);
 extern HRESULT WIN_CoInitialize(void);
 extern void WIN_CoUninitialize(void);
 
+/* Returns SDL_TRUE if we're running on Windows Vista and newer */
+extern BOOL WIN_IsWindowsVistaOrGreater();
+
 #endif /* _INCLUDED_WINDOWS_H */
 
 /* vi: set ts=4 sw=4 expandtab: */
