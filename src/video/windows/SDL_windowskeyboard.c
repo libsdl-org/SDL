@@ -386,7 +386,8 @@ IME_GetReadingString(SDL_VideoData *videodata, HWND hwnd)
     INT err = 0;
     BOOL vertical = FALSE;
     UINT maxuilen = 0;
-    static OSVERSIONINFOA osversion = {0};
+	static OSVERSIONINFOA osversion;
+
     if (videodata->ime_uiless)
         return;
 
