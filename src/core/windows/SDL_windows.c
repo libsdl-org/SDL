@@ -28,6 +28,11 @@
 
 #include <objbase.h>  /* for CoInitialize/CoUninitialize (Win32 only) */
 
+#ifndef _WIN32_WINNT_VISTA
+#define _WIN32_WINNT_VISTA  0x0600
+#endif
+
+
 /* Sets an error message based on GetLastError() */
 int
 WIN_SetErrorFromHRESULT(const char *prefix, HRESULT hr)
