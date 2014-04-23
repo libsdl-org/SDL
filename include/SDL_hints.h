@@ -443,7 +443,7 @@ extern "C" {
 /**
  * \brief Android APK expansion patch file version. Should be a string number like "1", "2" etc.
  */
-#define SDL_HINT_ANDROID_APK_EXPANSION_PATCH_FILE_VERSION "SDL_ANDROID_APK_EXPANSION_MAIN_PATCH_VERSION"
+#define SDL_HINT_ANDROID_APK_EXPANSION_PATCH_FILE_VERSION "SDL_ANDROID_APK_EXPANSION_PATCH_FILE_VERSION"
 
 
 /**
