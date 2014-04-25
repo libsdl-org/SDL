@@ -38,6 +38,8 @@
 #include "../../events/SDL_events_c.h"
 #endif
 
+#define SDL_JOYSTICK_RUNLOOP_MODE CFSTR("SDLJoystick")
+
 /* The base object of the HID Manager API */
 static IOHIDManagerRef hidman = NULL;
 
@@ -67,6 +69,11 @@ FreeDevice(recDevice *removeDevice)
 {
     recDevice *pDeviceNext = NULL;
     if (removeDevice) {
+        if (removeDevice->deviceRef) {
+            IOHIDDeviceUnscheduleFromRunLoop(removeDevice->deviceRef, CFRunLoopGetCurrent(), SDL_JOYSTICK_RUNLOOP_MODE);
+            removeDevice->deviceRef = NULL;
+        }
+
         /* save next device prior to disposing of this device */
         pDeviceNext = removeDevice->pNext;
 
@@ -378,7 +385,7 @@ JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender, IOHIDDevic
 
     /* Get notified when this device is disconnected. */
     IOHIDDeviceRegisterRemovalCallback(ioHIDDeviceObject, JoystickDeviceWasRemovedCallback, device);
-    IOHIDDeviceScheduleWithRunLoop(ioHIDDeviceObject, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
+    IOHIDDeviceScheduleWithRunLoop(ioHIDDeviceObject, CFRunLoopGetCurrent(), SDL_JOYSTICK_RUNLOOP_MODE);
 
     /* Allocate an instance ID for this device */
     device->instance_id = ++s_joystick_instance_id;
@@ -420,25 +427,19 @@ ConfigHIDManager(CFArrayRef matchingArray)
 {
     CFRunLoopRef runloop = CFRunLoopGetCurrent();
 
-    /* Run in a custom RunLoop mode just while initializing,
-       so we can detect sticks without messing with everything else. */
-    CFStringRef tempRunLoopMode = CFSTR("SDLJoystickInit");
-
     if (IOHIDManagerOpen(hidman, kIOHIDOptionsTypeNone) != kIOReturnSuccess) {
         return SDL_FALSE;
     }
 
     IOHIDManagerRegisterDeviceMatchingCallback(hidman, JoystickDeviceWasAddedCallback, NULL);
-    IOHIDManagerScheduleWithRunLoop(hidman, runloop, tempRunLoopMode);
+    IOHIDManagerScheduleWithRunLoop(hidman, runloop, SDL_JOYSTICK_RUNLOOP_MODE);
     IOHIDManagerSetDeviceMatchingMultiple(hidman, matchingArray);
 
-    while (CFRunLoopRunInMode(tempRunLoopMode,0,TRUE)==kCFRunLoopRunHandledSource) {
+    while (CFRunLoopRunInMode(SDL_JOYSTICK_RUNLOOP_MODE,0,TRUE) == kCFRunLoopRunHandledSource) {
         /* no-op. Callback fires once per existing device. */
     }
 
-    /* Put this in the normal RunLoop mode now, for future hotplug events. */
-    IOHIDManagerUnscheduleFromRunLoop(hidman, runloop, tempRunLoopMode);
-    IOHIDManagerScheduleWithRunLoop(hidman, runloop, kCFRunLoopDefaultMode);
+    /* future hotplug events will come through SDL_JOYSTICK_RUNLOOP_MODE now. */
 
     return SDL_TRUE;  /* good to go. */
 }
@@ -544,6 +545,10 @@ SDL_SYS_NumJoysticks()
 void
 SDL_SYS_JoystickDetect()
 {
+    while (CFRunLoopRunInMode(SDL_JOYSTICK_RUNLOOP_MODE,0,TRUE) == kCFRunLoopRunHandledSource) {
+        /* no-op. Pending callbacks will fire in CFRunLoopRunInMode(). */
+    }
+
     if (s_bDeviceAdded || s_bDeviceRemoved) {
         recDevice *device = gpDeviceList;
         s_bDeviceAdded = SDL_FALSE;
@@ -793,6 +798,7 @@ SDL_SYS_JoystickQuit(void)
     }
 
     if (hidman) {
+        IOHIDManagerUnscheduleFromRunLoop(hidman, CFRunLoopGetCurrent(), SDL_JOYSTICK_RUNLOOP_MODE);
         IOHIDManagerClose(hidman, kIOHIDOptionsTypeNone);
         CFRelease(hidman);
         hidman = NULL;
