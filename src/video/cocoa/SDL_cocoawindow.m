@@ -92,7 +92,7 @@ static Uint32 s_moveHack;
 static void ConvertNSRect(NSScreen *screen, NSRect *r)
 {
     NSRect visibleScreen = [screen visibleFrame];
-    r->origin.y = visibleScreen.size.height - r->origin.y - r->size.height;
+    r->origin.y = (visibleScreen.origin.y + visibleScreen.size.height) - r->origin.y - r->size.height;
 }
 
 static void
