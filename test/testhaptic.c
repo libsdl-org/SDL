@@ -1,15 +1,4 @@
 /*
-  Copyright (C) 1997-2014 Sam Lantinga <slouken@libsdl.org>
-
-  This software is provided 'as-is', without any express or implied
-  warranty.  In no event will the authors be held liable for any damages
-  arising from the use of this software.
-
-  Permission is granted to anyone to use this software for any purpose,
-  including commercial applications, and to alter it and redistribute it
-  freely.
-*/
-/*
 Copyright (c) 2008, Edgar Simo Serra
 All rights reserved.
 
@@ -199,7 +188,7 @@ main(int argc, char **argv)
     /* The pretty awesome inertia effect. */
     if (supported & SDL_HAPTIC_INERTIA) {
         SDL_Log("   effect %d: Condition Inertia\n", nefx);
-        efx[nefx].type = SDL_HAPTIC_SPRING;
+        efx[nefx].type = SDL_HAPTIC_INERTIA;
         efx[nefx].condition.length = 5000;
         for (i = 0; i < SDL_HapticNumAxes(haptic); i++) {
             efx[nefx].condition.right_sat[i] = 0x7FFF;
