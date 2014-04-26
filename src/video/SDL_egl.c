@@ -142,7 +142,7 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
         if (WIN_IsWindowsVistaOrGreater()) {
             d3dcompiler = "d3dcompiler_46.dll";
         } else {
-            d3dcompiler = "none";
+            d3dcompiler = "d3dcompiler_43.dll";
         }
     }
     if (SDL_strcasecmp(d3dcompiler, "none") != 0) {
