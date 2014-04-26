@@ -33,7 +33,9 @@
 #ifndef __IPHONEOS__
 
 #ifdef __WIN32__
+#ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
+#endif
 #ifndef NOMINMAX
 #define NOMINMAX                /* Don't defined min() and max() */
 #endif
