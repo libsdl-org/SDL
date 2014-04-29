@@ -1,0 +1,272 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="Globals">
+    <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
+    <HasSharedItems>true</HasSharedItems>
+    <ItemsProjectGuid>{918d443b-862f-4787-8351-1b804b2c9a1c}</ItemsProjectGuid>
+    <ItemsRootNamespace>SDL_WinRT81</ItemsRootNamespace>
+    <ItemsProjectName>SDL2-WinRT81.Shared</ItemsProjectName>
+    <CodeSharingProject>248F659F-DAC5-46E8-AC09-60EC9FC95053</CodeSharingProject>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories);$(MSBuildThisFileDirectory)</AdditionalIncludeDirectories>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ProjectCapability Include="SourceItemsFromImports" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\begin_code.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\close_code.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_assert.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_atomic.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_audio.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_blendmode.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_clipboard.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_config.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_config_minimal.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_config_winrt.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_copying.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_cpuinfo.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_egl.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_endian.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_error.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_events.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_filesystem.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_haptic.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_hints.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_input.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_joystick.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_keyboard.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_keycode.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_loadso.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_log.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_main.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_mouse.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_mutex.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_name.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_opengles2.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_pixels.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_platform.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_power.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_quit.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_rect.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_render.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_revision.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_rwops.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_scancode.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_shape.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_stdinc.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_surface.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_system.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_syswm.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_thread.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_timer.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_touch.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_types.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_version.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\include\SDL_video.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\audio\disk\SDL_diskaudio.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\audio\dummy\SDL_dummyaudio.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\audio\SDL_audiodev_c.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\audio\SDL_audiomem.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\audio\SDL_audio_c.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\audio\SDL_sysaudio.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\audio\SDL_wave.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\audio\xaudio2\SDL_xaudio2_winrthelpers.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\core\windows\SDL_windows.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\core\winrt\SDL_winrtapp_common.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\core\winrt\SDL_winrtapp_direct3d.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\core\winrt\SDL_winrtapp_xaml.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\dynapi\SDL_dynapi.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\dynapi\SDL_dynapi_overrides.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\dynapi\SDL_dynapi_procs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\events\blank_cursor.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\events\default_cursor.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\events\SDL_clipboardevents_c.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\events\SDL_dropevents_c.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\events\SDL_events_c.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\events\SDL_keyboard_c.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\events\SDL_mouse_c.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\events\SDL_sysevents.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\events\SDL_touch_c.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\events\SDL_windowevents_c.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\haptic\SDL_haptic_c.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\haptic\SDL_syshaptic.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\joystick\SDL_gamecontrollerdb.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\joystick\SDL_joystick_c.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\joystick\SDL_sysjoystick.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\render\direct3d11\SDL_render_winrt.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\render\mmx.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\render\opengles2\SDL_gles2funcs.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\render\opengles2\SDL_shaders_gles2.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\render\SDL_d3dmath.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\render\SDL_sysrender.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\render\SDL_yuv_sw_c.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\render\software\SDL_blendfillrect.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\render\software\SDL_blendline.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\render\software\SDL_blendpoint.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\render\software\SDL_draw.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\render\software\SDL_drawline.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\render\software\SDL_drawpoint.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\render\software\SDL_render_sw_c.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\render\software\SDL_rotate.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\SDL_assert_c.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\SDL_error_c.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\SDL_fatal.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\SDL_hints_c.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\SDL_internal.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\thread\SDL_systhread.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\thread\SDL_thread_c.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\thread\stdcpp\SDL_sysmutex_c.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\thread\stdcpp\SDL_systhread_c.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\timer\SDL_timer_c.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\video\dummy\SDL_nullevents_c.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\video\dummy\SDL_nullframebuffer_c.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\video\dummy\SDL_nullvideo.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\video\SDL_blit.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\video\SDL_blit_auto.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\video\SDL_blit_copy.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\video\SDL_blit_slow.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\video\SDL_egl_c.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\video\SDL_pixels_c.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\video\SDL_rect_c.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\video\SDL_RLEaccel_c.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\video\SDL_shape_internals.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\video\SDL_sysvideo.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\video\winrt\SDL_winrtevents_c.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\video\winrt\SDL_winrtmessagebox.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\video\winrt\SDL_winrtmouse_c.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\video\winrt\SDL_winrtopengles.h" />
+    <ClInclude Include="$(MSBuildThisFileDirectory)..\..\src\video\winrt\SDL_winrtvideo_cpp.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\atomic\SDL_atomic.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\atomic\SDL_spinlock.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\audio\disk\SDL_diskaudio.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\audio\dummy\SDL_dummyaudio.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\audio\SDL_audio.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\audio\SDL_audiocvt.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\audio\SDL_audiodev.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\audio\SDL_audiotypecvt.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\audio\SDL_mixer.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\audio\SDL_wave.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\audio\xaudio2\SDL_xaudio2.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\audio\xaudio2\SDL_xaudio2_winrthelpers.cpp">
+      <CompileAsWinRT>true</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\core\windows\SDL_windows.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\core\winrt\SDL_winrtapp_common.cpp">
+      <CompileAsWinRT>true</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\core\winrt\SDL_winrtapp_direct3d.cpp">
+      <CompileAsWinRT>true</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\core\winrt\SDL_winrtapp_xaml.cpp">
+      <CompileAsWinRT>true</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\cpuinfo\SDL_cpuinfo.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\dynapi\SDL_dynapi.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\events\SDL_clipboardevents.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\events\SDL_dropevents.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\events\SDL_events.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\events\SDL_gesture.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\events\SDL_keyboard.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\events\SDL_mouse.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\events\SDL_quit.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\events\SDL_touch.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\events\SDL_windowevents.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\filesystem\winrt\SDL_sysfilesystem.cpp">
+      <CompileAsWinRT>true</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\file\SDL_rwops.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\haptic\dummy\SDL_syshaptic.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\haptic\SDL_haptic.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\joystick\SDL_gamecontroller.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\joystick\SDL_joystick.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\joystick\winrt\SDL_xinputjoystick.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\loadso\windows\SDL_sysloadso.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\power\SDL_power.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\power\winrt\SDL_syspower.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\render\direct3d11\SDL_render_d3d11.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\render\direct3d11\SDL_render_winrt.cpp">
+      <CompileAsWinRT>true</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\render\opengles2\SDL_render_gles2.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\render\opengles2\SDL_shaders_gles2.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\render\SDL_d3dmath.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\render\SDL_render.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\render\SDL_yuv_mmx.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\render\SDL_yuv_sw.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\render\software\SDL_blendfillrect.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\render\software\SDL_blendline.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\render\software\SDL_blendpoint.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\render\software\SDL_drawline.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\render\software\SDL_drawpoint.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\render\software\SDL_render_sw.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\render\software\SDL_rotate.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\SDL.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\SDL_assert.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\SDL_error.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\SDL_hints.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\SDL_log.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\stdlib\SDL_getenv.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\stdlib\SDL_iconv.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\stdlib\SDL_malloc.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\stdlib\SDL_qsort.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\stdlib\SDL_stdlib.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\stdlib\SDL_string.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\thread\generic\SDL_syssem.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\thread\SDL_thread.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\thread\stdcpp\SDL_syscond.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\thread\stdcpp\SDL_sysmutex.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\thread\stdcpp\SDL_systhread.cpp" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\timer\SDL_timer.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\timer\windows\SDL_systimer.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\video\dummy\SDL_nullevents.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\video\dummy\SDL_nullframebuffer.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\video\dummy\SDL_nullvideo.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\video\SDL_blit.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\video\SDL_blit_0.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\video\SDL_blit_1.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\video\SDL_blit_A.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\video\SDL_blit_auto.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\video\SDL_blit_copy.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\video\SDL_blit_N.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\video\SDL_blit_slow.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\video\SDL_bmp.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\video\SDL_clipboard.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\video\SDL_egl.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\video\SDL_fillrect.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\video\SDL_pixels.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\video\SDL_rect.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\video\SDL_RLEaccel.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\video\SDL_shape.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\video\SDL_stretch.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\video\SDL_surface.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\video\SDL_video.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\video\winrt\SDL_winrtevents.cpp">
+      <CompileAsWinRT>true</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\video\winrt\SDL_winrtkeyboard.cpp">
+      <CompileAsWinRT>true</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\video\winrt\SDL_winrtmessagebox.cpp">
+      <CompileAsWinRT>true</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\video\winrt\SDL_winrtmouse.cpp">
+      <CompileAsWinRT>true</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\video\winrt\SDL_winrtopengles.cpp">
+      <CompileAsWinRT>true</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\video\winrt\SDL_winrtpointerinput.cpp">
+      <CompileAsWinRT>true</CompileAsWinRT>
+    </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\video\winrt\SDL_winrtvideo.cpp">
+      <CompileAsWinRT>true</CompileAsWinRT>
+    </ClCompile>
+  </ItemGroup>
+</Project>
