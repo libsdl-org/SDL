@@ -93,6 +93,7 @@ WIN_CoUninitialize(void)
 #endif
 }
 
+#ifndef __WINRT__
 static BOOL
 IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WORD wServicePackMajor)
 {
@@ -112,10 +113,15 @@ IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WORD wServiceP
 
     return VerifyVersionInfoW(&osvi, VER_MAJORVERSION | VER_MINORVERSION | VER_SERVICEPACKMAJOR, dwlConditionMask) != FALSE;
 }
+#endif
 
 BOOL WIN_IsWindowsVistaOrGreater()
 {
+#ifdef __WINRT__
+    return TRUE;
+#else
     return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_VISTA), LOBYTE(_WIN32_WINNT_VISTA), 0);
+#endif
 }
 
 #endif /* __WIN32__ */
