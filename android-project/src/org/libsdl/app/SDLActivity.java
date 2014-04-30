@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.lang.reflect.Method;
 
 import android.app.*;
 import android.content.*;
@@ -21,9 +22,6 @@ import android.util.Log;
 import android.graphics.*;
 import android.media.*;
 import android.hardware.*;
-
-import com.android.vending.expansion.zipfile.APKExpansionSupport;
-import com.android.vending.expansion.zipfile.ZipResourceFile;
 
 /**
     SDL Activity
@@ -502,7 +500,12 @@ public class SDLActivity extends Activity {
     }
 
     // APK extension files support
-    private ZipResourceFile expansionFile = null;
+
+    /** com.android.vending.expansion.zipfile.ZipResourceFile object or null. */
+    private Object expansionFile;
+
+    /** com.android.vending.expansion.zipfile.ZipResourceFile's getInputStream() or null. */
+    private Method expansionFileMethod;
 
     public InputStream openAPKExtensionInputStream(String fileName) throws IOException {
         // Get a ZipResourceFile representing a merger of both the main and patch files
@@ -510,11 +513,28 @@ public class SDLActivity extends Activity {
             Integer mainVersion = Integer.parseInt(nativeGetHint("SDL_ANDROID_APK_EXPANSION_MAIN_FILE_VERSION"));
             Integer patchVersion = Integer.parseInt(nativeGetHint("SDL_ANDROID_APK_EXPANSION_PATCH_FILE_VERSION"));
 
-            expansionFile = APKExpansionSupport.getAPKExpansionZipFile(this, mainVersion, patchVersion);
+            try {
+                expansionFile = Class.forName("com.android.vending.expansion.zipfile.APKExpansionSupport")
+                    .getMethod("getAPKExpansionZipFile", Context.class, int.class, int.class)
+                    .invoke(null, this, mainVersion, patchVersion);
+
+                expansionFileMethod = expansionFile.getClass()
+                    .getMethod("getInputStream", String.class);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                expansionFile = null;
+                expansionFileMethod = null;
+            }
         }
 
         // Get an input stream for a known file inside the expansion file ZIPs
-        InputStream fileStream = expansionFile.getInputStream(fileName);
+        InputStream fileStream;
+        try {
+            fileStream = (InputStream)expansionFileMethod.invoke(expansionFile, fileName);
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            fileStream = null;
+        }
 
         if (fileStream == null) {
             throw new IOException();
