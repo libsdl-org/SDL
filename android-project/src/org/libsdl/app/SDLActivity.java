@@ -514,6 +514,8 @@ public class SDLActivity extends Activity {
             Integer patchVersion = Integer.parseInt(nativeGetHint("SDL_ANDROID_APK_EXPANSION_PATCH_FILE_VERSION"));
 
             try {
+                // To avoid direct dependency on Google APK extension library that is
+                // not a part of Android SDK we access it using reflection
                 expansionFile = Class.forName("com.android.vending.expansion.zipfile.APKExpansionSupport")
                     .getMethod("getAPKExpansionZipFile", Context.class, int.class, int.class)
                     .invoke(null, this, mainVersion, patchVersion);
