@@ -2899,6 +2899,8 @@ D3D11_RenderPresent(SDL_Renderer * renderer)
     HRESULT result;
     DXGI_PRESENT_PARAMETERS parameters;
 
+    SDL_zero(parameters);
+
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
     syncInterval = 1;
     presentFlags = 0;
@@ -2916,7 +2918,6 @@ D3D11_RenderPresent(SDL_Renderer * renderer)
      * rects to improve efficiency in certain scenarios.
      * This option is not available on Windows Phone 8, to note.
      */
-    SDL_zero(parameters);
     result = IDXGISwapChain1_Present1(data->swapChain, syncInterval, presentFlags, &parameters);
 #endif
 
