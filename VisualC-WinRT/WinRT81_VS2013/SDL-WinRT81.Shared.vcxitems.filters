@@ -680,5 +680,8 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\video\winrt\SDL_winrtvideo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\joystick\dummy\SDL_sysjoystick.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

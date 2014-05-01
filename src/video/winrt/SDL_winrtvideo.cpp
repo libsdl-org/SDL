@@ -215,7 +215,7 @@ WINRT_CalcDisplayModeUsingNativeWindow(SDL_DisplayMode * mode)
     // orientation changes.  In order to compensate for this behavior,
     // on Windows Phone, the mode's width and height will be swapped when
     // the device is in a landscape (non-portrait) mode.
-    switch (DisplayProperties::CurrentOrientation) {
+    switch (driverdata->currentOrientation) {
         case DisplayOrientations::Landscape:
         case DisplayOrientations::LandscapeFlipped:
         {
