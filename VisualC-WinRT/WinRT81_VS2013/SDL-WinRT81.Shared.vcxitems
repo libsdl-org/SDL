@@ -184,6 +184,7 @@
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\file\SDL_rwops.c" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\haptic\dummy\SDL_syshaptic.c" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\haptic\SDL_haptic.c" />
+    <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\joystick\dummy\SDL_sysjoystick.c" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\joystick\SDL_gamecontroller.c" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\joystick\SDL_joystick.c" />
     <ClCompile Include="$(MSBuildThisFileDirectory)..\..\src\joystick\winrt\SDL_xinputjoystick.c" />
