@@ -99,6 +99,9 @@ MIR_CreateWindow(_THIS, SDL_Window* window)
     mir_data = _this->driverdata;
     window->driverdata = mir_window;
 
+    if (mir_data->software)
+        surfaceparm.buffer_usage = mir_buffer_usage_software;
+
     if (window->x == SDL_WINDOWPOS_UNDEFINED)
         window->x = 0;
 
