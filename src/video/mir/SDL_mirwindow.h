@@ -34,7 +34,6 @@
 typedef struct {
     SDL_Window* sdl_window;
     MIR_Data* mir_data;
-    bool software;
 
     MirSurface* surface;
     EGLSurface egl_surface;
