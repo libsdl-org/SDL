@@ -56,6 +56,8 @@ MIR_CreateWindowFramebuffer(_THIS, SDL_Window* window, Uint32* format,
     MIR_Window* mir_window;
     MirSurfaceParameters surfaceparm;
 
+    mir_data->software = SDL_TRUE;
+
     if (MIR_CreateWindow(_this, window) < 0)
         return SDL_SetError("Failed to created a mir window.");
 

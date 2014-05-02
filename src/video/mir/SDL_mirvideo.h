@@ -32,6 +32,8 @@
 typedef struct
 {
     MirConnection* connection;
+    SDL_bool software;
+    
 } MIR_Data;
 
 #endif /* _SDL_mirvideo_h_ */

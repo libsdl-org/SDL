@@ -273,6 +273,7 @@ MIR_VideoInit(_THIS)
     MIR_Data* mir_data = _this->driverdata;
 
     mir_data->connection = MIR_mir_connect_sync(NULL, __PRETTY_FUNCTION__);
+    mir_data->software = SDL_FALSE;
 
     if (!MIR_mir_connection_is_valid(mir_data->connection))
         return SDL_SetError("Failed to connect to the Mir Server");
