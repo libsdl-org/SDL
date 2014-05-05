@@ -86,7 +86,7 @@ static bool bHasNewData;
 *******************************************************************************/
 
 /* Library init */
-jint JNI_OnLoad(JavaVM* vm, void* reserved)
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved)
 {
     JNIEnv *env;
     mJavaVM = vm;
@@ -108,7 +108,7 @@ jint JNI_OnLoad(JavaVM* vm, void* reserved)
 }
 
 /* Called before SDL_main() to initialize JNI bindings */
-void SDL_Android_Init(JNIEnv* mEnv, jclass cls)
+JNIEXPORT void JNICALL SDL_Android_Init(JNIEnv* mEnv, jclass cls)
 {
     __android_log_print(ANDROID_LOG_INFO, "SDL", "SDL_Android_Init()");
 
@@ -141,7 +141,7 @@ void SDL_Android_Init(JNIEnv* mEnv, jclass cls)
 }
 
 /* Resize */
-void Java_org_libsdl_app_SDLActivity_onNativeResize(
+JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_onNativeResize(
                                     JNIEnv* env, jclass jcls,
                                     jint width, jint height, jint format)
 {
@@ -149,7 +149,7 @@ void Java_org_libsdl_app_SDLActivity_onNativeResize(
 }
 
 // Paddown
-int Java_org_libsdl_app_SDLActivity_onNativePadDown(
+JNIEXPORT int JNICALL Java_org_libsdl_app_SDLActivity_onNativePadDown(
                                     JNIEnv* env, jclass jcls,
                                     jint device_id, jint keycode)
 {
@@ -157,7 +157,7 @@ int Java_org_libsdl_app_SDLActivity_onNativePadDown(
 }
 
 // Padup
-int Java_org_libsdl_app_SDLActivity_onNativePadUp(
+JNIEXPORT int JNICALL Java_org_libsdl_app_SDLActivity_onNativePadUp(
                                    JNIEnv* env, jclass jcls,
                                    jint device_id, jint keycode)
 {
@@ -165,7 +165,7 @@ int Java_org_libsdl_app_SDLActivity_onNativePadUp(
 }
 
 /* Joy */
-void Java_org_libsdl_app_SDLActivity_onNativeJoy(
+JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_onNativeJoy(
                                     JNIEnv* env, jclass jcls,
                                     jint device_id, jint axis, jfloat value)
 {
@@ -173,7 +173,7 @@ void Java_org_libsdl_app_SDLActivity_onNativeJoy(
 }
 
 /* POV Hat */
-void Java_org_libsdl_app_SDLActivity_onNativeHat(
+JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_onNativeHat(
                                     JNIEnv* env, jclass jcls,
                                     jint device_id, jint hat_id, jint x, jint y)
 {
@@ -181,7 +181,7 @@ void Java_org_libsdl_app_SDLActivity_onNativeHat(
 }
 
 
-int Java_org_libsdl_app_SDLActivity_nativeAddJoystick(
+JNIEXPORT int JNICALL Java_org_libsdl_app_SDLActivity_nativeAddJoystick(
     JNIEnv* env, jclass jcls,
     jint device_id, jstring device_name, jint is_accelerometer, 
     jint nbuttons, jint naxes, jint nhats, jint nballs)
@@ -196,7 +196,7 @@ int Java_org_libsdl_app_SDLActivity_nativeAddJoystick(
     return retval;
 }
 
-int Java_org_libsdl_app_SDLActivity_nativeRemoveJoystick(
+JNIEXPORT int JNICALL Java_org_libsdl_app_SDLActivity_nativeRemoveJoystick(
     JNIEnv* env, jclass jcls, jint device_id)
 {
     return Android_RemoveJoystick(device_id);
@@ -204,7 +204,7 @@ int Java_org_libsdl_app_SDLActivity_nativeRemoveJoystick(
 
 
 /* Surface Created */
-void Java_org_libsdl_app_SDLActivity_onNativeSurfaceChanged(JNIEnv* env, jclass jcls)
+JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_onNativeSurfaceChanged(JNIEnv* env, jclass jcls)
 {
     SDL_WindowData *data;
     SDL_VideoDevice *_this;
@@ -230,7 +230,7 @@ void Java_org_libsdl_app_SDLActivity_onNativeSurfaceChanged(JNIEnv* env, jclass 
 }
 
 /* Surface Destroyed */
-void Java_org_libsdl_app_SDLActivity_onNativeSurfaceDestroyed(JNIEnv* env, jclass jcls)
+JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_onNativeSurfaceDestroyed(JNIEnv* env, jclass jcls)
 {
     /* We have to clear the current context and destroy the egl surface here
      * Otherwise there's BAD_NATIVE_WINDOW errors coming from eglCreateWindowSurface on resume
@@ -256,27 +256,27 @@ void Java_org_libsdl_app_SDLActivity_onNativeSurfaceDestroyed(JNIEnv* env, jclas
 
 }
 
-void Java_org_libsdl_app_SDLActivity_nativeFlipBuffers(JNIEnv* env, jclass jcls)
+JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_nativeFlipBuffers(JNIEnv* env, jclass jcls)
 {
     SDL_GL_SwapWindow(Android_Window);
 }
 
 /* Keydown */
-void Java_org_libsdl_app_SDLActivity_onNativeKeyDown(
+JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_onNativeKeyDown(
                                     JNIEnv* env, jclass jcls, jint keycode)
 {
     Android_OnKeyDown(keycode);
 }
 
 /* Keyup */
-void Java_org_libsdl_app_SDLActivity_onNativeKeyUp(
+JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_onNativeKeyUp(
                                     JNIEnv* env, jclass jcls, jint keycode)
 {
     Android_OnKeyUp(keycode);
 }
 
 /* Keyboard Focus Lost */
-void Java_org_libsdl_app_SDLActivity_onNativeKeyboardFocusLost(
+JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_onNativeKeyboardFocusLost(
                                     JNIEnv* env, jclass jcls)
 {
     /* Calling SDL_StopTextInput will take care of hiding the keyboard and cleaning up the DummyText widget */
@@ -285,7 +285,7 @@ void Java_org_libsdl_app_SDLActivity_onNativeKeyboardFocusLost(
 
 
 /* Touch */
-void Java_org_libsdl_app_SDLActivity_onNativeTouch(
+JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_onNativeTouch(
                                     JNIEnv* env, jclass jcls,
                                     jint touch_device_id_in, jint pointer_finger_id_in,
                                     jint action, jfloat x, jfloat y, jfloat p)
@@ -294,7 +294,7 @@ void Java_org_libsdl_app_SDLActivity_onNativeTouch(
 }
 
 /* Accelerometer */
-void Java_org_libsdl_app_SDLActivity_onNativeAccel(
+JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_onNativeAccel(
                                     JNIEnv* env, jclass jcls,
                                     jfloat x, jfloat y, jfloat z)
 {
@@ -305,14 +305,14 @@ void Java_org_libsdl_app_SDLActivity_onNativeAccel(
 }
 
 /* Low memory */
-void Java_org_libsdl_app_SDLActivity_nativeLowMemory(
+JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_nativeLowMemory(
                                     JNIEnv* env, jclass cls)
 {
     SDL_SendAppEvent(SDL_APP_LOWMEMORY);
 }
 
 /* Quit */
-void Java_org_libsdl_app_SDLActivity_nativeQuit(
+JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_nativeQuit(
                                     JNIEnv* env, jclass cls)
 {
     /* Discard previous events. The user should have handled state storage
@@ -328,7 +328,7 @@ void Java_org_libsdl_app_SDLActivity_nativeQuit(
 }
 
 /* Pause */
-void Java_org_libsdl_app_SDLActivity_nativePause(
+JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_nativePause(
                                     JNIEnv* env, jclass cls)
 {
     __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativePause()");
@@ -345,7 +345,7 @@ void Java_org_libsdl_app_SDLActivity_nativePause(
 }
 
 /* Resume */
-void Java_org_libsdl_app_SDLActivity_nativeResume(
+JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_nativeResume(
                                     JNIEnv* env, jclass cls)
 {
     __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeResume()");
@@ -363,7 +363,7 @@ void Java_org_libsdl_app_SDLActivity_nativeResume(
     }
 }
 
-void Java_org_libsdl_app_SDLInputConnection_nativeCommitText(
+JNIEXPORT void JNICALL Java_org_libsdl_app_SDLInputConnection_nativeCommitText(
                                     JNIEnv* env, jclass cls,
                                     jstring text, jint newCursorPosition)
 {
@@ -374,7 +374,7 @@ void Java_org_libsdl_app_SDLInputConnection_nativeCommitText(
     (*env)->ReleaseStringUTFChars(env, text, utftext);
 }
 
-void Java_org_libsdl_app_SDLInputConnection_nativeSetComposingText(
+JNIEXPORT void JNICALL Java_org_libsdl_app_SDLInputConnection_nativeSetComposingText(
                                     JNIEnv* env, jclass cls,
                                     jstring text, jint newCursorPosition)
 {
