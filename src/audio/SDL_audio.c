@@ -305,7 +305,7 @@ SDL_StreamDeinit(SDL_AudioStreamer * stream)
 }
 #endif
 
-#if defined(ANDROID)
+#if defined(__ANDROID__)
 #include <android/log.h>
 #endif
 
