@@ -2658,6 +2658,7 @@ case "$host" in
                 if test x$enable_video = xyes; then
                     SOURCES="$SOURCES $srcdir/src/core/android/*.c $srcdir/src/video/android/*.c"
                     $as_echo "#define SDL_VIDEO_DRIVER_ANDROID 1" >>confdefs.h
+                    SUMMARY_video="${SUMMARY_video} android"
                 fi
                 ;;
             *-*-linux*)         ARCH=linux ;;
@@ -2727,6 +2728,7 @@ case "$host" in
             android)
                 AC_DEFINE(SDL_AUDIO_DRIVER_ANDROID, 1, [ ])
                 SOURCES="$SOURCES $srcdir/src/audio/android/*.c"
+                SUMMARY_audio="${SUMMARY_audio} android"
                 have_audio=yes
             ;;
           esac
