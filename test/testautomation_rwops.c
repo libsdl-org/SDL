@@ -309,7 +309,7 @@ rwops_testFileRead(void)
    if (rw == NULL) return TEST_ABORTED;
 
    /* Check type */
-#if defined(ANDROID)
+#if defined(__ANDROID__)
    SDLTest_AssertCheck(
       rw->type == SDL_RWOPS_STDFILE || rw->type == SDL_RWOPS_JNIFILE,
       "Verify RWops type is SDL_RWOPS_STDFILE or SDL_RWOPS_JNIFILE; expected: %d|%d, got: %d", SDL_RWOPS_STDFILE, SDL_RWOPS_JNIFILE, rw->type);
@@ -356,7 +356,7 @@ rwops_testFileWrite(void)
    if (rw == NULL) return TEST_ABORTED;
 
    /* Check type */
-#if defined(ANDROID)
+#if defined(__ANDROID__)
    SDLTest_AssertCheck(
       rw->type == SDL_RWOPS_STDFILE || rw->type == SDL_RWOPS_JNIFILE,
       "Verify RWops type is SDL_RWOPS_STDFILE or SDL_RWOPS_JNIFILE; expected: %d|%d, got: %d", SDL_RWOPS_STDFILE, SDL_RWOPS_JNIFILE, rw->type);

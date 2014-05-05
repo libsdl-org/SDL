@@ -93,7 +93,7 @@ typedef struct SDL_RWops
     Uint32 type;
     union
     {
-#if defined(ANDROID)
+#if defined(__ANDROID__)
         struct
         {
             void *fileNameRef;
