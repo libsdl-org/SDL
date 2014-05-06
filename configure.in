@@ -2404,6 +2404,7 @@ AC_HELP_STRING([--enable-directx], [use DirectX for Windows audio/video [[defaul
         AC_CHECK_HEADER(dsound.h, have_dsound=yes)
         AC_CHECK_HEADER(dinput.h, have_dinput=yes)
         AC_CHECK_HEADER(xaudio2.h, have_xaudio2=yes)
+        AC_CHECK_HEADER(dxgi.h, have_dxgi=yes)
 
         SUMMARY_video="${SUMMARY_video} directx"
         SUMMARY_audio="${SUMMARY_audio} directx"
@@ -2829,6 +2830,9 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
             if test x$enable_render_d3d = xyes -a x$have_d3d11 = xyes; then
                 AC_DEFINE(SDL_VIDEO_RENDER_D3D11, 1, [ ])
             fi
+        fi
+        if test x$have_dxgi = xyes; then
+            AC_DEFINE(HAVE_DXGI_H, 1, [ ])
         fi
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
