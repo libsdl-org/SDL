@@ -18953,7 +18953,6 @@ _ACEOF
                 EXTRA_LDFLAGS="$EXTRA_LDFLAGS $MIR_LIBS"
                 SUMMARY_video="${SUMMARY_video} mir"
             fi
-            SDL_CFLAGS="$SDL_CFLAGS $MIR_CFLAGS"
             have_video=yes
         fi
     fi
@@ -21405,6 +21404,10 @@ else
 fi
 
     case "$host" in
+	 *-*-androideabi*)
+            pthread_cflags="-D_REENTRANT -D_THREAD_SAFE"
+            pthread_lib=""
+	    ;;
         *-*-linux*|*-*-uclinux*)
             pthread_cflags="-D_REENTRANT"
             pthread_lib="-lpthread"
@@ -21909,6 +21912,12 @@ fi
         ac_fn_c_check_header_mongrel "$LINENO" "xaudio2.h" "ac_cv_header_xaudio2_h" "$ac_includes_default"
 if test "x$ac_cv_header_xaudio2_h" = xyes; then :
   have_xaudio2=yes
+fi
+
+
+        ac_fn_c_check_header_mongrel "$LINENO" "dxgi.h" "ac_cv_header_dxgi_h" "$ac_includes_default"
+if test "x$ac_cv_header_dxgi_h" = xyes; then :
+  have_dxgi=yes
 fi
 
 
@@ -22549,6 +22558,20 @@ case "$host" in
                     $as_echo "#define SDL_VIDEO_DRIVER_RPI 1" >>confdefs.h
                 fi
                 ;;
+            *-*-androideabi*)
+                # Android
+                ARCH=android
+                ANDROID_CFLAGS="-DGL_GLEXT_PROTOTYPES"
+                CFLAGS="$CFLAGS $ANDROID_CFLAGS"
+                SDL_CFLAGS="$SDL_CFLAGS $ANDROID_CFLAGS"
+                EXTRA_CFLAGS="$EXTRA_CFLAGS $ANDROID_CFLAGS"
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS -ldl -lGLESv1_CM -lGLESv2 -llog -landroid"
+
+                if test x$enable_video = xyes; then
+                    SOURCES="$SOURCES $srcdir/src/core/android/*.c $srcdir/src/video/android/*.c"
+                    $as_echo "#define SDL_VIDEO_DRIVER_ANDROID 1" >>confdefs.h
+                fi
+                ;;
             *-*-linux*)         ARCH=linux ;;
             *-*-uclinux*)       ARCH=linux ;;
             *-*-kfreebsd*-gnu)  ARCH=kfreebsd-gnu ;;
@@ -22619,6 +22642,13 @@ $as_echo "#define SDL_AUDIO_DRIVER_PAUDIO 1" >>confdefs.h
                 SOURCES="$SOURCES $srcdir/src/audio/paudio/*.c"
                 have_audio=yes
             ;;
+            android)
+
+$as_echo "#define SDL_AUDIO_DRIVER_ANDROID 1" >>confdefs.h
+
+                SOURCES="$SOURCES $srcdir/src/audio/android/*.c"
+                have_audio=yes
+            ;;
           esac
         fi
         # Set up files for the joystick library
@@ -22629,6 +22659,13 @@ $as_echo "#define SDL_AUDIO_DRIVER_PAUDIO 1" >>confdefs.h
 $as_echo "#define SDL_JOYSTICK_LINUX 1" >>confdefs.h
 
                 SOURCES="$SOURCES $srcdir/src/joystick/linux/*.c"
+                have_joystick=yes
+            ;;
+            android)
+
+$as_echo "#define SDL_JOYSTICK_ANDROID 1" >>confdefs.h
+
+                SOURCES="$SOURCES $srcdir/src/joystick/android/*.c"
                 have_joystick=yes
             ;;
           esac
@@ -22655,6 +22692,13 @@ $as_echo "#define SDL_HAPTIC_LINUX 1" >>confdefs.h
 $as_echo "#define SDL_POWER_LINUX 1" >>confdefs.h
 
                    SOURCES="$SOURCES $srcdir/src/power/linux/*.c"
+                   have_power=yes
+               ;;
+               android)
+
+$as_echo "#define SDL_POWER_ANDROID 1" >>confdefs.h
+
+                   SOURCES="$SOURCES $srcdir/src/power/android/*.c"
                    have_power=yes
                ;;
              esac
@@ -22730,6 +22774,11 @@ $as_echo "#define SDL_VIDEO_RENDER_D3D 1" >>confdefs.h
 $as_echo "#define SDL_VIDEO_RENDER_D3D11 1" >>confdefs.h
 
             fi
+        fi
+        if test x$have_dxgi = xyes; then
+
+$as_echo "#define HAVE_DXGI_H 1" >>confdefs.h
+
         fi
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
@@ -23155,7 +23204,7 @@ for EXT in asm cc m c S; do
     OBJECTS=`echo "$OBJECTS" | sed 's,[^ ]*/\([^ ]*\)\.'$EXT',$(objects)/\1.lo,g'`
     DEPENDS=`echo "$DEPENDS" | sed "s,^\\([^ ]*\\)/\\([^ ]*\\)\\.$EXT\\$,\\\\
 \\$(objects)/\\2.lo: \\1/\\2.$EXT\\\\
-	\\$(LIBTOOL) --mode=compile \\$(CC) \\$(CFLAGS) \\$(EXTRA_CFLAGS) $DEPENDENCY_TRACKING_OPTIONS -c \\$< -o \\$@,g"`
+	\\$(LIBTOOL) --tag=CC --mode=compile \\$(CC) \\$(CFLAGS) \\$(EXTRA_CFLAGS) $DEPENDENCY_TRACKING_OPTIONS -c \\$< -o \\$@,g"`
 done
 
 VERSION_OBJECTS=`echo $VERSION_SOURCES`
@@ -23170,14 +23219,14 @@ SDLMAIN_DEPENDS=`echo $SDLMAIN_SOURCES`
 SDLMAIN_OBJECTS=`echo "$SDLMAIN_OBJECTS" | sed 's,[^ ]*/\([^ ]*\)\.c,$(objects)/\1.o,g'`
 SDLMAIN_DEPENDS=`echo "$SDLMAIN_DEPENDS" | sed "s,\\([^ ]*\\)/\\([^ ]*\\)\\.c,\\\\
 \\$(objects)/\\2.o: \\1/\\2.c\\\\
-	\\$(LIBTOOL) --mode=compile \\$(CC) \\$(CFLAGS) \\$(EXTRA_CFLAGS) $DEPENDENCY_TRACKING_OPTIONS -c \\$< -o \\$@,g"`
+	\\$(LIBTOOL) --tag=CC --mode=compile \\$(CC) \\$(CFLAGS) \\$(EXTRA_CFLAGS) $DEPENDENCY_TRACKING_OPTIONS -c \\$< -o \\$@,g"`
 
 SDLTEST_OBJECTS=`echo $SDLTEST_SOURCES`
 SDLTEST_DEPENDS=`echo $SDLTEST_SOURCES`
 SDLTEST_OBJECTS=`echo "$SDLTEST_OBJECTS" | sed 's,[^ ]*/\([^ ]*\)\.c,$(objects)/\1.o,g'`
 SDLTEST_DEPENDS=`echo "$SDLTEST_DEPENDS" | sed "s,\\([^ ]*\\)/\\([^ ]*\\)\\.c,\\\\
 \\$(objects)/\\2.o: \\1/\\2.c\\\\
-	\\$(LIBTOOL) --mode=compile \\$(CC) \\$(CFLAGS) \\$(EXTRA_CFLAGS) $DEPENDENCY_TRACKING_OPTIONS -c \\$< -o \\$@,g"`
+	\\$(LIBTOOL) --tag=CC --mode=compile \\$(CC) \\$(CFLAGS) \\$(EXTRA_CFLAGS) $DEPENDENCY_TRACKING_OPTIONS -c \\$< -o \\$@,g"`
 
 # Set runtime shared library paths as needed
 
