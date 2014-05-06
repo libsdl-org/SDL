@@ -245,11 +245,12 @@ SDL_Direct3D9GetAdapterIndex( int displayIndex )
     }
 }
 
+#if HAVE_DXGI_H
 #define CINTERFACE
 #define COBJMACROS
 #include <dxgi.h>
 
-SDL_bool 
+static SDL_bool
 DXGI_LoadDLL(void **pDXGIDLL, IDXGIFactory **pDXGIFactory)
 {
     *pDXGIDLL = SDL_LoadObject("DXGI.DLL");
@@ -277,18 +278,25 @@ DXGI_LoadDLL(void **pDXGIDLL, IDXGIFactory **pDXGIFactory)
         return SDL_FALSE;
     }
 }
+#endif
 
 
 SDL_bool
 SDL_DXGIGetOutputInfo(int displayIndex, int *adapterIndex, int *outputIndex)
 {
+#if !HAVE_DXGI_H
+    if (adapterIndex) *adapterIndex = -1;
+    if (outputIndex) *outputIndex = -1;
+    SDL_SetError("SDL was compiled without DXGI support due to missing dxgi.h header");
+    return SDL_FALSE;
+#else
     SDL_DisplayData *pData = (SDL_DisplayData *)SDL_GetDisplayDriverData(displayIndex);
     void *pDXGIDLL;
+    char *displayName;
+    int nAdapter, nOutput;
     IDXGIFactory *pDXGIFactory;
     IDXGIAdapter *pDXGIAdapter;
     IDXGIOutput* pDXGIOutput;
-    char *displayName;
-    int nAdapter, nOutput;
 
     if (!adapterIndex) {
         SDL_InvalidParamError("adapterIndex");
@@ -344,6 +352,7 @@ SDL_DXGIGetOutputInfo(int displayIndex, int *adapterIndex, int *outputIndex)
     } else {
         return SDL_TRUE;
     }
+#endif
 }
 
 #endif /* SDL_VIDEO_DRIVER_WINDOWS */

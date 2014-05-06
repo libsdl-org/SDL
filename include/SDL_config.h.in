@@ -51,6 +51,8 @@
 #undef HAVE_GCC_SYNC_LOCK_TEST_AND_SET
 #undef HAVE_PTHREAD_SPINLOCK
 
+#undef HAVE_DXGI_H
+
 /* Comment this if you want to build without any C library requirements */
 #undef HAVE_LIBC
 #if HAVE_LIBC

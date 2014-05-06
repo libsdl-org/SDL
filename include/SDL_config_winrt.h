@@ -77,6 +77,7 @@ typedef unsigned int uintptr_t;
 #endif
 
 /* Useful headers */
+#define HAVE_DXGI_H 1
 #define HAVE_LIBC 1
 #define HAVE_STDIO_H 1
 #define STDC_HEADERS 1
