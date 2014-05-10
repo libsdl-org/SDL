@@ -54,6 +54,7 @@ void SDL_free(void *ptr)
 #define LACKS_STRING_H
 #define LACKS_STDLIB_H
 #define ABORT
+#define USE_LOCKS 1
 
 /*
   This is a version (aka dlmalloc) of malloc/free/realloc written by
