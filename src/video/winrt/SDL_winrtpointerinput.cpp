@@ -83,7 +83,7 @@ WINRT_TransformCursorPosition(SDL_Window * window,
     // Compute coordinates normalized from 0..1.
     // If the coordinates need to be sized to the SDL window,
     // we'll do that after.
-#if (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP) || (NTDDI_VERSION >= NTDDI_WINBLUE)
+#if (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP) || (NTDDI_VERSION > NTDDI_WIN8)
     outputPosition.X = rawPosition.X / nativeWindow->Bounds.Width;
     outputPosition.Y = rawPosition.Y / nativeWindow->Bounds.Height;
 #else
