@@ -376,7 +376,7 @@ main(int argc, char *argv[])
         }
     }
 
-#ifdef ANDROID
+#ifdef __ANDROID__
     if (SDL_NumJoysticks() > 0) {
 #else
     if (argv[1]) {
@@ -385,7 +385,7 @@ main(int argc, char *argv[])
         SDL_bool keepGoing = SDL_TRUE;
         SDL_Event event;
         int device;
-#ifdef ANDROID
+#ifdef __ANDROID__
         device = 0;
 #else
         device = atoi(argv[1]);
