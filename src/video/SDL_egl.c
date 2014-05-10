@@ -201,6 +201,7 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
         if (dll_handle == NULL) {
             return SDL_SetError("Could not load EGL library");
         }
+        SDL_ClearError();
     }
 
     _this->egl_data->dll_handle = dll_handle;
