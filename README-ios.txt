@@ -1,5 +1,5 @@
 ==============================================================================
-Building the Simple DirectMedia Layer for iPhone OS 2.0
+Building the Simple DirectMedia Layer for iPhone OS 5.1
 ==============================================================================
 
 Requirements: Mac OS X v10.5 or later and the iPhone SDK.
