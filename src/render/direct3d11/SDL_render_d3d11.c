@@ -29,6 +29,7 @@
 #include "SDL_syswm.h"
 #include "../SDL_sysrender.h"
 #include "../SDL_d3dmath.h"
+/* #include "SDL_log.h" */
 
 #include <d3d11_1.h>
 
@@ -1390,6 +1391,7 @@ D3D11_CreateSwapChain(SDL_Renderer * renderer, int w, int h)
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
     swapChainDesc.Scaling = DXGI_SCALING_STRETCH; /* On phone, only stretch and aspect-ratio stretch scaling are allowed. */
     swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD; /* On phone, no swap effects are supported. */
+    /* TODO, WinRT: see if Win 8.x DXGI_SWAP_CHAIN_DESC1 settings are available on Windows Phone 8.1, and if there's any advantage to having them on */
 #else
     if (usingXAML) {
         swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
@@ -1484,6 +1486,7 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
      */
     SDL_GetWindowSize(renderer->window, &w, &h);
     data->rotation = D3D11_GetCurrentRotation();
+    /* SDL_Log("%s: windowSize={%d,%d}, orientation=%d\n", __FUNCTION__, w, h, (int)data->rotation); */
     if (D3D11_IsDisplayRotated90Degrees(data->rotation)) {
         int tmp = w;
         w = h;
@@ -1521,11 +1524,21 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
     }
     
 #if WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP
-    /* Set the proper rotation for the swap chain, and generate the
-     * 3D matrix transformation for rendering to the rotated swap chain.
+    /* Set the proper rotation for the swap chain.
      *
      * To note, the call for this, IDXGISwapChain1::SetRotation, is not necessary
-     * on Windows Phone, nor is it supported there.  It's only needed in Windows 8/RT.
+     * on Windows Phone 8.0, nor is it supported there.
+     *
+     * IDXGISwapChain1::SetRotation does seem to be available on Windows Phone 8.1,
+     * however I've yet to find a way to make it work.  It might have something to
+     * do with IDXGISwapChain::ResizeBuffers appearing to not being available on
+     * Windows Phone 8.1 (it wasn't on Windows Phone 8.0), but I'm not 100% sure of this.
+     * The call doesn't appear to be entirely necessary though, and is a performance-related
+     * call, at least according to the following page on MSDN:
+     * http://code.msdn.microsoft.com/windowsapps/DXGI-swap-chain-rotation-21d13d71
+     *   -- David L.
+     *
+     * TODO, WinRT: reexamine the docs for IDXGISwapChain1::SetRotation, see if might be available, usable, and prudent-to-call on WinPhone 8.1
      */
     if (data->swapEffect == DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL) {
         result = IDXGISwapChain1_SetRotation(data->swapChain, data->rotation);
@@ -2144,6 +2157,7 @@ D3D11_UpdateViewport(SDL_Renderer * renderer)
          * SDL_CreateRenderer is calling it, and will call it again later
          * with a non-empty viewport.
          */
+        /* SDL_Log("%s, no viewport was set!\n", __FUNCTION__); */
         return 0;
     }
 
@@ -2223,6 +2237,7 @@ D3D11_UpdateViewport(SDL_Renderer * renderer)
     viewport.Height = orientationAlignedViewport.h;
     viewport.MinDepth = 0.0f;
     viewport.MaxDepth = 1.0f;
+    /* SDL_Log("%s: D3D viewport = {%f,%f,%f,%f}\n", __FUNCTION__, viewport.TopLeftX, viewport.TopLeftY, viewport.Width, viewport.Height); */
     ID3D11DeviceContext_RSSetViewports(data->d3dContext, 1, &viewport);
 
     return 0;

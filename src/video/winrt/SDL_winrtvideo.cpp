@@ -53,6 +53,7 @@ extern "C" {
 #include "SDL_winrtmouse_c.h"
 #include "SDL_main.h"
 #include "SDL_system.h"
+//#include "SDL_log.h"
 
 
 /* Initialization/Query functions */
@@ -174,6 +175,14 @@ WINRT_CalcDisplayModeUsingNativeWindow(SDL_DisplayMode * mode)
         return SDL_SetError("SDL/WinRT display modes cannot be calculated outside of the main thread, such as in SDL's XAML thread");
     }
 
+    //SDL_Log("%s, size={%f,%f}, current orientation=%d, native orientation=%d, auto rot. pref=%d, DPI = %f\n",
+    //    __FUNCTION__,
+    //    CoreWindow::GetForCurrentThread()->Bounds.Width, CoreWindow::GetForCurrentThread()->Bounds.Height,
+    //    WINRT_DISPLAY_PROPERTY(CurrentOrientation),
+    //    WINRT_DISPLAY_PROPERTY(NativeOrientation),
+    //    WINRT_DISPLAY_PROPERTY(AutoRotationPreferences),
+    //    WINRT_DISPLAY_PROPERTY(LogicalDpi));
+
     // Calculate the display size given the window size, taking into account
     // the current display's DPI:
 #if NTDDI_VERSION > NTDDI_WIN8
@@ -208,10 +217,10 @@ WINRT_CalcDisplayModeUsingNativeWindow(SDL_DisplayMode * mode)
     driverdata->currentOrientation = DisplayProperties::CurrentOrientation;
 #endif
 
-#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
-    // On Windows Phone, the native window's size is always in portrait,
+#if (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP) && (NTDDI_VERSION == NTDDI_WIN8)
+    // On Windows Phone 8.0, the native window's size is always in portrait,
     // regardless of the device's orientation.  This is in contrast to
-    // Windows 8/RT, which will resize the native window as the device's
+    // Windows 8.x/RT and Windows Phone 8.1, which will resize the native window as the device's
     // orientation changes.  In order to compensate for this behavior,
     // on Windows Phone, the mode's width and height will be swapped when
     // the device is in a landscape (non-portrait) mode.
