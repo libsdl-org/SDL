@@ -229,36 +229,30 @@ WINRT_ProcessWindowSizeChange()
     }
 
     if (WINRT_GlobalSDLWindow) {
-        // Send a window-resize event to the rest of SDL, and to apps:
-        SDL_SendWindowEvent(
-            WINRT_GlobalSDLWindow,
-            SDL_WINDOWEVENT_RESIZED,
-            newDisplayMode.w,
-            newDisplayMode.h);
-
+        // If the window size changed, send a resize event to SDL and its host app:
+        int window_w = 0;
+        int window_h = 0;
+        SDL_GetWindowSize(WINRT_GlobalSDLWindow, &window_w, &window_h);
+        if ((window_w != newDisplayMode.w) || (window_h != newDisplayMode.h)) {
+            SDL_SendWindowEvent(
+                WINRT_GlobalSDLWindow,
+                SDL_WINDOWEVENT_RESIZED,
+                newDisplayMode.w,
+                newDisplayMode.h);
+        } else {
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
-        // HACK: On Windows Phone, make sure that orientation changes from
-        // Landscape to LandscapeFlipped, Portrait to PortraitFlipped,
-        // or vice-versa on either of those two, lead to the Direct3D renderer
-        // getting updated.
-        const DisplayOrientations oldOrientation = ((SDL_DisplayModeData *)oldDisplayMode.driverdata)->currentOrientation;
-        const DisplayOrientations newOrientation = ((SDL_DisplayModeData *)newDisplayMode.driverdata)->currentOrientation;
-
-        if ((oldOrientation == DisplayOrientations::Landscape && newOrientation == DisplayOrientations::LandscapeFlipped) ||
-            (oldOrientation == DisplayOrientations::LandscapeFlipped && newOrientation == DisplayOrientations::Landscape) ||
-            (oldOrientation == DisplayOrientations::Portrait && newOrientation == DisplayOrientations::PortraitFlipped) ||
-            (oldOrientation == DisplayOrientations::PortraitFlipped && newOrientation == DisplayOrientations::Portrait))
-        {
-            // One of the reasons this event is getting sent out is because SDL
-            // will ignore requests to send out SDL_WINDOWEVENT_RESIZED events
-            // if and when the event size doesn't change (and the Direct3D 11.1
-            // renderer doesn't get the memo).
+            // HACK: Make sure that orientation changes
+            // lead to the Direct3D renderer's viewport getting updated:
             //
-            // Make sure that the display/window size really didn't change.  If
-            // it did, then a SDL_WINDOWEVENT_SIZE_CHANGED event got sent, and
-            // the Direct3D 11.1 renderer picked it up, presumably.
-            if (oldDisplayMode.w == newDisplayMode.w &&
-                oldDisplayMode.h == newDisplayMode.h)
+            // For some reason, this doesn't seem to need to be done on Windows 8.x,
+            // even when going from Landscape to LandscapeFlipped.  It only seems to
+            // be needed on Windows Phone, at least when I tested on my devices.
+            // I'm not currently sure why this is, but it seems to work fine. -- David L.
+            //
+            // TODO, WinRT: do more extensive research into why orientation changes on Win 8.x don't need D3D changes, or if they might, in some cases
+            const DisplayOrientations oldOrientation = ((SDL_DisplayModeData *)oldDisplayMode.driverdata)->currentOrientation;
+            const DisplayOrientations newOrientation = ((SDL_DisplayModeData *)newDisplayMode.driverdata)->currentOrientation;
+            if (oldOrientation != newOrientation)
             {
                 SDL_SendWindowEvent(
                     WINRT_GlobalSDLWindow,
@@ -266,8 +260,8 @@ WINRT_ProcessWindowSizeChange()
                     newDisplayMode.w,
                     newDisplayMode.h);
             }
-        }
 #endif
+        }
     }
     
     // Finally, free the 'driverdata' field of the old 'desktop_mode'.
@@ -309,26 +303,21 @@ void SDL_WinRTApp::OnOrientationChanged(Object^ sender)
     if (window) {
         SDL_Log("%s, current orientation=%d, native orientation=%d, auto rot. pref=%d, CoreWindow Size={%f,%f}\n",
             __FUNCTION__,
-            (int)DisplayProperties::CurrentOrientation,
-            (int)DisplayProperties::NativeOrientation,
-            (int)DisplayProperties::AutoRotationPreferences,
+            WINRT_DISPLAY_PROPERTY(CurrentOrientation),
+            WINRT_DISPLAY_PROPERTY(NativeOrientation),
+            WINRT_DISPLAY_PROPERTY(AutoRotationPreferences),
             window->Bounds.Width,
             window->Bounds.Height);
     } else {
         SDL_Log("%s, current orientation=%d, native orientation=%d, auto rot. pref=%d\n",
             __FUNCTION__,
-            (int)DisplayProperties::CurrentOrientation,
-            (int)DisplayProperties::NativeOrientation,
-            (int)DisplayProperties::AutoRotationPreferences);
+            WINRT_DISPLAY_PROPERTY(CurrentOrientation),
+            WINRT_DISPLAY_PROPERTY(NativeOrientation),
+            WINRT_DISPLAY_PROPERTY(AutoRotationPreferences));
     }
 #endif
 
-#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
-    // On Windows Phone, treat an orientation change as a change in window size.
-    // The native window's size doesn't seem to change, however SDL will simulate
-    // a window size change.
     WINRT_ProcessWindowSizeChange();
-#endif
 }
 
 void SDL_WinRTApp::SetWindow(CoreWindow^ window)
@@ -336,9 +325,9 @@ void SDL_WinRTApp::SetWindow(CoreWindow^ window)
 #if LOG_WINDOW_EVENTS==1
     SDL_Log("%s, current orientation=%d, native orientation=%d, auto rot. pref=%d, window Size={%f,%f}\n",
         __FUNCTION__,
-        (int)DisplayProperties::CurrentOrientation,
-        (int)DisplayProperties::NativeOrientation,
-        (int)DisplayProperties::AutoRotationPreferences,
+        WINRT_DISPLAY_PROPERTY(CurrentOrientation),
+        WINRT_DISPLAY_PROPERTY(NativeOrientation),
+        WINRT_DISPLAY_PROPERTY(AutoRotationPreferences),
         window->Bounds.Width,
         window->Bounds.Height);
 #endif
@@ -540,9 +529,9 @@ void SDL_WinRTApp::OnWindowSizeChanged(CoreWindow^ sender, WindowSizeChangedEven
     SDL_Log("%s, size={%f,%f}, current orientation=%d, native orientation=%d, auto rot. pref=%d, WINRT_GlobalSDLWindow?=%s\n",
         __FUNCTION__,
         args->Size.Width, args->Size.Height,
-        (int)DisplayProperties::CurrentOrientation,
-        (int)DisplayProperties::NativeOrientation,
-        (int)DisplayProperties::AutoRotationPreferences,
+        WINRT_DISPLAY_PROPERTY(CurrentOrientation),
+        WINRT_DISPLAY_PROPERTY(NativeOrientation),
+        WINRT_DISPLAY_PROPERTY(AutoRotationPreferences),
         (WINRT_GlobalSDLWindow ? "yes" : "no"));
 #endif
 

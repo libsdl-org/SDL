@@ -70,6 +70,13 @@ typedef struct
 
 #ifdef __cplusplus_winrt
 
+/* A convenience macro to get a WinRT display property */
+#if NTDDI_VERSION > NTDDI_WIN8
+#define WINRT_DISPLAY_PROPERTY(NAME) (Windows::Graphics::Display::DisplayInformation::GetForCurrentView()->NAME)
+#else
+#define WINRT_DISPLAY_PROPERTY(NAME) (Windows::Graphics::Display::DisplayProperties::NAME)
+#endif
+
 /* Internal window data */
 struct SDL_WindowData
 {
