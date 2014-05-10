@@ -87,7 +87,7 @@ WINRT_TransformCursorPosition(SDL_Window * window,
     outputPosition.X = rawPosition.X / nativeWindow->Bounds.Width;
     outputPosition.Y = rawPosition.Y / nativeWindow->Bounds.Height;
 #else
-    switch (DisplayProperties::CurrentOrientation)
+    switch (WINRT_DISPLAY_PROPERTY(CurrentOrientation))
     {
         case DisplayOrientations::Portrait:
             outputPosition.X = rawPosition.X / nativeWindow->Bounds.Width;

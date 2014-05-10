@@ -170,11 +170,7 @@ static void WINRT_SetDisplayOrientationsPreference(void *userdata, const char *n
     // for details.  Microsoft's "Display orientation sample" also gives an
     // outline of how Windows treats device rotation
     // (http://code.msdn.microsoft.com/Display-Orientation-Sample-19a58e93).
-#if NTDDI_VERSION > NTDDI_WIN8
-    DisplayInformation::AutoRotationPreferences = (DisplayOrientations) orientationFlags;
-#else
-    DisplayProperties::AutoRotationPreferences = (DisplayOrientations) orientationFlags;
-#endif
+    WINRT_DISPLAY_PROPERTY(AutoRotationPreferences) = (DisplayOrientations) orientationFlags;
 }
 
 static void
