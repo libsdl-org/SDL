@@ -19,6 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "../SDL_internal.h"
+
+#if (SDL_VIDEO_RENDER_D3D || SDL_VIDEO_RENDER_D3D11) && !SDL_RENDER_DISABLED
 #include "SDL_stdinc.h"
 
 #include "SDL_d3dmath.h"
@@ -126,6 +128,9 @@ Float4X4 MatrixRotationZ(float r)
     m._33 = 1.0f;
     m._44 = 1.0f;
     return m;
+
 }
+
+#endif /* (SDL_VIDEO_RENDER_D3D || SDL_VIDEO_RENDER_D3D11) && !SDL_RENDER_DISABLED */
 
 /* vi: set ts=4 sw=4 expandtab: */
