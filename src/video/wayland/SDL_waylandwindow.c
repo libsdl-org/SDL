@@ -41,6 +41,19 @@ static void
 handle_configure(void *data, struct wl_shell_surface *shell_surface,
                  uint32_t edges, int32_t width, int32_t height)
 {
+    SDL_WindowData *wind = (SDL_WindowData *)data;
+    SDL_Window *window = wind->sdlwindow;
+    struct wl_region *region;
+
+    window->w = width;
+    window->h = height;
+    WAYLAND_wl_egl_window_resize(wind->egl_window, window->w, window->h, 0, 0);
+
+    region = wl_compositor_create_region(wind->waylandData->compositor);
+    wl_region_add(region, 0, 0, window->w, window->h);
+    wl_surface_set_opaque_region(wind->surface, region);
+    wl_region_destroy(region);
+    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, window->w, window->h);
 }
 
 static void
