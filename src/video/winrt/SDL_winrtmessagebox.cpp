@@ -46,7 +46,7 @@ WINRT_UTF8ToPlatformString(const char * str)
 extern "C" int
 WINRT_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 {
-#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+#if (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP) && (NTDDI_VERSION == NTDDI_WIN8)
     /* Sadly, Windows Phone 8 doesn't include the MessageDialog class that
      * Windows 8.x/RT does, even though MSDN's reference documentation for
      * Windows Phone 8 mentions it.
@@ -54,12 +54,21 @@ WINRT_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
      * The .NET runtime on Windows Phone 8 does, however, include a
      * MessageBox class.  Perhaps this could be called, somehow?
      */
-    return SDL_SetError("SDL_messagebox support is not available for Windows Phone");
+    return SDL_SetError("SDL_messagebox support is not available for Windows Phone 8.0");
 #else
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
-    if (messageboxdata->numbuttons > 3) {
-        return SDL_SetError("WinRT's MessageDialog only supports 3 buttons, at most. %d were requested.", messageboxdata->numbuttons);
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+    const int maxbuttons = 3;
+    const char * platform = "Windows Phone 8.1+";
+#else
+    const int maxbuttons = 3;
+    const char * platform = "Windows 8.x";
+#endif
+
+    if (messageboxdata->numbuttons > maxbuttons) {
+        return SDL_SetError("WinRT's MessageDialog only supports %d buttons, at most, on %s. %d were requested.",
+            maxbuttons, platform, messageboxdata->numbuttons);
     }
 
     /* Build a MessageDialog object and its buttons */
