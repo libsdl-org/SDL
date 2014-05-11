@@ -263,13 +263,25 @@ SDL_memset(void *dst, int c, size_t len)
 #if defined(HAVE_MEMSET)
     return memset(dst, c, len);
 #else
-    size_t left = (len % 4);
+    size_t left;
     Uint32 *dstp4;
-    Uint8 *dstp1;
+    Uint8 *dstp1 = (Uint8 *) dst;
     Uint32 value4 = (c | (c << 8) | (c << 16) | (c << 24));
     Uint8 value1 = (Uint8) c;
 
-    dstp4 = (Uint32 *) dst;
+    /* The destination pointer needs to be aligned on a 4-byte boundary to
+     * execute a 32-bit set. Set first bytes manually if needed until it is
+     * aligned. */
+    while ((intptr_t)dstp1 & 0x3) {
+        if (len--) {
+            *dstp1++ = value1;
+        } else {
+            return dst;
+        }
+    }
+
+    dstp4 = (Uint32 *) dstp1;
+    left = (len % 4);
     len /= 4;
     while (len--) {
         *dstp4++ = value4;
