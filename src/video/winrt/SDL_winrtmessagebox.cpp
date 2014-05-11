@@ -59,7 +59,7 @@ WINRT_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
-    const int maxbuttons = 3;
+    const int maxbuttons = 2;
     const char * platform = "Windows Phone 8.1+";
 #else
     const int maxbuttons = 3;
