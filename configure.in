@@ -1174,7 +1174,9 @@ AC_HELP_STRING([--enable-video-wayland-qt-touch], [QtWayland server support for 
         AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
         AC_MSG_CHECKING(for Wayland support)
         video_wayland=no
-        if test x$PKG_CONFIG != xno; then
+        if  test x$PKG_CONFIG != xno && \
+            test x$video_opengl_egl = xyes && \
+            test x$video_opengles_v2 = xyes; then
             if $PKG_CONFIG --exists wayland-client wayland-egl wayland-cursor egl xkbcommon ; then
                 WAYLAND_CFLAGS=`$PKG_CONFIG --cflags wayland-client wayland-egl wayland-cursor xkbcommon`
                 WAYLAND_LIBS=`$PKG_CONFIG --libs wayland-client wayland-egl wayland-cursor xkbcommon`
@@ -1256,7 +1258,18 @@ AC_HELP_STRING([--enable-video-mir], [use Mir video driver [[default=yes]]]),
             if $PKG_CONFIG --exists mirclient egl xkbcommon ; then
                 MIR_CFLAGS=`$PKG_CONFIG --cflags mirclient egl xkbcommon`
                 MIR_LIBS=`$PKG_CONFIG --libs mirclient egl xkbcommon`
+                save_CFLAGS="$CFLAGS"
+                CFLAGS="$save_CFLAGS $MIR_CFLAGS"
+                
+                dnl This will disable Mir on Ubuntu < 14.04
+                AC_TRY_COMPILE([
+                #include <mir_toolkit/mir_client_library.h>
+                ],[
+                    MirMotionToolType tool = mir_motion_tool_type_mouse;
+                ],[
                 video_mir=yes
+                ])
+                CFLAGS="$save_CFLAGS"
             fi
         fi
         AC_MSG_RESULT($video_mir)
@@ -2691,12 +2704,12 @@ case "$host" in
         CheckNAS
         CheckSNDIO
         CheckX11
-        CheckWayland
-        CheckMir
         CheckDirectFB
         CheckFusionSound
         CheckOpenGLX11
         CheckOpenGLESX11
+        CheckMir
+        CheckWayland
         CheckLibUDev
         CheckDBus
         CheckInputEvents
