@@ -18745,7 +18745,9 @@ fi
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Wayland support" >&5
 $as_echo_n "checking for Wayland support... " >&6; }
         video_wayland=no
-        if test x$PKG_CONFIG != xno; then
+        if  test x$PKG_CONFIG != xno && \
+            test x$video_opengl_egl = xyes && \
+            test x$video_opengles_v2 = xyes; then
             if $PKG_CONFIG --exists wayland-client wayland-egl wayland-cursor egl xkbcommon ; then
                 WAYLAND_CFLAGS=`$PKG_CONFIG --cflags wayland-client wayland-egl wayland-cursor xkbcommon`
                 WAYLAND_LIBS=`$PKG_CONFIG --libs wayland-client wayland-egl wayland-cursor xkbcommon`
@@ -18895,7 +18897,31 @@ $as_echo_n "checking for Mir support... " >&6; }
             if $PKG_CONFIG --exists mirclient egl xkbcommon ; then
                 MIR_CFLAGS=`$PKG_CONFIG --cflags mirclient egl xkbcommon`
                 MIR_LIBS=`$PKG_CONFIG --libs mirclient egl xkbcommon`
+                save_CFLAGS="$CFLAGS"
+                CFLAGS="$save_CFLAGS $MIR_CFLAGS"
+
+                                cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+                #include <mir_toolkit/mir_client_library.h>
+
+int
+main ()
+{
+
+                    MirMotionToolType tool = mir_motion_tool_type_mouse;
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
                 video_mir=yes
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+                CFLAGS="$save_CFLAGS"
             fi
         fi
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_mir" >&5
@@ -22570,6 +22596,7 @@ case "$host" in
                 if test x$enable_video = xyes; then
                     SOURCES="$SOURCES $srcdir/src/core/android/*.c $srcdir/src/video/android/*.c"
                     $as_echo "#define SDL_VIDEO_DRIVER_ANDROID 1" >>confdefs.h
+                    SUMMARY_video="${SUMMARY_video} android"
                 fi
                 ;;
             *-*-linux*)         ARCH=linux ;;
@@ -22602,12 +22629,12 @@ case "$host" in
         CheckNAS
         CheckSNDIO
         CheckX11
-        CheckWayland
-        CheckMir
         CheckDirectFB
         CheckFusionSound
         CheckOpenGLX11
         CheckOpenGLESX11
+        CheckMir
+        CheckWayland
         CheckLibUDev
         CheckDBus
         CheckInputEvents
@@ -22647,6 +22674,7 @@ $as_echo "#define SDL_AUDIO_DRIVER_PAUDIO 1" >>confdefs.h
 $as_echo "#define SDL_AUDIO_DRIVER_ANDROID 1" >>confdefs.h
 
                 SOURCES="$SOURCES $srcdir/src/audio/android/*.c"
+                SUMMARY_audio="${SUMMARY_audio} android"
                 have_audio=yes
             ;;
           esac
