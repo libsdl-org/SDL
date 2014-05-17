@@ -148,7 +148,7 @@ JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_onNativeResize(
     Android_SetScreenResolution(width, height, format);
 }
 
-// Paddown
+/* Paddown */
 JNIEXPORT int JNICALL Java_org_libsdl_app_SDLActivity_onNativePadDown(
                                     JNIEnv* env, jclass jcls,
                                     jint device_id, jint keycode)
@@ -156,7 +156,7 @@ JNIEXPORT int JNICALL Java_org_libsdl_app_SDLActivity_onNativePadDown(
     return Android_OnPadDown(device_id, keycode);
 }
 
-// Padup
+/* Padup */
 JNIEXPORT int JNICALL Java_org_libsdl_app_SDLActivity_onNativePadUp(
                                    JNIEnv* env, jclass jcls,
                                    jint device_id, jint keycode)
