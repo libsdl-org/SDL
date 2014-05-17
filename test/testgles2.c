@@ -210,7 +210,7 @@ process_shader(GLuint *shader, const char * source, GLint shader_type)
     GL_CHECK(ctx.glCompileShader(*shader));
     GL_CHECK(ctx.glGetShaderiv(*shader, GL_COMPILE_STATUS, &status));
 
-    // Dump debug info (source and log) if compilation failed.
+    /* Dump debug info (source and log) if compilation failed. */
     if(status != GL_TRUE) {
         SDL_Log("Shader compilation failed");
         quit(-1);

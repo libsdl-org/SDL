@@ -44,7 +44,7 @@ main(int argc, char *argv[])
         int consumed;
 
         consumed = SDLTest_CommonArg(state, i);
-        // needed vodoo to allow app to launch via OS X Finder
+        /* needed voodoo to allow app to launch via OS X Finder */
         if (SDL_strncmp(argv[i], "-psn", 4)==0) {
             consumed = 1;
         }
