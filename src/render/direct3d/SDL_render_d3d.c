@@ -1871,7 +1871,7 @@ SDL_RenderGetD3D9Device(SDL_Renderer * renderer)
 #if SDL_VIDEO_RENDER_D3D && !SDL_RENDER_DISABLED
     D3D_RenderData *data = (D3D_RenderData *) renderer->driverdata;
 
-    // Make sure that this is a D3D renderer
+    /* Make sure that this is a D3D renderer */
     if (renderer->DestroyRenderer != D3D_DestroyRenderer) {
         SDL_SetError("Renderer is not a D3D renderer");
         return NULL;

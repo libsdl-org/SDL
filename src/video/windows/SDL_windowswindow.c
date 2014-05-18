@@ -343,15 +343,16 @@ WIN_CreateWindowFrom(_THIS, SDL_Window * window, const void *data)
     {
         const char *hint = SDL_GetHint(SDL_HINT_VIDEO_WINDOW_SHARE_PIXEL_FORMAT);
         if (hint) {
-            // This hint is a pointer (in string form) of the address of
-            // the window to share a pixel format with
+            /* This hint is a pointer (in string form) of the address of
+               the window to share a pixel format with
+            */
             SDL_Window *otherWindow = NULL;
             SDL_sscanf(hint, "%p", (void**)&otherWindow);
 
-            // Do some error checking on the pointer
+            /* Do some error checking on the pointer */
             if (otherWindow != NULL && otherWindow->magic == &_this->window_magic)
             {
-                // If the otherWindow has SDL_WINDOW_OPENGL set, set it for the new window as well
+                /* If the otherWindow has SDL_WINDOW_OPENGL set, set it for the new window as well */
                 if (otherWindow->flags & SDL_WINDOW_OPENGL)
                 {
                     window->flags |= SDL_WINDOW_OPENGL;

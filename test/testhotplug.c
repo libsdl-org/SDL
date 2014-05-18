@@ -123,7 +123,9 @@ main(int argc, char *argv[])
                     }
                     break;
                 case SDL_JOYAXISMOTION:
+/*
 //                    SDL_Log("Axis Move: %d\n", event.jaxis.axis);
+*/
                     if (enable_haptic)
                         SDL_HapticRumblePlay(haptic, 0.25, 250);
                     break;
