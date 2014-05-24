@@ -117,6 +117,37 @@ extern DECLSPEC void SDLCALL SDL_WarpMouseInWindow(SDL_Window * window,
 extern DECLSPEC int SDLCALL SDL_SetRelativeMouseMode(SDL_bool enabled);
 
 /**
+ *  \brief Capture the mouse, to track input outside an SDL window.
+ *
+ *  \param enabled Whether or not to enable capturing
+ *
+ *  Capturing enables your app to obtain mouse events globally, instead of
+ *  just within your window. Not all video targets support this function.
+ *  When capturing is enabled, the current window will get all mouse events,
+ *  but unlike relative mode, no change is made to the cursor and it is
+ *  not restrained to your window.
+ *
+ *  This function may also deny mouse input to other windows--both those in
+ *  your application and others on the system--so you should use this
+ *  function sparingly, and in small bursts. For example, you might want to
+ *  track the mouse while the user is dragging something, until the user
+ *  releases a mouse button. It is not recommended that you capture the mouse
+ *  for long periods of time, such as the entire time your app is running.
+ *
+ *  While captured, mouse events still report coordinates relative to the
+ *  current (foreground) window, but those coordinates may be outside the
+ *  bounds of the window (including negative values). Capturing is only
+ *  allowed for the foreground window. If the window loses focus while
+ *  capturing, the capture will be disabled automatically.
+ *
+ *  While capturing is enabled, the current window will have the
+ *  SDL_WINDOW_MOUSE_CAPTURE flag set.
+ *
+ *  \return 0 on success, or -1 if not supported.
+ */
+extern DECLSPEC int SDLCALL SDL_CaptureMouse(SDL_bool enabled);
+
+/**
  *  \brief Query whether relative mouse mode is enabled.
  *
  *  \sa SDL_SetRelativeMouseMode()

@@ -999,10 +999,12 @@ default: return "???";
 static void
 SDLTest_PrintEvent(SDL_Event * event)
 {
+#if 0
     if ((event->type == SDL_MOUSEMOTION) || (event->type == SDL_FINGERMOTION)) {
         /* Mouse and finger motion are really spammy */
         return;
     }
+#endif
 
     switch (event->type) {
     case SDL_WINDOWEVENT:
@@ -1377,6 +1379,14 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
                             SDL_RenderSetClipRect(state->renderers[i], NULL);
                         }
                     }
+                }
+            }
+            if (withShift) {
+                SDL_Window *current_win = SDL_GetKeyboardFocus();
+                if (current_win) {
+                    const SDL_bool shouldCapture = (SDL_GetWindowFlags(current_win) & SDL_WINDOW_MOUSE_CAPTURE) == 0;
+                    const int rc = SDL_CaptureMouse(shouldCapture);
+                    printf("%sapturing mouse %s!\n", shouldCapture ? "C" : "Unc", (rc == 0) ? "succeeded" : "failed");
                 }
             }
             break;

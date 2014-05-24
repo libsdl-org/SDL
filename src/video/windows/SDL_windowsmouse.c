@@ -219,6 +219,19 @@ WIN_SetRelativeMouseMode(SDL_bool enabled)
     return 0;
 }
 
+static int
+WIN_CaptureMouse(SDL_Window *window)
+{
+    if (!window) {
+        ReleaseCapture();
+    } else {
+        const SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+        SetCapture(data->hwnd);
+    }
+
+    return 0;
+}
+
 void
 WIN_InitMouse(_THIS)
 {
@@ -230,6 +243,7 @@ WIN_InitMouse(_THIS)
     mouse->FreeCursor = WIN_FreeCursor;
     mouse->WarpMouse = WIN_WarpMouse;
     mouse->SetRelativeMouseMode = WIN_SetRelativeMouseMode;
+    mouse->CaptureMouse = WIN_CaptureMouse;
 
     SDL_SetDefaultCursor(WIN_CreateDefaultCursor());
 
