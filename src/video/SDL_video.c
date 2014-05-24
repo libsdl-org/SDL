@@ -2216,6 +2216,8 @@ SDL_OnWindowFocusLost(SDL_Window * window)
     }
 }
 
+/* !!! FIXME: is this different than SDL_GetKeyboardFocus()?
+   !!! FIXME:  Also, SDL_GetKeyboardFocus() is O(1), this isn't. */
 SDL_Window *
 SDL_GetFocusWindow(void)
 {
