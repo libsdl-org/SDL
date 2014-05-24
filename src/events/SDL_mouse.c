@@ -246,6 +246,7 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
         mouse->y += yrel;
     }
 
+    /* !!! FIXME: shouldn't this be (window) instead of (mouse->focus)? */
     SDL_GetWindowSize(mouse->focus, &x_max, &y_max);
     --x_max;
     --y_max;
