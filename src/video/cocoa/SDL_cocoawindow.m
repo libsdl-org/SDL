@@ -745,8 +745,8 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
     x = (int)point.x;
     y = (int)(window->h - point.y);
 
-    if (x < 0 || x >= window->w || y < 0 || y >= window->h) {
-        if (window->flags & SDL_WINDOW_INPUT_GRABBED) {
+    if (window->flags & SDL_WINDOW_INPUT_GRABBED) {
+        if (x < 0 || x >= window->w || y < 0 || y >= window->h) {
             if (x < 0) {
                 x = 0;
             } else if (x >= window->w) {
