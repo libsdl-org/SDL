@@ -274,6 +274,14 @@ Cocoa_SetRelativeMouseMode(SDL_bool enabled)
     return 0;
 }
 
+static int
+Cocoa_CaptureMouse(SDL_Window *window)
+{
+    /* our Cocoa event code already tracks the mouse outside the window,
+        so all we have to do here is say "okay" and do what we always do. */
+    return 0;
+}
+
 void
 Cocoa_InitMouse(_THIS)
 {
@@ -287,6 +295,7 @@ Cocoa_InitMouse(_THIS)
     mouse->FreeCursor = Cocoa_FreeCursor;
     mouse->WarpMouse = Cocoa_WarpMouse;
     mouse->SetRelativeMouseMode = Cocoa_SetRelativeMouseMode;
+    mouse->CaptureMouse = Cocoa_CaptureMouse;
 
     SDL_SetDefaultCursor(Cocoa_CreateDefaultCursor());
 
