@@ -3269,12 +3269,17 @@ SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     int retval = -1;
     SDL_bool relative_mode;
     int show_cursor_prev;
+    SDL_bool mouse_captured;
+    SDL_Window *current_window;
 
     if (!messageboxdata) {
         return SDL_InvalidParamError("messageboxdata");
     }
 
+    current_window = SDL_GetKeyboardFocus();
+    mouse_captured = current_window && ((SDL_GetWindowFlags(current_window) & SDL_WINDOW_MOUSE_CAPTURE) != 0);
     relative_mode = SDL_GetRelativeMouseMode();
+    SDL_CaptureMouse(SDL_FALSE);
     SDL_SetRelativeMouseMode(SDL_FALSE);
     show_cursor_prev = SDL_ShowCursor(1);
 
@@ -3324,6 +3329,13 @@ SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 #endif
     if (retval == -1) {
         SDL_SetError("No message system available");
+    }
+
+    if (current_window) {
+        SDL_RaiseWindow(current_window);
+        if (mouse_captured) {
+            SDL_CaptureMouse(SDL_TRUE);
+        }
     }
 
     SDL_ShowCursor(show_cursor_prev);

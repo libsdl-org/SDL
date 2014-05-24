@@ -330,6 +330,29 @@ X11_SetRelativeMouseMode(SDL_bool enabled)
     return -1;
 }
 
+static int
+X11_CaptureMouse(SDL_Window *window)
+{
+    Display *display = GetDisplay();
+
+    if (window) {
+        SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+        const unsigned int mask = ButtonPressMask | ButtonReleaseMask | PointerMotionMask | FocusChangeMask;
+        const int rc = X11_XGrabPointer(display, data->xwindow, False,
+                                        mask, GrabModeAsync, GrabModeAsync,
+                                        None, None, CurrentTime);
+        if (rc != GrabSuccess) {
+            return SDL_SetError("X server refused mouse capture");
+        }
+    } else {
+        X11_XUngrabPointer(display, CurrentTime);
+    }
+
+    X11_XSync(display, False);
+
+    return 0;
+}
+
 void
 X11_InitMouse(_THIS)
 {
@@ -341,6 +364,7 @@ X11_InitMouse(_THIS)
     mouse->FreeCursor = X11_FreeCursor;
     mouse->WarpMouse = X11_WarpMouse;
     mouse->SetRelativeMouseMode = X11_SetRelativeMouseMode;
+    mouse->CaptureMouse = X11_CaptureMouse;
 
     SDL_SetDefaultCursor(X11_CreateDefaultCursor());
 }

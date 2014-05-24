@@ -25,6 +25,7 @@
 #include "SDL_timer.h"
 #include "SDL_events.h"
 #include "SDL_events_c.h"
+#include "SDL_assert.h"
 #include "../video/SDL_sysvideo.h"
 
 
@@ -619,6 +620,16 @@ SDL_SetKeyboardFocus(SDL_Window * window)
 
     /* See if the current window has lost focus */
     if (keyboard->focus && keyboard->focus != window) {
+
+        /* new window shouldn't think it has mouse captured. */
+        SDL_assert(!window || !(window->flags & SDL_WINDOW_MOUSE_CAPTURE));
+
+        /* old window must lose an existing mouse capture. */
+        if (keyboard->focus->flags & SDL_WINDOW_MOUSE_CAPTURE) {
+            SDL_CaptureMouse(SDL_FALSE);  /* drop the capture. */
+            SDL_assert(!(keyboard->focus->flags & SDL_WINDOW_MOUSE_CAPTURE));
+        }
+
         SDL_SendWindowEvent(keyboard->focus, SDL_WINDOWEVENT_FOCUS_LOST,
                             0, 0);
 

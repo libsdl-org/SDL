@@ -140,30 +140,17 @@ static SDL_bool
 SDL_UpdateMouseFocus(SDL_Window * window, int x, int y, Uint32 buttonstate)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
-    int w, h;
-    SDL_bool inWindow;
+    SDL_bool inWindow = SDL_TRUE;
 
-    SDL_GetWindowSize(window, &w, &h);
-    if (x < 0 || y < 0 || x >= w || y >= h) {
-        inWindow = SDL_FALSE;
-    } else {
-        inWindow = SDL_TRUE;
+    if ((window->flags & SDL_WINDOW_MOUSE_CAPTURE) == 0) {
+        int w, h;
+        SDL_GetWindowSize(window, &w, &h);
+        if (x < 0 || y < 0 || x >= w || y >= h) {
+            inWindow = SDL_FALSE;
+        }
     }
 
-/* Linux doesn't give you mouse events outside your window unless you grab
-   the pointer.
-
-   Windows doesn't give you mouse events outside your window unless you call
-   SetCapture().
-
-   Both of these are slightly scary changes, so for now we'll punt and if the
-   mouse leaves the window you'll lose mouse focus and reset button state.
-*/
-#ifdef SUPPORT_DRAG_OUTSIDE_WINDOW
-    if (!inWindow && !buttonstate) {
-#else
     if (!inWindow) {
-#endif
         if (window == mouse->focus) {
 #ifdef DEBUG_MOUSE
             printf("Mouse left window, synthesizing move & focus lost event\n");
@@ -204,7 +191,6 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
     int posted;
     int xrel;
     int yrel;
-    int x_max = 0, y_max = 0;
 
     if (mouse->relative_mode_warp) {
         int center_x = 0, center_y = 0;
@@ -246,24 +232,29 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
         mouse->y += yrel;
     }
 
-    /* !!! FIXME: shouldn't this be (window) instead of (mouse->focus)? */
-    SDL_GetWindowSize(mouse->focus, &x_max, &y_max);
-    --x_max;
-    --y_max;
+    /* make sure that the pointers find themselves inside the windows,
+       unless we have the mouse captured. */
+    if ((window->flags & SDL_WINDOW_MOUSE_CAPTURE) == 0) {
+        int x_max = 0, y_max = 0;
 
-    /* make sure that the pointers find themselves inside the windows */
-    if (mouse->x > x_max) {
-        mouse->x = x_max;
-    }
-    if (mouse->x < 0) {
-        mouse->x = 0;
-    }
+        // !!! FIXME: shouldn't this be (window) instead of (mouse->focus)?
+        SDL_GetWindowSize(mouse->focus, &x_max, &y_max);
+        --x_max;
+        --y_max;
 
-    if (mouse->y > y_max) {
-        mouse->y = y_max;
-    }
-    if (mouse->y < 0) {
-        mouse->y = 0;
+        if (mouse->x > x_max) {
+            mouse->x = x_max;
+        }
+        if (mouse->x < 0) {
+            mouse->x = 0;
+        }
+
+        if (mouse->y > y_max) {
+            mouse->y = y_max;
+        }
+        if (mouse->y < 0) {
+            mouse->y = 0;
+        }
     }
 
     mouse->xdelta += xrel;
@@ -426,6 +417,7 @@ SDL_MouseQuit(void)
     SDL_Cursor *cursor, *next;
     SDL_Mouse *mouse = SDL_GetMouse();
 
+    SDL_CaptureMouse(SDL_FALSE);
     SDL_SetRelativeMouseMode(SDL_FALSE);
     SDL_ShowCursor(1);
 
@@ -571,6 +563,42 @@ SDL_GetRelativeMouseMode()
 
     return mouse->relative_mode;
 }
+
+int
+SDL_CaptureMouse(SDL_bool enabled)
+{
+    SDL_Mouse *mouse = SDL_GetMouse();
+    SDL_Window *focusWindow;
+    SDL_bool isCaptured;
+
+    if (!mouse->CaptureMouse) {
+        return SDL_Unsupported();
+    }
+
+    focusWindow = SDL_GetKeyboardFocus();
+
+    isCaptured = focusWindow && (focusWindow->flags & SDL_WINDOW_MOUSE_CAPTURE);
+    if (isCaptured == enabled) {
+        return 0;  /* already done! */
+    }
+
+    if (enabled) {
+        if (!focusWindow) {
+            return SDL_SetError("No window has focus");
+        } else if (mouse->CaptureMouse(focusWindow) == -1) {
+            return -1;  /* CaptureMouse() should call SetError */
+        }
+        focusWindow->flags |= SDL_WINDOW_MOUSE_CAPTURE;
+    } else {
+        if (mouse->CaptureMouse(NULL) == -1) {
+            return -1;  /* CaptureMouse() should call SetError */
+        }
+        focusWindow->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
+    }
+
+    return 0;
+}
+
 
 SDL_Cursor *
 SDL_CreateCursor(const Uint8 * data, const Uint8 * mask,
