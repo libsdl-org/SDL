@@ -215,8 +215,8 @@ struct SDL_VideoDevice
     SDL_ShapeDriver shape_driver;
 
     /* Get some platform dependent window information */
-      SDL_bool(*GetWindowWMInfo) (_THIS, SDL_Window * window,
-                                  struct SDL_SysWMinfo * info);
+    SDL_bool(*GetWindowWMInfo) (_THIS, SDL_Window * window,
+                                struct SDL_SysWMinfo * info);
 
     /* * * */
     /*
