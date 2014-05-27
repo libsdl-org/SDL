@@ -45,6 +45,7 @@ typedef enum
     PendingWindowOperation pendingWindowOperation;
     BOOL isMoving;
     int pendingWindowWarpX, pendingWindowWarpY;
+    BOOL isDragAreaRunning;
 }
 
 -(void) listen:(SDL_WindowData *) data;
@@ -74,6 +75,9 @@ typedef enum
 -(void) windowWillExitFullScreen:(NSNotification *) aNotification;
 -(void) windowDidExitFullScreen:(NSNotification *) aNotification;
 -(NSApplicationPresentationOptions)window:(NSWindow *)window willUseFullScreenPresentationOptions:(NSApplicationPresentationOptions)proposedOptions;
+
+/* See if event is in a drag area, toggle on window dragging. */
+-(BOOL) processDragArea:(NSEvent *)theEvent;
 
 /* Window event handling */
 -(void) mouseDown:(NSEvent *) theEvent;
@@ -115,6 +119,7 @@ struct SDL_WindowData
     SDL_bool inWindowMove;
     Cocoa_WindowListener *listener;
     struct SDL_VideoData *videodata;
+    NSView *dragarea;
 };
 
 extern int Cocoa_CreateWindow(_THIS, SDL_Window * window);
@@ -138,8 +143,8 @@ extern int Cocoa_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * r
 extern int Cocoa_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp);
 extern void Cocoa_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed);
 extern void Cocoa_DestroyWindow(_THIS, SDL_Window * window);
-extern SDL_bool Cocoa_GetWindowWMInfo(_THIS, SDL_Window * window,
-                                      struct SDL_SysWMinfo *info);
+extern SDL_bool Cocoa_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info);
+extern int Cocoa_SetWindowDragAreas(SDL_Window *window, const SDL_Rect *areas, int num_areas);
 
 #endif /* _SDL_cocoawindow_h */
 

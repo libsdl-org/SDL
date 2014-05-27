@@ -108,6 +108,7 @@ Cocoa_CreateDevice(int devindex)
     device->SetWindowGrab = Cocoa_SetWindowGrab;
     device->DestroyWindow = Cocoa_DestroyWindow;
     device->GetWindowWMInfo = Cocoa_GetWindowWMInfo;
+    device->SetWindowDragAreas = Cocoa_SetWindowDragAreas;
 
     device->shape_driver.CreateShaper = Cocoa_CreateShaper;
     device->shape_driver.SetWindowShape = Cocoa_SetWindowShape;

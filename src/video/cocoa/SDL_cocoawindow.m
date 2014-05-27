@@ -180,6 +180,7 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
     inFullscreenTransition = NO;
     pendingWindowOperation = PENDING_OPERATION_NONE;
     isMoving = NO;
+    isDragAreaRunning = NO;
 
     center = [NSNotificationCenter defaultCenter];
 
@@ -656,9 +657,45 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
     /*NSLog(@"doCommandBySelector: %@\n", NSStringFromSelector(aSelector));*/
 }
 
+- (BOOL)processDragArea:(NSEvent *)theEvent
+{
+    const int num_areas = _data->window->num_drag_areas;
+
+    SDL_assert(isDragAreaRunning == [_data->nswindow isMovableByWindowBackground]);
+    SDL_assert((num_areas > 0) || !isDragAreaRunning);
+
+    if (num_areas > 0) {  /* if no drag areas, skip this. */
+        int i;
+        const NSPoint location = [theEvent locationInWindow];
+        const SDL_Point point = { (int) location.x, _data->window->h - (((int) location.y)-1) };
+        const SDL_Rect *areas = _data->window->drag_areas;
+        for (i = 0; i < num_areas; i++) {
+            if (SDL_PointInRect(&point, &areas[i])) {
+                if (!isDragAreaRunning) {
+                    isDragAreaRunning = YES;
+                    [_data->nswindow setMovableByWindowBackground:YES];
+                }
+                return YES;  /* started a new drag! */
+            }
+        }
+    }
+
+    if (isDragAreaRunning) {
+        isDragAreaRunning = NO;
+        [_data->nswindow setMovableByWindowBackground:NO];
+        return YES;  /* was dragging, drop event. */
+    }
+
+    return NO;  /* not a drag area, carry on. */
+}
+
 - (void)mouseDown:(NSEvent *)theEvent
 {
     int button;
+
+    if ([self processDragArea:theEvent]) {
+        return;  /* dragging, drop event. */
+    }
 
     switch ([theEvent buttonNumber]) {
     case 0:
@@ -698,6 +735,10 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 {
     int button;
 
+    if ([self processDragArea:theEvent]) {
+        return;  /* stopped dragging, drop event. */
+    }
+
     switch ([theEvent buttonNumber]) {
     case 0:
         if (wasCtrlLeft) {
@@ -736,6 +777,10 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
     SDL_Window *window = _data->window;
     NSPoint point;
     int x, y;
+
+    if ([self processDragArea:theEvent]) {
+        return;  /* dragging, drop event. */
+    }
 
     if (mouse->relative_mode) {
         return;
@@ -883,12 +928,21 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 
 /* The default implementation doesn't pass rightMouseDown to responder chain */
 - (void)rightMouseDown:(NSEvent *)theEvent;
+- (BOOL)mouseDownCanMoveWindow;
 @end
 
 @implementation SDLView
 - (void)rightMouseDown:(NSEvent *)theEvent
 {
     [[self nextResponder] rightMouseDown:theEvent];
+}
+
+- (BOOL)mouseDownCanMoveWindow
+{
+    /* Always say YES, but this doesn't do anything until we call
+       -[NSWindow setMovableByWindowBackground:YES], which we ninja-toggle
+       during mouse events when we're using a drag area. */
+    return YES;
 }
 
 - (void)resetCursorRects
@@ -1542,6 +1596,12 @@ Cocoa_SetWindowFullscreenSpace(SDL_Window * window, SDL_bool state)
     [pool release];
 
     return succeeded;
+}
+
+int
+Cocoa_SetWindowDragAreas(SDL_Window * window, const SDL_Rect *areas, int num_areas)
+{
+    return 0;  /* just succeed, the real work is done elsewhere. */
 }
 
 #endif /* SDL_VIDEO_DRIVER_COCOA */

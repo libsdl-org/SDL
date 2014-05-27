@@ -792,6 +792,44 @@ extern DECLSPEC int SDLCALL SDL_GetWindowGammaRamp(SDL_Window * window,
                                                    Uint16 * blue);
 
 /**
+ *  \brief Define regions of a window that can be used to drag it.
+ *
+ *  Normally windows are dragged by decorations provided by the system
+ *  window manager (usually, a title bar), but for some apps, it makes sense
+ *  to drag them from somewhere else inside the window itself; for example,
+ *  one might have a borderless window that wants to be draggable from any
+ *  part, or simulate its own title bar, etc.
+ *
+ *  This method designates pieces of a given window as "drag areas," which
+ *  will move the window when the user drags with his mouse, as if she had
+ *  used the titlebar.
+ *
+ *  You may specify multiple drag areas, disconnected or overlapping. This
+ *  function accepts an array of rectangles. Each call to this function will
+ *  replace any previously-defined drag areas. To disable drag areas on a
+ *  window, call this function with a NULL array of zero elements.
+ *
+ *  Drag areas do not automatically resize. If your window changes dimensions
+ *  you should plan to re-call this function with new drag areas if
+ *  appropriate.
+ *
+ *  Mouse input may not be delivered to your application if it is within
+ *  a drag area; the OS will often apply that input to moving the window and
+ *  not deliver it to the application.
+ *
+ *  Platforms that don't support this functionality will return -1
+ *  unconditionally, even if you're attempting to disable drag areas.
+ *
+ *  \param window The window to set drag areas on.
+ *  \param areas An array of SDL_Rects containing num_areas elements.
+ *  \param num_areas The number of elements in the areas parameter.
+ *  \return 0 on success, -1 on error (including unsupported).
+ */
+extern DECLSPEC int SDLCALL SDL_SetWindowDragAreas(SDL_Window * window,
+                                                   const SDL_Rect *areas,
+                                                   int num_areas);
+
+/**
  *  \brief Destroy a window.
  */
 extern DECLSPEC void SDLCALL SDL_DestroyWindow(SDL_Window * window);

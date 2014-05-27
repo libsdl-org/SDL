@@ -12,6 +12,7 @@ TARGETS = \
 	loopwave$(EXE) \
 	testaudioinfo$(EXE) \
 	testautomation$(EXE) \
+	testdragareas$(EXE) \
 	testdraw2$(EXE) \
 	testdrawchessboard$(EXE) \
 	testdropfile$(EXE) \
@@ -106,6 +107,9 @@ testintersections$(EXE): $(srcdir)/testintersections.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testrelative$(EXE): $(srcdir)/testrelative.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testdragareas$(EXE): $(srcdir)/testdragareas.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testdraw2$(EXE): $(srcdir)/testdraw2.c

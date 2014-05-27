@@ -1410,6 +1410,11 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
         SDL_SetWindowIcon(window, icon);
         SDL_FreeSurface(icon);
     }
+
+    if (window->num_drag_areas > 0) {
+        _this->SetWindowDragAreas(window, window->drag_areas, window->num_drag_areas);
+    }
+
     SDL_FinishWindowCreation(window, flags);
 
     return 0;
@@ -2304,6 +2309,8 @@ SDL_DestroyWindow(SDL_Window * window)
     } else {
         _this->windows = window->next;
     }
+
+    SDL_free(window->drag_areas);
 
     SDL_free(window);
 }
@@ -3378,6 +3385,36 @@ SDL_ShouldAllowTopmost(void)
         }
     }
     return SDL_TRUE;
+}
+
+int
+SDL_SetWindowDragAreas(SDL_Window * window, const SDL_Rect *_areas, int num_areas)
+{
+    SDL_Rect *areas = NULL;
+
+    CHECK_WINDOW_MAGIC(window, -1);
+
+    if (!_this->SetWindowDragAreas) {
+        return SDL_Unsupported();
+    }
+
+    if (num_areas > 0) {
+        const size_t len = sizeof (SDL_Rect) * num_areas;
+        areas = (SDL_Rect *) SDL_malloc(len);
+        if (!areas) {
+            return SDL_OutOfMemory();
+        }
+        SDL_memcpy(areas, _areas, len);
+    }
+
+    if (_this->SetWindowDragAreas(window, areas, num_areas) == -1) {
+        SDL_free(areas);
+        return -1;
+    }
+
+    SDL_free(window->drag_areas);
+    window->drag_areas = areas;
+    window->num_drag_areas = num_areas;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
