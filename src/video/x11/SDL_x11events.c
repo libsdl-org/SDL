@@ -40,6 +40,10 @@
 
 #include <stdio.h>
 
+#ifndef _NET_WM_MOVERESIZE_MOVE
+#define _NET_WM_MOVERESIZE_MOVE 8
+#endif
+
 typedef struct {
     unsigned char *data;
     int format, count;
@@ -290,7 +294,7 @@ InitiateWindowMove(_THIS, const SDL_WindowData *data, const SDL_Point *point)
     evt.xclient.format = 32;
     evt.xclient.data.l[0] = window->x + point->x;
     evt.xclient.data.l[1] = window->y + point->y;
-    evt.xclient.data.l[2] = 8; /* _NET_WM_MOVERESIZE_MOVE */  /* !!! FIXME: hardcoded 8? */
+    evt.xclient.data.l[2] = _NET_WM_MOVERESIZE_MOVE;
     evt.xclient.data.l[3] = Button1;
     evt.xclient.data.l[4] = 0;
     X11_XSendEvent(display, DefaultRootWindow(display), False, SubstructureRedirectMask | SubstructureNotifyMask, &evt);
