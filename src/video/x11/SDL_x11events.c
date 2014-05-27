@@ -273,27 +273,24 @@ X11_DispatchUnmapNotify(SDL_WindowData *data)
 }
 
 static void
-InitiateWindowMove(SDL_Window *window)
+InitiateWindowMove(_THIS, const SDL_WindowData *data, const SDL_Point *point)
 {
-    SDL_SysWMinfo info;
-    SDL_VERSION(&info.version);
-    SDL_GetWindowWMInfo(window, &info);
-    Display *display = info.info.x11.display;
+    SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
+    SDL_Window* window = data->window;
+    Display *display = viddata->display;
 
-    int bx, by, dx, dy;
-    SDL_GetWindowPosition(window, &bx, &by);
-    SDL_GetMouseState(&dx, &dy);
+    /* !!! FIXME: we need to regrab this if necessary when the drag is done. */
     X11_XUngrabPointer(display, 0L);
     X11_XFlush(display);
 
     XEvent evt;
     evt.xclient.type = ClientMessage;
-    evt.xclient.window = info.info.x11.window;
+    evt.xclient.window = data->xwindow;
     evt.xclient.message_type = X11_XInternAtom(display, "_NET_WM_MOVERESIZE", False);
     evt.xclient.format = 32;
-    evt.xclient.data.l[0] = bx + dx;
-    evt.xclient.data.l[1] = by + dy;
-    evt.xclient.data.l[2] = 8; /* _NET_WM_MOVERESIZE_MOVE */
+    evt.xclient.data.l[0] = window->x + point->x;
+    evt.xclient.data.l[1] = window->y + point->y;
+    evt.xclient.data.l[2] = 8; /* _NET_WM_MOVERESIZE_MOVE */  /* !!! FIXME: hardcoded 8? */
     evt.xclient.data.l[3] = Button1;
     evt.xclient.data.l[4] = 0;
     X11_XSendEvent(display, DefaultRootWindow(display), False, SubstructureRedirectMask | SubstructureNotifyMask, &evt);
@@ -301,20 +298,26 @@ InitiateWindowMove(SDL_Window *window)
     X11_XSync(display, 0);
 }
 
-static void
-ProcessDragArea(SDL_WindowData* data)
+static SDL_bool
+ProcessDragArea(_THIS, const SDL_WindowData *data, const XEvent *xev)
 {
-    SDL_Window* window = data->window;
-    SDL_Mouse* mouse = SDL_GetMouse();
-    int i;
+    const SDL_Window *window = data->window;
     const int num_areas = window->num_drag_areas;
-    const SDL_Point point = {mouse->x, mouse->y};
-    const SDL_Rect *areas = window->drag_areas;
-    for(i = 0;i < num_areas;++i) {
-        if (SDL_PointInRect(&point, &areas[i])) {
-            InitiateWindowMove(window);
+
+    if (num_areas > 0) {
+        const SDL_Point point = { xev->xbutton.x, xev->xbutton.y };
+        const SDL_Rect *areas = window->drag_areas;
+        int i;
+
+        for (i = 0; i < num_areas; i++) {
+            if (SDL_PointInRect(&point, &areas[i])) {
+                InitiateWindowMove(_this, data, &point);
+                return SDL_TRUE;  /* dragging, drop this event. */
+            }
         }
     }
+
+    return SDL_FALSE;  /* not a drag area. */
 }
 
 static void
@@ -754,8 +757,10 @@ X11_DispatchEvent(_THIS)
             if (X11_IsWheelEvent(display,&xevent,&ticks)) {
                 SDL_SendMouseWheel(data->window, 0, 0, ticks);
             } else {
-                if(xevent.xbutton.button == SDL_BUTTON_LEFT) {
-                    ProcessDragArea(data);
+                if(xevent.xbutton.button == Button1) {
+                    if (ProcessDragArea(_this, data, &xevent)) {
+                        break;  /* don't pass this event on to app. */
+                    }
                 }
                 SDL_SendMouseButton(data->window, 0, SDL_PRESSED, xevent.xbutton.button);
             }
