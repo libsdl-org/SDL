@@ -93,6 +93,7 @@ extern void X11_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed);
 extern void X11_DestroyWindow(_THIS, SDL_Window * window);
 extern SDL_bool X11_GetWindowWMInfo(_THIS, SDL_Window * window,
                                     struct SDL_SysWMinfo *info);
+extern int X11_SetWindowDragAreas(SDL_Window *window, const SDL_Rect *areas, int num_areas);
 
 #endif /* _SDL_x11window_h */
 

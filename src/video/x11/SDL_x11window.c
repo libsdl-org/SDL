@@ -1444,6 +1444,12 @@ X11_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
     }
 }
 
+int
+X11_SetWindowDragAreas(SDL_Window *window, const SDL_Rect *areas, int num_areas)
+{
+    return 0; // nothing to do, will be handled in event handler
+}
+
 #endif /* SDL_VIDEO_DRIVER_X11 */
 
 /* vi: set ts=4 sw=4 expandtab: */

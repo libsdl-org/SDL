@@ -457,6 +457,7 @@ X11_CreateDevice(int devindex)
     device->UpdateWindowFramebuffer = X11_UpdateWindowFramebuffer;
     device->DestroyWindowFramebuffer = X11_DestroyWindowFramebuffer;
     device->GetWindowWMInfo = X11_GetWindowWMInfo;
+    device->SetWindowDragAreas = X11_SetWindowDragAreas;
 
     device->shape_driver.CreateShaper = X11_CreateShaper;
     device->shape_driver.SetWindowShape = X11_SetWindowShape;
