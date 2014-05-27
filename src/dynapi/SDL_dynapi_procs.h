@@ -613,3 +613,4 @@ SDL_DYNAPI_PROC(const char*,SDL_WinRTGetFSPathUTF8,(SDL_WinRT_Path a),(a),return
 SDL_DYNAPI_PROC(int,SDL_WinRTRunApp,(int a, char **b, void *c),(a,b,c),return)
 #endif
 SDL_DYNAPI_PROC(int,SDL_CaptureMouse,(SDL_bool a),(a),return)
+SDL_DYNAPI_PROC(int,SDL_SetWindowDragAreas,(SDL_Window *a, const SDL_Rect *b, int c),(a,b,c),return)

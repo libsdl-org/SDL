@@ -55,6 +55,7 @@ test/loopwave
 test/testatomic
 test/testaudioinfo
 test/testautomation
+test/testdragareas
 test/testdraw2
 test/testerror
 test/testfile
