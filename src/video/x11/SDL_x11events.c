@@ -303,21 +303,16 @@ InitiateWindowMove(_THIS, const SDL_WindowData *data, const SDL_Point *point)
 }
 
 static SDL_bool
-ProcessDragArea(_THIS, const SDL_WindowData *data, const XEvent *xev)
+ProcessHitTest(_THIS, const SDL_WindowData *data, const XEvent *xev)
 {
-    const SDL_Window *window = data->window;
-    const int num_areas = window->num_drag_areas;
+    SDL_Window *window = data->window;
 
-    if (num_areas > 0) {
+    if (window->hit_test) {
         const SDL_Point point = { xev->xbutton.x, xev->xbutton.y };
-        const SDL_Rect *areas = window->drag_areas;
-        int i;
-
-        for (i = 0; i < num_areas; i++) {
-            if (SDL_PointInRect(&point, &areas[i])) {
-                InitiateWindowMove(_this, data, &point);
-                return SDL_TRUE;  /* dragging, drop this event. */
-            }
+        const SDL_HitTestResult rc = window->hit_test(window, &point, window->hit_test_data);
+        if (rc == SDL_HITTEST_DRAGGABLE) {
+            InitiateWindowMove(_this, data, &point);
+            return SDL_TRUE;  /* dragging, drop this event. */
         }
     }
 
@@ -762,7 +757,7 @@ X11_DispatchEvent(_THIS)
                 SDL_SendMouseWheel(data->window, 0, 0, ticks);
             } else {
                 if(xevent.xbutton.button == Button1) {
-                    if (ProcessDragArea(_this, data, &xevent)) {
+                    if (ProcessHitTest(_this, data, &xevent)) {
                         break;  /* don't pass this event on to app. */
                     }
                 }

@@ -1445,9 +1445,9 @@ X11_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
 }
 
 int
-X11_SetWindowDragAreas(SDL_Window *window, const SDL_Rect *areas, int num_areas)
+X11_SetWindowHitTest(SDL_Window *window, SDL_bool enabled)
 {
-    return 0; // nothing to do, will be handled in event handler
+    return 0;  /* just succeed, the real work is done elsewhere. */
 }
 
 #endif /* SDL_VIDEO_DRIVER_X11 */

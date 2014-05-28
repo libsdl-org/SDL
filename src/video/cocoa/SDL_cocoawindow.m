@@ -657,26 +657,20 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
     /*NSLog(@"doCommandBySelector: %@\n", NSStringFromSelector(aSelector));*/
 }
 
-- (BOOL)processDragArea:(NSEvent *)theEvent
+- (BOOL)processHitTest:(NSEvent *)theEvent
 {
-    const int num_areas = _data->window->num_drag_areas;
-
     SDL_assert(isDragAreaRunning == [_data->nswindow isMovableByWindowBackground]);
-    SDL_assert((num_areas > 0) || !isDragAreaRunning);
 
-    if (num_areas > 0) {  /* if no drag areas, skip this. */
-        int i;
+    if (_data->window->hit_test) {  /* if no hit-test, skip this. */
         const NSPoint location = [theEvent locationInWindow];
         const SDL_Point point = { (int) location.x, _data->window->h - (((int) location.y)-1) };
-        const SDL_Rect *areas = _data->window->drag_areas;
-        for (i = 0; i < num_areas; i++) {
-            if (SDL_PointInRect(&point, &areas[i])) {
-                if (!isDragAreaRunning) {
-                    isDragAreaRunning = YES;
-                    [_data->nswindow setMovableByWindowBackground:YES];
-                }
-                return YES;  /* started a new drag! */
+        const SDL_HitTestResult rc = _data->window->hit_test(_data->window, &point, _data->window->hit_test_data);
+        if (rc == SDL_HITTEST_DRAGGABLE) {
+            if (!isDragAreaRunning) {
+                isDragAreaRunning = YES;
+                [_data->nswindow setMovableByWindowBackground:YES];
             }
+            return YES;  /* dragging! */
         }
     }
 
@@ -686,14 +680,14 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
         return YES;  /* was dragging, drop event. */
     }
 
-    return NO;  /* not a drag area, carry on. */
+    return NO;  /* not a special area, carry on. */
 }
 
 - (void)mouseDown:(NSEvent *)theEvent
 {
     int button;
 
-    if ([self processDragArea:theEvent]) {
+    if ([self processHitTest:theEvent]) {
         return;  /* dragging, drop event. */
     }
 
@@ -735,7 +729,7 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 {
     int button;
 
-    if ([self processDragArea:theEvent]) {
+    if ([self processHitTest:theEvent]) {
         return;  /* stopped dragging, drop event. */
     }
 
@@ -778,7 +772,7 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
     NSPoint point;
     int x, y;
 
-    if ([self processDragArea:theEvent]) {
+    if ([self processHitTest:theEvent]) {
         return;  /* dragging, drop event. */
     }
 
@@ -1599,7 +1593,7 @@ Cocoa_SetWindowFullscreenSpace(SDL_Window * window, SDL_bool state)
 }
 
 int
-Cocoa_SetWindowDragAreas(SDL_Window * window, const SDL_Rect *areas, int num_areas)
+Cocoa_SetWindowHitTest(SDL_Window * window, SDL_bool enabled)
 {
     return 0;  /* just succeed, the real work is done elsewhere. */
 }
