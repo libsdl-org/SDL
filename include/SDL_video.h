@@ -791,43 +791,51 @@ extern DECLSPEC int SDLCALL SDL_GetWindowGammaRamp(SDL_Window * window,
                                                    Uint16 * green,
                                                    Uint16 * blue);
 
+typedef enum
+{
+    SDL_HITTEST_NORMAL,  /**< Region is normal. No special properties. */
+    SDL_HITTEST_DRAGGABLE,  /**< Region can drag entire window. */
+    /* !!! FIXME: resize enums here. */
+} SDL_HitTestResult;
+
+typedef SDL_HitTestResult (SDLCALL *SDL_HitTest)(SDL_Window *win,
+                                                 const SDL_Point *area,
+                                                 void *data);
+
 /**
- *  \brief Define regions of a window that can be used to drag it.
+ *  \brief Provide a callback that decides if a window region has special properties.
  *
- *  Normally windows are dragged by decorations provided by the system
- *  window manager (usually, a title bar), but for some apps, it makes sense
- *  to drag them from somewhere else inside the window itself; for example,
- *  one might have a borderless window that wants to be draggable from any
- *  part, or simulate its own title bar, etc.
+ *  Normally windows are dragged and resized by decorations provided by the
+ *  system window manager (a title bar, borders, etc), but for some apps, it
+ *  makes sense to drag them from somewhere else inside the window itself; for
+ *  example, one might have a borderless window that wants to be draggable
+ *  from any part, or simulate its own title bar, etc.
  *
- *  This method designates pieces of a given window as "drag areas," which
- *  will move the window when the user drags with his mouse, as if she had
- *  used the titlebar.
- *
- *  You may specify multiple drag areas, disconnected or overlapping. This
- *  function accepts an array of rectangles. Each call to this function will
- *  replace any previously-defined drag areas. To disable drag areas on a
- *  window, call this function with a NULL array of zero elements.
- *
- *  Drag areas do not automatically resize. If your window changes dimensions
- *  you should plan to re-call this function with new drag areas if
- *  appropriate.
+ *  This function lets the app provide a callback that designates pieces of
+ *  a given window as special. This callback is run during event processing
+ *  if we need to tell the OS to treat a region of the window specially; the
+ *  use of this callback is known as "hit testing."
  *
  *  Mouse input may not be delivered to your application if it is within
- *  a drag area; the OS will often apply that input to moving the window and
- *  not deliver it to the application.
+ *  a special area; the OS will often apply that input to moving the window or
+ *  resizing the window and not deliver it to the application.
+ *
+ *  Specifying NULL for a callback disables hit-testing. Hit-testing is
+ *  disabled by default.
  *
  *  Platforms that don't support this functionality will return -1
- *  unconditionally, even if you're attempting to disable drag areas.
+ *  unconditionally, even if you're attempting to disable hit-testing.
  *
- *  \param window The window to set drag areas on.
- *  \param areas An array of SDL_Rects containing num_areas elements.
- *  \param num_areas The number of elements in the areas parameter.
+ *  Your callback may fire at any time.
+ *
+ *  \param window The window to set hit-testing on.
+ *  \param callback The callback to call when doing a hit-test.
+ *  \param callback_data An app-defined void pointer passed to the callback.
  *  \return 0 on success, -1 on error (including unsupported).
  */
-extern DECLSPEC int SDLCALL SDL_SetWindowDragAreas(SDL_Window * window,
-                                                   const SDL_Rect *areas,
-                                                   int num_areas);
+extern DECLSPEC int SDLCALL SDL_SetWindowHitTest(SDL_Window * window,
+                                                 SDL_HitTest callback,
+                                                 void *callback_data);
 
 /**
  *  \brief Destroy a window.

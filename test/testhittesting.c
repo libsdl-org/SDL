@@ -3,28 +3,42 @@
 
 /* !!! FIXME: rewrite this to be wired in to test framework. */
 
+const SDL_Rect drag_areas[] = {
+    { 20, 20, 100, 100 },
+    { 200, 70, 100, 100 },
+    { 400, 90, 100, 100 }
+};
+
+static const SDL_Rect *areas = drag_areas;
+static int numareas = SDL_arraysize(drag_areas);
+
+static SDL_HitTestResult
+hitTest(SDL_Window *window, const SDL_Point *pt, void *data)
+{
+    int i;
+    for (i = 0; i < numareas; i++) {
+        if (SDL_PointInRect(pt, &areas[i])) {
+            return SDL_HITTEST_DRAGGABLE;
+        }
+    }
+
+    return SDL_HITTEST_NORMAL;
+}
+
+
 int main(int argc, char **argv)
 {
     int done = 0;
     SDL_Window *window;
     SDL_Renderer *renderer;
 
-    const SDL_Rect drag_areas[] = {
-        { 20, 20, 100, 100 },
-        { 200, 70, 100, 100 },
-        { 400, 90, 100, 100 }
-    };
-
-    const SDL_Rect *areas = drag_areas;
-    int numareas = SDL_arraysize(drag_areas);
-
     /* !!! FIXME: check for errors. */
     SDL_Init(SDL_INIT_VIDEO);
     window = SDL_CreateWindow("Drag the red boxes", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 480, SDL_WINDOW_BORDERLESS);
     renderer = SDL_CreateRenderer(window, -1, 0);
 
-    if (SDL_SetWindowDragAreas(window, areas, numareas) == -1) {
-        fprintf(stderr, "Setting drag areas failed!\n");
+    if (SDL_SetWindowHitTest(window, hitTest, NULL) == -1) {
+        fprintf(stderr, "Enabling hit-testing failed!\n");
         SDL_Quit();
         return 1;
     }
@@ -68,11 +82,6 @@ int main(int argc, char **argv)
                         } else {
                             areas = NULL;
                             numareas = 0;
-                        }
-                        if (SDL_SetWindowDragAreas(window, areas, numareas) == -1) {
-                            fprintf(stderr, "Setting drag areas failed!\n");
-                            SDL_Quit();
-                            return 1;
                         }
                     }
                     break;

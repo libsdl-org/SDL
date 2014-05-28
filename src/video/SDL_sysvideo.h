@@ -97,8 +97,8 @@ struct SDL_Window
 
     SDL_WindowShaper *shaper;
 
-    int num_drag_areas;
-    SDL_Rect *drag_areas;
+    SDL_HitTest hit_test;
+    void *hit_test_data;
 
     SDL_WindowUserData *data;
 
@@ -264,8 +264,8 @@ struct SDL_VideoDevice
     /* MessageBox */
     int (*ShowMessageBox) (_THIS, const SDL_MessageBoxData *messageboxdata, int *buttonid);
 
-    /* Drag areas. Note that (areas) and (num_areas) are also copied to the SDL_Window for you after this call. */
-    int (*SetWindowDragAreas)(SDL_Window * window, const SDL_Rect *areas, int num_areas);
+    /* Hit-testing */
+    int (*SetWindowHitTest)(SDL_Window * window, SDL_bool enabled);
 
     /* * * */
     /* Data common to all drivers */
