@@ -18,10 +18,12 @@ hitTest(SDL_Window *window, const SDL_Point *pt, void *data)
     int i;
     for (i = 0; i < numareas; i++) {
         if (SDL_PointInRect(pt, &areas[i])) {
+            printf("HIT-TEST: DRAGGABLE\n");
             return SDL_HITTEST_DRAGGABLE;
         }
     }
 
+    printf("HIT-TEST: NORMAL\n");
     return SDL_HITTEST_NORMAL;
 }
 
