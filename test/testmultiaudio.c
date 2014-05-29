@@ -11,6 +11,8 @@
 */
 #include "SDL.h"
 
+#include <stdio.h> /* for fflush() and stdout */
+
 static SDL_AudioSpec spec;
 static Uint8 *sound = NULL;     /* Pointer to wave data */
 static Uint32 soundlen = 0;     /* Length of wave data */
