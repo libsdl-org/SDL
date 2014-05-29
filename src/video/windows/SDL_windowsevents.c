@@ -865,6 +865,21 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             return 0;
         }
         break;
+
+    case WM_NCHITTEST:
+        {
+            SDL_Window *window = data->window;
+            if (window->hit_test) {
+                const SDL_Point point = { (int) LOWORD(lParam), (int) HIWORD(lParam) };
+                const SDL_HitTestResult rc = window->hit_test(window, &point, window->hit_test_data);
+                if (rc == SDL_HITTEST_DRAGGABLE) {
+                    return HTCAPTION;
+                }
+                // if we didn't return, this will call DefWindowProc below.
+            }
+        }
+        break;
+
     }
 
     /* If there's a window proc, assume it's going to handle messages */

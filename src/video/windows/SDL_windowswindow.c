@@ -782,6 +782,12 @@ WIN_UpdateClipCursor(SDL_Window *window)
     }
 }
 
+int
+WIN_SetWindowHitTest(SDL_Window *window, SDL_bool enabled)
+{
+    return 0;  /* just succeed, the real work is done elsewhere. */
+}
+
 #endif /* SDL_VIDEO_DRIVER_WINDOWS */
 
 /* vi: set ts=4 sw=4 expandtab: */
