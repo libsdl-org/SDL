@@ -791,6 +791,11 @@ extern DECLSPEC int SDLCALL SDL_GetWindowGammaRamp(SDL_Window * window,
                                                    Uint16 * green,
                                                    Uint16 * blue);
 
+/**
+ *  \brief Possible return values from the SDL_HitTest callback.
+ *
+ *  \sa SDL_HitTest
+ */
 typedef enum
 {
     SDL_HITTEST_NORMAL,  /**< Region is normal. No special properties. */
@@ -798,6 +803,11 @@ typedef enum
     /* !!! FIXME: resize enums here. */
 } SDL_HitTestResult;
 
+/**
+ *  \brief Callback used for hit-testing.
+ *
+ *  \sa SDL_SetWindowHitTest
+ */
 typedef SDL_HitTestResult (SDLCALL *SDL_HitTest)(SDL_Window *win,
                                                  const SDL_Point *area,
                                                  void *data);
@@ -826,7 +836,13 @@ typedef SDL_HitTestResult (SDLCALL *SDL_HitTest)(SDL_Window *win,
  *  Platforms that don't support this functionality will return -1
  *  unconditionally, even if you're attempting to disable hit-testing.
  *
- *  Your callback may fire at any time.
+ *  Your callback may fire at any time, and its firing does not indicate any
+ *  specific behavior (for example, on Windows, this certainly might fire
+ *  when the OS is deciding whether to drag your window, but it fires for lots
+ *  of other reasons, too, some unrelated to anything you probably care about
+ *  _and when the mouse isn't actually at the location it is testing_).
+ *  Since this can fire at any time, you should try to keep your callback
+ *  efficient, devoid of allocations, etc.
  *
  *  \param window The window to set hit-testing on.
  *  \param callback The callback to call when doing a hit-test.
