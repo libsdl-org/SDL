@@ -297,24 +297,37 @@ public class SDLActivity extends Activity {
                                                int naxes, int nhats, int nballs);
     public static native int nativeRemoveJoystick(int device_id);
 
+    /**
+     * This method is called by SDL using JNI.
+     */
     public static void flipBuffers() {
         SDLActivity.nativeFlipBuffers();
     }
 
+    /**
+     * This method is called by SDL using JNI.
+     */
     public static boolean setActivityTitle(String title) {
         // Called from SDLMain() thread and can't directly affect the view
         return mSingleton.sendCommand(COMMAND_CHANGE_TITLE, title);
     }
 
+    /**
+     * This method is called by SDL using JNI.
+     */
     public static boolean sendMessage(int command, int param) {
         return mSingleton.sendCommand(command, Integer.valueOf(param));
     }
 
+    /**
+     * This method is called by SDL using JNI.
+     */
     public static Context getContext() {
         return mSingleton;
     }
 
     /**
+     * This method is called by SDL using JNI.
      * @return result of getSystemService(name) but executed on UI thread.
      */
     public Object getSystemServiceFromUiThread(final String name) {
@@ -380,16 +393,26 @@ public class SDLActivity extends Activity {
         }
     }
 
+    /**
+     * This method is called by SDL using JNI.
+     */
     public static boolean showTextInput(int x, int y, int w, int h) {
         // Transfer the task to the main thread as a Runnable
         return mSingleton.commandHandler.post(new ShowTextInputTask(x, y, w, h));
     }
-            
+
+    /**
+     * This method is called by SDL using JNI.
+     */
     public static Surface getNativeSurface() {
         return SDLActivity.mSurface.getNativeSurface();
     }
 
     // Audio
+
+    /**
+     * This method is called by SDL using JNI.
+     */
     public static int audioInit(int sampleRate, boolean is16Bit, boolean isStereo, int desiredFrames) {
         int channelConfig = isStereo ? AudioFormat.CHANNEL_CONFIGURATION_STEREO : AudioFormat.CHANNEL_CONFIGURATION_MONO;
         int audioFormat = is16Bit ? AudioFormat.ENCODING_PCM_16BIT : AudioFormat.ENCODING_PCM_8BIT;
@@ -423,7 +446,10 @@ public class SDLActivity extends Activity {
         
         return 0;
     }
-    
+
+    /**
+     * This method is called by SDL using JNI.
+     */
     public static void audioWriteShortBuffer(short[] buffer) {
         for (int i = 0; i < buffer.length; ) {
             int result = mAudioTrack.write(buffer, i, buffer.length - i);
@@ -441,7 +467,10 @@ public class SDLActivity extends Activity {
             }
         }
     }
-    
+
+    /**
+     * This method is called by SDL using JNI.
+     */
     public static void audioWriteByteBuffer(byte[] buffer) {
         for (int i = 0; i < buffer.length; ) {
             int result = mAudioTrack.write(buffer, i, buffer.length - i);
@@ -460,6 +489,9 @@ public class SDLActivity extends Activity {
         }
     }
 
+    /**
+     * This method is called by SDL using JNI.
+     */
     public static void audioQuit() {
         if (mAudioTrack != null) {
             mAudioTrack.stop();
@@ -470,6 +502,7 @@ public class SDLActivity extends Activity {
     // Input
 
     /**
+     * This method is called by SDL using JNI.
      * @return an array which may be empty but is never null.
      */
     public static int[] inputGetInputDeviceIds(int sources) {
@@ -484,12 +517,15 @@ public class SDLActivity extends Activity {
         }
         return Arrays.copyOf(filtered, used);
     }
-            
+
     // Joystick glue code, just a series of stubs that redirect to the SDLJoystickHandler instance
     public static boolean handleJoystickMotionEvent(MotionEvent event) {
         return mJoystickHandler.handleMotionEvent(event);
     }
-    
+
+    /**
+     * This method is called by SDL using JNI.
+     */
     public static void pollInputDevices() {
         if (SDLActivity.mSDLThread != null) {
             mJoystickHandler.pollInputDevices();
