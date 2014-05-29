@@ -1018,12 +1018,12 @@ class SDLJoystickHandler_API12 extends SDLJoystickHandler {
                 if (device_id == deviceIds[j]) break;
             }
             if (j == deviceIds.length) {
-                removedDevices.add(device_id);
+                removedDevices.add(Integer.valueOf(device_id));
             }
         }
             
         for(int i=0; i < removedDevices.size(); i++) {
-            int device_id = removedDevices.get(i);
+            int device_id = removedDevices.get(i).intValue();
             SDLActivity.nativeRemoveJoystick(device_id);
             for (int j=0; j < mJoysticks.size(); j++) {
                 if (mJoysticks.get(j).device_id == device_id) {
