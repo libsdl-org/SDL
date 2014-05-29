@@ -109,7 +109,7 @@ WatchJoystick(SDL_Joystick * joystick)
     SDL_Rect dst;
     int s, _s;
     Uint8 alpha=200, alpha_step = -1;
-    Uint32 alpha_ticks;
+    Uint32 alpha_ticks = 0;
     char mapping[4096], temp[4096];
     MappingStep *step, *prev_step;
     MappingStep steps[] = {
