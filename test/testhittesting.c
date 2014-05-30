@@ -18,12 +18,12 @@ hitTest(SDL_Window *window, const SDL_Point *pt, void *data)
     int i;
     for (i = 0; i < numareas; i++) {
         if (SDL_PointInRect(pt, &areas[i])) {
-            printf("HIT-TEST: DRAGGABLE\n");
+            SDL_Log("HIT-TEST: DRAGGABLE\n");
             return SDL_HITTEST_DRAGGABLE;
         }
     }
 
-    printf("HIT-TEST: NORMAL\n");
+    SDL_Log("HIT-TEST: NORMAL\n");
     return SDL_HITTEST_NORMAL;
 }
 
@@ -40,7 +40,7 @@ int main(int argc, char **argv)
     renderer = SDL_CreateRenderer(window, -1, 0);
 
     if (SDL_SetWindowHitTest(window, hitTest, NULL) == -1) {
-        fprintf(stderr, "Enabling hit-testing failed!\n");
+        SDL_Log("Enabling hit-testing failed!\n");
         SDL_Quit();
         return 1;
     }
@@ -61,16 +61,16 @@ int main(int argc, char **argv)
             switch (e.type)
             {
                 case SDL_MOUSEBUTTONDOWN:
-                    printf("button down!\n");
+                    SDL_Log("button down!\n");
                     break;
 
                 case SDL_MOUSEBUTTONUP:
-                    printf("button up!\n");
+                    SDL_Log("button up!\n");
                     break;
 
                 case SDL_WINDOWEVENT:
                     if (e.window.event == SDL_WINDOWEVENT_MOVED) {
-                        printf("Window event moved to (%d, %d)!\n", (int) e.window.data1, (int) e.window.data2);
+                        SDL_Log("Window event moved to (%d, %d)!\n", (int) e.window.data1, (int) e.window.data2);
                     }
                     break;
 
