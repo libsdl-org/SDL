@@ -30,6 +30,44 @@
 
 HCURSOR SDL_cursor = NULL;
 
+static int rawInputEnableCount = 0;
+
+static int 
+ToggleRawInput(SDL_bool enabled)
+{
+    RAWINPUTDEVICE rawMouse = { 0x01, 0x02, 0, NULL }; /* Mouse: UsagePage = 1, Usage = 2 */
+
+    if (enabled) {
+        rawInputEnableCount++;
+        if (rawInputEnableCount > 1) {
+            return 0;  /* already done. */
+        }
+    } else {
+        if (rawInputEnableCount == 0) {
+            return 0;  /* already done. */
+        }
+        rawInputEnableCount--;
+        if (rawInputEnableCount > 0) {
+            return 0;  /* not time to disable yet */
+        }
+    }
+
+    if (!enabled) {
+        rawMouse.dwFlags |= RIDEV_REMOVE;
+    }
+
+    /* (Un)register raw input for mice */
+    if (RegisterRawInputDevices(&rawMouse, 1, sizeof(RAWINPUTDEVICE)) == FALSE) {
+
+        /* Only return an error when registering. If we unregister and fail,
+           then it's probably that we unregistered twice. That's OK. */
+        if (enabled) {
+            return SDL_Unsupported();
+        }
+    }
+    return 0;
+}
+
 
 static SDL_Cursor *
 WIN_CreateDefaultCursor()
@@ -201,35 +239,25 @@ WIN_WarpMouse(SDL_Window * window, int x, int y)
 static int
 WIN_SetRelativeMouseMode(SDL_bool enabled)
 {
-    RAWINPUTDEVICE rawMouse = { 0x01, 0x02, 0, NULL }; /* Mouse: UsagePage = 1, Usage = 2 */
-
-    if (!enabled) {
-        rawMouse.dwFlags |= RIDEV_REMOVE;
-    }
-
-    /* (Un)register raw input for mice */
-    if (RegisterRawInputDevices(&rawMouse, 1, sizeof(RAWINPUTDEVICE)) == FALSE) {
-
-        /* Only return an error when registering. If we unregister and fail,
-           then it's probably that we unregistered twice. That's OK. */
-        if (enabled) {
-            return SDL_Unsupported();
-        }
-    }
-    return 0;
+    return ToggleRawInput(enabled);
 }
 
 static int
 WIN_CaptureMouse(SDL_Window *window)
 {
     if (!window) {
-        ReleaseCapture();
-    } else {
-        const SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-        SetCapture(data->hwnd);
+        SDL_Window *focusWin = SDL_GetKeyboardFocus();
+        if (focusWin) {
+            SDL_WindowData *data = (SDL_WindowData *)focusWin->driverdata;
+            WIN_OnWindowEnter(SDL_GetVideoDevice(), focusWin);  /* make sure WM_MOUSELEAVE messages are (re)enabled. */
+        }
     }
 
-    return 0;
+    /* While we were thinking of SetCapture() when designing this API in SDL,
+       we didn't count on the fact that SetCapture() only tracks while the
+       left mouse button is held down! Instead, we listen for raw mouse input
+       and manually query the mouse when it leaves the window. :/ */
+    return ToggleRawInput(window != NULL);
 }
 
 void
@@ -258,6 +286,11 @@ WIN_QuitMouse(_THIS)
         SDL_free(mouse->def_cursor);
         mouse->def_cursor = NULL;
         mouse->cur_cursor = NULL;
+    }
+
+    if (rawInputEnableCount) {  /* force RAWINPUT off here. */
+        rawInputEnableCount = 1;
+        ToggleRawInput(SDL_FALSE);
     }
 }
 
