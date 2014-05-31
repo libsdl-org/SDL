@@ -195,7 +195,7 @@ D3D_LoadDLL( void **pD3DDLL, IDirect3D9 **pDirect3D9Interface )
             HRESULT hr = Direct3DCreate9ExFunc(D3D_SDK_VERSION, &pDirect3D9ExInterface);
             if (SUCCEEDED(hr)) {
                 const GUID IDirect3D9_GUID = { 0x81bdcbca, 0x64d4, 0x426d, { 0xae, 0x8d, 0xad, 0x1, 0x47, 0xf4, 0x27, 0x5c } };
-                hr = IDirect3D9Ex_QueryInterface(pDirect3D9ExInterface, &IDirect3D9_GUID, (LPVOID)pDirect3D9Interface);
+                hr = IDirect3D9Ex_QueryInterface(pDirect3D9ExInterface, &IDirect3D9_GUID, (void**)pDirect3D9Interface);
                 IDirect3D9Ex_Release(pDirect3D9ExInterface);
                 if (SUCCEEDED(hr)) {
                     return SDL_TRUE;
