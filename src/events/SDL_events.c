@@ -550,7 +550,7 @@ SDL_DelEventWatch(SDL_EventFilter filter, void *userdata)
 void
 SDL_FilterEvents(SDL_EventFilter filter, void *userdata)
 {
-    if (SDL_LockMutex(SDL_EventQ.lock) == 0) {
+    if (SDL_EventQ.lock && SDL_LockMutex(SDL_EventQ.lock) == 0) {
         SDL_EventEntry *entry, *next;
         for (entry = SDL_EventQ.head; entry; entry = next) {
             next = entry->next;
