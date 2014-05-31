@@ -275,15 +275,25 @@ WIN_CheckAsyncMouseRelease( SDL_WindowData *data )
     mouseFlags = SDL_GetMouseState( NULL, NULL );
 
     keyState = GetAsyncKeyState( VK_LBUTTON );
-    WIN_CheckWParamMouseButton( ( keyState & 0x8000 ), ( mouseFlags & SDL_BUTTON_LMASK ), data, SDL_BUTTON_LEFT );
-    keyState = GetAsyncKeyState( VK_RBUTTON );
-    WIN_CheckWParamMouseButton( ( keyState & 0x8000 ), ( mouseFlags & SDL_BUTTON_RMASK ), data, SDL_BUTTON_RIGHT );
-    keyState = GetAsyncKeyState( VK_MBUTTON );
-    WIN_CheckWParamMouseButton( ( keyState & 0x8000 ), ( mouseFlags & SDL_BUTTON_MMASK ), data, SDL_BUTTON_MIDDLE );
-    keyState = GetAsyncKeyState( VK_XBUTTON1 );
-    WIN_CheckWParamMouseButton( ( keyState & 0x8000 ), ( mouseFlags & SDL_BUTTON_X1MASK ), data, SDL_BUTTON_X1 );
-    keyState = GetAsyncKeyState( VK_XBUTTON2 );
-    WIN_CheckWParamMouseButton( ( keyState & 0x8000 ), ( mouseFlags & SDL_BUTTON_X2MASK ), data, SDL_BUTTON_X2 );
+    if (!(keyState & 0x8000)) {
+        WIN_CheckWParamMouseButton(SDL_FALSE, (mouseFlags & SDL_BUTTON_LMASK), data, SDL_BUTTON_LEFT);
+    }
+    keyState = GetAsyncKeyState(VK_RBUTTON);
+    if (!(keyState & 0x8000)) {
+        WIN_CheckWParamMouseButton(SDL_FALSE, (mouseFlags & SDL_BUTTON_RMASK), data, SDL_BUTTON_RIGHT);
+    }
+    keyState = GetAsyncKeyState(VK_MBUTTON);
+    if (!(keyState & 0x8000)) {
+        WIN_CheckWParamMouseButton(SDL_FALSE, (mouseFlags & SDL_BUTTON_MMASK), data, SDL_BUTTON_MIDDLE);
+    }
+    keyState = GetAsyncKeyState(VK_XBUTTON1);
+    if (!(keyState & 0x8000)) {
+        WIN_CheckWParamMouseButton(SDL_FALSE, (mouseFlags & SDL_BUTTON_X1MASK), data, SDL_BUTTON_X1);
+    }
+    keyState = GetAsyncKeyState(VK_XBUTTON2);
+    if (!(keyState & 0x8000)) {
+        WIN_CheckWParamMouseButton(SDL_FALSE, (mouseFlags & SDL_BUTTON_X2MASK), data, SDL_BUTTON_X2);
+    }
     data->mouse_button_flags = 0;
 }
 
@@ -368,6 +378,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
     case WM_ACTIVATE:
         {
+            POINT cursorPos;
             BOOL minimized;
 
             minimized = HIWORD(wParam);
@@ -377,6 +388,11 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     SDL_SetKeyboardFocus(data->window);
                 }
                 WIN_UpdateClipCursor(data->window);
+                
+                GetCursorPos(&cursorPos);
+                ScreenToClient(hwnd, &cursorPos);
+                SDL_SendMouseMotion(data->window, 0, 0, cursorPos.x, cursorPos.y);
+                
                 WIN_CheckAsyncMouseRelease(data);
 
                 /*
