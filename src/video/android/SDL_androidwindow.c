@@ -22,6 +22,7 @@
 
 #if SDL_VIDEO_DRIVER_ANDROID
 
+#include "SDL_syswm.h"
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/SDL_mouse_c.h"
