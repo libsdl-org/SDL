@@ -268,6 +268,8 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
         return NO;  /* Spaces are forcibly disabled. */
     } else if (state && ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP)) {
         return NO;  /* we only allow you to make a Space on FULLSCREEN_DESKTOP windows. */
+    } else if (!state && ((window->last_fullscreen_flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP)) {
+        return NO;  /* we only handle leaving the Space on windows that were previously FULLSCREEN_DESKTOP. */
     } else if (state == isFullscreenSpace) {
         return YES;  /* already there. */
     }
