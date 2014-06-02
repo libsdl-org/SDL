@@ -49,6 +49,9 @@
 #endif
 
 
+#define FULLSCREEN_MASK (SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN)
+
+
 @interface SDLWindow : NSWindow
 /* These are needed for borderless/fullscreen windows */
 - (BOOL)canBecomeKeyWindow;
@@ -89,9 +92,9 @@
 
 static Uint32 s_moveHack;
 
-static void ConvertNSRect(NSScreen *screen, NSRect *r)
+static void ConvertNSRect(NSScreen *screen, BOOL fullscreen, NSRect *r)
 {
-    NSRect visibleScreen = [screen visibleFrame];
+    NSRect visibleScreen = fullscreen ? [screen frame] : [screen visibleFrame];
     r->origin.y = (visibleScreen.origin.y + visibleScreen.size.height) - r->origin.y - r->size.height;
 }
 
@@ -412,8 +415,9 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
     int x, y;
     SDL_Window *window = _data->window;
     NSWindow *nswindow = _data->nswindow;
+    BOOL fullscreen = window->flags & FULLSCREEN_MASK;
     NSRect rect = [nswindow contentRectForFrameRect:[nswindow frame]];
-    ConvertNSRect([nswindow screen], &rect);
+    ConvertNSRect([nswindow screen], fullscreen, &rect);
 
     if (s_moveHack) {
         SDL_bool blockMove = ((SDL_GetTicks() - s_moveHack) < 500);
@@ -424,7 +428,7 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
             /* Cocoa is adjusting the window in response to a mode change */
             rect.origin.x = window->x;
             rect.origin.y = window->y;
-            ConvertNSRect([nswindow screen], &rect);
+            ConvertNSRect([nswindow screen], fullscreen, &rect);
             [nswindow setFrameOrigin:rect.origin];
             return;
         }
@@ -449,7 +453,7 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
     NSWindow *nswindow = _data->nswindow;
     int x, y, w, h;
     NSRect rect = [nswindow contentRectForFrameRect:[nswindow frame]];
-    ConvertNSRect([nswindow screen], &rect);
+    ConvertNSRect([nswindow screen], (window->flags & FULLSCREEN_MASK), &rect);
     x = (int)rect.origin.x;
     y = (int)rect.origin.y;
     w = (int)rect.size.width;
@@ -934,7 +938,7 @@ SetupWindowData(_THIS, SDL_Window * window, NSWindow *nswindow, SDL_bool created
     /* Fill in the SDL window with the window data */
     {
         NSRect rect = [nswindow contentRectForFrameRect:[nswindow frame]];
-        ConvertNSRect([nswindow screen], &rect);
+        ConvertNSRect([nswindow screen], (window->flags & FULLSCREEN_MASK), &rect);
         window->x = (int)rect.origin.x;
         window->y = (int)rect.origin.y;
         window->w = (int)rect.size.width;
@@ -1010,7 +1014,7 @@ Cocoa_CreateWindow(_THIS, SDL_Window * window)
     rect.origin.y = window->y;
     rect.size.width = window->w;
     rect.size.height = window->h;
-    ConvertNSRect([[NSScreen screens] objectAtIndex:0], &rect);
+    ConvertNSRect([[NSScreen screens] objectAtIndex:0], (window->flags & FULLSCREEN_MASK), &rect);
 
     style = GetWindowStyle(window);
 
@@ -1138,7 +1142,7 @@ Cocoa_SetWindowPosition(_THIS, SDL_Window * window)
     rect.origin.y = window->y;
     rect.size.width = window->w;
     rect.size.height = window->h;
-    ConvertNSRect([nswindow screen], &rect);
+    ConvertNSRect([nswindow screen], (window->flags & FULLSCREEN_MASK), &rect);
 
     moveHack = s_moveHack;
     s_moveHack = 0;
@@ -1338,7 +1342,7 @@ Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
         rect.origin.y = bounds.y;
         rect.size.width = bounds.w;
         rect.size.height = bounds.h;
-        ConvertNSRect([nswindow screen], &rect);
+        ConvertNSRect([nswindow screen], fullscreen, &rect);
 
         /* Hack to fix origin on Mac OS X 10.4 */
         NSRect screenRect = [[nswindow screen] frame];
@@ -1356,7 +1360,7 @@ Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
         rect.origin.y = window->windowed.y;
         rect.size.width = window->windowed.w;
         rect.size.height = window->windowed.h;
-        ConvertNSRect([nswindow screen], &rect);
+        ConvertNSRect([nswindow screen], fullscreen, &rect);
 
         if ([nswindow respondsToSelector: @selector(setStyleMask:)]) {
             [nswindow performSelector: @selector(setStyleMask:) withObject: (id)(uintptr_t)GetWindowStyle(window)];
