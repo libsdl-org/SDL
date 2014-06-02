@@ -271,6 +271,15 @@ Cocoa_SetRelativeMouseMode(SDL_bool enabled)
     if (result != kCGErrorSuccess) {
         return SDL_SetError("CGAssociateMouseAndMouseCursorPosition() failed");
     }
+
+    /* The hide/unhide calls are redundant most of the time, but they fix
+     * https://bugzilla.libsdl.org/show_bug.cgi?id=2550
+     */
+    if (enabled) {
+        [NSCursor hide];
+    } else {
+        [NSCursor unhide];
+    }
     return 0;
 }
 
