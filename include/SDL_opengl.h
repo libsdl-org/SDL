@@ -50,6 +50,7 @@
 #define __glext_h_              /* Don't let gl.h include glext.h */
 #endif
 #if defined(__MACOSX__)
+#include <stddef.h>             /* Needed for ptrdiff_t */
 #include <OpenGL/gl.h>          /* Header File For The OpenGL Library */
 #define __X_GL_H
 #else

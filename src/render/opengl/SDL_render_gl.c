@@ -332,7 +332,7 @@ GL_ResetState(SDL_Renderer *renderer)
 }
 
 static void APIENTRY
-GL_HandleDebugMessage(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const char *message, void *userParam)
+GL_HandleDebugMessage(GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const char *message, const void *userParam)
 {
     SDL_Renderer *renderer = (SDL_Renderer *) userParam;
     GL_RenderData *data = (GL_RenderData *) renderer->driverdata;
