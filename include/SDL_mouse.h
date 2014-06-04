@@ -99,6 +99,16 @@ extern DECLSPEC void SDLCALL SDL_WarpMouseInWindow(SDL_Window * window,
                                                    int x, int y);
 
 /**
+ *  \brief Moves the mouse to the given position in global screen space.
+ *
+ *  \param x The x coordinate
+ *  \param y The y coordinate
+ *
+ *  \note This function generates a mouse motion event
+ */
+extern DECLSPEC void SDLCALL SDL_WarpMouseGlobal(int x, int y);
+
+/**
  *  \brief Set relative mouse mode.
  *
  *  \param enabled Whether or not to enable relative mode

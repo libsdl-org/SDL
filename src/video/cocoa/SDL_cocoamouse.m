@@ -241,6 +241,30 @@ Cocoa_WarpMouse(SDL_Window * window, int x, int y)
     }
 }
 
+static void
+Cocoa_WarpMouseGlobal(int x, int y)
+{
+    SDL_Mouse *mouse = SDL_GetMouse();
+    CGPoint point = CGPointMake((float)x, (float)y);
+
+    Cocoa_HandleMouseWarp(point.x, point.y);
+
+    /* According to the docs, this was deprecated in 10.6, but it's still
+     * around. The substitute requires a CGEventSource, but I'm not entirely
+     * sure how we'd procure the right one for this event.
+     */
+    CGSetLocalEventsSuppressionInterval(0.0);
+    CGWarpMouseCursorPosition(point);
+    CGSetLocalEventsSuppressionInterval(0.25);
+
+    if (!mouse->relative_mode && mouse->focus) {
+        /* CGWarpMouseCursorPosition doesn't generate a window event, unlike our
+         * other implementations' APIs.
+         */
+        SDL_SendMouseMotion(mouse->focus, mouse->mouseID, 0, x - mouse->focus.x, y - mouse->focus.y);
+    }
+}
+
 static int
 Cocoa_SetRelativeMouseMode(SDL_bool enabled)
 {
@@ -295,6 +319,7 @@ Cocoa_InitMouse(_THIS)
     mouse->ShowCursor = Cocoa_ShowCursor;
     mouse->FreeCursor = Cocoa_FreeCursor;
     mouse->WarpMouse = Cocoa_WarpMouse;
+    mouse->WarpMouseGlobal = Cocoa_WarpMouseGlobal;
     mouse->SetRelativeMouseMode = Cocoa_SetRelativeMouseMode;
 
     SDL_SetDefaultCursor(Cocoa_CreateDefaultCursor());

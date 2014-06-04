@@ -482,16 +482,26 @@ SDL_WarpMouseInWindow(SDL_Window * window, int x, int y)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
-    if ( window == NULL )
+    if (window == NULL)
         window = mouse->focus;
 
-    if ( window == NULL )
+    if (window == NULL)
         return;
 
     if (mouse->WarpMouse) {
         mouse->WarpMouse(window, x, y);
     } else {
         SDL_SendMouseMotion(window, mouse->mouseID, 0, x, y);
+    }
+}
+
+void
+SDL_WarpMouseGlobal(int x, int y)
+{
+    SDL_Mouse *mouse = SDL_GetMouse();
+
+    if (mouse->WarpMouseGlobal) {
+        mouse->WarpMouseGlobal(x, y);
     }
 }
 

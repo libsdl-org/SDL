@@ -318,6 +318,15 @@ X11_WarpMouse(SDL_Window * window, int x, int y)
     X11_XSync(display, False);
 }
 
+static void
+X11_WarpMouseGlobal(int x, int y)
+{
+    Display *display = GetDisplay();
+
+    X11_XWarpPointer(display, None, DefaultRootWindow(display), 0, 0, 0, 0, x, y);
+    X11_XSync(display, False);
+}
+
 static int
 X11_SetRelativeMouseMode(SDL_bool enabled)
 {
@@ -340,6 +349,7 @@ X11_InitMouse(_THIS)
     mouse->ShowCursor = X11_ShowCursor;
     mouse->FreeCursor = X11_FreeCursor;
     mouse->WarpMouse = X11_WarpMouse;
+    mouse->WarpMouseGlobal = X11_WarpMouseGlobal;
     mouse->SetRelativeMouseMode = X11_SetRelativeMouseMode;
 
     SDL_SetDefaultCursor(X11_CreateDefaultCursor());
