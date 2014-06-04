@@ -197,6 +197,17 @@ extern "C" {
 #define SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN    "SDL_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN"
 
 /**
+ *  \brief  A variable controlling whether the windows message loop is processed by SDL 
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - The window message loop is not run
+ *    "1"       - The window message loop is processed in SDL_PumpEvents()
+ *
+ *  By default SDL will process the windows message loop
+ */
+#define SDL_HINT_WINDOWS_ENABLE_MESSAGELOOP "SDL_WINDOWS_ENABLE_MESSAGELOOP"
+
+/**
  *  \brief  A variable controlling whether grabbing input grabs the keyboard
  *
  *  This variable can be set to the following values:
