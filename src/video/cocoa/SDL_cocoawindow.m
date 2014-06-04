@@ -57,6 +57,7 @@
 - (BOOL)canBecomeKeyWindow;
 - (BOOL)canBecomeMainWindow;
 - (void)sendEvent:(NSEvent *)event;
+- (void)doCommandBySelector:(SEL)aSelector;
 @end
 
 @implementation SDLWindow
@@ -86,6 +87,14 @@
   if ([delegate isMoving]) {
       [delegate windowDidFinishMoving];
   }
+}
+
+/* We'll respond to selectors by doing nothing so we don't beep.
+ * The escape key gets converted to a "cancel" selector, etc.
+ */
+- (void)doCommandBySelector:(SEL)aSelector
+{
+    /*NSLog(@"doCommandBySelector: %@\n", NSStringFromSelector(aSelector));*/
 }
 @end
 
@@ -652,14 +661,6 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 - (void)keyUp:(NSEvent *)theEvent
 {
     /*Cocoa_HandleKeyEvent(SDL_GetVideoDevice(), theEvent);*/
-}
-
-/* We'll respond to selectors by doing nothing so we don't beep.
- * The escape key gets converted to a "cancel" selector, etc.
- */
-- (void)doCommandBySelector:(SEL)aSelector
-{
-    /*NSLog(@"doCommandBySelector: %@\n", NSStringFromSelector(aSelector));*/
 }
 
 - (void)mouseDown:(NSEvent *)theEvent
