@@ -1544,6 +1544,20 @@ Cocoa_SetWindowFullscreenSpace(SDL_Window * window, SDL_bool state)
 
     if ([data->listener setFullscreenSpace:(state ? YES : NO)]) {
         succeeded = SDL_TRUE;
+
+        /* Wait for the transition to complete, so application changes
+           take effect properly (e.g. setting the window size, etc.)
+         */
+        const int limit = 10000;
+        int count = 0;
+        while ([data->listener isInFullscreenSpaceTransition]) {
+            if ( ++count == limit ) {
+                /* Uh oh, transition isn't completing. Should we assert? */
+                break;
+            }
+            SDL_Delay(1);
+            SDL_PumpEvents();
+        }
     }
 
     [pool release];
