@@ -28,4 +28,3 @@
 #endif
 
 #endif /* __gl2platform_h_ */
-
