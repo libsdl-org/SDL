@@ -186,6 +186,17 @@ extern "C" {
 #define SDL_HINT_VIDEO_X11_XRANDR           "SDL_VIDEO_X11_XRANDR"
 
 /**
+ *  \brief  A variable controlling whether the window frame and title bar are interactive when the cursor is hidden 
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - The window frame is not interactive when the cursor is hidden (no move, resize, etc)
+ *    "1"       - The window frame is interactive when the cursor is hidden
+ *
+ *  By default SDL will allow interaction with the window frame when the cursor is hidden
+ */
+#define SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN    "SDL_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN"
+
+/**
  *  \brief  A variable controlling whether grabbing input grabs the keyboard
  *
  *  This variable can be set to the following values:
