@@ -890,14 +890,16 @@ WIN_PumpEvents(_THIS)
     MSG msg;
     DWORD start_ticks = GetTickCount();
 
-    while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
-        /* Always translate the message in case it's a non-SDL window (e.g. with Qt integration) */
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
+    if (g_WindowsEnableMessageLoop) {
+        while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+            /* Always translate the message in case it's a non-SDL window (e.g. with Qt integration) */
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
 
-        /* Make sure we don't busy loop here forever if there are lots of events coming in */
-        if (SDL_TICKS_PASSED(msg.time, start_ticks)) {
-            break;
+            /* Make sure we don't busy loop here forever if there are lots of events coming in */
+            if (SDL_TICKS_PASSED(msg.time, start_ticks)) {
+                break;
+            }
         }
     }
 
