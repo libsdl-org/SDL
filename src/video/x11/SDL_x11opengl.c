@@ -539,24 +539,30 @@ X11_GL_GetVisual(_THIS, Display * display, int screen)
 #endif
 static int (*handler) (Display *, XErrorEvent *) = NULL;
 static int errorBase = 0;
+static int errorCode = 0;
 static int
 X11_GL_CreateContextErrorHandler(Display * d, XErrorEvent * e)
 {
-    switch (e->error_code) {
-    case BadRequest:
-    case BadMatch:
-    case BadValue:
-    case BadAlloc:
-        return (0);
-    default:
-        if (errorBase && 
-            (e->error_code == errorBase + GLXBadContext ||
-             e->error_code == errorBase + GLXBadFBConfig ||
-             e->error_code == errorBase + GLXBadProfileARB)) {
-            return (0);
-        }
-        return (handler(d, e));
+    char *x11_error = NULL;
+    char x11_error_locale[256];
+
+    errorCode = e->error_code;
+    if (X11_XGetErrorText(d, errorCode, x11_error_locale, sizeof(x11_error_locale)) == Success)
+    {
+        x11_error = SDL_iconv_string("UTF-8", "", x11_error_locale, strlen(x11_error_locale));
     }
+
+    if (x11_error)
+    {
+        SDL_SetError("Could not create GL context: %s", x11_error);
+        SDL_free(x11_error);
+    }
+    else
+    {
+        SDL_SetError("Could not create GL context: %i (Base %i)\n", errorCode, errorBase);
+    }
+
+    return (0);
 }
 
 SDL_GLContext
@@ -581,6 +587,7 @@ X11_GL_CreateContext(_THIS, SDL_Window * window)
     /* We do this to create a clean separation between X and GLX errors. */
     X11_XSync(display, False);
     errorBase = _this->gl_data->errorBase;
+    errorCode = Success;
     handler = X11_XSetErrorHandler(X11_GL_CreateContextErrorHandler);
     X11_XGetWindowAttributes(display, data->xwindow, &xattr);
     v.screen = screen;
@@ -675,7 +682,9 @@ X11_GL_CreateContext(_THIS, SDL_Window * window)
     X11_XSetErrorHandler(handler);
 
     if (!context) {
-        SDL_SetError("Could not create GL context");
+        if (errorCode == Success) {
+            SDL_SetError("Could not create GL context");
+        }
         return NULL;
     }
 
