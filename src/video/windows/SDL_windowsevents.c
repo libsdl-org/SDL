@@ -665,7 +665,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             style = GetWindowLong(hwnd, GWL_STYLE);
             /* DJM - according to the docs for GetMenu(), the
                return value is undefined if hwnd is a child window.
-               Aparently it's too difficult for MS to check
+               Apparently it's too difficult for MS to check
                inside their function, so I have to do it here.
              */
             menu = (style & WS_CHILDWINDOW) ? FALSE : (GetMenu(hwnd) != NULL);
@@ -702,6 +702,10 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             RECT rect;
             int x, y;
             int w, h;
+            
+            if (data->in_border_change) {
+                break;
+            }
 
             if (!GetClientRect(hwnd, &rect) || IsRectEmpty(&rect)) {
                 break;
