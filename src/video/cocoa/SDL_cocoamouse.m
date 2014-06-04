@@ -261,7 +261,7 @@ Cocoa_WarpMouseGlobal(int x, int y)
         /* CGWarpMouseCursorPosition doesn't generate a window event, unlike our
          * other implementations' APIs.
          */
-        SDL_SendMouseMotion(mouse->focus, mouse->mouseID, 0, x - mouse->focus.x, y - mouse->focus.y);
+        SDL_SendMouseMotion(mouse->focus, mouse->mouseID, 0, x - mouse->focus->x, y - mouse->focus->y);
     }
 }
 
