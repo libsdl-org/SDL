@@ -462,15 +462,21 @@ D3D_ActivateRenderer(SDL_Renderer * renderer)
     if (data->updateSize) {
         SDL_Window *window = renderer->window;
         int w, h;
+        Uint32 window_flags = SDL_GetWindowFlags(window);
 
         SDL_GetWindowSize(window, &w, &h);
         data->pparams.BackBufferWidth = w;
         data->pparams.BackBufferHeight = h;
-        if (SDL_GetWindowFlags(window) & SDL_WINDOW_FULLSCREEN) {
-            data->pparams.BackBufferFormat =
-                PixelFormatToD3DFMT(SDL_GetWindowPixelFormat(window));
+        if (window_flags & SDL_WINDOW_FULLSCREEN && (window_flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP) {
+            SDL_DisplayMode fullscreen_mode;
+            SDL_GetWindowDisplayMode(window, &fullscreen_mode);
+            data->pparams.Windowed = FALSE;
+            data->pparams.BackBufferFormat = PixelFormatToD3DFMT(fullscreen_mode.format);
+            data->pparams.FullScreen_RefreshRateInHz = fullscreen_mode.refresh_rate;
         } else {
+            data->pparams.Windowed = TRUE;
             data->pparams.BackBufferFormat = D3DFMT_UNKNOWN;
+            data->pparams.FullScreen_RefreshRateInHz = 0;
         }
         if (D3D_Reset(renderer) < 0) {
             return -1;
@@ -565,25 +571,16 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
     pparams.hDeviceWindow = windowinfo.info.win.window;
     pparams.BackBufferWidth = w;
     pparams.BackBufferHeight = h;
-    if (window_flags & SDL_WINDOW_FULLSCREEN) {
-        pparams.BackBufferFormat =
-            PixelFormatToD3DFMT(fullscreen_mode.format);
-    } else {
-        pparams.BackBufferFormat = D3DFMT_UNKNOWN;
-    }
     pparams.BackBufferCount = 1;
     pparams.SwapEffect = D3DSWAPEFFECT_DISCARD;
 
-    if (window_flags & SDL_WINDOW_FULLSCREEN) {
-        if ((window_flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP)  {
-            pparams.Windowed = TRUE;
-            pparams.FullScreen_RefreshRateInHz = 0;
-        } else {
-            pparams.Windowed = FALSE;
-            pparams.FullScreen_RefreshRateInHz = fullscreen_mode.refresh_rate;
-        }
+    if (window_flags & SDL_WINDOW_FULLSCREEN && (window_flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP) {
+        pparams.Windowed = FALSE;
+        pparams.BackBufferFormat = PixelFormatToD3DFMT(fullscreen_mode.format);
+        pparams.FullScreen_RefreshRateInHz = fullscreen_mode.refresh_rate;
     } else {
         pparams.Windowed = TRUE;
+        pparams.BackBufferFormat = D3DFMT_UNKNOWN;
         pparams.FullScreen_RefreshRateInHz = 0;
     }
     if (flags & SDL_RENDERER_PRESENTVSYNC) {

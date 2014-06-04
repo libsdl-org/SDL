@@ -1044,10 +1044,10 @@ SDL_GetWindowDisplayMode(SDL_Window * window, SDL_DisplayMode * mode)
 
     fullscreen_mode = window->fullscreen_mode;
     if (!fullscreen_mode.w) {
-        fullscreen_mode.w = window->w;
+        fullscreen_mode.w = window->windowed.w;
     }
     if (!fullscreen_mode.h) {
-        fullscreen_mode.h = window->h;
+        fullscreen_mode.h = window->windowed.h;
     }
 
     display = SDL_GetDisplayForWindow(window);
@@ -1093,9 +1093,9 @@ static void
 SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
 {
     SDL_VideoDisplay *display;
-	SDL_Window *other;
+    SDL_Window *other;
 
-	CHECK_WINDOW_MAGIC(window,);
+    CHECK_WINDOW_MAGIC(window,);
 
 #ifdef __MACOSX__
     if (Cocoa_SetWindowFullscreenSpace(window, fullscreen)) {
@@ -1688,15 +1688,13 @@ SDL_SetWindowSize(SDL_Window * window, int w, int h)
         h = window->max_h;
     }
 
-    if (window->flags & SDL_WINDOW_FULLSCREEN) {
-        window->windowed.w = w;
-        window->windowed.h = h;
+    window->windowed.w = w;
+    window->windowed.h = h;
 
+    if (window->flags & SDL_WINDOW_FULLSCREEN) {
         if (FULLSCREEN_VISIBLE(window) && (window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP) {
-            SDL_DisplayMode fullscreen_mode;
-            if (SDL_GetWindowDisplayMode(window, &fullscreen_mode) == 0) {
-                SDL_SetDisplayModeForDisplay(SDL_GetDisplayForWindow(window), &fullscreen_mode);
-            }
+            window->last_fullscreen_flags = 0;
+            SDL_UpdateFullscreenMode(window, SDL_TRUE);
         }
     } else {
         window->w = w;
