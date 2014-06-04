@@ -93,7 +93,7 @@ SDL_GetPowerInfo(int *seconds, int *percent)
 {
     const int total = sizeof(implementations) / sizeof(implementations[0]);
     int _seconds, _percent;
-    SDL_PowerState retval;
+    SDL_PowerState retval = SDL_POWERSTATE_UNKNOWN;
     int i;
 
     /* Make these never NULL for platform-specific implementations. */
@@ -106,7 +106,7 @@ SDL_GetPowerInfo(int *seconds, int *percent)
     }
 
     for (i = 0; i < total; i++) {
-        if (implementations[i] (&retval, seconds, percent)) {
+        if (implementations[i](&retval, seconds, percent)) {
             return retval;
         }
     }

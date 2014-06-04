@@ -1093,7 +1093,9 @@ static void
 SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
 {
     SDL_VideoDisplay *display;
-    SDL_Window *other;
+	SDL_Window *other;
+
+	CHECK_WINDOW_MAGIC(window,);
 
 #ifdef __MACOSX__
     if (Cocoa_SetWindowFullscreenSpace(window, fullscreen)) {

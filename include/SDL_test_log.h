@@ -47,14 +47,14 @@ extern "C" {
  *
  * \param fmt Message to be logged
  */
-void SDLTest_Log(const char *fmt, ...);
+void SDLTest_Log(SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(1);
 
 /**
  * \brief Prints given message with a timestamp in the TEST category and the ERROR priority.
  *
  * \param fmt Message to be logged
  */
-void SDLTest_LogError(const char *fmt, ...);
+void SDLTest_LogError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(1);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

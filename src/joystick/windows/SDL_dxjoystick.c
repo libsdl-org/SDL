@@ -45,6 +45,7 @@
 #if !SDL_EVENTS_DISABLED
 #include "../../events/SDL_events_c.h"
 #endif
+#include "../../core/windows/SDL_windows.h"
 
 #define INITGUID /* Only set here, if set twice will cause mingw32 to break. */
 #include "SDL_dxjoystick_c.h"
@@ -499,13 +500,13 @@ SDL_JoystickThread(void *_data)
 
     if (!RegisterClassEx (&wincl))
     {
-        return SDL_SetError("Failed to create register class for joystick autodetect.", GetLastError());
+		return WIN_SetError( "Failed to create register class for joystick autodetect");
     }
 
     messageWindow = (HWND)CreateWindowEx( 0,  L"Message", NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, NULL, NULL );
     if ( !messageWindow )
     {
-        return SDL_SetError("Failed to create message window for joystick autodetect.", GetLastError());
+        return WIN_SetError("Failed to create message window for joystick autodetect");
     }
 
     SDL_zero(dbh);
@@ -517,7 +518,7 @@ SDL_JoystickThread(void *_data)
     hNotify = RegisterDeviceNotification( messageWindow, &dbh, DEVICE_NOTIFY_WINDOW_HANDLE );
     if ( !hNotify )
     {
-        return SDL_SetError("Failed to create notify device for joystick autodetect.", GetLastError());
+		return WIN_SetError( "Failed to create notify device for joystick autodetect");
     }
 
     SDL_LockMutex( s_mutexJoyStickEnum );
