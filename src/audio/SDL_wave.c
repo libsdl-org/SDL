@@ -493,8 +493,7 @@ SDL_LoadWAV_RW(SDL_RWops * src, int freesrc,
         IMA_ADPCM_encoded = 1;
         break;
     case MP3_CODE:
-        SDL_SetError("MPEG Layer 3 data not supported",
-                     SDL_SwapLE16(format->encoding));
+        SDL_SetError("MPEG Layer 3 data not supported");
         was_error = 1;
         goto done;
     default:

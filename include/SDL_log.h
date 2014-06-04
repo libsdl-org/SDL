@@ -137,44 +137,44 @@ extern DECLSPEC void SDLCALL SDL_LogResetPriorities(void);
 /**
  *  \brief Log a message with SDL_LOG_CATEGORY_APPLICATION and SDL_LOG_PRIORITY_INFO
  */
-extern DECLSPEC void SDLCALL SDL_Log(const char *fmt, ...);
+extern DECLSPEC void SDLCALL SDL_Log(SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(1);
 
 /**
  *  \brief Log a message with SDL_LOG_PRIORITY_VERBOSE
  */
-extern DECLSPEC void SDLCALL SDL_LogVerbose(int category, const char *fmt, ...);
+extern DECLSPEC void SDLCALL SDL_LogVerbose(int category, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(2);
 
 /**
  *  \brief Log a message with SDL_LOG_PRIORITY_DEBUG
  */
-extern DECLSPEC void SDLCALL SDL_LogDebug(int category, const char *fmt, ...);
+extern DECLSPEC void SDLCALL SDL_LogDebug(int category, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(2);
 
 /**
  *  \brief Log a message with SDL_LOG_PRIORITY_INFO
  */
-extern DECLSPEC void SDLCALL SDL_LogInfo(int category, const char *fmt, ...);
+extern DECLSPEC void SDLCALL SDL_LogInfo(int category, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(2);
 
 /**
  *  \brief Log a message with SDL_LOG_PRIORITY_WARN
  */
-extern DECLSPEC void SDLCALL SDL_LogWarn(int category, const char *fmt, ...);
+extern DECLSPEC void SDLCALL SDL_LogWarn(int category, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(2);
 
 /**
  *  \brief Log a message with SDL_LOG_PRIORITY_ERROR
  */
-extern DECLSPEC void SDLCALL SDL_LogError(int category, const char *fmt, ...);
+extern DECLSPEC void SDLCALL SDL_LogError(int category, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(2);
 
 /**
  *  \brief Log a message with SDL_LOG_PRIORITY_CRITICAL
  */
-extern DECLSPEC void SDLCALL SDL_LogCritical(int category, const char *fmt, ...);
+extern DECLSPEC void SDLCALL SDL_LogCritical(int category, SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(2);
 
 /**
  *  \brief Log a message with the specified category and priority.
  */
 extern DECLSPEC void SDLCALL SDL_LogMessage(int category,
                                             SDL_LogPriority priority,
-                                            const char *fmt, ...);
+                                            SDL_PRINTF_FORMAT_STRING const char *fmt, ...) SDL_PRINTF_VARARG_FUNC(3);
 
 /**
  *  \brief Log a message with the specified category and priority.
