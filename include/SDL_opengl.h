@@ -51,7 +51,10 @@
 #endif
 #if defined(__MACOSX__)
 #include <stddef.h>             /* Needed for ptrdiff_t */
+/* Hack to prevent duplicate definition of GLsizeiptrARB and GLintptrARB in <OpenGL/gltypes.h> */
+#define GL_ARB_vertex_buffer_object 1
 #include <OpenGL/gl.h>          /* Header File For The OpenGL Library */
+#undef GL_ARB_vertex_buffer_object
 #define __X_GL_H
 #else
 #include <GL/gl.h>              /* Header File For The OpenGL Library */
