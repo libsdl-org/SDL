@@ -24,6 +24,7 @@
 
 #include "SDL_main.h"
 #include "SDL_video.h"
+#include "SDL_hints.h"
 #include "SDL_mouse.h"
 #include "SDL_system.h"
 #include "../SDL_sysvideo.h"
@@ -36,6 +37,18 @@
 /* Initialization/Query functions */
 static int WIN_VideoInit(_THIS);
 static void WIN_VideoQuit(_THIS);
+
+/* Hints */
+SDL_bool g_WindowFrameUsableWhileCursorHidden = SDL_TRUE;
+
+static void UpdateWindowFrameUsableWhileCursorHidden(void *userdata, const char *name, const char *oldValue, const char *newValue)
+{
+    if (newValue && *newValue == '0') {
+        g_WindowFrameUsableWhileCursorHidden = SDL_FALSE;
+    } else {
+        g_WindowFrameUsableWhileCursorHidden = SDL_TRUE;
+    }
+}
 
 
 /* Windows driver bootstrap functions */
@@ -150,6 +163,7 @@ WIN_CreateDevice(int devindex)
     return device;
 }
 
+
 VideoBootStrap WINDOWS_bootstrap = {
     "windows", "SDL Windows video driver", WIN_Available, WIN_CreateDevice
 };
@@ -163,6 +177,8 @@ WIN_VideoInit(_THIS)
 
     WIN_InitKeyboard(_this);
     WIN_InitMouse(_this);
+
+    SDL_AddHintCallback( SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN, UpdateWindowFrameUsableWhileCursorHidden, NULL );
 
     return 0;
 }
