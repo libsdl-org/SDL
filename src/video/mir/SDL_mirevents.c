@@ -224,11 +224,11 @@ HandleMotionEvent(MirMotionEvent const motion, SDL_Window* sdl_window)
 {
     int cord_index;
     for (cord_index = 0; cord_index < motion.pointer_count; cord_index++) {
-        if (motion.pointer_coordinates[cord_index].tool_type == mir_motion_tool_type_mouse) {
-            HandleMouseEvent(motion, cord_index, sdl_window);
-        }
-        else if (motion.pointer_coordinates[cord_index].tool_type == mir_motion_tool_type_finger) {
+        if (motion.pointer_coordinates[cord_index].tool_type == mir_motion_tool_type_finger) {
             HandleTouchEvent(motion, cord_index, sdl_window);
+        }
+        else {
+            HandleMouseEvent(motion, cord_index, sdl_window);
         }
     }
 }
