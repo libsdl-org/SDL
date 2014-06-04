@@ -83,7 +83,7 @@ struct SDL_SysWMinfo;
 
 #if defined(SDL_VIDEO_DRIVER_COCOA)
 #ifdef __OBJC__
-#include <Cocoa/Cocoa.h>
+@class NSWindow;
 #else
 typedef struct _NSWindow NSWindow;
 #endif
