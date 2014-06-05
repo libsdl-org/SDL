@@ -266,7 +266,7 @@ static const SDL_Scancode xfree86_scancode_table2[] = {
     /*  86 */   SDL_SCANCODE_NONUSBACKSLASH,
     /*  87 */   SDL_SCANCODE_F11,
     /*  88 */   SDL_SCANCODE_F12,
-    /*  89 */   SDL_SCANCODE_UNKNOWN,
+    /*  89 */   SDL_SCANCODE_SLASH,
     /*  90 */   SDL_SCANCODE_UNKNOWN,   /* Katakana */
     /*  91 */   SDL_SCANCODE_UNKNOWN,   /* Hiragana */
     /*  92 */   SDL_SCANCODE_UNKNOWN,   /* Henkan_Mode */
