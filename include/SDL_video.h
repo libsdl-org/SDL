@@ -800,7 +800,14 @@ typedef enum
 {
     SDL_HITTEST_NORMAL,  /**< Region is normal. No special properties. */
     SDL_HITTEST_DRAGGABLE,  /**< Region can drag entire window. */
-    /* !!! FIXME: resize enums here. */
+    SDL_HITTEST_RESIZE_TOPLEFT,
+    SDL_HITTEST_RESIZE_TOP,
+    SDL_HITTEST_RESIZE_TOPRIGHT,
+    SDL_HITTEST_RESIZE_RIGHT,
+    SDL_HITTEST_RESIZE_BOTTOMRIGHT,
+    SDL_HITTEST_RESIZE_BOTTOM,
+    SDL_HITTEST_RESIZE_BOTTOMLEFT,
+    SDL_HITTEST_RESIZE_LEFT
 } SDL_HitTestResult;
 
 /**
