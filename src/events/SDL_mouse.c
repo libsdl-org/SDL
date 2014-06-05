@@ -469,6 +469,30 @@ SDL_GetRelativeMouseState(int *x, int *y)
     return mouse->buttonstate;
 }
 
+Uint32
+SDL_GetAbsoluteMouseState(int *x, int *y)
+{
+    SDL_Mouse *mouse = SDL_GetMouse();
+    int tmpx, tmpy;
+
+    /* make sure these are never NULL for the backend implementations... */
+    if (!x) {
+        x = &tmpx;
+    }
+    if (!y) {
+        y = &tmpy;
+    }
+
+    *x = *y = 0;
+
+    if (!mouse->GetAbsoluteMouseState) {
+        SDL_assert(0 && "This should really be implemented for every target.");
+        return 0;
+    }
+
+    return mouse->GetAbsoluteMouseState(x, y);
+}
+
 void
 SDL_WarpMouseInWindow(SDL_Window * window, int x, int y)
 {
