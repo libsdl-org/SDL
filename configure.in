@@ -2021,12 +2021,6 @@ CheckMacGL()
         AC_DEFINE(SDL_VIDEO_OPENGL_CGL, 1, [ ])
         AC_DEFINE(SDL_VIDEO_RENDER_OGL, 1, [ ])
         SUMMARY_video="${SUMMARY_video} opengl"
-        case "$host" in
-            *-*-darwin*)
-                if test x$enable_video_cocoa = xyes; then
-                    EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,OpenGL"
-                fi
-        esac
     fi
 }
 
