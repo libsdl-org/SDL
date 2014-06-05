@@ -150,7 +150,7 @@ SDL_SemWaitTimeout(SDL_sem * sem, Uint32 timeout)
         if (errno == ETIMEDOUT) {
             retval = SDL_MUTEX_TIMEDOUT;
         } else {
-            SDL_SetError(strerror(errno));
+            SDL_SetError("sem_timedwait returned an error: %s", strerror(errno));
         }
     }
 #else
