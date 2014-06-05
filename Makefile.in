@@ -70,6 +70,7 @@ HDRS = \
 	SDL_mutex.h \
 	SDL_name.h \
 	SDL_opengl.h \
+	SDL_opengl_glext.h \
 	SDL_opengles.h \
 	SDL_opengles2.h \
 	SDL_pixels.h \
