@@ -1488,6 +1488,19 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
                 }
             }
             break;
+        case SDLK_a:
+            if (withControl) {
+                /* Ctrl-A reports absolute mouse position. */
+                int x, y;
+                const Uint32 mask = SDL_GetAbsoluteMouseState(&x, &y);
+                SDL_Log("ABSOLUTE MOUSE: (%d, %d)%s%s%s%s%s\n", x, y,
+                        (mask & SDL_BUTTON_LMASK) ? " [LBUTTON]" : "",
+                        (mask & SDL_BUTTON_MMASK) ? " [MBUTTON]" : "",
+                        (mask & SDL_BUTTON_RMASK) ? " [RBUTTON]" : "",
+                        (mask & SDL_BUTTON_X1MASK) ? " [X2BUTTON]" : "",
+                        (mask & SDL_BUTTON_X2MASK) ? " [X2BUTTON]" : "");
+            }
+            break;
         case SDLK_0:
             if (withControl) {
                 SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);

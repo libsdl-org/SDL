@@ -581,3 +581,4 @@
 #define SDL_WinRTRunApp SDL_WinRTRunApp_REAL
 #define SDL_CaptureMouse SDL_CaptureMouse_REAL
 #define SDL_SetWindowHitTest SDL_SetWindowHitTest_REAL
+#define SDL_GetAbsoluteMouseState SDL_GetAbsoluteMouseState_REAL

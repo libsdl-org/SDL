@@ -78,6 +78,31 @@ extern DECLSPEC SDL_Window * SDLCALL SDL_GetMouseFocus(void);
 extern DECLSPEC Uint32 SDLCALL SDL_GetMouseState(int *x, int *y);
 
 /**
+ *  \brief Get the current state of the mouse, in relation to the desktop
+ *
+ *  This works just like SDL_GetMouseState(), but the coordinates will be
+ *  reported relative to the top-left of the desktop. This can be useful if
+ *  you need to track the mouse outside of a specific window and
+ *  SDL_CaptureMouse() doesn't fit your needs. For example, it could be
+ *  useful if you need to track the mouse while dragging a window, where
+ *  coordinates relative to a window might not be in sync at all times.
+ *
+ *  \note SDL_GetMouseState() returns the mouse position as SDL understands
+ *        it from the last pump of the event queue. This function, however,
+ *        queries the OS for the current mouse position, and as such, might
+ *        be a slightly less efficient function. Unless you know what you're
+ *        doing and have a good reason to use this function, you probably want
+ *        SDL_GetMouseState() instead.
+ *
+ *  \param x Returns the current X coord, relative to the desktop. Can be NULL.
+ *  \param y Returns the current Y coord, relative to the desktop. Can be NULL.
+ *  \return The current button state as a bitmask, which can be tested using the SDL_BUTTON(X) macros.
+ *
+ *  \sa SDL_GetMouseState
+ */
+extern DECLSPEC Uint32 SDLCALL SDL_GetAbsoluteMouseState(int *x, int *y);
+
+/**
  *  \brief Retrieve the relative state of the mouse.
  *
  *  The current button state is returned as a button bitmask, which can
