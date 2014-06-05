@@ -46,7 +46,7 @@ static Uint32 SDLTest_AssertsPassed = 0;
  */
 void SDLTest_Assert(int assertCondition, SDL_PRINTF_FORMAT_STRING const char *assertDescription, ...)
 {
-        va_list list;
+    va_list list;
     char logMessage[SDLTEST_MAX_LOGMESSAGE_LENGTH];
 
     /* Print assert description into a buffer */
@@ -56,7 +56,7 @@ void SDLTest_Assert(int assertCondition, SDL_PRINTF_FORMAT_STRING const char *as
     va_end(list);
 
     /* Log, then assert and break on failure */
-    SDL_assert((SDLTest_AssertCheck(assertCondition, logMessage)));
+    SDL_assert((SDLTest_AssertCheck(assertCondition, "%s", logMessage)));
 }
 
 /*
