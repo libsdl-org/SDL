@@ -47,10 +47,11 @@ HDRS = \
 	SDL_assert.h \
 	SDL_atomic.h \
 	SDL_audio.h \
-    SDL_bits.h \
+	SDL_bits.h \
 	SDL_blendmode.h \
 	SDL_clipboard.h \
 	SDL_cpuinfo.h \
+	SDL_egl.h \
 	SDL_endian.h \
 	SDL_error.h \
 	SDL_events.h \
@@ -72,7 +73,11 @@ HDRS = \
 	SDL_opengl.h \
 	SDL_opengl_glext.h \
 	SDL_opengles.h \
+	SDL_opengles2_gl2ext.h \
+	SDL_opengles2_gl2.h \
+	SDL_opengles2_gl2platform.h \
 	SDL_opengles2.h \
+	SDL_opengles2_khrplatform.h \
 	SDL_pixels.h \
 	SDL_platform.h \
 	SDL_power.h \
