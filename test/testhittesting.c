@@ -28,22 +28,29 @@ hitTest(SDL_Window *window, const SDL_Point *pt, void *data)
     }
 
     SDL_GetWindowSize(window, &w, &h);
-    if (pt->x < RESIZE_BORDER && pt->y < RESIZE_BORDER)
-        return SDL_HITTEST_RESIZE_TOPLEFT;
-    if (pt->x > RESIZE_BORDER && pt->x < w - RESIZE_BORDER && pt->y < RESIZE_BORDER)
-        return SDL_HITTEST_RESIZE_TOP;
-    if (pt->x > w - RESIZE_BORDER && pt->y < RESIZE_BORDER)
-        return SDL_HITTEST_RESIZE_TOPRIGHT;
-    if (pt->x > w - RESIZE_BORDER && pt->y > RESIZE_BORDER && pt->y < h - RESIZE_BORDER)
-        return SDL_HITTEST_RESIZE_RIGHT;
-    if (pt->x > w - RESIZE_BORDER && pt->y > h - RESIZE_BORDER)
-        return SDL_HITTEST_RESIZE_BOTTOMRIGHT;
-    if (pt->x < w - RESIZE_BORDER && pt->x > RESIZE_BORDER && pt->y > h - RESIZE_BORDER)
-        return SDL_HITTEST_RESIZE_BOTTOM;
-    if (pt->x < RESIZE_BORDER && pt->y > h - RESIZE_BORDER)
-        return SDL_HITTEST_RESIZE_BOTTOMLEFT;
-    if (pt->x < RESIZE_BORDER && pt->y < h - RESIZE_BORDER && pt->y > RESIZE_BORDER)
-        return SDL_HITTEST_RESIZE_LEFT;
+
+    #define REPORT_RESIZE_HIT(name) { \
+        SDL_Log("HIT-TEST: RESIZE_" #name "\n"); \
+        return SDL_HITTEST_RESIZE_##name; \
+    }
+
+    if (pt->x < RESIZE_BORDER && pt->y < RESIZE_BORDER) {
+        REPORT_RESIZE_HIT(TOPLEFT);
+    } else if (pt->x > RESIZE_BORDER && pt->x < w - RESIZE_BORDER && pt->y < RESIZE_BORDER) {
+        REPORT_RESIZE_HIT(TOP);
+    } else if (pt->x > w - RESIZE_BORDER && pt->y < RESIZE_BORDER) {
+        REPORT_RESIZE_HIT(TOPRIGHT);
+    } else if (pt->x > w - RESIZE_BORDER && pt->y > RESIZE_BORDER && pt->y < h - RESIZE_BORDER) {
+        REPORT_RESIZE_HIT(RIGHT);
+    } else if (pt->x > w - RESIZE_BORDER && pt->y > h - RESIZE_BORDER) {
+        REPORT_RESIZE_HIT(BOTTOMRIGHT);
+    } else if (pt->x < w - RESIZE_BORDER && pt->x > RESIZE_BORDER && pt->y > h - RESIZE_BORDER) {
+        REPORT_RESIZE_HIT(BOTTOM);
+    } else if (pt->x < RESIZE_BORDER && pt->y > h - RESIZE_BORDER) {
+        REPORT_RESIZE_HIT(BOTTOMLEFT);
+    } else if (pt->x < RESIZE_BORDER && pt->y < h - RESIZE_BORDER && pt->y > RESIZE_BORDER) {
+        REPORT_RESIZE_HIT(LEFT);
+    }
 
     SDL_Log("HIT-TEST: NORMAL\n");
     return SDL_HITTEST_NORMAL;
