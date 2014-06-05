@@ -40,8 +40,40 @@
 
 #include <stdio.h>
 
+#ifndef _NET_WM_MOVERESIZE_SIZE_TOPLEFT
+#define _NET_WM_MOVERESIZE_SIZE_TOPLEFT      0
+#endif
+
+#ifndef _NET_WM_MOVERESIZE_SIZE_TOP
+#define _NET_WM_MOVERESIZE_SIZE_TOP          1
+#endif
+
+#ifndef _NET_WM_MOVERESIZE_SIZE_TOPRIGHT
+#define _NET_WM_MOVERESIZE_SIZE_TOPRIGHT     2
+#endif
+
+#ifndef _NET_WM_MOVERESIZE_SIZE_RIGHT
+#define _NET_WM_MOVERESIZE_SIZE_RIGHT        3
+#endif
+
+#ifndef _NET_WM_MOVERESIZE_SIZE_BOTTOMRIGHT
+#define _NET_WM_MOVERESIZE_SIZE_BOTTOMRIGHT  4
+#endif
+
+#ifndef _NET_WM_MOVERESIZE_SIZE_BOTTOM
+#define _NET_WM_MOVERESIZE_SIZE_BOTTOM       5
+#endif
+
+#ifndef _NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT
+#define _NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT   6
+#endif
+
+#ifndef _NET_WM_MOVERESIZE_SIZE_LEFT
+#define _NET_WM_MOVERESIZE_SIZE_LEFT         7
+#endif
+
 #ifndef _NET_WM_MOVERESIZE_MOVE
-#define _NET_WM_MOVERESIZE_MOVE 8
+#define _NET_WM_MOVERESIZE_MOVE              8
 #endif
 
 typedef struct {
@@ -290,7 +322,7 @@ InitiateWindowMove(_THIS, const SDL_WindowData *data, const SDL_Point *point)
     XEvent evt;
     evt.xclient.type = ClientMessage;
     evt.xclient.window = data->xwindow;
-    evt.xclient.message_type = X11_XInternAtom(display, "_NET_WM_MOVERESIZE", False);
+    evt.xclient.message_type = X11_XInternAtom(display, "_NET_WM_MOVERESIZE", True);
     evt.xclient.format = 32;
     evt.xclient.data.l[0] = window->x + point->x;
     evt.xclient.data.l[1] = window->y + point->y;
@@ -302,21 +334,96 @@ InitiateWindowMove(_THIS, const SDL_WindowData *data, const SDL_Point *point)
     X11_XSync(display, 0);
 }
 
+static void
+InitiateWindowResize(_THIS, const SDL_WindowData *data, const SDL_Point *point, int direction)
+{
+    SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
+    SDL_Window* window = data->window;
+    Display *display = viddata->display;
+
+    if (direction < _NET_WM_MOVERESIZE_SIZE_TOPLEFT || direction > _NET_WM_MOVERESIZE_SIZE_LEFT)
+        return;
+
+    /* !!! FIXME: we need to regrab this if necessary when the drag is done. */
+    X11_XUngrabPointer(display, 0L);
+    X11_XFlush(display);
+
+    XEvent evt;
+    evt.xclient.type = ClientMessage;
+    evt.xclient.window = data->xwindow;
+    evt.xclient.message_type = X11_XInternAtom(display, "_NET_WM_MOVERESIZE", True);
+    evt.xclient.format = 32;
+    evt.xclient.data.l[0] = window->x + point->x;
+    evt.xclient.data.l[1] = window->y + point->y;
+    evt.xclient.data.l[2] = direction;
+    evt.xclient.data.l[3] = Button1;
+    evt.xclient.data.l[4] = 0;
+    X11_XSendEvent(display, DefaultRootWindow(display), False, SubstructureRedirectMask | SubstructureNotifyMask, &evt);
+
+    X11_XSync(display, 0);
+}
+
 static SDL_bool
 ProcessHitTest(_THIS, const SDL_WindowData *data, const XEvent *xev)
 {
     SDL_Window *window = data->window;
+    SDL_bool ret = SDL_FALSE;
 
     if (window->hit_test) {
         const SDL_Point point = { xev->xbutton.x, xev->xbutton.y };
         const SDL_HitTestResult rc = window->hit_test(window, &point, window->hit_test_data);
-        if (rc == SDL_HITTEST_DRAGGABLE) {
-            InitiateWindowMove(_this, data, &point);
-            return SDL_TRUE;  /* dragging, drop this event. */
+        switch (rc) {
+            case SDL_HITTEST_DRAGGABLE: {
+                    InitiateWindowMove(_this, data, &point);
+                    ret = SDL_TRUE;
+                }
+                break;
+            case SDL_HITTEST_RESIZE_TOPLEFT: {
+                    InitiateWindowResize(_this, data, &point, _NET_WM_MOVERESIZE_SIZE_TOPLEFT);
+                    ret = SDL_TRUE;
+                }
+                break;
+            case SDL_HITTEST_RESIZE_TOP: {
+                    InitiateWindowResize(_this, data, &point, _NET_WM_MOVERESIZE_SIZE_TOP);
+                    ret = SDL_TRUE;
+                }
+                break;
+            case SDL_HITTEST_RESIZE_TOPRIGHT: {
+                    InitiateWindowResize(_this, data, &point, _NET_WM_MOVERESIZE_SIZE_TOPRIGHT);
+                    ret = SDL_TRUE;
+                }
+                break;
+            case SDL_HITTEST_RESIZE_RIGHT: {
+                    InitiateWindowResize(_this, data, &point, _NET_WM_MOVERESIZE_SIZE_RIGHT);
+                    ret = SDL_TRUE;
+                }
+                break;
+            case SDL_HITTEST_RESIZE_BOTTOMRIGHT: {
+                    InitiateWindowResize(_this, data, &point, _NET_WM_MOVERESIZE_SIZE_BOTTOMRIGHT);
+                    ret = SDL_TRUE;
+                }
+                break;
+            case SDL_HITTEST_RESIZE_BOTTOM: {
+                    InitiateWindowResize(_this, data, &point, _NET_WM_MOVERESIZE_SIZE_BOTTOM);
+                    ret = SDL_TRUE;
+                }
+                break;
+            case SDL_HITTEST_RESIZE_BOTTOMLEFT: {
+                    InitiateWindowResize(_this, data, &point, _NET_WM_MOVERESIZE_SIZE_BOTTOMLEFT);
+                    ret = SDL_TRUE;
+                }
+                break;
+            case SDL_HITTEST_RESIZE_LEFT: {
+                    InitiateWindowResize(_this, data, &point, _NET_WM_MOVERESIZE_SIZE_LEFT);
+                    ret = SDL_TRUE;
+                }
+                break;
+            default:
+                break;
         }
     }
 
-    return SDL_FALSE;  /* not a drag area. */
+    return ret;
 }
 
 static void

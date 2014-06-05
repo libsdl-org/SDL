@@ -3,6 +3,8 @@
 
 /* !!! FIXME: rewrite this to be wired in to test framework. */
 
+#define RESIZE_BORDER 20
+
 const SDL_Rect drag_areas[] = {
     { 20, 20, 100, 100 },
     { 200, 70, 100, 100 },
@@ -16,12 +18,32 @@ static SDL_HitTestResult
 hitTest(SDL_Window *window, const SDL_Point *pt, void *data)
 {
     int i;
+    int w, h;
+
     for (i = 0; i < numareas; i++) {
         if (SDL_PointInRect(pt, &areas[i])) {
             SDL_Log("HIT-TEST: DRAGGABLE\n");
             return SDL_HITTEST_DRAGGABLE;
         }
     }
+
+    SDL_GetWindowSize(window, &w, &h);
+    if (pt->x < RESIZE_BORDER && pt->y < RESIZE_BORDER)
+        return SDL_HITTEST_RESIZE_TOPLEFT;
+    if (pt->x > RESIZE_BORDER && pt->x < w - RESIZE_BORDER && pt->y < RESIZE_BORDER)
+        return SDL_HITTEST_RESIZE_TOP;
+    if (pt->x > w - RESIZE_BORDER && pt->y < RESIZE_BORDER)
+        return SDL_HITTEST_RESIZE_TOPRIGHT;
+    if (pt->x > w - RESIZE_BORDER && pt->y > RESIZE_BORDER && pt->y < h - RESIZE_BORDER)
+        return SDL_HITTEST_RESIZE_RIGHT;
+    if (pt->x > w - RESIZE_BORDER && pt->y > h - RESIZE_BORDER)
+        return SDL_HITTEST_RESIZE_BOTTOMRIGHT;
+    if (pt->x < w - RESIZE_BORDER && pt->x > RESIZE_BORDER && pt->y > h - RESIZE_BORDER)
+        return SDL_HITTEST_RESIZE_BOTTOM;
+    if (pt->x < RESIZE_BORDER && pt->y > h - RESIZE_BORDER)
+        return SDL_HITTEST_RESIZE_BOTTOMLEFT;
+    if (pt->x < RESIZE_BORDER && pt->y < h - RESIZE_BORDER && pt->y > RESIZE_BORDER)
+        return SDL_HITTEST_RESIZE_LEFT;
 
     SDL_Log("HIT-TEST: NORMAL\n");
     return SDL_HITTEST_NORMAL;
@@ -36,7 +58,7 @@ int main(int argc, char **argv)
 
     /* !!! FIXME: check for errors. */
     SDL_Init(SDL_INIT_VIDEO);
-    window = SDL_CreateWindow("Drag the red boxes", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 480, SDL_WINDOW_BORDERLESS);
+    window = SDL_CreateWindow("Drag the red boxes", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 640, 480, SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE);
     renderer = SDL_CreateRenderer(window, -1, 0);
 
     if (SDL_SetWindowHitTest(window, hitTest, NULL) == -1) {
