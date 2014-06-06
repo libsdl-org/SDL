@@ -1317,6 +1317,32 @@ AC_HELP_STRING([--enable-mir-shared], [dynamically load Mir support [[default=ma
     fi
 }
 
+dnl Check for Native Client stuff
+CheckNativeClient()
+{
+        AC_TRY_COMPILE([
+          #if !defined(__native_client__)
+          #error "NO NACL"
+          #endif
+        ],[
+        ],[
+        AC_DEFINE(SDL_VIDEO_DRIVER_NACL)
+        AC_DEFINE(SDL_AUDIO_DRIVER_NACL)
+        AC_DEFINE(HAVE_POW, 1, [ ])
+        AC_DEFINE(HAVE_OPENGLES2, 1, [ ])
+        AC_DEFINE(SDL_VIDEO_OPENGL_ES2, 1, [ ])
+        AC_DEFINE(SDL_VIDEO_RENDER_OGL_ES2, 1, [ ])
+
+        SDL_LIBS="-lppapi_simple -lppapi_gles2 $SDL_LIBS"
+
+        SDLMAIN_SOURCES="$srcdir/src/main/nacl/*.c"
+        SOURCES="$SOURCES $srcdir/src/audio/nacl/*.c"
+        SUMMARY_audio="${SUMMARY_audio} nacl"
+        SOURCES="$SOURCES $srcdir/src/video/nacl/*.c"
+        SUMMARY_video="${SUMMARY_video} nacl opengles2"
+        ])
+}
+
 
 dnl Find the X11 include and library directories
 CheckX11()
@@ -3118,6 +3144,20 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         if test x$enable_audio = xyes; then
             EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,CoreAudio -Wl,-framework,AudioToolbox -Wl,-framework,AudioUnit"
         fi
+        ;;
+    *-nacl|*-pnacl)
+        ARCH=nacl
+        CheckNativeClient
+        CheckDummyAudio
+        CheckDummyVideo
+        CheckInputEvents
+        # Set up files for the timer library
+        if test x$enable_timers = xyes; then
+            AC_DEFINE(SDL_TIMER_UNIX)
+            SOURCES="$SOURCES $srcdir/src/timer/unix/*.c"
+            have_timers=yes
+        fi
+        CheckPTHREAD      
         ;;
     *)
         AC_MSG_ERROR([

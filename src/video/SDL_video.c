@@ -92,6 +92,9 @@ static VideoBootStrap *bootstrap[] = {
 #if SDL_VIDEO_DRIVER_WAYLAND
     &Wayland_bootstrap,
 #endif
+#if SDL_VIDEO_DRIVER_NACL
+    &NACL_bootstrap,
+#endif
 #if SDL_VIDEO_DRIVER_DUMMY
     &DUMMY_bootstrap,
 #endif
@@ -253,7 +256,7 @@ SDL_CreateWindowTexture(_THIS, SDL_Window * window, Uint32 * format, void ** pix
                 }
             }
         }
-
+        
         if (!renderer) {
             for (i = 0; i < SDL_GetNumRenderDrivers(); ++i) {
                 SDL_GetRenderDriverInfo(i, &info);
@@ -1239,7 +1242,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
     }
 
     /* Some platforms have OpenGL enabled by default */
-#if (SDL_VIDEO_OPENGL && __MACOSX__) || __IPHONEOS__ || __ANDROID__
+#if (SDL_VIDEO_OPENGL && __MACOSX__) || __IPHONEOS__ || __ANDROID__ || __NACL__
     flags |= SDL_WINDOW_OPENGL;
 #endif
     if (flags & SDL_WINDOW_OPENGL) {

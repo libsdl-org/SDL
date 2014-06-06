@@ -43,6 +43,10 @@
 #include "SDL_system.h"
 #endif
 
+#if __NACL__
+#include "nacl_io/nacl_io.h"
+#endif
+
 #ifdef __WIN32__
 
 /* Functions to read/write Win32 API file pointers */
@@ -760,6 +764,30 @@ SDL_WriteBE64(SDL_RWops * dst, Uint64 value)
 {
     const Uint64 swapped = SDL_SwapBE64(value);
     return SDL_RWwrite(dst, &swapped, sizeof (swapped), 1);
+}
+
+
+/* SDL_RWops on NACL are implemented using nacl_io, and require mount points
+ * to be established before actual file operations are performed
+ * 
+ * Ref: https://developers.google.com/native-client/dev/devguide/coding/nacl_io?hl=es
+ */
+
+int 
+SDL_RWMount(const char* source, const char* target, const char* filesystemtype, 
+          unsigned long mountflags, const void *data) {
+#if __NACL__
+    return mount(source, target, filesystemtype, mountflags, data);
+#endif /* __NACL__ */
+    return SDL_SetError ("Mount not supported on this platform");
+}
+
+int 
+SDL_RWUmount(const char *target) {
+#if __NACL__
+    return umount(target);
+#endif /* __NACL__ */
+    return SDL_SetError ("Umount not supported on this platform");
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
