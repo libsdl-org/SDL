@@ -16,7 +16,7 @@
 
 #include "SDL_test_common.h"
 
-#if defined(__IPHONEOS__) || defined(__ANDROID__)
+#if defined(__IPHONEOS__) || defined(__ANDROID__) || defined(__NACL__)
 #define HAVE_OPENGLES2
 #endif
 
@@ -195,6 +195,8 @@ process_shader(GLuint *shader, const char * source, GLint shader_type)
 {
     GLint status = GL_FALSE;
     const char *shaders[1] = { NULL };
+    char buffer[1024];
+    GLsizei length;
 
     /* Create shader and load into GL. */
     *shader = GL_CHECK(ctx.glCreateShader(shader_type));
@@ -212,7 +214,9 @@ process_shader(GLuint *shader, const char * source, GLint shader_type)
 
     /* Dump debug info (source and log) if compilation failed. */
     if(status != GL_TRUE) {
-        SDL_Log("Shader compilation failed");
+        ctx.glGetProgramInfoLog(*shader, sizeof(buffer), &length, &buffer[0]);
+        buffer[length] = '\0';
+        SDL_Log("Shader compilation failed: %s", buffer);fflush(stderr);
         quit(-1);
     }
 }
@@ -675,7 +679,7 @@ main(int argc, char *argv[])
         SDL_Log("%2.2f frames per second\n",
                ((double) frames * 1000) / (now - then));
     }
-#if !defined(__ANDROID__)    
+#if !defined(__ANDROID__) && !defined(__NACL__)  
     quit(0);
 #endif    
     return 0;

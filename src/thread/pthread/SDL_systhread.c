@@ -141,12 +141,15 @@ SDL_SYS_SetupThread(const char *name)
         #endif
     }
 
+   /* NativeClient does not yet support signals.*/
+#ifndef __NACL__
     /* Mask asynchronous signals for this thread */
     sigemptyset(&mask);
     for (i = 0; sig_list[i]; ++i) {
         sigaddset(&mask, sig_list[i]);
     }
     pthread_sigmask(SIG_BLOCK, &mask, 0);
+#endif
 
 #ifdef PTHREAD_CANCEL_ASYNCHRONOUS
     /* Allow ourselves to be asynchronously cancelled */
@@ -166,7 +169,10 @@ SDL_ThreadID(void)
 int
 SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 {
-#ifdef __LINUX__
+#if __NACL__ 
+    /* FIXME: Setting thread priority does not seem to be supported in NACL */
+    return 0;
+#elif __LINUX__
     int value;
 
     if (priority == SDL_THREAD_PRIORITY_LOW) {

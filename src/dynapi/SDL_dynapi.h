@@ -43,7 +43,7 @@
 #include "TargetConditionals.h"
 #endif
 
-#if TARGET_OS_IPHONE  /* probably not useful on iOS. */
+#if TARGET_OS_IPHONE || __native_client__  /* probably not useful on iOS or NACL. */
 #define SDL_DYNAMIC_API 0
 #elif SDL_BUILDING_WINRT /* probaly not useful on WinRT, given current .dll loading restrictions */
 #define SDL_DYNAMIC_API 0

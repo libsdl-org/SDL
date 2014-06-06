@@ -18984,6 +18984,55 @@ _ACEOF
     fi
 }
 
+CheckNativeClient()
+{
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+          #if !defined(__native_client__)
+          #error "NO NACL"
+          #endif
+
+int
+main ()
+{
+
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+        $as_echo "#define SDL_VIDEO_DRIVER_NACL 1" >>confdefs.h
+
+        $as_echo "#define SDL_AUDIO_DRIVER_NACL 1" >>confdefs.h
+
+
+$as_echo "#define HAVE_POW 1" >>confdefs.h
+
+
+$as_echo "#define HAVE_OPENGLES2 1" >>confdefs.h
+
+
+$as_echo "#define SDL_VIDEO_OPENGL_ES2 1" >>confdefs.h
+
+
+$as_echo "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
+
+
+        SDL_LIBS="-lppapi_simple -lppapi_gles2 $SDL_LIBS"
+
+        SDLMAIN_SOURCES="$srcdir/src/main/nacl/*.c"
+        SOURCES="$SOURCES $srcdir/src/audio/nacl/*.c"
+        SUMMARY_audio="${SUMMARY_audio} nacl"
+        SOURCES="$SOURCES $srcdir/src/video/nacl/*.c"
+        SUMMARY_video="${SUMMARY_video} nacl opengles2"
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+}
+
 
 CheckX11()
 {
@@ -23155,6 +23204,21 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
         if test x$enable_audio = xyes; then
             EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,CoreAudio -Wl,-framework,AudioToolbox -Wl,-framework,AudioUnit"
         fi
+        ;;
+    *-nacl|*-pnacl)
+        ARCH=nacl
+        CheckNativeClient
+        CheckDummyAudio
+        CheckDummyVideo
+        CheckInputEvents
+        # Set up files for the timer library
+        if test x$enable_timers = xyes; then
+            $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/timer/unix/*.c"
+            have_timers=yes
+        fi
+        CheckPTHREAD
         ;;
     *)
         as_fn_error $? "

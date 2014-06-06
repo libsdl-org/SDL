@@ -68,4 +68,4 @@ SDL_PROC(void, glFramebufferTexture2D, (GLenum, GLenum, GLenum, GLuint, GLint))
 SDL_PROC(GLenum, glCheckFramebufferStatus, (GLenum))
 SDL_PROC(void, glDeleteFramebuffers, (GLsizei, const GLuint *))
 SDL_PROC(GLint, glGetAttribLocation, (GLuint, const GLchar *))
- 
+SDL_PROC(void, glGetProgramInfoLog, (GLuint, GLsizei, GLsizei*, GLchar*))

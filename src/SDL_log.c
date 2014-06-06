@@ -413,6 +413,9 @@ SDL_LogOutput(void *userdata, int category, SDL_LogPriority priority,
 #endif
 #if HAVE_STDIO_H
     fprintf(stderr, "%s: %s\n", SDL_priority_prefixes[priority], message);
+#if __NACL__
+    fflush(stderr);
+#endif
 #endif
 }
 
