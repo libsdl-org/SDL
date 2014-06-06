@@ -133,6 +133,16 @@ main(int argc, char **argv)
     }
 
     SDL_Log("Using audio driver: %s\n", SDL_GetCurrentAudioDriver());
+    
+    #if __NACL__
+    SDL_RWUmount("/");
+    SDL_RWMount(
+        "",  /* source */
+        "/",  /* target */
+        "httpfs",  /* filesystemtype */
+        0,  /* mountflags */
+        "");  /* data specific to the html5fs type */
+#endif
 
     devcount = SDL_GetNumAudioDevices(0);
     if (devcount < 1) {
