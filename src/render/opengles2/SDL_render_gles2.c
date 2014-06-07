@@ -79,6 +79,10 @@ typedef struct GLES2_TextureData
     GLenum pixel_type;
     void *pixel_data;
     size_t pitch;
+    /* YV12 texture support */
+    SDL_bool yuv;
+    GLenum texture_v;
+    GLenum texture_u;
     GLES2_FBOList *fbo;
 } GLES2_TextureData;
 
@@ -133,7 +137,9 @@ typedef enum
     GLES2_UNIFORM_PROJECTION,
     GLES2_UNIFORM_TEXTURE,
     GLES2_UNIFORM_MODULATION,
-    GLES2_UNIFORM_COLOR
+    GLES2_UNIFORM_COLOR,
+    GLES2_UNIFORM_TEXTURE_U,
+    GLES2_UNIFORM_TEXTURE_V
 } GLES2_Uniform;
 
 typedef enum
@@ -142,7 +148,8 @@ typedef enum
     GLES2_IMAGESOURCE_TEXTURE_ABGR,
     GLES2_IMAGESOURCE_TEXTURE_ARGB,
     GLES2_IMAGESOURCE_TEXTURE_RGB,
-    GLES2_IMAGESOURCE_TEXTURE_BGR
+    GLES2_IMAGESOURCE_TEXTURE_BGR,
+    GLES2_IMAGESOURCE_TEXTURE_YUV
 } GLES2_ImageSource;
 
 typedef struct GLES2_DriverContext
@@ -433,6 +440,11 @@ GLES2_DestroyRenderer(SDL_Renderer *renderer)
 static int GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture);
 static int GLES2_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect *rect,
                                const void *pixels, int pitch);
+static int GLES2_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
+                               const SDL_Rect * rect,
+                               const Uint8 *Yplane, int Ypitch,
+                               const Uint8 *Uplane, int Upitch,
+                               const Uint8 *Vplane, int Vpitch);
 static int GLES2_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect *rect,
                              void **pixels, int *pitch);
 static void GLES2_UnlockTexture(SDL_Renderer *renderer, SDL_Texture *texture);
@@ -472,6 +484,11 @@ GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         format = GL_RGBA;
         type = GL_UNSIGNED_BYTE;
         break;
+    case SDL_PIXELFORMAT_IYUV:
+    case SDL_PIXELFORMAT_YV12:
+        format = GL_LUMINANCE;
+        type = GL_UNSIGNED_BYTE;
+        break;
     default:
         return SDL_SetError("Texture format not supported");
     }
@@ -485,12 +502,21 @@ GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     data->texture_type = GL_TEXTURE_2D;
     data->pixel_format = format;
     data->pixel_type = type;
+    data->yuv = ((texture->format == SDL_PIXELFORMAT_IYUV) || (texture->format == SDL_PIXELFORMAT_YV12));
+    data->texture_u = 0;
+    data->texture_v = 0;
     scaleMode = GetScaleQuality();
 
     /* Allocate a blob for image renderdata */
     if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
+        size_t size;
         data->pitch = texture->w * SDL_BYTESPERPIXEL(texture->format);
-        data->pixel_data = SDL_calloc(1, data->pitch * texture->h);
+        size = texture->h * data->pitch;
+        if (data->yuv) {
+            /* Need to add size for the U and V planes */
+            size += (2 * (texture->h * data->pitch) / 4);
+        }
+        data->pixel_data = SDL_calloc(1, size);
         if (!data->pixel_data) {
             SDL_free(data);
             return SDL_OutOfMemory();
@@ -499,11 +525,42 @@ GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 
     /* Allocate the texture */
     GL_CheckError("", renderer);
+
+    if (data->yuv) {
+        renderdata->glGenTextures(1, &data->texture_v);
+        if (GL_CheckError("glGenTexures()", renderer) < 0) {
+            return -1;
+        }
+        renderdata->glActiveTexture(GL_TEXTURE2);
+        renderdata->glBindTexture(data->texture_type, data->texture_v);
+        renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MIN_FILTER, scaleMode);
+        renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MAG_FILTER, scaleMode);
+        renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        renderdata->glTexImage2D(data->texture_type, 0, format, texture->w / 2, texture->h / 2, 0, format, type, NULL);
+
+        renderdata->glGenTextures(1, &data->texture_u);
+        if (GL_CheckError("glGenTexures()", renderer) < 0) {
+            return -1;
+        }
+        renderdata->glActiveTexture(GL_TEXTURE1);
+        renderdata->glBindTexture(data->texture_type, data->texture_u);
+        renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MIN_FILTER, scaleMode);
+        renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MAG_FILTER, scaleMode);
+        renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        renderdata->glTexImage2D(data->texture_type, 0, format, texture->w / 2, texture->h / 2, 0, format, type, NULL);
+        if (GL_CheckError("glTexImage2D()", renderer) < 0) {
+            return -1;
+        }
+    }
+
     renderdata->glGenTextures(1, &data->texture);
     if (GL_CheckError("glGenTexures()", renderer) < 0) {
         return -1;
     }
     texture->driverdata = data;
+    renderdata->glActiveTexture(GL_TEXTURE0);
     renderdata->glBindTexture(data->texture_type, data->texture);
     renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MIN_FILTER, scaleMode);
     renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MAG_FILTER, scaleMode);
@@ -575,6 +632,53 @@ GLES2_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect
 }
 
 static int
+GLES2_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
+                    const SDL_Rect * rect,
+                    const Uint8 *Yplane, int Ypitch,
+                    const Uint8 *Uplane, int Upitch,
+                    const Uint8 *Vplane, int Vpitch)
+{
+    GLES2_DriverContext *data = (GLES2_DriverContext *)renderer->driverdata;
+    GLES2_TextureData *tdata = (GLES2_TextureData *)texture->driverdata;
+
+    data->glBindTexture(tdata->texture_type, tdata->texture_v);
+    data->glTexSubImage2D(tdata->texture_type,
+                    0,
+                    rect->x,
+                    rect->y,
+                    rect->w / 2,
+                    rect->h / 2,
+                    tdata->pixel_format,
+                    tdata->pixel_type,
+                    Vplane);
+
+    data->glBindTexture(tdata->texture_type, tdata->texture_u);
+    data->glTexSubImage2D(tdata->texture_type,
+                    0,
+                    rect->x,
+                    rect->y,
+                    rect->w / 2,
+                    rect->h / 2,
+                    tdata->pixel_format,
+                    tdata->pixel_type,
+                    Uplane);
+
+    data->glBindTexture(tdata->texture_type, tdata->texture);
+    data->glTexSubImage2D(tdata->texture_type,
+                    0,
+                    rect->x,
+                    rect->y,
+                    rect->w,
+                    rect->h,
+                    tdata->pixel_format,
+                    tdata->pixel_type,
+                    Yplane);
+
+
+    return GL_CheckError("glTexSubImage2D()", renderer);
+}
+
+static int
 GLES2_LockTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect *rect,
                   void **pixels, int *pitch)
 {
@@ -638,6 +742,12 @@ GLES2_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     if (tdata)
     {
         data->glDeleteTextures(1, &tdata->texture);
+        if (tdata->texture_v) {
+            data->glDeleteTextures(1, &tdata->texture_v);
+        }
+        if (tdata->texture_u) {
+            data->glDeleteTextures(1, &tdata->texture_u);
+        }
         SDL_free(tdata->pixel_data);
         SDL_free(tdata);
         texture->driverdata = NULL;
@@ -723,6 +833,10 @@ GLES2_CacheProgram(SDL_Renderer *renderer, GLES2_ShaderCacheEntry *vertex,
     /* Predetermine locations of uniform variables */
     entry->uniform_locations[GLES2_UNIFORM_PROJECTION] =
         data->glGetUniformLocation(entry->id, "u_projection");
+    entry->uniform_locations[GLES2_UNIFORM_TEXTURE_V] =
+        data->glGetUniformLocation(entry->id, "u_texture_v");
+    entry->uniform_locations[GLES2_UNIFORM_TEXTURE_U] =
+        data->glGetUniformLocation(entry->id, "u_texture_u");
     entry->uniform_locations[GLES2_UNIFORM_TEXTURE] =
         data->glGetUniformLocation(entry->id, "u_texture");
     entry->uniform_locations[GLES2_UNIFORM_MODULATION] =
@@ -734,8 +848,10 @@ GLES2_CacheProgram(SDL_Renderer *renderer, GLES2_ShaderCacheEntry *vertex,
     entry->color_r = entry->color_g = entry->color_b = entry->color_a = 255;
 
     data->glUseProgram(entry->id);
-    data->glUniformMatrix4fv(entry->uniform_locations[GLES2_UNIFORM_PROJECTION], 1, GL_FALSE, (GLfloat *)entry->projection);
+    data->glUniform1i(entry->uniform_locations[GLES2_UNIFORM_TEXTURE_V], 2);  /* always texture unit 2. */
+    data->glUniform1i(entry->uniform_locations[GLES2_UNIFORM_TEXTURE_U], 1);  /* always texture unit 1. */
     data->glUniform1i(entry->uniform_locations[GLES2_UNIFORM_TEXTURE], 0);  /* always texture unit 0. */
+    data->glUniformMatrix4fv(entry->uniform_locations[GLES2_UNIFORM_PROJECTION], 1, GL_FALSE, (GLfloat *)entry->projection);
     data->glUniform4f(entry->uniform_locations[GLES2_UNIFORM_MODULATION], 1.0f, 1.0f, 1.0f, 1.0f);
     data->glUniform4f(entry->uniform_locations[GLES2_UNIFORM_COLOR], 1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -926,6 +1042,9 @@ GLES2_SelectProgram(SDL_Renderer *renderer, GLES2_ImageSource source, SDL_BlendM
         break;
     case GLES2_IMAGESOURCE_TEXTURE_BGR:
         ftype = GLES2_SHADER_FRAGMENT_TEXTURE_BGR_SRC;
+        break;
+    case GLES2_IMAGESOURCE_TEXTURE_YUV:
+        ftype = GLES2_SHADER_FRAGMENT_TEXTURE_YUV_SRC;
         break;
     default:
         goto fault;
@@ -1358,6 +1477,11 @@ GLES2_RenderCopy(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect *s
             case SDL_PIXELFORMAT_RGB888:
                 sourceType = GLES2_IMAGESOURCE_TEXTURE_RGB;
                 break;
+            // TODO: new shader to change yv planes YV12 format
+            case SDL_PIXELFORMAT_IYUV:
+            case SDL_PIXELFORMAT_YV12:
+                sourceType = GLES2_IMAGESOURCE_TEXTURE_YUV;
+                break;
             default:
                 return -1;
         }
@@ -1368,6 +1492,15 @@ GLES2_RenderCopy(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect *s
     }
 
     /* Select the target texture */
+    if (tdata->yuv) {
+        data->glActiveTexture(GL_TEXTURE2);
+        data->glBindTexture(tdata->texture_type, tdata->texture_v);
+
+        data->glActiveTexture(GL_TEXTURE1);
+        data->glBindTexture(tdata->texture_type, tdata->texture_u);
+
+        data->glActiveTexture(GL_TEXTURE0);
+    }
     data->glBindTexture(tdata->texture_type, tdata->texture);
 
     /* Configure color modulation */
@@ -1869,6 +2002,7 @@ GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->WindowEvent         = &GLES2_WindowEvent;
     renderer->CreateTexture       = &GLES2_CreateTexture;
     renderer->UpdateTexture       = &GLES2_UpdateTexture;
+    renderer->UpdateTextureYUV    = &GLES2_UpdateTextureYUV;
     renderer->LockTexture         = &GLES2_LockTexture;
     renderer->UnlockTexture       = &GLES2_UnlockTexture;
     renderer->SetRenderTarget     = &GLES2_SetRenderTarget;
@@ -1886,6 +2020,9 @@ GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->DestroyRenderer     = &GLES2_DestroyRenderer;
     renderer->GL_BindTexture      = &GLES2_BindTexture;
     renderer->GL_UnbindTexture    = &GLES2_UnbindTexture;
+
+    renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_YV12;
+    renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_IYUV;
 
     GLES2_ResetState(renderer);
 
