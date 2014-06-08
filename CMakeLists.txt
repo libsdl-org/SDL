@@ -494,7 +494,7 @@ if(LIBC)
             strlen _strrev _strupr _strlwr strchr strrchr strstr itoa _ltoa
             _ultoa strtol strtoul strtoll strtod atoi atof strcmp strncmp
             _stricmp _strnicmp sscanf atan atan2 acos asin ceil copysign cos
-            cosf fabs floor log pow scalbn sin sinf sqrt)
+            cosf fabs floor log pow scalbn sin sinf sqrt sqrtf tan tanf)
       string(TOUPPER ${_FN} _UPPER)
       set(HAVE_${_UPPER} 1)
     endforeach()
@@ -541,7 +541,7 @@ if(LIBC)
       set(CMAKE_REQUIRED_LIBRARIES m)
       foreach(_FN
               atan atan2 ceil copysign cos cosf fabs floor log pow scalbn sin
-              sinf sqrt)
+              sinf sqrt sqrtf tan tanf)
         string(TOUPPER ${_FN} _UPPER)
         set(_HAVEVAR "HAVE_${_UPPER}")
         check_function_exists("${_FN}" ${_HAVEVAR})
