@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -61,14 +61,14 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Platform)\$(Configuration)\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Platform)\$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)\$(Platform)\$(Configuration)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Platform)\$(Configuration)\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Platform)\$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</LinkIncremental>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Platform)\$(Configuration)\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)\$(Platform)\$(Configuration)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Platform)\$(Configuration)\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
@@ -91,13 +91,8 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <TargetMachine>MachineX86</TargetMachine>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
-    <PostBuildEvent>
-      <Command>copy "$(SolutionDir)\SDL\$(Platform)\$(Configuration)\SDL2.dll" "$(TargetDir)\SDL2.dll"</Command>
-    </PostBuildEvent>
-    <PostBuildEvent>
-      <Message>Copy SDL</Message>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -114,13 +109,8 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
-    <PostBuildEvent>
-      <Command>copy "$(SolutionDir)\SDL\$(Platform)\$(Configuration)\SDL2.dll" "$(TargetDir)\SDL2.dll"</Command>
-    </PostBuildEvent>
-    <PostBuildEvent>
-      <Message>Copy SDL</Message>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -142,12 +132,6 @@
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <TargetMachine>MachineX86</TargetMachine>
     </Link>
-    <PostBuildEvent>
-      <Command>copy "$(SolutionDir)\SDL\$(Platform)\$(Configuration)\SDL2.dll" "$(TargetDir)\SDL2.dll"</Command>
-    </PostBuildEvent>
-    <PostBuildEvent>
-      <Message>Copy SDL</Message>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -161,12 +145,6 @@
       </PrecompiledHeader>
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
-      <PostBuildEvent>
-        <Command>copy "$(SolutionDir)\SDL\$(Platform)\$(Configuration)\SDL2.dll" "$(TargetDir)\SDL2.dll"</Command>
-      </PostBuildEvent>
-      <PostBuildEvent>
-        <Message>Copy SDL</Message>
-      </PostBuildEvent>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>

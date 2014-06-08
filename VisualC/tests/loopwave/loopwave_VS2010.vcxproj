@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -63,14 +63,14 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Platform)\$(Configuration)\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)\$(Platform)\$(Configuration)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Platform)\$(Configuration)\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Platform)\$(Configuration)\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Platform)\$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)\$(Platform)\$(Configuration)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Platform)\$(Configuration)\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Platform)\$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
@@ -104,13 +104,6 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <SubSystem>Windows</SubSystem>
     </Link>
-    <PostBuildEvent>
-      <Command>copy "$(SolutionDir)\SDL\$(Platform)\$(Configuration)\SDL2.dll" "$(TargetDir)\SDL2.dll"
-copy "$(SolutionDir)\..\test\sample.wav" "$(TargetDir)\sample.wav"</Command>
-    </PostBuildEvent>
-    <PostBuildEvent>
-      <Message>Copy SDL</Message>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Midl>
@@ -139,13 +132,6 @@ copy "$(SolutionDir)\..\test\sample.wav" "$(TargetDir)\sample.wav"</Command>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <SubSystem>Windows</SubSystem>
     </Link>
-    <PostBuildEvent>
-      <Command>copy "$(SolutionDir)\SDL\$(Platform)\$(Configuration)\SDL2.dll" "$(TargetDir)\SDL2.dll"
-copy "$(SolutionDir)\..\test\sample.wav" "$(TargetDir)\sample.wav"</Command>
-    </PostBuildEvent>
-    <PostBuildEvent>
-      <Message>Copy SDL</Message>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <Midl>
@@ -174,14 +160,8 @@ copy "$(SolutionDir)\..\test\sample.wav" "$(TargetDir)\sample.wav"</Command>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
-    <PostBuildEvent>
-      <Command>copy "$(SolutionDir)\SDL\$(Platform)\$(Configuration)\SDL2.dll" "$(TargetDir)\SDL2.dll"
-copy "$(SolutionDir)\..\test\sample.wav" "$(TargetDir)\sample.wav"</Command>
-    </PostBuildEvent>
-    <PostBuildEvent>
-      <Message>Copy SDL</Message>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <Midl>
@@ -209,17 +189,28 @@ copy "$(SolutionDir)\..\test\sample.wav" "$(TargetDir)\sample.wav"</Command>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
-    <PostBuildEvent>
-      <Command>copy "$(SolutionDir)\SDL\$(Platform)\$(Configuration)\SDL2.dll" "$(TargetDir)\SDL2.dll"
-copy "$(SolutionDir)\..\test\sample.wav" "$(TargetDir)\sample.wav"</Command>
-    </PostBuildEvent>
-    <PostBuildEvent>
-      <Message>Copy SDL</Message>
-    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\Test\Loopwave.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="..\..\..\test\sample.wav">
+      <FileType>Document</FileType>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">copy %(FullPath) $(ProjectDir)\</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(ProjectDir)\%(Filename)%(Extension)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">copy %(FullPath) $(ProjectDir)\</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(ProjectDir)\%(Filename)%(Extension)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">copy %(FullPath) $(ProjectDir)\</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(ProjectDir)\%(Filename)%(Extension)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">copy %(FullPath) $(ProjectDir)\</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(ProjectDir)\%(Filename)%(Extension)</Outputs>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Copying %(Filename)%(Extension)</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Copying %(Filename)%(Extension)</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Copying %(Filename)%(Extension)</Message>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Copying %(Filename)%(Extension)</Message>
+    </CustomBuild>
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\SDLmain\SDLmain_VS2010.vcxproj">
