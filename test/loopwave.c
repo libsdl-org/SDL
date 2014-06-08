@@ -90,7 +90,7 @@ main(int argc, char *argv[])
         return (1);
     }
 
-    if (argc >= 1) {
+    if (argc > 1) {
         SDL_strlcpy(filename, argv[1], sizeof(filename));
     } else {
         SDL_strlcpy(filename, "sample.wav", sizeof(filename));
