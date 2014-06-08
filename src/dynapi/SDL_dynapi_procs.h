@@ -613,3 +613,6 @@ SDL_DYNAPI_PROC(const wchar_t*,SDL_WinRTGetFSPathUNICODE,(SDL_WinRT_Path a),(a),
 SDL_DYNAPI_PROC(const char*,SDL_WinRTGetFSPathUTF8,(SDL_WinRT_Path a),(a),return)
 #endif
 SDL_DYNAPI_PROC(void,SDL_WarpMouseGlobal,(int a, int b),(a,b),)
+SDL_DYNAPI_PROC(float,SDL_sqrtf,(float a),(a),return)
+SDL_DYNAPI_PROC(double,SDL_tan,(double a),(a),return)
+SDL_DYNAPI_PROC(float,SDL_tanf,(float a),(a),return)

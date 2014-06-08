@@ -40,6 +40,7 @@ typedef unsigned int u_int32_t;
 #define scalbn          SDL_uclibc_scalbn
 #define sin             SDL_uclibc_sin
 #define __ieee754_sqrt  SDL_uclibc_sqrt
+#define tan             SDL_uclibc_tan
 
 /* The original fdlibm code used statements like:
 	n0 = ((*(int*)&one)>>29)^1;		* index of high word *

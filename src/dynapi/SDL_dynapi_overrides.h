@@ -581,3 +581,6 @@
 #define SDL_WinRTGetFSPathUNICODE SDL_WinRTGetFSPathUNICODE_REAL
 #define SDL_WinRTGetFSPathUTF8 SDL_WinRTGetFSPathUTF8_REAL
 #define SDL_WinRTRunApp SDL_WinRTRunApp_REAL
+#define SDL_sqrtf SDL_sqrtf_REAL
+#define SDL_tan SDL_tan_REAL
+#define SDL_tanf SDL_tanf_REAL

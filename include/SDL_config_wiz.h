@@ -89,6 +89,9 @@
 #define HAVE_SIN 1
 #define HAVE_SINF 1
 #define HAVE_SQRT 1
+#define HAVE_SQRTF 1
+#define HAVE_TAN 1
+#define HAVE_TANF 1
 #define HAVE_SIGACTION 1
 #define HAVE_SETJMP 1
 #define HAVE_NANOSLEEP 1

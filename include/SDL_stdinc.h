@@ -411,6 +411,9 @@ extern DECLSPEC double SDLCALL SDL_scalbn(double x, int n);
 extern DECLSPEC double SDLCALL SDL_sin(double x);
 extern DECLSPEC float SDLCALL SDL_sinf(float x);
 extern DECLSPEC double SDLCALL SDL_sqrt(double x);
+extern DECLSPEC float SDLCALL SDL_sqrtf(float x);
+extern DECLSPEC double SDLCALL SDL_tan(double x);
+extern DECLSPEC float SDLCALL SDL_tanf(float x);
 
 /* The SDL implementation of iconv() returns these error codes */
 #define SDL_ICONV_ERROR     (size_t)-1
