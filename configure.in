@@ -3151,13 +3151,21 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         CheckDummyAudio
         CheckDummyVideo
         CheckInputEvents
+        CheckPTHREAD
+        
         # Set up files for the timer library
         if test x$enable_timers = xyes; then
             AC_DEFINE(SDL_TIMER_UNIX)
             SOURCES="$SOURCES $srcdir/src/timer/unix/*.c"
             have_timers=yes
         fi
-        CheckPTHREAD      
+        
+        if test x$enable_filesystem = xyes; then
+            AC_DEFINE(SDL_FILESYSTEM_NACL, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/filesystem/nacl/*.c"
+            have_filesystem=yes
+        fi
+        
         ;;
     *)
         AC_MSG_ERROR([

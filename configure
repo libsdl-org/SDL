@@ -23211,6 +23211,8 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
         CheckDummyAudio
         CheckDummyVideo
         CheckInputEvents
+        CheckPTHREAD
+
         # Set up files for the timer library
         if test x$enable_timers = xyes; then
             $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
@@ -23218,7 +23220,15 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
             SOURCES="$SOURCES $srcdir/src/timer/unix/*.c"
             have_timers=yes
         fi
-        CheckPTHREAD
+
+        if test x$enable_filesystem = xyes; then
+
+$as_echo "#define SDL_FILESYSTEM_NACL 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/filesystem/nacl/*.c"
+            have_filesystem=yes
+        fi
+
         ;;
     *)
         as_fn_error $? "

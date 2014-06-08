@@ -24,6 +24,7 @@
 
 /* Include the SDL main definition header */
 #include "SDL_main.h"
+#include "SDL_system.h"
 
 #include "ppapi_simple/ps_main.h"
 #include "ppapi_simple/ps_event.h"
@@ -63,6 +64,18 @@ nacl_main(int argc, char *argv[])
             PSEventRelease(ps_event);
         }
     }
+    
+    /* Do a default httpfs mount on /, 
+     * apps can override this by unmounting / 
+     * and remounting with the desired configuration
+     */
+    SDL_NaClUmount("/");
+    SDL_NaClMount(
+        "",  /* source */
+        "/",  /* target */
+        "httpfs",  /* filesystemtype */
+        0,  /* mountflags */
+        "");  /* data specific to the html5fs type */
     
     /* Everything is ready, start the user main function */
     SDL_SetMainReady();
