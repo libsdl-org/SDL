@@ -33,5 +33,6 @@ double SDL_uclibc_pow(double x, double y);
 double SDL_uclibc_scalbn(double x, int n);
 double SDL_uclibc_sin(double x);
 double SDL_uclibc_sqrt(double x);
+double SDL_uclibc_tan(double x);
 
 /* vi: set ts=4 sw=4 expandtab: */
