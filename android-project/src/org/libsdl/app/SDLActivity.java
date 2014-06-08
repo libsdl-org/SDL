@@ -991,15 +991,14 @@ class SDLJoystickHandler {
 
 /* Actual joystick functionality available for API >= 12 devices */
 class SDLJoystickHandler_API12 extends SDLJoystickHandler {
-  
-    class SDLJoystick {
+
+    static class SDLJoystick {
         public int device_id;
         public String name;
         public ArrayList<InputDevice.MotionRange> axes;
         public ArrayList<InputDevice.MotionRange> hats;
     }
-    class RangeComparator implements Comparator<InputDevice.MotionRange>
-    {
+    static class RangeComparator implements Comparator<InputDevice.MotionRange> {
         @Override
         public int compare(InputDevice.MotionRange arg0, InputDevice.MotionRange arg1) {
             return arg0.getAxis() - arg1.getAxis();
