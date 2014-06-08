@@ -49,15 +49,24 @@ static void nacl_audio_callback(void* samples, uint32_t buffer_size, PP_TimeDelt
     SDL_AudioDevice* _this = (SDL_AudioDevice*) data;
     
     SDL_LockMutex(private->mutex);
-    /*if (private->opened) {*/
-    SDL_memset(samples, _this->spec.silence, buffer_size);
-    SDL_LockMutex(_this->mixer_lock);
-    (*_this->spec.callback)(_this->spec.userdata, (Uint8*)samples, buffer_size);
-    SDL_UnlockMutex(_this->mixer_lock);
-    /*} else {
+
+    if (_this->enabled && !_this->paused) {
+        if (_this->convert.needed) {
+            SDL_LockMutex(_this->mixer_lock);
+            (*_this->spec.callback) (_this->spec.userdata,
+                                     (Uint8 *) _this->convert.buf,
+                                     _this->convert.len);
+            SDL_UnlockMutex(_this->mixer_lock);
+            SDL_ConvertAudio(&_this->convert);
+            SDL_memcpy(samples, _this->convert.buf, _this->convert.len_cvt);
+        } else {
+            SDL_LockMutex(_this->mixer_lock);
+            (*_this->spec.callback) (_this->spec.userdata, (Uint8 *) samples, buffer_size);
+            SDL_UnlockMutex(_this->mixer_lock);
+        }
+    } else {
         SDL_memset(samples, 0, buffer_size);
-    }*/
-    SDL_UnlockMutex(private->mutex);
+    }
     
     return;
 }
@@ -92,6 +101,9 @@ NACLAUD_OpenDevice(_THIS, const char *devname, int iscapture) {
         instance, 
         PP_AUDIOSAMPLERATE_44100, 
         SAMPLE_FRAME_COUNT);
+    
+    /* Calculate the final parameters for this audio specification */
+    SDL_CalculateAudioSpec(&_this->spec);
     
     private->audio = ppb_audio->Create(
         instance,

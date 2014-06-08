@@ -53,8 +53,23 @@ Once the build finishes, you have to serve the contents with a web server (the
 script will give you instructions on how to do that with Python).
 
 ================================================================================
+RWOps and nacl_io
+================================================================================
+
+SDL_RWops work transparently with nacl_io. Two functions are provided to control
+mount points:
+    
+    
+    For convenience, SDL will by default
+mount an httpfs tree at / before calling the app's main function. Such setting
+can be overriden by calling SDL_NaCl
+
+For more information on how nacl_io and mount points work, see:
+    
+    https://developer.chrome.com/native-client/devguide/coding/nacl_io
+
+================================================================================
 TODO - Known Issues
 ================================================================================
-* Audio backend is not usable yet.
 * Testing of all systems with a real application (something other than SDL's tests)
 

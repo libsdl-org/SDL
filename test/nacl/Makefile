@@ -13,8 +13,8 @@ include $(NACL_SDK_ROOT)/tools/common.mk
 
 TARGET = sdl_app
 DEPS = ppapi_simple nacl_io
-# ppapi_simple ends up being listed twice due to dependency solving issues -- Gabriel
-LIBS = SDL2_test SDL2 ppapi_simple SDL2main $(DEPS) ppapi_gles2 ppapi_cpp ppapi pthread 
+# ppapi_simple and SDL2 end up being listed twice due to dependency solving issues -- Gabriel
+LIBS = SDL2_test SDL2 ppapi_simple SDL2main SDL2 $(DEPS) ppapi_gles2 ppapi_cpp ppapi pthread 
 
 CFLAGS := -Wall
 SOURCES ?= testgles2.c

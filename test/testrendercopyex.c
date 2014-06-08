@@ -161,16 +161,6 @@ main(int argc, char *argv[])
         quit(2);
     }
 
-#if __NACL__
-    SDL_RWUmount("/");
-    SDL_RWMount(
-        "",  /* source */
-        "/",  /* target */
-        "httpfs",  /* filesystemtype */
-        0,  /* mountflags */
-        "");  /* data specific to the html5fs type */
-#endif    
-    
     drawstates = SDL_stack_alloc(DrawState, state->num_windows);
     for (i = 0; i < state->num_windows; ++i) {
         DrawState *drawstate = &drawstates[i];

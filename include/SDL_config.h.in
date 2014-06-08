@@ -336,6 +336,7 @@
 #undef SDL_FILESYSTEM_DUMMY
 #undef SDL_FILESYSTEM_UNIX
 #undef SDL_FILESYSTEM_WINDOWS
+#undef SDL_FILESYSTEM_NACL
 
 /* Enable assembly routines */
 #undef SDL_ASSEMBLY_ROUTINES

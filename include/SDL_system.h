@@ -179,6 +179,22 @@ extern DECLSPEC const char * SDLCALL SDL_WinRTGetFSPathUTF8(SDL_WinRT_Path pathT
 
 #endif /* __WINRT__ */
 
+#ifdef __NACL__
+
+/**
+ *  \name Mount/umount functions
+ *
+ *  Required for RWOps on Native Client
+ */
+/* @{ */
+extern DECLSPEC int SDLCALL SDL_NaClMount(const char* source, const char* target, 
+                                        const char* filesystemtype, 
+                                        unsigned long mountflags, const void *data);
+
+extern DECLSPEC int SDLCALL SDL_NaClUmount(const char *target);
+
+#endif /* __NACL__ */
+
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
