@@ -39,7 +39,7 @@
  *	TRIG(x) returns trig(x) nearly rounded
  */
 
-#include "math.h"
+#include "math_libm.h"
 #include "math_private.h"
 
 double tan(double x)
