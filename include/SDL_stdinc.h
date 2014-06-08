@@ -208,7 +208,7 @@ typedef uint64_t Uint64;
 #define SDL_PRINTF_VARARG_FUNC( fmtargnumber )
 #define SDL_SCANF_VARARG_FUNC( fmtargnumber )
 #endif
-#endif /* SDL_DISABLE_ANALYSE_MACROS */
+#endif /* SDL_DISABLE_ANALYZE_MACROS */
 
 #define SDL_COMPILE_TIME_ASSERT(name, x)               \
        typedef int SDL_dummy_ ## name[(x) * 2 - 1]
