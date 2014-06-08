@@ -1468,6 +1468,9 @@ SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, 
     size_t left = maxlen;
     char *textstart = text;
 
+    if (!fmt) {
+        fmt = "";
+    }
     while (*fmt) {
         if (*fmt == '%') {
             SDL_bool done = SDL_FALSE;
