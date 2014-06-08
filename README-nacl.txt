@@ -28,6 +28,10 @@ path can't be modified externally, so the linker won't find SDL's binaries unles
 you dump them into the SDK path, which is inconvenient).
 Also provided in test/nacl is the required support file, such as index.html, 
 manifest.json, etc.
+SDL apps for NaCl run on a worker thread using the ppapi_simple infrastructure.
+This allows for blocking calls on all the relevant systems (OpenGL ES, filesystem),
+hiding the asynchronous nature of the browser behind the scenes...which is not the
+same as making it dissapear!
 
 
 ================================================================================
@@ -59,10 +63,24 @@ RWOps and nacl_io
 SDL_RWops work transparently with nacl_io. Two functions are provided to control
 mount points:
     
+    int SDL_NaClMount(const char* source, const char* target, 
+                      const char* filesystemtype, 
+                      unsigned long mountflags, const void *data);
+    int SDL_NaClUmount(const char *target);
     
-    For convenience, SDL will by default
-mount an httpfs tree at / before calling the app's main function. Such setting
-can be overriden by calling SDL_NaCl
+    For convenience, SDL will by default mount an httpfs tree at / before calling 
+the app's main function. Such setting can be overriden by calling:
+    
+    SDL_NaClUmount("/");
+
+And then mounting a different filesystem at /
+
+It's important to consider that the asynchronous nature of file operations on a
+browser is hidden from the application, effectively providing the developer with
+a set of blocking file operations just like you get in a regular desktop 
+environment, which eases the job of porting to Native Client, but also introduces 
+a set of challenges of its own, in particular when big file sizes and slow 
+connections are involved.
 
 For more information on how nacl_io and mount points work, see:
     
