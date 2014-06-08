@@ -220,18 +220,6 @@ extern DECLSPEC size_t SDLCALL SDL_WriteLE64(SDL_RWops * dst, Uint64 value);
 extern DECLSPEC size_t SDLCALL SDL_WriteBE64(SDL_RWops * dst, Uint64 value);
 /* @} *//* Write endian functions */
 
-/**
- *  \name Mount/umount functions
- *
- *  Required for RWops on Native Client
- */
-/* @{ */
-extern DECLSPEC int SDLCALL SDL_RWMount(const char* source, const char* target, 
-                                        const char* filesystemtype, 
-                                        unsigned long mountflags, const void *data);
-extern DECLSPEC int SDLCALL SDL_RWUmount(const char *target);
-/* @} *//* Mount/umount functions */
-
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }
