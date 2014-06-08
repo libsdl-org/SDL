@@ -99,19 +99,19 @@ quit(int rc)
  * order. 
  */
 static void
-rotate_matrix(double angle, double x, double y, double z, float *r)
+rotate_matrix(float angle, float x, float y, float z, float *r)
 {
-    double radians, c, s, c1, u[3], length;
+    float radians, c, s, c1, u[3], length;
     int i, j;
 
-    radians = (angle * M_PI) / 180.0;
+    radians = (float)(angle * M_PI) / 180.0f;
 
-    c = cos(radians);
-    s = sin(radians);
+    c = SDL_cosf(radians);
+    s = SDL_sinf(radians);
 
-    c1 = 1.0 - cos(radians);
+    c1 = 1.0f - SDL_cosf(radians);
 
-    length = sqrt(x * x + y * y + z * z);
+    length = (float)SDL_sqrt(x * x + y * y + z * z);
 
     u[0] = x / length;
     u[1] = y / length;
@@ -130,7 +130,7 @@ rotate_matrix(double angle, double x, double y, double z, float *r)
 
     for (i = 0; i < 3; i++) {
         for (j = 0; j < 3; j++) {
-            r[i * 4 + j] += c1 * u[i] * u[j] + (i == j ? c : 0.0);
+            r[i * 4 + j] += c1 * u[i] * u[j] + (i == j ? c : 0.0f);
         }
     }
 }
@@ -139,12 +139,12 @@ rotate_matrix(double angle, double x, double y, double z, float *r)
  * Simulates gluPerspectiveMatrix 
  */
 static void 
-perspective_matrix(double fovy, double aspect, double znear, double zfar, float *r)
+perspective_matrix(float fovy, float aspect, float znear, float zfar, float *r)
 {
     int i;
-    double f;
+    float f;
 
-    f = 1.0/tan(fovy * 0.5);
+    f = 1.0f/SDL_tanf(fovy * 0.5f);
 
     for (i = 0; i < 16; i++) {
         r[i] = 0.0;
@@ -153,9 +153,9 @@ perspective_matrix(double fovy, double aspect, double znear, double zfar, float 
     r[0] = f / aspect;
     r[5] = f;
     r[10] = (znear + zfar) / (znear - zfar);
-    r[11] = -1.0;
-    r[14] = (2.0 * znear * zfar) / (znear - zfar);
-    r[15] = 0.0;
+    r[11] = -1.0f;
+    r[14] = (2.0f * znear * zfar) / (znear - zfar);
+    r[15] = 0.0f;
 }
 
 /* 
@@ -376,19 +376,19 @@ Render(unsigned int width, unsigned int height, shader_data* data)
     * Do some rotation with Euler angles. It is not a fixed axis as
     * quaterions would be, but the effect is cool. 
     */
-    rotate_matrix(data->angle_x, 1.0, 0.0, 0.0, matrix_modelview);
-    rotate_matrix(data->angle_y, 0.0, 1.0, 0.0, matrix_rotate);
+    rotate_matrix((float)data->angle_x, 1.0f, 0.0f, 0.0f, matrix_modelview);
+    rotate_matrix((float)data->angle_y, 0.0f, 1.0f, 0.0f, matrix_rotate);
 
     multiply_matrix(matrix_rotate, matrix_modelview, matrix_modelview);
 
-    rotate_matrix(data->angle_z, 0.0, 1.0, 0.0, matrix_rotate);
+    rotate_matrix((float)data->angle_z, 0.0f, 1.0f, 0.0f, matrix_rotate);
 
     multiply_matrix(matrix_rotate, matrix_modelview, matrix_modelview);
 
     /* Pull the camera back from the cube */
     matrix_modelview[14] -= 2.5;
 
-    perspective_matrix(45.0, (double)width/(double)height, 0.01, 100.0, matrix_perspective);
+    perspective_matrix(45.0f, (float)width/height, 0.01f, 100.0f, matrix_perspective);
     multiply_matrix(matrix_perspective, matrix_modelview, matrix_mvp);
 
     GL_CHECK(ctx.glUniformMatrix4fv(data->attr_mvp, 1, GL_FALSE, matrix_mvp));
