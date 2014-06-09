@@ -31,7 +31,7 @@ manifest.json, etc.
 SDL apps for NaCl run on a worker thread using the ppapi_simple infrastructure.
 This allows for blocking calls on all the relevant systems (OpenGL ES, filesystem),
 hiding the asynchronous nature of the browser behind the scenes...which is not the
-same as making it dissapear!
+same as making it disappear!
 
 
 ================================================================================
@@ -57,7 +57,7 @@ Once the build finishes, you have to serve the contents with a web server (the
 script will give you instructions on how to do that with Python).
 
 ================================================================================
-RWOps and nacl_io
+RWops and nacl_io
 ================================================================================
 
 SDL_RWops work transparently with nacl_io. Two functions are provided to control
@@ -69,7 +69,7 @@ mount points:
     int SDL_NaClUmount(const char *target);
     
     For convenience, SDL will by default mount an httpfs tree at / before calling 
-the app's main function. Such setting can be overriden by calling:
+the app's main function. Such setting can be overridden by calling:
     
     SDL_NaClUmount("/");
 
