@@ -260,6 +260,24 @@ WIN_CaptureMouse(SDL_Window *window)
     return ToggleRawInput(window != NULL);
 }
 
+static Uint32
+WIN_GetAbsoluteMouseState(int *x, int *y)
+{
+    Uint32 retval = 0;
+    POINT pt = { 0, 0 };
+    GetCursorPos(&pt);
+    *x = (int) pt.x;
+    *y = (int) pt.y;
+
+    retval |= GetAsyncKeyState(VK_LBUTTON) & 0x8000 ? SDL_BUTTON_LMASK : 0;
+    retval |= GetAsyncKeyState(VK_RBUTTON) & 0x8000 ? SDL_BUTTON_RMASK : 0;
+    retval |= GetAsyncKeyState(VK_MBUTTON) & 0x8000 ? SDL_BUTTON_MMASK : 0;
+    retval |= GetAsyncKeyState(VK_X1BUTTON) & 0x8000 ? SDL_BUTTON_X1MASK : 0;
+    retval |= GetAsyncKeyState(VK_X2BUTTON) & 0x8000 ? SDL_BUTTON_X2MASK : 0;
+
+    return retval;
+}
+
 void
 WIN_InitMouse(_THIS)
 {
@@ -272,6 +290,7 @@ WIN_InitMouse(_THIS)
     mouse->WarpMouse = WIN_WarpMouse;
     mouse->SetRelativeMouseMode = WIN_SetRelativeMouseMode;
     mouse->CaptureMouse = WIN_CaptureMouse;
+    mouse->GetAbsoluteMouseState = WIN_GetAbsoluteMouseState;
 
     SDL_SetDefaultCursor(WIN_CreateDefaultCursor());
 
