@@ -282,6 +282,31 @@ Cocoa_CaptureMouse(SDL_Window *window)
     return 0;
 }
 
+static Uint32
+Cocoa_GetAbsoluteMouseState(int *x, int *y)
+{
+    const NSUInteger cocoaButtons = [NSEvent pressedMouseButtons];
+    const NSPoint cocoaLocation = [NSEvent mouseLocation];
+    Uint32 retval = 0;
+
+    for (NSScreen *screen in [NSScreen screens]) {
+        NSRect frame = [screen frame];
+        if (NSPointInRect(cocoaLocation, frame)) {
+            *x = (int) cocoaLocation.x;
+            *y = (int) ((frame.origin.y + frame.size.height) - cocoaLocation.y);
+            break;
+        }
+    }
+
+    retval |= (cocoaButtons & (1 << 0)) ? SDL_BUTTON_LMASK : 0;
+    retval |= (cocoaButtons & (1 << 1)) ? SDL_BUTTON_RMASK : 0;
+    retval |= (cocoaButtons & (1 << 2)) ? SDL_BUTTON_MMASK : 0;
+    retval |= (cocoaButtons & (1 << 3)) ? SDL_BUTTON_X1MASK : 0;
+    retval |= (cocoaButtons & (1 << 4)) ? SDL_BUTTON_X2MASK : 0;
+
+    return retval;
+}
+
 void
 Cocoa_InitMouse(_THIS)
 {
@@ -296,6 +321,7 @@ Cocoa_InitMouse(_THIS)
     mouse->WarpMouse = Cocoa_WarpMouse;
     mouse->SetRelativeMouseMode = Cocoa_SetRelativeMouseMode;
     mouse->CaptureMouse = Cocoa_CaptureMouse;
+    mouse->GetAbsoluteMouseState = Cocoa_GetAbsoluteMouseState;
 
     SDL_SetDefaultCursor(Cocoa_CreateDefaultCursor());
 
