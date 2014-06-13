@@ -139,6 +139,7 @@ JoystickDeviceWasRemovedCallback(void *ctx, IOReturn result, void *sender)
 {
     recDevice *device = (recDevice *) ctx;
     device->removed = 1;
+    device->deviceRef = NULL; // deviceRef was invalidated due to the remove
 #if SDL_HAPTIC_IOKIT
     MacHaptic_MaybeRemoveDevice(device->ffservice);
 #endif
@@ -603,6 +604,7 @@ SDL_SYS_JoystickDetect()
 SDL_bool
 SDL_SYS_JoystickNeedsPolling()
 {
+	// BUGBUG - only works if someone else is pumping the CFRunLoop...
     return s_bDeviceAdded || s_bDeviceRemoved;
 }
 
