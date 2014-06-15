@@ -349,8 +349,11 @@ Cocoa_HandleMouseEvent(_THIS, NSEvent *event)
     }
 
     SDL_Mouse *mouse = SDL_GetMouse();
-
     SDL_MouseData *driverdata = (SDL_MouseData*)mouse->driverdata;
+    if (!driverdata) {
+        return;  /* can happen when returning from fullscreen Space on shutdown */
+    }
+
     const SDL_bool seenWarp = driverdata->seenWarp;
     driverdata->seenWarp = NO;
 
