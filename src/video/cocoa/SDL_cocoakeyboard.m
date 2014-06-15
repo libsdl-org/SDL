@@ -565,6 +565,10 @@ void
 Cocoa_HandleKeyEvent(_THIS, NSEvent *event)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+    if (!data) {
+        return;  /* can happen when returning from fullscreen Space on shutdown */
+    }
+
     unsigned short scancode = [event keyCode];
     SDL_Scancode code;
 #if 0
