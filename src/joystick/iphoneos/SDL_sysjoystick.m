@@ -49,11 +49,6 @@ void SDL_SYS_JoystickDetect()
 {
 }
 
-SDL_bool SDL_SYS_JoystickNeedsPolling()
-{
-    return SDL_FALSE;
-}
-
 /* Function to get the device-dependent name of a joystick */
 const char *
 SDL_SYS_JoystickNameForDeviceIndex(int device_index)

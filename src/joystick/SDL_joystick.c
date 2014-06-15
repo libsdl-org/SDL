@@ -736,18 +736,6 @@ SDL_JoystickEventState(int state)
 #endif /* SDL_EVENTS_DISABLED */
 }
 
-/* return 1 if you want to run the joystick update loop this frame, used by hotplug support */
-SDL_bool
-SDL_PrivateJoystickNeedsPolling()
-{
-    if (SDL_joysticks != NULL) {
-        return SDL_TRUE;
-    } else {
-        return SDL_SYS_JoystickNeedsPolling();
-    }
-}
-
-
 /* return the guid for this index */
 SDL_JoystickGUID SDL_JoystickGetDeviceGUID(int device_index)
 {

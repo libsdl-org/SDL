@@ -213,11 +213,6 @@ void SDL_SYS_JoystickDetect()
 {
 }
 
-SDL_bool SDL_SYS_JoystickNeedsPolling()
-{
-    return SDL_FALSE;
-}
-
 const char *
 SDL_SYS_JoystickNameForDeviceIndex(int device_index)
 {

@@ -392,15 +392,6 @@ void SDL_SYS_JoystickDetect()
     
 }
 
-SDL_bool SDL_SYS_JoystickNeedsPolling()
-{
-#if SDL_USE_LIBUDEV
-    return SDL_TRUE;
-#endif
-    
-    return SDL_FALSE;
-}
-
 static SDL_joylist_item *
 JoystickByDevIndex(int device_index)
 {
