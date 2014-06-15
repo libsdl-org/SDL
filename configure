@@ -23076,6 +23076,7 @@ $as_echo "#define SDL_FILESYSTEM_HAIKU 1" >>confdefs.h
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
             SOURCES="$SOURCES $srcdir/src/audio/coreaudio/*.c"
+            SUMMARY_audio="${SUMMARY_audio} coreaudio"
             have_audio=yes
         fi
         # Set up files for the joystick library
@@ -23147,6 +23148,7 @@ $as_echo "#define SDL_FILESYSTEM_HAIKU 1" >>confdefs.h
 $as_echo "#define SDL_AUDIO_DRIVER_COREAUDIO 1" >>confdefs.h
 
             SOURCES="$SOURCES $srcdir/src/audio/coreaudio/*.c"
+            SUMMARY_audio="${SUMMARY_audio} coreaudio"
             have_audio=yes
         fi
         # Set up files for the joystick library
