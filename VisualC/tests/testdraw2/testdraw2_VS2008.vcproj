@@ -17,8 +17,8 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory=".\Release"
-			IntermediateDirectory=".\Release"
+			OutputDirectory="$(SolutionDir)\$(PlatformName)\$(ConfigurationName)\"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)\"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
 			UseOfMFC="0"
@@ -99,14 +99,12 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copy SDL"
-				CommandLine="copy &quot;$(SolutionDir)\SDL\$(ConfigurationName)\SDL2.dll&quot; &quot;$(TargetDir)\SDL2.dll&quot;"
 			/>
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory=".\Debug"
-			IntermediateDirectory=".\Debug"
+			OutputDirectory="$(SolutionDir)\$(PlatformName)\$(ConfigurationName)\"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)\"
 			ConfigurationType="1"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
 			UseOfMFC="0"
@@ -187,12 +185,31 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-				Description="Copy SDL"
-				CommandLine="copy &quot;$(SolutionDir)\SDL\$(ConfigurationName)\SDL2.dll&quot; &quot;$(TargetDir)\SDL2.dll&quot;"
 			/>
 		</Configuration>
 	</Configurations>
 	<References>
+		<ProjectReference
+			ReferencedProjectIdentifier="{81CE8DAF-EBB2-4761-8E45-B71ABCCA8C68}"
+			CopyLocal="false"
+			CopyLocalDependencies="false"
+			CopyLocalSatelliteAssemblies="false"
+			RelativePathToProject=".\SDL\SDL_VS2008.vcproj"
+		/>
+		<ProjectReference
+			ReferencedProjectIdentifier="{DA956FD3-E142-46F2-9DD5-C78BEBB56B7A}"
+			CopyLocal="false"
+			CopyLocalDependencies="false"
+			CopyLocalSatelliteAssemblies="false"
+			RelativePathToProject=".\SDLmain\SDLmain_VS2008.vcproj"
+		/>
+		<ProjectReference
+			ReferencedProjectIdentifier="{DA956FD3-E143-46F2-9FE5-C77BEBC56B1A}"
+			CopyLocal="false"
+			CopyLocalDependencies="false"
+			CopyLocalSatelliteAssemblies="false"
+			RelativePathToProject=".\SDLtest\SDLtest_VS2008.vcproj"
+		/>
 	</References>
 	<Files>
 		<File
