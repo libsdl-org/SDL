@@ -797,80 +797,71 @@ EnumXInputDevices(JoyStick_DeviceData **pContext)
 void SDL_SYS_JoystickDetect()
 {
     JoyStick_DeviceData *pCurList = NULL;
+#if !SDL_EVENTS_DISABLED
+    SDL_Event event;
+#endif
+
     /* only enum the devices if the joystick thread told us something changed */
-    if ( s_bDeviceAdded || s_bDeviceRemoved )
-    {
-        SDL_LockMutex( s_mutexJoyStickEnum );
-
-        s_bDeviceAdded = SDL_FALSE;
-        s_bDeviceRemoved = SDL_FALSE;
-
-        pCurList = SYS_Joystick;
-        SYS_Joystick = NULL;
-
-        /* Look for DirectInput joysticks, wheels, head trackers, gamepads, etc.. */
-        IDirectInput8_EnumDevices(dinput,
-            DI8DEVCLASS_GAMECTRL,
-            EnumJoysticksCallback,
-            &pCurList, DIEDFL_ATTACHEDONLY);
-
-        SDL_free(SDL_RawDevList);  /* in case we used this in DirectInput enumerator. */
-        SDL_RawDevList = NULL;
-        SDL_RawDevListCount = 0;
-
-        /* Look for XInput devices. Do this last, so they're first in the final list. */
-        EnumXInputDevices(&pCurList);
-
-        SDL_UnlockMutex( s_mutexJoyStickEnum );
+    if (!s_bDeviceAdded && !s_bDeviceRemoved) {
+        return;  /* thread hasn't signaled, nothing to do right now. */
     }
 
-    if ( pCurList )
-    {
-        while ( pCurList )
-        {
-            JoyStick_DeviceData *pListNext = NULL;
+    SDL_LockMutex(s_mutexJoyStickEnum);
+
+    s_bDeviceAdded = SDL_FALSE;
+    s_bDeviceRemoved = SDL_FALSE;
+
+    pCurList = SYS_Joystick;
+    SYS_Joystick = NULL;
+
+    /* Look for DirectInput joysticks, wheels, head trackers, gamepads, etc.. */
+    IDirectInput8_EnumDevices(dinput, DI8DEVCLASS_GAMECTRL, EnumJoysticksCallback, &pCurList, DIEDFL_ATTACHEDONLY);
+
+    SDL_free(SDL_RawDevList);  /* in case we used this in DirectInput enumerator. */
+    SDL_RawDevList = NULL;
+    SDL_RawDevListCount = 0;
+
+    /* Look for XInput devices. Do this last, so they're first in the final list. */
+    EnumXInputDevices(&pCurList);
+
+    SDL_UnlockMutex(s_mutexJoyStickEnum);
+
+    while (pCurList) {
+        JoyStick_DeviceData *pListNext = NULL;
 
 #if SDL_HAPTIC_DINPUT
-            if (pCurList->bXInputDevice) {
-                XInputHaptic_MaybeRemoveDevice(pCurList->XInputUserId);
-            } else {
-                DirectInputHaptic_MaybeRemoveDevice(&pCurList->dxdevice);
-            }
+        if (pCurList->bXInputDevice) {
+            XInputHaptic_MaybeRemoveDevice(pCurList->XInputUserId);
+        } else {
+            DirectInputHaptic_MaybeRemoveDevice(&pCurList->dxdevice);
+        }
 #endif
 
 #if !SDL_EVENTS_DISABLED
-            {
-            SDL_Event event;
-            event.type = SDL_JOYDEVICEREMOVED;
+        SDL_zero(event);
+        event.type = SDL_JOYDEVICEREMOVED;
 
-            if (SDL_GetEventState(event.type) == SDL_ENABLE) {
-                event.jdevice.which = pCurList->nInstanceID;
-                if ((SDL_EventOK == NULL)
-                    || (*SDL_EventOK) (SDL_EventOKParam, &event)) {
-                        SDL_PushEvent(&event);
-                }
+        if (SDL_GetEventState(event.type) == SDL_ENABLE) {
+            event.jdevice.which = pCurList->nInstanceID;
+            if ((!SDL_EventOK) || (*SDL_EventOK) (SDL_EventOKParam, &event)) {
+                SDL_PushEvent(&event);
             }
-            }
+        }
 #endif /* !SDL_EVENTS_DISABLED */
 
-            pListNext = pCurList->pNext;
-            SDL_free(pCurList->joystickname);
-            SDL_free(pCurList);
-            pCurList = pListNext;
-        }
-
+        pListNext = pCurList->pNext;
+        SDL_free(pCurList->joystickname);
+        SDL_free(pCurList);
+        pCurList = pListNext;
     }
 
-    if ( s_bDeviceAdded )
-    {
+    if (s_bDeviceAdded) {
         JoyStick_DeviceData *pNewJoystick;
         int device_index = 0;
         s_bDeviceAdded = SDL_FALSE;
         pNewJoystick = SYS_Joystick;
-        while ( pNewJoystick )
-        {
-            if ( pNewJoystick->send_add_event )
-            {
+        while (pNewJoystick) {
+            if (pNewJoystick->send_add_event) {
 #if SDL_HAPTIC_DINPUT
                 if (pNewJoystick->bXInputDevice) {
                     XInputHaptic_MaybeAddDevice(pNewJoystick->XInputUserId);
@@ -880,17 +871,14 @@ void SDL_SYS_JoystickDetect()
 #endif
 
 #if !SDL_EVENTS_DISABLED
-                {
-                SDL_Event event;
+                SDL_zero(event);
                 event.type = SDL_JOYDEVICEADDED;
 
                 if (SDL_GetEventState(event.type) == SDL_ENABLE) {
                     event.jdevice.which = device_index;
-                    if ((SDL_EventOK == NULL)
-                        || (*SDL_EventOK) (SDL_EventOKParam, &event)) {
-                            SDL_PushEvent(&event);
+                    if ((!SDL_EventOK) || (*SDL_EventOK) (SDL_EventOKParam, &event)) {
+                        SDL_PushEvent(&event);
                     }
-                }
                 }
 #endif /* !SDL_EVENTS_DISABLED */
                 pNewJoystick->send_add_event = 0;
@@ -899,16 +887,6 @@ void SDL_SYS_JoystickDetect()
             pNewJoystick = pNewJoystick->pNext;
         }
     }
-}
-
-/* we need to poll if we have pending hotplug device changes or connected devices */
-SDL_bool SDL_SYS_JoystickNeedsPolling()
-{
-    /* we have a new device or one was pulled, we need to think this frame please */
-    if ( s_bDeviceAdded || s_bDeviceRemoved )
-        return SDL_TRUE;
-
-    return SDL_FALSE;
 }
 
 /* Function to get the device-dependent name of a joystick */

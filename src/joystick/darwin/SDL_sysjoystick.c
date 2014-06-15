@@ -601,15 +601,6 @@ SDL_SYS_JoystickDetect()
     }
 }
 
-SDL_bool
-SDL_SYS_JoystickNeedsPolling()
-{
-    while (CFRunLoopRunInMode(SDL_JOYSTICK_RUNLOOP_MODE,0,TRUE) == kCFRunLoopRunHandledSource) {
-        /* no-op. Pending callbacks will fire in CFRunLoopRunInMode(). */
-    }
-    return s_bDeviceAdded || s_bDeviceRemoved;
-}
-
 /* Function to get the device-dependent name of a joystick */
 const char *
 SDL_SYS_JoystickNameForDeviceIndex(int device_index)
