@@ -45,8 +45,8 @@
 #ifdef __glext_h_
 /* Someone has already included glext.h */
 #define NO_SDL_GLEXT
-#endif
-#ifndef NO_SDL_GLEXT
+#else
+#define _SDL_CLEAR_GLEXT_HEADERGUARD
 #define __glext_h_              /* Don't let gl.h include glext.h */
 #endif
 #if defined(__MACOSX__)
@@ -55,7 +55,7 @@
 #else
 #include <GL/gl.h>              /* Header File For The OpenGL Library */
 #endif
-#ifndef NO_SDL_GLEXT
+#ifdef _SDL_CLEAR_GLEXT_HEADERGUARD
 #undef __glext_h_
 #endif
 
