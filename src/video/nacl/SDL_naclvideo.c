@@ -139,6 +139,7 @@ int NACL_VideoInit(_THIS) {
     SDL_VideoData *driverdata = (SDL_VideoData *) _this->driverdata;
     SDL_DisplayMode mode;
 
+    SDL_zero(mode);
     mode.format = driverdata->format;
     mode.w = driverdata->w;
     mode.h = driverdata->h;
@@ -147,8 +148,7 @@ int NACL_VideoInit(_THIS) {
     if (SDL_AddBasicVideoDisplay(&mode) < 0) {
         return -1;
     }
-    
-    SDL_zero(mode);
+
     SDL_AddDisplayMode(&_this->displays[0], &mode);
     
     PSInterfaceInit();
