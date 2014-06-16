@@ -786,6 +786,16 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                 SDLActivity.onNativeTouch(touchDevId, pointerFingerId, action, x, y, p);
                 break;
             
+            case MotionEvent.ACTION_CANCEL:
+                for (i = 0; i < pointerCount; i++) {
+                    pointerFingerId = event.getPointerId(i);
+                    x = event.getX(i) / mWidth;
+                    y = event.getY(i) / mHeight;
+                    p = event.getPressure(i);
+                    SDLActivity.onNativeTouch(touchDevId, pointerFingerId, MotionEvent.ACTION_UP, x, y, p);
+                }
+                break;
+
             default:
                 break;
         }
