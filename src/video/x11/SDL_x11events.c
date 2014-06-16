@@ -174,6 +174,79 @@ static SDL_bool X11_IsWheelEvent(Display * display,XEvent * event,int * ticks)
     return SDL_FALSE;
 }
 
+/* Decodes URI escape sequences in string buf of len bytes
+   (excluding the terminating NULL byte) in-place. Since
+   URI-encoded characters take three times the space of
+   normal characters, this should not be an issue.
+
+   Returns the number of decoded bytes that wound up in
+   the buffer, excluding the terminating NULL byte.
+
+   The buffer is guaranteed to be NULL-terminated but
+   may contain embedded NULL bytes.
+
+   On error, -1 is returned.
+ */
+int X11_URIDecode(char *buf, int len) {
+    int ri, wi, di;
+    char decode = '\0';
+    if (buf == NULL || len < 0) {
+        errno = EINVAL;
+        return -1;
+    }
+    if (len == 0) {
+        len = SDL_strlen(buf);
+    }
+    for (ri = 0, wi = 0, di = 0; ri < len && wi < len; ri += 1) {
+        if (di == 0) {
+            /* start decoding */
+            if (buf[ri] == '%') {
+                decode = '\0';
+                di += 1;
+                continue;
+            }
+            /* normal write */
+            buf[wi] = buf[ri];
+            wi += 1;
+            continue;
+        } else if (di == 1 || di == 2) {
+            char off = '\0';
+            char isa = buf[ri] >= 'a' && buf[ri] <= 'f';
+            char isA = buf[ri] >= 'A' && buf[ri] <= 'F';
+            char isn = buf[ri] >= '0' && buf[ri] <= '9';
+            if (!(isa || isA || isn)) {
+                /* not a hexadecimal */
+                int sri;
+                for (sri = ri - di; sri <= ri; sri += 1) {
+                    buf[wi] = buf[sri];
+                    wi += 1;
+                }
+                di = 0;
+                continue;
+            }
+            /* itsy bitsy magicsy */
+            if (isn) {
+                off = 0 - '0';
+            } else if (isa) {
+                off = 10 - 'a';
+            } else if (isA) {
+                off = 10 - 'A';
+            }
+            decode |= (buf[ri] + off) << (2 - di) * 4;
+            if (di == 2) {
+                buf[wi] = decode;
+                wi += 1;
+                di = 0;
+            } else {
+                di += 1;
+            }
+            continue;
+        }
+    }
+    buf[wi] = '\0';
+    return wi;
+}
+
 /* Convert URI to local filename
    return filename if possible, else NULL
 */
@@ -202,6 +275,8 @@ static char* X11_URIToLocal(char* uri) {
     }
     if ( local ) {
       file = uri;
+      /* Convert URI escape sequences to real characters */
+      X11_URIDecode(file, 0);
       if ( uri[1] == '/' ) {
           file++;
       } else {
