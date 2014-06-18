@@ -287,6 +287,10 @@ X11_InitKeyboard(_THIS)
 
     SDL_SetScancodeName(SDL_SCANCODE_APPLICATION, "Menu");
 
+#ifdef SDL_USE_IBUS
+    SDL_IBus_Init();
+#endif
+
     return 0;
 }
 
@@ -320,6 +324,38 @@ X11_UpdateKeymap(_THIS)
 void
 X11_QuitKeyboard(_THIS)
 {
+#ifdef SDL_USE_IBUS
+    SDL_IBus_Quit();
+#endif
+}
+
+void
+X11_StartTextInput(_THIS)
+{
+#ifdef SDL_USE_IBUS
+    SDL_IBus_SetFocus(SDL_GetFocusWindow() != NULL);
+#endif
+}
+
+void
+X11_StopTextInput(_THIS)
+{
+#ifdef SDL_USE_IBUS
+    SDL_IBus_Reset();
+#endif
+}
+
+void
+X11_SetTextInputRect(_THIS, SDL_Rect *rect)
+{
+    if (!rect) {
+        SDL_InvalidParamError("rect");
+        return;
+    }
+       
+#ifdef SDL_USE_IBUS
+    SDL_IBus_UpdateTextRect(rect);
+#endif
 }
 
 #endif /* SDL_VIDEO_DRIVER_X11 */

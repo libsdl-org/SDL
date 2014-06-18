@@ -493,6 +493,11 @@ X11_DispatchEvent(_THIS)
 #ifdef DEBUG_XEVENTS
             printf("window %p: FocusIn!\n", data);
 #endif
+#ifdef SDL_USE_IBUS
+            if(SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
+                SDL_IBus_SetFocus(SDL_TRUE);
+            }
+#endif
             if (data->pending_focus == PENDING_FOCUS_OUT &&
                 data->window == SDL_GetKeyboardFocus()) {
                 /* We want to reset the keyboard here, because we may have
@@ -530,6 +535,11 @@ X11_DispatchEvent(_THIS)
 #ifdef DEBUG_XEVENTS
             printf("window %p: FocusOut!\n", data);
 #endif
+#ifdef SDL_USE_IBUS
+            if(SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
+                SDL_IBus_SetFocus(SDL_FALSE);
+            }
+#endif
             data->pending_focus = PENDING_FOCUS_OUT;
             data->pending_focus_time = SDL_GetTicks() + PENDING_FOCUS_OUT_TIME;
         }
@@ -561,11 +571,14 @@ X11_DispatchEvent(_THIS)
             KeySym keysym = NoSymbol;
             char text[SDL_TEXTINPUTEVENT_TEXT_SIZE];
             Status status = 0;
+            Bool handled = False;
 
 #ifdef DEBUG_XEVENTS
             printf("window %p: KeyPress (X11 keycode = 0x%X)\n", data, xevent.xkey.keycode);
 #endif
+#ifndef SDL_USE_IBUS
             SDL_SendKeyboardKey(SDL_PRESSED, videodata->key_layout[keycode]);
+#endif
 #if 1
             if (videodata->key_layout[keycode] == SDL_SCANCODE_UNKNOWN && keycode) {
                 int min_keycode, max_keycode;
@@ -591,9 +604,21 @@ X11_DispatchEvent(_THIS)
 #else
             XLookupString(&xevent.xkey, text, sizeof(text), &keysym, NULL);
 #endif
-            if (*text) {
-                SDL_SendKeyboardText(text);
+#ifdef SDL_USE_IBUS
+            if(SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
+                if(!(handled = SDL_IBus_ProcessKeyEvent(keysym, keycode))){
+#endif
+                    if(*text){
+                        SDL_SendKeyboardText(text);
+                    }
+#ifdef SDL_USE_IBUS
+                }
             }
+
+            if (!handled) {
+                SDL_SendKeyboardKey(SDL_PRESSED, videodata->key_layout[keycode]);
+            }
+#endif
         }
         break;
 
@@ -663,6 +688,12 @@ X11_DispatchEvent(_THIS)
                 SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MOVED,
                                     xevent.xconfigure.x - border_left,
                                     xevent.xconfigure.y - border_top);
+#ifdef SDL_USE_IBUS
+                if(SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
+                    /* Update IBus candidate list position */
+                    SDL_IBus_UpdateTextRect(NULL);
+                }
+#endif
             }
             if (xevent.xconfigure.width != data->last_xconfigure.width ||
                 xevent.xconfigure.height != data->last_xconfigure.height) {
@@ -1079,13 +1110,19 @@ X11_PumpEvents(_THIS)
             SDL_TICKS_PASSED(now, data->screensaver_activity + 30000)) {
             X11_XResetScreenSaver(data->display);
 
-            #if SDL_USE_LIBDBUS
-            SDL_dbus_screensaver_tickle(_this);
-            #endif
+#if SDL_USE_LIBDBUS
+            SDL_DBus_ScreensaverTickle();
+#endif
 
             data->screensaver_activity = now;
         }
     }
+
+#ifdef SDL_USE_IBUS
+    if(SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
+        SDL_IBus_PumpEvents();
+    }
+#endif
 
     /* Keep processing pending events */
     while (X11_Pending(data->display)) {
@@ -1107,12 +1144,12 @@ X11_SuspendScreenSaver(_THIS)
 #endif /* SDL_VIDEO_DRIVER_X11_XSCRNSAVER */
 
 #if SDL_USE_LIBDBUS
-    if (SDL_dbus_screensaver_inhibit(_this)) {
+    if (SDL_DBus_ScreensaverInhibit(_this->suspend_screensaver)) {
         return;
     }
 
     if (_this->suspend_screensaver) {
-        SDL_dbus_screensaver_tickle(_this);
+        SDL_DBus_ScreensaverTickle();
     }
 #endif
 
