@@ -54,8 +54,11 @@
 #endif
 
 #ifdef HAVE_DBUS_DBUS_H
-#define SDL_USE_LIBDBUS 1
-#include <dbus/dbus.h>
+#include "../../core/linux/SDL_dbus.h"
+#endif
+
+#ifdef HAVE_IBUS_IBUS_H
+#include "../../core/linux/SDL_ibus.h"
 #endif
 
 #include "SDL_x11dyn.h"
@@ -114,15 +117,9 @@ typedef struct SDL_VideoData
     SDL_Scancode key_layout[256];
     SDL_bool selection_waiting;
 
-#if SDL_USE_LIBDBUS
-    DBusConnection *dbus;
-#endif
 } SDL_VideoData;
 
 extern SDL_bool X11_UseDirectColorVisuals(void);
-
-SDL_bool SDL_dbus_screensaver_inhibit(_THIS);
-void SDL_dbus_screensaver_tickle(_THIS);
 
 #endif /* _SDL_x11video_h */
 
