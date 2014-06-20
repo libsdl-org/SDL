@@ -20,7 +20,7 @@ fi
 echo "Using SDK at $NACL_SDK_ROOT"
 
 export NACL_SDK_ROOT="$NACL_SDK_ROOT"
-export CFLAGS="$CFLAGS -I$NACL_SDK_ROOT/include"
+export CFLAGS="$CFLAGS -I$NACL_SDK_ROOT/include -I$NACL_SDK_ROOT/include/pnacl"
 
 NCPUS="1"
 case "$OSTYPE" in

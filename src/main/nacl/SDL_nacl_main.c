@@ -29,6 +29,7 @@
 #include "ppapi_simple/ps_event.h"
 #include "ppapi_simple/ps_interface.h"
 #include "nacl_io/nacl_io.h"
+#include "sys/mount.h"
 
 extern void NACL_SetScreenResolution(int width, int height, Uint32 format);
 
