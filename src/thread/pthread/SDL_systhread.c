@@ -57,11 +57,13 @@
 
 #include "SDL_assert.h"
 
+#ifndef __NACL__
 /* List of signals to mask in the subthreads */
 static const int sig_list[] = {
     SIGHUP, SIGINT, SIGQUIT, SIGPIPE, SIGALRM, SIGTERM, SIGCHLD, SIGWINCH,
     SIGVTALRM, SIGPROF, 0
 };
+#endif
 
 static void *
 RunThread(void *data)
@@ -115,8 +117,10 @@ SDL_SYS_CreateThread(SDL_Thread * thread, void *args)
 void
 SDL_SYS_SetupThread(const char *name)
 {
+#ifndef __NACL__
     int i;
     sigset_t mask;
+#endif
 
     if (name != NULL) {
         #if defined(__MACOSX__) || defined(__IPHONEOS__) || defined(__LINUX__)

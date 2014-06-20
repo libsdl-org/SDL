@@ -3259,7 +3259,8 @@ SDL_IsScreenKeyboardShown(SDL_Window *window)
 #include "x11/SDL_x11messagebox.h"
 #endif
 
-static SDL_bool SDL_MessageboxValidForDriver(const SDL_MessageBoxData *messageboxdata, SDL_SYSWM_TYPE drivertype)
+// This function will be unused if none of the above video drivers are present.
+SDL_UNUSED static SDL_bool SDL_MessageboxValidForDriver(const SDL_MessageBoxData *messageboxdata, SDL_SYSWM_TYPE drivertype)
 {
     SDL_SysWMinfo info;
     SDL_Window *window = messageboxdata->window;
