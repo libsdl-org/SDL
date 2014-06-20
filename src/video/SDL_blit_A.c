@@ -343,7 +343,7 @@ BlitRGBtoRGBPixelAlphaMMX(SDL_BlitInfo * info)
     mm_zero = _mm_setzero_si64();       /* 0 -> mm_zero */
     multmask = 0x00FF;
 	multmask <<= (ashift * 2);
-	multmask2 = 0x00FF00FF00FF00FF;
+	multmask2 = 0x00FF00FF00FF00FFULL;
 
     while (height--) {
 		/* *INDENT-OFF* */
@@ -530,7 +530,7 @@ BlitRGBtoRGBPixelAlphaMMX3DNOW(SDL_BlitInfo * info)
     mm_zero = _mm_setzero_si64();       /* 0 -> mm_zero */
     multmask = 0x00FF;
     multmask <<= (ashift * 2);
-    multmask2 = 0x00FF00FF00FF00FF;
+    multmask2 = 0x00FF00FF00FF00FFULL;
 
     while (height--) {
 	    /* *INDENT-OFF* */

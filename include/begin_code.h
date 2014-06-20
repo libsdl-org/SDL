@@ -41,6 +41,14 @@
 #  endif
 #endif
 
+#ifndef SDL_UNUSED
+#  ifdef __GNUC__
+#    define SDL_UNUSED __attribute__((unused))
+#  else
+#    define SDL_UNUSED
+#  endif
+#endif
+
 /* Some compilers use a special export keyword */
 #ifndef DECLSPEC
 # if defined(__WIN32__) || defined(__WINRT__)
