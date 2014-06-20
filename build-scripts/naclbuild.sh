@@ -1,6 +1,6 @@
 #!/bin/bash
 if [ -z "$1" ] && [ -z "$NACL_SDK_ROOT" ]; then
-    echo "Usage: ./naclbuild ~/nacl/pepper_33"
+    echo "Usage: ./naclbuild ~/nacl/pepper_35"
     echo "This will build SDL for Native Client, and testgles2.c as a demo"
     echo "You can set env vars CC, AR, LD and RANLIB to override the default PNaCl toolchain used"
     echo "You can set env var SOURCES to select a different source file than testgles2.c"

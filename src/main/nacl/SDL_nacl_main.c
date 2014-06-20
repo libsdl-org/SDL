@@ -24,11 +24,11 @@
 
 /* Include the SDL main definition header */
 #include "SDL_main.h"
-#include "SDL_system.h"
 
 #include "ppapi_simple/ps_main.h"
 #include "ppapi_simple/ps_event.h"
 #include "ppapi_simple/ps_interface.h"
+#include "nacl_io/nacl_io.h"
 
 extern void NACL_SetScreenResolution(int width, int height, Uint32 format);
 
@@ -69,8 +69,10 @@ nacl_main(int argc, char *argv[])
      * apps can override this by unmounting / 
      * and remounting with the desired configuration
      */
-    SDL_NaClUmount("/");
-    SDL_NaClMount(
+    nacl_io_init_ppapi(PSGetInstanceId(), PSGetInterface);
+    
+    umount("/");
+    mount(
         "",  /* source */
         "/",  /* target */
         "httpfs",  /* filesystemtype */
