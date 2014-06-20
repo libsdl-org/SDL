@@ -60,18 +60,17 @@ script will give you instructions on how to do that with Python).
 RWops and nacl_io
 ================================================================================
 
-SDL_RWops work transparently with nacl_io. Two functions are provided to control
-mount points:
+SDL_RWops work transparently with nacl_io. Two functions control the mount points:
     
-    int SDL_NaClMount(const char* source, const char* target, 
+    int mount(const char* source, const char* target, 
                       const char* filesystemtype, 
                       unsigned long mountflags, const void *data);
-    int SDL_NaClUmount(const char *target);
+    int umount(const char *target);
     
     For convenience, SDL will by default mount an httpfs tree at / before calling 
 the app's main function. Such setting can be overridden by calling:
     
-    SDL_NaClUmount("/");
+    umount("/");
 
 And then mounting a different filesystem at /
 
@@ -85,6 +84,17 @@ connections are involved.
 For more information on how nacl_io and mount points work, see:
     
     https://developer.chrome.com/native-client/devguide/coding/nacl_io
+    https://src.chromium.org/chrome/trunk/src/native_client_sdk/src/libraries/nacl_io/nacl_io.h
+
+To be able to save into the directory "/save/" (like backup of game) :
+
+    mount("", "/save", "html5fs", 0, "type=PERSISTENT");
+
+And add to manifest.json :
+
+  "permissions": [
+     "unlimitedStorage"
+  ]
 
 ================================================================================
 TODO - Known Issues
