@@ -372,6 +372,7 @@ void _uikit_keyboard_update() {
     int height = view.keyboardHeight;
     int offsetx = 0;
     int offsety = 0;
+    float scale = [UIScreen mainScreen].scale;
     if (height) {
         int sw,sh;
         SDL_GetWindowSize(window,&sw,&sh);
@@ -392,11 +393,10 @@ void _uikit_keyboard_update() {
     if (ui_orient == UIInterfaceOrientationPortraitUpsideDown) {
         offsety = -offsety;
     }
-    if ([[UIScreen mainScreen] respondsToSelector:@selector(displayLinkWithTarget:selector:)]) {
-        float scale = [UIScreen mainScreen].scale;
-        offsetx /= scale;
-        offsety /= scale;
-    }
+
+    offsetx /= scale;
+    offsety /= scale;
+
     view.frame = CGRectMake(offsetx,offsety,view.frame.size.width,view.frame.size.height);
 }
 
@@ -424,9 +424,7 @@ void _uikit_keyboard_init() {
                         if (ui_orient == UIInterfaceOrientationLandscapeRight || ui_orient == UIInterfaceOrientationLandscapeLeft) {
                             height = keyboardSize.width;
                         }
-                        if ([[UIScreen mainScreen] respondsToSelector:@selector(displayLinkWithTarget:selector:)]) {
-                            height *= [UIScreen mainScreen].scale;
-                        }
+                        height *= [UIScreen mainScreen].scale;
                         _uikit_keyboard_set_height(height);
                     }
      ];

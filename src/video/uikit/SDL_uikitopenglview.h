@@ -79,7 +79,7 @@
 - (void)startAnimation;
 - (void)stopAnimation;
 
-- (void)doLoop:(id)sender;
+- (void)doLoop:(CADisplayLink*)sender;
 
 @end
 
