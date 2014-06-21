@@ -165,6 +165,23 @@ typedef uint64_t Uint64;
 
 /* @} *//* Basic data types */
 
+/* Make sure we have macros for printing 64 bit values.
+ * <stdint.h> should define these but this is not true all platforms.
+ * (for example win32) */
+#ifndef PRIs64
+#ifdef __WIN32__
+#define PRIs64 "I64"
+#else
+#define PRIs64 "lld"
+#endif
+#endif
+#ifndef PRIu64
+#ifdef __WIN32__
+#define PRIu64 "I64u"
+#else
+#define PRIu64 "llu"
+#endif
+#endif
 
 /* Annotations to help code analysis tools */
 #ifdef SDL_DISABLE_ANALYZE_MACROS
