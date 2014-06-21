@@ -1276,6 +1276,9 @@ SDL_snprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL_PRINTF_FORMAT_
 #ifdef HAVE_VSNPRINTF
 int SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, va_list ap)
 {
+    if (!fmt) {
+        fmt = "";
+    }
     return vsnprintf(text, maxlen, fmt, ap);
 }
 #else
