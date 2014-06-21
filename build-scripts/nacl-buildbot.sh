@@ -3,13 +3,6 @@
 # This is the script buildbot.libsdl.org uses to cross-compile SDL2 from
 #  amd64 Linux to NaCl.
 
-# The final tarball can be unpacked in the root directory of a RPi,
-#  so the SDL2 install lands in /usr/local. Run ldconfig, and then
-#  you should be able to build and run SDL2-based software on your
-#  Pi. Standard configure scripts should be able to find SDL and
-#  build against it, and sdl2-config should work correctly on the
-#  actual device.
-
 export NACL_SDK_ROOT="/nacl_sdk/pepper_35"
 
 TARBALL="$1"
@@ -50,7 +43,7 @@ export RANLIB="$NACL_SDK_ROOT/toolchain/linux_pnacl/bin/pnacl-ranlib"
 ../configure --host=pnacl --prefix=$PWD/nacl-sdl2-installed
 $MAKE
 $MAKE install
-# Fix up a few things to a real install path on a real Raspberry Pi...
+# Fix up a few things to a real install path
 perl -w -pi -e "s#$PWD/nacl-sdl2-installed#/usr/local#g;" ./nacl-sdl2-installed/lib/libSDL2.la ./nacl-sdl2-installed/lib/pkgconfig/sdl2.pc ./nacl-sdl2-installed/bin/sdl2-config
 mkdir -p ./usr
 mv ./nacl-sdl2-installed ./usr/local
