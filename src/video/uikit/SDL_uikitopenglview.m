@@ -84,8 +84,7 @@
         }
 
         /* Set the appropriate scale (for retina display support) */
-        if ([self respondsToSelector:@selector(contentScaleFactor)])
-            self.contentScaleFactor = scale;
+        self.contentScaleFactor = scale;
 
         /* create the buffers */
         glGenFramebuffersOES(1, &viewFramebuffer);
@@ -171,11 +170,7 @@
 
 - (void)startAnimation
 {
-    /* CADisplayLink is API new to iPhone SDK 3.1.
-     * Compiling against earlier versions will result in a warning, but can be dismissed
-     * if the system version runtime check for CADisplayLink exists in -initWithCoder:.
-     */
-    displayLink = [NSClassFromString(@"CADisplayLink") displayLinkWithTarget:self selector:@selector(doLoop:)];
+    displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(doLoop:)];
     [displayLink setFrameInterval:animationInterval];
     [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
 }
@@ -186,7 +181,7 @@
     displayLink = nil;
 }
 
-- (void)doLoop:(id)sender
+- (void)doLoop:(CADisplayLink*)sender
 {
     /* Don't run the game loop while a messagebox is up */
     if (!UIKit_ShowingMessageBox()) {

@@ -37,8 +37,6 @@ typedef struct
     CGFloat scale;
 } SDL_DisplayModeData;
 
-extern BOOL SDL_UIKit_supports_multiple_displays;
-
 extern SDL_bool UIKit_IsDisplayLandscape(UIScreen *uiscreen);
 
 extern int UIKit_InitModes(_THIS);
