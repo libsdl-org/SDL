@@ -842,6 +842,7 @@ enable_video_opengl
 enable_video_opengles
 enable_libudev
 enable_dbus
+enable_ibus
 enable_input_tslib
 enable_pthreads
 enable_pthread_sem
@@ -1573,6 +1574,7 @@ Optional Features:
   --enable-video-opengles include OpenGL ES support [[default=yes]]
   --enable-libudev        enable libudev support [[default=yes]]
   --enable-dbus           enable D-Bus support [[default=yes]]
+  --enable-ibus           enable IBus support [[default=yes]]
   --enable-input-tslib    use the Touchscreen library for input
                           [[default=yes]]
   --enable-pthreads       use POSIX threads for multi-threading
@@ -21406,6 +21408,100 @@ fi
 $as_echo "#define HAVE_DBUS_DBUS_H 1" >>confdefs.h
 
                 EXTRA_CFLAGS="$EXTRA_CFLAGS $DBUS_CFLAGS"
+                SOURCES="$SOURCES $srcdir/src/core/linux/SDL_dbus.c"
+            fi
+        fi
+    fi
+}
+
+CheckIBus()
+{
+    # Check whether --enable-ibus was given.
+if test "${enable_ibus+set}" = set; then :
+  enableval=$enable_ibus;
+else
+  enable_ibus=yes
+fi
+
+    if test x$enable_ibus = xyes; then
+        # Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_PKG_CONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_path_PKG_CONFIG" && ac_cv_path_PKG_CONFIG="no"
+  ;;
+esac
+fi
+PKG_CONFIG=$ac_cv_path_PKG_CONFIG
+if test -n "$PKG_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
+$as_echo "$PKG_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+        if test x$PKG_CONFIG != xno; then
+            IBUS_CFLAGS=`$PKG_CONFIG --cflags ibus-1.0`
+            save_CFLAGS="$CFLAGS"
+            CFLAGS="$save_CFLAGS $IBUS_CFLAGS"
+            ac_fn_c_check_header_mongrel "$LINENO" "ibus-1.0/ibus.h" "ac_cv_header_ibus_1_0_ibus_h" "$ac_includes_default"
+if test "x$ac_cv_header_ibus_1_0_ibus_h" = xyes; then :
+  have_ibus_ibus_h_hdr=yes
+else
+  have_ibus_ibus_h_hdr=no
+fi
+
+
+            ac_fn_c_check_header_mongrel "$LINENO" "sys/inotify.h" "ac_cv_header_sys_inotify_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_inotify_h" = xyes; then :
+  have_inotify_inotify_h_hdr=yes
+else
+  have_inotify_inotify_h_hdr=no
+fi
+
+
+            CFLAGS="$save_CFLAGS"
+            if test x$have_ibus_ibus_h_hdr = xyes; then
+                if test x$enable_dbus != xyes; then
+                    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: DBus support is required for IBus." >&5
+$as_echo "$as_me: WARNING: DBus support is required for IBus." >&2;}
+                    have_ibus_ibus_h_hdr=no
+                elif test x$have_inotify_inotify_h_hdr != xyes; then
+                    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: INotify support is required for IBus." >&5
+$as_echo "$as_me: WARNING: INotify support is required for IBus." >&2;}
+                    have_ibus_ibus_h_hdr=no
+                else
+
+$as_echo "#define HAVE_IBUS_IBUS_H 1" >>confdefs.h
+
+                    EXTRA_CFLAGS="$EXTRA_CFLAGS $IBUS_CFLAGS"
+                    SOURCES="$SOURCES $srcdir/src/core/linux/SDL_ibus.c"
+               fi
             fi
         fi
     fi
@@ -22680,6 +22776,7 @@ case "$host" in
         CheckWayland
         CheckLibUDev
         CheckDBus
+        CheckIBus
         CheckInputEvents
         CheckInputKD
         CheckTslib
@@ -23418,6 +23515,11 @@ if test x$have_dbus_dbus_h_hdr = xyes; then
     SUMMARY="${SUMMARY}Using dbus      : YES\n"
 else
     SUMMARY="${SUMMARY}Using dbus      : NO\n"
+fi
+if test x$have_ibus_ibus_h_hdr = xyes; then
+    SUMMARY="${SUMMARY}Using ibus      : YES\n"
+else
+    SUMMARY="${SUMMARY}Using ibus      : NO\n"
 fi
 ac_config_commands="$ac_config_commands summary"
 
