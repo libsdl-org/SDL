@@ -385,7 +385,15 @@ JNIEXPORT void JNICALL Java_org_libsdl_app_SDLInputConnection_nativeSetComposing
     (*env)->ReleaseStringUTFChars(env, text, utftext);
 }
 
+jstring Java_org_libsdl_app_SDLActivity_nativeGetHint(JNIEnv* env, jclass cls, jstring name) {
+    const char *utfname = (*env)->GetStringUTFChars(env, name, NULL);
+    const char *hint = SDL_GetHint(utfname);
 
+    jstring result = (*env)->NewStringUTF(env, hint);
+    (*env)->ReleaseStringUTFChars(env, name, utfname);
+
+    return result;
+}
 
 /*******************************************************************************
              Functions called by SDL into Java
@@ -758,7 +766,14 @@ fallback:
                 "open", "(Ljava/lang/String;I)Ljava/io/InputStream;");
         inputStream = (*mEnv)->CallObjectMethod(mEnv, assetManager, mid, fileNameJString, 1 /* ACCESS_RANDOM */);
         if (Android_JNI_ExceptionOccurred(false)) {
-            goto failure;
+            // Try fallback to APK Extension files
+            mid = (*mEnv)->GetMethodID(mEnv, (*mEnv)->GetObjectClass(mEnv, context),
+                "openAPKExtensionInputStream", "(Ljava/lang/String;)Ljava/io/InputStream;");
+            inputStream = (*mEnv)->CallObjectMethod(mEnv, context, mid, fileNameJString);
+
+            if (Android_JNI_ExceptionOccurred(false)) {
+                goto failure;
+            }
         }
 
         ctx->hidden.androidio.inputStreamRef = (*mEnv)->NewGlobalRef(mEnv, inputStream);
