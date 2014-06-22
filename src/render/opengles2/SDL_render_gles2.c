@@ -49,10 +49,12 @@ SDL_RenderDriver GLES2_RenderDriver = {
         "opengles2",
         (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE),
         4,
-        {SDL_PIXELFORMAT_ABGR8888,
+        {
         SDL_PIXELFORMAT_ARGB8888,
+        SDL_PIXELFORMAT_ABGR8888,
         SDL_PIXELFORMAT_RGB888,
-        SDL_PIXELFORMAT_BGR888},
+        SDL_PIXELFORMAT_BGR888
+        },
         0,
         0
     }
@@ -477,10 +479,10 @@ GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     /* Determine the corresponding GLES texture format params */
     switch (texture->format)
     {
-    case SDL_PIXELFORMAT_ABGR8888:
     case SDL_PIXELFORMAT_ARGB8888:
-    case SDL_PIXELFORMAT_BGR888:
+    case SDL_PIXELFORMAT_ABGR8888:
     case SDL_PIXELFORMAT_RGB888:
+    case SDL_PIXELFORMAT_BGR888:
         format = GL_RGBA;
         type = GL_UNSIGNED_BYTE;
         break;
@@ -1417,6 +1419,18 @@ GLES2_RenderCopy(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect *s
         if (renderer->target->format != texture->format) {
             switch (texture->format)
             {
+            case SDL_PIXELFORMAT_ARGB8888:
+                switch (renderer->target->format)
+                {
+                    case SDL_PIXELFORMAT_ABGR8888:
+                    case SDL_PIXELFORMAT_BGR888:
+                        sourceType = GLES2_IMAGESOURCE_TEXTURE_ARGB;
+                        break;
+                    case SDL_PIXELFORMAT_RGB888:
+                        sourceType = GLES2_IMAGESOURCE_TEXTURE_ABGR;
+                        break;
+                }
+                break;
             case SDL_PIXELFORMAT_ABGR8888:
                 switch (renderer->target->format)
                 {
@@ -1429,15 +1443,17 @@ GLES2_RenderCopy(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect *s
                         break;
                 }
                 break;
-            case SDL_PIXELFORMAT_ARGB8888:
+            case SDL_PIXELFORMAT_RGB888:
                 switch (renderer->target->format)
                 {
                     case SDL_PIXELFORMAT_ABGR8888:
-                    case SDL_PIXELFORMAT_BGR888:
                         sourceType = GLES2_IMAGESOURCE_TEXTURE_ARGB;
                         break;
-                    case SDL_PIXELFORMAT_RGB888:
-                        sourceType = GLES2_IMAGESOURCE_TEXTURE_ABGR;
+                    case SDL_PIXELFORMAT_ARGB8888:
+                        sourceType = GLES2_IMAGESOURCE_TEXTURE_BGR;
+                        break;
+                    case SDL_PIXELFORMAT_BGR888:
+                        sourceType = GLES2_IMAGESOURCE_TEXTURE_ARGB;
                         break;
                 }
                 break;
@@ -1455,20 +1471,6 @@ GLES2_RenderCopy(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect *s
                         break;
                 }
                 break;
-            case SDL_PIXELFORMAT_RGB888:
-                switch (renderer->target->format)
-                {
-                    case SDL_PIXELFORMAT_ABGR8888:
-                        sourceType = GLES2_IMAGESOURCE_TEXTURE_ARGB;
-                        break;
-                    case SDL_PIXELFORMAT_ARGB8888:
-                        sourceType = GLES2_IMAGESOURCE_TEXTURE_BGR;
-                        break;
-                    case SDL_PIXELFORMAT_BGR888:
-                        sourceType = GLES2_IMAGESOURCE_TEXTURE_ARGB;
-                        break;
-                }
-                break;
             }
         }
         else sourceType = GLES2_IMAGESOURCE_TEXTURE_ABGR;   /* Texture formats match, use the non color mapping shader (even if the formats are not ABGR) */
@@ -1476,17 +1478,17 @@ GLES2_RenderCopy(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect *s
     else {
         switch (texture->format)
         {
-            case SDL_PIXELFORMAT_ABGR8888:
-                sourceType = GLES2_IMAGESOURCE_TEXTURE_ABGR;
-                break;
             case SDL_PIXELFORMAT_ARGB8888:
                 sourceType = GLES2_IMAGESOURCE_TEXTURE_ARGB;
                 break;
-            case SDL_PIXELFORMAT_BGR888:
-                sourceType = GLES2_IMAGESOURCE_TEXTURE_BGR;
+            case SDL_PIXELFORMAT_ABGR8888:
+                sourceType = GLES2_IMAGESOURCE_TEXTURE_ABGR;
                 break;
             case SDL_PIXELFORMAT_RGB888:
                 sourceType = GLES2_IMAGESOURCE_TEXTURE_RGB;
+                break;
+            case SDL_PIXELFORMAT_BGR888:
+                sourceType = GLES2_IMAGESOURCE_TEXTURE_BGR;
                 break;
             // TODO: new shader to change yv planes YV12 format
             case SDL_PIXELFORMAT_IYUV:
@@ -1599,6 +1601,18 @@ GLES2_RenderCopyEx(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect 
         if (renderer->target->format != texture->format) {
             switch (texture->format)
             {
+            case SDL_PIXELFORMAT_ARGB8888:
+                switch (renderer->target->format)
+                {
+                    case SDL_PIXELFORMAT_ABGR8888:
+                    case SDL_PIXELFORMAT_BGR888:
+                        sourceType = GLES2_IMAGESOURCE_TEXTURE_ARGB;
+                        break;
+                    case SDL_PIXELFORMAT_RGB888:
+                        sourceType = GLES2_IMAGESOURCE_TEXTURE_ABGR;
+                        break;
+                }
+                break;
             case SDL_PIXELFORMAT_ABGR8888:
                 switch (renderer->target->format)
                 {
@@ -1611,15 +1625,17 @@ GLES2_RenderCopyEx(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect 
                         break;
                 }
                 break;
-            case SDL_PIXELFORMAT_ARGB8888:
+            case SDL_PIXELFORMAT_RGB888:
                 switch (renderer->target->format)
                 {
                     case SDL_PIXELFORMAT_ABGR8888:
-                    case SDL_PIXELFORMAT_BGR888:
                         sourceType = GLES2_IMAGESOURCE_TEXTURE_ARGB;
                         break;
-                    case SDL_PIXELFORMAT_RGB888:
-                        sourceType = GLES2_IMAGESOURCE_TEXTURE_ABGR;
+                    case SDL_PIXELFORMAT_ARGB8888:
+                        sourceType = GLES2_IMAGESOURCE_TEXTURE_BGR;
+                        break;
+                    case SDL_PIXELFORMAT_BGR888:
+                        sourceType = GLES2_IMAGESOURCE_TEXTURE_ARGB;
                         break;
                 }
                 break;
@@ -1637,20 +1653,6 @@ GLES2_RenderCopyEx(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect 
                         break;
                 }
                 break;
-            case SDL_PIXELFORMAT_RGB888:
-                switch (renderer->target->format)
-                {
-                    case SDL_PIXELFORMAT_ABGR8888:
-                        sourceType = GLES2_IMAGESOURCE_TEXTURE_ARGB;
-                        break;
-                    case SDL_PIXELFORMAT_ARGB8888:
-                        sourceType = GLES2_IMAGESOURCE_TEXTURE_BGR;
-                        break;
-                    case SDL_PIXELFORMAT_BGR888:
-                        sourceType = GLES2_IMAGESOURCE_TEXTURE_ARGB;
-                        break;
-                }
-                break;
             }
         }
         else sourceType = GLES2_IMAGESOURCE_TEXTURE_ABGR;   /* Texture formats match, use the non color mapping shader (even if the formats are not ABGR) */
@@ -1658,17 +1660,17 @@ GLES2_RenderCopyEx(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect 
     else {
         switch (texture->format)
         {
-            case SDL_PIXELFORMAT_ABGR8888:
-                sourceType = GLES2_IMAGESOURCE_TEXTURE_ABGR;
-                break;
             case SDL_PIXELFORMAT_ARGB8888:
                 sourceType = GLES2_IMAGESOURCE_TEXTURE_ARGB;
                 break;
-            case SDL_PIXELFORMAT_BGR888:
-                sourceType = GLES2_IMAGESOURCE_TEXTURE_BGR;
+            case SDL_PIXELFORMAT_ABGR8888:
+                sourceType = GLES2_IMAGESOURCE_TEXTURE_ABGR;
                 break;
             case SDL_PIXELFORMAT_RGB888:
                 sourceType = GLES2_IMAGESOURCE_TEXTURE_RGB;
+                break;
+            case SDL_PIXELFORMAT_BGR888:
+                sourceType = GLES2_IMAGESOURCE_TEXTURE_BGR;
                 break;
             default:
                 return -1;
