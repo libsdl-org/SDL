@@ -334,6 +334,7 @@ if(USE_GCC OR USE_CLANG)
       set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-multichar")
     endif()
   endif()
+  #check_c_compiler_flag(-Wshadow HAVE_GCC_WSHADOW)
 endif()
 
 if(ASSEMBLY)
