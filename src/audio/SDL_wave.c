@@ -460,7 +460,7 @@ SDL_LoadWAV_RW(SDL_RWops * src, int freesrc,
         }
         /* 2 Uint32's for chunk header+len, plus the lenread */
         headerDiff += lenread + 2 * sizeof(Uint32);
-    } while ((chunk.magic == FACT) || (chunk.magic == LIST));
+    } while ((chunk.magic == FACT) || (chunk.magic == LIST) || (chunk.magic == BEXT));
 
     /* Decode the audio data format */
     format = (WaveFMT *) chunk.data;
