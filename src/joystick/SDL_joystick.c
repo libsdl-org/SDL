@@ -502,20 +502,21 @@ SDL_PrivateJoystickAxis(SDL_Joystick * joystick, Uint8 axis, Sint16 value)
         return 0;
     }
 
+    /* We ignore events if we don't have keyboard focus, except for centering
+     * events.
+     */
+    if (SDL_PrivateJoystickShouldIgnoreEvent()) {
+        if ((value > 0 && value >= joystick->axes[axis]) ||
+            (value < 0 && value <= joystick->axes[axis])) {
+            return 0;
+        }
+    }
+
     /* Update internal joystick state */
     if (value == joystick->axes[axis]) {
         return 0;
     }
     joystick->axes[axis] = value;
-
-    /* We ignore events if we don't have keyboard focus, except for centering
-     * events.
-     */
-    if (SDL_PrivateJoystickShouldIgnoreEvent()) {
-        if (!(joystick->closed && joystick->uncentered)) {
-            return 0;
-        }
-    }
 
     /* Post the event, if desired */
     posted = 0;
@@ -542,18 +543,20 @@ SDL_PrivateJoystickHat(SDL_Joystick * joystick, Uint8 hat, Uint8 value)
         return 0;
     }
 
-    /* Update internal joystick state */
-    joystick->hats[hat] = value;
-
     /* We ignore events if we don't have keyboard focus, except for centering
      * events.
      */
     if (SDL_PrivateJoystickShouldIgnoreEvent()) {
-        if (!(joystick->closed && joystick->uncentered)) {
+        if (value != SDL_HAT_CENTERED) {
             return 0;
         }
     }
 
+    /* Update internal joystick state */
+    if (value == joystick->hats[hat]) {
+        return 0;
+    }
+    joystick->hats[hat] = value;
 
     /* Post the event, if desired */
     posted = 0;
@@ -633,11 +636,16 @@ SDL_PrivateJoystickButton(SDL_Joystick * joystick, Uint8 button, Uint8 state)
 
     /* We ignore events if we don't have keyboard focus, except for button
      * release. */
-    if (state == SDL_PRESSED && SDL_PrivateJoystickShouldIgnoreEvent()) {
-        return 0;
+    if (SDL_PrivateJoystickShouldIgnoreEvent()) {
+        if (state == SDL_PRESSED) {
+            return 0;
+        }
     }
 
     /* Update internal joystick state */
+    if (state == joystick->buttons[button]) {
+        return 0;
+    }
     joystick->buttons[button] = state;
 
     /* Post the event, if desired */
