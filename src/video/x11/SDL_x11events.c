@@ -571,7 +571,9 @@ X11_DispatchEvent(_THIS)
             KeySym keysym = NoSymbol;
             char text[SDL_TEXTINPUTEVENT_TEXT_SIZE];
             Status status = 0;
+#ifdef SDL_USE_IBUS
             Bool handled = False;
+#endif
 
 #ifdef DEBUG_XEVENTS
             printf("window %p: KeyPress (X11 keycode = 0x%X)\n", data, xevent.xkey.keycode);
