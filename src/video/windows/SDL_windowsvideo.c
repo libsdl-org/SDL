@@ -159,6 +159,17 @@ WIN_CreateDevice(int devindex)
     device->GL_GetSwapInterval = WIN_GL_GetSwapInterval;
     device->GL_SwapWindow = WIN_GL_SwapWindow;
     device->GL_DeleteContext = WIN_GL_DeleteContext;
+#elif SDL_VIDEO_OPENGL_EGL        
+    /* Use EGL based functions */
+    device->GL_LoadLibrary = WIN_GLES_LoadLibrary;
+    device->GL_GetProcAddress = WIN_GLES_GetProcAddress;
+    device->GL_UnloadLibrary = WIN_GLES_UnloadLibrary;
+    device->GL_CreateContext = WIN_GLES_CreateContext;
+    device->GL_MakeCurrent = WIN_GLES_MakeCurrent;
+    device->GL_SetSwapInterval = WIN_GLES_SetSwapInterval;
+    device->GL_GetSwapInterval = WIN_GLES_GetSwapInterval;
+    device->GL_SwapWindow = WIN_GLES_SwapWindow;
+    device->GL_DeleteContext = WIN_GLES_DeleteContext;
 #endif
     device->StartTextInput = WIN_StartTextInput;
     device->StopTextInput = WIN_StopTextInput;
