@@ -619,6 +619,8 @@ WIN_DestroyWindow(_THIS, SDL_Window * window)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
 
+    window->driverdata = NULL;
+
     if (data) {
         ReleaseDC(data->hwnd, data->hdc);
         if (data->created) {
