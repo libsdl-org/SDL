@@ -1357,6 +1357,7 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
 {
     char *title = window->title;
     SDL_Surface *icon = window->icon;
+    SDL_bool loaded_opengl = SDL_FALSE;
 
     if ((flags & SDL_WINDOW_OPENGL) && !_this->GL_CreateContext) {
         return SDL_SetError("No OpenGL support in video driver");
@@ -1389,6 +1390,7 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
             if (SDL_GL_LoadLibrary(NULL) < 0) {
                 return -1;
             }
+            loaded_opengl = SDL_TRUE;
         } else {
             SDL_GL_UnloadLibrary();
         }
@@ -1402,8 +1404,9 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
 
     if (_this->CreateWindow && !(flags & SDL_WINDOW_FOREIGN)) {
         if (_this->CreateWindow(_this, window) < 0) {
-            if ((flags & SDL_WINDOW_OPENGL) && !(window->flags & SDL_WINDOW_OPENGL)) {
+            if (loaded_opengl) {
                 SDL_GL_UnloadLibrary();
+                window->flags &= ~SDL_WINDOW_OPENGL;
             }
             return -1;
         }
