@@ -302,7 +302,6 @@ SDL_PeepEvents(SDL_Event * events, int numevents, SDL_eventaction action,
                            For now we'll guarantee it's valid at least until
                            the next call to SDL_PeepEvents()
                          */
-                        SDL_SysWMEntry *wmmsg;
                         if (SDL_EventQ.wmmsg_free) {
                             wmmsg = SDL_EventQ.wmmsg_free;
                             SDL_EventQ.wmmsg_free = wmmsg->next;
