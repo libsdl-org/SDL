@@ -751,9 +751,7 @@ WIN_UpdateClipCursor(SDL_Window *window)
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     SDL_Mouse *mouse = SDL_GetMouse();
 
-    /* Don't clip the cursor while we're in the modal resize or move loop */
-    if (data->in_title_click || data->in_modal_loop) {
-        ClipCursor(NULL);
+    if (data->focus_click_pending) {
         return;
     }
 

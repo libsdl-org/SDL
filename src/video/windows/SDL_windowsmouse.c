@@ -188,7 +188,7 @@ WIN_WarpMouse(SDL_Window * window, int x, int y)
     POINT pt;
 
     /* Don't warp the mouse while we're doing a modal interaction */
-    if (data->in_title_click || data->in_modal_loop) {
+    if (data->in_title_click || data->focus_click_pending) {
         return;
     }
 
