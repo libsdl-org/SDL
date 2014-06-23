@@ -196,6 +196,11 @@ WindowsScanCodeToSDLScanCode(LPARAM lParam, WPARAM wParam)
 void
 WIN_CheckWParamMouseButton(SDL_bool bwParamMousePressed, SDL_bool bSDLMousePressed, SDL_WindowData *data, Uint8 button)
 {
+    if (data->focus_click_pending && button == SDL_BUTTON_LEFT && !bwParamMousePressed) {
+        data->focus_click_pending = SDL_FALSE;
+        WIN_UpdateClipCursor(data->window);
+    }
+
     if (bwParamMousePressed && !bSDLMousePressed) {
         SDL_SendMouseButton(data->window, 0, SDL_PRESSED, button);
     } else if (!bwParamMousePressed && bSDLMousePressed) {
@@ -371,11 +376,12 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             minimized = HIWORD(wParam);
             if (!minimized && (LOWORD(wParam) != WA_INACTIVE)) {
+                data->focus_click_pending = (GetAsyncKeyState(VK_LBUTTON) != 0);
+
                 SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_SHOWN, 0, 0);
                 if (SDL_GetKeyboardFocus() != data->window) {
                     SDL_SetKeyboardFocus(data->window);
                 }
-                WIN_UpdateClipCursor(data->window);
                 
                 GetCursorPos(&cursorPos);
                 ScreenToClient(hwnd, &cursorPos);
@@ -584,32 +590,14 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_NCLBUTTONDOWN:
         {
             data->in_title_click = SDL_TRUE;
-            WIN_UpdateClipCursor(data->window);
         }
         break;
 
-    case WM_NCMOUSELEAVE:
+    case WM_CAPTURECHANGED:
         {
             data->in_title_click = SDL_FALSE;
-            WIN_UpdateClipCursor(data->window);
-        }
-        break;
 
-    case WM_ENTERSIZEMOVE:
-    case WM_ENTERMENULOOP:
-        {
-            data->in_modal_loop = SDL_TRUE;
-            WIN_UpdateClipCursor(data->window);
-        }
-        break;
-
-    case WM_EXITSIZEMOVE:
-    case WM_EXITMENULOOP:
-        {
-            data->in_modal_loop = SDL_FALSE;
-            WIN_UpdateClipCursor(data->window);
-
-            /* The mouse may have been released during the modal loop */
+            /* The mouse may have been released during a modal loop */
             WIN_CheckAsyncMouseRelease(data);
         }
         break;

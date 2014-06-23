@@ -40,7 +40,7 @@ typedef struct
     SDL_bool expected_resize;
     SDL_bool in_border_change;
     SDL_bool in_title_click;
-    SDL_bool in_modal_loop;
+	SDL_bool focus_click_pending;
     struct SDL_VideoData *videodata;
 #if SDL_VIDEO_OPENGL_EGL  
     EGLSurface egl_surface;
