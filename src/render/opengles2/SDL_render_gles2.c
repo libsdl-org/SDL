@@ -592,7 +592,7 @@ GLES2_TexSubImage2D(GLES2_DriverContext *data, GLenum target, GLint xoffset, GLi
 
     /* Reformat the texture data into a tightly packed array */
     src_pitch = width * bpp;
-    src = (Uint8 *)data;
+    src = (Uint8 *) pixels;
     if (pitch != src_pitch) {
         blob = (Uint8 *)SDL_malloc(src_pitch * height);
         if (!blob) {
