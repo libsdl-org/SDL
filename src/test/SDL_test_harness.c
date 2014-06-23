@@ -564,7 +564,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
                             execKey = SDLTest_GenerateExecKey((char *)runSeed, testSuite->name, testCase->name, iterationCounter);
                         }
 
-                        SDLTest_Log("Test Iteration %i: execKey %" PRIu64, iterationCounter, execKey);
+                        SDLTest_Log("Test Iteration %i: execKey %" SDL_PRIu64, iterationCounter, execKey);
                         testResult = SDLTest_RunTest(testSuite, testCase, execKey);
 
                         if (testResult == TEST_RESULT_PASSED) {

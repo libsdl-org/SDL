@@ -244,19 +244,19 @@ int main(int argc, char* argv[])
         break;
       case SDL_FINGERMOTION:
 #if VERBOSE
-        SDL_Log("Finger: %"PRIs64",x: %f, y: %f",event.tfinger.fingerId,
+        SDL_Log("Finger: %"SDL_PRIs64",x: %f, y: %f",event.tfinger.fingerId,
                event.tfinger.x,event.tfinger.y);
 #endif
         break;
       case SDL_FINGERDOWN:
 #if VERBOSE
-        SDL_Log("Finger: %"PRIs64" down - x: %f, y: %f",
+        SDL_Log("Finger: %"SDL_PRIs64" down - x: %f, y: %f",
            event.tfinger.fingerId,event.tfinger.x,event.tfinger.y);
 #endif
         break;
       case SDL_FINGERUP:
 #if VERBOSE
-        SDL_Log("Finger: %"PRIs64" up - x: %f, y: %f",
+        SDL_Log("Finger: %"SDL_PRIs64" up - x: %f, y: %f",
                event.tfinger.fingerId,event.tfinger.x,event.tfinger.y);
 #endif
         break;
@@ -275,12 +275,12 @@ int main(int argc, char* argv[])
         knob.r += event.mgesture.dDist;
         break;
       case SDL_DOLLARGESTURE:
-        SDL_Log("Gesture %"PRIs64" performed, error: %f",
+        SDL_Log("Gesture %"SDL_PRIs64" performed, error: %f",
            event.dgesture.gestureId,
            event.dgesture.error);
         break;
       case SDL_DOLLARRECORD:
-        SDL_Log("Recorded gesture: %"PRIs64"",event.dgesture.gestureId);
+        SDL_Log("Recorded gesture: %"SDL_PRIs64"",event.dgesture.gestureId);
         break;
       }
       }
