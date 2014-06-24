@@ -54,6 +54,43 @@
 #define XINPUT_CAPS_FFB_SUPPORTED 0x0001
 #endif
 
+#ifndef XINPUT_DEVSUBTYPE_UNKNOWN
+#define XINPUT_DEVSUBTYPE_UNKNOWN 0x00
+#endif
+#ifndef XINPUT_DEVSUBTYPE_GAMEPAD
+#define XINPUT_DEVSUBTYPE_GAMEPAD 0x01
+#endif
+#ifndef XINPUT_DEVSUBTYPE_WHEEL
+#define XINPUT_DEVSUBTYPE_WHEEL 0x02
+#endif
+#ifndef XINPUT_DEVSUBTYPE_ARCADE_STICK
+#define XINPUT_DEVSUBTYPE_ARCADE_STICK 0x03
+#endif
+#ifndef XINPUT_DEVSUBTYPE_FLIGHT_STICK
+#define XINPUT_DEVSUBTYPE_FLIGHT_STICK 0x04
+#endif
+#ifndef XINPUT_DEVSUBTYPE_DANCE_PAD
+#define XINPUT_DEVSUBTYPE_DANCE_PAD 0x05
+#endif
+#ifndef XINPUT_DEVSUBTYPE_GUITAR
+#define XINPUT_DEVSUBTYPE_GUITAR 0x06
+#endif
+#ifndef XINPUT_DEVSUBTYPE_GUITAR_ALTERNATE
+#define XINPUT_DEVSUBTYPE_GUITAR_ALTERNATE 0x07
+#endif
+#ifndef XINPUT_DEVSUBTYPE_DRUM_KIT
+#define XINPUT_DEVSUBTYPE_DRUM_KIT 0x08
+#endif
+#ifndef XINPUT_DEVSUBTYPE_GUITAR_BASS
+#define XINPUT_DEVSUBTYPE_GUITAR_BASS 0x0B
+#endif
+#ifndef XINPUT_DEVSUBTYPE_ARCADE_PAD
+#define XINPUT_DEVSUBTYPE_ARCADE_PAD 0x13
+#endif
+
+#ifndef XINPUT_GAMEPAD_GUIDE
+#define XINPUT_GAMEPAD_GUIDE 0x0400
+#endif
 
 /* typedef's for XInput structs we use */
 typedef struct
@@ -138,13 +175,12 @@ struct joystick_hwdata
     input_t Inputs[MAX_INPUTS];
     int NumInputs;
     int NumSliders;
-    Uint8 removed;
-    Uint8 send_remove_event;
-    Uint8 bXInputDevice; /* 1 if this device supports using the xinput API rather than DirectInput */
-    Uint8 bXInputHaptic; /* Supports force feedback via XInput. */
+	SDL_bool removed;
+	SDL_bool send_remove_event;
+	SDL_bool bXInputDevice; /* SDL_TRUE if this device supports using the xinput API rather than DirectInput */
+	SDL_bool bXInputHaptic; /* Supports force feedback via XInput. */
     Uint8 userid; /* XInput userid index for this joystick */
-    Uint8 currentXInputSlot; /* the current position to write to in XInputState below, used so we can compare old and new values */
-    XINPUT_STATE_EX XInputState[2];
+	DWORD dwPacketNumber;
 };
 
 #endif /* SDL_JOYSTICK_DINPUT_H */
