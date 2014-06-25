@@ -232,16 +232,13 @@ ShouldUseTextureFramebuffer()
 }
 
 static int
-SDL_CreateWindowTexture(_THIS, SDL_Window * window, Uint32 * format, void ** pixels, int *pitch)
+SDL_CreateWindowTexture(SDL_VideoDevice *unused, SDL_Window * window, Uint32 * format, void ** pixels, int *pitch)
 {
     SDL_WindowTextureData *data;
-    SDL_RendererInfo info;
-    Uint32 i;
 
     data = SDL_GetWindowData(window, SDL_WINDOWTEXTUREDATA);
     if (!data) {
         SDL_Renderer *renderer = NULL;
-        SDL_RendererInfo info;
         int i;
         const char *hint = SDL_GetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION);
 
@@ -249,6 +246,7 @@ SDL_CreateWindowTexture(_THIS, SDL_Window * window, Uint32 * format, void ** pix
         if (hint && *hint != '0' && *hint != '1' &&
             SDL_strcasecmp(hint, "software") != 0) {
             for (i = 0; i < SDL_GetNumRenderDrivers(); ++i) {
+                SDL_RendererInfo info;
                 SDL_GetRenderDriverInfo(i, &info);
                 if (SDL_strcasecmp(info.name, hint) == 0) {
                     renderer = SDL_CreateRenderer(window, i, 0);
@@ -259,6 +257,7 @@ SDL_CreateWindowTexture(_THIS, SDL_Window * window, Uint32 * format, void ** pix
         
         if (!renderer) {
             for (i = 0; i < SDL_GetNumRenderDrivers(); ++i) {
+                SDL_RendererInfo info;
                 SDL_GetRenderDriverInfo(i, &info);
                 if (SDL_strcmp(info.name, "software") != 0) {
                     renderer = SDL_CreateRenderer(window, i, 0);
@@ -291,17 +290,23 @@ SDL_CreateWindowTexture(_THIS, SDL_Window * window, Uint32 * format, void ** pix
     SDL_free(data->pixels);
     data->pixels = NULL;
 
-    if (SDL_GetRendererInfo(data->renderer, &info) < 0) {
-        return -1;
-    }
+    {
+        SDL_RendererInfo info;
+        Uint32 i;
 
-    /* Find the first format without an alpha channel */
-    *format = info.texture_formats[0];
-    for (i = 0; i < info.num_texture_formats; ++i) {
-        if (!SDL_ISPIXELFORMAT_FOURCC(info.texture_formats[i]) &&
-            !SDL_ISPIXELFORMAT_ALPHA(info.texture_formats[i])) {
-            *format = info.texture_formats[i];
-            break;
+        if (SDL_GetRendererInfo(data->renderer, &info) < 0) {
+            return -1;
+        }
+
+        /* Find the first format without an alpha channel */
+        *format = info.texture_formats[0];
+
+        for (i = 0; i < info.num_texture_formats; ++i) {
+            if (!SDL_ISPIXELFORMAT_FOURCC(info.texture_formats[i]) &&
+                    !SDL_ISPIXELFORMAT_ALPHA(info.texture_formats[i])) {
+                *format = info.texture_formats[i];
+                break;
+            }
         }
     }
 
@@ -330,7 +335,7 @@ SDL_CreateWindowTexture(_THIS, SDL_Window * window, Uint32 * format, void ** pix
 }
 
 static int
-SDL_UpdateWindowTexture(_THIS, SDL_Window * window, const SDL_Rect * rects, int numrects)
+SDL_UpdateWindowTexture(SDL_VideoDevice *unused, SDL_Window * window, const SDL_Rect * rects, int numrects)
 {
     SDL_WindowTextureData *data;
     SDL_Rect rect;
@@ -360,7 +365,7 @@ SDL_UpdateWindowTexture(_THIS, SDL_Window * window, const SDL_Rect * rects, int 
 }
 
 static void
-SDL_DestroyWindowTexture(_THIS, SDL_Window * window)
+SDL_DestroyWindowTexture(SDL_VideoDevice *unused, SDL_Window * window)
 {
     SDL_WindowTextureData *data;
 
