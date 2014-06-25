@@ -91,14 +91,14 @@ static int numhaptics = -1;
  * Like strerror but for force feedback errors.
  */
 static const char *
-FFStrError(HRESULT err)
+FFStrError(unsigned int err)
 {
     switch (err) {
     case FFERR_DEVICEFULL:
         return "device full";
-        /* This should be valid, but for some reason isn't defined... */
-        /* case FFERR_DEVICENOTREG:
-           return "device not registered"; */
+    /* This should be valid, but for some reason isn't defined... */
+    /* case FFERR_DEVICENOTREG:
+        return "device not registered"; */
     case FFERR_DEVICEPAUSED:
         return "device paused";
     case FFERR_DEVICERELEASED:
