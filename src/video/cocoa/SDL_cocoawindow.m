@@ -921,7 +921,7 @@ SetupWindowData(_THIS, SDL_Window * window, NSWindow *nswindow, SDL_bool created
     SDL_WindowData *data;
 
     /* Allocate the window data */
-    data = (SDL_WindowData *) SDL_calloc(1, sizeof(*data));
+    window->driverdata = data = (SDL_WindowData *) SDL_calloc(1, sizeof(*data));
     if (!data) {
         return SDL_OutOfMemory();
     }
@@ -995,7 +995,6 @@ SetupWindowData(_THIS, SDL_Window * window, NSWindow *nswindow, SDL_bool created
 
     /* All done! */
     [pool release];
-    window->driverdata = data;
     return 0;
 }
 
