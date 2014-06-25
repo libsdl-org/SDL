@@ -115,22 +115,22 @@
  * This can be used for any RGB permutation of course.
  */
 #define ALPHA_BLIT32_888(to, from, length, bpp, alpha)      \
-    do {                            \
-        int i;                          \
-    Uint32 *src = (Uint32 *)(from);             \
-    Uint32 *dst = (Uint32 *)(to);               \
-    for(i = 0; i < (int)(length); i++) {            \
-        Uint32 s = *src++;                  \
-        Uint32 d = *dst;                    \
-        Uint32 s1 = s & 0xff00ff;               \
-        Uint32 d1 = d & 0xff00ff;               \
-        d1 = (d1 + ((s1 - d1) * alpha >> 8)) & 0xff00ff;    \
-        s &= 0xff00;                    \
-        d &= 0xff00;                    \
-        d = (d + ((s - d) * alpha >> 8)) & 0xff00;      \
-        *dst++ = d1 | d;                    \
-    }                           \
-    } while(0)
+    do {                                                    \
+        int i;                                              \
+        Uint32 *src = (Uint32 *)(from);                     \
+        Uint32 *dst = (Uint32 *)(to);                       \
+        for (i = 0; i < (int)(length); i++) {               \
+            Uint32 s = *src++;                              \
+            Uint32 d = *dst;                                \
+            Uint32 s1 = s & 0xff00ff;                       \
+            Uint32 d1 = d & 0xff00ff;                       \
+            d1 = (d1 + ((s1 - d1) * alpha >> 8)) & 0xff00ff; \
+            s &= 0xff00;                                    \
+            d &= 0xff00;                                    \
+            d = (d + ((s - d) * alpha >> 8)) & 0xff00;      \
+            *dst++ = d1 | d;                                \
+        }                                                   \
+    } while (0)
 
 /*
  * For 16bpp pixels we can go a step further: put the middle component
@@ -139,97 +139,97 @@
  * 5 bits, we have to scale alpha down to 5 bits as well.
  */
 #define ALPHA_BLIT16_565(to, from, length, bpp, alpha)  \
-    do {                        \
-        int i;                      \
-    Uint16 *src = (Uint16 *)(from);         \
-    Uint16 *dst = (Uint16 *)(to);           \
-    Uint32 ALPHA = alpha >> 3;          \
-    for(i = 0; i < (int)(length); i++) {        \
-        Uint32 s = *src++;              \
-        Uint32 d = *dst;                \
-        s = (s | s << 16) & 0x07e0f81f;     \
-        d = (d | d << 16) & 0x07e0f81f;     \
-        d += (s - d) * ALPHA >> 5;          \
-        d &= 0x07e0f81f;                \
-        *dst++ = (Uint16)(d | d >> 16);         \
-    }                       \
+    do {                                                \
+        int i;                                          \
+        Uint16 *src = (Uint16 *)(from);                 \
+        Uint16 *dst = (Uint16 *)(to);                   \
+        Uint32 ALPHA = alpha >> 3;                      \
+        for(i = 0; i < (int)(length); i++) {            \
+            Uint32 s = *src++;                          \
+            Uint32 d = *dst;                            \
+            s = (s | s << 16) & 0x07e0f81f;             \
+            d = (d | d << 16) & 0x07e0f81f;             \
+            d += (s - d) * ALPHA >> 5;                  \
+            d &= 0x07e0f81f;                            \
+            *dst++ = (Uint16)(d | d >> 16);             \
+        }                                               \
     } while(0)
 
 #define ALPHA_BLIT16_555(to, from, length, bpp, alpha)  \
-    do {                        \
-        int i;                      \
-    Uint16 *src = (Uint16 *)(from);         \
-    Uint16 *dst = (Uint16 *)(to);           \
-    Uint32 ALPHA = alpha >> 3;          \
-    for(i = 0; i < (int)(length); i++) {        \
-        Uint32 s = *src++;              \
-        Uint32 d = *dst;                \
-        s = (s | s << 16) & 0x03e07c1f;     \
-        d = (d | d << 16) & 0x03e07c1f;     \
-        d += (s - d) * ALPHA >> 5;          \
-        d &= 0x03e07c1f;                \
-        *dst++ = (Uint16)(d | d >> 16);         \
-    }                       \
+    do {                                                \
+        int i;                                          \
+        Uint16 *src = (Uint16 *)(from);                 \
+        Uint16 *dst = (Uint16 *)(to);                   \
+        Uint32 ALPHA = alpha >> 3;                      \
+        for(i = 0; i < (int)(length); i++) {            \
+            Uint32 s = *src++;                          \
+            Uint32 d = *dst;                            \
+            s = (s | s << 16) & 0x03e07c1f;             \
+            d = (d | d << 16) & 0x03e07c1f;             \
+            d += (s - d) * ALPHA >> 5;                  \
+            d &= 0x03e07c1f;                            \
+            *dst++ = (Uint16)(d | d >> 16);             \
+        }                                               \
     } while(0)
 
 /*
  * The general slow catch-all function, for remaining depths and formats
  */
 #define ALPHA_BLIT_ANY(to, from, length, bpp, alpha)            \
-    do {                                \
-        int i;                              \
-    Uint8 *src = from;                      \
-    Uint8 *dst = to;                        \
-    for(i = 0; i < (int)(length); i++) {                \
-        Uint32 s, d;                        \
-        unsigned rs, gs, bs, rd, gd, bd;                \
-        switch(bpp) {                       \
-        case 2:                         \
-        s = *(Uint16 *)src;                 \
-        d = *(Uint16 *)dst;                 \
-        break;                          \
-        case 3:                         \
-        if(SDL_BYTEORDER == SDL_BIG_ENDIAN) {           \
-            s = (src[0] << 16) | (src[1] << 8) | src[2];    \
-            d = (dst[0] << 16) | (dst[1] << 8) | dst[2];    \
-        } else {                        \
-            s = (src[2] << 16) | (src[1] << 8) | src[0];    \
-            d = (dst[2] << 16) | (dst[1] << 8) | dst[0];    \
-        }                           \
-        break;                          \
-        case 4:                         \
-        s = *(Uint32 *)src;                 \
-        d = *(Uint32 *)dst;                 \
-        break;                          \
-        }                               \
-        RGB_FROM_PIXEL(s, fmt, rs, gs, bs);             \
-        RGB_FROM_PIXEL(d, fmt, rd, gd, bd);             \
-        rd += (rs - rd) * alpha >> 8;               \
-        gd += (gs - gd) * alpha >> 8;               \
-        bd += (bs - bd) * alpha >> 8;               \
-        PIXEL_FROM_RGB(d, fmt, rd, gd, bd);             \
-        switch(bpp) {                       \
-        case 2:                         \
-        *(Uint16 *)dst = (Uint16)d;                 \
-        break;                          \
-        case 3:                         \
-        if(SDL_BYTEORDER == SDL_BIG_ENDIAN) {           \
-            dst[0] = (Uint8)(d >> 16);                  \
-            dst[1] = (Uint8)(d >> 8);                   \
-            dst[2] = (Uint8)(d);                        \
-        } else {                        \
-            dst[0] = (Uint8)d;                      \
-            dst[1] = (Uint8)(d >> 8);                   \
-            dst[2] = (Uint8)(d >> 16);                  \
-        }                           \
-        break;                          \
-        case 4:                         \
-        *(Uint32 *)dst = d;                 \
-        break;                          \
-        }                               \
-        src += bpp;                         \
-        dst += bpp;                         \
-    }                               \
+    do {                                                        \
+        int i;                                                  \
+        Uint8 *src = from;                                      \
+        Uint8 *dst = to;                                        \
+        for (i = 0; i < (int)(length); i++) {                   \
+            Uint32 s, d;                                        \
+            unsigned rs, gs, bs, rd, gd, bd;                    \
+            switch (bpp) {                                      \
+            case 2:                                             \
+                s = *(Uint16 *)src;                             \
+                d = *(Uint16 *)dst;                             \
+                break;                                          \
+            case 3:                                             \
+                if (SDL_BYTEORDER == SDL_BIG_ENDIAN) {          \
+                    s = (src[0] << 16) | (src[1] << 8) | src[2]; \
+                    d = (dst[0] << 16) | (dst[1] << 8) | dst[2]; \
+                } else {                                        \
+                    s = (src[2] << 16) | (src[1] << 8) | src[0]; \
+                    d = (dst[2] << 16) | (dst[1] << 8) | dst[0]; \
+                }                                               \
+                break;                                          \
+            case 4:                                             \
+                s = *(Uint32 *)src;                             \
+                d = *(Uint32 *)dst;                             \
+                break;                                          \
+            }                                                   \
+            RGB_FROM_PIXEL(s, fmt, rs, gs, bs);                 \
+            RGB_FROM_PIXEL(d, fmt, rd, gd, bd);                 \
+            rd += (rs - rd) * alpha >> 8;                       \
+            gd += (gs - gd) * alpha >> 8;                       \
+            bd += (bs - bd) * alpha >> 8;                       \
+            PIXEL_FROM_RGB(d, fmt, rd, gd, bd);                 \
+            switch (bpp) {                                      \
+            case 2:                                             \
+                *(Uint16 *)dst = (Uint16)d;                     \
+                break;                                          \
+            case 3:                                             \
+                if (SDL_BYTEORDER == SDL_BIG_ENDIAN) {          \
+                    dst[0] = (Uint8)(d >> 16);                  \
+                    dst[1] = (Uint8)(d >> 8);                   \
+                    dst[2] = (Uint8)(d);                        \
+                } else {                                        \
+                    dst[0] = (Uint8)d;                          \
+                    dst[1] = (Uint8)(d >> 8);                   \
+                    dst[2] = (Uint8)(d >> 16);                  \
+                }                                               \
+                break;                                          \
+            case 4:                                             \
+                *(Uint32 *)dst = d;                             \
+                break;                                          \
+            }                                                   \
+            src += bpp;                                         \
+            dst += bpp;                                         \
+        }                                                       \
     } while(0)
 
 /*
@@ -241,16 +241,16 @@
  * add them. Then shift right and add the sum of the lowest bits.
  */
 #define ALPHA_BLIT32_888_50(to, from, length, bpp, alpha)       \
-    do {                                \
-        int i;                              \
-    Uint32 *src = (Uint32 *)(from);                 \
-    Uint32 *dst = (Uint32 *)(to);                   \
-    for(i = 0; i < (int)(length); i++) {                \
-        Uint32 s = *src++;                      \
-        Uint32 d = *dst;                        \
-        *dst++ = (((s & 0x00fefefe) + (d & 0x00fefefe)) >> 1)   \
-             + (s & d & 0x00010101);                \
-    }                               \
+    do {                                                        \
+        int i;                                                  \
+        Uint32 *src = (Uint32 *)(from);                         \
+        Uint32 *dst = (Uint32 *)(to);                           \
+        for(i = 0; i < (int)(length); i++) {                    \
+            Uint32 s = *src++;                                  \
+            Uint32 d = *dst;                                    \
+            *dst++ = (((s & 0x00fefefe) + (d & 0x00fefefe)) >> 1) \
+                 + (s & d & 0x00010101);                        \
+        }                                                       \
     } while(0)
 
 /*
@@ -259,116 +259,118 @@
  */
 
 /* helper: blend a single 16 bit pixel at 50% */
-#define BLEND16_50(dst, src, mask)          \
-    do {                        \
-    Uint32 s = *src++;              \
-    Uint32 d = *dst;                \
-    *dst++ = (Uint16)((((s & mask) + (d & mask)) >> 1) +    \
-                      (s & d & (~mask & 0xffff)));      \
+#define BLEND16_50(dst, src, mask)                              \
+    do {                                                        \
+        Uint32 s = *src++;                                      \
+        Uint32 d = *dst;                                        \
+        *dst++ = (Uint16)((((s & mask) + (d & mask)) >> 1) +    \
+                          (s & d & (~mask & 0xffff)));          \
     } while(0)
 
 /* basic 16bpp blender. mask is the pixels to keep when adding. */
 #define ALPHA_BLIT16_50(to, from, length, bpp, alpha, mask)     \
-    do {                                \
-    unsigned n = (length);                      \
-    Uint16 *src = (Uint16 *)(from);                 \
-    Uint16 *dst = (Uint16 *)(to);                   \
-    if(((uintptr_t)src ^ (uintptr_t)dst) & 3) {         \
-        /* source and destination not in phase, blit one by one */  \
-        while(n--)                          \
-        BLEND16_50(dst, src, mask);             \
-    } else {                            \
-        if((uintptr_t)src & 3) {                    \
-        /* first odd pixel */                   \
-        BLEND16_50(dst, src, mask);             \
-        n--;                            \
-        }                               \
-        for(; n > 1; n -= 2) {                  \
-        Uint32 s = *(Uint32 *)src;              \
-        Uint32 d = *(Uint32 *)dst;              \
-        *(Uint32 *)dst = ((s & (mask | mask << 16)) >> 1)   \
-                       + ((d & (mask | mask << 16)) >> 1)   \
-                       + (s & d & (~(mask | mask << 16)));  \
-        src += 2;                       \
-        dst += 2;                       \
-        }                               \
-        if(n)                           \
-        BLEND16_50(dst, src, mask); /* last odd pixel */    \
-    }                               \
+    do {                                                        \
+        unsigned n = (length);                                  \
+        Uint16 *src = (Uint16 *)(from);                         \
+        Uint16 *dst = (Uint16 *)(to);                           \
+        if (((uintptr_t)src ^ (uintptr_t)dst) & 3) {            \
+            /* source and destination not in phase, blit one by one */ \
+            while (n--)                                         \
+                BLEND16_50(dst, src, mask);                     \
+        } else {                                                \
+            if ((uintptr_t)src & 3) {                           \
+                /* first odd pixel */                           \
+                BLEND16_50(dst, src, mask);                     \
+                n--;                                            \
+            }                                                   \
+            for (; n > 1; n -= 2) {                             \
+                Uint32 s = *(Uint32 *)src;                      \
+                Uint32 d = *(Uint32 *)dst;                      \
+                *(Uint32 *)dst = ((s & (mask | mask << 16)) >> 1) \
+                    + ((d & (mask | mask << 16)) >> 1)          \
+                    + (s & d & (~(mask | mask << 16)));         \
+                src += 2;                                       \
+                dst += 2;                                       \
+            }                                                   \
+            if (n)                                              \
+                BLEND16_50(dst, src, mask); /* last odd pixel */ \
+        }                                                       \
     } while(0)
 
-#define ALPHA_BLIT16_565_50(to, from, length, bpp, alpha)   \
+#define ALPHA_BLIT16_565_50(to, from, length, bpp, alpha)       \
     ALPHA_BLIT16_50(to, from, length, bpp, alpha, 0xf7de)
 
-#define ALPHA_BLIT16_555_50(to, from, length, bpp, alpha)   \
+#define ALPHA_BLIT16_555_50(to, from, length, bpp, alpha)       \
     ALPHA_BLIT16_50(to, from, length, bpp, alpha, 0xfbde)
 
-#define CHOOSE_BLIT(blitter, alpha, fmt)                \
-    do {                                \
-        if(alpha == 255) {                      \
-        switch(fmt->BytesPerPixel) {                \
-        case 1: blitter(1, Uint8, OPAQUE_BLIT); break;      \
-        case 2: blitter(2, Uint8, OPAQUE_BLIT); break;      \
-        case 3: blitter(3, Uint8, OPAQUE_BLIT); break;      \
-        case 4: blitter(4, Uint16, OPAQUE_BLIT); break;     \
-        }                               \
-    } else {                            \
-        switch(fmt->BytesPerPixel) {                \
-        case 1:                         \
-        /* No 8bpp alpha blitting */                \
-        break;                          \
-                                    \
-        case 2:                         \
-        switch(fmt->Rmask | fmt->Gmask | fmt->Bmask) {      \
-        case 0xffff:                        \
-            if(fmt->Gmask == 0x07e0             \
-               || fmt->Rmask == 0x07e0              \
-               || fmt->Bmask == 0x07e0) {           \
-            if(alpha == 128)                \
-                blitter(2, Uint8, ALPHA_BLIT16_565_50); \
-            else {                      \
-                blitter(2, Uint8, ALPHA_BLIT16_565);    \
-            }                       \
-            } else                      \
-            goto general16;                 \
-            break;                      \
-                                    \
-        case 0x7fff:                        \
-            if(fmt->Gmask == 0x03e0             \
-               || fmt->Rmask == 0x03e0              \
-               || fmt->Bmask == 0x03e0) {           \
-            if(alpha == 128)                \
-                blitter(2, Uint8, ALPHA_BLIT16_555_50); \
-            else {                      \
-                blitter(2, Uint8, ALPHA_BLIT16_555);    \
-            }                       \
-            break;                      \
-            }                           \
-            /* fallthrough */                   \
-                                    \
-        default:                        \
-        general16:                      \
-            blitter(2, Uint8, ALPHA_BLIT_ANY);          \
-        }                           \
-        break;                          \
-                                    \
-        case 3:                         \
-        blitter(3, Uint8, ALPHA_BLIT_ANY);          \
-        break;                          \
-                                    \
-        case 4:                         \
-        if((fmt->Rmask | fmt->Gmask | fmt->Bmask) == 0x00ffffff \
-           && (fmt->Gmask == 0xff00 || fmt->Rmask == 0xff00 \
-               || fmt->Bmask == 0xff00)) {          \
-            if(alpha == 128)                    \
-            blitter(4, Uint16, ALPHA_BLIT32_888_50);    \
-            else                        \
-            blitter(4, Uint16, ALPHA_BLIT32_888);       \
-        } else                          \
-            blitter(4, Uint16, ALPHA_BLIT_ANY);         \
-        break;                          \
-        }                               \
-    }                               \
+#define CHOOSE_BLIT(blitter, alpha, fmt)                        \
+    do {                                                        \
+        if (alpha == 255) {                                     \
+            switch (fmt->BytesPerPixel) {                       \
+            case 1: blitter(1, Uint8, OPAQUE_BLIT); break;      \
+            case 2: blitter(2, Uint8, OPAQUE_BLIT); break;      \
+            case 3: blitter(3, Uint8, OPAQUE_BLIT); break;      \
+            case 4: blitter(4, Uint16, OPAQUE_BLIT); break;     \
+            }                                                   \
+        } else {                                                \
+            switch (fmt->BytesPerPixel) {                       \
+            case 1:                                             \
+                /* No 8bpp alpha blitting */                    \
+                break;                                          \
+                                                                \
+            case 2:                                             \
+                switch (fmt->Rmask | fmt->Gmask | fmt->Bmask) { \
+                case 0xffff:                                    \
+                    if (fmt->Gmask == 0x07e0                    \
+                        || fmt->Rmask == 0x07e0                 \
+                        || fmt->Bmask == 0x07e0) {              \
+                        if (alpha == 128) {                     \
+                            blitter(2, Uint8, ALPHA_BLIT16_565_50); \
+                        } else {                                \
+                            blitter(2, Uint8, ALPHA_BLIT16_565); \
+                        }                                       \
+                    } else                                      \
+                        goto general16;                         \
+                    break;                                      \
+                                                                \
+                case 0x7fff:                                    \
+                    if (fmt->Gmask == 0x03e0                    \
+                        || fmt->Rmask == 0x03e0                 \
+                        || fmt->Bmask == 0x03e0) {              \
+                        if (alpha == 128) {                     \
+                            blitter(2, Uint8, ALPHA_BLIT16_555_50); \
+                        } else {                                \
+                            blitter(2, Uint8, ALPHA_BLIT16_555); \
+                        }                                       \
+                        break;                                  \
+                    } else                                      \
+                        goto general16;                         \
+                    break;                                      \
+                                                                \
+                default:                                        \
+    general16:                                                  \
+                    blitter(2, Uint8, ALPHA_BLIT_ANY);          \
+                }                                               \
+                break;                                          \
+                                                                \
+            case 3:                                             \
+                blitter(3, Uint8, ALPHA_BLIT_ANY);              \
+                break;                                          \
+                                                                \
+            case 4:                                             \
+                if ((fmt->Rmask | fmt->Gmask | fmt->Bmask) == 0x00ffffff \
+                    && (fmt->Gmask == 0xff00 || fmt->Rmask == 0xff00 \
+                    || fmt->Bmask == 0xff00)) {                 \
+                    if (alpha == 128) {                         \
+                        blitter(4, Uint16, ALPHA_BLIT32_888_50); \
+                    } else {                                    \
+                        blitter(4, Uint16, ALPHA_BLIT32_888);   \
+                    }                                           \
+                } else                                          \
+                    blitter(4, Uint16, ALPHA_BLIT_ANY);         \
+                break;                                          \
+            }                                                   \
+        }                                                       \
     } while(0)
 
 /*
@@ -381,48 +383,49 @@ RLEClipBlit(int w, Uint8 * srcbuf, SDL_Surface * surf_dst,
 {
     SDL_PixelFormat *fmt = surf_dst->format;
 
-#define RLECLIPBLIT(bpp, Type, do_blit)                    \
-    do {                                   \
-    int linecount = srcrect->h;                    \
-    int ofs = 0;                               \
-    int left = srcrect->x;                         \
-    int right = left + srcrect->w;                     \
-    dstbuf -= left * bpp;                          \
-    for(;;) {                              \
-        int run;                               \
-        ofs += *(Type *)srcbuf;                    \
-        run = ((Type *)srcbuf)[1];                     \
-        srcbuf += 2 * sizeof(Type);                    \
-        if(run) {                              \
-        /* clip to left and right borders */               \
-        if(ofs < right) {                      \
-            int start = 0;                     \
-            int len = run;                     \
-            int startcol;                      \
-            if(left - ofs > 0) {                   \
-            start = left - ofs;                \
-            len -= start;                      \
-            if(len <= 0)                       \
-                goto nocopy ## bpp ## do_blit;         \
-            }                              \
-            startcol = ofs + start;                \
-            if(len > right - startcol)                 \
-            len = right - startcol;                \
-            do_blit(dstbuf + startcol * bpp, srcbuf + start * bpp, \
-                len, bpp, alpha);                  \
-        }                              \
-        nocopy ## bpp ## do_blit:                      \
-        srcbuf += run * bpp;                       \
-        ofs += run;                        \
-        } else if(!ofs)                        \
-        break;                             \
-        if(ofs == w) {                         \
-        ofs = 0;                           \
-        dstbuf += surf_dst->pitch;                      \
-        if(!--linecount)                       \
-            break;                         \
-        }                                  \
-    }                                  \
+#define RLECLIPBLIT(bpp, Type, do_blit)                         \
+    do {                                                        \
+        int linecount = srcrect->h;                             \
+        int ofs = 0;                                            \
+        int left = srcrect->x;                                  \
+        int right = left + srcrect->w;                          \
+        dstbuf -= left * bpp;                                   \
+        for (;;) {                                              \
+            int run;                                            \
+            ofs += *(Type *)srcbuf;                             \
+            run = ((Type *)srcbuf)[1];                          \
+            srcbuf += 2 * sizeof(Type);                         \
+            if (run) {                                          \
+                /* clip to left and right borders */            \
+                if (ofs < right) {                              \
+                    int start = 0;                              \
+                    int len = run;                              \
+                    int startcol;                               \
+                    if (left - ofs > 0) {                       \
+                        start = left - ofs;                     \
+                        len -= start;                           \
+                        if (len <= 0)                           \
+                            goto nocopy ## bpp ## do_blit;      \
+                    }                                           \
+                    startcol = ofs + start;                     \
+                    if (len > right - startcol)                 \
+                        len = right - startcol;                 \
+                    do_blit(dstbuf + startcol * bpp, srcbuf + start * bpp, \
+                        len, bpp, alpha);                       \
+                }                                               \
+    nocopy ## bpp ## do_blit:                                   \
+                srcbuf += run * bpp;                            \
+                ofs += run;                                     \
+            } else if (!ofs)                                    \
+                break;                                          \
+                                                                \
+            if (ofs == w) {                                     \
+                ofs = 0;                                        \
+                dstbuf += surf_dst->pitch;                      \
+                if (!--linecount)                               \
+                    break;                                      \
+            }                                                   \
+        }                                                       \
     } while(0)
 
     CHOOSE_BLIT(RLECLIPBLIT, alpha, fmt);
