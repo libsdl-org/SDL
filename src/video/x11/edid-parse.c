@@ -548,7 +548,6 @@ yesno (int v)
 void
 dump_monitor_info (MonitorInfo *info)
 {
-    char *s;
     int i;
     
     printf ("Checksum: %d (%s)\n",
@@ -601,6 +600,7 @@ dump_monitor_info (MonitorInfo *info)
     }
     else
     {
+       const char *s;
 	printf ("Video Signal Level: %f\n", info->analog.video_signal_level);
 	printf ("Sync Signal Level: %f\n", info->analog.sync_signal_level);
 	printf ("Total Signal Level: %f\n", info->analog.total_signal_level);

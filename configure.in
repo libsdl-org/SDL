@@ -3238,7 +3238,7 @@ esac
 
 dnl Do this on all platforms, after everything else.
 CheckWarnAll
-#CheckWarnShadow
+CheckWarnShadow
 
 # Verify that we have all the platform specific files we need
 

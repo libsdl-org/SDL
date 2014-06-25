@@ -402,18 +402,18 @@ do {                                                                    \
 {                                                                       \
     switch (bpp) {                                                      \
         case 1: {                                                       \
-            Uint8 Pixel;                                                \
+            Uint8 _pixel;                                               \
                                                                         \
-            PIXEL_FROM_RGBA(Pixel, fmt, r, g, b, a);                    \
-            *((Uint8 *)(buf)) = Pixel;                                  \
+            PIXEL_FROM_RGBA(_pixel, fmt, r, g, b, a);                   \
+            *((Uint8 *)(buf)) = _pixel;                                 \
         }                                                               \
         break;                                                          \
                                                                         \
         case 2: {                                                       \
-            Uint16 Pixel;                                               \
+            Uint16 _pixel;                                              \
                                                                         \
-            PIXEL_FROM_RGBA(Pixel, fmt, r, g, b, a);                    \
-            *((Uint16 *)(buf)) = Pixel;                                 \
+            PIXEL_FROM_RGBA(_pixel, fmt, r, g, b, a);                   \
+            *((Uint16 *)(buf)) = _pixel;                                \
         }                                                               \
         break;                                                          \
                                                                         \
@@ -431,10 +431,10 @@ do {                                                                    \
         break;                                                          \
                                                                         \
         case 4: {                                                       \
-            Uint32 Pixel;                                               \
+            Uint32 _pixel;                                              \
                                                                         \
-            PIXEL_FROM_RGBA(Pixel, fmt, r, g, b, a);                    \
-            *((Uint32 *)(buf)) = Pixel;                                 \
+            PIXEL_FROM_RGBA(_pixel, fmt, r, g, b, a);                   \
+            *((Uint32 *)(buf)) = _pixel;                                \
         }                                                               \
         break;                                                          \
     }                                                                   \

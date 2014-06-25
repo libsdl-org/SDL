@@ -23374,7 +23374,7 @@ $as_echo "#define SDL_FILESYSTEM_NACL 1" >>confdefs.h
 esac
 
 CheckWarnAll
-#CheckWarnShadow
+CheckWarnShadow
 
 # Verify that we have all the platform specific files we need
 

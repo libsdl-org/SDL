@@ -376,10 +376,10 @@
  * right. Top clipping has already been taken care of.
  */
 static void
-RLEClipBlit(int w, Uint8 * srcbuf, SDL_Surface * dst,
+RLEClipBlit(int w, Uint8 * srcbuf, SDL_Surface * surf_dst,
             Uint8 * dstbuf, SDL_Rect * srcrect, unsigned alpha)
 {
-    SDL_PixelFormat *fmt = dst->format;
+    SDL_PixelFormat *fmt = surf_dst->format;
 
 #define RLECLIPBLIT(bpp, Type, do_blit)                    \
     do {                                   \
@@ -418,7 +418,7 @@ RLEClipBlit(int w, Uint8 * srcbuf, SDL_Surface * dst,
         break;                             \
         if(ofs == w) {                         \
         ofs = 0;                           \
-        dstbuf += dst->pitch;                      \
+        dstbuf += surf_dst->pitch;                      \
         if(!--linecount)                       \
             break;                         \
         }                                  \
@@ -434,18 +434,18 @@ RLEClipBlit(int w, Uint8 * srcbuf, SDL_Surface * dst,
 
 /* blit a colorkeyed RLE surface */
 int
-SDL_RLEBlit(SDL_Surface * src, SDL_Rect * srcrect,
-            SDL_Surface * dst, SDL_Rect * dstrect)
+SDL_RLEBlit(SDL_Surface * surf_src, SDL_Rect * srcrect,
+            SDL_Surface * surf_dst, SDL_Rect * dstrect)
 {
     Uint8 *dstbuf;
     Uint8 *srcbuf;
     int x, y;
-    int w = src->w;
+    int w = surf_src->w;
     unsigned alpha;
 
     /* Lock the destination if necessary */
-    if (SDL_MUSTLOCK(dst)) {
-        if (SDL_LockSurface(dst) < 0) {
+    if (SDL_MUSTLOCK(surf_dst)) {
+        if (SDL_LockSurface(surf_dst) < 0) {
             return (-1);
         }
     }
@@ -453,9 +453,9 @@ SDL_RLEBlit(SDL_Surface * src, SDL_Rect * srcrect,
     /* Set up the source and destination pointers */
     x = dstrect->x;
     y = dstrect->y;
-    dstbuf = (Uint8 *) dst->pixels
-        + y * dst->pitch + x * src->format->BytesPerPixel;
-    srcbuf = (Uint8 *) src->map->data;
+    dstbuf = (Uint8 *) surf_dst->pixels
+        + y * surf_dst->pitch + x * surf_src->format->BytesPerPixel;
+    srcbuf = (Uint8 *) surf_src->map->data;
 
     {
         /* skip lines at the top if necessary */
@@ -481,7 +481,7 @@ SDL_RLEBlit(SDL_Surface * src, SDL_Rect * srcrect,
             }               \
         }
 
-            switch (src->format->BytesPerPixel) {
+            switch (surf_src->format->BytesPerPixel) {
             case 1:
                 RLESKIP(1, Uint8);
                 break;
@@ -501,12 +501,12 @@ SDL_RLEBlit(SDL_Surface * src, SDL_Rect * srcrect,
         }
     }
 
-    alpha = src->map->info.a;
+    alpha = surf_src->map->info.a;
     /* if left or right edge clipping needed, call clip blit */
-    if (srcrect->x || srcrect->w != src->w) {
-        RLEClipBlit(w, srcbuf, dst, dstbuf, srcrect, alpha);
+    if (srcrect->x || srcrect->w != surf_src->w) {
+        RLEClipBlit(w, srcbuf, surf_dst, dstbuf, srcrect, alpha);
     } else {
-        SDL_PixelFormat *fmt = src->format;
+        SDL_PixelFormat *fmt = surf_src->format;
 
 #define RLEBLIT(bpp, Type, do_blit)                       \
         do {                                  \
@@ -525,7 +525,7 @@ SDL_RLEBlit(SDL_Surface * src, SDL_Rect * srcrect,
             break;                            \
             if(ofs == w) {                        \
             ofs = 0;                          \
-            dstbuf += dst->pitch;                     \
+            dstbuf += surf_dst->pitch;                     \
             if(!--linecount)                      \
                 break;                        \
             }                                 \
@@ -539,8 +539,8 @@ SDL_RLEBlit(SDL_Surface * src, SDL_Rect * srcrect,
 
   done:
     /* Unlock the destination if necessary */
-    if (SDL_MUSTLOCK(dst)) {
-        SDL_UnlockSurface(dst);
+    if (SDL_MUSTLOCK(surf_dst)) {
+        SDL_UnlockSurface(surf_dst);
     }
     return (0);
 }
@@ -620,10 +620,10 @@ typedef struct
 
 /* blit a pixel-alpha RLE surface clipped at the right and/or left edges */
 static void
-RLEAlphaClipBlit(int w, Uint8 * srcbuf, SDL_Surface * dst,
+RLEAlphaClipBlit(int w, Uint8 * srcbuf, SDL_Surface * surf_dst,
                  Uint8 * dstbuf, SDL_Rect * srcrect)
 {
-    SDL_PixelFormat *df = dst->format;
+    SDL_PixelFormat *df = surf_dst->format;
     /*
      * clipped blitter: Ptype is the destination pixel type,
      * Ctype the translucent count type, and do_blend the macro
@@ -693,7 +693,7 @@ RLEAlphaClipBlit(int w, Uint8 * srcbuf, SDL_Surface * dst,
             ofs += run;                       \
         }                             \
         } while(ofs < w);                         \
-        dstbuf += dst->pitch;                     \
+        dstbuf += surf_dst->pitch;                     \
     } while(--linecount);                         \
     } while(0)
 
@@ -712,25 +712,25 @@ RLEAlphaClipBlit(int w, Uint8 * srcbuf, SDL_Surface * dst,
 
 /* blit a pixel-alpha RLE surface */
 int
-SDL_RLEAlphaBlit(SDL_Surface * src, SDL_Rect * srcrect,
-                 SDL_Surface * dst, SDL_Rect * dstrect)
+SDL_RLEAlphaBlit(SDL_Surface * surf_src, SDL_Rect * srcrect,
+                 SDL_Surface * surf_dst, SDL_Rect * dstrect)
 {
     int x, y;
-    int w = src->w;
+    int w = surf_src->w;
     Uint8 *srcbuf, *dstbuf;
-    SDL_PixelFormat *df = dst->format;
+    SDL_PixelFormat *df = surf_dst->format;
 
     /* Lock the destination if necessary */
-    if (SDL_MUSTLOCK(dst)) {
-        if (SDL_LockSurface(dst) < 0) {
+    if (SDL_MUSTLOCK(surf_dst)) {
+        if (SDL_LockSurface(surf_dst) < 0) {
             return -1;
         }
     }
 
     x = dstrect->x;
     y = dstrect->y;
-    dstbuf = (Uint8 *) dst->pixels + y * dst->pitch + x * df->BytesPerPixel;
-    srcbuf = (Uint8 *) src->map->data + sizeof(RLEDestFormat);
+    dstbuf = (Uint8 *) surf_dst->pixels + y * surf_dst->pitch + x * df->BytesPerPixel;
+    srcbuf = (Uint8 *) surf_src->map->data + sizeof(RLEDestFormat);
 
     {
         /* skip lines at the top if necessary */
@@ -789,8 +789,8 @@ SDL_RLEAlphaBlit(SDL_Surface * src, SDL_Rect * srcrect,
     }
 
     /* if left or right edge clipping needed, call clip blit */
-    if (srcrect->x || srcrect->w != src->w) {
-        RLEAlphaClipBlit(w, srcbuf, dst, dstbuf, srcrect);
+    if (srcrect->x || srcrect->w != surf_src->w) {
+        RLEAlphaClipBlit(w, srcbuf, surf_dst, dstbuf, srcrect);
     } else {
 
         /*
@@ -839,7 +839,7 @@ SDL_RLEAlphaBlit(SDL_Surface * src, SDL_Rect * srcrect,
             ofs += run;                  \
             }                            \
         } while(ofs < w);                    \
-        dstbuf += dst->pitch;                    \
+        dstbuf += surf_dst->pitch;                    \
         } while(--linecount);                    \
     } while(0)
 
@@ -859,8 +859,8 @@ SDL_RLEAlphaBlit(SDL_Surface * src, SDL_Rect * srcrect,
 
   done:
     /* Unlock the destination if necessary */
-    if (SDL_MUSTLOCK(dst)) {
-        SDL_UnlockSurface(dst);
+    if (SDL_MUSTLOCK(surf_dst)) {
+        SDL_UnlockSurface(surf_dst);
     }
     return 0;
 }
