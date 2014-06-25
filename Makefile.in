@@ -42,15 +42,25 @@ SDLTEST_OBJECTS = @SDLTEST_OBJECTS@
 SRC_DIST = *.txt acinclude Android.mk autogen.sh android-project build-scripts cmake configure configure.in debian include Makefile.* sdl2-config.in sdl2.m4 sdl2.pc.in SDL2.spec.in src test VisualC.html VisualC Xcode Xcode-iOS
 GEN_DIST = SDL2.spec
 
+ifneq ($V,1)
+RUN_CMD_AR     = @echo "  AR    " $@;
+RUN_CMD_CC     = @echo "  CC    " $@;
+RUN_CMD_CXX    = @echo "  CXX   " $@;
+RUN_CMD_LTLINK = @echo "  LTLINK" $@;
+RUN_CMD_RANLIB = @echo "  RANLIB" $@;
+LIBTOOL += --quiet
+endif
+
 HDRS = \
 	SDL.h \
 	SDL_assert.h \
 	SDL_atomic.h \
 	SDL_audio.h \
-    SDL_bits.h \
+	SDL_bits.h \
 	SDL_blendmode.h \
 	SDL_clipboard.h \
 	SDL_cpuinfo.h \
+	SDL_egl.h \
 	SDL_endian.h \
 	SDL_error.h \
 	SDL_events.h \
@@ -70,8 +80,13 @@ HDRS = \
 	SDL_mutex.h \
 	SDL_name.h \
 	SDL_opengl.h \
+	SDL_opengl_glext.h \
 	SDL_opengles.h \
+	SDL_opengles2_gl2ext.h \
+	SDL_opengles2_gl2.h \
+	SDL_opengles2_gl2platform.h \
 	SDL_opengles2.h \
+	SDL_opengles2_khrplatform.h \
 	SDL_pixels.h \
 	SDL_platform.h \
 	SDL_power.h \
@@ -123,15 +138,15 @@ update-revision:
 .PHONY: all update-revision install install-bin install-hdrs install-lib install-data uninstall uninstall-bin uninstall-hdrs uninstall-lib uninstall-data clean distclean dist $(OBJECTS:.lo=.d)
 
 $(objects)/$(TARGET): $(OBJECTS) $(VERSION_OBJECTS)
-	$(LIBTOOL) --tag=CC --mode=link $(CC) -o $@ $(OBJECTS) $(VERSION_OBJECTS) $(LDFLAGS) $(EXTRA_LDFLAGS) $(LT_LDFLAGS)
+	$(RUN_CMD_LTLINK)$(LIBTOOL) --tag=CC --mode=link $(CC) -o $@ $(OBJECTS) $(VERSION_OBJECTS) $(LDFLAGS) $(EXTRA_LDFLAGS) $(LT_LDFLAGS)
 
 $(objects)/$(SDLMAIN_TARGET): $(SDLMAIN_OBJECTS)
-	$(AR) cru $@ $(SDLMAIN_OBJECTS)
-	$(RANLIB) $@
+	$(RUN_CMD_AR)$(AR) cru $@ $(SDLMAIN_OBJECTS)
+	$(RUN_CMD_RANLIB)$(RANLIB) $@
 
 $(objects)/$(SDLTEST_TARGET): $(SDLTEST_OBJECTS)
-	$(AR) cru $@ $(SDLTEST_OBJECTS)
-	$(RANLIB) $@
+	$(RUN_CMD_AR)$(AR) cru $@ $(SDLTEST_OBJECTS)
+	$(RUN_CMD_RANLIB)$(RANLIB) $@
 
 install: all install-bin install-hdrs install-lib install-data
 install-bin:

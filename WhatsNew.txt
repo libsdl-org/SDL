@@ -9,6 +9,7 @@ General:
 * Added an event SDL_RENDER_DEVICE_RESET that is sent from the D3D renderers 
   when the D3D device is lost, and from Android's event loop when the GLES
   context had to be re created.
+* Native Client backend
 
 ---------------------------------------------------------------------------
 2.0.3:

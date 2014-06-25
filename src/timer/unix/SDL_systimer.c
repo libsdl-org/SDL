@@ -28,6 +28,7 @@
 #include <errno.h>
 
 #include "SDL_timer.h"
+#include "SDL_assert.h"
 
 /* The clock_gettime provides monotonous time, so we should use it if
    it's available. The clock_gettime function is behind ifdef
@@ -106,6 +107,9 @@ SDL_GetTicks(void)
 #elif defined(__APPLE__)
         uint64_t now = mach_absolute_time();
         ticks = (((now - start_mach) * mach_base_info.numer) / mach_base_info.denom) / 1000000;
+#else
+        SDL_assert(SDL_FALSE);
+        ticks = 0;
 #endif
     } else {
         struct timeval now;
@@ -136,6 +140,9 @@ SDL_GetPerformanceCounter(void)
         ticks += now.tv_nsec;
 #elif defined(__APPLE__)
         ticks = mach_absolute_time();
+#else
+        SDL_assert(SDL_FALSE);
+        ticks = 0;
 #endif
     } else {
         struct timeval now;

@@ -29,6 +29,7 @@
 #define WAVE            0x45564157      /* "WAVE" */
 #define FACT            0x74636166      /* "fact" */
 #define LIST            0x5453494c      /* "LIST" */
+#define BEXT            0x74786562      /* "bext" */
 #define FMT             0x20746D66      /* "fmt " */
 #define DATA            0x61746164      /* "data" */
 #define PCM_CODE        0x0001

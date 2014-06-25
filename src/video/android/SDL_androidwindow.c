@@ -22,6 +22,7 @@
 
 #if SDL_VIDEO_DRIVER_ANDROID
 
+#include "SDL_syswm.h"
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/SDL_mouse_c.h"
@@ -106,12 +107,30 @@ Android_DestroyWindow(_THIS, SDL_Window * window)
             if (data->egl_surface != EGL_NO_SURFACE) {
                 SDL_EGL_DestroySurface(_this, data->egl_surface);
             }
-            if(data->native_window) {
+            if (data->native_window) {
                 ANativeWindow_release(data->native_window);
             }
             SDL_free(window->driverdata);
             window->driverdata = NULL;
         }
+    }
+}
+
+SDL_bool
+Android_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
+{
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+
+    if (info->version.major == SDL_MAJOR_VERSION &&
+        info->version.minor == SDL_MINOR_VERSION) {
+        info->subsystem = SDL_SYSWM_ANDROID;
+        info->info.android.window = data->native_window;
+        info->info.android.surface = data->egl_surface;
+        return SDL_TRUE;
+    } else {
+        SDL_SetError("Application not compiled with SDL %d.%d\n",
+                     SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
+        return SDL_FALSE;
     }
 }
 

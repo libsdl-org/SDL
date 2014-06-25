@@ -186,6 +186,28 @@ extern "C" {
 #define SDL_HINT_VIDEO_X11_XRANDR           "SDL_VIDEO_X11_XRANDR"
 
 /**
+ *  \brief  A variable controlling whether the window frame and title bar are interactive when the cursor is hidden 
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - The window frame is not interactive when the cursor is hidden (no move, resize, etc)
+ *    "1"       - The window frame is interactive when the cursor is hidden
+ *
+ *  By default SDL will allow interaction with the window frame when the cursor is hidden
+ */
+#define SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN    "SDL_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN"
+
+/**
+ *  \brief  A variable controlling whether the windows message loop is processed by SDL 
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - The window message loop is not run
+ *    "1"       - The window message loop is processed in SDL_PumpEvents()
+ *
+ *  By default SDL will process the windows message loop
+ */
+#define SDL_HINT_WINDOWS_ENABLE_MESSAGELOOP "SDL_WINDOWS_ENABLE_MESSAGELOOP"
+
+/**
  *  \brief  A variable controlling whether grabbing input grabs the keyboard
  *
  *  This variable can be set to the following values:
@@ -257,6 +279,16 @@ extern "C" {
  *    "1"       - Enable XInput detection (the default)
  */
 #define SDL_HINT_XINPUT_ENABLED "SDL_XINPUT_ENABLED"
+
+
+/**
+ *  \brief  A variable that causes SDL to use the old axis and button mapping for XInput devices.
+ *
+ *  This hint is for backwards compatibility only and will be removed in SDL 2.1
+ *
+ *  The default value is "0".  This hint must be set before SDL_Init()
+ */
+#define SDL_HINT_XINPUT_USE_OLD_JOYSTICK_MAPPING "SDL_XINPUT_USE_OLD_JOYSTICK_MAPPING"
 
 
 /**
@@ -434,6 +466,16 @@ extern "C" {
  *   any windows are created.
  */
 #define SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES    "SDL_VIDEO_MAC_FULLSCREEN_SPACES"
+
+/**
+ * \brief Android APK expansion main file version. Should be a string number like "1", "2" etc.
+ */
+#define SDL_HINT_ANDROID_APK_EXPANSION_MAIN_FILE_VERSION "SDL_ANDROID_APK_EXPANSION_MAIN_FILE_VERSION"
+ 
+/**
+ * \brief Android APK expansion patch file version. Should be a string number like "1", "2" etc.
+ */
+#define SDL_HINT_ANDROID_APK_EXPANSION_PATCH_FILE_VERSION "SDL_ANDROID_APK_EXPANSION_PATCH_FILE_VERSION"
 
 
 /**

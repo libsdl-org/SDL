@@ -83,19 +83,6 @@ static struct
 } SDL_EventQ = { NULL, SDL_TRUE };
 
 
-static SDL_INLINE SDL_bool
-SDL_ShouldPollJoystick()
-{
-#if !SDL_JOYSTICK_DISABLED
-    if ((!SDL_disabled_events[SDL_JOYAXISMOTION >> 8] ||
-         SDL_JoystickEventState(SDL_QUERY)) &&
-        SDL_PrivateJoystickNeedsPolling()) {
-        return SDL_TRUE;
-    }
-#endif
-    return SDL_FALSE;
-}
-
 /* Public functions */
 
 void
@@ -315,7 +302,6 @@ SDL_PeepEvents(SDL_Event * events, int numevents, SDL_eventaction action,
                            For now we'll guarantee it's valid at least until
                            the next call to SDL_PeepEvents()
                          */
-                        SDL_SysWMEntry *wmmsg;
                         if (SDL_EventQ.wmmsg_free) {
                             wmmsg = SDL_EventQ.wmmsg_free;
                             SDL_EventQ.wmmsg_free = wmmsg->next;
@@ -403,7 +389,7 @@ SDL_PumpEvents(void)
     }
 #if !SDL_JOYSTICK_DISABLED
     /* Check for joystick state change */
-    if (SDL_ShouldPollJoystick()) {
+    if ((!SDL_disabled_events[SDL_JOYAXISMOTION >> 8] || SDL_JoystickEventState(SDL_QUERY))) {
         SDL_JoystickUpdate();
     }
 #endif
@@ -550,7 +536,7 @@ SDL_DelEventWatch(SDL_EventFilter filter, void *userdata)
 void
 SDL_FilterEvents(SDL_EventFilter filter, void *userdata)
 {
-    if (SDL_LockMutex(SDL_EventQ.lock) == 0) {
+    if (SDL_EventQ.lock && SDL_LockMutex(SDL_EventQ.lock) == 0) {
         SDL_EventEntry *entry, *next;
         for (entry = SDL_EventQ.head; entry; entry = next) {
             next = entry->next;

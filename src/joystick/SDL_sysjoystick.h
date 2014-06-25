@@ -50,8 +50,8 @@ struct _SDL_Joystick
 
     int ref_count;              /* Reference count for multiple opens */
 
-    Uint8 closed;               /* 1 if this device is no longer valid */
-    Uint8 uncentered;           /* 1 if this device needs to have its state reset to 0 */
+    SDL_bool closed;            /* SDL_TRUE if this device is no longer valid */
+    SDL_bool uncentered;        /* SDL_TRUE if this device needs to have its state reset to 0 */
     struct _SDL_Joystick *next; /* pointer to next joystick we have allocated */
 };
 
@@ -67,9 +67,6 @@ extern int SDL_SYS_NumJoysticks();
 
 /* Function to cause any queued joystick insertions to be processed */
 extern void SDL_SYS_JoystickDetect();
-
-/* Function to determine if the joystick loop needs to run right now */
-extern SDL_bool SDL_SYS_JoystickNeedsPolling();
 
 /* Function to get the device-dependent name of a joystick */
 extern const char *SDL_SYS_JoystickNameForDeviceIndex(int device_index);
@@ -109,9 +106,8 @@ extern SDL_JoystickGUID SDL_SYS_JoystickGetDeviceGUID(int device_index);
 extern SDL_JoystickGUID SDL_SYS_JoystickGetGUID(SDL_Joystick * joystick);
 
 #if defined(SDL_JOYSTICK_DINPUT) || defined(SDL_JOYSTICK_XINPUT)
-/* Function to get the current instance id of the joystick located at device_index */
-extern SDL_bool SDL_SYS_IsXInputDeviceIndex( int device_index );
-extern SDL_bool SDL_SYS_IsXInputJoystick(SDL_Joystick * joystick);
+/* Function returns SDL_TRUE if this device is an XInput gamepad */
+extern SDL_bool SDL_SYS_IsXInputGamepad_DeviceIndex( int device_index );
 #endif
 
 /* vi: set ts=4 sw=4 expandtab: */

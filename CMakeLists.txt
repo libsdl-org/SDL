@@ -334,6 +334,7 @@ if(USE_GCC OR USE_CLANG)
       set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-multichar")
     endif()
   endif()
+  #check_c_compiler_flag(-Wshadow HAVE_GCC_WSHADOW)
 endif()
 
 if(ASSEMBLY)
@@ -494,7 +495,7 @@ if(LIBC)
             strlen _strrev _strupr _strlwr strchr strrchr strstr itoa _ltoa
             _ultoa strtol strtoul strtoll strtod atoi atof strcmp strncmp
             _stricmp _strnicmp sscanf atan atan2 acos asin ceil copysign cos
-            cosf fabs floor log pow scalbn sin sinf sqrt)
+            cosf fabs floor log pow scalbn sin sinf sqrt sqrtf tan tanf)
       string(TOUPPER ${_FN} _UPPER)
       set(HAVE_${_UPPER} 1)
     endforeach()
@@ -541,7 +542,7 @@ if(LIBC)
       set(CMAKE_REQUIRED_LIBRARIES m)
       foreach(_FN
               atan atan2 ceil copysign cos cosf fabs floor log pow scalbn sin
-              sinf sqrt)
+              sinf sqrt sqrtf tan tanf)
         string(TOUPPER ${_FN} _UPPER)
         set(_HAVEVAR "HAVE_${_UPPER}")
         check_function_exists("${_FN}" ${_HAVEVAR})
@@ -1308,3 +1309,12 @@ else()
   install(TARGETS SDL2 RUNTIME DESTINATION bin)
 endif()
 
+##### Uninstall target #####
+
+configure_file(
+    "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
+    "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+    IMMEDIATE @ONLY)
+
+add_custom_target(uninstall
+    COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)

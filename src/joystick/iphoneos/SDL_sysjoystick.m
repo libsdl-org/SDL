@@ -23,11 +23,18 @@
 /* This is the iOS implementation of the SDL joystick API */
 
 #include "SDL_joystick.h"
+#include "SDL_stdinc.h"
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
-#import "SDLUIAccelerationDelegate.h"
 
-const char *accelerometerName = "iPhone accelerometer";
+#import <CoreMotion/CoreMotion.h>
+
+/* needed for SDL_IPHONE_MAX_GFORCE macro */
+#import "SDL_config_iphoneos.h"
+
+const char *accelerometerName = "iOS accelerometer";
+
+static CMMotionManager *motionManager = nil;
 
 /* Function to scan the system for joysticks.
  * This function should set SDL_numjoysticks to the number of available
@@ -47,11 +54,6 @@ int SDL_SYS_NumJoysticks()
 
 void SDL_SYS_JoystickDetect()
 {
-}
-
-SDL_bool SDL_SYS_JoystickNeedsPolling()
-{
-    return SDL_FALSE;
 }
 
 /* Function to get the device-dependent name of a joystick */
@@ -79,7 +81,15 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
     joystick->nhats = 0;
     joystick->nballs = 0;
     joystick->nbuttons = 0;
-    [[SDLUIAccelerationDelegate sharedDelegate] startup];
+
+    if (motionManager == nil) {
+        motionManager = [[CMMotionManager alloc] init];
+    }
+
+    /* Shorter times between updates can significantly increase CPU usage. */
+    motionManager.accelerometerUpdateInterval = 0.1;
+    [motionManager startAccelerometerUpdates];
+
     return 0;
 }
 
@@ -87,6 +97,45 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
 SDL_bool SDL_SYS_JoystickAttached(SDL_Joystick *joystick)
 {
     return SDL_TRUE;
+}
+
+static void SDL_SYS_AccelerometerUpdate(SDL_Joystick * joystick)
+{
+    const float maxgforce = SDL_IPHONE_MAX_GFORCE;
+    const SInt16 maxsint16 = 0x7FFF;
+    CMAcceleration accel;
+
+    if (!motionManager.accelerometerActive) {
+        return;
+    }
+
+    accel = [[motionManager accelerometerData] acceleration];
+
+    /*
+     Convert accelerometer data from floating point to Sint16, which is what
+     the joystick system expects.
+
+     To do the conversion, the data is first clamped onto the interval
+     [-SDL_IPHONE_MAX_G_FORCE, SDL_IPHONE_MAX_G_FORCE], then the data is multiplied
+     by MAX_SINT16 so that it is mapped to the full range of an Sint16.
+
+     You can customize the clamped range of this function by modifying the
+     SDL_IPHONE_MAX_GFORCE macro in SDL_config_iphoneos.h.
+
+     Once converted to Sint16, the accelerometer data no longer has coherent
+     units. You can convert the data back to units of g-force by multiplying
+     it in your application's code by SDL_IPHONE_MAX_GFORCE / 0x7FFF.
+     */
+
+    /* clamp the data */
+    accel.x = SDL_min(SDL_max(accel.x, -maxgforce), maxgforce);
+    accel.y = SDL_min(SDL_max(accel.y, -maxgforce), maxgforce);
+    accel.z = SDL_min(SDL_max(accel.z, -maxgforce), maxgforce);
+
+    /* pass in data mapped to range of SInt16 */
+    SDL_PrivateJoystickAxis(joystick, 0, (accel.x / maxgforce) * maxsint16);
+    SDL_PrivateJoystickAxis(joystick, 1, -(accel.y / maxgforce) * maxsint16);
+    SDL_PrivateJoystickAxis(joystick, 2, (accel.z / maxgforce) * maxsint16);
 }
 
 /* Function to update the state of a joystick - called as a device poll.
@@ -97,37 +146,25 @@ SDL_bool SDL_SYS_JoystickAttached(SDL_Joystick *joystick)
 void
 SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
 {
-
-    Sint16 orientation[3];
-
-    if ([[SDLUIAccelerationDelegate sharedDelegate] hasNewData]) {
-
-        [[SDLUIAccelerationDelegate sharedDelegate] getLastOrientation: orientation];
-        [[SDLUIAccelerationDelegate sharedDelegate] setHasNewData: NO];
-
-        SDL_PrivateJoystickAxis(joystick, 0, orientation[0]);
-        SDL_PrivateJoystickAxis(joystick, 1, -orientation[1]);
-        SDL_PrivateJoystickAxis(joystick, 2, orientation[2]);
-
-    }
-
-    return;
+    SDL_SYS_AccelerometerUpdate(joystick);
 }
 
 /* Function to close a joystick after use */
 void
 SDL_SYS_JoystickClose(SDL_Joystick * joystick)
 {
-    if ([[SDLUIAccelerationDelegate sharedDelegate] isRunning]) {
-        [[SDLUIAccelerationDelegate sharedDelegate] shutdown];
-    }
-    SDL_SetError("No joystick open with that index");
+    [motionManager stopAccelerometerUpdates];
+    joystick->closed = 1;
 }
 
 /* Function to perform any system-specific joystick related cleanup */
 void
 SDL_SYS_JoystickQuit(void)
 {
+    if (motionManager != nil) {
+        [motionManager release];
+        motionManager = nil;
+    }
 }
 
 SDL_JoystickGUID SDL_SYS_JoystickGetDeviceGUID( int device_index )

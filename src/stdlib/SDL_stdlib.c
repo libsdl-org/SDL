@@ -211,6 +211,36 @@ SDL_sqrt(double x)
 #endif
 }
 
+float
+SDL_sqrtf(float x)
+{
+#if defined(HAVE_SQRTF)
+    return sqrtf(x);
+#else
+    return (float)SDL_sqrt((double)x);
+#endif
+}
+
+double
+SDL_tan(double x)
+{
+#if defined(HAVE_TAN)
+    return tan(x);
+#else
+    return SDL_uclibc_tan(x);
+#endif
+}
+
+float
+SDL_tanf(float x)
+{
+#if defined(HAVE_TANF)
+    return tanf(x);
+#else
+    return (float)SDL_tan((double)x);
+#endif
+}
+
 int SDL_abs(int x)
 {
 #ifdef HAVE_ABS

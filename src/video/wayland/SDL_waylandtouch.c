@@ -25,8 +25,8 @@
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
 
-#include "SDL_waylandtouch.h"
 #include "SDL_log.h"
+#include "SDL_waylandtouch.h"
 #include "../../events/SDL_touch_c.h"
 
 struct SDL_WaylandTouch {

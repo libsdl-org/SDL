@@ -132,7 +132,7 @@ Cocoa_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     }
     else
     {
-        returnValue = SDL_SetError("Did not get a valid `clicked button' id: %d", clicked);
+        returnValue = SDL_SetError("Did not get a valid `clicked button' id: %ld", (long)clicked);
     }
 
     [pool release];

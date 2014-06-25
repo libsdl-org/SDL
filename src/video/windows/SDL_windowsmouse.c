@@ -226,13 +226,23 @@ WIN_WarpMouse(SDL_Window * window, int x, int y)
     POINT pt;
 
     /* Don't warp the mouse while we're doing a modal interaction */
-    if (data->in_title_click || data->in_modal_loop) {
+    if (data->in_title_click || data->focus_click_pending) {
         return;
     }
 
     pt.x = x;
     pt.y = y;
     ClientToScreen(hwnd, &pt);
+    SetCursorPos(pt.x, pt.y);
+}
+
+static void
+WIN_WarpMouseGlobal(int x, int y)
+{
+    POINT pt;
+
+    pt.x = x;
+    pt.y = y;
     SetCursorPos(pt.x, pt.y);
 }
 
@@ -288,6 +298,7 @@ WIN_InitMouse(_THIS)
     mouse->ShowCursor = WIN_ShowCursor;
     mouse->FreeCursor = WIN_FreeCursor;
     mouse->WarpMouse = WIN_WarpMouse;
+    mouse->WarpMouseGlobal = WIN_WarpMouseGlobal;
     mouse->SetRelativeMouseMode = WIN_SetRelativeMouseMode;
     mouse->CaptureMouse = WIN_CaptureMouse;
     mouse->GetGlobalMouseState = WIN_GetGlobalMouseState;

@@ -189,7 +189,7 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
         dll_handle = SDL_LoadObject(egl_path);
     }   
     /* Try loading a EGL symbol, if it does not work try the default library paths */
-    if (SDL_LoadFunction(dll_handle, "eglChooseConfig") == NULL) {
+    if (dll_handle == NULL || SDL_LoadFunction(dll_handle, "eglChooseConfig") == NULL) {
         if (dll_handle != NULL) {
             SDL_UnloadObject(dll_handle);
         }
@@ -198,7 +198,10 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
             path = DEFAULT_EGL;
         }
         dll_handle = SDL_LoadObject(path);
-        if (dll_handle == NULL) {
+        if (dll_handle == NULL || SDL_LoadFunction(dll_handle, "eglChooseConfig") == NULL) {
+            if (dll_handle != NULL) {
+                SDL_UnloadObject(dll_handle);
+            }
             return SDL_SetError("Could not load EGL library");
         }
         SDL_ClearError();
@@ -235,8 +238,6 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
     }
 #endif
 
-    _this->egl_data->dll_handle = dll_handle;
-    _this->egl_data->egl_dll_handle = egl_dll_handle;
     _this->gl_config.driver_loaded = 1;
 
     if (path) {

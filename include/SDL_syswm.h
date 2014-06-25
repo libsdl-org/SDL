@@ -83,7 +83,7 @@ struct SDL_SysWMinfo;
 
 #if defined(SDL_VIDEO_DRIVER_COCOA)
 #ifdef __OBJC__
-#include <Cocoa/Cocoa.h>
+@class NSWindow;
 #else
 typedef struct _NSWindow NSWindow;
 #endif
@@ -96,6 +96,11 @@ typedef struct _NSWindow NSWindow;
 typedef struct _UIWindow UIWindow;
 typedef struct _UIViewController UIViewController;
 #endif
+#endif
+
+#if defined(SDL_VIDEO_DRIVER_ANDROID)
+typedef struct ANativeWindow ANativeWindow;
+typedef void *EGLSurface;
 #endif
 
 /**
@@ -111,7 +116,8 @@ typedef enum
     SDL_SYSWM_UIKIT,
     SDL_SYSWM_WAYLAND,
     SDL_SYSWM_MIR,
-    SDL_SYSWM_WINRT
+    SDL_SYSWM_WINRT,
+    SDL_SYSWM_ANDROID
 } SDL_SYSWM_TYPE;
 
 /**
@@ -223,6 +229,14 @@ struct SDL_SysWMinfo
             struct MirConnection *connection;  /**< Mir display server connection */
             struct MirSurface *surface;  /**< Mir surface */
         } mir;
+#endif
+
+#if defined(SDL_VIDEO_DRIVER_ANDROID)
+        struct
+        {
+            ANativeWindow *window;
+            EGLSurface surface;
+        } android;
 #endif
 
         /* Can't have an empty union */

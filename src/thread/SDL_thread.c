@@ -442,10 +442,10 @@ SDL_DetachThread(SDL_Thread * thread)
         SDL_SYS_DetachThread(thread);
     } else {
         /* all other states are pretty final, see where we landed. */
-        const int state = SDL_AtomicGet(&thread->state);
-        if ((state == SDL_THREAD_STATE_DETACHED) || (state == SDL_THREAD_STATE_CLEANED)) {
+        const int thread_state = SDL_AtomicGet(&thread->state);
+        if ((thread_state == SDL_THREAD_STATE_DETACHED) || (thread_state == SDL_THREAD_STATE_CLEANED)) {
             return;  /* already detached (you shouldn't call this twice!) */
-        } else if (state == SDL_THREAD_STATE_ZOMBIE) {
+        } else if (thread_state == SDL_THREAD_STATE_ZOMBIE) {
             SDL_WaitThread(thread, NULL);  /* already done, clean it up. */
         } else {
             SDL_assert(0 && "Unexpected thread state");

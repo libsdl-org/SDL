@@ -624,6 +624,8 @@ SDL_SYS_HapticQuit(void)
 #endif /* SDL_USE_LIBUDEV */
 
     numhaptics = 0;
+    SDL_hapticlist = NULL;
+    SDL_hapticlist_tail = NULL;
 }
 
 

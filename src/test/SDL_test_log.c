@@ -68,7 +68,7 @@ char *SDLTest_TimestampToString(const time_t timestamp)
 /*
  * Prints given message with a timestamp in the TEST category and INFO priority.
  */
-void SDLTest_Log(const char *fmt, ...)
+void SDLTest_Log(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
 {
     va_list list;
     char logMessage[SDLTEST_MAX_LOGMESSAGE_LENGTH];
@@ -86,7 +86,7 @@ void SDLTest_Log(const char *fmt, ...)
 /*
  * Prints given message with a timestamp in the TEST category and the ERROR priority.
  */
-void SDLTest_LogError(const char *fmt, ...)
+void SDLTest_LogError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
 {
     va_list list;
     char logMessage[SDLTEST_MAX_LOGMESSAGE_LENGTH];

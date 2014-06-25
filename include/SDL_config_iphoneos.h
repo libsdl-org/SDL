@@ -98,6 +98,9 @@
 #define HAVE_SIN    1
 #define HAVE_SINF   1
 #define HAVE_SQRT   1
+#define HAVE_SQRTF  1
+#define HAVE_TAN    1
+#define HAVE_TANF   1
 #define HAVE_SIGACTION  1
 #define HAVE_SETJMP 1
 #define HAVE_NANOSLEEP  1
@@ -131,6 +134,7 @@
 #define SDL_VIDEO_DRIVER_DUMMY  1
 
 /* enable OpenGL ES */
+#define SDL_VIDEO_OPENGL_ES2 1
 #define SDL_VIDEO_OPENGL_ES 1
 #define SDL_VIDEO_RENDER_OGL_ES 1
 #define SDL_VIDEO_RENDER_OGL_ES2    1
@@ -145,7 +149,7 @@
 #define SDL_JOYSTICK_DISABLED 0
 
 /* Set max recognized G-force from accelerometer
-   See src/joystick/uikit/SDLUIAccelerationDelegate.m for notes on why this is needed
+   See src/joystick/uikit/SDL_sysjoystick.m for notes on why this is needed
  */
 #define SDL_IPHONE_MAX_GFORCE 5.0
 

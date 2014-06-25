@@ -121,7 +121,8 @@ MS_ADPCM_decode(Uint8 ** audio_buf, Uint32 * audio_len)
     struct MS_ADPCM_decodestate *state[2];
     Uint8 *freeable, *encoded, *decoded;
     Sint32 encoded_len, samplesleft;
-    Sint8 nybble, stereo;
+    Sint8 nybble;
+    Uint8 stereo;
     Sint16 *coeff[2];
     Sint32 new_sample;
 
@@ -278,7 +279,8 @@ IMA_ADPCM_nibble(struct IMA_ADPCM_decodestate *state, Uint8 nybble)
     } else if (state->index < 0) {
         state->index = 0;
     }
-    step = step_table[state->index];
+    /* explicit cast to avoid gcc warning about using 'char' as array index */
+    step = step_table[(int)state->index];
     delta = step >> 3;
     if (nybble & 0x04)
         delta += step;
@@ -343,7 +345,7 @@ IMA_ADPCM_decode(Uint8 ** audio_buf, Uint32 * audio_len)
     /* Check to make sure we have enough variables in the state array */
     channels = IMA_ADPCM_state.wavefmt.channels;
     if (channels > SDL_arraysize(IMA_ADPCM_state.state)) {
-        SDL_SetError("IMA ADPCM decoder can only handle %d channels",
+        SDL_SetError("IMA ADPCM decoder can only handle %zu channels",
                      SDL_arraysize(IMA_ADPCM_state.state));
         return (-1);
     }
@@ -458,7 +460,7 @@ SDL_LoadWAV_RW(SDL_RWops * src, int freesrc,
         }
         /* 2 Uint32's for chunk header+len, plus the lenread */
         headerDiff += lenread + 2 * sizeof(Uint32);
-    } while ((chunk.magic == FACT) || (chunk.magic == LIST));
+    } while ((chunk.magic == FACT) || (chunk.magic == LIST) || (chunk.magic == BEXT));
 
     /* Decode the audio data format */
     format = (WaveFMT *) chunk.data;
@@ -493,8 +495,7 @@ SDL_LoadWAV_RW(SDL_RWops * src, int freesrc,
         IMA_ADPCM_encoded = 1;
         break;
     case MP3_CODE:
-        SDL_SetError("MPEG Layer 3 data not supported",
-                     SDL_SwapLE16(format->encoding));
+        SDL_SetError("MPEG Layer 3 data not supported");
         was_error = 1;
         goto done;
     default:

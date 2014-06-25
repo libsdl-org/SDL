@@ -11,6 +11,8 @@
 */
 #include "SDL.h"
 
+#include <stdio.h> /* for fflush() and stdout */
+
 static SDL_AudioSpec spec;
 static Uint8 *sound = NULL;     /* Pointer to wave data */
 static Uint32 soundlen = 0;     /* Length of wave data */
@@ -131,7 +133,7 @@ main(int argc, char **argv)
     }
 
     SDL_Log("Using audio driver: %s\n", SDL_GetCurrentAudioDriver());
-
+    
     devcount = SDL_GetNumAudioDevices(0);
     if (devcount < 1) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Don't see any specific audio devices!\n");

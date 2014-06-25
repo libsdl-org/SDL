@@ -412,7 +412,7 @@ int audio_buildAudioCVT()
             i, _audioFormatsVerbose[i], spec1.format, j, spec1.channels, k, spec1.freq, ii, _audioFormatsVerbose[ii], spec2.format, jj, spec2.channels, kk, spec2.freq);
         SDLTest_AssertCheck(result == 0 || result == 1, "Verify result value; expected: 0 or 1, got: %i", result);
         if (result<0) {
-          SDLTest_LogError(SDL_GetError());
+          SDLTest_LogError("%s", SDL_GetError());
         } else {
           SDLTest_AssertCheck(cvt.len_mult > 0, "Verify that cvt.len_mult value; expected: >0, got: %i", cvt.len_mult);
         }
@@ -502,7 +502,7 @@ int audio_buildAudioCVTNegative()
         SDL_strlcat(message, " spec2.freq", 256);
         spec2.freq = 0;
     }
-    SDLTest_Log(message);
+    SDLTest_Log("%s", message);
     result = SDL_BuildAudioCVT(&cvt, spec1.format, spec1.channels, spec1.freq,
                                    spec2.format, spec2.channels, spec2.freq);
     SDLTest_AssertPass("Call to SDL_BuildAudioCVT(spec1 ==> spec2)");
@@ -688,7 +688,7 @@ int audio_convertAudio()
     if (c & 4) {
       SDL_strlcat(message, " Frequencies", 128);
     }
-    SDLTest_Log(message);
+    SDLTest_Log("%s", message);
     /* All source conversions with random conversion targets */
     for (i = 0; i < _numAudioFormats; i++) {
       for (j = 0; j < _numAudioChannels; j++) {
@@ -725,7 +725,7 @@ int audio_convertAudio()
             i, _audioFormatsVerbose[i], spec1.format, j, spec1.channels, k, spec1.freq, ii, _audioFormatsVerbose[ii], spec2.format, jj, spec2.channels, kk, spec2.freq);
           SDLTest_AssertCheck(result == 1, "Verify result value; expected: 1, got: %i", result);
           if (result != 1) {
-            SDLTest_LogError(SDL_GetError());
+            SDLTest_LogError("%s", SDL_GetError());
           } else {
             SDLTest_AssertCheck(cvt.len_mult > 0, "Verify that cvt.len_mult value; expected: >0, got: %i", cvt.len_mult);
             if (cvt.len_mult < 1) return TEST_ABORTED;

@@ -19,26 +19,23 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#import <UIKit/UIKit.h>
-#import <SDL_types.h>
+#include "../../SDL_internal.h"
 
-/* *INDENT-OFF* */
-@interface SDLUIAccelerationDelegate: NSObject <UIAccelerometerDelegate> {
+#ifndef _SDL_naclaudio_h
+#define _SDL_naclaudio_h
 
-	UIAccelerationValue x, y, z;
-	BOOL isRunning;
-	BOOL hasNewData;
-	
-}
+#include "SDL_audio.h"
+#include "../SDL_sysaudio.h"
+#include "SDL_mutex.h"
 
-+(SDLUIAccelerationDelegate *)sharedDelegate;
--(void)accelerometer:(UIAccelerometer *)accelerometer didAccelerate:(UIAcceleration *)acceleration;
--(void)getLastOrientation:(Sint16 *)data;
--(void)startup;
--(void)shutdown;
--(BOOL)isRunning;
--(BOOL)hasNewData;
--(void)setHasNewData:(BOOL)value;
+#include "ppapi/c/ppb_audio.h"
 
-@end
-/* *INDENT-ON* */
+#define _THIS  SDL_AudioDevice *_this
+#define private _this->hidden
+
+typedef struct SDL_PrivateAudioData {
+  SDL_mutex* mutex;
+  PP_Resource audio;
+} SDL_PrivateAudioData;
+
+#endif /* _SDL_naclaudio_h */

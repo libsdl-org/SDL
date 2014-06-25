@@ -24,6 +24,7 @@
 
 #include "SDL_main.h"
 #include "SDL_video.h"
+#include "SDL_hints.h"
 #include "SDL_mouse.h"
 #include "SDL_system.h"
 #include "../SDL_sysvideo.h"
@@ -36,6 +37,28 @@
 /* Initialization/Query functions */
 static int WIN_VideoInit(_THIS);
 static void WIN_VideoQuit(_THIS);
+
+/* Hints */
+SDL_bool g_WindowsEnableMessageLoop = SDL_TRUE;
+SDL_bool g_WindowFrameUsableWhileCursorHidden = SDL_TRUE;
+
+static void UpdateWindowsEnableMessageLoop(void *userdata, const char *name, const char *oldValue, const char *newValue)
+{
+    if (newValue && *newValue == '0') {
+        g_WindowsEnableMessageLoop = SDL_FALSE;
+    } else {
+        g_WindowsEnableMessageLoop = SDL_TRUE;
+    }
+}
+
+static void UpdateWindowFrameUsableWhileCursorHidden(void *userdata, const char *name, const char *oldValue, const char *newValue)
+{
+    if (newValue && *newValue == '0') {
+        g_WindowFrameUsableWhileCursorHidden = SDL_FALSE;
+    } else {
+        g_WindowFrameUsableWhileCursorHidden = SDL_TRUE;
+    }
+}
 
 
 /* Windows driver bootstrap functions */
@@ -84,9 +107,9 @@ WIN_CreateDevice(int devindex)
 
     data->userDLL = SDL_LoadObject("USER32.DLL");
     if (data->userDLL) {
-        data->CloseTouchInputHandle = (BOOL (WINAPI *)( HTOUCHINPUT )) SDL_LoadFunction(data->userDLL, "CloseTouchInputHandle");
-        data->GetTouchInputInfo = (BOOL (WINAPI *)( HTOUCHINPUT, UINT, PTOUCHINPUT, int )) SDL_LoadFunction(data->userDLL, "GetTouchInputInfo");
-        data->RegisterTouchWindow = (BOOL (WINAPI *)( HWND, ULONG )) SDL_LoadFunction(data->userDLL, "RegisterTouchWindow");
+        data->CloseTouchInputHandle = (BOOL (WINAPI *)(HTOUCHINPUT)) SDL_LoadFunction(data->userDLL, "CloseTouchInputHandle");
+        data->GetTouchInputInfo = (BOOL (WINAPI *)(HTOUCHINPUT, UINT, PTOUCHINPUT, int)) SDL_LoadFunction(data->userDLL, "GetTouchInputInfo");
+        data->RegisterTouchWindow = (BOOL (WINAPI *)(HWND, ULONG)) SDL_LoadFunction(data->userDLL, "RegisterTouchWindow");
     }
 
     /* Set the function pointers */
@@ -137,6 +160,17 @@ WIN_CreateDevice(int devindex)
     device->GL_GetSwapInterval = WIN_GL_GetSwapInterval;
     device->GL_SwapWindow = WIN_GL_SwapWindow;
     device->GL_DeleteContext = WIN_GL_DeleteContext;
+#elif SDL_VIDEO_OPENGL_EGL        
+    /* Use EGL based functions */
+    device->GL_LoadLibrary = WIN_GLES_LoadLibrary;
+    device->GL_GetProcAddress = WIN_GLES_GetProcAddress;
+    device->GL_UnloadLibrary = WIN_GLES_UnloadLibrary;
+    device->GL_CreateContext = WIN_GLES_CreateContext;
+    device->GL_MakeCurrent = WIN_GLES_MakeCurrent;
+    device->GL_SetSwapInterval = WIN_GLES_SetSwapInterval;
+    device->GL_GetSwapInterval = WIN_GLES_GetSwapInterval;
+    device->GL_SwapWindow = WIN_GLES_SwapWindow;
+    device->GL_DeleteContext = WIN_GLES_DeleteContext;
 #endif
     device->StartTextInput = WIN_StartTextInput;
     device->StopTextInput = WIN_StopTextInput;
@@ -151,6 +185,7 @@ WIN_CreateDevice(int devindex)
     return device;
 }
 
+
 VideoBootStrap WINDOWS_bootstrap = {
     "windows", "SDL Windows video driver", WIN_Available, WIN_CreateDevice
 };
@@ -164,6 +199,9 @@ WIN_VideoInit(_THIS)
 
     WIN_InitKeyboard(_this);
     WIN_InitMouse(_this);
+
+    SDL_AddHintCallback(SDL_HINT_WINDOWS_ENABLE_MESSAGELOOP, UpdateWindowsEnableMessageLoop, NULL);
+    SDL_AddHintCallback(SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN, UpdateWindowFrameUsableWhileCursorHidden, NULL);
 
     return 0;
 }
@@ -181,34 +219,50 @@ WIN_VideoQuit(_THIS)
 #include <d3d9.h>
 
 SDL_bool 
-D3D_LoadDLL( void **pD3DDLL, IDirect3D9 **pDirect3D9Interface )
+D3D_LoadDLL(void **pD3DDLL, IDirect3D9 **pDirect3D9Interface)
 {
     *pD3DDLL = SDL_LoadObject("D3D9.DLL");
     if (*pD3DDLL) {
-        IDirect3D9 *(WINAPI * D3DCreate) (UINT SDKVersion);
+        typedef IDirect3D9 *(WINAPI *Direct3DCreate9_t) (UINT SDKVersion);
+        Direct3DCreate9_t Direct3DCreate9Func;
 
-        D3DCreate =
-            (IDirect3D9 * (WINAPI *) (UINT)) SDL_LoadFunction(*pD3DDLL,
-            "Direct3DCreate9");
-        if (D3DCreate) {
-            *pDirect3D9Interface = D3DCreate(D3D_SDK_VERSION);
+#ifdef USE_D3D9EX
+        typedef HRESULT (WINAPI *Direct3DCreate9Ex_t)(UINT SDKVersion, IDirect3D9Ex **ppD3D);
+        Direct3DCreate9Ex_t Direct3DCreate9ExFunc;
+
+        Direct3DCreate9ExFunc = (Direct3DCreate9Ex_t)SDL_LoadFunction(*pD3DDLL, "Direct3DCreate9Ex");
+        if (Direct3DCreate9ExFunc) {
+            IDirect3D9Ex *pDirect3D9ExInterface;
+            HRESULT hr = Direct3DCreate9ExFunc(D3D_SDK_VERSION, &pDirect3D9ExInterface);
+            if (SUCCEEDED(hr)) {
+                const GUID IDirect3D9_GUID = { 0x81bdcbca, 0x64d4, 0x426d, { 0xae, 0x8d, 0xad, 0x1, 0x47, 0xf4, 0x27, 0x5c } };
+                hr = IDirect3D9Ex_QueryInterface(pDirect3D9ExInterface, &IDirect3D9_GUID, (void**)pDirect3D9Interface);
+                IDirect3D9Ex_Release(pDirect3D9ExInterface);
+                if (SUCCEEDED(hr)) {
+                    return SDL_TRUE;
+                }
+            }
         }
-        if (!*pDirect3D9Interface) {
-            SDL_UnloadObject(*pD3DDLL);
-            *pD3DDLL = NULL;
-            return SDL_FALSE;
+#endif /* USE_D3D9EX */
+
+        Direct3DCreate9Func = (Direct3DCreate9_t)SDL_LoadFunction(*pD3DDLL, "Direct3DCreate9");
+        if (Direct3DCreate9Func) {
+            *pDirect3D9Interface = Direct3DCreate9Func(D3D_SDK_VERSION);
+            if (*pDirect3D9Interface) {
+                return SDL_TRUE;
+            }
         }
 
-        return SDL_TRUE;
-    } else {
-        *pDirect3D9Interface = NULL;
-        return SDL_FALSE;
+        SDL_UnloadObject(*pD3DDLL);
+        *pD3DDLL = NULL;
     }
+    *pDirect3D9Interface = NULL;
+    return SDL_FALSE;
 }
 
 
 int
-SDL_Direct3D9GetAdapterIndex( int displayIndex )
+SDL_Direct3D9GetAdapterIndex(int displayIndex)
 {
     void *pD3DDLL;
     IDirect3D9 *pD3D;
@@ -256,7 +310,7 @@ DXGI_LoadDLL(void **pDXGIDLL, IDXGIFactory **pDXGIFactory)
 {
     *pDXGIDLL = SDL_LoadObject("DXGI.DLL");
     if (*pDXGIDLL) {
-        HRESULT (WINAPI *CreateDXGI)( REFIID riid, void **ppFactory );
+        HRESULT (WINAPI *CreateDXGI)(REFIID riid, void **ppFactory);
 
         CreateDXGI =
             (HRESULT (WINAPI *) (REFIID, void**)) SDL_LoadFunction(*pDXGIDLL,
@@ -334,7 +388,7 @@ SDL_DXGIGetOutputInfo(int displayIndex, int *adapterIndex, int *outputIndex)
                     *adapterIndex = nAdapter;
                     *outputIndex = nOutput;
                 }
-                SDL_free( outputName );
+                SDL_free(outputName);
             }
             IDXGIOutput_Release(pDXGIOutput);
             nOutput++;

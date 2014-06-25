@@ -306,6 +306,7 @@ static void InitEventQueue(SDL_EventQueue *queue)
 #ifdef TEST_SPINLOCK_FIFO
     queue->lock = 0;
     SDL_AtomicSet(&queue->rwcount, 0);
+    SDL_AtomicSet(&queue->watcher, 0);
 #endif
     queue->active = SDL_TRUE;
 }
