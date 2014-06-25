@@ -389,12 +389,12 @@ InitiateWindowMove(_THIS, const SDL_WindowData *data, const SDL_Point *point)
     SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
     SDL_Window* window = data->window;
     Display *display = viddata->display;
+    XEvent evt;
 
     /* !!! FIXME: we need to regrab this if necessary when the drag is done. */
     X11_XUngrabPointer(display, 0L);
     X11_XFlush(display);
 
-    XEvent evt;
     evt.xclient.type = ClientMessage;
     evt.xclient.window = data->xwindow;
     evt.xclient.message_type = X11_XInternAtom(display, "_NET_WM_MOVERESIZE", True);
@@ -415,6 +415,7 @@ InitiateWindowResize(_THIS, const SDL_WindowData *data, const SDL_Point *point, 
     SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
     SDL_Window* window = data->window;
     Display *display = viddata->display;
+    XEvent evt;
 
     if (direction < _NET_WM_MOVERESIZE_SIZE_TOPLEFT || direction > _NET_WM_MOVERESIZE_SIZE_LEFT)
         return;
@@ -423,7 +424,6 @@ InitiateWindowResize(_THIS, const SDL_WindowData *data, const SDL_Point *point, 
     X11_XUngrabPointer(display, 0L);
     X11_XFlush(display);
 
-    XEvent evt;
     evt.xclient.type = ClientMessage;
     evt.xclient.window = data->xwindow;
     evt.xclient.message_type = X11_XInternAtom(display, "_NET_WM_MOVERESIZE", True);
