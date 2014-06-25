@@ -282,8 +282,8 @@ WIN_GetGlobalMouseState(int *x, int *y)
     retval |= GetAsyncKeyState(VK_LBUTTON) & 0x8000 ? SDL_BUTTON_LMASK : 0;
     retval |= GetAsyncKeyState(VK_RBUTTON) & 0x8000 ? SDL_BUTTON_RMASK : 0;
     retval |= GetAsyncKeyState(VK_MBUTTON) & 0x8000 ? SDL_BUTTON_MMASK : 0;
-    retval |= GetAsyncKeyState(VK_X1BUTTON) & 0x8000 ? SDL_BUTTON_X1MASK : 0;
-    retval |= GetAsyncKeyState(VK_X2BUTTON) & 0x8000 ? SDL_BUTTON_X2MASK : 0;
+    retval |= GetAsyncKeyState(VK_XBUTTON1) & 0x8000 ? SDL_BUTTON_X1MASK : 0;
+    retval |= GetAsyncKeyState(VK_XBUTTON2) & 0x8000 ? SDL_BUTTON_X2MASK : 0;
 
     return retval;
 }
