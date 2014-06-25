@@ -614,4 +614,4 @@ SDL_DYNAPI_PROC(int,SDL_WinRTRunApp,(int a, char **b, void *c),(a,b,c),return)
 #endif
 SDL_DYNAPI_PROC(int,SDL_CaptureMouse,(SDL_bool a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_SetWindowHitTest,(SDL_Window *a, SDL_HitTest b, void *c),(a,b,c),return)
-SDL_DYNAPI_PROC(Uint32,SDL_GetAbsoluteMouseState,(int *a, int *b),(a,b),return)
+SDL_DYNAPI_PROC(Uint32,SDL_GetGlobalMouseState,(int *a, int *b),(a,b),return)

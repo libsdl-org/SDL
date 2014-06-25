@@ -100,7 +100,7 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetMouseState(int *x, int *y);
  *
  *  \sa SDL_GetMouseState
  */
-extern DECLSPEC Uint32 SDLCALL SDL_GetAbsoluteMouseState(int *x, int *y);
+extern DECLSPEC Uint32 SDLCALL SDL_GetGlobalMouseState(int *x, int *y);
 
 /**
  *  \brief Retrieve the relative state of the mouse.

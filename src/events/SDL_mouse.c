@@ -470,7 +470,7 @@ SDL_GetRelativeMouseState(int *x, int *y)
 }
 
 Uint32
-SDL_GetAbsoluteMouseState(int *x, int *y)
+SDL_GetGlobalMouseState(int *x, int *y)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     int tmpx, tmpy;
@@ -485,12 +485,12 @@ SDL_GetAbsoluteMouseState(int *x, int *y)
 
     *x = *y = 0;
 
-    if (!mouse->GetAbsoluteMouseState) {
+    if (!mouse->GetGlobalMouseState) {
         SDL_assert(0 && "This should really be implemented for every target.");
         return 0;
     }
 
-    return mouse->GetAbsoluteMouseState(x, y);
+    return mouse->GetGlobalMouseState(x, y);
 }
 
 void

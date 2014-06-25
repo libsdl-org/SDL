@@ -354,7 +354,7 @@ X11_CaptureMouse(SDL_Window *window)
 }
 
 static Uint32
-X11_GetAbsoluteMouseState(int *x, int *y)
+X11_GetGlobalMouseState(int *x, int *y)
 {
     Display *display = GetDisplay();
     const int num_screens = SDL_GetNumVideoDisplays();
@@ -398,7 +398,7 @@ X11_InitMouse(_THIS)
     mouse->WarpMouse = X11_WarpMouse;
     mouse->SetRelativeMouseMode = X11_SetRelativeMouseMode;
     mouse->CaptureMouse = X11_CaptureMouse;
-    mouse->GetAbsoluteMouseState = X11_GetAbsoluteMouseState;
+    mouse->GetGlobalMouseState = X11_GetGlobalMouseState;
 
     SDL_SetDefaultCursor(X11_CreateDefaultCursor());
 }
