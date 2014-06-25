@@ -67,14 +67,14 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30319.1</_ProjectFileVersion>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Platform)\$(Configuration)\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(SolutionDir)\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(SolutionDir)\$(Platform)\$(Configuration)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Platform)\$(Configuration)\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</LinkIncremental>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Platform)\$(Configuration)\</OutDir>
-    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Platform)\$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(SolutionDir)\$(Platform)\$(Configuration)\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(SolutionDir)\$(Platform)\$(Configuration)\</OutDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Platform)\$(Configuration)\</IntDir>
     <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Platform)\$(Configuration)\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
@@ -112,21 +112,18 @@
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>
-        copy "$(SolutionDir)SDL\$(Platform)\$(Configuration)\SDL2.dll" "$(TargetDir)SDL2.dll"
-        copy "$(SolutionDir)..\test\icon.bmp" "$(TargetDir)icon.bmp"
-        copy "$(SolutionDir)tests\testsprite2\$(Platform)\$(Configuration)\testsprite2.exe" "$(TargetDir)testsprite2.exe"
-        copy "$(SolutionDir)visualtest\unittest\testquit\$(Platform)\$(Configuration)\testquit.exe" "$(TargetDir)testquit.exe"
-        copy /y "$(SolutionDir)..\visualtest\*.config" "$(TargetDir)"
-        copy /y "$(SolutionDir)..\visualtest\*.parameters" "$(TargetDir)"
-        copy /y "$(SolutionDir)..\visualtest\*.actions" "$(TargetDir)"
-        copy /y "$(SolutionDir)..\visualtest\unittest\*.config" "$(TargetDir)"
-        copy /y "$(SolutionDir)..\visualtest\unittest\*.parameters" "$(TargetDir)"
-        copy /y "$(SolutionDir)..\visualtest\unittest\*.actions" "$(TargetDir)"
-  	  </Command>
+      <Command>copy "$(SolutionDir)..\test\icon.bmp" "$(ProjectDir)icon.bmp"
+copy "$(SolutionDir)\$(Platform)\$(Configuration)\testsprite2.exe" "$(ProjectDir)"
+copy "$(SolutionDir)\$(Platform)\$(Configuration)\testquit.exe" "$(ProjectDir)"
+copy /y "$(SolutionDir)..\visualtest\*.config" "$(ProjectDir)"
+copy /y "$(SolutionDir)..\visualtest\*.parameters" "$(ProjectDir)"
+copy /y "$(SolutionDir)..\visualtest\*.actions" "$(ProjectDir)"
+copy /y "$(SolutionDir)..\visualtest\unittest\*.config" "$(ProjectDir)"
+copy /y "$(SolutionDir)..\visualtest\unittest\*.parameters" "$(ProjectDir)"
+copy /y "$(SolutionDir)..\visualtest\unittest\*.actions" "$(ProjectDir)"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
-      <Message>Copy SDL and data files</Message>
+      <Message>Copy data files</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -157,21 +154,18 @@
       <SubSystem>Windows</SubSystem>
     </Link>
     <PostBuildEvent>
-      <Command>
-        copy "$(SolutionDir)SDL\$(Platform)\$(Configuration)\SDL2.dll" "$(TargetDir)SDL2.dll"
-        copy "$(SolutionDir)..\test\icon.bmp" "$(TargetDir)icon.bmp"
-        copy "$(SolutionDir)tests\testsprite2\$(Platform)\$(Configuration)\testsprite2.exe" "$(TargetDir)testsprite2.exe"
-        copy "$(SolutionDir)visualtest\unittest\testquit\$(Platform)\$(Configuration)\testquit.exe" "$(TargetDir)testquit.exe"
-        copy /y "$(SolutionDir)..\visualtest\*.config" "$(TargetDir)"
-        copy /y "$(SolutionDir)..\visualtest\*.parameters" "$(TargetDir)"
-        copy /y "$(SolutionDir)..\visualtest\*.actions" "$(TargetDir)"
-        copy /y "$(SolutionDir)..\visualtest\unittest\*.config" "$(TargetDir)"
-        copy /y "$(SolutionDir)..\visualtest\unittest\*.parameters" "$(TargetDir)"
-        copy /y "$(SolutionDir)..\visualtest\unittest\*.actions" "$(TargetDir)"
-      </Command>
+      <Command>copy "$(SolutionDir)..\test\icon.bmp" "$(ProjectDir)icon.bmp"
+copy "$(SolutionDir)\$(Platform)\$(Configuration)\testsprite2.exe" "$(ProjectDir)"
+copy "$(SolutionDir)\$(Platform)\$(Configuration)\testquit.exe" "$(ProjectDir)"
+copy /y "$(SolutionDir)..\visualtest\*.config" "$(ProjectDir)"
+copy /y "$(SolutionDir)..\visualtest\*.parameters" "$(ProjectDir)"
+copy /y "$(SolutionDir)..\visualtest\*.actions" "$(ProjectDir)"
+copy /y "$(SolutionDir)..\visualtest\unittest\*.config" "$(ProjectDir)"
+copy /y "$(SolutionDir)..\visualtest\unittest\*.parameters" "$(ProjectDir)"
+copy /y "$(SolutionDir)..\visualtest\unittest\*.actions" "$(ProjectDir)"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
-      <Message>Copy SDL and data files</Message>
+      <Message>Copy data files</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
@@ -203,23 +197,21 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
       <AdditionalDependencies>kernel32.lib;user32.lib;gdi32.lib;winspool.lib;comdlg32.lib;advapi32.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;odbc32.lib;odbccp32.lib;Shlwapi.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <PostBuildEvent>
-      <Command>
-        copy "$(SolutionDir)SDL\$(Platform)\$(Configuration)\SDL2.dll" "$(TargetDir)SDL2.dll"
-        copy "$(SolutionDir)..\test\icon.bmp" "$(TargetDir)icon.bmp"
-        copy "$(SolutionDir)tests\testsprite2\$(Platform)\$(Configuration)\testsprite2.exe" "$(TargetDir)testsprite2.exe"
-        copy "$(SolutionDir)visualtest\unittest\testquit\$(Platform)\$(Configuration)\testquit.exe" "$(TargetDir)testquit.exe"
-        copy /y "$(SolutionDir)..\visualtest\*.config" "$(TargetDir)"
-        copy /y "$(SolutionDir)..\visualtest\*.parameters" "$(TargetDir)"
-        copy /y "$(SolutionDir)..\visualtest\*.actions" "$(TargetDir)"
-        copy /y "$(SolutionDir)..\visualtest\unittest\*.config" "$(TargetDir)"
-        copy /y "$(SolutionDir)..\visualtest\unittest\*.parameters" "$(TargetDir)"
-        copy /y "$(SolutionDir)..\visualtest\unittest\*.actions" "$(TargetDir)"
-      </Command>
+      <Command>copy "$(SolutionDir)..\test\icon.bmp" "$(ProjectDir)icon.bmp"
+copy "$(SolutionDir)\$(Platform)\$(Configuration)\testsprite2.exe" "$(ProjectDir)"
+copy "$(SolutionDir)\$(Platform)\$(Configuration)\testquit.exe" "$(ProjectDir)"
+copy /y "$(SolutionDir)..\visualtest\*.config" "$(ProjectDir)"
+copy /y "$(SolutionDir)..\visualtest\*.parameters" "$(ProjectDir)"
+copy /y "$(SolutionDir)..\visualtest\*.actions" "$(ProjectDir)"
+copy /y "$(SolutionDir)..\visualtest\unittest\*.config" "$(ProjectDir)"
+copy /y "$(SolutionDir)..\visualtest\unittest\*.parameters" "$(ProjectDir)"
+copy /y "$(SolutionDir)..\visualtest\unittest\*.actions" "$(ProjectDir)"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
-      <Message>Copy SDL and data files</Message>
+      <Message>Copy data files</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -248,30 +240,23 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
+      <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
     </Link>
     <PostBuildEvent>
-      <Command>
-        copy "$(SolutionDir)SDL\$(Platform)\$(Configuration)\SDL2.dll" "$(TargetDir)SDL2.dll"
-        copy "$(SolutionDir)..\test\icon.bmp" "$(TargetDir)icon.bmp"
-        copy "$(SolutionDir)tests\testsprite2\$(Platform)\$(Configuration)\testsprite2.exe" "$(TargetDir)testsprite2.exe"
-        copy "$(SolutionDir)visualtest\unittest\testquit\$(Platform)\$(Configuration)\testquit.exe" "$(TargetDir)testquit.exe"
-        copy /y "$(SolutionDir)..\visualtest\*.config" "$(TargetDir)"
-        copy /y "$(SolutionDir)..\visualtest\*.parameters" "$(TargetDir)"
-        copy /y "$(SolutionDir)..\visualtest\*.actions" "$(TargetDir)"
-        copy /y "$(SolutionDir)..\visualtest\unittest\*.config" "$(TargetDir)"
-        copy /y "$(SolutionDir)..\visualtest\unittest\*.parameters" "$(TargetDir)"
-        copy /y "$(SolutionDir)..\visualtest\unittest\*.actions" "$(TargetDir)"
-      </Command>
+      <Command>copy "$(SolutionDir)..\test\icon.bmp" "$(ProjectDir)icon.bmp"
+copy "$(SolutionDir)\$(Platform)\$(Configuration)\testsprite2.exe" "$(ProjectDir)"
+copy "$(SolutionDir)\$(Platform)\$(Configuration)\testquit.exe" "$(ProjectDir)"
+copy /y "$(SolutionDir)..\visualtest\*.config" "$(ProjectDir)"
+copy /y "$(SolutionDir)..\visualtest\*.parameters" "$(ProjectDir)"
+copy /y "$(SolutionDir)..\visualtest\*.actions" "$(ProjectDir)"
+copy /y "$(SolutionDir)..\visualtest\unittest\*.config" "$(ProjectDir)"
+copy /y "$(SolutionDir)..\visualtest\unittest\*.parameters" "$(ProjectDir)"
+copy /y "$(SolutionDir)..\visualtest\unittest\*.actions" "$(ProjectDir)"</Command>
     </PostBuildEvent>
     <PostBuildEvent>
-      <Message>Copy SDL and data files</Message>
+      <Message>Copy data files</Message>
     </PostBuildEvent>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <Library Include="..\SDL\$(Platform)\$(Configuration)\SDL2.lib" />
-    <Library Include="..\SDLmain\$(Platform)\$(Configuration)\SDL2main.lib" />
-    <Library Include="..\SDLtest\$(Platform)\$(Configuration)\SDL2test.lib" />
-  </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\visualtest\include\SDL_visualtest_action_configparser.h" />
     <ClInclude Include="..\..\visualtest\include\SDL_visualtest_exhaustive_variator.h" />
@@ -301,6 +286,17 @@
     <ClCompile Include="..\..\visualtest\src\variator_random.c" />
     <ClCompile Include="..\..\visualtest\src\windows\windows_process.c" />
     <ClCompile Include="..\..\visualtest\src\windows\windows_screenshot.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SDLmain\SDLmain_VS2012.vcxproj">
+      <Project>{da956fd3-e142-46f2-9dd5-c78bebb56b7a}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\SDLtest\SDLtest_VS2012.vcxproj">
+      <Project>{da956fd3-e143-46f2-9fe5-c77bebc56b1a}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\SDL\SDL_VS2012.vcxproj">
+      <Project>{81ce8daf-ebb2-4761-8e45-b71abcca8c68}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

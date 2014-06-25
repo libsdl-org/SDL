@@ -50,7 +50,7 @@ SDL_LookupString(const char *key)
 /* Public functions */
 
 int
-SDL_SetError(const char *fmt, ...)
+SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
 {
     va_list ap;
     SDL_error *error;

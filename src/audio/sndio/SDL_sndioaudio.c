@@ -209,7 +209,7 @@ SNDIO_OpenDevice(_THIS, const char *devname, int iscapture)
     this->hidden->mixlen = this->spec.size;
 
     /* !!! FIXME: SIO_DEVANY can be a specific device... */
-    if ((this->hidden->dev = SNDIO_sio_open(NULL, SIO_PLAY, 0)) == NULL) {
+    if ((this->hidden->dev = SNDIO_sio_open(SIO_DEVANY, SIO_PLAY, 0)) == NULL) {
         SNDIO_CloseDevice(this);
         return SDL_SetError("sio_open() failed");
     }
@@ -229,7 +229,17 @@ SNDIO_OpenDevice(_THIS, const char *devname, int iscapture)
             par.sig = SDL_AUDIO_ISSIGNED(test_format) ? 1 : 0;
             par.bits = SDL_AUDIO_BITSIZE(test_format);
 
-            if (SNDIO_sio_setpar(this->hidden->dev, &par) == 1) {
+            if (SNDIO_sio_setpar(this->hidden->dev, &par) == 0) {
+                continue;
+            }
+            if (SNDIO_sio_getpar(this->hidden->dev, &par) == 0) {
+                SNDIO_CloseDevice(this);
+                return SDL_SetError("sio_getpar() failed");
+            }
+            if (par.bps != SIO_BPS(par.bits)) {
+                continue;
+            }
+            if ((par.bits == 8 * par.bps) || (par.msb)) {
                 status = 0;
                 break;
             }
@@ -242,26 +252,21 @@ SNDIO_OpenDevice(_THIS, const char *devname, int iscapture)
         return SDL_SetError("sndio: Couldn't find any hardware audio formats");
     }
 
-    if (SNDIO_sio_getpar(this->hidden->dev, &par) == 0) {
-        SNDIO_CloseDevice(this);
-        return SDL_SetError("sio_getpar() failed");
-    }
-
-    if ((par.bits == 32) && (par.sig) && (par.le))
+    if ((par.bps == 4) && (par.sig) && (par.le))
         this->spec.format = AUDIO_S32LSB;
-    else if ((par.bits == 32) && (par.sig) && (!par.le))
+    else if ((par.bps == 4) && (par.sig) && (!par.le))
         this->spec.format = AUDIO_S32MSB;
-    else if ((par.bits == 16) && (par.sig) && (par.le))
+    else if ((par.bps == 2) && (par.sig) && (par.le))
         this->spec.format = AUDIO_S16LSB;
-    else if ((par.bits == 16) && (par.sig) && (!par.le))
+    else if ((par.bps == 2) && (par.sig) && (!par.le))
         this->spec.format = AUDIO_S16MSB;
-    else if ((par.bits == 16) && (!par.sig) && (par.le))
+    else if ((par.bps == 2) && (!par.sig) && (par.le))
         this->spec.format = AUDIO_U16LSB;
-    else if ((par.bits == 16) && (!par.sig) && (!par.le))
+    else if ((par.bps == 2) && (!par.sig) && (!par.le))
         this->spec.format = AUDIO_U16MSB;
-    else if ((par.bits == 8) && (par.sig))
+    else if ((par.bps == 1) && (par.sig))
         this->spec.format = AUDIO_S8;
-    else if ((par.bits == 8) && (!par.sig))
+    else if ((par.bps == 1) && (!par.sig))
         this->spec.format = AUDIO_U8;
     else {
         SNDIO_CloseDevice(this);

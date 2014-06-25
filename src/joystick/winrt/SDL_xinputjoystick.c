@@ -230,14 +230,6 @@ void SDL_SYS_JoystickDetect()
     SDL_UnlockMutex(g_DeviceInfoLock);
 }
 
-SDL_bool SDL_SYS_JoystickNeedsPolling()
-{
-    /* Since XInput, or WinRT, provides any events to indicate when a game
-       controller gets connected, and instead indicates device availability
-       solely through polling, we'll poll (for new devices).
-     */
-    return SDL_TRUE;
-}
 
 /* Internal function to retreive device capabilities.
    This function will return an SDL-standard value of 0 on success

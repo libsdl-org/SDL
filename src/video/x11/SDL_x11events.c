@@ -210,6 +210,79 @@ static SDL_bool X11_IsWheelEvent(Display * display,XEvent * event,int * ticks)
     return SDL_FALSE;
 }
 
+/* Decodes URI escape sequences in string buf of len bytes
+   (excluding the terminating NULL byte) in-place. Since
+   URI-encoded characters take three times the space of
+   normal characters, this should not be an issue.
+
+   Returns the number of decoded bytes that wound up in
+   the buffer, excluding the terminating NULL byte.
+
+   The buffer is guaranteed to be NULL-terminated but
+   may contain embedded NULL bytes.
+
+   On error, -1 is returned.
+ */
+int X11_URIDecode(char *buf, int len) {
+    int ri, wi, di;
+    char decode = '\0';
+    if (buf == NULL || len < 0) {
+        errno = EINVAL;
+        return -1;
+    }
+    if (len == 0) {
+        len = SDL_strlen(buf);
+    }
+    for (ri = 0, wi = 0, di = 0; ri < len && wi < len; ri += 1) {
+        if (di == 0) {
+            /* start decoding */
+            if (buf[ri] == '%') {
+                decode = '\0';
+                di += 1;
+                continue;
+            }
+            /* normal write */
+            buf[wi] = buf[ri];
+            wi += 1;
+            continue;
+        } else if (di == 1 || di == 2) {
+            char off = '\0';
+            char isa = buf[ri] >= 'a' && buf[ri] <= 'f';
+            char isA = buf[ri] >= 'A' && buf[ri] <= 'F';
+            char isn = buf[ri] >= '0' && buf[ri] <= '9';
+            if (!(isa || isA || isn)) {
+                /* not a hexadecimal */
+                int sri;
+                for (sri = ri - di; sri <= ri; sri += 1) {
+                    buf[wi] = buf[sri];
+                    wi += 1;
+                }
+                di = 0;
+                continue;
+            }
+            /* itsy bitsy magicsy */
+            if (isn) {
+                off = 0 - '0';
+            } else if (isa) {
+                off = 10 - 'a';
+            } else if (isA) {
+                off = 10 - 'A';
+            }
+            decode |= (buf[ri] + off) << (2 - di) * 4;
+            if (di == 2) {
+                buf[wi] = decode;
+                wi += 1;
+                di = 0;
+            } else {
+                di += 1;
+            }
+            continue;
+        }
+    }
+    buf[wi] = '\0';
+    return wi;
+}
+
 /* Convert URI to local filename
    return filename if possible, else NULL
 */
@@ -238,6 +311,8 @@ static char* X11_URIToLocal(char* uri) {
     }
     if ( local ) {
       file = uri;
+      /* Convert URI escape sequences to real characters */
+      X11_URIDecode(file, 0);
       if ( uri[1] == '/' ) {
           file++;
       } else {
@@ -459,12 +534,15 @@ X11_DispatchEvent(_THIS)
 #endif
         if (orig_keycode) {
             /* Make sure dead key press/release events are sent */
+            /* Actually, don't do this because it causes double-delivery
+               of some keys on Ubuntu 14.04 (bug 2526)
             SDL_Scancode scancode = videodata->key_layout[orig_keycode];
             if (orig_event_type == KeyPress) {
                 SDL_SendKeyboardKey(SDL_PRESSED, scancode);
             } else {
                 SDL_SendKeyboardKey(SDL_RELEASED, scancode);
             }
+            */
         }
         return;
     }
@@ -569,6 +647,11 @@ X11_DispatchEvent(_THIS)
 #ifdef DEBUG_XEVENTS
             printf("window %p: FocusIn!\n", data);
 #endif
+#ifdef SDL_USE_IBUS
+            if(SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
+                SDL_IBus_SetFocus(SDL_TRUE);
+            }
+#endif
             if (data->pending_focus == PENDING_FOCUS_OUT &&
                 data->window == SDL_GetKeyboardFocus()) {
                 /* We want to reset the keyboard here, because we may have
@@ -606,6 +689,11 @@ X11_DispatchEvent(_THIS)
 #ifdef DEBUG_XEVENTS
             printf("window %p: FocusOut!\n", data);
 #endif
+#ifdef SDL_USE_IBUS
+            if(SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
+                SDL_IBus_SetFocus(SDL_FALSE);
+            }
+#endif
             data->pending_focus = PENDING_FOCUS_OUT;
             data->pending_focus_time = SDL_GetTicks() + PENDING_FOCUS_OUT_TIME;
         }
@@ -637,11 +725,16 @@ X11_DispatchEvent(_THIS)
             KeySym keysym = NoSymbol;
             char text[SDL_TEXTINPUTEVENT_TEXT_SIZE];
             Status status = 0;
+#ifdef SDL_USE_IBUS
+            Bool handled = False;
+#endif
 
 #ifdef DEBUG_XEVENTS
             printf("window %p: KeyPress (X11 keycode = 0x%X)\n", data, xevent.xkey.keycode);
 #endif
+#ifndef SDL_USE_IBUS
             SDL_SendKeyboardKey(SDL_PRESSED, videodata->key_layout[keycode]);
+#endif
 #if 1
             if (videodata->key_layout[keycode] == SDL_SCANCODE_UNKNOWN && keycode) {
                 int min_keycode, max_keycode;
@@ -667,9 +760,21 @@ X11_DispatchEvent(_THIS)
 #else
             XLookupString(&xevent.xkey, text, sizeof(text), &keysym, NULL);
 #endif
-            if (*text) {
-                SDL_SendKeyboardText(text);
+#ifdef SDL_USE_IBUS
+            if(SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
+                if(!(handled = SDL_IBus_ProcessKeyEvent(keysym, keycode))){
+#endif
+                    if(*text){
+                        SDL_SendKeyboardText(text);
+                    }
+#ifdef SDL_USE_IBUS
+                }
             }
+
+            if (!handled) {
+                SDL_SendKeyboardKey(SDL_PRESSED, videodata->key_layout[keycode]);
+            }
+#endif
         }
         break;
 
@@ -739,6 +844,12 @@ X11_DispatchEvent(_THIS)
                 SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MOVED,
                                     xevent.xconfigure.x - border_left,
                                     xevent.xconfigure.y - border_top);
+#ifdef SDL_USE_IBUS
+                if(SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
+                    /* Update IBus candidate list position */
+                    SDL_IBus_UpdateTextRect(NULL);
+                }
+#endif
             }
             if (xevent.xconfigure.width != data->last_xconfigure.width ||
                 xevent.xconfigure.height != data->last_xconfigure.height) {
@@ -1160,13 +1271,19 @@ X11_PumpEvents(_THIS)
             SDL_TICKS_PASSED(now, data->screensaver_activity + 30000)) {
             X11_XResetScreenSaver(data->display);
 
-            #if SDL_USE_LIBDBUS
-            SDL_dbus_screensaver_tickle(_this);
-            #endif
+#if SDL_USE_LIBDBUS
+            SDL_DBus_ScreensaverTickle();
+#endif
 
             data->screensaver_activity = now;
         }
     }
+
+#ifdef SDL_USE_IBUS
+    if(SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
+        SDL_IBus_PumpEvents();
+    }
+#endif
 
     /* Keep processing pending events */
     while (X11_Pending(data->display)) {
@@ -1188,12 +1305,12 @@ X11_SuspendScreenSaver(_THIS)
 #endif /* SDL_VIDEO_DRIVER_X11_XSCRNSAVER */
 
 #if SDL_USE_LIBDBUS
-    if (SDL_dbus_screensaver_inhibit(_this)) {
+    if (SDL_DBus_ScreensaverInhibit(_this->suspend_screensaver)) {
         return;
     }
 
     if (_this->suspend_screensaver) {
-        SDL_dbus_screensaver_tickle(_this);
+        SDL_DBus_ScreensaverTickle();
     }
 #endif
 

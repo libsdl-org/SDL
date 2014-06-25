@@ -421,6 +421,8 @@ SDL_GetPlatform()
     return "MacOS Classic";
 #elif __MACOSX__
     return "Mac OS X";
+#elif __NACL__
+    return "NaCl";
 #elif __NETBSD__
     return "NetBSD";
 #elif __OPENBSD__

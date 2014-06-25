@@ -130,6 +130,7 @@ UIKit_CreateWindow(_THIS, SDL_Window *window)
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
     SDL_DisplayData *data = (SDL_DisplayData *) display->driverdata;
     const BOOL external = ([UIScreen mainScreen] != data->uiscreen);
+    const CGSize origsize = [[data->uiscreen currentMode] size];
 
     /* SDL currently puts this window at the start of display's linked list. We rely on this. */
     SDL_assert(_this->windows == window);
@@ -143,31 +144,28 @@ UIKit_CreateWindow(_THIS, SDL_Window *window)
      * user, so it's in standby), try to force the display to a resolution
      * that most closely matches the desired window size.
      */
-    if (SDL_UIKit_supports_multiple_displays) {
-        const CGSize origsize = [[data->uiscreen currentMode] size];
-        if ((origsize.width == 0.0f) && (origsize.height == 0.0f)) {
-            if (display->num_display_modes == 0) {
-                _this->GetDisplayModes(_this, display);
-            }
+    if ((origsize.width == 0.0f) && (origsize.height == 0.0f)) {
+        if (display->num_display_modes == 0) {
+            _this->GetDisplayModes(_this, display);
+        }
 
-            int i;
-            const SDL_DisplayMode *bestmode = NULL;
-            for (i = display->num_display_modes; i >= 0; i--) {
-                const SDL_DisplayMode *mode = &display->display_modes[i];
-                if ((mode->w >= window->w) && (mode->h >= window->h))
-                    bestmode = mode;
-            }
+        int i;
+        const SDL_DisplayMode *bestmode = NULL;
+        for (i = display->num_display_modes; i >= 0; i--) {
+            const SDL_DisplayMode *mode = &display->display_modes[i];
+            if ((mode->w >= window->w) && (mode->h >= window->h))
+                bestmode = mode;
+        }
 
-            if (bestmode) {
-                SDL_DisplayModeData *modedata = (SDL_DisplayModeData *)bestmode->driverdata;
-                [data->uiscreen setCurrentMode:modedata->uiscreenmode];
+        if (bestmode) {
+            SDL_DisplayModeData *modedata = (SDL_DisplayModeData *)bestmode->driverdata;
+            [data->uiscreen setCurrentMode:modedata->uiscreenmode];
 
-                /* desktop_mode doesn't change here (the higher level will
-                 * use it to set all the screens back to their defaults
-                 * upon window destruction, SDL_Quit(), etc.
-                 */
-                display->current_mode = *bestmode;
-            }
+            /* desktop_mode doesn't change here (the higher level will
+             * use it to set all the screens back to their defaults
+             * upon window destruction, SDL_Quit(), etc.
+             */
+            display->current_mode = *bestmode;
         }
     }
 
@@ -291,11 +289,13 @@ void
 UIKit_DestroyWindow(_THIS, SDL_Window * window)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+
+    window->driverdata = NULL;
+
     if (data) {
         [data->viewcontroller release];
         [data->uiwindow release];
         SDL_free(data);
-        window->driverdata = NULL;
     }
 }
 

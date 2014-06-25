@@ -145,6 +145,9 @@
 #cmakedefine HAVE_SIN 1
 #cmakedefine HAVE_SINF 1
 #cmakedefine HAVE_SQRT 1
+#cmakedefine HAVE_SQRTF 1
+#cmakedefine HAVE_TAN 1
+#cmakedefine HAVE_TANF 1
 #cmakedefine HAVE_FSEEKO 1
 #cmakedefine HAVE_FSEEKO64 1
 #cmakedefine HAVE_SIGACTION 1

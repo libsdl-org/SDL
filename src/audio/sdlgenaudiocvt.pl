@@ -383,6 +383,7 @@ sub buildArbitraryResampleFunc {
     my $eps_adjust = ($upsample) ? 'dstsize' : 'srcsize';
     my $incr = '';
     my $incr2 = '';
+    my $block_align = $channels * $fsize/8;
 
 
     # !!! FIXME: DEBUG_CONVERT should report frequencies.
@@ -395,7 +396,7 @@ ${sym}(SDL_AudioCVT * cvt, SDL_AudioFormat format)
 #endif
 
     const int srcsize = cvt->len_cvt - $fudge;
-    const int dstsize = (int) (((double)cvt->len_cvt) * cvt->rate_incr);
+    const int dstsize = (int) (((double)(cvt->len_cvt/${block_align})) * cvt->rate_incr) * ${block_align};
     register int eps = 0;
 EOF
 

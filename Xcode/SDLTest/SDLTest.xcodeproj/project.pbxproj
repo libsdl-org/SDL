@@ -82,7 +82,6 @@
 		0017957F10741F7900F5D044 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
 		0017958010741F7900F5D044 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
 		0017958110741F7900F5D044 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
-		0017958210741F7900F5D044 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
 		0017958310741F7900F5D044 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
 		0017958410741F7900F5D044 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
 		0017958510741F7900F5D044 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
@@ -93,7 +92,6 @@
 		001795A0107421BF00F5D044 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
 		001795A1107421BF00F5D044 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
 		001795A2107421BF00F5D044 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
-		001795A3107421BF00F5D044 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
 		001795A4107421BF00F5D044 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
 		001795A5107421BF00F5D044 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
 		001795A6107421BF00F5D044 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
@@ -104,7 +102,6 @@
 		0017971410742F3200F5D044 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
 		0017971510742F3200F5D044 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
 		0017971610742F3200F5D044 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
-		0017971710742F3200F5D044 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
 		0017971810742F3200F5D044 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
 		0017971910742F3200F5D044 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
 		0017971A10742F3200F5D044 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
@@ -115,7 +112,6 @@
 		0017973B107430D600F5D044 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
 		0017973C107430D600F5D044 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
 		0017973D107430D600F5D044 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
-		0017973E107430D600F5D044 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
 		0017973F107430D600F5D044 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
 		00179740107430D600F5D044 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
 		00179741107430D600F5D044 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
@@ -126,7 +122,6 @@
 		00179761107431B300F5D044 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
 		00179762107431B300F5D044 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
 		00179763107431B300F5D044 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
-		00179764107431B300F5D044 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
 		00179765107431B300F5D044 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
 		00179766107431B300F5D044 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
 		00179767107431B300F5D044 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
@@ -137,7 +132,6 @@
 		00179781107432AE00F5D044 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
 		00179782107432AE00F5D044 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
 		00179783107432AE00F5D044 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
-		00179784107432AE00F5D044 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
 		00179785107432AE00F5D044 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
 		00179786107432AE00F5D044 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
 		00179787107432AE00F5D044 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
@@ -148,7 +142,6 @@
 		001797A11074334C00F5D044 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
 		001797A21074334C00F5D044 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
 		001797A31074334C00F5D044 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
-		001797A41074334C00F5D044 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
 		001797A51074334C00F5D044 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
 		001797A61074334C00F5D044 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
 		001797A71074334C00F5D044 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
@@ -159,7 +152,6 @@
 		001797C3107433C600F5D044 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
 		001797C4107433C600F5D044 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
 		001797C5107433C600F5D044 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
-		001797C6107433C600F5D044 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
 		001797C7107433C600F5D044 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
 		001797C8107433C600F5D044 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
 		001797C9107433C600F5D044 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
@@ -170,7 +162,6 @@
 		001798051074355200F5D044 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
 		001798061074355200F5D044 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
 		001798071074355200F5D044 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
-		001798081074355200F5D044 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
 		001798091074355200F5D044 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
 		0017980A1074355200F5D044 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
 		0017980B1074355200F5D044 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
@@ -184,7 +175,6 @@
 		001798871074392D00F5D044 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
 		001798881074392D00F5D044 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
 		001798891074392D00F5D044 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
-		0017988A1074392D00F5D044 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
 		0017988B1074392D00F5D044 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
 		0017988C1074392D00F5D044 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
 		0017988D1074392D00F5D044 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
@@ -194,7 +184,6 @@
 		001798A8107439DF00F5D044 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
 		001798A9107439DF00F5D044 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
 		001798AA107439DF00F5D044 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
-		001798AB107439DF00F5D044 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
 		001798AC107439DF00F5D044 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
 		001798AD107439DF00F5D044 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
 		001798AE107439DF00F5D044 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
@@ -205,7 +194,6 @@
 		001798E510743BEC00F5D044 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
 		001798E610743BEC00F5D044 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
 		001798E710743BEC00F5D044 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
-		001798E810743BEC00F5D044 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
 		001798E910743BEC00F5D044 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
 		001798EA10743BEC00F5D044 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
 		001798EB10743BEC00F5D044 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
@@ -216,7 +204,6 @@
 		0017990910743F1000F5D044 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
 		0017990A10743F1000F5D044 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
 		0017990B10743F1000F5D044 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
-		0017990C10743F1000F5D044 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
 		0017990D10743F1000F5D044 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
 		0017990E10743F1000F5D044 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
 		0017990F10743F1000F5D044 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
@@ -227,7 +214,6 @@
 		0017992B10743FB700F5D044 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
 		0017992C10743FB700F5D044 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
 		0017992D10743FB700F5D044 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
-		0017992E10743FB700F5D044 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
 		0017992F10743FB700F5D044 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
 		0017993010743FB700F5D044 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
 		0017993110743FB700F5D044 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
@@ -308,21 +294,6 @@
 		002A86DC10730596007319AE /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
 		002A86DD10730596007319AE /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
 		002A86DE10730596007319AE /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
-		002A86F4107305CE007319AE /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
-		002A86F8107305CE007319AE /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
-		002A86FA107305CE007319AE /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
-		002A86FF107305CE007319AE /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
-		002A8702107305CF007319AE /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
-		002A8703107305CF007319AE /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
-		002A8705107305CF007319AE /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
-		002A8706107305CF007319AE /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
-		002A8707107305CF007319AE /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
-		002A8709107305CF007319AE /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
-		002A870B107305CF007319AE /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
-		002A870C107305CF007319AE /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
-		002A870E107305CF007319AE /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
-		002A8710107305CF007319AE /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
-		002A8711107305CF007319AE /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
 		002A871610730623007319AE /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
 		002A871A10730623007319AE /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
 		002A871C10730623007319AE /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
@@ -383,7 +354,6 @@
 		BBFC08C3164C6862003E6A99 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
 		BBFC08C4164C6862003E6A99 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
 		BBFC08C5164C6862003E6A99 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
-		BBFC08C6164C6862003E6A99 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
 		BBFC08C7164C6862003E6A99 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
 		BBFC08C8164C6862003E6A99 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
 		BBFC08C9164C6862003E6A99 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
@@ -405,7 +375,6 @@
 		DB0F48E017CA51E5008798C5 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
 		DB0F48E117CA51E5008798C5 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
 		DB0F48E217CA51E5008798C5 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
-		DB0F48E317CA51E5008798C5 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
 		DB0F48E417CA51E5008798C5 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
 		DB0F48E517CA51E5008798C5 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
 		DB0F48E617CA51E5008798C5 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
@@ -416,7 +385,6 @@
 		DB0F48F617CA5212008798C5 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
 		DB0F48F717CA5212008798C5 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
 		DB0F48F817CA5212008798C5 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
-		DB0F48F917CA5212008798C5 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
 		DB0F48FA17CA5212008798C5 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
 		DB0F48FB17CA5212008798C5 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
 		DB0F48FC17CA5212008798C5 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
@@ -429,7 +397,6 @@
 		DB166D7616A1CFB200A1396C /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
 		DB166D7716A1CFB200A1396C /* ForceFeedback.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863C10730545007319AE /* ForceFeedback.framework */; };
 		DB166D7816A1CFB200A1396C /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
-		DB166D7916A1CFB200A1396C /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
 		DB166D7A16A1CFD500A1396C /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
 		DB166D9316A1D1A500A1396C /* SDL_test_assert.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166D8416A1D1A500A1396C /* SDL_test_assert.c */; };
 		DB166D9416A1D1A500A1396C /* SDL_test_common.c in Sources */ = {isa = PBXBuildFile; fileRef = DB166D8516A1D1A500A1396C /* SDL_test_common.c */; };
@@ -459,7 +426,6 @@
 		DB166DB416A1D2F600A1396C /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
 		DB166DB516A1D2F600A1396C /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
 		DB166DB616A1D2F600A1396C /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
-		DB166DB716A1D2F600A1396C /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
 		DB166DB816A1D2F600A1396C /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
 		DB166DB916A1D2F600A1396C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
 		DB166DBA16A1D2F600A1396C /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
@@ -470,7 +436,6 @@
 		DB166DCB16A1D36A00A1396C /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
 		DB166DCC16A1D36A00A1396C /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
 		DB166DCD16A1D36A00A1396C /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
-		DB166DCE16A1D36A00A1396C /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
 		DB166DCF16A1D36A00A1396C /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
 		DB166DD016A1D36A00A1396C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
 		DB166DD116A1D36A00A1396C /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
@@ -482,7 +447,6 @@
 		DB166DE316A1D50C00A1396C /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
 		DB166DE416A1D50C00A1396C /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
 		DB166DE516A1D50C00A1396C /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
-		DB166DE616A1D50C00A1396C /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
 		DB166DE716A1D50C00A1396C /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
 		DB166DE816A1D50C00A1396C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
 		DB166DE916A1D50C00A1396C /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
@@ -494,7 +458,6 @@
 		DB166DFA16A1D57C00A1396C /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
 		DB166DFB16A1D57C00A1396C /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
 		DB166DFC16A1D57C00A1396C /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
-		DB166DFD16A1D57C00A1396C /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
 		DB166DFE16A1D57C00A1396C /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
 		DB166DFF16A1D57C00A1396C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
 		DB166E0016A1D57C00A1396C /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
@@ -506,7 +469,6 @@
 		DB166E1116A1D5AD00A1396C /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
 		DB166E1216A1D5AD00A1396C /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
 		DB166E1316A1D5AD00A1396C /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
-		DB166E1416A1D5AD00A1396C /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
 		DB166E1516A1D5AD00A1396C /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
 		DB166E1616A1D5AD00A1396C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
 		DB166E1716A1D5AD00A1396C /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
@@ -522,7 +484,6 @@
 		DB166E2E16A1D64D00A1396C /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
 		DB166E2F16A1D64D00A1396C /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
 		DB166E3016A1D64D00A1396C /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
-		DB166E3116A1D64D00A1396C /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
 		DB166E3216A1D64D00A1396C /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
 		DB166E3316A1D64D00A1396C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
 		DB166E3416A1D64D00A1396C /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
@@ -533,7 +494,6 @@
 		DB166E4416A1D69000A1396C /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
 		DB166E4516A1D69000A1396C /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
 		DB166E4616A1D69000A1396C /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
-		DB166E4716A1D69000A1396C /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
 		DB166E4816A1D69000A1396C /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
 		DB166E4916A1D69000A1396C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
 		DB166E4A16A1D69000A1396C /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
@@ -547,7 +507,6 @@
 		DB166E5E16A1D6F300A1396C /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
 		DB166E5F16A1D6F300A1396C /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
 		DB166E6016A1D6F300A1396C /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
-		DB166E6116A1D6F300A1396C /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
 		DB166E6216A1D6F300A1396C /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
 		DB166E6316A1D6F300A1396C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
 		DB166E6416A1D6F300A1396C /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
@@ -558,7 +517,6 @@
 		DB166E7416A1D78400A1396C /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
 		DB166E7516A1D78400A1396C /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
 		DB166E7616A1D78400A1396C /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
-		DB166E7716A1D78400A1396C /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
 		DB166E7816A1D78400A1396C /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
 		DB166E7916A1D78400A1396C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
 		DB166E7A16A1D78400A1396C /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
@@ -568,7 +526,6 @@
 		DB166E8716A1D78C00A1396C /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
 		DB166E8816A1D78C00A1396C /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
 		DB166E8916A1D78C00A1396C /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
-		DB166E8A16A1D78C00A1396C /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
 		DB166E8B16A1D78C00A1396C /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
 		DB166E8C16A1D78C00A1396C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
 		DB166E8D16A1D78C00A1396C /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
@@ -577,29 +534,27 @@
 		DB166E9A16A1D7F700A1396C /* moose.dat in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E5E09D20839003FC8A1 /* moose.dat */; };
 		DB166E9C16A1D80900A1396C /* icon.bmp in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E5D09D20839003FC8A1 /* icon.bmp */; };
 		DB166ED016A1D88100A1396C /* shapes in CopyFiles */ = {isa = PBXBuildFile; fileRef = DB166ECF16A1D87000A1396C /* shapes */; };
-		DB89957118A19ABA0092407C /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002F33A709CA188600EBEB88 /* Cocoa.framework */; };
-		DB89957218A19ABA0092407C /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863B10730545007319AE /* CoreAudio.framework */; };
-		DB89957318A19ABA0092407C /* ForceFeedback.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863C10730545007319AE /* ForceFeedback.framework */; };
-		DB89957418A19ABA0092407C /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
-		DB89957518A19ABA0092407C /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
-		DB89957618A19ABA0092407C /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
-		DB89957718A19ABA0092407C /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
-		DB89957818A19ABA0092407C /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
-		DB89957918A19ABA0092407C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
-		DB89957A18A19ABA0092407C /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
-		DB89958418A19B130092407C /* testhotplug.c in Sources */ = {isa = PBXBuildFile; fileRef = DB89958318A19B130092407C /* testhotplug.c */; };
 		DB445EEA18184B7000B306B0 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002F33A709CA188600EBEB88 /* Cocoa.framework */; };
 		DB445EEB18184B7000B306B0 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863B10730545007319AE /* CoreAudio.framework */; };
 		DB445EEC18184B7000B306B0 /* ForceFeedback.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863C10730545007319AE /* ForceFeedback.framework */; };
 		DB445EED18184B7000B306B0 /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
 		DB445EEE18184B7000B306B0 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
 		DB445EEF18184B7000B306B0 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
-		DB445EF018184B7000B306B0 /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86F2107305CE007319AE /* OpenGL.framework */; };
 		DB445EF118184B7000B306B0 /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
 		DB445EF218184B7000B306B0 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
 		DB445EF318184B7000B306B0 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
 		DB445EF418184B7000B306B0 /* libSDL_test.a in Frameworks */ = {isa = PBXBuildFile; fileRef = DB166D7F16A1D12400A1396C /* libSDL_test.a */; };
 		DB445EFB18184BB600B306B0 /* testdropfile.c in Sources */ = {isa = PBXBuildFile; fileRef = DB445EFA18184BB600B306B0 /* testdropfile.c */; };
+		DB89957118A19ABA0092407C /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002F33A709CA188600EBEB88 /* Cocoa.framework */; };
+		DB89957218A19ABA0092407C /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863B10730545007319AE /* CoreAudio.framework */; };
+		DB89957318A19ABA0092407C /* ForceFeedback.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863C10730545007319AE /* ForceFeedback.framework */; };
+		DB89957418A19ABA0092407C /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
+		DB89957518A19ABA0092407C /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
+		DB89957618A19ABA0092407C /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
+		DB89957818A19ABA0092407C /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
+		DB89957918A19ABA0092407C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
+		DB89957A18A19ABA0092407C /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
+		DB89958418A19B130092407C /* testhotplug.c in Sources */ = {isa = PBXBuildFile; fileRef = DB89958318A19B130092407C /* testhotplug.c */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1095,7 +1050,6 @@
 		002A863D10730545007319AE /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = /System/Library/Frameworks/IOKit.framework; sourceTree = "<absolute>"; };
 		002A869F10730593007319AE /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = /System/Library/Frameworks/AudioToolbox.framework; sourceTree = "<absolute>"; };
 		002A86A010730593007319AE /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = /System/Library/Frameworks/CoreFoundation.framework; sourceTree = "<absolute>"; };
-		002A86F2107305CE007319AE /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = /System/Library/Frameworks/OpenGL.framework; sourceTree = "<absolute>"; };
 		002A871410730623007319AE /* AudioUnit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioUnit.framework; path = /System/Library/Frameworks/AudioUnit.framework; sourceTree = "<absolute>"; };
 		002A873910730675007319AE /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
 		002F33A709CA188600EBEB88 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
@@ -1182,10 +1136,10 @@
 		DB166E7E16A1D78400A1396C /* testspriteminimal */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testspriteminimal; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB166E9116A1D78C00A1396C /* teststreaming */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = teststreaming; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB166ECF16A1D87000A1396C /* shapes */ = {isa = PBXFileReference; lastKnownFileType = folder; name = shapes; path = ../../test/shapes; sourceTree = "<group>"; };
-		DB89957E18A19ABA0092407C /* testhotplug */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testhotplug; sourceTree = BUILT_PRODUCTS_DIR; };
-		DB89958318A19B130092407C /* testhotplug.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testhotplug.c; path = ../../test/testhotplug.c; sourceTree = "<group>"; };
 		DB445EF818184B7000B306B0 /* testdropfile.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testdropfile.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB445EFA18184BB600B306B0 /* testdropfile.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testdropfile.c; path = ../../test/testdropfile.c; sourceTree = "<group>"; };
+		DB89957E18A19ABA0092407C /* testhotplug */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testhotplug; sourceTree = BUILT_PRODUCTS_DIR; };
+		DB89958318A19B130092407C /* testhotplug.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testhotplug.c; path = ../../test/testhotplug.c; sourceTree = "<group>"; };
 		DBBC552C182831D700F3CA8D /* TestDropFile-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "TestDropFile-Info.plist"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -1200,7 +1154,6 @@
 				0017957F10741F7900F5D044 /* IOKit.framework in Frameworks */,
 				0017958010741F7900F5D044 /* AudioToolbox.framework in Frameworks */,
 				0017958110741F7900F5D044 /* CoreFoundation.framework in Frameworks */,
-				0017958210741F7900F5D044 /* OpenGL.framework in Frameworks */,
 				0017958310741F7900F5D044 /* AudioUnit.framework in Frameworks */,
 				0017958410741F7900F5D044 /* Carbon.framework in Frameworks */,
 				0017958510741F7900F5D044 /* libSDL2.a in Frameworks */,
@@ -1217,7 +1170,6 @@
 				001795A0107421BF00F5D044 /* IOKit.framework in Frameworks */,
 				001795A1107421BF00F5D044 /* AudioToolbox.framework in Frameworks */,
 				001795A2107421BF00F5D044 /* CoreFoundation.framework in Frameworks */,
-				001795A3107421BF00F5D044 /* OpenGL.framework in Frameworks */,
 				001795A4107421BF00F5D044 /* AudioUnit.framework in Frameworks */,
 				001795A5107421BF00F5D044 /* Carbon.framework in Frameworks */,
 				001795A6107421BF00F5D044 /* libSDL2.a in Frameworks */,
@@ -1234,7 +1186,6 @@
 				0017971410742F3200F5D044 /* IOKit.framework in Frameworks */,
 				0017971510742F3200F5D044 /* AudioToolbox.framework in Frameworks */,
 				0017971610742F3200F5D044 /* CoreFoundation.framework in Frameworks */,
-				0017971710742F3200F5D044 /* OpenGL.framework in Frameworks */,
 				0017971810742F3200F5D044 /* AudioUnit.framework in Frameworks */,
 				0017971910742F3200F5D044 /* Carbon.framework in Frameworks */,
 				0017971A10742F3200F5D044 /* libSDL2.a in Frameworks */,
@@ -1252,7 +1203,6 @@
 				0017973B107430D600F5D044 /* IOKit.framework in Frameworks */,
 				0017973C107430D600F5D044 /* AudioToolbox.framework in Frameworks */,
 				0017973D107430D600F5D044 /* CoreFoundation.framework in Frameworks */,
-				0017973E107430D600F5D044 /* OpenGL.framework in Frameworks */,
 				0017973F107430D600F5D044 /* AudioUnit.framework in Frameworks */,
 				00179740107430D600F5D044 /* Carbon.framework in Frameworks */,
 				00179741107430D600F5D044 /* libSDL2.a in Frameworks */,
@@ -1269,7 +1219,6 @@
 				00179761107431B300F5D044 /* IOKit.framework in Frameworks */,
 				00179762107431B300F5D044 /* AudioToolbox.framework in Frameworks */,
 				00179763107431B300F5D044 /* CoreFoundation.framework in Frameworks */,
-				00179764107431B300F5D044 /* OpenGL.framework in Frameworks */,
 				00179765107431B300F5D044 /* AudioUnit.framework in Frameworks */,
 				00179766107431B300F5D044 /* Carbon.framework in Frameworks */,
 				00179767107431B300F5D044 /* libSDL2.a in Frameworks */,
@@ -1287,7 +1236,6 @@
 				00179781107432AE00F5D044 /* IOKit.framework in Frameworks */,
 				00179782107432AE00F5D044 /* AudioToolbox.framework in Frameworks */,
 				00179783107432AE00F5D044 /* CoreFoundation.framework in Frameworks */,
-				00179784107432AE00F5D044 /* OpenGL.framework in Frameworks */,
 				00179785107432AE00F5D044 /* AudioUnit.framework in Frameworks */,
 				00179786107432AE00F5D044 /* Carbon.framework in Frameworks */,
 				00179787107432AE00F5D044 /* libSDL2.a in Frameworks */,
@@ -1305,7 +1253,6 @@
 				001797A11074334C00F5D044 /* IOKit.framework in Frameworks */,
 				001797A21074334C00F5D044 /* AudioToolbox.framework in Frameworks */,
 				001797A31074334C00F5D044 /* CoreFoundation.framework in Frameworks */,
-				001797A41074334C00F5D044 /* OpenGL.framework in Frameworks */,
 				001797A51074334C00F5D044 /* AudioUnit.framework in Frameworks */,
 				001797A61074334C00F5D044 /* Carbon.framework in Frameworks */,
 				001797A71074334C00F5D044 /* libSDL2.a in Frameworks */,
@@ -1323,7 +1270,6 @@
 				001797C3107433C600F5D044 /* IOKit.framework in Frameworks */,
 				001797C4107433C600F5D044 /* AudioToolbox.framework in Frameworks */,
 				001797C5107433C600F5D044 /* CoreFoundation.framework in Frameworks */,
-				001797C6107433C600F5D044 /* OpenGL.framework in Frameworks */,
 				001797C7107433C600F5D044 /* AudioUnit.framework in Frameworks */,
 				001797C8107433C600F5D044 /* Carbon.framework in Frameworks */,
 				001797C9107433C600F5D044 /* libSDL2.a in Frameworks */,
@@ -1340,7 +1286,6 @@
 				001798051074355200F5D044 /* IOKit.framework in Frameworks */,
 				001798061074355200F5D044 /* AudioToolbox.framework in Frameworks */,
 				001798071074355200F5D044 /* CoreFoundation.framework in Frameworks */,
-				001798081074355200F5D044 /* OpenGL.framework in Frameworks */,
 				001798091074355200F5D044 /* AudioUnit.framework in Frameworks */,
 				0017980A1074355200F5D044 /* Carbon.framework in Frameworks */,
 				0017980B1074355200F5D044 /* libSDL2.a in Frameworks */,
@@ -1357,7 +1302,6 @@
 				001798871074392D00F5D044 /* IOKit.framework in Frameworks */,
 				001798881074392D00F5D044 /* AudioToolbox.framework in Frameworks */,
 				001798891074392D00F5D044 /* CoreFoundation.framework in Frameworks */,
-				0017988A1074392D00F5D044 /* OpenGL.framework in Frameworks */,
 				0017988B1074392D00F5D044 /* AudioUnit.framework in Frameworks */,
 				0017988C1074392D00F5D044 /* Carbon.framework in Frameworks */,
 				0017988D1074392D00F5D044 /* libSDL2.a in Frameworks */,
@@ -1374,7 +1318,6 @@
 				001798A8107439DF00F5D044 /* IOKit.framework in Frameworks */,
 				001798A9107439DF00F5D044 /* AudioToolbox.framework in Frameworks */,
 				001798AA107439DF00F5D044 /* CoreFoundation.framework in Frameworks */,
-				001798AB107439DF00F5D044 /* OpenGL.framework in Frameworks */,
 				001798AC107439DF00F5D044 /* AudioUnit.framework in Frameworks */,
 				001798AD107439DF00F5D044 /* Carbon.framework in Frameworks */,
 				001798AE107439DF00F5D044 /* libSDL2.a in Frameworks */,
@@ -1391,7 +1334,6 @@
 				001798E510743BEC00F5D044 /* IOKit.framework in Frameworks */,
 				001798E610743BEC00F5D044 /* AudioToolbox.framework in Frameworks */,
 				001798E710743BEC00F5D044 /* CoreFoundation.framework in Frameworks */,
-				001798E810743BEC00F5D044 /* OpenGL.framework in Frameworks */,
 				001798E910743BEC00F5D044 /* AudioUnit.framework in Frameworks */,
 				001798EA10743BEC00F5D044 /* Carbon.framework in Frameworks */,
 				001798EB10743BEC00F5D044 /* libSDL2.a in Frameworks */,
@@ -1408,7 +1350,6 @@
 				0017990910743F1000F5D044 /* IOKit.framework in Frameworks */,
 				0017990A10743F1000F5D044 /* AudioToolbox.framework in Frameworks */,
 				0017990B10743F1000F5D044 /* CoreFoundation.framework in Frameworks */,
-				0017990C10743F1000F5D044 /* OpenGL.framework in Frameworks */,
 				0017990D10743F1000F5D044 /* AudioUnit.framework in Frameworks */,
 				0017990E10743F1000F5D044 /* Carbon.framework in Frameworks */,
 				0017990F10743F1000F5D044 /* libSDL2.a in Frameworks */,
@@ -1426,7 +1367,6 @@
 				0017992B10743FB700F5D044 /* IOKit.framework in Frameworks */,
 				0017992C10743FB700F5D044 /* AudioToolbox.framework in Frameworks */,
 				0017992D10743FB700F5D044 /* CoreFoundation.framework in Frameworks */,
-				0017992E10743FB700F5D044 /* OpenGL.framework in Frameworks */,
 				0017992F10743FB700F5D044 /* AudioUnit.framework in Frameworks */,
 				0017993010743FB700F5D044 /* Carbon.framework in Frameworks */,
 				0017993110743FB700F5D044 /* libSDL2.a in Frameworks */,
@@ -1444,7 +1384,6 @@
 				002A866D10730548007319AE /* IOKit.framework in Frameworks */,
 				002A86BF10730595007319AE /* AudioToolbox.framework in Frameworks */,
 				002A86C010730595007319AE /* CoreFoundation.framework in Frameworks */,
-				002A8702107305CF007319AE /* OpenGL.framework in Frameworks */,
 				002A872410730624007319AE /* AudioUnit.framework in Frameworks */,
 				002A874910730676007319AE /* Carbon.framework in Frameworks */,
 				001794D11073667B00F5D044 /* libSDL2.a in Frameworks */,
@@ -1461,7 +1400,6 @@
 				002A866410730547007319AE /* IOKit.framework in Frameworks */,
 				002A86B910730594007319AE /* AudioToolbox.framework in Frameworks */,
 				002A86BA10730594007319AE /* CoreFoundation.framework in Frameworks */,
-				002A86FF107305CE007319AE /* OpenGL.framework in Frameworks */,
 				002A872110730624007319AE /* AudioUnit.framework in Frameworks */,
 				002A874610730676007319AE /* Carbon.framework in Frameworks */,
 				001794D41073668800F5D044 /* libSDL2.a in Frameworks */,
@@ -1478,7 +1416,6 @@
 				002A868210730549007319AE /* IOKit.framework in Frameworks */,
 				002A86CD10730595007319AE /* AudioToolbox.framework in Frameworks */,
 				002A86CE10730596007319AE /* CoreFoundation.framework in Frameworks */,
-				002A8709107305CF007319AE /* OpenGL.framework in Frameworks */,
 				002A872B10730624007319AE /* AudioUnit.framework in Frameworks */,
 				002A875010730677007319AE /* Carbon.framework in Frameworks */,
 				001794D91073669E00F5D044 /* libSDL2.a in Frameworks */,
@@ -1495,7 +1432,6 @@
 				002A868810730549007319AE /* IOKit.framework in Frameworks */,
 				002A86D110730596007319AE /* AudioToolbox.framework in Frameworks */,
 				002A86D210730596007319AE /* CoreFoundation.framework in Frameworks */,
-				002A870B107305CF007319AE /* OpenGL.framework in Frameworks */,
 				002A872D10730624007319AE /* AudioUnit.framework in Frameworks */,
 				002A875210730677007319AE /* Carbon.framework in Frameworks */,
 				001794DB107366A700F5D044 /* libSDL2.a in Frameworks */,
@@ -1514,7 +1450,6 @@
 				DB166D7616A1CFB200A1396C /* CoreFoundation.framework in Frameworks */,
 				DB166D7716A1CFB200A1396C /* ForceFeedback.framework in Frameworks */,
 				DB166D7816A1CFB200A1396C /* IOKit.framework in Frameworks */,
-				DB166D7916A1CFB200A1396C /* OpenGL.framework in Frameworks */,
 				DB166D7A16A1CFD500A1396C /* libSDL2.a in Frameworks */,
 				DB166DA416A1D21700A1396C /* libSDL_test.a in Frameworks */,
 			);
@@ -1530,7 +1465,6 @@
 				BBFC08C3164C6862003E6A99 /* IOKit.framework in Frameworks */,
 				BBFC08C4164C6862003E6A99 /* AudioToolbox.framework in Frameworks */,
 				BBFC08C5164C6862003E6A99 /* CoreFoundation.framework in Frameworks */,
-				BBFC08C6164C6862003E6A99 /* OpenGL.framework in Frameworks */,
 				BBFC08C7164C6862003E6A99 /* AudioUnit.framework in Frameworks */,
 				BBFC08C8164C6862003E6A99 /* Carbon.framework in Frameworks */,
 				BBFC08C9164C6862003E6A99 /* libSDL2.a in Frameworks */,
@@ -1548,7 +1482,6 @@
 				002A864F10730546007319AE /* IOKit.framework in Frameworks */,
 				002A86AB10730594007319AE /* AudioToolbox.framework in Frameworks */,
 				002A86AC10730594007319AE /* CoreFoundation.framework in Frameworks */,
-				002A86F8107305CE007319AE /* OpenGL.framework in Frameworks */,
 				002A871A10730623007319AE /* AudioUnit.framework in Frameworks */,
 				002A873F10730675007319AE /* Carbon.framework in Frameworks */,
 			);
@@ -1564,7 +1497,6 @@
 				002A865510730547007319AE /* IOKit.framework in Frameworks */,
 				002A86AF10730594007319AE /* AudioToolbox.framework in Frameworks */,
 				002A86B010730594007319AE /* CoreFoundation.framework in Frameworks */,
-				002A86FA107305CE007319AE /* OpenGL.framework in Frameworks */,
 				002A871C10730623007319AE /* AudioUnit.framework in Frameworks */,
 				002A874110730676007319AE /* Carbon.framework in Frameworks */,
 				002A875E10730745007319AE /* libSDL2.a in Frameworks */,
@@ -1581,7 +1513,6 @@
 				002A867010730548007319AE /* IOKit.framework in Frameworks */,
 				002A86C110730595007319AE /* AudioToolbox.framework in Frameworks */,
 				002A86C210730595007319AE /* CoreFoundation.framework in Frameworks */,
-				002A8703107305CF007319AE /* OpenGL.framework in Frameworks */,
 				002A872510730624007319AE /* AudioUnit.framework in Frameworks */,
 				002A874A10730676007319AE /* Carbon.framework in Frameworks */,
 				001794D01073667700F5D044 /* libSDL2.a in Frameworks */,
@@ -1598,7 +1529,6 @@
 				002A86911073054A007319AE /* IOKit.framework in Frameworks */,
 				002A86D710730596007319AE /* AudioToolbox.framework in Frameworks */,
 				002A86D810730596007319AE /* CoreFoundation.framework in Frameworks */,
-				002A870E107305CF007319AE /* OpenGL.framework in Frameworks */,
 				002A873010730625007319AE /* AudioUnit.framework in Frameworks */,
 				002A875510730677007319AE /* Carbon.framework in Frameworks */,
 				001794DE107366B900F5D044 /* libSDL2.a in Frameworks */,
@@ -1615,7 +1545,6 @@
 				002A867610730548007319AE /* IOKit.framework in Frameworks */,
 				002A86C510730595007319AE /* AudioToolbox.framework in Frameworks */,
 				002A86C610730595007319AE /* CoreFoundation.framework in Frameworks */,
-				002A8705107305CF007319AE /* OpenGL.framework in Frameworks */,
 				002A872710730624007319AE /* AudioUnit.framework in Frameworks */,
 				002A874C10730676007319AE /* Carbon.framework in Frameworks */,
 				001794D51073668D00F5D044 /* libSDL2.a in Frameworks */,
@@ -1632,7 +1561,6 @@
 				002A867910730549007319AE /* IOKit.framework in Frameworks */,
 				002A86C710730595007319AE /* AudioToolbox.framework in Frameworks */,
 				002A86C810730595007319AE /* CoreFoundation.framework in Frameworks */,
-				002A8706107305CF007319AE /* OpenGL.framework in Frameworks */,
 				002A872810730624007319AE /* AudioUnit.framework in Frameworks */,
 				002A874D10730677007319AE /* Carbon.framework in Frameworks */,
 				001794D61073669200F5D044 /* libSDL2.a in Frameworks */,
@@ -1649,7 +1577,6 @@
 				002A867C10730549007319AE /* IOKit.framework in Frameworks */,
 				002A86C910730595007319AE /* AudioToolbox.framework in Frameworks */,
 				002A86CA10730595007319AE /* CoreFoundation.framework in Frameworks */,
-				002A8707107305CF007319AE /* OpenGL.framework in Frameworks */,
 				002A872910730624007319AE /* AudioUnit.framework in Frameworks */,
 				002A874E10730677007319AE /* Carbon.framework in Frameworks */,
 				001794D71073669700F5D044 /* libSDL2.a in Frameworks */,
@@ -1666,7 +1593,6 @@
 				002A868B1073054A007319AE /* IOKit.framework in Frameworks */,
 				002A86D310730596007319AE /* AudioToolbox.framework in Frameworks */,
 				002A86D410730596007319AE /* CoreFoundation.framework in Frameworks */,
-				002A870C107305CF007319AE /* OpenGL.framework in Frameworks */,
 				002A872E10730624007319AE /* AudioUnit.framework in Frameworks */,
 				002A875310730677007319AE /* Carbon.framework in Frameworks */,
 				001794DC107366AC00F5D044 /* libSDL2.a in Frameworks */,
@@ -1683,7 +1609,6 @@
 				002A869A1073054A007319AE /* IOKit.framework in Frameworks */,
 				002A86DD10730596007319AE /* AudioToolbox.framework in Frameworks */,
 				002A86DE10730596007319AE /* CoreFoundation.framework in Frameworks */,
-				002A8711107305CF007319AE /* OpenGL.framework in Frameworks */,
 				002A873310730625007319AE /* AudioUnit.framework in Frameworks */,
 				002A875810730678007319AE /* Carbon.framework in Frameworks */,
 				001794DF107366BD00F5D044 /* libSDL2.a in Frameworks */,
@@ -1700,7 +1625,6 @@
 				002A86971073054A007319AE /* IOKit.framework in Frameworks */,
 				002A86DB10730596007319AE /* AudioToolbox.framework in Frameworks */,
 				002A86DC10730596007319AE /* CoreFoundation.framework in Frameworks */,
-				002A8710107305CF007319AE /* OpenGL.framework in Frameworks */,
 				002A873210730625007319AE /* AudioUnit.framework in Frameworks */,
 				002A875710730678007319AE /* Carbon.framework in Frameworks */,
 				001794E0107366C100F5D044 /* libSDL2.a in Frameworks */,
@@ -1717,7 +1641,6 @@
 				002A864310730546007319AE /* IOKit.framework in Frameworks */,
 				002A86A310730593007319AE /* AudioToolbox.framework in Frameworks */,
 				002A86A410730593007319AE /* CoreFoundation.framework in Frameworks */,
-				002A86F4107305CE007319AE /* OpenGL.framework in Frameworks */,
 				002A871610730623007319AE /* AudioUnit.framework in Frameworks */,
 				002A873B10730675007319AE /* Carbon.framework in Frameworks */,
 				001794E5107366D900F5D044 /* libSDL2.a in Frameworks */,
@@ -1734,7 +1657,6 @@
 				DB0F48E017CA51E5008798C5 /* IOKit.framework in Frameworks */,
 				DB0F48E117CA51E5008798C5 /* AudioToolbox.framework in Frameworks */,
 				DB0F48E217CA51E5008798C5 /* CoreFoundation.framework in Frameworks */,
-				DB0F48E317CA51E5008798C5 /* OpenGL.framework in Frameworks */,
 				DB0F48E417CA51E5008798C5 /* AudioUnit.framework in Frameworks */,
 				DB0F48E517CA51E5008798C5 /* Carbon.framework in Frameworks */,
 				DB0F48E617CA51E5008798C5 /* libSDL2.a in Frameworks */,
@@ -1751,7 +1673,6 @@
 				DB0F48F617CA5212008798C5 /* IOKit.framework in Frameworks */,
 				DB0F48F717CA5212008798C5 /* AudioToolbox.framework in Frameworks */,
 				DB0F48F817CA5212008798C5 /* CoreFoundation.framework in Frameworks */,
-				DB0F48F917CA5212008798C5 /* OpenGL.framework in Frameworks */,
 				DB0F48FA17CA5212008798C5 /* AudioUnit.framework in Frameworks */,
 				DB0F48FB17CA5212008798C5 /* Carbon.framework in Frameworks */,
 				DB0F48FC17CA5212008798C5 /* libSDL2.a in Frameworks */,
@@ -1775,7 +1696,6 @@
 				DB166DB416A1D2F600A1396C /* IOKit.framework in Frameworks */,
 				DB166DB516A1D2F600A1396C /* AudioToolbox.framework in Frameworks */,
 				DB166DB616A1D2F600A1396C /* CoreFoundation.framework in Frameworks */,
-				DB166DB716A1D2F600A1396C /* OpenGL.framework in Frameworks */,
 				DB166DB816A1D2F600A1396C /* AudioUnit.framework in Frameworks */,
 				DB166DB916A1D2F600A1396C /* Carbon.framework in Frameworks */,
 				DB166DBA16A1D2F600A1396C /* libSDL2.a in Frameworks */,
@@ -1792,7 +1712,6 @@
 				DB166DCB16A1D36A00A1396C /* IOKit.framework in Frameworks */,
 				DB166DCC16A1D36A00A1396C /* AudioToolbox.framework in Frameworks */,
 				DB166DCD16A1D36A00A1396C /* CoreFoundation.framework in Frameworks */,
-				DB166DCE16A1D36A00A1396C /* OpenGL.framework in Frameworks */,
 				DB166DCF16A1D36A00A1396C /* AudioUnit.framework in Frameworks */,
 				DB166DD016A1D36A00A1396C /* Carbon.framework in Frameworks */,
 				DB166DD116A1D36A00A1396C /* libSDL2.a in Frameworks */,
@@ -1809,7 +1728,6 @@
 				DB166DE316A1D50C00A1396C /* IOKit.framework in Frameworks */,
 				DB166DE416A1D50C00A1396C /* AudioToolbox.framework in Frameworks */,
 				DB166DE516A1D50C00A1396C /* CoreFoundation.framework in Frameworks */,
-				DB166DE616A1D50C00A1396C /* OpenGL.framework in Frameworks */,
 				DB166DE716A1D50C00A1396C /* AudioUnit.framework in Frameworks */,
 				DB166DE816A1D50C00A1396C /* Carbon.framework in Frameworks */,
 				DB166DE916A1D50C00A1396C /* libSDL2.a in Frameworks */,
@@ -1827,7 +1745,6 @@
 				DB166DFA16A1D57C00A1396C /* IOKit.framework in Frameworks */,
 				DB166DFB16A1D57C00A1396C /* AudioToolbox.framework in Frameworks */,
 				DB166DFC16A1D57C00A1396C /* CoreFoundation.framework in Frameworks */,
-				DB166DFD16A1D57C00A1396C /* OpenGL.framework in Frameworks */,
 				DB166DFE16A1D57C00A1396C /* AudioUnit.framework in Frameworks */,
 				DB166DFF16A1D57C00A1396C /* Carbon.framework in Frameworks */,
 				DB166E0016A1D57C00A1396C /* libSDL2.a in Frameworks */,
@@ -1845,7 +1762,6 @@
 				DB166E1116A1D5AD00A1396C /* IOKit.framework in Frameworks */,
 				DB166E1216A1D5AD00A1396C /* AudioToolbox.framework in Frameworks */,
 				DB166E1316A1D5AD00A1396C /* CoreFoundation.framework in Frameworks */,
-				DB166E1416A1D5AD00A1396C /* OpenGL.framework in Frameworks */,
 				DB166E1516A1D5AD00A1396C /* AudioUnit.framework in Frameworks */,
 				DB166E1616A1D5AD00A1396C /* Carbon.framework in Frameworks */,
 				DB166E1716A1D5AD00A1396C /* libSDL2.a in Frameworks */,
@@ -1863,7 +1779,6 @@
 				DB166E2E16A1D64D00A1396C /* IOKit.framework in Frameworks */,
 				DB166E2F16A1D64D00A1396C /* AudioToolbox.framework in Frameworks */,
 				DB166E3016A1D64D00A1396C /* CoreFoundation.framework in Frameworks */,
-				DB166E3116A1D64D00A1396C /* OpenGL.framework in Frameworks */,
 				DB166E3216A1D64D00A1396C /* AudioUnit.framework in Frameworks */,
 				DB166E3316A1D64D00A1396C /* Carbon.framework in Frameworks */,
 				DB166E3416A1D64D00A1396C /* libSDL2.a in Frameworks */,
@@ -1880,7 +1795,6 @@
 				DB166E4416A1D69000A1396C /* IOKit.framework in Frameworks */,
 				DB166E4516A1D69000A1396C /* AudioToolbox.framework in Frameworks */,
 				DB166E4616A1D69000A1396C /* CoreFoundation.framework in Frameworks */,
-				DB166E4716A1D69000A1396C /* OpenGL.framework in Frameworks */,
 				DB166E4816A1D69000A1396C /* AudioUnit.framework in Frameworks */,
 				DB166E4916A1D69000A1396C /* Carbon.framework in Frameworks */,
 				DB166E4A16A1D69000A1396C /* libSDL2.a in Frameworks */,
@@ -1898,7 +1812,6 @@
 				DB166E5E16A1D6F300A1396C /* IOKit.framework in Frameworks */,
 				DB166E5F16A1D6F300A1396C /* AudioToolbox.framework in Frameworks */,
 				DB166E6016A1D6F300A1396C /* CoreFoundation.framework in Frameworks */,
-				DB166E6116A1D6F300A1396C /* OpenGL.framework in Frameworks */,
 				DB166E6216A1D6F300A1396C /* AudioUnit.framework in Frameworks */,
 				DB166E6316A1D6F300A1396C /* Carbon.framework in Frameworks */,
 				DB166E6416A1D6F300A1396C /* libSDL2.a in Frameworks */,
@@ -1915,7 +1828,6 @@
 				DB166E7416A1D78400A1396C /* IOKit.framework in Frameworks */,
 				DB166E7516A1D78400A1396C /* AudioToolbox.framework in Frameworks */,
 				DB166E7616A1D78400A1396C /* CoreFoundation.framework in Frameworks */,
-				DB166E7716A1D78400A1396C /* OpenGL.framework in Frameworks */,
 				DB166E7816A1D78400A1396C /* AudioUnit.framework in Frameworks */,
 				DB166E7916A1D78400A1396C /* Carbon.framework in Frameworks */,
 				DB166E7A16A1D78400A1396C /* libSDL2.a in Frameworks */,
@@ -1932,27 +1844,9 @@
 				DB166E8716A1D78C00A1396C /* IOKit.framework in Frameworks */,
 				DB166E8816A1D78C00A1396C /* AudioToolbox.framework in Frameworks */,
 				DB166E8916A1D78C00A1396C /* CoreFoundation.framework in Frameworks */,
-				DB166E8A16A1D78C00A1396C /* OpenGL.framework in Frameworks */,
 				DB166E8B16A1D78C00A1396C /* AudioUnit.framework in Frameworks */,
 				DB166E8C16A1D78C00A1396C /* Carbon.framework in Frameworks */,
 				DB166E8D16A1D78C00A1396C /* libSDL2.a in Frameworks */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
-		DB89957018A19ABA0092407C /* Frameworks */ = {
-			isa = PBXFrameworksBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				DB89957118A19ABA0092407C /* Cocoa.framework in Frameworks */,
-				DB89957218A19ABA0092407C /* CoreAudio.framework in Frameworks */,
-				DB89957318A19ABA0092407C /* ForceFeedback.framework in Frameworks */,
-				DB89957418A19ABA0092407C /* IOKit.framework in Frameworks */,
-				DB89957518A19ABA0092407C /* AudioToolbox.framework in Frameworks */,
-				DB89957618A19ABA0092407C /* CoreFoundation.framework in Frameworks */,
-				DB89957718A19ABA0092407C /* OpenGL.framework in Frameworks */,
-				DB89957818A19ABA0092407C /* AudioUnit.framework in Frameworks */,
-				DB89957918A19ABA0092407C /* Carbon.framework in Frameworks */,
-				DB89957A18A19ABA0092407C /* libSDL2.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1966,11 +1860,26 @@
 				DB445EED18184B7000B306B0 /* IOKit.framework in Frameworks */,
 				DB445EEE18184B7000B306B0 /* AudioToolbox.framework in Frameworks */,
 				DB445EEF18184B7000B306B0 /* CoreFoundation.framework in Frameworks */,
-				DB445EF018184B7000B306B0 /* OpenGL.framework in Frameworks */,
 				DB445EF118184B7000B306B0 /* AudioUnit.framework in Frameworks */,
 				DB445EF218184B7000B306B0 /* Carbon.framework in Frameworks */,
 				DB445EF318184B7000B306B0 /* libSDL2.a in Frameworks */,
 				DB445EF418184B7000B306B0 /* libSDL_test.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DB89957018A19ABA0092407C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DB89957118A19ABA0092407C /* Cocoa.framework in Frameworks */,
+				DB89957218A19ABA0092407C /* CoreAudio.framework in Frameworks */,
+				DB89957318A19ABA0092407C /* ForceFeedback.framework in Frameworks */,
+				DB89957418A19ABA0092407C /* IOKit.framework in Frameworks */,
+				DB89957518A19ABA0092407C /* AudioToolbox.framework in Frameworks */,
+				DB89957618A19ABA0092407C /* CoreFoundation.framework in Frameworks */,
+				DB89957818A19ABA0092407C /* AudioUnit.framework in Frameworks */,
+				DB89957918A19ABA0092407C /* Carbon.framework in Frameworks */,
+				DB89957A18A19ABA0092407C /* libSDL2.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1988,7 +1897,6 @@
 				002A86A010730593007319AE /* CoreFoundation.framework */,
 				002A863C10730545007319AE /* ForceFeedback.framework */,
 				002A863D10730545007319AE /* IOKit.framework */,
-				002A86F2107305CE007319AE /* OpenGL.framework */,
 			);
 			name = "Linked Frameworks";
 			sourceTree = "<group>";
@@ -2894,22 +2802,6 @@
 			productReference = DB166E9116A1D78C00A1396C /* teststreaming */;
 			productType = "com.apple.product-type.tool";
 		};
-		DB89956D18A19ABA0092407C /* testhotplug */ = {
-			isa = PBXNativeTarget;
-			buildConfigurationList = DB89957B18A19ABA0092407C /* Build configuration list for PBXNativeTarget "testhotplug" */;
-			buildPhases = (
-				DB89956E18A19ABA0092407C /* Sources */,
-				DB89957018A19ABA0092407C /* Frameworks */,
-			);
-			buildRules = (
-			);
-			dependencies = (
-			);
-			name = testhotplug;
-			productName = testalpha;
-			productReference = DB89957E18A19ABA0092407C /* testhotplug */;
-			productType = "com.apple.product-type.tool";
-		};
 		DB445EE618184B7000B306B0 /* testdropfile */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = DB445EF518184B7000B306B0 /* Build configuration list for PBXNativeTarget "testdropfile" */;
@@ -2925,6 +2817,22 @@
 			productName = testdropfile;
 			productReference = DB445EF818184B7000B306B0 /* testdropfile.app */;
 			productType = "com.apple.product-type.application";
+		};
+		DB89956D18A19ABA0092407C /* testhotplug */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DB89957B18A19ABA0092407C /* Build configuration list for PBXNativeTarget "testhotplug" */;
+			buildPhases = (
+				DB89956E18A19ABA0092407C /* Sources */,
+				DB89957018A19ABA0092407C /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = testhotplug;
+			productName = testalpha;
+			productReference = DB89957E18A19ABA0092407C /* testhotplug */;
+			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
 
@@ -3406,19 +3314,19 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
-		DB89956E18A19ABA0092407C /* Sources */ = {
-			isa = PBXSourcesBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-				DB89958418A19B130092407C /* testhotplug.c in Sources */,
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-		};
 		DB445EE718184B7000B306B0 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				DB445EFB18184BB600B306B0 /* testdropfile.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DB89956E18A19ABA0092407C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DB89958418A19B130092407C /* testhotplug.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4309,20 +4217,6 @@
 			};
 			name = Release;
 		};
-		DB89957C18A19ABA0092407C /* Debug */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				PRODUCT_NAME = testhotplug;
-			};
-			name = Debug;
-		};
-		DB89957D18A19ABA0092407C /* Release */ = {
-			isa = XCBuildConfiguration;
-			buildSettings = {
-				PRODUCT_NAME = testhotplug;
-			};
-			name = Release;
-		};
 		DB445EF618184B7000B306B0 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -4336,6 +4230,20 @@
 			buildSettings = {
 				INFOPLIST_FILE = "TestDropFile-Info.plist";
 				PRODUCT_NAME = testdropfile;
+			};
+			name = Release;
+		};
+		DB89957C18A19ABA0092407C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = testhotplug;
+			};
+			name = Debug;
+		};
+		DB89957D18A19ABA0092407C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = testhotplug;
 			};
 			name = Release;
 		};
@@ -4756,20 +4664,20 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;
 		};
-		DB89957B18A19ABA0092407C /* Build configuration list for PBXNativeTarget "testhotplug" */ = {
-			isa = XCConfigurationList;
-			buildConfigurations = (
-				DB89957C18A19ABA0092407C /* Debug */,
-				DB89957D18A19ABA0092407C /* Release */,
-			);
-			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = Debug;
-		};
 		DB445EF518184B7000B306B0 /* Build configuration list for PBXNativeTarget "testdropfile" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				DB445EF618184B7000B306B0 /* Debug */,
 				DB445EF718184B7000B306B0 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		DB89957B18A19ABA0092407C /* Build configuration list for PBXNativeTarget "testhotplug" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DB89957C18A19ABA0092407C /* Debug */,
+				DB89957D18A19ABA0092407C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

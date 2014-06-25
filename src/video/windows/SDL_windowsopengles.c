@@ -64,6 +64,7 @@ WIN_GLES_CreateContext(_THIS, SDL_Window * window)
     SDL_GLContext context;
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
 
+#if SDL_VIDEO_OPENGL_WGL
     if (_this->gl_config.profile_mask != SDL_GL_CONTEXT_PROFILE_ES) {
         /* Switch to WGL based functions */
         WIN_GLES_UnloadLibrary(_this);
@@ -83,6 +84,7 @@ WIN_GLES_CreateContext(_THIS, SDL_Window * window)
 
         return WIN_GL_CreateContext(_this, window);
     }
+#endif
 
     context = SDL_EGL_CreateContext(_this, data->egl_surface);
     return context;

@@ -999,12 +999,10 @@ default: return "???";
 static void
 SDLTest_PrintEvent(SDL_Event * event)
 {
-#if 0
     if ((event->type == SDL_MOUSEMOTION) || (event->type == SDL_FINGERMOTION)) {
         /* Mouse and finger motion are really spammy */
         return;
     }
-#endif
 
     switch (event->type) {
     case SDL_WINDOWEVENT:

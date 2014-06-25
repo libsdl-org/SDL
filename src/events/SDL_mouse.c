@@ -150,7 +150,20 @@ SDL_UpdateMouseFocus(SDL_Window * window, int x, int y, Uint32 buttonstate)
         }
     }
 
+/* Linux doesn't give you mouse events outside your window unless you grab
+   the pointer.
+
+   Windows doesn't give you mouse events outside your window unless you call
+   SetCapture().
+
+   Both of these are slightly scary changes, so for now we'll punt and if the
+   mouse leaves the window you'll lose mouse focus and reset button state.
+*/
+#ifdef SUPPORT_DRAG_OUTSIDE_WINDOW
+    if (!inWindow && !buttonstate) {
+#else
     if (!inWindow) {
+#endif
         if (window == mouse->focus) {
 #ifdef DEBUG_MOUSE
             printf("Mouse left window, synthesizing move & focus lost event\n");
@@ -191,6 +204,7 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
     int posted;
     int xrel;
     int yrel;
+    int x_max = 0, y_max = 0;
 
     if (mouse->relative_mode_warp) {
         int center_x = 0, center_y = 0;
@@ -498,11 +512,11 @@ SDL_WarpMouseInWindow(SDL_Window * window, int x, int y)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
-    if ( window == NULL ) {
+    if (window == NULL) {
         window = mouse->focus;
     }
 
-    if ( window == NULL ) {
+    if (window == NULL) {
         return;
     }
 
@@ -510,6 +524,16 @@ SDL_WarpMouseInWindow(SDL_Window * window, int x, int y)
         mouse->WarpMouse(window, x, y);
     } else {
         SDL_SendMouseMotion(window, mouse->mouseID, 0, x, y);
+    }
+}
+
+void
+SDL_WarpMouseGlobal(int x, int y)
+{
+    SDL_Mouse *mouse = SDL_GetMouse();
+
+    if (mouse->WarpMouseGlobal) {
+        mouse->WarpMouseGlobal(x, y);
     }
 }
 
@@ -589,42 +613,6 @@ SDL_GetRelativeMouseMode()
 
     return mouse->relative_mode;
 }
-
-int
-SDL_CaptureMouse(SDL_bool enabled)
-{
-    SDL_Mouse *mouse = SDL_GetMouse();
-    SDL_Window *focusWindow;
-    SDL_bool isCaptured;
-
-    if (!mouse->CaptureMouse) {
-        return SDL_Unsupported();
-    }
-
-    focusWindow = SDL_GetKeyboardFocus();
-
-    isCaptured = focusWindow && (focusWindow->flags & SDL_WINDOW_MOUSE_CAPTURE);
-    if (isCaptured == enabled) {
-        return 0;  /* already done! */
-    }
-
-    if (enabled) {
-        if (!focusWindow) {
-            return SDL_SetError("No window has focus");
-        } else if (mouse->CaptureMouse(focusWindow) == -1) {
-            return -1;  /* CaptureMouse() should call SetError */
-        }
-        focusWindow->flags |= SDL_WINDOW_MOUSE_CAPTURE;
-    } else {
-        if (mouse->CaptureMouse(NULL) == -1) {
-            return -1;  /* CaptureMouse() should call SetError */
-        }
-        focusWindow->flags &= ~SDL_WINDOW_MOUSE_CAPTURE;
-    }
-
-    return 0;
-}
-
 
 SDL_Cursor *
 SDL_CreateCursor(const Uint8 * data, const Uint8 * mask,

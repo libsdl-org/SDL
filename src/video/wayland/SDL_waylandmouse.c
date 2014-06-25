@@ -345,7 +345,12 @@ static void
 Wayland_WarpMouse(SDL_Window *window, int x, int y)
 {
     SDL_Unsupported();
-    return;
+}
+
+static void
+Wayland_WarpMouseGlobal(int x, int y)
+{
+    SDL_Unsupported();
 }
 
 static int
@@ -365,6 +370,7 @@ Wayland_InitMouse(void)
     mouse->ShowCursor = Wayland_ShowCursor;
     mouse->FreeCursor = Wayland_FreeCursor;
     mouse->WarpMouse = Wayland_WarpMouse;
+    mouse->WarpMouseGlobal = Wayland_WarpMouseGlobal;
     mouse->SetRelativeMouseMode = Wayland_SetRelativeMouseMode;
 
     SDL_SetDefaultCursor(Wayland_CreateDefaultCursor());

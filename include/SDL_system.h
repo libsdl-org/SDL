@@ -179,7 +179,6 @@ extern DECLSPEC const char * SDLCALL SDL_WinRTGetFSPathUTF8(SDL_WinRT_Path pathT
 
 #endif /* __WINRT__ */
 
-
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }
