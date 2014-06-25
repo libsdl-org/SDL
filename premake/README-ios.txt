@@ -25,6 +25,7 @@ Xcode-iOS project. Those are:
   -UIKit.framework
   -Foundation.framework
   -CoreAudio.framework
+  -CoreMotion.framework
 
 All of these frameworks are part of the iOS SDK, not part of the core OS X
 system.
