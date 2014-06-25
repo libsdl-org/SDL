@@ -261,7 +261,7 @@ WIN_CaptureMouse(SDL_Window *window)
 }
 
 static Uint32
-WIN_GetAbsoluteMouseState(int *x, int *y)
+WIN_GetGlobalMouseState(int *x, int *y)
 {
     Uint32 retval = 0;
     POINT pt = { 0, 0 };
@@ -290,7 +290,7 @@ WIN_InitMouse(_THIS)
     mouse->WarpMouse = WIN_WarpMouse;
     mouse->SetRelativeMouseMode = WIN_SetRelativeMouseMode;
     mouse->CaptureMouse = WIN_CaptureMouse;
-    mouse->GetAbsoluteMouseState = WIN_GetAbsoluteMouseState;
+    mouse->GetGlobalMouseState = WIN_GetGlobalMouseState;
 
     SDL_SetDefaultCursor(WIN_CreateDefaultCursor());
 
