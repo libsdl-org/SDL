@@ -592,7 +592,7 @@ GLES2_TexSubImage2D(GLES2_DriverContext *data, GLenum target, GLint xoffset, GLi
 
     /* Reformat the texture data into a tightly packed array */
     src_pitch = width * bpp;
-    src = (Uint8 *) pixels;
+    src = (Uint8 *)pixels;
     if (pitch != src_pitch) {
         blob = (Uint8 *)SDL_malloc(src_pitch * height);
         if (!blob) {
@@ -638,6 +638,40 @@ GLES2_UpdateTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect
                     tdata->pixel_format,
                     tdata->pixel_type,
                     pixels, pitch, SDL_BYTESPERPIXEL(texture->format));
+
+    if (tdata->yuv) {
+        /* Skip to the correct offset into the next texture */
+        pixels = (const void*)((const Uint8*)pixels + rect->h * pitch);
+        if (texture->format == SDL_PIXELFORMAT_YV12) {
+            data->glBindTexture(tdata->texture_type, tdata->texture_v);
+        } else {
+            data->glBindTexture(tdata->texture_type, tdata->texture_u);
+        }
+        GLES2_TexSubImage2D(data, tdata->texture_type,
+                rect->x / 2,
+                rect->y / 2,
+                rect->w / 2,
+                rect->h / 2,
+                tdata->pixel_format,
+                tdata->pixel_type,
+                pixels, pitch / 2, 1);
+
+        /* Skip to the correct offset into the next texture */
+        pixels = (const void*)((const Uint8*)pixels + (rect->h * pitch)/4);
+        if (texture->format == SDL_PIXELFORMAT_YV12) {
+            data->glBindTexture(tdata->texture_type, tdata->texture_u);
+        } else {
+            data->glBindTexture(tdata->texture_type, tdata->texture_v);
+        }
+        GLES2_TexSubImage2D(data, tdata->texture_type,
+                rect->x / 2,
+                rect->y / 2,
+                rect->w / 2,
+                rect->h / 2,
+                tdata->pixel_format,
+                tdata->pixel_type,
+                pixels, pitch / 2, 1);
+    }
 
     return GL_CheckError("glTexSubImage2D()", renderer);
 }
@@ -686,7 +720,7 @@ GLES2_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
                     rect->h,
                     tdata->pixel_format,
                     tdata->pixel_type,
-                    Vplane, Vpitch, 1);
+                    Yplane, Ypitch, 1);
 
     return GL_CheckError("glTexSubImage2D()", renderer);
 }
