@@ -43,6 +43,10 @@
 #include <Windows.h>
 #include <Xinput.h>
 
+#ifndef XINPUT_GAMEPAD_GUIDE
+#define XINPUT_GAMEPAD_GUIDE 0x0400
+#endif
+
 struct joystick_hwdata {
     //Uint8 bXInputHaptic; // Supports force feedback via XInput.
     DWORD userIndex;    // The XInput device index, in the range [0, XUSER_MAX_COUNT-1] (probably [0,3]).
@@ -377,6 +381,51 @@ static int ButtonChanged( int ButtonsNow, int ButtonsPrev, int ButtonMask )
     return ( ButtonsNow & ButtonMask ) != ( ButtonsPrev & ButtonMask );
 }
 
+/* This is an almost-identical copy of UpdateXInputJoystickState from the
+   DirectInput + XInput backend.
+
+   TODO, WinRT: look into making the DirectInput+Xinput and WinRT/XInput joystick backends share more code, without duplication
+   TODO, WinRT: consider adding support for the "old" XInput controller mapping (via SDL_HINT_XINPUT_USE_OLD_JOYSTICK_MAPPING)
+*/
+static void
+UpdateXInputJoystickState(SDL_Joystick * joystick, XINPUT_STATE *pXInputState)
+{
+    static WORD s_XInputButtons[] = {
+        XINPUT_GAMEPAD_A, XINPUT_GAMEPAD_B, XINPUT_GAMEPAD_X, XINPUT_GAMEPAD_Y,
+        XINPUT_GAMEPAD_LEFT_SHOULDER, XINPUT_GAMEPAD_RIGHT_SHOULDER, XINPUT_GAMEPAD_BACK, XINPUT_GAMEPAD_START,
+        XINPUT_GAMEPAD_LEFT_THUMB, XINPUT_GAMEPAD_RIGHT_THUMB,
+        XINPUT_GAMEPAD_GUIDE
+    };
+    WORD wButtons = pXInputState->Gamepad.wButtons;
+    Uint8 button;
+    Uint8 hat = SDL_HAT_CENTERED;
+
+    SDL_PrivateJoystickAxis(joystick, 0, (Sint16)pXInputState->Gamepad.sThumbLX);
+    SDL_PrivateJoystickAxis(joystick, 1, (Sint16)(-SDL_max(-32767, pXInputState->Gamepad.sThumbLY)));
+    SDL_PrivateJoystickAxis(joystick, 2, (Sint16)(((int)pXInputState->Gamepad.bLeftTrigger * 65535 / 255) - 32768));
+    SDL_PrivateJoystickAxis(joystick, 3, (Sint16)pXInputState->Gamepad.sThumbRX);
+    SDL_PrivateJoystickAxis(joystick, 4, (Sint16)(-SDL_max(-32767, pXInputState->Gamepad.sThumbRY)));
+    SDL_PrivateJoystickAxis(joystick, 5, (Sint16)(((int)pXInputState->Gamepad.bRightTrigger * 65535 / 255) - 32768));
+
+    for (button = 0; button < SDL_arraysize(s_XInputButtons); ++button) {
+        SDL_PrivateJoystickButton(joystick, button, (wButtons & s_XInputButtons[button]) ? SDL_PRESSED : SDL_RELEASED);
+    }
+
+    if (wButtons & XINPUT_GAMEPAD_DPAD_UP) {
+        hat |= SDL_HAT_UP;
+    }
+    if (wButtons & XINPUT_GAMEPAD_DPAD_DOWN) {
+        hat |= SDL_HAT_DOWN;
+    }
+    if (wButtons & XINPUT_GAMEPAD_DPAD_LEFT) {
+        hat |= SDL_HAT_LEFT;
+    }
+    if (wButtons & XINPUT_GAMEPAD_DPAD_RIGHT) {
+        hat |= SDL_HAT_RIGHT;
+    }
+    SDL_PrivateJoystickHat(joystick, 0, hat);
+}
+
 /* Function to update the state of a joystick - called as a device poll.
  * This function shouldn't update the joystick structure directly,
  * but instead should call SDL_PrivateJoystick*() to deliver events
@@ -413,45 +462,7 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
         && joystick->hwdata->XInputState.dwPacketNumber != prevXInputState.dwPacketNumber )
     {
         XINPUT_STATE *pXInputState = &joystick->hwdata->XInputState;
-        XINPUT_STATE *pXInputStatePrev = &prevXInputState;
-
-        SDL_PrivateJoystickAxis(joystick, 0, (Sint16)pXInputState->Gamepad.sThumbLX );
-        SDL_PrivateJoystickAxis(joystick, 1, (Sint16)(-1*pXInputState->Gamepad.sThumbLY-1) );
-        SDL_PrivateJoystickAxis(joystick, 2, (Sint16)pXInputState->Gamepad.sThumbRX );
-        SDL_PrivateJoystickAxis(joystick, 3, (Sint16)(-1*pXInputState->Gamepad.sThumbRY-1) );
-        SDL_PrivateJoystickAxis(joystick, 4, (Sint16)((int)pXInputState->Gamepad.bLeftTrigger*32767/255) );
-        SDL_PrivateJoystickAxis(joystick, 5, (Sint16)((int)pXInputState->Gamepad.bRightTrigger*32767/255) );
-
-        if ( ButtonChanged( pXInputState->Gamepad.wButtons, pXInputStatePrev->Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_UP ) )
-            SDL_PrivateJoystickButton(joystick, 0, pXInputState->Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_UP ? SDL_PRESSED :	SDL_RELEASED );
-        if ( ButtonChanged( pXInputState->Gamepad.wButtons, pXInputStatePrev->Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_DOWN ) )
-            SDL_PrivateJoystickButton(joystick, 1, pXInputState->Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_DOWN ? SDL_PRESSED :	SDL_RELEASED );
-        if ( ButtonChanged( pXInputState->Gamepad.wButtons, pXInputStatePrev->Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_LEFT ) )
-            SDL_PrivateJoystickButton(joystick, 2, pXInputState->Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT ? SDL_PRESSED :	SDL_RELEASED );
-        if ( ButtonChanged( pXInputState->Gamepad.wButtons, pXInputStatePrev->Gamepad.wButtons, XINPUT_GAMEPAD_DPAD_RIGHT ) )
-            SDL_PrivateJoystickButton(joystick, 3, pXInputState->Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT ? SDL_PRESSED :	SDL_RELEASED );
-        if ( ButtonChanged( pXInputState->Gamepad.wButtons, pXInputStatePrev->Gamepad.wButtons, XINPUT_GAMEPAD_START ) )
-            SDL_PrivateJoystickButton(joystick, 4, pXInputState->Gamepad.wButtons & XINPUT_GAMEPAD_START ? SDL_PRESSED :	SDL_RELEASED );
-        if ( ButtonChanged( pXInputState->Gamepad.wButtons, pXInputStatePrev->Gamepad.wButtons, XINPUT_GAMEPAD_BACK ) )
-            SDL_PrivateJoystickButton(joystick, 5, pXInputState->Gamepad.wButtons & XINPUT_GAMEPAD_BACK ? SDL_PRESSED :	SDL_RELEASED );
-        if ( ButtonChanged( pXInputState->Gamepad.wButtons, pXInputStatePrev->Gamepad.wButtons, XINPUT_GAMEPAD_LEFT_THUMB ) )
-            SDL_PrivateJoystickButton(joystick, 6, pXInputState->Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_THUMB ? SDL_PRESSED :	SDL_RELEASED );
-        if ( ButtonChanged( pXInputState->Gamepad.wButtons, pXInputStatePrev->Gamepad.wButtons, XINPUT_GAMEPAD_RIGHT_THUMB ) )
-            SDL_PrivateJoystickButton(joystick, 7, pXInputState->Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_THUMB ? SDL_PRESSED :	SDL_RELEASED );
-        if ( ButtonChanged( pXInputState->Gamepad.wButtons, pXInputStatePrev->Gamepad.wButtons, XINPUT_GAMEPAD_LEFT_SHOULDER ) )
-            SDL_PrivateJoystickButton(joystick, 8, pXInputState->Gamepad.wButtons & XINPUT_GAMEPAD_LEFT_SHOULDER ? SDL_PRESSED :	SDL_RELEASED );
-        if ( ButtonChanged( pXInputState->Gamepad.wButtons, pXInputStatePrev->Gamepad.wButtons, XINPUT_GAMEPAD_RIGHT_SHOULDER ) )
-            SDL_PrivateJoystickButton(joystick, 9, pXInputState->Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER ? SDL_PRESSED :	SDL_RELEASED );
-        if ( ButtonChanged( pXInputState->Gamepad.wButtons, pXInputStatePrev->Gamepad.wButtons, XINPUT_GAMEPAD_A ) )
-            SDL_PrivateJoystickButton(joystick, 10, pXInputState->Gamepad.wButtons & XINPUT_GAMEPAD_A ? SDL_PRESSED :	SDL_RELEASED );
-        if ( ButtonChanged( pXInputState->Gamepad.wButtons, pXInputStatePrev->Gamepad.wButtons, XINPUT_GAMEPAD_B ) )
-            SDL_PrivateJoystickButton(joystick, 11, pXInputState->Gamepad.wButtons & XINPUT_GAMEPAD_B ? SDL_PRESSED :	SDL_RELEASED );
-        if ( ButtonChanged( pXInputState->Gamepad.wButtons, pXInputStatePrev->Gamepad.wButtons, XINPUT_GAMEPAD_X ) )
-            SDL_PrivateJoystickButton(joystick, 12, pXInputState->Gamepad.wButtons & XINPUT_GAMEPAD_X ? SDL_PRESSED :	SDL_RELEASED );
-        if ( ButtonChanged( pXInputState->Gamepad.wButtons, pXInputStatePrev->Gamepad.wButtons, XINPUT_GAMEPAD_Y ) )
-            SDL_PrivateJoystickButton(joystick, 13, pXInputState->Gamepad.wButtons & XINPUT_GAMEPAD_Y ? SDL_PRESSED :	SDL_RELEASED );
-        if ( ButtonChanged( pXInputState->Gamepad.wButtons, pXInputStatePrev->Gamepad.wButtons,  0x400 ) )
-            SDL_PrivateJoystickButton(joystick, 14, pXInputState->Gamepad.wButtons & 0x400 ? SDL_PRESSED :	SDL_RELEASED ); // 0x400 is the undocumented code for the guide button
+        UpdateXInputJoystickState(joystick, pXInputState);
     }
 
     SDL_UnlockMutex(g_DeviceInfoLock);
