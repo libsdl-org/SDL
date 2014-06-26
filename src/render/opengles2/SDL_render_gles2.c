@@ -694,8 +694,8 @@ GLES2_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
 
     data->glBindTexture(tdata->texture_type, tdata->texture_v);
     GLES2_TexSubImage2D(data, tdata->texture_type,
-                    rect->x,
-                    rect->y,
+                    rect->x / 2,
+                    rect->y / 2,
                     rect->w / 2,
                     rect->h / 2,
                     tdata->pixel_format,
@@ -704,8 +704,8 @@ GLES2_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
 
     data->glBindTexture(tdata->texture_type, tdata->texture_u);
     GLES2_TexSubImage2D(data, tdata->texture_type,
-                    rect->x,
-                    rect->y,
+                    rect->x / 2,
+                    rect->y / 2,
                     rect->w / 2,
                     rect->h / 2,
                     tdata->pixel_format,
