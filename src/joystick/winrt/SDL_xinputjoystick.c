@@ -524,6 +524,17 @@ SDL_bool SDL_SYS_IsXInputDeviceIndex(int device_index)
     return SDL_TRUE;
 }
 
+SDL_bool SDL_SYS_IsXInputGamepad_DeviceIndex(int device_index)
+{
+    XINPUT_CAPABILITIES deviceCaps;
+
+    if (SDL_XInput_GetDeviceCapabilities(device_index, &deviceCaps) != 0) {
+        return SDL_FALSE;
+    }
+
+    return (deviceCaps.SubType == XINPUT_DEVSUBTYPE_GAMEPAD);
+}
+
 #endif /* SDL_JOYSTICK_XINPUT */
 
 /* vi: set ts=4 sw=4 expandtab: */
