@@ -1956,6 +1956,7 @@ CheckOpenGLESX11()
         video_opengl_egl=no
         AC_TRY_COMPILE([
          #include <EGL/egl.h>
+         #include <EGL/eglext.h>
         ],[
         ],[
         video_opengl_egl=yes

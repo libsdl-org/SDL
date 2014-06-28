@@ -27,6 +27,7 @@
 #ifndef _MSC_VER
 
 #include <EGL/egl.h>
+#include <EGL/eglext.h>
 
 #else /* _MSC_VER */
 
