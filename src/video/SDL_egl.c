@@ -416,7 +416,9 @@ SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
     }
     
     /* Bind the API */
+#if !__ANDROID__ /* No support for desktop OpenGL on Android */
     if(_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) {
+#endif /* !__ANDROID__ */        
         _this->egl_data->eglBindAPI(EGL_OPENGL_ES_API);
         if (_this->gl_config.major_version) {
             context_attrib_list[1] = _this->gl_config.major_version;
@@ -425,6 +427,8 @@ SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
         egl_context = _this->egl_data->eglCreateContext(_this->egl_data->egl_display,
                                           _this->egl_data->egl_config,
                                           share_context, context_attrib_list);
+
+#if !__ANDROID__
     }
     else {
         _this->egl_data->eglBindAPI(EGL_OPENGL_API);
@@ -452,6 +456,7 @@ SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
                                           _this->egl_data->egl_config,
                                           share_context, context_attrib_list);
     }
+#endif /* !__ANDROID__ */
     
     if (egl_context == EGL_NO_CONTEXT) {
         SDL_SetError("Could not create EGL context");
