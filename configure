@@ -21045,6 +21045,7 @@ $as_echo_n "checking for EGL support... " >&6; }
 /* end confdefs.h.  */
 
          #include <EGL/egl.h>
+         #include <EGL/eglext.h>
 
 int
 main ()

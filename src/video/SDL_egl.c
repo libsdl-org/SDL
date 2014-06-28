@@ -69,6 +69,37 @@ if (!_this->egl_data->NAME) \
 }
     
 /* EGL implementation of SDL OpenGL ES support */
+static int SDL_EGL_HasExtension(_THIS, const char *ext)
+{
+    int i;
+    int len = 0;
+    int ext_len;
+    const char *exts;
+    const char *ext_word;
+
+    ext_len = SDL_strlen(ext);
+    exts = _this->egl_data->eglQueryString(_this->egl_data->egl_display, EGL_EXTENSIONS);
+
+    if(exts) {
+        ext_word = exts;
+
+        for(i = 0; exts[i] != 0; i++) {
+            if(exts[i] == ' ') {
+                if(ext_len == len && !SDL_strncmp(ext_word, ext, len)) {
+                    return 1;
+                }
+
+                len = 0;
+                ext_word = &exts[i + 1];
+            }
+            else {
+                len++;
+            }
+        }
+    }
+
+    return 0;
+}
 
 void *
 SDL_EGL_GetProcAddress(_THIS, const char *proc)
@@ -226,6 +257,7 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
     LOAD_FUNC(eglWaitNative);
     LOAD_FUNC(eglWaitGL);
     LOAD_FUNC(eglBindAPI);
+    LOAD_FUNC(eglQueryString);
     
 #if !defined(__WINRT__)
     _this->egl_data->egl_display = _this->egl_data->eglGetDisplay(native_display);
@@ -365,6 +397,10 @@ SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
     EGLint context_attrib_list[] = {
         EGL_CONTEXT_CLIENT_VERSION,
         1,
+        EGL_NONE,
+        EGL_NONE,
+        EGL_NONE,
+        EGL_NONE,
         EGL_NONE
     };
     
@@ -392,9 +428,29 @@ SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
     }
     else {
         _this->egl_data->eglBindAPI(EGL_OPENGL_API);
+        if(SDL_EGL_HasExtension(_this, "EGL_KHR_create_context")) {
+            context_attrib_list[0] = EGL_CONTEXT_MAJOR_VERSION_KHR;
+            context_attrib_list[1] = _this->gl_config.major_version;
+            context_attrib_list[2] = EGL_CONTEXT_MINOR_VERSION_KHR;
+            context_attrib_list[3] = _this->gl_config.minor_version;
+            context_attrib_list[4] = EGL_CONTEXT_OPENGL_PROFILE_MASK_KHR;
+            switch(_this->gl_config.profile_mask) {
+            case SDL_GL_CONTEXT_PROFILE_COMPATIBILITY:
+                context_attrib_list[5] = EGL_CONTEXT_OPENGL_COMPATIBILITY_PROFILE_BIT_KHR;
+                break;
+
+            case SDL_GL_CONTEXT_PROFILE_CORE:
+            default:
+                context_attrib_list[5] = EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT_KHR;
+                break;
+            }
+        }
+        else {
+            context_attrib_list[0] = EGL_NONE;
+        }
         egl_context = _this->egl_data->eglCreateContext(_this->egl_data->egl_display,
                                           _this->egl_data->egl_config,
-                                          share_context, NULL);
+                                          share_context, context_attrib_list);
     }
     
     if (egl_context == EGL_NO_CONTEXT) {
