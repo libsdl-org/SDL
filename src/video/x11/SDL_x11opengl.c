@@ -549,7 +549,7 @@ X11_GL_CreateContextErrorHandler(Display * d, XErrorEvent * e)
     errorCode = e->error_code;
     if (X11_XGetErrorText(d, errorCode, x11_error_locale, sizeof(x11_error_locale)) == Success)
     {
-        x11_error = SDL_iconv_string("UTF-8", "", x11_error_locale, strlen(x11_error_locale));
+        x11_error = SDL_iconv_string("UTF-8", "", x11_error_locale, SDL_strlen(x11_error_locale)+1);
     }
 
     if (x11_error)
