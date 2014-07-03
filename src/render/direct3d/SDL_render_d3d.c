@@ -41,6 +41,8 @@
 
 
 #ifdef ASSEMBLE_SHADER
+#pragma comment(lib, "d3dx9.lib")
+
 /**************************************************************************
  * ID3DXBuffer:
  * ------------
@@ -689,7 +691,7 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
 
            PS_OUTPUT YUV420( VS_OUTPUT In ) 
            {
-               const float3 offset = {-0.0625, -0.5, -0.5};
+               const float3 offset = {-0.0627451017, -0.501960814, -0.501960814};
                const float3 Rcoeff = {1.164,  0.000,  1.596};
                const float3 Gcoeff = {1.164, -0.391, -0.813};
                const float3 Bcoeff = {1.164,  2.018,  0.000};
@@ -721,7 +723,7 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
         */
         const char *shader_text =
             "ps_2_0\n"
-            "def c0, -0.0625, -0.5, -0.5, 1\n"
+            "def c0, -0.0627451017, -0.501960814, -0.501960814, 1\n"
             "def c1, 1.16400003, 0, 1.59599996, 0\n"
             "def c2, 1.16400003, -0.391000003, -0.813000023, 0\n"
             "def c3, 1.16400003, 2.01799989, 0, 0\n"
@@ -758,7 +760,7 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
         }
 #else
         const DWORD shader_data[] = {
-            0xffff0200, 0x05000051, 0xa00f0000, 0xbd800000, 0xbf000000, 0xbf000000,
+            0xffff0200, 0x05000051, 0xa00f0000, 0xbd808081, 0xbf008081, 0xbf008081,
             0x3f800000, 0x05000051, 0xa00f0001, 0x3f94fdf4, 0x00000000, 0x3fcc49ba,
             0x00000000, 0x05000051, 0xa00f0002, 0x3f94fdf4, 0xbec83127, 0xbf5020c5,
             0x00000000, 0x05000051, 0xa00f0003, 0x3f94fdf4, 0x400126e9, 0x00000000,
