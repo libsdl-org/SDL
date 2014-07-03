@@ -22112,18 +22112,50 @@ if test "x$ac_cv_header_dinput_h" = xyes; then :
 fi
 
 
-        ac_fn_c_check_header_mongrel "$LINENO" "xaudio2.h" "ac_cv_header_xaudio2_h" "$ac_includes_default"
-if test "x$ac_cv_header_xaudio2_h" = xyes; then :
-  have_xaudio2=yes
-fi
-
-
         ac_fn_c_check_header_mongrel "$LINENO" "dxgi.h" "ac_cv_header_dxgi_h" "$ac_includes_default"
 if test "x$ac_cv_header_dxgi_h" = xyes; then :
   have_dxgi=yes
 fi
 
 
+        ac_fn_c_check_header_mongrel "$LINENO" "xaudio2.h" "ac_cv_header_xaudio2_h" "$ac_includes_default"
+if test "x$ac_cv_header_xaudio2_h" = xyes; then :
+  have_xaudio2=yes
+fi
+
+
+        ac_fn_c_check_header_mongrel "$LINENO" "xinput.h" "ac_cv_header_xinput_h" "$ac_includes_default"
+if test "x$ac_cv_header_xinput_h" = xyes; then :
+  have_xinput=yes
+fi
+
+
+
+        if test x$have_ddraw = xyes; then
+
+$as_echo "#define HAVE_DDRAW_H 1" >>confdefs.h
+
+        fi
+        if test x$have_dinput = xyes; then
+
+$as_echo "#define HAVE_DINPUT_H 1" >>confdefs.h
+
+        fi
+        if test x$have_dsound = xyes; then
+
+$as_echo "#define HAVE_DSOUND_H 1" >>confdefs.h
+
+        fi
+        if test x$have_dxgi = xyes; then
+
+$as_echo "#define HAVE_DXGI_H 1" >>confdefs.h
+
+        fi
+        if test x$have_xinput = xyes; then
+
+$as_echo "#define HAVE_XINPUT_H 1" >>confdefs.h
+
+        fi
 
         SUMMARY_video="${SUMMARY_video} directx"
         SUMMARY_audio="${SUMMARY_audio} directx"
@@ -22981,11 +23013,6 @@ $as_echo "#define SDL_VIDEO_RENDER_D3D11 1" >>confdefs.h
 
             fi
         fi
-        if test x$have_dxgi = xyes; then
-
-$as_echo "#define HAVE_DXGI_H 1" >>confdefs.h
-
-        fi
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
 
@@ -23008,25 +23035,38 @@ $as_echo "#define SDL_AUDIO_DRIVER_XAUDIO2 1" >>confdefs.h
         fi
         # Set up files for the joystick library
         if test x$enable_joystick = xyes; then
-            if test x$have_dinput = xyes; then
+            if test x$have_dinput = xyes -o x$have_xinput = xyes; then
+                if test x$have_xinput = xyes; then
+
+$as_echo "#define SDL_JOYSTICK_XINPUT 1" >>confdefs.h
+
+                fi
+                if test x$have_dinput = xyes; then
 
 $as_echo "#define SDL_JOYSTICK_DINPUT 1" >>confdefs.h
 
-                SOURCES="$SOURCES $srcdir/src/joystick/windows/SDL_dxjoystick.c"
-                EXTRA_LDFLAGS="$EXTRA_LDFLAGS -ldinput8 -ldxguid -ldxerr8"
+                    EXTRA_LDFLAGS="$EXTRA_LDFLAGS -ldinput8 -ldxguid -ldxerr8"
+                fi
             else
 
 $as_echo "#define SDL_JOYSTICK_WINMM 1" >>confdefs.h
 
-                SOURCES="$SOURCES $srcdir/src/joystick/windows/SDL_mmjoystick.c"
             fi
+            SOURCES="$SOURCES $srcdir/src/joystick/windows/*.c"
             have_joystick=yes
         fi
         if test x$enable_haptic = xyes; then
-            if test x$have_dinput = xyes; then
+            if test x$have_dinput = xyes -o x$have_xinput = xyes; then
+                if test x$have_xinput = xyes; then
+
+$as_echo "#define SDL_HAPTIC_XINPUT 1" >>confdefs.h
+
+                fi
+                if test x$have_dinput = xyes; then
 
 $as_echo "#define SDL_HAPTIC_DINPUT 1" >>confdefs.h
 
+                fi
                 SOURCES="$SOURCES $srcdir/src/haptic/windows/SDL_syshaptic.c"
                 have_haptic=yes
             fi

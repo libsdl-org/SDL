@@ -372,6 +372,14 @@
 			Name="API Headers"
 			>
 			<File
+				RelativePath="..\..\include\begin_code.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\close_code.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\SDL.h"
 				>
 			</File>
@@ -417,10 +425,6 @@
 			</File>
 			<File
 				RelativePath="..\..\include\SDL_egl.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\src\video\sdl_egl_c.h"
 				>
 			</File>
 			<File
@@ -500,7 +504,31 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\SDL_opengl_glext.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\SDL_opengles.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\SDL_opengles2.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\SDL_opengles2_gl2.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\SDL_opengles2_gl2ext.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\SDL_opengles2_gl2platform.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\SDL_opengles2_khrplatform.h"
 				>
 			</File>
 			<File
@@ -560,6 +588,54 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\include\SDL_test.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\SDL_test_assert.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\SDL_test_common.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\SDL_test_compare.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\SDL_test_crc32.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\SDL_test_font.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\SDL_test_fuzzer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\SDL_test_harness.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\SDL_test_images.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\SDL_test_log.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\SDL_test_md5.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\include\SDL_test_random.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\include\SDL_thread.h"
 				>
 			</File>
@@ -583,10 +659,6 @@
 				RelativePath="..\..\include\SDL_video.h"
 				>
 			</File>
-			<File
-				RelativePath="..\..\src\video\windows\SDL_windowsopengles.h"
-				>
-			</File>
 		</Filter>
 		<File
 			RelativePath="..\..\src\events\blank_cursor.h"
@@ -594,10 +666,6 @@
 		</File>
 		<File
 			RelativePath="..\..\src\events\default_cursor.h"
-			>
-		</File>
-		<File
-			RelativePath="..\..\src\audio\directsound\directx.h"
 			>
 		</File>
 		<File
@@ -825,11 +893,31 @@
 			>
 		</File>
 		<File
+			RelativePath="..\..\src\haptic\windows\SDL_dinputhaptic.c"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\haptic\windows\SDL_dinputhaptic_c.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\joystick\windows\SDL_dinputjoystick.c"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\joystick\windows\SDL_dinputjoystick_c.h"
+			>
+		</File>
+		<File
 			RelativePath="..\..\src\audio\directsound\SDL_directsound.c"
 			>
 		</File>
 		<File
 			RelativePath="..\..\src\audio\directsound\SDL_directsound.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\core\windows\SDL_directx.h"
 			>
 		</File>
 		<File
@@ -874,10 +962,6 @@
 		</File>
 		<File
 			RelativePath="..\..\src\audio\dummy\SDL_dummyaudio.h"
-			>
-		</File>
-		<File
-			RelativePath="..\..\src\joystick\windows\SDL_dxjoystick.c"
 			>
 		</File>
 		<File
@@ -1157,10 +1241,6 @@
 			>
 		</File>
 		<File
-			RelativePath="..\..\src\haptic\windows\SDL_syshaptic.c"
-			>
-		</File>
-		<File
 			RelativePath="..\..\src\haptic\SDL_syshaptic.h"
 			>
 		</File>
@@ -1297,6 +1377,22 @@
 			>
 		</File>
 		<File
+			RelativePath="..\..\src\haptic\windows\SDL_windowshaptic.c"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\haptic\windows\SDL_windowshaptic_c.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\joystick\windows\SDL_windowsjoystick.c"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\joystick\windows\SDL_windowsjoystick_c.h"
+			>
+		</File>
+		<File
 			RelativePath="..\..\src\video\windows\SDL_windowskeyboard.c"
 			>
 		</File>
@@ -1374,6 +1470,30 @@
 		</File>
 		<File
 			RelativePath="..\..\src\audio\xaudio2\SDL_xaudio2.c"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\core\windows\SDL_xinput.c"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\core\windows\SDL_xinput.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\haptic\windows\SDL_xinputhaptic.c"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\haptic\windows\SDL_xinputhaptic_c.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\joystick\windows\SDL_xinputjoystick.c"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\joystick\windows\SDL_xinputjoystick_c.h"
 			>
 		</File>
 		<File

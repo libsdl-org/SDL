@@ -18,13 +18,14 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include "../../SDL_internal.h"
 
-#ifndef _directx_h
-#define _directx_h
+#ifndef _SDL_directx_h
+#define _SDL_directx_h
 
 /* Include all of the DirectX 8.0 headers and adds any necessary tweaks */
 
-#include "../../core/windows/SDL_windows.h"
+#include "SDL_windows.h"
 #include <mmsystem.h>
 #ifndef WIN32
 #define WIN32
@@ -91,12 +92,20 @@
 /* We need these defines to mark what version of DirectX API we use */
 #define DIRECTDRAW_VERSION  0x0700
 #define DIRECTSOUND_VERSION 0x0800
-#define DIRECTINPUT_VERSION 0x0500
+#define DIRECTINPUT_VERSION 0x0800 /* Need version 7 for force feedback. Need version 8 so IDirectInput8_EnumDevices doesn't leak like a sieve... */
 
+#ifdef HAVE_DDRAW_H
 #include <ddraw.h>
+#endif
+#ifdef HAVE_DSOUND_H
 #include <dsound.h>
+#endif
+#ifdef HAVE_DINPUT_H
 #include <dinput.h>
+#else
+typedef struct { int unused; } DIDEVICEINSTANCE;
+#endif
 
-#endif /* _directx_h */
+#endif /* _SDL_directx_h */
 
 /* vi: set ts=4 sw=4 expandtab: */

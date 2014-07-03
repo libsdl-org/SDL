@@ -20,29 +20,13 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef SDL_JOYSTICK_DINPUT_H
+#ifndef _SDL_xinput_h
+#define _SDL_xinput_h
 
-/* DirectInput joystick driver; written by Glenn Maynard, based on Andrei de
- * A. Formiga's WINMM driver.
- *
- * Hats and sliders are completely untested; the app I'm writing this for mostly
- * doesn't use them and I don't own any joysticks with them.
- *
- * We don't bother to use event notification here.  It doesn't seem to work
- * with polled devices, and it's fine to call IDirectInputDevice2_GetDeviceData and
- * let it return 0 events. */
+#ifdef HAVE_XINPUT_H
 
-#include "../../core/windows/SDL_windows.h"
-
-#define DIRECTINPUT_VERSION 0x0800      /* Need version 7 for force feedback. Need version 8 so IDirectInput8_EnumDevices doesn't leak like a sieve... */
-#include <dinput.h>
-#define COBJMACROS
-#include <wbemcli.h>
-#include <oleauto.h>
+#include "SDL_windows.h"
 #include <xinput.h>
-#include <devguid.h>
-#include <dbt.h>
-
 
 #ifndef XUSER_MAX_COUNT
 #define XUSER_MAX_COUNT 4
@@ -142,45 +126,9 @@ extern DWORD SDL_XInputVersion;  /* ((major << 16) & 0xFF00) | (minor & 0xFF) */
 #define XINPUTGETSTATE          SDL_XInputGetState
 #define XINPUTSETSTATE          SDL_XInputSetState
 #define XINPUTGETCAPABILITIES   SDL_XInputGetCapabilities
-#define INVALID_XINPUT_USERID   XUSER_INDEX_ANY
-#define SDL_XINPUT_MAX_DEVICES  XUSER_MAX_COUNT
 
-#define MAX_INPUTS  256     /* each joystick can have up to 256 inputs */
+#endif /* HAVE_XINPUT_H */
 
+#endif /* _SDL_xinput_h */
 
-/* local types */
-typedef enum Type
-{ BUTTON, AXIS, HAT } Type;
-
-typedef struct input_t
-{
-    /* DirectInput offset for this input type: */
-    DWORD ofs;
-
-    /* Button, axis or hat: */
-    Type type;
-
-    /* SDL input offset: */
-    Uint8 num;
-} input_t;
-
-/* The private structure used to keep track of a joystick */
-struct joystick_hwdata
-{
-    LPDIRECTINPUTDEVICE8 InputDevice;
-    DIDEVCAPS Capabilities;
-    int buffered;
-    SDL_JoystickGUID guid;
-
-    input_t Inputs[MAX_INPUTS];
-    int NumInputs;
-    int NumSliders;
-	SDL_bool removed;
-	SDL_bool send_remove_event;
-	SDL_bool bXInputDevice; /* SDL_TRUE if this device supports using the xinput API rather than DirectInput */
-	SDL_bool bXInputHaptic; /* Supports force feedback via XInput. */
-    Uint8 userid; /* XInput userid index for this joystick */
-	DWORD dwPacketNumber;
-};
-
-#endif /* SDL_JOYSTICK_DINPUT_H */
+/* vi: set ts=4 sw=4 expandtab: */

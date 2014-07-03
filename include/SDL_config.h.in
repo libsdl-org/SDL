@@ -51,7 +51,11 @@
 #undef HAVE_GCC_SYNC_LOCK_TEST_AND_SET
 #undef HAVE_PTHREAD_SPINLOCK
 
+#undef HAVE_DDRAW_H
+#undef HAVE_DINPUT_H
+#undef HAVE_DSOUND_H
 #undef HAVE_DXGI_H
+#undef HAVE_XINPUT_H
 
 /* Comment this if you want to build without any C library requirements */
 #undef HAVE_LIBC
@@ -232,6 +236,7 @@
 #undef SDL_INPUT_TSLIB
 #undef SDL_JOYSTICK_HAIKU
 #undef SDL_JOYSTICK_DINPUT
+#undef SDL_JOYSTICK_XINPUT
 #undef SDL_JOYSTICK_DUMMY
 #undef SDL_JOYSTICK_IOKIT
 #undef SDL_JOYSTICK_LINUX
@@ -243,6 +248,7 @@
 #undef SDL_HAPTIC_LINUX
 #undef SDL_HAPTIC_IOKIT
 #undef SDL_HAPTIC_DINPUT
+#undef SDL_HAPTIC_XINPUT
 
 /* Enable various shared object loading systems */
 #undef SDL_LOADSO_HAIKU

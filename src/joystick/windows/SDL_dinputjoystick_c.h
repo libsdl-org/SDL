@@ -18,11 +18,13 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include "../../SDL_internal.h"
 
-extern int DirectInputHaptic_MaybeAddDevice(const DIDEVICEINSTANCE *pdidInstance);
-extern int DirectInputHaptic_MaybeRemoveDevice(const DIDEVICEINSTANCE *pdidInstance);
-extern int XInputHaptic_MaybeAddDevice(const DWORD dwUserid);
-extern int XInputHaptic_MaybeRemoveDevice(const DWORD dwUserid);
+extern int SDL_DINPUT_JoystickInit(void);
+extern void SDL_DINPUT_JoystickDetect(JoyStick_DeviceData **pContext);
+extern int SDL_DINPUT_JoystickOpen(SDL_Joystick * joystick, JoyStick_DeviceData *joystickdevice);
+extern void SDL_DINPUT_JoystickUpdate(SDL_Joystick * joystick);
+extern void SDL_DINPUT_JoystickClose(SDL_Joystick * joystick);
+extern void SDL_DINPUT_JoystickQuit(void);
 
 /* vi: set ts=4 sw=4 expandtab: */
-

@@ -381,6 +381,24 @@
     <ClInclude Include="..\..\src\video\winrt\SDL_winrtvideo_cpp.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\core\windows\SDL_directx.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\core\windows\SDL_xinput.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\joystick\windows\SDL_windowsjoystick_c.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\joystick\windows\SDL_xinputjoystick_c.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\joystick\windows\SDL_dinputjoystick_c.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\haptic\windows\SDL_windowshaptic_c.h" />
+    <ClInclude Include="..\..\src\haptic\windows\SDL_dinputhaptic_c.h" />
+    <ClInclude Include="..\..\src\haptic\windows\SDL_xinputhaptic_c.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\atomic\SDL_atomic.c">
@@ -483,9 +501,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\joystick\SDL_joystick.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\joystick\winrt\SDL_xinputjoystick.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\loadso\windows\SDL_sysloadso.c">
@@ -683,5 +698,20 @@
     <ClCompile Include="..\..\src\video\winrt\SDL_winrtvideo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\core\windows\SDL_xinput.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\joystick\windows\SDL_windowsjoystick.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\joystick\windows\SDL_xinputjoystick.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\joystick\windows\SDL_dinputjoystick.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\haptic\windows\SDL_windowshaptic.c" />
+    <ClCompile Include="..\..\src\haptic\windows\SDL_xinputhaptic.c" />
+    <ClCompile Include="..\..\src\haptic\windows\SDL_dinputhaptic.c" />
   </ItemGroup>
 </Project>

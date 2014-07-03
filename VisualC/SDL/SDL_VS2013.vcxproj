@@ -223,6 +223,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\include\begin_code.h" />
+    <ClInclude Include="..\..\include\close_code.h" />
     <ClInclude Include="..\..\include\SDL.h" />
     <ClInclude Include="..\..\include\SDL_assert.h" />
     <ClInclude Include="..\..\include\SDL_atomic.h" />
@@ -239,6 +241,7 @@
     <ClInclude Include="..\..\include\SDL_error.h" />
     <ClInclude Include="..\..\include\SDL_events.h" />
     <ClInclude Include="..\..\include\SDL_filesystem.h" />
+    <ClInclude Include="..\..\include\SDL_gamecontroller.h" />
     <ClInclude Include="..\..\include\SDL_gesture.h" />
     <ClInclude Include="..\..\include\SDL_haptic.h" />
     <ClInclude Include="..\..\include\SDL_hints.h" />
@@ -248,11 +251,18 @@
     <ClInclude Include="..\..\include\SDL_loadso.h" />
     <ClInclude Include="..\..\include\SDL_log.h" />
     <ClInclude Include="..\..\include\SDL_main.h" />
+    <ClInclude Include="..\..\include\SDL_messagebox.h" />
     <ClInclude Include="..\..\include\SDL_mouse.h" />
     <ClInclude Include="..\..\include\SDL_mutex.h" />
     <ClInclude Include="..\..\include\SDL_name.h" />
     <ClInclude Include="..\..\include\SDL_opengl.h" />
     <ClInclude Include="..\..\include\SDL_opengles.h" />
+    <ClInclude Include="..\..\include\SDL_opengles2.h" />
+    <ClInclude Include="..\..\include\SDL_opengles2_gl2.h" />
+    <ClInclude Include="..\..\include\SDL_opengles2_gl2ext.h" />
+    <ClInclude Include="..\..\include\SDL_opengles2_gl2platform.h" />
+    <ClInclude Include="..\..\include\SDL_opengles2_khrplatform.h" />
+    <ClInclude Include="..\..\include\SDL_opengl_glext.h" />
     <ClInclude Include="..\..\include\SDL_pixels.h" />
     <ClInclude Include="..\..\include\SDL_platform.h" />
     <ClInclude Include="..\..\include\SDL_power.h" />
@@ -267,23 +277,42 @@
     <ClInclude Include="..\..\include\SDL_surface.h" />
     <ClInclude Include="..\..\include\SDL_system.h" />
     <ClInclude Include="..\..\include\SDL_syswm.h" />
+    <ClInclude Include="..\..\include\SDL_test.h" />
+    <ClInclude Include="..\..\include\SDL_test_assert.h" />
+    <ClInclude Include="..\..\include\SDL_test_common.h" />
+    <ClInclude Include="..\..\include\SDL_test_compare.h" />
+    <ClInclude Include="..\..\include\SDL_test_crc32.h" />
+    <ClInclude Include="..\..\include\SDL_test_font.h" />
+    <ClInclude Include="..\..\include\SDL_test_fuzzer.h" />
+    <ClInclude Include="..\..\include\SDL_test_harness.h" />
+    <ClInclude Include="..\..\include\SDL_test_images.h" />
+    <ClInclude Include="..\..\include\SDL_test_log.h" />
+    <ClInclude Include="..\..\include\SDL_test_md5.h" />
+    <ClInclude Include="..\..\include\SDL_test_random.h" />
     <ClInclude Include="..\..\include\SDL_thread.h" />
     <ClInclude Include="..\..\include\SDL_timer.h" />
     <ClInclude Include="..\..\include\SDL_touch.h" />
     <ClInclude Include="..\..\include\SDL_types.h" />
     <ClInclude Include="..\..\include\SDL_version.h" />
     <ClInclude Include="..\..\include\SDL_video.h" />
-    <ClInclude Include="..\..\include\SDL_gamecontroller.h" />
+    <ClInclude Include="..\..\src\core\windows\SDL_directx.h" />
     <ClInclude Include="..\..\src\core\windows\SDL_windows.h" />
+    <ClInclude Include="..\..\src\core\windows\SDL_xinput.h" />
     <ClInclude Include="..\..\src\dynapi\SDL_dynapi.h" />
     <ClInclude Include="..\..\src\dynapi\SDL_dynapi_overrides.h" />
     <ClInclude Include="..\..\src\dynapi\SDL_dynapi_procs.h" />
     <ClInclude Include="..\..\src\events\blank_cursor.h" />
     <ClInclude Include="..\..\src\events\default_cursor.h" />
-    <ClInclude Include="..\..\src\audio\directsound\directx.h" />
     <ClInclude Include="..\..\src\events\SDL_clipboardevents_c.h" />
     <ClInclude Include="..\..\src\events\SDL_gesture_c.h" />
     <ClInclude Include="..\..\src\events\SDL_touch_c.h" />
+    <ClInclude Include="..\..\src\haptic\windows\SDL_dinputhaptic_c.h" />
+    <ClInclude Include="..\..\src\haptic\windows\SDL_windowshaptic_c.h" />
+    <ClInclude Include="..\..\src\haptic\windows\SDL_xinputhaptic_c.h" />
+    <ClInclude Include="..\..\src\joystick\SDL_gamecontrollerdb.h" />
+    <ClInclude Include="..\..\src\joystick\windows\SDL_dinputjoystick_c.h" />
+    <ClInclude Include="..\..\src\joystick\windows\SDL_windowsjoystick_c.h" />
+    <ClInclude Include="..\..\src\joystick\windows\SDL_xinputjoystick_c.h" />
     <ClInclude Include="..\..\src\libm\math_libm.h" />
     <ClInclude Include="..\..\src\libm\math_private.h" />
     <ClInclude Include="..\..\src\render\mmx.h" />
@@ -326,7 +355,6 @@
     <ClInclude Include="..\..\src\video\SDL_RLEaccel_c.h" />
     <ClInclude Include="..\..\src\audio\SDL_sysaudio.h" />
     <ClInclude Include="..\..\src\events\SDL_sysevents.h" />
-    <ClInclude Include="..\..\src\haptic\SDL_syshaptic.h" />
     <ClInclude Include="..\..\src\joystick\SDL_sysjoystick.h" />
     <ClInclude Include="..\..\src\thread\SDL_systhread.h" />
     <ClInclude Include="..\..\src\thread\windows\SDL_systhread_c.h" />
@@ -352,10 +380,17 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\core\windows\SDL_windows.c" />
+    <ClCompile Include="..\..\src\core\windows\SDL_xinput.c" />
     <ClCompile Include="..\..\src\dynapi\SDL_dynapi.c" />
     <ClCompile Include="..\..\src\events\SDL_clipboardevents.c" />
     <ClCompile Include="..\..\src\events\SDL_gesture.c" />
     <ClCompile Include="..\..\src\events\SDL_touch.c" />
+    <ClCompile Include="..\..\src\haptic\windows\SDL_dinputhaptic.c" />
+    <ClCompile Include="..\..\src\haptic\windows\SDL_windowshaptic.c" />
+    <ClCompile Include="..\..\src\haptic\windows\SDL_xinputhaptic.c" />
+    <ClCompile Include="..\..\src\joystick\windows\SDL_dinputjoystick.c" />
+    <ClCompile Include="..\..\src\joystick\windows\SDL_windowsjoystick.c" />
+    <ClCompile Include="..\..\src\joystick\windows\SDL_xinputjoystick.c" />
     <ClCompile Include="..\..\src\libm\e_atan2.c" />
     <ClCompile Include="..\..\src\libm\e_log.c" />
     <ClCompile Include="..\..\src\libm\e_pow.c" />
@@ -420,7 +455,6 @@
     <ClCompile Include="..\..\src\audio\directsound\SDL_directsound.c" />
     <ClCompile Include="..\..\src\events\SDL_dropevents.c" />
     <ClCompile Include="..\..\src\audio\xaudio2\SDL_xaudio2.c" />
-    <ClCompile Include="..\..\src\joystick\windows\SDL_dxjoystick.c" />
     <ClCompile Include="..\..\src\SDL_error.c" />
     <ClCompile Include="..\..\src\events\SDL_events.c" />
     <ClCompile Include="..\..\src\video\SDL_fillrect.c" />
@@ -448,7 +482,6 @@
     <ClCompile Include="..\..\src\video\SDL_surface.c" />
     <ClCompile Include="..\..\src\thread\generic\SDL_syscond.c" />
     <ClCompile Include="..\..\src\filesystem\windows\SDL_sysfilesystem.c" />
-    <ClCompile Include="..\..\src\haptic\windows\SDL_syshaptic.c" />
     <ClCompile Include="..\..\src\loadso\windows\SDL_sysloadso.c" />
     <ClCompile Include="..\..\src\thread\windows\SDL_sysmutex.c" />
     <ClCompile Include="..\..\src\power\windows\SDL_syspower.c" />

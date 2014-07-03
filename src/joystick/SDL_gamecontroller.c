@@ -88,9 +88,7 @@ typedef struct _ControllerMapping_t
 } ControllerMapping_t;
 
 static ControllerMapping_t *s_pSupportedControllers = NULL;
-#if defined(SDL_JOYSTICK_DINPUT) || defined(SDL_JOYSTICK_XINPUT)
 static ControllerMapping_t *s_pXInputMapping = NULL;
-#endif
 
 /* The SDL game controller structure */
 struct _SDL_GameController
@@ -260,12 +258,10 @@ ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickGUID *gu
  */
 ControllerMapping_t *SDL_PrivateGetControllerMapping(int device_index)
 {
-#if defined(SDL_JOYSTICK_DINPUT) || defined(SDL_JOYSTICK_XINPUT)
     if (SDL_SYS_IsXInputGamepad_DeviceIndex(device_index) && s_pXInputMapping) {
         return s_pXInputMapping;
     }
     else
-#endif
     {
         SDL_JoystickGUID jGUID = SDL_JoystickGetDeviceGUID(device_index);
         return SDL_PrivateGetControllerMappingForGUID(&jGUID);
@@ -669,19 +665,15 @@ SDL_GameControllerAddMapping(const char *mappingString)
     char *pchMapping;
     SDL_JoystickGUID jGUID;
     ControllerMapping_t *pControllerMapping;
-#if defined(SDL_JOYSTICK_DINPUT) || defined(SDL_JOYSTICK_XINPUT)
     SDL_bool is_xinput_mapping = SDL_FALSE;
-#endif
 
     pchGUID = SDL_PrivateGetControllerGUIDFromMappingString(mappingString);
     if (!pchGUID) {
         return SDL_SetError("Couldn't parse GUID from %s", mappingString);
     }
-#if defined(SDL_JOYSTICK_DINPUT) || defined(SDL_JOYSTICK_XINPUT)
     if (!SDL_strcasecmp(pchGUID, "xinput")) {
         is_xinput_mapping = SDL_TRUE;
     }
-#endif
     jGUID = SDL_JoystickGetGUIDFromString(pchGUID);
     SDL_free(pchGUID);
 
@@ -714,11 +706,9 @@ SDL_GameControllerAddMapping(const char *mappingString)
             SDL_free(pchMapping);
             return SDL_OutOfMemory();
         }
-#if defined(SDL_JOYSTICK_DINPUT) || defined(SDL_JOYSTICK_XINPUT)
         if (is_xinput_mapping) {
             s_pXInputMapping = pControllerMapping;
         }
-#endif
         pControllerMapping->guid = jGUID;
         pControllerMapping->name = pchName;
         pControllerMapping->mapping = pchMapping;
