@@ -133,7 +133,7 @@ static const char *shader_source[NUM_SHADERS][2] =
 "uniform sampler2D tex2; // V \n"
 "\n"
 "// YUV offset \n"
-"const vec3 offset = vec3(-0.0625, -0.5, -0.5);\n"
+"const vec3 offset = vec3(-0.0627451017, -0.501960814, -0.501960814);\n"
 "\n"
 "// RGB coefficients \n"
 "const vec3 Rcoeff = vec3(1.164,  0.000,  1.596);\n"
