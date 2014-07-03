@@ -2496,8 +2496,25 @@ AC_HELP_STRING([--enable-directx], [use DirectX for Windows audio/video [[defaul
         AC_CHECK_HEADER(ddraw.h, have_ddraw=yes)
         AC_CHECK_HEADER(dsound.h, have_dsound=yes)
         AC_CHECK_HEADER(dinput.h, have_dinput=yes)
-        AC_CHECK_HEADER(xaudio2.h, have_xaudio2=yes)
         AC_CHECK_HEADER(dxgi.h, have_dxgi=yes)
+        AC_CHECK_HEADER(xaudio2.h, have_xaudio2=yes)
+        AC_CHECK_HEADER(xinput.h, have_xinput=yes)
+
+        if test x$have_ddraw = xyes; then
+            AC_DEFINE(HAVE_DDRAW_H, 1, [ ])
+        fi
+        if test x$have_dinput = xyes; then
+            AC_DEFINE(HAVE_DINPUT_H, 1, [ ])
+        fi
+        if test x$have_dsound = xyes; then
+            AC_DEFINE(HAVE_DSOUND_H, 1, [ ])
+        fi
+        if test x$have_dxgi = xyes; then
+            AC_DEFINE(HAVE_DXGI_H, 1, [ ])
+        fi
+        if test x$have_xinput = xyes; then
+            AC_DEFINE(HAVE_XINPUT_H, 1, [ ])
+        fi
 
         SUMMARY_video="${SUMMARY_video} directx"
         SUMMARY_audio="${SUMMARY_audio} directx"
@@ -2927,9 +2944,6 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
                 AC_DEFINE(SDL_VIDEO_RENDER_D3D11, 1, [ ])
             fi
         fi
-        if test x$have_dxgi = xyes; then
-            AC_DEFINE(HAVE_DXGI_H, 1, [ ])
-        fi
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
             AC_DEFINE(SDL_AUDIO_DRIVER_WINMM, 1, [ ])
@@ -2946,19 +2960,28 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         fi
         # Set up files for the joystick library
         if test x$enable_joystick = xyes; then
-            if test x$have_dinput = xyes; then
-                AC_DEFINE(SDL_JOYSTICK_DINPUT, 1, [ ])
-                SOURCES="$SOURCES $srcdir/src/joystick/windows/SDL_dxjoystick.c"
-                EXTRA_LDFLAGS="$EXTRA_LDFLAGS -ldinput8 -ldxguid -ldxerr8"
+            if test x$have_dinput = xyes -o x$have_xinput = xyes; then
+                if test x$have_xinput = xyes; then
+                    AC_DEFINE(SDL_JOYSTICK_XINPUT, 1, [ ])
+                fi
+                if test x$have_dinput = xyes; then
+                    AC_DEFINE(SDL_JOYSTICK_DINPUT, 1, [ ])
+                    EXTRA_LDFLAGS="$EXTRA_LDFLAGS -ldinput8 -ldxguid -ldxerr8"
+                fi
             else
                 AC_DEFINE(SDL_JOYSTICK_WINMM, 1, [ ])
-                SOURCES="$SOURCES $srcdir/src/joystick/windows/SDL_mmjoystick.c"
             fi
+            SOURCES="$SOURCES $srcdir/src/joystick/windows/*.c"
             have_joystick=yes
         fi
         if test x$enable_haptic = xyes; then
-            if test x$have_dinput = xyes; then
-                AC_DEFINE(SDL_HAPTIC_DINPUT, 1, [ ])
+            if test x$have_dinput = xyes -o x$have_xinput = xyes; then
+                if test x$have_xinput = xyes; then
+                    AC_DEFINE(SDL_HAPTIC_XINPUT, 1, [ ])
+                fi
+                if test x$have_dinput = xyes; then
+                    AC_DEFINE(SDL_HAPTIC_DINPUT, 1, [ ])
+                fi
                 SOURCES="$SOURCES $srcdir/src/haptic/windows/SDL_syshaptic.c"
                 have_haptic=yes
             fi

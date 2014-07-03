@@ -20,27 +20,14 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_directsound_h
-#define _SDL_directsound_h
+#include "../../core/windows/SDL_xinput.h"
 
-#include "../../core/windows/SDL_directx.h"
-
-#include "../SDL_sysaudio.h"
-
-/* Hidden "this" pointer for the audio functions */
-#define _THIS   SDL_AudioDevice *this
-
-/* The DirectSound objects */
-struct SDL_PrivateAudioData
-{
-    LPDIRECTSOUND sound;
-    LPDIRECTSOUNDBUFFER mixbuf;
-    int num_buffers;
-    int mixlen;
-    DWORD lastchunk;
-    Uint8 *locked_buf;
-};
-
-#endif /* _SDL_directsound_h */
+extern SDL_bool SDL_XINPUT_Enabled(void);
+extern int SDL_XINPUT_JoystickInit(void);
+extern void SDL_XINPUT_JoystickDetect(JoyStick_DeviceData **pContext);
+extern int SDL_XINPUT_JoystickOpen(SDL_Joystick * joystick, JoyStick_DeviceData *joystickdevice);
+extern void SDL_XINPUT_JoystickUpdate(SDL_Joystick * joystick);
+extern void SDL_XINPUT_JoystickClose(SDL_Joystick * joystick);
+extern void SDL_XINPUT_JoystickQuit(void);
 
 /* vi: set ts=4 sw=4 expandtab: */

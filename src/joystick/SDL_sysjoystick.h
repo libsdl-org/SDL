@@ -20,6 +20,9 @@
 */
 #include "../SDL_internal.h"
 
+#ifndef _SDL_sysjoystick_h
+#define _SDL_sysjoystick_h
+
 /* This is the system specific header for the SDL joystick API */
 
 #include "SDL_joystick.h"
@@ -105,9 +108,9 @@ extern SDL_JoystickGUID SDL_SYS_JoystickGetDeviceGUID(int device_index);
 /* Function to return the stable GUID for a opened joystick */
 extern SDL_JoystickGUID SDL_SYS_JoystickGetGUID(SDL_Joystick * joystick);
 
-#if defined(SDL_JOYSTICK_DINPUT) || defined(SDL_JOYSTICK_XINPUT)
 /* Function returns SDL_TRUE if this device is an XInput gamepad */
-extern SDL_bool SDL_SYS_IsXInputGamepad_DeviceIndex( int device_index );
-#endif
+extern SDL_bool SDL_SYS_IsXInputGamepad_DeviceIndex(int device_index);
+
+#endif /* _SDL_sysjoystick_h */
 
 /* vi: set ts=4 sw=4 expandtab: */
