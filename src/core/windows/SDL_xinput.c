@@ -35,6 +35,40 @@ static HANDLE s_pXInputDLL = 0;
 static int s_XInputDLLRefCount = 0;
 
 
+#ifdef __WINRT__
+
+int
+WIN_LoadXInputDLL(void)
+{
+    /* Getting handles to system dlls (via LoadLibrary and its variants) is not
+     * supported on WinRT, thus, pointers to XInput's functions can't be
+     * retrieved via GetProcAddress.
+     *
+     * When on WinRT, assume that XInput is already loaded, and directly map
+     * its XInput.h-declared functions to the SDL_XInput* set of function
+     * pointers.
+     *
+     * Side-note: XInputGetStateEx is not available for use in WinRT.
+     * This seems to mean that support for the guide button is not available
+     * in WinRT, unfortunately.
+     */
+    SDL_XInputGetState = (XInputGetState_t)XInputGetState;
+    SDL_XInputSetState = (XInputSetState_t)XInputSetState;
+    SDL_XInputGetCapabilities = (XInputGetCapabilities_t)XInputGetCapabilities;
+
+    /* XInput 1.4 ships with Windows 8 and 8.1: */
+    SDL_XInputVersion = (1 << 16) | 4;
+
+    return 0;
+}
+
+void
+WIN_UnloadXInputDLL(void)
+{
+}
+
+#else /* !__WINRT__ */
+
 int
 WIN_LoadXInputDLL(void)
 {
@@ -89,6 +123,7 @@ WIN_UnloadXInputDLL(void)
     }
 }
 
+#endif /* __WINRT__ */
 #endif /* HAVE_XINPUT_H */
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -357,6 +357,9 @@
     <ClInclude Include="..\..\src\video\winrt\SDL_winrtmessagebox.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\joystick\windows\SDL_xinputjoystick_c.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\atomic\SDL_atomic.c">
@@ -642,6 +645,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\video\winrt\SDL_winrtmessagebox.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\joystick\windows\SDL_xinputjoystick.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

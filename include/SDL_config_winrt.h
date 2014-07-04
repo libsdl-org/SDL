@@ -78,7 +78,9 @@ typedef unsigned int uintptr_t;
 
 /* Useful headers */
 #define HAVE_DXGI_H 1
+#if WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP
 #define HAVE_XINPUT_H 1
+#endif
 #define HAVE_LIBC 1
 #define HAVE_STDIO_H 1
 #define STDC_HEADERS 1
