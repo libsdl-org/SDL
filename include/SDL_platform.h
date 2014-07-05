@@ -109,7 +109,7 @@
 #undef __RISCOS__
 #define __RISCOS__  1
 #endif
-#if defined(__SVR4)
+#if defined(__sun) && defined(__SVR4)
 #undef __SOLARIS__
 #define __SOLARIS__ 1
 #endif
