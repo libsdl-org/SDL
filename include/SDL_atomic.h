@@ -122,7 +122,8 @@ extern DECLSPEC void SDLCALL SDL_AtomicUnlock(SDL_SpinLock *lock);
 void _ReadWriteBarrier(void);
 #pragma intrinsic(_ReadWriteBarrier)
 #define SDL_CompilerBarrier()   _ReadWriteBarrier()
-#elif defined(__GNUC__)
+#elif defined(__GNUC__) || (defined(__SUNPRO_C) && (__SUNPRO_C >= 0x5120))
+/* This is correct for all CPUs when using GCC or Solaris Studio 12.1+. */
 #define SDL_CompilerBarrier()   __asm__ __volatile__ ("" : : : "memory")
 #else
 #define SDL_CompilerBarrier()   \
@@ -169,9 +170,16 @@ extern DECLSPEC void SDLCALL SDL_MemoryBarrierAcquire();
 #define SDL_MemoryBarrierAcquire()   __asm__ __volatile__ ("" : : : "memory")
 #endif /* __GNUC__ && __arm__ */
 #else
+#if (defined(__SUNPRO_C) && (__SUNPRO_C >= 0x5120))
+/* This is correct for all CPUs on Solaris when using Solaris Studio 12.1+. */
+#include <mbarrier.h>
+#define SDL_MemoryBarrierRelease()  __machine_rel_barrier()
+#define SDL_MemoryBarrierAcquire()  __machine_acq_barrier()
+#else
 /* This is correct for the x86 and x64 CPUs, and we'll expand this over time. */
 #define SDL_MemoryBarrierRelease()  SDL_CompilerBarrier()
 #define SDL_MemoryBarrierAcquire()  SDL_CompilerBarrier()
+#endif
 #endif
 
 /**

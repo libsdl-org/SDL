@@ -31,6 +31,10 @@
 #include <libkern/OSAtomic.h>
 #endif
 
+#if !defined(HAVE_GCC_ATOMICS) && defined(__SOLARIS__)
+#include <atomic.h>
+#endif
+
 /*
   If any of the operations are not provided then we must emulate some
   of them. That means we need a nice implementation of spin locks
@@ -54,7 +58,7 @@
   Contributed by Bob Pendleton, bob@pendleton.com
 */
 
-#if !defined(HAVE_MSC_ATOMICS) && !defined(HAVE_GCC_ATOMICS) && !defined(__MACOSX__)
+#if !defined(HAVE_MSC_ATOMICS) && !defined(HAVE_GCC_ATOMICS) && !defined(__MACOSX__) && !defined(__SOLARIS__)
 #define EMULATE_CAS 1
 #endif
 
@@ -88,6 +92,10 @@ SDL_AtomicCAS(SDL_atomic_t *a, int oldval, int newval)
     return (SDL_bool) OSAtomicCompareAndSwap32Barrier(oldval, newval, &a->value);
 #elif defined(HAVE_GCC_ATOMICS)
     return (SDL_bool) __sync_bool_compare_and_swap(&a->value, oldval, newval);
+#elif defined(__SOLARIS__) && defined(_LP64)
+    return (SDL_bool) ((int) atomic_cas_64((volatile uint64_t*)&a->value, (uint64_t)oldval, (uint64_t)newval) == oldval);
+#elif defined(__SOLARIS__) && !defined(_LP64)
+    return (SDL_bool) ((int) atomic_cas_32((volatile uint32_t*)&a->value, (uint32_t)oldval, (uint32_t)newval) == oldval);
 #elif EMULATE_CAS
     SDL_bool retval = SDL_FALSE;
 
@@ -117,6 +125,8 @@ SDL_AtomicCASPtr(void **a, void *oldval, void *newval)
     return (SDL_bool) OSAtomicCompareAndSwap32Barrier((int32_t)oldval, (int32_t)newval, (int32_t*) a);
 #elif defined(HAVE_GCC_ATOMICS)
     return __sync_bool_compare_and_swap(a, oldval, newval);
+#elif defined(__SOLARIS__)
+    return (SDL_bool) (atomic_cas_ptr(a, oldval, newval) == oldval);
 #elif EMULATE_CAS
     SDL_bool retval = SDL_FALSE;
 
@@ -140,6 +150,10 @@ SDL_AtomicSet(SDL_atomic_t *a, int v)
     return _InterlockedExchange((long*)&a->value, v);
 #elif defined(HAVE_GCC_ATOMICS)
     return __sync_lock_test_and_set(&a->value, v);
+#elif defined(__SOLARIS__) && defined(_LP64)
+    return (int) atomic_swap_64((volatile uint64_t*)&a->value, (uint64_t)v);
+#elif defined(__SOLARIS__) && !defined(_LP64)
+    return (int) atomic_swap_32((volatile uint32_t*)&a->value, (uint32_t)v);
 #else
     int value;
     do {
@@ -158,6 +172,8 @@ SDL_AtomicSetPtr(void **a, void *v)
     return _InterlockedExchangePointer(a, v);
 #elif defined(HAVE_GCC_ATOMICS)
     return __sync_lock_test_and_set(a, v);
+#elif defined(__SOLARIS__)
+    return atomic_swap_ptr(a, v);
 #else
     void *value;
     do {
@@ -174,6 +190,15 @@ SDL_AtomicAdd(SDL_atomic_t *a, int v)
     return _InterlockedExchangeAdd((long*)&a->value, v);
 #elif defined(HAVE_GCC_ATOMICS)
     return __sync_fetch_and_add(&a->value, v);
+#elif defined(__SOLARIS__)
+    int pv = a->value;
+    membar_consumer();
+#if defined(_LP64)
+    atomic_add_64((volatile uint64_t*)&a->value, v);
+#elif !defined(_LP64)
+    atomic_add_32((volatile uint32_t*)&a->value, v);
+#endif
+    return pv;
 #else
     int value;
     do {
