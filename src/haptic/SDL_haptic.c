@@ -343,7 +343,7 @@ SDL_HapticClose(SDL_Haptic * haptic)
     }
 
     /* Check if it's still in use */
-    if (--haptic->ref_count < 0) {
+    if (--haptic->ref_count > 0) {
         return;
     }
 
