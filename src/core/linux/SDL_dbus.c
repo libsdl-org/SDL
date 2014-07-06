@@ -67,6 +67,7 @@ load_dbus_syms(void)
     SDL_DBUS_SYM(error_free);
     SDL_DBUS_SYM(get_local_machine_id);
     SDL_DBUS_SYM(free);
+    SDL_DBUS_SYM(shutdown);
 
     #undef SDL_DBUS_SYM
     #undef SDL_DBUS_SYM2
@@ -106,7 +107,7 @@ LoadDBUSLibrary(void)
 void
 SDL_DBus_Init(void)
 {
-    if (LoadDBUSLibrary() != -1) {
+    if (!dbus.session_conn && LoadDBUSLibrary() != -1) {
         DBusError err;
         dbus.error_init(&err);
         dbus.session_conn = dbus.bus_get_private(DBUS_BUS_SESSION, &err);
@@ -128,6 +129,7 @@ SDL_DBus_Quit(void)
     if (dbus.session_conn) {
         dbus.connection_close(dbus.session_conn);
         dbus.connection_unref(dbus.session_conn);
+        dbus.shutdown();
         SDL_memset(&dbus, 0, sizeof(dbus));
     }
     UnloadDBUSLibrary();
