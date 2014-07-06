@@ -62,7 +62,8 @@ typedef struct SDL_DBusContext {
     dbus_bool_t (*error_is_set)(const DBusError *);
     void (*error_free)(DBusError *);
     char *(*get_local_machine_id)(void);
-    void (*free)(void *); 	 	
+    void (*free)(void *);
+    void (*shutdown)(void);
 
 } SDL_DBusContext;
 
