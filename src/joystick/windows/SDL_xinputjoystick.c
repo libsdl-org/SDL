@@ -196,7 +196,6 @@ SDL_XINPUT_JoystickOpen(SDL_Joystick * joystick, JoyStick_DeviceData *joystickde
     SDL_assert(s_bXInputEnabled);
     SDL_assert(XINPUTGETCAPABILITIES);
     SDL_assert(XINPUTSETSTATE);
-    SDL_assert(userId >= 0);
     SDL_assert(userId < XUSER_MAX_COUNT);
 
     joystick->hwdata->bXInputDevice = SDL_TRUE;
