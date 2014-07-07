@@ -57,6 +57,10 @@
 #include "../../haptic/windows/SDL_xinputhaptic_c.h"    /* For haptic hot plugging */
 
 
+#ifndef DEVICE_NOTIFY_WINDOW_HANDLE
+#define DEVICE_NOTIFY_WINDOW_HANDLE 0x00000000
+#endif
+
 /* local variables */
 static SDL_bool s_bDeviceAdded = SDL_FALSE;
 static SDL_bool s_bDeviceRemoved = SDL_FALSE;
