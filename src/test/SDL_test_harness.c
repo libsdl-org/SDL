@@ -219,11 +219,12 @@ void
 * \param testSuite Suite containing the test case.
 * \param testCase Case to execute.
 * \param execKey Execution key for the fuzzer.
+* \param forceTestRun Force test to run even if test was disabled in suite.
 *
 * \returns Test case result.
 */
 int
-SDLTest_RunTest(SDLTest_TestSuiteReference *testSuite, SDLTest_TestCaseReference *testCase, Uint64 execKey)
+SDLTest_RunTest(SDLTest_TestSuiteReference *testSuite, SDLTest_TestCaseReference *testCase, Uint64 execKey, SDL_bool forceTestRun)
 {
     SDL_TimerID timer = 0;
     int testCaseResult = 0;
@@ -236,12 +237,11 @@ SDLTest_RunTest(SDLTest_TestSuiteReference *testSuite, SDLTest_TestCaseReference
         return TEST_RESULT_SETUP_FAILURE;
     }
 
-    if (!testCase->enabled)
+	if (!testCase->enabled && forceTestRun == SDL_FALSE)
     {
         SDLTest_Log((char *)SDLTest_FinalResultFormat, "Test", testCase->name, "Skipped (Disabled)");
         return TEST_RESULT_SKIPPED;
     }
-
 
     /* Initialize fuzzer */
     SDLTest_FuzzerInit(execKey);
@@ -386,6 +386,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
     char *suiteFilterName = NULL;
     int testFilter = 0;
     char *testFilterName = NULL;
+	SDL_bool forceTestRun = SDL_FALSE;
     int testResult = 0;
     int runResult = 0;
     Uint32 totalTestFailedCount = 0;
@@ -536,7 +537,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
                     /* Override 'disabled' flag if we specified a test filter (i.e. force run for debugging) */
                     if (testFilter == 1 && !testCase->enabled) {
                         SDLTest_Log("Force run of disabled test since test filter was set");
-                        testCase->enabled = 1;
+						forceTestRun = SDL_TRUE;
                     }
 
                     /* Take time - test start */
@@ -565,7 +566,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
                         }
 
                         SDLTest_Log("Test Iteration %i: execKey %" SDL_PRIu64, iterationCounter, execKey);
-                        testResult = SDLTest_RunTest(testSuite, testCase, execKey);
+						testResult = SDLTest_RunTest(testSuite, testCase, execKey, forceTestRun);
 
                         if (testResult == TEST_RESULT_PASSED) {
                             testPassedCount++;
