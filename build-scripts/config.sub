@@ -367,11 +367,11 @@ case $basic_machine in
 		basic_machine=i686-pc
 		os=-nacl
 		;;
-    pnacl*)
-        # le32-unknown-pnacl comes from http://www.chromium.org/nativeclient/pnacl/stability-of-the-pnacl-bitcode-abi
-        basic_machine=le32-unknown
-        os=-pnacl
-        ;;
+	pnacl*)
+		# le32-unknown-pnacl comes from http://www.chromium.org/nativeclient/pnacl/stability-of-the-pnacl-bitcode-abi
+		basic_machine=le32-unknown
+		os=-pnacl
+		;;
 	# Object if more than one company name word.
 	*-*-*)
 		echo Invalid configuration \`$1\': machine \`$basic_machine\' not recognized 1>&2
@@ -856,10 +856,10 @@ case $basic_machine in
 		basic_machine=le32-unknown
 		os=-nacl
 		;;
-    pnacl)
-        basic_machine=le32-unknown
-        os=-pnacl
-        ;;
+	pnacl)
+		basic_machine=le32-unknown
+		os=-pnacl
+		;;
 	ncr3000)
 		basic_machine=i486-ncr
 		os=-sysv4
@@ -1404,9 +1404,9 @@ case $os in
 	-nacl*)
 		os=-nacl
 		;;
-    -pnacl*)
-        os=-pnacl
-        ;;
+	-pnacl*)
+		os=-pnacl
+		;;
 	-nto-qnx*)
 		;;
 	-nto*)
@@ -1532,7 +1532,7 @@ case $os in
         os=-nacl
         ;;
 	-pnacl*)
-        os=-pnacl
+		os=-pnacl
 		;;
 	-none)
 		;;
