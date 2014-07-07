@@ -80,7 +80,7 @@ typedef struct GLES2_TextureData
     GLenum pixel_format;
     GLenum pixel_type;
     void *pixel_data;
-    size_t pitch;
+    int pitch;
     /* YV12 texture support */
     SDL_bool yuv;
     GLenum texture_v;
