@@ -700,7 +700,7 @@ static void RunFIFOTest(SDL_bool lock_free)
         }
         len = SDL_strlen(textBuffer);
         SDL_snprintf(textBuffer + len, sizeof(textBuffer) - len, " }\n");
-		SDL_Log(textBuffer);
+		SDL_Log("%s", textBuffer);
     }
     SDL_Log("Readers read %d total events\n", grand_total);
 }
