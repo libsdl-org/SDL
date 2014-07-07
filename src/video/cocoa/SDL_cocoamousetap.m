@@ -67,8 +67,7 @@ Cocoa_MouseTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event
     NSRect windowRect;
     CGPoint eventLocation;
 
-    switch (type)
-    {
+    switch (type) {
         case kCGEventTapDisabledByTimeout:
         case kCGEventTapDisabledByUserInput:
             {

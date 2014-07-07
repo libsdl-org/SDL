@@ -120,8 +120,7 @@ Cocoa_CreateSystemCursor(SDL_SystemCursor id)
     NSCursor *nscursor = NULL;
     SDL_Cursor *cursor = NULL;
 
-    switch(id)
-    {
+    switch(id) {
     case SDL_SYSTEM_CURSOR_ARROW:
         nscursor = [NSCursor arrowCursor];
         break;
@@ -212,8 +211,7 @@ static void
 Cocoa_WarpMouse(SDL_Window * window, int x, int y)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-    if ([data->listener isMoving])
-    {
+    if ([data->listener isMoving]) {
         DLog("Postponing warp, window being moved.");
         [data->listener setPendingMoveX:x
                                       Y:y];
@@ -370,8 +368,7 @@ Cocoa_InitMouse(_THIS)
 void
 Cocoa_HandleMouseEvent(_THIS, NSEvent *event)
 {
-    switch ([event type])
-    {
+    switch ([event type]) {
         case NSMouseMoved:
         case NSLeftMouseDragged:
         case NSRightMouseDragged:
@@ -415,8 +412,7 @@ Cocoa_HandleMouseEvent(_THIS, NSEvent *event)
     float deltaX = [event deltaX];
     float deltaY = [event deltaY];
 
-    if (seenWarp)
-    {
+    if (seenWarp) {
         deltaX += (lastMoveX - driverdata->lastWarpX);
         deltaY += ((CGDisplayPixelsHigh(kCGDirectMainDisplay) - lastMoveY) - driverdata->lastWarpY);
 

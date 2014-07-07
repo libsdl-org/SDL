@@ -362,8 +362,7 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
        !!! FIXME:   http://bugzilla.libsdl.org/show_bug.cgi?id=1825
     */
     windows = [NSApp orderedWindows];
-    for (NSWindow *win in windows)
-    {
+    for (NSWindow *win in windows) {
         if (win == window) {
             continue;
         }
@@ -386,8 +385,7 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 
 - (void)windowDidFinishMoving
 {
-    if ([self isMoving])
-    {
+    if ([self isMoving]) {
         isMoving = NO;
 
         SDL_Mouse *mouse = SDL_GetMouse();
@@ -859,48 +857,29 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 
 - (void)touchesBeganWithEvent:(NSEvent *) theEvent
 {
-    [self handleTouches:COCOA_TOUCH_DOWN withEvent:theEvent];
+    [self handleTouches:NSTouchPhaseBegan withEvent:theEvent];
 }
 
 - (void)touchesMovedWithEvent:(NSEvent *) theEvent
 {
-    [self handleTouches:COCOA_TOUCH_MOVE withEvent:theEvent];
+    [self handleTouches:NSTouchPhaseMoved withEvent:theEvent];
 }
 
 - (void)touchesEndedWithEvent:(NSEvent *) theEvent
 {
-    [self handleTouches:COCOA_TOUCH_UP withEvent:theEvent];
+    [self handleTouches:NSTouchPhaseEnded withEvent:theEvent];
 }
 
 - (void)touchesCancelledWithEvent:(NSEvent *) theEvent
 {
-    [self handleTouches:COCOA_TOUCH_CANCELLED withEvent:theEvent];
+    [self handleTouches:NSTouchPhaseCancelled withEvent:theEvent];
 }
 
-- (void)handleTouches:(cocoaTouchType)type withEvent:(NSEvent *)event
+- (void)handleTouches:(NSTouchPhase) phase withEvent:(NSEvent *) theEvent
 {
-    NSSet *touches = 0;
-    NSEnumerator *enumerator;
-    NSTouch *touch;
+    NSSet *touches = [theEvent touchesMatchingPhase:phase inView:nil];
 
-    switch (type) {
-        case COCOA_TOUCH_DOWN:
-            touches = [event touchesMatchingPhase:NSTouchPhaseBegan inView:nil];
-            break;
-        case COCOA_TOUCH_UP:
-            touches = [event touchesMatchingPhase:NSTouchPhaseEnded inView:nil];
-            break;
-        case COCOA_TOUCH_CANCELLED:
-            touches = [event touchesMatchingPhase:NSTouchPhaseCancelled inView:nil];
-            break;
-        case COCOA_TOUCH_MOVE:
-            touches = [event touchesMatchingPhase:NSTouchPhaseMoved inView:nil];
-            break;
-    }
-
-    enumerator = [touches objectEnumerator];
-    touch = (NSTouch*)[enumerator nextObject];
-    while (touch) {
+    for (NSTouch *touch in touches) {
         const SDL_TouchID touchId = (SDL_TouchID)(intptr_t)[touch device];
         if (!SDL_GetTouch(touchId)) {
             if (SDL_AddTouch(touchId, "") < 0) {
@@ -914,20 +893,20 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
         /* Make the origin the upper left instead of the lower left */
         y = 1.0f - y;
 
-        switch (type) {
-        case COCOA_TOUCH_DOWN:
+        switch (phase) {
+        case NSTouchPhaseBegan:
             SDL_SendTouch(touchId, fingerId, SDL_TRUE, x, y, 1.0f);
             break;
-        case COCOA_TOUCH_UP:
-        case COCOA_TOUCH_CANCELLED:
+        case NSTouchPhaseEnded:
+        case NSTouchPhaseCancelled:
             SDL_SendTouch(touchId, fingerId, SDL_FALSE, x, y, 1.0f);
             break;
-        case COCOA_TOUCH_MOVE:
+        case NSTouchPhaseMoved:
             SDL_SendTouchMotion(touchId, fingerId, x, y, 1.0f);
             break;
+        default:
+            break;
         }
-
-        touch = (NSTouch*)[enumerator nextObject];
     }
 }
 
@@ -1065,23 +1044,20 @@ Cocoa_CreateWindow(_THIS, SDL_Window * window)
     NSRect rect;
     SDL_Rect bounds;
     unsigned int style;
+    NSArray *screens = [NSScreen screens];
 
     Cocoa_GetDisplayBounds(_this, display, &bounds);
     rect.origin.x = window->x;
     rect.origin.y = window->y;
     rect.size.width = window->w;
     rect.size.height = window->h;
-    ConvertNSRect([[NSScreen screens] objectAtIndex:0], (window->flags & FULLSCREEN_MASK), &rect);
+    ConvertNSRect([screens objectAtIndex:0], (window->flags & FULLSCREEN_MASK), &rect);
 
     style = GetWindowStyle(window);
 
     /* Figure out which screen to place this window */
-    NSArray *screens = [NSScreen screens];
     NSScreen *screen = nil;
-    NSScreen *candidate;
-    int i, count = [screens count];
-    for (i = 0; i < count; ++i) {
-        candidate = [screens objectAtIndex:i];
+    for (NSScreen *candidate in screens) {
         NSRect screenRect = [candidate frame];
         if (rect.origin.x >= screenRect.origin.x &&
             rect.origin.x < screenRect.origin.x + screenRect.size.width &&
@@ -1104,7 +1080,7 @@ Cocoa_CreateWindow(_THIS, SDL_Window * window)
     [nswindow setBackgroundColor:[NSColor blackColor]];
 
     if (videodata->allow_spaces) {
-        SDL_assert(videodata->osversion >= 0x1070);
+        SDL_assert(floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6);
         SDL_assert([nswindow respondsToSelector:@selector(toggleFullScreen:)]);
         /* we put FULLSCREEN_DESKTOP windows in their own Space, without a toggle button or menubar, later */
         if (window->flags & SDL_WINDOW_RESIZABLE) {
