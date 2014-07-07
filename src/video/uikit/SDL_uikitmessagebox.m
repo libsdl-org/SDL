@@ -55,7 +55,7 @@ static SDL_bool s_showingMessageBox = SDL_FALSE;
 
 - (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex;
 {
-    *clickedButtonIndex = buttonIndex;
+    *clickedButtonIndex = (int)buttonIndex;
 }
 
 @end /* UIKit_UIAlertViewDelegate */

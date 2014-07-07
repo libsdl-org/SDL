@@ -142,7 +142,7 @@ SDL_UpdateMouseFocus(SDL_Window * window, int x, int y, Uint32 buttonstate)
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_bool inWindow = SDL_TRUE;
 
-    if (window != NULL && ((window->flags & SDL_WINDOW_MOUSE_CAPTURE) == 0)) {
+    if (window && ((window->flags & SDL_WINDOW_MOUSE_CAPTURE) == 0)) {
         int w, h;
         SDL_GetWindowSize(window, &w, &h);
         if (x < 0 || y < 0 || x >= w || y >= h) {
@@ -247,7 +247,7 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
 
     /* make sure that the pointers find themselves inside the windows,
        unless we have the mouse captured. */
-    if (window != NULL && ((window->flags & SDL_WINDOW_MOUSE_CAPTURE) == 0)) {
+    if (window && ((window->flags & SDL_WINDOW_MOUSE_CAPTURE) == 0)) {
         int x_max = 0, y_max = 0;
 
         // !!! FIXME: shouldn't this be (window) instead of (mouse->focus)?
