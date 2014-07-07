@@ -1544,8 +1544,6 @@ Cocoa_DestroyWindow(_THIS, SDL_Window * window)
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
 
-    window->driverdata = NULL;
-
     if (data) {
         [data->listener close];
         [data->listener release];
@@ -1562,6 +1560,8 @@ Cocoa_DestroyWindow(_THIS, SDL_Window * window)
 
         SDL_free(data);
     }
+    window->driverdata = NULL;
+
     [pool release];
 }
 

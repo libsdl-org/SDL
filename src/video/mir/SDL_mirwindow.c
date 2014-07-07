@@ -149,14 +149,13 @@ MIR_DestroyWindow(_THIS, SDL_Window* window)
     MIR_Data* mir_data = _this->driverdata;
     MIR_Window* mir_window = window->driverdata;
 
-    window->driverdata = NULL;
-
     if (mir_data) {
         SDL_EGL_DestroySurface(_this, mir_window->egl_surface);
         MIR_mir_surface_release_sync(mir_window->surface);
 
         SDL_free(mir_window);
     }
+    window->driverdata = NULL;
 }
 
 SDL_bool
