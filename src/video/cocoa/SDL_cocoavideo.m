@@ -22,13 +22,6 @@
 
 #if SDL_VIDEO_DRIVER_COCOA
 
-#if defined(__APPLE__) && defined(__POWERPC__) && !defined(__APPLE_ALTIVEC__)
-#include <altivec.h>
-#undef bool
-#undef vector
-#undef pixel
-#endif
-
 #include "SDL.h"
 #include "SDL_endian.h"
 #include "SDL_cocoavideo.h"
@@ -75,9 +68,6 @@ Cocoa_CreateDevice(int devindex)
         return NULL;
     }
     device->driverdata = data;
-
-    /* Find out what version of Mac OS X we're running */
-    Gestalt(gestaltSystemVersion, &data->osversion);
 
     /* Set the function pointers */
     device->VideoInit = Cocoa_VideoInit;
@@ -156,7 +146,7 @@ Cocoa_VideoInit(_THIS)
     Cocoa_InitMouse(_this);
 
     const char *hint = SDL_GetHint(SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES);
-    data->allow_spaces = ( (data->osversion >= 0x1070) && (!hint || (*hint != '0')) );
+    data->allow_spaces = ( (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6) && (!hint || (*hint != '0')) );
 
     return 0;
 }

@@ -32,33 +32,7 @@
 /*#define DEBUG_IME NSLog */
 #define DEBUG_IME(...)
 
-#ifndef NX_DEVICERCTLKEYMASK
-    #define NX_DEVICELCTLKEYMASK    0x00000001
-#endif
-#ifndef NX_DEVICELSHIFTKEYMASK
-    #define NX_DEVICELSHIFTKEYMASK  0x00000002
-#endif
-#ifndef NX_DEVICERSHIFTKEYMASK
-    #define NX_DEVICERSHIFTKEYMASK  0x00000004
-#endif
-#ifndef NX_DEVICELCMDKEYMASK
-    #define NX_DEVICELCMDKEYMASK    0x00000008
-#endif
-#ifndef NX_DEVICERCMDKEYMASK
-    #define NX_DEVICERCMDKEYMASK    0x00000010
-#endif
-#ifndef NX_DEVICELALTKEYMASK
-    #define NX_DEVICELALTKEYMASK    0x00000020
-#endif
-#ifndef NX_DEVICERALTKEYMASK
-    #define NX_DEVICERALTKEYMASK    0x00000040
-#endif
-#ifndef NX_DEVICERCTLKEYMASK
-    #define NX_DEVICERCTLKEYMASK    0x00002000
-#endif
-
-@interface SDLTranslatorResponder : NSView <NSTextInput>
-{
+@interface SDLTranslatorResponder : NSView <NSTextInput> {
     NSString *_markedText;
     NSRange   _markedRange;
     NSRange   _selectedRange;
@@ -83,10 +57,11 @@
 
     /* Could be NSString or NSAttributedString, so we have
      * to test and convert it before return as SDL event */
-    if ([aString isKindOfClass: [NSAttributedString class]])
+    if ([aString isKindOfClass: [NSAttributedString class]]) {
         str = [[aString string] UTF8String];
-    else
+    } else {
         str = [aString UTF8String];
+    }
 
     SDL_SendKeyboardText(str);
 }
@@ -117,17 +92,16 @@
 - (void) setMarkedText:(id) aString
          selectedRange:(NSRange) selRange
 {
-    if ([aString isKindOfClass: [NSAttributedString class]])
+    if ([aString isKindOfClass: [NSAttributedString class]]) {
         aString = [aString string];
+    }
 
-    if ([aString length] == 0)
-    {
+    if ([aString length] == 0) {
         [self unmarkText];
         return;
     }
 
-    if (_markedText != aString)
-    {
+    if (_markedText != aString) {
         [_markedText release];
         _markedText = [aString retain];
     }
@@ -443,10 +417,11 @@ UpdateKeymap(SDL_VideoData *data)
 
     /* Try Unicode data first */
     CFDataRef uchrDataRef = TISGetInputSourceProperty(key_layout, kTISPropertyUnicodeKeyLayoutData);
-    if (uchrDataRef)
+    if (uchrDataRef) {
         chr_data = CFDataGetBytePtr(uchrDataRef);
-    else
+    } else {
         goto cleanup;
+    }
 
     if (chr_data) {
         UInt32 keyboard_type = LMGetKbdType();
@@ -470,8 +445,9 @@ UpdateKeymap(SDL_VideoData *data)
                                   0, keyboard_type,
                                   kUCKeyTranslateNoDeadKeysMask,
                                   &dead_key_state, 8, &len, s);
-            if (err != noErr)
+            if (err != noErr) {
                 continue;
+            }
 
             if (len > 0 && s[0] != 0x10) {
                 keymap[scancode] = s[0];
@@ -508,8 +484,9 @@ Cocoa_StartTextInput(_THIS)
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     SDL_Window *window = SDL_GetKeyboardFocus();
     NSWindow *nswindow = nil;
-    if (window)
+    if (window) {
         nswindow = ((SDL_WindowData*)window->driverdata)->nswindow;
+    }
 
     NSView *parentView = [nswindow contentView];
 
@@ -523,8 +500,7 @@ Cocoa_StartTextInput(_THIS)
             [[SDLTranslatorResponder alloc] initWithFrame: NSMakeRect(0.0, 0.0, 0.0, 0.0)];
     }
 
-    if (![[data->fieldEdit superview] isEqual: parentView])
-    {
+    if (![[data->fieldEdit superview] isEqual: parentView]) {
         /* DEBUG_IME(@"add fieldEdit to window contentView"); */
         [data->fieldEdit removeFromSuperview];
         [parentView addSubview: data->fieldEdit];
@@ -554,8 +530,8 @@ Cocoa_SetTextInputRect(_THIS, SDL_Rect *rect)
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
 
     if (!rect) {
-    SDL_InvalidParamError("rect");
-    return;
+        SDL_InvalidParamError("rect");
+        return;
     }
 
     [data->fieldEdit setInputRect: rect];
@@ -579,10 +555,10 @@ Cocoa_HandleKeyEvent(_THIS, NSEvent *event)
         /* see comments in SDL_cocoakeys.h */
         scancode = 60 - scancode;
     }
+
     if (scancode < SDL_arraysize(darwin_scancode_table)) {
         code = darwin_scancode_table[scancode];
-    }
-    else {
+    } else {
         /* Hmm, does this ever happen?  If so, need to extend the keymap... */
         code = SDL_SCANCODE_UNKNOWN;
     }

@@ -97,13 +97,7 @@ typedef enum
 -(void) touchesCancelledWithEvent:(NSEvent *) theEvent;
 
 /* Touch event handling */
-typedef enum {
-    COCOA_TOUCH_DOWN,
-    COCOA_TOUCH_UP,
-    COCOA_TOUCH_MOVE,
-    COCOA_TOUCH_CANCELLED
-} cocoaTouchType;
--(void) handleTouches:(cocoaTouchType)type withEvent:(NSEvent*) event;
+-(void) handleTouches:(NSTouchPhase) phase withEvent:(NSEvent*) theEvent;
 
 @end
 /* *INDENT-ON* */

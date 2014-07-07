@@ -30,7 +30,8 @@
 #include "SDL_assert.h"
 
 SDL_WindowShaper*
-Cocoa_CreateShaper(SDL_Window* window) {
+Cocoa_CreateShaper(SDL_Window* window)
+{
     SDL_WindowData* windata = (SDL_WindowData*)window->driverdata;
     [windata->nswindow setOpaque:NO];
 
@@ -63,7 +64,8 @@ typedef struct {
 } SDL_CocoaClosure;
 
 void
-ConvertRects(SDL_ShapeTree* tree,void* closure) {
+ConvertRects(SDL_ShapeTree* tree, void* closure)
+{
     SDL_CocoaClosure* data = (SDL_CocoaClosure*)closure;
     if(tree->kind == OpaqueShape) {
         NSRect rect = NSMakeRect(tree->data.shape.x,data->window->h - tree->data.shape.y,tree->data.shape.w,tree->data.shape.h);
@@ -72,7 +74,8 @@ ConvertRects(SDL_ShapeTree* tree,void* closure) {
 }
 
 int
-Cocoa_SetWindowShape(SDL_WindowShaper *shaper,SDL_Surface *shape,SDL_WindowShapeMode *shape_mode) {
+Cocoa_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_WindowShapeMode *shape_mode)
+{
     SDL_ShapeData* data = (SDL_ShapeData*)shaper->driverdata;
     SDL_WindowData* windata = (SDL_WindowData*)shaper->window->driverdata;
     SDL_CocoaClosure closure;
@@ -102,7 +105,8 @@ Cocoa_SetWindowShape(SDL_WindowShaper *shaper,SDL_Surface *shape,SDL_WindowShape
 }
 
 int
-Cocoa_ResizeWindowShape(SDL_Window *window) {
+Cocoa_ResizeWindowShape(SDL_Window *window)
+{
     SDL_ShapeData* data = window->shaper->driverdata;
     SDL_assert(data != NULL);
     return 0;

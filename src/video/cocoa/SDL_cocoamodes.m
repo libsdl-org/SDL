@@ -43,10 +43,11 @@ Cocoa_ToggleMenuBar(const BOOL show)
      *  we can just simply do without it on newer OSes...
      */
 #if (MAC_OS_X_VERSION_MIN_REQUIRED < 1070) && !defined(__LP64__)
-    if (show)
+    if (show) {
         ShowMenuBar();
-    else
+    } else {
         HideMenuBar();
+    }
 #endif
 }
 
@@ -60,12 +61,12 @@ Cocoa_ToggleMenuBar(const BOOL show)
 #endif
 
 static BOOL
-IS_SNOW_LEOPARD_OR_LATER(_THIS)
+IS_SNOW_LEOPARD_OR_LATER()
 {
 #if FORCE_OLD_API
     return NO;
 #else
-    return ((((SDL_VideoData *) _this->driverdata))->osversion >= 0x1060);
+    return floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_5;
 #endif
 }
 
@@ -127,7 +128,7 @@ GetDisplayMode(_THIS, const void *moderef, SDL_DisplayMode *mode)
     }
     data->moderef = moderef;
 
-    if (IS_SNOW_LEOPARD_OR_LATER(_this)) {
+    if (IS_SNOW_LEOPARD_OR_LATER()) {
         CGDisplayModeRef vidmode = (CGDisplayModeRef) moderef;
         CFStringRef fmt = CGDisplayModeCopyPixelEncoding(vidmode);
         width = (long) CGDisplayModeGetWidth(vidmode);
@@ -148,7 +149,7 @@ GetDisplayMode(_THIS, const void *moderef, SDL_DisplayMode *mode)
     }
 
     #if MAC_OS_X_VERSION_MIN_REQUIRED < 1060
-    if (!IS_SNOW_LEOPARD_OR_LATER(_this)) {
+    if (!IS_SNOW_LEOPARD_OR_LATER()) {
         CFNumberRef number;
         CFDictionaryRef vidmode = (CFDictionaryRef) moderef;
         number = CFDictionaryGetValue(vidmode, kCGDisplayWidth);
@@ -184,7 +185,7 @@ GetDisplayMode(_THIS, const void *moderef, SDL_DisplayMode *mode)
 static void
 Cocoa_ReleaseDisplayMode(_THIS, const void *moderef)
 {
-    if (IS_SNOW_LEOPARD_OR_LATER(_this)) {
+    if (IS_SNOW_LEOPARD_OR_LATER()) {
         CGDisplayModeRelease((CGDisplayModeRef) moderef);  /* NULL is ok */
     }
 }
@@ -192,7 +193,7 @@ Cocoa_ReleaseDisplayMode(_THIS, const void *moderef)
 static void
 Cocoa_ReleaseDisplayModeList(_THIS, CFArrayRef modelist)
 {
-    if (IS_SNOW_LEOPARD_OR_LATER(_this)) {
+    if (IS_SNOW_LEOPARD_OR_LATER()) {
         CFRelease(modelist);  /* NULL is ok */
     }
 }
@@ -257,12 +258,12 @@ Cocoa_InitModes(_THIS)
                 continue;
             }
 
-            if (IS_SNOW_LEOPARD_OR_LATER(_this)) {
+            if (IS_SNOW_LEOPARD_OR_LATER()) {
                 moderef = CGDisplayCopyDisplayMode(displays[i]);
             }
 
             #if MAC_OS_X_VERSION_MIN_REQUIRED < 1060
-            if (!IS_SNOW_LEOPARD_OR_LATER(_this)) {
+            if (!IS_SNOW_LEOPARD_OR_LATER()) {
                 moderef = CGDisplayCurrentMode(displays[i]);
             }
             #endif
@@ -319,12 +320,12 @@ Cocoa_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
     SDL_DisplayData *data = (SDL_DisplayData *) display->driverdata;
     CFArrayRef modes = NULL;
 
-    if (IS_SNOW_LEOPARD_OR_LATER(_this)) {
+    if (IS_SNOW_LEOPARD_OR_LATER()) {
         modes = CGDisplayCopyAllDisplayModes(data->display, NULL);
     }
 
     #if MAC_OS_X_VERSION_MIN_REQUIRED < 1060
-    if (!IS_SNOW_LEOPARD_OR_LATER(_this)) {
+    if (!IS_SNOW_LEOPARD_OR_LATER()) {
         modes = CGDisplayAvailableModes(data->display);
     }
     #endif
@@ -337,7 +338,7 @@ Cocoa_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
             const void *moderef = CFArrayGetValueAtIndex(modes, i);
             SDL_DisplayMode mode;
             if (GetDisplayMode(_this, moderef, &mode)) {
-                if (IS_SNOW_LEOPARD_OR_LATER(_this)) {
+                if (IS_SNOW_LEOPARD_OR_LATER()) {
                     CGDisplayModeRetain((CGDisplayModeRef) moderef);
                 }
                 SDL_AddDisplayMode(display, &mode);
@@ -351,12 +352,12 @@ Cocoa_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
 static CGError
 Cocoa_SwitchMode(_THIS, CGDirectDisplayID display, const void *mode)
 {
-    if (IS_SNOW_LEOPARD_OR_LATER(_this)) {
+    if (IS_SNOW_LEOPARD_OR_LATER()) {
         return CGDisplaySetDisplayMode(display, (CGDisplayModeRef) mode, NULL);
     }
  
     #if MAC_OS_X_VERSION_MIN_REQUIRED < 1060
-    if (!IS_SNOW_LEOPARD_OR_LATER(_this)) {
+    if (!IS_SNOW_LEOPARD_OR_LATER()) {
         return CGDisplaySwitchToMode(display, (CFDictionaryRef) mode);
     }
     #endif

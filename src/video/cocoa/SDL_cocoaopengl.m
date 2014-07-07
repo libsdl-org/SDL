@@ -35,16 +35,6 @@
 
 #define DEFAULT_OPENGL  "/System/Library/Frameworks/OpenGL.framework/Libraries/libGL.dylib"
 
-#ifndef NSOpenGLPFAOpenGLProfile
-#define NSOpenGLPFAOpenGLProfile 99
-#endif
-#ifndef NSOpenGLProfileVersionLegacy
-#define NSOpenGLProfileVersionLegacy 0x1000
-#endif
-#ifndef NSOpenGLProfileVersion3_2Core
-#define NSOpenGLProfileVersion3_2Core 0x3200
-#endif
-
 @implementation SDLOpenGLContext : NSOpenGLContext
 
 - (id)initWithFormat:(NSOpenGLPixelFormat *)format
@@ -161,10 +151,10 @@ Cocoa_GL_UnloadLibrary(_THIS)
 SDL_GLContext
 Cocoa_GL_CreateContext(_THIS, SDL_Window * window)
 {
-    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
     NSAutoreleasePool *pool;
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
     SDL_DisplayData *displaydata = (SDL_DisplayData *)display->driverdata;
+    SDL_bool lion_or_later = floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6;
     NSOpenGLPixelFormatAttribute attr[32];
     NSOpenGLPixelFormat *fmt;
     SDLOpenGLContext *context;
@@ -178,7 +168,7 @@ Cocoa_GL_CreateContext(_THIS, SDL_Window * window)
         SDL_SetError ("OpenGL ES is not supported on this platform");
         return NULL;
     }
-    if ((_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_CORE) && (data->osversion < 0x1070)) {
+    if ((_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_CORE) && !lion_or_later) {
         SDL_SetError ("OpenGL Core Profile is not supported on this platform version");
         return NULL;
     }
@@ -186,7 +176,7 @@ Cocoa_GL_CreateContext(_THIS, SDL_Window * window)
     pool = [[NSAutoreleasePool alloc] init];
 
     /* specify a profile if we're on Lion (10.7) or later. */
-    if (data->osversion >= 0x1070) {
+    if (lion_or_later) {
         NSOpenGLPixelFormatAttribute profile = NSOpenGLProfileVersionLegacy;
         if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_CORE) {
             profile = NSOpenGLProfileVersion3_2Core;

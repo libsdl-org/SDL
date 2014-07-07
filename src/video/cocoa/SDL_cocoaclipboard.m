@@ -28,9 +28,7 @@
 static NSString *
 GetTextFormat(_THIS)
 {
-    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
-
-    if (data->osversion >= 0x1060) {
+    if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_5) {
         return NSPasteboardTypeString;
     } else {
         return NSStringPboardType;
@@ -96,7 +94,7 @@ Cocoa_HasClipboardText(_THIS)
     char *text = Cocoa_GetClipboardText(_this);
     if (text) {
         result = text[0] != '\0' ? SDL_TRUE : SDL_FALSE;
-    SDL_free(text);
+        SDL_free(text);
     }
     return result;
 }

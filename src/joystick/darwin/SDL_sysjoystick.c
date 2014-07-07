@@ -406,17 +406,13 @@ JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender, IOHIDDevic
     s_bDeviceAdded = SDL_TRUE;
 
     /* Add device to the end of the list */
-    if ( !gpDeviceList )
-    {
+    if ( !gpDeviceList ) {
         gpDeviceList = device;
-    }
-    else
-    {
+    } else {
         recDevice *curdevice;
 
         curdevice = gpDeviceList;
-        while ( curdevice->pNext )
-        {
+        while ( curdevice->pNext ) {
             curdevice = curdevice->pNext;
         }
         curdevice->pNext = device;

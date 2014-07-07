@@ -37,8 +37,7 @@ FILE* SDL_OpenFPFromBundleOrFallback(const char *file, const char *mode)
     FILE* fp = NULL;
 
     /* If the file mode is writable, skip all the bundle stuff because generally the bundle is read-only. */
-    if(strcmp("r", mode) && strcmp("rb", mode))
-    {
+    if(strcmp("r", mode) && strcmp("rb", mode)) {
         return fopen(file, mode);
     }
 
@@ -51,12 +50,10 @@ FILE* SDL_OpenFPFromBundleOrFallback(const char *file, const char *mode)
     NSString* ns_string_file_component = [file_manager stringWithFileSystemRepresentation:file length:strlen(file)];
 
     NSString* full_path_with_file_to_try = [resource_path stringByAppendingPathComponent:ns_string_file_component];
-    if([file_manager fileExistsAtPath:full_path_with_file_to_try])
-    {
+    if([file_manager fileExistsAtPath:full_path_with_file_to_try]) {
         fp = fopen([full_path_with_file_to_try fileSystemRepresentation], mode);
     }
-    else
-    {
+    else {
         fp = fopen(file, mode);
     }
 

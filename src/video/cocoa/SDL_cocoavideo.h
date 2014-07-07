@@ -45,7 +45,6 @@
 
 typedef struct SDL_VideoData
 {
-    SInt32 osversion;
     int allow_spaces;
     unsigned int modifierFlags;
     void *key_layout;
