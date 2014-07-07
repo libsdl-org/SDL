@@ -10,6 +10,13 @@
 		1D3623EC0D0F72F000981E51 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D3623EB0D0F72F000981E51 /* CoreGraphics.framework */; };
 		1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
 		1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
+		FA8B4BA31967070A00F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BA21967070A00F8EB7C /* CoreMotion.framework */; };
+		FA8B4BA41967071300F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BA21967070A00F8EB7C /* CoreMotion.framework */; };
+		FA8B4BA51967071A00F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BA21967070A00F8EB7C /* CoreMotion.framework */; };
+		FA8B4BA61967072100F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BA21967070A00F8EB7C /* CoreMotion.framework */; };
+		FA8B4BA71967072800F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BA21967070A00F8EB7C /* CoreMotion.framework */; };
+		FA8B4BA81967073400F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BA21967070A00F8EB7C /* CoreMotion.framework */; };
+		FA8B4BA91967073D00F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BA21967070A00F8EB7C /* CoreMotion.framework */; };
 		FD15FD690E086911003BDF25 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
 		FD15FD6A0E086911003BDF25 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
 		FD15FD6B0E086911003BDF25 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D3623EB0D0F72F000981E51 /* CoreGraphics.framework */; };
@@ -169,6 +176,7 @@
 		1D6058910D05DD3D006BFB54 /* Rectangles.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Rectangles.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1DF5F4DF0D08C38300B7A737 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		FA8B4BA21967070A00F8EB7C /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
 		FD15FCB20E086866003BDF25 /* Happy.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Happy.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FD1B48920E313154007AB34E /* SDL.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL.xcodeproj; path = ../SDL/SDL.xcodeproj; sourceTree = SOURCE_ROOT; };
 		FD5F9BE40E0DEBEA008E885B /* Accel.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Accel.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -209,6 +217,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FD1B48DD0E313255007AB34E /* libSDL2.a in Frameworks */,
+				FA8B4BA31967070A00F8EB7C /* CoreMotion.framework in Frameworks */,
 				FDF0D7AB0E12D53800247964 /* CoreAudio.framework in Frameworks */,
 				FDF0D7AC0E12D53800247964 /* AudioToolbox.framework in Frameworks */,
 				1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */,
@@ -224,6 +233,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FD1B49980E313261007AB34E /* libSDL2.a in Frameworks */,
+				FA8B4BA41967071300F8EB7C /* CoreMotion.framework in Frameworks */,
 				FDF0D7A90E12D53500247964 /* CoreAudio.framework in Frameworks */,
 				FDF0D7AA0E12D53500247964 /* AudioToolbox.framework in Frameworks */,
 				FD15FD690E086911003BDF25 /* Foundation.framework in Frameworks */,
@@ -239,6 +249,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FD1B499C0E313269007AB34E /* libSDL2.a in Frameworks */,
+				FA8B4BA51967071A00F8EB7C /* CoreMotion.framework in Frameworks */,
 				FDF0D7A70E12D53200247964 /* CoreAudio.framework in Frameworks */,
 				FDF0D7A80E12D53200247964 /* AudioToolbox.framework in Frameworks */,
 				FD5F9CEB0E0E0741008E885B /* OpenGLES.framework in Frameworks */,
@@ -254,6 +265,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FDB652000E43D1F300F688B5 /* libSDL2.a in Frameworks */,
+				FA8B4BA91967073D00F8EB7C /* CoreMotion.framework in Frameworks */,
 				FDB652020E43D1F300F688B5 /* Foundation.framework in Frameworks */,
 				FDB652030E43D1F300F688B5 /* UIKit.framework in Frameworks */,
 				FDB652040E43D1F300F688B5 /* CoreGraphics.framework in Frameworks */,
@@ -269,6 +281,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FD1B499E0E31326C007AB34E /* libSDL2.a in Frameworks */,
+				FA8B4BA61967072100F8EB7C /* CoreMotion.framework in Frameworks */,
 				FDF0D7950E12D52900247964 /* CoreAudio.framework in Frameworks */,
 				FDF0D7960E12D52900247964 /* AudioToolbox.framework in Frameworks */,
 				FDC202E60E107B1200ABAC90 /* Foundation.framework in Frameworks */,
@@ -284,6 +297,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FD1B49A20E313273007AB34E /* libSDL2.a in Frameworks */,
+				FA8B4BA81967073400F8EB7C /* CoreMotion.framework in Frameworks */,
 				FDC52ED40E2843D6008D768C /* Foundation.framework in Frameworks */,
 				FDC52ED50E2843D6008D768C /* UIKit.framework in Frameworks */,
 				FDC52ED60E2843D6008D768C /* CoreGraphics.framework in Frameworks */,
@@ -299,6 +313,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FD1B49A00E313270007AB34E /* libSDL2.a in Frameworks */,
+				FA8B4BA71967072800F8EB7C /* CoreMotion.framework in Frameworks */,
 				FDF0D69C0E12D05400247964 /* Foundation.framework in Frameworks */,
 				FDF0D69D0E12D05400247964 /* UIKit.framework in Frameworks */,
 				FDF0D69E0E12D05400247964 /* CoreGraphics.framework in Frameworks */,
@@ -352,6 +367,7 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				FA8B4BA21967070A00F8EB7C /* CoreMotion.framework */,
 				FDF0D7220E12D31800247964 /* AudioToolbox.framework */,
 				FDB96EDF0DEFC9DC00FAF19F /* QuartzCore.framework */,
 				FDB96ED30DEFC9C700FAF19F /* OpenGLES.framework */,
@@ -799,14 +815,9 @@
 		C01FCF4F08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = (
-					armv6,
-					armv7,
-				);
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_OPTIMIZATION_LEVEL = 0;
 				HEADER_SEARCH_PATHS = ../../include;
-				IPHONEOS_DEPLOYMENT_TARGET = 3.1.3;
 				PRELINK_LIBS = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";
@@ -816,13 +827,8 @@
 		C01FCF5008A954540054247B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = (
-					armv6,
-					armv7,
-				);
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				HEADER_SEARCH_PATHS = ../../include;
-				IPHONEOS_DEPLOYMENT_TARGET = 3.1.3;
 				PRELINK_LIBS = "";
 				SDKROOT = iphoneos;
 				TARGETED_DEVICE_FAMILY = "1,2";

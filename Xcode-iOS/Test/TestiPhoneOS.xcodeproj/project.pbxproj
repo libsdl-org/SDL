@@ -65,6 +65,29 @@
 		AAE7DFAC14CBB54E00DF1A0E /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A89D0E2D111A00EA573E /* Foundation.framework */; };
 		AAE7DFAD14CBB54E00DF1A0E /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A89E0E2D111A00EA573E /* CoreAudio.framework */; };
 		AAE7DFB514CBB5F700DF1A0E /* testrendertarget.c in Sources */ = {isa = PBXBuildFile; fileRef = AAE7DFB414CBB5F700DF1A0E /* testrendertarget.c */; };
+		FA8B4BAD1967076F00F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BAC1967076F00F8EB7C /* CoreMotion.framework */; };
+		FA8B4BC9196766BC00F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BAC1967076F00F8EB7C /* CoreMotion.framework */; };
+		FA8B4BCD196766BF00F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BAC1967076F00F8EB7C /* CoreMotion.framework */; };
+		FA8B4BCE196766C100F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BAC1967076F00F8EB7C /* CoreMotion.framework */; };
+		FA8B4BCF196766C400F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BAC1967076F00F8EB7C /* CoreMotion.framework */; };
+		FA8B4BD0196766C600F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BAC1967076F00F8EB7C /* CoreMotion.framework */; };
+		FA8B4BD1196766C900F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BAC1967076F00F8EB7C /* CoreMotion.framework */; };
+		FA8B4BD2196766CB00F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BAC1967076F00F8EB7C /* CoreMotion.framework */; };
+		FA8B4BD3196766CE00F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BAC1967076F00F8EB7C /* CoreMotion.framework */; };
+		FA8B4BD4196766D100F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BAC1967076F00F8EB7C /* CoreMotion.framework */; };
+		FA8B4BD5196766D400F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BAC1967076F00F8EB7C /* CoreMotion.framework */; };
+		FA8B4BD6196766D700F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BAC1967076F00F8EB7C /* CoreMotion.framework */; };
+		FA8B4BD7196766DA00F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BAC1967076F00F8EB7C /* CoreMotion.framework */; };
+		FA8B4BD8196766DD00F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BAC1967076F00F8EB7C /* CoreMotion.framework */; };
+		FA8B4BD9196766E000F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BAC1967076F00F8EB7C /* CoreMotion.framework */; };
+		FA8B4BDA196766E200F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BAC1967076F00F8EB7C /* CoreMotion.framework */; };
+		FA8B4BDB196766E500F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BAC1967076F00F8EB7C /* CoreMotion.framework */; };
+		FA8B4BDC196766E800F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BAC1967076F00F8EB7C /* CoreMotion.framework */; };
+		FA8B4BDD196766EB00F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BAC1967076F00F8EB7C /* CoreMotion.framework */; };
+		FA8B4BDE196766EE00F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BAC1967076F00F8EB7C /* CoreMotion.framework */; };
+		FA8B4BDF196766F100F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BAC1967076F00F8EB7C /* CoreMotion.framework */; };
+		FA8B4BE0196766F400F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BAC1967076F00F8EB7C /* CoreMotion.framework */; };
+		FA8B4BE1196766F600F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BAC1967076F00F8EB7C /* CoreMotion.framework */; };
 		FDA8A79C0E2D0F9300EA573E /* testwm2.c in Sources */ = {isa = PBXBuildFile; fileRef = FDA8A75F0E2D0F1600EA573E /* testwm2.c */; };
 		FDA8A89F0E2D111A00EA573E /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A8980E2D111A00EA573E /* AudioToolbox.framework */; };
 		FDA8A8A00E2D111A00EA573E /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A8990E2D111A00EA573E /* QuartzCore.framework */; };
@@ -236,13 +259,6 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		0466EE6F11E565E4000198A4 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = FD1B48AC0E3131CA007AB34E /* SDL.xcodeproj */;
-			proxyType = 2;
-			remoteGlobalIDString = 006E982211955059001DE610;
-			remoteInfo = testsdl;
-		};
 		AA1EE451176059230029C7A5 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = AA1EE44D176059220029C7A5 /* SDL2test.xcodeproj */;
@@ -272,6 +288,7 @@
 		AAE7DF4514CBB43900DF1A0E /* testscale.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testscale.c; path = ../../test/testscale.c; sourceTree = "<group>"; };
 		AAE7DFB114CBB54E00DF1A0E /* testrendertarget.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testrendertarget.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AAE7DFB414CBB5F700DF1A0E /* testrendertarget.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testrendertarget.c; path = ../../test/testrendertarget.c; sourceTree = "<group>"; };
+		FA8B4BAC1967076F00F8EB7C /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
 		FD1B48AC0E3131CA007AB34E /* SDL.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL.xcodeproj; path = ../SDL/SDL.xcodeproj; sourceTree = SOURCE_ROOT; };
 		FDA8A7410E2D0F1600EA573E /* testaudioinfo.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testaudioinfo.c; path = ../../test/testaudioinfo.c; sourceTree = SOURCE_ROOT; };
 		FDA8A7470E2D0F1600EA573E /* testerror.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testerror.c; path = ../../test/testerror.c; sourceTree = SOURCE_ROOT; };
@@ -330,6 +347,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				046CEF7B13254F23007AD51D /* libSDL2.a in Frameworks */,
+				FA8B4BD1196766C900F8EB7C /* CoreMotion.framework in Frameworks */,
 				046CEF7C13254F23007AD51D /* AudioToolbox.framework in Frameworks */,
 				046CEF7D13254F23007AD51D /* QuartzCore.framework in Frameworks */,
 				046CEF7E13254F23007AD51D /* OpenGLES.framework in Frameworks */,
@@ -346,6 +364,7 @@
 			files = (
 				AA1EE470176059D00029C7A5 /* libSDL2test.a in Frameworks */,
 				047A63E213285C3200CD7973 /* libSDL2.a in Frameworks */,
+				FA8B4BAD1967076F00F8EB7C /* CoreMotion.framework in Frameworks */,
 				047A63E313285C3200CD7973 /* AudioToolbox.framework in Frameworks */,
 				047A63E413285C3200CD7973 /* QuartzCore.framework in Frameworks */,
 				047A63E513285C3200CD7973 /* OpenGLES.framework in Frameworks */,
@@ -362,6 +381,7 @@
 			files = (
 				AA1EE47817605BF60029C7A5 /* libSDL2test.a in Frameworks */,
 				FDBDE5810E313465006BAC0B /* libSDL2.a in Frameworks */,
+				FA8B4BE0196766F400F8EB7C /* CoreMotion.framework in Frameworks */,
 				FDA8A89F0E2D111A00EA573E /* AudioToolbox.framework in Frameworks */,
 				FDA8A8A00E2D111A00EA573E /* QuartzCore.framework in Frameworks */,
 				FDA8A8A10E2D111A00EA573E /* OpenGLES.framework in Frameworks */,
@@ -377,6 +397,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				56ED0502118A8FE400A56AA6 /* libSDL2.a in Frameworks */,
+				FA8B4BD8196766DD00F8EB7C /* CoreMotion.framework in Frameworks */,
 				56ED0503118A8FE400A56AA6 /* AudioToolbox.framework in Frameworks */,
 				56ED0504118A8FE400A56AA6 /* QuartzCore.framework in Frameworks */,
 				56ED0505118A8FE400A56AA6 /* OpenGLES.framework in Frameworks */,
@@ -393,6 +414,7 @@
 			files = (
 				AA1EE47617605B9E0029C7A5 /* libSDL2test.a in Frameworks */,
 				AAE7DEE114CBB1E100DF1A0E /* libSDL2.a in Frameworks */,
+				FA8B4BDA196766E200F8EB7C /* CoreMotion.framework in Frameworks */,
 				AAE7DEE214CBB1E100DF1A0E /* AudioToolbox.framework in Frameworks */,
 				AAE7DEE314CBB1E100DF1A0E /* QuartzCore.framework in Frameworks */,
 				AAE7DEE414CBB1E100DF1A0E /* OpenGLES.framework in Frameworks */,
@@ -409,6 +431,7 @@
 			files = (
 				AA1EE47517605B930029C7A5 /* libSDL2test.a in Frameworks */,
 				AAE7DFA614CBB54E00DF1A0E /* libSDL2.a in Frameworks */,
+				FA8B4BD9196766E000F8EB7C /* CoreMotion.framework in Frameworks */,
 				AAE7DFA714CBB54E00DF1A0E /* AudioToolbox.framework in Frameworks */,
 				AAE7DFA814CBB54E00DF1A0E /* QuartzCore.framework in Frameworks */,
 				AAE7DFA914CBB54E00DF1A0E /* OpenGLES.framework in Frameworks */,
@@ -424,6 +447,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FDBDE5850E313495006BAC0B /* libSDL2.a in Frameworks */,
+				FA8B4BC9196766BC00F8EB7C /* CoreMotion.framework in Frameworks */,
 				FDA8AAB10E2D330F00EA573E /* AudioToolbox.framework in Frameworks */,
 				FDA8AAB20E2D330F00EA573E /* QuartzCore.framework in Frameworks */,
 				FDA8AAB30E2D330F00EA573E /* OpenGLES.framework in Frameworks */,
@@ -439,6 +463,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FDBDE58C0E3134F3006BAC0B /* libSDL2.a in Frameworks */,
+				FA8B4BCD196766BF00F8EB7C /* CoreMotion.framework in Frameworks */,
 				FDAAC3C30E2D47E6001DB1D8 /* AudioToolbox.framework in Frameworks */,
 				FDAAC3C40E2D47E6001DB1D8 /* QuartzCore.framework in Frameworks */,
 				FDAAC3C50E2D47E6001DB1D8 /* OpenGLES.framework in Frameworks */,
@@ -454,6 +479,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FDBDE59B0E31356A006BAC0B /* libSDL2.a in Frameworks */,
+				FA8B4BCF196766C400F8EB7C /* CoreMotion.framework in Frameworks */,
 				FDAAC5910E2D5429001DB1D8 /* AudioToolbox.framework in Frameworks */,
 				FDAAC5920E2D5429001DB1D8 /* QuartzCore.framework in Frameworks */,
 				FDAAC5930E2D5429001DB1D8 /* OpenGLES.framework in Frameworks */,
@@ -469,6 +495,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FDBDE59F0E31358D006BAC0B /* libSDL2.a in Frameworks */,
+				FA8B4BD0196766C600F8EB7C /* CoreMotion.framework in Frameworks */,
 				FDAAC5BF0E2D55B5001DB1D8 /* AudioToolbox.framework in Frameworks */,
 				FDAAC5C00E2D55B5001DB1D8 /* QuartzCore.framework in Frameworks */,
 				FDAAC5C10E2D55B5001DB1D8 /* OpenGLES.framework in Frameworks */,
@@ -485,6 +512,7 @@
 			files = (
 				AA1EE47417605B5C0029C7A5 /* libSDL2test.a in Frameworks */,
 				FDBDE57C0E313445006BAC0B /* libSDL2.a in Frameworks */,
+				FA8B4BD2196766CB00F8EB7C /* CoreMotion.framework in Frameworks */,
 				FDAAC61C0E2D5914001DB1D8 /* AudioToolbox.framework in Frameworks */,
 				FDAAC61D0E2D5914001DB1D8 /* QuartzCore.framework in Frameworks */,
 				FDAAC61E0E2D5914001DB1D8 /* OpenGLES.framework in Frameworks */,
@@ -501,6 +529,7 @@
 			files = (
 				AA1EE47117605A7F0029C7A5 /* libSDL2test.a in Frameworks */,
 				FDC42FF40F0D866D009C87E1 /* libSDL2.a in Frameworks */,
+				FA8B4BCE196766C100F8EB7C /* CoreMotion.framework in Frameworks */,
 				FDC42FF60F0D866D009C87E1 /* AudioToolbox.framework in Frameworks */,
 				FDC42FF70F0D866D009C87E1 /* QuartzCore.framework in Frameworks */,
 				FDC42FF80F0D866D009C87E1 /* OpenGLES.framework in Frameworks */,
@@ -516,6 +545,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FDBDE5A90E3135C0006BAC0B /* libSDL2.a in Frameworks */,
+				FA8B4BDD196766EB00F8EB7C /* CoreMotion.framework in Frameworks */,
 				FDD2C1000E2E4F4B00B7A85F /* AudioToolbox.framework in Frameworks */,
 				FDD2C1010E2E4F4B00B7A85F /* QuartzCore.framework in Frameworks */,
 				FDD2C1020E2E4F4B00B7A85F /* OpenGLES.framework in Frameworks */,
@@ -531,6 +561,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FDBDE5AE0E3135E6006BAC0B /* libSDL2.a in Frameworks */,
+				FA8B4BD3196766CE00F8EB7C /* CoreMotion.framework in Frameworks */,
 				FDD2C1770E2E52C000B7A85F /* AudioToolbox.framework in Frameworks */,
 				FDD2C1780E2E52C000B7A85F /* QuartzCore.framework in Frameworks */,
 				FDD2C1790E2E52C000B7A85F /* OpenGLES.framework in Frameworks */,
@@ -546,6 +577,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FDBDE5B60E3135FE006BAC0B /* libSDL2.a in Frameworks */,
+				FA8B4BD4196766D100F8EB7C /* CoreMotion.framework in Frameworks */,
 				FDD2C19B0E2E534F00B7A85F /* AudioToolbox.framework in Frameworks */,
 				FDD2C19C0E2E534F00B7A85F /* QuartzCore.framework in Frameworks */,
 				FDD2C19D0E2E534F00B7A85F /* OpenGLES.framework in Frameworks */,
@@ -561,6 +593,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FDBDE5BC0E31364D006BAC0B /* libSDL2.a in Frameworks */,
+				FA8B4BD5196766D400F8EB7C /* CoreMotion.framework in Frameworks */,
 				FDD2C4540E2E773800B7A85F /* AudioToolbox.framework in Frameworks */,
 				FDD2C4550E2E773800B7A85F /* QuartzCore.framework in Frameworks */,
 				FDD2C4560E2E773800B7A85F /* OpenGLES.framework in Frameworks */,
@@ -576,6 +609,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FDBDE5C20E313663006BAC0B /* libSDL2.a in Frameworks */,
+				FA8B4BD6196766D700F8EB7C /* CoreMotion.framework in Frameworks */,
 				FDD2C4720E2E77D700B7A85F /* AudioToolbox.framework in Frameworks */,
 				FDD2C4730E2E77D700B7A85F /* QuartzCore.framework in Frameworks */,
 				FDD2C4740E2E77D700B7A85F /* OpenGLES.framework in Frameworks */,
@@ -591,6 +625,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FDBDE5C60E3136F1006BAC0B /* libSDL2.a in Frameworks */,
+				FA8B4BD7196766DA00F8EB7C /* CoreMotion.framework in Frameworks */,
 				FDD2C5010E2E7F4800B7A85F /* AudioToolbox.framework in Frameworks */,
 				FDD2C5020E2E7F4800B7A85F /* QuartzCore.framework in Frameworks */,
 				FDD2C5030E2E7F4800B7A85F /* OpenGLES.framework in Frameworks */,
@@ -606,6 +641,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FDBDE5C80E313702006BAC0B /* libSDL2.a in Frameworks */,
+				FA8B4BDB196766E500F8EB7C /* CoreMotion.framework in Frameworks */,
 				FDD2C51F0E2E807600B7A85F /* AudioToolbox.framework in Frameworks */,
 				FDD2C5200E2E807600B7A85F /* QuartzCore.framework in Frameworks */,
 				FDD2C5210E2E807600B7A85F /* OpenGLES.framework in Frameworks */,
@@ -622,6 +658,7 @@
 			files = (
 				AA1EE47717605BAB0029C7A5 /* libSDL2test.a in Frameworks */,
 				FDBDE5CA0E313712006BAC0B /* libSDL2.a in Frameworks */,
+				FA8B4BDC196766E800F8EB7C /* CoreMotion.framework in Frameworks */,
 				FDD2C5440E2E80E400B7A85F /* AudioToolbox.framework in Frameworks */,
 				FDD2C5450E2E80E400B7A85F /* QuartzCore.framework in Frameworks */,
 				FDD2C5460E2E80E400B7A85F /* OpenGLES.framework in Frameworks */,
@@ -637,6 +674,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FDBDE5CC0E31372B006BAC0B /* libSDL2.a in Frameworks */,
+				FA8B4BDE196766EE00F8EB7C /* CoreMotion.framework in Frameworks */,
 				FDD2C57D0E2E8C7400B7A85F /* AudioToolbox.framework in Frameworks */,
 				FDD2C57E0E2E8C7400B7A85F /* QuartzCore.framework in Frameworks */,
 				FDD2C57F0E2E8C7400B7A85F /* OpenGLES.framework in Frameworks */,
@@ -652,6 +690,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FDBDE5CE0E31373E006BAC0B /* libSDL2.a in Frameworks */,
+				FA8B4BDF196766F100F8EB7C /* CoreMotion.framework in Frameworks */,
 				FDD2C5BB0E2E8CFC00B7A85F /* AudioToolbox.framework in Frameworks */,
 				FDD2C5BC0E2E8CFC00B7A85F /* QuartzCore.framework in Frameworks */,
 				FDD2C5BD0E2E8CFC00B7A85F /* OpenGLES.framework in Frameworks */,
@@ -667,6 +706,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FDBDE5D40E313789006BAC0B /* libSDL2.a in Frameworks */,
+				FA8B4BE1196766F600F8EB7C /* CoreMotion.framework in Frameworks */,
 				FDD2C6EA0E2E959E00B7A85F /* AudioToolbox.framework in Frameworks */,
 				FDD2C6EB0E2E959E00B7A85F /* QuartzCore.framework in Frameworks */,
 				FDD2C6EC0E2E959E00B7A85F /* OpenGLES.framework in Frameworks */,
@@ -735,7 +775,6 @@
 			isa = PBXGroup;
 			children = (
 				FD1B48B80E3131CA007AB34E /* libSDL2.a */,
-				0466EE7011E565E4000198A4 /* testsdl.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -774,6 +813,7 @@
 		FDA8A7C30E2D10FA00EA573E /* Linked Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				FA8B4BAC1967076F00F8EB7C /* CoreMotion.framework */,
 				FDA8A8980E2D111A00EA573E /* AudioToolbox.framework */,
 				FDA8A8990E2D111A00EA573E /* QuartzCore.framework */,
 				FDA8A89A0E2D111A00EA573E /* OpenGLES.framework */,
@@ -1252,13 +1292,6 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
-		0466EE7011E565E4000198A4 /* testsdl.app */ = {
-			isa = PBXReferenceProxy;
-			fileType = wrapper.application;
-			path = testsdl.app;
-			remoteRef = 0466EE6F11E565E4000198A4 /* PBXContainerItemProxy */;
-			sourceTree = BUILT_PRODUCTS_DIR;
-		};
 		AA1EE452176059230029C7A5 /* libSDL2test.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
@@ -1738,14 +1771,9 @@
 		C01FCF4F08A954540054247B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = (
-					armv7,
-					armv6,
-				);
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				GCC_OPTIMIZATION_LEVEL = 0;
 				HEADER_SEARCH_PATHS = ../../include;
-				IPHONEOS_DEPLOYMENT_TARGET = 3.1.3;
 				OTHER_LDFLAGS = "-ObjC";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				SDKROOT = iphoneos;
@@ -1756,13 +1784,8 @@
 		C01FCF5008A954540054247B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ARCHS = (
-					armv7,
-					armv6,
-				);
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				HEADER_SEARCH_PATHS = ../../include;
-				IPHONEOS_DEPLOYMENT_TARGET = 3.1.3;
 				OTHER_LDFLAGS = "-ObjC";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				SDKROOT = iphoneos;

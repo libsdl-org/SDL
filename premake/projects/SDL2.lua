@@ -401,5 +401,6 @@ SDL_project "SDL2"
 			"$(SDKROOT)/CoreGraphics.framework",
 			"$(SDKROOT)/UIKit.framework",
 			"$(SDKROOT)/Foundation.framework",
-			"$(SDKROOT)/CoreAudio.framework"
+			"$(SDKROOT)/CoreAudio.framework",
+			"$(SDKROOT)/CoreMotion.framework"
 		}
