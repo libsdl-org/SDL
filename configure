@@ -23067,7 +23067,7 @@ $as_echo "#define SDL_HAPTIC_XINPUT 1" >>confdefs.h
 $as_echo "#define SDL_HAPTIC_DINPUT 1" >>confdefs.h
 
                 fi
-                SOURCES="$SOURCES $srcdir/src/haptic/windows/SDL_syshaptic.c"
+                SOURCES="$SOURCES $srcdir/src/haptic/windows/*.c"
                 have_haptic=yes
             fi
         fi

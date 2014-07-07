@@ -234,7 +234,6 @@ UpdateXInputJoystickState_OLD(SDL_Joystick * joystick, XINPUT_STATE_EX *pXInputS
     };
     WORD wButtons = pXInputState->Gamepad.wButtons;
     Uint8 button;
-    Uint8 hat = SDL_HAT_CENTERED;
 
     SDL_PrivateJoystickAxis(joystick, 0, (Sint16)pXInputState->Gamepad.sThumbLX);
     SDL_PrivateJoystickAxis(joystick, 1, (Sint16)(-SDL_max(-32767, pXInputState->Gamepad.sThumbLY)));
@@ -377,12 +376,6 @@ SDL_XINPUT_JoystickClose(SDL_Joystick * joystick)
 void
 SDL_XINPUT_JoystickQuit(void)
 {
-}
-
-SDL_bool
-SDL_SYS_IsXInputGamepad_DeviceIndex(int device_index)
-{
-    return SDL_FALSE;
 }
 
 #endif /* SDL_JOYSTICK_XINPUT */

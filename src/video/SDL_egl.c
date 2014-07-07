@@ -69,6 +69,7 @@ if (!_this->egl_data->NAME) \
 }
     
 /* EGL implementation of SDL OpenGL ES support */
+#ifdef EGL_KHR_create_context        
 static int SDL_EGL_HasExtension(_THIS, const char *ext)
 {
     int i;
@@ -100,6 +101,7 @@ static int SDL_EGL_HasExtension(_THIS, const char *ext)
 
     return 0;
 }
+#endif /* EGL_KHR_create_context */
 
 void *
 SDL_EGL_GetProcAddress(_THIS, const char *proc)
@@ -552,21 +554,22 @@ SDL_EGL_DeleteContext(_THIS, SDL_GLContext context)
 EGLSurface *
 SDL_EGL_CreateSurface(_THIS, NativeWindowType nw) 
 {
-    EGLint format;
-    
     if (SDL_EGL_ChooseConfig(_this) != 0) {
         return EGL_NO_SURFACE;
     }
     
 #if __ANDROID__
-    /* Android docs recommend doing this!
-     * Ref: http://developer.android.com/reference/android/app/NativeActivity.html 
-     */
-    _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display,
-                                        _this->egl_data->egl_config, 
-                                        EGL_NATIVE_VISUAL_ID, &format);
+    {
+        /* Android docs recommend doing this!
+         * Ref: http://developer.android.com/reference/android/app/NativeActivity.html 
+         */
+        EGLint format;
+        _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display,
+                                            _this->egl_data->egl_config, 
+                                            EGL_NATIVE_VISUAL_ID, &format);
 
-    ANativeWindow_setBuffersGeometry(nw, 0, 0, format);
+        ANativeWindow_setBuffersGeometry(nw, 0, 0, format);
+    }
 #endif    
     
     return _this->egl_data->eglCreateWindowSurface(
