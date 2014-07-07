@@ -346,7 +346,7 @@ IMA_ADPCM_decode(Uint8 ** audio_buf, Uint32 * audio_len)
     channels = IMA_ADPCM_state.wavefmt.channels;
     if (channels > SDL_arraysize(IMA_ADPCM_state.state)) {
         SDL_SetError("IMA ADPCM decoder can only handle %u channels",
-                     SDL_arraysize(IMA_ADPCM_state.state));
+                     (unsigned int)SDL_arraysize(IMA_ADPCM_state.state));
         return (-1);
     }
     state = IMA_ADPCM_state.state;
