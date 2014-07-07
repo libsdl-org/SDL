@@ -24,7 +24,7 @@
 #define _SDL_windowshaptic_c_h
 
 #include "SDL_thread.h"
-
+#include "../SDL_syshaptic.h"
 #include "../../core/windows/SDL_directx.h"
 #include "../../core/windows/SDL_xinput.h"
 

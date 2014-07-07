@@ -453,31 +453,30 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             /* Mouse data */
             if (inp.header.dwType == RIM_TYPEMOUSE) {
                 if (isRelative) {
-                    RAWMOUSE* mouse = &inp.data.mouse;
+                    RAWMOUSE* rawmouse = &inp.data.mouse;
 
-                    if ((mouse->usFlags & 0x01) == MOUSE_MOVE_RELATIVE) {
-                        SDL_SendMouseMotion(data->window, 0, 1, (int)mouse->lLastX, (int)mouse->lLastY);
+                    if ((rawmouse->usFlags & 0x01) == MOUSE_MOVE_RELATIVE) {
+                        SDL_SendMouseMotion(data->window, 0, 1, (int)rawmouse->lLastX, (int)rawmouse->lLastY);
                     } else {
                         /* synthesize relative moves from the abs position */
                         static SDL_Point initialMousePoint;
                         if (initialMousePoint.x == 0 && initialMousePoint.y == 0) {
-                            initialMousePoint.x = mouse->lLastX;
-                            initialMousePoint.y = mouse->lLastY;
+                            initialMousePoint.x = rawmouse->lLastX;
+                            initialMousePoint.y = rawmouse->lLastY;
                         }
 
-                        SDL_SendMouseMotion(data->window, 0, 1, (int)(mouse->lLastX-initialMousePoint.x), (int)(mouse->lLastY-initialMousePoint.y) );
+                        SDL_SendMouseMotion(data->window, 0, 1, (int)(rawmouse->lLastX-initialMousePoint.x), (int)(rawmouse->lLastY-initialMousePoint.y) );
 
-                        initialMousePoint.x = mouse->lLastX;
-                        initialMousePoint.y = mouse->lLastY;
+                        initialMousePoint.x = rawmouse->lLastX;
+                        initialMousePoint.y = rawmouse->lLastY;
                     }
-                    WIN_CheckRawMouseButtons( mouse->usButtonFlags, data );
+                    WIN_CheckRawMouseButtons(rawmouse->usButtonFlags, data);
                 } else if (isCapture) {
                     /* we check for where Windows thinks the system cursor lives in this case, so we don't really lose mouse accel, etc. */
                     POINT pt;
-                    HWND hwnd = data->hwnd;
                     GetCursorPos(&pt);
                     if (WindowFromPoint(pt) != hwnd) {  /* if in the window, WM_MOUSEMOVE, etc, will cover it. */
-                        ScreenToClient(data->hwnd, &pt);
+                        ScreenToClient(hwnd, &pt);
                         SDL_SendMouseMotion(data->window, 0, 0, (int) pt.x, (int) pt.y);
                         SDL_SendMouseButton(data->window, 0, GetAsyncKeyState(VK_LBUTTON) & 0x8000 ? SDL_PRESSED : SDL_RELEASED, SDL_BUTTON_LEFT);
                         SDL_SendMouseButton(data->window, 0, GetAsyncKeyState(VK_RBUTTON) & 0x8000 ? SDL_PRESSED : SDL_RELEASED, SDL_BUTTON_RIGHT);
@@ -892,7 +891,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             SDL_Window *window = data->window;
             if (window->hit_test) {
                 POINT winpoint = { (int) LOWORD(lParam), (int) HIWORD(lParam) };
-                if (ScreenToClient(data->hwnd, &winpoint)) {
+                if (ScreenToClient(hwnd, &winpoint)) {
                     const SDL_Point point = { (int) winpoint.x, (int) winpoint.y };
                     const SDL_HitTestResult rc = window->hit_test(window, &point, window->hit_test_data);
                     switch (rc) {
@@ -905,6 +904,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                         case SDL_HITTEST_RESIZE_BOTTOM: return HTBOTTOM;
                         case SDL_HITTEST_RESIZE_BOTTOMLEFT: return HTBOTTOMLEFT;
                         case SDL_HITTEST_RESIZE_LEFT: return HTLEFT;
+                        case SDL_HITTEST_NORMAL: return HTCLIENT;
                     }
                 }
                 /* If we didn't return, this will call DefWindowProc below. */

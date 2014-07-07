@@ -258,7 +258,6 @@ WIN_CaptureMouse(SDL_Window *window)
     if (!window) {
         SDL_Window *focusWin = SDL_GetKeyboardFocus();
         if (focusWin) {
-            SDL_WindowData *data = (SDL_WindowData *)focusWin->driverdata;
             WIN_OnWindowEnter(SDL_GetVideoDevice(), focusWin);  /* make sure WM_MOUSELEAVE messages are (re)enabled. */
         }
     }

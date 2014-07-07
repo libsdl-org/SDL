@@ -231,7 +231,7 @@ SetDIerror(const char *function, HRESULT code)
     return SDL_SetError("%s() [%s]: %s", function,
     DXGetErrorString9A(code), DXGetErrorDescription9A(code));
     */
-    return SDL_SetError("%s() DirectX error %d", function, code);
+    return SDL_SetError("%s() DirectX error 0x%8.8lx", function, code);
 }
 
 static SDL_bool
@@ -324,7 +324,7 @@ SDL_DINPUT_JoystickInit(void)
     /* Because we used CoCreateInstance, we need to Initialize it, first. */
     instance = GetModuleHandle(NULL);
     if (instance == NULL) {
-        return SDL_SetError("GetModuleHandle() failed with error code %d.", GetLastError());
+        return SDL_SetError("GetModuleHandle() failed with error code %lu.", GetLastError());
     }
     result = IDirectInput8_Initialize(dinput, instance, DIRECTINPUT_VERSION);
 

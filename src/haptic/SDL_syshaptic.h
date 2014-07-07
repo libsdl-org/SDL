@@ -21,6 +21,9 @@
 
 #include "../SDL_internal.h"
 
+#ifndef _SDL_syshaptic_h
+#define _SDL_syshaptic_h
+
 #include "SDL_haptic.h"
 
 
@@ -205,6 +208,8 @@ extern int SDL_SYS_HapticUnpause(SDL_Haptic * haptic);
  * Returns 0 on success, -1 on error.
  */
 extern int SDL_SYS_HapticStopAll(SDL_Haptic * haptic);
+
+#endif /* _SDL_syshaptic_h */
 
 /* vi: set ts=4 sw=4 expandtab: */
 

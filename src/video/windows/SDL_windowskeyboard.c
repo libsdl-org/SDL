@@ -750,18 +750,16 @@ IME_GetCandidateList(HIMC himc, SDL_VideoData *videodata)
         if (cand_list) {
             size = ImmGetCandidateListW(himc, 0, cand_list, size);
             if (size) {
-                int i = 0;
-                int j = 0;
-                int page_start = 0;
+                UINT i, j;
+                UINT page_start = 0;
                 videodata->ime_candsel = cand_list->dwSelection;
                 videodata->ime_candcount = cand_list->dwCount;
 
                 if (LANG() == LANG_CHS && IME_GetId(videodata, 0)) {
                     const UINT maxcandchar = 18;
-                    UINT i = 0;
                     size_t cchars = 0;
 
-                    for (; i < videodata->ime_candcount; ++i) {
+                    for (i = 0; i < videodata->ime_candcount; ++i) {
                         size_t len = SDL_wcslen((LPWSTR)((DWORD_PTR)cand_list + cand_list->dwOffset[i])) + 1;
                         if (len + cchars > maxcandchar) {
                             if (i > cand_list->dwSelection)
@@ -775,8 +773,7 @@ IME_GetCandidateList(HIMC himc, SDL_VideoData *videodata)
                         }
                     }
                     videodata->ime_candpgsize = i - page_start;
-                }
-                else {
+                } else {
                     videodata->ime_candpgsize = SDL_min(cand_list->dwPageSize, MAX_CANDLIST);
                     page_start = (cand_list->dwSelection / videodata->ime_candpgsize) * videodata->ime_candpgsize;
                 }

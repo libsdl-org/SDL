@@ -258,10 +258,12 @@ ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickGUID *gu
  */
 ControllerMapping_t *SDL_PrivateGetControllerMapping(int device_index)
 {
+#if SDL_JOYSTICK_XINPUT
     if (SDL_SYS_IsXInputGamepad_DeviceIndex(device_index) && s_pXInputMapping) {
         return s_pXInputMapping;
     }
     else
+#endif /* SDL_JOYSTICK_XINPUT */
     {
         SDL_JoystickGUID jGUID = SDL_JoystickGetDeviceGUID(device_index);
         return SDL_PrivateGetControllerMappingForGUID(&jGUID);

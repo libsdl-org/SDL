@@ -2982,7 +2982,7 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
                 if test x$have_dinput = xyes; then
                     AC_DEFINE(SDL_HAPTIC_DINPUT, 1, [ ])
                 fi
-                SOURCES="$SOURCES $srcdir/src/haptic/windows/SDL_syshaptic.c"
+                SOURCES="$SOURCES $srcdir/src/haptic/windows/*.c"
                 have_haptic=yes
             fi
         fi

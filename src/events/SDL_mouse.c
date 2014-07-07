@@ -204,7 +204,6 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
     int posted;
     int xrel;
     int yrel;
-    int x_max = 0, y_max = 0;
 
     if (mouse->relative_mode_warp) {
         int center_x = 0, center_y = 0;
