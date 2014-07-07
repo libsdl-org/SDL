@@ -290,13 +290,12 @@ UIKit_DestroyWindow(_THIS, SDL_Window * window)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
 
-    window->driverdata = NULL;
-
     if (data) {
         [data->viewcontroller release];
         [data->uiwindow release];
         SDL_free(data);
     }
+    window->driverdata = NULL;
 }
 
 SDL_bool
