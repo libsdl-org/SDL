@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# WARNING: You may have to run Clean in Xcode after changing CODE_SIGN_IDENTITY! 
+# WARNING: You may have to run Clean in Xcode after changing CODE_SIGN_IDENTITY!
 
 # Verify that $CODE_SIGN_IDENTITY is set
 if [ -z "$CODE_SIGN_IDENTITY" ] ; then
@@ -14,20 +14,16 @@ if [ -z "$CODE_SIGN_IDENTITY" ] ; then
     fi
 fi
 
-SAVEIFS=$IFS
-IFS=$(echo -en "\n\b")
-
 FRAMEWORK_DIR="${TARGET_BUILD_DIR}"
 
 # Loop through all frameworks
-FRAMEWORKS=`find "${FRAMEWORK_DIR}" -type d -name "*.framework" | sed -e "s/\(.*\)/\1\/Versions\/A\//"`
+FRAMEWORKS=`find "${FRAMEWORK_DIR}" -type d -name "*.framework"`
 RESULT=$?
 if [[ $RESULT != 0 ]] ; then
     exit 1
 fi
 
-echo "Found:"
-echo "${FRAMEWORKS}"
+echo "Found: ${FRAMEWORKS}"
 
 for FRAMEWORK in $FRAMEWORKS;
 do
@@ -38,6 +34,3 @@ do
         exit 1
     fi
 done
-
-# restore $IFS
-IFS=$SAVEIFS
