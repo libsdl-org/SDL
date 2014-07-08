@@ -21847,43 +21847,6 @@ rm -f core conftest.err conftest.$ac_objext \
 $as_echo "$have_sem_timedwait" >&6; }
             fi
 
-            { $as_echo "$as_me:${as_lineno-$LINENO}: checking for pthread_spin_trylock" >&5
-$as_echo_n "checking for pthread_spin_trylock... " >&6; }
-            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-/* Override any GCC internal prototype to avoid an error.
-   Use char because int might match the return type of a GCC
-   builtin and then its argument prototype would still apply.  */
-#ifdef __cplusplus
-extern "C"
-#endif
-char pthread_spin_trylock ();
-int
-main ()
-{
-return pthread_spin_trylock ();
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_link "$LINENO"; then :
-
-              has_pthread_spin_trylock=yes
-
-$as_echo "#define HAVE_PTHREAD_SPINLOCK 1" >>confdefs.h
-
-
-else
-
-              has_pthread_spin_trylock=no
-
-fi
-rm -f core conftest.err conftest.$ac_objext \
-    conftest$ac_exeext conftest.$ac_ext
-            { $as_echo "$as_me:${as_lineno-$LINENO}: result: $has_pthread_spin_trylock" >&5
-$as_echo "$has_pthread_spin_trylock" >&6; }
-
             ac_fn_c_check_header_compile "$LINENO" "pthread_np.h" "ac_cv_header_pthread_np_h" " #include <pthread.h>
 "
 if test "x$ac_cv_header_pthread_np_h" = xyes; then :
