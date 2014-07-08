@@ -23,12 +23,19 @@ if [[ $RESULT != 0 ]] ; then
     exit 1
 fi
 
-echo "Found: ${FRAMEWORKS}"
-
 for FRAMEWORK in $FRAMEWORKS;
 do
+    if [[ "$CONFIGURATION" = "Release" ]]; then
+        echo "Stripping '${FRAMEWORK}'"
+        NAME=$(basename "${FRAMEWORK}" .framework)
+        xcrun strip -x "${FRAMEWORK}/${NAME}"
+        RESULT=$?
+        if [[ $RESULT != 0 ]] ; then
+            exit 1
+        fi
+    fi
     echo "Signing '${FRAMEWORK}'"
-    `codesign -f -v -s "${CODE_SIGN_IDENTITY}" "${FRAMEWORK}"`
+    codesign -f -v -s "${CODE_SIGN_IDENTITY}" "${FRAMEWORK}"
     RESULT=$?
     if [[ $RESULT != 0 ]] ; then
         exit 1
