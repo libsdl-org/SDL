@@ -814,12 +814,24 @@ GLES_RenderDrawPoints(SDL_Renderer * renderer, const SDL_FPoint * points,
                       int count)
 {
     GLES_RenderData *data = (GLES_RenderData *) renderer->driverdata;
+    GLfloat *vertices;
+    int idx;
 
     GLES_SetDrawingState(renderer);
 
-    data->glVertexPointer(2, GL_FLOAT, 0, points);
-    data->glDrawArrays(GL_POINTS, 0, count);
+    /* Emit the specified vertices as points */
+    vertices = SDL_stack_alloc(GLfloat, count * 2);
+    for (idx = 0; idx < count; ++idx) {
+        GLfloat x = points[idx].x + 0.5f;
+        GLfloat y = points[idx].y + 0.5f;
 
+        vertices[idx * 2] = x;
+        vertices[(idx * 2) + 1] = y;
+    }
+
+    data->glVertexPointer(2, GL_FLOAT, 0, vertices);
+    data->glDrawArrays(GL_POINTS, 0, count);
+    SDL_stack_free(vertices);
     return 0;
 }
 
@@ -828,10 +840,22 @@ GLES_RenderDrawLines(SDL_Renderer * renderer, const SDL_FPoint * points,
                      int count)
 {
     GLES_RenderData *data = (GLES_RenderData *) renderer->driverdata;
+    GLfloat *vertices;
+    int idx;
 
     GLES_SetDrawingState(renderer);
 
-    data->glVertexPointer(2, GL_FLOAT, 0, points);
+    /* Emit a line strip including the specified vertices */
+    vertices = SDL_stack_alloc(GLfloat, count * 2);
+    for (idx = 0; idx < count; ++idx) {
+        GLfloat x = points[idx].x + 0.5f;
+        GLfloat y = points[idx].y + 0.5f;
+
+        vertices[idx * 2] = x;
+        vertices[(idx * 2) + 1] = y;
+    }
+
+    data->glVertexPointer(2, GL_FLOAT, 0, vertices);
     if (count > 2 &&
         points[0].x == points[count-1].x && points[0].y == points[count-1].y) {
         /* GL_LINE_LOOP takes care of the final segment */
@@ -842,6 +866,7 @@ GLES_RenderDrawLines(SDL_Renderer * renderer, const SDL_FPoint * points,
         /* We need to close the endpoint of the line */
         data->glDrawArrays(GL_POINTS, count-1, 1);
     }
+    SDL_stack_free(vertices);
 
     return 0;
 }
