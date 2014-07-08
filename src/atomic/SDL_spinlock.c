@@ -89,10 +89,6 @@ SDL_AtomicTryLock(SDL_SpinLock *lock)
     /* Maybe used for PowerPC, but the Intel asm or gcc atomics are favored. */
     return OSAtomicCompareAndSwap32Barrier(0, 1, lock);
 
-#elif HAVE_PTHREAD_SPINLOCK
-    /* pthread instructions */
-    return (pthread_spin_trylock(lock) == 0);
-
 #elif defined(__SOLARIS__) && defined(_LP64)
     /* Used for Solaris with non-gcc compilers. */
     return (SDL_bool) ((int) atomic_cas_64((volatile uint64_t*)lock, 0, 1) == 0);
@@ -125,9 +121,6 @@ SDL_AtomicUnlock(SDL_SpinLock *lock)
 
 #elif HAVE_GCC_ATOMICS || HAVE_GCC_SYNC_LOCK_TEST_AND_SET
     __sync_lock_release(lock);
-
-#elif HAVE_PTHREAD_SPINLOCK
-    pthread_spin_unlock(lock);
 
 #elif defined(__SOLARIS__)
     /* Used for Solaris when not using gcc. */
