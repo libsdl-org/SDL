@@ -145,7 +145,12 @@ SDL_SetSurfacePalette(SDL_Surface * surface, SDL_Palette * palette)
     if (!surface) {
         return SDL_SetError("SDL_SetSurfacePalette() passed a NULL surface");
     }
-    return SDL_SetPixelFormatPalette(surface->format, palette);
+    if (SDL_SetPixelFormatPalette(surface->format, palette) < 0) {
+        return -1;
+    }
+    SDL_InvalidateMap(surface->map);
+
+    return 0;
 }
 
 int
