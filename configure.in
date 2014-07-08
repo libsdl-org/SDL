@@ -2384,15 +2384,6 @@ AC_HELP_STRING([--enable-pthread-sem], [use pthread semaphores [[default=yes]]])
                 AC_MSG_RESULT($have_sem_timedwait)
             fi
 
-            AC_MSG_CHECKING(for pthread_spin_trylock)
-            AC_TRY_LINK_FUNC(pthread_spin_trylock, [
-              has_pthread_spin_trylock=yes
-              AC_DEFINE(HAVE_PTHREAD_SPINLOCK, 1, [ ])
-            ],[
-              has_pthread_spin_trylock=no
-            ])
-            AC_MSG_RESULT($has_pthread_spin_trylock)
-
             AC_CHECK_HEADER(pthread_np.h, have_pthread_np_h=yes, have_pthread_np_h=no, [ #include <pthread.h> ])
             if test x$have_pthread_np_h = xyes; then
                 AC_DEFINE(HAVE_PTHREAD_NP_H, 1, [ ])

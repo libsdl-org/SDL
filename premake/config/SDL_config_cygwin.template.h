@@ -46,7 +46,6 @@
 #define SIZEOF_VOIDP 4
 #define HAVE_GCC_ATOMICS 1
 /* #undef HAVE_GCC_SYNC_LOCK_TEST_AND_SET */
-#define HAVE_PTHREAD_SPINLOCK 1
 
 /* Comment this if you want to build without any C library requirements */
 #define HAVE_LIBC 0

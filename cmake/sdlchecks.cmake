@@ -755,13 +755,6 @@ macro(CheckPTHREAD)
 
       check_c_source_compiles("
           #include <pthread.h>
-          int main(int argc, char** argv) {
-              pthread_spin_trylock(NULL);
-              return 0;
-          }" HAVE_PTHREAD_SPINLOCK)
-
-      check_c_source_compiles("
-          #include <pthread.h>
           #include <pthread_np.h>
           int main(int argc, char** argv) { return 0; }" HAVE_PTHREAD_NP_H)
       check_function_exists(pthread_setname_np HAVE_PTHREAD_setNAME_NP)
