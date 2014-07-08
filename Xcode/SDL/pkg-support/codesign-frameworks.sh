@@ -17,7 +17,7 @@ fi
 FRAMEWORK_DIR="${TARGET_BUILD_DIR}"
 
 # Loop through all frameworks
-FRAMEWORKS=`find "${FRAMEWORK_DIR}" -type d -name "*.framework"`
+FRAMEWORKS=`find "${FRAMEWORK_DIR}" -type d -name "*.framework" | sort -r`
 RESULT=$?
 if [[ $RESULT != 0 ]] ; then
     exit 1
