@@ -254,6 +254,13 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
                 Rmask = 0x00FF0000;
                 Gmask = 0x0000FF00;
                 Bmask = 0x000000FF;
+            } else if ((Rmask == 0xFFFFFF00) && (Gmask == 0xFFFFFF00) &&
+                       (Bmask == 0xFFFFFF00) && (Amask == 0xFFFFFF00) ) {
+                /* argh, The Gimp seems to put out different bogus masks! */
+                Amask = 0x000000FF;
+                Rmask = 0xFF000000;
+                Gmask = 0x00FF0000;
+                Bmask = 0x0000FF00;
             }
 
             break;
