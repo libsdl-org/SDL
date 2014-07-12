@@ -51,11 +51,12 @@ do { \
 
 #define DRAW_SETPIXEL_BLEND(getpixel, setpixel) \
 do { \
-    unsigned sr, sg, sb, sa; (void) sa; \
+    unsigned sr, sg, sb, sa; \
     getpixel; \
     sr = DRAW_MUL(inva, sr) + r; \
     sg = DRAW_MUL(inva, sg) + g; \
     sb = DRAW_MUL(inva, sb) + b; \
+    sa = DRAW_MUL(inva, sa) + a; \
     setpixel; \
 } while (0)
 
