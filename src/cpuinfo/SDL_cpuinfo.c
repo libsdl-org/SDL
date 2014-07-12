@@ -255,8 +255,6 @@ CPU_OSSavesYMM(void)
         _asm _emit 0x0f _asm _emit 0x01 _asm _emit 0xd0
         mov a, xcr0
     }
-#else
-#error Need xgetbv implementation!
 #endif
     return ((a & 6) == 6) ? SDL_TRUE : SDL_FALSE;
 }
