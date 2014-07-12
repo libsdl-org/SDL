@@ -587,3 +587,4 @@
 #define SDL_CaptureMouse SDL_CaptureMouse_REAL
 #define SDL_SetWindowHitTest SDL_SetWindowHitTest_REAL
 #define SDL_GetGlobalMouseState SDL_GetGlobalMouseState_REAL
+#define SDL_HasAVX2 SDL_HasAVX2_REAL
