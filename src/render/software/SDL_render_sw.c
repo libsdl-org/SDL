@@ -146,6 +146,7 @@ SW_CreateRendererForSurface(SDL_Surface * surface)
         return NULL;
     }
     data->surface = surface;
+    data->window = surface;
 
     renderer->WindowEvent = SW_WindowEvent;
     renderer->GetOutputSize = SW_GetOutputSize;
