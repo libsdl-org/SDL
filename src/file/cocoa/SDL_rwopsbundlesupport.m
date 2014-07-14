@@ -41,27 +41,24 @@ FILE* SDL_OpenFPFromBundleOrFallback(const char *file, const char *mode)
         return fopen(file, mode);
     }
 
-    NSAutoreleasePool* autorelease_pool = [[NSAutoreleasePool alloc] init];
+    @autoreleasepool {
+        NSFileManager* file_manager = [NSFileManager defaultManager];
+        NSString* resource_path = [[NSBundle mainBundle] resourcePath];
 
+        NSString* ns_string_file_component = [file_manager stringWithFileSystemRepresentation:file length:strlen(file)];
 
-    NSFileManager* file_manager = [NSFileManager defaultManager];
-    NSString* resource_path = [[NSBundle mainBundle] resourcePath];
-
-    NSString* ns_string_file_component = [file_manager stringWithFileSystemRepresentation:file length:strlen(file)];
-
-    NSString* full_path_with_file_to_try = [resource_path stringByAppendingPathComponent:ns_string_file_component];
-    if([file_manager fileExistsAtPath:full_path_with_file_to_try]) {
-        fp = fopen([full_path_with_file_to_try fileSystemRepresentation], mode);
+        NSString* full_path_with_file_to_try = [resource_path stringByAppendingPathComponent:ns_string_file_component];
+        if([file_manager fileExistsAtPath:full_path_with_file_to_try]) {
+            fp = fopen([full_path_with_file_to_try fileSystemRepresentation], mode);
+        }
+        else {
+            fp = fopen(file, mode);
+        }
     }
-    else {
-        fp = fopen(file, mode);
-    }
-
-    [autorelease_pool drain];
 
     return fp;
 }
 
-#endif /* __MACOSX__ */
+#endif /* __APPLE__ */
 
 /* vi: set ts=4 sw=4 expandtab: */
