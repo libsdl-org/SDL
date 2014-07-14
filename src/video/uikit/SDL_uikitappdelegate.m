@@ -44,7 +44,6 @@ static UIWindow *launch_window;
 int main(int argc, char **argv)
 {
     int i;
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
     /* store arguments */
     forward_argc = argc;
@@ -56,7 +55,9 @@ int main(int argc, char **argv)
     forward_argv[i] = NULL;
 
     /* Give over control to run loop, SDLUIKitDelegate will handle most things from here */
-    UIApplicationMain(argc, argv, NULL, [SDLUIKitDelegate getAppDelegateClassName]);
+    @autoreleasepool {
+        UIApplicationMain(argc, argv, NULL, [SDLUIKitDelegate getAppDelegateClassName]);
+    }
 
     /* free the memory we used to hold copies of argc and argv */
     for (i = 0; i < forward_argc; i++) {
@@ -64,7 +65,6 @@ int main(int argc, char **argv)
     }
     free(forward_argv);
 
-    [pool release];
     return exit_status;
 }
 
@@ -151,8 +151,8 @@ SDL_IdleTimerDisabledChanged(void *userdata, const char *name, const char *oldVa
     } else {
         image = self->splashPortrait;
     }
-    if (image)
-    {
+
+    if (image) {
         splash.image = image;
     }
 }
@@ -165,7 +165,7 @@ SDL_IdleTimerDisabledChanged(void *userdata, const char *name, const char *oldVa
 /* convenience method */
 + (id) sharedAppDelegate
 {
-    /* the delegate is set in UIApplicationMain(), which is garaunteed to be called before this method */
+    /* the delegate is set in UIApplicationMain(), which is guaranteed to be called before this method */
     return [[UIApplication sharedApplication] delegate];
 }
 

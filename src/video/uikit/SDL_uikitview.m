@@ -35,7 +35,7 @@
 #include "SDL_uikitmodes.h"
 #include "SDL_uikitwindow.h"
 
-void _uikit_keyboard_init() ;
+void _uikit_keyboard_init();
 
 @implementation SDL_uikitview
 
@@ -66,7 +66,7 @@ void _uikit_keyboard_init() ;
     CGPoint point = [touch locationInView: self];
 
     /* Get the display scale and apply that to the input coordinates */
-    SDL_Window *window = self->viewcontroller.window;
+    SDL_Window *window = viewcontroller.window;
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
     SDL_DisplayModeData *displaymodedata = (SDL_DisplayModeData *) display->current_mode.driverdata;
 
@@ -83,18 +83,15 @@ void _uikit_keyboard_init() ;
 
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    NSEnumerator *enumerator = [touches objectEnumerator];
-    UITouch *touch = (UITouch*)[enumerator nextObject];
-
-    while (touch) {
+    for (UITouch *touch in touches) {
         if (!leftFingerDown) {
             CGPoint locationInView = [self touchLocation:touch shouldNormalize:NO];
 
             /* send moved event */
-            SDL_SendMouseMotion(self->viewcontroller.window, SDL_TOUCH_MOUSEID, 0, locationInView.x, locationInView.y);
+            SDL_SendMouseMotion(viewcontroller.window, SDL_TOUCH_MOUSEID, 0, locationInView.x, locationInView.y);
 
             /* send mouse down event */
-            SDL_SendMouseButton(self->viewcontroller.window, SDL_TOUCH_MOUSEID, SDL_PRESSED, SDL_BUTTON_LEFT);
+            SDL_SendMouseButton(viewcontroller.window, SDL_TOUCH_MOUSEID, SDL_PRESSED, SDL_BUTTON_LEFT);
 
             leftFingerDown = touch;
         }
@@ -118,19 +115,15 @@ void _uikit_keyboard_init() ;
             }
         }
 #endif
-        touch = (UITouch*)[enumerator nextObject];
     }
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    NSEnumerator *enumerator = [touches objectEnumerator];
-    UITouch *touch = (UITouch*)[enumerator nextObject];
-
-    while(touch) {
+    for (UITouch *touch in touches) {
         if (touch == leftFingerDown) {
             /* send mouse up */
-            SDL_SendMouseButton(self->viewcontroller.window, SDL_TOUCH_MOUSEID, SDL_RELEASED, SDL_BUTTON_LEFT);
+            SDL_SendMouseButton(viewcontroller.window, SDL_TOUCH_MOUSEID, SDL_RELEASED, SDL_BUTTON_LEFT);
             leftFingerDown = nil;
         }
 
@@ -149,7 +142,6 @@ void _uikit_keyboard_init() ;
             }
         }
 #endif
-        touch = (UITouch*)[enumerator nextObject];
     }
 }
 
@@ -165,15 +157,12 @@ void _uikit_keyboard_init() ;
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    NSEnumerator *enumerator = [touches objectEnumerator];
-    UITouch *touch = (UITouch*)[enumerator nextObject];
-
-    while (touch) {
+    for (UITouch *touch in touches) {
         if (touch == leftFingerDown) {
             CGPoint locationInView = [self touchLocation:touch shouldNormalize:NO];
 
             /* send moved event */
-            SDL_SendMouseMotion(self->viewcontroller.window, SDL_TOUCH_MOUSEID, 0, locationInView.x, locationInView.y);
+            SDL_SendMouseMotion(viewcontroller.window, SDL_TOUCH_MOUSEID, 0, locationInView.x, locationInView.y);
         }
 
         CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
@@ -190,7 +179,6 @@ void _uikit_keyboard_init() ;
             }
         }
 #endif
-        touch = (UITouch*)[enumerator nextObject];
     }
 }
 
