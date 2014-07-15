@@ -49,7 +49,7 @@ SDL_SYS_JoystickInit(void)
     const char *hint = SDL_GetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK);
     if (!hint || SDL_atoi(hint)) {
         /* Default behavior, accelerometer as joystick */
-        numjoysticks++;
+        numjoysticks = 1;
     }
 
     return numjoysticks;
