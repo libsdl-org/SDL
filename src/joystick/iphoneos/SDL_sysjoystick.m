@@ -23,6 +23,7 @@
 /* This is the iOS implementation of the SDL joystick API */
 
 #include "SDL_joystick.h"
+#include "SDL_hints.h"
 #include "SDL_stdinc.h"
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
@@ -32,9 +33,10 @@
 /* needed for SDL_IPHONE_MAX_GFORCE macro */
 #import "SDL_config_iphoneos.h"
 
-const char *accelerometerName = "iOS accelerometer";
+const char *accelerometerName = "iOS Accelerometer";
 
 static CMMotionManager *motionManager = nil;
+static int numjoysticks = 0;
 
 /* Function to scan the system for joysticks.
  * This function should set SDL_numjoysticks to the number of available
@@ -44,12 +46,18 @@ static CMMotionManager *motionManager = nil;
 int
 SDL_SYS_JoystickInit(void)
 {
-    return (1);
+    const char *hint = SDL_GetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK);
+    if (!hint || SDL_atoi(hint)) {
+        /* Default behavior, accelerometer as joystick */
+        numjoysticks++;
+    }
+
+    return numjoysticks;
 }
 
 int SDL_SYS_NumJoysticks()
 {
-    return 1;
+    return numjoysticks;
 }
 
 void SDL_SYS_JoystickDetect()
@@ -165,6 +173,8 @@ SDL_SYS_JoystickQuit(void)
         [motionManager release];
         motionManager = nil;
     }
+
+    numjoysticks = 0;
 }
 
 SDL_JoystickGUID SDL_SYS_JoystickGetDeviceGUID( int device_index )
