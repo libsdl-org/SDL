@@ -261,8 +261,9 @@ extern "C" {
 #define SDL_HINT_ORIENTATIONS "SDL_IOS_ORIENTATIONS"
     
 /**
- *  \brief  A variable controlling whether an Android built-in accelerometer should be
- *  listed as a joystick device, rather than listing actual joysticks only.
+ *  \brief  A variable controlling whether the Android / iOS built-in
+ *  accelerometer should be listed as a joystick device, rather than listing
+ *  actual joysticks only.
  *
  *  This variable can be set to the following values:
  *    "0"       - List only real joysticks and accept input from them
