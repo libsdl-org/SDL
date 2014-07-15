@@ -28,7 +28,7 @@
 
 static int
 UIKit_AllocateDisplayModeData(SDL_DisplayMode * mode,
-    UIScreenMode * uiscreenmode, CGFloat scale)
+    UIScreenMode * uiscreenmode)
 {
     SDL_DisplayModeData *data = NULL;
 
@@ -41,8 +41,6 @@ UIKit_AllocateDisplayModeData(SDL_DisplayMode * mode,
 
         data->uiscreenmode = uiscreenmode;
         [data->uiscreenmode retain];
-
-        data->scale = scale;
     }
 
     mode->driverdata = data;
@@ -63,14 +61,14 @@ UIKit_FreeDisplayModeData(SDL_DisplayMode * mode)
 
 static int
 UIKit_AddSingleDisplayMode(SDL_VideoDisplay * display, int w, int h,
-    UIScreenMode * uiscreenmode, CGFloat scale)
+    UIScreenMode * uiscreenmode)
 {
     SDL_DisplayMode mode;
     SDL_zero(mode);
 
     mode.format = SDL_PIXELFORMAT_ABGR8888;
     mode.refresh_rate = 0;
-    if (UIKit_AllocateDisplayModeData(&mode, uiscreenmode, scale) < 0) {
+    if (UIKit_AllocateDisplayModeData(&mode, uiscreenmode) < 0) {
         return -1;
     }
 
@@ -85,16 +83,16 @@ UIKit_AddSingleDisplayMode(SDL_VideoDisplay * display, int w, int h,
 }
 
 static int
-UIKit_AddDisplayMode(SDL_VideoDisplay * display, int w, int h, CGFloat scale,
+UIKit_AddDisplayMode(SDL_VideoDisplay * display, int w, int h,
                      UIScreenMode * uiscreenmode, SDL_bool addRotation)
 {
-    if (UIKit_AddSingleDisplayMode(display, w, h, uiscreenmode, scale) < 0) {
+    if (UIKit_AddSingleDisplayMode(display, w, h, uiscreenmode) < 0) {
         return -1;
     }
 
     if (addRotation) {
         /* Add the rotated version */
-        if (UIKit_AddSingleDisplayMode(display, h, w, uiscreenmode, scale) < 0) {
+        if (UIKit_AddSingleDisplayMode(display, h, w, uiscreenmode) < 0) {
             return -1;
         }
     }
@@ -114,24 +112,16 @@ UIKit_AddDisplay(UIScreen *uiscreen)
         size.height = height;
     }
 
-    /* When dealing with UIKit all coordinates are specified in terms of
-     * what Apple refers to as points. [UIScreen scale] indicates the
-     * relationship between points and pixels. Since SDL has no notion
-     * of points, we must compensate in all cases where dealing with such
-     * units.
-     */
-    CGFloat scale = [uiscreen scale];
-
     SDL_VideoDisplay display;
     SDL_DisplayMode mode;
     SDL_zero(mode);
     mode.format = SDL_PIXELFORMAT_ABGR8888;
-    mode.w = (int)(size.width * scale);
-    mode.h = (int)(size.height * scale);
+    mode.w = (int) size.width;
+    mode.h = (int) size.height;
 
-    UIScreenMode * uiscreenmode = [uiscreen currentMode];
+    UIScreenMode *uiscreenmode = [uiscreen currentMode];
 
-    if (UIKit_AllocateDisplayModeData(&mode, uiscreenmode, scale) < 0) {
+    if (UIKit_AllocateDisplayModeData(&mode, uiscreenmode) < 0) {
         return -1;
     }
 
@@ -148,7 +138,6 @@ UIKit_AddDisplay(UIScreen *uiscreen)
 
     [uiscreen retain];
     data->uiscreen = uiscreen;
-    data->scale = scale;
 
     display.driverdata = data;
     SDL_AddVideoDisplay(&display);
@@ -186,11 +175,14 @@ UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
 
     SDL_bool isLandscape = UIKit_IsDisplayLandscape(data->uiscreen);
     SDL_bool addRotation = (data->uiscreen == [UIScreen mainScreen]);
+    CGFloat scale = data->uiscreen.scale;
 
     for (UIScreenMode *uimode in [data->uiscreen availableModes]) {
+        /* The size of a UIScreenMode is in pixels, but we deal exclusively in
+         * points (except in SDL_GL_GetDrawableSize.) */
         CGSize size = [uimode size];
-        int w = (int)size.width;
-        int h = (int)size.height;
+        int w = (int)(size.width / scale);
+        int h = (int)(size.height / scale);
 
         /* Make sure the width/height are oriented correctly */
         if (isLandscape != (w > h)) {
@@ -200,17 +192,7 @@ UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
         }
 
         /* Add the native screen resolution. */
-        UIKit_AddDisplayMode(display, w, h, data->scale, uimode, addRotation);
-
-        if (data->scale != 1.0f) {
-            /* Add the native screen resolution divided by its scale.
-             * This is so devices capable of e.g. 640x960 also advertise 320x480.
-             */
-            UIKit_AddDisplayMode(display,
-                (int)(size.width / data->scale),
-                (int)(size.height / data->scale),
-                1.0f, uimode, addRotation);
-        }
+        UIKit_AddDisplayMode(display, w, h, uimode, addRotation);
     }
 }
 

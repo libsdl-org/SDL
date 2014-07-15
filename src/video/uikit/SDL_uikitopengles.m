@@ -49,7 +49,8 @@ UIKit_GL_GetProcAddress(_THIS, const char *proc)
 /*
     note that SDL_GL_Delete context makes it current without passing the window
 */
-int UIKit_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
+int
+UIKit_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
 {
     if (context) {
         SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
@@ -61,6 +62,19 @@ int UIKit_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
 
     return 0;
 }
+
+void UIKit_GL_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h)
+{
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+
+    if (w) {
+        *w = data->view.backingWidth;
+    }
+    if (h) {
+        *h = data->view.backingHeight;
+    }
+}
+
 
 int
 UIKit_GL_LoadLibrary(_THIS, const char *path)
@@ -96,15 +110,22 @@ void UIKit_GL_SwapWindow(_THIS, SDL_Window * window)
      */
 }
 
-SDL_GLContext UIKit_GL_CreateContext(_THIS, SDL_Window * window)
+SDL_GLContext
+UIKit_GL_CreateContext(_THIS, SDL_Window * window)
 {
     SDL_uikitopenglview *view;
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-    SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
-    SDL_DisplayData *displaydata = display->driverdata;
-    SDL_DisplayModeData *displaymodedata = display->current_mode.driverdata;
     UIWindow *uiwindow = data->uiwindow;
     EAGLSharegroup *share_group = nil;
+    CGFloat scale = 1.0;
+
+    if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+        /* Set the scale to the natural scale factor of the screen - the backing
+           dimensions of the OpenGL view will match the pixel dimensions of the
+           screen rather than the dimensions in points.
+         */
+        scale = [uiwindow screen].scale;
+    }
 
     if (_this->gl_config.share_with_current_context) {
         SDL_uikitopenglview *view = (SDL_uikitopenglview *) SDL_GL_GetCurrentContext();
@@ -114,12 +135,12 @@ SDL_GLContext UIKit_GL_CreateContext(_THIS, SDL_Window * window)
     /* construct our view, passing in SDL's OpenGL configuration data */
     CGRect frame;
     if (window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_BORDERLESS)) {
-        frame = [displaydata->uiscreen bounds];
+        frame = [[uiwindow screen] bounds];
     } else {
-        frame = [displaydata->uiscreen applicationFrame];
+        frame = [[uiwindow screen] applicationFrame];
     }
     view = [[SDL_uikitopenglview alloc] initWithFrame: frame
-                                    scale: displaymodedata->scale
+                                    scale: scale
                                     retainBacking: _this->gl_config.retained_backing
                                     rBits: _this->gl_config.red_size
                                     gBits: _this->gl_config.green_size
@@ -152,7 +173,7 @@ SDL_GLContext UIKit_GL_CreateContext(_THIS, SDL_Window * window)
     }
 
     /* Make this window the current mouse focus for touch input */
-    if (displaydata->uiscreen == [UIScreen mainScreen]) {
+    if ([uiwindow screen] == [UIScreen mainScreen]) {
         SDL_SetMouseFocus(window);
         SDL_SetKeyboardFocus(window);
     }
@@ -160,7 +181,8 @@ SDL_GLContext UIKit_GL_CreateContext(_THIS, SDL_Window * window)
     return view;
 }
 
-void UIKit_GL_DeleteContext(_THIS, SDL_GLContext context)
+void
+UIKit_GL_DeleteContext(_THIS, SDL_GLContext context)
 {
     /* the delegate has retained the view, this will release him */
     SDL_uikitopenglview *view = (SDL_uikitopenglview *)context;

@@ -32,6 +32,9 @@
 
 @synthesize context;
 
+@synthesize backingWidth = backingWidth;
+@synthesize backingHeight = backingHeight;
+
 + (Class)layerClass
 {
     return [CAEAGLLayer class];
@@ -74,7 +77,9 @@
 
         eaglLayer.opaque = YES;
         eaglLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
-                                        [NSNumber numberWithBool: retained], kEAGLDrawablePropertyRetainedBacking, colorFormat, kEAGLDrawablePropertyColorFormat, nil];
+                                        [NSNumber numberWithBool: retained], kEAGLDrawablePropertyRetainedBacking,
+                                        colorFormat, kEAGLDrawablePropertyColorFormat,
+                                        nil];
 
         context = [[EAGLContext alloc] initWithAPI:api sharegroup:shareGroup];
         if (!context || ![EAGLContext setCurrentContext:context]) {

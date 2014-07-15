@@ -28,13 +28,11 @@
 typedef struct
 {
     UIScreen *uiscreen;
-    CGFloat scale;
 } SDL_DisplayData;
 
 typedef struct
 {
     UIScreenMode *uiscreenmode;
-    CGFloat scale;
 } SDL_DisplayModeData;
 
 extern SDL_bool UIKit_IsDisplayLandscape(UIScreen *uiscreen);

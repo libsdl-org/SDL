@@ -28,7 +28,7 @@
     SDL_Window *window;
 }
 
-@property (readwrite) SDL_Window *window;
+@property (nonatomic, readwrite) SDL_Window *window;
 
 - (id)initWithSDLWindow:(SDL_Window *)_window;
 - (void)loadView;

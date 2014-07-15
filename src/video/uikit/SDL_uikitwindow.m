@@ -47,7 +47,6 @@
 static int SetupWindowData(_THIS, SDL_Window *window, UIWindow *uiwindow, SDL_bool created)
 {
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
-    SDL_DisplayModeData *displaymodedata = (SDL_DisplayModeData *) display->current_mode.driverdata;
     SDL_DisplayData *displaydata = (SDL_DisplayData *) display->driverdata;
     SDL_WindowData *data;
 
@@ -72,9 +71,9 @@ static int SetupWindowData(_THIS, SDL_Window *window, UIWindow *uiwindow, SDL_bo
             bounds = [displaydata->uiscreen applicationFrame];
         }
 
-        /* Get frame dimensions in pixels */
-        int width = (int)(bounds.size.width * displaymodedata->scale);
-        int height = (int)(bounds.size.height * displaymodedata->scale);
+        /* Get frame dimensions */
+        int width = (int) bounds.size.width;
+        int height = (int) bounds.size.height;
 
         /* Make sure the width/height are oriented correctly */
         if (UIKit_IsDisplayLandscape(displaydata->uiscreen) != (width > height)) {
@@ -191,8 +190,7 @@ UIKit_CreateWindow(_THIS, SDL_Window *window)
 
     /* ignore the size user requested, and make a fullscreen window */
     /* !!! FIXME: can we have a smaller view? */
-    UIWindow *uiwindow = [UIWindow alloc];
-    uiwindow = [uiwindow initWithFrame:[data->uiscreen bounds]];
+    UIWindow *uiwindow = [[UIWindow alloc] initWithFrame:[data->uiscreen bounds]];
 
     /* put the window on an external display if appropriate. This implicitly
      * does [uiwindow setframe:[uiscreen bounds]], so don't do it on the
@@ -243,7 +241,6 @@ void
 UIKit_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen)
 {
     SDL_DisplayData *displaydata = (SDL_DisplayData *) display->driverdata;
-    SDL_DisplayModeData *displaymodedata = (SDL_DisplayModeData *) display->current_mode.driverdata;
     UIWindow *uiwindow = ((SDL_WindowData *) window->driverdata)->uiwindow;
 
     if (fullscreen) {
@@ -259,9 +256,9 @@ UIKit_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
         bounds = [displaydata->uiscreen applicationFrame];
     }
 
-    /* Get frame dimensions in pixels */
-    int width = (int)(bounds.size.width * displaymodedata->scale);
-    int height = (int)(bounds.size.height * displaymodedata->scale);
+    /* Get frame dimensions */
+    int width = (int) bounds.size.width;
+    int height = (int) bounds.size.height;
 
     /* We can pick either width or height here and we'll rotate the
        screen to match, so we pick the closest to what we wanted.

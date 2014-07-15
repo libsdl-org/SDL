@@ -65,19 +65,12 @@ void _uikit_keyboard_init();
 {
     CGPoint point = [touch locationInView: self];
 
-    /* Get the display scale and apply that to the input coordinates */
-    SDL_Window *window = viewcontroller.window;
-    SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
-    SDL_DisplayModeData *displaymodedata = (SDL_DisplayModeData *) display->current_mode.driverdata;
-
     if (normalize) {
         CGRect bounds = [self bounds];
         point.x /= bounds.size.width;
         point.y /= bounds.size.height;
-    } else {
-        point.x *= displaymodedata->scale;
-        point.y *= displaymodedata->scale;
     }
+
     return point;
 }
 
@@ -360,7 +353,6 @@ void _uikit_keyboard_update() {
     int height = view.keyboardHeight;
     int offsetx = 0;
     int offsety = 0;
-    float scale = [UIScreen mainScreen].scale;
     if (height) {
         int sw,sh;
         SDL_GetWindowSize(window,&sw,&sh);
@@ -381,9 +373,6 @@ void _uikit_keyboard_update() {
     if (ui_orient == UIInterfaceOrientationPortraitUpsideDown) {
         offsety = -offsety;
     }
-
-    offsetx /= scale;
-    offsety /= scale;
 
     view.frame = CGRectMake(offsetx,offsety,view.frame.size.width,view.frame.size.height);
 }
@@ -412,7 +401,6 @@ void _uikit_keyboard_init() {
                         if (ui_orient == UIInterfaceOrientationLandscapeRight || ui_orient == UIInterfaceOrientationLandscapeLeft) {
                             height = keyboardSize.width;
                         }
-                        height *= [UIScreen mainScreen].scale;
                         _uikit_keyboard_set_height(height);
                     }
      ];
