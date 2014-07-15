@@ -93,12 +93,13 @@ UIKit_CreateDevice(int devindex)
 #endif
 
     /* OpenGL (ES) functions */
-    device->GL_MakeCurrent        = UIKit_GL_MakeCurrent;
-    device->GL_SwapWindow        = UIKit_GL_SwapWindow;
+    device->GL_MakeCurrent      = UIKit_GL_MakeCurrent;
+    device->GL_GetDrawableSize  = UIKit_GL_GetDrawableSize;
+    device->GL_SwapWindow       = UIKit_GL_SwapWindow;
     device->GL_CreateContext    = UIKit_GL_CreateContext;
     device->GL_DeleteContext    = UIKit_GL_DeleteContext;
     device->GL_GetProcAddress   = UIKit_GL_GetProcAddress;
-    device->GL_LoadLibrary        = UIKit_GL_LoadLibrary;
+    device->GL_LoadLibrary      = UIKit_GL_LoadLibrary;
     device->free = UIKit_DeleteDevice;
 
     device->gl_config.accelerated = 1;

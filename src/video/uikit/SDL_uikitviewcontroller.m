@@ -56,15 +56,11 @@
 
 - (void)viewDidLayoutSubviews
 {
-    if (self->window->flags & SDL_WINDOW_RESIZABLE) {
-        SDL_WindowData *data = self->window->driverdata;
-        SDL_VideoDisplay *display = SDL_GetDisplayForWindow(self->window);
-        SDL_DisplayModeData *displaymodedata = (SDL_DisplayModeData *) display->current_mode.driverdata;
+    if (window->flags & SDL_WINDOW_RESIZABLE) {
+        SDL_WindowData *data = window->driverdata;
         const CGSize size = data->view.bounds.size;
-        int w, h;
-
-        w = (int)(size.width * displaymodedata->scale);
-        h = (int)(size.height * displaymodedata->scale);
+        int w = (int) size.width;
+        int h = (int) size.height;
 
         SDL_SendWindowEvent(self->window, SDL_WINDOWEVENT_RESIZED, w, h);
     }
