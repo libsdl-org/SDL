@@ -36,5 +36,6 @@
 - (NSUInteger)supportedInterfaceOrientations;
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)orient;
 - (BOOL)prefersStatusBarHidden;
+- (UIStatusBarStyle)preferredStatusBarStyle;
 
 @end

@@ -124,6 +124,16 @@
     }
 }
 
+- (UIStatusBarStyle)preferredStatusBarStyle
+{
+#ifdef __IPHONE_7_0
+    return UIStatusBarStyleLightContent;
+#else
+    /* This is only called in iOS 7+, so the return value isn't important. */
+    return UIStatusBarStyleBlackTranslucent;
+#endif
+}
+
 @end
 
 #endif /* SDL_VIDEO_DRIVER_UIKIT */

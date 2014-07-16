@@ -169,8 +169,9 @@
     animationCallback = callback;
     animationCallbackParam = callbackParam;
 
-    if (animationCallback)
+    if (animationCallback) {
         [self startAnimation];
+    }
 }
 
 - (void)startAnimation
