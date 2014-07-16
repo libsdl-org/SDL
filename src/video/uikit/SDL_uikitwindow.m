@@ -241,13 +241,21 @@ void
 UIKit_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen)
 {
     SDL_DisplayData *displaydata = (SDL_DisplayData *) display->driverdata;
-    UIWindow *uiwindow = ((SDL_WindowData *) window->driverdata)->uiwindow;
+    SDL_WindowData *windowdata = (SDL_WindowData *) window->driverdata;
+    SDL_uikitviewcontroller *viewcontroller = windowdata->viewcontroller;
+    UIWindow *uiwindow = windowdata->uiwindow;
 
     if (fullscreen) {
         [UIApplication sharedApplication].statusBarHidden = YES;
     } else {
         [UIApplication sharedApplication].statusBarHidden = NO;
     }
+
+#ifdef __IPHONE_7_0
+    if ([viewcontroller respondsToSelector:@selector(setNeedsStatusBarAppearanceUpdate)]) {
+        [viewcontroller setNeedsStatusBarAppearanceUpdate];
+    }
+#endif
 
     CGRect bounds;
     if (fullscreen) {
