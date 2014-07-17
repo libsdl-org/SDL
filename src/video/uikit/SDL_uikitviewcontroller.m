@@ -56,14 +56,12 @@
 
 - (void)viewDidLayoutSubviews
 {
-    if (window->flags & SDL_WINDOW_RESIZABLE) {
-        SDL_WindowData *data = window->driverdata;
-        const CGSize size = data->view.bounds.size;
-        int w = (int) size.width;
-        int h = (int) size.height;
+    SDL_WindowData *data = window->driverdata;
+    const CGSize size = data->view.bounds.size;
+    int w = (int) size.width;
+    int h = (int) size.height;
 
-        SDL_SendWindowEvent(self->window, SDL_WINDOWEVENT_RESIZED, w, h);
-    }
+    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, w, h);
 }
 
 - (NSUInteger)supportedInterfaceOrientations
@@ -91,7 +89,7 @@
         }
     }
 
-    if (orientationMask == 0 && window->flags & SDL_WINDOW_RESIZABLE) {
+    if (orientationMask == 0 && (window->flags & SDL_WINDOW_RESIZABLE)) {
         orientationMask = UIInterfaceOrientationMaskAll;  /* any orientation is okay. */
     }
 
