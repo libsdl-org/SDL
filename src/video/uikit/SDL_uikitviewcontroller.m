@@ -69,13 +69,12 @@
 - (NSUInteger)supportedInterfaceOrientations
 {
     NSUInteger orientationMask = 0;
+    const char *orientationsHint = SDL_GetHint(SDL_HINT_ORIENTATIONS);
 
-    const char *orientationsCString;
-    if ((orientationsCString = SDL_GetHint(SDL_HINT_ORIENTATIONS)) != NULL) {
-        BOOL rotate = NO;
-        NSString *orientationsNSString = [NSString stringWithCString:orientationsCString
-                                                            encoding:NSUTF8StringEncoding];
-        NSArray *orientations = [orientationsNSString componentsSeparatedByCharactersInSet:
+    if (orientationsHint != NULL) {
+        NSString *orientationsString = [NSString stringWithCString:orientationsHint
+                                                          encoding:NSUTF8StringEncoding];
+        NSArray *orientations = [orientationsString componentsSeparatedByCharactersInSet:
                                  [NSCharacterSet characterSetWithCharactersInString:@" "]];
 
         if ([orientations containsObject:@"LandscapeLeft"]) {
@@ -90,14 +89,17 @@
         if ([orientations containsObject:@"PortraitUpsideDown"]) {
             orientationMask |= UIInterfaceOrientationMaskPortraitUpsideDown;
         }
+    }
 
-    } else if (self->window->flags & SDL_WINDOW_RESIZABLE) {
+    if (orientationMask == 0 && window->flags & SDL_WINDOW_RESIZABLE) {
         orientationMask = UIInterfaceOrientationMaskAll;  /* any orientation is okay. */
-    } else {
-        if (self->window->w >= self->window->h) {
+    }
+
+    if (orientationMask == 0) {
+        if (window->w >= window->h) {
             orientationMask |= UIInterfaceOrientationMaskLandscape;
         }
-        if (self->window->h >= self->window->w) {
+        if (window->h >= window->w) {
             orientationMask |= (UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown);
         }
     }
@@ -117,7 +119,7 @@
 
 - (BOOL)prefersStatusBarHidden
 {
-    if (self->window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_BORDERLESS)) {
+    if (window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_BORDERLESS)) {
         return YES;
     } else {
         return NO;
@@ -129,7 +131,7 @@
 #ifdef __IPHONE_7_0
     return UIStatusBarStyleLightContent;
 #else
-    /* This is only called in iOS 7+, so the return value isn't important. */
+    /* This method is only used in iOS 7+, so the return value here isn't important. */
     return UIStatusBarStyleBlackTranslucent;
 #endif
 }
