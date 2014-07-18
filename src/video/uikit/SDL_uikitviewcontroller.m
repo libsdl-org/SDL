@@ -127,6 +127,7 @@
 - (UIStatusBarStyle)preferredStatusBarStyle
 {
 #ifdef __IPHONE_7_0
+    /* We assume most games don't have a bright white background. */
     return UIStatusBarStyleLightContent;
 #else
     /* This method is only used in iOS 7+, so the return value here isn't important. */
