@@ -42,8 +42,6 @@
 #include <Foundation/Foundation.h>
 
 
-
-
 static int SetupWindowData(_THIS, SDL_Window *window, UIWindow *uiwindow, SDL_bool created)
 {
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
@@ -115,9 +113,7 @@ static int SetupWindowData(_THIS, SDL_Window *window, UIWindow *uiwindow, SDL_bo
      * device orientation changes. This will trigger resize events, if
      * appropriate.
      */
-    SDL_uikitviewcontroller *controller;
-    controller = [SDL_uikitviewcontroller alloc];
-    data->viewcontroller = [controller initWithSDLWindow:window];
+    data->viewcontroller = [[SDL_uikitviewcontroller alloc] initWithSDLWindow:window];
     [data->viewcontroller setTitle:@"SDL App"];  /* !!! FIXME: hook up SDL_SetWindowTitle() */
 
     return 0;
@@ -245,7 +241,7 @@ UIKit_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
     SDL_uikitviewcontroller *viewcontroller = windowdata->viewcontroller;
     UIWindow *uiwindow = windowdata->uiwindow;
 
-    if (fullscreen) {
+    if (fullscreen || (window->flags & SDL_WINDOW_BORDERLESS)) {
         [UIApplication sharedApplication].statusBarHidden = YES;
     } else {
         [UIApplication sharedApplication].statusBarHidden = NO;

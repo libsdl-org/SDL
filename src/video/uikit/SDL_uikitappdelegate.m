@@ -205,12 +205,18 @@ SDL_IdleTimerDisabledChanged(void *userdata, const char *name, const char *oldVa
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     /* Keep the launch image up until we set a video mode */
-    launch_window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+
+    /* This is disabled temporarily because the splash viewcontroller is
+     * interfering with rotation once a regular window is created: the view's
+     * orientations are incorrect and the status bar rotates without the view.
+     * Additionally, the splash viewcontroller doesn't load the correct launch
+     * images on iOS 7 and modern devices. */
+    /*launch_window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 
     UIViewController *splashViewController = [[SDL_splashviewcontroller alloc] init];
     launch_window.rootViewController = splashViewController;
     [launch_window addSubview:splashViewController.view];
-    [launch_window makeKeyAndVisible];
+    [launch_window makeKeyAndVisible];*/
 
     /* Set working directory to resource path */
     [[NSFileManager defaultManager] changeCurrentDirectoryPath: [[NSBundle mainBundle] resourcePath]];
