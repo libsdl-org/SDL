@@ -212,6 +212,8 @@
 
 - (void)layoutSubviews
 {
+    [super layoutSubviews];
+
     [EAGLContext setCurrentContext:context];
     [self updateFrame];
 }
