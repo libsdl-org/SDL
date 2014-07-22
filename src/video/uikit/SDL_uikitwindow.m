@@ -240,6 +240,7 @@ UIKit_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
     SDL_WindowData *windowdata = (SDL_WindowData *) window->driverdata;
     SDL_uikitviewcontroller *viewcontroller = windowdata->viewcontroller;
     UIWindow *uiwindow = windowdata->uiwindow;
+    CGRect bounds;
 
     if (fullscreen || (window->flags & SDL_WINDOW_BORDERLESS)) {
         [UIApplication sharedApplication].statusBarHidden = YES;
@@ -253,12 +254,16 @@ UIKit_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
     }
 #endif
 
-    CGRect bounds;
-    if (fullscreen) {
+    if (fullscreen || (window->flags & SDL_WINDOW_BORDERLESS)) {
         bounds = [displaydata->uiscreen bounds];
     } else {
         bounds = [displaydata->uiscreen applicationFrame];
     }
+
+    /* Update the view's frame to account for the status bar change. */
+    windowdata->view.frame = bounds;
+    [windowdata->view setNeedsLayout];
+    [windowdata->view layoutIfNeeded];
 
     /* Get frame dimensions */
     int width = (int) bounds.size.width;
@@ -268,21 +273,11 @@ UIKit_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
        screen to match, so we pick the closest to what we wanted.
      */
     if (window->w >= window->h) {
-        if (width > height) {
-            window->w = width;
-            window->h = height;
-        } else {
-            window->w = height;
-            window->h = width;
-        }
+        window->w = SDL_max(width, height);
+        window->h = SDL_min(width, height);
     } else {
-        if (width > height) {
-            window->w = height;
-            window->h = width;
-        } else {
-            window->w = width;
-            window->h = height;
-        }
+        window->w = SDL_min(width, height);
+        window->h = SDL_max(width, height);
     }
 }
 
