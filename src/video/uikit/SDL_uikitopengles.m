@@ -132,24 +132,26 @@ UIKit_GL_CreateContext(_THIS, SDL_Window * window)
         share_group = [view.context sharegroup];
     }
 
-    /* construct our view, passing in SDL's OpenGL configuration data */
     CGRect frame;
     if (window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_BORDERLESS)) {
         frame = [[uiwindow screen] bounds];
     } else {
         frame = [[uiwindow screen] applicationFrame];
     }
+
+    /* construct our view, passing in SDL's OpenGL configuration data */
     view = [[SDL_uikitopenglview alloc] initWithFrame: frame
-                                    scale: scale
-                                    retainBacking: _this->gl_config.retained_backing
-                                    rBits: _this->gl_config.red_size
-                                    gBits: _this->gl_config.green_size
-                                    bBits: _this->gl_config.blue_size
-                                    aBits: _this->gl_config.alpha_size
-                                    depthBits: _this->gl_config.depth_size
-                                    stencilBits: _this->gl_config.stencil_size
-                                    majorVersion: _this->gl_config.major_version
-                                    shareGroup: share_group];
+                                                scale: scale
+                                        retainBacking: _this->gl_config.retained_backing
+                                                rBits: _this->gl_config.red_size
+                                                gBits: _this->gl_config.green_size
+                                                bBits: _this->gl_config.blue_size
+                                                aBits: _this->gl_config.alpha_size
+                                            depthBits: _this->gl_config.depth_size
+                                          stencilBits: _this->gl_config.stencil_size
+                                                 sRGB: _this->gl_config.framebuffer_srgb_capable
+                                         majorVersion: _this->gl_config.major_version
+                                           shareGroup: share_group];
     if (!view) {
         return NULL;
     }

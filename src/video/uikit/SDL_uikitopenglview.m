@@ -41,16 +41,17 @@
 }
 
 - (id)initWithFrame:(CGRect)frame
-      scale:(CGFloat)scale
+              scale:(CGFloat)scale
       retainBacking:(BOOL)retained
-      rBits:(int)rBits
-      gBits:(int)gBits
-      bBits:(int)bBits
-      aBits:(int)aBits
-      depthBits:(int)depthBits
-      stencilBits:(int)stencilBits
-      majorVersion:(int)majorVersion
-      shareGroup:(EAGLSharegroup*)shareGroup
+              rBits:(int)rBits
+              gBits:(int)gBits
+              bBits:(int)bBits
+              aBits:(int)aBits
+          depthBits:(int)depthBits
+        stencilBits:(int)stencilBits
+               sRGB:(BOOL)sRGB
+       majorVersion:(int)majorVersion
+         shareGroup:(EAGLSharegroup*)shareGroup
 {
     depthBufferFormat = 0;
 
@@ -59,12 +60,29 @@
         const BOOL useDepthBuffer = (depthBits != 0);
         NSString *colorFormat = nil;
 
+        self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
+        self.autoresizesSubviews = YES;
+
         /* The EAGLRenderingAPI enum values currently map 1:1 to major GLES
            versions, and this allows us to handle future OpenGL ES versions.
          */
         EAGLRenderingAPI api = majorVersion;
 
-        if (rBits == 8 && gBits == 8 && bBits == 8) {
+        context = [[EAGLContext alloc] initWithAPI:api sharegroup:shareGroup];
+        if (!context || ![EAGLContext setCurrentContext:context]) {
+            [self release];
+            SDL_SetError("OpenGL ES %d not supported", majorVersion);
+            return nil;
+        }
+
+#ifdef __IPHONE_7_0
+        /* sRGB context support was added in iOS 7 */
+        BOOL hasiOS7 = [[UIDevice currentDevice].systemVersion compare:@"7.0" options:NSNumericSearch] != NSOrderedAscending;
+        if (sRGB && hasiOS7) {
+            colorFormat = kEAGLColorFormatSRGBA8;
+        } else
+#endif
+        if (rBits >= 8 && gBits >= 8 && bBits >= 8) {
             /* if user specifically requests rbg888 or some color format higher than 16bpp */
             colorFormat = kEAGLColorFormatRGBA8;
         } else {
@@ -81,23 +99,24 @@
                                         colorFormat, kEAGLDrawablePropertyColorFormat,
                                         nil];
 
-        context = [[EAGLContext alloc] initWithAPI:api sharegroup:shareGroup];
-        if (!context || ![EAGLContext setCurrentContext:context]) {
-            [self release];
-            SDL_SetError("OpenGL ES %d not supported", majorVersion);
-            return nil;
-        }
-
         /* Set the appropriate scale (for retina display support) */
         self.contentScaleFactor = scale;
 
-        /* create the buffers */
-        glGenFramebuffersOES(1, &viewFramebuffer);
+        /* Create the color Renderbuffer Object */
         glGenRenderbuffersOES(1, &viewRenderbuffer);
-
-        glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
         glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
-        [context renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:(CAEAGLLayer*)self.layer];
+
+        if (![context renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:eaglLayer]) {
+            [self release];
+            SDL_SetError("Failed creating OpenGL ES drawable");
+            return nil;
+        }
+
+        /* Create the Framebuffer Object */
+        glGenFramebuffersOES(1, &viewFramebuffer);
+        glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
+
+        /* attach the color renderbuffer to the FBO */
         glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, viewRenderbuffer);
 
         glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
@@ -124,15 +143,14 @@
         }
 
         if (glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES) {
-            return NO;
+            [self release];
+            SDL_SetError("Failed creating OpenGL ES framebuffer");
+            return nil;
         }
 
         glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
-        /* end create buffers */
-
-        self.autoresizingMask = (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
-        self.autoresizesSubviews = YES;
     }
+
     return self;
 }
 
@@ -220,12 +238,17 @@
 
 - (void)destroyFramebuffer
 {
-    glDeleteFramebuffersOES(1, &viewFramebuffer);
-    viewFramebuffer = 0;
-    glDeleteRenderbuffersOES(1, &viewRenderbuffer);
-    viewRenderbuffer = 0;
+    if (viewFramebuffer != 0) {
+        glDeleteFramebuffersOES(1, &viewFramebuffer);
+        viewFramebuffer = 0;
+    }
 
-    if (depthRenderbuffer) {
+    if (viewRenderbuffer != 0) {
+        glDeleteRenderbuffersOES(1, &viewRenderbuffer);
+        viewRenderbuffer = 0;
+    }
+
+    if (depthRenderbuffer != 0) {
         glDeleteRenderbuffersOES(1, &depthRenderbuffer);
         depthRenderbuffer = 0;
     }
