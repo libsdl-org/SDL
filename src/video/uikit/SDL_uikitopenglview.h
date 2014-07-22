@@ -63,16 +63,17 @@
 - (void)setCurrentContext;
 
 - (id)initWithFrame:(CGRect)frame
-    scale:(CGFloat)scale
-    retainBacking:(BOOL)retained
-    rBits:(int)rBits
-    gBits:(int)gBits
-    bBits:(int)bBits
-    aBits:(int)aBits
-    depthBits:(int)depthBits
-    stencilBits:(int)stencilBits
-    majorVersion:(int)majorVersion
-    shareGroup:(EAGLSharegroup*)shareGroup;
+              scale:(CGFloat)scale
+      retainBacking:(BOOL)retained
+              rBits:(int)rBits
+              gBits:(int)gBits
+              bBits:(int)bBits
+              aBits:(int)aBits
+          depthBits:(int)depthBits
+        stencilBits:(int)stencilBits
+               sRGB:(BOOL)sRGB
+       majorVersion:(int)majorVersion
+         shareGroup:(EAGLSharegroup*)shareGroup;
 
 - (void)updateFrame;
 
