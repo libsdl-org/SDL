@@ -53,7 +53,7 @@ static SDL_bool s_showingMessageBox = SDL_FALSE;
     return self;
 }
 
-- (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex;
+- (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
 {
     *clickedButtonIndex = (int)buttonIndex;
 }
@@ -77,8 +77,8 @@ UIKit_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     @autoreleasepool {
         UIAlertView* alert = [[UIAlertView alloc] init];
 
-        alert.title = [NSString stringWithUTF8String:messageboxdata->title];
-        alert.message = [NSString stringWithUTF8String:messageboxdata->message];
+        alert.title = @(messageboxdata->title);
+        alert.message = @(messageboxdata->message);
         alert.delegate = [[UIKit_UIAlertViewDelegate alloc] initWithButtonIndex:&clicked];
 
         for (i = 0; i < messageboxdata->numbuttons; ++i) {

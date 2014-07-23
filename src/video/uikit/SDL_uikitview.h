@@ -61,9 +61,9 @@
 - (void)showKeyboard;
 - (void)hideKeyboard;
 - (void)initializeKeyboard;
-@property (readonly) BOOL keyboardVisible;
-@property (nonatomic,assign) SDL_Rect textInputRect;
-@property (nonatomic,assign) int keyboardHeight;
+@property (nonatomic, readonly) BOOL keyboardVisible;
+@property (nonatomic, assign) SDL_Rect textInputRect;
+@property (nonatomic, assign) int keyboardHeight;
 
 SDL_bool UIKit_HasScreenKeyboardSupport(_THIS);
 void UIKit_ShowScreenKeyboard(_THIS, SDL_Window *window);

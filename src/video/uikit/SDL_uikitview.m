@@ -395,7 +395,7 @@ void _uikit_keyboard_init() {
                          queue:queue
                     usingBlock:^(NSNotification *notification) {
                         int height = 0;
-                        CGSize keyboardSize = [[[notification userInfo] objectForKey:UIKeyboardFrameBeginUserInfoKey] CGRectValue].size;
+                        CGSize keyboardSize = [[notification userInfo][UIKeyboardFrameBeginUserInfoKey] CGRectValue].size;
                         height = keyboardSize.height;
                         UIInterfaceOrientation ui_orient = [[UIApplication sharedApplication] statusBarOrientation];
                         if (ui_orient == UIInterfaceOrientationLandscapeRight || ui_orient == UIInterfaceOrientationLandscapeLeft) {

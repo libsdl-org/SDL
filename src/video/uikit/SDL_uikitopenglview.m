@@ -94,10 +94,10 @@
         CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
 
         eaglLayer.opaque = YES;
-        eaglLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
-                                        [NSNumber numberWithBool: retained], kEAGLDrawablePropertyRetainedBacking,
-                                        colorFormat, kEAGLDrawablePropertyColorFormat,
-                                        nil];
+        eaglLayer.drawableProperties = @{
+            kEAGLDrawablePropertyRetainedBacking: @(retained),
+            kEAGLDrawablePropertyColorFormat: colorFormat
+        };
 
         /* Set the appropriate scale (for retina display support) */
         self.contentScaleFactor = scale;
