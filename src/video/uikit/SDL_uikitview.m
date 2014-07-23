@@ -37,7 +37,19 @@
 
 void _uikit_keyboard_init();
 
-@implementation SDL_uikitview
+@implementation SDL_uikitview {
+
+    SDL_TouchID touchId;
+    UITouch *leftFingerDown;
+#ifndef IPHONE_TOUCH_EFFICIENT_DANGEROUS
+    UITouch *finger[MAX_SIMULTANEOUS_TOUCHES];
+#endif
+
+#if SDL_IPHONE_KEYBOARD
+    UITextField *textField;
+#endif
+
+}
 
 - (void)dealloc
 {
@@ -66,7 +78,7 @@ void _uikit_keyboard_init();
     CGPoint point = [touch locationInView: self];
 
     if (normalize) {
-        CGRect bounds = [self bounds];
+        CGRect bounds = self.bounds;
         point.x /= bounds.size.width;
         point.y /= bounds.size.height;
     }
@@ -122,7 +134,7 @@ void _uikit_keyboard_init();
 
         CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
 #ifdef IPHONE_TOUCH_EFFICIENT_DANGEROUS
-        SDL_SendTouch(touchId, (long)touch,
+        SDL_SendTouch(touchId, (SDL_FingerID)((size_t)touch),
                       SDL_FALSE, locationInView.x, locationInView.y, 1.0f);
 #else
         int i;
@@ -160,7 +172,7 @@ void _uikit_keyboard_init();
 
         CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
 #ifdef IPHONE_TOUCH_EFFICIENT_DANGEROUS
-        SDL_SendTouchMotion(touchId, (long)touch,
+        SDL_SendTouchMotion(touchId, (SDL_FingerID)((size_t)touch),
                             locationInView.x, locationInView.y, 1.0f);
 #else
         int i;
@@ -180,14 +192,9 @@ void _uikit_keyboard_init();
 */
 #if SDL_IPHONE_KEYBOARD
 
-@synthesize textInputRect = textInputRect;
-@synthesize keyboardHeight = keyboardHeight;
-
-/* Is the iPhone virtual keyboard visible onscreen? */
-- (BOOL)keyboardVisible
-{
-    return keyboardVisible;
-}
+@synthesize textInputRect;
+@synthesize keyboardHeight;
+@synthesize keyboardVisible;
 
 /* Set ourselves up as a UITextFieldDelegate */
 - (void)initializeKeyboard
@@ -337,7 +344,7 @@ SDL_bool UIKit_IsScreenKeyboardShown(_THIS, SDL_Window *window)
         return 0;
     }
 
-    return view.keyboardVisible;
+    return view.isKeyboardVisible;
 }
 
 

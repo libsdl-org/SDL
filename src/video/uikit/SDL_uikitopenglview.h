@@ -29,38 +29,7 @@
     The view content is basically an EAGL surface you render your OpenGL scene into.
     Note that setting the view non-opaque will only work if the EAGL surface has an alpha channel.
  */
-@interface SDL_uikitopenglview : SDL_uikitview {
-
-@private
-    /* The pixel dimensions of the backbuffer */
-    GLint backingWidth;
-    GLint backingHeight;
-
-    EAGLContext *context;
-
-    /* OpenGL names for the renderbuffer and framebuffers used to render to this view */
-    GLuint viewRenderbuffer, viewFramebuffer;
-
-    /* OpenGL name for the depth buffer that is attached to viewFramebuffer, if it exists (0 if it does not exist) */
-    GLuint depthRenderbuffer;
-
-    /* format of depthRenderbuffer */
-    GLenum depthBufferFormat;
-
-    id displayLink;
-    int animationInterval;
-    void (*animationCallback)(void*);
-    void *animationCallbackParam;
-}
-
-@property (nonatomic, retain, readonly) EAGLContext *context;
-
-/* The width and height of the drawable in pixels (as opposed to points.) */
-@property (nonatomic, readonly) int backingWidth;
-@property (nonatomic, readonly) int backingHeight;
-
-- (void)swapBuffers;
-- (void)setCurrentContext;
+@interface SDL_uikitopenglview : SDL_uikitview
 
 - (id)initWithFrame:(CGRect)frame
               scale:(CGFloat)scale
@@ -75,11 +44,20 @@
        majorVersion:(int)majorVersion
          shareGroup:(EAGLSharegroup*)shareGroup;
 
+@property (nonatomic, retain, readonly) EAGLContext *context;
+
+/* The width and height of the drawable in pixels (as opposed to points.) */
+@property (nonatomic, readonly) int backingWidth;
+@property (nonatomic, readonly) int backingHeight;
+
+- (void)swapBuffers;
+- (void)setCurrentContext;
+
 - (void)updateFrame;
 
 - (void)setAnimationCallback:(int)interval
-    callback:(void (*)(void*))callback
-    callbackParam:(void*)callbackParam;
+                    callback:(void (*)(void*))callback
+               callbackParam:(void*)callbackParam;
 
 - (void)startAnimation;
 - (void)stopAnimation;

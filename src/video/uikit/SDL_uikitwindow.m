@@ -239,7 +239,6 @@ UIKit_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
     SDL_DisplayData *displaydata = (SDL_DisplayData *) display->driverdata;
     SDL_WindowData *windowdata = (SDL_WindowData *) window->driverdata;
     SDL_uikitviewcontroller *viewcontroller = windowdata->viewcontroller;
-    UIWindow *uiwindow = windowdata->uiwindow;
     CGRect bounds;
 
     if (fullscreen || (window->flags & SDL_WINDOW_BORDERLESS)) {

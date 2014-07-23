@@ -75,16 +75,17 @@ SDL_IdleTimerDisabledChanged(void *userdata, const char *name, const char *oldVa
     [UIApplication sharedApplication].idleTimerDisabled = disable;
 }
 
-@interface SDL_splashviewcontroller : UIViewController {
+@interface SDL_splashviewcontroller : UIViewController
+
+- (void)updateSplashImage:(UIInterfaceOrientation)interfaceOrientation;
+
+@end
+
+@implementation SDL_splashviewcontroller {
     UIImageView *splash;
     UIImage *splashPortrait;
     UIImage *splashLandscape;
 }
-
-- (void)updateSplashImage:(UIInterfaceOrientation)interfaceOrientation;
-@end
-
-@implementation SDL_splashviewcontroller
 
 - (id)init
 {
