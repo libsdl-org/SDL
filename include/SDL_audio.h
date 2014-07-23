@@ -155,6 +155,9 @@ typedef Uint16 SDL_AudioFormat;
  *
  *  Once the callback returns, the buffer will no longer be valid.
  *  Stereo samples are stored in a LRLRLR ordering.
+ *
+ *  You can choose to avoid callbacks and use SDL_QueueAudio() instead, if
+ *  you like. Just open your audio device with a NULL callback.
  */
 typedef void (SDLCALL * SDL_AudioCallback) (void *userdata, Uint8 * stream,
                                             int len);
@@ -171,8 +174,8 @@ typedef struct SDL_AudioSpec
     Uint16 samples;             /**< Audio buffer size in samples (power of 2) */
     Uint16 padding;             /**< Necessary for some compile environments */
     Uint32 size;                /**< Audio buffer size in bytes (calculated) */
-    SDL_AudioCallback callback;
-    void *userdata;
+    SDL_AudioCallback callback; /**< Callback that feeds the audio device (NULL to use SDL_QueueAudio()). */
+    void *userdata;             /**< Userdata passed to callback (ignored for NULL callbacks). */
 } SDL_AudioSpec;
 
 
@@ -273,9 +276,11 @@ extern DECLSPEC const char *SDLCALL SDL_GetCurrentAudioDriver(void);
  *      to the audio buffer, and the length in bytes of the audio buffer.
  *      This function usually runs in a separate thread, and so you should
  *      protect data structures that it accesses by calling SDL_LockAudio()
- *      and SDL_UnlockAudio() in your code.
+ *      and SDL_UnlockAudio() in your code. Alternately, you may pass a NULL
+ *      pointer here, and call SDL_QueueAudio() with some frequency, to queue
+ *      more audio samples to be played.
  *    - \c desired->userdata is passed as the first parameter to your callback
- *      function.
+ *      function. If you passed a NULL callback, this value is ignored.
  *
  *  The audio device starts out playing silence when it's opened, and should
  *  be enabled for playing by calling \c SDL_PauseAudio(0) when you are ready
@@ -473,6 +478,100 @@ extern DECLSPEC void SDLCALL SDL_MixAudioFormat(Uint8 * dst,
                                                 const Uint8 * src,
                                                 SDL_AudioFormat format,
                                                 Uint32 len, int volume);
+
+/**
+ *  Queue more audio on non-callback devices.
+ *
+ *  SDL offers two ways to feed audio to the device: you can either supply a
+ *  callback that SDL triggers with some frequency to obtain more audio
+ *  (pull method), or you can supply no callback, and then SDL will expect
+ *  you to supply data at regular intervals (push method) with this function.
+ *
+ *  There are no limits on the amount of data you can queue, short of
+ *  exhaustion of address space. Queued data will drain to the device as
+ *  necessary without further intervention from you. If the device needs
+ *  audio but there is not enough queued, it will play silence to make up
+ *  the difference. This means you will have skips in your audio playback
+ *  if you aren't routinely queueing sufficient data.
+ *
+ *  This function copies the supplied data, so you are safe to free it when
+ *  the function returns. This function is thread-safe, but queueing to the
+ *  same device from two threads at once does not promise which buffer will
+ *  be queued first.
+ *
+ *  You may not queue audio on a device that is using an application-supplied
+ *  callback; doing so returns an error. You have to use the audio callback
+ *  or queue audio with this function, but not both.
+ *
+ *  You should not call SDL_LockAudio() on the device before queueing; SDL
+ *  handles locking internally for this function.
+ *
+ *  \param dev The device ID to which we will queue audio.
+ *  \param data The data to queue to the device for later playback.
+ *  \param len The number of bytes (not samples!) to which (data) points.
+ *  \return zero on success, -1 on error.
+ *
+ *  \sa SDL_GetQueuedAudioSize
+ *  \sa SDL_ClearQueuedAudio
+ */
+extern DECLSPEC int SDLCALL SDL_QueueAudio(SDL_AudioDeviceID dev, const void *data, Uint32 len);
+
+/**
+ *  Get the number of bytes of still-queued audio.
+ *
+ *  This is the number of bytes that have been queued for playback with
+ *  SDL_QueueAudio(), but have not yet been sent to the hardware.
+ *
+ *  Once we've sent it to the hardware, this function can not decide the exact
+ *  byte boundary of what has been played. It's possible that we just gave the
+ *  hardware several kilobytes right before you called this function, but it
+ *  hasn't played any of it yet, or maybe half of it, etc.
+ *
+ *  You may not queue audio on a device that is using an application-supplied
+ *  callback; calling this function on such a device always returns 0.
+ *  You have to use the audio callback or queue audio with SDL_QueueAudio(),
+ *  but not both.
+ *
+ *  You should not call SDL_LockAudio() on the device before querying; SDL
+ *  handles locking internally for this function.
+ *
+ *  \param dev The device ID of which we will query queued audio size.
+ *  \return Number of bytes (not samples!) of queued audio.
+ *
+ *  \sa SDL_QueueAudio
+ *  \sa SDL_ClearQueuedAudio
+ */
+extern DECLSPEC Uint32 SDLCALL SDL_GetQueuedAudioSize(SDL_AudioDeviceID dev);
+
+/**
+ *  Drop any queued audio data waiting to be sent to the hardware.
+ *
+ *  Immediately after this call, SDL_GetQueuedAudioSize() will return 0 and
+ *  the hardware will start playing silence if more audio isn't queued.
+ *
+ *  This will not prevent playback of queued audio that's already been sent
+ *  to the hardware, as we can not undo that, so expect there to be some
+ *  fraction of a second of audio that might still be heard. This can be
+ *  useful if you want to, say, drop any pending music during a level change
+ *  in your game.
+ *
+ *  You may not queue audio on a device that is using an application-supplied
+ *  callback; calling this function on such a device is always a no-op.
+ *  You have to use the audio callback or queue audio with SDL_QueueAudio(),
+ *  but not both.
+ *
+ *  You should not call SDL_LockAudio() on the device before clearing the
+ *  queue; SDL handles locking internally for this function.
+ *
+ *  This function always succeeds and thus returns void.
+ *
+ *  \param dev The device ID of which to clear the audio queue.
+ *
+ *  \sa SDL_QueueAudio
+ *  \sa SDL_GetQueuedAudioSize
+ */
+extern DECLSPEC void SDLCALL SDL_ClearQueuedAudio(SDL_AudioDeviceID dev);
+
 
 /**
  *  \name Audio lock functions
