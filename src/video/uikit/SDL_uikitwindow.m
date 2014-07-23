@@ -248,11 +248,10 @@ UIKit_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
         [UIApplication sharedApplication].statusBarHidden = NO;
     }
 
-#ifdef __IPHONE_7_0
+    /* iOS 7+ won't update the status bar until we tell it to. */
     if ([viewcontroller respondsToSelector:@selector(setNeedsStatusBarAppearanceUpdate)]) {
         [viewcontroller setNeedsStatusBarAppearanceUpdate];
     }
-#endif
 
     if (fullscreen || (window->flags & SDL_WINDOW_BORDERLESS)) {
         bounds = [displaydata->uiscreen bounds];
