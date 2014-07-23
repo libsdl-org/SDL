@@ -30,17 +30,16 @@
 
 static SDL_bool s_showingMessageBox = SDL_FALSE;
 
-@interface UIKit_UIAlertViewDelegate : NSObject <UIAlertViewDelegate> {
-@private
-    int *clickedButtonIndex;
-}
+@interface UIKit_UIAlertViewDelegate : NSObject <UIAlertViewDelegate>
 
 - (id)initWithButtonIndex:(int *)_buttonIndex;
 - (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex;
 
 @end
 
-@implementation UIKit_UIAlertViewDelegate
+@implementation UIKit_UIAlertViewDelegate {
+    int *clickedButtonIndex;
+}
 
 - (id)initWithButtonIndex:(int *)buttonIndex
 {
@@ -48,7 +47,8 @@ static SDL_bool s_showingMessageBox = SDL_FALSE;
     if (self == nil) {
         return nil;
     }
-    self->clickedButtonIndex = buttonIndex;
+
+    clickedButtonIndex = buttonIndex;
 
     return self;
 }

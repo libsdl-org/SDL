@@ -28,12 +28,28 @@
 #include "SDL_uikitmessagebox.h"
 
 
-@implementation SDL_uikitopenglview
+@implementation SDL_uikitopenglview {
+
+    /* OpenGL names for the renderbuffer and framebuffers used to render to this view */
+    GLuint viewRenderbuffer, viewFramebuffer;
+
+    /* OpenGL name for the depth buffer that is attached to viewFramebuffer, if it exists (0 if it does not exist) */
+    GLuint depthRenderbuffer;
+
+    /* format of depthRenderbuffer */
+    GLenum depthBufferFormat;
+
+    id displayLink;
+    int animationInterval;
+    void (*animationCallback)(void*);
+    void *animationCallbackParam;
+
+}
 
 @synthesize context;
 
-@synthesize backingWidth = backingWidth;
-@synthesize backingHeight = backingHeight;
+@synthesize backingWidth;
+@synthesize backingHeight;
 
 + (Class)layerClass
 {
@@ -53,8 +69,6 @@
        majorVersion:(int)majorVersion
          shareGroup:(EAGLSharegroup*)shareGroup
 {
-    depthBufferFormat = 0;
-
     if ((self = [super initWithFrame:frame])) {
         const BOOL useStencilBuffer = (stencilBits != 0);
         const BOOL useDepthBuffer = (depthBits != 0);

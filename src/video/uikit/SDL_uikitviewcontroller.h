@@ -23,12 +23,9 @@
 
 #include "../SDL_sysvideo.h"
 
-@interface SDL_uikitviewcontroller : UIViewController {
-@private
-    SDL_Window *window;
-}
+@interface SDL_uikitviewcontroller : UIViewController
 
-@property (nonatomic, readwrite) SDL_Window *window;
+@property (nonatomic, assign) SDL_Window *window;
 
 - (id)initWithSDLWindow:(SDL_Window *)_window;
 - (void)loadView;
