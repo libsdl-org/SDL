@@ -70,9 +70,7 @@
     const char *orientationsHint = SDL_GetHint(SDL_HINT_ORIENTATIONS);
 
     if (orientationsHint != NULL) {
-        NSString *orientationsString = [NSString stringWithCString:orientationsHint
-                                                          encoding:NSUTF8StringEncoding];
-        NSArray *orientations = [orientationsString componentsSeparatedByCharactersInSet:
+        NSArray *orientations = [@(orientationsHint) componentsSeparatedByCharactersInSet:
                                  [NSCharacterSet characterSetWithCharactersInString:@" "]];
 
         if ([orientations containsObject:@"LandscapeLeft"]) {
