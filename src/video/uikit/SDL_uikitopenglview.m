@@ -75,14 +75,11 @@
             return nil;
         }
 
-#ifdef __IPHONE_7_0
-        /* sRGB context support was added in iOS 7 */
         BOOL hasiOS7 = [[UIDevice currentDevice].systemVersion compare:@"7.0" options:NSNumericSearch] != NSOrderedAscending;
         if (sRGB && hasiOS7) {
+             /* sRGB EAGL drawable support was added in iOS 7 */
             colorFormat = kEAGLColorFormatSRGBA8;
-        } else
-#endif
-        if (rBits >= 8 && gBits >= 8 && bBits >= 8) {
+        } else if (rBits >= 8 && gBits >= 8 && bBits >= 8) {
             /* if user specifically requests rbg888 or some color format higher than 16bpp */
             colorFormat = kEAGLColorFormatRGBA8;
         } else {
