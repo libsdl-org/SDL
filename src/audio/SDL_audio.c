@@ -205,22 +205,34 @@ SDL_AudioOpenDevice_Default(_THIS, const char *devname, int iscapture)
     return -1;
 }
 
+static SDL_INLINE SDL_bool
+is_in_audio_device_thread(SDL_AudioDevice * device)
+{
+    /* The device thread locks the same mutex, but not through the public API.
+       This check is in case the application, in the audio callback,
+       tries to lock the thread that we've already locked from the
+       device thread...just in case we only have non-recursive mutexes. */
+    if (device->thread && (SDL_ThreadID() == device->threadid)) {
+        return SDL_TRUE;
+    }
+
+    return SDL_FALSE;
+}
+
 static void
 SDL_AudioLockDevice_Default(SDL_AudioDevice * device)
 {
-    if (device->thread && (SDL_ThreadID() == device->threadid)) {
-        return;
+    if (!is_in_audio_device_thread(device)) {
+        SDL_LockMutex(device->mixer_lock);
     }
-    SDL_LockMutex(device->mixer_lock);
 }
 
 static void
 SDL_AudioUnlockDevice_Default(SDL_AudioDevice * device)
 {
-    if (device->thread && (SDL_ThreadID() == device->threadid)) {
-        return;
+    if (!is_in_audio_device_thread(device)) {
+        SDL_UnlockMutex(device->mixer_lock);
     }
-    SDL_UnlockMutex(device->mixer_lock);
 }
 
 
