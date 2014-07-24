@@ -116,6 +116,7 @@ UIKit_GL_CreateContext(_THIS, SDL_Window * window)
     SDL_uikitopenglview *view;
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     UIWindow *uiwindow = data->uiwindow;
+    CGRect frame = UIKit_ComputeViewFrame(window, uiwindow.screen);
     EAGLSharegroup *share_group = nil;
     CGFloat scale = 1.0;
 
@@ -124,19 +125,12 @@ UIKit_GL_CreateContext(_THIS, SDL_Window * window)
            dimensions of the OpenGL view will match the pixel dimensions of the
            screen rather than the dimensions in points.
          */
-        scale = [uiwindow screen].scale;
+        scale = uiwindow.screen.scale;
     }
 
     if (_this->gl_config.share_with_current_context) {
         SDL_uikitopenglview *view = (SDL_uikitopenglview *) SDL_GL_GetCurrentContext();
         share_group = [view.context sharegroup];
-    }
-
-    CGRect frame;
-    if (window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_BORDERLESS)) {
-        frame = [[uiwindow screen] bounds];
-    } else {
-        frame = [[uiwindow screen] applicationFrame];
     }
 
     /* construct our view, passing in SDL's OpenGL configuration data */
@@ -175,7 +169,7 @@ UIKit_GL_CreateContext(_THIS, SDL_Window * window)
     }
 
     /* Make this window the current mouse focus for touch input */
-    if ([uiwindow screen] == [UIScreen mainScreen]) {
+    if (uiwindow.screen == [UIScreen mainScreen]) {
         SDL_SetMouseFocus(window);
         SDL_SetKeyboardFocus(window);
     }

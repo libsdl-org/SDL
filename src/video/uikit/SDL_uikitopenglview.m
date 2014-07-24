@@ -26,6 +26,7 @@
 #include <OpenGLES/EAGLDrawable.h>
 #include "SDL_uikitopenglview.h"
 #include "SDL_uikitmessagebox.h"
+#include "SDL_uikitvideo.h"
 
 
 @implementation SDL_uikitopenglview {
@@ -89,8 +90,7 @@
             return nil;
         }
 
-        BOOL hasiOS7 = [[UIDevice currentDevice].systemVersion compare:@"7.0" options:NSNumericSearch] != NSOrderedAscending;
-        if (sRGB && hasiOS7) {
+        if (sRGB && UIKit_IsSystemVersionAtLeast(@"7.0")) {
              /* sRGB EAGL drawable support was added in iOS 7 */
             colorFormat = kEAGLColorFormatSRGBA8;
         } else if (rBits >= 8 && gBits >= 8 && bBits >= 8) {
