@@ -49,7 +49,7 @@
 - (void)hideKeyboard;
 - (void)initializeKeyboard;
 
-@property (nonatomic, readonly, assign, getter=isKeyboardVisible) BOOL keyboardVisible;
+@property (nonatomic, assign, getter=isKeyboardVisible) BOOL keyboardVisible;
 @property (nonatomic, assign) SDL_Rect textInputRect;
 @property (nonatomic, assign) int keyboardHeight;
 
