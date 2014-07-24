@@ -387,9 +387,10 @@ void _uikit_keyboard_update() {
 void _uikit_keyboard_set_height(int height) {
     SDL_uikitview *view = getWindowView(SDL_GetFocusWindow());
     if (view == nil) {
-        return ;
+        return;
     }
-    
+
+    view.keyboardVisible = height > 0;
     view.keyboardHeight = height;
     _uikit_keyboard_update();
 }
