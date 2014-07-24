@@ -130,6 +130,26 @@ UIKit_VideoQuit(_THIS)
     UIKit_QuitModes(_this);
 }
 
+BOOL
+UIKit_IsSystemVersionAtLeast(NSString *version)
+{
+    NSString *sysversion = [UIDevice currentDevice].systemVersion;
+    return [sysversion compare:version options:NSNumericSearch] != NSOrderedAscending;
+}
+
+CGRect
+UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
+{
+    BOOL hasiOS7 = UIKit_IsSystemVersionAtLeast(@"7.0");
+
+    if (hasiOS7 || (window->flags & (SDL_WINDOW_BORDERLESS|SDL_WINDOW_FULLSCREEN))) {
+        /* The view should always show behind the status bar in iOS 7+. */
+        return screen.bounds;
+    } else {
+        return screen.applicationFrame;
+    }
+}
+
 /*
  * iOS log support.
  *

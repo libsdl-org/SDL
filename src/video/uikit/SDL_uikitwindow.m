@@ -62,16 +62,11 @@ static int SetupWindowData(_THIS, SDL_Window *window, UIWindow *uiwindow, SDL_bo
         window->x = 0;
         window->y = 0;
 
-        CGRect bounds;
-        if (window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_BORDERLESS)) {
-            bounds = [displaydata->uiscreen bounds];
-        } else {
-            bounds = [displaydata->uiscreen applicationFrame];
-        }
+        CGRect frame = UIKit_ComputeViewFrame(window, displaydata->uiscreen);
 
         /* Get frame dimensions */
-        int width = (int) bounds.size.width;
-        int height = (int) bounds.size.height;
+        int width = (int) frame.size.width;
+        int height = (int) frame.size.height;
 
         /* Make sure the width/height are oriented correctly */
         if (UIKit_IsDisplayLandscape(displaydata->uiscreen) != (width > height)) {
@@ -239,7 +234,7 @@ UIKit_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
     SDL_DisplayData *displaydata = (SDL_DisplayData *) display->driverdata;
     SDL_WindowData *windowdata = (SDL_WindowData *) window->driverdata;
     SDL_uikitviewcontroller *viewcontroller = windowdata->viewcontroller;
-    CGRect bounds;
+    CGRect frame;
 
     if (fullscreen || (window->flags & SDL_WINDOW_BORDERLESS)) {
         [UIApplication sharedApplication].statusBarHidden = YES;
@@ -252,20 +247,15 @@ UIKit_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
         [viewcontroller setNeedsStatusBarAppearanceUpdate];
     }
 
-    if (fullscreen || (window->flags & SDL_WINDOW_BORDERLESS)) {
-        bounds = [displaydata->uiscreen bounds];
-    } else {
-        bounds = [displaydata->uiscreen applicationFrame];
-    }
-
     /* Update the view's frame to account for the status bar change. */
-    windowdata->view.frame = bounds;
+    frame = UIKit_ComputeViewFrame(window, displaydata->uiscreen);
+    windowdata->view.frame = frame;
     [windowdata->view setNeedsLayout];
     [windowdata->view layoutIfNeeded];
 
     /* Get frame dimensions */
-    int width = (int) bounds.size.width;
-    int height = (int) bounds.size.height;
+    int width = (int) frame.size.width;
+    int height = (int) frame.size.height;
 
     /* We can pick either width or height here and we'll rotate the
        screen to match, so we pick the closest to what we wanted.
