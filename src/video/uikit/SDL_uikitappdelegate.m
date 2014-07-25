@@ -242,6 +242,28 @@ SDL_IdleTimerDisabledChanged(void *userdata, const char *name, const char *oldVa
     SDL_SendAppEvent(SDL_APP_LOWMEMORY);
 }
 
+- (void)application:(UIApplication *)application didChangeStatusBarOrientation:(UIInterfaceOrientation)oldStatusBarOrientation
+{
+    UIInterfaceOrientation orientation = application.statusBarOrientation;
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+
+    if (_this && _this->num_displays > 0) {
+        SDL_VideoDisplay *display = &_this->displays[0]; /* Main screen. */
+        SDL_DisplayMode *mode = &display->desktop_mode;
+
+        /* The desktop display mode should be kept in sync with the screen
+         * orientation so that updating a window's fullscreen state to
+         * SDL_WINDOW_FULLSCREEN_DESKTOP keeps the window dimensions in the
+         * correct orientation.
+         */
+        if (UIInterfaceOrientationIsLandscape(orientation) != (mode->w > mode->h)) {
+            int height = mode->w;
+            mode->w = mode->h;
+            mode->h = height;
+        }
+    }
+}
+
 - (void) applicationWillResignActive:(UIApplication*)application
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
