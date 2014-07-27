@@ -10,9 +10,6 @@
 /* Include this so we define UNICODE properly */
 #include "../../core/windows/SDL_windows.h"
 
-#include <stdio.h>
-#include <stdlib.h>
-
 /* Include the SDL main definition header */
 #include "SDL.h"
 #include "SDL_main.h"
@@ -103,23 +100,11 @@ ParseCommandLine(char *cmdline, char **argv)
     return (argc);
 }
 
-/* Show an error message */
-static void
-ShowError(const char *title, const char *message)
-{
-/* If USE_MESSAGEBOX is defined, you need to link with user32.lib */
-#ifdef USE_MESSAGEBOX
-    MessageBox(NULL, message, title, MB_ICONEXCLAMATION | MB_OK);
-#else
-    fprintf(stderr, "%s: %s\n", title, message);
-#endif
-}
-
 /* Pop up an out of memory message, returns to Windows */
 static BOOL
 OutOfMemory(void)
 {
-    ShowError("Fatal Error", "Out of memory - aborting");
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, "Fatal Error", "Out of memory - aborting", NULL);
     return FALSE;
 }
 
@@ -132,18 +117,10 @@ OutOfMemory(void)
 int
 console_main(int argc, char *argv[])
 {
-    int status;
-
     SDL_SetMainReady();
 
     /* Run the application main() code */
-    status = SDL_main(argc, argv);
-
-    /* Exit cleanly, calling atexit() functions */
-    exit(status);
-
-    /* Hush little compiler, don't you cry... */
-    return 0;
+    return SDL_main(argc, argv);
 }
 
 /* This is where execution begins [windowed apps] */
