@@ -94,6 +94,7 @@
       <CompileAs>Default</CompileAs>
       <ExceptionHandling>false</ExceptionHandling>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
+      <OmitDefaultLibName>true</OmitDefaultLibName>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -127,6 +128,7 @@
       <WarningLevel>Level3</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <ExceptionHandling>false</ExceptionHandling>
+      <OmitDefaultLibName>true</OmitDefaultLibName>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -167,6 +169,7 @@
       <ExceptionHandling>false</ExceptionHandling>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <EnableEnhancedInstructionSet>StreamingSIMDExtensions</EnableEnhancedInstructionSet>
+      <OmitDefaultLibName>true</OmitDefaultLibName>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -203,6 +206,7 @@
       <WarningLevel>Level3</WarningLevel>
       <ExceptionHandling>false</ExceptionHandling>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <OmitDefaultLibName>true</OmitDefaultLibName>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>

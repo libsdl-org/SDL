@@ -91,6 +91,7 @@
       <CompileAs>Default</CompileAs>
       <DebugInformationFormat>OldStyle</DebugInformationFormat>
       <ExceptionHandling>false</ExceptionHandling>
+      <OmitDefaultLibName>true</OmitDefaultLibName>
     </ClCompile>
     <Lib>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -114,6 +115,7 @@
       <CompileAs>Default</CompileAs>
       <DebugInformationFormat>OldStyle</DebugInformationFormat>
       <ExceptionHandling>false</ExceptionHandling>
+      <OmitDefaultLibName>true</OmitDefaultLibName>
     </ClCompile>
     <Lib>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -133,6 +135,7 @@
       <DebugInformationFormat>OldStyle</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
       <ExceptionHandling>false</ExceptionHandling>
+      <OmitDefaultLibName>true</OmitDefaultLibName>
     </ClCompile>
     <Lib>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -154,6 +157,7 @@
       <DebugInformationFormat>OldStyle</DebugInformationFormat>
       <CompileAs>Default</CompileAs>
       <ExceptionHandling>false</ExceptionHandling>
+      <OmitDefaultLibName>true</OmitDefaultLibName>
     </ClCompile>
     <Lib>
       <SuppressStartupBanner>true</SuppressStartupBanner>

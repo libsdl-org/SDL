@@ -56,6 +56,7 @@
 				SuppressStartupBanner="true"
 				DebugInformationFormat="1"
 				CompileAs="0"
+				OmitDefaultLibName="true"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -123,6 +124,7 @@
 				SuppressStartupBanner="true"
 				DebugInformationFormat="1"
 				CompileAs="0"
+				OmitDefaultLibName="true"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -316,6 +318,7 @@
 				SuppressStartupBanner="true"
 				DebugInformationFormat="1"
 				CompileAs="0"
+				OmitDefaultLibName="true"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -381,6 +384,7 @@
 				SuppressStartupBanner="true"
 				DebugInformationFormat="1"
 				CompileAs="0"
+				OmitDefaultLibName="true"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
