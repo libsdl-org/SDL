@@ -51,7 +51,7 @@ do { \
 
 #define DRAW_SETPIXEL_BLEND(getpixel, setpixel) \
 do { \
-    unsigned sr, sg, sb, sa; \
+    unsigned sr, sg, sb, sa = 0xFF; \
     getpixel; \
     sr = DRAW_MUL(inva, sr) + r; \
     sg = DRAW_MUL(inva, sg) + g; \
