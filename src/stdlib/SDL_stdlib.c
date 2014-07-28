@@ -377,34 +377,25 @@ _allmul()
 {
     /* *INDENT-OFF* */
     __asm {
-        push        ebp
-        mov         ebp,esp
-        push        edi
-        push        esi
+        mov         eax, dword ptr[esp+8]
+        mov         ecx, dword ptr[esp+10h]
+        or          ecx, eax
+        mov         ecx, dword ptr[esp+0Ch]
+        jne         hard
+        mov         eax, dword ptr[esp+4]
+        mul         ecx
+        ret         10h
+hard:
         push        ebx
-        sub         esp,0Ch
-        mov         eax,dword ptr [ebp+10h]
-        mov         edi,dword ptr [ebp+8]
-        mov         ebx,eax
-        mov         esi,eax
-        sar         esi,1Fh
-        mov         eax,dword ptr [ebp+8]
-        mul         ebx
-        imul        edi,esi
-        mov         ecx,edx
-        mov         dword ptr [ebp-18h],eax
-        mov         edx,dword ptr [ebp+0Ch]
-        add         ecx,edi
-        imul        ebx,edx
-        mov         eax,dword ptr [ebp-18h]
-        lea         ebx,[ebx+ecx]
-        mov         dword ptr [ebp-14h],ebx
-        mov         edx,dword ptr [ebp-14h]
-        add         esp,0Ch
+        mul         ecx
+        mov         ebx, eax
+        mov         eax, dword ptr[esp+8]
+        mul         dword ptr[esp+14h]
+        add         ebx, eax
+        mov         eax, dword ptr[esp+8]
+        mul         ecx
+        add         edx, ebx
         pop         ebx
-        pop         esi
-        pop         edi
-        pop         ebp
         ret         10h
     }
     /* *INDENT-ON* */
