@@ -41,8 +41,23 @@
 
 #include <Foundation/Foundation.h>
 
+@implementation SDL_uikitwindow
 
-static int SetupWindowData(_THIS, SDL_Window *window, UIWindow *uiwindow, SDL_bool created)
+- (void)layoutSubviews
+{
+    [super layoutSubviews];
+
+    /* This seems to be needed on iOS 8, otherwise the window's frame is put in
+     * an unexpected position when the screen or device is rotated.
+     * FIXME: is there a better solution to that problem than this ugly hack?
+     */
+    self.frame = self.screen.bounds;
+}
+
+@end
+
+
+static int SetupWindowData(_THIS, SDL_Window *window, SDL_uikitwindow *uiwindow, SDL_bool created)
 {
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
     SDL_DisplayData *displaydata = (SDL_DisplayData *) display->driverdata;
@@ -181,7 +196,7 @@ UIKit_CreateWindow(_THIS, SDL_Window *window)
 
     /* ignore the size user requested, and make a fullscreen window */
     /* !!! FIXME: can we have a smaller view? */
-    UIWindow *uiwindow = [[UIWindow alloc] initWithFrame:[data->uiscreen bounds]];
+    SDL_uikitwindow *uiwindow = [[SDL_uikitwindow alloc] initWithFrame:data->uiscreen.bounds];
 
     /* put the window on an external display if appropriate. This implicitly
      * does [uiwindow setframe:[uiscreen bounds]], so don't do it on the
@@ -198,7 +213,6 @@ UIKit_CreateWindow(_THIS, SDL_Window *window)
     }
 
     return 1;
-
 }
 
 void
@@ -228,45 +242,57 @@ UIKit_RaiseWindow(_THIS, SDL_Window * window)
     _this->GL_MakeCurrent(_this, _this->current_glwin, _this->current_glctx);
 }
 
-void
-UIKit_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen)
+static void
+UIKit_UpdateWindowBorder(_THIS, SDL_Window * window)
 {
-    SDL_DisplayData *displaydata = (SDL_DisplayData *) display->driverdata;
     SDL_WindowData *windowdata = (SDL_WindowData *) window->driverdata;
     SDL_uikitviewcontroller *viewcontroller = windowdata->viewcontroller;
     CGRect frame;
 
-    if (fullscreen || (window->flags & SDL_WINDOW_BORDERLESS)) {
-        [UIApplication sharedApplication].statusBarHidden = YES;
-    } else {
-        [UIApplication sharedApplication].statusBarHidden = NO;
-    }
+    if (windowdata->uiwindow.screen == [UIScreen mainScreen]) {
+        if (window->flags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_BORDERLESS)) {
+            [UIApplication sharedApplication].statusBarHidden = YES;
+        } else {
+            [UIApplication sharedApplication].statusBarHidden = NO;
+        }
 
-    /* iOS 7+ won't update the status bar until we tell it to. */
-    if ([viewcontroller respondsToSelector:@selector(setNeedsStatusBarAppearanceUpdate)]) {
-        [viewcontroller setNeedsStatusBarAppearanceUpdate];
+        /* iOS 7+ won't update the status bar until we tell it to. */
+        if ([viewcontroller respondsToSelector:@selector(setNeedsStatusBarAppearanceUpdate)]) {
+            [viewcontroller setNeedsStatusBarAppearanceUpdate];
+        }
     }
 
     /* Update the view's frame to account for the status bar change. */
-    frame = UIKit_ComputeViewFrame(window, displaydata->uiscreen);
+    frame = UIKit_ComputeViewFrame(window, windowdata->uiwindow.screen);
+
     windowdata->view.frame = frame;
     [windowdata->view setNeedsLayout];
     [windowdata->view layoutIfNeeded];
 
     /* Get frame dimensions */
-    int width = (int) frame.size.width;
+    int width  = (int) frame.size.width;
     int height = (int) frame.size.height;
 
     /* We can pick either width or height here and we'll rotate the
-       screen to match, so we pick the closest to what we wanted.
+     screen to match, so we pick the closest to what we wanted.
      */
     if (window->w >= window->h) {
-        window->w = SDL_max(width, height);
-        window->h = SDL_min(width, height);
+        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, SDL_max(width, height), SDL_min(width, height));
     } else {
-        window->w = SDL_min(width, height);
-        window->h = SDL_max(width, height);
+        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, SDL_min(width, height), SDL_max(width, height));
     }
+}
+
+void
+UIKit_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
+{
+    UIKit_UpdateWindowBorder(_this, window);
+}
+
+void
+UIKit_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen)
+{
+    UIKit_UpdateWindowBorder(_this, window);
 }
 
 void

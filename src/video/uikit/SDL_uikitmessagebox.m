@@ -32,7 +32,7 @@ static SDL_bool s_showingMessageBox = SDL_FALSE;
 
 @interface UIKit_UIAlertViewDelegate : NSObject <UIAlertViewDelegate>
 
-- (id)initWithButtonIndex:(int *)_buttonIndex;
+- (id)initWithButtonIndex:(int *)buttonIndex;
 - (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex;
 
 @end

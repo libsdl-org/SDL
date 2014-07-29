@@ -51,23 +51,18 @@ void _uikit_keyboard_init();
 
 }
 
-- (void)dealloc
-{
-    [super dealloc];
-}
-
 - (id)initWithFrame:(CGRect)frame
 {
-    self = [super initWithFrame: frame];
-
+    if (self = [super initWithFrame: frame]) {
 #if SDL_IPHONE_KEYBOARD
-    [self initializeKeyboard];
+        [self initializeKeyboard];
 #endif
 
-    self.multipleTouchEnabled = YES;
+        self.multipleTouchEnabled = YES;
 
-    touchId = 1;
-    SDL_AddTouch(touchId, "");
+        touchId = 1;
+        SDL_AddTouch(touchId, "");
+    }
 
     return self;
 
