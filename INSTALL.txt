@@ -9,7 +9,7 @@ To compile and install SDL:
         * Run './configure; make; make install'
 
         Mac OS X with Xcode:
-        * Read README-macosx.txt
+        * Read docs/README-macosx.md
 
         Mac OS X from the command line:
         * Run './configure; make; make install'
@@ -18,13 +18,13 @@ To compile and install SDL:
         * Run './configure; make; make install'
 
         Android:
-        * Read README-android.txt
+        * Read docs/README-android.md
 
         iOS:
-        * Read README-ios.txt
+        * Read docs/README-ios.md
 
         Using Cmake:
-        * Read README-cmake.txt
+        * Read docs/README-cmake.md
 
     2.  Look at the example programs in ./test, and check out the online
         documentation at http://wiki.libsdl.org/
