@@ -1,4 +1,5 @@
-SDL on DirectFB
+DirectFB
+========
 
 Supports:
 

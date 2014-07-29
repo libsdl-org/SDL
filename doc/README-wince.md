@@ -1,3 +1,5 @@
+WinCE
+=====
 
 Windows CE is no longer supported by SDL.
 

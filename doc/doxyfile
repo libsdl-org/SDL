@@ -38,7 +38,7 @@ PROJECT_NUMBER         = 2.0.0
 # If a relative path is entered, it will be relative to the location 
 # where doxygen was started. If left blank the current directory will be used.
 
-OUTPUT_DIRECTORY       = .
+OUTPUT_DIRECTORY       = ./output
 
 # If the CREATE_SUBDIRS tag is set to YES, then doxygen will create 
 # 4096 sub-directories (in 2 levels) under the output directory of each output 
@@ -569,7 +569,7 @@ WARN_LOGFILE           = ./doxygen_warn.txt
 # directories like "/usr/src/myproject". Separate the files or directories 
 # with spaces.
 
-INPUT                  = .
+INPUT                  = . ../include
 
 # This tag can be used to specify the character encoding of the source files 
 # that doxygen parses. Internally doxygen uses the UTF-8 encoding, which is 
@@ -618,7 +618,8 @@ FILE_PATTERNS          = *.c \
                          *.vhd \
                          *.vhdl \
                          *.h.in \
-                         *.h.default
+                         *.h.default \
+                         *.md
 
 # The RECURSIVE tag can be used to turn specify whether or not subdirectories 
 # should be searched for input files as well. Possible values are YES and NO. 
@@ -630,12 +631,15 @@ RECURSIVE              = YES
 # excluded from the INPUT source files. This way you can easily exclude a 
 # subdirectory from a directory tree whose root is specified with the INPUT tag.
 
-EXCLUDE                = ../doxy \
-                         ../test \
-                         ../Xcode \
-                         ../VisualC \
-                         ../VisualCE \
-                         ../Xcode-iOS
+EXCLUDE                = ../include/SDL_opengles2_gl2ext.h \
+                         ../include/SDL_opengles2_gl2platform.h \
+                         ../include/SDL_opengles2_khrplatform.h \
+                         ../include/SDL_opengl_glext.h \
+                         ../include/SDL_opengles2_gl2.h \
+                         ../include/SDL_opengles2.h \
+                         ../include/SDL_opengles.h \
+                         ../include/SDL_opengl.h \
+
 
 # The EXCLUDE_SYMLINKS tag can be used select whether or not files or 
 # directories that are symbolic links (a Unix filesystem feature) are excluded 
@@ -1271,7 +1275,7 @@ SEARCH_INCLUDES        = YES
 # contain include files that are not input files but should be processed by 
 # the preprocessor.
 
-INCLUDE_PATH           = 
+INCLUDE_PATH           =
 
 # You can use the INCLUDE_FILE_PATTERNS tag to specify one or more wildcard 
 # patterns (like *.h and *.hpp) to filter out the header-files in the 
