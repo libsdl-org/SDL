@@ -78,11 +78,10 @@ UIKit_CreateDevice(int devindex)
     device->ShowWindow = UIKit_ShowWindow;
     device->HideWindow = UIKit_HideWindow;
     device->RaiseWindow = UIKit_RaiseWindow;
+    device->SetWindowBordered = UIKit_SetWindowBordered;
     device->SetWindowFullscreen = UIKit_SetWindowFullscreen;
     device->DestroyWindow = UIKit_DestroyWindow;
     device->GetWindowWMInfo = UIKit_GetWindowWMInfo;
-
-    /* !!! FIXME: implement SetWindowBordered */
 
 #if SDL_IPHONE_KEYBOARD
     device->HasScreenKeyboardSupport = UIKit_HasScreenKeyboardSupport;

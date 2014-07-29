@@ -40,12 +40,9 @@
 
 - (id)initWithSDLWindow:(SDL_Window *)_window
 {
-    self = [self init];
-    if (self == nil) {
-        return nil;
+    if (self = [super initWithNibName:nil bundle:nil]) {
+        self.window = _window;
     }
-    self.window = _window;
-
     return self;
 }
 
@@ -56,8 +53,7 @@
 
 - (void)viewDidLayoutSubviews
 {
-    SDL_WindowData *data = window->driverdata;
-    const CGSize size = data->view.bounds.size;
+    const CGSize size = self.view.bounds.size;
     int w = (int) size.width;
     int h = (int) size.height;
 
