@@ -90,13 +90,15 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
     joystick->nballs = 0;
     joystick->nbuttons = 0;
 
-    if (motionManager == nil) {
-        motionManager = [[CMMotionManager alloc] init];
-    }
+    @autoreleasepool {
+        if (motionManager == nil) {
+            motionManager = [[CMMotionManager alloc] init];
+        }
 
-    /* Shorter times between updates can significantly increase CPU usage. */
-    motionManager.accelerometerUpdateInterval = 0.1;
-    [motionManager startAccelerometerUpdates];
+        /* Shorter times between updates can significantly increase CPU usage. */
+        motionManager.accelerometerUpdateInterval = 0.1;
+        [motionManager startAccelerometerUpdates];
+    }
 
     return 0;
 }
@@ -113,11 +115,13 @@ static void SDL_SYS_AccelerometerUpdate(SDL_Joystick * joystick)
     const SInt16 maxsint16 = 0x7FFF;
     CMAcceleration accel;
 
-    if (!motionManager.accelerometerActive) {
-        return;
-    }
+    @autoreleasepool {
+        if (!motionManager.accelerometerActive) {
+            return;
+        }
 
-    accel = [[motionManager accelerometerData] acceleration];
+        accel = motionManager.accelerometerData.acceleration;
+    }
 
     /*
      Convert accelerometer data from floating point to Sint16, which is what
@@ -161,7 +165,9 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
 void
 SDL_SYS_JoystickClose(SDL_Joystick * joystick)
 {
-    [motionManager stopAccelerometerUpdates];
+    @autoreleasepool {
+        [motionManager stopAccelerometerUpdates];
+    }
     joystick->closed = 1;
 }
 
@@ -169,9 +175,11 @@ SDL_SYS_JoystickClose(SDL_Joystick * joystick)
 void
 SDL_SYS_JoystickQuit(void)
 {
-    if (motionManager != nil) {
-        [motionManager release];
-        motionManager = nil;
+    @autoreleasepool {
+        if (motionManager != nil) {
+            [motionManager release];
+            motionManager = nil;
+        }
     }
 
     numjoysticks = 0;

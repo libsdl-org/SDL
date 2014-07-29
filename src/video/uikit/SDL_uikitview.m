@@ -318,28 +318,34 @@ SDL_bool UIKit_HasScreenKeyboardSupport(_THIS)
 
 void UIKit_ShowScreenKeyboard(_THIS, SDL_Window *window)
 {
-    SDL_uikitview *view = getWindowView(window);
-    if (view != nil) {
-        [view showKeyboard];
+    @autoreleasepool {
+        SDL_uikitview *view = getWindowView(window);
+        if (view != nil) {
+            [view showKeyboard];
+        }
     }
 }
 
 void UIKit_HideScreenKeyboard(_THIS, SDL_Window *window)
 {
-    SDL_uikitview *view = getWindowView(window);
-    if (view != nil) {
-        [view hideKeyboard];
+    @autoreleasepool {
+        SDL_uikitview *view = getWindowView(window);
+        if (view != nil) {
+            [view hideKeyboard];
+        }
     }
 }
 
 SDL_bool UIKit_IsScreenKeyboardShown(_THIS, SDL_Window *window)
 {
-    SDL_uikitview *view = getWindowView(window);
-    if (view == nil) {
-        return 0;
-    }
+    @autoreleasepool {
+        SDL_uikitview *view = getWindowView(window);
+        if (view == nil) {
+            return 0;
+        }
 
-    return view.isKeyboardVisible;
+        return view.isKeyboardVisible;
+    }
 }
 
 
@@ -423,13 +429,15 @@ UIKit_SetTextInputRect(_THIS, SDL_Rect *rect)
         SDL_InvalidParamError("rect");
         return;
     }
-    
-    SDL_uikitview *view = getWindowView(SDL_GetFocusWindow());
-    if (view == nil) {
-        return ;
-    }
 
-    view.textInputRect = *rect;
+    @autoreleasepool {
+        SDL_uikitview *view = getWindowView(SDL_GetFocusWindow());
+        if (view == nil) {
+            return;
+        }
+
+        view.textInputRect = *rect;
+    }
 }
 
 
