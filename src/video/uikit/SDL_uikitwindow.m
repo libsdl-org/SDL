@@ -132,84 +132,86 @@ static int SetupWindowData(_THIS, SDL_Window *window, SDL_uikitwindow *uiwindow,
 int
 UIKit_CreateWindow(_THIS, SDL_Window *window)
 {
-    SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
-    SDL_DisplayData *data = (SDL_DisplayData *) display->driverdata;
-    const BOOL external = ([UIScreen mainScreen] != data->uiscreen);
-    const CGSize origsize = [[data->uiscreen currentMode] size];
+    @autoreleasepool {
+        SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
+        SDL_DisplayData *data = (SDL_DisplayData *) display->driverdata;
+        const BOOL external = ([UIScreen mainScreen] != data->uiscreen);
+        const CGSize origsize = [[data->uiscreen currentMode] size];
 
-    /* SDL currently puts this window at the start of display's linked list. We rely on this. */
-    SDL_assert(_this->windows == window);
+        /* SDL currently puts this window at the start of display's linked list. We rely on this. */
+        SDL_assert(_this->windows == window);
 
-    /* We currently only handle a single window per display on iOS */
-    if (window->next != NULL) {
-        return SDL_SetError("Only one window allowed per display.");
-    }
-
-    /* If monitor has a resolution of 0x0 (hasn't been explicitly set by the
-     * user, so it's in standby), try to force the display to a resolution
-     * that most closely matches the desired window size.
-     */
-    if ((origsize.width == 0.0f) && (origsize.height == 0.0f)) {
-        if (display->num_display_modes == 0) {
-            _this->GetDisplayModes(_this, display);
+        /* We currently only handle a single window per display on iOS */
+        if (window->next != NULL) {
+            return SDL_SetError("Only one window allowed per display.");
         }
 
-        int i;
-        const SDL_DisplayMode *bestmode = NULL;
-        for (i = display->num_display_modes; i >= 0; i--) {
-            const SDL_DisplayMode *mode = &display->display_modes[i];
-            if ((mode->w >= window->w) && (mode->h >= window->h))
-                bestmode = mode;
-        }
-
-        if (bestmode) {
-            SDL_DisplayModeData *modedata = (SDL_DisplayModeData *)bestmode->driverdata;
-            [data->uiscreen setCurrentMode:modedata->uiscreenmode];
-
-            /* desktop_mode doesn't change here (the higher level will
-             * use it to set all the screens back to their defaults
-             * upon window destruction, SDL_Quit(), etc.
-             */
-            display->current_mode = *bestmode;
-        }
-    }
-
-    if (data->uiscreen == [UIScreen mainScreen]) {
-        if (window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_BORDERLESS)) {
-            [UIApplication sharedApplication].statusBarHidden = YES;
-        } else {
-            [UIApplication sharedApplication].statusBarHidden = NO;
-        }
-    }
-
-    if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
-        if (window->w > window->h) {
-            if (!UIKit_IsDisplayLandscape(data->uiscreen)) {
-                [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationLandscapeRight animated:NO];
+        /* If monitor has a resolution of 0x0 (hasn't been explicitly set by the
+         * user, so it's in standby), try to force the display to a resolution
+         * that most closely matches the desired window size.
+         */
+        if ((origsize.width == 0.0f) && (origsize.height == 0.0f)) {
+            if (display->num_display_modes == 0) {
+                _this->GetDisplayModes(_this, display);
             }
-        } else if (window->w < window->h) {
-            if (UIKit_IsDisplayLandscape(data->uiscreen)) {
-                [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationPortrait animated:NO];
+
+            int i;
+            const SDL_DisplayMode *bestmode = NULL;
+            for (i = display->num_display_modes; i >= 0; i--) {
+                const SDL_DisplayMode *mode = &display->display_modes[i];
+                if ((mode->w >= window->w) && (mode->h >= window->h))
+                    bestmode = mode;
+            }
+
+            if (bestmode) {
+                SDL_DisplayModeData *modedata = (SDL_DisplayModeData *)bestmode->driverdata;
+                [data->uiscreen setCurrentMode:modedata->uiscreenmode];
+
+                /* desktop_mode doesn't change here (the higher level will
+                 * use it to set all the screens back to their defaults
+                 * upon window destruction, SDL_Quit(), etc.
+                 */
+                display->current_mode = *bestmode;
             }
         }
-    }
 
-    /* ignore the size user requested, and make a fullscreen window */
-    /* !!! FIXME: can we have a smaller view? */
-    SDL_uikitwindow *uiwindow = [[SDL_uikitwindow alloc] initWithFrame:data->uiscreen.bounds];
+        if (data->uiscreen == [UIScreen mainScreen]) {
+            if (window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_BORDERLESS)) {
+                [UIApplication sharedApplication].statusBarHidden = YES;
+            } else {
+                [UIApplication sharedApplication].statusBarHidden = NO;
+            }
+        }
 
-    /* put the window on an external display if appropriate. This implicitly
-     * does [uiwindow setframe:[uiscreen bounds]], so don't do it on the
-     * main display, where we land by default, as that would eat the
-     * status bar real estate.
-     */
-    if (external) {
-        [uiwindow setScreen:data->uiscreen];
-    }
+        if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
+            if (window->w > window->h) {
+                if (!UIKit_IsDisplayLandscape(data->uiscreen)) {
+                    [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationLandscapeRight animated:NO];
+                }
+            } else if (window->w < window->h) {
+                if (UIKit_IsDisplayLandscape(data->uiscreen)) {
+                    [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationPortrait animated:NO];
+                }
+            }
+        }
 
-    if (SetupWindowData(_this, window, uiwindow, SDL_TRUE) < 0) {
-        [uiwindow release];
-        return -1;
+        /* ignore the size user requested, and make a fullscreen window */
+        /* !!! FIXME: can we have a smaller view? */
+        SDL_uikitwindow *uiwindow = [[SDL_uikitwindow alloc] initWithFrame:data->uiscreen.bounds];
+
+        /* put the window on an external display if appropriate. This implicitly
+         * does [uiwindow setframe:[uiscreen bounds]], so don't do it on the
+         * main display, where we land by default, as that would eat the
+         * status bar real estate.
+         */
+        if (external) {
+            [uiwindow setScreen:data->uiscreen];
+        }
+
+        if (SetupWindowData(_this, window, uiwindow, SDL_TRUE) < 0) {
+            [uiwindow release];
+            return -1;
+        }
     }
 
     return 1;
@@ -218,17 +220,21 @@ UIKit_CreateWindow(_THIS, SDL_Window *window)
 void
 UIKit_ShowWindow(_THIS, SDL_Window * window)
 {
-    UIWindow *uiwindow = ((SDL_WindowData *) window->driverdata)->uiwindow;
+    @autoreleasepool {
+        UIWindow *uiwindow = ((SDL_WindowData *) window->driverdata)->uiwindow;
 
-    [uiwindow makeKeyAndVisible];
+        [uiwindow makeKeyAndVisible];
+    }
 }
 
 void
 UIKit_HideWindow(_THIS, SDL_Window * window)
 {
-    UIWindow *uiwindow = ((SDL_WindowData *) window->driverdata)->uiwindow;
+    @autoreleasepool {
+        UIWindow *uiwindow = ((SDL_WindowData *) window->driverdata)->uiwindow;
 
-    uiwindow.hidden = YES;
+        uiwindow.hidden = YES;
+    }
 }
 
 void
@@ -286,13 +292,17 @@ UIKit_UpdateWindowBorder(_THIS, SDL_Window * window)
 void
 UIKit_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
 {
-    UIKit_UpdateWindowBorder(_this, window);
+    @autoreleasepool {
+        UIKit_UpdateWindowBorder(_this, window);
+    }
 }
 
 void
 UIKit_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen)
 {
-    UIKit_UpdateWindowBorder(_this, window);
+    @autoreleasepool {
+        UIKit_UpdateWindowBorder(_this, window);
+    }
 }
 
 void
@@ -300,27 +310,32 @@ UIKit_DestroyWindow(_THIS, SDL_Window * window)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
 
-    if (data) {
-        [data->viewcontroller release];
-        [data->uiwindow release];
-        SDL_free(data);
+    @autoreleasepool {
+        if (data) {
+            [data->viewcontroller release];
+            [data->uiwindow release];
+            SDL_free(data);
+        }
     }
+
     window->driverdata = NULL;
 }
 
 SDL_bool
 UIKit_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
 {
-    UIWindow *uiwindow = ((SDL_WindowData *) window->driverdata)->uiwindow;
+    @autoreleasepool {
+        UIWindow *uiwindow = ((SDL_WindowData *) window->driverdata)->uiwindow;
 
-    if (info->version.major <= SDL_MAJOR_VERSION) {
-        info->subsystem = SDL_SYSWM_UIKIT;
-        info->info.uikit.window = uiwindow;
-        return SDL_TRUE;
-    } else {
-        SDL_SetError("Application not compiled with SDL %d.%d\n",
-                     SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
-        return SDL_FALSE;
+        if (info->version.major <= SDL_MAJOR_VERSION) {
+            info->subsystem = SDL_SYSWM_UIKIT;
+            info->info.uikit.window = uiwindow;
+            return SDL_TRUE;
+        } else {
+            SDL_SetError("Application not compiled with SDL %d.%d\n",
+                         SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
+            return SDL_FALSE;
+        }
     }
 }
 
@@ -333,7 +348,10 @@ SDL_iPhoneSetAnimationCallback(SDL_Window * window, int interval, void (*callbac
         return SDL_SetError("Invalid window or view not set");
     }
 
-    [data->view setAnimationCallback:interval callback:callback callbackParam:callbackParam];
+    @autoreleasepool {
+        [data->view setAnimationCallback:interval callback:callback callbackParam:callbackParam];
+    }
+
     return 0;
 }
 
