@@ -472,11 +472,11 @@ SDL_QueueAudio(SDL_AudioDeviceID devid, const void *_data, Uint32 len)
 Uint32
 SDL_GetQueuedAudioSize(SDL_AudioDeviceID devid)
 {
-    /* this happens to work for non-queueing devices, since we memset()
-       the device to zero at init time, and these devices should return 0. */
     Uint32 retval = 0;
     SDL_AudioDevice *device = get_audio_device(devid);
-    if (device) {
+
+    /* Nothing to do unless we're set up for queueing. */
+    if (device && (device->spec.callback == SDL_BufferQueueDrainCallback)) {
         current_audio.impl.LockDevice(device);
         retval = device->queued_bytes + current_audio.impl.GetPendingBytes(device);
         current_audio.impl.UnlockDevice(device);
