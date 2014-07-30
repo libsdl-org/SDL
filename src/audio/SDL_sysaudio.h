@@ -60,6 +60,7 @@ typedef struct SDL_AudioDriverImpl
     void (*ThreadInit) (_THIS); /* Called by audio thread at start */
     void (*WaitDevice) (_THIS);
     void (*PlayDevice) (_THIS);
+    int (*GetPendingBytes) (_THIS);
     Uint8 *(*GetDeviceBuf) (_THIS);
     void (*WaitDone) (_THIS);
     void (*CloseDevice) (_THIS);

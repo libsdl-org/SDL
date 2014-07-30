@@ -178,6 +178,12 @@ SDL_AudioPlayDevice_Default(_THIS)
 {                               /* no-op. */
 }
 
+static int
+SDL_AudioGetPendingBytes_Default(_THIS)
+{
+    return 0;
+}
+
 static Uint8 *
 SDL_AudioGetDeviceBuf_Default(_THIS)
 {
@@ -253,6 +259,7 @@ finalize_audio_entry_points(void)
     FILL_STUB(ThreadInit);
     FILL_STUB(WaitDevice);
     FILL_STUB(PlayDevice);
+    FILL_STUB(GetPendingBytes);
     FILL_STUB(GetDeviceBuf);
     FILL_STUB(WaitDone);
     FILL_STUB(CloseDevice);
@@ -471,7 +478,7 @@ SDL_GetQueuedAudioSize(SDL_AudioDeviceID devid)
     SDL_AudioDevice *device = get_audio_device(devid);
     if (device) {
         current_audio.impl.LockDevice(device);
-        retval = device->queued_bytes;
+        retval = device->queued_bytes + current_audio.impl.GetPendingBytes(device);
         current_audio.impl.UnlockDevice(device);
     }
 
