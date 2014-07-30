@@ -58,7 +58,7 @@
 /* The configure script already did any necessary checking */
 #  define SDL_XAUDIO2_HAS_SDK 1
 #elif defined(__WINRT__)
-/* WinRT always has access to the .the XAudio 2 SDK */
+/* WinRT always has access to the the XAudio 2 SDK */
 #  define SDL_XAUDIO2_HAS_SDK
 #else
 /* XAudio2 exists as of the March 2008 DirectX SDK 
