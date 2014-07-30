@@ -241,14 +241,14 @@ XAUDIO2_WaitDone(_THIS)
     SDL_assert(!this->enabled);  /* flag that stops playing. */
     IXAudio2SourceVoice_Discontinuity(source);
 #if SDL_XAUDIO2_WIN8
-    IXAudio2SourceVoice_GetState(source, &state, 0);
+    IXAudio2SourceVoice_GetState(source, &state, XAUDIO2_VOICE_NOSAMPLESPLAYED);
 #else
     IXAudio2SourceVoice_GetState(source, &state);
 #endif
     while (state.BuffersQueued > 0) {
         SDL_SemWait(this->hidden->semaphore);
 #if SDL_XAUDIO2_WIN8
-        IXAudio2SourceVoice_GetState(source, &state, 0);
+        IXAudio2SourceVoice_GetState(source, &state, XAUDIO2_VOICE_NOSAMPLESPLAYED);
 #else
         IXAudio2SourceVoice_GetState(source, &state);
 #endif
