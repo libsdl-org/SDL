@@ -58,7 +58,7 @@
 /* The configure script already did any necessary checking */
 #  define SDL_XAUDIO2_HAS_SDK 1
 #elif defined(__WINRT__)
-/* WinRT always has access to the .the XAudio 2 SDK */
+/* WinRT always has access to the the XAudio 2 SDK */
 #  define SDL_XAUDIO2_HAS_SDK
 #else
 /* XAudio2 exists as of the March 2008 DirectX SDK 
@@ -241,14 +241,14 @@ XAUDIO2_WaitDone(_THIS)
     SDL_assert(!this->enabled);  /* flag that stops playing. */
     IXAudio2SourceVoice_Discontinuity(source);
 #if SDL_XAUDIO2_WIN8
-    IXAudio2SourceVoice_GetState(source, &state, 0);
+    IXAudio2SourceVoice_GetState(source, &state, XAUDIO2_VOICE_NOSAMPLESPLAYED);
 #else
     IXAudio2SourceVoice_GetState(source, &state);
 #endif
     while (state.BuffersQueued > 0) {
         SDL_SemWait(this->hidden->semaphore);
 #if SDL_XAUDIO2_WIN8
-        IXAudio2SourceVoice_GetState(source, &state, 0);
+        IXAudio2SourceVoice_GetState(source, &state, XAUDIO2_VOICE_NOSAMPLESPLAYED);
 #else
         IXAudio2SourceVoice_GetState(source, &state);
 #endif

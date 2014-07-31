@@ -331,10 +331,10 @@ IBus_SetupConnection(SDL_DBusContext *dbus, const char* addr)
     }
 
     if(result){
-        DBusMessage *msg = dbus->message_new_method_call(IBUS_SERVICE,
-                                                         input_ctx_path,
-                                                         IBUS_INPUT_INTERFACE,
-                                                         "SetCapabilities");
+        msg = dbus->message_new_method_call(IBUS_SERVICE,
+                                            input_ctx_path,
+                                            IBUS_INPUT_INTERFACE,
+                                            "SetCapabilities");
         if(msg){
             Uint32 caps = IBUS_CAP_FOCUS | IBUS_CAP_PREEDIT_TEXT;
             dbus->message_append_args(msg,

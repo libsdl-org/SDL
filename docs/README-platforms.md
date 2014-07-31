@@ -1,3 +1,6 @@
+Platforms
+=========
+
 
 This is a list of the platforms SDL supports, and who maintains them.
 

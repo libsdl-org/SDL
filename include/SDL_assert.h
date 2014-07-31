@@ -141,16 +141,13 @@ extern DECLSPEC SDL_assert_state SDLCALL SDL_ReportAssertion(SDL_assert_data *,
 #define SDL_enabled_assert(condition) \
     do { \
         while ( !(condition) ) { \
-            static struct SDL_assert_data assert_data = { \
+            static struct SDL_assert_data sdl_assert_data = { \
                 0, 0, #condition, 0, 0, 0, 0 \
             }; \
-            const SDL_assert_state state = SDL_ReportAssertion(&assert_data, \
-                                                               SDL_FUNCTION, \
-                                                               SDL_FILE, \
-                                                               SDL_LINE); \
-            if (state == SDL_ASSERTION_RETRY) { \
+            const SDL_assert_state sdl_assert_state = SDL_ReportAssertion(&sdl_assert_data, SDL_FUNCTION, SDL_FILE, SDL_LINE); \
+            if (sdl_assert_state == SDL_ASSERTION_RETRY) { \
                 continue; /* go again. */ \
-            } else if (state == SDL_ASSERTION_BREAK) { \
+            } else if (sdl_assert_state == SDL_ASSERTION_BREAK) { \
                 SDL_TriggerBreakpoint(); \
             } \
             break; /* not retrying. */ \
