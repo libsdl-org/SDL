@@ -1,5 +1,4 @@
-================================================================================
-Simple DirectMedia Layer for WinRT
+WinRT
 ================================================================================
 
 SDL/WinRT layer allows SDL2-based applications to run on many of Microsoft's

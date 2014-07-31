@@ -1,3 +1,6 @@
+Mercurial
+=========
+
 The latest development version of SDL is available via Mercurial.
 Mercurial allows you to get up-to-the-minute fixes and enhancements;
 as a developer works on a source tree, you can use "hg" to mirror that

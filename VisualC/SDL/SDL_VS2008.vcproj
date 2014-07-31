@@ -61,6 +61,7 @@
 				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="4"
 				CompileAs="0"
+				OmitDefaultLibName="true"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -144,6 +145,7 @@
 				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="4"
 				CompileAs="0"
+				OmitDefaultLibName="true"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -232,6 +234,7 @@
 				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
 				CompileAs="0"
+				OmitDefaultLibName="true"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -320,6 +323,7 @@
 				Detect64BitPortabilityProblems="false"
 				DebugInformationFormat="3"
 				CompileAs="0"
+				OmitDefaultLibName="true"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"

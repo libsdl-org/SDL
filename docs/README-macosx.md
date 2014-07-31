@@ -1,5 +1,4 @@
-==============================================================================
-Using the Simple DirectMedia Layer with Mac OS X
+Mac OS X
 ==============================================================================
 
 These instructions are for people using Apple's Mac OS X (pronounced

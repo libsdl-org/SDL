@@ -688,6 +688,9 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     GL_CheckError("", renderer);
     renderdata->glGenTextures(1, &data->texture);
     if (GL_CheckError("glGenTexures()", renderer) < 0) {
+        if (data->pixels) {
+            SDL_free(data->pixels);
+        }
         SDL_free(data);
         return -1;
     }
