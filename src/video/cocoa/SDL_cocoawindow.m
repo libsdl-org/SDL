@@ -1271,6 +1271,7 @@ Cocoa_RaiseWindow(_THIS, SDL_Window * window)
      */
     [windowData->listener pauseVisibleObservation];
     if (![nswindow isMiniaturized] && [nswindow isVisible]) {
+        [NSApp activateIgnoringOtherApps:YES];
         [nswindow makeKeyAndOrderFront:nil];
     }
     [windowData->listener resumeVisibleObservation];
