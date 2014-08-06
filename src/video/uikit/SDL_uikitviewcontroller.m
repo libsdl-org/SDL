@@ -63,11 +63,10 @@
 - (NSUInteger)supportedInterfaceOrientations
 {
     NSUInteger orientationMask = 0;
-    const char *orientationsHint = SDL_GetHint(SDL_HINT_ORIENTATIONS);
+    const char *hint = SDL_GetHint(SDL_HINT_ORIENTATIONS);
 
-    if (orientationsHint != NULL) {
-        NSArray *orientations = [@(orientationsHint) componentsSeparatedByCharactersInSet:
-                                 [NSCharacterSet characterSetWithCharactersInString:@" "]];
+    if (hint != NULL) {
+        NSArray *orientations = [@(hint) componentsSeparatedByString:@" "];
 
         if ([orientations containsObject:@"LandscapeLeft"]) {
             orientationMask |= UIInterfaceOrientationMaskLandscapeLeft;
