@@ -76,13 +76,14 @@ UIKit_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 
     @autoreleasepool {
         UIAlertView* alert = [[UIAlertView alloc] init];
+        UIKit_UIAlertViewDelegate *delegate = [[UIKit_UIAlertViewDelegate alloc] initWithButtonIndex:&clicked];
 
         alert.title = @(messageboxdata->title);
         alert.message = @(messageboxdata->message);
-        alert.delegate = [[UIKit_UIAlertViewDelegate alloc] initWithButtonIndex:&clicked];
+        alert.delegate = delegate;
 
         for (i = 0; i < messageboxdata->numbuttons; ++i) {
-            [alert addButtonWithTitle:[[NSString alloc] initWithUTF8String:buttons[i].text]];
+            [alert addButtonWithTitle:@(buttons[i].text)];
         }
 
         /* Set up for showing the alert */
@@ -100,8 +101,7 @@ UIKit_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 
         *buttonid = messageboxdata->buttons[clicked].buttonid;
 
-        [alert.delegate release];
-        [alert release];
+        alert.delegate = nil;
     }
 
     return 0;

@@ -176,10 +176,7 @@ void
 SDL_SYS_JoystickQuit(void)
 {
     @autoreleasepool {
-        if (motionManager != nil) {
-            [motionManager release];
-            motionManager = nil;
-        }
+        motionManager = nil;
     }
 
     numjoysticks = 0;

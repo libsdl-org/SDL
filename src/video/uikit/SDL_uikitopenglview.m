@@ -85,7 +85,6 @@
 
         context = [[EAGLContext alloc] initWithAPI:api sharegroup:shareGroup];
         if (!context || ![EAGLContext setCurrentContext:context]) {
-            [self release];
             SDL_SetError("OpenGL ES %d not supported", majorVersion);
             return nil;
         }
@@ -118,7 +117,6 @@
         glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
 
         if (![context renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:eaglLayer]) {
-            [self release];
             SDL_SetError("Failed creating OpenGL ES drawable");
             return nil;
         }
@@ -154,7 +152,6 @@
         }
 
         if (glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES) {
-            [self release];
             SDL_SetError("Failed creating OpenGL ES framebuffer");
             return nil;
         }
@@ -268,12 +265,10 @@
 
 - (void)dealloc
 {
-    [self destroyFramebuffer];
     if ([EAGLContext currentContext] == context) {
+        [self destroyFramebuffer];
         [EAGLContext setCurrentContext:nil];
     }
-    [context release];
-    [super dealloc];
 }
 
 @end

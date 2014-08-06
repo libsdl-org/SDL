@@ -56,7 +56,7 @@ int main(int argc, char **argv)
 
     /* Give over control to run loop, SDLUIKitDelegate will handle most things from here */
     @autoreleasepool {
-        UIApplicationMain(argc, argv, NULL, [SDLUIKitDelegate getAppDelegateClassName]);
+        UIApplicationMain(argc, argv, nil, [SDLUIKitDelegate getAppDelegateClassName]);
     }
 
     /* free the memory we used to hold copies of argc and argv */
@@ -94,26 +94,20 @@ SDL_IdleTimerDisabledChanged(void *userdata, const char *name, const char *oldVa
         return nil;
     }
 
-    self->splash = [[UIImageView alloc] init];
-    [self setView:self->splash];
+    splash = [[UIImageView alloc] init];
+    self.view = splash;
 
     CGSize size = [UIScreen mainScreen].bounds.size;
     float height = SDL_max(size.width, size.height);
-    self->splashPortrait = [UIImage imageNamed:[NSString stringWithFormat:@"Default-%dh.png", (int)height]];
-    if (!self->splashPortrait) {
-        self->splashPortrait = [UIImage imageNamed:@"Default.png"];
+    splashPortrait = [UIImage imageNamed:[NSString stringWithFormat:@"Default-%dh.png", (int)height]];
+    if (!splashPortrait) {
+        splashPortrait = [UIImage imageNamed:@"Default.png"];
     }
-    self->splashLandscape = [UIImage imageNamed:@"Default-Landscape.png"];
-    if (!self->splashLandscape && self->splashPortrait) {
-        self->splashLandscape = [[UIImage alloc] initWithCGImage: self->splashPortrait.CGImage
-                                                           scale: 1.0
-                                                     orientation: UIImageOrientationRight];
-    }
-    if (self->splashPortrait) {
-        [self->splashPortrait retain];
-    }
-    if (self->splashLandscape) {
-        [self->splashLandscape retain];
+    splashLandscape = [UIImage imageNamed:@"Default-Landscape.png"];
+    if (!splashLandscape && splashPortrait) {
+        splashLandscape = [[UIImage alloc] initWithCGImage: splashPortrait.CGImage
+                                                     scale: 1.0
+                                               orientation: UIImageOrientationRight];
     }
 
     [self updateSplashImage:[[UIApplication sharedApplication] statusBarOrientation]];
@@ -148,9 +142,9 @@ SDL_IdleTimerDisabledChanged(void *userdata, const char *name, const char *oldVa
     UIImage *image;
 
     if (UIInterfaceOrientationIsLandscape(interfaceOrientation)) {
-        image = self->splashLandscape;
+        image = splashLandscape;
     } else {
-        image = self->splashPortrait;
+        image = splashPortrait;
     }
 
     if (image) {
@@ -192,8 +186,7 @@ SDL_IdleTimerDisabledChanged(void *userdata, const char *name, const char *oldVa
 
     /* If we showed a splash image, clean it up */
     if (launch_window) {
-        [launch_window release];
-        launch_window = NULL;
+        launch_window = nil;
     }
 
     /* exit, passing the return status from the user's application */

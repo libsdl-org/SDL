@@ -31,13 +31,12 @@
 #endif
 
 #if SDL_IPHONE_KEYBOARD
-@interface SDL_uikitview : UIView<UITextFieldDelegate> {
+@interface SDL_uikitview : UIView <UITextFieldDelegate>
 #else
-@interface SDL_uikitview : UIView {
+@interface SDL_uikitview : UIView
 #endif
-@public
-    SDL_uikitviewcontroller *viewcontroller;
-}
+
+@property (nonatomic, weak) SDL_uikitviewcontroller *viewcontroller;
 
 - (CGPoint)touchLocation:(UITouch *)touch shouldNormalize:(BOOL)normalize;
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
