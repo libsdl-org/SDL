@@ -113,7 +113,7 @@
 #define SDL_AUDIO_DRIVER_DUMMY  1
 
 /* Enable the stub haptic driver (src/haptic/dummy/\*.c) */
-#define SDL_HAPTIC_DISABLED 1
+#define SDL_HAPTIC_DUMMY 1
 
 /* Enable Unix style SO loading */
 /* Technically this works, but it violates the iPhone developer agreement */
