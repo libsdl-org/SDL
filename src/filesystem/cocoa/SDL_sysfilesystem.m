@@ -36,67 +36,69 @@
 char *
 SDL_GetBasePath(void)
 {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    NSBundle *bundle = [NSBundle mainBundle];
-    const char* baseType = [[[bundle infoDictionary] objectForKey:@"SDL_FILESYSTEM_BASE_DIR_TYPE"] UTF8String];
-    const char *base = NULL;
     char *retval = NULL;
-    if (baseType == NULL) {
-        baseType = "resource";
-    }
-    if (SDL_strcasecmp(baseType, "bundle")==0) {
-        base = [[bundle bundlePath] fileSystemRepresentation];
-    } else if (SDL_strcasecmp(baseType, "parent")==0) {
-        base = [[[bundle bundlePath] stringByDeletingLastPathComponent] fileSystemRepresentation];
-    } else {
-        /* this returns the exedir for non-bundled  and the resourceDir for bundled apps */
-        base = [[bundle resourcePath] fileSystemRepresentation];
-    }
-    if (base) {
-        const size_t len = SDL_strlen(base) + 2;
-        retval = (char *) SDL_malloc(len);
-        if (retval == NULL) {
-            SDL_OutOfMemory();
+
+    @autoreleasepool {
+        const char *base = NULL;
+        NSBundle *bundle = [NSBundle mainBundle];
+        const char* baseType = [[[bundle infoDictionary] objectForKey:@"SDL_FILESYSTEM_BASE_DIR_TYPE"] UTF8String];
+        if (baseType == NULL) {
+            baseType = "resource";
+        }
+        if (SDL_strcasecmp(baseType, "bundle")==0) {
+            base = [[bundle bundlePath] fileSystemRepresentation];
+        } else if (SDL_strcasecmp(baseType, "parent")==0) {
+            base = [[[bundle bundlePath] stringByDeletingLastPathComponent] fileSystemRepresentation];
         } else {
-            SDL_snprintf(retval, len, "%s/", base);
+            /* this returns the exedir for non-bundled  and the resourceDir for bundled apps */
+            base = [[bundle resourcePath] fileSystemRepresentation];
+        }
+
+        if (base) {
+            const size_t len = SDL_strlen(base) + 2;
+            retval = (char *) SDL_malloc(len);
+            if (retval == NULL) {
+                SDL_OutOfMemory();
+            } else {
+                SDL_snprintf(retval, len, "%s/", base);
+            }
         }
     }
 
-    [pool release];
     return retval;
 }
 
 char *
 SDL_GetPrefPath(const char *org, const char *app)
 {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-    NSArray *array = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
     char *retval = NULL;
 
-    if ([array count] > 0) {  /* we only want the first item in the list. */
-        NSString *str = [array objectAtIndex:0];
-        const char *base = [str fileSystemRepresentation];
-        if (base) {
-            const size_t len = SDL_strlen(base) + SDL_strlen(org) + SDL_strlen(app) + 4;
-            retval = (char *) SDL_malloc(len);
-            if (retval == NULL) {
-                SDL_OutOfMemory();
-            } else {
-                char *ptr;
-                SDL_snprintf(retval, len, "%s/%s/%s/", base, org, app);
-                for (ptr = retval+1; *ptr; ptr++) {
-                    if (*ptr == '/') {
-                        *ptr = '\0';
-                        mkdir(retval, 0700);
-                        *ptr = '/';
+    @autoreleasepool {
+        NSArray *array = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
+
+        if ([array count] > 0) {  /* we only want the first item in the list. */
+            NSString *str = [array objectAtIndex:0];
+            const char *base = [str fileSystemRepresentation];
+            if (base) {
+                const size_t len = SDL_strlen(base) + SDL_strlen(org) + SDL_strlen(app) + 4;
+                retval = (char *) SDL_malloc(len);
+                if (retval == NULL) {
+                    SDL_OutOfMemory();
+                } else {
+                    char *ptr;
+                    SDL_snprintf(retval, len, "%s/%s/%s/", base, org, app);
+                    for (ptr = retval+1; *ptr; ptr++) {
+                        if (*ptr == '/') {
+                            *ptr = '\0';
+                            mkdir(retval, 0700);
+                            *ptr = '/';
+                        }
                     }
+                    mkdir(retval, 0700);
                 }
-                mkdir(retval, 0700);
             }
         }
     }
-
-    [pool release];
     return retval;
 }
 
