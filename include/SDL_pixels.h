@@ -248,7 +248,11 @@ enum
     SDL_PIXELFORMAT_UYVY =      /**< Packed mode: U0+Y0+V0+Y1 (1 plane) */
         SDL_DEFINE_PIXELFOURCC('U', 'Y', 'V', 'Y'),
     SDL_PIXELFORMAT_YVYU =      /**< Packed mode: Y0+V0+Y1+U0 (1 plane) */
-        SDL_DEFINE_PIXELFOURCC('Y', 'V', 'Y', 'U')
+        SDL_DEFINE_PIXELFOURCC('Y', 'V', 'Y', 'U'),
+    SDL_PIXELFORMAT_NV12 =      /**< Planar mode: Y + U/V interleaved  (2 planes) */
+        SDL_DEFINE_PIXELFOURCC('N', 'V', '1', '2'),
+    SDL_PIXELFORMAT_NV21 =      /**< Planar mode: Y + V/U interleaved  (2 planes) */
+        SDL_DEFINE_PIXELFOURCC('N', 'V', '2', '1')
 };
 
 typedef struct SDL_Color

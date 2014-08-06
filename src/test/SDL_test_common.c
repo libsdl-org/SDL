@@ -572,6 +572,12 @@ SDLTest_PrintPixelFormat(Uint32 format)
     case SDL_PIXELFORMAT_YVYU:
         fprintf(stderr, "YVYU");
         break;
+    case SDL_PIXELFORMAT_NV12:
+        fprintf(stderr, "NV12");
+        break;
+    case SDL_PIXELFORMAT_NV21:
+        fprintf(stderr, "NV21");
+        break;
     default:
         fprintf(stderr, "0x%8.8x", format);
         break;

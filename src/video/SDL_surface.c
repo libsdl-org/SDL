@@ -1005,7 +1005,7 @@ int SDL_ConvertPixels(int width, int height,
     SDL_Rect rect;
     void *nonconst_src = (void *) src;
 
-    /* Check to make sure we are bliting somewhere, so we don't crash */
+    /* Check to make sure we are blitting somewhere, so we don't crash */
     if (!dst) {
         return SDL_InvalidParamError("dst");
     }
@@ -1015,16 +1015,20 @@ int SDL_ConvertPixels(int width, int height,
 
     /* Fast path for same format copy */
     if (src_format == dst_format) {
-        int bpp;
+        int bpp, i;
 
         if (SDL_ISPIXELFORMAT_FOURCC(src_format)) {
             switch (src_format) {
-            case SDL_PIXELFORMAT_YV12:
-            case SDL_PIXELFORMAT_IYUV:
             case SDL_PIXELFORMAT_YUY2:
             case SDL_PIXELFORMAT_UYVY:
             case SDL_PIXELFORMAT_YVYU:
                 bpp = 2;
+                break;
+            case SDL_PIXELFORMAT_YV12:
+            case SDL_PIXELFORMAT_IYUV:
+            case SDL_PIXELFORMAT_NV12:
+            case SDL_PIXELFORMAT_NV21:
+                bpp = 1;
                 break;
             default:
                 return SDL_SetError("Unknown FOURCC pixel format");
@@ -1034,10 +1038,31 @@ int SDL_ConvertPixels(int width, int height,
         }
         width *= bpp;
 
-        while (height-- > 0) {
+        for (i = height; i--;) {
             SDL_memcpy(dst, src, width);
             src = (Uint8*)src + src_pitch;
             dst = (Uint8*)dst + dst_pitch;
+        }
+
+        if (src_format == SDL_PIXELFORMAT_YV12 || src_format == SDL_PIXELFORMAT_IYUV) {
+            /* U and V planes are a quarter the size of the Y plane */
+            width /= 2;
+            height /= 2;
+            src_pitch /= 2;
+            dst_pitch /= 2;
+            for (i = height * 2; i--;) {
+                SDL_memcpy(dst, src, width);
+                src = (Uint8*)src + src_pitch;
+                dst = (Uint8*)dst + dst_pitch;
+            }
+        } else if (src_format == SDL_PIXELFORMAT_NV12 || src_format == SDL_PIXELFORMAT_NV21) {
+            /* U/V plane is half the height of the Y plane */
+            height /= 2;
+            for (i = height; i--;) {
+                SDL_memcpy(dst, src, width);
+                src = (Uint8*)src + src_pitch;
+                dst = (Uint8*)dst + dst_pitch;
+            }
         }
         return 0;
     }

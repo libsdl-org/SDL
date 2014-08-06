@@ -79,14 +79,16 @@ char* _RGBPixelFormatsVerbose[] =
   };
 
 /* Definition of all Non-RGB formats used to test pixel conversions */
-const int _numNonRGBPixelFormats = 5;
+const int _numNonRGBPixelFormats = 7;
 Uint32 _nonRGBPixelFormats[] =
   {
     SDL_PIXELFORMAT_YV12,
     SDL_PIXELFORMAT_IYUV,
     SDL_PIXELFORMAT_YUY2,
     SDL_PIXELFORMAT_UYVY,
-    SDL_PIXELFORMAT_YVYU
+    SDL_PIXELFORMAT_YVYU,
+    SDL_PIXELFORMAT_NV12,
+    SDL_PIXELFORMAT_NV21
   };
 char* _nonRGBPixelFormatsVerbose[] =
   {
@@ -94,7 +96,9 @@ char* _nonRGBPixelFormatsVerbose[] =
     "SDL_PIXELFORMAT_IYUV",
     "SDL_PIXELFORMAT_YUY2",
     "SDL_PIXELFORMAT_UYVY",
-    "SDL_PIXELFORMAT_YVYU"
+    "SDL_PIXELFORMAT_YVYU",
+    "SDL_PIXELFORMAT_NV12",
+    "SDL_PIXELFORMAT_NV21"
   };
 
 /* Definition of some invalid formats for negative tests */

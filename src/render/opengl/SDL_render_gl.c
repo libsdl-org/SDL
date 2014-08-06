@@ -164,8 +164,9 @@ typedef struct
     int pitch;
     SDL_Rect locked_rect;
 
-    /* YV12 texture support */
+    /* YUV texture support */
     SDL_bool yuv;
+    SDL_bool nv12;
     GLuint utexture;
     GLuint vtexture;
 
@@ -531,6 +532,8 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     if (data->shaders && data->num_texture_units >= 3) {
         renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_YV12;
         renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_IYUV;
+        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV12;
+        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV21;
     }
 
 #ifdef __MACOSX__
@@ -611,16 +614,18 @@ convert_format(GL_RenderData *renderdata, Uint32 pixel_format,
         break;
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
+    case SDL_PIXELFORMAT_NV12:
+    case SDL_PIXELFORMAT_NV21:
         *internalFormat = GL_LUMINANCE;
         *format = GL_LUMINANCE;
         *type = GL_UNSIGNED_BYTE;
         break;
 #ifdef __MACOSX__
     case SDL_PIXELFORMAT_UYVY:
-		*internalFormat = GL_RGB8;
-		*format = GL_YCBCR_422_APPLE;
-		*type = GL_UNSIGNED_SHORT_8_8_APPLE;
-		break;
+        *internalFormat = GL_RGB8;
+        *format = GL_YCBCR_422_APPLE;
+        *type = GL_UNSIGNED_SHORT_8_8_APPLE;
+        break;
 #endif
     default:
         return SDL_FALSE;
@@ -671,6 +676,11 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
             texture->format == SDL_PIXELFORMAT_IYUV) {
             /* Need to add size for the U and V planes */
             size += (2 * (texture->h * data->pitch) / 4);
+        }
+        if (texture->format == SDL_PIXELFORMAT_NV12 ||
+            texture->format == SDL_PIXELFORMAT_NV21) {
+            /* Need to add size for the U/V plane */
+            size += ((texture->h * data->pitch) / 2);
         }
         data->pixels = SDL_calloc(1, size);
         if (!data->pixels) {
@@ -801,6 +811,27 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         renderdata->glDisable(data->type);
     }
 
+    if (texture->format == SDL_PIXELFORMAT_NV12 ||
+        texture->format == SDL_PIXELFORMAT_NV21) {
+        data->nv12 = SDL_TRUE;
+
+        renderdata->glGenTextures(1, &data->utexture);
+        renderdata->glEnable(data->type);
+
+        renderdata->glBindTexture(data->type, data->utexture);
+        renderdata->glTexParameteri(data->type, GL_TEXTURE_MIN_FILTER,
+                                    scaleMode);
+        renderdata->glTexParameteri(data->type, GL_TEXTURE_MAG_FILTER,
+                                    scaleMode);
+        renderdata->glTexParameteri(data->type, GL_TEXTURE_WRAP_S,
+                                    GL_CLAMP_TO_EDGE);
+        renderdata->glTexParameteri(data->type, GL_TEXTURE_WRAP_T,
+                                    GL_CLAMP_TO_EDGE);
+        renderdata->glTexImage2D(data->type, 0, GL_LUMINANCE_ALPHA, texture_w/2,
+                                 texture_h/2, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, NULL);
+        renderdata->glDisable(data->type);
+    }
+
     return GL_CheckError("", renderer);
 }
 
@@ -847,6 +878,17 @@ GL_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
         renderdata->glTexSubImage2D(data->type, 0, rect->x/2, rect->y/2,
                                     rect->w/2, rect->h/2,
                                     data->format, data->formattype, pixels);
+    }
+
+    if (data->nv12) {
+        renderdata->glPixelStorei(GL_UNPACK_ROW_LENGTH, (pitch / 2));
+
+        /* Skip to the correct offset into the next texture */
+        pixels = (const void*)((const Uint8*)pixels + rect->h * pitch);
+        renderdata->glBindTexture(data->type, data->utexture);
+        renderdata->glTexSubImage2D(data->type, 0, rect->x/2, rect->y/2,
+                                    rect->w/2, rect->h/2,
+                                    GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, pixels);
     }
     renderdata->glDisable(data->type);
 
@@ -1184,21 +1226,22 @@ GL_RenderFillRects(SDL_Renderer * renderer, const SDL_FRect * rects, int count)
 }
 
 static int
-GL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
-              const SDL_Rect * srcrect, const SDL_FRect * dstrect)
+GL_SetupCopy(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     GL_RenderData *data = (GL_RenderData *) renderer->driverdata;
     GL_TextureData *texturedata = (GL_TextureData *) texture->driverdata;
-    GLfloat minx, miny, maxx, maxy;
-    GLfloat minu, maxu, minv, maxv;
-
-    GL_ActivateRenderer(renderer);
 
     data->glEnable(texturedata->type);
     if (texturedata->yuv) {
         data->glActiveTextureARB(GL_TEXTURE2_ARB);
         data->glBindTexture(texturedata->type, texturedata->vtexture);
 
+        data->glActiveTextureARB(GL_TEXTURE1_ARB);
+        data->glBindTexture(texturedata->type, texturedata->utexture);
+
+        data->glActiveTextureARB(GL_TEXTURE0_ARB);
+    }
+    if (texturedata->nv12) {
         data->glActiveTextureARB(GL_TEXTURE1_ARB);
         data->glBindTexture(texturedata->type, texturedata->utexture);
 
@@ -1215,9 +1258,32 @@ GL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
     GL_SetBlendMode(data, texture->blendMode);
 
     if (texturedata->yuv) {
-        GL_SetShader(data, SHADER_YV12);
+        GL_SetShader(data, SHADER_YUV);
+    } else if (texturedata->nv12) {
+        if (texture->format == SDL_PIXELFORMAT_NV12) {
+            GL_SetShader(data, SHADER_NV12);
+        } else {
+            GL_SetShader(data, SHADER_NV21);
+        }
     } else {
         GL_SetShader(data, SHADER_RGB);
+    }
+    return 0;
+}
+
+static int
+GL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
+              const SDL_Rect * srcrect, const SDL_FRect * dstrect)
+{
+    GL_RenderData *data = (GL_RenderData *) renderer->driverdata;
+    GL_TextureData *texturedata = (GL_TextureData *) texture->driverdata;
+    GLfloat minx, miny, maxx, maxy;
+    GLfloat minu, maxu, minv, maxv;
+
+    GL_ActivateRenderer(renderer);
+
+    if (GL_SetupCopy(renderer, texture) < 0) {
+        return -1;
     }
 
     minx = dstrect->x;
@@ -1263,30 +1329,8 @@ GL_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
 
     GL_ActivateRenderer(renderer);
 
-    data->glEnable(texturedata->type);
-    if (texturedata->yuv) {
-        data->glActiveTextureARB(GL_TEXTURE2_ARB);
-        data->glBindTexture(texturedata->type, texturedata->vtexture);
-
-        data->glActiveTextureARB(GL_TEXTURE1_ARB);
-        data->glBindTexture(texturedata->type, texturedata->utexture);
-
-        data->glActiveTextureARB(GL_TEXTURE0_ARB);
-    }
-    data->glBindTexture(texturedata->type, texturedata->texture);
-
-    if (texture->modMode) {
-        GL_SetColor(data, texture->r, texture->g, texture->b, texture->a);
-    } else {
-        GL_SetColor(data, 255, 255, 255, 255);
-    }
-
-    GL_SetBlendMode(data, texture->blendMode);
-
-    if (texturedata->yuv) {
-        GL_SetShader(data, SHADER_YV12);
-    } else {
-        GL_SetShader(data, SHADER_RGB);
+    if (GL_SetupCopy(renderer, texture) < 0) {
+        return -1;
     }
 
     centerx = center->x;
