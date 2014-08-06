@@ -8,6 +8,9 @@ Makefile
 sdl-config
 SDL2.spec
 build
+Build
+*xcuserdata*
+*xcworkspacedata*
 
 # for Xcode
 *.orig
