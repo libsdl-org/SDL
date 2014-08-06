@@ -51,14 +51,7 @@ UIKit_GL_GetProcAddress(_THIS, const char *proc)
 */
 int UIKit_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
 {
-    if (context) {
-        SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
-        [data->view setCurrentContext];
-    }
-    else {
-        [EAGLContext setCurrentContext: nil];
-    }
-
+    [EAGLContext setCurrentContext: context];
     return 0;
 }
 
@@ -146,8 +139,9 @@ SDL_GLContext UIKit_GL_CreateContext(_THIS, SDL_Window * window)
         uiwindow.rootViewController = view->viewcontroller;
     }
 
-    if (UIKit_GL_MakeCurrent(_this, window, view) < 0) {
-        UIKit_GL_DeleteContext(_this, view);
+    EAGLContext *context = view.context;
+    if (UIKit_GL_MakeCurrent(_this, window, context) < 0) {
+        UIKit_GL_DeleteContext(_this, context);
         return NULL;
     }
 
@@ -157,23 +151,37 @@ SDL_GLContext UIKit_GL_CreateContext(_THIS, SDL_Window * window)
         SDL_SetKeyboardFocus(window);
     }
 
-    return view;
+    return context;
 }
 
 void UIKit_GL_DeleteContext(_THIS, SDL_GLContext context)
 {
-    /* the delegate has retained the view, this will release him */
-    SDL_uikitopenglview *view = (SDL_uikitopenglview *)context;
-    if (view->viewcontroller) {
-        UIWindow *uiwindow = (UIWindow *)view.superview;
-        if (uiwindow.rootViewController == view->viewcontroller) {
-            uiwindow.rootViewController = nil;
+    SDL_Window *window;
+
+    /* Find the view associated with this context */
+    for (window = _this->windows; window; window = window->next) {
+        SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+        SDL_uikitopenglview *view = data->view;
+        if (view.context == context) {
+            /* the delegate has retained the view, this will release him */
+            if (view->viewcontroller) {
+                UIWindow *uiwindow = (UIWindow *)view.superview;
+                if (uiwindow.rootViewController == view->viewcontroller) {
+                    uiwindow.rootViewController = nil;
+                }
+                [view->viewcontroller setView:nil];
+                [view->viewcontroller release];
+            }
+            [view removeFromSuperview];
+
+            /* FIXME: This doesn't actually call view dealloc - what is holding a reference to it? */
+            [view release];
+            return;
         }
-        [view->viewcontroller setView:nil];
-        [view->viewcontroller release];
     }
-    [view removeFromSuperview];
-    [view release];
+
+    /* View not found... delete the context anyway? */
+    [(EAGLContext *)context release];
 }
 
 #endif /* SDL_VIDEO_DRIVER_UIKIT */
