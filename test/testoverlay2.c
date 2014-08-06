@@ -206,6 +206,29 @@ ConvertRGBtoYV12(Uint8 *rgb, Uint8 *out, int w, int h,
     }
 }
 
+void
+ConvertRGBtoNV12(Uint8 *rgb, Uint8 *out, int w, int h,
+                 int monochrome, int luminance)
+{
+    int x, y;
+    int yuv[3];
+    Uint8 *op[2];
+
+    op[0] = out;
+    op[1] = op[0] + w*h;
+    for (y = 0; y < h; ++y) {
+        for (x = 0; x < w; ++x) {
+            RGBtoYUV(rgb, yuv, monochrome, luminance);
+            *(op[0]++) = yuv[0];
+            if (x % 2 == 0 && y % 2 == 0) {
+                *(op[1]++) = yuv[1];
+                *(op[1]++) = yuv[2];
+            }
+            rgb += 3;
+        }
+    }
+}
+
 static void
 PrintUsage(char *argv0)
 {
@@ -241,7 +264,11 @@ main(int argc, char **argv)
     int fps = 12;
     int fpsdelay;
     int nodelay = 0;
+#ifdef TEST_NV12
+    Uint32 pixel_format = SDL_PIXELFORMAT_NV12;
+#else
     Uint32 pixel_format = SDL_PIXELFORMAT_YV12;
+#endif
     int scale = 5;
     SDL_bool done = SDL_FALSE;
 
@@ -371,7 +398,17 @@ main(int argc, char **argv)
             rgb[2] = MooseColors[frame[j]].b;
             rgb += 3;
         }
-        ConvertRGBtoYV12(MooseFrameRGB, MooseFrame[i], MOOSEPIC_W, MOOSEPIC_H, 0, 100);
+        switch (pixel_format) {
+        case SDL_PIXELFORMAT_YV12:
+            ConvertRGBtoYV12(MooseFrameRGB, MooseFrame[i], MOOSEPIC_W, MOOSEPIC_H, 0, 100);
+            break;
+        case SDL_PIXELFORMAT_NV12:
+            ConvertRGBtoNV12(MooseFrameRGB, MooseFrame[i], MOOSEPIC_W, MOOSEPIC_H, 0, 100);
+            break;
+        default:
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unsupported pixel format\n");
+            break;
+        }
     }
 
     free(RawMooseData);
