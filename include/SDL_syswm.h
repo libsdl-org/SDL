@@ -209,9 +209,9 @@ struct SDL_SysWMinfo
         struct
         {
 #if defined(__OBJC__) && __has_feature(objc_arc)
-            NSWindow __unsafe_unretained *window; /* The Cocoa window */
+            NSWindow * __unsafe_unretained window; /* The Cocoa window */
 #else
-            NSWindow *window;                     /* The Cocoa window */
+            NSWindow *window;                      /* The Cocoa window */
 #endif
         } cocoa;
 #endif
@@ -219,9 +219,9 @@ struct SDL_SysWMinfo
         struct
         {
 #if defined(__OBJC__) && __has_feature(objc_arc)
-            UIWindow __unsafe_unretained *window; /* The UIKit window */
+            UIWindow * __unsafe_unretained window; /* The UIKit window */
 #else
-            UIWindow *window;                     /* The UIKit window */
+            UIWindow *window;                      /* The UIKit window */
 #endif
         } uikit;
 #endif

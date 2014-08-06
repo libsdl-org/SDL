@@ -26,8 +26,6 @@
 #import "SDL_uikitopenglview.h"
 #import "SDL_uikitviewcontroller.h"
 
-typedef struct SDL_WindowData SDL_WindowData;
-
 extern int UIKit_CreateWindow(_THIS, SDL_Window * window);
 extern void UIKit_ShowWindow(_THIS, SDL_Window * window);
 extern void UIKit_HideWindow(_THIS, SDL_Window * window);
@@ -44,12 +42,13 @@ extern SDL_bool UIKit_GetWindowWMInfo(_THIS, SDL_Window * window,
 
 @end
 
-struct SDL_WindowData
-{
-    SDL_uikitwindow *uiwindow;
-    SDL_uikitopenglview *view;
-    SDL_uikitviewcontroller *viewcontroller;
-};
+@interface SDL_WindowData : NSObject
+
+@property (nonatomic, strong) SDL_uikitwindow *uiwindow;
+@property (nonatomic, strong) SDL_uikitopenglview *view;
+@property (nonatomic, strong) SDL_uikitviewcontroller *viewcontroller;
+
+@end
 
 #endif /* _SDL_uikitwindow_h */
 

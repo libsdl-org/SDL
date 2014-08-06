@@ -44,7 +44,7 @@
        majorVersion:(int)majorVersion
          shareGroup:(EAGLSharegroup*)shareGroup;
 
-@property (nonatomic, retain, readonly) EAGLContext *context;
+@property (nonatomic, strong, readonly) EAGLContext *context;
 
 /* The width and height of the drawable in pixels (as opposed to points.) */
 @property (nonatomic, readonly) int backingWidth;

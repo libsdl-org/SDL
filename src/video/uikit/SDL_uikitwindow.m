@@ -56,35 +56,41 @@
 
 @end
 
+@implementation SDL_WindowData
+
+@synthesize uiwindow;
+@synthesize view;
+@synthesize viewcontroller;
+
+@end
+
 
 static int SetupWindowData(_THIS, SDL_Window *window, SDL_uikitwindow *uiwindow, SDL_bool created)
 {
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
-    SDL_DisplayData *displaydata = (SDL_DisplayData *) display->driverdata;
-    SDL_WindowData *data;
+    SDL_DisplayData *displaydata = (__bridge SDL_DisplayData *) display->driverdata;
 
     /* Allocate the window data */
-    data = (SDL_WindowData *)SDL_malloc(sizeof(*data));
+    SDL_WindowData *data = [[SDL_WindowData alloc] init];
     if (!data) {
         return SDL_OutOfMemory();
     }
-    data->uiwindow = uiwindow;
-    data->viewcontroller = nil;
-    data->view = nil;
+
+    data.uiwindow = uiwindow;
 
     /* Fill in the SDL window with the window data */
     {
         window->x = 0;
         window->y = 0;
 
-        CGRect frame = UIKit_ComputeViewFrame(window, displaydata->uiscreen);
+        CGRect frame = UIKit_ComputeViewFrame(window, displaydata.uiscreen);
 
         /* Get frame dimensions */
         int width = (int) frame.size.width;
         int height = (int) frame.size.height;
 
         /* Make sure the width/height are oriented correctly */
-        if (UIKit_IsDisplayLandscape(displaydata->uiscreen) != (width > height)) {
+        if (UIKit_IsDisplayLandscape(displaydata.uiscreen) != (width > height)) {
             int temp = width;
             width = height;
             height = temp;
@@ -94,7 +100,7 @@ static int SetupWindowData(_THIS, SDL_Window *window, SDL_uikitwindow *uiwindow,
         window->h = height;
     }
 
-    window->driverdata = data;
+    window->driverdata = (void *) CFBridgingRetain(data);
 
     /* only one window on iOS, always shown */
     window->flags &= ~SDL_WINDOW_HIDDEN;
@@ -103,7 +109,7 @@ static int SetupWindowData(_THIS, SDL_Window *window, SDL_uikitwindow *uiwindow,
      * This is only set if the window is on the main screen. Other screens
      *  just force the window to have the borderless flag.
      */
-    if (displaydata->uiscreen == [UIScreen mainScreen]) {
+    if (displaydata.uiscreen == [UIScreen mainScreen]) {
         window->flags |= SDL_WINDOW_INPUT_FOCUS;  /* always has input focus */
 
         /* This was setup earlier for our window, and in iOS 7 is controlled by the view, not the application
@@ -123,8 +129,8 @@ static int SetupWindowData(_THIS, SDL_Window *window, SDL_uikitwindow *uiwindow,
      * device orientation changes. This will trigger resize events, if
      * appropriate.
      */
-    data->viewcontroller = [[SDL_uikitviewcontroller alloc] initWithSDLWindow:window];
-    [data->viewcontroller setTitle:@"SDL App"];  /* !!! FIXME: hook up SDL_SetWindowTitle() */
+    data.viewcontroller = [[SDL_uikitviewcontroller alloc] initWithSDLWindow:window];
+    data.viewcontroller.title = @"SDL App";  /* !!! FIXME: hook up SDL_SetWindowTitle() */
 
     return 0;
 }
@@ -134,9 +140,9 @@ UIKit_CreateWindow(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
         SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
-        SDL_DisplayData *data = (SDL_DisplayData *) display->driverdata;
-        const BOOL external = ([UIScreen mainScreen] != data->uiscreen);
-        const CGSize origsize = [[data->uiscreen currentMode] size];
+        SDL_DisplayData *data = (__bridge SDL_DisplayData *) display->driverdata;
+        const BOOL external = ([UIScreen mainScreen] != data.uiscreen);
+        const CGSize origsize = [[data.uiscreen currentMode] size];
 
         /* SDL currently puts this window at the start of display's linked list. We rely on this. */
         SDL_assert(_this->windows == window);
@@ -164,8 +170,8 @@ UIKit_CreateWindow(_THIS, SDL_Window *window)
             }
 
             if (bestmode) {
-                SDL_DisplayModeData *modedata = (SDL_DisplayModeData *)bestmode->driverdata;
-                [data->uiscreen setCurrentMode:modedata->uiscreenmode];
+                SDL_DisplayModeData *modedata = (__bridge SDL_DisplayModeData *)bestmode->driverdata;
+                [data.uiscreen setCurrentMode:modedata.uiscreenmode];
 
                 /* desktop_mode doesn't change here (the higher level will
                  * use it to set all the screens back to their defaults
@@ -175,7 +181,7 @@ UIKit_CreateWindow(_THIS, SDL_Window *window)
             }
         }
 
-        if (data->uiscreen == [UIScreen mainScreen]) {
+        if (data.uiscreen == [UIScreen mainScreen]) {
             if (window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_BORDERLESS)) {
                 [UIApplication sharedApplication].statusBarHidden = YES;
             } else {
@@ -185,11 +191,11 @@ UIKit_CreateWindow(_THIS, SDL_Window *window)
 
         if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
             if (window->w > window->h) {
-                if (!UIKit_IsDisplayLandscape(data->uiscreen)) {
+                if (!UIKit_IsDisplayLandscape(data.uiscreen)) {
                     [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationLandscapeRight animated:NO];
                 }
             } else if (window->w < window->h) {
-                if (UIKit_IsDisplayLandscape(data->uiscreen)) {
+                if (UIKit_IsDisplayLandscape(data.uiscreen)) {
                     [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationPortrait animated:NO];
                 }
             }
@@ -197,7 +203,7 @@ UIKit_CreateWindow(_THIS, SDL_Window *window)
 
         /* ignore the size user requested, and make a fullscreen window */
         /* !!! FIXME: can we have a smaller view? */
-        SDL_uikitwindow *uiwindow = [[SDL_uikitwindow alloc] initWithFrame:data->uiscreen.bounds];
+        SDL_uikitwindow *uiwindow = [[SDL_uikitwindow alloc] initWithFrame:data.uiscreen.bounds];
 
         /* put the window on an external display if appropriate. This implicitly
          * does [uiwindow setframe:[uiscreen bounds]], so don't do it on the
@@ -205,13 +211,13 @@ UIKit_CreateWindow(_THIS, SDL_Window *window)
          * status bar real estate.
          */
         if (external) {
-            [uiwindow setScreen:data->uiscreen];
+            [uiwindow setScreen:data.uiscreen];
         }
 
         if (SetupWindowData(_this, window, uiwindow, SDL_TRUE) < 0) {
-            [uiwindow release];
             return -1;
         }
+
     }
 
     return 1;
@@ -221,7 +227,7 @@ void
 UIKit_ShowWindow(_THIS, SDL_Window * window)
 {
     @autoreleasepool {
-        UIWindow *uiwindow = ((SDL_WindowData *) window->driverdata)->uiwindow;
+        UIWindow *uiwindow = ((__bridge SDL_WindowData *) window->driverdata).uiwindow;
 
         [uiwindow makeKeyAndVisible];
     }
@@ -231,7 +237,7 @@ void
 UIKit_HideWindow(_THIS, SDL_Window * window)
 {
     @autoreleasepool {
-        UIWindow *uiwindow = ((SDL_WindowData *) window->driverdata)->uiwindow;
+        UIWindow *uiwindow = ((__bridge SDL_WindowData *) window->driverdata).uiwindow;
 
         uiwindow.hidden = YES;
     }
@@ -251,11 +257,11 @@ UIKit_RaiseWindow(_THIS, SDL_Window * window)
 static void
 UIKit_UpdateWindowBorder(_THIS, SDL_Window * window)
 {
-    SDL_WindowData *windowdata = (SDL_WindowData *) window->driverdata;
-    SDL_uikitviewcontroller *viewcontroller = windowdata->viewcontroller;
+    SDL_WindowData *windowdata = (__bridge SDL_WindowData *) window->driverdata;
+    SDL_uikitviewcontroller *viewcontroller = windowdata.viewcontroller;
     CGRect frame;
 
-    if (windowdata->uiwindow.screen == [UIScreen mainScreen]) {
+    if (windowdata.uiwindow.screen == [UIScreen mainScreen]) {
         if (window->flags & (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_BORDERLESS)) {
             [UIApplication sharedApplication].statusBarHidden = YES;
         } else {
@@ -269,11 +275,11 @@ UIKit_UpdateWindowBorder(_THIS, SDL_Window * window)
     }
 
     /* Update the view's frame to account for the status bar change. */
-    frame = UIKit_ComputeViewFrame(window, windowdata->uiwindow.screen);
+    frame = UIKit_ComputeViewFrame(window, windowdata.uiwindow.screen);
 
-    windowdata->view.frame = frame;
-    [windowdata->view setNeedsLayout];
-    [windowdata->view layoutIfNeeded];
+    windowdata.view.frame = frame;
+    [windowdata.view setNeedsLayout];
+    [windowdata.view layoutIfNeeded];
 
     /* Get frame dimensions */
     int width  = (int) frame.size.width;
@@ -308,13 +314,9 @@ UIKit_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
 void
 UIKit_DestroyWindow(_THIS, SDL_Window * window)
 {
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
-
     @autoreleasepool {
-        if (data) {
-            [data->viewcontroller release];
-            [data->uiwindow release];
-            SDL_free(data);
+        if (window->driverdata != NULL) {
+            CFRelease(window->driverdata);
         }
     }
 
@@ -325,7 +327,7 @@ SDL_bool
 UIKit_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
 {
     @autoreleasepool {
-        UIWindow *uiwindow = ((SDL_WindowData *) window->driverdata)->uiwindow;
+        UIWindow *uiwindow = ((__bridge SDL_WindowData *) window->driverdata).uiwindow;
 
         if (info->version.major <= SDL_MAJOR_VERSION) {
             info->subsystem = SDL_SYSWM_UIKIT;
@@ -342,14 +344,14 @@ UIKit_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
 int
 SDL_iPhoneSetAnimationCallback(SDL_Window * window, int interval, void (*callback)(void*), void *callbackParam)
 {
-    SDL_WindowData *data = window ? (SDL_WindowData *)window->driverdata : NULL;
-
-    if (!data || !data->view) {
-        return SDL_SetError("Invalid window or view not set");
-    }
-
     @autoreleasepool {
-        [data->view setAnimationCallback:interval callback:callback callbackParam:callbackParam];
+        SDL_WindowData *data = window ? (__bridge SDL_WindowData *)window->driverdata : nil;
+
+        if (!data || !data.view) {
+            return SDL_SetError("Invalid window or view not set");
+        }
+
+        [data.view setAnimationCallback:interval callback:callback callbackParam:callbackParam];
     }
 
     return 0;

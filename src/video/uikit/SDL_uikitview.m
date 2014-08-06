@@ -51,6 +51,8 @@ void _uikit_keyboard_init();
 
 }
 
+@synthesize viewcontroller;
+
 - (id)initWithFrame:(CGRect)frame
 {
     if (self = [super initWithFrame: frame]) {
@@ -88,10 +90,10 @@ void _uikit_keyboard_init();
             CGPoint locationInView = [self touchLocation:touch shouldNormalize:NO];
 
             /* send moved event */
-            SDL_SendMouseMotion(viewcontroller.window, SDL_TOUCH_MOUSEID, 0, locationInView.x, locationInView.y);
+            SDL_SendMouseMotion(self.viewcontroller.window, SDL_TOUCH_MOUSEID, 0, locationInView.x, locationInView.y);
 
             /* send mouse down event */
-            SDL_SendMouseButton(viewcontroller.window, SDL_TOUCH_MOUSEID, SDL_PRESSED, SDL_BUTTON_LEFT);
+            SDL_SendMouseButton(self.viewcontroller.window, SDL_TOUCH_MOUSEID, SDL_PRESSED, SDL_BUTTON_LEFT);
 
             leftFingerDown = touch;
         }
@@ -123,7 +125,7 @@ void _uikit_keyboard_init();
     for (UITouch *touch in touches) {
         if (touch == leftFingerDown) {
             /* send mouse up */
-            SDL_SendMouseButton(viewcontroller.window, SDL_TOUCH_MOUSEID, SDL_RELEASED, SDL_BUTTON_LEFT);
+            SDL_SendMouseButton(self.viewcontroller.window, SDL_TOUCH_MOUSEID, SDL_RELEASED, SDL_BUTTON_LEFT);
             leftFingerDown = nil;
         }
 
@@ -162,7 +164,7 @@ void _uikit_keyboard_init();
             CGPoint locationInView = [self touchLocation:touch shouldNormalize:NO];
 
             /* send moved event */
-            SDL_SendMouseMotion(viewcontroller.window, SDL_TOUCH_MOUSEID, 0, locationInView.x, locationInView.y);
+            SDL_SendMouseMotion(self.viewcontroller.window, SDL_TOUCH_MOUSEID, 0, locationInView.x, locationInView.y);
         }
 
         CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
@@ -212,7 +214,6 @@ void _uikit_keyboard_init();
     keyboardVisible = NO;
     /* add the UITextField (hidden) to our view */
     [self addSubview: textField];
-    [textField release];
     
     _uikit_keyboard_init();
 }
@@ -301,8 +302,8 @@ static SDL_uikitview * getWindowView(SDL_Window * window)
         return nil;
     }
 
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
-    SDL_uikitview *view = data != NULL ? data->view : nil;
+    SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
+    SDL_uikitview *view = data != nil ? data.view : nil;
 
     if (view == nil) {
         SDL_SetError("Window has no view");
@@ -352,11 +353,11 @@ SDL_bool UIKit_IsScreenKeyboardShown(_THIS, SDL_Window *window)
 void _uikit_keyboard_update() {
     SDL_Window *window = SDL_GetFocusWindow();
     if (!window) { return; }
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
     if (!data) { return; }
-    SDL_uikitview *view = data->view;
+    SDL_uikitview *view = data.view;
     if (!view) { return; }
-    
+
     SDL_Rect r = view.textInputRect;
     int height = view.keyboardHeight;
     int offsetx = 0;
