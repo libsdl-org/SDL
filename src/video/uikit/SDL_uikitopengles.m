@@ -129,8 +129,8 @@ UIKit_GL_CreateContext(_THIS, SDL_Window * window)
         }
 
         if (_this->gl_config.share_with_current_context) {
-            SDL_uikitopenglview *view = (__bridge SDL_uikitopenglview *) SDL_GL_GetCurrentContext();
-            share_group = [view.context sharegroup];
+            EAGLContext *context = (__bridge EAGLContext *) SDL_GL_GetCurrentContext();
+            share_group = context.sharegroup;
         }
 
         /* construct our view, passing in SDL's OpenGL configuration data */
@@ -174,6 +174,7 @@ UIKit_GL_CreateContext(_THIS, SDL_Window * window)
             SDL_SetKeyboardFocus(window);
         }
 
+        /* We return a +1'd context. The window's driverdata owns the view. */
         return (SDL_GLContext) CFBridgingRetain(context);
     }
 }
@@ -182,8 +183,9 @@ void
 UIKit_GL_DeleteContext(_THIS, SDL_GLContext context)
 {
     @autoreleasepool {
-        SDL_Window *window;
+        /* Transfer ownership the +1'd context to ARC. */
         EAGLContext *eaglcontext = (EAGLContext *) CFBridgingRelease(context);
+        SDL_Window *window;
 
         /* Find the view associated with this context */
         for (window = _this->windows; window; window = window->next) {
