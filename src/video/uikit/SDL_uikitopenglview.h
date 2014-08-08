@@ -50,6 +50,9 @@
 @property (nonatomic, readonly) int backingWidth;
 @property (nonatomic, readonly) int backingHeight;
 
+@property (nonatomic, readonly) GLuint drawableRenderbuffer;
+@property (nonatomic, readonly) GLuint drawableFramebuffer;
+
 - (void)swapBuffers;
 - (void)setCurrentContext;
 

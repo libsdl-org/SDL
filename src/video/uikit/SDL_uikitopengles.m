@@ -210,6 +210,40 @@ UIKit_GL_DeleteContext(_THIS, SDL_GLContext context)
     }
 }
 
+Uint32 SDL_iPhoneGetViewRenderbuffer(SDL_Window * window)
+{
+    if (!window) {
+        SDL_SetError("Invalid window");
+        return 0;
+    }
+
+    @autoreleasepool {
+        SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
+        if (data.view != nil) {
+            return data.view.drawableRenderbuffer;
+        } else {
+            return 0;
+        }
+    }
+}
+
+Uint32 SDL_iPhoneGetViewFramebuffer(SDL_Window * window)
+{
+    if (!window) {
+        SDL_SetError("Invalid window");
+        return 0;
+    }
+
+    @autoreleasepool {
+        SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
+        if (data.view != nil) {
+            return data.view.drawableFramebuffer;
+        } else {
+            return 0;
+        }
+    }
+}
+
 #endif /* SDL_VIDEO_DRIVER_UIKIT */
 
 /* vi: set ts=4 sw=4 expandtab: */
