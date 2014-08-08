@@ -162,6 +162,16 @@
     return self;
 }
 
+- (GLuint)drawableRenderbuffer
+{
+    return viewRenderbuffer;
+}
+
+- (GLuint)drawableFramebuffer
+{
+    return viewFramebuffer;
+}
+
 - (void)updateFrame
 {
     glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
