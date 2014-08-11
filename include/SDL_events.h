@@ -59,7 +59,7 @@ typedef enum
     /* Application events */
     SDL_QUIT           = 0x100, /**< User-requested quit */
 
-    /* These application events have special meaning on iOS, see README-ios.txt for details */
+    /* These application events have special meaning on iOS, see README-ios.md for details */
     SDL_APP_TERMINATING,        /**< The application is being terminated by the OS
                                      Called on iOS in applicationWillTerminate()
                                      Called on Android in onDestroy()
