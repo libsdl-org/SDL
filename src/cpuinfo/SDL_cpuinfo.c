@@ -246,7 +246,7 @@ CPU_OSSavesYMM(void)
     a = 0;
 #if defined(__GNUC__) && (defined(i386) || defined(__x86_64__))
     asm(".byte 0x0f, 0x01, 0xd0" : "=a" (a) : "c" (0) : "%edx");
-#elif defined(_MSC_VER) && (_MSC_FULL_VER >= 160040219) /* VS2010 SP1 */
+#elif defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64)) && (_MSC_FULL_VER >= 160040219) /* VS2010 SP1 */
     a = (int)_xgetbv(0);
 #elif (defined(_MSC_VER) && defined(_M_IX86)) || defined(__WATCOMC__)
     __asm
