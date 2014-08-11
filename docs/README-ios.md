@@ -68,56 +68,56 @@ not give you any processing time after the events are delivered.
 
 e.g.
 
-int HandleAppEvents(void *userdata, SDL_Event *event)
-{
-    switch (event->type)
+    int HandleAppEvents(void *userdata, SDL_Event *event)
     {
-    case SDL_APP_TERMINATING:
-        /* Terminate the app.
-           Shut everything down before returning from this function.
-        */
-        return 0;
-    case SDL_APP_LOWMEMORY:
-        /* You will get this when your app is paused and iOS wants more memory.
-           Release as much memory as possible.
-        */
-        return 0;
-    case SDL_APP_WILLENTERBACKGROUND:
-        /* Prepare your app to go into the background.  Stop loops, etc.
-           This gets called when the user hits the home button, or gets a call.
-        */
-        return 0;
-    case SDL_APP_DIDENTERBACKGROUND:
-        /* This will get called if the user accepted whatever sent your app to the background.
-           If the user got a phone call and canceled it, you'll instead get an SDL_APP_DIDENTERFOREGROUND event and restart your loops.
-           When you get this, you have 5 seconds to save all your state or the app will be terminated.
-           Your app is NOT active at this point.
-        */
-        return 0;
-    case SDL_APP_WILLENTERFOREGROUND:
-        /* This call happens when your app is coming back to the foreground.
-           Restore all your state here.
-        */
-        return 0;
-    case SDL_APP_DIDENTERFOREGROUND:
-        /* Restart your loops here.
-           Your app is interactive and getting CPU again.
-        */
-        return 0;
-    default:
-        /* No special processing, add it to the event queue */
-        return 1;
+        switch (event->type)
+        {
+        case SDL_APP_TERMINATING:
+            /* Terminate the app.
+               Shut everything down before returning from this function.
+            */
+            return 0;
+        case SDL_APP_LOWMEMORY:
+            /* You will get this when your app is paused and iOS wants more memory.
+               Release as much memory as possible.
+            */
+            return 0;
+        case SDL_APP_WILLENTERBACKGROUND:
+            /* Prepare your app to go into the background.  Stop loops, etc.
+               This gets called when the user hits the home button, or gets a call.
+            */
+            return 0;
+        case SDL_APP_DIDENTERBACKGROUND:
+            /* This will get called if the user accepted whatever sent your app to the background.
+               If the user got a phone call and canceled it, you'll instead get an SDL_APP_DIDENTERFOREGROUND event and restart your loops.
+               When you get this, you have 5 seconds to save all your state or the app will be terminated.
+               Your app is NOT active at this point.
+            */
+            return 0;
+        case SDL_APP_WILLENTERFOREGROUND:
+            /* This call happens when your app is coming back to the foreground.
+               Restore all your state here.
+            */
+            return 0;
+        case SDL_APP_DIDENTERFOREGROUND:
+            /* Restart your loops here.
+               Your app is interactive and getting CPU again.
+            */
+            return 0;
+        default:
+            /* No special processing, add it to the event queue */
+            return 1;
+        }
     }
-}
-
-int main(int argc, char *argv[])
-{
-    SDL_SetEventFilter(HandleAppEvents, NULL);
-
-    ... run your main loop
-
-    return 0;
-}
+    
+    int main(int argc, char *argv[])
+    {
+        SDL_SetEventFilter(HandleAppEvents, NULL);
+    
+        ... run your main loop
+    
+        return 0;
+    }
 
     
 ==============================================================================
@@ -198,28 +198,28 @@ This will set up the given function to be called back on the animation callback,
 
 e.g.
 
-extern "C"
-void ShowFrame(void*)
-{
-    ... do event handling, frame logic and rendering
-}
-
-int main(int argc, char *argv[])
-{
-   ... initialize game ...
-
-#if __IPHONEOS__
-        // Initialize the Game Center for scoring and matchmaking
-        InitGameCenter();
-
-        // Set up the game to run in the window animation callback on iOS
-        // so that Game Center and so forth works correctly.
-        SDL_iPhoneSetAnimationCallback(window, 1, ShowFrame, NULL);
-#else
-        while ( running ) {
-                ShowFrame(0);
-                DelayFrame();
-        }
-#endif
-        return 0;
-}
+    extern "C"
+    void ShowFrame(void*)
+    {
+        ... do event handling, frame logic and rendering
+    }
+    
+    int main(int argc, char *argv[])
+    {
+        ... initialize game ...
+    
+    #if __IPHONEOS__
+            // Initialize the Game Center for scoring and matchmaking
+            InitGameCenter();
+    
+            // Set up the game to run in the window animation callback on iOS
+            // so that Game Center and so forth works correctly.
+            SDL_iPhoneSetAnimationCallback(window, 1, ShowFrame, NULL);
+    #else
+            while ( running ) {
+                    ShowFrame(0);
+                    DelayFrame();
+            }
+    #endif
+            return 0;
+    }
