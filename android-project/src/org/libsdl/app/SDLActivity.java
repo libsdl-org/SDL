@@ -543,6 +543,9 @@ public class SDLActivity extends Activity {
     /** com.android.vending.expansion.zipfile.ZipResourceFile's getInputStream() or null. */
     private Method expansionFileMethod;
 
+    /**
+     * This method is called by SDL using JNI.
+     */
     public InputStream openAPKExtensionInputStream(String fileName) throws IOException {
         // Get a ZipResourceFile representing a merger of both the main and patch files
         if (expansionFile == null) {
