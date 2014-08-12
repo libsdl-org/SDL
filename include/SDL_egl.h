@@ -20,9 +20,9 @@
 */
 
 /**
- *  \file SDL_opengles.h
+ *  \file SDL_egl.h
  *
- *  This is a simple file to encapsulate the OpenGL ES 2.0 API headers.
+ *  This is a simple file to encapsulate the EGL API headers.
  */
 #ifndef _MSC_VER
 

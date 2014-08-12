@@ -81,33 +81,33 @@ sdk.dir=PATH_TO_ANDROID_SDK
 
 Here's an explanation of the files in the Android project, so you can customize them:
 
-android-project/
-	AndroidManifest.xml	- package manifest. Among others, it contains the class name
-				  of the main Activity and the package name of the application.
-	build.properties	- empty
-	build.xml		- build description file, used by ant. The actual application name
-				  is specified here.
-	default.properties	- holds the target ABI for the application, android-10 and up
-	project.properties	- holds the target ABI for the application, android-10 and up
-	local.properties	- holds the SDK path, you should change this to the path to your SDK
-	jni/			- directory holding native code
-	jni/Android.mk		- Android makefile that can call recursively the Android.mk files
-				  in all subdirectories
-	jni/SDL/		- (symlink to) directory holding the SDL library files
-	jni/SDL/Android.mk	- Android makefile for creating the SDL shared library
-	jni/src/		- directory holding your C/C++ source
-	jni/src/Android.mk	- Android makefile that you should customize to include your 
+    android-project/
+        AndroidManifest.xml	- package manifest. Among others, it contains the class name
+        			  of the main Activity and the package name of the application.
+        build.properties	- empty
+        build.xml		- build description file, used by ant. The actual application name
+        			  is specified here.
+        default.properties	- holds the target ABI for the application, android-10 and up
+        project.properties	- holds the target ABI for the application, android-10 and up
+        local.properties	- holds the SDK path, you should change this to the path to your SDK
+        jni/			- directory holding native code
+        jni/Android.mk		- Android makefile that can call recursively the Android.mk files
+        			  in all subdirectories
+        jni/SDL/		- (symlink to) directory holding the SDL library files
+        jni/SDL/Android.mk	- Android makefile for creating the SDL shared library
+        jni/src/		- directory holding your C/C++ source
+        jni/src/Android.mk	- Android makefile that you should customize to include your 
                                   source code and any library references
-	res/			- directory holding resources for your application
-	res/drawable-*		- directories holding icons for different phone hardware. Could be
-				  one dir called "drawable".
-	res/layout/main.xml	- Usually contains a file main.xml, which declares the screen layout.
-				  We don't need it because we use the SDL video output.
-	res/values/strings.xml	- strings used in your application, including the application name
-				  shown on the phone.
-	src/org/libsdl/app/SDLActivity.java - the Java class handling the initialization and binding
-				  to SDL.  Be very careful changing this, as the SDL library relies
-				  on this implementation.
+        res/			- directory holding resources for your application
+        res/drawable-*		- directories holding icons for different phone hardware. Could be
+        			  one dir called "drawable".
+        res/layout/main.xml	- Usually contains a file main.xml, which declares the screen layout.
+        			  We don't need it because we use the SDL video output.
+        res/values/strings.xml	- strings used in your application, including the application name
+        			  shown on the phone.
+        src/org/libsdl/app/SDLActivity.java - the Java class handling the initialization and binding
+        			  to SDL.  Be very careful changing this, as the SDL library relies
+        			  on this implementation.
 
 
 ================================================================================
@@ -141,6 +141,7 @@ To customize your application name, edit AndroidManifest.xml and replace
 
 Then create a Java class extending SDLActivity and place it in a directory
 under src matching your package, e.g.
+
 	src/com/gamemaker/game/MyGame.java
 
 Here's an example of a minimal class file:
@@ -291,30 +292,39 @@ You can create and run an emulator from the Eclipse IDE:
  * Window -> Android SDK and AVD Manager
 
 You can see if adb can see any devices with the following command:
+
 	adb devices
 
 You can see the output of log messages on the default device with:
+
 	adb logcat
 
 You can push files to the device with:
+
 	adb push local_file remote_path_and_file
 
 You can push files to the SD Card at /sdcard, for example:
+
 	adb push moose.dat /sdcard/moose.dat
 
 You can see the files on the SD card with a shell command:
+
 	adb shell ls /sdcard/
 
 You can start a command shell on the default device with:
+
 	adb shell
 
 You can remove the library files of your project (and not the SDL lib files) with:
+
 	ndk-build clean
 
 You can do a build with the following command:
+
 	ndk-build
 
 You can see the complete command line that ndk-build is using by passing V=1 on the command line:
+
 	ndk-build V=1
 
 If your application crashes in native code, you can use addr2line to convert the
@@ -334,7 +344,9 @@ For example, if your crash looks like this:
 
 You can see that there's a crash in the C library being called from the main code.
 I run addr2line with the debug version of my code:
+
 	arm-eabi-addr2line -C -f -e obj/local/armeabi/libmain.so
+
 and then paste in the number after "pc" in the call stack, from the line that I care about:
 000014bc
 
@@ -342,9 +354,9 @@ I get output from addr2line showing that it's in the quit function, in testsprit
 
 You can add logging to your code to help show what's happening:
 
-#include <android/log.h>
-
-	__android_log_print(ANDROID_LOG_INFO, "foo", "Something happened! x = %d", x);
+    #include <android/log.h>
+    
+    __android_log_print(ANDROID_LOG_INFO, "foo", "Something happened! x = %d", x);
 
 If you need to build without optimization turned on, you can create a file called
 "Application.mk" in the jni directory, with the following line in it:
@@ -357,7 +369,9 @@ APP_OPTIM := debug
 
 The best (and slowest) way to debug memory issues on Android is valgrind.
 Valgrind has support for Android out of the box, just grab code using:
+
 	svn co svn://svn.valgrind.org/valgrind/trunk valgrind
+
 ... and follow the instructions in the file README.android to build it.
 
 One thing I needed to do on Mac OS X was change the path to the toolchain,
@@ -374,12 +388,15 @@ application with it, changing org.libsdl.app to your package identifier:
     ------------------------------------------
 
 Then push it to the device:
+
 	adb push start_valgrind_app /data/local
 
 and make it executable:
+
 	adb shell chmod 755 /data/local/start_valgrind_app
 
 and tell Android to use the script to launch your application:
+
 	adb shell setprop wrap.org.libsdl.app "logwrapper /data/local/start_valgrind_app"
 
 If the setprop command says "could not set property", it's likely that
@@ -390,9 +407,11 @@ You can then launch your application normally and waaaaaaaiiittt for it.
 You can monitor the startup process with the logcat command above, and
 when it's done (or even while it's running) you can grab the valgrind
 output file:
+
 	adb pull /sdcard/valgrind.log
 
 When you're done instrumenting with valgrind, you can disable the wrapper:
+
 	adb shell setprop wrap.org.libsdl.app ""
 
 ================================================================================
