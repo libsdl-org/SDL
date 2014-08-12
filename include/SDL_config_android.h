@@ -141,7 +141,7 @@
 /* Enable system power support */
 #define SDL_POWER_ANDROID 1
 
-/* !!! FIXME: what does Android do for filesystem stuff? */
-#define SDL_FILESYSTEM_DUMMY   1
+/* Enable the filesystem driver */
+#define SDL_FILESYSTEM_ANDROID   1
 
 #endif /* _SDL_config_android_h */
