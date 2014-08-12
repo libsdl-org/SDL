@@ -1650,7 +1650,6 @@ GLES2_RenderCopy(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect *s
                  const SDL_FRect *dstrect)
 {
     GLES2_DriverContext *data = (GLES2_DriverContext *)renderer->driverdata;
-    GLES2_TextureData *tdata = (GLES2_TextureData *)texture->driverdata;
     GLfloat vertices[8];
     GLfloat texCoords[8];
 
@@ -1689,7 +1688,6 @@ GLES2_RenderCopyEx(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect 
                  const SDL_FRect *dstrect, const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip)
 {
     GLES2_DriverContext *data = (GLES2_DriverContext *)renderer->driverdata;
-    GLES2_TextureData *tdata = (GLES2_TextureData *)texture->driverdata;
     GLfloat vertices[8];
     GLfloat texCoords[8];
     GLfloat translate[8];
