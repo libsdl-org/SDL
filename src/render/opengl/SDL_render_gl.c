@@ -121,6 +121,7 @@ typedef struct
     GLDEBUGPROCARB next_error_callback;
     GLvoid *next_error_userparam;
 
+    SDL_bool GL_ARB_texture_non_power_of_two_supported;
     SDL_bool GL_ARB_texture_rectangle_supported;
     struct {
         GL_Shader shader;
@@ -499,9 +500,13 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
         data->glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
     }
 
-    if (SDL_GL_ExtensionSupported("GL_ARB_texture_rectangle")
-        || SDL_GL_ExtensionSupported("GL_EXT_texture_rectangle")) {
+    if (SDL_GL_ExtensionSupported("GL_ARB_texture_non_power_of_two")) {
+        data->GL_ARB_texture_non_power_of_two_supported = SDL_TRUE;
+    } else if (SDL_GL_ExtensionSupported("GL_ARB_texture_rectangle") ||
+               SDL_GL_ExtensionSupported("GL_EXT_texture_rectangle")) {
         data->GL_ARB_texture_rectangle_supported = SDL_TRUE;
+    }
+    if (data->GL_ARB_texture_rectangle_supported) {
         data->glGetIntegerv(GL_MAX_RECTANGLE_TEXTURE_SIZE_ARB, &value);
         renderer->info.max_texture_width = value;
         renderer->info.max_texture_height = value;
@@ -697,7 +702,7 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 
     GL_CheckError("", renderer);
     renderdata->glGenTextures(1, &data->texture);
-    if (GL_CheckError("glGenTexures()", renderer) < 0) {
+    if (GL_CheckError("glGenTextures()", renderer) < 0) {
         if (data->pixels) {
             SDL_free(data->pixels);
         }
@@ -706,8 +711,13 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     }
     texture->driverdata = data;
 
-    if ((renderdata->GL_ARB_texture_rectangle_supported)
-        /* && texture->access != SDL_TEXTUREACCESS_TARGET */){
+    if (renderdata->GL_ARB_texture_non_power_of_two_supported) {
+        data->type = GL_TEXTURE_2D;
+        texture_w = texture->w;
+        texture_h = texture->h;
+        data->texw = 1.0f;
+        data->texh = 1.0f;
+    } else if (renderdata->GL_ARB_texture_rectangle_supported) {
         data->type = GL_TEXTURE_RECTANGLE_ARB;
         texture_w = texture->w;
         texture_h = texture->h;

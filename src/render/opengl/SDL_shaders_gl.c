@@ -376,8 +376,9 @@ GL_CreateShaderContext()
         return NULL;
     }
 
-    if (SDL_GL_ExtensionSupported("GL_ARB_texture_rectangle")
-        || SDL_GL_ExtensionSupported("GL_EXT_texture_rectangle")) {
+    if (!SDL_GL_ExtensionSupported("GL_ARB_texture_non_power_of_two") &&
+        (SDL_GL_ExtensionSupported("GL_ARB_texture_rectangle") ||
+         SDL_GL_ExtensionSupported("GL_EXT_texture_rectangle"))) {
         ctx->GL_ARB_texture_rectangle_supported = SDL_TRUE;
     }
 
