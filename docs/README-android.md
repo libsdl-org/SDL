@@ -18,9 +18,9 @@ Joystick support is available for API level >=12 devices.
 
 - Android applications are Java-based, optionally with parts written in C
 - As SDL apps are C-based, we use a small Java shim that uses JNI to talk to 
-the SDL library
+  the SDL library
 - This means that your application C code must be placed inside an Android 
-Java project, along with some C support code that communicates with Java
+  Java project, along with some C support code that communicates with Java
 - This eventually produces a standard Android .apk package
 
 The Android Java code implements an "Activity" and can be found in:
@@ -42,15 +42,15 @@ For simple projects you can use the script located at build-scripts/androidbuild
 
 There's two ways of using it:
 
-androidbuild.sh com.yourcompany.yourapp < sources.list
-androidbuild.sh com.yourcompany.yourapp source1.c source2.c ...sourceN.c
+    androidbuild.sh com.yourcompany.yourapp < sources.list
+    androidbuild.sh com.yourcompany.yourapp source1.c source2.c ...sourceN.c
 
 sources.list should be a text file with a source file name in each line
 Filenames should be specified relative to the current directory, for example if
 you are in the build-scripts directory and want to create the testgles.c test, you'll
 run:
-    
-./androidbuild.sh org.libsdl.testgles ../test/testgles.c
+
+    ./androidbuild.sh org.libsdl.testgles ../test/testgles.c
 
 One limitation of this script is that all sources provided will be aggregated into
 a single directory, thus all your source files should have a unique name.
@@ -74,7 +74,9 @@ For more complex projects, follow these instructions:
 If you want to use the Eclipse IDE, skip to the Eclipse section below.
 
 5. Create <project>/local.properties and use that to point to the Android SDK directory, by writing a line with the following form:
-sdk.dir=PATH_TO_ANDROID_SDK
+
+       sdk.dir=PATH_TO_ANDROID_SDK
+
 6. Run 'ant debug' in android/project. This compiles the .java and eventually 
    creates a .apk with the native code embedded
 7. 'ant debug install' will push the apk to the device or emulator (if connected)
@@ -125,7 +127,7 @@ Instructions:
 4. create and export an environment variable named NDK_MODULE_PATH that points
    to the parent directory of this SDL directory. e.g.:
 
-   export NDK_MODULE_PATH="$PWD"/..
+       export NDK_MODULE_PATH="$PWD"/..
 
 5. Edit <project>/src/org/libsdl/app/SDLActivity.java and remove the call to
    System.loadLibrary("SDL2").
@@ -142,7 +144,7 @@ To customize your application name, edit AndroidManifest.xml and replace
 Then create a Java class extending SDLActivity and place it in a directory
 under src matching your package, e.g.
 
-	src/com/gamemaker/game/MyGame.java
+    src/com/gamemaker/game/MyGame.java
 
 Here's an example of a minimal class file:
 
@@ -184,9 +186,9 @@ standard functions in SDL_rwops.h.
 
 There are also a few Android specific functions that allow you to get other
 useful paths for saving and loading data:
-SDL_AndroidGetInternalStoragePath()
-SDL_AndroidGetExternalStorageState()
-SDL_AndroidGetExternalStoragePath()
+* SDL_AndroidGetInternalStoragePath()
+* SDL_AndroidGetExternalStorageState()
+* SDL_AndroidGetExternalStoragePath()
 
 See SDL_system.h for more details on these functions.
 
@@ -228,6 +230,7 @@ under iOS, if the OS can not restore your GL context it will just kill your app)
 
 For a quick tour on how Linux native threads interoperate with the Java VM, take
 a look here: http://developer.android.com/guide/practices/jni.html
+
 If you want to use threads in your SDL app, it's strongly recommended that you
 do so by creating them using SDL functions. This way, the required attach/detach
 handling is managed by SDL automagically. If you have threads created by other
@@ -242,7 +245,8 @@ detach it.
 
 You can use STL in your project by creating an Application.mk file in the jni
 folder and adding the following line:
-APP_STL := stlport_static
+
+    APP_STL := stlport_static
 
 For more information check out CPLUSPLUS-SUPPORT.html in the NDK documentation.
 
@@ -293,39 +297,39 @@ You can create and run an emulator from the Eclipse IDE:
 
 You can see if adb can see any devices with the following command:
 
-	adb devices
+    adb devices
 
 You can see the output of log messages on the default device with:
 
-	adb logcat
+    adb logcat
 
 You can push files to the device with:
 
-	adb push local_file remote_path_and_file
+    adb push local_file remote_path_and_file
 
 You can push files to the SD Card at /sdcard, for example:
 
-	adb push moose.dat /sdcard/moose.dat
+    adb push moose.dat /sdcard/moose.dat
 
 You can see the files on the SD card with a shell command:
 
-	adb shell ls /sdcard/
+    adb shell ls /sdcard/
 
 You can start a command shell on the default device with:
 
-	adb shell
+    adb shell
 
 You can remove the library files of your project (and not the SDL lib files) with:
 
-	ndk-build clean
+    ndk-build clean
 
 You can do a build with the following command:
 
-	ndk-build
+    ndk-build
 
 You can see the complete command line that ndk-build is using by passing V=1 on the command line:
 
-	ndk-build V=1
+    ndk-build V=1
 
 If your application crashes in native code, you can use addr2line to convert the
 addresses in the stack trace to lines in your code.
@@ -345,7 +349,7 @@ For example, if your crash looks like this:
 You can see that there's a crash in the C library being called from the main code.
 I run addr2line with the debug version of my code:
 
-	arm-eabi-addr2line -C -f -e obj/local/armeabi/libmain.so
+    arm-eabi-addr2line -C -f -e obj/local/armeabi/libmain.so
 
 and then paste in the number after "pc" in the call stack, from the line that I care about:
 000014bc
@@ -360,7 +364,8 @@ You can add logging to your code to help show what's happening:
 
 If you need to build without optimization turned on, you can create a file called
 "Application.mk" in the jni directory, with the following line in it:
-APP_OPTIM := debug
+
+    APP_OPTIM := debug
 
 
 ================================================================================
@@ -370,7 +375,7 @@ APP_OPTIM := debug
 The best (and slowest) way to debug memory issues on Android is valgrind.
 Valgrind has support for Android out of the box, just grab code using:
 
-	svn co svn://svn.valgrind.org/valgrind/trunk valgrind
+    svn co svn://svn.valgrind.org/valgrind/trunk valgrind
 
 ... and follow the instructions in the file README.android to build it.
 
@@ -389,15 +394,15 @@ application with it, changing org.libsdl.app to your package identifier:
 
 Then push it to the device:
 
-	adb push start_valgrind_app /data/local
+    adb push start_valgrind_app /data/local
 
 and make it executable:
 
-	adb shell chmod 755 /data/local/start_valgrind_app
+    adb shell chmod 755 /data/local/start_valgrind_app
 
 and tell Android to use the script to launch your application:
 
-	adb shell setprop wrap.org.libsdl.app "logwrapper /data/local/start_valgrind_app"
+    adb shell setprop wrap.org.libsdl.app "logwrapper /data/local/start_valgrind_app"
 
 If the setprop command says "could not set property", it's likely that
 your package name is too long and you should make it shorter by changing
@@ -408,11 +413,11 @@ You can monitor the startup process with the logcat command above, and
 when it's done (or even while it's running) you can grab the valgrind
 output file:
 
-	adb pull /sdcard/valgrind.log
+    adb pull /sdcard/valgrind.log
 
 When you're done instrumenting with valgrind, you can disable the wrapper:
 
-	adb shell setprop wrap.org.libsdl.app ""
+    adb shell setprop wrap.org.libsdl.app ""
 
 ================================================================================
  Why is API level 10 the minimum required?

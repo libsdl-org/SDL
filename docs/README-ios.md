@@ -14,10 +14,11 @@ Instructions:
 There are three build targets:
 - libSDL.a:
 	Build SDL as a statically linked library
-- testsdl
+- testsdl:
 	Build a test program (there are known test failures which are fine)
 - Template:
 	Package a project template together with the SDL for iPhone static libraries and copies of the SDL headers.  The template includes proper references to the SDL library and headers, skeleton code for a basic SDL program, and placeholder graphics for the application icon and startup screen.
+
 
 ==============================================================================
 Build SDL for iOS from the command line
@@ -56,6 +57,7 @@ Here is a more manual method:
 3.  Include the SDL header files in your project.
 4.  Remove the ApplicationDelegate.h and ApplicationDelegate.m files -- SDL for iPhone provides its own UIApplicationDelegate.  Remove MainWindow.xib -- SDL for iPhone produces its user interface programmatically.
 5.  Delete the contents of main.m and program your app as a regular SDL program instead.  You may replace main.m with your own main.c, but you must tell XCode not to use the project prefix file, as it includes Objective-C code.
+
 
 ==============================================================================
 Notes -- Application events
@@ -148,10 +150,13 @@ The SDL keyboard API has been extended to support on-screen keyboards:
 
 void SDL_StartTextInput()
 	-- enables text events and reveals the onscreen keyboard.
+
 void SDL_StopTextInput()
 	-- disables text events and hides the onscreen keyboard.
+
 SDL_bool SDL_IsTextInputActive()
 	-- returns whether or not text events are enabled (and the onscreen keyboard is visible)
+
 
 ==============================================================================
 Notes -- Reading and Writing files
@@ -161,12 +166,12 @@ Each application installed on iPhone resides in a sandbox which includes its own
 
 Once your application is installed its directory tree looks like:
 
-MySDLApp Home/
-	MySDLApp.app
-	Documents/
-	Library/
-		Preferences/
-	tmp/
+    MySDLApp Home/
+        MySDLApp.app
+        Documents/
+        Library/
+            Preferences/
+        tmp/
 
 When your SDL based iPhone application starts up, it sets the working directory to the main bundle (MySDLApp Home/MySDLApp.app), where your application resources are stored.  You cannot write to this directory.  Instead, I advise you to write document files to "../Documents/" and preferences to "../Library/Preferences".  
 
@@ -191,8 +196,8 @@ Game Center
 ==============================================================================
 
 Game Center integration requires that you break up your main loop in order to yield control back to the system. In other words, instead of running an endless main loop, you run each frame in a callback function, using:
-    
-int SDL_iPhoneSetAnimationCallback(SDL_Window * window, int interval, void (*callback)(void*), void *callbackParam);
+
+    int SDL_iPhoneSetAnimationCallback(SDL_Window * window, int interval, void (*callback)(void*), void *callbackParam);
 
 This will set up the given function to be called back on the animation callback, and then you have to return from main() to let the Cocoa event loop run.
 
@@ -201,7 +206,7 @@ e.g.
     extern "C"
     void ShowFrame(void*)
     {
-        ... do event handling, frame logic and rendering
+        ... do event handling, frame logic and rendering ...
     }
     
     int main(int argc, char *argv[])
@@ -209,17 +214,17 @@ e.g.
         ... initialize game ...
     
     #if __IPHONEOS__
-            // Initialize the Game Center for scoring and matchmaking
-            InitGameCenter();
+        // Initialize the Game Center for scoring and matchmaking
+        InitGameCenter();
     
-            // Set up the game to run in the window animation callback on iOS
-            // so that Game Center and so forth works correctly.
-            SDL_iPhoneSetAnimationCallback(window, 1, ShowFrame, NULL);
+        // Set up the game to run in the window animation callback on iOS
+        // so that Game Center and so forth works correctly.
+        SDL_iPhoneSetAnimationCallback(window, 1, ShowFrame, NULL);
     #else
-            while ( running ) {
-                    ShowFrame(0);
-                    DelayFrame();
-            }
+        while ( running ) {
+            ShowFrame(0);
+            DelayFrame();
+        }
     #endif
-            return 0;
+        return 0;
     }

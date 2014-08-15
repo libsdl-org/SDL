@@ -45,28 +45,29 @@ Some things you have to be aware of when using SDL on Mac OS X:
   file with the app. To solve these issues, put the following code in your 
   NSApplicationDelegate implementation:
 
-  - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
-  {
-      if (SDL_GetEventState(SDL_QUIT) == SDL_ENABLE) {
-          SDL_Event event;
-          event.type = SDL_QUIT;
-          SDL_PushEvent(&event);
-      }
 
-      return NSTerminateCancel;
-  }
-
-  - (BOOL)application:(NSApplication *)theApplication openFile:(NSString *)filename
-  {
-      if (SDL_GetEventState(SDL_DROPFILE) == SDL_ENABLE) {
-          SDL_Event event;
-          event.type = SDL_DROPFILE;
-          event.drop.file = SDL_strdup([filename UTF8String]);
-          return (SDL_PushEvent(&event) > 0);
-      }
-
-      return NO;
-  }
+    - (NSApplicationTerminateReply)applicationShouldTerminate:(NSApplication *)sender
+    {
+        if (SDL_GetEventState(SDL_QUIT) == SDL_ENABLE) {
+            SDL_Event event;
+            event.type = SDL_QUIT;
+            SDL_PushEvent(&event);
+        }
+    
+        return NSTerminateCancel;
+    }
+    
+    - (BOOL)application:(NSApplication *)theApplication openFile:(NSString *)filename
+    {
+        if (SDL_GetEventState(SDL_DROPFILE) == SDL_ENABLE) {
+            SDL_Event event;
+            event.type = SDL_DROPFILE;
+            event.drop.file = SDL_strdup([filename UTF8String]);
+            return (SDL_PushEvent(&event) > 0);
+        }
+    
+        return NO;
+    }
 
 ==============================================================================
 Using the Simple DirectMedia Layer with a traditional Makefile

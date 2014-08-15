@@ -10,22 +10,23 @@ It works in parallel to the legacy system, so users can experiment with it
 without complication.
 While still experimental, the build system should be usable on the following
 platforms:
-    
-    * FreeBSD
-    * Linux
-    * VS.NET 2010
-    * MinGW and Msys
-    * OS X with support for XCode
-    
+
+* FreeBSD
+* Linux
+* VS.NET 2010
+* MinGW and Msys
+* OS X with support for XCode
+
+
 ================================================================================
 Usage
 ================================================================================
 
 Assuming the source for SDL is located at ~/sdl
 
-cd ~
-mkdir build
-cd build
-cmake ../sdl
+    cd ~
+    mkdir build
+    cd build
+    cmake ../sdl
 
 This will build the static and dynamic versions of SDL in the ~/build directory.
