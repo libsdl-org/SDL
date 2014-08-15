@@ -128,7 +128,7 @@ Instructions:
    export NDK_MODULE_PATH="$PWD"/..
 
 5. Edit <project>/src/org/libsdl/app/SDLActivity.java and remove the call to
-   System.loadLibrary("SDL2") line 42.
+   System.loadLibrary("SDL2").
 6. Run 'ndk-build' (a script provided by the NDK). This compiles the C source
 
 
@@ -151,7 +151,7 @@ Here's an example of a minimal class file:
     
     import org.libsdl.app.SDLActivity; 
     
-    /* 
+    /**
      * A sample wrapper class that just calls SDLActivity 
      */ 
     
@@ -232,7 +232,7 @@ If you want to use threads in your SDL app, it's strongly recommended that you
 do so by creating them using SDL functions. This way, the required attach/detach
 handling is managed by SDL automagically. If you have threads created by other
 means and they make calls to SDL functions, make sure that you call
-Android_JNI_SetupThread before doing anything else otherwise SDL will attach
+Android_JNI_SetupThread() before doing anything else otherwise SDL will attach
 your thread automatically anyway (when you make an SDL call), but it'll never
 detach it.
 
@@ -268,7 +268,7 @@ Once you've copied the SDL android project and customized it, you can create an 
  * Select the Android -> Android Project wizard and click Next
  * Enter the name you'd like your project to have
  * Select "Create project from existing source" and browse for your project directory
- * Make sure the Build Target is set to Android 2.0
+ * Make sure the Build Target is set to Android 3.1 (API 12)
  * Click Finish
 
 
