@@ -20,18 +20,18 @@ Events
 SDL_FINGERDOWN:
 Sent when a finger (or stylus) is placed on a touch device.
 Fields:
-event.tfinger.touchId  - the Id of the touch device.
-event.tfinger.fingerId - the Id of the finger which just went down.
-event.tfinger.x        - the x coordinate of the touch (0..1)
-event.tfinger.y        - the y coordinate of the touch (0..1)
-event.tfinger.pressure - the pressure of the touch (0..1)
+* event.tfinger.touchId  - the Id of the touch device.
+* event.tfinger.fingerId - the Id of the finger which just went down.
+* event.tfinger.x        - the x coordinate of the touch (0..1)
+* event.tfinger.y        - the y coordinate of the touch (0..1)
+* event.tfinger.pressure - the pressure of the touch (0..1)
 
 SDL_FINGERMOTION:
 Sent when a finger (or stylus) is moved on the touch device.
 Fields:
 Same as SDL_FINGERDOWN but with additional:
-event.tfinger.dx       - change in x coordinate during this motion event.
-event.tfinger.dy       - change in y coordinate during this motion event.
+* event.tfinger.dx       - change in x coordinate during this motion event.
+* event.tfinger.dy       - change in y coordinate during this motion event.
 
 SDL_FINGERUP:
 Sent when a finger (or stylus) is lifted from the touch device.
@@ -70,10 +70,11 @@ A SDL_Finger is guaranteed to be persistent for the duration of a touch, but it 
 As a result, be very careful to check for NULL return values.
 
 A SDL_Finger has the following fields:
->x,y,pressure:
+* x,y,pressure:
 	The current coordinates of the touch.
->pressure:
+* pressure:
 	The pressure of the touch.
+
 
 ===========================================================================
 Notes

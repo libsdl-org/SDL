@@ -2,9 +2,9 @@ Native Client
 ================================================================================
 
 Requirements: 
-    
-    * Native Client SDK (https://developer.chrome.com/native-client), 
-      (tested with Pepper version 33 or higher).
+
+* Native Client SDK (https://developer.chrome.com/native-client), 
+  (tested with Pepper version 33 or higher).
 
 The SDL backend for Chrome's Native Client has been tested only with the PNaCl
 toolchain, which generates binaries designed to run on ARM and x86_32/64 
@@ -91,9 +91,9 @@ To be able to save into the directory "/save/" (like backup of game) :
 
 And add to manifest.json :
 
-  "permissions": [
-     "unlimitedStorage"
-  ]
+    "permissions": [
+        "unlimitedStorage"
+    ]
 
 ================================================================================
 TODO - Known Issues
