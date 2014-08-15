@@ -47,8 +47,8 @@ FIXME: This needs to be updated for the latest methods
 
 Here is the easiest method:
 1.  Build the SDL libraries (libSDL.a and libSDLSimulator.a) and the iPhone SDL Application template.
-1.  Install the iPhone SDL Application template by copying it to one of XCode's template directories.  I recommend creating a directory called "SDL" in "/Developer/Platforms/iOS.platform/Developer/Library/XCode/Project Templates/" and placing it there.
-2.  Start a new project using the template.  The project should be immediately ready for use with SDL.
+2.  Install the iPhone SDL Application template by copying it to one of XCode's template directories.  I recommend creating a directory called "SDL" in "/Developer/Platforms/iOS.platform/Developer/Library/XCode/Project Templates/" and placing it there.
+3.  Start a new project using the template.  The project should be immediately ready for use with SDL.
 
 Here is a more manual method:
 1.  Create a new iPhone view based application.
