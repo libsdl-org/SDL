@@ -652,15 +652,15 @@ SDL_SYS_ToButton(Uint16 button)
 
 
 /*
- * Returns the ff_effect usable direction from a SDL_HapticDirection.
+ * Initializes the ff_effect usable direction from a SDL_HapticDirection.
  */
-static Uint16
-SDL_SYS_ToDirection(SDL_HapticDirection * dir)
+static int
+SDL_SYS_ToDirection(Uint16 *dest, SDL_HapticDirection * src)
 {
     Uint32 tmp;
     float f;                    /* Ideally we'd use fixed point math instead of floats... */
 
-    switch (dir->type) {
+    switch (src->type) {
     case SDL_HAPTIC_POLAR:
         /* Linux directions start from south.
                 (and range from 0 to 0xFFFF)
@@ -671,10 +671,11 @@ SDL_SYS_ToDirection(SDL_HapticDirection * dir)
                         180 deg -> 0x8000 (up)
                         270 deg -> 0xC000 (right)
                     */
-        tmp = (((18000 + dir->dir[0]) % 36000) * 0xFFFF) / 36000; /* convert to range [0,0xFFFF] */
-        return (Uint16) tmp;
+        tmp = (((18000 + src->dir[0]) % 36000) * 0xFFFF) / 36000; /* convert to range [0,0xFFFF] */
+        *dest = (Uint16) tmp;
+        break;
 
-       case SDL_HAPTIC_SPHERICAL:
+    case SDL_HAPTIC_SPHERICAL:
             /*
                 We convert to polar, because that's the only supported direction on Linux.
                 The first value of a spherical direction is practically the same as a
@@ -683,12 +684,13 @@ SDL_SYS_ToDirection(SDL_HapticDirection * dir)
                 --> add 9000
                 --> finally add 18000 and convert to [0,0xFFFF] as in case SDL_HAPTIC_POLAR.
             */
-            tmp = ((dir->dir[0]) + 9000) % 36000;    /* Convert to polars */
+            tmp = ((src->dir[0]) + 9000) % 36000;    /* Convert to polars */
         tmp = (((18000 + tmp) % 36000) * 0xFFFF) / 36000; /* convert to range [0,0xFFFF] */
-        return (Uint16) tmp;
+        *dest = (Uint16) tmp;
+        break;
 
     case SDL_HAPTIC_CARTESIAN:
-        f = atan2(dir->dir[1], dir->dir[0]);
+        f = atan2(src->dir[1], src->dir[0]);
                     /*
                       atan2 takes the parameters: Y-axis-value and X-axis-value (in that order)
                        - Y-axis-value is the second coordinate (from center to SOUTH)
@@ -701,10 +703,11 @@ SDL_SYS_ToDirection(SDL_HapticDirection * dir)
                     */
                 tmp = (((int) (f * 18000. / M_PI)) + 45000) % 36000;
         tmp = (((18000 + tmp) % 36000) * 0xFFFF) / 36000; /* convert to range [0,0xFFFF] */
-        return (Uint16) tmp;
+        *dest = (Uint16) tmp;
+        break;
 
     default:
-        return (Uint16) SDL_SetError("Haptic: Unsupported direction type.");
+        return SDL_SetError("Haptic: Unsupported direction type.");
     }
 
     return 0;
@@ -735,8 +738,7 @@ SDL_SYS_ToFFEffect(struct ff_effect *dest, SDL_HapticEffect * src)
 
         /* Header */
         dest->type = FF_CONSTANT;
-        dest->direction = SDL_SYS_ToDirection(&constant->direction);
-        if (dest->direction == (Uint16) - 1)
+        if (SDL_SYS_ToDirection(&dest->direction, &constant->direction) == -1)
             return -1;
 
         /* Replay */
@@ -771,8 +773,7 @@ SDL_SYS_ToFFEffect(struct ff_effect *dest, SDL_HapticEffect * src)
 
         /* Header */
         dest->type = FF_PERIODIC;
-        dest->direction = SDL_SYS_ToDirection(&periodic->direction);
-        if (dest->direction == (Uint16) - 1)
+        if (SDL_SYS_ToDirection(&dest->direction, &periodic->direction) == -1)
             return -1;
 
         /* Replay */
@@ -868,8 +869,7 @@ SDL_SYS_ToFFEffect(struct ff_effect *dest, SDL_HapticEffect * src)
 
         /* Header */
         dest->type = FF_RAMP;
-        dest->direction = SDL_SYS_ToDirection(&ramp->direction);
-        if (dest->direction == (Uint16) - 1)
+        if (SDL_SYS_ToDirection(&dest->direction, &ramp->direction) == -1)
             return -1;
 
         /* Replay */
