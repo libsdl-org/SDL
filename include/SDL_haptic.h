@@ -370,7 +370,7 @@ typedef struct _SDL_Haptic SDL_Haptic;
                          ^
                          |
                          |
-    (1,0)  West <----[ HAPTIC ]----> East (-1,0)
+   (-1,0)  West <----[ HAPTIC ]----> East (1,0)
                          |
                          |
                          v
@@ -395,9 +395,9 @@ typedef struct _SDL_Haptic SDL_Haptic;
  *  (X axis, Y axis and Z axis (with 3 axes)).  ::SDL_HAPTIC_CARTESIAN uses
  *  the first three \c dir parameters.  The cardinal directions would be:
  *   - North:  0,-1, 0
- *   - East:  -1, 0, 0
+ *   - East:   1, 0, 0
  *   - South:  0, 1, 0
- *   - West:   1, 0, 0
+ *   - West:  -1, 0, 0
  *
  *  The Z axis represents the height of the effect if supported, otherwise
  *  it's unused.  In cartesian encoding (1, 2) would be the same as (2, 4), you
