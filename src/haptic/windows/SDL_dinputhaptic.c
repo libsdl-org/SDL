@@ -763,10 +763,10 @@ SDL_SYS_ToDIEFFECT(SDL_Haptic * haptic, DIEFFECT * dest,
             condition[i].lNegativeCoefficient =
                 CONVERT(hap_condition->left_coeff[i]);
             condition[i].dwPositiveSaturation =
-                CONVERT(hap_condition->right_sat[i]);
+                CONVERT(hap_condition->right_sat[i] / 2);
             condition[i].dwNegativeSaturation =
-                CONVERT(hap_condition->left_sat[i]);
-            condition[i].lDeadBand = CONVERT(hap_condition->deadband[i]);
+                CONVERT(hap_condition->left_sat[i] / 2);
+            condition[i].lDeadBand = CONVERT(hap_condition->deadband[i] / 2);
         }
         dest->cbTypeSpecificParams = sizeof(DICONDITION) * dest->cAxes;
         dest->lpvTypeSpecificParams = condition;
