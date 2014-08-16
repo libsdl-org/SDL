@@ -671,7 +671,7 @@ SDL_SYS_ToDirection(Uint16 *dest, SDL_HapticDirection * src)
                         180 deg -> 0x8000 (up)
                         270 deg -> 0xC000 (right)
                     */
-        tmp = (((18000 + src->dir[0]) % 36000) * 0xFFFF) / 36000; /* convert to range [0,0xFFFF] */
+        tmp = ((src->dir[0] % 36000) * 0x8000) / 18000; /* convert to range [0,0xFFFF] */
         *dest = (Uint16) tmp;
         break;
 
@@ -682,10 +682,10 @@ SDL_SYS_ToDirection(Uint16 *dest, SDL_HapticDirection * src)
                 Polar direction, except that we have to add 90 degrees. It is the angle
                 from EAST {1,0} towards SOUTH {0,1}.
                 --> add 9000
-                --> finally add 18000 and convert to [0,0xFFFF] as in case SDL_HAPTIC_POLAR.
+                --> finally convert to [0,0xFFFF] as in case SDL_HAPTIC_POLAR.
             */
             tmp = ((src->dir[0]) + 9000) % 36000;    /* Convert to polars */
-        tmp = (((18000 + tmp) % 36000) * 0xFFFF) / 36000; /* convert to range [0,0xFFFF] */
+        tmp = (tmp * 0x8000) / 18000; /* convert to range [0,0xFFFF] */
         *dest = (Uint16) tmp;
         break;
 
@@ -699,10 +699,10 @@ SDL_SYS_ToDirection(Uint16 *dest, SDL_HapticDirection * src)
                         have the first spherical value. Therefore we proceed as in case
                         SDL_HAPTIC_SPHERICAL and add another 9000 to get the polar value.
                       --> add 45000 in total
-                      --> finally add 18000 and convert to [0,0xFFFF] as in case SDL_HAPTIC_POLAR.
+                      --> finally convert to [0,0xFFFF] as in case SDL_HAPTIC_POLAR.
                     */
-                tmp = (((int) (f * 18000. / M_PI)) + 45000) % 36000;
-        tmp = (((18000 + tmp) % 36000) * 0xFFFF) / 36000; /* convert to range [0,0xFFFF] */
+                tmp = (((Sint32) (f * 18000. / M_PI)) + 45000) % 36000;
+        tmp = (tmp * 0x8000) / 18000; /* convert to range [0,0xFFFF] */
         *dest = (Uint16) tmp;
         break;
 
