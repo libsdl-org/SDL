@@ -658,7 +658,6 @@ static int
 SDL_SYS_ToDirection(Uint16 *dest, SDL_HapticDirection * src)
 {
     Uint32 tmp;
-    float f;                    /* Ideally we'd use fixed point math instead of floats... */
 
     switch (src->type) {
     case SDL_HAPTIC_POLAR:
@@ -690,7 +689,12 @@ SDL_SYS_ToDirection(Uint16 *dest, SDL_HapticDirection * src)
         break;
 
     case SDL_HAPTIC_CARTESIAN:
-        f = atan2(src->dir[1], src->dir[0]);
+        if (!src->dir[1])
+            *dest = (src->dir[0] >= 0 ? 0x4000 : 0xC000);
+        else if (!src->dir[0])
+            *dest = (src->dir[1] >= 0 ? 0x8000 : 0);
+        else {
+            float f = atan2(src->dir[1], src->dir[0]);    /* Ideally we'd use fixed point math instead of floats... */
                     /*
                       atan2 takes the parameters: Y-axis-value and X-axis-value (in that order)
                        - Y-axis-value is the second coordinate (from center to SOUTH)
@@ -702,8 +706,9 @@ SDL_SYS_ToDirection(Uint16 *dest, SDL_HapticDirection * src)
                       --> finally convert to [0,0xFFFF] as in case SDL_HAPTIC_POLAR.
                     */
                 tmp = (((Sint32) (f * 18000. / M_PI)) + 45000) % 36000;
-        tmp = (tmp * 0x8000) / 18000; /* convert to range [0,0xFFFF] */
-        *dest = (Uint16) tmp;
+            tmp = (tmp * 0x8000) / 18000; /* convert to range [0,0xFFFF] */
+            *dest = (Uint16) tmp;
+        }
         break;
 
     default:
