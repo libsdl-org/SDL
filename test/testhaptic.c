@@ -172,8 +172,8 @@ main(int argc, char **argv)
         efx[nefx].type = SDL_HAPTIC_SPRING;
         efx[nefx].condition.length = 5000;
         for (i = 0; i < SDL_HapticNumAxes(haptic); i++) {
-            efx[nefx].condition.right_sat[i] = 0x7FFF;
-            efx[nefx].condition.left_sat[i] = 0x7FFF;
+            efx[nefx].condition.right_sat[i] = 0xFFFF;
+            efx[nefx].condition.left_sat[i] = 0xFFFF;
             efx[nefx].condition.right_coeff[i] = 0x2000;
             efx[nefx].condition.left_coeff[i] = 0x2000;
             efx[nefx].condition.center[i] = 0x1000;     /* Displace the center for it to move. */
@@ -191,10 +191,11 @@ main(int argc, char **argv)
         efx[nefx].type = SDL_HAPTIC_INERTIA;
         efx[nefx].condition.length = 5000;
         for (i = 0; i < SDL_HapticNumAxes(haptic); i++) {
-            efx[nefx].condition.right_sat[i] = 0x7FFF;
-            efx[nefx].condition.left_sat[i] = 0x7FFF;
+            efx[nefx].condition.right_sat[i] = 0xFFFF;
+            efx[nefx].condition.left_sat[i] = 0xFFFF;
             efx[nefx].condition.right_coeff[i] = 0x2000;
             efx[nefx].condition.left_coeff[i] = 0x2000;
+            efx[nefx].condition.deadband[i] = 0x1000;    /* 1/16th of axis-range around the center is 'dead'. */
         }
         id[nefx] = SDL_HapticNewEffect(haptic, &efx[nefx]);
         if (id[nefx] < 0) {

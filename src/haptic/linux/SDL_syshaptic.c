@@ -847,20 +847,18 @@ SDL_SYS_ToFFEffect(struct ff_effect *dest, SDL_HapticEffect * src)
 
         /* Condition */
         /* X axis */
-        dest->u.condition[0].right_saturation =
-            CLAMP(condition->right_sat[0]);
-        dest->u.condition[0].left_saturation = CLAMP(condition->left_sat[0]);
+        dest->u.condition[0].right_saturation = condition->right_sat[0];
+        dest->u.condition[0].left_saturation = condition->left_sat[0];
         dest->u.condition[0].right_coeff = condition->right_coeff[0];
         dest->u.condition[0].left_coeff = condition->left_coeff[0];
-        dest->u.condition[0].deadband = CLAMP(condition->deadband[0]);
+        dest->u.condition[0].deadband = condition->deadband[0];
         dest->u.condition[0].center = condition->center[0];
         /* Y axis */
-        dest->u.condition[1].right_saturation =
-            CLAMP(condition->right_sat[1]);
-        dest->u.condition[1].left_saturation = CLAMP(condition->left_sat[1]);
+        dest->u.condition[1].right_saturation = condition->right_sat[1];
+        dest->u.condition[1].left_saturation = condition->left_sat[1];
         dest->u.condition[1].right_coeff = condition->right_coeff[1];
         dest->u.condition[1].left_coeff = condition->left_coeff[1];
-        dest->u.condition[1].deadband = CLAMP(condition->deadband[1]);
+        dest->u.condition[1].deadband = condition->deadband[1];
         dest->u.condition[1].center = condition->center[1];
 
         /*

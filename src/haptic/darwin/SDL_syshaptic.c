@@ -924,10 +924,10 @@ SDL_SYS_ToFFEFFECT(SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src)
             condition[i].lNegativeCoefficient =
                 CONVERT(hap_condition->left_coeff[i]);
             condition[i].dwPositiveSaturation =
-                CCONVERT(hap_condition->right_sat[i]);
+                CCONVERT(hap_condition->right_sat[i] / 2);
             condition[i].dwNegativeSaturation =
-                CCONVERT(hap_condition->left_sat[i]);
-            condition[i].lDeadBand = CCONVERT(hap_condition->deadband[i]);
+                CCONVERT(hap_condition->left_sat[i] / 2);
+            condition[i].lDeadBand = CCONVERT(hap_condition->deadband[i] / 2);
         }
         dest->cbTypeSpecificParams = sizeof(FFCONDITION) * dest->cAxes;
         dest->lpvTypeSpecificParams = condition;
