@@ -103,8 +103,7 @@ static Uint32 s_moveHack;
 
 static void ConvertNSRect(NSScreen *screen, BOOL fullscreen, NSRect *r)
 {
-    NSRect visibleScreen = fullscreen ? [screen frame] : [screen visibleFrame];
-    r->origin.y = (visibleScreen.origin.y + visibleScreen.size.height) - r->origin.y - r->size.height;
+    r->origin.y = CGDisplayPixelsHigh(kCGDirectMainDisplay) - r->origin.y - r->size.height;
 }
 
 static void
@@ -389,11 +388,11 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
         isMoving = NO;
 
         SDL_Mouse *mouse = SDL_GetMouse();
-        if (pendingWindowWarpX >= 0 && pendingWindowWarpY >= 0) {
-            mouse->WarpMouse(_data->window, pendingWindowWarpX, pendingWindowWarpY);
-            pendingWindowWarpX = pendingWindowWarpY = -1;
+        if (pendingWindowWarpX != INT_MAX && pendingWindowWarpY != INT_MAX) {
+            mouse->WarpMouseGlobal(pendingWindowWarpX, pendingWindowWarpY);
+            pendingWindowWarpX = pendingWindowWarpY = INT_MAX;
         }
-        if (mouse->relative_mode && SDL_GetMouseFocus() == _data->window) {
+        if (mouse->relative_mode && !mouse->relative_mode_warp && mouse->focus == _data->window) {
             mouse->SetRelativeMouseMode(SDL_TRUE);
         }
     }
@@ -413,7 +412,7 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 - (void)windowWillMove:(NSNotification *)aNotification
 {
     if ([_data->nswindow isKindOfClass:[SDLWindow class]]) {
-        pendingWindowWarpX = pendingWindowWarpY = -1;
+        pendingWindowWarpX = pendingWindowWarpY = INT_MAX;
         isMoving = YES;
     }
 }
@@ -500,7 +499,7 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 {
     SDL_Window *window = _data->window;
     SDL_Mouse *mouse = SDL_GetMouse();
-    if (mouse->relative_mode && ![self isMoving]) {
+    if (mouse->relative_mode && !mouse->relative_mode_warp && ![self isMoving]) {
         mouse->SetRelativeMouseMode(SDL_TRUE);
     }
 
@@ -532,7 +531,7 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 - (void)windowDidResignKey:(NSNotification *)aNotification
 {
     SDL_Mouse *mouse = SDL_GetMouse();
-    if (mouse->relative_mode) {
+    if (mouse->relative_mode && !mouse->relative_mode_warp) {
         mouse->SetRelativeMouseMode(SDL_FALSE);
     }
 
