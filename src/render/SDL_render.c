@@ -115,6 +115,12 @@ SDL_RendererEventWatch(void *userdata, SDL_Event *event)
             }
 
             if (event->window.event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+                /* Make sure we're operating on the default render target */
+                SDL_Texture *saved_target = SDL_GetRenderTarget(renderer);
+                if (saved_target) {
+                    SDL_SetRenderTarget(renderer, NULL);
+                }
+
                 if (renderer->logical_w) {
                     UpdateLogicalSize(renderer);
                 } else {
@@ -139,6 +145,10 @@ SDL_RendererEventWatch(void *userdata, SDL_Event *event)
                         renderer->viewport.h = h;
                         renderer->UpdateViewport(renderer);
                     }
+                }
+
+                if (saved_target) {
+                    SDL_SetRenderTarget(renderer, saved_target);
                 }
             } else if (event->window.event == SDL_WINDOWEVENT_HIDDEN) {
                 renderer->hidden = SDL_TRUE;
@@ -916,12 +926,12 @@ int SDL_UpdateYUVTexture(SDL_Texture * texture, const SDL_Rect * rect,
         SDL_assert(!texture->native);
         renderer = texture->renderer;
         SDL_assert(renderer->UpdateTextureYUV);
-		if (renderer->UpdateTextureYUV) {
-			return renderer->UpdateTextureYUV(renderer, texture, rect, Yplane, Ypitch, Uplane, Upitch, Vplane, Vpitch);
-		} else {
-			return SDL_Unsupported();
-		}
-	}
+        if (renderer->UpdateTextureYUV) {
+            return renderer->UpdateTextureYUV(renderer, texture, rect, Yplane, Ypitch, Uplane, Upitch, Vplane, Vpitch);
+        } else {
+            return SDL_Unsupported();
+        }
+    }
 }
 
 static int
