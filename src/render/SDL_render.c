@@ -540,6 +540,10 @@ SDL_CreateTextureFromSurface(SDL_Renderer * renderer, SDL_Surface * surface)
 
         /* Set up a destination surface for the texture update */
         dst_fmt = SDL_AllocFormat(format);
+        if (!dst_fmt) {
+           SDL_DestroyTexture(texture);
+           return NULL;
+        }
         temp = SDL_ConvertSurface(surface, dst_fmt, 0);
         SDL_FreeFormat(dst_fmt);
         if (temp) {
