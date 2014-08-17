@@ -135,6 +135,7 @@ typedef unsigned int uintptr_t;
 #define HAVE_FLOOR 1
 #define HAVE_LOG 1
 #define HAVE_POW 1
+#define HAVE_ROUND 1
 //#define HAVE_SCALBN 1
 #define HAVE__SCALB 1
 #define HAVE_SIN 1

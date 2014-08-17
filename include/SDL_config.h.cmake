@@ -140,6 +140,7 @@
 #cmakedefine HAVE_FLOOR 1
 #cmakedefine HAVE_LOG 1
 #cmakedefine HAVE_POW 1
+#cmakedefine HAVE_ROUND 1
 #cmakedefine HAVE_SCALBN 1
 #cmakedefine HAVE_SIN 1
 #cmakedefine HAVE_SINF 1
