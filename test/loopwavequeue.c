@@ -15,11 +15,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "SDL.h"
+
 #if HAVE_SIGNAL_H
 #include <signal.h>
 #endif
-
-#include "SDL.h"
 
 struct
 {
