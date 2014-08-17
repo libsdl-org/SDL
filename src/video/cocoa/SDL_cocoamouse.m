@@ -208,41 +208,17 @@ Cocoa_ShowCursor(SDL_Cursor * cursor)
 }
 
 static void
-Cocoa_WarpMouse(SDL_Window * window, int x, int y)
-{
-    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-    if ([data->listener isMoving]) {
-        DLog("Postponing warp, window being moved.");
-        [data->listener setPendingMoveX:x
-                                      Y:y];
-        return;
-    }
-
-    SDL_Mouse *mouse = SDL_GetMouse();
-    CGPoint point = CGPointMake(x + (float)window->x, y + (float)window->y);
-
-    Cocoa_HandleMouseWarp(point.x, point.y);
-
-    /* According to the docs, this was deprecated in 10.6, but it's still
-     * around. The substitute requires a CGEventSource, but I'm not entirely
-     * sure how we'd procure the right one for this event.
-     */
-    CGSetLocalEventsSuppressionInterval(0.0);
-    CGWarpMouseCursorPosition(point);
-    CGSetLocalEventsSuppressionInterval(0.25);
-
-    if (!mouse->relative_mode) {
-        /* CGWarpMouseCursorPosition doesn't generate a window event, unlike our
-         * other implementations' APIs.
-         */
-        SDL_SendMouseMotion(mouse->focus, mouse->mouseID, 0, x, y);
-    }
-}
-
-static void
 Cocoa_WarpMouseGlobal(int x, int y)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
+    if (mouse->focus) {
+        SDL_WindowData *data = (SDL_WindowData *) mouse->focus->driverdata;
+        if ([data->listener isMoving]) {
+            DLog("Postponing warp, window being moved.");
+            [data->listener setPendingMoveX:x Y:y];
+            return;
+        }
+    }
     CGPoint point = CGPointMake((float)x, (float)y);
 
     Cocoa_HandleMouseWarp(point.x, point.y);
@@ -261,6 +237,12 @@ Cocoa_WarpMouseGlobal(int x, int y)
          */
         SDL_SendMouseMotion(mouse->focus, mouse->mouseID, 0, x - mouse->focus->x, y - mouse->focus->y);
     }
+}
+
+static void
+Cocoa_WarpMouse(SDL_Window * window, int x, int y)
+{
+    Cocoa_WarpMouseGlobal(x + window->x, y + window->y);
 }
 
 static int
