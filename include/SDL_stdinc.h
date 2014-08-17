@@ -428,7 +428,6 @@ extern DECLSPEC double SDLCALL SDL_fabs(double x);
 extern DECLSPEC double SDLCALL SDL_floor(double x);
 extern DECLSPEC double SDLCALL SDL_log(double x);
 extern DECLSPEC double SDLCALL SDL_pow(double x, double y);
-extern DECLSPEC double SDLCALL SDL_round(double x);
 extern DECLSPEC double SDLCALL SDL_scalbn(double x, int n);
 extern DECLSPEC double SDLCALL SDL_sin(double x);
 extern DECLSPEC float SDLCALL SDL_sinf(float x);
