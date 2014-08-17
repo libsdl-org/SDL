@@ -1831,9 +1831,10 @@ D3D_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     D3DLOCKED_RECT locked;
     HRESULT result;
 
-    result = IDirect3DDevice9_GetBackBuffer(data->device, 0, 0, D3DBACKBUFFER_TYPE_MONO, &backBuffer);
-    if (FAILED(result)) {
-        return D3D_SetError("GetBackBuffer()", result);
+    if (data->currentRenderTarget) {
+        backBuffer = data->currentRenderTarget;
+    } else {
+        backBuffer = data->defaultRenderTarget;
     }
 
     result = IDirect3DSurface9_GetDesc(backBuffer, &desc);
@@ -1874,7 +1875,6 @@ D3D_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     IDirect3DSurface9_UnlockRect(surface);
 
     IDirect3DSurface9_Release(surface);
-    IDirect3DSurface9_Release(backBuffer);
 
     return 0;
 }
