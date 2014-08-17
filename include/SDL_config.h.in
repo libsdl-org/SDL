@@ -150,6 +150,7 @@
 #undef HAVE_FLOOR
 #undef HAVE_LOG
 #undef HAVE_POW
+#undef HAVE_ROUND
 #undef HAVE_SCALBN
 #undef HAVE_SIN
 #undef HAVE_SINF
