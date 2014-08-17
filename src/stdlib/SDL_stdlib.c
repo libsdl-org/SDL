@@ -170,16 +170,6 @@ SDL_pow(double x, double y)
 }
 
 double
-SDL_round(double x)
-{
-#if defined(HAVE_ROUND)
-    return round(x);
-#else
-    return SDL_uclibc_round(x);
-#endif /* HAVE_ROUND */
-}
-
-double
 SDL_scalbn(double x, int n)
 {
 #if defined(HAVE_SCALBN)

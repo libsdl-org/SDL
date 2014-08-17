@@ -37,7 +37,6 @@ typedef unsigned int u_int32_t;
 #define floor           SDL_uclibc_floor
 #define __ieee754_log   SDL_uclibc_log
 #define __ieee754_pow   SDL_uclibc_pow
-#define round           SDL_uclibc_round
 #define scalbn          SDL_uclibc_scalbn
 #define sin             SDL_uclibc_sin
 #define __ieee754_sqrt  SDL_uclibc_sqrt
