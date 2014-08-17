@@ -33,6 +33,7 @@
  Also, note the bundle layouts are different for iPhone and Mac.
 */
 FILE* SDL_OpenFPFromBundleOrFallback(const char *file, const char *mode)
+{ @autoreleasepool
 {
     FILE* fp = NULL;
 
@@ -40,9 +41,6 @@ FILE* SDL_OpenFPFromBundleOrFallback(const char *file, const char *mode)
     if(strcmp("r", mode) && strcmp("rb", mode)) {
         return fopen(file, mode);
     }
-
-    NSAutoreleasePool* autorelease_pool = [[NSAutoreleasePool alloc] init];
-
 
     NSFileManager* file_manager = [NSFileManager defaultManager];
     NSString* resource_path = [[NSBundle mainBundle] resourcePath];
@@ -57,10 +55,8 @@ FILE* SDL_OpenFPFromBundleOrFallback(const char *file, const char *mode)
         fp = fopen(file, mode);
     }
 
-    [autorelease_pool drain];
-
     return fp;
-}
+}}
 
 #endif /* __MACOSX__ */
 

@@ -248,17 +248,16 @@ CreateApplicationMenus(void)
 
 void
 Cocoa_RegisterApp(void)
+{ @autoreleasepool
 {
     /* This can get called more than once! Be careful what you initialize! */
     ProcessSerialNumber psn;
-    NSAutoreleasePool *pool;
 
     if (!GetCurrentProcess(&psn)) {
         TransformProcessType(&psn, kProcessTransformToForegroundApplication);
         SetFrontProcess(&psn);
     }
 
-    pool = [[NSAutoreleasePool alloc] init];
     if (NSApp == nil) {
         [SDLApplication sharedApplication];
         SDL_assert(NSApp != nil);
@@ -287,14 +286,12 @@ Cocoa_RegisterApp(void)
             appDelegate->seenFirstActivate = YES;
         }
     }
-    [pool release];
-}
+}}
 
 void
 Cocoa_PumpEvents(_THIS)
+{ @autoreleasepool
 {
-    NSAutoreleasePool *pool;
-
     /* Update activity every 30 seconds to prevent screensaver */
     if (_this->suspend_screensaver) {
         SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
@@ -306,7 +303,6 @@ Cocoa_PumpEvents(_THIS)
         }
     }
 
-    pool = [[NSAutoreleasePool alloc] init];
     for ( ; ; ) {
         NSEvent *event = [NSApp nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantPast] inMode:NSDefaultRunLoopMode dequeue:YES ];
         if ( event == nil ) {
@@ -338,8 +334,7 @@ Cocoa_PumpEvents(_THIS)
         /* Pass through to NSApp to make sure everything stays in sync */
         [NSApp sendEvent:event];
     }
-    [pool release];
-}
+}}
 
 #endif /* SDL_VIDEO_DRIVER_COCOA */
 

@@ -79,10 +79,9 @@
 /* Display a Cocoa message box */
 int
 Cocoa_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
+{ @autoreleasepool
 {
     Cocoa_RegisterApp();
-
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
 
     NSAlert* alert = [[[NSAlert alloc] init] autorelease];
 
@@ -125,10 +124,8 @@ Cocoa_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         returnValue = SDL_SetError("Did not get a valid `clicked button' id: %ld", (long)clicked);
     }
 
-    [pool release];
-
     return returnValue;
-}
+}}
 
 #endif /* SDL_VIDEO_DRIVER_COCOA */
 

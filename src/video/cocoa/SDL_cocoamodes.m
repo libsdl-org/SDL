@@ -214,8 +214,8 @@ Cocoa_GetDisplayName(CGDirectDisplayID displayID)
 
 void
 Cocoa_InitModes(_THIS)
+{ @autoreleasepool
 {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     CGDisplayErr result;
     CGDirectDisplayID *displays;
     CGDisplayCount numDisplays;
@@ -224,7 +224,6 @@ Cocoa_InitModes(_THIS)
     result = CGGetOnlineDisplayList(0, NULL, &numDisplays);
     if (result != kCGErrorSuccess) {
         CG_SetError("CGGetOnlineDisplayList()", result);
-        [pool release];
         return;
     }
     displays = SDL_stack_alloc(CGDirectDisplayID, numDisplays);
@@ -232,7 +231,6 @@ Cocoa_InitModes(_THIS)
     if (result != kCGErrorSuccess) {
         CG_SetError("CGGetOnlineDisplayList()", result);
         SDL_stack_free(displays);
-        [pool release];
         return;
     }
 
@@ -297,8 +295,7 @@ Cocoa_InitModes(_THIS)
         }
     }
     SDL_stack_free(displays);
-    [pool release];
-}
+}}
 
 int
 Cocoa_GetDisplayBounds(_THIS, SDL_VideoDisplay * display, SDL_Rect * rect)

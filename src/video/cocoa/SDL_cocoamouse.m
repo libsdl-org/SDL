@@ -66,8 +66,8 @@
 
 static SDL_Cursor *
 Cocoa_CreateDefaultCursor()
+{ @autoreleasepool
 {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     NSCursor *nscursor;
     SDL_Cursor *cursor = NULL;
 
@@ -81,15 +81,13 @@ Cocoa_CreateDefaultCursor()
         }
     }
 
-    [pool release];
-
     return cursor;
-}
+}}
 
 static SDL_Cursor *
 Cocoa_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
+{ @autoreleasepool
 {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     NSImage *nsimage;
     NSCursor *nscursor = NULL;
     SDL_Cursor *cursor = NULL;
@@ -108,15 +106,13 @@ Cocoa_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
         }
     }
 
-    [pool release];
-
     return cursor;
-}
+}}
 
 static SDL_Cursor *
 Cocoa_CreateSystemCursor(SDL_SystemCursor id)
+{ @autoreleasepool
 {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     NSCursor *nscursor = NULL;
     SDL_Cursor *cursor = NULL;
 
@@ -169,28 +165,23 @@ Cocoa_CreateSystemCursor(SDL_SystemCursor id)
         }
     }
 
-    [pool release];
-
     return cursor;
-}
+}}
 
 static void
 Cocoa_FreeCursor(SDL_Cursor * cursor)
+{ @autoreleasepool
 {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     NSCursor *nscursor = (NSCursor *)cursor->driverdata;
 
     [nscursor release];
     SDL_free(cursor);
-
-    [pool release];
-}
+}}
 
 static int
 Cocoa_ShowCursor(SDL_Cursor * cursor)
+{ @autoreleasepool
 {
-    NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
-
     SDL_VideoDevice *device = SDL_GetVideoDevice();
     SDL_Window *window = (device ? device->windows : NULL);
     for (; window != NULL; window = window->next) {
@@ -201,11 +192,8 @@ Cocoa_ShowCursor(SDL_Cursor * cursor)
                                                 waitUntilDone:NO];
         }
     }
-
-    [pool release];
-
     return 0;
-}
+}}
 
 static void
 Cocoa_WarpMouseGlobal(int x, int y)
