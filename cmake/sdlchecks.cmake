@@ -917,3 +917,32 @@ macro(CheckUSBHID)
     set(CMAKE_REQUIRED_FLAGS)
   endif(HAVE_USBHID)
 endmacro(CheckUSBHID)
+
+# Requires:
+# - n/a
+macro(CheckRPI)
+  if(VIDEO_RPI)
+    set(VIDEO_RPI_INCLUDE_DIRS "/opt/vc/include" "/opt/vc/include/interface/vcos/pthreads" "/opt/vc/include/interface/vmcs_host/linux/" )
+    set(VIDEO_RPI_LIBRARY_DIRS "/opt/vc/lib" )
+    set(VIDEO_RPI_LIBS bcm_host )
+    listtostr(VIDEO_RPI_INCLUDE_DIRS VIDEO_RPI_INCLUDE_FLAGS "-I")
+    listtostr(VIDEO_RPI_LIBRARY_DIRS VIDEO_RPI_LIBRARY_FLAGS "-L")
+
+    set(CMAKE_REQUIRED_FLAGS "${VIDEO_RPI_INCLUDE_FLAGS} ${VIDEO_RPI_LIBRARY_FLAGS}")
+    set(CMAKE_REQUIRED_LIBRARIES "${VIDEO_RPI_LIBS}")
+    check_c_source_compiles("
+        #include <bcm_host.h>
+        int main(int argc, char **argv) {}" HAVE_VIDEO_RPI)
+    set(CMAKE_REQUIRED_FLAGS)
+    set(CMAKE_REQUIRED_LIBRARIES)
+
+    if(SDL_VIDEO AND HAVE_VIDEO_RPI)
+      set(HAVE_SDL_VIDEO TRUE)
+      set(SDL_VIDEO_DRIVER_RPI 1)
+      file(GLOB VIDEO_RPI_SOURCES ${SDL2_SOURCE_DIR}/src/video/raspberry/*.c)
+      set(SOURCE_FILES ${SOURCE_FILES} ${VIDEO_RPI_SOURCES})
+      list(APPEND EXTRA_LIBS ${VIDEO_RPI_LIBS})
+      set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${VIDEO_RPI_INCLUDE_FLAGS} ${VIDEO_RPI_LIBRARY_FLAGS}")
+    endif(SDL_VIDEO AND HAVE_VIDEO_RPI)
+  endif(VIDEO_RPI)
+endmacro(CheckRPI)

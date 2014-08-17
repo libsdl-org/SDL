@@ -237,6 +237,7 @@ set_option(INPUT_TSLIB         "Use the Touchscreen library for input" ${UNIX_SY
 set_option(VIDEO_X11           "Use X11 video driver" ${UNIX_SYS})
 set_option(VIDEO_WAYLAND       "Use Wayland video driver" ${UNIX_SYS})
 set_option(VIDEO_MIR           "Use Mir video driver" ${UNIX_SYS})
+set_option(VIDEO_RPI           "Use Raspberry Pi video driver" ${UNIX_SYS})
 dep_option(X11_SHARED          "Dynamically load X11 support" ON "VIDEO_X11" OFF)
 set(SDL_X11_OPTIONS Xcursor Xinerama XInput Xrandr Xscrnsaver XShape Xvm)
 foreach(_SUB ${SDL_X11_OPTIONS})
@@ -658,6 +659,8 @@ if(UNIX AND NOT APPLE)
   endif()
 
   if(SDL_VIDEO)
+    # Need to check for Raspberry PI first and add platform specific compiler flags, otherwise the test for GLES fails!
+    CheckRPI()
     CheckX11()
     CheckMir()
     CheckDirectFB()
