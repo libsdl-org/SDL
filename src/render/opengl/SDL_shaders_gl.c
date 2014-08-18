@@ -150,7 +150,7 @@ static const char *shader_source[NUM_SHADERS][2] =
 "    yuv.x = texture2D(tex0, tcoord).r;\n"
 "\n"
 "    // Get the U and V values \n"
-"    tcoord *= 0.5;\n"
+"    tcoord *= UVCoordScale;\n"
 "    yuv.y = texture2D(tex1, tcoord).r;\n"
 "    yuv.z = texture2D(tex2, tcoord).r;\n"
 "\n"
@@ -201,7 +201,7 @@ static const char *shader_source[NUM_SHADERS][2] =
 "    yuv.x = texture2D(tex0, tcoord).r;\n"
 "\n"
 "    // Get the U and V values \n"
-"    tcoord *= 0.5;\n"
+"    tcoord *= UVCoordScale;\n"
 "    yuv.yz = texture2D(tex1, tcoord).ra;\n"
 "\n"
 "    // Do the color transform \n"
@@ -251,7 +251,7 @@ static const char *shader_source[NUM_SHADERS][2] =
 "    yuv.x = texture2D(tex0, tcoord).r;\n"
 "\n"
 "    // Get the U and V values \n"
-"    tcoord *= 0.5;\n"
+"    tcoord *= UVCoordScale;\n"
 "    yuv.yz = texture2D(tex1, tcoord).ar;\n"
 "\n"
 "    // Do the color transform \n"
@@ -318,7 +318,11 @@ CompileShaderProgram(GL_ShaderContext *ctx, int index, GL_ShaderData *data)
     if (ctx->GL_ARB_texture_rectangle_supported) {
         frag_defines =
 "#define sampler2D sampler2DRect\n"
-"#define texture2D texture2DRect\n";
+"#define texture2D texture2DRect\n"
+"#define UVCoordScale 0.5\n";
+    } else {
+        frag_defines = 
+"#define UVCoordScale 1.0\n";
     }
 
     /* Create one program object to rule them all */
