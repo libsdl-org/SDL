@@ -477,6 +477,18 @@ extern "C" {
  */
 #define SDL_HINT_ANDROID_APK_EXPANSION_PATCH_FILE_VERSION "SDL_ANDROID_APK_EXPANSION_PATCH_FILE_VERSION"
 
+/**
+ * \brief A variable to control whether certain IMs should handle text editing internally instead of sending TEXTEDITING events.
+ *
+ *
+ * The variable can be set to the following values:
+ *   "0"       - TEXTEDITING events are sent, and it is the application's
+ *               responsibility to render the text from these events and 
+ *               differentiate it somehow from committed text. (default)
+ *   "1"       - If supported by the IM then TEXTEDITING events are not sent, 
+ *               and text that is being composed will be rendered in its own UI.
+ */
+#define SDL_HINT_IM_INTERNAL_EDITING "SDL_IM_INTERNAL_EDITING"
 
 /**
  *  \brief  An enumeration of hint priorities

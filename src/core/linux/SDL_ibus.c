@@ -288,6 +288,41 @@ IBus_GetDBusAddressFilename(void)
     return SDL_strdup(file_path);
 }
 
+static SDL_bool IBus_CheckConnection(SDL_DBusContext *dbus);
+
+static void
+IBus_SetCapabilities(void *data, const char *name, const char *old_val,
+                                                   const char *internal_editing)
+{
+    SDL_DBusContext *dbus = SDL_DBus_GetContext();
+    
+    if(IBus_CheckConnection(dbus)){
+
+        DBusMessage *msg = dbus->message_new_method_call(IBUS_SERVICE,
+                                                         input_ctx_path,
+                                                         IBUS_INPUT_INTERFACE,
+                                                         "SetCapabilities");
+        if(msg){
+            Uint32 caps = IBUS_CAP_FOCUS;
+            if(!(internal_editing && *internal_editing == '1')){
+                caps |= IBUS_CAP_PREEDIT_TEXT;
+            }
+            
+            dbus->message_append_args(msg,
+                                      DBUS_TYPE_UINT32, &caps,
+                                      DBUS_TYPE_INVALID);
+        }
+        
+        if(msg){
+            if(dbus->connection_send(ibus_conn, msg, NULL)){
+                dbus->connection_flush(ibus_conn);
+            }
+            dbus->message_unref(msg);
+        }
+    }
+}
+
+
 static SDL_bool
 IBus_SetupConnection(SDL_DBusContext *dbus, const char* addr)
 {
@@ -340,23 +375,7 @@ IBus_SetupConnection(SDL_DBusContext *dbus, const char* addr)
     }
 
     if(result){
-        msg = dbus->message_new_method_call(IBUS_SERVICE,
-                                            input_ctx_path,
-                                            IBUS_INPUT_INTERFACE,
-                                            "SetCapabilities");
-        if(msg){
-            Uint32 caps = IBUS_CAP_FOCUS | IBUS_CAP_PREEDIT_TEXT;
-            dbus->message_append_args(msg,
-                                      DBUS_TYPE_UINT32, &caps,
-                                      DBUS_TYPE_INVALID);
-        }
-        
-        if(msg){
-            if(dbus->connection_send(ibus_conn, msg, NULL)){
-                dbus->connection_flush(ibus_conn);
-            }
-            dbus->message_unref(msg);
-        }
+        SDL_AddHintCallback(SDL_HINT_IM_INTERNAL_EDITING, &IBus_SetCapabilities, NULL);
         
         dbus->bus_add_match(ibus_conn, "type='signal',interface='org.freedesktop.IBus.InputContext'", NULL);
         dbus->connection_add_filter(ibus_conn, &IBus_MessageFilter, dbus, NULL);
@@ -476,6 +495,8 @@ SDL_IBus_Quit(void)
         inotify_wd = -1;
     }
     
+    SDL_DelHintCallback(SDL_HINT_IM_INTERNAL_EDITING, &IBus_SetCapabilities, NULL);
+    
     SDL_memset(&ibus_cursor_rect, 0, sizeof(ibus_cursor_rect));
 }
 
@@ -548,6 +569,8 @@ SDL_IBus_ProcessKeyEvent(Uint32 keysym, Uint32 keycode)
         
     }
     
+    SDL_IBus_UpdateTextRect(NULL);
+
     return result;
 }
 
