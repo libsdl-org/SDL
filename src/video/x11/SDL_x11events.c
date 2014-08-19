@@ -1073,7 +1073,8 @@ X11_DispatchEvent(_THIS)
                    because they use the NETWM protocol to notify us of changes.
                  */
                 Uint32 flags = X11_GetNetWMState(_this, xevent.xproperty.window);
-                if ((flags^data->window->flags) & SDL_WINDOW_HIDDEN) {
+				if ((flags^data->window->flags) & SDL_WINDOW_HIDDEN ||
+					(flags^data->window->flags) & SDL_WINDOW_FULLSCREEN ) {
                     if (flags & SDL_WINDOW_HIDDEN) {
                         X11_DispatchUnmapNotify(data);
                     } else {
