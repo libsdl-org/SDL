@@ -347,6 +347,9 @@ X11_DispatchFocusIn(SDL_WindowData *data)
         X11_XSetICFocus(data->ic);
     }
 #endif
+#ifdef SDL_USE_IBUS
+    SDL_IBus_SetFocus(SDL_TRUE);
+#endif
 }
 
 static void
@@ -366,6 +369,9 @@ X11_DispatchFocusOut(SDL_WindowData *data)
     if (data->ic) {
         X11_XUnsetICFocus(data->ic);
     }
+#endif
+#ifdef SDL_USE_IBUS
+    SDL_IBus_SetFocus(SDL_FALSE);
 #endif
 }
 
@@ -647,11 +653,6 @@ X11_DispatchEvent(_THIS)
 #ifdef DEBUG_XEVENTS
             printf("window %p: FocusIn!\n", data);
 #endif
-#ifdef SDL_USE_IBUS
-            if(SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
-                SDL_IBus_SetFocus(SDL_TRUE);
-            }
-#endif
             if (data->pending_focus == PENDING_FOCUS_OUT &&
                 data->window == SDL_GetKeyboardFocus()) {
                 /* We want to reset the keyboard here, because we may have
@@ -689,11 +690,6 @@ X11_DispatchEvent(_THIS)
 #ifdef DEBUG_XEVENTS
             printf("window %p: FocusOut!\n", data);
 #endif
-#ifdef SDL_USE_IBUS
-            if(SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
-                SDL_IBus_SetFocus(SDL_FALSE);
-            }
-#endif
             data->pending_focus = PENDING_FOCUS_OUT;
             data->pending_focus_time = SDL_GetTicks() + PENDING_FOCUS_OUT_TIME;
         }
@@ -725,15 +721,10 @@ X11_DispatchEvent(_THIS)
             KeySym keysym = NoSymbol;
             char text[SDL_TEXTINPUTEVENT_TEXT_SIZE];
             Status status = 0;
-#ifdef SDL_USE_IBUS
-            Bool handled = False;
-#endif
+            SDL_bool handled_by_ime = SDL_FALSE;
 
 #ifdef DEBUG_XEVENTS
             printf("window %p: KeyPress (X11 keycode = 0x%X)\n", data, xevent.xkey.keycode);
-#endif
-#ifndef SDL_USE_IBUS
-            SDL_SendKeyboardKey(SDL_PRESSED, videodata->key_layout[keycode]);
 #endif
 #if 1
             if (videodata->key_layout[keycode] == SDL_SCANCODE_UNKNOWN && keycode) {
@@ -762,7 +753,7 @@ X11_DispatchEvent(_THIS)
 #endif
 #ifdef SDL_USE_IBUS
             if(SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
-                if(!(handled = SDL_IBus_ProcessKeyEvent(keysym, keycode))){
+                if(!(handled_by_ime = SDL_IBus_ProcessKeyEvent(keysym, keycode))){
 #endif
                     if(*text){
                         SDL_SendKeyboardText(text);
@@ -770,11 +761,11 @@ X11_DispatchEvent(_THIS)
 #ifdef SDL_USE_IBUS
                 }
             }
-
-            if (!handled) {
+#endif
+            if (!handled_by_ime) {
                 SDL_SendKeyboardKey(SDL_PRESSED, videodata->key_layout[keycode]);
             }
-#endif
+
         }
         break;
 
