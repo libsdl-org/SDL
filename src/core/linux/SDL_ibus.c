@@ -45,7 +45,7 @@ static char *input_ctx_path = NULL;
 static SDL_Rect ibus_cursor_rect = {0};
 static DBusConnection *ibus_conn = NULL;
 static char *ibus_addr_file = NULL;
-int inotify_fd = -1;
+int inotify_fd = -1, inotify_wd = -1;
 
 static Uint32
 IBus_ModState(void)
@@ -166,13 +166,16 @@ IBus_MessageFilter(DBusConnection *conn, DBusMessage *msg, void *user_data)
                 i += sz;
                 cursor += chars;
             }
-        } else {
-            SDL_SendEditingText("", 0, 0);
         }
         
         SDL_IBus_UpdateTextRect(NULL);
         
         return DBUS_HANDLER_RESULT_HANDLED;
+    }
+    
+    if(dbus->message_is_signal(msg, IBUS_INPUT_INTERFACE, "HidePreeditText")){
+    	SDL_SendEditingText("", 0, 0);
+    	return DBUS_HANDLER_RESULT_HANDLED;
     }
     
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
@@ -360,7 +363,7 @@ IBus_SetupConnection(SDL_DBusContext *dbus, const char* addr)
         dbus->connection_flush(ibus_conn);
     }
 
-    SDL_IBus_SetFocus(SDL_GetFocusWindow() != NULL);
+    SDL_IBus_SetFocus(SDL_GetKeyboardFocus() != NULL);
     SDL_IBus_UpdateTextRect(NULL);
     
     return result;
@@ -375,7 +378,7 @@ IBus_CheckConnection(SDL_DBusContext *dbus)
         return SDL_TRUE;
     }
     
-    if(inotify_fd != -1){
+    if(inotify_fd > 0 && inotify_wd > 0){
         char buf[1024];
         ssize_t readsize = read(inotify_fd, buf, sizeof(buf));
         if(readsize > 0){
@@ -428,15 +431,17 @@ SDL_IBus_Init(void)
         
         char *addr = IBus_ReadAddressFromFile(addr_file);
         
-        inotify_fd = inotify_init();
-        fcntl(inotify_fd, F_SETFL, O_NONBLOCK);
+        if(inotify_fd < 0){
+            inotify_fd = inotify_init();
+            fcntl(inotify_fd, F_SETFL, O_NONBLOCK);
+        }
         
         char *addr_file_dir = SDL_strrchr(addr_file, '/');
         if(addr_file_dir){
             *addr_file_dir = 0;
         }
         
-        inotify_add_watch(inotify_fd, addr_file, IN_CREATE | IN_MODIFY);
+        inotify_wd = inotify_add_watch(inotify_fd, addr_file, IN_CREATE | IN_MODIFY);
         SDL_free(addr_file);
         
         result = IBus_SetupConnection(dbus, addr);
@@ -464,6 +469,11 @@ SDL_IBus_Quit(void)
     if(dbus && ibus_conn){
         dbus->connection_close(ibus_conn);
         dbus->connection_unref(ibus_conn);
+    }
+    
+    if(inotify_fd > 0 && inotify_wd > 0){
+        inotify_rm_watch(inotify_fd, inotify_wd);
+        inotify_wd = -1;
     }
     
     SDL_memset(&ibus_cursor_rect, 0, sizeof(ibus_cursor_rect));
@@ -548,7 +558,7 @@ SDL_IBus_UpdateTextRect(SDL_Rect *rect)
         SDL_memcpy(&ibus_cursor_rect, rect, sizeof(ibus_cursor_rect));
     }
     
-    SDL_Window *focused_win = SDL_GetFocusWindow();
+    SDL_Window *focused_win = SDL_GetKeyboardFocus();
 
     if(!focused_win) return;
     
