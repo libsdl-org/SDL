@@ -466,8 +466,8 @@ GLAPI void APIENTRY glBlendEquation (GLenum mode);
 #define GL_VERSION_1_5 1
 #include <stddef.h>
 #ifdef __MACOSX__
-typedef ssize_t GLsizeiptr;
-typedef ssize_t GLintptr;
+typedef long GLsizeiptr;
+typedef long GLintptr;
 #else
 typedef ptrdiff_t GLsizeiptr;
 typedef ptrdiff_t GLintptr;
