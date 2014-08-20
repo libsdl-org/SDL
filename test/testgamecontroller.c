@@ -28,51 +28,6 @@
 #define SCREEN_HEIGHT   317
 #endif
 
-static const char *
-ControllerAxisName(const SDL_GameControllerAxis axis)
-{
-    switch (axis)
-    {
-        #define AXIS_CASE(ax) case SDL_CONTROLLER_AXIS_##ax: return #ax
-        AXIS_CASE(INVALID);
-        AXIS_CASE(LEFTX);
-        AXIS_CASE(LEFTY);
-        AXIS_CASE(RIGHTX);
-        AXIS_CASE(RIGHTY);
-        AXIS_CASE(TRIGGERLEFT);
-        AXIS_CASE(TRIGGERRIGHT);
-        #undef AXIS_CASE
-        default: return "???";
-    }
-}
-
-static const char *
-ControllerButtonName(const SDL_GameControllerButton button)
-{
-    switch (button)
-    {
-        #define BUTTON_CASE(btn) case SDL_CONTROLLER_BUTTON_##btn: return #btn
-        BUTTON_CASE(INVALID);
-        BUTTON_CASE(A);
-        BUTTON_CASE(B);
-        BUTTON_CASE(X);
-        BUTTON_CASE(Y);
-        BUTTON_CASE(BACK);
-        BUTTON_CASE(GUIDE);
-        BUTTON_CASE(START);
-        BUTTON_CASE(LEFTSTICK);
-        BUTTON_CASE(RIGHTSTICK);
-        BUTTON_CASE(LEFTSHOULDER);
-        BUTTON_CASE(RIGHTSHOULDER);
-        BUTTON_CASE(DPAD_UP);
-        BUTTON_CASE(DPAD_DOWN);
-        BUTTON_CASE(DPAD_LEFT);
-        BUTTON_CASE(DPAD_RIGHT);
-        #undef BUTTON_CASE
-        default: return "???";
-    }
-}
-
 static SDL_Texture *
 LoadTexture(SDL_Renderer *renderer, char *file, SDL_bool transparent)
 {
