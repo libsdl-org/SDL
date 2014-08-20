@@ -208,7 +208,7 @@ struct SDL_SysWMinfo
 #if defined(SDL_VIDEO_DRIVER_COCOA)
         struct
         {
-#if defined(__OBJC__) && __has_feature(objc_arc)
+#if defined(__OBJC__) && defined(__clang__) && __has_feature(objc_arc)
             NSWindow __unsafe_unretained *window; /* The Cocoa window */
 #else
             NSWindow *window;                     /* The Cocoa window */
@@ -218,7 +218,7 @@ struct SDL_SysWMinfo
 #if defined(SDL_VIDEO_DRIVER_UIKIT)
         struct
         {
-#if defined(__OBJC__) && __has_feature(objc_arc)
+#if defined(__OBJC__) && defined(__clang__) && __has_feature(objc_arc)
             UIWindow __unsafe_unretained *window; /* The UIKit window */
 #else
             UIWindow *window;                     /* The UIKit window */
