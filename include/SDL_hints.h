@@ -488,7 +488,7 @@ extern "C" {
  *   "1"       - If supported by the IM then TEXTEDITING events are not sent, 
  *               and text that is being composed will be rendered in its own UI.
  */
-#define SDL_HINT_IM_INTERNAL_EDITING "SDL_IM_INTERNAL_EDITING"
+#define SDL_HINT_IME_INTERNAL_EDITING "SDL_IME_INTERNAL_EDITING"
 
 /**
  *  \brief  An enumeration of hint priorities

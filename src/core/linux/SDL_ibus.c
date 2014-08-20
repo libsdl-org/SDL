@@ -375,7 +375,7 @@ IBus_SetupConnection(SDL_DBusContext *dbus, const char* addr)
     }
 
     if(result){
-        SDL_AddHintCallback(SDL_HINT_IM_INTERNAL_EDITING, &IBus_SetCapabilities, NULL);
+        SDL_AddHintCallback(SDL_HINT_IME_INTERNAL_EDITING, &IBus_SetCapabilities, NULL);
         
         dbus->bus_add_match(ibus_conn, "type='signal',interface='org.freedesktop.IBus.InputContext'", NULL);
         dbus->connection_add_filter(ibus_conn, &IBus_MessageFilter, dbus, NULL);
@@ -495,7 +495,7 @@ SDL_IBus_Quit(void)
         inotify_wd = -1;
     }
     
-    SDL_DelHintCallback(SDL_HINT_IM_INTERNAL_EDITING, &IBus_SetCapabilities, NULL);
+    SDL_DelHintCallback(SDL_HINT_IME_INTERNAL_EDITING, &IBus_SetCapabilities, NULL);
     
     SDL_memset(&ibus_cursor_rect, 0, sizeof(ibus_cursor_rect));
 }
