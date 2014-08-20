@@ -14,9 +14,6 @@
 
 /* Sample program:  Draw a Chess Board  by using SDL_CreateSoftwareRenderer API */
 
-#include <stdlib.h>
-#include <stdio.h>
-
 #include "SDL.h"
 
 void
