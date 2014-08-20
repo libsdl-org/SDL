@@ -28,11 +28,11 @@ DrawChessBoard(SDL_Renderer * renderer)
 	/* Get the Size of drawing surface */
 	SDL_RenderGetViewport(renderer, &darea);
 
-	for(row; row < 8; row++)
+	for( ; row < 8; row++)
 	{
 		coloum = row%2;
 		x = x + coloum;
-		for(coloum; coloum < 4+(row%2); coloum++)
+		for( ; coloum < 4+(row%2); coloum++)
 		{
 			SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
 
