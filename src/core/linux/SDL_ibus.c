@@ -590,7 +590,8 @@ SDL_IBus_ProcessKeyEvent(Uint32 keysym, Uint32 keycode)
 void
 SDL_IBus_UpdateTextRect(SDL_Rect *rect)
 {
-    SDL_Window *focused_win = SDL_GetKeyboardFocus();
+    SDL_Window *focused_win;
+    SDL_SysWMinfo info;
     int x = 0, y = 0;
     SDL_DBusContext *dbus;
 
@@ -598,13 +599,12 @@ SDL_IBus_UpdateTextRect(SDL_Rect *rect)
         SDL_memcpy(&ibus_cursor_rect, rect, sizeof(ibus_cursor_rect));
     }
 
+    focused_win = SDL_GetKeyboardFocus();
     if (!focused_win) {
         return;
     }
 
-    SDL_SysWMinfo info;
     SDL_VERSION(&info.version);
-    
     if (!SDL_GetWindowWMInfo(focused_win, &info)) {
         return;
     }
