@@ -213,6 +213,7 @@ SDL_project "SDL2"
 		}
 		SDL_links
 		{
+			"CoreVideo.framework",
 			"AudioToolbox.framework",
 			"AudioUnit.framework",
 			"Cocoa.framework",

@@ -810,6 +810,9 @@
 		DB31407217554B71006C0E22 /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 007317C10858E15000B2BC32 /* Carbon.framework */; };
 		DB31408B17554D37006C0E22 /* ForceFeedback.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00CFA89C106B4BA100758660 /* ForceFeedback.framework */; };
 		DB31408D17554D3C006C0E22 /* ForceFeedback.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00CFA89C106B4BA100758660 /* ForceFeedback.framework */; };
+		FA73671D19A540EF004122E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA73671C19A540EF004122E4 /* CoreVideo.framework */; };
+		FA73671E19A54140004122E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA73671C19A540EF004122E4 /* CoreVideo.framework */; };
+		FA73671F19A54144004122E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA73671C19A540EF004122E4 /* CoreVideo.framework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1109,6 +1112,7 @@
 		F5A2EF3900C6A39A01000001 /* BUGS.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = BUGS.txt; path = ../../BUGS.txt; sourceTree = SOURCE_ROOT; };
 		F5A2EF3A00C6A3C201000001 /* README-macosx.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = "README-macosx.txt"; path = "../../README-macosx.txt"; sourceTree = SOURCE_ROOT; };
 		F5F81AD400D706B101000001 /* Readme SDL Developer.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = "Readme SDL Developer.txt"; path = "pkg-support/Readme SDL Developer.txt"; sourceTree = SOURCE_ROOT; };
+		FA73671C19A540EF004122E4 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = /System/Library/Frameworks/CoreVideo.framework; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1116,6 +1120,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FA73671D19A540EF004122E4 /* CoreVideo.framework in Frameworks */,
 				007317A20858DECD00B2BC32 /* AudioToolbox.framework in Frameworks */,
 				007317A30858DECD00B2BC32 /* AudioUnit.framework in Frameworks */,
 				007317A40858DECD00B2BC32 /* Cocoa.framework in Frameworks */,
@@ -1131,6 +1136,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FA73671E19A54140004122E4 /* CoreVideo.framework in Frameworks */,
 				007317A90858DECD00B2BC32 /* AudioToolbox.framework in Frameworks */,
 				007317AA0858DECD00B2BC32 /* AudioUnit.framework in Frameworks */,
 				007317AB0858DECD00B2BC32 /* Cocoa.framework in Frameworks */,
@@ -1145,6 +1151,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FA73671F19A54144004122E4 /* CoreVideo.framework in Frameworks */,
 				DB31406C17554B71006C0E22 /* AudioToolbox.framework in Frameworks */,
 				DB31406D17554B71006C0E22 /* AudioUnit.framework in Frameworks */,
 				DB31406E17554B71006C0E22 /* Cocoa.framework in Frameworks */,
@@ -1738,6 +1745,7 @@
 		BEC562FE0761C0E800A33029 /* Linked Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				FA73671C19A540EF004122E4 /* CoreVideo.framework */,
 				00D0D08310675DD9004B05EF /* CoreFoundation.framework */,
 				007317C10858E15000B2BC32 /* Carbon.framework */,
 				0073179B0858DECD00B2BC32 /* AudioToolbox.framework */,

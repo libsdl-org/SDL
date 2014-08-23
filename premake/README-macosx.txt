@@ -17,6 +17,7 @@ tests on that platform.
 
 The Mac OS X projects currently have reliance on the following dependencies:
 
+  -CoreVideo.framework
   -AudioToolbox.framework
   -AudioUnit.framework
   -Cocoa.framework

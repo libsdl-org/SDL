@@ -27,6 +27,10 @@
 /* We need this for IODisplayCreateInfoDictionary and kIODisplayOnlyPreferredName */
 #include <IOKit/graphics/IOGraphicsLib.h>
 
+/* We need this for CVDisplayLinkGetNominalOutputVideoRefreshPeriod */
+#include <CoreVideo/CVBase.h>
+#include <CoreVideo/CVDisplayLink.h>
+
 /* we need this for ShowMenuBar() and HideMenuBar(). */
 #include <Carbon/Carbon.h>
 
@@ -114,7 +118,7 @@ CG_SetError(const char *prefix, CGDisplayErr result)
 }
 
 static SDL_bool
-GetDisplayMode(_THIS, const void *moderef, SDL_DisplayMode *mode)
+GetDisplayMode(_THIS, const void *moderef, CVDisplayLinkRef link, SDL_DisplayMode *mode)
 {
     SDL_DisplayModeData *data;
     long width = 0;
@@ -133,7 +137,7 @@ GetDisplayMode(_THIS, const void *moderef, SDL_DisplayMode *mode)
         CFStringRef fmt = CGDisplayModeCopyPixelEncoding(vidmode);
         width = (long) CGDisplayModeGetWidth(vidmode);
         height = (long) CGDisplayModeGetHeight(vidmode);
-        refreshRate = (long) CGDisplayModeGetRefreshRate(vidmode);
+        refreshRate = (long) (CGDisplayModeGetRefreshRate(vidmode) + 0.5);
 
         if (CFStringCompare(fmt, CFSTR(IO32BitDirectPixels),
                             kCFCompareCaseInsensitive) == kCFCompareEqualTo) {
@@ -141,6 +145,9 @@ GetDisplayMode(_THIS, const void *moderef, SDL_DisplayMode *mode)
         } else if (CFStringCompare(fmt, CFSTR(IO16BitDirectPixels),
                             kCFCompareCaseInsensitive) == kCFCompareEqualTo) {
             bpp = 16;
+        } else if (CFStringCompare(fmt, CFSTR(kIO30BitDirectPixels),
+                            kCFCompareCaseInsensitive) == kCFCompareEqualTo) {
+            bpp = 30;
         } else {
             bpp = 0;  /* ignore 8-bit and such for now. */
         }
@@ -151,6 +158,7 @@ GetDisplayMode(_THIS, const void *moderef, SDL_DisplayMode *mode)
     #if MAC_OS_X_VERSION_MIN_REQUIRED < 1060
     if (!IS_SNOW_LEOPARD_OR_LATER()) {
         CFNumberRef number;
+        double refresh;
         CFDictionaryRef vidmode = (CFDictionaryRef) moderef;
         number = CFDictionaryGetValue(vidmode, kCGDisplayWidth);
         CFNumberGetValue(number, kCFNumberLongType, &width);
@@ -159,14 +167,26 @@ GetDisplayMode(_THIS, const void *moderef, SDL_DisplayMode *mode)
         number = CFDictionaryGetValue(vidmode, kCGDisplayBitsPerPixel);
         CFNumberGetValue(number, kCFNumberLongType, &bpp);
         number = CFDictionaryGetValue(vidmode, kCGDisplayRefreshRate);
-        CFNumberGetValue(number, kCFNumberLongType, &refreshRate);
+        CFNumberGetValue(number, kCFNumberDoubleType, &refresh);
+        refreshRate = (long) (refresh + 0.5);
     }
     #endif
+
+    /* CGDisplayModeGetRefreshRate returns 0 for many non-CRT displays. */
+    if (refreshRate == 0 && link != NULL) {
+        CVTime time = CVDisplayLinkGetNominalOutputVideoRefreshPeriod(link);
+        if ((time.flags & kCVTimeIsIndefinite) == 0 && time.timeValue != 0) {
+            refreshRate = (long) ((time.timeScale / (double) time.timeValue) + 0.5);
+        }
+    }
 
     mode->format = SDL_PIXELFORMAT_UNKNOWN;
     switch (bpp) {
     case 16:
         mode->format = SDL_PIXELFORMAT_ARGB1555;
+        break;
+    case 30:
+        mode->format = SDL_PIXELFORMAT_ARGB2101010;
         break;
     case 32:
         mode->format = SDL_PIXELFORMAT_ARGB8888;
@@ -241,6 +261,7 @@ Cocoa_InitModes(_THIS)
             SDL_DisplayData *displaydata;
             SDL_DisplayMode mode;
             const void *moderef = NULL;
+            CVDisplayLinkRef link = NULL;
 
             if (pass == 0) {
                 if (!CGDisplayIsMain(displays[i])) {
@@ -277,15 +298,20 @@ Cocoa_InitModes(_THIS)
             }
             displaydata->display = displays[i];
 
+            CVDisplayLinkCreateWithCGDisplay(displays[i], &link);
+
             SDL_zero(display);
             /* this returns a stddup'ed string */
             display.name = (char *)Cocoa_GetDisplayName(displays[i]);
-            if (!GetDisplayMode (_this, moderef, &mode)) {
+            if (!GetDisplayMode(_this, moderef, link, &mode)) {
+                CVDisplayLinkRelease(link);
                 Cocoa_ReleaseDisplayMode(_this, moderef);
                 SDL_free(display.name);
                 SDL_free(displaydata);
                 continue;
             }
+
+            CVDisplayLinkRelease(link);
 
             display.desktop_mode = mode;
             display.current_mode = mode;
@@ -328,13 +354,16 @@ Cocoa_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
     #endif
 
     if (modes) {
+        CVDisplayLinkRef link = NULL;
         const CFIndex count = CFArrayGetCount(modes);
         CFIndex i;
+
+        CVDisplayLinkCreateWithCGDisplay(data->display, &link);
 
         for (i = 0; i < count; i++) {
             const void *moderef = CFArrayGetValueAtIndex(modes, i);
             SDL_DisplayMode mode;
-            if (GetDisplayMode(_this, moderef, &mode)) {
+            if (GetDisplayMode(_this, moderef, link, &mode)) {
                 if (IS_SNOW_LEOPARD_OR_LATER()) {
                     CGDisplayModeRetain((CGDisplayModeRef) moderef);
                 }
@@ -342,6 +371,7 @@ Cocoa_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
             }
         }
 
+        CVDisplayLinkRelease(link);
         Cocoa_ReleaseDisplayModeList(_this, modes);
     }
 }
