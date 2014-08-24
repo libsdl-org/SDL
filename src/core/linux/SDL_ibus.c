@@ -227,6 +227,8 @@ IBus_GetDBusAddressFilename(void)
     const char *conf_env;
     char *key;
     char file_path[PATH_MAX];
+    const char *host;
+    char *disp_num, *screen_num;
 
     if (ibus_addr_file) {
         return SDL_strdup(ibus_addr_file);
@@ -253,9 +255,9 @@ IBus_GetDBusAddressFilename(void)
         display = SDL_strdup(disp_env);
     }
     
-    const char *host = display;
-    char *disp_num   = SDL_strrchr(display, ':'), 
-         *screen_num = SDL_strrchr(display, '.');
+    host = display;
+    disp_num   = SDL_strrchr(display, ':');
+    screen_num = SDL_strrchr(display, '.');
     
     if (!disp_num) {
         SDL_free(display);
