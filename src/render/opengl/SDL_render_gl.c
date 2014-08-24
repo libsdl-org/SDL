@@ -1429,6 +1429,7 @@ GL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
                        format, type, temp_pixels);
 
     if (GL_CheckError("glReadPixels()", renderer) < 0) {
+        SDL_free(temp_pixels);
         return -1;
     }
 
