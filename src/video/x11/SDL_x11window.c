@@ -643,6 +643,7 @@ X11_GetWindowTitle(_THIS, Window xwindow)
                     &items_read, &items_left, &propdata);
         if (status == Success && propdata) {
             title = SDL_iconv_string("UTF-8", "", SDL_static_cast(char*, propdata), items_read+1);
+            X11_XFree(propdata);
         } else {
             title = SDL_strdup("");
         }
