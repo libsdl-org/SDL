@@ -364,15 +364,33 @@ GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
     return SDL_TRUE;
 }
 
+static SDL_bool
+JoystickAlreadyKnown(IOHIDDeviceRef ioHIDDeviceObject)
+{
+    recDevice *i;
+    for (i = gpDeviceList; i != NULL; i = i->pNext) {
+        if (i->deviceRef == ioHIDDeviceObject) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
 
 static void
 JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender, IOHIDDeviceRef ioHIDDeviceObject)
 {
+    recDevice *device;
+
     if (res != kIOReturnSuccess) {
         return;
     }
 
-    recDevice *device = (recDevice *) SDL_calloc(1, sizeof(recDevice));
+    if (JoystickAlreadyKnown(ioHIDDeviceObject)) {
+        return;  /* IOKit sent us a duplicate. */
+    }
+
+    device = (recDevice *) SDL_calloc(1, sizeof(recDevice));
 
     if (!device) {
         SDL_OutOfMemory();
