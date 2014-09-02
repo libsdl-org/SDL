@@ -833,7 +833,6 @@
 		0073179F0858DECD00B2BC32 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = /System/Library/Frameworks/IOKit.framework; sourceTree = "<absolute>"; };
 		007317C10858E15000B2BC32 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
 		00794D3F09D0C461003FC8A1 /* License.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = License.txt; sourceTree = "<group>"; };
-		00AE6E1E08B958CC00255E2F /* ReadMeDevLite.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = ReadMeDevLite.txt; sourceTree = "<group>"; };
 		00CFA89C106B4BA100758660 /* ForceFeedback.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ForceFeedback.framework; path = /System/Library/Frameworks/ForceFeedback.framework; sourceTree = "<absolute>"; };
 		00D0D08310675DD9004B05EF /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = /System/Library/Frameworks/CoreFoundation.framework; sourceTree = "<absolute>"; };
 		04043BBA12FEB1BE0076DB1F /* SDL_glfuncs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_glfuncs.h; sourceTree = "<group>"; };
@@ -1103,15 +1102,9 @@
 		D55A1B80179F262300625D7C /* SDL_cocoamousetap.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_cocoamousetap.m; sourceTree = "<group>"; };
 		DB31407717554B71006C0E22 /* libSDL2.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libSDL2.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB89958518A1A5C50092407C /* SDL_syshaptic_c.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SDL_syshaptic_c.h; sourceTree = "<group>"; };
-		F59C70FF00D5CB5801000001 /* ReadMe.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = ReadMe.txt; sourceTree = "<group>"; };
-		F59C710000D5CB5801000001 /* Welcome.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = Welcome.txt; sourceTree = "<group>"; };
 		F59C710300D5CB5801000001 /* ReadMe.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = ReadMe.txt; sourceTree = "<group>"; };
-		F59C710500D5CB5801000001 /* SDL-devel.info */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = "SDL-devel.info"; sourceTree = "<group>"; };
 		F59C710600D5CB5801000001 /* SDL.info */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = SDL.info; sourceTree = "<group>"; };
-		F59C710C00D5D15801000001 /* install.sh */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text.script.sh; path = install.sh; sourceTree = "<group>"; };
 		F5A2EF3900C6A39A01000001 /* BUGS.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = BUGS.txt; path = ../../BUGS.txt; sourceTree = SOURCE_ROOT; };
-		F5A2EF3A00C6A3C201000001 /* README-macosx.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = "README-macosx.txt"; path = "../../README-macosx.txt"; sourceTree = SOURCE_ROOT; };
-		F5F81AD400D706B101000001 /* Readme SDL Developer.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = "Readme SDL Developer.txt"; path = "pkg-support/Readme SDL Developer.txt"; sourceTree = SOURCE_ROOT; };
 		FA73671C19A540EF004122E4 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = /System/Library/Frameworks/CoreVideo.framework; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
@@ -1670,7 +1663,6 @@
 			isa = PBXGroup;
 			children = (
 				F5A2EF3900C6A39A01000001 /* BUGS.txt */,
-				F5A2EF3A00C6A3C201000001 /* README-macosx.txt */,
 				F59C70FC00D5CB5801000001 /* pkg-support */,
 				0153844A006D81B07F000001 /* Public Headers */,
 				08FB77ACFE841707C02AAC07 /* Library Source */,
@@ -1761,30 +1753,16 @@
 		F59C70FC00D5CB5801000001 /* pkg-support */ = {
 			isa = PBXGroup;
 			children = (
-				F59C70FE00D5CB5801000001 /* devel-resources */,
 				F59C710100D5CB5801000001 /* resources */,
-				F5F81AD400D706B101000001 /* Readme SDL Developer.txt */,
-				F59C710500D5CB5801000001 /* SDL-devel.info */,
 				F59C710600D5CB5801000001 /* SDL.info */,
 			);
 			path = "pkg-support";
 			sourceTree = SOURCE_ROOT;
 		};
-		F59C70FE00D5CB5801000001 /* devel-resources */ = {
-			isa = PBXGroup;
-			children = (
-				F59C710C00D5D15801000001 /* install.sh */,
-				F59C70FF00D5CB5801000001 /* ReadMe.txt */,
-				F59C710000D5CB5801000001 /* Welcome.txt */,
-			);
-			path = "devel-resources";
-			sourceTree = "<group>";
-		};
 		F59C710100D5CB5801000001 /* resources */ = {
 			isa = PBXGroup;
 			children = (
 				00794D3F09D0C461003FC8A1 /* License.txt */,
-				00AE6E1E08B958CC00255E2F /* ReadMeDevLite.txt */,
 				F59C710300D5CB5801000001 /* ReadMe.txt */,
 			);
 			path = resources;
@@ -2815,7 +2793,7 @@
 			buildSettings = {
 				CLANG_LINK_OBJC_RUNTIME = NO;
 				DYLIB_COMPATIBILITY_VERSION = 1.0.0;
-				DYLIB_CURRENT_VERSION = 3.1.0;
+				DYLIB_CURRENT_VERSION = 5.0.0;
 				FRAMEWORK_VERSION = A;
 				HEADER_SEARCH_PATHS = /usr/X11R6/include;
 				INFOPLIST_FILE = "Info-Framework.plist";
@@ -2870,7 +2848,7 @@
 			buildSettings = {
 				CLANG_LINK_OBJC_RUNTIME = NO;
 				DYLIB_COMPATIBILITY_VERSION = 1.0.0;
-				DYLIB_CURRENT_VERSION = 3.1.0;
+				DYLIB_CURRENT_VERSION = 5.0.0;
 				FRAMEWORK_VERSION = A;
 				HEADER_SEARCH_PATHS = /usr/X11R6/include;
 				INFOPLIST_FILE = "Info-Framework.plist";
