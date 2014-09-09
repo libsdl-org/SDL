@@ -126,7 +126,7 @@ create_buffer_from_shm(Wayland_CursorData *d,
                        MAP_SHARED,
                        shm_fd,
                        0);
-    if (data == MAP_FAILED) {
+    if (d->shm_data == MAP_FAILED) {
         d->shm_data = NULL;
         fprintf (stderr, "mmap () failed\n");
         close (shm_fd);
