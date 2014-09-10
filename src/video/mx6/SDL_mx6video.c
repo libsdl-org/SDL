@@ -124,6 +124,36 @@ VideoBootStrap MX6_bootstrap = {
     MX6_Create
 };
 
+static void
+MX6_UpdateDisplay(_THIS)
+{
+    SDL_VideoDisplay *display = &_this->displays[0];
+    SDL_DisplayData *data = (SDL_DisplayData*)display->driverdata;
+    EGLNativeDisplayType native_display = egl_viv_data->fbGetDisplayByIndex(0);
+    SDL_DisplayMode current_mode;
+    int pitch, bpp;
+    unsigned long pixels;
+
+    /* Store the native EGL display */
+    data->native_display = native_display;
+
+    SDL_zero(current_mode);
+    egl_viv_data->fbGetDisplayInfo(native_display, &current_mode.w, &current_mode.h, &pixels, &pitch, &bpp);
+    /* FIXME: How do we query refresh rate? */
+    current_mode.refresh_rate = 60;
+
+    switch (bpp)
+    {
+    default: /* Is another format used? */
+    case 16:
+        current_mode.format = SDL_PIXELFORMAT_RGB565;
+        break;
+    }
+
+    display->desktop_mode = current_mode;
+    display->current_mode = current_mode;
+}
+
 /*****************************************************************************/
 /* SDL Video and Display initialization/handling functions                   */
 /*****************************************************************************/
@@ -138,16 +168,9 @@ MX6_VideoInit(_THIS)
     if (data == NULL) {
         return SDL_OutOfMemory();
     }
-    
-    /* Actual data will be set in SDL_GL_LoadLibrary call below */
-    SDL_zero(current_mode);
-    current_mode.w = 0;
-    current_mode.h = 0;
-    current_mode.refresh_rate = 60;
-    current_mode.format = SDL_PIXELFORMAT_RGB565;
-    current_mode.driverdata = NULL;
 
     SDL_zero(display);
+    SDL_zero(current_mode);
     display.desktop_mode = current_mode;
     display.current_mode = current_mode;
     display.driverdata = data;
@@ -156,6 +179,7 @@ MX6_VideoInit(_THIS)
     if (SDL_GL_LoadLibrary(NULL) < 0) {
         return -1;
     }
+    MX6_UpdateDisplay(_this);
 
 #ifdef SDL_INPUT_LINUXEV    
     SDL_EVDEV_Init();

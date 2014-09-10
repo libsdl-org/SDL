@@ -150,8 +150,6 @@ MX6_GLES_LoadLibrary(_THIS, const char *egl_path) {
     LOAD_VIV_FUNC(fbDestroyPixmap);
    
     displaydata = SDL_GetDisplayDriverData(0);
-    displaydata->native_display = egl_viv_data->fbGetDisplayByIndex(0);
-    egl_viv_data->fbGetDisplayGeometry(displaydata->native_display, &displaydata->width, &displaydata->height);
 
     _this->egl_data->egl_display = _this->egl_data->eglGetDisplay(displaydata->native_display);
     if (!_this->egl_data->egl_display) {
