@@ -601,6 +601,25 @@ macro(CheckDirectFB)
 endmacro(CheckDirectFB)
 
 # Requires:
+# - n/a
+macro(CheckMX6)
+  if(VIDEO_MX6)
+    check_c_source_compiles("
+        #define EGL_API_FB
+        #include <EGL/eglvivante.h>
+        int main(int argc, char** argv) {}" HAVE_VIDEO_OPENGL_EGL_VIVANTE)
+    if(HAVE_VIDEO_OPENGL_EGL_VIVANTE)
+      set(HAVE_VIDEO_MX6 TRUE)
+      set(HAVE_SDL_VIDEO TRUE)
+
+      file(GLOB MX6_SOURCES ${SDL2_SOURCE_DIR}/src/video/mx6/*.c)
+      set(SOURCE_FILES ${SOURCE_FILES} ${MX6_SOURCES})
+      set(SDL_VIDEO_DRIVER_MX6 1)
+    endif(HAVE_VIDEO_OPENGL_EGL_VIVANTE)
+  endif(VIDEO_MX6)
+endmacro(CheckMX6)
+
+# Requires:
 # - nada
 macro(CheckOpenGLX11)
   if(VIDEO_OPENGL)
@@ -624,6 +643,7 @@ endmacro(CheckOpenGLX11)
 macro(CheckOpenGLESX11)
   if(VIDEO_OPENGLES)
     check_c_source_compiles("
+        #define EGL_API_FB
         #include <EGL/egl.h>
         int main (int argc, char** argv) {}" HAVE_VIDEO_OPENGL_EGL)
     if(HAVE_VIDEO_OPENGL_EGL)

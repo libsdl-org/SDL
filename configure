@@ -832,6 +832,7 @@ enable_video_x11_xrandr
 enable_video_x11_scrnsaver
 enable_video_x11_xshape
 enable_video_x11_vm
+enable_video_mx6
 enable_video_cocoa
 enable_video_directfb
 enable_directfb_shared
@@ -1561,6 +1562,7 @@ Optional Features:
   --enable-video-x11-xshape
                           enable X11 XShape support [[default=yes]]
   --enable-video-x11-vm   use X11 VM extension for fullscreen [[default=yes]]
+  --enable-video-mx6      use Freescale i.MX6 video driver [[default=no]]
   --enable-video-cocoa    use Cocoa video driver [[default=yes]]
   --enable-video-directfb use DirectFB video driver [[default=no]]
   --enable-directfb-shared
@@ -20591,6 +20593,53 @@ $as_echo "#define SDL_VIDEO_DRIVER_X11_XVIDMODE 1" >>confdefs.h
     fi
 }
 
+CheckMX6Video()
+{
+    # Check whether --enable-video-mx6 was given.
+if test "${enable_video_mx6+set}" = set; then :
+  enableval=$enable_video_mx6;
+else
+  enable_video_mx6=no
+fi
+
+    if test x$enable_video = xyes -a x$enable_video_mx6 = xyes; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Vivante GPU SDK" >&5
+$as_echo_n "checking for Vivante GPU SDK... " >&6; }
+        have_viv_sdk=no
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+          #define EGL_API_FB
+          #include <EGL/eglvivante.h>
+
+int
+main ()
+{
+
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+        have_viv_sdk=yes
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_viv_sdk" >&5
+$as_echo "$have_viv_sdk" >&6; }
+        if test x$have_viv_sdk = xyes; then
+
+$as_echo "#define SDL_VIDEO_DRIVER_MX6 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/video/mx6/*.c"
+            SUMMARY_video="${SUMMARY_video} mx6"
+            have_video=yes
+        fi
+    fi
+}
+
 CheckHaikuVideo()
 {
     if test x$enable_video = xyes; then
@@ -21044,6 +21093,7 @@ $as_echo_n "checking for EGL support... " >&6; }
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
+         #define EGL_API_FB
          #include <EGL/egl.h>
          #include <EGL/eglext.h>
 
@@ -22818,6 +22868,7 @@ case "$host" in
         CheckClockGettime
         CheckLinuxVersion
         CheckRPATH
+        CheckMX6Video
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
           case $ARCH in

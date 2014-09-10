@@ -264,6 +264,7 @@
 #cmakedefine SDL_VIDEO_DRIVER_WINDOWS @SDL_VIDEO_DRIVER_WINDOWS@
 #cmakedefine SDL_VIDEO_DRIVER_WAYLAND @SDL_VIDEO_DRIVER_WAYLAND@
 #cmakedefine SDL_VIDEO_DRIVER_RPI @SDL_VIDEO_DRIVER_RPI@
+#cmakedefine SDL_VIDEO_DRIVER_MX6 @SDL_VIDEO_DRIVER_MX6@
 
 #if 0
 /* !!! FIXME: in configure script version, missing here: */
