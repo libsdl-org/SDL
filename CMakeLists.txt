@@ -247,6 +247,7 @@ endforeach()
 set_option(VIDEO_COCOA         "Use Cocoa video driver" ${APPLE})
 set_option(DIRECTX             "Use DirectX for Windows audio/video" ${WINDOWS})
 set_option(RENDER_D3D          "Enable the Direct3D render driver" ${WINDOWS})
+set_option(VIDEO_MX6           "Use Freescale i.MX6 video driver" OFF)
 
 # TODO: We should (should we?) respect cmake's ${BUILD_SHARED_LIBS} flag here
 # The options below are for compatibility to configure's default behaviour.
@@ -678,6 +679,7 @@ if(UNIX AND NOT APPLE)
     CheckOpenGLX11()
     CheckOpenGLESX11()
     CheckWayland()
+    CheckMX6()
   endif()
 
   if(LINUX)
