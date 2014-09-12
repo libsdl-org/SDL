@@ -163,7 +163,7 @@ MX6_VideoInit(_THIS)
     SDL_VideoDisplay display;
     SDL_DisplayMode current_mode;
     SDL_DisplayData *data;
-    
+
     data = (SDL_DisplayData *) SDL_calloc(1, sizeof(SDL_DisplayData));
     if (data == NULL) {
         return SDL_OutOfMemory();
@@ -181,9 +181,9 @@ MX6_VideoInit(_THIS)
     }
     MX6_UpdateDisplay(_this);
 
-#ifdef SDL_INPUT_LINUXEV    
+#ifdef SDL_INPUT_LINUXEV
     SDL_EVDEV_Init();
-#endif    
+#endif
 
     return 1;
 }
@@ -191,9 +191,9 @@ MX6_VideoInit(_THIS)
 void
 MX6_VideoQuit(_THIS)
 {
-#ifdef SDL_INPUT_LINUXEV    
+#ifdef SDL_INPUT_LINUXEV
     SDL_EVDEV_Quit();
-#endif    
+#endif
 }
 
 void
@@ -214,9 +214,9 @@ MX6_CreateWindow(_THIS, SDL_Window * window)
 {
     SDL_DisplayData *displaydata;
     SDL_WindowData *wdata;
-    
+
     displaydata = SDL_GetDisplayDriverData(0);
-    
+
     /* Allocate window internal data */
     wdata = (SDL_WindowData *) SDL_calloc(1, sizeof(SDL_WindowData));
     if (wdata == NULL) {
@@ -226,12 +226,12 @@ MX6_CreateWindow(_THIS, SDL_Window * window)
     /* Setup driver data for this window */
     window->driverdata = wdata;
     window->flags |= SDL_WINDOW_OPENGL;
-    
+
     if (!_this->egl_data) {
         return -1;
     }
 
-    wdata->native_window = egl_viv_data->fbCreateWindow(displaydata->native_display, window->x, window->y, window->w, window->h);    
+    wdata->native_window = egl_viv_data->fbCreateWindow(displaydata->native_display, window->x, window->y, window->w, window->h);
     if (!wdata->native_window) {
         return SDL_SetError("MX6: Can't create native window");
     }
@@ -249,7 +249,7 @@ void
 MX6_DestroyWindow(_THIS, SDL_Window * window)
 {
     SDL_WindowData *wdata;
-    
+
     wdata = window->driverdata;
     if (wdata) {
         SDL_EGL_DestroySurface(_this, wdata->egl_surface);
