@@ -508,6 +508,27 @@ ProcessHitTest(_THIS, const SDL_WindowData *data, const XEvent *xev)
 }
 
 static void
+ReconcileKeyboardState(_THIS, const SDL_WindowData *data)
+{
+    SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
+    SDL_Window* window = data->window;
+    Display *display = viddata->display;
+    char keys[32];
+    int keycode = 0;
+
+    X11_XQueryKeymap( display, keys );
+
+    while ( keycode < 256 ) {
+        if ( keys[keycode / 8] & (1 << (keycode % 8)) ) {
+            SDL_SendKeyboardKey(SDL_PRESSED, viddata->key_layout[keycode]);
+        } else {
+            SDL_SendKeyboardKey(SDL_RELEASED, viddata->key_layout[keycode]);
+        }
+        keycode++;
+    }
+}
+
+static void
 X11_DispatchEvent(_THIS)
 {
     SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
@@ -655,16 +676,7 @@ X11_DispatchEvent(_THIS)
 #endif
             if (data->pending_focus == PENDING_FOCUS_OUT &&
                 data->window == SDL_GetKeyboardFocus()) {
-                /* We want to reset the keyboard here, because we may have
-                   missed keyboard messages after our previous FocusOut.
-                 */
-                /* Actually, if we do this we clear the ALT key on Unity
-                   because it briefly takes focus for their dashboard.
-
-                   I think it's better to think the ALT key is held down
-                   when it's not, then always lose the ALT modifier on Unity.
-                 */
-                /* SDL_ResetKeyboard(); */
+                ReconcileKeyboardState(_this, data);
             }
             data->pending_focus = PENDING_FOCUS_IN;
             data->pending_focus_time = SDL_GetTicks() + PENDING_FOCUS_IN_TIME;
