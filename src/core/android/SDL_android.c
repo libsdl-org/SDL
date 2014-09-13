@@ -1342,6 +1342,85 @@ void Android_JNI_HideTextInput()
     Android_JNI_SendMessage(COMMAND_TEXTEDIT_HIDE, 0);
 }
 
+int Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
+{
+    JNIEnv *env;
+    jmethodID mid;
+    jobject context;
+    jstring title;
+    jstring message;
+    jintArray button_flags;
+    jintArray button_ids;
+    jobjectArray button_texts;
+    jintArray colors;
+    jint temp;
+    int i;
+
+    env = Android_JNI_GetEnv();
+
+    /* convert parameters */
+
+    title = (*env)->NewStringUTF(env, messageboxdata->title);
+    message = (*env)->NewStringUTF(env, messageboxdata->message);
+
+    button_flags = (*env)->NewIntArray(env, messageboxdata->numbuttons);
+    button_ids = (*env)->NewIntArray(env, messageboxdata->numbuttons);
+    button_texts = (*env)->NewObjectArray(env, messageboxdata->numbuttons,
+        (*env)->FindClass(env, "java/lang/String"), NULL);
+    for (i = 0; i < messageboxdata->numbuttons; ++i) {
+        temp = messageboxdata->buttons[i].flags;
+        (*env)->SetIntArrayRegion(env, button_flags, i, 1, &temp);
+        temp = messageboxdata->buttons[i].buttonid;
+        (*env)->SetIntArrayRegion(env, button_ids, i, 1, &temp);
+        (*env)->SetObjectArrayElement(env, button_texts, i, (*env)->NewStringUTF(env, messageboxdata->buttons[i].text));
+    }
+
+    if (messageboxdata->colorScheme) {
+        colors = (*env)->NewIntArray(env, SDL_MESSAGEBOX_COLOR_MAX);
+        for (i = 0; i < SDL_MESSAGEBOX_COLOR_MAX; ++i) {
+            temp = (0xFF << 24) |
+                   (messageboxdata->colorScheme->colors[i].r << 16) |
+                   (messageboxdata->colorScheme->colors[i].g << 8) |
+                   (messageboxdata->colorScheme->colors[i].b << 0);
+            (*env)->SetIntArrayRegion(env, colors, i, 1, &temp);
+        }
+    } else {
+        colors = NULL;
+    }
+
+    /* call function */
+
+    mid = (*env)->GetStaticMethodID(env, mActivityClass, "getContext","()Landroid/content/Context;");
+
+    context = (*env)->CallStaticObjectMethod(env, mActivityClass, mid);
+
+    mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, context),
+        "messageboxShowMessageBox", "(ILjava/lang/String;Ljava/lang/String;[I[I[Ljava/lang/String;[I)I");
+    *buttonid = (*env)->CallIntMethod(env, context, mid,
+        messageboxdata->flags,
+        title,
+        message,
+        button_flags,
+        button_ids,
+        button_texts,
+        colors);
+
+    /* delete parameters */
+
+    (*env)->DeleteLocalRef(env, title);
+    (*env)->DeleteLocalRef(env, message);
+    (*env)->DeleteLocalRef(env, button_flags);
+    (*env)->DeleteLocalRef(env, button_ids);
+    for (i = 0; i < messageboxdata->numbuttons; ++i) {
+        (*env)->DeleteLocalRef(env, (*env)->GetObjectArrayElement(env, button_texts, i));
+        (*env)->SetObjectArrayElement(env, button_texts, i, NULL);
+    }
+    (*env)->DeleteLocalRef(env, button_texts);
+    (*env)->DeleteLocalRef(env, colors);
+
+    return 0;
+}
+
 /*
 //////////////////////////////////////////////////////////////////////////////
 //
