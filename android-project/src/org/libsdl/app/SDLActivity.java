@@ -17,8 +17,12 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputConnection;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AbsoluteLayout;
+import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.os.*;
 import android.util.Log;
+import android.util.SparseArray;
 import android.graphics.*;
 import android.media.*;
 import android.hardware.*;
@@ -582,6 +586,199 @@ public class SDLActivity extends Activity {
         }
 
         return fileStream;
+    }
+
+    // Messagebox
+
+    /** Result of current messagebox. Also used for blocking the calling thread. */
+    protected final int[] messageboxSelection = new int[1];
+
+    /** Id of current dialog. */
+    protected int dialogs = 0;
+
+    /**
+     * This method is called by SDL using JNI.
+     * Shows the messagebox from UI thread and block calling thread.
+     * buttonFlags, buttonIds and buttonTexts must have same length.
+     * @param buttonFlags array containing flags for every button.
+     * @param buttonIds array containing id for every button.
+     * @param buttonTexts array containing text for every button.
+     * @param colors null for default or array of length 5 containing colors.
+     * @return button id or -1.
+     */
+    public int messageboxShowMessageBox(
+            final int flags,
+            final String title,
+            final String message,
+            final int[] buttonFlags,
+            final int[] buttonIds,
+            final String[] buttonTexts,
+            final int[] colors) {
+
+        messageboxSelection[0] = -1;
+
+        // sanity checks
+
+        if ((buttonFlags.length != buttonIds.length) && (buttonIds.length != buttonTexts.length)) {
+            return -1; // implementation broken
+        }
+
+        // collect arguments for Dialog
+
+        final Bundle args = new Bundle();
+        args.putInt("flags", flags);
+        args.putString("title", title);
+        args.putString("message", message);
+        args.putIntArray("buttonFlags", buttonFlags);
+        args.putIntArray("buttonIds", buttonIds);
+        args.putStringArray("buttonTexts", buttonTexts);
+        args.putIntArray("colors", colors);
+
+        // trigger Dialog creation on UI thread
+
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                showDialog(dialogs++, args);
+            }
+        });
+
+        // block the calling thread
+
+        synchronized (messageboxSelection) {
+            try {
+                messageboxSelection.wait();
+            } catch (InterruptedException ex) {
+                ex.printStackTrace();
+                return -1;
+            }
+        }
+
+        // return selected value
+
+        return messageboxSelection[0];
+    }
+
+    @Override
+    protected Dialog onCreateDialog(int ignore, Bundle args) {
+
+        // TODO set values from "flags" to messagebox dialog
+
+        // get colors
+
+        int[] colors = args.getIntArray("colors");
+        int backgroundColor;
+        int textColor;
+        int buttonBorderColor;
+        int buttonBackgroundColor;
+        int buttonSelectedColor;
+        if (colors != null) {
+            int i = -1;
+            backgroundColor = colors[++i];
+            textColor = colors[++i];
+            buttonBorderColor = colors[++i];
+            buttonBackgroundColor = colors[++i];
+            buttonSelectedColor = colors[++i];
+        } else {
+            backgroundColor = Color.TRANSPARENT;
+            textColor = Color.TRANSPARENT;
+            buttonBorderColor = Color.TRANSPARENT;
+            buttonBackgroundColor = Color.TRANSPARENT;
+            buttonSelectedColor = Color.TRANSPARENT;
+        }
+
+        // create dialog with title and a listener to wake up calling thread
+
+        final Dialog dialog = new Dialog(this);
+        dialog.setTitle(args.getString("title"));
+        dialog.setCancelable(false);
+        dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface unused) {
+                synchronized (messageboxSelection) {
+                    messageboxSelection.notify();
+                }
+            }
+        });
+
+        // create text
+
+        TextView message = new TextView(this);
+        message.setGravity(Gravity.CENTER);
+        message.setText(args.getString("message"));
+        if (textColor != Color.TRANSPARENT) {
+            message.setTextColor(textColor);
+        }
+
+        // create buttons
+
+        int[] buttonFlags = args.getIntArray("buttonFlags");
+        int[] buttonIds = args.getIntArray("buttonIds");
+        String[] buttonTexts = args.getStringArray("buttonTexts");
+
+        final SparseArray<Button> mapping = new SparseArray<Button>();
+
+        LinearLayout buttons = new LinearLayout(this);
+        buttons.setOrientation(LinearLayout.HORIZONTAL);
+        buttons.setGravity(Gravity.CENTER);
+        for (int i = 0; i < buttonTexts.length; ++i) {
+            Button button = new Button(this);
+            final int id = buttonIds[i];
+            button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    messageboxSelection[0] = id;
+                    dialog.dismiss();
+                }
+            });
+            if (buttonFlags[i] != 0) {
+                // see SDL_messagebox.h
+                if ((buttonFlags[i] & 0x00000001) != 0) {
+                    mapping.put(KeyEvent.KEYCODE_ENTER, button);
+                }
+                if ((buttonFlags[i] & 0x00000002) != 0) {
+                    mapping.put(111, button); /* API 11: KeyEvent.KEYCODE_ESCAPE */
+                }
+            }
+            button.setText(buttonTexts[i]);
+            if (buttonBorderColor != Color.TRANSPARENT) {
+                // TODO set color for border of messagebox button
+            }
+            if (buttonBackgroundColor != Color.TRANSPARENT) {
+                button.setBackgroundColor(buttonBackgroundColor);
+            }
+            if (buttonSelectedColor != Color.TRANSPARENT) {
+                // TODO set color for selected messagebox button
+            }
+            buttons.addView(button);
+        }
+
+        // create content
+
+        LinearLayout content = new LinearLayout(this);
+        content.setOrientation(LinearLayout.VERTICAL);
+        content.addView(message);
+        content.addView(buttons);
+        if (backgroundColor != Color.TRANSPARENT) {
+            content.setBackgroundColor(backgroundColor);
+        }
+
+        // add content to dialog and return
+
+        dialog.setContentView(content);
+        dialog.setOnKeyListener(new Dialog.OnKeyListener() {
+            @Override
+            public boolean onKey(DialogInterface d, int keyCode, KeyEvent event) {
+                Button button = mapping.get(keyCode);
+                if (button != null) {
+                    button.performClick();
+                    return true;
+                }
+                return false;
+            }
+        });
+
+        return dialog;
     }
 }
 
