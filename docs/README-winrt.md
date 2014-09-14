@@ -18,12 +18,26 @@ called "Windows Store" apps.
 Requirements
 ------------
 
-- Microsoft Visual C++ 2012 -- Free, "Express" editions may be used, so long
-  as they include support for either "Windows Store" or "Windows Phone" apps.
-  (NOTE: MSVC 2013 support is pending.  2012 projects may be converted to 2013
-  projects by MSVC, in the meantime.)
-- A valid Microsoft account -- This requirement is not imposed by SDL, but
-  rather by Microsoft's Visual C++ toolchain.  This is required to debug apps.
+* Microsoft Visual C++ (aka Visual Studio), either 2013 or 2012 versions
+  - Free, "Express" editions may be used, so long as they include support for 
+    either "Windows Store" or "Windows Phone" apps.  Versions marked as
+    supporting "Windows Desktop" development typically do not include support
+    for creating WinRT apps.
+  - Visual C++ 2012 can only build apps that target versions 8.0 of Windows, or 
+    Windows Phone.  8.0-targetted apps will still run on devices running 
+    8.1 editions of Windows, however they will not be able to take advantage of 
+    8.1-specific features.
+  - Visual C++ 2013 can only create app projects that target 8.1 versions
+    of Windows, which do NOT run on 8.0 devices.  An optional Visual Studio 
+    add-in, "Tools for Maintaining Store apps for Windows 8", allows projects 
+    that are created with Visual C++ 2012, which target 8.0 versions of Windows, 
+    to be loaded and built with Visual C++ 2013.  More details on this can be 
+    found at the following web pages:
+      - [Develop apps by using Visual Studio 2013](http://msdn.microsoft.com/en-us/library/windows/apps/br211384.aspx)
+      - [To add the Tools for Maintaining Store apps for Windows 8](http://msdn.microsoft.com/en-us/library/windows/apps/dn263114.aspx#AddMaintenanceTools)
+* A valid Microsoft account - This requirement is not imposed by SDL, but
+  rather by Microsoft's Visual C++ toolchain.  This is required to launch or 
+  debug apps.
 
 
 Setup, High-Level Steps
