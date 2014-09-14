@@ -121,11 +121,18 @@ UIKit_GL_CreateContext(_THIS, SDL_Window * window)
         CGFloat scale = 1.0;
 
         if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
-            /* Set the scale to the natural scale factor of the screen - the backing
-               dimensions of the OpenGL view will match the pixel dimensions of the
-               screen rather than the dimensions in points.
+            /* Set the scale to the natural scale factor of the screen - the
+               backing dimensions of the OpenGL view will match the pixel
+               dimensions of the screen rather than the dimensions in points.
              */
-            scale = uiwindow.screen.scale;
+#ifdef __IPHONE_8_0
+            if ([uiwindow.screen respondsToSelector:@selector(nativeScale)]) {
+                scale = uiwindow.screen.nativeScale;
+            } else
+#endif
+            {
+                scale = uiwindow.screen.scale;
+            }
         }
 
         if (_this->gl_config.share_with_current_context) {

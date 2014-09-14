@@ -189,12 +189,19 @@ UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
         SDL_bool addRotation = (data.uiscreen == [UIScreen mainScreen]);
         CGFloat scale = data.uiscreen.scale;
 
+#ifdef __IPHONE_8_0
+        /* The UIScreenMode of an iPhone 6 Plus should be 1080x1920 rather than
+         * 1242x2208 (414x736@3x), so we should use the native scale. */
+        if ([data.uiscreen respondsToSelector:@selector(nativeScale)]) {
+            scale = data.uiscreen.nativeScale;
+        }
+#endif
+
         for (UIScreenMode *uimode in [data.uiscreen availableModes]) {
-            /* The size of a UIScreenMode is in pixels, but we deal exclusively in
-             * points (except in SDL_GL_GetDrawableSize.) */
-            CGSize size = [uimode size];
-            int w = (int)(size.width / scale);
-            int h = (int)(size.height / scale);
+            /* The size of a UIScreenMode is in pixels, but we deal exclusively
+             * in points (except in SDL_GL_GetDrawableSize.) */
+            int w = (int)(uimode.size.width / scale);
+            int h = (int)(uimode.size.height / scale);
 
             /* Make sure the width/height are oriented correctly */
             if (isLandscape != (w > h)) {
