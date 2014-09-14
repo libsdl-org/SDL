@@ -771,8 +771,10 @@ public class SDLActivity extends Activity {
             public boolean onKey(DialogInterface d, int keyCode, KeyEvent event) {
                 Button button = mapping.get(keyCode);
                 if (button != null) {
-                    button.performClick();
-                    return true;
+                    if (event.getAction() == KeyEvent.ACTION_UP) {
+                        button.performClick();
+                    }
+                    return true; // also for ignored actions
                 }
                 return false;
             }
