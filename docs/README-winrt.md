@@ -28,11 +28,12 @@ Requirements
     8.1 editions of Windows, however they will not be able to take advantage of 
     8.1-specific features.
   - Visual C++ 2013 can only create app projects that target 8.1 versions
-    of Windows, which do NOT run on 8.0 devices.  An optional Visual Studio 
-    add-in, "Tools for Maintaining Store apps for Windows 8", allows projects 
-    that are created with Visual C++ 2012, which target 8.0 versions of Windows, 
-    to be loaded and built with Visual C++ 2013.  More details on this can be 
-    found at the following web pages:
+    of Windows, which do NOT run on 8.0 devices.  An optional Visual Studio
+    add-in, "Tools for Maintaining Store apps for Windows 8", allows projects
+    that are created with Visual C++ 2012, which can create Windows 8.0 apps,
+    to be loaded and built with non-Express editions of Visual C++ 2013.  More
+    details on targeting different versions of Windows can found at the
+    following web pages:
       - [Develop apps by using Visual Studio 2013](http://msdn.microsoft.com/en-us/library/windows/apps/br211384.aspx)
       - [To add the Tools for Maintaining Store apps for Windows 8](http://msdn.microsoft.com/en-us/library/windows/apps/dn263114.aspx#AddMaintenanceTools)
 * A valid Microsoft account - This requirement is not imposed by SDL, but
