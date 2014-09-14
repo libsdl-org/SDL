@@ -1,5 +1,5 @@
 WinRT
-================================================================================
+=====
 
 SDL/WinRT layer allows SDL2-based applications to run on many of Microsoft's
 platforms that utilize the "Windows Runtime" (aka "WinRT") APIs.  WinRT apps
@@ -15,9 +15,9 @@ To note, WinRT applications that run on Windows 8.x and/or Windows RT are often
 called "Windows Store" apps.
 
 
---------------------------------------------------------------------------------
 Requirements
---------------------------------------------------------------------------------
+------------
+
 - Microsoft Visual C++ 2012 -- Free, "Express" editions may be used, so long
   as they include support for either "Windows Store" or "Windows Phone" apps.
   (NOTE: MSVC 2013 support is pending.  2012 projects may be converted to 2013
@@ -26,9 +26,9 @@ Requirements
   rather by Microsoft's Visual C++ toolchain.
 
 
---------------------------------------------------------------------------------
 TODO
---------------------------------------------------------------------------------
+----
+
 - Finish adding support for MSVC 2013, and "Universal" WinRT apps, which
   support Windows 8.1, Windows Phone 8.1, and in the future, Xbox One and
   Windows Desktop.
