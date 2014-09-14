@@ -23,7 +23,7 @@ Requirements
   (NOTE: MSVC 2013 support is pending.  2012 projects may be converted to 2013
   projects by MSVC, in the meantime.)
 - A valid Microsoft account -- This requirement is not imposed by SDL, but
-  rather by Microsoft's Visual C++ toolchain.
+  rather by Microsoft's Visual C++ toolchain.  This is required to debug apps.
 
 
 TODO
