@@ -23,6 +23,7 @@
 #ifdef SDL_HAPTIC_IOKIT
 
 #include "SDL_assert.h"
+#include "SDL_stdinc.h"
 #include "SDL_haptic.h"
 #include "../SDL_syshaptic.h"
 #include "SDL_joystick.h"
@@ -872,9 +873,10 @@ SDL_SYS_ToFFEFFECT(SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src)
         SDL_memset(periodic, 0, sizeof(FFPERIODIC));
 
         /* Specifics */
-        periodic->dwMagnitude = CONVERT(hap_periodic->magnitude);
+        periodic->dwMagnitude = CONVERT(SDL_abs(hap_periodic->magnitude));
         periodic->lOffset = CONVERT(hap_periodic->offset);
-        periodic->dwPhase = hap_periodic->phase;
+        periodic->dwPhase = 
+                (hap_periodic->phase + (hap_periodic->magnitude < 0 ? 18000 : 0)) % 36000;
         periodic->dwPeriod = hap_periodic->period * 1000;
         dest->cbTypeSpecificParams = sizeof(FFPERIODIC);
         dest->lpvTypeSpecificParams = periodic;
