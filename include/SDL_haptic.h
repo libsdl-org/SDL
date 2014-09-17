@@ -492,7 +492,7 @@ typedef struct SDL_HapticConstant
  *  over time.  The type determines the shape of the wave and the parameters
  *  determine the dimensions of the wave.
  *
- *  Phase is given by hundredth of a cycle meaning that giving the phase a value
+ *  Phase is given by hundredth of a degree meaning that giving the phase a value
  *  of 9000 will displace it 25% of its period.  Here are sample values:
  *   -     0: No phase displacement.
  *   -  9000: Displaced 25% of its period.
@@ -555,7 +555,7 @@ typedef struct SDL_HapticPeriodic
     Uint16 period;      /**< Period of the wave. */
     Sint16 magnitude;   /**< Peak value. */
     Sint16 offset;      /**< Mean value of the wave. */
-    Uint16 phase;       /**< Horizontal shift given by hundredth of a cycle. */
+    Uint16 phase;       /**< Horizontal shift given by hundredth of a degree. */
 
     /* Envelope */
     Uint16 attack_length;   /**< Duration of the attack. */
