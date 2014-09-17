@@ -50,6 +50,12 @@ test_multi_audio(int devcount)
     callback_data cbd[64];
     int keep_going = 1;
     int i;
+    
+#ifdef __ANDROID__  
+    SDL_Event event;
+  
+    SDL_CreateWindow("testmultiaudio", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 320, 240, 0);
+#endif
 
     if (devcount > 64) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Too many devices (%d), clamping to 64...\n",
@@ -71,8 +77,12 @@ test_multi_audio(int devcount)
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Open device failed: %s\n", SDL_GetError());
         } else {
             SDL_PauseAudioDevice(cbd[0].dev, 0);
-            while (!cbd[0].done)
+            while (!cbd[0].done) {
+#ifdef __ANDROID__                
+                while (SDL_PollEvent(&event)){}
+#endif                
                 SDL_Delay(100);
+            }
             SDL_PauseAudioDevice(cbd[0].dev, 1);
             SDL_Log("done.\n");
             SDL_CloseAudioDevice(cbd[0].dev);
@@ -104,6 +114,9 @@ test_multi_audio(int devcount)
                 keep_going = 1;
             }
         }
+#ifdef __ANDROID__        
+        while (SDL_PollEvent(&event)){}
+#endif        
         SDL_Delay(100);
     }
 
