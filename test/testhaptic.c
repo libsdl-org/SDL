@@ -122,7 +122,8 @@ main(int argc, char **argv)
         SDL_Log("   effect %d: Sine Wave\n", nefx);
         efx[nefx].type = SDL_HAPTIC_SINE;
         efx[nefx].periodic.period = 1000;
-        efx[nefx].periodic.magnitude = 0x4000;
+        efx[nefx].periodic.magnitude = -0x2000;    /* Negative magnitude and ...                      */
+        efx[nefx].periodic.phase = 18000;          /* ... 180 degrees phase shift => cancel eachother */
         efx[nefx].periodic.length = 5000;
         efx[nefx].periodic.attack_length = 1000;
         efx[nefx].periodic.fade_length = 1000;

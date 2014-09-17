@@ -21,6 +21,7 @@
 #include "../../SDL_internal.h"
 
 #include "SDL_error.h"
+#include "SDL_stdinc.h"
 #include "SDL_haptic.h"
 #include "SDL_timer.h"
 #include "SDL_windowshaptic_c.h"
@@ -714,9 +715,10 @@ SDL_SYS_ToDIEFFECT(SDL_Haptic * haptic, DIEFFECT * dest,
         SDL_memset(periodic, 0, sizeof(DIPERIODIC));
 
         /* Specifics */
-        periodic->dwMagnitude = CONVERT(hap_periodic->magnitude);
+        periodic->dwMagnitude = CONVERT(SDL_abs(hap_periodic->magnitude));
         periodic->lOffset = CONVERT(hap_periodic->offset);
-        periodic->dwPhase = hap_periodic->phase;
+        periodic->dwPhase = 
+                (hap_periodic->phase + (hap_periodic->magnitude < 0 ? 18000 : 0)) % 36000;
         periodic->dwPeriod = hap_periodic->period * 1000;
         dest->cbTypeSpecificParams = sizeof(DIPERIODIC);
         dest->lpvTypeSpecificParams = periodic;
