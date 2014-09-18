@@ -32,7 +32,7 @@
 
 #include <android/log.h>
 
-static void * audioDevice;
+static SDL_AudioDevice* audioDevice = NULL;
 
 static int
 AndroidAUD_OpenDevice(_THIS, const char *devname, int iscapture)
@@ -49,6 +49,11 @@ AndroidAUD_OpenDevice(_THIS, const char *devname, int iscapture)
     }
 
     audioDevice = this;
+    
+    this->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, (sizeof *this->hidden));
+    if (this->hidden == NULL) {
+        return SDL_OutOfMemory();
+    }
 
     test_format = SDL_FirstAudioFormat(this->spec.format);
     while (test_format != 0) { /* no "UNKNOWN" constant */
@@ -110,6 +115,10 @@ AndroidAUD_CloseDevice(_THIS)
     Android_JNI_CloseAudioDevice();
 
     if (audioDevice == this) {
+        if (audioDevice->hidden != NULL) {
+            SDL_free(this->hidden);
+            this->hidden = NULL;
+        }
         audioDevice = NULL;
     }
 }
@@ -134,6 +143,41 @@ AndroidAUD_Init(SDL_AudioDriverImpl * impl)
 AudioBootStrap ANDROIDAUD_bootstrap = {
     "android", "SDL Android audio driver", AndroidAUD_Init, 0
 };
+
+/* Pause (block) all non already paused audio devices by taking their mixer lock */
+void AndroidAUD_PauseDevices(void)
+{
+    /* TODO: Handle multiple devices? */
+    struct SDL_PrivateAudioData *private;
+    if(audioDevice != NULL && audioDevice->hidden != NULL) {
+        private = (struct SDL_PrivateAudioData *) audioDevice->hidden;
+        if (audioDevice->paused) {
+            /* The device is already paused, leave it alone */
+            private->resume = SDL_FALSE;
+        }
+        else {
+            SDL_LockMutex(audioDevice->mixer_lock);
+            audioDevice->paused = SDL_TRUE;
+            private->resume = SDL_TRUE;
+        }
+    }
+}
+
+/* Resume (unblock) all non already paused audio devices by releasing their mixer lock */
+void AndroidAUD_ResumeDevices(void)
+{
+    /* TODO: Handle multiple devices? */
+    struct SDL_PrivateAudioData *private;
+    if(audioDevice != NULL && audioDevice->hidden != NULL) {
+        private = (struct SDL_PrivateAudioData *) audioDevice->hidden;
+        if (private->resume) {
+            audioDevice->paused = SDL_FALSE;
+            private->resume = SDL_FALSE;
+            SDL_UnlockMutex(audioDevice->mixer_lock);
+        }
+    }
+}
+
 
 #endif /* SDL_AUDIO_DRIVER_ANDROID */
 

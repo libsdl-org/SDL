@@ -1348,26 +1348,17 @@ void
 SDL_PauseAudioDevice(SDL_AudioDeviceID devid, int pause_on)
 {
     SDL_AudioDevice *device = get_audio_device(devid);
-    if (device && device->paused != pause_on) {
-        if (pause_on) {
-            current_audio.impl.LockDevice(device);
-        }
+    if (device) {
+        current_audio.impl.LockDevice(device);
         device->paused = pause_on;
-        if (!pause_on) {
-            current_audio.impl.UnlockDevice(device);
-        }
+        current_audio.impl.UnlockDevice(device);
     }
 }
 
 void
 SDL_PauseAudio(int pause_on)
 {
-    int id;
-    for (id = 0; id < SDL_arraysize(open_devices); id++) {
-        if (open_devices[id] != NULL) {
-            SDL_PauseAudioDevice(id+1, pause_on);
-        }
-    }
+    SDL_PauseAudioDevice(1, pause_on);
 }
 
 
