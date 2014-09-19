@@ -137,9 +137,9 @@ Some build settings need to be changed in your app's project.  This guide will
 outline the following:
 
 - making sure that the compiler knows where to find SDL's header files
-- **(optional for C++, but NECESSARY for compiling C code)** telling the
+- **Optional for C++, but NECESSARY for compiling C code:** telling the
   compiler not to use Microsoft's C++ extensions for WinRT development.
-- **(OPTIONAL)** telling the compiler not generate errors due to missing
+- **Optional:** telling the compiler not generate errors due to missing
   precompiled header files.
 
 To change these settings:
@@ -152,12 +152,12 @@ To change these settings:
 6. select "General"
 7. edit the "Additional Include Directories" setting, and add a path to SDL's
    "include" directory
-8. ***Optional: to enable compilation of C code:*** change the setting for
+8. **Optional: to enable compilation of C code:** change the setting for
    "Consume Windows Runtime Extension" from "Yes (/ZW)" to "No".  If you're 
    working with a completely C++ based project, this step can usually be 
    omitted.
-9. ***Optional: to disable precompiled headers (which can produce 
-   'stdafx.h'-related build errors, if setup incorrectly:*** in the left-hand 
+9. **Optional: to disable precompiled headers (which can produce 
+   'stdafx.h'-related build errors, if setup incorrectly:** in the left-hand 
    list, select "Precompiled Headers", then change the setting for "Precompiled 
    Header" from "Use (/Yu)" to "Not Using Precompiled Headers".
 10. close the dialog, saving settings, by clicking the "OK" button
@@ -176,9 +176,9 @@ You'll need to add this file, or a copy of it, to your app's project, and make
 sure it gets compiled using a Microsoft-specific set of C++ extensions called 
 C++/CX.
 
-***NOTE: C++/CX compilation is currently required in at least one file of your 
+**NOTE: C++/CX compilation is currently required in at least one file of your 
 app's project.  This is to make sure that Visual C++'s linker builds a 'Windows 
-Metadata' file (.winmd) for your app.  Not doing so can lead to build errors.***
+Metadata' file (.winmd) for your app.  Not doing so can lead to build errors.**
 
 To include `SDL_winrt_main_NonXAML.cpp`:
 
