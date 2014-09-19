@@ -1,18 +1,18 @@
 WinRT
 =====
 
-SDL/WinRT layer allows SDL2-based applications to run on many of Microsoft's
-platforms that utilize the "Windows Runtime" (aka "WinRT") APIs.  WinRT apps
-are currently always full-screen apps, run in what Microsoft calls their
-"Modern" environment (aka. "Metro"), and are distributed via Microsoft-run
-online stores.  Some of the operating systems that support such apps include:
+This port allows SDL applications to run on Microsoft's platforms that require
+use of "Windows Runtime", aka. "WinRT", APIs.  WinRT apps are currently
+full-screen only, and run in what Microsoft sometimes refers to as their
+"Modern" (formerly, "Metro"), environment.  For Windows 8.x, Microsoft may also
+refer to them as "Windows Store" apps, due to them being distributed,
+primarily, via a Microsoft-run online store (of the same name).
+
+Some of the operating systems that include WinRT, are:
 
 * Windows 8.x
 * Windows RT 8.x (aka. Windows 8.x for ARM processors)
 * Windows Phone 8.x
-
-To note, WinRT applications that run on Windows 8.x and/or Windows RT are often
-called "Windows Store" apps.
 
 
 Requirements
