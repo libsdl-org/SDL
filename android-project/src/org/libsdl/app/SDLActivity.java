@@ -741,6 +741,9 @@ public class SDLActivity extends Activity {
                 }
             }
             button.setText(buttonTexts[i]);
+            if (textColor != Color.TRANSPARENT) {
+                button.setTextColor(textColor);
+            }
             if (buttonBorderColor != Color.TRANSPARENT) {
                 // TODO set color for border of messagebox button
             }
