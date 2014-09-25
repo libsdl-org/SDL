@@ -24,6 +24,7 @@ import android.os.*;
 import android.util.Log;
 import android.util.SparseArray;
 import android.graphics.*;
+import android.graphics.drawable.Drawable;
 import android.media.*;
 import android.hardware.*;
 
@@ -748,7 +749,14 @@ public class SDLActivity extends Activity {
                 // TODO set color for border of messagebox button
             }
             if (buttonBackgroundColor != Color.TRANSPARENT) {
-                button.setBackgroundColor(buttonBackgroundColor);
+                Drawable drawable = button.getBackground();
+                if (drawable == null) {
+                    // setting the color this way removes the style
+                    button.setBackgroundColor(buttonBackgroundColor);
+                } else {
+                    // setting the color this way keeps the style (gradient, padding, etc.)
+                    drawable.setColorFilter(buttonBackgroundColor, PorterDuff.Mode.MULTIPLY);
+                }
             }
             if (buttonSelectedColor != Color.TRANSPARENT) {
                 // TODO set color for selected messagebox button
