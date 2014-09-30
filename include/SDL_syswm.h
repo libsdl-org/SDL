@@ -152,6 +152,10 @@ struct SDL_SysWMmsg
 #if defined(SDL_VIDEO_DRIVER_COCOA)
         struct
         {
+            /* Latest version of Xcode clang complains about empty structs in C v. C++:
+                 error: empty struct has size 0 in C, size 1 in C++
+             */
+            int dummy;
             /* No Cocoa window events yet */
         } cocoa;
 #endif
