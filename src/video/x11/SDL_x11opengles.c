@@ -29,8 +29,8 @@
 /* EGL implementation of SDL OpenGL support */
 
 int
-X11_GLES_LoadLibrary(_THIS, const char *path) {
-        
+X11_GLES_LoadLibrary(_THIS, const char *path)
+{
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
 
     /* If the profile requested is not GL ES, switch over to X11_GL functions  */

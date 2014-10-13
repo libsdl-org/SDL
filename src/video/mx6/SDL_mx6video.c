@@ -48,6 +48,7 @@ static void
 MX6_Destroy(SDL_VideoDevice * device)
 {
     if (device->driverdata != NULL) {
+        SDL_free(device->driverdata);
         device->driverdata = NULL;
     }
 }
@@ -56,7 +57,7 @@ static SDL_VideoDevice *
 MX6_Create()
 {
     SDL_VideoDevice *device;
-    SDL_VideoData *phdata;
+    SDL_VideoData *data;
 
     /* Initialize SDL_VideoDevice structure */
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
@@ -66,14 +67,14 @@ MX6_Create()
     }
 
     /* Initialize internal data */
-    phdata = (SDL_VideoData *) SDL_calloc(1, sizeof(SDL_VideoData));
-    if (phdata == NULL) {
+    data = (SDL_VideoData *) SDL_calloc(1, sizeof(SDL_VideoData));
+    if (data == NULL) {
         SDL_OutOfMemory();
         SDL_free(device);
         return NULL;
     }
 
-    device->driverdata = phdata;
+    device->driverdata = data;
 
     /* Setup amount of available displays and current display */
     device->num_displays = 0;
@@ -185,7 +186,7 @@ MX6_VideoInit(_THIS)
     SDL_EVDEV_Init();
 #endif
 
-    return 1;
+    return 0;
 }
 
 void
@@ -213,31 +214,31 @@ int
 MX6_CreateWindow(_THIS, SDL_Window * window)
 {
     SDL_DisplayData *displaydata;
-    SDL_WindowData *wdata;
+    SDL_WindowData *data;
 
     displaydata = SDL_GetDisplayDriverData(0);
 
     /* Allocate window internal data */
-    wdata = (SDL_WindowData *) SDL_calloc(1, sizeof(SDL_WindowData));
-    if (wdata == NULL) {
+    data = (SDL_WindowData *) SDL_calloc(1, sizeof(SDL_WindowData));
+    if (data == NULL) {
         return SDL_OutOfMemory();
     }
 
     /* Setup driver data for this window */
-    window->driverdata = wdata;
+    window->driverdata = data;
     window->flags |= SDL_WINDOW_OPENGL;
 
     if (!_this->egl_data) {
         return -1;
     }
 
-    wdata->native_window = egl_viv_data->fbCreateWindow(displaydata->native_display, window->x, window->y, window->w, window->h);
-    if (!wdata->native_window) {
+    data->native_window = egl_viv_data->fbCreateWindow(displaydata->native_display, window->x, window->y, window->w, window->h);
+    if (!data->native_window) {
         return SDL_SetError("MX6: Can't create native window");
     }
 
-    wdata->egl_surface = SDL_EGL_CreateSurface(_this, wdata->native_window);
-    if (wdata->egl_surface == EGL_NO_SURFACE) {
+    data->egl_surface = SDL_EGL_CreateSurface(_this, data->native_window);
+    if (data->egl_surface == EGL_NO_SURFACE) {
         return SDL_SetError("MX6: Can't create EGL surface");
     }
 
@@ -248,22 +249,27 @@ MX6_CreateWindow(_THIS, SDL_Window * window)
 void
 MX6_DestroyWindow(_THIS, SDL_Window * window)
 {
-    SDL_WindowData *wdata;
+    SDL_WindowData *data;
 
-    wdata = window->driverdata;
-    if (wdata) {
-        SDL_EGL_DestroySurface(_this, wdata->egl_surface);
-    }
+    data = window->driverdata;
+    if (data) {
+        if (data->egl_surface != EGL_NO_SURFACE) {
+            SDL_EGL_DestroySurface(_this, data->egl_surface);
+        }
 
-    if (egl_viv_data) {
-        egl_viv_data->fbDestroyWindow(wdata->native_window);
+        if (data->native_window) {
+            egl_viv_data->fbDestroyWindow(data->native_window);
+        }
+
+        SDL_free(data);
     }
+    window->driverdata = NULL;
 }
 
 int
 MX6_CreateWindowFrom(_THIS, SDL_Window * window, const void *data)
 {
-    return -1;
+    return SDL_Unsupported();
 }
 
 void

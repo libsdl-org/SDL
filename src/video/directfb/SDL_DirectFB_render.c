@@ -52,7 +52,7 @@
 #define SDL_DFB_RENDERERDATA(rend) DirectFB_RenderData *renddata = ((rend) ? (DirectFB_RenderData *) (rend)->driverdata : NULL)
 
 
-/* GDI renderer implementation */
+/* DirectFB renderer implementation */
 
 static SDL_Renderer *DirectFB_CreateRenderer(SDL_Window * window,
                                              Uint32 flags);
