@@ -238,7 +238,7 @@ DirectFB_VideoInit(_THIS)
 
     if (!devdata->use_linux_input)
     {
-        SDL_DFB_LOG("Disabling linxu input\n");
+        SDL_DFB_LOG("Disabling linux input\n");
         DirectFBSetOption("disable-module", "linux_input");
     }
 
