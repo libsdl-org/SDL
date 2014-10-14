@@ -1330,10 +1330,22 @@ D3D11_IsDisplayRotated90Degrees(DXGI_MODE_ROTATION rotation)
 }
 
 static int
+D3D11_GetRotationForCurrentRenderTarget(SDL_Renderer * renderer)
+{
+    D3D11_RenderData *data = (D3D11_RenderData *)renderer->driverdata;
+    if (data->currentOffscreenRenderTargetView) {
+        return DXGI_MODE_ROTATION_IDENTITY;
+    } else {
+        return data->rotation;
+    }
+}
+
+static int
 D3D11_GetViewportAlignedD3DRect(SDL_Renderer * renderer, const SDL_Rect * sdlRect, D3D11_RECT * outRect)
 {
     D3D11_RenderData *data = (D3D11_RenderData *) renderer->driverdata;
-    switch (data->rotation) {
+    const int rotation = D3D11_GetRotationForCurrentRenderTarget(renderer);
+    switch (rotation) {
         case DXGI_MODE_ROTATION_IDENTITY:
             outRect->left = sdlRect->x;
             outRect->right = sdlRect->x + sdlRect->w;
@@ -2151,6 +2163,7 @@ D3D11_UpdateViewport(SDL_Renderer * renderer)
     SDL_FRect orientationAlignedViewport;
     BOOL swapDimensions;
     D3D11_VIEWPORT viewport;
+    const int rotation = D3D11_GetRotationForCurrentRenderTarget(renderer);
 
     if (renderer->viewport.w == 0 || renderer->viewport.h == 0) {
         /* If the viewport is empty, assume that it is because
@@ -2166,7 +2179,7 @@ D3D11_UpdateViewport(SDL_Renderer * renderer)
      * default coordinate system) so rotations will be done in the opposite
      * direction of the DXGI_MODE_ROTATION enumeration.
      */
-    switch (data->rotation) {
+    switch (rotation) {
         case DXGI_MODE_ROTATION_IDENTITY:
             projection = MatrixIdentity();
             break;
@@ -2217,7 +2230,7 @@ D3D11_UpdateViewport(SDL_Renderer * renderer)
      * a landscape mode, for all Windows 8/RT devices, or a portrait mode,
      * for Windows Phone devices.
      */
-    swapDimensions = D3D11_IsDisplayRotated90Degrees(data->rotation);
+    swapDimensions = D3D11_IsDisplayRotated90Degrees(rotation);
     if (swapDimensions) {
         orientationAlignedViewport.x = (float) renderer->viewport.y;
         orientationAlignedViewport.y = (float) renderer->viewport.x;
