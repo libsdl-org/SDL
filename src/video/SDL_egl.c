@@ -62,7 +62,7 @@
 #endif /* SDL_VIDEO_DRIVER_RPI */
 
 #define LOAD_FUNC(NAME) \
-*((void**)&_this->egl_data->NAME) = SDL_LoadFunction(_this->egl_data->dll_handle, #NAME); \
+_this->egl_data->NAME = SDL_LoadFunction(_this->egl_data->dll_handle, #NAME); \
 if (!_this->egl_data->NAME) \
 { \
     return SDL_SetError("Could not retrieve EGL function " #NAME); \
