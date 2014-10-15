@@ -602,22 +602,33 @@ endmacro(CheckDirectFB)
 
 # Requires:
 # - n/a
-macro(CheckMX6)
-  if(VIDEO_MX6)
+macro(CheckVivante)
+  if(VIDEO_VIVANTE)
     check_c_source_compiles("
+        #include <gc_vdk.h>
+        int main(int argc, char** argv) {}" HAVE_VIDEO_VIVANTE_VDK)
+    check_c_source_compiles("
+        #define LINUX
         #define EGL_API_FB
         #include <EGL/eglvivante.h>
-        int main(int argc, char** argv) {}" HAVE_VIDEO_OPENGL_EGL_VIVANTE)
-    if(HAVE_VIDEO_OPENGL_EGL_VIVANTE)
-      set(HAVE_VIDEO_MX6 TRUE)
+        int main(int argc, char** argv) {}" HAVE_VIDEO_VIVANTE_EGL_FB)
+    if(HAVE_VIDEO_VIVANTE_VDK OR HAVE_VIDEO_VIVANTE_EGL_FB)
+      set(HAVE_VIDEO_VIVANTE TRUE)
       set(HAVE_SDL_VIDEO TRUE)
 
-      file(GLOB MX6_SOURCES ${SDL2_SOURCE_DIR}/src/video/mx6/*.c)
-      set(SOURCE_FILES ${SOURCE_FILES} ${MX6_SOURCES})
-      set(SDL_VIDEO_DRIVER_MX6 1)
-    endif(HAVE_VIDEO_OPENGL_EGL_VIVANTE)
-  endif(VIDEO_MX6)
-endmacro(CheckMX6)
+      file(GLOB VIVANTE_SOURCES ${SDL2_SOURCE_DIR}/src/video/vivante/*.c)
+      set(SOURCE_FILES ${SOURCE_FILES} ${VIVANTE_SOURCES})
+      set(SDL_VIDEO_DRIVER_VIVANTE 1)
+      if(HAVE_VIDEO_VIVANTE_VDK)
+        set(SDL_VIDEO_DRIVER_VIVANTE_VDK 1)
+        list(APPEND EXTRA_LIBS VDK VIVANTE)
+      else
+        set(SDL_CFLAGS "${SDL_CFLAGS} -DLINUX -DEGL_API_FB")
+        list(APPEND EXTRA_LIBS EGL)
+      endif(HAVE_VIDEO_VIVANTE_VDK)
+    endif(HAVE_VIDEO_VIVANTE_VDK OR HAVE_VIDEO_VIVANTE_EGL_FB)
+  endif(VIDEO_VIVANTE)
+endmacro(CheckVivante)
 
 # Requires:
 # - nada

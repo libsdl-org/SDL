@@ -18,28 +18,31 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_MX6
+#ifndef _SDL_vivanteopengles_h
+#define _SDL_vivanteopengles_h
 
-#include "../../events/SDL_sysevents.h"
-#include "../../events/SDL_events_c.h"
-#include "../../events/SDL_keyboard_c.h"
-#include "SDL_mx6video.h"
-#include "SDL_mx6events_c.h"
+#if SDL_VIDEO_DRIVER_VIVANTE && SDL_VIDEO_OPENGL_EGL
 
-#ifdef SDL_INPUT_LINUXEV
-#include "../../core/linux/SDL_evdev.h"
-#endif
+#include "../SDL_sysvideo.h"
+#include "../SDL_egl_c.h"
 
-void MX6_PumpEvents(_THIS)
-{
-#ifdef SDL_INPUT_LINUXEV
-    SDL_EVDEV_Poll();
-#endif
-    
-}
+/* OpenGLES functions */
+#define VIVANTE_GLES_GetAttribute SDL_EGL_GetAttribute
+#define VIVANTE_GLES_GetProcAddress SDL_EGL_GetProcAddress
+#define VIVANTE_GLES_UnloadLibrary SDL_EGL_UnloadLibrary
+#define VIVANTE_GLES_SetSwapInterval SDL_EGL_SetSwapInterval
+#define VIVANTE_GLES_GetSwapInterval SDL_EGL_GetSwapInterval
+#define VIVANTE_GLES_DeleteContext SDL_EGL_DeleteContext
 
-#endif /* SDL_VIDEO_DRIVER_MX6 */
+extern int VIVANTE_GLES_LoadLibrary(_THIS, const char *path);
+extern SDL_GLContext VIVANTE_GLES_CreateContext(_THIS, SDL_Window * window);
+extern void VIVANTE_GLES_SwapWindow(_THIS, SDL_Window * window);
+extern int VIVANTE_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context);
 
+#endif /* SDL_VIDEO_DRIVER_VIVANTE && SDL_VIDEO_OPENGL_EGL */
+
+#endif /* _SDL_vivanteopengles_h */
+
+/* vi: set ts=4 sw=4 expandtab: */
