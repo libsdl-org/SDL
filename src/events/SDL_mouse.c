@@ -430,7 +430,9 @@ SDL_MouseQuit(void)
     SDL_Cursor *cursor, *next;
     SDL_Mouse *mouse = SDL_GetMouse();
 
-    SDL_CaptureMouse(SDL_FALSE);
+    if (mouse->CaptureMouse) {
+        SDL_CaptureMouse(SDL_FALSE);
+    }
     SDL_SetRelativeMouseMode(SDL_FALSE);
     SDL_ShowCursor(1);
 
