@@ -375,7 +375,7 @@ int
 X11_InitModes(_THIS)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
-    int screen, screencount;
+    int snum, screen, screencount;
 #if SDL_VIDEO_DRIVER_X11_XINERAMA
     int xinerama_major, xinerama_minor;
     int use_xinerama = 0;
@@ -423,7 +423,7 @@ X11_InitModes(_THIS)
     }
 #endif /* SDL_VIDEO_DRIVER_X11_XVIDMODE */
 
-    for (screen = 0; screen < screencount; ++screen) {
+    for (snum = 0; snum < screencount; ++snum) {
         XVisualInfo vinfo;
         SDL_VideoDisplay display;
         SDL_DisplayData *displaydata;
@@ -432,6 +432,15 @@ X11_InitModes(_THIS)
         XPixmapFormatValues *pixmapFormats;
         char display_name[128];
         int i, n;
+
+        /* Re-order screens to always put default screen first */
+        if (snum == 0) {
+            screen = DefaultScreen(data->display);
+        } else if (snum == DefaultScreen(data->display)) {
+            screen = 0;
+        } else {
+            screen = snum;
+        }
 
 #if SDL_VIDEO_DRIVER_X11_XINERAMA
         if (xinerama) {
