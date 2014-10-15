@@ -584,6 +584,10 @@ SDL_EVDEV_Poll(void)
     Uint32 kval;
 #endif
 
+    if (!_this) {
+        return;
+    }
+
 #if SDL_USE_LIBUDEV
     SDL_UDEV_Poll();
 #endif
