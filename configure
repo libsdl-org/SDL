@@ -832,7 +832,7 @@ enable_video_x11_xrandr
 enable_video_x11_scrnsaver
 enable_video_x11_xshape
 enable_video_x11_vm
-enable_video_mx6
+enable_video_vivante
 enable_video_cocoa
 enable_video_directfb
 enable_directfb_shared
@@ -841,6 +841,8 @@ enable_fusionsound_shared
 enable_video_dummy
 enable_video_opengl
 enable_video_opengles
+enable_video_opengles1
+enable_video_opengles2
 enable_libudev
 enable_dbus
 enable_ibus
@@ -1562,7 +1564,7 @@ Optional Features:
   --enable-video-x11-xshape
                           enable X11 XShape support [[default=yes]]
   --enable-video-x11-vm   use X11 VM extension for fullscreen [[default=yes]]
-  --enable-video-mx6      use Freescale i.MX6 video driver [[default=no]]
+  --enable-video-vivante  use Vivante EGL video driver [[default=yes]]
   --enable-video-cocoa    use Cocoa video driver [[default=yes]]
   --enable-video-directfb use DirectFB video driver [[default=no]]
   --enable-directfb-shared
@@ -1574,6 +1576,10 @@ Optional Features:
   --enable-video-dummy    use dummy video driver [[default=yes]]
   --enable-video-opengl   include OpenGL support [[default=yes]]
   --enable-video-opengles include OpenGL ES support [[default=yes]]
+  --enable-video-opengles1
+                          include OpenGL ES 1.1 support [[default=yes]]
+  --enable-video-opengles2
+                          include OpenGL ES 2.0 support [[default=yes]]
   --enable-libudev        enable libudev support [[default=yes]]
   --enable-dbus           enable D-Bus support [[default=yes]]
   --enable-ibus           enable IBus support [[default=yes]]
@@ -20593,22 +20599,51 @@ $as_echo "#define SDL_VIDEO_DRIVER_X11_XVIDMODE 1" >>confdefs.h
     fi
 }
 
-CheckMX6Video()
+CheckVivanteVideo()
 {
-    # Check whether --enable-video-mx6 was given.
-if test "${enable_video_mx6+set}" = set; then :
-  enableval=$enable_video_mx6;
+    # Check whether --enable-video-vivante was given.
+if test "${enable_video_vivante+set}" = set; then :
+  enableval=$enable_video_vivante;
 else
-  enable_video_mx6=no
+  enable_video_vivante=yes
 fi
 
-    if test x$enable_video = xyes -a x$enable_video_mx6 = xyes; then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Vivante GPU SDK" >&5
-$as_echo_n "checking for Vivante GPU SDK... " >&6; }
-        have_viv_sdk=no
+    if test x$enable_video = xyes -a x$enable_video_vivante = xyes; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Vivante VDK API" >&5
+$as_echo_n "checking for Vivante VDK API... " >&6; }
+        have_vivante_vdk=no
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
+          #define LINUX
+          #define EGL_API_FB
+          #include <gc_vdk.h>
+
+int
+main ()
+{
+
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+        have_vivante_vdk=yes
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_vivante_vdk" >&5
+$as_echo "$have_vivante_vdk" >&6; }
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Vivante FB API" >&5
+$as_echo_n "checking for Vivante FB API... " >&6; }
+        have_vivante_egl=no
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+          #define LINUX
           #define EGL_API_FB
           #include <EGL/eglvivante.h>
 
@@ -20623,18 +20658,26 @@ main ()
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
 
-        have_viv_sdk=yes
+        have_vivante_egl=yes
 
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_viv_sdk" >&5
-$as_echo "$have_viv_sdk" >&6; }
-        if test x$have_viv_sdk = xyes; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_vivante_egl" >&5
+$as_echo "$have_vivante_egl" >&6; }
 
-$as_echo "#define SDL_VIDEO_DRIVER_MX6 1" >>confdefs.h
+        if test x$have_vivante_vdk = xyes -o x$have_vivante_egl = xyes; then
 
-            SOURCES="$SOURCES $srcdir/src/video/mx6/*.c"
-            SUMMARY_video="${SUMMARY_video} mx6"
+$as_echo "#define SDL_VIDEO_DRIVER_VIVANTE 1" >>confdefs.h
+
+            EXTRA_CFLAGS="$EXTRA_CFLAGS -DLINUX -DEGL_API_FB"
+            if test x$have_vivante_vdk = xyes; then
+
+$as_echo "#define SDL_VIDEO_DRIVER_VIVANTE_VDK 1" >>confdefs.h
+
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lVDK"
+            fi
+            SOURCES="$SOURCES $srcdir/src/video/vivante/*.c"
+            SUMMARY_video="${SUMMARY_video} vivante"
             have_video=yes
         fi
     fi
@@ -21083,6 +21126,20 @@ else
   enable_video_opengles=yes
 fi
 
+# Check whether --enable-video-opengles1 was given.
+if test "${enable_video_opengles1+set}" = set; then :
+  enableval=$enable_video_opengles1;
+else
+  enable_video_opengles1=yes
+fi
+
+# Check whether --enable-video-opengles2 was given.
+if test "${enable_video_opengles2+set}" = set; then :
+  enableval=$enable_video_opengles2;
+else
+  enable_video_opengles2=yes
+fi
+
 
 CheckOpenGLESX11()
 {
@@ -21093,9 +21150,10 @@ $as_echo_n "checking for EGL support... " >&6; }
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-         #define EGL_API_FB
-         #include <EGL/egl.h>
-         #include <EGL/eglext.h>
+          #define LINUX
+          #define EGL_API_FB
+          #include <EGL/egl.h>
+          #include <EGL/eglext.h>
 
 int
 main ()
@@ -21120,14 +21178,15 @@ $as_echo "#define SDL_VIDEO_OPENGL_EGL 1" >>confdefs.h
 
         fi
 
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenGL ES v1 headers" >&5
+        if test x$enable_video_opengles1 = xyes; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenGL ES v1 headers" >&5
 $as_echo_n "checking for OpenGL ES v1 headers... " >&6; }
-        video_opengles_v1=no
-        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+            video_opengles_v1=no
+            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-         #include <GLES/gl.h>
-         #include <GLES/glext.h>
+             #include <GLES/gl.h>
+             #include <GLES/glext.h>
 
 int
 main ()
@@ -21140,30 +21199,32 @@ main ()
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
 
-        video_opengles_v1=yes
+            video_opengles_v1=yes
 
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengles_v1" >&5
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengles_v1" >&5
 $as_echo "$video_opengles_v1" >&6; }
-        if test x$video_opengles_v1 = xyes; then
+            if test x$video_opengles_v1 = xyes; then
 
 $as_echo "#define SDL_VIDEO_OPENGL_ES 1" >>confdefs.h
 
 
 $as_echo "#define SDL_VIDEO_RENDER_OGL_ES 1" >>confdefs.h
 
-            SUMMARY_video="${SUMMARY_video} opengl_es1"
+                SUMMARY_video="${SUMMARY_video} opengl_es1"
+            fi
         fi
 
-        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenGL ES v2 headers" >&5
+        if test x$enable_video_opengles2 = xyes; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenGL ES v2 headers" >&5
 $as_echo_n "checking for OpenGL ES v2 headers... " >&6; }
-        video_opengles_v2=no
-        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+            video_opengles_v2=no
+            cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-         #include <GLES2/gl2.h>
-         #include <GLES2/gl2ext.h>
+             #include <GLES2/gl2.h>
+             #include <GLES2/gl2ext.h>
 
 int
 main ()
@@ -21176,20 +21237,21 @@ main ()
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
 
-        video_opengles_v2=yes
+            video_opengles_v2=yes
 
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengles_v2" >&5
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengles_v2" >&5
 $as_echo "$video_opengles_v2" >&6; }
-        if test x$video_opengles_v2 = xyes; then
+            if test x$video_opengles_v2 = xyes; then
 
 $as_echo "#define SDL_VIDEO_OPENGL_ES2 1" >>confdefs.h
 
 
 $as_echo "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
 
-            SUMMARY_video="${SUMMARY_video} opengl_es2"
+                SUMMARY_video="${SUMMARY_video} opengl_es2"
+            fi
         fi
     fi
 }
@@ -21657,10 +21719,10 @@ else
 fi
 
     case "$host" in
-	 *-*-androideabi*)
+         *-*-androideabi*)
             pthread_cflags="-D_REENTRANT -D_THREAD_SAFE"
             pthread_lib=""
-	    ;;
+            ;;
         *-*-linux*|*-*-uclinux*)
             pthread_cflags="-D_REENTRANT"
             pthread_lib="-lpthread"
@@ -22868,7 +22930,7 @@ case "$host" in
         CheckClockGettime
         CheckLinuxVersion
         CheckRPATH
-        CheckMX6Video
+        CheckVivanteVideo
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
           case $ARCH in
