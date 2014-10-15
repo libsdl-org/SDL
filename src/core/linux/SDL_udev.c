@@ -25,17 +25,18 @@
  * udevadm info --query=all -n input/event3 (for a keyboard, mouse, etc)
  * udevadm info --query=property -n input/event2
  */
-
 #include "SDL_udev.h"
 
 #ifdef SDL_USE_LIBUDEV
+
+#include <linux/input.h>
+
+#include "SDL.h"
 
 static char* SDL_UDEV_LIBS[] = { "libudev.so.1", "libudev.so.0" };
 
 #define _THIS SDL_UDEV_PrivateData *_this
 static _THIS = NULL;
-
-#include "SDL.h"
 
 static SDL_bool SDL_UDEV_load_sym(const char *fn, void **addr);
 static int SDL_UDEV_load_syms(void);
@@ -64,7 +65,9 @@ SDL_UDEV_load_syms(void)
     SDL_UDEV_SYM(udev_device_get_action);
     SDL_UDEV_SYM(udev_device_get_devnode);
     SDL_UDEV_SYM(udev_device_get_subsystem);
+    SDL_UDEV_SYM(udev_device_get_parent_with_subsystem_devtype);
     SDL_UDEV_SYM(udev_device_get_property_value);
+    SDL_UDEV_SYM(udev_device_get_sysattr_value);
     SDL_UDEV_SYM(udev_device_new_from_syspath);
     SDL_UDEV_SYM(udev_device_unref);
     SDL_UDEV_SYM(udev_enumerate_add_match_property);
@@ -274,6 +277,109 @@ SDL_UDEV_LoadLibrary(void)
     return retval;
 }
 
+#define BITS_PER_LONG           (sizeof(unsigned long) * 8)
+#define NBITS(x)                ((((x)-1)/BITS_PER_LONG)+1)
+#define OFF(x)                  ((x)%BITS_PER_LONG)
+#define BIT(x)                  (1UL<<OFF(x))
+#define LONG(x)                 ((x)/BITS_PER_LONG)
+#define test_bit(bit, array)    ((array[LONG(bit)] >> OFF(bit)) & 1)
+
+static void get_caps(struct udev_device *dev, struct udev_device *pdev, const char *attr, unsigned long *bitmask, size_t bitmask_len)
+{
+    const char *value;
+    char text[4096];
+    char *word;
+    int i;
+    unsigned long v;
+
+    SDL_memset(bitmask, 0, bitmask_len*sizeof(*bitmask));
+    value = _this->udev_device_get_sysattr_value(pdev, attr);
+    if (!value) {
+        return;
+    }
+
+    SDL_strlcpy(text, value, sizeof(text));
+    i = 0;
+    while ((word = SDL_strrchr(text, ' ')) != NULL) {
+        v = SDL_strtoul(word+1, NULL, 16);
+        if (i < bitmask_len) {
+            bitmask[i] = v;
+        }
+        ++i;
+        *word = '\0';
+    }
+    v = SDL_strtoul(text, NULL, 16);
+    if (i < bitmask_len) {
+        bitmask[i] = v;
+    }
+}
+
+static int
+guess_device_class(struct udev_device *dev)
+{
+    int devclass = 0;
+    struct udev_device *pdev;
+    unsigned long bitmask_ev[NBITS(EV_MAX)];
+    unsigned long bitmask_abs[NBITS(ABS_MAX)];
+    unsigned long bitmask_key[NBITS(KEY_MAX)];
+    unsigned long bitmask_rel[NBITS(REL_MAX)];
+    unsigned long keyboard_mask;
+
+    /* walk up the parental chain until we find the real input device; the
+     * argument is very likely a subdevice of this, like eventN */
+    pdev = dev;
+    while (pdev && !_this->udev_device_get_sysattr_value(pdev, "capabilities/ev")) {
+        pdev = _this->udev_device_get_parent_with_subsystem_devtype(pdev, "input", NULL);
+    }
+    if (!pdev) {
+        return 0;
+    }
+
+    get_caps(dev, pdev, "capabilities/ev", bitmask_ev, SDL_arraysize(bitmask_ev));
+    get_caps(dev, pdev, "capabilities/abs", bitmask_abs, SDL_arraysize(bitmask_abs));
+    get_caps(dev, pdev, "capabilities/rel", bitmask_rel, SDL_arraysize(bitmask_rel));
+    get_caps(dev, pdev, "capabilities/key", bitmask_key, SDL_arraysize(bitmask_key));
+
+    if (test_bit(EV_ABS, bitmask_ev) &&
+        test_bit(ABS_X, bitmask_abs) && test_bit(ABS_Y, bitmask_abs)) {
+        if (test_bit(BTN_STYLUS, bitmask_key) || test_bit(BTN_TOOL_PEN, bitmask_key)) {
+            ; /* ID_INPUT_TABLET */
+        } else if (test_bit(BTN_TOOL_FINGER, bitmask_key) && !test_bit(BTN_TOOL_PEN, bitmask_key)) {
+            ; /* ID_INPUT_TOUCHPAD */
+        } else if (test_bit(BTN_MOUSE, bitmask_key)) {
+            devclass |= SDL_UDEV_DEVICE_MOUSE; /* ID_INPUT_MOUSE */
+        } else if (test_bit(BTN_TOUCH, bitmask_key)) {
+            ; /* ID_INPUT_TOUCHSCREEN */
+        } else if (test_bit(BTN_TRIGGER, bitmask_key) ||
+                 test_bit(BTN_A, bitmask_key) ||
+                 test_bit(BTN_1, bitmask_key) ||
+                 test_bit(ABS_RX, bitmask_abs) ||
+                 test_bit(ABS_RY, bitmask_abs) ||
+                 test_bit(ABS_RZ, bitmask_abs) ||
+                 test_bit(ABS_THROTTLE, bitmask_abs) ||
+                 test_bit(ABS_RUDDER, bitmask_abs) ||
+                 test_bit(ABS_WHEEL, bitmask_abs) ||
+                 test_bit(ABS_GAS, bitmask_abs) ||
+                 test_bit(ABS_BRAKE, bitmask_abs)) {
+            devclass |= SDL_UDEV_DEVICE_JOYSTICK; /* ID_INPUT_JOYSTICK */
+        }
+    }
+
+    if (test_bit(EV_REL, bitmask_ev) &&
+        test_bit(REL_X, bitmask_rel) && test_bit(REL_Y, bitmask_rel) &&
+        test_bit(BTN_MOUSE, bitmask_key)) {
+        devclass |= SDL_UDEV_DEVICE_MOUSE; /* ID_INPUT_MOUSE */
+    }
+
+    /* the first 32 bits are ESC, numbers, and Q to D; if we have all of
+     * those, consider it a full keyboard; do not test KEY_RESERVED, though */
+    keyboard_mask = 0xFFFFFFFE;
+    if ((bitmask_key[0] & keyboard_mask) == keyboard_mask)
+        devclass |= SDL_UDEV_DEVICE_KEYBOARD; /* ID_INPUT_KEYBOARD */
+
+    return devclass;
+}
+
 static void 
 device_event(SDL_UDEV_deviceevent type, struct udev_device *dev) 
 {
@@ -308,7 +414,7 @@ device_event(SDL_UDEV_deviceevent type, struct udev_device *dev)
         }
 
         if (devclass == 0) {
-            // Fall back to old style input classes
+            /* Fall back to old style input classes */
             val = _this->udev_device_get_property_value(dev, "ID_CLASS");
             if (val != NULL) {
                 if (SDL_strcmp(val, "joystick") == 0) {
@@ -321,7 +427,8 @@ device_event(SDL_UDEV_deviceevent type, struct udev_device *dev)
                     return;
                 }
             } else {
-                return;
+                /* We could be linked with libudev on a system that doesn't have udev running */
+                devclass = guess_device_class(dev);
             }
         }
     } else {
