@@ -18,14 +18,27 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include "../../SDL_internal.h"
 
-#ifndef _SDL_mx6events_c_h
-#define _SDL_mx6events_c_h
+#ifndef _SDL_vivanteplatform_h
+#define _SDL_vivanteplatform_h
 
-#include "SDL_mx6video.h"
+#if SDL_VIDEO_DRIVER_VIVANTE
 
-void MX6_PumpEvents(_THIS);
-void MX6_EventInit(_THIS);
-void MX6_EventQuit(_THIS);
+#include "SDL_vivantevideo.h"
 
-#endif /* _SDL_mx6events_c_h */
+#if defined(CAVIUM)
+#define VIVANTE_PLATFORM_CAVIUM
+#elif defined(MARVELL)
+#define VIVANTE_PLATFORM_MARVELL
+#else
+#define VIVANTE_PLATFORM_GENERIC
+#endif
+
+extern int VIVANTE_SetupPlatform(_THIS);
+
+#endif /* SDL_VIDEO_DRIVER_VIVANTE */
+
+#endif /* _SDL_vivanteplatform_h */
+
+/* vi: set ts=4 sw=4 expandtab: */
