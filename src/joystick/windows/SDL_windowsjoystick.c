@@ -46,7 +46,9 @@
 #include "../../events/SDL_events_c.h"
 #endif
 #include "../../core/windows/SDL_windows.h"
+#if !defined(__WINRT__)
 #include <dbt.h>
+#endif
 
 #define INITGUID /* Only set here, if set twice will cause mingw32 to break. */
 #include "SDL_windowsjoystick_c.h"
