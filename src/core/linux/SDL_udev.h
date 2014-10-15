@@ -75,7 +75,9 @@ typedef struct SDL_UDEV_PrivateData
     const char *(*udev_device_get_action)(struct udev_device *);
     const char *(*udev_device_get_devnode)(struct udev_device *);
     const char *(*udev_device_get_subsystem)(struct udev_device *);
+	struct udev_device *(*udev_device_get_parent_with_subsystem_devtype)(struct udev_device *udev_device, const char *subsystem, const char *devtype);
     const char *(*udev_device_get_property_value)(struct udev_device *, const char *);
+	const char *(*udev_device_get_sysattr_value)(struct udev_device *udev_device, const char *sysattr);
     struct udev_device *(*udev_device_new_from_syspath)(struct udev *, const char *);
     void (*udev_device_unref)(struct udev_device *);
     int (*udev_enumerate_add_match_property)(struct udev_enumerate *, const char *, const char *);
