@@ -398,6 +398,8 @@ device_event(SDL_UDEV_deviceevent type, struct udev_device *dev)
     if (SDL_strcmp(subsystem, "sound") == 0) {
         devclass = SDL_UDEV_DEVICE_SOUND;
     } else if (SDL_strcmp(subsystem, "input") == 0) {
+        /* udev rules reference: http://cgit.freedesktop.org/systemd/systemd/tree/src/udev/udev-builtin-input_id.c */
+        
         val = _this->udev_device_get_property_value(dev, "ID_INPUT_JOYSTICK");
         if (val != NULL && SDL_strcmp(val, "1") == 0 ) {
             devclass |= SDL_UDEV_DEVICE_JOYSTICK;
@@ -408,7 +410,13 @@ device_event(SDL_UDEV_deviceevent type, struct udev_device *dev)
             devclass |= SDL_UDEV_DEVICE_MOUSE;
         }
 
-        val = _this->udev_device_get_property_value(dev, "ID_INPUT_KEYBOARD");
+        /* The undocumented rule is:
+           - All devices with keys get ID_INPUT_KEY
+           - From this subset, if they have ESC, numbers, and Q to D, it also gets ID_INPUT_KEYBOARD
+           
+           Ref: http://cgit.freedesktop.org/systemd/systemd/tree/src/udev/udev-builtin-input_id.c#n183
+        */
+        val = _this->udev_device_get_property_value(dev, "ID_INPUT_KEY");
         if (val != NULL && SDL_strcmp(val, "1") == 0 ) {
             devclass |= SDL_UDEV_DEVICE_KEYBOARD;
         }
