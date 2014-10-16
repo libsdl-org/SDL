@@ -26,9 +26,15 @@
 
 #ifdef VIVANTE_PLATFORM_GENERIC
 
-int VIVANTE_SetupPlatform(_THIS)
+int
+VIVANTE_SetupPlatform(_THIS)
 {
     return 0;
+}
+
+void
+VIVANTE_CleanupPlatform(_THIS)
+{
 }
 
 #endif /* VIVANTE_PLATFORM_GENERIC */

@@ -226,6 +226,8 @@ VIVANTE_VideoQuit(_THIS)
     SDL_EVDEV_Quit();
 #endif
 
+    VIVANTE_CleanupPlatform(_this);
+
 #if SDL_VIDEO_DRIVER_VIVANTE_VDK
     if (videodata->vdk_private) {
         vdkExit(videodata->vdk_private);
