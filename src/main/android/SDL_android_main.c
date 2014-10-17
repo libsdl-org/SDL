@@ -19,7 +19,7 @@ extern void SDL_Android_Init(JNIEnv* env, jclass cls);
 /* Start up the SDL app */
 int Java_org_libsdl_app_SDLActivity_nativeInit(JNIEnv* env, jclass cls, jobject obj)
 {
-    /* This interface could expand with ABI negotiation, calbacks, etc. */
+    /* This interface could expand with ABI negotiation, callbacks, etc. */
     SDL_Android_Init(env, cls);
 
     SDL_SetMainReady();
