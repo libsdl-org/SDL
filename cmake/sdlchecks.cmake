@@ -622,7 +622,7 @@ macro(CheckVivante)
       if(HAVE_VIDEO_VIVANTE_VDK)
         set(SDL_VIDEO_DRIVER_VIVANTE_VDK 1)
         list(APPEND EXTRA_LIBS VDK VIVANTE)
-      else
+      else()
         set(SDL_CFLAGS "${SDL_CFLAGS} -DLINUX -DEGL_API_FB")
         list(APPEND EXTRA_LIBS EGL)
       endif(HAVE_VIDEO_VIVANTE_VDK)
