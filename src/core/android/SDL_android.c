@@ -77,6 +77,7 @@ static jmethodID midAudioWriteShortBuffer;
 static jmethodID midAudioWriteByteBuffer;
 static jmethodID midAudioQuit;
 static jmethodID midPollInputDevices;
+static jmethodID midSuspendScreenSaver;
 
 /* Accelerometer data storage */
 static float fLastAccelerometer[3];
@@ -131,6 +132,8 @@ JNIEXPORT void JNICALL SDL_Android_Init(JNIEnv* mEnv, jclass cls)
                                 "audioQuit", "()V");
     midPollInputDevices = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
                                 "pollInputDevices", "()V");
+    midSuspendScreenSaver = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
+                                "suspendScreenSaver", "(Z)V");
 
     bHasNewData = false;
 
@@ -444,7 +447,13 @@ static void LocalReferenceHolder_Cleanup(struct LocalReferenceHolder *refholder)
 
 static SDL_bool LocalReferenceHolder_IsActive()
 {
-    return s_active > 0;    
+    return s_active > 0;
+}
+
+void Android_JNI_SuspendScreenSaver(SDL_bool suspend)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    (*env)->CallStaticObjectMethod(env, mActivityClass, midSuspendScreenSaver, suspend);
 }
 
 ANativeWindow* Android_JNI_GetNativeWindow(void)
