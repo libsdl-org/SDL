@@ -187,6 +187,13 @@ public class SDLActivity extends Activity {
         return super.dispatchKeyEvent(event);
     }
 
+    public static void suspendScreenSaver(boolean suspend) {
+        if (suspend)
+            mSingleton.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        else
+            mSingleton.getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+    }
+
     /** Called by onPause or surfaceDestroyed. Even if surfaceDestroyed
      *  is the first to be called, mIsSurfaceReady should still be set
      *  to 'true' during the call to onPause (in a usual scenario).
