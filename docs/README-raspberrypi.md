@@ -151,6 +151,23 @@ this determining the CAPS LOCK behavior:
     sudo dpkg-reconfigure locales
 
 ================================================================================
+ OpenGL problems
+================================================================================
+
+If you have desktop OpenGL headers installed at build time in your RPi or cross 
+compilation environment, support for it will be built in. However, the chipset 
+does not actually have support for it, which causes issues in certain SDL apps 
+since the presence of OpenGL support supersedes the ES/ES2 variants.
+The workaround is to disable OpenGL at configuration time:
+
+    ./configure --disable-video-opengl
+
+Or if the application uses the Render functions, you can use the SDL_RENDER_DRIVER
+environment variable:
+
+    export SDL_RENDER_DRIVER=opengles2
+
+================================================================================
  Notes
 ================================================================================
 
