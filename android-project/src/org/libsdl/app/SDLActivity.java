@@ -132,7 +132,7 @@ public class SDLActivity extends Activity {
                         SDLActivity.mSingleton.finish();
                     }
                 });
-           dlgAlert.setCancelable(true);
+           dlgAlert.setCancelable(false);
            dlgAlert.create().show();
 
            return;
