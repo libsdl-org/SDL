@@ -37,6 +37,8 @@ public class SDLActivity extends Activity {
     // Keep track of the paused state
     public static boolean mIsPaused, mIsSurfaceReady, mHasFocus;
     public static boolean mExitCalledFromJava;
+
+    /** If shared libraries (e.g. SDL or the native application) could not be loaded. */
     public static boolean mBrokenLibraries;
 
     // Main components
