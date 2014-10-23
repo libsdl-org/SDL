@@ -112,10 +112,10 @@ public class SDLActivity extends Activity {
         try {
             loadLibraries();
         } catch(UnsatisfiedLinkError e) {
-            System.out.println(e.getMessage());
+            System.err.println(e.getMessage());
             mBrokenLibraries = true;
         } catch(Exception e) {
-            System.out.println(e.getMessage());
+            System.err.println(e.getMessage());
             mBrokenLibraries = true;
         }
 
