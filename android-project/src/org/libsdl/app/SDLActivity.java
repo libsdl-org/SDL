@@ -124,7 +124,7 @@ public class SDLActivity extends Activity {
             AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(this);
             dlgAlert.setMessage("An error occurred while trying to start the application. Please try again and/or reinstall.");
             dlgAlert.setTitle("SDL Error");
-            dlgAlert.setPositiveButton("EXIT",
+            dlgAlert.setPositiveButton("Exit",
                 new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog,int id) {
                         // if this button is clicked, close current activity
