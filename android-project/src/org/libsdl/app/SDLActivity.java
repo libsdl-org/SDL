@@ -126,6 +126,7 @@ public class SDLActivity extends Activity {
             dlgAlert.setTitle("SDL Error");
             dlgAlert.setPositiveButton("Exit",
                 new DialogInterface.OnClickListener() {
+                    @Override
                     public void onClick(DialogInterface dialog,int id) {
                         // if this button is clicked, close current activity
                         SDLActivity.mSingleton.finish();
