@@ -39,7 +39,6 @@
 static int forward_argc;
 static char **forward_argv;
 static int exit_status;
-static UIWindow *launch_window;
 
 int main(int argc, char **argv)
 {
@@ -75,86 +74,6 @@ SDL_IdleTimerDisabledChanged(void *userdata, const char *name, const char *oldVa
     [UIApplication sharedApplication].idleTimerDisabled = disable;
 }
 
-@interface SDL_splashviewcontroller : UIViewController
-
-- (void)updateSplashImage:(UIInterfaceOrientation)interfaceOrientation;
-
-@end
-
-@implementation SDL_splashviewcontroller {
-    UIImageView *splash;
-    UIImage *splashPortrait;
-    UIImage *splashLandscape;
-}
-
-- (id)init
-{
-    self = [super init];
-    if (self == nil) {
-        return nil;
-    }
-
-    splash = [[UIImageView alloc] init];
-    self.view = splash;
-
-    CGSize size = [UIScreen mainScreen].bounds.size;
-    float height = SDL_max(size.width, size.height);
-    splashPortrait = [UIImage imageNamed:[NSString stringWithFormat:@"Default-%dh.png", (int)height]];
-    if (!splashPortrait) {
-        splashPortrait = [UIImage imageNamed:@"Default.png"];
-    }
-    splashLandscape = [UIImage imageNamed:@"Default-Landscape.png"];
-    if (!splashLandscape && splashPortrait) {
-        splashLandscape = [[UIImage alloc] initWithCGImage: splashPortrait.CGImage
-                                                     scale: 1.0
-                                               orientation: UIImageOrientationRight];
-    }
-
-    [self updateSplashImage:[[UIApplication sharedApplication] statusBarOrientation]];
-
-    return self;
-}
-
-- (NSUInteger)supportedInterfaceOrientations
-{
-    NSUInteger orientationMask = UIInterfaceOrientationMaskAll;
-
-    /* Don't allow upside-down orientation on the phone, so answering calls is in the natural orientation */
-    if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
-        orientationMask &= ~UIInterfaceOrientationMaskPortraitUpsideDown;
-    }
-    return orientationMask;
-}
-
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)orient
-{
-    NSUInteger orientationMask = [self supportedInterfaceOrientations];
-    return (orientationMask & (1 << orient));
-}
-
-- (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)interfaceOrientation duration:(NSTimeInterval)duration
-{
-    [self updateSplashImage:interfaceOrientation];
-}
-
-- (void)updateSplashImage:(UIInterfaceOrientation)interfaceOrientation
-{
-    UIImage *image;
-
-    if (UIInterfaceOrientationIsLandscape(interfaceOrientation)) {
-        image = splashLandscape;
-    } else {
-        image = splashPortrait;
-    }
-
-    if (image) {
-        splash.image = image;
-    }
-}
-
-@end
-
-
 @implementation SDLUIKitDelegate
 
 /* convenience method */
@@ -184,11 +103,6 @@ SDL_IdleTimerDisabledChanged(void *userdata, const char *name, const char *oldVa
     exit_status = SDL_main(forward_argc, forward_argv);
     SDL_iPhoneSetEventPump(SDL_FALSE);
 
-    /* If we showed a splash image, clean it up */
-    if (launch_window) {
-        launch_window = nil;
-    }
-
     /* exit, passing the return status from the user's application */
     /* We don't actually exit to support applications that do setup in
      * their main function and then allow the Cocoa event loop to run.
@@ -198,20 +112,6 @@ SDL_IdleTimerDisabledChanged(void *userdata, const char *name, const char *oldVa
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-    /* Keep the launch image up until we set a video mode */
-
-    /* This is disabled temporarily because the splash viewcontroller is
-     * interfering with rotation once a regular window is created: the view's
-     * orientations are incorrect and the status bar rotates without the view.
-     * Additionally, the splash viewcontroller doesn't load the correct launch
-     * images on iOS 7 and modern devices. */
-    /*launch_window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-
-    UIViewController *splashViewController = [[SDL_splashviewcontroller alloc] init];
-    launch_window.rootViewController = splashViewController;
-    [launch_window addSubview:splashViewController.view];
-    [launch_window makeKeyAndVisible];*/
-
     /* Set working directory to resource path */
     [[NSFileManager defaultManager] changeCurrentDirectoryPath: [[NSBundle mainBundle] resourcePath]];
 
