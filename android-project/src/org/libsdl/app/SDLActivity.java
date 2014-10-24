@@ -119,20 +119,26 @@ public class SDLActivity extends Activity {
         mSingleton = this;
 
         // Load shared libraries
+        String errorMsgBrokenLib = "";
         try {
             loadLibraries();
         } catch(UnsatisfiedLinkError e) {
             System.err.println(e.getMessage());
             mBrokenLibraries = true;
+            errorMsgBrokenLib = e.getMessage();
         } catch(Exception e) {
             System.err.println(e.getMessage());
             mBrokenLibraries = true;
+            errorMsgBrokenLib = e.getMessage();
         }
 
         if (mBrokenLibraries)
         {
             AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(this);
-            dlgAlert.setMessage("An error occurred while trying to start the application. Please try again and/or reinstall.");
+            dlgAlert.setMessage("An error occurred while trying to start the application. Please try again and/or reinstall."
+                  + System.getProperty("line.separator")
+                  + System.getProperty("line.separator")
+                  + "Error: " + errorMsgBrokenLib);
             dlgAlert.setTitle("SDL Error");
             dlgAlert.setPositiveButton("Exit",
                 new DialogInterface.OnClickListener() {
