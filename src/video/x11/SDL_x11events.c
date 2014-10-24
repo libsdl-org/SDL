@@ -511,7 +511,6 @@ static void
 ReconcileKeyboardState(_THIS, const SDL_WindowData *data)
 {
     SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
-    SDL_Window* window = data->window;
     Display *display = viddata->display;
     char keys[32];
     int keycode = 0;
