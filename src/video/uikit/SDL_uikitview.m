@@ -41,9 +41,6 @@ void _uikit_keyboard_init();
 
     SDL_TouchID touchId;
     UITouch *leftFingerDown;
-#ifndef IPHONE_TOUCH_EFFICIENT_DANGEROUS
-    UITouch *finger[MAX_SIMULTANEOUS_TOUCHES];
-#endif
 
 #if SDL_IPHONE_KEYBOARD
     UITextField *textField;
@@ -99,24 +96,8 @@ void _uikit_keyboard_init();
         }
 
         CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
-#ifdef IPHONE_TOUCH_EFFICIENT_DANGEROUS
-        /* FIXME: TODO: Using touch as the fingerId is potentially dangerous
-         * It is also much more efficient than storing the UITouch pointer
-         * and comparing it to the incoming event.
-         */
         SDL_SendTouch(touchId, (SDL_FingerID)((size_t)touch),
                       SDL_TRUE, locationInView.x, locationInView.y, 1.0f);
-#else
-        int i;
-        for(i = 0; i < MAX_SIMULTANEOUS_TOUCHES; i++) {
-            if (finger[i] == NULL) {
-                finger[i] = touch;
-                SDL_SendTouch(touchId, i,
-                              SDL_TRUE, locationInView.x, locationInView.y, 1.0f);
-                break;
-            }
-        }
-#endif
     }
 }
 
@@ -130,20 +111,8 @@ void _uikit_keyboard_init();
         }
 
         CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
-#ifdef IPHONE_TOUCH_EFFICIENT_DANGEROUS
         SDL_SendTouch(touchId, (SDL_FingerID)((size_t)touch),
                       SDL_FALSE, locationInView.x, locationInView.y, 1.0f);
-#else
-        int i;
-        for (i = 0; i < MAX_SIMULTANEOUS_TOUCHES; i++) {
-            if (finger[i] == touch) {
-                SDL_SendTouch(touchId, i,
-                              SDL_FALSE, locationInView.x, locationInView.y, 1.0f);
-                finger[i] = NULL;
-                break;
-            }
-        }
-#endif
     }
 }
 
@@ -168,19 +137,8 @@ void _uikit_keyboard_init();
         }
 
         CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
-#ifdef IPHONE_TOUCH_EFFICIENT_DANGEROUS
         SDL_SendTouchMotion(touchId, (SDL_FingerID)((size_t)touch),
                             locationInView.x, locationInView.y, 1.0f);
-#else
-        int i;
-        for (i = 0; i < MAX_SIMULTANEOUS_TOUCHES; i++) {
-            if (finger[i] == touch) {
-                SDL_SendTouchMotion(touchId, i,
-                                    locationInView.x, locationInView.y, 1.0f);
-                break;
-            }
-        }
-#endif
     }
 }
 
