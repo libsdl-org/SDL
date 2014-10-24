@@ -24,12 +24,6 @@
 
 #include "SDL_touch.h"
 
-#define IPHONE_TOUCH_EFFICIENT_DANGEROUS
-
-#ifndef IPHONE_TOUCH_EFFICIENT_DANGEROUS
-#define MAX_SIMULTANEOUS_TOUCHES 5
-#endif
-
 #if SDL_IPHONE_KEYBOARD
 @interface SDL_uikitview : UIView <UITextFieldDelegate>
 #else
