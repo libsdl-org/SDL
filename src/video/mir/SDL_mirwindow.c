@@ -186,9 +186,9 @@ MIR_SetWindowFullscreen(_THIS, SDL_Window* window,
         return;
 
     if (fullscreen) {
-        MIR_mir_surface_set_type(mir_window->surface, mir_surface_state_fullscreen);
+        MIR_mir_surface_set_state(mir_window->surface, mir_surface_state_fullscreen);
     } else {
-        MIR_mir_surface_set_type(mir_window->surface, mir_surface_state_restored);
+        MIR_mir_surface_set_state(mir_window->surface, mir_surface_state_restored);
     }
 }
 
@@ -200,7 +200,7 @@ MIR_MaximizeWindow(_THIS, SDL_Window* window)
     if (IsSurfaceValid(mir_window) < 0)
         return;
 
-    MIR_mir_surface_set_type(mir_window->surface, mir_surface_state_maximized);
+    MIR_mir_surface_set_state(mir_window->surface, mir_surface_state_maximized);
 }
 
 void
@@ -211,7 +211,7 @@ MIR_MinimizeWindow(_THIS, SDL_Window* window)
     if (IsSurfaceValid(mir_window) < 0)
         return;
 
-    MIR_mir_surface_set_type(mir_window->surface, mir_surface_state_minimized);
+    MIR_mir_surface_set_state(mir_window->surface, mir_surface_state_minimized);
 }
 
 void
@@ -222,7 +222,7 @@ MIR_RestoreWindow(_THIS, SDL_Window * window)
     if (IsSurfaceValid(mir_window) < 0)
         return;
 
-    MIR_mir_surface_set_type(mir_window->surface, mir_surface_state_restored);
+    MIR_mir_surface_set_state(mir_window->surface, mir_surface_state_restored);
 }
 
 #endif /* SDL_VIDEO_DRIVER_MIR */
