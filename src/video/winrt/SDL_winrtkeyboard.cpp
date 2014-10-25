@@ -269,7 +269,7 @@ TranslateKeycode(int keycode, unsigned int nativeScancode)
      * at least not for Windows [Phone] 8/8.1, as of Oct 24, 2014), then this
      * hack might become deprecated, or obsolete.
      */
-    if (nativeScancode < (sizeof(windows_scancode_table) / sizeof(SDL_Scancode))) {
+    if (nativeScancode < SDL_arraysize(windows_scancode_table)) {
         switch (keycode) {
             case 16:    // VirtualKey.Shift
                 switch (windows_scancode_table[nativeScancode]) {
@@ -311,7 +311,9 @@ WINRT_ProcessKeyDownEvent(Windows::UI::Core::KeyEventArgs ^args)
     SDL_Scancode sdlScancode = TranslateKeycode((int)args->VirtualKey, args->KeyStatus.ScanCode);
 #if 0
     SDL_Keycode keycode = SDL_GetKeyFromScancode(sdlScancode);
-    SDL_Log("key down, handled=%s, ext?=%s, released?=%s, menu key down?=%s, repeat count=%d, native scan code=0x%x, was down?=%s, vkey=%d, sdl scan code=%d (%s), sdl key code=%d (%s)\n",
+    SDL_Log("key down, handled=%s, ext?=%s, released?=%s, menu key down?=%s, "
+            "repeat count=%d, native scan code=0x%x, was down?=%s, vkey=%d, "
+            "sdl scan code=%d (%s), sdl key code=%d (%s)\n",
         (args->Handled ? "1" : "0"),
         (args->KeyStatus.IsExtendedKey ? "1" : "0"),
         (args->KeyStatus.IsKeyReleased ? "1" : "0"),
@@ -336,7 +338,9 @@ WINRT_ProcessKeyUpEvent(Windows::UI::Core::KeyEventArgs ^args)
     SDL_Scancode sdlScancode = TranslateKeycode((int)args->VirtualKey, args->KeyStatus.ScanCode);
 #if 0
     SDL_Keycode keycode = SDL_GetKeyFromScancode(sdlScancode);
-    SDL_Log("key up, handled=%s, ext?=%s, released?=%s, menu key down?=%s, repeat count=%d, native scan code=0x%x, was down?=%s, vkey=%d, sdl scan code=%d (%s), sdl key code=%d (%s)\n",
+    SDL_Log("key up, handled=%s, ext?=%s, released?=%s, menu key down?=%s, "
+            "repeat count=%d, native scan code=0x%x, was down?=%s, vkey=%d, "
+            "sdl scan code=%d (%s), sdl key code=%d (%s)\n",
         (args->Handled ? "1" : "0"),
         (args->KeyStatus.IsExtendedKey ? "1" : "0"),
         (args->KeyStatus.IsKeyReleased ? "1" : "0"),
