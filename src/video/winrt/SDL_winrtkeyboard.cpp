@@ -22,10 +22,6 @@
 
 #if SDL_VIDEO_DRIVER_WINRT
 
-/* Standard C++11 includes */
-#include <unordered_map>
-
-
 /* Windows-specific includes */
 #include <Windows.h>
 #include <agile.h>
@@ -217,45 +213,47 @@ static SDL_Scancode WinRT_Official_Keycodes[] = {
     SDL_SCANCODE_AC_HOME // VirtualKey.GoHome -- 172 : The go home key.
 };
 
-static std::unordered_map<int, SDL_Scancode> WinRT_Unofficial_Keycodes;
+/* Attempt to translate a keycode that isn't listed in WinRT's VirtualKey enum.
+ */
+static SDL_Scancode
+WINRT_TranslateUnofficialKeycode(int keycode)
+{
+    switch (keycode) {
+        case 173: return SDL_SCANCODE_MUTE;
+        case 174: return SDL_SCANCODE_VOLUMEDOWN;
+        case 175: return SDL_SCANCODE_VOLUMEUP;
+        case 176: return SDL_SCANCODE_AUDIONEXT;
+        case 177: return SDL_SCANCODE_AUDIOPREV;
+        // case 178: return ;
+        case 179: return SDL_SCANCODE_AUDIOPLAY;
+        case 180: return SDL_SCANCODE_MAIL;
+        case 181: return SDL_SCANCODE_MEDIASELECT;
+        // case 182: return ;
+        case 183: return SDL_SCANCODE_CALCULATOR;
+        // case 184: return ;
+        // case 185: return ;
+        case 186: return SDL_SCANCODE_SEMICOLON;
+        case 187: return SDL_SCANCODE_EQUALS;
+        case 188: return SDL_SCANCODE_COMMA;
+        case 189: return SDL_SCANCODE_MINUS;
+        case 190: return SDL_SCANCODE_PERIOD;
+        case 191: return SDL_SCANCODE_SLASH;
+        case 192: return SDL_SCANCODE_GRAVE;
+        // ?
+        // ...
+        // ?
+        case 219: return SDL_SCANCODE_LEFTBRACKET;
+        case 220: return SDL_SCANCODE_BACKSLASH;
+        case 221: return SDL_SCANCODE_RIGHTBRACKET;
+        case 222: return SDL_SCANCODE_APOSTROPHE;
+        default: break;
+    }
+    return SDL_SCANCODE_UNKNOWN;
+}
 
 static SDL_Scancode
 TranslateKeycode(int keycode)
 {
-    if (WinRT_Unofficial_Keycodes.empty()) {
-        /* Set up a table of keycodes that aren't listed in WinRT's
-         * VirtualKey enum.
-         */
-
-        WinRT_Unofficial_Keycodes[173] = SDL_SCANCODE_MUTE;
-        WinRT_Unofficial_Keycodes[174] = SDL_SCANCODE_VOLUMEDOWN;
-        WinRT_Unofficial_Keycodes[175] = SDL_SCANCODE_VOLUMEUP;
-        WinRT_Unofficial_Keycodes[176] = SDL_SCANCODE_AUDIONEXT;
-        WinRT_Unofficial_Keycodes[177] = SDL_SCANCODE_AUDIOPREV;
-        // WinRT_Unofficial_Keycodes[178] = ;
-        WinRT_Unofficial_Keycodes[179] = SDL_SCANCODE_AUDIOPLAY;
-        WinRT_Unofficial_Keycodes[180] = SDL_SCANCODE_MAIL;
-        WinRT_Unofficial_Keycodes[181] = SDL_SCANCODE_MEDIASELECT;
-        // WinRT_Unofficial_Keycodes[182] = ;
-        WinRT_Unofficial_Keycodes[183] = SDL_SCANCODE_CALCULATOR;
-        // WinRT_Unofficial_Keycodes[184] = ;
-        // WinRT_Unofficial_Keycodes[185] = ;
-        WinRT_Unofficial_Keycodes[186] = SDL_SCANCODE_SEMICOLON;
-        WinRT_Unofficial_Keycodes[187] = SDL_SCANCODE_EQUALS;
-        WinRT_Unofficial_Keycodes[188] = SDL_SCANCODE_COMMA;
-        WinRT_Unofficial_Keycodes[189] = SDL_SCANCODE_MINUS;
-        WinRT_Unofficial_Keycodes[190] = SDL_SCANCODE_PERIOD;
-        WinRT_Unofficial_Keycodes[191] = SDL_SCANCODE_SLASH;
-        WinRT_Unofficial_Keycodes[192] = SDL_SCANCODE_GRAVE;
-        // ?
-        // ...
-        // ?
-        WinRT_Unofficial_Keycodes[219] = SDL_SCANCODE_LEFTBRACKET;
-        WinRT_Unofficial_Keycodes[220] = SDL_SCANCODE_BACKSLASH;
-        WinRT_Unofficial_Keycodes[221] = SDL_SCANCODE_RIGHTBRACKET;
-        WinRT_Unofficial_Keycodes[222] = SDL_SCANCODE_APOSTROPHE;
-    }
-
     /* Try to get a documented, WinRT, 'VirtualKey' first (as documented at
        http://msdn.microsoft.com/en-us/library/windows/apps/windows.system.virtualkey.aspx ).
        If that fails, fall back to a Win32 virtual key.
@@ -267,9 +265,7 @@ TranslateKeycode(int keycode)
         scancode = WinRT_Official_Keycodes[keycode];
     }
     if (scancode == SDL_SCANCODE_UNKNOWN) {
-        if (WinRT_Unofficial_Keycodes.find(keycode) != WinRT_Unofficial_Keycodes.end()) {
-            scancode = WinRT_Unofficial_Keycodes[keycode];
-        }
+        scancode = WINRT_TranslateUnofficialKeycode(keycode);
     }
     if (scancode == SDL_SCANCODE_UNKNOWN) {
         SDL_Log("WinRT TranslateKeycode, unknown keycode=%d\n", (int)keycode);
