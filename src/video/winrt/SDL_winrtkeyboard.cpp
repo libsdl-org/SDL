@@ -305,9 +305,11 @@ TranslateKeycode(int keycode, unsigned int nativeScancode)
             scancode = windows_scancode_table[nativeScancode];
         }
     }
+    /*
     if (scancode == SDL_SCANCODE_UNKNOWN) {
         SDL_Log("WinRT TranslateKeycode, unknown keycode=%d\n", (int)keycode);
     }
+    */
     return scancode;
 }
 
