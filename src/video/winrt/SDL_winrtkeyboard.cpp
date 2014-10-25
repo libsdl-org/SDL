@@ -292,12 +292,18 @@ TranslateKeycode(int keycode, unsigned int nativeScancode)
     /* Try to get a documented, WinRT, 'VirtualKey' next (as documented at
        http://msdn.microsoft.com/en-us/library/windows/apps/windows.system.virtualkey.aspx ).
        If that fails, fall back to a Win32 virtual key.
+       If that fails, attempt to fall back to a scancode-derived key.
     */
     if (keycode < SDL_arraysize(WinRT_Official_Keycodes)) {
         scancode = WinRT_Official_Keycodes[keycode];
     }
     if (scancode == SDL_SCANCODE_UNKNOWN) {
         scancode = WINRT_TranslateUnofficialKeycode(keycode);
+    }
+    if (scancode == SDL_SCANCODE_UNKNOWN) {
+        if (nativeScancode < SDL_arraysize(windows_scancode_table)) {
+            scancode = windows_scancode_table[nativeScancode];
+        }
     }
     if (scancode == SDL_SCANCODE_UNKNOWN) {
         SDL_Log("WinRT TranslateKeycode, unknown keycode=%d\n", (int)keycode);
