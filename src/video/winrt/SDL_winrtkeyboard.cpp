@@ -252,15 +252,47 @@ WINRT_TranslateUnofficialKeycode(int keycode)
 }
 
 static SDL_Scancode
-TranslateKeycode(int keycode)
+TranslateKeycode(int keycode, unsigned int nativeScancode)
 {
-    /* Try to get a documented, WinRT, 'VirtualKey' first (as documented at
-       http://msdn.microsoft.com/en-us/library/windows/apps/windows.system.virtualkey.aspx ).
-       If that fails, fall back to a Win32 virtual key.
-    */
     // TODO, WinRT: try filling out the WinRT keycode table as much as possible, using the Win32 table for interpretation hints
     //SDL_Log("WinRT TranslateKeycode, keycode=%d\n", (int)keycode);
     SDL_Scancode scancode = SDL_SCANCODE_UNKNOWN;
+
+    /* HACK ALERT: At least one VirtualKey constant (Shift) with a left/right
+     * designation might not get reported with its correct handedness, however
+     * its hardware scan code can fill in the gaps.  If this is detected,
+     * use the hardware scan code to try telling if the left, or the right
+     * side's key was used.
+     *
+     * If Microsoft ever allows MapVirtualKey or MapVirtualKeyEx to be used
+     * in WinRT apps, or something similar to these (it doesn't appear to be,
+     * at least not for Windows [Phone] 8/8.1, as of Oct 24, 2014), then this
+     * hack might become deprecated, or obsolete.
+     */
+    if (nativeScancode < (sizeof(windows_scancode_table) / sizeof(SDL_Scancode))) {
+        switch (keycode) {
+            case 16:    // VirtualKey.Shift
+                switch (windows_scancode_table[nativeScancode]) {
+                    case SDL_SCANCODE_LSHIFT:
+                    case SDL_SCANCODE_RSHIFT:
+                        return windows_scancode_table[nativeScancode];
+                }
+                break;
+            
+            // Add others, as necessary.
+            //
+            // Unfortunately, this hack doesn't seem to work in determining
+            // handedness with Control keys.
+
+            default:
+                break;
+        }
+    }
+
+    /* Try to get a documented, WinRT, 'VirtualKey' next (as documented at
+       http://msdn.microsoft.com/en-us/library/windows/apps/windows.system.virtualkey.aspx ).
+       If that fails, fall back to a Win32 virtual key.
+    */
     if (keycode < SDL_arraysize(WinRT_Official_Keycodes)) {
         scancode = WinRT_Official_Keycodes[keycode];
     }
@@ -276,10 +308,10 @@ TranslateKeycode(int keycode)
 void
 WINRT_ProcessKeyDownEvent(Windows::UI::Core::KeyEventArgs ^args)
 {
-    SDL_Scancode sdlScancode = TranslateKeycode((int)args->VirtualKey);
+    SDL_Scancode sdlScancode = TranslateKeycode((int)args->VirtualKey, args->KeyStatus.ScanCode);
 #if 0
     SDL_Keycode keycode = SDL_GetKeyFromScancode(sdlScancode);
-    SDL_Log("key down, handled=%s, ext?=%s, released?=%s, menu key down?=%s, repeat count=%d, native scan code=%d, was down?=%s, vkey=%d, sdl scan code=%d (%s), sdl key code=%d (%s)\n",
+    SDL_Log("key down, handled=%s, ext?=%s, released?=%s, menu key down?=%s, repeat count=%d, native scan code=0x%x, was down?=%s, vkey=%d, sdl scan code=%d (%s), sdl key code=%d (%s)\n",
         (args->Handled ? "1" : "0"),
         (args->KeyStatus.IsExtendedKey ? "1" : "0"),
         (args->KeyStatus.IsKeyReleased ? "1" : "0"),
@@ -301,10 +333,10 @@ WINRT_ProcessKeyDownEvent(Windows::UI::Core::KeyEventArgs ^args)
 void
 WINRT_ProcessKeyUpEvent(Windows::UI::Core::KeyEventArgs ^args)
 {
-    SDL_Scancode sdlScancode = TranslateKeycode((int)args->VirtualKey);
+    SDL_Scancode sdlScancode = TranslateKeycode((int)args->VirtualKey, args->KeyStatus.ScanCode);
 #if 0
     SDL_Keycode keycode = SDL_GetKeyFromScancode(sdlScancode);
-    SDL_Log("key up, handled=%s, ext?=%s, released?=%s, menu key down?=%s, repeat count=%d, native scan code=%d, was down?=%s, vkey=%d, sdl scan code=%d (%s), sdl key code=%d (%s)\n",
+    SDL_Log("key up, handled=%s, ext?=%s, released?=%s, menu key down?=%s, repeat count=%d, native scan code=0x%x, was down?=%s, vkey=%d, sdl scan code=%d (%s), sdl key code=%d (%s)\n",
         (args->Handled ? "1" : "0"),
         (args->KeyStatus.IsExtendedKey ? "1" : "0"),
         (args->KeyStatus.IsKeyReleased ? "1" : "0"),
