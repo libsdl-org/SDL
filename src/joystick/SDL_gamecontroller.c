@@ -669,6 +669,10 @@ SDL_GameControllerAddMapping(const char *mappingString)
     ControllerMapping_t *pControllerMapping;
     SDL_bool is_xinput_mapping = SDL_FALSE;
 
+    if (!mappingString) {
+        return SDL_InvalidParamError("mappingString");
+    }
+
     pchGUID = SDL_PrivateGetControllerGUIDFromMappingString(mappingString);
     if (!pchGUID) {
         return SDL_SetError("Couldn't parse GUID from %s", mappingString);
