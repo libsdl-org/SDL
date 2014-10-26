@@ -746,6 +746,10 @@ SDL_GameControllerMappingForGUID(SDL_JoystickGUID guid)
 char *
 SDL_GameControllerMapping(SDL_GameController * gamecontroller)
 {
+    if (!gamecontroller) {
+        return NULL;
+    }
+
     return SDL_GameControllerMappingForGUID(gamecontroller->mapping.guid);
 }
 
