@@ -992,9 +992,6 @@ SDL_GameControllerGetAttached(SDL_GameController * gamecontroller)
 }
 
 
-/*
- * Get the number of multi-dimensional axis controls on a joystick
- */
 const char *
 SDL_GameControllerName(SDL_GameController * gamecontroller)
 {
@@ -1066,9 +1063,6 @@ SDL_GameControllerButtonBind SDL_GameControllerGetBindForButton(SDL_GameControll
 }
 
 
-/*
- * Close a joystick previously opened with SDL_JoystickOpen()
- */
 void
 SDL_GameControllerClose(SDL_GameController * gamecontroller)
 {
