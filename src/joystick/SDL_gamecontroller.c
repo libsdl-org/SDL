@@ -606,7 +606,7 @@ SDL_GameControllerAddMappingsFromRW(SDL_RWops * rw, int freerw)
         if (freerw) {
             SDL_RWclose(rw);
         }
-        return SDL_SetError("Could allocate space to not read DB into memory");
+        return SDL_SetError("Could not allocate space to read DB into memory");
     }
     
     if (SDL_RWread(rw, buf, db_size, 1) != 1) {
