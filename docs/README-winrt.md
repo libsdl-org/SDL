@@ -337,6 +337,25 @@ To setup Visual C++ to launch your app on an ARM device:
    C++.
 
 
+Troubleshooting
+---------------
+
+#### Build fails with message, "error LNK2038: mismatch detected for 'vccorlib_lib_should_be_specified_before_msvcrt_lib_to_linker'"
+
+Try adding the following to your linker flags.  In MSVC, this can be done by
+right-clicking on the app project, navigating to Configuration Properties ->
+Linker -> Command Line, then adding them to the Additional Options
+section.
+
+* For Release builds / MSVC-Configurations, add:
+
+    /nodefaultlib:vccorlib /nodefaultlib:msvcrt vccorlib.lib msvcrt.lib
+
+* For Debug builds / MSVC-Configurations, add:
+
+    /nodefaultlib:vccorlibd /nodefaultlib:msvcrtd vccorlibd.lib msvcrtd.lib
+
+
 TODO
 ----
 
