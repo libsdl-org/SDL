@@ -552,7 +552,7 @@ extern DECLSPEC void SDLCALL SDL_RenderGetClipRect(SDL_Renderer * renderer,
                                                    SDL_Rect * rect);
 
 /**
- *  \brief Get wether clipping is enabled on the given renderer
+ *  \brief Get whether clipping is enabled on the given renderer.
  *
  *  \param renderer The renderer from which clip state should be queried.
  *
