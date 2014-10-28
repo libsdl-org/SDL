@@ -24,6 +24,8 @@
 
 #include <QuartzCore/QuartzCore.h>
 #include <OpenGLES/EAGLDrawable.h>
+#include <OpenGLES/ES2/gl.h>
+#include <OpenGLES/ES2/glext.h>
 #include "SDL_uikitopenglview.h"
 #include "SDL_uikitmessagebox.h"
 #include "SDL_uikitvideo.h"
@@ -89,10 +91,15 @@
             return nil;
         }
 
-        if (sRGB && UIKit_IsSystemVersionAtLeast(@"7.0")) {
-             /* sRGB EAGL drawable support was added in iOS 7 */
-            colorFormat = kEAGLColorFormatSRGBA8;
-        } else if (rBits >= 8 && gBits >= 8 && bBits >= 8) {
+        if (sRGB) {
+            /* sRGB EAGL drawable support was added in iOS 7. */
+            if (UIKit_IsSystemVersionAtLeast(@"7.0")) {
+                colorFormat = kEAGLColorFormatSRGBA8;
+            } else {
+                SDL_SetError("sRGB drawables are not supported.");
+                return nil;
+            }
+        } else if (rBits >= 8 || gBits >= 8 || bBits >= 8) {
             /* if user specifically requests rbg888 or some color format higher than 16bpp */
             colorFormat = kEAGLColorFormatRGBA8;
         } else {
@@ -113,50 +120,50 @@
         self.contentScaleFactor = scale;
 
         /* Create the color Renderbuffer Object */
-        glGenRenderbuffersOES(1, &viewRenderbuffer);
-        glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
+        glGenRenderbuffers(1, &viewRenderbuffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, viewRenderbuffer);
 
-        if (![context renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:eaglLayer]) {
-            SDL_SetError("Failed creating OpenGL ES drawable");
+        if (![context renderbufferStorage:GL_RENDERBUFFER fromDrawable:eaglLayer]) {
+            SDL_SetError("Failed to create OpenGL ES drawable");
             return nil;
         }
 
         /* Create the Framebuffer Object */
-        glGenFramebuffersOES(1, &viewFramebuffer);
-        glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
+        glGenFramebuffers(1, &viewFramebuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, viewFramebuffer);
 
         /* attach the color renderbuffer to the FBO */
-        glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, viewRenderbuffer);
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, viewRenderbuffer);
 
-        glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
-        glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
+        glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &backingWidth);
+        glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &backingHeight);
 
         if ((useDepthBuffer) || (useStencilBuffer)) {
             if (useStencilBuffer) {
                 /* Apparently you need to pack stencil and depth into one buffer. */
                 depthBufferFormat = GL_DEPTH24_STENCIL8_OES;
             } else if (useDepthBuffer) {
-                /* iOS only has 24-bit depth buffers, even with GL_DEPTH_COMPONENT16_OES */
+                /* iOS only has 24-bit depth buffers, even with GL_DEPTH_COMPONENT16 */
                 depthBufferFormat = GL_DEPTH_COMPONENT24_OES;
             }
 
-            glGenRenderbuffersOES(1, &depthRenderbuffer);
-            glBindRenderbufferOES(GL_RENDERBUFFER_OES, depthRenderbuffer);
-            glRenderbufferStorageOES(GL_RENDERBUFFER_OES, depthBufferFormat, backingWidth, backingHeight);
+            glGenRenderbuffers(1, &depthRenderbuffer);
+            glBindRenderbuffer(GL_RENDERBUFFER, depthRenderbuffer);
+            glRenderbufferStorage(GL_RENDERBUFFER, depthBufferFormat, backingWidth, backingHeight);
             if (useDepthBuffer) {
-                glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_DEPTH_ATTACHMENT_OES, GL_RENDERBUFFER_OES, depthRenderbuffer);
+                glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderbuffer);
             }
             if (useStencilBuffer) {
-                glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_STENCIL_ATTACHMENT_OES, GL_RENDERBUFFER_OES, depthRenderbuffer);
+                glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthRenderbuffer);
             }
         }
 
-        if (glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES) {
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
             SDL_SetError("Failed creating OpenGL ES framebuffer");
             return nil;
         }
 
-        glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, viewRenderbuffer);
     }
 
     return self;
@@ -174,30 +181,30 @@
 
 - (void)updateFrame
 {
-    glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
-    glBindRenderbufferOES(GL_RENDERBUFFER_OES, 0);
-    glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, 0);
-    glDeleteRenderbuffersOES(1, &viewRenderbuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, viewFramebuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, 0);
+    glDeleteRenderbuffers(1, &viewRenderbuffer);
 
-    glGenRenderbuffersOES(1, &viewRenderbuffer);
-    glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
-    [context renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:(CAEAGLLayer*)self.layer];
-    glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, viewRenderbuffer);
+    glGenRenderbuffers(1, &viewRenderbuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, viewRenderbuffer);
+    [context renderbufferStorage:GL_RENDERBUFFER fromDrawable:(CAEAGLLayer*)self.layer];
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, viewRenderbuffer);
 
-    glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
-    glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
+    glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &backingWidth);
+    glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &backingHeight);
 
     if (depthRenderbuffer != 0) {
-        glBindRenderbufferOES(GL_RENDERBUFFER_OES, depthRenderbuffer);
-        glRenderbufferStorageOES(GL_RENDERBUFFER_OES, depthBufferFormat, backingWidth, backingHeight);
+        glBindRenderbuffer(GL_RENDERBUFFER, depthRenderbuffer);
+        glRenderbufferStorage(GL_RENDERBUFFER, depthBufferFormat, backingWidth, backingHeight);
     }
 
-    glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, viewRenderbuffer);
 }
 
 - (void)setAnimationCallback:(int)interval
-    callback:(void (*)(void*))callback
-    callbackParam:(void*)callbackParam
+                    callback:(void (*)(void*))callback
+               callbackParam:(void*)callbackParam
 {
     [self stopAnimation];
 
@@ -236,15 +243,13 @@
     [EAGLContext setCurrentContext:context];
 }
 
-
 - (void)swapBuffers
 {
     /* viewRenderbuffer should always be bound here. Code that binds something
-        else is responsible for rebinding viewRenderbuffer, to reduce
-        duplicate state changes. */
-    [context presentRenderbuffer:GL_RENDERBUFFER_OES];
+       else is responsible for rebinding viewRenderbuffer, to reduce duplicate
+       state changes. */
+    [context presentRenderbuffer:GL_RENDERBUFFER];
 }
-
 
 - (void)layoutSubviews
 {
@@ -257,17 +262,17 @@
 - (void)destroyFramebuffer
 {
     if (viewFramebuffer != 0) {
-        glDeleteFramebuffersOES(1, &viewFramebuffer);
+        glDeleteFramebuffers(1, &viewFramebuffer);
         viewFramebuffer = 0;
     }
 
     if (viewRenderbuffer != 0) {
-        glDeleteRenderbuffersOES(1, &viewRenderbuffer);
+        glDeleteRenderbuffers(1, &viewRenderbuffer);
         viewRenderbuffer = 0;
     }
 
     if (depthRenderbuffer != 0) {
-        glDeleteRenderbuffersOES(1, &depthRenderbuffer);
+        glDeleteRenderbuffers(1, &depthRenderbuffer);
         depthRenderbuffer = 0;
     }
 }

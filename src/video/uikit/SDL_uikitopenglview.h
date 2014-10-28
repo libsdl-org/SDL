@@ -21,8 +21,7 @@
 
 #import <UIKit/UIKit.h>
 #import <OpenGLES/EAGL.h>
-#import <OpenGLES/ES1/gl.h>
-#import <OpenGLES/ES1/glext.h>
+#import <OpenGLES/gltypes.h>
 #import "SDL_uikitview.h"
 /*
     This class wraps the CAEAGLLayer from CoreAnimation into a convenient UIView subclass.
