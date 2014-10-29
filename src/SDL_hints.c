@@ -149,6 +149,11 @@ SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *userdata)
         /* Need to add a hint entry for this watcher */
         hint = (SDL_Hint *)SDL_malloc(sizeof(*hint));
         if (!hint) {
+            if(entry)
+            {
+              SDL_free(entry);
+              entry = NULL;
+            }
             return;
         }
         hint->name = SDL_strdup(name);
