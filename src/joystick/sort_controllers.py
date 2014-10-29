@@ -40,15 +40,17 @@ def write_controllers():
     controller_guids = {}
 
 for line in input:
-    if ( parsing_controllers ):
+    if (parsing_controllers):
         if (line.startswith("{")):
             output.write(line)
-        elif (line.startswith("#endif")):
+        elif (line.startswith("    NULL")):
             parsing_controllers = False
             write_controllers()
             output.write(line)
-        elif (line.startswith("#")):
+        elif (line.startswith("#if")):
             print("Parsing " + line.strip())
+            output.write(line)
+        elif (line.startswith("#endif")):
             write_controllers()
             output.write(line)
         else:
