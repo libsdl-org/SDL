@@ -30,9 +30,9 @@ def write_controllers():
     for entry in sorted(controllers, key=lambda entry: entry[2]):
         line = "".join(entry) + "\n"
         if not line.endswith(",\n") and not line.endswith("*/\n"):
-            print "Warning: '%s' is missing a comma at the end of the line" % (line)
+            print("Warning: '%s' is missing a comma at the end of the line" % (line))
         if (entry[1] in controller_guids):
-            print "Warning: entry '%s' is duplicate of entry '%s'" % (entry[2], controller_guids[entry[1]][2])
+            print("Warning: entry '%s' is duplicate of entry '%s'" % (entry[2], controller_guids[entry[1]][2]))
         controller_guids[entry[1]] = entry
 
         output.write(line)
@@ -48,7 +48,7 @@ for line in input:
             write_controllers()
             output.write(line)
         elif (line.startswith("#")):
-            print "Parsing " + line.strip()
+            print("Parsing " + line.strip())
             write_controllers()
             output.write(line)
         else:
@@ -60,4 +60,4 @@ for line in input:
         output.write(line)
 
 output.close()
-print "Finished writing %s.new" % filename
+print("Finished writing %s.new" % filename)
