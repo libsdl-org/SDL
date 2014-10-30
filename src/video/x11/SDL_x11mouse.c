@@ -378,6 +378,7 @@ X11_GetGlobalMouseState(int *x, int *y)
             int rootx, rooty, winx, winy;
             unsigned int mask;
             if (X11_XQueryPointer(display, RootWindow(display, data->screen), &root, &child, &rootx, &rooty, &winx, &winy, &mask)) {
+                XWindowAttributes root_attrs;
                 Uint32 retval = 0;
                 retval |= (mask & Button1Mask) ? SDL_BUTTON_LMASK : 0;
                 retval |= (mask & Button2Mask) ? SDL_BUTTON_MMASK : 0;
@@ -386,7 +387,6 @@ X11_GetGlobalMouseState(int *x, int *y)
                  * (observed on dual monitor setup with primary display being the rightmost one - mouse was offset to the right).
                  *
                  * Adding root position to root-relative coordinates seems to be a better way to get absolute position. */
-                XWindowAttributes root_attrs;
                 X11_XGetWindowAttributes(display, root, &root_attrs);
                 *x = root_attrs.x + rootx;
                 *y = root_attrs.y + rooty;
