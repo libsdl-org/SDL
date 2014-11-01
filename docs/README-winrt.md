@@ -399,7 +399,8 @@ To setup Visual C++ to launch your app on an ARM device:
     2. select "Debugging"
     3. next to "Machine Name", enter the hostname or IP address of the ARM 
        device
-    4. if, and only if, you've turned off authentication in the Remote Debugger, then change the setting for "Require Authentication" to No
+    4. if, and only if, you've turned off authentication in the Remote Debugger,
+       then change the setting for "Require Authentication" to No
     5. click "OK"
 4. build and run the app (from Visual C++).  The first time you do this, a 
    prompt will show up on the ARM device, asking for a Microsoft Account.  You 
