@@ -428,15 +428,3 @@ section.
 
     /nodefaultlib:vccorlibd /nodefaultlib:msvcrtd vccorlibd.lib msvcrtd.lib
 
-
-TODO
-----
-
-- Document details of SDL satellite library support
-- Make [NuGet](https://www.nuget.org) packages for SDL/WinRT
-- Create templates for both MSVC 2012 and MSVC 2013, and have the corresponding
-  VSIX packages either include pre-built copies of SDL, or reference binaries
-  available via MSVC's NuGet servers
-    - Write setup instructions that use MSVC 201x templates
-- Write a list of caveats found in SDL/WinRT, such as APIs that don't work due
-  to platform restrictions, or things that need further work
