@@ -41,6 +41,78 @@ Requirements
   debug apps.
 
 
+Status
+------
+
+Here is a rough list of what works, and what doens't:
+
+* What works:
+  * compilation via Visual C++ 2012 and 2013
+  * compile-time platform detection for SDL programs.  The C/C++ #define,
+    `__WINRT__`, will be set to 1 (by SDL) when compiling for WinRT.
+  * GPU-accelerated 2D rendering, via SDL_Renderer.
+  * software rendering, via either SDL_Surface (optionally in conjunction with
+    SDL_GetWindowSurface() and SDL_UpdateWindowSurface()) or via the
+    SDL_Renderer APIs
+  * threads.  Significant chunks of Win32's threading APIs are not available in
+    WinRT.  A new, SDL threading backend was built using C++11's threading APIs
+    (std::thread, std::mutex, std::condition_variable, etc.), which C or C++
+    programs alike can access via SDL's threading APIs.  Support for thread
+    priorities is not, however, currently available, due to restrictions in
+    WinRT's own API set.
+  * timers (via SDL_GetTicks(), SDL_AddTimer(), SDL_GetPerformanceCounter(),
+    SDL_GetPerformanceFrequency(), etc.)
+  * file I/O via SDL_RWops
+  * mouse input  (unsupported on Windows Phone)
+  * audio, via a modified version of SDL's XAudio2 backend
+  * .DLL file loading.  Libraries must be packaged inside applications.  Loading
+    anything outside of the app is not supported.
+  * system path retrieval via SDL's filesystem APIs
+  * game controllers.  Support is provided via the SDL_Joystick and
+    SDL_GameController APIs, and is backed by Microsoft's XInput API.
+  * multi-touch input
+  * app events.  SDL_APP_WILLENTER* and SDL_APP_DIDENTER* events get sent out as
+    appropriate.
+  * window events.  SDL_WINDOWEVENT_MINIMIZED and SDL_WINDOWEVENT_RESTORED are
+    sent out on app suspend and resume, respectively.  SDL_WINDOWEVENT_SHOWN and
+    SDL_WINDOWEVENT_HIDDEN are also sent, but not necessarily on app suspend or
+    resume, as WinRT treats these two concepts differently..
+  * using Direct3D 11.x APIs outside of SDL.  Non-XAML / Direct3D-only apps can
+    choose to render content directly via Direct3D, using SDL to manage the
+    internal WinRT window, as well as input and audio.  (Use
+    SDL_GetWindowWMInfo() to get the WinRT 'CoreWindow', and pass it into
+    IDXGIFactory2::CreateSwapChainForCoreWindow() as appropriate.)
+
+* What partially works:
+  * keyboard input.  Most of WinRT's documented virtual keys are supported, as
+    well as many keys with documented hardware scancodes.
+  * OpenGL.  Experimental support for OpenGL ES 2 is available via a
+    Microsoft-modified version of the ANGLE project, as available at
+    https://github.com/msopentech/angle .  Support is currently limited to the
+    "winrt" branch, however support for the "future-dev" branch is planned.
+  * SDLmain.  WinRT uses a different signature for each app's main() function.
+    SDL-based apps that use this port must compile in SDL_winrt_main_NonXAML.cpp
+    (in `SDL\src\main\winrt\`) directly in order for their C-style main()
+    functions to be called.
+  * XAML interoperability.  This feature is currently experimental (there are
+    **many** known bugs in this, at present!), preliminary, and only for
+    Windows 8.x/RT at the moment.  Windows Phone + XAML support is still
+    pending.
+
+* What doesn't work:
+  * compilation with anything other than Visual C++ 2012 or 2013
+  * programmatically-created custom cursors.  These don't appear to be supported
+    by WinRT.  Different OS-provided cursors can, however, be created via
+    SDL_CreateSystemCursor() (unsupported on Windows Phone)
+  * SDL_WarpMouseInWindow() or SDL_WarpMouseGlobal().  This are not currently
+    supported by WinRT itself.
+  * joysticks and game controllers that aren't supported by Microsoft's XInput
+    API.
+  * probably anything else that's not listed as supported
+
+
+
+
 Setup, High-Level Steps
 -----------------------
 
