@@ -318,9 +318,9 @@ WINRT_CreateWindow(_THIS, SDL_Window * window)
         SDL_VideoData * video_data = (SDL_VideoData *)_this->driverdata;
 
         /* Call SDL_EGL_ChooseConfig and eglCreateWindowSurface directly,
-         * rather than via SDL_EGL_CreateSurface, as ANGLE/WinRT requires
-         * a C++ object, ComPtr<IUnknown>, to be passed into
-         * eglCreateWindowSurface.
+         * rather than via SDL_EGL_CreateSurface, as older versions of
+         * ANGLE/WinRT may require that a C++ object, ComPtr<IUnknown>,
+         * be passed into eglCreateWindowSurface.
          */
         if (SDL_EGL_ChooseConfig(_this) != 0) {
             char buf[512];
