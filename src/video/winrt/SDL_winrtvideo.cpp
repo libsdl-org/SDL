@@ -414,6 +414,7 @@ WINRT_DestroyWindow(_THIS, SDL_Window * window)
         // Delete the internal window data:
         delete data;
         data = NULL;
+        window->driverdata = NULL;
     }
 }
 
