@@ -47,17 +47,21 @@ extern int WINRT_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext cont
 /* Typedefs for ANGLE/WinRT's C++-based native-display and native-window types,
  * which are used when calling eglGetDisplay and eglCreateWindowSurface.
  */
-typedef Microsoft::WRL::ComPtr<IUnknown> WINRT_EGLNativeWindowType;
-typedef WINRT_EGLNativeWindowType WINRT_EGLNativeDisplayType;
+typedef Microsoft::WRL::ComPtr<IUnknown> WINRT_EGLNativeWindowType_Old;
 
-/* Function pointer typedefs for ANGLE/WinRT's functions that require
- * parameter customization [by passing in C++ objects].
+/* Function pointer typedefs for 'old' ANGLE/WinRT's functions, which may
+ * require that C++ objects be passed in:
  */
-typedef EGLDisplay (EGLAPIENTRY *eglGetDisplay_Function)(WINRT_EGLNativeWindowType);
-typedef EGLSurface (EGLAPIENTRY *eglCreateWindowSurface_Function)(EGLDisplay, EGLConfig, WINRT_EGLNativeWindowType, const EGLint *);
-typedef HRESULT (EGLAPIENTRY *CreateWinrtEglWindow_Function)(Microsoft::WRL::ComPtr<IUnknown>, int, IUnknown ** result);
+typedef EGLDisplay (EGLAPIENTRY *eglGetDisplay_Old_Function)(WINRT_EGLNativeWindowType_Old);
+typedef EGLSurface (EGLAPIENTRY *eglCreateWindowSurface_Old_Function)(EGLDisplay, EGLConfig, WINRT_EGLNativeWindowType_Old, const EGLint *);
+typedef HRESULT (EGLAPIENTRY *CreateWinrtEglWindow_Old_Function)(Microsoft::WRL::ComPtr<IUnknown>, int, IUnknown ** result);
 
 #endif /* __cplusplus */
+
+/* Function pointer typedefs for 'new' ANGLE/WinRT functions, which, unlike
+ * the old functions, do not require C++ support and work with plain C.
+ */
+typedef EGLDisplay (EGLAPIENTRY *eglGetPlatformDisplayEXT_Function)(EGLenum, void *, const EGLint *);
 
 #endif /* SDL_VIDEO_DRIVER_WINRT && SDL_VIDEO_OPENGL_EGL */
 

@@ -36,7 +36,10 @@ using namespace Windows::UI::Core;
 
 /* ANGLE/WinRT constants */
 static const int ANGLE_D3D_FEATURE_LEVEL_ANY = 0;
-
+#define EGL_PLATFORM_ANGLE_ANGLE                0x3201
+#define EGL_PLATFORM_ANGLE_TYPE_ANGLE           0x3202
+#define EGL_PLATFORM_ANGLE_TYPE_DEFAULT_ANGLE   0x3203
+#define EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE     0x3205
 
 /*
  * SDL/EGL top-level implementation
@@ -52,32 +55,56 @@ WINRT_GLES_LoadLibrary(_THIS, const char *path)
     }
 
     /* Load ANGLE/WinRT-specific functions */
-    CreateWinrtEglWindow_Function CreateWinrtEglWindow = (CreateWinrtEglWindow_Function) SDL_LoadFunction(_this->egl_data->egl_dll_handle, "CreateWinrtEglWindow");
-    if (!CreateWinrtEglWindow) {
-        return SDL_SetError("Could not retrieve ANGLE/WinRT function CreateWinrtEglWindow");
+    CreateWinrtEglWindow_Old_Function CreateWinrtEglWindow = (CreateWinrtEglWindow_Old_Function) SDL_LoadFunction(_this->egl_data->egl_dll_handle, "CreateWinrtEglWindow");
+    if (CreateWinrtEglWindow) {
+        /* 'CreateWinrtEglWindow' was found, which means that an an older
+         * version of ANGLE/WinRT is being used.  Continue setting up EGL,
+         * as appropriate to this version of ANGLE.
+         */
+
+        /* Create an ANGLE/WinRT EGL-window */
+        /* TODO, WinRT: check for XAML usage before accessing the CoreWindow, as not doing so could lead to a crash */
+        CoreWindow ^ native_win = CoreWindow::GetForCurrentThread();
+        Microsoft::WRL::ComPtr<IUnknown> cpp_win = reinterpret_cast<IUnknown *>(native_win);
+        HRESULT result = CreateWinrtEglWindow(cpp_win, ANGLE_D3D_FEATURE_LEVEL_ANY, &(video_data->winrtEglWindow));
+        if (FAILED(result)) {
+            return -1;
+        }
+
+        /* Call eglGetDisplay and eglInitialize as appropriate.  On other
+         * platforms, this would probably get done by SDL_EGL_LoadLibrary,
+         * however ANGLE/WinRT's current implementation (as of Mar 22, 2014) of
+         * eglGetDisplay requires that a C++ object be passed into it, so the
+         * call will be made in this file, a C++ file, instead.
+         */
+        Microsoft::WRL::ComPtr<IUnknown> cpp_display = video_data->winrtEglWindow;
+        _this->egl_data->egl_display = ((eglGetDisplay_Old_Function)_this->egl_data->eglGetDisplay)(cpp_display);
+        if (!_this->egl_data->egl_display) {
+            return SDL_SetError("Could not get EGL display");
+        }
+    } else {
+        const EGLint displayAttributes[] = {
+            EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
+            EGL_NONE,
+        };
+
+        /* 'CreateWinrtEglWindow' was NOT found, which either means that a
+         * newer version of ANGLE/WinRT is being used, or that we don't have
+         * a valid copy of ANGLE.
+         *
+         * Try loading ANGLE as if it were the newer version.
+         */
+        eglGetPlatformDisplayEXT_Function eglGetPlatformDisplayEXT = (eglGetPlatformDisplayEXT_Function)_this->egl_data->eglGetProcAddress("eglGetPlatformDisplayEXT");
+        if (!eglGetPlatformDisplayEXT) {
+            return SDL_SetError("Could not retrieve ANGLE/WinRT display function(s)");
+        }
+
+        _this->egl_data->egl_display = eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, EGL_DEFAULT_DISPLAY, displayAttributes);
+        if (!_this->egl_data->egl_display) {
+            return SDL_SetError("Could not get EGL display");
+        }
     }
 
-    /* Create an ANGLE/WinRT EGL-window */
-    /* TODO, WinRT: check for XAML usage before accessing the CoreWindow, as not doing so could lead to a crash */
-    CoreWindow ^ native_win = CoreWindow::GetForCurrentThread();
-    Microsoft::WRL::ComPtr<IUnknown> cpp_win = reinterpret_cast<IUnknown *>(native_win);
-    HRESULT result = CreateWinrtEglWindow(cpp_win, ANGLE_D3D_FEATURE_LEVEL_ANY, &(video_data->winrtEglWindow));
-    if (FAILED(result)) {
-        return -1;
-    }
-
-    /* Call eglGetDisplay and eglInitialize as appropriate.  On other
-     * platforms, this would probably get done by SDL_EGL_LoadLibrary,
-     * however ANGLE/WinRT's current implementation (as of Mar 22, 2014) of
-     * eglGetDisplay requires that a C++ object be passed into it, so the
-     * call will be made in this file, a C++ file, instead.
-     */
-    Microsoft::WRL::ComPtr<IUnknown> cpp_display = video_data->winrtEglWindow;
-    _this->egl_data->egl_display = ((eglGetDisplay_Function)_this->egl_data->eglGetDisplay)(cpp_display);
-    if (!_this->egl_data->egl_display) {
-        return SDL_SetError("Could not get EGL display");
-    }
-    
     if (_this->egl_data->eglInitialize(_this->egl_data->egl_display, NULL, NULL) != EGL_TRUE) {
         return SDL_SetError("Could not initialize EGL");
     }

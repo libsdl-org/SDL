@@ -328,13 +328,33 @@ WINRT_CreateWindow(_THIS, SDL_Window * window)
             return SDL_SetError(buf);
         }
 
-        Microsoft::WRL::ComPtr<IUnknown> cpp_winrtEglWindow = video_data->winrtEglWindow;
-        data->egl_surface = ((eglCreateWindowSurface_Function)_this->egl_data->eglCreateWindowSurface)(
-            _this->egl_data->egl_display,
-            _this->egl_data->egl_config,
-            cpp_winrtEglWindow, NULL);
-        if (data->egl_surface == NULL) {
-            return SDL_SetError("eglCreateWindowSurface failed");
+        if (video_data->winrtEglWindow) {   /* ... is the 'old' version of ANGLE/WinRT being used? */
+            /* Attempt to create a window surface using older versions of
+             * ANGLE/WinRT:
+             */
+            Microsoft::WRL::ComPtr<IUnknown> cpp_winrtEglWindow = video_data->winrtEglWindow;
+            data->egl_surface = ((eglCreateWindowSurface_Old_Function)_this->egl_data->eglCreateWindowSurface)(
+                _this->egl_data->egl_display,
+                _this->egl_data->egl_config,
+                cpp_winrtEglWindow, NULL);
+            if (data->egl_surface == NULL) {
+                return SDL_SetError("eglCreateWindowSurface failed");
+            }
+        } else if (data->coreWindow.Get() != nullptr) {
+            /* Attempt to create a window surface using newer versions of
+             * ANGLE/WinRT:
+             */
+            IInspectable * coreWindowAsIInspectable = reinterpret_cast<IInspectable *>(data->coreWindow.Get());
+            data->egl_surface = _this->egl_data->eglCreateWindowSurface(
+                _this->egl_data->egl_display,
+                _this->egl_data->egl_config,
+                coreWindowAsIInspectable,
+                NULL);
+            if (data->egl_surface == NULL) {
+                return SDL_SetError("eglCreateWindowSurface failed");
+            }
+        } else {
+            return SDL_SetError("No supported means to create an EGL window surface are available");
         }
     }
 #endif
