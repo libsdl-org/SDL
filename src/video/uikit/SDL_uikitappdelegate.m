@@ -75,6 +75,62 @@ SDL_IdleTimerDisabledChanged(void *userdata, const char *name, const char *oldVa
     [UIApplication sharedApplication].idleTimerDisabled = disable;
 }
 
+
+@interface SDL_launchscreenviewcontroller : UIViewController {
+	
+}
+
+@end
+
+@implementation SDL_launchscreenviewcontroller
+
+- (id)init
+{
+    self = [super init];
+    if (self == nil) {
+        return nil;
+    }
+
+    NSString* launch_screen_name = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"UILaunchStoryboardName"];
+
+    if(launch_screen_name) {
+        // TODO: If the NIB is not in the bundle, this will throw an exception. We might consider a pre-emptive check, but returning a useless viewcontroller isn't helpful and the check should be outside.
+        UIView* launch_screen = [[[NSBundle mainBundle] loadNibNamed:launch_screen_name owner:self options:nil] objectAtIndex:0];
+        CGSize size = [UIScreen mainScreen].bounds.size;
+        
+        CGRect bounds = CGRectMake(0, 0, size.width, size.height);
+        
+        [launch_screen setFrame:bounds];
+        [self setView:launch_screen];
+        [launch_screen release];
+    }
+
+    
+
+
+    return self;
+}
+
+- (NSUInteger)supportedInterfaceOrientations
+{
+    NSUInteger orientationMask = UIInterfaceOrientationMaskAll;
+    
+    /* Don't allow upside-down orientation on the phone, so answering calls is in the natural orientation */
+    if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
+        orientationMask &= ~UIInterfaceOrientationMaskPortraitUpsideDown;
+    }
+    return orientationMask;
+}
+
+- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)orient
+{
+    NSUInteger orientationMask = [self supportedInterfaceOrientations];
+    return (orientationMask & (1 << orient));
+}
+
+@end
+
+
 @interface SDL_splashviewcontroller : UIViewController {
     UIImageView *splash;
     UIImage *splashPortrait;
@@ -98,6 +154,13 @@ SDL_IdleTimerDisabledChanged(void *userdata, const char *name, const char *oldVa
 
     CGSize size = [UIScreen mainScreen].bounds.size;
     float height = SDL_max(size.width, size.height);
+    /* FIXME: Some where around iOS 7, UILaunchImages in the Info.plist was introduced which explicitly maps image names to devices and orientations.
+     This gets rid of the hardcoded magic file names and allows more control for OS version, orientation, retina, and device.
+     But this existing code needs to be modified to look in the Info.plist for each key and act appropriately for the correct iOS version.
+     But iOS 8 superscedes this process and introduces the LaunchScreen NIB which uses autolayout to handle all orientations and devices.
+     Since we now have a LaunchScreen solution, this may never get fixed, 
+     but this note is here for anybody trying to debug their program on iOS 7 and doesn't understand why their Info.plist isn't working.
+     */
     self->splashPortrait = [UIImage imageNamed:[NSString stringWithFormat:@"Default-%dh.png", (int)height]];
     if (!self->splashPortrait) {
         self->splashPortrait = [UIImage imageNamed:@"Default.png"];
@@ -207,10 +270,26 @@ SDL_IdleTimerDisabledChanged(void *userdata, const char *name, const char *oldVa
     /* Keep the launch image up until we set a video mode */
     launch_window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
 
-    UIViewController *splashViewController = [[SDL_splashviewcontroller alloc] init];
-    launch_window.rootViewController = splashViewController;
-    [launch_window addSubview:splashViewController.view];
-    [launch_window makeKeyAndVisible];
+    /* iOS 8 introduces LaunchScreen NIBs which use autolayout to handle all devices and orientations with a single NIB instead of multiple launch images.
+     This is also the only way to get the App Store badge "Optimized for iPhone 6 and iPhone 6 Plus".
+     So if the application is running on iOS 8 or greater AND has specified a LaunchScreen in their Info.plist, we should use the LaunchScreen NIB.
+     Otherwise, we should fallback to the legacy behavior of launch screen images.
+     */
+    NSString* launch_screen_name = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"UILaunchStoryboardName"];
+    if( ([[UIDevice currentDevice].systemVersion intValue] >= 8) && (nil != launch_screen_name) ) {
+        // iOS 8.0 and above uses LaunchScreen.xib
+        SDL_launchscreenviewcontroller* launch_screen_view_controller = [[SDL_launchscreenviewcontroller alloc] init];
+        launch_window.rootViewController = launch_screen_view_controller;
+        [launch_window addSubview:launch_screen_view_controller.view];
+        [launch_window makeKeyAndVisible];
+    } else {
+        // Anything less than iOS 8.0
+
+        UIViewController *splashViewController = [[SDL_splashviewcontroller alloc] init];
+        launch_window.rootViewController = splashViewController;
+        [launch_window addSubview:splashViewController.view];
+        [launch_window makeKeyAndVisible];
+    }
 
     /* Set working directory to resource path */
     [[NSFileManager defaultManager] changeCurrentDirectoryPath: [[NSBundle mainBundle] resourcePath]];
