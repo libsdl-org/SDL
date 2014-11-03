@@ -1,11 +1,11 @@
 #
-# winrt-build.ps1 -- A Powershell script to build all SDL/WinRT variants,
+# winrtbuild.ps1 -- A Powershell script to build all SDL/WinRT variants,
 #    across all WinRT platforms, in all of their supported, CPU architectures.
 #
 # Initial version written by David Ludwig <dludwig@pobox.com>
 #
 # This script can be launched from Windows Explorer by double-clicking
-# on winrt-build.bat
+# on winrtbuild.bat
 #
 # Output will be placed in the following subdirectories of the SDL source
 # tree:
