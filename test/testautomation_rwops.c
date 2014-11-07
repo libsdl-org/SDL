@@ -647,22 +647,22 @@ rwops_testFileWriteReadEndian(void)
 
      /* Write test data */
      objectsWritten = SDL_WriteBE16(rw, BE16value);
-     SDLTest_AssertPass("Call to SDL_WriteBE16");
+     SDLTest_AssertPass("Call to SDL_WriteBE16()");
      SDLTest_AssertCheck(objectsWritten == 1, "Validate number of objects written, expected: 1, got: %i", objectsWritten);
      objectsWritten = SDL_WriteBE32(rw, BE32value);
-     SDLTest_AssertPass("Call to SDL_WriteBE32");
+     SDLTest_AssertPass("Call to SDL_WriteBE32()");
      SDLTest_AssertCheck(objectsWritten == 1, "Validate number of objects written, expected: 1, got: %i", objectsWritten);
      objectsWritten = SDL_WriteBE64(rw, BE64value);
-     SDLTest_AssertPass("Call to SDL_WriteBE64");
+     SDLTest_AssertPass("Call to SDL_WriteBE64()");
      SDLTest_AssertCheck(objectsWritten == 1, "Validate number of objects written, expected: 1, got: %i", objectsWritten);
      objectsWritten = SDL_WriteLE16(rw, LE16value);
-     SDLTest_AssertPass("Call to SDL_WriteLE16");
+     SDLTest_AssertPass("Call to SDL_WriteLE16()");
      SDLTest_AssertCheck(objectsWritten == 1, "Validate number of objects written, expected: 1, got: %i", objectsWritten);
      objectsWritten = SDL_WriteLE32(rw, LE32value);
-     SDLTest_AssertPass("Call to SDL_WriteLE32");
+     SDLTest_AssertPass("Call to SDL_WriteLE32()");
      SDLTest_AssertCheck(objectsWritten == 1, "Validate number of objects written, expected: 1, got: %i", objectsWritten);
      objectsWritten = SDL_WriteLE64(rw, LE64value);
-     SDLTest_AssertPass("Call to SDL_WriteLE64");
+     SDLTest_AssertPass("Call to SDL_WriteLE64()");
      SDLTest_AssertCheck(objectsWritten == 1, "Validate number of objects written, expected: 1, got: %i", objectsWritten);
 
      /* Test seek to start */
@@ -672,22 +672,22 @@ rwops_testFileWriteReadEndian(void)
 
      /* Read test data */
      BE16test = SDL_ReadBE16(rw);
-     SDLTest_AssertPass("Call to SDL_ReadBE16");
+     SDLTest_AssertPass("Call to SDL_ReadBE16()");
      SDLTest_AssertCheck(BE16test == BE16value, "Validate return value from SDL_ReadBE16, expected: %hu, got: %hu", BE16value, BE16test);
      BE32test = SDL_ReadBE32(rw);
-     SDLTest_AssertPass("Call to SDL_ReadBE32");
+     SDLTest_AssertPass("Call to SDL_ReadBE32()");
      SDLTest_AssertCheck(BE32test == BE32value, "Validate return value from SDL_ReadBE32, expected: %u, got: %u", BE32value, BE32test);
      BE64test = SDL_ReadBE64(rw);
-     SDLTest_AssertPass("Call to SDL_ReadBE64");
+     SDLTest_AssertPass("Call to SDL_ReadBE64()");
      SDLTest_AssertCheck(BE64test == BE64value, "Validate return value from SDL_ReadBE64, expected: %llu, got: %llu", BE64value, BE64test);
      LE16test = SDL_ReadLE16(rw);
-     SDLTest_AssertPass("Call to SDL_ReadLE16");
+     SDLTest_AssertPass("Call to SDL_ReadLE16()");
      SDLTest_AssertCheck(LE16test == LE16value, "Validate return value from SDL_ReadLE16, expected: %hu, got: %hu", LE16value, LE16test);
      LE32test = SDL_ReadLE32(rw);
-     SDLTest_AssertPass("Call to SDL_ReadLE32");
+     SDLTest_AssertPass("Call to SDL_ReadLE32()");
      SDLTest_AssertCheck(LE32test == LE32value, "Validate return value from SDL_ReadLE32, expected: %u, got: %u", LE32value, LE32test);
      LE64test = SDL_ReadLE64(rw);
-     SDLTest_AssertPass("Call to SDL_ReadLE64");
+     SDLTest_AssertPass("Call to SDL_ReadLE64()");
      SDLTest_AssertCheck(LE64test == LE64value, "Validate return value from SDL_ReadLE64, expected: %llu, got: %llu", LE64value, LE64test);
 
      /* Close handle */

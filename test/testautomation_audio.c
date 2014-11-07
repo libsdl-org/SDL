@@ -92,7 +92,7 @@ int audio_initQuitAudio()
 
         /* Loop over all available audio drivers */
         iMax = SDL_GetNumAudioDrivers();
-        SDLTest_AssertPass("Call to SDL_GetNumAudioDrivers");
+        SDLTest_AssertPass("Call to SDL_GetNumAudioDrivers()");
         SDLTest_AssertCheck(iMax > 0, "Validate number of audio drivers; expected: >0 got: %d", iMax);
         for (i = 0; i < iMax; i++) {
             audioDriver = SDL_GetAudioDriver(i);
@@ -149,7 +149,7 @@ int audio_initOpenCloseQuitAudio()
 
         /* Loop over all available audio drivers */
         iMax = SDL_GetNumAudioDrivers();
-        SDLTest_AssertPass("Call to SDL_GetNumAudioDrivers");
+        SDLTest_AssertPass("Call to SDL_GetNumAudioDrivers()");
         SDLTest_AssertCheck(iMax > 0, "Validate number of audio drivers; expected: >0 got: %d", iMax);
         for (i = 0; i < iMax; i++) {
             audioDriver = SDL_GetAudioDriver(i);
@@ -238,7 +238,7 @@ int audio_pauseUnpauseAudio()
 
         /* Loop over all available audio drivers */
         iMax = SDL_GetNumAudioDrivers();
-        SDLTest_AssertPass("Call to SDL_GetNumAudioDrivers");
+        SDLTest_AssertPass("Call to SDL_GetNumAudioDrivers()");
         SDLTest_AssertCheck(iMax > 0, "Validate number of audio drivers; expected: >0 got: %d", iMax);
         for (i = 0; i < iMax; i++) {
             audioDriver = SDL_GetAudioDriver(i);
