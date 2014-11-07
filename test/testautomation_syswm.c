@@ -32,7 +32,7 @@ syswm_getWindowWMInfo(void *arg)
 
   /* Make call */
   result = SDL_GetWindowWMInfo(window, &info);
-  SDLTest_AssertPass("Call to SDL_GetWindowWMInfo");
+  SDLTest_AssertPass("Call to SDL_GetWindowWMInfo()");
   SDLTest_Log((result == SDL_TRUE) ? "Got window information" : "Couldn't get window information");
 
   SDL_DestroyWindow(window);

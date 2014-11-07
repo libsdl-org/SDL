@@ -51,7 +51,7 @@ void _destroyVideoSuiteTestWindow(SDL_Window *window)
   if (window != NULL) {
      SDL_DestroyWindow(window);
      window = NULL;
-     SDLTest_AssertPass("Call to SDL_DestroyWindow");
+     SDLTest_AssertPass("Call to SDL_DestroyWindow()");
   }
 }
 
@@ -342,7 +342,7 @@ video_getWindowFlags(void *arg)
   window = _createVideoSuiteTestWindow(title);
   if (window != NULL) {
       actualFlags = SDL_GetWindowFlags(window);
-      SDLTest_AssertPass("Call to SDL_GetWindowFlags");
+      SDLTest_AssertPass("Call to SDL_GetWindowFlags()");
       SDLTest_AssertCheck((flags & actualFlags) == flags, "Verify returned value has flags %d set, got: %d", flags, actualFlags);
   }
 
@@ -364,7 +364,7 @@ video_getNumDisplayModes(void *arg)
 
   /* Get number of displays */
   displayNum = SDL_GetNumVideoDisplays();
-  SDLTest_AssertPass("Call to SDL_GetNumVideoDisplays");
+  SDLTest_AssertPass("Call to SDL_GetNumVideoDisplays()");
 
   /* Make call for each display */
   for (i=0; i<displayNum; i++) {
@@ -388,7 +388,7 @@ video_getNumDisplayModesNegative(void *arg)
 
   /* Get number of displays */
   displayNum = SDL_GetNumVideoDisplays();
-  SDLTest_AssertPass("Call to SDL_GetNumVideoDisplays");
+  SDLTest_AssertPass("Call to SDL_GetNumVideoDisplays()");
 
   /* Invalid boundary values */
   displayIndex =  SDLTest_RandomSint32BoundaryValue(0, displayNum, SDL_FALSE);
@@ -427,7 +427,7 @@ video_getClosestDisplayModeCurrentResolution(void *arg)
 
   /* Get number of displays */
   displayNum = SDL_GetNumVideoDisplays();
-  SDLTest_AssertPass("Call to SDL_GetNumVideoDisplays");
+  SDLTest_AssertPass("Call to SDL_GetNumVideoDisplays()");
 
   /* Make calls for each display */
   for (i=0; i<displayNum; i++) {
@@ -435,7 +435,7 @@ video_getClosestDisplayModeCurrentResolution(void *arg)
 
     /* Get first display mode to get a sane resolution; this should always work */
     result = SDL_GetDisplayMode(i, 0, &current);
-    SDLTest_AssertPass("Call to SDL_GetDisplayMode");
+    SDLTest_AssertPass("Call to SDL_GetDisplayMode()");
     SDLTest_AssertCheck(result == 0, "Verify return value, expected: 0, got: %d", result);
     if (result != 0) {
       return TEST_ABORTED;
@@ -481,7 +481,7 @@ video_getClosestDisplayModeRandomResolution(void *arg)
 
   /* Get number of displays */
   displayNum = SDL_GetNumVideoDisplays();
-  SDLTest_AssertPass("Call to SDL_GetNumVideoDisplays");
+  SDLTest_AssertPass("Call to SDL_GetNumVideoDisplays()");
 
   /* Make calls for each display */
   for (i=0; i<displayNum; i++) {
@@ -521,7 +521,7 @@ video_getWindowBrightness(void *arg)
   window = _createVideoSuiteTestWindow(title);
   if (window != NULL) {
       result = SDL_GetWindowBrightness(window);
-      SDLTest_AssertPass("Call to SDL_GetWindowBrightness");
+      SDLTest_AssertPass("Call to SDL_GetWindowBrightness()");
       SDLTest_AssertCheck(result >= 0.0 && result <= 1.0, "Validate range of result value; expected: [0.0, 1.0], got: %f", result);
   }
 
@@ -583,7 +583,7 @@ video_getWindowDisplayMode(void *arg)
   window = _createVideoSuiteTestWindow(title);
   if (window != NULL) {
       result = SDL_GetWindowDisplayMode(window, &mode);
-      SDLTest_AssertPass("Call to SDL_GetWindowDisplayMode");
+      SDLTest_AssertPass("Call to SDL_GetWindowDisplayMode()");
       SDLTest_AssertCheck(result == 0, "Validate result value; expected: 0, got: %d", result);
       SDLTest_AssertCheck(mode.w > 0, "Validate mode.w content; expected: >0, got: %d", mode.w);
       SDLTest_AssertCheck(mode.h > 0, "Validate mode.h content; expected: >0, got: %d", mode.h);
