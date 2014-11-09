@@ -262,7 +262,7 @@ WINRT_ProcessPointerMovedEvent(SDL_Window *window, Windows::UI::Input::PointerPo
 
     if ( ! WINRT_IsTouchEvent(pointerPoint)) {
         SDL_SendMouseMotion(window, 0, 0, (int)windowPoint.X, (int)windowPoint.Y);
-    } else if (pointerPoint->PointerId == WINRT_LeftFingerDown) {
+    } else {
         if (pointerPoint->PointerId == WINRT_LeftFingerDown) {
             SDL_SendMouseMotion(window, 0, 0, (int)windowPoint.X, (int)windowPoint.Y);
         }
