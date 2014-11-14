@@ -35,7 +35,7 @@ while test x$1 != x; do
             compile=no; link=no;;
         -c) link=no;;
         -o) output=$2;;
-        *.c|*.cc|*.cpp|*.S) source=$1;;
+        *.c|*.cc|*.cpp|*.S|*.m|*.mm) source=$1;;
     esac
     shift
 done
