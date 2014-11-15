@@ -19,21 +19,24 @@ Requirements
 ------------
 
 * Microsoft Visual C++ (aka Visual Studio), either 2013 or 2012 versions
-  - Free, "Express" editions may be used, so long as they include support for 
-    either "Windows Store" or "Windows Phone" apps.  Versions marked as
-    supporting "Windows Desktop" development typically do not include support
-    for creating WinRT apps.
-  - Visual C++ 2012 can only build apps that target versions 8.0 of Windows, or 
-    Windows Phone.  8.0-targetted apps will still run on devices running 
-    8.1 editions of Windows, however they will not be able to take advantage of 
+  - Free, "Community" or "Express" editions may be used, so long as they
+    include  support for either "Windows Store" or "Windows Phone" apps.
+    "Express" versions marked as supporting "Windows Desktop" development
+    typically do not include support for creating WinRT apps, to note.
+    (The "Community" edition of Visual C++ 2013 does, however, support both
+    desktop/Win32 and WinRT development).
+  - Visual C++ 2012 can only build apps that target versions 8.0 of Windows,
+    or  Windows Phone.  8.0-targetted apps will run on devices running 8.1
+    editions of Windows, however they will not be able to take advantage of
     8.1-specific features.
-  - Visual C++ 2013 can only create app projects that target 8.1 versions
-    of Windows, which do NOT run on 8.0 devices.  An optional Visual Studio
-    add-in, "Tools for Maintaining Store apps for Windows 8", allows projects
-    that are created with Visual C++ 2012, which can create Windows 8.0 apps,
-    to be loaded and built with non-Express editions of Visual C++ 2013.  More
-    details on targeting different versions of Windows can found at the
-    following web pages:
+  - Visual C++ 2013 cannot create app projects that target Windows 8.0.
+    Visual C++ 2013 Update 4, can create app projects for Windows Phone 8.0,
+    Windows Phone 8.1, and Windows 8.1, but not Windows 8.0.  An optional
+    Visual Studio add-in, "Tools for Maintaining Store apps for Windows 8",
+    allows Visual C++ 2013 to load and build Windows 8.0 projects that were
+    created with Visual C++ 2012, so long as Visual C++ 2012 is installed
+    on the same machine.  More details on targeting different versions of
+    Windows can found at the following web pages:
       - [Develop apps by using Visual Studio 2013](http://msdn.microsoft.com/en-us/library/windows/apps/br211384.aspx)
       - [To add the Tools for Maintaining Store apps for Windows 8](http://msdn.microsoft.com/en-us/library/windows/apps/dn263114.aspx#AddMaintenanceTools)
 * A valid Microsoft account - This requirement is not imposed by SDL, but
