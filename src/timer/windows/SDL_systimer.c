@@ -186,7 +186,19 @@ SDL_GetPerformanceFrequency(void)
     return frequency.QuadPart;
 }
 
-#ifdef __WINRT__
+/* Sleep() is not publicly available to apps in early versions of WinRT.
+ *
+ * Visual C++ 2013 Update 4 re-introduced Sleep() for Windows 8.1 and
+ * Windows Phone 8.1.
+ *
+ * Use the compiler version to determine availability.
+ *
+ * NOTE #1: _MSC_FULL_VER == 180030723 for Visual C++ 2013 Update 3.
+ * NOTE #2: Visual C++ 2013, when compiling for Windows 8.0 and
+ *    Windows Phone 8.0, uses the Visual C++ 2012 compiler to build
+ *    apps and libraries.
+ */
+#if defined(__WINRT__) && defined(_MSC_FULL_VER) && (_MSC_FULL_VER <= 180030723)
 static void
 Sleep(DWORD timeout)
 {
