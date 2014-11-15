@@ -439,6 +439,8 @@ SDL_GetPlatform()
     return "Solaris";
 #elif __WIN32__
     return "Windows";
+#elif __WINRT__
+    return "WinRT";
 #elif __IPHONEOS__
     return "iOS";
 #elif __PSP__
