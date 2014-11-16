@@ -40,12 +40,9 @@
 
 - (id)initWithSDLWindow:(SDL_Window *)_window
 {
-    self = [self init];
-    if (self == nil) {
-        return nil;
+    if (self = [super initWithNibName:nil bundle:nil]) {
+        self.window = _window;
     }
-    self.window = _window;
-
     return self;
 }
 
@@ -56,31 +53,20 @@
 
 - (void)viewDidLayoutSubviews
 {
-    if (self->window->flags & SDL_WINDOW_RESIZABLE) {
-        SDL_WindowData *data = self->window->driverdata;
-        SDL_VideoDisplay *display = SDL_GetDisplayForWindow(self->window);
-        SDL_DisplayModeData *displaymodedata = (SDL_DisplayModeData *) display->current_mode.driverdata;
-        const CGSize size = data->view.bounds.size;
-        int w, h;
+    const CGSize size = self.view.bounds.size;
+    int w = (int) size.width;
+    int h = (int) size.height;
 
-        w = (int)(size.width * displaymodedata->scale);
-        h = (int)(size.height * displaymodedata->scale);
-
-        SDL_SendWindowEvent(self->window, SDL_WINDOWEVENT_RESIZED, w, h);
-    }
+    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, w, h);
 }
 
 - (NSUInteger)supportedInterfaceOrientations
 {
     NSUInteger orientationMask = 0;
+    const char *hint = SDL_GetHint(SDL_HINT_ORIENTATIONS);
 
-    const char *orientationsCString;
-    if ((orientationsCString = SDL_GetHint(SDL_HINT_ORIENTATIONS)) != NULL) {
-        BOOL rotate = NO;
-        NSString *orientationsNSString = [NSString stringWithCString:orientationsCString
-                                                            encoding:NSUTF8StringEncoding];
-        NSArray *orientations = [orientationsNSString componentsSeparatedByCharactersInSet:
-                                 [NSCharacterSet characterSetWithCharactersInString:@" "]];
+    if (hint != NULL) {
+        NSArray *orientations = [@(hint) componentsSeparatedByString:@" "];
 
         if ([orientations containsObject:@"LandscapeLeft"]) {
             orientationMask |= UIInterfaceOrientationMaskLandscapeLeft;
@@ -94,14 +80,17 @@
         if ([orientations containsObject:@"PortraitUpsideDown"]) {
             orientationMask |= UIInterfaceOrientationMaskPortraitUpsideDown;
         }
+    }
 
-    } else if (self->window->flags & SDL_WINDOW_RESIZABLE) {
+    if (orientationMask == 0 && (window->flags & SDL_WINDOW_RESIZABLE)) {
         orientationMask = UIInterfaceOrientationMaskAll;  /* any orientation is okay. */
-    } else {
-        if (self->window->w >= self->window->h) {
+    }
+
+    if (orientationMask == 0) {
+        if (window->w >= window->h) {
             orientationMask |= UIInterfaceOrientationMaskLandscape;
         }
-        if (self->window->h >= self->window->w) {
+        if (window->h >= window->w) {
             orientationMask |= (UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown);
         }
     }
@@ -121,11 +110,17 @@
 
 - (BOOL)prefersStatusBarHidden
 {
-    if (self->window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_BORDERLESS)) {
+    if (window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_BORDERLESS)) {
         return YES;
     } else {
         return NO;
     }
+}
+
+- (UIStatusBarStyle)preferredStatusBarStyle
+{
+    /* We assume most games don't have a bright white background. */
+    return UIStatusBarStyleLightContent;
 }
 
 @end
