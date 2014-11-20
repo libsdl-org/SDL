@@ -62,44 +62,7 @@
 
 - (NSUInteger)supportedInterfaceOrientations
 {
-    NSUInteger orientationMask = 0;
-    const char *hint = SDL_GetHint(SDL_HINT_ORIENTATIONS);
-
-    if (hint != NULL) {
-        NSArray *orientations = [@(hint) componentsSeparatedByString:@" "];
-
-        if ([orientations containsObject:@"LandscapeLeft"]) {
-            orientationMask |= UIInterfaceOrientationMaskLandscapeLeft;
-        }
-        if ([orientations containsObject:@"LandscapeRight"]) {
-            orientationMask |= UIInterfaceOrientationMaskLandscapeRight;
-        }
-        if ([orientations containsObject:@"Portrait"]) {
-            orientationMask |= UIInterfaceOrientationMaskPortrait;
-        }
-        if ([orientations containsObject:@"PortraitUpsideDown"]) {
-            orientationMask |= UIInterfaceOrientationMaskPortraitUpsideDown;
-        }
-    }
-
-    if (orientationMask == 0 && (window->flags & SDL_WINDOW_RESIZABLE)) {
-        orientationMask = UIInterfaceOrientationMaskAll;  /* any orientation is okay. */
-    }
-
-    if (orientationMask == 0) {
-        if (window->w >= window->h) {
-            orientationMask |= UIInterfaceOrientationMaskLandscape;
-        }
-        if (window->h >= window->w) {
-            orientationMask |= (UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown);
-        }
-    }
-
-    /* Don't allow upside-down orientation on the phone, so answering calls is in the natural orientation */
-    if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
-        orientationMask &= ~UIInterfaceOrientationMaskPortraitUpsideDown;
-    }
-    return orientationMask;
+    return UIKit_GetSupportedOrientations(window);
 }
 
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)orient
@@ -119,7 +82,7 @@
 
 - (UIStatusBarStyle)preferredStatusBarStyle
 {
-    /* We assume most games don't have a bright white background. */
+    /* We assume most SDL apps don't have a bright white background. */
     return UIStatusBarStyleLightContent;
 }
 

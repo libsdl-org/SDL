@@ -36,6 +36,8 @@ extern void UIKit_DestroyWindow(_THIS, SDL_Window * window);
 extern SDL_bool UIKit_GetWindowWMInfo(_THIS, SDL_Window * window,
                                       struct SDL_SysWMinfo * info);
 
+extern NSUInteger UIKit_GetSupportedOrientations(SDL_Window * window);
+
 @class UIWindow;
 
 @interface SDL_uikitwindow : UIWindow
