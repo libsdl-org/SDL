@@ -80,9 +80,6 @@ static int SetupWindowData(_THIS, SDL_Window *window, SDL_uikitwindow *uiwindow,
 
     /* Fill in the SDL window with the window data */
     {
-        window->x = 0;
-        window->y = 0;
-
         CGRect frame = UIKit_ComputeViewFrame(window, displaydata.uiscreen);
 
         /* Get frame dimensions */
@@ -96,6 +93,8 @@ static int SetupWindowData(_THIS, SDL_Window *window, SDL_uikitwindow *uiwindow,
             height = temp;
         }
 
+        window->x = 0;
+        window->y = 0;
         window->w = width;
         window->h = height;
     }
@@ -182,21 +181,32 @@ UIKit_CreateWindow(_THIS, SDL_Window *window)
         }
 
         if (data.uiscreen == [UIScreen mainScreen]) {
-            if (window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_BORDERLESS)) {
-                [UIApplication sharedApplication].statusBarHidden = YES;
-            } else {
-                [UIApplication sharedApplication].statusBarHidden = NO;
-            }
-        }
+            NSUInteger orientations = UIKit_GetSupportedOrientations(window);
+            UIApplication *app = [UIApplication sharedApplication];
 
-        if (!(window->flags & SDL_WINDOW_RESIZABLE)) {
-            if (window->w > window->h) {
-                if (!UIKit_IsDisplayLandscape(data.uiscreen)) {
-                    [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationLandscapeRight animated:NO];
+            if (window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_BORDERLESS)) {
+                app.statusBarHidden = YES;
+            } else {
+                app.statusBarHidden = NO;
+            }
+
+            /* Make sure the screen is using a supported orientation. We do it
+             * now so that SetupWindowData assigns the properly oriented width
+             * and height to the window's w and h variables.
+             */
+            if (UIKit_IsDisplayLandscape(data.uiscreen)) {
+                if (!(orientations & UIInterfaceOrientationMaskLandscape)) {
+                    [app setStatusBarOrientation:UIInterfaceOrientationPortrait animated:NO];
                 }
-            } else if (window->w < window->h) {
-                if (UIKit_IsDisplayLandscape(data.uiscreen)) {
-                    [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationPortrait animated:NO];
+            } else {
+                if (!(orientations & (UIInterfaceOrientationMaskPortrait|UIInterfaceOrientationMaskPortraitUpsideDown))) {
+                    UIInterfaceOrientation orient = UIInterfaceOrientationLandscapeLeft;
+
+                    if (orientations & UIInterfaceOrientationMaskLandscapeRight) {
+                        orient = UIInterfaceOrientationLandscapeRight;
+                    }
+
+                    [app setStatusBarOrientation:orient animated:NO];
                 }
             }
         }
@@ -228,7 +238,6 @@ UIKit_ShowWindow(_THIS, SDL_Window * window)
 {
     @autoreleasepool {
         UIWindow *uiwindow = ((__bridge SDL_WindowData *) window->driverdata).uiwindow;
-
         [uiwindow makeKeyAndVisible];
     }
 }
@@ -238,7 +247,6 @@ UIKit_HideWindow(_THIS, SDL_Window * window)
 {
     @autoreleasepool {
         UIWindow *uiwindow = ((__bridge SDL_WindowData *) window->driverdata).uiwindow;
-
         uiwindow.hidden = YES;
     }
 }
@@ -339,6 +347,53 @@ UIKit_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
             return SDL_FALSE;
         }
     }
+}
+
+NSUInteger
+UIKit_GetSupportedOrientations(SDL_Window * window)
+{
+    const char *hint = SDL_GetHint(SDL_HINT_ORIENTATIONS);
+    NSUInteger orientationMask = 0;
+
+    @autoreleasepool {
+        if (hint != NULL) {
+            NSArray *orientations = [@(hint) componentsSeparatedByString:@" "];
+
+            if ([orientations containsObject:@"LandscapeLeft"]) {
+                orientationMask |= UIInterfaceOrientationMaskLandscapeLeft;
+            }
+            if ([orientations containsObject:@"LandscapeRight"]) {
+                orientationMask |= UIInterfaceOrientationMaskLandscapeRight;
+            }
+            if ([orientations containsObject:@"Portrait"]) {
+                orientationMask |= UIInterfaceOrientationMaskPortrait;
+            }
+            if ([orientations containsObject:@"PortraitUpsideDown"]) {
+                orientationMask |= UIInterfaceOrientationMaskPortraitUpsideDown;
+            }
+        }
+
+        if (orientationMask == 0 && (window->flags & SDL_WINDOW_RESIZABLE)) {
+            /* any orientation is okay. */
+            orientationMask = UIInterfaceOrientationMaskAll;
+        }
+
+        if (orientationMask == 0) {
+            if (window->w >= window->h) {
+                orientationMask |= UIInterfaceOrientationMaskLandscape;
+            }
+            if (window->h >= window->w) {
+                orientationMask |= (UIInterfaceOrientationMaskPortrait | UIInterfaceOrientationMaskPortraitUpsideDown);
+            }
+        }
+
+        /* Don't allow upside-down orientation on the phone, so answering calls is in the natural orientation */
+        if ([[UIDevice currentDevice] userInterfaceIdiom] == UIUserInterfaceIdiomPhone) {
+            orientationMask &= ~UIInterfaceOrientationMaskPortraitUpsideDown;
+        }
+    }
+
+    return orientationMask;
 }
 
 int
