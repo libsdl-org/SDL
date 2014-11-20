@@ -52,7 +52,7 @@ void _uikit_keyboard_init();
 
 - (id)initWithFrame:(CGRect)frame
 {
-    if (self = [super initWithFrame: frame]) {
+    if (self = [super initWithFrame:frame]) {
 #if SDL_IPHONE_KEYBOARD
         [self initializeKeyboard];
 #endif
@@ -69,7 +69,7 @@ void _uikit_keyboard_init();
 
 - (CGPoint)touchLocation:(UITouch *)touch shouldNormalize:(BOOL)normalize
 {
-    CGPoint point = [touch locationInView: self];
+    CGPoint point = [touch locationInView:self];
 
     if (normalize) {
         CGRect bounds = self.bounds;
@@ -123,7 +123,7 @@ void _uikit_keyboard_init();
         at once, or perhaps in other circumstances.  Usually (it seems)
         all active touches are canceled.
     */
-    [self touchesEnded: touches withEvent: event];
+    [self touchesEnded:touches withEvent:event];
 }
 
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
@@ -154,7 +154,7 @@ void _uikit_keyboard_init();
 /* Set ourselves up as a UITextFieldDelegate */
 - (void)initializeKeyboard
 {
-    textField = [[UITextField alloc] initWithFrame: CGRectZero];
+    textField = [[UITextField alloc] initWithFrame:CGRectZero];
     textField.delegate = self;
     /* placeholder so there is something to delete! */
     textField.text = @" ";
@@ -171,7 +171,7 @@ void _uikit_keyboard_init();
     textField.hidden = YES;
     keyboardVisible = NO;
     /* add the UITextField (hidden) to our view */
-    [self addSubview: textField];
+    [self addSubview:textField];
     
     _uikit_keyboard_init();
 }
@@ -204,7 +204,7 @@ void _uikit_keyboard_init();
         int i;
         for (i = 0; i < [string length]; i++) {
 
-            unichar c = [string characterAtIndex: i];
+            unichar c = [string characterAtIndex:i];
 
             Uint16 mod = 0;
             SDL_Scancode code;

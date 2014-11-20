@@ -141,18 +141,18 @@ UIKit_GL_CreateContext(_THIS, SDL_Window * window)
         }
 
         /* construct our view, passing in SDL's OpenGL configuration data */
-        view = [[SDL_uikitopenglview alloc] initWithFrame: frame
-                                                    scale: scale
-                                            retainBacking: _this->gl_config.retained_backing
-                                                    rBits: _this->gl_config.red_size
-                                                    gBits: _this->gl_config.green_size
-                                                    bBits: _this->gl_config.blue_size
-                                                    aBits: _this->gl_config.alpha_size
-                                                depthBits: _this->gl_config.depth_size
-                                              stencilBits: _this->gl_config.stencil_size
-                                                     sRGB: _this->gl_config.framebuffer_srgb_capable
-                                             majorVersion: _this->gl_config.major_version
-                                               shareGroup: share_group];
+        view = [[SDL_uikitopenglview alloc] initWithFrame:frame
+                                                    scale:scale
+                                            retainBacking:_this->gl_config.retained_backing
+                                                    rBits:_this->gl_config.red_size
+                                                    gBits:_this->gl_config.green_size
+                                                    bBits:_this->gl_config.blue_size
+                                                    aBits:_this->gl_config.alpha_size
+                                                depthBits:_this->gl_config.depth_size
+                                              stencilBits:_this->gl_config.stencil_size
+                                                     sRGB:_this->gl_config.framebuffer_srgb_capable
+                                             majorVersion:_this->gl_config.major_version
+                                               shareGroup:share_group];
         if (!view) {
             return NULL;
         }
@@ -162,7 +162,7 @@ UIKit_GL_CreateContext(_THIS, SDL_Window * window)
         if (view.viewcontroller != nil) {
             view.viewcontroller.view = view;
         }
-        [uiwindow addSubview: view];
+        [uiwindow addSubview:view];
 
         /* The view controller needs to be the root in order to control rotation on iOS 6.0 */
         if (uiwindow.rootViewController == nil) {
