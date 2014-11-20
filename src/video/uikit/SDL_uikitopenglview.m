@@ -112,8 +112,8 @@
 
         eaglLayer.opaque = YES;
         eaglLayer.drawableProperties = @{
-            kEAGLDrawablePropertyRetainedBacking: @(retained),
-            kEAGLDrawablePropertyColorFormat: colorFormat
+            kEAGLDrawablePropertyRetainedBacking:@(retained),
+            kEAGLDrawablePropertyColorFormat:colorFormat
         };
 
         /* Set the appropriate scale (for retina display support) */

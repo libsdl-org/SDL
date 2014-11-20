@@ -113,7 +113,7 @@ SDL_IdleTimerDisabledChanged(void *userdata, const char *name, const char *oldVa
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     /* Set working directory to resource path */
-    [[NSFileManager defaultManager] changeCurrentDirectoryPath: [[NSBundle mainBundle] resourcePath]];
+    [[NSFileManager defaultManager] changeCurrentDirectoryPath:[[NSBundle mainBundle] resourcePath]];
 
     /* register a callback for the idletimer hint */
     SDL_AddHintCallback(SDL_HINT_IDLE_TIMER_DISABLED,
