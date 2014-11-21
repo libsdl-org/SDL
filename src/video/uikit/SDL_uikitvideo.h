@@ -25,7 +25,7 @@
 
 #include "../SDL_sysvideo.h"
 
-BOOL UIKit_IsSystemVersionAtLeast(NSString *version);
+BOOL UIKit_IsSystemVersionAtLeast(double version);
 CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen);
 
 #endif /* _SDL_uikitvideo_h */

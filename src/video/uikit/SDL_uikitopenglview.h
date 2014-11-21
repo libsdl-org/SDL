@@ -57,6 +57,8 @@
 
 - (void)updateFrame;
 
+- (void)setDebugLabels;
+
 - (void)setAnimationCallback:(int)interval
                     callback:(void (*)(void*))callback
                callbackParam:(void*)callbackParam;

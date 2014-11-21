@@ -130,16 +130,15 @@ UIKit_VideoQuit(_THIS)
 }
 
 BOOL
-UIKit_IsSystemVersionAtLeast(NSString *version)
+UIKit_IsSystemVersionAtLeast(double version)
 {
-    NSString *sysversion = [UIDevice currentDevice].systemVersion;
-    return [sysversion compare:version options:NSNumericSearch] != NSOrderedAscending;
+    return [[UIDevice currentDevice].systemVersion doubleValue] >= version;
 }
 
 CGRect
 UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
 {
-    BOOL hasiOS7 = UIKit_IsSystemVersionAtLeast(@"7.0");
+    BOOL hasiOS7 = UIKit_IsSystemVersionAtLeast(7.0);
 
     if (hasiOS7 || (window->flags & (SDL_WINDOW_BORDERLESS|SDL_WINDOW_FULLSCREEN))) {
         /* The view should always show behind the status bar in iOS 7+. */
