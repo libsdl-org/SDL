@@ -183,15 +183,11 @@
 
 - (void)updateFrame
 {
-    glBindFramebuffer(GL_FRAMEBUFFER, viewFramebuffer);
-    glBindRenderbuffer(GL_RENDERBUFFER, 0);
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, 0);
-    glDeleteRenderbuffers(1, &viewRenderbuffer);
+    GLint prevRenderbuffer = 0;
+    glGetIntegerv(GL_RENDERBUFFER_BINDING, &prevRenderbuffer);
 
-    glGenRenderbuffers(1, &viewRenderbuffer);
     glBindRenderbuffer(GL_RENDERBUFFER, viewRenderbuffer);
     [context renderbufferStorage:GL_RENDERBUFFER fromDrawable:(CAEAGLLayer*)self.layer];
-    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, viewRenderbuffer);
 
     glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &backingWidth);
     glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &backingHeight);
@@ -201,9 +197,7 @@
         glRenderbufferStorage(GL_RENDERBUFFER, depthBufferFormat, backingWidth, backingHeight);
     }
 
-    glBindRenderbuffer(GL_RENDERBUFFER, viewRenderbuffer);
-
-    [self setDebugLabels];
+    glBindRenderbuffer(GL_RENDERBUFFER, prevRenderbuffer);
 }
 
 - (void)setDebugLabels
@@ -278,8 +272,15 @@
 {
     [super layoutSubviews];
 
-    [EAGLContext setCurrentContext:context];
-    [self updateFrame];
+    CGSize layersize = self.layer.bounds.size;
+    int width = (int) (layersize.width * self.layer.contentsScale);
+    int height = (int) (layersize.height * self.layer.contentsScale);
+
+    /* Update the color and depth buffer storage if the layer size has changed. */
+    if (width != backingWidth || height != backingHeight) {
+        [EAGLContext setCurrentContext:context];
+        [self updateFrame];
+    }
 }
 
 - (void)destroyFramebuffer
