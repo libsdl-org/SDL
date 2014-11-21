@@ -193,19 +193,17 @@ void _uikit_keyboard_init();
 /* UITextFieldDelegate method.  Invoked when user types something. */
 - (BOOL)textField:(UITextField *)_textField shouldChangeCharactersInRange:(NSRange)range replacementString:(NSString *)string
 {
-    if ([string length] == 0) {
+    NSUInteger len = string.length;
+
+    if (len == 0) {
         /* it wants to replace text with nothing, ie a delete */
         SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_BACKSPACE);
         SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_BACKSPACE);
-    }
-    else {
+    } else {
         /* go through all the characters in the string we've been sent
            and convert them to key presses */
-        int i;
-        for (i = 0; i < [string length]; i++) {
-
+        for (int i = 0; i < len; i++) {
             unichar c = [string characterAtIndex:i];
-
             Uint16 mod = 0;
             SDL_Scancode code;
 
@@ -224,16 +222,20 @@ void _uikit_keyboard_init();
                 /* If character uses shift, press shift down */
                 SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_LSHIFT);
             }
+
             /* send a keydown and keyup even for the character */
             SDL_SendKeyboardKey(SDL_PRESSED, code);
             SDL_SendKeyboardKey(SDL_RELEASED, code);
+
             if (mod & KMOD_SHIFT) {
                 /* If character uses shift, press shift back up */
                 SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LSHIFT);
             }
         }
+
         SDL_SendKeyboardText([string UTF8String]);
     }
+
     return NO; /* don't allow the edit! (keep placeholder text there) */
 }
 

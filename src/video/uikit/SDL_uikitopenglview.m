@@ -93,7 +93,7 @@
 
         if (sRGB) {
             /* sRGB EAGL drawable support was added in iOS 7. */
-            if (UIKit_IsSystemVersionAtLeast(@"7.0")) {
+            if (UIKit_IsSystemVersionAtLeast(7.0)) {
                 colorFormat = kEAGLColorFormatSRGBA8;
             } else {
                 SDL_SetError("sRGB drawables are not supported.");
@@ -164,6 +164,8 @@
         }
 
         glBindRenderbuffer(GL_RENDERBUFFER, viewRenderbuffer);
+
+        [self setDebugLabels];
     }
 
     return self;
@@ -200,6 +202,27 @@
     }
 
     glBindRenderbuffer(GL_RENDERBUFFER, viewRenderbuffer);
+
+    [self setDebugLabels];
+}
+
+- (void)setDebugLabels
+{
+    if (viewFramebuffer != 0) {
+        glLabelObjectEXT(GL_FRAMEBUFFER, viewFramebuffer, 0, "context FBO");
+    }
+
+    if (viewRenderbuffer != 0) {
+        glLabelObjectEXT(GL_RENDERBUFFER, viewRenderbuffer, 0, "context color buffer");
+    }
+
+    if (depthRenderbuffer != 0) {
+        if (depthBufferFormat == GL_DEPTH24_STENCIL8_OES) {
+            glLabelObjectEXT(GL_RENDERBUFFER, depthRenderbuffer, 0, "context depth-stencil buffer");
+        } else {
+            glLabelObjectEXT(GL_RENDERBUFFER, depthRenderbuffer, 0, "context depth buffer");
+        }
+    }
 }
 
 - (void)setAnimationCallback:(int)interval

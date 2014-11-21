@@ -150,7 +150,6 @@ UIKit_AddDisplay(UIScreen *uiscreen)
     display.driverdata = (void *) CFBridgingRetain(data);
     SDL_AddVideoDisplay(&display);
 
-
     return 0;
 }
 
