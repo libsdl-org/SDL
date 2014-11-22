@@ -1,0 +1,31 @@
+
+These are test programs for the SDL library:
+
+	checkkeys	Watch the key events to check the keyboard
+	loopwave	Audio test -- loop playing a WAV file
+	loopwavequeue	Audio test -- loop playing a WAV file with SDL_QueueAudio
+	testaudioinfo	Lists audio device capabilities
+	testcdrom	Sample audio CD control program
+	testerror	Tests multi-threaded error handling
+	testfile	Tests RWops layer
+	testgl2		A very simple example of using OpenGL with SDL
+	testhread	Hacked up test of multi-threading
+	testiconv	Tests international string conversion
+	testjoystick	List joysticks and watch joystick events
+	testkeys	List the available keyboard keys
+	testloadso	Tests the loadable library layer
+	testlock	Hacked up test of multi-threading and locking
+	testmultiaudio	Tests using several audio devices
+	testoverlay2	Tests the overlay flickering/scaling during playback.
+	testpalette	Tests palette color cycling
+	testplatform	Tests types, endianness and cpu capabilities
+	testsem		Tests SDL's semaphore implementation
+	testshape	Tests shaped windows
+	testsprite2	Example of fast sprite movement on the screen
+	testtimer	Test the timer facilities
+	testver		Check the version and dynamic loading and endianness
+	testwm2		Test window manager -- title, icon, events
+	torturethread	Simple test for thread creation/destruction
+	controllermap   Useful to generate Game Controller API compatible maps
+
+

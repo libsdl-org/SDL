@@ -1,0 +1,58 @@
+# HG changeset patch
+# User Ben Henning
+# Date 1376509869 25200
+#      Wed Aug 14 12:51:09 2013 -0700
+# Node ID e8558df4fbdb173a2b9ed0d354d6c3e76b376698
+# Parent  a5f8b4f709722222e02fa481873d76ad25255e09
+Fixed a bug in Xcode project generation wherein pre/prelink/post-build commands
+would not be properly executed if the premake script only had the commands
+in configuration blocks, rather than in the project block. According to the
+website, these commands can exist in both blocks and the Xcode script does
+properly generate the commands, it just doesn't add a single line which allows
+Xcode to execute the commands at the correct stage. This patch fixes those
+issues.
+
+diff --git a/src/actions/xcode/xcode_common.lua b/src/actions/xcode/xcode_common.lua
+--- a/src/actions/xcode/xcode_common.lua
++++ b/src/actions/xcode/xcode_common.lua
+@@ -432,20 +432,37 @@
+ 		for _, node in ipairs(tr.products.children) do
+ 			local name = tr.project.name
+ 			
++			-- This function checks whether there are build commands of a specific
++			-- type to be executed; they will be generated correctly, but the project
++			-- commands will not contain any per-configuration commands, so the logic
++			-- has to be extended a bit to account for that.
++			local function hasBuildCommands(which)
++				-- standard check...this is what existed before
++				if #tr.project[which] > 0 then
++					return true
++				end
++				-- what if there are no project-level commands? check configs...
++				for _, cfg in ipairs(tr.configs) do
++					if #cfg[which] > 0 then
++						return true
++					end
++				end
++			end
++			
+ 			_p(2,'%s /* %s */ = {', node.targetid, name)
+ 			_p(3,'isa = PBXNativeTarget;')
+ 			_p(3,'buildConfigurationList = %s /* Build configuration list for PBXNativeTarget "%s" */;', node.cfgsection, name)
+ 			_p(3,'buildPhases = (')
+-			if #tr.project.prebuildcommands > 0 then
++			if hasBuildCommands('prebuildcommands') then
+ 				_p(4,'9607AE1010C857E500CD1376 /* Prebuild */,')
+ 			end
+ 			_p(4,'%s /* Resources */,', node.resstageid)
+ 			_p(4,'%s /* Sources */,', node.sourcesid)
+-			if #tr.project.prelinkcommands > 0 then
++			if hasBuildCommands('prelinkcommands') then
+ 				_p(4,'9607AE3510C85E7E00CD1376 /* Prelink */,')
+ 			end
+ 			_p(4,'%s /* Frameworks */,', node.fxstageid)
+-			if #tr.project.postbuildcommands > 0 then
++			if hasBuildCommands('postbuildcommands') then
+ 				_p(4,'9607AE3710C85E8F00CD1376 /* Postbuild */,')
+ 			end
+ 			_p(3,');')

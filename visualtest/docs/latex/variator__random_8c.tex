@@ -1,0 +1,54 @@
+\hypertarget{variator__random_8c}{\section{C\-:/\-Users/\-D\-E\-L\-L/\-Work/sdlvisualtest/visualtest/src/variator\-\_\-random.c File Reference}
+\label{variator__random_8c}\index{C\-:/\-Users/\-D\-E\-L\-L/\-Work/sdlvisualtest/visualtest/src/variator\-\_\-random.\-c@{C\-:/\-Users/\-D\-E\-L\-L/\-Work/sdlvisualtest/visualtest/src/variator\-\_\-random.\-c}}
+}
+{\ttfamily \#include $<$time.\-h$>$}\\*
+{\ttfamily \#include $<$S\-D\-L\-\_\-test.\-h$>$}\\*
+{\ttfamily \#include \char`\"{}S\-D\-L\-\_\-visualtest\-\_\-random\-\_\-variator.\-h\char`\"{}}\\*
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+int \hyperlink{variator__random_8c_a807486069b7180c3b3bf8af4616d055f}{S\-D\-L\-Visual\-Test\-\_\-\-Init\-Random\-Variator} (\hyperlink{struct_s_d_l_visual_test___random_variator}{S\-D\-L\-Visual\-Test\-\_\-\-Random\-Variator} $\ast$variator, \hyperlink{struct_s_d_l_visual_test___s_u_t_config}{S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Config} $\ast$config, Uint64 seed)
+\item 
+char $\ast$ \hyperlink{variator__random_8c_a479aceb74b5355c1d22856fc7efce890}{S\-D\-L\-Visual\-Test\-\_\-\-Get\-Next\-Random\-Variation} (\hyperlink{struct_s_d_l_visual_test___random_variator}{S\-D\-L\-Visual\-Test\-\_\-\-Random\-Variator} $\ast$variator)
+\item 
+void \hyperlink{variator__random_8c_ac95d9e0716e4c918c6902b10f9591d4b}{S\-D\-L\-Visual\-Test\-\_\-\-Free\-Random\-Variator} (\hyperlink{struct_s_d_l_visual_test___random_variator}{S\-D\-L\-Visual\-Test\-\_\-\-Random\-Variator} $\ast$variator)
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Source file for the variator that tests the S\-U\-T with random variations to the input parameters. 
+
+\subsection{Function Documentation}
+\hypertarget{variator__random_8c_ac95d9e0716e4c918c6902b10f9591d4b}{\index{variator\-\_\-random.\-c@{variator\-\_\-random.\-c}!S\-D\-L\-Visual\-Test\-\_\-\-Free\-Random\-Variator@{S\-D\-L\-Visual\-Test\-\_\-\-Free\-Random\-Variator}}
+\index{S\-D\-L\-Visual\-Test\-\_\-\-Free\-Random\-Variator@{S\-D\-L\-Visual\-Test\-\_\-\-Free\-Random\-Variator}!variator_random.c@{variator\-\_\-random.\-c}}
+\subsubsection[{S\-D\-L\-Visual\-Test\-\_\-\-Free\-Random\-Variator}]{\setlength{\rightskip}{0pt plus 5cm}void S\-D\-L\-Visual\-Test\-\_\-\-Free\-Random\-Variator (
+\begin{DoxyParamCaption}
+\item[{{\bf S\-D\-L\-Visual\-Test\-\_\-\-Random\-Variator} $\ast$}]{variator}
+\end{DoxyParamCaption}
+)}}\label{variator__random_8c_ac95d9e0716e4c918c6902b10f9591d4b}
+Frees any resources associated with the variator. \hypertarget{variator__random_8c_a479aceb74b5355c1d22856fc7efce890}{\index{variator\-\_\-random.\-c@{variator\-\_\-random.\-c}!S\-D\-L\-Visual\-Test\-\_\-\-Get\-Next\-Random\-Variation@{S\-D\-L\-Visual\-Test\-\_\-\-Get\-Next\-Random\-Variation}}
+\index{S\-D\-L\-Visual\-Test\-\_\-\-Get\-Next\-Random\-Variation@{S\-D\-L\-Visual\-Test\-\_\-\-Get\-Next\-Random\-Variation}!variator_random.c@{variator\-\_\-random.\-c}}
+\subsubsection[{S\-D\-L\-Visual\-Test\-\_\-\-Get\-Next\-Random\-Variation}]{\setlength{\rightskip}{0pt plus 5cm}char$\ast$ S\-D\-L\-Visual\-Test\-\_\-\-Get\-Next\-Random\-Variation (
+\begin{DoxyParamCaption}
+\item[{{\bf S\-D\-L\-Visual\-Test\-\_\-\-Random\-Variator} $\ast$}]{variator}
+\end{DoxyParamCaption}
+)}}\label{variator__random_8c_a479aceb74b5355c1d22856fc7efce890}
+Generates a new random variation.
+
+\begin{DoxyReturn}{Returns}
+The arguments string representing the random variation on success, and N\-U\-L\-L on failure. The pointer returned should not be freed. 
+\end{DoxyReturn}
+\hypertarget{variator__random_8c_a807486069b7180c3b3bf8af4616d055f}{\index{variator\-\_\-random.\-c@{variator\-\_\-random.\-c}!S\-D\-L\-Visual\-Test\-\_\-\-Init\-Random\-Variator@{S\-D\-L\-Visual\-Test\-\_\-\-Init\-Random\-Variator}}
+\index{S\-D\-L\-Visual\-Test\-\_\-\-Init\-Random\-Variator@{S\-D\-L\-Visual\-Test\-\_\-\-Init\-Random\-Variator}!variator_random.c@{variator\-\_\-random.\-c}}
+\subsubsection[{S\-D\-L\-Visual\-Test\-\_\-\-Init\-Random\-Variator}]{\setlength{\rightskip}{0pt plus 5cm}int S\-D\-L\-Visual\-Test\-\_\-\-Init\-Random\-Variator (
+\begin{DoxyParamCaption}
+\item[{{\bf S\-D\-L\-Visual\-Test\-\_\-\-Random\-Variator} $\ast$}]{variator, }
+\item[{{\bf S\-D\-L\-Visual\-Test\-\_\-\-S\-U\-T\-Config} $\ast$}]{config, }
+\item[{Uint64}]{seed}
+\end{DoxyParamCaption}
+)}}\label{variator__random_8c_a807486069b7180c3b3bf8af4616d055f}
+Initializes the variator.
+
+\begin{DoxyReturn}{Returns}
+1 on success, 0 on failure 
+\end{DoxyReturn}

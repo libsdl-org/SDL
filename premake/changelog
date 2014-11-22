@@ -1,0 +1,828 @@
+This file contains a log of most of the changes and evolutions of the meta-build
+system for Simple DirectMedia Layer 2.0 and related projects.
+
+Changes as of 09/18/2013:
+  -Enabled executable bits on the Mac OS X build-scripts command files.
+  -Replaced the Xcode directory structure with two folders for Xcode 3
+   and Xcode 4. It now looks like the VisualC folder, wherein there is
+   premake/Xcode/Xcode3 and premake/Xcode/Xcode4 default workspaces.
+  -Updated premake/Xcode/build-scripts/xcode3.command and the
+   xcode4.command files to properly generate the workspaces in the above
+   mentioned directories.
+  -Regenerated the Visual Studio projects to push the 'current working
+   directory' fix to the repository.
+  -Verified the projects are building and running properly across all platforms.
+
+Changes as of 09/13/2013-09/14/2013:
+  -Analyzed structure and existing problems to be fixed in the system.
+  -Updated the OpenGL dependency to not include "C:\Windows\System32" since that
+   is implicitly included for any compiler building the project on Windows
+   anyway.
+  -Removed the build.all.vs2012.bat script since it hasn't been working and
+   trying to get it to work or figure out why it doesn't is beyond the scope of
+   the project at this point.
+  -The above also applies to check.bin.compatibility.vs2010.bat.
+  -Updated typo in run.tests.bat to make testchessboard run properly (it was
+   looking for testdrawchessboard instead).
+  -Corrected OpenGL dependency to properly look for "libGL" instead of
+   "OpenGL32" on Linux.
+  -Updated OpenGL dependency to link to "libGL" instead of "OpenGL32" on Linux.
+  -Updated OpenGL dependency to properly notify the dependency system whether
+   OpenGL support has been found or not (it was always indicating OpenGL
+   support accidentally).
+  -Modified the vs2008/vs2010/vs2012 generation scripts to generate to specific
+   subfolders (ie, ./VS2008, etc.) so they can all be generated at once. Updated
+   the clean script appropriately. Originally, it was desired to generate
+   something more like SDL_VS2008.sln, etc., but premake has troubles correcting
+   interproject dependencies without renaming the binary files to similar names
+   (like SDL_main_VS2008.lib), which seemed much worse than just separating by
+   directory.
+  -Altered the working directories for the Visual Studio debugger to run from
+   the path of the binary for each test application, rather than from the
+   project directory. This allows the tests to utilize any locally copied
+   resource files from both inside and outside Visual Studio.
+  -Added execution bits to Linux build scripts.
+  -Clarified the second paragraph in README-windows.txt.
+  -Fixed typos in README.txt and added a plethora of code examples and
+   explanations to demonstrate how to add on to the current system.
+  -Regenerated default projects for MinGW, Linux, and Windows (this time serving
+   VS2008, VS2010, and VS2012).
+
+Changes as of 08/30/2013:
+  -Updated README-windows.txt, README-macosx.txt, and README-mingw.txt.
+  -Created README-linux.txt, README-ios.txt, README-linux.txt.
+  -Modified premake4.lua to not generate any files if simply printing help text.
+  -Created the entire primary README.txt help file.
+  -Updated the automated test command file for OS X to randomly select a file
+   for testshape, just like the windows version. However, there is an issue
+   with it so that test is currently commented out.
+  -Updated all 4 OS X build scripts to automatically build all of the generated
+   test projects, rather than maintaining a list.
+  -Generated an initial Xcode 4 workspace for iOS.
+  -Generated an initial Xcode 4 workspace for Mac OS X.
+  -Updated a bug in the windows automated test batch file within the label for
+   handling the specially randomized arguments passed to an application, such as
+   for testshape (it was hardcoded for testshape, rather than using a variable
+   as intended).
+  -Fixed a typo in the windows automated test batch file wherein it was not able
+   to run the chess board application correctly.
+  -Updated the automated test bash script for Linux targets to run the new
+   chessboard test and to randomly pick an image to send to testshape. It runs
+   testresample and testatomic now, too.
+
+Changes as of 08/28/2013 & 08/29/2013:
+  -Removed TODO.txt. It's no longer necessary; a lot of what was in it is no
+   longer relevant, completed, or replaced by something different and thus
+   implemented in some variety.
+  -Stopped the premake engine from executing the project definitions if simply
+   executing the help procedure, listing available options and acitons for the
+   target premake file.
+  -Modified the dependency function handling so that the function names are case
+   insensitive both for registering functions and checking or testing them.
+  -Created a function in sdl_projects.lua that can be used to retrieve all of
+   the known names of the dependencies registered with the system at that point.
+  -Implemented automated generation of options to forcibly enable certain
+   dependencies, even if they are explicitly defined to not work on a given
+   platform or if they simply cannot be found. This is useful, for instance, to
+   force on the DirectX dependency for MinGW if the user has successfully setup
+   the environment to work with it.
+  -Modified the behavior of the dependency functions to provide the libraries,
+   library paths, and include paths for platforms that don't support that
+   dependency, allowing the override command line options to properly work on
+   those platforms for those dependencies (again, the DirectX dependency on
+   MinGW comes to mind).
+  -Cleaned up premake4.lua.
+  -Removed hardcoded links in Linux from premake4.lua to its proper locations in
+   SDL2.lua and dependency functions.
+  -Renamed the 'reset_links' function in sdl_check_compile.lua to be
+   'reset_link_flags' since it fits the functionality better.
+  -Corrected a mistake in 'check_include_directory' in sdl_check_compile.lua
+   where it simply checked for files existing in a directory, rather than
+   specifically header files.
+  -Removed the 'projects' table declaration in premake4.lua, since its defined
+   in sdl_projects.lua anyway.
+  -Removed directive for copying the Info.plist file from the Xcode-iOS
+   directory for the testsprite2.lua project, since it makes no sense.
+  -Modified 'addConfig' in sdl_gen_config.lua to be extra cautious about
+   ensuring that keys and values in the supplied config table are, indeed,
+   strings as they need to be for concatenation.
+  -Added documentation for premake4.lua, sdl_check_compile.lua,
+   sdl_dependency_checkers.lua, sdl_depends.lua, sdl_file.lua,
+   sdl_gen_config.lua, sdl_string.lua, and sdl_projects.lua.
+  -Implemented file headers for every single project definition file.
+  -Significantly cleaned up the commenting in SDL2.lua and added a file header
+   description.
+  -Added a print line in premake4.lua to indicate when the generation of the
+   premake Lua file begins.
+  -Added initial sample projects for VS2010, Linux make, and MinGW make.
+
+Changes as of 08/27/2013:
+  -Updated the Linux premake executable based on all the patches applied to
+   premake thus far, as documented in the patches folder.
+  -Updated the Linux definition of SDL2.lua to have all of the subsequent source
+   files associated with each dependency to be within that dependency using the
+   SDL_paths directive.
+  -Implemented a function for modifying the search path for libraries during
+   the various compiler test functions in sdl_check_compile.lua.
+  -sdl_check_compile.lua: implemented a function for checking wether a library
+   exists using os.findlib, adding its directory to the library path, then
+   using check_library_exists to see if it can be linked to properly.
+  -sdl_check_compile.lua: implemented check_include_directory and
+   check_include_directories functions to see whether specified directories
+   exist and contains .h files. This could be modified later on for other types
+   of files that would exist in include directories (such as hpp, hxx, etc.).
+  -sdl_projects.lua: implemented a function that checks whether a dependency
+   exists and was found (the function must have been executed already). This is
+   used by many of the dependencies for Linux (specifically that most of its
+   dependencies depend on DLOpen for shared library binding).
+  -Modified the dependency order for Linux in SDL2.lua so that DLOpen is listed
+   first, as to help the dependency resolution process.
+  -Corrected the link order in sdl_check_compile.lua, fixing the
+   check_library_exists, check_library_exists_multiple, and
+   check_library_exists_lookup functions.
+  -Corrected the size definitions for SDL_config_linux.template.h so that it
+   will work cross-platform.
+  -Implemented better dependency support for the following Linux dependencies:
+   DLOpen, ALSA, PulseAudio, ESD, NAS, OSS, and X11. The dependency code is
+   based on CMake's definitions for those dependencies. The dependency function
+   for D-Bus is improved.
+  -Removed the commented code for the Windows SDK in the
+   sdl_dependency_checkers.lua file.
+  -Re-enabled the ifndef checks for the generate premake header file.
+  -Moved the clean action in premake4.lua to before the project definitions, so
+   that cleaning is immediate and doesn't have to wait on unnecessary dependency
+   checks.
+  -Renamed the macro defining whether to use the premake config header from
+   USING_PREMAKE_HEADER_H to USING_PREMAKE_CONFIG_H, which involved changes in
+   premake4.lua and include/SDL_config.h in the root source tree.
+  -Corrected a mistake in the OpenGL dependency function that would mishandle
+   forbidding desktop GL functionality on iOS.
+  -Corrected a bug that would properly setup MinGW targets to work with OpenGL,
+   but it would not link to WGL so there was no way for SDL to actually load the
+   OpenGL library and attach it to a window.
+  -Blocked support for OpenGL on Cygwin.
+  -Blocked support for testfilesystem on Cygwin due to lack of support, though
+   unix file system support is now enabled on Cygwin. The test accesses some
+   windows functions that do not link properly in the Cygwin environment.
+
+Changes as of 08/26/2013:
+  -Implemented the testdrawchessboard test application.
+  -Disabled the path-searching functionality for the DirectX dependency so it
+   would be significantly sped up. It makes the assumption that DirectX is only
+   installed if its DXSDK_DIR variable is set. The code is still there if users
+   wish to implement the functionality again.
+  -Modified the clean action to remove the 'ipch' directory since it sometimes
+   shows up in various Visual Studio solution builds.
+  -Fixed a bug in the post-build copy step that wouldn't correctly create nested
+   directories during the copy stage in Visual Studio on Windows targets. This
+   reflects an earlier bug fix that would stop the non-nested files from being
+   copied correctly; both work now.
+  -Modified the testshape project to copy all of the shape images instead of the
+   sample image.
+  -Updated the automated test batch file on Windows to randomly pick one of the
+   intended shapes while running testshape. It also runs testshape three times,
+   to demonstrate both the randomness and adequate testing of testshape over
+   multiple shapes.
+  -Changed the resample test to copy the sample.wav.
+  -Updated the 'pass' label in the windows run.tests.bat file to accept a
+   variable-number of arguments to be passed to the executable.
+  -Re-enabeld the testresample test to try and resample sample.wav at 44.1Khz.
+  -Updated testoverlay to copy moose.dat, since it depends on it now.
+  -Updated testshader to properly depend on OpenGL and link to it, as well as
+   copy the file it needs (icon.bmp).
+  -Moved the dependency checker file over to the util directory.
+  -Updated premake4.lua to recursively execute all the files in the projects
+   folder, so they don't have to be hardcoded into premake4.lua and can be
+   organized in whichever way desired (so long as their internal paths are
+   correct).
+  -Implemented text-based file writing in the sdl_file.lua utility file, as to
+   prep for going around generating a lua file and loading the generated file
+   from memory, instead.
+  -Updated all of the current SDL dependency functions to properly check for
+   MinGW and Cygwin support.
+  -Fixed a few bugs in premake4.lua that would break Cygwin and MinGW support
+   due to improper checking.
+  -Fixed bugs that made it tricky to do wildcard copying on *nix systems (needed
+   by testshape). Tested to work on MinGW and Windows.
+
+Changes as of 08/23/2013:
+  -Removed hardcoded definitions for the Linux config template.
+  -Moved definitions over to SDL2.lua.
+  -Added definition for enabling the file system module on Linux.
+  -Separated the OpenGL dependency into one for Windows (WGL) and Linux (GLX).
+   The core dependency is still there, but the windowing part is separate.
+  -Separated the library-based dependencies from the Linux implementation into
+   a series of dependency functions.
+  -Changed the dependency function to return a named table instead of variable
+   returns.
+
+Changes as of 08/22/2013:
+  -Rearranged a few more things in the top 'dofile' section in premake4.lua.
+  -Reverted accidental changs to include/SDL_config.h which rendered it specific
+   to a single platform, per cmake generation. All building was broken due to
+   this accidental change, but it should be fixed after this commit.
+  -Merged repository with the latest version from live SDL repository.
+  -Implemented new file system source tree on Windows.
+  -Implemented file system test.
+  -Removed files accidentally committed from the Linux directory.
+  -Implemented tests for the file system test for windows and Mac OS X.
+  -Implemented cocoa file system support.
+  -Implemented cocoa filesystem support on iOS.
+  -Fixed a bug that was leading to the Xcode-iOS trying to build the
+   OpenGL renderer on iOS, which isn't supported.
+
+Changes as of 08/21/2013:
+  -Changed names of generated files in check_compile.lua to more readable names,
+   within the format "premakecheck.*"
+  -Updated the check build function in check_compile.lua to support executing
+   the build and redirecting all output to "./premakecheck.stdout".
+  -Implemented a function for checking the size of a given type by generating a
+   program that prints it to the screen, then reads the result from a file and
+   converts it to an integer. This function is dependent on the existence of
+   stdio.h and the printf function.
+  -Tested the size function on Linux using various types.
+  -Clumped the "dofile" directives for all utility scripts together in
+   premake4.lua.
+  -Removed the *Mode variables for MinGW, Cygwin, and iOS. All checking for
+   these systems should be done using SDL_getos().
+  -Updated SDL_getos() to check the _OPTIONS table directly.
+  -From depends.lua, moved dirpathsearch and getenvpath to sdl_file.lua.
+  -Created a sdl_string.lua file to contain various string-related functions.
+  -From depends.lua, moved indexOf and explode to sdl_string.lua.
+  -From premake4.lua, moved implode to sdl_string.lua.
+  -Renamed depends.lua to sdl_depends.lua. Indicated that the file is
+   particularly for windows dependency testing.
+  -Rename check_compile.lua to sdl_check_compile.lua.
+  -Updated premake4.lua to reflect file changes and modified the order of doing
+   the util files, since their interdependencies have changed slightly.
+  -Added sdl_string.lua to the list of utility files done in the beginning of
+   premake4.lua.
+  -Updated header in every file to reflect that I did not create premake (old
+   wording was a bit vague).
+  -Added header to new files.
+
+Changes as of 08/20/2013:
+  -Fixed logical mistakes in the check build sources function.
+  -Added a check_function_exists function.
+  -Whenever an include header or headers are checked, if they are found
+   and build properly then they will be added to an internal list that
+   will be prepended whenever doing future check_function_exists and
+   check_library_exists calls.
+  -Added a function which will check if a function exists in any of a set
+   of libraries, rather than just one.
+  -Added support for linking libraries for the check_library_exists
+   function.
+  -Silenced building and linking commands.
+  -Incorporated check_compile.lua in premake4.lua.
+  -Tested the various functions with X11, DLOpen, and ALSA dependency
+   compatibility. some future tweaking may be necessary, but the
+   dependency checking happening in cmake should be reproducable using
+   these functions with some tweaking of the implementation itself.
+
+Changes as of 08/16/2013:
+  -Updated Cygwin build to foster a very trimmed down version of the Linux
+   build, with no audio, video, haptic, joystick, or input support.
+  -Cygwin uses a shared library. Read SDL2.lua for more information.
+  -Slimmed and trimmed the cygwin config template to its bare minimum.
+  -Implemented the configurations needed for Cygwin in SDL2.lua.
+  -Updated many projects to be excluded if building on Cygwin, since many of
+   them are incompatible without the aforementioned support.
+  -Implemented a Cygwin directory and separate build-scripts, working similarly
+   to that of MinGW.
+  -Implemented a check_compile.lua utility file emulating a lot of the same
+   functions used in cmake to check for dependencies and various libraries.
+   These will be added to a Linux-specific dependency checker function later on,
+   allowing all the Linux dependencies to follow a similar routine to that of
+   autotools and cmake.
+
+Changes as of 08/15/2013:
+  -Created a separate template configuration file for Cygwin.
+  -Created separate SDL2 project definitions for Cygwin, alongside Linux.
+  -Added various other side definitions for Cygwin support, though it is still
+   not building correctly due to some misunderstandings with library support.
+  -Patched premake to support custom source trees for Xcode projects to fix
+   issues finding the correct iOS frameworks in Xcode.
+  -Updated all Win32 premake executables containing the patch.
+  -Updated executables for Xcode and Xcode-iOS for above patch.
+  -Updated SDL2.lua for iOS to use the SDKROOT source tree for the frameworks,
+   as per the new patch.
+  -Successfully built and ran all the iOS demos.
+
+Changes as of 08/14/2013:
+  -Fixed a mistake in the windows-side copy command that was changed yesterday;
+   without parentheses it was inhibiting the ability to copy the SDL2.dll file
+   to the built directories if the directories already existed; this has been
+   fixed.
+  -Reintegrated MinGW support on Windows with a few slight changes to various
+   OS dependencies, since "MinGW" is now considered the target OS, versus
+   Windows. This involved changes in SDL2.lua, SDL2main.lua, testnative.lua.
+  -Reenabled both debug and release configurations.
+  -Separated post-build commands to being separate for debug and release.
+  -Setup temporary hardcoded linkoptions for MinGW on the release configuration.
+  -Verified both configurations build correctly for VS2010 and MinGW.
+  -Updated the premake executables for VS and MinGW to reflect the recent
+   patch.
+  -Updated premake executables for Xcode and Xcode-iOS to contain features
+   added from the latest patch.
+  -Verified working debug/release builds on Xcode, though the target
+   directories for the binaries clash, so they override each other. This
+   will be fixed in the future as the system starts to get cleaned up.
+
+Changes as of 08/13/2013:
+  -Implemented special SDL_getos function which gets the current build
+   platform, taking into consideration Cygwin, iOS, and MinGW modes.
+   Although it's invalid to consider Cygwin and MinGW operating systems,
+   for all intensive purposes they are considered separate for the build
+   system. This may be renamed later on.
+  -Updated OS-compatibility functions for SDL projects to use the new
+   SDL_getos function, so they can be dependent on Cygwin, MinGW, iOS, etc.
+  -Removed the iOS dependency function and updated the iOS portion of the
+   SDL2 project to depend on iOS rather than Mac OS X.
+  -Changed the explode function in depends.lua to be part of the string
+   table.
+  -Modified SDL_isos to accept patterns, such as "macosx|ios".
+  -Updated SDL2 and SDL2main to be compatible on Mac OS X and iOS
+   simultaneously.
+  -Updated SDL_os to work with the patterns, as well, by merging the
+   functionalities of SDL_os and SDL_isos to a local function.
+  -Updated SDL_notos similarly.
+  -Updated SDL_os to work on projects as well as dependencies, and updated
+   premake4.lua to check for overall project compatibility.
+  -Implemented SDL_notos to inhibit compatibility for projects that simply
+   cannot work on specific platforms.
+  -Added exclusions for every single current test project to not be added
+   to the iOS solution, since none of them are designed to run on iOS.
+  -Removed hacked override for info.plist and properly implemented plist
+   inclusion for Xcode projects. Premake already supported this well.
+  -Changed a few references in premake4.lua of os.get to SDL_getos to
+   avoid some of the hardcoding that was going on in various places.
+  -Advanced the SDL_copy feature for project resources to being able to
+   copy files to more complicated destination paths, with scripted support
+   to create the destination directories if they do not yet exist during
+   post-build execution.
+  -Patched premake to allow BMPamd WAV files to be considered as assets
+   for Xcode projects.
+  -Updated the premake executables for Xcode and Xcode-iOS, respectively.
+  -Successfully ported, built, and ran all working Xcode-iOS demos using
+   project files generated by the meta-build system for those demos. There
+   are a few hiccups that need to be ironed out yet, but overall it's a
+   hopeful step forward to decent iOS support.
+  -Upgraded the clean action to also delete the demos folder for iOS.
+  -Unhardcoded a lot of the iOS stuff added in previous commits, which
+   included switching a lot more references to os.get() to SDL_getos()
+   in premake4.lua.
+  -Preliminarily fixed some potential bugs stemming from SDL_getos()
+   versus os.get().
+  -Moved hardcoded iOS links from premake4.lua to their correct location
+   in SDL2.lua.
+  -Reinstated correct platforms directives, versus hardcoded iOS, etc.
+  -Double checked Xcode projects still are generated, built, and run
+   properly.
+  -Updated the patches listing and files portion appropriately for the
+   aforementioned premake modification.
+
+Changes as of 08/09/2013:
+  -More bruteforcing on trying to hack premake into generating a correct
+   iOS-compatible Xcode project.
+  -Added code to convert all ConsoleApps to WindowedApps in iOS mode
+   because ConsoleApps translate to 'tool' on Mac OS X and tools are
+   not supported on iOS.
+  -Forcefully implemented a list of links taken from the Demos SDL
+   iOS Xcode project for all generated SDL2 projects so they can
+   correctly link to the iOS system.
+  -Successfully built SDL2 and tests for iOS, though the test projects will
+   not run correctly on iOS due to not being built for iOS.
+  -Fixed a bug in the testgles project where it was not linking to SDL2test,
+   on which it was dependent.
+
+Changes as of 08/08/2013:
+  -Implemented template header for iOS configurations.
+  -Successfully built SDL2 library for iOS on Xcode.
+  -Implemented configuration for iOS similar to that of Cygwin and MinGW.
+  -Implemented command-line option for selecting iOS mode on Mac OS X.
+  -Currently, iOS projects will have some issues regarding correct
+   project types, so building and running are a bit off yet for iOS.
+  -Added a new folder for iOS generation.
+  -Added scripts for iOS generation and such.
+  -Added exclusion for the OpenGL dependency checker for always failing
+   on iOS, since iOS uses OpenGL ES 1.1/2.0, not desktop GL.
+  -Fixed a bug in sdl_projects.lua that led to excluded dependency
+   function calls to give a false positive if they lead to invoking
+   the function rather than using a cached result.
+
+Changes as of 08/07/2013:
+  -Created a fork for premake-stable to try and implement some of the necessary
+   changes in order to support many new features to the meta-build system.
+  -Created a directory for patches as part of the meta-build system. This may be
+   removed later on.
+  -Restored linking to MinGW32 in MinGW mode after temporarily removing it and
+   forgetting to restore it.
+  -Submitted a ticket and patch to premake for fixing the linker order that
+   prevented proper linking to SDL2main on the MinGW project.
+  -Created a manifest of patches made to premake needed for MinGW.
+  -Added a patch for adding iOS support on Xcode, though currently untested.
+  -Updated all Mac OS X, Windows, and MinGW binaries to reflect the above
+   patches.
+
+Changes as of 08/06/2013:
+  -Corrected a mistake in the Linux template config header that was preventing
+   it from being built on Linux. It was using the same header guard as
+   SDL_config.h, rendering it completely blank during compile time.
+  -Added a dependency function for checking for D-Bus support on Linux.
+  -Implemented a summary implementation for the Linux project in SDL2.lua,
+   making use of the D-Bus dependency function.
+  -Added temporary global links in premake4.lua for all projects on Linux.
+  -Successfully built SDL2.lua on 64-bit Linux Mint 15.
+  -Updated the testnative test project to have a Linux dependency, binding to
+   testnativex11.c.
+  -Implemented an X11 dependency function for testnative and related projects,
+   though only testnative currently uses it.
+  -Had to switch over to using a static library instead of a shared library on
+   Linux for now, because Linux requires the end executable to be aware of
+   where the shared library is, and we have no way currently to generate any
+   sort of install rule for the generated SDL2 makefile. Premake will have to
+   be patched to proceed on that route.
+  -Successfully built all test projects on 64-bit Linux Mint 15.
+  -Added a shell script to automatically run through the compatible tests in
+   Linux/build-scripts, similar to those of the other platforms.
+  -Successfully ran through many of the tests, though without OpenGL support.
+  -Added clean shell script for Linux targets.
+
+Changes as of 08/05/2013:
+  -Implemented global flags for checking if the current premake system is
+   targeting MinGW or Cygwin.
+  -Corrected previous checks that were directly using _OPTIONS to using the
+   MinGWMode flag, instead.
+  -Corrected typos where I was misspelling 'targeted' as 'targetted'
+  -Moved the options declarations a bit earlier in premake4.lua.
+  -Corrected a mistake in the clean batch file for MinGW where it wasn't
+   actually cleaning in MinGW mode.
+  -Started working on a Cygwin implementation.
+  -Started working on a Linux implementation (using Linux Mint 15).
+  -Setup a basic SDL_config_linux.template.h based on a SDL_config.h production
+   on 64bit Linux Mint 15 using the configure script.
+  -Setup the Linux directory and a basic build script. The system completely
+   does not build at this point, it's simply a step in the right direction.
+  -Fixed a bug in the testnative project where it was trying to build the X11
+   implementation on Mac OS X instead of the cocoa implementation. The test
+   now builds and runs correctly on Mac OS X.
+
+Changes as of 08/02/2013:
+  -Actually added a README file for MinGW.
+  -Changed all the README files to be named similar to those in the top level
+   directory.
+  -Updated the READMEs for more accurate and up-to-date information.
+  -Split this primary README.txt into three files: README.txt, TODO.txt, and
+   changelog.
+  -Updated the depends.lua file to automatically fail on the windows dependency
+   search if the current OS is not windows and corrected a bug that would result
+   in an infinite loop if the main search path provided is empty but not nil.
+  -Implemented a utility function in depends.lua for joining together a series
+   of evaluated environmental variables, taking into consideration of they do
+   not exist. This function is cross-platform.
+  -Fixed a bug where the recently added code for surrounding paths with spaces
+   in quotes would lead to premake placing a "../" before the path. Besides the
+   convention of using double quotes is not universal, this bug existed both
+   with Visual Studio and MinGW gmakefiles. The code has been completely
+   removed, as it was found unnecessary.
+  -Modified DirectX dependency function to fail if targeting MinGW.
+  -After fully testing support for MinGW, I found there were a few differences
+   in execution between that and VS builds (without DirectX), one of which is
+   torturethread crashing on MinGW builds.
+  -Changed testshape.lua to copy sample.bmp and changed the run test scripts
+   to use the local sample.bmp as the shape for the window. This was just to
+   make the built environment independent of the top-level SDL directory.
+  -Changed the test run scripts to properly run the semaphore test.
+  -Edited the build scripts for Visual Studio to parallelize builds when
+   possible.
+  -Moved build scripts for VS and MinGW projects into respective build-scripts
+   folders, similar to the top level SDL directory. Tested all the tests for
+   builds using VS2008, VS2010, VS2012, and MinGW.
+  -Moved the build scripts for Xcode 3 and 4 to their own build-scripts folder.
+  -Updated the build scripts for Mac OS X to run the semaphore test.
+  -Tested the build environment and tests with Xcode 3 and 4 with architectures
+   i386 and x86_64.
+
+Changes as of 08/01/2013:
+  -Implemented the SDL_notdepfunc function in sdl_projects.lua so dependencies
+   can depend on the absence of a dependency. For example, the haptic and
+   joystick systems have dummy systems that cannot be built alongside the Dinput
+   implementations, so they have to be added only in the absence of DirectX.
+  -Implement a dependency for handling the situation where DirectX is not found
+   on the windows platform.
+  -Tested SDL and its tests without DirectX support. Properly built SDL and ran
+   through the tests. Most of the tests ran great. There were a few tests that
+   did not work quite right, though.
+  -Began working on MinGW gmakefile support.
+  -Implemented custom option for specifying mingw mode (using --mingw); this is
+   used to ensure -lmingw32 is specified to gcc for proper linking with
+   SDL2main.
+  -Had to change make_cpp.lua as part of premake in order to ensure the linker
+   flags were specified before input, so that I could properly ensure the order
+   of library linking. The premake in the VisualC folder is now customized.
+  -Changed all of the projects' dependency orders to be logically correct, since
+   gcc requires linking order to be exact.
+  -Successfully built the entire project using MinGW and a generated GNU
+   makefile.
+  -Modified MinGW setup to statically link to libgcc so it can run independently
+   of the MinGW system.
+  -Successfully ran all tests with MinGW-built executables and library.
+  -Setup a directory, README, and generation script for MinGW builds.
+  -Updated clean action for makefiles.
+  -Implemented quoted libpath and incpaths incase they have spaces.
+  -DirectX and OpenGL currently not supported on MinGW due to build errors. This
+   will be fixed and should be supported soon.
+
+Changes as of 07/31/2013:
+  -Implemented functions for checking whether the current system is 64bit
+   per-project specification. This is similar to SDL_isos. There is a
+   negated version implemented, too.
+  -Implemented native and universal build platforms for the Mac OS X
+   projects. This translates to x32 and x64 build targets within Xcode.
+  -Modified the SDL_defines function to add table values instead of replace.
+  -Corrected a mistake that was defining _WINDOWS on the Mac OS X project.
+  -Changed the dependency and custom links listing functions for sdl_projects
+   to prevent duplicates.
+  -Upgraded the premake4.lua handling of dependency lists and custom links
+   to support prevented duplicates.
+  -Reimplemented OpenGL support on Mac OS X.
+  -Separated frameworks on Mac OS X into proper SDL_dependency declarations
+   so they are no longer hardcoded.
+  -Upgraded project dependency system so that when a project is dependent
+   on a static library, it inherits all of the dependencies of that project
+   as well.
+  -Created build scripts for i386 and x86_64 for both Xcode 3 and Xcode 4.
+  -Tested all of the above (including with OpenGL and without OpenGL) on all
+   tests for Xcode 3 and 4, on architecture targets i386 and x86_64.
+  -Removed the old premake4 executable in Xcode.
+
+Changes as of 07/30/2013:
+  -Began investigating different architectures for Windows, MacOSX, etc.
+  -Implemented functionality for specifying which platforms a project is
+   supported on, so as to start providing preliminary support for multiple
+   build platforms.
+  -Changed function declaration requirement for dependency functions.
+  -Changed the dependency function invocation to be table-based.
+  -Implemented features to cleanup using dependency functions for projects and
+   allowed possibility for multiple dependency functions on one project.
+  -Moved invocation of dependency functions from premake4.lua to
+   sdl_projects.lua.
+  -Some nested statements have been cleaned up in premake4.lua due to changing
+   the dependency function calling location.
+  -Moved all dependency functions to a unified location for order-independent
+   referencing of them. Ie, this allows SDL2 and testgl2 to both reference the
+   OpenGL checker function.
+  -Ensured all dependencies are invoked exactly one time even if referenced
+   multiple times.
+  -Implemented opengl dependencies for SDL2 so that opengl support should now be
+   reenabled in the SDL project.
+
+Changes as of 07/29/2013:
+  -Implemented scripts to automatically build all of the projects in the VS2010
+   and VS2012 solutions.
+  -Implemented scripts to automatically perform binary compatibility testing for
+   premake VS2010 and VS2012 libraries against the manual projects' test
+   executables.
+  -Tested binary compatibility for VS2010 and VS2012 solutions on Windows. The
+   usual lack of standard output is still ocurring. The testgl2 application
+   currently crashes on both, but that's because it's not linking to OpenGL
+   currently. The test shouldn't actually crash, but it reports no OpenGL
+   when it runs correctly. The other visual tests seem to run fine.
+  -Cleaned up this README a bit, adding the rest of the points discussed with
+   Gabriel.
+
+Changes as of 07/26/2013:
+  -Corrected a bug in SDL2.lua that didn't correctly define the compile-time
+   defines for Mac OS X.
+  -Added template configuration headers for minimal builds and Mac OS X
+  -Added template config selection based on current platform, defaulting to
+   minimal if on an unknown system
+  -Corrected bug in sdl_gen_config.lua to allow using templates that have no
+   area to paste generated tokens, thereby ignoring the tokens and just
+   copying the template right into the generated header
+  -Upgraded build.all.xcode4.command in the Xcode directory to give some
+   information regarding how many tests were attempted to be built, how
+   many passed, failed, and were skipped.
+  -Added support in the clean option to correctly remove the Xcode 4 workspace
+   file. It almost perfectly cleans Xcode projects now. It actually will only
+   miss folders if the user goes into those folders with Finder, otherwise it
+   cleans up properly right now.
+  -Added support build.all.xcode3.command for Xcode 3 projects, rather than
+   having to manually go into each project and build it individually.
+
+Changes as of 07/25/2013:
+  -Moved file-based operations to a separate utility sdl_file.lua file
+  -Began the configuration generation system using sdl_gen_config.lua
+  -Created a config folder for *config.h templates and added the
+   SDL_config_windows.template.h file, omitting everything premake will add
+   itself
+  -Fixed a bug where the base location would have a backslash on windows in the
+   final generated Lua file, where it wasn't supposed to
+  -Implemented clean option for the generated header file
+  -Modified SDL_config.h to include SDL_config_premake.h (generated) if the
+   preprocessor value 'USING_PREMAKE_HEADER_H' is defined, which the meta-build
+   system ensures it is
+  -Merged winmm dependency back into the windows dependency for SDL2.lua,
+   because the windows timer module depends on winmm, as well
+  -Partially tested configuration system via Visual Studio 2008; Mac OS X
+   projects will be broken until that side is upgraded
+
+Changes as of 07/24/2013:
+  -Updated mac os x test file to include all the new tests
+  -Added script to automatically batch together all the scheme builds for
+   the tests, so they don't have to be manually built through Xcode
+  -Tested new tests and build environment on Xcode 4 successfully (weren't
+   tested on here yet)
+  -Began investigating implementing iOS Xcode projects using meta-build
+   system
+  -Began investigating implementing gmakefile generation support for
+   GNU/Linux, Cygwin, and MinGW.
+
+Changes as of 07/23/2013:
+  -Latest changes tested on Xcode 3 and 4; test suites running as expected
+  -Implemented the entire test suite and tested it in Visual Studio on Windows;
+   incompatible tests will build and run, but they will fail if there are no
+   appropriate devices or settings for them to run correctly; this is correct
+   behavior. Tested most suites on VS2008, VS2010, and VS2012. Only testerror
+   crashed.
+
+Changes as of 07/22/2013:
+  -Cleaned up the mixture of forward/back slashes in the generated LUA file. The
+   only backslashes that exist are for copy commands, since they are copied as
+   text into the generated projects. The rest use forward slashes, since premake
+   actions handle per-system translation of directory paths.
+  -Implemented SDL_isos function for projects so that they can have some control
+   over certain functions where arguments or function calls changed with
+   different operating systems (such as SDL_kind for SDL2 project)
+  -Documented the new project functions. The documentation could be formatted a
+   bit better and the arguments could be explicitly formatted.
+  -Cleaned up SDL2.lua
+  -Implemented project-level files and paths directives for projects, so that
+   SDL_dependency isn't needed to specify files and file search paths for
+   projects
+  -Applied the above changes to all the project files and named a few other
+   dependencies such as for SDL_main and testgl2. No projects should have
+   unnamed dependencies at this point.
+  -Tested the changes of the last few days on VS2008, VS2010, and VS2012. All
+   the test suites run as expected.
+
+Changes as of 07/19/2013:
+  -Updated generation backend to be more concise and less like it was before;
+   this also fixed the duplicate dependency function calls bug
+  -Implemented config function for constants to set in a generated SDL config
+   header
+  -Preliminarily set the config values for the SDL2 project
+  -Updated generation code so that it won't generate empty projects, which stems
+   from projects in which all of its dependencies are not compatible with the
+   current system
+  -Updated windows automated tests batch file to work more like Xcode's shell
+   command file wherein it uses a labeled batch of commands as a sort of
+   procedure; it's cleaner now and it will work if some projects aren't there
+   (such as if they aren't supported on that platform)
+  -Separated the winmm portion of the SDL2 project from the windows portion, so
+   it has its own dependence now and uses a dependency check function that's
+   dependent on premake's os.findlib
+
+Changes as of 07/18/2013:
+  -Converted all projects over to the new, simpler format and tested on VS2008,
+   VS2010, and VS2012
+  -Corrected a mistake in the SDL2main project that always built the main file
+   for windows, even on mac os x
+  -Added some more features to the new project definition system to support
+   project locations, custom defines, copy tables, and project dependencies
+  -Moved new project definition system to a separate lua file
+  -Fixed using 'copy' on windows for post-build commands and 'cp' on all
+   other systems
+  -Tested projects on Xcode 3; everything working correctly
+  -Modified SDL2main project to use the dummy main for macosx
+  -Changed the convenience scripts on macosx to .command files for the ability
+   to conveniently double-click-execute them like an application or windows batch
+   file 
+
+Changes as of 07/17/2013:
+  -Tested that the generated Xcode 3 projects correctly work as expected
+  -Implemented a new backend system for defining projects that majorly cleans
+   up the syntax and eases the process of defining projects; currently only
+   tested with VS2010 on Windows.
+
+Changes as of 07/09/2013-07/10/2013:
+  -Fixed a bug that premake was causing where the mac project wouldn't execute
+   any of its post-build options because premake was incorrectly generating the
+   project in specific situations; the generated lua file now works around it
+   correctly
+
+Changes as of 07/08/2013:
+  -Unified SDL2.lua a bit by pulling out the source commonalities (generic
+   interfaces and dummy implementations) and keeping the platform-specific
+   implementations separate
+  -Converted absolute paths to relative paths where appropriate, so now
+   the generated VS solutions (and possibly Xcode) should be more portable
+  -Modified premake script to support different base locations, so now the
+   Visual Studio project directory structure is built within the VisualC
+   directory, and similarly for Xcode (better organization and separation)
+  -Fixed a minor bug in the cleanup action for VS2008 and VS2012 solutions
+
+Changes as of 07/05/2013:
+  -Setup proper dependencies for XCode and successfully built the library
+  -Ran test suites to ensure working Mac OSX binaries (64 bit, on Mac OS X 10.8
+   Mountain Lion)
+  -Redid the entire build environment to run out of a root premake folder,
+   instead of separate premake folders for VisualC and Xcode
+  -Setup convenient scripts for both Xcode and VisualC in the generic
+   premake folder
+  -Consolidated the premake scripts into a singular script for both targets
+
+Changes as of 07/02/2013 & 07/03/2013:
+  -Finished implementing base setup for XCode
+  -Configured the premake projects for XCode (using a parallel directory tree
+   for now)
+  -Implemented base XCode project using premake, though it still doesn't link
+   properly
+
+Changes as of 06/30/2013 & 07/01/2013:
+  -Implemented release configurations for projects
+  -Began setting up environment for implementing the XCode projects
+
+Changes as of 06/29/2013:
+  -Implemented copying intra-solution project dependencies shared libraries to
+   the binary folders of other projects (such as copying SDL2.dll to subsequent
+   directories of applications that depend on it).
+  -Fixed a bug in the testscale and testrendertarget project lua files: they
+   were copying sample.bmp for usage, but they depended on both icon.bmp and
+   sample.bmp.
+  -Added temporary batch script to simplify the process of running through all
+   the currently available tests on windows.
+  -Ensured binary compatibility for using SDL2.dll built with manual solutions
+   with test suite applications built with automatic premake solution. This was
+   tested successfully for VS2008, VS2010, and VS2012.
+  -Binary compatibility has been ensured to not currently work vice versa,
+   that is, using hand-rolled test suite applications with a generated-built
+   SDL2.dll shared library.
+
+Changes as of 06/27/2013 & 06/28/2013:
+  -Added premake5-dev to the repository, though it's still called premake4.exe
+   and the main lua file is named similarly because it's still not officially
+   premake5.
+  -Setup generated project to nearly exactly match the flags of the manual
+   project. Binary compatibility has been tested for SDL2.dll built with the
+   manual projects against the applications built with the generated project.
+   All seems to work so far. Only tested on VS2010. Much more testing to
+   happen later.
+
+Changes as of 06/24/2013 & 06/25/2013:
+  -Implemented basic meta-meta building system, where premake4.lua now
+   generates a lua file and executes that to generate the project, allowing
+   forward compatibility for premake5
+  -Began working on binary compatibility verification by testing the test
+   executables built by the manual VS solution using the SDL2.dll built
+   from the premake solution. There are some issues, but nothing crashes
+   that didn't crash before.
+
+Changes as of 06/21/2013:
+  -Fixed multiple linker problem by adding an exclusion filter for
+   src/thread/generic so that the duplicate objects wouldn't be doubly linked
+  -Above linker fix also fixed the execution of all VS2008 project builds. All
+   the projects run the same in terms of success or failure.
+  -Added rudimentary clean action to premake files
+  -Organized the project and build directory structures for the VS projects
+   similar to that of the manually-built VS projects (though they no longer run
+   out of the box, since SDL2.dll is now in a different directory; soon to be
+   fixed)
+
+Changes as of 06/20/2013:
+  -Implemented an optional copy table for projects that allow automatic copying
+   of each file in the copy table from the source directory to the destination
+   directory. These copy strings can actually be relative paths, as they will
+   be made absolute and normalized in the handler code (but not validated!)
+  -Implemented custom, per-project defines (needed for testgl2)
+  -Fixed many warnings from VS2008 project by making sure shared libraries
+   weren't being linked into shared library projects (such as SDLtest).
+  -Tested all builds on VS2008, VS2010, and VS2012. Everything works as expected
+   on the latter two.
+
+Changes as of 06/19/2013:
+  -Implemented all of the currently supported projects in the hand-built
+   Visual Studio solution, which successful building
+  -Updated the dependency system to handle cross-linking of projects, such as
+   the testing suite applications being dependent on SDL2 and SDL2main (and
+   some even on SDL2test, which further emphasizes the capabilities)
+  -Organized the folder structure to be less cluttered than before: only
+   premake4.lua needs to exist at the root directory
+  -Hardcoded the build path for all the projects to ./bin/Debug
+  -Implemented support for adding input library links from dependency
+   resolutions (for opengl in testgl2 in this case)
+
+Changes as of 06/18/2013:
+  -Implemented a dependency for handling complex building scenarios, though
+   it's only very simple right now
+  -Implemented utility depends.lua for handling dependency searching on windows
+  -Ported over hardcoded solution for SDL2 library to using dependency tree and
+   a separate lua file
+  -Implemented SDL2main static library, which involved more flexibility in the
+   existing system
+
+Initial:
+  -Built premake 4 binary and pasted it into secluded directory in SDL's build
+   folder for Visual Studio
+  -Created the initial premake script which recreated the SDL2.dll shared binary
+   library, as based on the manually-created SDL project
