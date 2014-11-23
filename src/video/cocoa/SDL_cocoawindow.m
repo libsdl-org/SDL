@@ -856,6 +856,25 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 
 - (void)touchesBeganWithEvent:(NSEvent *) theEvent
 {
+    NSSet *touches = [theEvent touchesMatchingPhase:NSTouchPhaseAny inView:nil];
+    int existingTouchCount = 0;
+
+    for (NSTouch* touch in touches) {
+        if ([touch phase] != NSTouchPhaseBegan) {
+            existingTouchCount++;
+        }
+    }
+    if (existingTouchCount == 0) {
+        SDL_TouchID touchID = (SDL_TouchID)(intptr_t)[[touches anyObject] device];
+        int numFingers = SDL_GetNumTouchFingers(touchID);
+        DLog("Reset Lost Fingers: %d", numFingers);
+        for (--numFingers; numFingers >= 0; --numFingers) {
+            SDL_Finger* finger = SDL_GetTouchFinger(touchID, numFingers);
+            SDL_SendTouch(touchID, finger->id, SDL_FALSE, 0, 0, 0);
+        }
+    }
+
+    DLog("Began Fingers: %lu .. existing: %d", (unsigned long)[touches count], existingTouchCount);
     [self handleTouches:NSTouchPhaseBegan withEvent:theEvent];
 }
 
