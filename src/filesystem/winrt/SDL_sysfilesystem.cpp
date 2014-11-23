@@ -153,7 +153,6 @@ SDL_GetPrefPath(const char *org, const char *app)
     const char * srcPath = SDL_WinRTGetFSPathUTF8(SDL_WINRT_PATH_LOCAL_FOLDER);
 #else
     /* A 'Roaming' folder is available on Windows 8 and 8.1.  Use that.
-     * (SDL for Win32/Windows-Desktop uses the 'roaming' path as well).
      */
     const char * srcPath = SDL_WinRTGetFSPathUTF8(SDL_WINRT_PATH_ROAMING_FOLDER);
 #endif
