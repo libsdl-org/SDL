@@ -1072,7 +1072,7 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                         }
                     }
                 }
-            });
+            }, "SDLThreadListener");
             SDLActivity.mSDLThread.start();
         }
     }
