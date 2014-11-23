@@ -62,7 +62,7 @@ SDL_WinRTGetFSPathUNICODE(SDL_WinRT_Path pathType)
             return path.c_str();
         }
 
-#if WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP
+#if (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP) || (NTDDI_VERSION > NTDDI_WIN8)
         case SDL_WINRT_PATH_ROAMING_FOLDER:
         {
             static wstring path;
@@ -145,10 +145,16 @@ SDL_GetPrefPath(const char *org, const char *app)
      */
 
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
-    /* A 'Roaming' folder is not available in Windows Phone 8, however a 'Local' folder is. */
+    /* A 'Roaming' folder is not available in Windows Phone 8.0, however a
+     * 'Local' folder is.  Use the 'Local' folder in order to preserve
+     * compatibility with Windows Phone 8.0, and with app-installs that have
+     * been updated from 8.0-based, to 8.1-based apps.
+     */
     const char * srcPath = SDL_WinRTGetFSPathUTF8(SDL_WINRT_PATH_LOCAL_FOLDER);
 #else
-    /* A 'Roaming' folder is available on Windows 8 and 8.1.  Use that. */
+    /* A 'Roaming' folder is available on Windows 8 and 8.1.  Use that.
+     * (SDL for Win32/Windows-Desktop uses the 'roaming' path as well).
+     */
     const char * srcPath = SDL_WinRTGetFSPathUTF8(SDL_WINRT_PATH_ROAMING_FOLDER);
 #endif
 
