@@ -78,9 +78,9 @@ extern "C" {
 /* ---------- Function Prototypes ------------- */
 
 /**
- * /brief initialize the context
+ * \brief initialize the context
  *
- * /param  mdContext        pointer to context variable
+ * \param  mdContext        pointer to context variable
  *
  * Note: The function initializes the message-digest context
  *       mdContext. Call before each new use of the context -
@@ -90,11 +90,11 @@ extern "C" {
 
 
 /**
- * /brief update digest from variable length data
+ * \brief update digest from variable length data
  *
- * /param  mdContext       pointer to context variable
- * /param  inBuf           pointer to data array/string
- * /param  inLen           length of data array/string
+ * \param  mdContext       pointer to context variable
+ * \param  inBuf           pointer to data array/string
+ * \param  inLen           length of data array/string
  *
  * Note: The function updates the message-digest context to account
  *       for the presence of each of the characters inBuf[0..inLen-1]
@@ -105,10 +105,10 @@ extern "C" {
                  unsigned int inLen);
 
 
-/*
- * /brief complete digest computation
+/**
+ * \brief complete digest computation
  *
- * /param mdContext     pointer to context variable
+ * \param mdContext     pointer to context variable
  *
  * Note: The function terminates the message-digest computation and
  *       ends with the desired message digest in mdContext.digest[0..15].

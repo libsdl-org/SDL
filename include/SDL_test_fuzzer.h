@@ -57,7 +57,7 @@ extern "C" {
 /**
  * Initializes the fuzzer for a test
  *
- * /param execKey Execution "Key" that initializes the random number generator uniquely for the test.
+ * \param execKey Execution "Key" that initializes the random number generator uniquely for the test.
  *
  */
 void SDLTest_FuzzerInit(Uint64 execKey);
