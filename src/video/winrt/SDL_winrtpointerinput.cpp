@@ -315,7 +315,7 @@ WINRT_ProcessPointerWheelChangedEvent(SDL_Window *window, Windows::UI::Input::Po
 
     // FIXME: This may need to accumulate deltas up to WHEEL_DELTA
     short motion = pointerPoint->Properties->MouseWheelDelta / WHEEL_DELTA;
-    SDL_SendMouseWheel(window, 0, 0, motion);
+    SDL_SendMouseWheel(window, 0, 0, motion, SDL_MOUSEWHEEL_NORMAL);
 }
 
 void

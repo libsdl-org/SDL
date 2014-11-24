@@ -990,7 +990,7 @@ X11_DispatchEvent(_THIS)
     case ButtonPress:{
             int ticks = 0;
             if (X11_IsWheelEvent(display,&xevent,&ticks)) {
-                SDL_SendMouseWheel(data->window, 0, 0, ticks);
+                SDL_SendMouseWheel(data->window, 0, 0, ticks, SDL_MOUSEWHEEL_NORMAL);
             } else {
                 if(xevent.xbutton.button == Button1) {
                     if (ProcessHitTest(_this, data, &xevent)) {
