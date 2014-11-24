@@ -41,21 +41,6 @@
 
 #include <Foundation/Foundation.h>
 
-@implementation SDL_uikitwindow
-
-- (void)layoutSubviews
-{
-    [super layoutSubviews];
-
-    /* This seems to be needed on iOS 8, otherwise the window's frame is put in
-     * an unexpected position when the screen or device is rotated.
-     * FIXME: is there a better solution to that problem than this ugly hack?
-     */
-    self.frame = self.screen.bounds;
-}
-
-@end
-
 @implementation SDL_WindowData
 
 @synthesize uiwindow;
@@ -65,7 +50,7 @@
 @end
 
 
-static int SetupWindowData(_THIS, SDL_Window *window, SDL_uikitwindow *uiwindow, SDL_bool created)
+static int SetupWindowData(_THIS, SDL_Window *window, UIWindow *uiwindow, SDL_bool created)
 {
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
     SDL_DisplayData *displaydata = (__bridge SDL_DisplayData *) display->driverdata;
@@ -213,7 +198,7 @@ UIKit_CreateWindow(_THIS, SDL_Window *window)
 
         /* ignore the size user requested, and make a fullscreen window */
         /* !!! FIXME: can we have a smaller view? */
-        SDL_uikitwindow *uiwindow = [[SDL_uikitwindow alloc] initWithFrame:data.uiscreen.bounds];
+        UIWindow *uiwindow = [[UIWindow alloc] initWithFrame:data.uiscreen.bounds];
 
         /* put the window on an external display if appropriate. This implicitly
          * does [uiwindow setframe:[uiscreen bounds]], so don't do it on the

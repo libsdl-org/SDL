@@ -40,13 +40,9 @@ extern NSUInteger UIKit_GetSupportedOrientations(SDL_Window * window);
 
 @class UIWindow;
 
-@interface SDL_uikitwindow : UIWindow
-
-@end
-
 @interface SDL_WindowData : NSObject
 
-@property (nonatomic, strong) SDL_uikitwindow *uiwindow;
+@property (nonatomic, strong) UIWindow *uiwindow;
 @property (nonatomic, strong) SDL_uikitopenglview *view;
 @property (nonatomic, strong) SDL_uikitviewcontroller *viewcontroller;
 
