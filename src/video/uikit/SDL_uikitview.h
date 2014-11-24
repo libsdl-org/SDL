@@ -40,7 +40,13 @@
 #if SDL_IPHONE_KEYBOARD
 - (void)showKeyboard;
 - (void)hideKeyboard;
-- (void)initializeKeyboard;
+- (void)initKeyboard;
+- (void)deinitKeyboard;
+
+- (void)keyboardWillShow:(NSNotification *)notification;
+- (void)keyboardWillHide:(NSNotification *)notification;
+
+- (void)updateKeyboard;
 
 @property (nonatomic, assign, getter=isKeyboardVisible) BOOL keyboardVisible;
 @property (nonatomic, assign) SDL_Rect textInputRect;
