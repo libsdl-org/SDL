@@ -137,7 +137,7 @@ HandleTouchMotion(int device_id, int source_id, float x, float y, float pressure
 static void
 HandleMouseScroll(SDL_Window* sdl_window, int hscroll, int vscroll)
 {
-    SDL_SendMouseWheel(sdl_window, 0, hscroll, vscroll);
+    SDL_SendMouseWheel(sdl_window, 0, hscroll, vscroll, SDL_MOUSEWHEEL_NORMAL);
 }
 
 static void

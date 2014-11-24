@@ -254,7 +254,7 @@ private:
             return;
         }
         win = GetSDLWindow(winID);
-        SDL_SendMouseWheel(win, 0, xTicks, yTicks);
+        SDL_SendMouseWheel(win, 0, xTicks, yTicks, SDL_MOUSEWHEEL_NORMAL);
     }
 
     void _HandleKey(BMessage *msg) {
