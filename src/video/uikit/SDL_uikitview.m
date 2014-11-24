@@ -35,8 +35,6 @@
 #include "SDL_uikitmodes.h"
 #include "SDL_uikitwindow.h"
 
-void _uikit_keyboard_init();
-
 @implementation SDL_uikitview {
 
     SDL_TouchID touchId;
@@ -54,7 +52,7 @@ void _uikit_keyboard_init();
 {
     if (self = [super initWithFrame:frame]) {
 #if SDL_IPHONE_KEYBOARD
-        [self initializeKeyboard];
+        [self initKeyboard];
 #endif
 
         self.multipleTouchEnabled = YES;
@@ -65,6 +63,13 @@ void _uikit_keyboard_init();
 
     return self;
 
+}
+
+- (void)dealloc
+{
+#if SDL_IPHONE_KEYBOARD
+    [self deinitKeyboard];
+#endif
 }
 
 - (CGPoint)touchLocation:(UITouch *)touch shouldNormalize:(BOOL)normalize
@@ -152,7 +157,7 @@ void _uikit_keyboard_init();
 @synthesize keyboardVisible;
 
 /* Set ourselves up as a UITextFieldDelegate */
-- (void)initializeKeyboard
+- (void)initKeyboard
 {
     textField = [[UITextField alloc] initWithFrame:CGRectZero];
     textField.delegate = self;
@@ -172,8 +177,17 @@ void _uikit_keyboard_init();
     keyboardVisible = NO;
     /* add the UITextField (hidden) to our view */
     [self addSubview:textField];
-    
-    _uikit_keyboard_init();
+
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+    [center addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
+    [center addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
+}
+
+- (void)deinitKeyboard
+{
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+    [center removeObserver:self name:UIKeyboardWillShowNotification object:nil];
+    [center removeObserver:self name:UIKeyboardWillHideNotification object:nil];
 }
 
 /* reveal onscreen virtual keyboard */
@@ -188,6 +202,71 @@ void _uikit_keyboard_init();
 {
     keyboardVisible = NO;
     [textField resignFirstResponder];
+}
+
+- (void)keyboardWillShow:(NSNotification *)notification
+{
+    CGRect kbrect = [[notification userInfo][UIKeyboardFrameBeginUserInfoKey] CGRectValue];
+    int height;
+
+    /* The keyboard rect is in the coordinate space of the screen, but we want
+     * its height in the view's coordinate space.
+     */
+#ifdef __IPHONE_8_0
+    if ([self respondsToSelector:@selector(convertRect:fromCoordinateSpace:)]) {
+        UIScreen *screen = self.window.screen;
+        kbrect = [self convertRect:kbrect fromCoordinateSpace:screen.coordinateSpace];
+        height = kbrect.size.height;
+    } else
+#endif
+    {
+        /* In iOS 7 and below, the screen's coordinate space is never rotated. */
+        if (UIInterfaceOrientationIsLandscape([[UIApplication sharedApplication] statusBarOrientation])) {
+            height = kbrect.size.width;
+        } else {
+            height = kbrect.size.height;
+        }
+    }
+
+    [self setKeyboardHeight:height];
+}
+
+ - (void)keyboardWillHide:(NSNotification *)notification
+{
+    [self setKeyboardHeight:0];
+}
+
+- (void)updateKeyboard
+{
+    SDL_Rect textrect = self.textInputRect;
+    CGAffineTransform t = self.transform;
+    CGPoint offset = CGPointMake(0.0, 0.0);
+
+    if (self.keyboardHeight) {
+        int rectbottom = textrect.y + textrect.h;
+        int kbottom = self.bounds.size.height - self.keyboardHeight;
+        if (kbottom < rectbottom) {
+            offset.y = kbottom - rectbottom;
+        }
+    }
+
+    /* Put the offset into the this view transform's coordinate space. */
+    t.tx = 0.0;
+    t.ty = 0.0;
+    offset = CGPointApplyAffineTransform(offset, t);
+
+    t.tx = offset.x;
+    t.ty = offset.y;
+
+    /* Move the view by applying the updated transform. */
+    self.transform = t;
+}
+
+- (void)setKeyboardHeight:(int)height
+{
+    keyboardVisible = height > 0;
+    keyboardHeight = height;
+    [self updateKeyboard];
 }
 
 /* UITextFieldDelegate method.  Invoked when user types something. */
@@ -255,7 +334,8 @@ void _uikit_keyboard_init();
 /* iPhone keyboard addition functions */
 #if SDL_IPHONE_KEYBOARD
 
-static SDL_uikitview * getWindowView(SDL_Window * window)
+static SDL_uikitview *
+GetWindowView(SDL_Window * window)
 {
     if (window == NULL) {
         SDL_SetError("Window does not exist");
@@ -272,115 +352,44 @@ static SDL_uikitview * getWindowView(SDL_Window * window)
     return view;
 }
 
-SDL_bool UIKit_HasScreenKeyboardSupport(_THIS)
+SDL_bool
+UIKit_HasScreenKeyboardSupport(_THIS)
 {
     return SDL_TRUE;
 }
 
-void UIKit_ShowScreenKeyboard(_THIS, SDL_Window *window)
+void
+UIKit_ShowScreenKeyboard(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
-        SDL_uikitview *view = getWindowView(window);
+        SDL_uikitview *view = GetWindowView(window);
         if (view != nil) {
             [view showKeyboard];
         }
     }
 }
 
-void UIKit_HideScreenKeyboard(_THIS, SDL_Window *window)
+void
+UIKit_HideScreenKeyboard(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
-        SDL_uikitview *view = getWindowView(window);
+        SDL_uikitview *view = GetWindowView(window);
         if (view != nil) {
             [view hideKeyboard];
         }
     }
 }
 
-SDL_bool UIKit_IsScreenKeyboardShown(_THIS, SDL_Window *window)
+SDL_bool
+UIKit_IsScreenKeyboardShown(_THIS, SDL_Window *window)
 {
     @autoreleasepool {
-        SDL_uikitview *view = getWindowView(window);
-        if (view == nil) {
-            return 0;
+        SDL_uikitview *view = GetWindowView(window);
+        if (view != nil) {
+            return view.isKeyboardVisible;
         }
-
-        return view.isKeyboardVisible;
+        return 0;
     }
-}
-
-
-void _uikit_keyboard_update() {
-    SDL_Window *window = SDL_GetFocusWindow();
-    if (!window) { return; }
-    SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
-    if (!data) { return; }
-    SDL_uikitview *view = data.view;
-    if (!view) { return; }
-
-    SDL_Rect r = view.textInputRect;
-    int height = view.keyboardHeight;
-    int offsetx = 0;
-    int offsety = 0;
-    if (height) {
-        int sw,sh;
-        SDL_GetWindowSize(window,&sw,&sh);
-        int bottom = (r.y + r.h);
-        int kbottom = sh - height;
-        if (kbottom < bottom) {
-            offsety = kbottom-bottom;
-        }
-    }
-    UIInterfaceOrientation ui_orient = [[UIApplication sharedApplication] statusBarOrientation];
-    if (ui_orient == UIInterfaceOrientationLandscapeLeft) {
-        int tmp = offsetx; offsetx = offsety; offsety = tmp;
-    }
-    if (ui_orient == UIInterfaceOrientationLandscapeRight) {
-        offsety = -offsety;
-        int tmp = offsetx; offsetx = offsety; offsety = tmp;
-    }
-    if (ui_orient == UIInterfaceOrientationPortraitUpsideDown) {
-        offsety = -offsety;
-    }
-
-    view.frame = CGRectMake(offsetx,offsety,view.frame.size.width,view.frame.size.height);
-}
-
-void _uikit_keyboard_set_height(int height) {
-    SDL_uikitview *view = getWindowView(SDL_GetFocusWindow());
-    if (view == nil) {
-        return;
-    }
-
-    view.keyboardVisible = height > 0;
-    view.keyboardHeight = height;
-    _uikit_keyboard_update();
-}
-
-void _uikit_keyboard_init() {
-    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
-    NSOperationQueue *queue = [NSOperationQueue mainQueue];
-    [center addObserverForName:UIKeyboardWillShowNotification
-                        object:nil
-                         queue:queue
-                    usingBlock:^(NSNotification *notification) {
-                        int height = 0;
-                        CGSize keyboardSize = [[notification userInfo][UIKeyboardFrameBeginUserInfoKey] CGRectValue].size;
-                        height = keyboardSize.height;
-                        UIInterfaceOrientation ui_orient = [[UIApplication sharedApplication] statusBarOrientation];
-                        if (ui_orient == UIInterfaceOrientationLandscapeRight || ui_orient == UIInterfaceOrientationLandscapeLeft) {
-                            height = keyboardSize.width;
-                        }
-                        _uikit_keyboard_set_height(height);
-                    }
-     ];
-    [center addObserverForName:UIKeyboardDidHideNotification
-                        object:nil
-                         queue:queue
-                    usingBlock:^(NSNotification *notification) {
-                        _uikit_keyboard_set_height(0);
-                    }
-     ];
 }
 
 void
@@ -392,12 +401,14 @@ UIKit_SetTextInputRect(_THIS, SDL_Rect *rect)
     }
 
     @autoreleasepool {
-        SDL_uikitview *view = getWindowView(SDL_GetFocusWindow());
-        if (view == nil) {
-            return;
-        }
+        SDL_uikitview *view = GetWindowView(SDL_GetFocusWindow());
+        if (view != nil) {
+            view.textInputRect = *rect;
 
-        view.textInputRect = *rect;
+            if (view.keyboardVisible) {
+                [view updateKeyboard];
+            }
+        }
     }
 }
 
