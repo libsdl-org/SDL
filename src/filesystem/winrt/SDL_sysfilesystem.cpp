@@ -20,8 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-/* TODO, WinRT: include copyright info in SDL_winrtpaths.cpp
-   TODO, WinRT: remove the need to compile this with C++/CX (/ZW) extensions, and if possible, without C++ at all
+/* TODO, WinRT: remove the need to compile this with C++/CX (/ZW) extensions, and if possible, without C++ at all
 */
 
 #ifdef __WINRT__
