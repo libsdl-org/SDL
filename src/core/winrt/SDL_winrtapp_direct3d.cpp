@@ -365,6 +365,9 @@ void SDL_WinRTApp::SetWindow(CoreWindow^ window)
     window->KeyUp +=
         ref new TypedEventHandler<CoreWindow^, KeyEventArgs^>(this, &SDL_WinRTApp::OnKeyUp);
 
+    window->CharacterReceived +=
+        ref new TypedEventHandler<CoreWindow^, CharacterReceivedEventArgs^>(this, &SDL_WinRTApp::OnCharacterReceived);
+
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
     HardwareButtons::BackPressed +=
         ref new EventHandler<BackPressedEventArgs^>(this, &SDL_WinRTApp::OnBackButtonPressed);
@@ -701,6 +704,11 @@ void SDL_WinRTApp::OnKeyDown(Windows::UI::Core::CoreWindow^ sender, Windows::UI:
 void SDL_WinRTApp::OnKeyUp(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args)
 {
     WINRT_ProcessKeyUpEvent(args);
+}
+
+void SDL_WinRTApp::OnCharacterReceived(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::CharacterReceivedEventArgs^ args)
+{
+    WINRT_ProcessCharacterReceivedEvent(args);
 }
 
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
