@@ -28,6 +28,7 @@
 extern "C" {
 #include "SDL_filesystem.h"
 #include "SDL_error.h"
+#include "SDL_hints.h"
 #include "SDL_stdinc.h"
 #include "SDL_system.h"
 #include "../../core/windows/SDL_windows.h"
@@ -149,13 +150,26 @@ SDL_GetPrefPath(const char *org, const char *app)
      * compatibility with Windows Phone 8.0, and with app-installs that have
      * been updated from 8.0-based, to 8.1-based apps.
      */
-    const char * srcPath = SDL_WinRTGetFSPathUTF8(SDL_WINRT_PATH_LOCAL_FOLDER);
+    SDL_WinRT_Path pathType = SDL_WINRT_PATH_LOCAL_FOLDER;
 #else
     /* A 'Roaming' folder is available on Windows 8 and 8.1.  Use that.
      */
-    const char * srcPath = SDL_WinRTGetFSPathUTF8(SDL_WINRT_PATH_ROAMING_FOLDER);
+    SDL_WinRT_Path pathType = SDL_WINRT_PATH_ROAMING_FOLDER;
 #endif
 
+    const char * hint = SDL_GetHint(SDL_HINT_WINRT_PREF_PATH_ROOT);
+    if (hint) {
+        if (SDL_strcasecmp(hint, "local") == 0) {
+            pathType = SDL_WINRT_PATH_LOCAL_FOLDER;
+        }
+#if (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP) || (NTDDI_VERSION > NTDDI_WIN8)
+        else if (SDL_strcasecmp(hint, "roaming") == 0) {
+            pathType = SDL_WINRT_PATH_ROAMING_FOLDER;
+        }
+#endif
+    }
+
+    const char * srcPath = SDL_WinRTGetFSPathUTF8(pathType);
     size_t destPathLen;
     char * destPath = NULL;
 

@@ -116,6 +116,32 @@ Here is a rough list of what works, and what doens't:
 
 
 
+Caveats
+-------
+
+#### SDL_GetPrefPath() usage
+
+SDL_GetPrefPath() is available for use in WinRT apps, however the following
+should be noted:
+
+1. It will return different path types, by default, depending on the WinRT
+   platform.  Windows Phone apps will default to using the app's "local" path,
+   whereas Windows Store (i.e. non-Phone) apps will default to using the app's
+   "roaming" path.  This behavior can be changed by calling SDL_SetHint() with
+   the key, SDL_HINT_WINRT_PREF_PATH_ROOT, and a value of either "local" or
+   "roaming".
+
+2. Windows Phone 8.0 does not provide apps access to a "roaming" folder.
+   Attempts to make SDL_GetPrefPath() return a roaming folder on Windows
+   Phone 8.0 will be ignored (and a path inside the "local" folder will be
+   used instead).
+
+Further details on this can be found in the documentation for
+SDL_HINT_WINRT_PREF_PATH_ROOT, in SDL_hints.h, as well as the docs for
+SDL_WinRT_Path, SDL_WinRTGetFSPathUNICODE, and SDL_WinRTGetFSPathUTF8,
+in SDL_system.h.
+
+
 
 Setup, High-Level Steps
 -----------------------
