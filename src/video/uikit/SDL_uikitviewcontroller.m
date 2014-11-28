@@ -73,11 +73,7 @@
 
 - (BOOL)prefersStatusBarHidden
 {
-    if (window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_BORDERLESS)) {
-        return YES;
-    } else {
-        return NO;
-    }
+    return (window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_BORDERLESS)) != 0;
 }
 
 - (UIStatusBarStyle)preferredStatusBarStyle

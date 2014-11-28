@@ -58,7 +58,8 @@ UIKit_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
     return 0;
 }
 
-void UIKit_GL_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h)
+void
+UIKit_GL_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h)
 {
     @autoreleasepool {
         SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
@@ -157,16 +158,15 @@ UIKit_GL_CreateContext(_THIS, SDL_Window * window)
             return NULL;
         }
 
+        view.sdlwindow = window;
         data.view = view;
-        view.viewcontroller = data.viewcontroller;
-        if (view.viewcontroller != nil) {
-            view.viewcontroller.view = view;
-        }
-        [uiwindow addSubview:view];
+        data.viewcontroller.view = view;
 
-        /* The view controller needs to be the root in order to control rotation on iOS 6.0 */
+        /* The view controller needs to be the root in order to control rotation */
         if (uiwindow.rootViewController == nil) {
-            uiwindow.rootViewController = view.viewcontroller;
+            uiwindow.rootViewController = data.viewcontroller;
+        } else {
+            [uiwindow addSubview:view];
         }
 
         EAGLContext *context = view.context;
@@ -199,17 +199,17 @@ UIKit_GL_DeleteContext(_THIS, SDL_GLContext context)
             SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
             SDL_uikitopenglview *view = data.view;
             if (view.context == eaglcontext) {
-                /* the delegate has retained the view, this will release him */
-                if (view.viewcontroller) {
+                /* the view controller has retained the view */
+                if (data.viewcontroller) {
                     UIWindow *uiwindow = (UIWindow *)view.superview;
-                    if (uiwindow.rootViewController == view.viewcontroller) {
+                    if (uiwindow.rootViewController == data.viewcontroller) {
                         uiwindow.rootViewController = nil;
                     }
-                    view.viewcontroller.view = nil;
-                    view.viewcontroller = nil;
+                    data.viewcontroller.view = nil;
                 }
-                [view removeFromSuperview];
 
+                [view removeFromSuperview];
+                view.sdlwindow = NULL;
                 data.view = nil;
                 return;
             }
@@ -217,7 +217,8 @@ UIKit_GL_DeleteContext(_THIS, SDL_GLContext context)
     }
 }
 
-Uint32 SDL_iPhoneGetViewRenderbuffer(SDL_Window * window)
+Uint32
+SDL_iPhoneGetViewRenderbuffer(SDL_Window * window)
 {
     if (!window) {
         SDL_SetError("Invalid window");
@@ -234,7 +235,8 @@ Uint32 SDL_iPhoneGetViewRenderbuffer(SDL_Window * window)
     }
 }
 
-Uint32 SDL_iPhoneGetViewFramebuffer(SDL_Window * window)
+Uint32
+SDL_iPhoneGetViewFramebuffer(SDL_Window * window)
 {
     if (!window) {
         SDL_SetError("Invalid window");

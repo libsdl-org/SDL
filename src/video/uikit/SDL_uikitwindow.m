@@ -55,7 +55,6 @@ static int SetupWindowData(_THIS, SDL_Window *window, UIWindow *uiwindow, SDL_bo
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
     SDL_DisplayData *displaydata = (__bridge SDL_DisplayData *) display->driverdata;
 
-    /* Allocate the window data */
     SDL_WindowData *data = [[SDL_WindowData alloc] init];
     if (!data) {
         return SDL_OutOfMemory();
@@ -67,7 +66,6 @@ static int SetupWindowData(_THIS, SDL_Window *window, UIWindow *uiwindow, SDL_bo
     {
         CGRect frame = UIKit_ComputeViewFrame(window, displaydata.uiscreen);
 
-        /* Get frame dimensions */
         int width = (int) frame.size.width;
         int height = (int) frame.size.height;
 
@@ -114,7 +112,7 @@ static int SetupWindowData(_THIS, SDL_Window *window, UIWindow *uiwindow, SDL_bo
      * appropriate.
      */
     data.viewcontroller = [[SDL_uikitviewcontroller alloc] initWithSDLWindow:window];
-    data.viewcontroller.title = @"SDL App";  /* !!! FIXME: hook up SDL_SetWindowTitle() */
+    data.viewcontroller.title = @"";
 
     return 0;
 }
@@ -186,11 +184,9 @@ UIKit_CreateWindow(_THIS, SDL_Window *window)
             } else {
                 if (!(orientations & (UIInterfaceOrientationMaskPortrait|UIInterfaceOrientationMaskPortraitUpsideDown))) {
                     UIInterfaceOrientation orient = UIInterfaceOrientationLandscapeLeft;
-
                     if (orientations & UIInterfaceOrientationMaskLandscapeRight) {
                         orient = UIInterfaceOrientationLandscapeRight;
                     }
-
                     [app setStatusBarOrientation:orient animated:NO];
                 }
             }
@@ -212,10 +208,22 @@ UIKit_CreateWindow(_THIS, SDL_Window *window)
         if (SetupWindowData(_this, window, uiwindow, SDL_TRUE) < 0) {
             return -1;
         }
-
     }
 
     return 1;
+}
+
+void
+UIKit_SetWindowTitle(_THIS, SDL_Window * window)
+{
+    @autoreleasepool {
+        SDL_uikitviewcontroller *vc = ((__bridge SDL_WindowData *) window->driverdata).viewcontroller;
+        if (window->title) {
+            vc.title = @(window->title);
+        } else {
+            vc.title = @"";
+        }
+    }
 }
 
 void
@@ -275,16 +283,16 @@ UIKit_UpdateWindowBorder(_THIS, SDL_Window * window)
     [windowdata.view layoutIfNeeded];
 
     /* Get frame dimensions */
-    int width  = (int) frame.size.width;
-    int height = (int) frame.size.height;
+    int w = (int) frame.size.width;
+    int h = (int) frame.size.height;
 
     /* We can pick either width or height here and we'll rotate the
      screen to match, so we pick the closest to what we wanted.
      */
     if (window->w >= window->h) {
-        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, SDL_max(width, height), SDL_min(width, height));
+        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, SDL_max(w, h), SDL_min(w, h));
     } else {
-        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, SDL_min(width, height), SDL_max(width, height));
+        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, SDL_min(w, h), SDL_max(w, h));
     }
 }
 
@@ -312,7 +320,6 @@ UIKit_DestroyWindow(_THIS, SDL_Window * window)
             CFRelease(window->driverdata);
         }
     }
-
     window->driverdata = NULL;
 }
 

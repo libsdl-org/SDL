@@ -20,7 +20,7 @@
 */
 
 #import <UIKit/UIKit.h>
-#import "SDL_uikitviewcontroller.h"
+#include "../SDL_sysvideo.h"
 
 #include "SDL_touch.h"
 
@@ -30,7 +30,7 @@
 @interface SDL_uikitview : UIView
 #endif
 
-@property (nonatomic, weak) SDL_uikitviewcontroller *viewcontroller;
+@property (nonatomic, assign) SDL_Window *sdlwindow;
 
 - (CGPoint)touchLocation:(UITouch *)touch shouldNormalize:(BOOL)normalize;
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;

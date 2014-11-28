@@ -46,7 +46,6 @@
     int animationInterval;
     void (*animationCallback)(void*);
     void *animationCallbackParam;
-
 }
 
 @synthesize context;
