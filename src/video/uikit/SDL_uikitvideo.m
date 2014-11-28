@@ -75,6 +75,7 @@ UIKit_CreateDevice(int devindex)
     device->SetDisplayMode = UIKit_SetDisplayMode;
     device->PumpEvents = UIKit_PumpEvents;
     device->CreateWindow = UIKit_CreateWindow;
+    device->SetWindowTitle = UIKit_SetWindowTitle;
     device->ShowWindow = UIKit_ShowWindow;
     device->HideWindow = UIKit_HideWindow;
     device->RaiseWindow = UIKit_RaiseWindow;
