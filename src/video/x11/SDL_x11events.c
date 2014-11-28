@@ -866,12 +866,19 @@ X11_DispatchEvent(_THIS)
         /* Have we been requested to quit (or another client message?) */
     case ClientMessage:{
 
-            int xdnd_version=0;
+            static int xdnd_version=0;
 
             if (xevent.xclient.message_type == videodata->XdndEnter) {
+
                 SDL_bool use_list = xevent.xclient.data.l[1] & 1;
                 data->xdnd_source = xevent.xclient.data.l[0];
                 xdnd_version = ( xevent.xclient.data.l[1] >> 24);
+#ifdef DEBUG_XEVENTS
+                printf("XID of source window : %ld\n", data->xdnd_source);
+                printf("Protocol version to use : %ld\n", xdnd_version);
+                printf("More then 3 data types : %ld\n", use_list); 
+#endif
+ 
                 if (use_list) {
                     /* fetch conversion targets */
                     SDL_x11Prop p;
@@ -885,6 +892,15 @@ X11_DispatchEvent(_THIS)
                 }
             }
             else if (xevent.xclient.message_type == videodata->XdndPosition) {
+            
+#ifdef DEBUG_XEVENTS
+                Atom act= videodata->XdndActionCopy;
+                if(xdnd_version >= 2) {
+                    act = xevent.xclient.data.l[4];
+                }
+                printf("Action requested by user is : %s\n", X11_XGetAtomName(display , act));
+#endif
+                
 
                 /* reply with status */
                 memset(&m, 0, sizeof(XClientMessageEvent));
