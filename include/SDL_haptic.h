@@ -347,6 +347,9 @@ typedef struct _SDL_Haptic SDL_Haptic;
 /**
  *  \brief Structure that represents a haptic direction.
  *
+ *  This is the direction where the force comes from,
+ *  instead of the direction in which the force is exerted.
+ *
  *  Directions can be specified by:
  *   - ::SDL_HAPTIC_POLAR : Specified by polar coordinates.
  *   - ::SDL_HAPTIC_CARTESIAN : Specified by cartesian coordinates.

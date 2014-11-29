@@ -669,6 +669,8 @@ SDL_SYS_ToDirection(Uint16 *dest, SDL_HapticDirection * src)
                         90 deg -> 0x4000 (left)
                         180 deg -> 0x8000 (up)
                         270 deg -> 0xC000 (right)
+                   The force pulls into the direction specified by Linux directions,
+                   i.e. the opposite convention of SDL directions.
                     */
         tmp = ((src->dir[0] % 36000) * 0x8000) / 18000; /* convert to range [0,0xFFFF] */
         *dest = (Uint16) tmp;
