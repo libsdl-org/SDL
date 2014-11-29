@@ -558,7 +558,7 @@ typedef struct SDL_HapticPeriodic
     Uint16 period;      /**< Period of the wave. */
     Sint16 magnitude;   /**< Peak value; if negative, equivalent to 180 degrees extra phase shift. */
     Sint16 offset;      /**< Mean value of the wave. */
-    Uint16 phase;       /**< Horizontal shift given by hundredth of a degree. */
+    Uint16 phase;       /**< Positive phase shift given by hundredth of a degree. */
 
     /* Envelope */
     Uint16 attack_length;   /**< Duration of the attack. */
