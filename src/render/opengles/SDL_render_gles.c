@@ -55,6 +55,7 @@ static const float inv255f = 1.0f / 255.0f;
 static SDL_Renderer *GLES_CreateRenderer(SDL_Window * window, Uint32 flags);
 static void GLES_WindowEvent(SDL_Renderer * renderer,
                              const SDL_WindowEvent *event);
+static int GLES_GetOutputSize(SDL_Renderer * renderer, int *w, int *h);
 static int GLES_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture);
 static int GLES_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                               const SDL_Rect * rect, const void *pixels,
@@ -321,6 +322,7 @@ GLES_CreateRenderer(SDL_Window * window, Uint32 flags)
     }
 
     renderer->WindowEvent = GLES_WindowEvent;
+    renderer->GetOutputSize = GLES_GetOutputSize;
     renderer->CreateTexture = GLES_CreateTexture;
     renderer->UpdateTexture = GLES_UpdateTexture;
     renderer->LockTexture = GLES_LockTexture;
@@ -436,6 +438,13 @@ GLES_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
         /* According to Apple documentation, we need to finish drawing NOW! */
         data->glFinish();
     }
+}
+
+static int
+GLES_GetOutputSize(SDL_Renderer * renderer, int *w, int *h)
+{
+    SDL_GL_GetDrawableSize(renderer->window, w, h);
+    return 0;
 }
 
 static SDL_INLINE int
