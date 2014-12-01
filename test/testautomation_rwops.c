@@ -105,7 +105,7 @@ _testGenericRWopsValidations(SDL_RWops *rw, int write)
    /* Set to start. */
    i = SDL_RWseek(rw, 0, RW_SEEK_SET );
    SDLTest_AssertPass("Call to SDL_RWseek succeeded");
-   SDLTest_AssertCheck(i == (Sint64)0, "Verify seek to 0 with SDL_RWseek (RW_SEEK_SET), expected 0, got %i", i);
+   SDLTest_AssertCheck(i == (Sint64)0, "Verify seek to 0 with SDL_RWseek (RW_SEEK_SET), expected 0, got %lli", i);
 
    /* Test write. */
    s = SDL_RWwrite(rw, RWopsHelloWorldTestString, sizeof(RWopsHelloWorldTestString)-1, 1);
@@ -120,12 +120,12 @@ _testGenericRWopsValidations(SDL_RWops *rw, int write)
    /* Test seek to random position */
    i = SDL_RWseek( rw, seekPos, RW_SEEK_SET );
    SDLTest_AssertPass("Call to SDL_RWseek succeeded");
-   SDLTest_AssertCheck(i == (Sint64)seekPos, "Verify seek to %i with SDL_RWseek (RW_SEEK_SET), expected %i, got %i", seekPos, seekPos, i);
+   SDLTest_AssertCheck(i == (Sint64)seekPos, "Verify seek to %i with SDL_RWseek (RW_SEEK_SET), expected %i, got %lli", seekPos, seekPos, i);
 
    /* Test seek back to start */
    i = SDL_RWseek(rw, 0, RW_SEEK_SET );
    SDLTest_AssertPass("Call to SDL_RWseek succeeded");
-   SDLTest_AssertCheck(i == (Sint64)0, "Verify seek to 0 with SDL_RWseek (RW_SEEK_SET), expected 0, got %i", i);
+   SDLTest_AssertCheck(i == (Sint64)0, "Verify seek to 0 with SDL_RWseek (RW_SEEK_SET), expected 0, got %lli", i);
 
    /* Test read */
    s = SDL_RWread( rw, buf, 1, sizeof(RWopsHelloWorldTestString)-1 );
@@ -144,7 +144,7 @@ _testGenericRWopsValidations(SDL_RWops *rw, int write)
    SDLTest_AssertPass("Call to SDL_RWseek(...,-4,RW_SEEK_CUR) succeeded");
    SDLTest_AssertCheck(
        i == (Sint64)(sizeof(RWopsHelloWorldTestString)-5),
-       "Verify seek to -4 with SDL_RWseek (RW_SEEK_CUR), expected %i, got %i",
+       "Verify seek to -4 with SDL_RWseek (RW_SEEK_CUR), expected %i, got %lli",
        sizeof(RWopsHelloWorldTestString)-5,
        i);
 
@@ -152,7 +152,7 @@ _testGenericRWopsValidations(SDL_RWops *rw, int write)
    SDLTest_AssertPass("Call to SDL_RWseek(...,-1,RW_SEEK_END) succeeded");
    SDLTest_AssertCheck(
        i == (Sint64)(sizeof(RWopsHelloWorldTestString)-2),
-       "Verify seek to -1 with SDL_RWseek (RW_SEEK_END), expected %i, got %i",
+       "Verify seek to -1 with SDL_RWseek (RW_SEEK_END), expected %i, got %lli",
        sizeof(RWopsHelloWorldTestString)-2,
        i);
 
@@ -161,7 +161,7 @@ _testGenericRWopsValidations(SDL_RWops *rw, int write)
    SDLTest_AssertPass("Call to SDL_RWseek(...,0,invalid_whence) succeeded");
    SDLTest_AssertCheck(
        i == (Sint64)(-1),
-       "Verify seek with SDL_RWseek (invalid_whence); expected: -1, got %i",
+       "Verify seek with SDL_RWseek (invalid_whence); expected: -1, got %lli",
        i);
 }
 
@@ -668,7 +668,7 @@ rwops_testFileWriteReadEndian(void)
      /* Test seek to start */
      result = SDL_RWseek( rw, 0, RW_SEEK_SET );
      SDLTest_AssertPass("Call to SDL_RWseek succeeded");
-     SDLTest_AssertCheck(result == 0, "Verify result from position 0 with SDL_RWseek, expected 0, got %i", result);
+     SDLTest_AssertCheck(result == 0, "Verify result from position 0 with SDL_RWseek, expected 0, got %lli", result);
 
      /* Read test data */
      BE16test = SDL_ReadBE16(rw);
