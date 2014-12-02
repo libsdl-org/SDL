@@ -555,6 +555,20 @@
 		DB89957918A19ABA0092407C /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
 		DB89957A18A19ABA0092407C /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
 		DB89958418A19B130092407C /* testhotplug.c in Sources */ = {isa = PBXBuildFile; fileRef = DB89958318A19B130092407C /* testhotplug.c */; };
+		DBEC54DD1A1A81C3005B1EAB /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA73672219A54A90004122E4 /* CoreVideo.framework */; };
+		DBEC54DE1A1A81C3005B1EAB /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002F33A709CA188600EBEB88 /* Cocoa.framework */; };
+		DBEC54DF1A1A81C3005B1EAB /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 003FA645093FFD41000C53B3 /* libSDL2.a */; };
+		DBEC54E01A1A81C3005B1EAB /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863B10730545007319AE /* CoreAudio.framework */; };
+		DBEC54E11A1A81C3005B1EAB /* ForceFeedback.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863C10730545007319AE /* ForceFeedback.framework */; };
+		DBEC54E21A1A81C3005B1EAB /* IOKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863D10730545007319AE /* IOKit.framework */; };
+		DBEC54E31A1A81C3005B1EAB /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A869F10730593007319AE /* AudioToolbox.framework */; };
+		DBEC54E41A1A81C3005B1EAB /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A86A010730593007319AE /* CoreFoundation.framework */; };
+		DBEC54E51A1A81C3005B1EAB /* AudioUnit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A871410730623007319AE /* AudioUnit.framework */; };
+		DBEC54E61A1A81C3005B1EAB /* Carbon.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A873910730675007319AE /* Carbon.framework */; };
+		DBEC54EB1A1A8205005B1EAB /* controllermap.c in Sources */ = {isa = PBXBuildFile; fileRef = DBEC54D11A1A811D005B1EAB /* controllermap.c */; };
+		DBEC54ED1A1A828A005B1EAB /* axis.bmp in CopyFiles */ = {isa = PBXBuildFile; fileRef = DBEC54D61A1A8145005B1EAB /* axis.bmp */; };
+		DBEC54EE1A1A828D005B1EAB /* button.bmp in CopyFiles */ = {isa = PBXBuildFile; fileRef = DBEC54D71A1A8145005B1EAB /* button.bmp */; };
+		DBEC54EF1A1A828F005B1EAB /* controllermap.bmp in CopyFiles */ = {isa = PBXBuildFile; fileRef = DBEC54D81A1A8145005B1EAB /* controllermap.bmp */; };
 		FA73672319A54A90004122E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA73672219A54A90004122E4 /* CoreVideo.framework */; };
 		FA73672819A54AB6004122E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA73672219A54A90004122E4 /* CoreVideo.framework */; };
 		FA73672919A54AB9004122E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA73672219A54A90004122E4 /* CoreVideo.framework */; };
@@ -1056,6 +1070,18 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		DBEC54EC1A1A827C005B1EAB /* CopyFiles */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 16;
+			files = (
+				DBEC54ED1A1A828A005B1EAB /* axis.bmp in CopyFiles */,
+				DBEC54EE1A1A828D005B1EAB /* button.bmp in CopyFiles */,
+				DBEC54EF1A1A828F005B1EAB /* controllermap.bmp in CopyFiles */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
@@ -1186,6 +1212,11 @@
 		DB89957E18A19ABA0092407C /* testhotplug */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testhotplug; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB89958318A19B130092407C /* testhotplug.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testhotplug.c; path = ../../test/testhotplug.c; sourceTree = "<group>"; };
 		DBBC552C182831D700F3CA8D /* TestDropFile-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = "TestDropFile-Info.plist"; sourceTree = "<group>"; };
+		DBEC54D11A1A811D005B1EAB /* controllermap.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = controllermap.c; path = ../../test/controllermap.c; sourceTree = "<group>"; };
+		DBEC54D61A1A8145005B1EAB /* axis.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = axis.bmp; path = ../../test/axis.bmp; sourceTree = "<group>"; };
+		DBEC54D71A1A8145005B1EAB /* button.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = button.bmp; path = ../../test/button.bmp; sourceTree = "<group>"; };
+		DBEC54D81A1A8145005B1EAB /* controllermap.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = controllermap.bmp; path = ../../test/controllermap.bmp; sourceTree = "<group>"; };
+		DBEC54EA1A1A81C3005B1EAB /* controllermap */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = controllermap; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA73672219A54A90004122E4 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = /System/Library/Frameworks/CoreVideo.framework; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
 
@@ -1974,6 +2005,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		DBEC54DC1A1A81C3005B1EAB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DBEC54DD1A1A81C3005B1EAB /* CoreVideo.framework in Frameworks */,
+				DBEC54DE1A1A81C3005B1EAB /* Cocoa.framework in Frameworks */,
+				DBEC54DF1A1A81C3005B1EAB /* libSDL2.a in Frameworks */,
+				DBEC54E01A1A81C3005B1EAB /* CoreAudio.framework in Frameworks */,
+				DBEC54E11A1A81C3005B1EAB /* ForceFeedback.framework in Frameworks */,
+				DBEC54E21A1A81C3005B1EAB /* IOKit.framework in Frameworks */,
+				DBEC54E31A1A81C3005B1EAB /* AudioToolbox.framework in Frameworks */,
+				DBEC54E41A1A81C3005B1EAB /* CoreFoundation.framework in Frameworks */,
+				DBEC54E51A1A81C3005B1EAB /* AudioUnit.framework in Frameworks */,
+				DBEC54E61A1A81C3005B1EAB /* Carbon.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -2007,13 +2055,16 @@
 		00794E4609D207B4003FC8A1 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
-				DBBC552C182831D700F3CA8D /* TestDropFile-Info.plist */,
-				DB166ECF16A1D87000A1396C /* shapes */,
+				DBEC54D61A1A8145005B1EAB /* axis.bmp */,
+				DBEC54D71A1A8145005B1EAB /* button.bmp */,
+				DBEC54D81A1A8145005B1EAB /* controllermap.bmp */,
 				00794E5D09D20839003FC8A1 /* icon.bmp */,
 				00794E5E09D20839003FC8A1 /* moose.dat */,
 				00794E5F09D20839003FC8A1 /* picture.xbm */,
 				00794E6109D20839003FC8A1 /* sample.bmp */,
 				00794E6209D20839003FC8A1 /* sample.wav */,
+				DB166ECF16A1D87000A1396C /* shapes */,
+				DBBC552C182831D700F3CA8D /* TestDropFile-Info.plist */,
 				00794E6309D20839003FC8A1 /* utf8.txt */,
 			);
 			name = Resources;
@@ -2037,6 +2088,7 @@
 			isa = PBXGroup;
 			children = (
 				092D6D10FFB30A2C7F000001 /* checkkeys.c */,
+				DBEC54D11A1A811D005B1EAB /* controllermap.c */,
 				083E4872006D84C97F000001 /* loopwave.c */,
 				0017958F1074216E00F5D044 /* testatomic.c */,
 				001795B01074222D00F5D044 /* testaudioinfo.c */,
@@ -2138,6 +2190,7 @@
 				DB0F490117CA5212008798C5 /* testfilesystem */,
 				DB89957E18A19ABA0092407C /* testhotplug */,
 				DB445EF818184B7000B306B0 /* testdropfile.app */,
+				DBEC54EA1A1A81C3005B1EAB /* controllermap */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -2926,6 +2979,23 @@
 			productReference = DB89957E18A19ABA0092407C /* testhotplug */;
 			productType = "com.apple.product-type.tool";
 		};
+		DBEC54D91A1A81C3005B1EAB /* controllermap */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DBEC54E71A1A81C3005B1EAB /* Build configuration list for PBXNativeTarget "controllermap" */;
+			buildPhases = (
+				DBEC54DA1A1A81C3005B1EAB /* Sources */,
+				DBEC54DC1A1A81C3005B1EAB /* Frameworks */,
+				DBEC54EC1A1A827C005B1EAB /* CopyFiles */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = controllermap;
+			productName = checkkeys;
+			productReference = DBEC54EA1A1A81C3005B1EAB /* controllermap */;
+			productType = "com.apple.product-type.tool";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -2958,6 +3028,7 @@
 				BEC566920761D90300A33029 /* All */,
 				DB166D7E16A1D12400A1396C /* SDL_test */,
 				BEC566AB0761D90300A33029 /* checkkeys */,
+				DBEC54D91A1A81C3005B1EAB /* controllermap */,
 				BEC566C50761D90300A33029 /* loopwave */,
 				0017957410741F7900F5D044 /* testatomic */,
 				00179595107421BF00F5D044 /* testaudioinfo */,
@@ -3419,6 +3490,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				DB89958418A19B130092407C /* testhotplug.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DBEC54DA1A1A81C3005B1EAB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DBEC54EB1A1A8205005B1EAB /* controllermap.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -4339,6 +4418,20 @@
 			};
 			name = Release;
 		};
+		DBEC54E81A1A81C3005B1EAB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = controllermap;
+			};
+			name = Debug;
+		};
+		DBEC54E91A1A81C3005B1EAB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = controllermap;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -4770,6 +4863,15 @@
 			buildConfigurations = (
 				DB89957C18A19ABA0092407C /* Debug */,
 				DB89957D18A19ABA0092407C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		DBEC54E71A1A81C3005B1EAB /* Build configuration list for PBXNativeTarget "controllermap" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DBEC54E81A1A81C3005B1EAB /* Debug */,
+				DBEC54E91A1A81C3005B1EAB /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

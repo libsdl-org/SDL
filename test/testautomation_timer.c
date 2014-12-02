@@ -42,7 +42,7 @@ timer_getPerformanceCounter(void *arg)
 
   result = SDL_GetPerformanceCounter();
   SDLTest_AssertPass("Call to SDL_GetPerformanceCounter()");
-  SDLTest_AssertCheck(result > 0, "Check result value, expected: >0, got: %lu", result);
+  SDLTest_AssertCheck(result > 0, "Check result value, expected: >0, got: %llu", result);
 
   return TEST_COMPLETED;
 }
@@ -57,7 +57,7 @@ timer_getPerformanceFrequency(void *arg)
 
   result = SDL_GetPerformanceFrequency();
   SDLTest_AssertPass("Call to SDL_GetPerformanceFrequency()");
-  SDLTest_AssertCheck(result > 0, "Check result value, expected: >0, got: %lu", result);
+  SDLTest_AssertCheck(result > 0, "Check result value, expected: >0, got: %llu", result);
 
   return TEST_COMPLETED;
 }

@@ -24,6 +24,7 @@
 #include <pthread.h>
 #include <semaphore.h>
 #include <sys/time.h>
+#include <time.h>
 
 #include "SDL_thread.h"
 #include "SDL_timer.h"
@@ -102,7 +103,9 @@ SDL_SemWaitTimeout(SDL_sem * sem, Uint32 timeout)
 {
     int retval;
 #ifdef HAVE_SEM_TIMEDWAIT
+#ifndef HAVE_CLOCK_GETTIME
     struct timeval now;
+#endif
     struct timespec ts_timeout;
 #else
     Uint32 end;
@@ -125,21 +128,25 @@ SDL_SemWaitTimeout(SDL_sem * sem, Uint32 timeout)
     * a lapse of time, but until we reach a certain time.
     * This time is now plus the timeout.
     */
+#ifdef HAVE_CLOCK_GETTIME
+    clock_gettime(CLOCK_REALTIME, &ts_timeout);
+
+    /* Add our timeout to current time */
+    ts_timeout.tv_nsec += (timeout % 1000) * 1000000;
+    ts_timeout.tv_sec += timeout / 1000;
+#else
     gettimeofday(&now, NULL);
 
     /* Add our timeout to current time */
-    now.tv_usec += (timeout % 1000) * 1000;
-    now.tv_sec += timeout / 1000;
+    ts_timeout.tv_sec = now.tv_sec + (timeout / 1000);
+    ts_timeout.tv_nsec = (now.tv_usec + (timeout % 1000) * 1000) * 1000;
+#endif
 
     /* Wrap the second if needed */
-    if ( now.tv_usec >= 1000000 ) {
-        now.tv_usec -= 1000000;
-        now.tv_sec ++;
+    if (ts_timeout.tv_nsec > 1000000000) {
+        ts_timeout.tv_sec += 1;
+        ts_timeout.tv_nsec -= 1000000000;
     }
-
-    /* Convert to timespec */
-    ts_timeout.tv_sec = now.tv_sec;
-    ts_timeout.tv_nsec = now.tv_usec * 1000;
 
     /* Wait. */
     do {
