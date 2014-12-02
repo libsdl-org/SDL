@@ -116,6 +116,69 @@ Here is a rough list of what works, and what doens't:
 
 
 
+Caveats
+-------
+
+#### SDL_GetPrefPath() usage when upgrading existing WinRT apps to SDL 2.0.4
+
+SDL 2.0.4 fixes two bugs found in SDL_GetPrefPath() which can affect
+an app's save data.  These bugs only apply to WinRT apps (and not
+Windows Desktop / Win32 apps, or to apps on any other SDL platform).
+In particular, for older versions of SDL (anything before 2.0.4):
+
+1. SDL_GetPrefPath() would return an invalid path, one in which attempts
+   to write files to would fail, in many cases.  Some of the path elements
+   returned by SDL_GetPrefPath() would not get created (as done on other
+   SDL platforms).  Files could be written to this path, however apps would
+   need to explicitly create the missing directories first.
+   
+2. SDL_GetPrefPath() would return a path inside a WinRT 'Roaming' folder,
+   the contents of which could get automatically synchronized across multiple
+   devices, by Windows.  This process could occur while an app was running.
+   Apps which were not explicitly built to handle this scenario could
+   have their SDL_GetPrefPath-backed save data swapped out by Windows at
+   unexpected times, which raised potential for data-loss (if apps weren't
+   designed to support live file-synchronization.)
+
+
+SDL_GetPrefPath(), starting with SDL 2.0.4, addresses these by:
+
+1. making sure that SDL_GetPrefPath() returns a directory in which data
+   can be written to immediately, without first needing to create directories.
+
+2. basing SDL_GetPrefPath() off of a non-Roaming / 'Local' folder, the
+   contents of which do not get automatically synchronized across devices,
+   and which may be safer in terms of data-integrity.
+   
+   Apps can, at their discretion, choose to utilize WinRT's Roaming
+   functionality by calling the following before calling SDL_GetPrefPath():
+   
+       SDL_SetHint(SDL_HINT_WINRT_PREF_PATH_ROOT, "roaming");
+
+   Alternatively, to restore SDL_GetPrefPath()'s old behavior (found in
+   SDL 2.0.3, and in many pre-2.0.4 versions of SDL found on hg.libsdl.org),
+   whereby a Roaming path is returned for Windows Store apps, and a Local
+   folder is returned for Windows Phone apps, use the following code:
+   
+       SDL_SetHint(SDL_HINT_WINRT_PREF_PATH_ROOT, "old");
+   
+   Before using Roaming data in any capacity, it is highly recommended that
+   one read the following:
+   
+   1. Microsoft's documentation on the Roaming data.  Details on this can be
+      found on MSDN, at:
+      [Guidelines for roaming app data](http://msdn.microsoft.com/en-us/library/windows/apps/hh465094.aspx).
+   
+   2. the SDL documentation for SDL_HINT_WINRT_PREF_PATH_ROOT, which is
+      listed inside SDL_hints.h.
+
+   Please note that Roaming support is not available on Windows Phone 8.0,
+   due to limitations in the OS itself.  Attempts to use it will fail, with
+   SDL_GetPrefPath() returning NULL (if SDL_HINT_WINRT_PREF_PATH_ROOT is
+   set to "roaming" on that platform).  Windows Phone 8.1 does not have this
+   limitation, and does support Roaming data.
+
+
 
 Setup, High-Level Steps
 -----------------------

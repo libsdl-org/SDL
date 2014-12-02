@@ -51,9 +51,9 @@ extern "C" {
  *
  * \param surface Surface used in comparison
  * \param referenceSurface Test Surface used in comparison
- * \param allowable_error Allowable difference (squared) in blending accuracy.
+ * \param allowable_error Allowable difference (=sum of squared difference for each RGB component) in blending accuracy.
  *
- * \returns 0 if comparison succeeded, >0 (=number of pixels where comparison failed) if comparison failed, -1 if any of the surfaces were NULL, -2 if the surface sizes differ.
+ * \returns 0 if comparison succeeded, >0 (=number of pixels for which the comparison failed) if comparison failed, -1 if any of the surfaces were NULL, -2 if the surface sizes differ.
  */
 int SDLTest_CompareSurfaces(SDL_Surface *surface, SDL_Surface *referenceSurface, int allowable_error);
 
