@@ -1,3 +1,4 @@
+w
 /*
   Simple DirectMedia Layer
   Copyright (C) 1997-2014 Sam Lantinga <slouken@libsdl.org>
@@ -172,7 +173,7 @@ typedef uint64_t Uint64;
 #ifdef PRIs64
 #define SDL_PRIs64 PRIs64
 #elif defined(__WIN32__)
-#define SDL_PRIs64 "I64"
+#define SDL_PRIs64 "I64d"
 #else
 #define SDL_PRIs64 "lld"
 #endif
