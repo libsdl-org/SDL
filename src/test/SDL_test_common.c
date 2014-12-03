@@ -1106,7 +1106,7 @@ SDLTest_PrintEvent(SDL_Event * event)
         break;
     case SDL_MOUSEWHEEL:
         SDL_Log("SDL EVENT: Mouse: wheel scrolled %d in x and %d in y (reversed: %d) in window %d",
-                event->wheel.x, event->wheel.y, event->wheel.reversed, event->wheel.windowID);
+                event->wheel.x, event->wheel.y, event->wheel.direction, event->wheel.windowID);
         break;
     case SDL_JOYDEVICEADDED:
         SDL_Log("SDL EVENT: Joystick index %d attached",
