@@ -492,36 +492,6 @@ extern "C" {
 #define SDL_HINT_WINRT_HANDLE_BACK_BUTTON "SDL_WINRT_HANDLE_BACK_BUTTON"
 
 /**
- *  \brief  A variable that dictates what SDL_GetPrefPath() returns in WinRT apps.
- *
- *  The variable can be set to the following values:
- *   * "local"   - Use the app's 'local' folder to store data.
- *   * "roaming" - Use the app's 'roaming' folder to store data.
- *                 On Windows Phone 8.0, this setting is not supported due to
- *                 limitations in the OS itself.  Attempts to use this (via
- *                 SDL_GetPrefPath()) on Windows Phone 8.0 will fail, with
- *                 SDL_GetPrefPath() returning NULL.  (Windows Phone 8.1 does,
- *                 however, support roaming folders.)
- *   * "old"     - Use the app's 'local' folder on Windows Phone, and 'roaming'
- *                 on non-Phone versions of WinRT.  This mimics behavior found
- *                 in SDL 2.0.3's implementation of SDL_GetPrefPath() for WinRT
- *                 (and was changed for SDL 2.0.4, further details of which are
- *                 in the "Caveats" section of SDL's
- *                 [WinRT README file](README-winrt.md).
- *
- *  The default is to use the app's "local" folder.
- *
- *  Details on 'local' verses 'roaming' folders can be found on MSDN, in
- *  the documentation for WinRT's Windows.Storage.ApplicationData class,
- *  (available at http://msdn.microsoft.com/en-us/library/windows/apps/windows.storage.applicationdata ).
- *
- *  The application's local and roaming paths may, alternatively, be retrieved
- *  via the SDL_WinRTGetFSPathUTF8() and SDL_WinRTGetFSPathUNICODE() functions,
- *  which are defined in SDL_system.h.
- */
-#define SDL_HINT_WINRT_PREF_PATH_ROOT "SDL_WINRT_PREF_PATH_ROOT"
-
-/**
  *  \brief  A variable that dictates policy for fullscreen Spaces on Mac OS X.
  *
  *  This hint only applies to Mac OS X.
