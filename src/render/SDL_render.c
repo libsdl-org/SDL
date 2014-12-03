@@ -1138,11 +1138,22 @@ UpdateLogicalSize(SDL_Renderer *renderer)
     float real_aspect;
     float scale;
     SDL_Rect viewport;
+    /* 0 is for letterbox, 1 is for overscan */
+    int scale_policy = 0;
+    const char *hint = SDL_GetHint(SDL_HINT_RENDER_LOGICAL_SIZE_MODE);
 
     if (SDL_GetRendererOutputSize(renderer, &w, &h) < 0) {
         return -1;
     }
 
+    if (!hint) {
+        scale_policy = 0;
+    } else if ( *hint == '1' || SDL_strcasecmp(hint, "overscan") == 0)  {
+        scale_policy = 1;
+    } else {
+        scale_policy = 0;
+    }
+    
     want_aspect = (float)renderer->logical_w / renderer->logical_h;
     real_aspect = (float)w / h;
 
@@ -1154,21 +1165,47 @@ UpdateLogicalSize(SDL_Renderer *renderer)
         scale = (float)w / renderer->logical_w;
         SDL_RenderSetViewport(renderer, NULL);
     } else if (want_aspect > real_aspect) {
-        /* We want a wider aspect ratio than is available - letterbox it */
-        scale = (float)w / renderer->logical_w;
-        viewport.x = 0;
-        viewport.w = w;
-        viewport.h = (int)SDL_ceil(renderer->logical_h * scale);
-        viewport.y = (h - viewport.h) / 2;
-        SDL_RenderSetViewport(renderer, &viewport);
+        if (scale_policy == 1) {
+            /* We want a wider aspect ratio than is available - 
+             zoom so logical height matches the real height 
+             and the width will grow off the screen 
+             */
+            scale = (float)h / renderer->logical_h;
+            viewport.y = 0;
+            viewport.h = h;
+            viewport.w = (int)SDL_ceil(renderer->logical_w * scale);
+            viewport.x = (w - viewport.w) / 2;
+            SDL_RenderSetViewport(renderer, &viewport);
+        } else {
+            /* We want a wider aspect ratio than is available - letterbox it */
+            scale = (float)w / renderer->logical_w;
+            viewport.x = 0;
+            viewport.w = w;
+            viewport.h = (int)SDL_ceil(renderer->logical_h * scale);
+            viewport.y = (h - viewport.h) / 2;
+            SDL_RenderSetViewport(renderer, &viewport);
+        }
     } else {
-        /* We want a narrower aspect ratio than is available - use side-bars */
-        scale = (float)h / renderer->logical_h;
-        viewport.y = 0;
-        viewport.h = h;
-        viewport.w = (int)SDL_ceil(renderer->logical_w * scale);
-        viewport.x = (w - viewport.w) / 2;
-        SDL_RenderSetViewport(renderer, &viewport);
+        if (scale_policy == 1) {
+            /* We want a narrower aspect ratio than is available -
+             zoom so logical width matches the real width
+             and the height will grow off the screen
+             */
+            scale = (float)w / renderer->logical_w;
+            viewport.x = 0;
+            viewport.w = w;
+            viewport.h = (int)SDL_ceil(renderer->logical_h * scale);
+            viewport.y = (h - viewport.h) / 2;
+            SDL_RenderSetViewport(renderer, &viewport);
+        } else {
+            /* We want a narrower aspect ratio than is available - use side-bars */
+             scale = (float)h / renderer->logical_h;
+             viewport.y = 0;
+             viewport.h = h;
+             viewport.w = (int)SDL_ceil(renderer->logical_w * scale);
+             viewport.x = (w - viewport.w) / 2;
+             SDL_RenderSetViewport(renderer, &viewport);
+        }
     }
 
     /* Set the new scale */
