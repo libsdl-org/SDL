@@ -186,6 +186,24 @@ typedef uint64_t Uint64;
 #define SDL_PRIu64 "llu"
 #endif
 #endif
+#ifndef SDL_PRIx64
+#ifdef PRIx64
+#define SDL_PRIx64 PRIx64
+#elif defined(__WIN32__)
+#define SDL_PRIx64 "I64x"
+#else
+#define SDL_PRIx64 "llx"
+#endif
+#endif
+#ifndef SDL_PRIX64
+#ifdef PRIX64
+#define SDL_PRIX64 PRIX64
+#elif defined(__WIN32__)
+#define SDL_PRIX64 "I64X"
+#else
+#define SDL_PRIX64 "llX"
+#endif
+#endif
 
 /* Annotations to help code analysis tools */
 #ifdef SDL_DISABLE_ANALYZE_MACROS
