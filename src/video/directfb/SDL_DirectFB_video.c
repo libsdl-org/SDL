@@ -156,7 +156,7 @@ DirectFB_CreateDevice(int devindex)
     return device;
   error:
     if (device)
-        free(device);
+        SDL_free(device);
     return (0);
 }
 
