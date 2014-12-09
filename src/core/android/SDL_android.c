@@ -386,7 +386,7 @@ JNIEXPORT void JNICALL Java_org_libsdl_app_SDLInputConnection_nativeSetComposing
     (*env)->ReleaseStringUTFChars(env, text, utftext);
 }
 
-jstring Java_org_libsdl_app_SDLActivity_nativeGetHint(JNIEnv* env, jclass cls, jstring name) {
+JNIEXPORT jstring JNICALL Java_org_libsdl_app_SDLActivity_nativeGetHint(JNIEnv* env, jclass cls, jstring name) {
     const char *utfname = (*env)->GetStringUTFChars(env, name, NULL);
     const char *hint = SDL_GetHint(utfname);
 
