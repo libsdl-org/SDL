@@ -54,6 +54,7 @@ test_multi_audio(int devcount)
 #ifdef __ANDROID__  
     SDL_Event event;
   
+    /* Create a Window to get fully initialized event processing for testing pause on Android. */
     SDL_CreateWindow("testmultiaudio", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 320, 240, 0);
 #endif
 
@@ -79,6 +80,7 @@ test_multi_audio(int devcount)
             SDL_PauseAudioDevice(cbd[0].dev, 0);
             while (!cbd[0].done) {
 #ifdef __ANDROID__                
+                /* Empty queue, some application events would prevent pause. */
                 while (SDL_PollEvent(&event)){}
 #endif                
                 SDL_Delay(100);
@@ -115,6 +117,7 @@ test_multi_audio(int devcount)
             }
         }
 #ifdef __ANDROID__        
+        /* Empty queue, some application events would prevent pause. */
         while (SDL_PollEvent(&event)){}
 #endif        
         SDL_Delay(100);
