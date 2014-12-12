@@ -33,7 +33,6 @@
 
 #define VERBOSE 0
 
-static SDL_Window *window;
 static SDL_Event events[EVENT_BUF_SIZE];
 static int eventWrite;
 
@@ -123,7 +122,7 @@ void drawKnob(SDL_Surface* screen,Knob k) {
                 (k.p.y+k.r/2*SDL_sinf(k.ang))*screen->h,k.r/4*screen->w,0);
 }
 
-void DrawScreen(SDL_Surface* screen)
+void DrawScreen(SDL_Surface* screen, SDL_Window* window)
 {
   int i;
 #if 1
@@ -165,7 +164,8 @@ void DrawScreen(SDL_Surface* screen)
   SDL_UpdateWindowSurface(window);
 }
 
-SDL_Surface* initScreen(int width,int height)
+/* Returns a new SDL_Window if window is NULL or window if not. */
+SDL_Window* initWindow(SDL_Window *window, int width,int height)
 {
   if (!window) {
     window = SDL_CreateWindow("Gesture Test",
@@ -175,11 +175,12 @@ SDL_Surface* initScreen(int width,int height)
   if (!window) {
     return NULL;
   }
-  return SDL_GetWindowSurface(window);
+  return window;
 }
 
 int main(int argc, char* argv[])
 {
+  SDL_Window *window = NULL;
   SDL_Surface *screen;
   SDL_Event event;
   SDL_bool quitting = SDL_FALSE;
@@ -194,7 +195,8 @@ int main(int argc, char* argv[])
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0 ) return 1;
 
-  if (!(screen = initScreen(WIDTH,HEIGHT)))
+  if (!(window = initWindow(window, WIDTH, HEIGHT)) ||
+      !(screen = SDL_GetWindowSurface(window)))
     {
       SDL_Quit();
       return 1;
@@ -244,7 +246,8 @@ int main(int argc, char* argv[])
         break;
       case SDL_WINDOWEVENT:
             if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
-          if (!(screen = initScreen(event.window.data1, event.window.data2)))
+          if (!(window = initWindow(window, event.window.data1, event.window.data2)) ||
+              !(screen = SDL_GetWindowSurface(window)))
           {
         SDL_Quit();
         return 1;
@@ -293,7 +296,7 @@ int main(int argc, char* argv[])
         break;
       }
       }
-    DrawScreen(screen);
+    DrawScreen(screen, window);
   }
   SDL_Quit();
   return 0;
