@@ -103,7 +103,7 @@ void drawCircle(SDL_Surface* screen,float x,float y,float r,unsigned int c)
   float tx,ty;
   float xr;
   for(ty = (float)-SDL_fabs(r);ty <= (float)SDL_fabs((int)r);ty++) {
-    xr = (float)sqrt(r*r - ty*ty);
+    xr = (float)SDL_sqrt(r*r - ty*ty);
     if(r > 0) { /* r > 0 ==> filled circle */
       for(tx=-xr+.5f;tx<=xr-.5;tx++) {
     setpix(screen,x+tx,y+ty,c);
