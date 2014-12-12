@@ -15,12 +15,7 @@
  *  l to load all touches from "./gestureSave"
  */
 
-#include <stdio.h>
-#include <math.h>
-
 #include "SDL.h"
-#include "SDL_touch.h"
-#include "SDL_gesture.h"
 
 #define WIDTH 640
 #define HEIGHT 480
@@ -49,18 +44,6 @@ typedef struct {
 } Knob;
 
 static Knob knob;
-
-void handler (int sig)
-{
-  SDL_Log ("exiting...(%d)", sig);
-  exit (0);
-}
-
-void perror_exit (char *error)
-{
-  perror (error);
-  handler (9);
-}
 
 void setpix(SDL_Surface *screen, float _x, float _y, unsigned int col)
 {
