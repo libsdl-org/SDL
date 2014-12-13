@@ -371,10 +371,10 @@ guess_device_class(struct udev_device *dev)
         devclass |= SDL_UDEV_DEVICE_MOUSE; /* ID_INPUT_MOUSE */
     }
 
-    /* the first 32 bits are ESC, numbers, and Q to D; if we have all of
-     * those, consider it a full keyboard; do not test KEY_RESERVED, though */
+    /* the first 32 bits are ESC, numbers, and Q to D; if we have any of
+     * those, consider it a keyboard device; do not test KEY_RESERVED, though */
     keyboard_mask = 0xFFFFFFFE;
-    if ((bitmask_key[0] & keyboard_mask) == keyboard_mask)
+    if ((bitmask_key[0] & keyboard_mask) != 0)
         devclass |= SDL_UDEV_DEVICE_KEYBOARD; /* ID_INPUT_KEYBOARD */
 
     return devclass;
