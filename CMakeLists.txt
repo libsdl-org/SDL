@@ -200,6 +200,8 @@ add_definitions(-DUSING_GENERATED_CONFIG_H)
 # General includes
 include_directories(${SDL2_BINARY_DIR}/include ${SDL2_SOURCE_DIR}/include)
 
+# All these ENABLED_BY_DEFAULT vars will default to ON if not specified, so
+#  you only need to have a platform override them if they are disabling.
 if(EMSCRIPTEN)
   # Set up default values for the currently supported set of subsystems:
   # Emscripten/Javascript does not have assembly support, a dynamic library 
@@ -211,13 +213,6 @@ if(EMSCRIPTEN)
   set(SDL_LOADSO_ENABLED_BY_DEFAULT OFF)
   set(SDL_CPUINFO_ENABLED_BY_DEFAULT OFF)
   set(DLOPEN_ENABLED_BY_DEFAULT OFF)
-else()
-  set(SDL_SHARED_ENABLED_BY_DEFAULT ON)
-  set(SDL_ATOMIC_ENABLED_BY_DEFAULT ON)
-  set(SDL_THREADS_ENABLED_BY_DEFAULT ON)
-  set(SDL_LOADSO_ENABLED_BY_DEFAULT ON)
-  set(SDL_CPUINFO_ENABLED_BY_DEFAULT ON)
-  set(DLOPEN_ENABLED_BY_DEFAULT ON)
 endif()
 
 set(SDL_SUBSYSTEMS
