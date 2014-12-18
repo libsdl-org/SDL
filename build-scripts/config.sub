@@ -1534,6 +1534,8 @@ case $os in
 	-pnacl*)
 		os=-pnacl
 		;;
+	-emscripten*)
+		;;
 	-none)
 		;;
 	*)

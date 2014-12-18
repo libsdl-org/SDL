@@ -117,6 +117,12 @@ else()
   set(UNIX_OR_MAC_SYS OFF)
 endif()
 
+if (UNIX_OR_MAC_SYS AND NOT EMSCRIPTEN) # JavaScript does not yet have threading support, so disable pthreads when building for Emscripten.
+  set(PTHREADS_ENABLED_BY_DEFAULT ON)
+else()
+  set(PTHREADS_ENABLED_BY_DEFAULT OFF)
+endif()
+
 # Default option knobs
 if(APPLE OR ARCH_64)
   set(OPT_DEF_SSEMATH ON)
@@ -170,13 +176,19 @@ endif()
 set(SDL_LIBS "-lSDL2")
 set(SDL_CFLAGS "")
 
+# Emscripten toolchain has a nonempty default value for this, and the checks 
+# in this file need to change that, so remember the original value, and 
+# restore back to that afterwards. For check_function_exists() to work in
+# Emscripten, this value must be at its default value.
+set(ORIG_CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS})
+
 if(CYGWIN)
   # We build SDL on cygwin without the UNIX emulation layer
   include_directories("-I/usr/include/mingw")
   set(CMAKE_REQUIRED_FLAGS "-mno-cygwin")
   check_c_source_compiles("int main(int argc, char **argv) {}"
     HAVE_GCC_NO_CYGWIN)
-  set(CMAKE_REQUIRED_FLAGS)
+  set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
   if(HAVE_GCC_NO_CYGWIN)
     list(APPEND EXTRA_LDFLAGS "-mno-cygwin")
     list(APPEND SDL_LIBS "-mno-cygwin")
@@ -188,12 +200,35 @@ add_definitions(-DUSING_GENERATED_CONFIG_H)
 # General includes
 include_directories(${SDL2_BINARY_DIR}/include ${SDL2_SOURCE_DIR}/include)
 
+if(EMSCRIPTEN)
+  # Set up default values for the currently supported set of subsystems:
+  # Emscripten/Javascript does not have assembly support, a dynamic library 
+  # loading architecture, low-level CPU inspection or multithreading.
+  set(OPT_DEF_ASM FALSE)
+  set(SDL_SHARED_ENABLED_BY_DEFAULT OFF)
+  set(SDL_ATOMIC_ENABLED_BY_DEFAULT OFF)
+  set(SDL_THREADS_ENABLED_BY_DEFAULT OFF)
+  set(SDL_LOADSO_ENABLED_BY_DEFAULT OFF)
+  set(SDL_CPUINFO_ENABLED_BY_DEFAULT OFF)
+  set(DLOPEN_ENABLED_BY_DEFAULT OFF)
+else()
+  set(SDL_SHARED_ENABLED_BY_DEFAULT ON)
+  set(SDL_ATOMIC_ENABLED_BY_DEFAULT ON)
+  set(SDL_THREADS_ENABLED_BY_DEFAULT ON)
+  set(SDL_LOADSO_ENABLED_BY_DEFAULT ON)
+  set(SDL_CPUINFO_ENABLED_BY_DEFAULT ON)
+  set(DLOPEN_ENABLED_BY_DEFAULT ON)
+endif()
+
 set(SDL_SUBSYSTEMS
     Atomic Audio Video Render Events Joystick Haptic Power Threads Timers
     File Loadso CPUinfo Filesystem)
 foreach(_SUB ${SDL_SUBSYSTEMS})
   string(TOUPPER ${_SUB} _OPT)
-  option(SDL_${_OPT} "Enable the ${_SUB} subsystem" ON)
+  if (NOT DEFINED SDL_${_OPT}_ENABLED_BY_DEFAULT)
+    set(SDL_${_OPT}_ENABLED_BY_DEFAULT ON)
+  endif()
+  option(SDL_${_OPT} "Enable the ${_SUB} subsystem" ${SDL_${_OPT}_ENABLED_BY_DEFAULT})
 endforeach()
 
 option_string(ASSERTIONS "Enable internal sanity checks (auto/disabled/release/enabled/paranoid)" "auto")
@@ -216,9 +251,9 @@ dep_option(FUSIONSOUND_SHARED  "Dynamically load fusionsound audio support" ON "
 set_option(VIDEO_DUMMY         "Use dummy video driver" ON)
 set_option(VIDEO_OPENGL        "Include OpenGL support" ON)
 set_option(VIDEO_OPENGLES      "Include OpenGL ES support" ON)
-set_option(PTHREADS            "Use POSIX threads for multi-threading" ${UNIX_OR_MAC_SYS})
+set_option(PTHREADS            "Use POSIX threads for multi-threading" ${PTHREADS_ENABLED_BY_DEFAULT})
 dep_option(PTHREADS_SEM        "Use pthread semaphores" ON "PTHREADS" OFF)
-set_option(SDL_DLOPEN          "Use dlopen for shared object loading" ON)
+set_option(SDL_DLOPEN          "Use dlopen for shared object loading" ${DLOPEN_ENABLED_BY_DEFAULT})
 set_option(OSS                 "Support the OSS audio API" ${UNIX_SYS})
 set_option(ALSA                "Support the ALSA audio API" ${UNIX_SYS})
 dep_option(ALSA_SHARED         "Dynamically load ALSA audio support" ON "ALSA" OFF)
@@ -251,7 +286,7 @@ set_option(VIDEO_VIVANTE       "Use Vivante EGL video driver" ${UNIX_SYS})
 
 # TODO: We should (should we?) respect cmake's ${BUILD_SHARED_LIBS} flag here
 # The options below are for compatibility to configure's default behaviour.
-set(SDL_SHARED ON CACHE BOOL "Build a shared version of the library")
+set(SDL_SHARED ${SDL_SHARED_ENABLED_BY_DEFAULT} CACHE BOOL "Build a shared version of the library")
 set(SDL_STATIC ON CACHE BOOL "Build a static version of the library")
 
 # General source files
@@ -317,7 +352,7 @@ if(USE_GCC OR USE_CLANG)
   set(CMAKE_REQUIRED_FLAGS "-mpreferred-stack-boundary=2")
   check_c_source_compiles("int x = 0; int main(int argc, char **argv) {}"
     HAVE_GCC_PREFERRED_STACK_BOUNDARY)
-  set(CMAKE_REQUIRED_FLAGS)
+  set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
 
   set(CMAKE_REQUIRED_FLAGS "-fvisibility=hidden -Werror")
   check_c_source_compiles("
@@ -328,7 +363,7 @@ if(USE_GCC OR USE_CLANG)
   if(HAVE_GCC_FVISIBILITY)
     list(APPEND EXTRA_CFLAGS "-fvisibility=hidden")
   endif()
-  set(CMAKE_REQUIRED_FLAGS)
+  set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
 
   check_c_compiler_flag(-Wall HAVE_GCC_WALL)
   if(HAVE_GCC_WALL)
@@ -376,7 +411,7 @@ if(ASSEMBLY)
       if(HAVE_MMX)
         list(APPEND EXTRA_CFLAGS "-mmmx")
       endif()
-      set(CMAKE_REQUIRED_FLAGS)
+      set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
     endif()
 
     if(3DNOW)
@@ -393,7 +428,7 @@ if(ASSEMBLY)
       if(HAVE_3DNOW)
         list(APPEND EXTRA_CFLAGS "-m3dnow")
       endif()
-      set(CMAKE_REQUIRED_FLAGS)
+      set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
     endif()
 
     if(SSE)
@@ -416,7 +451,7 @@ if(ASSEMBLY)
       if(HAVE_SSE)
         list(APPEND EXTRA_CFLAGS "-msse")
       endif()
-      set(CMAKE_REQUIRED_FLAGS)
+      set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
     endif()
 
     if(SSE2)
@@ -439,7 +474,7 @@ if(ASSEMBLY)
       if(HAVE_SSE2)
         list(APPEND EXTRA_CFLAGS "-msse2")
       endif()
-      set(CMAKE_REQUIRED_FLAGS)
+      set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
     endif()
 
     if(SSEMATH)
@@ -464,7 +499,7 @@ if(ASSEMBLY)
               return vec_splat_u32(0);
           }
           int main(int argc, char **argv) { }" HAVE_ALTIVEC)
-      set(CMAKE_REQUIRED_FLAGS)
+      set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
       if(HAVE_ALTIVEC OR HAVE_ALTIVEC_H_HDR)
         set(HAVE_ALTIVEC TRUE) # if only HAVE_ALTIVEC_H_HDR is set
         list(APPEND EXTRA_CFLAGS "-maltivec")
@@ -642,7 +677,49 @@ if(SDL_VIDEO)
 endif()
 
 # Platform-specific options and settings
-if(UNIX AND NOT APPLE)
+if(EMSCRIPTEN)
+  # Hide noisy warnings that intend to aid mostly during initial stages of porting a new
+  # project. Uncomment at will for verbose cross-compiling -I/../ path info.
+  add_definitions(-Wno-warn-absolute-paths)
+  if(SDL_AUDIO)
+    set(SDL_AUDIO_DRIVER_EMSCRIPTEN 1)
+    file(GLOB EM_AUDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/emscripten/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${EM_AUDIO_SOURCES})
+    set(HAVE_SDL_AUDIO TRUE)
+  endif()
+  if(SDL_FILESYSTEM)
+    set(SDL_FILESYSTEM_EMSCRIPTEN 1)
+    file(GLOB EM_FILESYSTEM_SOURCES ${SDL2_SOURCE_DIR}/src/filesystem/emscripten/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${EM_FILESYSTEM_SOURCES})
+    set(HAVE_SDL_FILESYSTEM TRUE)
+  endif()
+  if(SDL_JOYSTICK)
+    set(SDL_JOYSTICK_EMSCRIPTEN 1)
+    file(GLOB EM_JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/emscripten/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${EM_JOYSTICK_SOURCES})
+    set(HAVE_SDL_JOYSTICK TRUE)
+  endif()
+  if(SDL_POWER)
+    set(SDL_POWER_EMSCRIPTEN 1)
+    file(GLOB EM_POWER_SOURCES ${SDL2_SOURCE_DIR}/src/power/emscripten/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${EM_POWER_SOURCES})
+    set(HAVE_SDL_POWER TRUE)
+  endif()
+  if(SDL_VIDEO)
+    set(SDL_VIDEO_DRIVER_EMSCRIPTEN 1)
+    file(GLOB EM_VIDEO_SOURCES ${SDL2_SOURCE_DIR}/src/video/emscripten/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${EM_VIDEO_SOURCES})
+    set(HAVE_SDL_VIDEO TRUE)
+
+    #enable gles
+    if(VIDEO_OPENGLES)
+      set(SDL_VIDEO_OPENGL_EGL 1)
+      set(HAVE_VIDEO_OPENGLES TRUE)
+      set(SDL_VIDEO_OPENGL_ES2 1)
+      set(SDL_VIDEO_RENDER_OGL_ES2 1)
+    endif()
+  endif()
+elseif(UNIX AND NOT APPLE)
   if(SDL_AUDIO)
     if(SYSV5 OR SOLARIS OR HPUX)
         set(SDL_AUDIO_DRIVER_SUNAUDIO 1)
@@ -829,7 +906,7 @@ elseif(WINDOWS)
       link_directories($ENV{DXSDK_DIR}\\lib\\${PROCESSOR_ARCH})
       include_directories($ENV{DXSDK_DIR}\\Include)
     endif()
-    set(CMAKE_REQUIRED_FLAGS)
+    set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
   endif()
 
   if(SDL_AUDIO)

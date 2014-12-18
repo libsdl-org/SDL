@@ -89,6 +89,7 @@ typedef struct _ControllerMapping_t
 
 static ControllerMapping_t *s_pSupportedControllers = NULL;
 static ControllerMapping_t *s_pXInputMapping = NULL;
+static ControllerMapping_t *s_pEmscriptenMapping = NULL;
 
 /* The SDL game controller structure */
 struct _SDL_GameController
@@ -263,7 +264,13 @@ ControllerMapping_t *SDL_PrivateGetControllerMapping(int device_index)
         return s_pXInputMapping;
     }
     else
-#endif /* SDL_JOYSTICK_XINPUT */
+#endif
+#if defined(SDL_JOYSTICK_EMSCRIPTEN)
+    if (s_pEmscriptenMapping) {
+        return s_pEmscriptenMapping;
+    }
+    else
+#endif
     {
         SDL_JoystickGUID jGUID = SDL_JoystickGetDeviceGUID(device_index);
         return SDL_PrivateGetControllerMappingForGUID(&jGUID);
@@ -668,6 +675,7 @@ SDL_GameControllerAddMapping(const char *mappingString)
     SDL_JoystickGUID jGUID;
     ControllerMapping_t *pControllerMapping;
     SDL_bool is_xinput_mapping = SDL_FALSE;
+    SDL_bool is_emscripten_mapping = SDL_FALSE;
 
     if (!mappingString) {
         return SDL_InvalidParamError("mappingString");
@@ -679,6 +687,9 @@ SDL_GameControllerAddMapping(const char *mappingString)
     }
     if (!SDL_strcasecmp(pchGUID, "xinput")) {
         is_xinput_mapping = SDL_TRUE;
+    }
+    if (!SDL_strcasecmp(pchGUID, "emscripten")) {
+        is_emscripten_mapping = SDL_TRUE;
     }
     jGUID = SDL_JoystickGetGUIDFromString(pchGUID);
     SDL_free(pchGUID);
@@ -714,6 +725,9 @@ SDL_GameControllerAddMapping(const char *mappingString)
         }
         if (is_xinput_mapping) {
             s_pXInputMapping = pControllerMapping;
+        }
+        if (is_emscripten_mapping) {
+            s_pEmscriptenMapping = pControllerMapping;
         }
         pControllerMapping->guid = jGUID;
         pControllerMapping->name = pchName;

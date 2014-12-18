@@ -13,6 +13,10 @@
 
 #include <stdio.h> /* for fflush() and stdout */
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten/emscripten.h>
+#endif
+
 static SDL_AudioSpec spec;
 static Uint8 *sound = NULL;     /* Pointer to wave data */
 static Uint32 soundlen = 0;     /* Length of wave data */
@@ -23,6 +27,8 @@ typedef struct
     int soundpos;
     volatile int done;
 } callback_data;
+
+callback_data cbd[64];
 
 void SDLCALL
 play_through_once(void *arg, Uint8 * stream, int len)
@@ -44,10 +50,21 @@ play_through_once(void *arg, Uint8 * stream, int len)
     }
 }
 
+void
+loop()
+{
+    if(cbd[0].done) {
+        emscripten_cancel_main_loop();
+        SDL_PauseAudioDevice(cbd[0].dev, 1);
+        SDL_CloseAudioDevice(cbd[0].dev);
+        SDL_FreeWAV(sound);
+        SDL_Quit();
+    }
+}
+
 static void
 test_multi_audio(int devcount)
 {
-    callback_data cbd[64];
     int keep_going = 1;
     int i;
     
@@ -78,14 +95,19 @@ test_multi_audio(int devcount)
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Open device failed: %s\n", SDL_GetError());
         } else {
             SDL_PauseAudioDevice(cbd[0].dev, 0);
-            while (!cbd[0].done) {
-#ifdef __ANDROID__                
+#ifdef __EMSCRIPTEN__
+            emscripten_set_main_loop(loop, 0, 1);
+#else
+            while (!cbd[0].done)
+            {
+                #ifdef __ANDROID__                
                 /* Empty queue, some application events would prevent pause. */
                 while (SDL_PollEvent(&event)){}
-#endif                
+                #endif                
                 SDL_Delay(100);
             }
             SDL_PauseAudioDevice(cbd[0].dev, 1);
+#endif
             SDL_Log("done.\n");
             SDL_CloseAudioDevice(cbd[0].dev);
         }
@@ -116,21 +138,13 @@ test_multi_audio(int devcount)
                 keep_going = 1;
             }
         }
-#ifdef __ANDROID__        
+        #ifdef __ANDROID__        
         /* Empty queue, some application events would prevent pause. */
         while (SDL_PollEvent(&event)){}
-#endif        
+        #endif        
+
         SDL_Delay(100);
     }
-
-    for (i = 0; i < devcount; i++) {
-        if (cbd[i].dev) {
-            SDL_PauseAudioDevice(cbd[i].dev, 1);
-            SDL_CloseAudioDevice(cbd[i].dev);
-        }
-    }
-
-    SDL_Log("All done!\n");
 }
 
 
