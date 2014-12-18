@@ -17,6 +17,10 @@
 
 #include "SDL.h"
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten/emscripten.h>
+#endif
+
 #define WIDTH 640
 #define HEIGHT 480
 #define BPP 4
@@ -33,6 +37,9 @@ static int eventWrite;
 
 
 static int colors[7] = {0xFF,0xFF00,0xFF0000,0xFFFF00,0x00FFFF,0xFF00FF,0xFFFFFF};
+
+SDL_Surface *screen;
+SDL_bool quitting = SDL_FALSE;
 
 typedef struct {
   float x,y;
@@ -161,33 +168,13 @@ SDL_Window* initWindow(SDL_Window *window, int width,int height)
   return window;
 }
 
-int main(int argc, char* argv[])
+void loop()
 {
-  SDL_Window *window = NULL;
-  SDL_Surface *screen;
-  SDL_Event event;
-  SDL_bool quitting = SDL_FALSE;
-  SDL_RWops *stream;
+    SDL_Event event;
+    SDL_RWops *stream;
 
-  /* Enable standard application logging */
-  SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
-
-  /* gesture variables */
-  knob.r = .1f;
-  knob.ang = 0;
-
-  if (SDL_Init(SDL_INIT_VIDEO) < 0 ) return 1;
-
-  if (!(window = initWindow(window, WIDTH, HEIGHT)) ||
-      !(screen = SDL_GetWindowSurface(window)))
-    {
-      SDL_Quit();
-      return 1;
-    }
-
-  while(!quitting) {
     while(SDL_PollEvent(&event))
-      {
+    {
     /* Record _all_ events */
     events[eventWrite & (EVENT_BUF_SIZE-1)] = event;
     eventWrite++;
@@ -233,7 +220,7 @@ int main(int argc, char* argv[])
               !(screen = SDL_GetWindowSurface(window)))
           {
         SDL_Quit();
-        return 1;
+        exit(1);
           }
             }
         break;
@@ -278,9 +265,36 @@ int main(int argc, char* argv[])
         SDL_Log("Recorded gesture: %"SDL_PRIs64"",event.dgesture.gestureId);
         break;
       }
-      }
-    DrawScreen(screen, window);
+    }
+    DrawScreen(screen);
+}
+
+int main(int argc, char* argv[])
+{
+
+  /* Enable standard application logging */
+  SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+
+  /* gesture variables */
+  knob.r = .1f;
+  knob.ang = 0;
+
+  if (SDL_Init(SDL_INIT_VIDEO) < 0 ) return 1;
+
+  if (!(screen = initScreen(WIDTH,HEIGHT)))
+  {
+      SDL_Quit();
+      return 1;
   }
+
+#ifdef __EMSCRIPTEN__
+    emscripten_set_main_loop(loop, 0, 1);
+#else
+    while(!quitting) {
+        loop();
+    }
+#endif
+
   SDL_Quit();
   return 0;
 }

@@ -15,6 +15,10 @@
 #include <stdio.h>
 #include <time.h>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten/emscripten.h>
+#endif
+
 #include "SDL_test.h"
 #include "SDL_test_common.h"
 
@@ -37,6 +41,8 @@ static SDL_BlendMode blendMode = SDL_BLENDMODE_BLEND;
 /* Number of iterations to move sprites - used for visual tests. */
 /* -1: infinite random moves (default); >=0: enables N deterministic moves */
 static int iterations = -1;
+
+int done;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -230,11 +236,27 @@ MoveSprites(SDL_Renderer * renderer, SDL_Texture * sprite)
     SDL_RenderPresent(renderer);
 }
 
+void
+loop()
+{
+    int i;
+    SDL_Event event;
+
+    /* Check for events */
+    while (SDL_PollEvent(&event)) {
+        SDLTest_CommonEvent(state, &event, &done);
+    }
+    for (i = 0; i < state->num_windows; ++i) {
+        if (state->windows[i] == NULL)
+            continue;
+        MoveSprites(state->renderers[i], sprites[i]);
+    }
+}
+
 int
 main(int argc, char *argv[])
 {
-    int i, done;
-    SDL_Event event;
+    int i;
     Uint32 then, now, frames;
 	Uint64 seed;
     const char *icon = "icon.bmp";
@@ -351,18 +373,15 @@ main(int argc, char *argv[])
     frames = 0;
     then = SDL_GetTicks();
     done = 0;
+
+#ifdef __EMSCRIPTEN__
+    emscripten_set_main_loop(loop, 0, 1);
+#else
     while (!done) {
-        /* Check for events */
         ++frames;
-        while (SDL_PollEvent(&event)) {
-            SDLTest_CommonEvent(state, &event, &done);
-        }
-        for (i = 0; i < state->num_windows; ++i) {
-            if (state->windows[i] == NULL)
-                continue;
-            MoveSprites(state->renderers[i], sprites[i]);
-        }
+        loop();
     }
+#endif
 
     /* Print out some timing information */
     now = SDL_GetTicks();

@@ -14,6 +14,10 @@
 #include <string.h>
 #include <math.h>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten/emscripten.h>
+#endif
+
 #include "SDL_test_common.h"
 
 #if defined(__IPHONEOS__) || defined(__ANDROID__) || defined(__NACL__)
@@ -408,17 +412,72 @@ Render(unsigned int width, unsigned int height, shader_data* data)
     GL_CHECK(ctx.glDrawArrays(GL_TRIANGLES, 0, 36));
 }
 
+int done;
+Uint32 frames;
+shader_data *datas;
+
+void loop()
+{
+    SDL_Event event;
+    int i;
+    int status;
+
+    /* Check for events */
+    ++frames;
+    while (SDL_PollEvent(&event) && !done) {
+        switch (event.type) {
+        case SDL_WINDOWEVENT:
+            switch (event.window.event) {
+                case SDL_WINDOWEVENT_RESIZED:
+                    for (i = 0; i < state->num_windows; ++i) {
+                        if (event.window.windowID == SDL_GetWindowID(state->windows[i])) {
+                            int w, h;
+                            status = SDL_GL_MakeCurrent(state->windows[i], context[i]);
+                            if (status) {
+                                SDL_Log("SDL_GL_MakeCurrent(): %s\n", SDL_GetError());
+                                break;
+                            }
+                            /* Change view port to the new window dimensions */
+                            SDL_GL_GetDrawableSize(state->windows[i], &w, &h);
+                            ctx.glViewport(0, 0, w, h);
+                            state->window_w = event.window.data1;
+                            state->window_h = event.window.data2;
+                            /* Update window content */
+                            Render(event.window.data1, event.window.data2, &datas[i]);
+                            SDL_GL_SwapWindow(state->windows[i]);
+                            break;
+                        }
+                    }
+                    break;
+            }
+        }
+        SDLTest_CommonEvent(state, &event, &done);
+    }
+    if (!done) {
+      for (i = 0; i < state->num_windows; ++i) {
+          status = SDL_GL_MakeCurrent(state->windows[i], context[i]);
+          if (status) {
+              SDL_Log("SDL_GL_MakeCurrent(): %s\n", SDL_GetError());
+
+              /* Continue for next window */
+              continue;
+          }
+          Render(state->window_w, state->window_h, &datas[i]);
+          SDL_GL_SwapWindow(state->windows[i]);
+      }
+    }
+}
+
 int
 main(int argc, char *argv[])
 {
     int fsaa, accel;
     int value;
-    int i, done;
+    int i;
     SDL_DisplayMode mode;
-    SDL_Event event;
-    Uint32 then, now, frames;
+    Uint32 then, now;
     int status;
-    shader_data *datas, *data;
+    shader_data *data;
 
     /* Initialize parameters */
     fsaa = 0;
@@ -581,6 +640,7 @@ main(int argc, char *argv[])
     /* Set rendering settings for each context */
     for (i = 0; i < state->num_windows; ++i) {
 
+        int w, h;
         status = SDL_GL_MakeCurrent(state->windows[i], context[i]);
         if (status) {
             SDL_Log("SDL_GL_MakeCurrent(): %s\n", SDL_GetError());
@@ -588,7 +648,8 @@ main(int argc, char *argv[])
             /* Continue for next window */
             continue;
         }
-        ctx.glViewport(0, 0, state->window_w, state->window_h);
+        SDL_GL_GetDrawableSize(state->windows[i], &w, &h);
+        ctx.glViewport(0, 0, w, h);
 
         data = &datas[i];
         data->angle_x = 0; data->angle_y = 0; data->angle_z = 0;
@@ -630,48 +691,14 @@ main(int argc, char *argv[])
     frames = 0;
     then = SDL_GetTicks();
     done = 0;
-    while (!done) {
-        /* Check for events */
-        ++frames;
-        while (SDL_PollEvent(&event) && !done) {
-            switch (event.type) {
-            case SDL_WINDOWEVENT:
-                switch (event.window.event) {
-                    case SDL_WINDOWEVENT_RESIZED:
-                        for (i = 0; i < state->num_windows; ++i) {
-                            if (event.window.windowID == SDL_GetWindowID(state->windows[i])) {
-                                status = SDL_GL_MakeCurrent(state->windows[i], context[i]);
-                                if (status) {
-                                    SDL_Log("SDL_GL_MakeCurrent(): %s\n", SDL_GetError());
-                                    break;
-                                }
-                                /* Change view port to the new window dimensions */
-                                ctx.glViewport(0, 0, event.window.data1, event.window.data2);
-                                /* Update window content */
-                                Render(event.window.data1, event.window.data2, &datas[i]);
-                                SDL_GL_SwapWindow(state->windows[i]);
-                                break;
-                            }
-                        }
-                        break;
-                }
-            }
-            SDLTest_CommonEvent(state, &event, &done);
-        }
-        if (!done) {
-          for (i = 0; i < state->num_windows; ++i) {
-              status = SDL_GL_MakeCurrent(state->windows[i], context[i]);
-              if (status) {
-                  SDL_Log("SDL_GL_MakeCurrent(): %s\n", SDL_GetError());
 
-                  /* Continue for next window */
-                  continue;
-              }
-              Render(state->window_w, state->window_h, &datas[i]);
-              SDL_GL_SwapWindow(state->windows[i]);
-          }
-        }
+#ifdef __EMSCRIPTEN__
+    emscripten_set_main_loop(loop, 0, 1);
+#else
+    while (!done) {
+        loop();
     }
+#endif
 
     /* Print out some timing information */
     now = SDL_GetTicks();

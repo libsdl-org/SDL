@@ -65,6 +65,12 @@ case "$host" in
         MATHLIB=""
         SYS_GL_LIBS="-lGLES_CM"
         ;;
+    *-*-emscripten* )
+        dnl This should really be .js, but we need to specify extra flags when compiling to js
+        EXE=".bc"
+        MATHLIB=""
+        SYS_GL_LIBS=""
+        ;;
     *)
         dnl Oh well, call it Unix...
         ISUNIX="true"

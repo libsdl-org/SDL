@@ -8,6 +8,7 @@
 #define _CRT_NONSTDC_NO_DEPRECATE
 
 #include <stdio.h>
+#include <unistd.h>
 #include <sys/stat.h>
 
 #include "SDL.h"

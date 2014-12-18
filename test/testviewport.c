@@ -15,11 +15,22 @@
 #include <stdio.h>
 #include <time.h>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten/emscripten.h>
+#endif
+
 #include "SDL_test.h"
 #include "SDL_test_common.h"
 
 
 static SDLTest_CommonState *state;
+
+SDL_Rect viewport;
+int done, j;
+SDL_bool use_target = SDL_FALSE;
+#ifdef __EMSCRIPTEN__
+Uint32 wait_start;
+#endif
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -77,14 +88,54 @@ DrawOnViewport(SDL_Renderer * renderer, SDL_Rect viewport)
     SDL_RenderFillRect(renderer, &rect);
 }
 
+void
+loop()
+{
+#ifdef __EMSCRIPTEN__
+    /* Avoid using delays */
+    if(SDL_GetTicks() - wait_start < 1000)
+        return;
+    wait_start = SDL_GetTicks();
+#endif
+    SDL_Event event;
+    int i;
+    /* Check for events */
+    while (SDL_PollEvent(&event)) {
+        SDLTest_CommonEvent(state, &event, &done);
+    }
+
+    /* Move a viewport box in steps around the screen */
+    viewport.x = j * 100;
+    viewport.y = viewport.x;
+    viewport.w = 100 + j * 50;
+    viewport.h = 100 + j * 50;
+    j = (j + 1) % 4;
+    SDL_Log("Current Viewport x=%i y=%i w=%i h=%i", viewport.x, viewport.y, viewport.w, viewport.h);
+
+    for (i = 0; i < state->num_windows; ++i) {
+        if (state->windows[i] == NULL)
+            continue;
+
+        /* Draw using viewport */
+        DrawOnViewport(state->renderers[i], viewport);
+
+        /* Update the screen! */
+        if (use_target) {
+            SDL_SetRenderTarget(state->renderers[i], NULL);
+            SDL_RenderCopy(state->renderers[i], state->targets[i], NULL, NULL);
+            SDL_RenderPresent(state->renderers[i]);
+            SDL_SetRenderTarget(state->renderers[i], state->targets[i]);
+        } else {
+            SDL_RenderPresent(state->renderers[i]);
+        }
+    }
+}
+
 int
 main(int argc, char *argv[])
 {
-    int i, j, done;
-    SDL_Event event;
+    int i;
     Uint32 then, now, frames;
-    SDL_Rect viewport;
-    SDL_bool use_target = SDL_FALSE;
 
     /* Initialize test framework */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
@@ -135,41 +186,17 @@ main(int argc, char *argv[])
     then = SDL_GetTicks();
     done = 0;
     j = 0;
-    while (!done) {
-        /* Check for events */
-        ++frames;
-        while (SDL_PollEvent(&event)) {
-            SDLTest_CommonEvent(state, &event, &done);
-        }
-        
-        /* Move a viewport box in steps around the screen */                
-        viewport.x = j * 100;
-        viewport.y = viewport.x;
-        viewport.w = 100 + j * 50;
-        viewport.h = 100 + j * 50;
-        j = (j + 1) % 4;            
-        SDL_Log("Current Viewport x=%i y=%i w=%i h=%i", viewport.x, viewport.y, viewport.w, viewport.h);
-        
-        for (i = 0; i < state->num_windows; ++i) {
-            if (state->windows[i] == NULL)
-                continue;
-                
-            /* Draw using viewport */        
-            DrawOnViewport(state->renderers[i], viewport);
 
-            /* Update the screen! */
-            if (use_target) {
-                SDL_SetRenderTarget(state->renderers[i], NULL);
-                SDL_RenderCopy(state->renderers[i], state->targets[i], NULL, NULL);
-                SDL_RenderPresent(state->renderers[i]);
-                SDL_SetRenderTarget(state->renderers[i], state->targets[i]);
-            } else {
-                SDL_RenderPresent(state->renderers[i]);
-            }
-        }
-        
+#ifdef __EMSCRIPTEN__
+    wait_start = SDL_GetTicks();
+    emscripten_set_main_loop(loop, 0, 1);
+#else
+    while (!done) {
+        ++frames;
+        loop();
         SDL_Delay(1000);
     }
+#endif
 
     /* Print out some timing information */
     now = SDL_GetTicks();
