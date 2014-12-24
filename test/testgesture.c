@@ -170,7 +170,6 @@ SDL_Window* initWindow(SDL_Window *window, int width,int height)
 
 void loop()
 {
-    static SDL_Window *window = NULL;
     SDL_Event event;
     SDL_RWops *stream;
 
@@ -267,7 +266,7 @@ void loop()
         break;
       }
     }
-    DrawScreen(screen);
+    DrawScreen(screen, window);
 }
 
 int main(int argc, char* argv[])
