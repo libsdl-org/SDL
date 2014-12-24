@@ -59,6 +59,8 @@ emmake $MAKE
 
 echo "Moving things around..."
 emmake $MAKE install
+# Fix up a few things to a real install path
+perl -w -pi -e "s#$SDLBASE/emscripten-sdl2-installed#/usr/local#g;" ./emscripten-sdl2-installed/lib/libSDL2.la ./emscripten-sdl2-installed/lib/pkgconfig/sdl2.pc ./emscripten-sdl2-installed/bin/sdl2-config
 mkdir -p ./usr
 mv "$SDLBASE/emscripten-sdl2-installed" ./usr/local
 popd
