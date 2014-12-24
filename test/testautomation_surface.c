@@ -8,7 +8,7 @@
 #define _CRT_NONSTDC_NO_DEPRECATE
 
 #include <stdio.h>
-#ifndef __WIN32__
+#ifndef _MSC_VER
 #include <unistd.h>
 #endif
 #include <sys/stat.h>
