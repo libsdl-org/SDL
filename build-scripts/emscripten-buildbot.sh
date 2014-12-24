@@ -47,12 +47,11 @@ echo "Setting up..."
 set -x
 cd "$SDLBASE"
 rm -rf buildbot
-rm -rf emscripten-sdl2-installed
 mkdir buildbot
 pushd buildbot
 
 echo "Configuring..."
-emconfigure ../configure --host=asmjs-unknown-emscripten --disable-assembly --disable-threads --enable-cpuinfo=false CFLAGS="-O2 -Wno-warn-absolute-paths -Wdeclaration-after-statement -Werror=declaration-after-statement" --prefix="$SDLBASE/emscripten-sdl2-installed"
+emconfigure ../configure --host=asmjs-unknown-emscripten --disable-assembly --disable-threads --enable-cpuinfo=false CFLAGS="-O2 -Wno-warn-absolute-paths -Wdeclaration-after-statement -Werror=declaration-after-statement" --prefix="$PWD/emscripten-sdl2-installed"
 
 echo "Building..."
 emmake $MAKE
@@ -60,9 +59,9 @@ emmake $MAKE
 echo "Moving things around..."
 emmake $MAKE install
 # Fix up a few things to a real install path
-perl -w -pi -e "s#$SDLBASE/emscripten-sdl2-installed#/usr/local#g;" ./emscripten-sdl2-installed/lib/libSDL2.la ./emscripten-sdl2-installed/lib/pkgconfig/sdl2.pc ./emscripten-sdl2-installed/bin/sdl2-config
+perl -w -pi -e "s#$PWD/emscripten-sdl2-installed#/usr/local#g;" ./emscripten-sdl2-installed/lib/libSDL2.la ./emscripten-sdl2-installed/lib/pkgconfig/sdl2.pc ./emscripten-sdl2-installed/bin/sdl2-config
 mkdir -p ./usr
-mv "$SDLBASE/emscripten-sdl2-installed" ./usr/local
+mv ./emscripten-sdl2-installed ./usr/local
 popd
 tar -cJvvf $TARBALL -C buildbot usr
 rm -rf buildbot
