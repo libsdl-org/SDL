@@ -142,14 +142,11 @@ extern DECLSPEC void SDLCALL SDL_UnregisterApp(void);
  *  \brief Initializes and launches an SDL/WinRT application.
  *
  *  \param mainFunction The SDL app's C-style main().
- *  \param xamlBackgroundPanel An optional, XAML-based, background panel.
- *     For Non-XAML apps, this value must be set to NULL.  For XAML apps,
- *     pass in a pointer to a SwapChainBackgroundPanel, casted to an
- *     IInspectable (via reinterpret_cast).
+ *  \param reserved Reserved for future use; should be NULL
  *  \ret 0 on success, -1 on failure.  On failure, use SDL_GetError to retrieve more
  *      information on the failure.
  */
-extern DECLSPEC int SDLCALL SDL_WinRTRunApp(int (*mainFunction)(int, char **), void * xamlBackgroundPanel);
+extern DECLSPEC int SDLCALL SDL_WinRTRunApp(int (*mainFunction)(int, char **), void * reserved);
 
 #endif /* __WINRT__ */
 
