@@ -79,12 +79,14 @@ poked(int sig)
     done = 1;
 }
 
+#ifdef __EMSCRIPTEN__
 void
 loop()
 {
     if(done || (SDL_GetAudioStatus() != SDL_AUDIO_PLAYING))
         emscripten_cancel_main_loop();
 }
+#endif
 
 int
 main(int argc, char *argv[])
