@@ -214,7 +214,7 @@ WatchGameController(SDL_GameController * gamecontroller)
     emscripten_set_main_loop_arg(loop, gamecontroller, 0, 1);
 #else
     while (!done) {
-        loop(gamecontroler);
+        loop(gamecontroller);
     }
 #endif
 

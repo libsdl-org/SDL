@@ -269,6 +269,9 @@ void loop()
 
 int main(int argc, char* argv[])
 {
+  window = NULL;
+  screen = NULL;
+  quitting = SDL_FALSE;
 
   /* Enable standard application logging */
   SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
@@ -279,13 +282,8 @@ int main(int argc, char* argv[])
 
   if (SDL_Init(SDL_INIT_VIDEO) < 0 ) return 1;
 
-  if (!(screen = initScreen(WIDTH,HEIGHT)))
-  {
-      SDL_Quit();
-      return 1;
-  }
-
-  if (!(window = initWindow(NULL,WIDTH,HEIGHT)))
+  if (!(window = initWindow(window, WIDTH, HEIGHT)) ||
+      !(screen = SDL_GetWindowSurface(window)))
   {
       SDL_Quit();
       return 1;

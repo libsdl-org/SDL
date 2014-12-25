@@ -54,7 +54,9 @@ void
 loop()
 {
     if(cbd[0].done) {
+#ifdef __EMSCRIPTEN__
         emscripten_cancel_main_loop();
+#endif
         SDL_PauseAudioDevice(cbd[0].dev, 1);
         SDL_CloseAudioDevice(cbd[0].dev);
         SDL_FreeWAV(sound);
@@ -145,6 +147,17 @@ test_multi_audio(int devcount)
 
         SDL_Delay(100);
     }
+
+#ifndef __EMSCRIPTEN__
+    for (i = 0; i < devcount; i++) {
+        if (cbd[i].dev) {
+            SDL_PauseAudioDevice(cbd[i].dev, 1);
+            SDL_CloseAudioDevice(cbd[i].dev);
+        }
+    }
+
+    SDL_Log("All done!\n");
+#endif
 }
 
 
