@@ -62,7 +62,6 @@ HandleAudioProcess(_THIS)
     int byte_len = 0;
     int bytes = SDL_AUDIO_BITSIZE(this->spec.format) / 8;
     int bytes_in = SDL_AUDIO_BITSIZE(this->convert.src_format) / 8;
-    int i;
 
     /* Only do soemthing if audio is enabled */
     if (!this->enabled)

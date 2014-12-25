@@ -335,7 +335,7 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
 {
     EmscriptenGamepadEvent gamepadState;
     SDL_joylist_item *item = SDL_joylist;
-    int i, result, button, buttonState;
+    int i, result, buttonState;
 
     while (item != NULL) {
         result = emscripten_get_gamepad_status(item->index, &gamepadState);
