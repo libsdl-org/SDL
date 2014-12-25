@@ -39,6 +39,7 @@ static int eventWrite;
 static int colors[7] = {0xFF,0xFF00,0xFF0000,0xFFFF00,0x00FFFF,0xFF00FF,0xFFFFFF};
 
 SDL_Surface *screen;
+SDL_Window *window;
 SDL_bool quitting = SDL_FALSE;
 
 typedef struct {
@@ -162,9 +163,6 @@ SDL_Window* initWindow(SDL_Window *window, int width,int height)
                               SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
                               width, height, SDL_WINDOW_RESIZABLE);
   }
-  if (!window) {
-    return NULL;
-  }
   return window;
 }
 
@@ -282,6 +280,12 @@ int main(int argc, char* argv[])
   if (SDL_Init(SDL_INIT_VIDEO) < 0 ) return 1;
 
   if (!(screen = initScreen(WIDTH,HEIGHT)))
+  {
+      SDL_Quit();
+      return 1;
+  }
+
+  if (!(window = initWindow(NULL,WIDTH,HEIGHT)))
   {
       SDL_Quit();
       return 1;
