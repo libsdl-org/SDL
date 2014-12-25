@@ -542,7 +542,7 @@ extern "C" {
  *    "#document"    - The javascript document object
  *    "#screen"      - the javascript window.screen object
  *    "#canvas"      - the WebGL canvas element
- *    any other string without a leading # sign apples to the element on the page with that ID.
+ *    any other string without a leading # sign applies to the element on the page with that ID.
  */
 #define SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT   "SDL_EMSCRIPTEN_KEYBOARD_ELEMENT"
 
