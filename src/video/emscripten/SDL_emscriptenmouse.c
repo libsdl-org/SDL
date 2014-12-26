@@ -42,6 +42,11 @@ Emscripten_CreateDefaultCursor()
     cursor = SDL_calloc(1, sizeof(SDL_Cursor));
     if (cursor) {
         curdata = (Emscripten_CursorData *) SDL_calloc(1, sizeof(*curdata));
+        if (!curdata) {
+            SDL_OutOfMemory();
+            SDL_free(cursor);
+            return NULL;
+        }
 
         curdata->system_cursor = "default";
         cursor->driverdata = curdata;
@@ -108,7 +113,16 @@ Emscripten_CreateSystemCursor(SDL_SystemCursor id)
     }
 
     cursor = (SDL_Cursor *) SDL_calloc(1, sizeof(*cursor));
+    if (!cursor) {
+        SDL_OutOfMemory();
+        return NULL;
+    }
     curdata = (Emscripten_CursorData *) SDL_calloc(1, sizeof(*curdata));
+    if (!curdata) {
+        SDL_OutOfMemory();
+        SDL_free(cursor);
+        return NULL;
+    }
 
     curdata->system_cursor = cursor_name;
     cursor->driverdata = curdata;
