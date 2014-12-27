@@ -281,7 +281,7 @@ SDL_JoystickID SDL_SYS_GetInstanceIdOfDeviceIndex(int index)
     SDL_joylist_item *item = JoystickByIndex(index);
     if (item == NULL) {
         SDL_SetError("Joystick with index %d not found", index);
-        return NULL;
+        return 0;
     }
 
     return item->device_instance;

@@ -458,10 +458,11 @@ SDL_GetCPUType(void)
 
     if (!SDL_CPUType[0]) {
         int i = 0;
-        int a, b, c, d;
 
         if (CPU_haveCPUID()) {
+            int a, b, c, d;
             cpuid(0x00000000, a, b, c, d);
+            (void) a;
             SDL_CPUType[i++] = (char)(b & 0xff); b >>= 8;
             SDL_CPUType[i++] = (char)(b & 0xff); b >>= 8;
             SDL_CPUType[i++] = (char)(b & 0xff); b >>= 8;
@@ -563,15 +564,12 @@ int
 SDL_GetCPUCacheLineSize(void)
 {
     const char *cpuType = SDL_GetCPUType();
-
+    int a, b, c, d;
+    (void) a; (void) b; (void) c; (void) d;
     if (SDL_strcmp(cpuType, "GenuineIntel") == 0) {
-        int a, b, c, d;
-
         cpuid(0x00000001, a, b, c, d);
         return (((b >> 8) & 0xff) * 8);
     } else if (SDL_strcmp(cpuType, "AuthenticAMD") == 0) {
-        int a, b, c, d;
-
         cpuid(0x80000005, a, b, c, d);
         return (c & 0xff);
     } else {
