@@ -58,7 +58,6 @@ int Emscripten_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * form
 
 int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rect * rects, int numrects)
 {
-    static int frame_number;
     SDL_Surface *surface;
 
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
@@ -115,6 +114,7 @@ int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rec
     }, surface->w, surface->h, surface->pixels);
 
     /*if (SDL_getenv("SDL_VIDEO_Emscripten_SAVE_FRAMES")) {
+        static int frame_number = 0;
         char file[128];
         SDL_snprintf(file, sizeof(file), "SDL_window%d-%8.8d.bmp",
                      SDL_GetWindowID(window), ++frame_number);
