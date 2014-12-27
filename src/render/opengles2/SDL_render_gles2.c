@@ -28,7 +28,20 @@
 #include "../../video/SDL_blit.h"
 #include "SDL_shaders_gles2.h"
 
-/* To prevent unnecessary window recreation, 
+/* !!! FIXME: Emscripten makes these into WebGL calls, and WebGL doesn't offer
+   !!! FIXME:  client-side arrays (without an Emscripten compatibility hack,
+   !!! FIXME:  at least), but the current VBO code here is dramatically
+   !!! FIXME:  slower on actual iOS devices, even though the iOS Simulator
+   !!! FIXME:  is okay. Some time after 2.0.4 ships, we should revisit this,
+   !!! FIXME:  fix the performance bottleneck, and make everything use VBOs.
+*/
+#ifdef __EMSCRIPTEN__
+#define SDL_GLES2_USE_VBOS 1
+#else
+#define SDL_GLES2_USE_VBOS 0
+#endif
+
+/* To prevent unnecessary window recreation,
  * these should match the defaults selected in SDL_GL_ResetAttributes 
  */
 #define RENDERER_CONTEXT_MAJOR 2
@@ -181,8 +194,10 @@ typedef struct GLES2_DriverContext
     GLES2_ProgramCacheEntry *current_program;
     Uint8 clear_r, clear_g, clear_b, clear_a;
 
+#if SDL_GLES2_USE_VBOS
     GLuint vertex_buffers[4];
     GLsizeiptr vertex_buffer_size[4];
+#endif
 } GLES2_DriverContext;
 
 #define GLES2_MAX_CACHED_PROGRAMS 8
@@ -1393,10 +1408,10 @@ GLES2_UpdateVertexBuffer(SDL_Renderer *renderer, GLES2_Attribute attr,
                          const void *vertexData, size_t dataSizeInBytes)
 {
     GLES2_DriverContext *data = (GLES2_DriverContext *)renderer->driverdata;
-#if 0
+
+#if !SDL_GLES2_USE_VBOS
     data->glVertexAttribPointer(attr, attr == GLES2_ATTRIBUTE_ANGLE ? 1 : 2, GL_FLOAT, GL_FALSE, 0, vertexData);
 #else
-
     if (!data->vertex_buffers[attr])
         data->glGenBuffers(1, &data->vertex_buffers[attr]);
 
@@ -1411,6 +1426,7 @@ GLES2_UpdateVertexBuffer(SDL_Renderer *renderer, GLES2_Attribute attr,
 
     data->glVertexAttribPointer(attr, attr == GLES2_ATTRIBUTE_ANGLE ? 1 : 2, GL_FLOAT, GL_FALSE, 0, 0);
 #endif
+
     return 0;
 }
 
