@@ -379,11 +379,6 @@ SDL_FORCE_INLINE void SDL_memset4(void *dst, Uint32 val, size_t dwords)
 
 extern DECLSPEC void *SDLCALL SDL_memcpy(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void *src, size_t len);
 
-SDL_FORCE_INLINE void *SDL_memcpy4(SDL_OUT_BYTECAP(dwords*4) void *dst, SDL_IN_BYTECAP(dwords*4) const void *src, size_t dwords)
-{
-    return SDL_memcpy(dst, src, dwords * 4);
-}
-
 extern DECLSPEC void *SDLCALL SDL_memmove(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void *src, size_t len);
 extern DECLSPEC int SDLCALL SDL_memcmp(const void *s1, const void *s2, size_t len);
 
@@ -479,6 +474,39 @@ extern DECLSPEC char *SDLCALL SDL_iconv_string(const char *tocode,
 #define SDL_iconv_utf8_locale(S)    SDL_iconv_string("", "UTF-8", S, SDL_strlen(S)+1)
 #define SDL_iconv_utf8_ucs2(S)      (Uint16 *)SDL_iconv_string("UCS-2-INTERNAL", "UTF-8", S, SDL_strlen(S)+1)
 #define SDL_iconv_utf8_ucs4(S)      (Uint32 *)SDL_iconv_string("UCS-4-INTERNAL", "UTF-8", S, SDL_strlen(S)+1)
+
+/* force builds using Clang's static analysis tools to use literal C runtime
+   here, since there are possibly tests that are ineffective otherwise. */
+#if defined(__clang_analyzer__) && !defined(SDL_DISABLE_ANALYZE_MACROS)
+#define SDL_malloc malloc
+#define SDL_calloc calloc
+#define SDL_realloc realloc
+#define SDL_free free
+#define SDL_memset memset
+#define SDL_memcpy memcpy
+#define SDL_memmove memmove
+#define SDL_memcmp memcmp
+#define SDL_strlen strlen
+#define SDL_strlcpy strlcpy
+#define SDL_strlcat strlcat
+#define SDL_strdup strdup
+#define SDL_strchr strchr
+#define SDL_strrchr strrchr
+#define SDL_strstr strstr
+#define SDL_strcmp strcmp
+#define SDL_strncmp strncmp
+#define SDL_strcasecmp strcasecmp
+#define SDL_strncasecmp strncasecmp
+#define SDL_sscanf sscanf
+#define SDL_vsscanf vsscanf
+#define SDL_snprintf snprintf
+#define SDL_vsnprintf vsnprintf
+#endif
+
+SDL_FORCE_INLINE void *SDL_memcpy4(SDL_OUT_BYTECAP(dwords*4) void *dst, SDL_IN_BYTECAP(dwords*4) const void *src, size_t dwords)
+{
+    return SDL_memcpy(dst, src, dwords * 4);
+}
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
