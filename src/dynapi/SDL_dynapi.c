@@ -206,7 +206,14 @@ SDL_DYNAPI_entry(Uint32 apiver, void *table, Uint32 tablesize)
 static SDL_INLINE void *get_sdlapi_entry(const char *fname, const char *sym)
 {
     HANDLE lib = LoadLibraryA(fname);
-    return lib ? GetProcAddress(lib, sym) : NULL;
+    void *retval = NULL;
+    if (lib) {
+        retval = GetProcAddress(lib, sym);
+        if (retval == NULL) {
+            FreeLibrary(lib);
+        }
+    }
+    return retval;
 }
 
 #elif defined(__HAIKU__)
@@ -215,8 +222,11 @@ static SDL_INLINE void *get_sdlapi_entry(const char *fname, const char *sym)
 {
     image_id lib = load_add_on(fname);
     void *retval = NULL;
-    if ((lib < 0) || (get_image_symbol(lib, sym, B_SYMBOL_TYPE_TEXT, &retval) != B_NO_ERROR)) {
-        retval = NULL;
+    if (lib >= 0) {
+        if (get_image_symbol(lib, sym, B_SYMBOL_TYPE_TEXT, &retval) != B_NO_ERROR) {
+            unload_add_on(lib);
+            retval = NULL;
+        }
     }
     return retval;
 }
@@ -225,7 +235,14 @@ static SDL_INLINE void *get_sdlapi_entry(const char *fname, const char *sym)
 static SDL_INLINE void *get_sdlapi_entry(const char *fname, const char *sym)
 {
     void *lib = dlopen(fname, RTLD_NOW | RTLD_LOCAL);
-    return lib ? dlsym(lib, sym) : NULL;
+    void *retval = NULL;
+    if (lib != NULL) {
+        retval = dlsym(lib, sym);
+        if (retval == NULL) {
+            dlclose(lib);
+        }
+    }
+    return retval;
 }
 #else
 #error Please define your platform.
