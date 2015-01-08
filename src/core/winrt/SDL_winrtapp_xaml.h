@@ -23,7 +23,7 @@
 #ifndef _SDL_winrtapp_xaml_h
 #define _SDL_winrtapp_xaml_h
 
-#include "SDL_types.h"
+#include "SDL_stdinc.h"
 
 #ifdef __cplusplus
 extern SDL_bool WINRT_XAMLWasEnabled;
