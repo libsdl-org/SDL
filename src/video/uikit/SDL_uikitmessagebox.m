@@ -30,35 +30,20 @@
 
 static SDL_bool s_showingMessageBox = SDL_FALSE;
 
-@interface UIKit_UIAlertViewDelegate : NSObject <UIAlertViewDelegate>
+@interface SDLAlertViewDelegate : NSObject <UIAlertViewDelegate>
 
-- (id)initWithButtonIndex:(int *)buttonIndex;
-- (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex;
+@property (nonatomic, assign) int clickedIndex;
 
 @end
 
-@implementation UIKit_UIAlertViewDelegate {
-    int *clickedButtonIndex;
-}
-
-- (id)initWithButtonIndex:(int *)buttonIndex
-{
-    self = [self init];
-    if (self == nil) {
-        return nil;
-    }
-
-    clickedButtonIndex = buttonIndex;
-
-    return self;
-}
+@implementation SDLAlertViewDelegate
 
 - (void)alertView:(UIAlertView *)alertView didDismissWithButtonIndex:(NSInteger)buttonIndex
 {
-    *clickedButtonIndex = (int)buttonIndex;
+    _clickedIndex = (int)buttonIndex;
 }
 
-@end /* UIKit_UIAlertViewDelegate */
+@end
 
 
 SDL_bool
@@ -70,36 +55,35 @@ UIKit_ShowingMessageBox()
 int
 UIKit_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 {
-    int clicked;
     int i;
     const SDL_MessageBoxButtonData *buttons = messageboxdata->buttons;
 
     @autoreleasepool {
-        UIAlertView* alert = [[UIAlertView alloc] init];
-        UIKit_UIAlertViewDelegate *delegate = [[UIKit_UIAlertViewDelegate alloc] initWithButtonIndex:&clicked];
+        UIAlertView *alert = [[UIAlertView alloc] init];
+        SDLAlertViewDelegate *delegate = [[SDLAlertViewDelegate alloc] init];
 
+        alert.delegate = delegate;
         alert.title = @(messageboxdata->title);
         alert.message = @(messageboxdata->message);
-        alert.delegate = delegate;
 
         for (i = 0; i < messageboxdata->numbuttons; ++i) {
             [alert addButtonWithTitle:@(buttons[i].text)];
         }
 
         /* Set up for showing the alert */
-        clicked = messageboxdata->numbuttons;
+        delegate.clickedIndex = messageboxdata->numbuttons;
 
         [alert show];
 
         /* Run the main event loop until the alert has finished */
         /* Note that this needs to be done on the main thread */
         s_showingMessageBox = SDL_TRUE;
-        while (clicked == messageboxdata->numbuttons) {
+        while (delegate.clickedIndex == messageboxdata->numbuttons) {
             [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
         }
         s_showingMessageBox = SDL_FALSE;
 
-        *buttonid = messageboxdata->buttons[clicked].buttonid;
+        *buttonid = messageboxdata->buttons[delegate.clickedIndex].buttonid;
 
         alert.delegate = nil;
     }

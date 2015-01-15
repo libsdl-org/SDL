@@ -145,6 +145,9 @@
 /* enable iPhone keyboard support */
 #define SDL_IPHONE_KEYBOARD 1
 
+/* enable iOS extended launch screen */
+#define SDL_IPHONE_LAUNCHSCREEN 1
+
 /* enable joystick subsystem */
 #define SDL_JOYSTICK_DISABLED 0
 

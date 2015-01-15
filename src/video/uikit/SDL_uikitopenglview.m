@@ -22,34 +22,27 @@
 
 #if SDL_VIDEO_DRIVER_UIKIT
 
-#include <QuartzCore/QuartzCore.h>
 #include <OpenGLES/EAGLDrawable.h>
-#include <OpenGLES/ES2/gl.h>
 #include <OpenGLES/ES2/glext.h>
-#include "SDL_uikitopenglview.h"
-#include "SDL_uikitmessagebox.h"
-#include "SDL_uikitvideo.h"
+#import "SDL_uikitopenglview.h"
+#include "SDL_uikitwindow.h"
 
+@implementation SDLEAGLContext
+
+@end
 
 @implementation SDL_uikitopenglview {
-
-    /* OpenGL names for the renderbuffer and framebuffers used to render to this view */
+    /* The renderbuffer and framebuffer used to render to this layer. */
     GLuint viewRenderbuffer, viewFramebuffer;
 
-    /* OpenGL name for the depth buffer that is attached to viewFramebuffer, if it exists (0 if it does not exist) */
+    /* The depth buffer that is attached to viewFramebuffer, if it exists. */
     GLuint depthRenderbuffer;
 
     /* format of depthRenderbuffer */
     GLenum depthBufferFormat;
-
-    id displayLink;
-    int animationInterval;
-    void (*animationCallback)(void*);
-    void *animationCallbackParam;
 }
 
 @synthesize context;
-
 @synthesize backingWidth;
 @synthesize backingHeight;
 
@@ -58,37 +51,35 @@
     return [CAEAGLLayer class];
 }
 
-- (id)initWithFrame:(CGRect)frame
-              scale:(CGFloat)scale
-      retainBacking:(BOOL)retained
-              rBits:(int)rBits
-              gBits:(int)gBits
-              bBits:(int)bBits
-              aBits:(int)aBits
-          depthBits:(int)depthBits
-        stencilBits:(int)stencilBits
-               sRGB:(BOOL)sRGB
-       majorVersion:(int)majorVersion
-         shareGroup:(EAGLSharegroup*)shareGroup
+- (instancetype)initWithFrame:(CGRect)frame
+                        scale:(CGFloat)scale
+                retainBacking:(BOOL)retained
+                        rBits:(int)rBits
+                        gBits:(int)gBits
+                        bBits:(int)bBits
+                        aBits:(int)aBits
+                    depthBits:(int)depthBits
+                  stencilBits:(int)stencilBits
+                         sRGB:(BOOL)sRGB
+                 majorVersion:(int)majorVersion
+                   shareGroup:(EAGLSharegroup*)shareGroup
 {
     if ((self = [super initWithFrame:frame])) {
         const BOOL useStencilBuffer = (stencilBits != 0);
         const BOOL useDepthBuffer = (depthBits != 0);
         NSString *colorFormat = nil;
 
-        self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-        self.autoresizesSubviews = YES;
-
         /* The EAGLRenderingAPI enum values currently map 1:1 to major GLES
-           versions, and this allows us to handle future OpenGL ES versions.
-         */
+         * versions, and this allows us to handle future OpenGL ES versions. */
         EAGLRenderingAPI api = majorVersion;
 
-        context = [[EAGLContext alloc] initWithAPI:api sharegroup:shareGroup];
+        context = [[SDLEAGLContext alloc] initWithAPI:api sharegroup:shareGroup];
         if (!context || ![EAGLContext setCurrentContext:context]) {
             SDL_SetError("OpenGL ES %d not supported", majorVersion);
             return nil;
         }
+
+        context.sdlView = self;
 
         if (sRGB) {
             /* sRGB EAGL drawable support was added in iOS 7. */
@@ -102,11 +93,10 @@
             /* if user specifically requests rbg888 or some color format higher than 16bpp */
             colorFormat = kEAGLColorFormatRGBA8;
         } else {
-            /* default case (faster) */
+            /* default case (potentially faster) */
             colorFormat = kEAGLColorFormatRGB565;
         }
 
-        /* Get the layer */
         CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
 
         eaglLayer.opaque = YES;
@@ -142,7 +132,8 @@
                 /* Apparently you need to pack stencil and depth into one buffer. */
                 depthBufferFormat = GL_DEPTH24_STENCIL8_OES;
             } else if (useDepthBuffer) {
-                /* iOS only has 24-bit depth buffers, even with GL_DEPTH_COMPONENT16 */
+                /* iOS only uses 32-bit float (exposed as fixed point 24-bit)
+                 * depth buffers. */
                 depthBufferFormat = GL_DEPTH_COMPONENT24_OES;
             }
 
@@ -186,7 +177,7 @@
     glGetIntegerv(GL_RENDERBUFFER_BINDING, &prevRenderbuffer);
 
     glBindRenderbuffer(GL_RENDERBUFFER, viewRenderbuffer);
-    [context renderbufferStorage:GL_RENDERBUFFER fromDrawable:(CAEAGLLayer*)self.layer];
+    [context renderbufferStorage:GL_RENDERBUFFER fromDrawable:(CAEAGLLayer *)self.layer];
 
     glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &backingWidth);
     glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &backingHeight);
@@ -218,42 +209,6 @@
     }
 }
 
-- (void)setAnimationCallback:(int)interval
-                    callback:(void (*)(void*))callback
-               callbackParam:(void*)callbackParam
-{
-    [self stopAnimation];
-
-    animationInterval = interval;
-    animationCallback = callback;
-    animationCallbackParam = callbackParam;
-
-    if (animationCallback) {
-        [self startAnimation];
-    }
-}
-
-- (void)startAnimation
-{
-    displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(doLoop:)];
-    [displayLink setFrameInterval:animationInterval];
-    [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-}
-
-- (void)stopAnimation
-{
-    [displayLink invalidate];
-    displayLink = nil;
-}
-
-- (void)doLoop:(CADisplayLink*)sender
-{
-    /* Don't run the game loop while a messagebox is up */
-    if (!UIKit_ShowingMessageBox()) {
-        animationCallback(animationCallbackParam);
-    }
-}
-
 - (void)setCurrentContext
 {
     [EAGLContext setCurrentContext:context];
@@ -262,8 +217,8 @@
 - (void)swapBuffers
 {
     /* viewRenderbuffer should always be bound here. Code that binds something
-       else is responsible for rebinding viewRenderbuffer, to reduce duplicate
-       state changes. */
+     * else is responsible for rebinding viewRenderbuffer, to reduce duplicate
+     * state changes. */
     [context presentRenderbuffer:GL_RENDERBUFFER];
 }
 
@@ -271,14 +226,21 @@
 {
     [super layoutSubviews];
 
-    CGSize layersize = self.layer.bounds.size;
-    int width = (int) (layersize.width * self.layer.contentsScale);
-    int height = (int) (layersize.height * self.layer.contentsScale);
+    int width  = (int) (self.bounds.size.width * self.contentScaleFactor);
+    int height = (int) (self.bounds.size.height * self.contentScaleFactor);
 
     /* Update the color and depth buffer storage if the layer size has changed. */
     if (width != backingWidth || height != backingHeight) {
-        [EAGLContext setCurrentContext:context];
+        EAGLContext *prevContext = [EAGLContext currentContext];
+        if (prevContext != context) {
+            [EAGLContext setCurrentContext:context];
+        }
+
         [self updateFrame];
+
+        if (prevContext != context) {
+            [EAGLContext setCurrentContext:prevContext];
+        }
     }
 }
 
@@ -299,7 +261,6 @@
         depthRenderbuffer = 0;
     }
 }
-
 
 - (void)dealloc
 {

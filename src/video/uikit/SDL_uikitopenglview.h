@@ -21,29 +21,35 @@
 
 #import <UIKit/UIKit.h>
 #import <OpenGLES/EAGL.h>
-#import <OpenGLES/gltypes.h>
+#import <OpenGLES/ES2/gl.h>
+
 #import "SDL_uikitview.h"
-/*
-    This class wraps the CAEAGLLayer from CoreAnimation into a convenient UIView subclass.
-    The view content is basically an EAGL surface you render your OpenGL scene into.
-    Note that setting the view non-opaque will only work if the EAGL surface has an alpha channel.
- */
+#include "SDL_uikitvideo.h"
+
+@class SDL_uikitopenglview;
+
+@interface SDLEAGLContext : EAGLContext
+
+@property (nonatomic, weak) SDL_uikitopenglview *sdlView;
+
+@end
+
 @interface SDL_uikitopenglview : SDL_uikitview
 
-- (id)initWithFrame:(CGRect)frame
-              scale:(CGFloat)scale
-      retainBacking:(BOOL)retained
-              rBits:(int)rBits
-              gBits:(int)gBits
-              bBits:(int)bBits
-              aBits:(int)aBits
-          depthBits:(int)depthBits
-        stencilBits:(int)stencilBits
-               sRGB:(BOOL)sRGB
-       majorVersion:(int)majorVersion
-         shareGroup:(EAGLSharegroup*)shareGroup;
+- (instancetype)initWithFrame:(CGRect)frame
+                        scale:(CGFloat)scale
+                retainBacking:(BOOL)retained
+                        rBits:(int)rBits
+                        gBits:(int)gBits
+                        bBits:(int)bBits
+                        aBits:(int)aBits
+                    depthBits:(int)depthBits
+                  stencilBits:(int)stencilBits
+                         sRGB:(BOOL)sRGB
+                 majorVersion:(int)majorVersion
+                   shareGroup:(EAGLSharegroup*)shareGroup;
 
-@property (nonatomic, strong, readonly) EAGLContext *context;
+@property (nonatomic, readonly, strong) SDLEAGLContext *context;
 
 /* The width and height of the drawable in pixels (as opposed to points.) */
 @property (nonatomic, readonly) int backingWidth;
@@ -56,17 +62,6 @@
 - (void)setCurrentContext;
 
 - (void)updateFrame;
-
-- (void)setDebugLabels;
-
-- (void)setAnimationCallback:(int)interval
-                    callback:(void (*)(void*))callback
-               callbackParam:(void*)callbackParam;
-
-- (void)startAnimation;
-- (void)stopAnimation;
-
-- (void)doLoop:(CADisplayLink*)sender;
 
 @end
 

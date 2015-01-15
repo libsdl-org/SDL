@@ -23,10 +23,10 @@
 #if SDL_VIDEO_DRIVER_UIKIT
 
 #include "SDL_uikitopengles.h"
-#include "SDL_uikitopenglview.h"
-#include "SDL_uikitappdelegate.h"
+#import "SDL_uikitopenglview.h"
 #include "SDL_uikitmodes.h"
 #include "SDL_uikitwindow.h"
+#include "SDL_uikitevents.h"
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/SDL_mouse_c.h"
@@ -40,21 +40,29 @@ void *
 UIKit_GL_GetProcAddress(_THIS, const char *proc)
 {
     /* Look through all SO's for the proc symbol.  Here's why:
-       -Looking for the path to the OpenGL Library seems not to work in the iPhone Simulator.
-       -We don't know that the path won't change in the future.
-    */
+     * -Looking for the path to the OpenGL Library seems not to work in the iOS Simulator.
+     * -We don't know that the path won't change in the future. */
     return dlsym(RTLD_DEFAULT, proc);
 }
 
 /*
-    note that SDL_GL_Delete context makes it current without passing the window
+  note that SDL_GL_DeleteContext makes it current without passing the window
 */
 int
 UIKit_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
 {
     @autoreleasepool {
-        [EAGLContext setCurrentContext:(__bridge EAGLContext *)context];
+        SDLEAGLContext *eaglcontext = (__bridge SDLEAGLContext *) context;
+
+        if (![EAGLContext setCurrentContext:eaglcontext]) {
+            return SDL_SetError("Could not make EAGL context current");
+        }
+
+        if (eaglcontext) {
+            [eaglcontext.sdlView setSDLWindow:window];
+        }
     }
+
     return 0;
 }
 
@@ -63,27 +71,26 @@ UIKit_GL_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h)
 {
     @autoreleasepool {
         SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
-
-        if (w) {
-            *w = data.view.backingWidth;
-        }
-        if (h) {
-            *h = data.view.backingHeight;
+        UIView *view = data.viewcontroller.view;
+        if ([view isKindOfClass:[SDL_uikitopenglview class]]) {
+            SDL_uikitopenglview *glview = (SDL_uikitopenglview *) view;
+            if (w) {
+                *w = glview.backingWidth;
+            }
+            if (h) {
+                *h = glview.backingHeight;
+            }
         }
     }
 }
 
-
 int
 UIKit_GL_LoadLibrary(_THIS, const char *path)
 {
-    /*
-        shouldn't be passing a path into this function
-        why?  Because we've already loaded the library
-        and because the SDK forbids loading an external SO
-    */
+    /* We shouldn't pass a path to this function, since we've already loaded the
+     * library. */
     if (path != NULL) {
-        return SDL_SetError("iPhone GL Load Library just here for compatibility");
+        return SDL_SetError("iOS GL Load Library just here for compatibility");
     }
     return 0;
 }
@@ -91,22 +98,18 @@ UIKit_GL_LoadLibrary(_THIS, const char *path)
 void UIKit_GL_SwapWindow(_THIS, SDL_Window * window)
 {
     @autoreleasepool {
-        SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
+        SDLEAGLContext *context = (__bridge SDLEAGLContext *) SDL_GL_GetCurrentContext();
 
 #if SDL_POWER_UIKIT
         /* Check once a frame to see if we should turn off the battery monitor. */
         SDL_UIKit_UpdateBatteryMonitoring();
 #endif
 
-        if (data.view == nil) {
-            return;
-        }
-        [data.view swapBuffers];
+        [context.sdlView swapBuffers];
 
         /* You need to pump events in order for the OS to make changes visible.
-           We don't pump events here because we don't want iOS application events
-           (low memory, terminate, etc.) to happen inside low level rendering.
-         */
+         * We don't pump events here because we don't want iOS application events
+         * (low memory, terminate, etc.) to happen inside low level rendering. */
     }
 }
 
@@ -116,29 +119,27 @@ UIKit_GL_CreateContext(_THIS, SDL_Window * window)
     @autoreleasepool {
         SDL_uikitopenglview *view;
         SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
-        UIWindow *uiwindow = data.uiwindow;
-        CGRect frame = UIKit_ComputeViewFrame(window, uiwindow.screen);
-        EAGLSharegroup *share_group = nil;
+        CGRect frame = UIKit_ComputeViewFrame(window, data.uiwindow.screen);
+        EAGLSharegroup *sharegroup = nil;
         CGFloat scale = 1.0;
-
-        if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
-            /* Set the scale to the natural scale factor of the screen - the
-               backing dimensions of the OpenGL view will match the pixel
-               dimensions of the screen rather than the dimensions in points.
-             */
-#ifdef __IPHONE_8_0
-            if ([uiwindow.screen respondsToSelector:@selector(nativeScale)]) {
-                scale = uiwindow.screen.nativeScale;
-            } else
-#endif
-            {
-                scale = uiwindow.screen.scale;
-            }
-        }
 
         if (_this->gl_config.share_with_current_context) {
             EAGLContext *context = (__bridge EAGLContext *) SDL_GL_GetCurrentContext();
-            share_group = context.sharegroup;
+            sharegroup = context.sharegroup;
+        }
+
+        if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+            /* Set the scale to the natural scale factor of the screen - the
+             * backing dimensions of the OpenGL view will match the pixel
+             * dimensions of the screen rather than the dimensions in points. */
+#ifdef __IPHONE_8_0
+            if ([data.uiwindow.screen respondsToSelector:@selector(nativeScale)]) {
+                scale = data.uiwindow.screen.nativeScale;
+            } else
+#endif
+            {
+                scale = data.uiwindow.screen.scale;
+            }
         }
 
         /* construct our view, passing in SDL's OpenGL configuration data */
@@ -153,35 +154,19 @@ UIKit_GL_CreateContext(_THIS, SDL_Window * window)
                                               stencilBits:_this->gl_config.stencil_size
                                                      sRGB:_this->gl_config.framebuffer_srgb_capable
                                              majorVersion:_this->gl_config.major_version
-                                               shareGroup:share_group];
+                                               shareGroup:sharegroup];
         if (!view) {
             return NULL;
         }
 
-        view.sdlwindow = window;
-        data.view = view;
-        data.viewcontroller.view = view;
-
-        /* The view controller needs to be the root in order to control rotation */
-        if (uiwindow.rootViewController == nil) {
-            uiwindow.rootViewController = data.viewcontroller;
-        } else {
-            [uiwindow addSubview:view];
-        }
-
-        EAGLContext *context = view.context;
+        SDLEAGLContext *context = view.context;
         if (UIKit_GL_MakeCurrent(_this, window, (__bridge SDL_GLContext) context) < 0) {
             UIKit_GL_DeleteContext(_this, (SDL_GLContext) CFBridgingRetain(context));
             return NULL;
         }
 
-        /* Make this window the current mouse focus for touch input */
-        if (uiwindow.screen == [UIScreen mainScreen]) {
-            SDL_SetMouseFocus(window);
-            SDL_SetKeyboardFocus(window);
-        }
-
-        /* We return a +1'd context. The window's driverdata owns the view. */
+        /* We return a +1'd context. The window's driverdata owns the view (via
+         * MakeCurrent.) */
         return (SDL_GLContext) CFBridgingRetain(context);
     }
 }
@@ -191,29 +176,10 @@ UIKit_GL_DeleteContext(_THIS, SDL_GLContext context)
 {
     @autoreleasepool {
         /* Transfer ownership the +1'd context to ARC. */
-        EAGLContext *eaglcontext = (EAGLContext *) CFBridgingRelease(context);
-        SDL_Window *window;
+        SDLEAGLContext *eaglcontext = (SDLEAGLContext *) CFBridgingRelease(context);
 
-        /* Find the view associated with this context */
-        for (window = _this->windows; window; window = window->next) {
-            SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
-            SDL_uikitopenglview *view = data.view;
-            if (view.context == eaglcontext) {
-                /* the view controller has retained the view */
-                if (data.viewcontroller) {
-                    UIWindow *uiwindow = (UIWindow *)view.superview;
-                    if (uiwindow.rootViewController == data.viewcontroller) {
-                        uiwindow.rootViewController = nil;
-                    }
-                    data.viewcontroller.view = nil;
-                }
-
-                [view removeFromSuperview];
-                view.sdlwindow = NULL;
-                data.view = nil;
-                return;
-            }
-        }
+        /* Detach the context's view from its window. */
+        [eaglcontext.sdlView setSDLWindow:NULL];
     }
 }
 
@@ -227,12 +193,15 @@ SDL_iPhoneGetViewRenderbuffer(SDL_Window * window)
 
     @autoreleasepool {
         SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
-        if (data.view != nil) {
-            return data.view.drawableRenderbuffer;
-        } else {
-            return 0;
+        UIView *view = data.viewcontroller.view;
+        if ([view isKindOfClass:[SDL_uikitopenglview class]]) {
+            SDL_uikitopenglview *glview = (SDL_uikitopenglview *) view;
+            return glview.drawableRenderbuffer;
         }
     }
+
+    SDL_SetError("Window does not have an attached OpenGL view");
+    return 0;
 }
 
 Uint32
@@ -245,12 +214,15 @@ SDL_iPhoneGetViewFramebuffer(SDL_Window * window)
 
     @autoreleasepool {
         SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
-        if (data.view != nil) {
-            return data.view.drawableFramebuffer;
-        } else {
-            return 0;
+        UIView *view = data.viewcontroller.view;
+        if ([view isKindOfClass:[SDL_uikitopenglview class]]) {
+            SDL_uikitopenglview *glview = (SDL_uikitopenglview *) view;
+            return glview.drawableFramebuffer;
         }
     }
+
+    SDL_SetError("Window does not have an attached OpenGL view");
+    return 0;
 }
 
 #endif /* SDL_VIDEO_DRIVER_UIKIT */

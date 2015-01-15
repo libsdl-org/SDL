@@ -112,7 +112,7 @@ UIKit_AddDisplayMode(SDL_VideoDisplay * display, int w, int h,
 static int
 UIKit_AddDisplay(UIScreen *uiscreen)
 {
-    CGSize size = [uiscreen bounds].size;
+    CGSize size = uiscreen.bounds.size;
 
     /* Make sure the width/height are oriented correctly */
     if (UIKit_IsDisplayLandscape(uiscreen) != (size.width > size.height)) {
@@ -128,7 +128,7 @@ UIKit_AddDisplay(UIScreen *uiscreen)
     mode.w = (int) size.width;
     mode.h = (int) size.height;
 
-    UIScreenMode *uiscreenmode = [uiscreen currentMode];
+    UIScreenMode *uiscreenmode = uiscreen.currentMode;
 
     if (UIKit_AllocateDisplayModeData(&mode, uiscreenmode) < 0) {
         return -1;
@@ -157,9 +157,9 @@ SDL_bool
 UIKit_IsDisplayLandscape(UIScreen *uiscreen)
 {
     if (uiscreen == [UIScreen mainScreen]) {
-        return UIInterfaceOrientationIsLandscape([[UIApplication sharedApplication] statusBarOrientation]);
+        return UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation);
     } else {
-        CGSize size = [uiscreen bounds].size;
+        CGSize size = uiscreen.bounds.size;
         return (size.width > size.height);
     }
 }
@@ -196,7 +196,7 @@ UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
         }
 #endif
 
-        for (UIScreenMode *uimode in [data.uiscreen availableModes]) {
+        for (UIScreenMode *uimode in data.uiscreen.availableModes) {
             /* The size of a UIScreenMode is in pixels, but we deal exclusively
              * in points (except in SDL_GL_GetDrawableSize.) */
             int w = (int)(uimode.size.width / scale);
@@ -209,7 +209,6 @@ UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
                 h = tmp;
             }
 
-            /* Add the native screen resolution. */
             UIKit_AddDisplayMode(display, w, h, uimode, addRotation);
         }
     }
@@ -225,13 +224,16 @@ UIKit_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
         [data.uiscreen setCurrentMode:modedata.uiscreenmode];
 
         if (data.uiscreen == [UIScreen mainScreen]) {
+            /* [UIApplication setStatusBarOrientation:] no longer works reliably
+             * in recent iOS versions, so we can't rotate the screen when setting
+             * the display mode. */
             if (mode->w > mode->h) {
                 if (!UIKit_IsDisplayLandscape(data.uiscreen)) {
-                    [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationLandscapeRight animated:NO];
+                    return SDL_SetError("Screen orientation does not match display mode size");
                 }
             } else if (mode->w < mode->h) {
                 if (UIKit_IsDisplayLandscape(data.uiscreen)) {
-                    [[UIApplication sharedApplication] setStatusBarOrientation:UIInterfaceOrientationPortrait animated:NO];
+                    return SDL_SetError("Screen orientation does not match display mode size");
                 }
             }
         }
