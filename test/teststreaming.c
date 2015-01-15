@@ -18,6 +18,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten/emscripten.h>
+#endif
+
 #include "SDL.h"
 
 #define MOOSEPIC_W 64
@@ -52,6 +56,11 @@ SDL_Color MooseColors[84] = {
 
 Uint8 MooseFrames[MOOSEFRAMES_COUNT][MOOSEFRAME_SIZE];
 
+SDL_Renderer *renderer;
+int frame;
+SDL_Texture *MooseTexture;
+SDL_bool done = SDL_FALSE;
+
 void quit(int rc)
 {
     SDL_Quit();
@@ -82,16 +91,37 @@ void UpdateTexture(SDL_Texture *texture, int frame)
     SDL_UnlockTexture(texture);
 }
 
+void
+loop()
+{
+    SDL_Event event;
+
+    while (SDL_PollEvent(&event)) {
+        switch (event.type) {
+        case SDL_KEYDOWN:
+            if (event.key.keysym.sym == SDLK_ESCAPE) {
+                done = SDL_TRUE;
+            }
+            break;
+        case SDL_QUIT:
+            done = SDL_TRUE;
+            break;
+        }
+    }
+
+    frame = (frame + 1) % MOOSEFRAMES_COUNT;
+    UpdateTexture(MooseTexture, frame);
+
+    SDL_RenderClear(renderer);
+    SDL_RenderCopy(renderer, MooseTexture, NULL, NULL);
+    SDL_RenderPresent(renderer);
+}
+
 int
 main(int argc, char **argv)
 {
     SDL_Window *window;
-    SDL_Renderer *renderer;
     SDL_RWops *handle;
-    SDL_Texture *MooseTexture;
-    SDL_Event event;
-    SDL_bool done = SDL_FALSE;
-    int frame;
 
 	/* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
@@ -136,27 +166,15 @@ main(int argc, char **argv)
 
     /* Loop, waiting for QUIT or the escape key */
     frame = 0;
+
+#ifdef __EMSCRIPTEN__
+    emscripten_set_main_loop(loop, 0, 1);
+#else
     while (!done) {
-        while (SDL_PollEvent(&event)) {
-            switch (event.type) {
-            case SDL_KEYDOWN:
-                if (event.key.keysym.sym == SDLK_ESCAPE) {
-                    done = SDL_TRUE;
-                }
-                break;
-            case SDL_QUIT:
-                done = SDL_TRUE;
-                break;
-            }
+        loop();
         }
+#endif
 
-        frame = (frame + 1) % MOOSEFRAMES_COUNT;
-        UpdateTexture(MooseTexture, frame);
-
-        SDL_RenderClear(renderer);
-        SDL_RenderCopy(renderer, MooseTexture, NULL, NULL);
-        SDL_RenderPresent(renderer);
-    }
     SDL_DestroyRenderer(renderer);
 
     quit(0);

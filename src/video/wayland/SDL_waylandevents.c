@@ -184,7 +184,7 @@ pointer_handle_axis(void *data, struct wl_pointer *pointer,
                 return;
         }
 
-        SDL_SendMouseWheel(window->sdlwindow, 0, x, y);
+        SDL_SendMouseWheel(window->sdlwindow, 0, x, y, SDL_MOUSEWHEEL_NORMAL);
     }
 }
 

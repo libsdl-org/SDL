@@ -92,11 +92,7 @@ int platform_testEndianessAndSwap(void *arg)
 
     /* Test 64 swap. */
     SDLTest_AssertCheck( SDL_Swap64(value64) == swapped64,
-#ifdef _MSC_VER
-             "SDL_Swap64(): 64 bit swapped: 0x%I64X => 0x%I64X",
-#else
-             "SDL_Swap64(): 64 bit swapped: 0x%llX => 0x%llX",
-#endif
+             "SDL_Swap64(): 64 bit swapped: 0x%"SDL_PRIX64" => 0x%"SDL_PRIX64,
              value64, SDL_Swap64(value64) );
 
    return TEST_COMPLETED;

@@ -357,7 +357,7 @@ void NACL_PumpEvents(_THIS) {
                     case PP_INPUTEVENT_TYPE_WHEEL:
                         /* FIXME: GetTicks provides high resolution scroll events */
                         fp = driverdata->ppb_wheel_input_event->GetDelta(event);
-                        SDL_SendMouseWheel(mouse->focus, mouse->mouseID, (int) fp.x, (int) fp.y);
+                        SDL_SendMouseWheel(mouse->focus, mouse->mouseID, (int) fp.x, (int) fp.y, SDL_MOUSEWHEEL_NORMAL);
                         break;
                         
                     case PP_INPUTEVENT_TYPE_MOUSEENTER:
