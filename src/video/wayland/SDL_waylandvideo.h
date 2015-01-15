@@ -69,6 +69,6 @@ typedef struct {
     uint32_t shm_formats;
 } SDL_VideoData;
 
-#endif /* _SDL_nullvideo_h */
+#endif /* _SDL_waylandvideo_h */
 
 /* vi: set ts=4 sw=4 expandtab: */

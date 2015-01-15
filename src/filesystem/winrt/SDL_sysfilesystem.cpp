@@ -144,49 +144,6 @@ SDL_GetPrefPath(const char *org, const char *app)
      * without violating Microsoft's app-store requirements.
      */
 
-    /* Default to using a Local/non-Roaming path.  WinRT will often attempt
-     * to synchronize files in Roaming paths, and will do so while an app is
-     * running.  Using a Local path prevents the possibility that an app's
-     * save-data files will get changed from underneath it, without it
-     * being ready.
-     *
-     * This behavior can be changed via use of the
-     * SDL_HINT_WINRT_PREF_PATH_ROOT hint.
-     */
-    SDL_WinRT_Path pathType = SDL_WINRT_PATH_LOCAL_FOLDER;
-
-    const char * hint = SDL_GetHint(SDL_HINT_WINRT_PREF_PATH_ROOT);
-    if (hint) {
-        if (SDL_strcasecmp(hint, "local") == 0) {
-            pathType = SDL_WINRT_PATH_LOCAL_FOLDER;
-        } else if (SDL_strcasecmp(hint, "roaming") == 0) {
-#if (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP) || (NTDDI_VERSION > NTDDI_WIN8)
-            pathType = SDL_WINRT_PATH_ROAMING_FOLDER;
-#else
-            /* Don't apply a 'Roaming' path on Windows Phone 8.0.  Roaming
-             * data is not supported by that version of the operating system.
-             */
-            SDL_SetError("A Roaming path was specified via SDL_HINT_WINRT_PREF_PATH_ROOT, but Roaming is not supported on Windows Phone 8.0");
-            return NULL;
-#endif
-        } else if (SDL_strcasecmp(hint, "old") == 0) {
-            /* Older versions of SDL/WinRT, including 2.0.3, would return a
-             * pref-path that used a Roaming folder on non-Phone versions of
-             * Windows, such as Windows 8.0 and Windows 8.1.  This has since
-             * been reverted to using a Local folder, in order to prevent
-             * problems arising from WinRT automatically synchronizing files
-             * during an app's lifetime.  In case this functionality is
-             * desired, setting SDL_HINT_WINRT_PREF_PATH_ROOT to "old" will
-             * trigger the older behavior.
-             */
-#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
-            pathType = SDL_WINRT_PATH_LOCAL_FOLDER;
-#else
-            pathType = SDL_WINRT_PATH_ROAMING_FOLDER;
-#endif
-        }
-    }
-
     const WCHAR * srcPath = NULL;
     WCHAR path[MAX_PATH];
     char *retval = NULL;
@@ -195,7 +152,7 @@ SDL_GetPrefPath(const char *org, const char *app)
     size_t new_wpath_len = 0;
     BOOL api_result = FALSE;
 
-    srcPath = SDL_WinRTGetFSPathUNICODE(pathType);
+    srcPath = SDL_WinRTGetFSPathUNICODE(SDL_WINRT_PATH_LOCAL_FOLDER);
     if ( ! srcPath) {
         SDL_SetError("Unable to find a source path");
         return NULL;

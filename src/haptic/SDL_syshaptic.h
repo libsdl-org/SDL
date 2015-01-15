@@ -27,12 +27,6 @@
 #include "SDL_haptic.h"
 
 
-/*
- * Number of haptic devices on the system.
- */
-extern Uint8 SDL_numhaptics;
-
-
 struct haptic_effect
 {
     SDL_HapticEffect effect;    /* The current event */

@@ -441,7 +441,7 @@ SDL_SYS_HapticOpenFromFD(SDL_Haptic * haptic, int fd)
   open_err:
     close(fd);
     if (haptic->hwdata != NULL) {
-        free(haptic->hwdata);
+        SDL_free(haptic->hwdata);
         haptic->hwdata = NULL;
     }
     return -1;
@@ -959,7 +959,7 @@ SDL_SYS_HapticNewEffect(SDL_Haptic * haptic, struct haptic_effect *effect,
     return 0;
 
   new_effect_err:
-    free(effect->hweffect);
+    SDL_free(effect->hweffect);
     effect->hweffect = NULL;
     return -1;
 }

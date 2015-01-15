@@ -16,6 +16,10 @@
 #include <stdio.h>
 #include <time.h>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten/emscripten.h>
+#endif
+
 #include "SDL_test_common.h"
 
 #define SWAP(typ,a,b) do{typ t=a;a=b;b=t;}while(0)
@@ -29,6 +33,9 @@ static int cycle_direction = 1;
 static int current_alpha = 255;
 static int current_color = 255;
 static SDL_BlendMode blendMode = SDL_BLENDMODE_NONE;
+
+int mouse_begin_x = -1, mouse_begin_y = -1;
+int done;
 
 void
 DrawPoints(SDL_Renderer * renderer)
@@ -191,12 +198,71 @@ DrawRectRectIntersections(SDL_Renderer * renderer)
         }
 }
 
+void
+loop()
+{
+    int i;
+    SDL_Event event;
+
+    /* Check for events */
+    while (SDL_PollEvent(&event)) {
+        SDLTest_CommonEvent(state, &event, &done);
+        switch (event.type) {
+        case SDL_MOUSEBUTTONDOWN:
+            mouse_begin_x = event.button.x;
+            mouse_begin_y = event.button.y;
+            break;
+        case SDL_MOUSEBUTTONUP:
+            if (event.button.button == 3)
+                add_line(mouse_begin_x, mouse_begin_y, event.button.x,
+                         event.button.y);
+            if (event.button.button == 1)
+                add_rect(mouse_begin_x, mouse_begin_y, event.button.x,
+                         event.button.y);
+            break;
+        case SDL_KEYDOWN:
+            switch (event.key.keysym.sym) {
+            case 'l':
+                if (event.key.keysym.mod & KMOD_SHIFT)
+                    num_lines = 0;
+                else
+                    add_line(rand() % 640, rand() % 480, rand() % 640,
+                             rand() % 480);
+                break;
+            case 'r':
+                if (event.key.keysym.mod & KMOD_SHIFT)
+                    num_rects = 0;
+                else
+                    add_rect(rand() % 640, rand() % 480, rand() % 640,
+                             rand() % 480);
+                break;
+            }
+            break;
+        default:
+            break;
+        }
+    }
+    for (i = 0; i < state->num_windows; ++i) {
+        SDL_Renderer *renderer = state->renderers[i];
+        if (state->windows[i] == NULL)
+            continue;
+        SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
+        SDL_RenderClear(renderer);
+
+        DrawRects(renderer);
+        DrawPoints(renderer);
+        DrawRectRectIntersections(renderer);
+        DrawLines(renderer);
+        DrawRectLineIntersections(renderer);
+
+        SDL_RenderPresent(renderer);
+    }
+}
+
 int
 main(int argc, char *argv[])
 {
-    int mouse_begin_x = -1, mouse_begin_y = -1;
-    int i, done;
-    SDL_Event event;
+    int i;
     Uint32 then, now, frames;
 
     /* Enable standard application logging */
@@ -268,62 +334,15 @@ main(int argc, char *argv[])
     frames = 0;
     then = SDL_GetTicks();
     done = 0;
+
+#ifdef __EMSCRIPTEN__
+    emscripten_set_main_loop(loop, 0, 1);
+#else
     while (!done) {
-        /* Check for events */
         ++frames;
-        while (SDL_PollEvent(&event)) {
-            SDLTest_CommonEvent(state, &event, &done);
-            switch (event.type) {
-            case SDL_MOUSEBUTTONDOWN:
-                mouse_begin_x = event.button.x;
-                mouse_begin_y = event.button.y;
-                break;
-            case SDL_MOUSEBUTTONUP:
-                if (event.button.button == 3)
-                    add_line(mouse_begin_x, mouse_begin_y, event.button.x,
-                             event.button.y);
-                if (event.button.button == 1)
-                    add_rect(mouse_begin_x, mouse_begin_y, event.button.x,
-                             event.button.y);
-                break;
-            case SDL_KEYDOWN:
-                switch (event.key.keysym.sym) {
-                case 'l':
-                    if (event.key.keysym.mod & KMOD_SHIFT)
-                        num_lines = 0;
-                    else
-                        add_line(rand() % 640, rand() % 480, rand() % 640,
-                                 rand() % 480);
-                    break;
-                case 'r':
-                    if (event.key.keysym.mod & KMOD_SHIFT)
-                        num_rects = 0;
-                    else
-                        add_rect(rand() % 640, rand() % 480, rand() % 640,
-                                 rand() % 480);
-                    break;
-                }
-                break;
-            default:
-                break;
-            }
-        }
-        for (i = 0; i < state->num_windows; ++i) {
-            SDL_Renderer *renderer = state->renderers[i];
-            if (state->windows[i] == NULL)
-                continue;
-            SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
-            SDL_RenderClear(renderer);
-
-            DrawRects(renderer);
-            DrawPoints(renderer);
-            DrawRectRectIntersections(renderer);
-            DrawLines(renderer);
-            DrawRectLineIntersections(renderer);
-
-            SDL_RenderPresent(renderer);
-        }
+        loop();
     }
+#endif
 
     SDLTest_CommonQuit(state);
 

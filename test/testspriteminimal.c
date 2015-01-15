@@ -15,6 +15,10 @@
 #include <stdio.h>
 #include <time.h>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten/emscripten.h>
+#endif
+
 #include "SDL.h"
 
 #define WINDOW_WIDTH    640
@@ -26,6 +30,9 @@ static SDL_Texture *sprite;
 static SDL_Rect positions[NUM_SPRITES];
 static SDL_Rect velocities[NUM_SPRITES];
 static int sprite_w, sprite_h;
+
+SDL_Renderer *renderer;
+int done;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -118,13 +125,25 @@ MoveSprites(SDL_Renderer * renderer, SDL_Texture * sprite)
     SDL_RenderPresent(renderer);
 }
 
+void loop()
+{
+    SDL_Event event;
+
+    /* Check for events */
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_QUIT || event.type == SDL_KEYDOWN) {
+            done = 1;
+        }
+    }
+    MoveSprites(renderer, sprite);
+}
+
 int
 main(int argc, char *argv[])
 {
     SDL_Window *window;
-    SDL_Renderer *renderer;
-    int i, done;
-    SDL_Event event;
+    int i;
+
 
 	/* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
@@ -154,16 +173,14 @@ main(int argc, char *argv[])
 
     /* Main render loop */
     done = 0;
-    while (!done) {
-        /* Check for events */
-        while (SDL_PollEvent(&event)) {
-            if (event.type == SDL_QUIT || event.type == SDL_KEYDOWN) {
-                done = 1;
-            }
-        }
-        MoveSprites(renderer, sprite);
-    }
 
+#ifdef __EMSCRIPTEN__
+    emscripten_set_main_loop(loop, 0, 1);
+#else
+    while (!done) {
+        loop();
+        }
+#endif
     quit(0);
 
     return 0; /* to prevent compiler warning */

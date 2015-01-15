@@ -196,6 +196,15 @@ testnative$(EXE): $(srcdir)/testnative.c \
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @XLIB@
 endif
 
+#there's probably a better way of doing this
+ifeq (@ISMACOSX@,false)
+ifeq (@ISWINDOWS@,false)
+ifeq (@ISUNIX@,false)
+testnative$(EXE): ;
+endif
+endif
+endif
+
 testoverlay2$(EXE): $(srcdir)/testoverlay2.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 

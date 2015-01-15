@@ -15,6 +15,10 @@
 #include <stdio.h>
 #include <time.h>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten/emscripten.h>
+#endif
+
 #include "SDL_test_common.h"
 
 
@@ -28,6 +32,10 @@ typedef struct {
     SDL_Rect sprite_rect;
     int scale_direction;
 } DrawState;
+
+DrawState *drawstates;
+int done;
+SDL_bool test_composite = SDL_FALSE;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -214,15 +222,33 @@ Draw(DrawState *s)
     return SDL_TRUE;
 }
 
+void
+loop()
+{
+    int i;
+    SDL_Event event;
+
+    /* Check for events */
+    while (SDL_PollEvent(&event)) {
+        SDLTest_CommonEvent(state, &event, &done);
+    }
+    for (i = 0; i < state->num_windows; ++i) {
+        if (state->windows[i] == NULL)
+            continue;
+        if (test_composite) {
+            if (!DrawComposite(&drawstates[i])) done = 1;
+        } else {
+            if (!Draw(&drawstates[i])) done = 1;
+        }
+    }
+}
+
 int
 main(int argc, char *argv[])
 {
-    DrawState *drawstates;
-    int i, done;
-    SDL_Event event;
+    int i;
     int frames;
     Uint32 then, now;
-    SDL_bool test_composite = SDL_FALSE;
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
@@ -278,22 +304,15 @@ main(int argc, char *argv[])
     frames = 0;
     then = SDL_GetTicks();
     done = 0;
+
+#ifdef __EMSCRIPTEN__
+    emscripten_set_main_loop(loop, 0, 1);
+#else
     while (!done) {
-        /* Check for events */
         ++frames;
-        while (SDL_PollEvent(&event)) {
-            SDLTest_CommonEvent(state, &event, &done);
-        }
-        for (i = 0; i < state->num_windows; ++i) {
-            if (state->windows[i] == NULL)
-                continue;
-            if (test_composite) {
-                if (!DrawComposite(&drawstates[i])) done = 1;
-            } else {
-                if (!Draw(&drawstates[i])) done = 1;
-            }
-        }
+        loop();
     }
+#endif
 
     /* Print out some timing information */
     now = SDL_GetTicks();
