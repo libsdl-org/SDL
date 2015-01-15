@@ -21,11 +21,21 @@
 
 #import <UIKit/UIKit.h>
 
-@interface SDLUIKitDelegate : NSObject<UIApplicationDelegate> {
-}
+@interface SDLLaunchScreenController : UIViewController
 
-+ (id) sharedAppDelegate;
+- (instancetype)init;
+- (void)loadView;
+- (BOOL)shouldAutorotate;
+- (NSUInteger)supportedInterfaceOrientations;
+
+@end
+
+@interface SDLUIKitDelegate : NSObject<UIApplicationDelegate>
+
++ (id)sharedAppDelegate;
 + (NSString *)getAppDelegateClassName;
+
+- (void)hideLaunchScreen;
 
 @end
 

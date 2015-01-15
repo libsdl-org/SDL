@@ -23,7 +23,7 @@
 
 #include "../SDL_sysvideo.h"
 #import "SDL_uikitvideo.h"
-#import "SDL_uikitopenglview.h"
+#import "SDL_uikitview.h"
 #import "SDL_uikitviewcontroller.h"
 
 extern int UIKit_CreateWindow(_THIS, SDL_Window * window);
@@ -44,8 +44,10 @@ extern NSUInteger UIKit_GetSupportedOrientations(SDL_Window * window);
 @interface SDL_WindowData : NSObject
 
 @property (nonatomic, strong) UIWindow *uiwindow;
-@property (nonatomic, strong) SDL_uikitopenglview *view;
 @property (nonatomic, strong) SDL_uikitviewcontroller *viewcontroller;
+
+/* Array of SDL_uikitviews owned by this window. */
+@property (nonatomic, copy) NSMutableArray *views;
 
 @end
 

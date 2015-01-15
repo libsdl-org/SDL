@@ -20,45 +20,21 @@
 */
 
 #import <UIKit/UIKit.h>
+
 #include "../SDL_sysvideo.h"
 
 #include "SDL_touch.h"
 
-#if SDL_IPHONE_KEYBOARD
-@interface SDL_uikitview : UIView <UITextFieldDelegate>
-#else
 @interface SDL_uikitview : UIView
-#endif
 
-@property (nonatomic, assign) SDL_Window *sdlwindow;
+- (instancetype)initWithFrame:(CGRect)frame;
+
+- (void)setSDLWindow:(SDL_Window *)window;
 
 - (CGPoint)touchLocation:(UITouch *)touch shouldNormalize:(BOOL)normalize;
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
-
-#if SDL_IPHONE_KEYBOARD
-- (void)showKeyboard;
-- (void)hideKeyboard;
-- (void)initKeyboard;
-- (void)deinitKeyboard;
-
-- (void)keyboardWillShow:(NSNotification *)notification;
-- (void)keyboardWillHide:(NSNotification *)notification;
-
-- (void)updateKeyboard;
-
-@property (nonatomic, assign, getter=isKeyboardVisible) BOOL keyboardVisible;
-@property (nonatomic, assign) SDL_Rect textInputRect;
-@property (nonatomic, assign) int keyboardHeight;
-
-SDL_bool UIKit_HasScreenKeyboardSupport(_THIS);
-void UIKit_ShowScreenKeyboard(_THIS, SDL_Window *window);
-void UIKit_HideScreenKeyboard(_THIS, SDL_Window *window);
-SDL_bool UIKit_IsScreenKeyboardShown(_THIS, SDL_Window *window);
-void UIKit_SetTextInputRect(_THIS, SDL_Rect *rect);
-
-#endif
 
 @end
 
