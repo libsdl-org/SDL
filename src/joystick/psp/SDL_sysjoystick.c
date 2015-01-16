@@ -97,15 +97,12 @@ int JoystickUpdate(void *data)
 
 
 /* Function to scan the system for joysticks.
- * This function should set SDL_numjoysticks to the number of available
- * joysticks.  Joystick 0 should be the system default joystick.
+ * Joystick 0 should be the system default joystick.
  * It should return number of joysticks, or -1 on an unrecoverable fatal error.
  */
 int SDL_SYS_JoystickInit(void)
 {
     int i;
-
-/*  SDL_numjoysticks = 1; */
 
     /* Setup input */
     sceCtrlSetSamplingCycle(0);
