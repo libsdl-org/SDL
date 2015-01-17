@@ -1050,6 +1050,7 @@ elseif(APPLE)
   endif()
 
   if(SDL_AUDIO)
+    set(SDL_AUDIO_DRIVER_COREAUDIO 1)
     set(MACOSX_COREAUDIO 1)
     file(GLOB AUDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/coreaudio/*.c)
     set(SOURCE_FILES ${SOURCE_FILES} ${AUDIO_SOURCES})
