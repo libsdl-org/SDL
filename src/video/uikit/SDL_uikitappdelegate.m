@@ -115,7 +115,9 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     return image;
 }
 
-@implementation SDLLaunchScreenController
+@implementation SDLLaunchScreenController {
+    UIInterfaceOrientationMask supportedOrientations;
+}
 
 - (instancetype)init
 {
@@ -125,6 +127,9 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 
     NSBundle *bundle = [NSBundle mainBundle];
     NSString *screenname = [bundle objectForInfoDictionaryKey:@"UILaunchStoryboardName"];
+
+    /* Normally we don't want to rotate from the initial orientation. */
+    supportedOrientations = (1 << [UIApplication sharedApplication].statusBarOrientation);
 
     /* Launch screens were added in iOS 8. Otherwise we use launch images. */
     if (screenname && UIKit_IsSystemVersionAtLeast(8.0)) {
@@ -211,6 +216,12 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
         }
 
         if (image) {
+            if (image.size.width > image.size.height) {
+                supportedOrientations = UIInterfaceOrientationMaskLandscape;
+            } else {
+                supportedOrientations = UIInterfaceOrientationMaskPortrait;
+            }
+
             self.view = [[UIImageView alloc] initWithImage:image];
         }
     }
@@ -223,14 +234,9 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     /* Do nothing. */
 }
 
-- (BOOL)shouldAutorotate
-{
-    return YES;
-}
-
 - (NSUInteger)supportedInterfaceOrientations
 {
-    return UIInterfaceOrientationMaskAll;
+    return supportedOrientations;
 }
 
 @end
@@ -333,7 +339,7 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 
     SDL_SetMainReady();
     [self performSelector:@selector(postFinishLaunch) withObject:nil afterDelay:0.0];
-    
+
     return YES;
 }
 
