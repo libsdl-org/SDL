@@ -53,8 +53,7 @@ extern "C"
     static int SDL_SYS_numjoysticks = 0;
 
 /* Function to scan the system for joysticks.
- * This function should set SDL_numjoysticks to the number of available
- * joysticks.  Joystick 0 should be the system default joystick.
+ * Joystick 0 should be the system default joystick.
  * It should return 0, or -1 on an unrecoverable fatal error.
  */
     int SDL_SYS_JoystickInit(void)

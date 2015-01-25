@@ -143,9 +143,9 @@ JNIEXPORT void JNICALL SDL_Android_Init(JNIEnv* mEnv, jclass cls)
 /* Resize */
 JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_onNativeResize(
                                     JNIEnv* env, jclass jcls,
-                                    jint width, jint height, jint format)
+                                    jint width, jint height, jint format, jfloat rate)
 {
-    Android_SetScreenResolution(width, height, format);
+    Android_SetScreenResolution(width, height, format, rate);
 }
 
 /* Paddown */
