@@ -541,7 +541,6 @@ video_getWindowBrightnessNegative(void *arg)
 {
   const char *invalidWindowError = "Invalid window";
   char *lastError;
-  const char* title = "video_getWindowBrightnessNegative Test Window";
   float result;
 
   /* Call against invalid window */
@@ -728,7 +727,6 @@ video_getWindowGammaRamp(void *arg)
 int
 video_getWindowGammaRampNegative(void *arg)
 {
-  const char* title = "video_getWindowGammaRampNegative Test Window";
   Uint16 red[256];
   Uint16 green[256];
   Uint16 blue[256];
