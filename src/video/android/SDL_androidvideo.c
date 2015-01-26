@@ -86,6 +86,7 @@ Android_SuspendScreenSaver(_THIS)
 static void
 Android_DeleteDevice(SDL_VideoDevice * device)
 {
+    SDL_free(device->driverdata);
     SDL_free(device);
 }
 
