@@ -15,7 +15,7 @@ There are two basic ways of building SDL at the moment:
 
    If you have a GNUish system, then you might try this.  Edit configure.in,
    take a look at the large section labelled:
-	"Set up the configuration based on the target platform!"
+	"Set up the configuration based on the host platform!"
    Add a section for your platform, and then re-run autogen.sh and build!
 
 2. Using an IDE:
