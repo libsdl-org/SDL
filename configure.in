@@ -2971,9 +2971,18 @@ case "$host" in
         fi
         # Set up files for the filesystem library
         if test x$enable_filesystem = xyes; then
-            AC_DEFINE(SDL_FILESYSTEM_UNIX, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/filesystem/unix/*.c"
-            have_filesystem=yes
+             case $ARCH in
+               linux)
+                   AC_DEFINE(SDL_FILESYSTEM_UNIX, 1, [ ])
+                   SOURCES="$SOURCES $srcdir/src/filesystem/unix/*.c"
+                   have_filesystem=yes
+               ;;
+               android)
+                   AC_DEFINE(SDL_FILESYSTEM_ANDROID, 1, [ ])
+                   SOURCES="$SOURCES $srcdir/src/filesystem/android/*.c"
+                   have_filesystem=yes
+               ;;
+             esac
         fi
         # Set up files for the timer library
         if test x$enable_timers = xyes; then
