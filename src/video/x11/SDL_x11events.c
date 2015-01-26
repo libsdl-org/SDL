@@ -677,8 +677,17 @@ X11_DispatchEvent(_THIS)
                 data->window == SDL_GetKeyboardFocus()) {
                 ReconcileKeyboardState(_this, data);
             }
-            data->pending_focus = PENDING_FOCUS_IN;
-            data->pending_focus_time = SDL_GetTicks() + PENDING_FOCUS_IN_TIME;
+            if (!videodata->last_mode_change_deadline) /* no recent mode changes */
+            {
+                data->pending_focus = PENDING_FOCUS_NONE;
+                data->pending_focus_time = 0;
+                X11_DispatchFocusIn(data);
+            }
+            else
+            {
+                data->pending_focus = PENDING_FOCUS_IN;
+                data->pending_focus_time = SDL_GetTicks() + PENDING_FOCUS_TIME;
+            }
         }
         break;
 
@@ -701,8 +710,17 @@ X11_DispatchEvent(_THIS)
 #ifdef DEBUG_XEVENTS
             printf("window %p: FocusOut!\n", data);
 #endif
-            data->pending_focus = PENDING_FOCUS_OUT;
-            data->pending_focus_time = SDL_GetTicks() + PENDING_FOCUS_OUT_TIME;
+            if (!videodata->last_mode_change_deadline) /* no recent mode changes */
+            {
+                data->pending_focus = PENDING_FOCUS_NONE;
+                data->pending_focus_time = 0;
+                X11_DispatchFocusOut(data);
+            }
+            else
+            {
+                data->pending_focus = PENDING_FOCUS_OUT;
+                data->pending_focus_time = SDL_GetTicks() + PENDING_FOCUS_TIME;
+            }
         }
         break;
 
@@ -1283,9 +1301,15 @@ X11_PumpEvents(_THIS)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
 
+    if (data->last_mode_change_deadline) {
+        if (SDL_TICKS_PASSED(SDL_GetTicks(), data->last_mode_change_deadline)) {
+            data->last_mode_change_deadline = 0;  /* assume we're done. */
+        }
+    }
+
     /* Update activity every 30 seconds to prevent screensaver */
     if (_this->suspend_screensaver) {
-        Uint32 now = SDL_GetTicks();
+        const Uint32 now = SDL_GetTicks();
         if (!data->screensaver_activity ||
             SDL_TICKS_PASSED(now, data->screensaver_activity + 30000)) {
             X11_XResetScreenSaver(data->display);

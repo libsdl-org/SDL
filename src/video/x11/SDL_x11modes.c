@@ -24,6 +24,7 @@
 
 #include "SDL_hints.h"
 #include "SDL_x11video.h"
+#include "SDL_timer.h"
 #include "edid.h"
 
 /* #define X11MODES_DEBUG */
@@ -813,9 +814,12 @@ X11_GetDisplayModes(_THIS, SDL_VideoDisplay * sdl_display)
 int
 X11_SetDisplayMode(_THIS, SDL_VideoDisplay * sdl_display, SDL_DisplayMode * mode)
 {
-    Display *display = ((SDL_VideoData *) _this->driverdata)->display;
+    SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
+    Display *display = viddata->display;
     SDL_DisplayData *data = (SDL_DisplayData *) sdl_display->driverdata;
     SDL_DisplayModeData *modedata = (SDL_DisplayModeData *)mode->driverdata;
+
+    viddata->last_mode_change_deadline = SDL_GetTicks() + (PENDING_FOCUS_TIME * 2);
 
 #if SDL_VIDEO_DRIVER_X11_XRANDR
     if (data->use_xrandr) {
