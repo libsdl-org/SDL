@@ -2972,14 +2972,14 @@ case "$host" in
         # Set up files for the filesystem library
         if test x$enable_filesystem = xyes; then
              case $ARCH in
-               linux)
-                   AC_DEFINE(SDL_FILESYSTEM_UNIX, 1, [ ])
-                   SOURCES="$SOURCES $srcdir/src/filesystem/unix/*.c"
-                   have_filesystem=yes
-               ;;
                android)
                    AC_DEFINE(SDL_FILESYSTEM_ANDROID, 1, [ ])
                    SOURCES="$SOURCES $srcdir/src/filesystem/android/*.c"
+                   have_filesystem=yes
+               ;;
+               *)
+                   AC_DEFINE(SDL_FILESYSTEM_UNIX, 1, [ ])
+                   SOURCES="$SOURCES $srcdir/src/filesystem/unix/*.c"
                    have_filesystem=yes
                ;;
              esac
