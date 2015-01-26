@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="test">
+      <UniqueIdentifier>{E40CCFF9-BD96-E647-8B8F-BCC4CAA08BC5}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\..\test\testsprite2.c">
+      <Filter>test</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>

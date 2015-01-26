@@ -1,0 +1,370 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		45273A68360C0E815D1B1BC0 /* kromasky_16x16.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 5F9758D31B3F59084DC82795 /* kromasky_16x16.bmp */; };
+		324160D025840B5270143D94 /* common.c in Sources */ = {isa = PBXBuildFile; fileRef = 6E0951906832624606980FA7 /* common.c */; };
+		4CBC542E1F7005322C280595 /* keyboard.c in Sources */ = {isa = PBXBuildFile; fileRef = 2987762A782C33F9516B55E5 /* keyboard.c */; };
+		7BBF522D0B3425221AC07065 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 2343286F2DA963733BDB4BFF /* AudioToolbox.framework */; };
+		79421BCE00DF36EC439A5CD4 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 29F4734C35942DEA723A5A77 /* QuartzCore.framework */; };
+		06A76AFF0ED4094D53875FC7 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7E0C550168CA5DF878D253AB /* OpenGLES.framework */; };
+		3D133C292D622B105EE9453E /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 422B29AA759D18C60A831E77 /* CoreGraphics.framework */; };
+		05431A973AEA7EE57FA27595 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 750F39EC6BA274B14FCF2602 /* UIKit.framework */; };
+		69605E6F6C651372297A0B12 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 243E12D229FC131B064C7705 /* Foundation.framework */; };
+		05CF5EDB7CA80D6B0B8E1F8D /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7256748A485906120EDA0EC6 /* CoreAudio.framework */; };
+		152755650FEB31C909EC00E4 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 72750F76468F6580744A4BC9 /* libSDL2.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		5034364C4E5B3FD958D13B5C /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4EC774AF1C8B11653EDD4CF5 /* SDL2.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 224D2C85085A7BA60E532655;
+			remoteInfo = "libSDL2.a";
+		};
+		47316C104E515CB0638F45FE /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 4EC774AF1C8B11653EDD4CF5 /* SDL2.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 515D4C462ACD2DA8180E7783;
+			remoteInfo = "libSDL2.a";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		3EAB5300634A1F997DFB781B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Info.plist"; path = "../../../../Xcode-iOS/Demos/Info.plist"; sourceTree = "<group>"; };
+		5F9758D31B3F59084DC82795 /* kromasky_16x16.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = "kromasky_16x16.bmp"; path = "../../../../Xcode-iOS/Demos/data/bitmapfont/kromasky_16x16.bmp"; sourceTree = "<group>"; };
+		6E0951906832624606980FA7 /* common.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "common.c"; path = "../../../../Xcode-iOS/Demos/src/common.c"; sourceTree = "<group>"; };
+		4D90349C274323322B1A6BBA /* common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "common.h"; path = "../../../../Xcode-iOS/Demos/src/common.h"; sourceTree = "<group>"; };
+		2987762A782C33F9516B55E5 /* keyboard.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "keyboard.c"; path = "../../../../Xcode-iOS/Demos/src/keyboard.c"; sourceTree = "<group>"; };
+		2343286F2DA963733BDB4BFF /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "AudioToolbox.framework"; path = "System/Library/Frameworks/AudioToolbox.framework"; sourceTree = "SDKROOT"; };
+		29F4734C35942DEA723A5A77 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "QuartzCore.framework"; path = "System/Library/Frameworks/QuartzCore.framework"; sourceTree = "SDKROOT"; };
+		7E0C550168CA5DF878D253AB /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "OpenGLES.framework"; path = "System/Library/Frameworks/OpenGLES.framework"; sourceTree = "SDKROOT"; };
+		422B29AA759D18C60A831E77 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "CoreGraphics.framework"; path = "System/Library/Frameworks/CoreGraphics.framework"; sourceTree = "SDKROOT"; };
+		750F39EC6BA274B14FCF2602 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "UIKit.framework"; path = "System/Library/Frameworks/UIKit.framework"; sourceTree = "SDKROOT"; };
+		243E12D229FC131B064C7705 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "Foundation.framework"; path = "System/Library/Frameworks/Foundation.framework"; sourceTree = "SDKROOT"; };
+		7256748A485906120EDA0EC6 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "CoreAudio.framework"; path = "System/Library/Frameworks/CoreAudio.framework"; sourceTree = "SDKROOT"; };
+		759B2B246CC126C15CAC3E9A /* keyboard */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = "keyboard"; path = "keyboard"; sourceTree = BUILT_PRODUCTS_DIR; };
+		4EC774AF1C8B11653EDD4CF5 /* SDL2.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "SDL2.xcodeproj"; path = "../../SDL2/SDL2.xcodeproj"; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		34184B7037081F3645C941EF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				7BBF522D0B3425221AC07065 /* AudioToolbox.framework in Frameworks */,
+				79421BCE00DF36EC439A5CD4 /* QuartzCore.framework in Frameworks */,
+				06A76AFF0ED4094D53875FC7 /* OpenGLES.framework in Frameworks */,
+				3D133C292D622B105EE9453E /* CoreGraphics.framework in Frameworks */,
+				05431A973AEA7EE57FA27595 /* UIKit.framework in Frameworks */,
+				69605E6F6C651372297A0B12 /* Foundation.framework in Frameworks */,
+				05CF5EDB7CA80D6B0B8E1F8D /* CoreAudio.framework in Frameworks */,
+				152755650FEB31C909EC00E4 /* libSDL2.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		677B6BC5125065EF671517AF /* keyboard */ = {
+			isa = PBXGroup;
+			children = (
+				7B4430D456083F22037D36EF /* Xcode-iOS */,
+				12A204F705CD6EA85EED2785 /* Frameworks */,
+				648E631128706545491A6FF5 /* Products */,
+				5C50345624874A655FED50DE /* Projects */,
+			);
+			name = "keyboard";
+			sourceTree = "<group>";
+		};
+		7B4430D456083F22037D36EF /* Xcode-iOS */ = {
+			isa = PBXGroup;
+			children = (
+				0CDD3A6150551D1F7A057966 /* Demos */,
+			);
+			name = "Xcode-iOS";
+			sourceTree = "<group>";
+		};
+		0CDD3A6150551D1F7A057966 /* Demos */ = {
+			isa = PBXGroup;
+			children = (
+				3EAB5300634A1F997DFB781B /* Info.plist */,
+				49C73F1123DD22E36DB26715 /* data */,
+				70CD296F51F07063761032D3 /* src */,
+			);
+			name = "Demos";
+			sourceTree = "<group>";
+		};
+		49C73F1123DD22E36DB26715 /* data */ = {
+			isa = PBXGroup;
+			children = (
+				4B1E1F4E75081D4125E24E30 /* bitmapfont */,
+			);
+			name = "data";
+			sourceTree = "<group>";
+		};
+		4B1E1F4E75081D4125E24E30 /* bitmapfont */ = {
+			isa = PBXGroup;
+			children = (
+				5F9758D31B3F59084DC82795 /* kromasky_16x16.bmp */,
+			);
+			name = "bitmapfont";
+			sourceTree = "<group>";
+		};
+		70CD296F51F07063761032D3 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				6E0951906832624606980FA7 /* common.c */,
+				4D90349C274323322B1A6BBA /* common.h */,
+				2987762A782C33F9516B55E5 /* keyboard.c */,
+			);
+			name = "src";
+			sourceTree = "<group>";
+		};
+		12A204F705CD6EA85EED2785 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				2343286F2DA963733BDB4BFF /* AudioToolbox.framework */,
+				29F4734C35942DEA723A5A77 /* QuartzCore.framework */,
+				7E0C550168CA5DF878D253AB /* OpenGLES.framework */,
+				422B29AA759D18C60A831E77 /* CoreGraphics.framework */,
+				750F39EC6BA274B14FCF2602 /* UIKit.framework */,
+				243E12D229FC131B064C7705 /* Foundation.framework */,
+				7256748A485906120EDA0EC6 /* CoreAudio.framework */,
+			);
+			name = "Frameworks";
+			sourceTree = "<group>";
+		};
+		648E631128706545491A6FF5 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				759B2B246CC126C15CAC3E9A /* keyboard */,
+			);
+			name = "Products";
+			sourceTree = "<group>";
+		};
+		5C50345624874A655FED50DE /* Projects */ = {
+			isa = PBXGroup;
+			children = (
+				4EC774AF1C8B11653EDD4CF5 /* SDL2.xcodeproj */,
+			);
+			name = "Projects";
+			sourceTree = "<group>";
+		};
+		644325D14FD20B88184F7B96 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				72750F76468F6580744A4BC9 /* libSDL2.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		73176F12128359B77F276047 /* keyboard */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 2CB14BD0504177BD395A5721 /* Build configuration list for PBXNativeTarget "keyboard" */;
+			buildPhases = (
+				4684144777C328C125E4477A /* Resources */,
+				46C76D2668D37A606FA41834 /* Sources */,
+				34184B7037081F3645C941EF /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				49D96F9A0B0A7D6D315D6561 /* PBXTargetDependency */,
+			);
+			name = "keyboard";
+			productInstallPath = "$(HOME)/Applications";
+			productName = "keyboard";
+			productReference = 759B2B246CC126C15CAC3E9A /* keyboard */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		08FB7793FE84155DC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "keyboard" */;
+			compatibilityVersion = "Xcode 3.2";
+			hasScannedForEncodings = 1;
+			mainGroup = 677B6BC5125065EF671517AF /* keyboard */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 644325D14FD20B88184F7B96 /* Products */;
+					ProjectRef = 4EC774AF1C8B11653EDD4CF5 /* SDL2.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				73176F12128359B77F276047 /* keyboard */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		72750F76468F6580744A4BC9 /* libSDL2.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "Build/Debug/libSDL2.a";
+			remoteRef = 5034364C4E5B3FD958D13B5C /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXResourcesBuildPhase section */
+		4684144777C328C125E4477A /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				45273A68360C0E815D1B1BC0 /* kromasky_16x16.bmp in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		46C76D2668D37A606FA41834 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				324160D025840B5270143D94 /* common.c in Sources */,
+				4CBC542E1F7005322C280595 /* keyboard.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+/* End PBXVariantGroup section */
+
+/* Begin PBXTargetDependency section */
+		49D96F9A0B0A7D6D315D6561 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "libSDL2.a";
+			targetProxy = 47316C104E515CB0638F45FE /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		29CD6D214B7C539E454E3F7F /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CONFIGURATION_BUILD_DIR = Build/Debug;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				INFOPLIST_FILE = "../../../../Xcode-iOS/Demos/Info.plist";
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = "keyboard";
+			};
+			name = "Debug";
+		};
+		4F111B6B1ABD2B982AD67BF5 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				CONFIGURATION_BUILD_DIR = Build/Release;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				INFOPLIST_FILE = "../../../../Xcode-iOS/Demos/Info.plist";
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = "keyboard";
+			};
+			name = "Release";
+		};
+		5BB564CA490F15C1418B1116 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_UNIVERSAL_IPHONE_OS)";
+				SDKROOT = iphoneos;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USING_PREMAKE_CONFIG_H",
+					"_DEBUG",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"../..",
+					"../../../../include",
+				);
+				OBJROOT = "obj/iOS/Debug";
+				ONLY_ACTIVE_ARCH = YES;
+				SYMROOT = "Build/Debug";
+			};
+			name = "Debug";
+		};
+		1CB3517C5A08534D77F33340 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_UNIVERSAL_IPHONE_OS)";
+				SDKROOT = iphoneos;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USING_PREMAKE_CONFIG_H",
+					"NDEBUG",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"../..",
+					"../../../../include",
+				);
+				OBJROOT = "obj/iOS/Release";
+				ONLY_ACTIVE_ARCH = NO;
+				SYMROOT = "Build/Release";
+			};
+			name = "Release";
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		2CB14BD0504177BD395A5721 /* Build configuration list for PBXNativeTarget "keyboard" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				29CD6D214B7C539E454E3F7F /* Debug */,
+				4F111B6B1ABD2B982AD67BF5 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Debug";
+		};
+		1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "keyboard" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5BB564CA490F15C1418B1116 /* Debug */,
+				1CB3517C5A08534D77F33340 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Debug";
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
+}

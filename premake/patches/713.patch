@@ -1,0 +1,64 @@
+# HG changeset patch
+# User Ben Henning
+# Date 1376606083 25200
+#      Thu Aug 15 15:34:43 2013 -0700
+# Node ID 8c9cd352c70012a64779356bff3c81998c3fb6a0
+# Parent  e8558df4fbdb173a2b9ed0d354d6c3e76b376698
+Implemented the option to set custom source trees for Xcode frameworks (links)
+using Visual Studio-esque variables, such as "$(SDKROOT)/OpenGLES.framework".
+
+diff --git a/src/actions/xcode/xcode_common.lua b/src/actions/xcode/xcode_common.lua
+--- a/src/actions/xcode/xcode_common.lua
++++ b/src/actions/xcode/xcode_common.lua
+@@ -318,18 +318,36 @@
+ 					local pth, src
+ 					if xcode.isframework(node.path) then
+ 						--respect user supplied paths
+-						if string.find(node.path,'/')  then
+-							if string.find(node.path,'^%.')then
++						-- look for special variable-starting paths for different sources
++						local nodePath = node.path
++						local _, matchEnd, variable = string.find(nodePath, "^%$%((.+)%)/")
++						if variable then
++							-- by skipping the last '/' we support the same absolute/relative
++							-- paths as before
++							nodePath = string.sub(nodePath, matchEnd + 1)
++						end
++						if string.find(nodePath,'/')  then
++							if string.find(nodePath,'^%.')then
+ 								error('relative paths are not currently supported for frameworks')
+ 							end
+-							pth = node.path
++							pth = nodePath
+ 						else
+-							pth = "/System/Library/Frameworks/" .. node.path
++							pth = "/System/Library/Frameworks/" .. nodePath
+ 						end
+-						src = "absolute"
++						-- if it starts with a variable, use that as the src instead
++						if variable then
++							src = variable
++							-- if we are using a different source tree, it has to be relative
++							-- to that source tree, so get rid of any leading '/'
++							if string.find(pth, '^/') then
++								pth = string.sub(pth, 2)
++							end
++						else
++							src = "<absolute>"
++						end
+ 					else
+ 						-- something else; probably a source code file
+-						src = "group"
++						src = "<group>"
+ 
+ 						-- if the parent node is virtual, it won't have a local path
+ 						-- of its own; need to use full relative path from project
+@@ -340,7 +358,7 @@
+ 						end
+ 					end
+ 					
+-					_p(2,'%s /* %s */ = {isa = PBXFileReference; lastKnownFileType = %s; name = "%s"; path = "%s"; sourceTree = "<%s>"; };',
++					_p(2,'%s /* %s */ = {isa = PBXFileReference; lastKnownFileType = %s; name = "%s"; path = "%s"; sourceTree = "%s"; };',
+ 						node.id, node.name, xcode.getfiletype(node), node.name, pth, src)
+ 				end
+ 			end
