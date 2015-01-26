@@ -23091,11 +23091,22 @@ $as_echo "#define SDL_POWER_ANDROID 1" >>confdefs.h
         fi
         # Set up files for the filesystem library
         if test x$enable_filesystem = xyes; then
+             case $ARCH in
+               linux)
 
 $as_echo "#define SDL_FILESYSTEM_UNIX 1" >>confdefs.h
 
-            SOURCES="$SOURCES $srcdir/src/filesystem/unix/*.c"
-            have_filesystem=yes
+                   SOURCES="$SOURCES $srcdir/src/filesystem/unix/*.c"
+                   have_filesystem=yes
+               ;;
+               android)
+
+$as_echo "#define SDL_FILESYSTEM_ANDROID 1" >>confdefs.h
+
+                   SOURCES="$SOURCES $srcdir/src/filesystem/android/*.c"
+                   have_filesystem=yes
+               ;;
+             esac
         fi
         # Set up files for the timer library
         if test x$enable_timers = xyes; then
