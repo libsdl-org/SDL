@@ -548,12 +548,12 @@ int Android_JNI_SetupThread(void)
  * Audio support
  */
 static jboolean audioBuffer16Bit = JNI_FALSE;
-static jboolean audioBufferStereo = JNI_FALSE;
 static jobject audioBuffer = NULL;
 static void* audioBufferPinned = NULL;
 
 int Android_JNI_OpenAudioDevice(int sampleRate, int is16Bit, int channelCount, int desiredBufferFrames)
 {
+    jboolean audioBufferStereo;
     int audioBufferFrames;
 
     JNIEnv *env = Android_JNI_GetEnv();
