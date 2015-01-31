@@ -20,6 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
+#if SDL_AUDIO_DRIVER_PSP
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -192,5 +194,6 @@ AudioBootStrap PSPAUD_bootstrap = {
 
  /* SDL_AUDI */
 
+#endif /* SDL_AUDIO_DRIVER_PSP */
 
-
+/* vi: set ts=4 sw=4 expandtab: */

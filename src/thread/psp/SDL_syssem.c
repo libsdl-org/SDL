@@ -20,6 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
+#if SDL_THREAD_PSP
+
 /* Semaphore functions for the PSP. */
 
 #include <stdio.h>
@@ -152,6 +154,8 @@ int SDL_SemPost(SDL_sem *sem)
 
     return 0;
 }
+
+#endif /* SDL_THREAD_PSP */
 
 /* vim: ts=4 sw=4
  */

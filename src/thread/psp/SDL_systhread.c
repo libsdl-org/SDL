@@ -20,6 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
+#if SDL_THREAD_PSP
+
 /* PSP thread management routines for SDL */
 
 #include <stdio.h>
@@ -103,6 +105,8 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
     return sceKernelChangeThreadPriority(sceKernelGetThreadId(),value);
 
 }
+
+#endif /* SDL_THREAD_PSP */
 
 /* vim: ts=4 sw=4
  */

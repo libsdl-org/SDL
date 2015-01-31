@@ -20,6 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
+#ifdef SDL_TIMERS_PSP
+
 #include "SDL_thread.h"
 #include "SDL_timer.h"
 #include "SDL_error.h"
@@ -82,6 +84,8 @@ void SDL_Delay(Uint32 ms)
         ms = max_delay;
     sceKernelDelayThreadCB(ms * 1000);
 }
+
+#endif /* SDL_TIMERS_PSP */
 
 /* vim: ts=4 sw=4
  */

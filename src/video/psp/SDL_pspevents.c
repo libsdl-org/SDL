@@ -20,6 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
+#if SDL_VIDEO_DRIVER_PSP
+
 /* Being a null driver, there's no event stream. We just define stubs for
    most of the API. */
 
@@ -283,3 +285,6 @@ void PSP_EventQuit(_THIS)
 
 /* end of SDL_pspevents.c ... */
 
+#endif /* SDL_VIDEO_DRIVER_PSP */
+
+/* vi: set ts=4 sw=4 expandtab: */

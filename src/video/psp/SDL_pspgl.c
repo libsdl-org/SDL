@@ -20,6 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
+#if SDL_VIDEO_DRIVER_PSP
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -204,3 +206,6 @@ PSP_GL_DeleteContext(_THIS, SDL_GLContext context)
     return;
 }
 
+#endif /* SDL_VIDEO_DRIVER_PSP */
+
+/* vi: set ts=4 sw=4 expandtab: */
