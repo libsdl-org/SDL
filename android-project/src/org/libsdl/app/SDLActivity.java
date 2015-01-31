@@ -81,7 +81,6 @@ public class SDLActivity extends Activity {
     }
     
     /**
-     * This method is called by SDL using JNI.
      * This method is called by SDL before starting the native application thread.
      * It can be overridden to provide the arguments after the application name.
      * The default implementation returns an empty array. It never returns null.
