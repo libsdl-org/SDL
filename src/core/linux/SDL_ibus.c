@@ -156,12 +156,12 @@ IBus_MessageFilter(DBusConnection *conn, DBusMessage *msg, void *user_data)
         dbus->message_iter_init(msg, &iter);
         text = IBus_GetVariantText(conn, &iter, dbus);
         
-        if (text && *text) {
+        if (text) {
             char buf[SDL_TEXTEDITINGEVENT_TEXT_SIZE];
             size_t text_bytes = SDL_strlen(text), i = 0;
             size_t cursor = 0;
             
-            while (i < text_bytes) {
+            do {
                 size_t sz = SDL_utf8strlcpy(buf, text+i, sizeof(buf));
                 size_t chars = IBus_utf8_strlen(buf);
                 
@@ -169,7 +169,7 @@ IBus_MessageFilter(DBusConnection *conn, DBusMessage *msg, void *user_data)
 
                 i += sz;
                 cursor += chars;
-            }
+            } while (i < text_bytes);
         }
         
         SDL_IBus_UpdateTextRect(NULL);
