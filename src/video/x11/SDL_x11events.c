@@ -1108,15 +1108,25 @@ X11_DispatchEvent(_THIS)
                    without ever mapping / unmapping them, so we handle that here,
                    because they use the NETWM protocol to notify us of changes.
                  */
-                Uint32 flags = X11_GetNetWMState(_this, xevent.xproperty.window);
-				if ((flags^data->window->flags) & SDL_WINDOW_HIDDEN ||
-					(flags^data->window->flags) & SDL_WINDOW_FULLSCREEN ) {
-                    if (flags & SDL_WINDOW_HIDDEN) {
-                        X11_DispatchUnmapNotify(data);
-                    } else {
-                        X11_DispatchMapNotify(data);
+                const Uint32 flags = X11_GetNetWMState(_this, xevent.xproperty.window);
+                const Uint32 changed = flags ^ data->window->flags;
+
+                if ((changed & SDL_WINDOW_HIDDEN) || (changed & SDL_WINDOW_FULLSCREEN)) {
+                     if (flags & SDL_WINDOW_HIDDEN) {
+                         X11_DispatchUnmapNotify(data);
+                     } else {
+                         X11_DispatchMapNotify(data);
                     }
                 }
+
+                if (changed & SDL_WINDOW_MAXIMIZED) {
+                    if (flags & SDL_WINDOW_MAXIMIZED) {
+                        SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MAXIMIZED, 0, 0);
+                    } else {
+                        SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_RESTORED, 0, 0);
+                    }
+                 }
+
             }
         }
         break;
