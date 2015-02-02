@@ -373,6 +373,16 @@ X11_GL_InitExtensions(_THIS)
             (int (*)(int)) X11_GL_GetProcAddress(_this, "glXSwapIntervalSGI");
     }
 
+    /* Check for GLX_ARB_create_context */
+    if (HasExtension("GLX_ARB_create_context", extensions)) {
+        _this->gl_data->glXCreateContextAttribsARB =
+            (GLXContext (*)(Display*,GLXFBConfig,GLXContext,Bool,const int *))
+                X11_GL_GetProcAddress(_this, "glXCreateContextAttribsARB");
+        _this->gl_data->glXChooseFBConfig =
+            (GLXFBConfig *(*)(Display *, int, const int *, int *))
+                X11_GL_GetProcAddress(_this, "glXChooseFBConfig");
+    }
+
     /* Check for GLX_EXT_visual_rating */
     if (HasExtension("GLX_EXT_visual_rating", extensions)) {
         _this->gl_data->HAS_GLX_EXT_visual_rating = SDL_TRUE;
@@ -576,7 +586,6 @@ X11_GL_CreateContext(_THIS, SDL_Window * window)
     XVisualInfo v, *vinfo;
     int n;
     GLXContext context = NULL, share_context;
-    PFNGLXCREATECONTEXTATTRIBSARBPROC glXCreateContextAttribs = NULL;
 
     if (_this->gl_config.share_with_current_context) {
         share_context = (GLXContext)SDL_GL_GetCurrentContext();
@@ -601,78 +610,52 @@ X11_GL_CreateContext(_THIS, SDL_Window * window)
             context =
                 _this->gl_data->glXCreateContext(display, vinfo, share_context, True);
         } else {
-            /* If we want a GL 3.0 context or later we need to get a temporary
-               context to grab the new context creation function */
-            GLXContext temp_context =
-                _this->gl_data->glXCreateContext(display, vinfo, NULL, True);
-            if (temp_context) {
-                /* max 8 attributes plus terminator */
-                int attribs[9] = {
-                    GLX_CONTEXT_MAJOR_VERSION_ARB,
-                    _this->gl_config.major_version,
-                    GLX_CONTEXT_MINOR_VERSION_ARB,
-                    _this->gl_config.minor_version,
-                    0
-                };
-                int iattr = 4;
+            /* max 8 attributes plus terminator */
+            int attribs[9] = {
+                GLX_CONTEXT_MAJOR_VERSION_ARB,
+                _this->gl_config.major_version,
+                GLX_CONTEXT_MINOR_VERSION_ARB,
+                _this->gl_config.minor_version,
+                0
+            };
+            int iattr = 4;
 
-                /* SDL profile bits match GLX profile bits */
-                if( _this->gl_config.profile_mask != 0 ) {
-                    attribs[iattr++] = GLX_CONTEXT_PROFILE_MASK_ARB;
-                    attribs[iattr++] = _this->gl_config.profile_mask;
-                }
+            /* SDL profile bits match GLX profile bits */
+            if( _this->gl_config.profile_mask != 0 ) {
+                attribs[iattr++] = GLX_CONTEXT_PROFILE_MASK_ARB;
+                attribs[iattr++] = _this->gl_config.profile_mask;
+            }
 
-                /* SDL flags match GLX flags */
-                if( _this->gl_config.flags != 0 ) {
-                    attribs[iattr++] = GLX_CONTEXT_FLAGS_ARB;
-                    attribs[iattr++] = _this->gl_config.flags;
-                }
+            /* SDL flags match GLX flags */
+            if( _this->gl_config.flags != 0 ) {
+                attribs[iattr++] = GLX_CONTEXT_FLAGS_ARB;
+                attribs[iattr++] = _this->gl_config.flags;
+            }
 
-                attribs[iattr++] = 0;
+            attribs[iattr++] = 0;
 
-                /* Get a pointer to the context creation function for GL 3.0 */
-                glXCreateContextAttribs =
-                    (PFNGLXCREATECONTEXTATTRIBSARBPROC) _this->gl_data->
-                    glXGetProcAddress((GLubyte *)
-                                      "glXCreateContextAttribsARB");
-                if (!glXCreateContextAttribs) {
-                    SDL_SetError("GL 3.x is not supported");
-                    context = temp_context;
+            /* Get a pointer to the context creation function for GL 3.0 */
+            if (!_this->gl_data->glXCreateContextAttribsARB) {
+                SDL_SetError("OpenGL 3.0 and later are not supported by this system");
+            } else {
+                int glxAttribs[64];
+
+                /* Create a GL 3.x context */
+                GLXFBConfig *framebuffer_config = NULL;
+                int fbcount = 0;
+
+                X11_GL_GetAttributes(_this,display,screen,glxAttribs,64,SDL_TRUE);
+
+                if (!_this->gl_data->glXChooseFBConfig
+                    || !(framebuffer_config =
+                        _this->gl_data->glXChooseFBConfig(display,
+                                          DefaultScreen(display), glxAttribs,
+                                          &fbcount))) {
+                    SDL_SetError("No good framebuffers found. OpenGL 3.0 and later unavailable");
                 } else {
-                    int glxAttribs[64];
-
-                    /* Create a GL 3.x context */
-                    GLXFBConfig *framebuffer_config = NULL;
-                    int fbcount = 0;
-                    GLXFBConfig *(*glXChooseFBConfig) (Display * disp,
-                                                       int screen,
-                                                       const int *attrib_list,
-                                                       int *nelements);
-
-                    glXChooseFBConfig =
-                        (GLXFBConfig *
-                         (*)(Display *, int, const int *,
-                             int *)) _this->gl_data->
-                        glXGetProcAddress((GLubyte *) "glXChooseFBConfig");
-
-                    X11_GL_GetAttributes(_this,display,screen,glxAttribs,64,SDL_TRUE);
-
-                    if (!glXChooseFBConfig
-                        || !(framebuffer_config =
-                             glXChooseFBConfig(display,
-                                               DefaultScreen(display), glxAttribs,
-                                               &fbcount))) {
-                        SDL_SetError
-                            ("No good framebuffers found. GL 3.x disabled");
-                        context = temp_context;
-                    } else {
-                        context =
-                            glXCreateContextAttribs(display,
+                    context = _this->gl_data->glXCreateContextAttribsARB(display,
                                                     framebuffer_config[0],
                                                     share_context, True, attribs);
-                        _this->gl_data->glXDestroyContext(display,
-                                                          temp_context);
-                    }
                 }
             }
         }
