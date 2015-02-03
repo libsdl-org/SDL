@@ -20,6 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
+#if SDL_VIDEO_DRIVER_NACL
+
 #include "SDL.h"
 #include "../../events/SDL_sysevents.h"
 #include "../../events/SDL_events_c.h"
@@ -430,3 +432,7 @@ void NACL_PumpEvents(_THIS) {
     }
   }
 }
+
+#endif /* SDL_VIDEO_DRIVER_NACL */
+
+/* vi: set ts=4 sw=4 expandtab: */

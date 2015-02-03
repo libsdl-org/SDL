@@ -20,6 +20,9 @@
 */
 
 #include "../../SDL_internal.h"
+
+#if SDL_AUDIO_DRIVER_NACL
+
 #include "SDL_naclaudio.h"
 
 #include "SDL_audio.h"
@@ -145,3 +148,7 @@ AudioBootStrap NACLAUD_bootstrap = {
     NACLAUD_DRIVER_NAME, "SDL NaCl Audio Driver",
     NACLAUD_Init, 0
 };
+
+#endif /* SDL_AUDIO_DRIVER_NACL */
+
+/* vi: set ts=4 sw=4 expandtab: */
