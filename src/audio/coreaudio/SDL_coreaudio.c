@@ -19,6 +19,9 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "../../SDL_internal.h"
+
+#if SDL_AUDIO_DRIVER_COREAUDIO
+
 #include "SDL_audio.h"
 #include "../SDL_audio_c.h"
 #include "../SDL_sysaudio.h"
@@ -553,5 +556,7 @@ COREAUDIO_Init(SDL_AudioDriverImpl * impl)
 AudioBootStrap COREAUDIO_bootstrap = {
     "coreaudio", "CoreAudio", COREAUDIO_Init, 0
 };
+
+#endif /* SDL_AUDIO_DRIVER_COREAUDIO */
 
 /* vi: set ts=4 sw=4 expandtab: */
