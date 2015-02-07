@@ -49,11 +49,19 @@ loop(){
         }
     }
     for (i = 0; i < state->num_windows; ++i) {
+        SDL_Rect viewport;
         SDL_Renderer *renderer = state->renderers[i];
         if (state->windows[i] == NULL)
             continue;
         SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
         SDL_RenderClear(renderer);
+
+        /* Wrap the cursor rectangle at the screen edges to keep it visible */
+        SDL_RenderGetViewport(renderer, &viewport);
+        if (rect.x < viewport.x) rect.x += viewport.w;
+        if (rect.y < viewport.y) rect.y += viewport.h;
+        if (rect.x > viewport.x + viewport.w) rect.x -= viewport.w;
+        if (rect.y > viewport.y + viewport.h) rect.y -= viewport.h;
 
         DrawRects(renderer, &rect);
 
