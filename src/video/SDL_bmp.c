@@ -306,16 +306,18 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
             biClrUsed = 1 << biBitCount;
         }
         if ((int) biClrUsed > palette->ncolors) {
+            SDL_Color *colors;
             palette->ncolors = biClrUsed;
-            palette->colors =
+            colors =
                 (SDL_Color *) SDL_realloc(palette->colors,
                                           palette->ncolors *
                                           sizeof(*palette->colors));
-            if (!palette->colors) {
+            if (!colors) {
                 SDL_OutOfMemory();
                 was_error = SDL_TRUE;
                 goto done;
             }
+            palette->colors = colors;
         } else if ((int) biClrUsed < palette->ncolors) {
             palette->ncolors = biClrUsed;
         }

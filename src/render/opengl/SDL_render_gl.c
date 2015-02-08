@@ -342,9 +342,10 @@ GL_HandleDebugMessage(GLenum source, GLenum type, GLuint id, GLenum severity, GL
 
     if (type == GL_DEBUG_TYPE_ERROR_ARB) {
         /* Record this error */
+        char **error_messages = SDL_realloc(data->error_messages, data->errors * sizeof(*data->error_messages));
         ++data->errors;
-        data->error_messages = SDL_realloc(data->error_messages, data->errors * sizeof(*data->error_messages));
-        if (data->error_messages) {
+        if (error_messages) {
+            data->error_messages = error_messages;
             data->error_messages[data->errors-1] = SDL_strdup(message);
         }
     }
