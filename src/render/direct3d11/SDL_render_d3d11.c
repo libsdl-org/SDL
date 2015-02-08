@@ -829,9 +829,24 @@ D3D11_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->info.flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
     renderer->driverdata = data;
 
+#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+    /* VSync is required in Windows Phone, at least for Win Phone 8.0 and 8.1.
+     * Failure to use it seems to either result in:
+     *
+     *  - with the D3D11 debug runtime turned OFF, vsync seemingly gets turned
+     *    off (framerate doesn't get capped), but nothing appears on-screen
+     *
+     *  - with the D3D11 debug runtime turned ON, vsync gets automatically
+     *    turned back on, and the following gets output to the debug console:
+     *    
+     *    DXGI ERROR: IDXGISwapChain::Present: Interval 0 is not supported, changed to Interval 1. [ UNKNOWN ERROR #1024: ] 
+     */
+    renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
+#else
     if ((flags & SDL_RENDERER_PRESENTVSYNC)) {
         renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
     }
+#endif
 
     /* HACK: make sure the SDL_Renderer references the SDL_Window data now, in
      * order to give init functions access to the underlying window handle:
