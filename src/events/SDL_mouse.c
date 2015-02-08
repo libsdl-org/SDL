@@ -303,10 +303,11 @@ static SDL_MouseClickState *GetMouseClickState(SDL_Mouse *mouse, Uint8 button)
 {
     if (button >= mouse->num_clickstates) {
         int i, count = button + 1;
-        mouse->clickstate = (SDL_MouseClickState *)SDL_realloc(mouse->clickstate, count * sizeof(*mouse->clickstate));
-        if (!mouse->clickstate) {
+        SDL_MouseClickState *clickstate = (SDL_MouseClickState *)SDL_realloc(mouse->clickstate, count * sizeof(*mouse->clickstate));
+        if (!clickstate) {
             return NULL;
         }
+        mouse->clickstate = clickstate;
 
         for (i = mouse->num_clickstates; i < count; ++i) {
             SDL_zero(mouse->clickstate[i]);
