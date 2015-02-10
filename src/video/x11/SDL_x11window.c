@@ -333,7 +333,7 @@ SetWindowBordered(Display *display, int screen, Window window, SDL_bool border)
 
         X11_XChangeProperty(display, window, WM_HINTS, WM_HINTS, 32,
                         PropModeReplace, (unsigned char *) &MWMHints,
-                        sizeof(MWMHints) / 4);
+                        sizeof(MWMHints) / sizeof(long));
     } else {  /* set the transient hints instead, if necessary */
         X11_XSetTransientForHint(display, window, RootWindow(display, screen));
     }
