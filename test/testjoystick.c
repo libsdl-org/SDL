@@ -176,7 +176,7 @@ WatchJoystick(SDL_Joystick * joystick)
 {
     SDL_Window *window = NULL;
     const char *name = NULL;
-
+    done = SDL_FALSE;
 
     /* Create a window to display joystick axis position */
     window = SDL_CreateWindow("Joystick Test", SDL_WINDOWPOS_CENTERED,
