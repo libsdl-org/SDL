@@ -163,6 +163,10 @@ WatchGameController(SDL_GameController * gamecontroller)
     const size_t titlelen = SDL_strlen(basetitle) + SDL_strlen(name) + 1;
     char *title = (char *)SDL_malloc(titlelen);
     SDL_Window *window = NULL;
+
+    retval = SDL_FALSE;
+    done = SDL_FALSE;
+
     if (title) {
         SDL_snprintf(title, titlelen, "%s%s", basetitle, name);
     }
@@ -219,6 +223,10 @@ WatchGameController(SDL_GameController * gamecontroller)
 #endif
 
     SDL_DestroyRenderer(screen);
+    screen = NULL;
+    background = NULL;
+    button = NULL;
+    axis = NULL;
     SDL_DestroyWindow(window);
     return retval;
 }

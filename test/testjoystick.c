@@ -176,6 +176,8 @@ WatchJoystick(SDL_Joystick * joystick)
 {
     SDL_Window *window = NULL;
     const char *name = NULL;
+
+    retval = SDL_FALSE;
     done = SDL_FALSE;
 
     /* Create a window to display joystick axis position */
@@ -217,6 +219,7 @@ WatchJoystick(SDL_Joystick * joystick)
 #endif
 
     SDL_DestroyRenderer(screen);
+    screen = NULL;
     SDL_DestroyWindow(window);
     return retval;
 }
