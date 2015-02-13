@@ -405,6 +405,8 @@ SDL_GetPlatform()
     return "BSDI";
 #elif __DREAMCAST__
     return "Dreamcast";
+#elif __EMSCRIPTEN__
+    return "Emscripten";
 #elif __FREEBSD__
     return "FreeBSD";
 #elif __HAIKU__
