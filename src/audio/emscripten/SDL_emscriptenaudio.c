@@ -157,6 +157,7 @@ Emscripten_OpenDevice(_THIS, const char *devname, int iscapture)
     SDL_AudioFormat test_format = SDL_FirstAudioFormat(this->spec.format);
     int i;
     float f;
+    int result;
 
     while ((!valid_format) && (test_format)) {
         switch (test_format) {
@@ -185,7 +186,7 @@ Emscripten_OpenDevice(_THIS, const char *devname, int iscapture)
     /* based on parts of library_sdl.js */
 
     /* create context (TODO: this puts stuff in the global namespace...)*/
-    EM_ASM({
+    result = EM_ASM_INT_V({
         if(typeof(SDL2) === 'undefined')
             SDL2 = {};
 
@@ -198,10 +199,14 @@ Emscripten_OpenDevice(_THIS, const char *devname, int iscapture)
             } else if (typeof(webkitAudioContext) !== 'undefined') {
                 SDL2.audioContext = new webkitAudioContext();
             } else {
-                throw 'Web Audio API is not available!';
+                return -1;
             }
         }
+        return 0;
     });
+    if (result < 0) {
+        return SDL_SetError("Web Audio API is not available!");
+    }
 
     /* limit to native freq */
     int sampleRate = EM_ASM_INT_V({
