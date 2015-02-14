@@ -112,7 +112,7 @@ Emscripten_JoyStickConnected(int eventType, const EmscriptenGamepadEvent *gamepa
     event.type = SDL_JOYDEVICEADDED;
 
     if (SDL_GetEventState(event.type) == SDL_ENABLE) {
-        event.jdevice.which = item->device_instance - 1;
+        event.jdevice.which = item->index;
         if ( (SDL_EventOK == NULL) ||
              (*SDL_EventOK) (SDL_EventOKParam, &event) ) {
             SDL_PushEvent(&event);
