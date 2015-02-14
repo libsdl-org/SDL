@@ -105,7 +105,9 @@ Emscripten_JoyStickConnected(int eventType, const EmscriptenGamepadEvent *gamepa
     }
 
     ++numjoysticks;
-    SDL_Log("%d",numjoysticks);
+#ifdef DEBUG_JOYSTICK
+    SDL_Log("Number of joysticks is %d", numjoysticks);
+#endif
 #if !SDL_EVENTS_DISABLED
     event.type = SDL_JOYDEVICEADDED;
 
@@ -118,7 +120,9 @@ Emscripten_JoyStickConnected(int eventType, const EmscriptenGamepadEvent *gamepa
     }
 #endif /* !SDL_EVENTS_DISABLED */
 
+#ifdef DEBUG_JOYSTICK
     SDL_Log("Added joystick with index %d", item->index);
+#endif
 
     return 1;
 }
@@ -144,7 +148,6 @@ Emscripten_JoyStickDisconnected(int eventType, const EmscriptenGamepadEvent *gam
         return 1;
     }
 
-    const int retval = item->device_instance;
     if (item->joystick) {
         item->joystick->hwdata = NULL;
     }
@@ -174,7 +177,9 @@ Emscripten_JoyStickDisconnected(int eventType, const EmscriptenGamepadEvent *gam
     }
 #endif /* !SDL_EVENTS_DISABLED */
 
-    SDL_Log("Removed joystick with index %d", retval);
+#ifdef DEBUG_JOYSTICK
+    SDL_Log("Removed joystick with id %d", item->device_instance);
+#endif
     SDL_free(item->name);
     SDL_free(item->mapping);
     SDL_free(item);
