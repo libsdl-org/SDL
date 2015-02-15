@@ -48,7 +48,6 @@ poked(int sig)
 int
 main(int argc, char *argv[])
 {
-    int i;
     char filename[4096];
 
 	/* Enable standard application logging */
