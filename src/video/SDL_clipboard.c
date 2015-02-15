@@ -29,6 +29,10 @@ SDL_SetClipboardText(const char *text)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
+    if (!_this) {
+        return SDL_SetError("Video subsystem must be initialized to set clipboard text");
+    }
+
     if (!text) {
         text = "";
     }
@@ -46,6 +50,11 @@ SDL_GetClipboardText(void)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
+    if (!_this) {
+        SDL_SetError("Video subsystem must be initialized to get clipboard text");
+        return SDL_strdup("");
+    }
+
     if (_this->GetClipboardText) {
         return _this->GetClipboardText(_this);
     } else {
@@ -61,6 +70,11 @@ SDL_bool
 SDL_HasClipboardText(void)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
+
+    if (!_this) {
+        SDL_SetError("Video subsystem must be initialized to check clipboard text");
+        return SDL_FALSE;
+    }
 
     if (_this->HasClipboardText) {
         return _this->HasClipboardText(_this);
