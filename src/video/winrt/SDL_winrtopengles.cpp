@@ -36,10 +36,15 @@ using namespace Windows::UI::Core;
 
 /* ANGLE/WinRT constants */
 static const int ANGLE_D3D_FEATURE_LEVEL_ANY = 0;
-#define EGL_PLATFORM_ANGLE_ANGLE                0x3201
-#define EGL_PLATFORM_ANGLE_TYPE_ANGLE           0x3202
-#define EGL_PLATFORM_ANGLE_TYPE_DEFAULT_ANGLE   0x3205
-#define EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE     0x3207
+#define EGL_PLATFORM_ANGLE_ANGLE                        0x3201
+#define EGL_PLATFORM_ANGLE_TYPE_ANGLE                   0x3202
+#define EGL_PLATFORM_ANGLE_MAX_VERSION_MINOR_ANGLE      0x3204
+#define EGL_PLATFORM_ANGLE_MAX_VERSION_MAJOR_ANGLE      0x3203
+#define EGL_PLATFORM_ANGLE_TYPE_DEFAULT_ANGLE           0x3205
+#define EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE             0x3207
+#define EGL_PLATFORM_ANGLE_USE_WARP_ANGLE               0x3208
+#define EGL_ANGLE_DISPLAY_ALLOW_RENDER_TO_BACK_BUFFER   0x320B
+
 
 /*
  * SDL/EGL top-level implementation
@@ -82,9 +87,35 @@ WINRT_GLES_LoadLibrary(_THIS, const char *path)
         if (!_this->egl_data->egl_display) {
             return SDL_SetError("Could not get EGL display");
         }
+
+        if (_this->egl_data->eglInitialize(_this->egl_data->egl_display, NULL, NULL) != EGL_TRUE) {
+            return SDL_SetError("Could not initialize EGL");
+        }
     } else {
-        const EGLint displayAttributes[] = {
+        /* Declare some ANGLE/EGL initialization property-sets, as suggested by
+         * MSOpenTech's ANGLE-for-WinRT template apps:
+         */
+        const EGLint defaultDisplayAttributes[] =
+        {
             EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
+            EGL_ANGLE_DISPLAY_ALLOW_RENDER_TO_BACK_BUFFER, EGL_TRUE, 
+            EGL_NONE,
+        };
+
+        const EGLint fl9_3DisplayAttributes[] =
+        {
+            EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
+            EGL_PLATFORM_ANGLE_MAX_VERSION_MAJOR_ANGLE, 9,
+            EGL_PLATFORM_ANGLE_MAX_VERSION_MINOR_ANGLE, 3,
+            EGL_ANGLE_DISPLAY_ALLOW_RENDER_TO_BACK_BUFFER, EGL_TRUE, 
+            EGL_NONE,
+        };
+
+        const EGLint warpDisplayAttributes[] =
+        {
+            EGL_PLATFORM_ANGLE_TYPE_ANGLE, EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE,
+            EGL_PLATFORM_ANGLE_USE_WARP_ANGLE, EGL_TRUE,
+            EGL_ANGLE_DISPLAY_ALLOW_RENDER_TO_BACK_BUFFER, EGL_TRUE, 
             EGL_NONE,
         };
 
@@ -99,14 +130,41 @@ WINRT_GLES_LoadLibrary(_THIS, const char *path)
             return SDL_SetError("Could not retrieve ANGLE/WinRT display function(s)");
         }
 
-        _this->egl_data->egl_display = eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, EGL_DEFAULT_DISPLAY, displayAttributes);
+#if (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP)
+        /* Try initializing EGL at D3D11 Feature Level 10_0+ (which is not
+         * supported on WinPhone 8.x.
+         */
+        _this->egl_data->egl_display = eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, EGL_DEFAULT_DISPLAY, defaultDisplayAttributes);
         if (!_this->egl_data->egl_display) {
             return SDL_SetError("Could not get EGL display");
         }
-    }
 
-    if (_this->egl_data->eglInitialize(_this->egl_data->egl_display, NULL, NULL) != EGL_TRUE) {
-        return SDL_SetError("Could not initialize EGL");
+        if (_this->egl_data->eglInitialize(_this->egl_data->egl_display, NULL, NULL) != EGL_TRUE)
+#endif
+        {
+            /* Try initializing EGL at D3D11 Feature Level 9_3, in case the
+             * 10_0 init fails, or we're on Windows Phone (which only supports
+             * 9_3).
+             */
+            _this->egl_data->egl_display = eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, EGL_DEFAULT_DISPLAY, fl9_3DisplayAttributes);
+            if (!_this->egl_data->egl_display) {
+                return SDL_SetError("Could not get 9_3 EGL display");
+            }
+
+            if (_this->egl_data->eglInitialize(_this->egl_data->egl_display, NULL, NULL) != EGL_TRUE) {
+                /* Try initializing EGL at D3D11 Feature Level 11_0 on WARP
+                 * (a Windows-provided, software rasterizer) if all else fails.
+                 */
+                _this->egl_data->egl_display = eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, EGL_DEFAULT_DISPLAY, warpDisplayAttributes);
+                if (!_this->egl_data->egl_display) {
+                    return SDL_SetError("Could not get WARP EGL display");
+                }
+
+                if (_this->egl_data->eglInitialize(_this->egl_data->egl_display, NULL, NULL) != EGL_TRUE) {
+                    return SDL_SetError("Could not initialize EGL");
+                }
+            }
+        }
     }
 
     return 0;
