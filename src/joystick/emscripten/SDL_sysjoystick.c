@@ -261,12 +261,6 @@ void SDL_SYS_JoystickDetect()
 {
 }
 
-// we need to poll to see if the gamepad state has changed
-SDL_bool SDL_SYS_JoystickNeedsPolling()
-{
-    return SDL_TRUE;
-}
-
 /* Function to get the device-dependent name of a joystick */
 const char *
 SDL_SYS_JoystickNameForDeviceIndex(int index)
