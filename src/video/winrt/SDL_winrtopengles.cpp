@@ -38,8 +38,8 @@ using namespace Windows::UI::Core;
 static const int ANGLE_D3D_FEATURE_LEVEL_ANY = 0;
 #define EGL_PLATFORM_ANGLE_ANGLE                0x3201
 #define EGL_PLATFORM_ANGLE_TYPE_ANGLE           0x3202
-#define EGL_PLATFORM_ANGLE_TYPE_DEFAULT_ANGLE   0x3203
-#define EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE     0x3205
+#define EGL_PLATFORM_ANGLE_TYPE_DEFAULT_ANGLE   0x3205
+#define EGL_PLATFORM_ANGLE_TYPE_D3D11_ANGLE     0x3207
 
 /*
  * SDL/EGL top-level implementation
