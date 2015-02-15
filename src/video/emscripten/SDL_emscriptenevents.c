@@ -296,7 +296,7 @@ Emscripten_ConvertUTF32toUTF8(Uint32 codepoint, char * text)
     return SDL_TRUE;
 }
 
-int
+EM_BOOL
 Emscripten_HandleMouseMove(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
@@ -322,7 +322,7 @@ Emscripten_HandleMouseMove(int eventType, const EmscriptenMouseEvent *mouseEvent
     return 0;
 }
 
-int
+EM_BOOL
 Emscripten_HandleMouseButton(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
@@ -344,7 +344,7 @@ Emscripten_HandleMouseButton(int eventType, const EmscriptenMouseEvent *mouseEve
     return 1;
 }
 
-int
+EM_BOOL
 Emscripten_HandleMouseFocus(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
@@ -352,7 +352,7 @@ Emscripten_HandleMouseFocus(int eventType, const EmscriptenMouseEvent *mouseEven
     return 1;
 }
 
-int
+EM_BOOL
 Emscripten_HandleWheel(int eventType, const EmscriptenWheelEvent *wheelEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
@@ -360,7 +360,7 @@ Emscripten_HandleWheel(int eventType, const EmscriptenWheelEvent *wheelEvent, vo
     return 1;
 }
 
-int
+EM_BOOL
 Emscripten_HandleFocus(int eventType, const EmscriptenFocusEvent *wheelEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
@@ -368,7 +368,7 @@ Emscripten_HandleFocus(int eventType, const EmscriptenFocusEvent *wheelEvent, vo
     return 1;
 }
 
-int
+EM_BOOL
 Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent *touchEvent, void *userData)
 {
     /*SDL_WindowData *window_data = userData;*/
@@ -404,7 +404,7 @@ Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent *touchEvent, vo
     return 1;
 }
 
-int
+EM_BOOL
 Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData)
 {
     Uint32 scancode;
@@ -443,7 +443,7 @@ Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent *keyEvent, voi
             || keyEvent->keyCode == 8 /* backspace */ || keyEvent->keyCode == 9 /* tab */;
 }
 
-int
+EM_BOOL
 Emscripten_HandleKeyPress(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData)
 {
     char text[5];
@@ -452,7 +452,7 @@ Emscripten_HandleKeyPress(int eventType, const EmscriptenKeyboardEvent *keyEvent
     return 1;
 }
 
-int
+EM_BOOL
 Emscripten_HandleFullscreenChange(int eventType, const EmscriptenFullscreenChangeEvent *fullscreenChangeEvent, void *userData)
 {
     /*make sure this is actually our element going fullscreen*/
@@ -514,7 +514,7 @@ Emscripten_HandleFullscreenChange(int eventType, const EmscriptenFullscreenChang
     return 0;
 }
 
-int
+EM_BOOL
 Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *uiEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
@@ -554,7 +554,7 @@ Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *uiEvent, void *u
     return 0;
 }
 
-int
+EM_BOOL
 Emscripten_HandleVisibilityChange(int eventType, const EmscriptenVisibilityChangeEvent *visEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
