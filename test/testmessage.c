@@ -17,7 +17,6 @@
 #include <signal.h>
 
 #include "SDL.h"
-#include "SDL_thread.h"
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void

@@ -18,7 +18,6 @@
 #include <string.h>
 
 #include "SDL.h"
-#include "SDL_thread.h"
 
 #define NUMTHREADS 10
 
