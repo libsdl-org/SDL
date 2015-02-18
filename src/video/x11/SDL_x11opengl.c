@@ -279,12 +279,12 @@ HasExtension(const char *extension, const char *extensions)
     const char *start;
     const char *where, *terminator;
 
+    if (!extensions)
+        return SDL_FALSE;
+
     /* Extension names should not have spaces. */
     where = SDL_strchr(extension, ' ');
     if (where || *extension == '\0')
-        return SDL_FALSE;
-
-    if (!extensions)
         return SDL_FALSE;
 
     /* It takes a bit of care to be fool-proof about parsing the
