@@ -29,7 +29,6 @@
 #endif
 
 #include "SDL.h"
-#include "SDL_audio.h"
 
 struct
 {

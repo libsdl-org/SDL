@@ -13,9 +13,6 @@
 #include <stdio.h>
 
 #include "SDL.h"
-#include "SDL_endian.h"
-#include "SDL_cpuinfo.h"
-#include "SDL_assert.h"
 
 /*
  * Watcom C flags these as Warning 201: "Unreachable code" if you just
