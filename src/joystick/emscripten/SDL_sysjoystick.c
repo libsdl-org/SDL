@@ -220,6 +220,7 @@ SDL_SYS_JoystickInit(void)
                                                       Emscripten_JoyStickConnected);
 
     if(retval != EMSCRIPTEN_RESULT_SUCCESS) {
+        SDL_SYS_JoystickQuit();
         return -1;
     }
 
@@ -227,6 +228,7 @@ SDL_SYS_JoystickInit(void)
                                                          0,
                                                          Emscripten_JoyStickDisconnected);
     if(retval != EMSCRIPTEN_RESULT_SUCCESS) {
+        SDL_SYS_JoystickQuit();
         return -1;
     }
 
@@ -399,6 +401,9 @@ SDL_SYS_JoystickQuit(void)
 
     numjoysticks = 0;
     instance_counter = 0;
+
+    emscripten_set_gamepadconnected_callback(NULL, 0, NULL);
+    emscripten_set_gamepaddisconnected_callback(NULL, 0, NULL);
 }
 
 SDL_JoystickGUID SDL_SYS_JoystickGetDeviceGUID(int index)
