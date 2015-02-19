@@ -288,8 +288,7 @@ MaybeAddDevice(const char *path)
     }
 
     item->fname = SDL_strdup(path);
-    if ( (item->fname == NULL) ) {
-        SDL_free(item->fname);
+    if (item->fname == NULL) {
         SDL_free(item);
         return -1;
     }
