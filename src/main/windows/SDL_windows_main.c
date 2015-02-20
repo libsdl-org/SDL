@@ -150,6 +150,7 @@ console_wmain(int argc, wchar_t *wargv[], wchar_t *wenvp)
 
     retval = main_utf8(argc, argv);
 
+    /* !!! FIXME: we are leaking all the elements of argv we allocated. */
     SDL_stack_free(argv);
 
     return retval;
