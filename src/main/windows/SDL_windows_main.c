@@ -110,21 +110,30 @@ OutOfMemory(void)
 
 #if defined(_MSC_VER)
 /* The VC++ compiler needs main/wmain defined */
-# define console_utf8_main main
+# define console_ansi_main main
 # if UNICODE
 #  define console_wmain wmain
 # endif
 #endif
 
-/* This is where execution begins [console apps, ansi] */
-int
-console_utf8_main(int argc, char *argv[])
+/* WinMain, main, and wmain eventually call into here. */
+static int
+main_utf8(int argc, char *argv[])
 {
     SDL_SetMainReady();
 
     /* Run the application main() code */
     return SDL_main(argc, argv);
 }
+
+/* This is where execution begins [console apps, ansi] */
+int
+console_ansi_main(int argc, char *argv[])
+{
+    /* !!! FIXME: are these in the system codepage? We need to convert to UTF-8. */
+    return main_utf8(argc, argv);
+}
+
 
 #if UNICODE
 /* This is where execution begins [console apps, unicode] */
@@ -138,7 +147,7 @@ console_wmain(int argc, wchar_t *wargv[], wchar_t *wenvp)
         argv[i] = WIN_StringToUTF8(wargv[i]);
     }
 
-    return console_utf8_main(argc, argv);
+    return main_utf8(argc, argv);
 }
 #endif
 
@@ -170,7 +179,7 @@ WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int sw)
     ParseCommandLine(cmdline, argv);
 
     /* Run the main program */
-    console_utf8_main(argc, argv);
+    main_utf8(argc, argv);
 
     SDL_stack_free(argv);
 
