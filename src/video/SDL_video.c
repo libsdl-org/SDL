@@ -1607,13 +1607,14 @@ SDL_SetWindowPosition(SDL_Window * window, int x, int y)
     CHECK_WINDOW_MAGIC(window,);
 
     if (SDL_WINDOWPOS_ISCENTERED(x) || SDL_WINDOWPOS_ISCENTERED(y)) {
-        SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
-        int displayIndex;
+        int displayIndex = (x & 0xFFFF);
         SDL_Rect bounds;
+        if (displayIndex > _this->num_displays) {
+            displayIndex = 0;
+        }
 
         SDL_zero(bounds);
 
-        displayIndex = SDL_GetIndexOfDisplay(display);
         SDL_GetDisplayBounds(displayIndex, &bounds);
         if (SDL_WINDOWPOS_ISCENTERED(x)) {
             x = bounds.x + (bounds.w - window->w) / 2;
