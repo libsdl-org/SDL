@@ -140,6 +140,7 @@ console_ansi_main(int argc, char *argv[])
 int
 console_wmain(int argc, wchar_t *wargv[], wchar_t *wenvp)
 {
+    int retval = 0;
     char **argv = SDL_stack_alloc(char*, argc);
     int i;
 
@@ -147,7 +148,11 @@ console_wmain(int argc, wchar_t *wargv[], wchar_t *wenvp)
         argv[i] = WIN_StringToUTF8(wargv[i]);
     }
 
-    return main_utf8(argc, argv);
+    retval = main_utf8(argc, argv);
+
+    SDL_stack_free(argv);
+
+    return retval;
 }
 #endif
 
