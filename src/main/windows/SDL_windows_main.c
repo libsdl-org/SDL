@@ -164,6 +164,7 @@ WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int sw)
 #if UNICODE
     cmdline = WIN_StringToUTF8(text);
 #else
+    /* !!! FIXME: are these in the system codepage? We need to convert to UTF-8. */
     cmdline = SDL_strdup(text);
 #endif
     if (cmdline == NULL) {
