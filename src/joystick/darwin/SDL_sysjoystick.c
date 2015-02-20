@@ -446,9 +446,9 @@ ConfigHIDManager(CFArrayRef matchingArray)
         return SDL_FALSE;
     }
 
+    IOHIDManagerSetDeviceMatchingMultiple(hidman, matchingArray);
     IOHIDManagerRegisterDeviceMatchingCallback(hidman, JoystickDeviceWasAddedCallback, NULL);
     IOHIDManagerScheduleWithRunLoop(hidman, runloop, SDL_JOYSTICK_RUNLOOP_MODE);
-    IOHIDManagerSetDeviceMatchingMultiple(hidman, matchingArray);
 
     while (CFRunLoopRunInMode(SDL_JOYSTICK_RUNLOOP_MODE,0,TRUE) == kCFRunLoopRunHandledSource) {
         /* no-op. Callback fires once per existing device. */
