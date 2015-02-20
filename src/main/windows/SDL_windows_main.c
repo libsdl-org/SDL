@@ -109,19 +109,38 @@ OutOfMemory(void)
 }
 
 #if defined(_MSC_VER)
-/* The VC++ compiler needs main defined */
-#define console_main main
+/* The VC++ compiler needs main/wmain defined */
+# define console_utf8_main main
+# if UNICODE
+#  define console_wmain wmain
+# endif
 #endif
 
-/* This is where execution begins [console apps] */
+/* This is where execution begins [console apps, ansi] */
 int
-console_main(int argc, char *argv[])
+console_utf8_main(int argc, char *argv[])
 {
     SDL_SetMainReady();
 
     /* Run the application main() code */
     return SDL_main(argc, argv);
 }
+
+#if UNICODE
+/* This is where execution begins [console apps, unicode] */
+int
+console_wmain(int argc, wchar_t *wargv[], wchar_t *wenvp)
+{
+    char **argv = SDL_stack_alloc(char*, argc);
+    int i;
+
+    for (i = 0; i < argc; ++i) {
+        argv[i] = WIN_StringToUTF8(wargv[i]);
+    }
+
+    return console_utf8_main(argc, argv);
+}
+#endif
 
 /* This is where execution begins [windowed apps] */
 int WINAPI
@@ -151,7 +170,7 @@ WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int sw)
     ParseCommandLine(cmdline, argv);
 
     /* Run the main program */
-    console_main(argc, argv);
+    console_utf8_main(argc, argv);
 
     SDL_stack_free(argv);
 
