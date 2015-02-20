@@ -27,6 +27,11 @@
 #include "../../events/SDL_events_c.h"
 #include "SDL_assert.h"
 
+/* This define was added in the 10.9 SDK. */
+#ifndef kIOPMAssertPreventUserIdleDisplaySleep
+#define kIOPMAssertPreventUserIdleDisplaySleep kIOPMAssertionTypePreventUserIdleDisplaySleep
+#endif
+
 @interface SDLApplication : NSApplication
 
 - (void)terminate:(id)sender;
@@ -251,16 +256,23 @@ Cocoa_RegisterApp(void)
 { @autoreleasepool
 {
     /* This can get called more than once! Be careful what you initialize! */
-    ProcessSerialNumber psn;
-
-    if (!GetCurrentProcess(&psn)) {
-        TransformProcessType(&psn, kProcessTransformToForegroundApplication);
-        SetFrontProcess(&psn);
-    }
 
     if (NSApp == nil) {
         [SDLApplication sharedApplication];
         SDL_assert(NSApp != nil);
+
+#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_6
+        if ([NSApp respondsToSelector:@selector(setActivationPolicy:)]) {
+#endif
+            [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_6
+        } else {
+            ProcessSerialNumber psn = {0, kCurrentProcess};
+            TransformProcessType(&psn, kProcessTransformToForegroundApplication);
+        }
+#endif
+
+        [NSApp activateIgnoringOtherApps:YES];
 
         if ([NSApp mainMenu] == nil) {
             CreateApplicationMenus();
@@ -293,8 +305,8 @@ Cocoa_PumpEvents(_THIS)
 { @autoreleasepool
 {
     /* Update activity every 30 seconds to prevent screensaver */
-    if (_this->suspend_screensaver) {
-        SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+    if (_this->suspend_screensaver && !data->screensaver_use_iopm) {
         Uint32 now = SDL_GetTicks();
         if (!data->screensaver_activity ||
             SDL_TICKS_PASSED(now, data->screensaver_activity + 30000)) {
@@ -333,6 +345,35 @@ Cocoa_PumpEvents(_THIS)
         }
         /* Pass through to NSApp to make sure everything stays in sync */
         [NSApp sendEvent:event];
+    }
+}}
+
+void
+Cocoa_SuspendScreenSaver(_THIS)
+{ @autoreleasepool
+{
+    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+
+    if (!data->screensaver_use_iopm) {
+        return;
+    }
+
+    if (data->screensaver_assertion) {
+        IOPMAssertionRelease(data->screensaver_assertion);
+        data->screensaver_assertion = 0;
+    }
+
+    if (_this->suspend_screensaver) {
+        /* FIXME: this should ideally describe the real reason why the game
+         * called SDL_DisableScreenSaver. Note that the name is only meant to be
+         * seen by OS X power users. there's an additional optional human-readable
+         * (localized) reason parameter which we don't set.
+         */
+        NSString *name = [GetApplicationName() stringByAppendingString:@" using SDL_DisableScreenSaver"];
+        IOPMAssertionCreateWithDescription(kIOPMAssertPreventUserIdleDisplaySleep,
+                                           (CFStringRef) name,
+                                           NULL, NULL, NULL, 0, NULL,
+                                           &data->screensaver_assertion);
     }
 }}
 

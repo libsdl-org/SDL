@@ -76,6 +76,7 @@ Cocoa_CreateDevice(int devindex)
     device->GetDisplayModes = Cocoa_GetDisplayModes;
     device->SetDisplayMode = Cocoa_SetDisplayMode;
     device->PumpEvents = Cocoa_PumpEvents;
+    device->SuspendScreenSaver = Cocoa_SuspendScreenSaver;
 
     device->CreateWindow = Cocoa_CreateWindow;
     device->CreateWindowFrom = Cocoa_CreateWindowFrom;
@@ -147,6 +148,9 @@ Cocoa_VideoInit(_THIS)
 
     const char *hint = SDL_GetHint(SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES);
     data->allow_spaces = ( (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6) && (!hint || (*hint != '0')) );
+
+    /* The IOPM assertion API can disable the screensaver as of 10.7. */
+    data->screensaver_use_iopm = floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6;
 
     return 0;
 }
