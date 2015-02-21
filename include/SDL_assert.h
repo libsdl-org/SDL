@@ -102,9 +102,9 @@ typedef enum
     SDL_ASSERTION_ABORT,  /**< Terminate the program. */
     SDL_ASSERTION_IGNORE,  /**< Ignore the assert. */
     SDL_ASSERTION_ALWAYS_IGNORE  /**< Ignore the assert from now on. */
-} SDL_assert_state;
+} SDL_AssertState;
 
-typedef struct SDL_assert_data
+typedef struct SDL_AssertData
 {
     int always_ignore;
     unsigned int trigger_count;
@@ -112,13 +112,13 @@ typedef struct SDL_assert_data
     const char *filename;
     int linenum;
     const char *function;
-    const struct SDL_assert_data *next;
-} SDL_assert_data;
+    const struct SDL_AssertData *next;
+} SDL_AssertData;
 
 #if (SDL_ASSERT_LEVEL > 0)
 
 /* Never call this directly. Use the SDL_assert* macros. */
-extern DECLSPEC SDL_assert_state SDLCALL SDL_ReportAssertion(SDL_assert_data *,
+extern DECLSPEC SDL_AssertState SDLCALL SDL_ReportAssertion(SDL_AssertData *,
                                                              const char *,
                                                              const char *, int)
 #if defined(__clang__)
@@ -141,10 +141,10 @@ extern DECLSPEC SDL_assert_state SDLCALL SDL_ReportAssertion(SDL_assert_data *,
 #define SDL_enabled_assert(condition) \
     do { \
         while ( !(condition) ) { \
-            static struct SDL_assert_data sdl_assert_data = { \
+            static struct SDL_AssertData sdl_assert_data = { \
                 0, 0, #condition, 0, 0, 0, 0 \
             }; \
-            const SDL_assert_state sdl_assert_state = SDL_ReportAssertion(&sdl_assert_data, SDL_FUNCTION, SDL_FILE, SDL_LINE); \
+            const SDL_AssertState sdl_assert_state = SDL_ReportAssertion(&sdl_assert_data, SDL_FUNCTION, SDL_FILE, SDL_LINE); \
             if (sdl_assert_state == SDL_ASSERTION_RETRY) { \
                 continue; /* go again. */ \
             } else if (sdl_assert_state == SDL_ASSERTION_BREAK) { \
@@ -181,8 +181,8 @@ extern DECLSPEC SDL_assert_state SDLCALL SDL_ReportAssertion(SDL_assert_data *,
 #define SDL_assert_always(condition) SDL_enabled_assert(condition)
 
 
-typedef SDL_assert_state (SDLCALL *SDL_AssertionHandler)(
-                                 const SDL_assert_data* data, void* userdata);
+typedef SDL_AssertState (SDLCALL *SDL_AssertionHandler)(
+                                 const SDL_AssertData* data, void* userdata);
 
 /**
  *  \brief Set an application-defined assertion handler.
@@ -199,7 +199,7 @@ typedef SDL_assert_state (SDLCALL *SDL_AssertionHandler)(
  *
  *  This callback is NOT reset to SDL's internal handler upon SDL_Quit()!
  *
- *  \return SDL_assert_state value of how to handle the assertion failure.
+ *  \return SDL_AssertState value of how to handle the assertion failure.
  *
  *  \param handler Callback function, called when an assertion fails.
  *  \param userdata A pointer passed to the callback as-is.
@@ -246,7 +246,7 @@ extern DECLSPEC SDL_AssertionHandler SDLCALL SDL_GetAssertionHandler(void **puse
  *  The proper way to examine this data looks something like this:
  *
  *  <code>
- *  const SDL_assert_data *item = SDL_GetAssertionReport();
+ *  const SDL_AssertData *item = SDL_GetAssertionReport();
  *  while (item) {
  *      printf("'%s', %s (%s:%d), triggered %u times, always ignore: %s.\n",
  *             item->condition, item->function, item->filename,
@@ -259,7 +259,7 @@ extern DECLSPEC SDL_AssertionHandler SDLCALL SDL_GetAssertionHandler(void **puse
  *  \return List of all assertions.
  *  \sa SDL_ResetAssertionReport
  */
-extern DECLSPEC const SDL_assert_data * SDLCALL SDL_GetAssertionReport(void);
+extern DECLSPEC const SDL_AssertData * SDLCALL SDL_GetAssertionReport(void);
 
 /**
  *  \brief Reset the list of all assertion failures.
@@ -269,6 +269,12 @@ extern DECLSPEC const SDL_assert_data * SDLCALL SDL_GetAssertionReport(void);
  *  \sa SDL_GetAssertionReport
  */
 extern DECLSPEC void SDLCALL SDL_ResetAssertionReport(void);
+
+
+/* these had wrong naming conventions until 2.0.4. Please update your app! */
+#define SDL_assert_state SDL_AssertState
+#define SDL_assert_data SDL_AssertData
+
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
