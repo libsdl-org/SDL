@@ -335,10 +335,10 @@ void
 SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
 {
     EmscriptenGamepadEvent gamepadState;
-    SDL_joylist_item *item = SDL_joylist;
+    SDL_joylist_item *item = (SDL_joylist_item *) joystick->hwdata;
     int i, result, buttonState;
 
-    while (item != NULL) {
+    if (item) {
         result = emscripten_get_gamepad_status(item->index, &gamepadState);
         if( result == EMSCRIPTEN_RESULT_SUCCESS) {
             if(gamepadState.timestamp == 0 || gamepadState.timestamp != item->timestamp) {
@@ -368,7 +368,6 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
                 }
             }
         }
-        item = item->next;
     }
 }
 
