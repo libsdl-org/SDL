@@ -123,7 +123,7 @@ IBus_utf8_strlen(const char *str)
 }
 
 static DBusHandlerResult
-IBus_MessageFilter(DBusConnection *conn, DBusMessage *msg, void *user_data)
+IBus_MessageHandler(DBusConnection *conn, DBusMessage *msg, void *user_data)
 {
     SDL_DBusContext *dbus = (SDL_DBusContext *)user_data;
         
@@ -341,6 +341,8 @@ IBus_SetupConnection(SDL_DBusContext *dbus, const char* addr)
     const char *path = NULL;
     SDL_bool result = SDL_FALSE;
     DBusMessage *msg;
+    DBusObjectPathVTable ibus_vtable = {0};
+    ibus_vtable.message_function = &IBus_MessageHandler;
 
     ibus_conn = dbus->connection_open_private(addr, NULL);
 
@@ -388,7 +390,7 @@ IBus_SetupConnection(SDL_DBusContext *dbus, const char* addr)
         SDL_AddHintCallback(SDL_HINT_IME_INTERNAL_EDITING, &IBus_SetCapabilities, NULL);
         
         dbus->bus_add_match(ibus_conn, "type='signal',interface='org.freedesktop.IBus.InputContext'", NULL);
-        dbus->connection_add_filter(ibus_conn, &IBus_MessageFilter, dbus, NULL);
+        dbus->connection_try_register_object_path(ibus_conn, input_ctx_path, &ibus_vtable, dbus, NULL);
         dbus->connection_flush(ibus_conn);
     }
 
@@ -668,7 +670,7 @@ SDL_IBus_PumpEvents(void)
         dbus->connection_read_write(ibus_conn, 0);
     
         while (dbus->connection_dispatch(ibus_conn) == DBUS_DISPATCH_DATA_REMAINS) {
-            /* Do nothing, actual work happens in IBus_MessageFilter */
+            /* Do nothing, actual work happens in IBus_MessageHandler */
         }
     }
 }
