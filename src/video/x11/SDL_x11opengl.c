@@ -122,6 +122,13 @@ typedef GLXContext(*PFNGLXCREATECONTEXTATTRIBSARBPROC) (Display * dpy,
 #define GLX_LATE_SWAPS_TEAR_EXT 0x20F3
 #endif
 
+#ifndef GLX_ARB_context_flush_control
+#define GLX_ARB_context_flush_control
+#define GLX_CONTEXT_RELEASE_BEHAVIOR_ARB   0x2097
+#define GLX_CONTEXT_RELEASE_BEHAVIOR_NONE_ARB           0x0000
+#define GLX_CONTEXT_RELEASE_BEHAVIOR_FLUSH_ARB          0x2098
+#endif
+
 #define OPENGL_REQUIRES_DLOPEN
 #if defined(OPENGL_REQUIRES_DLOPEN) && defined(SDL_LOADSO_DLOPEN)
 #include <dlfcn.h>
@@ -375,6 +382,11 @@ X11_GL_InitExtensions(_THIS)
     if (HasExtension("GLX_EXT_create_context_es2_profile", extensions)) {
         _this->gl_data->HAS_GLX_EXT_create_context_es2_profile = SDL_TRUE;
     }
+
+    /* Check for GLX_ARB_context_flush_control */
+    if (HasExtension("GLX_ARB_context_flush_control", extensions)) {
+        _this->gl_data->HAS_GLX_ARB_context_flush_control = SDL_TRUE;
+    }
 }
 
 /* glXChooseVisual and glXChooseFBConfig have some small differences in
@@ -581,8 +593,8 @@ X11_GL_CreateContext(_THIS, SDL_Window * window)
             context =
                 _this->gl_data->glXCreateContext(display, vinfo, share_context, True);
         } else {
-            /* max 8 attributes plus terminator */
-            int attribs[9] = {
+            /* max 10 attributes plus terminator */
+            int attribs[11] = {
                 GLX_CONTEXT_MAJOR_VERSION_ARB,
                 _this->gl_config.major_version,
                 GLX_CONTEXT_MINOR_VERSION_ARB,
@@ -601,6 +613,15 @@ X11_GL_CreateContext(_THIS, SDL_Window * window)
             if( _this->gl_config.flags != 0 ) {
                 attribs[iattr++] = GLX_CONTEXT_FLAGS_ARB;
                 attribs[iattr++] = _this->gl_config.flags;
+            }
+
+            /* only set if glx extension is available */
+            if( _this->gl_data->HAS_GLX_ARB_context_flush_control ) {
+                attribs[iattr++] = GLX_CONTEXT_RELEASE_BEHAVIOR_ARB;
+                attribs[iattr++] = 
+                    _this->gl_config.release_behavior ? 
+                    GLX_CONTEXT_RELEASE_BEHAVIOR_FLUSH_ARB : 
+                    GLX_CONTEXT_RELEASE_BEHAVIOR_NONE_ARB;
             }
 
             attribs[iattr++] = 0;
