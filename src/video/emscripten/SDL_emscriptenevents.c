@@ -621,10 +621,15 @@ Emscripten_UnregisterEventHandlers(SDL_WindowData *data)
     emscripten_set_touchmove_callback("#canvas", NULL, 0, NULL);
     emscripten_set_touchcancel_callback("#canvas", NULL, 0, NULL);
 
-    emscripten_set_keydown_callback("#window", NULL, 0, NULL);
-    emscripten_set_keyup_callback("#window", NULL, 0, NULL);
+    const char *target = SDL_GetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT);
+    if (!target) {
+        target = "#window";
+    }
 
-    emscripten_set_keypress_callback("#window", NULL, 0, NULL);
+    emscripten_set_keydown_callback(target, NULL, 0, NULL);
+    emscripten_set_keyup_callback(target, NULL, 0, NULL);
+
+    emscripten_set_keypress_callback(target, NULL, 0, NULL);
 
     emscripten_set_fullscreenchange_callback("#document", NULL, 0, NULL);
 
