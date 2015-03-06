@@ -303,6 +303,7 @@ struct SDL_VideoDevice
         int flags;
         int profile_mask;
         int share_with_current_context;
+        int release_behavior;
         int framebuffer_srgb_capable;
         int retained_backing;
         int driver_loaded;
