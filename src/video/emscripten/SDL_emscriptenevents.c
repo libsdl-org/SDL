@@ -447,8 +447,9 @@ EM_BOOL
 Emscripten_HandleKeyPress(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData)
 {
     char text[5];
-    Emscripten_ConvertUTF32toUTF8(keyEvent->charCode, text);
-    SDL_SendKeyboardText(text);
+    if (Emscripten_ConvertUTF32toUTF8(keyEvent->charCode, text)) {
+        SDL_SendKeyboardText(text);
+    }
     return 1;
 }
 
