@@ -646,7 +646,7 @@ SDL_SYS_GetInstanceIdOfDeviceIndex(int device_index)
 }
 
 /* Function to open a joystick for use.
- * The joystick to open is specified by the index field of the joystick.
+ * The joystick to open is specified by the device index.
  * This should fill the nbuttons and naxes fields of the joystick structure.
  * It returns 0, or -1 if there is an error.
  */
@@ -672,7 +672,7 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
 }
 
 /* Function to query if the joystick is currently attached
- *   It returns 1 if attached, 0 otherwise.
+ * It returns SDL_TRUE if attached, SDL_FALSE otherwise.
  */
 SDL_bool
 SDL_SYS_JoystickAttached(SDL_Joystick * joystick)

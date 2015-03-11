@@ -164,7 +164,7 @@ const char *SDL_SYS_JoystickName(int index)
 }
 
 /* Function to open a joystick for use.
-   The joystick to open is specified by the index field of the joystick.
+   The joystick to open is specified by the device index.
    This should fill the nbuttons and naxes fields of the joystick structure.
    It returns 0, or -1 if there is an error.
  */
@@ -182,12 +182,12 @@ SDL_bool SDL_SYS_JoystickAttached(SDL_Joystick *joystick)
 {
     return SDL_TRUE;
 }
+
 /* Function to update the state of a joystick - called as a device poll.
  * This function shouldn't update the joystick structure directly,
  * but instead should call SDL_PrivateJoystick*() to deliver events
  * and update joystick device state.
  */
-
 void SDL_SYS_JoystickUpdate(SDL_Joystick *joystick)
 {
     int i;
