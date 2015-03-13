@@ -726,7 +726,7 @@ SDL_RunAudio(void *devicep)
         SDL_StreamDeinit(&device->streamer);
 #endif
 
-    return (0);
+    return 0;
 }
 
 
@@ -759,16 +759,16 @@ SDL_ParseAudioFormat(const char *string)
 int
 SDL_GetNumAudioDrivers(void)
 {
-    return (SDL_arraysize(bootstrap) - 1);
+    return SDL_arraysize(bootstrap) - 1;
 }
 
 const char *
 SDL_GetAudioDriver(int index)
 {
     if (index >= 0 && index < SDL_GetNumAudioDrivers()) {
-        return (bootstrap[index]->name);
+        return bootstrap[index]->name;
     }
-    return (NULL);
+    return NULL;
 }
 
 int
@@ -816,12 +816,12 @@ SDL_AudioInit(const char *driver_name)
         }
 
         SDL_memset(&current_audio, 0, sizeof(current_audio));
-        return (-1);            /* No driver was available, so fail. */
+        return -1;            /* No driver was available, so fail. */
     }
 
     finalize_audio_entry_points();
 
-    return (0);
+    return 0;
 }
 
 /*
@@ -1294,14 +1294,14 @@ SDL_OpenAudio(SDL_AudioSpec * desired, SDL_AudioSpec * obtained)
     /* Start up the audio driver, if necessary. This is legacy behaviour! */
     if (!SDL_WasInit(SDL_INIT_AUDIO)) {
         if (SDL_InitSubSystem(SDL_INIT_AUDIO) < 0) {
-            return (-1);
+            return -1;
         }
     }
 
     /* SDL_OpenAudio() is legacy and can only act on Device ID #1. */
     if (open_devices[0] != NULL) {
         SDL_SetError("Audio device is already opened");
-        return (-1);
+        return -1;
     }
 
     if (obtained) {
@@ -1312,7 +1312,7 @@ SDL_OpenAudio(SDL_AudioSpec * desired, SDL_AudioSpec * obtained)
     }
 
     SDL_assert((id == 0) || (id == 1));
-    return ((id == 0) ? -1 : 0);
+    return (id == 0) ? -1 : 0;
 }
 
 SDL_AudioDeviceID
@@ -1336,7 +1336,7 @@ SDL_GetAudioDeviceStatus(SDL_AudioDeviceID devid)
             status = SDL_AUDIO_PLAYING;
         }
     }
-    return (status);
+    return status;
 }
 
 
@@ -1472,16 +1472,16 @@ SDL_FirstAudioFormat(SDL_AudioFormat format)
         }
     }
     format_idx_sub = 0;
-    return (SDL_NextAudioFormat());
+    return SDL_NextAudioFormat();
 }
 
 SDL_AudioFormat
 SDL_NextAudioFormat(void)
 {
     if ((format_idx == NUM_FORMATS) || (format_idx_sub == NUM_FORMATS)) {
-        return (0);
+        return 0;
     }
-    return (format_list[format_idx][format_idx_sub++]);
+    return format_list[format_idx][format_idx_sub++];
 }
 
 void
