@@ -51,9 +51,7 @@ extern AudioBootStrap QSAAUDIO_bootstrap;
 extern AudioBootStrap SUNAUDIO_bootstrap;
 extern AudioBootStrap ARTS_bootstrap;
 extern AudioBootStrap ESD_bootstrap;
-#if SDL_AUDIO_DRIVER_NACL
 extern AudioBootStrap NACLAUD_bootstrap;
-#endif
 extern AudioBootStrap NAS_bootstrap;
 extern AudioBootStrap XAUDIO2_bootstrap;
 extern AudioBootStrap DSOUND_bootstrap;
