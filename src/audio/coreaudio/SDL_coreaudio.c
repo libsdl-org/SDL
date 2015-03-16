@@ -40,13 +40,50 @@ static void COREAUDIO_CloseDevice(_THIS);
     }
 
 #if MACOSX_COREAUDIO
-typedef void (*addDevFn)(const char *name, AudioDeviceID devId, void *data);
+static const AudioObjectPropertyAddress devlist_address = {
+    kAudioHardwarePropertyDevices,
+    kAudioObjectPropertyScopeGlobal,
+    kAudioObjectPropertyElementMaster
+};
+
+typedef void (*addDevFn)(const char *name, const int iscapture, AudioDeviceID devId, void *data);
+
+typedef struct AudioDeviceList
+{
+    AudioDeviceID devid;
+    SDL_bool alive;
+    struct AudioDeviceList *next;
+} AudioDeviceList;
+
+static AudioDeviceList *output_devs = NULL;
+static AudioDeviceList *capture_devs = NULL;
+
+static SDL_bool
+add_to_internal_dev_list(const int iscapture, AudioDeviceID devId)
+{
+    AudioDeviceList *item = (AudioDeviceList *) SDL_malloc(sizeof (AudioDeviceList));
+    if (item == NULL) {
+        return SDL_FALSE;
+    }
+    item->devid = devId;
+    item->alive = SDL_TRUE;
+    item->next = iscapture ? capture_devs : output_devs;
+    if (iscapture) {
+        capture_devs = item;
+    } else {
+        output_devs = item;
+    }
+
+    return SDL_TRUE;
+}
 
 static void
-addToDevList(const char *name, AudioDeviceID devId, void *data)
+addToDevList(const char *name, const int iscapture, AudioDeviceID devId, void *data)
 {
     SDL_AddAudioDevice addfn = (SDL_AddAudioDevice) data;
-    addfn(name);
+    if (add_to_internal_dev_list(iscapture, devId)) {
+        addfn(name);
+    }
 }
 
 typedef struct
@@ -57,7 +94,7 @@ typedef struct
 } FindDevIdData;
 
 static void
-findDevId(const char *name, AudioDeviceID devId, void *_data)
+findDevId(const char *name, const int iscapture, AudioDeviceID devId, void *_data)
 {
     FindDevIdData *data = (FindDevIdData *) _data;
     if (!data->found) {
@@ -77,14 +114,8 @@ build_device_list(int iscapture, addDevFn addfn, void *addfndata)
     UInt32 i = 0;
     UInt32 max = 0;
 
-    AudioObjectPropertyAddress addr = {
-        kAudioHardwarePropertyDevices,
-        kAudioObjectPropertyScopeGlobal,
-        kAudioObjectPropertyElementMaster
-    };
-
-    result = AudioObjectGetPropertyDataSize(kAudioObjectSystemObject, &addr,
-                                            0, NULL, &size);
+    result = AudioObjectGetPropertyDataSize(kAudioObjectSystemObject,
+                                            &devlist_address, 0, NULL, &size);
     if (result != kAudioHardwareNoError)
         return;
 
@@ -92,8 +123,8 @@ build_device_list(int iscapture, addDevFn addfn, void *addfndata)
     if (devs == NULL)
         return;
 
-    result = AudioObjectGetPropertyData(kAudioObjectSystemObject, &addr,
-                                        0, NULL, &size, devs);
+    result = AudioObjectGetPropertyData(kAudioObjectSystemObject,
+                                        &devlist_address, 0, NULL, &size, devs);
     if (result != kAudioHardwareNoError)
         return;
 
@@ -105,10 +136,17 @@ build_device_list(int iscapture, addDevFn addfn, void *addfndata)
         AudioBufferList *buflist = NULL;
         int usable = 0;
         CFIndex len = 0;
+        const AudioObjectPropertyAddress addr = {
+            kAudioDevicePropertyStreamConfiguration,
+            iscapture ? kAudioDevicePropertyScopeInput : kAudioDevicePropertyScopeOutput,
+            kAudioObjectPropertyElementMaster
+        };
 
-        addr.mScope = iscapture ? kAudioDevicePropertyScopeInput :
-                        kAudioDevicePropertyScopeOutput;
-        addr.mSelector = kAudioDevicePropertyStreamConfiguration;
+        const AudioObjectPropertyAddress nameaddr = {
+            kAudioObjectPropertyName,
+            iscapture ? kAudioDevicePropertyScopeInput : kAudioDevicePropertyScopeOutput,
+            kAudioObjectPropertyElementMaster
+        };
 
         result = AudioObjectGetPropertyDataSize(dev, &addr, 0, NULL, &size);
         if (result != noErr)
@@ -136,9 +174,9 @@ build_device_list(int iscapture, addDevFn addfn, void *addfndata)
         if (!usable)
             continue;
 
-        addr.mSelector = kAudioObjectPropertyName;
+
         size = sizeof (CFStringRef);
-        result = AudioObjectGetPropertyData(dev, &addr, 0, NULL, &size, &cfstr);
+        result = AudioObjectGetPropertyData(dev, &nameaddr, 0, NULL, &size, &cfstr);
         if (result != kAudioHardwareNoError)
             continue;
 
@@ -169,16 +207,94 @@ build_device_list(int iscapture, addDevFn addfn, void *addfndata)
                    ((iscapture) ? "capture" : "output"),
                    (int) *devCount, ptr, (int) dev);
 #endif
-            addfn(ptr, dev, addfndata);
+            addfn(ptr, iscapture, dev, addfndata);
         }
         SDL_free(ptr);  /* addfn() would have copied the string. */
     }
 }
 
 static void
+free_audio_device_list(AudioDeviceList **list)
+{
+    AudioDeviceList *item = *list;
+    while (item) {
+        AudioDeviceList *next = item->next;
+        SDL_free(item);
+        item = next;
+    }
+    *list = NULL;
+}
+
+static void
 COREAUDIO_DetectDevices(int iscapture, SDL_AddAudioDevice addfn)
 {
+    free_audio_device_list(iscapture ? &capture_devs : &output_devs);
     build_device_list(iscapture, addToDevList, addfn);
+}
+
+static void
+build_device_change_list(const char *name, const int iscapture, AudioDeviceID devId, void *data)
+{
+    AudioDeviceList **list = (AudioDeviceList **) data;
+    AudioDeviceList *item;
+    for (item = *list; item != NULL; item = item->next) {
+        if (item->devid == devId) {
+            item->alive = SDL_TRUE;
+            return;
+        }
+    }
+
+    add_to_internal_dev_list(iscapture, devId);  /* new device, add it. */
+    SDL_AudioDeviceConnected(iscapture, name);
+}
+
+static SDL_bool
+reprocess_device_list(const int iscapture, AudioDeviceList **list)
+{
+    SDL_bool was_disconnect = SDL_FALSE;
+    AudioDeviceList *item;
+    AudioDeviceList *prev = NULL;
+    for (item = *list; item != NULL; item = item->next) {
+        item->alive = SDL_FALSE;
+    }
+
+    build_device_list(iscapture, build_device_change_list, list);
+
+    /* free items in the list that aren't still alive. */
+    item = *list;
+    while (item != NULL) {
+        AudioDeviceList *next = item->next;
+        if (item->alive) {
+            prev = item;
+        } else {
+            was_disconnect = SDL_TRUE;
+            if (prev) {
+                prev->next = item->next;
+            } else {
+                *list = item->next;
+            }
+            SDL_free(item);
+        }
+        item = next;
+    }
+
+    return was_disconnect;
+}
+
+
+/* this is called when the system's list of available audio devices changes. */
+static OSStatus
+device_list_changed(AudioObjectID systemObj, UInt32 num_addr, const AudioObjectPropertyAddress *addrs, void *data)
+{
+    if (reprocess_device_list(SDL_TRUE, &capture_devs)) {
+        SDL_AudioDeviceDisconnected(SDL_TRUE, NULL);
+    }
+
+    if (reprocess_device_list(SDL_FALSE, &output_devs)) {
+        SDL_AudioDeviceDisconnected(SDL_FALSE, NULL);
+    }
+
+    return 0;
 }
 
 static int
@@ -317,11 +433,54 @@ inputCallback(void *inRefCon,
 }
 
 
+#if MACOSX_COREAUDIO
+static const AudioObjectPropertyAddress alive_address =
+{
+    kAudioDevicePropertyDeviceIsAlive,
+    kAudioObjectPropertyScopeGlobal,
+    kAudioObjectPropertyElementMaster
+};
+
+static OSStatus
+device_unplugged(AudioObjectID devid, UInt32 num_addr, const AudioObjectPropertyAddress *addrs, void *data)
+{
+    SDL_AudioDevice *this = (SDL_AudioDevice *) data;
+    SDL_bool dead = SDL_FALSE;
+    UInt32 isAlive = 1;
+    UInt32 size = sizeof (isAlive);
+    OSStatus error;
+
+    if (!this->enabled) {
+        return 0;  /* already known to be dead. */
+    }
+
+    error = AudioObjectGetPropertyData(this->hidden->deviceID, &alive_address,
+                                       0, NULL, &size, &isAlive);
+
+    if (error == kAudioHardwareBadDeviceError) {
+        dead = SDL_TRUE;  /* device was unplugged. */
+    } else if ((error == kAudioHardwareNoError) && (!isAlive)) {
+        dead = SDL_TRUE;  /* device died in some other way. */
+    }
+
+    if (dead) {
+        SDL_AudioDeviceDisconnected(this->iscapture, this);
+    }
+
+    return 0;
+}
+#endif
+
 static void
 COREAUDIO_CloseDevice(_THIS)
 {
     if (this->hidden != NULL) {
         if (this->hidden->audioUnitOpened) {
+            #if MACOSX_COREAUDIO
+            /* Unregister our disconnect callback. */
+            AudioObjectRemovePropertyListener(this->hidden->deviceID, &alive_address, device_unplugged, this);
+            #endif
+
             AURenderCallbackStruct callback;
             const AudioUnitElement output_bus = 0;
             const AudioUnitElement input_bus = 1;
@@ -354,7 +513,6 @@ COREAUDIO_CloseDevice(_THIS)
         this->hidden = NULL;
     }
 }
-
 
 static int
 prepare_audiounit(_THIS, const char *devname, int iscapture,
@@ -454,6 +612,11 @@ prepare_audiounit(_THIS, const char *devname, int iscapture,
     result = AudioOutputUnitStart(this->hidden->audioUnit);
     CHECK_RESULT("AudioOutputUnitStart");
 
+#if MACOSX_COREAUDIO
+    /* Fire a callback if the device stops being "alive" (disconnected, etc). */
+    AudioObjectAddPropertyListener(this->hidden->deviceID, &alive_address, device_unplugged, this);
+#endif
+
     /* We're running! */
     return 1;
 }
@@ -527,15 +690,27 @@ COREAUDIO_OpenDevice(_THIS, const char *devname, int iscapture)
     return 0;   /* good to go. */
 }
 
+static void
+COREAUDIO_Deinitialize(void)
+{
+#if MACOSX_COREAUDIO
+    AudioObjectRemovePropertyListener(kAudioObjectSystemObject, &devlist_address, device_list_changed, NULL);
+    free_audio_device_list(&capture_devs);
+    free_audio_device_list(&output_devs);
+#endif
+}
+
 static int
 COREAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
     /* Set the function pointers */
     impl->OpenDevice = COREAUDIO_OpenDevice;
     impl->CloseDevice = COREAUDIO_CloseDevice;
+    impl->Deinitialize = COREAUDIO_Deinitialize;
 
 #if MACOSX_COREAUDIO
     impl->DetectDevices = COREAUDIO_DetectDevices;
+    AudioObjectAddPropertyListener(kAudioObjectSystemObject, &devlist_address, device_list_changed, NULL);
 #else
     impl->OnlyHasDefaultOutputDevice = 1;
 

@@ -221,7 +221,7 @@ XAUDIO2_PlayDevice(_THIS)
 
     if (result != S_OK) {  /* uhoh, panic! */
         IXAudio2SourceVoice_FlushSourceBuffers(source);
-        this->enabled = 0;
+        SDL_AudioDeviceDisconnected(SDL_FALSE, this);
     }
 }
 

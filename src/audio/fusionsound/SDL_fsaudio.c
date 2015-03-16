@@ -143,7 +143,7 @@ SDL_FS_PlayDevice(_THIS)
                                       this->hidden->mixsamples);
     /* If we couldn't write, assume fatal error for now */
     if (ret) {
-        this->enabled = 0;
+        SDL_AudioDeviceDisconnected(SDL_FALSE, this);
     }
 #ifdef DEBUG_AUDIO
     fprintf(stderr, "Wrote %d bytes of audio data\n", this->hidden->mixlen);

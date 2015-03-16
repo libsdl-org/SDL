@@ -270,7 +270,7 @@ DSP_PlayDevice(_THIS)
     const int mixlen = this->hidden->mixlen;
     if (write(this->hidden->audio_fd, mixbuf, mixlen) == -1) {
         perror("Audio write");
-        this->enabled = 0;
+        SDL_AudioDeviceDisconnected(SDL_FALSE, this);
     }
 #ifdef DEBUG_AUDIO
     fprintf(stderr, "Wrote %d bytes of audio data\n", mixlen);

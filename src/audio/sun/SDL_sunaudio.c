@@ -158,7 +158,7 @@ SUNAUDIO_PlayDevice(_THIS)
         if (write(this->hidden->audio_fd, this->hidden->ulaw_buf,
             this->hidden->fragsize) < 0) {
             /* Assume fatal error, for now */
-            this->enabled = 0;
+            SDL_AudioDeviceDisconnected(SDL_FALSE, this);
         }
         this->hidden->written += this->hidden->fragsize;
     } else {
@@ -168,7 +168,7 @@ SUNAUDIO_PlayDevice(_THIS)
         if (write(this->hidden->audio_fd, this->hidden->mixbuf,
             this->spec.size) < 0) {
             /* Assume fatal error, for now */
-            this->enabled = 0;
+            SDL_AudioDeviceDisconnected(SDL_FALSE, this);
         }
         this->hidden->written += this->hidden->fragsize;
     }

@@ -31,7 +31,16 @@ typedef struct SDL_AudioDevice SDL_AudioDevice;
 #define _THIS   SDL_AudioDevice *_this
 
 /* Used by audio targets during DetectDevices() */
-typedef void (*SDL_AddAudioDevice)(const char *name);
+typedef int (*SDL_AddAudioDevice)(const char *name);
+
+/* Audio targets should call this as devices are hotplugged. Don't call
+   during DetectDevices(), this is for hotplugging a device later. */
+extern void SDL_AudioDeviceConnected(const int iscapture, const char *name);
+
+/* Audio targets should call this as devices are unplugged.
+  (device) can be NULL if an unopened device is lost. */
+extern void SDL_AudioDeviceDisconnected(const int iscapture, SDL_AudioDevice *device);
+
 
 /* This is the size of a packet when using SDL_QueueAudio(). We allocate
    these as necessary and pool them, under the assumption that we'll
@@ -92,6 +101,12 @@ typedef struct SDL_AudioDriver
 
     SDL_AudioDriverImpl impl;
 
+    /* A mutex for device detection */
+    SDL_mutex *detection_lock;
+
+    SDL_bool need_capture_device_redetect;
+    SDL_bool need_output_device_redetect;
+
     char **outputDevices;
     int outputDeviceCount;
 
@@ -114,6 +129,7 @@ struct SDL_AudioDevice
 {
     /* * * */
     /* Data common to all devices */
+    SDL_AudioDeviceID id;
 
     /* The current audio specification (shared with audio thread) */
     SDL_AudioSpec spec;
