@@ -320,7 +320,7 @@ ALSA_PlayDevice(_THIS)
                 /* Hmm, not much we can do - abort */
                 fprintf(stderr, "ALSA write failed (unrecoverable): %s\n",
                         ALSA_snd_strerror(status));
-                this->enabled = 0;
+                SDL_AudioDeviceDisconnected(SDL_FALSE, this);
                 return;
             }
             continue;

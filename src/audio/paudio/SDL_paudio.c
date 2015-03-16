@@ -176,7 +176,7 @@ PAUDIO_WaitDevice(_THIS)
              * the user know what happened.
              */
             fprintf(stderr, "SDL: %s - %s\n", strerror(errno), message);
-            this->enabled = 0;
+            SDL_AudioDeviceDisconnected(SDL_FALSE, this);
             /* Don't try to close - may hang */
             this->hidden->audio_fd = -1;
 #ifdef DEBUG_AUDIO
@@ -212,7 +212,7 @@ PAUDIO_PlayDevice(_THIS)
 
     /* If we couldn't write, assume fatal error for now */
     if (written < 0) {
-        this->enabled = 0;
+        SDL_AudioDeviceDisconnected(SDL_FALSE, this);
     }
 #ifdef DEBUG_AUDIO
     fprintf(stderr, "Wrote %d bytes of audio data\n", written);

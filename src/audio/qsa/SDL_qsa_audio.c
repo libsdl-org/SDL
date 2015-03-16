@@ -300,7 +300,7 @@ QSA_PlayDevice(_THIS)
 
     /* If we couldn't write, assume fatal error for now */
     if (towrite != 0) {
-        this->enabled = 0;
+        SDL_AudioDeviceDisconnected(SDL_FALSE, this);
     }
 }
 

@@ -110,6 +110,10 @@ typedef enum
     SDL_JOYDEVICEADDED,         /**< A new joystick has been inserted into the system */
     SDL_JOYDEVICEREMOVED,       /**< An opened joystick has been removed */
 
+    /* Audio hotplug events */
+    SDL_AUDIODEVICEADDED = 0x700,  /**< A new audio device is available */
+    SDL_AUDIODEVICEREMOVED,        /**< An audio device has been removed. */
+
     /* Game controller events */
     SDL_CONTROLLERAXISMOTION  = 0x650, /**< Game controller axis motion */
     SDL_CONTROLLERBUTTONDOWN,          /**< Game controller button pressed */
@@ -382,6 +386,20 @@ typedef struct SDL_ControllerDeviceEvent
     Sint32 which;       /**< The joystick device index for the ADDED event, instance id for the REMOVED or REMAPPED event */
 } SDL_ControllerDeviceEvent;
 
+/**
+ *  \brief Audio device event structure (event.adevice.*)
+ */
+typedef struct SDL_AudioDeviceEvent
+{
+    Uint32 type;        /**< ::SDL_AUDIODEVICEADDED, or ::SDL_AUDIODEVICEREMOVED */
+    Uint32 timestamp;
+    Uint32 which;       /**< The audio device index for the ADDED event (valid until next SDL_GetNumAudioDevices() call), SDL_AudioDeviceID for the REMOVED event */
+    Uint8 iscapture;    /**< zero if an output device, non-zero if a capture device. */
+    Uint8 padding1;
+    Uint8 padding2;
+    Uint8 padding3;
+} SDL_AudioDeviceEvent;
+
 
 /**
  *  \brief Touch finger event structure (event.tfinger.*)
@@ -516,6 +534,7 @@ typedef union SDL_Event
     SDL_ControllerAxisEvent caxis;      /**< Game Controller axis event data */
     SDL_ControllerButtonEvent cbutton;  /**< Game Controller button event data */
     SDL_ControllerDeviceEvent cdevice;  /**< Game Controller device event data */
+    SDL_AudioDeviceEvent adevice;   /**< Audio device event data */
     SDL_QuitEvent quit;             /**< Quit request event data */
     SDL_UserEvent user;             /**< Custom event data */
     SDL_SysWMEvent syswm;           /**< System dependent window event data */

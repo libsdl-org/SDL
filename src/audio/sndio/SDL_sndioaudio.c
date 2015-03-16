@@ -158,7 +158,7 @@ SNDIO_PlayDevice(_THIS)
 
     /* If we couldn't write, assume fatal error for now */
     if ( written == 0 ) {
-        this->enabled = 0;
+        SDL_AudioDeviceDisconnected(SDL_FALSE, this);
     }
 #ifdef DEBUG_AUDIO
     fprintf(stderr, "Wrote %d bytes of audio data\n", written);
