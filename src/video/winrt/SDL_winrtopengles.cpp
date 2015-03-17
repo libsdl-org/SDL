@@ -85,11 +85,11 @@ WINRT_GLES_LoadLibrary(_THIS, const char *path)
         Microsoft::WRL::ComPtr<IUnknown> cpp_display = video_data->winrtEglWindow;
         _this->egl_data->egl_display = ((eglGetDisplay_Old_Function)_this->egl_data->eglGetDisplay)(cpp_display);
         if (!_this->egl_data->egl_display) {
-            return SDL_SetError("Could not get EGL display");
+            return SDL_SetError("Could not get Windows 8.0 EGL display");
         }
 
         if (_this->egl_data->eglInitialize(_this->egl_data->egl_display, NULL, NULL) != EGL_TRUE) {
-            return SDL_SetError("Could not initialize EGL");
+            return SDL_SetError("Could not initialize Windows 8.0 EGL");
         }
     } else {
         /* Declare some ANGLE/EGL initialization property-sets, as suggested by
@@ -136,7 +136,7 @@ WINRT_GLES_LoadLibrary(_THIS, const char *path)
          */
         _this->egl_data->egl_display = eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, EGL_DEFAULT_DISPLAY, defaultDisplayAttributes);
         if (!_this->egl_data->egl_display) {
-            return SDL_SetError("Could not get EGL display");
+            return SDL_SetError("Could not get 10_0 EGL display");
         }
 
         if (_this->egl_data->eglInitialize(_this->egl_data->egl_display, NULL, NULL) != EGL_TRUE)
@@ -161,7 +161,7 @@ WINRT_GLES_LoadLibrary(_THIS, const char *path)
                 }
 
                 if (_this->egl_data->eglInitialize(_this->egl_data->egl_display, NULL, NULL) != EGL_TRUE) {
-                    return SDL_SetError("Could not initialize EGL");
+                    return SDL_SetError("Could not initialize WinRT 8.x+ EGL");
                 }
             }
         }
