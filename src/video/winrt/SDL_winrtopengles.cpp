@@ -136,7 +136,7 @@ WINRT_GLES_LoadLibrary(_THIS, const char *path)
          */
         _this->egl_data->egl_display = eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, EGL_DEFAULT_DISPLAY, defaultDisplayAttributes);
         if (!_this->egl_data->egl_display) {
-            return SDL_SetError("Could not get 10_0 EGL display");
+            return SDL_SetError("Could not get 10_0+ EGL display");
         }
 
         if (_this->egl_data->eglInitialize(_this->egl_data->egl_display, NULL, NULL) != EGL_TRUE)
