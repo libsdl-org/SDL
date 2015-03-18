@@ -46,18 +46,21 @@
 #define _PATH_DEV_AUDIO "/dev/audio"
 #endif
 
-static SDL_INLINE void
-test_device(const char *fname, int flags, int (*test) (int fd),
-            SDL_AddAudioDevice addfn)
+static void
+test_device(const int iscapture, const char *fname, int flags, int (*test) (int fd))
 {
     struct stat sb;
     if ((stat(fname, &sb) == 0) && (S_ISCHR(sb.st_mode))) {
         const int audio_fd = open(fname, flags, 0);
         if (audio_fd >= 0) {
-            if (test(audio_fd)) {
-                addfn(fname);
-            }
+            const int okay = test(audio_fd);
             close(audio_fd);
+            if (okay) {
+                static size_t dummyhandle = 0;
+                dummyhandle++;
+                SDL_assert(dummyhandle != 0);
+                SDL_AddAudioDevice(iscapture, fname, (void *) dummyhandle);
+            }
         }
     }
 }
@@ -68,11 +71,10 @@ test_stub(int fd)
     return 1;
 }
 
-void
-SDL_EnumUnixAudioDevices(int iscapture, int classic, int (*test)(int fd),
-                         SDL_AddAudioDevice addfn)
+static void
+SDL_EnumUnixAudioDevices_Internal(const int iscapture, const int classic, int (*test)(int))
 {
-    const int flags = ((iscapture) ? OPEN_FLAGS_INPUT : OPEN_FLAGS_OUTPUT);
+    const int flags = iscapture ? OPEN_FLAGS_INPUT : OPEN_FLAGS_OUTPUT;
     const char *audiodev;
     char audiopath[1024];
 
@@ -97,17 +99,25 @@ SDL_EnumUnixAudioDevices(int iscapture, int classic, int (*test)(int fd),
             }
         }
     }
-    test_device(audiodev, flags, test, addfn);
+    test_device(iscapture, audiodev, flags, test);
 
     if (SDL_strlen(audiodev) < (sizeof(audiopath) - 3)) {
         int instance = 0;
         while (instance++ <= 64) {
             SDL_snprintf(audiopath, SDL_arraysize(audiopath),
                          "%s%d", audiodev, instance);
-            test_device(audiopath, flags, test, addfn);
+            test_device(iscapture, audiopath, flags, test);
         }
     }
 }
 
+void
+SDL_EnumUnixAudioDevices(const int classic, int (*test)(int))
+{
+    SDL_EnumUnixAudioDevices_Internal(SDL_TRUE, classic, test);
+    SDL_EnumUnixAudioDevices_Internal(SDL_FALSE, classic, test);
+}
+
 #endif /* Audio driver selection */
+
 /* vi: set ts=4 sw=4 expandtab: */

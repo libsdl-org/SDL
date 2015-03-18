@@ -27,7 +27,7 @@
 #include "SDL_dummyaudio.h"
 
 static int
-DUMMYAUD_OpenDevice(_THIS, const char *devname, int iscapture)
+DUMMYAUD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 {
     return 0;                   /* always succeeds. */
 }

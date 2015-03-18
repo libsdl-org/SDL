@@ -276,7 +276,7 @@ find_device(_THIS, int nch)
 }
 
 static int
-NAS_OpenDevice(_THIS, const char *devname, int iscapture)
+NAS_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 {
     AuElement elms[3];
     int buffer_size;

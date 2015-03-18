@@ -151,7 +151,7 @@ Emscripten_CloseDevice(_THIS)
 }
 
 static int
-Emscripten_OpenDevice(_THIS, const char *devname, int iscapture)
+Emscripten_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 {
     SDL_bool valid_format = SDL_FALSE;
     SDL_AudioFormat test_format = SDL_FirstAudioFormat(this->spec.format);
