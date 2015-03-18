@@ -26,6 +26,7 @@
    Stéphan Kochen: stephan .a.t. kochen.nl
 */
 #include "../../SDL_internal.h"
+#include "SDL_assert.h"
 
 #if SDL_AUDIO_DRIVER_PULSEAUDIO
 
@@ -38,7 +39,6 @@
 #include <sys/types.h>
 #include <errno.h>
 #include <pulse/pulseaudio.h>
-#include <pulse/simple.h>
 
 #include "SDL_timer.h"
 #include "SDL_audio.h"
@@ -66,10 +66,6 @@ static SDL_INLINE int PA_STREAM_IS_GOOD(pa_stream_state_t x) {
 
 
 static const char *(*PULSEAUDIO_pa_get_library_version) (void);
-static pa_simple *(*PULSEAUDIO_pa_simple_new) (const char *, const char *,
-    pa_stream_direction_t, const char *, const char *, const pa_sample_spec *,
-    const pa_channel_map *, const pa_buffer_attr *, int *);
-static void (*PULSEAUDIO_pa_simple_free) (pa_simple *);
 static pa_channel_map *(*PULSEAUDIO_pa_channel_map_init_auto) (
     pa_channel_map *, unsigned, pa_channel_map_def_t);
 static const char * (*PULSEAUDIO_pa_strerror) (int);
@@ -87,6 +83,7 @@ static pa_context * (*PULSEAUDIO_pa_context_new) (pa_mainloop_api *,
     const char *);
 static int (*PULSEAUDIO_pa_context_connect) (pa_context *, const char *,
     pa_context_flags_t, const pa_spawn_api *);
+static pa_operation * (*PULSEAUDIO_pa_context_get_sink_info_list)(pa_context *, pa_sink_info_cb_t, void *);
 static pa_context_state_t (*PULSEAUDIO_pa_context_get_state) (pa_context *);
 static void (*PULSEAUDIO_pa_context_disconnect) (pa_context *);
 static void (*PULSEAUDIO_pa_context_unref) (pa_context *);
@@ -179,8 +176,6 @@ static int
 load_pulseaudio_syms(void)
 {
     SDL_PULSEAUDIO_SYM(pa_get_library_version);
-    SDL_PULSEAUDIO_SYM(pa_simple_new);
-    SDL_PULSEAUDIO_SYM(pa_simple_free);
     SDL_PULSEAUDIO_SYM(pa_mainloop_new);
     SDL_PULSEAUDIO_SYM(pa_mainloop_get_api);
     SDL_PULSEAUDIO_SYM(pa_mainloop_iterate);
@@ -190,6 +185,7 @@ load_pulseaudio_syms(void)
     SDL_PULSEAUDIO_SYM(pa_operation_unref);
     SDL_PULSEAUDIO_SYM(pa_context_new);
     SDL_PULSEAUDIO_SYM(pa_context_connect);
+    SDL_PULSEAUDIO_SYM(pa_context_get_sink_info_list);
     SDL_PULSEAUDIO_SYM(pa_context_get_state);
     SDL_PULSEAUDIO_SYM(pa_context_disconnect);
     SDL_PULSEAUDIO_SYM(pa_context_unref);
@@ -206,27 +202,95 @@ load_pulseaudio_syms(void)
     return 0;
 }
 
-
-/* Check to see if we can connect to PulseAudio */
-static SDL_bool
-CheckPulseAudioAvailable()
+static SDL_INLINE int
+squashVersion(const int major, const int minor, const int patch)
 {
-    pa_simple *s;
-    pa_sample_spec ss;
+    return ((major & 0xFF) << 16) | ((minor & 0xFF) << 8) | (patch & 0xFF);
+}
 
-    ss.format = PA_SAMPLE_S16NE;
-    ss.channels = 1;
-    ss.rate = 22050;
+/* Workaround for older pulse: pa_context_new() must have non-NULL appname */
+static const char *
+getAppName(void)
+{
+    const char *verstr = PULSEAUDIO_pa_get_library_version();
+    if (verstr != NULL) {
+        int maj, min, patch;
+        if (SDL_sscanf(verstr, "%d.%d.%d", &maj, &min, &patch) == 3) {
+            if (squashVersion(maj, min, patch) >= squashVersion(0, 9, 15)) {
+                return NULL;  /* 0.9.15+ handles NULL correctly. */
+            }
+        }
+    }
+    return "SDL Application";  /* oh well. */
+}
 
-    s = PULSEAUDIO_pa_simple_new(NULL, "SDL", PA_STREAM_PLAYBACK, NULL,
-                                 "Test", &ss, NULL, NULL, NULL);
-    if (s) {
-        PULSEAUDIO_pa_simple_free(s);
-        return SDL_TRUE;
-    } else {
-        return SDL_FALSE;
+static void
+DisconnectFromPulseServer(pa_mainloop *mainloop, pa_context *context)
+{
+    if (context) {
+        PULSEAUDIO_pa_context_disconnect(context);
+        PULSEAUDIO_pa_context_unref(context);
+    }
+    if (mainloop != NULL) {
+        PULSEAUDIO_pa_mainloop_free(mainloop);
     }
 }
+
+static int
+ConnectToPulseServer_Internal(pa_mainloop **_mainloop, pa_context **_context)
+{
+    pa_mainloop *mainloop = NULL;
+    pa_context *context = NULL;
+    pa_mainloop_api *mainloop_api = NULL;
+    int state = 0;
+
+    *_mainloop = NULL;
+    *_context = NULL;
+
+    /* Set up a new main loop */
+    if (!(mainloop = PULSEAUDIO_pa_mainloop_new())) {
+        return SDL_SetError("pa_mainloop_new() failed");
+    }
+
+    *_mainloop = mainloop;
+
+    mainloop_api = PULSEAUDIO_pa_mainloop_get_api(mainloop);
+    SDL_assert(mainloop_api);  /* this never fails, right? */
+
+    context = PULSEAUDIO_pa_context_new(mainloop_api, getAppName());
+    if (!context) {
+        return SDL_SetError("pa_context_new() failed");
+    }
+    *_context = context;
+
+    /* Connect to the PulseAudio server */
+    if (PULSEAUDIO_pa_context_connect(context, NULL, 0, NULL) < 0) {
+        return SDL_SetError("Could not setup connection to PulseAudio");
+    }
+
+    do {
+        if (PULSEAUDIO_pa_mainloop_iterate(mainloop, 1, NULL) < 0) {
+            return SDL_SetError("pa_mainloop_iterate() failed");
+        }
+        state = PULSEAUDIO_pa_context_get_state(context);
+        if (!PA_CONTEXT_IS_GOOD(state)) {
+            return SDL_SetError("Could not connect to PulseAudio");
+        }
+    } while (state != PA_CONTEXT_READY);
+
+    return 0;  /* connected and ready! */
+}
+
+static int
+ConnectToPulseServer(pa_mainloop **_mainloop, pa_context **_context)
+{
+    const int retval = ConnectToPulseServer_Internal(_mainloop, _context);
+    if (retval < 0) {
+        DisconnectFromPulseServer(*_mainloop, *_context);
+    }
+    return retval;
+}
+
 
 /* This function waits until it is possible to write a full sound buffer */
 static void
@@ -307,41 +371,10 @@ PULSEAUDIO_CloseDevice(_THIS)
             PULSEAUDIO_pa_stream_unref(this->hidden->stream);
             this->hidden->stream = NULL;
         }
-        if (this->hidden->context != NULL) {
-            PULSEAUDIO_pa_context_disconnect(this->hidden->context);
-            PULSEAUDIO_pa_context_unref(this->hidden->context);
-            this->hidden->context = NULL;
-        }
-        if (this->hidden->mainloop != NULL) {
-            PULSEAUDIO_pa_mainloop_free(this->hidden->mainloop);
-            this->hidden->mainloop = NULL;
-        }
+        DisconnectFromPulseServer(this->hidden->mainloop, this->hidden->context);
         SDL_free(this->hidden);
         this->hidden = NULL;
     }
-}
-
-
-static SDL_INLINE int
-squashVersion(const int major, const int minor, const int patch)
-{
-    return ((major & 0xFF) << 16) | ((minor & 0xFF) << 8) | (patch & 0xFF);
-}
-
-/* Workaround for older pulse: pa_context_new() must have non-NULL appname */
-static const char *
-getAppName(void)
-{
-    const char *verstr = PULSEAUDIO_pa_get_library_version();
-    if (verstr != NULL) {
-        int maj, min, patch;
-        if (SDL_sscanf(verstr, "%d.%d.%d", &maj, &min, &patch) == 3) {
-            if (squashVersion(maj, min, patch) >= squashVersion(0, 9, 15)) {
-                return NULL;  /* 0.9.15+ handles NULL correctly. */
-            }
-        }
-    }
-    return "SDL Application";  /* oh well. */
 }
 
 static int
@@ -442,41 +475,15 @@ PULSEAUDIO_OpenDevice(_THIS, const char *devname, int iscapture)
     paattr.minreq = h->mixlen;
 #endif
 
+    if (ConnectToPulseServer(&h->mainloop, &h->context) < 0) {
+        PULSEAUDIO_CloseDevice(this);
+        return SDL_SetError("Could not connect to PulseAudio server");
+    }
+
     /* The SDL ALSA output hints us that we use Windows' channel mapping */
     /* http://bugzilla.libsdl.org/show_bug.cgi?id=110 */
     PULSEAUDIO_pa_channel_map_init_auto(&pacmap, this->spec.channels,
                                         PA_CHANNEL_MAP_WAVEEX);
-
-    /* Set up a new main loop */
-    if (!(h->mainloop = PULSEAUDIO_pa_mainloop_new())) {
-        PULSEAUDIO_CloseDevice(this);
-        return SDL_SetError("pa_mainloop_new() failed");
-    }
-
-    h->mainloop_api = PULSEAUDIO_pa_mainloop_get_api(h->mainloop);
-    h->context = PULSEAUDIO_pa_context_new(h->mainloop_api, getAppName());
-    if (!h->context) {
-        PULSEAUDIO_CloseDevice(this);
-        return SDL_SetError("pa_context_new() failed");
-    }
-
-    /* Connect to the PulseAudio server */
-    if (PULSEAUDIO_pa_context_connect(h->context, NULL, 0, NULL) < 0) {
-        PULSEAUDIO_CloseDevice(this);
-        return SDL_SetError("Could not setup connection to PulseAudio");
-    }
-
-    do {
-        if (PULSEAUDIO_pa_mainloop_iterate(h->mainloop, 1, NULL) < 0) {
-            PULSEAUDIO_CloseDevice(this);
-            return SDL_SetError("pa_mainloop_iterate() failed");
-        }
-        state = PULSEAUDIO_pa_context_get_state(h->context);
-        if (!PA_CONTEXT_IS_GOOD(state)) {
-            PULSEAUDIO_CloseDevice(this);
-            return SDL_SetError("Could not connect to PulseAudio");
-        }
-    } while (state != PA_CONTEXT_READY);
 
     h->stream = PULSEAUDIO_pa_stream_new(
         h->context,
@@ -490,7 +497,7 @@ PULSEAUDIO_OpenDevice(_THIS, const char *devname, int iscapture)
         return SDL_SetError("Could not set up PulseAudio stream");
     }
 
-    if (PULSEAUDIO_pa_stream_connect_playback(h->stream, NULL, &paattr, flags,
+    if (PULSEAUDIO_pa_stream_connect_playback(h->stream, devname, &paattr, flags,
             NULL, NULL) < 0) {
         PULSEAUDIO_CloseDevice(this);
         return SDL_SetError("Could not connect PulseAudio stream");
@@ -512,6 +519,50 @@ PULSEAUDIO_OpenDevice(_THIS, const char *devname, int iscapture)
     return 0;
 }
 
+typedef struct
+{
+    uint8_t last;
+    SDL_AddAudioDevice addfn;
+} sink_struct;
+
+static void
+get_sink_info_callback(pa_context *c, const pa_sink_info *i, int is_last, void *userdata)
+{
+    sink_struct *a = (sink_struct *) userdata;
+    a->last = is_last;
+    if (i) {
+        a->addfn(i->name);
+    }
+}
+
+static void
+PULSEAUDIO_DetectDevices(int iscapture, SDL_AddAudioDevice addfn)
+{
+    pa_mainloop *mainloop = NULL;
+    pa_context *context = NULL;
+
+    if (ConnectToPulseServer(&mainloop, &context) < 0) {
+        return;
+    }
+
+    if (!iscapture) {
+        sink_struct a;
+        a.last = 0;
+        a.addfn = addfn;
+        pa_operation* o = PULSEAUDIO_pa_context_get_sink_info_list(context,
+                get_sink_info_callback, &a);
+        while (!a.last) {
+            if (PULSEAUDIO_pa_operation_get_state(o) == PA_OPERATION_CANCELLED) {
+                break;
+            }
+            if (PULSEAUDIO_pa_mainloop_iterate(mainloop, 1, NULL) < 0) {
+                break;
+            }
+        }
+    }
+
+    DisconnectFromPulseServer(mainloop, context);
+}
 
 static void
 PULSEAUDIO_Deinitialize(void)
@@ -522,16 +573,22 @@ PULSEAUDIO_Deinitialize(void)
 static int
 PULSEAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
+    pa_mainloop *mainloop = NULL;
+    pa_context *context = NULL;
+
     if (LoadPulseAudioLibrary() < 0) {
         return 0;
     }
 
-    if (!CheckPulseAudioAvailable()) {
+    if (ConnectToPulseServer(&mainloop, &context) < 0) {
         UnloadPulseAudioLibrary();
         return 0;
     }
 
+    DisconnectFromPulseServer(mainloop, context);
+
     /* Set the function pointers */
+    impl->DetectDevices = PULSEAUDIO_DetectDevices;
     impl->OpenDevice = PULSEAUDIO_OpenDevice;
     impl->PlayDevice = PULSEAUDIO_PlayDevice;
     impl->WaitDevice = PULSEAUDIO_WaitDevice;
@@ -539,11 +596,9 @@ PULSEAUDIO_Init(SDL_AudioDriverImpl * impl)
     impl->CloseDevice = PULSEAUDIO_CloseDevice;
     impl->WaitDone = PULSEAUDIO_WaitDone;
     impl->Deinitialize = PULSEAUDIO_Deinitialize;
-    impl->OnlyHasDefaultOutputDevice = 1;
 
     return 1;   /* this audio target is available. */
 }
-
 
 AudioBootStrap PULSEAUDIO_bootstrap = {
     "pulseaudio", "PulseAudio", PULSEAUDIO_Init, 0
