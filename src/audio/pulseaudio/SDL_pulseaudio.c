@@ -546,10 +546,8 @@ PULSEAUDIO_DetectDevices(int iscapture, SDL_AddAudioDevice addfn)
     }
 
     if (!iscapture) {
-        sink_struct a;
-        a.last = 0;
-        a.addfn = addfn;
-        pa_operation* o = PULSEAUDIO_pa_context_get_sink_info_list(context,
+        sink_struct a = { 0, addfn };
+        pa_operation *o = PULSEAUDIO_pa_context_get_sink_info_list(context,
                 get_sink_info_callback, &a);
         while (!a.last) {
             if (PULSEAUDIO_pa_operation_get_state(o) == PA_OPERATION_CANCELLED) {
