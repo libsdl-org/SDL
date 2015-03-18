@@ -784,8 +784,8 @@ SDL_AudioInit(const char *driver_name)
         SDL_AudioQuit();        /* shutdown driver if already running. */
     }
 
-    SDL_memset(&current_audio, '\0', sizeof(current_audio));
-    SDL_memset(open_devices, '\0', sizeof(open_devices));
+    SDL_zero(current_audio);
+    SDL_zero(open_devices);
 
     /* Select the proper audio driver */
     if (driver_name == NULL) {
@@ -801,7 +801,7 @@ SDL_AudioInit(const char *driver_name)
         }
 
         tried_to_init = 1;
-        SDL_memset(&current_audio, 0, sizeof(current_audio));
+        SDL_zero(current_audio);
         current_audio.name = backend->name;
         current_audio.desc = backend->desc;
         initialized = backend->init(&current_audio.impl);
@@ -817,7 +817,7 @@ SDL_AudioInit(const char *driver_name)
             }
         }
 
-        SDL_memset(&current_audio, 0, sizeof(current_audio));
+        SDL_zero(current_audio);
         return -1;            /* No driver was available, so fail. */
     }
 
