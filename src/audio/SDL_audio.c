@@ -616,6 +616,7 @@ SDL_RunAudio(void *devicep)
                 }
 
                 /* Read from the callback into the _input_ stream */
+                // !!! FIXME: this should be LockDevice.
                 SDL_LockMutex(device->mixer_lock);
                 (*fill) (udata, istream, istream_len);
                 SDL_UnlockMutex(device->mixer_lock);
@@ -687,6 +688,7 @@ SDL_RunAudio(void *devicep)
                 }
             }
 
+            /* !!! FIXME: this should be LockDevice. */
             SDL_LockMutex(device->mixer_lock);
             if (device->paused) {
                 SDL_memset(stream, silence, stream_len);
@@ -1138,7 +1140,7 @@ open_audio_device(const char *devname, int iscapture,
     device->paused = 1;
     device->iscapture = iscapture;
 
-    /* Create a semaphore for locking the sound buffers */
+    /* Create a mutex for locking the sound buffers */
     if (!current_audio.impl.SkipMixerLock) {
         device->mixer_lock = SDL_CreateMutex();
         if (device->mixer_lock == NULL) {

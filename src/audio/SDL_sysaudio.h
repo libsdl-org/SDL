@@ -71,6 +71,7 @@ typedef struct SDL_AudioDriverImpl
     /* !!! FIXME: add pause(), so we can optimize instead of mixing silence. */
 
     /* Some flags to push duplicate code into the core and reduce #ifdefs. */
+    /* !!! FIXME: these should be SDL_bool */
     int ProvidesOwnCallbackThread;
     int SkipMixerLock;  /* !!! FIXME: do we need this anymore? */
     int HasCaptureSupport;
@@ -125,6 +126,7 @@ struct SDL_AudioDevice
     SDL_AudioStreamer streamer;
 
     /* Current state flags */
+    /* !!! FIXME: should be SDL_bool */
     int iscapture;
     int enabled;
     int paused;
@@ -133,7 +135,7 @@ struct SDL_AudioDevice
     /* Fake audio buffer for when the audio hardware is busy */
     Uint8 *fake_stream;
 
-    /* A semaphore for locking the mixing buffers */
+    /* A mutex for locking the mixing buffers */
     SDL_mutex *mixer_lock;
 
     /* A thread to feed the audio device */
