@@ -36,8 +36,10 @@
 #define WAVE_FORMAT_IEEE_FLOAT 0x0003
 #endif
 
-#define DETECT_DEV_IMPL(typ, capstyp) \
-static void DetectWave##typ##Devs(SDL_AddAudioDevice addfn) { \
+#define DETECT_DEV_IMPL(iscap, typ, capstyp) \
+static void DetectWave##typ##Devs(void) { \
+    const UINT iscapture = iscap ? 1 : 0; \
+    UINT devcount = wave##typ##GetNumDevs(); \
     const UINT devcount = wave##typ##GetNumDevs(); \
     capstyp caps; \
     UINT i; \
@@ -45,24 +47,21 @@ static void DetectWave##typ##Devs(SDL_AddAudioDevice addfn) { \
         if (wave##typ##GetDevCaps(i,&caps,sizeof(caps))==MMSYSERR_NOERROR) { \
             char *name = WIN_StringToUTF8(caps.szPname); \
             if (name != NULL) { \
-                addfn(name); \
+                SDL_AddAudioDevice((int) iscapture, name, (void *) ((size_t) i|(iscap<<31))); \
                 SDL_free(name); \
             } \
         } \
     } \
 }
 
-DETECT_DEV_IMPL(Out, WAVEOUTCAPS)
-DETECT_DEV_IMPL(In, WAVEINCAPS)
+DETECT_DEV_IMPL(SDL_FALSE, Out, WAVEOUTCAPS)
+DETECT_DEV_IMPL(SDL_TRUE, In, WAVEINCAPS)
 
 static void
-WINMM_DetectDevices(int iscapture, SDL_AddAudioDevice addfn)
+WINMM_DetectDevices()
 {
-    if (iscapture) {
-        DetectWaveInDevs(addfn);
-    } else {
-        DetectWaveOutDevs(addfn);
-    }
+    DetectWaveInDevs();
+    DetectWaveOutDevs();
 }
 
 static void CALLBACK
@@ -220,7 +219,7 @@ PrepWaveFormat(_THIS, UINT devId, WAVEFORMATEX *pfmt, const int iscapture)
 }
 
 static int
-WINMM_OpenDevice(_THIS, const char *devname, int iscapture)
+WINMM_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 {
     SDL_AudioFormat test_format = SDL_FirstAudioFormat(this->spec.format);
     int valid_datatype = 0;
@@ -230,37 +229,13 @@ WINMM_OpenDevice(_THIS, const char *devname, int iscapture)
     char *utf8 = NULL;
     UINT i;
 
-    if (devname != NULL) {  /* specific device requested? */
+    if (handle != NULL) {  /* specific device requested? */
+        const size_t val = (size_t) handle;
+        devId = (UINT) val;
         if (iscapture) {
-            const UINT devcount = waveInGetNumDevs();
-            WAVEINCAPS caps;
-            for (i = 0; (i < devcount) && (devId == WAVE_MAPPER); i++) {
-                result = waveInGetDevCaps(i, &caps, sizeof (caps));
-                if (result != MMSYSERR_NOERROR)
-                    continue;
-                else if ((utf8 = WIN_StringToUTF8(caps.szPname)) == NULL)
-                    continue;
-                else if (SDL_strcmp(devname, utf8) == 0)
-                    devId = i;
-                SDL_free(utf8);
-            }
-        } else {
-            const UINT devcount = waveOutGetNumDevs();
-            WAVEOUTCAPS caps;
-            for (i = 0; (i < devcount) && (devId == WAVE_MAPPER); i++) {
-                result = waveOutGetDevCaps(i, &caps, sizeof (caps));
-                if (result != MMSYSERR_NOERROR)
-                    continue;
-                else if ((utf8 = WIN_StringToUTF8(caps.szPname)) == NULL)
-                    continue;
-                else if (SDL_strcmp(devname, utf8) == 0)
-                    devId = i;
-                SDL_free(utf8);
-            }
-        }
-
-        if (devId == WAVE_MAPPER) {
-            return SDL_SetError("Requested device not found");
+            /* we use the top bit to make value unique vs output indices. */
+            SDL_assert((devId & (1<<31)) != 0);
+            devId &= ~(1<<31);
         }
     }
 

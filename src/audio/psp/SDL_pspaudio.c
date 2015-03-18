@@ -43,7 +43,7 @@
 #define PSPAUD_DRIVER_NAME         "psp"
 
 static int
-PSPAUD_OpenDevice(_THIS, const char *devname, int iscapture)
+PSPAUD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 {
     int format, mixlen, i;
     this->hidden = (struct SDL_PrivateAudioData *)

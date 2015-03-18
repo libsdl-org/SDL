@@ -144,15 +144,22 @@ SetDSerror(const char *function, int code)
     return SDL_SetError("%s", errbuf);
 }
 
+static void
+DSOUND_FreeDeviceHandle(void *handle)
+{
+    SDL_free(handle);
+}
 
 static BOOL CALLBACK
 FindAllDevs(LPGUID guid, LPCWSTR desc, LPCWSTR module, LPVOID data)
 {
-    SDL_AddAudioDevice addfn = (SDL_AddAudioDevice) data;
+    const int iscapture = (int) ((size_t) data);
     if (guid != NULL) {  /* skip default device */
         char *str = WIN_StringToUTF8(desc);
         if (str != NULL) {
-            addfn(str);
+            LPGUID cpyguid = (LPGUID) SDL_malloc(sizeof (GUID));
+            SDL_memcpy(cpyguid, guid, sizeof (GUID));
+            SDL_AddAudioDevice(iscapture, str, cpyguid);
             SDL_free(str);  /* addfn() makes a copy of this string. */
         }
     }
@@ -160,13 +167,10 @@ FindAllDevs(LPGUID guid, LPCWSTR desc, LPCWSTR module, LPVOID data)
 }
 
 static void
-DSOUND_DetectDevices(int iscapture, SDL_AddAudioDevice addfn)
+DSOUND_DetectDevices(void)
 {
-    if (iscapture) {
-        pDirectSoundCaptureEnumerateW(FindAllDevs, addfn);
-    } else {
-        pDirectSoundEnumerateW(FindAllDevs, addfn);
-    }
+    pDirectSoundCaptureEnumerateW(FindAllDevs, (void *) ((size_t) 1));
+    pDirectSoundEnumerateW(FindAllDevs, (void *) ((size_t) 0));
 }
 
 
@@ -419,53 +423,14 @@ CreateSecondary(_THIS, HWND focus)
     return (numchunks);
 }
 
-typedef struct FindDevGUIDData
-{
-    const char *devname;
-    GUID guid;
-    int found;
-} FindDevGUIDData;
-
-static BOOL CALLBACK
-FindDevGUID(LPGUID guid, LPCWSTR desc, LPCWSTR module, LPVOID _data)
-{
-    if (guid != NULL) {  /* skip the default device. */
-        FindDevGUIDData *data = (FindDevGUIDData *) _data;
-        char *str = WIN_StringToUTF8(desc);
-        const int match = (SDL_strcmp(str, data->devname) == 0);
-        SDL_free(str);
-        if (match) {
-            data->found = 1;
-            SDL_memcpy(&data->guid, guid, sizeof (data->guid));
-            return FALSE;  /* found it! stop enumerating. */
-        }
-    }
-    return TRUE;  /* keep enumerating. */
-}
-
 static int
-DSOUND_OpenDevice(_THIS, const char *devname, int iscapture)
+DSOUND_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 {
     HRESULT result;
     SDL_bool valid_format = SDL_FALSE;
     SDL_bool tried_format = SDL_FALSE;
     SDL_AudioFormat test_format = SDL_FirstAudioFormat(this->spec.format);
-    FindDevGUIDData devguid;
-    LPGUID guid = NULL;
-
-    if (devname != NULL) {
-        devguid.found = 0;
-        devguid.devname = devname;
-        if (iscapture)
-            pDirectSoundCaptureEnumerateW(FindDevGUID, &devguid);
-        else
-            pDirectSoundEnumerateW(FindDevGUID, &devguid);
-
-        if (!devguid.found) {
-            return SDL_SetError("DirectSound: Requested device not found");
-        }
-        guid = &devguid.guid;
-    }
+    LPGUID guid = (LPGUID) handle;
 
     /* Initialize all variables that we clean on shutdown */
     this->hidden = (struct SDL_PrivateAudioData *)
@@ -536,6 +501,8 @@ DSOUND_Init(SDL_AudioDriverImpl * impl)
     impl->WaitDone = DSOUND_WaitDone;
     impl->GetDeviceBuf = DSOUND_GetDeviceBuf;
     impl->CloseDevice = DSOUND_CloseDevice;
+    impl->FreeDeviceHandle = DSOUND_FreeDeviceHandle;
+
     impl->Deinitialize = DSOUND_Deinitialize;
 
     return 1;   /* this audio target is available. */
