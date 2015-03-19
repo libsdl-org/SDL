@@ -424,7 +424,10 @@ SDL_AddAudioDevice(const int iscapture, const char *name, void *handle)
 void SDL_OpenedAudioDeviceDisconnected(SDL_AudioDevice *device)
 {
     SDL_assert(get_audio_device(device->id) == device);
-    SDL_assert(device->enabled);  /* called more than once?! */
+
+    if (!device->enabled) {
+        return;
+    }
 
     /* Ends the audio callback and mark the device as STOPPED, but the
        app still needs to close the device to free resources. */
