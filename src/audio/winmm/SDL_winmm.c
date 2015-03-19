@@ -47,7 +47,7 @@ static void DetectWave##typ##Devs(void) { \
         if (wave##typ##GetDevCaps(i,&caps,sizeof(caps))==MMSYSERR_NOERROR) { \
             char *name = WIN_StringToUTF8(caps.szPname); \
             if (name != NULL) { \
-                SDL_AddAudioDevice((int) iscapture, name, (void *) ((size_t) i|(iscap<<31))); \
+                SDL_AddAudioDevice((int) iscapture, name, (void *) ((size_t) i)); \
                 SDL_free(name); \
             } \
         } \
@@ -232,11 +232,6 @@ WINMM_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     if (handle != NULL) {  /* specific device requested? */
         const size_t val = (size_t) handle;
         devId = (UINT) val;
-        if (iscapture) {
-            /* we use the top bit to make value unique vs output indices. */
-            SDL_assert((devId & (1<<31)) != 0);
-            devId &= ~(1<<31);
-        }
     }
 
     /* Initialize all variables that we clean on shutdown */
