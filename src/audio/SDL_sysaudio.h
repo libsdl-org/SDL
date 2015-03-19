@@ -155,7 +155,8 @@ struct SDL_AudioDevice
     /* Current state flags */
     /* !!! FIXME: should be SDL_bool */
     int iscapture;
-    int enabled;
+    int enabled;  /* true if device is functioning and connected. */
+    int shutdown; /* true if we are signaling the play thread to end. */
     int paused;
     int opened;
 

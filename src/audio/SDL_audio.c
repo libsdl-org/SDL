@@ -727,7 +727,7 @@ SDL_RunAudio(void *devicep)
            resampling process can be any number. We will have to see what a good size for the
            stream's maximum length is, but I suspect 2*max(len_cvt, stream_len) is a good figure.
          */
-        while (device->enabled) {
+        while (!device->shutdown) {
 
             if (device->paused) {
                 SDL_Delay(delay);
@@ -810,31 +810,27 @@ SDL_RunAudio(void *devicep)
         const int silence = (int) device->spec.silence;
 
         /* Loop, filling the audio buffers */
-        while (device->enabled) {
-
+        while (!device->shutdown) {
             /* Fill the current buffer with sound */
             if (device->convert.needed) {
-                if (device->convert.buf) {
-                    stream = device->convert.buf;
-                } else {
-                    continue;
-                }
-            } else {
+                stream = device->convert.buf;
+            } else if (device->enabled) {
                 stream = current_audio.impl.GetDeviceBuf(device);
-                if (stream == NULL) {
-                    stream = device->fake_stream;
-                }
+            } else {
+                /* if the device isn't enabled, we still write to the
+                    fake_stream, so the app's callback will fire with
+                    a regular frequency, in case they depend on that
+                    for timing or progress. They can use hotplug
+                    now to know if the device failed. */
+                stream = NULL;
+            }
+
+            if (stream == NULL) {
+                stream = device->fake_stream;
             }
 
             /* !!! FIXME: this should be LockDevice. */
             SDL_LockMutex(device->mixer_lock);
-
-            /* Check again, in case device was removed while a lock was held. */
-            if (!device->enabled) {
-                SDL_UnlockMutex(device->mixer_lock);
-                break;
-            }
-
             if (device->paused) {
                 SDL_memset(stream, silence, stream_len);
             } else {
@@ -843,14 +839,15 @@ SDL_RunAudio(void *devicep)
             SDL_UnlockMutex(device->mixer_lock);
 
             /* Convert the audio if necessary */
-            if (device->convert.needed) {
+            if (device->enabled && device->convert.needed) {
                 SDL_ConvertAudio(&device->convert);
                 stream = current_audio.impl.GetDeviceBuf(device);
                 if (stream == NULL) {
                     stream = device->fake_stream;
+                } else {
+                    SDL_memcpy(stream, device->convert.buf,
+                               device->convert.len_cvt);
                 }
-                SDL_memcpy(stream, device->convert.buf,
-                           device->convert.len_cvt);
             }
 
             /* Ready current buffer for play and change current buffer */
@@ -1084,6 +1081,7 @@ static void
 close_audio_device(SDL_AudioDevice * device)
 {
     device->enabled = 0;
+    device->shutdown = 1;
     if (device->thread != NULL) {
         SDL_WaitThread(device->thread, NULL);
     }
@@ -1178,6 +1176,7 @@ open_audio_device(const char *devname, int iscapture,
     SDL_AudioDevice *device;
     SDL_bool build_cvt;
     void *handle = NULL;
+    int stream_len;
     int i = 0;
 
     if (!SDL_WasInit(SDL_INIT_AUDIO)) {
@@ -1304,14 +1303,6 @@ open_audio_device(const char *devname, int iscapture,
     }
     device->opened = 1;
 
-    /* Allocate a fake audio memory buffer */
-    device->fake_stream = (Uint8 *)SDL_AllocAudioMem(device->spec.size);
-    if (device->fake_stream == NULL) {
-        close_audio_device(device);
-        SDL_OutOfMemory();
-        return 0;
-    }
-
     /* See if we need to do any conversion */
     build_cvt = SDL_FALSE;
     if (obtained->freq != device->spec.freq) {
@@ -1368,6 +1359,18 @@ open_audio_device(const char *devname, int iscapture,
                 return 0;
             }
         }
+    }
+
+    /* Allocate a fake audio memory buffer */
+    stream_len = (device->convert.needed) ? device->convert.len_cvt : 0;
+    if (device->spec.size > stream_len) {
+        stream_len = device->spec.size;
+    }
+    device->fake_stream = (Uint8 *)SDL_AllocAudioMem(stream_len);
+    if (device->fake_stream == NULL) {
+        close_audio_device(device);
+        SDL_OutOfMemory();
+        return 0;
     }
 
     if (device->spec.callback == NULL) {  /* use buffer queueing? */
