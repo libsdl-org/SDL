@@ -246,7 +246,7 @@ reprocess_device_list(const int iscapture, AudioDeviceList **list)
         if (item->alive) {
             prev = item;
         } else {
-            SDL_RemoveAudioDevice((void *) ((size_t) item->devid));
+            SDL_RemoveAudioDevice(iscapture, (void *) ((size_t) item->devid));
             if (prev) {
                 prev->next = item->next;
             } else {

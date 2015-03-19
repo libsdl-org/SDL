@@ -400,11 +400,14 @@ mark_device_removed(void *handle, SDL_AudioDeviceItem *devices, SDL_bool *remove
 
 /* The audio backends call this when a device is removed from the system. */
 void
-SDL_RemoveAudioDevice(void *handle)
+SDL_RemoveAudioDevice(const int iscapture, void *handle)
 {
     SDL_LockMutex(current_audio.detectionLock);
-    mark_device_removed(handle, current_audio.inputDevices, &current_audio.captureDevicesRemoved);
-    mark_device_removed(handle, current_audio.outputDevices, &current_audio.outputDevicesRemoved);
+    if (iscapture) {
+        mark_device_removed(handle, current_audio.inputDevices, &current_audio.captureDevicesRemoved);
+    } else {
+        mark_device_removed(handle, current_audio.outputDevices, &current_audio.outputDevicesRemoved);
+    }
     SDL_UnlockMutex(current_audio.detectionLock);
     current_audio.impl.FreeDeviceHandle(handle);
 }
