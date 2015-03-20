@@ -99,7 +99,11 @@ typedef struct SDL_AudioDeviceItem
 {
     void *handle;
     struct SDL_AudioDeviceItem *next;
+    #if (defined(__GNUC__) && (__GNUC__ <= 2))
+    char name[1];  /* actually variable length. */
+    #else
     char name[];
+    #endif
 } SDL_AudioDeviceItem;
 
 
