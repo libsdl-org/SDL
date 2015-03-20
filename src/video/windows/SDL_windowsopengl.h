@@ -30,6 +30,7 @@ struct SDL_GLDriverData
     SDL_bool HAS_WGL_ARB_pixel_format;
     SDL_bool HAS_WGL_EXT_swap_control_tear;
     SDL_bool HAS_WGL_EXT_create_context_es2_profile;
+    SDL_bool HAS_WGL_ARB_context_flush_control;
 
     void *(WINAPI * wglGetProcAddress) (const char *proc);
       HGLRC(WINAPI * wglCreateContext) (HDC hdc);
