@@ -505,8 +505,13 @@ macro(CheckX11)
   endif()
 endmacro()
 
+# Requires:
+# - EGL
+# - PkgCheckModules
+# Optional:
+# - MIR_SHARED opt
+# - HAVE_DLOPEN opt
 macro(CheckMir)
-# !!! FIXME: hook up dynamic loading here.
     if(VIDEO_MIR)
         find_library(MIR_LIB mirclient mircommon egl)
         pkg_check_modules(MIR_TOOLKIT mirclient mircommon)
@@ -522,15 +527,31 @@ macro(CheckMir)
             set(SDL_VIDEO_DRIVER_MIR 1)
 
             list(APPEND EXTRA_CFLAGS ${MIR_TOOLKIT_CFLAGS} ${EGL_CLFAGS} ${XKB_CLFLAGS})
-            list(APPEND EXTRA_LDFLAGS ${MIR_TOOLKIT_LDFLAGS} ${EGL_LDLAGS} ${XKB_LDLAGS})
-        endif (MIR_LIB AND MIR_TOOLKIT_FOUND AND EGL_FOUND AND XKB_FOUND)
+
+            if(MIR_SHARED)
+                if(NOT HAVE_DLOPEN)
+                    message_warn("You must have SDL_LoadObject() support for dynamic Mir loading")
+                else()
+                    FindLibraryAndSONAME(mirclient)
+                    FindLibraryAndSONAME(xkbcommon)
+                    set(SDL_VIDEO_DRIVER_MIR_DYNAMIC "\"${MIRCLIENT_LIB_SONAME}\"")
+                    set(SDL_VIDEO_DRIVER_MIR_DYNAMIC_XKBCOMMON "\"${XKBCOMMON_LIB_SONAME}\"")
+                    set(HAVE_MIR_SHARED TRUE)
+                endif()
+            else()
+                set(EXTRA_LIBS ${MIR_TOOLKIT_LIBRARIES} ${EXTRA_LIBS})
+            endif()
+        endif()
     endif()
 endmacro()
 
 # Requires:
 # - EGL
+# - PkgCheckModules
+# Optional:
+# - WAYLAND_SHARED opt
+# - HAVE_DLOPEN opt
 macro(CheckWayland)
-# !!! FIXME: hook up dynamic loading here.
   if(VIDEO_WAYLAND)
     pkg_check_modules(WAYLAND wayland-client wayland-cursor wayland-egl egl xkbcommon)
     if(WAYLAND_FOUND)
@@ -540,12 +561,34 @@ macro(CheckWayland)
       include_directories(
           ${WAYLAND_INCLUDE_DIRS}
       )
-      set(EXTRA_LIBS ${WAYLAND_LIBRARIES} ${EXTRA_LIBS})
       set(HAVE_VIDEO_WAYLAND TRUE)
       set(HAVE_SDL_VIDEO TRUE)
 
       file(GLOB WAYLAND_SOURCES ${SDL2_SOURCE_DIR}/src/video/wayland/*.c)
       set(SOURCE_FILES ${SOURCE_FILES} ${WAYLAND_SOURCES})
+
+      if(VIDEO_WAYLAND_QT_TOUCH)
+          set(SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH 1)
+      endif()
+
+      if(WAYLAND_SHARED)
+        if(NOT HAVE_DLOPEN)
+          message_warn("You must have SDL_LoadObject() support for dynamic Wayland loading")
+        else()
+          FindLibraryAndSONAME(wayland-client)
+          FindLibraryAndSONAME(wayland-egl)
+          FindLibraryAndSONAME(wayland-cursor)
+          FindLibraryAndSONAME(xkbcommon)
+          set(SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC "\"${WAYLAND_CLIENT_LIB_SONAME}\"")
+          set(SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_EGL "\"${WAYLAND_EGL_LIB_SONAME}\"")
+          set(SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_CURSOR "\"${WAYLAND_CURSOR_LIB_SONAME}\"")
+          set(SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_XKBCOMMON "\"${XKBCOMMON_LIB_SONAME}\"")
+          set(HAVE_WAYLAND_SHARED TRUE)
+        endif()
+      else()
+        set(EXTRA_LIBS ${WAYLAND_LIBRARIES} ${EXTRA_LIBS})
+      endif()
+
       set(SDL_VIDEO_DRIVER_WAYLAND 1)
     endif()
   endif()
