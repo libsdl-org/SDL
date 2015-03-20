@@ -1162,6 +1162,7 @@ open_audio_device(const char *devname, int iscapture,
     if (device->spec.size > stream_len) {
         stream_len = device->spec.size;
     }
+    SDL_assert(stream_len > 0);
     device->fake_stream = (Uint8 *)SDL_AllocAudioMem(stream_len);
     if (device->fake_stream == NULL) {
         close_audio_device(device);
