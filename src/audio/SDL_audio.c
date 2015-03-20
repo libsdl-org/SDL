@@ -972,7 +972,7 @@ open_audio_device(const char *devname, int iscapture,
     SDL_AudioDevice *device;
     SDL_bool build_cvt;
     void *handle = NULL;
-    int stream_len;
+    Uint32 stream_len;
     int i = 0;
 
     if (!SDL_WasInit(SDL_INIT_AUDIO)) {

@@ -57,7 +57,7 @@ DETECT_DEV_IMPL(SDL_FALSE, Out, WAVEOUTCAPS)
 DETECT_DEV_IMPL(SDL_TRUE, In, WAVEINCAPS)
 
 static void
-WINMM_DetectDevices()
+WINMM_DetectDevices(void)
 {
     DetectWaveInDevs();
     DetectWaveOutDevs();
