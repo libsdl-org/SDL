@@ -39,7 +39,6 @@
 #define DETECT_DEV_IMPL(iscap, typ, capstyp) \
 static void DetectWave##typ##Devs(void) { \
     const UINT iscapture = iscap ? 1 : 0; \
-    UINT devcount = wave##typ##GetNumDevs(); \
     const UINT devcount = wave##typ##GetNumDevs(); \
     capstyp caps; \
     UINT i; \
