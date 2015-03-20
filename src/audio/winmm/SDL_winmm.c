@@ -225,7 +225,6 @@ WINMM_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     MMRESULT result;
     WAVEFORMATEX waveformat;
     UINT devId = WAVE_MAPPER;  /* WAVE_MAPPER == choose system's default */
-    char *utf8 = NULL;
     UINT i;
 
     if (handle != NULL) {  /* specific device requested? */
