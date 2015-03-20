@@ -299,7 +299,7 @@ add_audio_device(const char *name, void *handle, SDL_AudioDeviceItem **devices, 
         return -1;
     }
 
-    SDL_assert(handle != NULL);
+    SDL_assert(handle != NULL);  /* we reserve NULL, audio backends can't use it. */
 
     item->handle = handle;
     SDL_strlcpy(item->name, name, size - sizeof (SDL_AudioDeviceItem));
