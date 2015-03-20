@@ -479,8 +479,10 @@ SDL_IBus_Init(void)
         inotify_wd = inotify_add_watch(inotify_fd, addr_file, IN_CREATE | IN_MODIFY);
         SDL_free(addr_file);
         
-        result = IBus_SetupConnection(dbus, addr);
-        SDL_free(addr);
+        if (addr) {
+            result = IBus_SetupConnection(dbus, addr);
+            SDL_free(addr);
+        }
     }
     
     return result;
