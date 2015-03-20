@@ -131,7 +131,8 @@ main(int argc, char *argv[])
         return (1);
     }
 
-    SDL_CreateWindow("testaudiohotplug", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, 0);
+    /* Some targets (Mac CoreAudio) need an event queue for audio hotplug, so make and immediately hide a window. */
+    SDL_MinimizeWindow(SDL_CreateWindow("testaudiohotplug", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 640, 480, 0));
 
     if (argc > 1) {
         SDL_strlcpy(filename, argv[1], sizeof(filename));
