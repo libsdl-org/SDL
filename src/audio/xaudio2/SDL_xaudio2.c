@@ -146,7 +146,7 @@ XAUDIO2_DetectDevices(void)
         if (IXAudio2_GetDeviceDetails(ixa2, i, &details) == S_OK) {
             char *str = WIN_StringToUTF8(details.DisplayName);
             if (str != NULL) {
-                SDL_AddAudioDevice(SDL_FALSE, str, (void *) ((size_t) i));
+                SDL_AddAudioDevice(SDL_FALSE, str, (void *) ((size_t) i+1));
                 SDL_free(str);  /* SDL_AddAudioDevice made a copy of the string. */
             }
         }
@@ -297,7 +297,7 @@ XAUDIO2_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 #if defined(SDL_XAUDIO2_WIN8)
     LPCWSTR devId = NULL;
 #else
-    UINT32 devId = (UINT32) ((size_t) handle);  /* 0 == system default device. */
+    UINT32 devId = 0;  /* 0 == system default device. */
 #endif
 
     static IXAudio2VoiceCallbackVtbl callbacks_vtable = {
@@ -311,6 +311,16 @@ XAUDIO2_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     };
 
     static IXAudio2VoiceCallback callbacks = { &callbacks_vtable };
+
+#if defined(SDL_XAUDIO2_WIN8)
+    /* !!! FIXME: hook up hotplugging. */
+#else
+    if (handle != NULL) {  /* specific device requested? */
+        /* -1 because we increment the original value to avoid NULL. */
+        const size_t val = ((size_t) handle) - 1;
+        devId = (UINT32) val;
+    }
+#endif
 
     if (XAudio2Create(&ixa2, 0, XAUDIO2_DEFAULT_PROCESSOR) != S_OK) {
         return SDL_SetError("XAudio2: XAudio2Create() failed at open.");
