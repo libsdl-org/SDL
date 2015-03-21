@@ -836,7 +836,8 @@ macro(CheckPTHREAD)
           #include <pthread_np.h>
           int main(int argc, char** argv) { return 0; }" HAVE_PTHREAD_NP_H)
       check_function_exists(pthread_setname_np HAVE_PTHREAD_SETNAME_NP)
-      check_function_exists(pthread_set_name_np HAVE_PTHREAD_SET_NAME_NP)      set(CMAKE_REQUIRED_FLAGS)
+      check_function_exists(pthread_set_name_np HAVE_PTHREAD_SET_NAME_NP)
+      set(CMAKE_REQUIRED_FLAGS)
 
       set(SOURCE_FILES ${SOURCE_FILES}
           ${SDL2_SOURCE_DIR}/src/thread/pthread/SDL_systhread.c
