@@ -110,10 +110,6 @@ typedef enum
     SDL_JOYDEVICEADDED,         /**< A new joystick has been inserted into the system */
     SDL_JOYDEVICEREMOVED,       /**< An opened joystick has been removed */
 
-    /* Audio hotplug events */
-    SDL_AUDIODEVICEADDED = 0x700,  /**< A new audio device is available */
-    SDL_AUDIODEVICEREMOVED,        /**< An audio device has been removed. */
-
     /* Game controller events */
     SDL_CONTROLLERAXISMOTION  = 0x650, /**< Game controller axis motion */
     SDL_CONTROLLERBUTTONDOWN,          /**< Game controller button pressed */
@@ -137,6 +133,10 @@ typedef enum
 
     /* Drag and drop events */
     SDL_DROPFILE        = 0x1000, /**< The system requests a file open */
+
+    /* Audio hotplug events */
+    SDL_AUDIODEVICEADDED = 0x1100, /**< A new audio device is available */
+    SDL_AUDIODEVICEREMOVED,        /**< An audio device has been removed. */
 
     /* Render events */
     SDL_RENDER_TARGETS_RESET = 0x2000, /**< The render targets have been reset and their contents need to be updated */
