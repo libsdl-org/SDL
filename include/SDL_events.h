@@ -440,7 +440,7 @@ typedef struct SDL_MultiGestureEvent
  */
 typedef struct SDL_DollarGestureEvent
 {
-    Uint32 type;        /**< ::SDL_DOLLARGESTURE */
+    Uint32 type;        /**< ::SDL_DOLLARGESTURE or ::SDL_DOLLARRECORD */
     Uint32 timestamp;
     SDL_TouchID touchId; /**< The touch device id */
     SDL_GestureID gestureId;
