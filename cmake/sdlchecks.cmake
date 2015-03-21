@@ -725,7 +725,7 @@ macro(CheckOpenGLESX11)
   endif()
 endmacro()
 
-# Rquires:
+# Requires:
 # - nada
 # Optional:
 # - THREADS opt
@@ -776,13 +776,17 @@ macro(CheckPTHREAD)
 
     # Run some tests
     set(CMAKE_REQUIRED_FLAGS "${PTHREAD_CFLAGS} ${PTHREAD_LDFLAGS}")
-    check_c_source_runs("
+    if(CMAKE_CROSSCOMPILING)
+      set(HAVE_PTHREADS 1)
+    else()
+      check_c_source_runs("
         #include <pthread.h>
         int main(int argc, char** argv) {
           pthread_attr_t type;
           pthread_attr_init(&type);
           return 0;
         }" HAVE_PTHREADS)
+    endif()
     if(HAVE_PTHREADS)
       set(SDL_THREAD_PTHREAD 1)
       list(APPEND EXTRA_CFLAGS ${PTHREAD_CFLAGS})
@@ -831,9 +835,8 @@ macro(CheckPTHREAD)
           #include <pthread.h>
           #include <pthread_np.h>
           int main(int argc, char** argv) { return 0; }" HAVE_PTHREAD_NP_H)
-      check_function_exists(pthread_setname_np HAVE_PTHREAD_setNAME_NP)
-      check_function_exists(pthread_set_name_np HAVE_PTHREAD_set_NAME_NP)
-      set(CMAKE_REQUIRED_FLAGS)
+      check_function_exists(pthread_setname_np HAVE_PTHREAD_SETNAME_NP)
+      check_function_exists(pthread_set_name_np HAVE_PTHREAD_SET_NAME_NP)      set(CMAKE_REQUIRED_FLAGS)
 
       set(SOURCE_FILES ${SOURCE_FILES}
           ${SDL2_SOURCE_DIR}/src/thread/pthread/SDL_systhread.c
