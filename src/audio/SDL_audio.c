@@ -590,10 +590,6 @@ SDL_ClearQueuedAudio(SDL_AudioDeviceID devid)
 }
 
 
-#if defined(__ANDROID__)
-#include <android/log.h>
-#endif
-
 /* The general mixing thread function */
 int SDLCALL
 SDL_RunAudio(void *devicep)
