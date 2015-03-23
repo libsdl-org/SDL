@@ -643,10 +643,11 @@ WIN_DestroyWindow(_THIS, SDL_Window * window)
 SDL_bool
 WIN_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
 {
-    HWND hwnd = ((SDL_WindowData *) window->driverdata)->hwnd;
+    const SDL_WindowData *data = (const SDL_WindowData *) window->driverdata;
     if (info->version.major <= SDL_MAJOR_VERSION) {
         info->subsystem = SDL_SYSWM_WINDOWS;
-        info->info.win.window = hwnd;
+        info->info.win.window = data->hwnd;
+        info->info.win.hdc = data->hdc;
         return SDL_TRUE;
     } else {
         SDL_SetError("Application not compiled with SDL %d.%d\n",
