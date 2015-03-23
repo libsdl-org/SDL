@@ -31,8 +31,8 @@
 #include <locale.h>
 
 
-#define SDL_FORK_MESSAGEBOX 0
-#define SDL_SET_LOCALE      0
+#define SDL_FORK_MESSAGEBOX 1
+#define SDL_SET_LOCALE      1
 
 #if SDL_FORK_MESSAGEBOX
 #include <sys/types.h>
@@ -717,9 +717,6 @@ X11_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     pid_t pid;
     int fds[2];
     int status = 0;
-
-    /* Need to flush here in case someone has turned grab off and it hasn't gone through yet, etc. */
-    X11_XFlush(data->display);
 
     if (pipe(fds) == -1) {
         return X11_ShowMessageBoxImpl(messageboxdata, buttonid); /* oh well. */
