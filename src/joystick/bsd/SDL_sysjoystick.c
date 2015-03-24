@@ -558,8 +558,6 @@ SDL_SYS_JoystickClose(SDL_Joystick * joy)
     close(joy->hwdata->fd);
     SDL_free(joy->hwdata->path);
     SDL_free(joy->hwdata);
-
-    return;
 }
 
 void

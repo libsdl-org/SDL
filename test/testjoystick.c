@@ -56,6 +56,12 @@ loop(void *arg)
 
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
+
+            case SDL_JOYDEVICEREMOVED:
+                SDL_Log("Joystick device %d removed.\n", (int) event.jdevice.which);
+                SDL_Log("Our instance ID is %d\n", (int) SDL_JoystickInstanceID(joystick));
+                break;
+
             case SDL_JOYAXISMOTION:
                 SDL_Log("Joystick %d axis %d value: %d\n",
                        event.jaxis.which,

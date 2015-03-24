@@ -233,7 +233,6 @@ void SDL_SYS_JoystickUpdate(SDL_Joystick *joystick)
 /* Function to close a joystick after use */
 void SDL_SYS_JoystickClose(SDL_Joystick *joystick)
 {
-    /* Do nothing. */
 }
 
 /* Function to perform any system-specific joystick related cleanup */

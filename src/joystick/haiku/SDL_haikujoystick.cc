@@ -228,7 +228,6 @@ extern "C"
             SDL_free(joystick->hwdata->new_hats);
             SDL_free(joystick->hwdata->new_axes);
             SDL_free(joystick->hwdata);
-            joystick->hwdata = NULL;
         }
     }
 

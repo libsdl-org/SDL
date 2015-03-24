@@ -326,7 +326,7 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
 /* Function to determine is this joystick is attached to the system right now */
 SDL_bool SDL_SYS_JoystickAttached(SDL_Joystick *joystick)
 {
-    return !joystick->closed && (joystick->hwdata != NULL);
+    return joystick->hwdata != NULL;
 }
 
 /* Function to update the state of a joystick - called as a device poll.
@@ -378,11 +378,6 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
 void
 SDL_SYS_JoystickClose(SDL_Joystick * joystick)
 {
-    if (joystick->hwdata) {
-        ((SDL_joylist_item*)joystick->hwdata)->joystick = NULL;
-        joystick->hwdata = NULL;
-    }
-    joystick->closed = 1;
 }
 
 /* Function to perform any system-specific joystick related cleanup */

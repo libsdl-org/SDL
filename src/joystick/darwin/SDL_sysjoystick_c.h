@@ -58,8 +58,7 @@ struct joystick_hwdata
     recElement *firstButton;
     recElement *firstHat;
 
-    int removed;
-    int uncentered;
+    SDL_bool removed;
 
     int instance_id;
     SDL_JoystickGUID guid;
