@@ -248,10 +248,6 @@ WINMM_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     if (this->spec.channels > 2)
         this->spec.channels = 2;        /* !!! FIXME: is this right? */
 
-    /* Check the buffer size -- minimum of 1/4 second (word aligned) */
-    if (this->spec.samples < (this->spec.freq / 4))
-        this->spec.samples = ((this->spec.freq / 4) + 3) & ~3;
-
     while ((!valid_datatype) && (test_format)) {
         switch (test_format) {
         case AUDIO_U8:
