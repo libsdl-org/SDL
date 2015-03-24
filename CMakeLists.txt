@@ -118,9 +118,9 @@ else()
 endif()
 
 if (UNIX_OR_MAC_SYS AND NOT EMSCRIPTEN) # JavaScript does not yet have threading support, so disable pthreads when building for Emscripten.
-  set(PTHREADS_ENABLED_BY_DEFAULT ON)
+  set(SDL_PTHREADS_ENABLED_BY_DEFAULT ON)
 else()
-  set(PTHREADS_ENABLED_BY_DEFAULT OFF)
+  set(SDL_PTHREADS_ENABLED_BY_DEFAULT OFF)
 endif()
 
 # Default option knobs
@@ -202,6 +202,7 @@ include_directories(${SDL2_BINARY_DIR}/include ${SDL2_SOURCE_DIR}/include)
 
 # All these ENABLED_BY_DEFAULT vars will default to ON if not specified, so
 #  you only need to have a platform override them if they are disabling.
+set(OPT_DEF_ASM TRUE)
 if(EMSCRIPTEN)
   # Set up default values for the currently supported set of subsystems:
   # Emscripten/Javascript does not have assembly support, a dynamic library 
@@ -212,20 +213,12 @@ if(EMSCRIPTEN)
   set(SDL_THREADS_ENABLED_BY_DEFAULT OFF)
   set(SDL_LOADSO_ENABLED_BY_DEFAULT OFF)
   set(SDL_CPUINFO_ENABLED_BY_DEFAULT OFF)
-  set(DLOPEN_ENABLED_BY_DEFAULT OFF)
-else()
-  set(OPT_DEF_ASM TRUE)
-  set(SDL_SHARED_ENABLED_BY_DEFAULT ON)
-  set(SDL_ATOMIC_ENABLED_BY_DEFAULT ON)
-  set(SDL_THREADS_ENABLED_BY_DEFAULT ON)
-  set(SDL_LOADSO_ENABLED_BY_DEFAULT ON)
-  set(SDL_CPUINFO_ENABLED_BY_DEFAULT ON)
-  set(DLOPEN_ENABLED_BY_DEFAULT ON)
+  set(SDL_DLOPEN_ENABLED_BY_DEFAULT OFF)
 endif()
 
 set(SDL_SUBSYSTEMS
     Atomic Audio Video Render Events Joystick Haptic Power Threads Timers
-    File Loadso CPUinfo Filesystem)
+    File Loadso CPUinfo Filesystem Dlopen)
 foreach(_SUB ${SDL_SUBSYSTEMS})
   string(TOUPPER ${_SUB} _OPT)
   if (NOT DEFINED SDL_${_OPT}_ENABLED_BY_DEFAULT)
@@ -254,9 +247,9 @@ dep_option(FUSIONSOUND_SHARED  "Dynamically load fusionsound audio support" ON "
 set_option(VIDEO_DUMMY         "Use dummy video driver" ON)
 set_option(VIDEO_OPENGL        "Include OpenGL support" ON)
 set_option(VIDEO_OPENGLES      "Include OpenGL ES support" ON)
-set_option(PTHREADS            "Use POSIX threads for multi-threading" ${PTHREADS_ENABLED_BY_DEFAULT})
+set_option(PTHREADS            "Use POSIX threads for multi-threading" ${SDL_PTHREADS_ENABLED_BY_DEFAULT})
 dep_option(PTHREADS_SEM        "Use pthread semaphores" ON "PTHREADS" OFF)
-set_option(SDL_DLOPEN          "Use dlopen for shared object loading" ${DLOPEN_ENABLED_BY_DEFAULT})
+set_option(SDL_DLOPEN          "Use dlopen for shared object loading" ${SDL_DLOPEN_ENABLED_BY_DEFAULT})
 set_option(OSS                 "Support the OSS audio API" ${UNIX_SYS})
 set_option(ALSA                "Support the ALSA audio API" ${UNIX_SYS})
 dep_option(ALSA_SHARED         "Dynamically load ALSA audio support" ON "ALSA" OFF)
