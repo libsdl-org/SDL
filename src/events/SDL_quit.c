@@ -46,15 +46,9 @@ SDL_HandleSIG(int sig)
 #endif /* HAVE_SIGNAL_H */
 
 /* Public functions */
-int
-SDL_QuitInit(void)
+static int
+SDL_QuitInit_Internal(void)
 {
-    const char *hint = SDL_GetHint(SDL_HINT_NO_SIGNAL_HANDLERS);
-    disable_signals = hint && (SDL_atoi(hint) == 1);
-    if (disable_signals) {
-        return 0;
-    }
-
 #ifdef HAVE_SIGACTION
     struct sigaction action;
     sigaction(SIGINT, NULL, &action);
@@ -92,13 +86,20 @@ SDL_QuitInit(void)
     return 0;
 }
 
-void
-SDL_QuitQuit(void)
+int
+SDL_QuitInit(void)
 {
-    if (disable_signals) {
-        return;
+    const char *hint = SDL_GetHint(SDL_HINT_NO_SIGNAL_HANDLERS);
+    disable_signals = hint && (SDL_atoi(hint) == 1);
+    if (!disable_signals) {
+        return SDL_QuitInit_Internal();
     }
+    return 0;
+}
 
+static void
+SDL_QuitQuit_Internal(void)
+{
 #ifdef HAVE_SIGACTION
     struct sigaction action;
     sigaction(SIGINT, NULL, &action);
@@ -121,6 +122,14 @@ SDL_QuitQuit(void)
     if (ohandler != SDL_HandleSIG)
         signal(SIGTERM, ohandler);
 #endif /* HAVE_SIGNAL_H */
+}
+
+void
+SDL_QuitQuit(void)
+{
+    if (!disable_signals) {
+        SDL_QuitQuit_Internal();
+    }
 }
 
 /* This function returns 1 if it's okay to close the application window */
