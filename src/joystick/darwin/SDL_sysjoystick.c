@@ -138,7 +138,7 @@ static void
 JoystickDeviceWasRemovedCallback(void *ctx, IOReturn result, void *sender)
 {
     recDevice *device = (recDevice *) ctx;
-    device->removed = 1;
+    device->removed = SDL_TRUE;
     device->deviceRef = NULL; // deviceRef was invalidated due to the remove
 #if SDL_HAPTIC_IOKIT
     MacHaptic_MaybeRemoveDevice(device->ffservice);
@@ -677,16 +677,7 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
 SDL_bool
 SDL_SYS_JoystickAttached(SDL_Joystick * joystick)
 {
-    recDevice *device = gpDeviceList;
-
-    while (device) {
-        if (joystick->instance_id == device->instance_id) {
-            return SDL_TRUE;
-        }
-        device = device->pNext;
-    }
-
-    return SDL_FALSE;
+    return joystick->hwdata != NULL;
 }
 
 /* Function to update the state of a joystick - called as a device poll.
@@ -707,9 +698,10 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
     }
 
     if (device->removed) {      /* device was unplugged; ignore it. */
-        joystick->closed = 1;
-        joystick->uncentered = 1;
-        joystick->hwdata = NULL;
+        if (joystick->hwdata) {
+            joystick->force_recentering = SDL_TRUE;
+            joystick->hwdata = NULL;
+        }
         return;
     }
 
@@ -797,7 +789,6 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
 void
 SDL_SYS_JoystickClose(SDL_Joystick * joystick)
 {
-    joystick->closed = 1;
 }
 
 /* Function to perform any system-specific joystick related cleanup */

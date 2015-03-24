@@ -383,9 +383,7 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
 void
 SDL_SYS_JoystickClose(SDL_Joystick * joystick)
 {
-    /* free system specific hardware data */
     SDL_free(joystick->hwdata);
-    joystick->hwdata = NULL;
 }
 
 /* Function to perform any system-specific joystick related cleanup */

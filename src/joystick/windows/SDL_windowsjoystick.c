@@ -460,7 +460,6 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
 
     /* allocate memory for system specific hardware data */
     joystick->instance_id = joystickdevice->nInstanceID;
-    joystick->closed = SDL_FALSE;
     joystick->hwdata =
         (struct joystick_hwdata *) SDL_malloc(sizeof(struct joystick_hwdata));
     if (joystick->hwdata == NULL) {
@@ -480,13 +479,13 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
 SDL_bool 
 SDL_SYS_JoystickAttached(SDL_Joystick * joystick)
 {
-    return !joystick->closed && !joystick->hwdata->removed;
+    return joystick->hwdata && !joystick->hwdata->removed;
 }
 
 void
 SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
 {
-    if (joystick->closed || !joystick->hwdata) {
+    if (!joystick->hwdata || joystick->hwdata->removed) {
         return;
     }
 
@@ -497,8 +496,7 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
     }
 
     if (joystick->hwdata->removed) {
-        joystick->closed = SDL_TRUE;
-        joystick->uncentered = SDL_TRUE;
+        joystick->force_recentering = SDL_TRUE;
     }
 }
 
@@ -512,10 +510,7 @@ SDL_SYS_JoystickClose(SDL_Joystick * joystick)
         SDL_DINPUT_JoystickClose(joystick);
     }
 
-    /* free system specific hardware data */
     SDL_free(joystick->hwdata);
-
-    joystick->closed = SDL_TRUE;
 }
 
 /* Function to perform any system-specific joystick related cleanup */

@@ -153,7 +153,6 @@ void
 SDL_SYS_JoystickClose(SDL_Joystick * joystick)
 {
     [motionManager stopAccelerometerUpdates];
-    joystick->closed = 1;
 }
 
 /* Function to perform any system-specific joystick related cleanup */
