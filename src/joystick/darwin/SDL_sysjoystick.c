@@ -412,12 +412,12 @@ JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender, IOHIDDevic
     /* We have to do some storage of the io_service_t for SDL_HapticOpenFromJoystick */
     if (IOHIDDeviceGetService != NULL) {  /* weak reference: available in 10.6 and later. */
         const io_service_t ioservice = IOHIDDeviceGetService(ioHIDDeviceObject);
+#if SDL_HAPTIC_IOKIT
         if ((ioservice) && (FFIsForceFeedback(ioservice) == FF_OK)) {
             device->ffservice = ioservice;
-#if SDL_HAPTIC_IOKIT
             MacHaptic_MaybeAddDevice(ioservice);
-#endif
         }
+#endif
     }
 
     device->send_open_event = 1;
