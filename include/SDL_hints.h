@@ -547,6 +547,18 @@ extern "C" {
 #define SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT   "SDL_EMSCRIPTEN_KEYBOARD_ELEMENT"
 
 /**
+ *  \brief Tell SDL not to handle SIGINT.
+ *
+ * This hint only applies to Unix-like platforms.
+ *
+ * The variable can be set to the following values:
+ *   "0"       - SDL will install a SIGINT handler, and when it catches the
+ *               signal, conver it into an SDL_QUIT event.
+ *   "1"       - SDL will not install a SIGINT handler.
+ */
+#define SDL_HINT_DISABLE_SIGINT_HANDLER   "SDL_DISABLE_SIGINT_HANDLER"
+
+/**
  *  \brief  An enumeration of hint priorities
  */
 typedef enum
