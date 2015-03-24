@@ -24,13 +24,12 @@
 
 #include <android/log.h>
 
+#include "SDL_hints.h"
 #include "SDL_events.h"
+#include "SDL_log.h"
+#include "SDL_androidtouch.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_touch_c.h"
-#include "SDL_log.h"
-
-#include "SDL_androidtouch.h"
-
 #include "../../core/android/SDL_android.h"
 
 #define ACTION_DOWN 0
@@ -69,7 +68,7 @@ void Android_OnTouch(int touch_device_id_in, int pointer_finger_id_in, int actio
     SDL_TouchID touchDeviceId = 0;
     SDL_FingerID fingerId = 0;
     int window_x, window_y;
-    char * hint;
+    const char * hint;
     static SDL_FingerID pointerFingerID = 0;
 
     if (!Android_Window) {
