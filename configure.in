@@ -2424,7 +2424,8 @@ AC_HELP_STRING([--enable-pthread-sem], [use pthread semaphores [[default=yes]]])
             AC_MSG_CHECKING(for recursive mutexes)
             has_recursive_mutexes=no
             if test x$has_recursive_mutexes = xno; then
-                AC_TRY_COMPILE([
+                AC_TRY_LINK([
+                  #define _GNU_SOURCE 1
                   #include <pthread.h>
                 ],[
                   pthread_mutexattr_t attr;
@@ -2435,7 +2436,8 @@ AC_HELP_STRING([--enable-pthread-sem], [use pthread semaphores [[default=yes]]])
                 ])
             fi
             if test x$has_recursive_mutexes = xno; then
-                AC_TRY_COMPILE([
+                AC_TRY_LINK([
+                  #define _GNU_SOURCE 1
                   #include <pthread.h>
                 ],[
                   pthread_mutexattr_t attr;
