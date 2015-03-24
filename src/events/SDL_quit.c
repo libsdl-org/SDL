@@ -49,7 +49,7 @@ SDL_HandleSIG(int sig)
 int
 SDL_QuitInit(void)
 {
-    const char *hint = SDL_GetHint(SDL_HINT_DISABLE_SIGINT_HANDLER);
+    const char *hint = SDL_GetHint(SDL_HINT_NO_SIGNAL_HANDLERS);
     disable_signals = hint && (SDL_atoi(hint) == 1);
     if (disable_signals) {
         return 0;
