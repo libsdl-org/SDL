@@ -32,6 +32,7 @@
 
 #include "../../events/SDL_events_c.h"
 #include "../../video/android/SDL_androidkeyboard.h"
+#include "../../video/android/SDL_androidmouse.h"
 #include "../../video/android/SDL_androidtouch.h"
 #include "../../video/android/SDL_androidvideo.h"
 #include "../../video/android/SDL_androidwindow.h"
@@ -291,6 +292,22 @@ JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_onNativeTouch(
                                     jint action, jfloat x, jfloat y, jfloat p)
 {
     Android_OnTouch(touch_device_id_in, pointer_finger_id_in, action, x, y, p);
+}
+
+/* Mouse */
+JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_onNativeMouse(
+                                    JNIEnv* env, jclass jcls,
+                                    jint button, jint action, jfloat x, jfloat y)
+{
+    Android_OnMouse(button, action, x, y);
+}
+
+/* Mouse */
+JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_onNativeMouse(
+                                    JNIEnv* env, jclass jcls,
+                                    jint button, jint action, jfloat x, jfloat y)
+{
+    Android_OnMouse(button, action, x, y);
 }
 
 /* Accelerometer */

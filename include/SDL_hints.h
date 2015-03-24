@@ -532,6 +532,18 @@ extern "C" {
  */
 #define SDL_HINT_IME_INTERNAL_EDITING "SDL_IME_INTERNAL_EDITING"
 
+ /**
+ * \brief A variable to control whether mouse and touch events are to be treated together or separately
+ *
+ * The variable can be set to the following values:
+ *   "0"       - Mouse events will be handled as touch events, and touch will raise fake mouse
+ *               events. This is the behaviour of SDL <= 2.0.3. (default)
+ *   "1"       - Mouse events will be handled separately from pure touch events.
+ *
+ * The value of this hint is used at runtime, so it can be changed at any time.
+ */
+#define SDL_HINT_ANDROID_SEPARATE_MOUSE_AND_TOUCH "SDL_ANDROID_SEPARATE_MOUSE_AND_TOUCH"
+
 /**
  *  \brief override the binding element for keyboard inputs for Emscripten builds
  *
