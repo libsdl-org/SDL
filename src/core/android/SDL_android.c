@@ -302,14 +302,6 @@ JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_onNativeMouse(
     Android_OnMouse(button, action, x, y);
 }
 
-/* Mouse */
-JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_onNativeMouse(
-                                    JNIEnv* env, jclass jcls,
-                                    jint button, jint action, jfloat x, jfloat y)
-{
-    Android_OnMouse(button, action, x, y);
-}
-
 /* Accelerometer */
 JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_onNativeAccel(
                                     JNIEnv* env, jclass jcls,

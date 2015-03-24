@@ -24,7 +24,7 @@
 #if SDL_VIDEO_DRIVER_ANDROID
 
 #include "SDL_androidmouse.h"
-#include "SDL_Log.h"
+#include "SDL_log.h"
 
 #include "SDL_events.h"
 #include "../../events/SDL_mouse_c.h"
@@ -71,7 +71,7 @@ void Android_OnMouse( int androidButton, int action, float x, float y) {
             break;
 
         case ACTION_SCROLL:
-            SDL_SendMouseWheel(Android_Window, 0, x, y);
+            SDL_SendMouseWheel(Android_Window, 0, x, y, SDL_MOUSEWHEEL_NORMAL);
             break;
 
         default:

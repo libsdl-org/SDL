@@ -950,7 +950,7 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         mSensorManager = (SensorManager)context.getSystemService(Context.SENSOR_SERVICE);
         
         if(Build.VERSION.SDK_INT >= 12) {
-            setOnGenericMotionListener(new SDLGenericMotionListener_API12());
+            setOnGenericMotionListener(new SDLGenericMotionListener());
         }
 
         // Some arbitrary defaults to avoid a potential division by zero
