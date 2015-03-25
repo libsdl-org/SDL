@@ -188,6 +188,7 @@ Android_VideoInit(_THIS)
 void
 Android_VideoQuit(_THIS)
 {
+    Android_QuitTouch();
 }
 
 /* This function gets called before VideoInit() */
