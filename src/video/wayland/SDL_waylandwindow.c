@@ -116,7 +116,7 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
     if (window->flags & SDL_WINDOW_FULLSCREEN)
         wl_shell_surface_set_fullscreen(wind->shell_surface,
                                         WL_SHELL_SURFACE_FULLSCREEN_METHOD_DEFAULT,
-                                        0, NULL);
+                                        0, (struct wl_output *)window->fullscreen_mode.driverdata);
     else
         wl_shell_surface_set_toplevel(wind->shell_surface);
 
@@ -132,7 +132,7 @@ Wayland_SetWindowFullscreen(_THIS, SDL_Window * window,
     if (fullscreen)
         wl_shell_surface_set_fullscreen(wind->shell_surface,
                                         WL_SHELL_SURFACE_FULLSCREEN_METHOD_SCALE,
-                                        0, NULL);
+                                        0, (struct wl_output *)_display->driverdata);
     else
         wl_shell_surface_set_toplevel(wind->shell_surface);
 
