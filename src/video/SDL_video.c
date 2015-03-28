@@ -2116,6 +2116,7 @@ void
 SDL_UpdateWindowGrab(SDL_Window * window)
 {
     if (_this->SetWindowGrab) {
+        SDL_Window *grabbed_window;
         SDL_bool grabbed;
         if ((SDL_GetMouse()->relative_mode || (window->flags & SDL_WINDOW_INPUT_GRABBED)) &&
              (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
@@ -2123,6 +2124,19 @@ SDL_UpdateWindowGrab(SDL_Window * window)
         } else {
             grabbed = SDL_FALSE;
         }
+
+        grabbed_window = _this->grabbed_window;
+        if (grabbed) {
+            if (grabbed_window && (grabbed_window != window)) {
+                /* stealing a grab from another window! */
+                grabbed_window->flags &= ~SDL_WINDOW_INPUT_GRABBED;
+                _this->SetWindowGrab(_this, grabbed_window, SDL_FALSE);
+            }
+            _this->grabbed_window = window;
+        } else if (grabbed_window == window) {
+            _this->grabbed_window = NULL;  /* ungrabbing. */
+        }
+
         _this->SetWindowGrab(_this, window, grabbed);
     }
 }
@@ -2147,8 +2161,15 @@ SDL_bool
 SDL_GetWindowGrab(SDL_Window * window)
 {
     CHECK_WINDOW_MAGIC(window, SDL_FALSE);
+    SDL_assert(!_this->grabbed_window || ((_this->grabbed_window->flags & SDL_WINDOW_INPUT_GRABBED) != 0));
+    return window == _this->grabbed_window;
+}
 
-    return ((window->flags & SDL_WINDOW_INPUT_GRABBED) != 0);
+SDL_Window *
+SDL_GetGrabbedWindow(void)
+{
+    SDL_assert(!_this->grabbed_window || ((_this->grabbed_window->flags & SDL_WINDOW_INPUT_GRABBED) != 0));
+    return _this->grabbed_window;
 }
 
 void

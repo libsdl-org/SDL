@@ -722,6 +722,9 @@ extern DECLSPEC int SDLCALL SDL_UpdateWindowSurfaceRects(SDL_Window * window,
  *  \param window The window for which the input grab mode should be set.
  *  \param grabbed This is SDL_TRUE to grab input, and SDL_FALSE to release input.
  *
+ *  If the caller enables a grab while another window is currently grabbed,
+ *  the other window loses its grab in favor of the caller's window.
+ *
  *  \sa SDL_GetWindowGrab()
  */
 extern DECLSPEC void SDLCALL SDL_SetWindowGrab(SDL_Window * window,
@@ -735,6 +738,15 @@ extern DECLSPEC void SDLCALL SDL_SetWindowGrab(SDL_Window * window,
  *  \sa SDL_SetWindowGrab()
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_GetWindowGrab(SDL_Window * window);
+
+/**
+ *  \brief Get the window that currently has an input grab enabled.
+ *
+ *  \return This returns the window if input is grabbed, and NULL otherwise.
+ *
+ *  \sa SDL_SetWindowGrab()
+ */
+extern DECLSPEC SDL_Window * SDLCALL SDL_GetGrabbedWindow(void);
 
 /**
  *  \brief Set the brightness (gamma correction) for a window.
