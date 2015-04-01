@@ -41,6 +41,10 @@ public class SDLActivity extends Activity {
     /** If shared libraries (e.g. SDL or the native application) could not be loaded. */
     public static boolean mBrokenLibraries;
 
+    // If we want to separate mouse and touch events.
+    //  This is only toggled in native code when a hint is set!
+    public static boolean mSeparateMouseAndTouch;
+
     // Main components
     protected static SDLActivity mSingleton;
     protected static SDLSurface mSurface;
@@ -1130,11 +1134,18 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         int i = -1;
         float x,y,p;
 
-        if (event.getSource() == InputDevice.SOURCE_MOUSE &&
-            SDLActivity.nativeGetHint("SDL_ANDROID_SEPARATE_MOUSE_AND_TOUCH").equals("1")) {
+        // !!! FIXME: dump this SDK check after 2.0.4 ships and require API14.
+        if (event.getSource() == InputDevice.SOURCE_MOUSE && SDLActivity.mSeparateMouseAndTouch) {
+            if (Build.VERSION.SDK_INT < 14) {
                 mouseButton = 1;    // For Android==12 all mouse buttons are the left button
- 
-                SDLActivity.onNativeMouse(mouseButton, action, event.getX(0), event.getY(0));
+            } else {
+                try {
+                    mouseButton = event.getClass().getMethod("getButtonState").invoke(event);
+                } catch(Exception e) {
+                    mouseButton = 1;    // oh well.
+                }
+            }
+            SDLActivity.onNativeMouse(mouseButton, action, event.getX(0), event.getY(0));
         } else {
             switch(action) {
                 case MotionEvent.ACTION_MOVE:
