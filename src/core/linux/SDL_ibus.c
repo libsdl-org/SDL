@@ -462,6 +462,9 @@ SDL_IBus_Init(void)
         ibus_addr_file = SDL_strdup(addr_file);
         
         addr = IBus_ReadAddressFromFile(addr_file);
+        if (!addr) {
+            return SDL_FALSE;
+        }
         
         if (inotify_fd < 0) {
             inotify_fd = inotify_init();
