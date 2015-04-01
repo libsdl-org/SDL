@@ -1610,6 +1610,11 @@ const char * SDL_AndroidGetExternalStoragePath()
     return s_AndroidExternalFilesPath;
 }
 
+jclass Android_JNI_GetActivityClass(void)
+{
+    return mActivityClass;
+}
+
 #endif /* __ANDROID__ */
 
 /* vi: set ts=4 sw=4 expandtab: */
