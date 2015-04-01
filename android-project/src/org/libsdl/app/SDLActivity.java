@@ -1140,7 +1140,7 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                 mouseButton = 1;    // For Android==12 all mouse buttons are the left button
             } else {
                 try {
-                    mouseButton = event.getClass().getMethod("getButtonState").invoke(event);
+                    mouseButton = (Integer) event.getClass().getMethod("getButtonState").invoke(event);
                 } catch(Exception e) {
                     mouseButton = 1;    // oh well.
                 }
