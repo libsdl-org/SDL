@@ -1260,6 +1260,12 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
         h = 1;
     }
 
+    /* Some platforms blow up if the windows are too large. Raise it later? */
+    if ((w > 16384) || (h > 16384)) {
+        SDL_SetError("Window is too large.");
+        return NULL;
+    }
+
     /* Some platforms have OpenGL enabled by default */
 #if (SDL_VIDEO_OPENGL && __MACOSX__) || __IPHONEOS__ || __ANDROID__ || __NACL__
     flags |= SDL_WINDOW_OPENGL;
