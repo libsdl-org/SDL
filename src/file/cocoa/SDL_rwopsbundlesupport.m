@@ -50,14 +50,13 @@ FILE* SDL_OpenFPFromBundleOrFallback(const char *file, const char *mode)
     NSString* full_path_with_file_to_try = [resource_path stringByAppendingPathComponent:ns_string_file_component];
     if([file_manager fileExistsAtPath:full_path_with_file_to_try]) {
         fp = fopen([full_path_with_file_to_try fileSystemRepresentation], mode);
-    }
-    else {
+    } else {
         fp = fopen(file, mode);
     }
 
     return fp;
 }}
 
-#endif /* __MACOSX__ */
+#endif /* __APPLE__ */
 
 /* vi: set ts=4 sw=4 expandtab: */
