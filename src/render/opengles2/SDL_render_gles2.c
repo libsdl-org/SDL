@@ -370,6 +370,13 @@ GLES2_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
 }
 
 static int
+GLES2_GetOutputSize(SDL_Renderer * renderer, int *w, int *h)
+{
+    SDL_GL_GetDrawableSize(renderer->window, w, h);
+    return 0;
+}
+
+static int
 GLES2_UpdateViewport(SDL_Renderer * renderer)
 {
     GLES2_DriverContext *data = (GLES2_DriverContext *)renderer->driverdata;
@@ -2059,6 +2066,7 @@ GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
 
     /* Populate the function pointers for the module */
     renderer->WindowEvent         = &GLES2_WindowEvent;
+    renderer->GetOutputSize       = &GLES2_GetOutputSize;
     renderer->CreateTexture       = &GLES2_CreateTexture;
     renderer->UpdateTexture       = &GLES2_UpdateTexture;
     renderer->UpdateTextureYUV    = &GLES2_UpdateTextureYUV;

@@ -1107,22 +1107,22 @@ SDL_RestoreMousePosition(SDL_Window *window)
     }
 }
 
-static void
+static int
 SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
 {
     SDL_VideoDisplay *display;
     SDL_Window *other;
 
-    CHECK_WINDOW_MAGIC(window,);
+    CHECK_WINDOW_MAGIC(window,-1);
 
     /* if we are in the process of hiding don't go back to fullscreen */
     if ( window->is_hiding && fullscreen )
-        return;
+        return 0;
     
 #ifdef __MACOSX__
     if (Cocoa_SetWindowFullscreenSpace(window, fullscreen)) {
         window->last_fullscreen_flags = window->flags;
-        return;
+        return 0;
     }
 #endif
 
@@ -1139,7 +1139,7 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
     /* See if anything needs to be done now */
     if ((display->fullscreen_window == window) == fullscreen) {
         if ((window->last_fullscreen_flags & FULLSCREEN_MASK) == (window->flags & FULLSCREEN_MASK)) {
-            return;
+            return 0;
         }
     }
 
@@ -1168,9 +1168,13 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
 
                 /* only do the mode change if we want exclusive fullscreen */
                 if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP) {
-                    SDL_SetDisplayModeForDisplay(display, &fullscreen_mode);
+                    if (SDL_SetDisplayModeForDisplay(display, &fullscreen_mode) < 0) {
+                        return -1;
+                    }
                 } else {
-                    SDL_SetDisplayModeForDisplay(display, NULL);
+                    if (SDL_SetDisplayModeForDisplay(display, NULL) < 0) {
+                        return -1;
+                    }
                 }
 
                 if (_this->SetWindowFullscreen) {
@@ -1189,7 +1193,7 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
                 SDL_RestoreMousePosition(other);
 
                 window->last_fullscreen_flags = window->flags;
-                return;
+                return 0;
             }
         }
     }
@@ -1209,6 +1213,7 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
     SDL_RestoreMousePosition(window);
 
     window->last_fullscreen_flags = window->flags;
+    return 0;
 }
 
 #define CREATE_FLAGS \
@@ -1935,9 +1940,7 @@ SDL_SetWindowFullscreen(SDL_Window * window, Uint32 flags)
     window->flags &= ~FULLSCREEN_MASK;
     window->flags |= flags;
 
-    SDL_UpdateFullscreenMode(window, FULLSCREEN_VISIBLE(window));
-
-    return 0;
+    return SDL_UpdateFullscreenMode(window, FULLSCREEN_VISIBLE(window));
 }
 
 static SDL_Surface *
