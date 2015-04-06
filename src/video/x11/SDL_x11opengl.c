@@ -474,9 +474,7 @@ X11_GL_GetAttributes(_THIS, Display * display, int screen, int * attribs, int si
 
     if (_this->gl_config.framebuffer_srgb_capable) {
         attribs[i++] = GLX_FRAMEBUFFER_SRGB_CAPABLE_ARB;
-        if( for_FBConfig ) {
-            attribs[i++] = True;
-        }
+        attribs[i++] = True;  /* always needed, for_FBConfig or not! */
     }
 
     if (_this->gl_config.accelerated >= 0 &&
