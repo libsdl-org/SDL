@@ -392,7 +392,7 @@ X11_GL_InitExtensions(_THIS)
 /* glXChooseVisual and glXChooseFBConfig have some small differences in
  * the attribute encoding, it can be chosen with the for_FBConfig parameter.
  */
-int
+static int
 X11_GL_GetAttributes(_THIS, Display * display, int screen, int * attribs, int size, Bool for_FBConfig)
 {
     int i = 0;
