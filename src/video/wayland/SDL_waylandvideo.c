@@ -199,6 +199,7 @@ static const struct wl_output_listener output_listener = {
 static void
 Wayland_add_display(SDL_VideoData *d, uint32_t id)
 {
+    struct wl_output *output;
     SDL_VideoDisplay *display = SDL_malloc(sizeof *display);
     if (!display) {
         SDL_OutOfMemory();
@@ -206,7 +207,7 @@ Wayland_add_display(SDL_VideoData *d, uint32_t id)
     }
     SDL_zero(*display);
 
-    struct wl_output *output = wl_registry_bind(d->registry, id, &wl_output_interface, 2);
+    output = wl_registry_bind(d->registry, id, &wl_output_interface, 2);
     if (!output) {
         SDL_SetError("Failed to retrieve output.");
         return;
