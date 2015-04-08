@@ -592,3 +592,5 @@
 #define SDL_GetQueuedAudioSize SDL_GetQueuedAudioSize_REAL
 #define SDL_ClearQueuedAudio SDL_ClearQueuedAudio_REAL
 #define SDL_GetGrabbedWindow SDL_GetGrabbedWindow_REAL
+#define SDL_iPhoneGetViewRenderbuffer SDL_iPhoneGetViewRenderbuffer_REAL
+#define SDL_iPhoneGetViewFramebuffer SDL_iPhoneGetViewFramebuffer_REAL
