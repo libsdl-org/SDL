@@ -114,6 +114,8 @@ public class SDLActivity extends Activity {
     // Setup
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Log.v("SDL", "Device: " + android.os.Build.DEVICE);                     
+        Log.v("SDL", "Model: " + android.os.Build.MODEL);
         Log.v("SDL", "onCreate():" + mSingleton);
         super.onCreate(savedInstanceState);
         

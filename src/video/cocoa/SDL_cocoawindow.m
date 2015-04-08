@@ -1189,16 +1189,9 @@ Cocoa_SetWindowTitle(_THIS, SDL_Window * window)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     NSWindow *nswindow = ((SDL_WindowData *) window->driverdata)->nswindow;
-    NSString *string;
-
-    if(window->title) {
-        string = [[NSString alloc] initWithUTF8String:window->title];
-    } else {
-        string = [[NSString alloc] init];
-    }
+    NSString *string = [[NSString alloc] initWithUTF8String:window->title];
     [nswindow setTitle:string];
     [string release];
-
     [pool release];
 }
 
