@@ -1536,7 +1536,7 @@ class SDLGenericMotionListener_API12 implements View.OnGenericMotionListener {
 
             case InputDevice.SOURCE_MOUSE:
                 action = event.getActionMasked();
-                switch(event.getActionMasked()) {
+                switch (action) {
                     case MotionEvent.ACTION_SCROLL:
                         x = event.getAxisValue(MotionEvent.AXIS_HSCROLL, 0);
                         y = event.getAxisValue(MotionEvent.AXIS_VSCROLL, 0);
