@@ -324,8 +324,7 @@ Wayland_GetDisplayModes(_THIS, SDL_VideoDisplay *sdl_display)
 static int
 Wayland_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
-    SDL_SetError("SetDisplayMode not (yet?) supported on Wayland.");
-    return -1;
+    return SDL_Unsupported();
 }
 
 void
