@@ -656,7 +656,7 @@ X11_SetWindowTitle(_THIS, SDL_Window * window)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     Display *display = data->videodata->display;
-    XTextProperty titleprop, iconprop;
+    XTextProperty titleprop;
     Status status;
     const char *title = window->title ? window->title : "";
     char *title_locale = NULL;
