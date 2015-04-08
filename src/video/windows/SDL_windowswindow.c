@@ -371,14 +371,8 @@ void
 WIN_SetWindowTitle(_THIS, SDL_Window * window)
 {
     HWND hwnd = ((SDL_WindowData *) window->driverdata)->hwnd;
-    LPTSTR title;
-
-    if (window->title) {
-        title = WIN_UTF8ToString(window->title);
-    } else {
-        title = NULL;
-    }
-    SetWindowText(hwnd, title ? title : TEXT(""));
+    LPTSTR title = WIN_UTF8ToString(window->title);
+    SetWindowText(hwnd, title);
     SDL_free(title);
 }
 
