@@ -108,8 +108,8 @@ void Android_OnTouch(int touch_device_id_in, int pointer_finger_id_in, int actio
     switch (action) {
         case ACTION_DOWN:
             /* Primary pointer down */
-            Android_GetWindowCoordinates(x, y, &window_x, &window_y);
             if (!separate_mouse_and_touch) {
+                Android_GetWindowCoordinates(x, y, &window_x, &window_y);
                 /* send moved event */
                 SDL_SendMouseMotion(Android_Window, SDL_TOUCH_MOUSEID, 0, window_x, window_y);
                 /* send mouse down event */
@@ -123,8 +123,8 @@ void Android_OnTouch(int touch_device_id_in, int pointer_finger_id_in, int actio
 
         case ACTION_MOVE:
             if (!pointerFingerID) {
-                Android_GetWindowCoordinates(x, y, &window_x, &window_y);
                 if (!separate_mouse_and_touch) {
+                    Android_GetWindowCoordinates(x, y, &window_x, &window_y);
                     /* send moved event */
                     SDL_SendMouseMotion(Android_Window, SDL_TOUCH_MOUSEID, 0, window_x, window_y);
                 }
