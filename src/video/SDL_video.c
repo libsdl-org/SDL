@@ -1502,11 +1502,8 @@ SDL_SetWindowTitle(SDL_Window * window, const char *title)
         return;
     }
     SDL_free(window->title);
-    if (title && *title) {
-        window->title = SDL_strdup(title);
-    } else {
-        window->title = NULL;
-    }
+
+    window->title = SDL_strdup(title ? title : "");
 
     if (_this->SetWindowTitle) {
         _this->SetWindowTitle(_this, window);

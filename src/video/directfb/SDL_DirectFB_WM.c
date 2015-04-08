@@ -161,7 +161,7 @@ DirectFB_WM_RedrawLayout(_THIS, SDL_Window * window)
                y, w - 2 * d);
 
     /* Caption */
-    if (window->title) {
+    if (*window->title) {
         s->SetColor(s, COLOR_EXPAND(t->font_color));
         DrawCraption(_this, s, (x - w) / 2, t->top_size + d, window->title);
     }

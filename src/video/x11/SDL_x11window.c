@@ -658,39 +658,39 @@ X11_SetWindowTitle(_THIS, SDL_Window * window)
     Display *display = data->videodata->display;
     XTextProperty titleprop, iconprop;
     Status status;
-    const char *title = window->title;
+    const char *title = window->title ? window->title : "";
     const char *icon = NULL;
+    char *title_locale = NULL;
 
 #ifdef X_HAVE_UTF8_STRING
     Atom _NET_WM_NAME = data->videodata->_NET_WM_NAME;
     Atom _NET_WM_ICON_NAME = data->videodata->_NET_WM_ICON_NAME;
 #endif
 
-    if (title != NULL) {
-        char *title_locale = SDL_iconv_utf8_locale(title);
-        if (!title_locale) {
-            SDL_OutOfMemory();
-            return;
-        }
-        status = X11_XStringListToTextProperty(&title_locale, 1, &titleprop);
-        SDL_free(title_locale);
-        if (status) {
-            X11_XSetTextProperty(display, data->xwindow, &titleprop, XA_WM_NAME);
+    title_locale = SDL_iconv_utf8_locale(title);
+    if (!title_locale) {
+        SDL_OutOfMemory();
+        return;
+    }
+
+    status = X11_XStringListToTextProperty(&title_locale, 1, &titleprop);
+    SDL_free(title_locale);
+    if (status) {
+        X11_XSetTextProperty(display, data->xwindow, &titleprop, XA_WM_NAME);
+        X11_XFree(titleprop.value);
+    }
+#ifdef X_HAVE_UTF8_STRING
+    if (SDL_X11_HAVE_UTF8) {
+        status = X11_Xutf8TextListToTextProperty(display, (char **) &title, 1,
+                                            XUTF8StringStyle, &titleprop);
+        if (status == Success) {
+            X11_XSetTextProperty(display, data->xwindow, &titleprop,
+                                 _NET_WM_NAME);
             X11_XFree(titleprop.value);
         }
-#ifdef X_HAVE_UTF8_STRING
-        if (SDL_X11_HAVE_UTF8) {
-            status =
-                X11_Xutf8TextListToTextProperty(display, (char **) &title, 1,
-                                            XUTF8StringStyle, &titleprop);
-            if (status == Success) {
-                X11_XSetTextProperty(display, data->xwindow, &titleprop,
-                                 _NET_WM_NAME);
-                X11_XFree(titleprop.value);
-            }
-        }
-#endif
     }
+#endif
+
     if (icon != NULL) {
         char *icon_locale = SDL_iconv_utf8_locale(icon);
         if (!icon_locale) {
