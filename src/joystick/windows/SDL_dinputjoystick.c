@@ -345,6 +345,11 @@ EnumJoysticksCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext)
         return DIENUM_CONTINUE;  /* ignore XInput devices here, keep going. */
     }
 
+    const DWORD devtype = (pdidInstance->dwDevType & 0xFF);
+    if ((devtype != DI8DEVTYPE_JOYSTICK) && (devtype != DI8DEVTYPE_GAMEPAD)) {
+        return DIENUM_CONTINUE;  /* Ignore touchpads, etc. */
+    }
+
     pNewJoystick = *(JoyStick_DeviceData **)pContext;
     while (pNewJoystick) {
         if (!SDL_memcmp(&pNewJoystick->dxdevice.guidInstance, &pdidInstance->guidInstance, sizeof(pNewJoystick->dxdevice.guidInstance))) {
