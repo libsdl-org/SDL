@@ -297,10 +297,10 @@ Wayland_VideoInit(_THIS)
     wl_registry_add_listener(data->registry, &registry_listener, data);
 
     // First roundtrip to receive all registry objects.
-    wl_display_roundtrip(data->display);
+    WAYLAND_wl_display_roundtrip(data->display);
 
     // Second roundtrip to receive all output events.
-    wl_display_roundtrip(data->display);
+    WAYLAND_wl_display_roundtrip(data->display);
 
     data->xkb_context = WAYLAND_xkb_context_new(0);
     if (!data->xkb_context) {
