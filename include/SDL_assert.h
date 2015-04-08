@@ -86,8 +86,10 @@ This also solves the problem of...
 disable assertions.
 */
 
+/* "while (0,0)" fools Microsoft's compiler's /W4 warning level into thinking
+    this condition isn't constant. And looks like an owl's face! */
 #ifdef _MSC_VER  /* stupid /W4 warnings. */
-#define SDL_NULL_WHILE_LOOP_CONDITION (-1 == __LINE__)
+#define SDL_NULL_WHILE_LOOP_CONDITION (0,0)
 #else
 #define SDL_NULL_WHILE_LOOP_CONDITION (0)
 #endif

@@ -222,11 +222,7 @@ UIKit_SetWindowTitle(_THIS, SDL_Window * window)
 {
     @autoreleasepool {
         SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
-        if (window->title) {
-            data.viewcontroller.title = @(window->title);
-        } else {
-            data.viewcontroller.title = nil;
-        }
+        data.viewcontroller.title = @(window->title);
     }
 }
 
