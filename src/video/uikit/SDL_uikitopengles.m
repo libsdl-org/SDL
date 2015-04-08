@@ -184,7 +184,7 @@ UIKit_GL_DeleteContext(_THIS, SDL_GLContext context)
 }
 
 Uint32
-SDL_iPhoneGetViewRenderbuffer(SDL_Window * window)
+SDL_iOSGetViewRenderbuffer(SDL_Window * window)
 {
     if (!window) {
         SDL_SetError("Invalid window");
@@ -205,7 +205,7 @@ SDL_iPhoneGetViewRenderbuffer(SDL_Window * window)
 }
 
 Uint32
-SDL_iPhoneGetViewFramebuffer(SDL_Window * window)
+SDL_iOSGetViewFramebuffer(SDL_Window * window)
 {
     if (!window) {
         SDL_SetError("Invalid window");
