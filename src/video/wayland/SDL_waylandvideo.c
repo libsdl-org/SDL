@@ -284,13 +284,11 @@ Wayland_VideoInit(_THIS)
 
     data->display = WAYLAND_wl_display_connect(NULL);
     if (data->display == NULL) {
-        SDL_free(data);
         return SDL_SetError("Failed to connect to a Wayland display");
     }
 
     data->registry = wl_display_get_registry(data->display);
     if (data->registry == NULL) {
-        SDL_free(data);
         return SDL_SetError("Failed to get the Wayland registry");
     }
 
@@ -304,7 +302,6 @@ Wayland_VideoInit(_THIS)
 
     data->xkb_context = WAYLAND_xkb_context_new(0);
     if (!data->xkb_context) {
-        SDL_free(data);
         return SDL_SetError("Failed to create XKB context");
     }
 
