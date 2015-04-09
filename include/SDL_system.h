@@ -79,20 +79,6 @@ extern DECLSPEC int SDLCALL SDL_iPhoneSetAnimationCallback(SDL_Window * window, 
 #define SDL_iOSSetEventPump(enabled) SDL_iPhoneSetEventPump(enabled)
 extern DECLSPEC void SDLCALL SDL_iPhoneSetEventPump(SDL_bool enabled);
 
-/**
-   \brief Returns the OpenGL Renderbuffer Object associated with the window's main view.
-
-   The Renderbuffer must be bound when calling SDL_GL_SwapWindow.
- */
-extern DECLSPEC Uint32 SDLCALL SDL_iOSGetViewRenderbuffer(SDL_Window * window);
-
-/**
-   \brief Returns the OpenGL Framebuffer Object associated with the window's main view.
-
-   The Framebuffer must be bound when rendering to the screen.
- */
-extern DECLSPEC Uint32 SDLCALL SDL_iOSGetViewFramebuffer(SDL_Window * window);
-
 #endif /* __IPHONEOS__ */
 
 

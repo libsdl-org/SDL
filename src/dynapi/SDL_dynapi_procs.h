@@ -624,7 +624,3 @@ SDL_DYNAPI_PROC(int,SDL_QueueAudio,(SDL_AudioDeviceID a, const void *b, Uint32 c
 SDL_DYNAPI_PROC(Uint32,SDL_GetQueuedAudioSize,(SDL_AudioDeviceID a),(a),return)
 SDL_DYNAPI_PROC(void,SDL_ClearQueuedAudio,(SDL_AudioDeviceID a),(a),)
 SDL_DYNAPI_PROC(SDL_Window*,SDL_GetGrabbedWindow,(void),(),return)
-#if defined(__IPHONEOS__) && __IPHONEOS__
-SDL_DYNAPI_PROC(Uint32,SDL_iOSGetViewRenderbuffer,(SDL_Window *a),(a),return)
-SDL_DYNAPI_PROC(Uint32,SDL_iOSGetViewFramebuffer,(SDL_Window *a),(a),return)
-#endif
