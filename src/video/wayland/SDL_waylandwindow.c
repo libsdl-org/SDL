@@ -147,7 +147,7 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
 
     data = calloc(1, sizeof *data);
     if (data == NULL)
-        return 0;
+        return SDL_OutOfMemory();
 
     c = _this->driverdata;
     window->driverdata = data;
