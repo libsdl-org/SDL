@@ -277,21 +277,19 @@ Wayland_VideoInit(_THIS)
 {
     SDL_VideoData *data = SDL_malloc(sizeof *data);
     if (data == NULL)
-        return 0;
+        return SDL_OutOfMemory();
     memset(data, 0, sizeof *data);
 
     _this->driverdata = data;
 
     data->display = WAYLAND_wl_display_connect(NULL);
     if (data->display == NULL) {
-        SDL_SetError("Failed to connect to a Wayland display");
-        return 0;
+        return SDL_SetError("Failed to connect to a Wayland display");
     }
 
     data->registry = wl_display_get_registry(data->display);
     if (data->registry == NULL) {
-        SDL_SetError("Failed to get the Wayland registry");
-        return 0;
+        return SDL_SetError("Failed to get the Wayland registry");
     }
 
     wl_registry_add_listener(data->registry, &registry_listener, data);
@@ -304,8 +302,7 @@ Wayland_VideoInit(_THIS)
 
     data->xkb_context = WAYLAND_xkb_context_new(0);
     if (!data->xkb_context) {
-        SDL_SetError("Failed to create XKB context");
-        return 0;
+        return SDL_SetError("Failed to create XKB context");
     }
 
     Wayland_InitMouse();
