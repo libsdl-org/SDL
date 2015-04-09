@@ -183,48 +183,6 @@ UIKit_GL_DeleteContext(_THIS, SDL_GLContext context)
     }
 }
 
-Uint32
-SDL_iOSGetViewRenderbuffer(SDL_Window * window)
-{
-    if (!window) {
-        SDL_SetError("Invalid window");
-        return 0;
-    }
-
-    @autoreleasepool {
-        SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
-        UIView *view = data.viewcontroller.view;
-        if ([view isKindOfClass:[SDL_uikitopenglview class]]) {
-            SDL_uikitopenglview *glview = (SDL_uikitopenglview *) view;
-            return glview.drawableRenderbuffer;
-        }
-    }
-
-    SDL_SetError("Window does not have an attached OpenGL view");
-    return 0;
-}
-
-Uint32
-SDL_iOSGetViewFramebuffer(SDL_Window * window)
-{
-    if (!window) {
-        SDL_SetError("Invalid window");
-        return 0;
-    }
-
-    @autoreleasepool {
-        SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
-        UIView *view = data.viewcontroller.view;
-        if ([view isKindOfClass:[SDL_uikitopenglview class]]) {
-            SDL_uikitopenglview *glview = (SDL_uikitopenglview *) view;
-            return glview.drawableFramebuffer;
-        }
-    }
-
-    SDL_SetError("Window does not have an attached OpenGL view");
-    return 0;
-}
-
 #endif /* SDL_VIDEO_DRIVER_UIKIT */
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -38,6 +38,7 @@
 #import "SDL_uikitappdelegate.h"
 
 #import "SDL_uikitview.h"
+#import "SDL_uikitopenglview.h"
 
 #include <Foundation/Foundation.h>
 
@@ -314,8 +315,23 @@ UIKit_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
         SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
 
         if (info->version.major <= SDL_MAJOR_VERSION) {
+            int versionnum = SDL_VERSIONNUM(info->version.major, info->version.minor, info->version.patch);
+
             info->subsystem = SDL_SYSWM_UIKIT;
             info->info.uikit.window = data.uiwindow;
+
+            /* These struct members were added in SDL 2.0.4. */
+            if (versionnum >= SDL_VERSIONNUM(2,0,4)) {
+                if ([data.viewcontroller.view isKindOfClass:[SDL_uikitopenglview class]]) {
+                    SDL_uikitopenglview *glview = (SDL_uikitopenglview *)data.viewcontroller.view;
+                    info->info.uikit.framebuffer = glview.drawableFramebuffer;
+                    info->info.uikit.colorbuffer = glview.drawableRenderbuffer;
+                } else {
+                    info->info.uikit.framebuffer = 0;
+                    info->info.uikit.colorbuffer = 0;
+                }
+            }
+
             return SDL_TRUE;
         } else {
             SDL_SetError("Application not compiled with SDL %d.%d\n",
