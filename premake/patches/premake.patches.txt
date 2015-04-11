@@ -1,0 +1,26 @@
+The patches in this directory are targeted to the premake4 stable branch, based
+on the date of these files and the repository.
+
+1. 709.patch: this patch corrects the linking order for generated GNU makefiles.
+   More information on this patch can be found at:
+   https://sourceforge.net/p/premake/bugs/279/
+2. iOS.patch: this patch adds a iOS as a platform option for premake, allowing
+   for potential iOS Xcode project generation.
+3. 711.patch: this patch adds support for Xcode recognizing files added to
+   Xcode projects with the extensions of .bmp or .wav as resource files with
+   the respective file types of image and audio. This is needed to properly
+   bundle the Xcode-iOS resources with the app package. See the following for
+   more information:
+   https://sourceforge.net/p/premake/patches/165/
+4. 712.patch: this patch fixes an issue in Xcode that prevents post-build
+   commands from working for multiple configurations. This is why I had to have
+   debug and release configurations disabled for so long. They are now reenabled
+   and should be working fine. For more information:
+   https://sourceforge.net/p/premake/bugs/280/
+5. 713.patch: this patch allows custom source trees to be set in Xcode links
+   using variables similar to Visual Studio variables. This is necessary to
+   properly link to frameworks for iOS projects. For more information:
+   https://sourceforge.net/p/premake/patches/166/
+
+The repository containing these changes can be found at:
+https://bitbucket.org/gsocben/premake-stable-sdlgsoc2013
