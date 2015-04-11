@@ -2916,7 +2916,7 @@ D3D11_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
          */
         char errorMessage[1024];
         SDL_snprintf(errorMessage, sizeof(errorMessage), __FUNCTION__ ", Convert Pixels failed: %s", SDL_GetError());
-        SDL_SetError(errorMessage);
+        SDL_SetError("%s", errorMessage);
         goto done;
     }
 
