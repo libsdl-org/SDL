@@ -8,6 +8,15 @@
       android:versionName="1.0"
       android:installLocation="auto">
 
+    <!-- Android 2.3.3 -->
+    <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="12" />
+
+    <!-- OpenGL ES 2.0 -->
+    <uses-feature android:glEsVersion="0x00020000" />
+
+    <!-- Allow writing to external storage -->
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
     <!-- Create a Java class extending SDLActivity and place it in a
          directory under src matching the package, e.g.
          	src/com/gamemaker/game/MyGame.java
@@ -33,12 +42,4 @@
         </activity>
     </application>
 
-    <!-- Android 2.3.3 -->
-    <uses-sdk android:minSdkVersion="10" android:targetSdkVersion="12" />
-
-    <!-- OpenGL ES 2.0 -->
-    <uses-feature android:glEsVersion="0x00020000" /> 
-
-    <!-- Allow writing to external storage -->
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" /> 
 </manifest> 
