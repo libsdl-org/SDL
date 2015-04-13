@@ -77,11 +77,8 @@
 
         data.viewcontroller.view = view;
 
-        if (data.uiwindow.rootViewController != data.viewcontroller) {
-            data.uiwindow.rootViewController = data.viewcontroller;
-        } else if (view) {
-            [data.uiwindow addSubview:view];
-        }
+        data.uiwindow.rootViewController = nil;
+        data.uiwindow.rootViewController = data.viewcontroller;
 
         [data.uiwindow layoutIfNeeded];
     }
@@ -96,13 +93,13 @@
         [data.viewcontroller.view removeFromSuperview];
         data.viewcontroller.view = self;
 
-        if (data.uiwindow.rootViewController != data.viewcontroller) {
-            /* The root view controller handles rotation and the status bar.
-             * Assigning it also adds the controller's view to the window. */
-            data.uiwindow.rootViewController = data.viewcontroller;
-        } else {
-            [data.uiwindow addSubview:self];
-        }
+        /* The root view controller handles rotation and the status bar.
+         * Assigning it also adds the controller's view to the window. We
+         * explicitly re-set it to make sure the view is properly attached to
+         * the window. Just adding the sub-view if the root view controller is
+         * already correct causes orientation issues on iOS 7 and below. */
+        data.uiwindow.rootViewController = nil;
+        data.uiwindow.rootViewController = data.viewcontroller;
 
         /* The view's bounds may not be correct until the next event cycle. That
          * might happen after the current dimensions are queried, so we force a
