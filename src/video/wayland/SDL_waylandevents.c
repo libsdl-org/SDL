@@ -52,6 +52,10 @@ struct SDL_WaylandInput {
     SDL_WindowData *pointer_focus;
     SDL_WindowData *keyboard_focus;
 
+    /* Last motion location */
+    wl_fixed_t sx_w;
+    wl_fixed_t sy_w;
+    
     struct {
         struct xkb_keymap *keymap;
         struct xkb_state *state;
@@ -119,11 +123,77 @@ pointer_handle_motion(void *data, struct wl_pointer *pointer,
 {
     struct SDL_WaylandInput *input = data;
     SDL_WindowData *window = input->pointer_focus;
+    input->sx_w = sx_w;
+    input->sy_w = sy_w;
     int sx = wl_fixed_to_int(sx_w);
     int sy = wl_fixed_to_int(sy_w);
     if (input->pointer_focus) {
         SDL_SendMouseMotion(window->sdlwindow, 0, 0, sx, sy);
     }
+}
+
+static SDL_bool
+ProcessHitTest(struct SDL_WaylandInput *input, uint32_t serial)
+{
+    SDL_WindowData *window_data = input->pointer_focus;
+    SDL_Window *window = window_data->sdlwindow;
+    SDL_bool ret = SDL_FALSE;
+
+    if (window->hit_test) {
+        const SDL_Point point = { wl_fixed_to_int(input->sx_w), wl_fixed_to_int(input->sy_w) };
+        const SDL_HitTestResult rc = window->hit_test(window, &point, window->hit_test_data);
+        switch (rc) {
+            case SDL_HITTEST_DRAGGABLE: {
+                    wl_shell_surface_move(window_data->shell_surface, input->seat, serial);
+                    ret = SDL_TRUE;
+                }
+                break;
+            case SDL_HITTEST_RESIZE_TOPLEFT: {
+                    wl_shell_surface_resize(window_data->shell_surface, input->seat, serial, WL_SHELL_SURFACE_RESIZE_TOP_LEFT);
+                    ret = SDL_TRUE;
+                }
+                break;
+            case SDL_HITTEST_RESIZE_TOP: {
+                    wl_shell_surface_resize(window_data->shell_surface, input->seat, serial, WL_SHELL_SURFACE_RESIZE_TOP);
+                    ret = SDL_TRUE;
+                }
+                break;
+            case SDL_HITTEST_RESIZE_TOPRIGHT: {
+                    wl_shell_surface_resize(window_data->shell_surface, input->seat, serial,  WL_SHELL_SURFACE_RESIZE_TOP_RIGHT);
+                    ret = SDL_TRUE;
+                }
+                break;
+            case SDL_HITTEST_RESIZE_RIGHT: {
+                    wl_shell_surface_resize(window_data->shell_surface, input->seat, serial, WL_SHELL_SURFACE_RESIZE_RIGHT);
+                    ret = SDL_TRUE;
+                }
+                break;
+            case SDL_HITTEST_RESIZE_BOTTOMRIGHT: {
+                    wl_shell_surface_resize(window_data->shell_surface, input->seat, serial,  WL_SHELL_SURFACE_RESIZE_BOTTOM_RIGHT);
+                    ret = SDL_TRUE;
+                }
+                break;
+            case SDL_HITTEST_RESIZE_BOTTOM: {
+                    wl_shell_surface_resize(window_data->shell_surface, input->seat, serial, WL_SHELL_SURFACE_RESIZE_BOTTOM);
+                    ret = SDL_TRUE;
+                }
+                break;
+            case SDL_HITTEST_RESIZE_BOTTOMLEFT: {
+                    wl_shell_surface_resize(window_data->shell_surface, input->seat, serial, WL_SHELL_SURFACE_RESIZE_BOTTOM_LEFT);
+                    ret = SDL_TRUE;
+                }
+                break;
+            case SDL_HITTEST_RESIZE_LEFT: {
+                    wl_shell_surface_resize(window_data->shell_surface, input->seat, serial, WL_SHELL_SURFACE_RESIZE_LEFT);
+                    ret = SDL_TRUE;
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    return ret;
 }
 
 static void
@@ -139,6 +209,9 @@ pointer_handle_button(void *data, struct wl_pointer *pointer, uint32_t serial,
         switch (button) {
             case BTN_LEFT:
                 sdl_button = SDL_BUTTON_LEFT;
+                if (ProcessHitTest(data, serial)) {
+                    return;  /* don't pass this event on to app. */
+                }
                 break;
             case BTN_MIDDLE:
                 sdl_button = SDL_BUTTON_MIDDLE;
@@ -364,7 +437,8 @@ Wayland_display_add_input(SDL_VideoData *d, uint32_t id)
 
     input->display = d;
     input->seat = wl_registry_bind(d->registry, id, &wl_seat_interface, 1);
-
+    input->sx_w = wl_fixed_from_int(0);
+    input->sy_w = wl_fixed_from_int(0);
     d->input = input;
 
     wl_seat_add_listener(input->seat, &seat_listener, input);

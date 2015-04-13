@@ -109,6 +109,12 @@ Wayland_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
     return SDL_TRUE;
 }
 
+int
+Wayland_SetWindowHitTest(SDL_Window *window, SDL_bool enabled)
+{
+    return 0;  /* just succeed, the real work is done elsewhere. */
+}
+
 void Wayland_ShowWindow(_THIS, SDL_Window *window)
 {
     SDL_WindowData *wind = window->driverdata;
