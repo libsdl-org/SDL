@@ -115,9 +115,7 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     return image;
 }
 
-@implementation SDLLaunchScreenController {
-    UIInterfaceOrientationMask supportedOrientations;
-}
+@implementation SDLLaunchScreenController
 
 - (instancetype)init
 {
@@ -127,18 +125,16 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 
     NSBundle *bundle = [NSBundle mainBundle];
     NSString *screenname = [bundle objectForInfoDictionaryKey:@"UILaunchStoryboardName"];
-
-    /* Normally we don't want to rotate from the initial orientation. */
-    supportedOrientations = (1 << [UIApplication sharedApplication].statusBarOrientation);
+    BOOL atleastiOS8 = UIKit_IsSystemVersionAtLeast(8.0);
 
     /* Launch screens were added in iOS 8. Otherwise we use launch images. */
-    if (screenname && UIKit_IsSystemVersionAtLeast(8.0)) {
+    if (screenname && atleastiOS8) {
         @try {
             self.view = [bundle loadNibNamed:screenname owner:self options:nil][0];
         }
         @catch (NSException *exception) {
-            /* iOS displays a blank screen rather than falling back to an image,
-             * if a launch screen name is specified but it fails to load. */
+            /* If a launch screen name is specified but it fails to load, iOS
+             * displays a blank screen rather than falling back to an image. */
             return nil;
         }
     }
@@ -216,13 +212,37 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
         }
 
         if (image) {
-            if (image.size.width > image.size.height) {
-                supportedOrientations = UIInterfaceOrientationMaskLandscape;
-            } else {
-                supportedOrientations = UIInterfaceOrientationMaskPortrait;
+            UIImageView *view = [[UIImageView alloc] initWithFrame:[UIScreen mainScreen].bounds];
+            UIImageOrientation imageorient = UIImageOrientationUp;
+
+            /* Bugs observed / workaround tested in iOS 8.3, 7.1, and 6.1. */
+            if (UIInterfaceOrientationIsLandscape(curorient)) {
+                if (atleastiOS8 && image.size.width < image.size.height) {
+                    /* On iOS 8, portrait launch images displayed in forced-
+                     * landscape mode (e.g. a standard Default.png on an iPhone
+                     * when Info.plist only supports landscape orientations) need
+                     * to be rotated to display in the expected orientation. */
+                    if (curorient == UIInterfaceOrientationLandscapeLeft) {
+                        imageorient = UIImageOrientationRight;
+                    } else if (curorient == UIInterfaceOrientationLandscapeRight) {
+                        imageorient = UIImageOrientationLeft;
+                    }
+                } else if (!atleastiOS8 && image.size.width > image.size.height) {
+                    /* On iOS 7 and below, landscape launch images displayed in
+                     * landscape mode (e.g. landscape iPad launch images) need
+                     * to be rotated to display in the expected orientation. */
+                    if (curorient == UIInterfaceOrientationLandscapeLeft) {
+                        imageorient = UIImageOrientationLeft;
+                    } else if (curorient == UIInterfaceOrientationLandscapeRight) {
+                        imageorient = UIImageOrientationRight;
+                    }
+                }
             }
 
-            self.view = [[UIImageView alloc] initWithImage:image];
+            /* Create the properly oriented image. */
+            view.image = [[UIImage alloc] initWithCGImage:image.CGImage scale:image.scale orientation:imageorient];
+
+            self.view = view;
         }
     }
 
@@ -234,9 +254,18 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     /* Do nothing. */
 }
 
+- (BOOL)shouldAutorotate
+{
+    /* If YES, the launch image will be incorrectly rotated in some cases. */
+    return NO;
+}
+
 - (NSUInteger)supportedInterfaceOrientations
 {
-    return supportedOrientations;
+    /* We keep the supported orientations unrestricted to avoid the case where
+     * there are no common orientations between the ones set in Info.plist and
+     * the ones set here (it will cause an exception in that case.) */
+    return UIInterfaceOrientationMaskAll;
 }
 
 @end
