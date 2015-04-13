@@ -125,9 +125,9 @@ pointer_handle_motion(void *data, struct wl_pointer *pointer,
     SDL_WindowData *window = input->pointer_focus;
     input->sx_w = sx_w;
     input->sy_w = sy_w;
-    int sx = wl_fixed_to_int(sx_w);
-    int sy = wl_fixed_to_int(sy_w);
     if (input->pointer_focus) {
+        const int sx = wl_fixed_to_int(sx_w);
+        const int sy = wl_fixed_to_int(sy_w);
         SDL_SendMouseMotion(window->sdlwindow, 0, 0, sx, sy);
     }
 }
