@@ -137,63 +137,37 @@ ProcessHitTest(struct SDL_WaylandInput *input, uint32_t serial)
 {
     SDL_WindowData *window_data = input->pointer_focus;
     SDL_Window *window = window_data->sdlwindow;
-    SDL_bool ret = SDL_FALSE;
 
     if (window->hit_test) {
         const SDL_Point point = { wl_fixed_to_int(input->sx_w), wl_fixed_to_int(input->sy_w) };
         const SDL_HitTestResult rc = window->hit_test(window, &point, window->hit_test_data);
+        static const uint32_t directions[] = {
+            WL_SHELL_SURFACE_RESIZE_TOP_LEFT, WL_SHELL_SURFACE_RESIZE_TOP,
+            WL_SHELL_SURFACE_RESIZE_TOP_RIGHT, WL_SHELL_SURFACE_RESIZE_RIGHT,
+            WL_SHELL_SURFACE_RESIZE_BOTTOM_RIGHT, WL_SHELL_SURFACE_RESIZE_BOTTOM,
+            WL_SHELL_SURFACE_RESIZE_BOTTOM_LEFT, WL_SHELL_SURFACE_RESIZE_LEFT
+        };
         switch (rc) {
-            case SDL_HITTEST_DRAGGABLE: {
-                    wl_shell_surface_move(window_data->shell_surface, input->seat, serial);
-                    ret = SDL_TRUE;
-                }
-                break;
-            case SDL_HITTEST_RESIZE_TOPLEFT: {
-                    wl_shell_surface_resize(window_data->shell_surface, input->seat, serial, WL_SHELL_SURFACE_RESIZE_TOP_LEFT);
-                    ret = SDL_TRUE;
-                }
-                break;
-            case SDL_HITTEST_RESIZE_TOP: {
-                    wl_shell_surface_resize(window_data->shell_surface, input->seat, serial, WL_SHELL_SURFACE_RESIZE_TOP);
-                    ret = SDL_TRUE;
-                }
-                break;
-            case SDL_HITTEST_RESIZE_TOPRIGHT: {
-                    wl_shell_surface_resize(window_data->shell_surface, input->seat, serial,  WL_SHELL_SURFACE_RESIZE_TOP_RIGHT);
-                    ret = SDL_TRUE;
-                }
-                break;
-            case SDL_HITTEST_RESIZE_RIGHT: {
-                    wl_shell_surface_resize(window_data->shell_surface, input->seat, serial, WL_SHELL_SURFACE_RESIZE_RIGHT);
-                    ret = SDL_TRUE;
-                }
-                break;
-            case SDL_HITTEST_RESIZE_BOTTOMRIGHT: {
-                    wl_shell_surface_resize(window_data->shell_surface, input->seat, serial,  WL_SHELL_SURFACE_RESIZE_BOTTOM_RIGHT);
-                    ret = SDL_TRUE;
-                }
-                break;
-            case SDL_HITTEST_RESIZE_BOTTOM: {
-                    wl_shell_surface_resize(window_data->shell_surface, input->seat, serial, WL_SHELL_SURFACE_RESIZE_BOTTOM);
-                    ret = SDL_TRUE;
-                }
-                break;
-            case SDL_HITTEST_RESIZE_BOTTOMLEFT: {
-                    wl_shell_surface_resize(window_data->shell_surface, input->seat, serial, WL_SHELL_SURFACE_RESIZE_BOTTOM_LEFT);
-                    ret = SDL_TRUE;
-                }
-                break;
-            case SDL_HITTEST_RESIZE_LEFT: {
-                    wl_shell_surface_resize(window_data->shell_surface, input->seat, serial, WL_SHELL_SURFACE_RESIZE_LEFT);
-                    ret = SDL_TRUE;
-                }
-                break;
-            default:
-                break;
+            case SDL_HITTEST_DRAGGABLE:
+                wl_shell_surface_move(window_data->shell_surface, input->seat, serial);
+                return SDL_TRUE;
+
+            case SDL_HITTEST_RESIZE_TOPLEFT:
+            case SDL_HITTEST_RESIZE_TOP:
+            case SDL_HITTEST_RESIZE_TOPRIGHT:
+            case SDL_HITTEST_RESIZE_RIGHT:
+            case SDL_HITTEST_RESIZE_BOTTOMRIGHT:
+            case SDL_HITTEST_RESIZE_BOTTOM:
+            case SDL_HITTEST_RESIZE_BOTTOMLEFT:
+            case SDL_HITTEST_RESIZE_LEFT:
+                wl_shell_surface_resize(window_data->shell_surface, input->seat, serial, directions[rc - SDL_HITTEST_RESIZE_TOPLEFT]);
+                return SDL_TRUE;
+
+            default: return SDL_FALSE;
         }
     }
 
-    return ret;
+    return SDL_FALSE;
 }
 
 static void
