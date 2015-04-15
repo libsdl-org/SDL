@@ -57,6 +57,7 @@ SDL_GetPrefPath(const char *org, const char *app)
 
     if (mkdir(retval, 0700) != 0 && errno != EEXIST) {
         SDL_SetError("Couldn't create directory '%s': '%s'", retval, strerror(errno));
+        SDL_free(retval);
         return NULL;
     }
 
