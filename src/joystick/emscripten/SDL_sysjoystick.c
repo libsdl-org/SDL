@@ -350,6 +350,10 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
                         buttonState = gamepadState.digitalButton[i]? SDL_PRESSED: SDL_RELEASED;
                         SDL_PrivateJoystickButton(item->joystick, i, buttonState);
                     }
+
+                    /* store values to compare them in the next update */
+                    item->analogButton[i] = gamepadState.analogButton[i];
+                    item->digitalButton[i] = gamepadState.digitalButton[i];
                 }
 
                 for(i = 0; i < item->naxes; i++) {
@@ -358,17 +362,12 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
                         SDL_PrivateJoystickAxis(item->joystick, i,
                                                   (Sint16) (32767.*gamepadState.axis[i]));
                     }
-                }
 
-                item->timestamp = gamepadState.timestamp;
-                for( i = 0; i < item->naxes; i++) {
+                    /* store to compare in next update */
                     item->axis[i] = gamepadState.axis[i];
                 }
 
-                for( i = 0; i < item->nbuttons; i++) {
-                    item->analogButton[i] = gamepadState.analogButton[i];
-                    item->digitalButton[i] = gamepadState.digitalButton[i];
-                }
+                item->timestamp = gamepadState.timestamp;
             }
         }
     }
