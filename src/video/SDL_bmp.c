@@ -531,6 +531,10 @@ SDL_SaveBMP_RW(SDL_Surface * saveme, SDL_RWops * dst, int freedst)
                              format.BitsPerPixel);
             }
         }
+    } else {
+        /* Set no error here because it may overwrite a more useful message from
+           SDL_RWFromFile() if SDL_SaveBMP_RW() is called from SDL_SaveBMP(). */
+        return -1;
     }
 
     if (surface && (SDL_LockSurface(surface) == 0)) {
