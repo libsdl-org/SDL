@@ -20,6 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
+#if SDL_THREAD_PSP
+
 /* An implementation of mutexes using semaphores */
 
 #include "SDL_thread.h"
@@ -128,5 +130,7 @@ SDL_mutexV(SDL_mutex * mutex)
     return 0;
 #endif /* SDL_THREADS_DISABLED */
 }
+
+#endif /* SDL_THREAD_PSP */
 
 /* vi: set ts=4 sw=4 expandtab: */

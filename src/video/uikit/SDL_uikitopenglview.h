@@ -21,65 +21,47 @@
 
 #import <UIKit/UIKit.h>
 #import <OpenGLES/EAGL.h>
-#import <OpenGLES/ES1/gl.h>
-#import <OpenGLES/ES1/glext.h>
+#import <OpenGLES/ES2/gl.h>
+
 #import "SDL_uikitview.h"
-/*
-    This class wraps the CAEAGLLayer from CoreAnimation into a convenient UIView subclass.
-    The view content is basically an EAGL surface you render your OpenGL scene into.
-    Note that setting the view non-opaque will only work if the EAGL surface has an alpha channel.
- */
-@interface SDL_uikitopenglview : SDL_uikitview {
+#include "SDL_uikitvideo.h"
 
-@private
-    /* The pixel dimensions of the backbuffer */
-    GLint backingWidth;
-    GLint backingHeight;
+@class SDL_uikitopenglview;
 
-    EAGLContext *context;
+@interface SDLEAGLContext : EAGLContext
 
-    /* OpenGL names for the renderbuffer and framebuffers used to render to this view */
-    GLuint viewRenderbuffer, viewFramebuffer;
+@property (nonatomic, weak) SDL_uikitopenglview *sdlView;
 
-    /* OpenGL name for the depth buffer that is attached to viewFramebuffer, if it exists (0 if it does not exist) */
-    GLuint depthRenderbuffer;
+@end
 
-    /* format of depthRenderbuffer */
-    GLenum depthBufferFormat;
+@interface SDL_uikitopenglview : SDL_uikitview
 
-    id displayLink;
-    int animationInterval;
-    void (*animationCallback)(void*);
-    void *animationCallbackParam;
-}
+- (instancetype)initWithFrame:(CGRect)frame
+                        scale:(CGFloat)scale
+                retainBacking:(BOOL)retained
+                        rBits:(int)rBits
+                        gBits:(int)gBits
+                        bBits:(int)bBits
+                        aBits:(int)aBits
+                    depthBits:(int)depthBits
+                  stencilBits:(int)stencilBits
+                         sRGB:(BOOL)sRGB
+                 majorVersion:(int)majorVersion
+                   shareGroup:(EAGLSharegroup*)shareGroup;
 
-@property (nonatomic, retain, readonly) EAGLContext *context;
+@property (nonatomic, readonly, strong) SDLEAGLContext *context;
+
+/* The width and height of the drawable in pixels (as opposed to points.) */
+@property (nonatomic, readonly) int backingWidth;
+@property (nonatomic, readonly) int backingHeight;
+
+@property (nonatomic, readonly) GLuint drawableRenderbuffer;
+@property (nonatomic, readonly) GLuint drawableFramebuffer;
 
 - (void)swapBuffers;
 - (void)setCurrentContext;
 
-- (id)initWithFrame:(CGRect)frame
-    scale:(CGFloat)scale
-    retainBacking:(BOOL)retained
-    rBits:(int)rBits
-    gBits:(int)gBits
-    bBits:(int)bBits
-    aBits:(int)aBits
-    depthBits:(int)depthBits
-    stencilBits:(int)stencilBits
-    majorVersion:(int)majorVersion
-    shareGroup:(EAGLSharegroup*)shareGroup;
-
 - (void)updateFrame;
-
-- (void)setAnimationCallback:(int)interval
-    callback:(void (*)(void*))callback
-    callbackParam:(void*)callbackParam;
-
-- (void)startAnimation;
-- (void)stopAnimation;
-
-- (void)doLoop:(CADisplayLink*)sender;
 
 @end
 

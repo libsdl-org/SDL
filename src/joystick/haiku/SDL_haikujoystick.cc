@@ -53,8 +53,7 @@ extern "C"
     static int SDL_SYS_numjoysticks = 0;
 
 /* Function to scan the system for joysticks.
- * This function should set SDL_numjoysticks to the number of available
- * joysticks.  Joystick 0 should be the system default joystick.
+ * Joystick 0 should be the system default joystick.
  * It should return 0, or -1 on an unrecoverable fatal error.
  */
     int SDL_SYS_JoystickInit(void)
@@ -107,7 +106,7 @@ extern "C"
     }
 
 /* Function to open a joystick for use.
-   The joystick to open is specified by the index field of the joystick.
+   The joystick to open is specified by the device index.
    This should fill the nbuttons and naxes fields of the joystick structure.
    It returns 0, or -1 if there is an error.
  */
@@ -153,7 +152,7 @@ extern "C"
         return (0);
     }
 
-/* Function to determine is this joystick is attached to the system right now */
+/* Function to determine if this joystick is attached to the system right now */
     SDL_bool SDL_SYS_JoystickAttached(SDL_Joystick *joystick)
     {
         return SDL_TRUE;
@@ -229,7 +228,6 @@ extern "C"
             SDL_free(joystick->hwdata->new_hats);
             SDL_free(joystick->hwdata->new_axes);
             SDL_free(joystick->hwdata);
-            joystick->hwdata = NULL;
         }
     }
 

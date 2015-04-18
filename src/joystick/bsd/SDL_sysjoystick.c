@@ -421,7 +421,7 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joy, int device_index)
     return (-1);
 }
 
-/* Function to determine is this joystick is attached to the system right now */
+/* Function to determine if this joystick is attached to the system right now */
 SDL_bool SDL_SYS_JoystickAttached(SDL_Joystick *joystick)
 {
     return SDL_TRUE;
@@ -558,8 +558,6 @@ SDL_SYS_JoystickClose(SDL_Joystick * joy)
     close(joy->hwdata->fd);
     SDL_free(joy->hwdata->path);
     SDL_free(joy->hwdata);
-
-    return;
 }
 
 void

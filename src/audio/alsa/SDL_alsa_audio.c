@@ -320,7 +320,7 @@ ALSA_PlayDevice(_THIS)
                 /* Hmm, not much we can do - abort */
                 fprintf(stderr, "ALSA write failed (unrecoverable): %s\n",
                         ALSA_snd_strerror(status));
-                this->enabled = 0;
+                SDL_OpenedAudioDeviceDisconnected(this);
                 return;
             }
             continue;
@@ -465,7 +465,7 @@ ALSA_set_buffer_size(_THIS, snd_pcm_hw_params_t *params, int override)
 }
 
 static int
-ALSA_OpenDevice(_THIS, const char *devname, int iscapture)
+ALSA_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 {
     int status = 0;
     snd_pcm_t *pcm_handle = NULL;

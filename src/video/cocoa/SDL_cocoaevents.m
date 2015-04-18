@@ -27,6 +27,11 @@
 #include "../../events/SDL_events_c.h"
 #include "SDL_assert.h"
 
+/* This define was added in the 10.9 SDK. */
+#ifndef kIOPMAssertPreventUserIdleDisplaySleep
+#define kIOPMAssertPreventUserIdleDisplaySleep kIOPMAssertionTypePreventUserIdleDisplaySleep
+#endif
+
 @interface SDLApplication : NSApplication
 
 - (void)terminate:(id)sender;
@@ -61,11 +66,19 @@
 {
     self = [super init];
     if (self) {
+        NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+
         seenFirstActivate = NO;
-        [[NSNotificationCenter defaultCenter] addObserver:self
-                                                 selector:@selector(focusSomeWindow:)
-                                                     name:NSApplicationDidBecomeActiveNotification
-                                                   object:nil];
+
+        [center addObserver:self
+                   selector:@selector(windowWillClose:)
+                       name:NSWindowWillCloseNotification
+                     object:nil];
+
+        [center addObserver:self
+                   selector:@selector(focusSomeWindow:)
+                       name:NSApplicationDidBecomeActiveNotification
+                     object:nil];
     }
 
     return self;
@@ -73,8 +86,57 @@
 
 - (void)dealloc
 {
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
+    NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
+
+    [center removeObserver:self name:NSWindowWillCloseNotification object:nil];
+    [center removeObserver:self name:NSApplicationDidBecomeActiveNotification object:nil];
+
     [super dealloc];
+}
+
+- (void)windowWillClose:(NSNotification *)notification;
+{
+    NSWindow *win = (NSWindow*)[notification object];
+
+    if (![win isKeyWindow]) {
+        return;
+    }
+
+    /* HACK: Make the next window in the z-order key when the key window is
+     * closed. The custom event loop and/or windowing code we have seems to
+     * prevent the normal behavior: https://bugzilla.libsdl.org/show_bug.cgi?id=1825
+     */
+
+    /* +[NSApp orderedWindows] never includes the 'About' window, but we still
+     * want to try its list first since the behavior in other apps is to only
+     * make the 'About' window key if no other windows are on-screen.
+     */
+    for (NSWindow *window in [NSApp orderedWindows]) {
+        if (window != win && [window canBecomeKeyWindow]) {
+            if ([window respondsToSelector:@selector(isOnActiveSpace)]) {
+                if (![window isOnActiveSpace]) {
+                    continue;
+                }
+            }
+            [window makeKeyAndOrderFront:self];
+            return;
+        }
+    }
+
+    /* If a window wasn't found above, iterate through all visible windows
+     * (including the 'About' window, if it's shown) and make the first one key.
+     * Note that +[NSWindow windowNumbersWithOptions:] was added in 10.6.
+     */
+    if ([NSWindow respondsToSelector:@selector(windowNumbersWithOptions:)]) {
+        /* Get all visible windows in the active Space, in z-order. */
+        for (NSNumber *num in [NSWindow windowNumbersWithOptions:0]) {
+            NSWindow *window = [NSApp windowWithWindowNumber:[num integerValue]];
+            if (window && window != win && [window canBecomeKeyWindow]) {
+                [window makeKeyAndOrderFront:self];
+                return;
+            }
+        }
+    }
 }
 
 - (void)focusSomeWindow:(NSNotification *)aNotification
@@ -82,7 +144,7 @@
     /* HACK: Ignore the first call. The application gets a
      * applicationDidBecomeActive: a little bit after the first window is
      * created, and if we don't ignore it, a window that has been created with
-     * SDL_WINDOW_MINIZED will ~immediately be restored.
+     * SDL_WINDOW_MINIMIZED will ~immediately be restored.
      */
     if (!seenFirstActivate) {
         seenFirstActivate = YES;
@@ -251,16 +313,23 @@ Cocoa_RegisterApp(void)
 { @autoreleasepool
 {
     /* This can get called more than once! Be careful what you initialize! */
-    ProcessSerialNumber psn;
-
-    if (!GetCurrentProcess(&psn)) {
-        TransformProcessType(&psn, kProcessTransformToForegroundApplication);
-        SetFrontProcess(&psn);
-    }
 
     if (NSApp == nil) {
         [SDLApplication sharedApplication];
         SDL_assert(NSApp != nil);
+
+#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_6
+        if ([NSApp respondsToSelector:@selector(setActivationPolicy:)]) {
+#endif
+            [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+#if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_6
+        } else {
+            ProcessSerialNumber psn = {0, kCurrentProcess};
+            TransformProcessType(&psn, kProcessTransformToForegroundApplication);
+        }
+#endif
+
+        [NSApp activateIgnoringOtherApps:YES];
 
         if ([NSApp mainMenu] == nil) {
             CreateApplicationMenus();
@@ -293,8 +362,8 @@ Cocoa_PumpEvents(_THIS)
 { @autoreleasepool
 {
     /* Update activity every 30 seconds to prevent screensaver */
-    if (_this->suspend_screensaver) {
-        SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+    if (_this->suspend_screensaver && !data->screensaver_use_iopm) {
         Uint32 now = SDL_GetTicks();
         if (!data->screensaver_activity ||
             SDL_TICKS_PASSED(now, data->screensaver_activity + 30000)) {
@@ -333,6 +402,35 @@ Cocoa_PumpEvents(_THIS)
         }
         /* Pass through to NSApp to make sure everything stays in sync */
         [NSApp sendEvent:event];
+    }
+}}
+
+void
+Cocoa_SuspendScreenSaver(_THIS)
+{ @autoreleasepool
+{
+    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+
+    if (!data->screensaver_use_iopm) {
+        return;
+    }
+
+    if (data->screensaver_assertion) {
+        IOPMAssertionRelease(data->screensaver_assertion);
+        data->screensaver_assertion = 0;
+    }
+
+    if (_this->suspend_screensaver) {
+        /* FIXME: this should ideally describe the real reason why the game
+         * called SDL_DisableScreenSaver. Note that the name is only meant to be
+         * seen by OS X power users. there's an additional optional human-readable
+         * (localized) reason parameter which we don't set.
+         */
+        NSString *name = [GetApplicationName() stringByAppendingString:@" using SDL_DisableScreenSaver"];
+        IOPMAssertionCreateWithDescription(kIOPMAssertPreventUserIdleDisplaySleep,
+                                           (CFStringRef) name,
+                                           NULL, NULL, NULL, 0, NULL,
+                                           &data->screensaver_assertion);
     }
 }}
 

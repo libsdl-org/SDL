@@ -498,12 +498,12 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             s_AccumulatedMotion += GET_WHEEL_DELTA_WPARAM(wParam);
             if (s_AccumulatedMotion > 0) {
                 while (s_AccumulatedMotion >= WHEEL_DELTA) {
-                    SDL_SendMouseWheel(data->window, 0, 0, 1);
+                    SDL_SendMouseWheel(data->window, 0, 0, 1, SDL_MOUSEWHEEL_NORMAL);
                     s_AccumulatedMotion -= WHEEL_DELTA;
                 }
             } else {
                 while (s_AccumulatedMotion <= -WHEEL_DELTA) {
-                    SDL_SendMouseWheel(data->window, 0, 0, -1);
+                    SDL_SendMouseWheel(data->window, 0, 0, -1, SDL_MOUSEWHEEL_NORMAL);
                     s_AccumulatedMotion += WHEEL_DELTA;
                 }
             }
@@ -517,12 +517,12 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             s_AccumulatedMotion += GET_WHEEL_DELTA_WPARAM(wParam);
             if (s_AccumulatedMotion > 0) {
                 while (s_AccumulatedMotion >= WHEEL_DELTA) {
-                    SDL_SendMouseWheel(data->window, 0, 1, 0);
+                    SDL_SendMouseWheel(data->window, 0, 1, 0, SDL_MOUSEWHEEL_NORMAL);
                     s_AccumulatedMotion -= WHEEL_DELTA;
                 }
             } else {
                 while (s_AccumulatedMotion <= -WHEEL_DELTA) {
-                    SDL_SendMouseWheel(data->window, 0, -1, 0);
+                    SDL_SendMouseWheel(data->window, 0, -1, 0, SDL_MOUSEWHEEL_NORMAL);
                     s_AccumulatedMotion += WHEEL_DELTA;
                 }
             }
@@ -559,10 +559,11 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             GetKeyboardState(keyboardState);
             if (ToUnicode(wParam, (lParam >> 16) & 0xff, keyboardState, (LPWSTR)&utf32, 1, 0) > 0) {
-                WORD repetition;
-                for (repetition = lParam & 0xffff; repetition > 0; repetition--) {
-                    WIN_ConvertUTF32toUTF8(utf32, text);
-                    SDL_SendKeyboardText(text);
+                if (WIN_ConvertUTF32toUTF8(utf32, text)) {
+                    WORD repetition;
+                    for (repetition = lParam & 0xffff; repetition > 0; repetition--) {
+                        SDL_SendKeyboardText(text);
+                    }
                 }
             }
         }

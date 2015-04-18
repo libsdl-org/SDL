@@ -28,7 +28,7 @@
 #include "../SDL_sysvideo.h"
 
 /* Called by the JNI layer when the screen changes size or format */
-extern void Android_SetScreenResolution(int width, int height, Uint32 format);
+extern void Android_SetScreenResolution(int width, int height, Uint32 format, float rate);
 
 /* Private display data */
 

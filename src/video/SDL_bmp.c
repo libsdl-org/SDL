@@ -306,16 +306,19 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
             biClrUsed = 1 << biBitCount;
         }
         if ((int) biClrUsed > palette->ncolors) {
-            palette->ncolors = biClrUsed;
-            palette->colors =
+            SDL_Color *colors;
+            int ncolors = biClrUsed;
+            colors =
                 (SDL_Color *) SDL_realloc(palette->colors,
-                                          palette->ncolors *
+                                          ncolors *
                                           sizeof(*palette->colors));
-            if (!palette->colors) {
+            if (!colors) {
                 SDL_OutOfMemory();
                 was_error = SDL_TRUE;
                 goto done;
             }
+            palette->ncolors = ncolors;
+            palette->colors = colors;
         } else if ((int) biClrUsed < palette->ncolors) {
             palette->ncolors = biClrUsed;
         }
@@ -528,6 +531,10 @@ SDL_SaveBMP_RW(SDL_Surface * saveme, SDL_RWops * dst, int freedst)
                              format.BitsPerPixel);
             }
         }
+    } else {
+        /* Set no error here because it may overwrite a more useful message from
+           SDL_RWFromFile() if SDL_SaveBMP_RW() is called from SDL_SaveBMP(). */
+        return -1;
     }
 
     if (surface && (SDL_LockSurface(surface) == 0)) {

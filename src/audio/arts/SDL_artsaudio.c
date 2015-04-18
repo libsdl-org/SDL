@@ -151,7 +151,7 @@ ARTS_WaitDevice(_THIS)
         /* Check every 10 loops */
         if (this->hidden->parent && (((++cnt) % 10) == 0)) {
             if (kill(this->hidden->parent, 0) < 0 && errno == ESRCH) {
-                this->enabled = 0;
+                SDL_OpenedAudioDeviceDisconnected(this);
             }
         }
     }
@@ -179,7 +179,7 @@ ARTS_PlayDevice(_THIS)
 
     /* If we couldn't write, assume fatal error for now */
     if (written < 0) {
-        this->enabled = 0;
+        SDL_OpenedAudioDeviceDisconnected(this);
     }
 #ifdef DEBUG_AUDIO
     fprintf(stderr, "Wrote %d bytes of audio data\n", written);
@@ -229,7 +229,7 @@ ARTS_Suspend(void)
 }
 
 static int
-ARTS_OpenDevice(_THIS, const char *devname, int iscapture)
+ARTS_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 {
     int rc = 0;
     int bits = 0, frag_spec = 0;

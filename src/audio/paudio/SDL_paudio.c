@@ -176,7 +176,7 @@ PAUDIO_WaitDevice(_THIS)
              * the user know what happened.
              */
             fprintf(stderr, "SDL: %s - %s\n", strerror(errno), message);
-            this->enabled = 0;
+            SDL_OpenedAudioDeviceDisconnected(this);
             /* Don't try to close - may hang */
             this->hidden->audio_fd = -1;
 #ifdef DEBUG_AUDIO
@@ -212,7 +212,7 @@ PAUDIO_PlayDevice(_THIS)
 
     /* If we couldn't write, assume fatal error for now */
     if (written < 0) {
-        this->enabled = 0;
+        SDL_OpenedAudioDeviceDisconnected(this);
     }
 #ifdef DEBUG_AUDIO
     fprintf(stderr, "Wrote %d bytes of audio data\n", written);
@@ -241,7 +241,7 @@ PAUDIO_CloseDevice(_THIS)
 }
 
 static int
-PAUDIO_OpenDevice(_THIS, const char *devname, int iscapture)
+PAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 {
     const char *workaround = SDL_getenv("SDL_DSP_NOSELECT");
     char audiodev[1024];

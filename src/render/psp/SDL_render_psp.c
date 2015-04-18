@@ -459,7 +459,7 @@ static int
 PSP_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
 /*      PSP_RenderData *renderdata = (PSP_RenderData *) renderer->driverdata; */
-    PSP_TextureData* psp_texture = (PSP_TextureData*) SDL_calloc(1, sizeof(*psp_texture));;
+    PSP_TextureData* psp_texture = (PSP_TextureData*) SDL_calloc(1, sizeof(*psp_texture));
 
     if(!psp_texture)
         return -1;

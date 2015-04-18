@@ -8,6 +8,9 @@ Makefile
 sdl-config
 SDL2.spec
 build
+Build
+*xcuserdata*
+*xcworkspacedata*
 
 # for Xcode
 *.orig
@@ -72,20 +75,26 @@ test/config.status
 test/Makefile
 test/SDL2.dll
 test/checkkeys
+test/controllermap
 test/loopwave
 test/loopwavequeue
 test/testatomic
+test/testaudiohotplug
 test/testaudioinfo
 test/testautomation
 test/testdraw2
+test/testdrawchessboard
+test/testdropfile
 test/testerror
 test/testfile
 test/testgamecontroller
 test/testgesture
 test/testgl2
 test/testgles
+test/testgles2
 test/testhaptic
 test/testhittesting
+test/testhotplug
 test/testiconv
 test/testime
 test/testintersections
@@ -115,6 +124,7 @@ test/teststreaming
 test/testthread
 test/testtimer
 test/testver
+test/testviewport
 test/testwm2
 test/torturethread
 test/*.exe

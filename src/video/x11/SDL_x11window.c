@@ -333,7 +333,7 @@ SetWindowBordered(Display *display, int screen, Window window, SDL_bool border)
 
         X11_XChangeProperty(display, window, WM_HINTS, WM_HINTS, 32,
                         PropModeReplace, (unsigned char *) &MWMHints,
-                        sizeof(MWMHints) / 4);
+                        sizeof(MWMHints) / sizeof(long));
     } else {  /* set the transient hints instead, if necessary */
         X11_XSetTransientForHint(display, window, RootWindow(display, screen));
     }
@@ -656,67 +656,39 @@ X11_SetWindowTitle(_THIS, SDL_Window * window)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     Display *display = data->videodata->display;
-    XTextProperty titleprop, iconprop;
+    XTextProperty titleprop;
     Status status;
-    const char *title = window->title;
-    const char *icon = NULL;
+    const char *title = window->title ? window->title : "";
+    char *title_locale = NULL;
 
 #ifdef X_HAVE_UTF8_STRING
     Atom _NET_WM_NAME = data->videodata->_NET_WM_NAME;
-    Atom _NET_WM_ICON_NAME = data->videodata->_NET_WM_ICON_NAME;
 #endif
 
-    if (title != NULL) {
-        char *title_locale = SDL_iconv_utf8_locale(title);
-        if (!title_locale) {
-            SDL_OutOfMemory();
-            return;
-        }
-        status = X11_XStringListToTextProperty(&title_locale, 1, &titleprop);
-        SDL_free(title_locale);
-        if (status) {
-            X11_XSetTextProperty(display, data->xwindow, &titleprop, XA_WM_NAME);
+    title_locale = SDL_iconv_utf8_locale(title);
+    if (!title_locale) {
+        SDL_OutOfMemory();
+        return;
+    }
+
+    status = X11_XStringListToTextProperty(&title_locale, 1, &titleprop);
+    SDL_free(title_locale);
+    if (status) {
+        X11_XSetTextProperty(display, data->xwindow, &titleprop, XA_WM_NAME);
+        X11_XFree(titleprop.value);
+    }
+#ifdef X_HAVE_UTF8_STRING
+    if (SDL_X11_HAVE_UTF8) {
+        status = X11_Xutf8TextListToTextProperty(display, (char **) &title, 1,
+                                            XUTF8StringStyle, &titleprop);
+        if (status == Success) {
+            X11_XSetTextProperty(display, data->xwindow, &titleprop,
+                                 _NET_WM_NAME);
             X11_XFree(titleprop.value);
         }
-#ifdef X_HAVE_UTF8_STRING
-        if (SDL_X11_HAVE_UTF8) {
-            status =
-                X11_Xutf8TextListToTextProperty(display, (char **) &title, 1,
-                                            XUTF8StringStyle, &titleprop);
-            if (status == Success) {
-                X11_XSetTextProperty(display, data->xwindow, &titleprop,
-                                 _NET_WM_NAME);
-                X11_XFree(titleprop.value);
-            }
-        }
-#endif
     }
-    if (icon != NULL) {
-        char *icon_locale = SDL_iconv_utf8_locale(icon);
-        if (!icon_locale) {
-            SDL_OutOfMemory();
-            return;
-        }
-        status = X11_XStringListToTextProperty(&icon_locale, 1, &iconprop);
-        SDL_free(icon_locale);
-        if (status) {
-            X11_XSetTextProperty(display, data->xwindow, &iconprop,
-                             XA_WM_ICON_NAME);
-            X11_XFree(iconprop.value);
-        }
-#ifdef X_HAVE_UTF8_STRING
-        if (SDL_X11_HAVE_UTF8) {
-            status =
-                X11_Xutf8TextListToTextProperty(display, (char **) &icon, 1,
-                                            XUTF8StringStyle, &iconprop);
-            if (status == Success) {
-                X11_XSetTextProperty(display, data->xwindow, &iconprop,
-                                 _NET_WM_ICON_NAME);
-                X11_XFree(iconprop.value);
-            }
-        }
 #endif
-    }
+
     X11_XFlush(display);
 }
 

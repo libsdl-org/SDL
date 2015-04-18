@@ -17,7 +17,6 @@
 #include <string.h>
 
 #include "SDL.h"
-#include "SDL_haptic.h"
 
 #if !defined SDL_JOYSTICK_DISABLED && !defined SDL_HAPTIC_DISABLED
 

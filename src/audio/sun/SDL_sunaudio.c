@@ -56,9 +56,9 @@ static Uint8 snd2au(int sample);
 
 /* Audio driver bootstrap functions */
 static void
-SUNAUDIO_DetectDevices(int iscapture, SDL_AddAudioDevice addfn)
+SUNAUDIO_DetectDevices(void)
 {
-    SDL_EnumUnixAudioDevices(iscapture, 1, (int (*)(int fd)) NULL, addfn);
+    SDL_EnumUnixAudioDevices(1, (int (*)(int)) NULL);
 }
 
 #ifdef DEBUG_AUDIO
@@ -158,7 +158,7 @@ SUNAUDIO_PlayDevice(_THIS)
         if (write(this->hidden->audio_fd, this->hidden->ulaw_buf,
             this->hidden->fragsize) < 0) {
             /* Assume fatal error, for now */
-            this->enabled = 0;
+            SDL_OpenedAudioDeviceDisconnected(this);
         }
         this->hidden->written += this->hidden->fragsize;
     } else {
@@ -168,7 +168,7 @@ SUNAUDIO_PlayDevice(_THIS)
         if (write(this->hidden->audio_fd, this->hidden->mixbuf,
             this->spec.size) < 0) {
             /* Assume fatal error, for now */
-            this->enabled = 0;
+            SDL_OpenedAudioDeviceDisconnected(this);
         }
         this->hidden->written += this->hidden->fragsize;
     }
@@ -198,7 +198,7 @@ SUNAUDIO_CloseDevice(_THIS)
 }
 
 static int
-SUNAUDIO_OpenDevice(_THIS, const char *devname, int iscapture)
+SUNAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 {
     const int flags = ((iscapture) ? OPEN_FLAGS_INPUT : OPEN_FLAGS_OUTPUT);
     SDL_AudioFormat format = 0;
@@ -413,6 +413,8 @@ SUNAUDIO_Init(SDL_AudioDriverImpl * impl)
     impl->WaitDevice = SUNAUDIO_WaitDevice;
     impl->GetDeviceBuf = SUNAUDIO_GetDeviceBuf;
     impl->CloseDevice = SUNAUDIO_CloseDevice;
+
+    impl->AllowsArbitraryDeviceNames = 1;
 
     return 1; /* this audio target is available. */
 }

@@ -38,4 +38,5 @@ SDL_GetPrefPath(const char *org, const char *app)
     return NULL;
 }
 
-#endif /* __NACL__ */
+#endif /* SDL_FILESYSTEM_NACL */
+

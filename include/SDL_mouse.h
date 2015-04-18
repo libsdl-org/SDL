@@ -60,6 +60,15 @@ typedef enum
     SDL_NUM_SYSTEM_CURSORS
 } SDL_SystemCursor;
 
+/**
+ * \brief Scroll direction types for the Scroll event
+ */
+typedef enum
+{
+    SDL_MOUSEWHEEL_NORMAL,    /**< The scroll direction is normal */
+    SDL_MOUSEWHEEL_FLIPPED    /**< The scroll direction is flipped / natural */
+} SDL_MouseWheelDirection;
+
 /* Function prototypes */
 
 /**

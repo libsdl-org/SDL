@@ -262,13 +262,13 @@ MacHaptic_MaybeAddDevice( io_object_t device )
                                      CFSTR(kIOHIDPrimaryUsagePageKey));
         if (refCF) {
             if (!CFNumberGetValue(refCF, kCFNumberLongType, &item->usagePage)) {
-                SDL_SetError("Haptic: Recieving device's usage page.");
+                SDL_SetError("Haptic: Receiving device's usage page.");
             }
             refCF = CFDictionaryGetValue(hidProperties,
                                          CFSTR(kIOHIDPrimaryUsageKey));
             if (refCF) {
                 if (!CFNumberGetValue(refCF, kCFNumberLongType, &item->usage)) {
-                    SDL_SetError("Haptic: Recieving device's usage.");
+                    SDL_SetError("Haptic: Receiving device's usage.");
                 }
             }
         }
@@ -551,7 +551,7 @@ SDL_SYS_HapticOpenFromService(SDL_Haptic * haptic, io_service_t service)
     FFReleaseDevice(haptic->hwdata->device);
   creat_err:
     if (haptic->hwdata != NULL) {
-        free(haptic->hwdata);
+        SDL_free(haptic->hwdata);
         haptic->hwdata = NULL;
     }
     return -1;

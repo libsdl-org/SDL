@@ -21385,6 +21385,78 @@ $as_echo "#define SDL_VIDEO_RENDER_OGL 1" >>confdefs.h
     fi
 }
 
+CheckEmscriptenGLES()
+{
+    if test x$enable_video = xyes -a x$enable_video_opengles = xyes; then
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for EGL support" >&5
+$as_echo_n "checking for EGL support... " >&6; }
+        video_opengl_egl=no
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+         #include <EGL/egl.h>
+
+int
+main ()
+{
+
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+        video_opengl_egl=yes
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengl_egl" >&5
+$as_echo "$video_opengl_egl" >&6; }
+        if test x$video_opengl_egl = xyes; then
+
+$as_echo "#define SDL_VIDEO_OPENGL_EGL 1" >>confdefs.h
+
+        fi
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for OpenGL ES v2 headers" >&5
+$as_echo_n "checking for OpenGL ES v2 headers... " >&6; }
+        video_opengles_v2=no
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+         #include <GLES2/gl2.h>
+         #include <GLES2/gl2ext.h>
+
+int
+main ()
+{
+
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+        video_opengles_v2=yes
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $video_opengles_v2" >&5
+$as_echo "$video_opengles_v2" >&6; }
+        if test x$video_opengles_v2 = xyes; then
+
+$as_echo "#define SDL_VIDEO_OPENGL_ES2 1" >>confdefs.h
+
+
+$as_echo "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
+
+            SUMMARY_video="${SUMMARY_video} opengl_es2"
+        fi
+    fi
+}
+
 CheckInputEvents()
 {
             { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Linux 2.4 unified input interface" >&5
@@ -21844,6 +21916,7 @@ $as_echo_n "checking for recursive mutexes... " >&6; }
                 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
+                  #define _GNU_SOURCE 1
                   #include <pthread.h>
 
 int
@@ -21857,7 +21930,7 @@ main ()
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
+if ac_fn_c_try_link "$LINENO"; then :
 
                 has_recursive_mutexes=yes
 
@@ -21865,12 +21938,14 @@ $as_echo "#define SDL_THREAD_PTHREAD_RECURSIVE_MUTEX 1" >>confdefs.h
 
 
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
             fi
             if test x$has_recursive_mutexes = xno; then
                 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
+                  #define _GNU_SOURCE 1
                   #include <pthread.h>
 
 int
@@ -21884,7 +21959,7 @@ main ()
   return 0;
 }
 _ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
+if ac_fn_c_try_link "$LINENO"; then :
 
                 has_recursive_mutexes=yes
 
@@ -21892,7 +21967,8 @@ $as_echo "#define SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP 1" >>confdefs.h
 
 
 fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
             fi
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: $has_recursive_mutexes" >&5
 $as_echo "$has_recursive_mutexes" >&6; }
@@ -22865,7 +22941,9 @@ case "$host" in
 
                 if test x$enable_video = xyes; then
                     SOURCES="$SOURCES $srcdir/src/video/raspberry/*.c"
+                    # FIXME: confdefs? Not AC_DEFINE?
                     $as_echo "#define SDL_VIDEO_DRIVER_RPI 1" >>confdefs.h
+                    SUMMARY_video="${SUMMARY_video} rpi"
                 fi
                 ;;
             *-*-androideabi*)
@@ -22879,6 +22957,7 @@ case "$host" in
 
                 if test x$enable_video = xyes; then
                     SOURCES="$SOURCES $srcdir/src/core/android/*.c $srcdir/src/video/android/*.c"
+                    # FIXME: confdefs? Not AC_DEFINE?
                     $as_echo "#define SDL_VIDEO_DRIVER_ANDROID 1" >>confdefs.h
                     SUMMARY_video="${SUMMARY_video} android"
                 fi
@@ -23019,11 +23098,22 @@ $as_echo "#define SDL_POWER_ANDROID 1" >>confdefs.h
         fi
         # Set up files for the filesystem library
         if test x$enable_filesystem = xyes; then
+             case $ARCH in
+               android)
+
+$as_echo "#define SDL_FILESYSTEM_ANDROID 1" >>confdefs.h
+
+                   SOURCES="$SOURCES $srcdir/src/filesystem/android/*.c"
+                   have_filesystem=yes
+               ;;
+               *)
 
 $as_echo "#define SDL_FILESYSTEM_UNIX 1" >>confdefs.h
 
-            SOURCES="$SOURCES $srcdir/src/filesystem/unix/*.c"
-            have_filesystem=yes
+                   SOURCES="$SOURCES $srcdir/src/filesystem/unix/*.c"
+                   have_filesystem=yes
+               ;;
+             esac
         fi
         # Set up files for the timer library
         if test x$enable_timers = xyes; then
@@ -23483,7 +23573,68 @@ $as_echo "#define SDL_FILESYSTEM_NACL 1" >>confdefs.h
             SOURCES="$SOURCES $srcdir/src/filesystem/nacl/*.c"
             have_filesystem=yes
         fi
+        ;;
+    *-*-emscripten* )
+        if test x$enable_video = xyes; then
 
+$as_echo "#define SDL_VIDEO_DRIVER_EMSCRIPTEN 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/video/emscripten/*.c"
+            have_video=yes
+            SUMMARY_video="${SUMMARY_video} emscripten"
+        fi
+
+        if test x$enable_audio = xyes; then
+
+$as_echo "#define SDL_AUDIO_DRIVER_EMSCRIPTEN 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/audio/emscripten/*.c"
+            have_audio=yes
+            SUMMARY_audio="${SUMMARY_audio} emscripten"
+        fi
+
+        CheckVisibilityHidden
+        CheckDummyVideo
+        CheckDiskAudio
+        CheckDummyAudio
+        CheckDLOPEN
+        CheckClockGettime
+        CheckEmscriptenGLES
+
+         # Set up files for the power library
+        if test x$enable_power = xyes; then
+
+$as_echo "#define SDL_POWER_EMSCRIPTEN 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/power/emscripten/*.c"
+            have_power=yes
+        fi
+
+        # Set up files for the power library
+        if test x$enable_joystick = xyes; then
+
+$as_echo "#define SDL_JOYSTICK_EMSCRIPTEN 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/joystick/emscripten/*.c"
+            have_joystick=yes
+        fi
+
+        # Set up files for the filesystem library
+        if test x$enable_filesystem = xyes; then
+
+$as_echo "#define SDL_FILESYSTEM_EMSCRIPTEN 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/filesystem/emscripten/*.c"
+            have_filesystem=yes
+        fi
+        # Set up files for the timer library
+        if test x$enable_timers = xyes; then
+
+$as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/timer/unix/*.c"
+            have_timers=yes
+        fi
         ;;
     *)
         as_fn_error $? "

@@ -898,6 +898,7 @@ EOF
 	else
         case `sed -n '/^Hardware/s/^.*: \(.*\)/\1/p' < /proc/cpuinfo` in
         BCM2708) MANUFACTURER=raspberry;;
+        BCM2709) MANUFACTURER=raspberry;;
         *) MANUFACTURER=unknown;;
         esac
 	    if echo __ARM_PCS_VFP | $CC_FOR_BUILD -E - 2>/dev/null \

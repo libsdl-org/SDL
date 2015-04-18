@@ -129,7 +129,7 @@ ESD_WaitDevice(_THIS)
         /* Check every 10 loops */
         if (this->hidden->parent && (((++cnt) % 10) == 0)) {
             if (kill(this->hidden->parent, 0) < 0 && errno == ESRCH) {
-                this->enabled = 0;
+                SDL_OpenedAudioDeviceDisconnected(this);
             }
         }
     }
@@ -161,7 +161,7 @@ ESD_PlayDevice(_THIS)
 
     /* If we couldn't write, assume fatal error for now */
     if (written < 0) {
-        this->enabled = 0;
+        SDL_OpenedAudioDeviceDisconnected(this);
     }
 }
 
@@ -215,7 +215,7 @@ get_progname(void)
 
 
 static int
-ESD_OpenDevice(_THIS, const char *devname, int iscapture)
+ESD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 {
     esd_format_t format = (ESD_STREAM | ESD_PLAY);
     SDL_AudioFormat test_format = 0;

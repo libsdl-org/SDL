@@ -38,6 +38,7 @@ TARGETS = \
 	testloadso$(EXE) \
 	testlock$(EXE) \
 	testmultiaudio$(EXE) \
+	testaudiohotplug$(EXE) \
 	testnative$(EXE) \
 	testoverlay2$(EXE) \
 	testplatform$(EXE) \
@@ -103,6 +104,9 @@ testautomation$(EXE): $(srcdir)/testautomation.c \
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) 
 
 testmultiaudio$(EXE): $(srcdir)/testmultiaudio.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testaudiohotplug$(EXE): $(srcdir)/testaudiohotplug.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testatomic$(EXE): $(srcdir)/testatomic.c
@@ -194,6 +198,15 @@ ifeq (@ISUNIX@,true)
 testnative$(EXE): $(srcdir)/testnative.c \
 			$(srcdir)/testnativex11.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS) @XLIB@
+endif
+
+#there's probably a better way of doing this
+ifeq (@ISMACOSX@,false)
+ifeq (@ISWINDOWS@,false)
+ifeq (@ISUNIX@,false)
+testnative$(EXE): ;
+endif
+endif
 endif
 
 testoverlay2$(EXE): $(srcdir)/testoverlay2.c

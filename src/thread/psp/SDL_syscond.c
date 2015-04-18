@@ -20,6 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
+#if SDL_THREAD_PSP
+
 /* An implementation of condition variables using semaphores and mutexes */
 /*
    This implementation borrows heavily from the BeOS condition variable
@@ -216,5 +218,7 @@ SDL_CondWait(SDL_cond * cond, SDL_mutex * mutex)
 {
     return SDL_CondWaitTimeout(cond, mutex, SDL_MUTEX_MAXWAIT);
 }
+
+#endif /* SDL_THREAD_PSP */
 
 /* vi: set ts=4 sw=4 expandtab: */

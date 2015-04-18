@@ -12,9 +12,6 @@
 #include <stdio.h>
 
 #include "SDL.h"
-#include "SDL_atomic.h"
-#include "SDL_assert.h"
-#include "SDL_cpuinfo.h"
 
 /*
   Absolutely basic tests just to see if we get the expected value

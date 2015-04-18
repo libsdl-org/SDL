@@ -112,6 +112,7 @@ typedef struct SDL_VideoData
     SDL_Scancode key_layout[256];
     SDL_bool selection_waiting;
 
+    Uint32 last_mode_change_deadline;
 } SDL_VideoData;
 
 extern SDL_bool X11_UseDirectColorVisuals(void);

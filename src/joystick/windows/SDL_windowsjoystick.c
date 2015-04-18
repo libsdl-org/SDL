@@ -278,8 +278,7 @@ void SDL_SYS_AddJoystickDevice(JoyStick_DeviceData *device)
 }
 
 /* Function to scan the system for joysticks.
- * This function should set SDL_numjoysticks to the number of available
- * joysticks.  Joystick 0 should be the system default joystick.
+ * Joystick 0 should be the system default joystick.
  * It should return 0, or -1 on an unrecoverable fatal error.
  */
 int
@@ -447,7 +446,7 @@ SDL_SYS_GetInstanceIdOfDeviceIndex(int device_index)
 }
 
 /* Function to open a joystick for use.
-   The joystick to open is specified by the index field of the joystick.
+   The joystick to open is specified by the device index.
    This should fill the nbuttons and naxes fields of the joystick structure.
    It returns 0, or -1 if there is an error.
  */
@@ -461,7 +460,6 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
 
     /* allocate memory for system specific hardware data */
     joystick->instance_id = joystickdevice->nInstanceID;
-    joystick->closed = SDL_FALSE;
     joystick->hwdata =
         (struct joystick_hwdata *) SDL_malloc(sizeof(struct joystick_hwdata));
     if (joystick->hwdata == NULL) {
@@ -481,13 +479,13 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
 SDL_bool 
 SDL_SYS_JoystickAttached(SDL_Joystick * joystick)
 {
-    return !joystick->closed && !joystick->hwdata->removed;
+    return joystick->hwdata && !joystick->hwdata->removed;
 }
 
 void
 SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
 {
-    if (joystick->closed || !joystick->hwdata) {
+    if (!joystick->hwdata || joystick->hwdata->removed) {
         return;
     }
 
@@ -498,8 +496,7 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
     }
 
     if (joystick->hwdata->removed) {
-        joystick->closed = SDL_TRUE;
-        joystick->uncentered = SDL_TRUE;
+        joystick->force_recentering = SDL_TRUE;
     }
 }
 
@@ -513,10 +510,7 @@ SDL_SYS_JoystickClose(SDL_Joystick * joystick)
         SDL_DINPUT_JoystickClose(joystick);
     }
 
-    /* free system specific hardware data */
     SDL_free(joystick->hwdata);
-
-    joystick->closed = SDL_TRUE;
 }
 
 /* Function to perform any system-specific joystick related cleanup */

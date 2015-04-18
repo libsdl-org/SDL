@@ -33,7 +33,6 @@
 #define OPEN_FLAGS_INPUT (O_RDONLY|O_NONBLOCK)
 #endif
 
-void SDL_EnumUnixAudioDevices(int iscapture, int classic,
-                              int (*test) (int fd), SDL_AddAudioDevice addfn);
+extern void SDL_EnumUnixAudioDevices(const int classic, int (*test)(int));
 
 /* vi: set ts=4 sw=4 expandtab: */

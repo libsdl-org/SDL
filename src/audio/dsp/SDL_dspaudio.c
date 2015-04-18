@@ -51,9 +51,9 @@
 
 
 static void
-DSP_DetectDevices(int iscapture, SDL_AddAudioDevice addfn)
+DSP_DetectDevices(void)
 {
-    SDL_EnumUnixAudioDevices(iscapture, 0, NULL, addfn);
+    SDL_EnumUnixAudioDevices(0, NULL);
 }
 
 
@@ -74,7 +74,7 @@ DSP_CloseDevice(_THIS)
 
 
 static int
-DSP_OpenDevice(_THIS, const char *devname, int iscapture)
+DSP_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 {
     const int flags = ((iscapture) ? OPEN_FLAGS_INPUT : OPEN_FLAGS_OUTPUT);
     int format;
@@ -270,7 +270,7 @@ DSP_PlayDevice(_THIS)
     const int mixlen = this->hidden->mixlen;
     if (write(this->hidden->audio_fd, mixbuf, mixlen) == -1) {
         perror("Audio write");
-        this->enabled = 0;
+        SDL_OpenedAudioDeviceDisconnected(this);
     }
 #ifdef DEBUG_AUDIO
     fprintf(stderr, "Wrote %d bytes of audio data\n", mixlen);
@@ -292,6 +292,8 @@ DSP_Init(SDL_AudioDriverImpl * impl)
     impl->PlayDevice = DSP_PlayDevice;
     impl->GetDeviceBuf = DSP_GetDeviceBuf;
     impl->CloseDevice = DSP_CloseDevice;
+
+    impl->AllowsArbitraryDeviceNames = 1;
 
     return 1;   /* this audio target is available. */
 }

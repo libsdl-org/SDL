@@ -272,8 +272,9 @@ extern "C" {
 #define SDL_HINT_ORIENTATIONS "SDL_IOS_ORIENTATIONS"
     
 /**
- *  \brief  A variable controlling whether an Android built-in accelerometer should be
- *  listed as a joystick device, rather than listing actual joysticks only.
+ *  \brief  A variable controlling whether the Android / iOS built-in
+ *  accelerometer should be listed as a joystick device, rather than listing
+ *  actual joysticks only.
  *
  *  This variable can be set to the following values:
  *    "0"       - List only real joysticks and accept input from them
@@ -356,7 +357,7 @@ extern "C" {
 
 
 /**
- *  \brief If set to 1, then do not allow high-DPI windows. ("Retina" on Mac)
+ *  \brief If set to 1, then do not allow high-DPI windows. ("Retina" on Mac and iOS)
  */
 #define SDL_HINT_VIDEO_HIGHDPI_DISABLED "SDL_VIDEO_HIGHDPI_DISABLED"
 
@@ -542,6 +543,44 @@ extern "C" {
  *               and text that is being composed will be rendered in its own UI.
  */
 #define SDL_HINT_IME_INTERNAL_EDITING "SDL_IME_INTERNAL_EDITING"
+
+ /**
+ * \brief A variable to control whether mouse and touch events are to be treated together or separately
+ *
+ * The variable can be set to the following values:
+ *   "0"       - Mouse events will be handled as touch events, and touch will raise fake mouse
+ *               events. This is the behaviour of SDL <= 2.0.3. (default)
+ *   "1"       - Mouse events will be handled separately from pure touch events.
+ *
+ * The value of this hint is used at runtime, so it can be changed at any time.
+ */
+#define SDL_HINT_ANDROID_SEPARATE_MOUSE_AND_TOUCH "SDL_ANDROID_SEPARATE_MOUSE_AND_TOUCH"
+
+/**
+ *  \brief override the binding element for keyboard inputs for Emscripten builds
+ *
+ * This hint only applies to the emscripten platform
+ *
+ * The variable can be one of
+ *    "#window"      - The javascript window object (this is the default)
+ *    "#document"    - The javascript document object
+ *    "#screen"      - the javascript window.screen object
+ *    "#canvas"      - the WebGL canvas element
+ *    any other string without a leading # sign applies to the element on the page with that ID.
+ */
+#define SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT   "SDL_EMSCRIPTEN_KEYBOARD_ELEMENT"
+
+/**
+ *  \brief Tell SDL not to catch the SIGINT or SIGTERM signals.
+ *
+ * This hint only applies to Unix-like platforms.
+ *
+ * The variable can be set to the following values:
+ *   "0"       - SDL will install a SIGINT and SIGTERM handler, and when it
+ *               catches a signal, convert it into an SDL_QUIT event.
+ *   "1"       - SDL will not install a signal handler at all.
+ */
+#define SDL_HINT_NO_SIGNAL_HANDLERS   "SDL_NO_SIGNAL_HANDLERS"
 
 /**
  *  \brief  An enumeration of hint priorities

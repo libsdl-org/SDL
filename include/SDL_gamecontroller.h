@@ -241,7 +241,8 @@ SDL_GameControllerGetBindForAxis(SDL_GameController *gamecontroller,
 /**
  *  Get the current state of an axis control on a game controller.
  *
- *  The state is a value ranging from -32768 to 32767.
+ *  The state is a value ranging from -32768 to 32767 (except for the triggers,
+ *  which range from 0 to 32767).
  *
  *  The axis indices start at index 0.
  */

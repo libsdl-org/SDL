@@ -142,13 +142,15 @@ IsJoystick(int fd, char *namebuf, const size_t namebuflen, SDL_JoystickGUID *gui
 #if SDL_USE_LIBUDEV
 void joystick_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class, const char *devpath)
 {
-    if (devpath == NULL || !(udev_class & SDL_UDEV_DEVICE_JOYSTICK)) {
+    if (devpath == NULL) {
         return;
     }
-    
-    switch( udev_type )
-    {
+
+    switch (udev_type) {
         case SDL_UDEV_DEVICEADDED:
+            if (!(udev_class & SDL_UDEV_DEVICE_JOYSTICK)) {
+                return;
+            }
             MaybeAddDevice(devpath);
             break;
             
@@ -335,13 +337,12 @@ JoystickInitWithoutUdev(void)
 static int
 JoystickInitWithUdev(void)
 {
-
     if (SDL_UDEV_Init() < 0) {
         return SDL_SetError("Could not initialize UDEV");
     }
 
     /* Set up the udev callback */
-    if ( SDL_UDEV_AddCallback(joystick_udev_callback) < 0) {
+    if (SDL_UDEV_AddCallback(joystick_udev_callback) < 0) {
         SDL_UDEV_Quit();
         return SDL_SetError("Could not set up joystick <-> udev callback");
     }
@@ -565,7 +566,7 @@ ConfigJoystick(SDL_Joystick * joystick, int fd)
 
 
 /* Function to open a joystick for use.
-   The joystick to open is specified by the index field of the joystick.
+   The joystick to open is specified by the device index.
    This should fill the nbuttons and naxes fields of the joystick structure.
    It returns 0, or -1 if there is an error.
  */
@@ -620,10 +621,10 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
     return (0);
 }
 
-/* Function to determine is this joystick is attached to the system right now */
+/* Function to determine if this joystick is attached to the system right now */
 SDL_bool SDL_SYS_JoystickAttached(SDL_Joystick *joystick)
 {
-    return !joystick->closed && (joystick->hwdata->item != NULL);
+    return joystick->hwdata->item != NULL;
 }
 
 static SDL_INLINE void
@@ -840,9 +841,7 @@ SDL_SYS_JoystickClose(SDL_Joystick * joystick)
         SDL_free(joystick->hwdata->balls);
         SDL_free(joystick->hwdata->fname);
         SDL_free(joystick->hwdata);
-        joystick->hwdata = NULL;
     }
-    joystick->closed = 1;
 }
 
 /* Function to perform any system-specific joystick related cleanup */

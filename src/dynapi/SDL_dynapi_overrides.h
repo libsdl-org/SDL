@@ -591,3 +591,4 @@
 #define SDL_QueueAudio SDL_QueueAudio_REAL
 #define SDL_GetQueuedAudioSize SDL_GetQueuedAudioSize_REAL
 #define SDL_ClearQueuedAudio SDL_ClearQueuedAudio_REAL
+#define SDL_GetGrabbedWindow SDL_GetGrabbedWindow_REAL

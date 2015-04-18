@@ -138,7 +138,7 @@ static void
 JoystickDeviceWasRemovedCallback(void *ctx, IOReturn result, void *sender)
 {
     recDevice *device = (recDevice *) ctx;
-    device->removed = 1;
+    device->removed = SDL_TRUE;
     device->deviceRef = NULL; // deviceRef was invalidated due to the remove
 #if SDL_HAPTIC_IOKIT
     MacHaptic_MaybeRemoveDevice(device->ffservice);
@@ -412,12 +412,12 @@ JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender, IOHIDDevic
     /* We have to do some storage of the io_service_t for SDL_HapticOpenFromJoystick */
     if (IOHIDDeviceGetService != NULL) {  /* weak reference: available in 10.6 and later. */
         const io_service_t ioservice = IOHIDDeviceGetService(ioHIDDeviceObject);
+#if SDL_HAPTIC_IOKIT
         if ((ioservice) && (FFIsForceFeedback(ioservice) == FF_OK)) {
             device->ffservice = ioservice;
-#if SDL_HAPTIC_IOKIT
             MacHaptic_MaybeAddDevice(ioservice);
-#endif
         }
+#endif
     }
 
     device->send_open_event = 1;
@@ -446,9 +446,9 @@ ConfigHIDManager(CFArrayRef matchingArray)
         return SDL_FALSE;
     }
 
+    IOHIDManagerSetDeviceMatchingMultiple(hidman, matchingArray);
     IOHIDManagerRegisterDeviceMatchingCallback(hidman, JoystickDeviceWasAddedCallback, NULL);
     IOHIDManagerScheduleWithRunLoop(hidman, runloop, SDL_JOYSTICK_RUNLOOP_MODE);
-    IOHIDManagerSetDeviceMatchingMultiple(hidman, matchingArray);
 
     while (CFRunLoopRunInMode(SDL_JOYSTICK_RUNLOOP_MODE,0,TRUE) == kCFRunLoopRunHandledSource) {
         /* no-op. Callback fires once per existing device. */
@@ -560,10 +560,6 @@ SDL_SYS_NumJoysticks()
 void
 SDL_SYS_JoystickDetect()
 {
-    while (CFRunLoopRunInMode(SDL_JOYSTICK_RUNLOOP_MODE,0,TRUE) == kCFRunLoopRunHandledSource) {
-        /* no-op. Pending callbacks will fire in CFRunLoopRunInMode(). */
-    }
-
     if (s_bDeviceAdded || s_bDeviceRemoved) {
         recDevice *device = gpDeviceList;
         s_bDeviceAdded = SDL_FALSE;
@@ -613,6 +609,12 @@ SDL_SYS_JoystickDetect()
             }
         }
     }
+
+	// run this after the checks above so we don't set device->removed and delete the device before
+	// SDL_SYS_JoystickUpdate can run to clean up the SDL_Joystick object that owns this device
+	while (CFRunLoopRunInMode(SDL_JOYSTICK_RUNLOOP_MODE,0,TRUE) == kCFRunLoopRunHandledSource) {
+		/* no-op. Pending callbacks will fire in CFRunLoopRunInMode(). */
+	}
 }
 
 /* Function to get the device-dependent name of a joystick */
@@ -644,7 +646,7 @@ SDL_SYS_GetInstanceIdOfDeviceIndex(int device_index)
 }
 
 /* Function to open a joystick for use.
- * The joystick to open is specified by the index field of the joystick.
+ * The joystick to open is specified by the device index.
  * This should fill the nbuttons and naxes fields of the joystick structure.
  * It returns 0, or -1 if there is an error.
  */
@@ -670,21 +672,12 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
 }
 
 /* Function to query if the joystick is currently attached
- *   It returns 1 if attached, 0 otherwise.
+ * It returns SDL_TRUE if attached, SDL_FALSE otherwise.
  */
 SDL_bool
 SDL_SYS_JoystickAttached(SDL_Joystick * joystick)
 {
-    recDevice *device = gpDeviceList;
-
-    while (device) {
-        if (joystick->instance_id == device->instance_id) {
-            return SDL_TRUE;
-        }
-        device = device->pNext;
-    }
-
-    return SDL_FALSE;
+    return joystick->hwdata != NULL;
 }
 
 /* Function to update the state of a joystick - called as a device poll.
@@ -705,9 +698,10 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
     }
 
     if (device->removed) {      /* device was unplugged; ignore it. */
-        joystick->closed = 1;
-        joystick->uncentered = 1;
-        joystick->hwdata = NULL;
+        if (joystick->hwdata) {
+            joystick->force_recentering = SDL_TRUE;
+            joystick->hwdata = NULL;
+        }
         return;
     }
 
@@ -795,7 +789,6 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
 void
 SDL_SYS_JoystickClose(SDL_Joystick * joystick)
 {
-    joystick->closed = 1;
 }
 
 /* Function to perform any system-specific joystick related cleanup */
