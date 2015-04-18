@@ -90,10 +90,12 @@ Here is a rough list of what works, and what doens't:
   * keyboard input.  Most of WinRT's documented virtual keys are supported, as
     well as many keys with documented hardware scancodes.
   * OpenGL.  Experimental support for OpenGL ES 2 is available via the ANGLE
-    project, using either MS Open Technologies' repository, at 
-    https://github.com/msopentech/angle (both the "winrt" and "future-dev"
-    branches are supported), or the official ANGLE repository, at
-    https://chromium.googlesource.com/angle/angle
+    project, using either:
+    * MS Open Technologies' "ms-master" repository, at https://github.com/MSOpenTech/angle
+      (for use with Windows 8.1+ or Windows Phone 8.1+)
+    * MS Open Technologies' "angle-win8.0" repository, at https://github.com/MSOpenTech/angle-win8.0
+      (for Windows 8.0 only!)
+    * Google's main ANGLE repository, at https://chromium.googlesource.com/angle/angle
   * SDLmain.  WinRT uses a different signature for each app's main() function.
     SDL-based apps that use this port must compile in SDL_winrt_main_NonXAML.cpp
     (in `SDL\src\main\winrt\`) directly in order for their C-style main()
@@ -112,6 +114,11 @@ Here is a rough list of what works, and what doens't:
     supported by WinRT itself.
   * joysticks and game controllers that aren't supported by Microsoft's XInput
     API.
+  * turning off VSync when rendering on Windows Phone.  Attempts to turn VSync
+    off on Windows Phone result either in Direct3D not drawing anything, or it
+    forcing VSync back on.  As such, SDL_RENDERER_PRESENTVSYNC will always get
+    turned-on on Windows Phone.  This limitation is not present in non-Phone
+    WinRT (such as Windows 8.x), where turning off VSync appears to work.
   * probably anything else that's not listed as supported
 
 

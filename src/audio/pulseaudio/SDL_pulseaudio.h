@@ -32,9 +32,10 @@
 
 struct SDL_PrivateAudioData
 {
+    char *device_name;
+
     /* pulseaudio structures */
     pa_mainloop *mainloop;
-    pa_mainloop_api *mainloop_api;
     pa_context *context;
     pa_stream *stream;
 

@@ -206,10 +206,6 @@ SDL_PrivateJoystickValid(SDL_Joystick * joystick)
         valid = 1;
     }
 
-    if (joystick && joystick->closed) {
-        valid = 0;
-    }
-
     return valid;
 }
 
@@ -412,6 +408,7 @@ SDL_JoystickClose(SDL_Joystick * joystick)
     }
 
     SDL_SYS_JoystickClose(joystick);
+    joystick->hwdata = NULL;
 
     joysticklist = SDL_joysticks;
     joysticklistprev = NULL;
@@ -668,7 +665,7 @@ SDL_JoystickUpdate(void)
 
         SDL_SYS_JoystickUpdate(joystick);
 
-        if (joystick->closed && joystick->uncentered) {
+        if (joystick->force_recentering) {
             int i;
 
             /* Tell the app that everything is centered/unpressed...  */
@@ -681,7 +678,7 @@ SDL_JoystickUpdate(void)
             for (i = 0; i < joystick->nhats; i++)
                 SDL_PrivateJoystickHat(joystick, i, SDL_HAT_CENTERED);
 
-            joystick->uncentered = SDL_FALSE;
+            joystick->force_recentering = SDL_FALSE;
         }
 
         SDL_updating_joystick = NULL;

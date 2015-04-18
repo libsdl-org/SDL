@@ -25,6 +25,25 @@ main(int argc, char *argv[])
         return 1;
     }
 
+    char *base_path = SDL_GetBasePath();
+    if(base_path == NULL){
+      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find base path: %s\n",
+                   SDL_GetError());
+      return 0;
+    }
+
+    SDL_Log("base path: '%s'\n", SDL_GetBasePath());
+    SDL_free(base_path);
+
+    char *pref_path = SDL_GetPrefPath("libsdl", "testfilesystem");
+    if(pref_path == NULL){
+      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find pref path: %s\n",
+                   SDL_GetError());
+      return 0;
+    }
+    SDL_Log("pref path: '%s'\n", SDL_GetPrefPath("libsdl", "testfilesystem"));
+    SDL_free(pref_path);
+
     SDL_Log("base path: '%s'\n", SDL_GetBasePath());
     SDL_Log("pref path: '%s'\n", SDL_GetPrefPath("libsdl", "testfilesystem"));
 

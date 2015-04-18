@@ -19,6 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "../SDL_internal.h"
+#include "SDL_hints.h"
 
 /* General quit handling code for SDL */
 
@@ -29,6 +30,8 @@
 #include "SDL_events.h"
 #include "SDL_events_c.h"
 
+
+static SDL_bool disable_signals = SDL_FALSE;
 
 #ifdef HAVE_SIGNAL_H
 static void
@@ -43,8 +46,8 @@ SDL_HandleSIG(int sig)
 #endif /* HAVE_SIGNAL_H */
 
 /* Public functions */
-int
-SDL_QuitInit(void)
+static int
+SDL_QuitInit_Internal(void)
 {
 #ifdef HAVE_SIGACTION
     struct sigaction action;
@@ -80,11 +83,22 @@ SDL_QuitInit(void)
 #endif /* HAVE_SIGNAL_H */
 
     /* That's it! */
-    return (0);
+    return 0;
 }
 
-void
-SDL_QuitQuit(void)
+int
+SDL_QuitInit(void)
+{
+    const char *hint = SDL_GetHint(SDL_HINT_NO_SIGNAL_HANDLERS);
+    disable_signals = hint && (SDL_atoi(hint) == 1);
+    if (!disable_signals) {
+        return SDL_QuitInit_Internal();
+    }
+    return 0;
+}
+
+static void
+SDL_QuitQuit_Internal(void)
 {
 #ifdef HAVE_SIGACTION
     struct sigaction action;
@@ -108,6 +122,14 @@ SDL_QuitQuit(void)
     if (ohandler != SDL_HandleSIG)
         signal(SIGTERM, ohandler);
 #endif /* HAVE_SIGNAL_H */
+}
+
+void
+SDL_QuitQuit(void)
+{
+    if (!disable_signals) {
+        SDL_QuitQuit_Internal();
+    }
 }
 
 /* This function returns 1 if it's okay to close the application window */

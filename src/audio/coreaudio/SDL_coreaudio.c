@@ -19,6 +19,9 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "../../SDL_internal.h"
+
+#if SDL_AUDIO_DRIVER_COREAUDIO
+
 #include "SDL_audio.h"
 #include "../SDL_audio_c.h"
 #include "../SDL_sysaudio.h"
@@ -37,31 +40,48 @@ static void COREAUDIO_CloseDevice(_THIS);
     }
 
 #if MACOSX_COREAUDIO
-typedef void (*addDevFn)(const char *name, AudioDeviceID devId, void *data);
+static const AudioObjectPropertyAddress devlist_address = {
+    kAudioHardwarePropertyDevices,
+    kAudioObjectPropertyScopeGlobal,
+    kAudioObjectPropertyElementMaster
+};
 
-static void
-addToDevList(const char *name, AudioDeviceID devId, void *data)
+typedef void (*addDevFn)(const char *name, const int iscapture, AudioDeviceID devId, void *data);
+
+typedef struct AudioDeviceList
 {
-    SDL_AddAudioDevice addfn = (SDL_AddAudioDevice) data;
-    addfn(name);
+    AudioDeviceID devid;
+    SDL_bool alive;
+    struct AudioDeviceList *next;
+} AudioDeviceList;
+
+static AudioDeviceList *output_devs = NULL;
+static AudioDeviceList *capture_devs = NULL;
+
+static SDL_bool
+add_to_internal_dev_list(const int iscapture, AudioDeviceID devId)
+{
+    AudioDeviceList *item = (AudioDeviceList *) SDL_malloc(sizeof (AudioDeviceList));
+    if (item == NULL) {
+        return SDL_FALSE;
+    }
+    item->devid = devId;
+    item->alive = SDL_TRUE;
+    item->next = iscapture ? capture_devs : output_devs;
+    if (iscapture) {
+        capture_devs = item;
+    } else {
+        output_devs = item;
+    }
+
+    return SDL_TRUE;
 }
 
-typedef struct
-{
-    const char *findname;
-    AudioDeviceID devId;
-    int found;
-} FindDevIdData;
-
 static void
-findDevId(const char *name, AudioDeviceID devId, void *_data)
+addToDevList(const char *name, const int iscapture, AudioDeviceID devId, void *data)
 {
-    FindDevIdData *data = (FindDevIdData *) _data;
-    if (!data->found) {
-        if (SDL_strcmp(name, data->findname) == 0) {
-            data->found = 1;
-            data->devId = devId;
-        }
+    if (add_to_internal_dev_list(iscapture, devId)) {
+        SDL_AddAudioDevice(iscapture, name, (void *) ((size_t) devId));
     }
 }
 
@@ -74,14 +94,8 @@ build_device_list(int iscapture, addDevFn addfn, void *addfndata)
     UInt32 i = 0;
     UInt32 max = 0;
 
-    AudioObjectPropertyAddress addr = {
-        kAudioHardwarePropertyDevices,
-        kAudioObjectPropertyScopeGlobal,
-        kAudioObjectPropertyElementMaster
-    };
-
-    result = AudioObjectGetPropertyDataSize(kAudioObjectSystemObject, &addr,
-                                            0, NULL, &size);
+    result = AudioObjectGetPropertyDataSize(kAudioObjectSystemObject,
+                                            &devlist_address, 0, NULL, &size);
     if (result != kAudioHardwareNoError)
         return;
 
@@ -89,8 +103,8 @@ build_device_list(int iscapture, addDevFn addfn, void *addfndata)
     if (devs == NULL)
         return;
 
-    result = AudioObjectGetPropertyData(kAudioObjectSystemObject, &addr,
-                                        0, NULL, &size, devs);
+    result = AudioObjectGetPropertyData(kAudioObjectSystemObject,
+                                        &devlist_address, 0, NULL, &size, devs);
     if (result != kAudioHardwareNoError)
         return;
 
@@ -102,10 +116,17 @@ build_device_list(int iscapture, addDevFn addfn, void *addfndata)
         AudioBufferList *buflist = NULL;
         int usable = 0;
         CFIndex len = 0;
+        const AudioObjectPropertyAddress addr = {
+            kAudioDevicePropertyStreamConfiguration,
+            iscapture ? kAudioDevicePropertyScopeInput : kAudioDevicePropertyScopeOutput,
+            kAudioObjectPropertyElementMaster
+        };
 
-        addr.mScope = iscapture ? kAudioDevicePropertyScopeInput :
-                        kAudioDevicePropertyScopeOutput;
-        addr.mSelector = kAudioDevicePropertyStreamConfiguration;
+        const AudioObjectPropertyAddress nameaddr = {
+            kAudioObjectPropertyName,
+            iscapture ? kAudioDevicePropertyScopeInput : kAudioDevicePropertyScopeOutput,
+            kAudioObjectPropertyElementMaster
+        };
 
         result = AudioObjectGetPropertyDataSize(dev, &addr, 0, NULL, &size);
         if (result != noErr)
@@ -133,9 +154,9 @@ build_device_list(int iscapture, addDevFn addfn, void *addfndata)
         if (!usable)
             continue;
 
-        addr.mSelector = kAudioObjectPropertyName;
+
         size = sizeof (CFStringRef);
-        result = AudioObjectGetPropertyData(dev, &addr, 0, NULL, &size, &cfstr);
+        result = AudioObjectGetPropertyData(dev, &nameaddr, 0, NULL, &size, &cfstr);
         if (result != kAudioHardwareNoError)
             continue;
 
@@ -166,79 +187,84 @@ build_device_list(int iscapture, addDevFn addfn, void *addfndata)
                    ((iscapture) ? "capture" : "output"),
                    (int) *devCount, ptr, (int) dev);
 #endif
-            addfn(ptr, dev, addfndata);
+            addfn(ptr, iscapture, dev, addfndata);
         }
         SDL_free(ptr);  /* addfn() would have copied the string. */
     }
 }
 
 static void
-COREAUDIO_DetectDevices(int iscapture, SDL_AddAudioDevice addfn)
+free_audio_device_list(AudioDeviceList **list)
 {
-    build_device_list(iscapture, addToDevList, addfn);
+    AudioDeviceList *item = *list;
+    while (item) {
+        AudioDeviceList *next = item->next;
+        SDL_free(item);
+        item = next;
+    }
+    *list = NULL;
 }
 
-static int
-find_device_by_name(_THIS, const char *devname, int iscapture)
+static void
+COREAUDIO_DetectDevices(void)
 {
-    AudioDeviceID devid = 0;
-    OSStatus result = noErr;
-    UInt32 size = 0;
-    UInt32 alive = 0;
-    pid_t pid = 0;
+    build_device_list(SDL_TRUE, addToDevList, NULL);
+    build_device_list(SDL_FALSE, addToDevList, NULL);
+}
 
-    AudioObjectPropertyAddress addr = {
-        0,
-        kAudioObjectPropertyScopeGlobal,
-        kAudioObjectPropertyElementMaster
-    };
-
-    if (devname == NULL) {
-        size = sizeof (AudioDeviceID);
-        addr.mSelector =
-            ((iscapture) ? kAudioHardwarePropertyDefaultInputDevice :
-            kAudioHardwarePropertyDefaultOutputDevice);
-        result = AudioObjectGetPropertyData(kAudioObjectSystemObject, &addr,
-                                            0, NULL, &size, &devid);
-        CHECK_RESULT("AudioHardwareGetProperty (default device)");
-    } else {
-        FindDevIdData data;
-        SDL_zero(data);
-        data.findname = devname;
-        build_device_list(iscapture, findDevId, &data);
-        if (!data.found) {
-            SDL_SetError("CoreAudio: No such audio device.");
-            return 0;
+static void
+build_device_change_list(const char *name, const int iscapture, AudioDeviceID devId, void *data)
+{
+    AudioDeviceList **list = (AudioDeviceList **) data;
+    AudioDeviceList *item;
+    for (item = *list; item != NULL; item = item->next) {
+        if (item->devid == devId) {
+            item->alive = SDL_TRUE;
+            return;
         }
-        devid = data.devId;
     }
 
-    addr.mSelector = kAudioDevicePropertyDeviceIsAlive;
-    addr.mScope = iscapture ? kAudioDevicePropertyScopeInput :
-                    kAudioDevicePropertyScopeOutput;
+    add_to_internal_dev_list(iscapture, devId);  /* new device, add it. */
+    SDL_AddAudioDevice(iscapture, name, (void *) ((size_t) devId));
+}
 
-    size = sizeof (alive);
-    result = AudioObjectGetPropertyData(devid, &addr, 0, NULL, &size, &alive);
-    CHECK_RESULT
-        ("AudioDeviceGetProperty (kAudioDevicePropertyDeviceIsAlive)");
-
-    if (!alive) {
-        SDL_SetError("CoreAudio: requested device exists, but isn't alive.");
-        return 0;
+static void
+reprocess_device_list(const int iscapture, AudioDeviceList **list)
+{
+    AudioDeviceList *item;
+    AudioDeviceList *prev = NULL;
+    for (item = *list; item != NULL; item = item->next) {
+        item->alive = SDL_FALSE;
     }
 
-    addr.mSelector = kAudioDevicePropertyHogMode;
-    size = sizeof (pid);
-    result = AudioObjectGetPropertyData(devid, &addr, 0, NULL, &size, &pid);
+    build_device_list(iscapture, build_device_change_list, list);
 
-    /* some devices don't support this property, so errors are fine here. */
-    if ((result == noErr) && (pid != -1)) {
-        SDL_SetError("CoreAudio: requested device is being hogged.");
-        return 0;
+    /* free items in the list that aren't still alive. */
+    item = *list;
+    while (item != NULL) {
+        AudioDeviceList *next = item->next;
+        if (item->alive) {
+            prev = item;
+        } else {
+            SDL_RemoveAudioDevice(iscapture, (void *) ((size_t) item->devid));
+            if (prev) {
+                prev->next = item->next;
+            } else {
+                *list = item->next;
+            }
+            SDL_free(item);
+        }
+        item = next;
     }
+}
 
-    this->hidden->deviceID = devid;
-    return 1;
+/* this is called when the system's list of available audio devices changes. */
+static OSStatus
+device_list_changed(AudioObjectID systemObj, UInt32 num_addr, const AudioObjectPropertyAddress *addrs, void *data)
+{
+    reprocess_device_list(SDL_TRUE, &capture_devs);
+    reprocess_device_list(SDL_FALSE, &output_devs);
+    return 0;
 }
 #endif
 
@@ -314,11 +340,54 @@ inputCallback(void *inRefCon,
 }
 
 
+#if MACOSX_COREAUDIO
+static const AudioObjectPropertyAddress alive_address =
+{
+    kAudioDevicePropertyDeviceIsAlive,
+    kAudioObjectPropertyScopeGlobal,
+    kAudioObjectPropertyElementMaster
+};
+
+static OSStatus
+device_unplugged(AudioObjectID devid, UInt32 num_addr, const AudioObjectPropertyAddress *addrs, void *data)
+{
+    SDL_AudioDevice *this = (SDL_AudioDevice *) data;
+    SDL_bool dead = SDL_FALSE;
+    UInt32 isAlive = 1;
+    UInt32 size = sizeof (isAlive);
+    OSStatus error;
+
+    if (!this->enabled) {
+        return 0;  /* already known to be dead. */
+    }
+
+    error = AudioObjectGetPropertyData(this->hidden->deviceID, &alive_address,
+                                       0, NULL, &size, &isAlive);
+
+    if (error == kAudioHardwareBadDeviceError) {
+        dead = SDL_TRUE;  /* device was unplugged. */
+    } else if ((error == kAudioHardwareNoError) && (!isAlive)) {
+        dead = SDL_TRUE;  /* device died in some other way. */
+    }
+
+    if (dead) {
+        SDL_OpenedAudioDeviceDisconnected(this);
+    }
+
+    return 0;
+}
+#endif
+
 static void
 COREAUDIO_CloseDevice(_THIS)
 {
     if (this->hidden != NULL) {
         if (this->hidden->audioUnitOpened) {
+            #if MACOSX_COREAUDIO
+            /* Unregister our disconnect callback. */
+            AudioObjectRemovePropertyListener(this->hidden->deviceID, &alive_address, device_unplugged, this);
+            #endif
+
             AURenderCallbackStruct callback;
             const AudioUnitElement output_bus = 0;
             const AudioUnitElement input_bus = 1;
@@ -352,9 +421,63 @@ COREAUDIO_CloseDevice(_THIS)
     }
 }
 
+#if MACOSX_COREAUDIO
+static int
+prepare_device(_THIS, void *handle, int iscapture)
+{
+    AudioDeviceID devid = (AudioDeviceID) ((size_t) handle);
+    OSStatus result = noErr;
+    UInt32 size = 0;
+    UInt32 alive = 0;
+    pid_t pid = 0;
+
+    AudioObjectPropertyAddress addr = {
+        0,
+        kAudioObjectPropertyScopeGlobal,
+        kAudioObjectPropertyElementMaster
+    };
+
+    if (handle == NULL) {
+        size = sizeof (AudioDeviceID);
+        addr.mSelector =
+            ((iscapture) ? kAudioHardwarePropertyDefaultInputDevice :
+            kAudioHardwarePropertyDefaultOutputDevice);
+        result = AudioObjectGetPropertyData(kAudioObjectSystemObject, &addr,
+                                            0, NULL, &size, &devid);
+        CHECK_RESULT("AudioHardwareGetProperty (default device)");
+    }
+
+    addr.mSelector = kAudioDevicePropertyDeviceIsAlive;
+    addr.mScope = iscapture ? kAudioDevicePropertyScopeInput :
+                    kAudioDevicePropertyScopeOutput;
+
+    size = sizeof (alive);
+    result = AudioObjectGetPropertyData(devid, &addr, 0, NULL, &size, &alive);
+    CHECK_RESULT
+        ("AudioDeviceGetProperty (kAudioDevicePropertyDeviceIsAlive)");
+
+    if (!alive) {
+        SDL_SetError("CoreAudio: requested device exists, but isn't alive.");
+        return 0;
+    }
+
+    addr.mSelector = kAudioDevicePropertyHogMode;
+    size = sizeof (pid);
+    result = AudioObjectGetPropertyData(devid, &addr, 0, NULL, &size, &pid);
+
+    /* some devices don't support this property, so errors are fine here. */
+    if ((result == noErr) && (pid != -1)) {
+        SDL_SetError("CoreAudio: requested device is being hogged.");
+        return 0;
+    }
+
+    this->hidden->deviceID = devid;
+    return 1;
+}
+#endif
 
 static int
-prepare_audiounit(_THIS, const char *devname, int iscapture,
+prepare_audiounit(_THIS, void *handle, int iscapture,
                   const AudioStreamBasicDescription * strdesc)
 {
     OSStatus result = noErr;
@@ -373,8 +496,7 @@ prepare_audiounit(_THIS, const char *devname, int iscapture,
                                   kAudioUnitScope_Input);
 
 #if MACOSX_COREAUDIO
-    if (!find_device_by_name(this, devname, iscapture)) {
-        SDL_SetError("Couldn't find requested CoreAudio device");
+    if (!prepare_device(this, handle, iscapture)) {
         return 0;
     }
 #endif
@@ -451,13 +573,18 @@ prepare_audiounit(_THIS, const char *devname, int iscapture,
     result = AudioOutputUnitStart(this->hidden->audioUnit);
     CHECK_RESULT("AudioOutputUnitStart");
 
+#if MACOSX_COREAUDIO
+    /* Fire a callback if the device stops being "alive" (disconnected, etc). */
+    AudioObjectAddPropertyListener(this->hidden->deviceID, &alive_address, device_unplugged, this);
+#endif
+
     /* We're running! */
     return 1;
 }
 
 
 static int
-COREAUDIO_OpenDevice(_THIS, const char *devname, int iscapture)
+COREAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 {
     AudioStreamBasicDescription strdesc;
     SDL_AudioFormat test_format = SDL_FirstAudioFormat(this->spec.format);
@@ -516,12 +643,22 @@ COREAUDIO_OpenDevice(_THIS, const char *devname, int iscapture)
     strdesc.mBytesPerPacket =
         strdesc.mBytesPerFrame * strdesc.mFramesPerPacket;
 
-    if (!prepare_audiounit(this, devname, iscapture, &strdesc)) {
+    if (!prepare_audiounit(this, handle, iscapture, &strdesc)) {
         COREAUDIO_CloseDevice(this);
         return -1;      /* prepare_audiounit() will call SDL_SetError()... */
     }
 
     return 0;   /* good to go. */
+}
+
+static void
+COREAUDIO_Deinitialize(void)
+{
+#if MACOSX_COREAUDIO
+    AudioObjectRemovePropertyListener(kAudioObjectSystemObject, &devlist_address, device_list_changed, NULL);
+    free_audio_device_list(&capture_devs);
+    free_audio_device_list(&output_devs);
+#endif
 }
 
 static int
@@ -530,9 +667,11 @@ COREAUDIO_Init(SDL_AudioDriverImpl * impl)
     /* Set the function pointers */
     impl->OpenDevice = COREAUDIO_OpenDevice;
     impl->CloseDevice = COREAUDIO_CloseDevice;
+    impl->Deinitialize = COREAUDIO_Deinitialize;
 
 #if MACOSX_COREAUDIO
     impl->DetectDevices = COREAUDIO_DetectDevices;
+    AudioObjectAddPropertyListener(kAudioObjectSystemObject, &devlist_address, device_list_changed, NULL);
 #else
     impl->OnlyHasDefaultOutputDevice = 1;
 
@@ -553,5 +692,7 @@ COREAUDIO_Init(SDL_AudioDriverImpl * impl)
 AudioBootStrap COREAUDIO_bootstrap = {
     "coreaudio", "CoreAudio", COREAUDIO_Init, 0
 };
+
+#endif /* SDL_AUDIO_DRIVER_COREAUDIO */
 
 /* vi: set ts=4 sw=4 expandtab: */

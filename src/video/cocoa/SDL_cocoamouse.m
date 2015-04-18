@@ -399,6 +399,13 @@ Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event)
 
     float x = -[event deltaX];
     float y = [event deltaY];
+    SDL_MouseWheelDirection direction = SDL_MOUSEWHEEL_NORMAL;
+
+    if ([event respondsToSelector:@selector(isDirectionInvertedFromDevice)]) {
+        if ([event isDirectionInvertedFromDevice] == YES) {
+            direction = SDL_MOUSEWHEEL_FLIPPED;
+        }
+    }
 
     if (x > 0) {
         x += 0.9f;
@@ -410,7 +417,7 @@ Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event)
     } else if (y < 0) {
         y -= 0.9f;
     }
-    SDL_SendMouseWheel(window, mouse->mouseID, (int)x, (int)y);
+    SDL_SendMouseWheel(window, mouse->mouseID, (int)x, (int)y, direction);
 }
 
 void

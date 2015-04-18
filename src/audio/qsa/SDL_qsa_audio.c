@@ -19,6 +19,15 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+/*
+ * !!! FIXME: streamline this a little by removing all the
+ * !!! FIXME:  if (capture) {} else {} sections that are identical
+ * !!! FIXME:  except for one flag.
+ */
+
+/* !!! FIXME: can this target support hotplugging? */
+/* !!! FIXME: ...does SDL2 even support QNX? */
+
 #include "../../SDL_internal.h"
 
 #if SDL_AUDIO_DRIVER_QSA
@@ -300,7 +309,7 @@ QSA_PlayDevice(_THIS)
 
     /* If we couldn't write, assume fatal error for now */
     if (towrite != 0) {
-        this->enabled = 0;
+        SDL_OpenedAudioDeviceDisconnected(this);
     }
 }
 
@@ -337,8 +346,9 @@ QSA_CloseDevice(_THIS)
 }
 
 static int
-QSA_OpenDevice(_THIS, const char *devname, int iscapture)
+QSA_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 {
+    const QSA_Device *device = (const QSA_Device *) handle;
     int status = 0;
     int format = 0;
     SDL_AudioFormat test_format = 0;
@@ -363,80 +373,19 @@ QSA_OpenDevice(_THIS, const char *devname, int iscapture)
     /* Initialize channel direction: capture or playback */
     this->hidden->iscapture = iscapture;
 
-    /* Find deviceid and cardid by device name for playback */
-    if ((!this->hidden->iscapture) && (devname != NULL)) {
-        uint32_t device;
-        int32_t status;
-
-        /* Search in the playback devices */
-        device = 0;
-        do {
-            status = SDL_strcmp(qsa_playback_device[device].name, devname);
-            if (status == 0) {
-                /* Found requested device */
-                this->hidden->deviceno = qsa_playback_device[device].deviceno;
-                this->hidden->cardno = qsa_playback_device[device].cardno;
-                break;
-            }
-            device++;
-            if (device >= qsa_playback_devices) {
-                QSA_CloseDevice(this);
-                return SDL_SetError("No such playback device");
-            }
-        } while (1);
-    }
-
-    /* Find deviceid and cardid by device name for capture */
-    if ((this->hidden->iscapture) && (devname != NULL)) {
-        /* Search in the capture devices */
-        uint32_t device;
-        int32_t status;
-
-        /* Searching in the playback devices */
-        device = 0;
-        do {
-            status = SDL_strcmp(qsa_capture_device[device].name, devname);
-            if (status == 0) {
-                /* Found requested device */
-                this->hidden->deviceno = qsa_capture_device[device].deviceno;
-                this->hidden->cardno = qsa_capture_device[device].cardno;
-                break;
-            }
-            device++;
-            if (device >= qsa_capture_devices) {
-                QSA_CloseDevice(this);
-                return SDL_SetError("No such capture device");
-            }
-        } while (1);
-    }
-
-    /* Check if SDL requested default audio device */
-    if (devname == NULL) {
-        /* Open system default audio device */
-        if (!this->hidden->iscapture) {
-            status = snd_pcm_open_preferred(&this->hidden->audio_handle,
-                                            &this->hidden->cardno,
-                                            &this->hidden->deviceno,
-                                            SND_PCM_OPEN_PLAYBACK);
-        } else {
-            status = snd_pcm_open_preferred(&this->hidden->audio_handle,
-                                            &this->hidden->cardno,
-                                            &this->hidden->deviceno,
-                                            SND_PCM_OPEN_CAPTURE);
-        }
-    } else {
+    if (device != NULL) {
         /* Open requested audio device */
-        if (!this->hidden->iscapture) {
-            status =
-                snd_pcm_open(&this->hidden->audio_handle,
-                             this->hidden->cardno, this->hidden->deviceno,
-                             SND_PCM_OPEN_PLAYBACK);
-        } else {
-            status =
-                snd_pcm_open(&this->hidden->audio_handle,
-                             this->hidden->cardno, this->hidden->deviceno,
-                             SND_PCM_OPEN_CAPTURE);
-        }
+        this->hidden->deviceno = device->deviceno;
+        this->hidden->cardno = device->cardno;
+        status = snd_pcm_open(&this->hidden->audio_handle,
+                              device->cardno, device->deviceno,
+                              iscapture ? SND_PCM_OPEN_PLAYBACK : SND_PCM_OPEN_CAPTURE);
+    } else {
+        /* Open system default audio device */
+        status = snd_pcm_open_preferred(&this->hidden->audio_handle,
+                                        &this->hidden->cardno,
+                                        &this->hidden->deviceno,
+                                        iscapture ? SND_PCM_OPEN_PLAYBACK : SND_PCM_OPEN_CAPTURE);
     }
 
     /* Check if requested device is opened */
@@ -638,7 +587,7 @@ QSA_OpenDevice(_THIS, const char *devname, int iscapture)
 }
 
 static void
-QSA_DetectDevices(int iscapture, SDL_AddAudioDevice addfn)
+QSA_DetectDevices(void)
 {
     uint32_t it;
     uint32_t cards;
@@ -656,8 +605,9 @@ QSA_DetectDevices(int iscapture, SDL_AddAudioDevice addfn)
         return;
     }
 
+    /* !!! FIXME: code duplication */
     /* Find requested devices by type */
-    if (!iscapture) {
+    {  /* output devices */
         /* Playback devices enumeration requested */
         for (it = 0; it < cards; it++) {
             devices = 0;
@@ -688,7 +638,7 @@ QSA_DetectDevices(int iscapture, SDL_AddAudioDevice addfn)
                             devices;
                         status = snd_pcm_close(handle);
                         if (status == EOK) {
-                            addfn(qsa_playback_device[qsa_playback_devices].name);
+                            SDL_AddAudioDevice(SDL_FALSE, qsa_playback_device[qsa_playback_devices].name, &qsa_playback_device[qsa_playback_devices]);
                             qsa_playback_devices++;
                         }
                     } else {
@@ -713,7 +663,9 @@ QSA_DetectDevices(int iscapture, SDL_AddAudioDevice addfn)
                 break;
             }
         }
-    } else {
+    }
+
+    {  /* capture devices */
         /* Capture devices enumeration requested */
         for (it = 0; it < cards; it++) {
             devices = 0;
@@ -744,7 +696,7 @@ QSA_DetectDevices(int iscapture, SDL_AddAudioDevice addfn)
                             devices;
                         status = snd_pcm_close(handle);
                         if (status == EOK) {
-                            addfn(qsa_capture_device[qsa_capture_devices].name);
+                            SDL_AddAudioDevice(SDL_TRUE, qsa_capture_device[qsa_capture_devices].name, &qsa_capture_device[qsa_capture_devices]);
                             qsa_capture_devices++;
                         }
                     } else {

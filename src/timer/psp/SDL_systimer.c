@@ -18,6 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include "../../SDL_internal.h"
+
+#ifdef SDL_TIMERS_PSP
 
 #include "SDL_thread.h"
 #include "SDL_timer.h"
@@ -81,6 +84,8 @@ void SDL_Delay(Uint32 ms)
         ms = max_delay;
     sceKernelDelayThreadCB(ms * 1000);
 }
+
+#endif /* SDL_TIMERS_PSP */
 
 /* vim: ts=4 sw=4
  */

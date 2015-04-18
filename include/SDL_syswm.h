@@ -98,6 +98,7 @@ typedef struct _NSWindow NSWindow;
 typedef struct _UIWindow UIWindow;
 typedef struct _UIViewController UIViewController;
 #endif
+typedef Uint32 GLuint;
 #endif
 
 #if defined(SDL_VIDEO_DRIVER_ANDROID)
@@ -186,6 +187,7 @@ struct SDL_SysWMinfo
         struct
         {
             HWND window;                /**< The window handle */
+            HDC hdc;                    /**< The window device context */
         } win;
 #endif
 #if defined(SDL_VIDEO_DRIVER_WINRT)
@@ -227,6 +229,8 @@ struct SDL_SysWMinfo
 #else
             UIWindow *window;                     /* The UIKit window */
 #endif
+            GLuint framebuffer; /* The GL view's Framebuffer Object. It must be bound when rendering to the screen using GL. */
+            GLuint colorbuffer; /* The GL view's color Renderbuffer Object. It must be bound when SDL_GL_SwapWindow is called. */
         } uikit;
 #endif
 #if defined(SDL_VIDEO_DRIVER_WAYLAND)

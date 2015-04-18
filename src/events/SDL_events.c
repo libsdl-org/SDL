@@ -75,12 +75,13 @@ static struct
     SDL_mutex *lock;
     volatile SDL_bool active;
     volatile int count;
+    volatile int max_events_seen;
     SDL_EventEntry *head;
     SDL_EventEntry *tail;
     SDL_EventEntry *free;
     SDL_SysWMEntry *wmmsg_used;
     SDL_SysWMEntry *wmmsg_free;
-} SDL_EventQ = { NULL, SDL_TRUE };
+} SDL_EventQ = { NULL, SDL_TRUE, 0, 0, NULL, NULL, NULL, NULL, NULL };
 
 
 /* Public functions */
@@ -88,6 +89,7 @@ static struct
 void
 SDL_StopEventLoop(void)
 {
+    const char *report = SDL_GetHint("SDL_EVENT_QUEUE_STATISTICS");
     int i;
     SDL_EventEntry *entry;
     SDL_SysWMEntry *wmmsg;
@@ -97,6 +99,11 @@ SDL_StopEventLoop(void)
     }
 
     SDL_EventQ.active = SDL_FALSE;
+
+    if (report && SDL_atoi(report)) {
+        SDL_Log("SDL EVENT QUEUE: Maximum events in-flight: %d\n",
+                SDL_EventQ.max_events_seen);
+    }
 
     /* Clean out EventQ */
     for (entry = SDL_EventQ.head; entry; ) {
@@ -119,7 +126,9 @@ SDL_StopEventLoop(void)
         SDL_free(wmmsg);
         wmmsg = next;
     }
+
     SDL_EventQ.count = 0;
+    SDL_EventQ.max_events_seen = 0;
     SDL_EventQ.head = NULL;
     SDL_EventQ.tail = NULL;
     SDL_EventQ.free = NULL;
@@ -217,6 +226,10 @@ SDL_AddEvent(SDL_Event * event)
         entry->next = NULL;
     }
     ++SDL_EventQ.count;
+
+    if (SDL_EventQ.count > SDL_EventQ.max_events_seen) {
+        SDL_EventQ.max_events_seen = SDL_EventQ.count;
+    }
 
     return 1;
 }

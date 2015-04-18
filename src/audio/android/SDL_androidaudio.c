@@ -35,7 +35,7 @@
 static SDL_AudioDevice* audioDevice = NULL;
 
 static int
-AndroidAUD_OpenDevice(_THIS, const char *devname, int iscapture)
+AndroidAUD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 {
     SDL_AudioFormat test_format;
 

@@ -462,6 +462,9 @@ SDL_IBus_Init(void)
         ibus_addr_file = SDL_strdup(addr_file);
         
         addr = IBus_ReadAddressFromFile(addr_file);
+        if (!addr) {
+            return SDL_FALSE;
+        }
         
         if (inotify_fd < 0) {
             inotify_fd = inotify_init();
@@ -476,8 +479,10 @@ SDL_IBus_Init(void)
         inotify_wd = inotify_add_watch(inotify_fd, addr_file, IN_CREATE | IN_MODIFY);
         SDL_free(addr_file);
         
-        result = IBus_SetupConnection(dbus, addr);
-        SDL_free(addr);
+        if (addr) {
+            result = IBus_SetupConnection(dbus, addr);
+            SDL_free(addr);
+        }
     }
     
     return result;

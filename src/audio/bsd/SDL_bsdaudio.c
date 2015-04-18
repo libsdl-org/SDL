@@ -51,9 +51,9 @@
 
 
 static void
-BSDAUDIO_DetectDevices(int iscapture, SDL_AddAudioDevice addfn)
+BSDAUDIO_DetectDevices(void)
 {
-    SDL_EnumUnixAudioDevices(iscapture, 0, NULL, addfn);
+    SDL_EnumUnixAudioDevices(0, NULL);
 }
 
 
@@ -150,7 +150,7 @@ BSDAUDIO_WaitDevice(_THIS)
                the user know what happened.
              */
             fprintf(stderr, "SDL: %s\n", message);
-            this->enabled = 0;
+            SDL_OpenedAudioDeviceDisconnected(this);
             /* Don't try to close - may hang */
             this->hidden->audio_fd = -1;
 #ifdef DEBUG_AUDIO
@@ -195,7 +195,7 @@ BSDAUDIO_PlayDevice(_THIS)
 
     /* If we couldn't write, assume fatal error for now */
     if (written < 0) {
-        this->enabled = 0;
+        SDL_OpenedAudioDeviceDisconnected(this);
     }
 #ifdef DEBUG_AUDIO
     fprintf(stderr, "Wrote %d bytes of audio data\n", written);
@@ -224,7 +224,7 @@ BSDAUDIO_CloseDevice(_THIS)
 }
 
 static int
-BSDAUDIO_OpenDevice(_THIS, const char *devname, int iscapture)
+BSDAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 {
     const int flags = ((iscapture) ? OPEN_FLAGS_INPUT : OPEN_FLAGS_OUTPUT);
     SDL_AudioFormat format = 0;
@@ -347,6 +347,8 @@ BSDAUDIO_Init(SDL_AudioDriverImpl * impl)
     impl->WaitDevice = BSDAUDIO_WaitDevice;
     impl->GetDeviceBuf = BSDAUDIO_GetDeviceBuf;
     impl->CloseDevice = BSDAUDIO_CloseDevice;
+
+    impl->AllowsArbitraryDeviceNames = 1;
 
     return 1;   /* this audio target is available. */
 }

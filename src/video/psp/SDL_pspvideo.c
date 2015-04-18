@@ -66,7 +66,7 @@ PSP_Create()
     SDL_GLDriverData *gldata;
     int status;
 
-    /* Check if pandora could be initialized */
+    /* Check if PSP could be initialized */
     status = PSP_Available();
     if (status == 0) {
         /* PSP could not be used */
@@ -80,7 +80,7 @@ PSP_Create()
         return NULL;
     }
 
-    /* Initialize internal Pandora specific data */
+    /* Initialize internal PSP specific data */
     phdata = (SDL_VideoData *) SDL_calloc(1, sizeof(SDL_VideoData));
     if (phdata == NULL) {
         SDL_OutOfMemory();

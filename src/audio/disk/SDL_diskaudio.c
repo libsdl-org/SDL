@@ -71,7 +71,7 @@ DISKAUD_PlayDevice(_THIS)
 
     /* If we couldn't write, assume fatal error for now */
     if (written != this->hidden->mixlen) {
-        this->enabled = 0;
+        SDL_OpenedAudioDeviceDisconnected(this);
     }
 #ifdef DEBUG_AUDIO
     fprintf(stderr, "Wrote %d bytes of audio data\n", written);
@@ -100,7 +100,7 @@ DISKAUD_CloseDevice(_THIS)
 }
 
 static int
-DISKAUD_OpenDevice(_THIS, const char *devname, int iscapture)
+DISKAUD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 {
     const char *envr = SDL_getenv(DISKENVR_WRITEDELAY);
     const char *fname = DISKAUD_GetOutputFilename(devname);
@@ -150,6 +150,8 @@ DISKAUD_Init(SDL_AudioDriverImpl * impl)
     impl->PlayDevice = DISKAUD_PlayDevice;
     impl->GetDeviceBuf = DISKAUD_GetDeviceBuf;
     impl->CloseDevice = DISKAUD_CloseDevice;
+
+    impl->AllowsArbitraryDeviceNames = 1;
 
     return 1;   /* this audio target is available. */
 }

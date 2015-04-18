@@ -55,6 +55,7 @@ extern void Wayland_DestroyWindow(_THIS, SDL_Window *window);
 
 extern SDL_bool
 Wayland_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info);
+extern int Wayland_SetWindowHitTest(SDL_Window *window, SDL_bool enabled);
 
 #endif /* _SDL_waylandwindow_h */
 

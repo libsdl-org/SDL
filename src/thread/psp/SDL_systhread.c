@@ -18,7 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include "../../SDL_internal.h"
 
+#if SDL_THREAD_PSP
 
 /* PSP thread management routines for SDL */
 
@@ -103,6 +105,8 @@ int SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
     return sceKernelChangeThreadPriority(sceKernelGetThreadId(),value);
 
 }
+
+#endif /* SDL_THREAD_PSP */
 
 /* vim: ts=4 sw=4
  */

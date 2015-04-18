@@ -46,6 +46,10 @@
 #include "SDL_opengles2.h"
 #endif /* SDL_VIDEO_OPENGL_ES2 && !SDL_VIDEO_OPENGL */
 
+#ifndef GL_CONTEXT_RELEASE_BEHAVIOR_KHR
+#define GL_CONTEXT_RELEASE_BEHAVIOR_KHR 0x82FB
+#endif
+
 /* On Windows, windows.h defines CreateWindow */
 #ifdef CreateWindow
 #undef CreateWindow
@@ -97,6 +101,9 @@ static VideoBootStrap *bootstrap[] = {
 #endif 
 #if SDL_VIDEO_DRIVER_NACL
     &NACL_bootstrap,
+#endif
+#if SDL_VIDEO_DRIVER_EMSCRIPTEN
+    &Emscripten_bootstrap,
 #endif
 #if SDL_VIDEO_DRIVER_DUMMY
     &DUMMY_bootstrap,
@@ -1100,22 +1107,22 @@ SDL_RestoreMousePosition(SDL_Window *window)
     }
 }
 
-static void
+static int
 SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
 {
     SDL_VideoDisplay *display;
     SDL_Window *other;
 
-    CHECK_WINDOW_MAGIC(window,);
+    CHECK_WINDOW_MAGIC(window,-1);
 
     /* if we are in the process of hiding don't go back to fullscreen */
     if ( window->is_hiding && fullscreen )
-        return;
+        return 0;
     
 #ifdef __MACOSX__
     if (Cocoa_SetWindowFullscreenSpace(window, fullscreen)) {
         window->last_fullscreen_flags = window->flags;
-        return;
+        return 0;
     }
 #endif
 
@@ -1132,7 +1139,7 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
     /* See if anything needs to be done now */
     if ((display->fullscreen_window == window) == fullscreen) {
         if ((window->last_fullscreen_flags & FULLSCREEN_MASK) == (window->flags & FULLSCREEN_MASK)) {
-            return;
+            return 0;
         }
     }
 
@@ -1161,9 +1168,13 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
 
                 /* only do the mode change if we want exclusive fullscreen */
                 if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) != SDL_WINDOW_FULLSCREEN_DESKTOP) {
-                    SDL_SetDisplayModeForDisplay(display, &fullscreen_mode);
+                    if (SDL_SetDisplayModeForDisplay(display, &fullscreen_mode) < 0) {
+                        return -1;
+                    }
                 } else {
-                    SDL_SetDisplayModeForDisplay(display, NULL);
+                    if (SDL_SetDisplayModeForDisplay(display, NULL) < 0) {
+                        return -1;
+                    }
                 }
 
                 if (_this->SetWindowFullscreen) {
@@ -1182,7 +1193,7 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
                 SDL_RestoreMousePosition(other);
 
                 window->last_fullscreen_flags = window->flags;
-                return;
+                return 0;
             }
         }
     }
@@ -1202,6 +1213,7 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
     SDL_RestoreMousePosition(window);
 
     window->last_fullscreen_flags = window->flags;
+    return 0;
 }
 
 #define CREATE_FLAGS \
@@ -1251,6 +1263,12 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
     }
     if (h < 1) {
         h = 1;
+    }
+
+    /* Some platforms blow up if the windows are too large. Raise it later? */
+    if ((w > 16384) || (h > 16384)) {
+        SDL_SetError("Window is too large.");
+        return NULL;
     }
 
     /* Some platforms have OpenGL enabled by default */
@@ -1489,11 +1507,8 @@ SDL_SetWindowTitle(SDL_Window * window, const char *title)
         return;
     }
     SDL_free(window->title);
-    if (title && *title) {
-        window->title = SDL_strdup(title);
-    } else {
-        window->title = NULL;
-    }
+
+    window->title = SDL_strdup(title ? title : "");
 
     if (_this->SetWindowTitle) {
         _this->SetWindowTitle(_this, window);
@@ -1604,13 +1619,14 @@ SDL_SetWindowPosition(SDL_Window * window, int x, int y)
     CHECK_WINDOW_MAGIC(window,);
 
     if (SDL_WINDOWPOS_ISCENTERED(x) || SDL_WINDOWPOS_ISCENTERED(y)) {
-        SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
-        int displayIndex;
+        int displayIndex = (x & 0xFFFF);
         SDL_Rect bounds;
+        if (displayIndex > _this->num_displays) {
+            displayIndex = 0;
+        }
 
         SDL_zero(bounds);
 
-        displayIndex = SDL_GetIndexOfDisplay(display);
         SDL_GetDisplayBounds(displayIndex, &bounds);
         if (SDL_WINDOWPOS_ISCENTERED(x)) {
             x = bounds.x + (bounds.w - window->w) / 2;
@@ -1927,9 +1943,7 @@ SDL_SetWindowFullscreen(SDL_Window * window, Uint32 flags)
     window->flags &= ~FULLSCREEN_MASK;
     window->flags |= flags;
 
-    SDL_UpdateFullscreenMode(window, FULLSCREEN_VISIBLE(window));
-
-    return 0;
+    return SDL_UpdateFullscreenMode(window, FULLSCREEN_VISIBLE(window));
 }
 
 static SDL_Surface *
@@ -2041,6 +2055,7 @@ SDL_SetWindowGammaRamp(SDL_Window * window, const Uint16 * red,
         if (SDL_GetWindowGammaRamp(window, NULL, NULL, NULL) < 0) {
             return -1;
         }
+        SDL_assert(window->gamma != NULL);
     }
 
     if (red) {
@@ -2108,6 +2123,7 @@ void
 SDL_UpdateWindowGrab(SDL_Window * window)
 {
     if (_this->SetWindowGrab) {
+        SDL_Window *grabbed_window;
         SDL_bool grabbed;
         if ((SDL_GetMouse()->relative_mode || (window->flags & SDL_WINDOW_INPUT_GRABBED)) &&
              (window->flags & SDL_WINDOW_INPUT_FOCUS)) {
@@ -2115,6 +2131,19 @@ SDL_UpdateWindowGrab(SDL_Window * window)
         } else {
             grabbed = SDL_FALSE;
         }
+
+        grabbed_window = _this->grabbed_window;
+        if (grabbed) {
+            if (grabbed_window && (grabbed_window != window)) {
+                /* stealing a grab from another window! */
+                grabbed_window->flags &= ~SDL_WINDOW_INPUT_GRABBED;
+                _this->SetWindowGrab(_this, grabbed_window, SDL_FALSE);
+            }
+            _this->grabbed_window = window;
+        } else if (grabbed_window == window) {
+            _this->grabbed_window = NULL;  /* ungrabbing. */
+        }
+
         _this->SetWindowGrab(_this, window, grabbed);
     }
 }
@@ -2139,8 +2168,15 @@ SDL_bool
 SDL_GetWindowGrab(SDL_Window * window)
 {
     CHECK_WINDOW_MAGIC(window, SDL_FALSE);
+    SDL_assert(!_this->grabbed_window || ((_this->grabbed_window->flags & SDL_WINDOW_INPUT_GRABBED) != 0));
+    return window == _this->grabbed_window;
+}
 
-    return ((window->flags & SDL_WINDOW_INPUT_GRABBED) != 0);
+SDL_Window *
+SDL_GetGrabbedWindow(void)
+{
+    SDL_assert(!_this->grabbed_window || ((_this->grabbed_window->flags & SDL_WINDOW_INPUT_GRABBED) != 0));
+    return _this->grabbed_window;
 }
 
 void
@@ -2633,6 +2669,7 @@ SDL_GL_ResetAttributes()
 #endif
     _this->gl_config.flags = 0;
     _this->gl_config.framebuffer_srgb_capable = 0;
+    _this->gl_config.release_behavior = SDL_GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH;
 
     _this->gl_config.share_with_current_context = 0;
 }
@@ -2739,6 +2776,9 @@ SDL_GL_SetAttribute(SDL_GLattr attr, int value)
     case SDL_GL_FRAMEBUFFER_SRGB_CAPABLE:
         _this->gl_config.framebuffer_srgb_capable = value;
         break;
+    case SDL_GL_CONTEXT_RELEASE_BEHAVIOR:
+        _this->gl_config.release_behavior = value;
+        break;
     default:
         retval = SDL_SetError("Unknown OpenGL attribute");
         break;
@@ -2839,6 +2879,13 @@ SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
         attrib = GL_SAMPLES_ARB;
 #else
         attrib = GL_SAMPLES;
+#endif
+        break;
+    case SDL_GL_CONTEXT_RELEASE_BEHAVIOR:
+#if SDL_VIDEO_OPENGL
+        attrib = GL_CONTEXT_RELEASE_BEHAVIOR;
+#else
+        attrib = GL_CONTEXT_RELEASE_BEHAVIOR_KHR;
 #endif
         break;
     case SDL_GL_BUFFER_SIZE:

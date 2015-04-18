@@ -111,7 +111,7 @@ UnmaskSignals(sigset_t * omask)
 
 
 static int
-HAIKUAUDIO_OpenDevice(_THIS, const char *devname, int iscapture)
+HAIKUAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 {
     int valid_datatype = 0;
     media_raw_audio_format format;

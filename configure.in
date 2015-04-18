@@ -2130,6 +2130,40 @@ CheckMacGL()
     fi
 }
 
+CheckEmscriptenGLES()
+{
+    if test x$enable_video = xyes -a x$enable_video_opengles = xyes; then
+        AC_MSG_CHECKING(for EGL support)
+        video_opengl_egl=no
+        AC_TRY_COMPILE([
+         #include <EGL/egl.h>
+        ],[
+        ],[
+        video_opengl_egl=yes
+        ])
+        AC_MSG_RESULT($video_opengl_egl)
+        if test x$video_opengl_egl = xyes; then
+            AC_DEFINE(SDL_VIDEO_OPENGL_EGL, 1, [ ])
+        fi
+
+        AC_MSG_CHECKING(for OpenGL ES v2 headers)
+        video_opengles_v2=no
+        AC_TRY_COMPILE([
+         #include <GLES2/gl2.h>
+         #include <GLES2/gl2ext.h>
+        ],[
+        ],[
+        video_opengles_v2=yes
+        ])
+        AC_MSG_RESULT($video_opengles_v2)
+        if test x$video_opengles_v2 = xyes; then
+            AC_DEFINE(SDL_VIDEO_OPENGL_ES2, 1, [ ])
+            AC_DEFINE(SDL_VIDEO_RENDER_OGL_ES2, 1, [ ])
+            SUMMARY_video="${SUMMARY_video} opengl_es2"
+        fi
+    fi
+}
+
 dnl See if we can use the new unified event interface in Linux 2.4
 CheckInputEvents()
 {
@@ -2390,7 +2424,8 @@ AC_HELP_STRING([--enable-pthread-sem], [use pthread semaphores [[default=yes]]])
             AC_MSG_CHECKING(for recursive mutexes)
             has_recursive_mutexes=no
             if test x$has_recursive_mutexes = xno; then
-                AC_TRY_COMPILE([
+                AC_TRY_LINK([
+                  #define _GNU_SOURCE 1
                   #include <pthread.h>
                 ],[
                   pthread_mutexattr_t attr;
@@ -2401,7 +2436,8 @@ AC_HELP_STRING([--enable-pthread-sem], [use pthread semaphores [[default=yes]]])
                 ])
             fi
             if test x$has_recursive_mutexes = xno; then
-                AC_TRY_COMPILE([
+                AC_TRY_LINK([
+                  #define _GNU_SOURCE 1
                   #include <pthread.h>
                 ],[
                   pthread_mutexattr_t attr;
@@ -2801,7 +2837,9 @@ case "$host" in
 
                 if test x$enable_video = xyes; then
                     SOURCES="$SOURCES $srcdir/src/video/raspberry/*.c"
+                    # FIXME: confdefs? Not AC_DEFINE?
                     $as_echo "#define SDL_VIDEO_DRIVER_RPI 1" >>confdefs.h
+                    SUMMARY_video="${SUMMARY_video} rpi"
                 fi
                 ;;
             *-*-androideabi*)
@@ -2815,6 +2853,7 @@ case "$host" in
 
                 if test x$enable_video = xyes; then
                     SOURCES="$SOURCES $srcdir/src/core/android/*.c $srcdir/src/video/android/*.c"
+                    # FIXME: confdefs? Not AC_DEFINE?
                     $as_echo "#define SDL_VIDEO_DRIVER_ANDROID 1" >>confdefs.h
                     SUMMARY_video="${SUMMARY_video} android"
                 fi
@@ -2937,9 +2976,18 @@ case "$host" in
         fi
         # Set up files for the filesystem library
         if test x$enable_filesystem = xyes; then
-            AC_DEFINE(SDL_FILESYSTEM_UNIX, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/filesystem/unix/*.c"
-            have_filesystem=yes
+             case $ARCH in
+               android)
+                   AC_DEFINE(SDL_FILESYSTEM_ANDROID, 1, [ ])
+                   SOURCES="$SOURCES $srcdir/src/filesystem/android/*.c"
+                   have_filesystem=yes
+               ;;
+               *)
+                   AC_DEFINE(SDL_FILESYSTEM_UNIX, 1, [ ])
+                   SOURCES="$SOURCES $srcdir/src/filesystem/unix/*.c"
+                   have_filesystem=yes
+               ;;
+             esac
         fi
         # Set up files for the timer library
         if test x$enable_timers = xyes; then
@@ -3302,7 +3350,56 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
             SOURCES="$SOURCES $srcdir/src/filesystem/nacl/*.c"
             have_filesystem=yes
         fi
+        ;;
+    *-*-emscripten* )
+        if test x$enable_video = xyes; then
+            AC_DEFINE(SDL_VIDEO_DRIVER_EMSCRIPTEN, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/video/emscripten/*.c"
+            have_video=yes
+            SUMMARY_video="${SUMMARY_video} emscripten"
+        fi
+
+        if test x$enable_audio = xyes; then
+            AC_DEFINE(SDL_AUDIO_DRIVER_EMSCRIPTEN, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/audio/emscripten/*.c"
+            have_audio=yes
+            SUMMARY_audio="${SUMMARY_audio} emscripten"
+        fi
+
+        CheckVisibilityHidden
+        CheckDummyVideo
+        CheckDiskAudio
+        CheckDummyAudio
+        CheckDLOPEN
+        CheckClockGettime
+        CheckEmscriptenGLES
+
+         # Set up files for the power library
+        if test x$enable_power = xyes; then
+            AC_DEFINE(SDL_POWER_EMSCRIPTEN, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/power/emscripten/*.c"
+            have_power=yes
+        fi
         
+        # Set up files for the power library
+        if test x$enable_joystick = xyes; then
+            AC_DEFINE(SDL_JOYSTICK_EMSCRIPTEN, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/joystick/emscripten/*.c"
+            have_joystick=yes
+        fi
+
+        # Set up files for the filesystem library
+        if test x$enable_filesystem = xyes; then
+            AC_DEFINE(SDL_FILESYSTEM_EMSCRIPTEN, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/filesystem/emscripten/*.c"
+            have_filesystem=yes
+        fi
+        # Set up files for the timer library
+        if test x$enable_timers = xyes; then
+            AC_DEFINE(SDL_TIMER_UNIX, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/timer/unix/*.c"
+            have_timers=yes
+        fi
         ;;
     *)
         AC_MSG_ERROR([

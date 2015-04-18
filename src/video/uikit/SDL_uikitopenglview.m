@@ -22,170 +22,190 @@
 
 #if SDL_VIDEO_DRIVER_UIKIT
 
-#include <QuartzCore/QuartzCore.h>
 #include <OpenGLES/EAGLDrawable.h>
-#include "SDL_uikitopenglview.h"
-#include "SDL_uikitmessagebox.h"
+#include <OpenGLES/ES2/glext.h>
+#import "SDL_uikitopenglview.h"
+#include "SDL_uikitwindow.h"
 
+@implementation SDLEAGLContext
 
-@implementation SDL_uikitopenglview
+@end
+
+@implementation SDL_uikitopenglview {
+    /* The renderbuffer and framebuffer used to render to this layer. */
+    GLuint viewRenderbuffer, viewFramebuffer;
+
+    /* The depth buffer that is attached to viewFramebuffer, if it exists. */
+    GLuint depthRenderbuffer;
+
+    /* format of depthRenderbuffer */
+    GLenum depthBufferFormat;
+}
 
 @synthesize context;
+@synthesize backingWidth;
+@synthesize backingHeight;
 
 + (Class)layerClass
 {
     return [CAEAGLLayer class];
 }
 
-- (id)initWithFrame:(CGRect)frame
-      scale:(CGFloat)scale
-      retainBacking:(BOOL)retained
-      rBits:(int)rBits
-      gBits:(int)gBits
-      bBits:(int)bBits
-      aBits:(int)aBits
-      depthBits:(int)depthBits
-      stencilBits:(int)stencilBits
-      majorVersion:(int)majorVersion
-      shareGroup:(EAGLSharegroup*)shareGroup
+- (instancetype)initWithFrame:(CGRect)frame
+                        scale:(CGFloat)scale
+                retainBacking:(BOOL)retained
+                        rBits:(int)rBits
+                        gBits:(int)gBits
+                        bBits:(int)bBits
+                        aBits:(int)aBits
+                    depthBits:(int)depthBits
+                  stencilBits:(int)stencilBits
+                         sRGB:(BOOL)sRGB
+                 majorVersion:(int)majorVersion
+                   shareGroup:(EAGLSharegroup*)shareGroup
 {
-    depthBufferFormat = 0;
-
     if ((self = [super initWithFrame:frame])) {
         const BOOL useStencilBuffer = (stencilBits != 0);
         const BOOL useDepthBuffer = (depthBits != 0);
         NSString *colorFormat = nil;
 
         /* The EAGLRenderingAPI enum values currently map 1:1 to major GLES
-           versions, and this allows us to handle future OpenGL ES versions.
-         */
+         * versions, and this allows us to handle future OpenGL ES versions. */
         EAGLRenderingAPI api = majorVersion;
 
-        if (rBits == 8 && gBits == 8 && bBits == 8) {
-            /* if user specifically requests rbg888 or some color format higher than 16bpp */
-            colorFormat = kEAGLColorFormatRGBA8;
-        } else {
-            /* default case (faster) */
-            colorFormat = kEAGLColorFormatRGB565;
-        }
-
-        /* Get the layer */
-        CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
-
-        eaglLayer.opaque = YES;
-        eaglLayer.drawableProperties = [NSDictionary dictionaryWithObjectsAndKeys:
-                                        [NSNumber numberWithBool: retained], kEAGLDrawablePropertyRetainedBacking, colorFormat, kEAGLDrawablePropertyColorFormat, nil];
-
-        context = [[EAGLContext alloc] initWithAPI:api sharegroup:shareGroup];
+        context = [[SDLEAGLContext alloc] initWithAPI:api sharegroup:shareGroup];
         if (!context || ![EAGLContext setCurrentContext:context]) {
-            [self release];
             SDL_SetError("OpenGL ES %d not supported", majorVersion);
             return nil;
         }
 
+        context.sdlView = self;
+
+        if (sRGB) {
+            /* sRGB EAGL drawable support was added in iOS 7. */
+            if (UIKit_IsSystemVersionAtLeast(7.0)) {
+                colorFormat = kEAGLColorFormatSRGBA8;
+            } else {
+                SDL_SetError("sRGB drawables are not supported.");
+                return nil;
+            }
+        } else if (rBits >= 8 || gBits >= 8 || bBits >= 8) {
+            /* if user specifically requests rbg888 or some color format higher than 16bpp */
+            colorFormat = kEAGLColorFormatRGBA8;
+        } else {
+            /* default case (potentially faster) */
+            colorFormat = kEAGLColorFormatRGB565;
+        }
+
+        CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
+
+        eaglLayer.opaque = YES;
+        eaglLayer.drawableProperties = @{
+            kEAGLDrawablePropertyRetainedBacking:@(retained),
+            kEAGLDrawablePropertyColorFormat:colorFormat
+        };
+
         /* Set the appropriate scale (for retina display support) */
         self.contentScaleFactor = scale;
 
-        /* create the buffers */
-        glGenFramebuffersOES(1, &viewFramebuffer);
-        glGenRenderbuffersOES(1, &viewRenderbuffer);
+        /* Create the color Renderbuffer Object */
+        glGenRenderbuffers(1, &viewRenderbuffer);
+        glBindRenderbuffer(GL_RENDERBUFFER, viewRenderbuffer);
 
-        glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
-        glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
-        [context renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:(CAEAGLLayer*)self.layer];
-        glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, viewRenderbuffer);
+        if (![context renderbufferStorage:GL_RENDERBUFFER fromDrawable:eaglLayer]) {
+            SDL_SetError("Failed to create OpenGL ES drawable");
+            return nil;
+        }
 
-        glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
-        glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
+        /* Create the Framebuffer Object */
+        glGenFramebuffers(1, &viewFramebuffer);
+        glBindFramebuffer(GL_FRAMEBUFFER, viewFramebuffer);
+
+        /* attach the color renderbuffer to the FBO */
+        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, viewRenderbuffer);
+
+        glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &backingWidth);
+        glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &backingHeight);
 
         if ((useDepthBuffer) || (useStencilBuffer)) {
             if (useStencilBuffer) {
                 /* Apparently you need to pack stencil and depth into one buffer. */
                 depthBufferFormat = GL_DEPTH24_STENCIL8_OES;
             } else if (useDepthBuffer) {
-                /* iOS only has 24-bit depth buffers, even with GL_DEPTH_COMPONENT16_OES */
+                /* iOS only uses 32-bit float (exposed as fixed point 24-bit)
+                 * depth buffers. */
                 depthBufferFormat = GL_DEPTH_COMPONENT24_OES;
             }
 
-            glGenRenderbuffersOES(1, &depthRenderbuffer);
-            glBindRenderbufferOES(GL_RENDERBUFFER_OES, depthRenderbuffer);
-            glRenderbufferStorageOES(GL_RENDERBUFFER_OES, depthBufferFormat, backingWidth, backingHeight);
+            glGenRenderbuffers(1, &depthRenderbuffer);
+            glBindRenderbuffer(GL_RENDERBUFFER, depthRenderbuffer);
+            glRenderbufferStorage(GL_RENDERBUFFER, depthBufferFormat, backingWidth, backingHeight);
             if (useDepthBuffer) {
-                glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_DEPTH_ATTACHMENT_OES, GL_RENDERBUFFER_OES, depthRenderbuffer);
+                glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderbuffer);
             }
             if (useStencilBuffer) {
-                glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_STENCIL_ATTACHMENT_OES, GL_RENDERBUFFER_OES, depthRenderbuffer);
+                glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depthRenderbuffer);
             }
         }
 
-        if (glCheckFramebufferStatusOES(GL_FRAMEBUFFER_OES) != GL_FRAMEBUFFER_COMPLETE_OES) {
-            return NO;
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            SDL_SetError("Failed creating OpenGL ES framebuffer");
+            return nil;
         }
 
-        glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
-        /* end create buffers */
+        glBindRenderbuffer(GL_RENDERBUFFER, viewRenderbuffer);
 
-        self.autoresizingMask = (UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight);
-        self.autoresizesSubviews = YES;
+        [self setDebugLabels];
     }
+
     return self;
+}
+
+- (GLuint)drawableRenderbuffer
+{
+    return viewRenderbuffer;
+}
+
+- (GLuint)drawableFramebuffer
+{
+    return viewFramebuffer;
 }
 
 - (void)updateFrame
 {
-    glBindFramebufferOES(GL_FRAMEBUFFER_OES, viewFramebuffer);
-    glBindRenderbufferOES(GL_RENDERBUFFER_OES, 0);
-    glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, 0);
-    glDeleteRenderbuffersOES(1, &viewRenderbuffer);
+    GLint prevRenderbuffer = 0;
+    glGetIntegerv(GL_RENDERBUFFER_BINDING, &prevRenderbuffer);
 
-    glGenRenderbuffersOES(1, &viewRenderbuffer);
-    glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
-    [context renderbufferStorage:GL_RENDERBUFFER_OES fromDrawable:(CAEAGLLayer*)self.layer];
-    glFramebufferRenderbufferOES(GL_FRAMEBUFFER_OES, GL_COLOR_ATTACHMENT0_OES, GL_RENDERBUFFER_OES, viewRenderbuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, viewRenderbuffer);
+    [context renderbufferStorage:GL_RENDERBUFFER fromDrawable:(CAEAGLLayer *)self.layer];
 
-    glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_WIDTH_OES, &backingWidth);
-    glGetRenderbufferParameterivOES(GL_RENDERBUFFER_OES, GL_RENDERBUFFER_HEIGHT_OES, &backingHeight);
+    glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &backingWidth);
+    glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &backingHeight);
 
     if (depthRenderbuffer != 0) {
-        glBindRenderbufferOES(GL_RENDERBUFFER_OES, depthRenderbuffer);
-        glRenderbufferStorageOES(GL_RENDERBUFFER_OES, depthBufferFormat, backingWidth, backingHeight);
+        glBindRenderbuffer(GL_RENDERBUFFER, depthRenderbuffer);
+        glRenderbufferStorage(GL_RENDERBUFFER, depthBufferFormat, backingWidth, backingHeight);
     }
 
-    glBindRenderbufferOES(GL_RENDERBUFFER_OES, viewRenderbuffer);
+    glBindRenderbuffer(GL_RENDERBUFFER, prevRenderbuffer);
 }
 
-- (void)setAnimationCallback:(int)interval
-    callback:(void (*)(void*))callback
-    callbackParam:(void*)callbackParam
+- (void)setDebugLabels
 {
-    [self stopAnimation];
+    if (viewFramebuffer != 0) {
+        glLabelObjectEXT(GL_FRAMEBUFFER, viewFramebuffer, 0, "context FBO");
+    }
 
-    animationInterval = interval;
-    animationCallback = callback;
-    animationCallbackParam = callbackParam;
+    if (viewRenderbuffer != 0) {
+        glLabelObjectEXT(GL_RENDERBUFFER, viewRenderbuffer, 0, "context color buffer");
+    }
 
-    if (animationCallback)
-        [self startAnimation];
-}
-
-- (void)startAnimation
-{
-    displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(doLoop:)];
-    [displayLink setFrameInterval:animationInterval];
-    [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
-}
-
-- (void)stopAnimation
-{
-    [displayLink invalidate];
-    displayLink = nil;
-}
-
-- (void)doLoop:(CADisplayLink*)sender
-{
-    /* Don't run the game loop while a messagebox is up */
-    if (!UIKit_ShowingMessageBox()) {
-        animationCallback(animationCallbackParam);
+    if (depthRenderbuffer != 0) {
+        if (depthBufferFormat == GL_DEPTH24_STENCIL8_OES) {
+            glLabelObjectEXT(GL_RENDERBUFFER, depthRenderbuffer, 0, "context depth-stencil buffer");
+        } else {
+            glLabelObjectEXT(GL_RENDERBUFFER, depthRenderbuffer, 0, "context depth buffer");
+        }
     }
 }
 
@@ -194,44 +214,60 @@
     [EAGLContext setCurrentContext:context];
 }
 
-
 - (void)swapBuffers
 {
     /* viewRenderbuffer should always be bound here. Code that binds something
-        else is responsible for rebinding viewRenderbuffer, to reduce
-        duplicate state changes. */
-    [context presentRenderbuffer:GL_RENDERBUFFER_OES];
+     * else is responsible for rebinding viewRenderbuffer, to reduce duplicate
+     * state changes. */
+    [context presentRenderbuffer:GL_RENDERBUFFER];
 }
-
 
 - (void)layoutSubviews
 {
-    [EAGLContext setCurrentContext:context];
-    [self updateFrame];
+    [super layoutSubviews];
+
+    int width  = (int) (self.bounds.size.width * self.contentScaleFactor);
+    int height = (int) (self.bounds.size.height * self.contentScaleFactor);
+
+    /* Update the color and depth buffer storage if the layer size has changed. */
+    if (width != backingWidth || height != backingHeight) {
+        EAGLContext *prevContext = [EAGLContext currentContext];
+        if (prevContext != context) {
+            [EAGLContext setCurrentContext:context];
+        }
+
+        [self updateFrame];
+
+        if (prevContext != context) {
+            [EAGLContext setCurrentContext:prevContext];
+        }
+    }
 }
 
 - (void)destroyFramebuffer
 {
-    glDeleteFramebuffersOES(1, &viewFramebuffer);
-    viewFramebuffer = 0;
-    glDeleteRenderbuffersOES(1, &viewRenderbuffer);
-    viewRenderbuffer = 0;
+    if (viewFramebuffer != 0) {
+        glDeleteFramebuffers(1, &viewFramebuffer);
+        viewFramebuffer = 0;
+    }
 
-    if (depthRenderbuffer) {
-        glDeleteRenderbuffersOES(1, &depthRenderbuffer);
+    if (viewRenderbuffer != 0) {
+        glDeleteRenderbuffers(1, &viewRenderbuffer);
+        viewRenderbuffer = 0;
+    }
+
+    if (depthRenderbuffer != 0) {
+        glDeleteRenderbuffers(1, &depthRenderbuffer);
         depthRenderbuffer = 0;
     }
 }
 
-
 - (void)dealloc
 {
-    [self destroyFramebuffer];
     if ([EAGLContext currentContext] == context) {
+        [self destroyFramebuffer];
         [EAGLContext setCurrentContext:nil];
     }
-    [context release];
-    [super dealloc];
 }
 
 @end

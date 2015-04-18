@@ -64,6 +64,8 @@ extern int Android_GLES_LoadLibrary(_THIS, const char *path);
 int Android_ScreenWidth = 0;
 int Android_ScreenHeight = 0;
 Uint32 Android_ScreenFormat = SDL_PIXELFORMAT_UNKNOWN;
+int Android_ScreenRate = 0;
+
 SDL_sem *Android_PauseSem = NULL, *Android_ResumeSem = NULL;
 
 /* Currently only one window */
@@ -84,6 +86,7 @@ Android_SuspendScreenSaver(_THIS)
 static void
 Android_DeleteDevice(SDL_VideoDevice * device)
 {
+    SDL_free(device->driverdata);
     SDL_free(device);
 }
 
@@ -166,7 +169,7 @@ Android_VideoInit(_THIS)
     mode.format = Android_ScreenFormat;
     mode.w = Android_ScreenWidth;
     mode.h = Android_ScreenHeight;
-    mode.refresh_rate = 0;
+    mode.refresh_rate = Android_ScreenRate;
     mode.driverdata = NULL;
     if (SDL_AddBasicVideoDisplay(&mode) < 0) {
         return -1;
@@ -185,15 +188,17 @@ Android_VideoInit(_THIS)
 void
 Android_VideoQuit(_THIS)
 {
+    Android_QuitTouch();
 }
 
 /* This function gets called before VideoInit() */
 void
-Android_SetScreenResolution(int width, int height, Uint32 format)
+Android_SetScreenResolution(int width, int height, Uint32 format, float rate)
 {
     Android_ScreenWidth = width;
     Android_ScreenHeight = height;
     Android_ScreenFormat = format;
+    Android_ScreenRate = rate;
 
     if (Android_Window) {
         SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_RESIZED, width, height);

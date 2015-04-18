@@ -2988,6 +2988,11 @@ GLAPI GLboolean APIENTRY glIsProgramARB (GLuint program);
 #define GL_ARB_framebuffer_sRGB 1
 #endif /* GL_ARB_framebuffer_sRGB */
 
+#ifndef GL_KHR_context_flush_control
+#define GL_CONTEXT_RELEASE_BEHAVIOR       0x82FB
+#define GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH 0x82FC
+#endif /* GL_KHR_context_flush_control */
+
 #ifndef GL_ARB_geometry_shader4
 #define GL_ARB_geometry_shader4 1
 #define GL_LINES_ADJACENCY_ARB            0x000A

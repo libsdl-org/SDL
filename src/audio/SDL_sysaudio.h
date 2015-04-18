@@ -30,8 +30,21 @@
 typedef struct SDL_AudioDevice SDL_AudioDevice;
 #define _THIS   SDL_AudioDevice *_this
 
-/* Used by audio targets during DetectDevices() */
-typedef void (*SDL_AddAudioDevice)(const char *name);
+/* Audio targets should call this as devices are added to the system (such as
+   a USB headset being plugged in), and should also be called for
+   for every device found during DetectDevices(). */
+extern void SDL_AddAudioDevice(const int iscapture, const char *name, void *handle);
+
+/* Audio targets should call this as devices are removed, so SDL can update
+   its list of available devices. */
+extern void SDL_RemoveAudioDevice(const int iscapture, void *handle);
+
+/* Audio targets should call this if an opened audio device is lost while
+   being used. This can happen due to i/o errors, or a device being unplugged,
+   etc. If the device is totally gone, please also call SDL_RemoveAudioDevice()
+   as appropriate so SDL's list of devices is accurate. */
+extern void SDL_OpenedAudioDeviceDisconnected(SDL_AudioDevice *device);
+
 
 /* This is the size of a packet when using SDL_QueueAudio(). We allocate
    these as necessary and pool them, under the assumption that we'll
@@ -55,8 +68,8 @@ typedef struct SDL_AudioBufferQueue
 
 typedef struct SDL_AudioDriverImpl
 {
-    void (*DetectDevices) (int iscapture, SDL_AddAudioDevice addfn);
-    int (*OpenDevice) (_THIS, const char *devname, int iscapture);
+    void (*DetectDevices) (void);
+    int (*OpenDevice) (_THIS, void *handle, const char *devname, int iscapture);
     void (*ThreadInit) (_THIS); /* Called by audio thread at start */
     void (*WaitDevice) (_THIS);
     void (*PlayDevice) (_THIS);
@@ -66,17 +79,32 @@ typedef struct SDL_AudioDriverImpl
     void (*CloseDevice) (_THIS);
     void (*LockDevice) (_THIS);
     void (*UnlockDevice) (_THIS);
+    void (*FreeDeviceHandle) (void *handle);  /**< SDL is done with handle from SDL_AddAudioDevice() */
     void (*Deinitialize) (void);
 
     /* !!! FIXME: add pause(), so we can optimize instead of mixing silence. */
 
     /* Some flags to push duplicate code into the core and reduce #ifdefs. */
+    /* !!! FIXME: these should be SDL_bool */
     int ProvidesOwnCallbackThread;
     int SkipMixerLock;  /* !!! FIXME: do we need this anymore? */
     int HasCaptureSupport;
     int OnlyHasDefaultOutputDevice;
     int OnlyHasDefaultInputDevice;
+    int AllowsArbitraryDeviceNames;
 } SDL_AudioDriverImpl;
+
+
+typedef struct SDL_AudioDeviceItem
+{
+    void *handle;
+    struct SDL_AudioDeviceItem *next;
+    #if (defined(__GNUC__) && (__GNUC__ <= 2))
+    char name[1];  /* actually variable length. */
+    #else
+    char name[];
+    #endif
+} SDL_AudioDeviceItem;
 
 
 typedef struct SDL_AudioDriver
@@ -91,11 +119,14 @@ typedef struct SDL_AudioDriver
 
     SDL_AudioDriverImpl impl;
 
-    char **outputDevices;
+    /* A mutex for device detection */
+    SDL_mutex *detectionLock;
+    SDL_bool captureDevicesRemoved;
+    SDL_bool outputDevicesRemoved;
     int outputDeviceCount;
-
-    char **inputDevices;
     int inputDeviceCount;
+    SDL_AudioDeviceItem *outputDevices;
+    SDL_AudioDeviceItem *inputDevices;
 } SDL_AudioDriver;
 
 
@@ -113,6 +144,7 @@ struct SDL_AudioDevice
 {
     /* * * */
     /* Data common to all devices */
+    SDL_AudioDeviceID id;
 
     /* The current audio specification (shared with audio thread) */
     SDL_AudioSpec spec;
@@ -125,15 +157,17 @@ struct SDL_AudioDevice
     SDL_AudioStreamer streamer;
 
     /* Current state flags */
+    /* !!! FIXME: should be SDL_bool */
     int iscapture;
-    int enabled;
+    int enabled;  /* true if device is functioning and connected. */
+    int shutdown; /* true if we are signaling the play thread to end. */
     int paused;
     int opened;
 
     /* Fake audio buffer for when the audio hardware is busy */
     Uint8 *fake_stream;
 
-    /* A semaphore for locking the mixing buffers */
+    /* A mutex for locking the mixing buffers */
     SDL_mutex *mixer_lock;
 
     /* A thread to feed the audio device */

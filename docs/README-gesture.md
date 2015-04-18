@@ -1,6 +1,6 @@
 Dollar Gestures
 ===========================================================================
-SDL Provides an implementation of the $1 gesture recognition system. This allows for recording, saving, loading, and performing single stroke gestures.
+SDL provides an implementation of the $1 gesture recognition system. This allows for recording, saving, loading, and performing single stroke gestures.
 
 Gestures can be performed with any number of fingers (the centroid of the fingers must follow the path of the gesture), but the number of fingers must be constant (a finger cannot go down in the middle of a gesture). The path of a gesture is considered the path from the time when the final finger went down, to the first time any finger comes up. 
 

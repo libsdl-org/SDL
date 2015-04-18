@@ -40,18 +40,11 @@ typedef struct {
     struct wl_display *display;
     struct wl_registry *registry;
     struct wl_compositor *compositor;
-    struct wl_output *output;
     struct wl_shm *shm;
     struct wl_cursor_theme *cursor_theme;
     struct wl_cursor *default_cursor;
     struct wl_pointer *pointer;
     struct wl_shell *shell;
-
-    struct {
-        int32_t x, y, width, height;
-    } screen_allocation;
-
-    struct wl_list modes_list;
 
     EGLDisplay edpy;
     EGLContext context;
@@ -59,16 +52,14 @@ typedef struct {
 
     struct xkb_context *xkb_context;
     struct SDL_WaylandInput *input;
-    
-#ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH    
+
+#ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
     struct SDL_WaylandTouch *touch;
     struct qt_surface_extension *surface_extension;
     struct qt_windowmanager *windowmanager;
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
-
-    uint32_t shm_formats;
 } SDL_VideoData;
 
-#endif /* _SDL_nullvideo_h */
+#endif /* _SDL_waylandvideo_h */
 
 /* vi: set ts=4 sw=4 expandtab: */

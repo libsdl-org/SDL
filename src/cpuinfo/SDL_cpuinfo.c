@@ -79,6 +79,7 @@ CPU_haveCPUID(void)
 {
     int has_CPUID = 0;
 /* *INDENT-OFF* */
+#ifndef SDL_CPUINFO_DISABLED
 #if defined(__GNUC__) && defined(i386)
     __asm__ (
 "        pushfl                      # Get original EFLAGS             \n"
@@ -164,6 +165,7 @@ done:
 "       movl    $1,-8(%rbp)    \n"
 "1:                            \n"
     );
+#endif
 #endif
 /* *INDENT-ON* */
     return has_CPUID;
@@ -272,6 +274,7 @@ static int
 CPU_haveAltiVec(void)
 {
     volatile int altivec = 0;
+#ifndef SDL_CPUINFO_DISABLED
 #if (defined(__MACOSX__) && (defined(__ppc__) || defined(__ppc64__))) || (defined(__OpenBSD__) && defined(__powerpc__))
 #ifdef __OpenBSD__
     int selectors[2] = { CTL_MACHDEP, CPU_ALTIVEC };
@@ -291,6 +294,7 @@ CPU_haveAltiVec(void)
         altivec = 1;
     }
     signal(SIGILL, handler);
+#endif
 #endif
     return altivec;
 }
@@ -418,6 +422,7 @@ int
 SDL_GetCPUCount(void)
 {
     if (!SDL_CPUCount) {
+#ifndef SDL_CPUINFO_DISABLED
 #if defined(HAVE_SYSCONF) && defined(_SC_NPROCESSORS_ONLN)
         if (SDL_CPUCount <= 0) {
             SDL_CPUCount = (int)sysconf(_SC_NPROCESSORS_ONLN);
@@ -436,6 +441,7 @@ SDL_GetCPUCount(void)
             SDL_CPUCount = info.dwNumberOfProcessors;
         }
 #endif
+#endif
         /* There has to be at least 1, right? :) */
         if (SDL_CPUCount <= 0) {
             SDL_CPUCount = 1;
@@ -452,10 +458,11 @@ SDL_GetCPUType(void)
 
     if (!SDL_CPUType[0]) {
         int i = 0;
-        int a, b, c, d;
 
         if (CPU_haveCPUID()) {
+            int a, b, c, d;
             cpuid(0x00000000, a, b, c, d);
+            (void) a;
             SDL_CPUType[i++] = (char)(b & 0xff); b >>= 8;
             SDL_CPUType[i++] = (char)(b & 0xff); b >>= 8;
             SDL_CPUType[i++] = (char)(b & 0xff); b >>= 8;
@@ -557,15 +564,12 @@ int
 SDL_GetCPUCacheLineSize(void)
 {
     const char *cpuType = SDL_GetCPUType();
-
+    int a, b, c, d;
+    (void) a; (void) b; (void) c; (void) d;
     if (SDL_strcmp(cpuType, "GenuineIntel") == 0) {
-        int a, b, c, d;
-
         cpuid(0x00000001, a, b, c, d);
         return (((b >> 8) & 0xff) * 8);
     } else if (SDL_strcmp(cpuType, "AuthenticAMD") == 0) {
-        int a, b, c, d;
-
         cpuid(0x80000005, a, b, c, d);
         return (c & 0xff);
     } else {
@@ -723,6 +727,7 @@ int
 SDL_GetSystemRAM(void)
 {
     if (!SDL_SystemRAM) {
+#ifndef SDL_CPUINFO_DISABLED
 #if defined(HAVE_SYSCONF) && defined(_SC_PHYS_PAGES) && defined(_SC_PAGESIZE)
         if (SDL_SystemRAM <= 0) {
             SDL_SystemRAM = (int)((Sint64)sysconf(_SC_PHYS_PAGES) * sysconf(_SC_PAGESIZE) / (1024*1024));
@@ -756,6 +761,7 @@ SDL_GetSystemRAM(void)
                 SDL_SystemRAM = (int)(stat.ullTotalPhys / (1024 * 1024));
             }
         }
+#endif
 #endif
     }
     return SDL_SystemRAM;

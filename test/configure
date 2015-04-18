@@ -2980,6 +2980,11 @@ fi
         MATHLIB=""
         SYS_GL_LIBS="-lGLES_CM"
         ;;
+    *-*-emscripten* )
+                EXE=".bc"
+        MATHLIB=""
+        SYS_GL_LIBS=""
+        ;;
     *)
                 ISUNIX="true"
         EXE=""

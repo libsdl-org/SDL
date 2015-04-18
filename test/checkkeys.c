@@ -19,7 +19,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten/emscripten.h>
+#endif
+
 #include "SDL.h"
+
+int done;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -128,12 +134,37 @@ PrintText(char *text)
     SDL_Log("Text (%s): \"%s%s\"\n", expanded, *text == '"' ? "\\" : "", text);
 }
 
+void
+loop()
+{
+    SDL_Event event;
+    /* Check for events */
+    /*SDL_WaitEvent(&event); emscripten does not like waiting*/
+
+    while (SDL_PollEvent(&event)) {
+        switch (event.type) {
+        case SDL_KEYDOWN:
+        //case SDL_KEYUP:
+		    PrintKey(&event.key.keysym, (event.key.state == SDL_PRESSED) ? SDL_TRUE : SDL_FALSE, (event.key.repeat) ? SDL_TRUE : SDL_FALSE);
+            break;
+        case SDL_TEXTINPUT:
+            PrintText(event.text.text);
+            break;
+        case SDL_MOUSEBUTTONDOWN:
+            /* Any button press quits the app... */
+        case SDL_QUIT:
+            done = 1;
+            break;
+        default:
+            break;
+        }
+    }
+}
+
 int
 main(int argc, char *argv[])
 {
     SDL_Window *window;
-    SDL_Event event;
-    int done;
 	
 	/* Enable standard application logging */
 	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
@@ -163,26 +194,14 @@ main(int argc, char *argv[])
 
     /* Watch keystrokes */
     done = 0;
+
+#ifdef __EMSCRIPTEN__
+    emscripten_set_main_loop(loop, 0, 1);
+#else
     while (!done) {
-        /* Check for events */
-        SDL_WaitEvent(&event);
-        switch (event.type) {
-        case SDL_KEYDOWN:
-        case SDL_KEYUP:
-			PrintKey(&event.key.keysym, (event.key.state == SDL_PRESSED) ? SDL_TRUE : SDL_FALSE, (event.key.repeat) ? SDL_TRUE : SDL_FALSE);
-            break;
-        case SDL_TEXTINPUT:
-            PrintText(event.text.text);
-            break;
-        case SDL_MOUSEBUTTONDOWN:
-            /* Any button press quits the app... */
-        case SDL_QUIT:
-            done = 1;
-            break;
-        default:
-            break;
-        }
+        loop();
     }
+#endif
 
     SDL_Quit();
     return (0);

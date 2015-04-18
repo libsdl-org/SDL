@@ -17,7 +17,6 @@
 #include <signal.h>
 
 #include "SDL.h"
-#include "SDL_thread.h"
 
 static int alive = 0;
 

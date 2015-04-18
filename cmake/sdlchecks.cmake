@@ -39,7 +39,7 @@ macro(CheckDLOPEN)
         set(_DLLIB ${_LIBNAME})
         set(HAVE_DLOPEN TRUE)
         break()
-      endif(DLOPEN_LIB)
+      endif()
     endforeach()
   endif()
 
@@ -63,7 +63,7 @@ macro(CheckDLOPEN)
     set(SOURCE_FILES ${SOURCE_FILES} ${DLOPEN_SOURCES})
     set(HAVE_SDL_LOADSO TRUE)
   endif()
-endmacro(CheckDLOPEN)
+endmacro()
 
 # Requires:
 # - n/a
@@ -78,23 +78,23 @@ macro(CheckOSS)
       check_c_source_compiles("
           #include <soundcard.h>
           int main() { int arg = SNDCTL_DSP_SETFRAGMENT; }" OSS_FOUND)
-    endif(NOT OSS_FOUND)
+    endif()
 
     if(OSS_FOUND)
       set(HAVE_OSS TRUE)
       file(GLOB OSS_SOURCES ${SDL2_SOURCE_DIR}/src/audio/dsp/*.c)
       if(OSS_HEADER_FILE STREQUAL "soundcard.h")
         set(SDL_AUDIO_DRIVER_OSS_SOUNDCARD_H 1)
-      endif(OSS_HEADER_FILE STREQUAL "soundcard.h")
+      endif()
       set(SDL_AUDIO_DRIVER_OSS 1)
       set(SOURCE_FILES ${SOURCE_FILES} ${OSS_SOURCES})
       if(NETBSD OR OPENBSD)
         list(APPEND EXTRA_LIBS ossaudio)
-      endif(NETBSD OR OPENBSD)
+      endif()
       set(HAVE_SDL_AUDIO TRUE)
-    endif(OSS_FOUND)
-  endif(OSS)
-endmacro(CheckOSS)
+    endif()
+  endif()
+endmacro()
 
 # Requires:
 # - n/a
@@ -117,14 +117,14 @@ macro(CheckALSA)
           FindLibraryAndSONAME("asound")
           set(SDL_AUDIO_DRIVER_ALSA_DYNAMIC "\"${ASOUND_LIB_SONAME}\"")
           set(HAVE_ALSA_SHARED TRUE)
-        endif(NOT HAVE_DLOPEN)
-      else(ALSA_SHARED)
+        endif()
+      else()
         list(APPEND EXTRA_LIBS asound)
-      endif(ALSA_SHARED)
+      endif()
       set(HAVE_SDL_AUDIO TRUE)
-    endif(HAVE_ASOUNDLIB_H)
-  endif(ALSA)
-endmacro(CheckALSA)
+    endif()
+  endif()
+endmacro()
 
 # Requires:
 # - PkgCheckModules
@@ -147,14 +147,14 @@ macro(CheckPulseAudio)
           FindLibraryAndSONAME("pulse-simple")
           set(SDL_AUDIO_DRIVER_PULSEAUDIO_DYNAMIC "\"${PULSE_SIMPLE_LIB_SONAME}\"")
           set(HAVE_PULSEAUDIO_SHARED TRUE)
-        endif(NOT HAVE_DLOPEN)
-      else(PULSEAUDIO_SHARED)
+        endif()
+      else()
         list(APPEND EXTRA_LDFLAGS ${PKG_PULSEAUDIO_LDFLAGS})
-      endif(PULSEAUDIO_SHARED)
+      endif()
       set(HAVE_SDL_AUDIO TRUE)
-    endif(PKG_PULSEAUDIO_FOUND)
-  endif(PULSEAUDIO)
-endmacro(CheckPulseAudio)
+    endif()
+  endif()
+endmacro()
 
 # Requires:
 # - PkgCheckModules
@@ -177,14 +177,14 @@ macro(CheckESD)
           FindLibraryAndSONAME(esd)
           set(SDL_AUDIO_DRIVER_ESD_DYNAMIC "\"${ESD_LIB_SONAME}\"")
           set(HAVE_ESD_SHARED TRUE)
-        endif(NOT HAVE_DLOPEN)
-      else(ESD_SHARED)
+        endif()
+      else()
         list(APPEND EXTRA_LDFLAGS ${PKG_ESD_LDFLAGS})
-      endif(ESD_SHARED)
+      endif()
       set(HAVE_SDL_AUDIO TRUE)
-    endif(PKG_ESD_FOUND)
-  endif(ESD)
-endmacro(CheckESD)
+    endif()
+  endif()
+endmacro()
 
 # Requires:
 # - n/a
@@ -212,14 +212,14 @@ macro(CheckARTS)
           FindLibraryAndSONAME(artsc)
           set(SDL_AUDIO_DRIVER_ARTS_DYNAMIC "\"${ARTSC_LIB_SONAME}\"")
           set(HAVE_ARTS_SHARED TRUE)
-        endif(NOT HAVE_DLOPEN)
-      else(ARTS_SHARED)
+        endif()
+      else()
         list(APPEND EXTRA_LDFLAGS ${ARTS_LIBS})
-      endif(ARTS_SHARED)
+      endif()
       set(HAVE_SDL_AUDIO TRUE)
-    endif(ARTS_CONFIG)
-  endif(ARTS)
-endmacro(CheckARTS)
+    endif()
+  endif()
+endmacro()
 
 # Requires:
 # - n/a
@@ -243,14 +243,14 @@ macro(CheckNAS)
           FindLibraryAndSONAME("audio")
           set(SDL_AUDIO_DRIVER_NAS_DYNAMIC "\"${AUDIO_LIB_SONAME}\"")
           set(HAVE_NAS_SHARED TRUE)
-        endif(NOT HAVE_DLOPEN)
-      else(NAS_SHARED)
+        endif()
+      else()
         list(APPEND EXTRA_LIBS ${D_NAS_LIB})
-      endif(NAS_SHARED)
+      endif()
       set(HAVE_SDL_AUDIO TRUE)
-    endif(HAVE_NAS_H AND D_NAS_LIB)
-  endif(NAS)
-endmacro(CheckNAS)
+    endif()
+  endif()
+endmacro()
 
 # Requires:
 # - n/a
@@ -274,14 +274,14 @@ macro(CheckSNDIO)
           FindLibraryAndSONAME("sndio")
           set(SDL_AUDIO_DRIVER_SNDIO_DYNAMIC "\"${SNDIO_LIB_SONAME}\"")
           set(HAVE_SNDIO_SHARED TRUE)
-        endif(NOT HAVE_DLOPEN)
-      else(SNDIO_SHARED)
+        endif()
+      else()
         list(APPEND EXTRA_LIBS ${D_SNDIO_LIB})
-      endif(SNDIO_SHARED)
+      endif()
       set(HAVE_SDL_AUDIO TRUE)
-    endif(HAVE_SNDIO_H AND D_SNDIO_LIB)
-  endif(SNDIO)
-endmacro(CheckSNDIO)
+    endif()
+  endif()
+endmacro()
 
 # Requires:
 # - PkgCheckModules
@@ -304,14 +304,14 @@ macro(CheckFusionSound)
           FindLibraryAndSONAME("fusionsound")
           set(SDL_AUDIO_DRIVER_FUSIONSOUND_DYNAMIC "\"${FUSIONSOUND_LIB_SONAME}\"")
           set(HAVE_FUSIONSOUND_SHARED TRUE)
-        endif(NOT HAVE_DLOPEN)
-      else(FUSIONSOUND_SHARED)
+        endif()
+      else()
         list(APPEND EXTRA_LDFLAGS ${PKG_FUSIONSOUND_LDFLAGS})
-      endif(FUSIONSOUND_SHARED)
+      endif()
       set(HAVE_SDL_AUDIO TRUE)
-    endif(PKG_FUSIONSOUND_FOUND)
-  endif(FUSIONSOUND)
-endmacro(CheckFusionSound)
+    endif()
+  endif()
+endmacro()
 
 # Requires:
 # - n/a
@@ -353,34 +353,34 @@ macro(CheckX11)
 
       if(APPLE)
         set(X11_SHARED OFF)
-      endif(APPLE)
+      endif()
 
       check_function_exists("shmat" HAVE_SHMAT)
       if(NOT HAVE_SHMAT)
         check_library_exists(ipc shmat "" HAVE_SHMAT)
         if(HAVE_SHMAT)
           list(APPEND EXTRA_LIBS ipc)
-        endif(HAVE_SHMAT)
+        endif()
         if(NOT HAVE_SHMAT)
           add_definitions(-DNO_SHARED_MEMORY)
           set(X_CFLAGS "${X_CFLAGS} -DNO_SHARED_MEMORY")
-        endif(NOT HAVE_SHMAT)
-      endif(NOT HAVE_SHMAT)
+        endif()
+      endif()
 
       if(X11_SHARED)
         if(NOT HAVE_DLOPEN)
           message_warn("You must have SDL_LoadObject() support for dynamic X11 loading")
           set(HAVE_X11_SHARED FALSE)
-        else(NOT HAVE_DLOPEN)
+        else()
           set(HAVE_X11_SHARED TRUE)
         endif()
         if(HAVE_X11_SHARED)
           set(SDL_VIDEO_DRIVER_X11_DYNAMIC "\"${X11_LIB_SONAME}\"")
           set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XEXT "\"${XEXT_LIB_SONAME}\"")
-        else(HAVE_X11_SHARED)
+        else()
           list(APPEND EXTRA_LIBS ${X11_LIB} ${XEXT_LIB})
-        endif(HAVE_X11_SHARED)
-      endif(X11_SHARED)
+        endif()
+      endif()
 
       set(SDL_CFLAGS "${SDL_CFLAGS} ${X_CFLAGS}")
 
@@ -394,7 +394,7 @@ macro(CheckX11)
           int main(int argc, char **argv) {}" HAVE_CONST_XEXT_ADDDISPLAY)
       if(HAVE_CONST_XEXT_ADDDISPLAY)
         set(SDL_VIDEO_DRIVER_X11_CONST_PARAM_XEXTADDDISPLAY 1)
-      endif(HAVE_CONST_XEXT_ADDDISPLAY)
+      endif()
 
       check_c_source_compiles("
           #include <X11/Xlib.h>
@@ -407,7 +407,7 @@ macro(CheckX11)
             XFreeEventData(display, cookie); }" HAVE_XGENERICEVENT)
       if(HAVE_XGENERICEVENT)
         set(SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS 1)
-      endif(HAVE_XGENERICEVENT)
+      endif()
 
       check_c_source_compiles("
           #include <X11/Xlibint.h>
@@ -415,7 +415,7 @@ macro(CheckX11)
           int main(int argc, char **argv) {}" HAVE_CONST_XDATA32)
       if(HAVE_CONST_XDATA32)
         set(SDL_VIDEO_DRIVER_X11_CONST_PARAM_XDATA32 1)
-      endif(HAVE_CONST_XDATA32)
+      endif()
 
       check_function_exists(XkbKeycodeToKeysym SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM)
 
@@ -423,29 +423,29 @@ macro(CheckX11)
         set(HAVE_VIDEO_X11_XCURSOR TRUE)
         if(HAVE_X11_SHARED AND XCURSOR_LIB)
           set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XCURSOR "\"${XCURSOR_LIB_SONAME}\"")
-        else(HAVE_X11_SHARED AND XCURSOR_LIB)
+        else()
           list(APPEND EXTRA_LIBS ${XCURSOR_LIB})
-        endif(HAVE_X11_SHARED AND XCURSOR_LIB)
+        endif()
         set(SDL_VIDEO_DRIVER_X11_XCURSOR 1)
-      endif(VIDEO_X11_XCURSOR AND HAVE_XCURSOR_H)
+      endif()
 
       if(VIDEO_X11_XINERAMA AND HAVE_XINERAMA_H)
         set(HAVE_VIDEO_X11_XINERAMA TRUE)
         if(HAVE_X11_SHARED AND XINERAMA_LIB)
           set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XINERAMA "\"${XINERAMA_LIB_SONAME}\"")
-        else(HAVE_X11_SHARED AND XINERAMA_LIB)
+        else()
           list(APPEND EXTRA_LIBS ${XINERAMA_LIB})
-        endif(HAVE_X11_SHARED AND XINERAMA_LIB)
+        endif()
         set(SDL_VIDEO_DRIVER_X11_XINERAMA 1)
-      endif(VIDEO_X11_XINERAMA AND HAVE_XINERAMA_H)
+      endif()
 
       if(VIDEO_X11_XINPUT AND HAVE_XINPUT_H)
         set(HAVE_VIDEO_X11_XINPUT TRUE)
         if(HAVE_X11_SHARED AND XI_LIB)
           set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XINPUT2 "\"${XI_LIB_SONAME}\"")
-        else(HAVE_X11_SHARED AND XI_LIB)
+        else()
           list(APPEND EXTRA_LIBS ${XI_LIB})
-        endif(HAVE_X11_SHARED AND XI_LIB)
+        endif()
         set(SDL_VIDEO_DRIVER_X11_XINPUT2 1)
 
         # Check for multitouch
@@ -462,51 +462,56 @@ macro(CheckX11)
             int main(int argc, char **argv) {}" HAVE_XINPUT2_MULTITOUCH)
         if(HAVE_XINPUT2_MULTITOUCH)
           set(SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH 1)
-        endif(HAVE_XINPUT2_MULTITOUCH)
-      endif(VIDEO_X11_XINPUT AND HAVE_XINPUT_H)
+        endif()
+      endif()
 
       if(VIDEO_X11_XRANDR AND HAVE_XRANDR_H)
         if(HAVE_X11_SHARED AND XRANDR_LIB)
           set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XRANDR "\"${XRANDR_LIB_SONAME}\"")
-        else(HAVE_X11_SHARED AND XRANDR_LIB)
+        else()
           list(APPEND EXTRA_LIBS ${XRANDR_LIB})
-        endif(HAVE_X11_SHARED AND XRANDR_LIB)
+        endif()
         set(SDL_VIDEO_DRIVER_X11_XRANDR 1)
         set(HAVE_VIDEO_X11_XRANDR TRUE)
-      endif(VIDEO_X11_XRANDR AND HAVE_XRANDR_H)
+      endif()
 
       if(VIDEO_X11_XSCRNSAVER AND HAVE_XSS_H)
         if(HAVE_X11_SHARED AND XSS_LIB)
           set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XSS "\"${XSS_LIB_SONAME}\"")
-        else(HAVE_X11_SHARED AND XSS_LIB)
+        else()
           list(APPEND EXTRA_LIBS ${XSS_LIB})
-        endif(HAVE_X11_SHARED AND XSS_LIB)
+        endif()
         set(SDL_VIDEO_DRIVER_X11_XSCRNSAVER 1)
         set(HAVE_VIDEO_X11_XSCRNSAVER TRUE)
-      endif(VIDEO_X11_XSCRNSAVER AND HAVE_XSS_H)
+      endif()
 
       if(VIDEO_X11_XSHAPE AND HAVE_XSHAPE_H)
         set(SDL_VIDEO_DRIVER_X11_XSHAPE 1)
         set(HAVE_VIDEO_X11_XSHAPE TRUE)
-      endif(VIDEO_X11_XSHAPE AND HAVE_XSHAPE_H)
+      endif()
 
       if(VIDEO_X11_XVM AND HAVE_XF86VM_H)
         if(HAVE_X11_SHARED AND XXF86VM_LIB)
           set(SDL_VIDEO_DRIVER_X11_DYNAMIC_XVIDMODE "\"${XXF86VM_LIB_SONAME}\"")
-        else(HAVE_X11_SHARED AND XXF86VM_LIB)
+        else()
           list(APPEND EXTRA_LIBS ${XXF86VM_LIB})
-        endif(HAVE_X11_SHARED AND XXF86VM_LIB)
+        endif()
         set(SDL_VIDEO_DRIVER_X11_XVIDMODE 1)
         set(HAVE_VIDEO_X11_XVM TRUE)
-      endif(VIDEO_X11_XVM AND HAVE_XF86VM_H)
+      endif()
 
       set(CMAKE_REQUIRED_LIBRARIES)
-    endif(X11_LIB)
-  endif(VIDEO_X11)
-endmacro(CheckX11)
+    endif()
+  endif()
+endmacro()
 
+# Requires:
+# - EGL
+# - PkgCheckModules
+# Optional:
+# - MIR_SHARED opt
+# - HAVE_DLOPEN opt
 macro(CheckMir)
-# !!! FIXME: hook up dynamic loading here.
     if(VIDEO_MIR)
         find_library(MIR_LIB mirclient mircommon egl)
         pkg_check_modules(MIR_TOOLKIT mirclient mircommon)
@@ -522,15 +527,31 @@ macro(CheckMir)
             set(SDL_VIDEO_DRIVER_MIR 1)
 
             list(APPEND EXTRA_CFLAGS ${MIR_TOOLKIT_CFLAGS} ${EGL_CLFAGS} ${XKB_CLFLAGS})
-            list(APPEND EXTRA_LDFLAGS ${MIR_TOOLKIT_LDFLAGS} ${EGL_LDLAGS} ${XKB_LDLAGS})
-        endif (MIR_LIB AND MIR_TOOLKIT_FOUND AND EGL_FOUND AND XKB_FOUND)
-    endif(VIDEO_MIR)
-endmacro(CheckMir)
+
+            if(MIR_SHARED)
+                if(NOT HAVE_DLOPEN)
+                    message_warn("You must have SDL_LoadObject() support for dynamic Mir loading")
+                else()
+                    FindLibraryAndSONAME(mirclient)
+                    FindLibraryAndSONAME(xkbcommon)
+                    set(SDL_VIDEO_DRIVER_MIR_DYNAMIC "\"${MIRCLIENT_LIB_SONAME}\"")
+                    set(SDL_VIDEO_DRIVER_MIR_DYNAMIC_XKBCOMMON "\"${XKBCOMMON_LIB_SONAME}\"")
+                    set(HAVE_MIR_SHARED TRUE)
+                endif()
+            else()
+                set(EXTRA_LIBS ${MIR_TOOLKIT_LIBRARIES} ${EXTRA_LIBS})
+            endif()
+        endif()
+    endif()
+endmacro()
 
 # Requires:
 # - EGL
+# - PkgCheckModules
+# Optional:
+# - WAYLAND_SHARED opt
+# - HAVE_DLOPEN opt
 macro(CheckWayland)
-# !!! FIXME: hook up dynamic loading here.
   if(VIDEO_WAYLAND)
     pkg_check_modules(WAYLAND wayland-client wayland-cursor wayland-egl egl xkbcommon)
     if(WAYLAND_FOUND)
@@ -540,16 +561,38 @@ macro(CheckWayland)
       include_directories(
           ${WAYLAND_INCLUDE_DIRS}
       )
-      set(EXTRA_LIBS ${WAYLAND_LIBRARIES} ${EXTRA_LIBS})
       set(HAVE_VIDEO_WAYLAND TRUE)
       set(HAVE_SDL_VIDEO TRUE)
 
       file(GLOB WAYLAND_SOURCES ${SDL2_SOURCE_DIR}/src/video/wayland/*.c)
       set(SOURCE_FILES ${SOURCE_FILES} ${WAYLAND_SOURCES})
+
+      if(VIDEO_WAYLAND_QT_TOUCH)
+          set(SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH 1)
+      endif()
+
+      if(WAYLAND_SHARED)
+        if(NOT HAVE_DLOPEN)
+          message_warn("You must have SDL_LoadObject() support for dynamic Wayland loading")
+        else()
+          FindLibraryAndSONAME(wayland-client)
+          FindLibraryAndSONAME(wayland-egl)
+          FindLibraryAndSONAME(wayland-cursor)
+          FindLibraryAndSONAME(xkbcommon)
+          set(SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC "\"${WAYLAND_CLIENT_LIB_SONAME}\"")
+          set(SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_EGL "\"${WAYLAND_EGL_LIB_SONAME}\"")
+          set(SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_CURSOR "\"${WAYLAND_CURSOR_LIB_SONAME}\"")
+          set(SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC_XKBCOMMON "\"${XKBCOMMON_LIB_SONAME}\"")
+          set(HAVE_WAYLAND_SHARED TRUE)
+        endif()
+      else()
+        set(EXTRA_LIBS ${WAYLAND_LIBRARIES} ${EXTRA_LIBS})
+      endif()
+
       set(SDL_VIDEO_DRIVER_WAYLAND 1)
-    endif(WAYLAND_FOUND)
-  endif(VIDEO_WAYLAND)
-endmacro(CheckWayland)
+    endif()
+  endif()
+endmacro()
 
 # Requires:
 # - n/a
@@ -558,16 +601,16 @@ macro(CheckCOCOA)
   if(VIDEO_COCOA)
     if(APPLE) # Apple always has Cocoa.
       set(HAVE_VIDEO_COCOA TRUE)
-    endif(APPLE)
+    endif()
     if(HAVE_VIDEO_COCOA)
       file(GLOB COCOA_SOURCES ${SDL2_SOURCE_DIR}/src/video/cocoa/*.m)
       set_source_files_properties(${COCOA_SOURCES} PROPERTIES LANGUAGE C)
       set(SOURCE_FILES ${SOURCE_FILES} ${COCOA_SOURCES})
       set(SDL_VIDEO_DRIVER_COCOA 1)
       set(HAVE_SDL_VIDEO TRUE)
-    endif(HAVE_VIDEO_COCOA)
-  endif(VIDEO_COCOA)
-endmacro(CheckCOCOA)
+    endif()
+  endif()
+endmacro()
 
 # Requires:
 # - PkgCheckModules
@@ -591,14 +634,14 @@ macro(CheckDirectFB)
           FindLibraryAndSONAME("directfb")
           set(SDL_VIDEO_DRIVER_DIRECTFB_DYNAMIC "\"${DIRECTFB_LIB_SONAME}\"")
           set(HAVE_DIRECTFB_SHARED TRUE)
-        endif(NOT HAVE_DLOPEN)
-      else(DIRECTFB_SHARED)
+        endif()
+      else()
         list(APPEND EXTRA_LDFLAGS ${PKG_DIRECTFB_LDFLAGS})
-      endif(DIRECTFB_SHARED)
+      endif()
       set(HAVE_SDL_VIDEO TRUE)
-    endif(PKG_DIRECTFB_FOUND)
-  endif(VIDEO_DIRECTFB)
-endmacro(CheckDirectFB)
+    endif()
+  endif()
+endmacro()
 
 # Requires:
 # - n/a
@@ -645,9 +688,9 @@ macro(CheckOpenGLX11)
       set(SDL_VIDEO_OPENGL_GLX 1)
       set(SDL_VIDEO_RENDER_OGL 1)
       list(APPEND EXTRA_LIBS GL)
-    endif(HAVE_VIDEO_OPENGL)
-  endif(VIDEO_OPENGL)
-endmacro(CheckOpenGLX11)
+    endif()
+  endif()
+endmacro()
 
 # Requires:
 # - nada
@@ -659,7 +702,7 @@ macro(CheckOpenGLESX11)
         int main (int argc, char** argv) {}" HAVE_VIDEO_OPENGL_EGL)
     if(HAVE_VIDEO_OPENGL_EGL)
         set(SDL_VIDEO_OPENGL_EGL 1)
-    endif(HAVE_VIDEO_OPENGL_EGL) 
+    endif()
     check_c_source_compiles("
       #include <GLES/gl.h>
       #include <GLES/glext.h>
@@ -668,7 +711,7 @@ macro(CheckOpenGLESX11)
         set(HAVE_VIDEO_OPENGLES TRUE)
         set(SDL_VIDEO_OPENGL_ES 1)
         set(SDL_VIDEO_RENDER_OGL_ES 1)
-    endif(HAVE_VIDEO_OPENGLES_V1)
+    endif()
     check_c_source_compiles("
       #include <GLES2/gl2.h>
       #include <GLES2/gl2ext.h>
@@ -677,12 +720,12 @@ macro(CheckOpenGLESX11)
         set(HAVE_VIDEO_OPENGLES TRUE)
         set(SDL_VIDEO_OPENGL_ES2 1)
         set(SDL_VIDEO_RENDER_OGL_ES2 1)
-    endif(HAVE_VIDEO_OPENGLES_V2)
+    endif()
 
-  endif(VIDEO_OPENGLES)
-endmacro(CheckOpenGLESX11)
+  endif()
+endmacro()
 
-# Rquires:
+# Requires:
 # - nada
 # Optional:
 # - THREADS opt
@@ -729,17 +772,21 @@ macro(CheckPTHREAD)
     else()
       set(PTHREAD_CFLAGS "-D_REENTRANT")
       set(PTHREAD_LDFLAGS "-lpthread")
-    endif(LINUX)
+    endif()
 
     # Run some tests
     set(CMAKE_REQUIRED_FLAGS "${PTHREAD_CFLAGS} ${PTHREAD_LDFLAGS}")
-    check_c_source_runs("
+    if(CMAKE_CROSSCOMPILING)
+      set(HAVE_PTHREADS 1)
+    else()
+      check_c_source_runs("
         #include <pthread.h>
         int main(int argc, char** argv) {
           pthread_attr_t type;
           pthread_attr_init(&type);
           return 0;
         }" HAVE_PTHREADS)
+    endif()
     if(HAVE_PTHREADS)
       set(SDL_THREAD_PTHREAD 1)
       list(APPEND EXTRA_CFLAGS ${PTHREAD_CFLAGS})
@@ -756,7 +803,7 @@ macro(CheckPTHREAD)
         }" HAVE_RECURSIVE_MUTEXES)
       if(HAVE_RECURSIVE_MUTEXES)
         set(SDL_THREAD_PTHREAD_RECURSIVE_MUTEX 1)
-      else(HAVE_RECURSIVE_MUTEXES)
+      else()
         check_c_source_compiles("
             #include <pthread.h>
             int main(int argc, char **argv) {
@@ -766,8 +813,8 @@ macro(CheckPTHREAD)
             }" HAVE_RECURSIVE_MUTEXES_NP)
         if(HAVE_RECURSIVE_MUTEXES_NP)
           set(SDL_THREAD_PTHREAD_RECURSIVE_MUTEX_NP 1)
-        endif(HAVE_RECURSIVE_MUTEXES_NP)
-      endif(HAVE_RECURSIVE_MUTEXES)
+        endif()
+      endif()
 
       if(PTHREADS_SEM)
         check_c_source_compiles("#include <pthread.h>
@@ -781,15 +828,15 @@ macro(CheckPTHREAD)
                   sem_timedwait(NULL, NULL);
                   return 0;
               }" HAVE_SEM_TIMEDWAIT)
-        endif(HAVE_PTHREADS_SEM)
-      endif(PTHREADS_SEM)
+        endif()
+      endif()
 
       check_c_source_compiles("
           #include <pthread.h>
           #include <pthread_np.h>
           int main(int argc, char** argv) { return 0; }" HAVE_PTHREAD_NP_H)
-      check_function_exists(pthread_setname_np HAVE_PTHREAD_setNAME_NP)
-      check_function_exists(pthread_set_name_np HAVE_PTHREAD_set_NAME_NP)
+      check_function_exists(pthread_setname_np HAVE_PTHREAD_SETNAME_NP)
+      check_function_exists(pthread_set_name_np HAVE_PTHREAD_SET_NAME_NP)
       set(CMAKE_REQUIRED_FLAGS)
 
       set(SOURCE_FILES ${SOURCE_FILES}
@@ -801,14 +848,14 @@ macro(CheckPTHREAD)
       if(HAVE_PTHREADS_SEM)
         set(SOURCE_FILES ${SOURCE_FILES}
             ${SDL2_SOURCE_DIR}/src/thread/pthread/SDL_syssem.c)
-      else(HAVE_PTHREADS_SEM)
+      else()
         set(SOURCE_FILES ${SOURCE_FILES}
             ${SDL2_SOURCE_DIR}/src/thread/generic/SDL_syssem.c)
-      endif(HAVE_PTHREADS_SEM)
+      endif()
       set(HAVE_SDL_THREADS TRUE)
-    endif(HAVE_PTHREADS)
-  endif(PTHREADS)
-endmacro(CheckPTHREAD)
+    endif()
+  endif()
+endmacro()
 
 # Requires
 # - nada
@@ -822,27 +869,27 @@ macro(CheckUSBHID)
     check_include_file(usbhid.h HAVE_USBHID_H)
     if(HAVE_USBHID_H)
       set(USB_CFLAGS "-DHAVE_USBHID_H")
-    endif(HAVE_USBHID_H)
+    endif()
 
     check_include_file(libusbhid.h HAVE_LIBUSBHID_H)
     if(HAVE_LIBUSBHID_H)
       set(USB_CFLAGS "${USB_CFLAGS} -DHAVE_LIBUSBHID_H")
-    endif(HAVE_LIBUSBHID_H)
+    endif()
     set(USB_LIBS ${USB_LIBS} usbhid)
-  else(LIBUSBHID)
+  else()
     check_include_file(usb.h HAVE_USB_H)
     if(HAVE_USB_H)
       set(USB_CFLAGS "-DHAVE_USB_H")
-    endif(HAVE_USB_H)
+    endif()
     check_include_file(libusb.h HAVE_LIBUSB_H)
     if(HAVE_LIBUSB_H)
       set(USB_CFLAGS "${USB_CFLAGS} -DHAVE_LIBUSB_H")
-    endif(HAVE_LIBUSB_H)
+    endif()
     check_library_exists(usb hid_init "" LIBUSB)
     if(LIBUSB)
       set(USB_LIBS ${USB_LIBS} usb)
-    endif(LIBUSB)
-  endif(LIBUSBHID)
+    endif()
+  endif()
 
   set(CMAKE_REQUIRED_FLAGS "${USB_CFLAGS}")
   set(CMAKE_REQUIRED_LIBRARIES "${USB_LIBS}")
@@ -898,7 +945,7 @@ macro(CheckUSBHID)
           }" HAVE_USBHID_UCR_DATA)
     if(HAVE_USBHID_UCR_DATA)
       set(USB_CFLAGS "${USB_CFLAGS} -DUSBHID_UCR_DATA")
-    endif(HAVE_USBHID_UCR_DATA)
+    endif()
 
     check_c_source_compiles("
           #include <sys/types.h>
@@ -926,7 +973,7 @@ macro(CheckUSBHID)
           }" HAVE_USBHID_NEW)
     if(HAVE_USBHID_NEW)
       set(USB_CFLAGS "${USB_CFLAGS} -DUSBHID_NEW")
-    endif(HAVE_USBHID_NEW)
+    endif()
 
     check_c_source_compiles("
         #include <machine/joystick.h>
@@ -936,7 +983,7 @@ macro(CheckUSBHID)
         }" HAVE_MACHINE_JOYSTICK)
     if(HAVE_MACHINE_JOYSTICK)
       set(SDL_JOYSTICK_USBHID_MACHINE_JOYSTICK_H 1)
-    endif(HAVE_MACHINE_JOYSTICK)
+    endif()
     set(SDL_JOYSTICK_USBHID 1)
     file(GLOB BSD_JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/bsd/*.c)
     set(SOURCE_FILES ${SOURCE_FILES} ${BSD_JOYSTICK_SOURCES})
@@ -946,8 +993,8 @@ macro(CheckUSBHID)
 
     set(CMAKE_REQUIRED_LIBRARIES)
     set(CMAKE_REQUIRED_FLAGS)
-  endif(HAVE_USBHID)
-endmacro(CheckUSBHID)
+  endif()
+endmacro()
 
 # Requires:
 # - n/a

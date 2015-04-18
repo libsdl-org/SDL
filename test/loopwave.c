@@ -24,8 +24,11 @@
 #include <signal.h>
 #endif
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten/emscripten.h>
+#endif
+
 #include "SDL.h"
-#include "SDL_audio.h"
 
 struct
 {
@@ -74,6 +77,15 @@ poked(int sig)
 {
     done = 1;
 }
+
+#ifdef __EMSCRIPTEN__
+void
+loop()
+{
+    if(done || (SDL_GetAudioStatus() != SDL_AUDIO_PLAYING))
+        emscripten_cancel_main_loop();
+}
+#endif
 
 int
 main(int argc, char *argv[])
@@ -131,8 +143,13 @@ main(int argc, char *argv[])
 
     /* Let the audio run */
     SDL_PauseAudio(0);
+
+#ifdef __EMSCRIPTEN__
+    emscripten_set_main_loop(loop, 0, 1);
+#else
     while (!done && (SDL_GetAudioStatus() == SDL_AUDIO_PLAYING))
         SDL_Delay(1000);
+#endif
 
     /* Clean up on signal */
     SDL_CloseAudio();

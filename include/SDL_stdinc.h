@@ -172,7 +172,9 @@ typedef uint64_t Uint64;
 #ifdef PRIs64
 #define SDL_PRIs64 PRIs64
 #elif defined(__WIN32__)
-#define SDL_PRIs64 "I64"
+#define SDL_PRIs64 "I64d"
+#elif defined(__LINUX__) && defined(__LP64__)
+#define SDL_PRIs64 "ld"
 #else
 #define SDL_PRIs64 "lld"
 #endif
@@ -182,8 +184,32 @@ typedef uint64_t Uint64;
 #define SDL_PRIu64 PRIu64
 #elif defined(__WIN32__)
 #define SDL_PRIu64 "I64u"
+#elif defined(__LINUX__) && defined(__LP64__)
+#define SDL_PRIu64 "lu"
 #else
 #define SDL_PRIu64 "llu"
+#endif
+#endif
+#ifndef SDL_PRIx64
+#ifdef PRIx64
+#define SDL_PRIx64 PRIx64
+#elif defined(__WIN32__)
+#define SDL_PRIx64 "I64x"
+#elif defined(__LINUX__) && defined(__LP64__)
+#define SDL_PRIx64 "lx"
+#else
+#define SDL_PRIx64 "llx"
+#endif
+#endif
+#ifndef SDL_PRIX64
+#ifdef PRIX64
+#define SDL_PRIX64 PRIX64
+#elif defined(__WIN32__)
+#define SDL_PRIX64 "I64X"
+#elif defined(__LINUX__) && defined(__LP64__)
+#define SDL_PRIX64 "lX"
+#else
+#define SDL_PRIX64 "llX"
 #endif
 #endif
 
@@ -200,7 +226,7 @@ typedef uint64_t Uint64;
 #define SDL_PRINTF_VARARG_FUNC( fmtargnumber )
 #define SDL_SCANF_VARARG_FUNC( fmtargnumber )
 #else
-#if _MSC_VER >= 1600 /* VS 2010 and above */
+#if defined(_MSC_VER) && (_MSC_VER >= 1600) /* VS 2010 and above */
 #include <sal.h>
 
 #define SDL_IN_BYTECAP(x) _In_bytecount_(x)
@@ -361,11 +387,6 @@ SDL_FORCE_INLINE void SDL_memset4(void *dst, Uint32 val, size_t dwords)
 
 extern DECLSPEC void *SDLCALL SDL_memcpy(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void *src, size_t len);
 
-SDL_FORCE_INLINE void *SDL_memcpy4(SDL_OUT_BYTECAP(dwords*4) void *dst, SDL_IN_BYTECAP(dwords*4) const void *src, size_t dwords)
-{
-    return SDL_memcpy(dst, src, dwords * 4);
-}
-
 extern DECLSPEC void *SDLCALL SDL_memmove(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void *src, size_t len);
 extern DECLSPEC int SDLCALL SDL_memcmp(const void *s1, const void *s2, size_t len);
 
@@ -461,6 +482,39 @@ extern DECLSPEC char *SDLCALL SDL_iconv_string(const char *tocode,
 #define SDL_iconv_utf8_locale(S)    SDL_iconv_string("", "UTF-8", S, SDL_strlen(S)+1)
 #define SDL_iconv_utf8_ucs2(S)      (Uint16 *)SDL_iconv_string("UCS-2-INTERNAL", "UTF-8", S, SDL_strlen(S)+1)
 #define SDL_iconv_utf8_ucs4(S)      (Uint32 *)SDL_iconv_string("UCS-4-INTERNAL", "UTF-8", S, SDL_strlen(S)+1)
+
+/* force builds using Clang's static analysis tools to use literal C runtime
+   here, since there are possibly tests that are ineffective otherwise. */
+#if defined(__clang_analyzer__) && !defined(SDL_DISABLE_ANALYZE_MACROS)
+#define SDL_malloc malloc
+#define SDL_calloc calloc
+#define SDL_realloc realloc
+#define SDL_free free
+#define SDL_memset memset
+#define SDL_memcpy memcpy
+#define SDL_memmove memmove
+#define SDL_memcmp memcmp
+#define SDL_strlen strlen
+#define SDL_strlcpy strlcpy
+#define SDL_strlcat strlcat
+#define SDL_strdup strdup
+#define SDL_strchr strchr
+#define SDL_strrchr strrchr
+#define SDL_strstr strstr
+#define SDL_strcmp strcmp
+#define SDL_strncmp strncmp
+#define SDL_strcasecmp strcasecmp
+#define SDL_strncasecmp strncasecmp
+#define SDL_sscanf sscanf
+#define SDL_vsscanf vsscanf
+#define SDL_snprintf snprintf
+#define SDL_vsnprintf vsnprintf
+#endif
+
+SDL_FORCE_INLINE void *SDL_memcpy4(SDL_OUT_BYTECAP(dwords*4) void *dst, SDL_IN_BYTECAP(dwords*4) const void *src, size_t dwords)
+{
+    return SDL_memcpy(dst, src, dwords * 4);
+}
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

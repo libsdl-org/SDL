@@ -43,11 +43,6 @@
 
 #define WAYLANDVID_DRIVER_NAME "wayland"
 
-struct wayland_mode {
-    SDL_DisplayMode mode;
-    struct wl_list link;
-};
-
 /* Initialization/Query functions */
 static int
 Wayland_VideoInit(_THIS);
@@ -87,7 +82,7 @@ static SDL_VideoDevice *
 Wayland_CreateDevice(int devindex)
 {
     SDL_VideoDevice *device;
-    
+
     if (!SDL_WAYLAND_LoadSymbols()) {
         return NULL;
     }
@@ -124,6 +119,7 @@ Wayland_CreateDevice(int devindex)
     device->SetWindowFullscreen = Wayland_SetWindowFullscreen;
     device->SetWindowSize = Wayland_SetWindowSize;
     device->DestroyWindow = Wayland_DestroyWindow;
+    device->SetWindowHitTest = Wayland_SetWindowHitTest;
 
     device->free = Wayland_DeleteDevice;
 
@@ -134,27 +130,6 @@ VideoBootStrap Wayland_bootstrap = {
     WAYLANDVID_DRIVER_NAME, "SDL Wayland video driver",
     Wayland_Available, Wayland_CreateDevice
 };
-
-static void
-wayland_add_mode(SDL_VideoData *d, SDL_DisplayMode m)
-{
-    struct wayland_mode *mode;
-
-    /* Check for duplicate mode */
-    wl_list_for_each(mode, &d->modes_list, link)
-        if (mode->mode.w == m.w && mode->mode.h == m.h &&
-	    mode->mode.refresh_rate == m.refresh_rate)
-	    return;
-
-    /* Add new mode to the list */
-    mode = (struct wayland_mode *) SDL_calloc(1, sizeof *mode);
-
-    if (!mode)
-	return;
-
-    mode->mode = m;
-    WAYLAND_wl_list_insert(&d->modes_list, &mode->link);
-}
 
 static void
 display_handle_geometry(void *data,
@@ -168,54 +143,79 @@ display_handle_geometry(void *data,
                         int transform)
 
 {
-    SDL_VideoData *d = data;
+    SDL_VideoDisplay *display = data;
 
-    d->screen_allocation.x = x;
-    d->screen_allocation.y = y;
+    display->name = strdup(model);
+    display->driverdata = output;
 }
 
 static void
 display_handle_mode(void *data,
-                    struct wl_output *wl_output,
+                    struct wl_output *output,
                     uint32_t flags,
                     int width,
                     int height,
                     int refresh)
 {
-    SDL_VideoData *d = data;
+    SDL_VideoDisplay *display = data;
     SDL_DisplayMode mode;
 
     SDL_zero(mode);
     mode.w = width;
     mode.h = height;
-    mode.refresh_rate = refresh / 1000;
-
-    wayland_add_mode(d, mode);
+    mode.refresh_rate = refresh / 1000; // mHz to Hz
+    SDL_AddDisplayMode(display, &mode);
 
     if (flags & WL_OUTPUT_MODE_CURRENT) {
-        d->screen_allocation.width = width;
-        d->screen_allocation.height = height;
+        display->current_mode = mode;
+        display->desktop_mode = mode;
     }
+}
+
+static void
+display_handle_done(void *data,
+                    struct wl_output *output)
+{
+    SDL_VideoDisplay *display = data;
+    SDL_AddVideoDisplay(display);
+    SDL_free(display->name);
+    SDL_free(display);
+}
+
+static void
+display_handle_scale(void *data,
+                     struct wl_output *output,
+                     int32_t factor)
+{
+    // TODO: do HiDPI stuff.
 }
 
 static const struct wl_output_listener output_listener = {
     display_handle_geometry,
-    display_handle_mode
+    display_handle_mode,
+    display_handle_done,
+    display_handle_scale
 };
 
 static void
-shm_handle_format(void *data,
-                  struct wl_shm *shm,
-                  uint32_t format)
+Wayland_add_display(SDL_VideoData *d, uint32_t id)
 {
-    SDL_VideoData *d = data;
+    struct wl_output *output;
+    SDL_VideoDisplay *display = SDL_malloc(sizeof *display);
+    if (!display) {
+        SDL_OutOfMemory();
+        return;
+    }
+    SDL_zero(*display);
 
-    d->shm_formats |= (1 << format);
+    output = wl_registry_bind(d->registry, id, &wl_output_interface, 2);
+    if (!output) {
+        SDL_SetError("Failed to retrieve output.");
+        return;
+    }
+
+    wl_output_add_listener(output, &output_listener, display);
 }
-
-static const struct wl_shm_listener shm_listener = {
-    shm_handle_format
-};
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
 static void
@@ -238,15 +238,14 @@ static const struct qt_windowmanager_listener windowmanager_listener = {
 
 static void
 display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
-					const char *interface, uint32_t version)
+                      const char *interface, uint32_t version)
 {
     SDL_VideoData *d = data;
-    
+
     if (strcmp(interface, "wl_compositor") == 0) {
         d->compositor = wl_registry_bind(d->registry, id, &wl_compositor_interface, 1);
     } else if (strcmp(interface, "wl_output") == 0) {
-        d->output = wl_registry_bind(d->registry, id, &wl_output_interface, 1);
-        wl_output_add_listener(d->output, &output_listener, d);
+        Wayland_add_display(d, id);
     } else if (strcmp(interface, "wl_seat") == 0) {
         Wayland_display_add_input(d, id);
     } else if (strcmp(interface, "wl_shell") == 0) {
@@ -255,8 +254,7 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
         d->shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
         d->cursor_theme = WAYLAND_wl_cursor_theme_load(NULL, 32, d->shm);
         d->default_cursor = WAYLAND_wl_cursor_theme_get_cursor(d->cursor_theme, "left_ptr");
-        wl_shm_add_listener(d->shm, &shm_listener, d);
-    
+
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
     } else if (strcmp(interface, "qt_touch_extension") == 0) {
         Wayland_touch_create(d, id);
@@ -272,73 +270,43 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
 }
 
 static const struct wl_registry_listener registry_listener = {
-	display_handle_global
+    display_handle_global
 };
 
 int
 Wayland_VideoInit(_THIS)
 {
-    SDL_VideoData *data;
-    SDL_VideoDisplay display;
-    SDL_DisplayMode mode;
-    int i;
-    
-    data = malloc(sizeof *data);
+    SDL_VideoData *data = SDL_malloc(sizeof *data);
     if (data == NULL)
-        return 0;
+        return SDL_OutOfMemory();
     memset(data, 0, sizeof *data);
 
     _this->driverdata = data;
 
-    WAYLAND_wl_list_init(&data->modes_list);
-    
     data->display = WAYLAND_wl_display_connect(NULL);
     if (data->display == NULL) {
-        SDL_SetError("Failed to connect to a Wayland display");
-        return 0;
+        return SDL_SetError("Failed to connect to a Wayland display");
     }
 
     data->registry = wl_display_get_registry(data->display);
-   
-    if ( data->registry == NULL) {
-        SDL_SetError("Failed to get the Wayland registry");
-        return 0;
+    if (data->registry == NULL) {
+        return SDL_SetError("Failed to get the Wayland registry");
     }
-    
+
     wl_registry_add_listener(data->registry, &registry_listener, data);
 
-    for (i=0; i < 100; i++) {
-        if (data->screen_allocation.width != 0 || WAYLAND_wl_display_get_error(data->display) != 0) {
-            break;
-        }
-        WAYLAND_wl_display_dispatch(data->display);
-    }
-    
-    if (data->screen_allocation.width == 0) {
-        SDL_SetError("Failed while waiting for screen allocation: %d ", WAYLAND_wl_display_get_error(data->display));
-        return 0;
-    }
+    // First roundtrip to receive all registry objects.
+    WAYLAND_wl_display_roundtrip(data->display);
+
+    // Second roundtrip to receive all output events.
+    WAYLAND_wl_display_roundtrip(data->display);
 
     data->xkb_context = WAYLAND_xkb_context_new(0);
     if (!data->xkb_context) {
-        SDL_SetError("Failed to create XKB context");
-        return 0;
+        return SDL_SetError("Failed to create XKB context");
     }
 
-    /* Use a fake 32-bpp desktop mode */
-    mode.format = SDL_PIXELFORMAT_RGB888;
-    mode.w = data->screen_allocation.width;
-    mode.h = data->screen_allocation.height;
-    mode.refresh_rate = 0;
-    mode.driverdata = NULL;
-    wayland_add_mode(data, mode);
-    SDL_zero(display);
-    display.desktop_mode = mode;
-    display.current_mode = mode;
-    display.driverdata = NULL;
-    SDL_AddVideoDisplay(&display);
-
-    Wayland_InitMouse ();
+    Wayland_InitMouse();
 
     WAYLAND_wl_display_flush(data->display);
 
@@ -348,46 +316,29 @@ Wayland_VideoInit(_THIS)
 static void
 Wayland_GetDisplayModes(_THIS, SDL_VideoDisplay *sdl_display)
 {
-    SDL_VideoData *data = _this->driverdata;
-    SDL_DisplayMode mode;
-    struct wayland_mode *m;
-
-    Wayland_PumpEvents(_this);
-
-    wl_list_for_each(m, &data->modes_list, link) {
-        m->mode.format = SDL_PIXELFORMAT_RGB888;
-        SDL_AddDisplayMode(sdl_display, &m->mode);
-        m->mode.format = SDL_PIXELFORMAT_RGBA8888;
-        SDL_AddDisplayMode(sdl_display, &m->mode);
-    }
-
-    mode.w = data->screen_allocation.width;
-    mode.h = data->screen_allocation.height;
-    mode.refresh_rate = 0;
-    mode.driverdata = NULL;
-
-    mode.format = SDL_PIXELFORMAT_RGB888;
-    SDL_AddDisplayMode(sdl_display, &mode);
-    mode.format = SDL_PIXELFORMAT_RGBA8888;
-    SDL_AddDisplayMode(sdl_display, &mode);
+    // Nothing to do here, everything was already done in the wl_output
+    // callbacks.
 }
 
 static int
 Wayland_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode)
 {
-    return 0;
+    return SDL_Unsupported();
 }
 
 void
 Wayland_VideoQuit(_THIS)
 {
     SDL_VideoData *data = _this->driverdata;
-    struct wayland_mode *t, *m;
+    int i;
 
     Wayland_FiniMouse ();
 
-    if (data->output)
-        wl_output_destroy(data->output);
+    for (i = 0; i < _this->num_displays; ++i) {
+        SDL_VideoDisplay *display = &_this->displays[i];
+        wl_output_destroy(display->driverdata);
+        display->driverdata = NULL;
+    }
 
     Wayland_display_destroy_input(data);
 
@@ -417,16 +368,13 @@ Wayland_VideoQuit(_THIS)
     if (data->compositor)
         wl_compositor_destroy(data->compositor);
 
+    if (data->registry)
+        wl_registry_destroy(data->registry);
+
     if (data->display) {
         WAYLAND_wl_display_flush(data->display);
         WAYLAND_wl_display_disconnect(data->display);
     }
-    
-    wl_list_for_each_safe(m, t, &data->modes_list, link) {
-        WAYLAND_wl_list_remove(&m->link);
-        free(m);
-    }
-
 
     free(data);
     _this->driverdata = NULL;

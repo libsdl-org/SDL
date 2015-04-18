@@ -13,9 +13,6 @@
 #include <stdio.h>
 
 #include "SDL.h"
-#include "SDL_endian.h"
-#include "SDL_cpuinfo.h"
-#include "SDL_assert.h"
 
 /*
  * Watcom C flags these as Warning 201: "Unreachable code" if you just
@@ -119,14 +116,8 @@ TestEndian(SDL_bool verbose)
         ++error;
     }
     if (verbose) {
-#ifdef _MSC_VER
-        SDL_Log("Value 64 = 0x%I64X, swapped = 0x%I64X\n", value64,
+        SDL_Log("Value 64 = 0x%"SDL_PRIX64", swapped = 0x%"SDL_PRIX64"\n", value64,
                SDL_Swap64(value64));
-#else
-        SDL_Log("Value 64 = 0x%llX, swapped = 0x%llX\n",
-               (unsigned long long) value64,
-               (unsigned long long) SDL_Swap64(value64));
-#endif
     }
     if (SDL_Swap64(value64) != swapped64) {
         if (verbose) {
@@ -176,7 +167,7 @@ TestAssertions(SDL_bool verbose)
 #endif
 
     {
-        const SDL_assert_data *item = SDL_GetAssertionReport();
+        const SDL_AssertData *item = SDL_GetAssertionReport();
         while (item) {
             SDL_Log("'%s', %s (%s:%d), triggered %u times, always ignore: %s.\n",
                 item->condition, item->function, item->filename,

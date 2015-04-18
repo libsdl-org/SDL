@@ -20,58 +20,21 @@
 */
 
 #import <UIKit/UIKit.h>
-#import "SDL_uikitviewcontroller.h"
+
+#include "../SDL_sysvideo.h"
 
 #include "SDL_touch.h"
 
-#define IPHONE_TOUCH_EFFICIENT_DANGEROUS
+@interface SDL_uikitview : UIView
 
-#ifndef IPHONE_TOUCH_EFFICIENT_DANGEROUS
-#define MAX_SIMULTANEOUS_TOUCHES 5
-#endif
+- (instancetype)initWithFrame:(CGRect)frame;
 
-#if SDL_IPHONE_KEYBOARD
-@interface SDL_uikitview : UIView<UITextFieldDelegate> {
-#else
-@interface SDL_uikitview : UIView {
-#endif
+- (void)setSDLWindow:(SDL_Window *)window;
 
-    SDL_TouchID touchId;
-    UITouch *leftFingerDown;
-#ifndef IPHONE_TOUCH_EFFICIENT_DANGEROUS
-    UITouch *finger[MAX_SIMULTANEOUS_TOUCHES];
-#endif
-
-#if SDL_IPHONE_KEYBOARD
-    UITextField *textField;
-    BOOL keyboardVisible;
-    SDL_Rect textInputRect;
-    int keyboardHeight;
-#endif
-
-@public
-    SDL_uikitviewcontroller *viewcontroller;
-}
 - (CGPoint)touchLocation:(UITouch *)touch shouldNormalize:(BOOL)normalize;
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event;
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event;
-
-#if SDL_IPHONE_KEYBOARD
-- (void)showKeyboard;
-- (void)hideKeyboard;
-- (void)initializeKeyboard;
-@property (readonly) BOOL keyboardVisible;
-@property (nonatomic,assign) SDL_Rect textInputRect;
-@property (nonatomic,assign) int keyboardHeight;
-
-SDL_bool UIKit_HasScreenKeyboardSupport(_THIS);
-void UIKit_ShowScreenKeyboard(_THIS, SDL_Window *window);
-void UIKit_HideScreenKeyboard(_THIS, SDL_Window *window);
-SDL_bool UIKit_IsScreenKeyboardShown(_THIS, SDL_Window *window);
-void UIKit_SetTextInputRect(_THIS, SDL_Rect *rect);
-
-#endif
 
 @end
 

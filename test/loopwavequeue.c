@@ -15,6 +15,10 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten/emscripten.h>
+#endif
+
 #include "SDL.h"
 
 #if HAVE_SIGNAL_H
@@ -45,10 +49,32 @@ poked(int sig)
     done = 1;
 }
 
+void
+loop()
+{
+#ifdef __EMSCRIPTEN__
+    if (done || (SDL_GetAudioStatus() != SDL_AUDIO_PLAYING)) {
+        emscripten_cancel_main_loop();
+    }
+    else
+#endif
+    {
+        /* The device from SDL_OpenAudio() is always device #1. */
+        const Uint32 queued = SDL_GetQueuedAudioSize(1);
+        SDL_Log("Device has %u bytes queued.\n", (unsigned int) queued);
+        if (queued <= 8192) {  /* time to requeue the whole thing? */
+            if (SDL_QueueAudio(1, wave.sound, wave.soundlen) == 0) {
+                SDL_Log("Device queued %u more bytes.\n", (unsigned int) wave.soundlen);
+            } else {
+                SDL_Log("Device FAILED to queue %u more bytes: %s\n", (unsigned int) wave.soundlen, SDL_GetError());
+            }
+        }
+    }
+}
+
 int
 main(int argc, char *argv[])
 {
-    int i;
     char filename[4096];
 
 	/* Enable standard application logging */
@@ -97,25 +123,22 @@ main(int argc, char *argv[])
     /* Let the audio run */
     SDL_PauseAudio(0);
 
+    done = 0;
+
     /* Note that we stuff the entire audio buffer into the queue in one
        shot. Most apps would want to feed it a little at a time, as it
        plays, but we're going for simplicity here. */
     
+#ifdef __EMSCRIPTEN__
+    emscripten_set_main_loop(loop, 0, 1);
+#else
     while (!done && (SDL_GetAudioStatus() == SDL_AUDIO_PLAYING))
     {
-        /* The device from SDL_OpenAudio() is always device #1. */
-        const Uint32 queued = SDL_GetQueuedAudioSize(1);
-        SDL_Log("Device has %u bytes queued.\n", (unsigned int) queued);
-        if (queued <= 8192) {  /* time to requeue the whole thing? */
-            if (SDL_QueueAudio(1, wave.sound, wave.soundlen) == 0) {
-                SDL_Log("Device queued %u more bytes.\n", (unsigned int) wave.soundlen);
-            } else {
-                SDL_Log("Device FAILED to queue %u more bytes: %s\n", (unsigned int) wave.soundlen, SDL_GetError());
-            }
-        }
+        loop();
 
         SDL_Delay(100);  /* let it play for awhile. */
     }
+#endif
 
     /* Clean up on signal */
     SDL_CloseAudio();

@@ -22,8 +22,6 @@ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND 
 
 #ifndef SDL_HAPTIC_DISABLED
 
-#include "SDL_haptic.h"
-
 static SDL_Haptic *haptic;
 
 

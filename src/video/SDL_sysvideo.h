@@ -274,6 +274,7 @@ struct SDL_VideoDevice
     int num_displays;
     SDL_VideoDisplay *displays;
     SDL_Window *windows;
+    SDL_Window *grabbed_window;
     Uint8 window_magic;
     Uint32 next_object_id;
     char * clipboard_text;
@@ -303,6 +304,7 @@ struct SDL_VideoDevice
         int flags;
         int profile_mask;
         int share_with_current_context;
+        int release_behavior;
         int framebuffer_srgb_capable;
         int retained_backing;
         int driver_loaded;
@@ -393,6 +395,9 @@ extern VideoBootStrap NACL_bootstrap;
 #endif
 #if SDL_VIDEO_DRIVER_VIVANTE
 extern VideoBootStrap VIVANTE_bootstrap;
+#endif
+#if SDL_VIDEO_DRIVER_EMSCRIPTEN
+extern VideoBootStrap Emscripten_bootstrap;
 #endif
 
 extern SDL_VideoDevice *SDL_GetVideoDevice(void);

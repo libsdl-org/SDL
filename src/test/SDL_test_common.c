@@ -1105,8 +1105,8 @@ SDLTest_PrintEvent(SDL_Event * event)
                 event->button.windowID);
         break;
     case SDL_MOUSEWHEEL:
-        SDL_Log("SDL EVENT: Mouse: wheel scrolled %d in x and %d in y in window %d",
-                event->wheel.x, event->wheel.y, event->wheel.windowID);
+        SDL_Log("SDL EVENT: Mouse: wheel scrolled %d in x and %d in y (reversed: %d) in window %d",
+                event->wheel.x, event->wheel.y, event->wheel.direction, event->wheel.windowID);
         break;
     case SDL_JOYDEVICEADDED:
         SDL_Log("SDL EVENT: Joystick index %d attached",
@@ -1203,6 +1203,15 @@ SDLTest_PrintEvent(SDL_Event * event)
                 event->tfinger.x, event->tfinger.y,
                 event->tfinger.dx, event->tfinger.dy, event->tfinger.pressure);
         break;
+    case SDL_DOLLARGESTURE:
+        SDL_Log("SDL_EVENT: Dollar gesture detect: %"SDL_PRIs64, (Sint64) event->dgesture.gestureId);
+        break;
+    case SDL_DOLLARRECORD:
+        SDL_Log("SDL_EVENT: Dollar gesture record: %"SDL_PRIs64, (Sint64) event->dgesture.gestureId);
+        break;
+    case SDL_MULTIGESTURE:
+        SDL_Log("SDL_EVENT: Multi gesture fingers: %d", event->mgesture.numFingers);
+        break;
 
     case SDL_RENDER_DEVICE_RESET:
         SDL_Log("SDL EVENT: render device reset");
@@ -1218,7 +1227,7 @@ SDLTest_PrintEvent(SDL_Event * event)
         SDL_Log("SDL EVENT: User event %d", event->user.code);
         break;
     default:
-        SDL_Log("Unknown event %d", event->type);
+        SDL_Log("Unknown event %04x", event->type);
         break;
     }
 }

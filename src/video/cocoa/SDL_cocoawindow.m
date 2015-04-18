@@ -374,7 +374,6 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
     NSNotificationCenter *center;
     NSWindow *window = _data->nswindow;
     NSView *view = [window contentView];
-    NSArray *windows = nil;
 
     center = [NSNotificationCenter defaultCenter];
 
@@ -401,25 +400,6 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
     }
     if ([view nextResponder] == self) {
         [view setNextResponder:nil];
-    }
-
-    /* Make the next window in the z-order Key. If we weren't the foreground
-       when closed, this is a no-op.
-       !!! FIXME: Note that this is a hack, and there are corner cases where
-       !!! FIXME:  this fails (such as the About box). The typical nib+RunLoop
-       !!! FIXME:  handles this for Cocoa apps, but we bypass all that in SDL.
-       !!! FIXME:  We should remove this code when we find a better way to
-       !!! FIXME:  have the system do this for us. See discussion in
-       !!! FIXME:   http://bugzilla.libsdl.org/show_bug.cgi?id=1825
-    */
-    windows = [NSApp orderedWindows];
-    for (NSWindow *win in windows) {
-        if (win == window) {
-            continue;
-        }
-
-        [win makeKeyAndOrderFront:self];
-        break;
     }
 }
 
@@ -1209,16 +1189,9 @@ Cocoa_SetWindowTitle(_THIS, SDL_Window * window)
 {
     NSAutoreleasePool *pool = [[NSAutoreleasePool alloc] init];
     NSWindow *nswindow = ((SDL_WindowData *) window->driverdata)->nswindow;
-    NSString *string;
-
-    if(window->title) {
-        string = [[NSString alloc] initWithUTF8String:window->title];
-    } else {
-        string = [[NSString alloc] init];
-    }
+    NSString *string = [[NSString alloc] initWithUTF8String:window->title];
     [nswindow setTitle:string];
     [string release];
-
     [pool release];
 }
 

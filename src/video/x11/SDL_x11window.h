@@ -27,8 +27,7 @@
    video mode changes and we can respond to them by triggering more mode
    changes.
 */
-#define PENDING_FOCUS_IN_TIME   200
-#define PENDING_FOCUS_OUT_TIME  200
+#define PENDING_FOCUS_TIME   200
 
 #if SDL_VIDEO_OPENGL_EGL   
 #include <EGL/egl.h>

@@ -120,7 +120,7 @@ SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
    so that it supports internationalization and thread-safe errors.
 */
 static char *
-SDL_GetErrorMsg(char *errstr, unsigned int maxlen)
+SDL_GetErrorMsg(char *errstr, int maxlen)
 {
     SDL_error *error;
 
@@ -163,37 +163,55 @@ SDL_GetErrorMsg(char *errstr, unsigned int maxlen)
                     len =
                         SDL_snprintf(msg, maxlen, tmp,
                                      error->args[argi++].value_i);
-                    msg += len;
-                    maxlen -= len;
+                    if (len > 0) {
+                        msg += len;
+                        maxlen -= len;
+                    }
                     break;
+
                 case 'f':
                     len =
                         SDL_snprintf(msg, maxlen, tmp,
                                      error->args[argi++].value_f);
-                    msg += len;
-                    maxlen -= len;
+                    if (len > 0) {
+                        msg += len;
+                        maxlen -= len;
+                    }
                     break;
+
                 case 'p':
                     len =
                         SDL_snprintf(msg, maxlen, tmp,
                                      error->args[argi++].value_ptr);
-                    msg += len;
-                    maxlen -= len;
+                    if (len > 0) {
+                        msg += len;
+                        maxlen -= len;
+                    }
                     break;
+
                 case 's':
                     len =
                         SDL_snprintf(msg, maxlen, tmp,
                                      SDL_LookupString(error->args[argi++].
                                                       buf));
-                    msg += len;
-                    maxlen -= len;
+                    if (len > 0) {
+                        msg += len;
+                        maxlen -= len;
+                    }
                     break;
+
                 }
             } else {
                 *msg++ = *fmt++;
                 maxlen -= 1;
             }
         }
+
+        /* slide back if we've overshot the end of our buffer. */
+        if (maxlen < 0) {
+            msg -= (-maxlen) + 1;
+        }
+
         *msg = 0;               /* NULL terminate the string */
     }
     return (errstr);

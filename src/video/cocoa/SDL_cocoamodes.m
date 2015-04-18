@@ -193,6 +193,7 @@ GetDisplayMode(_THIS, const void *moderef, CVDisplayLinkRef link, SDL_DisplayMod
         break;
     case 8: /* We don't support palettized modes now */
     default: /* Totally unrecognizable bit depth. */
+        SDL_free(data);
         return SDL_FALSE;
     }
     mode->w = width;
