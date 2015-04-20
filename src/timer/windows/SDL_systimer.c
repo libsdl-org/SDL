@@ -30,10 +30,9 @@
 
 
 /* The first (low-resolution) ticks value of the application */
-static DWORD start;
+static DWORD start = 0;
 static BOOL ticks_started = FALSE; 
 
-#ifndef USE_GETTICKCOUNT
 /* Store if a high-resolution performance counter exists on the system */
 static BOOL hires_timer_available;
 /* The first high-resolution ticks value of the application */
@@ -41,10 +40,10 @@ static LARGE_INTEGER hires_start_ticks;
 /* The number of ticks per second of the high-resolution performance counter */
 static LARGE_INTEGER hires_ticks_per_second;
 
-#ifndef __WINRT__
 static void
-timeSetPeriod(const UINT uPeriod)
+SDL_SetSystemTimerResolution(const UINT uPeriod)
 {
+#ifndef __WINRT__
     static UINT timer_period = 0;
 
     if (uPeriod != timer_period) {
@@ -58,6 +57,7 @@ timeSetPeriod(const UINT uPeriod)
             timeBeginPeriod(timer_period);
         }
     }
+#endif
 }
 
 static void
@@ -72,12 +72,9 @@ SDL_TimerResolutionChanged(void *userdata, const char *name, const char *oldValu
         uPeriod = 1;
     }
     if (uPeriod || oldValue != hint) {
-        timeSetPeriod(uPeriod);
+        SDL_SetSystemTimerResolution(uPeriod);
     }
 }
-#endif /* ifndef __WINRT__ */
-
-#endif /* !USE_GETTICKCOUNT */
 
 void
 SDL_TicksInit(void)
@@ -93,9 +90,6 @@ SDL_TicksInit(void)
                         SDL_TimerResolutionChanged, NULL);
 
     /* Set first ticks value */
-#ifdef USE_GETTICKCOUNT
-    start = GetTickCount();
-#else
     /* QueryPerformanceCounter has had problems in the past, but lots of games
        use it, so we'll rely on it here.
      */
@@ -104,49 +98,36 @@ SDL_TicksInit(void)
         QueryPerformanceCounter(&hires_start_ticks);
     } else {
         hires_timer_available = FALSE;
-#ifdef __WINRT__
-        start = 0;            /* the timer failed to start! */
-#else
+#ifndef __WINRT__
         start = timeGetTime();
 #endif /* __WINRT__ */
     }
-#endif /* USE_GETTICKCOUNT */
 }
 
 void
 SDL_TicksQuit(void)
 {
-#ifndef USE_GETTICKCOUNT
     if (!hires_timer_available) {
-#ifndef __WINRT__
         SDL_DelHintCallback(SDL_HINT_TIMER_RESOLUTION,
                             SDL_TimerResolutionChanged, NULL);
-#endif /* __WINRT__ */
     }
-#endif /* USE_GETTICKCOUNT */
 
-#ifndef __WINRT__
-    timeSetPeriod(0);  /* always release our timer resolution request. */
-#endif
+    SDL_SetSystemTimerResolution(0);  /* always release our timer resolution request. */
 
+    start = 0;
     ticks_started = SDL_FALSE;
 }
 
 Uint32
 SDL_GetTicks(void)
 {
-    DWORD now;
-#ifndef USE_GETTICKCOUNT
+    DWORD now = 0;
     LARGE_INTEGER hires_now;
-#endif
 
     if (!ticks_started) {
         SDL_TicksInit();
     }
 
-#ifdef USE_GETTICKCOUNT
-    now = GetTickCount();
-#else
     if (hires_timer_available) {
         QueryPerformanceCounter(&hires_now);
 
@@ -156,13 +137,10 @@ SDL_GetTicks(void)
 
         return (DWORD) hires_now.QuadPart;
     } else {
-#ifdef __WINRT__
-        now = 0;
-#else
+#ifndef __WINRT__
         now = timeGetTime();
 #endif /* __WINRT__ */
     }
-#endif
 
     return (now - start);
 }
@@ -189,35 +167,30 @@ SDL_GetPerformanceFrequency(void)
     return frequency.QuadPart;
 }
 
-/* Sleep() is not publicly available to apps in early versions of WinRT.
- *
- * Visual C++ 2013 Update 4 re-introduced Sleep() for Windows 8.1 and
- * Windows Phone 8.1.
- *
- * Use the compiler version to determine availability.
- *
- * NOTE #1: _MSC_FULL_VER == 180030723 for Visual C++ 2013 Update 3.
- * NOTE #2: Visual C++ 2013, when compiling for Windows 8.0 and
- *    Windows Phone 8.0, uses the Visual C++ 2012 compiler to build
- *    apps and libraries.
- */
-#if defined(__WINRT__) && defined(_MSC_FULL_VER) && (_MSC_FULL_VER <= 180030723)
-static void
-Sleep(DWORD timeout)
-{
-    static HANDLE mutex = 0;
-    if ( ! mutex )
-    {
-        mutex = CreateEventEx(0, 0, 0, EVENT_ALL_ACCESS);
-    }
-    WaitForSingleObjectEx(mutex, timeout, FALSE);
-}
-#endif
-
 void
 SDL_Delay(Uint32 ms)
 {
+    /* Sleep() is not publicly available to apps in early versions of WinRT.
+     *
+     * Visual C++ 2013 Update 4 re-introduced Sleep() for Windows 8.1 and
+     * Windows Phone 8.1.
+     *
+     * Use the compiler version to determine availability.
+     *
+     * NOTE #1: _MSC_FULL_VER == 180030723 for Visual C++ 2013 Update 3.
+     * NOTE #2: Visual C++ 2013, when compiling for Windows 8.0 and
+     *    Windows Phone 8.0, uses the Visual C++ 2012 compiler to build
+     *    apps and libraries.
+     */
+#if defined(__WINRT__) && defined(_MSC_FULL_VER) && (_MSC_FULL_VER <= 180030723)
+    static HANDLE mutex = 0;
+    if (!mutex) {
+        mutex = CreateEventEx(0, 0, 0, EVENT_ALL_ACCESS);
+    }
+    WaitForSingleObjectEx(mutex, ms, FALSE);
+#else
     Sleep(ms);
+#endif
 }
 
 #endif /* SDL_TIMER_WINDOWS */
