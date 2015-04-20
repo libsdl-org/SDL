@@ -163,8 +163,9 @@ extern DECLSPEC const char *SDLCALL SDL_GameControllerNameForIndex(int joystick_
 /**
  *  Open a game controller for use.
  *  The index passed as an argument refers to the N'th game controller on the system.
- *  This index is the value which will identify this controller in future controller
- *  events.
+ *  This index is not the value which will identify this controller in future
+ *  controller events.  The joystick's instance id (::SDL_JoystickID) will be
+ *  used there instead.
  *
  *  \return A controller identifier, or NULL if an error occurred.
  */

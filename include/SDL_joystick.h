@@ -88,8 +88,9 @@ extern DECLSPEC const char *SDLCALL SDL_JoystickNameForIndex(int device_index);
 /**
  *  Open a joystick for use.
  *  The index passed as an argument refers to the N'th joystick on the system.
- *  This index is the value which will identify this joystick in future joystick
- *  events.
+ *  This index is not the value which will identify this joystick in future
+ *  joystick events.  The joystick's instance id (::SDL_JoystickID) will be used
+ *  there instead.
  *
  *  \return A joystick identifier, or NULL if an error occurred.
  */
