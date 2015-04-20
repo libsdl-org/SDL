@@ -1,0 +1,30 @@
+# HG changeset patch
+# User Ben Henning
+# Date 1376453463 25200
+#      Tue Aug 13 21:11:03 2013 -0700
+# Node ID a5f8b4f709722222e02fa481873d76ad25255e09
+# Parent  8b24d45e6a5d717876a7b32b64e99043c95328e5
+Implemented Xcode recognizing bitmap and wave files as resources, plus properly
+set their types recognizable by Xcode itself.
+
+diff --git a/src/actions/xcode/xcode_common.lua b/src/actions/xcode/xcode_common.lua
+--- a/src/actions/xcode/xcode_common.lua
++++ b/src/actions/xcode/xcode_common.lua
+@@ -32,6 +32,8 @@
+ 			[".nib"] = "Resources",
+ 			[".xib"] = "Resources",
+ 			[".icns"] = "Resources",
++			[".bmp"] = "Resources",
++			[".wav"] = "Resources",
+ 		}
+ 		return categories[path.getextension(node.name)]
+ 	end
+@@ -85,6 +87,8 @@
+ 			[".strings"]   = "text.plist.strings",
+ 			[".xib"]       = "file.xib",
+ 			[".icns"]      = "image.icns",
++			[".bmp"]       = "image.bmp",
++			[".wav"]       = "audio.wav",
+ 		}
+ 		return types[path.getextension(node.path)] or "text"
+ 	end

@@ -1,0 +1,29 @@
+# HG changeset patch
+# User Ben Henning
+# Date 1375901577 25200
+#      Wed Aug 07 11:52:57 2013 -0700
+# Node ID 1d820b5754a9bc79b5c4c6a26d1acc170ebf4784
+# Parent  0af3bf0e3755477eafb247935db77b2765df2d19
+Updated the GCC make option to handle its linker cmomand generation a bit
+differently. Rather than putting the sibling libraries before the linker
+flags, they are put after. This allows for some extra flexibility in putting
+custom linker libraries before the list of sibling libraries, in case one of
+them depends on it.
+
+diff --git a/src/actions/make/make_cpp.lua b/src/actions/make/make_cpp.lua
+--- a/src/actions/make/make_cpp.lua
++++ b/src/actions/make/make_cpp.lua
+@@ -267,11 +267,12 @@
+ 				_p('  LINKCMD    = $(AR) -rcs $(TARGET) $(OBJECTS)')
+ 			end
+ 		else
++			-- Ben: changed order of ALL_LDFLAGS and LIBS (switched them)
+ 			-- this was $(TARGET) $(LDFLAGS) $(OBJECTS)
+ 			--  but had trouble linking to certain static libs so $(OBJECTS) moved up
+ 			-- then $(LDFLAGS) moved to end
+ 			--   https://sourceforge.net/tracker/?func=detail&aid=3430158&group_id=71616&atid=531880
+-			_p('  LINKCMD    = $(%s) -o $(TARGET) $(OBJECTS) $(RESOURCES) $(ARCH) $(LIBS) $(ALL_LDFLAGS)', iif(cfg.language == "C", "CC", "CXX"))
++			_p('  LINKCMD    = $(%s) -o $(TARGET) $(OBJECTS) $(RESOURCES) $(ARCH) $(ALL_LDFLAGS) $(LIBS)', iif(cfg.language == "C", "CC", "CXX"))
+ 		end
+ 	end
+ 
