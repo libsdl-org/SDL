@@ -143,7 +143,7 @@ extern DECLSPEC void SDLCALL SDL_UnregisterApp(void);
  *
  *  \param mainFunction The SDL app's C-style main().
  *  \param reserved Reserved for future use; should be NULL
- *  \ret 0 on success, -1 on failure.  On failure, use SDL_GetError to retrieve more
+ *  \return 0 on success, -1 on failure.  On failure, use SDL_GetError to retrieve more
  *      information on the failure.
  */
 extern DECLSPEC int SDLCALL SDL_WinRTRunApp(int (*mainFunction)(int, char **), void * reserved);
