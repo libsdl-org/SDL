@@ -43,7 +43,7 @@ static LARGE_INTEGER hires_ticks_per_second;
 
 #ifndef __WINRT__
 static void
-timeSetPeriod(UINT uPeriod)
+timeSetPeriod(const UINT uPeriod)
 {
     static UINT timer_period = 0;
 
@@ -87,6 +87,11 @@ SDL_TicksInit(void)
     }
     ticks_started = SDL_TRUE;
 
+    /* if we didn't set a precision, set it high. This affects lots of things
+       on Windows besides the SDL timers, like audio callbacks, etc. */
+    SDL_AddHintCallback(SDL_HINT_TIMER_RESOLUTION,
+                        SDL_TimerResolutionChanged, NULL);
+
     /* Set first ticks value */
 #ifdef USE_GETTICKCOUNT
     start = GetTickCount();
@@ -102,11 +107,7 @@ SDL_TicksInit(void)
 #ifdef __WINRT__
         start = 0;            /* the timer failed to start! */
 #else
-        timeSetPeriod(1);     /* use 1 ms timer precision */
         start = timeGetTime();
-
-        SDL_AddHintCallback(SDL_HINT_TIMER_RESOLUTION,
-                            SDL_TimerResolutionChanged, NULL);
 #endif /* __WINRT__ */
     }
 #endif /* USE_GETTICKCOUNT */
@@ -120,11 +121,13 @@ SDL_TicksQuit(void)
 #ifndef __WINRT__
         SDL_DelHintCallback(SDL_HINT_TIMER_RESOLUTION,
                             SDL_TimerResolutionChanged, NULL);
-
-        timeSetPeriod(0);
 #endif /* __WINRT__ */
     }
 #endif /* USE_GETTICKCOUNT */
+
+#ifndef __WINRT__
+    timeSetPeriod(0);  /* always release our timer resolution request. */
+#endif
 
     ticks_started = SDL_FALSE;
 }
