@@ -942,6 +942,16 @@ X11_SetWindowOpacity(_THIS, SDL_Window * window, float opacity)
     return 0;
 }
 
+int 
+X11_SetWindowModalFor(_THIS, SDL_Window * modal_window, SDL_Window * parent_window) {
+    SDL_WindowData *data = (SDL_WindowData *) modal_window->driverdata;
+    SDL_WindowData *parent_data = (SDL_WindowData *) parent_window->driverdata;
+    Display *display = data->videodata->display;
+
+    X11_XSetTransientForHint(display, data->xwindow, parent_data->xwindow);
+    return 0;
+}
+
 int
 X11_SetWindowInputFocus(_THIS, SDL_Window * window) 
 {

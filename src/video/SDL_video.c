@@ -2228,6 +2228,19 @@ SDL_GetWindowOpacity(SDL_Window * window, float * out_opacity)
     return 0;
 }
 
+int
+SDL_SetWindowModalFor(SDL_Window * modal_window, SDL_Window * parent_window)
+{
+    CHECK_WINDOW_MAGIC(modal_window, -1);
+    CHECK_WINDOW_MAGIC(parent_window, -1);
+
+    if (!_this->SetWindowModalFor) {
+        return SDL_Unsupported();
+    }
+    
+    return _this->SetWindowModalFor(_this, modal_window, parent_window);
+}
+
 int 
 SDL_SetWindowInputFocus(SDL_Window * window)
 {

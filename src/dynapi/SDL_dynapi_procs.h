@@ -636,3 +636,4 @@ SDL_DYNAPI_PROC(int,SDL_GetWindowBordersSize,(SDL_Window *a, int *b, int *c, int
 SDL_DYNAPI_PROC(int,SDL_SetWindowOpacity,(SDL_Window *a, float b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_GetWindowOpacity,(SDL_Window *a, float *b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_SetWindowInputFocus,(SDL_Window *a),(a),return)
+SDL_DYNAPI_PROC(int,SDL_SetWindowModalFor,(SDL_Window *a, SDL_Window *b),(a,b),return)
