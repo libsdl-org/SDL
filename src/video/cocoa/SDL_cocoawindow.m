@@ -196,6 +196,7 @@ ScheduleContextUpdates(SDL_WindowData *data)
     }
 }
 
+/* !!! FIXME: this should use a hint callback. */
 static int
 GetHintCtrlClickEmulateRightClick()
 {
