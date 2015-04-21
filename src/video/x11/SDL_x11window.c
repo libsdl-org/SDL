@@ -1042,7 +1042,7 @@ X11_RestoreWindow(_THIS, SDL_Window * window)
     SetWindowActive(_this, window);
 }
 
-/* This asks the Window Manager to handle fullscreen for us. Most don't do it right, though. */
+/* This asks the Window Manager to handle fullscreen for us. This is the modern way. */
 static void
 X11_SetWindowFullscreenViaWM(_THIS, SDL_Window * window, SDL_VideoDisplay * _display, SDL_bool fullscreen)
 {
