@@ -207,7 +207,9 @@ X11_GetNetWMState(_THIS, Window xwindow)
         }
         if (maximized == 3) {
             flags |= SDL_WINDOW_MAXIMIZED;
-        }  else if (fullscreen == 1) {
+        }
+
+        if (fullscreen == 1) {
             flags |= SDL_WINDOW_FULLSCREEN;
         }
         X11_XFree(propertyValue);
