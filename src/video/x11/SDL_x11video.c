@@ -234,6 +234,7 @@ X11_CreateDevice(int devindex)
     device->SetWindowMaximumSize = X11_SetWindowMaximumSize;
     device->GetWindowBordersSize = X11_GetWindowBordersSize;
     device->SetWindowOpacity = X11_SetWindowOpacity;
+    device->SetWindowModalFor = X11_SetWindowModalFor;
     device->SetWindowInputFocus = X11_SetWindowInputFocus;
     device->ShowWindow = X11_ShowWindow;
     device->HideWindow = X11_HideWindow;

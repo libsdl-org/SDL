@@ -874,6 +874,16 @@ extern DECLSPEC int SDLCALL SDL_SetWindowOpacity(SDL_Window * window, float opac
 extern DECLSPEC int SDLCALL SDL_GetWindowOpacity(SDL_Window * window, float * out_opacity);
 
 /**
+ *  \brief Sets the window as a modal for another window (@TODO: reconsider this function and/or its name)
+ *
+ *  \param modal_window The window that should be modal
+ *  \param parent_window The parent window
+ * 
+ *  \return 0 on success, or -1 otherwise.
+ */
+extern DECLSPEC int SDLCALL SDL_SetWindowModalFor(SDL_Window * modal_window, SDL_Window * parent_window);
+
+/**
  *  \brief Explicitly sets input focus to the window.
  *
  *  You almost certainly want SDL_RaiseWindow() instead of this function. Use

@@ -602,3 +602,4 @@
 #define SDL_SetWindowOpacity SDL_SetWindowOpacity_REAL
 #define SDL_GetWindowOpacity SDL_GetWindowOpacity_REAL
 #define SDL_SetWindowInputFocus SDL_SetWindowInputFocus_REAL
+#define SDL_SetWindowModalFor SDL_SetWindowModalFor_REAL
