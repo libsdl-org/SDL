@@ -852,6 +852,7 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
     }
 
     if ([self processHitTest:theEvent]) {
+        SDL_SendWindowEvent(_data->window, SDL_WINDOWEVENT_HIT_TEST, 0, 0);
         return;  /* dragging, drop event. */
     }
 
@@ -894,6 +895,7 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
     int button;
 
     if ([self processHitTest:theEvent]) {
+        SDL_SendWindowEvent(_data->window, SDL_WINDOWEVENT_HIT_TEST, 0, 0);
         return;  /* stopped dragging, drop event. */
     }
 
@@ -937,6 +939,7 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
     int x, y;
 
     if ([self processHitTest:theEvent]) {
+        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_HIT_TEST, 0, 0);
         return;  /* dragging, drop event. */
     }
 

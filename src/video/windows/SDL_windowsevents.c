@@ -928,15 +928,17 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     const SDL_Point point = { (int) winpoint.x, (int) winpoint.y };
                     const SDL_HitTestResult rc = window->hit_test(window, &point, window->hit_test_data);
                     switch (rc) {
-                        case SDL_HITTEST_DRAGGABLE: return HTCAPTION;
-                        case SDL_HITTEST_RESIZE_TOPLEFT: return HTTOPLEFT;
-                        case SDL_HITTEST_RESIZE_TOP: return HTTOP;
-                        case SDL_HITTEST_RESIZE_TOPRIGHT: return HTTOPRIGHT;
-                        case SDL_HITTEST_RESIZE_RIGHT: return HTRIGHT;
-                        case SDL_HITTEST_RESIZE_BOTTOMRIGHT: return HTBOTTOMRIGHT;
-                        case SDL_HITTEST_RESIZE_BOTTOM: return HTBOTTOM;
-                        case SDL_HITTEST_RESIZE_BOTTOMLEFT: return HTBOTTOMLEFT;
-                        case SDL_HITTEST_RESIZE_LEFT: return HTLEFT;
+                        #define POST_HIT_TEST(ret) { SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_HIT_TEST, 0, 0); return ret; }
+                        case SDL_HITTEST_DRAGGABLE: POST_HIT_TEST(HTCAPTION);
+                        case SDL_HITTEST_RESIZE_TOPLEFT: POST_HIT_TEST(HTTOPLEFT);
+                        case SDL_HITTEST_RESIZE_TOP: POST_HIT_TEST(HTTOP);
+                        case SDL_HITTEST_RESIZE_TOPRIGHT: POST_HIT_TEST(HTTOPRIGHT);
+                        case SDL_HITTEST_RESIZE_RIGHT: POST_HIT_TEST(HTRIGHT);
+                        case SDL_HITTEST_RESIZE_BOTTOMRIGHT: POST_HIT_TEST(HTBOTTOMRIGHT);
+                        case SDL_HITTEST_RESIZE_BOTTOM: POST_HIT_TEST(HTBOTTOM);
+                        case SDL_HITTEST_RESIZE_BOTTOMLEFT: POST_HIT_TEST(HTBOTTOMLEFT);
+                        case SDL_HITTEST_RESIZE_LEFT: POST_HIT_TEST(HTLEFT);
+                        #undef POST_HIT_TEST
                         case SDL_HITTEST_NORMAL: return HTCLIENT;
                     }
                 }
