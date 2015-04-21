@@ -1011,6 +1011,7 @@ X11_DispatchEvent(_THIS)
                 int button = xevent.xbutton.button;
                 if(button == Button1) {
                     if (ProcessHitTest(_this, data, &xevent)) {
+                        SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_HIT_TEST, 0, 0);
                         break;  /* don't pass this event on to app. */
                     }
                 }
