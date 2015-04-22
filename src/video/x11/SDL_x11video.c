@@ -175,6 +175,8 @@ X11_CreateDevice(int devindex)
     }
     device->driverdata = data;
 
+    data->global_mouse_changed = SDL_TRUE;
+
     /* FIXME: Do we need this?
        if ( (SDL_strncmp(X11_XDisplayName(display), ":", 1) == 0) ||
        (SDL_strncmp(X11_XDisplayName(display), "unix:", 5) == 0) ) {

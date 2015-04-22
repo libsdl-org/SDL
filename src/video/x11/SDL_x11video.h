@@ -118,6 +118,10 @@ typedef struct SDL_VideoData
     SDL_bool selection_waiting;
 
     Uint32 last_mode_change_deadline;
+
+    SDL_bool global_mouse_changed;
+    SDL_Point global_mouse_position;
+    Uint32 global_mouse_buttons;
 } SDL_VideoData;
 
 extern SDL_bool X11_UseDirectColorVisuals(void);

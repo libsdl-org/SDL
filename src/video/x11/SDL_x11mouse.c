@@ -366,39 +366,52 @@ X11_CaptureMouse(SDL_Window *window)
 static Uint32
 X11_GetGlobalMouseState(int *x, int *y)
 {
+    SDL_VideoData *videodata = (SDL_VideoData *) SDL_GetVideoDevice()->driverdata;
     Display *display = GetDisplay();
     const int num_screens = SDL_GetNumVideoDisplays();
     int i;
 
     /* !!! FIXME: should we XSync() here first? */
 
-    for (i = 0; i < num_screens; i++) {
-        SDL_DisplayData *data = (SDL_DisplayData *) SDL_GetDisplayDriverData(i);
-        if (data != NULL) {
-            Window root, child;
-            int rootx, rooty, winx, winy;
-            unsigned int mask;
-            if (X11_XQueryPointer(display, RootWindow(display, data->screen), &root, &child, &rootx, &rooty, &winx, &winy, &mask)) {
-                XWindowAttributes root_attrs;
-                Uint32 retval = 0;
-                retval |= (mask & Button1Mask) ? SDL_BUTTON_LMASK : 0;
-                retval |= (mask & Button2Mask) ? SDL_BUTTON_MMASK : 0;
-                retval |= (mask & Button3Mask) ? SDL_BUTTON_RMASK : 0;
-                /* SDL_DisplayData->x,y point to screen origin, and adding them to mouse coordinates relative to root window doesn't do the right thing
-                 * (observed on dual monitor setup with primary display being the rightmost one - mouse was offset to the right).
-                 *
-                 * Adding root position to root-relative coordinates seems to be a better way to get absolute position. */
-                X11_XGetWindowAttributes(display, root, &root_attrs);
-                *x = root_attrs.x + rootx;
-                *y = root_attrs.y + rooty;
-                return retval;
+#if !SDL_VIDEO_DRIVER_X11_XINPUT2
+    videodata->global_mouse_changed = SDL_TRUE;
+#endif
+
+    /* check if we have this cached since XInput last saw the mouse move. */
+    /* !!! FIXME: can we just calculate this from XInput's events? */
+    if (videodata->global_mouse_changed) {
+        for (i = 0; i < num_screens; i++) {
+            SDL_DisplayData *data = (SDL_DisplayData *) SDL_GetDisplayDriverData(i);
+            if (data != NULL) {
+                Window root, child;
+                int rootx, rooty, winx, winy;
+                unsigned int mask;
+                if (X11_XQueryPointer(display, RootWindow(display, data->screen), &root, &child, &rootx, &rooty, &winx, &winy, &mask)) {
+                    XWindowAttributes root_attrs;
+                    Uint32 buttons = 0;
+                    buttons |= (mask & Button1Mask) ? SDL_BUTTON_LMASK : 0;
+                    buttons |= (mask & Button2Mask) ? SDL_BUTTON_MMASK : 0;
+                    buttons |= (mask & Button3Mask) ? SDL_BUTTON_RMASK : 0;
+                    /* SDL_DisplayData->x,y point to screen origin, and adding them to mouse coordinates relative to root window doesn't do the right thing
+                     * (observed on dual monitor setup with primary display being the rightmost one - mouse was offset to the right).
+                     *
+                     * Adding root position to root-relative coordinates seems to be a better way to get absolute position. */
+                    X11_XGetWindowAttributes(display, root, &root_attrs);
+                    videodata->global_mouse_position.x = root_attrs.x + rootx;
+                    videodata->global_mouse_position.y = root_attrs.y + rooty;
+                    videodata->global_mouse_buttons = buttons;
+                    videodata->global_mouse_changed = SDL_FALSE;
+                    break;
+                }
             }
         }
     }
 
-    SDL_assert(0 && "The pointer wasn't on any X11 screen?!");
+    SDL_assert(!videodata->global_mouse_changed);  /* The pointer wasn't on any X11 screen?! */
 
-    return 0;
+    *x = videodata->global_mouse_position.x;
+    *y = videodata->global_mouse_position.y;
+    return videodata->global_mouse_buttons;
 }
 
 
