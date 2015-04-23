@@ -1390,7 +1390,8 @@ endif()
 ##### Installation targets #####
 install(TARGETS ${_INSTALL_LIBS}
   LIBRARY DESTINATION "lib${LIB_SUFFIX}"
-  ARCHIVE DESTINATION "lib${LIB_SUFFIX}")
+  ARCHIVE DESTINATION "lib${LIB_SUFFIX}"
+  RUNTIME DESTINATION bin)
 
 file(GLOB INCLUDE_FILES ${SDL2_SOURCE_DIR}/include/*.h)
 file(GLOB BIN_INCLUDE_FILES ${SDL2_BINARY_DIR}/include/*.h)
@@ -1418,10 +1419,6 @@ if(NOT WINDOWS OR CYGWIN)
   install(PROGRAMS ${SDL2_BINARY_DIR}/sdl2-config DESTINATION bin)
   # TODO: what about the .spec file? Is it only needed for RPM creation?
   install(FILES "${SDL2_SOURCE_DIR}/sdl2.m4" DESTINATION "share/aclocal")
-else()
-  if(SDL_SHARED)
-    install(TARGETS SDL2 RUNTIME DESTINATION bin)
-  endif()
 endif()
 
 ##### Uninstall target #####
