@@ -49,6 +49,14 @@ GetWindow(_THIS)
     return None;
 }
 
+/* We use our own cut-buffer for intermediate storage instead of  
+   XA_CUT_BUFFER0 because their use isn't really defined for holding UTF8. */ 
+Atom
+X11_GetSDLCutBufferClipboardType(Display *display)
+{
+    return X11_XInternAtom(display, "SDL_CUTBUFFER", False);
+}
+
 int
 X11_SetClipboardText(_THIS, const char *text)
 {
@@ -66,7 +74,7 @@ X11_SetClipboardText(_THIS, const char *text)
     /* Save the selection on the root window */
     format = TEXT_FORMAT;
     X11_XChangeProperty(display, DefaultRootWindow(display),
-        XA_CUT_BUFFER0, format, 8, PropModeReplace,
+        X11_GetSDLCutBufferClipboardType(display), format, 8, PropModeReplace,
         (const unsigned char *)text, SDL_strlen(text));
 
     if (XA_CLIPBOARD != None &&
@@ -109,9 +117,14 @@ X11_GetClipboardText(_THIS)
     window = GetWindow(_this);
     format = TEXT_FORMAT;
     owner = X11_XGetSelectionOwner(display, XA_CLIPBOARD);
-    if ((owner == None) || (owner == window)) {
+    if (owner == None) {
+        /* Fall back to ancient X10 cut-buffers which do not support UTF8 strings*/
         owner = DefaultRootWindow(display);
         selection = XA_CUT_BUFFER0;
+        format = XA_STRING;
+    } else if (owner == window) {
+        owner = DefaultRootWindow(display);
+        selection = X11_GetSDLCutBufferClipboardType(display);
     } else {
         /* Request that the selection owner copy the data to our window */
         owner = window;
