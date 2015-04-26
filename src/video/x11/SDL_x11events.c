@@ -1106,7 +1106,7 @@ X11_DispatchEvent(_THIS)
         }
         break;
 
-    /* Copy the selection from XA_CUT_BUFFER0 to the requested property */
+    /* Copy the selection from our own CUTBUFFER to the requested property */
     case SelectionRequest: {
             XSelectionRequestEvent *req;
             XEvent sevent;
@@ -1129,7 +1129,7 @@ X11_DispatchEvent(_THIS)
             sevent.xselection.requestor = req->requestor;
             sevent.xselection.time = req->time;
             if (X11_XGetWindowProperty(display, DefaultRootWindow(display),
-                    XA_CUT_BUFFER0, 0, INT_MAX/4, False, req->target,
+                    X11_GetSDLCutBufferClipboardType(display), 0, INT_MAX/4, False, req->target,
                     &sevent.xselection.target, &seln_format, &nbytes,
                     &overflow, &seln_data) == Success) {
                 Atom XA_TARGETS = X11_XInternAtom(display, "TARGETS", 0);
