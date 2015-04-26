@@ -2897,8 +2897,12 @@ case "$host" in
         CheckLibUDev
         CheckDBus
         CheckIBus
-        CheckInputEvents
-        CheckInputKD
+        case $ARCH in
+          linux)
+              CheckInputEvents
+              CheckInputKD
+          ;;
+        esac
         CheckTslib
         CheckUSBHID
         CheckPTHREAD
