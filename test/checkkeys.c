@@ -144,7 +144,7 @@ loop()
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
         case SDL_KEYDOWN:
-        //case SDL_KEYUP:
+        case SDL_KEYUP:
 		    PrintKey(&event.key.keysym, (event.key.state == SDL_PRESSED) ? SDL_TRUE : SDL_FALSE, (event.key.repeat) ? SDL_TRUE : SDL_FALSE);
             break;
         case SDL_TEXTINPUT:
