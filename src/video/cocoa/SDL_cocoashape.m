@@ -75,11 +75,11 @@ ConvertRects(SDL_ShapeTree* tree, void* closure)
 
 int
 Cocoa_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_WindowShapeMode *shape_mode)
+{ @autoreleasepool
 {
     SDL_ShapeData* data = (SDL_ShapeData*)shaper->driverdata;
     SDL_WindowData* windata = (SDL_WindowData*)shaper->window->driverdata;
     SDL_CocoaClosure closure;
-    NSAutoreleasePool *pool = NULL;
     if(data->saved == SDL_TRUE) {
         [data->context restoreGraphicsState];
         data->saved = SDL_FALSE;
@@ -93,16 +93,14 @@ Cocoa_SetWindowShape(SDL_WindowShaper *shaper, SDL_Surface *shape, SDL_WindowSha
     NSRectFill([[windata->nswindow contentView] frame]);
     data->shape = SDL_CalculateShapeTree(*shape_mode,shape);
 
-    pool = [[NSAutoreleasePool alloc] init];
     closure.view = [windata->nswindow contentView];
     closure.path = [NSBezierPath bezierPath];
     closure.window = shaper->window;
     SDL_TraverseShapeTree(data->shape,&ConvertRects,&closure);
     [closure.path addClip];
-    [pool release];
 
     return 0;
-}
+}}
 
 int
 Cocoa_ResizeWindowShape(SDL_Window *window)
