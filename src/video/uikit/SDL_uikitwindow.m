@@ -273,6 +273,12 @@ UIKit_UpdateWindowBorder(_THIS, SDL_Window * window)
 
     /* Update the view's frame to account for the status bar change. */
     viewcontroller.view.frame = UIKit_ComputeViewFrame(window, data.uiwindow.screen);
+
+#ifdef SDL_IPHONE_KEYBOARD
+    /* Make sure the view is offset correctly when the keyboard is visible. */
+    [viewcontroller updateKeyboard];
+#endif
+
     [viewcontroller.view setNeedsLayout];
     [viewcontroller.view layoutIfNeeded];
 }

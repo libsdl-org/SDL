@@ -212,28 +212,12 @@
 - (void)keyboardWillShow:(NSNotification *)notification
 {
     CGRect kbrect = [[notification userInfo][UIKeyboardFrameBeginUserInfoKey] CGRectValue];
-    UIView *view = self.view;
-    int height = 0;
 
-    /* The keyboard rect is in the coordinate space of the screen, but we want
-     * its height in the view's coordinate space. */
-#ifdef __IPHONE_8_0
-    if ([view respondsToSelector:@selector(convertRect:fromCoordinateSpace:)]) {
-        UIScreen *screen = view.window.screen;
-        kbrect = [view convertRect:kbrect fromCoordinateSpace:screen.coordinateSpace];
-        height = kbrect.size.height;
-    } else
-#endif
-    {
-        /* In iOS 7 and below, the screen's coordinate space is never rotated. */
-        if (UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation)) {
-            height = kbrect.size.width;
-        } else {
-            height = kbrect.size.height;
-        }
-    }
+    /* The keyboard rect is in the coordinate space of the screen/window, but we
+     * want its height in the coordinate space of the view. */
+    kbrect = [self.view convertRect:kbrect fromView:nil];
 
-    [self setKeyboardHeight:height];
+    [self setKeyboardHeight:(int)kbrect.size.height];
 }
 
 - (void)keyboardWillHide:(NSNotification *)notification
@@ -243,28 +227,29 @@
 
 - (void)updateKeyboard
 {
-    SDL_Rect textrect = self.textInputRect;
     CGAffineTransform t = self.view.transform;
     CGPoint offset = CGPointMake(0.0, 0.0);
+    CGRect frame = UIKit_ComputeViewFrame(window, self.view.window.screen);
 
     if (self.keyboardHeight) {
-        int rectbottom = textrect.y + textrect.h;
-        int kbottom = self.view.bounds.size.height - self.keyboardHeight;
-        if (kbottom < rectbottom) {
-            offset.y = kbottom - rectbottom;
+        int rectbottom = self.textInputRect.y + self.textInputRect.h;
+        int keybottom = self.view.bounds.size.height - self.keyboardHeight;
+        if (keybottom < rectbottom) {
+            offset.y = keybottom - rectbottom;
         }
     }
 
-    /* Put the offset into the this view transform's coordinate space. */
+    /* Apply this view's transform (except any translation) to the offset, in
+     * order to orient it correctly relative to the frame's coordinate space. */
     t.tx = 0.0;
     t.ty = 0.0;
     offset = CGPointApplyAffineTransform(offset, t);
 
-    t.tx = offset.x;
-    t.ty = offset.y;
+    /* Apply the updated offset to the view's frame. */
+    frame.origin.x += offset.x;
+    frame.origin.y += offset.y;
 
-    /* Move the view by applying the updated transform. */
-    self.view.transform = t;
+    self.view.frame = frame;
 }
 
 - (void)setKeyboardHeight:(int)height
