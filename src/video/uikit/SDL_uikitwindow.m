@@ -191,13 +191,10 @@ UIKit_CreateWindow(_THIS, SDL_Window *window)
         }
 
         if (data.uiscreen == [UIScreen mainScreen]) {
-            NSUInteger orientations = UIKit_GetSupportedOrientations(window);
-            UIApplication *app = [UIApplication sharedApplication];
-
             if (window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_BORDERLESS)) {
-                app.statusBarHidden = YES;
+                [UIApplication sharedApplication].statusBarHidden = YES;
             } else {
-                app.statusBarHidden = NO;
+                [UIApplication sharedApplication].statusBarHidden = NO;
             }
         }
 
@@ -345,9 +342,21 @@ NSUInteger
 UIKit_GetSupportedOrientations(SDL_Window * window)
 {
     const char *hint = SDL_GetHint(SDL_HINT_ORIENTATIONS);
+    NSUInteger validOrientations = UIInterfaceOrientationMaskAll;
     NSUInteger orientationMask = 0;
 
     @autoreleasepool {
+        SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
+        UIApplication *app = [UIApplication sharedApplication];
+
+        /* Get all possible valid orientations. If the app delegate doesn't tell
+         * us, we get the orientations from Info.plist via UIApplication. */
+        if ([app.delegate respondsToSelector:@selector(application:supportedInterfaceOrientationsForWindow:)]) {
+            validOrientations = [app.delegate application:app supportedInterfaceOrientationsForWindow:data.uiwindow];
+        } else if ([app respondsToSelector:@selector(supportedInterfaceOrientationsForWindow:)]) {
+            validOrientations = [app supportedInterfaceOrientationsForWindow:data.uiwindow];
+        }
+
         if (hint != NULL) {
             NSArray *orientations = [@(hint) componentsSeparatedByString:@" "];
 
@@ -379,9 +388,16 @@ UIKit_GetSupportedOrientations(SDL_Window * window)
             }
         }
 
-        /* Don't allow upside-down orientation on the phone, so answering calls is in the natural orientation */
+        /* Don't allow upside-down orientation on phones, so answering calls is in the natural orientation */
         if ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPhone) {
             orientationMask &= ~UIInterfaceOrientationMaskPortraitUpsideDown;
+        }
+
+        /* If none of the specified orientations are actually supported by the
+         * app, we'll revert to what the app supports. An exception would be
+         * thrown by the system otherwise. */
+        if ((validOrientations & orientationMask) == 0) {
+            orientationMask = validOrientations;
         }
     }
 
