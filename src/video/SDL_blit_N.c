@@ -2114,6 +2114,33 @@ Blit4to4MaskAlpha(SDL_BlitInfo * info)
     }
 }
 
+/* blits 32 bit RGBA<->RGBA with both surfaces having the same R,G,B,A fields */
+static void
+Blit4to4CopyAlpha(SDL_BlitInfo * info)
+{
+    int width = info->dst_w;
+    int height = info->dst_h;
+    Uint32 *src = (Uint32 *) info->src;
+    int srcskip = info->src_skip;
+    Uint32 *dst = (Uint32 *) info->dst;
+    int dstskip = info->dst_skip;
+
+    /* RGBA->RGBA, COPY_ALPHA */
+    while (height--) {
+        /* *INDENT-OFF* */
+        DUFFS_LOOP(
+        {
+            *dst = *src;
+            ++dst;
+            ++src;
+        },
+        width);
+        /* *INDENT-ON* */
+        src = (Uint32 *) ((Uint8 *) src + srcskip);
+        dst = (Uint32 *) ((Uint8 *) dst + dstskip);
+    }
+}
+
 static void
 BlitNtoN(SDL_BlitInfo * info)
 {
@@ -2562,8 +2589,17 @@ SDL_CalculateBlitN(SDL_Surface * surface)
                             srcfmt->Rmask == dstfmt->Rmask &&
                             srcfmt->Gmask == dstfmt->Gmask &&
                             srcfmt->Bmask == dstfmt->Bmask) {
-                    /* Fastpath C fallback: 32bit RGB<->RGBA blit with matching RGB */
-                    blitfun = Blit4to4MaskAlpha;
+                    if (a_need == COPY_ALPHA) {
+                        if (srcfmt->Amask == dstfmt->Amask) {
+                            /* Fastpath C fallback: 32bit RGBA<->RGBA blit with matching RGBA */
+                            blitfun = Blit4to4CopyAlpha;
+                        } else {
+                            blitfun = BlitNtoNCopyAlpha;
+                        }
+                    } else {
+                        /* Fastpath C fallback: 32bit RGB<->RGBA blit with matching RGB */
+                        blitfun = Blit4to4MaskAlpha;
+                    }
                 } else if (a_need == COPY_ALPHA) {
                     blitfun = BlitNtoNCopyAlpha;
                 }
