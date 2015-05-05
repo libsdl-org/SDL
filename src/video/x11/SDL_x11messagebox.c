@@ -376,7 +376,7 @@ X11_MessageBoxCreateWindow( SDL_MessageBoxDataX11 *data )
     int x, y;
     XSizeHints *sizehints;
     XSetWindowAttributes wnd_attr;
-    Atom _NET_WM_WINDOW_TYPE, _NET_WM_WINDOW_TYPE_DIALOG;
+    Atom _NET_WM_WINDOW_TYPE, _NET_WM_WINDOW_TYPE_DIALOG, _NET_WM_NAME, UTF8_STRING;
     Display *display = data->display;
     SDL_WindowData *windowdata = NULL;
     const SDL_MessageBoxData *messageboxdata = data->messageboxdata;
@@ -411,6 +411,11 @@ X11_MessageBoxCreateWindow( SDL_MessageBoxDataX11 *data )
     }
 
     X11_XStoreName( display, data->window, messageboxdata->title );
+    _NET_WM_NAME = X11_XInternAtom(display, "_NET_WM_NAME", False);
+    UTF8_STRING = X11_XInternAtom(display, "UTF8_STRING", False);
+    X11_XChangeProperty(display, data->window, _NET_WM_NAME, UTF8_STRING, 8,
+                    PropModeReplace, (unsigned char *) messageboxdata->title,
+                    strlen(messageboxdata->title) + 1 );
 
     /* Let the window manager know this is a dialog box */
     _NET_WM_WINDOW_TYPE = X11_XInternAtom(display, "_NET_WM_WINDOW_TYPE", False);
