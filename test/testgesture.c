@@ -16,6 +16,7 @@
  */
 
 #include "SDL.h"
+#include <stdlib.h> /* for exit() */
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
