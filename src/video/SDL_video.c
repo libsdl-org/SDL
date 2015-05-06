@@ -2793,19 +2793,37 @@ int
 SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
 {
 #if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
-    void (APIENTRY * glGetIntegervFunc) (GLenum pname, GLint * params);
-    GLenum(APIENTRY * glGetErrorFunc) (void);
+    void (APIENTRY *glGetIntegervFunc) (GLenum pname, GLint * params);
+    GLenum (APIENTRY *glGetErrorFunc) (void);
     GLenum attrib = 0;
     GLenum error = 0;
 
+    /*
+     * Some queries in Core Profile desktop OpenGL 3+ contexts require
+     * glGetFramebufferAttachmentParameteriv instead of glGetIntegerv. Note that
+     * the enums we use for the former function don't exist in OpenGL ES 2, and
+     * the function itself doesn't exist prior to OpenGL 3 and OpenGL ES 2.
+     */
+#if SDL_VIDEO_OPENGL
+    const GLubyte *(APIENTRY *glGetStringFunc) (GLenum name);
+    void (APIENTRY *glGetFramebufferAttachmentParameterivFunc) (GLenum target, GLenum attachment, GLenum pname, GLint* params);
+    GLenum attachment = GL_BACK_LEFT;
+    GLenum attachmentattrib = 0;
+
+    glGetStringFunc = SDL_GL_GetProcAddress("glGetString");
+    if (!glGetStringFunc) {
+        return SDL_SetError("Failed getting OpenGL glGetString entry point");
+    }
+#endif
+
     glGetIntegervFunc = SDL_GL_GetProcAddress("glGetIntegerv");
     if (!glGetIntegervFunc) {
-        return -1;
+        return SDL_SetError("Failed getting OpenGL glGetIntegerv entry point");
     }
 
     glGetErrorFunc = SDL_GL_GetProcAddress("glGetError");
     if (!glGetErrorFunc) {
-        return -1;
+        return SDL_SetError("Failed getting OpenGL glGetError entry point");
     }
 
     /* Clear value in any case */
@@ -2813,15 +2831,27 @@ SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
 
     switch (attr) {
     case SDL_GL_RED_SIZE:
+#if SDL_VIDEO_OPENGL
+        attachmentattrib = GL_FRAMEBUFFER_ATTACHMENT_RED_SIZE;
+#endif
         attrib = GL_RED_BITS;
         break;
     case SDL_GL_BLUE_SIZE:
+#if SDL_VIDEO_OPENGL
+        attachmentattrib = GL_FRAMEBUFFER_ATTACHMENT_BLUE_SIZE;
+#endif
         attrib = GL_BLUE_BITS;
         break;
     case SDL_GL_GREEN_SIZE:
+#if SDL_VIDEO_OPENGL
+        attachmentattrib = GL_FRAMEBUFFER_ATTACHMENT_GREEN_SIZE;
+#endif
         attrib = GL_GREEN_BITS;
         break;
     case SDL_GL_ALPHA_SIZE:
+#if SDL_VIDEO_OPENGL
+        attachmentattrib = GL_FRAMEBUFFER_ATTACHMENT_ALPHA_SIZE;
+#endif
         attrib = GL_ALPHA_BITS;
         break;
     case SDL_GL_DOUBLEBUFFER:
@@ -2836,9 +2866,17 @@ SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
         return 0;
 #endif
     case SDL_GL_DEPTH_SIZE:
+#if SDL_VIDEO_OPENGL
+        attachment = GL_DEPTH;
+        attachmentattrib = GL_FRAMEBUFFER_ATTACHMENT_DEPTH_SIZE;
+#endif
         attrib = GL_DEPTH_BITS;
         break;
     case SDL_GL_STENCIL_SIZE:
+#if SDL_VIDEO_OPENGL
+        attachment = GL_STENCIL;
+        attachmentattrib = GL_FRAMEBUFFER_ATTACHMENT_STENCIL_SIZE;
+#endif
         attrib = GL_STENCIL_BITS;
         break;
 #if SDL_VIDEO_OPENGL
@@ -2868,18 +2906,10 @@ SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
         return 0;
 #endif
     case SDL_GL_MULTISAMPLEBUFFERS:
-#if SDL_VIDEO_OPENGL
-        attrib = GL_SAMPLE_BUFFERS_ARB;
-#else
         attrib = GL_SAMPLE_BUFFERS;
-#endif
         break;
     case SDL_GL_MULTISAMPLESAMPLES:
-#if SDL_VIDEO_OPENGL
-        attrib = GL_SAMPLES_ARB;
-#else
         attrib = GL_SAMPLES;
-#endif
         break;
     case SDL_GL_CONTEXT_RELEASE_BEHAVIOR:
 #if SDL_VIDEO_OPENGL
@@ -2890,23 +2920,23 @@ SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
         break;
     case SDL_GL_BUFFER_SIZE:
         {
-            GLint bits = 0;
-            GLint component;
+            int rsize = 0, gsize = 0, bsize = 0, asize = 0;
 
-            /*
-             * there doesn't seem to be a single flag in OpenGL
-             * for this!
-             */
-            glGetIntegervFunc(GL_RED_BITS, &component);
-            bits += component;
-            glGetIntegervFunc(GL_GREEN_BITS, &component);
-            bits += component;
-            glGetIntegervFunc(GL_BLUE_BITS, &component);
-            bits += component;
-            glGetIntegervFunc(GL_ALPHA_BITS, &component);
-            bits += component;
+            /* There doesn't seem to be a single flag in OpenGL for this! */
+            if (SDL_GL_GetAttribute(SDL_GL_RED_SIZE, &rsize) < 0) {
+                return -1;
+            }
+            if (SDL_GL_GetAttribute(SDL_GL_GREEN_SIZE, &gsize) < 0) {
+                return -1;
+            }
+            if (SDL_GL_GetAttribute(SDL_GL_BLUE_SIZE, &bsize) < 0) {
+                return -1;
+            }
+            if (SDL_GL_GetAttribute(SDL_GL_ALPHA_SIZE, &asize) < 0) {
+                return -1;
+            }
 
-            *value = bits;
+            *value = rsize + gsize + bsize + asize;
             return 0;
         }
     case SDL_GL_ACCELERATED_VISUAL:
@@ -2965,7 +2995,21 @@ SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
         return SDL_SetError("Unknown OpenGL attribute");
     }
 
-    glGetIntegervFunc(attrib, (GLint *) value);
+#if SDL_VIDEO_OPENGL
+    if (attachmentattrib && isAtLeastGL3((const char *) glGetStringFunc(GL_VERSION))) {
+        glGetFramebufferAttachmentParameterivFunc = SDL_GL_GetProcAddress("glGetFramebufferAttachmentParameteriv");
+
+        if (glGetFramebufferAttachmentParameterivFunc) {
+            glGetFramebufferAttachmentParameterivFunc(GL_FRAMEBUFFER, attachment, attachmentattrib, (GLint *) value);
+        } else {
+            return SDL_SetError("Failed getting OpenGL glGetFramebufferAttachmentParameteriv entry point");
+        }
+    } else
+#endif
+    {
+        glGetIntegervFunc(attrib, (GLint *) value);
+    }
+
     error = glGetErrorFunc();
     if (error != GL_NO_ERROR) {
         if (error == GL_INVALID_ENUM) {
