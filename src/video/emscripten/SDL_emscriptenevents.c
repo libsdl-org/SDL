@@ -371,7 +371,7 @@ Emscripten_HandleFocus(int eventType, const EmscriptenFocusEvent *wheelEvent, vo
 EM_BOOL
 Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent *touchEvent, void *userData)
 {
-    /*SDL_WindowData *window_data = userData;*/
+    SDL_WindowData *window_data = userData;
     int i;
 
     SDL_TouchID deviceId = 0;
@@ -382,14 +382,15 @@ Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent *touchEvent, vo
     }
 
     for (i = 0; i < touchEvent->numTouches; i++) {
-        long x, y, id;
+        SDL_FingerID id;
+        float x, y;
 
         if (!touchEvent->touches[i].isChanged)
             continue;
 
         id = touchEvent->touches[i].identifier;
-        x = touchEvent->touches[i].canvasX;
-        y = touchEvent->touches[i].canvasY;
+        x = touchEvent->touches[i].canvasX / (float)window_data->windowed_width;
+        y = touchEvent->touches[i].canvasY / (float)window_data->windowed_height;
 
         if (eventType == EMSCRIPTEN_EVENT_TOUCHMOVE) {
             SDL_SendTouchMotion(deviceId, id, x, y, 1.0f);
