@@ -412,8 +412,8 @@ typedef struct SDL_TouchFingerEvent
     SDL_FingerID fingerId;
     float x;            /**< Normalized in the range 0...1 */
     float y;            /**< Normalized in the range 0...1 */
-    float dx;           /**< Normalized in the range 0...1 */
-    float dy;           /**< Normalized in the range 0...1 */
+    float dx;           /**< Normalized in the range -1...1 */
+    float dy;           /**< Normalized in the range -1...1 */
     float pressure;     /**< Normalized in the range 0...1 */
 } SDL_TouchFingerEvent;
 
