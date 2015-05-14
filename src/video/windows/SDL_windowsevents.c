@@ -24,6 +24,7 @@
 
 #include "SDL_windowsvideo.h"
 #include "SDL_windowsshape.h"
+#include "SDL_system.h"
 #include "SDL_syswm.h"
 #include "SDL_timer.h"
 #include "SDL_vkeys.h"
@@ -925,6 +926,14 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     }
 }
 
+/* A message hook called before TranslateMessage() */
+static SDL_WindowsMessageHook g_WindowsMessageHook = NULL;
+
+void SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback)
+{
+    g_WindowsMessageHook = callback;
+}
+
 void
 WIN_PumpEvents(_THIS)
 {
@@ -934,6 +943,10 @@ WIN_PumpEvents(_THIS)
 
     if (g_WindowsEnableMessageLoop) {
         while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
+            if (g_WindowsMessageHook) {
+                g_WindowsMessageHook(msg.hwnd, msg.message, msg.wParam, msg.lParam);
+            }
+
             /* Always translate the message in case it's a non-SDL window (e.g. with Qt integration) */
             TranslateMessage(&msg);
             DispatchMessage(&msg);
