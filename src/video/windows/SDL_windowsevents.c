@@ -928,10 +928,12 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
 /* A message hook called before TranslateMessage() */
 static SDL_WindowsMessageHook g_WindowsMessageHook = NULL;
+static void *g_WindowsMessageHookData = NULL;
 
-void SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback)
+void SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata)
 {
     g_WindowsMessageHook = callback;
+    g_WindowsMessageHookData = userdata;
 }
 
 void
@@ -944,7 +946,7 @@ WIN_PumpEvents(_THIS)
     if (g_WindowsEnableMessageLoop) {
         while (PeekMessage(&msg, NULL, 0, 0, PM_REMOVE)) {
             if (g_WindowsMessageHook) {
-                g_WindowsMessageHook(msg.hwnd, msg.message, msg.wParam, msg.lParam);
+                g_WindowsMessageHook(g_WindowsMessageHookData, msg.hwnd, msg.message, msg.wParam, msg.lParam);
             }
 
             /* Always translate the message in case it's a non-SDL window (e.g. with Qt integration) */

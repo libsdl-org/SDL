@@ -46,8 +46,8 @@ extern "C" {
 /**
    \brief Set a function that is called for every windows message, before TranslateMessage()
 */
-typedef void (*SDL_WindowsMessageHook)(void *hWnd, unsigned int message, Uint64 wParam, Sint64 lParam);
-extern DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback);
+typedef void (SDLCALL * SDL_WindowsMessageHook)(void *userdata, void *hWnd, unsigned int message, Uint64 wParam, Sint64 lParam);
+extern DECLSPEC void SDLCALL SDL_SetWindowsMessageHook(SDL_WindowsMessageHook callback, void *userdata);
 
 /**
    \brief Returns the D3D9 adapter index that matches the specified display index.
