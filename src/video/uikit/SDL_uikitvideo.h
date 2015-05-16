@@ -25,6 +25,8 @@
 
 #include "../SDL_sysvideo.h"
 
+void UIKit_SuspendScreenSaver(_THIS);
+
 BOOL UIKit_IsSystemVersionAtLeast(double version);
 CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen);
 
