@@ -810,13 +810,11 @@ static GLES2_Shader GLES2_FragmentShader_TextureNV21Src = {
 
 const GLES2_Shader *GLES2_GetShader(GLES2_ShaderType type, SDL_BlendMode blendMode)
 {
-    switch (type)
-    {
+    switch (type) {
     case GLES2_SHADER_VERTEX_DEFAULT:
         return &GLES2_VertexShader_Default;
     case GLES2_SHADER_FRAGMENT_SOLID_SRC:
-    switch (blendMode)
-    {
+    switch (blendMode) {
     case SDL_BLENDMODE_NONE:
         return &GLES2_FragmentShader_None_SolidSrc;
     case SDL_BLENDMODE_BLEND:
@@ -829,8 +827,7 @@ const GLES2_Shader *GLES2_GetShader(GLES2_ShaderType type, SDL_BlendMode blendMo
         return NULL;
     }
     case GLES2_SHADER_FRAGMENT_TEXTURE_ABGR_SRC:
-        switch (blendMode)
-    {
+        switch (blendMode) {
         case SDL_BLENDMODE_NONE:
             return &GLES2_FragmentShader_None_TextureABGRSrc;
         case SDL_BLENDMODE_BLEND:
@@ -843,8 +840,7 @@ const GLES2_Shader *GLES2_GetShader(GLES2_ShaderType type, SDL_BlendMode blendMo
             return NULL;
     }
     case GLES2_SHADER_FRAGMENT_TEXTURE_ARGB_SRC:
-        switch (blendMode)
-    {
+        switch (blendMode) {
         case SDL_BLENDMODE_NONE:
             return &GLES2_FragmentShader_None_TextureARGBSrc;
         case SDL_BLENDMODE_BLEND:
@@ -858,8 +854,7 @@ const GLES2_Shader *GLES2_GetShader(GLES2_ShaderType type, SDL_BlendMode blendMo
     }
 
     case GLES2_SHADER_FRAGMENT_TEXTURE_RGB_SRC:
-        switch (blendMode)
-    {
+        switch (blendMode) {
         case SDL_BLENDMODE_NONE:
             return &GLES2_FragmentShader_None_TextureRGBSrc;
         case SDL_BLENDMODE_BLEND:
@@ -873,8 +868,7 @@ const GLES2_Shader *GLES2_GetShader(GLES2_ShaderType type, SDL_BlendMode blendMo
     }
 
     case GLES2_SHADER_FRAGMENT_TEXTURE_BGR_SRC:
-        switch (blendMode)
-    {
+        switch (blendMode) {
         case SDL_BLENDMODE_NONE:
             return &GLES2_FragmentShader_None_TextureBGRSrc;
         case SDL_BLENDMODE_BLEND:
