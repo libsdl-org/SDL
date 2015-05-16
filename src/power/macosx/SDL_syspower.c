@@ -23,13 +23,13 @@
 #ifndef SDL_POWER_DISABLED
 #if SDL_POWER_MACOSX
 
-#include <Carbon/Carbon.h>
+#include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/ps/IOPowerSources.h>
 #include <IOKit/ps/IOPSKeys.h>
 
 #include "SDL_power.h"
 
-/* Carbon is so verbose... */
+/* CoreFoundation is so verbose... */
 #define STRMATCH(a,b) (CFStringCompare(a, b, 0) == kCFCompareEqualTo)
 #define GETVAL(k,v) \
     CFDictionaryGetValueIfPresent(dict, CFSTR(k), (const void **) v)
