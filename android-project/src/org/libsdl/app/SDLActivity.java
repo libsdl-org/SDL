@@ -114,9 +114,9 @@ public class SDLActivity extends Activity {
     // Setup
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.v("SDL", "Device: " + android.os.Build.DEVICE);
-        Log.v("SDL", "Model: " + android.os.Build.MODEL);
-        Log.v("SDL", "onCreate():" + mSingleton);
+        Log.v(TAG, "Device: " + android.os.Build.DEVICE);
+        Log.v(TAG, "Model: " + android.os.Build.MODEL);
+        Log.v(TAG, "onCreate():" + mSingleton);
         super.onCreate(savedInstanceState);
 
         SDLActivity.initialize();
@@ -178,7 +178,7 @@ public class SDLActivity extends Activity {
     // Events
     @Override
     protected void onPause() {
-        Log.v("SDL", "onPause()");
+        Log.v(TAG, "onPause()");
         super.onPause();
 
         if (SDLActivity.mBrokenLibraries) {
@@ -190,7 +190,7 @@ public class SDLActivity extends Activity {
 
     @Override
     protected void onResume() {
-        Log.v("SDL", "onResume()");
+        Log.v(TAG, "onResume()");
         super.onResume();
 
         if (SDLActivity.mBrokenLibraries) {
@@ -204,7 +204,7 @@ public class SDLActivity extends Activity {
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
         super.onWindowFocusChanged(hasFocus);
-        Log.v("SDL", "onWindowFocusChanged(): " + hasFocus);
+        Log.v(TAG, "onWindowFocusChanged(): " + hasFocus);
 
         if (SDLActivity.mBrokenLibraries) {
            return;
@@ -218,7 +218,7 @@ public class SDLActivity extends Activity {
 
     @Override
     public void onLowMemory() {
-        Log.v("SDL", "onLowMemory()");
+        Log.v(TAG, "onLowMemory()");
         super.onLowMemory();
 
         if (SDLActivity.mBrokenLibraries) {
@@ -230,7 +230,7 @@ public class SDLActivity extends Activity {
 
     @Override
     protected void onDestroy() {
-        Log.v("SDL", "onDestroy()");
+        Log.v(TAG, "onDestroy()");
 
         if (SDLActivity.mBrokenLibraries) {
            super.onDestroy();
@@ -248,11 +248,11 @@ public class SDLActivity extends Activity {
             try {
                 SDLActivity.mSDLThread.join();
             } catch(Exception e) {
-                Log.v("SDL", "Problem stopping thread: " + e);
+                Log.v(TAG, "Problem stopping thread: " + e);
             }
             SDLActivity.mSDLThread = null;
 
-            //Log.v("SDL", "Finished waiting for SDL thread");
+            //Log.v(TAG, "Finished waiting for SDL thread");
         }
 
         super.onDestroy();
@@ -542,7 +542,7 @@ public class SDLActivity extends Activity {
         int audioFormat = is16Bit ? AudioFormat.ENCODING_PCM_16BIT : AudioFormat.ENCODING_PCM_8BIT;
         int frameSize = (isStereo ? 2 : 1) * (is16Bit ? 2 : 1);
 
-        Log.v("SDL", "SDL audio: wanted " + (isStereo ? "stereo" : "mono") + " " + (is16Bit ? "16-bit" : "8-bit") + " " + (sampleRate / 1000f) + "kHz, " + desiredFrames + " frames buffer");
+        Log.v(TAG, "SDL audio: wanted " + (isStereo ? "stereo" : "mono") + " " + (is16Bit ? "16-bit" : "8-bit") + " " + (sampleRate / 1000f) + "kHz, " + desiredFrames + " frames buffer");
 
         // Let the user pick a larger buffer if they really want -- but ye
         // gods they probably shouldn't, the minimums are horrifyingly high
@@ -558,7 +558,7 @@ public class SDLActivity extends Activity {
             // Ref: http://developer.android.com/reference/android/media/AudioTrack.html#getState()
 
             if (mAudioTrack.getState() != AudioTrack.STATE_INITIALIZED) {
-                Log.e("SDL", "Failed during initialization of Audio Track");
+                Log.e(TAG, "Failed during initialization of Audio Track");
                 mAudioTrack = null;
                 return -1;
             }
@@ -566,7 +566,7 @@ public class SDLActivity extends Activity {
             mAudioTrack.play();
         }
 
-        Log.v("SDL", "SDL audio: got " + ((mAudioTrack.getChannelCount() >= 2) ? "stereo" : "mono") + " " + ((mAudioTrack.getAudioFormat() == AudioFormat.ENCODING_PCM_16BIT) ? "16-bit" : "8-bit") + " " + (mAudioTrack.getSampleRate() / 1000f) + "kHz, " + desiredFrames + " frames buffer");
+        Log.v(TAG, "SDL audio: got " + ((mAudioTrack.getChannelCount() >= 2) ? "stereo" : "mono") + " " + ((mAudioTrack.getAudioFormat() == AudioFormat.ENCODING_PCM_16BIT) ? "16-bit" : "8-bit") + " " + (mAudioTrack.getSampleRate() / 1000f) + "kHz, " + desiredFrames + " frames buffer");
 
         return 0;
     }
@@ -586,7 +586,7 @@ public class SDLActivity extends Activity {
                     // Nom nom
                 }
             } else {
-                Log.w("SDL", "SDL audio: error return from write(short)");
+                Log.w(TAG, "SDL audio: error return from write(short)");
                 return;
             }
         }
@@ -607,7 +607,7 @@ public class SDLActivity extends Activity {
                     // Nom nom
                 }
             } else {
-                Log.w("SDL", "SDL audio: error return from write(byte)");
+                Log.w(TAG, "SDL audio: error return from write(byte)");
                 return;
             }
         }
