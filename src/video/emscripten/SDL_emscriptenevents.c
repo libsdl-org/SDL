@@ -38,8 +38,9 @@
 #define FULLSCREEN_MASK ( SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN )
 
 /*
-.which to scancode
-https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent#Constants
+.keyCode to scancode
+https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent
+https://developer.mozilla.org/en-US/docs/Web/API/KeyboardEvent/keyCode
 */
 static const SDL_Scancode emscripten_scancode_table[] = {
     /*  0 */    SDL_SCANCODE_UNKNOWN,
