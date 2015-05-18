@@ -198,6 +198,11 @@ loop()
 
         SDL_RenderPresent(renderer);
     }
+#ifdef __EMSCRIPTEN__
+    if (done) {
+        emscripten_cancel_main_loop();
+    }
+#endif
 }
 
 int

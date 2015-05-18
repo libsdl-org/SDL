@@ -241,6 +241,11 @@ loop()
             if (!Draw(&drawstates[i])) done = 1;
         }
     }
+#ifdef __EMSCRIPTEN__
+    if (done) {
+        emscripten_cancel_main_loop();
+    }
+#endif
 }
 
 int

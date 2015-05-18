@@ -153,6 +153,12 @@ loop(void *arg)
         done = SDL_TRUE;
         retval = SDL_TRUE;  /* keep going, wait for reattach. */
     }
+
+#ifdef __EMSCRIPTEN__
+    if (done) {
+        emscripten_cancel_main_loop();
+    }
+#endif
 }
 
 SDL_bool

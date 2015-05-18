@@ -466,6 +466,11 @@ void loop()
           SDL_GL_SwapWindow(state->windows[i]);
       }
     }
+#ifdef __EMSCRIPTEN__
+    else {
+        emscripten_cancel_main_loop();
+    }
+#endif
 }
 
 int
