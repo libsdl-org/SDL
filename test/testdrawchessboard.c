@@ -62,11 +62,17 @@ loop()
     while (SDL_PollEvent(&e)) {
 		if (e.type == SDL_QUIT) {
 			done = 1;
+#ifdef __EMSCRIPTEN__
+			emscripten_cancel_main_loop();
+#endif
 			return;
 		}
 
 		if(e.key.keysym.sym == SDLK_ESCAPE) {
 			done = 1;
+#ifdef __EMSCRIPTEN__
+			emscripten_cancel_main_loop();
+#endif
 			return;
 		}
 	}

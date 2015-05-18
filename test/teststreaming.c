@@ -115,6 +115,12 @@ loop()
     SDL_RenderClear(renderer);
     SDL_RenderCopy(renderer, MooseTexture, NULL, NULL);
     SDL_RenderPresent(renderer);
+
+#ifdef __EMSCRIPTEN__
+    if (done) {
+        emscripten_cancel_main_loop();
+    }
+#endif
 }
 
 int

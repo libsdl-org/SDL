@@ -266,6 +266,12 @@ void loop()
       }
     }
     DrawScreen(screen, window);
+
+#ifdef __EMSCRIPTEN__
+    if (quitting) {
+        emscripten_cancel_main_loop();
+    }
+#endif
 }
 
 int main(int argc, char* argv[])
