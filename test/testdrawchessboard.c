@@ -59,7 +59,7 @@ void
 loop()
 {
     SDL_Event e;
-	if (SDL_PollEvent(&e)) {
+    while (SDL_PollEvent(&e)) {
 		if (e.type == SDL_QUIT) {
 			done = 1;
 			return;
