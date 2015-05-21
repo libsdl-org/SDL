@@ -68,7 +68,7 @@ loop()
 			return;
 		}
 
-		if(e.key.keysym.sym == SDLK_ESCAPE) {
+		if ((e.type == SDL_KEYDOWN) && (e.key.keysym.sym == SDLK_ESCAPE)) {
 			done = 1;
 #ifdef __EMSCRIPTEN__
 			emscripten_cancel_main_loop();
