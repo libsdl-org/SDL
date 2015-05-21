@@ -175,8 +175,8 @@ main(int argc, char *argv[])
 #endif
 
     /* Clean up on signal */
-    SDL_Quit();
     SDL_FreeWAV(sound);
+    SDL_Quit();
     return (0);
 }
 
