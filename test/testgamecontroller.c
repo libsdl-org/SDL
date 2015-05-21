@@ -294,10 +294,8 @@ main(int argc, char *argv[])
             while (keepGoing) {
                 if (gamecontroller == NULL) {
                     if (!reportederror) {
-                        if (gamecontroller == NULL) {
-                            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open gamecontroller %d: %s\n", device, SDL_GetError());
-                            retcode = 1;
-                        }
+                        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open gamecontroller %d: %s\n", device, SDL_GetError());
+                        retcode = 1;
                         keepGoing = SDL_FALSE;
                         reportederror = SDL_TRUE;
                     }
