@@ -1156,6 +1156,11 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                         x = event.getX(i) / mWidth;
                         y = event.getY(i) / mHeight;
                         p = event.getPressure(i);
+                        if (p > 1.0f) {
+                            // may be larger than 1.0f on some devices
+                            // see the documentation of getPressure(i)
+                            p = 1.0f;
+                        }
                         SDLActivity.onNativeTouch(touchDevId, pointerFingerId, action, x, y, p);
                     }
                     break;
@@ -1175,6 +1180,11 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                     x = event.getX(i) / mWidth;
                     y = event.getY(i) / mHeight;
                     p = event.getPressure(i);
+                    if (p > 1.0f) {
+                        // may be larger than 1.0f on some devices
+                        // see the documentation of getPressure(i)
+                        p = 1.0f;
+                    }
                     SDLActivity.onNativeTouch(touchDevId, pointerFingerId, action, x, y, p);
                     break;
 
@@ -1184,6 +1194,11 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                         x = event.getX(i) / mWidth;
                         y = event.getY(i) / mHeight;
                         p = event.getPressure(i);
+                        if (p > 1.0f) {
+                            // may be larger than 1.0f on some devices
+                            // see the documentation of getPressure(i)
+                            p = 1.0f;
+                        }
                         SDLActivity.onNativeTouch(touchDevId, pointerFingerId, MotionEvent.ACTION_UP, x, y, p);
                     }
                     break;
