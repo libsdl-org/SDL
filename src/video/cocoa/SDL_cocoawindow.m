@@ -962,14 +962,29 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 
 @end
 
-@interface SDLView : NSView
+@interface SDLView : NSView {
+    SDL_Window *_sdlWindow;
+}
+
+- (void)setSDLWindow:(SDL_Window*)window;
 
 /* The default implementation doesn't pass rightMouseDown to responder chain */
 - (void)rightMouseDown:(NSEvent *)theEvent;
 - (BOOL)mouseDownCanMoveWindow;
+- (void)drawRect:(NSRect)dirtyRect;
 @end
 
 @implementation SDLView
+- (void)setSDLWindow:(SDL_Window*)window
+{
+    _sdlWindow = window;
+}
+
+- (void)drawRect:(NSRect)dirtyRect
+{
+    SDL_SendWindowEvent(_sdlWindow, SDL_WINDOWEVENT_EXPOSED, 0, 0);
+}
+
 - (void)rightMouseDown:(NSEvent *)theEvent
 {
     [[self nextResponder] rightMouseDown:theEvent];
@@ -1136,7 +1151,8 @@ Cocoa_CreateWindow(_THIS, SDL_Window * window)
 
     /* Create a default view for this window */
     rect = [nswindow contentRectForFrameRect:[nswindow frame]];
-    NSView *contentView = [[SDLView alloc] initWithFrame:rect];
+    SDLView *contentView = [[SDLView alloc] initWithFrame:rect];
+    [contentView setSDLWindow:window];
 
     if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
         if ([contentView respondsToSelector:@selector(setWantsBestResolutionOpenGLSurface:)]) {
