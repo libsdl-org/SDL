@@ -64,8 +64,6 @@
 # else
 #  if defined(__GNUC__) && __GNUC__ >= 4
 #   define DECLSPEC __attribute__ ((visibility("default")))
-#  elif defined(__GNUC__) && __GNUC__ >= 2
-#   define DECLSPEC __declspec(dllexport)
 #  else
 #   define DECLSPEC
 #  endif
