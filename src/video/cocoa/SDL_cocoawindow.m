@@ -531,12 +531,14 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 {
     SDL_Window *window = _data->window;
     SDL_Mouse *mouse = SDL_GetMouse();
+
+    /* We're going to get keyboard events, since we're key. */
+    /* This needs to be done before restoring the relative mouse mode. */
+    SDL_SetKeyboardFocus(window);
+
     if (mouse->relative_mode && !mouse->relative_mode_warp && ![self isMoving]) {
         mouse->SetRelativeMouseMode(SDL_TRUE);
     }
-
-    /* We're going to get keyboard events, since we're key. */
-    SDL_SetKeyboardFocus(window);
 
     /* If we just gained focus we need the updated mouse position */
     if (!mouse->relative_mode) {
