@@ -820,7 +820,9 @@ SDL_UpdateTexture(SDL_Texture * texture, const SDL_Rect * rect,
         rect = &full_rect;
     }
 
-    if (texture->yuv) {
+    if ((rect->w == 0) || (rect->h == 0)) {
+        return 0;  /* nothing to do. */
+    } else if (texture->yuv) {
         return SDL_UpdateTextureYUV(texture, rect, pixels, pitch);
     } else if (texture->native) {
         return SDL_UpdateTextureNative(texture, rect, pixels, pitch);
