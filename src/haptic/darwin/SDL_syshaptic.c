@@ -911,8 +911,8 @@ SDL_SYS_ToFFEFFECT(SDL_Haptic * haptic, FFEFFECT * dest, SDL_HapticEffect * src)
     case SDL_HAPTIC_DAMPER:
     case SDL_HAPTIC_INERTIA:
     case SDL_HAPTIC_FRICTION:
+        hap_condition = &src->condition;
         if (dest->cAxes > 0) {
-            hap_condition = &src->condition;
             condition = SDL_malloc(sizeof(FFCONDITION) * dest->cAxes);
             if (condition == NULL) {
                 return SDL_OutOfMemory();
