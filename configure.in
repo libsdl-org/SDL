@@ -2413,7 +2413,6 @@ AC_HELP_STRING([--enable-pthread-sem], [use pthread semaphores [[default=yes]]])
             EXTRA_CFLAGS="$EXTRA_CFLAGS $pthread_cflags"
             EXTRA_LDFLAGS="$EXTRA_LDFLAGS $pthread_lib"
             SDL_CFLAGS="$SDL_CFLAGS $pthread_cflags"
-            SDL_LIBS="$SDL_LIBS $pthread_lib"
 
             # Save the original compiler flags and libraries
             ac_save_cflags="$CFLAGS"; ac_save_libs="$LIBS"
