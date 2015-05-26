@@ -2186,13 +2186,20 @@ if test "$GCC" = yes; then
     ;;
   esac
   # Ok, now we have the path, separated by spaces, we can step through it
-  # and add multilib dir if necessary.
+  # and add multilib dir if necessary...
   lt_tmp_lt_search_path_spec=
-  lt_multi_os_dir=`$CC $CPPFLAGS $CFLAGS $LDFLAGS -print-multi-os-directory 2>/dev/null`
+  lt_multi_os_dir=/`$CC $CPPFLAGS $CFLAGS $LDFLAGS -print-multi-os-directory 2>/dev/null`
+  # ...but if some path already ends with the multilib dir we assume
+  # that all is fine and trust -print-search-dirs as is (GCC 4.2 or newer).
+  case "$lt_multi_os_dir; $lt_search_path_spec " in
+  "/; "* | "/.; "* | "/./; "* | *"$lt_multi_os_dir "* | *"$lt_multi_os_dir/ "*)
+    lt_multi_os_dir=
+    ;;
+  esac
   for lt_sys_path in $lt_search_path_spec; do
-    if test -d "$lt_sys_path/$lt_multi_os_dir"; then
-      lt_tmp_lt_search_path_spec="$lt_tmp_lt_search_path_spec $lt_sys_path/$lt_multi_os_dir"
-    else
+    if test -d "$lt_sys_path$lt_multi_os_dir"; then
+      lt_tmp_lt_search_path_spec="$lt_tmp_lt_search_path_spec $lt_sys_path$lt_multi_os_dir"
+    elif test -n "$lt_multi_os_dir"; then
       test -d "$lt_sys_path" && \
 	lt_tmp_lt_search_path_spec="$lt_tmp_lt_search_path_spec $lt_sys_path"
     fi
