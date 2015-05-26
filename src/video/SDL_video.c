@@ -2793,7 +2793,6 @@ int
 SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
 {
 #if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
-    void (APIENTRY *glGetIntegervFunc) (GLenum pname, GLint * params);
     GLenum (APIENTRY *glGetErrorFunc) (void);
     GLenum attrib = 0;
     GLenum error = 0;
@@ -2815,11 +2814,6 @@ SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
         return SDL_SetError("Failed getting OpenGL glGetString entry point");
     }
 #endif
-
-    glGetIntegervFunc = SDL_GL_GetProcAddress("glGetIntegerv");
-    if (!glGetIntegervFunc) {
-        return SDL_SetError("Failed getting OpenGL glGetIntegerv entry point");
-    }
 
     glGetErrorFunc = SDL_GL_GetProcAddress("glGetError");
     if (!glGetErrorFunc) {
@@ -3007,7 +3001,13 @@ SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
     } else
 #endif
     {
-        glGetIntegervFunc(attrib, (GLint *) value);
+        void (APIENTRY *glGetIntegervFunc) (GLenum pname, GLint * params);
+        glGetIntegervFunc = SDL_GL_GetProcAddress("glGetIntegerv");
+        if (glGetIntegervFunc) {
+            glGetIntegervFunc(attrib, (GLint *) value);
+        } else {
+            return SDL_SetError("Failed getting OpenGL glGetIntegerv entry point");
+        }
     }
 
     error = glGetErrorFunc();
