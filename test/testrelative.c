@@ -30,7 +30,7 @@ SDL_Event event;
 static void
 DrawRects(SDL_Renderer * renderer, SDL_Rect * rect)
 {
-    SDL_SetRenderDrawColor(renderer, 255, 127, 0, 255);
+    SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     SDL_RenderFillRect(renderer, rect);
 }
 
@@ -53,7 +53,7 @@ loop(){
         SDL_Renderer *renderer = state->renderers[i];
         if (state->windows[i] == NULL)
             continue;
-        SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
+        SDL_SetRenderDrawColor(renderer, 0x00, 0x00, 0x00, 0xFF);
         SDL_RenderClear(renderer);
 
         /* Wrap the cursor rectangle at the screen edges to keep it visible */
