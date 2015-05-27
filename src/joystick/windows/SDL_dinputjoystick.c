@@ -342,7 +342,7 @@ EnumJoysticksCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext)
     JoyStick_DeviceData *pPrevJoystick = NULL;
     const DWORD devtype = (pdidInstance->dwDevType & 0xFF);
 
-    if ((devtype != DI8DEVTYPE_JOYSTICK) && (devtype != DI8DEVTYPE_GAMEPAD)) {
+    if ((devtype != DI8DEVTYPE_JOYSTICK) && (devtype != DI8DEVTYPE_GAMEPAD) && (devtype != DI8DEVTYPE_1STPERSON)) {
         return DIENUM_CONTINUE;  /* Ignore touchpads, etc. */
     }
 
