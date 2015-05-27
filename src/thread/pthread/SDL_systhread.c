@@ -113,7 +113,7 @@ SDL_SYS_CreateThread(SDL_Thread * thread, void *args)
     if (hint && hint[0] >= '0' && hint[0] <= '9') {
         const size_t stacksize = (size_t) SDL_atoi(hint);
         if (stacksize > 0) {
-            pthread_attr_setstacksize(&type, );
+            pthread_attr_setstacksize(&type, stacksize);
         }
     }
     
