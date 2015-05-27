@@ -45,6 +45,7 @@
 
 #include "SDL_platform.h"
 #include "SDL_thread.h"
+#include "SDL_hints.h"
 #include "../SDL_thread_c.h"
 #include "../SDL_systhread.h"
 #ifdef __ANDROID__
@@ -86,6 +87,8 @@ int
 SDL_SYS_CreateThread(SDL_Thread * thread, void *args)
 {
     pthread_attr_t type;
+    size_t ss;
+    const char *hint = SDL_GetHint(SDL_HINT_THREAD_STACK_SIZE);
 
     /* do this here before any threads exist, so there's no race condition. */
     #if defined(__MACOSX__) || defined(__IPHONEOS__) || defined(__LINUX__)
@@ -105,6 +108,13 @@ SDL_SYS_CreateThread(SDL_Thread * thread, void *args)
         return SDL_SetError("Couldn't initialize pthread attributes");
     }
     pthread_attr_setdetachstate(&type, PTHREAD_CREATE_JOINABLE);
+    
+    /* If the SDL_HINT_THREAD_STACK_SIZE exists and it seems to be a positive number, use it */
+    if (hint && hint[0] >= '0' && hint[0] <= '9') {
+        pthread_attr_setstacksize(&type, (size_t)SDL_atoi(hint));
+    }
+    
+    pthread_attr_getstacksize(&type, &ss);
 
     /* Create the thread and go! */
     if (pthread_create(&thread->handle, &type, RunThread, args) != 0) {
