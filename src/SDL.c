@@ -107,7 +107,6 @@ SDL_SetMainReady(void)
 int
 SDL_InitSubSystem(Uint32 flags)
 {
-    static Uint32 hints_initialized = SDL_FALSE;
     if (!SDL_MainIsReady) {
         SDL_SetError("Application didn't initialize properly, did you include SDL_main.h in the file containing your main() function?");
         return -1;
@@ -115,13 +114,6 @@ SDL_InitSubSystem(Uint32 flags)
 
     /* Clear the error message */
     SDL_ClearError();
-    
-    if (hints_initialized == SDL_FALSE) {
-        /* Set a default of -1 for SDL_HINT_THREAD_STACK_SIZE to prevent the
-           end user from interfering it's value with environment variables */
-        SDL_SetHintWithPriority(SDL_HINT_THREAD_STACK_SIZE, "-1", SDL_HINT_OVERRIDE);
-        hints_initialized = SDL_TRUE;
-    }
 
 #if SDL_VIDEO_DRIVER_WINDOWS
 	if ((flags & (SDL_INIT_HAPTIC|SDL_INIT_JOYSTICK))) {
