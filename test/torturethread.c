@@ -87,8 +87,6 @@ main(int argc, char *argv[])
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         return (1);
     }
-    
-    SDL_SetHintWithPriority(SDL_HINT_THREAD_STACK_SIZE, SDL_getenv(SDL_HINT_THREAD_STACK_SIZE), SDL_HINT_OVERRIDE);
 
     signal(SIGSEGV, SIG_DFL);
     for (i = 0; i < NUMTHREADS; i++) {
