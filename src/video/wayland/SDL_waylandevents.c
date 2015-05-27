@@ -293,6 +293,12 @@ keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
                       struct wl_array *keys)
 {
     struct SDL_WaylandInput *input = data;
+
+    if (!surface) {
+        /* enter event for a window we've just destroyed */
+        return;
+    }
+ 
     SDL_WindowData *window = wl_surface_get_user_data(surface);
 
     input->keyboard_focus = window;
