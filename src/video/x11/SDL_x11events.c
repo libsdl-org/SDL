@@ -1305,16 +1305,16 @@ X11_PumpEvents(_THIS)
         }
     }
 
+    /* Keep processing pending events */
+    while (X11_Pending(data->display)) {
+        X11_DispatchEvent(_this);
+    }
+
 #ifdef SDL_USE_IBUS
     if(SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
         SDL_IBus_PumpEvents();
     }
 #endif
-
-    /* Keep processing pending events */
-    while (X11_Pending(data->display)) {
-        X11_DispatchEvent(_this);
-    }
 
     /* FIXME: Only need to do this when there are pending focus changes */
     X11_HandleFocusChanges(_this);
