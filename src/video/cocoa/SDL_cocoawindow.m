@@ -255,6 +255,7 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
         [center addObserver:self selector:@selector(windowDidDeminiaturize:) name:NSWindowDidDeminiaturizeNotification object:window];
         [center addObserver:self selector:@selector(windowDidBecomeKey:) name:NSWindowDidBecomeKeyNotification object:window];
         [center addObserver:self selector:@selector(windowDidResignKey:) name:NSWindowDidResignKeyNotification object:window];
+        [center addObserver:self selector:@selector(windowDidChangeBackingProperties:) name:NSWindowDidChangeBackingPropertiesNotification object:window];
         [center addObserver:self selector:@selector(windowWillEnterFullScreen:) name:NSWindowWillEnterFullScreenNotification object:window];
         [center addObserver:self selector:@selector(windowDidEnterFullScreen:) name:NSWindowDidEnterFullScreenNotification object:window];
         [center addObserver:self selector:@selector(windowWillExitFullScreen:) name:NSWindowWillExitFullScreenNotification object:window];
@@ -385,6 +386,7 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
         [center removeObserver:self name:NSWindowDidDeminiaturizeNotification object:window];
         [center removeObserver:self name:NSWindowDidBecomeKeyNotification object:window];
         [center removeObserver:self name:NSWindowDidResignKeyNotification object:window];
+        [center removeObserver:self name:NSWindowDidChangeBackingPropertiesNotification object:window];
         [center removeObserver:self name:NSWindowWillEnterFullScreenNotification object:window];
         [center removeObserver:self name:NSWindowDidEnterFullScreenNotification object:window];
         [center removeObserver:self name:NSWindowWillExitFullScreenNotification object:window];
@@ -581,6 +583,22 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 
     if (isFullscreenSpace) {
         [NSMenu setMenuBarVisible:YES];
+    }
+}
+
+- (void)windowDidChangeBackingProperties:(NSNotification *)aNotification
+{
+    NSNumber *oldscale = [[aNotification userInfo] objectForKey:NSBackingPropertyOldScaleFactorKey];
+
+    if (inFullscreenTransition) {
+        return;
+    }
+
+    if ([oldscale doubleValue] != [_data->nswindow backingScaleFactor]) {
+        /* Force a resize event when the backing scale factor changes. */
+        _data->window->w = 0;
+        _data->window->h = 0;
+        [self windowDidResize:aNotification];
     }
 }
 
