@@ -1219,6 +1219,16 @@ X11_DispatchEvent(_THIS)
         }
         break;
 
+    case SelectionClear: {
+            Atom XA_CLIPBOARD = X11_XInternAtom(display, "CLIPBOARD", 0);
+
+            if (xevent.xselectionclear.selection == XA_PRIMARY ||
+                (XA_CLIPBOARD != None && xevent.xselectionclear.selection == XA_CLIPBOARD)) {
+                SDL_SendClipboardUpdate();
+            }
+        }
+        break;
+
     default:{
 #ifdef DEBUG_XEVENTS
             printf("window %p: Unhandled event %d\n", data, xevent.type);
