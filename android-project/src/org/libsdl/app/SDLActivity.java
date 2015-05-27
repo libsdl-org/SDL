@@ -173,6 +173,17 @@ public class SDLActivity extends Activity {
         mLayout.addView(mSurface);
 
         setContentView(mLayout);
+        
+        // Get filename from "Open with" of another application
+        Intent intent = getIntent();
+
+        if (intent != null && intent.getData() != null) {
+            String filename = intent.getData().getPath();
+            if (filename != null) {
+                Log.v("SDL", "Get filename:" + filename);
+                SDLActivity.onNativeDropFile(filename);
+            }
+        }
     }
 
     // Events
@@ -397,6 +408,7 @@ public class SDLActivity extends Activity {
     public static native void nativeQuit();
     public static native void nativePause();
     public static native void nativeResume();
+    public static native void onNativeDropFile(String filename);
     public static native void onNativeResize(int x, int y, int format, float rate);
     public static native int onNativePadDown(int device_id, int keycode);
     public static native int onNativePadUp(int device_id, int keycode);
