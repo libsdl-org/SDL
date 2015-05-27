@@ -549,6 +549,16 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_SYSKEYDOWN:
         {
             SDL_Scancode code = WindowsScanCodeToSDLScanCode(lParam, wParam);
+            const Uint8 *keyboardState = SDL_GetKeyboardState(NULL);
+
+            /* Detect relevant keyboard shortcuts */
+            if (keyboardState[SDL_SCANCODE_LALT] == SDL_PRESSED || keyboardState[SDL_SCANCODE_RALT] == SDL_PRESSED) {
+                /* ALT+F4: Close window */
+                if (code == SDL_SCANCODE_F4) {
+                    SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_CLOSE, 0, 0);
+                }
+            }
+
             if (code != SDL_SCANCODE_UNKNOWN) {
                 SDL_SendKeyboardKey(SDL_PRESSED, code);
             }
@@ -576,14 +586,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         {
             SDL_Scancode code = WindowsScanCodeToSDLScanCode(lParam, wParam);
             const Uint8 *keyboardState = SDL_GetKeyboardState(NULL);
-
-            /* Detect relevant keyboard shortcuts */
-            if (keyboardState[SDL_SCANCODE_LALT] == SDL_PRESSED || keyboardState[SDL_SCANCODE_RALT] == SDL_PRESSED) {
-                /* ALT+F4: Close window */
-                if (code == SDL_SCANCODE_F4) {
-                    SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_CLOSE, 0, 0);
-                }
-            }
 
             if (code != SDL_SCANCODE_UNKNOWN) {
                 if (code == SDL_SCANCODE_PRINTSCREEN &&
