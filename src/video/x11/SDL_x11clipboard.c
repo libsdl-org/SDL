@@ -72,7 +72,7 @@ X11_SetClipboardText(_THIS, const char *text)
     }
 
     /* Save the selection on the root window */
-    format = XA_STRING;
+    format = TEXT_FORMAT;
     X11_XChangeProperty(display, DefaultRootWindow(display),
         X11_GetSDLCutBufferClipboardType(display), format, 8, PropModeReplace,
         (const unsigned char *)text, SDL_strlen(text));
