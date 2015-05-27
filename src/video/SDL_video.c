@@ -3418,6 +3418,7 @@ SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     SDL_CaptureMouse(SDL_FALSE);
     SDL_SetRelativeMouseMode(SDL_FALSE);
     show_cursor_prev = SDL_ShowCursor(1);
+    SDL_ResetKeyboard();
 
     if (!buttonid) {
         buttonid = &dummybutton;
