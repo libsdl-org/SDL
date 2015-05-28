@@ -20,6 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
+#if SDL_HAPTIC_DINPUT
+
 #include "SDL_error.h"
 #include "SDL_stdinc.h"
 #include "SDL_haptic.h"
@@ -28,9 +30,6 @@
 #include "SDL_dinputhaptic_c.h"
 #include "../SDL_syshaptic.h"
 #include "../../joystick/windows/SDL_windowsjoystick_c.h"
-
-
-#if SDL_HAPTIC_DINPUT
 
 /*
  * External stuff.
@@ -1180,7 +1179,6 @@ SDL_DINPUT_HapticStopAll(SDL_Haptic * haptic)
 }
 
 #else /* !SDL_HAPTIC_DINPUT */
-
 
 int
 SDL_DINPUT_HapticInit(void)

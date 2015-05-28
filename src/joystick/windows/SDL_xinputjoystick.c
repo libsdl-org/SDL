@@ -20,14 +20,13 @@
 */
 #include "../../SDL_internal.h"
 
+#if SDL_JOYSTICK_XINPUT
+
 #include "SDL_assert.h"
 #include "SDL_hints.h"
 #include "../SDL_sysjoystick.h"
 #include "SDL_windowsjoystick_c.h"
 #include "SDL_xinputjoystick_c.h"
-
-
-#if SDL_JOYSTICK_XINPUT
 
 /*
  * Internal stuff.
