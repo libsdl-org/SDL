@@ -20,9 +20,10 @@
 */
 #include "../../SDL_internal.h"
 
+#include "../SDL_sysjoystick.h"
+
 #if SDL_JOYSTICK_DINPUT
 
-#include "../SDL_sysjoystick.h"
 #include "SDL_windowsjoystick_c.h"
 #include "SDL_dinputjoystick_c.h"
 #include "SDL_xinputjoystick_c.h"
@@ -866,6 +867,7 @@ SDL_DINPUT_JoystickQuit(void)
 
 #else /* !SDL_JOYSTICK_DINPUT */
 
+struct JoyStick_DeviceData;
 
 int
 SDL_DINPUT_JoystickInit(void)

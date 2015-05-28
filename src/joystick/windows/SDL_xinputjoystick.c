@@ -20,11 +20,12 @@
 */
 #include "../../SDL_internal.h"
 
+#include "../SDL_sysjoystick.h"
+
 #if SDL_JOYSTICK_XINPUT
 
 #include "SDL_assert.h"
 #include "SDL_hints.h"
-#include "../SDL_sysjoystick.h"
 #include "SDL_windowsjoystick_c.h"
 #include "SDL_xinputjoystick_c.h"
 
@@ -338,6 +339,7 @@ SDL_SYS_IsXInputGamepad_DeviceIndex(int device_index)
 
 #else /* !SDL_JOYSTICK_XINPUT */
 
+struct JoyStick_DeviceData;
 
 SDL_bool SDL_XINPUT_Enabled(void)
 {
