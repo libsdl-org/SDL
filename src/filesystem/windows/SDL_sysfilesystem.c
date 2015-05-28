@@ -36,19 +36,21 @@
 char *
 SDL_GetBasePath(void)
 {
-    DWORD (WINAPI * pGetModuleFileNameExW)(HANDLE, HMODULE, LPWSTR, DWORD) = NULL;
+    typedef DWORD (WINAPI *GetModuleFileNameExW_t)(HANDLE, HMODULE, LPWSTR, DWORD);
+    GetModuleFileNameExW_t pGetModuleFileNameExW;
     DWORD buflen = 128;
     WCHAR *path = NULL;
     HANDLE psapi = LoadLibrary(L"psapi.dll");
     char *retval = NULL;
     DWORD len = 0;
+    int i;
 
     if (!psapi) {
         WIN_SetError("Couldn't load psapi.dll");
         return NULL;
     }
 
-    pGetModuleFileNameExW = GetProcAddress(psapi, "GetModuleFileNameExW");
+    pGetModuleFileNameExW = (GetModuleFileNameExW_t)GetProcAddress(psapi, "GetModuleFileNameExW");
     if (!pGetModuleFileNameExW) {
         WIN_SetError("Couldn't find GetModuleFileNameExW");
         FreeLibrary(psapi);
@@ -56,14 +58,14 @@ SDL_GetBasePath(void)
     }
 
     while (SDL_TRUE) {
-        path = (WCHAR *) SDL_malloc(path, buflen * sizeof (WCHAR));
+        path = (WCHAR *)SDL_realloc(path, buflen * sizeof (WCHAR));
         if (!path) {
             FreeLibrary(psapi);
             SDL_OutOfMemory();
             return NULL;
         }
 
-        len = pGetModuleFileNameEx(GetCurrentProcess(), NULL, path, buflen);
+        len = pGetModuleFileNameExW(GetCurrentProcess(), NULL, path, buflen);
         if (len != buflen) {
             break;
         }
