@@ -72,7 +72,7 @@ SDL_GetBasePath(void)
 
         /* buffer too small? Try again. */
         SDL_free(path);
-        len *= 2;
+        buflen *= 2;
     }
 
     FreeLibrary(psapi);
