@@ -252,8 +252,7 @@ X11_InitKeyboard(_THIS)
 #endif
         SDL_memcpy(&data->key_layout[min_keycode], scancode_set[best_index].table,
                    sizeof(SDL_Scancode) * scancode_set[best_index].table_size);
-    }
-    else {
+    } else {
         SDL_Keycode keymap[SDL_NUM_SCANCODES];
 
         printf
@@ -316,6 +315,8 @@ X11_UpdateKeymap(_THIS)
         key = X11_KeyCodeToUcs4(data->display, (KeyCode)i);
         if (key) {
             keymap[scancode] = key;
+        } else {
+            keymap[scancode] = SDL_SCANCODE_TO_KEYCODE(X11_KeyCodeToSDLScancode(data->display, (KeyCode)i));
         }
     }
     SDL_SetKeymap(0, keymap, SDL_NUM_SCANCODES);
