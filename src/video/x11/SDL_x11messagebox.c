@@ -83,6 +83,10 @@ typedef struct SDL_MessageBoxDataX11
     Display *display;
     int screen;
     Window window;
+#if SDL_VIDEO_DRIVER_X11_XDBE
+    XdbeBackBuffer buf;
+    SDL_bool xdbe;                      /* Whether Xdbe is present or not */
+#endif
     long event_mask;
     Atom wm_protocols;
     Atom wm_delete_message;
@@ -347,6 +351,12 @@ X11_MessageBoxShutdown( SDL_MessageBoxDataX11 *data )
         data->font_struct = NULL;
     }
 
+#if SDL_VIDEO_DRIVER_X11_XDBE
+    if ( SDL_X11_HAVE_XDBE && data->xdbe ) {
+        X11_XdbeDeallocateBackBufferName(data->display, data->buf);
+    }
+#endif
+
     if ( data->display ) {
         if ( data->window != None ) {
             X11_XWithdrawWindow( data->display, data->window, data->screen );
@@ -445,6 +455,20 @@ X11_MessageBoxCreateWindow( SDL_MessageBoxDataX11 *data )
     }
 
     X11_XMapRaised( display, data->window );
+
+#if SDL_VIDEO_DRIVER_X11_XDBE
+    /* Initialise a back buffer for double buffering */
+    if (SDL_X11_HAVE_XDBE) {
+        int xdbe_major, xdbe_minor;
+        if (X11_XdbeQueryExtension(display, &xdbe_major, &xdbe_minor) != 0) {
+            data->xdbe = SDL_TRUE;
+            data->buf = X11_XdbeAllocateBackBufferName(display, data->window, XdbeUndefined);
+        } else {
+            data->xdbe = SDL_FALSE;
+        }
+    }
+#endif
+
     return 0;
 }
 
@@ -453,8 +477,15 @@ static void
 X11_MessageBoxDraw( SDL_MessageBoxDataX11 *data, GC ctx )
 {
     int i;
-    Window window = data->window;
+    Drawable window = data->window;
     Display *display = data->display;
+
+#if SDL_VIDEO_DRIVER_X11_XDBE
+    if (SDL_X11_HAVE_XDBE && data->xdbe) {
+        window = data->buf;
+        X11_XdbeBeginIdiom(data->display);
+    }
+#endif
 
     X11_XSetForeground( display, ctx, data->color[ SDL_MESSAGEBOX_COLOR_BACKGROUND ] );
     X11_XFillRectangle( display, window, ctx, 0, 0, data->dialog_width, data->dialog_height );
@@ -505,6 +536,16 @@ X11_MessageBoxDraw( SDL_MessageBoxDataX11 *data, GC ctx )
                          buttondata->text, buttondatax11->length );
         }
     }
+
+#if SDL_VIDEO_DRIVER_X11_XDBE
+    if (SDL_X11_HAVE_XDBE && data->xdbe) {
+        XdbeSwapInfo swap_info;
+        swap_info.swap_window = data->window;
+        swap_info.swap_action = XdbeUndefined;
+        X11_XdbeSwapBuffers(data->display, &swap_info, 1);
+        X11_XdbeEndIdiom(data->display);
+    }
+#endif
 }
 
 /* Loop and handle message box event messages until something kills it. */
@@ -568,7 +609,7 @@ X11_MessageBoxLoop( SDL_MessageBoxDataX11 *data )
         case MotionNotify:
             if ( has_focus ) {
                 /* Mouse moved... */
-                int previndex = data->mouse_over_index;
+                const int previndex = data->mouse_over_index;
                 data->mouse_over_index = GetHitButtonIndex( data, e.xbutton.x, e.xbutton.y );
                 if (data->mouse_over_index == previndex) {
                     draw = SDL_FALSE;

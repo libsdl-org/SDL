@@ -826,6 +826,7 @@ enable_video_x11
 with_x
 enable_x11_shared
 enable_video_x11_xcursor
+enable_video_x11_xdbe
 enable_video_x11_xinerama
 enable_video_x11_xinput
 enable_video_x11_xrandr
@@ -1551,6 +1552,7 @@ Optional Features:
   --enable-x11-shared     dynamically load X11 support [[default=maybe]]
   --enable-video-x11-xcursor
                           enable X11 Xcursor support [[default=yes]]
+  --enable-video-x11-xdbe enable X11 Xdbe support [[default=yes]]
   --enable-video-x11-xinerama
                           enable X11 Xinerama support [[default=yes]]
   --enable-video-x11-xinput
@@ -20122,6 +20124,31 @@ fi
 $as_echo "#define SDL_VIDEO_DRIVER_X11_XCURSOR 1" >>confdefs.h
 
                 SUMMARY_video_x11="${SUMMARY_video_x11} xcursor"
+            fi
+            # Check whether --enable-video-x11-xdbe was given.
+if test "${enable_video_x11_xdbe+set}" = set; then :
+  enableval=$enable_video_x11_xdbe;
+else
+  enable_video_x11_xdbe=yes
+fi
+
+            if test x$enable_video_x11_xdbe = xyes; then
+                ac_fn_c_check_header_compile "$LINENO" "X11/extensions/Xdbe.h" "ac_cv_header_X11_extensions_Xdbe_h" "#include <X11/Xlib.h>
+
+"
+if test "x$ac_cv_header_X11_extensions_Xdbe_h" = xyes; then :
+  have_dbe_h_hdr=yes
+else
+  have_dbe_h_hdr=no
+fi
+
+
+                if test x$have_dbe_h_hdr = xyes; then
+
+$as_echo "#define SDL_VIDEO_DRIVER_X11_XDBE 1" >>confdefs.h
+
+                    SUMMARY_video_x11="${SUMMARY_video_x11} xdbe"
+                fi
             fi
             # Check whether --enable-video-x11-xinerama was given.
 if test "${enable_video_x11_xinerama+set}" = set; then :

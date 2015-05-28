@@ -1552,6 +1552,20 @@ AC_HELP_STRING([--enable-video-x11-xcursor], [enable X11 Xcursor support [[defau
                 AC_DEFINE(SDL_VIDEO_DRIVER_X11_XCURSOR, 1, [ ])
                 SUMMARY_video_x11="${SUMMARY_video_x11} xcursor"
             fi
+            AC_ARG_ENABLE(video-x11-xdbe,
+AC_HELP_STRING([--enable-video-x11-xdbe], [enable X11 Xdbe support [[default=yes]]]),
+                            , enable_video_x11_xdbe=yes)
+            if test x$enable_video_x11_xdbe = xyes; then
+                AC_CHECK_HEADER(X11/extensions/Xdbe.h,
+                                have_dbe_h_hdr=yes,
+                                have_dbe_h_hdr=no,
+                                [#include <X11/Xlib.h>
+                                ])
+                if test x$have_dbe_h_hdr = xyes; then
+                    AC_DEFINE(SDL_VIDEO_DRIVER_X11_XDBE, 1, [ ])
+                    SUMMARY_video_x11="${SUMMARY_video_x11} xdbe"
+                fi
+            fi
             AC_ARG_ENABLE(video-x11-xinerama,
 AC_HELP_STRING([--enable-video-x11-xinerama], [enable X11 Xinerama support [[default=yes]]]),
                             , enable_video_x11_xinerama=yes)
