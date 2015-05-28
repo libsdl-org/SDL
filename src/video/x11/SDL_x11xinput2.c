@@ -197,9 +197,7 @@ X11_InitXinput2Multitouch(_THIS)
                 continue;
 
             touchId = t->sourceid;
-            if (!SDL_GetTouch(touchId)) {
-                SDL_AddTouch(touchId, dev->name);
-            }
+            SDL_AddTouch(touchId, dev->name);
         }
     }
     X11_XIFreeDeviceInfo(info);

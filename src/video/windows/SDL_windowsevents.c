@@ -849,10 +849,8 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     PTOUCHINPUT input = &inputs[i];
 
                     const SDL_TouchID touchId = (SDL_TouchID)((size_t)input->hSource);
-                    if (!SDL_GetTouch(touchId)) {
-                        if (SDL_AddTouch(touchId, "") < 0) {
-                            continue;
-                        }
+                    if (SDL_AddTouch(touchId, "") < 0) {
+                        continue;
                     }
 
                     /* Get the normalized coordinates for the window */
