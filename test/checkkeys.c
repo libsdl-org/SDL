@@ -89,6 +89,20 @@ print_modifiers(char **text, size_t *maxlen)
 }
 
 static void
+PrintModifierState()
+{
+    char message[512];
+    char *spot;
+    size_t left;
+
+    spot = message;
+    left = sizeof(message);
+
+    print_modifiers(&spot, &left);
+    SDL_Log("Initial state:%s\n", message);
+}
+
+static void
 PrintKey(SDL_Keysym * sym, SDL_bool pressed, SDL_bool repeat)
 {
     char message[512];
@@ -199,6 +213,10 @@ main(int argc, char *argv[])
 #endif
 
     SDL_StartTextInput();
+
+    /* Print initial modifier state */
+    SDL_PumpEvents();
+    PrintModifierState();
 
     /* Watch keystrokes */
     done = 0;

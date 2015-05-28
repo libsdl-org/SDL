@@ -334,6 +334,77 @@ static void X11_HandleGenericEvent(SDL_VideoData *videodata,XEvent event)
 }
 #endif /* SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS */
 
+static unsigned
+X11_GetNumLockModifierMask(_THIS)
+{
+    SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
+    Display *display = viddata->display;
+    unsigned num_mask = 0;
+    int i, j;
+    XModifierKeymap *xmods;
+    unsigned n;
+
+    xmods = X11_XGetModifierMapping(display);
+    n = xmods->max_keypermod;
+    for(i = 3; i < 8; i++) {
+        for(j = 0; j < n; j++) {
+            KeyCode kc = xmods->modifiermap[i * n + j];
+            if (viddata->key_layout[kc] == SDL_SCANCODE_NUMLOCKCLEAR) {
+                num_mask = 1 << i;
+                break;
+            }
+        }
+    }
+    X11_XFreeModifiermap(xmods);
+
+    return num_mask;
+}
+
+static void
+X11_ReconcileKeyboardState(_THIS, const SDL_WindowData *data)
+{
+    SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
+    Display *display = viddata->display;
+    char keys[32];
+    int keycode;
+    Window junk_window;
+    int x, y;
+    unsigned int mask;
+
+    X11_XQueryKeymap(display, keys);
+
+    /* Get the keyboard modifier state */
+    if (X11_XQueryPointer(display, DefaultRootWindow(display), &junk_window, &junk_window, &x, &y, &x, &y, &mask)) {
+        unsigned num_mask = X11_GetNumLockModifierMask(_this);
+        const Uint8 *keystate = SDL_GetKeyboardState(NULL);
+        Uint8 capslockState = keystate[SDL_SCANCODE_CAPSLOCK];
+        Uint8 numlockState = keystate[SDL_SCANCODE_NUMLOCKCLEAR];
+
+        /* Toggle key mod state if needed */
+        if (!!(mask & LockMask) != !!(SDL_GetModState() & KMOD_CAPS)) {
+            SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_CAPSLOCK);
+            if (capslockState == SDL_RELEASED) {
+                SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_CAPSLOCK);
+            }
+        }
+
+        if (!!(mask & num_mask) != !!(SDL_GetModState() & KMOD_NUM)) {
+            SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_NUMLOCKCLEAR);
+            if (numlockState == SDL_RELEASED) {
+                SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_NUMLOCKCLEAR);
+            }
+        }
+    }
+
+    for (keycode = 0; keycode < 256; ++keycode) {
+        if (keys[keycode / 8] & (1 << (keycode % 8))) {
+            SDL_SendKeyboardKey(SDL_PRESSED, viddata->key_layout[keycode]);
+        } else {
+            SDL_SendKeyboardKey(SDL_RELEASED, viddata->key_layout[keycode]);
+        }
+    }
+}
+
 
 static void
 X11_DispatchFocusIn(_THIS, SDL_WindowData *data)
@@ -342,7 +413,7 @@ X11_DispatchFocusIn(_THIS, SDL_WindowData *data)
     printf("window %p: Dispatching FocusIn\n", data);
 #endif
     SDL_SetKeyboardFocus(data->window);
-    ReconcileKeyboardState(_this, data);
+    X11_ReconcileKeyboardState(_this, data);
 #ifdef X_HAVE_UTF8_STRING
     if (data->ic) {
         X11_XSetICFocus(data->ic);
@@ -481,77 +552,6 @@ ProcessHitTest(_THIS, const SDL_WindowData *data, const XEvent *xev)
     }
 
     return SDL_FALSE;
-}
-
-static unsigned
-GetNumLockModifierMask(_THIS)
-{
-    SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
-    Display *display = viddata->display;
-    unsigned num_mask = 0;
-    int i, j;
-    XModifierKeymap *xmods;
-    unsigned n;
-
-    xmods = X11_XGetModifierMapping(display);
-    n = xmods->max_keypermod;
-    for(i = 3; i < 8; i++) {
-        for(j = 0; j < n; j++) {
-            KeyCode kc = xmods->modifiermap[i * n + j];
-            if (viddata->key_layout[kc] == SDL_SCANCODE_NUMLOCKCLEAR) {
-                num_mask = 1 << i;
-                break;
-            }
-        }
-    }
-    X11_XFreeModifiermap(xmods);
-
-    return num_mask;
-}
-
-static void
-ReconcileKeyboardState(_THIS, const SDL_WindowData *data)
-{
-    SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
-    Display *display = viddata->display;
-    char keys[32];
-    int keycode;
-    Window junk_window;
-    int x, y;
-    unsigned int mask;
-
-    X11_XQueryKeymap(display, keys);
-
-    for (keycode = 0; keycode < 256; ++keycode) {
-        if (keys[keycode / 8] & (1 << (keycode % 8))) {
-            SDL_SendKeyboardKey(SDL_PRESSED, viddata->key_layout[keycode]);
-        } else {
-            SDL_SendKeyboardKey(SDL_RELEASED, viddata->key_layout[keycode]);
-        }
-    }
-
-    /* Get the keyboard modifier state */
-    if (X11_XQueryPointer(display, DefaultRootWindow(display), &junk_window, &junk_window, &x, &y, &x, &y, &mask)) {
-        unsigned num_mask = GetNumLockModifierMask(_this);
-        const Uint8 *keystate = SDL_GetKeyboardState(NULL);
-        Uint8 capslockState = keystate[SDL_SCANCODE_CAPSLOCK];
-        Uint8 numlockState = keystate[SDL_SCANCODE_NUMLOCKCLEAR];
-
-        /* Toggle key mod state if needed */
-        if (!!(mask & LockMask) != !!(SDL_GetModState() & KMOD_CAPS)) {
-            SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_CAPSLOCK);
-            if (capslockState == SDL_RELEASED) {
-                SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_CAPSLOCK);
-            }
-        }
-
-        if (!!(mask & num_mask) != !!(SDL_GetModState() & KMOD_NUM)) {
-            SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_NUMLOCKCLEAR);
-            if (numlockState == SDL_RELEASED) {
-                SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_NUMLOCKCLEAR);
-            }
-        }
-    }
 }
 
 static void
@@ -737,7 +737,7 @@ X11_DispatchEvent(_THIS)
             {
                 data->pending_focus = PENDING_FOCUS_NONE;
                 data->pending_focus_time = 0;
-                X11_DispatchFocusOut(data);
+                X11_DispatchFocusOut(_this, data);
             }
             else
             {
