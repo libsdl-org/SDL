@@ -50,6 +50,9 @@
 #if SDL_VIDEO_DRIVER_X11_XCURSOR
 #include <X11/Xcursor/Xcursor.h>
 #endif
+#if SDL_VIDEO_DRIVER_X11_XDBE
+#include <X11/extensions/Xdbe.h>
+#endif
 #if SDL_VIDEO_DRIVER_X11_XINERAMA
 #include <X11/extensions/Xinerama.h>
 #endif

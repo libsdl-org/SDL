@@ -230,6 +230,20 @@ SDL_X11_SYM(void,XcursorImageDestroy,(XcursorImage *a),(a),)
 SDL_X11_SYM(Cursor,XcursorImageLoadCursor,(Display *a,const XcursorImage *b),(a,b),return)
 #endif
 
+/* Xdbe support */
+#if SDL_VIDEO_DRIVER_X11_XDBE
+SDL_X11_MODULE(XDBE)
+SDL_X11_SYM(Status,XdbeQueryExtension,(Display *dpy,int *major_version_return,int *minor_version_return),(dpy,major_version_return,minor_version_return),return)
+SDL_X11_SYM(XdbeBackBuffer,XdbeAllocateBackBufferName,(Display *dpy,Window window,XdbeSwapAction swap_action),(dpy,window,swap_action),return)
+SDL_X11_SYM(Status,XdbeDeallocateBackBufferName,(Display *dpy,XdbeBackBuffer buffer),(dpy,buffer),return)
+SDL_X11_SYM(Status,XdbeSwapBuffers,(Display *dpy,XdbeSwapInfo *swap_info,int num_windows),(dpy,swap_info,num_windows),return)
+SDL_X11_SYM(Status,XdbeBeginIdiom,(Display *dpy),(dpy),return)
+SDL_X11_SYM(Status,XdbeEndIdiom,(Display *dpy),(dpy),return)
+SDL_X11_SYM(XdbeScreenVisualInfo*,XdbeGetVisualInfo,(Display *dpy,Drawable *screen_specifiers,int *num_screens),(dpy,screen_specifiers,num_screens),return)
+SDL_X11_SYM(void,XdbeFreeVisualInfo,(XdbeScreenVisualInfo *visual_info),(visual_info),)
+SDL_X11_SYM(XdbeBackBufferAttributes*,XdbeGetBackBufferAttributes,(Display *dpy,XdbeBackBuffer buffer),(dpy,buffer),return)
+#endif
+
 /* Xinerama support */
 #if SDL_VIDEO_DRIVER_X11_XINERAMA
 SDL_X11_MODULE(XINERAMA)
