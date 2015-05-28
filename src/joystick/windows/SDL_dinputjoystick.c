@@ -20,13 +20,12 @@
 */
 #include "../../SDL_internal.h"
 
+#if SDL_JOYSTICK_DINPUT
+
 #include "../SDL_sysjoystick.h"
 #include "SDL_windowsjoystick_c.h"
 #include "SDL_dinputjoystick_c.h"
 #include "SDL_xinputjoystick_c.h"
-
-
-#if SDL_JOYSTICK_DINPUT
 
 #ifndef DIDFT_OPTIONAL
 #define DIDFT_OPTIONAL      0x80000000

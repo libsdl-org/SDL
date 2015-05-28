@@ -20,6 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
+#if SDL_HAPTIC_XINPUT
+
 #include "SDL_assert.h"
 #include "SDL_error.h"
 #include "SDL_haptic.h"
@@ -30,9 +32,6 @@
 #include "../SDL_syshaptic.h"
 #include "../../core/windows/SDL_xinput.h"
 #include "../../joystick/windows/SDL_windowsjoystick_c.h"
-
-
-#if SDL_HAPTIC_XINPUT
 
 /*
  * Internal stuff.
@@ -488,4 +487,5 @@ SDL_XINPUT_HapticStopAll(SDL_Haptic * haptic)
 }
 
 #endif /* SDL_HAPTIC_XINPUT */
+
 /* vi: set ts=4 sw=4 expandtab: */
