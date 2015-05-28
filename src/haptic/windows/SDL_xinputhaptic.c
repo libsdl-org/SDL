@@ -20,11 +20,12 @@
 */
 #include "../../SDL_internal.h"
 
+#include "SDL_error.h"
+#include "SDL_haptic.h"
+
 #if SDL_HAPTIC_XINPUT
 
 #include "SDL_assert.h"
-#include "SDL_error.h"
-#include "SDL_haptic.h"
 #include "SDL_hints.h"
 #include "SDL_timer.h"
 #include "SDL_windowshaptic_c.h"
