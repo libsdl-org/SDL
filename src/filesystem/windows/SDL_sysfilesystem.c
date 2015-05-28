@@ -36,11 +36,44 @@
 char *
 SDL_GetBasePath(void)
 {
-    TCHAR path[MAX_PATH];
-    const DWORD len = GetModuleFileName(NULL, path, SDL_arraysize(path));
-    size_t i;
+    DWORD (WINAPI * pGetModuleFileNameExW)(HANDLE, HMODULE, LPWSTR, DWORD) = NULL;
+    DWORD buflen = 128;
+    WCHAR *path = NULL;
+    HANDLE psapi = LoadLibrary(L"psapi.dll");
+    char *retval = NULL;
+    DWORD len = 0;
 
-    SDL_assert(len < SDL_arraysize(path));
+    if (!psapi) {
+        WIN_SetError("Couldn't load psapi.dll");
+        return NULL;
+    }
+
+    pGetModuleFileNameExW = GetProcAddress(psapi, "GetModuleFileNameExW");
+    if (!pGetModuleFileNameExW) {
+        WIN_SetError("Couldn't find GetModuleFileNameExW");
+        FreeLibrary(psapi);
+        return NULL;
+    }
+
+    while (SDL_TRUE) {
+        path = (WCHAR *) SDL_malloc(path, buflen * sizeof (WCHAR));
+        if (!path) {
+            FreeLibrary(psapi);
+            SDL_OutOfMemory();
+            return NULL;
+        }
+
+        len = pGetModuleFileNameEx(GetCurrentProcess(), NULL, path, buflen);
+        if (len != buflen) {
+            break;
+        }
+
+        /* buffer too small? Try again. */
+        SDL_free(path);
+        len *= 2;
+    }
+
+    FreeLibrary(psapi);
 
     if (len == 0) {
         WIN_SetError("Couldn't locate our .exe");
@@ -55,7 +88,11 @@ SDL_GetBasePath(void)
 
     SDL_assert(i > 0); /* Should have been an absolute path. */
     path[i+1] = '\0';  /* chop off filename. */
-    return WIN_StringToUTF8(path);
+
+    retval = WIN_StringToUTF8(path);
+    SDL_free(path);
+
+    return retval;
 }
 
 char *
