@@ -22,6 +22,7 @@
 
 #include "SDL_error.h"
 #include "SDL_haptic.h"
+#include "../SDL_syshaptic.h"
 
 #if SDL_HAPTIC_XINPUT
 
@@ -30,7 +31,6 @@
 #include "SDL_timer.h"
 #include "SDL_windowshaptic_c.h"
 #include "SDL_xinputhaptic_c.h"
-#include "../SDL_syshaptic.h"
 #include "../../core/windows/SDL_xinput.h"
 #include "../../joystick/windows/SDL_windowsjoystick_c.h"
 
