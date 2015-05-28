@@ -1182,6 +1182,7 @@ SDL_DINPUT_HapticStopAll(SDL_Haptic * haptic)
 #else /* !SDL_HAPTIC_DINPUT */
 
 typedef struct DIDEVICEINSTANCE DIDEVICEINSTANCE;
+typedef struct SDL_hapticlist_item SDL_hapticlist_item;
 
 int
 SDL_DINPUT_HapticInit(void)
