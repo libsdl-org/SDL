@@ -293,27 +293,27 @@ static char* X11_URIToLocal(char* uri) {
     if (memcmp(uri,"file:/",6) == 0) uri += 6;      /* local file? */
     else if (strstr(uri,":/") != NULL) return file; /* wrong scheme */
 
-    local = uri[0] != '/' || ( uri[0] != '\0' && uri[1] == '/' );
+    local = uri[0] != '/' || (uri[0] != '\0' && uri[1] == '/');
 
     /* got a hostname? */
-    if ( !local && uri[0] == '/' && uri[2] != '/' ) {
-      char* hostname_end = strchr( uri+1, '/' );
-      if ( hostname_end != NULL ) {
+    if (!local && uri[0] == '/' && uri[2] != '/') {
+      char* hostname_end = strchr(uri+1, '/');
+      if (hostname_end != NULL) {
           char hostname[ 257 ];
-          if ( gethostname( hostname, 255 ) == 0 ) {
+          if (gethostname(hostname, 255) == 0) {
             hostname[ 256 ] = '\0';
-            if ( memcmp( uri+1, hostname, hostname_end - ( uri+1 )) == 0 ) {
+            if (memcmp(uri+1, hostname, hostname_end - (uri+1)) == 0) {
                 uri = hostname_end + 1;
                 local = SDL_TRUE;
             }
           }
       }
     }
-    if ( local ) {
+    if (local) {
       file = uri;
       /* Convert URI escape sequences to real characters */
       X11_URIDecode(file, 0);
-      if ( uri[1] == '/' ) {
+      if (uri[1] == '/') {
           file++;
       } else {
           file--;
@@ -336,12 +336,13 @@ static void X11_HandleGenericEvent(SDL_VideoData *videodata,XEvent event)
 
 
 static void
-X11_DispatchFocusIn(SDL_WindowData *data)
+X11_DispatchFocusIn(_THIS, SDL_WindowData *data)
 {
 #ifdef DEBUG_XEVENTS
     printf("window %p: Dispatching FocusIn\n", data);
 #endif
     SDL_SetKeyboardFocus(data->window);
+    ReconcileKeyboardState(_this, data);
 #ifdef X_HAVE_UTF8_STRING
     if (data->ic) {
         X11_XSetICFocus(data->ic);
@@ -353,7 +354,7 @@ X11_DispatchFocusIn(SDL_WindowData *data)
 }
 
 static void
-X11_DispatchFocusOut(SDL_WindowData *data)
+X11_DispatchFocusOut(_THIS, SDL_WindowData *data)
 {
 #ifdef DEBUG_XEVENTS
     printf("window %p: Dispatching FocusOut\n", data);
@@ -482,23 +483,74 @@ ProcessHitTest(_THIS, const SDL_WindowData *data, const XEvent *xev)
     return SDL_FALSE;
 }
 
+static unsigned
+GetNumLockModifierMask(_THIS)
+{
+    SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
+    Display *display = viddata->display;
+    unsigned num_mask = 0;
+    int i, j;
+    XModifierKeymap *xmods;
+    unsigned n;
+
+    xmods = X11_XGetModifierMapping(display);
+    n = xmods->max_keypermod;
+    for(i = 3; i < 8; i++) {
+        for(j = 0; j < n; j++) {
+            KeyCode kc = xmods->modifiermap[i * n + j];
+            if (viddata->key_layout[kc] == SDL_SCANCODE_NUMLOCKCLEAR) {
+                num_mask = 1 << i;
+                break;
+            }
+        }
+    }
+    X11_XFreeModifiermap(xmods);
+
+    return num_mask;
+}
+
 static void
 ReconcileKeyboardState(_THIS, const SDL_WindowData *data)
 {
     SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
     Display *display = viddata->display;
     char keys[32];
-    int keycode = 0;
+    int keycode;
+    Window junk_window;
+    int x, y;
+    unsigned int mask;
 
-    X11_XQueryKeymap( display, keys );
+    X11_XQueryKeymap(display, keys);
 
-    while ( keycode < 256 ) {
-        if ( keys[keycode / 8] & (1 << (keycode % 8)) ) {
+    for (keycode = 0; keycode < 256; ++keycode) {
+        if (keys[keycode / 8] & (1 << (keycode % 8))) {
             SDL_SendKeyboardKey(SDL_PRESSED, viddata->key_layout[keycode]);
         } else {
             SDL_SendKeyboardKey(SDL_RELEASED, viddata->key_layout[keycode]);
         }
-        keycode++;
+    }
+
+    /* Get the keyboard modifier state */
+    if (X11_XQueryPointer(display, DefaultRootWindow(display), &junk_window, &junk_window, &x, &y, &x, &y, &mask)) {
+        unsigned num_mask = GetNumLockModifierMask(_this);
+        const Uint8 *keystate = SDL_GetKeyboardState(NULL);
+        Uint8 capslockState = keystate[SDL_SCANCODE_CAPSLOCK];
+        Uint8 numlockState = keystate[SDL_SCANCODE_NUMLOCKCLEAR];
+
+        /* Toggle key mod state if needed */
+        if (!!(mask & LockMask) != !!(SDL_GetModState() & KMOD_CAPS)) {
+            SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_CAPSLOCK);
+            if (capslockState == SDL_RELEASED) {
+                SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_CAPSLOCK);
+            }
+        }
+
+        if (!!(mask & num_mask) != !!(SDL_GetModState() & KMOD_NUM)) {
+            SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_NUMLOCKCLEAR);
+            if (numlockState == SDL_RELEASED) {
+                SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_NUMLOCKCLEAR);
+            }
+        }
     }
 }
 
@@ -648,15 +700,11 @@ X11_DispatchEvent(_THIS)
 #ifdef DEBUG_XEVENTS
             printf("window %p: FocusIn!\n", data);
 #endif
-            if (data->pending_focus == PENDING_FOCUS_OUT &&
-                data->window == SDL_GetKeyboardFocus()) {
-                ReconcileKeyboardState(_this, data);
-            }
             if (!videodata->last_mode_change_deadline) /* no recent mode changes */
             {
                 data->pending_focus = PENDING_FOCUS_NONE;
                 data->pending_focus_time = 0;
-                X11_DispatchFocusIn(data);
+                X11_DispatchFocusIn(_this, data);
             }
             else
             {
@@ -863,7 +911,7 @@ X11_DispatchEvent(_THIS)
 
                 SDL_bool use_list = xevent.xclient.data.l[1] & 1;
                 data->xdnd_source = xevent.xclient.data.l[0];
-                xdnd_version = ( xevent.xclient.data.l[1] >> 24);
+                xdnd_version = (xevent.xclient.data.l[1] >> 24);
 #ifdef DEBUG_XEVENTS
                 printf("XID of source window : %ld\n", data->xdnd_source);
                 printf("Protocol version to use : %ld\n", xdnd_version);
@@ -1250,10 +1298,10 @@ X11_HandleFocusChanges(_THIS)
             if (data && data->pending_focus != PENDING_FOCUS_NONE) {
                 Uint32 now = SDL_GetTicks();
                 if (SDL_TICKS_PASSED(now, data->pending_focus_time)) {
-                    if ( data->pending_focus == PENDING_FOCUS_IN ) {
-                        X11_DispatchFocusIn(data);
+                    if (data->pending_focus == PENDING_FOCUS_IN) {
+                        X11_DispatchFocusIn(_this, data);
                     } else {
-                        X11_DispatchFocusOut(data);
+                        X11_DispatchFocusOut(_this, data);
                     }
                     data->pending_focus = PENDING_FOCUS_NONE;
                 }
