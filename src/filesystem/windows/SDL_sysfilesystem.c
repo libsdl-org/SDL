@@ -58,14 +58,15 @@ SDL_GetBasePath(void)
     }
 
     while (SDL_TRUE) {
-        WCHAR *ptr = (WCHAR *)SDL_realloc(path, buflen * sizeof (WCHAR));
+        void *ptr = SDL_realloc(path, buflen * sizeof (WCHAR));
         if (!ptr) {
             SDL_free(path);
             FreeLibrary(psapi);
             SDL_OutOfMemory();
             return NULL;
         }
-        path = ptr;
+
+        path = (WCHAR *) ptr;
 
         len = pGetModuleFileNameExW(GetCurrentProcess(), NULL, path, buflen);
         if (len != buflen) {
@@ -79,6 +80,7 @@ SDL_GetBasePath(void)
     FreeLibrary(psapi);
 
     if (len == 0) {
+        SDL_free(path);
         WIN_SetError("Couldn't locate our .exe");
         return NULL;
     }
