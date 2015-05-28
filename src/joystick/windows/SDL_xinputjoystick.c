@@ -339,7 +339,7 @@ SDL_SYS_IsXInputGamepad_DeviceIndex(int device_index)
 
 #else /* !SDL_JOYSTICK_XINPUT */
 
-struct JoyStick_DeviceData;
+typedef struct JoyStick_DeviceData JoyStick_DeviceData;
 
 SDL_bool SDL_XINPUT_Enabled(void)
 {

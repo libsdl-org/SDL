@@ -867,7 +867,7 @@ SDL_DINPUT_JoystickQuit(void)
 
 #else /* !SDL_JOYSTICK_DINPUT */
 
-struct JoyStick_DeviceData;
+typedef struct JoyStick_DeviceData JoyStick_DeviceData;
 
 int
 SDL_DINPUT_JoystickInit(void)
