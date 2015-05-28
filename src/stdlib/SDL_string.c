@@ -23,6 +23,10 @@
 #define SDL_DISABLE_ANALYZE_MACROS 1
 #endif
 
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE 1
+#endif
+
 #include "../SDL_internal.h"
 
 /* This file contains portable string manipulation functions for SDL */
