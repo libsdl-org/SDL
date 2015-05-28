@@ -40,6 +40,8 @@
 
 #include <stdio.h>
 
+/*#define DEBUG_XEVENTS*/
+
 #ifndef _NET_WM_MOVERESIZE_SIZE_TOPLEFT
 #define _NET_WM_MOVERESIZE_SIZE_TOPLEFT      0
 #endif
@@ -132,7 +134,6 @@ static Atom X11_PickTargetFromAtoms(Display *disp, Atom a0, Atom a1, Atom a2)
     if (a2 != None) atom[count++] = a2;
     return X11_PickTarget(disp, atom, count);
 }
-/* #define DEBUG_XEVENTS */
 
 struct KeyRepeatCheckData
 {
@@ -361,7 +362,7 @@ X11_GetNumLockModifierMask(_THIS)
 }
 
 static void
-X11_ReconcileKeyboardState(_THIS, const SDL_WindowData *data)
+X11_ReconcileKeyboardState(_THIS)
 {
     SDL_VideoData *viddata = (SDL_VideoData *) _this->driverdata;
     Display *display = viddata->display;
@@ -413,7 +414,7 @@ X11_DispatchFocusIn(_THIS, SDL_WindowData *data)
     printf("window %p: Dispatching FocusIn\n", data);
 #endif
     SDL_SetKeyboardFocus(data->window);
-    X11_ReconcileKeyboardState(_this, data);
+    X11_ReconcileKeyboardState(_this);
 #ifdef X_HAVE_UTF8_STRING
     if (data->ic) {
         X11_XSetICFocus(data->ic);
@@ -633,6 +634,12 @@ X11_DispatchEvent(_THIS)
         }
     }
     if (!data) {
+        /* The window for KeymapNotify events is 0 */
+        if (xevent.type == KeymapNotify) {
+            if (SDL_GetKeyboardFocus() != NULL) {
+                X11_ReconcileKeyboardState(_this);
+            }
+        }
         return;
     }
 
@@ -744,17 +751,6 @@ X11_DispatchEvent(_THIS)
                 data->pending_focus = PENDING_FOCUS_OUT;
                 data->pending_focus_time = SDL_GetTicks() + PENDING_FOCUS_TIME;
             }
-        }
-        break;
-
-        /* Generated upon EnterWindow and FocusIn */
-    case KeymapNotify:{
-#ifdef DEBUG_XEVENTS
-            printf("window %p: KeymapNotify!\n", data);
-#endif
-            /* FIXME:
-               X11_SetKeyboardState(SDL_Display, xevent.xkeymap.key_vector);
-             */
         }
         break;
 
