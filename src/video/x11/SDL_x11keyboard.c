@@ -316,7 +316,28 @@ X11_UpdateKeymap(_THIS)
         if (key) {
             keymap[scancode] = key;
         } else {
-            keymap[scancode] = SDL_SCANCODE_TO_KEYCODE(X11_KeyCodeToSDLScancode(data->display, (KeyCode)i));
+            SDL_Scancode keyScancode = X11_KeyCodeToSDLScancode(data->display, (KeyCode)i);
+
+            switch (keyScancode) {
+                case SDL_SCANCODE_RETURN:
+                    keymap[scancode] = SDLK_RETURN;
+                    break;
+                case SDL_SCANCODE_ESCAPE:
+                    keymap[scancode] = SDLK_ESCAPE;
+                    break;
+                case SDL_SCANCODE_BACKSPACE:
+                    keymap[scancode] = SDLK_BACKSPACE;
+                    break;
+                case SDL_SCANCODE_TAB:
+                    keymap[scancode] = SDLK_TAB;
+                    break;
+                case SDL_SCANCODE_DELETE:
+                    keymap[scancode] = SDLK_DELETE;
+                    break;
+                default:
+                    keymap[scancode] = SDL_SCANCODE_TO_KEYCODE(keyScancode);
+                    break;
+            }
         }
     }
     SDL_SetKeymap(0, keymap, SDL_NUM_SCANCODES);
