@@ -173,14 +173,15 @@ static Bool X11_IsWheelCheckIfEvent(Display *display, XEvent *chkev,
     XEvent *event = (XEvent *) arg;
     /* we only handle buttons 4 and 5 - false positive avoidance */
     if (chkev->type == ButtonRelease &&
-        (event->xbutton.button == Button4 || event->xbutton.button == Button5) &&
+        (event->xbutton.button == Button4 || event->xbutton.button == Button5 ||
+         event->xbutton.button == 6 || event->xbutton.button == 7) &&
         chkev->xbutton.button == event->xbutton.button &&
         chkev->xbutton.time == event->xbutton.time)
         return True;
     return False;
 }
 
-static SDL_bool X11_IsWheelEvent(Display * display,XEvent * event,int * ticks)
+static SDL_bool X11_IsWheelEvent(Display * display,XEvent * event,int * xticks,int * yticks)
 {
     XEvent relevent;
     if (X11_XPending(display)) {
@@ -198,12 +199,19 @@ static SDL_bool X11_IsWheelEvent(Display * display,XEvent * event,int * ticks)
             (XPointer) event)) {
 
             /* by default, X11 only knows 5 buttons. on most 3 button + wheel mouse,
-               Button4 maps to wheel up, Button5 maps to wheel down. */
+               Button4 maps to (vertical) wheel up, Button5 maps to wheel down.
+               Horizontal scrolling usually maps to 6 and 7 which have no name */
             if (event->xbutton.button == Button4) {
-                *ticks = 1;
+                *yticks = 1;
             }
             else if (event->xbutton.button == Button5) {
-                *ticks = -1;
+                *yticks = -1;
+            }
+            else if (event->xbutton.button == 6) {
+                *xticks = 1;
+            }
+            else if (event->xbutton.button == 7) {
+                *xticks = -1;
             }
             return SDL_TRUE;
         }
@@ -1023,22 +1031,33 @@ X11_DispatchEvent(_THIS)
         break;
 
     case ButtonPress:{
-            int ticks = 0;
-            if (X11_IsWheelEvent(display,&xevent,&ticks)) {
-                SDL_SendMouseWheel(data->window, 0, 0, ticks, SDL_MOUSEWHEEL_NORMAL);
+            int xticks = 0, yticks = 0;
+            if (X11_IsWheelEvent(display,&xevent,&xticks, &yticks)) {
+                SDL_SendMouseWheel(data->window, 0, xticks, yticks, SDL_MOUSEWHEEL_NORMAL);
             } else {
-                if(xevent.xbutton.button == Button1) {
+                int button = xevent.xbutton.button;
+                if(button == Button1) {
                     if (ProcessHitTest(_this, data, &xevent)) {
                         break;  /* don't pass this event on to app. */
                     }
                 }
-                SDL_SendMouseButton(data->window, 0, SDL_PRESSED, xevent.xbutton.button);
+                else if(button > 7) {
+                    /* X button values 4-7 are used for scrolling, so X1 is 8, X2 is 9, ...
+                       => subtract (8-SDL_BUTTON_X1) to get value SDL expects */
+                    button -= (8-SDL_BUTTON_X1);
+                }
+                SDL_SendMouseButton(data->window, 0, SDL_PRESSED, button);
             }
         }
         break;
 
     case ButtonRelease:{
-            SDL_SendMouseButton(data->window, 0, SDL_RELEASED, xevent.xbutton.button);
+            int button = xevent.xbutton.button;
+            if (button > 7) {
+                /* see explanation at case ButtonPress */
+                button -= (8-SDL_BUTTON_X1);
+            }
+            SDL_SendMouseButton(data->window, 0, SDL_RELEASED, button);
         }
         break;
 
