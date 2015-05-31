@@ -196,9 +196,15 @@ SDL_FillRect2(Uint8 * pixels, int pitch, Uint32 color, int w, int h)
 static void
 SDL_FillRect3(Uint8 * pixels, int pitch, Uint32 color, int w, int h)
 {
-    Uint8 r = (Uint8) ((color >> 16) & 0xFF);
-    Uint8 g = (Uint8) ((color >> 8) & 0xFF);
-    Uint8 b = (Uint8) (color & 0xFF);
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+    Uint8 b1 = (Uint8) (color & 0xFF);
+    Uint8 b2 = (Uint8) ((color >> 8) & 0xFF);
+    Uint8 b3 = (Uint8) ((color >> 16) & 0xFF);
+#elif SDL_BYTEORDER == SDL_BIG_ENDIAN
+    Uint8 b1 = (Uint8) ((color >> 16) & 0xFF);
+    Uint8 b2 = (Uint8) ((color >> 8) & 0xFF);
+    Uint8 b3 = (Uint8) (color & 0xFF);
+#endif
     int n;
     Uint8 *p = NULL;
 
@@ -207,9 +213,9 @@ SDL_FillRect3(Uint8 * pixels, int pitch, Uint32 color, int w, int h)
         p = pixels;
 
         while (n--) {
-            *p++ = r;
-            *p++ = g;
-            *p++ = b;
+            *p++ = b1;
+            *p++ = b2;
+            *p++ = b3;
         }
         pixels += pitch;
     }
