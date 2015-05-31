@@ -230,6 +230,10 @@ Cocoa_WarpMouseGlobal(int x, int y)
 static void
 Cocoa_WarpMouse(SDL_Window * window, int x, int y)
 {
+    /* pretend we have the mouse focus, even if we don't, so
+        Cocoa_WarpMouseGlobal() will properly fake a mouse motion event. */
+    SDL_Mouse *mouse = SDL_GetMouse();
+    mouse->focus = window;
     Cocoa_WarpMouseGlobal(x + window->x, y + window->y);
 }
 
