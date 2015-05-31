@@ -751,6 +751,14 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 {
     int button;
 
+    /* Ignore events that aren't inside the client area (i.e. title bar.) */
+    if ([theEvent window]) {
+        const NSRect windowRect = [[[theEvent window] contentView] frame];
+        if (!NSPointInRect([theEvent locationInWindow], windowRect)) {
+            return;
+        }
+    }
+
     if ([self processHitTest:theEvent]) {
         return;  /* dragging, drop event. */
     }
