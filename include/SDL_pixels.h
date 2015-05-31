@@ -86,6 +86,8 @@ enum
 };
 
 /** Array component order, low byte -> high byte. */
+/* !!! FIXME: in 2.1, make these not overlap differently with
+   !!! FIXME:  SDL_PACKEDORDER_*, so we can simplify SDL_ISPIXELFORMAT_ALPHA */
 enum
 {
     SDL_ARRAYORDER_NONE,
@@ -134,12 +136,31 @@ enum
       (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_INDEX4) || \
       (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_INDEX8)))
 
-#define SDL_ISPIXELFORMAT_ALPHA(format)   \
+#define SDL_ISPIXELFORMAT_PACKED(format) \
     (!SDL_ISPIXELFORMAT_FOURCC(format) && \
+     ((SDL_PIXELTYPE(format) == SDL_PIXELTYPE_PACKED8) || \
+      (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_PACKED16) || \
+      (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_PACKED32)))
+
+#define SDL_ISPIXELFORMAT_ARRAY(format) \
+    (!SDL_ISPIXELFORMAT_FOURCC(format) && \
+     ((SDL_PIXELTYPE(format) == SDL_PIXELTYPE_ARRAYU8) || \
+      (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_ARRAYU16) || \
+      (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_ARRAYU32) || \
+      (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_ARRAYF16) || \
+      (SDL_PIXELTYPE(format) == SDL_PIXELTYPE_ARRAYF32)))
+
+#define SDL_ISPIXELFORMAT_ALPHA(format)   \
+    ((SDL_ISPIXELFORMAT_PACKED(format) && \
      ((SDL_PIXELORDER(format) == SDL_PACKEDORDER_ARGB) || \
       (SDL_PIXELORDER(format) == SDL_PACKEDORDER_RGBA) || \
       (SDL_PIXELORDER(format) == SDL_PACKEDORDER_ABGR) || \
-      (SDL_PIXELORDER(format) == SDL_PACKEDORDER_BGRA)))
+      (SDL_PIXELORDER(format) == SDL_PACKEDORDER_BGRA))) || \
+    (SDL_ISPIXELFORMAT_ARRAY(format) && \
+     ((SDL_PIXELORDER(format) == SDL_ARRAYORDER_ARGB) || \
+      (SDL_PIXELORDER(format) == SDL_ARRAYORDER_RGBA) || \
+      (SDL_PIXELORDER(format) == SDL_ARRAYORDER_ABGR) || \
+      (SDL_PIXELORDER(format) == SDL_ARRAYORDER_BGRA))))
 
 /* The flag is set to 1 because 0x1? is not in the printable ASCII range */
 #define SDL_ISPIXELFORMAT_FOURCC(format)    \
