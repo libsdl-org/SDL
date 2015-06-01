@@ -30,7 +30,7 @@ static unsigned int screensaver_cookie = 0;
 static SDL_DBusContext dbus = {0};
 
 static int
-load_dbus_syms(void)
+LoadDBUSSyms(void)
 {
     #define SDL_DBUS_SYM2(x, y) \
         if (!(dbus.x = SDL_LoadFunction(dbus_handle, #y))) return -1
@@ -95,7 +95,7 @@ LoadDBUSLibrary(void)
             retval = -1;
             /* Don't call SDL_SetError(): SDL_LoadObject already did. */
         } else {
-            retval = load_dbus_syms();
+            retval = LoadDBUSSyms();
             if (retval < 0) {
                 UnloadDBUSLibrary();
             }
