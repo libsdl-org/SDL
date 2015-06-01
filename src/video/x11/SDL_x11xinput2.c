@@ -183,7 +183,7 @@ X11_InitXinput2Multitouch(_THIS)
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
     XIDeviceInfo *info;
     int ndevices,i,j;
-    info = X11_XIQueryDevice(data->display, XIAllMasterDevices, &ndevices);
+    info = X11_XIQueryDevice(data->display, XIAllDevices, &ndevices);
 
     for (i = 0; i < ndevices; i++) {
         XIDeviceInfo *dev = &info[i];
