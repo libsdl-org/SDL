@@ -32,7 +32,7 @@ main(int argc, char *argv[])
       return 0;
     }
 
-    SDL_Log("base path: '%s'\n", SDL_GetBasePath());
+    SDL_Log("base path: '%s'\n", base_path);
     SDL_free(base_path);
 
     char *pref_path = SDL_GetPrefPath("libsdl", "testfilesystem");
@@ -41,11 +41,8 @@ main(int argc, char *argv[])
                    SDL_GetError());
       return 0;
     }
-    SDL_Log("pref path: '%s'\n", SDL_GetPrefPath("libsdl", "testfilesystem"));
+    SDL_Log("pref path: '%s'\n", pref_path); 
     SDL_free(pref_path);
-
-    SDL_Log("base path: '%s'\n", SDL_GetBasePath());
-    SDL_Log("pref path: '%s'\n", SDL_GetPrefPath("libsdl", "testfilesystem"));
 
     SDL_Quit();
     return 0;
