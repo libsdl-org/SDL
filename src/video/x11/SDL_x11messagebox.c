@@ -548,6 +548,13 @@ X11_MessageBoxDraw( SDL_MessageBoxDataX11 *data, GC ctx )
 #endif
 }
 
+static Bool
+X11_MessageBoxEventTest(Display *display, XEvent *event, XPointer arg)
+{
+    const SDL_MessageBoxDataX11 *data = (const SDL_MessageBoxDataX11 *) arg;
+    return ((event->xany.display == data->display) && (event->xany.window == data->window)) ? True : False;
+}
+
 /* Loop and handle message box event messages until something kills it. */
 static int
 X11_MessageBoxLoop( SDL_MessageBoxDataX11 *data )
@@ -580,7 +587,9 @@ X11_MessageBoxLoop( SDL_MessageBoxDataX11 *data )
         XEvent e;
         SDL_bool draw = SDL_TRUE;
 
-        X11_XWindowEvent( data->display, data->window, data->event_mask, &e );
+        /* can't use XWindowEvent() because it can't handle ClientMessage events. */
+        /* can't use XNextEvent() because we only want events for this window. */
+        X11_XIfEvent( data->display, &e, X11_MessageBoxEventTest, (XPointer) data );
 
         /* If X11_XFilterEvent returns True, then some input method has filtered the
            event, and the client should discard the event. */
