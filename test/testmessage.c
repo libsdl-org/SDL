@@ -69,7 +69,7 @@ button_messagebox(void *eventNumber)
             quit(2);
         }
     }
-    SDL_Log("Pressed button: %d, %s\n", button, button == 1 ? "Cancel" : "OK");
+    SDL_Log("Pressed button: %d, %s\n", button, button == -1 ? "[closed]" : button == 1 ? "Cancel" : "OK");
 
     if (eventNumber) {
         SDL_UserEvent event;
