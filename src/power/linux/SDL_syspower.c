@@ -36,8 +36,10 @@
 static const char *proc_apm_path = "/proc/apm";
 static const char *proc_acpi_battery_path = "/proc/acpi/battery";
 static const char *proc_acpi_ac_adapter_path = "/proc/acpi/ac_adapter";
+static const char *sys_class_power_supply_path = "/sys/class/power_supply";
 
-static int open_acpi_file(const char *base, const char *node, const char *key)
+static int
+open_power_file(const char *base, const char *node, const char *key)
 {
     const size_t pathlen = strlen(base) + strlen(node) + strlen(key) + 3;
     char *path = (char *) alloca(pathlen);
@@ -51,11 +53,11 @@ static int open_acpi_file(const char *base, const char *node, const char *key)
 
 
 static SDL_bool
-load_acpi_file(const char *base, const char *node, const char *key,
-               char *buf, size_t buflen)
+read_power_file(const char *base, const char *node, const char *key,
+                char *buf, size_t buflen)
 {
     ssize_t br = 0;
-    const int fd = open_acpi_file(base, node, key);
+    const int fd = open_power_file(base, node, key);
     if (fd == -1) {
         return SDL_FALSE;
     }
@@ -133,9 +135,9 @@ check_proc_acpi_battery(const char * node, SDL_bool * have_battery,
     int secs = -1;
     int pct = -1;
 
-    if (!load_acpi_file(base, node, "state", state, sizeof (state))) {
+    if (!read_power_file(base, node, "state", state, sizeof (state))) {
         return;
-    } else if (!load_acpi_file(base, node, "info", info, sizeof (info))) {
+    } else if (!read_power_file(base, node, "info", info, sizeof (info))) {
         return;
     }
 
@@ -214,7 +216,7 @@ check_proc_acpi_ac_adapter(const char * node, SDL_bool * have_ac)
     char *key = NULL;
     char *val = NULL;
 
-    if (!load_acpi_file(base, node, "state", state, sizeof (state))) {
+    if (!read_power_file(base, node, "state", state, sizeof (state))) {
         return;
     }
 
@@ -421,6 +423,94 @@ SDL_GetPowerInfo_Linux_proc_apm(SDL_PowerState * state,
     }
 
     return SDL_TRUE;
+}
+
+/* !!! FIXME: implement d-bus queries to org.freedesktop.UPower. */
+
+SDL_bool
+SDL_GetPowerInfo_Linux_sys_class_power_supply(SDL_PowerState *state, int *seconds, int *percent)
+{
+    const char *base = sys_class_power_supply_path;
+    struct dirent *dent;
+    DIR *dirp;
+
+    dirp = opendir(base);
+    if (!dirp) {
+        return SDL_FALSE;
+    }
+
+    *state = SDL_POWERSTATE_NO_BATTERY;  /* assume we're just plugged in. */
+    *seconds = -1;
+    *percent = -1;
+
+    while ((dent = readdir(dirp)) != NULL) {
+        const char *name = dent->d_name;
+        SDL_bool choose = SDL_FALSE;
+        char str[64];
+        SDL_PowerState st;
+        int secs;
+        int pct;
+
+        if ((SDL_strcmp(name, ".") == 0) || (SDL_strcmp(name, "..") == 0)) {
+            continue;  /* skip these, of course. */
+        } else if (!read_power_file(base, name, "type", str, sizeof (str))) {
+            continue;  /* Don't know _what_ we're looking at. Give up on it. */
+        } else if (SDL_strcmp(str, "Battery\n") != 0) {
+            continue;  /* we don't care about UPS and such. */
+        }
+
+        /* some drivers don't offer this, so if it's not explicitly reported assume it's present. */
+        if (read_power_file(base, name, "present", str, sizeof (str)) && (SDL_strcmp(str, "0\n") == 0)) {
+            st = SDL_POWERSTATE_NO_BATTERY;
+        } else if (!read_power_file(base, name, "status", str, sizeof (str))) {
+            st = SDL_POWERSTATE_UNKNOWN;  /* uh oh */
+        } else if (SDL_strcmp(str, "Charging\n") == 0) {
+            st = SDL_POWERSTATE_CHARGING;
+        } else if (SDL_strcmp(str, "Discharging\n") == 0) {
+            st = SDL_POWERSTATE_ON_BATTERY;
+        } else if ((SDL_strcmp(str, "Full\n") == 0) || (SDL_strcmp(str, "Not charging\n") == 0)) {
+            st = SDL_POWERSTATE_CHARGED;
+        } else {
+            st = SDL_POWERSTATE_UNKNOWN;  /* uh oh */
+        }
+
+        if (!read_power_file(base, name, "capacity", str, sizeof (str))) {
+            pct = -1;
+        } else {
+            pct = SDL_atoi(str);
+            pct = (pct > 100) ? 100 : pct; /* clamp between 0%, 100% */
+        }
+
+        if (!read_power_file(base, name, "time_to_empty_now", str, sizeof (str))) {
+            secs = -1;
+        } else {
+            secs = SDL_atoi(str);
+            secs = (secs <= 0) ? -1 : secs;  /* 0 == unknown */
+        }
+
+        /*
+         * We pick the battery that claims to have the most minutes left.
+         *  (failing a report of minutes, we'll take the highest percent.)
+         */
+        if ((secs < 0) && (*seconds < 0)) {
+            if ((pct < 0) && (*percent < 0)) {
+                choose = SDL_TRUE;  /* at least we know there's a battery. */
+            } else if (pct > *percent) {
+                choose = SDL_TRUE;
+            }
+        } else if (secs > *seconds) {
+            choose = SDL_TRUE;
+        }
+
+        if (choose) {
+            *seconds = secs;
+            *percent = pct;
+            *state = st;
+        }
+    }
+
+    closedir(dirp);
+    return SDL_TRUE;  /* don't look any further. */
 }
 
 #endif /* SDL_POWER_LINUX */
