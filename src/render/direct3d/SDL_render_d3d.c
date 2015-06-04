@@ -843,7 +843,7 @@ D3D_CreateStagingTexture(IDirect3DDevice9 *device, D3D_TextureRep *texture)
     HRESULT result;
 
     if (texture->staging == NULL) {
-        result = IDirect3DDevice9_CreateTexture(device, texture->w, texture->h, 1, texture->usage,
+        result = IDirect3DDevice9_CreateTexture(device, texture->w, texture->h, 1, 0,
             PixelFormatToD3DFMT(texture->format),
             D3DPOOL_SYSTEMMEM, &texture->staging, NULL);
         if (FAILED(result)) {
