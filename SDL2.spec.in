@@ -68,7 +68,7 @@ rm -rf $RPM_BUILD_ROOT
 
 %files devel
 %{__defattr}
-%doc README*.txt COPYING.txt CREDITS.txt BUGS.txt WhatsNew.txt
+%doc docs/README*.md
 %{_bindir}/*-config
 %{_libdir}/lib*.a
 %{_libdir}/lib*.la
@@ -78,6 +78,9 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/aclocal/*
 
 %changelog
+* Thu Jun 04 2015 Ryan C. Gordon <icculus@icculus.org>
+- Fixed README paths.
+
 * Sun Dec 07 2014 Simone Contini <s.contini@oltrelinux.com>
 - Fixed changelog date issue and docs filenames
 
