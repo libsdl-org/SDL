@@ -918,8 +918,8 @@ X11_DispatchEvent(_THIS)
                 xdnd_version = (xevent.xclient.data.l[1] >> 24);
 #ifdef DEBUG_XEVENTS
                 printf("XID of source window : %ld\n", data->xdnd_source);
-                printf("Protocol version to use : %ld\n", xdnd_version);
-                printf("More then 3 data types : %ld\n", use_list); 
+                printf("Protocol version to use : %d\n", xdnd_version);
+                printf("More then 3 data types : %d\n", (int) use_list);
 #endif
  
                 if (use_list) {
@@ -1066,7 +1066,7 @@ X11_DispatchEvent(_THIS)
             unsigned char *propdata;
             int status, real_format;
             Atom real_type;
-            unsigned long items_read, items_left, i;
+            unsigned long items_read, items_left;
 
             char *name = X11_XGetAtomName(display, xevent.xproperty.atom);
             if (name) {
@@ -1118,18 +1118,18 @@ X11_DispatchEvent(_THIS)
 
                     printf("{");
                     for (i = 0; i < items_read; i++) {
-                        char *name = X11_XGetAtomName(display, atoms[i]);
-                        if (name) {
-                            printf(" %s", name);
-                            X11_XFree(name);
+                        char *atomname = X11_XGetAtomName(display, atoms[i]);
+                        if (atomname) {
+                            printf(" %s", atomname);
+                            X11_XFree(atomname);
                         }
                     }
                     printf(" }\n");
                 } else {
-                    char *name = X11_XGetAtomName(display, real_type);
-                    printf("Unknown type: %ld (%s)\n", real_type, name ? name : "UNKNOWN");
-                    if (name) {
-                        X11_XFree(name);
+                    char *atomname = X11_XGetAtomName(display, real_type);
+                    printf("Unknown type: %ld (%s)\n", real_type, atomname ? atomname : "UNKNOWN");
+                    if (atomname) {
+                        X11_XFree(atomname);
                     }
                 }
             }
