@@ -39,7 +39,7 @@ DrawChessBoard(SDL_Renderer * renderer)
 	for( ; row < 8; row++)
 	{
 		column = row%2;
-		x = x + column;
+		x = column;
 		for( ; column < 4+(row%2); column++)
 		{
 			SDL_SetRenderDrawColor(renderer, 0, 0, 0, 0xFF);
@@ -51,7 +51,6 @@ DrawChessBoard(SDL_Renderer * renderer)
 			x = x + 2;
 			SDL_RenderFillRect(renderer, &rect);
 		}
-		x=0;
 	}
 }
 
