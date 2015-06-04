@@ -1189,6 +1189,7 @@ X11_DispatchEvent(_THIS)
             sevent.xselection.property = None;
             sevent.xselection.requestor = req->requestor;
             sevent.xselection.time = req->time;
+
             if (X11_XGetWindowProperty(display, DefaultRootWindow(display),
                     X11_GetSDLCutBufferClipboardType(display), 0, INT_MAX/4, False, req->target,
                     &sevent.xselection.target, &seln_format, &nbytes,
@@ -1200,12 +1201,13 @@ X11_DispatchEvent(_THIS)
                         seln_data, nbytes);
                     sevent.xselection.property = req->property;
                 } else if (XA_TARGETS == req->target) {
-                    Atom SupportedFormats[] = { sevent.xselection.target, XA_TARGETS };
+                    Atom SupportedFormats[] = { XA_TARGETS, sevent.xselection.target };
                     X11_XChangeProperty(display, req->requestor, req->property,
                         XA_ATOM, 32, PropModeReplace,
                         (unsigned char*)SupportedFormats,
-                        sizeof(SupportedFormats)/sizeof(*SupportedFormats));
+                        SDL_arraysize(SupportedFormats));
                     sevent.xselection.property = req->property;
+                    sevent.xselection.target = XA_TARGETS;
                 }
                 X11_XFree(seln_data);
             }
