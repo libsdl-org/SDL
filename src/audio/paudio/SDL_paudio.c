@@ -111,7 +111,7 @@ OpenAudioPath(char *path, int maxlen, int flags, int classic)
 
         if (stat(audiopath, &sb) == 0) {
             fd = open(audiopath, flags, 0);
-            if (fd > 0) {
+            if (fd >= 0) {
                 if (path != NULL) {
                     SDL_strlcpy(path, audiopath, maxlen);
                 }
