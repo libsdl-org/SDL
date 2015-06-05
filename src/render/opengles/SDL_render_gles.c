@@ -43,7 +43,7 @@ glDrawTexiOES(GLint x, GLint y, GLint z, GLint width, GLint height)
     return;
 }
 
-#endif /* PANDORA */
+#endif /* SDL_VIDEO_DRIVER_PANDORA */
 
 /* OpenGL ES 1.1 renderer implementation, based on the OpenGL renderer */
 
@@ -206,7 +206,7 @@ static int GLES_LoadFunctions(GLES_RenderData * data)
     do { \
         data->func = SDL_GL_GetProcAddress(#func); \
     } while ( 0 );    
-#endif /* _SDL_NOGETPROCADDR_ */
+#endif /* __SDL_NOGETPROCADDR__ */
 
 #include "SDL_glesfuncs.h"
 #undef SDL_PROC

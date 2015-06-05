@@ -169,6 +169,6 @@ static UIKitKeyInfo unicharToUIKeyInfoTable[] = {
 /*  127 */{    SDL_SCANCODE_BACKSPACE, KMOD_SHIFT }
 };
 
-#endif /* UIKitKeyInfo */
+#endif /* _UIKIT_KeyInfo */
 
 /* vi: set ts=4 sw=4 expandtab: */

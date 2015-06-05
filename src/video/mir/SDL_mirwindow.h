@@ -63,7 +63,7 @@ MIR_RestoreWindow(_THIS, SDL_Window* window);
 extern SDL_bool
 MIR_GetWindowWMInfo(_THIS, SDL_Window* window, SDL_SysWMinfo* info);
 
-#endif /* _SDL_mirwindow */
+#endif /* _SDL_mirwindow_h */
 
 /* vi: set ts=4 sw=4 expandtab: */
 
