@@ -580,7 +580,7 @@ BlitRGBtoRGBPixelAlphaMMX3DNOW(SDL_BlitInfo * info)
     _mm_empty();
 }
 
-#endif /* __MMX__ */
+#endif /* __3dNOW__ */
 
 /* 16bpp special case for per-surface alpha=50%: blend 2 pixels in parallel */
 

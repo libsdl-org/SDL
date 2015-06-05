@@ -300,7 +300,7 @@ static int GLES2_LoadFunctions(GLES2_DriverContext * data)
             return SDL_SetError("Couldn't load GLES2 function %s: %s\n", #func, SDL_GetError()); \
         } \
     } while ( 0 );
-#endif /* _SDL_NOGETPROCADDR_ */
+#endif /* __SDL_NOGETPROCADDR__ */
 
 #include "SDL_gles2funcs.h"
 #undef SDL_PROC

@@ -124,6 +124,6 @@ BOOL WIN_IsWindowsVistaOrGreater()
 #endif
 }
 
-#endif /* __WIN32__ */
+#endif /* __WIN32__ || __WINRT__ */
 
 /* vi: set ts=4 sw=4 expandtab: */
