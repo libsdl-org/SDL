@@ -375,6 +375,8 @@ SDL_XINPUT_HapticStopAll(SDL_Haptic * haptic)
 
 #else /* !SDL_HAPTIC_XINPUT */
 
+#include "../../core/windows/SDL_windows.h"
+
 typedef struct SDL_hapticlist_item SDL_hapticlist_item;
 
 int
