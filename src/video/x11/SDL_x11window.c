@@ -1353,12 +1353,9 @@ X11_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
     if (oldstyle_fullscreen || grabbed) {
         /* Try to grab the mouse */
         for (;;) {
-            const unsigned int mask = ButtonPressMask | ButtonReleaseMask 
-                | PointerMotionMask | FocusChangeMask;
             int result =
-                X11_XGrabPointer(display, data->xwindow, False, mask, 
-                             GrabModeAsync, GrabModeAsync, data->xwindow, 
-                             None, CurrentTime);
+                X11_XGrabPointer(display, data->xwindow, True, 0, GrabModeAsync,
+                             GrabModeAsync, data->xwindow, None, CurrentTime);
             if (result == GrabSuccess) {
                 break;
             }
