@@ -461,10 +461,12 @@ SDL_IBus_Init(void)
             return SDL_FALSE;
         }
         
+        /* !!! FIXME: if ibus_addr_file != NULL, this will overwrite it and leak (twice!) */
         ibus_addr_file = SDL_strdup(addr_file);
         
         addr = IBus_ReadAddressFromFile(addr_file);
         if (!addr) {
+            SDL_free(addr_file);
             return SDL_FALSE;
         }
         
