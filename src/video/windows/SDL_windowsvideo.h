@@ -27,7 +27,7 @@
 
 #include "../SDL_sysvideo.h"
 
-#if defined(_MSC_VER)
+#if defined(_MSC_VER) && (_MSC_VER >= 1500)
 #include <msctf.h>
 #else
 #include "SDL_msctf.h"

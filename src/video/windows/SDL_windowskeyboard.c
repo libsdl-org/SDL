@@ -211,7 +211,12 @@ void IME_Present(SDL_VideoData *videodata)
 
 #else
 
-#ifdef __GNUC__
+#ifdef _SDL_msctf_h
+#define USE_INIT_GUID
+#elif defined(__GNUC__)
+#define USE_INIT_GUID
+#endif
+#ifdef USE_INIT_GUID
 #undef DEFINE_GUID
 #define DEFINE_GUID(n,l,w1,w2,b1,b2,b3,b4,b5,b6,b7,b8) static const GUID n = {l,w1,w2,{b1,b2,b3,b4,b5,b6,b7,b8}}
 DEFINE_GUID(IID_ITfInputProcessorProfileActivationSink,        0x71C6E74E,0x0F28,0x11D8,0xA8,0x2A,0x00,0x06,0x5B,0x84,0x43,0x5C);
