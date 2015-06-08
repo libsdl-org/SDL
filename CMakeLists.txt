@@ -216,6 +216,10 @@ if(EMSCRIPTEN)
   set(SDL_DLOPEN_ENABLED_BY_DEFAULT OFF)
 endif()
 
+if (NOT DEFINED SDL_SHARED_ENABLED_BY_DEFAULT)
+    set(SDL_SHARED_ENABLED_BY_DEFAULT ON)
+endif()
+
 set(SDL_SUBSYSTEMS
     Atomic Audio Video Render Events Joystick Haptic Power Threads Timers
     File Loadso CPUinfo Filesystem Dlopen)
