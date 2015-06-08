@@ -19937,35 +19937,6 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
             { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_const_param_XextAddDisplay" >&5
 $as_echo "$have_const_param_XextAddDisplay" >&6; }
 
-            { $as_echo "$as_me:${as_lineno-$LINENO}: checking for const parameter to _XData32" >&5
-$as_echo_n "checking for const parameter to _XData32... " >&6; }
-	    have_const_param_xdata32=no
-	    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-
-	      #include <X11/Xlibint.h>
-	      extern int _XData32(Display *dpy,register _Xconst long *data,unsigned len);
-
-int
-main ()
-{
-
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-
-	    have_const_param_xdata32=yes
-	    $as_echo "#define SDL_VIDEO_DRIVER_X11_CONST_PARAM_XDATA32 1" >>confdefs.h
-
-
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_const_param_xdata32" >&5
-$as_echo "$have_const_param_xdata32" >&6; }
-
                         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for XGenericEvent" >&5
 $as_echo_n "checking for XGenericEvent... " >&6; }
             have_XGenericEvent=no
