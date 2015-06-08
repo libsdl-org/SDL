@@ -409,14 +409,6 @@ macro(CheckX11)
         set(SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS 1)
       endif()
 
-      check_c_source_compiles("
-          #include <X11/Xlibint.h>
-          extern int _XData32(Display *dpy,register _Xconst long *data,unsigned len);
-          int main(int argc, char **argv) {}" HAVE_CONST_XDATA32)
-      if(HAVE_CONST_XDATA32)
-        set(SDL_VIDEO_DRIVER_X11_CONST_PARAM_XDATA32 1)
-      endif()
-
       check_function_exists(XkbKeycodeToKeysym SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM)
 
       if(VIDEO_X11_XCURSOR AND HAVE_XCURSOR_H)
