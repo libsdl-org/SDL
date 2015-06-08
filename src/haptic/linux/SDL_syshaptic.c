@@ -390,8 +390,8 @@ SDL_SYS_HapticName(int index)
             /* No name found, return device character device */
             name = item->fname;
         }
+        close(fd);
     }
-    close(fd);
 
     return name;
 }
