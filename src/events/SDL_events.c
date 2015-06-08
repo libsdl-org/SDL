@@ -406,6 +406,8 @@ SDL_PumpEvents(void)
         SDL_JoystickUpdate();
     }
 #endif
+
+    SDL_SendPendingQuit();  /* in case we had a signal handler fire, etc. */
 }
 
 /* Public functions */
