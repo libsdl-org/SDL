@@ -43,6 +43,8 @@ extern int SDL_QuitInit(void);
 extern int SDL_SendQuit(void);
 extern void SDL_QuitQuit(void);
 
+extern void SDL_SendPendingQuit(void);
+
 /* The event filter function */
 extern SDL_EventFilter SDL_EventOK;
 extern void *SDL_EventOKParam;

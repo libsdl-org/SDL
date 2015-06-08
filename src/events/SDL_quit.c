@@ -20,6 +20,7 @@
 */
 #include "../SDL_internal.h"
 #include "SDL_hints.h"
+#include "SDL_assert.h"
 
 /* General quit handling code for SDL */
 
@@ -30,8 +31,8 @@
 #include "SDL_events.h"
 #include "SDL_events_c.h"
 
-
 static SDL_bool disable_signals = SDL_FALSE;
+static SDL_bool send_quit_pending = SDL_FALSE;
 
 #ifdef HAVE_SIGNAL_H
 static void
@@ -40,8 +41,9 @@ SDL_HandleSIG(int sig)
     /* Reset the signal handler */
     signal(sig, SDL_HandleSIG);
 
-    /* Signal a quit interrupt */
-    SDL_SendQuit();
+    /* Send a quit event next time the event loop pumps. */
+    /* We can't send it in signal handler; malloc() might be interrupted! */
+    send_quit_pending = SDL_TRUE;
 }
 #endif /* HAVE_SIGNAL_H */
 
@@ -136,7 +138,17 @@ SDL_QuitQuit(void)
 int
 SDL_SendQuit(void)
 {
+    send_quit_pending = SDL_FALSE;
     return SDL_SendAppEvent(SDL_QUIT);
+}
+
+void
+SDL_SendPendingQuit(void)
+{
+    if (send_quit_pending) {
+        SDL_SendQuit();
+        SDL_assert(!send_quit_pending);
+    }
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
