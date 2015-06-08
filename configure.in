@@ -1492,18 +1492,6 @@ AC_HELP_STRING([--enable-x11-shared], [dynamically load X11 support [[default=ma
             ])
             AC_MSG_RESULT($have_const_param_XextAddDisplay)
 
-            AC_MSG_CHECKING(for const parameter to _XData32)
-	    have_const_param_xdata32=no
-	    AC_TRY_COMPILE([
-	      #include <X11/Xlibint.h>
-	      extern int _XData32(Display *dpy,register _Xconst long *data,unsigned len);
-	    ],[
-	    ],[
-	    have_const_param_xdata32=yes
-	    AC_DEFINE(SDL_VIDEO_DRIVER_X11_CONST_PARAM_XDATA32)
-	    ])
-	    AC_MSG_RESULT($have_const_param_xdata32)
-
             dnl AC_CHECK_LIB(X11, XGetEventData, AC_DEFINE(SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS, 1, [Have XGenericEvent]))
             AC_MSG_CHECKING([for XGenericEvent])
             have_XGenericEvent=no

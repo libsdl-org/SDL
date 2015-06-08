@@ -203,11 +203,7 @@ SDL_X11_SYM(Bool,XShmQueryExtension,(Display* a),(a),return)
  */
 #ifdef LONG64
 SDL_X11_MODULE(IO_32BIT)
-#if SDL_VIDEO_DRIVER_X11_CONST_PARAM_XDATA32
 SDL_X11_SYM(int,_XData32,(Display *dpy,register _Xconst long *data,unsigned len),(dpy,data,len),return)
-#else
-SDL_X11_SYM(int,_XData32,(Display *dpy,register long *data,unsigned len),(dpy,data,len),return)
-#endif
 SDL_X11_SYM(void,_XRead32,(Display *dpy,register long *data,long len),(dpy,data,len),)
 #endif
 
