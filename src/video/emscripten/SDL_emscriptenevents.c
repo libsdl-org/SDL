@@ -375,7 +375,7 @@ Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent *touchEvent, vo
     SDL_WindowData *window_data = userData;
     int i;
 
-    SDL_TouchID deviceId = 0;
+    SDL_TouchID deviceId = 1;
     if (SDL_AddTouch(deviceId, "") < 0) {
          return 0;
     }
