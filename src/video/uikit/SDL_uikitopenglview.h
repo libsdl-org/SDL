@@ -26,14 +26,6 @@
 #import "SDL_uikitview.h"
 #include "SDL_uikitvideo.h"
 
-@class SDL_uikitopenglview;
-
-@interface SDLEAGLContext : EAGLContext
-
-@property (nonatomic, weak) SDL_uikitopenglview *sdlView;
-
-@end
-
 @interface SDL_uikitopenglview : SDL_uikitview
 
 - (instancetype)initWithFrame:(CGRect)frame
@@ -46,10 +38,9 @@
                     depthBits:(int)depthBits
                   stencilBits:(int)stencilBits
                          sRGB:(BOOL)sRGB
-                 majorVersion:(int)majorVersion
-                   shareGroup:(EAGLSharegroup*)shareGroup;
+                      context:(EAGLContext *)glcontext;
 
-@property (nonatomic, readonly, strong) SDLEAGLContext *context;
+@property (nonatomic, readonly, weak) EAGLContext *context;
 
 /* The width and height of the drawable in pixels (as opposed to points.) */
 @property (nonatomic, readonly) int backingWidth;
@@ -59,7 +50,6 @@
 @property (nonatomic, readonly) GLuint drawableFramebuffer;
 
 - (void)swapBuffers;
-- (void)setCurrentContext;
 
 - (void)updateFrame;
 

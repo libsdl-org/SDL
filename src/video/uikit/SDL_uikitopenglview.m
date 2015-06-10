@@ -27,10 +27,6 @@
 #import "SDL_uikitopenglview.h"
 #include "SDL_uikitwindow.h"
 
-@implementation SDLEAGLContext
-
-@end
-
 @implementation SDL_uikitopenglview {
     /* The renderbuffer and framebuffer used to render to this layer. */
     GLuint viewRenderbuffer, viewFramebuffer;
@@ -61,25 +57,19 @@
                     depthBits:(int)depthBits
                   stencilBits:(int)stencilBits
                          sRGB:(BOOL)sRGB
-                 majorVersion:(int)majorVersion
-                   shareGroup:(EAGLSharegroup*)shareGroup
+                      context:(EAGLContext *)glcontext
 {
     if ((self = [super initWithFrame:frame])) {
         const BOOL useStencilBuffer = (stencilBits != 0);
         const BOOL useDepthBuffer = (depthBits != 0);
         NSString *colorFormat = nil;
 
-        /* The EAGLRenderingAPI enum values currently map 1:1 to major GLES
-         * versions, and this allows us to handle future OpenGL ES versions. */
-        EAGLRenderingAPI api = majorVersion;
+        context = glcontext;
 
-        context = [[SDLEAGLContext alloc] initWithAPI:api sharegroup:shareGroup];
         if (!context || ![EAGLContext setCurrentContext:context]) {
-            SDL_SetError("OpenGL ES %d not supported", majorVersion);
+            SDL_SetError("Could not create OpenGL ES drawable (could not make context current)");
             return nil;
         }
-
-        context.sdlView = self;
 
         if (sRGB) {
             /* sRGB EAGL drawable support was added in iOS 7. */
@@ -209,11 +199,6 @@
     }
 }
 
-- (void)setCurrentContext
-{
-    [EAGLContext setCurrentContext:context];
-}
-
 - (void)swapBuffers
 {
     /* viewRenderbuffer should always be bound here. Code that binds something
@@ -264,7 +249,7 @@
 
 - (void)dealloc
 {
-    if ([EAGLContext currentContext] == context) {
+    if (context && context == [EAGLContext currentContext]) {
         [self destroyFramebuffer];
         [EAGLContext setCurrentContext:nil];
     }

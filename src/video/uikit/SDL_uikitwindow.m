@@ -305,7 +305,17 @@ UIKit_DestroyWindow(_THIS, SDL_Window * window)
     @autoreleasepool {
         if (window->driverdata != NULL) {
             SDL_WindowData *data = (SDL_WindowData *) CFBridgingRelease(window->driverdata);
+            NSArray *views = nil;
+
             [data.viewcontroller stopAnimation];
+
+            /* Detach all views from this window. We use a copy of the array
+             * because setSDLWindow will remove the object from the original
+             * array, which would be undesirable if we were iterating over it. */
+            views = [data.views copy];
+            for (SDL_uikitview *view in views) {
+                [view setSDLWindow:NULL];
+            }
         }
     }
     window->driverdata = NULL;
