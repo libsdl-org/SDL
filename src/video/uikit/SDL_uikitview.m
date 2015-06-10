@@ -62,6 +62,7 @@
         return;
     }
 
+    /* Remove ourself from the old window. */
     if (sdlwindow) {
         SDL_uikitview *view = nil;
         data = (__bridge SDL_WindowData *) sdlwindow->driverdata;
@@ -71,9 +72,7 @@
         [self removeFromSuperview];
 
         /* Restore the next-oldest view in the old window. */
-        if (data.views.count > 0) {
-            view = data.views[data.views.count - 1];
-        }
+        view = data.views.lastObject;
 
         data.viewcontroller.view = view;
 
@@ -83,6 +82,7 @@
         [data.uiwindow layoutIfNeeded];
     }
 
+    /* Add ourself to the new window. */
     if (window) {
         data = (__bridge SDL_WindowData *) window->driverdata;
 
