@@ -341,7 +341,7 @@ static Uint8 EVDEV_MouseButtons[] = {
     SDL_BUTTON_X2 + 3           /*  BTN_TASK        0x117 */
 };
 
-static char* EVDEV_consoles[] = {
+static const char* EVDEV_consoles[] = {
     "/proc/self/fd/0",
     "/dev/tty",
     "/dev/tty0",
