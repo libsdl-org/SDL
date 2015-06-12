@@ -145,12 +145,15 @@ SDL_AddTouch(SDL_TouchID touchID, const char *name)
     }
 
     SDL_touchDevices = touchDevices;
-    index = SDL_num_touch++;
+    index = SDL_num_touch;
 
     SDL_touchDevices[index] = (SDL_Touch *) SDL_malloc(sizeof(*SDL_touchDevices[index]));
     if (!SDL_touchDevices[index]) {
         return SDL_OutOfMemory();
     }
+
+    /* Added touch to list */
+    ++SDL_num_touch;
 
     /* we're setting the touch properties */
     SDL_touchDevices[index]->id = touchID;
