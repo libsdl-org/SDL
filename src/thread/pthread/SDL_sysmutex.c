@@ -23,8 +23,8 @@
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
 #endif
-#include <pthread.h>
 #include <errno.h>
+#include <pthread.h>
 
 #include "SDL_thread.h"
 
