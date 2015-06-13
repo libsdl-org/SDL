@@ -20,6 +20,9 @@
 */
 #include "../../SDL_internal.h"
 
+#ifndef _GNU_SOURCE
+#define _GNU_SOURCE
+#endif
 #include <errno.h>
 #include <pthread.h>
 #include <semaphore.h>
