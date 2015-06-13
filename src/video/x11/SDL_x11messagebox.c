@@ -28,6 +28,7 @@
 #include "SDL_x11dyn.h"
 #include "SDL_assert.h"
 
+#include <X11/keysym.h>
 #include <locale.h>
 
 
