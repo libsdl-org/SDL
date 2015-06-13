@@ -6,10 +6,62 @@ This is a list of major changes in SDL's version history.
 ---------------------------------------------------------------------------
 
 General:
-* Added an event SDL_RENDER_DEVICE_RESET that is sent from the D3D renderers 
-  when the D3D device is lost, and from Android's event loop when the GLES
-  context had to be re created.
-* Native Client backend
+* Added support for web applications using Emscripten, see docs/README-emscripten.md for more information
+* Added support for web applications using Native Client (NaCl), see docs/README-nacl.md for more information
+* Added an API to queue audio instead of using the audio callback:
+    SDL_QueueAudio(), SDL_GetQueuedAudioSize(), SDL_ClearQueuedAudio()
+* Added events for audio device hot plug support:
+    SDL_AUDIODEVICEADDED, SDL_AUDIODEVICEREMOVED
+* Added SDL_PointInRect()
+* Added SDL_HasAVX2() to detect CPUs with AVX2 support
+* Added SDL_SetWindowHitTest() to let apps treat parts of their SDL window like traditional window decorations (drag areas, resize areas)
+* Added SDL_GetGrabbedWindow() to get the window that currently has input grab, if any
+* Added SDL_RenderIsClipEnabled() to tell whether clipping is currently enabled in a renderer
+* Added SDL_CaptureMouse() to capture the mouse to get events while the mouse is not in your window
+* Added SDL_WarpMouseGlobal() to warp the mouse cursor in global screen space
+* Added SDL_GetGlobalMouseState() to get the current mouse state outside of an SDL window
+* Added a direction field to mouse wheel events to tell whether they are flipped (natural) or not
+* You can distinguish between real mouse and touch events by looking for SDL_TOUCH_MOUSEID in the mouse event "which" field
+* Added GL_CONTEXT_RELEASE_BEHAVIOR GL attribute (maps to [WGL|GLX]_ARB_context_flush_control extension)
+* Added EGL_KHR_create_context support to allow OpenGL ES version selection on some platforms
+* Added NV12 and NV21 YUV texture support for OpenGL and OpenGL ES 2.0 renderers
+* Added a Vivante video driver that is used on various SoC platforms
+* Added an event SDL_RENDER_DEVICE_RESET that is sent from the D3D renderers when the D3D device is lost, and from Android's event loop when the GLES context had to be recreated
+* Added a hint SDL_HINT_NO_SIGNAL_HANDLERS to disable SDL's built in signal handling
+* Improved support for WAV and BMP files with unusual chunks in them
+
+Windows:
+* Added support for Windows Phone 8.1
+* Timer resolution is now 1 ms by default, adjustable with the SDL_HINT_TIMER_RESOLUTION hint
+* SDLmain no longer depends on the C runtime, so you can use the same .lib in both Debug and Release builds
+* Added SDL_SetWindowsMessageHook() to set a function to be called for every windows message before TranslateMessage()
+* Added a hint SDL_HINT_WINDOWS_ENABLE_MESSAGELOOP to control whether SDL_PumpEvents() processes the Windows message loop
+* SDL_SysWMinfo now contains the window HDC
+* Added support for Unicode command line options
+* Prevent beeping when Alt-key combos are pressed
+
+Mac OS X:
+* Implemented drag-and-drop support
+* Improved joystick hot-plug detection
+* Fixed relative mouse mode when the application loses/regains focus
+* SDL_SysWMInfo is now ARC-compatible
+
+Linux:
+* Enabled building with Mir and Wayland support by default.
+* Added IBus IME support
+* Added a hint SDL_HINT_IME_INTERNAL_EDITING to control whether IBus should handle text editing internally instead of sending SDL_TEXTEDITING events
+* Added support for multiple audio devices when using Pulseaudio
+* Fixed duplicate mouse events when using relative mouse motion
+
+iOS:
+* Added support for iOS 8
+
+Android:
+* Added a hint SDL_HINT_ANDROID_SEPARATE_MOUSE_AND_TOUCH to prevent mouse events from being registered as touch events
+
+Raspberry Pi:
+* Added support for the Raspberry Pi 2
+
 
 ---------------------------------------------------------------------------
 2.0.3:
