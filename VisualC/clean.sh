@@ -1,5 +1,4 @@
-find . -type d -name 'Debug' -exec rm -rv {} \;
-find . -type d -name 'Release' -exec rm -rv {} \;
-find . -type f -name '*.user' -exec rm -v {} \;
-find . -type f -name '*.ncb' -exec rm -v {} \;
-find . -type f -name '*.suo' -exec rm -v {} \;
+#!/bin/sh
+find . -type f \( -name '*.user' -o -name '*.sdf' -o -name '*.ncb' -o -name '*.suo' \) -print -delete
+find . -type f \( -name '*.bmp' -o -name '*.wav' -o -name '*.dat' \) -print -delete
+find . -depth -type d \( -name Win32 -o -name x64 \) -exec rm -rv {} \;
