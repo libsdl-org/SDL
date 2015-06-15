@@ -518,6 +518,15 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
             if (item->joystick) {
                 if (Android_JNI_GetAccelerometerValues(values)) {
                     for ( i = 0; i < 3; i++ ) {
+                        if (values[i] > 1.0f)
+                        {
+                            values[i] = 1.0f;
+                        }
+                        else if (values[i] < -1.0f)
+                        {
+                            values[i] = -1.0f;
+                        }
+
                         value = (Sint16)(values[i] * 32767.0f);
                         SDL_PrivateJoystickAxis(item->joystick, i, value);
                     }
