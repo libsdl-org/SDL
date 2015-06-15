@@ -20,7 +20,7 @@
 	<Configurations>
 		<Configuration
 			Name="Release|Win32"
-			OutputDirectory="$(SolutionDir)\$(PlatformName)\$(ConfigurationName)\"
+			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)\"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
@@ -45,17 +45,15 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\include,..\..\include\SDL"
+				AdditionalIncludeDirectories="$(SolutionDir)/../include"
+				AdditionalUsingDirectories=""
 				PreprocessorDefinitions="WIN32,NDEBUG,_WINDOWS"
 				StringPooling="true"
-				ExceptionHandling="0"
 				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="true"
+				BufferSecurityCheck="false"
+				EnableEnhancedInstructionSet="1"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
 				DebugInformationFormat="1"
-				CompileAs="0"
 				OmitDefaultLibName="true"
 			/>
 			<Tool
@@ -88,8 +86,8 @@
 		</Configuration>
 		<Configuration
 			Name="Release|x64"
-			OutputDirectory="$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)\"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
 			UseOfMFC="0"
@@ -113,17 +111,15 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="..\..\include,..\..\include\SDL"
+				AdditionalIncludeDirectories="$(SolutionDir)/../include"
+				AdditionalUsingDirectories=""
 				PreprocessorDefinitions="WIN32,NDEBUG,_WINDOWS"
 				StringPooling="true"
-				ExceptionHandling="0"
 				RuntimeLibrary="2"
-				EnableFunctionLevelLinking="true"
+				BufferSecurityCheck="false"
+				EnableEnhancedInstructionSet="1"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
 				DebugInformationFormat="1"
-				CompileAs="0"
 				OmitDefaultLibName="true"
 			/>
 			<Tool
@@ -155,67 +151,8 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Release_NoSTDIO|Win32"
-			IntermediateDirectory="$(ConfigurationName)"
-			ConfigurationType="1"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-				ExceptionHandling="0"
-				DebugInformationFormat="1"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLinkerTool"
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCManifestTool"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-			/>
-			<Tool
-				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCAppVerifierTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-			/>
-		</Configuration>
-		<Configuration
 			Name="Release_NoSTDIO|x64"
-			OutputDirectory="$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
@@ -240,7 +177,6 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="..\..\include,..\..\include\SDL"
 				PreprocessorDefinitions="WIN32,NDEBUG,_WINDOWS,NO_STDIO_REDIRECT"
 				StringPooling="true"
@@ -250,7 +186,6 @@
 				WarningLevel="3"
 				SuppressStartupBanner="true"
 				DebugInformationFormat="1"
-				CompileAs="0"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -284,7 +219,7 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|Win32"
-			OutputDirectory="$(SolutionDir)\$(PlatformName)\$(ConfigurationName)\"
+			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)\"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
@@ -310,14 +245,14 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\include,..\..\include\SDL"
+				AdditionalIncludeDirectories="$(SolutionDir)/../include"
+				AdditionalUsingDirectories=""
 				PreprocessorDefinitions="WIN32,_DEBUG,_WINDOWS"
-				ExceptionHandling="0"
-				RuntimeLibrary="3"
+				RuntimeLibrary="2"
+				BufferSecurityCheck="false"
+				EnableEnhancedInstructionSet="1"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
 				DebugInformationFormat="1"
-				CompileAs="0"
 				OmitDefaultLibName="true"
 			/>
 			<Tool
@@ -350,8 +285,8 @@
 		</Configuration>
 		<Configuration
 			Name="Debug|x64"
-			OutputDirectory="$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			OutputDirectory="$(SolutionDir)$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)\"
 			ConfigurationType="4"
 			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC70.vsprops"
 			UseOfMFC="0"
@@ -376,14 +311,14 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\include,..\..\include\SDL"
+				AdditionalIncludeDirectories="$(SolutionDir)/../include"
+				AdditionalUsingDirectories=""
 				PreprocessorDefinitions="WIN32,_DEBUG,_WINDOWS"
-				ExceptionHandling="0"
 				RuntimeLibrary="2"
+				BufferSecurityCheck="false"
+				EnableEnhancedInstructionSet="1"
 				WarningLevel="3"
-				SuppressStartupBanner="true"
 				DebugInformationFormat="1"
-				CompileAs="0"
 				OmitDefaultLibName="true"
 			/>
 			<Tool
