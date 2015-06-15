@@ -272,6 +272,10 @@ SDL_SYS_HapticQuit(void)
 
     SDL_XINPUT_HapticQuit();
     SDL_DINPUT_HapticQuit();
+
+    numhaptics = 0;
+    SDL_hapticlist = NULL;
+    SDL_hapticlist_tail = NULL;
 }
 
 /*

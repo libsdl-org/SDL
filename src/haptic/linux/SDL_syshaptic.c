@@ -1162,5 +1162,6 @@ SDL_SYS_HapticStopAll(SDL_Haptic * haptic)
     return 0;
 }
 
-
 #endif /* SDL_HAPTIC_LINUX */
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -206,4 +206,3 @@ extern int SDL_SYS_HapticStopAll(SDL_Haptic * haptic);
 #endif /* _SDL_syshaptic_h */
 
 /* vi: set ts=4 sw=4 expandtab: */
-
