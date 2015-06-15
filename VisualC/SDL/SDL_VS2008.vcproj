@@ -51,6 +51,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="$(SolutionDir)/../include"
 				AdditionalUsingDirectories=""
 				PreprocessorDefinitions="_DEBUG;_WINDOWS"
@@ -133,6 +134,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
+				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="$(SolutionDir)/../include"
 				AdditionalUsingDirectories=""
 				PreprocessorDefinitions="_DEBUG;_WINDOWS"
@@ -214,6 +216,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="$(SolutionDir)/../include"
 				AdditionalUsingDirectories=""
 				PreprocessorDefinitions="NDEBUG;_WINDOWS"
@@ -296,6 +299,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
+				InlineFunctionExpansion="1"
 				AdditionalIncludeDirectories="$(SolutionDir)/../include"
 				AdditionalUsingDirectories=""
 				PreprocessorDefinitions="NDEBUG;_WINDOWS"
