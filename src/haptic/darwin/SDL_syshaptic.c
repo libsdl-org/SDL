@@ -683,7 +683,10 @@ SDL_SYS_HapticQuit(void)
         IOObjectRelease(item->dev);
         SDL_free(item);
     }
+
     numhaptics = -1;
+    SDL_hapticlist = NULL;
+    SDL_hapticlist_tail = NULL;
 }
 
 
@@ -1409,5 +1412,6 @@ SDL_SYS_HapticStopAll(SDL_Haptic * haptic)
     return 0;
 }
 
-
 #endif /* SDL_HAPTIC_IOKIT */
+
+/* vi: set ts=4 sw=4 expandtab: */
