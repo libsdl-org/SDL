@@ -163,7 +163,7 @@ function Build-SDL-WinRT-Variant
     #
     # Build the VS Project:
     #
-    cmd.exe /c " ""$BatchFileForMSBuildEnv"" x86 & msbuild ""$VSProjectPath"" /p:Platform=$Platform /p:OutDir=""$OutDir\\"" /p:IntDir=""$IntermediateDir\\""" | Out-Host
+    cmd.exe /c " ""$BatchFileForMSBuildEnv"" x86 & msbuild ""$VSProjectPath"" /p:Configuration=Release /p:Platform=$Platform /p:OutDir=""$OutDir\\"" /p:IntDir=""$IntermediateDir\\""" | Out-Host
     $BuildResult = $?
 
     #
