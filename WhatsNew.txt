@@ -21,7 +21,6 @@ General:
 * Added SDL_WarpMouseGlobal() to warp the mouse cursor in global screen space
 * Added SDL_GetGlobalMouseState() to get the current mouse state outside of an SDL window
 * Added a direction field to mouse wheel events to tell whether they are flipped (natural) or not
-* You can distinguish between real mouse and touch events by looking for SDL_TOUCH_MOUSEID in the mouse event "which" field
 * Added GL_CONTEXT_RELEASE_BEHAVIOR GL attribute (maps to [WGL|GLX]_ARB_context_flush_control extension)
 * Added EGL_KHR_create_context support to allow OpenGL ES version selection on some platforms
 * Added NV12 and NV21 YUV texture support for OpenGL and OpenGL ES 2.0 renderers
@@ -36,6 +35,7 @@ Windows:
 * SDLmain no longer depends on the C runtime, so you can use the same .lib in both Debug and Release builds
 * Added SDL_SetWindowsMessageHook() to set a function to be called for every windows message before TranslateMessage()
 * Added a hint SDL_HINT_WINDOWS_ENABLE_MESSAGELOOP to control whether SDL_PumpEvents() processes the Windows message loop
+* You can distinguish between real mouse and touch events by looking for SDL_TOUCH_MOUSEID in the mouse event "which" field
 * SDL_SysWMinfo now contains the window HDC
 * Added support for Unicode command line options
 * Prevent beeping when Alt-key combos are pressed
