@@ -115,4 +115,4 @@ main(int argc, char **argv)
     return 0;
 }                               /* main */
 
-/* end of resample_test.c ... */
+/* end of testresample.c ... */
