@@ -187,6 +187,7 @@ void
 WIN_SetTextInputRect(_THIS, SDL_Rect *rect)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+    HIMC himc = 0;
 
     if (!rect) {
         SDL_InvalidParamError("rect");
@@ -194,6 +195,17 @@ WIN_SetTextInputRect(_THIS, SDL_Rect *rect)
     }
 
     videodata->ime_rect = *rect;
+
+    himc = ImmGetContext(videodata->ime_hwnd_current);
+    if (himc)
+    {
+        COMPOSITIONFORM cf;
+        cf.ptCurrentPos.x = videodata->ime_rect.x;
+        cf.ptCurrentPos.y = videodata->ime_rect.y;
+        cf.dwStyle = CFS_FORCE_POSITION;
+        ImmSetCompositionWindow(himc, &cf);
+        ImmReleaseContext(videodata->ime_hwnd_current, himc);
+    }
 }
 
 #ifdef SDL_DISABLE_WINDOWS_IME
