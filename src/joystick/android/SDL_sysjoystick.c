@@ -191,8 +191,8 @@ Android_OnPadDown(int device_id, int keycode)
         item = JoystickByDeviceId(device_id);
         if (item && item->joystick) {
             SDL_PrivateJoystickButton(item->joystick, button , SDL_PRESSED);
+            return 0;
         }
-        return 0;
     }
     
     return -1;
@@ -207,8 +207,8 @@ Android_OnPadUp(int device_id, int keycode)
         item = JoystickByDeviceId(device_id);
         if (item && item->joystick) {
             SDL_PrivateJoystickButton(item->joystick, button, SDL_RELEASED);
+            return 0;
         }
-        return 0;
     }
     
     return -1;
