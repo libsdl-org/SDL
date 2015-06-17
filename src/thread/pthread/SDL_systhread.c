@@ -130,10 +130,10 @@ SDL_SYS_CreateThread(SDL_Thread * thread, void *args)
 void
 SDL_SYS_SetupThread(const char *name)
 {
-#ifndef __NACL__
+#if !defined(__ANDROID__) && !defined(__NACL__)
     int i;
     sigset_t mask;
-#endif
+#endif /* !__ANDROID__ && !__NACL__ */
 
     if (name != NULL) {
         #if defined(__MACOSX__) || defined(__IPHONEOS__) || defined(__LINUX__)
