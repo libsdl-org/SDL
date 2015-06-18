@@ -1,6 +1,7 @@
 Dynamic API
 ================================================================================
-Originally posted by Ryan at https://plus.google.com/103391075724026391227/posts/TB8UfnDYu4U
+Originally posted by Ryan at:
+  https://plus.google.com/103391075724026391227/posts/TB8UfnDYu4U
 
 Background:
 
