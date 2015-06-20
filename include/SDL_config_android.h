@@ -104,6 +104,7 @@
 #define HAVE_SETJMP 1
 #define HAVE_NANOSLEEP  1
 #define HAVE_SYSCONF    1
+#define HAVE_CLOCK_GETTIME	1
 
 #define SIZEOF_VOIDP 4
 
