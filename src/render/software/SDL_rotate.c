@@ -342,7 +342,7 @@ SDLgfx_rotateSurface(SDL_Surface * src, double angle, int centerx, int centery, 
     SDL_Surface *rz_src;
     SDL_Surface *rz_dst;
     int is32bit;
-    int i, src_converted;
+    int i;
     Uint8 r,g,b;
     Uint32 colorkey = 0;
     int colorKeyAvailable = 0;
@@ -369,27 +369,15 @@ SDLgfx_rotateSurface(SDL_Surface * src, double angle, int centerx, int centery, 
         * Use source surface 'as is'
         */
         rz_src = src;
-        src_converted = 0;
     } else {
-        /*
-        * New source surface is 32bit with a defined RGBA ordering
-        */
-        rz_src =
-            SDL_CreateRGBSurface(SDL_SWSURFACE, src->w, src->h, 32,
+        Uint32 format = SDL_MasksToPixelFormatEnum(32,
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
             0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000
 #else
             0xff000000,  0x00ff0000, 0x0000ff00, 0x000000ff
 #endif
-            );
-        if(colorKeyAvailable)
-            SDL_SetColorKey(src, 0, 0);
-
-        SDL_BlitSurface(src, NULL, rz_src, NULL);
-
-        if(colorKeyAvailable)
-            SDL_SetColorKey(src, SDL_TRUE /* SDL_SRCCOLORKEY */, colorkey);
-        src_converted = 1;
+        );
+        rz_src = SDL_ConvertSurfaceFormat(src, format, src->flags);
         is32bit = 1;
     }
 
@@ -474,6 +462,19 @@ SDLgfx_rotateSurface(SDL_Surface * src, double angle, int centerx, int centery, 
             flipx, flipy);
         SDL_SetColorKey(rz_dst, /* SDL_SRCCOLORKEY */ SDL_TRUE | SDL_RLEACCEL, _colorkey(rz_src));
     }
+
+    /* copy alpha mod, color mod, and blend mode */
+    {
+      SDL_BlendMode blendMode;
+      Uint8 alphaMod, r, g, b;
+      SDL_GetSurfaceAlphaMod(src, &alphaMod);
+      SDL_GetSurfaceBlendMode(src, &blendMode);
+      SDL_GetSurfaceColorMod(src, &r, &g, &b);
+      SDL_SetSurfaceAlphaMod(rz_dst, alphaMod);
+      SDL_SetSurfaceBlendMode(rz_dst, blendMode);
+      SDL_SetSurfaceColorMod(rz_dst, r, g, b);
+    }
+
     /*
     * Unlock source surface
     */
@@ -484,7 +485,7 @@ SDLgfx_rotateSurface(SDL_Surface * src, double angle, int centerx, int centery, 
     /*
     * Cleanup temp surface
     */
-    if (src_converted) {
+    if (rz_src != src) {
         SDL_FreeSurface(rz_src);
     }
 
