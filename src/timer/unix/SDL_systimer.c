@@ -48,6 +48,15 @@
 #include <mach/mach_time.h>
 #endif
 
+/* Use CLOCK_MONOTONIC_RAW, if available, which is not subject to adjustment by NTP */
+#if HAVE_CLOCK_GETTIME
+#ifdef CLOCK_MONOTONIC_RAW
+#define SDL_MONOTONIC_CLOCK CLOCK_MONOTONIC_RAW
+#else
+#define SDL_MONOTONIC_CLOCK CLOCK_MONOTONIC
+#endif
+#endif
+
 /* The first ticks value of the application */
 #if HAVE_CLOCK_GETTIME
 static struct timespec start_ts;
@@ -69,7 +78,7 @@ SDL_TicksInit(void)
 
     /* Set first ticks value */
 #if HAVE_CLOCK_GETTIME
-    if (clock_gettime(CLOCK_MONOTONIC, &start_ts) == 0) {
+    if (clock_gettime(SDL_MONOTONIC_CLOCK, &start_ts) == 0) {
         has_monotonic_time = SDL_TRUE;
     } else
 #elif defined(__APPLE__)
@@ -101,7 +110,7 @@ SDL_GetTicks(void)
     if (has_monotonic_time) {
 #if HAVE_CLOCK_GETTIME
         struct timespec now;
-        clock_gettime(CLOCK_MONOTONIC, &now);
+        clock_gettime(SDL_MONOTONIC_CLOCK, &now);
         ticks = (now.tv_sec - start_ts.tv_sec) * 1000 + (now.tv_nsec -
                                                  start_ts.tv_nsec) / 1000000;
 #elif defined(__APPLE__)
@@ -132,7 +141,7 @@ SDL_GetPerformanceCounter(void)
 #if HAVE_CLOCK_GETTIME
         struct timespec now;
 
-        clock_gettime(CLOCK_MONOTONIC, &now);
+        clock_gettime(SDL_MONOTONIC_CLOCK, &now);
         ticks = now.tv_sec;
         ticks *= 1000000000;
         ticks += now.tv_nsec;
