@@ -253,6 +253,12 @@ static int
 SW_SetTextureColorMod(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
+    /* If the color mod is ever enabled (non-white), permanently disable RLE (which doesn't support
+     * color mod) to avoid potentially frequent RLE encoding/decoding.
+     */
+    if ((texture->r & texture->g & texture->b) != 255) {
+        SDL_SetSurfaceRLE(surface, 0);
+    }
     return SDL_SetSurfaceColorMod(surface, texture->r, texture->g,
                                   texture->b);
 }
@@ -261,6 +267,12 @@ static int
 SW_SetTextureAlphaMod(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
+    /* If the texture ever has multiple alpha values (surface alpha plus alpha channel), permanently
+     * disable RLE (which doesn't support this) to avoid potentially frequent RLE encoding/decoding.
+     */
+    if (texture->a != 255 && surface->format->Amask) {
+        SDL_SetSurfaceRLE(surface, 0);
+    }
     return SDL_SetSurfaceAlphaMod(surface, texture->a);
 }
 
@@ -268,6 +280,12 @@ static int
 SW_SetTextureBlendMode(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
+    /* If add or mod blending are ever enabled, permanently disable RLE (which doesn't support
+     * them) to avoid potentially frequent RLE encoding/decoding.
+     */
+    if ((texture->blendMode == SDL_BLENDMODE_ADD || texture->blendMode == SDL_BLENDMODE_MOD)) {
+        SDL_SetSurfaceRLE(surface, 0);
+    }
     return SDL_SetSurfaceBlendMode(surface, texture->blendMode);
 }
 
@@ -553,6 +571,10 @@ SW_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
     if ( srcrect->w == final_rect.w && srcrect->h == final_rect.h ) {
         return SDL_BlitSurface(src, srcrect, surface, &final_rect);
     } else {
+        /* If scaling is ever done, permanently disable RLE (which doesn't support scaling)
+         * to avoid potentially frequent RLE encoding/decoding.
+         */
+        SDL_SetSurfaceRLE(surface, 0);
         return SDL_BlitScaled(src, srcrect, surface, &final_rect);
     }
 }
