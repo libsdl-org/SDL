@@ -374,6 +374,18 @@
     } while(0)
 
 /*
+ * Set a pixel value using the given format, except that the alpha value is
+ * placed in the top byte. This is the format used for RLE with alpha.
+ */
+#define RLEPIXEL_FROM_RGBA(Pixel, fmt, r, g, b, a)                      \
+{                                                                       \
+    Pixel = ((r>>fmt->Rloss)<<fmt->Rshift)|                             \
+        ((g>>fmt->Gloss)<<fmt->Gshift)|                                 \
+        ((b>>fmt->Bloss)<<fmt->Bshift)|                                 \
+        (a<<24);                                                        \
+}
+
+/*
  * This takes care of the case when the surface is clipped on the left and/or
  * right. Top clipping has already been taken care of.
  */
@@ -982,7 +994,7 @@ copy_32(void *dst, Uint32 * src, int n,
     for (i = 0; i < n; i++) {
         unsigned r, g, b, a;
         RGBA_FROM_8888(*src, sfmt, r, g, b, a);
-        PIXEL_FROM_RGBA(*d, dfmt, r, g, b, a);
+        RLEPIXEL_FROM_RGBA(*d, dfmt, r, g, b, a);
         d++;
         src++;
     }
