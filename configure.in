@@ -1159,28 +1159,6 @@ CheckWarnAll()
     fi
 }
 
-dnl See if GCC's -Wshadow is supported.
-CheckWarnShadow()
-{
-    AC_MSG_CHECKING(for GCC -Wshadow option)
-    have_gcc_Wshadow=no
-
-    save_CFLAGS="$CFLAGS"
-    CFLAGS="$save_CFLAGS -Wshadow"
-    AC_TRY_COMPILE([
-    int x = 0;
-    ],[
-    ],[
-    have_gcc_Wshadow=yes
-    ])
-    AC_MSG_RESULT($have_gcc_Wshadow)
-    CFLAGS="$save_CFLAGS"
-
-    if test x$have_gcc_Wshadow = xyes; then
-        EXTRA_CFLAGS="$EXTRA_CFLAGS -Wshadow"
-    fi
-}
-
 dnl Check for Wayland
 CheckWayland()
 {
@@ -3415,7 +3393,6 @@ esac
 
 dnl Do this on all platforms, after everything else.
 CheckWarnAll
-CheckWarnShadow
 
 # Verify that we have all the platform specific files we need
 
