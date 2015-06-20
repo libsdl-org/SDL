@@ -188,10 +188,8 @@ _transformSurfaceRGBA(SDL_Surface * src, SDL_Surface * dst, int cx, int cy, int 
                 dy = (sdy >> 16);
                 if (flipx) dx = sw - dx;
                 if (flipy) dy = sh - dy;
-                if ((dx > -1) && (dy > -1) && (dx < (src->w-1)) && (dy < (src->h-1))) {
-                    sp = (tColorRGBA *)src->pixels;
-                    sp += ((src->pitch/4) * dy);
-                    sp += dx;
+                if ((unsigned)dx < (unsigned)sw && (unsigned)dy < (unsigned)sh) {
+                    sp = (tColorRGBA *) ((Uint8 *) src->pixels + src->pitch * dy) + dx;
                     c00 = *sp;
                     sp += 1;
                     c01 = *sp;
@@ -237,14 +235,12 @@ _transformSurfaceRGBA(SDL_Surface * src, SDL_Surface * dst, int cx, int cy, int 
             sdx = (ax + (isin * dy)) + xd;
             sdy = (ay - (icos * dy)) + yd;
             for (x = 0; x < dst->w; x++) {
-                dx = (short) (sdx >> 16);
-                dy = (short) (sdy >> 16);
-                if (flipx) dx = (src->w-1)-dx;
-                if (flipy) dy = (src->h-1)-dy;
-                if ((dx >= 0) && (dy >= 0) && (dx < src->w) && (dy < src->h)) {
-                    sp = (tColorRGBA *) ((Uint8 *) src->pixels + src->pitch * dy);
-                    sp += dx;
-                    *pc = *sp;
+                dx = (sdx >> 16);
+                dy = (sdy >> 16);
+                if ((unsigned)dx < (unsigned)src->w && (unsigned)dy < (unsigned)src->h) {
+                    if(flipx) dx = sw - dx;
+                    if(flipy) dy = sh - dy;
+                    *pc = *((tColorRGBA *)((Uint8 *)src->pixels + src->pitch * dy) + dx);
                 }
                 sdx += icos;
                 sdy += isin;
@@ -277,7 +273,7 @@ static void
 transformSurfaceY(SDL_Surface * src, SDL_Surface * dst, int cx, int cy, int isin, int icos, int flipx, int flipy)
 {
     int x, y, dx, dy, xd, yd, sdx, sdy, ax, ay;
-    tColorY *pc, *sp;
+    tColorY *pc;
     int gap;
 
     /*
@@ -301,14 +297,12 @@ transformSurfaceY(SDL_Surface * src, SDL_Surface * dst, int cx, int cy, int isin
         sdx = (ax + (isin * dy)) + xd;
         sdy = (ay - (icos * dy)) + yd;
         for (x = 0; x < dst->w; x++) {
-            dx = (short) (sdx >> 16);
-            dy = (short) (sdy >> 16);
-            if (flipx) dx = (src->w-1)-dx;
-            if (flipy) dy = (src->h-1)-dy;
-            if ((dx >= 0) && (dy >= 0) && (dx < src->w) && (dy < src->h)) {
-                sp = (tColorY *) (src->pixels);
-                sp += (src->pitch * dy + dx);
-                *pc = *sp;
+            dx = (sdx >> 16);
+            dy = (sdy >> 16);
+            if ((unsigned)dx < (unsigned)src->w && (unsigned)dy < (unsigned)src->h) {
+                if (flipx) dx = (src->w-1)-dx;
+                if (flipy) dy = (src->h-1)-dy;
+                *pc = *((tColorY *)src->pixels + src->pitch * dy + dx);
             }
             sdx += icos;
             sdy += isin;
