@@ -22,8 +22,8 @@ Build
 *.pbxuser
 (^|/)build($|/)
 .DS_Store
-*xcuserdata
-*xcworkspace*
+xcuserdata
+*.xcworkspace
 
 # for Visual C++
 Debug
