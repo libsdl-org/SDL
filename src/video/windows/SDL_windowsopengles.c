@@ -111,6 +111,7 @@ WIN_GLES_SetupWindow(_THIS, SDL_Window * window)
 
     if (_this->egl_data == NULL) {
         if (SDL_EGL_LoadLibrary(_this, NULL, EGL_DEFAULT_DISPLAY) < 0) {
+            SDL_EGL_UnloadLibrary(_this);
             return -1;
         }
     }
