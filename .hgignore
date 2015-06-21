@@ -9,8 +9,6 @@ sdl-config
 SDL2.spec
 build
 Build
-*xcuserdata*
-*xcworkspacedata*
 
 # for Xcode
 *.orig
@@ -20,20 +18,12 @@ Build
 *~
 *.o
 *.mode1*
-*.model*
-*.perspective*
 *.perspective*
 *.pbxuser
 (^|/)build($|/)
 .DS_Store
-Xcode/SDL/SDL.xcodeproj/xcuserdata
-Xcode/SDL/SDL.xcodeproj/project.xcworkspace
-Xcode/SDLTest/SDLTest.xcodeproj/xcuserdata
-Xcode/SDLTest/SDLTest.xcodeproj/project.xcworkspace
-Xcode-iOS/SDL/SDL.xcodeproj/xcuserdata
-Xcode-iOS/SDL/SDL.xcodeproj/project.xcworkspace
-Xcode-iOS/Demos/Demos.xcodeproj/xcuserdata
-Xcode-iOS/Demos/Demos.xcodeproj/project.xcworkspace
+xcuserdata
+*.xcworkspace
 
 # for Visual C++
 Debug
