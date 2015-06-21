@@ -1,0 +1,8 @@
+usr/bin/sdl2-config
+usr/include/SDL2
+usr/lib/*/libSDL2*.so
+usr/lib/*/libSDL2.a
+usr/lib/*/libSDL2main.a
+usr/lib/*/libSDL2_test.a
+usr/lib/*/pkgconfig/sdl2.pc
+usr/share/aclocal/sdl2.m4

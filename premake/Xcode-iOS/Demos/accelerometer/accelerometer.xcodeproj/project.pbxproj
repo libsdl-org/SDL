@@ -1,0 +1,366 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 45;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		674906CF330F50E3203B3BE2 /* ship.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 324B72283F7756BA003D4F89 /* ship.bmp */; };
+		7D6E4948535F13803EB24793 /* space.bmp in Resources */ = {isa = PBXBuildFile; fileRef = 75D70D1032D7609D1FF110D8 /* space.bmp */; };
+		05BC137B00F21C1E34222E13 /* accelerometer.c in Sources */ = {isa = PBXBuildFile; fileRef = 0F0668AE7894542751932A92 /* accelerometer.c */; };
+		26993FB748FA383F4D1609ED /* common.c in Sources */ = {isa = PBXBuildFile; fileRef = 1AD060ED78CA41CC628541A4 /* common.c */; };
+		0D4139CC20C575FB6FE0714B /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 13373F7C6C961F2D4D281BE9 /* AudioToolbox.framework */; };
+		21C26FE40025290D321B186A /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 761E2DD50F5B34C04FFD2AAE /* QuartzCore.framework */; };
+		27DC096C4EBF1C4910E8113A /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 691C3F7C7CBC50FC7AF4543F /* OpenGLES.framework */; };
+		188D7C0554AA68A621F77BC2 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 7CF62CCC24035B7636970CDF /* CoreGraphics.framework */; };
+		1C4B220C7E566D3B6FEA219B /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0FF410EE17A75CBF37A16A7A /* UIKit.framework */; };
+		3AB556FB793A74F25F5554E7 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4EE13E2B3520069A797D2E12 /* Foundation.framework */; };
+		128C61D42B537987446C3DAE /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 09C44E3B227D56962A4C6F18 /* CoreAudio.framework */; };
+		6B4A5750488819AB41E467FB /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5EF20F1D796452C879872F95 /* libSDL2.a */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		7C9A632C62AF516279D47C47 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3CC27DC669FE34F16DE15E07 /* SDL2.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 224D2C85085A7BA60E532655;
+			remoteInfo = "libSDL2.a";
+		};
+		3694413107B7067430080ECD /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 3CC27DC669FE34F16DE15E07 /* SDL2.xcodeproj */;
+			proxyType = 1;
+			remoteGlobalIDString = 515D4C462ACD2DA8180E7783;
+			remoteInfo = "libSDL2.a";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		2FE912395DD5772A6A7E1F33 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "Info.plist"; path = "../../../../Xcode-iOS/Demos/Info.plist"; sourceTree = "<group>"; };
+		324B72283F7756BA003D4F89 /* ship.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = "ship.bmp"; path = "../../../../Xcode-iOS/Demos/data/ship.bmp"; sourceTree = "<group>"; };
+		75D70D1032D7609D1FF110D8 /* space.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = "space.bmp"; path = "../../../../Xcode-iOS/Demos/data/space.bmp"; sourceTree = "<group>"; };
+		0F0668AE7894542751932A92 /* accelerometer.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "accelerometer.c"; path = "../../../../Xcode-iOS/Demos/src/accelerometer.c"; sourceTree = "<group>"; };
+		1AD060ED78CA41CC628541A4 /* common.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "common.c"; path = "../../../../Xcode-iOS/Demos/src/common.c"; sourceTree = "<group>"; };
+		6717384817185E66201700F1 /* common.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "common.h"; path = "../../../../Xcode-iOS/Demos/src/common.h"; sourceTree = "<group>"; };
+		13373F7C6C961F2D4D281BE9 /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "AudioToolbox.framework"; path = "System/Library/Frameworks/AudioToolbox.framework"; sourceTree = "SDKROOT"; };
+		761E2DD50F5B34C04FFD2AAE /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "QuartzCore.framework"; path = "System/Library/Frameworks/QuartzCore.framework"; sourceTree = "SDKROOT"; };
+		691C3F7C7CBC50FC7AF4543F /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "OpenGLES.framework"; path = "System/Library/Frameworks/OpenGLES.framework"; sourceTree = "SDKROOT"; };
+		7CF62CCC24035B7636970CDF /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "CoreGraphics.framework"; path = "System/Library/Frameworks/CoreGraphics.framework"; sourceTree = "SDKROOT"; };
+		0FF410EE17A75CBF37A16A7A /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "UIKit.framework"; path = "System/Library/Frameworks/UIKit.framework"; sourceTree = "SDKROOT"; };
+		4EE13E2B3520069A797D2E12 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "Foundation.framework"; path = "System/Library/Frameworks/Foundation.framework"; sourceTree = "SDKROOT"; };
+		09C44E3B227D56962A4C6F18 /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = "CoreAudio.framework"; path = "System/Library/Frameworks/CoreAudio.framework"; sourceTree = "SDKROOT"; };
+		61D70B5D29674F5D75141737 /* accelerometer */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; name = "accelerometer"; path = "accelerometer"; sourceTree = BUILT_PRODUCTS_DIR; };
+		3CC27DC669FE34F16DE15E07 /* SDL2.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = "SDL2.xcodeproj"; path = "../../SDL2/SDL2.xcodeproj"; sourceTree = SOURCE_ROOT; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		4F2B411B72F5599B7711251B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0D4139CC20C575FB6FE0714B /* AudioToolbox.framework in Frameworks */,
+				21C26FE40025290D321B186A /* QuartzCore.framework in Frameworks */,
+				27DC096C4EBF1C4910E8113A /* OpenGLES.framework in Frameworks */,
+				188D7C0554AA68A621F77BC2 /* CoreGraphics.framework in Frameworks */,
+				1C4B220C7E566D3B6FEA219B /* UIKit.framework in Frameworks */,
+				3AB556FB793A74F25F5554E7 /* Foundation.framework in Frameworks */,
+				128C61D42B537987446C3DAE /* CoreAudio.framework in Frameworks */,
+				6B4A5750488819AB41E467FB /* libSDL2.a in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		1BCF64F206ED3FFA6FCB3744 /* accelerometer */ = {
+			isa = PBXGroup;
+			children = (
+				57EA49B528E153D23CAA746B /* Xcode-iOS */,
+				04022578784D401A06614C4C /* Frameworks */,
+				0682642E36227AF649AD15E1 /* Products */,
+				10934AB6192843925A2C3FCB /* Projects */,
+			);
+			name = "accelerometer";
+			sourceTree = "<group>";
+		};
+		57EA49B528E153D23CAA746B /* Xcode-iOS */ = {
+			isa = PBXGroup;
+			children = (
+				440746E769CB3C2666172B92 /* Demos */,
+			);
+			name = "Xcode-iOS";
+			sourceTree = "<group>";
+		};
+		440746E769CB3C2666172B92 /* Demos */ = {
+			isa = PBXGroup;
+			children = (
+				2FE912395DD5772A6A7E1F33 /* Info.plist */,
+				09B436A542BB045D05CC2009 /* data */,
+				0D4A117E0EF119EE7D3E77A5 /* src */,
+			);
+			name = "Demos";
+			sourceTree = "<group>";
+		};
+		09B436A542BB045D05CC2009 /* data */ = {
+			isa = PBXGroup;
+			children = (
+				324B72283F7756BA003D4F89 /* ship.bmp */,
+				75D70D1032D7609D1FF110D8 /* space.bmp */,
+			);
+			name = "data";
+			sourceTree = "<group>";
+		};
+		0D4A117E0EF119EE7D3E77A5 /* src */ = {
+			isa = PBXGroup;
+			children = (
+				0F0668AE7894542751932A92 /* accelerometer.c */,
+				1AD060ED78CA41CC628541A4 /* common.c */,
+				6717384817185E66201700F1 /* common.h */,
+			);
+			name = "src";
+			sourceTree = "<group>";
+		};
+		04022578784D401A06614C4C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				13373F7C6C961F2D4D281BE9 /* AudioToolbox.framework */,
+				761E2DD50F5B34C04FFD2AAE /* QuartzCore.framework */,
+				691C3F7C7CBC50FC7AF4543F /* OpenGLES.framework */,
+				7CF62CCC24035B7636970CDF /* CoreGraphics.framework */,
+				0FF410EE17A75CBF37A16A7A /* UIKit.framework */,
+				4EE13E2B3520069A797D2E12 /* Foundation.framework */,
+				09C44E3B227D56962A4C6F18 /* CoreAudio.framework */,
+			);
+			name = "Frameworks";
+			sourceTree = "<group>";
+		};
+		0682642E36227AF649AD15E1 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				61D70B5D29674F5D75141737 /* accelerometer */,
+			);
+			name = "Products";
+			sourceTree = "<group>";
+		};
+		10934AB6192843925A2C3FCB /* Projects */ = {
+			isa = PBXGroup;
+			children = (
+				3CC27DC669FE34F16DE15E07 /* SDL2.xcodeproj */,
+			);
+			name = "Projects";
+			sourceTree = "<group>";
+		};
+		00327F6B64F33A717B2750FC /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				5EF20F1D796452C879872F95 /* libSDL2.a */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		206349984FD364256139268B /* accelerometer */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 31FC2F13262437C908FF3C38 /* Build configuration list for PBXNativeTarget "accelerometer" */;
+			buildPhases = (
+				1CE11A4948F84856205D72AA /* Resources */,
+				0A7A791967E92509752E3940 /* Sources */,
+				4F2B411B72F5599B7711251B /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				59ED738603BF22172E103B9C /* PBXTargetDependency */,
+			);
+			name = "accelerometer";
+			productInstallPath = "$(HOME)/Applications";
+			productName = "accelerometer";
+			productReference = 61D70B5D29674F5D75141737 /* accelerometer */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		08FB7793FE84155DC02AAC07 /* Project object */ = {
+			isa = PBXProject;
+			buildConfigurationList = 1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "accelerometer" */;
+			compatibilityVersion = "Xcode 3.2";
+			hasScannedForEncodings = 1;
+			mainGroup = 1BCF64F206ED3FFA6FCB3744 /* accelerometer */;
+			projectDirPath = "";
+			projectReferences = (
+				{
+					ProductGroup = 00327F6B64F33A717B2750FC /* Products */;
+					ProjectRef = 3CC27DC669FE34F16DE15E07 /* SDL2.xcodeproj */;
+				},
+			);
+			projectRoot = "";
+			targets = (
+				206349984FD364256139268B /* accelerometer */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXReferenceProxy section */
+		5EF20F1D796452C879872F95 /* libSDL2.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = "Build/Debug/libSDL2.a";
+			remoteRef = 7C9A632C62AF516279D47C47 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+/* End PBXReferenceProxy section */
+
+/* Begin PBXResourcesBuildPhase section */
+		1CE11A4948F84856205D72AA /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				674906CF330F50E3203B3BE2 /* ship.bmp in Resources */,
+				7D6E4948535F13803EB24793 /* space.bmp in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		0A7A791967E92509752E3940 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				05BC137B00F21C1E34222E13 /* accelerometer.c in Sources */,
+				26993FB748FA383F4D1609ED /* common.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXVariantGroup section */
+/* End PBXVariantGroup section */
+
+/* Begin PBXTargetDependency section */
+		59ED738603BF22172E103B9C /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = "libSDL2.a";
+			targetProxy = 3694413107B7067430080ECD /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		25FD2ACB1A5E4A7146666462 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CONFIGURATION_BUILD_DIR = Build/Debug;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				INFOPLIST_FILE = "../../../../Xcode-iOS/Demos/Info.plist";
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = "accelerometer";
+			};
+			name = "Debug";
+		};
+		171926D866766FC058847A16 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				CONFIGURATION_BUILD_DIR = Build/Release;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_MODEL_TUNING = G5;
+				INFOPLIST_FILE = "../../../../Xcode-iOS/Demos/Info.plist";
+				INSTALL_PATH = "$(HOME)/Applications";
+				PRODUCT_NAME = "accelerometer";
+			};
+			name = "Release";
+		};
+		6505556E31F8228178087816 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_UNIVERSAL_IPHONE_OS)";
+				SDKROOT = iphoneos;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				COPY_PHASE_STRIP = NO;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USING_PREMAKE_CONFIG_H",
+					"_DEBUG",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"../..",
+					"../../../../include",
+				);
+				OBJROOT = "obj/iOS/Debug";
+				ONLY_ACTIVE_ARCH = YES;
+				SYMROOT = "Build/Debug";
+			};
+			name = "Debug";
+		};
+		50AE5630181E7A0D22AF4CB3 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_UNIVERSAL_IPHONE_OS)";
+				SDKROOT = iphoneos;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				CONFIGURATION_BUILD_DIR = "$(SYMROOT)";
+				CONFIGURATION_TEMP_DIR = "$(OBJROOT)";
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_ENABLE_CPP_EXCEPTIONS = NO;
+				GCC_ENABLE_OBJC_EXCEPTIONS = NO;
+				GCC_OPTIMIZATION_LEVEL = 3;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"USING_PREMAKE_CONFIG_H",
+					"NDEBUG",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"../..",
+					"../../../../include",
+				);
+				OBJROOT = "obj/iOS/Release";
+				ONLY_ACTIVE_ARCH = NO;
+				SYMROOT = "Build/Release";
+			};
+			name = "Release";
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		31FC2F13262437C908FF3C38 /* Build configuration list for PBXNativeTarget "accelerometer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				25FD2ACB1A5E4A7146666462 /* Debug */,
+				171926D866766FC058847A16 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Debug";
+		};
+		1DEB928908733DD80010E9CD /* Build configuration list for PBXProject "accelerometer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6505556E31F8228178087816 /* Debug */,
+				50AE5630181E7A0D22AF4CB3 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = "Debug";
+		};
+/* End XCConfigurationList section */
+
+	};
+	rootObject = 08FB7793FE84155DC02AAC07 /* Project object */;
+}
