@@ -72,6 +72,7 @@
 _this->egl_data->NAME = SDL_LoadFunction(_this->egl_data->dll_handle, #NAME); \
 if (!_this->egl_data->NAME) \
 { \
+    SDL_EGL_UnloadLibrary(_this); \
     return SDL_SetError("Could not retrieve EGL function " #NAME); \
 }
     
@@ -219,6 +220,7 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
     _this->egl_data->egl_dll_handle = egl_dll_handle;
 
     if (egl_dll_handle == NULL) {
+        SDL_EGL_UnloadLibrary(_this);
         return SDL_SetError("Could not initialize OpenGL / GLES library");
     }
 
@@ -240,6 +242,7 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
             if (dll_handle != NULL) {
                 SDL_UnloadObject(dll_handle);
             }
+            SDL_EGL_UnloadLibrary(_this);
             return SDL_SetError("Could not load EGL library");
         }
         SDL_ClearError();
@@ -269,10 +272,12 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
 #if !defined(__WINRT__)
     _this->egl_data->egl_display = _this->egl_data->eglGetDisplay(native_display);
     if (!_this->egl_data->egl_display) {
+        SDL_EGL_UnloadLibrary(_this);
         return SDL_SetError("Could not get EGL display");
     }
     
     if (_this->egl_data->eglInitialize(_this->egl_data->egl_display, NULL, NULL) != EGL_TRUE) {
+        SDL_EGL_UnloadLibrary(_this);
         return SDL_SetError("Could not initialize EGL");
     }
 #endif
