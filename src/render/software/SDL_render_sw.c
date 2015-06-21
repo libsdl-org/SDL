@@ -253,6 +253,12 @@ static int
 SW_SetTextureColorMod(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
+    /* If the color mod is ever enabled (non-white), permanently disable RLE (which doesn't support
+     * color mod) to avoid potentially frequent RLE encoding/decoding.
+     */
+    if ((texture->r & texture->g & texture->b) != 255) {
+        SDL_SetSurfaceRLE(surface, 0);
+    }
     return SDL_SetSurfaceColorMod(surface, texture->r, texture->g,
                                   texture->b);
 }
@@ -261,6 +267,12 @@ static int
 SW_SetTextureAlphaMod(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
+    /* If the texture ever has multiple alpha values (surface alpha plus alpha channel), permanently
+     * disable RLE (which doesn't support this) to avoid potentially frequent RLE encoding/decoding.
+     */
+    if (texture->a != 255 && surface->format->Amask) {
+        SDL_SetSurfaceRLE(surface, 0);
+    }
     return SDL_SetSurfaceAlphaMod(surface, texture->a);
 }
 
@@ -268,6 +280,12 @@ static int
 SW_SetTextureBlendMode(SDL_Renderer * renderer, SDL_Texture * texture)
 {
     SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
+    /* If add or mod blending are ever enabled, permanently disable RLE (which doesn't support
+     * them) to avoid potentially frequent RLE encoding/decoding.
+     */
+    if ((texture->blendMode == SDL_BLENDMODE_ADD || texture->blendMode == SDL_BLENDMODE_MOD)) {
+        SDL_SetSurfaceRLE(surface, 0);
+    }
     return SDL_SetSurfaceBlendMode(surface, texture->blendMode);
 }
 
@@ -553,6 +571,10 @@ SW_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
     if ( srcrect->w == final_rect.w && srcrect->h == final_rect.h ) {
         return SDL_BlitSurface(src, srcrect, surface, &final_rect);
     } else {
+        /* If scaling is ever done, permanently disable RLE (which doesn't support scaling)
+         * to avoid potentially frequent RLE encoding/decoding.
+         */
+        SDL_SetSurfaceRLE(surface, 0);
         return SDL_BlitScaled(src, srcrect, surface, &final_rect);
     }
 }
@@ -578,7 +600,6 @@ SW_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
     SDL_Surface *src = (SDL_Surface *) texture->driverdata;
     SDL_Rect final_rect, tmp_rect;
     SDL_Surface *surface_rotated, *surface_scaled;
-    Uint32 colorkey;
     int retval, dstwidth, dstheight, abscenterx, abscentery;
     double cangle, sangle, px, py, p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y;
 
@@ -596,66 +617,113 @@ SW_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
     final_rect.w = (int)dstrect->w;
     final_rect.h = (int)dstrect->h;
 
-    surface_scaled = SDL_CreateRGBSurface(SDL_SWSURFACE, final_rect.w, final_rect.h, src->format->BitsPerPixel,
-                                          src->format->Rmask, src->format->Gmask,
-                                          src->format->Bmask, src->format->Amask );
-    if (surface_scaled) {
-        SDL_GetColorKey(src, &colorkey);
-        SDL_SetColorKey(surface_scaled, SDL_TRUE, colorkey);
-        tmp_rect = final_rect;
-        tmp_rect.x = 0;
-        tmp_rect.y = 0;
+    /* SDLgfx_rotateSurface doesn't accept a source rectangle, so crop and scale if we need to */
+    tmp_rect = final_rect;
+    tmp_rect.x = 0;
+    tmp_rect.y = 0;
+    if (srcrect->w == final_rect.w && srcrect->h == final_rect.h && srcrect->x == 0 && srcrect->y == 0) {
+        surface_scaled = src; /* but if we don't need to, just use the original */
+        retval = 0;
+    } else {
+        SDL_Surface *blit_src = src;
+        Uint32 colorkey;
+        SDL_BlendMode blendMode;
+        Uint8 alphaMod, r, g, b;
+        SDL_bool cloneSource = SDL_FALSE;
 
-        retval = SDL_BlitScaled(src, srcrect, surface_scaled, &tmp_rect);
-        if (!retval) {
-            SDLgfx_rotozoomSurfaceSizeTrig(tmp_rect.w, tmp_rect.h, -angle, &dstwidth, &dstheight, &cangle, &sangle);
-            surface_rotated = SDLgfx_rotateSurface(surface_scaled, -angle, dstwidth/2, dstheight/2, GetScaleQuality(), flip & SDL_FLIP_HORIZONTAL, flip & SDL_FLIP_VERTICAL, dstwidth, dstheight, cangle, sangle);
-            if(surface_rotated) {
-                /* Find out where the new origin is by rotating the four final_rect points around the center and then taking the extremes */
-                abscenterx = final_rect.x + (int)center->x;
-                abscentery = final_rect.y + (int)center->y;
-                /* Compensate the angle inversion to match the behaviour of the other backends */
-                sangle = -sangle;
-
-                /* Top Left */
-                px = final_rect.x - abscenterx;
-                py = final_rect.y - abscentery;
-                p1x = px * cangle - py * sangle + abscenterx;
-                p1y = px * sangle + py * cangle + abscentery;
-
-                /* Top Right */
-                px = final_rect.x + final_rect.w - abscenterx;
-                py = final_rect.y - abscentery;
-                p2x = px * cangle - py * sangle + abscenterx;
-                p2y = px * sangle + py * cangle + abscentery;
-
-                /* Bottom Left */
-                px = final_rect.x - abscenterx;
-                py = final_rect.y + final_rect.h - abscentery;
-                p3x = px * cangle - py * sangle + abscenterx;
-                p3y = px * sangle + py * cangle + abscentery;
-
-                /* Bottom Right */
-                px = final_rect.x + final_rect.w - abscenterx;
-                py = final_rect.y + final_rect.h - abscentery;
-                p4x = px * cangle - py * sangle + abscenterx;
-                p4y = px * sangle + py * cangle + abscentery;
-
-                tmp_rect.x = (int)MIN(MIN(p1x, p2x), MIN(p3x, p4x));
-                tmp_rect.y = (int)MIN(MIN(p1y, p2y), MIN(p3y, p4y));
-                tmp_rect.w = dstwidth;
-                tmp_rect.h = dstheight;
-
-                retval = SDL_BlitSurface(surface_rotated, NULL, surface, &tmp_rect);
-                SDL_FreeSurface(surface_scaled);
-                SDL_FreeSurface(surface_rotated);
-                return retval;
-            }
+        surface_scaled = SDL_CreateRGBSurface(SDL_SWSURFACE, final_rect.w, final_rect.h, src->format->BitsPerPixel,
+                                              src->format->Rmask, src->format->Gmask,
+                                              src->format->Bmask, src->format->Amask );
+        if (!surface_scaled) {
+            return -1;
         }
-        return retval;
+
+        /* copy the color key, alpha mod, blend mode, and color mod so the scaled surface behaves like the source */
+        if (SDL_GetColorKey(src, &colorkey) == 0) {
+            SDL_SetColorKey(surface_scaled, SDL_TRUE, colorkey);
+            cloneSource = SDL_TRUE;
+        }
+        SDL_GetSurfaceAlphaMod(src, &alphaMod); /* these will be copied to surface_scaled below if necessary */
+        SDL_GetSurfaceBlendMode(src, &blendMode);
+        SDL_GetSurfaceColorMod(src, &r, &g, &b);
+
+        /* now we need to blit the src into surface_scaled. since we want to copy the colors from the source to
+         * surface_scaled rather than blend them, etc. we'll need to disable the blend mode, alpha mod, etc.
+         * but we don't want to modify src (in case it's being used on other threads), so we'll need to clone it
+         * before changing the blend options
+         */
+        cloneSource |= blendMode != SDL_BLENDMODE_NONE || (alphaMod & r & g & b) != 255;
+        if (cloneSource) {
+            blit_src = SDL_ConvertSurface(src, src->format, src->flags); /* clone src */
+            if (!blit_src) {
+                SDL_FreeSurface(surface_scaled);
+                return -1;
+            }
+            SDL_SetSurfaceAlphaMod(blit_src, 255); /* disable all blending options in blit_src */
+            SDL_SetSurfaceBlendMode(blit_src, SDL_BLENDMODE_NONE);
+            SDL_SetColorKey(blit_src, 0, 0);
+            SDL_SetSurfaceColorMod(blit_src, 255, 255, 255);
+            SDL_SetSurfaceRLE(blit_src, 0); /* don't RLE encode a surface we'll only use once */
+
+            SDL_SetSurfaceAlphaMod(surface_scaled, alphaMod); /* copy blending options to surface_scaled */
+            SDL_SetSurfaceBlendMode(surface_scaled, blendMode);
+            SDL_SetSurfaceColorMod(surface_scaled, r, g, b);
+        }
+
+        retval = SDL_BlitScaled(blit_src, srcrect, surface_scaled, &tmp_rect);
+        if (blit_src != src) {
+            SDL_FreeSurface(blit_src);
+        }
     }
 
-    return -1;
+    if (!retval) {
+        SDLgfx_rotozoomSurfaceSizeTrig(tmp_rect.w, tmp_rect.h, -angle, &dstwidth, &dstheight, &cangle, &sangle);
+        surface_rotated = SDLgfx_rotateSurface(surface_scaled, -angle, dstwidth/2, dstheight/2, GetScaleQuality(), flip & SDL_FLIP_HORIZONTAL, flip & SDL_FLIP_VERTICAL, dstwidth, dstheight, cangle, sangle);
+        if(surface_rotated) {
+            /* Find out where the new origin is by rotating the four final_rect points around the center and then taking the extremes */
+            abscenterx = final_rect.x + (int)center->x;
+            abscentery = final_rect.y + (int)center->y;
+            /* Compensate the angle inversion to match the behaviour of the other backends */
+            sangle = -sangle;
+
+            /* Top Left */
+            px = final_rect.x - abscenterx;
+            py = final_rect.y - abscentery;
+            p1x = px * cangle - py * sangle + abscenterx;
+            p1y = px * sangle + py * cangle + abscentery;
+
+            /* Top Right */
+            px = final_rect.x + final_rect.w - abscenterx;
+            py = final_rect.y - abscentery;
+            p2x = px * cangle - py * sangle + abscenterx;
+            p2y = px * sangle + py * cangle + abscentery;
+
+            /* Bottom Left */
+            px = final_rect.x - abscenterx;
+            py = final_rect.y + final_rect.h - abscentery;
+            p3x = px * cangle - py * sangle + abscenterx;
+            p3y = px * sangle + py * cangle + abscentery;
+
+            /* Bottom Right */
+            px = final_rect.x + final_rect.w - abscenterx;
+            py = final_rect.y + final_rect.h - abscentery;
+            p4x = px * cangle - py * sangle + abscenterx;
+            p4y = px * sangle + py * cangle + abscentery;
+
+            tmp_rect.x = (int)MIN(MIN(p1x, p2x), MIN(p3x, p4x));
+            tmp_rect.y = (int)MIN(MIN(p1y, p2y), MIN(p3y, p4y));
+            tmp_rect.w = dstwidth;
+            tmp_rect.h = dstheight;
+
+            retval = SDL_BlitSurface(surface_rotated, NULL, surface, &tmp_rect);
+            SDL_FreeSurface(surface_rotated);
+        }
+    }
+
+    if (surface_scaled != src) {
+        SDL_FreeSurface(surface_scaled);
+    }
+    return retval;
 }
 
 static int

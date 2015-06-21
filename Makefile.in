@@ -39,7 +39,7 @@ SDLMAIN_OBJECTS = @SDLMAIN_OBJECTS@
 SDLTEST_TARGET = libSDL2_test.a
 SDLTEST_OBJECTS = @SDLTEST_OBJECTS@
 
-SRC_DIST = *.txt acinclude Android.mk autogen.sh android-project build-scripts cmake configure configure.in debian include Makefile.* sdl2-config.in sdl2.m4 sdl2.pc.in SDL2.spec.in src test VisualC.html VisualC Xcode Xcode-iOS
+SRC_DIST = *.txt acinclude Android.mk autogen.sh android-project build-scripts cmake cmake_uninstall.cmake.in configure configure.in debian docs include Makefile.* sdl2-config.in sdl2.m4 sdl2.pc.in SDL2.spec.in src test VisualC.html VisualC VisualC-WinRT Xcode Xcode-iOS
 GEN_DIST = SDL2.spec
 
 ifneq ($V,1)
