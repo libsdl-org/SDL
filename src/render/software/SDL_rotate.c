@@ -466,13 +466,13 @@ SDLgfx_rotateSurface(SDL_Surface * src, double angle, int centerx, int centery, 
     /* copy alpha mod, color mod, and blend mode */
     {
       SDL_BlendMode blendMode;
-      Uint8 alphaMod, r, g, b;
+      Uint8 alphaMod, cr, cg, cb;
       SDL_GetSurfaceAlphaMod(src, &alphaMod);
       SDL_GetSurfaceBlendMode(src, &blendMode);
-      SDL_GetSurfaceColorMod(src, &r, &g, &b);
+      SDL_GetSurfaceColorMod(src, &cr, &cg, &cb);
       SDL_SetSurfaceAlphaMod(rz_dst, alphaMod);
       SDL_SetSurfaceBlendMode(rz_dst, blendMode);
-      SDL_SetSurfaceColorMod(rz_dst, r, g, b);
+      SDL_SetSurfaceColorMod(rz_dst, cr, cg, cb);
     }
 
     /*
