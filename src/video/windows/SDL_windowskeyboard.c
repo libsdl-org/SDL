@@ -122,10 +122,9 @@ WIN_UpdateKeymap()
         }
 
         /* If this key is one of the non-mappable keys, ignore it */
-        /* Don't allow the number keys right above the qwerty row to translate or the top left key (grave/backquote) */
         /* Not mapping numbers fixes the French layout, giving numeric keycodes for the number keys, which is the expected behavior */
         if ((keymap[scancode] & SDLK_SCANCODE_MASK) ||
-            scancode == SDL_SCANCODE_GRAVE ||
+			/*  scancode == SDL_SCANCODE_GRAVE || */ /* Uncomment this line to re-enable the behavior of not mapping the "`"(grave) key to the users actual keyboard layout */
             (scancode >= SDL_SCANCODE_1 && scancode <= SDL_SCANCODE_0) ) {
             continue;
         }
