@@ -154,7 +154,7 @@ X11_KeyCodeToSDLScancode(Display *display, KeyCode keycode)
 #if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
     keysym = X11_XkbKeycodeToKeysym(display, keycode, 0, 0);
 #else
-    keysym = XKeycodeToKeysym(display, keycode, 0);
+    keysym = X11_XKeycodeToKeysym(display, keycode, 0);
 #endif
     if (keysym == NoSymbol) {
         return SDL_SCANCODE_UNKNOWN;
@@ -184,7 +184,7 @@ X11_KeyCodeToUcs4(Display *display, KeyCode keycode)
 #if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
     keysym = X11_XkbKeycodeToKeysym(display, keycode, 0, 0);
 #else
-    keysym = XKeycodeToKeysym(display, keycode, 0);
+    keysym = X11_XKeycodeToKeysym(display, keycode, 0);
 #endif
     if (keysym == NoSymbol) {
         return 0;
@@ -265,7 +265,7 @@ X11_InitKeyboard(_THIS)
 #if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
             sym = X11_XkbKeycodeToKeysym(data->display, i, 0, 0);
 #else
-            sym = XKeycodeToKeysym(data->display, i, 0);
+            sym = X11_XKeycodeToKeysym(data->display, i, 0);
 #endif
             if (sym != NoSymbol) {
                 SDL_Scancode scancode;

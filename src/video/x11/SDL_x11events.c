@@ -789,7 +789,7 @@ X11_DispatchEvent(_THIS)
 #if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
                 keysym = X11_XkbKeycodeToKeysym(display, keycode, 0, 0);
 #else
-                keysym = XKeycodeToKeysym(display, keycode, 0);
+                keysym = X11_XKeycodeToKeysym(display, keycode, 0);
 #endif
                 fprintf(stderr,
                         "The key you just pressed is not recognized by SDL. To help get this fixed, please report this to the SDL mailing list <sdl@libsdl.org> X11 KeyCode %d (%d), X11 KeySym 0x%lX (%s).\n",
