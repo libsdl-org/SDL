@@ -364,7 +364,7 @@ static int SDL_EVDEV_get_console_fd(void)
     
     /* Try a few consoles to see which one we have read access to */
     
-    for( i = 0; i < SDL_arraysize(EVDEV_consoles); i++) {
+    for(i = 0; i < SDL_arraysize(EVDEV_consoles); i++) {
         fd = open(EVDEV_consoles[i], O_RDONLY);
         if (fd >= 0) {
             if (IS_CONSOLE(fd)) return fd;
@@ -374,7 +374,7 @@ static int SDL_EVDEV_get_console_fd(void)
     
     /* Try stdin, stdout, stderr */
     
-    for( fd = 0; fd < 3; fd++) {
+    for(fd = 0; fd < 3; fd++) {
         if (IS_CONSOLE(fd)) return fd;
     }
     
@@ -468,7 +468,7 @@ SDL_EVDEV_Init(void)
         }
 
         /* Set up the udev callback */
-        if ( SDL_UDEV_AddCallback(SDL_EVDEV_udev_callback) < 0) {
+        if (SDL_UDEV_AddCallback(SDL_EVDEV_udev_callback) < 0) {
             SDL_EVDEV_Quit();
             return -1;
         }
@@ -614,7 +614,7 @@ SDL_EVDEV_Poll(void)
                     if (scan_code != SDL_SCANCODE_UNKNOWN) {
                         if (events[i].value == 0) {
                             SDL_SendKeyboardKey(SDL_RELEASED, scan_code);
-                        } else if (events[i].value == 1 || events[i].value == 2 /* Key repeated */ ) {
+                        } else if (events[i].value == 1 || events[i].value == 2 /* Key repeated */) {
                             SDL_SendKeyboardKey(SDL_PRESSED, scan_code);
 #ifdef SDL_INPUT_LINUXKD
                             if (_this->console_fd >= 0) {
@@ -625,12 +625,12 @@ SDL_EVDEV_Poll(void)
                                 kbe.kb_table = 0;
                                 
                                 /* Ref: http://graphics.stanford.edu/~seander/bithacks.html#ConditionalSetOrClearBitsWithoutBranching */
-                                kbe.kb_table |= -( (modstate & KMOD_LCTRL) != 0) & (1 << KG_CTRLL | 1 << KG_CTRL);
-                                kbe.kb_table |= -( (modstate & KMOD_RCTRL) != 0) & (1 << KG_CTRLR | 1 << KG_CTRL);
-                                kbe.kb_table |= -( (modstate & KMOD_LSHIFT) != 0) & (1 << KG_SHIFTL | 1 << KG_SHIFT);
-                                kbe.kb_table |= -( (modstate & KMOD_RSHIFT) != 0) & (1 << KG_SHIFTR | 1 << KG_SHIFT);
-                                kbe.kb_table |= -( (modstate & KMOD_LALT) != 0) & (1 << KG_ALT);
-                                kbe.kb_table |= -( (modstate & KMOD_RALT) != 0) & (1 << KG_ALTGR);
+                                kbe.kb_table |= -((modstate & KMOD_LCTRL) != 0) & (1 << KG_CTRLL | 1 << KG_CTRL);
+                                kbe.kb_table |= -((modstate & KMOD_RCTRL) != 0) & (1 << KG_CTRLR | 1 << KG_CTRL);
+                                kbe.kb_table |= -((modstate & KMOD_LSHIFT) != 0) & (1 << KG_SHIFTL | 1 << KG_SHIFT);
+                                kbe.kb_table |= -((modstate & KMOD_RSHIFT) != 0) & (1 << KG_SHIFTR | 1 << KG_SHIFT);
+                                kbe.kb_table |= -((modstate & KMOD_LALT) != 0) & (1 << KG_ALT);
+                                kbe.kb_table |= -((modstate & KMOD_RALT) != 0) & (1 << KG_ALTGR);
 
                                 if (ioctl(_this->console_fd, KDGKBENT, (unsigned long)&kbe) == 0 && 
                                     ((KTYP(kbe.kb_value) == KT_LATIN) || (KTYP(kbe.kb_value) == KT_ASCII) || (KTYP(kbe.kb_value) == KT_LETTER))) 
@@ -641,8 +641,8 @@ SDL_EVDEV_Poll(void)
                                      * because 1 << KG_CAPSSHIFT overflows the 8 bits of kb_table 
                                      * So, we do the CAPS LOCK logic here. Note that isalpha depends on the locale!
                                      */
-                                    if ( modstate & KMOD_CAPS && isalpha(kval) ) {
-                                        if ( isupper(kval) ) {
+                                    if (modstate & KMOD_CAPS && isalpha(kval)) {
+                                        if (isupper(kval)) {
                                             kval = tolower(kval);
                                         } else {
                                             kval = toupper(kval);
@@ -650,7 +650,7 @@ SDL_EVDEV_Poll(void)
                                     }
                                      
                                     /* Convert to UTF-8 and send */
-                                    end = SDL_UCS4ToUTF8( kval, keysym);
+                                    end = SDL_UCS4ToUTF8(kval, keysym);
                                     *end = '\0';
                                     SDL_SendKeyboardText(keysym);
                                 }
@@ -732,7 +732,7 @@ SDL_EVDEV_device_added(const char *devpath)
 
     /* Check to make sure it's not already in list. */
     for (item = _this->first; item != NULL; item = item->next) {
-        if (strcmp(devpath, item->path) == 0) {
+        if (SDL_strcmp(devpath, item->path) == 0) {
             return -1;  /* already have this one */
         }
     }
@@ -779,7 +779,7 @@ SDL_EVDEV_device_removed(const char *devpath)
 
     for (item = _this->first; item != NULL; item = item->next) {
         /* found it, remove it. */
-        if ( strcmp(devpath, item->path) ==0 ) {
+        if (SDL_strcmp(devpath, item->path) == 0) {
             if (prev != NULL) {
                 prev->next = item->next;
             } else {
