@@ -295,7 +295,7 @@ WIN_CheckAsyncMouseRelease(SDL_WindowData *data)
     data->mouse_button_flags = 0;
 }
 
-SDL_FORCE_INLINE BOOL
+BOOL 
 WIN_ConvertUTF32toUTF8(UINT32 codepoint, char * text)
 {
     if (codepoint <= 0x7F) {
@@ -568,21 +568,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 SDL_SendKeyboardKey(SDL_PRESSED, code);
             }
         }
-        if (msg == WM_KEYDOWN) {
-            BYTE keyboardState[256];
-            char text[5];
-            UINT32 utf32 = 0;
-
-            GetKeyboardState(keyboardState);
-            if (ToUnicode(wParam, (lParam >> 16) & 0xff, keyboardState, (LPWSTR)&utf32, 1, 0) > 0) {
-                if (WIN_ConvertUTF32toUTF8(utf32, text)) {
-                    WORD repetition;
-                    for (repetition = lParam & 0xffff; repetition > 0; repetition--) {
-                        SDL_SendKeyboardText(text);
-                    }
-                }
-            }
-        }
+ 
         returnCode = 0;
         break;
 
@@ -604,9 +590,19 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         break;
 
     case WM_UNICHAR:
-    case WM_CHAR:
-        /* Ignore WM_CHAR messages that come from TranslateMessage(), since we handle WM_KEY* messages directly */
-        returnCode = 0;
+		if ( wParam == UNICODE_NOCHAR ) {
+			returnCode = 1;
+			break;
+		}
+		/* otherwise fall through to below */
+	case WM_CHAR:
+		{
+			char text[5];
+			if ( WIN_ConvertUTF32toUTF8( wParam, text ) ) {
+				SDL_SendKeyboardText( text );
+			}
+		}
+		returnCode = 0;
         break;
 
 #ifdef WM_INPUTLANGCHANGE
