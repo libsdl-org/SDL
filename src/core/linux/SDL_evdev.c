@@ -547,12 +547,11 @@ void SDL_EVDEV_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class, con
         return;
     }
     
-    if (!(udev_class & (SDL_UDEV_DEVICE_MOUSE|SDL_UDEV_DEVICE_KEYBOARD))) {
-        return;
-    }
-
-    switch( udev_type ) {
+    switch(udev_type) {
     case SDL_UDEV_DEVICEADDED:
+        if (!(udev_class & (SDL_UDEV_DEVICE_MOUSE|SDL_UDEV_DEVICE_KEYBOARD))) {
+            return;
+        }
         SDL_EVDEV_device_added(devpath);
         break;
             
