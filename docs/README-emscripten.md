@@ -3,13 +3,17 @@ Emscripten
 
 Build:
 
-    $ emconfigure ./configure --host=asmjs-unknown-emscripten --disable-assembly --disable-threads --enable-cpuinfo=false CFLAGS="-O2"
+    $ mkdir build
+    $ cd build
+    $ emconfigure ../configure --host=asmjs-unknown-emscripten --disable-assembly --disable-threads --enable-cpuinfo=false CFLAGS="-O2"
     $ emmake make
 
 Or with cmake:
 
-    $ emconfigure cmake ..
-    $ make
+    $ mkdir build
+    $ cd build
+    $ emcmake cmake ..
+    $ emmake make
 
 To build one of the tests:
 
@@ -22,7 +26,7 @@ tests: https://dl.dropboxusercontent.com/u/17360362/SDL2-em/index.html
 
 Some other SDL2 libraries can be easily built (assuming SDL2 is installed somewhere):
 
-SDL_mixer (http://www.libsdl.org/projects/SDL_mixer/)
+SDL_mixer (http://www.libsdl.org/projects/SDL_mixer/):
 
     $ EMCONFIGURE_JS=1 emconfigure ../configure
     build as usual...
