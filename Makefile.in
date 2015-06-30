@@ -176,6 +176,8 @@ install-data:
 	$(INSTALL) -m 644 $(srcdir)/sdl2.m4 $(DESTDIR)$(datadir)/aclocal/sdl2.m4
 	$(SHELL) $(auxdir)/mkinstalldirs $(DESTDIR)$(libdir)/pkgconfig
 	$(INSTALL) -m 644 sdl2.pc $(DESTDIR)$(libdir)/pkgconfig
+	$(SHELL) $(auxdir)/mkinstalldirs $(DESTDIR)$(libdir)/cmake/SDL2
+	$(INSTALL) -m 644 sdl2-config.cmake $(DESTDIR)$(libdir)/cmake/SDL2
 
 uninstall: uninstall-bin uninstall-hdrs uninstall-lib uninstall-data
 uninstall-bin:
@@ -194,6 +196,7 @@ uninstall-lib:
 uninstall-data:
 	rm -f $(DESTDIR)$(datadir)/aclocal/sdl2.m4
 	rm -f $(DESTDIR)$(libdir)/pkgconfig/sdl2.pc
+	rm -f $(DESTDIR)$(libdir)/cmake/SDL2/sdl2-config.cmake
 
 clean:
 	rm -rf $(objects)
