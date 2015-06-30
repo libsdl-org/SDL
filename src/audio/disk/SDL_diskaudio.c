@@ -102,8 +102,9 @@ DISKAUD_CloseDevice(_THIS)
 static int
 DISKAUD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 {
+    /* handle != NULL means "user specified the placeholder name on the fake detected device list" */
+    const char *fname = DISKAUD_GetOutputFilename(handle ? NULL : devname);
     const char *envr = SDL_getenv(DISKENVR_WRITEDELAY);
-    const char *fname = DISKAUD_GetOutputFilename(devname);
 
     this->hidden = (struct SDL_PrivateAudioData *)
         SDL_malloc(sizeof(*this->hidden));
@@ -141,6 +142,13 @@ DISKAUD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     return 0;
 }
 
+static void
+DISKAUD_DetectDevices(void)
+{
+    /* !!! FIXME: stole this literal string from DEFAULT_OUTPUT_DEVNAME in SDL_audio.c */
+    SDL_AddAudioDevice(SDL_FALSE, "System audio output device", (void *) 0x1);
+}
+
 static int
 DISKAUD_Init(SDL_AudioDriverImpl * impl)
 {
@@ -150,6 +158,7 @@ DISKAUD_Init(SDL_AudioDriverImpl * impl)
     impl->PlayDevice = DISKAUD_PlayDevice;
     impl->GetDeviceBuf = DISKAUD_GetDeviceBuf;
     impl->CloseDevice = DISKAUD_CloseDevice;
+    impl->DetectDevices = DISKAUD_DetectDevices;
 
     impl->AllowsArbitraryDeviceNames = 1;
 
