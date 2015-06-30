@@ -649,9 +649,15 @@ X11_DispatchEvent(_THIS)
             }
         } else if (xevent.type == MappingNotify) {
             /* Has the keyboard layout changed? */
+            const int request = xevent.xmapping.request;
+
 #ifdef DEBUG_XEVENTS
             printf("window %p: MappingNotify!\n", data);
 #endif
+            if ((request == MappingKeyboard) || (request == MappingModifier)) {
+                X11_XRefreshKeyboardMapping(&xevent.xmapping);
+            }
+
             X11_UpdateKeymap(_this);
         }
         return;
