@@ -642,11 +642,17 @@ X11_DispatchEvent(_THIS)
         }
     }
     if (!data) {
-        /* The window for KeymapNotify events is 0 */
+        /* The window for KeymapNotify, etc events is 0 */
         if (xevent.type == KeymapNotify) {
             if (SDL_GetKeyboardFocus() != NULL) {
                 X11_ReconcileKeyboardState(_this);
             }
+        } else if (xevent.type == MappingNotify) {
+            /* Has the keyboard layout changed? */
+#ifdef DEBUG_XEVENTS
+            printf("window %p: MappingNotify!\n", data);
+#endif
+            X11_UpdateKeymap(_this);
         }
         return;
     }
@@ -759,15 +765,6 @@ X11_DispatchEvent(_THIS)
                 data->pending_focus = PENDING_FOCUS_OUT;
                 data->pending_focus_time = SDL_GetTicks() + PENDING_FOCUS_TIME;
             }
-        }
-        break;
-
-        /* Has the keyboard layout changed? */
-    case MappingNotify:{
-#ifdef DEBUG_XEVENTS
-            printf("window %p: MappingNotify!\n", data);
-#endif
-            X11_UpdateKeymap(_this);
         }
         break;
 
