@@ -1456,6 +1456,11 @@ Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
 
         if ([nswindow respondsToSelector: @selector(setStyleMask:)]) {
             [nswindow performSelector: @selector(setStyleMask:) withObject: (id)(uintptr_t)GetWindowStyle(window)];
+
+            /* Hack to restore window decorations on Mac OS X 10.10 */
+            NSRect frameRect = [nswindow frame];
+            [nswindow setFrame:NSMakeRect(frameRect.origin.x, frameRect.origin.y, frameRect.size.width + 1, frameRect.size.height) display:NO];
+            [nswindow setFrame:frameRect display:NO];
         } else {
             nswindow = Cocoa_RebuildWindow(data, nswindow, GetWindowStyle(window));
         }
