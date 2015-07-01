@@ -649,8 +649,7 @@ void SDL_GestureProcessEvent(SDL_Event* event)
             break;
             pressure? */
         }
-
-        if (event->type == SDL_FINGERDOWN) {
+        else if (event->type == SDL_FINGERDOWN) {
 
             inTouch->numDownFingers++;
             inTouch->centroid.x = (inTouch->centroid.x*(inTouch->numDownFingers - 1)+
