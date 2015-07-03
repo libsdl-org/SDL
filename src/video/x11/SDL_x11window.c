@@ -884,24 +884,6 @@ X11_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
     X11_XCheckIfEvent(display, &event, &isMapNotify, (XPointer)&data->xwindow);
 }
 
-static SDL_bool
-X11_HasWindowManager(const SDL_WindowData *data)
-{
-    const SDL_DisplayData *displaydata =
-        (SDL_DisplayData *) SDL_GetDisplayForWindow(data->window)->driverdata;
-    Display *display = data->videodata->display;
-    const int screen  = displaydata->screen;
-    char atomname[16];
-    Atom atom;
-
-    /* Compliments to Chromium for this technique.
-        Window Managers are supposed to own "WM_Sx" selections, where
-        "x" is the screen number (ICCCM 2.8). */
-    SDL_snprintf(atomname, sizeof (atomname), "WM_S%d", screen);
-    atom = X11_XInternAtom(display, atomname, True);
-    return ((atom != None) && (X11_XGetSelectionOwner(display, atom) != None));
-}
-
 void
 X11_ShowWindow(_THIS, SDL_Window * window)
 {
@@ -918,7 +900,7 @@ X11_ShowWindow(_THIS, SDL_Window * window)
         X11_XFlush(display);
     }
 
-    if (!X11_HasWindowManager(data)) {
+    if (SDL_TRUE != data->videodata->net_wm) {
         /* no WM means no FocusIn event, which confuses us. Force it. */
         X11_XSetInputFocus(display, data->xwindow, RevertToNone, CurrentTime);
         X11_XFlush(display);
