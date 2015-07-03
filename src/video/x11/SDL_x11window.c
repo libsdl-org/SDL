@@ -900,7 +900,7 @@ X11_ShowWindow(_THIS, SDL_Window * window)
         X11_XFlush(display);
     }
 
-    if (SDL_TRUE != data->videodata->net_wm) {
+    if (!data->videodata->net_wm) {
         /* no WM means no FocusIn event, which confuses us. Force it. */
         X11_XSetInputFocus(display, data->xwindow, RevertToNone, CurrentTime);
         X11_XFlush(display);
