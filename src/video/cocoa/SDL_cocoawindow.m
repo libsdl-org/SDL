@@ -106,42 +106,64 @@
 
 - (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender
 {
-    return NSDragOperationGeneric;
+    if (([sender draggingSourceOperationMask] & NSDragOperationGeneric) == NSDragOperationGeneric) {
+        return NSDragOperationGeneric;
+    }
+
+    return NSDragOperationNone; /* no idea what to do with this, reject it. */
 }
 
 - (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
+{ @autoreleasepool
 {
-    NSURL *fileURL = [NSURL URLFromPasteboard:[sender draggingPasteboard]];
-    NSNumber *isAlias = nil;
+    NSPasteboard *pasteboard = [sender draggingPasteboard];
+    NSArray *types = [NSArray arrayWithObject:NSFilenamesPboardType];
+    NSString *desiredType = [pasteboard availableTypeFromArray:types];
+    if (desiredType == nil) {
+        return NO;  /* can't accept anything that's being dropped here. */
+    }
 
-    if (fileURL == nil) {
+    NSData *data = [pasteboard dataForType:desiredType];
+    if (data == nil) {
         return NO;
     }
 
-    /* Functionality for resolving URL aliases was added with OS X 10.6. */
-    if ([fileURL respondsToSelector:@selector(getResourceValue:forKey:error:)]) {
-        [fileURL getResourceValue:&isAlias forKey:NSURLIsAliasFileKey error:nil];
-    }
+    SDL_assert([desiredType isEqualToString:NSFilenamesPboardType]);
+    NSArray *array = [pasteboard propertyListForType:@"NSFilenamesPboardType"];
 
-    /* If the URL is an alias, resolve it. */
-    if ([isAlias boolValue]) {
-        NSURLBookmarkResolutionOptions opts = NSURLBookmarkResolutionWithoutMounting | NSURLBookmarkResolutionWithoutUI;
-        NSData *bookmark = [NSURL bookmarkDataWithContentsOfURL:fileURL error:nil];
-        if (bookmark != nil) {
-            NSURL *resolvedURL = [NSURL URLByResolvingBookmarkData:bookmark
-                                                           options:opts
-                                                     relativeToURL:nil
-                                               bookmarkDataIsStale:nil
-                                                             error:nil];
+    for (NSString *path in array) {
+        NSURL *fileURL = [[NSURL fileURLWithPath:path] autorelease];
+        NSNumber *isAlias = nil;
 
-            if (resolvedURL != nil) {
-                fileURL = resolvedURL;
+        /* Functionality for resolving URL aliases was added with OS X 10.6. */
+        if ([fileURL respondsToSelector:@selector(getResourceValue:forKey:error:)]) {
+            [fileURL getResourceValue:&isAlias forKey:NSURLIsAliasFileKey error:nil];
+        }
+
+        /* If the URL is an alias, resolve it. */
+        if ([isAlias boolValue]) {
+            NSURLBookmarkResolutionOptions opts = NSURLBookmarkResolutionWithoutMounting | NSURLBookmarkResolutionWithoutUI;
+            NSData *bookmark = [NSURL bookmarkDataWithContentsOfURL:fileURL error:nil];
+            if (bookmark != nil) {
+                NSURL *resolvedURL = [NSURL URLByResolvingBookmarkData:bookmark
+                                                               options:opts
+                                                         relativeToURL:nil
+                                                   bookmarkDataIsStale:nil
+                                                                 error:nil];
+
+                if (resolvedURL != nil) {
+                    fileURL = resolvedURL;
+                }
             }
+        }
+
+        if (!SDL_SendDropFile([[fileURL path] UTF8String])) {
+            return NO;
         }
     }
 
-    return (BOOL) SDL_SendDropFile([[fileURL path] UTF8String]);
-}
+    return YES;
+}}
 
 - (BOOL)wantsPeriodicDraggingUpdates
 {
