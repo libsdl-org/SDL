@@ -1241,8 +1241,9 @@ void
 Cocoa_SetWindowTitle(_THIS, SDL_Window * window)
 { @autoreleasepool
 {
+    const char *title = window->title ? window->title : "";
     NSWindow *nswindow = ((SDL_WindowData *) window->driverdata)->nswindow;
-    NSString *string = [[NSString alloc] initWithUTF8String:window->title];
+    NSString *string = [[NSString alloc] initWithUTF8String:title];
     [nswindow setTitle:string];
     [string release];
 }}
@@ -1428,7 +1429,7 @@ Cocoa_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
 { @autoreleasepool
 {
     if (SetWindowStyle(window, GetWindowStyle(window))) {
-        if (bordered && window->title) {
+        if (bordered) {
             Cocoa_SetWindowTitle(_this, window);  /* this got blanked out. */
         }
     }
@@ -1499,7 +1500,7 @@ Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
     s_moveHack = SDL_GetTicks();
 
     /* When the window style changes the title is cleared */
-    if (!fullscreen && window->title) {
+    if (!fullscreen) {
         Cocoa_SetWindowTitle(_this, window);
     }
 
