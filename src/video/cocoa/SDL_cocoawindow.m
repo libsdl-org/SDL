@@ -1428,7 +1428,7 @@ Cocoa_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
 { @autoreleasepool
 {
     if (SetWindowStyle(window, GetWindowStyle(window))) {
-        if (bordered) {
+        if (bordered && window->title) {
             Cocoa_SetWindowTitle(_this, window);  /* this got blanked out. */
         }
     }
@@ -1499,7 +1499,7 @@ Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
     s_moveHack = SDL_GetTicks();
 
     /* When the window style changes the title is cleared */
-    if (!fullscreen) {
+    if (!fullscreen && window->title) {
         Cocoa_SetWindowTitle(_this, window);
     }
 
