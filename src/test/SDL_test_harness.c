@@ -484,6 +484,7 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
         if (suiteFilter == 0 && testFilter == 0) {
             SDLTest_LogError("Filter '%s' did not match any test suite/case.", filter);
             SDLTest_Log("Exit code: 2");
+            SDL_free(failedTests);
             return 2;
         }
     }
