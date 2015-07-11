@@ -808,7 +808,7 @@ X11_DispatchEvent(_THIS)
                                   &keysym, &status);
             }
 #else
-            XLookupString(&xevent.xkey, text, sizeof(text), &keysym, NULL);
+            X11_XLookupString(&xevent.xkey, text, sizeof(text), &keysym, NULL);
 #endif
 
 #ifdef SDL_USE_IBUS
