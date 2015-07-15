@@ -439,8 +439,16 @@ X11_MessageBoxCreateWindow( SDL_MessageBoxDataX11 *data )
         y = attrib.y + ( attrib.height - data->dialog_height ) / 3 ;
         X11_XTranslateCoordinates(display, windowdata->xwindow, RootWindow(display, data->screen), x, y, &x, &y, &dummy);
     } else {
-        x = ( DisplayWidth( display, data->screen ) - data->dialog_width ) / 2;
-        y = ( DisplayHeight( display, data->screen ) - data->dialog_height ) / 3 ;
+        const SDL_VideoDevice *dev = SDL_GetVideoDevice();
+        if ((dev) && (dev->displays) && (dev->num_displays > 0)) {
+            const SDL_VideoDisplay *dpy = &dev->displays[0];
+            const SDL_DisplayData *dpydata = (SDL_DisplayData *) dpy->driverdata;
+            x = dpydata->x + (( dpy->current_mode.w - data->dialog_width ) / 2);
+            y = dpydata->y + (( dpy->current_mode.h - data->dialog_height ) / 3);
+        } else {   /* oh well. This will misposition on a multi-head setup. Init first next time. */
+            x = ( DisplayWidth( display, data->screen ) - data->dialog_width ) / 2;
+            y = ( DisplayHeight( display, data->screen ) - data->dialog_height ) / 3 ;
+        }
     }
     X11_XMoveWindow( display, data->window, x, y );
 
