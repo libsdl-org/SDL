@@ -10,7 +10,7 @@
   freely.
 */
 
-/* Program to test hotplugging of audio devices */
+/* Program to test querying of display info */
 
 #include "SDL.h"
 
