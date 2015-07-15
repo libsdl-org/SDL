@@ -117,6 +117,7 @@ test/testver
 test/testviewport
 test/testwm2
 test/torturethread
+test/testdisplayinfo
 test/*.exe
 test/*.dSYM
 buildbot
