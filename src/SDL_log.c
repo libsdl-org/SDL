@@ -371,9 +371,9 @@ SDL_LogOutput(void *userdata, int category, SDL_LogPriority priority,
         if (consoleAttached == 1) {
                 if (!WriteConsole(stderrHandle, tstr, lstrlen(tstr), &charsWritten, NULL)) {
                     OutputDebugString(TEXT("Error calling WriteConsole\r\n"));
-                }
-                if (charsWritten == ERROR_NOT_ENOUGH_MEMORY) {
-                    OutputDebugString(TEXT("Insufficient heap memory to write message\r\n"));
+                    if (GetLastError() == ERROR_NOT_ENOUGH_MEMORY) {
+                        OutputDebugString(TEXT("Insufficient heap memory to write message\r\n"));
+                    }
                 }
         }
 #endif /* ifndef __WINRT__ */
