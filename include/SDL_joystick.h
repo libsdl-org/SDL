@@ -190,7 +190,7 @@ extern DECLSPEC Sint16 SDLCALL SDL_JoystickGetAxis(SDL_Joystick * joystick,
  */
 /* @{ */
 #define SDL_HAT_CENTERED    0x00
-#define SDL_HAT_UP      0x01
+#define SDL_HAT_UP          0x01
 #define SDL_HAT_RIGHT       0x02
 #define SDL_HAT_DOWN        0x04
 #define SDL_HAT_LEFT        0x08
