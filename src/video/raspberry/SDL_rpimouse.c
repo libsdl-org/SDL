@@ -48,7 +48,7 @@ static int RPI_ShowCursor(SDL_Cursor * cursor);
 static void RPI_MoveCursor(SDL_Cursor * cursor);
 static void RPI_FreeCursor(SDL_Cursor * cursor);
 static void RPI_WarpMouse(SDL_Window * window, int x, int y);
-static void RPI_WarpMouseGlobal(int x, int y);
+static int RPI_WarpMouseGlobal(int x, int y);
 
 static SDL_Cursor *
 RPI_CreateDefaultCursor(void)
