@@ -318,13 +318,14 @@ X11_WarpMouse(SDL_Window * window, int x, int y)
     X11_XSync(display, False);
 }
 
-static void
+static int
 X11_WarpMouseGlobal(int x, int y)
 {
     Display *display = GetDisplay();
 
     X11_XWarpPointer(display, None, DefaultRootWindow(display), 0, 0, 0, 0, x, y);
     X11_XSync(display, False);
+    return 0;
 }
 
 static int

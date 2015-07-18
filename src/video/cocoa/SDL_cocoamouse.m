@@ -210,7 +210,7 @@ SDL_FindWindowAtPoint(const int x, const int y)
     return NULL;
 }
 
-static void
+static int
 Cocoa_WarpMouseGlobal(int x, int y)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
@@ -219,7 +219,7 @@ Cocoa_WarpMouseGlobal(int x, int y)
         if ([data->listener isMoving]) {
             DLog("Postponing warp, window being moved.");
             [data->listener setPendingMoveX:x Y:y];
-            return;
+            return 0;
         }
     }
     const CGPoint point = CGPointMake((float)x, (float)y);
@@ -245,6 +245,8 @@ Cocoa_WarpMouseGlobal(int x, int y)
             SDL_SendMouseMotion(win, mouse->mouseID, 0, x - win->x, y - win->y);
         }
     }
+
+    return 0;
 }
 
 static void
