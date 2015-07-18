@@ -347,10 +347,10 @@ Wayland_WarpMouse(SDL_Window *window, int x, int y)
     SDL_Unsupported();
 }
 
-static void
+static int
 Wayland_WarpMouseGlobal(int x, int y)
 {
-    SDL_Unsupported();
+    return SDL_Unsupported();
 }
 
 static int

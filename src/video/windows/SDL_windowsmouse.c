@@ -236,7 +236,7 @@ WIN_WarpMouse(SDL_Window * window, int x, int y)
     SetCursorPos(pt.x, pt.y);
 }
 
-static void
+static int
 WIN_WarpMouseGlobal(int x, int y)
 {
     POINT pt;
@@ -244,6 +244,7 @@ WIN_WarpMouseGlobal(int x, int y)
     pt.x = x;
     pt.y = y;
     SetCursorPos(pt.x, pt.y);
+    return 0;
 }
 
 static int

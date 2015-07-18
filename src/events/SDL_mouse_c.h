@@ -61,7 +61,7 @@ typedef struct
     void (*WarpMouse) (SDL_Window * window, int x, int y);
 
     /* Warp the mouse to (x,y) in screen space */
-    void (*WarpMouseGlobal) (int x, int y);
+    int (*WarpMouseGlobal) (int x, int y);
 
     /* Set relative mode */
     int (*SetRelativeMouseMode) (SDL_bool enabled);
