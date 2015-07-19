@@ -339,9 +339,11 @@ UIKit_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
                     SDL_uikitopenglview *glview = (SDL_uikitopenglview *)data.viewcontroller.view;
                     info->info.uikit.framebuffer = glview.drawableFramebuffer;
                     info->info.uikit.colorbuffer = glview.drawableRenderbuffer;
+                    info->info.uikit.resolveFramebuffer = glview.msaaResolveFramebuffer;
                 } else {
                     info->info.uikit.framebuffer = 0;
                     info->info.uikit.colorbuffer = 0;
+                    info->info.uikit.resolveFramebuffer = 0;
                 }
             }
 

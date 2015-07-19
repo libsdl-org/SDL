@@ -2,13 +2,13 @@ iOS
 ======
 
 ==============================================================================
-Building the Simple DirectMedia Layer for iPhone OS 5.1
+Building the Simple DirectMedia Layer for iOS 5.1+
 ==============================================================================
 
-Requirements: Mac OS X v10.5 or later and the iPhone SDK.
+Requirements: Mac OS X 10.8 or later and the iOS 7+ SDK.
 
 Instructions:
-1.  Open SDL.xcodeproj (located in Xcode-iOS/SDL) in XCode.
+1.  Open SDL.xcodeproj (located in Xcode-iOS/SDL) in Xcode.
 2.  Select your desired target, and hit build.
 
 There are three build targets:
@@ -134,13 +134,21 @@ The main thing to note when using the accelerometer with SDL is that while the i
 Notes -- OpenGL ES
 ==============================================================================
 
-Your SDL application for iPhone uses OpenGL ES for video by default.
+Your SDL application for iOS uses OpenGL ES for video by default.
 
-OpenGL ES for iPhone supports several display pixel formats, such as RGBA8 and RGB565, which provide a 32 bit and 16 bit color buffer respectively.  By default, the implementation uses RGB565, but you may use RGBA8 by setting each color component to 8 bits in SDL_GL_SetAttribute.
+OpenGL ES for iOS supports several display pixel formats, such as RGBA8 and RGB565, which provide a 32 bit and 16 bit color buffer respectively. By default, the implementation uses RGB565, but you may use RGBA8 by setting each color component to 8 bits in SDL_GL_SetAttribute.
 
 If your application doesn't use OpenGL's depth buffer, you may find significant performance improvement by setting SDL_GL_DEPTH_SIZE to 0.
 
-Finally, if your application completely redraws the screen each frame, you may find significant performance improvement by setting the attribute SDL_GL_RETAINED_BACKING to 1.
+Finally, if your application completely redraws the screen each frame, you may find significant performance improvement by setting the attribute SDL_GL_RETAINED_BACKING to 0.
+
+OpenGL ES on iOS doesn't use the traditional system-framebuffer setup provided in other operating systems. Special care must be taken because of this:
+
+- The drawable Renderbuffer must be bound to the GL_RENDERBUFFER binding point when SDL_GL_SwapWindow is called.
+- The drawable Framebuffer Object must be bound while rendering to the screen and when SDL_GL_SwapWindow is called.
+- If multisample antialiasing (MSAA) is used and glReadPixels is used on the screen, the drawable framebuffer must be resolved to the MSAA resolve framebuffer (via glBlitFramebuffer or glResolveMultisampleFramebufferAPPLE), and the MSAA resolve framebuffer must be bound to the GL_READ_FRAMEBUFFER binding point, before glReadPixels is called.
+
+The above objects can be obtained via SDL_GetWindowWMInfo (in SDL_syswm.h).
 
 ==============================================================================
 Notes -- Keyboard
@@ -189,7 +197,7 @@ Textures:
 	The optimal texture formats on iOS are SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_ABGR8888, SDL_PIXELFORMAT_BGR888, and SDL_PIXELFORMAT_RGB24 pixel formats.
 
 Loading Shared Objects:
-	This is disabled by default since it seems to break the terms of the iPhone SDK agreement.  It can be re-enabled in SDL_config_iphoneos.h.
+	This is disabled by default since it seems to break the terms of the iOS SDK agreement for iOS versions prior to iOS 8. It can be re-enabled in SDL_config_iphoneos.h.
 
 ==============================================================================
 Game Center 
