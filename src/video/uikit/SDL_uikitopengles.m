@@ -141,10 +141,15 @@ UIKit_GL_CreateContext(_THIS, SDL_Window * window)
         CGRect frame = UIKit_ComputeViewFrame(window, data.uiwindow.screen);
         EAGLSharegroup *sharegroup = nil;
         CGFloat scale = 1.0;
+        int samples = 0;
 
         /* The EAGLRenderingAPI enum values currently map 1:1 to major GLES
          * versions. */
         EAGLRenderingAPI api = _this->gl_config.major_version;
+
+        if (_this->gl_config.multisamplebuffers > 0) {
+            samples = _this->gl_config.multisamplesamples;
+        }
 
         if (_this->gl_config.share_with_current_context) {
             EAGLContext *context = (__bridge EAGLContext *) SDL_GL_GetCurrentContext();
@@ -182,6 +187,7 @@ UIKit_GL_CreateContext(_THIS, SDL_Window * window)
                                                 depthBits:_this->gl_config.depth_size
                                               stencilBits:_this->gl_config.stencil_size
                                                      sRGB:_this->gl_config.framebuffer_srgb_capable
+                                             multisamples:samples
                                                   context:context];
 
         if (!view) {

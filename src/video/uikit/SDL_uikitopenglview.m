@@ -34,8 +34,18 @@
     /* The depth buffer that is attached to viewFramebuffer, if it exists. */
     GLuint depthRenderbuffer;
 
+    GLenum colorBufferFormat;
+
     /* format of depthRenderbuffer */
     GLenum depthBufferFormat;
+
+    /* The framebuffer and renderbuffer used for rendering with MSAA. */
+    GLuint msaaFramebuffer, msaaRenderbuffer;
+
+    /* The number of MSAA samples. */
+    int samples;
+
+    BOOL retainedBacking;
 }
 
 @synthesize context;
@@ -57,6 +67,7 @@
                     depthBits:(int)depthBits
                   stencilBits:(int)stencilBits
                          sRGB:(BOOL)sRGB
+                 multisamples:(int)multisamples
                       context:(EAGLContext *)glcontext
 {
     if ((self = [super initWithFrame:frame])) {
@@ -65,6 +76,8 @@
         NSString *colorFormat = nil;
 
         context = glcontext;
+        samples = multisamples;
+        retainedBacking = retained;
 
         if (!context || ![EAGLContext setCurrentContext:context]) {
             SDL_SetError("Could not create OpenGL ES drawable (could not make context current)");
@@ -75,6 +88,7 @@
             /* sRGB EAGL drawable support was added in iOS 7. */
             if (UIKit_IsSystemVersionAtLeast(7.0)) {
                 colorFormat = kEAGLColorFormatSRGBA8;
+                colorBufferFormat = GL_SRGB8_ALPHA8;
             } else {
                 SDL_SetError("sRGB drawables are not supported.");
                 return nil;
@@ -82,9 +96,11 @@
         } else if (rBits >= 8 || gBits >= 8 || bBits >= 8) {
             /* if user specifically requests rbg888 or some color format higher than 16bpp */
             colorFormat = kEAGLColorFormatRGBA8;
+            colorBufferFormat = GL_RGBA8;
         } else {
             /* default case (potentially faster) */
             colorFormat = kEAGLColorFormatRGB565;
+            colorBufferFormat = GL_RGB565;
         }
 
         CAEAGLLayer *eaglLayer = (CAEAGLLayer *)self.layer;
@@ -117,7 +133,31 @@
         glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &backingWidth);
         glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &backingHeight);
 
-        if ((useDepthBuffer) || (useStencilBuffer)) {
+        if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            SDL_SetError("Failed creating OpenGL ES framebuffer");
+            return nil;
+        }
+
+        /* When MSAA is used we'll use a separate framebuffer for rendering to,
+         * since we'll need to do an explicit MSAA resolve before presenting. */
+        if (samples > 0) {
+            glGenFramebuffers(1, &msaaFramebuffer);
+            glBindFramebuffer(GL_FRAMEBUFFER, msaaFramebuffer);
+
+            glGenRenderbuffers(1, &msaaRenderbuffer);
+            glBindRenderbuffer(GL_RENDERBUFFER, msaaRenderbuffer);
+
+            glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, colorBufferFormat, backingWidth, backingHeight);
+
+            glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, msaaRenderbuffer);
+
+            if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+                SDL_SetError("Failed creating OpenGL ES framebuffer: Unsupported MSAA sample count");
+                return nil;
+            }
+        }
+
+        if (useDepthBuffer || useStencilBuffer) {
             if (useStencilBuffer) {
                 /* Apparently you need to pack stencil and depth into one buffer. */
                 depthBufferFormat = GL_DEPTH24_STENCIL8_OES;
@@ -129,7 +169,13 @@
 
             glGenRenderbuffers(1, &depthRenderbuffer);
             glBindRenderbuffer(GL_RENDERBUFFER, depthRenderbuffer);
-            glRenderbufferStorage(GL_RENDERBUFFER, depthBufferFormat, backingWidth, backingHeight);
+
+            if (samples > 0) {
+                glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, depthBufferFormat, backingWidth, backingHeight);
+            } else {
+                glRenderbufferStorage(GL_RENDERBUFFER, depthBufferFormat, backingWidth, backingHeight);
+            }
+
             if (useDepthBuffer) {
                 glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, depthRenderbuffer);
             }
@@ -158,7 +204,23 @@
 
 - (GLuint)drawableFramebuffer
 {
-    return viewFramebuffer;
+    /* When MSAA is used, the MSAA draw framebuffer is used for drawing. */
+    if (msaaFramebuffer) {
+        return msaaFramebuffer;
+    } else {
+        return viewFramebuffer;
+    }
+}
+
+- (GLuint)msaaResolveFramebuffer
+{
+    /* When MSAA is used, the MSAA draw framebuffer is used for drawing and the
+     * view framebuffer is used as a MSAA resolve framebuffer. */
+    if (msaaFramebuffer) {
+        return viewFramebuffer;
+    } else {
+        return 0;
+    }
 }
 
 - (void)updateFrame
@@ -172,9 +234,19 @@
     glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, &backingWidth);
     glGetRenderbufferParameteriv(GL_RENDERBUFFER, GL_RENDERBUFFER_HEIGHT, &backingHeight);
 
+    if (msaaRenderbuffer != 0) {
+        glBindRenderbuffer(GL_RENDERBUFFER, msaaRenderbuffer);
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_RGBA8, backingWidth, backingHeight);
+    }
+
     if (depthRenderbuffer != 0) {
         glBindRenderbuffer(GL_RENDERBUFFER, depthRenderbuffer);
-        glRenderbufferStorage(GL_RENDERBUFFER, depthBufferFormat, backingWidth, backingHeight);
+
+        if (samples > 0) {
+            glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, depthBufferFormat, backingWidth, backingHeight);
+        } else {
+            glRenderbufferStorage(GL_RENDERBUFFER, depthBufferFormat, backingWidth, backingHeight);
+        }
     }
 
     glBindRenderbuffer(GL_RENDERBUFFER, prevRenderbuffer);
@@ -197,10 +269,47 @@
             glLabelObjectEXT(GL_RENDERBUFFER, depthRenderbuffer, 0, "context depth buffer");
         }
     }
+
+    if (msaaFramebuffer != 0) {
+        glLabelObjectEXT(GL_FRAMEBUFFER, msaaFramebuffer, 0, "context MSAA FBO");
+    }
+
+    if (msaaRenderbuffer != 0) {
+        glLabelObjectEXT(GL_RENDERBUFFER, msaaRenderbuffer, 0, "context MSAA renderbuffer");
+    }
 }
 
 - (void)swapBuffers
 {
+    if (msaaFramebuffer) {
+        const GLenum attachments[] = {GL_COLOR_ATTACHMENT0};
+
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, viewFramebuffer);
+
+        /* OpenGL ES 3+ provides explicit MSAA resolves via glBlitFramebuffer.
+         * In OpenGL ES 1 and 2, MSAA resolves must be done via an extension. */
+        if (context.API >= kEAGLRenderingAPIOpenGLES3) {
+            int w = backingWidth;
+            int h = backingHeight;
+            glBlitFramebuffer(0, 0, w, h, 0, 0, w, h, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+
+            if (!retainedBacking) {
+                /* Discard the contents of the MSAA drawable color buffer. */
+                glInvalidateFramebuffer(GL_READ_FRAMEBUFFER, 1, attachments);
+            }
+        } else {
+            glResolveMultisampleFramebufferAPPLE();
+
+            if (!retainedBacking) {
+                glDiscardFramebufferEXT(GL_READ_FRAMEBUFFER, 1, attachments);
+            }
+        }
+
+        /* We assume the "drawable framebuffer" (MSAA draw framebuffer) was
+         * previously bound... */
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, msaaFramebuffer);
+    }
+
     /* viewRenderbuffer should always be bound here. Code that binds something
      * else is responsible for rebinding viewRenderbuffer, to reduce duplicate
      * state changes. */
@@ -244,6 +353,16 @@
     if (depthRenderbuffer != 0) {
         glDeleteRenderbuffers(1, &depthRenderbuffer);
         depthRenderbuffer = 0;
+    }
+
+    if (msaaFramebuffer != 0) {
+        glDeleteFramebuffers(1, &msaaFramebuffer);
+        msaaFramebuffer = 0;
+    }
+
+    if (msaaRenderbuffer != 0) {
+        glDeleteRenderbuffers(1, &msaaRenderbuffer);
+        msaaRenderbuffer = 0;
     }
 }
 
