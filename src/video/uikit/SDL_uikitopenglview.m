@@ -84,6 +84,18 @@
             return nil;
         }
 
+        if (samples > 0) {
+            GLint maxsamples = 0;
+            glGetIntegerv(GL_MAX_SAMPLES, &maxsamples);
+
+            /* Verify that the sample count is supported before creating any
+             * multisample Renderbuffers, to avoid generating GL errors. */
+            if (samples > maxsamples) {
+                SDL_SetError("Failed creating OpenGL ES framebuffer: Unsupported MSAA sample count");
+                return nil;
+            }
+        }
+
         if (sRGB) {
             /* sRGB EAGL drawable support was added in iOS 7. */
             if (UIKit_IsSystemVersionAtLeast(7.0)) {
@@ -150,11 +162,6 @@
             glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, colorBufferFormat, backingWidth, backingHeight);
 
             glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER, msaaRenderbuffer);
-
-            if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-                SDL_SetError("Failed creating OpenGL ES framebuffer: Unsupported MSAA sample count");
-                return nil;
-            }
         }
 
         if (useDepthBuffer || useStencilBuffer) {
