@@ -26,6 +26,7 @@
 #include "SDL_cocoavideo.h"
 #include "../../events/SDL_events_c.h"
 #include "SDL_assert.h"
+#include "SDL_hints.h"
 
 /* This define was added in the 10.9 SDK. */
 #ifndef kIOPMAssertPreventUserIdleDisplaySleep
@@ -318,19 +319,21 @@ Cocoa_RegisterApp(void)
         [SDLApplication sharedApplication];
         SDL_assert(NSApp != nil);
 
+        const char *hint = SDL_GetHint(SDL_HINT_MAC_BACKGROUND_APP);
+		if (!hint && *hint != '0') {
 #if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_6
-        if ([NSApp respondsToSelector:@selector(setActivationPolicy:)]) {
+			if ([NSApp respondsToSelector:@selector(setActivationPolicy:)]) {
 #endif
-            [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
+				[NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
 #if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_6
-        } else {
-            ProcessSerialNumber psn = {0, kCurrentProcess};
-            TransformProcessType(&psn, kProcessTransformToForegroundApplication);
-        }
+			} else {
+				ProcessSerialNumber psn = {0, kCurrentProcess};
+				TransformProcessType(&psn, kProcessTransformToForegroundApplication);
+			}
 #endif
-
-        [NSApp activateIgnoringOtherApps:YES];
-
+            [NSApp activateIgnoringOtherApps:YES];
+		}
+		
         if ([NSApp mainMenu] == nil) {
             CreateApplicationMenus();
         }

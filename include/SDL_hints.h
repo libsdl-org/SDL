@@ -526,6 +526,14 @@ extern "C" {
 #define SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES    "SDL_VIDEO_MAC_FULLSCREEN_SPACES"
 
 /**
+*  \brief  When set don't force the SDL app to become a foreground process
+*
+*  This hint only applies to Mac OS X.
+*
+*/
+#define SDL_HINT_MAC_BACKGROUND_APP    "SDL_MAC_BACKGROUND_APP"
+    
+/**
  * \brief Android APK expansion main file version. Should be a string number like "1", "2" etc.
  */
 #define SDL_HINT_ANDROID_APK_EXPANSION_MAIN_FILE_VERSION "SDL_ANDROID_APK_EXPANSION_MAIN_FILE_VERSION"
