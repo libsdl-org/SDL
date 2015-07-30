@@ -76,6 +76,17 @@ typedef struct _TOUCHINPUT {
 
 #endif /* WINVER < 0x0601 */
 
+#if WINVER < 0x0603
+
+typedef enum MONITOR_DPI_TYPE {
+    MDT_EFFECTIVE_DPI = 0,
+    MDT_ANGULAR_DPI = 1,
+    MDT_RAW_DPI = 2,
+    MDT_DEFAULT = MDT_EFFECTIVE_DPI
+} MONITOR_DPI_TYPE;
+
+#endif /* WINVER < 0x0603 */
+
 typedef BOOL  (*PFNSHFullScreen)(HWND, DWORD);
 typedef void  (*PFCoordTransform)(SDL_Window*, POINT*);
 
@@ -124,6 +135,12 @@ typedef struct SDL_VideoData
     BOOL (WINAPI *GetTouchInputInfo)( HTOUCHINPUT, UINT, PTOUCHINPUT, int );
     BOOL (WINAPI *RegisterTouchWindow)( HWND, ULONG );
 
+    void* shcoreDLL;
+    HRESULT (WINAPI *GetDpiForMonitor)( HMONITOR         hmonitor,
+                                        MONITOR_DPI_TYPE dpiType,
+                                        UINT             *dpiX,
+                                        UINT             *dpiY );
+    
     SDL_bool ime_com_initialized;
     struct ITfThreadMgr *ime_threadmgr;
     SDL_bool ime_initialized;
