@@ -81,7 +81,7 @@ static int SDL_EGL_HasExtension(_THIS, const char *ext)
 {
     int i;
     int len = 0;
-    int ext_len;
+    size_t ext_len;
     const char *exts;
     const char *ext_word;
 

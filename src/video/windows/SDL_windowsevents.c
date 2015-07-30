@@ -598,7 +598,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 	case WM_CHAR:
 		{
 			char text[5];
-			if ( WIN_ConvertUTF32toUTF8( wParam, text ) ) {
+			if ( WIN_ConvertUTF32toUTF8( (UINT32)wParam, text ) ) {
 				SDL_SendKeyboardText( text );
 			}
 		}
