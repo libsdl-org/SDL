@@ -297,6 +297,18 @@ extern DECLSPEC const char * SDLCALL SDL_GetDisplayName(int displayIndex);
 extern DECLSPEC int SDLCALL SDL_GetDisplayBounds(int displayIndex, SDL_Rect * rect);
 
 /**
+ *  \brief Get the dots/pixels-per-inch for a display
+ *
+ *  \note Diagonal, horizontal and vertical DPI can all be optionally
+ *        returned if the parameter is non-NULL.
+ *
+ *  \return 0 on success, or -1 if no DPI information is available or the index is out of range.
+ *
+ *  \sa SDL_GetNumVideoDisplays()
+ */
+extern DECLSPEC int SDLCALL SDL_GetDisplayDPI(int displayIndex, float * ddpi, float * hdpi, float * vdpi);
+
+/**
  *  \brief Returns the number of available display modes.
  *
  *  \sa SDL_GetDisplayMode()
