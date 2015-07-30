@@ -121,11 +121,16 @@ WIN_GetDisplayMode(_THIS, LPCTSTR deviceName, DWORD index, SDL_DisplayMode * mod
 		// so only call after those are set.
 		if (vid_data->GetDpiForMonitor) {
 			WIN_GetMonitorDPIData dpi_data;
+            RECT monitor_rect;
 
 			dpi_data.vid_data = vid_data;
 			dpi_data.mode = mode;
 			dpi_data.mode_data = data;
-			EnumDisplayMonitors(hdc, NULL, WIN_GetMonitorDPI, (LPARAM)&dpi_data);
+            monitor_rect.left = devmode.dmPosition.x;
+            monitor_rect.top = devmode.dmPosition.y;
+            monitor_rect.right = monitor_rect.left + 1;
+            monitor_rect.bottom = monitor_rect.top + 1;
+			EnumDisplayMonitors(NULL, &monitor_rect, WIN_GetMonitorDPI, (LPARAM)&dpi_data);
 		} else {
 			// We don't have the Windows 8.1 routine so just
 			// get system DPI.
