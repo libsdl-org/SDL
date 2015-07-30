@@ -947,7 +947,7 @@ X11_GetDisplayDPI(_THIS, SDL_VideoDisplay * sdl_display, float * ddpi, float * h
         *hdpi = data->hdpi;
     }
     if (vdpi) {
-        *vpid = data->vdpi;
+        *vdpi = data->vdpi;
     }
 
     return data->ddpi != 0.0f ? 0 : -1;
