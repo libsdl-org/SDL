@@ -533,6 +533,18 @@ X11_InitModes(_THIS)
         displaydata->visual = vinfo.visual;
         displaydata->depth = vinfo.depth;
 
+        // We use the displaydata screen index here so that this works
+        // for both the Xinerama case, where we get the overall DPI,
+        // and the regular X11 screen info case.
+        displaydata->hdpi = (float)DisplayWidth(data->display, displaydata->screen) * 25.4f /
+            DisplayWidthMM(data->display, displaydata->screen);
+        displaydata->vdpi = (float)DisplayHeight(data->display, displaydata->screen) * 25.4f /
+            DisplayHeightMM(data->display, displaydata->screen);
+        displaydata->ddpi = SDL_ComputeDiagonalDPI(DisplayWidth(data->display, displaydata->screen),
+                                                   DisplayHeight(data->display, displaydata->screen),
+                                                   (float)DisplayWidthMM(data->display, displaydata->screen) / 25.4f,
+                                                   (float)DisplayHeightMM(data->display, displaydata->screen) / 25.4f);
+
         displaydata->scanline_pad = SDL_BYTESPERPIXEL(mode.format) * 8;
         pixmapFormats = X11_XListPixmapFormats(data->display, &n);
         if (pixmapFormats) {
@@ -921,6 +933,24 @@ X11_GetDisplayBounds(_THIS, SDL_VideoDisplay * sdl_display, SDL_Rect * rect)
     }
 #endif /* SDL_VIDEO_DRIVER_X11_XINERAMA */
     return 0;
+}
+
+int
+X11_GetDisplayDPI(_THIS, SDL_VideoDisplay * sdl_display, float * ddpi, float * hdpi, float * vdpi)
+{
+    SDL_DisplayData *data = (SDL_DisplayData *) sdl_display->driverdata;
+
+    if (ddpi) {
+        *ddpi = data->ddpi;
+    }
+    if (hdpi) {
+        *hdpi = data->hdpi;
+    }
+    if (vdpi) {
+        *vpid = data->vdpi;
+    }
+
+    return data->ddpi != 0.0f ? 0 : -1;
 }
 
 #endif /* SDL_VIDEO_DRIVER_X11 */

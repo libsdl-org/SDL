@@ -31,6 +31,9 @@ typedef struct
     int scanline_pad;
     int x;
     int y;
+    float ddpi;
+    float hdpi;
+    float vdpi;
 
     int use_xinerama;
     int use_xrandr;
@@ -74,6 +77,7 @@ extern int X11_GetVisualInfoFromVisual(Display * display, Visual * visual,
 extern Uint32 X11_GetPixelFormatFromVisualInfo(Display * display,
                                                XVisualInfo * vinfo);
 extern int X11_GetDisplayBounds(_THIS, SDL_VideoDisplay * sdl_display, SDL_Rect * rect);
+extern int X11_GetDisplayDPI(_THIS, SDL_VideoDisplay * sdl_display, float * ddpi, float * hdpi, float * vdpi);
 
 #endif /* _SDL_x11modes_h */
 
