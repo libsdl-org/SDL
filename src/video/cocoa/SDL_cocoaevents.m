@@ -320,7 +320,7 @@ Cocoa_RegisterApp(void)
         SDL_assert(NSApp != nil);
 
         const char *hint = SDL_GetHint(SDL_HINT_MAC_BACKGROUND_APP);
-		if (!hint || *hint != '0') {
+        if (!hint || *hint == '0') {
 #if MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_6
 			if ([NSApp respondsToSelector:@selector(setActivationPolicy:)]) {
 #endif
