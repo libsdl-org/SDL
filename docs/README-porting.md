@@ -43,6 +43,7 @@ There are two basic ways of building SDL at the moment:
 	src/video/*.c
 	src/audio/disk/*.c
 	src/audio/dummy/*.c
+	src/filesystem/dummy/*.c
 	src/video/dummy/*.c
 	src/haptic/dummy/*.c
 	src/joystick/dummy/*.c
