@@ -115,7 +115,7 @@ echo "public class $ACTIVITY extends SDLActivity {}" >> "$ACTIVITY.java"
 
 # Update project and build
 cd $BUILDPATH
-android update project --path $BUILDPATH
+$ANDROID update project --path $BUILDPATH
 $NDKBUILD -j $NCPUS $NDKARGS
 $ANT debug
 
