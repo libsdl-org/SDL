@@ -453,8 +453,8 @@ typedef struct SDL_DollarGestureEvent
 
 /**
  *  \brief An event used to request a file open by the system (event.drop.*)
- *         This event is disabled by default, you can enable it with SDL_EventState()
- *  \note If you enable this event, you must free the filename in the event.
+ *         This event is enabled by default, you can disable it with SDL_EventState().
+ *  \note If this event is enabled, you must free the filename in the event.
  */
 typedef struct SDL_DropEvent
 {
