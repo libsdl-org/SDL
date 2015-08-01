@@ -340,6 +340,18 @@ SDL_EGL_ChooseConfig(_THIS)
         attribs[i++] = _this->gl_config.multisamplesamples;
     }
 
+    if (_this->gl_config.framebuffer_srgb_capable) {
+#ifdef EGL_KHR_gl_colorspace
+        if (SDL_EGL_HasExtension(_this, "EGL_KHR_gl_colorspace")) {
+            attribs[i++] = EGL_GL_COLORSPACE_KHR;
+            attribs[i++] = EGL_GL_COLORSPACE_SRGB_KHR;
+        } else
+#endif
+        {
+            return SDL_SetError("EGL implementation does not support sRGB system framebuffers");
+        }
+    }
+
     attribs[i++] = EGL_RENDERABLE_TYPE;
     if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) {
 #ifdef EGL_KHR_create_context
@@ -358,9 +370,9 @@ SDL_EGL_ChooseConfig(_THIS)
         attribs[i++] = EGL_OPENGL_BIT;
         _this->egl_data->eglBindAPI(EGL_OPENGL_API);
     }
-    
+
     attribs[i++] = EGL_NONE;
-   
+
     if (_this->egl_data->eglChooseConfig(_this->egl_data->egl_display,
         attribs,
         configs, SDL_arraysize(configs),
@@ -368,7 +380,7 @@ SDL_EGL_ChooseConfig(_THIS)
         found_configs == 0) {
         return SDL_SetError("Couldn't find matching EGL config");
     }
-    
+
     /* eglChooseConfig returns a number of configurations that match or exceed the requested attribs. */
     /* From those, we select the one that matches our requirements more closely via a makeshift algorithm */
 
