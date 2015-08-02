@@ -17,7 +17,7 @@
 extern void SDL_Android_Init(JNIEnv* env, jclass cls);
 
 /* Start up the SDL app */
-int Java_org_libsdl_app_SDLActivity_nativeInit(JNIEnv* env, jclass cls, jobject array)
+JNIEXPORT int JNICALL Java_org_libsdl_app_SDLActivity_nativeInit(JNIEnv* env, jclass cls, jobject array)
 {
     int i;
     int argc;
