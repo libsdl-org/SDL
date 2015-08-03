@@ -594,6 +594,15 @@ extern "C" {
 #define SDL_HINT_NO_SIGNAL_HANDLERS   "SDL_NO_SIGNAL_HANDLERS"
 
 /**
+ *  \brief Tell SDL not to generate window-close events for Alt+F4 on Windows.
+ *
+ * The variable can be set to the following values:
+ *   "0"       - SDL will generate a window-close event when it sees Alt+F4.
+ *   "1"       - SDL will only do normal key handling for Alt+F4.
+ */
+#define SDL_HINT_WINDOWS_NO_CLOSE_ON_ALT_F4	"SDL_WINDOWS_NO_CLOSE_ON_ALT_F4"
+
+/**
  *  \brief  An enumeration of hint priorities
  */
 typedef enum
