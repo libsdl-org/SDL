@@ -32,6 +32,7 @@
 #include "../../events/SDL_touch_c.h"
 #include "../../events/scancodes_windows.h"
 #include "SDL_assert.h"
+#include "SDL_hints.h"
 
 /* Dropfile support */
 #include <shellapi.h>
@@ -322,6 +323,22 @@ WIN_ConvertUTF32toUTF8(UINT32 codepoint, char * text)
     return SDL_TRUE;
 }
 
+static SDL_bool
+ShouldGenerateWindowCloseOnAltF4(void)
+{
+    const char *hint;
+    
+    hint = SDL_GetHint(SDL_HINT_WINDOWS_NO_CLOSE_ON_ALT_F4);
+    if (hint) {
+        if (*hint == '0') {
+            return SDL_TRUE;
+        } else {
+            return SDL_FALSE;
+        }
+    }
+    return SDL_TRUE;
+}
+
 LRESULT CALLBACK
 WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -559,7 +576,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             /* Detect relevant keyboard shortcuts */
             if (keyboardState[SDL_SCANCODE_LALT] == SDL_PRESSED || keyboardState[SDL_SCANCODE_RALT] == SDL_PRESSED) {
                 /* ALT+F4: Close window */
-                if (code == SDL_SCANCODE_F4) {
+                if (code == SDL_SCANCODE_F4 && ShouldGenerateWindowCloseOnAltF4()) {
                     SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_CLOSE, 0, 0);
                 }
             }
