@@ -263,6 +263,10 @@ Emscripten_Init(SDL_AudioDriverImpl * impl)
         return 0;
     });
 
+    if (!available) {
+        SDL_SetError("No audio context available");
+    }
+
     return available;
 }
 
