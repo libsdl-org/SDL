@@ -200,6 +200,7 @@ SDL_SYS_JoystickInit(void)
 
     /* Check if gamepad is supported by browser */
     if (numjs == EMSCRIPTEN_RESULT_NOT_SUPPORTED) {
+        SDL_SetError("Gamepads not supported");
         return -1;
     }
 
@@ -221,6 +222,7 @@ SDL_SYS_JoystickInit(void)
 
     if(retval != EMSCRIPTEN_RESULT_SUCCESS) {
         SDL_SYS_JoystickQuit();
+        SDL_SetError("Could not set gamepad connect callback");
         return -1;
     }
 
@@ -229,6 +231,7 @@ SDL_SYS_JoystickInit(void)
                                                          Emscripten_JoyStickDisconnected);
     if(retval != EMSCRIPTEN_RESULT_SUCCESS) {
         SDL_SYS_JoystickQuit();
+        SDL_SetError("Could not set gamepad disconnect callback");
         return -1;
     }
 
