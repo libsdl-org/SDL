@@ -31,6 +31,7 @@ General:
 * Added SDL_sqrtf(), SDL_tan(), and SDL_tanf() to the stdlib routines
 * Improved support for WAV and BMP files with unusual chunks in them
 * Renamed SDL_assert_data to SDL_AssertData and SDL_assert_state to SDL_AssertState
+* Added a hint SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN to prevent window interaction while cursor is hidden
 
 Windows:
 * Added support for Windows Phone 8.1
@@ -43,6 +44,8 @@ Windows:
 * Added support for Unicode command line options
 * Prevent beeping when Alt-key combos are pressed
 * SDL_SetTextInputRect() re-positions the OS-rendered IME
+* Added a hint SDL_HINT_WINDOWS_NO_CLOSE_ON_ALT_F4 to prevent generating SDL_WINDOWEVENT_CLOSE events when Alt-F4 is pressed
+* Added a hint SDL_HINT_XINPUT_USE_OLD_JOYSTICK_MAPPING to use the old axis and button mapping for XInput devices (deprecated)
 
 Mac OS X:
 * Implemented drag-and-drop support
@@ -52,6 +55,7 @@ Mac OS X:
 * Fixed bugs related to transitioning to and from Spaces-aware fullscreen-desktop mode
 * Fixed the refresh rate of display modes
 * SDL_SysWMInfo is now ARC-compatible
+* Added a hint SDL_HINT_MAC_BACKGROUND_APP to prevent forcing the application to become a foreground process
 
 Linux:
 * Enabled building with Mir and Wayland support by default.
@@ -73,6 +77,7 @@ iOS:
 
 Android:
 * Added a hint SDL_HINT_ANDROID_SEPARATE_MOUSE_AND_TOUCH to prevent mouse events from being registered as touch events
+* Added hints SDL_HINT_ANDROID_APK_EXPANSION_MAIN_FILE_VERSION and SDL_HINT_ANDROID_APK_EXPANSION_PATCH_FILE_VERSION
 
 Raspberry Pi:
 * Added support for the Raspberry Pi 2
