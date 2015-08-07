@@ -81,6 +81,7 @@ main(int argc, char *argv[])
         SDL_Log("\n");
     }
 
+    SDL_Quit();
     return 0;
 }
 
