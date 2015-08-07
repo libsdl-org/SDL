@@ -748,7 +748,9 @@ X11_GetDisplayModes(_THIS, SDL_VideoDisplay * sdl_display)
                 *modedata = *(SDL_DisplayModeData *)sdl_display->desktop_mode.driverdata;
             }
             mode.driverdata = modedata;
-            SDL_AddDisplayMode(sdl_display, &mode);
+            if (!SDL_AddDisplayMode(sdl_display, &mode)) {
+                SDL_free(modedata);
+            }
         }
         else if (!data->use_xrandr)
         {
@@ -762,7 +764,9 @@ X11_GetDisplayModes(_THIS, SDL_VideoDisplay * sdl_display)
                 *modedata = *(SDL_DisplayModeData *)sdl_display->desktop_mode.driverdata;
             }
             mode.driverdata = modedata;
-            SDL_AddDisplayMode(sdl_display, &mode);
+            if (!SDL_AddDisplayMode(sdl_display, &mode)) {
+                SDL_free(modedata);
+            }
         }
 
     }
@@ -787,9 +791,8 @@ X11_GetDisplayModes(_THIS, SDL_VideoDisplay * sdl_display)
                     }
                     mode.driverdata = modedata;
 
-                    if (SetXRandRModeInfo(display, res, output_info, output_info->modes[i], &mode)) {
-                        SDL_AddDisplayMode(sdl_display, &mode);
-                    } else {
+                    if (!SetXRandRModeInfo(display, res, output_info, output_info->modes[i], &mode) ||
+                        !SDL_AddDisplayMode(sdl_display, &mode)) {
                         SDL_free(modedata);
                     }
                 }
@@ -822,9 +825,7 @@ X11_GetDisplayModes(_THIS, SDL_VideoDisplay * sdl_display)
             }
             mode.driverdata = modedata;
 
-            if (SetXVidModeModeInfo(modes[i], &mode)) {
-                SDL_AddDisplayMode(sdl_display, &mode);
-            } else {
+            if (!SetXVidModeModeInfo(modes[i], &mode) || !SDL_AddDisplayMode(sdl_display, &mode)) {
                 SDL_free(modedata);
             }
         }
@@ -842,7 +843,9 @@ X11_GetDisplayModes(_THIS, SDL_VideoDisplay * sdl_display)
             *modedata = *(SDL_DisplayModeData *)sdl_display->desktop_mode.driverdata;
         }
         mode.driverdata = modedata;
-        SDL_AddDisplayMode(sdl_display, &mode);
+        if (!SDL_AddDisplayMode(sdl_display, &mode)) {
+            SDL_free(modedata);
+        }
     }
 }
 
