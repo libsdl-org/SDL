@@ -244,10 +244,12 @@ CheckXRandR(Display * display, int *major, int *minor)
     }
 
     /* Query the extension version */
+    *major = 1; *minor = 3;  /* we want 1.3 */
     if (!X11_XRRQueryVersion(display, major, minor)) {
 #ifdef X11MODES_DEBUG
         printf("XRandR not active on the display\n");
 #endif
+        *major = *minor = 0;
         return SDL_FALSE;
     }
 #ifdef X11MODES_DEBUG
@@ -267,20 +269,20 @@ CalculateXRandRRefreshRate(const XRRModeInfo *info)
 }
 
 static SDL_bool
-SetXRandRModeInfo(Display *display, XRRScreenResources *res, XRROutputInfo *output_info,
+SetXRandRModeInfo(Display *display, XRRScreenResources *res, RRCrtc crtc,
                   RRMode modeID, SDL_DisplayMode *mode)
 {
     int i;
     for (i = 0; i < res->nmode; ++i) {
-        if (res->modes[i].id == modeID) {
-            XRRCrtcInfo *crtc;
+        const XRRModeInfo *info = &res->modes[i];
+        if (info->id == modeID) {
+            XRRCrtcInfo *crtcinfo;
             Rotation rotation = 0;
-            const XRRModeInfo *info = &res->modes[i];
 
-            crtc = X11_XRRGetCrtcInfo(display, res, output_info->crtc);
-            if (crtc) {
-                rotation = crtc->rotation;
-                X11_XRRFreeCrtcInfo(crtc);
+            crtcinfo = X11_XRRGetCrtcInfo(display, res, crtc);
+            if (crtcinfo) {
+                rotation = crtcinfo->rotation;
+                X11_XRRFreeCrtcInfo(crtcinfo);
             }
 
             if (rotation & (XRANDR_ROTATION_LEFT|XRANDR_ROTATION_RIGHT)) {
@@ -299,6 +301,203 @@ SetXRandRModeInfo(Display *display, XRRScreenResources *res, XRROutputInfo *outp
         }
     }
     return SDL_FALSE;
+}
+
+static void
+SetXRandRDisplayName(Display *dpy, Atom EDID, char *name, const size_t namelen, RROutput output, const unsigned long widthmm, const unsigned long heightmm)
+{
+    /* See if we can get the EDID data for the real monitor name */
+    int inches;
+    int nprop;
+    Atom *props = X11_XRRListOutputProperties(dpy, output, &nprop);
+    int i;
+
+    for (i = 0; i < nprop; ++i) {
+        unsigned char *prop;
+        int actual_format;
+        unsigned long nitems, bytes_after;
+        Atom actual_type;
+
+        if (props[i] == EDID) {
+            if (X11_XRRGetOutputProperty(dpy, output, props[i], 0, 100, False,
+                                         False, AnyPropertyType, &actual_type,
+                                         &actual_format, &nitems, &bytes_after,
+                                         &prop) == Success) {
+                MonitorInfo *info = decode_edid(prop);
+                if (info) {
+#ifdef X11MODES_DEBUG
+                    printf("Found EDID data for %s\n", name);
+                    dump_monitor_info(info);
+#endif
+                    SDL_strlcpy(name, info->dsc_product_name, namelen);
+                    free(info);
+                }
+                X11_XFree(prop);
+            }
+            break;
+        }
+    }
+
+    if (props) {
+        X11_XFree(props);
+    }
+
+    inches = (int)((SDL_sqrt(widthmm * widthmm + heightmm * heightmm) / 25.4f) + 0.5f);
+    if (*name && inches) {
+        const size_t len = SDL_strlen(name);
+        SDL_snprintf(&name[len], namelen-len, " %d\"", inches);
+    }
+
+#ifdef X11MODES_DEBUG
+    printf("Display name: %s\n", name);
+#endif
+}
+
+
+int
+X11_InitModes_XRandR(_THIS)
+{
+    /* In theory, you _could_ have multiple screens (like DISPLAY=:0.0
+       and DISPLAY=:0.1) but no XRandR system we care about is like this,
+       as all the physical displays would be separate XRandR "outputs" on
+       the one X11 virtual "screen". So we don't use ScreenCount() here. */
+
+    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+    Display *dpy = data->display;
+    Atom EDID = X11_XInternAtom(dpy, "EDID", False);
+    const int screen = DefaultScreen(dpy);
+    RROutput primary;
+    XRRScreenResources *res = NULL;
+    Uint32 pixelformat;
+    XVisualInfo vinfo;
+    XPixmapFormatValues *pixmapformats;
+    int looking_for_primary;
+    int scanline_pad;
+    int output;
+    int i, n;
+
+    if (get_visualinfo(dpy, screen, &vinfo) < 0) {
+        return -1;
+    }
+
+    pixelformat = X11_GetPixelFormatFromVisualInfo(dpy, &vinfo);
+    if (SDL_ISPIXELFORMAT_INDEXED(pixelformat)) {
+        return SDL_SetError("Palettized video modes are no longer supported");
+    }
+
+    scanline_pad = SDL_BYTESPERPIXEL(pixelformat) * 8;
+    pixmapformats = X11_XListPixmapFormats(dpy, &n);
+    if (pixmapformats) {
+        for (i = 0; i < n; ++i) {
+            if (pixmapformats[i].depth == vinfo.depth) {
+                scanline_pad = pixmapformats[i].scanline_pad;
+                break;
+            }
+        }
+        X11_XFree(pixmapformats);
+    }
+
+    res = X11_XRRGetScreenResources(dpy, RootWindow(dpy, screen));
+    if (!res) {
+        return -1;
+    }
+
+    primary = X11_XRRGetOutputPrimary(dpy, RootWindow(dpy, screen));
+
+    for (looking_for_primary = 1; looking_for_primary >= 0; looking_for_primary--) {
+        for (output = 0; output < res->noutput; output++) {
+            XRROutputInfo *output_info;
+            int display_x, display_y;
+            unsigned long display_mm_width, display_mm_height;
+            SDL_DisplayData *displaydata;
+            char display_name[128];
+            SDL_DisplayMode mode;
+            SDL_DisplayModeData *modedata;
+            SDL_VideoDisplay display;
+            RRMode modeID;
+            RRCrtc output_crtc;
+            XRRCrtcInfo *crtc;
+
+            /* The primary output _should_ always be sorted first, but just in case... */
+            if ((looking_for_primary && (res->outputs[output] != primary)) ||
+                (!looking_for_primary && (res->outputs[output] == primary))) {
+                continue;
+            }
+
+            output_info = X11_XRRGetOutputInfo(dpy, res, res->outputs[output]);
+            if (!output_info || !output_info->crtc || output_info->connection == RR_Disconnected) {
+                X11_XRRFreeOutputInfo(output_info);
+                continue;
+            }
+
+            SDL_strlcpy(display_name, output_info->name, sizeof(display_name));
+            display_mm_width = output_info->mm_width;
+            display_mm_height = output_info->mm_height;
+            output_crtc = output_info->crtc;
+            X11_XRRFreeOutputInfo(output_info);
+
+            crtc = X11_XRRGetCrtcInfo(dpy, res, output_crtc);
+            if (!crtc) {
+                continue;
+            }
+
+            SDL_zero(mode);
+            modeID = crtc->mode;
+            mode.w = crtc->width;
+            mode.h = crtc->height;
+            mode.format = pixelformat;
+
+            display_x = crtc->x;
+            display_y = crtc->y;
+
+            X11_XRRFreeCrtcInfo(crtc);
+
+            displaydata = (SDL_DisplayData *) SDL_calloc(1, sizeof(*displaydata));
+            if (!displaydata) {
+                return SDL_OutOfMemory();
+            }
+
+            modedata = (SDL_DisplayModeData *) SDL_calloc(1, sizeof(SDL_DisplayModeData));
+            if (!modedata) {
+                SDL_free(displaydata);
+                return SDL_OutOfMemory();
+            }
+            modedata->xrandr_mode = modeID;
+            mode.driverdata = modedata;
+
+            displaydata->screen = screen;
+            displaydata->visual = vinfo.visual;
+            displaydata->depth = vinfo.depth;
+            displaydata->hdpi = ((float) mode.w) * 25.4f / display_mm_width;
+            displaydata->vdpi = ((float) mode.h) * 25.4f / display_mm_height;
+            displaydata->ddpi = SDL_ComputeDiagonalDPI(mode.w, mode.h, ((float) display_mm_width) / 25.4f,((float) display_mm_height) / 25.4f);
+            displaydata->scanline_pad = scanline_pad;
+            displaydata->x = display_x;
+            displaydata->y = display_y;
+            displaydata->use_xrandr = 1;
+            displaydata->xrandr_output = res->outputs[output];
+
+            SetXRandRModeInfo(dpy, res, output_crtc, modeID, &mode);
+            SetXRandRDisplayName(dpy, EDID, display_name, sizeof (display_name), res->outputs[output], display_mm_width, display_mm_height);
+
+            SDL_zero(display);
+            if (*display_name) {
+                display.name = display_name;
+            }
+            display.desktop_mode = mode;
+            display.current_mode = mode;
+            display.driverdata = displaydata;
+            SDL_AddVideoDisplay(&display);
+        }
+    }
+
+    X11_XRRFreeScreenResources(res);
+
+    if (_this->num_displays == 0) {
+        return SDL_SetError("No available displays");
+    }
+
+    return 0;
 }
 #endif /* SDL_VIDEO_DRIVER_X11_XRANDR */
 
@@ -399,13 +598,23 @@ X11_InitModes(_THIS)
 #endif
 #if SDL_VIDEO_DRIVER_X11_XRANDR
     int xrandr_major, xrandr_minor;
-    int use_xrandr = 0;
-    XRRScreenResources *res = NULL;
 #endif
 #if SDL_VIDEO_DRIVER_X11_XVIDMODE
     int vm_major, vm_minor;
     int use_vidmode = 0;
 #endif
+
+/* XRandR is the One True Modern Way to do this on X11. If it's enabled and
+   available, don't even look at other ways of doing things. */
+#if SDL_VIDEO_DRIVER_X11_XRANDR
+    /* require at least XRandR v1.3 */
+    if (CheckXRandR(data->display, &xrandr_major, &xrandr_minor) &&
+        (xrandr_major >= 2 || (xrandr_major == 1 && xrandr_minor >= 3))) {
+        return X11_InitModes_XRandR(_this);
+    }
+#endif /* SDL_VIDEO_DRIVER_X11_XRANDR */
+
+/* !!! FIXME: eventually remove support for Xinerama and XVidMode (everything below here). */
 
 #if SDL_VIDEO_DRIVER_X11_XINERAMA
     /* Query Xinerama extention
@@ -432,14 +641,6 @@ X11_InitModes(_THIS)
 #else
     screencount = ScreenCount(data->display);
 #endif /* SDL_VIDEO_DRIVER_X11_XINERAMA */
-
-#if SDL_VIDEO_DRIVER_X11_XRANDR
-    /* require at least XRandR v1.2 */
-    if (CheckXRandR(data->display, &xrandr_major, &xrandr_minor) &&
-        (xrandr_major >= 2 || (xrandr_major == 1 && xrandr_minor >= 2))) {
-        use_xrandr = xrandr_major * 100 + xrandr_minor;
-    }
-#endif /* SDL_VIDEO_DRIVER_X11_XRANDR */
 
 #if SDL_VIDEO_DRIVER_X11_XVIDMODE
     if (CheckVidMode(data->display, &vm_major, &vm_minor)) {
@@ -569,106 +770,6 @@ X11_InitModes(_THIS)
             displaydata->y = 0;
         }
 
-#if SDL_VIDEO_DRIVER_X11_XRANDR
-        if (use_xrandr) {
-            res = X11_XRRGetScreenResources(data->display, RootWindow(data->display, displaydata->screen));
-        }
-        if (res) {
-            XRROutputInfo *output_info;
-            XRRCrtcInfo *crtc;
-            int output;
-            Atom EDID = X11_XInternAtom(data->display, "EDID", False);
-            Atom *props;
-            int nprop;
-            unsigned long width_mm;
-            unsigned long height_mm;
-            int inches = 0;
-
-            for (output = 0; output < res->noutput; output++) {
-                output_info = X11_XRRGetOutputInfo(data->display, res, res->outputs[output]);
-                if (!output_info || !output_info->crtc ||
-                    output_info->connection == RR_Disconnected) {
-                    X11_XRRFreeOutputInfo(output_info);
-                    continue;
-                }
-
-                /* Is this the output that corresponds to the current screen?
-                   We're checking the crtc position, but that may not be a valid test
-                   in all cases.  Anybody want to give this some love?
-                 */
-                crtc = X11_XRRGetCrtcInfo(data->display, res, output_info->crtc);
-                if (!crtc || crtc->x != displaydata->x || crtc->y != displaydata->y ||
-                    crtc->width != mode.w || crtc->height != mode.h) {
-                    X11_XRRFreeOutputInfo(output_info);
-                    X11_XRRFreeCrtcInfo(crtc);
-                    continue;
-                }
-
-                displaydata->use_xrandr = use_xrandr;
-                displaydata->xrandr_output = res->outputs[output];
-                SetXRandRModeInfo(data->display, res, output_info, crtc->mode, &mode);
-
-                /* Get the name of this display */
-                width_mm = output_info->mm_width;
-                height_mm = output_info->mm_height;
-                inches = (int)((sqrt(width_mm * width_mm +
-                                     height_mm * height_mm) / 25.4f) + 0.5f);
-                SDL_strlcpy(display_name, output_info->name, sizeof(display_name));
-
-                /* See if we can get the EDID data for the real monitor name */
-                props = X11_XRRListOutputProperties(data->display, res->outputs[output], &nprop);
-                for (i = 0; i < nprop; ++i) {
-                    unsigned char *prop;
-                    int actual_format;
-                    unsigned long nitems, bytes_after;
-                    Atom actual_type;
-
-                    if (props[i] == EDID) {
-                        if (X11_XRRGetOutputProperty(data->display,
-                                                 res->outputs[output], props[i],
-                                                 0, 100, False, False,
-                                                 AnyPropertyType,
-                                                 &actual_type, &actual_format,
-                                                 &nitems, &bytes_after, &prop) == Success ) {
-                            MonitorInfo *info = decode_edid(prop);
-                            if (info) {
-    #ifdef X11MODES_DEBUG
-                                printf("Found EDID data for %s\n", output_info->name);
-                                dump_monitor_info(info);
-    #endif
-                                SDL_strlcpy(display_name, info->dsc_product_name, sizeof(display_name));
-                                free(info);
-                            }
-                            X11_XFree(prop);
-                        }
-                        break;
-                    }
-                }
-                if (props) {
-                    X11_XFree(props);
-                }
-
-                if (*display_name && inches) {
-                    size_t len = SDL_strlen(display_name);
-                    SDL_snprintf(&display_name[len], sizeof(display_name)-len, " %d\"", inches);
-                }
-#ifdef X11MODES_DEBUG
-                printf("Display name: %s\n", display_name);
-#endif
-
-                X11_XRRFreeOutputInfo(output_info);
-                X11_XRRFreeCrtcInfo(crtc);
-                break;
-            }
-#ifdef X11MODES_DEBUG
-            if (output == res->noutput) {
-                printf("Couldn't find XRandR CRTC at %d,%d\n", displaydata->x, displaydata->y);
-            }
-#endif
-            X11_XRRFreeScreenResources(res);
-        }
-#endif /* SDL_VIDEO_DRIVER_X11_XRANDR */
-
 #if SDL_VIDEO_DRIVER_X11_XVIDMODE
         if (!displaydata->use_xrandr &&
 #if SDL_VIDEO_DRIVER_X11_XINERAMA
@@ -791,7 +892,7 @@ X11_GetDisplayModes(_THIS, SDL_VideoDisplay * sdl_display)
                     }
                     mode.driverdata = modedata;
 
-                    if (!SetXRandRModeInfo(display, res, output_info, output_info->modes[i], &mode) ||
+                    if (!SetXRandRModeInfo(display, res, output_info->crtc, output_info->modes[i], &mode) ||
                         !SDL_AddDisplayMode(sdl_display, &mode)) {
                         SDL_free(modedata);
                     }
