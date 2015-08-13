@@ -167,54 +167,20 @@ static SDL_bool X11_KeyRepeat(Display *display, XEvent *event)
     return d.found;
 }
 
-static Bool X11_IsWheelCheckIfEvent(Display *display, XEvent *chkev,
-    XPointer arg)
+static SDL_bool
+X11_IsWheelEvent(Display * display,XEvent * event,int * xticks,int * yticks)
 {
-    XEvent *event = (XEvent *) arg;
-    /* we only handle buttons 4 and 5 - false positive avoidance */
-    if (chkev->type == ButtonRelease &&
-        (event->xbutton.button == Button4 || event->xbutton.button == Button5 ||
-         event->xbutton.button == 6 || event->xbutton.button == 7) &&
-        chkev->xbutton.button == event->xbutton.button &&
-        chkev->xbutton.time == event->xbutton.time)
-        return True;
-    return False;
-}
+    /* according to the xlib docs, no specific mouse wheel events exist.
+       However, the defacto standard is that the vertical wheel is X buttons
+       4 (up) and 5 (down) and a horizontal wheel is 6 (left) and 7 (right). */
 
-static SDL_bool X11_IsWheelEvent(Display * display,XEvent * event,int * xticks,int * yticks)
-{
-    XEvent relevent;
-    if (X11_XPending(display)) {
-        /* according to the xlib docs, no specific mouse wheel events exist.
-           however, mouse wheel events trigger a button press and a button release
-           immediately. thus, checking if the same button was released at the same
-           time as it was pressed, should be an adequate hack to derive a mouse
-           wheel event.
-           However, there is broken and unusual hardware out there...
-           - False positive: a button for which a release event is
-             generated (or synthesised) immediately.
-           - False negative: a wheel which, when rolled, doesn't have
-             a release event generated immediately. */
-        if (X11_XCheckIfEvent(display, &relevent, X11_IsWheelCheckIfEvent,
-            (XPointer) event)) {
-
-            /* by default, X11 only knows 5 buttons. on most 3 button + wheel mouse,
-               Button4 maps to (vertical) wheel up, Button5 maps to wheel down.
-               Horizontal scrolling usually maps to 6 and 7 which have no name */
-            if (event->xbutton.button == Button4) {
-                *yticks = 1;
-            }
-            else if (event->xbutton.button == Button5) {
-                *yticks = -1;
-            }
-            else if (event->xbutton.button == 6) {
-                *xticks = 1;
-            }
-            else if (event->xbutton.button == 7) {
-                *xticks = -1;
-            }
-            return SDL_TRUE;
-        }
+    /* Xlib defines "Button1" through 5, so we just use literals here. */
+    switch (event->xbutton.button) {
+        case 4: *yticks = 1; return SDL_TRUE;
+        case 5: *yticks = -1; return SDL_TRUE;
+        case 6: *xticks = 1; return SDL_TRUE;
+        case 7: *xticks = -1; return SDL_TRUE;
+        default: break;
     }
     return SDL_FALSE;
 }
@@ -1056,9 +1022,13 @@ X11_DispatchEvent(_THIS)
 
     case ButtonRelease:{
             int button = xevent.xbutton.button;
-            if (button > 7) {
-                /* see explanation at case ButtonPress */
-                button -= (8-SDL_BUTTON_X1);
+            /* The X server sends a Release event for each Press for wheels. Ignore them. */
+            int xticks = 0, yticks = 0;
+            if (!X11_IsWheelEvent(display,&xevent,&xticks, &yticks)) {
+                if (button > 7) {
+                    /* see explanation at case ButtonPress */
+                    button -= (8-SDL_BUTTON_X1);
+                }
             }
             SDL_SendMouseButton(data->window, 0, SDL_RELEASED, button);
         }
