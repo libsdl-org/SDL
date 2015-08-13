@@ -864,7 +864,6 @@ X11_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
 
     SetWindowBordered(display, displaydata->screen, data->xwindow, bordered);
     X11_XFlush(display);
-    X11_XIfEvent(display, &event, &isConfigureNotify, (XPointer)&data->xwindow);
 
     if (visible) {
         XWindowAttributes attr;
