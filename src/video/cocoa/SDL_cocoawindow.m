@@ -1288,11 +1288,13 @@ Cocoa_SetWindowSize(_THIS, SDL_Window * window)
 {
     SDL_WindowData *windata = (SDL_WindowData *) window->driverdata;
     NSWindow *nswindow = windata->nswindow;
-    NSSize size;
 
-    size.width = window->w;
-    size.height = window->h;
-    [nswindow setContentSize:size];
+    NSRect frame = [nswindow frame];
+    frame.origin.y = (frame.origin.y + frame.size.height) - ((float) window->h);
+    frame.size.width = window->w;
+    frame.size.height = window->h;
+
+    [nswindow setFrame:frame display:YES];
 
     ScheduleContextUpdates(windata);
 }}
