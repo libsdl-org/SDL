@@ -165,6 +165,7 @@ SDL_X11_SYM(KeySym,XkbKeycodeToKeysym,(Display* a,unsigned int b,int c,int d),(a
 #else
 SDL_X11_SYM(KeySym,XkbKeycodeToKeysym,(Display* a,KeyCode b,int c,int d),(a,b,c,d),return)
 #endif
+SDL_X11_SYM(Status,XkbGetState,(Display* a,unsigned int b,XkbStatePtr c),(a,b,c),return)
 #endif
 
 #if NeedWidePrototypes

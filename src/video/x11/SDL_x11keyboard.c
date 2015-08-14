@@ -29,6 +29,7 @@
 #include "../../events/scancodes_xfree86.h"
 
 #include <X11/keysym.h>
+#include <X11/XKBlib.h>
 
 #include "imKStoUCS.h"
 
@@ -177,12 +178,12 @@ X11_KeyCodeToSDLScancode(Display *display, KeyCode keycode)
 }
 
 static Uint32
-X11_KeyCodeToUcs4(Display *display, KeyCode keycode)
+X11_KeyCodeToUcs4(Display *display, KeyCode keycode, unsigned char group)
 {
     KeySym keysym;
 
 #if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
-    keysym = X11_XkbKeycodeToKeysym(display, keycode, 0, 0);
+    keysym = X11_XkbKeycodeToKeysym(display, keycode, group, 0);
 #else
     keysym = X11_XKeycodeToKeysym(display, keycode, 0);
 #endif
@@ -300,8 +301,17 @@ X11_UpdateKeymap(_THIS)
     int i;
     SDL_Scancode scancode;
     SDL_Keycode keymap[SDL_NUM_SCANCODES];
+    unsigned char group = 0;
 
     SDL_GetDefaultKeymap(keymap);
+    
+#if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
+    XkbStateRec state;
+    if(0 == X11_XkbGetState(data->display, XkbUseCoreKbd, &state))
+        group = state.group;
+#endif
+
+
     for (i = 0; i < SDL_arraysize(data->key_layout); i++) {
         Uint32 key;
 
@@ -312,7 +322,7 @@ X11_UpdateKeymap(_THIS)
         }
 
         /* See if there is a UCS keycode for this scancode */
-        key = X11_KeyCodeToUcs4(data->display, (KeyCode)i);
+        key = X11_KeyCodeToUcs4(data->display, (KeyCode)i, group);
         if (key) {
             keymap[scancode] = key;
         } else {
