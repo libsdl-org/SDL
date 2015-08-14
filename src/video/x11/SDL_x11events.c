@@ -1029,8 +1029,8 @@ X11_DispatchEvent(_THIS)
                     /* see explanation at case ButtonPress */
                     button -= (8-SDL_BUTTON_X1);
                 }
+                SDL_SendMouseButton(data->window, 0, SDL_RELEASED, button);
             }
-            SDL_SendMouseButton(data->window, 0, SDL_RELEASED, button);
         }
         break;
 
