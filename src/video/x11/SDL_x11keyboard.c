@@ -133,6 +133,17 @@ static const struct {
     { XK_Meta_R, SDL_SCANCODE_RGUI },
     { XK_Super_R, SDL_SCANCODE_RGUI },
     { XK_Mode_switch, SDL_SCANCODE_MODE },
+    { XK_period, SDL_SCANCODE_PERIOD },
+    { XK_comma, SDL_SCANCODE_COMMA },
+    { XK_slash, SDL_SCANCODE_SLASH },
+    { XK_backslash, SDL_SCANCODE_BACKSLASH },
+    { XK_minus, SDL_SCANCODE_MINUS },
+    { XK_equal, SDL_SCANCODE_EQUALS },
+    { XK_space, SDL_SCANCODE_SPACE },
+    { XK_grave, SDL_SCANCODE_GRAVE },
+    { XK_apostrophe, SDL_SCANCODE_APOSTROPHE },
+    { XK_bracketleft, SDL_SCANCODE_LEFTBRACKET },
+    { XK_bracketright, SDL_SCANCODE_RIGHTBRACKET },
 };
 
 static const struct
@@ -162,12 +173,18 @@ X11_KeyCodeToSDLScancode(Display *display, KeyCode keycode)
         return SDL_SCANCODE_UNKNOWN;
     }
 
+    if (keysym >= XK_a && keysym <= XK_z) {
+        return SDL_SCANCODE_A + (keysym - XK_a);
+    }
     if (keysym >= XK_A && keysym <= XK_Z) {
         return SDL_SCANCODE_A + (keysym - XK_A);
     }
 
-    if (keysym >= XK_0 && keysym <= XK_9) {
-        return SDL_SCANCODE_0 + (keysym - XK_0);
+    if (keysym == XK_0) {
+        return SDL_SCANCODE_0;
+    }
+    if (keysym >= XK_1 && keysym <= XK_9) {
+        return SDL_SCANCODE_1 + (keysym - XK_1);
     }
 
     for (i = 0; i < SDL_arraysize(KeySymToSDLScancode); ++i) {
