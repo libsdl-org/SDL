@@ -1134,8 +1134,15 @@ X11_DispatchEvent(_THIS)
                     } else {
                         SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_RESTORED, 0, 0);
                     }
-                 }
-
+                }
+            } else if (xevent.xproperty.atom == videodata->XKLAVIER_STATE) {
+                /* Hack for Ubuntu 12.04 (etc) that doesn't send MappingNotify
+                   events when the keyboard layout changes (for example,
+                   changing from English to French on the menubar's keyboard
+                   icon). Since it changes the XKLAVIER_STATE property, we
+                   notice and reinit our keymap here. This might not be the
+                   right approach, but it seems to work. */
+                X11_UpdateKeymap(_this);
             }
         }
         break;

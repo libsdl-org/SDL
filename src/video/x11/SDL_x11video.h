@@ -111,6 +111,7 @@ typedef struct SDL_VideoData
     Atom XdndDrop;
     Atom XdndFinished;
     Atom XdndSelection;
+    Atom XKLAVIER_STATE;
 
     SDL_Scancode key_layout[256];
     SDL_bool selection_waiting;
