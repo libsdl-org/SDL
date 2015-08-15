@@ -408,6 +408,7 @@ X11_VideoInit(_THIS)
     GET_ATOM(XdndDrop);
     GET_ATOM(XdndFinished);
     GET_ATOM(XdndSelection);
+    GET_ATOM(XKLAVIER_STATE);
 
     /* Detect the window manager */
     X11_CheckWindowManager(_this);
