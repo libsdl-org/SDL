@@ -307,8 +307,9 @@ X11_UpdateKeymap(_THIS)
     
 #if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
     XkbStateRec state;
-    if(0 == X11_XkbGetState(data->display, XkbUseCoreKbd, &state))
+    if (X11_XkbGetState(data->display, XkbUseCoreKbd, &state == Success)) {
         group = state.group;
+    }
 #endif
 
 
