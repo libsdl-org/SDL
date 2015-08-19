@@ -88,7 +88,7 @@ typedef int SDL_TimerID;
 /**
  * \brief Add a new timer to the pool of timers already running.
  *
- * \return A timer ID, or NULL when an error occurs.
+ * \return A timer ID, or 0 when an error occurs.
  */
 extern DECLSPEC SDL_TimerID SDLCALL SDL_AddTimer(Uint32 interval,
                                                  SDL_TimerCallback callback,
