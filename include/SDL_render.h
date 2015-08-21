@@ -229,7 +229,7 @@ extern DECLSPEC int SDLCALL SDL_GetRendererOutputSize(SDL_Renderer * renderer,
  *  \param w      The width of the texture in pixels.
  *  \param h      The height of the texture in pixels.
  *
- *  \return The created texture is returned, or 0 if no rendering context was
+ *  \return The created texture is returned, or NULL if no rendering context was
  *          active,  the format was unsupported, or the width or height were out
  *          of range.
  *
@@ -248,7 +248,7 @@ extern DECLSPEC SDL_Texture * SDLCALL SDL_CreateTexture(SDL_Renderer * renderer,
  *  \param renderer The renderer.
  *  \param surface The surface containing pixel data used to fill the texture.
  *
- *  \return The created texture is returned, or 0 on error.
+ *  \return The created texture is returned, or NULL on error.
  *
  *  \note The surface is not modified or freed by this function.
  *
