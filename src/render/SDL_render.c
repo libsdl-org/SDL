@@ -457,7 +457,7 @@ SDL_CreateTexture(SDL_Renderer * renderer, Uint32 format, int access, int w, int
     if (IsSupportedFormat(renderer, format)) {
         if (renderer->CreateTexture(renderer, texture) < 0) {
             SDL_DestroyTexture(texture);
-            return 0;
+            return NULL;
         }
     } else {
         texture->native = SDL_CreateTexture(renderer,
