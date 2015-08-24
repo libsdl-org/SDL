@@ -42,7 +42,7 @@
 #define IRKBD_CONFIG_FILE     NULL    /* this will take ms0:/seplugins/pspirkeyb.ini */
 
 static int irkbd_ready = 0;
-static SDLKey keymap[256];
+static SDL_Keycode keymap[256];
 #endif
 
 static enum PspHprmKeys hprm = 0;
