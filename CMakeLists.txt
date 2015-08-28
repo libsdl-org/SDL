@@ -906,13 +906,23 @@ elseif(WINDOWS)
       endif()
       set(CMAKE_REQUIRED_FLAGS "/I\"$ENV{DXSDK_DIR}\\Include\"")
     endif()
+
+    if(HAVE_WIN32_CC)
+      # xinput.h may need windows.h, but doesn't include it itself.
+      check_c_source_compiles("
+        #include <windows.h>
+        #include <xinput.h>
+        int main(int argc, char **argv) { }" HAVE_XINPUT_H)
+    else()
+      check_include_file(xinput.h HAVE_XINPUT_H)
+    endif()
+
     check_include_file(d3d9.h HAVE_D3D_H)
     check_include_file(d3d11_1.h HAVE_D3D11_H)
     check_include_file(ddraw.h HAVE_DDRAW_H)
     check_include_file(dsound.h HAVE_DSOUND_H)
     check_include_file(dinput.h HAVE_DINPUT_H)
     check_include_file(xaudio2.h HAVE_XAUDIO2_H)
-    check_include_file(xinput.h HAVE_XINPUT_H)
     check_include_file(dxgi.h HAVE_DXGI_H)
     if(HAVE_D3D_H OR HAVE_D3D11_H OR HAVE_DDRAW_H OR HAVE_DSOUND_H OR HAVE_DINPUT_H OR HAVE_XAUDIO2_H)
       set(HAVE_DIRECTX TRUE)
