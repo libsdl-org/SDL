@@ -160,7 +160,7 @@ JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_onNativeResize(
 }
 
 /* Paddown */
-JNIEXPORT int JNICALL Java_org_libsdl_app_SDLActivity_onNativePadDown(
+JNIEXPORT jint JNICALL Java_org_libsdl_app_SDLActivity_onNativePadDown(
                                     JNIEnv* env, jclass jcls,
                                     jint device_id, jint keycode)
 {
@@ -168,7 +168,7 @@ JNIEXPORT int JNICALL Java_org_libsdl_app_SDLActivity_onNativePadDown(
 }
 
 /* Padup */
-JNIEXPORT int JNICALL Java_org_libsdl_app_SDLActivity_onNativePadUp(
+JNIEXPORT jint JNICALL Java_org_libsdl_app_SDLActivity_onNativePadUp(
                                    JNIEnv* env, jclass jcls,
                                    jint device_id, jint keycode)
 {
@@ -192,7 +192,7 @@ JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_onNativeHat(
 }
 
 
-JNIEXPORT int JNICALL Java_org_libsdl_app_SDLActivity_nativeAddJoystick(
+JNIEXPORT jint JNICALL Java_org_libsdl_app_SDLActivity_nativeAddJoystick(
     JNIEnv* env, jclass jcls,
     jint device_id, jstring device_name, jint is_accelerometer, 
     jint nbuttons, jint naxes, jint nhats, jint nballs)
@@ -207,7 +207,7 @@ JNIEXPORT int JNICALL Java_org_libsdl_app_SDLActivity_nativeAddJoystick(
     return retval;
 }
 
-JNIEXPORT int JNICALL Java_org_libsdl_app_SDLActivity_nativeRemoveJoystick(
+JNIEXPORT jint JNICALL Java_org_libsdl_app_SDLActivity_nativeRemoveJoystick(
     JNIEnv* env, jclass jcls, jint device_id)
 {
     return Android_RemoveJoystick(device_id);
