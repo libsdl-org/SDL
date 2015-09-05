@@ -1598,7 +1598,6 @@ class SDLGenericMotionListener_API12 implements View.OnGenericMotionListener {
     @Override
     public boolean onGenericMotion(View v, MotionEvent event) {
         float x, y;
-        int mouseButton;
         int action;
 
         switch ( event.getSource() ) {
