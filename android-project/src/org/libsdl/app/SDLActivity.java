@@ -1627,6 +1627,7 @@ class SDLGenericMotionListener_API12 implements View.OnGenericMotionListener {
                     default:
                         break;
                 }
+                break;
 
             default:
                 break;
