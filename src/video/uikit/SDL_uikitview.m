@@ -123,9 +123,22 @@
     return point;
 }
 
+- (float)pressureForTouch:(UITouch *)touch
+{
+#ifdef __IPHONE_9_0
+    if ([touch respondsToSelector:@selector(force)]) {
+        return (float) touch.force;
+    }
+#endif
+
+    return 1.0f;
+}
+
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
     for (UITouch *touch in touches) {
+        float pressure = [self pressureForTouch:touch];
+
         if (!firstFingerDown) {
             CGPoint locationInView = [self touchLocation:touch shouldNormalize:NO];
 
@@ -140,13 +153,15 @@
 
         CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
         SDL_SendTouch(touchId, (SDL_FingerID)((size_t)touch),
-                      SDL_TRUE, locationInView.x, locationInView.y, 1.0f);
+                      SDL_TRUE, locationInView.x, locationInView.y, pressure);
     }
 }
 
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
     for (UITouch *touch in touches) {
+        float pressure = [self pressureForTouch:touch];
+
         if (touch == firstFingerDown) {
             /* send mouse up */
             SDL_SendMouseButton(sdlwindow, SDL_TOUCH_MOUSEID, SDL_RELEASED, SDL_BUTTON_LEFT);
@@ -155,7 +170,7 @@
 
         CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
         SDL_SendTouch(touchId, (SDL_FingerID)((size_t)touch),
-                      SDL_FALSE, locationInView.x, locationInView.y, 1.0f);
+                      SDL_FALSE, locationInView.x, locationInView.y, pressure);
     }
 }
 
@@ -167,6 +182,8 @@
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
 {
     for (UITouch *touch in touches) {
+        float pressure = [self pressureForTouch:touch];
+
         if (touch == firstFingerDown) {
             CGPoint locationInView = [self touchLocation:touch shouldNormalize:NO];
 
@@ -176,7 +193,7 @@
 
         CGPoint locationInView = [self touchLocation:touch shouldNormalize:YES];
         SDL_SendTouchMotion(touchId, (SDL_FingerID)((size_t)touch),
-                            locationInView.x, locationInView.y, 1.0f);
+                            locationInView.x, locationInView.y, pressure);
     }
 }
 
