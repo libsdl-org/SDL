@@ -465,6 +465,7 @@ JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender, IOHIDDevic
             curdevice = curdevice->pNext;
         }
         curdevice->pNext = device;
+        ++device_index;  /* bump by one since we counted by pNext. */
     }
 
 /* !!! FIXME: why isn't there an SDL_PrivateJoyDeviceAdded()? */
