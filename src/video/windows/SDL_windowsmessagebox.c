@@ -297,9 +297,12 @@ static WIN_DialogData *CreateDialogData(int w, int h, const char *caption)
 
         /* Font size - convert to logical font size for dialog parameter. */
         {
-            HDC ScreenDC = GetDC(0);
-            WordToPass = (WORD)(-72 * NCM.lfMessageFont.lfHeight / GetDeviceCaps(ScreenDC, LOGPIXELSY));
-            ReleaseDC(0, ScreenDC);
+            HDC ScreenDC = GetDC(NULL);
+            int LogicalPixelsY = GetDeviceCaps(ScreenDC, LOGPIXELSY);
+            if (!LogicalPixelsY) /* This can happen if the application runs out of GDI handles */
+                LogicalPixelsY = 72;
+            WordToPass = (WORD)(-72 * NCM.lfMessageFont.lfHeight / LogicalPixelsY);
+            ReleaseDC(NULL, ScreenDC);
         }
 
         if (!AddDialogData(dialog, &WordToPass, 2)) {
