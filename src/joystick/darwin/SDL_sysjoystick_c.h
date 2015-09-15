@@ -21,6 +21,7 @@
 #include "../../SDL_internal.h"
 
 #ifndef SDL_JOYSTICK_IOKIT_H
+#define SDL_JOYSTICK_IOKIT_H
 
 #include <IOKit/hid/IOHIDLib.h>
 
