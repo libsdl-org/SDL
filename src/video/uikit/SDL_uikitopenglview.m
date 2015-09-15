@@ -88,12 +88,8 @@
             GLint maxsamples = 0;
             glGetIntegerv(GL_MAX_SAMPLES, &maxsamples);
 
-            /* Verify that the sample count is supported before creating any
-             * multisample Renderbuffers, to avoid generating GL errors. */
-            if (samples > maxsamples) {
-                SDL_SetError("Failed creating OpenGL ES framebuffer: Unsupported MSAA sample count");
-                return nil;
-            }
+            /* Clamp the samples to the max supported count. */
+            samples = MIN(samples, maxsamples);
         }
 
         if (sRGB) {
