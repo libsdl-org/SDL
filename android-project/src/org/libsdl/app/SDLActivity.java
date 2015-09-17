@@ -1136,11 +1136,6 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         }
     }
 
-    // unused
-    @Override
-    public void onDraw(Canvas canvas) {}
-
-
     // Key events
     @Override
     public boolean onKey(View  v, int keyCode, KeyEvent event) {
