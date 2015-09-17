@@ -790,7 +790,10 @@ fallback:
                 "openAPKExpansionInputStream", "(Ljava/lang/String;)Ljava/io/InputStream;");
             inputStream = (*mEnv)->CallObjectMethod(mEnv, context, mid, fileNameJString);
 
-            if (Android_JNI_ExceptionOccurred(SDL_FALSE)) {
+            /* Exception is checked first because it always needs to be cleared.
+             * If no exception occurred then the last SDL error message is kept.
+             */
+            if (Android_JNI_ExceptionOccurred(SDL_FALSE) || !inputStream) {
                 goto failure;
             }
         }
