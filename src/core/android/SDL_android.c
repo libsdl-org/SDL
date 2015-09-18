@@ -788,6 +788,10 @@ fallback:
             /* Try fallback to APK expansion files */
             mid = (*mEnv)->GetMethodID(mEnv, (*mEnv)->GetObjectClass(mEnv, context),
                 "openAPKExpansionInputStream", "(Ljava/lang/String;)Ljava/io/InputStream;");
+            if (!mid) {
+                SDL_SetError("No openAPKExpansionInputStream() in Java class");
+                goto failure; /* Java class is missing the required method */
+            }
             inputStream = (*mEnv)->CallObjectMethod(mEnv, context, mid, fileNameJString);
 
             /* Exception is checked first because it always needs to be cleared.
