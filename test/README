@@ -29,3 +29,21 @@ These are test programs for the SDL library:
 	controllermap   Useful to generate Game Controller API compatible maps
 
 
+
+This directory contains sample.wav, which is a sample from Will Provost's
+song, The Living Proof:
+
+     From the album The Living Proof
+     Publisher: 5 Guys Named Will
+     Copyright 1996 Will Provost
+
+You can get a copy of the full song (and album!) from iTunes...
+
+    https://itunes.apple.com/us/album/the-living-proof/id4153978
+
+or Amazon...
+
+    http://www.amazon.com/The-Living-Proof-Will-Provost/dp/B00004R8RH
+
+Thanks to Will for permitting us to distribute this sample with SDL!
+
