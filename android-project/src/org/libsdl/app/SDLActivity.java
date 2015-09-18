@@ -742,7 +742,7 @@ public class SDLActivity extends Activity {
 
         if (fileStream == null) {
             // calling "getInputStream" was successful but null was returned
-            throw new IOException("Could not open stream from APK expansion file");
+            throw new IOException("Could not find path in APK expansion file");
         }
 
         return fileStream;
