@@ -70,6 +70,7 @@ iOS:
 * Added support for the hint SDL_HINT_ACCELEROMETER_AS_JOYSTICK
 * Added sRGB OpenGL ES context support on iOS 7+
 * Added native resolution support for the iPhone 6 Plus
+* Added support for SDL_DisableScreenSaver(), SDL_EnableScreenSaver() and the hint SDL_HINT_VIDEO_ALLOW_SCREENSAVER
 * The SDL_WINDOW_ALLOW_HIGHDPI window flag now enables high-dpi support, and SDL_GL_GetDrawableSize() or SDL_GetRendererOutputSize() gets the window resolution in pixels
 * SDL_GetWindowSize() and display mode sizes are in the "DPI-independent points" coordinate space rather than pixels (matches OS X behavior)
 * SDL_SysWMinfo now contains the OpenGL ES framebuffer and color renderbuffer objects used by the window's active GLES view
@@ -79,6 +80,8 @@ iOS:
 Android:
 * Added a hint SDL_HINT_ANDROID_SEPARATE_MOUSE_AND_TOUCH to prevent mouse events from being registered as touch events
 * Added hints SDL_HINT_ANDROID_APK_EXPANSION_MAIN_FILE_VERSION and SDL_HINT_ANDROID_APK_EXPANSION_PATCH_FILE_VERSION
+* Added support for SDL_DisableScreenSaver(), SDL_EnableScreenSaver() and the hint SDL_HINT_VIDEO_ALLOW_SCREENSAVER
+* Added support for SDL_ShowMessageBox() and SDL_ShowSimpleMessageBox()
 
 Raspberry Pi:
 * Added support for the Raspberry Pi 2
