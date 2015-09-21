@@ -228,9 +228,6 @@ SDL_SYS_RemoveJoystickDevice(SDL_JoystickDeviceItem *device)
     }
 #endif /* SDL_JOYSTICK_MFI */
 
-    SDL_free(device->name);
-    SDL_free(device);
-
     --numjoysticks;
 
 #if !SDL_EVENTS_DISABLED
@@ -244,6 +241,9 @@ SDL_SYS_RemoveJoystickDevice(SDL_JoystickDeviceItem *device)
         }
     }
 #endif /* !SDL_EVENTS_DISABLED */
+
+    SDL_free(device->name);
+    SDL_free(device);
 
     return next;
 }
