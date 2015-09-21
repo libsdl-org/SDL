@@ -669,14 +669,17 @@ SDL_JoystickUpdate(void)
             int i;
 
             /* Tell the app that everything is centered/unpressed...  */
-            for (i = 0; i < joystick->naxes; i++)
+            for (i = 0; i < joystick->naxes; i++) {
                 SDL_PrivateJoystickAxis(joystick, i, 0);
+            }
 
-            for (i = 0; i < joystick->nbuttons; i++)
+            for (i = 0; i < joystick->nbuttons; i++) {
                 SDL_PrivateJoystickButton(joystick, i, 0);
+            }
 
-            for (i = 0; i < joystick->nhats; i++)
+            for (i = 0; i < joystick->nhats; i++) {
                 SDL_PrivateJoystickHat(joystick, i, SDL_HAT_CENTERED);
+            }
 
             joystick->force_recentering = SDL_FALSE;
         }

@@ -67,6 +67,7 @@ Linux:
 
 iOS:
 * Added support for iOS 8
+* Added support for MFi game controllers
 * Added support for the hint SDL_HINT_ACCELEROMETER_AS_JOYSTICK
 * Added sRGB OpenGL ES context support on iOS 7+
 * Added native resolution support for the iPhone 6 Plus

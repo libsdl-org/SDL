@@ -367,7 +367,7 @@ SDL_project "SDL2"
 		SDL_config
 		{
 			["SDL_AUDIO_DRIVER_COREAUDIO"] = 1,
-			["SDL_JOYSTICK_DISABLED"] = 0,
+			["SDL_JOYSTICK_MFI"] = 1,
 			["SDL_HAPTIC_DISABLED"] = 1,
 			["SDL_LOADSO_DISABLED"] = 1,
 			["SDL_THREAD_PTHREAD"] = 1,
@@ -404,5 +404,6 @@ SDL_project "SDL2"
 			"$(SDKROOT)/UIKit.framework",
 			"$(SDKROOT)/Foundation.framework",
 			"$(SDKROOT)/CoreAudio.framework",
-			"$(SDKROOT)/CoreMotion.framework"
+			"$(SDKROOT)/CoreMotion.framework",
+			"$(SDKROOT)/GameController.framework"
 		}
