@@ -243,6 +243,8 @@ main(int argc, char *argv[])
     int i;
     SDL_Joystick *joystick;
 
+    SDL_SetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, "0");
+
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);	
 
@@ -275,7 +277,7 @@ main(int argc, char *argv[])
         }
     }
 
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(__IPHONEOS__)
     if (SDL_NumJoysticks() > 0) {
 #else
     if (argv[1]) {
@@ -284,7 +286,7 @@ main(int argc, char *argv[])
         SDL_bool keepGoing = SDL_TRUE;
         SDL_Event event;
         int device;
-#ifdef __ANDROID__
+#if defined(__ANDROID__) || defined(__IPHONEOS__)
         device = 0;
 #else
         device = atoi(argv[1]);

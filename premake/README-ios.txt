@@ -26,6 +26,7 @@ Xcode-iOS project. Those are:
   -Foundation.framework
   -CoreAudio.framework
   -CoreMotion.framework
+  -GameController.framework
 
 All of these frameworks are part of the iOS SDK, not part of the core OS X
 system.

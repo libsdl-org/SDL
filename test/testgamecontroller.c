@@ -25,8 +25,8 @@
 #ifndef SDL_JOYSTICK_DISABLED
 
 #ifdef __IPHONEOS__
-#define SCREEN_WIDTH    320
-#define SCREEN_HEIGHT    480
+#define SCREEN_WIDTH    480
+#define SCREEN_HEIGHT    320
 #else
 #define SCREEN_WIDTH    512
 #define SCREEN_HEIGHT   317

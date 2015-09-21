@@ -115,8 +115,11 @@
 /* Enable the stub haptic driver (src/haptic/dummy/\*.c) */
 #define SDL_HAPTIC_DUMMY 1
 
+/* Enable MFi joystick support */
+#define SDL_JOYSTICK_MFI 1
+
 /* Enable Unix style SO loading */
-/* Technically this works, but it violates the iPhone developer agreement */
+/* Technically this works, but violates the iOS dev agreement prior to iOS 8 */
 /* #define SDL_LOADSO_DLOPEN 1 */
 
 /* Enable the stub shared object loader (src/loadso/dummy/\*.c) */
@@ -147,9 +150,6 @@
 
 /* enable iOS extended launch screen */
 #define SDL_IPHONE_LAUNCHSCREEN 1
-
-/* enable joystick subsystem */
-#define SDL_JOYSTICK_DISABLED 0
 
 /* Set max recognized G-force from accelerometer
    See src/joystick/uikit/SDL_sysjoystick.m for notes on why this is needed
