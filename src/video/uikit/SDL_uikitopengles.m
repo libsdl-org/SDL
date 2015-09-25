@@ -52,8 +52,6 @@
 
 @end
 
-static int UIKit_GL_Initialize(_THIS);
-
 void *
 UIKit_GL_GetProcAddress(_THIS, const char *proc)
 {

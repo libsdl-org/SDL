@@ -181,7 +181,7 @@ SDL_SYS_AddJoystickDevice(GCController *controller, SDL_bool accelerometer)
 #endif /* !SDL_EVENTS_DISABLED */
 }
 
-SDL_JoystickDeviceItem *
+static SDL_JoystickDeviceItem *
 SDL_SYS_RemoveJoystickDevice(SDL_JoystickDeviceItem *device)
 {
     SDL_JoystickDeviceItem *prev = NULL;
@@ -374,12 +374,14 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
 }
 
 /* Function to determine if this joystick is attached to the system right now */
-SDL_bool SDL_SYS_JoystickAttached(SDL_Joystick *joystick)
+SDL_bool
+SDL_SYS_JoystickAttached(SDL_Joystick *joystick)
 {
     return joystick->hwdata != NULL;
 }
 
-static void SDL_SYS_AccelerometerUpdate(SDL_Joystick * joystick)
+static void
+SDL_SYS_AccelerometerUpdate(SDL_Joystick * joystick)
 {
     const float maxgforce = SDL_IPHONE_MAX_GFORCE;
     const SInt16 maxsint16 = 0x7FFF;
@@ -579,7 +581,8 @@ SDL_SYS_JoystickQuit(void)
     numjoysticks = 0;
 }
 
-SDL_JoystickGUID SDL_SYS_JoystickGetDeviceGUID( int device_index )
+SDL_JoystickGUID
+SDL_SYS_JoystickGetDeviceGUID( int device_index )
 {
     SDL_JoystickDeviceItem *device = GetDeviceForIndex(device_index);
     SDL_JoystickGUID guid;
@@ -591,7 +594,8 @@ SDL_JoystickGUID SDL_SYS_JoystickGetDeviceGUID( int device_index )
     return guid;
 }
 
-SDL_JoystickGUID SDL_SYS_JoystickGetGUID(SDL_Joystick * joystick)
+SDL_JoystickGUID
+SDL_SYS_JoystickGetGUID(SDL_Joystick * joystick)
 {
     SDL_JoystickGUID guid;
     if (joystick->hwdata) {

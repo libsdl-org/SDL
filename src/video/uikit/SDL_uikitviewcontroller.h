@@ -47,9 +47,7 @@
 - (void)loadView;
 - (void)viewDidLayoutSubviews;
 - (NSUInteger)supportedInterfaceOrientations;
-- (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)orient;
 - (BOOL)prefersStatusBarHidden;
-- (UIStatusBarStyle)preferredStatusBarStyle;
 
 #if SDL_IPHONE_KEYBOARD
 - (void)showKeyboard;
