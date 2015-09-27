@@ -427,19 +427,11 @@ public class SDLActivity extends Activity {
     public static native void onNativeAccel(float x, float y, float z);
     public static native void onNativeSurfaceChanged();
     public static native void onNativeSurfaceDestroyed();
-    public static native void nativeFlipBuffers();
     public static native int nativeAddJoystick(int device_id, String name,
                                                int is_accelerometer, int nbuttons,
                                                int naxes, int nhats, int nballs);
     public static native int nativeRemoveJoystick(int device_id);
     public static native String nativeGetHint(String name);
-
-    /**
-     * This method is called by SDL using JNI.
-     */
-    public static void flipBuffers() {
-        SDLActivity.nativeFlipBuffers();
-    }
 
     /**
      * This method is called by SDL using JNI.
