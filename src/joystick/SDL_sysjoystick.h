@@ -54,6 +54,7 @@ struct _SDL_Joystick
     int ref_count;              /* Reference count for multiple opens */
 
     SDL_bool force_recentering; /* SDL_TRUE if this device needs to have its state reset to 0 */
+    SDL_JoystickPowerLevel epowerlevel; /* power level of this joystick, SDL_JOYSTICK_POWER_UNKNOWN if not supported */
     struct _SDL_Joystick *next; /* pointer to next joystick we have allocated */
 };
 

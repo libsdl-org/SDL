@@ -29,6 +29,7 @@
 XInputGetState_t SDL_XInputGetState = NULL;
 XInputSetState_t SDL_XInputSetState = NULL;
 XInputGetCapabilities_t SDL_XInputGetCapabilities = NULL;
+XInputGetBatteryInformation_t SDL_XInputGetBatteryInformation = NULL;
 DWORD SDL_XInputVersion = 0;
 
 static HANDLE s_pXInputDLL = 0;
@@ -55,6 +56,7 @@ WIN_LoadXInputDLL(void)
     SDL_XInputGetState = (XInputGetState_t)XInputGetState;
     SDL_XInputSetState = (XInputSetState_t)XInputSetState;
     SDL_XInputGetCapabilities = (XInputGetCapabilities_t)XInputGetCapabilities;
+    SDL_XInputGetBatteryInformation = (XInputGetBatteryInformation_t)XInputGetBatteryInformation;
 
     /* XInput 1.4 ships with Windows 8 and 8.1: */
     SDL_XInputVersion = (1 << 16) | 4;
@@ -108,6 +110,7 @@ WIN_LoadXInputDLL(void)
     }
     SDL_XInputSetState = (XInputSetState_t)GetProcAddress((HMODULE)s_pXInputDLL, "XInputSetState");
     SDL_XInputGetCapabilities = (XInputGetCapabilities_t)GetProcAddress((HMODULE)s_pXInputDLL, "XInputGetCapabilities");
+    SDL_XInputGetBatteryInformation = (XInputGetBatteryInformation_t)GetProcAddress( (HMODULE)s_pXInputDLL, "XInputGetBatteryInformation" );
     if (!SDL_XInputGetState || !SDL_XInputSetState || !SDL_XInputGetCapabilities) {
         WIN_UnloadXInputDLL();
         return -1;
