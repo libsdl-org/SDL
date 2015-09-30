@@ -221,8 +221,39 @@ SDL_XINPUT_JoystickOpen(SDL_Joystick * joystick, JoyStick_DeviceData *joystickde
     return 0;
 }
 
+static void 
+UpdateXInputJoystickBatteryInformation(SDL_Joystick * joystick, XINPUT_BATTERY_INFORMATION *pBatteryInformation)
+{
+    if ( pBatteryInformation->BatteryType != BATTERY_TYPE_UNKNOWN )
+    {
+        SDL_JoystickPowerLevel ePowerLevel = SDL_JOYSTICK_POWER_UNKNOWN;
+        if (pBatteryInformation->BatteryType == BATTERY_TYPE_WIRED) {
+            ePowerLevel = SDL_JOYSTICK_POWER_WIRED;
+        } else {
+            switch ( pBatteryInformation->BatteryLevel )
+            {
+            case BATTERY_LEVEL_EMPTY:
+                ePowerLevel = SDL_JOYSTICK_POWER_EMPTY;
+                break;
+            case BATTERY_LEVEL_LOW:
+                ePowerLevel = SDL_JOYSTICK_POWER_LOW;
+                break;
+            case BATTERY_LEVEL_MEDIUM:
+                ePowerLevel = SDL_JOYSTICK_POWER_MEDIUM;
+                break;
+            default:
+            case BATTERY_LEVEL_FULL:
+                ePowerLevel = SDL_JOYSTICK_POWER_FULL;
+                break;
+            }
+        }
+
+        SDL_PrivateJoystickBatteryLevel( joystick, ePowerLevel );
+    }
+}
+
 static void
-UpdateXInputJoystickState_OLD(SDL_Joystick * joystick, XINPUT_STATE_EX *pXInputState)
+UpdateXInputJoystickState_OLD(SDL_Joystick * joystick, XINPUT_STATE_EX *pXInputState, XINPUT_BATTERY_INFORMATION *pBatteryInformation)
 {
     static WORD s_XInputButtons[] = {
         XINPUT_GAMEPAD_DPAD_UP, XINPUT_GAMEPAD_DPAD_DOWN, XINPUT_GAMEPAD_DPAD_LEFT, XINPUT_GAMEPAD_DPAD_RIGHT,
@@ -244,10 +275,12 @@ UpdateXInputJoystickState_OLD(SDL_Joystick * joystick, XINPUT_STATE_EX *pXInputS
     for (button = 0; button < SDL_arraysize(s_XInputButtons); ++button) {
         SDL_PrivateJoystickButton(joystick, button, (wButtons & s_XInputButtons[button]) ? SDL_PRESSED : SDL_RELEASED);
     }
+
+    UpdateXInputJoystickBatteryInformation( joystick, pBatteryInformation );
 }
 
 static void
-UpdateXInputJoystickState(SDL_Joystick * joystick, XINPUT_STATE_EX *pXInputState)
+UpdateXInputJoystickState(SDL_Joystick * joystick, XINPUT_STATE_EX *pXInputState, XINPUT_BATTERY_INFORMATION *pBatteryInformation)
 {
     static WORD s_XInputButtons[] = {
         XINPUT_GAMEPAD_A, XINPUT_GAMEPAD_B, XINPUT_GAMEPAD_X, XINPUT_GAMEPAD_Y,
@@ -283,6 +316,8 @@ UpdateXInputJoystickState(SDL_Joystick * joystick, XINPUT_STATE_EX *pXInputState
         hat |= SDL_HAT_RIGHT;
     }
     SDL_PrivateJoystickHat(joystick, 0, hat);
+
+    UpdateXInputJoystickBatteryInformation( joystick, pBatteryInformation );
 }
 
 void
@@ -290,6 +325,7 @@ SDL_XINPUT_JoystickUpdate(SDL_Joystick * joystick)
 {
     HRESULT result;
     XINPUT_STATE_EX XInputState;
+    XINPUT_BATTERY_INFORMATION XBatteryInformation;
 
     if (!XINPUTGETSTATE)
         return;
@@ -301,12 +337,18 @@ SDL_XINPUT_JoystickUpdate(SDL_Joystick * joystick)
         return;
     }
 
+    SDL_zero( XBatteryInformation );
+    if ( XINPUTGETBATTERYINFORMATION )
+    {
+        result = XINPUTGETBATTERYINFORMATION( joystick->hwdata->userid, BATTERY_DEVTYPE_GAMEPAD, &XBatteryInformation );
+    }
+
     /* only fire events if the data changed from last time */
     if (XInputState.dwPacketNumber && XInputState.dwPacketNumber != joystick->hwdata->dwPacketNumber) {
         if (SDL_XInputUseOldJoystickMapping()) {
-            UpdateXInputJoystickState_OLD(joystick, &XInputState);
+            UpdateXInputJoystickState_OLD(joystick, &XInputState, &XBatteryInformation);
         } else {
-            UpdateXInputJoystickState(joystick, &XInputState);
+            UpdateXInputJoystickState(joystick, &XInputState, &XBatteryInformation);
         }
         joystick->hwdata->dwPacketNumber = XInputState.dwPacketNumber;
     }
