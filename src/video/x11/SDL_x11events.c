@@ -565,15 +565,12 @@ X11_DispatchEvent(_THIS)
 #endif
         if (orig_keycode) {
             /* Make sure dead key press/release events are sent */
-            /* Actually, don't do this because it causes double-delivery
-               of some keys on Ubuntu 14.04 (bug 2526)
             SDL_Scancode scancode = videodata->key_layout[orig_keycode];
             if (orig_event_type == KeyPress) {
                 SDL_SendKeyboardKey(SDL_PRESSED, scancode);
             } else {
                 SDL_SendKeyboardKey(SDL_RELEASED, scancode);
             }
-            */
         }
         return;
     }
@@ -781,6 +778,8 @@ X11_DispatchEvent(_THIS)
             if (data->ic) {
                 X11_Xutf8LookupString(data->ic, &xevent.xkey, text, sizeof(text),
                                   &keysym, &status);
+            } else {
+                X11_XLookupString(&xevent.xkey, text, sizeof(text), &keysym, NULL);
             }
 #else
             X11_XLookupString(&xevent.xkey, text, sizeof(text), &keysym, NULL);
