@@ -594,3 +594,4 @@
 #define SDL_ClearQueuedAudio SDL_ClearQueuedAudio_REAL
 #define SDL_GetGrabbedWindow SDL_GetGrabbedWindow_REAL
 #define SDL_SetWindowsMessageHook SDL_SetWindowsMessageHook_REAL
+#define SDL_JoystickCurrentPowerLevel SDL_JoystickCurrentPowerLevel_REAL
