@@ -109,7 +109,7 @@ WIN_SetWindowPositionInternal(_THIS, SDL_Window * window, UINT flags)
     y = window->y + rect.top;
 
     data->expected_resize = SDL_TRUE;
-    SetWindowPos( hwnd, top, x, y, w, h, flags );
+    SetWindowPos(hwnd, top, x, y, w, h, flags);
     data->expected_resize = SDL_FALSE;
 }
 
@@ -165,7 +165,26 @@ SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, SDL_bool created)
             int h = rect.bottom;
             if ((window->w && window->w != w) || (window->h && window->h != h)) {
                 /* We tried to create a window larger than the desktop and Windows didn't allow it.  Override! */
-                WIN_SetWindowPositionInternal(_this, window, SWP_NOCOPYBITS | SWP_NOZORDER | SWP_NOACTIVATE);
+                RECT rect;
+                DWORD style;
+                BOOL menu;
+                int x, y;
+                int w, h;
+
+                /* Figure out what the window area will be */
+                style = GetWindowLong(hwnd, GWL_STYLE);
+                rect.left = 0;
+                rect.top = 0;
+                rect.right = window->w;
+                rect.bottom = window->h;
+                menu = (style & WS_CHILDWINDOW) ? FALSE : (GetMenu(hwnd) != NULL);
+                AdjustWindowRectEx(&rect, style, menu, 0);
+                w = (rect.right - rect.left);
+                h = (rect.bottom - rect.top);
+                x = window->x + rect.left;
+                y = window->y + rect.top;
+
+                SetWindowPos(hwnd, HWND_NOTOPMOST, x, y, w, h, SWP_NOCOPYBITS | SWP_NOZORDER | SWP_NOACTIVATE);
             } else {
                 window->w = w;
                 window->h = h;
@@ -492,7 +511,7 @@ WIN_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
     }
 
     data->in_border_change = SDL_TRUE;
-    SetWindowLong( hwnd, GWL_STYLE, style );
+    SetWindowLong(hwnd, GWL_STYLE, style);
     WIN_SetWindowPositionInternal(_this, window, SWP_NOCOPYBITS | SWP_FRAMECHANGED | SWP_NOZORDER | SWP_NOACTIVATE);
     data->in_border_change = SDL_FALSE;
 }
