@@ -1136,8 +1136,19 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
     /* if we are in the process of hiding don't go back to fullscreen */
     if ( window->is_hiding && fullscreen )
         return 0;
-    
+
 #ifdef __MACOSX__
+    /* If we're switching between a fullscreen Space and "normal" fullscreen, we need to get back to normal first. */
+    if (fullscreen && ((window->last_fullscreen_flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN_DESKTOP) && ((window->flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN)) {
+        Cocoa_SetWindowFullscreenSpace(window, SDL_FALSE);
+    } else if (fullscreen && ((window->last_fullscreen_flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN) && ((window->flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN_DESKTOP)) {
+        display = SDL_GetDisplayForWindow(window);
+        SDL_SetDisplayModeForDisplay(display, NULL);
+        if (_this->SetWindowFullscreen) {
+            _this->SetWindowFullscreen(_this, window, display, SDL_FALSE);
+        }
+    }
+
     if (Cocoa_SetWindowFullscreenSpace(window, fullscreen)) {
         window->last_fullscreen_flags = window->flags;
         return 0;
