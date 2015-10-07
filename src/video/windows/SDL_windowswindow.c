@@ -130,7 +130,7 @@ SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, SDL_bool created)
     data->created = created;
     data->mouse_button_flags = 0;
     data->videodata = videodata;
-	data->initializing = SDL_TRUE;
+    data->initializing = SDL_TRUE;
 
     window->driverdata = data;
 
@@ -256,7 +256,7 @@ SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, SDL_bool created)
     /* Enable dropping files */
     DragAcceptFiles(hwnd, TRUE);
 
-	data->initializing = SDL_FALSE;
+    data->initializing = SDL_FALSE;
 
     /* All done! */
     return 0;
