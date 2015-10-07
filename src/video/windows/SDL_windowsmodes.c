@@ -30,43 +30,43 @@
 #endif
 
 typedef struct _WIN_GetMonitorDPIData {
-	SDL_VideoData *vid_data;
-	SDL_DisplayMode *mode;
-	SDL_DisplayModeData *mode_data;
+    SDL_VideoData *vid_data;
+    SDL_DisplayMode *mode;
+    SDL_DisplayModeData *mode_data;
 } WIN_GetMonitorDPIData;
 
 static BOOL CALLBACK
 WIN_GetMonitorDPI(HMONITOR hMonitor,
-				  HDC      hdcMonitor,
-				  LPRECT   lprcMonitor,
-				  LPARAM   dwData)
+                  HDC      hdcMonitor,
+                  LPRECT   lprcMonitor,
+                  LPARAM   dwData)
 {
-	WIN_GetMonitorDPIData *data = (WIN_GetMonitorDPIData*) dwData;
-	UINT hdpi, vdpi;
+    WIN_GetMonitorDPIData *data = (WIN_GetMonitorDPIData*) dwData;
+    UINT hdpi, vdpi;
 
-	if (data->vid_data->GetDpiForMonitor(hMonitor, MDT_EFFECTIVE_DPI, &hdpi, &vdpi) == S_OK &&
-		hdpi > 0 &&
-		vdpi > 0) {
-		float hsize, vsize;
-		
-		data->mode_data->HorzDPI = (float)hdpi;
-		data->mode_data->VertDPI = (float)vdpi;
+    if (data->vid_data->GetDpiForMonitor(hMonitor, MDT_EFFECTIVE_DPI, &hdpi, &vdpi) == S_OK &&
+        hdpi > 0 &&
+        vdpi > 0) {
+        float hsize, vsize;
+        
+        data->mode_data->HorzDPI = (float)hdpi;
+        data->mode_data->VertDPI = (float)vdpi;
 
-		// Figure out the monitor size and compute the diagonal DPI.
-		hsize = data->mode->w / data->mode_data->HorzDPI;
-		vsize = data->mode->h / data->mode_data->VertDPI;
-		
-		data->mode_data->DiagDPI = SDL_ComputeDiagonalDPI( data->mode->w,
-														   data->mode->h,
-														   hsize,
-														   vsize );
+        // Figure out the monitor size and compute the diagonal DPI.
+        hsize = data->mode->w / data->mode_data->HorzDPI;
+        vsize = data->mode->h / data->mode_data->VertDPI;
+        
+        data->mode_data->DiagDPI = SDL_ComputeDiagonalDPI( data->mode->w,
+                                                           data->mode->h,
+                                                           hsize,
+                                                           vsize );
 
-		// We can only handle one DPI per display mode so end the enumeration.
-		return FALSE;
-	}
+        // We can only handle one DPI per display mode so end the enumeration.
+        return FALSE;
+    }
 
-	// We didn't get DPI information so keep going.
-	return TRUE;
+    // We didn't get DPI information so keep going.
+    return TRUE;
 }
 
 static SDL_bool
@@ -91,11 +91,11 @@ WIN_GetDisplayMode(_THIS, LPCTSTR deviceName, DWORD index, SDL_DisplayMode * mod
     data->DeviceMode.dmFields =
         (DM_BITSPERPEL | DM_PELSWIDTH | DM_PELSHEIGHT | DM_DISPLAYFREQUENCY |
          DM_DISPLAYFLAGS);
-	data->ScaleX = 1.0f;
-	data->ScaleY = 1.0f;
-	data->DiagDPI = 0.0f;
-	data->HorzDPI = 0.0f;
-	data->VertDPI = 0.0f;
+    data->ScaleX = 1.0f;
+    data->ScaleY = 1.0f;
+    data->DiagDPI = 0.0f;
+    data->HorzDPI = 0.0f;
+    data->VertDPI = 0.0f;
 
     /* Fill in the mode information */
     mode->format = SDL_PIXELFORMAT_UNKNOWN;
@@ -109,43 +109,43 @@ WIN_GetDisplayMode(_THIS, LPCTSTR deviceName, DWORD index, SDL_DisplayMode * mod
         char bmi_data[sizeof(BITMAPINFOHEADER) + 256 * sizeof(RGBQUAD)];
         LPBITMAPINFO bmi;
         HBITMAP hbm;
-		int logical_width = GetDeviceCaps( hdc, HORZRES );
-		int logical_height = GetDeviceCaps( hdc, VERTRES );
+        int logical_width = GetDeviceCaps( hdc, HORZRES );
+        int logical_height = GetDeviceCaps( hdc, VERTRES );
 
-		data->ScaleX = (float)logical_width / devmode.dmPelsWidth;
-		data->ScaleY = (float)logical_height / devmode.dmPelsHeight;
-		mode->w = logical_width;
-		mode->h = logical_height;
+        data->ScaleX = (float)logical_width / devmode.dmPelsWidth;
+        data->ScaleY = (float)logical_height / devmode.dmPelsHeight;
+        mode->w = logical_width;
+        mode->h = logical_height;
 
-		// WIN_GetMonitorDPI needs mode->w and mode->h
-		// so only call after those are set.
-		if (vid_data->GetDpiForMonitor) {
-			WIN_GetMonitorDPIData dpi_data;
+        // WIN_GetMonitorDPI needs mode->w and mode->h
+        // so only call after those are set.
+        if (vid_data->GetDpiForMonitor) {
+            WIN_GetMonitorDPIData dpi_data;
             RECT monitor_rect;
 
-			dpi_data.vid_data = vid_data;
-			dpi_data.mode = mode;
-			dpi_data.mode_data = data;
+            dpi_data.vid_data = vid_data;
+            dpi_data.mode = mode;
+            dpi_data.mode_data = data;
             monitor_rect.left = devmode.dmPosition.x;
             monitor_rect.top = devmode.dmPosition.y;
             monitor_rect.right = monitor_rect.left + 1;
             monitor_rect.bottom = monitor_rect.top + 1;
-			EnumDisplayMonitors(NULL, &monitor_rect, WIN_GetMonitorDPI, (LPARAM)&dpi_data);
-		} else {
-			// We don't have the Windows 8.1 routine so just
-			// get system DPI.
-			data->HorzDPI = (float)GetDeviceCaps( hdc, LOGPIXELSX );
-			data->VertDPI = (float)GetDeviceCaps( hdc, LOGPIXELSY );
-			if (data->HorzDPI == data->VertDPI) {
-				data->DiagDPI = data->HorzDPI;
-			} else {
-				data->DiagDPI = SDL_ComputeDiagonalDPI( mode->w,
-														mode->h,
-														(float)GetDeviceCaps( hdc, HORZSIZE ) / 25.4f,
-														(float)GetDeviceCaps( hdc, VERTSIZE ) / 25.4f );
-			}
-		}
-		
+            EnumDisplayMonitors(NULL, &monitor_rect, WIN_GetMonitorDPI, (LPARAM)&dpi_data);
+        } else {
+            // We don't have the Windows 8.1 routine so just
+            // get system DPI.
+            data->HorzDPI = (float)GetDeviceCaps( hdc, LOGPIXELSX );
+            data->VertDPI = (float)GetDeviceCaps( hdc, LOGPIXELSY );
+            if (data->HorzDPI == data->VertDPI) {
+                data->DiagDPI = data->HorzDPI;
+            } else {
+                data->DiagDPI = SDL_ComputeDiagonalDPI( mode->w,
+                                                        mode->h,
+                                                        (float)GetDeviceCaps( hdc, HORZSIZE ) / 25.4f,
+                                                        (float)GetDeviceCaps( hdc, VERTSIZE ) / 25.4f );
+            }
+        }
+        
         SDL_zero(bmi_data);
         bmi = (LPBITMAPINFO) bmi_data;
         bmi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
@@ -175,7 +175,7 @@ WIN_GetDisplayMode(_THIS, LPCTSTR deviceName, DWORD index, SDL_DisplayMode * mod
         } else if (bmi->bmiHeader.biBitCount == 4) {
             mode->format = SDL_PIXELFORMAT_INDEX4LSB;
         }
-	} else {
+    } else {
         /* FIXME: Can we tell what this will be? */
         if ((devmode.dmFields & DM_BITSPERPEL) == DM_BITSPERPEL) {
             switch (devmode.dmBitsPerPel) {
@@ -319,17 +319,17 @@ WIN_GetDisplayDPI(_THIS, SDL_VideoDisplay * display, float * ddpi, float * hdpi,
 {
     SDL_DisplayModeData *data = (SDL_DisplayModeData *) display->current_mode.driverdata;
 
-	if (ddpi) {
-		*ddpi = data->DiagDPI;
-	}
-	if (hdpi) {
-		*hdpi = data->HorzDPI;
-	}
-	if (vdpi) {
-		*vdpi = data->VertDPI;
-	}
+    if (ddpi) {
+        *ddpi = data->DiagDPI;
+    }
+    if (hdpi) {
+        *hdpi = data->HorzDPI;
+    }
+    if (vdpi) {
+        *vdpi = data->VertDPI;
+    }
 
-	return data->DiagDPI != 0.0f ? 0 : -1;
+    return data->DiagDPI != 0.0f ? 0 : -1;
 }
 
 void

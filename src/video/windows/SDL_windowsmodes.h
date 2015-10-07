@@ -31,11 +31,11 @@ typedef struct
 typedef struct
 {
     DEVMODE DeviceMode;
-	float ScaleX;
-	float ScaleY;
+    float ScaleX;
+    float ScaleY;
     float DiagDPI;
-	float HorzDPI;
-	float VertDPI;
+    float HorzDPI;
+    float VertDPI;
 } SDL_DisplayModeData;
 
 extern int WIN_InitModes(_THIS);
