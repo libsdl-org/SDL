@@ -1522,10 +1522,10 @@ video_getSetWindowData(void *arg)
   const char *referenceName2 = "TestName2";
   const char *name2 = "TestName2";
   int datasize;
-  char *referenceUserdata;
-  char *userdata;
-  char *referenceUserdata2;
-  char *userdata2;
+  char *referenceUserdata = NULL;
+  char *userdata = NULL;
+  char *referenceUserdata2 = NULL;
+  char *userdata2 = NULL;
   char *result;
   int iteration;
 
