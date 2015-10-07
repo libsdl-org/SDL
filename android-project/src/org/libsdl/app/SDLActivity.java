@@ -300,7 +300,7 @@ public class SDLActivity extends Activity {
         if (!SDLActivity.mIsPaused && SDLActivity.mIsSurfaceReady) {
             SDLActivity.mIsPaused = true;
             SDLActivity.nativePause();
-            mSurface.enableSensor(Sensor.TYPE_ACCELEROMETER, false);
+            mSurface.handlePause();
         }
     }
 
@@ -997,6 +997,10 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         // Some arbitrary defaults to avoid a potential division by zero
         mWidth = 1.0f;
         mHeight = 1.0f;
+    }
+
+    public void handlePause() {
+        enableSensor(Sensor.TYPE_ACCELEROMETER, false);
     }
 
     public void handleResume() {
