@@ -735,7 +735,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             int x, y;
             int w, h;
             
-            if (data->in_border_change) {
+            if (data->initializing || data->in_border_change) {
                 break;
             }
 
