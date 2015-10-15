@@ -1393,6 +1393,7 @@ class DummyEdit extends View implements View.OnKeyListener {
     public InputConnection onCreateInputConnection(EditorInfo outAttrs) {
         ic = new SDLInputConnection(this, true);
 
+        outAttrs.inputType = InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD;
         outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_EXTRACT_UI
                 | 33554432 /* API 11: EditorInfo.IME_FLAG_NO_FULLSCREEN */;
 
