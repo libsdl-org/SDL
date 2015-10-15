@@ -2504,7 +2504,7 @@ D3D11_RenderDrawPoints(SDL_Renderer * renderer,
     a = (float)(renderer->a / 255.0f);
 
     vertices = SDL_stack_alloc(VertexPositionColor, count);
-    for (i = 0; i < min(count, 128); ++i) {
+    for (i = 0; i < count; ++i) {
         const VertexPositionColor v = { { points[i].x, points[i].y, 0.0f }, { 0.0f, 0.0f }, { r, g, b, a } };
         vertices[i] = v;
     }
