@@ -398,7 +398,7 @@ HandleModifiers(_THIS, unsigned short scancode, unsigned int modifierFlags)
 }
 
 static void
-UpdateKeymap(SDL_VideoData *data)
+UpdateKeymap(SDL_VideoData *data, SDL_bool send_event)
 {
     TISInputSourceRef key_layout;
     const void *chr_data;
@@ -454,6 +454,9 @@ UpdateKeymap(SDL_VideoData *data)
             }
         }
         SDL_SetKeymap(0, keymap, SDL_NUM_SCANCODES);
+        if (send_event) {
+            SDL_SendKeymapChangedEvent();
+        }
         return;
     }
 
@@ -466,7 +469,7 @@ Cocoa_InitKeyboard(_THIS)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
 
-    UpdateKeymap(data);
+    UpdateKeymap(data, SDL_FALSE);
 
     /* Set our own names for the platform-dependent but layout-independent keys */
     /* This key is NumLock on the MacBook keyboard. :) */
@@ -564,7 +567,7 @@ Cocoa_HandleKeyEvent(_THIS, NSEvent *event)
     case NSKeyDown:
         if (![event isARepeat]) {
             /* See if we need to rebuild the keyboard layout */
-            UpdateKeymap(data);
+            UpdateKeymap(data, SDL_TRUE);
         }
 
         SDL_SendKeyboardKey(SDL_PRESSED, code);
