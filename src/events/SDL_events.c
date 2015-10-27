@@ -649,4 +649,10 @@ SDL_SendSysWMEvent(SDL_SysWMmsg * message)
     return (posted);
 }
 
+int
+SDL_SendKeymapChangedEvent(void)
+{
+    return SDL_SendAppEvent(SDL_KEYMAPCHANGED);
+}
+
 /* vi: set ts=4 sw=4 expandtab: */

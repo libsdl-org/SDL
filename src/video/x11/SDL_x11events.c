@@ -625,6 +625,7 @@ X11_DispatchEvent(_THIS)
             }
 
             X11_UpdateKeymap(_this);
+            SDL_SendKeymapChangedEvent();
         }
         return;
     }
@@ -1143,6 +1144,7 @@ X11_DispatchEvent(_THIS)
                    notice and reinit our keymap here. This might not be the
                    right approach, but it seems to work. */
                 X11_UpdateKeymap(_this);
+                SDL_SendKeymapChangedEvent();
             }
         }
         break;
