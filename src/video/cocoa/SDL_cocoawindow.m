@@ -646,9 +646,6 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 
     isFullscreenSpace = NO;
     inFullscreenTransition = NO;
-
-    /* Try again? Not sure what else to do, the application wants to be fullscreen. */
-    [self setFullscreenSpace:YES];
 }
 
 - (void)windowDidEnterFullScreen:(NSNotification *)aNotification
@@ -693,9 +690,6 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
     
     isFullscreenSpace = YES;
     inFullscreenTransition = NO;
-
-    /* Try again? Not sure what else to do, the application wants to be non-fullscreen. */
-    [self setFullscreenSpace:NO];
 }
 
 - (void)windowDidExitFullScreen:(NSNotification *)aNotification
@@ -1704,21 +1698,30 @@ Cocoa_SetWindowFullscreenSpace(SDL_Window * window, SDL_bool state)
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
 
     if ([data->listener setFullscreenSpace:(state ? YES : NO)]) {
-        succeeded = SDL_TRUE;
-
-        /* Wait for the transition to complete, so application changes
-           take effect properly (e.g. setting the window size, etc.)
-         */
-        const int limit = 10000;
-        int count = 0;
-        while ([data->listener isInFullscreenSpaceTransition]) {
-            if ( ++count == limit ) {
-                /* Uh oh, transition isn't completing. Should we assert? */
-                break;
+        const int maxattempts = 3;
+        int attempt = 0;
+        while (++attempt <= maxattempts) {
+            /* Wait for the transition to complete, so application changes
+             take effect properly (e.g. setting the window size, etc.)
+             */
+            const int limit = 10000;
+            int count = 0;
+            while ([data->listener isInFullscreenSpaceTransition]) {
+                if ( ++count == limit ) {
+                    /* Uh oh, transition isn't completing. Should we assert? */
+                    break;
+                }
+                SDL_Delay(1);
+                SDL_PumpEvents();
             }
-            SDL_Delay(1);
-            SDL_PumpEvents();
+            if ([data->listener isInFullscreenSpace] == (state ? YES : NO))
+                break;
+            /* Try again, the last attempt was interrupted by user gestures */
+            if (![data->listener setFullscreenSpace:(state ? YES : NO)])
+                break; /* ??? */
         }
+        /* Return TRUE to prevent non-space fullscreen logic from running */
+        succeeded = SDL_TRUE;
     }
 
     return succeeded;
