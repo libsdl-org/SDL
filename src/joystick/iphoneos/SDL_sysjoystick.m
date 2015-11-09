@@ -463,10 +463,10 @@ SDL_SYS_MFIJoystickUpdate(SDL_Joystick * joystick)
             /* Axis order matches the XInput Windows mappings. */
             SDL_PrivateJoystickAxis(joystick, 0, (Sint16) (gamepad.leftThumbstick.xAxis.value * 32767));
             SDL_PrivateJoystickAxis(joystick, 1, (Sint16) (gamepad.leftThumbstick.yAxis.value * -32767));
-            SDL_PrivateJoystickAxis(joystick, 2, (Sint16) (gamepad.leftTrigger.value * 32767));
+            SDL_PrivateJoystickAxis(joystick, 2, (Sint16) ((gamepad.leftTrigger.value * 65535) - 32768));
             SDL_PrivateJoystickAxis(joystick, 3, (Sint16) (gamepad.rightThumbstick.xAxis.value * 32767));
             SDL_PrivateJoystickAxis(joystick, 4, (Sint16) (gamepad.rightThumbstick.yAxis.value * -32767));
-            SDL_PrivateJoystickAxis(joystick, 5, (Sint16) (gamepad.rightTrigger.value * 32767));
+            SDL_PrivateJoystickAxis(joystick, 5, (Sint16) ((gamepad.rightTrigger.value * 65535) - 32768));
 
             hatstate = SDL_SYS_MFIJoystickHatStateForDPad(gamepad.dpad);
 
