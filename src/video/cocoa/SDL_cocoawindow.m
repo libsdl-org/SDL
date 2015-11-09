@@ -282,6 +282,8 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
         [center addObserver:self selector:@selector(windowDidEnterFullScreen:) name:NSWindowDidEnterFullScreenNotification object:window];
         [center addObserver:self selector:@selector(windowWillExitFullScreen:) name:NSWindowWillExitFullScreenNotification object:window];
         [center addObserver:self selector:@selector(windowDidExitFullScreen:) name:NSWindowDidExitFullScreenNotification object:window];
+        [center addObserver:self selector:@selector(windowDidFailToEnterFullScreen:) name:@"NSWindowDidFailToEnterFullScreenNotification" object:window];
+        [center addObserver:self selector:@selector(windowDidFailToExitFullScreen:) name:@"NSWindowDidFailToExitFullScreenNotification" object:window];
     } else {
         [window setDelegate:self];
     }
@@ -413,6 +415,8 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
         [center removeObserver:self name:NSWindowDidEnterFullScreenNotification object:window];
         [center removeObserver:self name:NSWindowWillExitFullScreenNotification object:window];
         [center removeObserver:self name:NSWindowDidExitFullScreenNotification object:window];
+        [center removeObserver:self name:@"NSWindowDidFailToEnterFullScreenNotification" object:window];
+        [center removeObserver:self name:@"NSWindowDidFailToExitFullScreenNotification" object:window];
     } else {
         [window setDelegate:nil];
     }
@@ -634,6 +638,19 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
     inFullscreenTransition = YES;
 }
 
+- (void)windowDidFailToEnterFullScreen:(NSNotification *)aNotification
+{
+    SDL_Window *window = _data->window;
+    
+    SetWindowStyle(window, GetWindowStyle(window));
+
+    isFullscreenSpace = NO;
+    inFullscreenTransition = NO;
+
+    /* Try again? Not sure what else to do, the application wants to be fullscreen. */
+    [self setFullscreenSpace:YES];
+}
+
 - (void)windowDidEnterFullScreen:(NSNotification *)aNotification
 {
     SDL_Window *window = _data->window;
@@ -666,6 +683,19 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 
     isFullscreenSpace = NO;
     inFullscreenTransition = YES;
+}
+
+- (void)windowDidFailToExitFullScreen:(NSNotification *)aNotification
+{
+    SDL_Window *window = _data->window;
+    
+    SetWindowStyle(window, (NSTitledWindowMask|NSClosableWindowMask|NSMiniaturizableWindowMask|NSResizableWindowMask));
+    
+    isFullscreenSpace = YES;
+    inFullscreenTransition = NO;
+
+    /* Try again? Not sure what else to do, the application wants to be non-fullscreen. */
+    [self setFullscreenSpace:NO];
 }
 
 - (void)windowDidExitFullScreen:(NSNotification *)aNotification
