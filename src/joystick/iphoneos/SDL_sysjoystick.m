@@ -361,6 +361,25 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
         } else {
 #ifdef SDL_JOYSTICK_MFI
             GCController *controller = device->controller;
+            BOOL usedPlayerIndexSlots[4] = {NO, NO, NO, NO};
+
+            /* Find the player index of all other connected controllers. */
+            for (GCController *c in [GCController controllers]) {
+                if (c != controller && c.playerIndex >= 0) {
+                    usedPlayerIndexSlots[c.playerIndex] = YES;
+                }
+            }
+
+            /* Set this controller's player index to the first unused index.
+             * FIXME: This logic isn't great... but SDL doesn't expose this
+             * concept in its external API, so we don't have much to go on. */
+            for (int i = 0; i < 4; i++) {
+                if (!usedPlayerIndexSlots[i]) {
+                    controller.playerIndex = i;
+                    break;
+                }
+            }
+
             controller.controllerPausedHandler = ^(GCController *controller) {
                 if (joystick->hwdata) {
                     ++joystick->hwdata->num_pause_presses;
