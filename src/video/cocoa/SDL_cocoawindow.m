@@ -641,7 +641,11 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 - (void)windowDidFailToEnterFullScreen:(NSNotification *)aNotification
 {
     SDL_Window *window = _data->window;
-    
+
+    if (window->is_destroying) {
+        return;
+    }
+
     SetWindowStyle(window, GetWindowStyle(window));
 
     isFullscreenSpace = NO;
@@ -688,6 +692,10 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 {
     SDL_Window *window = _data->window;
     
+    if (window->is_destroying) {
+        return;
+    }
+
     SetWindowStyle(window, (NSTitledWindowMask|NSClosableWindowMask|NSMiniaturizableWindowMask|NSResizableWindowMask));
     
     isFullscreenSpace = YES;
@@ -1648,6 +1656,9 @@ Cocoa_DestroyWindow(_THIS, SDL_Window * window)
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
 
     if (data) {
+        if ([data->listener isInFullscreenSpace]) {
+            [NSMenu setMenuBarVisible:YES];
+        }
         [data->listener close];
         [data->listener release];
         if (data->created) {
