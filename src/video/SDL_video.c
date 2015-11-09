@@ -1138,6 +1138,12 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
         return 0;
 
 #ifdef __MACOSX__
+    /* if the window is going away and no resolution change is necessary,
+     do nothing, or else we may trigger an ugly double-transition
+     */
+    if (window->is_destroying && (window->last_fullscreen_flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN_DESKTOP)
+        return 0;
+    
     /* If we're switching between a fullscreen Space and "normal" fullscreen, we need to get back to normal first. */
     if (fullscreen && ((window->last_fullscreen_flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN_DESKTOP) && ((window->flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN)) {
         if (!Cocoa_SetWindowFullscreenSpace(window, SDL_FALSE)) {
