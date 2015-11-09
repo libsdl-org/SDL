@@ -646,6 +646,8 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 
     isFullscreenSpace = NO;
     inFullscreenTransition = NO;
+    
+    [self windowDidExitFullScreen:nil];
 }
 
 - (void)windowDidEnterFullScreen:(NSNotification *)aNotification
@@ -690,6 +692,8 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
     
     isFullscreenSpace = YES;
     inFullscreenTransition = NO;
+    
+    [self windowDidEnterFullScreen:nil];
 }
 
 - (void)windowDidExitFullScreen:(NSNotification *)aNotification
