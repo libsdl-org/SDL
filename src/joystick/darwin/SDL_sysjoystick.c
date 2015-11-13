@@ -243,6 +243,18 @@ AddHIDElement(const void *value, void *parameter)
                                     }
                                 }
                                 break;
+                            case kHIDUsage_GD_DPadUp:
+                            case kHIDUsage_GD_DPadDown:
+                            case kHIDUsage_GD_DPadRight:
+                            case kHIDUsage_GD_DPadLeft:
+                                if (!ElementAlreadyAdded(cookie, pDevice->firstButton)) {
+                                    element = (recElement *) SDL_calloc(1, sizeof (recElement));
+                                    if (element) {
+                                        pDevice->buttons++;
+                                        headElement = &(pDevice->firstButton);
+                                    }
+                                }
+                                break;
                         }
                         break;
 
@@ -265,6 +277,7 @@ AddHIDElement(const void *value, void *parameter)
                         break;
 
                     case kHIDPage_Button:
+                    case kHIDPage_Consumer: /* e.g. 'pause' button on Steelseries MFi gamepads. */
                         if (!ElementAlreadyAdded(cookie, pDevice->firstButton)) {
                             element = (recElement *) SDL_calloc(1, sizeof (recElement));
                             if (element) {
