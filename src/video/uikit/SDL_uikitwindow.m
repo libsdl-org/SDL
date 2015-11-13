@@ -316,6 +316,9 @@ UIKit_DestroyWindow(_THIS, SDL_Window * window)
             for (SDL_uikitview *view in views) {
                 [view setSDLWindow:NULL];
             }
+
+            data.uiwindow.rootViewController = nil;
+            data.uiwindow.hidden = YES;
         }
     }
     window->driverdata = NULL;
