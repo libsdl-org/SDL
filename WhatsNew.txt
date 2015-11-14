@@ -34,6 +34,8 @@ General:
 * Added a hint SDL_HINT_WINDOW_FRAME_USABLE_WHILE_CURSOR_HIDDEN to prevent window interaction while cursor is hidden
 * Added SDL_GetDisplayDPI() to get the DPI information for a display
 * Added SDL_JoystickCurrentPowerLevel() to get the battery level of a joystick
+* Added SDL_JoystickFromInstanceID(), as a helper function, to get the SDL_Joystick* that an event is referring to.
+* Added SDL_GameControllerFromInstanceID(), as a helper function, to get the SDL_GameController* that an event is referring to.
 
 Windows:
 * Added support for Windows Phone 8.1

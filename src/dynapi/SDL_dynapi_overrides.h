@@ -595,3 +595,5 @@
 #define SDL_GetGrabbedWindow SDL_GetGrabbedWindow_REAL
 #define SDL_SetWindowsMessageHook SDL_SetWindowsMessageHook_REAL
 #define SDL_JoystickCurrentPowerLevel SDL_JoystickCurrentPowerLevel_REAL
+#define SDL_GameControllerFromInstanceID SDL_GameControllerFromInstanceID_REAL
+#define SDL_JoystickFromInstanceID SDL_JoystickFromInstanceID_REAL

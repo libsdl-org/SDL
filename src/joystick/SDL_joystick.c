@@ -374,6 +374,23 @@ SDL_JoystickInstanceID(SDL_Joystick * joystick)
 }
 
 /*
+ * Find the SDL_Joystick that owns this instance id
+ */
+SDL_Joystick *
+SDL_JoystickFromInstanceID(SDL_JoystickID joyid)
+{
+    SDL_Joystick *joystick = SDL_joysticks;
+    while (joystick) {
+        if (joystick->instance_id == joyid) {
+            return joystick;
+        }
+        joystick = joystick->next;
+    }
+
+    return NULL;
+}
+
+/*
  * Get the friendly name of this joystick
  */
 const char *

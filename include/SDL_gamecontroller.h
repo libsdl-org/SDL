@@ -172,6 +172,11 @@ extern DECLSPEC const char *SDLCALL SDL_GameControllerNameForIndex(int joystick_
 extern DECLSPEC SDL_GameController *SDLCALL SDL_GameControllerOpen(int joystick_index);
 
 /**
+ * Return the SDL_GameController associated with an instance id.
+ */
+extern DECLSPEC SDL_GameController *SDLCALL SDL_GameControllerFromInstanceID(SDL_JoystickID joyid);
+
+/**
  *  Return the name for this currently opened controller
  */
 extern DECLSPEC const char *SDLCALL SDL_GameControllerName(SDL_GameController *gamecontroller);

@@ -629,3 +629,5 @@ SDL_DYNAPI_PROC(void,SDL_SetWindowsMessageHook,(SDL_WindowsMessageHook a, void *
 #endif
 SDL_DYNAPI_PROC(int,SDL_GetDisplayDPI,(int a, float *b, float *c, float *d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(SDL_JoystickPowerLevel,SDL_JoystickCurrentPowerLevel,(SDL_Joystick *a),(a),return)
+SDL_DYNAPI_PROC(SDL_GameController*,SDL_GameControllerFromInstanceID,(SDL_JoystickID a),(a),return)
+SDL_DYNAPI_PROC(SDL_Joystick*,SDL_JoystickFromInstanceID,(SDL_JoystickID a),(a),return)

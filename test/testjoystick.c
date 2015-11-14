@@ -265,6 +265,7 @@ main(int argc, char *argv[])
                     SDL_GetError());
         } else {
             char guid[64];
+            SDL_assert(SDL_JoystickFromInstanceID(SDL_JoystickInstanceID(joystick)) == joystick);
             SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joystick),
                                       guid, sizeof (guid));
             SDL_Log("       axes: %d\n", SDL_JoystickNumAxes(joystick));
@@ -292,6 +293,9 @@ main(int argc, char *argv[])
         device = atoi(argv[1]);
 #endif
         joystick = SDL_JoystickOpen(device);
+        if (joystick != NULL) {
+            SDL_assert(SDL_JoystickFromInstanceID(SDL_JoystickInstanceID(joystick)) == joystick);
+        }
 
         while ( keepGoing ) {
             if (joystick == NULL) {
@@ -317,6 +321,9 @@ main(int argc, char *argv[])
                     keepGoing = SDL_FALSE;
                 } else if (event.type == SDL_JOYDEVICEADDED) {
                     joystick = SDL_JoystickOpen(device);
+                    if (joystick != NULL) {
+                        SDL_assert(SDL_JoystickFromInstanceID(SDL_JoystickInstanceID(joystick)) == joystick);
+                    }
                     break;
                 }
             }
