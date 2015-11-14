@@ -258,10 +258,9 @@ extern DECLSPEC Uint8 SDLCALL SDL_JoystickGetButton(SDL_Joystick * joystick,
 extern DECLSPEC void SDLCALL SDL_JoystickClose(SDL_Joystick * joystick);
 
 /**
-*  Return the battery level of this joystick
-*/
+ *  Return the battery level of this joystick
+ */
 extern DECLSPEC SDL_JoystickPowerLevel SDLCALL SDL_JoystickCurrentPowerLevel(SDL_Joystick * joystick);
-
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
