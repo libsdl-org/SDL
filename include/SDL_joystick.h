@@ -107,6 +107,11 @@ extern DECLSPEC const char *SDLCALL SDL_JoystickNameForIndex(int device_index);
 extern DECLSPEC SDL_Joystick *SDLCALL SDL_JoystickOpen(int device_index);
 
 /**
+ * Return the SDL_Joystick associated with an instance id.
+ */
+extern DECLSPEC SDL_Joystick *SDLCALL SDL_JoystickFromInstanceID(SDL_JoystickID joyid);
+
+/**
  *  Return the name for this currently opened joystick.
  *  If no name can be found, this function returns NULL.
  */

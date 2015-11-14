@@ -291,6 +291,11 @@ main(int argc, char *argv[])
                                       guid, sizeof (guid));
             SDL_Log("Attempting to open device %i, guid %s\n", device, guid);
             gamecontroller = SDL_GameControllerOpen(device);
+
+            if (gamecontroller != NULL) {
+                SDL_assert(SDL_GameControllerFromInstanceID(SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(gamecontroller))) == gamecontroller);
+            }
+
             while (keepGoing) {
                 if (gamecontroller == NULL) {
                     if (!reportederror) {
@@ -316,6 +321,9 @@ main(int argc, char *argv[])
                         keepGoing = SDL_FALSE;
                     } else if (event.type == SDL_CONTROLLERDEVICEADDED) {
                         gamecontroller = SDL_GameControllerOpen(event.cdevice.which);
+                        if (gamecontroller != NULL) {
+                            SDL_assert(SDL_GameControllerFromInstanceID(SDL_JoystickInstanceID(SDL_GameControllerGetJoystick(gamecontroller))) == gamecontroller);
+                        }
                         break;
                     }
                 }

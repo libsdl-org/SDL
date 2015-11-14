@@ -1046,6 +1046,25 @@ SDL_Joystick *SDL_GameControllerGetJoystick(SDL_GameController * gamecontroller)
     return gamecontroller->joystick;
 }
 
+
+/*
+ * Find the SDL_GameController that owns this instance id
+ */
+SDL_GameController *
+SDL_GameControllerFromInstanceID(SDL_JoystickID joyid)
+{
+    SDL_GameController *gamecontroller = SDL_gamecontrollers;
+    while (gamecontroller) {
+        if (gamecontroller->joystick->instance_id == joyid) {
+            return gamecontroller;
+        }
+        gamecontroller = gamecontroller->next;
+    }
+
+    return NULL;
+}
+
+
 /**
  * Get the SDL joystick layer binding for this controller axis mapping
  */
