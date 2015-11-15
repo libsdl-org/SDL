@@ -118,11 +118,11 @@ typedef struct
     XINPUT_GAMEPAD_EX Gamepad;
 } XINPUT_STATE_EX;
 
-typedef struct _XINPUT_BATTERY_INFORMATION
+typedef struct
 {
     BYTE BatteryType;
     BYTE BatteryLevel;
-} XINPUT_BATTERY_INFORMATION, *PXINPUT_BATTERY_INFORMATION;
+} XINPUT_BATTERY_INFORMATION_EX;
 
 /* Forward decl's for XInput API's we load dynamically and use if available */
 typedef DWORD (WINAPI *XInputGetState_t)
@@ -146,9 +146,9 @@ typedef DWORD (WINAPI *XInputGetCapabilities_t)
 
 typedef DWORD (WINAPI *XInputGetBatteryInformation_t)
     (
-    _In_  DWORD                      dwUserIndex,
-    _In_  BYTE                       devType,
-    _Out_ XINPUT_BATTERY_INFORMATION *pBatteryInformation
+    _In_  DWORD                         dwUserIndex,
+    _In_  BYTE                          devType,
+    _Out_ XINPUT_BATTERY_INFORMATION_EX *pBatteryInformation
     );
 
 extern int WIN_LoadXInputDLL(void);
