@@ -128,7 +128,7 @@ SDL_CondWaitTimeout(SDL_cond * cond, SDL_mutex * mutex, Uint32 ms)
     }
 
     try {
-        std::unique_lock<std::recursive_mutex> cpp_lock(mutex->cpp_mutex, std::defer_lock_t());
+        std::unique_lock<std::recursive_mutex> cpp_lock(mutex->cpp_mutex, std::adopt_lock_t());
         if (ms == SDL_MUTEX_MAXWAIT) {
             cond->cpp_cond.wait(
                 cpp_lock
