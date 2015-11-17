@@ -146,9 +146,9 @@ typedef DWORD (WINAPI *XInputGetCapabilities_t)
 
 typedef DWORD (WINAPI *XInputGetBatteryInformation_t)
     (
-    _In_  DWORD                         dwUserIndex,
-    _In_  BYTE                          devType,
-    _Out_ XINPUT_BATTERY_INFORMATION_EX *pBatteryInformation
+    DWORD                         dwUserIndex,
+    BYTE                          devType,
+    XINPUT_BATTERY_INFORMATION_EX *pBatteryInformation
     );
 
 extern int WIN_LoadXInputDLL(void);
