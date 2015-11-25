@@ -85,7 +85,7 @@ main(int argc, char *argv[])
 {
     int success;
 
-	/* Enable standard application logging */
+    /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     success = SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR,

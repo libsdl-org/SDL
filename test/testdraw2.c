@@ -211,8 +211,8 @@ main(int argc, char *argv[])
     int i;
     Uint32 then, now, frames;
 
-	/* Enable standard application logging */
-	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    /* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Initialize parameters */
     num_objects = NUM_OBJECTS;

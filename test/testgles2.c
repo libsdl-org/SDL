@@ -169,7 +169,7 @@ perspective_matrix(float fovy, float aspect, float znear, float zfar, float *r)
 static void
 multiply_matrix(float *lhs, float *rhs, float *r)
 {
-	int i, j, k;
+    int i, j, k;
     float tmp[16];
 
     for (i = 0; i < 4; i++) {

@@ -45,7 +45,7 @@ main(int argc, char *argv[])
     Uint32 start32, now32;
     Uint64 start, now;
 
-	/* Enable standard application logging */
+    /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     if (SDL_Init(SDL_INIT_TIMER) < 0) {

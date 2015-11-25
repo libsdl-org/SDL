@@ -203,13 +203,13 @@ MoveSprites(SDL_Renderer * renderer, SDL_Texture * sprite)
             velocity = &velocities[i];
             position->x += velocity->x;
             if ((position->x < 0) || (position->x >= (viewport.w - sprite_w))) {
-            	velocity->x = -velocity->x;
-            	position->x += velocity->x;
+                velocity->x = -velocity->x;
+                position->x += velocity->x;
             }
             position->y += velocity->y;
             if ((position->y < 0) || (position->y >= (viewport.h - sprite_h))) {
-            	velocity->y = -velocity->y;
-            	position->y += velocity->y;
+                velocity->y = -velocity->y;
+                position->y += velocity->y;
             }
 
         }
@@ -227,7 +227,7 @@ MoveSprites(SDL_Renderer * renderer, SDL_Texture * sprite)
     /* Draw sprites */
     for (i = 0; i < num_sprites; ++i) {
         position = &positions[i];
-		
+
         /* Blit the sprite onto the screen */
         SDL_RenderCopy(renderer, sprite, NULL, position);
     }
@@ -263,7 +263,7 @@ main(int argc, char *argv[])
 {
     int i;
     Uint32 then, now, frames;
-	Uint64 seed;
+    Uint64 seed;
     const char *icon = "icon.bmp";
 
     /* Initialize parameters */
