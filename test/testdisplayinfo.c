@@ -34,8 +34,8 @@ main(int argc, char *argv[])
     SDL_DisplayMode mode;
     int num_displays, dpy;
 
-	/* Enable standard application logging */
-	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    /* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Load the SDL library */
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {

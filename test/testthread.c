@@ -57,7 +57,7 @@ main(int argc, char *argv[])
 {
     SDL_Thread *thread;
 
-	/* Enable standard application logging */
+    /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Load the SDL library */

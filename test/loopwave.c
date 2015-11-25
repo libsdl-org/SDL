@@ -93,8 +93,8 @@ main(int argc, char *argv[])
     int i;
     char filename[4096];
 
-	/* Enable standard application logging */
-	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    /* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Load the SDL library */
     if (SDL_Init(SDL_INIT_AUDIO) < 0) {
@@ -129,7 +129,7 @@ main(int argc, char *argv[])
     /* Show the list of available drivers */
     SDL_Log("Available audio drivers:");
     for (i = 0; i < SDL_GetNumAudioDrivers(); ++i) {
-		SDL_Log("%i: %s", i, SDL_GetAudioDriver(i));
+        SDL_Log("%i: %s", i, SDL_GetAudioDriver(i));
     }
 
     /* Initialize fillerup() variables */

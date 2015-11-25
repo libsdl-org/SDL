@@ -596,8 +596,8 @@ static void RunFIFOTest(SDL_bool lock_free)
     Uint32 start, end;
     int i, j;
     int grand_total;
-	char textBuffer[1024];
-	int len;
+    char textBuffer[1024];
+    int len;
 
     SDL_Log("\nFIFO test---------------------------------------\n\n");
     SDL_Log("Mode: %s\n", lock_free ? "LockFree" : "Mutex");
@@ -686,10 +686,10 @@ static void RunFIFOTest(SDL_bool lock_free)
         }
         grand_total += total;
         SDL_Log("Reader %d read %d events, had %d waits\n", i, total, readerData[i].waits);
-		SDL_snprintf(textBuffer, sizeof(textBuffer), "  { ");
+        SDL_snprintf(textBuffer, sizeof(textBuffer), "  { ");
         for (j = 0; j < NUM_WRITERS; ++j) {
             if (j > 0) {
-				len = SDL_strlen(textBuffer);
+                len = SDL_strlen(textBuffer);
                 SDL_snprintf(textBuffer + len, sizeof(textBuffer) - len, ", ");
             }
             len = SDL_strlen(textBuffer);
@@ -697,7 +697,7 @@ static void RunFIFOTest(SDL_bool lock_free)
         }
         len = SDL_strlen(textBuffer);
         SDL_snprintf(textBuffer + len, sizeof(textBuffer) - len, " }\n");
-		SDL_Log("%s", textBuffer);
+        SDL_Log("%s", textBuffer);
     }
     SDL_Log("Readers read %d total events\n", grand_total);
 }
@@ -708,8 +708,8 @@ static void RunFIFOTest(SDL_bool lock_free)
 int
 main(int argc, char *argv[])
 {
-	/* Enable standard application logging */
-	SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+    /* Enable standard application logging */
+    SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     RunBasicTest();
     RunEpicTest();

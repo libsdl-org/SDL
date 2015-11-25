@@ -131,7 +131,7 @@ main(int argc, char *argv[])
     int sprite_w, sprite_h;
     SDL_Event event;
 
-	/* Enable standard application logging */
+    /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     if (SDL_VideoInit(NULL) < 0) {
