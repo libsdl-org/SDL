@@ -65,6 +65,7 @@ Linux:
 * Enabled building with Mir and Wayland support by default.
 * Added IBus IME support
 * Added a hint SDL_HINT_IME_INTERNAL_EDITING to control whether IBus should handle text editing internally instead of sending SDL_TEXTEDITING events
+* Added a hint SDL_HINT_VIDEO_X11_NET_WM_PING to allow disabling _NET_WM_PING protocol handling in SDL_CreateWindow()
 * Added support for multiple audio devices when using Pulseaudio
 * Fixed duplicate mouse events when using relative mouse motion
 
