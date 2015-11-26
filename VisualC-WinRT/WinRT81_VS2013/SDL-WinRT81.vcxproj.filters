@@ -312,16 +312,7 @@
     <ClInclude Include="..\..\src\SDL_internal.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\thread\SDL_systhread.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\thread\SDL_thread_c.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\thread\stdcpp\SDL_sysmutex_c.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\src\thread\stdcpp\SDL_systhread_c.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\timer\SDL_timer_c.h">
@@ -399,6 +390,9 @@
     <ClInclude Include="..\..\src\haptic\windows\SDL_windowshaptic_c.h" />
     <ClInclude Include="..\..\src\haptic\windows\SDL_dinputhaptic_c.h" />
     <ClInclude Include="..\..\src\haptic\windows\SDL_xinputhaptic_c.h" />
+    <ClInclude Include="..\..\src\thread\windows\SDL_systhread_c.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\atomic\SDL_atomic.c">
@@ -590,19 +584,7 @@
     <ClCompile Include="..\..\src\stdlib\SDL_string.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\thread\generic\SDL_syssem.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\src\thread\SDL_thread.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\thread\stdcpp\SDL_syscond.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\thread\stdcpp\SDL_sysmutex.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\thread\stdcpp\SDL_systhread.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\timer\SDL_timer.c">
@@ -713,5 +695,20 @@
     <ClCompile Include="..\..\src\haptic\windows\SDL_windowshaptic.c" />
     <ClCompile Include="..\..\src\haptic\windows\SDL_xinputhaptic.c" />
     <ClCompile Include="..\..\src\haptic\windows\SDL_dinputhaptic.c" />
+    <ClCompile Include="..\..\src\thread\windows\SDL_sysmutex.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\thread\windows\SDL_systhread.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\thread\windows\SDL_systls.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\thread\generic\SDL_syscond.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\thread\windows\SDL_syssem.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

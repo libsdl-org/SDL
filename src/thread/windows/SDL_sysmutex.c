@@ -45,7 +45,11 @@ SDL_CreateMutex(void)
     if (mutex) {
         /* Initialize */
         /* On SMP systems, a non-zero spin count generally helps performance */
+#if __WINRT__
+        InitializeCriticalSectionEx(&mutex->cs, 2000, 0);
+#else
         InitializeCriticalSectionAndSpinCount(&mutex->cs, 2000);
+#endif
     } else {
         SDL_OutOfMemory();
     }
