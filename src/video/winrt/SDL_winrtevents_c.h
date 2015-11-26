@@ -57,6 +57,8 @@ extern Uint8 WINRT_GetSDLButtonForPointerPoint(Windows::UI::Input::PointerPoint 
 extern void WINRT_ProcessPointerPressedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint);
 extern void WINRT_ProcessPointerMovedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint);
 extern void WINRT_ProcessPointerReleasedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint);
+extern void WINRT_ProcessPointerEnteredEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint);
+extern void WINRT_ProcessPointerExitedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint);
 extern void WINRT_ProcessPointerWheelChangedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint);
 extern void WINRT_ProcessMouseMovedEvent(SDL_Window * window, Windows::Devices::Input::MouseEventArgs ^args);
 

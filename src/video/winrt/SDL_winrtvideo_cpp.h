@@ -29,6 +29,12 @@
 #include "SDL_video.h"
 #include "SDL_events.h"
 
+#if NTDDI_VERSION >= NTDDI_WINBLUE  /* ApplicationView's functionality only becomes
+                                       useful for SDL in Win[Phone] 8.1 and up.
+                                       Plus, it is not available at all in WinPhone 8.0. */
+#define SDL_WINRT_USE_APPLICATIONVIEW 1
+#endif
+
 extern "C" {
 #include "../SDL_sysvideo.h"
 #include "../SDL_egl_c.h"
@@ -48,25 +54,17 @@ typedef struct SDL_VideoData {
 */
 extern SDL_Window * WINRT_GlobalSDLWindow;
 
-/* Creates a display mode for Plain Direct3D (non-XAML) apps, using the lone, native window's settings.
-
-   Pass in an allocated SDL_DisplayMode field to store the data in.
-
-   This function will return 0 on success, -1 on failure.
-
-   If this function succeeds, be sure to call SDL_free on the
-   SDL_DisplayMode's driverdata field.
+/* Updates one or more SDL_Window flags, by querying the OS' native windowing APIs.
+   SDL_Window flags that can be updated should be specified in 'mask'.
 */
-extern int WINRT_CalcDisplayModeUsingNativeWindow(SDL_DisplayMode * mode);
-
-/* Duplicates a display mode, copying over driverdata as necessary */
-extern int WINRT_DuplicateDisplayMode(SDL_DisplayMode * dest, const SDL_DisplayMode * src);
+extern void WINRT_UpdateWindowFlags(SDL_Window * window, Uint32 mask);
+extern "C" Uint32 WINRT_DetectWindowFlags(SDL_Window * window);  /* detects flags w/o applying them */
 
 /* Display mode internals */
-typedef struct
-{
-    Windows::Graphics::Display::DisplayOrientations currentOrientation;
-} SDL_DisplayModeData;
+//typedef struct
+//{
+//    Windows::Graphics::Display::DisplayOrientations currentOrientation;
+//} SDL_DisplayModeData;
 
 #ifdef __cplusplus_winrt
 
@@ -77,6 +75,10 @@ typedef struct
 #define WINRT_DISPLAY_PROPERTY(NAME) (Windows::Graphics::Display::DisplayProperties::NAME)
 #endif
 
+/* Converts DIPS to physical pixels */
+#define WINRT_DIPS_TO_PHYSICAL_PIXELS(DIPS) ((int)(0.5f + (((float)(DIPS) * (float)WINRT_DISPLAY_PROPERTY(LogicalDpi)) / 96.f)))
+
+
 /* Internal window data */
 struct SDL_WindowData
 {
@@ -84,6 +86,9 @@ struct SDL_WindowData
     Platform::Agile<Windows::UI::Core::CoreWindow> coreWindow;
 #ifdef SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;
+#endif
+#if SDL_WINRT_USE_APPLICATIONVIEW
+    Windows::UI::ViewManagement::ApplicationView ^ appView;
 #endif
 };
 
