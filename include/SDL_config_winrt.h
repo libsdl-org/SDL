@@ -19,10 +19,22 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_config_windows_h
-#define _SDL_config_windows_h
+#ifndef _SDL_config_winrt_h
+#define _SDL_config_winrt_h
 
 #include "SDL_platform.h"
+
+/* Make sure the Windows SDK's NTDDI_VERSION macro gets defined.  This is used
+   by SDL to determine which version of the Windows SDK is being used.
+*/
+#include <sdkddkver.h>
+
+/* Define possibly-undefined NTDDI values (used when compiling SDL against
+   older versions of the Windows SDK.
+*/
+#ifndef NTDDI_WINBLUE
+#define NTDDI_WINBLUE 0x06030000
+#endif
 
 /* This is a set of defines to configure the SDL features */
 
@@ -191,4 +203,4 @@ typedef unsigned int uintptr_t;
 #define SDL_ASSEMBLY_ROUTINES	1
 #endif
 
-#endif /* _SDL_config_windows_h */
+#endif /* _SDL_config_winrt_h */

@@ -306,6 +306,28 @@ void WINRT_ProcessPointerReleasedEvent(SDL_Window *window, Windows::UI::Input::P
     }
 }
 
+void WINRT_ProcessPointerEnteredEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint)
+{
+    if (!window) {
+        return;
+    }
+
+    if (!WINRT_IsTouchEvent(pointerPoint)) {
+        SDL_SetMouseFocus(window);
+    }
+}
+
+void WINRT_ProcessPointerExitedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint)
+{
+    if (!window) {
+        return;
+    }
+
+    if (!WINRT_IsTouchEvent(pointerPoint)) {
+        SDL_SetMouseFocus(NULL);
+    }
+}
+
 void
 WINRT_ProcessPointerWheelChangedEvent(SDL_Window *window, Windows::UI::Input::PointerPoint ^pointerPoint)
 {
