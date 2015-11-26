@@ -359,6 +359,13 @@ WINRT_VideoQuit(_THIS)
     WINRT_QuitMouse(_this);
 }
 
+static const Uint32 WINRT_DetectableFlags =
+    SDL_WINDOW_MAXIMIZED |
+    SDL_WINDOW_FULLSCREEN_DESKTOP |
+    SDL_WINDOW_SHOWN |
+    SDL_WINDOW_HIDDEN |
+    SDL_WINDOW_MOUSE_FOCUS;
+
 extern "C" Uint32
 WINRT_DetectWindowFlags(SDL_Window * window)
 {
@@ -430,6 +437,7 @@ WINRT_DetectWindowFlags(SDL_Window * window)
 void
 WINRT_UpdateWindowFlags(SDL_Window * window, Uint32 mask)
 {
+    mask &= WINRT_DetectableFlags;
     if (window) {
         Uint32 apply = WINRT_DetectWindowFlags(window);
         if ((apply & mask) & SDL_WINDOW_FULLSCREEN) {
