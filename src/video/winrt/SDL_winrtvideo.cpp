@@ -35,6 +35,7 @@
 #include <dxgi1_2.h>
 using namespace Windows::ApplicationModel::Core;
 using namespace Windows::Foundation;
+using namespace Windows::Graphics::Display;
 using namespace Windows::UI::Core;
 using namespace Windows::UI::ViewManagement;
 
@@ -376,9 +377,31 @@ WINRT_DetectWindowFlags(SDL_Window * window)
     if (data->coreWindow.Get()) {
         if (is_fullscreen) {
             SDL_VideoDisplay * display = SDL_GetDisplayForWindow(window);
-            if (display->desktop_mode.w != WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Width) ||
-                display->desktop_mode.h != WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Height))
-            {
+            int w = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Width);
+            int h = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Height);
+
+#if (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP) || (NTDDI_VERSION > NTDDI_WIN8)
+            // On all WinRT platforms, except for WinPhone 8.0, rotate the
+            // window size.  This is needed to properly calculate
+            // fullscreen vs. maximized.
+            const DisplayOrientations currentOrientation = WINRT_DISPLAY_PROPERTY(CurrentOrientation);
+            switch (currentOrientation) {
+#if (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
+                case DisplayOrientations::Landscape:
+                case DisplayOrientations::LandscapeFlipped:
+#else
+                case DisplayOrientations::Portrait:
+                case DisplayOrientations::PortraitFlipped:
+#endif
+                {
+                    int tmp = w;
+                    w = h;
+                    h = tmp;
+                } break;
+            }
+#endif
+
+            if (display->desktop_mode.w != w || display->desktop_mode.h != h) {
                 latestFlags |= SDL_WINDOW_MAXIMIZED;
             } else {
                 latestFlags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
