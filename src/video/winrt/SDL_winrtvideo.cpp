@@ -532,14 +532,16 @@ WINRT_CreateWindow(_THIS, SDL_Window * window)
 #if SDL_WINRT_USE_APPLICATIONVIEW
     /* Determine as many flags dynamically, as possible. */
     window->flags =
-        SDL_WINDOW_BORDERLESS;
+        SDL_WINDOW_BORDERLESS |
+        SDL_WINDOW_RESIZABLE;
 #else
     /* Set SDL_Window flags for Windows Phone 8.0 */
     window->flags =
         SDL_WINDOW_FULLSCREEN_DESKTOP |
         SDL_WINDOW_BORDERLESS |
         SDL_WINDOW_MAXIMIZED |
-        SDL_WINDOW_INPUT_GRABBED;
+        SDL_WINDOW_INPUT_GRABBED |
+        SDL_WINDOW_RESIZABLE;
 #endif
 
 #if SDL_VIDEO_OPENGL_EGL
