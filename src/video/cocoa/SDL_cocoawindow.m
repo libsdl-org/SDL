@@ -1189,7 +1189,6 @@ int
 Cocoa_CreateWindow(_THIS, SDL_Window * window)
 { @autoreleasepool
 {
-    NSLog(@"CREATE WINDOW");
     SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
     NSWindow *nswindow;
     SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
@@ -1549,7 +1548,6 @@ Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
     }
 
     s_moveHack = 0;
-    NSLog(@"SET CONTENT SIZE: %@", NSStringFromRect(rect));
     [nswindow setContentSize:rect.size];
     [nswindow setFrameOrigin:rect.origin];
     s_moveHack = SDL_GetTicks();
