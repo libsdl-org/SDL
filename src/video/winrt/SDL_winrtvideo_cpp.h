@@ -75,9 +75,9 @@ extern "C" Uint32 WINRT_DetectWindowFlags(SDL_Window * window);  /* detects flag
 #define WINRT_DISPLAY_PROPERTY(NAME) (Windows::Graphics::Display::DisplayProperties::NAME)
 #endif
 
-/* Converts DIPS to physical pixels */
-#define WINRT_DIPS_TO_PHYSICAL_PIXELS(DIPS) ((int)(0.5f + (((float)(DIPS) * (float)WINRT_DISPLAY_PROPERTY(LogicalDpi)) / 96.f)))
-
+/* Converts DIPS to/from physical pixels */
+#define WINRT_DIPS_TO_PHYSICAL_PIXELS(DIPS)     ((int)(0.5f + (((float)(DIPS) * (float)WINRT_DISPLAY_PROPERTY(LogicalDpi)) / 96.f)))
+#define WINRT_PHYSICAL_PIXELS_TO_DIPS(PHYSPIX)  (((float)(PHYSPIX) * 96.f)/WINRT_DISPLAY_PROPERTY(LogicalDpi))
 
 /* Internal window data */
 struct SDL_WindowData

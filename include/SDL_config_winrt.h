@@ -35,6 +35,9 @@
 #ifndef NTDDI_WINBLUE
 #define NTDDI_WINBLUE 0x06030000
 #endif
+#ifndef NTDDI_WIN10
+#define NTDDI_WIN10 0x0A000000
+#endif
 
 /* This is a set of defines to configure the SDL features */
 

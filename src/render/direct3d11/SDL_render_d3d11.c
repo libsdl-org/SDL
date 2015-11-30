@@ -2367,7 +2367,7 @@ D3D11_UpdateVertexBuffer(SDL_Renderer *renderer,
     } else {
         SAFE_RELEASE(rendererData->vertexBuffer);
 
-        vertexBufferDesc.ByteWidth = dataSizeInBytes;
+        vertexBufferDesc.ByteWidth = (UINT) dataSizeInBytes;
         vertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
         vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
         vertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
