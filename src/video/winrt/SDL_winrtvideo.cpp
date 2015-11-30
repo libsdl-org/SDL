@@ -76,6 +76,8 @@ static void WINRT_VideoQuit(_THIS);
 
 /* Window functions */
 static int WINRT_CreateWindow(_THIS, SDL_Window * window);
+static void WINRT_SetWindowSize(_THIS, SDL_Window * window);
+static void WINRT_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen);
 static void WINRT_DestroyWindow(_THIS, SDL_Window * window);
 static SDL_bool WINRT_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info);
 
@@ -134,6 +136,8 @@ WINRT_CreateDevice(int devindex)
     device->VideoInit = WINRT_VideoInit;
     device->VideoQuit = WINRT_VideoQuit;
     device->CreateWindow = WINRT_CreateWindow;
+    device->SetWindowSize = WINRT_SetWindowSize;
+    device->SetWindowFullscreen = WINRT_SetWindowFullscreen;
     device->DestroyWindow = WINRT_DestroyWindow;
     device->SetDisplayMode = WINRT_SetDisplayMode;
     device->PumpEvents = WINRT_PumpEvents;
@@ -478,6 +482,9 @@ WINRT_CreateWindow(_THIS, SDL_Window * window)
 #endif
     }
 
+    /* Make note of the requested window flags, before they start getting changed. */
+    const Uint32 requestedFlags = window->flags;
+
 #if SDL_VIDEO_OPENGL_EGL
     /* Setup the EGL surface, but only if OpenGL ES 2 was requested. */
     if (!(window->flags & SDL_WINDOW_OPENGL)) {
@@ -548,15 +555,35 @@ WINRT_CreateWindow(_THIS, SDL_Window * window)
         SDL_SetMouseFocus(NULL);        // TODO: detect this
         SDL_SetKeyboardFocus(NULL);     // TODO: detect this
     } else {
-        /* WinRT apps seem to live in an environment where the OS controls the
+        /* WinRT 8.x apps seem to live in an environment where the OS controls the
            app's window size, with some apps being fullscreen, depending on
            user choice of various things.  For now, just adapt the SDL_Window to
            whatever Windows set-up as the native-window's geometry.
         */
         window->x = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Left);
         window->y = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Top);
+#if NTDDI_VERSION < NTDDI_WIN10
+        /* On WinRT 8.x / pre-Win10, just use the size we were given. */
         window->w = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Width);
         window->h = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Height);
+#else
+        /* On Windows 10, we occasionally get control over window size.  For windowed
+           mode apps, try this.
+        */
+        bool didSetSize = false;
+        if (!(requestedFlags & SDL_WINDOW_FULLSCREEN)) {
+            const Windows::Foundation::Size size(WINRT_PHYSICAL_PIXELS_TO_DIPS(window->w),
+                                                 WINRT_PHYSICAL_PIXELS_TO_DIPS(window->h));
+            didSetSize = data->appView->TryResizeView(size);
+        }
+        if (!didSetSize) {
+            /* We either weren't able to set the window size, or a request for
+               fullscreen was made.  Get window-size info from the OS.
+            */
+            window->w = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Width);
+            window->h = WINRT_DIPS_TO_PHYSICAL_PIXELS(data->coreWindow->Bounds.Height);
+        }
+#endif
 
         WINRT_UpdateWindowFlags(
             window,
@@ -583,6 +610,35 @@ WINRT_CreateWindow(_THIS, SDL_Window * window)
     /* All done! */
     return 0;
 }
+
+void
+WINRT_SetWindowSize(_THIS, SDL_Window * window)
+{
+#if NTDDI_VERSION >= NTDDI_WIN10
+    SDL_WindowData * data = (SDL_WindowData *)window->driverdata;
+    const Windows::Foundation::Size size(WINRT_PHYSICAL_PIXELS_TO_DIPS(window->w),
+                                         WINRT_PHYSICAL_PIXELS_TO_DIPS(window->h));
+    data->appView->TryResizeView(size); // TODO, WinRT: return failure (to caller?) from TryResizeView()
+#endif
+}
+
+void
+WINRT_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen)
+{
+#if NTDDI_VERSION >= NTDDI_WIN10
+    SDL_WindowData * data = (SDL_WindowData *)window->driverdata;
+    if (fullscreen) {
+        if (!data->appView->IsFullScreenMode) {
+            data->appView->TryEnterFullScreenMode();    // TODO, WinRT: return failure (to caller?) from TryEnterFullScreenMode()
+        }
+    } else {
+        if (data->appView->IsFullScreenMode) {
+            data->appView->ExitFullScreenMode();
+        }
+    }
+#endif
+}
+
 
 void
 WINRT_DestroyWindow(_THIS, SDL_Window * window)

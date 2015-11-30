@@ -381,7 +381,7 @@ void SDL_WinRTApp::SetWindow(CoreWindow^ window)
     // TODO, WinRT: see if an app's default orientation can be found out via WinRT API(s), then set the initial value of SDL_HINT_ORIENTATIONS accordingly.
     SDL_AddHintCallback(SDL_HINT_ORIENTATIONS, WINRT_SetDisplayOrientationsPreference, NULL);
 
-#if WINAPI_FAMILY == WINAPI_FAMILY_APP  // for Windows 8/8.1/RT apps... (and not Phone apps)
+#if (WINAPI_FAMILY == WINAPI_FAMILY_APP) && (NTDDI_VERSION < NTDDI_WIN10)  // for Windows 8/8.1/RT apps... (and not Phone apps)
     // Make sure we know when a user has opened the app's settings pane.
     // This is needed in order to display a privacy policy, which needs
     // to be done for network-enabled apps, as per Windows Store requirements.
@@ -474,7 +474,7 @@ void SDL_WinRTApp::Uninitialize()
 {
 }
 
-#if WINAPI_FAMILY == WINAPI_FAMILY_APP
+#if (WINAPI_FAMILY == WINAPI_FAMILY_APP) && (NTDDI_VERSION < NTDDI_WIN10)
 void SDL_WinRTApp::OnSettingsPaneCommandsRequested(
     Windows::UI::ApplicationSettings::SettingsPane ^p,
     Windows::UI::ApplicationSettings::SettingsPaneCommandsRequestedEventArgs ^args)
@@ -516,7 +516,7 @@ void SDL_WinRTApp::OnSettingsPaneCommandsRequested(
         args->Request->ApplicationCommands->Append(cmd);
     }
 }
-#endif // if WINAPI_FAMILY == WINAPI_FAMILY_APP
+#endif // if (WINAPI_FAMILY == WINAPI_FAMILY_APP) && (NTDDI_VERSION < NTDDI_WIN10)
 
 void SDL_WinRTApp::OnWindowSizeChanged(CoreWindow^ sender, WindowSizeChangedEventArgs^ args)
 {
