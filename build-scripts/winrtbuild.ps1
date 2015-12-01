@@ -59,6 +59,9 @@ function Get-MSBuild-Env-Launcher
     if ($PlatformToolset -eq "v120_wp81") { # Windows Phone 8.1, via VS 2013
         return "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat"
     }
+    if ($PlatformToolset -eq "v140") {      # Windows 10, via VS 2015
+        return "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat"
+    }
     return ""
 }
 
@@ -100,6 +103,13 @@ function Get-SDL-WinRT-Variant-Name
             return "WinPhone81_VS2013"
         } else {
             return "WinPhone81"
+        }
+    }
+    if ($PlatformToolset -eq "v140") {      # Windows 10, via VS 2015 project files
+        if ($IncludeVSSuffix) {
+            return "UWP_VS2015"
+        } else {
+            return "UWP"
         }
     }
     return ""
@@ -215,6 +225,11 @@ if ( ! (Build-SDL-WinRT-Variant "SDL" "v110" "x64"))        { $DidAnyFail = $tru
 if ( ! (Build-SDL-WinRT-Variant "SDL" "v120" "ARM"))        { $DidAnyFail = $true }
 if ( ! (Build-SDL-WinRT-Variant "SDL" "v120" "Win32"))      { $DidAnyFail = $true }
 if ( ! (Build-SDL-WinRT-Variant "SDL" "v120" "x64"))        { $DidAnyFail = $true }
+
+# Build for Windows 10, via VC++ 2015
+if ( ! (Build-SDL-WinRT-Variant "SDL" "v140" "ARM"))        { $DidAnyFail = $true }
+if ( ! (Build-SDL-WinRT-Variant "SDL" "v140" "Win32"))      { $DidAnyFail = $true }
+if ( ! (Build-SDL-WinRT-Variant "SDL" "v140" "x64"))        { $DidAnyFail = $true }
 
 # Let the script's caller know whether or not any errors occurred.
 # Exit codes compatible with Buildbot are used (1 for error, 0 for success).
