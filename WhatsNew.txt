@@ -38,7 +38,7 @@ General:
 * Added SDL_GameControllerFromInstanceID(), as a helper function, to get the SDL_GameController* that an event is referring to.
 
 Windows:
-* Added support for Windows Phone 8.1
+* Added support for Windows Phone 8.1 and Windows 10/UWP (Universal Windows Platform)
 * Timer resolution is now 1 ms by default, adjustable with the SDL_HINT_TIMER_RESOLUTION hint
 * SDLmain no longer depends on the C runtime, so you can use the same .lib in both Debug and Release builds
 * Added SDL_SetWindowsMessageHook() to set a function to be called for every windows message before TranslateMessage()
