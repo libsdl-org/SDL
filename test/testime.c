@@ -289,7 +289,7 @@ int main(int argc, char *argv[]) {
                              break;
                         case SDLK_BACKSPACE:
                              {
-                                 int textlen=SDL_strlen(text);
+                                 size_t textlen = SDL_strlen(text);
 
                                  do {
                                      if (textlen==0)
