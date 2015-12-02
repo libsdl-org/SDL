@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package >
   <metadata>
-    <id>SDL2main-WinRT-CoreWindow</id>
+    <id>SDL2main-WinRT-NonXAML</id>
     <version>2.0.4-Unofficial</version>
     <authors>Sam Lantinga</authors>
     <owners>David Ludwig</owners>
@@ -17,6 +17,6 @@
   </metadata>
   <files>
     <file src="..\src\main\winrt\SDL_winrt_main_NonXAML.cpp" target="src\main\winrt"/>
-    <file src="SDL2main-WinRT-CoreWindow.targets" target="build\native"/>
+    <file src="SDL2main-WinRT-NonXAML.targets" target="build\native"/>
   </files>
 </package>
