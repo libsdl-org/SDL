@@ -274,7 +274,7 @@ if ($DidAnyDLLBuildFail -eq $true) {
         if ( ! $? ) { $DidAnyNugetBuildFail = $true }
 
         # Package SDL2main:
-        $NugetOptions[1] = "$PSScriptRoot\..\VisualC-WinRT\SDL2main-WinRT-CoreWindow.nuspec"
+        $NugetOptions[1] = "$PSScriptRoot\..\VisualC-WinRT\SDL2main-WinRT-NonXAML.nuspec"
         &"$NugetPath" $NugetOptions
         if ( ! $? ) { $DidAnyNugetBuildFail = $true }
     }
