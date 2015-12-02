@@ -248,7 +248,7 @@ if ($DidAnyDLLBuildFail -eq $true) {
         Write-Host -ForegroundColor Cyan "... via NuGet install: $NugetPath"
         $NugetOutputDir = "$PSScriptRoot\..\VisualC-WinRT\lib\nuget"
         Write-Host -ForegroundColor Cyan "...  output directory: $NugetOutputDir"
-        $SDLHGRevision = $($(hg log -l 1 | select-string "changeset") -Replace "changeset:\W*(\d+).*",'$1') 2>$null
+        $SDLHGRevision = $($(hg log -l 1 --repository "$PSScriptRoot\.." | select-string "changeset") -Replace "changeset:\W*(\d+).*",'$1') 2>$null
         Write-Host -ForegroundColor Cyan "...       HG Revision: $SDLHGRevision"
 
         # Base options to nuget.exe
