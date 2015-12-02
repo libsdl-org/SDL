@@ -38,6 +38,8 @@
 #     "ARM", or "x64" (for 64-bit x86).
 #
 
+# Base version of SDL, used for packaging purposes
+$SDLVersion = "2.0.4"
 
 # Gets the .bat file that sets up an MSBuild environment, given one of
 # Visual Studio's, "PlatformToolset"s.
@@ -165,7 +167,7 @@ function Build-SDL-WinRT-Variant
     $VSProjectName = Get-VS-ProjectName $VSProjectPath
 
     # Where to place output binaries (.dll, .lib, and .pdb files):
-    $OutDir = "$PSScriptRoot\..\VisualC-WinRT\lib\$PlatformToolset\$Platform"
+    $OutDir = "$PSScriptRoot\..\VisualC-WinRT\lib\$(Get-SDL-WinRT-Variant-Name $PlatformToolset)\$Platform"
 
     # Where to place intermediate build files:
     $IntermediateDir = "$PSScriptRoot\..\VisualC-WinRT\obj\$SDLProjectName-$(Get-SDL-WinRT-Variant-Name $PlatformToolset)\$Platform"
@@ -206,35 +208,87 @@ function Build-SDL-WinRT-Variant
 #
 # Build each variant, with corresponding .dll, .lib, and .pdb files:
 #
-$DidAnyFail = $false
+$DidAnyDLLBuildFail = $false
+$DidAnyNugetBuildFail = $false
 
 # Build for Windows Phone 8.0, via VC++ 2012:
-if ( ! (Build-SDL-WinRT-Variant "SDL" "v110_wp80" "ARM"))   { $DidAnyFail = $true }
-if ( ! (Build-SDL-WinRT-Variant "SDL" "v110_wp80" "Win32")) { $DidAnyFail = $true }
+if ( ! (Build-SDL-WinRT-Variant "SDL" "v110_wp80" "ARM"))   { $DidAnyDLLBuildFail = $true }
+if ( ! (Build-SDL-WinRT-Variant "SDL" "v110_wp80" "Win32")) { $DidAnyDLLBuildFail = $true }
 
 # Build for Windows Phone 8.1, via VC++ 2013:
-if ( ! (Build-SDL-WinRT-Variant "SDL" "v120_wp81" "ARM"))   { $DidAnyFail = $true }
-if ( ! (Build-SDL-WinRT-Variant "SDL" "v120_wp81" "Win32")) { $DidAnyFail = $true }
+if ( ! (Build-SDL-WinRT-Variant "SDL" "v120_wp81" "ARM"))   { $DidAnyDLLBuildFail = $true }
+if ( ! (Build-SDL-WinRT-Variant "SDL" "v120_wp81" "Win32")) { $DidAnyDLLBuildFail = $true }
 
 # Build for Windows 8.0 and Windows RT 8.0, via VC++ 2012:
-if ( ! (Build-SDL-WinRT-Variant "SDL" "v110" "ARM"))        { $DidAnyFail = $true }
-if ( ! (Build-SDL-WinRT-Variant "SDL" "v110" "Win32"))      { $DidAnyFail = $true }
-if ( ! (Build-SDL-WinRT-Variant "SDL" "v110" "x64"))        { $DidAnyFail = $true }
+if ( ! (Build-SDL-WinRT-Variant "SDL" "v110" "ARM"))        { $DidAnyDLLBuildFail = $true }
+if ( ! (Build-SDL-WinRT-Variant "SDL" "v110" "Win32"))      { $DidAnyDLLBuildFail = $true }
+if ( ! (Build-SDL-WinRT-Variant "SDL" "v110" "x64"))        { $DidAnyDLLBuildFail = $true }
 
 # Build for Windows 8.1 and Windows RT 8.1, via VC++ 2013:
-if ( ! (Build-SDL-WinRT-Variant "SDL" "v120" "ARM"))        { $DidAnyFail = $true }
-if ( ! (Build-SDL-WinRT-Variant "SDL" "v120" "Win32"))      { $DidAnyFail = $true }
-if ( ! (Build-SDL-WinRT-Variant "SDL" "v120" "x64"))        { $DidAnyFail = $true }
+if ( ! (Build-SDL-WinRT-Variant "SDL" "v120" "ARM"))        { $DidAnyDLLBuildFail = $true }
+if ( ! (Build-SDL-WinRT-Variant "SDL" "v120" "Win32"))      { $DidAnyDLLBuildFail = $true }
+if ( ! (Build-SDL-WinRT-Variant "SDL" "v120" "x64"))        { $DidAnyDLLBuildFail = $true }
 
 # Build for Windows 10, via VC++ 2015
-if ( ! (Build-SDL-WinRT-Variant "SDL" "v140" "ARM"))        { $DidAnyFail = $true }
-if ( ! (Build-SDL-WinRT-Variant "SDL" "v140" "Win32"))      { $DidAnyFail = $true }
-if ( ! (Build-SDL-WinRT-Variant "SDL" "v140" "x64"))        { $DidAnyFail = $true }
+if ( ! (Build-SDL-WinRT-Variant "SDL" "v140" "ARM"))        { $DidAnyDLLBuildFail = $true }
+if ( ! (Build-SDL-WinRT-Variant "SDL" "v140" "Win32"))      { $DidAnyDLLBuildFail = $true }
+if ( ! (Build-SDL-WinRT-Variant "SDL" "v140" "x64"))        { $DidAnyDLLBuildFail = $true }
+
+# Build NuGet packages, if possible
+if ($DidAnyDLLBuildFail -eq $true) {
+    Write-Warning -Message "Unable to build all variants.  NuGet packages will not be built."
+    $DidAnyNugetBuildFail = $true
+} else {
+    $NugetPath = (Get-Command -CommandType Application nuget.exe | %{$_.Path}) 2> $null
+    if ("$NugetPath" -eq "") {
+        Write-Warning -Message "Unable to find nuget.exe.  NuGet packages will not be built."
+        $DidAnyNugetBuildFail = $true
+    } else {
+        Write-Host -ForegroundColor Cyan "Building SDL2 NuGet packages..."
+        Write-Host -ForegroundColor Cyan "... via NuGet install: $NugetPath"
+        $NugetOutputDir = "$PSScriptRoot\..\VisualC-WinRT\lib\nuget"
+        Write-Host -ForegroundColor Cyan "...  output directory: $NugetOutputDir"
+        $SDLHGRevision = $($(hg log -l 1 | select-string "changeset") -Replace "changeset:\W*(\d+).*",'$1') 2>$null
+        Write-Host -ForegroundColor Cyan "...       HG Revision: $SDLHGRevision"
+
+        # Base options to nuget.exe
+        $NugetOptions = @("pack", "PACKAGE_NAME_WILL_GO_HERE", "-Output", "$NugetOutputDir")
+
+        # Try attaching hg revision to NuGet package:
+        $NugetOptions += "-Version"
+        if ("$SDLHGRevision" -eq "") {
+            Write-Warning -Message "Unable to find the Mercurial revision (maybe hg.exe can't be found?).  NuGet packages will not have this attached to their name."
+            $NugetOptions += "$SDLVersion-Unofficial"
+        } else {
+            $NugetOptions += "$SDLVersion.$SDLHGRevision-Unofficial"
+        }
+
+        # Create NuGet output dir, if not yet created:
+        if ($(Test-Path "$NugetOutputDir") -eq $false) {
+            New-Item "$NugetOutputDir" -type directory
+        }
+
+        # Package SDL2:
+        $NugetOptions[1] = "$PSScriptRoot\..\VisualC-WinRT\SDL2-WinRT.nuspec"
+        &"$NugetPath" $NugetOptions -Symbols
+        if ( ! $? ) { $DidAnyNugetBuildFail = $true }
+
+        # Package SDL2main:
+        $NugetOptions[1] = "$PSScriptRoot\..\VisualC-WinRT\SDL2main-WinRT-CoreWindow.nuspec"
+        &"$NugetPath" $NugetOptions
+        if ( ! $? ) { $DidAnyNugetBuildFail = $true }
+    }
+}
+
 
 # Let the script's caller know whether or not any errors occurred.
 # Exit codes compatible with Buildbot are used (1 for error, 0 for success).
-if ($DidAnyFail -eq $true) {
+if ($DidAnyDLLBuildFail -eq $true) {
+    Write-Error -Message "Unable to build all known variants of SDL2 for WinRT"
     exit 1
+} elseif ($DidAnyNugetBuildFail -eq $true) {
+    Write-Warning -Message "Unable to build NuGet packages"
+    exit 0  # Should NuGet package build failure lead to a non-failing result code instead?
 } else {
     exit 0
 }
