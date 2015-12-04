@@ -9,7 +9,7 @@
   including commercial applications, and to alter it and redistribute it
   freely.
 */
-/* Simple test of power subsystem. */
+/* Simple test of filesystem functions. */
 
 #include <stdio.h>
 #include "SDL.h"
