@@ -491,10 +491,10 @@ X11_InitModes_XRandR(_THIS)
                 display.driverdata = displaydata;
                 SDL_AddVideoDisplay(&display);
             }
+
+            X11_XRRFreeScreenResources(res);
         }
     }
-
-    X11_XRRFreeScreenResources(res);
 
     if (_this->num_displays == 0) {
         return SDL_SetError("No available displays");
