@@ -386,7 +386,6 @@ WINRT_InitModes(_THIS)
         return -1;
     }
 
-    int adapterIndex = 0;
     for (int adapterIndex = 0; ; ++adapterIndex) {
         if (WINRT_AddDisplaysForAdapter(_this, dxgiFactory2, adapterIndex) < 0) {
             break;
