@@ -330,7 +330,7 @@ WINRT_AddDisplaysForAdapter (_THIS, IDXGIFactory2 * dxgiFactory2, int adapterInd
                happens, and use a hackish means to create a reasonable-as-possible
                'display mode'.  -- DavidL
             */
-#if SDL_WINRT_USE_APPLICATIONVIEW
+#if (NTDDI_VERSION >= NTDDI_WIN10) && SDL_WINRT_USE_APPLICATIONVIEW
             if (adapterIndex == 0 && outputIndex == 0) {
                 SDL_VideoDisplay display;
                 SDL_DisplayMode mode;
@@ -358,7 +358,7 @@ WINRT_AddDisplaysForAdapter (_THIS, IDXGIFactory2 * dxgiFactory2, int adapterInd
                     return SDL_SetError("Failed to apply DXGI Display-detection workaround");
                 }
             }
-#endif  // SDL_WINRT_USE_APPLICATIONVIEW
+#endif  // (NTDDI_VERSION >= NTDDI_WIN10) && SDL_WINRT_USE_APPLICATIONVIEW
 
             break;
         }
