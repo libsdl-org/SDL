@@ -333,11 +333,10 @@ WINRT_AddDisplaysForAdapter (_THIS, IDXGIFactory2 * dxgiFactory2, int adapterInd
             if (adapterIndex == 0 && outputIndex == 0) {
                 SDL_VideoDisplay display;
                 SDL_DisplayMode mode;
-#if (NTDDI_VERSION >= NTDDI_WIN10) || (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
+#if SDL_WINRT_USE_APPLICATIONVIEW
                 ApplicationView ^ appView = ApplicationView::GetForCurrentView();
-#else
-                CoreWindow ^ coreWin = CoreWindow::GetForCurrentThread();
 #endif
+                CoreWindow ^ coreWin = CoreWindow::GetForCurrentThread();
                 SDL_zero(display);
                 SDL_zero(mode);
                 display.name = "DXGI Display-detection Workaround";
@@ -349,7 +348,7 @@ WINRT_AddDisplaysForAdapter (_THIS, IDXGIFactory2 * dxgiFactory2, int adapterInd
                    failing test), whereas CoreWindow might not.  -- DavidL
                 */
 
-#if (NTDDI_VERSION >= NTDDI_WIN10) || (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
+#if (NTDDI_VERSION >= NTDDI_WIN10) || (SDL_WINRT_USE_APPLICATIONVIEW && WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
                 mode.w = WINRT_DIPS_TO_PHYSICAL_PIXELS(appView->VisibleBounds.Width);
                 mode.h = WINRT_DIPS_TO_PHYSICAL_PIXELS(appView->VisibleBounds.Height);
 #else
