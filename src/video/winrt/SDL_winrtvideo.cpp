@@ -315,6 +315,51 @@ WINRT_AddDisplaysForAdapter (_THIS, IDXGIFactory2 * dxgiFactory2, int adapterInd
 
     for (int outputIndex = 0; ; ++outputIndex) {
         if (WINRT_AddDisplaysForOutput(_this, dxgiAdapter1, outputIndex) < 0) {
+            /* HACK: The Windows App Certification Kit 10.0 can fail, when
+               running the Store Apps' test, "Direct3D Feature Test".  The
+               certification kit's error is:
+
+               "Application App was not running at the end of the test. It likely crashed or was terminated for having become unresponsive."
+
+               This was caused by SDL/WinRT's DXGI failing to report any
+               outputs.  Attempts to get the 1st display-output from the
+               1st display-adapter can fail, with IDXGIAdapter::EnumOutputs
+               returning DXGI_ERROR_NOT_FOUND.  This could be a bug in Windows,
+               the Windows App Certification Kit, or possibly in SDL/WinRT's
+               display detection code.  Either way, try to detect when this
+               happens, and use a hackish means to create a reasonable-as-possible
+               'display mode'.  -- DavidL
+            */
+#if SDL_WINRT_USE_APPLICATIONVIEW
+            if (adapterIndex == 0 && outputIndex == 0) {
+                SDL_VideoDisplay display;
+                SDL_DisplayMode mode;
+                ApplicationView ^ appView = ApplicationView::GetForCurrentView();
+                SDL_zero(display);
+                SDL_zero(mode);
+                display.name = "DXGI Display-detection Workaround";
+
+                /* HACK: ApplicationView's VisibleBounds property, appeared, via testing, to
+                   give a better approximation of display-size, than did CoreWindow's
+                   Bounds property, insofar that ApplicationView::VisibleBounds seems like
+                   it will, at least some of the time, give the full display size (during the
+                   failing test), whereas CoreWindow will not.  -- DavidL
+                */
+                mode.w = WINRT_DIPS_TO_PHYSICAL_PIXELS(appView->VisibleBounds.Width);
+                mode.h = WINRT_DIPS_TO_PHYSICAL_PIXELS(appView->VisibleBounds.Height);
+
+                mode.format = DXGI_FORMAT_B8G8R8A8_UNORM;
+                mode.refresh_rate = 0;  /* Display mode is unknown, so just fill in zero, as specified by SDL's header files */
+                display.desktop_mode = mode;
+                display.current_mode = mode;
+                if ((SDL_AddDisplayMode(&display, &mode) < 0) ||
+                    (SDL_AddVideoDisplay(&display) < 0))
+                {
+                    return SDL_SetError("Failed to apply DXGI Display-detection workaround");
+                }
+            }
+#endif  // SDL_WINRT_USE_APPLICATIONVIEW
+
             break;
         }
     }
