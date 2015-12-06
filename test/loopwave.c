@@ -10,7 +10,7 @@
   freely.
 */
 
-/* Program to load a wave file and loop playing it using SDL sound */
+/* Program to load a wave file and loop playing it using SDL audio */
 
 /* loopwaves.c is much more robust in handling WAVE files --
     This is only for simple WAVEs
