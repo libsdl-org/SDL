@@ -330,11 +330,12 @@ WINRT_AddDisplaysForAdapter (_THIS, IDXGIFactory2 * dxgiFactory2, int adapterInd
                happens, and use a hackish means to create a reasonable-as-possible
                'display mode'.  -- DavidL
             */
-#if (NTDDI_VERSION >= NTDDI_WIN10) && SDL_WINRT_USE_APPLICATIONVIEW
+#if SDL_WINRT_USE_APPLICATIONVIEW
             if (adapterIndex == 0 && outputIndex == 0) {
                 SDL_VideoDisplay display;
                 SDL_DisplayMode mode;
                 ApplicationView ^ appView = ApplicationView::GetForCurrentView();
+                CoreWindow ^ coreWin = CoreWindow::GetForCurrentThread();
                 SDL_zero(display);
                 SDL_zero(mode);
                 display.name = "DXGI Display-detection Workaround";
@@ -343,10 +344,19 @@ WINRT_AddDisplaysForAdapter (_THIS, IDXGIFactory2 * dxgiFactory2, int adapterInd
                    give a better approximation of display-size, than did CoreWindow's
                    Bounds property, insofar that ApplicationView::VisibleBounds seems like
                    it will, at least some of the time, give the full display size (during the
-                   failing test), whereas CoreWindow will not.  -- DavidL
+                   failing test), whereas CoreWindow might not.  -- DavidL
                 */
+
+#if (NTDDI_VERSION >= NTDDI_WIN10) || (WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP)
                 mode.w = WINRT_DIPS_TO_PHYSICAL_PIXELS(appView->VisibleBounds.Width);
                 mode.h = WINRT_DIPS_TO_PHYSICAL_PIXELS(appView->VisibleBounds.Height);
+#else
+                /* On platform(s) that do not support VisibleBounds, such as Windows 8.1,
+                   fall back to CoreWindow's Bounds property.
+                */
+                mode.w = WINRT_DIPS_TO_PHYSICAL_PIXELS(coreWin->Bounds.Width);
+                mode.h = WINRT_DIPS_TO_PHYSICAL_PIXELS(coreWin->Bounds.Height);
+#endif
 
                 mode.format = DXGI_FORMAT_B8G8R8A8_UNORM;
                 mode.refresh_rate = 0;  /* Display mode is unknown, so just fill in zero, as specified by SDL's header files */
@@ -358,7 +368,7 @@ WINRT_AddDisplaysForAdapter (_THIS, IDXGIFactory2 * dxgiFactory2, int adapterInd
                     return SDL_SetError("Failed to apply DXGI Display-detection workaround");
                 }
             }
-#endif  // (NTDDI_VERSION >= NTDDI_WIN10) && SDL_WINRT_USE_APPLICATIONVIEW
+#endif  // SDL_WINRT_USE_APPLICATIONVIEW
 
             break;
         }
