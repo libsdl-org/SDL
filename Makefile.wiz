@@ -12,13 +12,13 @@ CFLAGS  = -Wall -fPIC -I./include -I$(WIZSDK)/include -DWIZ_GLES_LITE
 TARGET_STATIC  = libSDL13.a
 TARGET_SHARED  = libSDL13.so
 
-SOURCES = ./src/*.c ./src/audio/*.c ./src/cdrom/*.c ./src/cpuinfo/*.c ./src/events/*.c \
+SOURCES = ./src/*.c ./src/audio/*.c ./src/cpuinfo/*.c ./src/events/*.c \
 	./src/file/*.c ./src/stdlib/*.c ./src/thread/*.c ./src/timer/*.c ./src/video/*.c \
 	./src/joystick/*.c ./src/haptic/*.c ./src/video/dummy/*.c ./src/audio/disk/*.c \
 	./src/audio/dummy/*.c ./src/loadso/dlopen/*.c ./src/audio/dsp/*.c \
 	./src/thread/pthread/SDL_systhread.c ./src/thread/pthread/SDL_syssem.c \
 	./src/thread/pthread/SDL_sysmutex.c ./src/thread/pthread/SDL_syscond.c \
-	./src/joystick/linux/*.c ./src/haptic/linux/*.c ./src/timer/unix/*.c ./src/cdrom/dummy/*.c \
+	./src/joystick/linux/*.c ./src/haptic/linux/*.c ./src/timer/unix/*.c \
 	./src/video/pandora/SDL_pandora.o ./src/video/pandora/SDL_pandora_events.o
 	
 
