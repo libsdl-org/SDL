@@ -254,36 +254,6 @@ ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickGUID *gu
     return NULL;
 }
 
-/*
- * Helper function to determine pre-calculated offset to certain joystick mappings
- */
-ControllerMapping_t *SDL_PrivateGetControllerMapping(int device_index)
-{
-    SDL_JoystickGUID jGUID = SDL_JoystickGetDeviceGUID(device_index);
-    ControllerMapping_t *mapping;
-
-    mapping = SDL_PrivateGetControllerMappingForGUID(&jGUID);
-#if SDL_JOYSTICK_XINPUT
-    if (!mapping && SDL_SYS_IsXInputGamepad_DeviceIndex(device_index)) {
-        mapping = s_pXInputMapping;
-    }
-#endif
-#if defined(SDL_JOYSTICK_EMSCRIPTEN)
-    if (!mapping && s_pEmscriptenMapping) {
-        mapping = s_pEmscriptenMapping;
-    }
-#endif
-    if (!mapping) {
-        const char *name = SDL_JoystickNameForIndex(device_index);
-        if (name) {
-            if (SDL_strstr(name, "Xbox") || SDL_strstr(name, "X-Box")) {
-                mapping = s_pXInputMapping;
-            }
-        }
-    }
-    return mapping;
-}
-
 static const char* map_StringForControllerAxis[] = {
     "leftx",
     "lefty",
@@ -581,6 +551,9 @@ char *SDL_PrivateGetControllerMappingFromMappingString(const char *pMapping)
     return SDL_strdup(pSecondComma + 1); /* mapping is everything after the 3rd comma */
 }
 
+/*
+ * Helper function to refresh a mapping
+ */
 void SDL_PrivateGameControllerRefreshMapping(ControllerMapping_t *pControllerMapping)
 {
     SDL_GameController *gamecontrollerlist = SDL_gamecontrollers;
@@ -597,6 +570,102 @@ void SDL_PrivateGameControllerRefreshMapping(ControllerMapping_t *pControllerMap
 
         gamecontrollerlist = gamecontrollerlist->next;
     }
+}
+
+/*
+ * Helper function to add a mapping for a guid
+ */
+static ControllerMapping_t *
+SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID, const char *mappingString, SDL_bool *existing)
+{
+    char *pchName;
+    char *pchMapping;
+    ControllerMapping_t *pControllerMapping;
+
+    pchName = SDL_PrivateGetControllerNameFromMappingString(mappingString);
+    if (!pchName) {
+        SDL_SetError("Couldn't parse name from %s", mappingString);
+        return NULL;
+    }
+
+    pchMapping = SDL_PrivateGetControllerMappingFromMappingString(mappingString);
+    if (!pchMapping) {
+        SDL_free(pchName);
+        SDL_SetError("Couldn't parse %s", mappingString);
+        return NULL;
+    }
+
+    pControllerMapping = SDL_PrivateGetControllerMappingForGUID(&jGUID);
+    if (pControllerMapping) {
+        /* Update existing mapping */
+        SDL_free(pControllerMapping->name);
+        pControllerMapping->name = pchName;
+        SDL_free(pControllerMapping->mapping);
+        pControllerMapping->mapping = pchMapping;
+        /* refresh open controllers */
+        SDL_PrivateGameControllerRefreshMapping(pControllerMapping);
+        *existing = SDL_TRUE;
+    } else {
+        pControllerMapping = SDL_malloc(sizeof(*pControllerMapping));
+        if (!pControllerMapping) {
+            SDL_free(pchName);
+            SDL_free(pchMapping);
+            SDL_OutOfMemory();
+            return NULL;
+        }
+        pControllerMapping->guid = jGUID;
+        pControllerMapping->name = pchName;
+        pControllerMapping->mapping = pchMapping;
+        pControllerMapping->next = s_pSupportedControllers;
+        s_pSupportedControllers = pControllerMapping;
+        *existing = SDL_FALSE;
+    }
+    return pControllerMapping;
+}
+
+/*
+ * Helper function to determine pre-calculated offset to certain joystick mappings
+ */
+ControllerMapping_t *SDL_PrivateGetControllerMapping(int device_index)
+{
+    SDL_JoystickGUID jGUID = SDL_JoystickGetDeviceGUID(device_index);
+    ControllerMapping_t *mapping;
+
+    mapping = SDL_PrivateGetControllerMappingForGUID(&jGUID);
+#if SDL_JOYSTICK_XINPUT
+    if (!mapping && SDL_SYS_IsXInputGamepad_DeviceIndex(device_index)) {
+        mapping = s_pXInputMapping;
+    }
+#endif
+#if defined(SDL_JOYSTICK_EMSCRIPTEN)
+    if (!mapping && s_pEmscriptenMapping) {
+        mapping = s_pEmscriptenMapping;
+    }
+#endif
+#ifdef __LINUX__
+    if (!mapping) {
+        const char *name = SDL_JoystickNameForIndex(device_index);
+        if (name) {
+            if (SDL_strstr(name, "Xbox 360 Wireless Receiver")) {
+                /* The Linux driver xpad.c maps the wireless dpad to buttons */
+                SDL_bool existing;
+                mapping = SDL_PrivateAddMappingForGUID(jGUID,
+"none,X360 Wireless Controller,a:b0,b:b1,back:b6,dpdown:b14,dpleft:b11,dpright:b12,dpup:b13,guide:b8,leftshoulder:b4,leftstick:b9,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b10,righttrigger:a5,rightx:a3,righty:a4,start:b7,x:b2,y:b3,",
+                              &existing);
+            }
+        }
+    }
+#endif /* __LINUX__ */
+
+    if (!mapping) {
+        const char *name = SDL_JoystickNameForIndex(device_index);
+        if (name) {
+            if (SDL_strstr(name, "Xbox") || SDL_strstr(name, "X-Box")) {
+                mapping = s_pXInputMapping;
+            }
+        }
+    }
+    return mapping;
 }
 
 /*
@@ -677,12 +746,11 @@ int
 SDL_GameControllerAddMapping(const char *mappingString)
 {
     char *pchGUID;
-    char *pchName;
-    char *pchMapping;
     SDL_JoystickGUID jGUID;
-    ControllerMapping_t *pControllerMapping;
     SDL_bool is_xinput_mapping = SDL_FALSE;
     SDL_bool is_emscripten_mapping = SDL_FALSE;
+    SDL_bool existing = SDL_FALSE;
+    ControllerMapping_t *pControllerMapping;
 
     if (!mappingString) {
         return SDL_InvalidParamError("mappingString");
@@ -701,46 +769,20 @@ SDL_GameControllerAddMapping(const char *mappingString)
     jGUID = SDL_JoystickGetGUIDFromString(pchGUID);
     SDL_free(pchGUID);
 
-    pchName = SDL_PrivateGetControllerNameFromMappingString(mappingString);
-    if (!pchName) {
-        return SDL_SetError("Couldn't parse name from %s", mappingString);
+    pControllerMapping = SDL_PrivateAddMappingForGUID(jGUID, mappingString, &existing);
+    if (!pControllerMapping) {
+        return -1;
     }
 
-    pchMapping = SDL_PrivateGetControllerMappingFromMappingString(mappingString);
-    if (!pchMapping) {
-        SDL_free(pchName);
-        return SDL_SetError("Couldn't parse %s", mappingString);
-    }
-
-    pControllerMapping = SDL_PrivateGetControllerMappingForGUID(&jGUID);
-
-    if (pControllerMapping) {
-        /* Update existing mapping */
-        SDL_free(pControllerMapping->name);
-        pControllerMapping->name = pchName;
-        SDL_free(pControllerMapping->mapping);
-        pControllerMapping->mapping = pchMapping;
-        /* refresh open controllers */
-        SDL_PrivateGameControllerRefreshMapping(pControllerMapping);
+    if (existing) {
         return 0;
     } else {
-        pControllerMapping = SDL_malloc(sizeof(*pControllerMapping));
-        if (!pControllerMapping) {
-            SDL_free(pchName);
-            SDL_free(pchMapping);
-            return SDL_OutOfMemory();
-        }
         if (is_xinput_mapping) {
             s_pXInputMapping = pControllerMapping;
         }
         if (is_emscripten_mapping) {
             s_pEmscriptenMapping = pControllerMapping;
         }
-        pControllerMapping->guid = jGUID;
-        pControllerMapping->name = pchName;
-        pControllerMapping->mapping = pchMapping;
-        pControllerMapping->next = s_pSupportedControllers;
-        s_pSupportedControllers = pControllerMapping;
         return 1;
     }
 }
