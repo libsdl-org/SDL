@@ -74,7 +74,9 @@ protected:
     void OnKeyUp(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::KeyEventArgs^ args);
     void OnCharacterReceived(Windows::UI::Core::CoreWindow^ sender, Windows::UI::Core::CharacterReceivedEventArgs^ args);
 
-#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+#if NTDDI_VERSION >= NTDDI_WIN10
+    void OnBackButtonPressed(Platform::Object^ sender, Windows::UI::Core::BackRequestedEventArgs^ args);
+#elif WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
     void OnBackButtonPressed(Platform::Object^ sender, Windows::Phone::UI::Input::BackPressedEventArgs^ args);
 #endif
 

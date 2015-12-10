@@ -364,7 +364,10 @@ void SDL_WinRTApp::SetWindow(CoreWindow^ window)
     window->CharacterReceived +=
         ref new TypedEventHandler<CoreWindow^, CharacterReceivedEventArgs^>(this, &SDL_WinRTApp::OnCharacterReceived);
 
-#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+#if NTDDI_VERSION >= NTDDI_WIN10
+    Windows::UI::Core::SystemNavigationManager::GetForCurrentView()->BackRequested +=
+        ref new EventHandler<BackRequestedEventArgs^>(this, &SDL_WinRTApp::OnBackButtonPressed);
+#elif WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
     HardwareButtons::BackPressed +=
         ref new EventHandler<BackPressedEventArgs^>(this, &SDL_WinRTApp::OnBackButtonPressed);
 #endif
@@ -785,8 +788,8 @@ void SDL_WinRTApp::OnCharacterReceived(Windows::UI::Core::CoreWindow^ sender, Wi
     WINRT_ProcessCharacterReceivedEvent(args);
 }
 
-#if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
-void SDL_WinRTApp::OnBackButtonPressed(Platform::Object^ sender, Windows::Phone::UI::Input::BackPressedEventArgs^ args)
+template <typename BackButtonEventArgs>
+static void WINRT_OnBackButtonPressed(BackButtonEventArgs ^ args)
 {
     SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_AC_BACK);
     SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_AC_BACK);
@@ -797,6 +800,19 @@ void SDL_WinRTApp::OnBackButtonPressed(Platform::Object^ sender, Windows::Phone:
             args->Handled = true;
         }
     }
+}
+
+#if NTDDI_VERSION == NTDDI_WIN10
+void SDL_WinRTApp::OnBackButtonPressed(Platform::Object^ sender, Windows::UI::Core::BackRequestedEventArgs^ args)
+
+{
+    WINRT_OnBackButtonPressed(args);
+}
+#elif WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
+void SDL_WinRTApp::OnBackButtonPressed(Platform::Object^ sender, Windows::Phone::UI::Input::BackPressedEventArgs^ args)
+
+{
+    WINRT_OnBackButtonPressed(args);
 }
 #endif
 
