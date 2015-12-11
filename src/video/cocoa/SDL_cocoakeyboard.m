@@ -33,25 +33,27 @@
 /*#define DEBUG_IME NSLog */
 #define DEBUG_IME(...)
 
-@interface SDLTranslatorResponder : NSView <NSTextInput> {
+@interface SDLTranslatorResponder : NSView <NSTextInputClient> {
     NSString *_markedText;
     NSRange   _markedRange;
     NSRange   _selectedRange;
     SDL_Rect  _inputRect;
 }
-- (void) doCommandBySelector:(SEL)myselector;
-- (void) setInputRect:(SDL_Rect *) rect;
+- (void)doCommandBySelector:(SEL)myselector;
+- (void)setInputRect:(SDL_Rect *)rect;
 @end
 
 @implementation SDLTranslatorResponder
 
-- (void) setInputRect:(SDL_Rect *) rect
+- (void)setInputRect:(SDL_Rect *)rect
 {
     _inputRect = *rect;
 }
 
-- (void) insertText:(id) aString
+- (void)insertText:(id)aString replacementRange:(NSRange)replacementRange
 {
+    /* TODO: Make use of replacementRange? */
+
     const char *str;
 
     DEBUG_IME(@"insertText: %@", aString);
@@ -67,7 +69,15 @@
     SDL_SendKeyboardText(str);
 }
 
-- (void) doCommandBySelector:(SEL) myselector
+- (void)insertText:(id)insertString
+{
+    /* This method is part of NSTextInput and not NSTextInputClient, but
+     * apparently it still might be called in OS X 10.5 and can cause beeps if
+     * the implementation is missing: http://crbug.com/47890 */
+    [self insertText:insertString replacementRange:NSMakeRange(0, 0)];
+}
+
+- (void)doCommandBySelector:(SEL)myselector
 {
     /* No need to do anything since we are not using Cocoa
        selectors to handle special keys, instead we use SDL
@@ -75,23 +85,22 @@
     */
 }
 
-- (BOOL) hasMarkedText
+- (BOOL)hasMarkedText
 {
     return _markedText != nil;
 }
 
-- (NSRange) markedRange
+- (NSRange)markedRange
 {
     return _markedRange;
 }
 
-- (NSRange) selectedRange
+- (NSRange)selectedRange
 {
     return _selectedRange;
 }
 
-- (void) setMarkedText:(id) aString
-         selectedRange:(NSRange) selRange
+- (void)setMarkedText:(id)aString selectedRange:(NSRange)selectedRange replacementRange:(NSRange)replacementRange;
 {
     if ([aString isKindOfClass: [NSAttributedString class]]) {
         aString = [aString string];
@@ -107,17 +116,17 @@
         _markedText = [aString retain];
     }
 
-    _selectedRange = selRange;
+    _selectedRange = selectedRange;
     _markedRange = NSMakeRange(0, [aString length]);
 
     SDL_SendEditingText([aString UTF8String],
-                        selRange.location, selRange.length);
+                        selectedRange.location, selectedRange.length);
 
     DEBUG_IME(@"setMarkedText: %@, (%d, %d)", _markedText,
           selRange.location, selRange.length);
 }
 
-- (void) unmarkText
+- (void)unmarkText
 {
     [_markedText release];
     _markedText = nil;
@@ -125,29 +134,38 @@
     SDL_SendEditingText("", 0, 0);
 }
 
-- (NSRect) firstRectForCharacterRange: (NSRange) theRange
+- (NSRect)firstRectForCharacterRange:(NSRange)aRange actualRange:(NSRangePointer)actualRange;
 {
     NSWindow *window = [self window];
-    NSRect contentRect = [window contentRectForFrameRect: [window frame]];
+    NSRect contentRect = [window contentRectForFrameRect:[window frame]];
     float windowHeight = contentRect.size.height;
     NSRect rect = NSMakeRect(_inputRect.x, windowHeight - _inputRect.y - _inputRect.h,
                              _inputRect.w, _inputRect.h);
 
+    if (actualRange) {
+        *actualRange = aRange;
+    }
+
     DEBUG_IME(@"firstRectForCharacterRange: (%d, %d): windowHeight = %g, rect = %@",
-            theRange.location, theRange.length, windowHeight,
+            aRange.location, aRange.length, windowHeight,
             NSStringFromRect(rect));
-    rect.origin = [[self window] convertBaseToScreen: rect.origin];
+
+    if ([[self window] respondsToSelector:@selector(convertRectToScreen:)]) {
+        rect = [[self window] convertRectToScreen:rect];
+    } else {
+        rect.origin = [[self window] convertBaseToScreen:rect.origin];
+    }
 
     return rect;
 }
 
-- (NSAttributedString *) attributedSubstringFromRange: (NSRange) theRange
+- (NSAttributedString *)attributedSubstringForProposedRange:(NSRange)aRange actualRange:(NSRangePointer)actualRange;
 {
-    DEBUG_IME(@"attributedSubstringFromRange: (%d, %d)", theRange.location, theRange.length);
+    DEBUG_IME(@"attributedSubstringFromRange: (%d, %d)", aRange.location, aRange.length);
     return nil;
 }
 
-- (NSInteger) conversationIdentifier
+- (NSInteger)conversationIdentifier
 {
     return (NSInteger) self;
 }
@@ -155,7 +173,7 @@
 /* This method returns the index for character that is
  * nearest to thePoint.  thPoint is in screen coordinate system.
  */
-- (NSUInteger) characterIndexForPoint:(NSPoint) thePoint
+- (NSUInteger)characterIndexForPoint:(NSPoint)thePoint
 {
     DEBUG_IME(@"characterIndexForPoint: (%g, %g)", thePoint.x, thePoint.y);
     return 0;
@@ -166,7 +184,7 @@
  * NSInputServer examines the return value of this
  * method & constructs appropriate attributed string.
  */
-- (NSArray *) validAttributesForMarkedText
+- (NSArray *)validAttributesForMarkedText
 {
     return [NSArray array];
 }
@@ -504,7 +522,7 @@ Cocoa_StartTextInput(_THIS)
             [[SDLTranslatorResponder alloc] initWithFrame: NSMakeRect(0.0, 0.0, 0.0, 0.0)];
     }
 
-    if (![[data->fieldEdit superview] isEqual: parentView]) {
+    if (![[data->fieldEdit superview] isEqual:parentView]) {
         /* DEBUG_IME(@"add fieldEdit to window contentView"); */
         [data->fieldEdit removeFromSuperview];
         [parentView addSubview: data->fieldEdit];
@@ -535,7 +553,7 @@ Cocoa_SetTextInputRect(_THIS, SDL_Rect *rect)
         return;
     }
 
-    [data->fieldEdit setInputRect: rect];
+    [data->fieldEdit setInputRect:rect];
 }
 
 void
