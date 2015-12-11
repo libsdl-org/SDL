@@ -393,7 +393,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     const char *hint;
     GLint value;
     Uint32 window_flags;
-    int profile_mask, major, minor;
+    int profile_mask = 0, major = 0, minor = 0;
     SDL_bool changed_window = SDL_FALSE;
 
     SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &profile_mask);
