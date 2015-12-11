@@ -116,6 +116,10 @@ SDL_SYS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *contr
         device->nbuttons = 7; /* ABXY, shoulder buttons, pause button */
     }
     /* TODO: Handle micro profiles on tvOS. */
+
+    /* This will be set when the first button press of the controller is
+     * detected. */
+    controller.playerIndex = -1;
 #endif
 }
 
@@ -361,26 +365,7 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
         } else {
 #ifdef SDL_JOYSTICK_MFI
             GCController *controller = device->controller;
-            BOOL usedPlayerIndexSlots[4] = {NO, NO, NO, NO};
-
-            /* Find the player index of all other connected controllers. */
-            for (GCController *c in [GCController controllers]) {
-                if (c != controller && c.playerIndex >= 0) {
-                    usedPlayerIndexSlots[c.playerIndex] = YES;
-                }
-            }
-
-            /* Set this controller's player index to the first unused index.
-             * FIXME: This logic isn't great... but SDL doesn't expose this
-             * concept in its external API, so we don't have much to go on. */
-            for (int i = 0; i < 4; i++) {
-                if (!usedPlayerIndexSlots[i]) {
-                    controller.playerIndex = i;
-                    break;
-                }
-            }
-
-            controller.controllerPausedHandler = ^(GCController *controller) {
+            controller.controllerPausedHandler = ^(GCController *c) {
                 if (joystick->hwdata) {
                     ++joystick->hwdata->num_pause_presses;
                 }
@@ -475,53 +460,102 @@ SDL_SYS_MFIJoystickUpdate(SDL_Joystick * joystick)
         GCController *controller = joystick->hwdata->controller;
         Uint8 hatstate = SDL_HAT_CENTERED;
         int i;
+        int updateplayerindex = 0;
 
         if (controller.extendedGamepad) {
             GCExtendedGamepad *gamepad = controller.extendedGamepad;
 
             /* Axis order matches the XInput Windows mappings. */
-            SDL_PrivateJoystickAxis(joystick, 0, (Sint16) (gamepad.leftThumbstick.xAxis.value * 32767));
-            SDL_PrivateJoystickAxis(joystick, 1, (Sint16) (gamepad.leftThumbstick.yAxis.value * -32767));
-            SDL_PrivateJoystickAxis(joystick, 2, (Sint16) ((gamepad.leftTrigger.value * 65535) - 32768));
-            SDL_PrivateJoystickAxis(joystick, 3, (Sint16) (gamepad.rightThumbstick.xAxis.value * 32767));
-            SDL_PrivateJoystickAxis(joystick, 4, (Sint16) (gamepad.rightThumbstick.yAxis.value * -32767));
-            SDL_PrivateJoystickAxis(joystick, 5, (Sint16) ((gamepad.rightTrigger.value * 65535) - 32768));
+            Sint16 axes[] = {
+                (Sint16) (gamepad.leftThumbstick.xAxis.value * 32767),
+                (Sint16) (gamepad.leftThumbstick.yAxis.value * -32767),
+                (Sint16) ((gamepad.leftTrigger.value * 65535) - 32768),
+                (Sint16) (gamepad.rightThumbstick.xAxis.value * 32767),
+                (Sint16) (gamepad.rightThumbstick.yAxis.value * -32767),
+                (Sint16) ((gamepad.rightTrigger.value * 65535) - 32768),
+            };
+
+            /* Button order matches the XInput Windows mappings. */
+            Uint8 buttons[] = {
+                gamepad.buttonA.isPressed, gamepad.buttonB.isPressed,
+                gamepad.buttonX.isPressed, gamepad.buttonY.isPressed,
+                gamepad.leftShoulder.isPressed,
+                gamepad.rightShoulder.isPressed,
+            };
 
             hatstate = SDL_SYS_MFIJoystickHatStateForDPad(gamepad.dpad);
 
-            /* Button order matches the XInput Windows mappings. */
-            SDL_PrivateJoystickButton(joystick, 0, gamepad.buttonA.isPressed);
-            SDL_PrivateJoystickButton(joystick, 1, gamepad.buttonB.isPressed);
-            SDL_PrivateJoystickButton(joystick, 2, gamepad.buttonX.isPressed);
-            SDL_PrivateJoystickButton(joystick, 3, gamepad.buttonY.isPressed);
-            SDL_PrivateJoystickButton(joystick, 4, gamepad.leftShoulder.isPressed);
-            SDL_PrivateJoystickButton(joystick, 5, gamepad.rightShoulder.isPressed);
+            for (i = 0; i < SDL_arraysize(axes); i++) {
+                /* The triggers (axes 2 and 5) are resting at -32768 but SDL
+                 * initializes its values to 0. We only want to make sure the
+                 * player index is up to date if the user actually moves an axis. */
+                if ((i != 2 && i != 5) || axes[i] != -32768) {
+                    updateplayerindex |= (joystick->axes[i] != axes[i]);
+                }
+                SDL_PrivateJoystickAxis(joystick, i, axes[i]);
+            }
+
+            for (i = 0; i < SDL_arraysize(buttons); i++) {
+                updateplayerindex |= (joystick->buttons[i] != buttons[i]);
+                SDL_PrivateJoystickButton(joystick, i, buttons[i]);
+            }
         } else if (controller.gamepad) {
             GCGamepad *gamepad = controller.gamepad;
 
+            /* Button order matches the XInput Windows mappings. */
+            Uint8 buttons[] = {
+                gamepad.buttonA.isPressed, gamepad.buttonB.isPressed,
+                gamepad.buttonX.isPressed, gamepad.buttonY.isPressed,
+                gamepad.leftShoulder.isPressed,
+                gamepad.rightShoulder.isPressed,
+            };
+
             hatstate = SDL_SYS_MFIJoystickHatStateForDPad(gamepad.dpad);
 
-            /* Button order matches the XInput Windows mappings. */
-            SDL_PrivateJoystickButton(joystick, 0, gamepad.buttonA.isPressed);
-            SDL_PrivateJoystickButton(joystick, 1, gamepad.buttonB.isPressed);
-            SDL_PrivateJoystickButton(joystick, 2, gamepad.buttonX.isPressed);
-            SDL_PrivateJoystickButton(joystick, 3, gamepad.buttonY.isPressed);
-            SDL_PrivateJoystickButton(joystick, 4, gamepad.leftShoulder.isPressed);
-            SDL_PrivateJoystickButton(joystick, 5, gamepad.rightShoulder.isPressed);
+            for (i = 0; i < SDL_arraysize(buttons); i++) {
+                updateplayerindex |= (joystick->buttons[i] != buttons[i]);
+                SDL_PrivateJoystickButton(joystick, i, buttons[i]);
+            }
         }
         /* TODO: Handle micro profiles on tvOS. */
 
-        SDL_PrivateJoystickHat(joystick, 0, hatstate);
+        if (joystick->nhats > 0) {
+            updateplayerindex |= (joystick->hats[0] != hatstate);
+            SDL_PrivateJoystickHat(joystick, 0, hatstate);
+        }
 
         for (i = 0; i < joystick->hwdata->num_pause_presses; i++) {
             /* The pause button is always last. */
             Uint8 pausebutton = joystick->nbuttons - 1;
 
-            SDL_PrivateJoystickButton(joystick, pausebutton, 1);
-            SDL_PrivateJoystickButton(joystick, pausebutton, 0);
+            SDL_PrivateJoystickButton(joystick, pausebutton, SDL_PRESSED);
+            SDL_PrivateJoystickButton(joystick, pausebutton, SDL_RELEASED);
+
+            updateplayerindex = YES;
         }
 
         joystick->hwdata->num_pause_presses = 0;
+
+        if (updateplayerindex && controller.playerIndex == -1) {
+            BOOL usedPlayerIndexSlots[4] = {NO, NO, NO, NO};
+
+            /* Find the player index of all other connected controllers. */
+            for (GCController *c in [GCController controllers]) {
+                if (c != controller && c.playerIndex >= 0) {
+                    usedPlayerIndexSlots[c.playerIndex] = YES;
+                }
+            }
+
+            /* Set this controller's player index to the first unused index.
+             * FIXME: This logic isn't great... but SDL doesn't expose this
+             * concept in its external API, so we don't have much to go on. */
+            for (i = 0; i < SDL_arraysize(usedPlayerIndexSlots); i++) {
+                if (!usedPlayerIndexSlots[i]) {
+                    controller.playerIndex = i;
+                    break;
+                }
+            }
+        }
     }
 #endif
 }
@@ -566,6 +600,7 @@ SDL_SYS_JoystickClose(SDL_Joystick * joystick)
 #ifdef SDL_JOYSTICK_MFI
             GCController *controller = device->controller;
             controller.controllerPausedHandler = nil;
+            controller.playerIndex = -1;
 #endif
         }
     }
