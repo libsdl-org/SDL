@@ -666,29 +666,29 @@ WIN_GL_CreateContext(_THIS, SDL_Window * window)
                 WGL_CONTEXT_MINOR_VERSION_ARB, _this->gl_config.minor_version,
                 0
             };
-        int iattr = 4;
+            int iattr = 4;
 
-        /* SDL profile bits match WGL profile bits */
-        if( _this->gl_config.profile_mask != 0 ) {
-            attribs[iattr++] = WGL_CONTEXT_PROFILE_MASK_ARB;
-        attribs[iattr++] = _this->gl_config.profile_mask;
-        }
+            /* SDL profile bits match WGL profile bits */
+            if (_this->gl_config.profile_mask != 0) {
+                attribs[iattr++] = WGL_CONTEXT_PROFILE_MASK_ARB;
+                attribs[iattr++] = _this->gl_config.profile_mask;
+            }
 
-        /* SDL flags match WGL flags */
-        if( _this->gl_config.flags != 0 ) {
-            attribs[iattr++] = WGL_CONTEXT_FLAGS_ARB;
-        attribs[iattr++] = _this->gl_config.flags;
-        }
+            /* SDL flags match WGL flags */
+            if (_this->gl_config.flags != 0) {
+                attribs[iattr++] = WGL_CONTEXT_FLAGS_ARB;
+                attribs[iattr++] = _this->gl_config.flags;
+            }
 
-        /* only set if wgl extension is available */
-        if( _this->gl_data->HAS_WGL_ARB_context_flush_control ) {
-            attribs[iattr++] = WGL_CONTEXT_RELEASE_BEHAVIOR_ARB;
-            attribs[iattr++] = _this->gl_config.release_behavior ?
+            /* only set if wgl extension is available */
+            if (_this->gl_data->HAS_WGL_ARB_context_flush_control) {
+                attribs[iattr++] = WGL_CONTEXT_RELEASE_BEHAVIOR_ARB;
+                attribs[iattr++] = _this->gl_config.release_behavior ?
                                     WGL_CONTEXT_RELEASE_BEHAVIOR_FLUSH_ARB :
                                     WGL_CONTEXT_RELEASE_BEHAVIOR_NONE_ARB;
-        }
+            }
 
-        attribs[iattr++] = 0;
+            attribs[iattr++] = 0;
 
             /* Create the GL 3.x context */
             context = wglCreateContextAttribsARB(hdc, share_context, attribs);
