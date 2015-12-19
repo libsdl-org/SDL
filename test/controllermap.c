@@ -232,7 +232,7 @@ WatchJoystick(SDL_Joystick * joystick)
             if (SDL_PollEvent(&event)) {
                 switch (event.type) {
                 case SDL_JOYAXISMOTION:
-                    if (event.jaxis.value > 20000 || event.jaxis.value < -20000) {
+                    if ((event.jaxis.value > 20000 || event.jaxis.value < -20000) && event.jaxis.value != -32768) {
                         for (_s = 0; _s < s; _s++) {
                             if (steps[_s].axis == event.jaxis.axis) {
                                 break;
