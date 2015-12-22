@@ -505,6 +505,32 @@ WINRT_UpdateWindowFlags(SDL_Window * window, Uint32 mask)
     }
 }
 
+static bool
+WINRT_IsCoreWindowActive(CoreWindow ^ coreWindow)
+{
+    /* WinRT does not appear to offer API(s) to determine window-activation state,
+       at least not that I am aware of in Win8 - Win10.  As such, SDL tracks this
+       itself, via window-activation events.
+       
+       If there *is* an API to track this, it should probably get used instead
+       of the following hack (that uses "SDLHelperWindowActivationState").
+         -- DavidL.
+    */
+    if (coreWindow->CustomProperties->HasKey("SDLHelperWindowActivationState")) {
+        CoreWindowActivationState activationState = \
+            safe_cast<CoreWindowActivationState>(coreWindow->CustomProperties->Lookup("SDLHelperWindowActivationState"));
+        return (activationState != CoreWindowActivationState::Deactivated);
+    }
+
+    /* Assume that non-SDL tracked windows are active, although this should
+       probably be avoided, if possible.
+       
+       This might not even be possible, in normal SDL use, at least as of
+       this writing (Dec 22, 2015; via latest hg.libsdl.org/SDL clone)  -- DavidL
+    */
+    return true;
+}
+
 int
 WINRT_CreateWindow(_THIS, SDL_Window * window)
 {
@@ -645,12 +671,7 @@ WINRT_CreateWindow(_THIS, SDL_Window * window)
         );
 
         /* Try detecting if the window is active */
-        bool isWindowActive = true;     /* Presume the window is active, unless we've been told otherwise */
-        if (data->coreWindow->CustomProperties->HasKey("SDLHelperWindowActivationState")) {
-            CoreWindowActivationState activationState = \
-                safe_cast<CoreWindowActivationState>(data->coreWindow->CustomProperties->Lookup("SDLHelperWindowActivationState"));
-            isWindowActive = (activationState != CoreWindowActivationState::Deactivated);
-        }
+        bool isWindowActive = WINRT_IsCoreWindowActive(data->coreWindow.Get());
         if (isWindowActive) {
             SDL_SetKeyboardFocus(window);
         }
@@ -681,13 +702,16 @@ WINRT_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
 {
 #if NTDDI_VERSION >= NTDDI_WIN10
     SDL_WindowData * data = (SDL_WindowData *)window->driverdata;
-    if (fullscreen) {
-        if (!data->appView->IsFullScreenMode) {
-            data->appView->TryEnterFullScreenMode();    // TODO, WinRT: return failure (to caller?) from TryEnterFullScreenMode()
-        }
-    } else {
-        if (data->appView->IsFullScreenMode) {
-            data->appView->ExitFullScreenMode();
+    bool isWindowActive = WINRT_IsCoreWindowActive(data->coreWindow.Get());
+    if (isWindowActive) {
+        if (fullscreen) {
+            if (!data->appView->IsFullScreenMode) {
+                data->appView->TryEnterFullScreenMode();    // TODO, WinRT: return failure (to caller?) from TryEnterFullScreenMode()
+            }
+        } else {
+            if (data->appView->IsFullScreenMode) {
+                data->appView->ExitFullScreenMode();
+            }
         }
     }
 #endif
