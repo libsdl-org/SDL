@@ -127,6 +127,7 @@ SDL_SendWindowEvent(SDL_Window * window, Uint8 windowevent, int data1,
         if (window->flags & SDL_WINDOW_MINIMIZED) {
             return 0;
         }
+        window->flags &= ~SDL_WINDOW_MAXIMIZED;
         window->flags |= SDL_WINDOW_MINIMIZED;
         SDL_OnWindowMinimized(window);
         break;
@@ -134,6 +135,7 @@ SDL_SendWindowEvent(SDL_Window * window, Uint8 windowevent, int data1,
         if (window->flags & SDL_WINDOW_MAXIMIZED) {
             return 0;
         }
+        window->flags &= ~SDL_WINDOW_MINIMIZED;
         window->flags |= SDL_WINDOW_MAXIMIZED;
         break;
     case SDL_WINDOWEVENT_RESTORED:
