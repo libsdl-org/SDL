@@ -497,6 +497,15 @@ Cocoa_InitKeyboard(_THIS)
     SDL_SetScancodeName(SDL_SCANCODE_LGUI, "Left Command");
     SDL_SetScancodeName(SDL_SCANCODE_RALT, "Right Option");
     SDL_SetScancodeName(SDL_SCANCODE_RGUI, "Right Command");
+
+    /* On pre-10.6, you might have the initial capslock key state wrong. */
+    if (floor(NSAppKitVersionNumber) >= NSAppKitVersionNumber10_6) {
+        data->modifierFlags = [NSEvent modifierFlags];
+        if (data->modifierFlags & NSAlphaShiftKeyMask) {
+            SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_CAPSLOCK);
+            SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_CAPSLOCK);
+        }
+    }
 }
 
 void
