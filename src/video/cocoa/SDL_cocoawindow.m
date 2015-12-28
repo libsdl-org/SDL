@@ -588,6 +588,17 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
     if ((isFullscreenSpace) && ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP)) {
         [NSMenu setMenuBarVisible:NO];
     }
+
+    /* On pre-10.6, you might have the capslock key state wrong now. */
+    if (floor(NSAppKitVersionNumber) >= NSAppKitVersionNumber10_6) {
+        const unsigned int oldflags = _data->videodata->modifierFlags & NSAlphaShiftKeyMask;
+        const unsigned int newflags = [NSEvent modifierFlags] & NSAlphaShiftKeyMask;
+        if (oldflags != newflags) {
+            _data->videodata->modifierFlags = (_data->videodata->modifierFlags & ~NSAlphaShiftKeyMask) | newflags;
+            SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_CAPSLOCK);
+            SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_CAPSLOCK);
+        }
+    }
 }
 
 - (void)windowDidResignKey:(NSNotification *)aNotification
