@@ -218,7 +218,17 @@ WINRT_ProcessWindowSizeChange() // TODO: Pass an SDL_Window-identifying thing in
             }
 #endif
 
-            WINRT_UpdateWindowFlags(window, SDL_WINDOW_MAXIMIZED | SDL_WINDOW_FULLSCREEN_DESKTOP);
+            const Uint32 latestFlags = WINRT_DetectWindowFlags(window);
+            if (latestFlags & SDL_WINDOW_MAXIMIZED) {
+                /* SDL_SendWindowEvent, as of this writing (2015-Dec-27), *won't* actually
+                   send events if the associated flag is already set.  This is taken
+                   advantage of here.  The below call is only meant to send a
+                   window event, if and when it is needed!
+                */
+                SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MAXIMIZED, 0, 0);
+            }
+
+            WINRT_UpdateWindowFlags(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
 
             /* The window can move during a resize event, such as when maximizing
                or resizing from a corner */
