@@ -348,27 +348,10 @@ X11_ReconcileKeyboardState(_THIS)
 
     X11_XQueryKeymap(display, keys);
 
-    /* Get the keyboard modifier state */
+    /* Sync up the keyboard modifier state */
     if (X11_XQueryPointer(display, DefaultRootWindow(display), &junk_window, &junk_window, &x, &y, &x, &y, &mask)) {
-        unsigned num_mask = X11_GetNumLockModifierMask(_this);
-        const Uint8 *keystate = SDL_GetKeyboardState(NULL);
-        Uint8 capslockState = keystate[SDL_SCANCODE_CAPSLOCK];
-        Uint8 numlockState = keystate[SDL_SCANCODE_NUMLOCKCLEAR];
-
-        /* Toggle key mod state if needed */
-        if (!!(mask & LockMask) != !!(SDL_GetModState() & KMOD_CAPS)) {
-            SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_CAPSLOCK);
-            if (capslockState == SDL_RELEASED) {
-                SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_CAPSLOCK);
-            }
-        }
-
-        if (!!(mask & num_mask) != !!(SDL_GetModState() & KMOD_NUM)) {
-            SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_NUMLOCKCLEAR);
-            if (numlockState == SDL_RELEASED) {
-                SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_NUMLOCKCLEAR);
-            }
-        }
+        SDL_ToggleModState(KMOD_CAPS, (mask & LockMask) != 0);
+        SDL_ToggleModState(KMOD_NUM, (mask & X11_GetNumLockModifierMask(_this)) != 0);
     }
 
     for (keycode = 0; keycode < 256; ++keycode) {

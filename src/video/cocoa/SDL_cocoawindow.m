@@ -589,15 +589,11 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
         [NSMenu setMenuBarVisible:NO];
     }
 
-    /* On pre-10.6, you might have the capslock key state wrong now. */
+    /* On pre-10.6, you might have the capslock key state wrong now because we can't check here. */
     if (floor(NSAppKitVersionNumber) >= NSAppKitVersionNumber10_6) {
-        const unsigned int oldflags = _data->videodata->modifierFlags & NSAlphaShiftKeyMask;
         const unsigned int newflags = [NSEvent modifierFlags] & NSAlphaShiftKeyMask;
-        if (oldflags != newflags) {
-            _data->videodata->modifierFlags = (_data->videodata->modifierFlags & ~NSAlphaShiftKeyMask) | newflags;
-            SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_CAPSLOCK);
-            SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_CAPSLOCK);
-        }
+        _data->videodata->modifierFlags = (_data->videodata->modifierFlags & ~NSAlphaShiftKeyMask) | newflags;
+        SDL_ToggleModState(KMOD_CAPS, newflags != 0);
     }
 }
 

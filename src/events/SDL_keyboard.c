@@ -845,6 +845,19 @@ SDL_SetModState(SDL_Keymod modstate)
     keyboard->modstate = modstate;
 }
 
+/* Note that SDL_ToggleModState() is not a public API. SDL_SetModState() is. */
+void
+SDL_ToggleModState(const SDL_Keymod modstate, const SDL_bool toggle)
+{
+    SDL_Keyboard *keyboard = &SDL_keyboard;
+    if (toggle) {
+        keyboard->modstate |= modstate;
+    } else {
+        keyboard->modstate &= ~modstate;
+    }
+}
+
+
 SDL_Keycode
 SDL_GetKeyFromScancode(SDL_Scancode scancode)
 {
