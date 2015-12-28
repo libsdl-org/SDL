@@ -415,6 +415,9 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                  * FIXME: Update keyboard state
                  */
                 WIN_CheckClipboardUpdate(data->videodata);
+
+                SDL_ToggleModState(KMOD_CAPS, (GetKeyState(VK_CAPITAL) & 0x0001) != 0);
+                SDL_ToggleModState(KMOD_NUM, (GetKeyState(VK_NUMLOCK) & 0x0001) != 0);
             } else {
                 if (SDL_GetKeyboardFocus() == data->window) {
                     SDL_SetKeyboardFocus(NULL);
