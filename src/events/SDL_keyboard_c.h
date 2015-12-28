@@ -62,6 +62,9 @@ extern void SDL_KeyboardQuit(void);
 /* Convert to UTF-8 */
 extern char *SDL_UCS4ToUTF8(Uint32 ch, char *dst);
 
+/* Toggle on or off pieces of the keyboard mod state. */
+extern void SDL_ToggleModState(const SDL_Keymod modstate, const SDL_bool toggle);
+
 #endif /* _SDL_keyboard_c_h */
 
 /* vi: set ts=4 sw=4 expandtab: */

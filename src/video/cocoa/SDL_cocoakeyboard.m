@@ -341,8 +341,7 @@ HandleCapsLock(unsigned short scancode,
     newMask = newMods & NSAlphaShiftKeyMask;
 
     if (oldMask != newMask) {
-        SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_CAPSLOCK);
-        SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_CAPSLOCK);
+        SDL_ToggleModState(KMOD_CAPS, newMask != 0);
     }
 }
 
@@ -501,10 +500,7 @@ Cocoa_InitKeyboard(_THIS)
     /* On pre-10.6, you might have the initial capslock key state wrong. */
     if (floor(NSAppKitVersionNumber) >= NSAppKitVersionNumber10_6) {
         data->modifierFlags = [NSEvent modifierFlags];
-        if (data->modifierFlags & NSAlphaShiftKeyMask) {
-            SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_CAPSLOCK);
-            SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_CAPSLOCK);
-        }
+        SDL_ToggleModState(KMOD_CAPS, (data->modifierFlags & NSAlphaShiftKeyMask) != 0);
     }
 }
 

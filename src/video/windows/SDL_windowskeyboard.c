@@ -104,18 +104,8 @@ WIN_InitKeyboard(_THIS)
     SDL_SetScancodeName(SDL_SCANCODE_RGUI, "Right Windows");
 
     /* Are system caps/num/scroll lock active? Set our state to match. */
-    if (GetKeyState(VK_CAPITAL) & 0x0001) {
-        SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_CAPSLOCK);
-        SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_CAPSLOCK);
-    }
-    if (GetKeyState(VK_NUMLOCK) & 0x0001) {
-        SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_NUMLOCKCLEAR);
-        SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_NUMLOCKCLEAR);
-    }
-    if (GetKeyState(VK_SCROLL) & 0x0001) {
-        SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_SCROLLLOCK);
-        SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_SCROLLLOCK);
-    }
+    SDL_ToggleModState(KMOD_CAPS, (GetKeyState(VK_CAPITAL) & 0x0001) != 0);
+    SDL_ToggleModState(KMOD_NUM, (GetKeyState(VK_NUMLOCK) & 0x0001) != 0);
 }
 
 void
