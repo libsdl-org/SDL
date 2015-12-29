@@ -2846,6 +2846,21 @@ case "$host" in
             *-*-bsdi*)          ARCH=bsdi ;;
             *-*-freebsd*)       ARCH=freebsd ;;
             *-*-dragonfly*)     ARCH=freebsd ;;
+            *-raspberry-netbsd*)
+                # Raspberry Pi
+                ARCH=netbsd
+                RPI_CFLAGS="-I/usr/pkg/include -I/usr/pkg/include/interface/vcos/pthreads -I/usr/pkg/include/interface/vmcs_host/linux"
+                CFLAGS="$CFLAGS $RPI_CFLAGS"
+                SDL_CFLAGS="$SDL_CFLAGS $RPI_CFLAGS"
+                EXTRA_CFLAGS="$EXTRA_CFLAGS $RPI_CFLAGS"
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-R/usr/pkg/lib -L/usr/pkg/lib -lbcm_host -ldl"
+
+                if test x$enable_video = xyes; then
+                    SOURCES="$SOURCES $srcdir/src/video/raspberry/*.c"
+                    $as_echo "#define SDL_VIDEO_DRIVER_RPI 1" >>confdefs.h
+                    SUMMARY_video="${SUMMARY_video} raspberry"
+                fi
+                ;;
             *-*-netbsd*)        ARCH=netbsd ;;
             *-*-openbsd*)       ARCH=openbsd ;;
             *-*-sysv5*)         ARCH=sysv5 ;;
