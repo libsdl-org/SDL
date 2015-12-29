@@ -382,7 +382,7 @@ if(USE_GCC OR USE_CLANG)
 
   set(CMAKE_REQUIRED_FLAGS "-Wl,--no-undefined")
   check_c_compiler_flag("" HAVE_NO_UNDEFINED)
-  set(CMAKE_REQUIRED_FLAGS)
+  set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
   if(HAVE_NO_UNDEFINED)
     list(APPEND EXTRA_LDFLAGS "-Wl,--no-undefined")
   endif()
