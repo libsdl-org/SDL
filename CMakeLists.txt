@@ -826,7 +826,7 @@ elseif(UNIX AND NOT APPLE)
 
   if(SDL_JOYSTICK)
     CheckUSBHID()   # seems to be BSD specific - limit the test to BSD only?
-    if(LINUX)
+    if(LINUX AND NOT ANDROID)
       set(SDL_JOYSTICK_LINUX 1)
       file(GLOB JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/linux/*.c)
       set(SOURCE_FILES ${SOURCE_FILES} ${JOYSTICK_SOURCES})
