@@ -376,8 +376,7 @@ X11_InitModes_XRandR(_THIS)
         for (screen = 0; screen < screencount; screen++) {
 
             /* we want the primary output first, and then skipped later. */
-            if ((looking_for_primary && (screen != default_screen)) ||
-                (!looking_for_primary && (screen == default_screen))) {
+            if (looking_for_primary && (screen != default_screen)) {
                 continue;
             }
 
@@ -421,7 +420,7 @@ X11_InitModes_XRandR(_THIS)
                 XRRCrtcInfo *crtc;
 
                 /* The primary output _should_ always be sorted first, but just in case... */
-                if ((looking_for_primary && ((screen != default_screen) || (res->outputs[output] != primary))) ||
+                if ((looking_for_primary && (res->outputs[output] != primary)) ||
                     (!looking_for_primary && (screen == default_screen) && (res->outputs[output] == primary))) {
                     continue;
                 }
