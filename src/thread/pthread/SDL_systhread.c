@@ -143,7 +143,11 @@ SDL_SYS_SetupThread(const char *name)
             #endif
         }
         #elif HAVE_PTHREAD_SETNAME_NP
+            #if defined(__NETBSD__)
+            pthread_setname_np(pthread_self(), "%s", name);
+            #else
             pthread_setname_np(pthread_self(), name);
+            #endif
         #elif HAVE_PTHREAD_SET_NAME_NP
             pthread_set_name_np(pthread_self(), name);
         #elif defined(__HAIKU__)
