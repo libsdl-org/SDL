@@ -2,7 +2,7 @@
 
 set(prefix "@prefix@") 
 set(exec_prefix "@exec_prefix@")
-set(libdir "@libdir")
+set(libdir "@libdir@")
 set(SDL2_PREFIX "@prefix@")
 set(SDL2_EXEC_PREFIX "@prefix@")
 set(SDL2_LIBDIR "@libdir@")
