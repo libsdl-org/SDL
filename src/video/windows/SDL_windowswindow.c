@@ -559,7 +559,25 @@ WIN_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, 
         y = bounds.y;
         w = bounds.w;
         h = bounds.h;
+
+        /* Unset the maximized flag.  This fixes
+           https://bugzilla.libsdl.org/show_bug.cgi?id=3215
+        */
+        if (style & WS_MAXIMIZE) {
+            data->windowed_mode_was_maximized = SDL_TRUE;
+            style &= ~WS_MAXIMIZE;
+        }
     } else {
+        /* Restore window-maximization state, as applicable.
+           Special care is taken to *not* do this if and when we're
+           alt-tab'ing away (to some other window; as indicated by
+           in_window_deactivation), otherwise
+           https://bugzilla.libsdl.org/show_bug.cgi?id=3215 can reproduce!
+        */
+        if (data->windowed_mode_was_maximized && !data->in_window_deactivation) {
+            style |= WS_MAXIMIZE;
+            data->windowed_mode_was_maximized = SDL_FALSE;
+        }
         rect.left = 0;
         rect.top = 0;
         rect.right = window->windowed.w;
