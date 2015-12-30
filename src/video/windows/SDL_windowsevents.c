@@ -419,11 +419,15 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 SDL_ToggleModState(KMOD_CAPS, (GetKeyState(VK_CAPITAL) & 0x0001) != 0);
                 SDL_ToggleModState(KMOD_NUM, (GetKeyState(VK_NUMLOCK) & 0x0001) != 0);
             } else {
+                data->in_window_deactivation = SDL_TRUE;
+
                 if (SDL_GetKeyboardFocus() == data->window) {
                     SDL_SetKeyboardFocus(NULL);
                 }
 
                 ClipCursor(NULL);
+
+                data->in_window_deactivation = SDL_FALSE;
             }
         }
         returnCode = 0;
