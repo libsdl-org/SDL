@@ -631,6 +631,15 @@ void SDL_WinRTApp::OnWindowActivated(CoreWindow^ sender, WindowActivatedEventArg
             // * FIXME: Update keyboard state
             // */
             //WIN_CheckClipboardUpdate(data->videodata);
+
+            // HACK: Resetting the mouse-cursor here seems to fix
+            // https://bugzilla.libsdl.org/show_bug.cgi?id=3217, whereby a
+            // WinRT app's mouse cursor may switch to Windows' 'wait' cursor,
+            // after a user alt-tabs back into a full-screened SDL app.
+            // This bug does not appear to reproduce 100% of the time.
+            // It may be a bug in Windows itself (v.10.0.586.36, as tested,
+            // and the most-recent as of this writing).
+            SDL_SetCursor(NULL);
         } else {
             if (SDL_GetKeyboardFocus() == window) {
                 SDL_SetKeyboardFocus(NULL);
