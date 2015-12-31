@@ -169,6 +169,13 @@ if(MSVC)
       endif()
     endforeach()
   endif()
+
+  # Make sure /RTC1 is disabled, otherwise it will use functions from the CRT
+  foreach(flag_var
+      CMAKE_C_FLAGS CMAKE_C_FLAGS_DEBUG CMAKE_C_FLAGS_RELEASE
+      CMAKE_C_FLAGS_MINSIZEREL CMAKE_C_FLAGS_RELWITHDEBINFO)
+    string(REGEX REPLACE "/RTC(su|[1su])" "" ${flag_var} "${${flag_var}}")
+  endforeach(flag_var)
 endif()
 
 # Those are used for pkg-config and friends, so that the SDL2.pc, sdl2-config,
@@ -944,6 +951,14 @@ elseif(WINDOWS)
   file(GLOB CORE_SOURCES ${SDL2_SOURCE_DIR}/src/core/windows/*.c)
   set(SOURCE_FILES ${SOURCE_FILES} ${CORE_SOURCES})
 
+  if(MSVC)
+    # Prevent codegen that would use the VC runtime libraries.
+    add_definitions(/GS-)
+    if(NOT ARCH_64)
+      add_definitions(/arch:SSE)
+    endif()
+  endif()
+
   # Check for DirectX
   if(DIRECTX)
     if(DEFINED MSVC_VERSION AND NOT ${MSVC_VERSION} LESS 1700)
@@ -1452,8 +1467,14 @@ if(SDL_SHARED)
       SOVERSION ${LT_REVISION}
       OUTPUT_NAME "SDL2")
   endif()
- set(_INSTALL_LIBS "SDL2" ${_INSTALL_LIBS})
- target_link_libraries(SDL2 ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
+  if(MSVC)
+    # Don't try to link with the default set of libraries.
+    set_target_properties(SDL2 PROPERTIES LINK_FLAGS_RELEASE "/NODEFAULTLIB")
+    set_target_properties(SDL2 PROPERTIES LINK_FLAGS_DEBUG "/NODEFAULTLIB")
+    set_target_properties(SDL2 PROPERTIES STATIC_LIBRARY_FLAGS "/NODEFAULTLIB")
+  endif()
+  set(_INSTALL_LIBS "SDL2" ${_INSTALL_LIBS})
+  target_link_libraries(SDL2 ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
 endif()
 
 if(SDL_STATIC)
