@@ -226,6 +226,8 @@ WINRT_ProcessWindowSizeChange() // TODO: Pass an SDL_Window-identifying thing in
                    window event, if and when it is needed!
                 */
                 SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MAXIMIZED, 0, 0);
+            } else {
+                SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESTORED, 0, 0);
             }
 
             WINRT_UpdateWindowFlags(window, SDL_WINDOW_FULLSCREEN_DESKTOP);
