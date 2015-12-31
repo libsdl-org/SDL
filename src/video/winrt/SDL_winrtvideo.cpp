@@ -492,6 +492,7 @@ WINRT_DetectWindowFlags(SDL_Window * window)
     return latestFlags;
 }
 
+// TODO, WinRT: consider removing WINRT_UpdateWindowFlags, and just calling WINRT_DetectWindowFlags as-appropriate (with appropriate calls to SDL_SendWindowEvent)
 void
 WINRT_UpdateWindowFlags(SDL_Window * window, Uint32 mask)
 {
