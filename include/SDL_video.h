@@ -427,9 +427,9 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window * window);
  *
  *  If the window is created with the SDL_WINDOW_ALLOW_HIGHDPI flag, its size
  *  in pixels may differ from its size in screen coordinates on platforms with
- *  high-DPI support (e.g. iOS and Mac OS X). Use SDL_GetWindowSize to query the
- *  size of the client area in screen coordinates, and SDL_GL_GetDrawableSize or
- *  SDL_GetRendererOutputSize to query the drawable size in pixels.
+ *  high-DPI support (e.g. iOS and Mac OS X). Use SDL_GetWindowSize() to query
+ *  the client area's size in screen coordinates, and SDL_GL_GetDrawableSize()
+ *  or SDL_GetRendererOutputSize() to query the drawable size in pixels.
  *
  *  \sa SDL_DestroyWindow()
  */
@@ -559,8 +559,8 @@ extern DECLSPEC void SDLCALL SDL_GetWindowPosition(SDL_Window * window,
  *
  *  The window size in screen coordinates may differ from the size in pixels, if
  *  the window was created with SDL_WINDOW_ALLOW_HIGHDPI on a platform with
- *  high-dpi support (e.g. iOS or OS X). Use SDL_GL_GetDrawableSize or
- *  SDL_GetRendererOutputSize to get the real client area size in pixels.
+ *  high-dpi support (e.g. iOS or OS X). Use SDL_GL_GetDrawableSize() or
+ *  SDL_GetRendererOutputSize() to get the real client area size in pixels.
  *
  *  \sa SDL_GetWindowSize()
  */
@@ -578,8 +578,8 @@ extern DECLSPEC void SDLCALL SDL_SetWindowSize(SDL_Window * window, int w,
  *
  *  The window size in screen coordinates may differ from the size in pixels, if
  *  the window was created with SDL_WINDOW_ALLOW_HIGHDPI on a platform with
- *  high-dpi support (e.g. iOS or OS X). Use SDL_GL_GetDrawableSize or
- *  SDL_GetRendererOutputSize to get the real client area size in pixels.
+ *  high-dpi support (e.g. iOS or OS X). Use SDL_GL_GetDrawableSize() or
+ *  SDL_GetRendererOutputSize() to get the real client area size in pixels.
  *
  *  \sa SDL_SetWindowSize()
  */
