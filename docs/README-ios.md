@@ -47,17 +47,45 @@ Using the Simple DirectMedia Layer for iOS
 FIXME: This needs to be updated for the latest methods
 
 Here is the easiest method:
-1.  Build the SDL libraries (libSDL.a and libSDLSimulator.a) and the iPhone SDL Application template.
-2.  Install the iPhone SDL Application template by copying it to one of XCode's template directories.  I recommend creating a directory called "SDL" in "/Developer/Platforms/iOS.platform/Developer/Library/XCode/Project Templates/" and placing it there.
+1.  Build the SDL library (libSDL2.a) and the iPhone SDL Application template.
+2.  Install the iPhone SDL Application template by copying it to one of Xcode's template directories.  I recommend creating a directory called "SDL" in "/Developer/Platforms/iOS.platform/Developer/Library/Xcode/Project Templates/" and placing it there.
 3.  Start a new project using the template.  The project should be immediately ready for use with SDL.
 
 Here is a more manual method:
-1.  Create a new iPhone view based application.
-2.  Build the SDL static libraries (libSDL.a and libSDLSimulator.a) for iPhone and include them in your project.  XCode will ignore the library that is not currently of the correct architecture, hence your app will work both on iPhone and in the iPhone Simulator.
+1.  Create a new iOS view based application.
+2.  Build the SDL static library (libSDL2.a) for iOS and include them in your project.  Xcode will ignore the library that is not currently of the correct architecture, hence your app will work both on iOS and in the iOS Simulator.
 3.  Include the SDL header files in your project.
-4.  Remove the ApplicationDelegate.h and ApplicationDelegate.m files -- SDL for iPhone provides its own UIApplicationDelegate.  Remove MainWindow.xib -- SDL for iPhone produces its user interface programmatically.
-5.  Delete the contents of main.m and program your app as a regular SDL program instead.  You may replace main.m with your own main.c, but you must tell XCode not to use the project prefix file, as it includes Objective-C code.
+4.  Remove the ApplicationDelegate.h and ApplicationDelegate.m files -- SDL for iOS provides its own UIApplicationDelegate.  Remove MainWindow.xib -- SDL for iOS produces its user interface programmatically.
+5.  Delete the contents of main.m and program your app as a regular SDL program instead.  You may replace main.m with your own main.c, but you must tell Xcode not to use the project prefix file, as it includes Objective-C code.
 
+==============================================================================
+Notes -- Retina / High-DPI and window sizes
+==============================================================================
+
+Window and display mode sizes in SDL are in "screen coordinates" (or "points",
+in Apple's terminology) rather than in pixels. On iOS this means that a window
+created on an iPhone 6 will have a size in screen cooordinates of 375 x 667,
+rather than a size in pixels of 750 x 1334. All iOS apps are expected to
+size their content based on screen coordinates / points rather than pixels,
+as this allows different iOS devices to have different pixel densities
+(Retina versus non-Retina screens, etc.) without apps caring too much.
+
+By default SDL will not use the full pixel density of the screen on
+Retina/high-dpi capable devices. Use the SDL_WINDOW_ALLOW_HIGHDPI flag when
+creating your window to enable high-dpi support.
+
+When high-dpi support is enabled, SDL_GetWindowSize and display mode sizes
+will still be in "screen coordinates" rather than pixels, but the window will
+have a much greater pixel density when the device supports it, and the
+SDL_GL_GetDrawableSize or SDL_GetRendererOutputSize functions (depending on
+whether raw OpenGL or the SDL_Render API is used) can be queried to determine
+the size in pixels of the drawable screen framebuffer.
+
+Some OpenGL ES functions such as glViewport expect sizes in pixels rather than
+sizes in screen coordinates. When doing 2D rendering with OpenGL ES, an
+orthographic projection matrix using the size in screen coordinates
+(SDL_GetWindowSize) can be used in order to display content at the same scale
+no matter whether a Retina device is used or not.
 
 ==============================================================================
 Notes -- Application events
@@ -203,7 +231,7 @@ Loading Shared Objects:
 Game Center 
 ==============================================================================
 
-Game Center integration requires that you break up your main loop in order to yield control back to the system. In other words, instead of running an endless main loop, you run each frame in a callback function, using:
+Game Center integration might require that you break up your main loop in order to yield control back to the system. In other words, instead of running an endless main loop, you run each frame in a callback function, using:
 
     int SDL_iPhoneSetAnimationCallback(SDL_Window * window, int interval, void (*callback)(void*), void *callbackParam);
 
