@@ -71,13 +71,13 @@ Linux:
 
 iOS:
 * Added support for iOS 8
+* The SDL_WINDOW_ALLOW_HIGHDPI window flag now enables high-dpi support, and SDL_GL_GetDrawableSize() or SDL_GetRendererOutputSize() gets the window resolution in pixels
+* SDL_GetWindowSize() and display mode sizes are in the "DPI-independent points" / "screen coordinates" coordinate space rather than pixels (matches OS X behavior)
+* Added native resolution support for the iPhone 6 Plus
 * Added support for MFi game controllers
 * Added support for the hint SDL_HINT_ACCELEROMETER_AS_JOYSTICK
 * Added sRGB OpenGL ES context support on iOS 7+
-* Added native resolution support for the iPhone 6 Plus
 * Added support for SDL_DisableScreenSaver(), SDL_EnableScreenSaver() and the hint SDL_HINT_VIDEO_ALLOW_SCREENSAVER
-* The SDL_WINDOW_ALLOW_HIGHDPI window flag now enables high-dpi support, and SDL_GL_GetDrawableSize() or SDL_GetRendererOutputSize() gets the window resolution in pixels
-* SDL_GetWindowSize() and display mode sizes are in the "DPI-independent points" coordinate space rather than pixels (matches OS X behavior)
 * SDL_SysWMinfo now contains the OpenGL ES framebuffer and color renderbuffer objects used by the window's active GLES view
 * Fixed various rotation and orientation issues
 * Fixed memory leaks
