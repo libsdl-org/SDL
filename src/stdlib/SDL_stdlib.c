@@ -275,10 +275,7 @@ int SDL_tolower(int x) { return ((x) >= 'A') && ((x) <= 'Z') ? ('a'+((x)-'A')) :
 
 #ifndef __FLTUSED__
 #define __FLTUSED__
-/* the multithreaded runtime already includes libcmt.lib - and this symbol is in there. */
-#ifndef _MT
 __declspec(selectany) int _fltused = 1;
-#endif
 #endif
 
 /* The optimizer on Visual Studio 2005 and later generates memcpy() calls */
