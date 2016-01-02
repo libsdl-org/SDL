@@ -1,5 +1,5 @@
 /*
-  Copyright (r) 1997-2015 Sam Lantinga <slouken@libsdl.org>
+  Copyright (r) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
