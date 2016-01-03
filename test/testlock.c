@@ -23,7 +23,7 @@
 static SDL_mutex *mutex = NULL;
 static SDL_threadID mainthread;
 static SDL_Thread *threads[6];
-static volatile int doterminate = 0;
+static SDL_atomic_t doterminate;
 
 /*
  * SDL_Quit() shouldn't be used with atexit() directly because
@@ -45,7 +45,7 @@ void
 terminate(int sig)
 {
     signal(SIGINT, terminate);
-    doterminate = 1;
+    SDL_AtomicSet(&doterminate, 1);
 }
 
 void
@@ -54,7 +54,7 @@ closemutex(int sig)
     SDL_threadID id = SDL_ThreadID();
     int i;
     SDL_Log("Process %lu:  Cleaning up...\n", id == mainthread ? 0 : id);
-    doterminate = 1;
+    SDL_AtomicSet(&doterminate, 1);
     for (i = 0; i < 6; ++i)
         SDL_WaitThread(threads[i], NULL);
     SDL_DestroyMutex(mutex);
@@ -66,7 +66,7 @@ Run(void *data)
 {
     if (SDL_ThreadID() == mainthread)
         signal(SIGTERM, closemutex);
-    while (!doterminate) {
+    while (!SDL_AtomicGet(&doterminate)) {
         SDL_Log("Process %lu ready to work\n", SDL_ThreadID());
         if (SDL_LockMutex(mutex) < 0) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't lock mutex: %s", SDL_GetError());
@@ -82,7 +82,7 @@ Run(void *data)
         /* If this sleep isn't done, then threads may starve */
         SDL_Delay(10);
     }
-    if (SDL_ThreadID() == mainthread && doterminate) {
+    if (SDL_ThreadID() == mainthread && SDL_AtomicGet(&doterminate)) {
         SDL_Log("Process %lu:  raising SIGTERM\n", SDL_ThreadID());
         raise(SIGTERM);
     }
@@ -104,6 +104,8 @@ main(int argc, char *argv[])
         exit(1);
     }
     atexit(SDL_Quit_Wrapper);
+
+    SDL_AtomicSet(&doterminate, 0);
 
     if ((mutex = SDL_CreateMutex()) == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't create mutex: %s\n", SDL_GetError());

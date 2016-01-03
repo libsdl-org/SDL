@@ -293,7 +293,7 @@ SDL_InitDynamicAPI(void)
      *  SDL_CreateThread() would also call this function before building the
      *  new thread).
      */
-    static volatile SDL_bool already_initialized = SDL_FALSE;
+    static SDL_bool already_initialized = SDL_FALSE;
 
     /* SDL_AtomicLock calls SDL mutex functions to emulate if
        SDL_ATOMIC_DISABLED, which we can't do here, so in such a
