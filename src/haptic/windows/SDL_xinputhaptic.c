@@ -146,7 +146,7 @@ SDL_RunXInputHaptic(void *arg)
 {
     struct haptic_hwdata *hwdata = (struct haptic_hwdata *) arg;
 
-    while (!hwdata->stopThread) {
+    while (!SDL_AtomicGet(&hwdata->stopThread)) {
         SDL_Delay(50);
         SDL_LockMutex(hwdata->mutex);
         /* If we're currently running and need to stop... */
@@ -261,7 +261,7 @@ SDL_XINPUT_HapticOpenFromJoystick(SDL_Haptic * haptic, SDL_Joystick * joystick)
 void
 SDL_XINPUT_HapticClose(SDL_Haptic * haptic)
 {
-    haptic->hwdata->stopThread = 1;
+    SDL_AtomicSet(&haptic->hwdata->stopThread, 1);
     SDL_WaitThread(haptic->hwdata->thread, NULL);
     SDL_DestroyMutex(haptic->hwdata->mutex);
 }

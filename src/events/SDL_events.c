@@ -73,15 +73,15 @@ typedef struct _SDL_SysWMEntry
 static struct
 {
     SDL_mutex *lock;
-    volatile SDL_bool active;
-    volatile int count;
-    volatile int max_events_seen;
+    SDL_atomic_t active;
+    SDL_atomic_t count;
+    int max_events_seen;
     SDL_EventEntry *head;
     SDL_EventEntry *tail;
     SDL_EventEntry *free;
     SDL_SysWMEntry *wmmsg_used;
     SDL_SysWMEntry *wmmsg_free;
-} SDL_EventQ = { NULL, SDL_TRUE, 0, 0, NULL, NULL, NULL, NULL, NULL };
+} SDL_EventQ = { NULL, { 1 }, { 0 }, 0, NULL, NULL, NULL, NULL, NULL };
 
 
 /* Public functions */
@@ -98,7 +98,7 @@ SDL_StopEventLoop(void)
         SDL_LockMutex(SDL_EventQ.lock);
     }
 
-    SDL_EventQ.active = SDL_FALSE;
+    SDL_AtomicSet(&SDL_EventQ.active, 0);
 
     if (report && SDL_atoi(report)) {
         SDL_Log("SDL EVENT QUEUE: Maximum events in-flight: %d\n",
@@ -127,7 +127,7 @@ SDL_StopEventLoop(void)
         wmmsg = next;
     }
 
-    SDL_EventQ.count = 0;
+    SDL_AtomicSet(&SDL_EventQ.count, 0);
     SDL_EventQ.max_events_seen = 0;
     SDL_EventQ.head = NULL;
     SDL_EventQ.tail = NULL;
@@ -171,7 +171,7 @@ SDL_StartEventLoop(void)
         SDL_EventQ.lock = SDL_CreateMutex();
     }
     if (SDL_EventQ.lock == NULL) {
-        return (-1);
+        return -1;
     }
 #endif /* !SDL_THREADS_DISABLED */
 
@@ -180,9 +180,9 @@ SDL_StartEventLoop(void)
     SDL_EventState(SDL_TEXTEDITING, SDL_DISABLE);
     SDL_EventState(SDL_SYSWMEVENT, SDL_DISABLE);
 
-    SDL_EventQ.active = SDL_TRUE;
+    SDL_AtomicSet(&SDL_EventQ.active, 1);
 
-    return (0);
+    return 0;
 }
 
 
@@ -191,9 +191,11 @@ static int
 SDL_AddEvent(SDL_Event * event)
 {
     SDL_EventEntry *entry;
+    const int initial_count = SDL_AtomicGet(&SDL_EventQ.count);
+    int final_count;
 
-    if (SDL_EventQ.count >= SDL_MAX_QUEUED_EVENTS) {
-        SDL_SetError("Event queue is full (%d events)", SDL_EventQ.count);
+    if (initial_count >= SDL_MAX_QUEUED_EVENTS) {
+        SDL_SetError("Event queue is full (%d events)", initial_count);
         return 0;
     }
 
@@ -225,10 +227,10 @@ SDL_AddEvent(SDL_Event * event)
         entry->prev = NULL;
         entry->next = NULL;
     }
-    ++SDL_EventQ.count;
 
-    if (SDL_EventQ.count > SDL_EventQ.max_events_seen) {
-        SDL_EventQ.max_events_seen = SDL_EventQ.count;
+    final_count = SDL_AtomicAdd(&SDL_EventQ.count, 1) + 1;
+    if (final_count > SDL_EventQ.max_events_seen) {
+        SDL_EventQ.max_events_seen = final_count;
     }
 
     return 1;
@@ -256,8 +258,8 @@ SDL_CutEvent(SDL_EventEntry *entry)
 
     entry->next = SDL_EventQ.free;
     SDL_EventQ.free = entry;
-    SDL_assert(SDL_EventQ.count > 0);
-    --SDL_EventQ.count;
+    SDL_assert(SDL_AtomicGet(&SDL_EventQ.count) > 0);
+    SDL_AtomicAdd(&SDL_EventQ.count, -1);
 }
 
 /* Lock the event queue, take a peep at it, and unlock it */
@@ -268,7 +270,7 @@ SDL_PeepEvents(SDL_Event * events, int numevents, SDL_eventaction action,
     int i, used;
 
     /* Don't look after we've quit */
-    if (!SDL_EventQ.active) {
+    if (!SDL_AtomicGet(&SDL_EventQ.active)) {
         /* We get a few spurious events at shutdown, so don't warn then */
         if (action != SDL_ADDEVENT) {
             SDL_SetError("The event system has been shut down");
@@ -363,7 +365,7 @@ void
 SDL_FlushEvents(Uint32 minType, Uint32 maxType)
 {
     /* Don't look after we've quit */
-    if (!SDL_EventQ.active) {
+    if (!SDL_AtomicGet(&SDL_EventQ.active)) {
         return;
     }
 

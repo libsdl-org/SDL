@@ -42,8 +42,8 @@ struct haptic_hwdata
     Uint8 userid; /* XInput userid index for this joystick */
     SDL_Thread *thread;
     SDL_mutex *mutex;
-    volatile Uint32 stopTicks;
-    volatile int stopThread;
+    Uint32 stopTicks;
+    SDL_atomic_t stopThread;
 };
 
 

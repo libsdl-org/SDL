@@ -35,7 +35,7 @@ typedef struct _SDL_Timer
     void *param;
     Uint32 interval;
     Uint32 scheduled;
-    volatile SDL_bool canceled;
+    SDL_atomic_t canceled;
     struct _SDL_Timer *next;
 } SDL_Timer;
 
@@ -60,9 +60,9 @@ typedef struct {
     /* Data used to communicate with the timer thread */
     SDL_SpinLock lock;
     SDL_sem *sem;
-    SDL_Timer * volatile pending;
-    SDL_Timer * volatile freelist;
-    volatile SDL_bool active;
+    SDL_Timer *pending;
+    SDL_Timer *freelist;
+    SDL_atomic_t active;
 
     /* List of timers - this is only touched by the timer thread */
     SDL_Timer *timers;
@@ -138,7 +138,7 @@ SDL_TimerThread(void *_data)
         freelist_tail = NULL;
 
         /* Check to see if we're still running, after maintenance */
-        if (!data->active) {
+        if (!SDL_AtomicGet(&data->active)) {
             break;
         }
 
@@ -160,7 +160,7 @@ SDL_TimerThread(void *_data)
             /* We're going to do something with this timer */
             data->timers = current->next;
 
-            if (current->canceled) {
+            if (SDL_AtomicGet(&current->canceled)) {
                 interval = 0;
             } else {
                 interval = current->callback(current->interval, current->param);
@@ -179,7 +179,7 @@ SDL_TimerThread(void *_data)
                 }
                 freelist_tail = current;
 
-                current->canceled = SDL_TRUE;
+                SDL_AtomicSet(&current->canceled, 1);
             }
         }
 
@@ -207,7 +207,7 @@ SDL_TimerInit(void)
 {
     SDL_TimerData *data = &SDL_timer_data;
 
-    if (!data->active) {
+    if (!SDL_AtomicGet(&data->active)) {
         const char *name = "SDLTimer";
         data->timermap_lock = SDL_CreateMutex();
         if (!data->timermap_lock) {
@@ -220,7 +220,7 @@ SDL_TimerInit(void)
             return -1;
         }
 
-        data->active = SDL_TRUE;
+        SDL_AtomicSet(&data->active, 1);
         /* !!! FIXME: this is nasty. */
 #if defined(__WIN32__) && !defined(HAVE_LIBC)
 #undef SDL_CreateThread
@@ -249,9 +249,7 @@ SDL_TimerQuit(void)
     SDL_Timer *timer;
     SDL_TimerMap *entry;
 
-    if (data->active) {
-        data->active = SDL_FALSE;
-
+    if (SDL_AtomicCAS(&data->active, 1, 0)) {  /* active? Move to inactive. */
         /* Shutdown the timer thread */
         if (data->thread) {
             SDL_SemPost(data->sem);
@@ -291,21 +289,14 @@ SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *param)
     SDL_Timer *timer;
     SDL_TimerMap *entry;
 
-    if (!data->active) {
-        int status = 0;
-
-        SDL_AtomicLock(&data->lock);
-        if (!data->active) {
-            status = SDL_TimerInit();
-        }
-        SDL_AtomicUnlock(&data->lock);
-
-        if (status < 0) {
+    SDL_AtomicLock(&data->lock);
+    if (!SDL_AtomicGet(&data->active)) {
+        if (SDL_TimerInit() < 0) {
+            SDL_AtomicUnlock(&data->lock);
             return 0;
         }
     }
 
-    SDL_AtomicLock(&data->lock);
     timer = data->freelist;
     if (timer) {
         data->freelist = timer->next;
@@ -326,7 +317,7 @@ SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *param)
     timer->param = param;
     timer->interval = interval;
     timer->scheduled = SDL_GetTicks() + interval;
-    timer->canceled = SDL_FALSE;
+    SDL_AtomicSet(&timer->canceled, 0);
 
     entry = (SDL_TimerMap *)SDL_malloc(sizeof(*entry));
     if (!entry) {
@@ -377,8 +368,8 @@ SDL_RemoveTimer(SDL_TimerID id)
     SDL_UnlockMutex(data->timermap_lock);
 
     if (entry) {
-        if (!entry->timer->canceled) {
-            entry->timer->canceled = SDL_TRUE;
+        if (!SDL_AtomicGet(&entry->timer->canceled)) {
+            SDL_AtomicSet(&entry->timer->canceled, 1);
             canceled = SDL_TRUE;
         }
         SDL_free(entry);
