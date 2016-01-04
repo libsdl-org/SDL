@@ -513,6 +513,23 @@ ProcessHitTest(_THIS, const SDL_WindowData *data, const XEvent *xev)
 }
 
 static void
+X11_UpdateUserTime(SDL_WindowData *data, const unsigned long latest)
+{
+    if (latest && (latest != data->user_time)) {
+        SDL_VideoData *videodata = data->videodata;
+        Display *display = videodata->display;
+        X11_XChangeProperty(display, data->xwindow, videodata->_NET_WM_USER_TIME,
+                            XA_CARDINAL, 32, PropModeReplace,
+                            (const unsigned char *) &latest, 1);
+        #if DEBUG_XEVENTS
+        printf("window %p: updating _NET_WM_USER_TIME to %lu\n", data, latest);
+        #endif
+        data->user_time = latest;
+    }
+}
+
+
+static void
 X11_DispatchEvent(_THIS)
 {
     SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
@@ -773,6 +790,7 @@ X11_DispatchEvent(_THIS)
                 }
             }
 
+            X11_UpdateUserTime(data, xevent.xkey.time);
         }
         break;
 
@@ -1001,6 +1019,7 @@ X11_DispatchEvent(_THIS)
                 }
                 SDL_SendMouseButton(data->window, 0, SDL_PRESSED, button);
             }
+            X11_UpdateUserTime(data, xevent.xbutton.time);
         }
         break;
 
@@ -1027,7 +1046,7 @@ X11_DispatchEvent(_THIS)
 
             char *name = X11_XGetAtomName(display, xevent.xproperty.atom);
             if (name) {
-                printf("window %p: PropertyNotify: %s %s\n", data, name, (xevent.xproperty.state == PropertyDelete) ? "deleted" : "changed");
+                printf("window %p: PropertyNotify: %s %s time=%lu\n", data, name, (xevent.xproperty.state == PropertyDelete) ? "deleted" : "changed", xevent.xproperty.time);
                 X11_XFree(name);
             }
 
@@ -1094,6 +1113,17 @@ X11_DispatchEvent(_THIS)
                 X11_XFree(propdata);
             }
 #endif /* DEBUG_XEVENTS */
+
+            /* Take advantage of this moment to make sure user_time has a
+                valid timestamp from the X server, so if we later try to
+                raise/restore this window, _NET_ACTIVE_WINDOW can have a
+                non-zero timestamp, even if there's never been a mouse or
+                key press to this window so far. Note that we don't try to
+                set _NET_WM_USER_TIME here, though. That's only for legit
+                user interaction with the window. */
+            if (!data->user_time) {
+                data->user_time = xevent.xproperty.time;
+            }
 
             if (xevent.xproperty.atom == data->videodata->_NET_WM_STATE) {
                 /* Get the new state from the window manager.

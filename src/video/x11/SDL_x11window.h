@@ -60,6 +60,7 @@ typedef struct
     Uint32 pending_focus_time;
     XConfigureEvent last_xconfigure;
     struct SDL_VideoData *videodata;
+    unsigned long user_time;
     Atom xdnd_req;
     Window xdnd_source;
 #if SDL_VIDEO_OPENGL_EGL  
