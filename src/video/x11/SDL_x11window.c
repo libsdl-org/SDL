@@ -944,6 +944,8 @@ SetWindowActive(_THIS, SDL_Window * window)
     Atom _NET_ACTIVE_WINDOW = data->videodata->_NET_ACTIVE_WINDOW;
 
     if (X11_IsWindowMapped(_this, window)) {
+        SDL_assert(data->user_time != 0);  /* should be set by _some_ event by now. */
+        /*printf("SDL Window %p: sending _NET_ACTIVE_WINDOW with timestamp %lu\n", window, data->user_time);*/
         XEvent e;
 
         SDL_zero(e);
@@ -952,7 +954,7 @@ SetWindowActive(_THIS, SDL_Window * window)
         e.xclient.format = 32;
         e.xclient.window = data->xwindow;
         e.xclient.data.l[0] = 1;  /* source indication. 1 = application */
-        e.xclient.data.l[1] = CurrentTime;
+        e.xclient.data.l[1] = data->user_time;
         e.xclient.data.l[2] = 0;
 
         X11_XSendEvent(display, RootWindow(display, displaydata->screen), 0,
