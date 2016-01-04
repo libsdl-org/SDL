@@ -1507,12 +1507,17 @@ endforeach()
 list(APPEND INCLUDE_FILES ${BIN_INCLUDE_FILES})
 install(FILES ${INCLUDE_FILES} DESTINATION include/SDL2)
 
-if(NOT WINDOWS OR CYGWIN)
+if(NOT (WINDOWS OR CYGWIN))
   if(SDL_SHARED)
+    if (APPLE)
+        set(SOEXT "dylib")
+    else()
+        set(SOEXT "so")
+    endif()
     install(CODE "
       execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-      \"libSDL2-2.0.so\" \"libSDL2.so\")")
-    install(FILES ${SDL2_BINARY_DIR}/libSDL2.so DESTINATION "lib${LIB_SUFFIX}")
+      \"libSDL2-2.0.${SOEXT}\" \"libSDL2.${SOEXT}\")")
+    install(FILES ${SDL2_BINARY_DIR}/libSDL2.${SOEXT} DESTINATION "lib${LIB_SUFFIX}")
   endif()
   if(FREEBSD)
     # FreeBSD uses ${PREFIX}/libdata/pkgconfig
