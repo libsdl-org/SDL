@@ -334,6 +334,24 @@ set(HAVE_ASSERTIONS ${ASSERTIONS})
 
 # Compiler option evaluation
 if(USE_GCC OR USE_CLANG)
+  # Check for -Wall first, so later things can override pieces of it.
+  check_c_compiler_flag(-Wall HAVE_GCC_WALL)
+  if(HAVE_GCC_WALL)
+    list(APPEND EXTRA_CFLAGS "-Wall")
+    if(HAIKU)
+      set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-multichar")
+    endif()
+  endif()
+
+  check_c_compiler_flag(-Wdeclaration-after-statement HAVE_GCC_WDECLARATION_AFTER_STATEMENT)
+  if(HAVE_GCC_WDECLARATION_AFTER_STATEMENT)
+    check_c_compiler_flag(-Werror=declaration-after-statement HAVE_GCC_WERROR_DECLARATION_AFTER_STATEMENT)
+    if(HAVE_GCC_WERROR_DECLARATION_AFTER_STATEMENT)
+      list(APPEND EXTRA_CFLAGS "-Werror=declaration-after-statement")
+    endif()
+    list(APPEND EXTRA_CFLAGS "-Wdeclaration-after-statement")
+  endif()
+
   if(DEPENDENCY_TRACKING)
     check_c_source_compiles("
         #if !defined(__GNUC__) || __GNUC__ < 3
@@ -375,13 +393,6 @@ if(USE_GCC OR USE_CLANG)
   endif()
   set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
 
-  check_c_compiler_flag(-Wall HAVE_GCC_WALL)
-  if(HAVE_GCC_WALL)
-    list(APPEND EXTRA_CFLAGS "-Wall")
-    if(HAIKU)
-      set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-multichar")
-    endif()
-  endif()
   check_c_compiler_flag(-Wshadow HAVE_GCC_WSHADOW)
   if(HAVE_GCC_WSHADOW)
     list(APPEND EXTRA_CFLAGS "-Wshadow")
