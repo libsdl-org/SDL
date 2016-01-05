@@ -574,18 +574,17 @@ X11_CreateWindow(_THIS, SDL_Window * window)
                     (unsigned char *)&compositor, 1);
 
     {
-        Atom protocols[2];
+        Atom protocols[3];
         int proto_count = 0;
         const char *ping_hint;
 
-        protocols[proto_count] = data->WM_DELETE_WINDOW; /* Allow window to be deleted by the WM */
-        proto_count++;
-        
+        protocols[proto_count++] = data->WM_DELETE_WINDOW; /* Allow window to be deleted by the WM */
+        protocols[proto_count++] = data->WM_TAKE_FOCUS; /* Since we will want to set input focus explicitly */
+
         ping_hint = SDL_GetHint(SDL_HINT_VIDEO_X11_NET_WM_PING);
         /* Default to using ping if there is no hint */
         if (!ping_hint || SDL_atoi(ping_hint)) {
-            protocols[proto_count] = data->_NET_WM_PING; /* Respond so WM knows we're alive */
-            proto_count++;
+            protocols[proto_count++] = data->_NET_WM_PING; /* Respond so WM knows we're alive */
         }
 
         SDL_assert(proto_count <= sizeof(protocols) / sizeof(protocols[0]));

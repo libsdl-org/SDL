@@ -89,6 +89,7 @@ typedef struct SDL_VideoData
     /* Useful atoms */
     Atom WM_PROTOCOLS;
     Atom WM_DELETE_WINDOW;
+    Atom WM_TAKE_FOCUS;
     Atom _NET_WM_STATE;
     Atom _NET_WM_STATE_HIDDEN;
     Atom _NET_WM_STATE_FOCUSED;
