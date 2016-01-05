@@ -907,12 +907,13 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 if (buffer) {
                     if (DragQueryFile(drop, i, buffer, size)) {
                         char *file = WIN_StringToUTF8(buffer);
-                        SDL_SendDropFile(file);
+                        SDL_SendDropFile(data->window, file);
                         SDL_free(file);
                     }
                     SDL_stack_free(buffer);
                 }
             }
+            SDL_SendDropComplete(data->window);
             DragFinish(drop);
             return 0;
         }

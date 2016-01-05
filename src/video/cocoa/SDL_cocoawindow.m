@@ -116,9 +116,12 @@
 - (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
 { @autoreleasepool
 {
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
     NSPasteboard *pasteboard = [sender draggingPasteboard];
     NSArray *types = [NSArray arrayWithObject:NSFilenamesPboardType];
     NSString *desiredType = [pasteboard availableTypeFromArray:types];
+    SDL_Window *sdlwindow = nil;
+
     if (desiredType == nil) {
         return NO;  /* can't accept anything that's being dropped here. */
     }
@@ -157,11 +160,22 @@
             }
         }
 
-        if (!SDL_SendDropFile([[fileURL path] UTF8String])) {
+        /* !!! FIXME: is there a better way to do this? */
+        if (_this) {
+            for (sdlwindow = _this->windows; sdlwindow; sdlwindow = sdlwindow->next) {
+                NSWindow *nswindow = ((SDL_WindowData *) sdlwindow->driverdata)->nswindow;
+                if (nswindow == self) {
+                    break;
+                }
+            }
+        }
+
+        if (!SDL_SendDropFile(sdlwindow, [[fileURL path] UTF8String])) {
             return NO;
         }
     }
 
+    SDL_SendDropComplete(sdlwindow);
     return YES;
 }}
 
