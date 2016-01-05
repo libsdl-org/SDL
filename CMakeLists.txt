@@ -13,7 +13,7 @@ project(SDL2 C)
 # !!! FIXME:  properly resolved, this line silences a warning in CMake 3.0+.
 # !!! FIXME:  remove it and this comment entirely once the problem is
 # !!! FIXME:  properly resolved.
-cmake_policy(SET CMP0042 OLD)
+#cmake_policy(SET CMP0042 OLD)
 
 include(CheckFunctionExists)
 include(CheckLibraryExists)
