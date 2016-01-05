@@ -618,6 +618,20 @@ X11_InitModes(_THIS)
 
 /* !!! FIXME: eventually remove support for Xinerama and XVidMode (everything below here). */
 
+    /* This is a workaround for some apps (UnrealEngine4, for example) until
+       we sort out the ramifications of removing XVidMode support outright.
+       This block should be removed with the XVidMode support. */
+    {
+        const char *env = SDL_GetHint("SDL_VIDEO_X11_REQUIRE_XRANDR");
+        if (env && SDL_atoi(env)) {
+            #if SDL_VIDEO_DRIVER_X11_XRANDR
+            return SDL_SetError("XRandR support is required but not available");
+            #else
+            return SDL_SetError("XRandR support is required but not built into SDL!");
+            #endif
+        }
+    }
+
 #if SDL_VIDEO_DRIVER_X11_XINERAMA
     /* Query Xinerama extention
      * NOTE: This works with Nvidia Twinview correctly, but you need version 302.17 (released on June 2012)
