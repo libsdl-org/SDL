@@ -135,6 +135,9 @@ struct SDL_Renderer
     int logical_w_backup;
     int logical_h_backup;
 
+    /* Whether or not to force the viewport to even integer intervals */
+    SDL_bool integer_scale;
+
     /* The drawable area within the window */
     SDL_Rect viewport;
     SDL_Rect viewport_backup;
