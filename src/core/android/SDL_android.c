@@ -144,8 +144,9 @@ void Java_org_libsdl_app_SDLActivity_onNativeDropFile(
                                     jstring filename)
 {
     const char *path = (*env)->GetStringUTFChars(env, filename, NULL);
-    SDL_SendDropFile(path);
+    SDL_SendDropFile(NULL, path);
     (*env)->ReleaseStringUTFChars(env, filename, path);
+    SDL_SendDropComplete(NULL);
 }
 
 /* Resize */
