@@ -19,6 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "../../SDL_internal.h"
+#include "SDL_assert.h"
 
 #if SDL_VIDEO_DRIVER_COCOA
 
@@ -335,6 +336,41 @@ Cocoa_GetDisplayBounds(_THIS, SDL_VideoDisplay * display, SDL_Rect * rect)
     rect->y = (int)cgrect.origin.y;
     rect->w = (int)cgrect.size.width;
     rect->h = (int)cgrect.size.height;
+    return 0;
+}
+
+int
+Cocoa_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay * display, SDL_Rect * rect)
+{
+    SDL_DisplayData *displaydata = (SDL_DisplayData *) display->driverdata;
+    const CGDirectDisplayID cgdisplay = displaydata->display;
+    NSArray *screens = [NSScreen screens];
+    NSScreen *screen = nil;
+
+    /* !!! FIXME: maybe track the NSScreen in SDL_DisplayData? */
+    for (NSScreen *i in screens) {
+        const CGDirectDisplayID thisDisplay = (CGDirectDisplayID) [[[i deviceDescription] objectForKey:@"NSScreenNumber"] unsignedIntValue];
+        if (thisDisplay == cgdisplay) {
+            screen = i;
+            break;
+        }
+    }
+
+    SDL_assert(screen != nil);  /* didn't find it?! */
+    if (screen == nil) {
+        return -1;
+    }
+
+    const CGRect cgrect = CGDisplayBounds(cgdisplay);
+    const NSRect frame = [screen visibleFrame];
+
+    // !!! FIXME: I assume -[NSScreen visibleFrame] is relative to the origin of the screen in question and not the whole desktop.
+    // !!! FIXME: The math vs CGDisplayBounds might be incorrect if that's not the case, though. Check this.
+    rect->x = (int)(cgrect.origin.x + frame.origin.x);
+    rect->y = (int)(cgrect.origin.y + frame.origin.y);
+    rect->w = (int)frame.size.width;
+    rect->h = (int)frame.size.height;
+
     return 0;
 }
 

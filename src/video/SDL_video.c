@@ -684,7 +684,26 @@ SDL_GetDisplayBounds(int displayIndex, SDL_Rect * rect)
         rect->w = display->current_mode.w;
         rect->h = display->current_mode.h;
     }
-    return 0;
+    return 0;  /* !!! FIXME: should this be an error if (rect==NULL) ? */
+}
+
+int SDL_GetDisplayUsableBounds(int displayIndex, SDL_Rect * rect)
+{
+    CHECK_DISPLAY_INDEX(displayIndex, -1);
+
+    if (rect) {
+        SDL_VideoDisplay *display = &_this->displays[displayIndex];
+
+        if (_this->GetDisplayUsableBounds) {
+            if (_this->GetDisplayUsableBounds(_this, display, rect) == 0) {
+                return 0;
+            }
+        }
+
+        /* Oh well, just give the entire display bounds. */
+        return SDL_GetDisplayBounds(displayIndex, rect);
+    }
+    return 0;  /* !!! FIXME: should this be an error if (rect==NULL) ? */
 }
 
 int

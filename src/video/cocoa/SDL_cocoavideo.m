@@ -73,6 +73,7 @@ Cocoa_CreateDevice(int devindex)
     device->VideoInit = Cocoa_VideoInit;
     device->VideoQuit = Cocoa_VideoQuit;
     device->GetDisplayBounds = Cocoa_GetDisplayBounds;
+    device->GetDisplayUsableBounds = Cocoa_GetDisplayUsableBounds;
     device->GetDisplayModes = Cocoa_GetDisplayModes;
     device->SetDisplayMode = Cocoa_SetDisplayMode;
     device->PumpEvents = Cocoa_PumpEvents;

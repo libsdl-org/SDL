@@ -176,6 +176,11 @@ struct SDL_VideoDevice
     int (*GetDisplayDPI) (_THIS, SDL_VideoDisplay * display, float * ddpi, float * hdpi, float * vdpi);
 
     /*
+     * Get the usable bounds of a display (bounds minus menubar or whatever)
+     */
+    int (*GetDisplayUsableBounds) (_THIS, SDL_VideoDisplay * display, SDL_Rect * rect);
+
+    /*
      * Get a list of the available display modes for a display.
      */
     void (*GetDisplayModes) (_THIS, SDL_VideoDisplay * display);

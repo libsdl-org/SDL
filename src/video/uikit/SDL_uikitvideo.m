@@ -85,6 +85,7 @@ UIKit_CreateDevice(int devindex)
     device->SetWindowFullscreen = UIKit_SetWindowFullscreen;
     device->DestroyWindow = UIKit_DestroyWindow;
     device->GetWindowWMInfo = UIKit_GetWindowWMInfo;
+    device->GetDisplayUsableBounds = UIKit_GetDisplayUsableBounds;
 
 #if SDL_IPHONE_KEYBOARD
     device->HasScreenKeyboardSupport = UIKit_HasScreenKeyboardSupport;

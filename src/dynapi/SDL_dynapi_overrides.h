@@ -597,3 +597,4 @@
 #define SDL_JoystickCurrentPowerLevel SDL_JoystickCurrentPowerLevel_REAL
 #define SDL_GameControllerFromInstanceID SDL_GameControllerFromInstanceID_REAL
 #define SDL_JoystickFromInstanceID SDL_JoystickFromInstanceID_REAL
+#define SDL_GetDisplayUsableBounds SDL_GetDisplayUsableBounds_REAL
