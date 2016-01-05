@@ -895,6 +895,34 @@ X11_SetWindowSize(_THIS, SDL_Window * window)
     X11_XFlush(display);
 }
 
+int
+X11_GetWindowBordersSize(_THIS, SDL_Window * window, int *top, int *left, int *bottom, int *right)
+{
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    Display *display = data->videodata->display;
+    Atom _NET_FRAME_EXTENTS = X11_XInternAtom(display, "_NET_FRAME_EXTENTS", 0);
+    Atom type;
+    int format;
+    unsigned long nitems, bytes_after;
+    unsigned char *property;
+    int result = -1;
+
+    if (X11_XGetWindowProperty(display, data->xwindow, _NET_FRAME_EXTENTS,
+                               0, 16, 0, XA_CARDINAL, &type, &format,
+                               &nitems, &bytes_after, &property) == Success) {
+        if (type != None && nitems == 4) {
+            *left = (int) (((long*)property)[0]);
+            *right = (int) (((long*)property)[1]);
+            *top = (int) (((long*)property)[2]);
+            *bottom = (int) (((long*)property)[3]);
+            result = 0;
+        }
+        X11_XFree(property);
+    }
+
+    return result;
+}
+
 void
 X11_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
 {
