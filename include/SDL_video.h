@@ -312,6 +312,25 @@ extern DECLSPEC int SDLCALL SDL_GetDisplayBounds(int displayIndex, SDL_Rect * re
 extern DECLSPEC int SDLCALL SDL_GetDisplayDPI(int displayIndex, float * ddpi, float * hdpi, float * vdpi);
 
 /**
+ *  \brief Get the usable desktop area represented by a display, with the
+ *         primary display located at 0,0
+ *
+ *  This is the same area as SDL_GetDisplayBounds() reports, but with portions
+ *  reserved by the system removed. For example, on Mac OS X, this subtracts
+ *  the area occupied by the menu bar and dock.
+ *
+ *  Setting a window to be fullscreen generally bypasses these unusable areas,
+ *  so these are good guidelines for the maximum space available to a
+ *  non-fullscreen window.
+ *
+ *  \return 0 on success, or -1 if the index is out of range.
+ *
+ *  \sa SDL_GetDisplayBounds()
+ *  \sa SDL_GetNumVideoDisplays()
+ */
+extern DECLSPEC int SDLCALL SDL_GetDisplayUsableBounds(int displayIndex, SDL_Rect * rect);
+
+/**
  *  \brief Returns the number of available display modes.
  *
  *  \sa SDL_GetDisplayMode()

@@ -332,6 +332,43 @@ WIN_GetDisplayDPI(_THIS, SDL_VideoDisplay * display, float * ddpi, float * hdpi,
     return data->DiagDPI != 0.0f ? 0 : -1;
 }
 
+int
+WIN_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay * display, SDL_Rect * rect)
+{
+    const SDL_DisplayModeData *data = (const SDL_DisplayModeData *) display->current_mode.driverdata;
+    const DEVMODE *pDevMode = &data->DeviceMode;
+    POINT pt = {
+        /* !!! FIXME: no scale, right? */
+        (LONG) (pDevMode->dmPosition.x + (pDevMode->dmPelsWidth / 2)),
+        (LONG) (pDevMode->dmPosition.y + (pDevMode->dmPelsHeight / 2))
+    };
+    HMONITOR hmon = MonitorFromPoint(&pt, MONITOR_DEFAULTTONULL);
+    MONITORINFO minfo;
+    const RECT *work;
+    BOOL rc = FALSE;
+
+    SDL_assert(hmon != NULL);
+
+    if (hmon != NULL) {
+        SDL_zero(minfo);
+        minfo.cbSize = sizeof (MONITORINFO);
+        rc = GetMonitorInfo(hmon, &minfo);
+        SDL_assert(rc);
+    }
+
+    if (!rc) {
+        return SDL_SetError("Couldn't find monitor data");
+    }
+
+    work = &minfo->rcWork;
+    rect->x = (int)SDL_ceil(work->left * data->ScaleX);
+    rect->y = (int)SDL_ceil(work->top * data->ScaleY);
+    rect->w = (int)SDL_ceil((work->right - work->left) * data->ScaleX);
+    rect->h = (int)SDL_ceil((work->bottom - work->top) * data->ScaleY);
+
+    return 0;
+}
+
 void
 WIN_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
 {

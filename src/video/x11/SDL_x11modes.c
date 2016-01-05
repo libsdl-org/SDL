@@ -1073,6 +1073,43 @@ X11_GetDisplayDPI(_THIS, SDL_VideoDisplay * sdl_display, float * ddpi, float * h
     return data->ddpi != 0.0f ? 0 : -1;
 }
 
+int
+X11_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay * sdl_display, SDL_Rect * rect)
+{
+    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+    Display *display = data->display;
+    Atom _NET_WORKAREA;
+    int status, real_format;
+    int retval = -1;
+    Atom real_type;
+    unsigned long items_read = 0, items_left = 0;
+    unsigned char *propdata = NULL;
+
+    if (X11_GetDisplayBounds(_this, sdl_display, rect) < 0) {
+        return -1;
+    }
+
+    _NET_WORKAREA = X11_XInternAtom(display, "_NET_WORKAREA", False);
+    status = X11_XGetWindowProperty(display, DefaultRootWindow(display),
+                                    _NET_WORKAREA, 0L, 4L, False, XA_CARDINAL,
+                                    &real_type, &real_format, &items_read,
+                                    &items_left, &propdata);
+    if ((status == Success) && (items_read >= 4)) {
+        retval = 0;
+        const long *p = (long*) propdata;
+        const SDL_Rect usable = { (int)p[0], (int)p[1], (int)p[2], (int)p[3] };
+        if (!SDL_IntersectRect(rect, &usable, rect)) {
+            SDL_zerop(rect);
+        }
+    }
+
+    if (propdata) {
+        X11_XFree(propdata);
+    }
+
+    return retval;
+}
+
 #endif /* SDL_VIDEO_DRIVER_X11 */
 
 /* vi: set ts=4 sw=4 expandtab: */
