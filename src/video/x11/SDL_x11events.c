@@ -1230,17 +1230,17 @@ X11_DispatchEvent(_THIS)
                     char *token = strtok((char *) p.data, "\r\n");
                     while (token != NULL) {
                         if (SDL_strcmp("text/plain", name)==0) {
-                            SDL_SendDropText(token);
+                            SDL_SendDropText(data->window, token);
                         } else if (SDL_strcmp("text/uri-list", name)==0) {
                             char *fn = X11_URIToLocal(token);
                             if (fn) {
-                                SDL_SendDropFile(fn);
+                                SDL_SendDropFile(data->window, fn);
                             }
                         }
                         token = strtok(NULL, "\r\n");
                     }
+                    SDL_SendDropComplete(data->window);
                 }
-
                 X11_XFree(p.data);
 
                 /* send reply */

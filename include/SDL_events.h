@@ -137,6 +137,8 @@ typedef enum
     /* Drag and drop events */
     SDL_DROPFILE        = 0x1000, /**< The system requests a file open */
     SDL_DROPTEXT,                 /**< text/plain drag-and-drop event */
+    SDL_DROPBEGIN,                /**< A new set of drops is beginning (NULL filename) */
+    SDL_DROPCOMPLETE,             /**< Current set of drops is now complete (NULL filename) */
 
     /* Audio hotplug events */
     SDL_AUDIODEVICEADDED = 0x1100, /**< A new audio device is available */
@@ -462,9 +464,10 @@ typedef struct SDL_DollarGestureEvent
  */
 typedef struct SDL_DropEvent
 {
-    Uint32 type;        /**< ::SDL_DROPFILE */
+    Uint32 type;        /**< ::SDL_DROPBEGIN or ::SDL_DROPFILE or ::SDL_DROPTEXT or ::SDL_DROPCOMPLETE */
     Uint32 timestamp;
-    char *file;         /**< The file name, which should be freed with SDL_free() */
+    char *file;         /**< The file name, which should be freed with SDL_free(), is NULL on begin/complete */
+    Uint32 windowID;    /**< The window that was dropped on, if any */
 } SDL_DropEvent;
 
 
