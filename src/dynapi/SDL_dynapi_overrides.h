@@ -598,3 +598,4 @@
 #define SDL_GameControllerFromInstanceID SDL_GameControllerFromInstanceID_REAL
 #define SDL_JoystickFromInstanceID SDL_JoystickFromInstanceID_REAL
 #define SDL_GetDisplayUsableBounds SDL_GetDisplayUsableBounds_REAL
+#define SDL_GetWindowBordersSize SDL_GetWindowBordersSize_REAL

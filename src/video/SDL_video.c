@@ -1907,6 +1907,28 @@ SDL_SetWindowMinimumSize(SDL_Window * window, int min_w, int min_h)
     }
 }
 
+int
+SDL_GetWindowBordersSize(SDL_Window * window, int *top, int *left, int *bottom, int *right)
+{
+    int dummy = 0;
+
+    if (!top) { top = &dummy; }
+    if (!left) { left = &dummy; }
+    if (!right) { right = &dummy; }
+    if (!bottom) { bottom = &dummy; }
+
+    /* Always initialize, so applications don't have to care */
+    *top = *left = *bottom = *right = 0;
+
+    CHECK_WINDOW_MAGIC(window, -1);
+
+    if (!_this->GetWindowBordersSize) {
+        return SDL_Unsupported();
+    }
+
+    return _this->GetWindowBordersSize(_this, window, top, left, bottom, right);
+}
+
 void
 SDL_GetWindowMinimumSize(SDL_Window * window, int *min_w, int *min_h)
 {

@@ -206,6 +206,7 @@ struct SDL_VideoDevice
     void (*SetWindowSize) (_THIS, SDL_Window * window);
     void (*SetWindowMinimumSize) (_THIS, SDL_Window * window);
     void (*SetWindowMaximumSize) (_THIS, SDL_Window * window);
+    int (*GetWindowBordersSize) (_THIS, SDL_Window * window, int *top, int *left, int *bottom, int *right);
     void (*ShowWindow) (_THIS, SDL_Window * window);
     void (*HideWindow) (_THIS, SDL_Window * window);
     void (*RaiseWindow) (_THIS, SDL_Window * window);

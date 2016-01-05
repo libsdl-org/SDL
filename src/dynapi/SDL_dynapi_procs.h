@@ -632,3 +632,4 @@ SDL_DYNAPI_PROC(SDL_JoystickPowerLevel,SDL_JoystickCurrentPowerLevel,(SDL_Joysti
 SDL_DYNAPI_PROC(SDL_GameController*,SDL_GameControllerFromInstanceID,(SDL_JoystickID a),(a),return)
 SDL_DYNAPI_PROC(SDL_Joystick*,SDL_JoystickFromInstanceID,(SDL_JoystickID a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_GetDisplayUsableBounds,(int a, SDL_Rect *b),(a,b),return)
+SDL_DYNAPI_PROC(int,SDL_GetWindowBordersSize,(SDL_Window *a, int *b, int *c, int *d, int *e),(a,b,c,d,e),return)

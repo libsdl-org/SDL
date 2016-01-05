@@ -612,6 +612,25 @@ extern DECLSPEC void SDLCALL SDL_GetWindowSize(SDL_Window * window, int *w,
                                                int *h);
 
 /**
+ *  \brief Get the size of a window's borders (decorations) around the client area.
+ *
+ *  \param window The window to query.
+ *  \param top Pointer to variable for storing the size of the top border. NULL is permitted.
+ *  \param left Pointer to variable for storing the size of the left border. NULL is permitted.
+ *  \param bottom Pointer to variable for storing the size of the bottom border. NULL is permitted.
+ *  \param right Pointer to variable for storing the size of the right border. NULL is permitted.
+ *
+ *  \return 0 on success, or -1 if getting this information is not supported.
+ *
+ *  \note if this function fails (returns -1), the size values will be
+ *        initialized to 0, 0, 0, 0 (if a non-NULL pointer is provided), as
+ *        if the window in question was borderless.
+ */
+extern DECLSPEC int SDLCALL SDL_GetWindowBordersSize(SDL_Window * window,
+                                                     int *top, int *left,
+                                                     int *bottom, int *right);
+
+/**
  *  \brief Set the minimum size of a window's client area.
  *
  *  \param window    The window to set a new minimum size.
