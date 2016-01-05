@@ -522,9 +522,10 @@ X11_CreateWindow(_THIS, SDL_Window * window)
     X11_XFree(classhints);
     /* Set the PID related to the window for the given hostname, if possible */
     if (data->pid > 0) {
+        long pid = (long) data->pid;
         _NET_WM_PID = X11_XInternAtom(display, "_NET_WM_PID", False);
         X11_XChangeProperty(display, w, _NET_WM_PID, XA_CARDINAL, 32, PropModeReplace,
-                        (unsigned char *)&data->pid, 1);
+                        (unsigned char *) &pid, 1);
     }
 
     /* Set the window manager state */
