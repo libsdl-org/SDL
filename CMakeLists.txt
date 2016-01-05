@@ -310,6 +310,8 @@ set_option(VIDEO_VIVANTE       "Use Vivante EGL video driver" ${UNIX_SYS})
 set(SDL_SHARED ${SDL_SHARED_ENABLED_BY_DEFAULT} CACHE BOOL "Build a shared version of the library")
 set(SDL_STATIC ON CACHE BOOL "Build a static version of the library")
 
+dep_option(SDL_STATIC_PIC      "Static version of the library should be built with Position Independent Code" OFF "SDL_STATIC" OFF)
+
 # General source files
 file(GLOB SOURCE_FILES
   ${SDL2_SOURCE_DIR}/src/*.c
@@ -1461,6 +1463,9 @@ message(STATUS " EXTRA_LIBS:    ${EXTRA_LIBS}")
 message(STATUS "")
 message(STATUS " Build Shared Library: ${SDL_SHARED}")
 message(STATUS " Build Static Library: ${SDL_STATIC}")
+if(SDL_STATIC)
+    message(STATUS " Build Static Library with Position Independent Code: ${SDL_STATIC_PIC}")
+endif()
 message(STATUS "")
 if(UNIX)
   message(STATUS "If something was not detected, although the libraries")
@@ -1503,6 +1508,7 @@ if(SDL_STATIC)
   set (BUILD_SHARED_LIBS FALSE)
   add_library(SDL2-static STATIC ${SOURCE_FILES})
   set_target_properties(SDL2-static PROPERTIES OUTPUT_NAME "SDL2")
+  set_target_properties(SDL2-static PROPERTIES POSITION_INDEPENDENT_CODE ${SDL_STATIC_PIC})
   if(MSVC)
     set_target_properties(SDL2-static PROPERTIES LINK_FLAGS_RELEASE "/NODEFAULTLIB")
     set_target_properties(SDL2-static PROPERTIES LINK_FLAGS_DEBUG "/NODEFAULTLIB")
