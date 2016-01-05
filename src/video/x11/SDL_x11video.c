@@ -376,6 +376,9 @@ X11_VideoInit(_THIS)
     /* Get the process PID to be associated to the window */
     data->pid = getpid();
 
+    /* I have no idea how random this actually is, or has to be. */
+    data->window_group = (XID) (((size_t) data->pid) ^ ((size_t) _this));
+
     /* Open a connection to the X input manager */
 #ifdef X_HAVE_UTF8_STRING
     if (SDL_X11_HAVE_UTF8) {
