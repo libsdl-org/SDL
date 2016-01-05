@@ -27,20 +27,33 @@
 #include "SDL_dropevents_c.h"
 
 
-int
-SDL_SendDropFile(const char *file)
+static int
+SDL_SendDrop(const SDL_EventType evtype, const char *data)
 {
     int posted;
 
     /* Post the event, if desired */
     posted = 0;
-    if (SDL_GetEventState(SDL_DROPFILE) == SDL_ENABLE) {
+    if (SDL_GetEventState(evtype) == SDL_ENABLE) {
         SDL_Event event;
-        event.type = SDL_DROPFILE;
-        event.drop.file = SDL_strdup(file);
+        SDL_zero(event);
+        event.type = evtype;
+        event.drop.file = SDL_strdup(data);
         posted = (SDL_PushEvent(&event) > 0);
     }
-    return (posted);
+    return posted;
+}
+
+int
+SDL_SendDropFile(const char *file)
+{
+    return SDL_SendDrop(SDL_DROPFILE, file);
+}
+
+int
+SDL_SendDropText(const char *text)
+{
+    return SDL_SendDrop(SDL_DROPTEXT, text);
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

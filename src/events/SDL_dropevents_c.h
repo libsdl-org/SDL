@@ -24,6 +24,7 @@
 #define _SDL_dropevents_c_h
 
 extern int SDL_SendDropFile(const char *file);
+extern int SDL_SendDropText(const char *text);
 
 #endif /* _SDL_dropevents_c_h */
 
