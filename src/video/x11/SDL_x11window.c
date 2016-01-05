@@ -524,7 +524,8 @@ X11_CreateWindow(_THIS, SDL_Window * window)
     /* Setup the input hints so we get keyboard input */
     wmhints = X11_XAllocWMHints();
     wmhints->input = True;
-    wmhints->flags = InputHint;
+    wmhints->window_group = data->window_group;
+    wmhints->flags = InputHint | WindowGroupHint;
 
     /* Setup the class hints so we can get an icon (AfterStep) */
     classhints = X11_XAllocClassHint();
