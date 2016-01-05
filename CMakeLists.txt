@@ -4,6 +4,17 @@ endif()
 
 cmake_minimum_required(VERSION 2.8)
 project(SDL2 C)
+
+# !!! FIXME: this should probably do "MACOSX_RPATH ON" as a target property
+# !!! FIXME:  for the SDL2 shared library (so you get an
+# !!! FIXME:  install_name ("soname") of "@rpath/libSDL-whatever.dylib"
+# !!! FIXME:  instead of "/usr/local/lib/libSDL-whatever.dylib"), but I'm
+# !!! FIXME:  punting for now and leaving the existing behavior. Until this
+# !!! FIXME:  properly resolved, this line silences a warning in CMake 3.0+.
+# !!! FIXME:  remove it and this comment entirely once the problem is
+# !!! FIXME:  properly resolved.
+cmake_policy(SET CMP0042 OLD)
+
 include(CheckFunctionExists)
 include(CheckLibraryExists)
 include(CheckIncludeFiles)
