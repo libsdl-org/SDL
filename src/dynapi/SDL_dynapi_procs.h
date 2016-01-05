@@ -635,3 +635,4 @@ SDL_DYNAPI_PROC(int,SDL_GetDisplayUsableBounds,(int a, SDL_Rect *b),(a,b),return
 SDL_DYNAPI_PROC(int,SDL_GetWindowBordersSize,(SDL_Window *a, int *b, int *c, int *d, int *e),(a,b,c,d,e),return)
 SDL_DYNAPI_PROC(int,SDL_SetWindowOpacity,(SDL_Window *a, float b),(a,b),return)
 SDL_DYNAPI_PROC(int,SDL_GetWindowOpacity,(SDL_Window *a, float *b),(a,b),return)
+SDL_DYNAPI_PROC(int,SDL_SetWindowInputFocus,(SDL_Window *a),(a),return)

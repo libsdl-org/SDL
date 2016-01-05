@@ -874,6 +874,20 @@ extern DECLSPEC int SDLCALL SDL_SetWindowOpacity(SDL_Window * window, float opac
 extern DECLSPEC int SDLCALL SDL_GetWindowOpacity(SDL_Window * window, float * out_opacity);
 
 /**
+ *  \brief Explicitly sets input focus to the window.
+ *
+ *  You almost certainly want SDL_RaiseWindow() instead of this function. Use
+ *  this with caution, as you might give focus to a window that's completely
+ *  obscured by other windows.
+ *
+ *  \param window The window that should get the input focus
+ * 
+ *  \return 0 on success, or -1 otherwise.
+ *  \sa SDL_RaiseWindow()
+ */
+extern DECLSPEC int SDLCALL SDL_SetWindowInputFocus(SDL_Window * window);
+
+/**
  *  \brief Set the gamma ramp for a window.
  *
  *  \param window The window for which the gamma ramp should be set.
