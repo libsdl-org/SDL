@@ -21,6 +21,8 @@
  */
 
 /* Author: Soren Sandmann <sandmann@redhat.com> */
+#include "../../SDL_internal.h"
+#include "SDL_stdinc.h"
 
 #include "edid.h"
 #include <stdlib.h>
@@ -247,7 +249,7 @@ decode_fraction (int high, int low)
     high = (high << 2) | low;
 
     for (i = 0; i < 10; ++i)
-	result += get_bit (high, i) * pow (2, i - 10);
+	result += get_bit (high, i) * SDL_pow (2, i - 10);
 
     return result;
 }
