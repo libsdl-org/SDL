@@ -1304,7 +1304,7 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
 }
 
 #define CREATE_FLAGS \
-    (SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI)
+    (SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_SKIP_TASKBAR | SDL_WINDOW_POPUP_MENU | SDL_WINDOW_UTILITY | SDL_WINDOW_TOOLTIP)
 
 static void
 SDL_FinishWindowCreation(SDL_Window *window, Uint32 flags)
@@ -1342,6 +1342,11 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
         if (SDL_VideoInit(NULL) < 0) {
             return NULL;
         }
+    }
+
+    if ( (((flags & SDL_WINDOW_UTILITY) != 0) + ((flags & SDL_WINDOW_TOOLTIP) != 0) + ((flags & SDL_WINDOW_POPUP_MENU) != 0)) > 1 ) {
+        SDL_SetError("Conflicting window flags specified");
+        return NULL;
     }
 
     /* Some platforms can't create zero-sized windows */

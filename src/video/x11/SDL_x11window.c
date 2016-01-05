@@ -137,7 +137,10 @@ X11_SetNetWMState(_THIS, Window xwindow, Uint32 flags)
     Atom _NET_WM_STATE_MAXIMIZED_VERT = videodata->_NET_WM_STATE_MAXIMIZED_VERT;
     Atom _NET_WM_STATE_MAXIMIZED_HORZ = videodata->_NET_WM_STATE_MAXIMIZED_HORZ;
     Atom _NET_WM_STATE_FULLSCREEN = videodata->_NET_WM_STATE_FULLSCREEN;
-    Atom atoms[5];
+    Atom _NET_WM_STATE_ABOVE = videodata->_NET_WM_STATE_ABOVE;
+    Atom _NET_WM_STATE_SKIP_TASKBAR = videodata->_NET_WM_STATE_SKIP_TASKBAR;
+    Atom _NET_WM_STATE_SKIP_PAGER = videodata->_NET_WM_STATE_SKIP_PAGER;
+    Atom atoms[16];
     int count = 0;
 
     /* The window manager sets this property, we shouldn't set it.
@@ -148,6 +151,14 @@ X11_SetNetWMState(_THIS, Window xwindow, Uint32 flags)
         atoms[count++] = _NET_WM_STATE_HIDDEN;
     }
     */
+
+    if (flags & SDL_WINDOW_ALWAYS_ON_TOP) {
+        atoms[count++] = _NET_WM_STATE_ABOVE;
+    }
+    if (flags & SDL_WINDOW_SKIP_TASKBAR) {
+        atoms[count++] = _NET_WM_STATE_SKIP_TASKBAR;
+        atoms[count++] = _NET_WM_STATE_SKIP_PAGER;
+    }
     if (flags & SDL_WINDOW_INPUT_FOCUS) {
         atoms[count++] = _NET_WM_STATE_FOCUSED;
     }
@@ -158,6 +169,9 @@ X11_SetNetWMState(_THIS, Window xwindow, Uint32 flags)
     if (flags & SDL_WINDOW_FULLSCREEN) {
         atoms[count++] = _NET_WM_STATE_FULLSCREEN;
     }
+
+    SDL_assert(count <= SDL_arraysize(atoms));
+
     if (count > 0) {
         X11_XChangeProperty(display, xwindow, _NET_WM_STATE, XA_ATOM, 32,
                         PropModeReplace, (unsigned char *)atoms, count);
@@ -358,10 +372,11 @@ X11_CreateWindow(_THIS, SDL_Window * window)
     XSizeHints *sizehints;
     XWMHints *wmhints;
     XClassHint *classhints;
-    const long _NET_WM_BYPASS_COMPOSITOR_HINT_ON = 1;
     Atom _NET_WM_BYPASS_COMPOSITOR;
     Atom _NET_WM_WINDOW_TYPE;
-    Atom _NET_WM_WINDOW_TYPE_NORMAL;
+    Atom wintype;
+    const char *wintype_name = NULL;
+    int compositor = 1;
     Atom _NET_WM_PID;
     Atom XdndAware, xdnd_version = 5;
     long fevent = 0;
@@ -399,7 +414,7 @@ X11_CreateWindow(_THIS, SDL_Window * window)
         depth = displaydata->depth;
     }
 
-    xattr.override_redirect = False;
+    xattr.override_redirect = ((window->flags & SDL_WINDOW_TOOLTIP) || (window->flags & SDL_WINDOW_POPUP_MENU)) ? True : False;
     xattr.background_pixmap = None;
     xattr.border_pixel = 0;
 
@@ -533,17 +548,29 @@ X11_CreateWindow(_THIS, SDL_Window * window)
     /* Set the window manager state */
     X11_SetNetWMState(_this, w, window->flags);
 
-    /* Let the window manager know we're a "normal" window */
+    compositor = 2;  /* don't disable compositing except for "normal" windows */
+
+    if (window->flags & SDL_WINDOW_UTILITY) {
+        wintype_name = "_NET_WM_WINDOW_TYPE_UTILITY";
+    } else if (window->flags & SDL_WINDOW_TOOLTIP) {
+        wintype_name = "_NET_WM_WINDOW_TYPE_TOOLTIP";
+    } else if (window->flags & SDL_WINDOW_POPUP_MENU) {
+        wintype_name = "_NET_WM_WINDOW_TYPE_POPUP_MENU";
+    } else {
+        wintype_name = "_NET_WM_WINDOW_TYPE_NORMAL";
+        compositor = 1;  /* disable compositing for "normal" windows */
+    }
+
+    /* Let the window manager know what type of window we are. */
     _NET_WM_WINDOW_TYPE = X11_XInternAtom(display, "_NET_WM_WINDOW_TYPE", False);
-    _NET_WM_WINDOW_TYPE_NORMAL = X11_XInternAtom(display, "_NET_WM_WINDOW_TYPE_NORMAL", False);
+    wintype = X11_XInternAtom(display, wintype_name, False);
     X11_XChangeProperty(display, w, _NET_WM_WINDOW_TYPE, XA_ATOM, 32,
-                    PropModeReplace,
-                    (unsigned char *)&_NET_WM_WINDOW_TYPE_NORMAL, 1);
+                    PropModeReplace, (unsigned char *)&wintype, 1);
 
     _NET_WM_BYPASS_COMPOSITOR = X11_XInternAtom(display, "_NET_WM_BYPASS_COMPOSITOR", False);
     X11_XChangeProperty(display, w, _NET_WM_BYPASS_COMPOSITOR, XA_CARDINAL, 32,
                     PropModeReplace,
-                    (unsigned char *)&_NET_WM_BYPASS_COMPOSITOR_HINT_ON, 1);
+                    (unsigned char *)&compositor, 1);
 
     {
         Atom protocols[2];

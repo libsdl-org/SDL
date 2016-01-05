@@ -110,7 +110,12 @@ typedef enum
     SDL_WINDOW_FULLSCREEN_DESKTOP = ( SDL_WINDOW_FULLSCREEN | 0x00001000 ),
     SDL_WINDOW_FOREIGN = 0x00000800,            /**< window not created by SDL */
     SDL_WINDOW_ALLOW_HIGHDPI = 0x00002000,      /**< window should be created in high-DPI mode if supported */
-    SDL_WINDOW_MOUSE_CAPTURE = 0x00004000       /**< window has mouse captured (unrelated to INPUT_GRABBED) */
+    SDL_WINDOW_MOUSE_CAPTURE = 0x00004000,      /**< window has mouse captured (unrelated to INPUT_GRABBED) */
+    SDL_WINDOW_ALWAYS_ON_TOP = 0x00008000,      /**< window should always be above others */
+    SDL_WINDOW_SKIP_TASKBAR  = 0x00010000,      /**< window should not be added to the taskbar */
+    SDL_WINDOW_UTILITY       = 0x00020000,      /**< window should be treated as a utility window */
+    SDL_WINDOW_TOOLTIP       = 0x00040000,      /**< window should be treated as a tooltip */
+    SDL_WINDOW_POPUP_MENU    = 0x00080000       /**< window should be treated as a popup menu */
 } SDL_WindowFlags;
 
 /**
