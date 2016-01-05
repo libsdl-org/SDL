@@ -451,10 +451,11 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 {
     NSURL *fileURL = url.filePathURL;
     if (fileURL != nil) {
-        SDL_SendDropFile([fileURL.path UTF8String]);
+        SDL_SendDropFile(NULL, [fileURL.path UTF8String]);
     } else {
-        SDL_SendDropFile([url.absoluteString UTF8String]);
+        SDL_SendDropFile(NULL, [url.absoluteString UTF8String]);
     }
+    SDL_SendDropComplete(NULL);
     return YES;
 }
 
