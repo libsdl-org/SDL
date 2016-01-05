@@ -923,6 +923,25 @@ X11_GetWindowBordersSize(_THIS, SDL_Window * window, int *top, int *left, int *b
     return result;
 }
 
+int
+X11_SetWindowOpacity(_THIS, SDL_Window * window, float opacity)
+{
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    Display *display = data->videodata->display;
+    Atom _NET_WM_WINDOW_OPACITY = data->videodata->_NET_WM_WINDOW_OPACITY;
+
+    if (opacity == 1.0f) {
+        X11_XDeleteProperty(display, data->xwindow, _NET_WM_WINDOW_OPACITY);
+    } else  {
+        const Uint32 FullyOpaque = 0xFFFFFFFF;
+        const long alpha = (long) ((double)opacity * (double)FullyOpaque);
+        X11_XChangeProperty(display, data->xwindow, _NET_WM_WINDOW_OPACITY, XA_CARDINAL, 32,
+            PropModeReplace, (unsigned char *)&alpha, 1);
+    }
+
+    return 0;
+}
+
 void
 X11_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
 {

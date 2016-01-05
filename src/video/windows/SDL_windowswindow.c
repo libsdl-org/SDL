@@ -826,6 +826,39 @@ WIN_SetWindowHitTest(SDL_Window *window, SDL_bool enabled)
     return 0;  /* just succeed, the real work is done elsewhere. */
 }
 
+int
+WIN_SetWindowOpacity(_THIS, SDL_Window * window, float opacity)
+{
+    const SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    const HWND hwnd = data->hwnd;
+    const LONG style = GetWindowLong(hwnd, GWL_EXSTYLE);
+
+    SDL_assert(style != 0);
+
+    if (opacity == 1.0f) {
+        /* want it fully opaque, just mark it unlayered if necessary. */
+        if (style & WS_EX_LAYERED) {
+            if (SetWindowLong(hwnd, GWL_EXSTYLE, style & ~WS_EX_LAYERED) == 0) {
+                return WIN_SetError("SetWindowLong()");
+            }
+        }
+    } else {
+        const BYTE alpha = (BYTE) ((int) (opacity * 255.0f));
+        /* want it transparent, mark it layered if necessary. */
+        if ((style & WS_EX_LAYERED) == 0) {
+            if (SetWindowLong(hwnd, GWL_EXSTYLE, style | WS_EX_LAYERED) == 0) {
+                return WIN_SetError("SetWindowLong()");
+            }
+        }
+
+        if (SetLayeredWindowAttributes(hwnd, 0, alpha, LWA_ALPHA) == 0) {
+            return WIN_SetError("SetLayeredWindowAttributes()");
+        }
+    }
+
+    return 0;
+}
+
 #endif /* SDL_VIDEO_DRIVER_WINDOWS */
 
 /* vi: set ts=4 sw=4 expandtab: */

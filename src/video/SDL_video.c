@@ -1415,6 +1415,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
     }
     window->flags = ((flags & CREATE_FLAGS) | SDL_WINDOW_HIDDEN);
     window->last_fullscreen_flags = window->flags;
+    window->opacity = 1.0f;
     window->brightness = 1.0f;
     window->next = _this->windows;
     window->is_destroying = SDL_FALSE;
@@ -1475,6 +1476,7 @@ SDL_CreateWindowFrom(const void *data)
     window->flags = SDL_WINDOW_FOREIGN;
     window->last_fullscreen_flags = window->flags;
     window->is_destroying = SDL_FALSE;
+    window->opacity = 1.0f;
     window->brightness = 1.0f;
     window->next = _this->windows;
     if (_this->windows) {
@@ -2188,6 +2190,42 @@ SDL_GetWindowBrightness(SDL_Window * window)
     CHECK_WINDOW_MAGIC(window, 1.0f);
 
     return window->brightness;
+}
+
+int
+SDL_SetWindowOpacity(SDL_Window * window, float opacity)
+{
+    int retval;
+    CHECK_WINDOW_MAGIC(window, -1);
+
+    if (!_this->SetWindowOpacity) {
+        return SDL_Unsupported();
+    }
+
+    if (opacity < 0.0f) {
+        opacity = 0.0f;
+    } else if (opacity > 1.0f) {
+        opacity = 1.0f;
+    }
+
+    retval = _this->SetWindowOpacity(_this, window, opacity);
+    if (retval == 0) {
+        window->opacity = opacity;
+    }
+
+    return retval;
+}
+
+int
+SDL_GetWindowOpacity(SDL_Window * window, float * out_opacity)
+{
+    CHECK_WINDOW_MAGIC(window, -1);
+
+    if (out_opacity) {
+        *out_opacity = window->opacity;
+    }
+
+    return 0;
 }
 
 int

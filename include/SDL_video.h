@@ -846,6 +846,34 @@ extern DECLSPEC int SDLCALL SDL_SetWindowBrightness(SDL_Window * window, float b
 extern DECLSPEC float SDLCALL SDL_GetWindowBrightness(SDL_Window * window);
 
 /**
+ *  \brief Set the opacity for a window
+ *
+ *  \param window The window which will be made transparent or opaque
+ *  \param opacity Opacity (0.0f - transparent, 1.0f - opaque) This will be
+ *                 clamped internally between 0.0f and 1.0f.
+ * 
+ *  \return 0 on success, or -1 if setting the opacity isn't supported.
+ *
+ *  \sa SDL_GetWindowOpacity()
+ */
+extern DECLSPEC int SDLCALL SDL_SetWindowOpacity(SDL_Window * window, float opacity);
+
+/**
+ *  \brief Get the opacity of a window.
+ *
+ *  If transparency isn't supported on this platform, opacity will be reported
+ *  as 1.0f without error.
+ *
+ *  \param window The window in question.
+ *  \param opacity Opacity (0.0f - transparent, 1.0f - opaque)
+ *
+ *  \return 0 on success, or -1 on error (invalid window, etc).
+ *
+ *  \sa SDL_SetWindowOpacity()
+ */
+extern DECLSPEC int SDLCALL SDL_GetWindowOpacity(SDL_Window * window, float * out_opacity);
+
+/**
  *  \brief Set the gamma ramp for a window.
  *
  *  \param window The window for which the gamma ramp should be set.

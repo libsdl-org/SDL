@@ -529,4 +529,17 @@ DirectFB_AdjustWindowSurface(SDL_Window * window)
     return;
 }
 
+int
+DirectFB_SetWindowOpacity(_THIS, SDL_Window * window, float opacity)
+{
+    const Uint8 alpha = (Uint8) ((unsigned int) (opacity * 255.0f));
+    SDL_DFB_WINDOWDATA(window);
+    SDL_DFB_CHECKERR(windata->dfbwin->SetOpacity(windata->dfbwin, alpha));
+    windata->opacity = alpha;
+    return 0;
+
+error:
+    return -1;
+}
+
 #endif /* SDL_VIDEO_DRIVER_DIRECTFB */

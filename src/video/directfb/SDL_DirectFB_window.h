@@ -75,6 +75,7 @@ extern SDL_bool DirectFB_GetWindowWMInfo(_THIS, SDL_Window * window,
                                          struct SDL_SysWMinfo *info);
 
 extern void DirectFB_AdjustWindowSurface(SDL_Window * window);
+extern int DirectFB_SetWindowOpacity(_THIS, SDL_Window * window, float opacity);
 
 #endif /* _SDL_directfb_window_h */
 

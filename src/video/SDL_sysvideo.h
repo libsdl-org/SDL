@@ -86,6 +86,8 @@ struct SDL_Window
 
     SDL_DisplayMode fullscreen_mode;
 
+    float opacity;
+
     float brightness;
     Uint16 *gamma;
     Uint16 *saved_gamma;        /* (just offset into gamma) */
@@ -207,6 +209,7 @@ struct SDL_VideoDevice
     void (*SetWindowMinimumSize) (_THIS, SDL_Window * window);
     void (*SetWindowMaximumSize) (_THIS, SDL_Window * window);
     int (*GetWindowBordersSize) (_THIS, SDL_Window * window, int *top, int *left, int *bottom, int *right);
+    int (*SetWindowOpacity) (_THIS, SDL_Window * window, float opacity);
     void (*ShowWindow) (_THIS, SDL_Window * window);
     void (*HideWindow) (_THIS, SDL_Window * window);
     void (*RaiseWindow) (_THIS, SDL_Window * window);

@@ -1782,6 +1782,14 @@ Cocoa_SetWindowHitTest(SDL_Window * window, SDL_bool enabled)
     return 0;  /* just succeed, the real work is done elsewhere. */
 }
 
+int
+Cocoa_SetWindowOpacity(_THIS, SDL_Window * window, float opacity)
+{
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    [data->nswindow setAlphaValue:opacity];
+    return 0;
+}
+
 #endif /* SDL_VIDEO_DRIVER_COCOA */
 
 /* vi: set ts=4 sw=4 expandtab: */

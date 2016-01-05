@@ -233,6 +233,7 @@ X11_CreateDevice(int devindex)
     device->SetWindowMinimumSize = X11_SetWindowMinimumSize;
     device->SetWindowMaximumSize = X11_SetWindowMaximumSize;
     device->GetWindowBordersSize = X11_GetWindowBordersSize;
+    device->SetWindowOpacity = X11_SetWindowOpacity;
     device->ShowWindow = X11_ShowWindow;
     device->HideWindow = X11_HideWindow;
     device->RaiseWindow = X11_RaiseWindow;
@@ -407,6 +408,7 @@ X11_VideoInit(_THIS)
     GET_ATOM(_NET_WM_ICON_NAME);
     GET_ATOM(_NET_WM_ICON);
     GET_ATOM(_NET_WM_PING);
+    GET_ATOM(_NET_WM_WINDOW_OPACITY);
     GET_ATOM(_NET_WM_USER_TIME);
     GET_ATOM(_NET_ACTIVE_WINDOW);
     GET_ATOM(UTF8_STRING);
