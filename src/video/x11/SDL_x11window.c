@@ -942,6 +942,19 @@ X11_SetWindowOpacity(_THIS, SDL_Window * window, float opacity)
     return 0;
 }
 
+int
+X11_SetWindowInputFocus(_THIS, SDL_Window * window) 
+{
+    if (X11_IsWindowMapped(_this, window)) {
+        SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+        Display *display = data->videodata->display;
+        X11_XSetInputFocus(display, data->xwindow, RevertToNone, CurrentTime);
+        X11_XFlush(display);
+        return 0;
+    }
+    return -1;
+}
+
 void
 X11_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
 {

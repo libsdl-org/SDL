@@ -2228,6 +2228,19 @@ SDL_GetWindowOpacity(SDL_Window * window, float * out_opacity)
     return 0;
 }
 
+int 
+SDL_SetWindowInputFocus(SDL_Window * window)
+{
+    CHECK_WINDOW_MAGIC(window, -1);
+
+    if (!_this->SetWindowInputFocus) {
+        return SDL_Unsupported();
+    }
+    
+    return _this->SetWindowInputFocus(_this, window);
+}
+
+
 int
 SDL_SetWindowGammaRamp(SDL_Window * window, const Uint16 * red,
                                             const Uint16 * green,
