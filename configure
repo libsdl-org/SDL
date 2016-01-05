@@ -18650,6 +18650,43 @@ $as_echo "$have_gcc_preferred_stack_boundary" >&6; }
     fi
 }
 
+CheckDeclarationAfterStatement()
+{
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GCC -Wdeclaration-after-statement option" >&5
+$as_echo_n "checking for GCC -Wdeclaration-after-statement option... " >&6; }
+    have_gcc_declaration_after_statement=no
+
+    save_CFLAGS="$CFLAGS"
+    CFLAGS="$save_CFLAGS -Wdeclaration-after-statement -Werror=declaration-after-statement"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+    int x = 0;
+
+int
+main ()
+{
+
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+    have_gcc_declaration_after_statement=yes
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_declaration_after_statement" >&5
+$as_echo "$have_gcc_declaration_after_statement" >&6; }
+    CFLAGS="$save_CFLAGS"
+
+    if test x$have_gcc_declaration_after_statement = xyes; then
+        EXTRA_CFLAGS="$EXTRA_CFLAGS -Wdeclaration-after-statement -Werror=declaration-after-statement"
+    fi
+}
+
 CheckWarnAll()
 {
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GCC -Wall option" >&5
@@ -22894,6 +22931,8 @@ fi
 
 }
 
+CheckWarnAll
+
 case "$host" in
     *-*-linux*|*-*-uclinux*|*-*-gnu*|*-*-k*bsd*-gnu|*-*-bsdi*|*-*-freebsd*|*-*-dragonfly*|*-*-netbsd*|*-*-openbsd*|*-*-sysv5*|*-*-solaris*|*-*-hpux*|*-*-aix*|*-*-minix*)
         case "$host" in
@@ -22962,6 +23001,7 @@ case "$host" in
             *-*-minix*)         ARCH=minix ;;
         esac
         CheckVisibilityHidden
+        CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckDiskAudio
         CheckDummyAudio
@@ -23392,6 +23432,7 @@ $as_echo "#define SDL_FILESYSTEM_HAIKU 1" >>confdefs.h
         ARCH=ios
 
         CheckVisibilityHidden
+        CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckDiskAudio
         CheckDummyAudio
@@ -23461,6 +23502,7 @@ $as_echo "#define SDL_FILESYSTEM_HAIKU 1" >>confdefs.h
         EXTRA_CFLAGS="$EXTRA_CFLAGS -DTARGET_API_MAC_OSX"
 
         CheckVisibilityHidden
+        CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckDiskAudio
         CheckDummyAudio
@@ -23581,6 +23623,7 @@ $as_echo "#define SDL_AUDIO_DRIVER_EMSCRIPTEN 1" >>confdefs.h
         fi
 
         CheckVisibilityHidden
+        CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckDiskAudio
         CheckDummyAudio
@@ -23629,8 +23672,6 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
         " "$LINENO" 5
         ;;
 esac
-
-CheckWarnAll
 
 # Verify that we have all the platform specific files we need
 

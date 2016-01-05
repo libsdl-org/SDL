@@ -1124,6 +1124,30 @@ CheckStackBoundary()
     fi
 }
 
+dnl See if GCC's -Wdeclaration-after-statement is supported.
+dnl  This lets us catch things that would fail on a C89 compiler when using
+dnl  a modern GCC.
+CheckDeclarationAfterStatement()
+{
+    AC_MSG_CHECKING(for GCC -Wdeclaration-after-statement option)
+    have_gcc_declaration_after_statement=no
+
+    save_CFLAGS="$CFLAGS"
+    CFLAGS="$save_CFLAGS -Wdeclaration-after-statement -Werror=declaration-after-statement"
+    AC_TRY_COMPILE([
+    int x = 0;
+    ],[
+    ],[
+    have_gcc_declaration_after_statement=yes
+    ])
+    AC_MSG_RESULT($have_gcc_declaration_after_statement)
+    CFLAGS="$save_CFLAGS"
+
+    if test x$have_gcc_declaration_after_statement = xyes; then
+        EXTRA_CFLAGS="$EXTRA_CFLAGS -Wdeclaration-after-statement -Werror=declaration-after-statement"
+    fi
+}
+
 dnl See if GCC's -Wall is supported.
 CheckWarnAll()
 {
@@ -2801,6 +2825,9 @@ AC_HELP_STRING([--enable-rpath], [use an rpath when linking SDL [[default=yes]]]
                   , enable_rpath=yes)
 }
 
+dnl Do this on all platforms, before everything else (other things might want to override it).
+CheckWarnAll
+
 dnl Set up the configuration based on the host platform!
 case "$host" in
     *-*-linux*|*-*-uclinux*|*-*-gnu*|*-*-k*bsd*-gnu|*-*-bsdi*|*-*-freebsd*|*-*-dragonfly*|*-*-netbsd*|*-*-openbsd*|*-*-sysv5*|*-*-solaris*|*-*-hpux*|*-*-aix*|*-*-minix*)
@@ -2870,6 +2897,7 @@ case "$host" in
             *-*-minix*)         ARCH=minix ;;
         esac
         CheckVisibilityHidden
+        CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckDiskAudio
         CheckDummyAudio
@@ -3196,6 +3224,7 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         ARCH=ios
 
         CheckVisibilityHidden
+        CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckDiskAudio
         CheckDummyAudio
@@ -3265,6 +3294,7 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         EXTRA_CFLAGS="$EXTRA_CFLAGS -DTARGET_API_MAC_OSX"
 
         CheckVisibilityHidden
+        CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckDiskAudio
         CheckDummyAudio
@@ -3366,6 +3396,7 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         fi
 
         CheckVisibilityHidden
+        CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckDiskAudio
         CheckDummyAudio
@@ -3406,9 +3437,6 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         ])
         ;;
 esac
-
-dnl Do this on all platforms, after everything else.
-CheckWarnAll
 
 # Verify that we have all the platform specific files we need
 
