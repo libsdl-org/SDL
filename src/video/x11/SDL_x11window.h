@@ -80,6 +80,7 @@ extern void X11_SetWindowPosition(_THIS, SDL_Window * window);
 extern void X11_SetWindowMinimumSize(_THIS, SDL_Window * window);
 extern void X11_SetWindowMaximumSize(_THIS, SDL_Window * window);
 extern int X11_GetWindowBordersSize(_THIS, SDL_Window * window, int *top, int *left, int *bottom, int *right);
+extern int X11_SetWindowOpacity(_THIS, SDL_Window * window, float opacity);
 extern void X11_SetWindowSize(_THIS, SDL_Window * window);
 extern void X11_ShowWindow(_THIS, SDL_Window * window);
 extern void X11_HideWindow(_THIS, SDL_Window * window);

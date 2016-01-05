@@ -1368,6 +1368,24 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
                 }
             }
             break;
+        case SDLK_o:
+            if (withControl) {
+                /* Ctrl-O (or Ctrl-Shift-O) changes window opacity. */
+                SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
+                if (window) {
+                    float opacity;
+                    if (SDL_GetWindowOpacity(window, &opacity) == 0) {
+                        if (withShift) {
+                            opacity += 0.20f;
+                        } else {
+                            opacity -= 0.20f;
+                        }
+                        SDL_SetWindowOpacity(window, opacity);
+                    }
+                }
+            }
+            break;
+
         case SDLK_c:
             if (withControl) {
                 /* Ctrl-C copy awesome text! */
