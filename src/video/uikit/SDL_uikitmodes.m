@@ -252,9 +252,9 @@ UIKit_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay * display, SDL_Rect * rect)
         return -1;
     }
 
-    SDL_DisplayData *data = (SDL_DisplayData *) display->driverdata;
-    const CGRect frame = [data->uiscreen applicationFrame];
-    const float scale = (float) data->scale;
+    SDL_DisplayData *data = (__bridge SDL_DisplayData *) display->driverdata;
+    const CGRect frame = [data.uiscreen applicationFrame];
+    const float scale = (float) data.uiscreen.scale;
     rect->x += (int) (frame.origin.x * scale);
     rect->y += (int) (frame.origin.y * scale);
     rect->w = (int) (frame.size.width * scale);
