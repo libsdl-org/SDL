@@ -342,7 +342,7 @@ SetXRandRDisplayName(Display *dpy, Atom EDID, char *name, const size_t namelen, 
         X11_XFree(props);
     }
 
-    inches = (int)((SDL_sqrt(widthmm * widthmm + heightmm * heightmm) / 25.4f) + 0.5f);
+    inches = (int)((SDL_sqrtf(widthmm * widthmm + heightmm * heightmm) / 25.4f) + 0.5f);
     if (*name && inches) {
         const size_t len = SDL_strlen(name);
         SDL_snprintf(&name[len], namelen-len, " %d\"", inches);
