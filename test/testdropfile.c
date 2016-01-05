@@ -77,9 +77,10 @@ main(int argc, char *argv[])
         while (SDL_PollEvent(&event)) {
             SDLTest_CommonEvent(state, &event, &done);
 
-            if (event.type == SDL_DROPFILE) {
+            if ((event.type == SDL_DROPFILE) || (event.type == SDL_DROPTEXT)) {
+                const char *typestr = (event.type == SDL_DROPFILE) ? "File" : "Text";
                 char *dropped_filedir = event.drop.file;
-                SDL_Log("File dropped on window: %s", dropped_filedir);
+                SDL_Log("%s dropped on window: %s", typestr, dropped_filedir);
                 SDL_free(dropped_filedir);
             }
         }

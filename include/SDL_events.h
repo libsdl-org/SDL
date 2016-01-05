@@ -136,6 +136,7 @@ typedef enum
 
     /* Drag and drop events */
     SDL_DROPFILE        = 0x1000, /**< The system requests a file open */
+    SDL_DROPTEXT,                 /**< text/plain drag-and-drop event */
 
     /* Audio hotplug events */
     SDL_AUDIODEVICEADDED = 0x1100, /**< A new audio device is available */

@@ -117,7 +117,9 @@ static Atom X11_PickTarget(Display *disp, Atom list[], int list_count)
     int i;
     for (i=0; i < list_count && request == None; i++) {
         name = X11_XGetAtomName(disp, list[i]);
-        if (strcmp("text/uri-list", name)==0) request = list[i];
+        if ((SDL_strcmp("text/uri-list", name) == 0) || (SDL_strcmp("text/plain", name) == 0)) {
+             request = list[i];
+        }
         X11_XFree(name);
     }
     return request;
@@ -1223,37 +1225,19 @@ X11_DispatchEvent(_THIS)
                 X11_ReadProperty(&p, display, data->xwindow, videodata->PRIMARY);
 
                 if (p.format == 8) {
-                    SDL_bool expect_lf = SDL_FALSE;
-                    char *start = NULL;
-                    char *scan = (char*)p.data;
-                    char *fn;
-                    char *uri;
-                    int length = 0;
-                    while (p.count--) {
-                        if (!expect_lf) {
-                            if (*scan == 0x0D) {
-                                expect_lf = SDL_TRUE;
+                    /* !!! FIXME: don't use strtok here. It's not reentrant and not in SDL_stdinc. */
+                    char* name = X11_XGetAtomName(display, target);
+                    char *token = strtok((char *) p.data, "\r\n");
+                    while (token != NULL) {
+                        if (SDL_strcmp("text/plain", name)==0) {
+                            SDL_SendDropText(token);
+                        } else if (SDL_strcmp("text/uri-list", name)==0) {
+                            char *fn = X11_URIToLocal(token);
+                            if (fn) {
+                                SDL_SendDropFile(fn);
                             }
-                            if (start == NULL) {
-                                start = scan;
-                                length = 0;
-                            }
-                            length++;
-                        } else {
-                            if (*scan == 0x0A && length > 0) {
-                                uri = SDL_malloc(length--);
-                                SDL_memcpy(uri, start, length);
-                                uri[length] = '\0';
-                                fn = X11_URIToLocal(uri);
-                                if (fn) {
-                                    SDL_SendDropFile(fn);
-                                }
-                                SDL_free(uri);
-                            }
-                            expect_lf = SDL_FALSE;
-                            start = NULL;
                         }
-                        scan++;
+                        token = strtok(NULL, "\r\n");
                     }
                 }
 
