@@ -866,7 +866,7 @@ extern DECLSPEC int SDLCALL SDL_SetWindowOpacity(SDL_Window * window, float opac
  *  as 1.0f without error.
  *
  *  \param window The window in question.
- *  \param opacity Opacity (0.0f - transparent, 1.0f - opaque)
+ *  \param out_opacity Opacity (0.0f - transparent, 1.0f - opaque)
  *
  *  \return 0 on success, or -1 on error (invalid window, etc).
  *
@@ -875,7 +875,7 @@ extern DECLSPEC int SDLCALL SDL_SetWindowOpacity(SDL_Window * window, float opac
 extern DECLSPEC int SDLCALL SDL_GetWindowOpacity(SDL_Window * window, float * out_opacity);
 
 /**
- *  \brief Sets the window as a modal for another window (@TODO: reconsider this function and/or its name)
+ *  \brief Sets the window as a modal for another window (TODO: reconsider this function and/or its name)
  *
  *  \param modal_window The window that should be modal
  *  \param parent_window The parent window
