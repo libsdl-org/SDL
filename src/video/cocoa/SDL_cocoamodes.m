@@ -374,6 +374,24 @@ Cocoa_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay * display, SDL_Rect * rect)
     return 0;
 }
 
+int
+Cocoa_GetDisplayDPI(_THIS, SDL_VideoDisplay * display, float * ddpi, float * hdpi, float * vdpi)
+{
+    const float MM_IN_INCH = 25.4f;
+
+    SDL_DisplayData *data = (SDL_DisplayData *) display->driverdata;
+
+    CGSize displaySize = CGDisplayScreenSize(data->display);
+    size_t pixelWidth = CGDisplayPixelsWide(data->display);
+    size_t pixelHeight = CGDisplayPixelsHigh(data->display);
+
+    *ddpi = SDL_ComputeDiagonalDPI(pixelWidth, pixelHeight, displaySize.width / MM_IN_INCH, displaySize.height / MM_IN_INCH);
+    *hdpi = pixelWidth * MM_IN_INCH / displaySize.width;
+    *vdpi = pixelHeight * MM_IN_INCH / displaySize.height;
+
+    return 0;
+}
+
 void
 Cocoa_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
 {

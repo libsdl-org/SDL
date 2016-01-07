@@ -51,10 +51,17 @@ main(int argc, char *argv[])
     for (dpy = 0; dpy < num_displays; dpy++) {
         const int num_modes = SDL_GetNumDisplayModes(dpy);
         SDL_Rect rect = { 0, 0, 0, 0 };
+        float ddpi, hdpi, vdpi;
         int m;
 
         SDL_GetDisplayBounds(dpy, &rect);
         SDL_Log("%d: \"%s\" (%dx%d, (%d, %d)), %d modes.\n", dpy, SDL_GetDisplayName(dpy), rect.w, rect.h, rect.x, rect.y, num_modes);
+
+        if (SDL_GetDisplayDPI(dpy, &ddpi, &hdpi, &vdpi) == -1) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "    DPI: failed to query (%s)\n", SDL_GetError());
+        } else {
+            SDL_Log("    DPI: ddpi=%f; hdpi=%f; vdpi=%f\n", ddpi, hdpi, vdpi);
+        }
 
         if (SDL_GetCurrentDisplayMode(dpy, &mode) == -1) {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "    CURRENT: failed to query (%s)\n", SDL_GetError());
