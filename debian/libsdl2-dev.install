@@ -5,4 +5,5 @@ usr/lib/*/libSDL2.a
 usr/lib/*/libSDL2main.a
 usr/lib/*/libSDL2_test.a
 usr/lib/*/pkgconfig/sdl2.pc
+usr/lib/*/cmake/SDL2/sdl2-config.cmake
 usr/share/aclocal/sdl2.m4
