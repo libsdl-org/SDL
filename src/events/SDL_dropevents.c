@@ -43,7 +43,11 @@ SDL_SendDrop(SDL_Window *window, const SDL_EventType evtype, const char *data)
         if (need_begin) {
             SDL_zero(event);
             event.type = SDL_DROPBEGIN;
-            event.drop.windowID = window->id;
+
+            if (window) {
+                event.drop.windowID = window->id;
+            }
+
             posted = (SDL_PushEvent(&event) > 0);
             if (!posted) {
                 return 0;
