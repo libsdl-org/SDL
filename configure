@@ -23763,6 +23763,36 @@ SDLTEST_DEPENDS=`echo "$SDLTEST_DEPENDS" | sed "s,\\([^ ]*\\)/\\([^ ]*\\)\\.c,\\
 if test "x$enable_rpath" = "xyes"; then
   if test $ARCH = bsdi -o $ARCH = freebsd -o $ARCH = linux -o $ARCH = netbsd; then
     SDL_RLD_FLAGS="-Wl,-rpath,\${libdir}"
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for linker option --enable-new-dtags" >&5
+$as_echo_n "checking for linker option --enable-new-dtags... " >&6; }
+    have_enable_new_dtags=no
+    save_LDFLAGS="$LDFLAGS"
+    LDFLAGS="$LDFLAGS -Wl,--enable-new-dtags"
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+
+    have_enable_new_dtags=yes
+    SDL_RLD_FLAGS="$SDL_RLD_FLAGS -Wl,--enable-new-dtags"
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+    LDFLAGS="$save_LDFLAGS"
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_enable_new_dtags" >&5
+$as_echo "$have_enable_new_dtags" >&6; }
   fi
   if test $ARCH = solaris; then
     SDL_RLD_FLAGS="-R\${libdir}"
