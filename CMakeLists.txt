@@ -158,8 +158,10 @@ endif()
 
 # Default flags, if not set otherwise
 if("$ENV{CFLAGS}" STREQUAL "")
-  if(USE_GCC OR USE_CLANG)
-    set(CMAKE_C_FLAGS "-g -O3")
+  if(CMAKE_BUILD_TYPE STREQUAL "")
+    if(USE_GCC OR USE_CLANG)
+      set(CMAKE_C_FLAGS "-g -O3")
+    endif()
   endif()
 else()
   set(CMAKE_C_FLAGS "$ENV{CFLAGS}")
