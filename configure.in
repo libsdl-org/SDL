@@ -3516,6 +3516,19 @@ SDLTEST_DEPENDS=`echo "$SDLTEST_DEPENDS" | sed "s,\\([[^ ]]*\\)/\\([[^ ]]*\\)\\.
 if test "x$enable_rpath" = "xyes"; then
   if test $ARCH = bsdi -o $ARCH = freebsd -o $ARCH = linux -o $ARCH = netbsd; then
     SDL_RLD_FLAGS="-Wl,-rpath,\${libdir}"
+
+    AC_MSG_CHECKING(for linker option --enable-new-dtags)
+    have_enable_new_dtags=no
+    save_LDFLAGS="$LDFLAGS"
+    LDFLAGS="$LDFLAGS -Wl,--enable-new-dtags"
+    AC_TRY_LINK([
+    ],[
+    ],[
+    have_enable_new_dtags=yes
+    SDL_RLD_FLAGS="$SDL_RLD_FLAGS -Wl,--enable-new-dtags"
+    ])
+    LDFLAGS="$save_LDFLAGS"
+    AC_MSG_RESULT($have_enable_new_dtags)
   fi
   if test $ARCH = solaris; then
     SDL_RLD_FLAGS="-R\${libdir}"
