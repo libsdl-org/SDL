@@ -636,6 +636,7 @@ X11_DispatchEvent(_THIS)
 
         /* Gaining mouse coverage? */
     case EnterNotify:{
+            SDL_Mouse *mouse = SDL_GetMouse();
 #ifdef DEBUG_XEVENTS
             printf("window %p: EnterNotify! (%d,%d,%d)\n", data,
                    xevent.xcrossing.x,
@@ -648,7 +649,10 @@ X11_DispatchEvent(_THIS)
 #endif
             SDL_SetMouseFocus(data->window);
 
-            if (!SDL_GetMouse()->relative_mode) {
+            mouse->last_x = xevent.xcrossing.x;
+            mouse->last_y = xevent.xcrossing.y;
+
+            if (!mouse->relative_mode) {
                 SDL_SendMouseMotion(data->window, 0, 0, xevent.xcrossing.x, xevent.xcrossing.y);
             }
         }
