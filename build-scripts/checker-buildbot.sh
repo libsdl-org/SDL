@@ -61,13 +61,13 @@ mkdir checker-buildbot
 cd checker-buildbot
 
 # You might want to do this for CMake-backed builds instead...
-PATH="$CHECKERDIR:$PATH" scan-build -o analysis cmake -DCMAKE_BUILD_TYPE=Debug ..
+PATH="$CHECKERDIR:$PATH" scan-build -o analysis cmake -DCMAKE_BUILD_TYPE=Debug -DASSERTIONS=enabled ..
 
 # ...or run configure without the scan-build wrapper...
-#CC="$CHECKERDIR/libexec/ccc-analyzer" CFLAGS="-O0" ../configure
+#CC="$CHECKERDIR/libexec/ccc-analyzer" CFLAGS="-O0" ../configure --enable-assertions=enabled
 
 # ...but this works for our buildbots just fine (EXCEPT ON LATEST MAC OS X).
-#CFLAGS="-O0" PATH="$CHECKERDIR:$PATH" scan-build -o analysis ../configure
+#CFLAGS="-O0" PATH="$CHECKERDIR:$PATH" scan-build -o analysis ../configure --enable-assertions=enabled
 
 rm -rf analysis
 PATH="$CHECKERDIR:$PATH" scan-build -o analysis $MAKE
