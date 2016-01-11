@@ -37,6 +37,8 @@
 #define BUTTON_PRIMARY 1
 #define BUTTON_SECONDARY 2
 #define BUTTON_TERTIARY 4
+#define BUTTON_BACK 8
+#define BUTTON_FORWARD 16
 
 void Android_OnMouse( int androidButton, int action, float x, float y) {
     static Uint8 SDLButton;
@@ -53,6 +55,10 @@ void Android_OnMouse( int androidButton, int action, float x, float y) {
                 SDLButton = SDL_BUTTON_RIGHT;
             } else if (androidButton == BUTTON_TERTIARY) {
                 SDLButton = SDL_BUTTON_MIDDLE;
+            } else if (androidButton == BUTTON_FORWARD) {
+                SDLButton = SDL_BUTTON_X1;
+            } else if (androidButton == BUTTON_BACK) {
+                SDLButton = SDL_BUTTON_X2;
             }
             SDL_SendMouseMotion(Android_Window, 0, 0, x, y);
             SDL_SendMouseButton(Android_Window, 0, SDL_PRESSED, SDLButton);
