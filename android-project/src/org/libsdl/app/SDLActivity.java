@@ -1214,7 +1214,7 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         // !!! FIXME: dump this SDK check after 2.0.4 ships and require API14.
         if (event.getSource() == InputDevice.SOURCE_MOUSE && SDLActivity.mSeparateMouseAndTouch) {
             if (Build.VERSION.SDK_INT < 14) {
-                mouseButton = 1;    // For Android==12 all mouse buttons are the left button
+                mouseButton = 1; // all mouse buttons are the left button
             } else {
                 try {
                     mouseButton = (Integer) event.getClass().getMethod("getButtonState").invoke(event);
