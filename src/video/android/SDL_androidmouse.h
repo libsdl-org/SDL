@@ -24,6 +24,7 @@
 
 #include "SDL_androidvideo.h"
 
+extern void Android_InitMouse(void);
 extern void Android_OnMouse( int button, int action, float x, float y);
 
 #endif /* _SDL_androidmouse_h */

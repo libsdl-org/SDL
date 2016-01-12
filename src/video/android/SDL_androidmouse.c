@@ -40,9 +40,15 @@
 #define BUTTON_BACK 8
 #define BUTTON_FORWARD 16
 
-void Android_OnMouse( int androidButton, int action, float x, float y) {
-    static Uint8 SDLButton;
+static Uint8 SDLButton;
 
+void
+Android_InitMouse(void)
+{
+    SDLButton = 0;
+}
+
+void Android_OnMouse( int androidButton, int action, float x, float y) {
     if (!Android_Window) {
         return;
     }
