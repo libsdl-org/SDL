@@ -1156,9 +1156,9 @@ UpdateLogicalSize(SDL_Renderer *renderer)
 
     if (renderer->integer_scale) {
         if (want_aspect > real_aspect) {
-            scale = w / renderer->logical_w;
+            scale = (float)(w / renderer->logical_w);
         } else {
-            scale = h / renderer->logical_h;
+            scale = (float)(h / renderer->logical_h);
         }
         viewport.w = (int)SDL_ceil(renderer->logical_w * scale);
         viewport.x = (w - viewport.w) / 2;
