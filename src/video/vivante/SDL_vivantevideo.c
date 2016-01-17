@@ -366,12 +366,13 @@ VIVANTE_HideWindow(_THIS, SDL_Window * window)
 SDL_bool
 VIVANTE_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info)
 {
-/*
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    SDL_DisplayData *displaydata = SDL_GetDisplayDriverData(0);
 
     if (info->version.major == SDL_MAJOR_VERSION &&
         info->version.minor == SDL_MINOR_VERSION) {
         info->subsystem = SDL_SYSWM_VIVANTE;
+        info->info.vivante.display = displaydata->native_display;
         info->info.vivante.window = data->native_window;
         return SDL_TRUE;
     } else {
@@ -379,9 +380,6 @@ VIVANTE_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info)
                      SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
         return SDL_FALSE;
     }
-*/
-    SDL_Unsupported();
-    return SDL_FALSE;
 }
 
 /*****************************************************************************/
