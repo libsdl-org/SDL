@@ -287,52 +287,48 @@ SDL_PeepEvents(SDL_Event * events, int numevents, SDL_eventaction action,
         } else {
             SDL_EventEntry *entry, *next;
             SDL_SysWMEntry *wmmsg, *wmmsg_next;
-            SDL_Event tmpevent;
             Uint32 type;
 
-            /* If 'events' is NULL, just see if they exist */
-            if (events == NULL) {
-                action = SDL_PEEKEVENT;
-                numevents = 1;
-                events = &tmpevent;
+            if (action == SDL_GETEVENT) {
+                /* Clean out any used wmmsg data
+                   FIXME: Do we want to retain the data for some period of time?
+                 */
+                for (wmmsg = SDL_EventQ.wmmsg_used; wmmsg; wmmsg = wmmsg_next) {
+                    wmmsg_next = wmmsg->next;
+                    wmmsg->next = SDL_EventQ.wmmsg_free;
+                    SDL_EventQ.wmmsg_free = wmmsg;
+                }
+                SDL_EventQ.wmmsg_used = NULL;
             }
 
-            /* Clean out any used wmmsg data
-               FIXME: Do we want to retain the data for some period of time?
-             */
-            for (wmmsg = SDL_EventQ.wmmsg_used; wmmsg; wmmsg = wmmsg_next) {
-                wmmsg_next = wmmsg->next;
-                wmmsg->next = SDL_EventQ.wmmsg_free;
-                SDL_EventQ.wmmsg_free = wmmsg;
-            }
-            SDL_EventQ.wmmsg_used = NULL;
-
-            for (entry = SDL_EventQ.head; entry && used < numevents; entry = next) {
+            for (entry = SDL_EventQ.head; entry && (!events || used < numevents); entry = next) {
                 next = entry->next;
                 type = entry->event.type;
                 if (minType <= type && type <= maxType) {
-                    events[used] = entry->event;
-                    if (entry->event.type == SDL_SYSWMEVENT) {
-                        /* We need to copy the wmmsg somewhere safe.
-                           For now we'll guarantee it's valid at least until
-                           the next call to SDL_PeepEvents()
-                         */
-                        if (SDL_EventQ.wmmsg_free) {
-                            wmmsg = SDL_EventQ.wmmsg_free;
-                            SDL_EventQ.wmmsg_free = wmmsg->next;
-                        } else {
-                            wmmsg = (SDL_SysWMEntry *)SDL_malloc(sizeof(*wmmsg));
+                    if (events) {
+                        events[used] = entry->event;
+                        if (entry->event.type == SDL_SYSWMEVENT) {
+                            /* We need to copy the wmmsg somewhere safe.
+                               For now we'll guarantee it's valid at least until
+                               the next call to SDL_PeepEvents()
+                             */
+                            if (SDL_EventQ.wmmsg_free) {
+                                wmmsg = SDL_EventQ.wmmsg_free;
+                                SDL_EventQ.wmmsg_free = wmmsg->next;
+                            } else {
+                                wmmsg = (SDL_SysWMEntry *)SDL_malloc(sizeof(*wmmsg));
+                            }
+                            wmmsg->msg = *entry->event.syswm.msg;
+                            wmmsg->next = SDL_EventQ.wmmsg_used;
+                            SDL_EventQ.wmmsg_used = wmmsg;
+                            events[used].syswm.msg = &wmmsg->msg;
                         }
-                        wmmsg->msg = *entry->event.syswm.msg;
-                        wmmsg->next = SDL_EventQ.wmmsg_used;
-                        SDL_EventQ.wmmsg_used = wmmsg;
-                        events[used].syswm.msg = &wmmsg->msg;
+
+                        if (action == SDL_GETEVENT) {
+                            SDL_CutEvent(entry);
+                        }
                     }
                     ++used;
-
-                    if (action == SDL_GETEVENT) {
-                        SDL_CutEvent(entry);
-                    }
                 }
             }
         }
