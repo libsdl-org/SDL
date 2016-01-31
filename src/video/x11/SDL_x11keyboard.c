@@ -129,6 +129,7 @@ static const struct {
     { XK_Control_R, SDL_SCANCODE_RCTRL },
     { XK_Shift_R, SDL_SCANCODE_RSHIFT },
     { XK_Alt_R, SDL_SCANCODE_RALT },
+    { XK_ISO_Level3_Shift, SDL_SCANCODE_RALT },
     { XK_Meta_R, SDL_SCANCODE_RGUI },
     { XK_Super_R, SDL_SCANCODE_RGUI },
     { XK_Mode_switch, SDL_SCANCODE_MODE },
