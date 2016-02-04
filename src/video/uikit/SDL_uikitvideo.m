@@ -36,8 +36,13 @@
 #include "SDL_uikitmodes.h"
 #include "SDL_uikitwindow.h"
 #include "SDL_uikitopengles.h"
+#include "SDL_uikitclipboard.h"
 
 #define UIKITVID_DRIVER_NAME "uikit"
+
+@implementation SDL_VideoData
+
+@end
 
 /* Initialization/Query functions */
 static int UIKit_VideoInit(_THIS);
@@ -53,61 +58,75 @@ UIKit_Available(void)
 
 static void UIKit_DeleteDevice(SDL_VideoDevice * device)
 {
-    SDL_free(device);
+    @autoreleasepool {
+        CFRelease(device->driverdata);
+        SDL_free(device);
+    }
 }
 
 static SDL_VideoDevice *
 UIKit_CreateDevice(int devindex)
 {
-    SDL_VideoDevice *device;
+    @autoreleasepool {
+        SDL_VideoDevice *device;
+        SDL_VideoData *data;
 
-    /* Initialize all variables that we clean on shutdown */
-    device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
-    if (!device) {
-        SDL_free(device);
-        SDL_OutOfMemory();
-        return (0);
+        /* Initialize all variables that we clean on shutdown */
+        device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
+        if (device) {
+            data = [SDL_VideoData new];
+        } else {
+            SDL_free(device);
+            SDL_OutOfMemory();
+            return (0);
+        }
+
+        device->driverdata = (void *) CFBridgingRetain(data);
+
+        /* Set the function pointers */
+        device->VideoInit = UIKit_VideoInit;
+        device->VideoQuit = UIKit_VideoQuit;
+        device->GetDisplayModes = UIKit_GetDisplayModes;
+        device->SetDisplayMode = UIKit_SetDisplayMode;
+        device->PumpEvents = UIKit_PumpEvents;
+        device->SuspendScreenSaver = UIKit_SuspendScreenSaver;
+        device->CreateWindow = UIKit_CreateWindow;
+        device->SetWindowTitle = UIKit_SetWindowTitle;
+        device->ShowWindow = UIKit_ShowWindow;
+        device->HideWindow = UIKit_HideWindow;
+        device->RaiseWindow = UIKit_RaiseWindow;
+        device->SetWindowBordered = UIKit_SetWindowBordered;
+        device->SetWindowFullscreen = UIKit_SetWindowFullscreen;
+        device->DestroyWindow = UIKit_DestroyWindow;
+        device->GetWindowWMInfo = UIKit_GetWindowWMInfo;
+        device->GetDisplayUsableBounds = UIKit_GetDisplayUsableBounds;
+
+    #if SDL_IPHONE_KEYBOARD
+        device->HasScreenKeyboardSupport = UIKit_HasScreenKeyboardSupport;
+        device->ShowScreenKeyboard = UIKit_ShowScreenKeyboard;
+        device->HideScreenKeyboard = UIKit_HideScreenKeyboard;
+        device->IsScreenKeyboardShown = UIKit_IsScreenKeyboardShown;
+        device->SetTextInputRect = UIKit_SetTextInputRect;
+    #endif
+
+        device->SetClipboardText = UIKit_SetClipboardText;
+        device->GetClipboardText = UIKit_GetClipboardText;
+        device->HasClipboardText = UIKit_HasClipboardText;
+
+        /* OpenGL (ES) functions */
+        device->GL_MakeCurrent      = UIKit_GL_MakeCurrent;
+        device->GL_GetDrawableSize  = UIKit_GL_GetDrawableSize;
+        device->GL_SwapWindow       = UIKit_GL_SwapWindow;
+        device->GL_CreateContext    = UIKit_GL_CreateContext;
+        device->GL_DeleteContext    = UIKit_GL_DeleteContext;
+        device->GL_GetProcAddress   = UIKit_GL_GetProcAddress;
+        device->GL_LoadLibrary      = UIKit_GL_LoadLibrary;
+        device->free = UIKit_DeleteDevice;
+
+        device->gl_config.accelerated = 1;
+
+        return device;
     }
-
-    /* Set the function pointers */
-    device->VideoInit = UIKit_VideoInit;
-    device->VideoQuit = UIKit_VideoQuit;
-    device->GetDisplayModes = UIKit_GetDisplayModes;
-    device->SetDisplayMode = UIKit_SetDisplayMode;
-    device->PumpEvents = UIKit_PumpEvents;
-    device->SuspendScreenSaver = UIKit_SuspendScreenSaver;
-    device->CreateWindow = UIKit_CreateWindow;
-    device->SetWindowTitle = UIKit_SetWindowTitle;
-    device->ShowWindow = UIKit_ShowWindow;
-    device->HideWindow = UIKit_HideWindow;
-    device->RaiseWindow = UIKit_RaiseWindow;
-    device->SetWindowBordered = UIKit_SetWindowBordered;
-    device->SetWindowFullscreen = UIKit_SetWindowFullscreen;
-    device->DestroyWindow = UIKit_DestroyWindow;
-    device->GetWindowWMInfo = UIKit_GetWindowWMInfo;
-    device->GetDisplayUsableBounds = UIKit_GetDisplayUsableBounds;
-
-#if SDL_IPHONE_KEYBOARD
-    device->HasScreenKeyboardSupport = UIKit_HasScreenKeyboardSupport;
-    device->ShowScreenKeyboard = UIKit_ShowScreenKeyboard;
-    device->HideScreenKeyboard = UIKit_HideScreenKeyboard;
-    device->IsScreenKeyboardShown = UIKit_IsScreenKeyboardShown;
-    device->SetTextInputRect = UIKit_SetTextInputRect;
-#endif
-
-    /* OpenGL (ES) functions */
-    device->GL_MakeCurrent      = UIKit_GL_MakeCurrent;
-    device->GL_GetDrawableSize  = UIKit_GL_GetDrawableSize;
-    device->GL_SwapWindow       = UIKit_GL_SwapWindow;
-    device->GL_CreateContext    = UIKit_GL_CreateContext;
-    device->GL_DeleteContext    = UIKit_GL_DeleteContext;
-    device->GL_GetProcAddress   = UIKit_GL_GetProcAddress;
-    device->GL_LoadLibrary      = UIKit_GL_LoadLibrary;
-    device->free = UIKit_DeleteDevice;
-
-    device->gl_config.accelerated = 1;
-
-    return device;
 }
 
 VideoBootStrap UIKIT_bootstrap = {

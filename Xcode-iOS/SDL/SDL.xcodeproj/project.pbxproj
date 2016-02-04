@@ -143,7 +143,9 @@
 		AABCC3941640643D00AB8930 /* SDL_uikitmessagebox.h in Headers */ = {isa = PBXBuildFile; fileRef = AABCC3921640643D00AB8930 /* SDL_uikitmessagebox.h */; };
 		AABCC3951640643D00AB8930 /* SDL_uikitmessagebox.m in Sources */ = {isa = PBXBuildFile; fileRef = AABCC3931640643D00AB8930 /* SDL_uikitmessagebox.m */; };
 		AADA5B8F16CCAB7C00107CF7 /* SDL_bits.h in Headers */ = {isa = PBXBuildFile; fileRef = AADA5B8E16CCAB7C00107CF7 /* SDL_bits.h */; };
-		FAD4F7021BA3C4E8008346CE /* SDL_sysjoystick_c.h in Headers */ = {isa = PBXBuildFile; fileRef = FAD4F7011BA3C4E8008346CE /* SDL_sysjoystick_c.h */; settings = {ASSET_TAGS = (); }; };
+		FA1DC2721C62BE65008F99A0 /* SDL_uikitclipboard.h in Headers */ = {isa = PBXBuildFile; fileRef = FA1DC2701C62BE65008F99A0 /* SDL_uikitclipboard.h */; };
+		FA1DC2731C62BE65008F99A0 /* SDL_uikitclipboard.m in Sources */ = {isa = PBXBuildFile; fileRef = FA1DC2711C62BE65008F99A0 /* SDL_uikitclipboard.m */; };
+		FAD4F7021BA3C4E8008346CE /* SDL_sysjoystick_c.h in Headers */ = {isa = PBXBuildFile; fileRef = FAD4F7011BA3C4E8008346CE /* SDL_sysjoystick_c.h */; };
 		FD3F4A760DEA620800C5B771 /* SDL_getenv.c in Sources */ = {isa = PBXBuildFile; fileRef = FD3F4A700DEA620800C5B771 /* SDL_getenv.c */; };
 		FD3F4A770DEA620800C5B771 /* SDL_iconv.c in Sources */ = {isa = PBXBuildFile; fileRef = FD3F4A710DEA620800C5B771 /* SDL_iconv.c */; };
 		FD3F4A780DEA620800C5B771 /* SDL_malloc.c in Sources */ = {isa = PBXBuildFile; fileRef = FD3F4A720DEA620800C5B771 /* SDL_malloc.c */; };
@@ -340,6 +342,8 @@
 		AABCC3921640643D00AB8930 /* SDL_uikitmessagebox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_uikitmessagebox.h; sourceTree = "<group>"; };
 		AABCC3931640643D00AB8930 /* SDL_uikitmessagebox.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_uikitmessagebox.m; sourceTree = "<group>"; };
 		AADA5B8E16CCAB7C00107CF7 /* SDL_bits.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_bits.h; sourceTree = "<group>"; };
+		FA1DC2701C62BE65008F99A0 /* SDL_uikitclipboard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_uikitclipboard.h; sourceTree = "<group>"; };
+		FA1DC2711C62BE65008F99A0 /* SDL_uikitclipboard.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_uikitclipboard.m; sourceTree = "<group>"; };
 		FAD4F7011BA3C4E8008346CE /* SDL_sysjoystick_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_sysjoystick_c.h; sourceTree = "<group>"; };
 		FD0BBFEF0E3933DD00D833B1 /* SDL_uikitview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_uikitview.h; sourceTree = "<group>"; };
 		FD3F4A700DEA620800C5B771 /* SDL_getenv.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_getenv.c; sourceTree = "<group>"; };
@@ -648,6 +652,8 @@
 				FDC261780E3A3FC8001C4554 /* keyinfotable.h */,
 				FD689FCD0E26E9D400F90B21 /* SDL_uikitappdelegate.h */,
 				FD689FCC0E26E9D400F90B21 /* SDL_uikitappdelegate.m */,
+				FA1DC2701C62BE65008F99A0 /* SDL_uikitclipboard.h */,
+				FA1DC2711C62BE65008F99A0 /* SDL_uikitclipboard.m */,
 				FD689F0C0E26E5D900F90B21 /* SDL_uikitevents.h */,
 				FD689F0D0E26E5D900F90B21 /* SDL_uikitevents.m */,
 				AABCC3921640643D00AB8930 /* SDL_uikitmessagebox.h */,
@@ -994,6 +1000,7 @@
 				04F7808012FB751400FC43C0 /* SDL_drawpoint.h in Headers */,
 				04F7808412FB753F00FC43C0 /* SDL_nullframebuffer_c.h in Headers */,
 				0442EC5012FE1C1E004C9285 /* SDL_render_sw_c.h in Headers */,
+				FA1DC2721C62BE65008F99A0 /* SDL_uikitclipboard.h in Headers */,
 				0402A85A12FE70C600CECEE3 /* SDL_shaders_gles2.h in Headers */,
 				04BAC09C1300C1290055DE28 /* SDL_assert_c.h in Headers */,
 				56EA86FC13E9EC2B002E47EB /* SDL_coreaudio.h in Headers */,
@@ -1139,6 +1146,7 @@
 				FD65266A0DE8FCDD002AD96B /* SDL_audiotypecvt.c in Sources */,
 				FD65266B0DE8FCDD002AD96B /* SDL_mixer.c in Sources */,
 				FD65266F0DE8FCDD002AD96B /* SDL_wave.c in Sources */,
+				FA1DC2731C62BE65008F99A0 /* SDL_uikitclipboard.m in Sources */,
 				FD6526700DE8FCDD002AD96B /* SDL_cpuinfo.c in Sources */,
 				FD6526710DE8FCDD002AD96B /* SDL_events.c in Sources */,
 				FD6526720DE8FCDD002AD96B /* SDL_keyboard.c in Sources */,
