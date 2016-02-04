@@ -25,6 +25,12 @@
 
 #include "../SDL_sysvideo.h"
 
+@interface SDL_VideoData : NSObject
+
+@property (nonatomic) id pasteboardObserver;
+
+@end
+
 void UIKit_SuspendScreenSaver(_THIS);
 
 BOOL UIKit_IsSystemVersionAtLeast(double version);
