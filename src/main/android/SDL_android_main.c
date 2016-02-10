@@ -22,6 +22,8 @@ JNIEXPORT int JNICALL Java_org_libsdl_app_SDLActivity_nativeInit(JNIEnv* env, jc
     int i;
     int argc;
     int status;
+    int len;
+    char** argv;
 
     /* This interface could expand with ABI negotiation, callbacks, etc. */
     SDL_Android_Init(env, cls);
@@ -30,8 +32,8 @@ JNIEXPORT int JNICALL Java_org_libsdl_app_SDLActivity_nativeInit(JNIEnv* env, jc
 
     /* Prepare the arguments. */
 
-    int len = (*env)->GetArrayLength(env, array);
-    char* argv[1 + len + 1];
+    len = (*env)->GetArrayLength(env, array);
+    argv = SDL_stack_alloc(char*, 1 + len + 1);
     argc = 0;
     /* Use the name "app_process" so PHYSFS_platformCalcBaseDir() works.
        https://bitbucket.org/MartinFelis/love-android-sdl2/issue/23/release-build-crash-on-start
@@ -66,7 +68,7 @@ JNIEXPORT int JNICALL Java_org_libsdl_app_SDLActivity_nativeInit(JNIEnv* env, jc
     for (i = 0; i < argc; ++i) {
         SDL_free(argv[i]);
     }
-
+    SDL_stack_free(argv);
     /* Do not issue an exit or the whole application will terminate instead of just the SDL thread */
     /* exit(status); */
 
