@@ -835,13 +835,13 @@ X11_DispatchEvent(_THIS)
 
         /* Have we been resized or moved? */
     case ConfigureNotify:{
+            long border_left = 0;
+            long border_top = 0;
 #ifdef DEBUG_XEVENTS
             printf("window %p: ConfigureNotify! (position: %d,%d, size: %dx%d)\n", data,
                    xevent.xconfigure.x, xevent.xconfigure.y,
                    xevent.xconfigure.width, xevent.xconfigure.height);
 #endif
-            long border_left = 0;
-            long border_top = 0;
             if (data->xwindow) {
                 Atom _net_frame_extents = X11_XInternAtom(display, "_NET_FRAME_EXTENTS", 0);
                 Atom type;
@@ -1229,11 +1229,11 @@ X11_DispatchEvent(_THIS)
         break;
 
     case SelectionNotify: {
+            Atom target = xevent.xselection.target;
 #ifdef DEBUG_XEVENTS
             printf("window %p: SelectionNotify (requestor = %ld, target = %ld)\n", data,
                 xevent.xselection.requestor, xevent.xselection.target);
 #endif
-            Atom target = xevent.xselection.target;
             if (target == data->xdnd_req) {
                 /* read data */
                 SDL_x11Prop p;
