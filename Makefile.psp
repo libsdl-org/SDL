@@ -49,6 +49,7 @@ OBJS= src/SDL.o \
       src/stdlib/SDL_stdlib.o \
       src/stdlib/SDL_string.o \
       src/thread/SDL_thread.o \
+      src/thread/generic/SDL_systls.o \
       src/thread/psp/SDL_syssem.o \
       src/thread/psp/SDL_systhread.o \
       src/thread/psp/SDL_sysmutex.o \
