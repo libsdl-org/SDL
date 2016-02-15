@@ -27,6 +27,9 @@ SDL_qsort(void *base, size_t nmemb, size_t size, int (*compare) (const void *, c
 #define _PDCLIB_size_t size_t
 #endif
 
+#ifdef qsort
+#undef qsort
+#endif
 #define qsort SDL_qsort
 
 #define inline SDL_INLINE
