@@ -40,7 +40,7 @@ https://bitbucket.org/pdclib/pdclib/raw/a82b02d0c7d4ed633b97f2a7639d9a10b1c92ec8
 The _PDCLIB_memswp macro was from
 https://bitbucket.org/pdclib/pdclib/src/a82b02d0c7d4ed633b97f2a7639d9a10b1c92ec8/platform/posix/internals/_PDCLIB_config.h?at=default&fileviewer=file-view-default#_PDCLIB_config.h-28
 
-Everything below this comment until the HAVE_QSORT #endif was from PDCLib.
+Everything below this comment until the HAVE_QSORT #endif was from PDCLib (minor changes noted inline).
 --ryan.
 */
 
@@ -52,7 +52,7 @@ Everything below this comment until the HAVE_QSORT #endif was from PDCLib.
    Permission is granted to use, modify, and / or redistribute at will.
 */
 
-#include <stdlib.h>
+/* I commented this out. --ryan. #include <stdlib.h> */
 
 #ifndef REGTEST
 
