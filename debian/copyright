@@ -31,10 +31,6 @@ Copyright: 1995 Erik Corry
            1995 Brown University
 License: BrownUn_UnCalifornia_ErikCorry
 
-Files: src/stdlib/SDL_qsort.c
-Copyright: 1998 Gareth McCaughan
-License: Gareth_McCaughan
-
 Files: src/test/SDL_test_md5.c
 Copyright: 1997-2016 Sam Lantinga <slouken@libsdl.org>
            1990 RSA Data Security, Inc.
@@ -269,13 +265,6 @@ License: BrownUn_UnCalifornia_ErikCorry
   * BASIS, AND BROWN UNIVERSITY HAS NO OBLIGATION TO PROVIDE MAINTENANCE,
   * SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
   */
-
-License: Gareth_McCaughan
-  You may use it in anything you like; you may make money
-  out of it; you may distribute it in object form or as
-  part of an executable without including source code;
-  you don't have to credit me. (But it would be nice if
-  you did.)
 
 License: Johnson_M._Hart
   Permission is granted for any and all use providing that this
