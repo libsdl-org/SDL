@@ -376,7 +376,7 @@ SDL_SYS_IsXInputGamepad_DeviceIndex(int device_index)
     for (index = device_index; index > 0; index--)
         device = device->pNext;
 
-    return (device->SubType == XINPUT_DEVSUBTYPE_GAMEPAD);
+    return device->bXInputDevice;
 }
 
 #else /* !SDL_JOYSTICK_XINPUT */
