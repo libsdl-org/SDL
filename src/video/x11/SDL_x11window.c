@@ -1047,7 +1047,6 @@ SetWindowActive(_THIS, SDL_Window * window)
     if (X11_IsWindowMapped(_this, window)) {
         XEvent e;
 
-        SDL_assert(data->user_time != 0);  /* should be set by _some_ event by now. */
         /*printf("SDL Window %p: sending _NET_ACTIVE_WINDOW with timestamp %lu\n", window, data->user_time);*/
 
         SDL_zero(e);
