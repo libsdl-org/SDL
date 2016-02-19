@@ -323,6 +323,7 @@ Android_RemoveJoystick(int device_id)
 {
     SDL_joylist_item *item = SDL_joylist;
     SDL_joylist_item *prev = NULL;
+    int retval;
 #if !SDL_EVENTS_DISABLED
     SDL_Event event;
 #endif
@@ -340,6 +341,7 @@ Android_RemoveJoystick(int device_id)
         return -1;
     }
 
+    retval = item->device_instance;
     if (item->joystick) {
         item->joystick->hwdata = NULL;
     }
