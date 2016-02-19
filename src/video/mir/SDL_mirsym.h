@@ -21,6 +21,14 @@
 
 /* *INDENT-OFF* */
 
+#ifndef SDL_MIR_MODULE
+#define SDL_MIR_MODULE(modname)
+#endif
+
+#ifndef SDL_MIR_SYM
+#define SDL_MIR_SYM(rc,fn,params)
+#endif
+
 SDL_MIR_MODULE(MIR_CLIENT)
 SDL_MIR_SYM(MirDisplayConfiguration*,mir_connection_create_display_config,(MirConnection *connection))
 SDL_MIR_SYM(MirSurface *,mir_connection_create_surface_sync,(MirConnection *connection, MirSurfaceParameters const *params))
@@ -43,6 +51,9 @@ SDL_MIR_SYM(void,mir_surface_swap_buffers_sync,(MirSurface *surface))
 
 SDL_MIR_MODULE(XKBCOMMON)
 SDL_MIR_SYM(int,xkb_keysym_to_utf8,(xkb_keysym_t keysym, char *buffer, size_t size))
+
+#undef SDL_MIR_MODULE
+#undef SDL_MIR_SYM
 
 /* *INDENT-ON* */
 

@@ -21,6 +21,14 @@
 
 /* *INDENT-OFF* */
 
+#ifndef SDL_X11_MODULE
+#define SDL_X11_MODULE(modname)
+#endif
+
+#ifndef SDL_X11_SYM
+#define SDL_X11_SYM(rc,fn,params,args,ret)
+#endif
+
 SDL_X11_MODULE(BASEXLIB)
 SDL_X11_SYM(XSizeHints*,XAllocSizeHints,(void),(),return)
 SDL_X11_SYM(XWMHints*,XAllocWMHints,(void),(),return)
@@ -310,6 +318,9 @@ SDL_X11_SYM(Bool,XF86VidModeQueryVersion,(Display *a,int *b,int *c),(a,b,c),retu
 SDL_X11_SYM(Bool,XF86VidModeSwitchToMode,(Display *a,int b,XF86VidModeModeInfo *c),(a,b,c),return)
 SDL_X11_SYM(Bool,XF86VidModeLockModeSwitch,(Display *a,int b,int c),(a,b,c),return)
 #endif
+
+#undef SDL_X11_MODULE
+#undef SDL_X11_SYM
 
 /* *INDENT-ON* */
 

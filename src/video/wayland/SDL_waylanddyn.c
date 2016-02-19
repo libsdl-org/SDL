@@ -94,9 +94,6 @@ WAYLAND_GetSym(const char *fnname, int *pHasModule)
 #define SDL_WAYLAND_SYM(rc,fn,params) SDL_DYNWAYLANDFN_##fn WAYLAND_##fn = NULL;
 #define SDL_WAYLAND_INTERFACE(iface) const struct wl_interface *WAYLAND_##iface = NULL;
 #include "SDL_waylandsym.h"
-#undef SDL_WAYLAND_MODULE
-#undef SDL_WAYLAND_SYM
-#undef SDL_WAYLAND_INTERFACE
 
 static int wayland_load_refcount = 0;
 
@@ -115,9 +112,6 @@ SDL_WAYLAND_UnloadSymbols(void)
 #define SDL_WAYLAND_SYM(rc,fn,params) WAYLAND_##fn = NULL;
 #define SDL_WAYLAND_INTERFACE(iface) WAYLAND_##iface = NULL;
 #include "SDL_waylandsym.h"
-#undef SDL_WAYLAND_MODULE
-#undef SDL_WAYLAND_SYM
-#undef SDL_WAYLAND_INTERFACE
 
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC
@@ -150,20 +144,12 @@ SDL_WAYLAND_LoadSymbols(void)
         }
 
 #define SDL_WAYLAND_MODULE(modname) SDL_WAYLAND_HAVE_##modname = 1; /* default yes */
-#define SDL_WAYLAND_SYM(rc,fn,params)
-#define SDL_WAYLAND_INTERFACE(iface)
 #include "SDL_waylandsym.h"
-#undef SDL_WAYLAND_MODULE
-#undef SDL_WAYLAND_SYM
-#undef SDL_WAYLAND_INTERFACE
 
 #define SDL_WAYLAND_MODULE(modname) thismod = &SDL_WAYLAND_HAVE_##modname;
 #define SDL_WAYLAND_SYM(rc,fn,params) WAYLAND_##fn = (SDL_DYNWAYLANDFN_##fn) WAYLAND_GetSym(#fn,thismod);
 #define SDL_WAYLAND_INTERFACE(iface) WAYLAND_##iface = (struct wl_interface *) WAYLAND_GetSym(#iface,thismod);
 #include "SDL_waylandsym.h"
-#undef SDL_WAYLAND_MODULE
-#undef SDL_WAYLAND_SYM
-#undef SDL_WAYLAND_INTERFACE
 
         if (SDL_WAYLAND_HAVE_WAYLAND_CLIENT) {
             /* all required symbols loaded. */
@@ -180,9 +166,6 @@ SDL_WAYLAND_LoadSymbols(void)
 #define SDL_WAYLAND_SYM(rc,fn,params) WAYLAND_##fn = fn;
 #define SDL_WAYLAND_INTERFACE(iface) WAYLAND_##iface = &iface;
 #include "SDL_waylandsym.h"
-#undef SDL_WAYLAND_MODULE
-#undef SDL_WAYLAND_SYM
-#undef SDL_WAYLAND_INTERFACE
 
 #endif
     }
