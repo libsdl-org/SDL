@@ -199,11 +199,7 @@ SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 void
 SDL_SYS_WaitThread(SDL_Thread * thread)
 {
-#if __WINRT__
     WaitForSingleObjectEx(thread->handle, INFINITE, FALSE);
-#else
-    WaitForSingleObject(thread->handle, INFINITE);
-#endif
     CloseHandle(thread->handle);
 }
 
