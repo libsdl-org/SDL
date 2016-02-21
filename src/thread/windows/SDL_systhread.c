@@ -145,9 +145,6 @@ SDL_SYS_CreateThread(SDL_Thread * thread, void *args)
     return 0;
 }
 
-#if 0  /* !!! FIXME: revisit this later. See https://bugzilla.libsdl.org/show_bug.cgi?id=2089 */
-#ifdef _MSC_VER
-#pragma warning(disable : 4733)
 #pragma pack(push,8)
 typedef struct tagTHREADNAME_INFO
 {
@@ -158,48 +155,20 @@ typedef struct tagTHREADNAME_INFO
 } THREADNAME_INFO;
 #pragma pack(pop)
 
-static EXCEPTION_DISPOSITION
-ignore_exception(void *a, void *b, void *c, void *d)
-{
-    return ExceptionContinueExecution;
-}
-#endif
-#endif
-
 void
 SDL_SYS_SetupThread(const char *name)
 {
-    if (name != NULL) {
-        #if 0 /* !!! FIXME: revisit this later. See https://bugzilla.libsdl.org/show_bug.cgi?id=2089 */
-        #if (defined(_MSC_VER) && defined(_M_IX86))
-        /* This magic tells the debugger to name a thread if it's listening.
-            The inline asm sets up SEH (__try/__except) without C runtime
-            support. See Microsoft Systems Journal, January 1997:
-            http://www.microsoft.com/msj/0197/exception/exception.aspx */
-        INT_PTR handler = (INT_PTR) ignore_exception;
+    if ((name != NULL) && IsDebuggerPresent()) {
+        /* This magic tells the debugger to name a thread if it's listening. */
         THREADNAME_INFO inf;
-
+        SDL_zero(inf);
         inf.dwType = 0x1000;
         inf.szName = name;
         inf.dwThreadID = (DWORD) -1;
         inf.dwFlags = 0;
 
-        __asm {   /* set up SEH */
-            push handler
-            push fs:[0]
-            mov fs:[0],esp
-        }
-
-        /* The program itself should ignore this bogus exception. */
-        RaiseException(0x406D1388, 0, sizeof(inf)/sizeof(DWORD), (DWORD*)&inf);
-
-        __asm {  /* tear down SEH. */
-            mov eax,[esp]
-            mov fs:[0], eax
-            add esp, 8
-        }
-        #endif
-        #endif
+        /* The debugger catches this, renames the thread, continues on. */
+        RaiseException(0x406D1388, 0, sizeof(inf) / sizeof(ULONG), (const ULONG_PTR*) &inf);
     }
 }
 
