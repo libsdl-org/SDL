@@ -29,7 +29,7 @@
 #include <mir_toolkit/mir_client_library.h>
 
 extern void
-MIR_HandleInput(MirSurface* surface, MirEvent const* ev, void* context);
+MIR_HandleEvent(MirSurface* surface, MirEvent const* ev, void* context);
 
 #endif /* _SDL_mirevents_h */
 

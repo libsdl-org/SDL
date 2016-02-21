@@ -1284,12 +1284,12 @@ AC_HELP_STRING([--enable-video-mir], [use Mir video driver [[default=yes]]]),
                 MIR_LIBS=`$PKG_CONFIG --libs mirclient egl xkbcommon`
                 save_CFLAGS="$CFLAGS"
                 CFLAGS="$save_CFLAGS $MIR_CFLAGS"
-                
-                dnl This will disable Mir on Ubuntu < 14.04
+
+                dnl This will disable Mir on Ubuntu < 15.04 (Mir should be 0.14 at this point)
                 AC_TRY_COMPILE([
                 #include <mir_toolkit/mir_client_library.h>
                 ],[
-                    MirMotionToolType tool = mir_motion_tool_type_mouse;
+                    MirPointerButton button = mir_pointer_button_primary;
                 ],[
                 video_mir=yes
                 ])
