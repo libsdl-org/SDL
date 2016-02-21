@@ -27,13 +27,13 @@
 
 #if SDL_VIDEO_DRIVER_MIR
 
+#include "SDL_mirwindow.h"
 #include "SDL_video.h"
 
 #include "SDL_mirframebuffer.h"
 #include "SDL_mirmouse.h"
 #include "SDL_miropengl.h"
 #include "SDL_mirvideo.h"
-#include "SDL_mirwindow.h"
 
 #include "SDL_mirdyn.h"
 
@@ -146,29 +146,29 @@ MIR_CreateDevice(int device_index)
     device->GL_GetProcAddress  = MIR_GL_GetProcAddress;
 
     /* mirwindow */
-    device->CreateWindow        = MIR_CreateWindow;
-    device->DestroyWindow       = MIR_DestroyWindow;
-    device->GetWindowWMInfo     = MIR_GetWindowWMInfo;
-    device->SetWindowFullscreen = MIR_SetWindowFullscreen;
-    device->MaximizeWindow      = MIR_MaximizeWindow;
-    device->MinimizeWindow      = MIR_MinimizeWindow;
-    device->RestoreWindow       = MIR_RestoreWindow;
+    device->CreateWindow         = MIR_CreateWindow;
+    device->DestroyWindow        = MIR_DestroyWindow;
+    device->GetWindowWMInfo      = MIR_GetWindowWMInfo;
+    device->SetWindowFullscreen  = MIR_SetWindowFullscreen;
+    device->MaximizeWindow       = MIR_MaximizeWindow;
+    device->MinimizeWindow       = MIR_MinimizeWindow;
+    device->RestoreWindow        = MIR_RestoreWindow;
+    device->ShowWindow           = MIR_RestoreWindow;
+    device->HideWindow           = MIR_HideWindow;
+    device->SetWindowSize        = MIR_SetWindowSize;
+    device->SetWindowMinimumSize = MIR_SetWindowMinimumSize;
+    device->SetWindowMaximumSize = MIR_SetWindowMaximumSize;
+    device->SetWindowTitle       = MIR_SetWindowTitle;
 
     device->CreateWindowFrom     = NULL;
-    device->SetWindowTitle       = NULL;
     device->SetWindowIcon        = NULL;
-    device->SetWindowPosition    = NULL;
-    device->SetWindowSize        = NULL;
-    device->SetWindowMinimumSize = NULL;
-    device->SetWindowMaximumSize = NULL;
-    device->ShowWindow           = NULL;
-    device->HideWindow           = NULL;
     device->RaiseWindow          = NULL;
     device->SetWindowBordered    = NULL;
     device->SetWindowGammaRamp   = NULL;
     device->GetWindowGammaRamp   = NULL;
     device->SetWindowGrab        = NULL;
     device->OnWindowEnter        = NULL;
+    device->SetWindowPosition    = NULL;
 
     /* mirframebuffer */
     device->CreateWindowFramebuffer  = MIR_CreateWindowFramebuffer;
@@ -272,8 +272,10 @@ MIR_VideoInit(_THIS)
 {
     MIR_Data* mir_data = _this->driverdata;
 
-    mir_data->connection = MIR_mir_connect_sync(NULL, __PRETTY_FUNCTION__);
-    mir_data->software = SDL_FALSE;
+    mir_data->connection     = MIR_mir_connect_sync(NULL, __PRETTY_FUNCTION__);
+    mir_data->current_window = NULL;
+    mir_data->software       = SDL_FALSE;
+    mir_data->pixel_format   = mir_pixel_format_invalid;
 
     if (!MIR_mir_connection_is_valid(mir_data->connection))
         return SDL_SetError("Failed to connect to the Mir Server");

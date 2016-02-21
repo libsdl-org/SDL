@@ -39,7 +39,11 @@ static const Uint32 mir_pixel_format_to_sdl_format[] = {
     SDL_PIXELFORMAT_BGR888,   /* mir_pixel_format_xbgr_8888 */
     SDL_PIXELFORMAT_ARGB8888, /* mir_pixel_format_argb_8888 */
     SDL_PIXELFORMAT_RGB888,   /* mir_pixel_format_xrgb_8888 */
-    SDL_PIXELFORMAT_BGR24     /* mir_pixel_format_bgr_888   */
+    SDL_PIXELFORMAT_BGR24,    /* mir_pixel_format_bgr_888   */
+    SDL_PIXELFORMAT_RGB24,    /* mir_pixel_format_rgb_888   */
+    SDL_PIXELFORMAT_RGB565,   /* mir_pixel_format_rgb_565   */
+    SDL_PIXELFORMAT_RGBA5551, /* mir_pixel_format_rgba_5551 */
+    SDL_PIXELFORMAT_RGBA4444  /* mir_pixel_format_rgba_4444 */
 };
 
 Uint32
@@ -53,19 +57,13 @@ MIR_CreateWindowFramebuffer(_THIS, SDL_Window* window, Uint32* format,
                             void** pixels, int* pitch)
 {
     MIR_Data* mir_data = _this->driverdata;
-    MIR_Window* mir_window;
-    MirSurfaceParameters surfaceparm;
 
     mir_data->software = SDL_TRUE;
 
     if (MIR_CreateWindow(_this, window) < 0)
         return SDL_SetError("Failed to created a mir window.");
 
-    mir_window = window->driverdata;
-
-    MIR_mir_surface_get_parameters(mir_window->surface, &surfaceparm);
-
-    *format = MIR_GetSDLPixelFormat(surfaceparm.pixel_format);
+    *format = MIR_GetSDLPixelFormat(mir_data->pixel_format);
     if (*format == SDL_PIXELFORMAT_UNKNOWN)
         return SDL_SetError("Unknown pixel format");
 
@@ -74,12 +72,6 @@ MIR_CreateWindowFramebuffer(_THIS, SDL_Window* window, Uint32* format,
     *pixels = SDL_malloc(window->h*(*pitch));
     if (*pixels == NULL)
         return SDL_OutOfMemory();
-
-    mir_window->surface = MIR_mir_connection_create_surface_sync(mir_data->connection, &surfaceparm);
-    if (!MIR_mir_surface_is_valid(mir_window->surface)) {
-        const char* error = MIR_mir_surface_get_error_message(mir_window->surface);
-        return SDL_SetError("Failed to created a mir surface: %s", error);
-    }
 
     return 0;
 }
@@ -91,12 +83,14 @@ MIR_UpdateWindowFramebuffer(_THIS, SDL_Window* window,
     MIR_Window* mir_window = window->driverdata;
 
     MirGraphicsRegion region;
+    MirBufferStream* bs;
     int i, j, x, y, w, h, start;
     int bytes_per_pixel, bytes_per_row, s_stride, d_stride;
     char* s_dest;
     char* pixels;
 
-    MIR_mir_surface_get_graphics_region(mir_window->surface, &region);
+    bs = MIR_mir_surface_get_buffer_stream(mir_window->surface);
+    MIR_mir_buffer_stream_get_graphics_region(bs, &region);
 
     s_dest = region.vaddr;
     pixels = (char*)window->surface->pixels;
@@ -144,7 +138,7 @@ MIR_UpdateWindowFramebuffer(_THIS, SDL_Window* window,
         }
     }
 
-    MIR_mir_surface_swap_buffers_sync(mir_window->surface);
+    MIR_mir_buffer_stream_swap_buffers_sync(bs);
 
     return 0;
 }

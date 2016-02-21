@@ -27,12 +27,21 @@
 
 #if SDL_VIDEO_DRIVER_MIR
 
-#include "SDL_mirmouse.h"
-
 #include "../../events/SDL_mouse_c.h"
+#include "../SDL_sysvideo.h"
 #include "SDL_assert.h"
 
 #include "SDL_mirdyn.h"
+
+#include "SDL_mirvideo.h"
+#include "SDL_mirmouse.h"
+#include "SDL_mirwindow.h"
+
+typedef struct
+{
+    MirCursorConfiguration* conf;
+    MirBufferStream*        stream;
+} MIR_Cursor;
 
 static SDL_Cursor*
 MIR_CreateDefaultCursor()
@@ -41,6 +50,16 @@ MIR_CreateDefaultCursor()
 
     cursor = SDL_calloc(1, sizeof(SDL_Cursor));
     if (cursor) {
+
+        MIR_Cursor* mir_cursor = SDL_calloc(1, sizeof(MIR_Cursor));
+        if (mir_cursor) {
+            mir_cursor->conf   = NULL;
+            mir_cursor->stream = NULL;
+            cursor->driverdata = mir_cursor;
+        }
+        else {
+            SDL_OutOfMemory();
+        }
     }
     else {
         SDL_OutOfMemory();
@@ -49,58 +68,160 @@ MIR_CreateDefaultCursor()
     return cursor;
 }
 
-static SDL_Cursor*
-MIR_CreateCursor(SDL_Surface* sruface, int hot_x, int hot_y)
+static void
+CopySurfacePixelsToMirStream(SDL_Surface* surface, MirBufferStream* stream)
 {
-    return MIR_CreateDefaultCursor();
+    char* dest, *pixels;
+    int i, s_w, s_h, r_stride, p_stride, bytes_per_pixel, bytes_per_row;
+
+    MirGraphicsRegion region;
+    MIR_mir_buffer_stream_get_graphics_region(stream, &region);
+
+    s_w = surface->w;
+    s_h = surface->h;
+
+    bytes_per_pixel = surface->format->BytesPerPixel;
+    bytes_per_row   = bytes_per_pixel * s_w;
+
+    dest = region.vaddr;
+    pixels = (char*)surface->pixels;
+
+    r_stride = region.stride;
+    p_stride = surface->pitch;
+
+    for (i = 0; i < s_h; i++)
+    {
+        memcpy(dest, pixels, bytes_per_row);
+        dest   += r_stride;
+        pixels += p_stride;
+    }
+}
+
+static SDL_Cursor*
+MIR_CreateCursor(SDL_Surface* surface, int hot_x, int hot_y)
+{
+    MirCursorConfiguration* conf;
+    MirBufferStream*        stream;
+
+    int s_w = surface->w;
+    int s_h = surface->h;
+
+    MIR_Data* mir_data     = (MIR_Data*)SDL_GetVideoDevice()->driverdata;
+    SDL_Cursor* cursor     = MIR_CreateDefaultCursor();
+    MIR_Cursor* mir_cursor = (MIR_Cursor*)cursor->driverdata;
+
+    stream = MIR_mir_connection_create_buffer_stream_sync(mir_data->connection,
+                                                          s_w, s_h, mir_data->pixel_format,
+                                                          mir_buffer_usage_software);
+
+    conf = MIR_mir_cursor_configuration_from_buffer_stream(stream, hot_x, hot_y);
+
+    CopySurfacePixelsToMirStream(surface, stream);
+    MIR_mir_buffer_stream_swap_buffers_sync(stream);
+
+    mir_cursor->conf   = conf;
+    mir_cursor->stream = stream;
+
+    return cursor;
 }
 
 static SDL_Cursor*
 MIR_CreateSystemCursor(SDL_SystemCursor id)
 {
+    char const* cursor_name = NULL;
+    MirCursorConfiguration* conf;
+    SDL_Cursor* cursor = MIR_CreateDefaultCursor();
+
     switch(id) {
         case SDL_SYSTEM_CURSOR_ARROW:
+            cursor_name = MIR_mir_arrow_cursor_name;
             break;
         case SDL_SYSTEM_CURSOR_IBEAM:
+            cursor_name = MIR_mir_caret_cursor_name;
             break;
         case SDL_SYSTEM_CURSOR_WAIT:
+            cursor_name = MIR_mir_busy_cursor_name;
             break;
         case SDL_SYSTEM_CURSOR_CROSSHAIR:
+            /* Unsupported */
+            cursor_name = MIR_mir_arrow_cursor_name;
             break;
         case SDL_SYSTEM_CURSOR_WAITARROW:
+            cursor_name = MIR_mir_busy_cursor_name;
             break;
         case SDL_SYSTEM_CURSOR_SIZENWSE:
+            cursor_name = MIR_mir_omnidirectional_resize_cursor_name;
             break;
         case SDL_SYSTEM_CURSOR_SIZENESW:
+            cursor_name = MIR_mir_omnidirectional_resize_cursor_name;
             break;
         case SDL_SYSTEM_CURSOR_SIZEWE:
+            cursor_name = MIR_mir_horizontal_resize_cursor_name;
             break;
         case SDL_SYSTEM_CURSOR_SIZENS:
+            cursor_name = MIR_mir_vertical_resize_cursor_name;
             break;
         case SDL_SYSTEM_CURSOR_SIZEALL:
+            cursor_name = MIR_mir_omnidirectional_resize_cursor_name;
             break;
         case SDL_SYSTEM_CURSOR_NO:
+            /* Unsupported */
+            cursor_name = MIR_mir_closed_hand_cursor_name;
             break;
         case SDL_SYSTEM_CURSOR_HAND:
+            cursor_name = MIR_mir_open_hand_cursor_name;
             break;
         default:
             SDL_assert(0);
             return NULL;
     }
 
-    return MIR_CreateDefaultCursor();
+    conf = MIR_mir_cursor_configuration_from_name(cursor_name);
+
+    cursor->driverdata = conf;
+
+    return cursor;
 }
 
 static void
 MIR_FreeCursor(SDL_Cursor* cursor)
 {
-    if (cursor)
-      SDL_free(cursor);
+    if (cursor) {
+
+        if (cursor->driverdata) {
+            MIR_Cursor* mir_cursor = (MIR_Cursor*)cursor->driverdata;
+
+            if (mir_cursor->conf)
+                MIR_mir_cursor_configuration_destroy(mir_cursor->conf);
+            if (mir_cursor->stream)
+                MIR_mir_buffer_stream_release_sync(mir_cursor->stream);
+
+            SDL_free(mir_cursor);
+        }
+
+        SDL_free(cursor);
+    }
 }
 
 static int
 MIR_ShowCursor(SDL_Cursor* cursor)
 {
+    MIR_Data* mir_data      = (MIR_Data*)SDL_GetVideoDevice()->driverdata;
+    MIR_Window* mir_window  = mir_data->current_window;
+
+    if (cursor && cursor->driverdata) {
+        if (mir_window && MIR_mir_surface_is_valid(mir_window->surface)) {
+            MIR_Cursor* mir_cursor = (MIR_Cursor*)cursor->driverdata;
+
+            if (mir_cursor->conf) {
+                MIR_mir_wait_for(MIR_mir_surface_configure_cursor(mir_window->surface, mir_cursor->conf));
+            }
+        }
+    }
+    else if(mir_window && MIR_mir_surface_is_valid(mir_window->surface)) {
+        MIR_mir_wait_for(MIR_mir_surface_configure_cursor(mir_window->surface, NULL));
+    }
+    
     return 0;
 }
 
