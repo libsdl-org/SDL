@@ -18965,7 +18965,7 @@ int
 main ()
 {
 
-                    MirMotionToolType tool = mir_motion_tool_type_mouse;
+                    MirPointerButton button = mir_pointer_button_primary;
 
   ;
   return 0;
