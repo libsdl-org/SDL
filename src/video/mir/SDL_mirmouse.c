@@ -59,6 +59,8 @@ MIR_CreateDefaultCursor()
         }
         else {
             SDL_OutOfMemory();
+            SDL_free(cursor);
+            cursor = NULL;
         }
     }
     else {
@@ -108,7 +110,13 @@ MIR_CreateCursor(SDL_Surface* surface, int hot_x, int hot_y)
 
     MIR_Data* mir_data     = (MIR_Data*)SDL_GetVideoDevice()->driverdata;
     SDL_Cursor* cursor     = MIR_CreateDefaultCursor();
-    MIR_Cursor* mir_cursor = (MIR_Cursor*)cursor->driverdata;
+    MIR_Cursor* mir_cursor;
+
+    if (!cursor) {
+        return NULL;
+    }
+
+    mir_cursor = (MIR_Cursor*)cursor->driverdata;
 
     stream = MIR_mir_connection_create_buffer_stream_sync(mir_data->connection,
                                                           s_w, s_h, mir_data->pixel_format,
@@ -131,6 +139,10 @@ MIR_CreateSystemCursor(SDL_SystemCursor id)
     char const* cursor_name = NULL;
     MirCursorConfiguration* conf;
     SDL_Cursor* cursor = MIR_CreateDefaultCursor();
+
+    if (!cursor) {
+        return NULL;
+    }
 
     switch(id) {
         case SDL_SYSTEM_CURSOR_ARROW:
