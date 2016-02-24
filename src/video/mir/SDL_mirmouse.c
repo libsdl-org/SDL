@@ -93,7 +93,7 @@ CopySurfacePixelsToMirStream(SDL_Surface* surface, MirBufferStream* stream)
 
     for (i = 0; i < s_h; i++)
     {
-        memcpy(dest, pixels, bytes_per_row);
+        SDL_memcpy(dest, pixels, bytes_per_row);
         dest   += r_stride;
         pixels += p_stride;
     }

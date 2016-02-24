@@ -132,7 +132,7 @@ MIR_UpdateWindowFramebuffer(_THIS, SDL_Window* window,
 
         bytes_per_row =  bytes_per_pixel * w;
         for (j = 0; j < h; j++) {
-            memcpy(s_dest, pixels, bytes_per_row);
+            SDL_memcpy(s_dest, pixels, bytes_per_row);
             pixels += s_stride;
             s_dest += d_stride;
         }
