@@ -39,7 +39,7 @@ will be placed in /opt/rpi-tools
 
 You'll also need a Rasbian binary image.
 Get it from: http://downloads.raspberrypi.org/raspbian_latest 
-After unzipping, you'll get file with a name like: <date>-wheezy-raspbian.img
+After unzipping, you'll get file with a name like: "<date>-wheezy-raspbian.img"
 Let's assume the sysroot will be built in /opt/rpi-sysroot.
 
     export SYSROOT=/opt/rpi-sysroot

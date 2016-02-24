@@ -67,13 +67,13 @@ For more complex projects, follow these instructions:
     
 1. Copy the android-project directory wherever you want to keep your projects
    and rename it to the name of your project.
-2. Move or symlink this SDL directory into the <project>/jni directory
-3. Edit <project>/jni/src/Android.mk to include your source files
+2. Move or symlink this SDL directory into the "<project>/jni" directory
+3. Edit "<project>/jni/src/Android.mk" to include your source files
 4. Run 'ndk-build' (a script provided by the NDK). This compiles the C source
 
 If you want to use the Eclipse IDE, skip to the Eclipse section below.
 
-5. Create <project>/local.properties and use that to point to the Android SDK directory, by writing a line with the following form:
+5. Create "<project>/local.properties" and use that to point to the Android SDK directory, by writing a line with the following form:
 
        sdk.dir=PATH_TO_ANDROID_SDK
 
@@ -121,15 +121,15 @@ This build uses the Android NDK module system.
 Instructions:
 1. Copy the android-project directory wherever you want to keep your projects
    and rename it to the name of your project.
-2. Rename <project>/jni/src/Android_static.mk to <project>/jni/src/Android.mk
+2. Rename "<project>/jni/src/Android_static.mk" to "<project>/jni/src/Android.mk"
    (overwrite the existing one)
-3. Edit <project>/jni/src/Android.mk to include your source files
+3. Edit "<project>/jni/src/Android.mk" to include your source files
 4. create and export an environment variable named NDK_MODULE_PATH that points
    to the parent directory of this SDL directory. e.g.:
 
        export NDK_MODULE_PATH="$PWD"/..
 
-5. Edit <project>/src/org/libsdl/app/SDLActivity.java and remove the call to
+5. Edit "<project>/src/org/libsdl/app/SDLActivity.java" and remove the call to
    System.loadLibrary("SDL2").
 6. Run 'ndk-build' (a script provided by the NDK). This compiles the C source
 

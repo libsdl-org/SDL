@@ -96,7 +96,7 @@ APP_NAME_bundle: EXE_NAME
 You should replace EXE_NAME with the name of the executable. APP_NAME is what
 will be visible to the user in the Finder. Usually it will be the same
 as EXE_NAME but capitalized. E.g. if EXE_NAME is "testgame" then APP_NAME 
-usually is "TestGame". You might also want to use @PACKAGE@ to use the package
+usually is "TestGame". You might also want to use `@PACKAGE@` to use the package
 name as specified in your configure.in file.
 
 If your project builds more than one application, you will have to do a bit
