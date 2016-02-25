@@ -46,6 +46,32 @@ IsSurfaceValid(MIR_Window* mir_window)
     return 0;
 }
 
+MirPixelFormat
+FindValidPixelFormat(MIR_Data* mir_data)
+{
+    unsigned int pf_size = 32;
+    unsigned int valid_formats;
+    unsigned int f;
+
+    MirPixelFormat formats[pf_size];
+    MIR_mir_connection_get_available_surface_formats(mir_data->connection, formats,
+                                                     pf_size, &valid_formats);
+
+    for (f = 0; f < valid_formats; f++) {
+        MirPixelFormat cur_pf = formats[f];
+
+        if (cur_pf == mir_pixel_format_abgr_8888 ||
+            cur_pf == mir_pixel_format_xbgr_8888 ||
+            cur_pf == mir_pixel_format_argb_8888 ||
+            cur_pf == mir_pixel_format_xrgb_8888) {
+
+            return cur_pf;
+        }
+    }
+
+    return mir_pixel_format_invalid;
+}
+
 int
 MIR_CreateWindow(_THIS, SDL_Window* window)
 {
@@ -72,9 +98,14 @@ MIR_CreateWindow(_THIS, SDL_Window* window)
     mir_window->mir_data = mir_data;
     mir_window->sdl_window = window;
 
-    pixel_format = MIR_mir_connection_get_egl_pixel_format(mir_data->connection,
-                                                           _this->egl_data->egl_display,
-                                                           _this->egl_data->egl_config);
+    if (window->flags & SDL_WINDOW_OPENGL) {
+        pixel_format = MIR_mir_connection_get_egl_pixel_format(mir_data->connection,
+                                                               _this->egl_data->egl_display,
+                                                               _this->egl_data->egl_config);
+    }
+    else {
+        pixel_format = FindValidPixelFormat(mir_data);
+    }
 
     mir_data->pixel_format = pixel_format;
     if (pixel_format == mir_pixel_format_invalid) {
