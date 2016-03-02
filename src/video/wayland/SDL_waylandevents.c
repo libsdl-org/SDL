@@ -302,9 +302,9 @@ keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
  
     window = wl_surface_get_user_data(surface);
 
-    input->keyboard_focus = window;
-    window->keyboard_device = input;
     if (window) {
+        input->keyboard_focus = window;
+        window->keyboard_device = input;
         SDL_SetKeyboardFocus(window->sdlwindow);
     }
 }
