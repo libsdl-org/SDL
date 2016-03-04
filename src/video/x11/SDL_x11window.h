@@ -56,6 +56,10 @@ typedef struct
     GC gc;
     XIC ic;
     SDL_bool created;
+    int border_left;
+    int border_right;
+    int border_top;
+    int border_bottom;
     PendingFocusEnum pending_focus;
     Uint32 pending_focus_time;
     XConfigureEvent last_xconfigure;

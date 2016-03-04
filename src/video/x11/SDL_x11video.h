@@ -108,6 +108,7 @@ typedef struct SDL_VideoData
     Atom _NET_WM_WINDOW_OPACITY;
     Atom _NET_WM_USER_TIME;
     Atom _NET_ACTIVE_WINDOW;
+    Atom _NET_FRAME_EXTENTS;
     Atom UTF8_STRING;
     Atom PRIMARY;
     Atom XdndEnter;
