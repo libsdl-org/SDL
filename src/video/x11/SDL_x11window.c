@@ -781,7 +781,7 @@ X11_SetWindowPosition(_THIS, SDL_Window * window)
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     Display *display = data->videodata->display;
 
-    X11_XMoveWindow(display, data->xwindow, window->x + data->border_left, window->y + data->border_top);
+    X11_XMoveWindow(display, data->xwindow, window->x - data->border_left, window->y - data->border_top);
     X11_XFlush(display);
 }
 
@@ -807,7 +807,7 @@ X11_SetWindowMinimumSize(_THIS, SDL_Window * window)
 
         /* See comment in X11_SetWindowSize. */
         X11_XResizeWindow(display, data->xwindow, window->w, window->h);
-        X11_XMoveWindow(display, data->xwindow, window->x, window->y);
+        X11_XMoveWindow(display, data->xwindow, window->x - data->border_left, window->y - data->border_top);
         X11_XRaiseWindow(display, data->xwindow);
     }
 
@@ -836,7 +836,7 @@ X11_SetWindowMaximumSize(_THIS, SDL_Window * window)
 
         /* See comment in X11_SetWindowSize. */
         X11_XResizeWindow(display, data->xwindow, window->w, window->h);
-        X11_XMoveWindow(display, data->xwindow, window->x, window->y);
+        X11_XMoveWindow(display, data->xwindow, window->x - data->border_left, window->y - data->border_top);
         X11_XRaiseWindow(display, data->xwindow);
     }
 
@@ -885,7 +885,7 @@ X11_SetWindowSize(_THIS, SDL_Window * window)
            and transitioning from windowed to fullscreen in Unity.
          */
         X11_XResizeWindow(display, data->xwindow, window->w, window->h);
-        X11_XMoveWindow(display, data->xwindow, window->x, window->y);
+        X11_XMoveWindow(display, data->xwindow, window->x - data->border_left, window->y - data->border_top);
         X11_XRaiseWindow(display, data->xwindow);
     } else {
         X11_XResizeWindow(display, data->xwindow, window->w, window->h);
