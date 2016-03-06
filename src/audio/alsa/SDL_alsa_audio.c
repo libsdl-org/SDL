@@ -85,6 +85,9 @@ static int (*ALSA_snd_pcm_nonblock) (snd_pcm_t *, int);
 static int (*ALSA_snd_pcm_wait)(snd_pcm_t *, int);
 static int (*ALSA_snd_pcm_sw_params_set_avail_min)
   (snd_pcm_t *, snd_pcm_sw_params_t *, snd_pcm_uframes_t);
+static int (*ALSA_snd_device_name_hint) (int, const char *, void ***);
+static char* (*ALSA_snd_device_name_get_hint) (const void *, const char *);
+static int (*ALSA_snd_device_name_free_hint) (void **);
 
 #ifdef SDL_AUDIO_DRIVER_ALSA_DYNAMIC
 #define snd_pcm_hw_params_sizeof ALSA_snd_pcm_hw_params_sizeof
@@ -144,6 +147,10 @@ load_alsa_syms(void)
     SDL_ALSA_SYM(snd_pcm_nonblock);
     SDL_ALSA_SYM(snd_pcm_wait);
     SDL_ALSA_SYM(snd_pcm_sw_params_set_avail_min);
+    SDL_ALSA_SYM(snd_device_name_hint);
+    SDL_ALSA_SYM(snd_device_name_get_hint);
+    SDL_ALSA_SYM(snd_device_name_free_hint);
+
     return 0;
 }
 
@@ -196,25 +203,27 @@ LoadALSALibrary(void)
 #endif /* SDL_AUDIO_DRIVER_ALSA_DYNAMIC */
 
 static const char *
-get_audio_device(int channels)
+get_audio_device(void *handle, const int channels)
 {
     const char *device;
 
-    device = SDL_getenv("AUDIODEV");    /* Is there a standard variable name? */
-    if (device == NULL) {
-        switch (channels) {
-        case 6:
-            device = "plug:surround51";
-            break;
-        case 4:
-            device = "plug:surround40";
-            break;
-        default:
-            device = "default";
-            break;
-        }
+    if (handle != NULL) {
+        return (const char *) handle;
     }
-    return device;
+
+    /* !!! FIXME: we also check "SDL_AUDIO_DEVICE_NAME" at the higher level. */
+    device = SDL_getenv("AUDIODEV");    /* Is there a standard variable name? */
+    if (device != NULL) {
+        return device;
+    }
+
+    if (channels == 6) {
+        return "plug:surround51";
+    } else if (channels == 4) {
+        return "plug:surround40";
+    }
+
+    return "default";
 }
 
 
@@ -487,7 +496,7 @@ ALSA_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     /* Open the audio device */
     /* Name of device should depend on # channels in spec */
     status = ALSA_snd_pcm_open(&pcm_handle,
-                               get_audio_device(this->spec.channels),
+                               get_audio_device(handle, this->spec.channels),
                                SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK);
 
     if (status < 0) {
@@ -656,6 +665,79 @@ ALSA_Deinitialize(void)
     UnloadALSALibrary();
 }
 
+static void
+add_device(const int iscapture, const char *name, const char *_desc)
+{
+    char *desc = SDL_strdup(_desc);
+    char *handle = NULL;
+    char *ptr;
+
+    if (!desc) {
+        return;
+    }
+
+    /* some strings have newlines, like "HDA NVidia, HDMI 0\nHDMI Audio Output" */
+    for (ptr = strchr(desc, '\n'); ptr; ptr = strchr(ptr + 1, '\n')) {
+        *ptr = ' ';
+    }
+
+    handle = SDL_strdup(name);
+    if (handle != NULL) {
+        SDL_AddAudioDevice(iscapture, desc, handle);
+    }
+
+    SDL_free(desc);
+}
+
+static void
+ALSA_DetectDevices(void)
+{
+    void **hints = NULL;
+    int i;
+
+    /* !!! FIXME: use udev instead. */
+    /* We won't deal with disconnects and hotplugs without udev, but at least
+       you'll get a reasonable device list at startup. */
+#if 1 /*!SDL_USE_LIBUDEV */
+    if (ALSA_snd_device_name_hint(-1, "pcm", &hints) == -1) {
+        return;  /* oh well. */
+    }
+
+    for (i = 0; hints[i]; i++) {
+        char *name = ALSA_snd_device_name_get_hint(hints[i], "NAME");
+        char *desc = ALSA_snd_device_name_get_hint(hints[i], "DESC");
+        char *ioid = ALSA_snd_device_name_get_hint(hints[i], "IOID");
+
+        if ((ioid == NULL) || (SDL_strcmp(ioid, "Output") == 0)) {
+            add_device(SDL_FALSE, name, desc);
+        }
+
+        if ((ioid == NULL) || (SDL_strcmp(ioid, "Input") == 0)) {
+            add_device(SDL_TRUE, name, desc);
+        }
+
+        free(name);
+        free(desc);
+        free(ioid);
+    }
+
+    ALSA_snd_device_name_free_hint(hints);
+#else
+#error Fill in udev support here.
+#endif
+}
+
+static void
+ALSA_FreeDeviceHandle(void *handle)
+{
+#if 1 /*!SDL_USE_LIBUDEV*/
+    SDL_free(handle);
+#else
+#error Fill in udev support here.
+#endif
+}
+
+
 static int
 ALSA_Init(SDL_AudioDriverImpl * impl)
 {
@@ -664,13 +746,14 @@ ALSA_Init(SDL_AudioDriverImpl * impl)
     }
 
     /* Set the function pointers */
+    impl->DetectDevices = ALSA_DetectDevices;
     impl->OpenDevice = ALSA_OpenDevice;
     impl->WaitDevice = ALSA_WaitDevice;
     impl->GetDeviceBuf = ALSA_GetDeviceBuf;
     impl->PlayDevice = ALSA_PlayDevice;
     impl->CloseDevice = ALSA_CloseDevice;
     impl->Deinitialize = ALSA_Deinitialize;
-    impl->OnlyHasDefaultOutputDevice = 1;       /* !!! FIXME: Add device enum! */
+    impl->FreeDeviceHandle = ALSA_FreeDeviceHandle;
 
     return 1;   /* this audio target is available. */
 }
