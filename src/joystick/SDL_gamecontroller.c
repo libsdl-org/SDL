@@ -861,7 +861,6 @@ SDL_GameControllerInit(void)
 {
     int i = 0;
     const char *pMappingString = NULL;
-    s_pSupportedControllers = NULL;
     pMappingString = s_ControllerMappings[i];
     while (pMappingString) {
         SDL_GameControllerAddMapping(pMappingString);
