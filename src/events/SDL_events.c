@@ -435,8 +435,6 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
         switch (SDL_PeepEvents(event, 1, SDL_GETEVENT, SDL_FIRSTEVENT, SDL_LASTEVENT)) {
         case -1:
             return 0;
-        case 1:
-            return 1;
         case 0:
             if (timeout == 0) {
                 /* Polling and no events, just return */
@@ -448,6 +446,9 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
             }
             SDL_Delay(10);
             break;
+        default:
+            /* Has events */
+            return 1;
         }
     }
 }
