@@ -118,15 +118,13 @@ WINRT_CreateDevice(int devindex)
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (!device) {
         SDL_OutOfMemory();
-        if (device) {
-            SDL_free(device);
-        }
         return (0);
     }
 
     data = (SDL_VideoData *) SDL_calloc(1, sizeof(SDL_VideoData));
     if (!data) {
         SDL_OutOfMemory();
+        SDL_free(device);
         return (0);
     }
     SDL_zerop(data);
