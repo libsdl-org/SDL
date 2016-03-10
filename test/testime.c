@@ -110,7 +110,6 @@ void CleanupVideo()
 #endif
 }
 
-
 void _Redraw(SDL_Renderer * renderer) {
     int w = 0, h = textRect.h;
     SDL_Rect cursorRect, underlineRect;
@@ -122,9 +121,14 @@ void _Redraw(SDL_Renderer * renderer) {
     if (*text)
     {
         SDL_Surface *textSur = TTF_RenderUTF8_Blended(font, text, textColor);
-        SDL_Rect dest = {textRect.x, textRect.y, textSur->w, textSur->h };
+        SDL_Rect dest;
+        SDL_Texture *texture;
+        dest.x = textRect.x;
+        dest.y = textRect.y;
+        dest.w = textSur->w;
+        dest.h = textSur->h;
 
-        SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer,textSur);
+        texture = SDL_CreateTextureFromSurface(renderer,textSur);
         SDL_FreeSurface(textSur);
 
         SDL_RenderCopy(renderer,texture,NULL,&dest);
@@ -156,6 +160,9 @@ void _Redraw(SDL_Renderer * renderer) {
     if (markedText[0])
     {
 #ifdef HAVE_SDL_TTF
+        SDL_Surface *textSur;
+        SDL_Rect dest;
+        SDL_Texture *texture;
         if (cursor)
         {
             char *p = utf8_advance(markedText, cursor);
@@ -169,10 +176,13 @@ void _Redraw(SDL_Renderer * renderer) {
             cursorRect.x += w;
             *p = c;
         }
-        SDL_Surface *textSur = TTF_RenderUTF8_Blended(font, markedText, textColor);
-        SDL_Rect dest = {markedRect.x, markedRect.y, textSur->w, textSur->h };
+        textSur = TTF_RenderUTF8_Blended(font, markedText, textColor);
+        dest.x = markedRect.x;
+        dest.y = markedRect.y;
+        dest.w = textSur->w;
+        dest.h = textSur->h;
         TTF_SizeUTF8(font, markedText, &w, &h);
-        SDL_Texture *texture = SDL_CreateTextureFromSurface(renderer,textSur);
+        texture = SDL_CreateTextureFromSurface(renderer,textSur);
         SDL_FreeSurface(textSur);
 
         SDL_RenderCopy(renderer,texture,NULL,&dest);
