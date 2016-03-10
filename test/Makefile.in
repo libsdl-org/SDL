@@ -62,6 +62,7 @@ TARGETS = \
 	testrendercopyex$(EXE) \
 	testmessage$(EXE) \
 	testdisplayinfo$(EXE) \
+	testqsort$(EXE) \
 	controllermap$(EXE) \
 	
 all: Makefile $(TARGETS)
@@ -269,6 +270,9 @@ testmessage$(EXE): $(srcdir)/testmessage.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testdisplayinfo$(EXE): $(srcdir)/testdisplayinfo.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testqsort$(EXE): $(srcdir)/testqsort.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testbounds$(EXE): $(srcdir)/testbounds.c

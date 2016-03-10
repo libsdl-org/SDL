@@ -119,6 +119,7 @@ test/testwm2
 test/testbounds
 test/torturethread
 test/testdisplayinfo
+test/testqsort
 test/*.exe
 test/*.dSYM
 buildbot
