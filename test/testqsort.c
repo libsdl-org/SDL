@@ -14,7 +14,6 @@
 #include <stdlib.h>
 
 #include "SDL.h"
-#include "SDL_revision.h"
 
 static int
 num_compare(const void *_a, const void *_b)
