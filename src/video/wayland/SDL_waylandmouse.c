@@ -174,7 +174,7 @@ Wayland_CreateCursor(SDL_Surface *surface, int hot_x, int hot_y)
         if (create_buffer_from_shm (data,
                                     surface->w,
                                     surface->h,
-                                    WL_SHM_FORMAT_XRGB8888) < 0)
+                                    WL_SHM_FORMAT_ARGB8888) < 0)
         {
             free (cursor->driverdata);
             free (cursor);
