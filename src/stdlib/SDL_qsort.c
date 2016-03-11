@@ -427,7 +427,7 @@ static void qsort_nonaligned(void *base, size_t nmemb, size_t size,
       Recurse(trunc)
     }
   }
-  PreInsertion(SWAP_nonaligned,TRUNC_nonaligned-1,size);
+  PreInsertion(SWAP_nonaligned,TRUNC_nonaligned,size);
   Insertion(SWAP_nonaligned);
   free(pivot);
 }
@@ -458,7 +458,7 @@ static void qsort_aligned(void *base, size_t nmemb, size_t size,
       Recurse(trunc)
     }
   }
-  PreInsertion(SWAP_aligned,TRUNC_aligned-1,size);
+  PreInsertion(SWAP_aligned,TRUNC_aligned,size);
   Insertion(SWAP_aligned);
   free(pivot);
 }
@@ -499,7 +499,7 @@ fprintf(stderr, "after partitioning first=#%lu last=#%lu\n", (first-(char*)base)
       Recurse(TRUNC_words)
     }
   }
-  PreInsertion(SWAP_words,(TRUNC_words/WORD_BYTES)-1,WORD_BYTES);
+  PreInsertion(SWAP_words,(TRUNC_words/WORD_BYTES),WORD_BYTES);
   /* Now do insertion sort. */
   last=((char*)base)+nmemb*WORD_BYTES;
   for (first=((char*)base)+WORD_BYTES;first!=last;first+=WORD_BYTES) {
