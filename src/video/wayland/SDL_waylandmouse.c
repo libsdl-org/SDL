@@ -334,13 +334,13 @@ Wayland_ShowCursor(SDL_Cursor *cursor)
     {
         Wayland_CursorData *data = cursor->driverdata;
 
-        wl_surface_attach(data->surface, data->buffer, 0, 0);
-        wl_surface_damage(data->surface, 0, 0, data->w, data->h);
-        wl_surface_commit(data->surface);
         wl_pointer_set_cursor (pointer, 0,
                                data->surface,
                                data->hot_x,
                                data->hot_y);
+        wl_surface_attach(data->surface, data->buffer, 0, 0);
+        wl_surface_damage(data->surface, 0, 0, data->w, data->h);
+        wl_surface_commit(data->surface);
     }
     else
     {
