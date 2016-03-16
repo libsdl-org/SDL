@@ -130,6 +130,7 @@ create_buffer_from_shm(Wayland_CursorData *d,
         d->shm_data = NULL;
         fprintf (stderr, "mmap () failed\n");
         close (shm_fd);
+        return -1;
     }
 
     shm_pool = wl_shm_create_pool(data->shm, shm_fd, size);
