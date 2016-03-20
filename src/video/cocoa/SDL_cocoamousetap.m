@@ -115,9 +115,8 @@ Cocoa_MouseTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event
             newLocation.y += (eventLocation.y - NSMaxY(windowRect) + 1);
         }
 
-        CGSetLocalEventsSuppressionInterval(0);
         CGWarpMouseCursorPosition(newLocation);
-        CGSetLocalEventsSuppressionInterval(0.25);
+        CGAssociateMouseAndMouseCursorPosition(YES);
 
         if ((CGEventMaskBit(type) & movementEventsMask) == 0) {
             /* For click events, we just constrain the event to the window, so
