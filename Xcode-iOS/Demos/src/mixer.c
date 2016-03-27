@@ -4,8 +4,8 @@
  *  use however you want
  */
 
-#import "SDL.h"
-#import "common.h"
+#include "SDL.h"
+#include "common.h"
 
 #define NUM_CHANNELS 8          /* max number of sounds we can play at once */
 #define NUM_DRUMS 4             /* number of drums in our set */
