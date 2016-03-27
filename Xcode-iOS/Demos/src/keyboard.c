@@ -4,8 +4,8 @@
  *  use however you want
  */
 
-#import "SDL.h"
-#import "common.h"
+#include "SDL.h"
+#include "common.h"
 
 #define GLYPH_SIZE_IMAGE 16     /* size of glyphs (characters) in the bitmap font file */
 #define GLYPH_SIZE_SCREEN 32    /* size of glyphs (characters) as shown on the screen */
