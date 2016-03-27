@@ -21,7 +21,7 @@
 
 #include "../SDL_internal.h"
 
-/* General mouse handling code for SDL */
+/* General gesture handling code for SDL */
 
 #include "SDL_events.h"
 #include "SDL_endian.h"
