@@ -37,45 +37,50 @@ render(SDL_Renderer *renderer)
 int
 main(int argc, char *argv[])
 {
-    if (SDL_Init(SDL_INIT_VIDEO/* | SDL_INIT_AUDIO */) < 0)
-    {
-        printf("Unable to initialize SDL");
+
+    SDL_Window *window;
+    SDL_Renderer *renderer;
+    int done;
+    SDL_Event event;
+
+    /* initialize SDL */
+    if (SDL_Init(SDL_INIT_VIDEO) < 0) {
+        fatalError("Could not initialize SDL");
     }
-    
-    SDL_LogSetAllPriority(SDL_LOG_PRIORITY_WARN);
-    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-    SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-    
-    int landscape = 1;
-    int modes = SDL_GetNumDisplayModes(0);
-    int sx = 0, sy = 0;
-    for (int i = 0; i < modes; i++)
-    {
-        SDL_DisplayMode mode;
-        SDL_GetDisplayMode(0, i, &mode);
-        if (landscape ? mode.w > sx : mode.h > sy)
-        {
-            sx = mode.w;
-            sy = mode.h;
+
+    /* seed random number generator */
+    srand(time(NULL));
+
+    /* create window and renderer */
+    window =
+        SDL_CreateWindow(NULL, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT,
+                         SDL_WINDOW_SHOWN);
+    if (window == 0) {
+        fatalError("Could not initialize Window");
+    }
+    renderer = SDL_CreateRenderer(window, -1, 0);
+    if (!renderer) {
+        fatalError("Could not create renderer");
+    }
+
+    /* Fill screen with black */
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+
+    /* Enter render loop, waiting for user to quit */
+    done = 0;
+    while (!done) {
+        while (SDL_PollEvent(&event)) {
+            if (event.type == SDL_QUIT) {
+                done = 1;
+            }
         }
+        render(renderer);
+        SDL_Delay(1);
     }
-    
-    printf("picked: %d %d\n", sx, sy);
-    
-    SDL_Window *_sdl_window = NULL;
-    SDL_GLContext _sdl_context = NULL;
-    
-    _sdl_window = SDL_CreateWindow("fred",
-                                   0, 0,
-                                   sx, sy,
-                                   SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS);
-    
-    SDL_SetHint("SDL_HINT_ORIENTATIONS", "LandscapeLeft LandscapeRight");
-    
-    int ax = 0, ay = 0;
-    SDL_GetWindowSize(_sdl_window, &ax, &ay);
-    
-    printf("given: %d %d\n", ax, ay);
+
+    /* shutdown SDL */
+    SDL_Quit();
 
     return 0;
 }
