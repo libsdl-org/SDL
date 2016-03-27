@@ -2,7 +2,7 @@
 About the iPhone OS Demo Applications
 ==============================================================================
 
-Demos.xcodeproj contains several targets for iPhone oriented SDL demos.  These demos are written strictly using SDL 1.3 calls.  All the demos except for Fireworks (which requires OpenGL ES) should work on platforms other than iPhone OS, though you'll need to write your own compile script.  To run them on your favorite platform, you may wish to set the macros SCREEN_WIDTH and SCREEN_HEIGHT, located in common.h.
+Demos.xcodeproj contains several targets for iPhone oriented SDL demos.  These demos are written strictly using SDL 2.0 calls.  All the demos except for Fireworks (which requires OpenGL ES) should work on platforms other than iPhone OS, though you'll need to write your own compile script.  To run them on your favorite platform, you may wish to set the macros SCREEN_WIDTH and SCREEN_HEIGHT, located in common.h.
 
 Common files:
 
