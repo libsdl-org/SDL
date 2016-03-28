@@ -52,9 +52,7 @@ main(int argc, char *argv[])
     srand(time(NULL));
 
     /* create window and renderer */
-    window =
-        SDL_CreateWindow(NULL, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT,
-                         SDL_WINDOW_SHOWN);
+    window = SDL_CreateWindow(NULL, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
     if (window == 0) {
         fatalError("Could not initialize Window");
     }
