@@ -34,6 +34,7 @@ void
 render(SDL_Renderer *renderer, int w, int h)
 {
 
+    float speed;
 
     /* get joystick (accelerometer) axis values and normalize them */
     float ax = SDL_JoystickGetAxis(accelerometer, 0);
@@ -58,7 +59,7 @@ render(SDL_Renderer *renderer, int w, int h)
         ay * SDL_IPHONE_MAX_GFORCE / SINT16_MAX * GRAVITY_CONSTANT *
         MILLESECONDS_PER_FRAME;
 
-    float speed = sqrt(shipData.vx * shipData.vx + shipData.vy * shipData.vy);
+    speed = sqrt(shipData.vx * shipData.vx + shipData.vy * shipData.vy);
 
     if (speed > 0) {
         /* compensate for friction */
@@ -207,8 +208,8 @@ main(int argc, char *argv[])
     done = 0;
     /* enter main loop */
     while (!done) {
-        startFrame = SDL_GetTicks();
         SDL_Event event;
+        startFrame = SDL_GetTicks();
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 done = 1;

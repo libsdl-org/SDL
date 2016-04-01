@@ -26,15 +26,17 @@ drawLine(SDL_Renderer *renderer, float startx, float starty, float dx, float dy)
     float dx_prime = dx / iterations;   /* x-shift per iteration */
     float dy_prime = dy / iterations;   /* y-shift per iteration */
     SDL_Rect dstRect;           /* rect to draw brush sprite into */
+    float x;
+    float y;
+    int i;
 
     dstRect.w = BRUSH_SIZE;
     dstRect.h = BRUSH_SIZE;
 
     /* setup x and y for the location of the first sprite */
-    float x = startx - BRUSH_SIZE / 2.0f;
-    float y = starty - BRUSH_SIZE / 2.0f;
+    x = startx - BRUSH_SIZE / 2.0f;
+    y = starty - BRUSH_SIZE / 2.0f;
 
-    int i;
     /* draw a series of blots to form the line */
     for (i = 0; i < iterations; i++) {
         dstRect.x = x;
