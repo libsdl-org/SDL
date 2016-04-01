@@ -147,8 +147,8 @@ main(int argc, char *argv[])
     /* main loop */
     done = 0;
     while (!done) {
-        startFrame = SDL_GetTicks();
         SDL_Event event;
+        startFrame = SDL_GetTicks();
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 done = 1;

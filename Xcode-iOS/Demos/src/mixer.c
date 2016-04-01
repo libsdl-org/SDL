@@ -278,6 +278,7 @@ main(int argc, char *argv[])
     Uint32 startFrame;          /* holds when frame started processing */
     Uint32 endFrame;            /* holds when frame ended processing */
     Uint32 delay;               /* calculated delay, how long should we wait before next frame? */
+    int i;
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
         fatalError("could not initialize SDL");
@@ -342,7 +343,6 @@ main(int argc, char *argv[])
     }
 
     /* cleanup code, let's free up those sound buffers */
-    int i;
     for (i = 0; i < NUM_DRUMS; i++) {
         SDL_free(drums[i].buffer);
     }
