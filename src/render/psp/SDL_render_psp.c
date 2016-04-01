@@ -861,7 +861,7 @@ PSP_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
                     Uint32 pixel_format, void * pixels, int pitch)
 
 {
-        return 0;
+    return SDL_Unsupported();
 }
 
 
