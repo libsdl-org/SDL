@@ -50,6 +50,8 @@ static SDL_Renderer *PSP_CreateRenderer(SDL_Window * window, Uint32 flags);
 static void PSP_WindowEvent(SDL_Renderer * renderer,
                              const SDL_WindowEvent *event);
 static int PSP_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture);
+static int PSP_SetTextureColorMod(SDL_Renderer * renderer,
+                                   SDL_Texture * texture);
 static int PSP_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                               const SDL_Rect * rect, const void *pixels,
                               int pitch);
@@ -359,6 +361,7 @@ PSP_CreateRenderer(SDL_Window * window, Uint32 flags)
 
     renderer->WindowEvent = PSP_WindowEvent;
     renderer->CreateTexture = PSP_CreateTexture;
+    renderer->SetTextureColorMod = PSP_SetTextureColorMod;
     renderer->UpdateTexture = PSP_UpdateTexture;
     renderer->LockTexture = PSP_LockTexture;
     renderer->UnlockTexture = PSP_UnlockTexture;
@@ -501,6 +504,11 @@ PSP_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     return 0;
 }
 
+static int
+PSP_SetTextureColorMod(SDL_Renderer * renderer, SDL_Texture * texture)
+{
+    return SDL_Unsupported();
+}
 
 void
 TextureActivate(SDL_Texture * texture)
