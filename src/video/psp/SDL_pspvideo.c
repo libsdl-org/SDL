@@ -234,7 +234,7 @@ PSP_CreateWindow(_THIS, SDL_Window * window)
 int
 PSP_CreateWindowFrom(_THIS, SDL_Window * window, const void *data)
 {
-    return -1;
+    return SDL_Unsupported();
 }
 
 void
