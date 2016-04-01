@@ -62,6 +62,20 @@ UIKit_PumpEvents(_THIS)
     do {
         result = CFRunLoopRunInMode((CFStringRef)UITrackingRunLoopMode, seconds, TRUE);
     } while(result == kCFRunLoopRunHandledSource);
+
+    @autoreleasepool {
+        /* Some iOS system functionality (such as Dictation on the on-screen
+           keyboard) uses its own OpenGL ES context but doesn't restore the
+           previous one when it's done. This is a workaround to make sure the
+           expected SDL-created OpenGL ES context is active after the OS is
+           finished running its own code for the frame. If this isn't done, the
+           app may crash or have other nasty symptoms when Dictation is used.
+         */
+        EAGLContext *context = (__bridge EAGLContext *) SDL_GL_GetCurrentContext();
+        if (context != NULL && [EAGLContext currentContext] != context) {
+            [EAGLContext setCurrentContext:context];
+        }
+    }
 }
 
 #endif /* SDL_VIDEO_DRIVER_UIKIT */
