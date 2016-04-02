@@ -548,6 +548,13 @@ extern "C" {
 #define SDL_HINT_MAC_BACKGROUND_APP    "SDL_MAC_BACKGROUND_APP"
 
 /**
+ *  \brief Allow mouse click events when clicking to focus an SDL window
+ *
+ *  This hint only applies to Mac OS X.
+ */
+#define SDL_HINT_MAC_MOUSE_FOCUS_CLICKTHROUGH "SDL_MAC_MOUSE_FOCUS_CLICKTHROUGH"
+
+/**
  * \brief Android APK expansion main file version. Should be a string number like "1", "2" etc.
  *
  * Must be set together with SDL_HINT_ANDROID_APK_EXPANSION_PATCH_FILE_VERSION.

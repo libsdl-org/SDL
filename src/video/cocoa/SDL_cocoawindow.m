@@ -80,20 +80,20 @@
 
 - (void)sendEvent:(NSEvent *)event
 {
-  [super sendEvent:event];
+    [super sendEvent:event];
 
-  if ([event type] != NSLeftMouseUp) {
-      return;
-  }
+    if ([event type] != NSLeftMouseUp) {
+        return;
+    }
 
-  id delegate = [self delegate];
-  if (![delegate isKindOfClass:[Cocoa_WindowListener class]]) {
-      return;
-  }
+    id delegate = [self delegate];
+    if (![delegate isKindOfClass:[Cocoa_WindowListener class]]) {
+        return;
+    }
 
-  if ([delegate isMoving]) {
-      [delegate windowDidFinishMoving];
-  }
+    if ([delegate isMoving]) {
+        [delegate windowDidFinishMoving];
+    }
 }
 
 /* We'll respond to selectors by doing nothing so we don't beep.
@@ -1093,6 +1093,7 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 - (void)rightMouseDown:(NSEvent *)theEvent;
 - (BOOL)mouseDownCanMoveWindow;
 - (void)drawRect:(NSRect)dirtyRect;
+- (BOOL)acceptsFirstMouse:(NSEvent *)theEvent;
 @end
 
 @implementation SDLView
@@ -1131,6 +1132,12 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
         [self addCursorRect:[self bounds]
                      cursor:[NSCursor invisibleCursor]];
     }
+}
+
+- (BOOL)acceptsFirstMouse:(NSEvent *)theEvent
+{
+    const char *hint = SDL_GetHint(SDL_HINT_MAC_MOUSE_FOCUS_CLICKTHROUGH);
+    return hint && *hint != '0';
 }
 @end
 
