@@ -33,6 +33,7 @@
 #include "SDL_uikitvideo.h"
 #include "SDL_uikitmodes.h"
 #include "SDL_uikitwindow.h"
+#include "SDL_uikitopengles.h"
 
 #if SDL_IPHONE_KEYBOARD
 #include "keyinfotable.h"
@@ -102,6 +103,9 @@
 {
     /* Don't run the game loop while a messagebox is up */
     if (!UIKit_ShowingMessageBox()) {
+        /* See the comment in the function definition. */
+        UIKit_GL_RestoreCurrentContext();
+
         animationCallback(animationCallbackParam);
     }
 }
