@@ -668,12 +668,17 @@ ALSA_Deinitialize(void)
 static void
 add_device(const int iscapture, const char *name, const char *_desc)
 {
-    char *desc = SDL_strdup(_desc);
+    char *desc = NULL;
     char *handle = NULL;
-    char *ptr;
+    char *ptr = NULL;
 
+    if (!name || !_desc) {
+        return;  /* nothing we can do with this...? */
+    }
+
+    desc = SDL_strdup(_desc);
     if (!desc) {
-        return;
+        return;  /* oh well, out of memory. Skip it. */
     }
 
     /* some strings have newlines, like "HDA NVidia, HDMI 0\nHDMI Audio Output" */
