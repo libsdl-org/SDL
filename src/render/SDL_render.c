@@ -1153,7 +1153,16 @@ UpdateLogicalSize(SDL_Renderer *renderer)
     if (!hint) {
         scale_policy = 0;
     } else if ( *hint == '1' || SDL_strcasecmp(hint, "overscan") == 0)  {
-        scale_policy = 1;
+        /* Unfortunately, Direct3D 9 does't support negative viewport numbers
+        which the main overscan implementation relies on.
+        D3D11 does support negative values and uses a different id string
+        so overscan will work for D3D11.
+        */
+        if(SDL_strcasecmp("direct3d", SDL_GetCurrentVideoDriver())) {
+            scale_policy = 0;
+        } else {
+            scale_policy = 1;
+        }
     } else {
         scale_policy = 0;
     }
