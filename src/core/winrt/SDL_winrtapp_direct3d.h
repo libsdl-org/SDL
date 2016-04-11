@@ -80,6 +80,10 @@ protected:
     void OnBackButtonPressed(Platform::Object^ sender, Windows::Phone::UI::Input::BackPressedEventArgs^ args);
 #endif
 
+#if NTDDI_VERSION >= NTDDI_WIN10
+    void OnGamepadAdded(Platform::Object ^sender, Windows::Gaming::Input::Gamepad ^gamepad);
+#endif
+
 private:
     bool m_windowClosed;
     bool m_windowVisible;
