@@ -254,6 +254,18 @@ void SDL_WinRTApp::Initialize(CoreApplicationView^ applicationView)
 
     CoreApplication::Exiting +=
         ref new EventHandler<Platform::Object^>(this, &SDL_WinRTApp::OnExiting);
+
+#if NTDDI_VERSION >= NTDDI_WIN10
+    /* HACK ALERT!  Xbox One doesn't seem to detect gamepads unless something
+       gets registered to receive Win10's Windows.Gaming.Input.Gamepad.GamepadAdded
+       events.  We'll register an event handler for these events here, to make
+       sure that gamepad detection works later on, if requested.
+    */
+    Windows::Gaming::Input::Gamepad::GamepadAdded +=
+        ref new Windows::Foundation::EventHandler<Windows::Gaming::Input::Gamepad^>(
+            this, &SDL_WinRTApp::OnGamepadAdded
+        );
+#endif
 }
 
 #if NTDDI_VERSION > NTDDI_WIN8
@@ -832,3 +844,13 @@ void SDL_WinRTApp::OnBackButtonPressed(Platform::Object^ sender, Windows::Phone:
 }
 #endif
 
+#if NTDDI_VERSION >= NTDDI_WIN10
+void SDL_WinRTApp::OnGamepadAdded(Platform::Object ^sender, Windows::Gaming::Input::Gamepad ^gamepad)
+{
+    /* HACK ALERT: Nothing needs to be done here, as this method currently
+       only exists to allow something to be registered with Win10's
+       GamepadAdded event, an operation that seems to be necessary to get
+       Xinput-based detection to work on Xbox One.
+    */
+}
+#endif
