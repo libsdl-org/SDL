@@ -140,10 +140,19 @@ UIKit_GL_CreateContext(_THIS, SDL_Window * window)
         EAGLSharegroup *sharegroup = nil;
         CGFloat scale = 1.0;
         int samples = 0;
+        int major = _this->gl_config.major_version;
+        int minor = _this->gl_config.minor_version;
 
         /* The EAGLRenderingAPI enum values currently map 1:1 to major GLES
          * versions. */
-        EAGLRenderingAPI api = _this->gl_config.major_version;
+        EAGLRenderingAPI api = major;
+
+        /* iOS currently doesn't support GLES >3.0. iOS 6 also only supports up
+         * to GLES 2.0. */
+        if (major > 3 || (major == 3 && (minor > 0 || !UIKit_IsSystemVersionAtLeast(7.0)))) {
+            SDL_SetError("OpenGL ES %d.%d context could not be created", major, minor);
+            return NULL;
+        }
 
         if (_this->gl_config.multisamplebuffers > 0) {
             samples = _this->gl_config.multisamplesamples;
