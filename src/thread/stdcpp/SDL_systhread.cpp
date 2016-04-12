@@ -48,6 +48,7 @@ int
 SDL_SYS_CreateThread(SDL_Thread * thread, void *args)
 {
     try {
+        // !!! FIXME: no way to set a thread stack size here.
         std::thread cpp_thread(RunThread, args);
         thread->handle = (void *) new std::thread(std::move(cpp_thread));
         return 0;

@@ -129,14 +129,17 @@ SDL_SYS_CreateThread(SDL_Thread * thread, void *args)
     /* Also save the real parameters we have to pass to thread function */
     pThreadParms->args = args;
 
+    /* thread->stacksize == 0 means "system default", same as win32 expects */
     if (pfnBeginThread) {
         unsigned threadid = 0;
         thread->handle = (SYS_ThreadHandle)
-            ((size_t) pfnBeginThread(NULL, 0, RunThreadViaBeginThreadEx,
+            ((size_t) pfnBeginThread(NULL, (unsigned int) thread->stacksize,
+                                     RunThreadViaBeginThreadEx,
                                      pThreadParms, 0, &threadid));
     } else {
         DWORD threadid = 0;
-        thread->handle = CreateThread(NULL, 0, RunThreadViaCreateThread,
+        thread->handle = CreateThread(NULL, thread->stacksize,
+                                      RunThreadViaCreateThread,
                                       pThreadParms, 0, &threadid);
     }
     if (thread->handle == NULL) {
