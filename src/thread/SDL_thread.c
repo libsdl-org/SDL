@@ -423,6 +423,16 @@ SDL_CreateThread(int (SDLCALL * fn) (void *),
 #endif
 }
 
+SDL_Thread *
+SDL_CreateThreadInternal(int (SDLCALL * fn) (void *), const char *name,
+                         const size_t stacksize, void *data) {
+#ifdef SDL_PASSED_BEGINTHREAD_ENDTHREAD
+    return SDL_CreateThreadWithStackSize(fn, name, stacksize, data, NULL, NULL);
+#else
+    return SDL_CreateThreadWithStackSize(fn, name, stacksize, data);
+#endif
+}
+
 SDL_threadID
 SDL_GetThreadID(SDL_Thread * thread)
 {

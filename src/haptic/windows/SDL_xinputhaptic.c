@@ -33,6 +33,7 @@
 #include "SDL_xinputhaptic_c.h"
 #include "../../core/windows/SDL_xinput.h"
 #include "../../joystick/windows/SDL_windowsjoystick_c.h"
+#include "../thread/SDL_systhread.h"
 
 /*
  * Internal stuff.
@@ -205,17 +206,8 @@ SDL_XINPUT_HapticOpenFromUserIndex(SDL_Haptic *haptic, const Uint8 userid)
     }
 
     SDL_snprintf(threadName, sizeof(threadName), "SDLXInputDev%d", (int)userid);
+    haptic->hwdata->thread = SDL_CreateThreadInternal(SDL_RunXInputHaptic, threadName, 64 * 1024, haptic->hwdata);
 
-#if defined(__WIN32__) && !defined(HAVE_LIBC)  /* !!! FIXME: this is nasty. */
-#undef SDL_CreateThread
-#if SDL_DYNAMIC_API
-    haptic->hwdata->thread = SDL_CreateThread_REAL(SDL_RunXInputHaptic, threadName, haptic->hwdata, NULL, NULL);
-#else
-    haptic->hwdata->thread = SDL_CreateThread(SDL_RunXInputHaptic, threadName, haptic->hwdata, NULL, NULL);
-#endif
-#else
-    haptic->hwdata->thread = SDL_CreateThread(SDL_RunXInputHaptic, threadName, haptic->hwdata);
-#endif
     if (haptic->hwdata->thread == NULL) {
         SDL_DestroyMutex(haptic->hwdata->mutex);
         SDL_free(haptic->effects);

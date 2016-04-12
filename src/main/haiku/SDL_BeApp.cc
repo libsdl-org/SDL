@@ -31,9 +31,9 @@
 
 #include "SDL_BApp.h"	/* SDL_BApp class definition */
 #include "SDL_BeApp.h"
-#include "SDL_thread.h"
 #include "SDL_timer.h"
 #include "SDL_error.h"
+#include "../thread/SDL_systhread.h"
 
 #include "../../video/haiku/SDL_BWin.h"
 
@@ -62,7 +62,7 @@ SDL_InitBeApp(void)
 {
     /* Create the BApplication that handles appserver interaction */
     if (SDL_BeAppActive <= 0) {
-        SDL_AppThread = SDL_CreateThread(StartBeApp, "SDLApplication", NULL);
+        SDL_AppThread = SDL_CreateThreadInternal(StartBeApp, "SDLApplication", 0, NULL);
         if (SDL_AppThread == NULL) {
             return SDL_SetError("Couldn't create BApplication thread");
         }

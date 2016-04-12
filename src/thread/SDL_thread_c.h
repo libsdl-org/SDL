@@ -90,19 +90,6 @@ extern SDL_TLSData *SDL_Generic_GetTLSData();
  */
 extern int SDL_Generic_SetTLSData(SDL_TLSData *data);
 
-/* !!! FIXME: for 2.1, remove this and make stack size part of SDL_CreateThread. */
-#ifdef SDL_PASSED_BEGINTHREAD_ENDTHREAD
-SDL_Thread *SDLCALL
-SDL_CreateThreadWithStackSize(int (SDLCALL * fn) (void *),
-                 const char *name, const size_t stacksize, void *data,
-                 pfnSDL_CurrentBeginThread pfnBeginThread,
-                 pfnSDL_CurrentEndThread pfnEndThread)
-#else
-SDL_Thread *SDLCALL
-SDL_CreateThreadWithStackSize(int (SDLCALL * fn) (void *),
-                const char *name, const size_t stacksize, void *data)
-#endif
-
 #endif /* _SDL_thread_c_h */
 
 /* vi: set ts=4 sw=4 expandtab: */

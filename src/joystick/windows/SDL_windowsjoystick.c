@@ -35,13 +35,13 @@
 #include "SDL_error.h"
 #include "SDL_assert.h"
 #include "SDL_events.h"
-#include "SDL_thread.h"
 #include "SDL_timer.h"
 #include "SDL_mutex.h"
 #include "SDL_events.h"
 #include "SDL_hints.h"
 #include "SDL_joystick.h"
 #include "../SDL_sysjoystick.h"
+#include "../thread/SDL_systhread.h"
 #if !SDL_EVENTS_DISABLED
 #include "../../events/SDL_events_c.h"
 #endif
@@ -301,18 +301,9 @@ SDL_SYS_JoystickInit(void)
     SDL_SYS_JoystickDetect();
 
     if (!s_threadJoystick) {
-        s_bJoystickThreadQuit = SDL_FALSE;
         /* spin up the thread to detect hotplug of devices */
-#if defined(__WIN32__) && !defined(HAVE_LIBC)
-#undef SDL_CreateThread
-#if SDL_DYNAMIC_API
-        s_threadJoystick= SDL_CreateThread_REAL(SDL_JoystickThread, "SDL_joystick", NULL, NULL, NULL);
-#else
-        s_threadJoystick= SDL_CreateThread(SDL_JoystickThread, "SDL_joystick", NULL, NULL, NULL);
-#endif
-#else
-        s_threadJoystick = SDL_CreateThread(SDL_JoystickThread, "SDL_joystick", NULL);
-#endif
+        s_bJoystickThreadQuit = SDL_FALSE;
+        s_threadJoystick = SDL_CreateThreadInternal(SDL_JoystickThread, "SDL_joystick", 64 * 1024, NULL);
     }
     return SDL_SYS_NumJoysticks();
 }

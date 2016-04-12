@@ -60,6 +60,11 @@ extern SDL_TLSData *SDL_SYS_GetTLSData();
 /* Set the thread local storage for this thread */
 extern int SDL_SYS_SetTLSData(SDL_TLSData *data);
 
+/* This is for internal SDL use, so we don't need #ifdefs everywhere. */
+extern SDL_Thread *
+SDL_CreateThreadInternal(int (SDLCALL * fn) (void *), const char *name,
+                         const size_t stacksize, void *data);
+
 #endif /* _SDL_systhread_h */
 
 /* vi: set ts=4 sw=4 expandtab: */

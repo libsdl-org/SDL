@@ -32,8 +32,8 @@
 #if SDL_MAC_NO_SANDBOX
 
 #include "SDL_keyboard.h"
-#include "SDL_thread.h"
 #include "SDL_cocoavideo.h"
+#include "../thread/SDL_systhread.h"
 
 #include "../../events/SDL_mouse_c.h"
 
@@ -202,7 +202,7 @@ Cocoa_InitMouseEventTap(SDL_MouseData* driverdata)
 
     tapdata->runloopStartedSemaphore = SDL_CreateSemaphore(0);
     if (tapdata->runloopStartedSemaphore) {
-        tapdata->thread = SDL_CreateThread(&Cocoa_MouseTapThread, "Event Tap Loop", tapdata);
+        tapdata->thread = SDL_CreateThreadInternal(&Cocoa_MouseTapThread, "Event Tap Loop", 64 * 1024, tapdata);
         if (!tapdata->thread) {
             SDL_DestroySemaphore(tapdata->runloopStartedSemaphore);
         }

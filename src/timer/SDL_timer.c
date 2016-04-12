@@ -24,7 +24,7 @@
 #include "SDL_timer_c.h"
 #include "SDL_atomic.h"
 #include "SDL_cpuinfo.h"
-#include "SDL_thread.h"
+#include "../thread/SDL_systhread.h"
 
 /* #define DEBUG_TIMERS */
 
@@ -221,17 +221,9 @@ SDL_TimerInit(void)
         }
 
         SDL_AtomicSet(&data->active, 1);
-        /* !!! FIXME: this is nasty. */
-#if defined(__WIN32__) && !defined(HAVE_LIBC)
-#undef SDL_CreateThread
-#if SDL_DYNAMIC_API
-        data->thread = SDL_CreateThread_REAL(SDL_TimerThread, name, data, NULL, NULL);
-#else
-        data->thread = SDL_CreateThread(SDL_TimerThread, name, data, NULL, NULL);
-#endif
-#else
-        data->thread = SDL_CreateThread(SDL_TimerThread, name, data);
-#endif
+
+        /* Timer threads use a callback into the app, so we can't set a limited stack size here. */
+        data->thread = SDL_CreateThreadInternal(SDL_TimerThread, name, 0, data);
         if (!data->thread) {
             SDL_TimerQuit();
             return -1;
