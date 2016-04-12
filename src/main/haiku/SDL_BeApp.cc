@@ -33,13 +33,15 @@
 #include "SDL_BeApp.h"
 #include "SDL_timer.h"
 #include "SDL_error.h"
-#include "../../thread/SDL_systhread.h"
 
 #include "../../video/haiku/SDL_BWin.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#include "../../thread/SDL_systhread.h"
+
 /* Flag to tell whether or not the Be application is active or not */
 int SDL_BeAppActive = 0;
 static SDL_Thread *SDL_AppThread = NULL;
