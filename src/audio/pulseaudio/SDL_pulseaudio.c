@@ -46,7 +46,7 @@
 #include "../SDL_audio_c.h"
 #include "SDL_pulseaudio.h"
 #include "SDL_loadso.h"
-#include "../thread/SDL_systhread.h"
+#include "../../thread/SDL_systhread.h"
 
 #if (PA_API_VERSION < 12)
 /** Return non-zero if the passed state is one of the connected states */

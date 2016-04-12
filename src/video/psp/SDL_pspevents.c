@@ -32,7 +32,7 @@
 #include "SDL_pspvideo.h"
 #include "SDL_pspevents_c.h"
 #include "SDL_keyboard.h"
-#include "../thread/SDL_systhread.h"
+#include "../../thread/SDL_systhread.h"
 #include <psphprm.h>
 
 #ifdef PSPIRKEYB

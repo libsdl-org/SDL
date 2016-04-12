@@ -41,7 +41,7 @@
 #include "SDL_hints.h"
 #include "SDL_joystick.h"
 #include "../SDL_sysjoystick.h"
-#include "../thread/SDL_systhread.h"
+#include "../../thread/SDL_systhread.h"
 #if !SDL_EVENTS_DISABLED
 #include "../../events/SDL_events_c.h"
 #endif

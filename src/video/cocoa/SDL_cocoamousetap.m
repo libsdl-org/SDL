@@ -33,7 +33,7 @@
 
 #include "SDL_keyboard.h"
 #include "SDL_cocoavideo.h"
-#include "../thread/SDL_systhread.h"
+#include "../../thread/SDL_systhread.h"
 
 #include "../../events/SDL_mouse_c.h"
 
