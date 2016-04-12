@@ -121,6 +121,7 @@ SDL_SYS_CreateThread(SDL_Thread * thread, void *args)
 #endif /* SDL_PASSED_BEGINTHREAD_ENDTHREAD */
     pThreadStartParms pThreadParms =
         (pThreadStartParms) SDL_malloc(sizeof(tThreadStartParms));
+    const DWORD flags = thread->stacksize ? STACK_SIZE_PARAM_IS_A_RESERVATION : 0;
     if (!pThreadParms) {
         return SDL_OutOfMemory();
     }
@@ -135,12 +136,12 @@ SDL_SYS_CreateThread(SDL_Thread * thread, void *args)
         thread->handle = (SYS_ThreadHandle)
             ((size_t) pfnBeginThread(NULL, (unsigned int) thread->stacksize,
                                      RunThreadViaBeginThreadEx,
-                                     pThreadParms, 0, &threadid));
+                                     pThreadParms, flags, &threadid));
     } else {
         DWORD threadid = 0;
         thread->handle = CreateThread(NULL, thread->stacksize,
                                       RunThreadViaCreateThread,
-                                      pThreadParms, 0, &threadid);
+                                      pThreadParms, flags, &threadid);
     }
     if (thread->handle == NULL) {
         return SDL_SetError("Not enough resources to create thread");
