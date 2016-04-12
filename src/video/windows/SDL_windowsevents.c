@@ -799,6 +799,9 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             h = rect.bottom - rect.top;
             SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_RESIZED, w,
                                 h);
+
+            /* Forces a WM_PAINT event */
+            InvalidateRect(hwnd, NULL, FALSE);
         }
         break;
 
