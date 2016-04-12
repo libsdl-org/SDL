@@ -33,7 +33,7 @@
 #include "SDL_BeApp.h"
 #include "SDL_timer.h"
 #include "SDL_error.h"
-#include "../thread/SDL_systhread.h"
+#include "../../thread/SDL_systhread.h"
 
 #include "../../video/haiku/SDL_BWin.h"
 

@@ -33,7 +33,7 @@
 #include "SDL_xinputhaptic_c.h"
 #include "../../core/windows/SDL_xinput.h"
 #include "../../joystick/windows/SDL_windowsjoystick_c.h"
-#include "../thread/SDL_systhread.h"
+#include "../../thread/SDL_systhread.h"
 
 /*
  * Internal stuff.
