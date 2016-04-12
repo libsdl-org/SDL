@@ -31,8 +31,8 @@
 #include "../../events/SDL_keyboard_c.h"
 #include "SDL_pspvideo.h"
 #include "SDL_pspevents_c.h"
-#include "SDL_thread.h"
 #include "SDL_keyboard.h"
+#include "../thread/SDL_systhread.h"
 #include <psphprm.h>
 
 #ifdef PSPIRKEYB
@@ -264,7 +264,7 @@ void PSP_EventInit(_THIS)
         return;
     }
     running = 1;
-    if((thread = SDL_CreateThread(EventUpdate, "PSPInputThread",NULL)) == NULL) {
+    if((thread = SDL_CreateThreadInternal(EventUpdate, "PSPInputThread", 4096, NULL)) == NULL) {
         SDL_SetError("Can't create input thread\n");
         return;
     }

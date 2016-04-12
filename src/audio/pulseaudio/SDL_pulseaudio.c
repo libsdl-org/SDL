@@ -46,6 +46,7 @@
 #include "../SDL_audio_c.h"
 #include "SDL_pulseaudio.h"
 #include "SDL_loadso.h"
+#include "../thread/SDL_systhread.h"
 
 #if (PA_API_VERSION < 12)
 /** Return non-zero if the passed state is one of the connected states */
@@ -646,7 +647,7 @@ PULSEAUDIO_DetectDevices()
     WaitForPulseOperation(hotplug_mainloop, PULSEAUDIO_pa_context_get_source_info_list(hotplug_context, SourceInfoCallback, NULL));
 
     /* ok, we have a sane list, let's set up hotplug notifications now... */
-    hotplug_thread = SDL_CreateThread(HotplugThread, "PulseHotplug", NULL);
+    hotplug_thread = SDL_CreateThreadInternal(HotplugThread, "PulseHotplug", 256 * 1024, NULL);
 }
 
 static void

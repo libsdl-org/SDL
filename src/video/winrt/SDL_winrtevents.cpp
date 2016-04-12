@@ -38,6 +38,7 @@ using Windows::UI::Core::CoreCursor;
 #include "../../core/winrt/SDL_winrtapp_xaml.h"
 #include "SDL_assert.h"
 #include "SDL_system.h"
+#include "../thread/SDL_systhread.h"
 
 extern "C" {
 #include "../SDL_sysvideo.h"
@@ -113,7 +114,7 @@ WINRT_CycleXAMLThread()
 
             _mutex = SDL_CreateMutex();
             _threadState = ThreadState_Running;
-            _XAMLThread = SDL_CreateThread(WINRT_XAMLThreadMain, "SDL/XAML App Thread", nullptr);
+            _XAMLThread = SDL_CreateThreadInternal(WINRT_XAMLThreadMain, "SDL/XAML App Thread", 0, nullptr);
 
             SDL_LockMutex(_mutex);
             while (_threadState != ThreadState_Yielding) {
