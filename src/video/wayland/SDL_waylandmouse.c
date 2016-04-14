@@ -27,7 +27,6 @@
 #define _GNU_SOURCE
 #endif
 
-#include <errno.h>
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <fcntl.h>
@@ -70,7 +69,6 @@ wayland_create_tmp_file(off_t size)
 
     xdg_path = SDL_getenv("XDG_RUNTIME_DIR");
     if (!xdg_path) {
-        errno = ENOENT;
         return -1;
     }
 
