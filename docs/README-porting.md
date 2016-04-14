@@ -5,7 +5,7 @@ Porting
 
   The first thing you have to do when porting to a new platform, is look at
 include/SDL_platform.h and create an entry there for your operating system.
-The standard format is __PLATFORM__, where PLATFORM is the name of the OS.
+The standard format is "__PLATFORM__", where PLATFORM is the name of the OS.
 Ideally SDL_platform.h will be able to auto-detect the system it's building
 on based on C preprocessor symbols.
 
@@ -15,7 +15,9 @@ There are two basic ways of building SDL at the moment:
 
    If you have a GNUish system, then you might try this.  Edit configure.in,
    take a look at the large section labelled:
+
 	"Set up the configuration based on the host platform!"
+
    Add a section for your platform, and then re-run autogen.sh and build!
 
 2. Using an IDE:
@@ -27,6 +29,7 @@ There are two basic ways of building SDL at the moment:
 
    Add the top level include directory to the header search path, and then add
    the following sources to the project:
+
 	src/*.c
 	src/atomic/*.c
 	src/audio/*.c
