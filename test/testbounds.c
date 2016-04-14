@@ -18,6 +18,7 @@ int main(int argc, char **argv)
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         SDL_Log("SDL_Init(SDL_INIT_VIDEO) failed: %s", SDL_GetError());
+        return 1;
     }
 
     total = SDL_GetNumVideoDisplays();
