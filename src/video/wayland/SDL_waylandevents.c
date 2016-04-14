@@ -40,7 +40,6 @@
 #include <sys/select.h>
 #include <sys/mman.h>
 #include <poll.h>
-#include <errno.h>
 #include <unistd.h>
 #include <xkbcommon/xkbcommon.h>
 
