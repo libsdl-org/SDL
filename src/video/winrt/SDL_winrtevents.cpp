@@ -38,9 +38,9 @@ using Windows::UI::Core::CoreCursor;
 #include "../../core/winrt/SDL_winrtapp_xaml.h"
 #include "SDL_assert.h"
 #include "SDL_system.h"
-#include "../../thread/SDL_systhread.h"
 
 extern "C" {
+#include "../../thread/SDL_systhread.h"
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_events_c.h"
 }
