@@ -2,11 +2,8 @@ WinRT
 =====
 
 This port allows SDL applications to run on Microsoft's platforms that require
-use of "Windows Runtime", aka. "WinRT", APIs.  WinRT apps are currently
-full-screen only, and run in what Microsoft sometimes refers to as their
-"Modern" (formerly, "Metro"), environment.  For Windows 8.x, Microsoft may also
-refer to them as "Windows Store" apps, due to them being distributed,
-primarily, via a Microsoft-run online store (of the same name).
+use of "Windows Runtime", aka. "WinRT", APIs.  Microsoft may, in some cases,
+refer to them as either "Windows Store", or for Windows 10, UWP apps.
 
 Some of the operating systems that include WinRT, are:
 
@@ -82,7 +79,9 @@ Here is a rough list of what works, and what doens't:
 
 * What partially works:
   * keyboard input.  Most of WinRT's documented virtual keys are supported, as
-    well as many keys with documented hardware scancodes.
+    well as many keys with documented hardware scancodes.  Converting
+    SDL_Scancodes to or from SDL_Keycodes may not work, due to missing APIs
+    (MapVirualKey()) in Microsoft's Windows Store / UWP APIs.
   * SDLmain.  WinRT uses a different signature for each app's main() function.
     SDL-based apps that use this port must compile in SDL_winrt_main_NonXAML.cpp
     (in `SDL\src\main\winrt\`) directly in order for their C-style main()
