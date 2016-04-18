@@ -3,7 +3,7 @@ WinRT
 
 This port allows SDL applications to run on Microsoft's platforms that require
 use of "Windows Runtime", aka. "WinRT", APIs.  Microsoft may, in some cases,
-refer to them as either "Windows Store", or for Windows 10, UWP apps.
+refer to them as either "Windows Store", or for Windows 10, "UWP" apps.
 
 Some of the operating systems that include WinRT, are:
 
