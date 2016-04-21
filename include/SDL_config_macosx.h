@@ -183,6 +183,10 @@
 #define SDL_VIDEO_RENDER_OGL_ES2 1
 #endif
 
+#ifndef SDL_VIDEO_RENDER_METAL
+#define SDL_VIDEO_RENDER_METAL    1
+#endif
+
 /* Enable OpenGL support */
 #ifndef SDL_VIDEO_OPENGL
 #define SDL_VIDEO_OPENGL    1
