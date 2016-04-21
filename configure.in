@@ -2053,6 +2053,19 @@ AC_HELP_STRING([--enable-video-cocoa], [use Cocoa video driver [[default=yes]]])
     fi
 }
 
+CheckMETAL()
+{
+    AC_ARG_ENABLE(render-metal,
+AC_HELP_STRING([--enable-render-metal], [enable the Metal render driver [[default=no]]]),
+                                , enable_render_metal=no)
+    if test x$enable_render = xyes -a x$enable_render_metal = xyes; then
+        dnl This should maybe make sure you have a supported SDK version.
+        AC_DEFINE(SDL_VIDEO_RENDER_METAL, 1, [ ])
+        SOURCES="$SOURCES $srcdir/src/render/metal/*.m"
+    fi
+}
+
+
 dnl Find DirectFB
 CheckDirectFB()
 {
@@ -2103,7 +2116,6 @@ AC_HELP_STRING([--enable-directfb-shared], [dynamically load directfb support [[
                               , enable_directfb_shared=yes)
 
             AC_DEFINE(SDL_VIDEO_DRIVER_DIRECTFB, 1, [ ])
-            AC_DEFINE(SDL_VIDEO_RENDER_DIRECTFB, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/video/directfb/*.c"
             EXTRA_CFLAGS="$EXTRA_CFLAGS $DIRECTFB_CFLAGS"
 
@@ -3636,8 +3648,9 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN
-        CheckPTHREAD
+        CheckMETAL
         CheckVulkan
+        CheckPTHREAD
 
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
@@ -3701,6 +3714,10 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,OpenGLES"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,QuartzCore"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,UIKit"
+
+        if test x$enable_render = xyes -a x$enable_render_metal = xyes; then
+            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,Metal"
+        fi
         ;;
     *-*-darwin* )
         # This could be either full "Mac OS X", or plain "Darwin" which is
@@ -3719,6 +3736,7 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         CheckDummyAudio
         CheckDLOPEN
         CheckCOCOA
+        CheckMETAL
         CheckX11
         CheckMacGL
         CheckOpenGLX11
