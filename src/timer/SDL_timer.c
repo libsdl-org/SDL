@@ -28,6 +28,8 @@
 
 /* #define DEBUG_TIMERS */
 
+#if !defined(__EMSCRIPTEN__) || !SDL_THREADS_DISABLED
+
 typedef struct _SDL_Timer
 {
     int timerID;
@@ -369,5 +371,41 @@ SDL_RemoveTimer(SDL_TimerID id)
     }
     return canceled;
 }
+
+#else
+
+#include <emscripten/emscripten.h>
+
+int
+SDL_TimerInit(void)
+{
+    return 0;
+}
+
+void
+SDL_TimerQuit(void)
+{
+}
+
+SDL_TimerID
+SDL_AddTimer(Uint32 interval, SDL_TimerCallback callback, void *param)
+{
+    return EM_ASM_INT({
+        return Browser.safeSetTimeout(function() {
+            dynCall('iii', $1, [$0, $2]);
+        }, $0);
+    }, interval, callback, param);
+}
+
+SDL_bool
+SDL_RemoveTimer(SDL_TimerID id)
+{
+    EM_ASM_({
+        window.clearTimeout($0);
+    }, id);
+    return 1;
+}
+
+#endif
 
 /* vi: set ts=4 sw=4 expandtab: */
