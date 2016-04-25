@@ -24,7 +24,7 @@
          then replace "SDLActivity" with the name of your class (e.g. "MyGame")
          in the XML below.
 
-         An example Java class can be found in README-android.txt
+         An example Java class can be found in README-android.md
     -->
     <application android:label="@string/app_name"
                  android:icon="@drawable/ic_launcher"
