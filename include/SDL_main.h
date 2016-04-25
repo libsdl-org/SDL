@@ -63,7 +63,7 @@
 /* On Android SDL provides a Java class in SDLActivity.java that is the
    main activity entry point.
 
-   See README-android.txt for more details on extending that class.
+   See README-android.md for more details on extending that class.
  */
 #define SDL_MAIN_NEEDED
 
