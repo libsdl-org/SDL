@@ -974,13 +974,8 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
             cgpoint.x = window->x + x;
             cgpoint.y = window->y + y;
 
-            /* According to the docs, this was deprecated in 10.6, but it's still
-             * around. The substitute requires a CGEventSource, but I'm not entirely
-             * sure how we'd procure the right one for this event.
-             */
-            CGSetLocalEventsSuppressionInterval(0.0);
             CGDisplayMoveCursorToPoint(kCGDirectMainDisplay, cgpoint);
-            CGSetLocalEventsSuppressionInterval(0.25);
+            CGAssociateMouseAndMouseCursorPosition(YES);
 
             Cocoa_HandleMouseWarp(cgpoint.x, cgpoint.y);
 #endif
