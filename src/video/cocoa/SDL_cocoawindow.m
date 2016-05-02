@@ -839,14 +839,7 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
     /* Ignore events that aren't inside the client area (i.e. title bar.) */
     if ([theEvent window]) {
         NSRect windowRect = [[[theEvent window] contentView] frame];
-
-        /* add one to size, since NSPointInRect is exclusive of the bottom
-           edges, which mean it misses the top of the window by one pixel
-           (as the origin is the bottom left). */
-        windowRect.size.width += 1;
-        windowRect.size.height += 1;
-
-        if (!NSPointInRect([theEvent locationInWindow], windowRect)) {
+        if (!NSMouseInRect([theEvent locationInWindow], windowRect, NO)) {
             return;
         }
     }
