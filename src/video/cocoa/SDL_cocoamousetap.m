@@ -96,7 +96,7 @@ Cocoa_MouseTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event
     eventLocation = CGEventGetUnflippedLocation(event);
     windowRect = [nswindow contentRectForFrameRect:[nswindow frame]];
 
-    if (!NSPointInRect(NSPointFromCGPoint(eventLocation), windowRect)) {
+    if (!NSMouseInRect(NSPointFromCGPoint(eventLocation), windowRect, NO)) {
 
         /* This is in CGs global screenspace coordinate system, which has a
          * flipped Y.
@@ -109,10 +109,10 @@ Cocoa_MouseTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event
             newLocation.x = NSMaxX(windowRect) - 1.0;
         }
 
-        if (eventLocation.y < NSMinY(windowRect)) {
+        if (eventLocation.y <= NSMinY(windowRect)) {
             newLocation.y -= (NSMinY(windowRect) - eventLocation.y + 1);
-        } else if (eventLocation.y >= NSMaxY(windowRect)) {
-            newLocation.y += (eventLocation.y - NSMaxY(windowRect) + 1);
+        } else if (eventLocation.y > NSMaxY(windowRect)) {
+            newLocation.y += (eventLocation.y - NSMaxY(windowRect));
         }
 
         CGWarpMouseCursorPosition(newLocation);
