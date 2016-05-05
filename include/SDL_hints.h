@@ -369,7 +369,7 @@ extern "C" {
 *  Use this hint in case you need to set SDL's threads stack size to other than the default.
 *  This is specially useful if you build SDL against a non glibc libc library (such as musl) which
 *  provides a relatively small default thread stack size (a few kilobytes versus the default 8MB glibc uses).
-*  Support for this hint is currently available only in the pthread backend.
+*  Support for this hint is currently available only in the pthread, Windows, and PSP backend.
 */
 #define SDL_HINT_THREAD_STACK_SIZE              "SDL_THREAD_STACK_SIZE"
 
