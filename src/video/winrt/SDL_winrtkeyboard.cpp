@@ -383,4 +383,48 @@ WINRT_ProcessCharacterReceivedEvent(Windows::UI::Core::CharacterReceivedEventArg
     }
 }
 
+
+#if NTDDI_VERSION >= NTDDI_WIN10
+
+SDL_bool WINRT_HasScreenKeyboardSupport(_THIS)
+{
+    return SDL_TRUE;
+}
+
+void WINRT_ShowScreenKeyboard(_THIS, SDL_Window *window)
+{
+    using namespace Windows::UI::ViewManagement;
+    InputPane ^ inputPane = InputPane::GetForCurrentView();
+    if (inputPane) {
+        inputPane->TryShow();
+    }
+}
+
+void WINRT_HideScreenKeyboard(_THIS, SDL_Window *window)
+{
+    using namespace Windows::UI::ViewManagement;
+    InputPane ^ inputPane = InputPane::GetForCurrentView();
+    if (inputPane) {
+        inputPane->TryHide();
+    }
+}
+
+SDL_bool WINRT_IsScreenKeyboardShown(_THIS, SDL_Window *window)
+{
+    using namespace Windows::UI::ViewManagement;
+    InputPane ^ inputPane = InputPane::GetForCurrentView();
+    if (inputPane) {
+        // dludwig@pobox.com: checking inputPane->Visible doesn't seem to detect visibility,
+        //   at least not on the Windows Phone 10.0.10240.0 emulator.  Checking
+        //   the size of inputPane->OccludedRect, however, does seem to work.
+        Windows::Foundation::Rect rect = inputPane->OccludedRect;
+        if (rect.Width > 0 && rect.Height > 0) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
+#endif  // NTDDI_VERSION >= ...
+
 #endif // SDL_VIDEO_DRIVER_WINRT

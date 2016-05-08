@@ -140,6 +140,14 @@ WINRT_CreateDevice(int devindex)
     device->SetDisplayMode = WINRT_SetDisplayMode;
     device->PumpEvents = WINRT_PumpEvents;
     device->GetWindowWMInfo = WINRT_GetWindowWMInfo;
+
+#if NTDDI_VERSION >= NTDDI_WIN10
+    device->HasScreenKeyboardSupport = WINRT_HasScreenKeyboardSupport;
+    device->ShowScreenKeyboard = WINRT_ShowScreenKeyboard;
+    device->HideScreenKeyboard = WINRT_HideScreenKeyboard;
+    device->IsScreenKeyboardShown = WINRT_IsScreenKeyboardShown;
+#endif
+
 #ifdef SDL_VIDEO_OPENGL_EGL
     device->GL_LoadLibrary = WINRT_GLES_LoadLibrary;
     device->GL_GetProcAddress = WINRT_GLES_GetProcAddress;
