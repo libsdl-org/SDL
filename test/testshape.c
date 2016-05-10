@@ -71,6 +71,10 @@ int main(int argc,char** argv)
 
     num_pictures = argc - 1;
     pictures = (LoadedPicture *)SDL_malloc(sizeof(LoadedPicture)*num_pictures);
+    if (!pictures) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not allocate memory.");
+        exit(1);
+    }
     for(i=0;i<num_pictures;i++)
         pictures[i].surface = NULL;
     for(i=0;i<num_pictures;i++) {
