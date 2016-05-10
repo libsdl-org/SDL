@@ -719,7 +719,9 @@ SDL_GetDisplayDPI(int displayIndex, float * ddpi, float * hdpi, float * vdpi)
 		if (_this->GetDisplayDPI(_this, display, ddpi, hdpi, vdpi) == 0) {
 			return 0;
 		}
-	}
+    } else {
+        return SDL_Unsupported();
+    }
 
 	return -1;
 }
