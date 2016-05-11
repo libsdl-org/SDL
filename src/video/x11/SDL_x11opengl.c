@@ -710,7 +710,7 @@ X11_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
    with 0 as an argument.
 */
 
-static int swapinterval = -1;
+static int swapinterval = 0;
 int
 X11_GL_SetSwapInterval(_THIS, int interval)
 {
