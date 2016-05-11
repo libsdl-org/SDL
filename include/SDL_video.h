@@ -449,7 +449,7 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window * window);
  *               ::SDL_WINDOW_MINIMIZED,     ::SDL_WINDOW_INPUT_GRABBED,
  *               ::SDL_WINDOW_ALLOW_HIGHDPI.
  *
- *  \return The id of the window created, or zero if window creation failed.
+ *  \return The created window, or NULL if window creation failed.
  *
  *  If the window is created with the SDL_WINDOW_ALLOW_HIGHDPI flag, its size
  *  in pixels may differ from its size in screen coordinates on platforms with
@@ -468,7 +468,7 @@ extern DECLSPEC SDL_Window * SDLCALL SDL_CreateWindow(const char *title,
  *
  *  \param data A pointer to driver-dependent window creation data
  *
- *  \return The id of the window created, or zero if window creation failed.
+ *  \return The created window, or NULL if window creation failed.
  *
  *  \sa SDL_DestroyWindow()
  */
