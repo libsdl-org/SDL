@@ -558,7 +558,8 @@ int
 SDL_EGL_GetSwapInterval(_THIS)
 {
     if (!_this->egl_data) {
-        return SDL_SetError("EGL not initialized");
+        SDL_SetError("EGL not initialized");
+        return 0;
     }
     
     return _this->egl_data->egl_swapinterval;
