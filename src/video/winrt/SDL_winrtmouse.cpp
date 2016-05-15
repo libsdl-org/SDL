@@ -26,6 +26,7 @@
  * Windows includes:
  */
 #include <Windows.h>
+#include <windows.ui.core.h>
 using namespace Windows::UI::Core;
 using Windows::UI::Core::CoreCursor;
 
@@ -116,11 +117,69 @@ WINRT_ShowCursor(SDL_Cursor * cursor)
         return 0;
     }
 
+    CoreWindow ^ coreWindow = CoreWindow::GetForCurrentThread();
     if (cursor) {
         CoreCursor ^* theCursor = (CoreCursor ^*) cursor->driverdata;
-        CoreWindow::GetForCurrentThread()->PointerCursor = *theCursor;
+        coreWindow->PointerCursor = *theCursor;
     } else {
-        CoreWindow::GetForCurrentThread()->PointerCursor = nullptr;
+        // HACK ALERT: TL;DR - Hiding the cursor in WinRT/UWP apps is weird, and
+        //   a Win32-style cursor resource file must be directly included in apps,
+        //   otherwise hiding the cursor will cause mouse-motion data to never be
+        //   received.
+        //
+        // Here's the lengthy explanation:
+        //
+        // There are two ways to hide a cursor in WinRT/UWP apps.
+        // Both involve setting the WinRT CoreWindow's (which is somewhat analogous
+        // to a Win32 HWND) 'PointerCursor' property.
+        //
+        // The first way to hide a cursor sets PointerCursor to nullptr.  This
+        // is, arguably, the easiest to implement for an app.  It does have an
+        // unfortunate side-effect: it'll prevent mouse-motion events from being
+        // sent to the app (via CoreWindow).
+        //
+        // The second way to hide a cursor sets PointerCursor to a transparent
+        // cursor.  This allows mouse-motion events to be sent to the app, but is
+        // more difficult to set up, as:
+        //   1. WinRT/UWP, while providing a few stock cursors, does not provide
+        //      a completely transparent cursor.
+        //   2. WinRT/UWP allows apps to provide custom-built cursors, but *ONLY*
+        //      if they are linked directly inside the app, via Win32-style
+        //      cursor resource files.  APIs to create cursors at runtime are
+        //      not provided to apps, and attempting to link-to or use Win32
+        //      cursor-creation APIs could cause an app to fail Windows Store
+        //      certification.
+        //
+        // SDL can use either means of hiding the cursor.  It provides a Win32-style
+        // set of cursor resource files in its source distribution, inside
+        // src/main/winrt/.  If those files are linked to an SDL-for-WinRT/UWP app
+        // (by including them in a MSVC project, for example), SDL will attempt to
+        // use those, if and when the cursor is hidden via SDL APIs.  If those
+        // files are not linked in, SDL will attempt to hide the cursor via the
+        // 'set PointerCursor to nullptr' means (which, if you recall, causes
+        // mouse-motion data to NOT be sent to the app!).
+        //
+        // Tech notes:
+        //  - SDL's blank cursor resource uses a resource ID of 5000.
+        //  - SDL's cursor resources consist of the following two files:
+        //     - src/main/winrt/SDL2-WinRTResource_BlankCursor.cur -- cursor pixel data
+        //     - src/main/winrt/SDL2-WinRTResources.rc             -- declares the cursor resource, and its ID (of 5000)
+        //
+
+        const unsigned int win32CursorResourceID = 5000;  
+        CoreCursor ^ blankCursor = ref new CoreCursor(CoreCursorType::Custom, win32CursorResourceID);
+
+        // Set 'PointerCursor' to 'blankCursor' in a way that shouldn't throw
+        // an exception if the app hasn't loaded that resource.
+        ABI::Windows::UI::Core::ICoreCursor * iblankCursor = reinterpret_cast<ABI::Windows::UI::Core::ICoreCursor *>(blankCursor);
+        ABI::Windows::UI::Core::ICoreWindow * icoreWindow = reinterpret_cast<ABI::Windows::UI::Core::ICoreWindow *>(coreWindow);
+        HRESULT hr = icoreWindow->put_PointerCursor(iblankCursor);
+        if (FAILED(hr)) {
+            // The app doesn't contain the cursor resource, or some other error
+            // occurred.  Just use the other, but mouse-motion-preventing, means of
+            // hiding the cursor.
+            coreWindow->PointerCursor = nullptr;
+        }
     }
     return 0;
 }
