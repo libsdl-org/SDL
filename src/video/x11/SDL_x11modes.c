@@ -1070,7 +1070,7 @@ X11_GetDisplayDPI(_THIS, SDL_VideoDisplay * sdl_display, float * ddpi, float * h
         *vdpi = data->vdpi;
     }
 
-    return data->ddpi != 0.0f ? 0 : -1;
+    return data->ddpi != 0.0f ? 0 : SDL_SetError("Couldn't get DPI");
 }
 
 int
