@@ -1017,7 +1017,7 @@ extern DECLSPEC void SDLCALL SDL_DestroyWindow(SDL_Window * window);
 
 
 /**
- *  \brief Returns whether the screensaver is currently enabled (default on).
+ *  \brief Returns whether the screensaver is currently enabled (default off).
  *
  *  \sa SDL_EnableScreenSaver()
  *  \sa SDL_DisableScreenSaver()
