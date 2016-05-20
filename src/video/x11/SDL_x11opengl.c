@@ -695,7 +695,7 @@ X11_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
 
     if (errorCode != Success) {   /* uhoh, an X error was thrown! */
         return -1;  /* the error handler called SDL_SetError() already. */
-    } else if (!rc) {  /* glxMakeCurrent() failed without throwing an X error */
+    } else if (!rc) {  /* glXMakeCurrent() failed without throwing an X error */
         return SDL_SetError("Unable to make GL context current");
     }
 
@@ -703,10 +703,10 @@ X11_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
 }
 
 /*
-   0 is a valid argument to glxSwapInterval(MESA|EXT) and setting it to 0
+   0 is a valid argument to glXSwapInterval(MESA|EXT) and setting it to 0
    will undo the effect of a previous call with a value that is greater
    than zero (or at least that is what the docs say). OTOH, 0 is an invalid
-   argument to glxSwapIntervalSGI and it returns an error if you call it
+   argument to glXSwapIntervalSGI and it returns an error if you call it
    with 0 as an argument.
 */
 
@@ -742,14 +742,14 @@ X11_GL_SetSwapInterval(_THIS, int interval)
     } else if (_this->gl_data->glXSwapIntervalMESA) {
         status = _this->gl_data->glXSwapIntervalMESA(interval);
         if (status != 0) {
-            SDL_SetError("glxSwapIntervalMESA failed");
+            SDL_SetError("glXSwapIntervalMESA failed");
         } else {
             swapinterval = interval;
         }
     } else if (_this->gl_data->glXSwapIntervalSGI) {
         status = _this->gl_data->glXSwapIntervalSGI(interval);
         if (status != 0) {
-            SDL_SetError("glxSwapIntervalSGI failed");
+            SDL_SetError("glXSwapIntervalSGI failed");
         } else {
             swapinterval = interval;
         }
