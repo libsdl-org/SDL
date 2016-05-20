@@ -342,7 +342,7 @@ WIN_GetDisplayDPI(_THIS, SDL_VideoDisplay * display, float * ddpi, float * hdpi,
         *vdpi = data->VertDPI;
     }
 
-    return data->DiagDPI != 0.0f ? 0 : -1;
+    return data->DiagDPI != 0.0f ? 0 : SDL_SetError("Couldn't get DPI");
 }
 
 int
