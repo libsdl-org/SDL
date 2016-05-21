@@ -50,7 +50,7 @@ Cocoa_GetClipboardText(_THIS)
     char *text;
 
     pasteboard = [NSPasteboard generalPasteboard];
-    available = [pasteboard availableTypeFromArray: [NSArray arrayWithObject:format]];
+    available = [pasteboard availableTypeFromArray:[NSArray arrayWithObject:format]];
     if ([available isEqualToString:format]) {
         NSString* string;
         const char *utf8;

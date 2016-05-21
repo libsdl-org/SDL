@@ -94,7 +94,7 @@
 
 - (void)setMarkedText:(id)aString selectedRange:(NSRange)selectedRange replacementRange:(NSRange)replacementRange;
 {
-    if ([aString isKindOfClass: [NSAttributedString class]]) {
+    if ([aString isKindOfClass:[NSAttributedString class]]) {
         aString = [aString string];
     }
 
@@ -142,10 +142,10 @@
             aRange.location, aRange.length, windowHeight,
             NSStringFromRect(rect));
 
-    if ([[self window] respondsToSelector:@selector(convertRectToScreen:)]) {
-        rect = [[self window] convertRectToScreen:rect];
+    if ([window respondsToSelector:@selector(convertRectToScreen:)]) {
+        rect = [window convertRectToScreen:rect];
     } else {
-        rect.origin = [[self window] convertBaseToScreen:rect.origin];
+        rect.origin = [window convertBaseToScreen:rect.origin];
     }
 
     return rect;
