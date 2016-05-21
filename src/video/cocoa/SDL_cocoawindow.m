@@ -138,10 +138,7 @@
         NSURL *fileURL = [[NSURL fileURLWithPath:path] autorelease];
         NSNumber *isAlias = nil;
 
-        /* Functionality for resolving URL aliases was added with OS X 10.6. */
-        if ([fileURL respondsToSelector:@selector(getResourceValue:forKey:error:)]) {
-            [fileURL getResourceValue:&isAlias forKey:NSURLIsAliasFileKey error:nil];
-        }
+        [fileURL getResourceValue:&isAlias forKey:NSURLIsAliasFileKey error:nil];
 
         /* If the URL is an alias, resolve it. */
         if ([isAlias boolValue]) {
@@ -218,10 +215,10 @@ GetHintCtrlClickEmulateRightClick()
 	return hint != NULL && *hint != '0';
 }
 
-static unsigned int
+static NSUInteger
 GetWindowStyle(SDL_Window * window)
 {
-    unsigned int style;
+    NSUInteger style = 0;
 
     if (window->flags & SDL_WINDOW_FULLSCREEN) {
         style = NSBorderlessWindowMask;
@@ -239,21 +236,17 @@ GetWindowStyle(SDL_Window * window)
 }
 
 static SDL_bool
-SetWindowStyle(SDL_Window * window, unsigned int style)
+SetWindowStyle(SDL_Window * window, NSUInteger style)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     NSWindow *nswindow = data->nswindow;
-
-    if (![nswindow respondsToSelector: @selector(setStyleMask:)]) {
-        return SDL_FALSE;
-    }
 
     /* The view responder chain gets messed with during setStyleMask */
     if ([[nswindow contentView] nextResponder] == data->listener) {
         [[nswindow contentView] setNextResponder:nil];
     }
 
-    [nswindow performSelector: @selector(setStyleMask:) withObject: (id)(uintptr_t)style];
+    [nswindow setStyleMask:style];
 
     /* The view responder chain gets messed with during setStyleMask */
     if ([[nswindow contentView] nextResponder] != data->listener) {
@@ -317,9 +310,7 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
 
     [view setNextResponder:self];
 
-    if ([view respondsToSelector:@selector(setAcceptsTouchEvents:)]) {
-        [view setAcceptsTouchEvents:YES];
-    }
+    [view setAcceptsTouchEvents:YES];
 }
 
 - (void)observeValueForKeyPath:(NSString *)keyPath
@@ -604,12 +595,9 @@ SetWindowStyle(SDL_Window * window, unsigned int style)
         [NSMenu setMenuBarVisible:NO];
     }
 
-    /* On pre-10.6, you might have the capslock key state wrong now because we can't check here. */
-    if (floor(NSAppKitVersionNumber) >= NSAppKitVersionNumber10_6) {
-        const unsigned int newflags = [NSEvent modifierFlags] & NSAlphaShiftKeyMask;
-        _data->videodata->modifierFlags = (_data->videodata->modifierFlags & ~NSAlphaShiftKeyMask) | newflags;
-        SDL_ToggleModState(KMOD_CAPS, newflags != 0);
-    }
+    const unsigned int newflags = [NSEvent modifierFlags] & NSAlphaShiftKeyMask;
+    _data->videodata->modifierFlags = (_data->videodata->modifierFlags & ~NSAlphaShiftKeyMask) | newflags;
+    SDL_ToggleModState(KMOD_CAPS, newflags != 0);
 }
 
 - (void)windowDidResignKey:(NSNotification *)aNotification
@@ -1483,27 +1471,6 @@ Cocoa_RestoreWindow(_THIS, SDL_Window * window)
     }
 }}
 
-static NSWindow *
-Cocoa_RebuildWindow(SDL_WindowData * data, NSWindow * nswindow, unsigned style)
-{
-    if (!data->created) {
-        /* Don't mess with other people's windows... */
-        return nswindow;
-    }
-
-    [data->listener close];
-    data->nswindow = [[SDLWindow alloc] initWithContentRect:[[nswindow contentView] frame] styleMask:style backing:NSBackingStoreBuffered defer:NO screen:[nswindow screen]];
-    [data->nswindow setContentView:[nswindow contentView]];
-    [data->nswindow registerForDraggedTypes:[NSArray arrayWithObject:(NSString *)kUTTypeFileURL]];
-    /* See comment in SetupWindowData. */
-    [data->nswindow setOneShot:NO];
-    [data->listener listen:data];
-
-    [nswindow close];
-
-    return data->nswindow;
-}
-
 void
 Cocoa_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
 { @autoreleasepool
@@ -1545,11 +1512,7 @@ Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
             rect.origin.y += (screenRect.size.height - rect.size.height);
         }
 
-        if ([nswindow respondsToSelector: @selector(setStyleMask:)]) {
-            [nswindow performSelector: @selector(setStyleMask:) withObject: (id)NSBorderlessWindowMask];
-        } else {
-            nswindow = Cocoa_RebuildWindow(data, nswindow, NSBorderlessWindowMask);
-        }
+        [nswindow setStyleMask:NSBorderlessWindowMask];
     } else {
         rect.origin.x = window->windowed.x;
         rect.origin.y = window->windowed.y;
@@ -1557,16 +1520,12 @@ Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
         rect.size.height = window->windowed.h;
         ConvertNSRect([nswindow screen], fullscreen, &rect);
 
-        if ([nswindow respondsToSelector: @selector(setStyleMask:)]) {
-            [nswindow performSelector: @selector(setStyleMask:) withObject: (id)(uintptr_t)GetWindowStyle(window)];
+        [nswindow setStyleMask:GetWindowStyle(window)];
 
-            /* Hack to restore window decorations on Mac OS X 10.10 */
-            NSRect frameRect = [nswindow frame];
-            [nswindow setFrame:NSMakeRect(frameRect.origin.x, frameRect.origin.y, frameRect.size.width + 1, frameRect.size.height) display:NO];
-            [nswindow setFrame:frameRect display:NO];
-        } else {
-            nswindow = Cocoa_RebuildWindow(data, nswindow, GetWindowStyle(window));
-        }
+        /* Hack to restore window decorations on Mac OS X 10.10 */
+        NSRect frameRect = [nswindow frame];
+        [nswindow setFrame:NSMakeRect(frameRect.origin.x, frameRect.origin.y, frameRect.size.width + 1, frameRect.size.height) display:NO];
+        [nswindow setFrame:frameRect display:NO];
     }
 
     /* The view responder chain gets messed with during setStyleMask */
