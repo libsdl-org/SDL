@@ -202,7 +202,7 @@ Cocoa_InitMouseEventTap(SDL_MouseData* driverdata)
 
     tapdata->runloopStartedSemaphore = SDL_CreateSemaphore(0);
     if (tapdata->runloopStartedSemaphore) {
-        tapdata->thread = SDL_CreateThreadInternal(&Cocoa_MouseTapThread, "Event Tap Loop", 64 * 1024, tapdata);
+        tapdata->thread = SDL_CreateThreadInternal(&Cocoa_MouseTapThread, "Event Tap Loop", 512 * 1024, tapdata);
         if (!tapdata->thread) {
             SDL_DestroySemaphore(tapdata->runloopStartedSemaphore);
         }
