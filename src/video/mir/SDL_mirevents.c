@@ -136,7 +136,8 @@ HandleMouseButton(SDL_Window* sdl_window, Uint8 state, MirPointerEvent const* po
 static void
 HandleMouseMotion(SDL_Window* sdl_window, int x, int y)
 {
-    SDL_SendMouseMotion(sdl_window, 0, 0, x, y);
+    SDL_Mouse* mouse = SDL_GetMouse();
+    SDL_SendMouseMotion(sdl_window, 0, mouse->relative_mode, x, y);
 }
 
 static void
@@ -218,11 +219,20 @@ HandleMouseEvent(MirPointerEvent const* pointer, SDL_Window* sdl_window)
             SDL_Mouse* mouse = SDL_GetMouse();
             x = MIR_mir_pointer_event_axis_value(pointer, mir_pointer_axis_x);
             y = MIR_mir_pointer_event_axis_value(pointer, mir_pointer_axis_y);
+
+            if (mouse && (mouse->x != x || mouse->y != y)) {
+                if (mouse->relative_mode) {
+                    int relative_x = MIR_mir_pointer_event_axis_value(pointer, mir_pointer_axis_relative_x);
+                    int relative_y = MIR_mir_pointer_event_axis_value(pointer, mir_pointer_axis_relative_y);
+                    HandleMouseMotion(sdl_window, relative_x, relative_y);
+                }
+                else {
+                    HandleMouseMotion(sdl_window, x, y);
+                }
+            }
+
             hscroll = MIR_mir_pointer_event_axis_value(pointer, mir_pointer_axis_hscroll);
             vscroll = MIR_mir_pointer_event_axis_value(pointer, mir_pointer_axis_vscroll);
-
-            if (mouse && (mouse->x != x || mouse->y != y))
-                HandleMouseMotion(sdl_window, x, y);
             if (vscroll != 0 || hscroll != 0)
                 HandleMouseScroll(sdl_window, hscroll, vscroll);
         }

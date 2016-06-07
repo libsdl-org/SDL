@@ -252,7 +252,7 @@ MIR_WarpMouseGlobal(int x, int y)
 static int
 MIR_SetRelativeMouseMode(SDL_bool enabled)
 {
-    return SDL_Unsupported();
+    return 0;
 }
 
 /* TODO Actually implement the cursor, need to wait for mir support */
