@@ -277,8 +277,10 @@ MIR_VideoInit(_THIS)
     mir_data->software       = SDL_FALSE;
     mir_data->pixel_format   = mir_pixel_format_invalid;
 
-    if (!MIR_mir_connection_is_valid(mir_data->connection))
-        return SDL_SetError("Failed to connect to the Mir Server");
+    if (!MIR_mir_connection_is_valid(mir_data->connection)) {
+        return SDL_SetError("Failed to connect to the mir server: %s",
+            MIR_mir_connection_get_error_message(mir_data->connection));
+    }
 
     MIR_InitDisplays(_this);
     MIR_InitMouse();
