@@ -130,8 +130,8 @@ MIR_CreateWindow(_THIS, SDL_Window* window)
     MIR_mir_surface_spec_release(spec);
 
     if (!MIR_mir_surface_is_valid(mir_window->surface)) {
-        const char* error = MIR_mir_surface_get_error_message(mir_window->surface);
-        return SDL_SetError("Failed to created a mir surface: %s", error);
+        return SDL_SetError("Failed to created a mir surface: %s",
+            MIR_mir_surface_get_error_message(mir_window->surface));
     }
 
     if (window->flags & SDL_WINDOW_OPENGL) {
