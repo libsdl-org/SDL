@@ -3,6 +3,7 @@
 top_builddir = .
 srcdir  = @srcdir@
 objects = build
+gen = gen
 prefix = @prefix@
 exec_prefix = @exec_prefix@
 bindir	= @bindir@
@@ -31,6 +32,8 @@ WINDRES	= @WINDRES@
 
 TARGET  = libSDL2.la
 OBJECTS = @OBJECTS@
+GEN_HEADERS = @GEN_HEADERS@
+GEN_OBJECTS = @GEN_OBJECTS@
 VERSION_OBJECTS = @VERSION_OBJECTS@
 
 SDLMAIN_TARGET = libSDL2main.a
@@ -38,6 +41,8 @@ SDLMAIN_OBJECTS = @SDLMAIN_OBJECTS@
 
 SDLTEST_TARGET = libSDL2_test.a
 SDLTEST_OBJECTS = @SDLTEST_OBJECTS@
+
+WAYLAND_SCANNER = @WAYLAND_SCANNER@
 
 SRC_DIST = *.txt acinclude Android.mk autogen.sh android-project build-scripts cmake cmake_uninstall.cmake.in configure configure.in debian docs include Makefile.* sdl2-config.cmake.in sdl2-config.in sdl2.m4 sdl2.pc.in SDL2.spec.in src test VisualC.html VisualC VisualC-WinRT Xcode Xcode-iOS
 GEN_DIST = SDL2.spec
@@ -48,6 +53,7 @@ RUN_CMD_CC     = @echo "  CC    " $@;
 RUN_CMD_CXX    = @echo "  CXX   " $@;
 RUN_CMD_LTLINK = @echo "  LTLINK" $@;
 RUN_CMD_RANLIB = @echo "  RANLIB" $@;
+RUN_CMD_GEN    = @echo "  GEN   " $@;
 LIBTOOL += --quiet
 endif
 
@@ -137,8 +143,8 @@ update-revision:
 
 .PHONY: all update-revision install install-bin install-hdrs install-lib install-data uninstall uninstall-bin uninstall-hdrs uninstall-lib uninstall-data clean distclean dist $(OBJECTS:.lo=.d)
 
-$(objects)/$(TARGET): $(OBJECTS) $(VERSION_OBJECTS)
-	$(RUN_CMD_LTLINK)$(LIBTOOL) --tag=CC --mode=link $(CC) -o $@ $(OBJECTS) $(VERSION_OBJECTS) $(LDFLAGS) $(EXTRA_LDFLAGS) $(LT_LDFLAGS)
+$(objects)/$(TARGET): $(GEN_HEADERS) $(GEN_OBJECTS) $(OBJECTS) $(VERSION_OBJECTS)
+	$(RUN_CMD_LTLINK)$(LIBTOOL) --tag=CC --mode=link $(CC) -o $@ $(OBJECTS) $(GEN_OBJECTS) $(VERSION_OBJECTS) $(LDFLAGS) $(EXTRA_LDFLAGS) $(LT_LDFLAGS)
 
 $(objects)/$(SDLMAIN_TARGET): $(SDLMAIN_OBJECTS)
 	$(RUN_CMD_AR)$(AR) cru $@ $(SDLMAIN_OBJECTS)
@@ -200,6 +206,7 @@ uninstall-data:
 
 clean:
 	rm -rf $(objects)
+	rm -rf $(gen)
 	if test -f test/Makefile; then (cd test; $(MAKE) $@); fi
 
 distclean: clean

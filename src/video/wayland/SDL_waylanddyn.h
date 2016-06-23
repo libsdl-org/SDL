@@ -94,7 +94,8 @@ void SDL_WAYLAND_UnloadSymbols(void);
 
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_DYNAMIC */
 
-#include "wayland-client.h"
+#include "wayland-client-core.h"
+#include "wayland-client-protocol.h"
 #include "wayland-egl.h"
 
 #endif /* !defined _SDL_waylanddyn_h */
