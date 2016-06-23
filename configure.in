@@ -1201,9 +1201,11 @@ AC_HELP_STRING([--enable-video-wayland-qt-touch], [QtWayland server support for 
         if  test x$PKG_CONFIG != xno && \
             test x$video_opengl_egl = xyes && \
             test x$video_opengles_v2 = xyes; then
-            if $PKG_CONFIG --exists wayland-client wayland-egl wayland-cursor egl xkbcommon ; then
+            if $PKG_CONFIG --exists wayland-client wayland-scanner wayland-egl wayland-cursor egl xkbcommon ; then
                 WAYLAND_CFLAGS=`$PKG_CONFIG --cflags wayland-client wayland-egl wayland-cursor xkbcommon`
                 WAYLAND_LIBS=`$PKG_CONFIG --libs wayland-client wayland-egl wayland-cursor xkbcommon`
+                WAYLAND_SCANNER=`$PKG_CONFIG --variable=wayland_scanner wayland-scanner`
+                WAYLAND_CORE_PROTOCOL_DIR=`$PKG_CONFIG --variable=pkgdatadir wayland-client`
                 video_wayland=yes
             fi
         fi
@@ -1215,7 +1217,7 @@ AC_HELP_STRING([--enable-video-wayland-qt-touch], [QtWayland server support for 
                 AC_DEFINE(SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH, 1, [ ])
             fi
             SOURCES="$SOURCES $srcdir/src/video/wayland/*.c"
-            EXTRA_CFLAGS="$EXTRA_CFLAGS $WAYLAND_CFLAGS"
+            EXTRA_CFLAGS="$EXTRA_CFLAGS $WAYLAND_CFLAGS -I\$(gen)"
             AC_ARG_ENABLE(wayland-shared,
 AC_HELP_STRING([--enable-wayland-shared], [dynamically load Wayland support [[default=maybe]]]),
                           , enable_wayland_shared=maybe)
@@ -3481,6 +3483,33 @@ if test x$SDLMAIN_SOURCES = x; then
 fi
 SDLTEST_SOURCES="$srcdir/src/test/*.c"
 
+if test x$video_wayland = xyes; then
+    WAYLAND_CORE_PROTOCOL_SOURCE='$(gen)/wayland-protocol.c'
+    WAYLAND_CORE_PROTOCOL_HEADER='$(gen)/wayland-client-protocol.h'
+    GEN_SOURCES="$GEN_SOURCES $WAYLAND_CORE_PROTOCOL_SOURCE"
+    GEN_HEADERS="$GEN_HEADERS $WAYLAND_CORE_PROTOCOL_HEADER"
+
+    WAYLAND_CORE_PROTOCOL_SOURCE_DEPENDS="
+$WAYLAND_CORE_PROTOCOL_SOURCE: $WAYLAND_CORE_PROTOCOL_DIR/wayland.xml
+	\$(SHELL) \$(auxdir)/mkinstalldirs \$(gen)
+	\$(RUN_CMD_GEN)\$(WAYLAND_SCANNER) code \$< \$@"
+
+    WAYLAND_CORE_PROTOCOL_HEADER_DEPENDS="
+$WAYLAND_CORE_PROTOCOL_HEADER: $WAYLAND_CORE_PROTOCOL_DIR/wayland.xml
+	\$(SHELL) \$(auxdir)/mkinstalldirs \$(gen)
+	\$(RUN_CMD_GEN)\$(WAYLAND_SCANNER) client-header \$< \$@"
+
+    WAYLAND_CORE_PROTOCOL_OBJECT="
+\$(objects)/`echo $WAYLAND_CORE_PROTOCOL_SOURCE | sed 's/\$(gen)\/\(.*\).c$/\1.lo/'`: $WAYLAND_CORE_PROTOCOL_SOURCE
+	\$(RUN_CMD_CC)\$(LIBTOOL) --tag=CC --mode=compile \$(CC) \$(CFLAGS) \$(EXTRA_CFLAGS) $DEPENDENCY_TRACKING_OPTIONS -c \$< -o \$@"
+
+    WAYLAND_PROTOCOLS_DEPENDS="
+$WAYLAND_CORE_PROTOCOL_SOURCE_DEPENDS
+$WAYLAND_CORE_PROTOCOL_HEADER_DEPENDS
+$WAYLAND_CORE_PROTOCOL_OBJECT
+"
+fi
+
 OBJECTS=`echo $SOURCES`
 DEPENDS=`echo $SOURCES | tr ' ' '\n'`
 for EXT in asm cc m c S; do
@@ -3489,6 +3518,8 @@ for EXT in asm cc m c S; do
 \\$(objects)/\\2.lo: \\1/\\2.$EXT\\\\
 	\\$(RUN_CMD_CC)\\$(LIBTOOL) --tag=CC --mode=compile \\$(CC) \\$(CFLAGS) \\$(EXTRA_CFLAGS) $DEPENDENCY_TRACKING_OPTIONS -c \\$< -o \\$@,g"`
 done
+
+GEN_OBJECTS=`echo "$GEN_SOURCES" | sed 's,[[^ ]]*/\([[^ ]]*\)\.c,$(objects)/\1.lo,g'`
 
 VERSION_OBJECTS=`echo $VERSION_SOURCES`
 VERSION_DEPENDS=`echo $VERSION_SOURCES`
@@ -3567,6 +3598,8 @@ dnl Expand the sources and objects needed to build the library
 AC_SUBST(ac_aux_dir)
 AC_SUBST(INCLUDE)
 AC_SUBST(OBJECTS)
+AC_SUBST(GEN_HEADERS)
+AC_SUBST(GEN_OBJECTS)
 AC_SUBST(VERSION_OBJECTS)
 AC_SUBST(SDLMAIN_OBJECTS)
 AC_SUBST(SDLTEST_OBJECTS)
@@ -3575,6 +3608,7 @@ AC_SUBST(EXTRA_CFLAGS)
 AC_SUBST(BUILD_LDFLAGS)
 AC_SUBST(EXTRA_LDFLAGS)
 AC_SUBST(WINDRES)
+AC_SUBST(WAYLAND_SCANNER)
 
 cat >Makefile.rules <<__EOF__
 
@@ -3587,6 +3621,7 @@ $DEPENDS
 $VERSION_DEPENDS
 $SDLMAIN_DEPENDS
 $SDLTEST_DEPENDS
+$WAYLAND_PROTOCOLS_DEPENDS
 __EOF__
 
 AC_CONFIG_FILES([

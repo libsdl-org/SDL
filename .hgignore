@@ -8,6 +8,7 @@ Makefile
 sdl-config
 SDL2.spec
 build
+gen
 Build
 
 # for Xcode
