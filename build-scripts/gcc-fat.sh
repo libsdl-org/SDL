@@ -14,7 +14,7 @@ GCC_LINK_X86="-mmacosx-version-min=10.6"
 
 # Intel 64-bit compiler flags (10.6 runtime compatibility)
 GCC_COMPILE_X64="gcc -arch x86_64 -mmacosx-version-min=10.6 \
--DMAC_OS_X_VERSION_MIN_REQUIRED=1050 \
+-DMAC_OS_X_VERSION_MIN_REQUIRED=1060 \
 -I/usr/local/include"
 
 GCC_LINK_X64="-mmacosx-version-min=10.6"
