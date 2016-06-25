@@ -1004,6 +1004,10 @@ D3D_RecreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     D3D_RenderData *data = (D3D_RenderData *)renderer->driverdata;
     D3D_TextureData *texturedata = (D3D_TextureData *)texture->driverdata;
 
+    if (!texturedata) {
+        return 0;
+    }
+
     if (D3D_RecreateTextureRep(data->device, &texturedata->texture, texture->format, texture->w, texture->h) < 0) {
         return -1;
     }
