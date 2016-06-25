@@ -30,10 +30,10 @@
 #include "SDL_test.h"
 
 /* Assert check message format */
-const char *SDLTest_AssertCheckFormat = "Assert '%s': %s";
+#define SDLTEST_ASSERT_CHECK_FORMAT "Assert '%s': %s"
 
 /* Assert summary message format */
-const char *SDLTest_AssertSummaryFormat = "Assert Summary: Total=%d Passed=%d Failed=%d";
+#define SDLTEST_ASSERT_SUMMARY_FORMAT "Assert Summary: Total=%d Passed=%d Failed=%d"
 
 /* ! \brief counts the failed asserts */
 static Uint32 SDLTest_AssertsFailed = 0;
@@ -77,12 +77,12 @@ int SDLTest_AssertCheck(int assertCondition, SDL_PRINTF_FORMAT_STRING const char
     if (assertCondition == ASSERT_FAIL)
     {
         SDLTest_AssertsFailed++;
-        SDLTest_LogError(SDLTest_AssertCheckFormat, logMessage, "Failed");
+        SDLTest_LogError(SDLTEST_ASSERT_CHECK_FORMAT, logMessage, "Failed");
     }
     else
     {
         SDLTest_AssertsPassed++;
-        SDLTest_Log(SDLTest_AssertCheckFormat, logMessage, "Passed");
+        SDLTest_Log(SDLTEST_ASSERT_CHECK_FORMAT, logMessage, "Passed");
     }
 
     return assertCondition;
@@ -104,7 +104,7 @@ void SDLTest_AssertPass(SDL_PRINTF_FORMAT_STRING const char *assertDescription, 
 
         /* Log pass message */
     SDLTest_AssertsPassed++;
-    SDLTest_Log(SDLTest_AssertCheckFormat, logMessage, "Pass");
+    SDLTest_Log(SDLTEST_ASSERT_CHECK_FORMAT, logMessage, "Pass");
 }
 
 /*
@@ -125,11 +125,11 @@ void SDLTest_LogAssertSummary()
     Uint32 totalAsserts = SDLTest_AssertsPassed + SDLTest_AssertsFailed;
     if (SDLTest_AssertsFailed == 0)
     {
-        SDLTest_Log(SDLTest_AssertSummaryFormat, totalAsserts, SDLTest_AssertsPassed, SDLTest_AssertsFailed);
+        SDLTest_Log(SDLTEST_ASSERT_SUMMARY_FORMAT, totalAsserts, SDLTest_AssertsPassed, SDLTest_AssertsFailed);
     }
     else
     {
-        SDLTest_LogError(SDLTest_AssertSummaryFormat, totalAsserts, SDLTest_AssertsPassed, SDLTest_AssertsFailed);
+        SDLTest_LogError(SDLTEST_ASSERT_SUMMARY_FORMAT, totalAsserts, SDLTest_AssertsPassed, SDLTest_AssertsFailed);
     }
 }
 
