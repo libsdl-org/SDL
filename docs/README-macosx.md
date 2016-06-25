@@ -227,4 +227,4 @@ following locations:
         Functionality may be added in the future to help this.
 
 
-Known bugs are listed in the file "BUGS"
+Known bugs are listed in the file "BUGS.txt".
