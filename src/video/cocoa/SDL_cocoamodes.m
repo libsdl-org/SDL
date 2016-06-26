@@ -323,9 +323,15 @@ Cocoa_GetDisplayDPI(_THIS, SDL_VideoDisplay * display, float * ddpi, float * hdp
     size_t pixelWidth = CGDisplayPixelsWide(data->display);
     size_t pixelHeight = CGDisplayPixelsHigh(data->display);
 
-    *ddpi = SDL_ComputeDiagonalDPI(pixelWidth, pixelHeight, displaySize.width / MM_IN_INCH, displaySize.height / MM_IN_INCH);
-    *hdpi = pixelWidth * MM_IN_INCH / displaySize.width;
-    *vdpi = pixelHeight * MM_IN_INCH / displaySize.height;
+    if (ddpi) {
+        *ddpi = SDL_ComputeDiagonalDPI(pixelWidth, pixelHeight, displaySize.width / MM_IN_INCH, displaySize.height / MM_IN_INCH);
+    }
+    if (hdpi) {
+        *hdpi = pixelWidth * MM_IN_INCH / displaySize.width;
+    }
+    if (vdpi) {
+        *vdpi = pixelHeight * MM_IN_INCH / displaySize.height;
+    }
 
     return 0;
 }
