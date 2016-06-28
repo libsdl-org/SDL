@@ -253,6 +253,43 @@ stdlib_getsetenv(void *arg)
   return TEST_COMPLETED;
 }
 
+/**
+ * @brief Call to SDL_sscanf
+ */
+#undef SDL_sscanf
+int
+stdlib_sscanf(void *arg)
+{
+  int output;
+  int result;
+  int expected_output;
+  int expected_result;
+
+  expected_output = output = 123;
+  expected_result = -1;
+  result = SDL_sscanf("", "%i", &output);
+  SDLTest_AssertPass("Call to SDL_sscanf(\"\", \"%%i\", &output)");
+  SDLTest_AssertCheck(expected_output == output, "Check output, expected: %i, got: %i", expected_output, output);
+  SDLTest_AssertCheck(expected_result == result, "Check return value, expected: %i, got: %i", expected_result, result);
+
+  expected_output = output = 123;
+  expected_result = 0;
+  result = SDL_sscanf("a", "%i", &output);
+  SDLTest_AssertPass("Call to SDL_sscanf(\"a\", \"%%i\", &output)");
+  SDLTest_AssertCheck(expected_output == output, "Check output, expected: %i, got: %i", expected_output, output);
+  SDLTest_AssertCheck(expected_result == result, "Check return value, expected: %i, got: %i", expected_result, result);
+
+  output = 123;
+  expected_output = 2;
+  expected_result = 1;
+  result = SDL_sscanf("2", "%i", &output);
+  SDLTest_AssertPass("Call to SDL_sscanf(\"2\", \"%%i\", &output)");
+  SDLTest_AssertCheck(expected_output == output, "Check output, expected: %i, got: %i", expected_output, output);
+  SDLTest_AssertCheck(expected_result == result, "Check return value, expected: %i, got: %i", expected_result, result);
+
+  return TEST_COMPLETED;
+}
+
 /* ================= Test References ================== */
 
 /* Standard C routine test cases */
@@ -265,9 +302,12 @@ static const SDLTest_TestCaseReference stdlibTest2 =
 static const SDLTest_TestCaseReference stdlibTest3 =
         { (SDLTest_TestCaseFp)stdlib_getsetenv, "stdlib_getsetenv", "Call to SDL_getenv and SDL_setenv", TEST_ENABLED };
 
+static const SDLTest_TestCaseReference stdlibTest4 =
+        { (SDLTest_TestCaseFp)stdlib_sscanf, "stdlib_sscanf", "Call to SDL_sscanf", TEST_ENABLED };
+
 /* Sequence of Standard C routine test cases */
 static const SDLTest_TestCaseReference *stdlibTests[] =  {
-    &stdlibTest1, &stdlibTest2, &stdlibTest3, NULL
+    &stdlibTest1, &stdlibTest2, &stdlibTest3, &stdlibTest4, NULL
 };
 
 /* Timer test suite (global) */
