@@ -145,7 +145,7 @@ display_handle_geometry(void *data,
 {
     SDL_VideoDisplay *display = data;
 
-    display->name = strdup(model);
+    display->name = SDL_strdup(model);
     display->driverdata = output;
 }
 

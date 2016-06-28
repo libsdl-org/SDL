@@ -74,8 +74,8 @@ extern "C"
                 if (joystick.Open(name) != B_ERROR) {
                     BString stick_name;
                       joystick.GetControllerName(&stick_name);
-                      SDL_joyport[SDL_SYS_numjoysticks] = strdup(name);
-                      SDL_joyname[SDL_SYS_numjoysticks] = strdup(stick_name.String());
+                      SDL_joyport[SDL_SYS_numjoysticks] = SDL_strdup(name);
+                      SDL_joyname[SDL_SYS_numjoysticks] = SDL_strdup(stick_name.String());
                       SDL_SYS_numjoysticks++;
                       joystick.Close();
                 }
