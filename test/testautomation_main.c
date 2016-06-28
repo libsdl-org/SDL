@@ -137,7 +137,7 @@ static const SDLTest_TestCaseReference mainTest3 =
 static const SDLTest_TestCaseReference mainTest4 =
         { (SDLTest_TestCaseFp)main_testImpliedJoystickQuit, "main_testImpliedJoystickQuit", "Tests that quit for gamecontroller doesn't quit joystick if you inited it explicitly", TEST_ENABLED};
 
-/* Sequence of Platform test cases */
+/* Sequence of Main test cases */
 static const SDLTest_TestCaseReference *mainTests[] =  {
     &mainTest1,
     &mainTest2,
@@ -146,7 +146,7 @@ static const SDLTest_TestCaseReference *mainTests[] =  {
     NULL
 };
 
-/* Platform test suite (global) */
+/* Main test suite (global) */
 SDLTest_TestSuiteReference mainTestSuite = {
     "Main",
     NULL,
