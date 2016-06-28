@@ -310,7 +310,7 @@ static const SDLTest_TestCaseReference *stdlibTests[] =  {
     &stdlibTest1, &stdlibTest2, &stdlibTest3, &stdlibTest4, NULL
 };
 
-/* Timer test suite (global) */
+/* Standard C routine test suite (global) */
 SDLTest_TestSuiteReference stdlibTestSuite = {
     "Stdlib",
     NULL,
