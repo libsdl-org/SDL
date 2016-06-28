@@ -179,7 +179,7 @@ SDL_SYS_JoystickInit(void)
 
         SDL_snprintf(s, SDL_arraysize(s), "/dev/uhid%d", i);
 
-        joynames[SDL_SYS_numjoysticks] = strdup(s);
+        joynames[SDL_SYS_numjoysticks] = SDL_strdup(s);
 
         if (SDL_SYS_JoystickOpen(&nj, SDL_SYS_numjoysticks) == 0) {
             SDL_SYS_JoystickClose(&nj);
@@ -193,7 +193,7 @@ SDL_SYS_JoystickInit(void)
         SDL_snprintf(s, SDL_arraysize(s), "/dev/joy%d", i);
         fd = open(s, O_RDONLY);
         if (fd != -1) {
-            joynames[SDL_SYS_numjoysticks++] = strdup(s);
+            joynames[SDL_SYS_numjoysticks++] = SDL_strdup(s);
             close(fd);
         }
     }
@@ -304,14 +304,14 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joy, int device_index)
     }
     joy->hwdata = hw;
     hw->fd = fd;
-    hw->path = strdup(path);
+    hw->path = SDL_strdup(path);
     if (!SDL_strncmp(path, "/dev/joy", 8)) {
         hw->type = BSDJOY_JOY;
         joy->naxes = 2;
         joy->nbuttons = 2;
         joy->nhats = 0;
         joy->nballs = 0;
-        joydevnames[device_index] = strdup("Gameport joystick");
+        joydevnames[device_index] = SDL_strdup("Gameport joystick");
         goto usbend;
     } else {
         hw->type = BSDJOY_UHID;
@@ -363,7 +363,7 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joy, int device_index)
         str[i] = '\0';
         asprintf(&new_name, "%s @ %s", str, path);
         if (new_name != NULL) {
-            free(joydevnames[SDL_SYS_numjoysticks]);
+            SDL_free(joydevnames[SDL_SYS_numjoysticks]);
             joydevnames[SDL_SYS_numjoysticks] = new_name;
         }
     }
