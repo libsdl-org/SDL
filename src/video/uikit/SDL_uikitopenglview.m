@@ -239,7 +239,7 @@
 
     if (msaaRenderbuffer != 0) {
         glBindRenderbuffer(GL_RENDERBUFFER, msaaRenderbuffer);
-        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, GL_RGBA8, backingWidth, backingHeight);
+        glRenderbufferStorageMultisample(GL_RENDERBUFFER, samples, colorBufferFormat, backingWidth, backingHeight);
     }
 
     if (depthRenderbuffer != 0) {
