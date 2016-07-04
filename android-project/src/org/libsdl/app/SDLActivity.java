@@ -1439,7 +1439,7 @@ class DummyEdit extends View implements View.OnKeyListener {
     public boolean onKey(View v, int keyCode, KeyEvent event) {
 
         // This handles the hardware keyboard input
-        if (event.isPrintingKey()) {
+        if (event.isPrintingKey() || keyCode == KeyEvent.KEYCODE_SPACE) {
             if (event.getAction() == KeyEvent.ACTION_DOWN) {
                 ic.commitText(String.valueOf((char) event.getUnicodeChar()), 1);
             }
@@ -1502,7 +1502,7 @@ class SDLInputConnection extends BaseInputConnection {
          */
         int keyCode = event.getKeyCode();
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
-            if (event.isPrintingKey()) {
+            if (event.isPrintingKey() || keyCode == KeyEvent.KEYCODE_SPACE) {
                 commitText(String.valueOf((char) event.getUnicodeChar()), 1);
             }
             SDLActivity.onNativeKeyDown(keyCode);
