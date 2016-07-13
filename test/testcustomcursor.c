@@ -167,11 +167,11 @@ main(int argc, char *argv[])
         quit(2);
     }
 
-	for (i = 0; i < state->num_windows; ++i) {
-		SDL_Renderer *renderer = state->renderers[i];
-		SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
-		SDL_RenderClear(renderer);
-	}
+    for (i = 0; i < state->num_windows; ++i) {
+        SDL_Renderer *renderer = state->renderers[i];
+        SDL_SetRenderDrawColor(renderer, 0xA0, 0xA0, 0xA0, 0xFF);
+        SDL_RenderClear(renderer);
+    }
 
     cursor = init_system_cursor(arrow);
     SDL_SetCursor(cursor);
