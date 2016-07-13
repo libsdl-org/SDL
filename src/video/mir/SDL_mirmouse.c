@@ -137,8 +137,8 @@ static SDL_Cursor*
 MIR_CreateSystemCursor(SDL_SystemCursor id)
 {
     char const* cursor_name = NULL;
-    MirCursorConfiguration* conf;
-    SDL_Cursor* cursor = MIR_CreateDefaultCursor();
+    SDL_Cursor* cursor      = MIR_CreateDefaultCursor();
+    MIR_Cursor* mir_cursor  = (MIR_Cursor*)cursor->driverdata;
 
     if (!cursor) {
         return NULL;
@@ -188,9 +188,7 @@ MIR_CreateSystemCursor(SDL_SystemCursor id)
             return NULL;
     }
 
-    conf = MIR_mir_cursor_configuration_from_name(cursor_name);
-
-    cursor->driverdata = conf;
+    mir_cursor->conf = MIR_mir_cursor_configuration_from_name(cursor_name);
 
     return cursor;
 }
@@ -226,12 +224,12 @@ MIR_ShowCursor(SDL_Cursor* cursor)
             MIR_Cursor* mir_cursor = (MIR_Cursor*)cursor->driverdata;
 
             if (mir_cursor->conf) {
-                MIR_mir_wait_for(MIR_mir_surface_configure_cursor(mir_window->surface, mir_cursor->conf));
+                MIR_mir_surface_configure_cursor(mir_window->surface, mir_cursor->conf);
             }
         }
     }
     else if(mir_window && MIR_mir_surface_is_valid(mir_window->surface)) {
-        MIR_mir_wait_for(MIR_mir_surface_configure_cursor(mir_window->surface, NULL));
+        MIR_mir_surface_configure_cursor(mir_window->surface, NULL);
     }
     
     return 0;
