@@ -15,6 +15,7 @@ TARGETS = \
 	testaudioinfo$(EXE) \
 	testautomation$(EXE) \
 	testbounds$(EXE) \
+	testcustomcursor$(EXE) \
 	testdraw2$(EXE) \
 	testdrawchessboard$(EXE) \
 	testdropfile$(EXE) \
@@ -276,6 +277,9 @@ testqsort$(EXE): $(srcdir)/testqsort.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testbounds$(EXE): $(srcdir)/testbounds.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testcustomcursor$(EXE): $(srcdir)/testcustomcursor.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 controllermap$(EXE): $(srcdir)/controllermap.c
