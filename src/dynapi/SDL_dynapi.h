@@ -43,11 +43,15 @@
 #include "TargetConditionals.h"
 #endif
 
-#if TARGET_OS_IPHONE || __native_client__ || __EMSCRIPTEN__  /* probably not useful on iOS, NACL or Emscripten. */
+#if defined(TARGET_OS_IPHONE) && TARGET_OS_IPHONE  /* probably not useful on iOS. */
 #define SDL_DYNAMIC_API 0
-#elif SDL_BUILDING_WINRT /* probaly not useful on WinRT, given current .dll loading restrictions */
+#elif defined(__native_client__) && __native_client__  /* probably not useful on NACL. */
 #define SDL_DYNAMIC_API 0
-#elif __PSP__
+#elif defined(__EMSCRIPTEN__) && __EMSCRIPTEN__  /* probably not useful on Emscripten. */
+#define SDL_DYNAMIC_API 0
+#elif defined(SDL_BUILDING_WINRT) && SDL_BUILDING_WINRT  /* probably not useful on WinRT, given current .dll loading restrictions */
+#define SDL_DYNAMIC_API 0
+#elif defined(__PSP__) && __PSP__
 #define SDL_DYNAMIC_API 0
 #elif defined(__clang_analyzer__)
 #define SDL_DYNAMIC_API 0  /* Turn off for static analysis, so reports are more clear. */
