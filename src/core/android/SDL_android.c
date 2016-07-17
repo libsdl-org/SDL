@@ -139,7 +139,7 @@ JNIEXPORT void JNICALL SDL_Android_Init(JNIEnv* mEnv, jclass cls)
 }
 
 /* Drop file */
-void Java_org_libsdl_app_SDLActivity_onNativeDropFile(
+JNIEXPORT void JNICALL Java_org_libsdl_app_SDLActivity_onNativeDropFile(
                                     JNIEnv* env, jclass jcls,
                                     jstring filename)
 {
