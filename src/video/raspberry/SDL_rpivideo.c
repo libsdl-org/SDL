@@ -88,7 +88,7 @@ RPI_Create()
 
     device->driverdata = phdata;
 
-    /* Setup amount of available displays and current display */
+    /* Setup amount of available displays */
     device->num_displays = 0;
 
     /* Set device free function */
