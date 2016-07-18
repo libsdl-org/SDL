@@ -87,8 +87,8 @@ else
 fi
 
 cp -r $SDLPATH/Android.mk $BUILDPATH/jni/SDL
-sed -i "s|YourSourceHere.c|$MKSOURCES|g" $BUILDPATH/jni/src/Android.mk
-sed -i "s|org\.libsdl\.app|$APP|g" $BUILDPATH/AndroidManifest.xml
+sed -i -e "s|YourSourceHere.c|$MKSOURCES|g" $BUILDPATH/jni/src/Android.mk
+sed -i -e "s|org\.libsdl\.app|$APP|g" $BUILDPATH/AndroidManifest.xml
 
 # Copy user sources
 for src in "${SOURCES[@]}"
@@ -105,8 +105,8 @@ do
 done
 
 ACTIVITY="${folder}Activity"
-sed -i "s|SDLActivity|$ACTIVITY|g" $BUILDPATH/AndroidManifest.xml
-sed -i "s|SDLActivity|$APP|g" $BUILDPATH/build.xml
+sed -i -e "s|SDLActivity|$ACTIVITY|g" $BUILDPATH/AndroidManifest.xml
+sed -i -e "s|SDLActivity|$APP|g" $BUILDPATH/build.xml
 
 # Fill in a default Activity
 echo "package $APP;" >  "$ACTIVITY.java"
