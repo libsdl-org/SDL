@@ -95,7 +95,6 @@ PND_create()
 
     /* Setup amount of available displays and current display */
     device->num_displays = 0;
-    device->current_display = 0;
 
     /* Set device free function */
     device->free = PND_destroy;
