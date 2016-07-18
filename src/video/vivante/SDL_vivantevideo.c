@@ -77,7 +77,7 @@ VIVANTE_Create()
 
     device->driverdata = data;
 
-    /* Setup amount of available displays and current display */
+    /* Setup amount of available displays */
     device->num_displays = 0;
 
     /* Set device free function */
