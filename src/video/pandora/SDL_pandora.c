@@ -628,12 +628,12 @@ PND_gl_createcontext(_THIS, SDL_Window * window)
     hNativeWnd = (NativeWindowType)malloc(16*1024);
 
     if(!hNativeWnd)
-        printf( "Error : Wiz framebuffer allocatation failed\n" );
+        printf( "Error: Wiz framebuffer allocatation failed\n" );
     else
-        printf( "SDL13: Wiz framebuffer allocated: %X\n", hNativeWnd );
+        printf( "SDL: Wiz framebuffer allocated: %X\n", hNativeWnd );
     }
     else {
-    printf( "SDL13: Wiz framebuffer already allocated: %X\n", hNativeWnd );
+        printf( "SDL: Wiz framebuffer already allocated: %X\n", hNativeWnd );
     }
 
     wdata->gles_surface =
@@ -837,7 +837,7 @@ PND_gl_deletecontext(_THIS, SDL_GLContext context)
     {
       free(hNativeWnd);
       hNativeWnd = 0;
-      printf( "SDL13: Wiz framebuffer released\n" );
+      printf( "SDL: Wiz framebuffer released\n" );
     }
 #endif
 
