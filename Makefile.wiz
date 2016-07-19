@@ -9,8 +9,8 @@ STRIP = $(WIZSDK)/bin/arm-openwiz-linux-gnu-strip
 
 CFLAGS  = -Wall -fPIC -I./include -I$(WIZSDK)/include -DWIZ_GLES_LITE
 
-TARGET_STATIC  = libSDL13.a
-TARGET_SHARED  = libSDL13.so
+TARGET_STATIC  = libSDL2.a
+TARGET_SHARED  = libSDL2.so
 
 SOURCES = ./src/*.c ./src/audio/*.c ./src/cpuinfo/*.c ./src/events/*.c \
 	./src/file/*.c ./src/stdlib/*.c ./src/thread/*.c ./src/timer/*.c ./src/video/*.c \
@@ -43,7 +43,7 @@ clean:
 
 install:
 	mkdir -p $(WIZSDK)/lib
-	mkdir -p $(WIZSDK)/include/SDL13
+	mkdir -p $(WIZSDK)/include/SDL2
 	cp -f $(TARGET_STATIC) $(WIZSDK)/lib
 	cp -f $(TARGET_SHARED).0.0.1 $(WIZSDK)/lib
 	rm -f $(WIZSDK)/lib/$(TARGET_SHARED).0 $(WIZSDK)/lib/$(TARGET_SHARED)
@@ -57,5 +57,5 @@ install:
 	ln -s ../../toolchain/libs/$(TARGET_SHARED).0 ../../toolchain/libs/$(TARGET_SHARED)
 
 	cp $(TARGET_SHARED).0.0.1 ../nehe_demos/build/$(TARGET_SHARED).0
-	cp -f include/*.h $(WIZSDK)/include/SDL13/
-	cp -f include/*.h ../../toolchain/include/SDL13/
+	cp -f include/*.h $(WIZSDK)/include/SDL2/
+	cp -f include/*.h ../../toolchain/include/SDL2/
