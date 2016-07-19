@@ -19,7 +19,7 @@ SOURCES = ./src/*.c ./src/audio/*.c ./src/cpuinfo/*.c ./src/events/*.c \
 	./src/thread/pthread/SDL_systhread.c ./src/thread/pthread/SDL_syssem.c \
 	./src/thread/pthread/SDL_sysmutex.c ./src/thread/pthread/SDL_syscond.c \
 	./src/joystick/linux/*.c ./src/haptic/linux/*.c ./src/timer/unix/*.c \
-	./src/atomic/linux/*.c ./src/filesystem/unix/*.c \
+	./src/atomic/*.c ./src/filesystem/unix/*.c \
 	./src/video/pandora/SDL_pandora.o ./src/video/pandora/SDL_pandora_events.o ./src/video/x11/*.c 
 	
 
