@@ -607,7 +607,8 @@ ALSA_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     if ( ALSA_set_period_size(this, hwparams, 0) < 0 &&
          ALSA_set_buffer_size(this, hwparams, 0) < 0 ) {
         /* Failed to set desired buffer size, do the best you can... */
-        if ( ALSA_set_period_size(this, hwparams, 1) < 0 ) {
+        status = ALSA_set_period_size(this, hwparams, 1);
+        if (status < 0) {
             ALSA_CloseDevice(this);
             return SDL_SetError("Couldn't set hardware audio parameters: %s", ALSA_snd_strerror(status));
         }
