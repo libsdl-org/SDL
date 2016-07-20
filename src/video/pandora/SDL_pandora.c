@@ -51,8 +51,10 @@ static void
 PND_destroy(SDL_VideoDevice * device)
 {
     if (device->driverdata != NULL) {
+        SDL_free(device->driverdata);
         device->driverdata = NULL;
     }
+    SDL_free(device);
 }
 
 static SDL_VideoDevice *
