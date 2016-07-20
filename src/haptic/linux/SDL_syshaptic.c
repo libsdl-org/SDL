@@ -609,7 +609,7 @@ SDL_SYS_HapticQuit(void)
         /* Opened and not closed haptics are leaked, this is on purpose.
          * Close your haptic devices after usage. */
         SDL_free(item->fname);
-        item->fname = NULL;
+        SDL_free(item);
     }
 
 #if SDL_USE_LIBUDEV
