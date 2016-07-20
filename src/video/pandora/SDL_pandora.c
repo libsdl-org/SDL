@@ -41,8 +41,6 @@
 static NativeWindowType hNativeWnd = 0; /* A handle to the window we will create. */
 #endif
 
-static SDL_bool PND_initialized = SDL_FALSE;
-
 static int
 PND_available(void)
 {
@@ -52,8 +50,6 @@ PND_available(void)
 static void
 PND_destroy(SDL_VideoDevice * device)
 {
-    SDL_VideoData *phdata = (SDL_VideoData *) device->driverdata;
-
     if (device->driverdata != NULL) {
         device->driverdata = NULL;
     }
@@ -203,10 +199,6 @@ PND_createwindow(_THIS, SDL_Window * window)
 
     SDL_WindowData *wdata;
 
-    uint32_t winargc = 0;
-    int32_t status;
-
-
     /* Allocate window internal data */
     wdata = (SDL_WindowData *) SDL_calloc(1, sizeof(SDL_WindowData));
     if (wdata == NULL) {
@@ -291,7 +283,7 @@ PND_restorewindow(_THIS, SDL_Window * window)
 {
 }
 void
-PND_setwindowgrab(_THIS, SDL_Window * window)
+PND_setwindowgrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 {
 }
 void
@@ -325,8 +317,6 @@ PND_getwindowwminfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info)
 int
 PND_gl_loadlibrary(_THIS, const char *path)
 {
-    SDL_VideoData *phdata = (SDL_VideoData *) _this->driverdata;
-
     /* Check if OpenGL ES library is specified for GF driver */
     if (path == NULL) {
         path = SDL_getenv("SDL_OPENGL_LIBRARY");
@@ -364,7 +354,6 @@ PND_gl_loadlibrary(_THIS, const char *path)
 void *
 PND_gl_getprocaddres(_THIS, const char *proc)
 {
-    SDL_VideoData *phdata = (SDL_VideoData *) _this->driverdata;
     void *function_address;
 
     /* Try to get function address through the egl interface */
@@ -408,10 +397,7 @@ PND_gl_createcontext(_THIS, SDL_Window * window)
 {
     SDL_VideoData *phdata = (SDL_VideoData *) _this->driverdata;
     SDL_WindowData *wdata = (SDL_WindowData *) window->driverdata;
-    SDL_DisplayData *didata =
-        (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
     EGLBoolean status;
-    int32_t gfstatus;
     EGLint configs;
     uint32_t attr_pos;
     EGLint attr_value;
@@ -791,9 +777,6 @@ PND_gl_swapwindow(_THIS, SDL_Window * window)
 {
     SDL_VideoData *phdata = (SDL_VideoData *) _this->driverdata;
     SDL_WindowData *wdata = (SDL_WindowData *) window->driverdata;
-    SDL_DisplayData *didata =
-        (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
-
 
     if (phdata->egl_initialized != SDL_TRUE) {
         SDL_SetError("PND: GLES initialization failed, no OpenGL ES support");

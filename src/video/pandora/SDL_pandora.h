@@ -77,7 +77,7 @@ void PND_raisewindow(_THIS, SDL_Window * window);
 void PND_maximizewindow(_THIS, SDL_Window * window);
 void PND_minimizewindow(_THIS, SDL_Window * window);
 void PND_restorewindow(_THIS, SDL_Window * window);
-void PND_setwindowgrab(_THIS, SDL_Window * window);
+void PND_setwindowgrab(_THIS, SDL_Window * window, SDL_bool grabbed);
 void PND_destroywindow(_THIS, SDL_Window * window);
 
 /* Window manager function */
