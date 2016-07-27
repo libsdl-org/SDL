@@ -42,14 +42,14 @@ Same as SDL_FINGERDOWN.
 ===========================================================================
 Functions
 ===========================================================================
-SDL provides the ability to access the underlying Finger structures.
+SDL provides the ability to access the underlying SDL_Finger structures.
 These structures should _never_ be modified.
 
 The following functions are included from SDL_touch.h
 
-To get a SDL_TouchID call SDL_GetTouchDevice(index).
+To get a SDL_TouchID call SDL_GetTouchDevice(int index).
 This returns a SDL_TouchID.
-IMPORTANT: If the touch has been removed, or there is no touch with the given ID, SDL_GetTouchID will return 0. Be sure to check for this!
+IMPORTANT: If the touch has been removed, or there is no touch with the given index, SDL_GetTouchDevice() will return 0. Be sure to check for this!
 
 The number of touch devices can be queried with SDL_GetNumTouchDevices().
 
@@ -64,13 +64,13 @@ The most common reason to access SDL_Finger is to query the fingers outside the 
 
 
 
-To get a SDL_Finger, call SDL_GetTouchFinger(touchID,index), where touchID is a SDL_TouchID, and index is the requested finger.
-This returns a SDL_Finger*, or NULL if the finger does not exist, or has been removed.
+To get a SDL_Finger, call SDL_GetTouchFinger(SDL_TouchID touchID, int index), where touchID is a SDL_TouchID, and index is the requested finger.
+This returns a SDL_Finger *, or NULL if the finger does not exist, or has been removed.
 A SDL_Finger is guaranteed to be persistent for the duration of a touch, but it will be de-allocated as soon as the finger is removed. This occurs when the SDL_FINGERUP event is _added_ to the event queue, and thus _before_ the SDL_FINGERUP event is polled.
 As a result, be very careful to check for NULL return values.
 
 A SDL_Finger has the following fields:
-* x,y,pressure:
+* x, y:
 	The current coordinates of the touch.
 * pressure:
 	The pressure of the touch.
