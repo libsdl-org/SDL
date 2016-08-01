@@ -185,7 +185,7 @@ build_device_list(int iscapture, addDevFn addfn, void *addfndata)
 #if DEBUG_COREAUDIO
             printf("COREAUDIO: Found %s device #%d: '%s' (devid %d)\n",
                    ((iscapture) ? "capture" : "output"),
-                   (int) *devCount, ptr, (int) dev);
+                   (int) i, ptr, (int) dev);
 #endif
             addfn(ptr, iscapture, dev, addfndata);
         }
@@ -324,18 +324,52 @@ outputCallback(void *inRefCon,
         }
     }
 
-    return 0;
+    return noErr;
 }
 
 static OSStatus
 inputCallback(void *inRefCon,
-              AudioUnitRenderActionFlags * ioActionFlags,
-              const AudioTimeStamp * inTimeStamp,
+              AudioUnitRenderActionFlags *ioActionFlags,
+              const AudioTimeStamp *inTimeStamp,
               UInt32 inBusNumber, UInt32 inNumberFrames,
-              AudioBufferList * ioData)
+              AudioBufferList *ioData)
 {
-    /* err = AudioUnitRender(afr->fAudioUnit, ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames, afr->fAudioBuffer); */
-    /* !!! FIXME: write me! */
+    SDL_AudioDevice *this = (SDL_AudioDevice *) inRefCon;
+    if (!this->enabled || this->paused) {
+        return noErr;  /* just drop this if we're not accepting input. */
+    }
+
+    const OSStatus err = AudioUnitRender(this->hidden->audioUnit, ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames, &this->hidden->captureBufferList);
+    SDL_assert(this->hidden->captureBufferList.mNumberBuffers == 1);
+
+    if (err == noErr) {
+        const AudioBuffer *abuf = &this->hidden->captureBufferList.mBuffers[0];
+        UInt32 remaining = abuf->mDataByteSize;
+        const Uint8 *ptr = (const Uint8 *) abuf->mData;
+
+        /* No SDL conversion should be needed here, ever, since we accept
+           any input format in OpenAudio, and leave the conversion to CoreAudio.
+         */
+        while (remaining > 0) {
+            UInt32 len = this->hidden->bufferSize - this->hidden->bufferOffset;
+            if (len > remaining)
+                len = remaining;
+
+            SDL_memcpy((char *)this->hidden->buffer + this->hidden->bufferOffset, ptr, len);
+            ptr += len;
+            remaining -= len;
+            this->hidden->bufferOffset += len;
+
+            if (this->hidden->bufferOffset >= this->hidden->bufferSize) {
+                SDL_LockMutex(this->mixer_lock);
+                (*this->spec.callback)(this->spec.userdata,
+                            this->hidden->buffer, this->hidden->bufferSize);
+                SDL_UnlockMutex(this->mixer_lock);
+                this->hidden->bufferOffset = 0;
+            }
+        }
+    }
+
     return noErr;
 }
 
@@ -394,20 +428,21 @@ COREAUDIO_CloseDevice(_THIS)
             const int iscapture = this->iscapture;
             const AudioUnitElement bus =
                 ((iscapture) ? input_bus : output_bus);
-            const AudioUnitScope scope =
-                ((iscapture) ? kAudioUnitScope_Output :
-                 kAudioUnitScope_Input);
 
             /* stop processing the audio unit */
             AudioOutputUnitStop(this->hidden->audioUnit);
 
             /* Remove the input callback */
-            SDL_memset(&callback, 0, sizeof(AURenderCallbackStruct));
+            SDL_zero(callback);
             AudioUnitSetProperty(this->hidden->audioUnit,
-                                 kAudioUnitProperty_SetRenderCallback,
-                                 scope, bus, &callback, sizeof(callback));
+                                 iscapture ? kAudioOutputUnitProperty_SetInputCallback : kAudioUnitProperty_SetRenderCallback,
+                                 kAudioUnitScope_Global, bus, &callback, sizeof(callback));
             AudioComponentInstanceDispose(this->hidden->audioUnit);
             this->hidden->audioUnitOpened = 0;
+
+            #if MACOSX_COREAUDIO
+            SDL_free(this->hidden->captureBufferList.mBuffers[0].mData);
+            #endif
         }
         SDL_free(this->hidden->buffer);
         SDL_free(this->hidden);
@@ -480,9 +515,6 @@ prepare_audiounit(_THIS, void *handle, int iscapture,
     AudioComponent comp = NULL;
     const AudioUnitElement output_bus = 0;
     const AudioUnitElement input_bus = 1;
-    const AudioUnitElement bus = ((iscapture) ? input_bus : output_bus);
-    const AudioUnitScope scope = ((iscapture) ? kAudioUnitScope_Output :
-                                  kAudioUnitScope_Input);
 
 #if MACOSX_COREAUDIO
     if (!prepare_device(this, handle, iscapture)) {
@@ -495,7 +527,7 @@ prepare_audiounit(_THIS, void *handle, int iscapture,
     desc.componentManufacturer = kAudioUnitManufacturer_Apple;
 
 #if MACOSX_COREAUDIO
-    desc.componentSubType = kAudioUnitSubType_DefaultOutput;
+    desc.componentSubType = iscapture ? kAudioUnitSubType_HALOutput : kAudioUnitSubType_DefaultOutput;
 #else
     desc.componentSubType = kAudioUnitSubType_RemoteIO;
 #endif
@@ -513,9 +545,28 @@ prepare_audiounit(_THIS, void *handle, int iscapture,
     this->hidden->audioUnitOpened = 1;
 
 #if MACOSX_COREAUDIO
+    if (iscapture) {  /* have to do EnableIO only for capture devices. */
+        UInt32 enable = 1;
+        result = AudioUnitSetProperty(this->hidden->audioUnit,
+                                      kAudioOutputUnitProperty_EnableIO,
+                                      kAudioUnitScope_Input, input_bus,
+                                      &enable, sizeof (enable));
+        CHECK_RESULT
+            ("AudioUnitSetProperty (kAudioOutputUnitProperty_EnableIO input bus)");
+
+        enable = 0;
+        result = AudioUnitSetProperty(this->hidden->audioUnit,
+                                      kAudioOutputUnitProperty_EnableIO,
+                                      kAudioUnitScope_Output, output_bus,
+                                      &enable, sizeof (enable));
+        CHECK_RESULT
+            ("AudioUnitSetProperty (kAudioOutputUnitProperty_EnableIO output bus)");
+    }
+
+    /* this is always on the output_bus, even for capture devices. */
     result = AudioUnitSetProperty(this->hidden->audioUnit,
                                   kAudioOutputUnitProperty_CurrentDevice,
-                                  kAudioUnitScope_Global, 0,
+                                  kAudioUnitScope_Global, output_bus,
                                   &this->hidden->deviceID,
                                   sizeof(AudioDeviceID));
     CHECK_RESULT
@@ -525,16 +576,47 @@ prepare_audiounit(_THIS, void *handle, int iscapture,
     /* Set the data format of the audio unit. */
     result = AudioUnitSetProperty(this->hidden->audioUnit,
                                   kAudioUnitProperty_StreamFormat,
-                                  scope, bus, strdesc, sizeof(*strdesc));
+                                  iscapture ? kAudioUnitScope_Output : kAudioUnitScope_Input,
+                                  iscapture ? input_bus : output_bus,
+                                  strdesc, sizeof (*strdesc));
     CHECK_RESULT("AudioUnitSetProperty (kAudioUnitProperty_StreamFormat)");
 
+#if MACOSX_COREAUDIO
+    if (iscapture) {  /* only need to do this for capture devices. */
+        void *ptr;
+        UInt32 framesize = 0;
+        UInt32 propsize = sizeof (UInt32);
+
+        result = AudioUnitGetProperty(this->hidden->audioUnit,
+                                      kAudioDevicePropertyBufferFrameSize,
+                                      kAudioUnitScope_Global, output_bus,
+                                      &framesize, &propsize);
+        CHECK_RESULT
+            ("AudioUnitGetProperty (kAudioDevicePropertyBufferFrameSize)");
+
+        framesize *= SDL_AUDIO_BITSIZE(this->spec.format) / 8;
+        ptr = SDL_calloc(1, framesize);
+        if (ptr == NULL) {
+            COREAUDIO_CloseDevice(this);
+            SDL_OutOfMemory();
+            return 0;
+        }
+
+        this->hidden->captureBufferList.mNumberBuffers = 1;
+        this->hidden->captureBufferList.mBuffers[0].mNumberChannels = this->spec.channels;
+        this->hidden->captureBufferList.mBuffers[0].mDataByteSize = framesize;
+        this->hidden->captureBufferList.mBuffers[0].mData = ptr;
+    }
+#endif
+
     /* Set the audio callback */
-    SDL_memset(&callback, 0, sizeof(AURenderCallbackStruct));
+    SDL_zero(callback);
     callback.inputProc = ((iscapture) ? inputCallback : outputCallback);
     callback.inputProcRefCon = this;
+
     result = AudioUnitSetProperty(this->hidden->audioUnit,
-                                  kAudioUnitProperty_SetRenderCallback,
-                                  scope, bus, &callback, sizeof(callback));
+                                  iscapture ? kAudioOutputUnitProperty_SetInputCallback : kAudioUnitProperty_SetRenderCallback,
+                                  kAudioUnitScope_Global, output_bus, &callback, sizeof(callback));
     CHECK_RESULT
         ("AudioUnitSetProperty (kAudioUnitProperty_SetRenderCallback)");
 
@@ -542,8 +624,15 @@ prepare_audiounit(_THIS, void *handle, int iscapture,
     SDL_CalculateAudioSpec(&this->spec);
 
     /* Allocate a sample buffer */
-    this->hidden->bufferOffset = this->hidden->bufferSize = this->spec.size;
+    this->hidden->bufferSize = this->spec.size;
+    this->hidden->bufferOffset = iscapture ? 0 : this->hidden->bufferSize;
+
     this->hidden->buffer = SDL_malloc(this->hidden->bufferSize);
+    if (this->hidden->buffer == NULL) {
+        COREAUDIO_CloseDevice(this);
+        SDL_OutOfMemory();
+        return 0;
+    }
 
     result = AudioUnitInitialize(this->hidden->audioUnit);
     CHECK_RESULT("AudioUnitInitialize");
@@ -552,6 +641,8 @@ prepare_audiounit(_THIS, void *handle, int iscapture,
     result = AudioOutputUnitStart(this->hidden->audioUnit);
     CHECK_RESULT("AudioOutputUnitStart");
 
+/* !!! FIXME: what does iOS do when a bluetooth audio device vanishes? Headphones unplugged? */
+/* !!! FIXME: (we only do a "default" device on iOS right now...can we do more?) */
 #if MACOSX_COREAUDIO
     /* Fire a callback if the device stops being "alive" (disconnected, etc). */
     AudioObjectAddPropertyListener(this->hidden->deviceID, &alive_address, device_unplugged, this);
@@ -575,10 +666,10 @@ COREAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     if (this->hidden == NULL) {
         return SDL_OutOfMemory();
     }
-    SDL_memset(this->hidden, 0, (sizeof *this->hidden));
+    SDL_zerop(this->hidden);
 
     /* Setup a AudioStreamBasicDescription with the requested format */
-    SDL_memset(&strdesc, '\0', sizeof(AudioStreamBasicDescription));
+    SDL_zero(strdesc);
     strdesc.mFormatID = kAudioFormatLinearPCM;
     strdesc.mFormatFlags = kLinearPCMFormatFlagIsPacked;
     strdesc.mChannelsPerFrame = this->spec.channels;
@@ -651,6 +742,7 @@ COREAUDIO_Init(SDL_AudioDriverImpl * impl)
 #if MACOSX_COREAUDIO
     impl->DetectDevices = COREAUDIO_DetectDevices;
     AudioObjectAddPropertyListener(kAudioObjectSystemObject, &devlist_address, device_list_changed, NULL);
+    impl->HasCaptureSupport = 1;
 #else
     impl->OnlyHasDefaultOutputDevice = 1;
 
