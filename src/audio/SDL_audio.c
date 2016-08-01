@@ -373,7 +373,7 @@ void SDL_OpenedAudioDeviceDisconnected(SDL_AudioDevice *device)
     /* Ends the audio callback and mark the device as STOPPED, but the
        app still needs to close the device to free resources. */
     current_audio.impl.LockDevice(device);
-    device->enabled = 0;
+    device->enabled = SDL_FALSE;
     current_audio.impl.UnlockDevice(device);
 
     /* Post the event, if desired */
@@ -873,7 +873,7 @@ SDL_GetAudioDeviceName(int index, int iscapture)
 static void
 close_audio_device(SDL_AudioDevice * device)
 {
-    device->enabled = 0;
+    device->enabled = SDL_FALSE;
     SDL_AtomicSet(&device->shutdown, 1);
     if (device->thread != NULL) {
         SDL_WaitThread(device->thread, NULL);
@@ -887,7 +887,7 @@ close_audio_device(SDL_AudioDevice * device)
     }
     if (device->opened) {
         current_audio.impl.CloseDevice(device);
-        device->opened = 0;
+        device->opened = SDL_FALSE;
     }
 
     free_audio_queue(device->buffer_queue_head);
@@ -1074,11 +1074,12 @@ open_audio_device(const char *devname, int iscapture,
         return 0;
     }
     SDL_zerop(device);
+    SDL_AtomicSet(&device->shutdown, 0);  /* just in case. */
     device->id = id + 1;
     device->spec = *obtained;
-    device->enabled = 1;
-    device->paused = 1;
-    device->iscapture = iscapture;
+    device->enabled = SDL_TRUE;
+    device->paused = SDL_TRUE;
+    device->iscapture = iscapture ? SDL_TRUE : SDL_FALSE;
 
     /* Create a mutex for locking the sound buffers */
     if (!current_audio.impl.SkipMixerLock) {
@@ -1094,7 +1095,7 @@ open_audio_device(const char *devname, int iscapture,
         close_audio_device(device);
         return 0;
     }
-    device->opened = 1;
+    device->opened = SDL_TRUE;
 
     /* See if we need to do any conversion */
     build_cvt = SDL_FALSE;
@@ -1278,7 +1279,7 @@ SDL_PauseAudioDevice(SDL_AudioDeviceID devid, int pause_on)
     SDL_AudioDevice *device = get_audio_device(devid);
     if (device) {
         current_audio.impl.LockDevice(device);
-        device->paused = pause_on;
+        device->paused = pause_on ? SDL_TRUE : SDL_FALSE;
         current_audio.impl.UnlockDevice(device);
     }
 }
