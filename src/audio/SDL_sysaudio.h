@@ -157,10 +157,10 @@ struct SDL_AudioDevice
     SDL_AudioStreamer streamer;
 
     /* Current state flags */
-    /* !!! FIXME: should be SDL_bool */
+    SDL_atomic_t shutdown; /* true if we are signaling the play thread to end. */
+    /* !!! FIXME: these should be SDL_bool */
     int iscapture;
     int enabled;  /* true if device is functioning and connected. */
-    int shutdown; /* true if we are signaling the play thread to end. */
     int paused;
     int opened;
 

@@ -103,7 +103,7 @@ static const AudioBootStrap *const bootstrap[] = {
     &ESD_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_NACL
-   &NACLAUD_bootstrap,
+    &NACLAUD_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_NAS
     &NAS_bootstrap,
@@ -611,7 +611,7 @@ SDL_RunAudio(void *devicep)
     current_audio.impl.ThreadInit(device);
 
     /* Loop, filling the audio buffers */
-    while (!device->shutdown) {
+    while (!SDL_AtomicGet(&device->shutdown)) {
         /* Fill the current buffer with sound */
         if (device->convert.needed) {
             stream = device->convert.buf;
@@ -874,7 +874,7 @@ static void
 close_audio_device(SDL_AudioDevice * device)
 {
     device->enabled = 0;
-    device->shutdown = 1;
+    SDL_AtomicSet(&device->shutdown, 1);
     if (device->thread != NULL) {
         SDL_WaitThread(device->thread, NULL);
     }
