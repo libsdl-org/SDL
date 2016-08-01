@@ -51,7 +51,7 @@ static void nacl_audio_callback(void* samples, uint32_t buffer_size, PP_TimeDelt
 static void nacl_audio_callback(void* samples, uint32_t buffer_size, PP_TimeDelta latency, void* data) {
     SDL_AudioDevice* _this = (SDL_AudioDevice*) data;
     
-    SDL_LockMutex(private->mutex);
+    SDL_LockMutex(private->mutex);  /* !!! FIXME: is this mutex necessary? */
 
     if (_this->enabled && !_this->paused) {
         if (_this->convert.needed) {
@@ -71,7 +71,7 @@ static void nacl_audio_callback(void* samples, uint32_t buffer_size, PP_TimeDelt
         SDL_memset(samples, 0, buffer_size);
     }
     
-    return;
+    SDL_UnlockMutex(private->mutex);
 }
 
 static void NACLAUD_CloseDevice(SDL_AudioDevice *device) {
