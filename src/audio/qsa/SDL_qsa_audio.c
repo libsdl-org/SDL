@@ -371,7 +371,7 @@ QSA_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     QSA_InitAudioParams(&cparams);
 
     /* Initialize channel direction: capture or playback */
-    this->hidden->iscapture = iscapture;
+    this->hidden->iscapture = iscapture ? SDL_TRUE : SDL_FALSE;
 
     if (device != NULL) {
         /* Open requested audio device */

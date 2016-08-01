@@ -158,11 +158,10 @@ struct SDL_AudioDevice
 
     /* Current state flags */
     SDL_atomic_t shutdown; /* true if we are signaling the play thread to end. */
-    /* !!! FIXME: these should be SDL_bool */
-    int iscapture;
-    int enabled;  /* true if device is functioning and connected. */
-    int paused;
-    int opened;
+    SDL_bool iscapture;
+    SDL_bool enabled;  /* true if device is functioning and connected. */
+    SDL_bool paused;
+    SDL_bool opened;
 
     /* Fake audio buffer for when the audio hardware is busy */
     Uint8 *fake_stream;
