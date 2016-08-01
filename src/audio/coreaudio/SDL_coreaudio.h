@@ -50,6 +50,7 @@ struct SDL_PrivateAudioData
     UInt32 bufferSize;
 #if MACOSX_COREAUDIO
     AudioDeviceID deviceID;
+    AudioBufferList captureBufferList;
 #endif
 };
 
