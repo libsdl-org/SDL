@@ -120,6 +120,7 @@ test/testbounds
 test/torturethread
 test/testdisplayinfo
 test/testqsort
+test/testaudiocapture
 test/*.exe
 test/*.dSYM
 buildbot

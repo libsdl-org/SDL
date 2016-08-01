@@ -317,7 +317,7 @@ add_audio_device(const char *name, void *handle, SDL_AudioDeviceItem **devices, 
 static SDL_INLINE int
 add_capture_device(const char *name, void *handle)
 {
-    /* !!! FIXME: add this later. SDL_assert(current_audio.impl.HasCaptureSupport);*/
+    SDL_assert(current_audio.impl.HasCaptureSupport);
     return add_audio_device(name, handle, &current_audio.inputDevices, &current_audio.inputDeviceCount);
 }
 
