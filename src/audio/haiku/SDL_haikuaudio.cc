@@ -49,10 +49,11 @@ FillSound(void *device, void *stream, size_t len,
     SDL_AudioDevice *audio = (SDL_AudioDevice *) device;
 
     /* Only do soemthing if audio is enabled */
-    if (!audio->enabled)
+    if (!SDL_AtomicGet(&audio->enabled)) {
         return;
+    }
 
-    if (!audio->paused) {
+    if (!SDL_AtomicGet(&audio->paused)) {
         if (audio->convert.needed) {
             SDL_LockMutex(audio->mixer_lock);
             (*audio->spec.callback) (audio->spec.userdata,

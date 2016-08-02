@@ -283,7 +283,7 @@ outputCallback(void *inRefCon,
     UInt32 i;
 
     /* Only do anything if audio is enabled and not paused */
-    if (!this->enabled || this->paused) {
+    if (!SDL_AtomicGet(&this->enabled) || SDL_AtomicGet(&this->paused)) {
         for (i = 0; i < ioData->mNumberBuffers; i++) {
             abuf = &ioData->mBuffers[i];
             SDL_memset(abuf->mData, this->spec.silence, abuf->mDataByteSize);
@@ -335,7 +335,7 @@ inputCallback(void *inRefCon,
               AudioBufferList *ioData)
 {
     SDL_AudioDevice *this = (SDL_AudioDevice *) inRefCon;
-    if (!this->enabled || this->paused) {
+    if (!SDL_AtomicGet(&this->enabled) || SDL_AtomicGet(&this->paused)) {
         return noErr;  /* just drop this if we're not accepting input. */
     }
 
@@ -391,7 +391,7 @@ device_unplugged(AudioObjectID devid, UInt32 num_addr, const AudioObjectProperty
     UInt32 size = sizeof (isAlive);
     OSStatus error;
 
-    if (!this->enabled) {
+    if (!SDL_AtomicGet(&this->enabled)) {
         return 0;  /* already known to be dead. */
     }
 

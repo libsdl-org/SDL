@@ -311,7 +311,7 @@ ALSA_PlayDevice(_THIS)
 
     swizzle_alsa_channels(this);
 
-    while ( frames_left > 0 && this->enabled ) {
+    while ( frames_left > 0 && SDL_AtomicGet(&this->enabled) ) {
         /* !!! FIXME: This works, but needs more testing before going live */
         /* ALSA_snd_pcm_wait(this->hidden->pcm_handle, -1); */
         status = ALSA_snd_pcm_writei(this->hidden->pcm_handle,

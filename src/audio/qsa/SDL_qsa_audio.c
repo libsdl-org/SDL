@@ -229,7 +229,7 @@ QSA_PlayDevice(_THIS)
     int towrite;
     void *pcmbuffer;
 
-    if ((!this->enabled) || (!this->hidden)) {
+    if (!SDL_AtomicGet(&this->enabled) || !this->hidden) {
         return;
     }
 
@@ -305,7 +305,7 @@ QSA_PlayDevice(_THIS)
             towrite -= written;
             pcmbuffer += written * this->spec.channels;
         }
-    } while ((towrite > 0) && (this->enabled));
+    } while ((towrite > 0) && SDL_AtomicGet(&this->enabled));
 
     /* If we couldn't write, assume fatal error for now */
     if (towrite != 0) {
