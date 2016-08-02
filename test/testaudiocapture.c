@@ -17,6 +17,12 @@
 
 #define CAPTURE_SECONDS 5
 
+#define DO_VIDEO defined(__ANDROID__) || defined(__IPHONEOS__) || defined(__EMSCRIPTEN__)
+#if DO_VIDEO
+static SDL_Window *window = NULL;
+static SDL_Renderer *renderer = NULL;
+#endif
+
 static SDL_AudioSpec spec;
 static Uint8 *sound = NULL;     /* Pointer to wave data */
 static Uint32 soundlen = 0;     /* Length of wave data */
@@ -67,6 +73,16 @@ loop()
             please_quit = SDL_TRUE;
         }
     }
+
+    #if DO_VIDEO
+    if (spec.callback == capture_callback) {
+        SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+    } else {
+        SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+    }
+    SDL_RenderClear(renderer);
+    SDL_RenderPresent(renderer);
+    #endif
 
     if ((!please_quit) && (processed >= soundlen)) {
         processed = 0;
@@ -123,8 +139,12 @@ main(int argc, char **argv)
     }
 
     /* Android apparently needs a window...? */
-    #ifdef __ANDROID__  
-    SDL_CreateWindow("testaudiocapture", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 320, 240, 0);
+    #if DO_VIDEO
+    window = SDL_CreateWindow("testaudiocapture", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 320, 240, SDL_WINDOW_FULLSCREEN_DESKTOP);
+    renderer = SDL_CreateRenderer(window, -1, 0);
+    SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+    SDL_RenderClear(renderer);
+    SDL_RenderPresent(renderer);
     #endif
 
     SDL_Log("Using audio driver: %s\n", SDL_GetCurrentAudioDriver());
