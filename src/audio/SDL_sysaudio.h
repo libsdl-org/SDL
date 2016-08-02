@@ -76,6 +76,8 @@ typedef struct SDL_AudioDriverImpl
     int (*GetPendingBytes) (_THIS);
     Uint8 *(*GetDeviceBuf) (_THIS);
     void (*WaitDone) (_THIS);
+    int (*CaptureFromDevice) (_THIS, void *buffer, int buflen);
+    void (*FlushCapture) (_THIS);
     void (*CloseDevice) (_THIS);
     void (*LockDevice) (_THIS);
     void (*UnlockDevice) (_THIS);
