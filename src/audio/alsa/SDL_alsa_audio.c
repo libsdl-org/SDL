@@ -29,6 +29,7 @@
 #include <errno.h>
 #include <string.h>
 
+#include "SDL_assert.h"
 #include "SDL_timer.h"
 #include "SDL_audio.h"
 #include "../SDL_audiomem.h"
@@ -42,8 +43,10 @@
 static int (*ALSA_snd_pcm_open)
   (snd_pcm_t **, const char *, snd_pcm_stream_t, int);
 static int (*ALSA_snd_pcm_close) (snd_pcm_t * pcm);
-static snd_pcm_sframes_t(*ALSA_snd_pcm_writei)
+static snd_pcm_sframes_t (*ALSA_snd_pcm_writei)
   (snd_pcm_t *, const void *, snd_pcm_uframes_t);
+static snd_pcm_sframes_t (*ALSA_snd_pcm_readi)
+  (snd_pcm_t *, void *, snd_pcm_uframes_t);
 static int (*ALSA_snd_pcm_recover) (snd_pcm_t *, int, int);
 static int (*ALSA_snd_pcm_prepare) (snd_pcm_t *);
 static int (*ALSA_snd_pcm_drain) (snd_pcm_t *);
@@ -85,6 +88,7 @@ static int (*ALSA_snd_pcm_nonblock) (snd_pcm_t *, int);
 static int (*ALSA_snd_pcm_wait)(snd_pcm_t *, int);
 static int (*ALSA_snd_pcm_sw_params_set_avail_min)
   (snd_pcm_t *, snd_pcm_sw_params_t *, snd_pcm_uframes_t);
+static int (*ALSA_snd_pcm_reset)(snd_pcm_t *);
 static int (*ALSA_snd_device_name_hint) (int, const char *, void ***);
 static char* (*ALSA_snd_device_name_get_hint) (const void *, const char *);
 static int (*ALSA_snd_device_name_free_hint) (void **);
@@ -121,6 +125,7 @@ load_alsa_syms(void)
     SDL_ALSA_SYM(snd_pcm_open);
     SDL_ALSA_SYM(snd_pcm_close);
     SDL_ALSA_SYM(snd_pcm_writei);
+    SDL_ALSA_SYM(snd_pcm_readi);
     SDL_ALSA_SYM(snd_pcm_recover);
     SDL_ALSA_SYM(snd_pcm_prepare);
     SDL_ALSA_SYM(snd_pcm_drain);
@@ -147,6 +152,7 @@ load_alsa_syms(void)
     SDL_ALSA_SYM(snd_pcm_nonblock);
     SDL_ALSA_SYM(snd_pcm_wait);
     SDL_ALSA_SYM(snd_pcm_sw_params_set_avail_min);
+    SDL_ALSA_SYM(snd_pcm_reset);
     SDL_ALSA_SYM(snd_device_name_hint);
     SDL_ALSA_SYM(snd_device_name_get_hint);
     SDL_ALSA_SYM(snd_device_name_free_hint);
@@ -342,6 +348,57 @@ ALSA_GetDeviceBuf(_THIS)
     return (this->hidden->mixbuf);
 }
 
+static int
+ALSA_CaptureFromDevice(_THIS, void *buffer, int buflen)
+{
+    Uint8 *sample_buf = (Uint8 *) buffer;
+    const int frame_size = (((int) SDL_AUDIO_BITSIZE(this->spec.format)) / 8) *
+                                this->spec.channels;
+    const int total_frames = buflen / frame_size;
+    snd_pcm_uframes_t frames_left = total_frames;
+
+    SDL_assert((buflen % frame_size) == 0);
+
+    while ( frames_left > 0 && SDL_AtomicGet(&this->enabled) ) {
+        /* !!! FIXME: This works, but needs more testing before going live */
+        /* ALSA_snd_pcm_wait(this->hidden->pcm_handle, -1); */
+        int status = ALSA_snd_pcm_readi(this->hidden->pcm_handle,
+                                        sample_buf, frames_left);
+
+        if (status < 0) {
+            /*printf("ALSA: capture error %d\n", status);*/
+            if (status == -EAGAIN) {
+                /* Apparently snd_pcm_recover() doesn't handle this case -
+                   does it assume snd_pcm_wait() above? */
+                SDL_Delay(1);
+                continue;
+            }
+            status = ALSA_snd_pcm_recover(this->hidden->pcm_handle, status, 0);
+            if (status < 0) {
+                /* Hmm, not much we can do - abort */
+                fprintf(stderr, "ALSA read failed (unrecoverable): %s\n",
+                        ALSA_snd_strerror(status));
+                return -1;
+            }
+            continue;
+        }
+
+        /*printf("ALSA: captured %d bytes\n", status * frame_size);*/
+        sample_buf += status * frame_size;
+        frames_left -= status;
+    }
+
+    swizzle_alsa_channels(this, buffer, total_frames - frames_left);
+
+    return (total_frames - frames_left) * frame_size;
+}
+
+static void
+ALSA_FlushCapture(_THIS)
+{
+    ALSA_snd_pcm_reset(this->hidden->pcm_handle);
+}
+
 static void
 ALSA_CloseDevice(_THIS)
 {
@@ -493,8 +550,9 @@ ALSA_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     /* Open the audio device */
     /* Name of device should depend on # channels in spec */
     status = ALSA_snd_pcm_open(&pcm_handle,
-                               get_audio_device(handle, this->spec.channels),
-                               SND_PCM_STREAM_PLAYBACK, SND_PCM_NONBLOCK);
+                get_audio_device(handle, this->spec.channels),
+                iscapture ? SND_PCM_STREAM_CAPTURE : SND_PCM_STREAM_PLAYBACK,
+                SND_PCM_NONBLOCK);
 
     if (status < 0) {
         ALSA_CloseDevice(this);
@@ -757,6 +815,10 @@ ALSA_Init(SDL_AudioDriverImpl * impl)
     impl->CloseDevice = ALSA_CloseDevice;
     impl->Deinitialize = ALSA_Deinitialize;
     impl->FreeDeviceHandle = ALSA_FreeDeviceHandle;
+    impl->CaptureFromDevice = ALSA_CaptureFromDevice;
+    impl->FlushCapture = ALSA_FlushCapture;
+
+    impl->HasCaptureSupport = SDL_TRUE;
 
     return 1;   /* this audio target is available. */
 }
