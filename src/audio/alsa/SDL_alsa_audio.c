@@ -241,37 +241,37 @@ ALSA_WaitDevice(_THIS)
  * "For Linux ALSA, this is FL-FR-RL-RR-C-LFE
  *  and for Windows DirectX [and CoreAudio], this is FL-FR-C-LFE-RL-RR"
  */
-#define SWIZ6(T) \
-    T *ptr = (T *) this->hidden->mixbuf; \
+#define SWIZ6(T, buf, numframes) \
+    T *ptr = (T *) buf; \
     Uint32 i; \
-    for (i = 0; i < this->spec.samples; i++, ptr += 6) { \
+    for (i = 0; i < numframes; i++, ptr += 6) { \
         T tmp; \
         tmp = ptr[2]; ptr[2] = ptr[4]; ptr[4] = tmp; \
         tmp = ptr[3]; ptr[3] = ptr[5]; ptr[5] = tmp; \
     }
 
 static SDL_INLINE void
-swizzle_alsa_channels_6_64bit(_THIS)
+swizzle_alsa_channels_6_64bit(void *buffer, Uint32 bufferlen)
 {
-    SWIZ6(Uint64);
+    SWIZ6(Uint64, buffer, bufferlen);
 }
 
 static SDL_INLINE void
-swizzle_alsa_channels_6_32bit(_THIS)
+swizzle_alsa_channels_6_32bit(void *buffer, Uint32 bufferlen)
 {
-    SWIZ6(Uint32);
+    SWIZ6(Uint32, buffer, bufferlen);
 }
 
 static SDL_INLINE void
-swizzle_alsa_channels_6_16bit(_THIS)
+swizzle_alsa_channels_6_16bit(void *buffer, Uint32 bufferlen)
 {
-    SWIZ6(Uint16);
+    SWIZ6(Uint16, buffer, bufferlen);
 }
 
 static SDL_INLINE void
-swizzle_alsa_channels_6_8bit(_THIS)
+swizzle_alsa_channels_6_8bit(void *buffer, Uint32 bufferlen)
 {
-    SWIZ6(Uint8);
+    SWIZ6(Uint8, buffer, bufferlen);
 }
 
 #undef SWIZ6
@@ -282,18 +282,16 @@ swizzle_alsa_channels_6_8bit(_THIS)
  *  channels from Windows/Mac order to the format alsalib will want.
  */
 static SDL_INLINE void
-swizzle_alsa_channels(_THIS)
+swizzle_alsa_channels(_THIS, void *buffer, Uint32 bufferlen)
 {
     if (this->spec.channels == 6) {
-        const Uint16 fmtsize = (this->spec.format & 0xFF);      /* bits/channel. */
-        if (fmtsize == 16)
-            swizzle_alsa_channels_6_16bit(this);
-        else if (fmtsize == 8)
-            swizzle_alsa_channels_6_8bit(this);
-        else if (fmtsize == 32)
-            swizzle_alsa_channels_6_32bit(this);
-        else if (fmtsize == 64)
-            swizzle_alsa_channels_6_64bit(this);
+        switch (SDL_AUDIO_BITSIZE(this->spec.format)) {
+            case 8: swizzle_alsa_channels_6_8bit(buffer, bufferlen); break;
+            case 16: swizzle_alsa_channels_6_16bit(buffer, bufferlen); break;
+            case 32: swizzle_alsa_channels_6_32bit(buffer, bufferlen); break;
+            case 64: swizzle_alsa_channels_6_64bit(buffer, bufferlen); break;
+            default: SDL_assert(!"unhandled bitsize"); break;
+        }
     }
 
     /* !!! FIXME: update this for 7.1 if needed, later. */
@@ -303,19 +301,18 @@ swizzle_alsa_channels(_THIS)
 static void
 ALSA_PlayDevice(_THIS)
 {
-    int status;
     const Uint8 *sample_buf = (const Uint8 *) this->hidden->mixbuf;
-    const int frame_size = (((int) (this->spec.format & 0xFF)) / 8) *
+    const int frame_size = (((int) SDL_AUDIO_BITSIZE(this->spec.format)) / 8) *
                                 this->spec.channels;
     snd_pcm_uframes_t frames_left = ((snd_pcm_uframes_t) this->spec.samples);
 
-    swizzle_alsa_channels(this);
+    swizzle_alsa_channels(this, this->hidden->mixbuf, frames_left);
 
     while ( frames_left > 0 && SDL_AtomicGet(&this->enabled) ) {
         /* !!! FIXME: This works, but needs more testing before going live */
         /* ALSA_snd_pcm_wait(this->hidden->pcm_handle, -1); */
-        status = ALSA_snd_pcm_writei(this->hidden->pcm_handle,
-                                     sample_buf, frames_left);
+        int status = ALSA_snd_pcm_writei(this->hidden->pcm_handle,
+                                         sample_buf, frames_left);
 
         if (status < 0) {
             if (status == -EAGAIN) {
