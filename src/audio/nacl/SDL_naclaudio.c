@@ -53,7 +53,7 @@ static void nacl_audio_callback(void* samples, uint32_t buffer_size, PP_TimeDelt
     
     SDL_LockMutex(private->mutex);  /* !!! FIXME: is this mutex necessary? */
 
-    if (_this->enabled && !_this->paused) {
+    if (SDL_AtomicGet(&this->enabled) && !SDL_AtomicGet(&this->paused)) {
         if (_this->convert.needed) {
             SDL_LockMutex(_this->mixer_lock);
             (*_this->spec.callback) (_this->spec.userdata,

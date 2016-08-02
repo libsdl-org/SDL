@@ -195,7 +195,7 @@ XAUDIO2_PlayDevice(_THIS)
     IXAudio2SourceVoice *source = this->hidden->source;
     HRESULT result = S_OK;
 
-    if (!this->enabled) { /* shutting down? */
+    if (!SDL_AtomicGet(&this->enabled)) { /* shutting down? */
         return;
     }
 
@@ -226,7 +226,7 @@ XAUDIO2_PlayDevice(_THIS)
 static void
 XAUDIO2_WaitDevice(_THIS)
 {
-    if (this->enabled) {
+    if (SDL_AtomicGet(&this->enabled)) {
         SDL_SemWait(this->hidden->semaphore);
     }
 }
@@ -236,7 +236,7 @@ XAUDIO2_WaitDone(_THIS)
 {
     IXAudio2SourceVoice *source = this->hidden->source;
     XAUDIO2_VOICE_STATE state;
-    SDL_assert(!this->enabled);  /* flag that stops playing. */
+    SDL_assert(!SDL_AtomicGet(&this->enabled));  /* flag that stops playing. */
     IXAudio2SourceVoice_Discontinuity(source);
 #if SDL_XAUDIO2_WIN8
     IXAudio2SourceVoice_GetState(source, &state, XAUDIO2_VOICE_NOSAMPLESPLAYED);

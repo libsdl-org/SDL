@@ -151,13 +151,13 @@ void AndroidAUD_PauseDevices(void)
     struct SDL_PrivateAudioData *private;
     if(audioDevice != NULL && audioDevice->hidden != NULL) {
         private = (struct SDL_PrivateAudioData *) audioDevice->hidden;
-        if (audioDevice->paused) {
+        if (SDL_AtomicGet(&audioDevice->paused)) {
             /* The device is already paused, leave it alone */
             private->resume = SDL_FALSE;
         }
         else {
             SDL_LockMutex(audioDevice->mixer_lock);
-            audioDevice->paused = SDL_TRUE;
+            SDL_AtomicSet(&audioDevice->paused, 1);
             private->resume = SDL_TRUE;
         }
     }
@@ -171,7 +171,7 @@ void AndroidAUD_ResumeDevices(void)
     if(audioDevice != NULL && audioDevice->hidden != NULL) {
         private = (struct SDL_PrivateAudioData *) audioDevice->hidden;
         if (private->resume) {
-            audioDevice->paused = SDL_FALSE;
+            SDL_AtomicSet(&audioDevice->paused, 0);
             private->resume = SDL_FALSE;
             SDL_UnlockMutex(audioDevice->mixer_lock);
         }

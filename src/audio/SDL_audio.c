@@ -366,14 +366,14 @@ void SDL_OpenedAudioDeviceDisconnected(SDL_AudioDevice *device)
 {
     SDL_assert(get_audio_device(device->id) == device);
 
-    if (!device->enabled) {
+    if (!SDL_AtomicGet(&device->enabled)) {
         return;
     }
 
     /* Ends the audio callback and mark the device as STOPPED, but the
        app still needs to close the device to free resources. */
     current_audio.impl.LockDevice(device);
-    device->enabled = SDL_FALSE;
+    SDL_AtomicSet(&device->enabled, 0);
     current_audio.impl.UnlockDevice(device);
 
     /* Post the event, if desired */
@@ -615,7 +615,7 @@ SDL_RunAudio(void *devicep)
         /* Fill the current buffer with sound */
         if (device->convert.needed) {
             stream = device->convert.buf;
-        } else if (device->enabled) {
+        } else if (SDL_AtomicGet(&device->enabled)) {
             stream = current_audio.impl.GetDeviceBuf(device);
         } else {
             /* if the device isn't enabled, we still write to the
@@ -632,7 +632,7 @@ SDL_RunAudio(void *devicep)
 
         /* !!! FIXME: this should be LockDevice. */
         SDL_LockMutex(device->mixer_lock);
-        if (device->paused) {
+        if (SDL_AtomicGet(&device->paused)) {
             SDL_memset(stream, silence, stream_len);
         } else {
             (*fill) (udata, stream, stream_len);
@@ -640,7 +640,7 @@ SDL_RunAudio(void *devicep)
         SDL_UnlockMutex(device->mixer_lock);
 
         /* Convert the audio if necessary */
-        if (device->enabled && device->convert.needed) {
+        if (device->convert.needed && SDL_AtomicGet(&device->enabled)) {
             SDL_ConvertAudio(&device->convert);
             stream = current_audio.impl.GetDeviceBuf(device);
             if (stream == NULL) {
@@ -873,8 +873,8 @@ SDL_GetAudioDeviceName(int index, int iscapture)
 static void
 close_audio_device(SDL_AudioDevice * device)
 {
-    device->enabled = SDL_FALSE;
     SDL_AtomicSet(&device->shutdown, 1);
+    SDL_AtomicSet(&device->enabled, 0);
     if (device->thread != NULL) {
         SDL_WaitThread(device->thread, NULL);
     }
@@ -1074,12 +1074,13 @@ open_audio_device(const char *devname, int iscapture,
         return 0;
     }
     SDL_zerop(device);
-    SDL_AtomicSet(&device->shutdown, 0);  /* just in case. */
     device->id = id + 1;
     device->spec = *obtained;
-    device->enabled = SDL_TRUE;
-    device->paused = SDL_TRUE;
     device->iscapture = iscapture ? SDL_TRUE : SDL_FALSE;
+
+    SDL_AtomicSet(&device->shutdown, 0);  /* just in case. */
+    SDL_AtomicSet(&device->paused, 1);
+    SDL_AtomicSet(&device->enabled, 1);
 
     /* Create a mutex for locking the sound buffers */
     if (!current_audio.impl.SkipMixerLock) {
@@ -1256,8 +1257,8 @@ SDL_GetAudioDeviceStatus(SDL_AudioDeviceID devid)
 {
     SDL_AudioDevice *device = get_audio_device(devid);
     SDL_AudioStatus status = SDL_AUDIO_STOPPED;
-    if (device && device->enabled) {
-        if (device->paused) {
+    if (device && SDL_AtomicGet(&device->enabled)) {
+        if (SDL_AtomicGet(&device->paused)) {
             status = SDL_AUDIO_PAUSED;
         } else {
             status = SDL_AUDIO_PLAYING;
@@ -1279,7 +1280,7 @@ SDL_PauseAudioDevice(SDL_AudioDeviceID devid, int pause_on)
     SDL_AudioDevice *device = get_audio_device(devid);
     if (device) {
         current_audio.impl.LockDevice(device);
-        device->paused = pause_on ? SDL_TRUE : SDL_FALSE;
+        SDL_AtomicSet(&device->paused, pause_on ? 1 : 0);
         current_audio.impl.UnlockDevice(device);
     }
 }

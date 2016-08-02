@@ -63,12 +63,10 @@ HandleAudioProcess(_THIS)
     int bytes = SDL_AUDIO_BITSIZE(this->spec.format) / 8;
     int bytes_in = SDL_AUDIO_BITSIZE(this->convert.src_format) / 8;
 
-    /* Only do soemthing if audio is enabled */
-    if (!this->enabled)
+    /* Only do something if audio is enabled */
+    if (!SDL_AtomicGet(&this->enabled) || SDL_AtomicGet(&this->paused)) {
         return;
-
-    if (this->paused)
-        return;
+    }
 
     if (this->convert.needed) {
         if (this->hidden->conv_in_len != 0) {

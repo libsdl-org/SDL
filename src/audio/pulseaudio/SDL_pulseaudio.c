@@ -326,7 +326,7 @@ PULSEAUDIO_WaitDevice(_THIS)
 {
     struct SDL_PrivateAudioData *h = this->hidden;
 
-    while (this->enabled) {
+    while (SDL_AtomicGet(&this->enabled)) {
         if (PULSEAUDIO_pa_context_get_state(h->context) != PA_CONTEXT_READY ||
             PULSEAUDIO_pa_stream_get_state(h->stream) != PA_STREAM_READY ||
             PULSEAUDIO_pa_mainloop_iterate(h->mainloop, 1, NULL) < 0) {
@@ -344,7 +344,7 @@ PULSEAUDIO_PlayDevice(_THIS)
 {
     /* Write the audio data */
     struct SDL_PrivateAudioData *h = this->hidden;
-    if (this->enabled) {
+    if (SDL_AtomicGet(&this->enabled)) {
         if (PULSEAUDIO_pa_stream_write(h->stream, h->mixbuf, h->mixlen, NULL, 0LL, PA_SEEK_RELATIVE) < 0) {
             SDL_OpenedAudioDeviceDisconnected(this);
         }
@@ -360,7 +360,7 @@ stream_drain_complete(pa_stream *s, int success, void *userdata)
 static void
 PULSEAUDIO_WaitDone(_THIS)
 {
-    if (this->enabled) {
+    if (SDL_AtomicGet(&this->enabled)) {
         struct SDL_PrivateAudioData *h = this->hidden;
         pa_operation *o = PULSEAUDIO_pa_stream_drain(h->stream, stream_drain_complete, NULL);
         if (o) {
