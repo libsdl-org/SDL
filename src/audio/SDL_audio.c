@@ -729,7 +729,6 @@ SDL_CaptureAudio(void *devicep)
 
         while (still_need > 0) {
             const int rc = current_audio.impl.CaptureFromDevice(device, ptr, still_need);
-            SDL_assert(rc != 0);  /* device should have blocked, failed, or returned data. */
             SDL_assert(rc <= still_need);  /* device should not overflow buffer. :) */
             if (rc > 0) {
                 still_need -= rc;
@@ -751,7 +750,9 @@ SDL_CaptureAudio(void *devicep)
 
         /* !!! FIXME: this should be LockDevice. */
         SDL_LockMutex(device->mixer_lock);
-        if (!SDL_AtomicGet(&device->paused)) {
+        if (SDL_AtomicGet(&device->paused)) {
+            current_audio.impl.FlushCapture(device);  /* one snuck in! */
+        } else {
             (*callback)(udata, stream, stream_len);
         }
         SDL_UnlockMutex(device->mixer_lock);
