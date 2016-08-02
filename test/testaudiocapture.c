@@ -108,6 +108,11 @@ loop()
 int
 main(int argc, char **argv)
 {
+    /* (argv[1] == NULL means "open default device.") */
+    const char *devname = argv[1];
+    int devcount;
+    int i;
+
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
@@ -124,6 +129,11 @@ main(int argc, char **argv)
 
     SDL_Log("Using audio driver: %s\n", SDL_GetCurrentAudioDriver());
 
+    devcount = SDL_GetNumAudioDevices(SDL_TRUE);
+    for (i = 0; i < devcount; i++) {
+        SDL_Log(" Capture device #%d: '%s'\n", i, SDL_GetAudioDeviceName(i, SDL_TRUE));
+    }
+
     SDL_zero(spec);
     spec.freq = 44100;
     spec.format = AUDIO_F32SYS;
@@ -139,7 +149,12 @@ main(int argc, char **argv)
         return 1;
     }
 
-    devid = SDL_OpenAudioDevice(NULL, 1, &spec, &spec, 0);
+    SDL_Log("Opening device %s%s%s...\n",
+            devname ? "'" : "",
+            devname ? devname : "[[default]]",
+            devname ? "'" : "");
+
+    devid = SDL_OpenAudioDevice(argv[1], SDL_TRUE, &spec, &spec, 0);
     if (!devid) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open an audio device for capture: %s!\n", SDL_GetError());
         SDL_free(sound);
