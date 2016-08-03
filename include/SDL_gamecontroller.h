@@ -93,7 +93,7 @@ typedef struct SDL_GameControllerButtonBind
  *      }
  *  }
  *
- *  Using the SDL_HINT_GAMECONTROLLERCONFIG hint or the SDL_GameControllerAddMapping you can add support for controllers SDL is unaware of or cause an existing controller to have a different binding. The format is:
+ *  Using the SDL_HINT_GAMECONTROLLERCONFIG hint or the SDL_GameControllerAddMapping() you can add support for controllers SDL is unaware of or cause an existing controller to have a different binding. The format is:
  *  guid,name,mappings
  *
  *  Where GUID is the string value from SDL_JoystickGetGUIDString(), name is the human readable string for the device and mappings are controller mappings to joystick ones.
@@ -136,14 +136,14 @@ extern DECLSPEC int SDLCALL SDL_GameControllerAddMapping( const char* mappingStr
 /**
  *  Get a mapping string for a GUID
  *
- *  \return the mapping string.  Must be freed with SDL_free.  Returns NULL if no mapping is available
+ *  \return the mapping string.  Must be freed with SDL_free().  Returns NULL if no mapping is available
  */
 extern DECLSPEC char * SDLCALL SDL_GameControllerMappingForGUID( SDL_JoystickGUID guid );
 
 /**
  *  Get a mapping string for an open GameController
  *
- *  \return the mapping string.  Must be freed with SDL_free.  Returns NULL if no mapping is available
+ *  \return the mapping string.  Must be freed with SDL_free().  Returns NULL if no mapping is available
  */
 extern DECLSPEC char * SDLCALL SDL_GameControllerMapping( SDL_GameController * gamecontroller );
 

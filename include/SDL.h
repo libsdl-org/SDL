@@ -95,8 +95,8 @@ extern DECLSPEC int SDLCALL SDL_Init(Uint32 flags);
  *  This function initializes specific SDL subsystems
  *
  *  Subsystem initialization is ref-counted, you must call
- *  SDL_QuitSubSystem for each SDL_InitSubSystem to correctly
- *  shutdown a subsystem manually (or call SDL_Quit to force shutdown).
+ *  SDL_QuitSubSystem() for each SDL_InitSubSystem() to correctly
+ *  shutdown a subsystem manually (or call SDL_Quit() to force shutdown).
  *  If a subsystem is already loaded then this call will
  *  increase the ref-count and return.
  */
