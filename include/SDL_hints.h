@@ -431,7 +431,7 @@ extern "C" {
  *  privacy policy.
  *
  *  To setup a URL to an app's privacy policy, set SDL_HINT_WINRT_PRIVACY_POLICY_URL
- *  before calling any SDL_Init functions.  The contents of the hint should
+ *  before calling any SDL_Init() functions.  The contents of the hint should
  *  be a valid URL.  For example, "http://www.example.com".
  *
  *  The default value is "", which will prevent SDL from adding a privacy policy
@@ -461,7 +461,7 @@ extern "C" {
  *  The contents of this hint should be encoded as a UTF8 string.
  *
  *  The default value is "Privacy Policy".  This hint should only be set during app
- *  initialization, preferably before any calls to SDL_Init.
+ *  initialization, preferably before any calls to SDL_Init().
  *
  *  For additional information on linking to a privacy policy, see the documentation for
  *  SDL_HINT_WINRT_PRIVACY_POLICY_URL.

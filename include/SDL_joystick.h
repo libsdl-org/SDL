@@ -24,7 +24,7 @@
  *
  *  Include file for SDL joystick event handling
  *
- * The term "device_index" identifies currently plugged in joystick devices between 0 and SDL_NumJoysticks, with the exact joystick
+ * The term "device_index" identifies currently plugged in joystick devices between 0 and SDL_NumJoysticks(), with the exact joystick
  *   behind a device_index changing as joysticks are plugged and unplugged.
  *
  * The term "instance_id" is the current instantiation of a joystick device in the system, if the joystick is removed and then re-inserted

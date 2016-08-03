@@ -41,7 +41,7 @@ extern "C" {
 typedef struct SDL_Cursor SDL_Cursor;   /* Implementation dependent */
 
 /**
- * \brief Cursor types for SDL_CreateSystemCursor.
+ * \brief Cursor types for SDL_CreateSystemCursor().
  */
 typedef enum
 {
