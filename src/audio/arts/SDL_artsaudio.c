@@ -217,13 +217,13 @@ ARTS_FlushCapture(_THIS)
     arts_stream_t stream = this->hidden->stream;
     int remain = SDL_NAME(arts_stream_get)(stream, ARTS_P_BUFFER_SPACE);
     Uint8 buf[512];
-    while (space > 0) {
+    while (remain > 0) {
         const int len = SDL_min(sizeof (buf), remain);
         const int br = SDL_NAME(arts_read)(stream, buf, len);
         if (br <= 0) {
             return;  /* oh well. */
         }
-        space -= br;
+        remain -= br;
     }
 }
 
