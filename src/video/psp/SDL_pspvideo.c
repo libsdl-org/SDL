@@ -92,6 +92,7 @@ PSP_Create()
     if (gldata == NULL) {
         SDL_OutOfMemory();
         SDL_free(device);
+        SDL_free(phdata);
         return NULL;
     }
     device->gl_data = gldata;
