@@ -127,7 +127,6 @@ WINRT_CreateDevice(int devindex)
         SDL_free(device);
         return (0);
     }
-    SDL_zerop(data);
     device->driverdata = data;
 
     /* Set the function pointers */
