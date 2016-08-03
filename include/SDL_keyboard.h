@@ -136,7 +136,7 @@ extern DECLSPEC SDL_Scancode SDLCALL SDL_GetScancodeFromName(const char *name);
  *          copy it.  If the key doesn't have a name, this function returns an
  *          empty string ("").
  *
- *  \sa SDL_Key
+ *  \sa SDL_Keycode
  */
 extern DECLSPEC const char *SDLCALL SDL_GetKeyName(SDL_Keycode key);
 
