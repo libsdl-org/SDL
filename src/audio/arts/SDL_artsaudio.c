@@ -54,12 +54,16 @@ static void (*SDL_NAME(arts_free)) (void);
 static arts_stream_t(*SDL_NAME(arts_play_stream)) (int rate, int bits,
                                                    int channels,
                                                    const char *name);
+static arts_stream_t(*SDL_NAME(arts_record_stream)) (int rate, int bits,
+                                                   int channels,
+                                                   const char *name);
 static int (*SDL_NAME(arts_stream_set)) (arts_stream_t s,
                                          arts_parameter_t param, int value);
 static int (*SDL_NAME(arts_stream_get)) (arts_stream_t s,
                                          arts_parameter_t param);
 static int (*SDL_NAME(arts_write)) (arts_stream_t s, const void *buffer,
                                     int count);
+static int (*SDL_NAME(arts_read)) (arts_stream_t s, void *buffer, int count);
 static void (*SDL_NAME(arts_close_stream)) (arts_stream_t s);
 static int (*SDL_NAME(arts_suspend))(void);
 static int (*SDL_NAME(arts_suspended)) (void);
@@ -75,9 +79,11 @@ static struct
     SDL_ARTS_SYM(arts_init),
     SDL_ARTS_SYM(arts_free),
     SDL_ARTS_SYM(arts_play_stream),
+    SDL_ARTS_SYM(arts_record_stream),
     SDL_ARTS_SYM(arts_stream_set),
     SDL_ARTS_SYM(arts_stream_get),
     SDL_ARTS_SYM(arts_write),
+    SDL_ARTS_SYM(arts_read),
     SDL_ARTS_SYM(arts_close_stream),
     SDL_ARTS_SYM(arts_suspend),
     SDL_ARTS_SYM(arts_suspended),
@@ -199,6 +205,27 @@ ARTS_GetDeviceBuf(_THIS)
     return (this->hidden->mixbuf);
 }
 
+static int
+ARTS_CaptureFromDevice(_THIS, void *buffer, int buflen)
+{
+    return SDL_NAME(arts_read) (this->hidden->stream, buffer, buflen);
+}
+
+static void
+ARTS_FlushCapture(_THIS)
+{
+    arts_stream_t stream = this->hidden->stream;
+    int remain = SDL_NAME(arts_stream_get)(stream, ARTS_P_BUFFER_SPACE);
+    Uint8 buf[512];
+    while (space > 0) {
+        const int len = SDL_min(sizeof (buf), remain);
+        const int br = SDL_NAME(arts_read)(stream, buf, len);
+        if (br <= 0) {
+            return;  /* oh well. */
+        }
+        space -= br;
+    }
+}
 
 static void
 ARTS_CloseDevice(_THIS)
@@ -278,18 +305,19 @@ ARTS_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
                             SDL_NAME(arts_error_text) (rc));
     }
 
-    if (!ARTS_Suspend()) {
-        ARTS_CloseDevice(this);
-        return SDL_SetError("ARTS can not open audio device");
+    if (iscapture) {
+        this->hidden->stream = SDL_NAME(arts_record_stream) (this->spec.freq,
+                                                             bits,
+                                                             this->spec.channels,
+                                                             "SDL");
+    } else {
+        this->hidden->stream = SDL_NAME(arts_play_stream) (this->spec.freq,
+                                                           bits,
+                                                           this->spec.channels,
+                                                           "SDL");
+        /* Play nothing so we have at least one write (server bug workaround). */
+        SDL_NAME(arts_write) (this->hidden->stream, "", 0);
     }
-
-    this->hidden->stream = SDL_NAME(arts_play_stream) (this->spec.freq,
-                                                       bits,
-                                                       this->spec.channels,
-                                                       "SDL");
-
-    /* Play nothing so we have at least one write (server bug workaround). */
-    SDL_NAME(arts_write) (this->hidden->stream, "", 0);
 
     /* Calculate the final parameters for this audio specification */
     SDL_CalculateAudioSpec(&this->spec);
@@ -369,7 +397,12 @@ ARTS_Init(SDL_AudioDriverImpl * impl)
     impl->CloseDevice = ARTS_CloseDevice;
     impl->WaitDone = ARTS_WaitDone;
     impl->Deinitialize = ARTS_Deinitialize;
+    impl->CaptureFromDevice = ARTS_CaptureFromDevice;
+    impl->FlushCapture = ARTS_FlushCapture;
+
     impl->OnlyHasDefaultOutputDevice = 1;
+    impl->OnlyHasDefaultInputDevice = 1;
+    impl->HasCaptureSupport = 1;
 
     return 1;   /* this audio target is available. */
 }
