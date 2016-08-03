@@ -33,11 +33,27 @@ DUMMYAUD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 }
 
 static int
+DUMMYAUD_CaptureFromDevice(_THIS, void *buffer, int buflen)
+{
+    /* Delay to make this sort of simulate real audio input. */
+    SDL_Delay((device->spec.samples * 1000) / device->spec.freq);
+
+    /* always return a full buffer of silence. */
+    SDL_memset(buffer, this->spec.silence, buflen);
+    return buflen;
+}
+
+static int
 DUMMYAUD_Init(SDL_AudioDriverImpl * impl)
 {
     /* Set the function pointers */
     impl->OpenDevice = DUMMYAUD_OpenDevice;
+    impl->CaptureFromDevice = DUMMYAUD_CaptureFromDevice;
+
     impl->OnlyHasDefaultOutputDevice = 1;
+    impl->OnlyHasDefaultInputDevice = 1;
+    impl->HasCaptureSupport = SDL_TRUE;
+
     return 1;   /* this audio target is available. */
 }
 
