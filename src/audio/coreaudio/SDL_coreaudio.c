@@ -268,6 +268,27 @@ device_list_changed(AudioObjectID systemObj, UInt32 num_addr, const AudioObjectP
 }
 #endif
 
+
+static int open_playback_devices = 0;
+static int open_capture_devices = 0;
+
+static void update_audio_session()
+{
+#if !MACOSX_COREAUDIO
+    /* !!! FIXME: move this to AVAudioSession. This is deprecated, and the new version is available as of (ancient!) iOS 3.0 */
+    UInt32 category;
+    if (open_playback_devices && open_capture_devices) {
+        category = kAudioSessionCategory_PlayAndRecord;
+    } else if (open_capture_devices) {
+        category = kAudioSessionCategory_RecordAudio;
+    } else {  /* nothing open, or just playing audio. */
+        category = kAudioSessionCategory_AmbientSound;
+    }
+    AudioSessionSetProperty(kAudioSessionProperty_AudioCategory, sizeof (UInt32), &category);
+#endif
+}
+
+
 /* The CoreAudio callback */
 static OSStatus
 outputCallback(void *inRefCon,
@@ -416,6 +437,7 @@ static void
 COREAUDIO_CloseDevice(_THIS)
 {
     if (this->hidden != NULL) {
+        const int iscapture = this->iscapture;
         if (this->hidden->audioUnitOpened) {
             #if MACOSX_COREAUDIO
             /* Unregister our disconnect callback. */
@@ -425,7 +447,6 @@ COREAUDIO_CloseDevice(_THIS)
             AURenderCallbackStruct callback;
             const AudioUnitElement output_bus = 0;
             const AudioUnitElement input_bus = 1;
-            const int iscapture = this->iscapture;
             const AudioUnitElement bus =
                 ((iscapture) ? input_bus : output_bus);
 
@@ -440,13 +461,19 @@ COREAUDIO_CloseDevice(_THIS)
             AudioComponentInstanceDispose(this->hidden->audioUnit);
             this->hidden->audioUnitOpened = 0;
 
-            #if MACOSX_COREAUDIO
             SDL_free(this->hidden->captureBufferList.mBuffers[0].mData);
-            #endif
+
         }
         SDL_free(this->hidden->buffer);
         SDL_free(this->hidden);
         this->hidden = NULL;
+
+        if (iscapture) {
+            open_capture_devices--;
+        } else {
+            open_playback_devices--;
+        }
+        update_audio_session();
     }
 }
 
@@ -544,7 +571,6 @@ prepare_audiounit(_THIS, void *handle, int iscapture,
 
     this->hidden->audioUnitOpened = 1;
 
-#if MACOSX_COREAUDIO
     if (iscapture) {  /* have to do EnableIO only for capture devices. */
         UInt32 enable = 1;
         result = AudioUnitSetProperty(this->hidden->audioUnit,
@@ -563,6 +589,7 @@ prepare_audiounit(_THIS, void *handle, int iscapture,
             ("AudioUnitSetProperty (kAudioOutputUnitProperty_EnableIO output bus)");
     }
 
+#if MACOSX_COREAUDIO
     /* this is always on the output_bus, even for capture devices. */
     result = AudioUnitSetProperty(this->hidden->audioUnit,
                                   kAudioOutputUnitProperty_CurrentDevice,
@@ -581,14 +608,13 @@ prepare_audiounit(_THIS, void *handle, int iscapture,
                                   strdesc, sizeof (*strdesc));
     CHECK_RESULT("AudioUnitSetProperty (kAudioUnitProperty_StreamFormat)");
 
-#if MACOSX_COREAUDIO
     if (iscapture) {  /* only need to do this for capture devices. */
         void *ptr;
         UInt32 framesize = 0;
         UInt32 propsize = sizeof (UInt32);
 
         result = AudioUnitGetProperty(this->hidden->audioUnit,
-                                      kAudioDevicePropertyBufferFrameSize,
+                                      kAudioUnitProperty_MaximumFramesPerSlice,
                                       kAudioUnitScope_Global, output_bus,
                                       &framesize, &propsize);
         CHECK_RESULT
@@ -601,13 +627,11 @@ prepare_audiounit(_THIS, void *handle, int iscapture,
             SDL_OutOfMemory();
             return 0;
         }
-
         this->hidden->captureBufferList.mNumberBuffers = 1;
         this->hidden->captureBufferList.mBuffers[0].mNumberChannels = this->spec.channels;
         this->hidden->captureBufferList.mBuffers[0].mDataByteSize = framesize;
         this->hidden->captureBufferList.mBuffers[0].mData = ptr;
     }
-#endif
 
     /* Set the audio callback */
     SDL_zero(callback);
@@ -616,7 +640,9 @@ prepare_audiounit(_THIS, void *handle, int iscapture,
 
     result = AudioUnitSetProperty(this->hidden->audioUnit,
                                   iscapture ? kAudioOutputUnitProperty_SetInputCallback : kAudioUnitProperty_SetRenderCallback,
-                                  kAudioUnitScope_Global, output_bus, &callback, sizeof(callback));
+                                  kAudioUnitScope_Global,
+                                  iscapture ? input_bus : output_bus,
+                                  &callback, sizeof (callback));
     CHECK_RESULT
         ("AudioUnitSetProperty (kAudioUnitProperty_SetRenderCallback)");
 
@@ -667,6 +693,13 @@ COREAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         return SDL_OutOfMemory();
     }
     SDL_zerop(this->hidden);
+
+    if (iscapture) {
+        open_capture_devices++;
+    } else {
+        open_playback_devices++;
+    }
+    update_audio_session();
 
     /* Setup a AudioStreamBasicDescription with the requested format */
     SDL_zero(strdesc);
@@ -742,20 +775,22 @@ COREAUDIO_Init(SDL_AudioDriverImpl * impl)
 #if MACOSX_COREAUDIO
     impl->DetectDevices = COREAUDIO_DetectDevices;
     AudioObjectAddPropertyListener(kAudioObjectSystemObject, &devlist_address, device_list_changed, NULL);
-    impl->HasCaptureSupport = 1;
 #else
     impl->OnlyHasDefaultOutputDevice = 1;
+    impl->OnlyHasDefaultInputDevice = 1;
 
     /* Set category to ambient sound so that other music continues playing.
        You can change this at runtime in your own code if you need different
        behavior.  If this is common, we can add an SDL hint for this.
     */
+    /* !!! FIXME: move this to AVAudioSession. This is deprecated, and the new version is available as of (ancient!) iOS 3.0 */
     AudioSessionInitialize(NULL, NULL, NULL, nil);
     UInt32 category = kAudioSessionCategory_AmbientSound;
     AudioSessionSetProperty(kAudioSessionProperty_AudioCategory, sizeof(UInt32), &category);
 #endif
 
     impl->ProvidesOwnCallbackThread = 1;
+    impl->HasCaptureSupport = 1;
 
     return 1;   /* this audio target is available. */
 }
