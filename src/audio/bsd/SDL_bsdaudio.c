@@ -182,11 +182,15 @@ BSDAUDIO_PlayDevice(_THIS)
             break;
         }
 
-        if (p < written
+#ifdef DEBUG_AUDIO
+        fprintf(stderr, "Wrote %d bytes of audio data\n", written);
+#endif
+
+        if (p < this->hidden->mixlen
             || ((written < 0) && ((errno == 0) || (errno == EAGAIN)))) {
             SDL_Delay(1);       /* Let a little CPU time go by */
         }
-    } while (p < written);
+    } while (p < this->hidden->mixlen);
 
     /* If timer synchronization is enabled, set the next write frame */
     if (this->hidden->frame_ticks) {
@@ -197,9 +201,6 @@ BSDAUDIO_PlayDevice(_THIS)
     if (written < 0) {
         SDL_OpenedAudioDeviceDisconnected(this);
     }
-#ifdef DEBUG_AUDIO
-    fprintf(stderr, "Wrote %d bytes of audio data\n", written);
-#endif
 }
 
 static Uint8 *
