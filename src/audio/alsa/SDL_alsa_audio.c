@@ -700,13 +700,15 @@ ALSA_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     SDL_CalculateAudioSpec(&this->spec);
 
     /* Allocate mixing buffer */
-    this->hidden->mixlen = this->spec.size;
-    this->hidden->mixbuf = (Uint8 *) SDL_AllocAudioMem(this->hidden->mixlen);
-    if (this->hidden->mixbuf == NULL) {
-        ALSA_CloseDevice(this);
-        return SDL_OutOfMemory();
+    if (!iscapture) {
+        this->hidden->mixlen = this->spec.size;
+        this->hidden->mixbuf = (Uint8 *) SDL_AllocAudioMem(this->hidden->mixlen);
+        if (this->hidden->mixbuf == NULL) {
+            ALSA_CloseDevice(this);
+            return SDL_OutOfMemory();
+        }
+        SDL_memset(this->hidden->mixbuf, this->spec.silence, this->hidden->mixlen);
     }
-    SDL_memset(this->hidden->mixbuf, this->spec.silence, this->hidden->mixlen);
 
     /* Switch to blocking mode for playback */
     ALSA_snd_pcm_nonblock(pcm_handle, 0);
