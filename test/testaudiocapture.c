@@ -15,104 +15,61 @@
 #include <emscripten/emscripten.h>
 #endif
 
-#define CAPTURE_SECONDS 5
-
-#define DO_VIDEO defined(__ANDROID__) || defined(__IPHONEOS__) || defined(__EMSCRIPTEN__)
-#if DO_VIDEO
 static SDL_Window *window = NULL;
 static SDL_Renderer *renderer = NULL;
-#endif
-
 static SDL_AudioSpec spec;
-static Uint8 *sound = NULL;     /* Pointer to wave data */
-static Uint32 soundlen = 0;     /* Length of wave data */
-static Uint32 processed = 0;
-static SDL_AudioDeviceID devid = 0;
+static SDL_AudioDeviceID devid_in = 0;
+static SDL_AudioDeviceID devid_out = 0;
 
 void SDLCALL
 capture_callback(void *arg, Uint8 * stream, int len)
 {
-    const int avail = (int) (soundlen - processed);
-    if (len > avail) {
-        len = avail;
-    }
-
-    /*SDL_Log("CAPTURE CALLBACK: %d more bytes\n", len);*/
-    SDL_memcpy(sound + processed, stream, len);
-    processed += len;
-}
-
-void SDLCALL
-play_callback(void *arg, Uint8 * stream, int len)
-{
-    const Uint8 *waveptr = sound + processed;
-    const int avail = soundlen - processed;
-    int cpy = len;
-    if (cpy > avail) {
-        cpy = avail;
-    }
-
-    /*SDL_Log("PLAY CALLBACK: %d more bytes\n", cpy);*/
-    SDL_memcpy(stream, waveptr, cpy);
-    processed += cpy;
-
-    len -= cpy;
-    if (len > 0) {
-        SDL_memset(stream + cpy, spec.silence, len);
-    }
+    SDL_QueueAudio(devid_out, stream, len);
 }
 
 static void
 loop()
 {
-    SDL_Event e;
     SDL_bool please_quit = SDL_FALSE;
+    SDL_Event e;
 
     while (SDL_PollEvent(&e)) {
         if (e.type == SDL_QUIT) {
             please_quit = SDL_TRUE;
+        } else if (e.type == SDL_KEYDOWN) {
+            if (e.key.keysym.sym == SDLK_ESCAPE) {
+                please_quit = SDL_TRUE;
+            }
+        } else if (e.type == SDL_MOUSEBUTTONDOWN) {
+            if (e.button.button == 1) {
+                SDL_PauseAudioDevice(devid_out, SDL_TRUE);
+                SDL_PauseAudioDevice(devid_in, SDL_FALSE);
+            }
+        } else if (e.type == SDL_MOUSEBUTTONUP) {
+            if (e.button.button == 1) {
+                SDL_PauseAudioDevice(devid_in, SDL_TRUE);
+                SDL_PauseAudioDevice(devid_out, SDL_FALSE);
+            }
         }
     }
 
-    #if DO_VIDEO
-    if (spec.callback == capture_callback) {
+    if (SDL_GetAudioDeviceStatus(devid_in) == SDL_AUDIO_PLAYING) {
         SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
     } else {
         SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
     }
     SDL_RenderClear(renderer);
     SDL_RenderPresent(renderer);
-    #endif
-
-    if ((!please_quit) && (processed >= soundlen)) {
-        processed = 0;
-        if (spec.callback == capture_callback) {
-            SDL_Log("Done recording, playing back...\n");
-            SDL_PauseAudioDevice(devid, 1);
-            SDL_CloseAudioDevice(devid);
-
-            spec.callback = play_callback;
-            devid = SDL_OpenAudioDevice(NULL, 0, &spec, &spec, 0);
-            if (!devid) {
-                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open an audio device for playback!\n");
-                SDL_Quit();
-                exit(1);
-            }
-
-            SDL_PauseAudioDevice(devid, 0);
-        } else {
-            SDL_Log("Done playing back.\n");
-            please_quit = SDL_TRUE;
-        }
-    }
 
     if (please_quit) {
         /* stop playing back, quit. */
         SDL_Log("Shutting down.\n");
-        SDL_PauseAudioDevice(devid, 1);
-        SDL_CloseAudioDevice(devid);
-        SDL_free(sound);
-        sound = NULL;
+        SDL_PauseAudioDevice(devid_in, 1);
+        SDL_CloseAudioDevice(devid_in);
+        SDL_PauseAudioDevice(devid_out, 1);
+        SDL_CloseAudioDevice(devid_out);
+        SDL_DestroyRenderer(renderer);
+        SDL_DestroyWindow(window);
         SDL_Quit();
         #ifdef __EMSCRIPTEN__
         emscripten_cancel_main_loop();
@@ -138,14 +95,11 @@ main(int argc, char **argv)
         return (1);
     }
 
-    /* Android apparently needs a window...? */
-    #if DO_VIDEO
     window = SDL_CreateWindow("testaudiocapture", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 320, 240, SDL_WINDOW_FULLSCREEN_DESKTOP);
     renderer = SDL_CreateRenderer(window, -1, 0);
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
     SDL_RenderPresent(renderer);
-    #endif
 
     SDL_Log("Using audio driver: %s\n", SDL_GetCurrentAudioDriver());
 
@@ -161,29 +115,28 @@ main(int argc, char **argv)
     spec.samples = 1024;
     spec.callback = capture_callback;
 
-    soundlen = spec.freq * (SDL_AUDIO_BITSIZE(spec.format) / 8) * spec.channels * CAPTURE_SECONDS;
-    sound = (Uint8 *) SDL_malloc(soundlen);
-    if (!sound) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Out of memory\n");
-        SDL_Quit();
-        return 1;
-    }
-
-    SDL_Log("Opening device %s%s%s...\n",
+    SDL_Log("Opening capture device %s%s%s...\n",
             devname ? "'" : "",
             devname ? devname : "[[default]]",
             devname ? "'" : "");
 
-    devid = SDL_OpenAudioDevice(argv[1], SDL_TRUE, &spec, &spec, 0);
-    if (!devid) {
+    devid_in = SDL_OpenAudioDevice(argv[1], SDL_TRUE, &spec, &spec, 0);
+    if (!devid_in) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open an audio device for capture: %s!\n", SDL_GetError());
-        SDL_free(sound);
         SDL_Quit();
         exit(1);
     }
 
-    SDL_Log("Recording for %d seconds...\n", CAPTURE_SECONDS);
-    SDL_PauseAudioDevice(devid, 0);
+    SDL_Log("Opening default playback device...\n");
+    spec.callback = NULL;
+    devid_out = SDL_OpenAudioDevice(NULL, SDL_FALSE, &spec, &spec, 0);
+    if (!devid_out) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open an audio device for capture: %s!\n", SDL_GetError());
+        SDL_Quit();
+        exit(1);
+    }
+
+    SDL_Log("Ready! Hold down mouse or finger to record!\n");
 
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(loop, 0, 1);
