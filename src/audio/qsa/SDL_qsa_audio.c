@@ -45,7 +45,6 @@
 
 #include "SDL_timer.h"
 #include "SDL_audio.h"
-#include "../SDL_audiomem.h"
 #include "../SDL_audio_c.h"
 #include "SDL_qsa_audio.h"
 
@@ -335,7 +334,7 @@ QSA_CloseDevice(_THIS)
         snd_pcm_close(this->hidden->audio_handle);
     }
 
-    SDL_FreeAudioMem(this->hidden->pcm_buf);
+    SDL_free(this->hidden->pcm_buf);
     SDL_free(this->hidden);
 }
 
@@ -529,7 +528,7 @@ QSA_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
      *  closest multiple)
      */
     this->hidden->pcm_buf =
-        (Uint8 *) SDL_AllocAudioMem(this->hidden->pcm_len);
+        (Uint8 *) SDL_malloc(this->hidden->pcm_len);
     if (this->hidden->pcm_buf == NULL) {
         return SDL_OutOfMemory();
     }

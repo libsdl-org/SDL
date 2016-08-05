@@ -32,7 +32,6 @@
 
 #include "SDL_timer.h"
 #include "SDL_audio.h"
-#include "../SDL_audiomem.h"
 #include "../SDL_audio_c.h"
 #include "SDL_esdaudio.h"
 
@@ -177,7 +176,7 @@ ESD_CloseDevice(_THIS)
     if (this->hidden->audio_fd >= 0) {
         SDL_NAME(esd_close) (this->hidden->audio_fd);
     }
-    SDL_FreeAudioMem(this->hidden->mixbuf);
+    SDL_free(this->hidden->mixbuf);
     SDL_free(this->hidden);
 }
 
@@ -275,7 +274,7 @@ ESD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 
     /* Allocate mixing buffer */
     this->hidden->mixlen = this->spec.size;
-    this->hidden->mixbuf = (Uint8 *) SDL_AllocAudioMem(this->hidden->mixlen);
+    this->hidden->mixbuf = (Uint8 *) SDL_malloc(this->hidden->mixlen);
     if (this->hidden->mixbuf == NULL) {
         return SDL_OutOfMemory();
     }

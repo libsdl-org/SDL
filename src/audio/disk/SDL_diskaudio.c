@@ -31,7 +31,6 @@
 #include "SDL_rwops.h"
 #include "SDL_timer.h"
 #include "SDL_audio.h"
-#include "../SDL_audiomem.h"
 #include "../SDL_audio_c.h"
 #include "SDL_diskaudio.h"
 
@@ -90,7 +89,7 @@ DISKAUD_CloseDevice(_THIS)
     if (this->hidden->output != NULL) {
         SDL_RWclose(this->hidden->output);
     }
-    SDL_FreeAudioMem(this->hidden->mixbuf);
+    SDL_free(this->hidden->mixbuf);
     SDL_free(this->hidden);
 }
 
@@ -119,7 +118,7 @@ DISKAUD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     }
 
     /* Allocate mixing buffer */
-    this->hidden->mixbuf = (Uint8 *) SDL_AllocAudioMem(this->hidden->mixlen);
+    this->hidden->mixbuf = (Uint8 *) SDL_malloc(this->hidden->mixlen);
     if (this->hidden->mixbuf == NULL) {
         return -1;
     }

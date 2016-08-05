@@ -27,7 +27,6 @@
 
 #include "SDL_audio.h"
 #include "SDL_mutex.h"
-#include "../SDL_audiomem.h"
 #include "../SDL_audio_c.h"
 #include "../SDL_audiodev_c.h"
 

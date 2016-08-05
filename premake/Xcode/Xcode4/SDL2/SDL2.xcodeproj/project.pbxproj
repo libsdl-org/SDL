@@ -146,7 +146,6 @@
 		07B907294E82663A7E91738C /* SDL_audiocvt.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "SDL_audiocvt.c"; path = "../../../../src/audio/SDL_audiocvt.c"; sourceTree = "<group>"; };
 		5AAD4B726237251050431873 /* SDL_audiodev.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "SDL_audiodev.c"; path = "../../../../src/audio/SDL_audiodev.c"; sourceTree = "<group>"; };
 		15895798549516351860492E /* SDL_audiodev_c.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "SDL_audiodev_c.h"; path = "../../../../src/audio/SDL_audiodev_c.h"; sourceTree = "<group>"; };
-		0D3062CE47BF5D5934AB598D /* SDL_audiomem.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "SDL_audiomem.h"; path = "../../../../src/audio/SDL_audiomem.h"; sourceTree = "<group>"; };
 		5B0759ED16B35B9A6B027892 /* SDL_audiotypecvt.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "SDL_audiotypecvt.c"; path = "../../../../src/audio/SDL_audiotypecvt.c"; sourceTree = "<group>"; };
 		2B8C7A19218A1FFC6D376B1D /* SDL_mixer.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = "SDL_mixer.c"; path = "../../../../src/audio/SDL_mixer.c"; sourceTree = "<group>"; };
 		09E4653E4CD964410C0E71BA /* SDL_sysaudio.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = "SDL_sysaudio.h"; path = "../../../../src/audio/SDL_sysaudio.h"; sourceTree = "<group>"; };
@@ -425,7 +424,6 @@
 				07B907294E82663A7E91738C /* SDL_audiocvt.c */,
 				5AAD4B726237251050431873 /* SDL_audiodev.c */,
 				15895798549516351860492E /* SDL_audiodev_c.h */,
-				0D3062CE47BF5D5934AB598D /* SDL_audiomem.h */,
 				5B0759ED16B35B9A6B027892 /* SDL_audiotypecvt.c */,
 				2B8C7A19218A1FFC6D376B1D /* SDL_mixer.c */,
 				09E4653E4CD964410C0E71BA /* SDL_sysaudio.h */,

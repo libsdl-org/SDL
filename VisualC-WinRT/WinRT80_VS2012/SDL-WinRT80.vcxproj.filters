@@ -417,9 +417,6 @@
     <ClInclude Include="..\..\include\SDL_clipboard.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\audio\SDL_audiomem.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\render\software\SDL_blendfillrect.h">
       <Filter>Source Files</Filter>
     </ClInclude>

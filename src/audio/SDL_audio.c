@@ -25,7 +25,6 @@
 #include "SDL.h"
 #include "SDL_audio.h"
 #include "SDL_audio_c.h"
-#include "SDL_audiomem.h"
 #include "SDL_sysaudio.h"
 #include "../thread/SDL_systhread.h"
 
@@ -978,9 +977,9 @@ close_audio_device(SDL_AudioDevice * device)
     if (device->mixer_lock != NULL) {
         SDL_DestroyMutex(device->mixer_lock);
     }
-    SDL_FreeAudioMem(device->fake_stream);
+    SDL_free(device->fake_stream);
     if (device->convert.needed) {
-        SDL_FreeAudioMem(device->convert.buf);
+        SDL_free(device->convert.buf);
     }
     if (device->hidden != NULL) {
         current_audio.impl.CloseDevice(device);
@@ -989,7 +988,7 @@ close_audio_device(SDL_AudioDevice * device)
     free_audio_queue(device->buffer_queue_head);
     free_audio_queue(device->buffer_queue_pool);
 
-    SDL_FreeAudioMem(device);
+    SDL_free(device);
 }
 
 
@@ -1164,12 +1163,11 @@ open_audio_device(const char *devname, int iscapture,
         }
     }
 
-    device = (SDL_AudioDevice *) SDL_AllocAudioMem(sizeof(SDL_AudioDevice));
+    device = (SDL_AudioDevice *) SDL_calloc(1, sizeof (SDL_AudioDevice));
     if (device == NULL) {
         SDL_OutOfMemory();
         return 0;
     }
-    SDL_zerop(device);
     device->id = id + 1;
     device->spec = *obtained;
     device->iscapture = iscapture ? SDL_TRUE : SDL_FALSE;
@@ -1245,7 +1243,7 @@ open_audio_device(const char *devname, int iscapture,
                                          device->convert.len_ratio);
 
             device->convert.buf =
-                (Uint8 *) SDL_AllocAudioMem(device->convert.len *
+                (Uint8 *) SDL_malloc(device->convert.len *
                                             device->convert.len_mult);
             if (device->convert.buf == NULL) {
                 close_audio_device(device);
@@ -1261,7 +1259,7 @@ open_audio_device(const char *devname, int iscapture,
         stream_len = device->spec.size;
     }
     SDL_assert(stream_len > 0);
-    device->fake_stream = (Uint8 *)SDL_AllocAudioMem(stream_len);
+    device->fake_stream = (Uint8 *) SDL_malloc(stream_len);
     if (device->fake_stream == NULL) {
         close_audio_device(device);
         SDL_OutOfMemory();
