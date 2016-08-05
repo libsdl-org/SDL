@@ -32,7 +32,6 @@
 #include "SDL_assert.h"
 #include "SDL_timer.h"
 #include "SDL_audio.h"
-#include "../SDL_audiomem.h"
 #include "../SDL_audio_c.h"
 #include "SDL_alsa_audio.h"
 
@@ -406,7 +405,7 @@ ALSA_CloseDevice(_THIS)
         ALSA_snd_pcm_drain(this->hidden->pcm_handle);
         ALSA_snd_pcm_close(this->hidden->pcm_handle);
     }
-    SDL_FreeAudioMem(this->hidden->mixbuf);
+    SDL_free(this->hidden->mixbuf);
     SDL_free(this->hidden);
 }
 
@@ -686,7 +685,7 @@ ALSA_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     /* Allocate mixing buffer */
     if (!iscapture) {
         this->hidden->mixlen = this->spec.size;
-        this->hidden->mixbuf = (Uint8 *) SDL_AllocAudioMem(this->hidden->mixlen);
+        this->hidden->mixbuf = (Uint8 *) SDL_malloc(this->hidden->mixlen);
         if (this->hidden->mixbuf == NULL) {
             return SDL_OutOfMemory();
         }

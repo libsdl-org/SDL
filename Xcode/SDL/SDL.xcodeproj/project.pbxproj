@@ -64,7 +64,6 @@
 		04BD002812E6671800899322 /* SDL_audiocvt.c in Sources */ = {isa = PBXBuildFile; fileRef = 04BDFDB612E6671700899322 /* SDL_audiocvt.c */; };
 		04BD002912E6671800899322 /* SDL_audiodev.c in Sources */ = {isa = PBXBuildFile; fileRef = 04BDFDB712E6671700899322 /* SDL_audiodev.c */; };
 		04BD002A12E6671800899322 /* SDL_audiodev_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 04BDFDB812E6671700899322 /* SDL_audiodev_c.h */; };
-		04BD002B12E6671800899322 /* SDL_audiomem.h in Headers */ = {isa = PBXBuildFile; fileRef = 04BDFDB912E6671700899322 /* SDL_audiomem.h */; };
 		04BD002C12E6671800899322 /* SDL_audiotypecvt.c in Sources */ = {isa = PBXBuildFile; fileRef = 04BDFDBA12E6671700899322 /* SDL_audiotypecvt.c */; };
 		04BD002D12E6671800899322 /* SDL_mixer.c in Sources */ = {isa = PBXBuildFile; fileRef = 04BDFDBB12E6671700899322 /* SDL_mixer.c */; };
 		04BD003412E6671800899322 /* SDL_sysaudio.h in Headers */ = {isa = PBXBuildFile; fileRef = 04BDFDC212E6671700899322 /* SDL_sysaudio.h */; };
@@ -218,7 +217,6 @@
 		04BD024412E6671800899322 /* SDL_audiocvt.c in Sources */ = {isa = PBXBuildFile; fileRef = 04BDFDB612E6671700899322 /* SDL_audiocvt.c */; };
 		04BD024512E6671800899322 /* SDL_audiodev.c in Sources */ = {isa = PBXBuildFile; fileRef = 04BDFDB712E6671700899322 /* SDL_audiodev.c */; };
 		04BD024612E6671800899322 /* SDL_audiodev_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 04BDFDB812E6671700899322 /* SDL_audiodev_c.h */; };
-		04BD024712E6671800899322 /* SDL_audiomem.h in Headers */ = {isa = PBXBuildFile; fileRef = 04BDFDB912E6671700899322 /* SDL_audiomem.h */; };
 		04BD024812E6671800899322 /* SDL_audiotypecvt.c in Sources */ = {isa = PBXBuildFile; fileRef = 04BDFDBA12E6671700899322 /* SDL_audiotypecvt.c */; };
 		04BD024912E6671800899322 /* SDL_mixer.c in Sources */ = {isa = PBXBuildFile; fileRef = 04BDFDBB12E6671700899322 /* SDL_mixer.c */; };
 		04BD025012E6671800899322 /* SDL_sysaudio.h in Headers */ = {isa = PBXBuildFile; fileRef = 04BDFDC212E6671700899322 /* SDL_sysaudio.h */; };
@@ -563,7 +561,6 @@
 		DB313F7617554B71006C0E22 /* SDL_coreaudio.h in Headers */ = {isa = PBXBuildFile; fileRef = 04BDFDA112E6671700899322 /* SDL_coreaudio.h */; };
 		DB313F7717554B71006C0E22 /* SDL_audio_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 04BDFDB512E6671700899322 /* SDL_audio_c.h */; };
 		DB313F7817554B71006C0E22 /* SDL_audiodev_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 04BDFDB812E6671700899322 /* SDL_audiodev_c.h */; };
-		DB313F7917554B71006C0E22 /* SDL_audiomem.h in Headers */ = {isa = PBXBuildFile; fileRef = 04BDFDB912E6671700899322 /* SDL_audiomem.h */; };
 		DB313F7A17554B71006C0E22 /* SDL_sysaudio.h in Headers */ = {isa = PBXBuildFile; fileRef = 04BDFDC212E6671700899322 /* SDL_sysaudio.h */; };
 		DB313F7B17554B71006C0E22 /* SDL_wave.h in Headers */ = {isa = PBXBuildFile; fileRef = 04BDFDC412E6671700899322 /* SDL_wave.h */; };
 		DB313F7C17554B71006C0E22 /* blank_cursor.h in Headers */ = {isa = PBXBuildFile; fileRef = 04BDFDD612E6671700899322 /* blank_cursor.h */; };
@@ -864,7 +861,6 @@
 		04BDFDB612E6671700899322 /* SDL_audiocvt.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_audiocvt.c; sourceTree = "<group>"; };
 		04BDFDB712E6671700899322 /* SDL_audiodev.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_audiodev.c; sourceTree = "<group>"; };
 		04BDFDB812E6671700899322 /* SDL_audiodev_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_audiodev_c.h; sourceTree = "<group>"; };
-		04BDFDB912E6671700899322 /* SDL_audiomem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_audiomem.h; sourceTree = "<group>"; };
 		04BDFDBA12E6671700899322 /* SDL_audiotypecvt.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_audiotypecvt.c; sourceTree = "<group>"; };
 		04BDFDBB12E6671700899322 /* SDL_mixer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_mixer.c; sourceTree = "<group>"; };
 		04BDFDC212E6671700899322 /* SDL_sysaudio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_sysaudio.h; sourceTree = "<group>"; };
@@ -1307,7 +1303,6 @@
 				04BDFDB612E6671700899322 /* SDL_audiocvt.c */,
 				04BDFDB712E6671700899322 /* SDL_audiodev.c */,
 				04BDFDB812E6671700899322 /* SDL_audiodev_c.h */,
-				04BDFDB912E6671700899322 /* SDL_audiomem.h */,
 				04BDFDBA12E6671700899322 /* SDL_audiotypecvt.c */,
 				04BDFDBB12E6671700899322 /* SDL_mixer.c */,
 				04BDFDC212E6671700899322 /* SDL_sysaudio.h */,
@@ -1840,7 +1835,6 @@
 				04BD001912E6671800899322 /* SDL_coreaudio.h in Headers */,
 				04BD002712E6671800899322 /* SDL_audio_c.h in Headers */,
 				04BD002A12E6671800899322 /* SDL_audiodev_c.h in Headers */,
-				04BD002B12E6671800899322 /* SDL_audiomem.h in Headers */,
 				04BD003412E6671800899322 /* SDL_sysaudio.h in Headers */,
 				04BD003612E6671800899322 /* SDL_wave.h in Headers */,
 				04BD004212E6671800899322 /* blank_cursor.h in Headers */,
@@ -1996,7 +1990,6 @@
 				04BD024312E6671800899322 /* SDL_audio_c.h in Headers */,
 				04BD024612E6671800899322 /* SDL_audiodev_c.h in Headers */,
 				AAC070FD195606770073DCDF /* SDL_opengles2_gl2.h in Headers */,
-				04BD024712E6671800899322 /* SDL_audiomem.h in Headers */,
 				04BD025012E6671800899322 /* SDL_sysaudio.h in Headers */,
 				04BD025212E6671800899322 /* SDL_wave.h in Headers */,
 				04BD025D12E6671800899322 /* blank_cursor.h in Headers */,
@@ -2151,7 +2144,6 @@
 				DB313F7717554B71006C0E22 /* SDL_audio_c.h in Headers */,
 				DB313F7817554B71006C0E22 /* SDL_audiodev_c.h in Headers */,
 				AAC070FE195606770073DCDF /* SDL_opengles2_gl2.h in Headers */,
-				DB313F7917554B71006C0E22 /* SDL_audiomem.h in Headers */,
 				DB313F7A17554B71006C0E22 /* SDL_sysaudio.h in Headers */,
 				DB313F7B17554B71006C0E22 /* SDL_wave.h in Headers */,
 				DB313F7C17554B71006C0E22 /* blank_cursor.h in Headers */,

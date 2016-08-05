@@ -113,7 +113,6 @@
     <ClInclude Include="..\..\..\..\src\SDL_assert_c.h" />
     <ClInclude Include="..\..\..\..\src\SDL_error_c.h" />
     <ClInclude Include="..\..\..\..\src\audio\SDL_audiodev_c.h" />
-    <ClInclude Include="..\..\..\..\src\audio\SDL_audiomem.h" />
     <ClInclude Include="..\..\..\..\src\audio\SDL_audio_c.h" />
     <ClInclude Include="..\..\..\..\src\audio\SDL_sysaudio.h" />
     <ClInclude Include="..\..\..\..\src\audio\SDL_wave.h" />

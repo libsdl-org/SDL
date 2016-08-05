@@ -42,7 +42,6 @@
 
 #include "SDL_timer.h"
 #include "SDL_audio.h"
-#include "../SDL_audiomem.h"
 #include "../SDL_audio_c.h"
 #include "SDL_pulseaudio.h"
 #include "SDL_loadso.h"
@@ -472,7 +471,7 @@ PULSEAUDIO_CloseDevice(_THIS)
     }
 
     DisconnectFromPulseServer(this->hidden->mainloop, this->hidden->context);
-    SDL_FreeAudioMem(this->hidden->mixbuf);
+    SDL_free(this->hidden->mixbuf);
     SDL_free(this->hidden->device_name);
     SDL_free(this->hidden);
 }
@@ -590,7 +589,7 @@ PULSEAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     /* Allocate mixing buffer */
     if (!iscapture) {
         h->mixlen = this->spec.size;
-        h->mixbuf = (Uint8 *) SDL_AllocAudioMem(h->mixlen);
+        h->mixbuf = (Uint8 *) SDL_malloc(h->mixlen);
         if (h->mixbuf == NULL) {
             return SDL_OutOfMemory();
         }

@@ -33,7 +33,6 @@
 
 #include "SDL_timer.h"
 #include "SDL_audio.h"
-#include "../SDL_audiomem.h"
 #include "../SDL_audio_c.h"
 #include "SDL_fsaudio.h"
 
@@ -176,7 +175,7 @@ SDL_FS_CloseDevice(_THIS)
     if (this->hidden->fs) {
         this->hidden->fs->Release(this->hidden->fs);
     }
-    SDL_FreeAudioMem(this->hidden->mixbuf);
+    SDL_free(this->hidden->mixbuf);
     SDL_free(this->hidden);
 }
 
@@ -278,7 +277,7 @@ SDL_FS_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 
     /* Allocate mixing buffer */
     this->hidden->mixlen = this->spec.size;
-    this->hidden->mixbuf = (Uint8 *) SDL_AllocAudioMem(this->hidden->mixlen);
+    this->hidden->mixbuf = (Uint8 *) SDL_malloc(this->hidden->mixlen);
     if (this->hidden->mixbuf == NULL) {
         return SDL_OutOfMemory();
     }
