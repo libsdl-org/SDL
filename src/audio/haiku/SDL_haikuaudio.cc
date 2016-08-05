@@ -74,16 +74,11 @@ FillSound(void *device, void *stream, size_t len,
 static void
 HAIKUAUDIO_CloseDevice(_THIS)
 {
-    if (_this->hidden != NULL) {
-        if (_this->hidden->audio_obj) {
-            _this->hidden->audio_obj->Stop();
-            delete _this->hidden->audio_obj;
-            _this->hidden->audio_obj = NULL;
-        }
-
-        delete _this->hidden;
-        _this->hidden = NULL;
+    if (_this->hidden->audio_obj) {
+        _this->hidden->audio_obj->Stop();
+        delete _this->hidden->audio_obj;
     }
+    delete _this->hidden;
 }
 
 
@@ -177,7 +172,6 @@ HAIKUAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     }
 
     if (!valid_datatype) {      /* shouldn't happen, but just in case... */
-        HAIKUAUDIO_CloseDevice(_this);
         return SDL_SetError("Unsupported audio format");
     }
 
@@ -196,7 +190,6 @@ HAIKUAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     if (_this->hidden->audio_obj->Start() == B_NO_ERROR) {
         _this->hidden->audio_obj->SetHasData(true);
     } else {
-        HAIKUAUDIO_CloseDevice(_this);
         return SDL_SetError("Unable to start Be audio");
     }
 

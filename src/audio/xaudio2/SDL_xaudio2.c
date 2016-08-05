@@ -257,33 +257,30 @@ XAUDIO2_WaitDone(_THIS)
 static void
 XAUDIO2_CloseDevice(_THIS)
 {
-    if (this->hidden != NULL) {
-        IXAudio2 *ixa2 = this->hidden->ixa2;
-        IXAudio2SourceVoice *source = this->hidden->source;
-        IXAudio2MasteringVoice *mastering = this->hidden->mastering;
+    IXAudio2 *ixa2 = this->hidden->ixa2;
+    IXAudio2SourceVoice *source = this->hidden->source;
+    IXAudio2MasteringVoice *mastering = this->hidden->mastering;
 
-        if (source != NULL) {
-            IXAudio2SourceVoice_Stop(source, 0, XAUDIO2_COMMIT_NOW);
-            IXAudio2SourceVoice_FlushSourceBuffers(source);
-            IXAudio2SourceVoice_DestroyVoice(source);
-        }
-        if (ixa2 != NULL) {
-            IXAudio2_StopEngine(ixa2);
-        }
-        if (mastering != NULL) {
-            IXAudio2MasteringVoice_DestroyVoice(mastering);
-        }
-        if (ixa2 != NULL) {
-            IXAudio2_Release(ixa2);
-        }
-        SDL_free(this->hidden->mixbuf);
-        if (this->hidden->semaphore != NULL) {
-            SDL_DestroySemaphore(this->hidden->semaphore);
-        }
-
-        SDL_free(this->hidden);
-        this->hidden = NULL;
+    if (source != NULL) {
+        IXAudio2SourceVoice_Stop(source, 0, XAUDIO2_COMMIT_NOW);
+        IXAudio2SourceVoice_FlushSourceBuffers(source);
+        IXAudio2SourceVoice_DestroyVoice(source);
     }
+    if (ixa2 != NULL) {
+        IXAudio2_StopEngine(ixa2);
+    }
+    if (mastering != NULL) {
+        IXAudio2MasteringVoice_DestroyVoice(mastering);
+    }
+    if (ixa2 != NULL) {
+        IXAudio2_Release(ixa2);
+    }
+    if (this->hidden->semaphore != NULL) {
+        SDL_DestroySemaphore(this->hidden->semaphore);
+    }
+
+    SDL_free(this->hidden->mixbuf);
+    SDL_free(this->hidden);
 }
 
 static int
@@ -350,7 +347,6 @@ XAUDIO2_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     this->hidden->ixa2 = ixa2;
     this->hidden->semaphore = SDL_CreateSemaphore(1);
     if (this->hidden->semaphore == NULL) {
-        XAUDIO2_CloseDevice(this);
         return SDL_SetError("XAudio2: CreateSemaphore() failed!");
     }
 
@@ -368,7 +364,6 @@ XAUDIO2_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     }
 
     if (!valid_format) {
-        XAUDIO2_CloseDevice(this);
         return SDL_SetError("XAudio2: Unsupported audio format");
     }
 
@@ -379,7 +374,6 @@ XAUDIO2_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     this->hidden->mixlen = this->spec.size;
     this->hidden->mixbuf = (Uint8 *) SDL_malloc(2 * this->hidden->mixlen);
     if (this->hidden->mixbuf == NULL) {
-        XAUDIO2_CloseDevice(this);
         return SDL_OutOfMemory();
     }
     this->hidden->nextbuf = this->hidden->mixbuf;
@@ -401,7 +395,6 @@ XAUDIO2_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
                                            this->spec.freq, 0, devId, NULL);
 #endif
     if (result != S_OK) {
-        XAUDIO2_CloseDevice(this);
         return SDL_SetError("XAudio2: Couldn't create mastering voice");
     }
 
@@ -436,7 +429,6 @@ XAUDIO2_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 
 #endif
     if (result != S_OK) {
-        XAUDIO2_CloseDevice(this);
         return SDL_SetError("XAudio2: Couldn't create source voice");
     }
     this->hidden->source = source;
@@ -444,13 +436,11 @@ XAUDIO2_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     /* Start everything playing! */
     result = IXAudio2_StartEngine(ixa2);
     if (result != S_OK) {
-        XAUDIO2_CloseDevice(this);
         return SDL_SetError("XAudio2: Couldn't start engine");
     }
 
     result = IXAudio2SourceVoice_Start(source, 0, XAUDIO2_COMMIT_NOW);
     if (result != S_OK) {
-        XAUDIO2_CloseDevice(this);
         return SDL_SetError("XAudio2: Couldn't start source voice");
     }
 

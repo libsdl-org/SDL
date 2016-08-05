@@ -136,16 +136,8 @@ HandleAudioProcess(_THIS)
 static void
 Emscripten_CloseDevice(_THIS)
 {
-    if (this->hidden != NULL) {
-        if (this->hidden->mixbuf != NULL) {
-            /* Clean up the audio buffer */
-            SDL_free(this->hidden->mixbuf);
-            this->hidden->mixbuf = NULL;
-        }
-
-        SDL_free(this->hidden);
-        this->hidden = NULL;
-    }
+    SDL_free(this->hidden->mixbuf);
+    SDL_free(this->hidden);
 }
 
 static int

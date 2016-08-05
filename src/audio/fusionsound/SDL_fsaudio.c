@@ -22,6 +22,8 @@
 
 #if SDL_AUDIO_DRIVER_FUSIONSOUND
 
+/* !!! FIXME: why is this is SDL_FS_* instead of FUSIONSOUND_*? */
+
 /* Allow access to a raw mixing buffer */
 
 #ifdef HAVE_SIGNAL_H
@@ -168,20 +170,14 @@ SDL_FS_GetDeviceBuf(_THIS)
 static void
 SDL_FS_CloseDevice(_THIS)
 {
-    if (this->hidden != NULL) {
-        SDL_FreeAudioMem(this->hidden->mixbuf);
-        this->hidden->mixbuf = NULL;
-        if (this->hidden->stream) {
-            this->hidden->stream->Release(this->hidden->stream);
-            this->hidden->stream = NULL;
-        }
-        if (this->hidden->fs) {
-            this->hidden->fs->Release(this->hidden->fs);
-            this->hidden->fs = NULL;
-        }
-        SDL_free(this->hidden);
-        this->hidden = NULL;
+    if (this->hidden->stream) {
+        this->hidden->stream->Release(this->hidden->stream);
     }
+    if (this->hidden->fs) {
+        this->hidden->fs->Release(this->hidden->fs);
+    }
+    SDL_FreeAudioMem(this->hidden->mixbuf);
+    SDL_free(this->hidden);
 }
 
 
@@ -239,7 +235,6 @@ SDL_FS_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     }
 
     if (format == 0) {
-        SDL_FS_CloseDevice(this);
         return SDL_SetError("Couldn't find any hardware audio formats");
     }
     this->spec.format = test_format;
@@ -247,7 +242,6 @@ SDL_FS_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     /* Retrieve the main sound interface. */
     ret = SDL_NAME(FusionSoundCreate) (&this->hidden->fs);
     if (ret) {
-        SDL_FS_CloseDevice(this);
         return SDL_SetError("Unable to initialize FusionSound: %d", ret);
     }
 
@@ -266,7 +260,6 @@ SDL_FS_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         this->hidden->fs->CreateStream(this->hidden->fs, &desc,
                                        &this->hidden->stream);
     if (ret) {
-        SDL_FS_CloseDevice(this);
         return SDL_SetError("Unable to create FusionSoundStream: %d", ret);
     }
 
@@ -287,7 +280,6 @@ SDL_FS_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     this->hidden->mixlen = this->spec.size;
     this->hidden->mixbuf = (Uint8 *) SDL_AllocAudioMem(this->hidden->mixlen);
     if (this->hidden->mixbuf == NULL) {
-        SDL_FS_CloseDevice(this);
         return SDL_OutOfMemory();
     }
     SDL_memset(this->hidden->mixbuf, this->spec.silence, this->spec.size);

@@ -87,16 +87,11 @@ DISKAUD_GetDeviceBuf(_THIS)
 static void
 DISKAUD_CloseDevice(_THIS)
 {
-    if (this->hidden != NULL) {
-        SDL_FreeAudioMem(this->hidden->mixbuf);
-        this->hidden->mixbuf = NULL;
-        if (this->hidden->output != NULL) {
-            SDL_RWclose(this->hidden->output);
-            this->hidden->output = NULL;
-        }
-        SDL_free(this->hidden);
-        this->hidden = NULL;
+    if (this->hidden->output != NULL) {
+        SDL_RWclose(this->hidden->output);
     }
+    SDL_FreeAudioMem(this->hidden->mixbuf);
+    SDL_free(this->hidden);
 }
 
 static int
@@ -120,14 +115,12 @@ DISKAUD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     /* Open the audio device */
     this->hidden->output = SDL_RWFromFile(fname, "wb");
     if (this->hidden->output == NULL) {
-        DISKAUD_CloseDevice(this);
         return -1;
     }
 
     /* Allocate mixing buffer */
     this->hidden->mixbuf = (Uint8 *) SDL_AllocAudioMem(this->hidden->mixlen);
     if (this->hidden->mixbuf == NULL) {
-        DISKAUD_CloseDevice(this);
         return -1;
     }
     SDL_memset(this->hidden->mixbuf, this->spec.silence, this->spec.size);

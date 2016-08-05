@@ -155,42 +155,31 @@ WINMM_WaitDone(_THIS)
 static void
 WINMM_CloseDevice(_THIS)
 {
-    /* Close up audio */
-    if (this->hidden != NULL) {
-        int i;
+    int i;
 
-        if (this->hidden->audio_sem) {
-            CloseHandle(this->hidden->audio_sem);
-            this->hidden->audio_sem = 0;
-        }
-
-        /* Clean up mixing buffers */
-        for (i = 0; i < NUM_BUFFERS; ++i) {
-            if (this->hidden->wavebuf[i].dwUser != 0xFFFF) {
-                waveOutUnprepareHeader(this->hidden->hout,
-                                       &this->hidden->wavebuf[i],
-                                       sizeof(this->hidden->wavebuf[i]));
-                this->hidden->wavebuf[i].dwUser = 0xFFFF;
-            }
-        }
-
-        /* Free raw mixing buffer */
-        SDL_free(this->hidden->mixbuf);
-        this->hidden->mixbuf = NULL;
-
-        if (this->hidden->hin) {
-            waveInClose(this->hidden->hin);
-            this->hidden->hin = 0;
-        }
-
-        if (this->hidden->hout) {
-            waveOutClose(this->hidden->hout);
-            this->hidden->hout = 0;
-        }
-
-        SDL_free(this->hidden);
-        this->hidden = NULL;
+    if (this->hidden->audio_sem) {
+        CloseHandle(this->hidden->audio_sem);
     }
+
+    /* Clean up mixing buffers */
+    for (i = 0; i < NUM_BUFFERS; ++i) {
+        if (this->hidden->wavebuf[i].dwUser != 0xFFFF) {
+            waveOutUnprepareHeader(this->hidden->hout,
+                                   &this->hidden->wavebuf[i],
+                                   sizeof (this->hidden->wavebuf[i]));
+        }
+    }
+
+    if (this->hidden->hin) {
+        waveInClose(this->hidden->hin);
+    }
+
+    if (this->hidden->hout) {
+        waveOutClose(this->hidden->hout);
+    }
+
+    SDL_free(this->hidden->mixbuf);
+    SDL_free(this->hidden);
 }
 
 static SDL_bool
@@ -269,7 +258,6 @@ WINMM_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     }
 
     if (!valid_datatype) {
-        WINMM_CloseDevice(this);
         return SDL_SetError("Unsupported audio format");
     }
 
@@ -288,7 +276,6 @@ WINMM_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     }
 
     if (result != MMSYSERR_NOERROR) {
-        WINMM_CloseDevice(this);
         return SetMMerror("waveOutOpen()", result);
     }
 #ifdef SOUND_DEBUG
@@ -299,7 +286,6 @@ WINMM_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         result = waveOutGetDevCaps((UINT) this->hidden->hout,
                                    &caps, sizeof(caps));
         if (result != MMSYSERR_NOERROR) {
-            WINMM_CloseDevice(this);
             return SetMMerror("waveOutGetDevCaps()", result);
         }
         printf("Audio device: %s\n", caps.szPname);
@@ -310,7 +296,6 @@ WINMM_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     this->hidden->audio_sem =
         CreateSemaphore(NULL, NUM_BUFFERS - 1, NUM_BUFFERS, NULL);
     if (this->hidden->audio_sem == NULL) {
-        WINMM_CloseDevice(this);
         return SDL_SetError("Couldn't create semaphore");
     }
 
@@ -318,7 +303,6 @@ WINMM_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     this->hidden->mixbuf =
         (Uint8 *) SDL_malloc(NUM_BUFFERS * this->spec.size);
     if (this->hidden->mixbuf == NULL) {
-        WINMM_CloseDevice(this);
         return SDL_OutOfMemory();
     }
     for (i = 0; i < NUM_BUFFERS; ++i) {
@@ -332,7 +316,6 @@ WINMM_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
                                       &this->hidden->wavebuf[i],
                                       sizeof(this->hidden->wavebuf[i]));
         if (result != MMSYSERR_NOERROR) {
-            WINMM_CloseDevice(this);
             return SetMMerror("waveOutPrepareHeader()", result);
         }
     }

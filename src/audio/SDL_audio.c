@@ -982,9 +982,8 @@ close_audio_device(SDL_AudioDevice * device)
     if (device->convert.needed) {
         SDL_FreeAudioMem(device->convert.buf);
     }
-    if (device->opened) {
+    if (device->hidden != NULL) {
         current_audio.impl.CloseDevice(device);
-        device->opened = SDL_FALSE;
     }
 
     free_audio_queue(device->buffer_queue_head);
@@ -1193,7 +1192,10 @@ open_audio_device(const char *devname, int iscapture,
         close_audio_device(device);
         return 0;
     }
-    device->opened = SDL_TRUE;
+
+    /* if your target really doesn't need it, set it to 0x1 or something. */
+    /* otherwise, close_audio_device() won't call impl.CloseDevice(). */
+    SDL_assert(device->hidden != NULL);
 
     /* See if we need to do any conversion */
     build_cvt = SDL_FALSE;

@@ -126,14 +126,11 @@ static void PSPAUD_CloseDevice(_THIS)
 {
     if (this->hidden->channel >= 0) {
         sceAudioChRelease(this->hidden->channel);
-        this->hidden->channel = -1;
     }
-
-    if (this->hidden->rawbuf != NULL) {
-        free(this->hidden->rawbuf);
-        this->hidden->rawbuf = NULL;
-    }
+    free(this->hidden->rawbuf);  /* this uses memalign(), not SDL_malloc(). */
+    SDL_free(this->hidden);
 }
+
 static void PSPAUD_ThreadInit(_THIS)
 {
     /* Increase the priority of this audio thread by 1 to put it
@@ -151,7 +148,6 @@ static void PSPAUD_ThreadInit(_THIS)
 static int
 PSPAUD_Init(SDL_AudioDriverImpl * impl)
 {
-
     /* Set the function pointers */
     impl->OpenDevice = PSPAUD_OpenDevice;
     impl->PlayDevice = PSPAUD_PlayDevice;
