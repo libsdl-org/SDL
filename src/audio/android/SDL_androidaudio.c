@@ -133,7 +133,7 @@ AndroidAUD_Init(SDL_AudioDriverImpl * impl)
     /* and the capabilities */
     impl->HasCaptureSupport = 0; /* TODO */
     impl->OnlyHasDefaultOutputDevice = 1;
-    impl->OnlyHasDefaultInputDevice = 1;
+    impl->OnlyHasDefaultCaptureDevice = 1;
 
     return 1;   /* this audio target is available. */
 }

@@ -161,7 +161,7 @@ PSPAUD_Init(SDL_AudioDriverImpl * impl)
 /*
     impl->HasCaptureSupport = 1;
 
-    impl->OnlyHasDefaultInputDevice = 1;
+    impl->OnlyHasDefaultCaptureDevice = 1;
 */
     /*
     impl->DetectDevices = DSOUND_DetectDevices;
