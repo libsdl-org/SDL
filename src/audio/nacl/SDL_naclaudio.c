@@ -65,7 +65,7 @@ static void nacl_audio_callback(void* samples, uint32_t buffer_size, PP_TimeDelt
             SDL_UnlockMutex(_this->mixer_lock);
         }
     } else {
-        SDL_memset(samples, 0, buffer_size);
+        SDL_memset(samples, _this->spec.silence, buffer_size);
     }
     
     SDL_UnlockMutex(private->mutex);

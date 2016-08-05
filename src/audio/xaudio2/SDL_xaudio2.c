@@ -342,7 +342,7 @@ XAUDIO2_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         IXAudio2_Release(ixa2);
         return SDL_OutOfMemory();
     }
-    SDL_memset(this->hidden, 0, (sizeof *this->hidden));
+    SDL_zerop(this->hidden);
 
     this->hidden->ixa2 = ixa2;
     this->hidden->semaphore = SDL_CreateSemaphore(1);
@@ -377,7 +377,7 @@ XAUDIO2_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         return SDL_OutOfMemory();
     }
     this->hidden->nextbuf = this->hidden->mixbuf;
-    SDL_memset(this->hidden->mixbuf, 0, 2 * this->hidden->mixlen);
+    SDL_memset(this->hidden->mixbuf, this->spec.silence, 2 * this->hidden->mixlen);
 
     /* We use XAUDIO2_DEFAULT_CHANNELS instead of this->spec.channels. On
        Xbox360, this means 5.1 output, but on Windows, it means "figure out
