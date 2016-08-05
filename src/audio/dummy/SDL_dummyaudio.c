@@ -52,7 +52,7 @@ DUMMYAUD_Init(SDL_AudioDriverImpl * impl)
     impl->CaptureFromDevice = DUMMYAUD_CaptureFromDevice;
 
     impl->OnlyHasDefaultOutputDevice = 1;
-    impl->OnlyHasDefaultInputDevice = 1;
+    impl->OnlyHasDefaultCaptureDevice = 1;
     impl->HasCaptureSupport = SDL_TRUE;
 
     return 1;   /* this audio target is available. */

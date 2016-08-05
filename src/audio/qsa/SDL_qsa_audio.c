@@ -769,7 +769,7 @@ QSA_Init(SDL_AudioDriverImpl * impl)
     impl->SkipMixerLock = 0;
     impl->HasCaptureSupport = 1;
     impl->OnlyHasDefaultOutputDevice = 0;
-    impl->OnlyHasDefaultInputDevice = 0;
+    impl->OnlyHasDefaultCaptureDevice = 0;
 
     /* Check if io-audio manager is running or not */
     status = snd_cards();

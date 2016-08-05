@@ -165,7 +165,7 @@ SDL_AudioDetectDevices_Default(void)
 {
     /* you have to write your own implementation if these assertions fail. */
     SDL_assert(current_audio.impl.OnlyHasDefaultOutputDevice);
-    SDL_assert(current_audio.impl.OnlyHasDefaultInputDevice || !current_audio.impl.HasCaptureSupport);
+    SDL_assert(current_audio.impl.OnlyHasDefaultCaptureDevice || !current_audio.impl.HasCaptureSupport);
 
     SDL_AddAudioDevice(SDL_FALSE, DEFAULT_OUTPUT_DEVNAME, (void *) ((size_t) 0x1));
     if (current_audio.impl.HasCaptureSupport) {
@@ -1111,7 +1111,7 @@ open_audio_device(const char *devname, int iscapture,
      *  opens of the default system device.
      */
 
-    if ((iscapture) && (current_audio.impl.OnlyHasDefaultInputDevice)) {
+    if ((iscapture) && (current_audio.impl.OnlyHasDefaultCaptureDevice)) {
         if ((devname) && (SDL_strcmp(devname, DEFAULT_INPUT_DEVNAME) != 0)) {
             SDL_SetError("No such device");
             return 0;

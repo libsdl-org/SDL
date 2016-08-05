@@ -766,7 +766,7 @@ COREAUDIO_Init(SDL_AudioDriverImpl * impl)
     AudioObjectAddPropertyListener(kAudioObjectSystemObject, &devlist_address, device_list_changed, NULL);
 #else
     impl->OnlyHasDefaultOutputDevice = 1;
-    impl->OnlyHasDefaultInputDevice = 1;
+    impl->OnlyHasDefaultCaptureDevice = 1;
 
     /* Set category to ambient sound so that other music continues playing.
        You can change this at runtime in your own code if you need different

@@ -92,7 +92,7 @@ typedef struct SDL_AudioDriverImpl
     int SkipMixerLock;  /* !!! FIXME: do we need this anymore? */
     int HasCaptureSupport;
     int OnlyHasDefaultOutputDevice;
-    int OnlyHasDefaultInputDevice;
+    int OnlyHasDefaultCaptureDevice;
     int AllowsArbitraryDeviceNames;
 } SDL_AudioDriverImpl;
 
