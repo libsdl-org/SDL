@@ -22,6 +22,8 @@
 
 #if SDL_AUDIO_DRIVER_COREAUDIO
 
+/* !!! FIXME: clean out some of the macro salsa in here. */
+
 #include "SDL_audio.h"
 #include "../SDL_audio_c.h"
 #include "../SDL_sysaudio.h"
@@ -30,11 +32,8 @@
 
 #define DEBUG_COREAUDIO 0
 
-static void COREAUDIO_CloseDevice(_THIS);
-
 #define CHECK_RESULT(msg) \
     if (result != noErr) { \
-        COREAUDIO_CloseDevice(this); \
         SDL_SetError("CoreAudio error (%s): %d", msg, (int) result); \
         return 0; \
     }
@@ -436,45 +435,39 @@ device_unplugged(AudioObjectID devid, UInt32 num_addr, const AudioObjectProperty
 static void
 COREAUDIO_CloseDevice(_THIS)
 {
-    if (this->hidden != NULL) {
-        const int iscapture = this->iscapture;
-        if (this->hidden->audioUnitOpened) {
-            #if MACOSX_COREAUDIO
-            /* Unregister our disconnect callback. */
-            AudioObjectRemovePropertyListener(this->hidden->deviceID, &alive_address, device_unplugged, this);
-            #endif
+    const int iscapture = this->iscapture;
+    if (this->hidden->audioUnitOpened) {
+        #if MACOSX_COREAUDIO
+        /* Unregister our disconnect callback. */
+        AudioObjectRemovePropertyListener(this->hidden->deviceID, &alive_address, device_unplugged, this);
+        #endif
 
-            AURenderCallbackStruct callback;
-            const AudioUnitElement output_bus = 0;
-            const AudioUnitElement input_bus = 1;
-            const AudioUnitElement bus =
-                ((iscapture) ? input_bus : output_bus);
+        AURenderCallbackStruct callback;
+        const AudioUnitElement output_bus = 0;
+        const AudioUnitElement input_bus = 1;
+        const AudioUnitElement bus = ((iscapture) ? input_bus : output_bus);
 
-            /* stop processing the audio unit */
-            AudioOutputUnitStop(this->hidden->audioUnit);
+        /* stop processing the audio unit */
+        AudioOutputUnitStop(this->hidden->audioUnit);
 
-            /* Remove the input callback */
-            SDL_zero(callback);
-            AudioUnitSetProperty(this->hidden->audioUnit,
-                                 iscapture ? kAudioOutputUnitProperty_SetInputCallback : kAudioUnitProperty_SetRenderCallback,
-                                 kAudioUnitScope_Global, bus, &callback, sizeof(callback));
-            AudioComponentInstanceDispose(this->hidden->audioUnit);
-            this->hidden->audioUnitOpened = 0;
-
-            SDL_free(this->hidden->captureBufferList.mBuffers[0].mData);
-
-        }
-        SDL_free(this->hidden->buffer);
-        SDL_free(this->hidden);
-        this->hidden = NULL;
-
-        if (iscapture) {
-            open_capture_devices--;
-        } else {
-            open_playback_devices--;
-        }
-        update_audio_session();
+        /* Remove the input callback */
+        SDL_zero(callback);
+        AudioUnitSetProperty(this->hidden->audioUnit,
+                             iscapture ? kAudioOutputUnitProperty_SetInputCallback : kAudioUnitProperty_SetRenderCallback,
+                             kAudioUnitScope_Global, bus, &callback, sizeof(callback));
+        AudioComponentInstanceDispose(this->hidden->audioUnit);
     }
+
+    SDL_free(this->hidden->captureBufferList.mBuffers[0].mData);
+    SDL_free(this->hidden->buffer);
+    SDL_free(this->hidden);
+
+    if (iscapture) {
+        open_capture_devices--;
+    } else {
+        open_playback_devices--;
+    }
+    update_audio_session();
 }
 
 #if MACOSX_COREAUDIO
@@ -623,7 +616,6 @@ prepare_audiounit(_THIS, void *handle, int iscapture,
         framesize *= SDL_AUDIO_BITSIZE(this->spec.format) / 8;
         ptr = SDL_calloc(1, framesize);
         if (ptr == NULL) {
-            COREAUDIO_CloseDevice(this);
             SDL_OutOfMemory();
             return 0;
         }
@@ -655,7 +647,6 @@ prepare_audiounit(_THIS, void *handle, int iscapture,
 
     this->hidden->buffer = SDL_malloc(this->hidden->bufferSize);
     if (this->hidden->buffer == NULL) {
-        COREAUDIO_CloseDevice(this);
         SDL_OutOfMemory();
         return 0;
     }
@@ -737,7 +728,6 @@ COREAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     }
 
     if (!valid_datatype) {      /* shouldn't happen, but just in case... */
-        COREAUDIO_CloseDevice(this);
         return SDL_SetError("Unsupported audio format");
     }
 
@@ -747,7 +737,6 @@ COREAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         strdesc.mBytesPerFrame * strdesc.mFramesPerPacket;
 
     if (!prepare_audiounit(this, handle, iscapture, &strdesc)) {
-        COREAUDIO_CloseDevice(this);
         return -1;      /* prepare_audiounit() will call SDL_SetError()... */
     }
 

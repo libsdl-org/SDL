@@ -44,6 +44,7 @@ AndroidAUD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         return SDL_SetError("Capture not supported on Android");
     }
 
+    /* !!! FIXME: higher level will prevent this now. Lose this check (and global?). */
     if (audioDevice != NULL) {
         return SDL_SetError("Only one audio device at a time please!");
     }
@@ -115,10 +116,7 @@ AndroidAUD_CloseDevice(_THIS)
     Android_JNI_CloseAudioDevice();
 
     if (audioDevice == this) {
-        if (audioDevice->hidden != NULL) {
-            SDL_free(this->hidden);
-            this->hidden = NULL;
-        }
+        SDL_free(this->hidden);
         audioDevice = NULL;
     }
 }

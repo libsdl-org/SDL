@@ -190,16 +190,11 @@ NAS_GetDeviceBuf(_THIS)
 static void
 NAS_CloseDevice(_THIS)
 {
-    if (this->hidden != NULL) {
-        SDL_FreeAudioMem(this->hidden->mixbuf);
-        this->hidden->mixbuf = NULL;
-        if (this->hidden->aud) {
-            NAS_AuCloseServer(this->hidden->aud);
-            this->hidden->aud = 0;
-        }
-        SDL_free(this->hidden);
-        this2 = this->hidden = NULL;
+    if (this->hidden->aud) {
+        NAS_AuCloseServer(this->hidden->aud);
     }
+    SDL_FreeAudioMem(this->hidden->mixbuf);
+    SDL_free(this->hidden);
 }
 
 static unsigned char
@@ -300,21 +295,18 @@ NAS_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         }
     }
     if (format == 0) {
-        NAS_CloseDevice(this);
         return SDL_SetError("NAS: Couldn't find any hardware audio formats");
     }
     this->spec.format = test_format;
 
     this->hidden->aud = NAS_AuOpenServer("", 0, NULL, 0, NULL, NULL);
     if (this->hidden->aud == 0) {
-        NAS_CloseDevice(this);
         return SDL_SetError("NAS: Couldn't open connection to NAS server");
     }
 
     this->hidden->dev = find_device(this, this->spec.channels);
     if ((this->hidden->dev == AuNone)
         || (!(this->hidden->flow = NAS_AuCreateFlow(this->hidden->aud, 0)))) {
-        NAS_CloseDevice(this);
         return SDL_SetError("NAS: Couldn't find a fitting device on NAS server");
     }
 
@@ -347,7 +339,6 @@ NAS_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     this->hidden->mixlen = this->spec.size;
     this->hidden->mixbuf = (Uint8 *) SDL_AllocAudioMem(this->hidden->mixlen);
     if (this->hidden->mixbuf == NULL) {
-        NAS_CloseDevice(this);
         return SDL_OutOfMemory();
     }
     SDL_memset(this->hidden->mixbuf, this->spec.silence, this->spec.size);

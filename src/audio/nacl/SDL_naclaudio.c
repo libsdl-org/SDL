@@ -43,8 +43,6 @@
 #define SAMPLE_FRAME_COUNT 4096
 
 /* Audio driver functions */
-static int NACLAUD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture);
-static void NACLAUD_CloseDevice(_THIS);
 static void nacl_audio_callback(void* samples, uint32_t buffer_size, PP_TimeDelta latency, void* data);
 
 /* FIXME: Make use of latency if needed */

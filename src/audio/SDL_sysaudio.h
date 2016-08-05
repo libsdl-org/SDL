@@ -162,7 +162,6 @@ struct SDL_AudioDevice
     SDL_atomic_t shutdown; /* true if we are signaling the play thread to end. */
     SDL_atomic_t enabled;  /* true if device is functioning and connected. */
     SDL_atomic_t paused;
-    SDL_bool opened;
     SDL_bool iscapture;
 
     /* Fake audio buffer for when the audio hardware is busy */

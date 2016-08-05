@@ -268,16 +268,11 @@ BSDAUDIO_FlushCapture(_THIS)
 static void
 BSDAUDIO_CloseDevice(_THIS)
 {
-    if (this->hidden != NULL) {
-        SDL_FreeAudioMem(this->hidden->mixbuf);
-        this->hidden->mixbuf = NULL;
-        if (this->hidden->audio_fd >= 0) {
-            close(this->hidden->audio_fd);
-            this->hidden->audio_fd = -1;
-        }
-        SDL_free(this->hidden);
-        this->hidden = NULL;
+    if (this->hidden->audio_fd >= 0) {
+        close(this->hidden->audio_fd);
     }
+    SDL_FreeAudioMem(this->hidden->mixbuf);
+    SDL_free(this->hidden);
 }
 
 static int
@@ -319,7 +314,6 @@ BSDAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     /* Set to play mode */
     info.mode = iscapture ? AUMODE_RECORD : AUMODE_PLAY;
     if (ioctl(this->hidden->audio_fd, AUDIO_SETINFO, &info) < 0) {
-        BSDAUDIO_CloseDevice(this);
         return SDL_SetError("Couldn't put device into play mode");
     }
 
@@ -361,7 +355,6 @@ BSDAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     }
 
     if (!format) {
-        BSDAUDIO_CloseDevice(this);
         return SDL_SetError("No supported encoding for 0x%x", this->spec.format);
     }
 
@@ -386,7 +379,6 @@ BSDAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         this->hidden->mixlen = this->spec.size;
         this->hidden->mixbuf = (Uint8 *) SDL_AllocAudioMem(this->hidden->mixlen);
         if (this->hidden->mixbuf == NULL) {
-            BSDAUDIO_CloseDevice(this);
             return SDL_OutOfMemory();
         }
         SDL_memset(this->hidden->mixbuf, this->spec.silence, this->spec.size);

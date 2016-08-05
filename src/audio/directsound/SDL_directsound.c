@@ -322,20 +322,13 @@ DSOUND_WaitDone(_THIS)
 static void
 DSOUND_CloseDevice(_THIS)
 {
-    if (this->hidden != NULL) {
-        if (this->hidden->sound != NULL) {
-            if (this->hidden->mixbuf != NULL) {
-                /* Clean up the audio buffer */
-                IDirectSoundBuffer_Release(this->hidden->mixbuf);
-                this->hidden->mixbuf = NULL;
-            }
-            IDirectSound_Release(this->hidden->sound);
-            this->hidden->sound = NULL;
-        }
-
-        SDL_free(this->hidden);
-        this->hidden = NULL;
+    if (this->hidden->mixbuf != NULL) {
+        IDirectSoundBuffer_Release(this->hidden->mixbuf);
     }
+    if (this->hidden->sound != NULL) {
+        IDirectSound_Release(this->hidden->sound);
+    }
+    SDL_free(this->hidden);
 }
 
 /* This function tries to create a secondary audio buffer, and returns the
@@ -443,7 +436,6 @@ DSOUND_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     /* Open the audio device */
     result = pDirectSoundCreate8(guid, &this->hidden->sound, NULL);
     if (result != DS_OK) {
-        DSOUND_CloseDevice(this);
         return SetDSerror("DirectSoundCreate", result);
     }
 
@@ -465,7 +457,6 @@ DSOUND_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     }
 
     if (!valid_format) {
-        DSOUND_CloseDevice(this);
         if (tried_format) {
             return -1;  /* CreateSecondary() should have called SDL_SetError(). */
         }

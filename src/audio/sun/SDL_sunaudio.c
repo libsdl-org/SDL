@@ -183,18 +183,12 @@ SUNAUDIO_GetDeviceBuf(_THIS)
 static void
 SUNAUDIO_CloseDevice(_THIS)
 {
-    if (this->hidden != NULL) {
-        SDL_FreeAudioMem(this->hidden->mixbuf);
-        this->hidden->mixbuf = NULL;
-        SDL_free(this->hidden->ulaw_buf);
-        this->hidden->ulaw_buf = NULL;
-        if (this->hidden->audio_fd >= 0) {
-            close(this->hidden->audio_fd);
-            this->hidden->audio_fd = -1;
-        }
-        SDL_free(this->hidden);
-        this->hidden = NULL;
+    SDL_free(this->hidden->ulaw_buf);
+    if (this->hidden->audio_fd >= 0) {
+        close(this->hidden->audio_fd);
     }
+    SDL_FreeAudioMem(this->hidden->mixbuf);
+    SDL_free(this->hidden);
 }
 
 static int
