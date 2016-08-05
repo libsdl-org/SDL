@@ -137,8 +137,7 @@ QSA_ThreadInit(_THIS)
 static void
 QSA_InitAudioParams(snd_pcm_channel_params_t * cpars)
 {
-    SDL_memset(cpars, 0, sizeof(snd_pcm_channel_params_t));
-
+    SDL_zerop(cpars);
     cpars->channel = SND_PCM_CHANNEL_PLAYBACK;
     cpars->mode = SND_PCM_MODE_BLOCK;
     cpars->start_mode = SND_PCM_START_DATA;
@@ -261,7 +260,7 @@ QSA_PlayDevice(_THIS)
                 continue;
             } else {
                 if ((errno == EINVAL) || (errno == EIO)) {
-                    SDL_memset(&cstatus, 0, sizeof(cstatus));
+                    SDL_zero(cstatus);
                     if (!this->hidden->iscapture) {
                         cstatus.channel = SND_PCM_CHANNEL_PLAYBACK;
                     } else {
@@ -358,7 +357,7 @@ QSA_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     if (this->hidden == NULL) {
         return SDL_OutOfMemory();
     }
-    SDL_memset(this->hidden, 0, sizeof(struct SDL_PrivateAudioData));
+    SDL_zerop(this->hidden);
 
     /* Initialize channel transfer parameters to default */
     QSA_InitAudioParams(&cparams);
@@ -499,7 +498,7 @@ QSA_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     }
 
     /* Make sure channel is setup right one last time */
-    SDL_memset(&csetup, 0, sizeof(csetup));
+    SDL_zero(csetup);
     if (!this->hidden->iscapture) {
         csetup.channel = SND_PCM_CHANNEL_PLAYBACK;
     } else {
@@ -731,10 +730,9 @@ static void
 QSA_Deinitialize(void)
 {
     /* Clear devices array on shutdown */
-    SDL_memset(qsa_playback_device, 0x00,
-               sizeof(QSA_Device) * QSA_MAX_DEVICES);
-    SDL_memset(qsa_capture_device, 0x00,
-               sizeof(QSA_Device) * QSA_MAX_DEVICES);
+    /* !!! FIXME: we zero these on init...any reason to do it here? */
+    SDL_zero(qsa_playback_device);
+    SDL_zero(qsa_capture_device);
     qsa_playback_devices = 0;
     qsa_capture_devices = 0;
 }
@@ -746,10 +744,8 @@ QSA_Init(SDL_AudioDriverImpl * impl)
     int32_t status = 0;
 
     /* Clear devices array */
-    SDL_memset(qsa_playback_device, 0x00,
-               sizeof(QSA_Device) * QSA_MAX_DEVICES);
-    SDL_memset(qsa_capture_device, 0x00,
-               sizeof(QSA_Device) * QSA_MAX_DEVICES);
+    SDL_zero(qsa_playback_device);
+    SDL_zero(qsa_capture_device);
     qsa_playback_devices = 0;
     qsa_capture_devices = 0;
 

@@ -504,7 +504,7 @@ SDL_LoadWAV_RW(SDL_RWops * src, int freesrc,
         was_error = 1;
         goto done;
     }
-    SDL_memset(spec, 0, (sizeof *spec));
+    SDL_zerop(spec);
     spec->freq = SDL_SwapLE32(format->frequency);
 
     if (IEEE_float_encoded) {

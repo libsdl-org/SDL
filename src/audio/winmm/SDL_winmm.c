@@ -228,7 +228,7 @@ WINMM_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     if (this->hidden == NULL) {
         return SDL_OutOfMemory();
     }
-    SDL_memset(this->hidden, 0, (sizeof *this->hidden));
+    SDL_zerop(this->hidden);
 
     /* Initialize the wavebuf structures for closing */
     for (i = 0; i < NUM_BUFFERS; ++i)
@@ -305,9 +305,9 @@ WINMM_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     if (this->hidden->mixbuf == NULL) {
         return SDL_OutOfMemory();
     }
+
+    SDL_zero(this->hidden->wavebuf);
     for (i = 0; i < NUM_BUFFERS; ++i) {
-        SDL_memset(&this->hidden->wavebuf[i], 0,
-                   sizeof(this->hidden->wavebuf[i]));
         this->hidden->wavebuf[i].dwBufferLength = this->spec.size;
         this->hidden->wavebuf[i].dwFlags = WHDR_DONE;
         this->hidden->wavebuf[i].lpData =
