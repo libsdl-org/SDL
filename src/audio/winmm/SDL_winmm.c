@@ -27,6 +27,7 @@
 #include "../../core/windows/SDL_windows.h"
 #include <mmsystem.h>
 
+#include "SDL_assert.h"
 #include "SDL_timer.h"
 #include "SDL_audio.h"
 #include "../SDL_audio_c.h"
@@ -152,30 +153,83 @@ WINMM_WaitDone(_THIS)
     } while (left > 0);
 }
 
+static int
+WINMM_CaptureFromDevice(_THIS, void *buffer, int buflen)
+{
+    const int nextbuf = this->hidden->next_buffer;
+    MMRESULT result;
+
+    SDL_assert(buflen == this->spec.size);
+
+    /* Wait for an audio chunk to finish */
+    WaitForSingleObject(this->hidden->audio_sem, INFINITE);
+
+    /* Copy it to caller's buffer... */
+    SDL_memcpy(buffer, this->hidden->wavebuf[nextbuf].lpData, this->spec.size);
+
+    /* requeue the buffer that just finished. */
+    result = waveInAddBuffer(this->hidden->hin,
+                             &this->hidden->wavebuf[nextbuf],
+                             sizeof (this->hidden->wavebuf[nextbuf]));
+    if (result != MMSYSERR_NOERROR) {
+        return -1;  /* uhoh! Disable the device. */
+    }
+
+    /* queue the next buffer in sequence, next time. */
+    this->hidden->next_buffer = (nextbuf + 1) % NUM_BUFFERS;
+    return this->spec.size;
+}
+
+static void
+WINMM_FlushCapture(_THIS)
+{
+    /* Wait for an audio chunk to finish */
+    if (WaitForSingleObject(this->hidden->audio_sem, 0) == WAIT_OBJECT_0) {
+        const int nextbuf = this->hidden->next_buffer;
+        /* requeue the buffer that just finished without reading from it. */
+        waveInAddBuffer(this->hidden->hin,
+                        &this->hidden->wavebuf[nextbuf],
+                        sizeof (this->hidden->wavebuf[nextbuf]));
+        this->hidden->next_buffer = (nextbuf + 1) % NUM_BUFFERS;
+    }
+}
+
 static void
 WINMM_CloseDevice(_THIS)
 {
     int i;
 
-    if (this->hidden->audio_sem) {
-        CloseHandle(this->hidden->audio_sem);
-    }
+    if (this->hidden->hout) {
+        waveOutReset(this->hidden->hout);
 
-    /* Clean up mixing buffers */
-    for (i = 0; i < NUM_BUFFERS; ++i) {
-        if (this->hidden->wavebuf[i].dwUser != 0xFFFF) {
-            waveOutUnprepareHeader(this->hidden->hout,
-                                   &this->hidden->wavebuf[i],
-                                   sizeof (this->hidden->wavebuf[i]));
+        /* Clean up mixing buffers */
+        for (i = 0; i < NUM_BUFFERS; ++i) {
+            if (this->hidden->wavebuf[i].dwUser != 0xFFFF) {
+                waveOutUnprepareHeader(this->hidden->hout,
+                                       &this->hidden->wavebuf[i],
+                                       sizeof (this->hidden->wavebuf[i]));
+            }
         }
+
+        waveOutClose(this->hidden->hout);
     }
 
     if (this->hidden->hin) {
+        waveInReset(this->hidden->hin);
+
+        /* Clean up mixing buffers */
+        for (i = 0; i < NUM_BUFFERS; ++i) {
+            if (this->hidden->wavebuf[i].dwUser != 0xFFFF) {
+                waveInUnprepareHeader(this->hidden->hin,
+                                       &this->hidden->wavebuf[i],
+                                       sizeof (this->hidden->wavebuf[i]));
+            }
+        }
         waveInClose(this->hidden->hin);
     }
 
-    if (this->hidden->hout) {
-        waveOutClose(this->hidden->hout);
+    if (this->hidden->audio_sem) {
+        CloseHandle(this->hidden->audio_sem);
     }
 
     SDL_free(this->hidden->mixbuf);
@@ -269,32 +323,44 @@ WINMM_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         result = waveInOpen(&this->hidden->hin, devId, &waveformat,
                              (DWORD_PTR) CaptureSound, (DWORD_PTR) this,
                              CALLBACK_FUNCTION);
+        if (result != MMSYSERR_NOERROR) {
+            return SetMMerror("waveInOpen()", result);
+        }
     } else {
         result = waveOutOpen(&this->hidden->hout, devId, &waveformat,
                              (DWORD_PTR) FillSound, (DWORD_PTR) this,
                              CALLBACK_FUNCTION);
+        if (result != MMSYSERR_NOERROR) {
+            return SetMMerror("waveOutOpen()", result);
+        }
     }
 
-    if (result != MMSYSERR_NOERROR) {
-        return SetMMerror("waveOutOpen()", result);
-    }
 #ifdef SOUND_DEBUG
     /* Check the sound device we retrieved */
     {
-        WAVEOUTCAPS caps;
-
-        result = waveOutGetDevCaps((UINT) this->hidden->hout,
-                                   &caps, sizeof(caps));
-        if (result != MMSYSERR_NOERROR) {
-            return SetMMerror("waveOutGetDevCaps()", result);
+        if (iscapture) {
+            WAVEINCAPS caps;
+            result = waveInGetDevCaps((UINT) this->hidden->hout,
+                                      &caps, sizeof (caps));
+            if (result != MMSYSERR_NOERROR) {
+                return SetMMerror("waveInGetDevCaps()", result);
+            }
+            printf("Audio device: %s\n", caps.szPname);
+        } else {
+            WAVEOUTCAPS caps;
+            result = waveOutGetDevCaps((UINT) this->hidden->hout,
+                                       &caps, sizeof(caps));
+            if (result != MMSYSERR_NOERROR) {
+                return SetMMerror("waveOutGetDevCaps()", result);
+            }
+            printf("Audio device: %s\n", caps.szPname);
         }
-        printf("Audio device: %s\n", caps.szPname);
     }
 #endif
 
     /* Create the audio buffer semaphore */
     this->hidden->audio_sem =
-        CreateSemaphore(NULL, NUM_BUFFERS - 1, NUM_BUFFERS, NULL);
+		CreateSemaphore(NULL, iscapture ? 0 : NUM_BUFFERS - 1, NUM_BUFFERS, NULL);
     if (this->hidden->audio_sem == NULL) {
         return SDL_SetError("Couldn't create semaphore");
     }
@@ -312,11 +378,35 @@ WINMM_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         this->hidden->wavebuf[i].dwFlags = WHDR_DONE;
         this->hidden->wavebuf[i].lpData =
             (LPSTR) & this->hidden->mixbuf[i * this->spec.size];
-        result = waveOutPrepareHeader(this->hidden->hout,
-                                      &this->hidden->wavebuf[i],
-                                      sizeof(this->hidden->wavebuf[i]));
+
+        if (iscapture) {
+            result = waveInPrepareHeader(this->hidden->hin,
+                                          &this->hidden->wavebuf[i],
+                                          sizeof(this->hidden->wavebuf[i]));
+            if (result != MMSYSERR_NOERROR) {
+                return SetMMerror("waveInPrepareHeader()", result);
+            }
+
+            result = waveInAddBuffer(this->hidden->hin,
+                                     &this->hidden->wavebuf[i],
+                                     sizeof(this->hidden->wavebuf[i]));
+            if (result != MMSYSERR_NOERROR) {
+                return SetMMerror("waveInAddBuffer()", result);
+            }
+        } else {
+            result = waveOutPrepareHeader(this->hidden->hout,
+                                          &this->hidden->wavebuf[i],
+                                          sizeof(this->hidden->wavebuf[i]));
+            if (result != MMSYSERR_NOERROR) {
+                return SetMMerror("waveOutPrepareHeader()", result);
+            }
+        }
+    }
+
+    if (iscapture) {
+        result = waveInStart(this->hidden->hin);
         if (result != MMSYSERR_NOERROR) {
-            return SetMMerror("waveOutPrepareHeader()", result);
+            return SetMMerror("waveInStart()", result);
         }
     }
 
@@ -334,7 +424,11 @@ WINMM_Init(SDL_AudioDriverImpl * impl)
     impl->WaitDevice = WINMM_WaitDevice;
     impl->WaitDone = WINMM_WaitDone;
     impl->GetDeviceBuf = WINMM_GetDeviceBuf;
+    impl->CaptureFromDevice = WINMM_CaptureFromDevice;
+    impl->FlushCapture = WINMM_FlushCapture;
     impl->CloseDevice = WINMM_CloseDevice;
+
+    impl->HasCaptureSupport = SDL_TRUE;
 
     return 1;   /* this audio target is available. */
 }
