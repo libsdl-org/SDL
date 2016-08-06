@@ -21,12 +21,6 @@ static SDL_AudioSpec spec;
 static SDL_AudioDeviceID devid_in = 0;
 static SDL_AudioDeviceID devid_out = 0;
 
-void SDLCALL
-capture_callback(void *arg, Uint8 * stream, int len)
-{
-    SDL_QueueAudio(devid_out, stream, len);
-}
-
 static void
 loop()
 {
@@ -76,6 +70,18 @@ loop()
         #endif
         exit(0);
     }
+
+    /* Note that it would be easier to just have a one-line function that
+        calls SDL_QueueAudio() as a capture device callback, but we're
+        trying to test the API, so we use SDL_DequeueAudio() here. */
+    while (SDL_TRUE) {
+        Uint8 buf[1024];
+        const Uint32 br = SDL_DequeueAudio(devid_in, buf, sizeof (buf));
+        SDL_QueueAudio(devid_out, buf, br);
+        if (br < sizeof (buf)) {
+            break;
+        }
+    }
 }
 
 int
@@ -113,7 +119,7 @@ main(int argc, char **argv)
     spec.format = AUDIO_F32SYS;
     spec.channels = 1;
     spec.samples = 1024;
-    spec.callback = capture_callback;
+    spec.callback = NULL;
 
     SDL_Log("Opening capture device %s%s%s...\n",
             devname ? "'" : "",
@@ -128,7 +134,6 @@ main(int argc, char **argv)
     }
 
     SDL_Log("Opening default playback device...\n");
-    spec.callback = NULL;
     devid_out = SDL_OpenAudioDevice(NULL, SDL_FALSE, &spec, &spec, 0);
     if (!devid_out) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open an audio device for capture: %s!\n", SDL_GetError());
