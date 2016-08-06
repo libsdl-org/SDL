@@ -33,11 +33,6 @@
 static SDL_AudioDriver current_audio;
 static SDL_AudioDevice *open_devices[16];
 
-/* !!! FIXME: These are wordy and unlocalized... */
-#define DEFAULT_OUTPUT_DEVNAME "System audio output device"
-#define DEFAULT_INPUT_DEVNAME "System audio capture device"
-
-
 /*
  * Not all of these will be compiled and linked in, but it's convenient
  *  to have a complete list here and saves yet-another block of #ifdefs...

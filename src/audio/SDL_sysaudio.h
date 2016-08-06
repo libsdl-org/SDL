@@ -26,6 +26,10 @@
 #include "SDL_mutex.h"
 #include "SDL_thread.h"
 
+/* !!! FIXME: These are wordy and unlocalized... */
+#define DEFAULT_OUTPUT_DEVNAME "System audio output device"
+#define DEFAULT_INPUT_DEVNAME "System audio capture device"
+
 /* The SDL audio driver */
 typedef struct SDL_AudioDevice SDL_AudioDevice;
 #define _THIS   SDL_AudioDevice *_this
