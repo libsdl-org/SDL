@@ -41,7 +41,6 @@
 #define DISKENVR_INFILE         "SDL_DISKAUDIOFILEIN"
 #define DISKDEFAULT_INFILE      "sdlaudio-in.raw"
 #define DISKENVR_IODELAY      "SDL_DISKAUDIODELAY"
-#define DISKDEFAULT_IODELAY   150
 
 /* This function waits until it is possible to write a full sound buffer */
 static void
@@ -140,7 +139,11 @@ DISKAUD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     }
     SDL_zerop(this->hidden);
 
-    this->hidden->io_delay = (envr) ? SDL_atoi(envr) : DISKDEFAULT_IODELAY;
+    if (envr != NULL) {
+        this->hidden->io_delay = SDL_atoi(envr);
+    } else {
+        this->hidden->io_delay = ((this->spec.samples * 1000) / this->spec.freq);
+    }
 
     /* Open the audio device */
     this->hidden->io = SDL_RWFromFile(fname, iscapture ? "rb" : "wb");
