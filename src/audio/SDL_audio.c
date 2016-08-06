@@ -586,20 +586,44 @@ void
 SDL_ClearQueuedAudio(SDL_AudioDeviceID devid)
 {
     SDL_AudioDevice *device = get_audio_device(devid);
-    SDL_AudioBufferQueue *buffer = NULL;
+    SDL_AudioBufferQueue *packet;
+
     if (!device) {
         return;  /* nothing to do. */
     }
 
     /* Blank out the device and release the mutex. Free it afterwards. */
     current_audio.impl.LockDevice(device);
-    buffer = device->buffer_queue_head;
+
+    /* merge the available pool and the current queue into one list. */
+    packet = device->buffer_queue_head;
+    if (packet) {
+        device->buffer_queue_tail->next = device->buffer_queue_pool;
+    } else {
+        packet = device->buffer_queue_pool;
+    }
+
+    /* Remove the queued packets from the device. */
     device->buffer_queue_tail = NULL;
     device->buffer_queue_head = NULL;
     device->queued_bytes = 0;
+    device->buffer_queue_pool = packet;
+
+    /* Keep up to two packets in the pool to reduce future malloc pressure. */
+    if (packet) {
+        if (!packet->next) {
+            packet = NULL;  /* one packet (the only one) for the pool. */
+        } else {
+            SDL_AudioBufferQueue *next = packet->next->next;
+            packet->next->next = NULL;  /* two packets for the pool. */
+            packet = next;  /* rest will be freed. */
+        }
+    }
+
     current_audio.impl.UnlockDevice(device);
 
-    free_audio_queue(buffer);
+    /* free any extra packets we didn't keep in the pool. */
+    free_audio_queue(packet);
 }
 
 
