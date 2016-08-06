@@ -32,10 +32,9 @@
 struct SDL_PrivateAudioData
 {
     /* The file descriptor for the audio device */
-    SDL_RWops *output;
+    SDL_RWops *io;
+    Uint32 io_delay;
     Uint8 *mixbuf;
-    Uint32 mixlen;
-    Uint32 write_delay;
 };
 
 #endif /* _SDL_diskaudio_h */
