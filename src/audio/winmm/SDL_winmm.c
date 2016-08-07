@@ -37,6 +37,21 @@
 #define WAVE_FORMAT_IEEE_FLOAT 0x0003
 #endif
 
+/* !!! FIXME:
+
+WAVExxxCAPS gives you 31 bytes for the device name, and just truncates if it's
+longer. However, since WinXP, you can use the WAVExxxCAPS2 structure, which
+will give you a name GUID. The full name is in the Windows Registry under
+that GUID, located here: HKLM\System\CurrentControlSet\Control\MediaCategories
+
+Note that drivers can report GUID_NULL for the name GUID, in which case,
+Windows makes a best effort to fill in those 31 bytes in the usual place.
+This info summarized from MSDN:
+
+http://web.archive.org/web/20131027093034/http://msdn.microsoft.com/en-us/library/windows/hardware/ff536382(v=vs.85).aspx
+
+*/
+
 #define DETECT_DEV_IMPL(iscap, typ, capstyp) \
 static void DetectWave##typ##Devs(void) { \
     const UINT iscapture = iscap ? 1 : 0; \
