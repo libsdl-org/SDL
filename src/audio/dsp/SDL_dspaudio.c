@@ -107,9 +107,8 @@ DSP_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     if (this->hidden->audio_fd < 0) {
         return SDL_SetError("Couldn't open %s: %s", devname, strerror(errno));
     }
-    this->hidden->mixbuf = NULL;
 
-    /* Make the file descriptor use blocking writes with fcntl() */
+    /* Make the file descriptor use blocking i/o with fcntl() */
     {
         long ctlflags;
         ctlflags = fcntl(this->hidden->audio_fd, F_GETFL);
@@ -236,12 +235,14 @@ DSP_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 #endif
 
     /* Allocate mixing buffer */
-    this->hidden->mixlen = this->spec.size;
-    this->hidden->mixbuf = (Uint8 *) SDL_malloc(this->hidden->mixlen);
-    if (this->hidden->mixbuf == NULL) {
-        return SDL_OutOfMemory();
+    if (!iscapture) {
+        this->hidden->mixlen = this->spec.size;
+        this->hidden->mixbuf = (Uint8 *) SDL_malloc(this->hidden->mixlen);
+        if (this->hidden->mixbuf == NULL) {
+            return SDL_OutOfMemory();
+        }
+        SDL_memset(this->hidden->mixbuf, this->spec.silence, this->spec.size);
     }
-    SDL_memset(this->hidden->mixbuf, this->spec.silence, this->spec.size);
 
     /* We're ready to rock and roll. :-) */
     return 0;
@@ -251,14 +252,13 @@ DSP_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 static void
 DSP_PlayDevice(_THIS)
 {
-    const Uint8 *mixbuf = this->hidden->mixbuf;
-    const int mixlen = this->hidden->mixlen;
-    if (write(this->hidden->audio_fd, mixbuf, mixlen) == -1) {
+    struct SDL_PrivateAudioData *h = this->hidden;
+    if (write(h->audio_fd, h->mixbuf, h->mixlen) == -1) {
         perror("Audio write");
         SDL_OpenedAudioDeviceDisconnected(this);
     }
 #ifdef DEBUG_AUDIO
-    fprintf(stderr, "Wrote %d bytes of audio data\n", mixlen);
+    fprintf(stderr, "Wrote %d bytes of audio data\n", h->mixlen);
 #endif
 }
 
@@ -266,6 +266,30 @@ static Uint8 *
 DSP_GetDeviceBuf(_THIS)
 {
     return (this->hidden->mixbuf);
+}
+
+static int
+DSP_CaptureFromDevice(_THIS, void *buffer, int buflen)
+{
+    return (int) read(this->hidden->audio_fd, buffer, buflen);
+}
+
+static void
+DSP_FlushCapture(_THIS)
+{
+    struct SDL_PrivateAudioData *h = this->hidden;
+    audio_buf_info info;
+    if (ioctl(h->audio_fd, SNDCTL_DSP_GETISPACE, &info) == 0) {
+        while (info.bytes > 0) {
+            char buf[512];
+            const size_t len = SDL_min(sizeof (buf), info.bytes);
+            const ssize_t br = read(h->audio_fd, buf, len);
+            if (br <= 0) {
+                break;
+            }
+            info.bytes -= br;
+        }
+    }
 }
 
 static int
@@ -277,8 +301,11 @@ DSP_Init(SDL_AudioDriverImpl * impl)
     impl->PlayDevice = DSP_PlayDevice;
     impl->GetDeviceBuf = DSP_GetDeviceBuf;
     impl->CloseDevice = DSP_CloseDevice;
+    impl->CaptureFromDevice = DSP_CaptureFromDevice;
+    impl->FlushCapture = DSP_FlushCapture;
 
     impl->AllowsArbitraryDeviceNames = 1;
+    impl->HasCaptureSupport = SDL_TRUE;
 
     return 1;   /* this audio target is available. */
 }
