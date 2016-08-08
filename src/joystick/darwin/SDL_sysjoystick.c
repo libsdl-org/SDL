@@ -249,6 +249,7 @@ AddHIDElement(const void *value, void *parameter)
                             case kHIDUsage_GD_DPadLeft:
                             case kHIDUsage_GD_Start:
                             case kHIDUsage_GD_Select:
+                            case kHIDUsage_GD_SystemMainMenu:
                                 if (!ElementAlreadyAdded(cookie, pDevice->firstButton)) {
                                     element = (recElement *) SDL_calloc(1, sizeof (recElement));
                                     if (element) {
