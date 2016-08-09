@@ -11,6 +11,8 @@
 */
 #include "SDL.h"
 
+#include <stdlib.h>
+
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
 #endif
@@ -89,6 +91,7 @@ main(int argc, char **argv)
 {
     /* (argv[1] == NULL means "open default device.") */
     const char *devname = argv[1];
+    SDL_AudioSpec wanted;
     int devcount;
     int i;
 
@@ -114,12 +117,28 @@ main(int argc, char **argv)
         SDL_Log(" Capture device #%d: '%s'\n", i, SDL_GetAudioDeviceName(i, SDL_TRUE));
     }
 
+    SDL_zero(wanted);
+    wanted.freq = 44100;
+    wanted.format = AUDIO_F32SYS;
+    wanted.channels = 1;
+    wanted.samples = 1024;
+    wanted.callback = NULL;
+
     SDL_zero(spec);
-    spec.freq = 44100;
-    spec.format = AUDIO_F32SYS;
-    spec.channels = 1;
-    spec.samples = 1024;
-    spec.callback = NULL;
+
+    /* DirectSound can fail in some instances if you open the same hardware
+       for both capture and output and didn't open the output end first,
+       according to the docs, so if you're doing something like this, always
+       open your capture devices second in case you land in those bizarre
+       circumstances. */
+
+    SDL_Log("Opening default playback device...\n");
+    devid_out = SDL_OpenAudioDevice(NULL, SDL_FALSE, &wanted, &spec, SDL_AUDIO_ALLOW_ANY_CHANGE);
+    if (!devid_out) {
+        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open an audio device for capture: %s!\n", SDL_GetError());
+        SDL_Quit();
+        exit(1);
+    }
 
     SDL_Log("Opening capture device %s%s%s...\n",
             devname ? "'" : "",
@@ -128,14 +147,6 @@ main(int argc, char **argv)
 
     devid_in = SDL_OpenAudioDevice(argv[1], SDL_TRUE, &spec, &spec, 0);
     if (!devid_in) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open an audio device for capture: %s!\n", SDL_GetError());
-        SDL_Quit();
-        exit(1);
-    }
-
-    SDL_Log("Opening default playback device...\n");
-    devid_out = SDL_OpenAudioDevice(NULL, SDL_FALSE, &spec, &spec, 0);
-    if (!devid_out) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open an audio device for capture: %s!\n", SDL_GetError());
         SDL_Quit();
         exit(1);
