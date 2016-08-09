@@ -375,6 +375,7 @@ inputCallback(void *inRefCon,
             if (len > remaining)
                 len = remaining;
 
+            /* !!! FIXME: why are we copying here? just pass the buffer to the callback? */
             SDL_memcpy((char *)this->hidden->buffer + this->hidden->bufferOffset, ptr, len);
             ptr += len;
             remaining -= len;
