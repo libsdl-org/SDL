@@ -1149,7 +1149,6 @@ open_audio_device(const char *devname, int iscapture,
     SDL_AudioDevice *device;
     SDL_bool build_cvt;
     void *handle = NULL;
-    Uint32 stream_len;
     int i = 0;
 
     if (!SDL_WasInit(SDL_INIT_AUDIO)) {
@@ -1338,19 +1337,6 @@ open_audio_device(const char *devname, int iscapture,
         }
     }
 
-    /* Allocate a fake audio memory buffer */
-    stream_len = (device->convert.needed) ? device->convert.len_cvt : 0;
-    if (device->spec.size > stream_len) {
-        stream_len = device->spec.size;
-    }
-    SDL_assert(stream_len > 0);
-    device->fake_stream = (Uint8 *) SDL_malloc(stream_len);
-    if (device->fake_stream == NULL) {
-        close_audio_device(device);
-        SDL_OutOfMemory();
-        return 0;
-    }
-
     if (device->spec.callback == NULL) {  /* use buffer queueing? */
         /* pool a few packets to start. Enough for two callbacks. */
         const int packetlen = SDL_AUDIOBUFFERQUEUE_PACKETLEN;
@@ -1376,6 +1362,20 @@ open_audio_device(const char *devname, int iscapture,
     /* Start the audio thread if necessary */
     if (!current_audio.impl.ProvidesOwnCallbackThread) {
         /* Start the audio thread */
+
+        /* Allocate a fake audio buffer; only used by our internal threads. */
+        Uint32 stream_len = (device->convert.needed) ? device->convert.len_cvt : 0;
+        if (device->spec.size > stream_len) {
+            stream_len = device->spec.size;
+        }
+        SDL_assert(stream_len > 0);
+
+        device->fake_stream = (Uint8 *) SDL_malloc(stream_len);
+        if (device->fake_stream == NULL) {
+            close_audio_device(device);
+            SDL_OutOfMemory();
+            return 0;
+        }
 
         /* !!! FIXME: we don't force the audio thread stack size here because it calls into user code, but maybe we should? */
         /* buffer queueing callback only needs a few bytes, so make the stack tiny. */
