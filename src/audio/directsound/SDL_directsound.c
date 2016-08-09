@@ -361,9 +361,6 @@ CreateSecondary(_THIS, HWND focus)
     wfmt.nBlockAlign = wfmt.nChannels * (wfmt.wBitsPerSample / 8);
     wfmt.nAvgBytesPerSec = wfmt.nSamplesPerSec * wfmt.nBlockAlign;
 
-    /* Update the fragment size as size in bytes */
-    SDL_CalculateAudioSpec(&this->spec);
-
     /* Try to set primary mixing privileges */
     if (focus) {
         result = IDirectSound_SetCooperativeLevel(sndObj,
@@ -447,6 +444,8 @@ DSOUND_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         case AUDIO_F32:
             tried_format = SDL_TRUE;
             this->spec.format = test_format;
+            /* Update the fragment size as size in bytes */
+            SDL_CalculateAudioSpec(&this->spec);
             this->hidden->num_buffers = CreateSecondary(this, NULL);
             if (this->hidden->num_buffers > 0) {
                 valid_format = SDL_TRUE;
