@@ -356,7 +356,7 @@ Emscripten_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
                 Runtime.dynCall('vi', $2, [$3]);
             };
 
-            SDL2.capture.silenceTimer = setTimeout(silence_callback, $1 / SDL2.audioContext.sampleRate);
+            SDL2.capture.silenceTimer = setTimeout(silence_callback, ($1 / SDL2.audioContext.sampleRate) * 1000);
 
             if ((navigator.mediaDevices !== undefined) && (navigator.mediaDevices.getUserMedia !== undefined)) {
                 navigator.mediaDevices.getUserMedia({ audio: true, video: false }).then(have_microphone).catch(no_microphone);
