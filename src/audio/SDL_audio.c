@@ -1362,6 +1362,10 @@ open_audio_device(const char *devname, int iscapture,
     /* Start the audio thread if necessary */
     if (!current_audio.impl.ProvidesOwnCallbackThread) {
         /* Start the audio thread */
+        /* !!! FIXME: we don't force the audio thread stack size here if it calls into user code, but maybe we should? */
+        /* buffer queueing callback only needs a few bytes, so make the stack tiny. */
+        const size_t stacksize = is_internal_thread ? 64 * 1024 : 0;
+        char threadname[64];
 
         /* Allocate a fake audio buffer; only used by our internal threads. */
         Uint32 stream_len = (device->convert.needed) ? device->convert.len_cvt : 0;
@@ -1377,12 +1381,8 @@ open_audio_device(const char *devname, int iscapture,
             return 0;
         }
 
-        /* !!! FIXME: we don't force the audio thread stack size here because it calls into user code, but maybe we should? */
-        /* buffer queueing callback only needs a few bytes, so make the stack tiny. */
-        char name[64];
-        const size_t stacksize = is_internal_thread ? 64 * 1024 : 0;
-        SDL_snprintf(name, sizeof (name), "SDLAudioDev%d", (int) device->id);
-        device->thread = SDL_CreateThreadInternal(iscapture ? SDL_CaptureAudio : SDL_RunAudio, name, stacksize, device);
+        SDL_snprintf(threadname, sizeof (threadname), "SDLAudioDev%d", (int) device->id);
+        device->thread = SDL_CreateThreadInternal(iscapture ? SDL_CaptureAudio : SDL_RunAudio, threadname, stacksize, device);
 
         if (device->thread == NULL) {
             SDL_CloseAudioDevice(device->id);
