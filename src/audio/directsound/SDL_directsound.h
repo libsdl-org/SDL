@@ -35,8 +35,9 @@ struct SDL_PrivateAudioData
 {
     LPDIRECTSOUND sound;
     LPDIRECTSOUNDBUFFER mixbuf;
+    LPDIRECTSOUNDCAPTURE capture;
+    LPDIRECTSOUNDCAPTUREBUFFER capturebuf;
     int num_buffers;
-    int mixlen;
     DWORD lastchunk;
     Uint8 *locked_buf;
 };
