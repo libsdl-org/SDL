@@ -155,7 +155,7 @@ FindAllDevs(LPGUID guid, LPCWSTR desc, LPCWSTR module, LPVOID data)
 {
     const int iscapture = (int) ((size_t) data);
     if (guid != NULL) {  /* skip default device */
-        char *str = WIN_StringToUTF8(desc);
+        char *str = WIN_LookupAudioDeviceName(desc, guid);
         if (str != NULL) {
             LPGUID cpyguid = (LPGUID) SDL_malloc(sizeof (GUID));
             SDL_memcpy(cpyguid, guid, sizeof (GUID));
