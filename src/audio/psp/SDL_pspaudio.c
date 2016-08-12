@@ -39,10 +39,10 @@
 #include <pspthreadman.h>
 
 /* The tag name used by PSP audio */
-#define PSPAUD_DRIVER_NAME         "psp"
+#define PSPAUDIO_DRIVER_NAME         "psp"
 
 static int
-PSPAUD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+PSPAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 {
     int format, mixlen, i;
     this->hidden = (struct SDL_PrivateAudioData *)
@@ -98,7 +98,7 @@ PSPAUD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     return 0;
 }
 
-static void PSPAUD_PlayDevice(_THIS)
+static void PSPAUDIO_PlayDevice(_THIS)
 {
     Uint8 *mixbuf = this->hidden->mixbufs[this->hidden->next_buffer];
 
@@ -112,16 +112,16 @@ static void PSPAUD_PlayDevice(_THIS)
 }
 
 /* This function waits until it is possible to write a full sound buffer */
-static void PSPAUD_WaitDevice(_THIS)
+static void PSPAUDIO_WaitDevice(_THIS)
 {
     /* Because we block when sending audio, there's no need for this function to do anything. */
 }
-static Uint8 *PSPAUD_GetDeviceBuf(_THIS)
+static Uint8 *PSPAUDIO_GetDeviceBuf(_THIS)
 {
     return this->hidden->mixbufs[this->hidden->next_buffer];
 }
 
-static void PSPAUD_CloseDevice(_THIS)
+static void PSPAUDIO_CloseDevice(_THIS)
 {
     if (this->hidden->channel >= 0) {
         sceAudioChRelease(this->hidden->channel);
@@ -130,7 +130,7 @@ static void PSPAUD_CloseDevice(_THIS)
     SDL_free(this->hidden);
 }
 
-static void PSPAUD_ThreadInit(_THIS)
+static void PSPAUDIO_ThreadInit(_THIS)
 {
     /* Increase the priority of this audio thread by 1 to put it
        ahead of other SDL threads. */
@@ -145,16 +145,16 @@ static void PSPAUD_ThreadInit(_THIS)
 
 
 static int
-PSPAUD_Init(SDL_AudioDriverImpl * impl)
+PSPAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
     /* Set the function pointers */
-    impl->OpenDevice = PSPAUD_OpenDevice;
-    impl->PlayDevice = PSPAUD_PlayDevice;
-    impl->WaitDevice = PSPAUD_WaitDevice;
-    impl->GetDeviceBuf = PSPAUD_GetDeviceBuf;
-    impl->WaitDone = PSPAUD_WaitDevice;
-    impl->CloseDevice = PSPAUD_CloseDevice;
-    impl->ThreadInit = PSPAUD_ThreadInit;
+    impl->OpenDevice = PSPAUDIO_OpenDevice;
+    impl->PlayDevice = PSPAUDIO_PlayDevice;
+    impl->WaitDevice = PSPAUDIO_WaitDevice;
+    impl->GetDeviceBuf = PSPAUDIO_GetDeviceBuf;
+    impl->WaitDone = PSPAUDIO_WaitDevice;
+    impl->CloseDevice = PSPAUDIO_CloseDevice;
+    impl->ThreadInit = PSPAUDIO_ThreadInit;
 
     /* PSP audio device */
     impl->OnlyHasDefaultOutputDevice = 1;
@@ -170,8 +170,8 @@ PSPAUD_Init(SDL_AudioDriverImpl * impl)
     return 1;   /* this audio target is available. */
 }
 
-AudioBootStrap PSPAUD_bootstrap = {
-    "psp", "PSP audio driver", PSPAUD_Init, 0
+AudioBootStrap PSPAUDIO_bootstrap = {
+    "psp", "PSP audio driver", PSPAUDIO_Init, 0
 };
 
  /* SDL_AUDI */
