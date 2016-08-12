@@ -37,7 +37,7 @@ static SDL_AudioDevice* audioDevice = NULL;
 static SDL_AudioDevice* captureDevice = NULL;
 
 static int
-AndroidAUD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+ANDROIDAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 {
     SDL_AudioFormat test_format;
 
@@ -96,31 +96,31 @@ AndroidAUD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 }
 
 static void
-AndroidAUD_PlayDevice(_THIS)
+ANDROIDAUDIO_PlayDevice(_THIS)
 {
     Android_JNI_WriteAudioBuffer();
 }
 
 static Uint8 *
-AndroidAUD_GetDeviceBuf(_THIS)
+ANDROIDAUDIO_GetDeviceBuf(_THIS)
 {
     return Android_JNI_GetAudioBuffer();
 }
 
 static int
-AndroidAUD_CaptureFromDevice(_THIS, void *buffer, int buflen)
+ANDROIDAUDIO_CaptureFromDevice(_THIS, void *buffer, int buflen)
 {
     return Android_JNI_CaptureAudioBuffer(buffer, buflen);
 }
 
 static void
-AndroidAUD_FlushCapture(_THIS)
+ANDROIDAUDIO_FlushCapture(_THIS)
 {
     Android_JNI_FlushCapturedAudio();
 }
 
 static void
-AndroidAUD_CloseDevice(_THIS)
+ANDROIDAUDIO_CloseDevice(_THIS)
 {
     /* At this point SDL_CloseAudioDevice via close_audio_device took care of terminating the audio thread
        so it's safe to terminate the Java side buffer and AudioTrack
@@ -137,15 +137,15 @@ AndroidAUD_CloseDevice(_THIS)
 }
 
 static int
-AndroidAUD_Init(SDL_AudioDriverImpl * impl)
+ANDROIDAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
     /* Set the function pointers */
-    impl->OpenDevice = AndroidAUD_OpenDevice;
-    impl->PlayDevice = AndroidAUD_PlayDevice;
-    impl->GetDeviceBuf = AndroidAUD_GetDeviceBuf;
-    impl->CloseDevice = AndroidAUD_CloseDevice;
-    impl->CaptureFromDevice = AndroidAUD_CaptureFromDevice;
-    impl->FlushCapture = AndroidAUD_FlushCapture;
+    impl->OpenDevice = ANDROIDAUDIO_OpenDevice;
+    impl->PlayDevice = ANDROIDAUDIO_PlayDevice;
+    impl->GetDeviceBuf = ANDROIDAUDIO_GetDeviceBuf;
+    impl->CloseDevice = ANDROIDAUDIO_CloseDevice;
+    impl->CaptureFromDevice = ANDROIDAUDIO_CaptureFromDevice;
+    impl->FlushCapture = ANDROIDAUDIO_FlushCapture;
 
     /* and the capabilities */
     impl->HasCaptureSupport = SDL_TRUE;
@@ -155,12 +155,12 @@ AndroidAUD_Init(SDL_AudioDriverImpl * impl)
     return 1;   /* this audio target is available. */
 }
 
-AudioBootStrap ANDROIDAUD_bootstrap = {
-    "android", "SDL Android audio driver", AndroidAUD_Init, 0
+AudioBootStrap ANDROIDAUDIO_bootstrap = {
+    "android", "SDL Android audio driver", ANDROIDAUDIO_Init, 0
 };
 
 /* Pause (block) all non already paused audio devices by taking their mixer lock */
-void AndroidAUD_PauseDevices(void)
+void ANDROIDAUDIO_PauseDevices(void)
 {
     /* TODO: Handle multiple devices? */
     struct SDL_PrivateAudioData *private;
@@ -192,7 +192,7 @@ void AndroidAUD_PauseDevices(void)
 }
 
 /* Resume (unblock) all non already paused audio devices by releasing their mixer lock */
-void AndroidAUD_ResumeDevices(void)
+void ANDROIDAUDIO_ResumeDevices(void)
 {
     /* TODO: Handle multiple devices? */
     struct SDL_PrivateAudioData *private;

@@ -46,7 +46,7 @@ extern AudioBootStrap QSAAUDIO_bootstrap;
 extern AudioBootStrap SUNAUDIO_bootstrap;
 extern AudioBootStrap ARTS_bootstrap;
 extern AudioBootStrap ESD_bootstrap;
-extern AudioBootStrap NACLAUD_bootstrap;
+extern AudioBootStrap NACLAUDIO_bootstrap;
 extern AudioBootStrap NAS_bootstrap;
 extern AudioBootStrap XAUDIO2_bootstrap;
 extern AudioBootStrap DSOUND_bootstrap;
@@ -55,17 +55,16 @@ extern AudioBootStrap PAUDIO_bootstrap;
 extern AudioBootStrap HAIKUAUDIO_bootstrap;
 extern AudioBootStrap COREAUDIO_bootstrap;
 extern AudioBootStrap SNDMGR_bootstrap;
-extern AudioBootStrap DISKAUD_bootstrap;
-extern AudioBootStrap DUMMYAUD_bootstrap;
-extern AudioBootStrap DCAUD_bootstrap;
+extern AudioBootStrap DISKAUDIO_bootstrap;
+extern AudioBootStrap DUMMYAUDIO_bootstrap;
+extern AudioBootStrap DCAUDIO_bootstrap;
 extern AudioBootStrap DART_bootstrap;
-extern AudioBootStrap NDSAUD_bootstrap;
+extern AudioBootStrap NDSAUDIO_bootstrap;
 extern AudioBootStrap FUSIONSOUND_bootstrap;
-extern AudioBootStrap ANDROIDAUD_bootstrap;
-extern AudioBootStrap PSPAUD_bootstrap;
+extern AudioBootStrap ANDROIDAUDIO_bootstrap;
+extern AudioBootStrap PSPAUDIO_bootstrap;
 extern AudioBootStrap SNDIO_bootstrap;
-extern AudioBootStrap EmscriptenAudio_bootstrap;
-
+extern AudioBootStrap EMSCRIPTENAUDIO_bootstrap;
 
 /* Available audio drivers */
 static const AudioBootStrap *const bootstrap[] = {
@@ -97,7 +96,7 @@ static const AudioBootStrap *const bootstrap[] = {
     &ESD_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_NACL
-    &NACLAUD_bootstrap,
+    &NACLAUDIO_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_NAS
     &NAS_bootstrap,
@@ -121,22 +120,22 @@ static const AudioBootStrap *const bootstrap[] = {
     &COREAUDIO_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_DISK
-    &DISKAUD_bootstrap,
+    &DISKAUDIO_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_DUMMY
-    &DUMMYAUD_bootstrap,
+    &DUMMYAUDIO_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_FUSIONSOUND
     &FUSIONSOUND_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_ANDROID
-    &ANDROIDAUD_bootstrap,
+    &ANDROIDAUDIO_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_PSP
-    &PSPAUD_bootstrap,
+    &PSPAUDIO_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_EMSCRIPTEN
-    &EmscriptenAudio_bootstrap,
+    &EMSCRIPTENAUDIO_bootstrap,
 #endif
     NULL
 };

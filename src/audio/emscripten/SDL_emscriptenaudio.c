@@ -196,7 +196,7 @@ HandleCaptureProcess(_THIS)
 
 
 static void
-Emscripten_CloseDevice(_THIS)
+EMSCRIPTENAUDIO_CloseDevice(_THIS)
 {
     EM_ASM_({
         if ($0) {
@@ -233,7 +233,7 @@ Emscripten_CloseDevice(_THIS)
 }
 
 static int
-Emscripten_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+EMSCRIPTENAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 {
     SDL_bool valid_format = SDL_FALSE;
     SDL_AudioFormat test_format;
@@ -380,11 +380,11 @@ Emscripten_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 }
 
 static int
-Emscripten_Init(SDL_AudioDriverImpl * impl)
+EMSCRIPTENAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
     /* Set the function pointers */
-    impl->OpenDevice = Emscripten_OpenDevice;
-    impl->CloseDevice = Emscripten_CloseDevice;
+    impl->OpenDevice = EMSCRIPTENAUDIO_OpenDevice;
+    impl->CloseDevice = EMSCRIPTENAUDIO_CloseDevice;
 
     impl->OnlyHasDefaultOutputDevice = 1;
 
@@ -421,8 +421,8 @@ Emscripten_Init(SDL_AudioDriverImpl * impl)
     return available;
 }
 
-AudioBootStrap EmscriptenAudio_bootstrap = {
-    "emscripten", "SDL emscripten audio driver", Emscripten_Init, 0
+AudioBootStrap EMSCRIPTENAUDIO_bootstrap = {
+    "emscripten", "SDL emscripten audio driver", EMSCRIPTENAUDIO_Init, 0
 };
 
 #endif /* SDL_AUDIO_DRIVER_EMSCRIPTEN */

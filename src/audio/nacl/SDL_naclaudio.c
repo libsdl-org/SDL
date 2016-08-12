@@ -37,7 +37,7 @@
 #include "ppapi_simple/ps_event.h"
 
 /* The tag name used by NACL audio */
-#define NACLAUD_DRIVER_NAME         "nacl"
+#define NACLAUDIO_DRIVER_NAME         "nacl"
 
 #define SAMPLE_FRAME_COUNT 4096
 
@@ -71,7 +71,7 @@ static void nacl_audio_callback(void* samples, uint32_t buffer_size, PP_TimeDelt
     SDL_UnlockMutex(private->mutex);
 }
 
-static void NACLAUD_CloseDevice(SDL_AudioDevice *device) {
+static void NACLAUDIO_CloseDevice(SDL_AudioDevice *device) {
     const PPB_Core *core = PSInterfaceCore();
     const PPB_Audio *ppb_audio = PSInterfaceAudio();
     SDL_PrivateAudioData *hidden = (SDL_PrivateAudioData *) device->hidden;
@@ -82,7 +82,7 @@ static void NACLAUD_CloseDevice(SDL_AudioDevice *device) {
 }
 
 static int
-NACLAUD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture) {
+NACLAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture) {
     PP_Instance instance = PSGetInstanceId();
     const PPB_Audio *ppb_audio = PSInterfaceAudio();
     const PPB_AudioConfig *ppb_audiocfg = PSInterfaceAudioConfig();
@@ -118,30 +118,30 @@ NACLAUD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture) {
 }
 
 static int
-NACLAUD_Init(SDL_AudioDriverImpl * impl)
+NACLAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
     if (PSGetInstanceId() == 0) {
         return 0;
     }
     
     /* Set the function pointers */
-    impl->OpenDevice = NACLAUD_OpenDevice;
-    impl->CloseDevice = NACLAUD_CloseDevice;
+    impl->OpenDevice = NACLAUDIO_OpenDevice;
+    impl->CloseDevice = NACLAUDIO_CloseDevice;
     impl->OnlyHasDefaultOutputDevice = 1;
     impl->ProvidesOwnCallbackThread = 1;
     /*
-     *    impl->WaitDevice = NACLAUD_WaitDevice;
-     *    impl->GetDeviceBuf = NACLAUD_GetDeviceBuf;
-     *    impl->PlayDevice = NACLAUD_PlayDevice;
-     *    impl->Deinitialize = NACLAUD_Deinitialize;
+     *    impl->WaitDevice = NACLAUDIO_WaitDevice;
+     *    impl->GetDeviceBuf = NACLAUDIO_GetDeviceBuf;
+     *    impl->PlayDevice = NACLAUDIO_PlayDevice;
+     *    impl->Deinitialize = NACLAUDIO_Deinitialize;
      */
     
     return 1;
 }
 
-AudioBootStrap NACLAUD_bootstrap = {
-    NACLAUD_DRIVER_NAME, "SDL NaCl Audio Driver",
-    NACLAUD_Init, 0
+AudioBootStrap NACLAUDIO_bootstrap = {
+    NACLAUDIO_DRIVER_NAME, "SDL NaCl Audio Driver",
+    NACLAUDIO_Init, 0
 };
 
 #endif /* SDL_AUDIO_DRIVER_NACL */

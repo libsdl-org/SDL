@@ -34,11 +34,11 @@ void android_egl_context_backup();
 void android_egl_context_restore();
 
 #if SDL_AUDIO_DRIVER_ANDROID
-void AndroidAUD_ResumeDevices(void);
-void AndroidAUD_PauseDevices(void);
+void ANDROIDAUDIO_ResumeDevices(void);
+void ANDROIDAUDIO_PauseDevices(void);
 #else
-static void AndroidAUD_ResumeDevices(void) {}
-static void AndroidAUD_PauseDevices(void) {}
+static void ANDROIDAUDIO_ResumeDevices(void) {}
+static void ANDROIDAUDIO_PauseDevices(void) {}
 #endif
 
 void 
@@ -83,14 +83,14 @@ Android_PumpEvents(_THIS)
     if (isPaused && !isPausing) {
         /* Make sure this is the last thing we do before pausing */
         android_egl_context_backup();
-        AndroidAUD_PauseDevices();
+        ANDROIDAUDIO_PauseDevices();
         if(SDL_SemWait(Android_ResumeSem) == 0) {
 #else
     if (isPaused) {
         if(SDL_SemTryWait(Android_ResumeSem) == 0) {
 #endif
             isPaused = 0;
-            AndroidAUD_ResumeDevices();
+            ANDROIDAUDIO_ResumeDevices();
             /* Restore the GL Context from here, as this operation is thread dependent */
             if (!SDL_HasEvent(SDL_QUIT)) {
                 android_egl_context_restore();
@@ -113,7 +113,7 @@ Android_PumpEvents(_THIS)
 #else
         if(SDL_SemTryWait(Android_PauseSem) == 0) {
             android_egl_context_backup();
-            AndroidAUD_PauseDevices();
+            ANDROIDAUDIO_PauseDevices();
             isPaused = 1;
         }
 #endif

@@ -44,13 +44,13 @@
 
 /* This function waits until it is possible to write a full sound buffer */
 static void
-DISKAUD_WaitDevice(_THIS)
+DISKAUDIO_WaitDevice(_THIS)
 {
     SDL_Delay(this->hidden->io_delay);
 }
 
 static void
-DISKAUD_PlayDevice(_THIS)
+DISKAUDIO_PlayDevice(_THIS)
 {
     const size_t written = SDL_RWwrite(this->hidden->io,
                                        this->hidden->mixbuf,
@@ -66,13 +66,13 @@ DISKAUD_PlayDevice(_THIS)
 }
 
 static Uint8 *
-DISKAUD_GetDeviceBuf(_THIS)
+DISKAUDIO_GetDeviceBuf(_THIS)
 {
     return (this->hidden->mixbuf);
 }
 
 static int
-DISKAUD_CaptureFromDevice(_THIS, void *buffer, int buflen)
+DISKAUDIO_CaptureFromDevice(_THIS, void *buffer, int buflen)
 {
     struct SDL_PrivateAudioData *h = this->hidden;
     const int origbuflen = buflen;
@@ -96,14 +96,14 @@ DISKAUD_CaptureFromDevice(_THIS, void *buffer, int buflen)
 }
 
 static void
-DISKAUD_FlushCapture(_THIS)
+DISKAUDIO_FlushCapture(_THIS)
 {
     /* no op...we don't advance the file pointer or anything. */
 }
 
 
 static void
-DISKAUD_CloseDevice(_THIS)
+DISKAUDIO_CloseDevice(_THIS)
 {
     if (this->hidden->io != NULL) {
         SDL_RWclose(this->hidden->io);
@@ -126,7 +126,7 @@ get_filename(const int iscapture, const char *devname)
 }
 
 static int
-DISKAUD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+DISKAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 {
     /* handle != NULL means "user specified the placeholder name on the fake detected device list" */
     const char *fname = get_filename(iscapture, handle ? NULL : devname);
@@ -172,25 +172,25 @@ DISKAUD_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 }
 
 static void
-DISKAUD_DetectDevices(void)
+DISKAUDIO_DetectDevices(void)
 {
     SDL_AddAudioDevice(SDL_FALSE, DEFAULT_OUTPUT_DEVNAME, (void *) 0x1);
     SDL_AddAudioDevice(SDL_TRUE, DEFAULT_INPUT_DEVNAME, (void *) 0x2);
 }
 
 static int
-DISKAUD_Init(SDL_AudioDriverImpl * impl)
+DISKAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
     /* Set the function pointers */
-    impl->OpenDevice = DISKAUD_OpenDevice;
-    impl->WaitDevice = DISKAUD_WaitDevice;
-    impl->PlayDevice = DISKAUD_PlayDevice;
-    impl->GetDeviceBuf = DISKAUD_GetDeviceBuf;
-    impl->CaptureFromDevice = DISKAUD_CaptureFromDevice;
-    impl->FlushCapture = DISKAUD_FlushCapture;
+    impl->OpenDevice = DISKAUDIO_OpenDevice;
+    impl->WaitDevice = DISKAUDIO_WaitDevice;
+    impl->PlayDevice = DISKAUDIO_PlayDevice;
+    impl->GetDeviceBuf = DISKAUDIO_GetDeviceBuf;
+    impl->CaptureFromDevice = DISKAUDIO_CaptureFromDevice;
+    impl->FlushCapture = DISKAUDIO_FlushCapture;
 
-    impl->CloseDevice = DISKAUD_CloseDevice;
-    impl->DetectDevices = DISKAUD_DetectDevices;
+    impl->CloseDevice = DISKAUDIO_CloseDevice;
+    impl->DetectDevices = DISKAUDIO_DetectDevices;
 
     impl->AllowsArbitraryDeviceNames = 1;
     impl->HasCaptureSupport = SDL_TRUE;
@@ -198,8 +198,8 @@ DISKAUD_Init(SDL_AudioDriverImpl * impl)
     return 1;   /* this audio target is available. */
 }
 
-AudioBootStrap DISKAUD_bootstrap = {
-    "disk", "direct-to-disk audio", DISKAUD_Init, 1
+AudioBootStrap DISKAUDIO_bootstrap = {
+    "disk", "direct-to-disk audio", DISKAUDIO_Init, 1
 };
 
 #endif /* SDL_AUDIO_DRIVER_DISK */
