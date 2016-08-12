@@ -391,11 +391,24 @@ Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent *touchEvent, vo
         x = touchEvent->touches[i].canvasX / (float)window_data->windowed_width;
         y = touchEvent->touches[i].canvasY / (float)window_data->windowed_height;
 
-        if (eventType == EMSCRIPTEN_EVENT_TOUCHMOVE) {
-            SDL_SendTouchMotion(deviceId, id, x, y, 1.0f);
-        } else if (eventType == EMSCRIPTEN_EVENT_TOUCHSTART) {
+        if (eventType == EMSCRIPTEN_EVENT_TOUCHSTART) {
+            if (!window_data->finger_touching) {
+                window_data->finger_touching = SDL_TRUE;
+                window_data->first_finger = id;
+                SDL_SendMouseMotion(window_data->window, SDL_TOUCH_MOUSEID, 0, x, y);
+                SDL_SendMouseButton(window_data->window, SDL_TOUCH_MOUSEID, SDL_PRESSED, SDL_BUTTON_LEFT);
+            }
             SDL_SendTouch(deviceId, id, SDL_TRUE, x, y, 1.0f);
+        } else if (eventType == EMSCRIPTEN_EVENT_TOUCHMOVE) {
+            if ((window_data->finger_touching) && (window_data->first_finger == id)) {
+                SDL_SendMouseMotion(window_data->window, SDL_TOUCH_MOUSEID, 0, x, y);
+            }
+            SDL_SendTouchMotion(deviceId, id, x, y, 1.0f);
         } else {
+            if ((window_data->finger_touching) && (window_data->first_finger == id)) {
+                SDL_SendMouseButton(window_data->window, SDL_TOUCH_MOUSEID, SDL_RELEASED, SDL_BUTTON_LEFT);
+                window_data->finger_touching = SDL_FALSE;
+            }
             SDL_SendTouch(deviceId, id, SDL_FALSE, x, y, 1.0f);
         }
     }
