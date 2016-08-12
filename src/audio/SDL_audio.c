@@ -38,10 +38,11 @@ static SDL_AudioDevice *open_devices[16];
  *  to have a complete list here and saves yet-another block of #ifdefs...
  *  Please see bootstrap[], below, for the actual #ifdef mess.
  */
+extern AudioBootStrap PULSEAUDIO_bootstrap;
+extern AudioBootStrap ALSA_bootstrap;
+extern AudioBootStrap SNDIO_bootstrap;
 extern AudioBootStrap BSD_AUDIO_bootstrap;
 extern AudioBootStrap DSP_bootstrap;
-extern AudioBootStrap ALSA_bootstrap;
-extern AudioBootStrap PULSEAUDIO_bootstrap;
 extern AudioBootStrap QSAAUDIO_bootstrap;
 extern AudioBootStrap SUNAUDIO_bootstrap;
 extern AudioBootStrap ARTS_bootstrap;
@@ -54,12 +55,8 @@ extern AudioBootStrap WINMM_bootstrap;
 extern AudioBootStrap PAUDIO_bootstrap;
 extern AudioBootStrap HAIKUAUDIO_bootstrap;
 extern AudioBootStrap COREAUDIO_bootstrap;
-extern AudioBootStrap SNDMGR_bootstrap;
 extern AudioBootStrap DISKAUDIO_bootstrap;
 extern AudioBootStrap DUMMYAUDIO_bootstrap;
-extern AudioBootStrap DCAUDIO_bootstrap;
-extern AudioBootStrap DART_bootstrap;
-extern AudioBootStrap NDSAUDIO_bootstrap;
 extern AudioBootStrap FUSIONSOUND_bootstrap;
 extern AudioBootStrap ANDROIDAUDIO_bootstrap;
 extern AudioBootStrap PSPAUDIO_bootstrap;
