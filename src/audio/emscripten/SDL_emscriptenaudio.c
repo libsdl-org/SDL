@@ -330,8 +330,11 @@ EMSCRIPTENAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscaptu
 
         EM_ASM_({
             var have_microphone = function(stream) {
-                clearTimeout(SDL2.capture.silenceTimer);
-                SDL2.capture.silenceTimer = undefined;
+                //console.log('SDL audio capture: we have a microphone! Replacing silence callback.');
+                if (SDL2.capture.silenceTimer !== undefined) {
+                    clearTimeout(SDL2.capture.silenceTimer);
+                    SDL2.capture.silenceTimer = undefined;
+                }
                 SDL2.capture.mediaStreamNode = SDL2.audioContext.createMediaStreamSource(stream);
                 SDL2.capture.scriptProcessorNode = SDL2.audioContext.createScriptProcessor($1, $0, 1);
                 SDL2.capture.scriptProcessorNode.onaudioprocess = function(audioProcessingEvent) {
@@ -344,13 +347,12 @@ EMSCRIPTENAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscaptu
             };
 
             var no_microphone = function(error) {
-                console.log('we DO NOT have a microphone! (' + error.name + ')...leaving silence callback running.');
+                //console.log('SDL audio capture: we DO NOT have a microphone! (' + error.name + ')...leaving silence callback running.');
             };
 
             /* we write silence to the audio callback until the microphone is available (user approves use, etc). */
             SDL2.capture.silenceBuffer = SDL2.audioContext.createBuffer($0, $1, SDL2.audioContext.sampleRate);
             SDL2.capture.silenceBuffer.getChannelData(0).fill(0.0);
-
             var silence_callback = function() {
                 SDL2.capture.currentCaptureBuffer = SDL2.capture.silenceBuffer;
                 Runtime.dynCall('vi', $2, [$3]);
