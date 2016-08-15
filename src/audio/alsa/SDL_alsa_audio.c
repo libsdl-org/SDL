@@ -714,12 +714,15 @@ ALSA_DetectDevices(void)
         char *desc = ALSA_snd_device_name_get_hint(hints[i], "DESC");
         char *ioid = ALSA_snd_device_name_get_hint(hints[i], "IOID");
 
-        if ((ioid == NULL) || (SDL_strcmp(ioid, "Output") == 0)) {
-            add_device(SDL_FALSE, name, desc);
-        }
+        /* only want physical hardware interfaces */
+        if (SDL_strncmp(name, "hw:", 3) == 0) {
+            if ((ioid == NULL) || (SDL_strcmp(ioid, "Output") == 0)) {
+                add_device(SDL_FALSE, name, desc);
+            }
 
-        if ((ioid == NULL) || (SDL_strcmp(ioid, "Input") == 0)) {
-            add_device(SDL_TRUE, name, desc);
+            if ((ioid == NULL) || (SDL_strcmp(ioid, "Input") == 0)) {
+                add_device(SDL_TRUE, name, desc);
+            }
         }
 
         free(name);
