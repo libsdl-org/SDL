@@ -46,6 +46,11 @@ typedef struct SDL_VideoData {
      * passed to eglGetDisplay and eglCreateWindowSurface:
      */
     IUnknown *winrtEglWindow;
+
+    /* Event token(s), for unregistering WinRT event handler(s).
+       These are just a struct with a 64-bit integer inside them
+    */
+    Windows::Foundation::EventRegistrationToken gameBarIsInputRedirectedToken;
 } SDL_VideoData;
 
 /* The global, WinRT, SDL Window.

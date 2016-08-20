@@ -316,6 +316,9 @@
     <ClCompile Include="..\..\src\haptic\windows\SDL_windowshaptic.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\video\winrt\SDL_winrtgamebar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\include\begin_code.h">
@@ -712,6 +715,9 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\haptic\windows\SDL_xinputhaptic_c.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\winrt\SDL_winrtgamebar_cpp.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>

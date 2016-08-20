@@ -175,6 +175,14 @@
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
     </ClCompile>
+    <ClCompile Include="..\..\src\video\winrt\SDL_winrtgamebar.cpp">
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>
+      <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</CompileAsWinRT>
+    </ClCompile>
     <ClCompile Include="..\..\src\video\winrt\SDL_winrtkeyboard.cpp">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
@@ -353,6 +361,7 @@
     <ClInclude Include="..\..\src\video\SDL_shape_internals.h" />
     <ClInclude Include="..\..\src\video\SDL_sysvideo.h" />
     <ClInclude Include="..\..\src\video\winrt\SDL_winrtevents_c.h" />
+    <ClInclude Include="..\..\src\video\winrt\SDL_winrtgamebar_cpp.h" />
     <ClInclude Include="..\..\src\video\winrt\SDL_winrtmessagebox.h" />
     <ClInclude Include="..\..\src\video\winrt\SDL_winrtmouse_c.h" />
     <ClInclude Include="..\..\src\video\winrt\SDL_winrtopengles.h" />
