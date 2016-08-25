@@ -539,7 +539,9 @@ void
 SDL_SYS_JoystickClose(SDL_Joystick * joystick)
 {
     SDL_joylist_item *item = (SDL_joylist_item *) joystick->hwdata;
-    item->joystick = NULL;
+    if (item) {
+        item->joystick = NULL;
+    }
 }
 
 /* Function to perform any system-specific joystick related cleanup */
