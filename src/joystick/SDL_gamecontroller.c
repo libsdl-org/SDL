@@ -222,7 +222,19 @@ int SDL_GameControllerEventWatcher(void *userdata, SDL_Event * event)
             SDL_GameController *controllerlist = SDL_gamecontrollers;
             while (controllerlist) {
                 if (controllerlist->joystick->instance_id == event->jdevice.which) {
+					SDL_Event peeped;
                     SDL_Event deviceevent;
+
+					/* If there is an existing add event in the queue, it
+					 * needs to be modified to have the right value for which,
+					 * because the number of controllers in the system is now
+					 * one less.
+					 */
+					if ( SDL_PeepEvents(&peeped, 1, SDL_GETEVENT, SDL_CONTROLLERDEVICEADDED, SDL_CONTROLLERDEVICEADDED) > 0) {
+						peeped.jdevice.which--;
+						SDL_PushEvent(&peeped);
+					}
+
                     deviceevent.type = SDL_CONTROLLERDEVICEREMOVED;
                     deviceevent.cdevice.which = event->jdevice.which;
                     SDL_PushEvent(&deviceevent);
