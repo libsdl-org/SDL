@@ -26,6 +26,7 @@
 /* needed for SDL_IPHONE_MAX_GFORCE macro */
 #include "SDL_config_iphoneos.h"
 
+#include "SDL_events.h"
 #include "SDL_joystick.h"
 #include "SDL_hints.h"
 #include "SDL_stdinc.h"
