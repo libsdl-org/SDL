@@ -295,6 +295,18 @@ MaybeRemoveDevice(const char *path)
             event.type = SDL_JOYDEVICEREMOVED;
 
             if (SDL_GetEventState(event.type) == SDL_ENABLE) {
+				SDL_Event peeped;
+
+				/* If there is an existing add event in the queue, it
+				 * needs to be modified to have the right value for which,
+				 * because the number of controllers in the system is now
+				 * one less.
+				 */
+				if ( SDL_PeepEvents(&peeped, 1, SDL_GETEVENT, SDL_JOYDEVICEADDED, SDL_JOYDEVICEADDED) > 0) {
+					peeped.jdevice.which--;
+					SDL_PushEvent(&peeped);
+				}
+
                 event.jdevice.which = item->device_instance;
                 if ( (SDL_EventOK == NULL) ||
                      (*SDL_EventOK) (SDL_EventOKParam, &event) ) {
