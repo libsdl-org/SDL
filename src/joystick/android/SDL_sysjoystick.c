@@ -27,10 +27,6 @@
 #include "SDL_error.h"
 #include "SDL_events.h"
 
-#if !SDL_EVENTS_DISABLED
-#include "../../events/SDL_events_c.h"
-#endif
-
 #include "SDL_joystick.h"
 #include "SDL_hints.h"
 #include "SDL_assert.h"
@@ -252,9 +248,6 @@ Android_AddJoystick(int device_id, const char *name, SDL_bool is_accelerometer, 
 {
     SDL_JoystickGUID guid;
     SDL_joylist_item *item;
-#if !SDL_EVENTS_DISABLED
-    SDL_Event event;
-#endif
     
     if(JoystickByDeviceId(device_id) != NULL || name == NULL) {
         return -1;
@@ -299,17 +292,7 @@ Android_AddJoystick(int device_id, const char *name, SDL_bool is_accelerometer, 
     /* Need to increment the joystick count before we post the event */
     ++numjoysticks;
 
-#if !SDL_EVENTS_DISABLED
-    event.type = SDL_JOYDEVICEADDED;
-
-    if (SDL_GetEventState(event.type) == SDL_ENABLE) {
-        event.jdevice.which = (numjoysticks - 1);
-        if ( (SDL_EventOK == NULL) ||
-             (*SDL_EventOK) (SDL_EventOKParam, &event) ) {
-            SDL_PushEvent(&event);
-        }
-    }
-#endif /* !SDL_EVENTS_DISABLED */
+    SDL_PrivateJoystickAdded(numjoysticks - 1);
 
 #ifdef DEBUG_JOYSTICK
     SDL_Log("Added joystick %s with device_id %d", name, device_id);
@@ -323,9 +306,6 @@ Android_RemoveJoystick(int device_id)
 {
     SDL_joylist_item *item = SDL_joylist;
     SDL_joylist_item *prev = NULL;
-#if !SDL_EVENTS_DISABLED
-    SDL_Event event;
-#endif
     
     /* Don't call JoystickByDeviceId here or there'll be an infinite loop! */
     while (item != NULL) {
@@ -357,17 +337,7 @@ Android_RemoveJoystick(int device_id)
     /* Need to decrement the joystick count before we post the event */
     --numjoysticks;
 
-#if !SDL_EVENTS_DISABLED
-    event.type = SDL_JOYDEVICEREMOVED;
-
-    if (SDL_GetEventState(event.type) == SDL_ENABLE) {
-        event.jdevice.which = item->device_instance;
-        if ( (SDL_EventOK == NULL) ||
-             (*SDL_EventOK) (SDL_EventOKParam, &event) ) {
-            SDL_PushEvent(&event);
-        }
-    }
-#endif /* !SDL_EVENTS_DISABLED */
+    SDL_PrivateJoystickRemoved(item->device_instance);
 
 #ifdef DEBUG_JOYSTICK
     SDL_Log("Removed joystick with device_id %d", device_id);

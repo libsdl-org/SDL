@@ -34,9 +34,6 @@
 #include "SDL_sysjoystick_c.h"
 #include "SDL_events.h"
 #include "../../haptic/darwin/SDL_syshaptic_c.h"    /* For haptic hot plugging */
-#if !SDL_EVENTS_DISABLED
-#include "../../events/SDL_events_c.h"
-#endif
 
 #define SDL_JOYSTICK_RUNLOOP_MODE CFSTR("SDLJoystick")
 
@@ -154,21 +151,7 @@ JoystickDeviceWasRemovedCallback(void *ctx, IOReturn result, void *sender)
     MacHaptic_MaybeRemoveDevice(device->ffservice);
 #endif
 
-/* !!! FIXME: why isn't there an SDL_PrivateJoyDeviceRemoved()? */
-#if !SDL_EVENTS_DISABLED
-    {
-        SDL_Event event;
-        event.type = SDL_JOYDEVICEREMOVED;
-
-        if (SDL_GetEventState(event.type) == SDL_ENABLE) {
-            event.jdevice.which = device->instance_id;
-            if ((SDL_EventOK == NULL)
-                || (*SDL_EventOK) (SDL_EventOKParam, &event)) {
-                SDL_PushEvent(&event);
-            }
-        }
-    }
-#endif /* !SDL_EVENTS_DISABLED */
+    SDL_PrivateJoystickRemoved(device->instance_id);
 }
 
 
@@ -476,21 +459,7 @@ JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender, IOHIDDevic
         ++device_index;  /* bump by one since we counted by pNext. */
     }
 
-/* !!! FIXME: why isn't there an SDL_PrivateJoyDeviceAdded()? */
-#if !SDL_EVENTS_DISABLED
-    {
-        SDL_Event event;
-        event.type = SDL_JOYDEVICEADDED;
-
-        if (SDL_GetEventState(event.type) == SDL_ENABLE) {
-            event.jdevice.which = device_index;
-            if ((SDL_EventOK == NULL)
-                || (*SDL_EventOK) (SDL_EventOKParam, &event)) {
-                SDL_PushEvent(&event);
-            }
-        }
-    }
-#endif /* !SDL_EVENTS_DISABLED */
+    SDL_PrivateJoystickAdded(device_index);
 }
 
 static SDL_bool

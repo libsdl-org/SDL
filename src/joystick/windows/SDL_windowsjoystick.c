@@ -42,9 +42,6 @@
 #include "SDL_joystick.h"
 #include "../SDL_sysjoystick.h"
 #include "../../thread/SDL_systhread.h"
-#if !SDL_EVENTS_DISABLED
-#include "../../events/SDL_events_c.h"
-#endif
 #include "../../core/windows/SDL_windows.h"
 #if !defined(__WINRT__)
 #include <dbt.h>
@@ -327,9 +324,6 @@ void
 SDL_SYS_JoystickDetect()
 {
     JoyStick_DeviceData *pCurList = NULL;
-#if !SDL_EVENTS_DISABLED
-    SDL_Event event;
-#endif
 
     /* only enum the devices if the joystick thread told us something changed */
     if (!s_bDeviceAdded && !s_bDeviceRemoved) {
@@ -361,17 +355,7 @@ SDL_SYS_JoystickDetect()
             SDL_DINPUT_MaybeRemoveDevice(&pCurList->dxdevice);
         }
 
-#if !SDL_EVENTS_DISABLED
-        SDL_zero(event);
-        event.type = SDL_JOYDEVICEREMOVED;
-
-        if (SDL_GetEventState(event.type) == SDL_ENABLE) {
-            event.jdevice.which = pCurList->nInstanceID;
-            if ((!SDL_EventOK) || (*SDL_EventOK) (SDL_EventOKParam, &event)) {
-                SDL_PushEvent(&event);
-            }
-        }
-#endif /* !SDL_EVENTS_DISABLED */
+        SDL_PrivateJoystickRemoved(pCurList->nInstanceID);
 
         pListNext = pCurList->pNext;
         SDL_free(pCurList->joystickname);
@@ -392,17 +376,8 @@ SDL_SYS_JoystickDetect()
                     SDL_DINPUT_MaybeAddDevice(&pNewJoystick->dxdevice);
                 }
 
-#if !SDL_EVENTS_DISABLED
-                SDL_zero(event);
-                event.type = SDL_JOYDEVICEADDED;
+                SDL_PrivateJoystickAdded(device_index);
 
-                if (SDL_GetEventState(event.type) == SDL_ENABLE) {
-                    event.jdevice.which = device_index;
-                    if ((!SDL_EventOK) || (*SDL_EventOK) (SDL_EventOKParam, &event)) {
-                        SDL_PushEvent(&event);
-                    }
-                }
-#endif /* !SDL_EVENTS_DISABLED */
                 pNewJoystick->send_add_event = SDL_FALSE;
             }
             device_index++;

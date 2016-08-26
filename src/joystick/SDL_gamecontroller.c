@@ -106,6 +106,35 @@ int SDL_PrivateGameControllerAxis(SDL_GameController * gamecontroller, SDL_GameC
 int SDL_PrivateGameControllerButton(SDL_GameController * gamecontroller, SDL_GameControllerButton button, Uint8 state);
 
 /*
+ * If there is an existing add event in the queue, it needs to be modified
+ * to have the right value for which, because the number of controllers in
+ * the system is now one less.
+ */
+static void UpdateEventsForDeviceRemoval()
+{
+    int i, num_events;
+    SDL_Event *events;
+
+    num_events = SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, SDL_CONTROLLERDEVICEADDED, SDL_CONTROLLERDEVICEADDED);
+    if (num_events <= 0) {
+        return;
+    }
+
+    events = SDL_stack_alloc(SDL_Event, num_events);
+    if (!events) {
+        return;
+    }
+
+    num_events = SDL_PeepEvents(events, num_events, SDL_GETEVENT, SDL_CONTROLLERDEVICEADDED, SDL_CONTROLLERDEVICEADDED);
+    for (i = 0; i < num_events; ++i) {
+        --events[i].cdevice.which;
+    }
+    SDL_PeepEvents(events, num_events, SDL_ADDEVENT, 0, 0);
+
+    SDL_stack_free(events);
+}
+
+/*
  * Event filter to fire controller events from joystick ones
  */
 int SDL_GameControllerEventWatcher(void *userdata, SDL_Event * event)
@@ -222,22 +251,13 @@ int SDL_GameControllerEventWatcher(void *userdata, SDL_Event * event)
             SDL_GameController *controllerlist = SDL_gamecontrollers;
             while (controllerlist) {
                 if (controllerlist->joystick->instance_id == event->jdevice.which) {
-					SDL_Event peeped;
                     SDL_Event deviceevent;
-
-					/* If there is an existing add event in the queue, it
-					 * needs to be modified to have the right value for which,
-					 * because the number of controllers in the system is now
-					 * one less.
-					 */
-					if ( SDL_PeepEvents(&peeped, 1, SDL_GETEVENT, SDL_CONTROLLERDEVICEADDED, SDL_CONTROLLERDEVICEADDED) > 0) {
-						peeped.jdevice.which--;
-						SDL_PushEvent(&peeped);
-					}
 
                     deviceevent.type = SDL_CONTROLLERDEVICEREMOVED;
                     deviceevent.cdevice.which = event->jdevice.which;
                     SDL_PushEvent(&deviceevent);
+
+                    UpdateEventsForDeviceRemoval();
                     break;
                 }
                 controllerlist = controllerlist->next;

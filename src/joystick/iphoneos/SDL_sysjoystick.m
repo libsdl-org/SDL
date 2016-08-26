@@ -32,10 +32,6 @@
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
 
-#if !SDL_EVENTS_DISABLED
-#include "../../events/SDL_events_c.h"
-#endif
-
 #import <CoreMotion/CoreMotion.h>
 
 #ifdef SDL_JOYSTICK_MFI
@@ -127,9 +123,6 @@ static void
 SDL_SYS_AddJoystickDevice(GCController *controller, SDL_bool accelerometer)
 {
     SDL_JoystickDeviceItem *device = deviceList;
-#if !SDL_EVENTS_DISABLED
-    SDL_Event event;
-#endif
 
     while (device != NULL) {
         if (device->controller == controller) {
@@ -172,17 +165,7 @@ SDL_SYS_AddJoystickDevice(GCController *controller, SDL_bool accelerometer)
 
     ++numjoysticks;
 
-#if !SDL_EVENTS_DISABLED
-    event.type = SDL_JOYDEVICEADDED;
-
-    if (SDL_GetEventState(event.type) == SDL_ENABLE) {
-        event.jdevice.which = numjoysticks - 1;
-        if ((SDL_EventOK == NULL) ||
-            (*SDL_EventOK)(SDL_EventOKParam, &event)) {
-            SDL_PushEvent(&event);
-        }
-    }
-#endif /* !SDL_EVENTS_DISABLED */
+    SDL_PrivateJoystickAdded(numjoysticks - 1);
 }
 
 static SDL_JoystickDeviceItem *
@@ -191,9 +174,6 @@ SDL_SYS_RemoveJoystickDevice(SDL_JoystickDeviceItem *device)
     SDL_JoystickDeviceItem *prev = NULL;
     SDL_JoystickDeviceItem *next = NULL;
     SDL_JoystickDeviceItem *item = deviceList;
-#if !SDL_EVENTS_DISABLED
-    SDL_Event event;
-#endif
 
     if (device == NULL) {
         return NULL;
@@ -234,17 +214,7 @@ SDL_SYS_RemoveJoystickDevice(SDL_JoystickDeviceItem *device)
 
     --numjoysticks;
 
-#if !SDL_EVENTS_DISABLED
-    event.type = SDL_JOYDEVICEREMOVED;
-
-    if (SDL_GetEventState(event.type) == SDL_ENABLE) {
-        event.jdevice.which = device->instance_id;
-        if ((SDL_EventOK == NULL) ||
-            (*SDL_EventOK)(SDL_EventOKParam, &event)) {
-            SDL_PushEvent(&event);
-        }
-    }
-#endif /* !SDL_EVENTS_DISABLED */
+	SDL_PrivateJoystickRemoved(device->instance_id);
 
     SDL_free(device->name);
     SDL_free(device);

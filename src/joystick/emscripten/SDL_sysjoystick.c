@@ -27,10 +27,6 @@
 #include "SDL_error.h"
 #include "SDL_events.h"
 
-#if !SDL_EVENTS_DISABLED
-#include "../../events/SDL_events_c.h"
-#endif
-
 #include "SDL_joystick.h"
 #include "SDL_hints.h"
 #include "SDL_assert.h"
@@ -56,10 +52,6 @@ Emscripten_JoyStickConnected(int eventType, const EmscriptenGamepadEvent *gamepa
     if (JoystickByIndex(gamepadEvent->index) != NULL) {
       return 1;
     }
-
-#if !SDL_EVENTS_DISABLED
-    SDL_Event event;
-#endif
 
     item = (SDL_joylist_item *) SDL_malloc(sizeof (SDL_joylist_item));
     if (item == NULL) {
@@ -105,20 +97,12 @@ Emscripten_JoyStickConnected(int eventType, const EmscriptenGamepadEvent *gamepa
     }
 
     ++numjoysticks;
+
+    SDL_PrivateJoystickAdded(numjoysticks - 1);
+
 #ifdef DEBUG_JOYSTICK
     SDL_Log("Number of joysticks is %d", numjoysticks);
 #endif
-#if !SDL_EVENTS_DISABLED
-    event.type = SDL_JOYDEVICEADDED;
-
-    if (SDL_GetEventState(event.type) == SDL_ENABLE) {
-        event.jdevice.which = numjoysticks - 1;
-        if ( (SDL_EventOK == NULL) ||
-             (*SDL_EventOK) (SDL_EventOKParam, &event) ) {
-            SDL_PushEvent(&event);
-        }
-    }
-#endif /* !SDL_EVENTS_DISABLED */
 
 #ifdef DEBUG_JOYSTICK
     SDL_Log("Added joystick with index %d", item->index);
@@ -132,9 +116,6 @@ Emscripten_JoyStickDisconnected(int eventType, const EmscriptenGamepadEvent *gam
 {
     SDL_joylist_item *item = SDL_joylist;
     SDL_joylist_item *prev = NULL;
-#if !SDL_EVENTS_DISABLED
-    SDL_Event event;
-#endif
 
     while (item != NULL) {
         if (item->index == gamepadEvent->index) {
@@ -165,17 +146,7 @@ Emscripten_JoyStickDisconnected(int eventType, const EmscriptenGamepadEvent *gam
     /* Need to decrement the joystick count before we post the event */
     --numjoysticks;
 
-#if !SDL_EVENTS_DISABLED
-    event.type = SDL_JOYDEVICEREMOVED;
-
-    if (SDL_GetEventState(event.type) == SDL_ENABLE) {
-        event.jdevice.which = item->device_instance;
-        if ( (SDL_EventOK == NULL) ||
-             (*SDL_EventOK) (SDL_EventOKParam, &event) ) {
-            SDL_PushEvent(&event);
-        }
-    }
-#endif /* !SDL_EVENTS_DISABLED */
+	SDL_PrivateJoystickRemoved(item->device_instance);
 
 #ifdef DEBUG_JOYSTICK
     SDL_Log("Removed joystick with id %d", item->device_instance);
