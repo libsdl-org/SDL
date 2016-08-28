@@ -40,7 +40,6 @@
 
 #include "SDL_timer.h"
 #include "SDL_audio.h"
-#include "../SDL_audiomem.h"
 #include "../SDL_audio_c.h"
 #include "../SDL_audiodev_c.h"
 #include "SDL_sunaudio.h"
@@ -183,18 +182,12 @@ SUNAUDIO_GetDeviceBuf(_THIS)
 static void
 SUNAUDIO_CloseDevice(_THIS)
 {
-    if (this->hidden != NULL) {
-        SDL_FreeAudioMem(this->hidden->mixbuf);
-        this->hidden->mixbuf = NULL;
-        SDL_free(this->hidden->ulaw_buf);
-        this->hidden->ulaw_buf = NULL;
-        if (this->hidden->audio_fd >= 0) {
-            close(this->hidden->audio_fd);
-            this->hidden->audio_fd = -1;
-        }
-        SDL_free(this->hidden);
-        this->hidden = NULL;
+    SDL_free(this->hidden->ulaw_buf);
+    if (this->hidden->audio_fd >= 0) {
+        close(this->hidden->audio_fd);
     }
+    SDL_free(this->hidden->mixbuf);
+    SDL_free(this->hidden);
 }
 
 static int
@@ -219,7 +212,7 @@ SUNAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     if (this->hidden == NULL) {
         return SDL_OutOfMemory();
     }
-    SDL_memset(this->hidden, 0, (sizeof *this->hidden));
+    SDL_zerop(this->hidden);
 
     /* Open the audio device */
     this->hidden->audio_fd = open(devname, flags, 0);
@@ -340,7 +333,7 @@ SUNAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     SDL_CalculateAudioSpec(&this->spec);
 
     /* Allocate mixing buffer */
-    this->hidden->mixbuf = (Uint8 *) SDL_AllocAudioMem(this->spec.size);
+    this->hidden->mixbuf = (Uint8 *) SDL_malloc(this->spec.size);
     if (this->hidden->mixbuf == NULL) {
         return SDL_OutOfMemory();
     }

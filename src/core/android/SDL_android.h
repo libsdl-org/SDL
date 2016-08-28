@@ -40,10 +40,12 @@ extern void Android_JNI_HideTextInput(void);
 extern ANativeWindow* Android_JNI_GetNativeWindow(void);
 
 /* Audio support */
-extern int Android_JNI_OpenAudioDevice(int sampleRate, int is16Bit, int channelCount, int desiredBufferFrames);
+extern int Android_JNI_OpenAudioDevice(int iscapture, int sampleRate, int is16Bit, int channelCount, int desiredBufferFrames);
 extern void* Android_JNI_GetAudioBuffer(void);
 extern void Android_JNI_WriteAudioBuffer(void);
-extern void Android_JNI_CloseAudioDevice(void);
+extern int Android_JNI_CaptureAudioBuffer(void *buffer, int buflen);
+extern void Android_JNI_FlushCapturedAudio(void);
+extern void Android_JNI_CloseAudioDevice(const int iscapture);
 
 #include "SDL_rwops.h"
 

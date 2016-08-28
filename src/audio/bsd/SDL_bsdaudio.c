@@ -38,7 +38,6 @@
 
 #include "SDL_timer.h"
 #include "SDL_audio.h"
-#include "../SDL_audiomem.h"
 #include "../SDL_audio_c.h"
 #include "../SDL_audiodev_c.h"
 #include "SDL_bsdaudio.h"
@@ -63,13 +62,17 @@ BSDAUDIO_Status(_THIS)
 #ifdef DEBUG_AUDIO
     /* *INDENT-OFF* */
     audio_info_t info;
+    const audio_prinfo *prinfo;
 
     if (ioctl(this->hidden->audio_fd, AUDIO_GETINFO, &info) < 0) {
         fprintf(stderr, "AUDIO_GETINFO failed.\n");
         return;
     }
+
+    prinfo = this->iscapture ? &info.play : &info.record;
+
     fprintf(stderr, "\n"
-            "[play/record info]\n"
+            "[%s info]\n"
             "buffer size	:   %d bytes\n"
             "sample rate	:   %i Hz\n"
             "channels	:   %i\n"
@@ -83,18 +86,19 @@ BSDAUDIO_Status(_THIS)
             "waiting		:   %s\n"
             "active		:   %s\n"
             "",
-            info.play.buffer_size,
-            info.play.sample_rate,
-            info.play.channels,
-            info.play.precision,
-            info.play.encoding,
-            info.play.seek,
-            info.play.samples,
-            info.play.eof,
-            info.play.pause ? "yes" : "no",
-            info.play.error ? "yes" : "no",
-            info.play.waiting ? "yes" : "no",
-            info.play.active ? "yes" : "no");
+            this->iscapture ? "record" : "play",
+            prinfo->buffer_size,
+            prinfo->sample_rate,
+            prinfo->channels,
+            prinfo->precision,
+            prinfo->encoding,
+            prinfo->seek,
+            prinfo->samples,
+            prinfo->eof,
+            prinfo->pause ? "yes" : "no",
+            prinfo->error ? "yes" : "no",
+            prinfo->waiting ? "yes" : "no",
+            prinfo->active ? "yes" : "no");
 
     fprintf(stderr, "\n"
             "[audio info]\n"
@@ -182,11 +186,15 @@ BSDAUDIO_PlayDevice(_THIS)
             break;
         }
 
-        if (p < written
+#ifdef DEBUG_AUDIO
+        fprintf(stderr, "Wrote %d bytes of audio data\n", written);
+#endif
+
+        if (p < this->hidden->mixlen
             || ((written < 0) && ((errno == 0) || (errno == EAGAIN)))) {
             SDL_Delay(1);       /* Let a little CPU time go by */
         }
-    } while (p < written);
+    } while (p < this->hidden->mixlen);
 
     /* If timer synchronization is enabled, set the next write frame */
     if (this->hidden->frame_ticks) {
@@ -197,9 +205,6 @@ BSDAUDIO_PlayDevice(_THIS)
     if (written < 0) {
         SDL_OpenedAudioDeviceDisconnected(this);
     }
-#ifdef DEBUG_AUDIO
-    fprintf(stderr, "Wrote %d bytes of audio data\n", written);
-#endif
 }
 
 static Uint8 *
@@ -208,27 +213,74 @@ BSDAUDIO_GetDeviceBuf(_THIS)
     return (this->hidden->mixbuf);
 }
 
+
+static int
+BSDAUDIO_CaptureFromDevice(_THIS, void *_buffer, int buflen)
+{
+    Uint8 *buffer = (Uint8 *) _buffer;
+    int br, p = 0;
+
+    /* Write the audio data, checking for EAGAIN on broken audio drivers */
+    do {
+        br = read(this->hidden->audio_fd, buffer + p, buflen - p);
+        if (br > 0)
+            p += br;
+        if (br == -1 && errno != 0 && errno != EAGAIN && errno != EINTR) {
+            /* Non recoverable error has occurred. It should be reported!!! */
+            perror("audio");
+            return p ? p : -1;
+        }
+
+#ifdef DEBUG_AUDIO
+        fprintf(stderr, "Captured %d bytes of audio data\n", br);
+#endif
+
+        if (p < buflen
+            || ((br < 0) && ((errno == 0) || (errno == EAGAIN)))) {
+            SDL_Delay(1);       /* Let a little CPU time go by */
+        }
+    } while (p < buflen);
+}
+
+static void
+BSDAUDIO_FlushCapture(_THIS)
+{
+    audio_info_t info;
+    size_t remain;
+    Uint8 buf[512];
+
+    if (ioctl(this->hidden->audio_fd, AUDIO_GETINFO, &info) < 0) {
+        return;  /* oh well. */
+    }
+
+    remain = (size_t) (info.record.samples * (SDL_AUDIO_BITSIZE(this->spec.format) / 8));
+    while (remain > 0) {
+        const size_t len = SDL_min(sizeof (buf), remain);
+        const int br = read(this->hidden->audio_fd, buf, len);
+        if (br <= 0) {
+            return;  /* oh well. */
+        }
+        remain -= br;
+    }
+}
+
 static void
 BSDAUDIO_CloseDevice(_THIS)
 {
-    if (this->hidden != NULL) {
-        SDL_FreeAudioMem(this->hidden->mixbuf);
-        this->hidden->mixbuf = NULL;
-        if (this->hidden->audio_fd >= 0) {
-            close(this->hidden->audio_fd);
-            this->hidden->audio_fd = -1;
-        }
-        SDL_free(this->hidden);
-        this->hidden = NULL;
+    if (this->hidden->audio_fd >= 0) {
+        close(this->hidden->audio_fd);
     }
+    SDL_free(this->hidden->mixbuf);
+    SDL_free(this->hidden);
 }
 
 static int
 BSDAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 {
-    const int flags = ((iscapture) ? OPEN_FLAGS_INPUT : OPEN_FLAGS_OUTPUT);
+    const int flags = iscapture ? OPEN_FLAGS_INPUT : OPEN_FLAGS_OUTPUT;
     SDL_AudioFormat format = 0;
     audio_info_t info;
+    audio_prinfo *prinfo = iscapture ? &info.play : &info.record;
 
     /* We don't care what the devname is...we'll try to open anything. */
     /*  ...but default to first name in the list... */
@@ -245,7 +297,7 @@ BSDAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     if (this->hidden == NULL) {
         return SDL_OutOfMemory();
     }
-    SDL_memset(this->hidden, 0, (sizeof *this->hidden));
+    SDL_zerop(this->hidden);
 
     /* Open the audio device */
     this->hidden->audio_fd = open(devname, flags, 0);
@@ -259,9 +311,8 @@ BSDAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     SDL_CalculateAudioSpec(&this->spec);
 
     /* Set to play mode */
-    info.mode = AUMODE_PLAY;
+    info.mode = iscapture ? AUMODE_RECORD : AUMODE_PLAY;
     if (ioctl(this->hidden->audio_fd, AUDIO_SETINFO, &info) < 0) {
-        BSDAUDIO_CloseDevice(this);
         return SDL_SetError("Couldn't put device into play mode");
     }
 
@@ -270,28 +321,28 @@ BSDAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
          format; format = SDL_NextAudioFormat()) {
         switch (format) {
         case AUDIO_U8:
-            info.play.encoding = AUDIO_ENCODING_ULINEAR;
-            info.play.precision = 8;
+            prinfo->encoding = AUDIO_ENCODING_ULINEAR;
+            prinfo->precision = 8;
             break;
         case AUDIO_S8:
-            info.play.encoding = AUDIO_ENCODING_SLINEAR;
-            info.play.precision = 8;
+            prinfo->encoding = AUDIO_ENCODING_SLINEAR;
+            prinfo->precision = 8;
             break;
         case AUDIO_S16LSB:
-            info.play.encoding = AUDIO_ENCODING_SLINEAR_LE;
-            info.play.precision = 16;
+            prinfo->encoding = AUDIO_ENCODING_SLINEAR_LE;
+            prinfo->precision = 16;
             break;
         case AUDIO_S16MSB:
-            info.play.encoding = AUDIO_ENCODING_SLINEAR_BE;
-            info.play.precision = 16;
+            prinfo->encoding = AUDIO_ENCODING_SLINEAR_BE;
+            prinfo->precision = 16;
             break;
         case AUDIO_U16LSB:
-            info.play.encoding = AUDIO_ENCODING_ULINEAR_LE;
-            info.play.precision = 16;
+            prinfo->encoding = AUDIO_ENCODING_ULINEAR_LE;
+            prinfo->precision = 16;
             break;
         case AUDIO_U16MSB:
-            info.play.encoding = AUDIO_ENCODING_ULINEAR_BE;
-            info.play.precision = 16;
+            prinfo->encoding = AUDIO_ENCODING_ULINEAR_BE;
+            prinfo->precision = 16;
             break;
         default:
             continue;
@@ -303,33 +354,34 @@ BSDAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     }
 
     if (!format) {
-        BSDAUDIO_CloseDevice(this);
         return SDL_SetError("No supported encoding for 0x%x", this->spec.format);
     }
 
     this->spec.format = format;
 
     AUDIO_INITINFO(&info);
-    info.play.channels = this->spec.channels;
+    prinfo->channels = this->spec.channels;
     if (ioctl(this->hidden->audio_fd, AUDIO_SETINFO, &info) == -1) {
         this->spec.channels = 1;
     }
     AUDIO_INITINFO(&info);
-    info.play.sample_rate = this->spec.freq;
+    prinfo->sample_rate = this->spec.freq;
     info.blocksize = this->spec.size;
     info.hiwat = 5;
     info.lowat = 3;
     (void) ioctl(this->hidden->audio_fd, AUDIO_SETINFO, &info);
     (void) ioctl(this->hidden->audio_fd, AUDIO_GETINFO, &info);
-    this->spec.freq = info.play.sample_rate;
-    /* Allocate mixing buffer */
-    this->hidden->mixlen = this->spec.size;
-    this->hidden->mixbuf = (Uint8 *) SDL_AllocAudioMem(this->hidden->mixlen);
-    if (this->hidden->mixbuf == NULL) {
-        BSDAUDIO_CloseDevice(this);
-        return SDL_OutOfMemory();
+    this->spec.freq = prinfo->sample_rate;
+
+    if (!iscapture) {
+        /* Allocate mixing buffer */
+        this->hidden->mixlen = this->spec.size;
+        this->hidden->mixbuf = (Uint8 *) SDL_malloc(this->hidden->mixlen);
+        if (this->hidden->mixbuf == NULL) {
+            return SDL_OutOfMemory();
+        }
+        SDL_memset(this->hidden->mixbuf, this->spec.silence, this->spec.size);
     }
-    SDL_memset(this->hidden->mixbuf, this->spec.silence, this->spec.size);
 
     BSDAUDIO_Status(this);
 
@@ -347,7 +399,10 @@ BSDAUDIO_Init(SDL_AudioDriverImpl * impl)
     impl->WaitDevice = BSDAUDIO_WaitDevice;
     impl->GetDeviceBuf = BSDAUDIO_GetDeviceBuf;
     impl->CloseDevice = BSDAUDIO_CloseDevice;
+    impl->CaptureFromDevice = BSDAUDIO_CaptureFromDevice;
+    impl->FlushCapture = BSDAUDIO_FlushCapture;
 
+    impl->HasCaptureSupport = SDL_TRUE;
     impl->AllowsArbitraryDeviceNames = 1;
 
     return 1;   /* this audio target is available. */

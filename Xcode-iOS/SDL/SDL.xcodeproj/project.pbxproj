@@ -376,7 +376,6 @@
 		FD99B9440DD52EDC00FB1D6B /* SDL_audio.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_audio.c; sourceTree = "<group>"; };
 		FD99B9450DD52EDC00FB1D6B /* SDL_audio_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_audio_c.h; sourceTree = "<group>"; };
 		FD99B9460DD52EDC00FB1D6B /* SDL_audiocvt.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_audiocvt.c; sourceTree = "<group>"; };
-		FD99B9490DD52EDC00FB1D6B /* SDL_audiomem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_audiomem.h; sourceTree = "<group>"; };
 		FD99B94A0DD52EDC00FB1D6B /* SDL_audiotypecvt.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_audiotypecvt.c; sourceTree = "<group>"; };
 		FD99B94B0DD52EDC00FB1D6B /* SDL_mixer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_mixer.c; sourceTree = "<group>"; };
 		FD99B9520DD52EDC00FB1D6B /* SDL_sysaudio.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_sysaudio.h; sourceTree = "<group>"; };
@@ -795,7 +794,6 @@
 				FD99B9440DD52EDC00FB1D6B /* SDL_audio.c */,
 				FD99B9450DD52EDC00FB1D6B /* SDL_audio_c.h */,
 				FD99B9460DD52EDC00FB1D6B /* SDL_audiocvt.c */,
-				FD99B9490DD52EDC00FB1D6B /* SDL_audiomem.h */,
 				FD99B94A0DD52EDC00FB1D6B /* SDL_audiotypecvt.c */,
 				FD99B94B0DD52EDC00FB1D6B /* SDL_mixer.c */,
 				FD99B9520DD52EDC00FB1D6B /* SDL_sysaudio.h */,

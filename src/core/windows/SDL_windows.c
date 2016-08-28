@@ -124,6 +124,80 @@ BOOL WIN_IsWindowsVistaOrGreater()
 #endif
 }
 
+/*
+WAVExxxCAPS gives you 31 bytes for the device name, and just truncates if it's
+longer. However, since WinXP, you can use the WAVExxxCAPS2 structure, which
+will give you a name GUID. The full name is in the Windows Registry under
+that GUID, located here: HKLM\System\CurrentControlSet\Control\MediaCategories
+
+Note that drivers can report GUID_NULL for the name GUID, in which case,
+Windows makes a best effort to fill in those 31 bytes in the usual place.
+This info summarized from MSDN:
+
+http://web.archive.org/web/20131027093034/http://msdn.microsoft.com/en-us/library/windows/hardware/ff536382(v=vs.85).aspx
+
+Always look this up in the registry if possible, because the strings are
+different! At least on Win10, I see "Yeti Stereo Microphone" in the
+Registry, and a unhelpful "Microphone(Yeti Stereo Microph" in winmm. Sigh.
+
+(Also, DirectSound shouldn't be limited to 32 chars, but its device enum
+has the same problem.)
+*/
+char *
+WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid)
+{
+    static const GUID nullguid = { 0 };
+    const unsigned char *ptr;
+    char keystr[128];
+    WCHAR *strw = NULL;
+    SDL_bool rc;
+    HKEY hkey;
+    DWORD len = 0;
+    char *retval = NULL;
+
+    if (SDL_memcmp(guid, &nullguid, sizeof (*guid)) == 0) {
+        return WIN_StringToUTF8(name);  /* No GUID, go with what we've got. */
+    }
+
+    ptr = (const char *) guid;
+    SDL_snprintf(keystr, sizeof (keystr),
+        "System\\CurrentControlSet\\Control\\MediaCategories\\{%02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X}",
+        ptr[3], ptr[2], ptr[1], ptr[0], ptr[5], ptr[4], ptr[7], ptr[6],
+        ptr[8], ptr[9], ptr[10], ptr[11], ptr[12], ptr[13], ptr[14], ptr[15]);
+
+    strw = WIN_UTF8ToString(keystr);
+    rc = (RegOpenKeyExW(HKEY_LOCAL_MACHINE, strw, 0, KEY_QUERY_VALUE, &hkey) == ERROR_SUCCESS);
+    SDL_free(strw);
+    if (!rc) {
+        return WIN_StringToUTF8(name);  /* oh well. */
+    }
+
+    rc = (RegQueryValueExW(hkey, L"Name", NULL, NULL, NULL, &len) == ERROR_SUCCESS);
+    if (!rc) {
+        RegCloseKey(hkey);
+        return WIN_StringToUTF8(name);  /* oh well. */
+    }
+
+    strw = (WCHAR *) SDL_malloc(len + sizeof (WCHAR));
+    if (!strw) {
+        RegCloseKey(hkey);
+        return WIN_StringToUTF8(name);  /* oh well. */
+    }
+
+    rc = (RegQueryValueExW(hkey, L"Name", NULL, NULL, (LPBYTE) strw, &len) == ERROR_SUCCESS);
+    RegCloseKey(hkey);
+    if (!rc) {
+        SDL_free(strw);
+        return WIN_StringToUTF8(name);  /* oh well. */
+    }
+
+    strw[len / 2] = 0;  /* make sure it's null-terminated. */
+
+    retval = WIN_StringToUTF8(strw);
+    SDL_free(strw);
+    return retval ? retval : WIN_StringToUTF8(name);
+}
+
 #endif /* __WIN32__ || __WINRT__ */
 
 /* vi: set ts=4 sw=4 expandtab: */

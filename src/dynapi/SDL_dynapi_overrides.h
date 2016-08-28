@@ -605,3 +605,4 @@
 #define SDL_SetWindowModalFor SDL_SetWindowModalFor_REAL
 #define SDL_RenderSetIntegerScale SDL_RenderSetIntegerScale_REAL
 #define SDL_RenderGetIntegerScale SDL_RenderGetIntegerScale_REAL
+#define SDL_DequeueAudio SDL_DequeueAudio_REAL

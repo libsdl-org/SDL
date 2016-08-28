@@ -26,6 +26,10 @@
 #include "SDL_mutex.h"
 #include "SDL_thread.h"
 
+/* !!! FIXME: These are wordy and unlocalized... */
+#define DEFAULT_OUTPUT_DEVNAME "System audio output device"
+#define DEFAULT_INPUT_DEVNAME "System audio capture device"
+
 /* The SDL audio driver */
 typedef struct SDL_AudioDevice SDL_AudioDevice;
 #define _THIS   SDL_AudioDevice *_this
@@ -76,6 +80,8 @@ typedef struct SDL_AudioDriverImpl
     int (*GetPendingBytes) (_THIS);
     Uint8 *(*GetDeviceBuf) (_THIS);
     void (*WaitDone) (_THIS);
+    int (*CaptureFromDevice) (_THIS, void *buffer, int buflen);
+    void (*FlushCapture) (_THIS);
     void (*CloseDevice) (_THIS);
     void (*LockDevice) (_THIS);
     void (*UnlockDevice) (_THIS);
@@ -90,7 +96,7 @@ typedef struct SDL_AudioDriverImpl
     int SkipMixerLock;  /* !!! FIXME: do we need this anymore? */
     int HasCaptureSupport;
     int OnlyHasDefaultOutputDevice;
-    int OnlyHasDefaultInputDevice;
+    int OnlyHasDefaultCaptureDevice;
     int AllowsArbitraryDeviceNames;
 } SDL_AudioDriverImpl;
 
@@ -157,12 +163,10 @@ struct SDL_AudioDevice
     SDL_AudioStreamer streamer;
 
     /* Current state flags */
-    /* !!! FIXME: should be SDL_bool */
-    int iscapture;
-    int enabled;  /* true if device is functioning and connected. */
-    int shutdown; /* true if we are signaling the play thread to end. */
-    int paused;
-    int opened;
+    SDL_atomic_t shutdown; /* true if we are signaling the play thread to end. */
+    SDL_atomic_t enabled;  /* true if device is functioning and connected. */
+    SDL_atomic_t paused;
+    SDL_bool iscapture;
 
     /* Fake audio buffer for when the audio hardware is busy */
     Uint8 *fake_stream;
