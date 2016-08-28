@@ -29,6 +29,7 @@
 #include <errno.h>
 #include <string.h>
 
+#include "SDL_assert.h"
 #include "SDL_timer.h"
 #include "SDL_audio.h"
 #include "../SDL_audiomem.h"
@@ -660,92 +661,195 @@ ALSA_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     return 0;
 }
 
-static void
-ALSA_Deinitialize(void)
+typedef struct ALSA_Device
 {
-    UnloadALSALibrary();
-}
+    char *name;
+    SDL_bool iscapture;
+    struct ALSA_Device *next;
+} ALSA_Device;
 
 static void
-add_device(const int iscapture, const char *name, const char *_desc)
+add_device(const int iscapture, const char *name, void *hint, ALSA_Device **pSeen)
 {
-    char *desc = NULL;
+    ALSA_Device *dev = SDL_malloc(sizeof (ALSA_Device));
+    char *desc = ALSA_snd_device_name_get_hint(hint, "DESC");
     char *handle = NULL;
-    char *ptr = NULL;
+    char *ptr;
 
-    if (!name || !_desc) {
-        return;  /* nothing we can do with this...? */
-    }
-
-    desc = SDL_strdup(_desc);
     if (!desc) {
-        return;  /* oh well, out of memory. Skip it. */
+        SDL_free(dev);
+        return;
+    } else if (!dev) {
+        free(desc);
+        return;
     }
 
-    /* some strings have newlines, like "HDA NVidia, HDMI 0\nHDMI Audio Output" */
-    for (ptr = strchr(desc, '\n'); ptr; ptr = strchr(ptr + 1, '\n')) {
-        *ptr = ' ';
+    SDL_assert(name != NULL);
+
+    /* some strings have newlines, like "HDA NVidia, HDMI 0\nHDMI Audio Output".
+       just chop the extra lines off, this seems to get a reasonable device
+       name without extra details. */
+    if ((ptr = strchr(desc, '\n')) != NULL) {
+        *ptr = '\0';
     }
+
+    /*printf("ALSA: adding %s device '%s' (%s)\n", iscapture ? "capture" : "output", name, desc);*/
 
     handle = SDL_strdup(name);
-    if (handle != NULL) {
-        SDL_AddAudioDevice(iscapture, desc, handle);
+    if (!handle) {
+        free(desc);
+        SDL_free(dev);
+        return;
     }
 
-    SDL_free(desc);
+    SDL_AddAudioDevice(iscapture, desc, handle);
+    free(desc);
+
+    dev->name = handle;
+    dev->iscapture = iscapture;
+    dev->next = *pSeen;
+    *pSeen = dev;
+}
+
+
+static SDL_atomic_t ALSA_hotplug_shutdown;
+static SDL_Thread *ALSA_hotplug_thread;
+
+static int SDLCALL
+ALSA_HotplugThread(void *arg)
+{
+    SDL_sem *first_run_semaphore = (SDL_sem *) arg;
+    ALSA_Device *devices = NULL;
+    ALSA_Device *next;
+    ALSA_Device *dev;
+    Uint32 ticks;
+
+    while (!SDL_AtomicGet(&ALSA_hotplug_shutdown)) {
+        void **hints = NULL;
+        if (ALSA_snd_device_name_hint(-1, "pcm", &hints) != -1) {
+            ALSA_Device *unseen = devices;
+            ALSA_Device *seen = NULL;
+            ALSA_Device *prev;
+            int i;
+
+            for (i = 0; hints[i]; i++) {
+                char *name = ALSA_snd_device_name_get_hint(hints[i], "NAME");
+                if (!name) {
+                    continue;
+                }
+
+                /* only want physical hardware interfaces */
+                if (SDL_strncmp(name, "hw:", 3) == 0) {
+                    char *ioid = ALSA_snd_device_name_get_hint(hints[i], "IOID");
+                    const SDL_bool isoutput = (ioid == NULL) || (SDL_strcmp(ioid, "Output") == 0);
+                    const SDL_bool isinput = (ioid == NULL) || (SDL_strcmp(ioid, "Input") == 0);
+                    SDL_bool have_output = SDL_FALSE;
+                    SDL_bool have_input = SDL_FALSE;
+
+                    free(ioid);
+
+                    if (!isoutput && !isinput) {
+                        free(name);
+                        continue;
+                    }
+
+                    prev = NULL;
+                    for (dev = unseen; dev; dev = next) {
+                        next = dev->next;
+                        if ( (SDL_strcmp(dev->name, name) == 0) && (((isinput) && dev->iscapture) || ((isoutput) && !dev->iscapture)) ) {
+                            if (prev) {
+                                prev->next = next;
+                            } else {
+                                unseen = next;
+                            }
+                            dev->next = seen;
+                            seen = dev;
+                            if (isinput) have_input = SDL_TRUE;
+                            if (isoutput) have_output = SDL_TRUE;
+                        } else {
+                            prev = dev;
+                        }
+                    }
+
+                    if (isinput && !have_input) {
+                        add_device(SDL_TRUE, name, hints[i], &seen);
+                    }
+                    if (isoutput && !have_output) {
+                        add_device(SDL_FALSE, name, hints[i], &seen);
+                    }
+                }
+
+                free(name);
+            }
+
+            ALSA_snd_device_name_free_hint(hints);
+
+            devices = seen;   /* now we have a known-good list of attached devices. */
+
+            /* report anything still in unseen as removed. */
+            for (dev = unseen; dev; dev = next) {
+                /*printf("ALSA: removing %s device '%s'\n", dev->iscapture ? "capture" : "output", dev->name);*/
+                next = dev->next;
+                SDL_RemoveAudioDevice(dev->iscapture, dev->name);
+                SDL_free(dev->name);
+                SDL_free(dev);
+            }
+        }
+
+        /* On first run, tell ALSA_DetectDevices() that we have a complete device list so it can return. */
+        if (first_run_semaphore) {
+            SDL_SemPost(first_run_semaphore);
+            first_run_semaphore = NULL;  /* let other thread clean it up. */
+        }
+
+        /* Block awhile before checking again, unless we're told to stop. */
+        ticks = SDL_GetTicks() + 5000;
+        while (!SDL_AtomicGet(&ALSA_hotplug_shutdown) && !SDL_TICKS_PASSED(SDL_GetTicks(), ticks))
+            SDL_Delay(100);
+        }
+    }
+
+    /* Shutting down! Clean up any data we've gathered. */
+    for (dev = devices; dev; dev = next) {
+        /*printf("ALSA: at shutdown, removing %s device '%s'\n", dev->iscapture ? "capture" : "output", dev->name);*/
+        next = dev->next;
+        SDL_free(dev->name);
+        SDL_free(dev);
+    }
+
+    return 0;
 }
 
 static void
 ALSA_DetectDevices(void)
 {
-    void **hints = NULL;
-    int i;
-
-    /* !!! FIXME: use udev instead. */
-    /* We won't deal with disconnects and hotplugs without udev, but at least
-       you'll get a reasonable device list at startup. */
-#if 1 /*!SDL_USE_LIBUDEV */
-    if (ALSA_snd_device_name_hint(-1, "pcm", &hints) == -1) {
+    /* Start the device detection thread here, wait for an initial iteration to complete. */
+    SDL_sem *semaphore = SDL_CreateSemaphore(0);
+    if (!semaphore) {
         return;  /* oh well. */
     }
 
-    for (i = 0; hints[i]; i++) {
-        char *name = ALSA_snd_device_name_get_hint(hints[i], "NAME");
-        char *desc = ALSA_snd_device_name_get_hint(hints[i], "DESC");
-        char *ioid = ALSA_snd_device_name_get_hint(hints[i], "IOID");
+    SDL_AtomicSet(&ALSA_hotplug_shutdown, 0);
 
-        /* only want physical hardware interfaces */
-        if (SDL_strncmp(name, "hw:", 3) == 0) {
-            if ((ioid == NULL) || (SDL_strcmp(ioid, "Output") == 0)) {
-                add_device(SDL_FALSE, name, desc);
-            }
-
-            if ((ioid == NULL) || (SDL_strcmp(ioid, "Input") == 0)) {
-                add_device(SDL_TRUE, name, desc);
-            }
-        }
-
-        free(name);
-        free(desc);
-        free(ioid);
+    ALSA_hotplug_thread = SDL_CreateThread(ALSA_HotplugThread, "SDLHotplugALSA", semaphore);
+    if (ALSA_hotplug_thread) {
+        SDL_SemWait(semaphore);  /* wait for the first iteration to finish. */
     }
 
-    ALSA_snd_device_name_free_hint(hints);
-#else
-#error Fill in udev support here.
-#endif
+    SDL_DestroySemaphore(semaphore);
 }
 
 static void
-ALSA_FreeDeviceHandle(void *handle)
+ALSA_Deinitialize(void)
 {
-#if 1 /*!SDL_USE_LIBUDEV*/
-    SDL_free(handle);
-#else
-#error Fill in udev support here.
-#endif
-}
+    if (ALSA_hotplug_thread != NULL) {
+        SDL_AtomicSet(&ALSA_hotplug_shutdown, 1);
+        SDL_WaitThread(ALSA_hotplug_thread, NULL);
+        ALSA_hotplug_thread = NULL;
+    }
 
+    UnloadALSALibrary();
+}
 
 static int
 ALSA_Init(SDL_AudioDriverImpl * impl)
@@ -762,7 +866,6 @@ ALSA_Init(SDL_AudioDriverImpl * impl)
     impl->PlayDevice = ALSA_PlayDevice;
     impl->CloseDevice = ALSA_CloseDevice;
     impl->Deinitialize = ALSA_Deinitialize;
-    impl->FreeDeviceHandle = ALSA_FreeDeviceHandle;
 
     return 1;   /* this audio target is available. */
 }
