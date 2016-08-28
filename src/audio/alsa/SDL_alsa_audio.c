@@ -804,7 +804,7 @@ ALSA_HotplugThread(void *arg)
 
         /* Block awhile before checking again, unless we're told to stop. */
         ticks = SDL_GetTicks() + 5000;
-        while (!SDL_AtomicGet(&ALSA_hotplug_shutdown) && !SDL_TICKS_PASSED(SDL_GetTicks(), ticks))
+        while (!SDL_AtomicGet(&ALSA_hotplug_shutdown) && !SDL_TICKS_PASSED(SDL_GetTicks(), ticks)) {
             SDL_Delay(100);
         }
     }
