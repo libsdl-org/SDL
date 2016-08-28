@@ -118,7 +118,7 @@ HAIKUAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     if (_this->hidden == NULL) {
         return SDL_OutOfMemory();
     }
-    SDL_zerop(this->hidden);
+    SDL_zerop(_this->hidden);
 
     /* Parse the audio format and fill the Be raw audio format */
     SDL_zero(format);
