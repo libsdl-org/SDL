@@ -135,7 +135,7 @@
     NSArray *array = [pasteboard propertyListForType:@"NSFilenamesPboardType"];
 
     for (NSString *path in array) {
-        NSURL *fileURL = [[NSURL fileURLWithPath:path] autorelease];
+        NSURL *fileURL = [NSURL fileURLWithPath:path];
         NSNumber *isAlias = nil;
 
         [fileURL getResourceValue:&isAlias forKey:NSURLIsAliasFileKey error:nil];
