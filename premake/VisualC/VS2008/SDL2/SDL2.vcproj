@@ -419,10 +419,6 @@
 					>
 				</File>
 				<File
-					RelativePath="..\..\..\..\src\audio\SDL_audiomem.h"
-					>
-				</File>
-				<File
 					RelativePath="..\..\..\..\src\audio\SDL_audiotypecvt.c"
 					>
 					<FileConfiguration

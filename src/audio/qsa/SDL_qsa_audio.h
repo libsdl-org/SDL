@@ -34,7 +34,7 @@
 struct SDL_PrivateAudioData
 {
     /* SDL capture state */
-    int iscapture;
+    SDL_bool iscapture;
 
     /* The audio device handle */
     int cardno;

@@ -17,6 +17,9 @@
     <!-- Allow writing to external storage -->
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
+    <!-- if you want to capture audio, uncomment this. -->
+    <!-- <uses-permission android:name="android.permission.RECORD_AUDIO" /> -->
+
     <!-- Create a Java class extending SDLActivity and place it in a
          directory under src matching the package, e.g.
          	src/com/gamemaker/game/MyGame.java

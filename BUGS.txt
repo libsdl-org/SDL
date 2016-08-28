@@ -1,7 +1,7 @@
 
 Bugs are now managed in the SDL bug tracker, here:
 
-    http://bugzilla.libsdl.org/
+    https://bugzilla.libsdl.org/
 
 You may report bugs there, and search to see if a given issue has already
  been reported, discussed, and maybe even fixed.

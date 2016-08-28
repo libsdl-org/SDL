@@ -49,10 +49,11 @@ FillSound(void *device, void *stream, size_t len,
     SDL_AudioDevice *audio = (SDL_AudioDevice *) device;
 
     /* Only do soemthing if audio is enabled */
-    if (!audio->enabled)
+    if (!SDL_AtomicGet(&audio->enabled)) {
         return;
+    }
 
-    if (!audio->paused) {
+    if (!SDL_AtomicGet(&audio->paused)) {
         if (audio->convert.needed) {
             SDL_LockMutex(audio->mixer_lock);
             (*audio->spec.callback) (audio->spec.userdata,
@@ -73,16 +74,11 @@ FillSound(void *device, void *stream, size_t len,
 static void
 HAIKUAUDIO_CloseDevice(_THIS)
 {
-    if (_this->hidden != NULL) {
-        if (_this->hidden->audio_obj) {
-            _this->hidden->audio_obj->Stop();
-            delete _this->hidden->audio_obj;
-            _this->hidden->audio_obj = NULL;
-        }
-
-        delete _this->hidden;
-        _this->hidden = NULL;
+    if (_this->hidden->audio_obj) {
+        _this->hidden->audio_obj->Stop();
+        delete _this->hidden->audio_obj;
     }
+    delete _this->hidden;
 }
 
 
@@ -122,10 +118,10 @@ HAIKUAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     if (_this->hidden == NULL) {
         return SDL_OutOfMemory();
     }
-    SDL_memset(_this->hidden, 0, (sizeof *_this->hidden));
+    SDL_zerop(this->hidden);
 
     /* Parse the audio format and fill the Be raw audio format */
-    SDL_memset(&format, '\0', sizeof(media_raw_audio_format));
+    SDL_zero(format);
     format.byte_order = B_MEDIA_LITTLE_ENDIAN;
     format.frame_rate = (float) _this->spec.freq;
     format.channel_count = _this->spec.channels;        /* !!! FIXME: support > 2? */
@@ -176,7 +172,6 @@ HAIKUAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     }
 
     if (!valid_datatype) {      /* shouldn't happen, but just in case... */
-        HAIKUAUDIO_CloseDevice(_this);
         return SDL_SetError("Unsupported audio format");
     }
 
@@ -195,7 +190,6 @@ HAIKUAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     if (_this->hidden->audio_obj->Start() == B_NO_ERROR) {
         _this->hidden->audio_obj->SetHasData(true);
     } else {
-        HAIKUAUDIO_CloseDevice(_this);
         return SDL_SetError("Unable to start Be audio");
     }
 

@@ -123,9 +123,6 @@
     <ClInclude Include="..\..\..\..\src\audio\SDL_audiodev_c.h">
       <Filter>src\audio</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\..\src\audio\SDL_audiomem.h">
-      <Filter>src\audio</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\..\src\audio\SDL_audio_c.h">
       <Filter>src\audio</Filter>
     </ClInclude>
