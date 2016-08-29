@@ -146,6 +146,9 @@ has the same problem.)
 char *
 WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid)
 {
+#if __WINRT__
+    return WIN_StringToUTF8(name);  /* No registry access on WinRT/UWP, go with what we've got. */
+#else
     static const GUID nullguid = { 0 };
     const unsigned char *ptr;
     char keystr[128];
@@ -196,6 +199,7 @@ WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid)
     retval = WIN_StringToUTF8(strw);
     SDL_free(strw);
     return retval ? retval : WIN_StringToUTF8(name);
+#endif /* if __WINRT__ / else */
 }
 
 #endif /* __WIN32__ || __WINRT__ */
