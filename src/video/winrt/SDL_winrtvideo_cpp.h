@@ -51,6 +51,12 @@ typedef struct SDL_VideoData {
        These are just a struct with a 64-bit integer inside them
     */
     Windows::Foundation::EventRegistrationToken gameBarIsInputRedirectedToken;
+
+    /* A WinRT DisplayRequest, used for implementing SDL_*ScreenSaver() functions.
+     * This is really a pointer to a 'ABI::Windows::System::Display::IDisplayRequest *',
+     * It's casted to 'IUnknown *', to help with building SDL.
+    */
+    IUnknown *displayRequest;
 } SDL_VideoData;
 
 /* The global, WinRT, SDL Window.

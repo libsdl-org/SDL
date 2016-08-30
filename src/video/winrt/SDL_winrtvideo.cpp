@@ -31,6 +31,7 @@
 /* Windows includes */
 #include <agile.h>
 #include <windows.graphics.display.h>
+#include <windows.system.display.h>
 #include <dxgi.h>
 #include <dxgi1_2.h>
 using namespace Windows::ApplicationModel::Core;
@@ -41,7 +42,8 @@ using namespace Windows::UI::ViewManagement;
 
 
 /* [re]declare Windows GUIDs locally, to limit the amount of external lib(s) SDL has to link to */
-static const GUID IID_IDXGIFactory2 = { 0x50c83a1c, 0xe072, 0x4c48,{ 0x87, 0xb0, 0x36, 0x30, 0xfa, 0x36, 0xa6, 0xd0 } };
+static const GUID IID_IDisplayRequest   = { 0xe5732044, 0xf49f, 0x4b60, { 0x8d, 0xd4, 0x5e, 0x7e, 0x3a, 0x63, 0x2a, 0xc0 } };
+static const GUID IID_IDXGIFactory2     = { 0x50c83a1c, 0xe072, 0x4c48, { 0x87, 0xb0, 0x36, 0x30, 0xfa, 0x36, 0xa6, 0xd0 } };
 
 
 /* SDL includes */
@@ -81,6 +83,11 @@ static void WINRT_SetWindowSize(_THIS, SDL_Window * window);
 static void WINRT_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen);
 static void WINRT_DestroyWindow(_THIS, SDL_Window * window);
 static SDL_bool WINRT_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info);
+
+
+/* Misc functions */
+static ABI::Windows::System::Display::IDisplayRequest * WINRT_CreateDisplayRequest(_THIS);
+extern void WINRT_SuspendScreenSaver(_THIS);
 
 
 /* SDL-internal globals: */
@@ -140,6 +147,7 @@ WINRT_CreateDevice(int devindex)
     device->SetDisplayMode = WINRT_SetDisplayMode;
     device->PumpEvents = WINRT_PumpEvents;
     device->GetWindowWMInfo = WINRT_GetWindowWMInfo;
+    device->SuspendScreenSaver = WINRT_SuspendScreenSaver;
 
 #if NTDDI_VERSION >= NTDDI_WIN10
     device->HasScreenKeyboardSupport = WINRT_HasScreenKeyboardSupport;
@@ -173,13 +181,17 @@ VideoBootStrap WINRT_bootstrap = {
 int
 WINRT_VideoInit(_THIS)
 {
+    SDL_VideoData * driverdata = (SDL_VideoData *) _this->driverdata;
     if (WINRT_InitModes(_this) < 0) {
         return -1;
     }
     WINRT_InitMouse(_this);
     WINRT_InitTouch(_this);
     WINRT_InitGameBar(_this);
-
+    if (driverdata) {
+        /* Initialize screensaver-disabling support */
+        driverdata->displayRequest = WINRT_CreateDisplayRequest(_this);
+    }
     return 0;
 }
 
@@ -421,6 +433,11 @@ WINRT_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
 void
 WINRT_VideoQuit(_THIS)
 {
+    SDL_VideoData * driverdata = (SDL_VideoData *) _this->driverdata;
+    if (driverdata && driverdata->displayRequest) {
+        driverdata->displayRequest->Release();
+        driverdata->displayRequest = NULL;
+    }
     WINRT_QuitGameBar(_this);
     WINRT_QuitMouse(_this);
 }
@@ -491,7 +508,7 @@ WINRT_DetectWindowFlags(SDL_Window * window)
         // data->coreWindow->PointerPosition is not supported on WinPhone 8.0
         latestFlags |= SDL_WINDOW_MOUSE_FOCUS;
 #else
-        if (data->coreWindow->Bounds.Contains(data->coreWindow->PointerPosition)) {
+        if (data->coreWindow->Visible && data->coreWindow->Bounds.Contains(data->coreWindow->PointerPosition)) {
             latestFlags |= SDL_WINDOW_MOUSE_FOCUS;
         }
 #endif
@@ -759,6 +776,65 @@ WINRT_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
         return SDL_FALSE;
     }
     return SDL_FALSE;
+}
+
+static ABI::Windows::System::Display::IDisplayRequest *
+WINRT_CreateDisplayRequest(_THIS)
+{
+    /* Setup a WinRT DisplayRequest object, usable for enabling/disabling screensaver requests */
+    wchar_t *wClassName = L"Windows.System.Display.DisplayRequest";
+    HSTRING hClassName;
+    IActivationFactory *pActivationFactory = NULL;
+    IInspectable * pDisplayRequestRaw = nullptr;
+    ABI::Windows::System::Display::IDisplayRequest * pDisplayRequest = nullptr;
+    HRESULT hr;
+
+    hr = ::WindowsCreateString(wClassName, (UINT32)wcslen(wClassName), &hClassName);
+    if (FAILED(hr)) {
+        goto done;
+    }
+
+    hr = Windows::Foundation::GetActivationFactory(hClassName, &pActivationFactory);
+    if (FAILED(hr)) {
+        goto done;
+    }
+
+    hr = pActivationFactory->ActivateInstance(&pDisplayRequestRaw);
+    if (FAILED(hr)) {
+        goto done;
+    }
+
+    hr = pDisplayRequestRaw->QueryInterface(IID_IDisplayRequest, (void **) &pDisplayRequest);
+    if (FAILED(hr)) {
+        goto done;
+    }
+
+done:
+    if (pDisplayRequestRaw) {
+        pDisplayRequestRaw->Release();
+    }
+    if (pActivationFactory) {
+        pActivationFactory->Release();
+    }
+    if (hClassName) {
+        ::WindowsDeleteString(hClassName);
+    }
+
+    return pDisplayRequest;
+}
+
+void
+WINRT_SuspendScreenSaver(_THIS)
+{
+    SDL_VideoData *driverdata = (SDL_VideoData *)_this->driverdata;
+    if (driverdata->displayRequest) {
+        ABI::Windows::System::Display::IDisplayRequest * displayRequest = (ABI::Windows::System::Display::IDisplayRequest *) driverdata->displayRequest;
+        if (_this->suspend_screensaver) {
+            displayRequest->RequestActive();
+        } else {
+            displayRequest->RequestRelease();
+        }
+    }
 }
 
 #endif /* SDL_VIDEO_DRIVER_WINRT */
