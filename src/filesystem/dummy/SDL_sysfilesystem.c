@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#ifdef SDL_FILESYSTEM_DUMMY
+#if defined(SDL_FILESYSTEM_DUMMY) || defined(SDL_FILESYSTEM_DISABLED)
 
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* System dependent filesystem routines                                */
@@ -42,6 +42,6 @@ SDL_GetPrefPath(const char *org, const char *app)
     return NULL;
 }
 
-#endif /* SDL_FILESYSTEM_DUMMY */
+#endif /* SDL_FILESYSTEM_DUMMY || SDL_FILESYSTEM_DISABLED */
 
 /* vi: set ts=4 sw=4 expandtab: */
