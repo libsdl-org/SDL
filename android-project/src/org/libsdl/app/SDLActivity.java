@@ -733,15 +733,6 @@ public class SDLActivity extends Activity {
     private Method expansionFileMethod;
 
     /**
-     * This method was called by SDL using JNI.
-     * @deprecated because of an incorrect name
-     */
-    @Deprecated
-    public InputStream openAPKExtensionInputStream(String fileName) throws IOException {
-        return openAPKExpansionInputStream(fileName);
-    }
-
-    /**
      * This method is called by SDL using JNI.
      * @return an InputStream on success or null if no expansion file was used.
      * @throws IOException on errors. Message is set for the SDL error message.
