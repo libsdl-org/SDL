@@ -32,6 +32,7 @@
 
 #define ACTION_DOWN 0
 #define ACTION_UP 1
+#define ACTION_MOVE 2
 #define ACTION_HOVER_MOVE 7
 #define ACTION_SCROLL 8
 #define BUTTON_PRIMARY 1
@@ -77,6 +78,7 @@ void Android_OnMouse( int androidButton, int action, float x, float y) {
             SDL_SendMouseButton(Android_Window, 0, SDL_RELEASED, SDLButton);
             break;
 
+        case ACTION_MOVE:
         case ACTION_HOVER_MOVE:
             SDL_SendMouseMotion(Android_Window, 0, 0, x, y);
             break;
