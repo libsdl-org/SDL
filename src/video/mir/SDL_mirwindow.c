@@ -29,6 +29,7 @@
 
 #include "../SDL_egl_c.h"
 #include "../SDL_sysvideo.h"
+#include "../../events/SDL_keyboard_c.h"
 
 #include "SDL_mirevents.h"
 #include "SDL_mirwindow.h"
@@ -123,6 +124,9 @@ MIR_CreateWindow(_THIS, SDL_Window* window)
 
     MIR_mir_surface_spec_set_buffer_usage(spec, buffer_usage);
     MIR_mir_surface_spec_set_name(spec, "Mir surface");
+
+    if (window->flags & SDL_WINDOW_INPUT_FOCUS)
+        SDL_SetKeyboardFocus(window);
 
     mir_window->surface = MIR_mir_surface_create_sync(spec);
     MIR_mir_surface_set_event_handler(mir_window->surface, MIR_HandleEvent, window);
@@ -354,6 +358,25 @@ MIR_SetWindowTitle(_THIS, SDL_Window* window)
 
     MIR_mir_surface_apply_spec(mir_window->surface, spec);
     MIR_mir_surface_spec_release(spec);
+}
+
+void
+MIR_SetWindowGrab(_THIS, SDL_Window* window, SDL_bool grabbed)
+{
+    MIR_Data*   mir_data   = _this->driverdata;
+    MIR_Window* mir_window = window->driverdata;
+    MirPointerConfinementState confined = mir_pointer_unconfined;
+    MirSurfaceSpec* spec;
+
+    if (grabbed)
+        confined = mir_pointer_confined_to_surface;
+
+    spec = MIR_mir_connection_create_spec_for_changes(mir_data->connection);
+    MIR_mir_surface_spec_set_pointer_confinement(spec, confined);
+
+    MIR_mir_surface_apply_spec(mir_window->surface, spec);
+    MIR_mir_surface_spec_release(spec);
+
 }
 
 #endif /* SDL_VIDEO_DRIVER_MIR */
