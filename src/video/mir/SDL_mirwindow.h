@@ -78,6 +78,10 @@ MIR_SetWindowMaximumSize(_THIS, SDL_Window* window);
 extern void
 MIR_SetWindowTitle(_THIS, SDL_Window* window);
 
+extern void
+MIR_SetWindowGrab(_THIS, SDL_Window* window, SDL_bool grabbed);
+
+
 #endif /* _SDL_mirwindow_h */
 
 /* vi: set ts=4 sw=4 expandtab: */
