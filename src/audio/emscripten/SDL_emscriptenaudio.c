@@ -203,7 +203,15 @@ EMSCRIPTENAUDIO_CloseDevice(_THIS)
             if (SDL2.capture.silenceTimer !== undefined) {
                 clearTimeout(SDL2.capture.silenceTimer);
             }
+            if (SDL2.capture.stream !== undefined) {
+                var tracks = SDL2.capture.stream.getAudioTracks();
+                for (var i = 0; i < tracks.length; i++) {
+                    SDL2.capture.stream.removeTrack(tracks[i]);
+                }
+                SDL2.capture.stream = undefined;
+            }
             if (SDL2.capture.scriptProcessorNode !== undefined) {
+                SDL2.capture.scriptProcessorNode.onaudioprocess = function(audioProcessingEvent) {};
                 SDL2.capture.scriptProcessorNode.disconnect();
                 SDL2.capture.scriptProcessorNode = undefined;
             }
@@ -344,6 +352,7 @@ EMSCRIPTENAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscaptu
                 };
                 SDL2.capture.mediaStreamNode.connect(SDL2.capture.scriptProcessorNode);
                 SDL2.capture.scriptProcessorNode.connect(SDL2.audioContext.destination);
+                SDL2.capture.stream = stream;
             };
 
             var no_microphone = function(error) {
