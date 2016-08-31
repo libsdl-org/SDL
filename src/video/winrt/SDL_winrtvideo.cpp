@@ -827,7 +827,7 @@ void
 WINRT_SuspendScreenSaver(_THIS)
 {
     SDL_VideoData *driverdata = (SDL_VideoData *)_this->driverdata;
-    if (driverdata->displayRequest) {
+    if (driverdata && driverdata->displayRequest) {
         ABI::Windows::System::Display::IDisplayRequest * displayRequest = (ABI::Windows::System::Display::IDisplayRequest *) driverdata->displayRequest;
         if (_this->suspend_screensaver) {
             displayRequest->RequestActive();
