@@ -305,7 +305,10 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
     } else if (strcmp(interface, "wl_shm") == 0) {
         d->shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
         d->cursor_theme = WAYLAND_wl_cursor_theme_load(NULL, 32, d->shm);
-
+    } else if (strcmp(interface, "zwp_relative_pointer_manager_v1") == 0) {
+        Wayland_display_add_relative_pointer_manager(d, id);
+    } else if (strcmp(interface, "zwp_pointer_constraints_v1") == 0) {
+        Wayland_display_add_pointer_constraints(d, id);
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
     } else if (strcmp(interface, "qt_touch_extension") == 0) {
         Wayland_touch_create(d, id);
@@ -395,6 +398,8 @@ Wayland_VideoQuit(_THIS)
     }
 
     Wayland_display_destroy_input(data);
+    Wayland_display_destroy_pointer_constraints(data);
+    Wayland_display_destroy_relative_pointer_manager(data);
 
     if (data->xkb_context) {
         WAYLAND_xkb_context_unref(data->xkb_context);

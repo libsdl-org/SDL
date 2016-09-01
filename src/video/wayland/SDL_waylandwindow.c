@@ -26,6 +26,7 @@
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_windowevents_c.h"
 #include "../SDL_egl_c.h"
+#include "SDL_waylandevents_c.h"
 #include "SDL_waylandwindow.h"
 #include "SDL_waylandvideo.h"
 #include "SDL_waylandtouch.h"
@@ -214,6 +215,10 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
     wl_region_add(region, 0, 0, window->w, window->h);
     wl_surface_set_opaque_region(data->surface, region);
     wl_region_destroy(region);
+
+    if (c->relative_mouse_mode) {
+        Wayland_input_lock_pointer(c->input);
+    }
 
     WAYLAND_wl_display_flush(c->display);
 
