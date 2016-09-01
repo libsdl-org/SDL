@@ -25,6 +25,7 @@
 
 #include "SDL_stdinc.h"
 #include "SDL_assert.h"
+#include "SDL_log.h"
 
 #include "../../events/SDL_sysevents.h"
 #include "../../events/SDL_events_c.h"
@@ -35,6 +36,9 @@
 #include "SDL_waylandwindow.h"
 
 #include "SDL_waylanddyn.h"
+
+#include "pointer-constraints-unstable-v1-client-protocol.h"
+#include "relative-pointer-unstable-v1-client-protocol.h"
 
 #include <linux/input.h>
 #include <sys/select.h>
@@ -48,13 +52,17 @@ struct SDL_WaylandInput {
     struct wl_seat *seat;
     struct wl_pointer *pointer;
     struct wl_keyboard *keyboard;
+    struct zwp_relative_pointer_v1 *relative_pointer;
     SDL_WindowData *pointer_focus;
     SDL_WindowData *keyboard_focus;
 
     /* Last motion location */
     wl_fixed_t sx_w;
     wl_fixed_t sy_w;
-    
+
+    double dx_frac;
+    double dy_frac;
+
     struct {
         struct xkb_keymap *keymap;
         struct xkb_state *state;
@@ -170,10 +178,9 @@ ProcessHitTest(struct SDL_WaylandInput *input, uint32_t serial)
 }
 
 static void
-pointer_handle_button(void *data, struct wl_pointer *pointer, uint32_t serial,
-                      uint32_t time, uint32_t button, uint32_t state_w)
+pointer_handle_button_common(struct SDL_WaylandInput *input, uint32_t serial,
+                             uint32_t time, uint32_t button, uint32_t state_w)
 {
-    struct SDL_WaylandInput *input = data;
     SDL_WindowData *window = input->pointer_focus;
     enum wl_pointer_button_state state = state_w;
     uint32_t sdl_button;
@@ -182,7 +189,7 @@ pointer_handle_button(void *data, struct wl_pointer *pointer, uint32_t serial,
         switch (button) {
             case BTN_LEFT:
                 sdl_button = SDL_BUTTON_LEFT;
-                if (ProcessHitTest(data, serial)) {
+                if (ProcessHitTest(input, serial)) {
                     return;  /* don't pass this event on to app. */
                 }
                 break;
@@ -208,10 +215,18 @@ pointer_handle_button(void *data, struct wl_pointer *pointer, uint32_t serial,
 }
 
 static void
-pointer_handle_axis(void *data, struct wl_pointer *pointer,
-                    uint32_t time, uint32_t axis, wl_fixed_t value)
+pointer_handle_button(void *data, struct wl_pointer *pointer, uint32_t serial,
+                      uint32_t time, uint32_t button, uint32_t state_w)
 {
     struct SDL_WaylandInput *input = data;
+
+    pointer_handle_button_common(input, serial, time, button, state_w);
+}
+
+static void
+pointer_handle_axis_common(struct SDL_WaylandInput *input,
+                           uint32_t time, uint32_t axis, wl_fixed_t value)
+{
     SDL_WindowData *window = input->pointer_focus;
     enum wl_pointer_axis a = axis;
     int x, y;
@@ -232,6 +247,15 @@ pointer_handle_axis(void *data, struct wl_pointer *pointer,
 
         SDL_SendMouseWheel(window->sdlwindow, 0, x, y, SDL_MOUSEWHEEL_NORMAL);
     }
+}
+
+static void
+pointer_handle_axis(void *data, struct wl_pointer *pointer,
+                    uint32_t time, uint32_t axis, wl_fixed_t value)
+{
+    struct SDL_WaylandInput *input = data;
+
+    pointer_handle_axis_common(input, time, axis, value);
 }
 
 static const struct wl_pointer_listener pointer_listener = {
@@ -451,6 +475,164 @@ void Wayland_display_destroy_input(SDL_VideoData *d)
 
     SDL_free(input);
     d->input = NULL;
+}
+
+void Wayland_display_add_relative_pointer_manager(SDL_VideoData *d, uint32_t id)
+{
+    d->relative_pointer_manager =
+        wl_registry_bind(d->registry, id,
+                         &zwp_relative_pointer_manager_v1_interface, 1);
+}
+
+void Wayland_display_destroy_relative_pointer_manager(SDL_VideoData *d)
+{
+    if (d->relative_pointer_manager)
+        zwp_relative_pointer_manager_v1_destroy(d->relative_pointer_manager);
+}
+
+void Wayland_display_add_pointer_constraints(SDL_VideoData *d, uint32_t id)
+{
+    d->pointer_constraints =
+        wl_registry_bind(d->registry, id,
+                         &zwp_pointer_constraints_v1_interface, 1);
+}
+
+void Wayland_display_destroy_pointer_constraints(SDL_VideoData *d)
+{
+    if (d->pointer_constraints)
+        zwp_pointer_constraints_v1_destroy(d->pointer_constraints);
+}
+
+static void
+relative_pointer_handle_relative_motion(void *data,
+                                        struct zwp_relative_pointer_v1 *pointer,
+                                        uint32_t time_hi,
+                                        uint32_t time_lo,
+                                        wl_fixed_t dx_w,
+                                        wl_fixed_t dy_w,
+                                        wl_fixed_t dx_unaccel_w,
+                                        wl_fixed_t dy_unaccel_w)
+{
+    struct SDL_WaylandInput *input = data;
+    SDL_VideoData *d = input->display;
+    SDL_WindowData *window = input->pointer_focus;
+    double dx_unaccel;
+    double dy_unaccel;
+    double dx;
+    double dy;
+
+    dx_unaccel = wl_fixed_to_double(dx_unaccel_w);
+    dy_unaccel = wl_fixed_to_double(dy_unaccel_w);
+
+    /* Add left over fraction from last event. */
+    dx_unaccel += input->dx_frac;
+    dy_unaccel += input->dy_frac;
+
+    input->dx_frac = modf(dx_unaccel, &dx);
+    input->dy_frac = modf(dy_unaccel, &dy);
+
+    if (input->pointer_focus && d->relative_mouse_mode) {
+        SDL_SendMouseMotion(window->sdlwindow, 0, 1, (int)dx, (int)dy);
+    }
+}
+
+static const struct zwp_relative_pointer_v1_listener relative_pointer_listener = {
+    relative_pointer_handle_relative_motion,
+};
+
+static void
+locked_pointer_locked(void *data,
+                      struct zwp_locked_pointer_v1 *locked_pointer)
+{
+}
+
+static void
+locked_pointer_unlocked(void *data,
+                        struct zwp_locked_pointer_v1 *locked_pointer)
+{
+}
+
+static const struct zwp_locked_pointer_v1_listener locked_pointer_listener = {
+    locked_pointer_locked,
+    locked_pointer_unlocked,
+};
+
+static void
+lock_pointer_to_window(SDL_Window *window,
+                       struct SDL_WaylandInput *input)
+{
+    SDL_WindowData *w = window->driverdata;
+    SDL_VideoData *d = input->display;
+    struct zwp_locked_pointer_v1 *locked_pointer;
+
+    if (w->locked_pointer)
+        return;
+
+    locked_pointer =
+        zwp_pointer_constraints_v1_lock_pointer(d->pointer_constraints,
+                                                w->surface,
+                                                input->pointer,
+                                                NULL,
+                                                ZWP_POINTER_CONSTRAINTS_V1_LIFETIME_PERSISTENT);
+    zwp_locked_pointer_v1_add_listener(locked_pointer,
+                                       &locked_pointer_listener,
+                                       window);
+
+    w->locked_pointer = locked_pointer;
+}
+
+int Wayland_input_lock_pointer(struct SDL_WaylandInput *input)
+{
+    SDL_VideoDevice *vd = SDL_GetVideoDevice();
+    SDL_VideoData *d = input->display;
+    SDL_Window *window;
+    struct zwp_relative_pointer_v1 *relative_pointer;
+
+    if (!d->relative_pointer_manager)
+        return -1;
+
+    if (!d->pointer_constraints)
+        return -1;
+
+    if (!input->relative_pointer) {
+        relative_pointer =
+            zwp_relative_pointer_manager_v1_get_relative_pointer(
+                d->relative_pointer_manager,
+                input->pointer);
+        zwp_relative_pointer_v1_add_listener(relative_pointer,
+                                             &relative_pointer_listener,
+                                             input);
+        input->relative_pointer = relative_pointer;
+    }
+
+    for (window = vd->windows; window; window = window->next)
+        lock_pointer_to_window(window, input);
+
+    d->relative_mouse_mode = 1;
+
+    return 0;
+}
+
+int Wayland_input_unlock_pointer(struct SDL_WaylandInput *input)
+{
+    SDL_VideoDevice *vd = SDL_GetVideoDevice();
+    SDL_VideoData *d = input->display;
+    SDL_Window *window;
+    SDL_WindowData *w;
+
+    for (window = vd->windows; window; window = window->next) {
+        w = window->driverdata;
+        if (w->locked_pointer)
+            zwp_locked_pointer_v1_destroy(w->locked_pointer);
+        w->locked_pointer = NULL;
+    }
+
+    zwp_relative_pointer_v1_destroy(input->relative_pointer);
+    input->relative_pointer = NULL;
+
+    d->relative_mouse_mode = 0;
+
+    return 0;
 }
 
 #endif /* SDL_VIDEO_DRIVER_WAYLAND */
