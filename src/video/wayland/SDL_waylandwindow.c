@@ -178,6 +178,7 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
     wl_surface_set_user_data(data->surface, data);
     data->shell_surface = wl_shell_get_shell_surface(c->shell,
                                                      data->surface);
+    wl_shell_surface_set_class (data->shell_surface, c->classname);
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH    
     if (c->surface_extension) {
         data->extended_surface = qt_surface_extension_get_extended_surface(

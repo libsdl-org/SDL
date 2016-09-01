@@ -35,6 +35,8 @@
 #include "SDL_waylandmouse.h"
 #include "SDL_waylandtouch.h"
 
+#include <sys/types.h>
+#include <unistd.h>
 #include <fcntl.h>
 #include <xkbcommon/xkbcommon.h>
 
@@ -54,6 +56,56 @@ Wayland_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode);
 
 static void
 Wayland_VideoQuit(_THIS);
+
+/* Find out what class name we should use
+ * Based on src/video/x11/SDL_x11video.c */
+static char *
+get_classname()
+{
+    char *spot;
+#if defined(__LINUX__) || defined(__FREEBSD__)
+    char procfile[1024];
+    char linkfile[1024];
+    int linksize;
+#endif
+
+    /* First allow environment variable override */
+    spot = SDL_getenv("SDL_VIDEO_WAYLAND_WMCLASS");
+    if (spot) {
+        return SDL_strdup(spot);
+    } else {
+        /* Fallback to the "old" envvar */
+        spot = SDL_getenv("SDL_VIDEO_X11_WMCLASS");
+        if (spot) {
+            return SDL_strdup(spot);
+        }
+    }
+
+    /* Next look at the application's executable name */
+#if defined(__LINUX__) || defined(__FREEBSD__)
+#if defined(__LINUX__)
+    SDL_snprintf(procfile, SDL_arraysize(procfile), "/proc/%d/exe", getpid());
+#elif defined(__FREEBSD__)
+    SDL_snprintf(procfile, SDL_arraysize(procfile), "/proc/%d/file",
+                 getpid());
+#else
+#error Where can we find the executable name?
+#endif
+    linksize = readlink(procfile, linkfile, sizeof(linkfile) - 1);
+    if (linksize > 0) {
+        linkfile[linksize] = '\0';
+        spot = SDL_strrchr(linkfile, '/');
+        if (spot) {
+            return SDL_strdup(spot + 1);
+        } else {
+            return SDL_strdup(linkfile);
+        }
+    }
+#endif /* __LINUX__ || __FREEBSD__ */
+
+    /* Finally use the default we've used forever */
+    return SDL_strdup("SDL_App");
+}
 
 /* Wayland driver bootstrap functions */
 static int
@@ -307,6 +359,9 @@ Wayland_VideoInit(_THIS)
 
     Wayland_InitMouse();
 
+    /* Get the surface class name, usually the name of the application */
+    data->classname = get_classname();
+
     WAYLAND_wl_display_flush(data->display);
 
     return 0;
@@ -375,6 +430,7 @@ Wayland_VideoQuit(_THIS)
         WAYLAND_wl_display_disconnect(data->display);
     }
 
+    SDL_free(data->classname);
     free(data);
     _this->driverdata = NULL;
 }

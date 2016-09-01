@@ -57,6 +57,8 @@ typedef struct {
     struct qt_surface_extension *surface_extension;
     struct qt_windowmanager *windowmanager;
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
+
+    char *classname;
 } SDL_VideoData;
 
 #endif /* _SDL_waylandvideo_h */
