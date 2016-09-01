@@ -18975,6 +18975,7 @@ main ()
 {
 
                     MirPointerButton button = mir_pointer_button_primary;
+                    MirPointerConfinementState confined = mir_pointer_unconfined;
 
   ;
   return 0;

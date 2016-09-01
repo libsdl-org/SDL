@@ -1291,11 +1291,12 @@ AC_HELP_STRING([--enable-video-mir], [use Mir video driver [[default=yes]]]),
                 save_CFLAGS="$CFLAGS"
                 CFLAGS="$save_CFLAGS $MIR_CFLAGS"
 
-                dnl This will disable Mir on Ubuntu < 15.04 (Mir should be 0.14 at this point)
+                dnl This will disable Mir if >= v0.24 is not available
                 AC_TRY_COMPILE([
                 #include <mir_toolkit/mir_client_library.h>
                 ],[
                     MirPointerButton button = mir_pointer_button_primary;
+                    MirPointerConfinementState confined = mir_pointer_unconfined;
                 ],[
                 video_mir=yes
                 ])
