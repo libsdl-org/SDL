@@ -564,7 +564,7 @@ prepare_audiounit(_THIS, void *handle, int iscapture,
     result = AudioComponentInstanceNew(comp, &this->hidden->audioUnit);
     CHECK_RESULT("AudioComponentInstanceNew");
 
-    this->hidden->audioUnitOpened = 1;
+    this->hidden->audioUnitOpened = SDL_TRUE;
 
     if (iscapture) {  /* have to do EnableIO only for capture devices. */
         UInt32 enable = 1;

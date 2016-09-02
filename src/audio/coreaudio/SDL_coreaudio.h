@@ -44,7 +44,7 @@
 struct SDL_PrivateAudioData
 {
     AudioUnit audioUnit;
-    int audioUnitOpened;
+    SDL_bool audioUnitOpened;
     void *buffer;
     UInt32 bufferOffset;
     UInt32 bufferSize;
