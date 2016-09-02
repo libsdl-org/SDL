@@ -437,16 +437,17 @@ static void
 COREAUDIO_CloseDevice(_THIS)
 {
     const int iscapture = this->iscapture;
+
     if (this->hidden->audioUnitOpened) {
+        const AudioUnitElement output_bus = 0;
+        const AudioUnitElement input_bus = 1;
+        const AudioUnitElement bus = ((iscapture) ? input_bus : output_bus);
+        AURenderCallbackStruct callback;
+
         #if MACOSX_COREAUDIO
         /* Unregister our disconnect callback. */
         AudioObjectRemovePropertyListener(this->hidden->deviceID, &alive_address, device_unplugged, this);
         #endif
-
-        AURenderCallbackStruct callback;
-        const AudioUnitElement output_bus = 0;
-        const AudioUnitElement input_bus = 1;
-        const AudioUnitElement bus = ((iscapture) ? input_bus : output_bus);
 
         /* stop processing the audio unit */
         AudioOutputUnitStop(this->hidden->audioUnit);
