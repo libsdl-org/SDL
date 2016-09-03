@@ -354,16 +354,19 @@ inputCallback(void *inRefCon,
               UInt32 inBusNumber, UInt32 inNumberFrames,
               AudioBufferList *ioData)
 {
+    AudioBufferList bufferList;
     SDL_AudioDevice *this = (SDL_AudioDevice *) inRefCon;
     if (!SDL_AtomicGet(&this->enabled) || SDL_AtomicGet(&this->paused)) {
         return noErr;  /* just drop this if we're not accepting input. */
     }
 
-    const OSStatus err = AudioUnitRender(this->hidden->audioUnit, ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames, &this->hidden->captureBufferList);
-    SDL_assert(this->hidden->captureBufferList.mNumberBuffers == 1);
+    bufferList.mNumberBuffers = 1;
+    bufferList.mBuffers[0].mData = NULL;
+
+    const OSStatus err = AudioUnitRender(this->hidden->audioUnit, ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames, &bufferList);
 
     if (err == noErr) {
-        const AudioBuffer *abuf = &this->hidden->captureBufferList.mBuffers[0];
+        const AudioBuffer *abuf = &bufferList.mBuffers[0];
         UInt32 remaining = abuf->mDataByteSize;
         const Uint8 *ptr = (const Uint8 *) abuf->mData;
 
@@ -460,7 +463,6 @@ COREAUDIO_CloseDevice(_THIS)
         AudioComponentInstanceDispose(this->hidden->audioUnit);
     }
 
-    SDL_free(this->hidden->captureBufferList.mBuffers[0].mData);
     SDL_free(this->hidden->buffer);
     SDL_free(this->hidden);
 
@@ -604,27 +606,12 @@ prepare_audiounit(_THIS, void *handle, int iscapture,
     CHECK_RESULT("AudioUnitSetProperty (kAudioUnitProperty_StreamFormat)");
 
     if (iscapture) {  /* only need to do this for capture devices. */
-        void *ptr;
-        UInt32 framesize = 0;
-        UInt32 propsize = sizeof (UInt32);
-
-        result = AudioUnitGetProperty(this->hidden->audioUnit,
-                                      kAudioUnitProperty_MaximumFramesPerSlice,
-                                      kAudioUnitScope_Global, output_bus,
-                                      &framesize, &propsize);
-        CHECK_RESULT
-            ("AudioUnitGetProperty (kAudioDevicePropertyBufferFrameSize)");
-
-        framesize *= SDL_AUDIO_BITSIZE(this->spec.format) / 8;
-        ptr = SDL_calloc(1, framesize);
-        if (ptr == NULL) {
-            SDL_OutOfMemory();
-            return 0;
-        }
-        this->hidden->captureBufferList.mNumberBuffers = 1;
-        this->hidden->captureBufferList.mBuffers[0].mNumberChannels = this->spec.channels;
-        this->hidden->captureBufferList.mBuffers[0].mDataByteSize = framesize;
-        this->hidden->captureBufferList.mBuffers[0].mData = ptr;
+        const UInt32 yes = 1;
+        result = AudioUnitSetProperty(this->hidden->audioUnit,
+                                      kAudioUnitProperty_ShouldAllocateBuffer,
+                                      kAudioUnitScope_Output,
+                                      input_bus, &yes, sizeof (yes));
+        CHECK_RESULT("AudioUnitSetProperty (kAudioUnitProperty_ShouldAllocateBuffer)");
     }
 
     /* Set the audio callback */
