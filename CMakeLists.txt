@@ -1201,6 +1201,7 @@ elseif(APPLE)
     set(HAVE_SDL_AUDIO TRUE)
     set(SDL_FRAMEWORK_COREAUDIO 1)
     set(SDL_FRAMEWORK_AUDIOUNIT 1)
+    set(SDL_FRAMEWORK_AUDIOTOOLBOX 1)
   endif()
 
   if(SDL_JOYSTICK)
@@ -1276,6 +1277,10 @@ elseif(APPLE)
   if(SDL_FRAMEWORK_AUDIOUNIT)
     find_library(AUDIOUNIT AudioUnit)
     list(APPEND EXTRA_LIBS ${AUDIOUNIT})
+  endif()
+  if(SDL_FRAMEWORK_AUDIOTOOLBOX)
+    find_library(AUDIOTOOLBOX AudioToolbox)
+    list(APPEND EXTRA_LIBS ${AUDIOTOOLBOX})
   endif()
 
   # iOS hack needed - http://code.google.com/p/ios-cmake/ ?
