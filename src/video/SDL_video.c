@@ -55,6 +55,10 @@
 #undef CreateWindow
 #endif
 
+#ifdef __EMSCRIPTEN__
+#include <emscripten.h>
+#endif
+
 /* Available video drivers */
 static VideoBootStrap *bootstrap[] = {
 #if SDL_VIDEO_DRIVER_COCOA
@@ -3722,6 +3726,16 @@ SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 int
 SDL_ShowSimpleMessageBox(Uint32 flags, const char *title, const char *message, SDL_Window *window)
 {
+#ifdef __EMSCRIPTEN__
+    /* !!! FIXME: propose a browser API for this, get this #ifdef out of here? */
+    /* Web browsers don't (currently) have an API for a custom message box
+       that can block, but for the most common case (SDL_ShowSimpleMessageBox),
+       we can use the standard Javascript alert() function. */
+    EM_ASM_({
+        alert(UTF8ToString($0) + "\n\n" + UTF8ToString($1));
+    }, title, message);
+    return 0;
+#else
     SDL_MessageBoxData data;
     SDL_MessageBoxButtonData button;
 
@@ -3739,6 +3753,7 @@ SDL_ShowSimpleMessageBox(Uint32 flags, const char *title, const char *message, S
     button.text = "OK";
 
     return SDL_ShowMessageBox(&data, NULL);
+#endif
 }
 
 SDL_bool
