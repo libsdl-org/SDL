@@ -56,8 +56,13 @@ UIKit_PumpEvents(_THIS)
     /* Pump most event types. */
     SInt32 result;
     do {
-        result = CFRunLoopRunInMode(kCFRunLoopCommonModes, seconds, TRUE);
+        result = CFRunLoopRunInMode(kCFRunLoopDefaultMode, seconds, TRUE);
     } while (result == kCFRunLoopRunHandledSource);
+
+    /* Make sure UIScrollView objects scroll properly. */
+    do {
+        result = CFRunLoopRunInMode((CFStringRef)UITrackingRunLoopMode, seconds, TRUE);
+    } while(result == kCFRunLoopRunHandledSource);
 
     /* See the comment in the function definition. */
     UIKit_GL_RestoreCurrentContext();
