@@ -350,8 +350,10 @@ Emscripten_HandleMouseButton(int eventType, const EmscriptenMouseEvent *mouseEve
         default:
             return 0;
     }
-    SDL_SendMouseButton(window_data->window, 0, eventType == EMSCRIPTEN_EVENT_MOUSEDOWN ? SDL_PRESSED : SDL_RELEASED, sdl_button);
-    return 1;
+
+    SDL_EventType sdl_event_type = (eventType == EMSCRIPTEN_EVENT_MOUSEDOWN ? SDL_PRESSED : SDL_RELEASED);
+    SDL_SendMouseButton(window_data->window, 0, sdl_event_type, sdl_button);
+    return SDL_GetEventState(sdl_event_type) == SDL_ENABLE;
 }
 
 EM_BOOL
@@ -377,7 +379,7 @@ Emscripten_HandleMouseFocus(int eventType, const EmscriptenMouseEvent *mouseEven
     }
 
     SDL_SetMouseFocus(eventType == EMSCRIPTEN_EVENT_MOUSEENTER ? window_data->window : NULL);
-    return 1;
+    return SDL_GetEventState(SDL_WINDOWEVENT) == SDL_ENABLE;
 }
 
 EM_BOOL
@@ -385,7 +387,7 @@ Emscripten_HandleWheel(int eventType, const EmscriptenWheelEvent *wheelEvent, vo
 {
     SDL_WindowData *window_data = userData;
     SDL_SendMouseWheel(window_data->window, 0, wheelEvent->deltaX, -wheelEvent->deltaY, SDL_MOUSEWHEEL_NORMAL);
-    return 1;
+    return SDL_GetEventState(SDL_MOUSEWHEEL) == SDL_ENABLE;
 }
 
 EM_BOOL
@@ -397,8 +399,10 @@ Emscripten_HandleFocus(int eventType, const EmscriptenFocusEvent *wheelEvent, vo
     if (eventType == EMSCRIPTEN_EVENT_BLUR) {
         SDL_ResetKeyboard();
     }
+
+
     SDL_SendWindowEvent(window_data->window, eventType == EMSCRIPTEN_EVENT_FOCUS ? SDL_WINDOWEVENT_FOCUS_GAINED : SDL_WINDOWEVENT_FOCUS_LOST, 0, 0);
-    return 1;
+    return SDL_GetEventState(SDL_WINDOWEVENT) == SDL_ENABLE;
 }
 
 EM_BOOL
@@ -407,6 +411,7 @@ Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent *touchEvent, vo
     SDL_WindowData *window_data = userData;
     int i;
     double client_w, client_h;
+    int preventDefault = 0;
 
     SDL_TouchID deviceId = 1;
     if (SDL_AddTouch(deviceId, "") < 0) {
@@ -434,22 +439,33 @@ Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent *touchEvent, vo
                 SDL_SendMouseButton(window_data->window, SDL_TOUCH_MOUSEID, SDL_PRESSED, SDL_BUTTON_LEFT);
             }
             SDL_SendTouch(deviceId, id, SDL_TRUE, x, y, 1.0f);
+
+            if (!preventDefault && SDL_GetEventState(SDL_FINGERDOWN) == SDL_ENABLE) {
+                preventDefault = 1;
+            }
         } else if (eventType == EMSCRIPTEN_EVENT_TOUCHMOVE) {
             if ((window_data->finger_touching) && (window_data->first_finger == id)) {
                 SDL_SendMouseMotion(window_data->window, SDL_TOUCH_MOUSEID, 0, x, y);
             }
             SDL_SendTouchMotion(deviceId, id, x, y, 1.0f);
+
+            if (!preventDefault && SDL_GetEventState(SDL_FINGERMOTION) == SDL_ENABLE) {
+                preventDefault = 1;
+            }
         } else {
             if ((window_data->finger_touching) && (window_data->first_finger == id)) {
                 SDL_SendMouseButton(window_data->window, SDL_TOUCH_MOUSEID, SDL_RELEASED, SDL_BUTTON_LEFT);
                 window_data->finger_touching = SDL_FALSE;
             }
             SDL_SendTouch(deviceId, id, SDL_FALSE, x, y, 1.0f);
+
+            if (!preventDefault && SDL_GetEventState(SDL_FINGERUP) == SDL_ENABLE) {
+                preventDefault = 1;
+            }
         }
     }
 
-
-    return 1;
+    return preventDefault;
 }
 
 EM_BOOL
@@ -479,16 +495,19 @@ Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent *keyEvent, voi
                         break;
                 }
             }
-            SDL_SendKeyboardKey(eventType == EMSCRIPTEN_EVENT_KEYDOWN ?
-                                SDL_PRESSED : SDL_RELEASED, scancode);
+            SDL_SendKeyboardKey(eventType == EMSCRIPTEN_EVENT_KEYDOWN ? SDL_PRESSED : SDL_RELEASED, scancode);
         }
     }
 
-    /* if we prevent keydown, we won't get keypress
-     * also we need to ALWAYS prevent backspace and tab otherwise chrome takes action and does bad navigation UX
+    SDL_bool prevent_default = SDL_GetEventState(eventType == EMSCRIPTEN_EVENT_KEYDOWN ? SDL_KEYDOWN : SDL_KEYUP) == SDL_ENABLE;
+
+    /* if TEXTINPUT events are enabled we can't prevent keydown or we won't get keypress
+     * we need to ALWAYS prevent backspace and tab otherwise chrome takes action and does bad navigation UX
      */
-    return SDL_GetEventState(SDL_TEXTINPUT) != SDL_ENABLE || eventType != EMSCRIPTEN_EVENT_KEYDOWN
-            || keyEvent->keyCode == 8 /* backspace */ || keyEvent->keyCode == 9 /* tab */;
+    if (eventType == EMSCRIPTEN_EVENT_KEYDOWN && SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE && keyEvent->keyCode != 8 /* backspace */ && keyEvent->keyCode != 9 /* tab */)
+        prevent_default = SDL_FALSE;
+
+    return prevent_default;
 }
 
 EM_BOOL
@@ -498,7 +517,7 @@ Emscripten_HandleKeyPress(int eventType, const EmscriptenKeyboardEvent *keyEvent
     if (Emscripten_ConvertUTF32toUTF8(keyEvent->charCode, text)) {
         SDL_SendKeyboardText(text);
     }
-    return 1;
+    return SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE;
 }
 
 EM_BOOL
