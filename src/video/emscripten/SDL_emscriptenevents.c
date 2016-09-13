@@ -305,9 +305,10 @@ Emscripten_HandleMouseMove(int eventType, const EmscriptenMouseEvent *mouseEvent
     EmscriptenPointerlockChangeEvent pointerlock_status;
 
     /* check for pointer lock */
-    emscripten_get_pointerlock_status(&pointerlock_status);
+    int isPointerLockSupported = emscripten_get_pointerlock_status(&pointerlock_status);
+    int isPointerLocked = isPointerLockSupported == EMSCRIPTEN_RESULT_SUCCESS  ? pointerlock_status.isActive : SDL_FALSE;
 
-    if (pointerlock_status.isActive) {
+    if (isPointerLocked) {
         mx = mouseEvent->movementX;
         my = mouseEvent->movementY;
     }
@@ -319,7 +320,7 @@ Emscripten_HandleMouseMove(int eventType, const EmscriptenMouseEvent *mouseEvent
     mx = mx * (window_data->window->w / (client_w * window_data->pixel_ratio));
     my = my * (window_data->window->h / (client_h * window_data->pixel_ratio));
 
-    SDL_SendMouseMotion(window_data->window, 0, pointerlock_status.isActive, mx, my);
+    SDL_SendMouseMotion(window_data->window, 0, isPointerLocked, mx, my);
     return 0;
 }
 
@@ -354,16 +355,17 @@ Emscripten_HandleMouseFocus(int eventType, const EmscriptenMouseEvent *mouseEven
     EmscriptenPointerlockChangeEvent pointerlock_status;
 
     /* check for pointer lock */
-    emscripten_get_pointerlock_status(&pointerlock_status);
+    int isPointerLockSupported = emscripten_get_pointerlock_status(&pointerlock_status);
+    int isPointerLocked = isPointerLockSupported == EMSCRIPTEN_RESULT_SUCCESS  ? pointerlock_status.isActive : SDL_FALSE;
 
-    if (!pointerlock_status.isActive) {
+    if (!isPointerLocked) {
         /* rescale (in case canvas is being scaled)*/
         double client_w, client_h;
         emscripten_get_element_css_size(NULL, &client_w, &client_h);
 
         mx = mx * (window_data->window->w / (client_w * window_data->pixel_ratio));
         my = my * (window_data->window->h / (client_h * window_data->pixel_ratio));
-        SDL_SendMouseMotion(window_data->window, 0, pointerlock_status.isActive, mx, my);
+        SDL_SendMouseMotion(window_data->window, 0, isPointerLocked, mx, my);
     }
 
     SDL_SetMouseFocus(eventType == EMSCRIPTEN_EVENT_MOUSEENTER ? window_data->window : NULL);
