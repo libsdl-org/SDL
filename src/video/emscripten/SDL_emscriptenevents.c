@@ -350,6 +350,22 @@ Emscripten_HandleMouseFocus(int eventType, const EmscriptenMouseEvent *mouseEven
 {
     SDL_WindowData *window_data = userData;
 
+    int mx = mouseEvent->canvasX, my = mouseEvent->canvasY;
+    EmscriptenPointerlockChangeEvent pointerlock_status;
+
+    /* check for pointer lock */
+    emscripten_get_pointerlock_status(&pointerlock_status);
+
+    if (!pointerlock_status.isActive) {
+        /* rescale (in case canvas is being scaled)*/
+        double client_w, client_h;
+        emscripten_get_element_css_size(NULL, &client_w, &client_h);
+
+        mx = mx * (window_data->window->w / (client_w * window_data->pixel_ratio));
+        my = my * (window_data->window->h / (client_h * window_data->pixel_ratio));
+        SDL_SendMouseMotion(window_data->window, 0, pointerlock_status.isActive, mx, my);
+    }
+
     SDL_SetMouseFocus(eventType == EMSCRIPTEN_EVENT_MOUSEENTER ? window_data->window : NULL);
     return 1;
 }
