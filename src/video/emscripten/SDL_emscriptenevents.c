@@ -374,11 +374,14 @@ Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent *touchEvent, vo
 {
     SDL_WindowData *window_data = userData;
     int i;
+    double client_w, client_h;
 
     SDL_TouchID deviceId = 1;
     if (SDL_AddTouch(deviceId, "") < 0) {
          return 0;
     }
+
+    emscripten_get_element_css_size(NULL, &client_w, &client_h);
 
     for (i = 0; i < touchEvent->numTouches; i++) {
         SDL_FingerID id;
@@ -388,8 +391,8 @@ Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent *touchEvent, vo
             continue;
 
         id = touchEvent->touches[i].identifier;
-        x = touchEvent->touches[i].canvasX / (float)window_data->windowed_width;
-        y = touchEvent->touches[i].canvasY / (float)window_data->windowed_height;
+        x = touchEvent->touches[i].canvasX / client_w;
+        y = touchEvent->touches[i].canvasY / client_h;
 
         if (eventType == EMSCRIPTEN_EVENT_TOUCHSTART) {
             if (!window_data->finger_touching) {
