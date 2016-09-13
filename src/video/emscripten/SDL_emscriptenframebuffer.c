@@ -69,15 +69,25 @@ int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rec
     /* Send the data to the display */
 
     EM_ASM_INT({
-        //TODO: don't create context every update
-        var ctx = Module['canvas'].getContext('2d');
+        var w = $0;
+        var h = $1;
+        var pixels = $2;
 
-        //library_sdl.js SDL_UnlockSurface
-        var image = ctx.createImageData($0, $1);
-        var data = image.data;
-        var src = $2 >> 2;
+        if (!Module['SDL2']) Module['SDL2'] = {};
+        var SDL2 = Module['SDL2'];
+        if (SDL2.ctxCanvas !== Module['canvas']) {
+            SDL2.ctx = Module['canvas'].getContext('2d');
+            SDL2.ctxCanvas = Module['canvas'];
+        }
+        if (SDL2.w !== w || SDL2.h !== h || SDL2.imageCtx !== SDL2.ctx) {
+            SDL2.image = SDL2.ctx.createImageData(w, h);
+            SDL2.w = w;
+            SDL2.h = h;
+            SDL2.imageCtx = SDL2.ctx;
+        }
+        var data = SDL2.image.data;
+        var src = pixels >> 2;
         var dst = 0;
-        var isScreen = true;
         var num;
         if (typeof CanvasPixelArray !== 'undefined' && data instanceof CanvasPixelArray) {
             // IE10/IE11: ImageData objects are backed by the deprecated CanvasPixelArray,
@@ -90,26 +100,58 @@ int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rec
                 data[dst  ] = val & 0xff;
                 data[dst+1] = (val >> 8) & 0xff;
                 data[dst+2] = (val >> 16) & 0xff;
-                data[dst+3] = isScreen ? 0xff : ((val >> 24) & 0xff);
+                data[dst+3] = 0xff;
                 src++;
                 dst += 4;
             }
         } else {
-            var data32 = new Uint32Array(data.buffer);
+            if (SDL2.data32Data !== data) {
+                SDL2.data32 = new Int32Array(data.buffer);
+                SDL2.data8 = new Uint8Array(data.buffer);
+            }
+            var data32 = SDL2.data32;
             num = data32.length;
-            if (isScreen) {
-                while (dst < num) {
-                    // HEAP32[src++] is an optimization. Instead, we could do {{{ makeGetValue('buffer', 'dst', 'i32') }}};
-                    data32[dst++] = HEAP32[src++] | 0xff000000;
+            // logically we need to do
+            //      while (dst < num) {
+            //          data32[dst++] = HEAP32[src++] | 0xff000000
+            //      }
+            // the following code is faster though, because
+            // .set() is almost free - easily 10x faster due to
+            // native memcpy efficiencies, and the remaining loop
+            // just stores, not load + store, so it is faster
+            data32.set(HEAP32.subarray(src, src + num));
+            var data8 = SDL2.data8;
+            var i = 3;
+            var j = i + 4*num;
+            if (num % 8 == 0) {
+                // unrolling gives big speedups
+                while (i < j) {
+                  data8[i] = 0xff;
+                  i = i + 4 | 0;
+                  data8[i] = 0xff;
+                  i = i + 4 | 0;
+                  data8[i] = 0xff;
+                  i = i + 4 | 0;
+                  data8[i] = 0xff;
+                  i = i + 4 | 0;
+                  data8[i] = 0xff;
+                  i = i + 4 | 0;
+                  data8[i] = 0xff;
+                  i = i + 4 | 0;
+                  data8[i] = 0xff;
+                  i = i + 4 | 0;
+                  data8[i] = 0xff;
+                  i = i + 4 | 0;
                 }
-            } else {
-                while (dst < num) {
-                    data32[dst++] = HEAP32[src++];
+             } else {
+                while (i < j) {
+                  data8[i] = 0xff;
+                  i = i + 4 | 0;
                 }
             }
         }
 
-        ctx.putImageData(image, 0, 0);
+        SDL2.ctx.putImageData(SDL2.image, 0, 0);
         return 0;
     }, surface->w, surface->h, surface->pixels);
 
