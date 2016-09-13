@@ -127,7 +127,7 @@ HandleAudioProcess(_THIS)
                 }
 
                 for (var j = 0; j < $1; ++j) {
-                    channelData[j] = getValue($0 + (j*numChannels + c)*4, 'float');
+                    channelData[j] = HEAPF32[$0 + ((j*numChannels + c) << 2) >> 2];
                 }
             }
         }, buf, byte_len / bytes / this->spec.channels);
