@@ -134,15 +134,17 @@ int
 Emscripten_VideoInit(_THIS)
 {
     SDL_DisplayMode mode;
-    double css_w, css_h;
 
     /* Use a fake 32-bpp desktop mode */
     mode.format = SDL_PIXELFORMAT_RGB888;
 
-    emscripten_get_element_css_size(NULL, &css_w, &css_h);
+    mode.w = EM_ASM_INT_V({
+        return screen.width;
+    });
 
-    mode.w = css_w;
-    mode.h = css_h;
+    mode.h = EM_ASM_INT_V({
+        return screen.height;
+    });
 
     mode.refresh_rate = 0;
     mode.driverdata = NULL;
