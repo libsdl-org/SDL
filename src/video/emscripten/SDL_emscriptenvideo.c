@@ -296,6 +296,7 @@ Emscripten_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * di
         if(fullscreen) {
             EmscriptenFullscreenStrategy strategy;
             SDL_bool is_desktop_fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP;
+            int res;
 
             strategy.scaleMode = is_desktop_fullscreen ? EMSCRIPTEN_FULLSCREEN_SCALE_STRETCH : EMSCRIPTEN_FULLSCREEN_SCALE_ASPECT;
 
@@ -314,10 +315,12 @@ Emscripten_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * di
 
             data->requested_fullscreen_mode = window->flags & (SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN);
             data->fullscreen_resize = is_desktop_fullscreen;
-            /*unset the fullscreen flags as we're not actually fullscreen yet*/
-            window->flags &= ~(SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN);
 
-            emscripten_request_fullscreen_strategy(NULL, 1, &strategy);
+            res = emscripten_request_fullscreen_strategy(NULL, 1, &strategy);
+            if(res != EMSCRIPTEN_RESULT_SUCCESS && res != EMSCRIPTEN_RESULT_DEFERRED) {
+                /* unset flags, fullscreen failed */
+                window->flags &= ~(SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN);
+            }
         }
         else
             emscripten_exit_fullscreen();
