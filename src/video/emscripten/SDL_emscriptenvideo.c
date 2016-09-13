@@ -218,9 +218,6 @@ Emscripten_CreateWindow(_THIS, SDL_Window * window)
         }
     }
 
-    wdata->windowed_width = scaled_w;
-    wdata->windowed_height = scaled_h;
-
     if (window->flags & SDL_WINDOW_OPENGL) {
         if (!_this->egl_data) {
             if (SDL_GL_LoadLibrary(NULL) < 0) {
@@ -290,24 +287,30 @@ Emscripten_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * di
         data = (SDL_WindowData *) window->driverdata;
 
         if(fullscreen) {
+            EmscriptenFullscreenStrategy strategy;
+            SDL_bool is_desktop_fullscreen = (window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP;
+
+            strategy.scaleMode = is_desktop_fullscreen ? EMSCRIPTEN_FULLSCREEN_SCALE_STRETCH : EMSCRIPTEN_FULLSCREEN_SCALE_ASPECT;
+
+            if(!is_desktop_fullscreen) {
+                strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_NONE;
+            } else if(window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+                strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_HIDEF;
+            } else {
+                strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
+            }
+
+            strategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_DEFAULT;
+
+            strategy.canvasResizedCallback = Emscripten_HandleCanvasResize;
+            strategy.canvasResizedCallbackUserData = data;
+
             data->requested_fullscreen_mode = window->flags & (SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN);
+            data->fullscreen_resize = is_desktop_fullscreen;
             /*unset the fullscreen flags as we're not actually fullscreen yet*/
             window->flags &= ~(SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN);
 
-            EM_ASM({
-                //reparent canvas (similar to Module.requestFullscreen)
-                var canvas = Module['canvas'];
-                if(canvas.parentNode.id != "SDLFullscreenElement") {
-                    var canvasContainer = document.createElement("div");
-                    canvasContainer.id = "SDLFullscreenElement";
-                    canvas.parentNode.insertBefore(canvasContainer, canvas);
-                    canvasContainer.appendChild(canvas);
-                }
-            });
-
-            int is_fullscreen;
-            emscripten_get_canvas_size(&data->windowed_width, &data->windowed_height, &is_fullscreen);
-            emscripten_request_fullscreen("SDLFullscreenElement", 1);
+            emscripten_request_fullscreen_strategy(NULL, 1, &strategy);
         }
         else
             emscripten_exit_fullscreen();
