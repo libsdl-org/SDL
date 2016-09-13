@@ -77,7 +77,10 @@ Emscripten_CreateDevice(int devindex)
         return (0);
     }
 
-    /* Firefox sends blur event which would otherwise prevent full screen */
+    /* Firefox sends blur event which would otherwise prevent full screen
+     * when the user clicks to allow full screen.
+     * See https://bugzilla.mozilla.org/show_bug.cgi?id=1144964
+    */
     SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 
     /* Set the function pointers */
