@@ -553,7 +553,7 @@ Emscripten_RegisterEventHandlers(SDL_WindowData *data)
     emscripten_set_mousemove_callback("#canvas", data, 0, Emscripten_HandleMouseMove);
 
     emscripten_set_mousedown_callback("#canvas", data, 0, Emscripten_HandleMouseButton);
-    emscripten_set_mouseup_callback("#canvas", data, 0, Emscripten_HandleMouseButton);
+    emscripten_set_mouseup_callback("#document", data, 0, Emscripten_HandleMouseButton);
 
     emscripten_set_mouseenter_callback("#canvas", data, 0, Emscripten_HandleMouseFocus);
     emscripten_set_mouseleave_callback("#canvas", data, 0, Emscripten_HandleMouseFocus);
@@ -590,7 +590,7 @@ Emscripten_UnregisterEventHandlers(SDL_WindowData *data)
     emscripten_set_mousemove_callback("#canvas", NULL, 0, NULL);
 
     emscripten_set_mousedown_callback("#canvas", NULL, 0, NULL);
-    emscripten_set_mouseup_callback("#canvas", NULL, 0, NULL);
+    emscripten_set_mouseup_callback("#document", NULL, 0, NULL);
 
     emscripten_set_mouseenter_callback("#canvas", NULL, 0, NULL);
     emscripten_set_mouseleave_callback("#canvas", NULL, 0, NULL);
