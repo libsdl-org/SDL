@@ -217,16 +217,16 @@ static const SDL_Scancode emscripten_scancode_table[] = {
     /* 171 */   SDL_SCANCODE_UNKNOWN,
     /* 172 */   SDL_SCANCODE_UNKNOWN,
     /* 173 */   SDL_SCANCODE_MINUS, /*FX*/
-    /* 174 */   SDL_SCANCODE_UNKNOWN,
-    /* 175 */   SDL_SCANCODE_UNKNOWN,
-    /* 176 */   SDL_SCANCODE_UNKNOWN,
-    /* 177 */   SDL_SCANCODE_UNKNOWN,
+    /* 174 */   SDL_SCANCODE_VOLUMEDOWN, /*IE, Chrome*/
+    /* 175 */   SDL_SCANCODE_VOLUMEUP, /*IE, Chrome*/
+    /* 176 */   SDL_SCANCODE_AUDIONEXT, /*IE, Chrome*/
+    /* 177 */   SDL_SCANCODE_AUDIOPREV, /*IE, Chrome*/
     /* 178 */   SDL_SCANCODE_UNKNOWN,
-    /* 179 */   SDL_SCANCODE_UNKNOWN,
+    /* 179 */   SDL_SCANCODE_AUDIOPLAY, /*IE, Chrome*/
     /* 180 */   SDL_SCANCODE_UNKNOWN,
-    /* 181 */   SDL_SCANCODE_UNKNOWN,
-    /* 182 */   SDL_SCANCODE_UNKNOWN,
-    /* 183 */   SDL_SCANCODE_UNKNOWN,
+    /* 181 */   SDL_SCANCODE_AUDIOMUTE, /*FX*/
+    /* 182 */   SDL_SCANCODE_VOLUMEDOWN, /*FX*/
+    /* 183 */   SDL_SCANCODE_VOLUMEUP, /*FX*/
     /* 184 */   SDL_SCANCODE_UNKNOWN,
     /* 185 */   SDL_SCANCODE_UNKNOWN,
     /* 186 */   SDL_SCANCODE_SEMICOLON, /*IE, Chrome, D3E legacy*/
