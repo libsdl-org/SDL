@@ -103,10 +103,10 @@ static SDL_bool
 GetDisplayMode(_THIS, CGDisplayModeRef vidmode, CVDisplayLinkRef link, SDL_DisplayMode *mode)
 {
     SDL_DisplayModeData *data;
-    long width = 0;
-    long height = 0;
-    long bpp = 0;
-    long refreshRate = 0;
+    int width = 0;
+    int height = 0;
+    int bpp = 0;
+    int refreshRate = 0;
     CFStringRef fmt;
 
     data = (SDL_DisplayModeData *) SDL_malloc(sizeof(*data));
@@ -116,9 +116,9 @@ GetDisplayMode(_THIS, CGDisplayModeRef vidmode, CVDisplayLinkRef link, SDL_Displ
     data->moderef = vidmode;
 
     fmt = CGDisplayModeCopyPixelEncoding(vidmode);
-    width = (long) CGDisplayModeGetWidth(vidmode);
-    height = (long) CGDisplayModeGetHeight(vidmode);
-    refreshRate = (long) (CGDisplayModeGetRefreshRate(vidmode) + 0.5);
+    width = (int) CGDisplayModeGetWidth(vidmode);
+    height = (int) CGDisplayModeGetHeight(vidmode);
+    refreshRate = (int) (CGDisplayModeGetRefreshRate(vidmode) + 0.5);
 
     if (CFStringCompare(fmt, CFSTR(IO32BitDirectPixels),
                         kCFCompareCaseInsensitive) == kCFCompareEqualTo) {
@@ -139,7 +139,7 @@ GetDisplayMode(_THIS, CGDisplayModeRef vidmode, CVDisplayLinkRef link, SDL_Displ
     if (refreshRate == 0 && link != NULL) {
         CVTime time = CVDisplayLinkGetNominalOutputVideoRefreshPeriod(link);
         if ((time.flags & kCVTimeIsIndefinite) == 0 && time.timeValue != 0) {
-            refreshRate = (long) ((time.timeScale / (double) time.timeValue) + 0.5);
+            refreshRate = (int) ((time.timeScale / (double) time.timeValue) + 0.5);
         }
     }
 
@@ -320,8 +320,8 @@ Cocoa_GetDisplayDPI(_THIS, SDL_VideoDisplay * display, float * ddpi, float * hdp
     SDL_DisplayData *data = (SDL_DisplayData *) display->driverdata;
 
     CGSize displaySize = CGDisplayScreenSize(data->display);
-    size_t pixelWidth = CGDisplayPixelsWide(data->display);
-    size_t pixelHeight = CGDisplayPixelsHigh(data->display);
+    int pixelWidth =  (int) CGDisplayPixelsWide(data->display);
+    int pixelHeight = (int) CGDisplayPixelsHigh(data->display);
 
     if (ddpi) {
         *ddpi = SDL_ComputeDiagonalDPI(pixelWidth, pixelHeight, displaySize.width / MM_IN_INCH, displaySize.height / MM_IN_INCH);
