@@ -24,6 +24,7 @@
 
 #include "SDL_video.h"
 #include "SDL_mouse.h"
+#include "SDL_hints.h"
 #include "../SDL_sysvideo.h"
 #include "../SDL_pixels_c.h"
 #include "../SDL_egl_c.h"
@@ -75,6 +76,9 @@ Emscripten_CreateDevice(int devindex)
         SDL_OutOfMemory();
         return (0);
     }
+
+    /* Firefox sends blur event which would otherwise prevent full screen */
+    SDL_SetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, "0");
 
     /* Set the function pointers */
     device->VideoInit = Emscripten_VideoInit;
