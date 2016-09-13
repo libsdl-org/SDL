@@ -301,24 +301,32 @@ EM_BOOL
 Emscripten_HandleMouseMove(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
-    int mx = mouseEvent->canvasX, my = mouseEvent->canvasY;
+    int mx, my;
+    static double residualx = 0, residualy = 0;
     EmscriptenPointerlockChangeEvent pointerlock_status;
+
+    /* rescale (in case canvas is being scaled)*/
+    double client_w, client_h, xscale, yscale;
+    emscripten_get_element_css_size(NULL, &client_w, &client_h);
+    xscale = window_data->window->w / (client_w * window_data->pixel_ratio);
+    yscale = window_data->window->h / (client_h * window_data->pixel_ratio);
 
     /* check for pointer lock */
     int isPointerLockSupported = emscripten_get_pointerlock_status(&pointerlock_status);
     int isPointerLocked = isPointerLockSupported == EMSCRIPTEN_RESULT_SUCCESS  ? pointerlock_status.isActive : SDL_FALSE;
 
     if (isPointerLocked) {
-        mx = mouseEvent->movementX;
-        my = mouseEvent->movementY;
+        residualx += mouseEvent->movementX * xscale;
+        residualy += mouseEvent->movementY * yscale;
+        /* Let slow sub-pixel motion accumulate. Don't lose it. */
+        mx = residualx;
+        residualx -= mx;
+        my = residualy;
+        residualy -= my;
+    } else {
+        mx = mouseEvent->canvasX * xscale;
+        my = mouseEvent->canvasY * yscale;
     }
-
-    /* rescale (in case canvas is being scaled)*/
-    double client_w, client_h;
-    emscripten_get_element_css_size(NULL, &client_w, &client_h);
-
-    mx = mx * (window_data->window->w / (client_w * window_data->pixel_ratio));
-    my = my * (window_data->window->h / (client_h * window_data->pixel_ratio));
 
     SDL_SendMouseMotion(window_data->window, 0, isPointerLocked, mx, my);
     return 0;
