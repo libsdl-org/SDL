@@ -205,7 +205,7 @@ set(ORIG_CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS})
 if(CYGWIN)
   # We build SDL on cygwin without the UNIX emulation layer
   include_directories("-I/usr/include/mingw")
-  set(CMAKE_REQUIRED_FLAGS "-mno-cygwin")
+  set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} -mno-cygwin")
   check_c_source_compiles("int main(int argc, char **argv) {}"
     HAVE_GCC_NO_CYGWIN)
   set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})

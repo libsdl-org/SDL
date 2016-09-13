@@ -766,7 +766,8 @@ macro(CheckPTHREAD)
     endif()
 
     # Run some tests
-    set(CMAKE_REQUIRED_FLAGS "${PTHREAD_CFLAGS} ${PTHREAD_LDFLAGS}")
+    set(ORIG_CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS}")
+    set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${PTHREAD_CFLAGS} ${PTHREAD_LDFLAGS}")
     if(CMAKE_CROSSCOMPILING)
       set(HAVE_PTHREADS 1)
     else()
@@ -828,7 +829,7 @@ macro(CheckPTHREAD)
           int main(int argc, char** argv) { return 0; }" HAVE_PTHREAD_NP_H)
       check_function_exists(pthread_setname_np HAVE_PTHREAD_SETNAME_NP)
       check_function_exists(pthread_set_name_np HAVE_PTHREAD_SET_NAME_NP)
-      set(CMAKE_REQUIRED_FLAGS)
+      set(CMAKE_REQUIRED_FLAGS "${ORIG_CMAKE_REQUIRED_FLAGS}")
 
       set(SOURCE_FILES ${SOURCE_FILES}
           ${SDL2_SOURCE_DIR}/src/thread/pthread/SDL_systhread.c
@@ -882,7 +883,8 @@ macro(CheckUSBHID)
     endif()
   endif()
 
-  set(CMAKE_REQUIRED_FLAGS "${USB_CFLAGS}")
+  set(ORIG_CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS}")
+  set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${USB_CFLAGS}")
   set(CMAKE_REQUIRED_LIBRARIES "${USB_LIBS}")
   check_c_source_compiles("
        #include <sys/types.h>
@@ -983,7 +985,7 @@ macro(CheckUSBHID)
     set(HAVE_SDL_JOYSTICK TRUE)
 
     set(CMAKE_REQUIRED_LIBRARIES)
-    set(CMAKE_REQUIRED_FLAGS)
+    set(CMAKE_REQUIRED_FLAGS "${ORIG_CMAKE_REQUIRED_FLAGS}")
   endif()
 endmacro()
 
@@ -997,12 +999,13 @@ macro(CheckRPI)
     listtostr(VIDEO_RPI_INCLUDE_DIRS VIDEO_RPI_INCLUDE_FLAGS "-I")
     listtostr(VIDEO_RPI_LIBRARY_DIRS VIDEO_RPI_LIBRARY_FLAGS "-L")
 
-    set(CMAKE_REQUIRED_FLAGS "${VIDEO_RPI_INCLUDE_FLAGS} ${VIDEO_RPI_LIBRARY_FLAGS}")
+    set(ORIG_CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS}")
+    set(CMAKE_REQUIRED_FLAGS "${CMAKE_REQUIRED_FLAGS} ${VIDEO_RPI_INCLUDE_FLAGS} ${VIDEO_RPI_LIBRARY_FLAGS}")
     set(CMAKE_REQUIRED_LIBRARIES "${VIDEO_RPI_LIBS}")
     check_c_source_compiles("
         #include <bcm_host.h>
         int main(int argc, char **argv) {}" HAVE_VIDEO_RPI)
-    set(CMAKE_REQUIRED_FLAGS)
+    set(CMAKE_REQUIRED_FLAGS "${ORIG_CMAKE_REQUIRED_FLAGS}")
     set(CMAKE_REQUIRED_LIBRARIES)
 
     if(SDL_VIDEO AND HAVE_VIDEO_RPI)
