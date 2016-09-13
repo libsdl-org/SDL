@@ -47,6 +47,7 @@ static void Emscripten_SetWindowSize(_THIS, SDL_Window * window);
 static void Emscripten_DestroyWindow(_THIS, SDL_Window * window);
 static void Emscripten_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen);
 static void Emscripten_PumpEvents(_THIS);
+static void Emscripten_SetWindowTitle(_THIS, SDL_Window * window);
 
 
 /* Emscripten driver bootstrap functions */
@@ -84,9 +85,9 @@ Emscripten_CreateDevice(int devindex)
     device->PumpEvents = Emscripten_PumpEvents;
 
     device->CreateWindow = Emscripten_CreateWindow;
-    /*device->CreateWindowFrom = Emscripten_CreateWindowFrom;
+    /*device->CreateWindowFrom = Emscripten_CreateWindowFrom;*/
     device->SetWindowTitle = Emscripten_SetWindowTitle;
-    device->SetWindowIcon = Emscripten_SetWindowIcon;
+    /*device->SetWindowIcon = Emscripten_SetWindowIcon;
     device->SetWindowPosition = Emscripten_SetWindowPosition;*/
     device->SetWindowSize = Emscripten_SetWindowSize;
     /*device->ShowWindow = Emscripten_ShowWindow;
@@ -315,6 +316,16 @@ Emscripten_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * di
         else
             emscripten_exit_fullscreen();
     }
+}
+
+static void
+Emscripten_SetWindowTitle(_THIS, SDL_Window * window) {
+    EM_ASM_INT({
+      if (typeof Module['setWindowTitle'] !== 'undefined') {
+        Module['setWindowTitle'](Module['Pointer_stringify']($0));
+      }
+      return 0;
+    }, window->title);
 }
 
 #endif /* SDL_VIDEO_DRIVER_EMSCRIPTEN */
