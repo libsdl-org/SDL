@@ -274,7 +274,7 @@ static int open_capture_devices = 0;
 
 static void update_audio_session()
 {
-#if !MACOSX_COREAUDIO
+#if !MACOSX_COREAUDIO && !TARGET_OS_TV
     /* !!! FIXME: move this to AVAudioSession. This is deprecated, and the new version is available as of (ancient!) iOS 3.0 */
     UInt32 category;
     if (open_playback_devices && open_capture_devices) {
@@ -569,8 +569,8 @@ prepare_audioqueue(_THIS)
     /* We're running! */
     return 1;
 }
-
 static int
+
 audioqueue_thread(void *arg)
 {
     SDL_AudioDevice *this = (SDL_AudioDevice *) arg;
@@ -725,9 +725,11 @@ COREAUDIO_Init(SDL_AudioDriverImpl * impl)
        !!! FIXME: do this when a device is opened, and deinitialize when all devices close.
     */
     /* !!! FIXME: move this to AVAudioSession. This is deprecated, and the new version is available as of (ancient!) iOS 3.0 */
+#if !TARGET_OS_TV
     AudioSessionInitialize(NULL, NULL, NULL, nil);
     UInt32 category = kAudioSessionCategory_AmbientSound;
     AudioSessionSetProperty(kAudioSessionProperty_AudioCategory, sizeof(UInt32), &category);
+#endif /* !TARGET_OS_TV */
 #endif
 
     impl->ProvidesOwnCallbackThread = 1;

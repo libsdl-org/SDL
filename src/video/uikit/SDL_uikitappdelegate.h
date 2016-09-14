@@ -25,7 +25,6 @@
 
 - (instancetype)init;
 - (void)loadView;
-- (NSUInteger)supportedInterfaceOrientations;
 
 @end
 

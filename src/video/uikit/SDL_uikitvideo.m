@@ -176,6 +176,7 @@ UIKit_IsSystemVersionAtLeast(double version)
 CGRect
 UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
 {
+#if !TARGET_OS_TV && (__IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_7_0)
     BOOL hasiOS7 = UIKit_IsSystemVersionAtLeast(7.0);
 
     if (hasiOS7 || (window->flags & (SDL_WINDOW_BORDERLESS|SDL_WINDOW_FULLSCREEN))) {
@@ -184,6 +185,9 @@ UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
     } else {
         return screen.applicationFrame;
     }
+#else
+    return screen.bounds;
+#endif
 }
 
 /*
