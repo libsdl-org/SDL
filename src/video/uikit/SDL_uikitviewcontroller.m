@@ -39,6 +39,17 @@
 #include "keyinfotable.h"
 #endif
 
+#if TARGET_OS_TV
+static void
+SDL_AppleTVControllerUIHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    @autoreleasepool {
+        SDL_uikitviewcontroller *viewcontroller = (__bridge SDL_uikitviewcontroller *) userdata;
+        viewcontroller.controllerUserInteractionEnabled = hint && (*hint != '0');
+    }
+}
+#endif
+
 @implementation SDL_uikitviewcontroller {
     CADisplayLink *displayLink;
     int animationInterval;
@@ -60,6 +71,12 @@
 #if SDL_IPHONE_KEYBOARD
         [self initKeyboard];
 #endif
+
+#if TARGET_OS_TV
+        SDL_AddHintCallback(SDL_HINT_APPLE_TV_CONTROLLER_UI_EVENTS,
+                            SDL_AppleTVControllerUIHintChanged,
+                            (__bridge void *) self);
+#endif
     }
     return self;
 }
@@ -68,6 +85,12 @@
 {
 #if SDL_IPHONE_KEYBOARD
     [self deinitKeyboard];
+#endif
+
+#if TARGET_OS_TV
+    SDL_DelHintCallback(SDL_HINT_APPLE_TV_CONTROLLER_UI_EVENTS,
+                        SDL_AppleTVControllerUIHintChanged,
+                        (__bridge void *) self);
 #endif
 }
 
@@ -124,6 +147,7 @@
     SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, w, h);
 }
 
+#if !TARGET_OS_TV
 - (NSUInteger)supportedInterfaceOrientations
 {
     return UIKit_GetSupportedOrientations(window);
@@ -138,6 +162,7 @@
 {
     return (window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_BORDERLESS)) != 0;
 }
+#endif
 
 /*
  ---- Keyboard related functionality below this line ----
@@ -168,9 +193,11 @@
     textField.hidden = YES;
     keyboardVisible = NO;
 
+#if !TARGET_OS_TV
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
     [center addObserver:self selector:@selector(keyboardWillShow:) name:UIKeyboardWillShowNotification object:nil];
     [center addObserver:self selector:@selector(keyboardWillHide:) name:UIKeyboardWillHideNotification object:nil];
+#endif
 }
 
 - (void)setView:(UIView *)view
@@ -186,9 +213,11 @@
 
 - (void)deinitKeyboard
 {
+#if !TARGET_OS_TV
     NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
     [center removeObserver:self name:UIKeyboardWillShowNotification object:nil];
     [center removeObserver:self name:UIKeyboardWillHideNotification object:nil];
+#endif
 }
 
 /* reveal onscreen virtual keyboard */
@@ -209,6 +238,7 @@
 
 - (void)keyboardWillShow:(NSNotification *)notification
 {
+#if !TARGET_OS_TV
     CGRect kbrect = [[notification userInfo][UIKeyboardFrameBeginUserInfoKey] CGRectValue];
 
     /* The keyboard rect is in the coordinate space of the screen/window, but we
@@ -216,6 +246,7 @@
     kbrect = [self.view convertRect:kbrect fromView:nil];
 
     [self setKeyboardHeight:(int)kbrect.size.height];
+#endif
 }
 
 - (void)keyboardWillHide:(NSNotification *)notification

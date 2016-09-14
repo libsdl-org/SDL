@@ -443,6 +443,8 @@ SDL_GetPlatform()
     return "Windows";
 #elif __WINRT__
     return "WinRT";
+#elif __TVOS__
+    return "tvOS";
 #elif __IPHONEOS__
     return "iOS";
 #elif __PSP__

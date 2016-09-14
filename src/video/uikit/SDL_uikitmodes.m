@@ -156,9 +156,12 @@ UIKit_AddDisplay(UIScreen *uiscreen)
 SDL_bool
 UIKit_IsDisplayLandscape(UIScreen *uiscreen)
 {
+#if !TARGET_OS_TV
     if (uiscreen == [UIScreen mainScreen]) {
         return UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation);
-    } else {
+    } else
+#endif /* !TARGET_OS_TV */
+    {
         CGSize size = uiscreen.bounds.size;
         return (size.width > size.height);
     }
@@ -187,6 +190,14 @@ UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
         SDL_bool isLandscape = UIKit_IsDisplayLandscape(data.uiscreen);
         SDL_bool addRotation = (data.uiscreen == [UIScreen mainScreen]);
         CGFloat scale = data.uiscreen.scale;
+        NSArray *availableModes = nil;
+
+#if TARGET_OS_TV
+        addRotation = SDL_FALSE;
+        availableModes = @[data.uiscreen.currentMode];
+#else
+        availableModes = data.uiscreen.availableModes;
+#endif
 
 #ifdef __IPHONE_8_0
         /* The UIScreenMode of an iPhone 6 Plus should be 1080x1920 rather than
@@ -196,7 +207,7 @@ UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
         }
 #endif
 
-        for (UIScreenMode *uimode in data.uiscreen.availableModes) {
+        for (UIScreenMode *uimode in availableModes) {
             /* The size of a UIScreenMode is in pixels, but we deal exclusively
              * in points (except in SDL_GL_GetDrawableSize.) */
             int w = (int)(uimode.size.width / scale);
@@ -219,9 +230,11 @@ UIKit_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
 {
     @autoreleasepool {
         SDL_DisplayData *data = (__bridge SDL_DisplayData *) display->driverdata;
-        SDL_DisplayModeData *modedata = (__bridge SDL_DisplayModeData *)mode->driverdata;
 
+#if !TARGET_OS_TV
+        SDL_DisplayModeData *modedata = (__bridge SDL_DisplayModeData *)mode->driverdata;
         [data.uiscreen setCurrentMode:modedata.uiscreenmode];
+#endif
 
         if (data.uiscreen == [UIScreen mainScreen]) {
             /* [UIApplication setStatusBarOrientation:] no longer works reliably
@@ -245,20 +258,30 @@ UIKit_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
 int
 UIKit_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay * display, SDL_Rect * rect)
 {
-    /* the default function iterates displays to make a fake offset,
-       as if all the displays were side-by-side, which is fine for iOS. */
-    const int displayIndex = (int) (display - _this->displays);
-    if (SDL_GetDisplayBounds(displayIndex, rect) < 0) {
-        return -1;
+    @autoreleasepool {
+        int displayIndex = (int) (display - _this->displays);
+        SDL_DisplayData *data = (__bridge SDL_DisplayData *) display->driverdata;
+
+        /* the default function iterates displays to make a fake offset,
+         as if all the displays were side-by-side, which is fine for iOS. */
+        if (SDL_GetDisplayBounds(displayIndex, rect) < 0) {
+            return -1;
+        }
+
+        CGRect frame = data.uiscreen.bounds;
+
+#if !TARGET_OS_TV
+        if (!UIKit_IsSystemVersionAtLeast(7.0)) {
+            frame = [data.uiscreen applicationFrame];
+        }
+#endif
+
+        rect->x += frame.origin.x;
+        rect->y += frame.origin.y;
+        rect->w = frame.size.width;
+        rect->h = frame.size.height;
     }
 
-    SDL_DisplayData *data = (__bridge SDL_DisplayData *) display->driverdata;
-    const CGRect frame = [data.uiscreen applicationFrame];
-    const float scale = (float) data.uiscreen.scale;
-    rect->x += (int) (frame.origin.x * scale);
-    rect->y += (int) (frame.origin.y * scale);
-    rect->w = (int) (frame.size.width * scale);
-    rect->h = (int) (frame.size.height * scale);
     return 0;
 }
 

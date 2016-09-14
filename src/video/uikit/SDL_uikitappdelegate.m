@@ -76,6 +76,7 @@ SDL_IdleTimerDisabledChanged(void *userdata, const char *name, const char *oldVa
     [UIApplication sharedApplication].idleTimerDisabled = disable;
 }
 
+#if !TARGET_OS_TV
 /* Load a launch image using the old UILaunchImageFile-era naming rules. */
 static UIImage *
 SDL_LoadLaunchImageNamed(NSString *name, int screenh)
@@ -114,6 +115,15 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 
     return image;
 }
+#endif /* !TARGET_OS_TV */
+
+@interface SDLLaunchScreenController ()
+
+#if !TARGET_OS_TV
+- (NSUInteger)supportedInterfaceOrientations;
+#endif
+
+@end
 
 @implementation SDLLaunchScreenController
 
@@ -140,6 +150,7 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     }
 
     if (!self.view) {
+#if !TARGET_OS_TV
         NSArray *launchimages = [bundle objectForInfoDictionaryKey:@"UILaunchImages"];
         UIInterfaceOrientation curorient = [UIApplication sharedApplication].statusBarOrientation;
         NSString *imagename = nil;
@@ -244,6 +255,9 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 
             self.view = view;
         }
+#else /* !TARGET_OS_TV */
+        return nil;
+#endif
     }
 
     return self;
@@ -254,6 +268,7 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     /* Do nothing. */
 }
 
+#if !TARGET_OS_TV
 - (BOOL)shouldAutorotate
 {
     /* If YES, the launch image will be incorrectly rotated in some cases. */
@@ -267,6 +282,7 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
      * the ones set here (it will cause an exception in that case.) */
     return UIInterfaceOrientationMaskAll;
 }
+#endif /* !TARGET_OS_TV */
 
 @end
 
@@ -381,6 +397,7 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     SDL_SendAppEvent(SDL_APP_LOWMEMORY);
 }
 
+#if !TARGET_OS_TV
 - (void)application:(UIApplication *)application didChangeStatusBarOrientation:(UIInterfaceOrientation)oldStatusBarOrientation
 {
     BOOL isLandscape = UIInterfaceOrientationIsLandscape(application.statusBarOrientation);
@@ -408,6 +425,7 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
         }
     }
 }
+#endif
 
 - (void)applicationWillResignActive:(UIApplication*)application
 {

@@ -33,7 +33,13 @@
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
 
+#if !SDL_EVENTS_DISABLED
+#include "../../events/SDL_events_c.h"
+#endif
+
+#if !TARGET_OS_TV
 #import <CoreMotion/CoreMotion.h>
+#endif
 
 #ifdef SDL_JOYSTICK_MFI
 #import <GameController/GameController.h>
@@ -42,8 +48,10 @@ static id connectObserver = nil;
 static id disconnectObserver = nil;
 #endif /* SDL_JOYSTICK_MFI */
 
+#if !TARGET_OS_TV
 static const char *accelerometerName = "iOS Accelerometer";
 static CMMotionManager *motionManager = nil;
+#endif /* !TARGET_OS_TV */
 
 static SDL_JoystickDeviceItem *deviceList = NULL;
 
@@ -102,6 +110,11 @@ SDL_SYS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *contr
     } else if (controller.gamepad) {
         device->guid.data[10] = 2;
     }
+#if TARGET_OS_TV
+    else if (controller.microGamepad) {
+        device->guid.data[10] = 3;
+    }
+#endif /* TARGET_OS_TV */
 
     if (controller.extendedGamepad) {
         device->naxes = 6; /* 2 thumbsticks and 2 triggers */
@@ -112,12 +125,19 @@ SDL_SYS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *contr
         device->nhats = 1; /* d-pad */
         device->nbuttons = 7; /* ABXY, shoulder buttons, pause button */
     }
-    /* TODO: Handle micro profiles on tvOS. */
+#if TARGET_OS_TV
+    else if (controller.microGamepad) {
+        device->naxes = 2; /* treat the touch surface as two axes */
+        device->nhats = 0; /* apparently the touch surface-as-dpad is buggy */
+        device->nbuttons = 3; /* AX, pause button */
+    }
+#endif /* TARGET_OS_TV */
 
     /* This will be set when the first button press of the controller is
      * detected. */
     controller.playerIndex = -1;
-#endif
+
+#endif /* SDL_JOYSTICK_MFI */
 }
 
 static void
@@ -143,6 +163,10 @@ SDL_SYS_AddJoystickDevice(GCController *controller, SDL_bool accelerometer)
     device->instance_id = instancecounter++;
 
     if (accelerometer) {
+#if TARGET_OS_TV
+        SDL_free(device);
+        return;
+#else
         device->name = SDL_strdup(accelerometerName);
         device->naxes = 3; /* Device acceleration in the x, y, and z axes. */
         device->nhats = 0;
@@ -150,6 +174,7 @@ SDL_SYS_AddJoystickDevice(GCController *controller, SDL_bool accelerometer)
 
         /* Use the accelerometer name as a GUID. */
         SDL_memcpy(&device->guid.data, device->name, SDL_min(sizeof(SDL_JoystickGUID), SDL_strlen(device->name)));
+#endif /* TARGET_OS_TV */
     } else if (controller) {
         SDL_SYS_AddMFIJoystickDevice(device, controller);
     }
@@ -232,12 +257,14 @@ SDL_SYS_JoystickInit(void)
 {
     @autoreleasepool {
         NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
-        const char *hint = SDL_GetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK);
 
+#if !TARGET_OS_TV
+        const char *hint = SDL_GetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK);
         if (!hint || SDL_atoi(hint)) {
             /* Default behavior, accelerometer as joystick */
             SDL_SYS_AddJoystickDevice(nil, SDL_TRUE);
         }
+#endif /* !TARGET_OS_TV */
 
 #ifdef SDL_JOYSTICK_MFI
         /* GameController.framework was added in iOS 7. */
@@ -326,6 +353,7 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
 
     @autoreleasepool {
         if (device->accelerometer) {
+#if !TARGET_OS_TV
             if (motionManager == nil) {
                 motionManager = [[CMMotionManager alloc] init];
             }
@@ -333,6 +361,7 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
             /* Shorter times between updates can significantly increase CPU usage. */
             motionManager.accelerometerUpdateInterval = 0.1;
             [motionManager startAccelerometerUpdates];
+#endif /* !TARGET_OS_TV */
         } else {
 #ifdef SDL_JOYSTICK_MFI
             GCController *controller = device->controller;
@@ -358,6 +387,7 @@ SDL_SYS_JoystickAttached(SDL_Joystick *joystick)
 static void
 SDL_SYS_AccelerometerUpdate(SDL_Joystick * joystick)
 {
+#if !TARGET_OS_TV
     const float maxgforce = SDL_IPHONE_MAX_GFORCE;
     const SInt16 maxsint16 = 0x7FFF;
     CMAcceleration accel;
@@ -395,6 +425,7 @@ SDL_SYS_AccelerometerUpdate(SDL_Joystick * joystick)
     SDL_PrivateJoystickAxis(joystick, 0,  (accel.x / maxgforce) * maxsint16);
     SDL_PrivateJoystickAxis(joystick, 1, -(accel.y / maxgforce) * maxsint16);
     SDL_PrivateJoystickAxis(joystick, 2,  (accel.z / maxgforce) * maxsint16);
+#endif /* !TARGET_OS_TV */
 }
 
 #ifdef SDL_JOYSTICK_MFI
@@ -426,7 +457,7 @@ SDL_SYS_MFIJoystickHatStateForDPad(GCControllerDirectionPad *dpad)
 static void
 SDL_SYS_MFIJoystickUpdate(SDL_Joystick * joystick)
 {
-#ifdef SDL_JOYSTICK_MFI
+#if SDL_JOYSTICK_MFI
     @autoreleasepool {
         GCController *controller = joystick->hwdata->controller;
         Uint8 hatstate = SDL_HAT_CENTERED;
@@ -482,13 +513,43 @@ SDL_SYS_MFIJoystickUpdate(SDL_Joystick * joystick)
             };
 
             hatstate = SDL_SYS_MFIJoystickHatStateForDPad(gamepad.dpad);
+            SDL_PrivateJoystickHat(joystick, 0, hatstate);
 
             for (i = 0; i < SDL_arraysize(buttons); i++) {
                 updateplayerindex |= (joystick->buttons[i] != buttons[i]);
                 SDL_PrivateJoystickButton(joystick, i, buttons[i]);
             }
         }
-        /* TODO: Handle micro profiles on tvOS. */
+#if TARGET_OS_TV
+        else if (controller.microGamepad) {
+            GCMicroGamepad *gamepad = controller.microGamepad;
+
+            Sint16 axes[] = {
+                (Sint16) (gamepad.dpad.xAxis.value * 32767),
+                (Sint16) (gamepad.dpad.yAxis.value * -32767),
+            };
+
+            for (i = 0; i < SDL_arraysize(axes); i++) {
+                updateplayerindex |= (joystick->axes[i] != axes[i]);
+                SDL_PrivateJoystickAxis(joystick, i, axes[i]);
+            }
+
+            /* Apparently the dpad values are not accurate enough to be useful. */
+            /* hatstate = SDL_SYS_MFIJoystickHatStateForDPad(gamepad.dpad); */
+
+            Uint8 buttons[] = {
+                gamepad.buttonA.isPressed,
+                gamepad.buttonX.isPressed,
+            };
+
+            for (i = 0; i < SDL_arraysize(buttons); i++) {
+                updateplayerindex |= (joystick->buttons[i] != buttons[i]);
+                SDL_PrivateJoystickButton(joystick, i, buttons[i]);
+            }
+
+            /* TODO: Figure out what to do with reportsAbsoluteDpadValues */
+        }
+#endif /* TARGET_OS_TV */
 
         if (joystick->nhats > 0) {
             updateplayerindex |= (joystick->hats[0] != hatstate);
@@ -528,7 +589,7 @@ SDL_SYS_MFIJoystickUpdate(SDL_Joystick * joystick)
             }
         }
     }
-#endif
+#endif /* SDL_JOYSTICK_MFI */
 }
 
 /* Function to update the state of a joystick - called as a device poll.
@@ -566,7 +627,9 @@ SDL_SYS_JoystickClose(SDL_Joystick * joystick)
 
     @autoreleasepool {
         if (device->accelerometer) {
+#if !TARGET_OS_TV
             [motionManager stopAccelerometerUpdates];
+#endif /* !TARGET_OS_TV */
         } else if (device->controller) {
 #ifdef SDL_JOYSTICK_MFI
             GCController *controller = device->controller;
@@ -600,7 +663,9 @@ SDL_SYS_JoystickQuit(void)
             SDL_SYS_RemoveJoystickDevice(deviceList);
         }
 
+#if !TARGET_OS_TV
         motionManager = nil;
+#endif /* !TARGET_OS_TV */
     }
 
     numjoysticks = 0;
