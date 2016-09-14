@@ -1607,6 +1607,7 @@
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				PRODUCT_NAME = SDL2;
 				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos appletvsimulator appletvos";
 			};
 			name = Debug;
 		};
@@ -1622,6 +1623,7 @@
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
 				PRODUCT_NAME = SDL2;
 				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "iphonesimulator iphoneos appletvsimulator appletvos";
 			};
 			name = Release;
 		};
