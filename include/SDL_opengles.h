@@ -24,6 +24,7 @@
  *
  *  This is a simple file to encapsulate the OpenGL ES 1.X API headers.
  */
+#include "SDL_config.h"
 
 #ifdef __IPHONEOS__
 #include <OpenGLES/ES1/gl.h>
