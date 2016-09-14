@@ -513,7 +513,6 @@ SDL_SYS_MFIJoystickUpdate(SDL_Joystick * joystick)
             };
 
             hatstate = SDL_SYS_MFIJoystickHatStateForDPad(gamepad.dpad);
-            SDL_PrivateJoystickHat(joystick, 0, hatstate);
 
             for (i = 0; i < SDL_arraysize(buttons); i++) {
                 updateplayerindex |= (joystick->buttons[i] != buttons[i]);
