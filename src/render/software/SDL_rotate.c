@@ -343,7 +343,7 @@ SDLgfx_rotateSurface(SDL_Surface * src, double angle, int centerx, int centery, 
     SDL_Surface *rz_dst;
     int is32bit;
     int i;
-    Uint8 r = 0,g = 0,b = 0;
+    Uint8 r = 0, g = 0, b = 0;
     Uint32 colorkey = 0;
     int colorKeyAvailable = 0;
     double sangleinv, cangleinv;
