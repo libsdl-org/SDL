@@ -24,6 +24,8 @@
  *
  *  This is a simple file to encapsulate the OpenGL ES 2.0 API headers.
  */
+#include "SDL_config.h"
+
 #ifndef _MSC_VER
 
 #ifdef __IPHONEOS__
