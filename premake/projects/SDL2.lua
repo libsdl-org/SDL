@@ -405,5 +405,6 @@ SDL_project "SDL2"
 			"$(SDKROOT)/Foundation.framework",
 			"$(SDKROOT)/CoreAudio.framework",
 			"$(SDKROOT)/CoreMotion.framework",
-			"$(SDKROOT)/GameController.framework"
+			"$(SDKROOT)/GameController.framework",
+			"$(SDKROOT)/AVFoundation.framework",
 		}
