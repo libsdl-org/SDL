@@ -272,21 +272,45 @@ device_list_changed(AudioObjectID systemObj, UInt32 num_addr, const AudioObjectP
 static int open_playback_devices = 0;
 static int open_capture_devices = 0;
 
-static void update_audio_session()
+#if !MACOSX_COREAUDIO
+static BOOL update_audio_session()
 {
-#if !MACOSX_COREAUDIO && !TARGET_OS_TV
-    /* !!! FIXME: move this to AVAudioSession. This is deprecated, and the new version is available as of (ancient!) iOS 3.0 */
-    UInt32 category;
-    if (open_playback_devices && open_capture_devices) {
-        category = kAudioSessionCategory_PlayAndRecord;
-    } else if (open_capture_devices) {
-        category = kAudioSessionCategory_RecordAudio;
-    } else {  /* nothing open, or just playing audio. */
-        category = kAudioSessionCategory_AmbientSound;
+    @autoreleasepool {
+        AVAudioSession *session = [AVAudioSession sharedInstance];
+        NSString *category;
+        NSError *err = nil;
+
+        if (open_playback_devices && open_capture_devices) {
+            category = AVAudioSessionCategoryPlayAndRecord;
+        } else if (open_capture_devices) {
+            category = AVAudioSessionCategoryRecord;
+        } else {
+            /* Set category to ambient so that other music continues playing.
+             You can change this at runtime in your own code if you need different
+             behavior. If this is common, we can add an SDL hint for this. */
+            category = AVAudioSessionCategoryAmbient;
+        }
+
+        if (open_playback_devices + open_capture_devices == 1) {
+            if (![session setActive:YES error:&err]) {
+                NSString *desc = err.description;
+                SDL_SetError("Could not activate Audio Session: %s", desc.UTF8String);
+                return NO;
+            }
+        } else if (!open_playback_devices && !open_capture_devices) {
+            [session setActive:NO error:nil];
+        }
+
+        if (![session setCategory:category error:&err]) {
+            NSString *desc = err.description;
+            SDL_SetError("Could not set Audio Session category: %s", desc.UTF8String);
+            return NO;
+        }
     }
-    AudioSessionSetProperty(kAudioSessionProperty_AudioCategory, sizeof (UInt32), &category);
-#endif
+
+    return YES;
 }
+#endif
 
 
 /* The AudioQueue callback */
@@ -444,7 +468,10 @@ COREAUDIO_CloseDevice(_THIS)
     } else {
         open_playback_devices--;
     }
+
+#if !MACOSX_COREAUDIO
     update_audio_session();
+#endif
 }
 
 #if MACOSX_COREAUDIO
@@ -620,7 +647,12 @@ COREAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     } else {
         open_playback_devices++;
     }
-    update_audio_session();
+
+#if !MACOSX_COREAUDIO
+    if (!update_audio_session()) {
+        return -1;
+    }
+#endif
 
     /* Setup a AudioStreamBasicDescription with the requested format */
     SDL_zerop(strdesc);
@@ -718,18 +750,6 @@ COREAUDIO_Init(SDL_AudioDriverImpl * impl)
 #else
     impl->OnlyHasDefaultOutputDevice = 1;
     impl->OnlyHasDefaultCaptureDevice = 1;
-
-    /* Set category to ambient sound so that other music continues playing.
-       You can change this at runtime in your own code if you need different
-       behavior.  If this is common, we can add an SDL hint for this.
-       !!! FIXME: do this when a device is opened, and deinitialize when all devices close.
-    */
-    /* !!! FIXME: move this to AVAudioSession. This is deprecated, and the new version is available as of (ancient!) iOS 3.0 */
-#if !TARGET_OS_TV
-    AudioSessionInitialize(NULL, NULL, NULL, nil);
-    UInt32 category = kAudioSessionCategory_AmbientSound;
-    AudioSessionSetProperty(kAudioSessionProperty_AudioCategory, sizeof(UInt32), &category);
-#endif /* !TARGET_OS_TV */
 #endif
 
     impl->ProvidesOwnCallbackThread = 1;
