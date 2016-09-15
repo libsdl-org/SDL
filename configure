@@ -23529,9 +23529,9 @@ $as_echo "#define SDL_FILESYSTEM_HAIKU 1" >>confdefs.h
 $as_echo "#define SDL_AUDIO_DRIVER_COREAUDIO 1" >>confdefs.h
 
             SOURCES="$SOURCES $srcdir/src/audio/coreaudio/*.m"
+            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,AVFoundation"
             SUMMARY_audio="${SUMMARY_audio} coreaudio"
             have_audio=yes
-            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,AVFoundation"
         fi
         # Set up files for the joystick library
         if test x$enable_joystick = xyes; then
@@ -23547,8 +23547,8 @@ $as_echo "#define SDL_JOYSTICK_IOKIT 1" >>confdefs.h
 $as_echo "#define SDL_HAPTIC_IOKIT 1" >>confdefs.h
 
             SOURCES="$SOURCES $srcdir/src/haptic/darwin/*.c"
-            have_haptic=yes
             EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,ForceFeedback"
+            have_haptic=yes
         fi
         # Set up files for the power library
         if test x$enable_power = xyes; then
@@ -23585,10 +23585,6 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,Cocoa"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,Carbon"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,IOKit"
-        # If audio is used, add the AudioUnit framework
-        if test x$enable_audio = xyes; then
-            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,CoreAudio -Wl,-framework,AudioToolbox -Wl,-framework,AudioUnit"
-        fi
         ;;
     *-nacl|*-pnacl)
         ARCH=nacl

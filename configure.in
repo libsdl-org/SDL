@@ -3316,9 +3316,9 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         if test x$enable_audio = xyes; then
             AC_DEFINE(SDL_AUDIO_DRIVER_COREAUDIO, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/audio/coreaudio/*.m"
+            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,AVFoundation"
             SUMMARY_audio="${SUMMARY_audio} coreaudio"
             have_audio=yes
-            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,AVFoundation"
         fi
         # Set up files for the joystick library
         if test x$enable_joystick = xyes; then
@@ -3330,8 +3330,8 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         if test x$enable_haptic = xyes; then
             AC_DEFINE(SDL_HAPTIC_IOKIT, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/haptic/darwin/*.c"
-            have_haptic=yes
             EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,ForceFeedback"
+            have_haptic=yes
         fi
         # Set up files for the power library
         if test x$enable_power = xyes; then
@@ -3362,10 +3362,6 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,Cocoa"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,Carbon"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,IOKit"
-        # If audio is used, add the AudioUnit framework
-        if test x$enable_audio = xyes; then
-            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,CoreAudio -Wl,-framework,AudioToolbox -Wl,-framework,AudioUnit"
-        fi
         ;;
     *-nacl|*-pnacl)
         ARCH=nacl
