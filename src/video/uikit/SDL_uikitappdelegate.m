@@ -464,17 +464,34 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     }
 }
 
-- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation
+- (void)sendDropFileForURL:(NSURL *)url
 {
     NSURL *fileURL = url.filePathURL;
     if (fileURL != nil) {
-        SDL_SendDropFile(NULL, [fileURL.path UTF8String]);
+        SDL_SendDropFile(NULL, fileURL.path.UTF8String);
     } else {
-        SDL_SendDropFile(NULL, [url.absoluteString UTF8String]);
+        SDL_SendDropFile(NULL, url.absoluteString.UTF8String);
     }
     SDL_SendDropComplete(NULL);
+}
+
+#if TARGET_OS_TV
+/* TODO: Use this on iOS 9+ as well? */
+- (BOOL)application:(UIApplication *)app openURL:(NSURL *)url options:(NSDictionary<UIApplicationOpenURLOptionsKey,id> *)options
+{
+    /* TODO: Handle options */
+    [self sendDropFileForURL:url];
     return YES;
 }
+#endif /* TARGET_OS_TV */
+
+#if !TARGET_OS_TV
+- (BOOL)application:(UIApplication *)application openURL:(NSURL *)url sourceApplication:(NSString *)sourceApplication annotation:(id)annotation
+{
+    [self sendDropFileForURL:url];
+    return YES;
+}
+#endif /* !TARGET_OS_TV */
 
 @end
 
