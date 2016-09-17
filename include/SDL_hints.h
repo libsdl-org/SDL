@@ -287,7 +287,7 @@ extern "C" {
  *
  * More information about properly making use of controllers for the Apple TV
  * can be found here:
- * https://developer.apple.com/tvos/human-interface-guidelines/remote-and-interaction/
+ * https://developer.apple.com/tvos/human-interface-guidelines/remote-and-controllers/
  *
  *  This variable can be set to the following values:
  *    "0"       - Controller input does not generate UI events (the default).
