@@ -1158,7 +1158,7 @@ SetupWindowData(_THIS, SDL_Window * window, NSWindow *nswindow, SDL_bool created
     }
 
     {
-        unsigned int style = [nswindow styleMask];
+        unsigned long style = [nswindow styleMask];
 
         if (style == NSBorderlessWindowMask) {
             window->flags |= SDL_WINDOW_BORDERLESS;
