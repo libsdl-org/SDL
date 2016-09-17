@@ -127,9 +127,13 @@ SDL_SYS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *contr
     }
 #if TARGET_OS_TV
     else if (controller.microGamepad) {
+        const char *hint = SDL_GetHint(SDL_HINT_APPLE_TV_REMOTE_ALLOW_ROTATION);
+
         device->naxes = 2; /* treat the touch surface as two axes */
         device->nhats = 0; /* apparently the touch surface-as-dpad is buggy */
         device->nbuttons = 3; /* AX, pause button */
+
+        controller.microGamepad.allowsRotation = (hint != NULL && *hint != '0');
     }
 #endif /* TARGET_OS_TV */
 
@@ -248,6 +252,22 @@ SDL_SYS_RemoveJoystickDevice(SDL_JoystickDeviceItem *device)
     return next;
 }
 
+#if TARGET_OS_TV
+static void
+SDL_AppleTVRemoteRotationHintChanged(void *udata, const char *name, const char *oldValue, const char *newValue)
+{
+    BOOL allowRotation = newValue != NULL && *newValue != '0';
+
+    @autoreleasepool {
+        for (GCController *controller in [GCController controllers]) {
+            if (controller.microGamepad) {
+                controller.microGamepad.allowsRotation = allowRotation;
+            }
+        }
+    }
+}
+#endif /* TARGET_OS_TV */
+
 /* Function to scan the system for joysticks.
  * Joystick 0 should be the system default joystick.
  * It should return 0, or -1 on an unrecoverable fatal error.
@@ -275,6 +295,11 @@ SDL_SYS_JoystickInit(void)
         for (GCController *controller in [GCController controllers]) {
             SDL_SYS_AddJoystickDevice(controller, SDL_FALSE);
         }
+
+#if TARGET_OS_TV
+        SDL_AddHintCallback(SDL_HINT_APPLE_TV_REMOTE_ALLOW_ROTATION,
+                            SDL_AppleTVRemoteRotationHintChanged, NULL);
+#endif /* TARGET_OS_TV */
 
         connectObserver = [center addObserverForName:GCControllerDidConnectNotification
                                               object:nil
@@ -656,6 +681,11 @@ SDL_SYS_JoystickQuit(void)
             [center removeObserver:disconnectObserver name:GCControllerDidDisconnectNotification object:nil];
             disconnectObserver = nil;
         }
+
+#if TARGET_OS_TV
+        SDL_DelHintCallback(SDL_HINT_APPLE_TV_REMOTE_ALLOW_ROTATION,
+                            SDL_AppleTVRemoteRotationHintChanged, NULL);
+#endif /* TARGET_OS_TV */
 #endif /* SDL_JOYSTICK_MFI */
 
         while (deviceList != NULL) {

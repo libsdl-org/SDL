@@ -296,6 +296,16 @@ extern "C" {
 #define SDL_HINT_APPLE_TV_CONTROLLER_UI_EVENTS "SDL_APPLE_TV_CONTROLLER_UI_EVENTS"
 
 /**
+ * \brief  A variable controlling whether the Apple TV remote's joystick axes
+ *         will automatically match the rotation of the remote.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Remote orientation does not affect joystick axes (the default).
+ *    "1"       - Joystick axes are based on the orientation of the remote.
+ */
+#define SDL_HINT_APPLE_TV_REMOTE_ALLOW_ROTATION "SDL_APPLE_TV_REMOTE_ALLOW_ROTATION"
+
+/**
  *  \brief  A variable controlling whether the Android / iOS built-in
  *  accelerometer should be listed as a joystick device, rather than listing
  *  actual joysticks only.
