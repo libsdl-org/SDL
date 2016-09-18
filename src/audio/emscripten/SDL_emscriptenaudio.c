@@ -346,6 +346,7 @@ EMSCRIPTENAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscaptu
                 SDL2.capture.mediaStreamNode = SDL2.audioContext.createMediaStreamSource(stream);
                 SDL2.capture.scriptProcessorNode = SDL2.audioContext.createScriptProcessor($1, $0, 1);
                 SDL2.capture.scriptProcessorNode.onaudioprocess = function(audioProcessingEvent) {
+                    if ((SDL2 === undefined) || (SDL2.capture === undefined)) { return; }
                     audioProcessingEvent.outputBuffer.getChannelData(0).fill(0.0);
                     SDL2.capture.currentCaptureBuffer = audioProcessingEvent.inputBuffer;
                     Runtime.dynCall('vi', $2, [$3]);
@@ -380,6 +381,7 @@ EMSCRIPTENAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscaptu
         EM_ASM_ARGS({
             SDL2.audio.scriptProcessorNode = SDL2.audioContext['createScriptProcessor']($1, 0, $0);
             SDL2.audio.scriptProcessorNode['onaudioprocess'] = function (e) {
+                if ((SDL2 === undefined) || (SDL2.audio === undefined)) { return; }
                 SDL2.audio.currentOutputBuffer = e['outputBuffer'];
                 Runtime.dynCall('vi', $2, [$3]);
             };
