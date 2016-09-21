@@ -678,8 +678,8 @@ prepare_audioqueue(_THIS)
     /* We're running! */
     return 1;
 }
-static int
 
+static int
 audioqueue_thread(void *arg)
 {
     SDL_AudioDevice *this = (SDL_AudioDevice *) arg;
