@@ -47,7 +47,7 @@ typedef struct MappingStep
 
 
 SDL_Texture *
-LoadTexture(SDL_Renderer *renderer, char *file, SDL_bool transparent)
+LoadTexture(SDL_Renderer *renderer, const char *file, SDL_bool transparent)
 {
     SDL_Surface *temp;
     SDL_Texture *texture;
@@ -226,7 +226,7 @@ WatchJoystick(SDL_Joystick * joystick)
             SDL_RenderCopy(screen, background, NULL, NULL);
             SDL_SetTextureAlphaMod(marker, alpha);
             SDL_SetTextureColorMod(marker, 10, 255, 21);
-            SDL_RenderCopyEx(screen, marker, NULL, &dst, step->angle, NULL, 0);
+            SDL_RenderCopyEx(screen, marker, NULL, &dst, step->angle, NULL, SDL_FLIP_NONE);
             SDL_RenderPresent(screen);
             
             if (SDL_PollEvent(&event)) {
