@@ -718,10 +718,8 @@ void Android_JNI_FlushCapturedAudio(void)
     }
     #else
     if (captureBuffer16Bit) {
-        const jint len = (*env)->GetArrayLength(env, (jshortArray)captureBuffer);
         (*env)->CallStaticIntMethod(env, mActivityClass, midCaptureReadShortBuffer, (jshortArray)captureBuffer, JNI_FALSE);
     } else {
-        const jint len = (*env)->GetArrayLength(env, (jbyteArray)captureBuffer);
         (*env)->CallStaticIntMethod(env, mActivityClass, midCaptureReadByteBuffer, (jbyteArray)captureBuffer, JNI_FALSE);
     }
     #endif
