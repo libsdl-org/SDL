@@ -33,25 +33,6 @@
 
 #include "SDL_mirdyn.h"
 
-static const Uint32 mir_pixel_format_to_sdl_format[] = {
-    SDL_PIXELFORMAT_UNKNOWN,  /* mir_pixel_format_invalid   */
-    SDL_PIXELFORMAT_ABGR8888, /* mir_pixel_format_abgr_8888 */
-    SDL_PIXELFORMAT_BGR888,   /* mir_pixel_format_xbgr_8888 */
-    SDL_PIXELFORMAT_ARGB8888, /* mir_pixel_format_argb_8888 */
-    SDL_PIXELFORMAT_RGB888,   /* mir_pixel_format_xrgb_8888 */
-    SDL_PIXELFORMAT_BGR24,    /* mir_pixel_format_bgr_888   */
-    SDL_PIXELFORMAT_RGB24,    /* mir_pixel_format_rgb_888   */
-    SDL_PIXELFORMAT_RGB565,   /* mir_pixel_format_rgb_565   */
-    SDL_PIXELFORMAT_RGBA5551, /* mir_pixel_format_rgba_5551 */
-    SDL_PIXELFORMAT_RGBA4444  /* mir_pixel_format_rgba_4444 */
-};
-
-Uint32
-MIR_GetSDLPixelFormat(MirPixelFormat format)
-{
-    return mir_pixel_format_to_sdl_format[format];
-}
-
 int
 MIR_CreateWindowFramebuffer(_THIS, SDL_Window* window, Uint32* format,
                             void** pixels, int* pitch)

@@ -39,6 +39,25 @@
 
 #define MIR_DRIVER_NAME "mir"
 
+static const Uint32 mir_pixel_format_to_sdl_format[] = {
+    SDL_PIXELFORMAT_UNKNOWN,  /* mir_pixel_format_invalid   */
+    SDL_PIXELFORMAT_ABGR8888, /* mir_pixel_format_abgr_8888 */
+    SDL_PIXELFORMAT_BGR888,   /* mir_pixel_format_xbgr_8888 */
+    SDL_PIXELFORMAT_ARGB8888, /* mir_pixel_format_argb_8888 */
+    SDL_PIXELFORMAT_RGB888,   /* mir_pixel_format_xrgb_8888 */
+    SDL_PIXELFORMAT_BGR24,    /* mir_pixel_format_bgr_888   */
+    SDL_PIXELFORMAT_RGB24,    /* mir_pixel_format_rgb_888   */
+    SDL_PIXELFORMAT_RGB565,   /* mir_pixel_format_rgb_565   */
+    SDL_PIXELFORMAT_RGBA5551, /* mir_pixel_format_rgba_5551 */
+    SDL_PIXELFORMAT_RGBA4444  /* mir_pixel_format_rgba_4444 */
+};
+
+Uint32
+MIR_GetSDLPixelFormat(MirPixelFormat format)
+{
+    return mir_pixel_format_to_sdl_format[format];
+}
+
 static int
 MIR_VideoInit(_THIS);
 
@@ -94,7 +113,7 @@ MIR_DeleteDevice(SDL_VideoDevice* device)
     SDL_MIR_UnloadSymbols();
 }
 
-void
+static void
 MIR_PumpEvents(_THIS)
 {
 }
@@ -206,68 +225,73 @@ VideoBootStrap MIR_bootstrap = {
     MIR_Available, MIR_CreateDevice
 };
 
-static void
-MIR_SetCurrentDisplayMode(MirDisplayOutput const* out, SDL_VideoDisplay* display)
+static SDL_DisplayMode
+MIR_ConvertModeToSDLMode(MirOutputMode const* mode, MirPixelFormat format)
 {
-    SDL_DisplayMode mode = {
-        .format = SDL_PIXELFORMAT_RGB888,
-        .w = out->modes[out->current_mode].horizontal_resolution,
-        .h = out->modes[out->current_mode].vertical_resolution,
-        .refresh_rate = out->modes[out->current_mode].refresh_rate,
-        .driverdata = NULL
+    SDL_DisplayMode sdl_mode  = {
+        .format = MIR_GetSDLPixelFormat(format),
+        .w      = MIR_mir_output_mode_get_width(mode),
+        .h      = MIR_mir_output_mode_get_height(mode),
+        .refresh_rate = MIR_mir_output_mode_get_refresh_rate(mode),
+        .driverdata   = NULL
     };
 
-    display->desktop_mode = mode;
-    display->current_mode = mode;
+    return sdl_mode;
 }
 
 static void
-MIR_AddAllModesFromDisplay(MirDisplayOutput const* out, SDL_VideoDisplay* display)
+MIR_AddModeToDisplay(SDL_VideoDisplay* display, MirOutputMode const* mode, MirPixelFormat format)
 {
-    int n_mode;
-    for (n_mode = 0; n_mode < out->num_modes; ++n_mode) {
-        SDL_DisplayMode mode = {
-            .format = SDL_PIXELFORMAT_RGB888,
-            .w = out->modes[n_mode].horizontal_resolution,
-            .h = out->modes[n_mode].vertical_resolution,
-            .refresh_rate = out->modes[n_mode].refresh_rate,
-            .driverdata = NULL
-        };
+    SDL_DisplayMode sdl_mode = MIR_ConvertModeToSDLMode(mode, format);
+    SDL_AddDisplayMode(display, &sdl_mode);
+}
 
-        SDL_AddDisplayMode(display, &mode);
+static void
+MIR_InitDisplayFromOutput(_THIS, MirOutput* output)
+{
+    SDL_VideoDisplay display;
+    int m;
+
+    MirPixelFormat format = MIR_mir_output_get_current_pixel_format(output);
+    int num_modes         = MIR_mir_output_get_num_modes(output);
+    SDL_DisplayMode current_mode = MIR_ConvertModeToSDLMode(mir_output_get_current_mode(output), format);
+
+    SDL_zero(display);
+
+    // Unfortunate cast, but SDL_AddVideoDisplay will strdup this pointer so its read-only in this case.
+    display.name = (char*)MIR_mir_output_type_name(MIR_mir_output_get_type(output));
+
+    for (m = 0; m < num_modes; m++) {
+        MirOutputMode const* mode = MIR_mir_output_get_mode(output, m);
+        MIR_AddModeToDisplay(&display, mode, format);
     }
+
+    display.desktop_mode = current_mode;
+    display.current_mode = current_mode;
+
+    display.driverdata = output;
+    SDL_AddVideoDisplay(&display);
 }
 
 static void
 MIR_InitDisplays(_THIS)
 {
     MIR_Data* mir_data = _this->driverdata;
+    int num_outputs    = MIR_mir_display_config_get_num_outputs(mir_data->display_config);
     int d;
 
-    MirDisplayConfiguration* display_config = MIR_mir_connection_create_display_config(mir_data->connection);
+    for (d = 0; d < num_outputs; d++) {
+        MirOutput* output = MIR_mir_display_config_get_mutable_output(mir_data->display_config, d);
+        SDL_bool enabled  = MIR_mir_output_is_enabled(output);
+        MirOutputConnectionState state = MIR_mir_output_get_connection_state(output);
 
-    for (d = 0; d < display_config->num_outputs; d++) {
-        MirDisplayOutput const* out = display_config->outputs + d;
-
-        SDL_VideoDisplay display;
-        SDL_zero(display);
-
-        if (out->used &&
-            out->connected &&
-            out->num_modes &&
-            out->current_mode < out->num_modes) {
-
-            MIR_SetCurrentDisplayMode(out, &display);
-            MIR_AddAllModesFromDisplay(out, &display);
-
-            SDL_AddVideoDisplay(&display);
+        if (enabled && state == mir_output_connection_state_connected) {
+            MIR_InitDisplayFromOutput(_this, output);
         }
     }
-
-    MIR_mir_display_config_destroy(display_config);
 }
 
-int
+static int
 MIR_VideoInit(_THIS)
 {
     MIR_Data* mir_data = _this->driverdata;
@@ -282,16 +306,34 @@ MIR_VideoInit(_THIS)
             MIR_mir_connection_get_error_message(mir_data->connection));
     }
 
+    mir_data->display_config = MIR_mir_connection_create_display_configuration(mir_data->connection);
+
     MIR_InitDisplays(_this);
     MIR_InitMouse();
 
     return 0;
 }
 
-void
+static void
+MIR_CleanUpDisplayConfig(_THIS)
+{
+    MIR_Data* mir_data = _this->driverdata;
+    int i;
+
+    // SDL_VideoQuit frees the display driverdata, we own it not them
+    for (i = 0; i < _this->num_displays; ++i) {
+        _this->displays[i].driverdata = NULL;
+    }
+
+    MIR_mir_display_config_release(mir_data->display_config);
+}
+
+static void
 MIR_VideoQuit(_THIS)
 {
     MIR_Data* mir_data = _this->driverdata;
+
+    MIR_CleanUpDisplayConfig(_this);
 
     MIR_FiniMouse();
 
@@ -307,40 +349,47 @@ MIR_VideoQuit(_THIS)
 static int
 MIR_GetDisplayBounds(_THIS, SDL_VideoDisplay* display, SDL_Rect* rect)
 {
-    MIR_Data* mir_data = _this->driverdata;
-    int d;
+    MirOutput const* output = display->driverdata;
 
-    MirDisplayConfiguration* display_config = MIR_mir_connection_create_display_config(mir_data->connection);
-
-    for (d = 0; d < display_config->num_outputs; d++) {
-        MirDisplayOutput const* out = display_config->outputs + d;
-
-        if (out->used &&
-            out->connected &&
-            out->num_modes &&
-            out->current_mode < out->num_modes) {
-
-            rect->x = out->position_x;
-            rect->y = out->position_y;
-            rect->w = out->modes->horizontal_resolution;
-            rect->h = out->modes->vertical_resolution;
-        }
-    }
-
-    MIR_mir_display_config_destroy(display_config);
+    rect->x = MIR_mir_output_get_position_x(output);
+    rect->y = MIR_mir_output_get_position_y(output);
+    rect->w = display->current_mode.w;
+    rect->h = display->current_mode.h;
 
     return 0;
 }
 
 static void
-MIR_GetDisplayModes(_THIS, SDL_VideoDisplay* sdl_display)
+MIR_GetDisplayModes(_THIS, SDL_VideoDisplay* display)
 {
 }
 
 static int
-MIR_SetDisplayMode(_THIS, SDL_VideoDisplay* sdl_display, SDL_DisplayMode* mode)
+MIR_SetDisplayMode(_THIS, SDL_VideoDisplay* display, SDL_DisplayMode* mode)
 {
-    return 0;
+    int m;
+    MirOutput* output = display->driverdata;
+    int num_modes     = MIR_mir_output_get_num_modes(output);
+    Uint32 sdl_format = MIR_GetSDLPixelFormat(
+                            MIR_mir_output_get_current_pixel_format(output));
+
+    for (m = 0; m < num_modes; m++) {
+        MirOutputMode const* mir_mode = MIR_mir_output_get_mode(output, m);
+        int width  = MIR_mir_output_mode_get_width(mir_mode);
+        int height = MIR_mir_output_mode_get_height(mir_mode);
+        double refresh_rate = MIR_mir_output_mode_get_refresh_rate(mir_mode);
+
+        if (mode->format == sdl_format &&
+            mode->w      == width &&
+            mode->h      == height &&
+            mode->refresh_rate == refresh_rate) {
+
+            MIR_mir_output_set_current_mode(output, mir_mode);
+            return 0;
+        }
+    }
+
+    return -1;
 }
 
 #endif /* SDL_VIDEO_DRIVER_MIR */

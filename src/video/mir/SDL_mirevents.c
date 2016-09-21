@@ -185,6 +185,8 @@ HandleTouchEvent(MirTouchEvent const* touch, int device_id, SDL_Window* sdl_wind
             case mir_touch_action_change:
                 HandleTouchMotion(device_id, id, n_x, n_y, pressure);
                 break;
+            case mir_touch_actions:
+                break;
         }
     }
 }
