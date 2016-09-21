@@ -11,9 +11,9 @@ command line tools or Apple's IDE Xcode.
 To build SDL using the command line, use the standard configure and make
 process:
 
-	./configure
-	make
-	sudo make install
+    ./configure
+    make
+    sudo make install
 
 You can also build SDL as a Universal library (a single binary for both
 32-bit and 64-bit Intel architectures), on Mac OS X 10.7 and newer, by using
@@ -22,8 +22,8 @@ the gcc-fat.sh script in build-scripts:
     mkdir mybuild
     cd mybuild
     CC=$PWD/../build-scripts/gcc-fat.sh CXX=$PWD/../build-scripts/g++fat.sh ../configure
-	make
-	sudo make install
+    make
+    sudo make install
 
 This script builds SDL with 10.5 ABI compatibility on i386 and 10.6
 ABI compatibility on x86_64 architectures.  For best compatibility you
@@ -86,12 +86,12 @@ so called "bundle", which basically is a fancy folder with a name like
 To get this build automatically, add something like the following rule to
 your Makefile.am:
 
-bundle_contents = APP_NAME.app/Contents
-APP_NAME_bundle: EXE_NAME
-	mkdir -p $(bundle_contents)/MacOS
-	mkdir -p $(bundle_contents)/Resources
-	echo "APPL????" > $(bundle_contents)/PkgInfo
-	$(INSTALL_PROGRAM) $< $(bundle_contents)/MacOS/
+    bundle_contents = APP_NAME.app/Contents
+    APP_NAME_bundle: EXE_NAME
+    	mkdir -p $(bundle_contents)/MacOS
+    	mkdir -p $(bundle_contents)/Resources
+    	echo "APPL????" > $(bundle_contents)/PkgInfo
+    	$(INSTALL_PROGRAM) $< $(bundle_contents)/MacOS/
 
 You should replace EXE_NAME with the name of the executable. APP_NAME is what
 will be visible to the user in the Finder. Usually it will be the same
@@ -105,13 +105,13 @@ more. For each of your target applications, you need a separate rule.
 If you want the created bundles to be installed, you may want to add this
 rule to your Makefile.am:
 
-install-exec-hook: APP_NAME_bundle
-	rm -rf $(DESTDIR)$(prefix)/Applications/APP_NAME.app
-	mkdir -p $(DESTDIR)$(prefix)/Applications/
-	cp -r $< /$(DESTDIR)$(prefix)Applications/
+    install-exec-hook: APP_NAME_bundle
+    	rm -rf $(DESTDIR)$(prefix)/Applications/APP_NAME.app
+    	mkdir -p $(DESTDIR)$(prefix)/Applications/
+    	cp -r $< /$(DESTDIR)$(prefix)Applications/
 
 This rule takes the Bundle created by the rule from step 3 and installs them
-into $(DESTDIR)$(prefix)/Applications/.
+into "$(DESTDIR)$(prefix)/Applications/".
 
 Again, if you want to install multiple applications, you will have to augment
 the make rule accordingly.
@@ -126,11 +126,16 @@ there are some more things you should do before shipping your product...
    unless you also install SDL on that other computer. A good solution
    for this dilemma is to static link against SDL. On OS X, you can
    achieve that by linking against the libraries listed by
-     sdl-config --static-libs
+
+       sdl-config --static-libs
+
    instead of those listed by
-     sdl-config --libs
+
+       sdl-config --libs
+
    Depending on how exactly SDL is integrated into your build systems, the
    way to achieve that varies, so I won't describe it here in detail
+
 2) Add an 'Info.plist' to your application. That is a special XML file which
    contains some meta-information about your application (like some copyright
    information, the version of your app, the name of an optional icon file,
@@ -156,8 +161,10 @@ The first thing to do is to unpack the Xcode.tar.gz archive in the
 top level SDL directory (where the Xcode.tar.gz archive resides).
 Because Stuffit Expander will unpack the archive into a subdirectory,
 you should unpack the archive manually from the command line:
-	cd [path_to_SDL_source]
-	tar zxf Xcode.tar.gz
+
+    cd [path_to_SDL_source]
+    tar zxf Xcode.tar.gz
+
 This will create a new folder called Xcode, which you can browse
 normally from the Finder.
 
