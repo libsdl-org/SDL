@@ -384,6 +384,7 @@ MIR_SetDisplayMode(_THIS, SDL_VideoDisplay* display, SDL_DisplayMode* mode)
             mode->h      == height &&
             mode->refresh_rate == refresh_rate) {
 
+            // FIXME Currently wont actually *set* anything. Need to wait for applying display changes
             MIR_mir_output_set_current_mode(output, mir_mode);
             return 0;
         }
