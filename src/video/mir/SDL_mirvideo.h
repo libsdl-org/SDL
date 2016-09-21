@@ -33,11 +33,15 @@ typedef struct MIR_Window MIR_Window;
 
 typedef struct
 {
-    MirConnection* connection;
-    MIR_Window*    current_window;
-    SDL_bool       software;
-    MirPixelFormat pixel_format;
+    MirConnection*    connection;
+    MirDisplayConfig* display_config;
+    MIR_Window*       current_window;
+    SDL_bool          software;
+    MirPixelFormat    pixel_format;
 } MIR_Data;
+
+extern Uint32
+MIR_GetSDLPixelFormat(MirPixelFormat format);
 
 #endif /* _SDL_mirvideo_h_ */
 
