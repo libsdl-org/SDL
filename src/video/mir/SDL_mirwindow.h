@@ -81,6 +81,11 @@ MIR_SetWindowTitle(_THIS, SDL_Window* window);
 extern void
 MIR_SetWindowGrab(_THIS, SDL_Window* window, SDL_bool grabbed);
 
+extern int
+MIR_SetWindowGammaRamp(_THIS, SDL_Window* window, Uint16 const* ramp);
+
+extern int
+MIR_GetWindowGammaRamp(_THIS, SDL_Window* window, Uint16* ramp);
 
 #endif /* _SDL_mirwindow_h */
 
