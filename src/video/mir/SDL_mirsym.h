@@ -115,6 +115,10 @@ SDL_MIR_SYM(MirOutputMode const*,mir_output_get_mode,(MirOutput const* output, s
 SDL_MIR_SYM(int,mir_output_mode_get_width,(MirOutputMode const* mode))
 SDL_MIR_SYM(int,mir_output_mode_get_height,(MirOutputMode const* mode))
 SDL_MIR_SYM(double,mir_output_mode_get_refresh_rate,(MirOutputMode const* mode))
+SDL_MIR_SYM(MirOutputGammaSupported,mir_output_is_gamma_supported,(MirOutput const* output))
+SDL_MIR_SYM(uint32_t,mir_output_get_gamma_size,(MirOutput const* output))
+SDL_MIR_SYM(void,mir_output_get_gamma,(MirOutput const* output, uint16_t* red, uint16_t* green, uint16_t* blue, uint32_t size))
+SDL_MIR_SYM(void,mir_output_set_gamma,(MirOutput* output, uint16_t const* red, uint16_t const* green, uint16_t const* blue, uint32_t size))
 
 SDL_MIR_SYM_CONST(char const*,mir_omnidirectional_resize_cursor_name)
 SDL_MIR_SYM_CONST(char const*,mir_busy_cursor_name)

@@ -376,7 +376,45 @@ MIR_SetWindowGrab(_THIS, SDL_Window* window, SDL_bool grabbed)
 
     MIR_mir_surface_apply_spec(mir_window->surface, spec);
     MIR_mir_surface_spec_release(spec);
+}
 
+int
+MIR_SetWindowGammaRamp(_THIS, SDL_Window* window, Uint16 const* ramp)
+{
+    MirOutput* output = SDL_GetDisplayForWindow(window)->driverdata;
+    Uint32 ramp_size = 256;
+
+    // FIXME Need to apply the changes to the output, once that public API function is around
+    if (MIR_mir_output_is_gamma_supported(output) == mir_output_gamma_supported) {
+        MIR_mir_output_set_gamma(output,
+                                 ramp + ramp_size * 0,
+                                 ramp + ramp_size * 1,
+                                 ramp + ramp_size * 2,
+                                 ramp_size);
+        return 0;
+    }
+
+    return -1;
+}
+
+int
+MIR_GetWindowGammaRamp(_THIS, SDL_Window* window, Uint16* ramp)
+{
+    MirOutput* output = SDL_GetDisplayForWindow(window)->driverdata;
+    Uint32 ramp_size = 256;
+
+    if (MIR_mir_output_is_gamma_supported(output) == mir_output_gamma_supported) {
+        if (MIR_mir_output_get_gamma_size(output) == ramp_size) {
+            MIR_mir_output_get_gamma(output,
+                                     ramp + ramp_size * 0,
+                                     ramp + ramp_size * 1,
+                                     ramp + ramp_size * 2,
+                                     ramp_size);
+            return 0;
+        }
+    }
+
+    return -1;
 }
 
 #endif /* SDL_VIDEO_DRIVER_MIR */

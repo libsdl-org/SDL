@@ -179,13 +179,13 @@ MIR_CreateDevice(int device_index)
     device->SetWindowMaximumSize = MIR_SetWindowMaximumSize;
     device->SetWindowTitle       = MIR_SetWindowTitle;
     device->SetWindowGrab        = MIR_SetWindowGrab;
+    device->SetWindowGammaRamp   = MIR_SetWindowGammaRamp;
+    device->GetWindowGammaRamp   = MIR_GetWindowGammaRamp;
 
     device->CreateWindowFrom     = NULL;
     device->SetWindowIcon        = NULL;
     device->RaiseWindow          = NULL;
     device->SetWindowBordered    = NULL;
-    device->SetWindowGammaRamp   = NULL;
-    device->GetWindowGammaRamp   = NULL;
     device->OnWindowEnter        = NULL;
     device->SetWindowPosition    = NULL;
 
