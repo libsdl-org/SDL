@@ -322,15 +322,13 @@ static SDL_MouseClickState *GetMouseClickState(SDL_Mouse *mouse, Uint8 button)
     return &mouse->clickstate[button];
 }
 
-int
-SDL_SendMouseButton(SDL_Window * window, SDL_MouseID mouseID, Uint8 state, Uint8 button)
+static int
+SDL_PrivateSendMouseButton(SDL_Window * window, SDL_MouseID mouseID, Uint8 state, Uint8 button, int clicks)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     int posted;
     Uint32 type;
     Uint32 buttonstate = mouse->buttonstate;
-    SDL_MouseClickState *clickstate = GetMouseClickState(mouse, button);
-    Uint8 click_count;
 
     /* Figure out which event to perform */
     switch (state) {
@@ -358,7 +356,8 @@ SDL_SendMouseButton(SDL_Window * window, SDL_MouseID mouseID, Uint8 state, Uint8
     }
     mouse->buttonstate = buttonstate;
 
-    if (clickstate) {
+    if (clicks < 0) {
+        SDL_MouseClickState *clickstate = GetMouseClickState(mouse, button);
         if (state == SDL_PRESSED) {
             Uint32 now = SDL_GetTicks();
 
@@ -374,9 +373,7 @@ SDL_SendMouseButton(SDL_Window * window, SDL_MouseID mouseID, Uint8 state, Uint8
                 ++clickstate->click_count;
             }
         }
-        click_count = clickstate->click_count;
-    } else {
-        click_count = 1;
+        clicks = clickstate->click_count;
     }
 
     /* Post the event, if desired */
@@ -388,7 +385,7 @@ SDL_SendMouseButton(SDL_Window * window, SDL_MouseID mouseID, Uint8 state, Uint8
         event.button.which = mouseID;
         event.button.state = state;
         event.button.button = button;
-        event.button.clicks = click_count;
+        event.button.clicks = (Uint8) SDL_min(clicks, 255);
         event.button.x = mouse->x;
         event.button.y = mouse->y;
         posted = (SDL_PushEvent(&event) > 0);
@@ -398,8 +395,21 @@ SDL_SendMouseButton(SDL_Window * window, SDL_MouseID mouseID, Uint8 state, Uint8
     if (window && state == SDL_RELEASED) {
         SDL_UpdateMouseFocus(window, mouse->x, mouse->y, buttonstate);
     }
-
+    
     return posted;
+}
+
+int
+SDL_SendMouseButtonClicks(SDL_Window * window, SDL_MouseID mouseID, Uint8 state, Uint8 button, int clicks)
+{
+    clicks = SDL_max(clicks, 0);
+    return SDL_PrivateSendMouseButton(window, mouseID, state, button, clicks);
+}
+
+int
+SDL_SendMouseButton(SDL_Window * window, SDL_MouseID mouseID, Uint8 state, Uint8 button)
+{
+    return SDL_PrivateSendMouseButton(window, mouseID, state, button, -1);
 }
 
 int

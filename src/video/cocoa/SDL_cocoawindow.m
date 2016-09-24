@@ -823,6 +823,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 - (void)mouseDown:(NSEvent *)theEvent
 {
     int button;
+    int clicks;
 
     /* Ignore events that aren't inside the client area (i.e. title bar.) */
     if ([theEvent window]) {
@@ -858,7 +859,9 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
         button = (int) [theEvent buttonNumber] + 1;
         break;
     }
-    SDL_SendMouseButton(_data->window, 0, SDL_PRESSED, button);
+
+    clicks = (int) [theEvent clickCount];
+    SDL_SendMouseButtonClicks(_data->window, 0, SDL_PRESSED, button, clicks);
 }
 
 - (void)rightMouseDown:(NSEvent *)theEvent
@@ -874,6 +877,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 - (void)mouseUp:(NSEvent *)theEvent
 {
     int button;
+    int clicks;
 
     if ([self processHitTest:theEvent]) {
         SDL_SendWindowEvent(_data->window, SDL_WINDOWEVENT_HIT_TEST, 0, 0);
@@ -899,7 +903,9 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
         button = (int) [theEvent buttonNumber] + 1;
         break;
     }
-    SDL_SendMouseButton(_data->window, 0, SDL_RELEASED, button);
+
+    clicks = (int) [theEvent clickCount];
+    SDL_SendMouseButtonClicks(_data->window, 0, SDL_RELEASED, button, clicks);
 }
 
 - (void)rightMouseUp:(NSEvent *)theEvent
@@ -1264,7 +1270,7 @@ Cocoa_CreateWindow(_THIS, SDL_Window * window)
         }
     }
 
-    [nswindow setContentView: contentView];
+    [nswindow setContentView:contentView];
     [contentView release];
 
     /* Allow files and folders to be dragged onto the window by users */
