@@ -99,9 +99,7 @@ static int SetupWindowData(_THIS, SDL_Window *window, UIWindow *uiwindow, SDL_bo
     /* only one window on iOS, always shown */
     window->flags &= ~SDL_WINDOW_HIDDEN;
 
-    if (displaydata.uiscreen == [UIScreen mainScreen]) {
-        window->flags |= SDL_WINDOW_INPUT_FOCUS;  /* always has input focus */
-    } else {
+    if (displaydata.uiscreen != [UIScreen mainScreen]) {
         window->flags &= ~SDL_WINDOW_RESIZABLE;  /* window is NEVER resizable */
         window->flags &= ~SDL_WINDOW_INPUT_FOCUS;  /* never has input focus */
         window->flags |= SDL_WINDOW_BORDERLESS;  /* never has a status bar. */
