@@ -167,7 +167,7 @@ UIKit_SuspendScreenSaver(_THIS)
     }
 }
 
-BOOL
+SDL_bool
 UIKit_IsSystemVersionAtLeast(double version)
 {
     return [[UIDevice currentDevice].systemVersion doubleValue] >= version;
