@@ -129,12 +129,17 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 
 - (instancetype)init
 {
+    return [self initWithNibName:nil bundle:[NSBundle mainBundle]];
+}
+
+- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
+{
     if (!(self = [super initWithNibName:nil bundle:nil])) {
         return nil;
     }
 
-    NSBundle *bundle = [NSBundle mainBundle];
-    NSString *screenname = [bundle objectForInfoDictionaryKey:@"UILaunchStoryboardName"];
+    NSString *screenname = nibNameOrNil;
+    NSBundle *bundle = nibBundleOrNil;
     BOOL atleastiOS8 = UIKit_IsSystemVersionAtLeast(8.0);
 
     /* Launch screens were added in iOS 8. Otherwise we use launch images. */
@@ -357,9 +362,28 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
      * displayed (e.g. if resources are loaded before SDL_GL_SwapWindow is
      * called), so we show the launch screen programmatically until the first
      * time events are pumped. */
-    UIViewController *viewcontroller = [[SDLLaunchScreenController alloc] init];
+    UIViewController *vc = nil;
 
-    if (viewcontroller.view) {
+    NSString *screenname = [bundle objectForInfoDictionaryKey:@"UILaunchStoryboardName"];
+
+    if (screenname && UIKit_IsSystemVersionAtLeast(8.0)) {
+        @try {
+            /* The launch storyboard is actually a nib in some older versions of
+             * Xcode. We'll try to load it as a storyboard first, as it's more
+             * modern. */
+            UIStoryboard *storyboard = [UIStoryboard storyboardWithName:screenname bundle:bundle];
+            vc = [storyboard instantiateInitialViewController];
+        }
+        @catch (NSException *exception) {
+            /* Do nothing (there's more code to execute below). */
+        }
+    }
+
+    if (vc == nil) {
+        vc = [[SDLLaunchScreenController alloc] initWithNibName:screenname bundle:bundle];
+    }
+
+    if (vc.view) {
         launchWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
 
         /* We don't want the launch window immediately hidden when a real SDL
@@ -370,7 +394,7 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
          * other windows when possible. */
         launchWindow.hidden = NO;
 
-        launchWindow.rootViewController = viewcontroller;
+        launchWindow.rootViewController = vc;
     }
 #endif
 
