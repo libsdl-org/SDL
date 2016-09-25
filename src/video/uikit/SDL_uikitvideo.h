@@ -21,9 +21,11 @@
 #ifndef _SDL_uikitvideo_h
 #define _SDL_uikitvideo_h
 
-#include <UIKit/UIKit.h>
-
 #include "../SDL_sysvideo.h"
+
+#ifdef __OBJC__
+
+#include <UIKit/UIKit.h>
 
 @interface SDL_VideoData : NSObject
 
@@ -31,10 +33,13 @@
 
 @end
 
+CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen);
+
+#endif /* __OBJC__ */
+
 void UIKit_SuspendScreenSaver(_THIS);
 
-BOOL UIKit_IsSystemVersionAtLeast(double version);
-CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen);
+SDL_bool UIKit_IsSystemVersionAtLeast(double version);
 
 #endif /* _SDL_uikitvideo_h */
 

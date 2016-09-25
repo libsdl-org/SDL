@@ -30,11 +30,25 @@
 
 #include "SDL_loadso.h"
 
+#if SDL_VIDEO_DRIVER_UIKIT
+#include "../../video/uikit/SDL_uikitvideo.h"
+#endif
+
 void *
 SDL_LoadObject(const char *sofile)
 {
-    void *handle = dlopen(sofile, RTLD_NOW|RTLD_LOCAL);
-    const char *loaderror = (char *) dlerror();
+    void *handle;
+    const char *loaderror;
+
+#if SDL_VIDEO_DRIVER_UIKIT
+    if (!UIKit_IsSystemVersionAtLeast(8.0)) {
+        SDL_SetError("SDL_LoadObject requires iOS 8+");
+        return NULL;
+    }
+#endif
+
+    handle = dlopen(sofile, RTLD_NOW|RTLD_LOCAL);
+    loaderror = (char *) dlerror();
     if (handle == NULL) {
         SDL_SetError("Failed loading %s: %s", sofile, loaderror);
     }
