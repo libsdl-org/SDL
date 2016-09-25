@@ -32,5 +32,25 @@ void
 fatalError(const char *string)
 {
     printf("%s: %s\n", string, SDL_GetError());
+    SDL_ShowSimpleMessageBox(SDL_MESSAGEBOX_ERROR, string, SDL_GetError(), NULL);
     exit(1);
+}
+
+static Uint64 prevTime = 0;
+
+double
+updateDeltaTime()
+{
+    Uint64 curTime;
+    double deltaTime;
+
+    if (prevTime == 0) {
+        prevTime = SDL_GetPerformanceCounter();
+    }
+
+    curTime = SDL_GetPerformanceCounter();
+    deltaTime = (double) (curTime - prevTime) / (double) SDL_GetPerformanceFrequency();
+    prevTime = curTime;
+
+    return deltaTime;
 }

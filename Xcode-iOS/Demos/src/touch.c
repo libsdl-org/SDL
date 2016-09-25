@@ -82,6 +82,7 @@ main(int argc, char *argv[])
     SDL_Window *window;         /* main window */
     SDL_Renderer *renderer;
     int done;                   /* does user want to quit? */
+    int w, h;
 
     /* initialize SDL */
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -89,10 +90,11 @@ main(int argc, char *argv[])
     }
 
     /* create main window and renderer */
-    window = SDL_CreateWindow(NULL, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT,
-                                SDL_WINDOW_OPENGL |
-                                SDL_WINDOW_BORDERLESS);
+    window = SDL_CreateWindow(NULL, 0, 0, 320, 480, SDL_WINDOW_BORDERLESS | SDL_WINDOW_ALLOW_HIGHDPI);
     renderer = SDL_CreateRenderer(window, 0, 0);
+
+    SDL_GetWindowSize(window, &w, &h);
+    SDL_RenderSetLogicalSize(renderer, w, h);
 
     /* load brush texture */
     initializeTexture(renderer);

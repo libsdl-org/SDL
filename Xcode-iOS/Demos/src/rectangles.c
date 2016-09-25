@@ -11,14 +11,18 @@
 void
 render(SDL_Renderer *renderer)
 {
-
     Uint8 r, g, b;
+    int renderW;
+    int renderH;
+
+    SDL_RenderGetLogicalSize(renderer, &renderW, &renderH);
+
     /*  Come up with a random rectangle */
     SDL_Rect rect;
     rect.w = randomInt(64, 128);
     rect.h = randomInt(64, 128);
-    rect.x = randomInt(0, SCREEN_WIDTH);
-    rect.y = randomInt(0, SCREEN_HEIGHT);
+    rect.x = randomInt(0, renderW);
+    rect.y = randomInt(0, renderH);
 
     /* Come up with a random color */
     r = randomInt(50, 255);
@@ -31,7 +35,6 @@ render(SDL_Renderer *renderer)
 
     /* update screen */
     SDL_RenderPresent(renderer);
-
 }
 
 int
@@ -42,6 +45,8 @@ main(int argc, char *argv[])
     SDL_Renderer *renderer;
     int done;
     SDL_Event event;
+    int windowW;
+    int windowH;
 
     /* initialize SDL */
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
@@ -52,7 +57,7 @@ main(int argc, char *argv[])
     srand(time(NULL));
 
     /* create window and renderer */
-    window = SDL_CreateWindow(NULL, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
+    window = SDL_CreateWindow(NULL, 0, 0, 320, 480, SDL_WINDOW_ALLOW_HIGHDPI);
     if (window == 0) {
         fatalError("Could not initialize Window");
     }
@@ -60,6 +65,9 @@ main(int argc, char *argv[])
     if (!renderer) {
         fatalError("Could not create renderer");
     }
+
+    SDL_GetWindowSize(window, &windowW, &windowH);
+    SDL_RenderSetLogicalSize(renderer, windowW, windowH);
 
     /* Fill screen with black */
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);

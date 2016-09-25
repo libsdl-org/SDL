@@ -8,7 +8,6 @@
 #include "math.h"
 #include "common.h"
 
-#define MILLESECONDS_PER_FRAME 16       /* about 60 frames per second */
 #define DAMPING 0.5f;           /* after bouncing off a wall, damping coefficient determines final speed */
 #define FRICTION 0.0008f        /* coefficient of acceleration that opposes direction of motion */
 #define GRAVITY_CONSTANT 0.004f /* how sensitive the ship is to the accelerometer */
@@ -31,9 +30,9 @@ static SDL_Texture *ship = 0;        /* texture for spaceship */
 static SDL_Texture *space = 0;       /* texture for space (background */
 
 void
-render(SDL_Renderer *renderer, int w, int h)
+render(SDL_Renderer *renderer, int w, int h, double deltaTime)
 {
-
+    double deltaMilliseconds = deltaTime * 1000;
     float speed;
 
     /* get joystick (accelerometer) axis values and normalize them */
@@ -54,10 +53,10 @@ render(SDL_Renderer *renderer, int w, int h)
      */
     shipData.vx +=
         ax * SDL_IPHONE_MAX_GFORCE / SINT16_MAX * GRAVITY_CONSTANT *
-        MILLESECONDS_PER_FRAME;
+        deltaMilliseconds;
     shipData.vy +=
         ay * SDL_IPHONE_MAX_GFORCE / SINT16_MAX * GRAVITY_CONSTANT *
-        MILLESECONDS_PER_FRAME;
+        deltaMilliseconds;
 
     speed = sqrt(shipData.vx * shipData.vx + shipData.vy * shipData.vy);
 
@@ -67,10 +66,10 @@ render(SDL_Renderer *renderer, int w, int h)
         float diry = shipData.vy / speed;   /* normalized y velocity */
 
         /* update velocity due to friction */
-        if (speed - FRICTION * MILLESECONDS_PER_FRAME > 0) {
+        if (speed - FRICTION * deltaMilliseconds > 0) {
             /* apply friction */
-            shipData.vx -= dirx * FRICTION * MILLESECONDS_PER_FRAME;
-            shipData.vy -= diry * FRICTION * MILLESECONDS_PER_FRAME;
+            shipData.vx -= dirx * FRICTION * deltaMilliseconds;
+            shipData.vy -= diry * FRICTION * deltaMilliseconds;
         } else {
             /* applying friction would MORE than stop the ship, so just stop the ship */
             shipData.vx = 0.0f;
@@ -79,8 +78,8 @@ render(SDL_Renderer *renderer, int w, int h)
     }
 
     /* update ship location */
-    shipData.x += shipData.vx * MILLESECONDS_PER_FRAME;
-    shipData.y += shipData.vy * MILLESECONDS_PER_FRAME;
+    shipData.x += shipData.vx * deltaMilliseconds;
+    shipData.y += shipData.vy * deltaMilliseconds;
 
     if (shipData.x > maxx) {
         shipData.x = maxx;
@@ -161,9 +160,6 @@ main(int argc, char *argv[])
 
     SDL_Window *window;         /* main window */
     SDL_Renderer *renderer;
-    Uint32 startFrame;          /* time frame began to process */
-    Uint32 endFrame;            /* time frame ended processing */
-    Sint32 delay;               /* time to pause waiting to draw next frame */
     int done;                   /* should we clean up and exit? */
     int w, h;
 
@@ -173,12 +169,11 @@ main(int argc, char *argv[])
     }
 
     /* create main window and renderer */
-    window = SDL_CreateWindow(NULL, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT,
-                                SDL_WINDOW_OPENGL |
-                                SDL_WINDOW_FULLSCREEN);
+    window = SDL_CreateWindow(NULL, 0, 0, 320, 480, SDL_WINDOW_FULLSCREEN | SDL_WINDOW_ALLOW_HIGHDPI);
     renderer = SDL_CreateRenderer(window, 0, 0);
     
     SDL_GetWindowSize(window, &w, &h);
+    SDL_RenderSetLogicalSize(renderer, w, h);
 
     /* print out some info about joysticks and try to open accelerometer for use */
     printf("There are %d joysticks available\n", SDL_NumJoysticks());
@@ -208,24 +203,15 @@ main(int argc, char *argv[])
     done = 0;
     /* enter main loop */
     while (!done) {
+        double deltaTime = updateDeltaTime();
         SDL_Event event;
-        startFrame = SDL_GetTicks();
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 done = 1;
             }
         }
-        render(renderer, w, h);
-        endFrame = SDL_GetTicks();
-
-        /* figure out how much time we have left, and then sleep */
-        delay = MILLESECONDS_PER_FRAME - (endFrame - startFrame);
-        if (delay < 0) {
-            delay = 0;
-        } else if (delay > MILLESECONDS_PER_FRAME) {
-            delay = MILLESECONDS_PER_FRAME;
-        }
-        SDL_Delay(delay);
+        render(renderer, w, h, deltaTime);
+        SDL_Delay(1);
     }
 
     /* delete textures */

@@ -8,8 +8,7 @@
 #include "common.h"
 
 #define NUM_HAPPY_FACES 100     /* number of faces to draw */
-#define MILLESECONDS_PER_FRAME 16       /* about 60 frames per second */
-#define HAPPY_FACE_SIZE 32      /* width and height of happyface (pixels) */
+#define HAPPY_FACE_SIZE 32      /* width and height of happyface */
 
 static SDL_Texture *texture = 0;    /* reference to texture holding happyface */
 
@@ -24,30 +23,37 @@ static struct
     units of velocity are pixels per millesecond
 */
 void
-initializeHappyFaces()
+initializeHappyFaces(SDL_Renderer *renderer)
 {
     int i;
+    int w;
+    int h;
+    SDL_RenderGetLogicalSize(renderer, &w, &h);
+
     for (i = 0; i < NUM_HAPPY_FACES; i++) {
-        faces[i].x = randomFloat(0.0f, SCREEN_WIDTH - HAPPY_FACE_SIZE);
-        faces[i].y = randomFloat(0.0f, SCREEN_HEIGHT - HAPPY_FACE_SIZE);
-        faces[i].xvel = randomFloat(-0.1f, 0.1f);
-        faces[i].yvel = randomFloat(-0.1f, 0.1f);
+        faces[i].x = randomFloat(0.0f, w - HAPPY_FACE_SIZE);
+        faces[i].y = randomFloat(0.0f, h - HAPPY_FACE_SIZE);
+        faces[i].xvel = randomFloat(-60.0f, 60.0f);
+        faces[i].yvel = randomFloat(-60.0f, 60.0f);
     }
 }
 
 void
-render(SDL_Renderer *renderer)
+render(SDL_Renderer *renderer, double deltaTime)
 {
-
     int i;
     SDL_Rect srcRect;
     SDL_Rect dstRect;
+    int w;
+    int h;
+
+    SDL_RenderGetLogicalSize(renderer, &w, &h);
 
     /* setup boundaries for happyface bouncing */
-    Uint16 maxx = SCREEN_WIDTH - HAPPY_FACE_SIZE;
-    Uint16 maxy = SCREEN_HEIGHT - HAPPY_FACE_SIZE;
-    Uint16 minx = 0;
-    Uint16 miny = 0;
+    int maxx = w - HAPPY_FACE_SIZE;
+    int maxy = h - HAPPY_FACE_SIZE;
+    int minx = 0;
+    int miny = 0;
 
     /* setup rects for drawing */
     srcRect.x = 0;
@@ -68,8 +74,8 @@ render(SDL_Renderer *renderer)
        - draw
      */
     for (i = 0; i < NUM_HAPPY_FACES; i++) {
-        faces[i].x += faces[i].xvel * MILLESECONDS_PER_FRAME;
-        faces[i].y += faces[i].yvel * MILLESECONDS_PER_FRAME;
+        faces[i].x += faces[i].xvel * deltaTime;
+        faces[i].y += faces[i].yvel * deltaTime;
         if (faces[i].x > maxx) {
             faces[i].x = maxx;
             faces[i].xvel = -faces[i].xvel;
@@ -123,48 +129,45 @@ initializeTexture(SDL_Renderer *renderer)
 int
 main(int argc, char *argv[])
 {
-
     SDL_Window *window;
     SDL_Renderer *renderer;
-    Uint32 startFrame;
-    Uint32 endFrame;
-    Uint32 delay;
     int done;
+    int width;
+    int height;
 
     /* initialize SDL */
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         fatalError("Could not initialize SDL");
     }
-    window = SDL_CreateWindow(NULL, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT,
-                                SDL_WINDOW_OPENGL |
-                                SDL_WINDOW_BORDERLESS);
+
+    /* The specified window size doesn't matter - except for its aspect ratio,
+     * which determines whether the window is in portrait or landscape on iOS
+     * (if SDL_WINDOW_RESIZABLE isn't specified). */
+    window = SDL_CreateWindow(NULL, 0, 0, 320, 480, SDL_WINDOW_FULLSCREEN | SDL_WINDOW_ALLOW_HIGHDPI);
 
     renderer = SDL_CreateRenderer(window, -1, 0);
 
+    SDL_GetWindowSize(window, &width, &height);
+    SDL_RenderSetLogicalSize(renderer, width, height);
+
     initializeTexture(renderer);
-    initializeHappyFaces();
+    initializeHappyFaces(renderer);
+
 
     /* main loop */
     done = 0;
     while (!done) {
         SDL_Event event;
-        startFrame = SDL_GetTicks();
+        double deltaTime = updateDeltaTime();
+
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 done = 1;
             }
         }
-        render(renderer);
-        endFrame = SDL_GetTicks();
 
-        /* figure out how much time we have left, and then sleep */
-        delay = MILLESECONDS_PER_FRAME - (endFrame - startFrame);
-        if (delay < 0) {
-            delay = 0;
-        } else if (delay > MILLESECONDS_PER_FRAME) {
-            delay = MILLESECONDS_PER_FRAME;
-        }
-        SDL_Delay(delay);
+        render(renderer, deltaTime);
+        SDL_Delay(1);
     }
 
     /* cleanup */

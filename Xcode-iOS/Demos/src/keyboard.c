@@ -132,10 +132,13 @@ keyToIndex(SDL_Keysym key)
 void
 getPositionForCharNumber(int n, int *x, int *y)
 {
+    int renderW, renderH;
+    SDL_RenderGetLogicalSize(renderer, &renderW, &renderH);
+
     int x_padding = 16;         /* padding space on left and right side of screen */
     int y_padding = 32;         /* padding space at top of screen */
     /* figure out the number of characters that can fit horizontally across the screen */
-    int max_x_chars = (SCREEN_WIDTH - 2 * x_padding) / GLYPH_SIZE_SCREEN;
+    int max_x_chars = (renderW - 2 * x_padding) / GLYPH_SIZE_SCREEN;
     int line_separation = 5;    /* pixels between each line */
     *x = (n % max_x_chars) * GLYPH_SIZE_SCREEN + x_padding;
     *y = (n / max_x_chars) * (GLYPH_SIZE_SCREEN + line_separation) +
@@ -228,20 +231,24 @@ loadFont(void)
 int
 main(int argc, char *argv[])
 {
-
     int index;                  /* index of last key we pushed in the bitmap font */
     SDL_Window *window;
     SDL_Event event;            /* last event received */
     SDL_Keymod mod;             /* key modifiers of last key we pushed */
     SDL_Scancode scancode;      /* scancode of last key we pushed */
+    int width;
+    int height;
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         printf("Error initializing SDL: %s", SDL_GetError());
     }
     /* create window */
-    window = SDL_CreateWindow("iPhone keyboard test", 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT, 0);
+    window = SDL_CreateWindow("iPhone keyboard test", 0, 0, 320, 480, SDL_WINDOW_ALLOW_HIGHDPI);
     /* create renderer */
     renderer = SDL_CreateRenderer(window, -1, 0);
+
+    SDL_GetWindowSize(window, &width, &height);
+    SDL_RenderSetLogicalSize(renderer, width, height);
 
     /* load up our font */
     loadFont();

@@ -24,6 +24,13 @@
 		FA30DECD1BBF5C14009C397F /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
 		FA30DECE1BBF5C14009C397F /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
 		FA30DECF1BBF5C14009C397F /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDF0D71D0E12D2AB00247964 /* CoreAudio.framework */; };
+		FA86C0371D9765BB009CB637 /* iOS Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FA86C0361D9765BA009CB637 /* iOS Launch Screen.storyboard */; };
+		FA86C0381D9765BB009CB637 /* iOS Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FA86C0361D9765BA009CB637 /* iOS Launch Screen.storyboard */; };
+		FA86C0391D9765BB009CB637 /* iOS Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FA86C0361D9765BA009CB637 /* iOS Launch Screen.storyboard */; };
+		FA86C03A1D9765BB009CB637 /* iOS Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FA86C0361D9765BA009CB637 /* iOS Launch Screen.storyboard */; };
+		FA86C03B1D9765BB009CB637 /* iOS Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FA86C0361D9765BA009CB637 /* iOS Launch Screen.storyboard */; };
+		FA86C03C1D9765BB009CB637 /* iOS Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FA86C0361D9765BA009CB637 /* iOS Launch Screen.storyboard */; };
+		FA86C03D1D9765BB009CB637 /* iOS Launch Screen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = FA86C0361D9765BA009CB637 /* iOS Launch Screen.storyboard */; };
 		FA8B4BA31967070A00F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BA21967070A00F8EB7C /* CoreMotion.framework */; };
 		FA8B4BA41967071300F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BA21967070A00F8EB7C /* CoreMotion.framework */; };
 		FA8B4BA51967071A00F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BA21967070A00F8EB7C /* CoreMotion.framework */; };
@@ -220,6 +227,7 @@
 		1DF5F4DF0D08C38300B7A737 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FA30DE961BBF59D9009C397F /* Happy-TV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Happy-TV.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		FA86C0361D9765BA009CB637 /* iOS Launch Screen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = "iOS Launch Screen.storyboard"; sourceTree = "<group>"; };
 		FA8B4BA21967070A00F8EB7C /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
 		FABA34D31D8B5E5600915323 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = System/Library/Frameworks/AVFoundation.framework; sourceTree = SDKROOT; };
 		FABA34D71D8B5E7700915323 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS10.0.sdk/System/Library/Frameworks/AVFoundation.framework; sourceTree = DEVELOPER_DIR; };
@@ -423,6 +431,7 @@
 		29B97314FDCFA39411CA2CEA /* CustomTemplate */ = {
 			isa = PBXGroup;
 			children = (
+				FA86C0361D9765BA009CB637 /* iOS Launch Screen.storyboard */,
 				FD1B48920E313154007AB34E /* SDL.xcodeproj */,
 				FD77A0040E26BC0500F39101 /* src */,
 				29B97317FDCFA39411CA2CEA /* Resources */,
@@ -676,7 +685,9 @@
 				TargetAttributes = {
 					FA30DE951BBF59D9009C397F = {
 						CreatedOnToolsVersion = 7.1;
-						DevelopmentTeam = DJN9C5VR5G;
+					};
+					FDC52EC60E2843D6008D768C = {
+						ProvisioningStyle = Automatic;
 					};
 				};
 			};
@@ -735,6 +746,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				FA86C0371D9765BB009CB637 /* iOS Launch Screen.storyboard in Resources */,
 				FD925B1B0E0F276600E92347 /* Icon.png in Resources */,
 				FD787AA20E22A5CC003E8E36 /* Default.png in Resources */,
 			);
@@ -755,6 +767,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FDB651D00E43D1AD00F688B5 /* icon.bmp in Resources */,
+				FA86C0381D9765BB009CB637 /* iOS Launch Screen.storyboard in Resources */,
 				FD925B1A0E0F276600E92347 /* Icon.png in Resources */,
 				FD787AA10E22A5CC003E8E36 /* Default.png in Resources */,
 			);
@@ -768,6 +781,7 @@
 				FDB651D10E43D1B300F688B5 /* ship.bmp in Resources */,
 				FD925B190E0F276600E92347 /* Icon.png in Resources */,
 				FD787AA30E22A5CC003E8E36 /* Default.png in Resources */,
+				FA86C0391D9765BB009CB637 /* iOS Launch Screen.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -779,6 +793,7 @@
 				FDB651FA0E43D1F300F688B5 /* Icon.png in Resources */,
 				FDB651FB0E43D1F300F688B5 /* Default.png in Resources */,
 				FDB652C70E43E25900F688B5 /* kromasky_16x16.bmp in Resources */,
+				FA86C03D1D9765BB009CB637 /* iOS Launch Screen.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -787,6 +802,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FDB651D30E43D1BA00F688B5 /* stroke.bmp in Resources */,
+				FA86C03A1D9765BB009CB637 /* iOS Launch Screen.storyboard in Resources */,
 				FDC202E10E107B1200ABAC90 /* Icon.png in Resources */,
 				FD787AA40E22A5CC003E8E36 /* Default.png in Resources */,
 			);
@@ -797,6 +813,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				FDB651D80E43D1D800F688B5 /* stroke.bmp in Resources */,
+				FA86C03C1D9765BB009CB637 /* iOS Launch Screen.storyboard in Resources */,
 				FDC52EC80E2843D6008D768C /* Icon.png in Resources */,
 				FDC52EC90E2843D6008D768C /* Default.png in Resources */,
 			);
@@ -809,6 +826,7 @@
 				FDB651D40E43D1C500F688B5 /* ds_brush_snare.wav in Resources */,
 				FDB651D50E43D1C500F688B5 /* ds_china.wav in Resources */,
 				FDB651D60E43D1C500F688B5 /* ds_kick_big_amb.wav in Resources */,
+				FA86C03B1D9765BB009CB637 /* iOS Launch Screen.storyboard in Resources */,
 				FDB651D70E43D1C500F688B5 /* ds_loose_skin_mute.wav in Resources */,
 				FDF0D6960E12D05400247964 /* Icon.png in Resources */,
 				FD787AA50E22A5CC003E8E36 /* Default.png in Resources */,
@@ -940,6 +958,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				INFOPLIST_FILE = Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.Rectangles;
 				PRODUCT_NAME = Rectangles;
 			};
 			name = Debug;
@@ -948,6 +967,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				INFOPLIST_FILE = Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.Rectangles;
 				PRODUCT_NAME = Rectangles;
 			};
 			name = Release;
@@ -995,6 +1015,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = "";
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -1013,7 +1034,7 @@
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MTL_ENABLE_DEBUG_INFO = YES;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.Happy-TV";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.yourcompany.Happy-TV";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
 				TARGETED_DEVICE_FAMILY = 3;
@@ -1040,6 +1061,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = "";
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				GCC_C_LANGUAGE_STANDARD = gnu99;
@@ -1053,7 +1075,7 @@
 				INFOPLIST_FILE = Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				MTL_ENABLE_DEBUG_INFO = NO;
-				PRODUCT_BUNDLE_IDENTIFIER = "com.Happy-TV";
+				PRODUCT_BUNDLE_IDENTIFIER = "com.yourcompany.Happy-TV";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = appletvos;
 				TARGETED_DEVICE_FAMILY = 3;
@@ -1067,6 +1089,7 @@
 			buildSettings = {
 				GCC_DYNAMIC_NO_PIC = NO;
 				INFOPLIST_FILE = Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.Happy;
 				PRODUCT_NAME = Happy;
 				SDKROOT = iphoneos;
 			};
@@ -1076,6 +1099,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				INFOPLIST_FILE = Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.Happy;
 				PRODUCT_NAME = Happy;
 				SDKROOT = iphoneos;
 			};
@@ -1085,6 +1109,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				INFOPLIST_FILE = Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.Accel;
 				PRODUCT_NAME = Accel;
 				SDKROOT = iphoneos;
 			};
@@ -1094,6 +1119,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				INFOPLIST_FILE = Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.Accel;
 				PRODUCT_NAME = Accel;
 				SDKROOT = iphoneos;
 			};
@@ -1103,6 +1129,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				INFOPLIST_FILE = Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.Keyboard;
 				PRODUCT_NAME = Keyboard;
 				SDKROOT = iphoneos;
 			};
@@ -1112,6 +1139,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				INFOPLIST_FILE = Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.Keyboard;
 				PRODUCT_NAME = Keyboard;
 				SDKROOT = iphoneos;
 			};
@@ -1121,6 +1149,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				INFOPLIST_FILE = Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.Touch;
 				PRODUCT_NAME = Touch;
 				SDKROOT = iphoneos;
 			};
@@ -1130,6 +1159,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				INFOPLIST_FILE = Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.Touch;
 				PRODUCT_NAME = Touch;
 				SDKROOT = iphoneos;
 			};
@@ -1138,7 +1168,10 @@
 		FDC52EDC0E2843D6008D768C /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.Fireworks;
 				PRODUCT_NAME = Fireworks;
 				SDKROOT = iphoneos;
 			};
@@ -1147,7 +1180,10 @@
 		FDC52EDD0E2843D6008D768C /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.Fireworks;
 				PRODUCT_NAME = Fireworks;
 				SDKROOT = iphoneos;
 			};
@@ -1157,6 +1193,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				INFOPLIST_FILE = Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.Mixer;
 				PRODUCT_NAME = Mixer;
 				SDKROOT = iphoneos;
 			};
@@ -1166,6 +1203,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				INFOPLIST_FILE = Info.plist;
+				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.Mixer;
 				PRODUCT_NAME = Mixer;
 				SDKROOT = iphoneos;
 			};
