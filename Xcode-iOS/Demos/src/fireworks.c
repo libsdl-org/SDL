@@ -10,13 +10,13 @@
 #include <math.h>
 #include <time.h>
 
-#define MILLESECONDS_PER_FRAME 16       /* about 60 frames per second */
 #define ACCEL 0.0001f           /* acceleration due to gravity, units in pixels per millesecond squared */
 #define WIND_RESISTANCE 0.00005f        /* acceleration per unit velocity due to wind resistance */
 #define MAX_PARTICLES 2000      /* maximum number of particles displayed at once */
 
 static GLuint particleTextureID;        /* OpenGL particle texture id */
 static SDL_bool pointSizeExtensionSupported;    /* is GL_OES_point_size_array supported ? */
+static float pointSizeScale;
 /*
     used to describe what type of particle a given struct particle is.
     emitter - this particle flies up, shooting off trail particles, then finally explodes into dust particles.
@@ -55,7 +55,7 @@ void initializeParticles(void);
 void initializeTexture();
 int nextPowerOfTwo(int x);
 void drawParticles();
-void stepParticles(void);
+void stepParticles(double deltaTime);
 
 /*  helper function (used in texture loading)
     returns next power of two greater than or equal to x
@@ -74,8 +74,9 @@ nextPowerOfTwo(int x)
     steps each active particle by timestep MILLESECONDS_PER_FRAME
 */
 void
-stepParticles(void)
+stepParticles(double deltaTime)
 {
+    float deltaMilliseconds = deltaTime * 1000;
     int i;
     struct particle *slot = particles;
     struct particle *curr = particles;
@@ -93,10 +94,10 @@ stepParticles(void)
                 curr->isActive = 0;
 
             /* step velocity, then step position */
-            curr->yvel += ACCEL * MILLESECONDS_PER_FRAME;
+            curr->yvel += ACCEL * deltaMilliseconds;
             curr->xvel += 0.0f;
-            curr->y += curr->yvel * MILLESECONDS_PER_FRAME;
-            curr->x += curr->xvel * MILLESECONDS_PER_FRAME;
+            curr->y += curr->yvel * deltaMilliseconds;
+            curr->x += curr->xvel * deltaMilliseconds;
 
             /* particle behavior */
             if (curr->type == emitter) {
@@ -111,29 +112,29 @@ stepParticles(void)
                     sqrt(curr->xvel * curr->xvel + curr->yvel * curr->yvel);
                 /*      if wind resistance is not powerful enough to stop us completely,
                    then apply winde resistance, otherwise just stop us completely */
-                if (WIND_RESISTANCE * MILLESECONDS_PER_FRAME < speed) {
+                if (WIND_RESISTANCE * deltaMilliseconds < speed) {
                     float normx = curr->xvel / speed;
                     float normy = curr->yvel / speed;
                     curr->xvel -=
-                        normx * WIND_RESISTANCE * MILLESECONDS_PER_FRAME;
+                        normx * WIND_RESISTANCE * deltaMilliseconds;
                     curr->yvel -=
-                        normy * WIND_RESISTANCE * MILLESECONDS_PER_FRAME;
+                        normy * WIND_RESISTANCE * deltaMilliseconds;
                 } else {
                     curr->xvel = curr->yvel = 0;        /* stop particle */
                 }
 
-                if (curr->color[3] <= MILLESECONDS_PER_FRAME * 0.1275f) {
+                if (curr->color[3] <= deltaMilliseconds * 0.1275f) {
                     /* if this next step will cause us to fade out completely
                        then just mark for deletion */
                     curr->isActive = 0;
                 } else {
                     /* otherwise, let's fade a bit more */
-                    curr->color[3] -= MILLESECONDS_PER_FRAME * 0.1275f;
+                    curr->color[3] -= deltaMilliseconds * 0.1275f;
                 }
 
                 /* if we're a dust particle, shrink our size */
                 if (curr->type == dust)
-                    curr->size -= MILLESECONDS_PER_FRAME * 0.010f;
+                    curr->size -= deltaMilliseconds * 0.010f;
 
             }
 
@@ -147,7 +148,7 @@ stepParticles(void)
     /* the number of active particles is computed as the difference between
        old number of active particles, where slot points, and the
        new size of the array, where particles points */
-    num_active_particles = slot - particles;
+    num_active_particles = (int) (slot - particles);
 }
 
 /*
@@ -206,7 +207,7 @@ explodeEmitter(struct particle *emitter)
         p->y = emitter->y + emitter->yvel;
         p->isActive = 1;
         p->type = dust;
-        p->size = 15;
+        p->size = 15 * pointSizeScale;
         /* inherit emitter's color */
         p->color[0] = emitter->color[0];
         p->color[1] = emitter->color[1];
@@ -244,7 +245,7 @@ spawnTrailFromEmitter(struct particle *emitter)
     p->color[3] = (0.7f) * 255;
 
     /* set other attributes */
-    p->size = 10;
+    p->size = 10 * pointSizeScale;
     p->type = trail;
     p->isActive = 1;
 
@@ -298,7 +299,7 @@ spawnEmitterParticle(GLfloat x, GLfloat y)
     p->xvel = 0;
     p->yvel = -sqrt(2 * ACCEL * (screen_h - y));
     /* set other attributes */
-    p->size = 10;
+    p->size = 10 * pointSizeScale;
     p->type = emitter;
     p->isActive = 1;
     /* our array has expanded at the end */
@@ -363,7 +364,7 @@ main(int argc, char *argv[])
 {
     SDL_Window *window;         /* main window */
     SDL_GLContext context;
-    int w, h;
+    int drawableW, drawableH;
     Uint32 startFrame;          /* time frame began to process */
     Uint32 endFrame;            /* time frame ended processing */
     Uint32 delay;               /* time to pause waiting to draw next frame */
@@ -391,10 +392,18 @@ main(int argc, char *argv[])
     SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 1);
 
     /* create main window and renderer */
-    window = SDL_CreateWindow(NULL, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT,
-                                SDL_WINDOW_OPENGL |
-                                SDL_WINDOW_BORDERLESS);
+    window = SDL_CreateWindow(NULL, 0, 0, 320, 480,
+                                SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS | SDL_WINDOW_ALLOW_HIGHDPI);
     context = SDL_GL_CreateContext(window);
+
+    /* The window size and drawable size may be different when highdpi is enabled,
+     * due to the increased pixel density of the drawable. */
+    SDL_GetWindowSize(window, &screen_w, &screen_h);
+    SDL_GL_GetDrawableSize(window, &drawableW, &drawableH);
+
+    /* In OpenGL, point sizes are always in pixels. We don't want them looking
+     * tiny on a retina screen. */
+    pointSizeScale = (float) drawableH / (float) screen_h;
 
     /* load the particle texture */
     initializeTexture();
@@ -412,8 +421,7 @@ main(int argc, char *argv[])
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    SDL_GetWindowSize(window, &screen_w, &screen_h);
-    glViewport(0, 0, screen_w, screen_h);
+    glViewport(0, 0, drawableW, drawableH);
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
@@ -436,14 +444,14 @@ main(int argc, char *argv[])
         glEnableClientState(GL_POINT_SIZE_ARRAY_OES);
     } else {
         /* if extension not available then all particles have size 10 */
-        glPointSize(10);
+        glPointSize(10 * pointSizeScale);
     }
 
     done = 0;
     /* enter main loop */
     while (!done) {
-        startFrame = SDL_GetTicks();
         SDL_Event event;
+        double deltaTime = updateDeltaTime();
         while (SDL_PollEvent(&event)) {
             if (event.type == SDL_QUIT) {
                 done = 1;
@@ -454,19 +462,10 @@ main(int argc, char *argv[])
                 spawnEmitterParticle(x, y);
             }
         }
-        stepParticles();
+        stepParticles(deltaTime);
         drawParticles();
         SDL_GL_SwapWindow(window);
-        endFrame = SDL_GetTicks();
-
-        /* figure out how much time we have left, and then sleep */
-        delay = MILLESECONDS_PER_FRAME - (endFrame - startFrame);
-        if (delay > MILLESECONDS_PER_FRAME) {
-            delay = MILLESECONDS_PER_FRAME;
-        }
-        if (delay > 0) {
-            SDL_Delay(delay);
-        }
+        SDL_Delay(1);
     }
 
     /* delete textures */

@@ -33,7 +33,7 @@ static struct sound drums[NUM_DRUMS];
 void handleMouseButtonDown(SDL_Event * event);
 void handleMouseButtonUp(SDL_Event * event);
 int playSound(struct sound *);
-void initializeButtons();
+void initializeButtons(SDL_Renderer *);
 void audioCallback(void *userdata, Uint8 * stream, int len);
 void loadSound(const char *file, struct sound *s);
 
@@ -52,19 +52,21 @@ struct
 
 /* sets up the buttons (color, position, state) */
 void
-initializeButtons()
+initializeButtons(SDL_Renderer *renderer)
 {
-
     int i;
     int spacing = 10;           /* gap between drum buttons */
     SDL_Rect buttonRect;        /* keeps track of where to position drum */
     SDL_Color upColor = { 86, 86, 140, 255 };   /* color of drum when not pressed */
     SDL_Color downColor = { 191, 191, 221, 255 };       /* color of drum when pressed */
+    int renderW, renderH;
+
+    SDL_RenderGetLogicalSize(renderer, &renderW, &renderH);
 
     buttonRect.x = spacing;
     buttonRect.y = spacing;
-    buttonRect.w = SCREEN_WIDTH - 2 * spacing;
-    buttonRect.h = (SCREEN_HEIGHT - (NUM_DRUMS + 1) * spacing) / NUM_DRUMS;
+    buttonRect.w = renderW - 2 * spacing;
+    buttonRect.h = (renderH - (NUM_DRUMS + 1) * spacing) / NUM_DRUMS;
 
     /* setup each button */
     for (i = 0; i < NUM_DRUMS; i++) {
@@ -270,23 +272,22 @@ audioCallback(void *userdata, Uint8 * stream, int len)
 int
 main(int argc, char *argv[])
 {
-
     int done;                   /* has user tried to quit ? */
     SDL_Window *window;         /* main window */
     SDL_Renderer *renderer;
     SDL_Event event;
-    Uint32 startFrame;          /* holds when frame started processing */
-    Uint32 endFrame;            /* holds when frame ended processing */
-    Uint32 delay;               /* calculated delay, how long should we wait before next frame? */
     int i;
+    int width;
+    int height;
 
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) < 0) {
         fatalError("could not initialize SDL");
     }
-    window =
-        SDL_CreateWindow(NULL, 0, 0, SCREEN_WIDTH, SCREEN_HEIGHT,
-                         SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS);
+    window = SDL_CreateWindow(NULL, 0, 0, 320, 480, SDL_WINDOW_BORDERLESS | SDL_WINDOW_ALLOW_HIGHDPI);
     renderer = SDL_CreateRenderer(window, 0, 0);
+
+    SDL_GetWindowSize(window, &width, &height);
+    SDL_RenderSetLogicalSize(renderer, width, height);
 
     /* initialize the mixer */
     SDL_memset(&mixer, 0, sizeof(mixer));
@@ -310,12 +311,11 @@ main(int argc, char *argv[])
     loadSound("ds_china.wav", &drums[0]);
 
     /* setup positions, colors, and state of buttons */
-    initializeButtons();
+    initializeButtons(renderer);
 
     /* enter main loop */
     done = 0;
     while (!done) {
-        startFrame = SDL_GetTicks();
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
             case SDL_MOUSEBUTTONDOWN:
@@ -330,16 +330,8 @@ main(int argc, char *argv[])
             }
         }
         render(renderer);               /* draw buttons */
-        endFrame = SDL_GetTicks();
 
-        /* figure out how much time we have left, and then sleep */
-        delay = MILLESECONDS_PER_FRAME - (endFrame - startFrame);
-        if (delay < 0) {
-            delay = 0;
-        } else if (delay > MILLESECONDS_PER_FRAME) {
-            delay = MILLESECONDS_PER_FRAME;
-        }
-        SDL_Delay(delay);
+        SDL_Delay(1);
     }
 
     /* cleanup code, let's free up those sound buffers */
