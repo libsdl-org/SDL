@@ -364,6 +364,8 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
      * time events are pumped. */
     UIViewController *vc = nil;
 
+    /* TODO: Try to load the 1080p launch image on tvOS. */
+#if !TARGET_OS_TV
     NSString *screenname = [bundle objectForInfoDictionaryKey:@"UILaunchStoryboardName"];
 
     if (screenname && UIKit_IsSystemVersionAtLeast(8.0)) {
@@ -382,6 +384,7 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     if (vc == nil) {
         vc = [[SDLLaunchScreenController alloc] initWithNibName:screenname bundle:bundle];
     }
+#endif
 
     if (vc.view) {
         launchWindow = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
