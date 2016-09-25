@@ -24,6 +24,7 @@
 @interface SDLLaunchScreenController : UIViewController
 
 - (instancetype)init;
+- (instancetype)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil;
 - (void)loadView;
 
 @end
