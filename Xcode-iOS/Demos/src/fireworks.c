@@ -71,7 +71,7 @@ nextPowerOfTwo(int x)
 }
 
 /*
-    steps each active particle by timestep MILLESECONDS_PER_FRAME
+    steps each active particle by timestep deltaTime
 */
 void
 stepParticles(double deltaTime)
