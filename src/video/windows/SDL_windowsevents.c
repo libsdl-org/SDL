@@ -202,9 +202,15 @@ WindowsScanCodeToSDLScanCode(LPARAM lParam, WPARAM wParam)
 void
 WIN_CheckWParamMouseButton(SDL_bool bwParamMousePressed, SDL_bool bSDLMousePressed, SDL_WindowData *data, Uint8 button, SDL_MouseID mouseID)
 {
-    if (data->focus_click_pending && button == SDL_BUTTON_LEFT && !bwParamMousePressed) {
-        data->focus_click_pending = SDL_FALSE;
-        WIN_UpdateClipCursor(data->window);
+    if (data->focus_click_pending & SDL_BUTTON(button)) {
+        /* Ignore the button click for activation */
+        if (!bwParamMousePressed) {
+            data->focus_click_pending &= ~SDL_BUTTON(button);
+            if (!data->focus_click_pending) {
+                WIN_UpdateClipCursor(data->window);
+            }
+        }
+        return;
     }
 
     if (bwParamMousePressed && !bSDLMousePressed) {
@@ -398,8 +404,22 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             minimized = HIWORD(wParam);
             if (!minimized && (LOWORD(wParam) != WA_INACTIVE)) {
-                data->focus_click_pending = (GetAsyncKeyState(VK_LBUTTON) != 0);
-
+                if (GetAsyncKeyState(VK_LBUTTON)) {
+                    data->focus_click_pending |= SDL_BUTTON_LMASK;
+                }
+                if (GetAsyncKeyState(VK_RBUTTON)) {
+                    data->focus_click_pending |= SDL_BUTTON_RMASK;
+                }
+                if (GetAsyncKeyState(VK_MBUTTON)) {
+                    data->focus_click_pending |= SDL_BUTTON_MMASK;
+                }
+                if (GetAsyncKeyState(VK_XBUTTON1)) {
+                    data->focus_click_pending |= SDL_BUTTON_X1MASK;
+                }
+                if (GetAsyncKeyState(VK_XBUTTON2)) {
+                    data->focus_click_pending |= SDL_BUTTON_X2MASK;
+                }
+                
                 SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_SHOWN, 0, 0);
                 if (SDL_GetKeyboardFocus() != data->window) {
                     SDL_SetKeyboardFocus(data->window);
