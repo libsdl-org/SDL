@@ -1395,7 +1395,7 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
             }
             SDLActivity.onNativeAccel(-x / SensorManager.GRAVITY_EARTH,
                                       y / SensorManager.GRAVITY_EARTH,
-                                      event.values[2] / SensorManager.GRAVITY_EARTH - 1);
+                                      event.values[2] / SensorManager.GRAVITY_EARTH);
         }
     }
 }
