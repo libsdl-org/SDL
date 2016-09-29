@@ -41,7 +41,7 @@ typedef struct
     SDL_bool expected_resize;
     SDL_bool in_border_change;
     SDL_bool in_title_click;
-    SDL_bool focus_click_pending;
+    Uint8 focus_click_pending;
     SDL_bool windowed_mode_was_maximized;
     SDL_bool in_window_deactivation;
     struct SDL_VideoData *videodata;
