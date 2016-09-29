@@ -198,6 +198,12 @@ WindowsScanCodeToSDLScanCode(LPARAM lParam, WPARAM wParam)
     return code;
 }
 
+static SDL_bool
+WIN_ShouldIgnoreFocusClick()
+{
+    const char *hint = "1";//SDL_GetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH);
+    return (!hint || (*hint == '0')) ? SDL_TRUE : SDL_FALSE;
+}
 
 void
 WIN_CheckWParamMouseButton(SDL_bool bwParamMousePressed, SDL_bool bSDLMousePressed, SDL_WindowData *data, Uint8 button, SDL_MouseID mouseID)
@@ -210,7 +216,9 @@ WIN_CheckWParamMouseButton(SDL_bool bwParamMousePressed, SDL_bool bSDLMousePress
                 WIN_UpdateClipCursor(data->window);
             }
         }
-        return;
+        if (WIN_ShouldIgnoreFocusClick()) {
+            return;
+        }
     }
 
     if (bwParamMousePressed && !bSDLMousePressed) {
