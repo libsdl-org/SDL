@@ -1064,6 +1064,12 @@ SDLTest_PrintEvent(SDL_Event * event)
         case SDL_WINDOWEVENT_CLOSE:
             SDL_Log("SDL EVENT: Window %d closed", event->window.windowID);
             break;
+        case SDL_WINDOWEVENT_TAKE_FOCUS:
+            SDL_Log("SDL EVENT: Window %d take focus", event->window.windowID);
+            break;
+        case SDL_WINDOWEVENT_HIT_TEST:
+            SDL_Log("SDL EVENT: Window %d hit test", event->window.windowID);
+            break;
         default:
             SDL_Log("SDL EVENT: Window %d got unknown event %d",
                     event->window.windowID, event->window.event);
