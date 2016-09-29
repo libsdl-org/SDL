@@ -60,6 +60,7 @@ typedef struct
     int border_right;
     int border_top;
     int border_bottom;
+    Uint32 last_focus_event_time;
     PendingFocusEnum pending_focus;
     Uint32 pending_focus_time;
     XConfigureEvent last_xconfigure;
