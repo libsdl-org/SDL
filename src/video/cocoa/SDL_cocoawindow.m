@@ -1118,7 +1118,11 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 
 - (BOOL)acceptsFirstMouse:(NSEvent *)theEvent
 {
-    const char *hint = SDL_GetHint(SDL_HINT_MAC_MOUSE_FOCUS_CLICKTHROUGH);
+    const char *hint = SDL_GetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH);
+    if (!hint) {
+        /* Check older hint for backwards compatibility */
+        hint = SDL_GetHint("SDL_MAC_MOUSE_FOCUS_CLICKTHROUGH");
+    }
     return hint && *hint != '0';
 }
 @end

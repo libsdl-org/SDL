@@ -233,15 +233,26 @@ extern "C" {
 #define SDL_HINT_GRAB_KEYBOARD              "SDL_GRAB_KEYBOARD"
 
 /**
-*  \brief  A variable controlling whether relative mouse mode is implemented using mouse warping
-*
-*  This variable can be set to the following values:
-*    "0"       - Relative mouse mode uses raw input
-*    "1"       - Relative mouse mode uses mouse warping
-*
-*  By default SDL will use raw input for relative mouse mode
-*/
+ *  \brief  A variable controlling whether relative mouse mode is implemented using mouse warping
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Relative mouse mode uses raw input
+ *    "1"       - Relative mouse mode uses mouse warping
+ *
+ *  By default SDL will use raw input for relative mouse mode
+ */
 #define SDL_HINT_MOUSE_RELATIVE_MODE_WARP    "SDL_MOUSE_RELATIVE_MODE_WARP"
+
+/**
+ *  \brief Allow mouse click events when clicking to focus an SDL window
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Ignore mouse clicks that activate a window
+ *    "1"       - Generate events for mouse clicks that activate a window
+ *
+ *  By default SDL will ignore mouse clicks that activate a window
+ */
+#define SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH "SDL_MOUSE_FOCUS_CLICKTHROUGH"
 
 /**
  *  \brief Minimize your SDL_Window if it loses key focus when in fullscreen mode. Defaults to true.
@@ -574,13 +585,6 @@ extern "C" {
 *
 */
 #define SDL_HINT_MAC_BACKGROUND_APP    "SDL_MAC_BACKGROUND_APP"
-
-/**
- *  \brief Allow mouse click events when clicking to focus an SDL window
- *
- *  This hint only applies to Mac OS X.
- */
-#define SDL_HINT_MAC_MOUSE_FOCUS_CLICKTHROUGH "SDL_MAC_MOUSE_FOCUS_CLICKTHROUGH"
 
 /**
  * \brief Android APK expansion main file version. Should be a string number like "1", "2" etc.
