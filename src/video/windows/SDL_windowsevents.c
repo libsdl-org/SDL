@@ -201,7 +201,7 @@ WindowsScanCodeToSDLScanCode(LPARAM lParam, WPARAM wParam)
 static SDL_bool
 WIN_ShouldIgnoreFocusClick()
 {
-    const char *hint = "1";//SDL_GetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH);
+    const char *hint = SDL_GetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH);
     return (!hint || (*hint == '0')) ? SDL_TRUE : SDL_FALSE;
 }
 
