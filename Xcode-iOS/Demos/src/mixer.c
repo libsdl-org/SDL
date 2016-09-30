@@ -9,7 +9,6 @@
 
 #define NUM_CHANNELS 8          /* max number of sounds we can play at once */
 #define NUM_DRUMS 4             /* number of drums in our set */
-#define MILLESECONDS_PER_FRAME 16       /* about 60 frames per second */
 
 static struct
 {
