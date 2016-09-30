@@ -81,6 +81,7 @@ BE_CreateDevice(int devindex)
     device->MinimizeWindow = BE_MinimizeWindow;
     device->RestoreWindow = BE_RestoreWindow;
     device->SetWindowBordered = BE_SetWindowBordered;
+    device->SetWindowResizable = BE_SetWindowResizable;
     device->SetWindowFullscreen = BE_SetWindowFullscreen;
     device->SetWindowGammaRamp = BE_SetWindowGammaRamp;
     device->GetWindowGammaRamp = BE_GetWindowGammaRamp;

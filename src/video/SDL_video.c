@@ -1842,6 +1842,24 @@ SDL_SetWindowBordered(SDL_Window * window, SDL_bool bordered)
 }
 
 void
+SDL_SetWindowResizable(SDL_Window * window, SDL_bool resizable)
+{
+    CHECK_WINDOW_MAGIC(window,);
+    if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
+        const int want = (resizable != SDL_FALSE);  /* normalize the flag. */
+        const int have = ((window->flags & SDL_WINDOW_RESIZABLE) != 0);
+        if ((want != have) && (_this->SetWindowResizable)) {
+            if (want) {
+                window->flags |= SDL_WINDOW_RESIZABLE;
+            } else {
+                window->flags &= ~SDL_WINDOW_RESIZABLE;
+            }
+            _this->SetWindowResizable(_this, window, (SDL_bool) want);
+        }
+    }
+}
+
+void
 SDL_SetWindowSize(SDL_Window * window, int w, int h)
 {
     CHECK_WINDOW_MAGIC(window,);

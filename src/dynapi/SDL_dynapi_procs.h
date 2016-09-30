@@ -640,3 +640,4 @@ SDL_DYNAPI_PROC(int,SDL_SetWindowModalFor,(SDL_Window *a, SDL_Window *b),(a,b),r
 SDL_DYNAPI_PROC(int,SDL_RenderSetIntegerScale,(SDL_Renderer *a, SDL_bool b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_RenderGetIntegerScale,(SDL_Renderer *a),(a),return)
 SDL_DYNAPI_PROC(Uint32,SDL_DequeueAudio,(SDL_AudioDeviceID a, void *b, Uint32 c),(a,b,c),return)
+SDL_DYNAPI_PROC(void,SDL_SetWindowResizable,(SDL_Window *a, SDL_bool b),(a,b),)

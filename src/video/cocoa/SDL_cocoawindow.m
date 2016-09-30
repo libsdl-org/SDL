@@ -1492,6 +1492,20 @@ Cocoa_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
     }
 }}
 
+void
+Cocoa_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizable)
+{ @autoreleasepool
+{
+    /* Don't set this if we're in a space!
+     * The window will get permanently stuck if resizable is false.
+     * -flibit
+     */
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    Cocoa_WindowListener *listener = data->listener;
+    if (![listener isInFullscreenSpace]) {
+        SetWindowStyle(window, GetWindowStyle(window));
+    }
+}}
 
 void
 Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen)

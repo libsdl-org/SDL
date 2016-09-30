@@ -982,6 +982,44 @@ X11_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
 }
 
 void
+X11_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizable)
+{
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    Display *display = data->videodata->display;
+
+    XSizeHints *sizehints = X11_XAllocSizeHints();
+    long userhints;
+
+    X11_XGetWMNormalHints(display, data->xwindow, sizehints, &userhints);
+
+    if (resizable) {
+        /* FIXME: Is there a better way to get max window size from X? -flibit */
+        const int maxsize = 0x7FFFFFFF;
+        sizehints->min_width = window->min_w;
+        sizehints->min_height = window->min_h;
+        sizehints->max_width = (window->max_w == 0) ? maxsize : window->max_w;
+        sizehints->max_height = (window->max_h == 0) ? maxsize : window->max_h;
+    } else {
+        sizehints->min_width = window->w;
+        sizehints->min_height = window->h;
+        sizehints->max_width = window->w;
+        sizehints->max_height = window->h;
+    }
+    sizehints->flags |= PMinSize | PMaxSize;
+
+    X11_XSetWMNormalHints(display, data->xwindow, sizehints);
+
+    X11_XFree(sizehints);
+
+    /* See comment in X11_SetWindowSize. */
+    X11_XResizeWindow(display, data->xwindow, window->w, window->h);
+    X11_XMoveWindow(display, data->xwindow, window->x - data->border_left, window->y - data->border_top);
+    X11_XRaiseWindow(display, data->xwindow);
+
+    X11_XFlush(display);
+}
+
+void
 X11_ShowWindow(_THIS, SDL_Window * window)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;

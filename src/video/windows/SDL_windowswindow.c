@@ -520,6 +520,22 @@ WIN_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
 }
 
 void
+WIN_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizable)
+{
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    HWND hwnd = data->hwnd;
+    DWORD style = GetWindowLong(hwnd, GWL_STYLE);
+
+    if (resizable) {
+        style |= STYLE_RESIZABLE;
+    } else {
+        style &= ~STYLE_RESIZABLE;
+    }
+
+    SetWindowLong(hwnd, GWL_STYLE, style);
+}
+
+void
 WIN_RestoreWindow(_THIS, SDL_Window * window)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
