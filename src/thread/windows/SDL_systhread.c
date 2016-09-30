@@ -24,6 +24,7 @@
 
 /* Win32 thread management routines for SDL */
 
+#include "SDL_hints.h"
 #include "SDL_thread.h"
 #include "../SDL_thread_c.h"
 #include "../SDL_systhread.h"
@@ -167,8 +168,15 @@ void
 SDL_SYS_SetupThread(const char *name)
 {
     if ((name != NULL) && IsDebuggerPresent()) {
-        /* This magic tells the debugger to name a thread if it's listening. */
         THREADNAME_INFO inf;
+
+        /* C# and friends will try to catch this Exception, let's avoid it. */
+        const char *hint = SDL_GetHint(SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING);
+        if (hint && *hint == '1') {
+            return;
+        }
+
+        /* This magic tells the debugger to name a thread if it's listening. */
         SDL_zero(inf);
         inf.dwType = 0x1000;
         inf.szName = name;

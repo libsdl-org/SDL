@@ -689,6 +689,17 @@ extern "C" {
 #define SDL_HINT_BMP_SAVE_LEGACY_FORMAT "SDL_BMP_SAVE_LEGACY_FORMAT"
 
 /**
+ * \brief Tell SDL not to name threads on Windows.
+ *
+ * The variable can be set to the following values:
+ *   "0"       - SDL will raise the 0x406D1388 Exception to name threads.
+ *               This is the default behavior of SDL <= 2.0.4. (default)
+ *   "1"       - SDL will not raise this exception, and threads will be unnamed.
+ *               For .NET languages this is required when running under a debugger.
+ */
+#define SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING "SDL_WINDOWS_DISABLE_THREAD_NAMING"
+
+/**
  *  \brief  An enumeration of hint priorities
  */
 typedef enum
