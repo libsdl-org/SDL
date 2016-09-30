@@ -842,6 +842,20 @@ X11_DispatchEvent(_THIS)
                    xevent.xconfigure.x, xevent.xconfigure.y,
                    xevent.xconfigure.width, xevent.xconfigure.height);
 #endif
+            /* Real configure notify events are relative to the parent, synthetic events are absolute. */
+            if (!xevent.xconfigure.send_event) {
+                unsigned int NumChildren;
+                Window ChildReturn, Root, Parent;
+                Window * Children;
+                /* Translate these coodinates back to relative to root */
+                X11_XQueryTree(data->videodata->display, xevent.xconfigure.window, &Root, &Parent, &Children, &NumChildren);
+                X11_XTranslateCoordinates(xevent.xconfigure.display,
+                                        Parent, DefaultRootWindow(xevent.xconfigure.display),
+                                        xevent.xconfigure.x, xevent.xconfigure.y,
+                                        &xevent.xconfigure.x, &xevent.xconfigure.y,
+                                        &ChildReturn);
+            }
+                
             if (xevent.xconfigure.x != data->last_xconfigure.x ||
                 xevent.xconfigure.y != data->last_xconfigure.y) {
                 SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MOVED,
