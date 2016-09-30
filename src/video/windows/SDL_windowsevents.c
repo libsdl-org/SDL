@@ -765,6 +765,13 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         break;
 #endif /* WM_GETMINMAXINFO */
 
+    case WM_WINDOWPOSCHANGING:
+
+        if (data->expected_resize) {
+            returnCode = 0;
+        }
+        break;
+
     case WM_WINDOWPOSCHANGED:
         {
             RECT rect;
