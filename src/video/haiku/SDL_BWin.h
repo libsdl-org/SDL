@@ -578,9 +578,9 @@ private:
             return;
         }
         if (bEnabled) {
-            SetFlags(GetFlags() & ~(B_NOT_RESIZABLE | B_NOT_ZOOMABLE));
+            SetFlags(Flags() & ~(B_NOT_RESIZABLE | B_NOT_ZOOMABLE));
         } else {
-            SetFlags(GetFlags() | (B_NOT_RESIZABLE | B_NOT_ZOOMABLE));
+            SetFlags(Flags() | (B_NOT_RESIZABLE | B_NOT_ZOOMABLE));
         }
     }
 
