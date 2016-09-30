@@ -186,6 +186,7 @@ MIR_CreateDevice(int device_index)
     device->SetWindowIcon        = NULL;
     device->RaiseWindow          = NULL;
     device->SetWindowBordered    = NULL;
+    device->SetWindowResizable   = NULL;
     device->OnWindowEnter        = NULL;
     device->SetWindowPosition    = NULL;
 

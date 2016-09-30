@@ -56,6 +56,7 @@ enum WinCommands {
     BWIN_RESTORE_WINDOW,
     BWIN_SET_TITLE,
     BWIN_SET_BORDERED,
+    BWIN_SET_RESIZABLE,
     BWIN_FULLSCREEN
 };
 
@@ -378,6 +379,9 @@ class SDL_BWin:public BDirectWindow
             case BWIN_SET_BORDERED:
                 _SetBordered(message);
                 break;
+            case BWIN_SET_RESIZABLE:
+                _SetResizable(message);
+                break;
             case BWIN_SHOW_WINDOW:
                 Show();
                 break;
@@ -566,6 +570,18 @@ private:
             return;
         }
         SetLook(bEnabled ? B_BORDERED_WINDOW_LOOK : B_NO_BORDER_WINDOW_LOOK);
+    }
+
+    void _SetResizable(BMessage *msg) {
+        bool bEnabled;
+        if(msg->FindBool("window-resizable", &bEnabled) != B_OK) {
+            return;
+        }
+        if (bEnabled) {
+            SetFlags(GetFlags() & ~(B_NOT_RESIZABLE | B_NOT_ZOOMABLE));
+        } else {
+            SetFlags(GetFlags() | (B_NOT_RESIZABLE | B_NOT_ZOOMABLE));
+        }
     }
 
     void _Restore() {

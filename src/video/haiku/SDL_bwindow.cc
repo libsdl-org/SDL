@@ -145,6 +145,12 @@ void BE_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered) {
 	_ToBeWin(window)->PostMessage(&msg);
 }
 
+void BE_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizable) {
+	BMessage msg(BWIN_SET_RESIZABLE);
+	msg.AddBool("window-resizable", resizable != SDL_FALSE);
+	_ToBeWin(window)->PostMessage(&msg);
+}
+
 void BE_ShowWindow(_THIS, SDL_Window * window) {
 	BMessage msg(BWIN_SHOW_WINDOW);
 	_ToBeWin(window)->PostMessage(&msg);
