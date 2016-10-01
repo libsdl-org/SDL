@@ -129,8 +129,6 @@ typedef struct
     GLES_FBOList *framebuffers;
     GLuint window_framebuffer;
 
-    SDL_bool useDrawTexture;
-    SDL_bool GL_OES_draw_texture_supported;
     SDL_bool GL_OES_blend_func_separate_supported;
 } GLES_RenderData;
 
@@ -368,19 +366,6 @@ GLES_CreateRenderer(SDL_Window * window, Uint32 flags)
     if (SDL_GL_GetSwapInterval() > 0) {
         renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
     }
-
-#if SDL_VIDEO_DRIVER_PANDORA
-    data->GL_OES_draw_texture_supported = SDL_FALSE;
-    data->useDrawTexture = SDL_FALSE;
-#else
-    if (SDL_GL_ExtensionSupported("GL_OES_draw_texture")) {
-        data->GL_OES_draw_texture_supported = SDL_TRUE;
-        data->useDrawTexture = SDL_TRUE;
-    } else {
-        data->GL_OES_draw_texture_supported = SDL_FALSE;
-        data->useDrawTexture = SDL_FALSE;
-    }
-#endif
 
     value = 0;
     data->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &value);
@@ -952,71 +937,42 @@ GLES_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
 
     GLES_SetTexCoords(data, SDL_TRUE);
 
-    if (data->GL_OES_draw_texture_supported && data->useDrawTexture) {
-        /* this code is a little funny because the viewport is upside down vs SDL's coordinate system */
-        GLint cropRect[4];
-        int w, h;
-        SDL_Window *window = renderer->window;
+    minx = dstrect->x;
+    miny = dstrect->y;
+    maxx = dstrect->x + dstrect->w;
+    maxy = dstrect->y + dstrect->h;
 
-        SDL_GetWindowSize(window, &w, &h);
-        if (renderer->target) {
-            cropRect[0] = srcrect->x;
-            cropRect[1] = srcrect->y;
-            cropRect[2] = srcrect->w;
-            cropRect[3] = srcrect->h;
-            data->glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_CROP_RECT_OES,
-                                   cropRect);
-            data->glDrawTexfOES(renderer->viewport.x + dstrect->x, renderer->viewport.y + dstrect->y, 0,
-                                dstrect->w, dstrect->h);
-        } else {
-            cropRect[0] = srcrect->x;
-            cropRect[1] = srcrect->y + srcrect->h;
-            cropRect[2] = srcrect->w;
-            cropRect[3] = -srcrect->h;
-            data->glTexParameteriv(GL_TEXTURE_2D, GL_TEXTURE_CROP_RECT_OES,
-                                   cropRect);
-            data->glDrawTexfOES(renderer->viewport.x + dstrect->x,
-                        h - (renderer->viewport.y + dstrect->y) - dstrect->h, 0,
-                        dstrect->w, dstrect->h);
-        }
-    } else {
+    minu = (GLfloat) srcrect->x / texture->w;
+    minu *= texturedata->texw;
+    maxu = (GLfloat) (srcrect->x + srcrect->w) / texture->w;
+    maxu *= texturedata->texw;
+    minv = (GLfloat) srcrect->y / texture->h;
+    minv *= texturedata->texh;
+    maxv = (GLfloat) (srcrect->y + srcrect->h) / texture->h;
+    maxv *= texturedata->texh;
 
-        minx = dstrect->x;
-        miny = dstrect->y;
-        maxx = dstrect->x + dstrect->w;
-        maxy = dstrect->y + dstrect->h;
+    vertices[0] = minx;
+    vertices[1] = miny;
+    vertices[2] = maxx;
+    vertices[3] = miny;
+    vertices[4] = minx;
+    vertices[5] = maxy;
+    vertices[6] = maxx;
+    vertices[7] = maxy;
 
-        minu = (GLfloat) srcrect->x / texture->w;
-        minu *= texturedata->texw;
-        maxu = (GLfloat) (srcrect->x + srcrect->w) / texture->w;
-        maxu *= texturedata->texw;
-        minv = (GLfloat) srcrect->y / texture->h;
-        minv *= texturedata->texh;
-        maxv = (GLfloat) (srcrect->y + srcrect->h) / texture->h;
-        maxv *= texturedata->texh;
+    texCoords[0] = minu;
+    texCoords[1] = minv;
+    texCoords[2] = maxu;
+    texCoords[3] = minv;
+    texCoords[4] = minu;
+    texCoords[5] = maxv;
+    texCoords[6] = maxu;
+    texCoords[7] = maxv;
 
-        vertices[0] = minx;
-        vertices[1] = miny;
-        vertices[2] = maxx;
-        vertices[3] = miny;
-        vertices[4] = minx;
-        vertices[5] = maxy;
-        vertices[6] = maxx;
-        vertices[7] = maxy;
+    data->glVertexPointer(2, GL_FLOAT, 0, vertices);
+    data->glTexCoordPointer(2, GL_FLOAT, 0, texCoords);
+    data->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-        texCoords[0] = minu;
-        texCoords[1] = minv;
-        texCoords[2] = maxu;
-        texCoords[3] = minv;
-        texCoords[4] = minu;
-        texCoords[5] = maxv;
-        texCoords[6] = maxu;
-        texCoords[7] = maxv;
-
-        data->glVertexPointer(2, GL_FLOAT, 0, vertices);
-        data->glTexCoordPointer(2, GL_FLOAT, 0, texCoords);
-        data->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-    }
     data->glDisable(GL_TEXTURE_2D);
 
     return 0;
