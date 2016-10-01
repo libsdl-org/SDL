@@ -325,7 +325,7 @@ SDL_DINPUT_HapticOpenFromDevice(SDL_Haptic * haptic, LPDIRECTINPUTDEVICE8 device
 
         /* Set data format. */
         ret = IDirectInputDevice8_SetDataFormat(haptic->hwdata->device,
-                                                &c_dfDIJoystick2);
+                                                &SDL_c_dfDIJoystick2);
         if (FAILED(ret)) {
             DI_SetError("Setting data format", ret);
             goto acquire_err;
