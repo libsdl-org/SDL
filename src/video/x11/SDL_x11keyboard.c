@@ -330,13 +330,14 @@ X11_UpdateKeymap(_THIS)
     
 #if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
     {
+        XkbStateRec state;
+
         if (data->xkb) {
             X11_XkbGetUpdatedMap(data->display, XkbAllClientInfoMask, data->xkb);
         } else {
             data->xkb = X11_XkbGetMap(data->display, XkbAllClientInfoMask, XkbUseCoreKbd);
         }
 
-        XkbStateRec state;
         if (X11_XkbGetState(data->display, XkbUseCoreKbd, &state) == Success) {
             group = state.group;
         }
