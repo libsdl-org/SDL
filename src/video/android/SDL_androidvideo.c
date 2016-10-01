@@ -194,7 +194,6 @@ Android_VideoQuit(_THIS)
     Android_QuitTouch();
 }
 
-/* This function gets called before VideoInit() */
 void
 Android_SetScreenResolution(int width, int height, Uint32 format, float rate)
 {
@@ -202,6 +201,22 @@ Android_SetScreenResolution(int width, int height, Uint32 format, float rate)
     Android_ScreenHeight = height;
     Android_ScreenFormat = format;
     Android_ScreenRate = rate;
+
+    /*
+      Update the resolution of the desktop mode, so that the window
+      can be properly resized. The screen resolution change can for
+      example happen when the Activity enters or exists immersive mode,
+      which can happen after VideoInit().
+    */
+    SDL_VideoDevice* device = SDL_GetVideoDevice();
+    if (device && device->num_displays > 0)
+    {
+        SDL_VideoDisplay* display = &device->displays[0];
+        display->desktop_mode.format = Android_ScreenFormat;
+        display->desktop_mode.w = Android_ScreenWidth;
+        display->desktop_mode.h = Android_ScreenHeight;
+        display->desktop_mode.refresh_rate  = Android_ScreenRate;
+    }
 
     if (Android_Window) {
         SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_RESIZED, width, height);
