@@ -27,6 +27,4 @@ extern void SDL_DINPUT_JoystickUpdate(SDL_Joystick * joystick);
 extern void SDL_DINPUT_JoystickClose(SDL_Joystick * joystick);
 extern void SDL_DINPUT_JoystickQuit(void);
 
-extern const DIDATAFORMAT SDL_c_dfDIJoystick2;
-
 /* vi: set ts=4 sw=4 expandtab: */
