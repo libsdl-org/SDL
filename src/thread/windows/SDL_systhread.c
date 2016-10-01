@@ -33,6 +33,10 @@
 /* We'll use the C library from this DLL */
 #include <process.h>
 
+#ifndef STACK_SIZE_PARAM_IS_A_RESERVATION
+#define STACK_SIZE_PARAM_IS_A_RESERVATION 0x00010000
+#endif
+
 /* Cygwin gcc-3 ... MingW64 (even with a i386 host) does this like MSVC. */
 #if (defined(__MINGW32__) && (__GNUC__ < 4))
 typedef unsigned long (__cdecl *pfnSDL_CurrentBeginThread) (void *, unsigned,
