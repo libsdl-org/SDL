@@ -32,6 +32,7 @@
    This code currently supports Win32 DIBs in uncompressed 8 and 24 bpp.
 */
 
+#include "SDL_hints.h"
 #include "SDL_video.h"
 #include "SDL_assert.h"
 #include "SDL_endian.h"
@@ -47,6 +48,11 @@
 #define BI_BITFIELDS    3
 #endif
 
+/* Logical color space values for BMP files */
+#ifndef LCS_WINDOWS_COLOR_SPACE
+/* 0x57696E20 == "Win " */
+#define LCS_WINDOWS_COLOR_SPACE    0x57696E20
+#endif
 
 static void CorrectAlphaChannel(SDL_Surface *surface)
 {
@@ -457,6 +463,8 @@ SDL_SaveBMP_RW(SDL_Surface * saveme, SDL_RWops * dst, int freedst)
     int i, pad;
     SDL_Surface *surface;
     Uint8 *bits;
+    SDL_bool save32bit = SDL_FALSE;
+    SDL_bool saveLegacyBMP = SDL_FALSE;
 
     /* The Win32 BMP file header (14 bytes) */
     char magic[2] = { 'B', 'M' };
@@ -478,14 +486,24 @@ SDL_SaveBMP_RW(SDL_Surface * saveme, SDL_RWops * dst, int freedst)
     Uint32 biClrUsed;
     Uint32 biClrImportant;
 
+    /* The additional header members from the Win32 BITMAPV4HEADER struct (108 bytes in total) */
+    Uint32 bV4RedMask = 0;
+    Uint32 bV4GreenMask = 0;
+    Uint32 bV4BlueMask = 0;
+    Uint32 bV4AlphaMask = 0;
+    Uint32 bV4CSType = 0;
+    Sint32 bV4Endpoints[3 * 3] = {0};
+    Uint32 bV4GammaRed = 0;
+    Uint32 bV4GammaGreen = 0;
+    Uint32 bV4GammaBlue = 0;
+
     /* Make sure we have somewhere to save */
     surface = NULL;
     if (dst) {
-        SDL_bool save32bit = SDL_FALSE;
 #ifdef SAVE_32BIT_BMP
         /* We can save alpha information in a 32-bit BMP */
-        if (saveme->map->info.flags & SDL_COPY_COLORKEY ||
-            saveme->format->Amask) {
+        if (saveme->format->BitsPerPixel >= 8 && (saveme->format->Amask ||
+            saveme->map->info.flags & SDL_COPY_COLORKEY)) {
             save32bit = SDL_TRUE;
         }
 #endif /* SAVE_32BIT_BMP */
@@ -497,7 +515,7 @@ SDL_SaveBMP_RW(SDL_Surface * saveme, SDL_RWops * dst, int freedst)
                 SDL_SetError("%d bpp BMP files not supported",
                              saveme->format->BitsPerPixel);
             }
-        } else if ((saveme->format->BitsPerPixel == 24) &&
+        } else if ((saveme->format->BitsPerPixel == 24) && !save32bit &&
 #if SDL_BYTEORDER == SDL_LIL_ENDIAN
                    (saveme->format->Rmask == 0x00FF0000) &&
                    (saveme->format->Gmask == 0x0000FF00) &&
@@ -537,6 +555,13 @@ SDL_SaveBMP_RW(SDL_Surface * saveme, SDL_RWops * dst, int freedst)
         return -1;
     }
 
+    if (save32bit) {
+        const char *hint = SDL_GetHint(SDL_HINT_BMP_SAVE_LEGACY_FORMAT);
+        if (hint != NULL && (hint[0] == '1' && hint[1] == 0)) {
+            saveLegacyBMP = SDL_TRUE;
+        }
+    }
+
     if (surface && (SDL_LockSurface(surface) == 0)) {
         const int bw = surface->w * surface->format->BytesPerPixel;
 
@@ -572,6 +597,21 @@ SDL_SaveBMP_RW(SDL_Surface * saveme, SDL_RWops * dst, int freedst)
         }
         biClrImportant = 0;
 
+        /* Set the BMP info values for the version 4 header */
+        if (save32bit && !saveLegacyBMP) {
+            biSize = 108;
+            biCompression = BI_BITFIELDS;
+            /* The BMP format is always little endian, these masks stay the same */
+            bV4RedMask   = 0x00ff0000;
+            bV4GreenMask = 0x0000ff00;
+            bV4BlueMask  = 0x000000ff;
+            bV4AlphaMask = 0xff000000;
+            bV4CSType = LCS_WINDOWS_COLOR_SPACE;
+            bV4GammaRed = 0;
+            bV4GammaGreen = 0;
+            bV4GammaBlue = 0;
+        }
+
         /* Write the BMP info values */
         SDL_WriteLE32(dst, biSize);
         SDL_WriteLE32(dst, biWidth);
@@ -584,6 +624,21 @@ SDL_SaveBMP_RW(SDL_Surface * saveme, SDL_RWops * dst, int freedst)
         SDL_WriteLE32(dst, biYPelsPerMeter);
         SDL_WriteLE32(dst, biClrUsed);
         SDL_WriteLE32(dst, biClrImportant);
+
+        /* Write the BMP info values for the version 4 header */
+        if (save32bit && !saveLegacyBMP) {
+            SDL_WriteLE32(dst, bV4RedMask);
+            SDL_WriteLE32(dst, bV4GreenMask);
+            SDL_WriteLE32(dst, bV4BlueMask);
+            SDL_WriteLE32(dst, bV4AlphaMask);
+            SDL_WriteLE32(dst, bV4CSType);
+            for (i = 0; i < 3 * 3; i++) {
+                SDL_WriteLE32(dst, bV4Endpoints[i]);
+            }
+            SDL_WriteLE32(dst, bV4GammaRed);
+            SDL_WriteLE32(dst, bV4GammaGreen);
+            SDL_WriteLE32(dst, bV4GammaBlue);
+        }
 
         /* Write the palette (in BGR color order) */
         if (surface->format->palette) {
