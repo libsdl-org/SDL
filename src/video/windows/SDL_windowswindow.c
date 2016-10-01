@@ -478,8 +478,8 @@ WIN_HideWindow(_THIS, SDL_Window * window)
 void
 WIN_RaiseWindow(_THIS, SDL_Window * window)
 {
-	HWND hwnd = ((SDL_WindowData *) window->driverdata)->hwnd;
-	SetForegroundWindow(hwnd);
+    HWND hwnd = ((SDL_WindowData *) window->driverdata)->hwnd;
+    SetForegroundWindow(hwnd);
 }
 
 void
