@@ -50,23 +50,19 @@
  *
  * \return Ascii representation of the timestamp in localtime in the format '08/23/01 14:55:02'
  */
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wformat-nonliteral"
 char *SDLTest_TimestampToString(const time_t timestamp)
 {
     time_t copy;
     static char buffer[64];
     struct tm *local;
-    const char *fmt = "%x %X";
 
     SDL_memset(buffer, 0, sizeof(buffer));
     copy = timestamp;
     local = localtime(&copy);
-    strftime(buffer, sizeof(buffer), fmt, local);
+    strftime(buffer, sizeof(buffer), "%x %X", local);
 
     return buffer;
 }
-#pragma GCC diagnostic pop
 
 /*
  * Prints given message with a timestamp in the TEST category and INFO priority.
