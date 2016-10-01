@@ -1106,6 +1106,8 @@ SDL_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
         renderer->viewport.y = 0;
         renderer->viewport.w = texture->w;
         renderer->viewport.h = texture->h;
+        SDL_zero(renderer->clip_rect);
+        renderer->clipping_enabled = SDL_FALSE;
         renderer->scale.x = 1.0f;
         renderer->scale.y = 1.0f;
         renderer->logical_w = texture->w;
