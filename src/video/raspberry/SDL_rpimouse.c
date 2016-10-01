@@ -230,35 +230,47 @@ RPI_WarpMouseGlobal(int x, int y)
 {
     RPI_CursorData *curdata;
     DISPMANX_UPDATE_HANDLE_T update;
+    int ret;
     VC_RECT_T dst_rect;
+    VC_RECT_T src_rect;
     SDL_Mouse *mouse = SDL_GetMouse();
     
     if (mouse != NULL && mouse->cur_cursor != NULL && mouse->cur_cursor->driverdata != NULL) {
         curdata = (RPI_CursorData *) mouse->cur_cursor->driverdata;
         if (curdata->element != DISPMANX_NO_HANDLE) {
-            int ret;
             update = vc_dispmanx_update_start( 10 );
             SDL_assert( update );
-            vc_dispmanx_rect_set( &dst_rect, x, y, curdata->w, curdata->h);
+            src_rect.x = 0;
+            src_rect.y = 0;
+            src_rect.width  = curdata->w << 16;
+            src_rect.height = curdata->h << 16;
+            dst_rect.x = x;
+            dst_rect.y = y;
+            dst_rect.width  = curdata->w;
+            dst_rect.height = curdata->h;
+
             ret = vc_dispmanx_element_change_attributes(
                 update,
                 curdata->element,
-                ELEMENT_CHANGE_DEST_RECT,
+                0,
                 0,
                 0,
                 &dst_rect,
-                NULL,
+                &src_rect,
                 DISPMANX_NO_HANDLE,
                 DISPMANX_NO_ROTATE);
-            SDL_assert( ret == DISPMANX_SUCCESS );
+            if (ret != DISPMANX_SUCCESS ) {
+                return SDL_SetError("vc_dispmanx_element_change_attributes() failed");
+            }
+
             /* Submit asynchronously, otherwise the peformance suffers a lot */
             ret = vc_dispmanx_update_submit( update, 0, NULL );
-            SDL_assert( ret == DISPMANX_SUCCESS );
-            return (ret == DISPMANX_SUCCESS) ? 0 : -1;
+            if (ret != DISPMANX_SUCCESS ) {
+                return SDL_SetError("vc_dispmanx_update_submit() failed");
+            }
         }
-    }    
-
-    return -1;  /* !!! FIXME: this should SDL_SetError() somewhere. */
+    }   
+    return 0;
 }
 
 void
