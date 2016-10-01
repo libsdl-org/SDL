@@ -179,14 +179,36 @@ X11_KeyCodeToSDLScancode(Display *display, KeyCode keycode)
 }
 
 static Uint32
-X11_KeyCodeToUcs4(Display *display, KeyCode keycode, unsigned char group)
+X11_KeyCodeToUcs4(SDL_VideoData *data, KeyCode keycode, unsigned char group)
 {
     KeySym keysym;
 
 #if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
-    keysym = X11_XkbKeycodeToKeysym(display, keycode, group, 0);
+    if (data->xkb) {
+        int num_groups     = XkbKeyNumGroups(data->xkb, keycode);
+        unsigned char info = XkbKeyGroupInfo(data->xkb, keycode);
+        
+        if (num_groups && group >= num_groups) {
+        
+            int action = XkbOutOfRangeGroupAction(info);
+            
+            if (action == XkbRedirectIntoRange) {
+                if ((group = XkbOutOfRangeGroupNumber(info)) >= num_groups) {
+                    group = 0;
+                }
+            } else if (action == XkbClampIntoRange) {
+                group = num_groups - 1;
+            } else {
+                group %= num_groups;
+            }
+        }
+    } else {
+        group = 0;
+    }
+
+    keysym = X11_XkbKeycodeToKeysym(data->display, keycode, group, 0);
 #else
-    keysym = X11_XKeycodeToKeysym(display, keycode, 0);
+    keysym = X11_XKeycodeToKeysym(data->display, keycode, 0);
 #endif
     if (keysym == NoSymbol) {
         return 0;
@@ -308,6 +330,12 @@ X11_UpdateKeymap(_THIS)
     
 #if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
     {
+        if (data->xkb) {
+            X11_XkbGetUpdatedMap(data->display, XkbAllClientInfoMask, data->xkb);
+        } else {
+            data->xkb = X11_XkbGetMap(data->display, XkbAllClientInfoMask, XkbUseCoreKbd);
+        }
+
         XkbStateRec state;
         if (X11_XkbGetState(data->display, XkbUseCoreKbd, &state) == Success) {
             group = state.group;
@@ -326,7 +354,7 @@ X11_UpdateKeymap(_THIS)
         }
 
         /* See if there is a UCS keycode for this scancode */
-        key = X11_KeyCodeToUcs4(data->display, (KeyCode)i, group);
+        key = X11_KeyCodeToUcs4(data, (KeyCode)i, group);
         if (key) {
             keymap[scancode] = key;
         } else {
@@ -360,6 +388,14 @@ X11_UpdateKeymap(_THIS)
 void
 X11_QuitKeyboard(_THIS)
 {
+    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
+
+#if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
+    if (data->xkb) {
+        X11_XkbFreeClientMap(data->xkb, 0, True);
+    }
+#endif
+
 #ifdef SDL_USE_IBUS
     SDL_IBus_Quit();
 #endif
