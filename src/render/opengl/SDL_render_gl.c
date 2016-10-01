@@ -450,7 +450,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->GL_BindTexture = GL_BindTexture;
     renderer->GL_UnbindTexture = GL_UnbindTexture;
     renderer->info = GL_RenderDriver.info;
-    renderer->info.flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+    renderer->info.flags = SDL_RENDERER_ACCELERATED;
     renderer->driverdata = data;
     renderer->window = window;
 
@@ -663,6 +663,11 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     GLenum scaleMode;
 
     GL_ActivateRenderer(renderer);
+
+    if (texture->access == SDL_TEXTUREACCESS_TARGET &&
+        !renderdata->GL_EXT_framebuffer_object_supported) {
+        return SDL_SetError("Render targets not supported by OpenGL");
+    }
 
     if (!convert_format(renderdata, texture->format, &internalFormat,
                         &format, &type)) {
@@ -979,6 +984,10 @@ GL_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
     GLenum status;
 
     GL_ActivateRenderer(renderer);
+
+    if (!data->GL_EXT_framebuffer_object_supported) {
+        return SDL_SetError("Render targets not supported by OpenGL");
+    }
 
     if (texture == NULL) {
         data->glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
