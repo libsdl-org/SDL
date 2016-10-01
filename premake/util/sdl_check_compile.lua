@@ -101,6 +101,18 @@ local function cleanup_build()
 	os.remove("./premakecheck.stdout")
 end
 
+local function os_execute(cmd)
+	if _ENV then
+		-- Lua 5.2 or greater
+		local cmdSuccess, textStatus, returnCode = os.execute(cmd)
+		return returnCode
+	else
+		-- Lua 5.1 or lesser
+		local returnCode = os.execute(cmd)
+		return returnCode
+	end
+end
+
 -- Check if a source builds, links, and or/runs, where running depends on
 -- linking and linking depends on building. The return from this function is
 -- a triple, where the first is a boolean value indicating if it successfully
@@ -108,10 +120,10 @@ end
 -- linked, and the third represents nil if it was not run or run correctly, or
 -- the output from the program executed (may be empty for no output).
 local function check_build_source(source, link, run)
-	local file = fileopen("./premakecheck.c", "wt")
+	local file = fileopen("./premakecheck.c", "w")
 	file:write(source)
 	file:close()
-	local result = os.execute(build_compile_line())
+	local result = os_execute(build_compile_line())
 	if not link then
 		cleanup_build()
 		if result == 0 then
@@ -125,13 +137,13 @@ local function check_build_source(source, link, run)
 		cleanup_build()
 		return false, false, nil -- no compile, no link, no run
 	end
-	result = os.execute(build_link_line())
+	result = os_execute(build_link_line())
 	if not run or result ~= 0 then -- have to link to run
 		cleanup_build()
 		return true, result == 0, nil -- compile, maybe link, no run
 	end
-	result = os.execute(build_run_line())
-	local output = readfile("./premakecheck.stdout", "rt")
+	result = os_execute(build_run_line())
+	local output = readfile("./premakecheck.stdout", "r")
 	cleanup_build()
 	return true, true, output -- compile, link, ran
 end
