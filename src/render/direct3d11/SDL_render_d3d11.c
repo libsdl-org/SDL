@@ -138,28 +138,22 @@ typedef struct
 } D3D11_RenderData;
 
 
-/* Defined here so we don't have to include uuid.lib */
-#ifndef __IDXGIFactory2_INTERFACE_DEFINED__
-static const GUID IID_IDXGIFactory2 = { 0x50c83a1c, 0xe072, 0x4c48, { 0x87, 0xb0, 0x36, 0x30, 0xfa, 0x36, 0xa6, 0xd0 } };
-#endif
-#ifndef __IDXGIDevice1_INTERFACE_DEFINED__
-static const GUID IID_IDXGIDevice1 = { 0x77db970f, 0x6276, 0x48ba, { 0xba, 0x28, 0x07, 0x01, 0x43, 0xb4, 0x39, 0x2c } };
-#endif
-#ifndef __IDXGIDevice3_INTERFACE_DEFINED__
-static const GUID IID_IDXGIDevice3 = { 0x6007896c, 0x3244, 0x4afd, { 0xbf, 0x18, 0xa6, 0xd3, 0xbe, 0xda, 0x50, 0x23 } };
-#endif
-#ifndef __ID3D11Texture2D_INTERFACE_DEFINED__
-static const GUID IID_ID3D11Texture2D = { 0x6f15aaf2, 0xd208, 0x4e89, { 0x9a, 0xb4, 0x48, 0x95, 0x35, 0xd3, 0x4f, 0x9c } };
-#endif
-#ifndef __ID3D11Device1_INTERFACE_DEFINED__
-static const GUID IID_ID3D11Device1 = { 0xa04bfb29, 0x08ef, 0x43d6, { 0xa4, 0x9c, 0xa9, 0xbd, 0xbd, 0xcb, 0xe6, 0x86 } };
-#endif
-#ifndef __ID3D11DeviceContext1_INTERFACE_DEFINED__
-static const GUID IID_ID3D11DeviceContext1 = { 0xbb2c6faa, 0xb5fb, 0x4082, { 0x8e, 0x6b, 0x38, 0x8b, 0x8c, 0xfa, 0x90, 0xe1 } };
-#endif
-#ifndef __ID3D11Debug_INTERFACE_DEFINED__
-static const GUID IID_ID3D11Debug = { 0x79cf2233, 0x7536, 0x4948, { 0x9d, 0x36, 0x1e, 0x46, 0x92, 0xdc, 0x57, 0x60 } };
-#endif
+/* Define D3D GUIDs here so we don't have to include uuid.lib.
+*
+* Fix for SDL bug https://bugzilla.libsdl.org/show_bug.cgi?id=3437:
+* The extra '_' was added to the start of each IID's name, in order
+* to prevent build errors on both MinGW-w64 and WinRT/UWP.
+* (SDL bug https://bugzilla.libsdl.org/show_bug.cgi?id=3336 led to
+* linker errors in WinRT/UWP builds.)
+*/
+
+static const GUID _IID_IDXGIFactory2 = { 0x50c83a1c, 0xe072, 0x4c48, { 0x87, 0xb0, 0x36, 0x30, 0xfa, 0x36, 0xa6, 0xd0 } };
+static const GUID _IID_IDXGIDevice1 = { 0x77db970f, 0x6276, 0x48ba, { 0xba, 0x28, 0x07, 0x01, 0x43, 0xb4, 0x39, 0x2c } };
+static const GUID _IID_IDXGIDevice3 = { 0x6007896c, 0x3244, 0x4afd, { 0xbf, 0x18, 0xa6, 0xd3, 0xbe, 0xda, 0x50, 0x23 } };
+static const GUID _IID_ID3D11Texture2D = { 0x6f15aaf2, 0xd208, 0x4e89, { 0x9a, 0xb4, 0x48, 0x95, 0x35, 0xd3, 0x4f, 0x9c } };
+static const GUID _IID_ID3D11Device1 = { 0xa04bfb29, 0x08ef, 0x43d6, { 0xa4, 0x9c, 0xa9, 0xbd, 0xbd, 0xcb, 0xe6, 0x86 } };
+static const GUID _IID_ID3D11DeviceContext1 = { 0xbb2c6faa, 0xb5fb, 0x4082, { 0x8e, 0x6b, 0x38, 0x8b, 0x8c, 0xfa, 0x90, 0xe1 } };
+static const GUID _IID_ID3D11Debug = { 0x79cf2233, 0x7536, 0x4948, { 0x9d, 0x36, 0x1e, 0x46, 0x92, 0xdc, 0x57, 0x60 } };
 
 /* Direct3D 11.x shaders
 
@@ -1057,7 +1051,7 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
     }
 #endif /* __WINRT__ */
 
-    result = CreateDXGIFactoryFunc(&IID_IDXGIFactory2, &data->dxgiFactory);
+    result = CreateDXGIFactoryFunc(&_IID_IDXGIFactory2, &data->dxgiFactory);
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("CreateDXGIFactory"), result);
         goto done;
@@ -1099,19 +1093,19 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
         goto done;
     }
 
-    result = ID3D11Device_QueryInterface(d3dDevice, &IID_ID3D11Device1, &data->d3dDevice);
+    result = ID3D11Device_QueryInterface(d3dDevice, &_IID_ID3D11Device1, &data->d3dDevice);
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device to ID3D11Device1"), result);
         goto done;
     }
 
-    result = ID3D11DeviceContext_QueryInterface(d3dContext, &IID_ID3D11DeviceContext1, &data->d3dContext);
+    result = ID3D11DeviceContext_QueryInterface(d3dContext, &_IID_ID3D11DeviceContext1, &data->d3dContext);
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11DeviceContext to ID3D11DeviceContext1"), result);
         goto done;
     }
 
-    result = ID3D11Device_QueryInterface(d3dDevice, &IID_IDXGIDevice1, &dxgiDevice);
+    result = ID3D11Device_QueryInterface(d3dDevice, &_IID_IDXGIDevice1, &dxgiDevice);
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device to IDXGIDevice1"), result);
         goto done;
@@ -1600,7 +1594,7 @@ D3D11_CreateWindowSizeDependentResources(SDL_Renderer * renderer)
 
     result = IDXGISwapChain_GetBuffer(data->swapChain,
         0,
-        &IID_ID3D11Texture2D,
+        &_IID_ID3D11Texture2D,
         &backBuffer
         );
     if (FAILED(result)) {
@@ -1677,7 +1671,7 @@ D3D11_Trim(SDL_Renderer * renderer)
     HRESULT result = S_OK;
     IDXGIDevice3 *dxgiDevice = NULL;
 
-    result = ID3D11Device_QueryInterface(data->d3dDevice, &IID_IDXGIDevice3, &dxgiDevice);
+    result = ID3D11Device_QueryInterface(data->d3dDevice, &_IID_IDXGIDevice3, &dxgiDevice);
     if (FAILED(result)) {
         //WIN_SetErrorFromHRESULT(__FUNCTION__ ", ID3D11Device to IDXGIDevice3", result);
         return;
@@ -2865,7 +2859,7 @@ D3D11_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     /* Retrieve a pointer to the back buffer: */
     result = IDXGISwapChain_GetBuffer(data->swapChain,
         0,
-        &IID_ID3D11Texture2D,
+        &_IID_ID3D11Texture2D,
         &backBuffer
         );
     if (FAILED(result)) {
