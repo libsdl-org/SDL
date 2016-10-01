@@ -129,6 +129,7 @@ SDL_Blit_Slow(SDL_BlitInfo * info)
                 dstR = srcR + ((255 - srcA) * dstR) / 255;
                 dstG = srcG + ((255 - srcA) * dstG) / 255;
                 dstB = srcB + ((255 - srcA) * dstB) / 255;
+                dstA = srcA + ((255 - srcA) * dstA) / 255;
                 break;
             case SDL_COPY_ADD:
                 dstR = srcR + dstR;
