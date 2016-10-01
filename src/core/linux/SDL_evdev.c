@@ -675,6 +675,7 @@ SDL_EVDEV_destroy_touchscreen(SDL_evdevlist_item* item) {
 static void
 SDL_EVDEV_sync_device(SDL_evdevlist_item *item) 
 {
+#ifdef EVIOCGMTSLOTS
     int i, ret;
     struct input_absinfo abs_info;
     /*
@@ -698,7 +699,6 @@ SDL_EVDEV_sync_device(SDL_evdevlist_item *item)
     
     mt_req_code = SDL_calloc(1, mt_req_size);
     if (mt_req_code == NULL) {
-        SDL_Log("Failed to sync device");
         return;
     }
     
@@ -708,7 +708,6 @@ SDL_EVDEV_sync_device(SDL_evdevlist_item *item)
     ret = ioctl(item->fd, EVIOCGMTSLOTS(mt_req_size), mt_req_code);
     if (ret < 0) {
         SDL_free(mt_req_code);
-        SDL_Log("Failed to sync device");
         return;
     }
     for(i = 0; i < item->touchscreen_data->max_slots; i++) {
@@ -736,7 +735,6 @@ SDL_EVDEV_sync_device(SDL_evdevlist_item *item)
     ret = ioctl(item->fd, EVIOCGMTSLOTS(mt_req_size), mt_req_code);
     if (ret < 0) {
         SDL_free(mt_req_code);
-        SDL_Log("Failed to sync device");
         return;
     }
     for(i = 0; i < item->touchscreen_data->max_slots; i++) {
@@ -755,7 +753,6 @@ SDL_EVDEV_sync_device(SDL_evdevlist_item *item)
     ret = ioctl(item->fd, EVIOCGMTSLOTS(mt_req_size), mt_req_code);
     if (ret < 0) {
         SDL_free(mt_req_code);
-        SDL_Log("Failed to sync device");
         return;
     }
     for(i = 0; i < item->touchscreen_data->max_slots; i++) {
@@ -773,12 +770,13 @@ SDL_EVDEV_sync_device(SDL_evdevlist_item *item)
     ret = ioctl(item->fd, EVIOCGABS(ABS_MT_SLOT), &abs_info);
     if (ret < 0) {
         SDL_free(mt_req_code);
-        SDL_Log("Failed to sync device");
         return;
     }
     item->touchscreen_data->current_slot = abs_info.value;
     
     SDL_free(mt_req_code);
+
+#endif /* EVIOCGMTSLOTS */
 }
 
 #if SDL_USE_LIBUDEV
