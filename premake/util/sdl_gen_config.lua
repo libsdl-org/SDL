@@ -33,8 +33,8 @@ local insertLocation
 -- This function begins config header generation given the name of the generated
 -- file and the name of the template file to use.
 function startGeneration(file, template)
-	configFile = fileopen(file, "wt")
-	templateFileContents = readfile(template, "rt")
+	configFile = fileopen(file, "w")
+	templateFileContents = readfile(template, "r")
 	insertLocation = templateFileContents:find(searchKey)
 	if insertLocation then
 		configFile:write(templateFileContents:sub(1, insertLocation - 1))

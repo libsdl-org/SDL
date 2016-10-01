@@ -121,7 +121,7 @@ if _OPTIONS["help"] == nil then
 	end
 
 	local genFile = baseLoc .. "/SDL-gen.lua"
-	local file = fileopen(genFile, "wt")
+	local file = fileopen(genFile, "w")
 	print("Generating " .. genFile .. "...")
 	-- begin generating the config header file
 	startGeneration(premakeConfigHeader, premakeTemplateHeader)
