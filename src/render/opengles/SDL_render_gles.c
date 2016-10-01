@@ -1088,23 +1088,25 @@ GLES_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
 
     data->glPixelStorei(GL_PACK_ALIGNMENT, 1);
 
-    data->glReadPixels(rect->x, (h-rect->y)-rect->h, rect->w, rect->h,
-                       GL_RGBA, GL_UNSIGNED_BYTE, temp_pixels);
+    data->glReadPixels(rect->x, renderer->target ? rect->y : (h-rect->y)-rect->h,
+                       rect->w, rect->h, GL_RGBA, GL_UNSIGNED_BYTE, temp_pixels);
 
-    /* Flip the rows to be top-down */
-    length = rect->w * SDL_BYTESPERPIXEL(temp_format);
-    src = (Uint8*)temp_pixels + (rect->h-1)*temp_pitch;
-    dst = (Uint8*)temp_pixels;
-    tmp = SDL_stack_alloc(Uint8, length);
-    rows = rect->h / 2;
-    while (rows--) {
-        SDL_memcpy(tmp, dst, length);
-        SDL_memcpy(dst, src, length);
-        SDL_memcpy(src, tmp, length);
-        dst += temp_pitch;
-        src -= temp_pitch;
+    /* Flip the rows to be top-down if necessary */
+    if (!renderer->target) {
+        length = rect->w * SDL_BYTESPERPIXEL(temp_format);
+        src = (Uint8*)temp_pixels + (rect->h-1)*temp_pitch;
+        dst = (Uint8*)temp_pixels;
+        tmp = SDL_stack_alloc(Uint8, length);
+        rows = rect->h / 2;
+        while (rows--) {
+            SDL_memcpy(tmp, dst, length);
+            SDL_memcpy(dst, src, length);
+            SDL_memcpy(src, tmp, length);
+            dst += temp_pitch;
+            src -= temp_pitch;
+        }
+        SDL_stack_free(tmp);
     }
-    SDL_stack_free(tmp);
 
     status = SDL_ConvertPixels(rect->w, rect->h,
                                temp_format, temp_pixels, temp_pitch,
