@@ -45,7 +45,8 @@ struct _SDL_HatMapping
     Uint8 mask;
 };
 
-#define k_nMaxReverseEntries 20
+/* We need 36 entries for Android (as of SDL v2.0.4) */
+#define k_nMaxReverseEntries 48
 
 /**
  * We are encoding the "HAT" as 0xhm. where h == hat ID and m == mask
