@@ -116,6 +116,8 @@ SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
     return -1;
 }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
 /* This function has a bit more overhead than most error functions
    so that it supports internationalization and thread-safe errors.
 */
@@ -216,6 +218,7 @@ SDL_GetErrorMsg(char *errstr, int maxlen)
     }
     return (errstr);
 }
+#pragma GCC diagnostic pop
 
 /* Available for backwards compatibility */
 const char *
