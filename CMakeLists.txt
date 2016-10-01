@@ -1318,7 +1318,7 @@ elseif(APPLE)
   # iOS hack needed - http://code.google.com/p/ios-cmake/ ?
   if(SDL_VIDEO)
     if (IOS)
-      set(SDL_VIDEO_DRIVER_HAIKU 1)
+      set(SDL_VIDEO_DRIVER_UIKIT 1)
       file(GLOB UIKITVIDEO_SOURCES ${SDL2_SOURCE_DIR}/src/video/uikit/*.m)
       set(SOURCE_FILES ${SOURCE_FILES} ${UIKITVIDEO_SOURCES})
     else()
