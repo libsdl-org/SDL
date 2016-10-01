@@ -165,7 +165,6 @@ WIN_ResetDeadKeys()
     this tries to undo the effect pressing the deadkey.
     see: http://archives.miloush.net/michkap/archive/2006/09/10/748775.html
     */
-
     BYTE keyboardState[256];
     WCHAR buffer[16];
     int keycode, scancode, result, i;
@@ -174,17 +173,14 @@ WIN_ResetDeadKeys()
 
     keycode = VK_SPACE;
     scancode = MapVirtualKey(keycode, MAPVK_VK_TO_VSC);
-    if (scancode == 0)
-    {
+    if (scancode == 0) {
         /* the keyboard doesn't have this key */
         return;
     }
 
-    for (i = 0; i < 5; i++)
-    {
+    for (i = 0; i < 5; i++) {
         result = ToUnicode(keycode, scancode, keyboardState, (LPWSTR)buffer, 16, 0);
-        if (result > 0)
-        {
+        if (result > 0) {
             /* success */
             return;
         }
