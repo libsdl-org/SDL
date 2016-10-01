@@ -1311,6 +1311,10 @@ D3D_RenderClear(SDL_Renderer * renderer)
         BackBufferHeight = data->pparams.BackBufferHeight;
     }
 
+    if (renderer->clipping_enabled) {
+        IDirect3DDevice9_SetRenderState(data->device, D3DRS_SCISSORTESTENABLE, FALSE);
+    }
+
     /* Don't reset the viewport if we don't have to! */
     if (!renderer->viewport.x && !renderer->viewport.y &&
         renderer->viewport.w == BackBufferWidth &&
@@ -1338,6 +1342,10 @@ D3D_RenderClear(SDL_Renderer * renderer)
         viewport.MinZ = 0.0f;
         viewport.MaxZ = 1.0f;
         IDirect3DDevice9_SetViewport(data->device, &viewport);
+    }
+
+    if (renderer->clipping_enabled) {
+        IDirect3DDevice9_SetRenderState(data->device, D3DRS_SCISSORTESTENABLE, TRUE);
     }
 
     if (FAILED(result)) {
