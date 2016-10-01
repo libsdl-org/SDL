@@ -141,12 +141,13 @@ int
 console_wmain(int argc, wchar_t *wargv[], wchar_t *wenvp)
 {
     int retval = 0;
-    char **argv = SDL_stack_alloc(char*, argc);
+    char **argv = SDL_stack_alloc(char*, argc + 1);
     int i;
 
     for (i = 0; i < argc; ++i) {
         argv[i] = WIN_StringToUTF8(wargv[i]);
     }
+    argv[argc] = NULL;
 
     retval = main_utf8(argc, argv);
 
