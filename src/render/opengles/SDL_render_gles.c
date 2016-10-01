@@ -1069,7 +1069,7 @@ GLES_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
                     Uint32 pixel_format, void * pixels, int pitch)
 {
     GLES_RenderData *data = (GLES_RenderData *) renderer->driverdata;
-    Uint32 temp_format = SDL_PIXELFORMAT_ABGR8888;
+    Uint32 temp_format = renderer->target ? renderer->target->format : SDL_PIXELFORMAT_ABGR8888;
     void *temp_pixels;
     int temp_pitch;
     Uint8 *src, *dst, *tmp;
