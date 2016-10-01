@@ -74,6 +74,12 @@ poked(int sig)
     done = 1;
 }
 
+static const char*
+devtypestr(int iscapture)
+{
+    return iscapture ? "capture" : "output";
+}
+
 static void
 iteration()
 {
@@ -82,10 +88,21 @@ iteration()
     while (SDL_PollEvent(&e)) {
         if (e.type == SDL_QUIT) {
             done = 1;
+        } else if (e.type == SDL_KEYUP) {
+            if (e.key.keysym.sym == SDLK_ESCAPE)
+                done = 1;
         } else if (e.type == SDL_AUDIODEVICEADDED) {
-            const char *name = SDL_GetAudioDeviceName(e.adevice.which, 0);
-            SDL_Log("New %s audio device: %s\n", e.adevice.iscapture ? "capture" : "output", name);
-            if (!e.adevice.iscapture) {
+            int index = e.adevice.which;
+            int iscapture = e.adevice.iscapture;
+            const char *name = SDL_GetAudioDeviceName(index, iscapture);
+            if (name != NULL)
+                SDL_Log("New %s audio device at index %u: %s\n", devtypestr(iscapture), (unsigned int) index, name);
+            else {
+                SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Got new %s device at index %u, but failed to get the name: %s\n",
+                    devtypestr(iscapture), (unsigned int) index, SDL_GetError());
+                continue;
+            }
+            if (!iscapture) {
                 positions[posindex] = 0;
                 spec.userdata = &positions[posindex++];
                 spec.callback = fillerup;
@@ -99,7 +116,7 @@ iteration()
             }
         } else if (e.type == SDL_AUDIODEVICEREMOVED) {
             dev = (SDL_AudioDeviceID) e.adevice.which;
-            SDL_Log("%s device %u removed.\n", e.adevice.iscapture ? "capture" : "output", (unsigned int) dev);
+            SDL_Log("%s device %u removed.\n", devtypestr(e.adevice.iscapture), (unsigned int) dev);
             SDL_CloseAudioDevice(dev);
         }
     }
@@ -163,6 +180,7 @@ main(int argc, char *argv[])
         SDL_Log("%i: %s", i, SDL_GetAudioDriver(i));
     }
 
+    SDL_Log("Select a driver with the SDL_AUDIODRIVER environment variable.\n");
     SDL_Log("Using audio driver: %s\n", SDL_GetCurrentAudioDriver());
 
 #ifdef __EMSCRIPTEN__
@@ -175,6 +193,8 @@ main(int argc, char *argv[])
 #endif
 
     /* Clean up on signal */
+    /* Quit audio first, then free WAV. This prevents access violations in the audio threads. */
+    SDL_QuitSubSystem(SDL_INIT_AUDIO);
     SDL_FreeWAV(sound);
     SDL_Quit();
     return (0);
