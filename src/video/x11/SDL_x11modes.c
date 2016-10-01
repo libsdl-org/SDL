@@ -264,8 +264,8 @@ CheckXRandR(Display * display, int *major, int *minor)
 static int
 CalculateXRandRRefreshRate(const XRRModeInfo *info)
 {
-    return (info->hTotal
-            && info->vTotal) ? (info->dotClock / (info->hTotal * info->vTotal)) : 0;
+    return (info->hTotal && info->vTotal) ?
+        round(((double)info->dotClock / (double)(info->hTotal * info->vTotal))) : 0;
 }
 
 static SDL_bool
