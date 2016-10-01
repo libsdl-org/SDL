@@ -478,7 +478,8 @@ WIN_HideWindow(_THIS, SDL_Window * window)
 void
 WIN_RaiseWindow(_THIS, SDL_Window * window)
 {
-    WIN_SetWindowPositionInternal(_this, window, SWP_NOCOPYBITS | SWP_NOMOVE | SWP_NOSIZE);
+	HWND hwnd = ((SDL_WindowData *) window->driverdata)->hwnd;
+	SetForegroundWindow(hwnd);
 }
 
 void
