@@ -1439,7 +1439,10 @@ GL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
         return SDL_OutOfMemory();
     }
 
-    convert_format(data, temp_format, &internalFormat, &format, &type);
+    if (!convert_format(data, temp_format, &internalFormat, &format, &type)) {
+        return SDL_SetError("Texture format %s not supported by OpenGL",
+                            SDL_GetPixelFormatName(temp_format));
+    }
 
     SDL_GetRendererOutputSize(renderer, &w, &h);
 
