@@ -324,7 +324,7 @@ SDL_LogOutput(void *userdata, int category, SDL_LogPriority priority,
         size_t length;
         LPTSTR tstr;
 
-#ifndef __WINRT__
+#if !defined(HAVE_STDIO_H) && !defined(__WINRT__)
         BOOL attachResult;
         DWORD attachError;
         unsigned long charsWritten; 
@@ -356,7 +356,7 @@ SDL_LogOutput(void *userdata, int category, SDL_LogPriority priority,
                         stderrHandle = GetStdHandle(STD_ERROR_HANDLE);
                 }
         }
-#endif /* ifndef __WINRT__ */
+#endif /* !defined(HAVE_STDIO_H) && !defined(__WINRT__) */
 
         length = SDL_strlen(SDL_priority_prefixes[priority]) + 2 + SDL_strlen(message) + 1 + 1 + 1;
         output = SDL_stack_alloc(char, length);
@@ -366,7 +366,7 @@ SDL_LogOutput(void *userdata, int category, SDL_LogPriority priority,
         /* Output to debugger */
         OutputDebugString(tstr);
        
-#ifndef __WINRT__
+#if !defined(HAVE_STDIO_H) && !defined(__WINRT__)
         /* Screen output to stderr, if console was attached. */
         if (consoleAttached == 1) {
                 if (!WriteConsole(stderrHandle, tstr, lstrlen(tstr), &charsWritten, NULL)) {
@@ -376,7 +376,7 @@ SDL_LogOutput(void *userdata, int category, SDL_LogPriority priority,
                     }
                 }
         }
-#endif /* ifndef __WINRT__ */
+#endif /* !defined(HAVE_STDIO_H) && !defined(__WINRT__) */
 
         SDL_free(tstr);
         SDL_stack_free(output);
