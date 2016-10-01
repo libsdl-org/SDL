@@ -590,6 +590,7 @@ GLES_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                     data->format,
                     data->formattype,
                     src);
+    renderdata->glDisable(data->type);
     SDL_free(blob);
 
     if (renderdata->glGetError() != GL_NO_ERROR) {
