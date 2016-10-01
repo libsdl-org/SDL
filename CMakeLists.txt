@@ -899,8 +899,22 @@ elseif(UNIX AND NOT APPLE)
 
     check_include_file("libudev.h" HAVE_LIBUDEV_H)
 
-    # !!! FIXME: this needs pkg-config to find the include path, I think.
-    check_include_file("dbus/dbus.h" HAVE_DBUS_DBUS_H)
+    if(PKG_CONFIG_FOUND)
+      pkg_search_module(DBUS dbus-1 dbus)
+      if(DBUS_FOUND)
+        set(HAVE_DBUS_DBUS_H TRUE)
+        include_directories(${DBUS_INCLUDE_DIRS})
+        list(APPEND EXTRA_LIBS ${DBUS_LIBRARIES})
+      endif()
+
+      pkg_search_module(IBUS ibus-1.0 ibus)
+      if(IBUS_FOUND)
+        set(HAVE_IBUS_IBUS_H TRUE)
+        include_directories(${IBUS_INCLUDE_DIRS})
+        list(APPEND EXTRA_LIBS ${IBUS_LIBRARIES})
+      endif()
+    endif()
+
   endif()
 
   if(INPUT_TSLIB)
