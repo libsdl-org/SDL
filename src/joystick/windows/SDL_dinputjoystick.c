@@ -214,7 +214,7 @@ static DIOBJECTDATAFORMAT dfDIJoystick2[] = {
         { &GUID_Slider, FIELD_OFFSET(DIJOYSTATE2, rglFSlider[1]), DIDFT_OPTIONAL | DIDFT_AXIS | DIDFT_ANYINSTANCE, 0 },
 };
 
-const DIDATAFORMAT c_dfDIJoystick2 = {
+static const DIDATAFORMAT c_dfDIJoystick2 = {
     sizeof(DIDATAFORMAT),
     sizeof(DIOBJECTDATAFORMAT),
     DIDF_ABSAXIS,
