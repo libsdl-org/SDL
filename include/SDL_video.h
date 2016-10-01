@@ -122,7 +122,7 @@ typedef enum
 /**
  *  \brief Used to indicate that you don't care what the window position is.
  */
-#define SDL_WINDOWPOS_UNDEFINED_MASK    0x1FFF0000
+#define SDL_WINDOWPOS_UNDEFINED_MASK    0x1FFF0000u
 #define SDL_WINDOWPOS_UNDEFINED_DISPLAY(X)  (SDL_WINDOWPOS_UNDEFINED_MASK|(X))
 #define SDL_WINDOWPOS_UNDEFINED         SDL_WINDOWPOS_UNDEFINED_DISPLAY(0)
 #define SDL_WINDOWPOS_ISUNDEFINED(X)    \
@@ -131,7 +131,7 @@ typedef enum
 /**
  *  \brief Used to indicate that the window position should be centered.
  */
-#define SDL_WINDOWPOS_CENTERED_MASK    0x2FFF0000
+#define SDL_WINDOWPOS_CENTERED_MASK    0x2FFF0000u
 #define SDL_WINDOWPOS_CENTERED_DISPLAY(X)  (SDL_WINDOWPOS_CENTERED_MASK|(X))
 #define SDL_WINDOWPOS_CENTERED         SDL_WINDOWPOS_CENTERED_DISPLAY(0)
 #define SDL_WINDOWPOS_ISCENTERED(X)    \
