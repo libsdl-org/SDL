@@ -1327,7 +1327,15 @@ GLES2_RenderClear(SDL_Renderer * renderer)
         data->clear_a = renderer->a;
     }
 
+    if (renderer->clipping_enabled) {
+        data->glDisable(GL_SCISSOR_TEST);
+    }
+
     data->glClear(GL_COLOR_BUFFER_BIT);
+
+    if (renderer->clipping_enabled) {
+        data->glEnable(GL_SCISSOR_TEST);
+    }
 
     return 0;
 }

@@ -1146,7 +1146,15 @@ GL_RenderClear(SDL_Renderer * renderer)
                        (GLfloat) renderer->b * inv255f,
                        (GLfloat) renderer->a * inv255f);
 
+    if (renderer->clipping_enabled) {
+        data->glDisable(GL_SCISSOR_TEST);
+    }
+
     data->glClear(GL_COLOR_BUFFER_BIT);
+
+    if (renderer->clipping_enabled) {
+        data->glEnable(GL_SCISSOR_TEST);
+    }
 
     return 0;
 }
