@@ -1054,7 +1054,8 @@ HINSTANCE SDL_Instance = NULL;
 int
 SDL_RegisterApp(char *name, Uint32 style, void *hInst)
 {
-    WNDCLASS class;
+    WNDCLASSEX wcex;
+    TCHAR path[MAX_PATH];
 
     /* Only do this once... */
     if (app_registered) {
@@ -1076,19 +1077,24 @@ SDL_RegisterApp(char *name, Uint32 style, void *hInst)
     }
 
     /* Register the application class */
-    class.hCursor = NULL;
-    class.hIcon =
-        LoadImage(SDL_Instance, SDL_Appname, IMAGE_ICON, 0, 0,
-                  LR_DEFAULTCOLOR);
-    class.lpszMenuName = NULL;
-    class.lpszClassName = SDL_Appname;
-    class.hbrBackground = NULL;
-    class.hInstance = SDL_Instance;
-    class.style = SDL_Appstyle;
-    class.lpfnWndProc = WIN_WindowProc;
-    class.cbWndExtra = 0;
-    class.cbClsExtra = 0;
-    if (!RegisterClass(&class)) {
+    wcex.cbSize         = sizeof(WNDCLASSEX);
+    wcex.hCursor        = NULL;
+    wcex.hIcon          = NULL;
+    wcex.hIconSm        = NULL;
+    wcex.lpszMenuName   = NULL;
+    wcex.lpszClassName  = SDL_Appname;
+    wcex.style          = SDL_Appstyle;
+    wcex.hbrBackground  = NULL;
+    wcex.lpfnWndProc    = WIN_WindowProc;
+    wcex.hInstance      = SDL_Instance;
+    wcex.cbClsExtra     = 0;
+    wcex.cbWndExtra     = 0;
+
+    /* Use the first icon as a default icon, like in the Explorer */
+    GetModuleFileName(SDL_Instance, path, MAX_PATH);
+    ExtractIconEx(path, 0, &wcex.hIcon, &wcex.hIconSm, 1);
+
+    if (!RegisterClassEx(&wcex)) {
         return SDL_SetError("Couldn't register application class");
     }
 
@@ -1100,7 +1106,7 @@ SDL_RegisterApp(char *name, Uint32 style, void *hInst)
 void
 SDL_UnregisterApp()
 {
-    WNDCLASS class;
+    WNDCLASSEX wcex;
 
     /* SDL_RegisterApp might not have been called before */
     if (!app_registered) {
@@ -1109,8 +1115,10 @@ SDL_UnregisterApp()
     --app_registered;
     if (app_registered == 0) {
         /* Check for any registered window classes. */
-        if (GetClassInfo(SDL_Instance, SDL_Appname, &class)) {
+        if (GetClassInfoEx(SDL_Instance, SDL_Appname, &wcex)) {
             UnregisterClass(SDL_Appname, SDL_Instance);
+            if (wcex.hIcon) DestroyIcon(wcex.hIcon);
+            if (wcex.hIconSm) DestroyIcon(wcex.hIconSm);
         }
         SDL_free(SDL_Appname);
         SDL_Appname = NULL;
