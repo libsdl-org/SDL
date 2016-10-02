@@ -268,8 +268,8 @@ extern "C" {
  *  this is problematic. This functionality can be disabled by setting this
  *  hint.
  *
- *  As of SDL 2.0.4, SDL_EnableScreenSaver and SDL_DisableScreenSaver accomplish
- *  the same thing on iOS. They should be preferred over this hint.
+ *  As of SDL 2.0.4, SDL_EnableScreenSaver() and SDL_DisableScreenSaver()
+ *  accomplish the same thing on iOS. They should be preferred over this hint.
  *
  *  This variable can be set to the following values:
  *    "0"       - Enable idle timer
