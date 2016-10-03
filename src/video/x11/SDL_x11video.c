@@ -399,6 +399,10 @@ X11_VideoInit(_THIS)
         const char *env_xmods = SDL_getenv("XMODIFIERS");
         SDL_bool has_dbus_ime_support = SDL_FALSE;
 
+        if (prev_locale) {
+            prev_locale = SDL_strdup(prev_locale);
+        }
+
         if (prev_xmods) {
             prev_xmods = SDL_strdup(prev_xmods);
         }
@@ -430,6 +434,10 @@ X11_VideoInit(_THIS)
            locale first because the X locale modifiers depend on it. */
         setlocale(LC_ALL, prev_locale);
         X11_XSetLocaleModifiers(prev_xmods);
+
+        if (prev_locale) {
+            SDL_free(prev_locale);
+        }
 
         if (prev_xmods) {
             SDL_free(prev_xmods);
