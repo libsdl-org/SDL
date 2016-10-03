@@ -154,21 +154,18 @@ static const struct
     { darwin_scancode_table, SDL_arraysize(darwin_scancode_table) },
     { xfree86_scancode_table, SDL_arraysize(xfree86_scancode_table) },
     { xfree86_scancode_table2, SDL_arraysize(xfree86_scancode_table2) },
+    { xvnc_scancode_table, SDL_arraysize(xvnc_scancode_table) },
 };
 /* *INDENT-OFF* */
 
 /* This function only works for keyboards in US QWERTY layout */
 static SDL_Scancode
-X11_KeyCodeToSDLScancode(Display *display, KeyCode keycode)
+X11_KeyCodeToSDLScancode(_THIS, KeyCode keycode)
 {
     KeySym keysym;
     int i;
 
-#if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
-    keysym = X11_XkbKeycodeToKeysym(display, keycode, 0, 0);
-#else
-    keysym = X11_XKeycodeToKeysym(display, keycode, 0);
-#endif
+    keysym = X11_KeyCodeToSym(_this, keycode, 0);
     if (keysym == NoSymbol) {
         return SDL_SCANCODE_UNKNOWN;
     }
@@ -196,8 +193,21 @@ X11_KeyCodeToSDLScancode(Display *display, KeyCode keycode)
 }
 
 static Uint32
-X11_KeyCodeToUcs4(SDL_VideoData *data, KeyCode keycode, unsigned char group)
+X11_KeyCodeToUcs4(_THIS, KeyCode keycode, unsigned char group)
 {
+    KeySym keysym = X11_KeyCodeToSym(_this, keycode, group);
+
+    if (keysym == NoSymbol) {
+        return 0;
+    }
+
+    return X11_KeySymToUcs4(keysym);
+}
+
+KeySym
+X11_KeyCodeToSym(_THIS, KeyCode keycode, unsigned char group)
+{
+    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
     KeySym keysym;
 
 #if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
@@ -219,19 +229,15 @@ X11_KeyCodeToUcs4(SDL_VideoData *data, KeyCode keycode, unsigned char group)
                 group %= num_groups;
             }
         }
+        keysym = X11_XkbKeycodeToKeysym(data->display, keycode, group, 0);
     } else {
-        group = 0;
+        keysym = X11_XKeycodeToKeysym(data->display, keycode, 0);
     }
-
-    keysym = X11_XkbKeycodeToKeysym(data->display, keycode, group, 0);
 #else
     keysym = X11_XKeycodeToKeysym(data->display, keycode, 0);
 #endif
-    if (keysym == NoSymbol) {
-        return 0;
-    }
 
-    return X11_KeySymToUcs4(keysym);
+    return keysym;
 }
 
 int
@@ -258,6 +264,16 @@ X11_InitKeyboard(_THIS)
     int distance;
 
     X11_XAutoRepeatOn(data->display);
+
+#if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
+    {
+	    int xkb_major = XkbMajorVersion;
+	    int xkb_minor = XkbMinorVersion;
+	    if (X11_XkbQueryExtension(data->display, NULL, NULL, NULL, &xkb_major, &xkb_minor)) {
+	        data->xkb = X11_XkbGetMap(data->display, XkbAllClientInfoMask, XkbUseCoreKbd);
+	    }
+	}
+#endif
 
     /* Try to determine which scancodes are being used based on fingerprint */
     best_distance = SDL_arraysize(fingerprint) + 1;
@@ -303,16 +319,12 @@ X11_InitKeyboard(_THIS)
         SDL_GetDefaultKeymap(keymap);
         for (i = min_keycode; i <= max_keycode; ++i) {
             KeySym sym;
-#if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
-            sym = X11_XkbKeycodeToKeysym(data->display, i, 0, 0);
-#else
-            sym = X11_XKeycodeToKeysym(data->display, i, 0);
-#endif
+            sym = X11_KeyCodeToSym(_this, (KeyCode) i, 0);
             if (sym != NoSymbol) {
                 SDL_Scancode scancode;
                 printf("code = %d, sym = 0x%X (%s) ", i - min_keycode,
                        (unsigned int) sym, X11_XKeysymToString(sym));
-                scancode = X11_KeyCodeToSDLScancode(data->display, i);
+                scancode = X11_KeyCodeToSDLScancode(_this, i);
                 data->key_layout[i] = scancode;
                 if (scancode == SDL_SCANCODE_UNKNOWN) {
                     printf("scancode not found\n");
@@ -344,16 +356,11 @@ X11_UpdateKeymap(_THIS)
     unsigned char group = 0;
 
     SDL_GetDefaultKeymap(keymap);
-    
-#if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
-    {
-        XkbStateRec state;
 
-        if (data->xkb) {
-            X11_XkbGetUpdatedMap(data->display, XkbAllClientInfoMask, data->xkb);
-        } else {
-            data->xkb = X11_XkbGetMap(data->display, XkbAllClientInfoMask, XkbUseCoreKbd);
-        }
+#if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
+    if (data->xkb) {
+        XkbStateRec state;
+        X11_XkbGetUpdatedMap(data->display, XkbAllClientInfoMask, data->xkb);
 
         if (X11_XkbGetState(data->display, XkbUseCoreKbd, &state) == Success) {
             group = state.group;
@@ -372,11 +379,11 @@ X11_UpdateKeymap(_THIS)
         }
 
         /* See if there is a UCS keycode for this scancode */
-        key = X11_KeyCodeToUcs4(data, (KeyCode)i, group);
+        key = X11_KeyCodeToUcs4(_this, (KeyCode)i, group);
         if (key) {
             keymap[scancode] = key;
         } else {
-            SDL_Scancode keyScancode = X11_KeyCodeToSDLScancode(data->display, (KeyCode)i);
+            SDL_Scancode keyScancode = X11_KeyCodeToSDLScancode(_this, (KeyCode)i);
 
             switch (keyScancode) {
                 case SDL_SCANCODE_RETURN:
@@ -411,6 +418,7 @@ X11_QuitKeyboard(_THIS)
 #if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
     if (data->xkb) {
         X11_XkbFreeClientMap(data->xkb, 0, True);
+        data->xkb = NULL;
     }
 #endif
 
