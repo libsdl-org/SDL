@@ -68,6 +68,18 @@ static const char *arrow[] = {
 };  
 
 static SDL_Cursor*
+init_color_cursor(const char *file)
+{
+    SDL_Cursor *cursor = NULL;
+    SDL_Surface *surface = SDL_LoadBMP(file);
+    if (surface) {
+        cursor = SDL_CreateColorCursor(surface, 0, 0);
+        SDL_FreeSurface(surface);
+    }
+    return cursor;
+}
+
+static SDL_Cursor*
 init_system_cursor(const char *image[])
 {
   int i, row, col;
@@ -140,6 +152,7 @@ int
 main(int argc, char *argv[])
 {
     int i;
+    const char *color_cursor = NULL;
 
     /* Enable standard application logging */
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
@@ -154,7 +167,8 @@ main(int argc, char *argv[])
 
         consumed = SDLTest_CommonArg(state, i);
         if (consumed == 0) {
-            consumed = -1;
+            color_cursor = argv[i];
+            break;
         }
         if (consumed < 0) {
             SDL_Log("Usage: %s %s\n", argv[0], SDLTest_CommonUsage(state));
@@ -173,7 +187,15 @@ main(int argc, char *argv[])
         SDL_RenderClear(renderer);
     }
 
-    cursor = init_system_cursor(arrow);
+    if (color_cursor) {
+        cursor = init_color_cursor(color_cursor);
+    } else {
+        cursor = init_system_cursor(arrow);
+    }
+    if (!cursor) {
+        SDL_Log("Error, couldn't create cursor\n");
+        quit(2);
+    }
     SDL_SetCursor(cursor);
 
     /* Main render loop */
