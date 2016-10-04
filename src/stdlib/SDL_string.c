@@ -1315,6 +1315,7 @@ static size_t
 SDL_PrintString(char *text, size_t maxlen, SDL_FormatInfo *info, const char *string)
 {
     size_t length = 0;
+    size_t slen;
 
     if (info && info->width && (size_t)info->width > SDL_strlen(string)) {
         char fill = info->pad_zeroes ? '0' : ' ';
@@ -1326,7 +1327,8 @@ SDL_PrintString(char *text, size_t maxlen, SDL_FormatInfo *info, const char *str
         }
     }
 
-    length += SDL_strlcpy(text, string, maxlen);
+    slen = SDL_strlcpy(text, string, maxlen);
+    length += SDL_min(slen, maxlen);
 
     if (info) {
         if (info->force_case == SDL_CASE_LOWER) {
@@ -1402,10 +1404,11 @@ SDL_PrintFloat(char *text, size_t maxlen, SDL_FormatInfo *info, double arg)
         }
         value = (unsigned long) arg;
         len = SDL_PrintUnsignedLong(text, left, NULL, value);
-        text += len;
         if (len >= left) {
+            text += (left > 1) ? left - 1 : 0;
             left = SDL_min(left, 1);
         } else {
+            text += len;
             left -= len;
         }
         arg -= value;
@@ -1422,10 +1425,11 @@ SDL_PrintFloat(char *text, size_t maxlen, SDL_FormatInfo *info, double arg)
             while (info->precision-- > 0) {
                 value = (unsigned long) (arg * mult);
                 len = SDL_PrintUnsignedLong(text, left, NULL, value);
-                text += len;
                 if (len >= left) {
+                    text += (left > 1) ? left - 1 : 0;
                     left = SDL_min(left, 1);
                 } else {
+                    text += len;
                     left -= len;
                 }
                 arg -= (double) value / mult;
@@ -1458,10 +1462,11 @@ SDL_PrintFloat(char *text, size_t maxlen, SDL_FormatInfo *info, double arg)
             }
         }
         len = (size_t)width;
-        text += len;
         if (len >= left) {
+            text += (left > 1) ? left - 1 : 0;
             left = SDL_min(left, 1);
         } else {
+            text += len;
             left -= len;
         }
         while (len--) {
@@ -1637,10 +1642,11 @@ SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, 
                 }
                 ++fmt;
             }
-            text += len;
             if (len >= left) {
+                text += (left > 1) ? left - 1 : 0;
                 left = SDL_min(left, 1);
             } else {
+                text += len;
                 left -= len;
             }
         } else {
