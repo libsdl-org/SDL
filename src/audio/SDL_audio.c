@@ -408,13 +408,26 @@ mark_device_removed(void *handle, SDL_AudioDeviceItem *devices, SDL_bool *remove
 void
 SDL_RemoveAudioDevice(const int iscapture, void *handle)
 {
+    int device_index;
+    SDL_AudioDevice *device = NULL;
+
     SDL_LockMutex(current_audio.detectionLock);
     if (iscapture) {
         mark_device_removed(handle, current_audio.inputDevices, &current_audio.captureDevicesRemoved);
     } else {
         mark_device_removed(handle, current_audio.outputDevices, &current_audio.outputDevicesRemoved);
     }
+    for (device_index = 0; device_index < SDL_arraysize(open_devices); device_index++)
+    {
+        device = open_devices[device_index];
+        if (device != NULL && device->handle == handle)
+        {
+            SDL_OpenedAudioDeviceDisconnected(device);
+            break;
+        }
+    }
     SDL_UnlockMutex(current_audio.detectionLock);
+
     current_audio.impl.FreeDeviceHandle(handle);
 }
 
@@ -1254,6 +1267,7 @@ open_audio_device(const char *devname, int iscapture,
     device->id = id + 1;
     device->spec = *obtained;
     device->iscapture = iscapture ? SDL_TRUE : SDL_FALSE;
+    device->handle = handle;
 
     SDL_AtomicSet(&device->shutdown, 0);  /* just in case. */
     SDL_AtomicSet(&device->paused, 1);
