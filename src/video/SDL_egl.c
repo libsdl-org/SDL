@@ -161,7 +161,7 @@ int
 SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_display)
 {
     void *dll_handle = NULL, *egl_dll_handle = NULL; /* The naming is counter intuitive, but hey, I just work here -- Gabriel */
-    char *path = NULL;
+    const char *path = NULL;
 #if SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_WINRT
     const char *d3dcompiler;
 #endif
