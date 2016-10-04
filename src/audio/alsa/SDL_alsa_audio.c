@@ -49,6 +49,7 @@ static snd_pcm_sframes_t (*ALSA_snd_pcm_readi)
 static int (*ALSA_snd_pcm_recover) (snd_pcm_t *, int, int);
 static int (*ALSA_snd_pcm_prepare) (snd_pcm_t *);
 static int (*ALSA_snd_pcm_drain) (snd_pcm_t *);
+static int (*ALSA_snd_pcm_drop) (snd_pcm_t *);
 static const char *(*ALSA_snd_strerror) (int);
 static size_t(*ALSA_snd_pcm_hw_params_sizeof) (void);
 static size_t(*ALSA_snd_pcm_sw_params_sizeof) (void);
@@ -128,6 +129,7 @@ load_alsa_syms(void)
     SDL_ALSA_SYM(snd_pcm_recover);
     SDL_ALSA_SYM(snd_pcm_prepare);
     SDL_ALSA_SYM(snd_pcm_drain);
+    SDL_ALSA_SYM(snd_pcm_drop);
     SDL_ALSA_SYM(snd_strerror);
     SDL_ALSA_SYM(snd_pcm_hw_params_sizeof);
     SDL_ALSA_SYM(snd_pcm_sw_params_sizeof);
@@ -402,7 +404,7 @@ static void
 ALSA_CloseDevice(_THIS)
 {
     if (this->hidden->pcm_handle) {
-        ALSA_snd_pcm_drain(this->hidden->pcm_handle);
+        ALSA_snd_pcm_drop(this->hidden->pcm_handle);
         ALSA_snd_pcm_close(this->hidden->pcm_handle);
     }
     SDL_free(this->hidden->mixbuf);

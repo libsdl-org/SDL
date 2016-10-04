@@ -725,13 +725,15 @@ SDL_RunAudio(void *devicep)
         }
 
         /* !!! FIXME: this should be LockDevice. */
-        SDL_LockMutex(device->mixer_lock);
-        if (SDL_AtomicGet(&device->paused)) {
-            SDL_memset(stream, silence, stream_len);
-        } else {
-            (*callback) (udata, stream, stream_len);
+        if ( SDL_AtomicGet(&device->enabled) ) {
+            SDL_LockMutex(device->mixer_lock);
+            if (SDL_AtomicGet(&device->paused)) {
+                SDL_memset(stream, silence, stream_len);
+            } else {
+                (*callback) (udata, stream, stream_len);
+            }
+            SDL_UnlockMutex(device->mixer_lock);
         }
-        SDL_UnlockMutex(device->mixer_lock);
 
         /* Convert the audio if necessary */
         if (device->convert.needed && SDL_AtomicGet(&device->enabled)) {
