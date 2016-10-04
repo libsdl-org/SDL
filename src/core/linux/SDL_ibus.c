@@ -42,7 +42,7 @@ static const char IBUS_INTERFACE[]       = "org.freedesktop.IBus";
 static const char IBUS_INPUT_INTERFACE[] = "org.freedesktop.IBus.InputContext";
 
 static char *input_ctx_path = NULL;
-static SDL_Rect ibus_cursor_rect = {0};
+static SDL_Rect ibus_cursor_rect = { 0, 0, 0, 0 };
 static DBusConnection *ibus_conn = NULL;
 static char *ibus_addr_file = NULL;
 int inotify_fd = -1, inotify_wd = -1;
@@ -341,7 +341,9 @@ IBus_SetupConnection(SDL_DBusContext *dbus, const char* addr)
     const char *path = NULL;
     SDL_bool result = SDL_FALSE;
     DBusMessage *msg;
-    DBusObjectPathVTable ibus_vtable = {0};
+    DBusObjectPathVTable ibus_vtable;
+
+    SDL_zero(ibus_vtable);
     ibus_vtable.message_function = &IBus_MessageHandler;
 
     ibus_conn = dbus->connection_open_private(addr, NULL);
