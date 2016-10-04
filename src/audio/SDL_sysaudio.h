@@ -187,6 +187,8 @@ struct SDL_AudioDevice
     /* * * */
     /* Data private to this driver */
     struct SDL_PrivateAudioData *hidden;
+
+    void *handle;
 };
 #undef _THIS
 
