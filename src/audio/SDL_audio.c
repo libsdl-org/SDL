@@ -1051,6 +1051,10 @@ close_audio_device(SDL_AudioDevice * device)
 {
     SDL_AtomicSet(&device->shutdown, 1);
     SDL_AtomicSet(&device->enabled, 0);
+
+    if (device->hidden != NULL) {
+        current_audio.impl.CloseDevice(device);
+    }
     if (device->thread != NULL) {
         SDL_WaitThread(device->thread, NULL);
     }
@@ -1060,9 +1064,6 @@ close_audio_device(SDL_AudioDevice * device)
     SDL_free(device->fake_stream);
     if (device->convert.needed) {
         SDL_free(device->convert.buf);
-    }
-    if (device->hidden != NULL) {
-        current_audio.impl.CloseDevice(device);
     }
 
     free_audio_queue(device->buffer_queue_head);
