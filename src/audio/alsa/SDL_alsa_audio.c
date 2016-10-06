@@ -779,7 +779,8 @@ ALSA_HotplugThread(void *arg)
                 }
 
                 /* only want physical hardware interfaces */
-                if (SDL_strncmp(name, "hw:", 3) == 0) {
+                if (SDL_strncmp(name, "hw:", 3) == 0 ||
+                    SDL_strncmp(name, "default:", 8) == 0) {
                     char *ioid = ALSA_snd_device_name_get_hint(hints[i], "IOID");
                     const SDL_bool isoutput = (ioid == NULL) || (SDL_strcmp(ioid, "Output") == 0);
                     const SDL_bool isinput = (ioid == NULL) || (SDL_strcmp(ioid, "Input") == 0);
