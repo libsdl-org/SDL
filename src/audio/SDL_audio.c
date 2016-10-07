@@ -259,14 +259,27 @@ SDL_AudioUnlockDevice_Default(SDL_AudioDevice * device)
     }
 }
 
+static void
+SDL_AudioLockOrUnlockDeviceWithNoMixerLock(SDL_AudioDevice * device)
+{
+}
 
 static void
-finalize_audio_entry_points(void)
+finish_audio_entry_points_init(void)
 {
     /*
      * Fill in stub functions for unused driver entry points. This lets us
      *  blindly call them without having to check for validity first.
      */
+
+    if (current_audio.impl.SkipMixerLock) {
+        if (current_audio.impl.LockDevice == NULL) {
+            current_audio.impl.LockDevice = SDL_AudioLockOrUnlockDeviceWithNoMixerLock;
+        }
+        if (current_audio.impl.UnlockDevice == NULL) {
+            current_audio.impl.UnlockDevice = SDL_AudioLockOrUnlockDeviceWithNoMixerLock;
+        }
+    }
 
 #define FILL_STUB(x) \
         if (current_audio.impl.x == NULL) { \
@@ -695,6 +708,35 @@ SDL_ClearQueuedAudio(SDL_AudioDeviceID devid)
     free_audio_queue(packet);
 }
 
+void
+SDL_FinalizeAudioDevice(SDL_AudioDevice *device)
+{
+    if (!device) {
+        return;
+    }
+
+    /* lock/unlock here so we don't race if the audio thread saw the shutdown
+       var without locking, and the thread that requested shutdown is now
+       trying to unlock the mutex while we destroy it. Threading is hard. */
+    current_audio.impl.LockDevice(device);
+    current_audio.impl.UnlockDevice(device);
+
+    if (device->mixer_lock != NULL) {
+        SDL_DestroyMutex(device->mixer_lock);
+    }
+    SDL_free(device->fake_stream);
+    if (device->convert.needed) {
+        SDL_free(device->convert.buf);
+    }
+    if (device->hidden != NULL) {
+        current_audio.impl.CloseDevice(device);
+    }
+
+    free_audio_queue(device->buffer_queue_head);
+    free_audio_queue(device->buffer_queue_pool);
+
+    SDL_free(device);
+}
 
 /* The general mixing thread function */
 static int SDLCALL
@@ -772,6 +814,8 @@ SDL_RunAudio(void *devicep)
     /* Wait for the audio to drain. */
     /* !!! FIXME: can we rename this WaitDrain? */
     current_audio.impl.WaitDone(device);
+
+    SDL_FinalizeAudioDevice(device);
 
     return 0;
 }
@@ -853,6 +897,8 @@ SDL_CaptureAudio(void *devicep)
     }
 
     current_audio.impl.FlushCapture(device);
+
+    SDL_FinalizeAudioDevice(device);
 
     return 0;
 }
@@ -949,7 +995,7 @@ SDL_AudioInit(const char *driver_name)
 
     current_audio.detectionLock = SDL_CreateMutex();
 
-    finalize_audio_entry_points();
+    finish_audio_entry_points_init();
 
     /* Make sure we have a list of devices available at startup. */
     current_audio.impl.DetectDevices();
@@ -1064,26 +1110,70 @@ SDL_GetAudioDeviceName(int index, int iscapture)
 static void
 close_audio_device(SDL_AudioDevice * device)
 {
-    SDL_AtomicSet(&device->shutdown, 1);
-    SDL_AtomicSet(&device->enabled, 0);
-    if (device->thread != NULL) {
-        SDL_WaitThread(device->thread, NULL);
-    }
-    if (device->mixer_lock != NULL) {
-        SDL_DestroyMutex(device->mixer_lock);
-    }
-    SDL_free(device->fake_stream);
-    if (device->convert.needed) {
-        SDL_free(device->convert.buf);
-    }
-    if (device->hidden != NULL) {
-        current_audio.impl.CloseDevice(device);
+    if (!device) {
+        return;
     }
 
-    free_audio_queue(device->buffer_queue_head);
-    free_audio_queue(device->buffer_queue_pool);
+    /* It's possible the audio device can hang at the OS level for
+       several reasons (buggy drivers, etc), so if we've got a thread in
+       flight, we mark the device as ready to shutdown and return
+       immediately. The thread will either notice this and clean everything
+       up when it can, or it's frozen and helpless, but since we've already
+       detached the thread, it's none of our concern. Otherwise, we might
+       hang too. */
 
-    SDL_free(device);
+    /* Note this can still hang if we initialized the device but failed
+       to finish setting up, forcing _this_ thread to do the cleanup, but
+       oh well. */
+
+    /* take it out of our open list now, though, even if device hangs. */
+    if (device->id > 0) {
+        SDL_AudioDevice *opendev = open_devices[device->id - 1];
+        SDL_assert((opendev == device) || (opendev == NULL));
+        if (opendev == device) {
+            open_devices[device->id - 1] = NULL;
+        }
+    }
+
+    if (!current_audio.impl.ProvidesOwnCallbackThread && !device->thread) {
+        /* no thread...maybe we're cleaning up a half-opened failure. */
+        SDL_FinalizeAudioDevice(device); /* do it ourselves. */
+    } else if (current_audio.impl.ProvidesOwnCallbackThread) {
+        /* !!! FIXME: this is sort of a mess, because we _should_ treat this
+           !!! FIXME:  the same as our internal threads, but those targets
+           !!! FIXME:  need refactoring first: they need to call
+           !!! FIXME:  SDL_FinalizeAudioDevice() themselves and also have
+           !!! FIXME:  their CloseDevice() code deal with cleaning up
+           !!! FIXME:  half-initialized opens _and_ normal runs. So for now,
+           !!! FIXME:  nothing to do here but pray this doesn't hang.
+           !!! FIXME:  (the TODO list: coreaudio, emscripten, nacl, haiku) */
+        SDL_FinalizeAudioDevice(device);
+    } else {
+        Uint32 delay = 0;
+
+        if (!device->iscapture) {
+            /* x2000: x1000 (cvt to ms) and x2 (alternating DMA buffers). */
+            const SDL_AudioSpec *spec = &device->spec;
+            delay = (Uint32) ((((float)spec->samples) / ((float)spec->freq)) * 2000.0f);
+        }
+
+        /* Lock to make sure an audio callback doesn't fire after we return.
+           Presumably, if a device hangs, it'll not be holding this mutex,
+           since it should only be held during the app's audio callback. */
+        current_audio.impl.LockDevice(device);
+        SDL_AtomicSet(&device->shutdown, 1);  /* let the thread do it. */
+        SDL_AtomicSet(&device->enabled, 0);
+        current_audio.impl.UnlockDevice(device);
+
+        /* device is no longer safe to touch at this point. */
+
+        if (delay > 0) {
+            /* Block the amount that is roughly pending for playback, so we
+               don't drop audio if the process exits right after this call. */
+printf("audio close: delay for %u ms\n", (unsigned int) delay);
+            SDL_Delay(delay);
+        }
+    }
 }
 
 
@@ -1172,6 +1262,7 @@ open_audio_device(const char *devname, int iscapture,
         return 0;
     }
 
+    /* !!! FIXME: there is a race condition here if two devices open from two threads at once. */
     /* Find an available device ID... */
     for (id = min_id - 1; id < SDL_arraysize(open_devices); id++) {
         if (open_devices[id] == NULL) {
@@ -1397,10 +1488,13 @@ open_audio_device(const char *devname, int iscapture,
         device->thread = SDL_CreateThreadInternal(iscapture ? SDL_CaptureAudio : SDL_RunAudio, threadname, stacksize, device);
 
         if (device->thread == NULL) {
-            SDL_CloseAudioDevice(device->id);
+            close_audio_device(device);
             SDL_SetError("Couldn't create audio thread");
             return 0;
         }
+
+        /* don't ever join on this thread; it will clean itself up. */
+        SDL_DetachThread(device->thread);
     }
 
     return device->id;
@@ -1520,11 +1614,7 @@ SDL_UnlockAudio(void)
 void
 SDL_CloseAudioDevice(SDL_AudioDeviceID devid)
 {
-    SDL_AudioDevice *device = get_audio_device(devid);
-    if (device) {
-        close_audio_device(device);
-        open_devices[devid - 1] = NULL;
-    }
+    close_audio_device(get_audio_device(devid));
 }
 
 void
@@ -1543,9 +1633,7 @@ SDL_AudioQuit(void)
     }
 
     for (i = 0; i < SDL_arraysize(open_devices); i++) {
-        if (open_devices[i] != NULL) {
-            SDL_CloseAudioDevice(i+1);
-        }
+        close_audio_device(open_devices[i]);
     }
 
     free_device_list(&current_audio.outputDevices, &current_audio.outputDeviceCount);
