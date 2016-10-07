@@ -156,8 +156,17 @@ int SDL_GameControllerEventWatcher(void *userdata, SDL_Event * event)
                         switch (axis) {
                             case SDL_CONTROLLER_AXIS_TRIGGERLEFT:
                             case SDL_CONTROLLER_AXIS_TRIGGERRIGHT:
-                                /* Shift it to be 0 - 32767. */
-                                value = value / 2 + 16384;
+                                /* Shift it to be 0 - 32767 */
+                                if (controllerlist->joystick->force_recentering) {
+                                    int triggerMapping = controllerlist->mapping.axes[axis];
+                                    if (triggerMapping >= 0) {
+                                        controllerlist->joystick->axes[triggerMapping] = (Sint16)-32768;
+                                    }
+                                    value = 0;
+                                } else {
+                                    value = value / 2 + 16384;
+                                }
+                                break;
                             default:
                                 break;
                         }
@@ -1003,6 +1012,18 @@ SDL_GameControllerOpen(int device_index)
 
     SDL_PrivateLoadButtonMapping(&gamecontroller->mapping, pSupportedController->guid, pSupportedController->name, pSupportedController->mapping);
 
+    /* The triggers are mapped from -32768 to 32767, where -32768 is the 'unpressed' value */
+    {
+        int leftTriggerMapping = gamecontroller->mapping.axes[SDL_CONTROLLER_AXIS_TRIGGERLEFT];
+        int rightTriggerMapping = gamecontroller->mapping.axes[SDL_CONTROLLER_AXIS_TRIGGERRIGHT];
+        if (leftTriggerMapping >= 0) {
+            gamecontroller->joystick->axes[leftTriggerMapping] = (Sint16)-32768;
+        }
+        if (rightTriggerMapping >= 0) {
+            gamecontroller->joystick->axes[rightTriggerMapping] = (Sint16)-32768;
+        }
+    }
+
     /* Add joystick to list */
     ++gamecontroller->ref_count;
     /* Link the joystick in the list */
@@ -1039,7 +1060,7 @@ SDL_GameControllerGetAxis(SDL_GameController * gamecontroller, SDL_GameControlle
         switch (axis) {
             case SDL_CONTROLLER_AXIS_TRIGGERLEFT:
             case SDL_CONTROLLER_AXIS_TRIGGERRIGHT:
-                /* Shift it to be 0 - 32767. */
+                /* Shift it to be 0 - 32767 */
                 value = value / 2 + 16384;
             default:
                 break;
