@@ -142,8 +142,8 @@ SDL_JoystickOpen(int device_index)
         joystick->name = NULL;
 
     if (joystick->naxes > 0) {
-        joystick->axes = (Sint16 *) SDL_malloc
-            (joystick->naxes * sizeof(Sint16));
+        joystick->axes = (Sint16 *) SDL_malloc(joystick->naxes * sizeof(Sint16));
+        joystick->axes_zero = (Sint16 *) SDL_malloc(joystick->naxes * sizeof(Sint16));
     }
     if (joystick->nhats > 0) {
         joystick->hats = (Uint8 *) SDL_malloc
@@ -167,6 +167,7 @@ SDL_JoystickOpen(int device_index)
     }
     if (joystick->axes) {
         SDL_memset(joystick->axes, 0, joystick->naxes * sizeof(Sint16));
+        SDL_memset(joystick->axes_zero, 0, joystick->naxes * sizeof(Sint16));
     }
     if (joystick->hats) {
         SDL_memset(joystick->hats, 0, joystick->nhats * sizeof(Uint8));
@@ -579,8 +580,8 @@ SDL_PrivateJoystickAxis(SDL_Joystick * joystick, Uint8 axis, Sint16 value)
      * events.
      */
     if (SDL_PrivateJoystickShouldIgnoreEvent()) {
-        if ((value > 0 && value >= joystick->axes[axis]) ||
-            (value < 0 && value <= joystick->axes[axis])) {
+        if ((value > joystick->axes_zero[axis] && value >= joystick->axes[axis]) ||
+            (value < joystick->axes_zero[axis] && value <= joystick->axes[axis])) {
             return 0;
         }
     }
@@ -753,7 +754,7 @@ SDL_JoystickUpdate(void)
 
             /* Tell the app that everything is centered/unpressed...  */
             for (i = 0; i < joystick->naxes; i++) {
-                SDL_PrivateJoystickAxis(joystick, i, 0);
+                SDL_PrivateJoystickAxis(joystick, i, joystick->axes_zero[i]);
             }
 
             for (i = 0; i < joystick->nbuttons; i++) {

@@ -156,16 +156,7 @@ int SDL_GameControllerEventWatcher(void *userdata, SDL_Event * event)
                         switch (axis) {
                             case SDL_CONTROLLER_AXIS_TRIGGERLEFT:
                             case SDL_CONTROLLER_AXIS_TRIGGERRIGHT:
-                                /* Shift it to be 0 - 32767 */
-                                if (controllerlist->joystick->force_recentering) {
-                                    int triggerMapping = controllerlist->mapping.axes[axis];
-                                    if (triggerMapping >= 0) {
-                                        controllerlist->joystick->axes[triggerMapping] = (Sint16)-32768;
-                                    }
-                                    value = 0;
-                                } else {
-                                    value = value / 2 + 16384;
-                                }
+                                value = value / 2 + 16384;
                                 break;
                             default:
                                 break;
@@ -1017,10 +1008,12 @@ SDL_GameControllerOpen(int device_index)
         int leftTriggerMapping = gamecontroller->mapping.axes[SDL_CONTROLLER_AXIS_TRIGGERLEFT];
         int rightTriggerMapping = gamecontroller->mapping.axes[SDL_CONTROLLER_AXIS_TRIGGERRIGHT];
         if (leftTriggerMapping >= 0) {
-            gamecontroller->joystick->axes[leftTriggerMapping] = (Sint16)-32768;
+            gamecontroller->joystick->axes[leftTriggerMapping] =
+            gamecontroller->joystick->axes_zero[leftTriggerMapping] = (Sint16)-32768;
         }
         if (rightTriggerMapping >= 0) {
-            gamecontroller->joystick->axes[rightTriggerMapping] = (Sint16)-32768;
+            gamecontroller->joystick->axes[rightTriggerMapping] =
+            gamecontroller->joystick->axes_zero[rightTriggerMapping] = (Sint16)-32768;
         }
     }
 
