@@ -232,27 +232,13 @@ XAUDIO2_WaitDevice(_THIS)
 }
 
 static void
-XAUDIO2_WaitDone(_THIS)
+XAUDIO2_PrepareToClose(_THIS)
 {
     IXAudio2SourceVoice *source = this->hidden->source;
-    XAUDIO2_VOICE_STATE state;
-    SDL_assert(!SDL_AtomicGet(&this->enabled));  /* flag that stops playing. */
-    IXAudio2SourceVoice_Discontinuity(source);
-#if SDL_XAUDIO2_WIN8
-    IXAudio2SourceVoice_GetState(source, &state, XAUDIO2_VOICE_NOSAMPLESPLAYED);
-#else
-    IXAudio2SourceVoice_GetState(source, &state);
-#endif
-    while (state.BuffersQueued > 0) {
-        SDL_SemWait(this->hidden->semaphore);
-#if SDL_XAUDIO2_WIN8
-        IXAudio2SourceVoice_GetState(source, &state, XAUDIO2_VOICE_NOSAMPLESPLAYED);
-#else
-        IXAudio2SourceVoice_GetState(source, &state);
-#endif
+    if (source) {
+        IXAudio2SourceVoice_Discontinuity(source);
     }
 }
-
 
 static void
 XAUDIO2_CloseDevice(_THIS)
@@ -489,7 +475,7 @@ XAUDIO2_Init(SDL_AudioDriverImpl * impl)
     impl->OpenDevice = XAUDIO2_OpenDevice;
     impl->PlayDevice = XAUDIO2_PlayDevice;
     impl->WaitDevice = XAUDIO2_WaitDevice;
-    impl->WaitDone = XAUDIO2_WaitDone;
+    impl->PrepareToClose = XAUDIO2_PrepareToClose;
     impl->GetDeviceBuf = XAUDIO2_GetDeviceBuf;
     impl->CloseDevice = XAUDIO2_CloseDevice;
     impl->Deinitialize = XAUDIO2_Deinitialize;

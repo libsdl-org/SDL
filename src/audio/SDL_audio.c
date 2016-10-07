@@ -191,11 +191,6 @@ SDL_AudioGetDeviceBuf_Default(_THIS)
     return NULL;
 }
 
-static void
-SDL_AudioWaitDone_Default(_THIS)
-{                               /* no-op. */
-}
-
 static int
 SDL_AudioCaptureFromDevice_Default(_THIS, void *buffer, int buflen)
 {
@@ -204,6 +199,11 @@ SDL_AudioCaptureFromDevice_Default(_THIS, void *buffer, int buflen)
 
 static void
 SDL_AudioFlushCapture_Default(_THIS)
+{                               /* no-op. */
+}
+
+static void
+SDL_AudioPrepareToClose_Default(_THIS)
 {                               /* no-op. */
 }
 
@@ -292,9 +292,9 @@ finish_audio_entry_points_init(void)
     FILL_STUB(PlayDevice);
     FILL_STUB(GetPendingBytes);
     FILL_STUB(GetDeviceBuf);
-    FILL_STUB(WaitDone);
     FILL_STUB(CaptureFromDevice);
     FILL_STUB(FlushCapture);
+    FILL_STUB(PrepareToClose);
     FILL_STUB(CloseDevice);
     FILL_STUB(LockDevice);
     FILL_STUB(UnlockDevice);
@@ -715,6 +715,9 @@ SDL_FinalizeAudioDevice(SDL_AudioDevice *device)
         return;
     }
 
+    SDL_AtomicSet(&device->shutdown, 1);  /* just in case. */
+    SDL_AtomicSet(&device->enabled, 0);
+
     /* lock/unlock here so we don't race if the audio thread saw the shutdown
        var without locking, and the thread that requested shutdown is now
        trying to unlock the mutex while we destroy it. Threading is hard. */
@@ -811,9 +814,10 @@ SDL_RunAudio(void *devicep)
         }
     }
 
+    current_audio.impl.PrepareToClose(device);
+
     /* Wait for the audio to drain. */
-    /* !!! FIXME: can we rename this WaitDrain? */
-    current_audio.impl.WaitDone(device);
+    SDL_Delay(((device->spec.samples * 1000) / device->spec.freq) * 2);
 
     SDL_FinalizeAudioDevice(device);
 
@@ -1153,7 +1157,7 @@ close_audio_device(SDL_AudioDevice * device)
 
         if (!device->iscapture) {
             const SDL_AudioSpec *spec = &device->spec;
-            delay = ((spec.samples * 1000) / spec.freq) * 2;
+            delay = ((spec->samples * 1000) / spec->freq) * 2;
         }
 
         /* Lock to make sure an audio callback doesn't fire after we return.

@@ -185,13 +185,6 @@ ARTS_PlayDevice(_THIS)
 #endif
 }
 
-static void
-ARTS_WaitDone(_THIS)
-{
-    /* !!! FIXME: camp here until buffer drains... SDL_Delay(???); */
-}
-
-
 static Uint8 *
 ARTS_GetDeviceBuf(_THIS)
 {
@@ -356,7 +349,6 @@ ARTS_Init(SDL_AudioDriverImpl * impl)
     impl->WaitDevice = ARTS_WaitDevice;
     impl->GetDeviceBuf = ARTS_GetDeviceBuf;
     impl->CloseDevice = ARTS_CloseDevice;
-    impl->WaitDone = ARTS_WaitDone;
     impl->Deinitialize = ARTS_Deinitialize;
     impl->OnlyHasDefaultOutputDevice = 1;
 

@@ -709,24 +709,6 @@ QSA_DetectDevices(void)
 }
 
 static void
-QSA_WaitDone(_THIS)
-{
-    if (!this->hidden->iscapture) {
-        if (this->hidden->audio_handle != NULL) {
-            /* Wait till last fragment is played and stop channel */
-            snd_pcm_plugin_flush(this->hidden->audio_handle,
-                                 SND_PCM_CHANNEL_PLAYBACK);
-        }
-    } else {
-        if (this->hidden->audio_handle != NULL) {
-            /* Discard all unread data and stop channel */
-            snd_pcm_plugin_flush(this->hidden->audio_handle,
-                                 SND_PCM_CHANNEL_CAPTURE);
-        }
-    }
-}
-
-static void
 QSA_Deinitialize(void)
 {
     /* Clear devices array on shutdown */
@@ -759,7 +741,6 @@ QSA_Init(SDL_AudioDriverImpl * impl)
     impl->PlayDevice = QSA_PlayDevice;
     impl->GetDeviceBuf = QSA_GetDeviceBuf;
     impl->CloseDevice = QSA_CloseDevice;
-    impl->WaitDone = QSA_WaitDone;
     impl->Deinitialize = QSA_Deinitialize;
     impl->LockDevice = NULL;
     impl->UnlockDevice = NULL;
