@@ -1152,9 +1152,8 @@ close_audio_device(SDL_AudioDevice * device)
         Uint32 delay = 0;
 
         if (!device->iscapture) {
-            /* x2000: x1000 (cvt to ms) and x2 (alternating DMA buffers). */
             const SDL_AudioSpec *spec = &device->spec;
-            delay = (Uint32) ((((float)spec->samples) / ((float)spec->freq)) * 2000.0f);
+            delay = ((spec.samples * 1000) / spec.freq) * 2;
         }
 
         /* Lock to make sure an audio callback doesn't fire after we return.
@@ -1170,7 +1169,6 @@ close_audio_device(SDL_AudioDevice * device)
         if (delay > 0) {
             /* Block the amount that is roughly pending for playback, so we
                don't drop audio if the process exits right after this call. */
-printf("audio close: delay for %u ms\n", (unsigned int) delay);
             SDL_Delay(delay);
         }
     }
