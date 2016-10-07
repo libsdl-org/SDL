@@ -307,22 +307,6 @@ DSOUND_GetDeviceBuf(_THIS)
     return (this->hidden->locked_buf);
 }
 
-static void
-DSOUND_WaitDone(_THIS)
-{
-    Uint8 *stream = DSOUND_GetDeviceBuf(this);
-
-    /* Wait for the playing chunk to finish */
-    if (stream != NULL) {
-        SDL_memset(stream, this->spec.silence, this->spec.size);
-        DSOUND_PlayDevice(this);
-    }
-    DSOUND_WaitDevice(this);
-
-    /* Stop the looping sound buffer */
-    IDirectSoundBuffer_Stop(this->hidden->mixbuf);
-}
-
 static int
 DSOUND_CaptureFromDevice(_THIS, void *buffer, int buflen)
 {
@@ -600,7 +584,6 @@ DSOUND_Init(SDL_AudioDriverImpl * impl)
     impl->OpenDevice = DSOUND_OpenDevice;
     impl->PlayDevice = DSOUND_PlayDevice;
     impl->WaitDevice = DSOUND_WaitDevice;
-    impl->WaitDone = DSOUND_WaitDone;
     impl->GetDeviceBuf = DSOUND_GetDeviceBuf;
     impl->CaptureFromDevice = DSOUND_CaptureFromDevice;
     impl->FlushCapture = DSOUND_FlushCapture;

@@ -152,7 +152,6 @@ PSPAUDIO_Init(SDL_AudioDriverImpl * impl)
     impl->PlayDevice = PSPAUDIO_PlayDevice;
     impl->WaitDevice = PSPAUDIO_WaitDevice;
     impl->GetDeviceBuf = PSPAUDIO_GetDeviceBuf;
-    impl->WaitDone = PSPAUDIO_WaitDevice;
     impl->CloseDevice = PSPAUDIO_CloseDevice;
     impl->ThreadInit = PSPAUDIO_ThreadInit;
 

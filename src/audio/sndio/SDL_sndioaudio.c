@@ -171,15 +171,10 @@ SNDIO_GetDeviceBuf(_THIS)
 }
 
 static void
-SNDIO_WaitDone(_THIS)
-{
-    SNDIO_sio_stop(this->hidden->dev);
-}
-
-static void
 SNDIO_CloseDevice(_THIS)
 {
     if ( this->hidden->dev != NULL ) {
+        SNDIO_sio_stop(this->hidden->dev);
         SNDIO_sio_close(this->hidden->dev);
     }
     SDL_free(this->hidden->mixbuf);
@@ -304,7 +299,6 @@ SNDIO_Init(SDL_AudioDriverImpl * impl)
     impl->WaitDevice = SNDIO_WaitDevice;
     impl->PlayDevice = SNDIO_PlayDevice;
     impl->GetDeviceBuf = SNDIO_GetDeviceBuf;
-    impl->WaitDone = SNDIO_WaitDone;
     impl->CloseDevice = SNDIO_CloseDevice;
     impl->Deinitialize = SNDIO_Deinitialize;
     impl->OnlyHasDefaultOutputDevice = 1;  /* !!! FIXME: sndio can handle multiple devices. */

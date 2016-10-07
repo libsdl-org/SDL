@@ -151,13 +151,6 @@ SDL_FS_PlayDevice(_THIS)
 #endif
 }
 
-static void
-SDL_FS_WaitDone(_THIS)
-{
-    this->hidden->stream->Wait(this->hidden->stream,
-                               this->hidden->mixsamples * FUSION_BUFFERS);
-}
-
 
 static Uint8 *
 SDL_FS_GetDeviceBuf(_THIS)
@@ -319,7 +312,6 @@ SDL_FS_Init(SDL_AudioDriverImpl * impl)
     impl->WaitDevice = SDL_FS_WaitDevice;
     impl->GetDeviceBuf = SDL_FS_GetDeviceBuf;
     impl->CloseDevice = SDL_FS_CloseDevice;
-    impl->WaitDone = SDL_FS_WaitDone;
     impl->Deinitialize = SDL_FS_Deinitialize;
     impl->OnlyHasDefaultOutputDevice = 1;
 

@@ -368,28 +368,6 @@ PULSEAUDIO_PlayDevice(_THIS)
     }
 }
 
-static void
-PULSEAUDIO_WaitDone(_THIS)
-{
-    if (SDL_AtomicGet(&this->enabled)) {
-        struct SDL_PrivateAudioData *h = this->hidden;
-        pa_operation *o = PULSEAUDIO_pa_stream_drain(h->stream, stream_operation_complete_no_op, NULL);
-        if (o) {
-            while (PULSEAUDIO_pa_operation_get_state(o) != PA_OPERATION_DONE) {
-                if (PULSEAUDIO_pa_context_get_state(h->context) != PA_CONTEXT_READY ||
-                    PULSEAUDIO_pa_stream_get_state(h->stream) != PA_STREAM_READY ||
-                    PULSEAUDIO_pa_mainloop_iterate(h->mainloop, 1, NULL) < 0) {
-                    PULSEAUDIO_pa_operation_cancel(o);
-                    break;
-                }
-            }
-            PULSEAUDIO_pa_operation_unref(o);
-        }
-    }
-}
-
-
-
 static Uint8 *
 PULSEAUDIO_GetDeviceBuf(_THIS)
 {
@@ -776,7 +754,6 @@ PULSEAUDIO_Init(SDL_AudioDriverImpl * impl)
     impl->WaitDevice = PULSEAUDIO_WaitDevice;
     impl->GetDeviceBuf = PULSEAUDIO_GetDeviceBuf;
     impl->CloseDevice = PULSEAUDIO_CloseDevice;
-    impl->WaitDone = PULSEAUDIO_WaitDone;
     impl->Deinitialize = PULSEAUDIO_Deinitialize;
     impl->CaptureFromDevice = PULSEAUDIO_CaptureFromDevice;
     impl->FlushCapture = PULSEAUDIO_FlushCapture;

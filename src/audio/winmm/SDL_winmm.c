@@ -135,24 +135,6 @@ WINMM_PlayDevice(_THIS)
     this->hidden->next_buffer = (this->hidden->next_buffer + 1) % NUM_BUFFERS;
 }
 
-static void
-WINMM_WaitDone(_THIS)
-{
-    int i, left;
-
-    do {
-        left = NUM_BUFFERS;
-        for (i = 0; i < NUM_BUFFERS; ++i) {
-            if (this->hidden->wavebuf[i].dwFlags & WHDR_DONE) {
-                --left;
-            }
-        }
-        if (left > 0) {
-            SDL_Delay(100);
-        }
-    } while (left > 0);
-}
-
 static int
 WINMM_CaptureFromDevice(_THIS, void *buffer, int buflen)
 {
@@ -422,7 +404,6 @@ WINMM_Init(SDL_AudioDriverImpl * impl)
     impl->OpenDevice = WINMM_OpenDevice;
     impl->PlayDevice = WINMM_PlayDevice;
     impl->WaitDevice = WINMM_WaitDevice;
-    impl->WaitDone = WINMM_WaitDone;
     impl->GetDeviceBuf = WINMM_GetDeviceBuf;
     impl->CaptureFromDevice = WINMM_CaptureFromDevice;
     impl->FlushCapture = WINMM_FlushCapture;
