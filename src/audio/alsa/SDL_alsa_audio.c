@@ -771,7 +771,28 @@ ALSA_HotplugThread(void *arg)
             ALSA_Device *seen = NULL;
             ALSA_Device *prev;
             int i;
+            const char *match = "default:";
+            size_t match_len = strlen(match);
 
+            /* determine what kind of name to match.  Use "hw:" devices if they
+               exist, otherwise use "default:" */
+            for (i = 0; hints[i]; i++) {
+                char *name = ALSA_snd_device_name_get_hint(hints[i], "NAME");
+                if (!name) {
+                    continue;
+                }
+
+                if (SDL_strncmp(name, "hw:", 3) == 0) {
+                    match = "hw:";
+                    match_len = strlen(match);
+                    free(name);
+                    break;
+                }
+
+                free(name);
+            }
+
+            /* look through the list of device names to find matches */
             for (i = 0; hints[i]; i++) {
                 char *name = ALSA_snd_device_name_get_hint(hints[i], "NAME");
                 if (!name) {
@@ -779,8 +800,7 @@ ALSA_HotplugThread(void *arg)
                 }
 
                 /* only want physical hardware interfaces */
-                if (SDL_strncmp(name, "hw:", 3) == 0 ||
-                    SDL_strncmp(name, "default:", 8) == 0) {
+                if (SDL_strncmp(name, match, match_len) == 0) {
                     char *ioid = ALSA_snd_device_name_get_hint(hints[i], "IOID");
                     const SDL_bool isoutput = (ioid == NULL) || (SDL_strcmp(ioid, "Output") == 0);
                     const SDL_bool isinput = (ioid == NULL) || (SDL_strcmp(ioid, "Input") == 0);
