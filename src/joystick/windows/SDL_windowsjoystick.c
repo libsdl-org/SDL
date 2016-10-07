@@ -509,6 +509,9 @@ SDL_SYS_JoystickQuit(void)
 
     SDL_DINPUT_JoystickQuit();
     SDL_XINPUT_JoystickQuit();
+
+    s_bDeviceAdded = SDL_FALSE;
+    s_bDeviceRemoved = SDL_FALSE;
 }
 
 /* return the stable device guid for this device index */
