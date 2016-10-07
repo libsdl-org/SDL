@@ -36,6 +36,7 @@ struct _SDL_Joystick
 
     int naxes;                  /* Number of axis controls on the joystick */
     Sint16 *axes;               /* Current axis states */
+    Sint16 *axes_zero;          /* Zero point on the axis (-32768 for triggers) */
 
     int nhats;                  /* Number of hats on the joystick */
     Uint8 *hats;                /* Current hat states */
