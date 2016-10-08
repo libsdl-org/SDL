@@ -390,7 +390,6 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
 {
     SDL_Renderer *renderer;
     GL_RenderData *data;
-    const char *hint;
     GLint value;
     Uint32 window_flags;
     int profile_mask = 0, major = 0, minor = 0;
@@ -528,8 +527,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     }
 
     /* Check for shader support */
-    hint = SDL_GetHint(SDL_HINT_RENDER_OPENGL_SHADERS);
-    if (!hint || *hint != '0') {
+    if (SDL_GetHintBoolean(SDL_HINT_RENDER_OPENGL_SHADERS, SDL_TRUE)) {
         data->shaders = GL_CreateShaderContext();
     }
     SDL_LogInfo(SDL_LOG_CATEGORY_RENDER, "OpenGL shaders: %s",

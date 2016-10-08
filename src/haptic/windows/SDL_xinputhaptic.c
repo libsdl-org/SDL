@@ -44,8 +44,7 @@ static SDL_bool loaded_xinput = SDL_FALSE;
 int
 SDL_XINPUT_HapticInit(void)
 {
-    const char *env = SDL_GetHint(SDL_HINT_XINPUT_ENABLED);
-    if (!env || SDL_atoi(env)) {
+    if (SDL_GetHintBoolean(SDL_HINT_XINPUT_ENABLED, SDL_TRUE)) {
         loaded_xinput = (WIN_LoadXInputDLL() == 0);
     }
 

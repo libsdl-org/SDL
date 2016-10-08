@@ -348,8 +348,7 @@ Cocoa_RegisterApp(void)
         [SDLApplication sharedApplication];
         SDL_assert(NSApp != nil);
 
-        const char *hint = SDL_GetHint(SDL_HINT_MAC_BACKGROUND_APP);
-        if (!hint || *hint == '0') {
+        if (!SDL_GetHintBoolean(SDL_HINT_MAC_BACKGROUND_APP, SDL_FALSE)) {
             [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
             [NSApp activateIgnoringOtherApps:YES];
 		}

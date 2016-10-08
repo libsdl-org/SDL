@@ -564,21 +564,11 @@ SDL_WarpMouseGlobal(int x, int y)
 static SDL_bool
 ShouldUseRelativeModeWarp(SDL_Mouse *mouse)
 {
-    const char *hint;
-
     if (!mouse->SetRelativeMouseMode) {
         return SDL_TRUE;
     }
 
-    hint = SDL_GetHint(SDL_HINT_MOUSE_RELATIVE_MODE_WARP);
-    if (hint) {
-        if (*hint == '0') {
-            return SDL_FALSE;
-        } else {
-            return SDL_TRUE;
-        }
-    }
-    return SDL_FALSE;
+    return SDL_GetHintBoolean(SDL_HINT_MOUSE_RELATIVE_MODE_WARP, SDL_FALSE);
 }
 
 int

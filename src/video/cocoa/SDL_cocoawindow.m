@@ -211,8 +211,7 @@ ScheduleContextUpdates(SDL_WindowData *data)
 static int
 GetHintCtrlClickEmulateRightClick()
 {
-	const char *hint = SDL_GetHint( SDL_HINT_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK );
-	return hint != NULL && *hint != '0';
+	return SDL_GetHintBoolean(SDL_HINT_MAC_CTRL_CLICK_EMULATE_RIGHT_CLICK, SDL_FALSE);
 }
 
 static NSUInteger
@@ -1118,12 +1117,11 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 
 - (BOOL)acceptsFirstMouse:(NSEvent *)theEvent
 {
-    const char *hint = SDL_GetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH);
-    if (!hint) {
-        /* Check older hint for backwards compatibility */
-        hint = SDL_GetHint("SDL_MAC_MOUSE_FOCUS_CLICKTHROUGH");
+    if (SDL_GetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH)) {
+        return SDL_GetHintBoolean(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, SDL_FALSE);
+    } else {
+        return SDL_GetHintBoolean("SDL_MAC_MOUSE_FOCUS_CLICKTHROUGH", SDL_FALSE);
     }
-    return hint && *hint != '0';
 }
 @end
 

@@ -739,6 +739,13 @@ extern DECLSPEC SDL_bool SDLCALL SDL_SetHint(const char *name,
 extern DECLSPEC const char * SDLCALL SDL_GetHint(const char *name);
 
 /**
+ *  \brief Get a hint
+ *
+ *  \return The boolean value of a hint variable.
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_GetHintBoolean(const char *name, SDL_bool default_value);
+
+/**
  *  \brief Add a function to watch a particular hint
  *
  *  \param name The hint to watch

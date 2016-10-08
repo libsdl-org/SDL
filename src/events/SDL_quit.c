@@ -91,9 +91,7 @@ SDL_QuitInit_Internal(void)
 int
 SDL_QuitInit(void)
 {
-    const char *hint = SDL_GetHint(SDL_HINT_NO_SIGNAL_HANDLERS);
-    disable_signals = hint && (SDL_atoi(hint) == 1);
-    if (!disable_signals) {
+    if (!SDL_GetHintBoolean(SDL_HINT_NO_SIGNAL_HANDLERS, SDL_FALSE)) {
         return SDL_QuitInit_Internal();
     }
     return 0;

@@ -40,8 +40,7 @@ SDL_XInputUseOldJoystickMapping()
 {
     static int s_XInputUseOldJoystickMapping = -1;
     if (s_XInputUseOldJoystickMapping < 0) {
-        const char *hint = SDL_GetHint(SDL_HINT_XINPUT_USE_OLD_JOYSTICK_MAPPING);
-        s_XInputUseOldJoystickMapping = (hint && *hint == '1') ? 1 : 0;
+        s_XInputUseOldJoystickMapping = SDL_GetHintBoolean(SDL_HINT_XINPUT_USE_OLD_JOYSTICK_MAPPING, SDL_FALSE);
     }
     return (s_XInputUseOldJoystickMapping > 0);
 }
@@ -54,10 +53,7 @@ SDL_bool SDL_XINPUT_Enabled(void)
 int
 SDL_XINPUT_JoystickInit(void)
 {
-    const char *env = SDL_GetHint(SDL_HINT_XINPUT_ENABLED);
-    if (env && !SDL_atoi(env)) {
-        s_bXInputEnabled = SDL_FALSE;
-    }
+    s_bXInputEnabled = SDL_GetHintBoolean(SDL_HINT_XINPUT_ENABLED, SDL_TRUE);
 
     if (s_bXInputEnabled && WIN_LoadXInputDLL() < 0) {
         s_bXInputEnabled = SDL_FALSE;  /* oh well. */

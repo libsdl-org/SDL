@@ -127,13 +127,11 @@ SDL_SYS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *contr
     }
 #if TARGET_OS_TV
     else if (controller.microGamepad) {
-        const char *hint = SDL_GetHint(SDL_HINT_APPLE_TV_REMOTE_ALLOW_ROTATION);
-
         device->naxes = 2; /* treat the touch surface as two axes */
         device->nhats = 0; /* apparently the touch surface-as-dpad is buggy */
         device->nbuttons = 3; /* AX, pause button */
 
-        controller.microGamepad.allowsRotation = (hint != NULL && *hint != '0');
+        controller.microGamepad.allowsRotation = SDL_GetHintBoolean(SDL_HINT_APPLE_TV_REMOTE_ALLOW_ROTATION, SDL_FALSE);
     }
 #endif /* TARGET_OS_TV */
 
@@ -279,8 +277,7 @@ SDL_SYS_JoystickInit(void)
         NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
 
 #if !TARGET_OS_TV
-        const char *hint = SDL_GetHint(SDL_HINT_ACCELEROMETER_AS_JOYSTICK);
-        if (!hint || SDL_atoi(hint)) {
+        if (SDL_GetHintBoolean(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, SDL_TRUE)) {
             /* Default behavior, accelerometer as joystick */
             SDL_SYS_AddJoystickDevice(nil, SDL_TRUE);
         }
