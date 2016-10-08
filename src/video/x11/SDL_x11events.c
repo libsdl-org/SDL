@@ -536,13 +536,18 @@ static void
 X11_DispatchEvent(_THIS)
 {
     SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
-    Display *display = videodata->display;
+    Display *display;
     SDL_WindowData *data;
     XEvent xevent;
     int orig_event_type;
     KeyCode orig_keycode;
     XClientMessageEvent m;
     int i;
+
+    if (!videodata) {
+        return;
+    }
+    display = videodata->display;
 
     SDL_zero(xevent);           /* valgrind fix. --ryan. */
     X11_XNextEvent(display, &xevent);
