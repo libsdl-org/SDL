@@ -202,6 +202,54 @@ SDL_MixAudioFormat(Uint8 * dst, const Uint8 * src, SDL_AudioFormat format,
         }
         break;
 
+    case AUDIO_U16LSB:
+        {
+            Uint16 src1, src2;
+            int dst_sample;
+            const int max_audioval = 0xFFFF;
+
+            len /= 2;
+            while (len--) {
+                src1 = ((src[1]) << 8 | src[0]);
+                ADJUST_VOLUME(src1, volume);
+                src2 = ((dst[1]) << 8 | dst[0]);
+                src += 2;
+                dst_sample = src1 + src2;
+                if (dst_sample > max_audioval) {
+                    dst_sample = max_audioval;
+                }
+                dst[0] = dst_sample & 0xFF;
+                dst_sample >>= 8;
+                dst[1] = dst_sample & 0xFF;
+                dst += 2;
+            }
+        }
+        break;
+
+    case AUDIO_U16MSB:
+        {
+            Uint16 src1, src2;
+            int dst_sample;
+            const int max_audioval = 0xFFFF;
+
+            len /= 2;
+            while (len--) {
+                src1 = ((src[0]) << 8 | src[1]);
+                ADJUST_VOLUME(src1, volume);
+                src2 = ((dst[0]) << 8 | dst[1]);
+                src += 2;
+                dst_sample = src1 + src2;
+                if (dst_sample > max_audioval) {
+                    dst_sample = max_audioval;
+                }
+                dst[1] = dst_sample & 0xFF;
+                dst_sample >>= 8;
+                dst[0] = dst_sample & 0xFF;
+                dst += 2;
+            }
+        }
+        break;
+
     case AUDIO_S32LSB:
         {
             const Uint32 *src32 = (Uint32 *) src;
@@ -313,7 +361,7 @@ SDL_MixAudioFormat(Uint8 * dst, const Uint8 * src, SDL_AudioFormat format,
         break;
 
     default:                   /* If this happens... FIXME! */
-        SDL_SetError("SDL_MixAudio(): unknown audio format");
+        SDL_SetError("SDL_MixAudioFormat(): unknown audio format");
         return;
     }
 }
