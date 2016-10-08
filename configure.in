@@ -770,7 +770,7 @@ CheckALSA()
 AC_HELP_STRING([--enable-alsa], [support the ALSA audio API [[default=yes]]]),
                   , enable_alsa=yes)
     if test x$enable_audio = xyes -a x$enable_alsa = xyes; then
-        AM_PATH_ALSA(0.9.0, have_alsa=yes, have_alsa=no)
+        AM_PATH_ALSA(1.0.11, have_alsa=yes, have_alsa=no)
         # Restore all flags from before the ALSA detection runs
         CFLAGS="$alsa_save_CFLAGS"
         LDFLAGS="$alsa_save_LDFLAGS"
