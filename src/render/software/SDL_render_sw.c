@@ -677,8 +677,8 @@ SW_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
     }
 
     if (!retval) {
-        SDLgfx_rotozoomSurfaceSizeTrig(tmp_rect.w, tmp_rect.h, -angle, &dstwidth, &dstheight, &cangle, &sangle);
-        surface_rotated = SDLgfx_rotateSurface(surface_scaled, -angle, dstwidth/2, dstheight/2, GetScaleQuality(), flip & SDL_FLIP_HORIZONTAL, flip & SDL_FLIP_VERTICAL, dstwidth, dstheight, cangle, sangle);
+        SDLgfx_rotozoomSurfaceSizeTrig(tmp_rect.w, tmp_rect.h, angle, &dstwidth, &dstheight, &cangle, &sangle);
+        surface_rotated = SDLgfx_rotateSurface(surface_scaled, angle, dstwidth/2, dstheight/2, GetScaleQuality(), flip & SDL_FLIP_HORIZONTAL, flip & SDL_FLIP_VERTICAL, dstwidth, dstheight, cangle, sangle);
         if(surface_rotated) {
             /* Find out where the new origin is by rotating the four final_rect points around the center and then taking the extremes */
             abscenterx = final_rect.x + (int)center->x;
