@@ -43,40 +43,44 @@ static void
 InitIME()
 {
     static SDL_bool inited = SDL_FALSE;
-    const char *im_module = NULL;
+    const char *im_module;
+    const char *xmodifiers = SDL_getenv("XMODIFIERS");
 
     if (inited == SDL_TRUE)
-        return ;
+        return;
 
     inited = SDL_TRUE;
-    // TODO:
-    // better move every ime implenment to a shared library
-
-    // default to IBus
-#ifdef HAVE_IBUS_IBUS_H
-    SDL_IME_Init_Real = SDL_IBus_Init;
-    SDL_IME_Quit_Real = SDL_IBus_Quit;
-    SDL_IME_SetFocus_Real = SDL_IBus_SetFocus;
-    SDL_IME_Reset_Real = SDL_IBus_Reset;
-    SDL_IME_ProcessKeyEvent_Real = SDL_IBus_ProcessKeyEvent;
-    SDL_IME_UpdateTextRect_Real = SDL_IBus_UpdateTextRect;
-    SDL_IME_PumpEvents_Real = SDL_IBus_PumpEvents;
-#endif
 
     im_module = SDL_getenv("SDL_IM_MODULE");
-    if (im_module) {
-        if (SDL_strcmp(im_module, "fcitx") == 0) {
+    xmodifiers = SDL_getenv("XMODIFIERS");
+
+    /* See if fcitx IME support is being requested */
 #ifdef HAVE_FCITX_FRONTEND_H
-            SDL_IME_Init_Real = SDL_Fcitx_Init;
-            SDL_IME_Quit_Real = SDL_Fcitx_Quit;
-            SDL_IME_SetFocus_Real = SDL_Fcitx_SetFocus;
-            SDL_IME_Reset_Real = SDL_Fcitx_Reset;
-            SDL_IME_ProcessKeyEvent_Real = SDL_Fcitx_ProcessKeyEvent;
-            SDL_IME_UpdateTextRect_Real = SDL_Fcitx_UpdateTextRect;
-            SDL_IME_PumpEvents_Real = SDL_Fcitx_PumpEvents;
-#endif
-        }
+    if (!SDL_IME_Init_Real &&
+        ((im_module && SDL_strcmp(im_module, "fcitx") == 0) ||
+         (!im_module && xmodifiers && SDL_strstr(xmodifiers, "@im=fcitx") != NULL))) {
+        SDL_IME_Init_Real = SDL_Fcitx_Init;
+        SDL_IME_Quit_Real = SDL_Fcitx_Quit;
+        SDL_IME_SetFocus_Real = SDL_Fcitx_SetFocus;
+        SDL_IME_Reset_Real = SDL_Fcitx_Reset;
+        SDL_IME_ProcessKeyEvent_Real = SDL_Fcitx_ProcessKeyEvent;
+        SDL_IME_UpdateTextRect_Real = SDL_Fcitx_UpdateTextRect;
+        SDL_IME_PumpEvents_Real = SDL_Fcitx_PumpEvents;
     }
+#endif /* HAVE_FCITX_FRONTEND_H */
+
+    /* default to IBus */
+#ifdef HAVE_IBUS_IBUS_H
+    if (!SDL_IME_Init_Real) {
+        SDL_IME_Init_Real = SDL_IBus_Init;
+        SDL_IME_Quit_Real = SDL_IBus_Quit;
+        SDL_IME_SetFocus_Real = SDL_IBus_SetFocus;
+        SDL_IME_Reset_Real = SDL_IBus_Reset;
+        SDL_IME_ProcessKeyEvent_Real = SDL_IBus_ProcessKeyEvent;
+        SDL_IME_UpdateTextRect_Real = SDL_IBus_UpdateTextRect;
+        SDL_IME_PumpEvents_Real = SDL_IBus_PumpEvents;
+    }
+#endif /* HAVE_IBUS_IBUS_H */
 }
 
 SDL_bool
