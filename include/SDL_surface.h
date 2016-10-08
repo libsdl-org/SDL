@@ -118,6 +118,8 @@ typedef int (*SDL_blit) (struct SDL_Surface * src, SDL_Rect * srcrect,
 extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurface
     (Uint32 flags, int width, int height, int depth,
      Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask);
+extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceWithFormat
+    (Uint32 flags, int width, int height, int depth, Uint32 format);
 extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceFrom(void *pixels,
                                                               int width,
                                                               int height,
@@ -127,6 +129,8 @@ extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceFrom(void *pixels,
                                                               Uint32 Gmask,
                                                               Uint32 Bmask,
                                                               Uint32 Amask);
+extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceWithFormatFrom
+    (void *pixels, int width, int height, int depth, int pitch, Uint32 format);
 extern DECLSPEC void SDLCALL SDL_FreeSurface(SDL_Surface * surface);
 
 /**
