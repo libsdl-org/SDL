@@ -339,8 +339,8 @@ X11_InitKeyboard(_THIS)
 
     SDL_SetScancodeName(SDL_SCANCODE_APPLICATION, "Menu");
 
-#ifdef SDL_USE_IBUS
-    SDL_IBus_Init();
+#ifdef SDL_USE_IME
+    SDL_IME_Init();
 #endif
 
     return 0;
@@ -422,8 +422,8 @@ X11_QuitKeyboard(_THIS)
     }
 #endif
 
-#ifdef SDL_USE_IBUS
-    SDL_IBus_Quit();
+#ifdef SDL_USE_IME
+    SDL_IME_Quit();
 #endif
 }
 
@@ -436,8 +436,8 @@ X11_StartTextInput(_THIS)
 void
 X11_StopTextInput(_THIS)
 {
-#ifdef SDL_USE_IBUS
-    SDL_IBus_Reset();
+#ifdef SDL_USE_IME
+    SDL_IME_Reset();
 #endif
 }
 
@@ -449,8 +449,8 @@ X11_SetTextInputRect(_THIS, SDL_Rect *rect)
         return;
     }
        
-#ifdef SDL_USE_IBUS
-    SDL_IBus_UpdateTextRect(rect);
+#ifdef SDL_USE_IME
+    SDL_IME_UpdateTextRect(rect);
 #endif
 }
 

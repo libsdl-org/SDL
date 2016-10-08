@@ -57,7 +57,7 @@
 #endif
 
 #include "../../core/linux/SDL_dbus.h"
-#include "../../core/linux/SDL_ibus.h"
+#include "../../core/linux/SDL_ime.h"
 
 #include "SDL_x11dyn.h"
 

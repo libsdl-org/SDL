@@ -380,8 +380,8 @@ X11_DispatchFocusIn(_THIS, SDL_WindowData *data)
         X11_XSetICFocus(data->ic);
     }
 #endif
-#ifdef SDL_USE_IBUS
-    SDL_IBus_SetFocus(SDL_TRUE);
+#ifdef SDL_USE_IME
+    SDL_IME_SetFocus(SDL_TRUE);
 #endif
 }
 
@@ -403,8 +403,8 @@ X11_DispatchFocusOut(_THIS, SDL_WindowData *data)
         X11_XUnsetICFocus(data->ic);
     }
 #endif
-#ifdef SDL_USE_IBUS
-    SDL_IBus_SetFocus(SDL_FALSE);
+#ifdef SDL_USE_IME
+    SDL_IME_SetFocus(SDL_FALSE);
 #endif
 }
 
@@ -786,9 +786,9 @@ X11_DispatchEvent(_THIS)
             X11_XLookupString(&xevent.xkey, text, sizeof(text), &keysym, NULL);
 #endif
 
-#ifdef SDL_USE_IBUS
+#ifdef SDL_USE_IME
             if(SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
-                handled_by_ime = SDL_IBus_ProcessKeyEvent(keysym, keycode);
+                handled_by_ime = SDL_IME_ProcessKeyEvent(keysym, keycode);
             }
 #endif
             if (!handled_by_ime) {
@@ -860,10 +860,10 @@ X11_DispatchEvent(_THIS)
                 xevent.xconfigure.y != data->last_xconfigure.y) {
                 SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_MOVED,
                                     xevent.xconfigure.x, xevent.xconfigure.y);
-#ifdef SDL_USE_IBUS
+#ifdef SDL_USE_IME
                 if(SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
-                    /* Update IBus candidate list position */
-                    SDL_IBus_UpdateTextRect(NULL);
+                    /* Update IME candidate list position */
+                    SDL_IME_UpdateTextRect(NULL);
                 }
 #endif
             }
@@ -1408,9 +1408,9 @@ X11_PumpEvents(_THIS)
         X11_DispatchEvent(_this);
     }
 
-#ifdef SDL_USE_IBUS
+#ifdef SDL_USE_IME
     if(SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE){
-        SDL_IBus_PumpEvents();
+        SDL_IME_PumpEvents();
     }
 #endif
 
