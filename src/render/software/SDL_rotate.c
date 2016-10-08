@@ -378,9 +378,11 @@ SDLgfx_rotateSurface(SDL_Surface * src, double angle, int centerx, int centery, 
 #endif
         );
         rz_src = SDL_ConvertSurfaceFormat(src, format, src->flags);
+        if (rz_src == NULL) {
+            return NULL;
+        }
         is32bit = 1;
     }
-
 
     /* Determine target size */
     /* _rotozoomSurfaceSizeTrig(rz_src->w, rz_src->h, angle, &dstwidth, &dstheight, &cangle, &sangle); */
@@ -394,7 +396,6 @@ SDLgfx_rotateSurface(SDL_Surface * src, double angle, int centerx, int centery, 
     /*
     * Alloc space to completely contain the rotated surface
     */
-    rz_dst = NULL;
     if (is32bit) {
         /*
         * Target surface is 32bit with source RGBA/ABGR ordering
