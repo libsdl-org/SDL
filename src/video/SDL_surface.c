@@ -27,26 +27,19 @@
 #include "SDL_pixels_c.h"
 
 /* Public routines */
+
 /*
- * Create an empty RGB surface of the appropriate depth
+ * Create an empty RGB surface of the appropriate depth using the given
+ * enum SDL_PIXELFORMAT_* format
  */
 SDL_Surface *
-SDL_CreateRGBSurface(Uint32 flags,
-                     int width, int height, int depth,
-                     Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask)
+SDL_CreateRGBSurfaceWithFormat(Uint32 flags, int width, int height, int depth,
+                               Uint32 format)
 {
     SDL_Surface *surface;
-    Uint32 format;
 
     /* The flags are no longer used, make the compiler happy */
     (void)flags;
-
-    /* Get the pixel format */
-    format = SDL_MasksToPixelFormatEnum(depth, Rmask, Gmask, Bmask, Amask);
-    if (format == SDL_PIXELFORMAT_UNKNOWN) {
-        SDL_SetError("Unknown pixel format");
-        return NULL;
-    }
 
     /* Allocate the surface */
     surface = (SDL_Surface *) SDL_calloc(1, sizeof(*surface));
@@ -105,13 +98,33 @@ SDL_CreateRGBSurface(Uint32 flags,
     }
 
     /* By default surface with an alpha mask are set up for blending */
-    if (Amask) {
+    if (surface->format->Amask) {
         SDL_SetSurfaceBlendMode(surface, SDL_BLENDMODE_BLEND);
     }
 
     /* The surface is ready to go */
     surface->refcount = 1;
     return surface;
+}
+
+/*
+ * Create an empty RGB surface of the appropriate depth
+ */
+SDL_Surface *
+SDL_CreateRGBSurface(Uint32 flags,
+                     int width, int height, int depth,
+                     Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask)
+{
+    Uint32 format;
+
+    /* Get the pixel format */
+    format = SDL_MasksToPixelFormatEnum(depth, Rmask, Gmask, Bmask, Amask);
+    if (format == SDL_PIXELFORMAT_UNKNOWN) {
+        SDL_SetError("Unknown pixel format");
+        return NULL;
+    }
+
+    return SDL_CreateRGBSurfaceWithFormat(flags, width, height, depth, format);
 }
 
 /*
@@ -125,8 +138,30 @@ SDL_CreateRGBSurfaceFrom(void *pixels,
 {
     SDL_Surface *surface;
 
-    surface =
-        SDL_CreateRGBSurface(0, 0, 0, depth, Rmask, Gmask, Bmask, Amask);
+    surface = SDL_CreateRGBSurface(0, 0, 0, depth, Rmask, Gmask, Bmask, Amask);
+    if (surface != NULL) {
+        surface->flags |= SDL_PREALLOC;
+        surface->pixels = pixels;
+        surface->w = width;
+        surface->h = height;
+        surface->pitch = pitch;
+        SDL_SetClipRect(surface, NULL);
+    }
+    return surface;
+}
+
+/*
+ * Create an RGB surface from an existing memory buffer using the given given
+ * enum SDL_PIXELFORMAT_* format
+ */
+SDL_Surface *
+SDL_CreateRGBSurfaceWithFormatFrom(void *pixels,
+                         int width, int height, int depth, int pitch,
+                         Uint32 format)
+{
+    SDL_Surface *surface;
+
+    surface = SDL_CreateRGBSurfaceWithFormat(0, 0, 0, depth, format);
     if (surface != NULL) {
         surface->flags |= SDL_PREALLOC;
         surface->pixels = pixels;

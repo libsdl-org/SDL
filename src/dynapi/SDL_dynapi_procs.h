@@ -641,3 +641,5 @@ SDL_DYNAPI_PROC(int,SDL_RenderSetIntegerScale,(SDL_Renderer *a, SDL_bool b),(a,b
 SDL_DYNAPI_PROC(SDL_bool,SDL_RenderGetIntegerScale,(SDL_Renderer *a),(a),return)
 SDL_DYNAPI_PROC(Uint32,SDL_DequeueAudio,(SDL_AudioDeviceID a, void *b, Uint32 c),(a,b,c),return)
 SDL_DYNAPI_PROC(void,SDL_SetWindowResizable,(SDL_Window *a, SDL_bool b),(a,b),)
+SDL_DYNAPI_PROC(SDL_Surface*,SDL_CreateRGBSurfaceWithFormat,(Uint32 a, int b, int c, int d, Uint32 e),(a,b,c,d,e),return)
+SDL_DYNAPI_PROC(SDL_Surface*,SDL_CreateRGBSurfaceWithFormatFrom,(void *a, int b, int c, int d, int e, Uint32 f),(a,b,c,d,e,f),return)
