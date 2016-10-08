@@ -62,7 +62,7 @@ static int
 GetDisplayNumber()
 {
     const char *display = SDL_getenv("DISPLAY");
-    const char *p = NULL;;
+    const char *p = NULL;
     int number = 0;
 
     if (display == NULL)
