@@ -332,7 +332,9 @@ SDL_PeepEvents(SDL_Event * events, int numevents, SDL_eventaction action,
                 }
             }
         }
-        SDL_UnlockMutex(SDL_EventQ.lock);
+        if (SDL_EventQ.lock) {
+            SDL_UnlockMutex(SDL_EventQ.lock);
+        }
     } else {
         return SDL_SetError("Couldn't lock event queue");
     }
@@ -374,7 +376,7 @@ SDL_FlushEvents(Uint32 minType, Uint32 maxType)
 #endif
 
     /* Lock the event queue */
-    if (SDL_LockMutex(SDL_EventQ.lock) == 0) {
+    if (SDL_EventQ.lock && SDL_LockMutex(SDL_EventQ.lock) == 0) {
         SDL_EventEntry *entry, *next;
         Uint32 type;
         for (entry = SDL_EventQ.head; entry; entry = next) {
