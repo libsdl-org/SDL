@@ -118,6 +118,19 @@ SDL_GetHint(const char *name)
     return env;
 }
 
+SDL_bool
+SDL_GetHintBoolean(const char *name, SDL_bool default_value)
+{
+    const char *hint = SDL_GetHint(name);
+    if (!hint) {
+        return default_value;
+    }
+    if (*hint == '0' || SDL_strcasecmp(hint, "false") == 0) {
+        return SDL_FALSE;
+    }
+    return SDL_TRUE;
+}
+
 void
 SDL_AddHintCallback(const char *name, SDL_HintCallback callback, void *userdata)
 {

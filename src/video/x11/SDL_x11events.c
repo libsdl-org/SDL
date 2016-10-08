@@ -1035,8 +1035,7 @@ X11_DispatchEvent(_THIS)
                 if (data->last_focus_event_time) {
                     const int X11_FOCUS_CLICK_TIMEOUT = 10;
                     if (!SDL_TICKS_PASSED(SDL_GetTicks(), data->last_focus_event_time + X11_FOCUS_CLICK_TIMEOUT)) {
-                        const char *hint = SDL_GetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH);
-                        ignore_click = (!hint || *hint == '0');
+                        ignore_click = !SDL_GetHintBoolean(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, SDL_FALSE);
                     }
                     data->last_focus_event_time = 0;
                 }

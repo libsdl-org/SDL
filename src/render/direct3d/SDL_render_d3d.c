@@ -512,7 +512,6 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
     D3D_RenderData *data;
     SDL_SysWMinfo windowinfo;
     HRESULT result;
-    const char *hint;
     D3DPRESENT_PARAMETERS pparams;
     IDirect3DSwapChain9 *chain;
     D3DCAPS9 caps;
@@ -607,8 +606,7 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
         device_flags |= D3DCREATE_SOFTWARE_VERTEXPROCESSING;
     }
 
-    hint = SDL_GetHint(SDL_HINT_RENDER_DIRECT3D_THREADSAFE);
-    if (hint && SDL_atoi(hint)) {
+    if (SDL_GetHintBoolean(SDL_HINT_RENDER_DIRECT3D_THREADSAFE, SDL_FALSE)) {
         device_flags |= D3DCREATE_MULTITHREADED;
     }
 

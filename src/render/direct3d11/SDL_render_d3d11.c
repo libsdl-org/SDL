@@ -1000,7 +1000,6 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
     IDXGIDevice1 *dxgiDevice = NULL;
     HRESULT result = S_OK;
     UINT creationFlags;
-    const char *hint;
 
     /* This array defines the set of DirectX hardware feature levels this app will support.
      * Note the ordering should be preserved.
@@ -1078,8 +1077,7 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
     creationFlags = D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 
     /* Make sure Direct3D's debugging feature gets used, if the app requests it. */
-    hint = SDL_GetHint(SDL_HINT_RENDER_DIRECT3D11_DEBUG);
-    if (hint && SDL_atoi(hint) > 0) {
+    if (SDL_GetHintBoolean(SDL_HINT_RENDER_DIRECT3D11_DEBUG, SDL_FALSE)) {
         creationFlags |= D3D11_CREATE_DEVICE_DEBUG;
     }
 

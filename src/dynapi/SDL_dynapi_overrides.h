@@ -611,3 +611,4 @@
 #define SDL_SetWindowResizable SDL_SetWindowResizable_REAL
 #define SDL_CreateRGBSurfaceWithFormat SDL_CreateRGBSurfaceWithFormat_REAL
 #define SDL_CreateRGBSurfaceWithFormatFrom SDL_CreateRGBSurfaceWithFormatFrom_REAL
+#define SDL_GetHintBoolean SDL_GetHintBoolean_REAL

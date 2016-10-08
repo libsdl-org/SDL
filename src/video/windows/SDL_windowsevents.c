@@ -201,8 +201,7 @@ WindowsScanCodeToSDLScanCode(LPARAM lParam, WPARAM wParam)
 static SDL_bool
 WIN_ShouldIgnoreFocusClick()
 {
-    const char *hint = SDL_GetHint(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH);
-    return (!hint || (*hint == '0')) ? SDL_TRUE : SDL_FALSE;
+    return !SDL_GetHintBoolean(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, SDL_FALSE);
 }
 
 void
@@ -340,17 +339,7 @@ WIN_ConvertUTF32toUTF8(UINT32 codepoint, char * text)
 static SDL_bool
 ShouldGenerateWindowCloseOnAltF4(void)
 {
-    const char *hint;
-    
-    hint = SDL_GetHint(SDL_HINT_WINDOWS_NO_CLOSE_ON_ALT_F4);
-    if (hint) {
-        if (*hint == '0') {
-            return SDL_TRUE;
-        } else {
-            return SDL_FALSE;
-        }
-    }
-    return SDL_TRUE;
+    return !SDL_GetHintBoolean(SDL_HINT_WINDOWS_NO_CLOSE_ON_ALT_F4, SDL_FALSE);
 }
 
 LRESULT CALLBACK

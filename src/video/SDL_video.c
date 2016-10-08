@@ -181,7 +181,7 @@ ShouldUseTextureFramebuffer()
     /* See if the user or application wants a specific behavior */
     hint = SDL_GetHint(SDL_HINT_FRAMEBUFFER_ACCELERATION);
     if (hint) {
-        if (*hint == '0') {
+        if (*hint == '0' || SDL_strcasecmp(hint, "false") == 0) {
             return SDL_FALSE;
         } else {
             return SDL_TRUE;
@@ -258,6 +258,8 @@ SDL_CreateWindowTexture(SDL_VideoDevice *unused, SDL_Window * window, Uint32 * f
 
         /* Check to see if there's a specific driver requested */
         if (hint && *hint != '0' && *hint != '1' &&
+            SDL_strcasecmp(hint, "true") != 0 &&
+            SDL_strcasecmp(hint, "false") != 0 &&
             SDL_strcasecmp(hint, "software") != 0) {
             for (i = 0; i < SDL_GetNumRenderDrivers(); ++i) {
                 SDL_RendererInfo info;
@@ -447,10 +449,8 @@ int
 SDL_VideoInit(const char *driver_name)
 {
     SDL_VideoDevice *video;
-    const char *hint;
     int index;
     int i;
-    SDL_bool allow_screensaver;
 
     /* Check to make sure we don't overwrite '_this' */
     if (_this != NULL) {
@@ -538,13 +538,7 @@ SDL_VideoInit(const char *driver_name)
        joystick, or passively watching a movie. Things that use SDL but
        function more like a normal desktop app should explicitly reenable the
        screensaver. */
-    hint = SDL_GetHint(SDL_HINT_VIDEO_ALLOW_SCREENSAVER);
-    if (hint) {
-        allow_screensaver = SDL_atoi(hint) ? SDL_TRUE : SDL_FALSE;
-    } else {
-        allow_screensaver = SDL_FALSE;
-    }
-    if (!allow_screensaver) {
+    if (!SDL_GetHintBoolean(SDL_HINT_VIDEO_ALLOW_SCREENSAVER, SDL_FALSE)) {
         SDL_DisableScreenSaver();
     }
 
@@ -1336,7 +1330,6 @@ SDL_Window *
 SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
 {
     SDL_Window *window;
-    const char *hint;
 
     if (!_this) {
         /* Initialize the video system if needed */
@@ -1384,8 +1377,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
      * SDL_WINDOW_ALLOW_HIGHDPI flag.
      */
     if (flags & SDL_WINDOW_ALLOW_HIGHDPI) {
-        hint = SDL_GetHint(SDL_HINT_VIDEO_HIGHDPI_DISABLED);
-        if (hint && SDL_atoi(hint) > 0) {
+        if (SDL_GetHintBoolean(SDL_HINT_VIDEO_HIGHDPI_DISABLED, SDL_FALSE)) {
             flags &= ~SDL_WINDOW_ALLOW_HIGHDPI;
         }
     }
@@ -2509,8 +2501,6 @@ SDL_OnWindowFocusGained(SDL_Window * window)
 static SDL_bool
 ShouldMinimizeOnFocusLoss(SDL_Window * window)
 {
-    const char *hint;
-
     if (!(window->flags & SDL_WINDOW_FULLSCREEN) || window->is_destroying) {
         return SDL_FALSE;
     }
@@ -2521,16 +2511,7 @@ ShouldMinimizeOnFocusLoss(SDL_Window * window)
     }
 #endif
 
-    hint = SDL_GetHint(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS);
-    if (hint) {
-        if (*hint == '0') {
-            return SDL_FALSE;
-        } else {
-            return SDL_TRUE;
-        }
-    }
-
-    return SDL_TRUE;
+    return SDL_GetHintBoolean(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, SDL_TRUE);
 }
 
 void
@@ -3779,15 +3760,7 @@ SDL_ShowSimpleMessageBox(Uint32 flags, const char *title, const char *message, S
 SDL_bool
 SDL_ShouldAllowTopmost(void)
 {
-    const char *hint = SDL_GetHint(SDL_HINT_ALLOW_TOPMOST);
-    if (hint) {
-        if (*hint == '0') {
-            return SDL_FALSE;
-        } else {
-            return SDL_TRUE;
-        }
-    }
-    return SDL_TRUE;
+    return SDL_GetHintBoolean(SDL_HINT_ALLOW_TOPMOST, SDL_TRUE);
 }
 
 int

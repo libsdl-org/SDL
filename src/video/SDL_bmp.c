@@ -556,10 +556,7 @@ SDL_SaveBMP_RW(SDL_Surface * saveme, SDL_RWops * dst, int freedst)
     }
 
     if (save32bit) {
-        const char *hint = SDL_GetHint(SDL_HINT_BMP_SAVE_LEGACY_FORMAT);
-        if (hint != NULL && (hint[0] == '1' && hint[1] == 0)) {
-            saveLegacyBMP = SDL_TRUE;
-        }
+        saveLegacyBMP = SDL_GetHintBoolean(SDL_HINT_BMP_SAVE_LEGACY_FORMAT, SDL_FALSE);
     }
 
     if (surface && (SDL_LockSurface(surface) == 0)) {

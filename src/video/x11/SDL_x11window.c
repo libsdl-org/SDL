@@ -576,14 +576,12 @@ X11_CreateWindow(_THIS, SDL_Window * window)
     {
         Atom protocols[3];
         int proto_count = 0;
-        const char *ping_hint;
 
         protocols[proto_count++] = data->WM_DELETE_WINDOW; /* Allow window to be deleted by the WM */
         protocols[proto_count++] = data->WM_TAKE_FOCUS; /* Since we will want to set input focus explicitly */
 
-        ping_hint = SDL_GetHint(SDL_HINT_VIDEO_X11_NET_WM_PING);
         /* Default to using ping if there is no hint */
-        if (!ping_hint || SDL_atoi(ping_hint)) {
+        if (SDL_GetHintBoolean(SDL_HINT_VIDEO_X11_NET_WM_PING, SDL_TRUE)) {
             protocols[proto_count++] = data->_NET_WM_PING; /* Respond so WM knows we're alive */
         }
 
@@ -1477,7 +1475,6 @@ X11_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
     Display *display = data->videodata->display;
     SDL_bool oldstyle_fullscreen;
     SDL_bool grab_keyboard;
-    const char *hint;
 
     /* ICCCM2.0-compliant window managers can handle fullscreen windows
        If we're using XVidMode to change resolution we need to confine
@@ -1501,8 +1498,7 @@ X11_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
         X11_XRaiseWindow(display, data->xwindow);
 
         /* Now grab the keyboard */
-        hint = SDL_GetHint(SDL_HINT_GRAB_KEYBOARD);
-        if (hint && SDL_atoi(hint)) {
+        if (SDL_GetHintBoolean(SDL_HINT_GRAB_KEYBOARD, SDL_FALSE)) {
             grab_keyboard = SDL_TRUE;
         } else {
             /* We need to do this with the old style override_redirect
