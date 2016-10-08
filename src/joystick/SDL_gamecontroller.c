@@ -145,7 +145,11 @@ int SDL_GameControllerEventWatcher(void *userdata, SDL_Event * event)
         {
             SDL_GameController *controllerlist;
 
-            if (event->jaxis.axis >= k_nMaxReverseEntries) break;
+            if (event->jaxis.axis >= k_nMaxReverseEntries)
+            {
+                SDL_SetError("SDL_GameControllerEventWatcher: Axis index %d too large, ignoring motion", (int)event->jaxis.axis);
+                break;
+            }
 
             controllerlist = SDL_gamecontrollers;
             while (controllerlist) {
@@ -176,7 +180,11 @@ int SDL_GameControllerEventWatcher(void *userdata, SDL_Event * event)
         {
             SDL_GameController *controllerlist;
 
-            if (event->jbutton.button >= k_nMaxReverseEntries) break;
+            if (event->jbutton.button >= k_nMaxReverseEntries)
+            {
+                SDL_SetError("SDL_GameControllerEventWatcher: Button index %d too large, ignoring update", (int)event->jbutton.button);
+                break;
+            }
 
             controllerlist = SDL_gamecontrollers;
             while (controllerlist) {
