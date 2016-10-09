@@ -110,7 +110,7 @@ static void unifont_init(const char *fontname)
     const size_t unifontTextureSize = UNIFONT_NUM_TEXTURES * state->num_windows * sizeof(void *);
 
     /* Allocate memory for the glyph data so the file can be closed after initialization. */
-    unifontGlyph = SDL_malloc(unifontGlyphSize);
+    unifontGlyph = (struct UnifontGlyph *)SDL_malloc(unifontGlyphSize);
     if (unifontGlyph == NULL)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Failed to allocate %d KiB for glyph data.\n", (int)(unifontGlyphSize + 1023) / 1024);
@@ -119,7 +119,7 @@ static void unifont_init(const char *fontname)
     SDL_memset(unifontGlyph, 0, unifontGlyphSize);
 
     /* Allocate memory for texture pointers for all renderers. */
-    unifontTexture = SDL_malloc(unifontTextureSize);
+    unifontTexture = (SDL_Texture **)SDL_malloc(unifontTextureSize);
     if (unifontTexture == NULL)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Failed to allocate %d KiB for texture pointer data.\n", (int)(unifontTextureSize + 1023) / 1024);
@@ -270,7 +270,7 @@ static void unifont_load_texture(Uint32 textureID)
         exit(-1);
     }
 
-    textureRGBA = SDL_malloc(UNIFONT_TEXTURE_SIZE);
+    textureRGBA = (Uint8 *)SDL_malloc(UNIFONT_TEXTURE_SIZE);
     if (textureRGBA == NULL)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Failed to allocate %d MiB for a texture.\n", UNIFONT_TEXTURE_SIZE / 1024 / 1024);
