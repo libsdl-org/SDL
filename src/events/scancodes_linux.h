@@ -221,7 +221,7 @@ static SDL_Scancode const linux_scancode_table[] = {
     /*  192 */    SDL_SCANCODE_F22,
     /*  193 */    SDL_SCANCODE_F23,
     /*  194 */    SDL_SCANCODE_F24,
-    0, 0, 0, 0,
+    0, 0, 0, 0, 0,
     /*  200 */    SDL_SCANCODE_UNKNOWN, /* KEY_PLAYCD */
     /*  201 */    SDL_SCANCODE_UNKNOWN, /* KEY_PAUSECD */
     /*  202 */    SDL_SCANCODE_UNKNOWN, /* KEY_PROG3 */
