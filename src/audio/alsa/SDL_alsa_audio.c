@@ -773,23 +773,40 @@ ALSA_HotplugThread(void *arg)
             ALSA_Device *unseen = devices;
             ALSA_Device *seen = NULL;
             ALSA_Device *prev;
-            int i;
-            const char *match = "default:";
-            size_t match_len = strlen(match);
+            int i, j;
+            const char *match = NULL;
+            int bestmatch = 0xFFFF;
+            size_t match_len = 0;
+            int defaultdev = -1;
+            static const char * const prefixes[] = {
+                "hw:", "sysdefault:", "default:", NULL
+            };
 
-            /* determine what kind of name to match.  Use "hw:" devices if they
-               exist, otherwise use "default:" */
+            /* Apparently there are several different ways that ALSA lists
+               actual hardware. It could be prefixed with "hw:" or "default:"
+               or "sysdefault:" and maybe others. Go through the list and see
+               if we can find a preferred prefix for the system. */
             for (i = 0; hints[i]; i++) {
                 char *name = ALSA_snd_device_name_get_hint(hints[i], "NAME");
                 if (!name) {
                     continue;
                 }
 
-                if (SDL_strncmp(name, "hw:", 3) == 0) {
-                    match = "hw:";
-                    match_len = strlen(match);
-                    free(name);
-                    break;
+                /* full name, not a prefix */
+                if ((defaultdev == -1) && (SDL_strcmp(name, "default") == 0)) {
+                    defaultdev = i;
+                }
+
+                for (j = 0; prefixes[j]; j++) {
+                    const char *prefix = prefixes[j];
+                    const size_t prefixlen = strlen(prefix);
+                    if (SDL_strncmp(name, prefix, prefixlen) == 0) {
+                        if (j < bestmatch) {
+                            bestmatch = j;
+                            match = prefix;
+                            match_len = prefixlen;
+                        }
+                    }
                 }
 
                 free(name);
@@ -797,13 +814,20 @@ ALSA_HotplugThread(void *arg)
 
             /* look through the list of device names to find matches */
             for (i = 0; hints[i]; i++) {
-                char *name = ALSA_snd_device_name_get_hint(hints[i], "NAME");
+                char *name;
+
+                /* if we didn't find a device name prefix we like at all... */
+                if ((!match) && (defaultdev != i)) {
+                    continue;  /* ...skip anything that isn't the default device. */
+                }
+
+                name = ALSA_snd_device_name_get_hint(hints[i], "NAME");
                 if (!name) {
                     continue;
                 }
 
                 /* only want physical hardware interfaces */
-                if (SDL_strncmp(name, match, match_len) == 0) {
+                if (!match || (SDL_strncmp(name, match, match_len) == 0)) {
                     char *ioid = ALSA_snd_device_name_get_hint(hints[i], "IOID");
                     const SDL_bool isoutput = (ioid == NULL) || (SDL_strcmp(ioid, "Output") == 0);
                     const SDL_bool isinput = (ioid == NULL) || (SDL_strcmp(ioid, "Input") == 0);
