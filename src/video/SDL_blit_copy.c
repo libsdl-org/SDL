@@ -109,10 +109,20 @@ SDL_BlitCopy(SDL_BlitInfo * info)
         overlap = (src < (dst + h*dstskip));
     }
     if (overlap) {
-        while (h--) {
-            SDL_memmove(dst, src, w);
-            src += srcskip;
-            dst += dstskip;
+        if ( dst < src ) {
+                while ( h-- ) {
+                        SDL_memmove(dst, src, w);
+                        src += srcskip;
+                        dst += dstskip;
+                }
+        } else {
+                src += ((h-1) * srcskip);
+                dst += ((h-1) * dstskip);
+                while ( h-- ) {
+                        SDL_memmove(dst, src, w);
+                        src -= srcskip;
+                        dst -= dstskip;
+                }
         }
         return;
     }
