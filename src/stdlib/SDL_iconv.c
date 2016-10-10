@@ -30,7 +30,7 @@
 #include "SDL_stdinc.h"
 #include "SDL_endian.h"
 
-#ifdef HAVE_ICONV
+#if defined(HAVE_ICONV) && defined(HAVE_ICONV_H)
 #include <iconv.h>
 
 /* Depending on which standard the iconv() was implemented with,
