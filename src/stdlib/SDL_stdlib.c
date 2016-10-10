@@ -34,7 +34,7 @@
 double
 SDL_atan(double x)
 {
-#ifdef HAVE_ATAN
+#if defined(HAVE_ATAN)
     return atan(x);
 #else
     return SDL_uclibc_atan(x);
@@ -90,7 +90,7 @@ SDL_asin(double val)
 double
 SDL_ceil(double x)
 {
-#ifdef HAVE_CEIL
+#if defined(HAVE_CEIL)
     return ceil(x);
 #else
     double integer = SDL_floor(x);
@@ -127,7 +127,7 @@ SDL_cos(double x)
 float
 SDL_cosf(float x)
 {
-#ifdef HAVE_COSF
+#if defined(HAVE_COSF)
     return cosf(x);
 #else
     return (float)SDL_cos((double)x);
@@ -199,7 +199,7 @@ SDL_sin(double x)
 float 
 SDL_sinf(float x)
 {
-#ifdef HAVE_SINF
+#if defined(HAVE_SINF)
     return sinf(x);
 #else
     return (float)SDL_sin((double)x);
@@ -248,14 +248,14 @@ SDL_tanf(float x)
 
 int SDL_abs(int x)
 {
-#ifdef HAVE_ABS
+#if defined(HAVE_ABS)
     return abs(x);
 #else
     return ((x) < 0 ? -(x) : (x));
 #endif
 }
 
-#ifdef HAVE_CTYPE_H
+#if defined(HAVE_CTYPE_H)
 int SDL_isdigit(int x) { return isdigit(x); }
 int SDL_isspace(int x) { return isspace(x); }
 int SDL_toupper(int x) { return toupper(x); }
