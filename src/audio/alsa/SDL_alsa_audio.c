@@ -799,7 +799,7 @@ ALSA_HotplugThread(void *arg)
 
                 for (j = 0; prefixes[j]; j++) {
                     const char *prefix = prefixes[j];
-                    const size_t prefixlen = strlen(prefix);
+                    const size_t prefixlen = SDL_strlen(prefix);
                     if (SDL_strncmp(name, prefix, prefixlen) == 0) {
                         if (j < bestmatch) {
                             bestmatch = j;
