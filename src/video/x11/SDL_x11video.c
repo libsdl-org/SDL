@@ -396,7 +396,9 @@ X11_VideoInit(_THIS)
         char *prev_locale = setlocale(LC_ALL, NULL);
         char *prev_xmods  = X11_XSetLocaleModifiers(NULL);
         const char *new_xmods = "";
+#if defined(HAVE_IBUS_IBUS_H) || defined(HAVE_FCITX_FRONTEND_H)
         const char *env_xmods = SDL_getenv("XMODIFIERS");
+#endif
         SDL_bool has_dbus_ime_support = SDL_FALSE;
 
         if (prev_locale) {
