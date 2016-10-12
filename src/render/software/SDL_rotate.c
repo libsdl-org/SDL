@@ -444,14 +444,7 @@ SDLgfx_rotateSurface(SDL_Surface * src, double angle, int centerx, int centery, 
         */
         rz_src = src;
     } else {
-        Uint32 format = SDL_MasksToPixelFormatEnum(32,
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
-            0x000000ff, 0x0000ff00, 0x00ff0000, 0xff000000
-#else
-            0xff000000,  0x00ff0000, 0x0000ff00, 0x000000ff
-#endif
-        );
-        rz_src = SDL_ConvertSurfaceFormat(src, format, src->flags);
+        rz_src = SDL_ConvertSurfaceFormat(src, SDL_PIXELFORMAT_ARGB32, src->flags);
         if (rz_src == NULL) {
             return NULL;
         }

@@ -176,13 +176,7 @@ Cocoa_CreateImage(SDL_Surface * surface)
     int i;
     NSImage *img;
 
-    converted = SDL_ConvertSurfaceFormat(surface,
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-                                         SDL_PIXELFORMAT_RGBA8888,
-#else
-                                         SDL_PIXELFORMAT_ABGR8888,
-#endif
-                                         0);
+    converted = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_RGBA32, 0);
     if (!converted) {
         return nil;
     }
