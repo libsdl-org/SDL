@@ -44,7 +44,7 @@ InitIME()
 {
     static SDL_bool inited = SDL_FALSE;
     const char *im_module;
-    const char *xmodifiers = SDL_getenv("XMODIFIERS");
+    const char *xmodifiers;
 
     if (inited == SDL_TRUE)
         return;
