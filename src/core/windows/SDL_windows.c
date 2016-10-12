@@ -162,7 +162,7 @@ WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid)
         return WIN_StringToUTF8(name);  /* No GUID, go with what we've got. */
     }
 
-    ptr = (const char *) guid;
+    ptr = (const unsigned char *) guid;
     SDL_snprintf(keystr, sizeof (keystr),
         "System\\CurrentControlSet\\Control\\MediaCategories\\{%02X%02X%02X%02X-%02X%02X-%02X%02X-%02X%02X-%02X%02X%02X%02X%02X%02X}",
         ptr[3], ptr[2], ptr[1], ptr[0], ptr[5], ptr[4], ptr[7], ptr[6],
