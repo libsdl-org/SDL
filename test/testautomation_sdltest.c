@@ -1093,7 +1093,7 @@ sdltest_randomIntegerInRange(void *arg)
   SDLTest_AssertCheck(min <= result && result <= max, "Validated returned value; expected: [%d,%d], got: %d", min, max, result);
 
   /* Range with max at integer limit */
-  min = long_min - (Sint32)SDLTest_RandomSint16();;
+  min = long_min - (Sint32)SDLTest_RandomSint16();
   max = long_max;
   result = SDLTest_RandomIntegerInRange(min, max);
   SDLTest_AssertPass("Call to SDLTest_RandomIntegerInRange(...,SINT32_MAX)");
