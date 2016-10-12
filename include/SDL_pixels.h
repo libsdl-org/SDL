@@ -29,6 +29,7 @@
 #define _SDL_pixels_h
 
 #include "SDL_stdinc.h"
+#include "SDL_endian.h"
 
 #include "begin_code.h"
 /* Set up for C function definitions, even when using C++ */
@@ -259,6 +260,19 @@ enum
     SDL_PIXELFORMAT_ARGB2101010 =
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_ARGB,
                                SDL_PACKEDLAYOUT_2101010, 32, 4),
+
+    /* Aliases for RGBA array of color formats for the current platform */
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    SDL_PIXELFORMAT_RGBA32 = SDL_PIXELFORMAT_RGBA8888, /**< endianess-specific alias for byte-wise 32bit RGBA data */
+    SDL_PIXELFORMAT_ARGB32 = SDL_PIXELFORMAT_ARGB8888,
+    SDL_PIXELFORMAT_BGRA32 = SDL_PIXELFORMAT_BGRA8888,
+    SDL_PIXELFORMAT_ABGR32 = SDL_PIXELFORMAT_ABGR8888,
+#else
+    SDL_PIXELFORMAT_RGBA32 = SDL_PIXELFORMAT_ABGR8888,
+    SDL_PIXELFORMAT_ARGB32 = SDL_PIXELFORMAT_BGRA8888,
+    SDL_PIXELFORMAT_BGRA32 = SDL_PIXELFORMAT_ARGB8888,
+    SDL_PIXELFORMAT_ABGR32 = SDL_PIXELFORMAT_RGBA8888,
+#endif
 
     SDL_PIXELFORMAT_YV12 =      /**< Planar mode: Y + V + U  (3 planes) */
         SDL_DEFINE_PIXELFOURCC('Y', 'V', '1', '2'),
