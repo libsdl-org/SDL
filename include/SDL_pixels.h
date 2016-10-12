@@ -261,9 +261,9 @@ enum
         SDL_DEFINE_PIXELFORMAT(SDL_PIXELTYPE_PACKED32, SDL_PACKEDORDER_ARGB,
                                SDL_PACKEDLAYOUT_2101010, 32, 4),
 
-    /* Aliases for RGBA array of color formats for the current platform */
+    /* Aliases for RGBA byte arrays of color data, for the current platform */
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
-    SDL_PIXELFORMAT_RGBA32 = SDL_PIXELFORMAT_RGBA8888, /**< endianess-specific alias for byte-wise 32bit RGBA data */
+    SDL_PIXELFORMAT_RGBA32 = SDL_PIXELFORMAT_RGBA8888,
     SDL_PIXELFORMAT_ARGB32 = SDL_PIXELFORMAT_ARGB8888,
     SDL_PIXELFORMAT_BGRA32 = SDL_PIXELFORMAT_BGRA8888,
     SDL_PIXELFORMAT_ABGR32 = SDL_PIXELFORMAT_ABGR8888,
