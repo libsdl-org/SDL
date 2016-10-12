@@ -2,6 +2,66 @@
 This is a list of major changes in SDL's version history.
 
 ---------------------------------------------------------------------------
+2.0.5:
+---------------------------------------------------------------------------
+
+General:
+* Implemented audio capture support for some platforms
+* Added SDL_DequeueAudio() to retrieve audio when buffer queuing is turned on for audio capture
+* Added events for dragging and dropping text
+* Added events for dragging and dropping multiple items
+* By default the click raising a window will not be delivered to the SDL application. You can set the hint SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH to "1" to allow that click through to the window.
+* Saving a surface with an alpha channel as a BMP will use a newer BMP format that supports alpha information. You can set the hint SDL_HINT_BMP_SAVE_LEGACY_FORMAT to "1" to use the old format.
+* Added SDL_GetHintBoolean() to get the boolean value of a hint
+* Added SDL_RenderSetIntegerScale() to set whether to smoothly scale or use integral multiples of the viewport size when scaling the rendering output
+* Added SDL_CreateRGBSurfaceWithFormat() and SDL_CreateRGBSurfaceWithFormatFrom() to create an SDL surface with a specific pixel format
+* Added SDL_GetDisplayUsableBounds() which returns the area usable for windows. For example, on Mac OS X, this subtracts the area occupied by the menu bar and dock.
+* Added SDL_GetWindowBordersSize() which returns the size of the window's borders around the client area
+* Added a window event SDL_WINDOWEVENT_HIT_TEST when a window had a hit test that wasn't SDL_HITTEST_NORMAL (e.g. in the title bar or window frame)
+* Added SDL_SetWindowResizable() to change whether a window is resizable
+* Added SDL_SetWindowOpacity() and SDL_GetWindowOpacity() to affect the window transparency
+* Added SDL_SetWindowModalFor() to set a window as modal for another window
+* Added support for AUDIO_U16LSB and AUDIO_U16MSB to SDL_MixAudioFormat()
+* Fixed flipped images when reading back from target textures when using the OpenGL renderer
+* Fixed texture color modulation with SDL_BLENDMODE_NONE when using the OpenGL renderer
+* Fixed bug where the alpha value of colorkeys was ignored when blitting in some cases
+
+Windows:
+* Added a hint SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING to prevent SDL from raising a debugger exception to name threads. This exception can cause problems with .NET applications when running under a debugger.
+* The hint SDL_HINT_THREAD_STACK_SIZE is now supported on Windows
+* Fixed XBox controller triggers automatically being pulled at startup
+* The first icon from the executable is used as the default window icon at runtime
+* Fixed SDL log messages being printed twice if SDL was built with C library support
+* Reset dead keys when the SDL window loses focus, so dead keys pressed in SDL applications don't affect text input into other applications.
+
+Mac OS X:
+* Fixed selecting the dummy video driver
+* The caps lock key now generates a pressed event when pressed and a released event when released, instead of a press/release event pair when pressed.
+* Fixed mouse wheel events on Mac OS X 10.12
+* The audio driver has been updated to use AVFoundation for better compatibility with newer versions of Mac OS X
+
+Linux:
+* Added support for the Fcitx IME
+* Added a window event SDL_WINDOWEVENT_TAKE_FOCUS when a window manager asks the SDL window whether it wants to take focus.
+* Refresh rates are now rounded instead of truncated, e.g. 59.94 Hz is rounded up to 60 Hz instead of 59.
+* Added initial support for touchscreens on Raspberry Pi
+
+iOS:
+* Added support for dynamically loaded objects on iOS 8 and newer
+
+tvOS:
+* Added support for Apple TV
+* Added a hint SDL_HINT_APPLE_TV_REMOTE_ALLOW_ROTATION to control whether he Apple TV remote's joystick axes will automatically match the rotation of the remote.  
+
+Android:
+* Fixed SDL not resizing window when Android screen resolution changes
+* Corrected the joystick Z axis reporting for the accelerometer
+
+Emscripten (running in a web browser):
+* Many bug fixes and improvements
+
+
+---------------------------------------------------------------------------
 2.0.4:
 ---------------------------------------------------------------------------
 
