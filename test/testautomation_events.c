@@ -87,7 +87,7 @@ events_addDelEventWatch(void *arg)
 
    /* Create user event */
    event.type = SDL_USEREVENT;
-   event.user.code = SDLTest_RandomSint32();;
+   event.user.code = SDLTest_RandomSint32();
    event.user.data1 = (void *)&_userdataValue1;
    event.user.data2 = (void *)&_userdataValue2;
 
@@ -137,7 +137,7 @@ events_addDelEventWatchWithUserdata(void *arg)
 
    /* Create user event */
    event.type = SDL_USEREVENT;
-   event.user.code = SDLTest_RandomSint32();;
+   event.user.code = SDLTest_RandomSint32();
    event.user.data1 = (void *)&_userdataValue1;
    event.user.data2 = (void *)&_userdataValue2;
 
