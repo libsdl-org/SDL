@@ -199,6 +199,10 @@ SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
     if (setpriority(PRIO_PROCESS, syscall(SYS_gettid), value) < 0) {
         /* Note that this fails if you're trying to set high priority
            and you don't have root permission. BUT DON'T RUN AS ROOT!
+
+           You can grant the ability to increase thread priority by
+           running the following command on your application binary:
+               sudo setcap 'cap_sys_nice=eip' <application>
          */
         return SDL_SetError("setpriority() failed");
     }
