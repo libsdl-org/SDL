@@ -200,7 +200,7 @@ HIDCallback(void *context, IOReturn result, void *sender, IOHIDValueRef value)
         || IOHIDElementGetUsage(elem) != kHIDUsage_KeyboardCapsLock) {
         return;
     }
-    int pressed = IOHIDValueGetIntegerValue(value);
+    CFIndex pressed = IOHIDValueGetIntegerValue(value);
     SDL_SendKeyboardKey(pressed ? SDL_PRESSED : SDL_RELEASED, SDL_SCANCODE_CAPSLOCK);
 }
 
