@@ -29,7 +29,7 @@
 #define SCREEN_HEIGHT    320
 #else
 #define SCREEN_WIDTH    512
-#define SCREEN_HEIGHT   317
+#define SCREEN_HEIGHT   320
 #endif
 
 /* This is indexed by SDL_GameControllerButton. */
