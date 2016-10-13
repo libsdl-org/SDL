@@ -314,9 +314,20 @@ ALSA_PlayDevice(_THIS)
     swizzle_alsa_channels(this, this->hidden->mixbuf, frames_left);
 
     while ( frames_left > 0 && SDL_AtomicGet(&this->enabled) ) {
-        /* !!! FIXME: This works, but needs more testing before going live */
-        /* ALSA_snd_pcm_wait(this->hidden->pcm_handle, -1); */
-        int status = ALSA_snd_pcm_writei(this->hidden->pcm_handle,
+        int status;
+
+        /* This wait is a work-around for a hang when USB devices are
+           unplugged.  Normally it should not result in any waiting,
+           but in the case of a USB unplug, it serves as a way to
+           join the playback thread after the timeout occurs */
+        status = ALSA_snd_pcm_wait(this->hidden->pcm_handle, 1000);
+        if (status == 0) {
+            /*fprintf(stderr, "ALSA timeout waiting for available buffer space\n");*/
+            SDL_OpenedAudioDeviceDisconnected(this);
+            return;
+        }
+
+        status = ALSA_snd_pcm_writei(this->hidden->pcm_handle,
                                          sample_buf, frames_left);
 
         if (status < 0) {
