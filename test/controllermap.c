@@ -26,7 +26,7 @@
 #define SCREEN_HEIGHT   480
 #else
 #define SCREEN_WIDTH    512
-#define SCREEN_HEIGHT   317
+#define SCREEN_HEIGHT   320
 #endif
 
 #define MAP_WIDTH 512
