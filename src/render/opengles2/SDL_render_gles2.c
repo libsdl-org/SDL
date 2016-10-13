@@ -388,7 +388,7 @@ GLES2_UpdateViewport(SDL_Renderer * renderer)
     } else {
         int w, h;
 
-        SDL_GetRendererOutputSize(renderer, &w, &h);
+        SDL_GL_GetDrawableSize(renderer->window, &w, &h);
         data->glViewport(renderer->viewport.x, (h - renderer->viewport.y - renderer->viewport.h),
                          renderer->viewport.w, renderer->viewport.h);
     }
@@ -417,7 +417,7 @@ GLES2_UpdateClipRect(SDL_Renderer * renderer)
         } else {
             int w, h;
 
-            SDL_GetRendererOutputSize(renderer, &w, &h);
+            SDL_GL_GetDrawableSize(renderer->window, &w, &h);
             data->glScissor(renderer->viewport.x + rect->x, h - renderer->viewport.y - rect->y - rect->h, rect->w, rect->h);
         }
     } else {
