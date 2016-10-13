@@ -592,7 +592,6 @@ static int
 GL_GetOutputSize(SDL_Renderer * renderer, int *w, int *h)
 {
     SDL_GL_GetDrawableSize(renderer->window, w, h);
-
     return 0;
 }
 
@@ -1020,7 +1019,7 @@ GL_UpdateViewport(SDL_Renderer * renderer)
     } else {
         int w, h;
 
-        SDL_GetRendererOutputSize(renderer, &w, &h);
+        SDL_GL_GetDrawableSize(renderer, &w, &h);
         data->glViewport(renderer->viewport.x, (h - renderer->viewport.y - renderer->viewport.h),
                          renderer->viewport.w, renderer->viewport.h);
     }
@@ -1058,7 +1057,7 @@ GL_UpdateClipRect(SDL_Renderer * renderer)
         } else {
             int w, h;
 
-            SDL_GetRendererOutputSize(renderer, &w, &h);
+            SDL_GL_GetDrawableSize(renderer, &w, &h);
             data->glScissor(renderer->viewport.x + rect->x, h - renderer->viewport.y - rect->y - rect->h, rect->w, rect->h);
         }
     } else {
