@@ -110,10 +110,9 @@ OutOfMemory(void)
 
 #if defined(_MSC_VER)
 /* The VC++ compiler needs main/wmain defined */
+# define console_ansi_main main
 # if UNICODE
 #  define console_wmain wmain
-# else
-#  define console_ansi_main main
 # endif
 #endif
 
