@@ -46,6 +46,9 @@ Linux:
 * Refresh rates are now rounded instead of truncated, e.g. 59.94 Hz is rounded up to 60 Hz instead of 59.
 * Added initial support for touchscreens on Raspberry Pi
 
+OpenBSD:
+* SDL_GetBasePath() is now implemented on OpenBSD
+
 iOS:
 * Added support for dynamically loaded objects on iOS 8 and newer
 
