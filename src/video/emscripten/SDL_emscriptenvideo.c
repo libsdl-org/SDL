@@ -209,7 +209,7 @@ Emscripten_CreateWindow(_THIS, SDL_Window * window)
 
     emscripten_get_element_css_size(NULL, &css_w, &css_h);
 
-    wdata->external_size = css_w != scaled_w || css_h != scaled_h;
+    wdata->external_size = SDL_floor(css_w) != scaled_w || SDL_floor(css_h) != scaled_h;
 
     if ((window->flags & SDL_WINDOW_RESIZABLE) && wdata->external_size) {
         /* external css has resized us */
@@ -262,6 +262,8 @@ static void Emscripten_SetWindowSize(_THIS, SDL_Window * window)
 
     if (window->driverdata) {
         data = (SDL_WindowData *) window->driverdata;
+        /* update pixel ratio */
+        data->pixel_ratio = emscripten_get_device_pixel_ratio();
         emscripten_set_canvas_size(window->w * data->pixel_ratio, window->h * data->pixel_ratio);
 
         /*scale canvas down*/
