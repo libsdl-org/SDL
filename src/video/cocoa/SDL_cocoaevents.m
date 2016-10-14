@@ -48,13 +48,12 @@
     SDL_SendQuit();
 }
 
-// Dispatch events here so that we can handle events caught by
-// nextEventMatchingMask in SDL, as well as events caught by other
-// processes (such as CEF) that are passed down to NSApp.
-- (void)sendEvent:(NSEvent *)theEvent
+static SDL_bool s_bShouldHandleEventsInSDLApplication = SDL_FALSE;
+
+static void Cocoa_DispatchEvent(NSEvent *theEvent)
 {
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
-    
+
     switch ([theEvent type]) {
         case NSLeftMouseDown:
         case NSOtherMouseDown:
@@ -77,7 +76,17 @@
         default:
             break;
     }
-    
+}
+
+// Dispatch events here so that we can handle events caught by
+// nextEventMatchingMask in SDL, as well as events caught by other
+// processes (such as CEF) that are passed down to NSApp.
+- (void)sendEvent:(NSEvent *)theEvent
+{
+    if (s_bShouldHandleEventsInSDLApplication) {
+        Cocoa_DispatchEvent(theEvent);
+    }
+
     [super sendEvent:theEvent];
 }
 
@@ -348,6 +357,8 @@ Cocoa_RegisterApp(void)
         [SDLApplication sharedApplication];
         SDL_assert(NSApp != nil);
 
+        s_bShouldHandleEventsInSDLApplication = SDL_TRUE;
+
         if (!SDL_GetHintBoolean(SDL_HINT_MAC_BACKGROUND_APP, SDL_FALSE)) {
             [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
             [NSApp activateIgnoringOtherApps:YES];
@@ -398,6 +409,10 @@ Cocoa_PumpEvents(_THIS)
         NSEvent *event = [NSApp nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantPast] inMode:NSDefaultRunLoopMode dequeue:YES ];
         if ( event == nil ) {
             break;
+        }
+
+        if (!s_bShouldHandleEventsInSDLApplication) {
+            Cocoa_DispatchEvent(event);
         }
 
         // Pass events down to SDLApplication to be handled in sendEvent:
