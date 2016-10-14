@@ -126,12 +126,49 @@ main_utf8(int argc, char *argv[])
     return SDL_main(argc, argv);
 }
 
+/* Gets the arguments with GetCommandLine, converts them to argc and argv
+   and calls main_utf8 */
+static int
+main_getcmdline()
+{
+    char **argv;
+    int argc;
+    char *cmdline;
+    int retval = 0;
+
+    /* Grab the command line */
+    TCHAR *text = GetCommandLine();
+#if UNICODE
+    cmdline = WIN_StringToUTF8(text);
+#else
+    /* !!! FIXME: are these in the system codepage? We need to convert to UTF-8. */
+    cmdline = SDL_strdup(text);
+#endif
+    if (cmdline == NULL) {
+        return OutOfMemory();
+    }
+
+    /* Parse it into argv and argc */
+    argc = ParseCommandLine(cmdline, NULL);
+    argv = SDL_stack_alloc(char *, argc + 1);
+    if (argv == NULL) {
+        return OutOfMemory();
+    }
+    ParseCommandLine(cmdline, argv);
+
+    retval = main_utf8(argc, argv);
+
+    SDL_stack_free(argv);
+    SDL_free(cmdline);
+
+    return retval;
+}
+
 /* This is where execution begins [console apps, ansi] */
 int
 console_ansi_main(int argc, char *argv[])
 {
-    /* !!! FIXME: are these in the system codepage? We need to convert to UTF-8. */
-    return main_utf8(argc, argv);
+    return main_getcmdline();
 }
 
 
@@ -162,39 +199,7 @@ console_wmain(int argc, wchar_t *wargv[], wchar_t *wenvp)
 int WINAPI
 WinMain(HINSTANCE hInst, HINSTANCE hPrev, LPSTR szCmdLine, int sw)
 {
-    char **argv;
-    int argc;
-    char *cmdline;
-
-    /* Grab the command line */
-    TCHAR *text = GetCommandLine();
-#if UNICODE
-    cmdline = WIN_StringToUTF8(text);
-#else
-    /* !!! FIXME: are these in the system codepage? We need to convert to UTF-8. */
-    cmdline = SDL_strdup(text);
-#endif
-    if (cmdline == NULL) {
-        return OutOfMemory();
-    }
-
-    /* Parse it into argv and argc */
-    argc = ParseCommandLine(cmdline, NULL);
-    argv = SDL_stack_alloc(char *, argc + 1);
-    if (argv == NULL) {
-        return OutOfMemory();
-    }
-    ParseCommandLine(cmdline, argv);
-
-    /* Run the main program */
-    main_utf8(argc, argv);
-
-    SDL_stack_free(argv);
-
-    SDL_free(cmdline);
-
-    /* Hush little compiler, don't you cry... */
-    return 0;
+    return main_getcmdline();
 }
 
 #endif /* __WIN32__ */
