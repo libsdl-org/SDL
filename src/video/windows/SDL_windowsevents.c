@@ -401,20 +401,22 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             minimized = HIWORD(wParam);
             if (!minimized && (LOWORD(wParam) != WA_INACTIVE)) {
-                if (GetAsyncKeyState(VK_LBUTTON)) {
-                    data->focus_click_pending |= SDL_BUTTON_LMASK;
-                }
-                if (GetAsyncKeyState(VK_RBUTTON)) {
-                    data->focus_click_pending |= SDL_BUTTON_RMASK;
-                }
-                if (GetAsyncKeyState(VK_MBUTTON)) {
-                    data->focus_click_pending |= SDL_BUTTON_MMASK;
-                }
-                if (GetAsyncKeyState(VK_XBUTTON1)) {
-                    data->focus_click_pending |= SDL_BUTTON_X1MASK;
-                }
-                if (GetAsyncKeyState(VK_XBUTTON2)) {
-                    data->focus_click_pending |= SDL_BUTTON_X2MASK;
+                if (LOWORD(wParam) == WA_CLICKACTIVE) {
+                    if (GetAsyncKeyState(VK_LBUTTON)) {
+                        data->focus_click_pending |= SDL_BUTTON_LMASK;
+                    }
+                    if (GetAsyncKeyState(VK_RBUTTON)) {
+                        data->focus_click_pending |= SDL_BUTTON_RMASK;
+                    }
+                    if (GetAsyncKeyState(VK_MBUTTON)) {
+                        data->focus_click_pending |= SDL_BUTTON_MMASK;
+                    }
+                    if (GetAsyncKeyState(VK_XBUTTON1)) {
+                        data->focus_click_pending |= SDL_BUTTON_X1MASK;
+                    }
+                    if (GetAsyncKeyState(VK_XBUTTON2)) {
+                        data->focus_click_pending |= SDL_BUTTON_X2MASK;
+                    }
                 }
                 
                 SDL_SendWindowEvent(data->window, SDL_WINDOWEVENT_SHOWN, 0, 0);
