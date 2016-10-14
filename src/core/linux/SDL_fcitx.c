@@ -18,6 +18,9 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include "SDL_config.h"
+
+#ifdef HAVE_FCITX_FRONTEND_H
 
 #include <fcitx/frontend.h>
 #include <unistd.h>
@@ -544,5 +547,7 @@ SDL_Fcitx_PumpEvents()
         usleep(10);
     }
 }
+
+#endif /* HAVE_FCITX_FRONTEND_H */
 
 /* vi: set ts=4 sw=4 expandtab: */
