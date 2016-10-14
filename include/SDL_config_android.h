@@ -43,6 +43,7 @@
 #define HAVE_STDINT_H   1
 #define HAVE_CTYPE_H    1
 #define HAVE_MATH_H 1
+#define HAVE_SIGNAL_H 1
 
 /* C library functions */
 #define HAVE_MALLOC 1
@@ -75,6 +76,7 @@
 #define HAVE_STRTOULL   1
 #define HAVE_STRTOD 1
 #define HAVE_ATOI   1
+#define HAVE_ATOF 1
 #define HAVE_STRCMP 1
 #define HAVE_STRNCMP    1
 #define HAVE_STRCASECMP 1
@@ -101,6 +103,7 @@
 #define HAVE_SQRTF  1
 #define HAVE_TAN    1
 #define HAVE_TANF   1
+#define HAVE_SIGACTION 1
 #define HAVE_SETJMP 1
 #define HAVE_NANOSLEEP  1
 #define HAVE_SYSCONF    1
