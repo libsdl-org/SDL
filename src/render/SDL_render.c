@@ -1145,6 +1145,9 @@ UpdateLogicalSize(SDL_Renderer *renderer)
     float scale;
     SDL_Rect viewport;
 
+    if (!renderer->logical_w || !renderer->logical_h) {
+        return 0;
+    }
     if (SDL_GetRendererOutputSize(renderer, &w, &h) < 0) {
         return -1;
     }
