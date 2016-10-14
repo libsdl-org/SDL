@@ -82,6 +82,7 @@
 #cmakedefine HAVE_LIBUDEV_H 1
 #cmakedefine HAVE_DBUS_DBUS_H 1
 #cmakedefine HAVE_IBUS_IBUS_H 1
+#cmakedefine HAVE_FCITX_FRONTEND_H 1
 
 /* C library functions */
 #cmakedefine HAVE_MALLOC 1
