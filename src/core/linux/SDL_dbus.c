@@ -27,7 +27,7 @@
 static const char *dbus_library = "libdbus-1.so.3";
 static void *dbus_handle = NULL;
 static unsigned int screensaver_cookie = 0;
-static SDL_DBusContext dbus = {0};
+static SDL_DBusContext dbus;
 
 static int
 LoadDBUSSyms(void)
