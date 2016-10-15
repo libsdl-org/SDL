@@ -29,9 +29,6 @@
 #define SCREEN_HEIGHT   320
 #endif
 
-#define MAP_WIDTH 512
-#define MAP_HEIGHT 317
-
 #define MARKER_BUTTON 1
 #define MARKER_AXIS 2
 
