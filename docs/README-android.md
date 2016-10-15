@@ -423,7 +423,11 @@ When you're done instrumenting with valgrind, you can disable the wrapper:
  Graphics debugging
 ================================================================================
 
-If you are developing on a compatible Tegra-based tablet, NVidia provides Tegra Graphics Debugger at their website.  Because SDL2 dynamically loads EGL and GLES libraries, you must follow their instructions for installing the interposer library on a rooted device.  The non-rooted instructions are not compatible with applications that use SDL2 for video.
+If you are developing on a compatible Tegra-based tablet, NVidia provides
+Tegra Graphics Debugger at their website.  Because SDL2 dynamically loads EGL
+and GLES libraries, you must follow their instructions for installing the
+interposer library on a rooted device.  The non-rooted instructions are not
+compatible with applications that use SDL2 for video.
 
 The Tegra Graphics Debugger is available from NVidia here:
 https://developer.nvidia.com/tegra-graphics-debugger
