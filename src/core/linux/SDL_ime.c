@@ -43,16 +43,15 @@ static void
 InitIME()
 {
     static SDL_bool inited = SDL_FALSE;
-    const char *im_module;
-    const char *xmodifiers;
+#ifdef HAVE_FCITX_FRONTEND_H
+    const char *im_module = SDL_getenv("SDL_IM_MODULE");
+    const char *xmodifiers = SDL_getenv("XMODIFIERS");
+#endif
 
     if (inited == SDL_TRUE)
         return;
 
     inited = SDL_TRUE;
-
-    im_module = SDL_getenv("SDL_IM_MODULE");
-    xmodifiers = SDL_getenv("XMODIFIERS");
 
     /* See if fcitx IME support is being requested */
 #ifdef HAVE_FCITX_FRONTEND_H
