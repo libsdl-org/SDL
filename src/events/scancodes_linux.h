@@ -111,7 +111,7 @@ static SDL_Scancode const linux_scancode_table[] = {
     /*  82 */    SDL_SCANCODE_KP_0,
     /*  83 */    SDL_SCANCODE_KP_PERIOD,
     0,
-    /*  85 */    SDL_SCANCODE_UNKNOWN, /* KEY_ZENKAKUHANKAKU */
+    /*  85 */    SDL_SCANCODE_LANG5, /* KEY_ZENKAKUHANKAKU */
     /*  86 */    SDL_SCANCODE_NONUSBACKSLASH, /* KEY_102ND */
     /*  87 */    SDL_SCANCODE_F11,
     /*  88 */    SDL_SCANCODE_F12,
@@ -153,7 +153,7 @@ static SDL_Scancode const linux_scancode_table[] = {
     /*  124 */    SDL_SCANCODE_INTERNATIONAL3, /* KEY_YEN */
     /*  125 */    SDL_SCANCODE_LGUI,
     /*  126 */    SDL_SCANCODE_RGUI,
-    /*  127 */    SDL_SCANCODE_UNKNOWN, /* KEY_COMPOSE */
+    /*  127 */    SDL_SCANCODE_APPLICATION, /* KEY_COMPOSE */
     /*  128 */    SDL_SCANCODE_STOP,
     /*  129 */    SDL_SCANCODE_AGAIN,
     /*  130 */    SDL_SCANCODE_UNKNOWN, /* KEY_PROPS */
@@ -174,9 +174,9 @@ static SDL_Scancode const linux_scancode_table[] = {
     /*  145 */    SDL_SCANCODE_UNKNOWN, /* KEY_SENDFILE */
     /*  146 */    SDL_SCANCODE_UNKNOWN, /* KEY_DELETEFILE */
     /*  147 */    SDL_SCANCODE_UNKNOWN, /* KEY_XFER */
-    /*  148 */    SDL_SCANCODE_UNKNOWN, /* KEY_PROG1 */
-    /*  149 */    SDL_SCANCODE_UNKNOWN, /* KEY_PROG2 */
-    /*  150 */    SDL_SCANCODE_UNKNOWN, /* KEY_WWW */
+    /*  148 */    SDL_SCANCODE_APP1, /* KEY_PROG1 */
+    /*  149 */    SDL_SCANCODE_APP2, /* KEY_PROG2 */
+    /*  150 */    SDL_SCANCODE_WWW, /* KEY_WWW */
     /*  151 */    SDL_SCANCODE_UNKNOWN, /* KEY_MSDOS */
     /*  152 */    SDL_SCANCODE_UNKNOWN, /* KEY_COFFEE */
     /*  153 */    SDL_SCANCODE_UNKNOWN, /* KEY_DIRECTION */
@@ -192,7 +192,7 @@ static SDL_Scancode const linux_scancode_table[] = {
     /*  163 */    SDL_SCANCODE_AUDIONEXT, /* KEY_NEXTSONG */
     /*  164 */    SDL_SCANCODE_AUDIOPLAY, /* KEY_PLAYPAUSE */
     /*  165 */    SDL_SCANCODE_AUDIOPREV, /* KEY_PREVIOUSSONG */
-    /*  166 */    SDL_SCANCODE_UNKNOWN, /* KEY_STOPCD */
+    /*  166 */    SDL_SCANCODE_AUDIOSTOP, /* KEY_STOPCD */
     /*  167 */    SDL_SCANCODE_UNKNOWN, /* KEY_RECORD */
     /*  168 */    SDL_SCANCODE_UNKNOWN, /* KEY_REWIND */
     /*  169 */    SDL_SCANCODE_UNKNOWN, /* KEY_PHONE */
