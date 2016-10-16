@@ -107,10 +107,8 @@ SDL_TicksInit(void)
 void
 SDL_TicksQuit(void)
 {
-    if (!hires_timer_available) {
-        SDL_DelHintCallback(SDL_HINT_TIMER_RESOLUTION,
-                            SDL_TimerResolutionChanged, NULL);
-    }
+    SDL_DelHintCallback(SDL_HINT_TIMER_RESOLUTION,
+                        SDL_TimerResolutionChanged, NULL);
 
     SDL_SetSystemTimerResolution(0);  /* always release our timer resolution request. */
 
