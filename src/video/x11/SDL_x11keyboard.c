@@ -427,15 +427,38 @@ X11_QuitKeyboard(_THIS)
 #endif
 }
 
+static void
+X11_ResetXIM(_THIS)
+{
+#ifdef X_HAVE_UTF8_STRING
+    SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
+    int i;
+
+    if (videodata && videodata->windowlist) {
+        for (i = 0; i < videodata->numwindows; ++i) {
+            SDL_WindowData *data = videodata->windowlist[i];
+            if (data && data->ic) {
+                /* Clear any partially entered dead keys */
+                char *contents = X11_Xutf8ResetIC(data->ic);
+                if (contents) {
+                    X11_XFree(contents);
+                }
+            }
+        }
+    }
+#endif
+}
+
 void
 X11_StartTextInput(_THIS)
 {
-
+    X11_ResetXIM(_this);
 }
 
 void
 X11_StopTextInput(_THIS)
 {
+    X11_ResetXIM(_this);
 #ifdef SDL_USE_IME
     SDL_IME_Reset();
 #endif
