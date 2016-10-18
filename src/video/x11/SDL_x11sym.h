@@ -201,6 +201,7 @@ SDL_X11_SYM(Status,XCloseIM,(XIM a),(a),return)
 SDL_X11_SYM(void,Xutf8DrawString,(Display *a, Drawable b, XFontSet c, GC d, int e, int f, _Xconst char *g, int h),(a,b,c,d,e,f,g,h),)
 SDL_X11_SYM(int,Xutf8TextExtents,(XFontSet a, _Xconst char*	b, int c, XRectangle* d, XRectangle* e),(a,b,c,d,e),return)
 SDL_X11_SYM(char*,XSetLocaleModifiers,(const char *a),(a),return)
+SDL_X11_SYM(char*,Xutf8ResetIC,(XIC a),(a),return)
 #endif
 
 #ifndef NO_SHARED_MEMORY
