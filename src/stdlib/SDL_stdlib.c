@@ -279,7 +279,7 @@ __declspec(selectany) int _fltused = 1;
 #endif
 
 /* The optimizer on Visual Studio 2005 and later generates memcpy() calls */
-#if (_MSC_VER >= 1400) && defined(_WIN64) && !defined(_DEBUG)
+#if (_MSC_VER >= 1400) && defined(_WIN64) && !defined(_DEBUG) && !(_MSC_VER >= 1900 && defined(_MT))
 #include <intrin.h>
 
 #pragma function(memcpy)
