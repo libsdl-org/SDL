@@ -1245,14 +1245,15 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         // SOURCE_JOYSTICK, while its key events arrive from the keyboard source
         // So, retrieve the device itself and check all of its sources
         if (SDLActivity.isDeviceSDLJoystick(event.getDeviceId())) {
-            // Note that we always process a pressed/released button here, as an unopened
-            // SDL_Joystick's button press should not be processed as a keyboard's key press
+            // Note that we process events with specific key codes here
             if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                SDLActivity.onNativePadDown(event.getDeviceId(), keyCode);
-                return true;
+                if (SDLActivity.onNativePadDown(event.getDeviceId(), keyCode) == 0) {
+                    return true;
+                }
             } else if (event.getAction() == KeyEvent.ACTION_UP) {
-                SDLActivity.onNativePadUp(event.getDeviceId(), keyCode);
-                return true;
+                if (SDLActivity.onNativePadUp(event.getDeviceId(), keyCode) == 0) {
+                    return true;
+                }
             }
         }
 
