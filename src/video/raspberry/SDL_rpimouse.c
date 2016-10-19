@@ -24,6 +24,7 @@
 
 #include "SDL_assert.h"
 #include "SDL_surface.h"
+#include "SDL_hints.h"
 
 #include "SDL_rpivideo.h"
 #include "SDL_rpimouse.h"
@@ -117,7 +118,9 @@ RPI_ShowCursor(SDL_Cursor * cursor)
     SDL_VideoDisplay *display;
     SDL_DisplayData *data;
     VC_DISPMANX_ALPHA_T alpha = {  DISPMANX_FLAGS_ALPHA_FROM_SOURCE /* flags */ , 255 /*opacity 0->255*/,  0 /* mask */ };
-    
+    uint32_t layer = SDL_RPI_MOUSELAYER;
+    const char *env;
+
     mouse = SDL_GetMouse();
     if (mouse == NULL) {
         return -1;
@@ -167,9 +170,14 @@ RPI_ShowCursor(SDL_Cursor * cursor)
         update = vc_dispmanx_update_start(10);
         SDL_assert(update);
 
+        env = SDL_GetHint(SDL_HINT_RPI_VIDEO_LAYER);
+        if (env) {
+            layer = SDL_atoi(env) + 1;
+        }
+
         curdata->element = vc_dispmanx_element_add(update,
                                                     data->dispman_display,
-                                                    SDL_RPI_MOUSELAYER, // layer
+                                                    layer,
                                                     &dst_rect,
                                                     curdata->resource,
                                                     &src_rect,
