@@ -700,6 +700,14 @@ extern "C" {
 #define SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING "SDL_WINDOWS_DISABLE_THREAD_NAMING"
 
 /**
+ * \brief Tell SDL which Dispmanx layer to use on a Raspberry PI
+ *
+ * Also known as Z-order. The variable can take a negative or positive value.
+ * The default is 10000.
+ */
+#define SDL_HINT_RPI_VIDEO_LAYER           "SDL_RPI_VIDEO_LAYER"
+
+/**
  *  \brief  An enumeration of hint priorities
  */
 typedef enum

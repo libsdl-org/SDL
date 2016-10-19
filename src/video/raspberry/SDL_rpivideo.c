@@ -38,6 +38,7 @@
 #include "SDL_events.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_keyboard_c.h"
+#include "SDL_hints.h"
 
 #ifdef SDL_INPUT_LINUXEV
 #include "../../core/linux/SDL_evdev.h"
@@ -221,6 +222,8 @@ RPI_CreateWindow(_THIS, SDL_Window * window)
     VC_RECT_T src_rect;
     VC_DISPMANX_ALPHA_T         dispman_alpha;
     DISPMANX_UPDATE_HANDLE_T dispman_update;
+    uint32_t layer = SDL_RPI_VIDEOLAYER;
+    const char *env;
 
     /* Disable alpha, otherwise the app looks composed with whatever dispman is showing (X11, console,etc) */
     dispman_alpha.flags = DISPMANX_FLAGS_ALPHA_FIXED_ALL_PIXELS; 
@@ -253,11 +256,25 @@ RPI_CreateWindow(_THIS, SDL_Window * window)
     src_rect.width = window->w << 16;
     src_rect.height = window->h << 16;
 
+    env = SDL_GetHint(SDL_HINT_RPI_VIDEO_LAYER);
+    if (env) {
+        layer = SDL_atoi(env);
+    }
+
     dispman_update = vc_dispmanx_update_start( 0 );
-    wdata->dispman_window.element = vc_dispmanx_element_add ( dispman_update, displaydata->dispman_display, SDL_RPI_VIDEOLAYER /* layer */, &dst_rect, 0/*src*/, &src_rect, DISPMANX_PROTECTION_NONE, &dispman_alpha /*alpha*/, 0/*clamp*/, 0/*transform*/);
+    wdata->dispman_window.element = vc_dispmanx_element_add (dispman_update,
+                                                             displaydata->dispman_display,
+                                                             layer /* layer */,
+                                                             &dst_rect,
+                                                             0 /*src*/,
+                                                             &src_rect,
+                                                             DISPMANX_PROTECTION_NONE,
+                                                             &dispman_alpha /*alpha*/,
+                                                             0 /*clamp*/,
+                                                             0 /*transform*/);
     wdata->dispman_window.width = window->w;
     wdata->dispman_window.height = window->h;
-    vc_dispmanx_update_submit_sync( dispman_update );
+    vc_dispmanx_update_submit_sync(dispman_update);
     
     if (!_this->egl_data) {
         if (SDL_GL_LoadLibrary(NULL) < 0) {
