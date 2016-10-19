@@ -235,7 +235,12 @@ QuitHIDCallback()
     IOHIDManagerUnscheduleFromRunLoop(s_hidManager, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
     IOHIDManagerRegisterInputValueCallback(s_hidManager, NULL, NULL);
     IOHIDManagerClose(s_hidManager, 0);
+
+#if 0 /* Releasing here causes a crash on Mac OS X 10.10 and earlier,
+       * so just leak it for now. See bug 2157 for details.
+       */
     CFRelease(s_hidManager);
+#endif
     s_hidManager = NULL;
 }
 
