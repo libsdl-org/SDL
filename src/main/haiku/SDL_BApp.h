@@ -193,7 +193,8 @@ public:
         if(_current_context)
             _current_context->UnlockGL();
         _current_context = newContext;
-        _current_context->LockGL();
+        if (_current_context)
+	        _current_context->LockGL();
     }
 private:
     /* Event management */
@@ -272,6 +273,17 @@ private:
         }
         BE_SetKeyState(scancode, state);
         SDL_SendKeyboardKey(state, BE_GetScancodeFromBeKey(scancode));
+        
+        if (state == SDL_PRESSED && SDL_EventState(SDL_TEXTINPUT, SDL_QUERY)) {
+            const int8 *keyUtf8;
+            ssize_t count;
+            if (msg->FindData("key-utf8", B_INT8_TYPE, (const void**)&keyUtf8, &count) == B_OK) {
+                char text[SDL_TEXTINPUTEVENT_TEXT_SIZE];
+                SDL_zero(text);
+                SDL_memcpy(text, keyUtf8, count);
+                SDL_SendKeyboardText(text);
+            }
+        }
     }
 
     void _HandleMouseFocus(BMessage *msg) {

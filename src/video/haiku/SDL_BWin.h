@@ -337,16 +337,30 @@ class SDL_BWin:public BDirectWindow
             break;
 
         case B_KEY_DOWN:
+            {
+                int32 i = 0;
+                int8 byte;
+                int8 bytes[4] = { 0, 0, 0, 0 };
+                while (i < 4 && msg->FindInt8("byte", i, &byte) == B_OK) {
+                    bytes[i] = byte;
+                    i++;
+                }
+                if (msg->FindInt32("key", &key) == B_OK) {
+                    _KeyEvent((SDL_Scancode)key, &bytes[0], i, SDL_PRESSED);
+                }
+            }
+            break;
+            
         case B_UNMAPPED_KEY_DOWN:      /* modifier keys are unmapped */
             if (msg->FindInt32("key", &key) == B_OK) {
-                _KeyEvent((SDL_Scancode)key, SDL_PRESSED);
+                _KeyEvent((SDL_Scancode)key, NULL, 0, SDL_PRESSED);
             }
             break;
 
         case B_KEY_UP:
         case B_UNMAPPED_KEY_UP:        /* modifier keys are unmapped */
             if (msg->FindInt32("key", &key) == B_OK) {
-                _KeyEvent(key, SDL_RELEASED);
+                _KeyEvent(key, NULL, 0, SDL_RELEASED);
             }
             break;
 
@@ -512,13 +526,15 @@ private:
         _PostWindowEvent(msg);
     }
 
-    void _KeyEvent(int32 keyCode, int32 keyState) {
+    void _KeyEvent(int32 keyCode, const int8 *keyUtf8, const ssize_t & len, int32 keyState) {
         /* Create a message to pass along to the BeApp thread */
         BMessage msg(BAPP_KEY);
         msg.AddInt32("key-state", keyState);
         msg.AddInt32("key-scancode", keyCode);
+        if (keyUtf8 != NULL) {
+        	msg.AddData("key-utf8", B_INT8_TYPE, (const void*)keyUtf8, len);
+        }
         be_app->PostMessage(&msg);
-        /* Apparently SDL only uses the scancode */
     }
 
     void _RepaintEvent() {
