@@ -21,7 +21,7 @@ the gcc-fat.sh script in build-scripts:
 
     mkdir mybuild
     cd mybuild
-    CC=$PWD/../build-scripts/gcc-fat.sh CXX=$PWD/../build-scripts/g++fat.sh ../configure
+    CC=$PWD/../build-scripts/gcc-fat.sh CXX=$PWD/../build-scripts/g++-fat.sh ../configure
     make
     sudo make install
 
