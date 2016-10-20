@@ -195,6 +195,11 @@ static IOHIDManagerRef s_hidManager = NULL;
 static void
 HIDCallback(void *context, IOReturn result, void *sender, IOHIDValueRef value)
 {
+    if (context != s_hidManager) {
+        /* An old callback, ignore it (related to bug 2157 below) */
+        return;
+    }
+
     IOHIDElementRef elem = IOHIDValueGetElement(value);
     if (IOHIDElementGetUsagePage(elem) != kHIDPage_KeyboardOrKeypad
         || IOHIDElementGetUsage(elem) != kHIDUsage_KeyboardCapsLock) {
@@ -232,13 +237,14 @@ QuitHIDCallback()
     if (!s_hidManager) {
         return;
     }
-    IOHIDManagerUnscheduleFromRunLoop(s_hidManager, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
-    IOHIDManagerRegisterInputValueCallback(s_hidManager, NULL, NULL);
-    IOHIDManagerClose(s_hidManager, 0);
 
 #if 0 /* Releasing here causes a crash on Mac OS X 10.10 and earlier,
        * so just leak it for now. See bug 2157 for details.
        */
+    IOHIDManagerUnscheduleFromRunLoop(s_hidManager, CFRunLoopGetCurrent(), kCFRunLoopDefaultMode);
+    IOHIDManagerRegisterInputValueCallback(s_hidManager, NULL, NULL);
+    IOHIDManagerClose(s_hidManager, 0);
+
     CFRelease(s_hidManager);
 #endif
     s_hidManager = NULL;
@@ -267,7 +273,7 @@ InitHIDCallback()
         goto fail;
     }
     IOHIDManagerSetDeviceMatchingMultiple(s_hidManager, matches);
-    IOHIDManagerRegisterInputValueCallback(s_hidManager, HIDCallback, NULL);
+    IOHIDManagerRegisterInputValueCallback(s_hidManager, HIDCallback, s_hidManager);
     IOHIDManagerScheduleWithRunLoop(s_hidManager, CFRunLoopGetMain(), kCFRunLoopDefaultMode);
     if (IOHIDManagerOpen(s_hidManager, kIOHIDOptionsTypeNone) == kIOReturnSuccess) {
         goto cleanup;
