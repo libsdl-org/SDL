@@ -118,12 +118,6 @@ calc_swizzle32(const SDL_PixelFormat * srcfmt, const SDL_PixelFormat * dstfmt)
         16, 8, 0, 24,
         0, NULL
     };
-    if (!srcfmt) {
-        srcfmt = &default_pixel_format;
-    }
-    if (!dstfmt) {
-        dstfmt = &default_pixel_format;
-    }
     const vector unsigned char plus = VECUINT8_LITERAL(0x00, 0x00, 0x00, 0x00,
                                                        0x04, 0x04, 0x04, 0x04,
                                                        0x08, 0x08, 0x08, 0x08,
@@ -136,6 +130,14 @@ calc_swizzle32(const SDL_PixelFormat * srcfmt, const SDL_PixelFormat * dstfmt)
     Uint32 gmask = RESHIFT(srcfmt->Gshift) << (dstfmt->Gshift);
     Uint32 bmask = RESHIFT(srcfmt->Bshift) << (dstfmt->Bshift);
     Uint32 amask;
+
+    if (!srcfmt) {
+        srcfmt = &default_pixel_format;
+    }
+    if (!dstfmt) {
+        dstfmt = &default_pixel_format;
+    }
+
     /* Use zero for alpha if either surface doesn't have alpha */
     if (dstfmt->Amask) {
         amask =
