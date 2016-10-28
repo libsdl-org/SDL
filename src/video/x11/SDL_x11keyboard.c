@@ -33,6 +33,10 @@
 
 #include "imKStoUCS.h"
 
+#ifdef X_HAVE_UTF8_STRING
+#include <locale.h>
+#endif
+
 /* *INDENT-OFF* */
 static const struct {
     KeySym keysym;
@@ -262,19 +266,82 @@ X11_InitKeyboard(_THIS)
     int best_distance;
     int best_index;
     int distance;
-
+    BOOL xkb_repeat = 0;
+    
     X11_XAutoRepeatOn(data->display);
 
 #if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
     {
-	    int xkb_major = XkbMajorVersion;
-	    int xkb_minor = XkbMinorVersion;
-	    if (X11_XkbQueryExtension(data->display, NULL, NULL, NULL, &xkb_major, &xkb_minor)) {
-	        data->xkb = X11_XkbGetMap(data->display, XkbAllClientInfoMask, XkbUseCoreKbd);
-	    }
-	}
-#endif
+        int xkb_major = XkbMajorVersion;
+        int xkb_minor = XkbMinorVersion;
 
+        if (X11_XkbQueryExtension(data->display, NULL, NULL, NULL, &xkb_major, &xkb_minor)) {
+            data->xkb = X11_XkbGetMap(data->display, XkbAllClientInfoMask, XkbUseCoreKbd);
+        }
+
+        /* This will remove KeyRelease events for held keys */
+        X11_XkbSetDetectableAutoRepeat(data->display, True, &xkb_repeat);
+    }
+#endif
+    
+    /* Open a connection to the X input manager */
+#ifdef X_HAVE_UTF8_STRING
+    if (SDL_X11_HAVE_UTF8) {
+        /* Set the locale, and call XSetLocaleModifiers before XOpenIM so that 
+           Compose keys will work correctly. */
+        char *prev_locale = setlocale(LC_ALL, NULL);
+        char *prev_xmods  = X11_XSetLocaleModifiers(NULL);
+        const char *new_xmods = "";
+#if defined(HAVE_IBUS_IBUS_H) || defined(HAVE_FCITX_FRONTEND_H)
+        const char *env_xmods = SDL_getenv("XMODIFIERS");
+#endif
+        SDL_bool has_dbus_ime_support = SDL_FALSE;
+
+        if (prev_locale) {
+            prev_locale = SDL_strdup(prev_locale);
+        }
+
+        if (prev_xmods) {
+            prev_xmods = SDL_strdup(prev_xmods);
+        }
+
+        /* IBus resends some key events that were filtered by XFilterEvents
+           when it is used via XIM which causes issues. Prevent this by forcing
+           @im=none if XMODIFIERS contains @im=ibus. IBus can still be used via 
+           the DBus implementation, which also has support for pre-editing. */
+#ifdef HAVE_IBUS_IBUS_H
+        if (env_xmods && SDL_strstr(env_xmods, "@im=ibus") != NULL) {
+            has_dbus_ime_support = SDL_TRUE;
+        }
+#endif
+#ifdef HAVE_FCITX_FRONTEND_H
+        if (env_xmods && SDL_strstr(env_xmods, "@im=fcitx") != NULL) {
+            has_dbus_ime_support = SDL_TRUE;
+        }
+#endif
+        if (has_dbus_ime_support || !xkb_repeat) {
+            new_xmods = "@im=none";
+        }
+
+        setlocale(LC_ALL, "");
+        X11_XSetLocaleModifiers(new_xmods);
+
+        data->im = X11_XOpenIM(data->display, NULL, data->classname, data->classname);
+
+        /* Reset the locale + X locale modifiers back to how they were,
+           locale first because the X locale modifiers depend on it. */
+        setlocale(LC_ALL, prev_locale);
+        X11_XSetLocaleModifiers(prev_xmods);
+
+        if (prev_locale) {
+            SDL_free(prev_locale);
+        }
+
+        if (prev_xmods) {
+            SDL_free(prev_xmods);
+        }
+    }
+#endif
     /* Try to determine which scancodes are being used based on fingerprint */
     best_distance = SDL_arraysize(fingerprint) + 1;
     best_index = -1;
