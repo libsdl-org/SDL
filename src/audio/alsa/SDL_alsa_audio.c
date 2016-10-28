@@ -91,6 +91,8 @@ static int (*ALSA_snd_pcm_reset)(snd_pcm_t *);
 static int (*ALSA_snd_device_name_hint) (int, const char *, void ***);
 static char* (*ALSA_snd_device_name_get_hint) (const void *, const char *);
 static int (*ALSA_snd_device_name_free_hint) (void **);
+static snd_pcm_chmap_t* (*ALSA_snd_pcm_get_chmap) (snd_pcm_t *);
+static int (*ALSA_snd_pcm_chmap_print) (const snd_pcm_chmap_t *map, size_t maxlen, char *buf);
 
 #ifdef SDL_AUDIO_DRIVER_ALSA_DYNAMIC
 #define snd_pcm_hw_params_sizeof ALSA_snd_pcm_hw_params_sizeof
@@ -155,6 +157,8 @@ load_alsa_syms(void)
     SDL_ALSA_SYM(snd_device_name_hint);
     SDL_ALSA_SYM(snd_device_name_get_hint);
     SDL_ALSA_SYM(snd_device_name_free_hint);
+    SDL_ALSA_SYM(snd_pcm_get_chmap);
+    SDL_ALSA_SYM(snd_pcm_chmap_print);
 
     return 0;
 }
@@ -255,25 +259,25 @@ ALSA_WaitDevice(_THIS)
         tmp = ptr[3]; ptr[3] = ptr[5]; ptr[5] = tmp; \
     }
 
-static SDL_INLINE void
+static void
 swizzle_alsa_channels_6_64bit(void *buffer, Uint32 bufferlen)
 {
     SWIZ6(Uint64, buffer, bufferlen);
 }
 
-static SDL_INLINE void
+static void
 swizzle_alsa_channels_6_32bit(void *buffer, Uint32 bufferlen)
 {
     SWIZ6(Uint32, buffer, bufferlen);
 }
 
-static SDL_INLINE void
+static void
 swizzle_alsa_channels_6_16bit(void *buffer, Uint32 bufferlen)
 {
     SWIZ6(Uint16, buffer, bufferlen);
 }
 
-static SDL_INLINE void
+static void
 swizzle_alsa_channels_6_8bit(void *buffer, Uint32 bufferlen)
 {
     SWIZ6(Uint8, buffer, bufferlen);
@@ -286,7 +290,7 @@ swizzle_alsa_channels_6_8bit(void *buffer, Uint32 bufferlen)
  * Called right before feeding this->hidden->mixbuf to the hardware. Swizzle
  *  channels from Windows/Mac order to the format alsalib will want.
  */
-static SDL_INLINE void
+static void
 swizzle_alsa_channels(_THIS, void *buffer, Uint32 bufferlen)
 {
     if (this->spec.channels == 6) {
@@ -302,6 +306,13 @@ swizzle_alsa_channels(_THIS, void *buffer, Uint32 bufferlen)
     /* !!! FIXME: update this for 7.1 if needed, later. */
 }
 
+/* Some devices have the right channel map, no swizzling necessary */
+static void
+no_swizzle(_THIS, void *buffer, Uint32 bufferlen)
+{
+    return;
+}
+
 
 static void
 ALSA_PlayDevice(_THIS)
@@ -311,7 +322,7 @@ ALSA_PlayDevice(_THIS)
                                 this->spec.channels;
     snd_pcm_uframes_t frames_left = ((snd_pcm_uframes_t) this->spec.samples);
 
-    swizzle_alsa_channels(this, this->hidden->mixbuf, frames_left);
+    this->hidden->swizzle_func(this, this->hidden->mixbuf, frames_left);
 
     while ( frames_left > 0 && SDL_AtomicGet(&this->enabled) ) {
         int status;
@@ -398,7 +409,7 @@ ALSA_CaptureFromDevice(_THIS, void *buffer, int buflen)
         frames_left -= status;
     }
 
-    swizzle_alsa_channels(this, buffer, total_frames - frames_left);
+    this->hidden->swizzle_func(this, buffer, total_frames - frames_left);
 
     return (total_frames - frames_left) * frame_size;
 }
@@ -548,6 +559,8 @@ ALSA_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     SDL_AudioFormat test_format = 0;
     unsigned int rate = 0;
     unsigned int channels = 0;
+    snd_pcm_chmap_t *chmap;
+    char chmap_str[64];
 
     /* Initialize all variables that we clean on shutdown */
     this->hidden = (struct SDL_PrivateAudioData *)
@@ -639,6 +652,20 @@ ALSA_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         return SDL_SetError("ALSA: Couldn't find any hardware audio formats");
     }
     this->spec.format = test_format;
+
+    /* Validate number of channels and determine if swizzling is necessary
+     * Assume original swizzling, until proven otherwise.
+     */
+    this->hidden->swizzle_func = swizzle_alsa_channels;
+    chmap = ALSA_snd_pcm_get_chmap(pcm_handle);
+    if (chmap) {
+        ALSA_snd_pcm_chmap_print(chmap, sizeof(chmap_str), chmap_str);
+        if (SDL_strcmp("FL FR FC LFE RL RR", chmap_str) == 0 ||
+            SDL_strcmp("FL FR FC LFE SL SR", chmap_str) == 0) {
+            this->hidden->swizzle_func = no_swizzle;
+        }
+        free(chmap);
+    }
 
     /* Set the number of channels */
     status = ALSA_snd_pcm_hw_params_set_channels(pcm_handle, hwparams,
