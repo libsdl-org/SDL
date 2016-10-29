@@ -91,8 +91,10 @@ static int (*ALSA_snd_pcm_reset)(snd_pcm_t *);
 static int (*ALSA_snd_device_name_hint) (int, const char *, void ***);
 static char* (*ALSA_snd_device_name_get_hint) (const void *, const char *);
 static int (*ALSA_snd_device_name_free_hint) (void **);
+#ifdef SND_CHMAP_API_VERSION
 static snd_pcm_chmap_t* (*ALSA_snd_pcm_get_chmap) (snd_pcm_t *);
 static int (*ALSA_snd_pcm_chmap_print) (const snd_pcm_chmap_t *map, size_t maxlen, char *buf);
+#endif
 
 #ifdef SDL_AUDIO_DRIVER_ALSA_DYNAMIC
 #define snd_pcm_hw_params_sizeof ALSA_snd_pcm_hw_params_sizeof
@@ -157,8 +159,10 @@ load_alsa_syms(void)
     SDL_ALSA_SYM(snd_device_name_hint);
     SDL_ALSA_SYM(snd_device_name_get_hint);
     SDL_ALSA_SYM(snd_device_name_free_hint);
+#ifdef SND_CHMAP_API_VERSION
     SDL_ALSA_SYM(snd_pcm_get_chmap);
     SDL_ALSA_SYM(snd_pcm_chmap_print);
+#endif
 
     return 0;
 }
@@ -559,8 +563,10 @@ ALSA_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     SDL_AudioFormat test_format = 0;
     unsigned int rate = 0;
     unsigned int channels = 0;
+#ifdef SND_CHMAP_API_VERSION
     snd_pcm_chmap_t *chmap;
     char chmap_str[64];
+#endif
 
     /* Initialize all variables that we clean on shutdown */
     this->hidden = (struct SDL_PrivateAudioData *)
@@ -657,6 +663,7 @@ ALSA_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
      * Assume original swizzling, until proven otherwise.
      */
     this->hidden->swizzle_func = swizzle_alsa_channels;
+#ifdef SND_CHMAP_API_VERSION
     chmap = ALSA_snd_pcm_get_chmap(pcm_handle);
     if (chmap) {
         ALSA_snd_pcm_chmap_print(chmap, sizeof(chmap_str), chmap_str);
@@ -666,6 +673,7 @@ ALSA_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         }
         free(chmap);
     }
+#endif /* SND_CHMAP_API_VERSION */
 
     /* Set the number of channels */
     status = ALSA_snd_pcm_hw_params_set_channels(pcm_handle, hwparams,
