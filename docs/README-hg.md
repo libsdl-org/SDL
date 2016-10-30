@@ -11,9 +11,6 @@ Mac OS X, Windows, and Unix systems.
 
     hg clone http://hg.libsdl.org/SDL
 
-If you are building SDL with an IDE, you will need to copy the file
-include/SDL_config.h.default to include/SDL_config.h before building.
-
 If you are building SDL via configure, you will need to run autogen.sh
 before running configure.
 
