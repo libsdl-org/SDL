@@ -133,6 +133,10 @@ typedef struct SDL_VideoData
 #if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
     XkbDescPtr xkb;
 #endif
+
+    KeyCode filter_code;
+    Time    filter_time;
+
 } SDL_VideoData;
 
 extern SDL_bool X11_UseDirectColorVisuals(void);
