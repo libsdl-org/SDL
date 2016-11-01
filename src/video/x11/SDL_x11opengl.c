@@ -648,6 +648,7 @@ X11_GL_CreateContext(_THIS, SDL_Window * window)
                     context = _this->gl_data->glXCreateContextAttribsARB(display,
                                                     framebuffer_config[0],
                                                     share_context, True, attribs);
+                    X11_XFree(framebuffer_config);
                 }
             }
         }
