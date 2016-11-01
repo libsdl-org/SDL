@@ -484,7 +484,7 @@ X11_QuitKeyboard(_THIS)
 
 #if SDL_VIDEO_DRIVER_X11_HAS_XKBKEYCODETOKEYSYM
     if (data->xkb) {
-        X11_XkbFreeClientMap(data->xkb, 0, True);
+        X11_XkbFreeKeyboard(data->xkb, 0, True);
         data->xkb = NULL;
     }
 #endif
