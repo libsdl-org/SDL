@@ -574,6 +574,9 @@ X11_DispatchEvent(_THIS)
         if (orig_keycode) {
 #if defined(HAVE_IBUS_IBUS_H) || defined(HAVE_FCITX_FRONTEND_H)
             SDL_Scancode scancode = videodata->key_layout[orig_keycode];
+            videodata->filter_code = orig_keycode;
+            videodata->filter_time = xevent.xkey.time;
+
             if (orig_event_type == KeyPress) {
                 SDL_SendKeyboardKey(SDL_PRESSED, scancode);
             } else {
@@ -581,6 +584,9 @@ X11_DispatchEvent(_THIS)
             }
 #endif
         }
+        return;
+    } else if (orig_keycode == videodata->filter_code && xevent.xkey.time == videodata->filter_time) {
+        /* This is a duplicate event, resent by an IME - skip it. */
         return;
     }
 
