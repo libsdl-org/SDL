@@ -253,7 +253,6 @@
 #undef SDL_HAPTIC_XINPUT
 
 /* Enable various shared object loading systems */
-#undef SDL_LOADSO_HAIKU
 #undef SDL_LOADSO_DLOPEN
 #undef SDL_LOADSO_DUMMY
 #undef SDL_LOADSO_LDG

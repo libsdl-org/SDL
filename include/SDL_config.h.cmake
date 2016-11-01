@@ -252,7 +252,6 @@
 #cmakedefine SDL_HAPTIC_XINPUT @SDL_HAPTIC_XINPUT@
 
 /* Enable various shared object loading systems */
-#cmakedefine SDL_LOADSO_HAIKU @SDL_LOADSO_HAIKU@
 #cmakedefine SDL_LOADSO_DLOPEN @SDL_LOADSO_DLOPEN@
 #cmakedefine SDL_LOADSO_DUMMY @SDL_LOADSO_DUMMY@
 #cmakedefine SDL_LOADSO_LDG @SDL_LOADSO_LDG@

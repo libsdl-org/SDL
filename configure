@@ -23490,6 +23490,7 @@ fi
         CheckDummyVideo
         CheckDiskAudio
         CheckDummyAudio
+        CheckDLOPEN        
         CheckHaikuVideo
         CheckHaikuGL
         CheckPTHREAD
@@ -23517,14 +23518,6 @@ $as_echo "#define SDL_TIMER_HAIKU 1" >>confdefs.h
 
             SOURCES="$SOURCES $srcdir/src/timer/haiku/*.c"
             have_timers=yes
-        fi
-        # Set up files for the shared object loading library
-        if test x$enable_loadso = xyes; then
-
-$as_echo "#define SDL_LOADSO_HAIKU 1" >>confdefs.h
-
-            SOURCES="$SOURCES $srcdir/src/loadso/haiku/*.c"
-            have_loadso=yes
         fi
         # Set up files for the system power library
         if test x$enable_power = xyes; then

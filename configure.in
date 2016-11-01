@@ -3229,6 +3229,7 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         CheckDummyVideo
         CheckDiskAudio
         CheckDummyAudio
+        CheckDLOPEN
         CheckHaikuVideo
         CheckHaikuGL
         CheckPTHREAD
@@ -3250,12 +3251,6 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
             AC_DEFINE(SDL_TIMER_HAIKU, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/timer/haiku/*.c"
             have_timers=yes
-        fi
-        # Set up files for the shared object loading library
-        if test x$enable_loadso = xyes; then
-            AC_DEFINE(SDL_LOADSO_HAIKU, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/loadso/haiku/*.c"
-            have_loadso=yes
         fi
         # Set up files for the system power library
         if test x$enable_power = xyes; then
