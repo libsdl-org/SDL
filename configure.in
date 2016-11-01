@@ -3713,7 +3713,7 @@ if test x$have_x = xyes; then
     SUMMARY="${SUMMARY}X11 libraries   :${SUMMARY_video_x11}\n"
 fi
 SUMMARY="${SUMMARY}Input drivers   :${SUMMARY_input}\n"
-if test x$enable_libudev = xyes; then
+if test x$have_libudev_h_hdr = xyes; then
     SUMMARY="${SUMMARY}Using libudev   : YES\n"
 else
     SUMMARY="${SUMMARY}Using libudev   : NO\n"
