@@ -585,9 +585,6 @@ X11_DispatchEvent(_THIS)
 #endif
         }
         return;
-    } else if (orig_keycode == videodata->filter_code && xevent.xkey.time == videodata->filter_time) {
-        /* This is a duplicate event, resent by an IME - skip it. */
-        return;
     }
 
     /* Send a SDL_SYSWMEVENT if the application wants them */
@@ -802,7 +799,10 @@ X11_DispatchEvent(_THIS)
             }
 #endif
             if (!handled_by_ime) {
-                SDL_SendKeyboardKey(SDL_PRESSED, videodata->key_layout[keycode]);
+                /* Don't send the key if it looks like a duplicate of a filtered key sent by an IME */
+                if (xevent.xkey.keycode != videodata->filter_code || xevent.xkey.time != videodata->filter_time) {
+                    SDL_SendKeyboardKey(SDL_PRESSED, videodata->key_layout[keycode]);
+                }
                 if(*text) {
                     SDL_SendKeyboardText(text);
                 }
