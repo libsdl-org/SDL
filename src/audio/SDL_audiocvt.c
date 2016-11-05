@@ -211,9 +211,9 @@ SDL_ConvertAudio(SDL_AudioCVT * cvt)
 static void SDLCALL
 SDL_Convert_Byteswap(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
-    #if DEBUG_CONVERT
-    fprintf(stderr, "Converting byte order\n");
-    #endif
+#if DEBUG_CONVERT
+    printf("Converting byte order\n");
+#endif
 
     switch (SDL_AUDIO_BITSIZE(format)) {
         #define CASESWAP(b) \
@@ -487,7 +487,7 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
     if ((src_rate == 0) || (dst_rate == 0)) {
         return SDL_SetError("Source or destination rate is zero");
     }
-#ifdef DEBUG_CONVERT
+#if DEBUG_CONVERT
     printf("Build format %04x->%04x, channels %u->%u, rate %d->%d\n",
            src_fmt, dst_fmt, src_channels, dst_channels, src_rate, dst_rate);
 #endif
