@@ -258,7 +258,10 @@ SDL_BuildAudioTypeCVTToFloat(SDL_AudioCVT *cvt, const SDL_AudioFormat src_fmt)
     }
 
     if (!SDL_AUDIO_ISFLOAT(src_fmt)) {
+        const Uint16 src_bitsize = SDL_AUDIO_BITSIZE(src_fmt);
+        const Uint16 dst_bitsize = 32;
         SDL_AudioFilter filter = NULL;
+
         switch (src_fmt & ~SDL_AUDIO_MASK_ENDIAN) {
             case AUDIO_S8: filter = SDL_Convert_S8_to_F32; break;
             case AUDIO_U8: filter = SDL_Convert_U8_to_F32; break;
@@ -271,8 +274,6 @@ SDL_BuildAudioTypeCVTToFloat(SDL_AudioCVT *cvt, const SDL_AudioFormat src_fmt)
             return SDL_SetError("No conversion available for these formats");
         }
 
-        const Uint16 src_bitsize = SDL_AUDIO_BITSIZE(src_fmt);
-        const Uint16 dst_bitsize = 32;
         cvt->filters[cvt->filter_index++] = filter;
         if (src_bitsize < dst_bitsize) {
             const int mult = (dst_bitsize / src_bitsize);
@@ -281,6 +282,7 @@ SDL_BuildAudioTypeCVTToFloat(SDL_AudioCVT *cvt, const SDL_AudioFormat src_fmt)
         } else if (src_bitsize > dst_bitsize) {
             cvt->len_ratio /= (src_bitsize / dst_bitsize);
         }
+
         retval = 1;  /* added a converter. */
     }
 
