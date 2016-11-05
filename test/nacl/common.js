@@ -39,7 +39,7 @@ var common = (function() {
         mimetype = 'application/x-ppapi-release';
       else
         mimetype = 'application/x-ppapi-debug';
-    } else if (tool == 'pnacl' && isRelease) {
+    } else if (tool == 'pnacl') {
       mimetype = 'application/x-pnacl';
     }
     return mimetype;
@@ -146,6 +146,11 @@ var common = (function() {
     // event fires.
     var listenerDiv = document.getElementById('listener');
     listenerDiv.appendChild(moduleEl);
+
+    // Request the offsetTop property to force a relayout. As of Apr 10, 2014
+    // this is needed if the module is being loaded on a Chrome App's
+    // background page (see crbug.com/350445).
+    moduleEl.offsetTop;
 
     // Host plugins don't send a moduleDidLoad message. We'll fake it here.
     var isHost = isHostToolchain(tool);
