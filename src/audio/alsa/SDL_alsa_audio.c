@@ -310,12 +310,14 @@ swizzle_alsa_channels(_THIS, void *buffer, Uint32 bufferlen)
     /* !!! FIXME: update this for 7.1 if needed, later. */
 }
 
+#ifdef SND_CHMAP_API_VERSION
 /* Some devices have the right channel map, no swizzling necessary */
 static void
 no_swizzle(_THIS, void *buffer, Uint32 bufferlen)
 {
     return;
 }
+#endif /* SND_CHMAP_API_VERSION */
 
 
 static void
