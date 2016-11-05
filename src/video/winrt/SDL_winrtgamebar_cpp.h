@@ -30,6 +30,6 @@ extern void WINRT_InitGameBar(_THIS);
 extern void WINRT_QuitGameBar(_THIS);
 #endif
 
-#endif /* _SDL_winrtmouse_h */
+#endif /* _SDL_winrtgamebar_h */
 
 /* vi: set ts=4 sw=4 expandtab: */
