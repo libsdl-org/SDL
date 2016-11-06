@@ -34,6 +34,7 @@
 #include "SDL_waylandopengles.h"
 #include "SDL_waylandmouse.h"
 #include "SDL_waylandtouch.h"
+#include "SDL_waylandclipboard.h"
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -176,6 +177,10 @@ Wayland_CreateDevice(int devindex)
     device->DestroyWindow = Wayland_DestroyWindow;
     device->SetWindowHitTest = Wayland_SetWindowHitTest;
 
+    device->SetClipboardText = Wayland_SetClipboardText;
+    device->GetClipboardText = Wayland_GetClipboardText;
+    device->HasClipboardText = Wayland_HasClipboardText;
+
     device->free = Wayland_DeleteDevice;
 
     return device;
@@ -312,6 +317,8 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
         Wayland_display_add_relative_pointer_manager(d, id);
     } else if (strcmp(interface, "zwp_pointer_constraints_v1") == 0) {
         Wayland_display_add_pointer_constraints(d, id);
+    } else if (strcmp(interface, "wl_data_device_manager") == 0) {
+        d->data_device_manager = wl_registry_bind(d->registry, id, &wl_data_device_manager_interface, 3);
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
     } else if (strcmp(interface, "qt_touch_extension") == 0) {
         Wayland_touch_create(d, id);
