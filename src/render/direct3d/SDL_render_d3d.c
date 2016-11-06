@@ -1723,28 +1723,26 @@ D3D_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
     centerx = center->x;
     centery = center->y;
 
-    if (flip & SDL_FLIP_HORIZONTAL) {
-        minx = dstrect->w - centerx - 0.5f;
-        maxx = -centerx - 0.5f;
-    }
-    else {
-        minx = -centerx - 0.5f;
-        maxx = dstrect->w - centerx - 0.5f;
-    }
-
-    if (flip & SDL_FLIP_VERTICAL) {
-        miny = dstrect->h - centery - 0.5f;
-        maxy = -centery - 0.5f;
-    }
-    else {
-        miny = -centery - 0.5f;
-        maxy = dstrect->h - centery - 0.5f;
-    }
+    minx = -centerx;
+    maxx = dstrect->w - centerx;
+    miny = -centery;
+    maxy = dstrect->h - centery;
 
     minu = (float) srcrect->x / texture->w;
     maxu = (float) (srcrect->x + srcrect->w) / texture->w;
     minv = (float) srcrect->y / texture->h;
     maxv = (float) (srcrect->y + srcrect->h) / texture->h;
+
+    if (flip & SDL_FLIP_HORIZONTAL) {
+        float tmp = maxu;
+        maxu = minu;
+        minu = tmp;
+    }
+    if (flip & SDL_FLIP_VERTICAL) {
+        float tmp = maxv;
+        maxv = minv;
+        minv = tmp;
+    }
 
     color = D3DCOLOR_ARGB(texture->a, texture->r, texture->g, texture->b);
 
@@ -1781,8 +1779,7 @@ D3D_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
     /* Rotate and translate */
     modelMatrix = MatrixMultiply(
             MatrixRotationZ((float)(M_PI * (float) angle / 180.0f)),
-            MatrixTranslation(dstrect->x + center->x, dstrect->y + center->y, 0)
-);
+            MatrixTranslation(dstrect->x + center->x - 0.5f, dstrect->y + center->y - 0.5f, 0));
     IDirect3DDevice9_SetTransform(data->device, D3DTS_VIEW, (D3DMATRIX*)&modelMatrix);
 
     D3D_UpdateTextureScaleMode(data, texturedata, 0);
