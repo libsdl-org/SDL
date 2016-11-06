@@ -195,30 +195,30 @@ typedef struct {
 
 static LL_Test LL_Tests[] = 
 {
-    {"_allshl",   &TST_allshl,   0xFFFFFFFFFFFFFFFFll,                  0ll, 65, 0x0000000000000000ll},
+    /* UNDEFINED {"_allshl",   &TST_allshl,   0xFFFFFFFFFFFFFFFFll,                  0ll, 65, 0x0000000000000000ll}, */
     {"_allshl",   &TST_allshl,   0xFFFFFFFFFFFFFFFFll,                  0ll,  1, 0xFFFFFFFFFFFFFFFEll},
     {"_allshl",   &TST_allshl,   0xFFFFFFFFFFFFFFFFll,                  0ll, 32, 0xFFFFFFFF00000000ll},
     {"_allshl",   &TST_allshl,   0xFFFFFFFFFFFFFFFFll,                  0ll, 33, 0xFFFFFFFE00000000ll},
     {"_allshl",   &TST_allshl,   0xFFFFFFFFFFFFFFFFll,                  0ll,  0, 0xFFFFFFFFFFFFFFFFll},
 
     {"_allshr",   &TST_allshr,   0xAAAAAAAA55555555ll,                  0ll, 63, 0xFFFFFFFFFFFFFFFFll},
-    {"_allshr",   &TST_allshr,   0xFFFFFFFFFFFFFFFFll,                  0ll, 65, 0xFFFFFFFFFFFFFFFFll},
+    /* UNDEFINED {"_allshr",   &TST_allshr,   0xFFFFFFFFFFFFFFFFll,                  0ll, 65, 0xFFFFFFFFFFFFFFFFll}, */
     {"_allshr",   &TST_allshr,   0xFFFFFFFFFFFFFFFFll,                  0ll,  1, 0xFFFFFFFFFFFFFFFFll},
     {"_allshr",   &TST_allshr,   0xFFFFFFFFFFFFFFFFll,                  0ll, 32, 0xFFFFFFFFFFFFFFFFll},
     {"_allshr",   &TST_allshr,   0xFFFFFFFFFFFFFFFFll,                  0ll, 33, 0xFFFFFFFFFFFFFFFFll},
     {"_allshr",   &TST_allshr,   0xFFFFFFFFFFFFFFFFll,                  0ll,  0, 0xFFFFFFFFFFFFFFFFll},
-    {"_allshr",   &TST_allshr,   0x5F5F5F5F5F5F5F5Fll,                  0ll, 65, 0x0000000000000000ll},
+    /* UNDEFINED {"_allshr",   &TST_allshr,   0x5F5F5F5F5F5F5F5Fll,                  0ll, 65, 0x0000000000000000ll}, */
     {"_allshr",   &TST_allshr,   0x5F5F5F5F5F5F5F5Fll,                  0ll,  1, 0x2FAFAFAFAFAFAFAFll},
     {"_allshr",   &TST_allshr,   0x5F5F5F5F5F5F5F5Fll,                  0ll, 32, 0x000000005F5F5F5Fll},
     {"_allshr",   &TST_allshr,   0x5F5F5F5F5F5F5F5Fll,                  0ll, 33, 0x000000002FAFAFAFll},
 
-    {"_aullshl",  &TST_aullshl,  0xFFFFFFFFFFFFFFFFll,                  0ll, 65, 0x0000000000000000ll},
+    /* UNDEFINED {"_aullshl",  &TST_aullshl,  0xFFFFFFFFFFFFFFFFll,                  0ll, 65, 0x0000000000000000ll}, */
     {"_aullshl",  &TST_aullshl,  0xFFFFFFFFFFFFFFFFll,                  0ll,  1, 0xFFFFFFFFFFFFFFFEll},
     {"_aullshl",  &TST_aullshl,  0xFFFFFFFFFFFFFFFFll,                  0ll, 32, 0xFFFFFFFF00000000ll},
     {"_aullshl",  &TST_aullshl,  0xFFFFFFFFFFFFFFFFll,                  0ll, 33, 0xFFFFFFFE00000000ll},
     {"_aullshl",  &TST_aullshl,  0xFFFFFFFFFFFFFFFFll,                  0ll,  0, 0xFFFFFFFFFFFFFFFFll},
 
-    {"_aullshr",  &TST_aullshr,  0xFFFFFFFFFFFFFFFFll,                  0ll, 65, 0x0000000000000000ll},
+    /* UNDEFINED {"_aullshr",  &TST_aullshr,  0xFFFFFFFFFFFFFFFFll,                  0ll, 65, 0x0000000000000000ll}, */
     {"_aullshr",  &TST_aullshr,  0xFFFFFFFFFFFFFFFFll,                  0ll,  1, 0x7FFFFFFFFFFFFFFFll},
     {"_aullshr",  &TST_aullshr,  0xFFFFFFFFFFFFFFFFll,                  0ll, 32, 0x00000000FFFFFFFFll},
     {"_aullshr",  &TST_aullshr,  0xFFFFFFFFFFFFFFFFll,                  0ll, 33, 0x000000007FFFFFFFll},
