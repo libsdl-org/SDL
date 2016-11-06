@@ -128,6 +128,220 @@ TestEndian(SDL_bool verbose)
     return (error ? 1 : 0);
 }
 
+static int TST_allmul (void *a, void *b, int arg, void *result, void *expected)
+{
+    (*(long long *)result) = ((*(long long *)a) * (*(long long *)b));
+    return (*(long long *)result) == (*(long long *)expected);
+}
+
+static int TST_alldiv (void *a, void *b, int arg, void *result, void *expected)
+{
+    (*(long long *)result) = ((*(long long *)a) / (*(long long *)b));
+    return (*(long long *)result) == (*(long long *)expected);
+}
+
+static int TST_allrem (void *a, void *b, int arg, void *result, void *expected)
+{
+    (*(long long *)result) = ((*(long long *)a) % (*(long long *)b));
+    return (*(long long *)result) == (*(long long *)expected);
+}
+
+static int TST_ualldiv (void *a, void *b, int arg, void *result, void *expected)
+{
+    (*(unsigned long long *)result) = ((*(unsigned long long *)a) / (*(unsigned long long *)b));
+    return (*(unsigned long long *)result) == (*(unsigned long long *)expected);
+}
+
+static int TST_uallrem (void *a, void *b, int arg, void *result, void *expected)
+{
+    (*(unsigned long long *)result) = ((*(unsigned long long *)a) % (*(unsigned long long *)b));
+    return (*(unsigned long long *)result) == (*(unsigned long long *)expected);
+}
+
+static int TST_allshl (void *a, void *b, int arg, void *result, void *expected)
+{
+    (*(long long *)result) = (*(long long *)a) << arg;
+    return (*(long long *)result) == (*(long long *)expected);
+}
+
+static int TST_aullshl (void *a, void *b, int arg, void *result, void *expected)
+{
+    (*(unsigned long long *)result) = (*(unsigned long long *)a) << arg;
+    return (*(unsigned long long *)result) == (*(unsigned long long *)expected);
+}
+
+static int TST_allshr (void *a, void *b, int arg, void *result, void *expected)
+{
+    (*(long long *)result) = (*(long long *)a) >> arg;
+    return (*(long long *)result) == (*(long long *)expected);
+}
+
+static int TST_aullshr (void *a, void *b, int arg, void *result, void *expected)
+{
+    (*(unsigned long long *)result) = (*(unsigned long long *)a) >> arg;
+    return (*(unsigned long long *)result) == (*(unsigned long long *)expected);
+}
+
+
+typedef int (*LL_Intrinsic)(void *a, void *b, int arg, void *result, void *expected);
+
+typedef struct {
+    const char *operation;
+    LL_Intrinsic routine;
+    unsigned long long a, b;
+    int arg;
+    unsigned long long expected_result;
+} LL_Test;
+
+static LL_Test LL_Tests[] = 
+{
+    {"_allshl",   &TST_allshl,   0xFFFFFFFFFFFFFFFFll,                  0ll, 65, 0x0000000000000000ll},
+    {"_allshl",   &TST_allshl,   0xFFFFFFFFFFFFFFFFll,                  0ll,  1, 0xFFFFFFFFFFFFFFFEll},
+    {"_allshl",   &TST_allshl,   0xFFFFFFFFFFFFFFFFll,                  0ll, 32, 0xFFFFFFFF00000000ll},
+    {"_allshl",   &TST_allshl,   0xFFFFFFFFFFFFFFFFll,                  0ll, 33, 0xFFFFFFFE00000000ll},
+    {"_allshl",   &TST_allshl,   0xFFFFFFFFFFFFFFFFll,                  0ll,  0, 0xFFFFFFFFFFFFFFFFll},
+
+    {"_allshr",   &TST_allshr,   0xAAAAAAAA55555555ll,                  0ll, 63, 0xFFFFFFFFFFFFFFFFll},
+    {"_allshr",   &TST_allshr,   0xFFFFFFFFFFFFFFFFll,                  0ll, 65, 0xFFFFFFFFFFFFFFFFll},
+    {"_allshr",   &TST_allshr,   0xFFFFFFFFFFFFFFFFll,                  0ll,  1, 0xFFFFFFFFFFFFFFFFll},
+    {"_allshr",   &TST_allshr,   0xFFFFFFFFFFFFFFFFll,                  0ll, 32, 0xFFFFFFFFFFFFFFFFll},
+    {"_allshr",   &TST_allshr,   0xFFFFFFFFFFFFFFFFll,                  0ll, 33, 0xFFFFFFFFFFFFFFFFll},
+    {"_allshr",   &TST_allshr,   0xFFFFFFFFFFFFFFFFll,                  0ll,  0, 0xFFFFFFFFFFFFFFFFll},
+    {"_allshr",   &TST_allshr,   0x5F5F5F5F5F5F5F5Fll,                  0ll, 65, 0x0000000000000000ll},
+    {"_allshr",   &TST_allshr,   0x5F5F5F5F5F5F5F5Fll,                  0ll,  1, 0x2FAFAFAFAFAFAFAFll},
+    {"_allshr",   &TST_allshr,   0x5F5F5F5F5F5F5F5Fll,                  0ll, 32, 0x000000005F5F5F5Fll},
+    {"_allshr",   &TST_allshr,   0x5F5F5F5F5F5F5F5Fll,                  0ll, 33, 0x000000002FAFAFAFll},
+
+    {"_aullshl",  &TST_aullshl,  0xFFFFFFFFFFFFFFFFll,                  0ll, 65, 0x0000000000000000ll},
+    {"_aullshl",  &TST_aullshl,  0xFFFFFFFFFFFFFFFFll,                  0ll,  1, 0xFFFFFFFFFFFFFFFEll},
+    {"_aullshl",  &TST_aullshl,  0xFFFFFFFFFFFFFFFFll,                  0ll, 32, 0xFFFFFFFF00000000ll},
+    {"_aullshl",  &TST_aullshl,  0xFFFFFFFFFFFFFFFFll,                  0ll, 33, 0xFFFFFFFE00000000ll},
+    {"_aullshl",  &TST_aullshl,  0xFFFFFFFFFFFFFFFFll,                  0ll,  0, 0xFFFFFFFFFFFFFFFFll},
+
+    {"_aullshr",  &TST_aullshr,  0xFFFFFFFFFFFFFFFFll,                  0ll, 65, 0x0000000000000000ll},
+    {"_aullshr",  &TST_aullshr,  0xFFFFFFFFFFFFFFFFll,                  0ll,  1, 0x7FFFFFFFFFFFFFFFll},
+    {"_aullshr",  &TST_aullshr,  0xFFFFFFFFFFFFFFFFll,                  0ll, 32, 0x00000000FFFFFFFFll},
+    {"_aullshr",  &TST_aullshr,  0xFFFFFFFFFFFFFFFFll,                  0ll, 33, 0x000000007FFFFFFFll},
+    {"_aullshr",  &TST_aullshr,  0xFFFFFFFFFFFFFFFFll,                  0ll,  0, 0xFFFFFFFFFFFFFFFFll},
+
+    {"_allmul",   &TST_allmul,   0xFFFFFFFFFFFFFFFFll, 0x0000000000000000ll,  0, 0x0000000000000000ll},
+    {"_allmul",   &TST_allmul,   0x0000000000000000ll, 0xFFFFFFFFFFFFFFFFll,  0, 0x0000000000000000ll},
+    {"_allmul",   &TST_allmul,   0x000000000FFFFFFFll, 0x0000000000000001ll,  0, 0x000000000FFFFFFFll},
+    {"_allmul",   &TST_allmul,   0x0000000000000001ll, 0x000000000FFFFFFFll,  0, 0x000000000FFFFFFFll},
+    {"_allmul",   &TST_allmul,   0x000000000FFFFFFFll, 0x0000000000000010ll,  0, 0x00000000FFFFFFF0ll},
+    {"_allmul",   &TST_allmul,   0x0000000000000010ll, 0x000000000FFFFFFFll,  0, 0x00000000FFFFFFF0ll},
+    {"_allmul",   &TST_allmul,   0x000000000FFFFFFFll, 0x0000000000000100ll,  0, 0x0000000FFFFFFF00ll},
+    {"_allmul",   &TST_allmul,   0x0000000000000100ll, 0x000000000FFFFFFFll,  0, 0x0000000FFFFFFF00ll},
+    {"_allmul",   &TST_allmul,   0x000000000FFFFFFFll, 0x0000000010000000ll,  0, 0x00FFFFFFF0000000ll},
+    {"_allmul",   &TST_allmul,   0x0000000010000000ll, 0x000000000FFFFFFFll,  0, 0x00FFFFFFF0000000ll},
+    {"_allmul",   &TST_allmul,   0x000000000FFFFFFFll, 0x0000000080000000ll,  0, 0x07FFFFFF80000000ll},
+    {"_allmul",   &TST_allmul,   0x0000000080000000ll, 0x000000000FFFFFFFll,  0, 0x07FFFFFF80000000ll},
+    {"_allmul",   &TST_allmul,   0xFFFFFFFFFFFFFFFEll, 0x0000000080000000ll,  0, 0xFFFFFFFF00000000ll},
+    {"_allmul",   &TST_allmul,   0x0000000080000000ll, 0xFFFFFFFFFFFFFFFEll,  0, 0xFFFFFFFF00000000ll},
+    {"_allmul",   &TST_allmul,   0xFFFFFFFFFFFFFFFEll, 0x0000000080000008ll,  0, 0xFFFFFFFEFFFFFFF0ll},
+    {"_allmul",   &TST_allmul,   0x0000000080000008ll, 0xFFFFFFFFFFFFFFFEll,  0, 0xFFFFFFFEFFFFFFF0ll},
+    {"_allmul",   &TST_allmul,   0x00000000FFFFFFFFll, 0x00000000FFFFFFFFll,  0, 0xFFFFFFFE00000001ll},
+
+    {"_alldiv",   &TST_alldiv,   0x0000000000000000ll, 0x0000000000000001ll,  0, 0x0000000000000000ll},
+    {"_alldiv",   &TST_alldiv,   0x0000000000000000ll, 0xFFFFFFFFFFFFFFFFll,  0, 0x0000000000000000ll},
+    {"_alldiv",   &TST_alldiv,   0x0000000000000001ll, 0xFFFFFFFFFFFFFFFFll,  0, 0xFFFFFFFFFFFFFFFFll},
+    {"_alldiv",   &TST_alldiv,   0xFFFFFFFFFFFFFFFFll, 0x0000000000000001ll,  0, 0xFFFFFFFFFFFFFFFFll},
+    {"_alldiv",   &TST_alldiv,   0x0000000000000001ll, 0xFFFFFFFFFFFFFFFFll,  0, 0xFFFFFFFFFFFFFFFFll},
+    {"_alldiv",   &TST_alldiv,   0x0000000000000001ll, 0x0000000000000001ll,  0, 0x0000000000000001ll},
+    {"_alldiv",   &TST_alldiv,   0xFFFFFFFFFFFFFFFFll, 0xFFFFFFFFFFFFFFFFll,  0, 0x0000000000000001ll},
+    {"_alldiv",   &TST_alldiv,   0x000000000FFFFFFFll, 0x0000000000000001ll,  0, 0x000000000FFFFFFFll},
+    {"_alldiv",   &TST_alldiv,   0x0000000FFFFFFFFFll, 0x0000000000000010ll,  0, 0x00000000FFFFFFFFll},
+    {"_alldiv",   &TST_alldiv,   0x0000000000000100ll, 0x000000000FFFFFFFll,  0, 0x0000000000000000ll},
+    {"_alldiv",   &TST_alldiv,   0x00FFFFFFF0000000ll, 0x0000000010000000ll,  0, 0x000000000FFFFFFFll},
+    {"_alldiv",   &TST_alldiv,   0x07FFFFFF80000000ll, 0x0000000080000000ll,  0, 0x000000000FFFFFFFll},
+    {"_alldiv",   &TST_alldiv,   0xFFFFFFFFFFFFFFFEll, 0x0000000080000000ll,  0, 0x0000000000000000ll},
+    {"_alldiv",   &TST_alldiv,   0xFFFFFFFEFFFFFFF0ll, 0xFFFFFFFFFFFFFFFEll,  0, 0x0000000080000008ll},
+    {"_alldiv",   &TST_alldiv,   0x7FFFFFFEFFFFFFF0ll, 0xFFFFFFFFFFFFFFFEll,  0, 0xC000000080000008ll},
+    {"_alldiv",   &TST_alldiv,   0x7FFFFFFEFFFFFFF0ll, 0x0000FFFFFFFFFFFEll,  0, 0x0000000000007FFFll},
+    {"_alldiv",   &TST_alldiv,   0x7FFFFFFEFFFFFFF0ll, 0x7FFFFFFEFFFFFFF0ll,  0, 0x0000000000000001ll},
+
+    {"_allrem",   &TST_allrem,   0x0000000000000000ll, 0x0000000000000001ll,  0, 0x0000000000000000ll},
+    {"_allrem",   &TST_allrem,   0x0000000000000000ll, 0xFFFFFFFFFFFFFFFFll,  0, 0x0000000000000000ll},
+    {"_allrem",   &TST_allrem,   0x0000000000000001ll, 0xFFFFFFFFFFFFFFFFll,  0, 0x0000000000000000ll},
+    {"_allrem",   &TST_allrem,   0xFFFFFFFFFFFFFFFFll, 0x0000000000000001ll,  0, 0x0000000000000000ll},
+    {"_allrem",   &TST_allrem,   0x0000000000000001ll, 0xFFFFFFFFFFFFFFFFll,  0, 0x0000000000000000ll},
+    {"_allrem",   &TST_allrem,   0x0000000000000001ll, 0x0000000000000001ll,  0, 0x0000000000000000ll},
+    {"_allrem",   &TST_allrem,   0xFFFFFFFFFFFFFFFFll, 0xFFFFFFFFFFFFFFFFll,  0, 0x0000000000000000ll},
+    {"_allrem",   &TST_allrem,   0x000000000FFFFFFFll, 0x0000000000000001ll,  0, 0x0000000000000000ll},
+    {"_allrem",   &TST_allrem,   0x0000000FFFFFFFFFll, 0x0000000000000010ll,  0, 0x000000000000000Fll},
+    {"_allrem",   &TST_allrem,   0x0000000000000100ll, 0x000000000FFFFFFFll,  0, 0x0000000000000100ll},
+    {"_allrem",   &TST_allrem,   0x00FFFFFFF0000000ll, 0x0000000010000000ll,  0, 0x0000000000000000ll},
+    {"_allrem",   &TST_allrem,   0x07FFFFFF80000000ll, 0x0000000080000000ll,  0, 0x0000000000000000ll},
+    {"_allrem",   &TST_allrem,   0xFFFFFFFFFFFFFFFEll, 0x0000000080000000ll,  0, 0xFFFFFFFFFFFFFFFEll},
+    {"_allrem",   &TST_allrem,   0xFFFFFFFEFFFFFFF0ll, 0xFFFFFFFFFFFFFFFEll,  0, 0x0000000000000000ll},
+    {"_allrem",   &TST_allrem,   0x7FFFFFFEFFFFFFF0ll, 0xFFFFFFFFFFFFFFFEll,  0, 0x0000000000000000ll},
+    {"_allrem",   &TST_allrem,   0x7FFFFFFEFFFFFFF0ll, 0x0000FFFFFFFFFFFEll,  0, 0x0000FFFF0000FFEEll},
+    {"_allrem",   &TST_allrem,   0x7FFFFFFEFFFFFFF0ll, 0x7FFFFFFEFFFFFFF0ll,  0, 0x0000000000000000ll},
+
+
+    {"_ualldiv",  &TST_ualldiv,  0x0000000000000000ll, 0x0000000000000001ll,  0, 0x0000000000000000ll},
+    {"_ualldiv",  &TST_ualldiv,  0x0000000000000000ll, 0xFFFFFFFFFFFFFFFFll,  0, 0x0000000000000000ll},
+    {"_ualldiv",  &TST_ualldiv,  0x0000000000000001ll, 0xFFFFFFFFFFFFFFFFll,  0, 0x0000000000000000ll},
+    {"_ualldiv",  &TST_ualldiv,  0xFFFFFFFFFFFFFFFFll, 0x0000000000000001ll,  0, 0xFFFFFFFFFFFFFFFFll},
+    {"_ualldiv",  &TST_ualldiv,  0x0000000000000001ll, 0xFFFFFFFFFFFFFFFFll,  0, 0x0000000000000000ll},
+    {"_ualldiv",  &TST_ualldiv,  0x0000000000000001ll, 0x0000000000000001ll,  0, 0x0000000000000001ll},
+    {"_ualldiv",  &TST_ualldiv,  0xFFFFFFFFFFFFFFFFll, 0xFFFFFFFFFFFFFFFFll,  0, 0x0000000000000001ll},
+    {"_ualldiv",  &TST_ualldiv,  0x000000000FFFFFFFll, 0x0000000000000001ll,  0, 0x000000000FFFFFFFll},
+    {"_ualldiv",  &TST_ualldiv,  0x0000000FFFFFFFFFll, 0x0000000000000010ll,  0, 0x00000000FFFFFFFFll},
+    {"_ualldiv",  &TST_ualldiv,  0x0000000000000100ll, 0x000000000FFFFFFFll,  0, 0x0000000000000000ll},
+    {"_ualldiv",  &TST_ualldiv,  0x00FFFFFFF0000000ll, 0x0000000010000000ll,  0, 0x000000000FFFFFFFll},
+    {"_ualldiv",  &TST_ualldiv,  0x07FFFFFF80000000ll, 0x0000000080000000ll,  0, 0x000000000FFFFFFFll},
+    {"_ualldiv",  &TST_ualldiv,  0xFFFFFFFFFFFFFFFEll, 0x0000000080000000ll,  0, 0x00000001FFFFFFFFll},
+    {"_ualldiv",  &TST_ualldiv,  0xFFFFFFFEFFFFFFF0ll, 0xFFFFFFFFFFFFFFFEll,  0, 0x0000000000000000ll},
+    {"_ualldiv",  &TST_ualldiv,  0x7FFFFFFEFFFFFFF0ll, 0xFFFFFFFFFFFFFFFEll,  0, 0x0000000000000000ll},
+    {"_ualldiv",  &TST_ualldiv,  0x7FFFFFFEFFFFFFF0ll, 0x0000FFFFFFFFFFFEll,  0, 0x0000000000007FFFll},
+    {"_ualldiv",  &TST_ualldiv,  0x7FFFFFFEFFFFFFF0ll, 0x7FFFFFFEFFFFFFF0ll,  0, 0x0000000000000001ll},
+
+    {"_uallrem",  &TST_uallrem,  0x0000000000000000ll, 0x0000000000000001ll,  0, 0x0000000000000000ll},
+    {"_uallrem",  &TST_uallrem,  0x0000000000000000ll, 0xFFFFFFFFFFFFFFFFll,  0, 0x0000000000000000ll},
+    {"_uallrem",  &TST_uallrem,  0x0000000000000001ll, 0xFFFFFFFFFFFFFFFFll,  0, 0x0000000000000001ll},
+    {"_uallrem",  &TST_uallrem,  0xFFFFFFFFFFFFFFFFll, 0x0000000000000001ll,  0, 0x0000000000000000ll},
+    {"_uallrem",  &TST_uallrem,  0x0000000000000001ll, 0xFFFFFFFFFFFFFFFFll,  0, 0x0000000000000001ll},
+    {"_uallrem",  &TST_uallrem,  0x0000000000000001ll, 0x0000000000000001ll,  0, 0x0000000000000000ll},
+    {"_uallrem",  &TST_uallrem,  0xFFFFFFFFFFFFFFFFll, 0xFFFFFFFFFFFFFFFFll,  0, 0x0000000000000000ll},
+    {"_uallrem",  &TST_uallrem,  0x000000000FFFFFFFll, 0x0000000000000001ll,  0, 0x0000000000000000ll},
+    {"_uallrem",  &TST_uallrem,  0x0000000FFFFFFFFFll, 0x0000000000000010ll,  0, 0x000000000000000Fll},
+    {"_uallrem",  &TST_uallrem,  0x0000000000000100ll, 0x000000000FFFFFFFll,  0, 0x0000000000000100ll},
+    {"_uallrem",  &TST_uallrem,  0x00FFFFFFF0000000ll, 0x0000000010000000ll,  0, 0x0000000000000000ll},
+    {"_uallrem",  &TST_uallrem,  0x07FFFFFF80000000ll, 0x0000000080000000ll,  0, 0x0000000000000000ll},
+    {"_uallrem",  &TST_uallrem,  0xFFFFFFFFFFFFFFFEll, 0x0000000080000000ll,  0, 0x000000007FFFFFFEll},
+    {"_uallrem",  &TST_uallrem,  0xFFFFFFFEFFFFFFF0ll, 0xFFFFFFFFFFFFFFFEll,  0, 0xFFFFFFFEFFFFFFF0ll},
+    {"_uallrem",  &TST_uallrem,  0x7FFFFFFEFFFFFFF0ll, 0xFFFFFFFFFFFFFFFEll,  0, 0x7FFFFFFEFFFFFFF0ll},
+    {"_uallrem",  &TST_uallrem,  0x7FFFFFFEFFFFFFF0ll, 0x0000FFFFFFFFFFFEll,  0, 0x0000FFFF0000FFEEll},
+    {"_uallrem",  &TST_uallrem,  0x7FFFFFFEFFFFFFF0ll, 0x7FFFFFFEFFFFFFF0ll,  0, 0x0000000000000000ll},
+
+    {NULL}
+};
+
+int
+Test64Bit (SDL_bool verbose)
+{
+    LL_Test *t;
+    int failed = 0;
+
+    for (t = LL_Tests; t->routine != NULL; t++) {
+        unsigned long long result = 0;
+        unsigned int *al = (unsigned int *)&t->a;
+        unsigned int *bl = (unsigned int *)&t->b;
+        unsigned int *el = (unsigned int *)&t->expected_result;
+        unsigned int *rl = (unsigned int *)&result;
+
+        if (!t->routine(&t->a, &t->b, t->arg, &result, &t->expected_result)) {
+            if (verbose)
+                SDL_Log("%s(0x%08X%08X, 0x%08X%08X, %3d, produced: 0x%08X%08X, expected: 0x%08X%08X\n",
+                        t->operation, al[1], al[0], bl[1], bl[0], t->arg, rl[1], rl[0], el[1], el[0]);
+            ++failed;
+        }
+    }
+    if (verbose && (failed == 0))
+        SDL_Log("All 64bit instrinsic tests passed\n");
+    return (failed ? 1 : 0);
+}
 
 int
 TestCPUInfo(SDL_bool verbose)
@@ -198,6 +412,7 @@ main(int argc, char *argv[])
 
     status += TestTypes(verbose);
     status += TestEndian(verbose);
+    status += Test64Bit(verbose);
     status += TestCPUInfo(verbose);
     status += TestAssertions(verbose);
 
