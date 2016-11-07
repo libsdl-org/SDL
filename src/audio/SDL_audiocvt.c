@@ -266,6 +266,7 @@ SDL_BuildAudioTypeCVTToFloat(SDL_AudioCVT *cvt, const SDL_AudioFormat src_fmt)
             case AUDIO_S8: filter = SDL_Convert_S8_to_F32; break;
             case AUDIO_U8: filter = SDL_Convert_U8_to_F32; break;
             case AUDIO_S16: filter = SDL_Convert_S16_to_F32; break;
+            case AUDIO_U16: filter = SDL_Convert_U16_to_F32; break;
             case AUDIO_S32: filter = SDL_Convert_S32_to_F32; break;
             default: SDL_assert(!"Unexpected audio format!"); break;
         }
@@ -302,6 +303,7 @@ SDL_BuildAudioTypeCVTFromFloat(SDL_AudioCVT *cvt, const SDL_AudioFormat dst_fmt)
             case AUDIO_S8: filter = SDL_Convert_F32_to_S8; break;
             case AUDIO_U8: filter = SDL_Convert_F32_to_U8; break;
             case AUDIO_S16: filter = SDL_Convert_F32_to_S16; break;
+            case AUDIO_U16: filter = SDL_Convert_F32_to_U16; break;
             case AUDIO_S32: filter = SDL_Convert_F32_to_S32; break;
             default: SDL_assert(!"Unexpected audio format!"); break;
         }
