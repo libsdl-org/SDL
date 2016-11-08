@@ -3,7 +3,7 @@
 # This is the script buildbot.libsdl.org uses to cross-compile SDL2 from
 #  amd64 Linux to NaCl.
 
-export NACL_SDK_ROOT="/nacl_sdk/pepper_35"
+export NACL_SDK_ROOT="/nacl_sdk/pepper_49"
 
 TARBALL="$1"
 if [ -z $1 ]; then
