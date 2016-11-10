@@ -23,8 +23,10 @@
 
 #if SDL_VIDEO_DRIVER_WAYLAND
 
-#include <unistd.h>
+/* _GNU_SOURCE for pipe2 declaration. */
+#define _GNU_SOURCE
 #include <fcntl.h>
+#include <unistd.h>
 #include <limits.h>
 #include <signal.h>
 
