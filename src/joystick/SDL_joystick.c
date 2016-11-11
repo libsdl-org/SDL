@@ -816,6 +816,41 @@ SDL_JoystickEventState(int state)
 #endif /* SDL_EVENTS_DISABLED */
 }
 
+static void GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *product, Uint16 *version)
+{
+    Uint16 *guid16 = (Uint16 *)guid.data;
+
+    /* If the GUID fits the form of BUS 0000 VENDOR 0000 PRODUCT 0000, return the data */
+    if (/* guid16[0] is device bus type */
+        guid16[1] == 0x00 &&
+        /* guid16[2] is vendor ID */
+        guid16[3] == 0x00 &&
+        /* guid16[4] is product ID */
+        guid16[5] == 0x00
+        /* guid16[6] is product version */
+    ) {
+        if (vendor) {
+            *vendor = guid16[2];
+        }
+        if (product) {
+            *product = guid16[4];
+        }
+        if (version) {
+            *version = guid16[6];
+        }
+    } else {
+        if (vendor) {
+            *vendor = 0;
+        }
+        if (product) {
+            *product = 0;
+        }
+        if (version) {
+            *version = 0;
+        }
+    }
+}
+
 /* return the guid for this index */
 SDL_JoystickGUID SDL_JoystickGetDeviceGUID(int device_index)
 {
@@ -828,6 +863,33 @@ SDL_JoystickGUID SDL_JoystickGetDeviceGUID(int device_index)
     return SDL_SYS_JoystickGetDeviceGUID(device_index);
 }
 
+Uint16 SDL_JoystickGetDeviceVendor(int device_index)
+{
+    Uint16 vendor;
+    SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(device_index);
+
+    GetJoystickGUIDInfo(guid, &vendor, NULL, NULL);
+    return vendor;
+}
+
+Uint16 SDL_JoystickGetDeviceProduct(int device_index)
+{
+    Uint16 product;
+    SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(device_index);
+
+    GetJoystickGUIDInfo(guid, NULL, &product, NULL);
+    return product;
+}
+
+Uint16 SDL_JoystickGetDeviceProductVersion(int device_index)
+{
+    Uint16 version;
+    SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(device_index);
+
+    GetJoystickGUIDInfo(guid, NULL, NULL, &version);
+    return version;
+}
+
 /* return the guid for this opened device */
 SDL_JoystickGUID SDL_JoystickGetGUID(SDL_Joystick * joystick)
 {
@@ -837,6 +899,33 @@ SDL_JoystickGUID SDL_JoystickGetGUID(SDL_Joystick * joystick)
         return emptyGUID;
     }
     return SDL_SYS_JoystickGetGUID(joystick);
+}
+
+Uint16 SDL_JoystickGetVendor(SDL_Joystick * joystick)
+{
+    Uint16 vendor;
+    SDL_JoystickGUID guid = SDL_JoystickGetGUID(joystick);
+
+    GetJoystickGUIDInfo(guid, &vendor, NULL, NULL);
+    return vendor;
+}
+
+Uint16 SDL_JoystickGetProduct(SDL_Joystick * joystick)
+{
+    Uint16 product;
+    SDL_JoystickGUID guid = SDL_JoystickGetGUID(joystick);
+
+    GetJoystickGUIDInfo(guid, NULL, &product, NULL);
+    return product;
+}
+
+Uint16 SDL_JoystickGetProductVersion(SDL_Joystick * joystick)
+{
+    Uint16 version;
+    SDL_JoystickGUID guid = SDL_JoystickGetGUID(joystick);
+
+    GetJoystickGUIDInfo(guid, NULL, NULL, &version);
+    return version;
 }
 
 /* convert the guid to a printable string */

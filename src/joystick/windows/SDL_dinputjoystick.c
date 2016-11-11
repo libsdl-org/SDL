@@ -350,9 +350,12 @@ SDL_DINPUT_JoystickInit(void)
 static BOOL CALLBACK
 EnumJoysticksCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext)
 {
+    const Uint16 BUS_USB = 0x03;
+    const Uint16 BUS_BLUETOOTH = 0x05;
     JoyStick_DeviceData *pNewJoystick;
     JoyStick_DeviceData *pPrevJoystick = NULL;
     const DWORD devtype = (pdidInstance->dwDevType & 0xFF);
+    Uint16 *guid16;
 
     if (devtype == DI8DEVTYPE_SUPPLEMENTAL) {
         return DIENUM_CONTINUE;  /* Ignore touchpads, etc. */
@@ -397,7 +400,24 @@ EnumJoysticksCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext)
     SDL_memcpy(&(pNewJoystick->dxdevice), pdidInstance,
         sizeof(DIDEVICEINSTANCE));
 
-    SDL_memcpy(&pNewJoystick->guid, &pdidInstance->guidProduct, sizeof(pNewJoystick->guid));
+    SDL_memset(pNewJoystick->guid.data, 0, sizeof(pNewJoystick->guid.data));
+
+    guid16 = (Uint16 *)pNewJoystick->guid.data;
+    if (SDL_memcmp(&pdidInstance->guidProduct.Data4[2], "VIDPID", 6) == 0) {
+        *guid16++ = SDL_SwapLE16(BUS_USB);
+        *guid16++ = 0;
+        *guid16++ = SDL_SwapLE16((Uint16)LOWORD(pdidInstance->guidProduct.Data1)); /* vendor */
+        *guid16++ = 0;
+        *guid16++ = SDL_SwapLE16((Uint16)HIWORD(pdidInstance->guidProduct.Data1)); /* product */
+        *guid16++ = 0;
+        *guid16++ = 0; /* version */
+        *guid16++ = 0;
+    } else {
+        *guid16++ = SDL_SwapLE16(BUS_BLUETOOTH);
+        *guid16++ = 0;
+        SDL_strlcpy((char*)guid16, pNewJoystick->joystickname, sizeof(pNewJoystick->guid.data) - 4);
+    }
+
     SDL_SYS_AddJoystickDevice(pNewJoystick);
 
     return DIENUM_CONTINUE; /* get next device, please */

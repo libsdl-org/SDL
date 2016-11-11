@@ -321,9 +321,14 @@ AddHIDElement(const void *value, void *parameter)
 static SDL_bool
 GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
 {
-    Uint32 *guid32 = NULL;
+    const Uint16 BUS_USB = 0x03;
+    const Uint16 BUS_BLUETOOTH = 0x05;
+    Sint32 vendor = 0;
+    Sint32 product = 0;
+    Sint32 version = 0;
     CFTypeRef refCF = NULL;
     CFArrayRef array = NULL;
+    Uint16 *guid16 = (Uint16 *)pDevice->guid->data;
 
     /* get usage page and usage */
     refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDPrimaryUsagePageKey));
@@ -359,22 +364,32 @@ GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
 
     refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDVendorIDKey));
     if (refCF) {
-        CFNumberGetValue(refCF, kCFNumberSInt32Type, &pDevice->guid.data[0]);
+        CFNumberGetValue(refCF, kCFNumberSInt32Type, &vendor);
     }
 
     refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDProductIDKey));
     if (refCF) {
-        CFNumberGetValue(refCF, kCFNumberSInt32Type, &pDevice->guid.data[8]);
+        CFNumberGetValue(refCF, kCFNumberSInt32Type, &product);
     }
 
-    /* Check to make sure we have a vendor and product ID
-       If we don't, use the same algorithm as the Linux code for Bluetooth devices */
-    guid32 = (Uint32*)pDevice->guid.data;
-    if (!guid32[0] && !guid32[1]) {
-        /* If we don't have a vendor and product ID this is probably a Bluetooth device */
-        const Uint16 BUS_BLUETOOTH = 0x05;
-        Uint16 *guid16 = (Uint16 *)guid32;
-        *guid16++ = BUS_BLUETOOTH;
+    refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDVersionNumberKey));
+    if (refCF) {
+        CFNumberGetValue(refCF, kCFNumberSInt32Type, &version);
+    }
+
+    SDL_memset(pDevice->guid->data, 0, sizeof(pDevice->guid->data));
+
+    if (vendor && product) {
+        *guid16++ = SDL_SwapLE16(BUS_USB);
+        *guid16++ = 0;
+        *guid16++ = SDL_SwapLE16((Uint16)vendor);
+        *guid16++ = 0;
+        *guid16++ = SDL_SwapLE16((Uint16)product);
+        *guid16++ = 0;
+        *guid16++ = SDL_SwapLE16((Uint16)version);
+        *guid16++ = 0;
+    } else {
+        *guid16++ = SDL_SwapLE16(BUS_BLUETOOTH);
         *guid16++ = 0;
         SDL_strlcpy((char*)guid16, pDevice->product, sizeof(pDevice->guid.data) - 4);
     }

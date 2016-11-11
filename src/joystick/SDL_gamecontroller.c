@@ -1107,6 +1107,33 @@ SDL_GameControllerGetButton(SDL_GameController * gamecontroller, SDL_GameControl
     return 0;
 }
 
+const char *
+SDL_GameControllerName(SDL_GameController * gamecontroller)
+{
+    if (!gamecontroller)
+        return NULL;
+
+    return gamecontroller->mapping.name;
+}
+
+Uint16
+SDL_GameControllerGetVendor(SDL_GameController * gamecontroller)
+{
+    return SDL_JoystickGetVendor(SDL_GameControllerGetJoystick(gamecontroller));
+}
+
+Uint16
+SDL_GameControllerGetProduct(SDL_GameController * gamecontroller)
+{
+    return SDL_JoystickGetProduct(SDL_GameControllerGetJoystick(gamecontroller));
+}
+
+Uint16
+SDL_GameControllerGetProductVersion(SDL_GameController * gamecontroller)
+{
+    return SDL_JoystickGetProductVersion(SDL_GameControllerGetJoystick(gamecontroller));
+}
+
 /*
  * Return if the joystick in question is currently attached to the system,
  *  \return 0 if not plugged in, 1 if still present.
@@ -1119,17 +1146,6 @@ SDL_GameControllerGetAttached(SDL_GameController * gamecontroller)
 
     return SDL_JoystickGetAttached(gamecontroller->joystick);
 }
-
-
-const char *
-SDL_GameControllerName(SDL_GameController * gamecontroller)
-{
-    if (!gamecontroller)
-        return NULL;
-
-    return (gamecontroller->mapping.name);
-}
-
 
 /*
  * Get the joystick for this controller
