@@ -368,6 +368,7 @@ main(int argc, char *argv[])
             SDL_Log("    buttons: %d\n", SDL_JoystickNumButtons(joystick));
             SDL_Log("instance id: %d\n", SDL_JoystickInstanceID(joystick));
             SDL_Log("       guid: %s\n", guid);
+            SDL_Log("    VID/PID: 0x%.4x/0x%.4x\n", SDL_JoystickGetVendor(joystick), SDL_JoystickGetProduct(joystick));
             SDL_JoystickClose(joystick);
         }
     }
@@ -435,3 +436,5 @@ main(int argc, char *argv[])
 }
 
 #endif
+
+/* vi: set ts=4 sw=4 expandtab: */
