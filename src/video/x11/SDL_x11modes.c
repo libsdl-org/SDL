@@ -18,10 +18,6 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-
 #include "../../SDL_internal.h"
 
 #if SDL_VIDEO_DRIVER_X11
