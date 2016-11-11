@@ -328,7 +328,7 @@ GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
     Sint32 version = 0;
     CFTypeRef refCF = NULL;
     CFArrayRef array = NULL;
-    Uint16 *guid16 = (Uint16 *)pDevice->guid->data;
+    Uint16 *guid16 = (Uint16 *)pDevice->guid.data;
 
     /* get usage page and usage */
     refCF = IOHIDDeviceGetProperty(hidDevice, CFSTR(kIOHIDPrimaryUsagePageKey));
@@ -377,7 +377,7 @@ GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
         CFNumberGetValue(refCF, kCFNumberSInt32Type, &version);
     }
 
-    SDL_memset(pDevice->guid->data, 0, sizeof(pDevice->guid->data));
+    SDL_memset(pDevice->guid.data, 0, sizeof(pDevice->guid.data));
 
     if (vendor && product) {
         *guid16++ = SDL_SwapLE16(BUS_USB);
