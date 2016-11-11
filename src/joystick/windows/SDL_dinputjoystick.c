@@ -403,7 +403,7 @@ EnumJoysticksCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext)
     SDL_memset(pNewJoystick->guid.data, 0, sizeof(pNewJoystick->guid.data));
 
     guid16 = (Uint16 *)pNewJoystick->guid.data;
-    if (SDL_memcmp(&pdidInstance->guidProduct.Data4[2], "VIDPID", 6) == 0) {
+    if (SDL_memcmp(&pdidInstance->guidProduct.Data4[2], "PIDVID", 6) == 0) {
         *guid16++ = SDL_SwapLE16(BUS_USB);
         *guid16++ = 0;
         *guid16++ = SDL_SwapLE16((Uint16)LOWORD(pdidInstance->guidProduct.Data1)); /* vendor */
