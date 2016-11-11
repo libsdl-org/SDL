@@ -103,9 +103,10 @@ SDL_EnumUnixAudioDevices_Internal(const int iscapture, const int classic, int (*
 
     if (SDL_strlen(audiodev) < (sizeof(audiopath) - 3)) {
         int instance = 0;
-        while (instance++ <= 64) {
+        while (instance <= 64) {
             SDL_snprintf(audiopath, SDL_arraysize(audiopath),
                          "%s%d", audiodev, instance);
+            instance++;
             test_device(iscapture, audiopath, flags, test);
         }
     }
