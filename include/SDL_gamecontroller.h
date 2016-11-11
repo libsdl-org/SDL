@@ -87,8 +87,8 @@ typedef struct SDL_GameControllerButtonBind
  *  To count the number of game controllers in the system for the following:
  *  int nJoysticks = SDL_NumJoysticks();
  *  int nGameControllers = 0;
- *  for ( int i = 0; i < nJoysticks; i++ ) {
- *      if ( SDL_IsGameController(i) ) {
+ *  for (int i = 0; i < nJoysticks; i++) {
+ *      if (SDL_IsGameController(i)) {
  *          nGameControllers++;
  *      }
  *  }
@@ -105,7 +105,7 @@ typedef struct SDL_GameControllerButtonBind
  *  Buttons can be used as a controller axis and vice versa.
  *
  *  This string shows an example of a valid mapping for a controller
- *  "341a3608000000000000504944564944,Afterglow PS3 Controller,a:b1,b:b2,y:b3,x:b0,start:b9,guide:b12,back:b8,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,leftshoulder:b4,rightshoulder:b5,leftstick:b10,rightstick:b11,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:b6,righttrigger:b7",
+ *  "03000000341a00003608000000000000,PS3 Controller,a:b1,b:b2,y:b3,x:b0,start:b9,guide:b12,back:b8,dpup:h0.1,dpleft:h0.8,dpdown:h0.4,dpright:h0.2,leftshoulder:b4,rightshoulder:b5,leftstick:b10,rightstick:b11,leftx:a0,lefty:a1,rightx:a2,righty:a3,lefttrigger:b6,righttrigger:b7",
  *
  */
 
@@ -117,7 +117,7 @@ typedef struct SDL_GameControllerButtonBind
  * 
  * \return number of mappings added, -1 on error
  */
-extern DECLSPEC int SDLCALL SDL_GameControllerAddMappingsFromRW( SDL_RWops * rw, int freerw );
+extern DECLSPEC int SDLCALL SDL_GameControllerAddMappingsFromRW(SDL_RWops * rw, int freerw);
 
 /**
  *  Load a set of mappings from a file, filtered by the current SDL_GetPlatform()
@@ -131,27 +131,26 @@ extern DECLSPEC int SDLCALL SDL_GameControllerAddMappingsFromRW( SDL_RWops * rw,
  *
  * \return 1 if mapping is added, 0 if updated, -1 on error
  */
-extern DECLSPEC int SDLCALL SDL_GameControllerAddMapping( const char* mappingString );
+extern DECLSPEC int SDLCALL SDL_GameControllerAddMapping(const char* mappingString);
 
 /**
  *  Get a mapping string for a GUID
  *
  *  \return the mapping string.  Must be freed with SDL_free().  Returns NULL if no mapping is available
  */
-extern DECLSPEC char * SDLCALL SDL_GameControllerMappingForGUID( SDL_JoystickGUID guid );
+extern DECLSPEC char * SDLCALL SDL_GameControllerMappingForGUID(SDL_JoystickGUID guid);
 
 /**
  *  Get a mapping string for an open GameController
  *
  *  \return the mapping string.  Must be freed with SDL_free().  Returns NULL if no mapping is available
  */
-extern DECLSPEC char * SDLCALL SDL_GameControllerMapping( SDL_GameController * gamecontroller );
+extern DECLSPEC char * SDLCALL SDL_GameControllerMapping(SDL_GameController * gamecontroller);
 
 /**
  *  Is the joystick on this index supported by the game controller interface?
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_IsGameController(int joystick_index);
-
 
 /**
  *  Get the implementation dependent name of a game controller.
@@ -180,6 +179,24 @@ extern DECLSPEC SDL_GameController *SDLCALL SDL_GameControllerFromInstanceID(SDL
  *  Return the name for this currently opened controller
  */
 extern DECLSPEC const char *SDLCALL SDL_GameControllerName(SDL_GameController *gamecontroller);
+
+/**
+ *  Get the USB vendor ID of an opened controller, if available.
+ *  If the vendor ID isn't available this function returns 0.
+ */
+extern DECLSPEC Uint16 SDLCALL SDL_GameControllerGetVendor(SDL_GameController * gamecontroller);
+
+/**
+ *  Get the USB product ID of an opened controller, if available.
+ *  If the product ID isn't available this function returns 0.
+ */
+extern DECLSPEC Uint16 SDLCALL SDL_GameControllerGetProduct(SDL_GameController * gamecontroller);
+
+/**
+ *  Get the product version of an opened controller, if available.
+ *  If the product version isn't available this function returns 0.
+ */
+extern DECLSPEC Uint16 SDLCALL SDL_GameControllerGetProductVersion(SDL_GameController * gamecontroller);
 
 /**
  *  Returns SDL_TRUE if the controller has been opened and currently connected,

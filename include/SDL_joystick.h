@@ -96,6 +96,33 @@ extern DECLSPEC int SDLCALL SDL_NumJoysticks(void);
 extern DECLSPEC const char *SDLCALL SDL_JoystickNameForIndex(int device_index);
 
 /**
+ *  Return the GUID for the joystick at this index
+ *  This can be called before any joysticks are opened.
+ */
+extern DECLSPEC SDL_JoystickGUID SDLCALL SDL_JoystickGetDeviceGUID(int device_index);
+
+/**
+ *  Get the USB vendor ID of a joystick, if available.
+ *  This can be called before any joysticks are opened.
+ *  If the vendor ID isn't available this function returns 0.
+ */
+extern DECLSPEC Uint16 SDLCALL SDL_JoystickGetDeviceVendor(int device_index);
+
+/**
+ *  Get the USB product ID of a joystick, if available.
+ *  This can be called before any joysticks are opened.
+ *  If the product ID isn't available this function returns 0.
+ */
+extern DECLSPEC Uint16 SDLCALL SDL_JoystickGetDeviceProduct(int device_index);
+
+/**
+ *  Get the product version of a joystick, if available.
+ *  This can be called before any joysticks are opened.
+ *  If the product version isn't available this function returns 0.
+ */
+extern DECLSPEC Uint16 SDLCALL SDL_JoystickGetDeviceProductVersion(int device_index);
+
+/**
  *  Open a joystick for use.
  *  The index passed as an argument refers to the N'th joystick on the system.
  *  This index is not the value which will identify this joystick in future
@@ -118,14 +145,27 @@ extern DECLSPEC SDL_Joystick *SDLCALL SDL_JoystickFromInstanceID(SDL_JoystickID 
 extern DECLSPEC const char *SDLCALL SDL_JoystickName(SDL_Joystick * joystick);
 
 /**
- *  Return the GUID for the joystick at this index
- */
-extern DECLSPEC SDL_JoystickGUID SDLCALL SDL_JoystickGetDeviceGUID(int device_index);
-
-/**
  *  Return the GUID for this opened joystick
  */
 extern DECLSPEC SDL_JoystickGUID SDLCALL SDL_JoystickGetGUID(SDL_Joystick * joystick);
+
+/**
+ *  Get the USB vendor ID of an opened joystick, if available.
+ *  If the vendor ID isn't available this function returns 0.
+ */
+extern DECLSPEC Uint16 SDLCALL SDL_JoystickGetVendor(SDL_Joystick * joystick);
+
+/**
+ *  Get the USB product ID of an opened joystick, if available.
+ *  If the product ID isn't available this function returns 0.
+ */
+extern DECLSPEC Uint16 SDLCALL SDL_JoystickGetProduct(SDL_Joystick * joystick);
+
+/**
+ *  Get the product version of an opened joystick, if available.
+ *  If the product version isn't available this function returns 0.
+ */
+extern DECLSPEC Uint16 SDLCALL SDL_JoystickGetProductVersion(SDL_Joystick * joystick);
 
 /**
  *  Return a string representation for this guid. pszGUID must point to at least 33 bytes
@@ -134,7 +174,7 @@ extern DECLSPEC SDL_JoystickGUID SDLCALL SDL_JoystickGetGUID(SDL_Joystick * joys
 extern DECLSPEC void SDLCALL SDL_JoystickGetGUIDString(SDL_JoystickGUID guid, char *pszGUID, int cbGUID);
 
 /**
- *  convert a string into a joystick formatted guid
+ *  Convert a string into a joystick guid
  */
 extern DECLSPEC SDL_JoystickGUID SDLCALL SDL_JoystickGetGUIDFromString(const char *pchGUID);
 

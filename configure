@@ -2691,7 +2691,7 @@ orig_CFLAGS="$CFLAGS"
 SDL_MAJOR_VERSION=2
 SDL_MINOR_VERSION=0
 SDL_MICRO_VERSION=5
-SDL_INTERFACE_AGE=1
+SDL_INTERFACE_AGE=0
 SDL_BINARY_AGE=5
 SDL_VERSION=$SDL_MAJOR_VERSION.$SDL_MINOR_VERSION.$SDL_MICRO_VERSION
 
@@ -5977,7 +5977,10 @@ s390*-*linux*|s390*-*tpf*|sparc*-*linux*)
 	  x86_64-*linux*)
 	    LD="${LD-ld} -m elf_x86_64"
 	    ;;
-	  ppc*-*linux*|powerpc*-*linux*)
+	  powerpc64le-*linux*)
+	    LD="${LD-ld} -m elf64lppc"
+	    ;;
+	  powerpc64-*linux*)
 	    LD="${LD-ld} -m elf64ppc"
 	    ;;
 	  s390*-*linux*|s390*-*tpf*)
