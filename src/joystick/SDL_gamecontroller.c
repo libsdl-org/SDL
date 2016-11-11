@@ -80,11 +80,19 @@ struct _SDL_ControllerMapping
 
 
 /* our hard coded list of mapping support */
+typedef enum
+{
+    SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT,
+    SDL_CONTROLLER_MAPPING_PRIORITY_API,
+    SDL_CONTROLLER_MAPPING_PRIORITY_USER,
+} SDL_ControllerMappingPriority;
+
 typedef struct _ControllerMapping_t
 {
     SDL_JoystickGUID guid;
     char *name;
     char *mapping;
+    SDL_ControllerMappingPriority priority;
     struct _ControllerMapping_t *next;
 } ControllerMapping_t;
 
@@ -636,7 +644,7 @@ void SDL_PrivateGameControllerRefreshMapping(ControllerMapping_t *pControllerMap
  * Helper function to add a mapping for a guid
  */
 static ControllerMapping_t *
-SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID, const char *mappingString, SDL_bool *existing)
+SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID, const char *mappingString, SDL_bool *existing, SDL_ControllerMappingPriority priority)
 {
     char *pchName;
     char *pchMapping;
@@ -657,13 +665,17 @@ SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID, const char *mappingString, 
 
     pControllerMapping = SDL_PrivateGetControllerMappingForGUID(&jGUID);
     if (pControllerMapping) {
-        /* Update existing mapping */
-        SDL_free(pControllerMapping->name);
-        pControllerMapping->name = pchName;
-        SDL_free(pControllerMapping->mapping);
-        pControllerMapping->mapping = pchMapping;
-        /* refresh open controllers */
-        SDL_PrivateGameControllerRefreshMapping(pControllerMapping);
+        /* Only overwrite the mapping if the priority is the same or higher. */
+        if (pControllerMapping->priority <= priority) {
+            /* Update existing mapping */
+            SDL_free(pControllerMapping->name);
+            pControllerMapping->name = pchName;
+            SDL_free(pControllerMapping->mapping);
+            pControllerMapping->mapping = pchMapping;
+            pControllerMapping->priority = priority;
+            /* refresh open controllers */
+            SDL_PrivateGameControllerRefreshMapping(pControllerMapping);
+        }
         *existing = SDL_TRUE;
     } else {
         pControllerMapping = SDL_malloc(sizeof(*pControllerMapping));
@@ -677,6 +689,7 @@ SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID, const char *mappingString, 
         pControllerMapping->name = pchName;
         pControllerMapping->mapping = pchMapping;
         pControllerMapping->next = s_pSupportedControllers;
+        pControllerMapping->priority = priority;
         s_pSupportedControllers = pControllerMapping;
         *existing = SDL_FALSE;
     }
@@ -711,7 +724,7 @@ ControllerMapping_t *SDL_PrivateGetControllerMapping(int device_index)
                 SDL_bool existing;
                 mapping = SDL_PrivateAddMappingForGUID(jGUID,
 "none,X360 Wireless Controller,a:b0,b:b1,back:b6,dpdown:b14,dpleft:b11,dpright:b12,dpup:b13,guide:b8,leftshoulder:b4,leftstick:b9,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b10,righttrigger:a5,rightx:a3,righty:a4,start:b7,x:b2,y:b3,",
-                              &existing);
+                              &existing, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
             }
         }
     }
@@ -800,10 +813,10 @@ SDL_GameControllerAddMappingsFromRW(SDL_RWops * rw, int freerw)
 }
 
 /*
- * Add or update an entry into the Mappings Database
+ * Add or update an entry into the Mappings Database with a priority
  */
-int
-SDL_GameControllerAddMapping(const char *mappingString)
+static int
+SDL_PrivateGameControllerAddMapping(const char *mappingString, SDL_ControllerMappingPriority priority)
 {
     char *pchGUID;
     SDL_JoystickGUID jGUID;
@@ -829,7 +842,7 @@ SDL_GameControllerAddMapping(const char *mappingString)
     jGUID = SDL_JoystickGetGUIDFromString(pchGUID);
     SDL_free(pchGUID);
 
-    pControllerMapping = SDL_PrivateAddMappingForGUID(jGUID, mappingString, &existing);
+    pControllerMapping = SDL_PrivateAddMappingForGUID(jGUID, mappingString, &existing, priority);
     if (!pControllerMapping) {
         return -1;
     }
@@ -845,6 +858,15 @@ SDL_GameControllerAddMapping(const char *mappingString)
         }
         return 1;
     }
+}
+
+/*
+ * Add or update an entry into the Mappings Database
+ */
+int
+SDL_GameControllerAddMapping(const char *mappingString)
+{
+    return SDL_PrivateGameControllerAddMapping(mappingString, SDL_CONTROLLER_MAPPING_PRIORITY_API);
 }
 
 /*
@@ -901,7 +923,7 @@ SDL_GameControllerLoadHints()
             if (pchNewLine)
                 *pchNewLine = '\0';
 
-            SDL_GameControllerAddMapping(pUserMappings);
+            SDL_PrivateGameControllerAddMapping(pUserMappings, SDL_CONTROLLER_MAPPING_PRIORITY_USER);
 
             if (pchNewLine) {
                 pUserMappings = pchNewLine + 1;
@@ -923,7 +945,7 @@ SDL_GameControllerInit(void)
     const char *pMappingString = NULL;
     pMappingString = s_ControllerMappings[i];
     while (pMappingString) {
-        SDL_GameControllerAddMapping(pMappingString);
+        SDL_PrivateGameControllerAddMapping(pMappingString, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
 
         i++;
         pMappingString = s_ControllerMappings[i];
