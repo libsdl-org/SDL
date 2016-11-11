@@ -417,7 +417,7 @@ SDLgfx_rotateSurface(SDL_Surface * src, double angle, int centerx, int centery, 
     SDL_Surface *rz_dst;
     int is32bit, angle90;
     int i;
-    Uint8 r = 0, g = 0, b = 0;
+    Uint8 r = 0, g = 0, b = 0, a = 0;
     Uint32 colorkey = 0;
     int colorKeyAvailable = 0;
     double sangleinv, cangleinv;
@@ -428,12 +428,12 @@ SDLgfx_rotateSurface(SDL_Surface * src, double angle, int centerx, int centery, 
     if (src == NULL)
         return (NULL);
 
-    if (src->flags & SDL_TRUE/* SDL_SRCCOLORKEY */)
-    {
+    if (src->flags & SDL_TRUE/* SDL_SRCCOLORKEY */) {
         colorkey = _colorkey(src);
-        SDL_GetRGB(colorkey, src->format, &r, &g, &b);
+        SDL_GetRGBA(colorkey, src->format, &r, &g, &b, &a);
         colorKeyAvailable = 1;
     }
+
     /*
     * Determine if source surface is 32bit or 8bit
     */
@@ -485,10 +485,10 @@ SDLgfx_rotateSurface(SDL_Surface * src, double angle, int centerx, int centery, 
     /* Adjust for guard rows */
     rz_dst->h = dstheight;
 
-    if (colorKeyAvailable == 1){
-        colorkey = SDL_MapRGB(rz_dst->format, r, g, b);
+    if (colorKeyAvailable == 1) {
+        colorkey = SDL_MapRGBA(rz_dst->format, r, g, b, a);
 
-        SDL_FillRect(rz_dst, NULL, colorkey );
+        SDL_FillRect(rz_dst, NULL, colorkey);
     }
 
     /*
@@ -523,10 +523,9 @@ SDLgfx_rotateSurface(SDL_Surface * src, double angle, int centerx, int centery, 
             _transformSurfaceRGBA(rz_src, rz_dst, centerx, centery, (int) (sangleinv), (int) (cangleinv), flipx, flipy, smooth);
         }
         /*
-        * Turn on source-alpha support
-        */
+         * Turn on source-alpha support
+         */
         /* SDL_SetAlpha(rz_dst, SDL_SRCALPHA, 255); */
-        SDL_SetColorKey(rz_dst, /* SDL_SRCCOLORKEY */ SDL_TRUE | SDL_RLEACCEL, _colorkey(rz_src));
     } else {
         /*
         * Copy palette and colorkey info
@@ -543,7 +542,12 @@ SDLgfx_rotateSurface(SDL_Surface * src, double angle, int centerx, int centery, 
         } else {
             transformSurfaceY(rz_src, rz_dst, centerx, centery, (int)(sangleinv), (int)(cangleinv), flipx, flipy);
         }
-        SDL_SetColorKey(rz_dst, /* SDL_SRCCOLORKEY */ SDL_TRUE | SDL_RLEACCEL, _colorkey(rz_src));
+    }
+
+    if (colorKeyAvailable == 1) {
+       SDL_SetColorKey(rz_dst, /* SDL_SRCCOLORKEY */ SDL_TRUE | SDL_RLEACCEL, colorkey);
+    } else {
+       SDL_SetColorKey(rz_dst, SDL_FALSE, 0);
     }
 
     /* copy alpha mod, color mod, and blend mode */
