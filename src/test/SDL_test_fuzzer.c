@@ -34,7 +34,6 @@
 #define UINT32_MAX  ~(Uint32)0
 #define UINT64_MAX  ~(Uint64)0
 #else
-#define _GNU_SOURCE
 #include <stdint.h>
 #endif
 #include <stdio.h>

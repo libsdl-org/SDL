@@ -23,10 +23,6 @@
 
 #if SDL_VIDEO_DRIVER_WAYLAND
 
-#ifndef _GNU_SOURCE
-#define _GNU_SOURCE
-#endif
-
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <fcntl.h>
