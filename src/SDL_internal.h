@@ -21,13 +21,9 @@
 #ifndef _SDL_internal_h
 #define _SDL_internal_h
 
-/* Many of SDL's features require _GNU_SOURCE on various platforms
-   You can turn this off if necessary by using -D_GNU_SOURCE=0
- */
+/* Many of SDL's features require _GNU_SOURCE on various platforms */
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE
-#elif !_GNU_SOURCE
-#undef _GNU_SOURCE
 #endif
 
 #include "dynapi/SDL_dynapi.h"
