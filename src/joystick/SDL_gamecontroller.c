@@ -396,11 +396,11 @@ void SDL_PrivateGameControllerParseButton(const char *szGameButton, const char *
             return;
         }
         if (axis != SDL_CONTROLLER_AXIS_INVALID) {
-            pMapping->axes[ axis ] = iSDLButton;
-            pMapping->raxes[ iSDLButton ] = axis;
+            pMapping->axes[axis] = iSDLButton;
+            pMapping->raxes[iSDLButton] = axis;
         } else if (button != SDL_CONTROLLER_BUTTON_INVALID) {
-            pMapping->axesasbutton[ button ] = iSDLButton;
-            pMapping->raxesasbutton[ iSDLButton ] = button;
+            pMapping->axesasbutton[button] = iSDLButton;
+            pMapping->raxesasbutton[iSDLButton] = button;
         } else {
             SDL_assert(!"How did we get here?");
         }
@@ -411,11 +411,11 @@ void SDL_PrivateGameControllerParseButton(const char *szGameButton, const char *
             return;
         }
         if (button != SDL_CONTROLLER_BUTTON_INVALID) {
-            pMapping->buttons[ button ] = iSDLButton;
-            pMapping->rbuttons[ iSDLButton ] = button;
+            pMapping->buttons[button] = iSDLButton;
+            pMapping->rbuttons[iSDLButton] = button;
         } else if (axis != SDL_CONTROLLER_AXIS_INVALID) {
-            pMapping->buttonasaxis[ axis ] = iSDLButton;
-            pMapping->rbuttonasaxis[ iSDLButton ] = axis;
+            pMapping->buttonasaxis[axis] = iSDLButton;
+            pMapping->rbuttonasaxis[iSDLButton] = axis;
         } else {
             SDL_assert(!"How did we get here?");
         }
@@ -428,10 +428,10 @@ void SDL_PrivateGameControllerParseButton(const char *szGameButton, const char *
 
         if (button != SDL_CONTROLLER_BUTTON_INVALID) {
             int ridx;
-            pMapping->hatasbutton[ button ].hat = hat;
-            pMapping->hatasbutton[ button ].mask = mask;
+            pMapping->hatasbutton[button].hat = hat;
+            pMapping->hatasbutton[button].mask = mask;
             ridx = (hat << 4) | mask;
-            pMapping->rhatasbutton[ ridx ] = button;
+            pMapping->rhatasbutton[ridx] = button;
         } else if (axis != SDL_CONTROLLER_AXIS_INVALID) {
             SDL_assert(!"Support hat as axis");
         } else {
@@ -540,7 +540,26 @@ char *SDL_PrivateGetControllerGUIDFromMappingString(const char *pMapping)
             return NULL;
         }
         SDL_memcpy(pchGUID, pMapping, pFirstComma - pMapping);
-        pchGUID[ pFirstComma - pMapping ] = 0;
+        pchGUID[pFirstComma - pMapping] = '\0';
+
+        /* Convert old style GUIDs to the new style in 2.0.5 */
+#if __WIN32__
+        if (SDL_strlen(pchGUID) == 32 &&
+            SDL_memcmp(&pchGUID[20], "504944564944", 12) == 0) {
+            SDL_memcpy(&pchGUID[20], "000000000000", 12);
+            SDL_memcpy(&pchGUID[16], &pchGUID[4], 4);
+            SDL_memcpy(&pchGUID[8], &pchGUID[0], 4);
+            SDL_memcpy(&pchGUID[0], "03000000", 8);
+        }
+#elif __MACOSX__
+        if (SDL_strlen(pchGUID) == 32 &&
+            SDL_memcmp(&pchGUID[4], "000000000000", 12) == 0 &&
+            SDL_memcmp(&pchGUID[20], "000000000000", 12) == 0) {
+            SDL_memcpy(&pchGUID[20], "000000000000", 12);
+            SDL_memcpy(&pchGUID[8], &pchGUID[0], 4);
+            SDL_memcpy(&pchGUID[0], "03000000", 8);
+        }
+#endif
         return pchGUID;
     }
     return NULL;
@@ -569,7 +588,7 @@ char *SDL_PrivateGetControllerNameFromMappingString(const char *pMapping)
         return NULL;
     }
     SDL_memcpy(pchName, pFirstComma + 1, pSecondComma - pFirstComma);
-    pchName[ pSecondComma - pFirstComma - 1 ] = 0;
+    pchName[pSecondComma - pFirstComma - 1] = 0;
     return pchName;
 }
 
