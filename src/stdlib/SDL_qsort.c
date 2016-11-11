@@ -275,7 +275,7 @@ typedef struct { char * first; char * last; } stack_entry;
 
 /* and so is the pivoting logic (note: last is inclusive): */
 #define Pivot(swapper,sz)			\
-  if (last-first>PIVOT_THRESHOLD*sz) mid=pivot_big(first,mid,last,sz,compare);\
+  if ((size_t)(last-first)>PIVOT_THRESHOLD*sz) mid=pivot_big(first,mid,last,sz,compare);\
   else {	\
     if (compare(first,mid)<0) {			\
       if (compare(mid,last)>0) {		\
@@ -413,7 +413,7 @@ static void qsort_nonaligned(void *base, size_t nmemb, size_t size,
 
   first=(char*)base; last=first+(nmemb-1)*size;
 
-  if (last-first>=trunc) {
+  if ((size_t)(last-first)>=trunc) {
     char *ffirst=first, *llast=last;
     while (1) {
       /* Select pivot */
@@ -444,7 +444,7 @@ static void qsort_aligned(void *base, size_t nmemb, size_t size,
 
   first=(char*)base; last=first+(nmemb-1)*size;
 
-  if (last-first>=trunc) {
+  if ((size_t)(last-first)>=trunc) {
     char *ffirst=first,*llast=last;
     while (1) {
       /* Select pivot */
