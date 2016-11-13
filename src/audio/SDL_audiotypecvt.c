@@ -239,7 +239,7 @@ SDL_Upsample_Arbitrary(SDL_AudioCVT *cvt, const int channels)
     SDL_memcpy(sample, src, cpy);
     SDL_memcpy(last_sample, src, cpy);
 
-    while (dst >= target) {
+    while (dst > target) {
         SDL_memcpy(dst, sample, cpy);
         dst -= 8;
         eps += srcsize;
@@ -320,7 +320,7 @@ SDL_Upsample_x2(SDL_AudioCVT *cvt, const int channels)
     SDL_assert(channels <= 8);
     SDL_memcpy(last_sample, src, cpy);
 
-    while (dst >= target) {
+    while (dst > target) {
         for (i = 0; i < channels; i++) {
             dst[i] = (float) ((((double)src[i]) + ((double)last_sample[i])) * 0.5);
         }
@@ -355,7 +355,7 @@ SDL_Upsample_x4(SDL_AudioCVT *cvt, const int channels)
     SDL_assert(channels <= 8);
     SDL_memcpy(last_sample, src, cpy);
 
-    while (dst >= target) {
+    while (dst > target) {
         for (i = 0; i < channels; i++) {
             dst[i] = (float) ((((double) src[i]) + (3.0 * ((double) last_sample[i]))) * 0.25);
         }
