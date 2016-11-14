@@ -50,7 +50,7 @@
  *
  * \return Ascii representation of the timestamp in localtime in the format '08/23/01 14:55:02'
  */
-char *SDLTest_TimestampToString(const time_t timestamp)
+static char *SDLTest_TimestampToString(const time_t timestamp)
 {
     time_t copy;
     static char buffer[64];

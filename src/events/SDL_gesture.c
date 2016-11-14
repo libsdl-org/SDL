@@ -71,9 +71,9 @@ typedef struct {
     SDL_bool recording;
 } SDL_GestureTouch;
 
-SDL_GestureTouch *SDL_gestureTouch;
-int SDL_numGestureTouches = 0;
-SDL_bool recordAll;
+static SDL_GestureTouch *SDL_gestureTouch;
+static int SDL_numGestureTouches = 0;
+static SDL_bool recordAll;
 
 #if 0
 static void PrintPath(SDL_FloatPoint *path)
@@ -468,7 +468,7 @@ static SDL_GestureTouch * SDL_GetGestureTouch(SDL_TouchID id)
     return NULL;
 }
 
-int SDL_SendGestureMulti(SDL_GestureTouch* touch,float dTheta,float dDist)
+static int SDL_SendGestureMulti(SDL_GestureTouch* touch,float dTheta,float dDist)
 {
     SDL_Event event;
     event.mgesture.type = SDL_MULTIGESTURE;

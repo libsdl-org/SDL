@@ -79,7 +79,7 @@ to a situation where the program can segfault.
 /* !
 \brief Lower limit of absolute zoom factor or rotation degrees.
 */
-#define VALUE_LIMIT 0.001
+/* #define VALUE_LIMIT 0.001 */
 
 /* !
 \brief Returns colorkey info for a surface

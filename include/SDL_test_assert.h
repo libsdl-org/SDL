@@ -80,12 +80,12 @@ void SDLTest_AssertPass(SDL_PRINTF_FORMAT_STRING const char *assertDescription, 
 /**
  * \brief Resets the assert summary counters to zero.
  */
-void SDLTest_ResetAssertSummary();
+void SDLTest_ResetAssertSummary(void);
 
 /**
  * \brief Logs summary of all assertions (total, pass, fail) since last reset as INFO or ERROR.
  */
-void SDLTest_LogAssertSummary();
+void SDLTest_LogAssertSummary(void);
 
 
 /**
@@ -93,7 +93,7 @@ void SDLTest_LogAssertSummary();
  *
  * \returns TEST_RESULT_PASSED, TEST_RESULT_FAILED, or TEST_RESULT_NO_ASSERT
  */
-int SDLTest_AssertSummaryToTestResult();
+int SDLTest_AssertSummaryToTestResult(void);
 
 #ifdef __cplusplus
 }

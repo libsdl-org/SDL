@@ -24,7 +24,7 @@
 
 /* GIMP RGB C-Source image dump (alpha.c) */
 
-const SDLTest_SurfaceImage_t SDLTest_imagePrimitivesBlend = {
+static const SDLTest_SurfaceImage_t SDLTest_imagePrimitivesBlend = {
   80, 60, 3,
   "\260e\15\222\356/\37\313\15\36\330\17K\3745D\3471\0\20\0D\3502D\3502<\321"
   ",\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\0-\0\377\377"

@@ -36,10 +36,7 @@
 
 /* Initialization/Cleanup routines */
 #if !SDL_TIMERS_DISABLED
-extern int SDL_TimerInit(void);
-extern void SDL_TimerQuit(void);
-extern void SDL_TicksInit(void);
-extern void SDL_TicksQuit(void);
+# include "timer/SDL_timer_c.h"
 #endif
 #if SDL_VIDEO_DRIVER_WINDOWS
 extern int SDL_HelperWindowCreate(void);

@@ -55,17 +55,17 @@ typedef struct SDLTest_SurfaceImage_s {
 } SDLTest_SurfaceImage_t;
 
 /* Test images */
-SDL_Surface *SDLTest_ImageBlit();
-SDL_Surface *SDLTest_ImageBlitColor();
-SDL_Surface *SDLTest_ImageBlitAlpha();
-SDL_Surface *SDLTest_ImageBlitBlendAdd();
-SDL_Surface *SDLTest_ImageBlitBlend();
-SDL_Surface *SDLTest_ImageBlitBlendMod();
-SDL_Surface *SDLTest_ImageBlitBlendNone();
-SDL_Surface *SDLTest_ImageBlitBlendAll();
-SDL_Surface *SDLTest_ImageFace();
-SDL_Surface *SDLTest_ImagePrimitives();
-SDL_Surface *SDLTest_ImagePrimitivesBlend();
+SDL_Surface *SDLTest_ImageBlit(void);
+SDL_Surface *SDLTest_ImageBlitColor(void);
+SDL_Surface *SDLTest_ImageBlitAlpha(void);
+SDL_Surface *SDLTest_ImageBlitBlendAdd(void);
+SDL_Surface *SDLTest_ImageBlitBlend(void);
+SDL_Surface *SDLTest_ImageBlitBlendMod(void);
+SDL_Surface *SDLTest_ImageBlitBlendNone(void);
+SDL_Surface *SDLTest_ImageBlitBlendAll(void);
+SDL_Surface *SDLTest_ImageFace(void);
+SDL_Surface *SDLTest_ImagePrimitives(void);
+SDL_Surface *SDLTest_ImagePrimitivesBlend(void);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

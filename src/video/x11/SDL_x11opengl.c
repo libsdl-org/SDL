@@ -519,6 +519,7 @@ X11_GL_GetVisual(_THIS, Display * display, int screen)
     return vinfo;
 }
 
+#if 0
 #ifndef GLXBadContext
 #define GLXBadContext 0
 #endif
@@ -528,6 +529,8 @@ X11_GL_GetVisual(_THIS, Display * display, int screen)
 #ifndef GLXBadProfileARB
 #define GLXBadProfileARB 13
 #endif
+#endif
+
 static int (*handler) (Display *, XErrorEvent *) = NULL;
 static const char *errorHandlerOperation = NULL;
 static int errorBase = 0;

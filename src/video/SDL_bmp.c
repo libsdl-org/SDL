@@ -43,8 +43,8 @@
 /* Compression encodings for BMP files */
 #ifndef BI_RGB
 #define BI_RGB      0
-#define BI_RLE8     1
-#define BI_RLE4     2
+/* #define BI_RLE8     1 */
+/* #define BI_RLE4     2 */
 #define BI_BITFIELDS    3
 #endif
 

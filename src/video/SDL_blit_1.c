@@ -70,12 +70,14 @@ Blit1to1(SDL_BlitInfo * info)
 }
 
 /* This is now endian dependent */
-#if ( SDL_BYTEORDER == SDL_LIL_ENDIAN )
-#define HI	1
-#define LO	0
-#else /* ( SDL_BYTEORDER == SDL_BIG_ENDIAN ) */
-#define HI	0
-#define LO	1
+#ifndef USE_DUFFS_LOOP
+# if ( SDL_BYTEORDER == SDL_LIL_ENDIAN )
+#  define HI	1
+#  define LO	0
+# else /* ( SDL_BYTEORDER == SDL_BIG_ENDIAN ) */
+#  define HI	0
+#  define LO	1
+# endif
 #endif
 static void
 Blit1to2(SDL_BlitInfo * info)

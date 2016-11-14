@@ -55,7 +55,7 @@ extern void SDL_SYS_WaitThread(SDL_Thread * thread);
 extern void SDL_SYS_DetachThread(SDL_Thread * thread);
 
 /* Get the thread local storage for this thread */
-extern SDL_TLSData *SDL_SYS_GetTLSData();
+extern SDL_TLSData *SDL_SYS_GetTLSData(void);
 
 /* Set the thread local storage for this thread */
 extern int SDL_SYS_SetTLSData(SDL_TLSData *data);

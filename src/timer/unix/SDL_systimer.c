@@ -29,6 +29,7 @@
 
 #include "SDL_timer.h"
 #include "SDL_assert.h"
+#include "../SDL_timer_c.h"
 
 /* The clock_gettime provides monotonous time, so we should use it if
    it's available. The clock_gettime function is behind ifdef

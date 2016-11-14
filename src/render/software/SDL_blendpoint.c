@@ -235,13 +235,11 @@ SDL_BlendPoint(SDL_Surface * dst, int x, int y, SDL_BlendMode blendMode, Uint8 r
         switch (dst->format->Rmask) {
         case 0x00FF0000:
             if (!dst->format->Amask) {
-                return SDL_BlendPoint_RGB888(dst, x, y, blendMode, r, g, b,
-                                             a);
+                return SDL_BlendPoint_RGB888(dst, x, y, blendMode, r, g, b, a);
             } else {
-                return SDL_BlendPoint_ARGB8888(dst, x, y, blendMode, r, g, b,
-                                               a);
+                return SDL_BlendPoint_ARGB8888(dst, x, y, blendMode, r, g, b, a);
             }
-            break;
+            /* break; -Wunreachable-code-break */
         }
         break;
     default:

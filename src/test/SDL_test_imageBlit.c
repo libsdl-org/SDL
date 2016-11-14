@@ -24,7 +24,7 @@
 
 /* GIMP RGB C-Source image dump (blit.c) */
 
-const SDLTest_SurfaceImage_t SDLTest_imageBlit = {
+static const SDLTest_SurfaceImage_t SDLTest_imageBlit = {
   80, 60, 3,
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
@@ -561,7 +561,7 @@ SDL_Surface *SDLTest_ImageBlit()
    return surface;
 }
 
-const SDLTest_SurfaceImage_t SDLTest_imageBlitColor = {
+static const SDLTest_SurfaceImage_t SDLTest_imageBlitColor = {
   80, 60, 3,
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
@@ -1044,7 +1044,7 @@ SDL_Surface *SDLTest_ImageBlitColor()
    return surface;
 }
 
-const SDLTest_SurfaceImage_t SDLTest_imageBlitAlpha = {
+static const SDLTest_SurfaceImage_t SDLTest_imageBlitAlpha = {
   80, 60, 3,
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"

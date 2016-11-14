@@ -68,14 +68,14 @@ void SDLTest_FuzzerInit(Uint64 execKey);
  *
  * \returns Generated integer
  */
-Uint8 SDLTest_RandomUint8();
+Uint8 SDLTest_RandomUint8(void);
 
 /**
  * Returns a random Sint8
  *
  * \returns Generated signed integer
  */
-Sint8 SDLTest_RandomSint8();
+Sint8 SDLTest_RandomSint8(void);
 
 
 /**
@@ -83,14 +83,14 @@ Sint8 SDLTest_RandomSint8();
  *
  * \returns Generated integer
  */
-Uint16 SDLTest_RandomUint16();
+Uint16 SDLTest_RandomUint16(void);
 
 /**
  * Returns a random Sint16
  *
  * \returns Generated signed integer
  */
-Sint16 SDLTest_RandomSint16();
+Sint16 SDLTest_RandomSint16(void);
 
 
 /**
@@ -98,7 +98,7 @@ Sint16 SDLTest_RandomSint16();
  *
  * \returns Generated integer
  */
-Sint32 SDLTest_RandomSint32();
+Sint32 SDLTest_RandomSint32(void);
 
 
 /**
@@ -106,14 +106,14 @@ Sint32 SDLTest_RandomSint32();
  *
  * \returns Generated integer
  */
-Uint32 SDLTest_RandomUint32();
+Uint32 SDLTest_RandomUint32(void);
 
 /**
  * Returns random Uint64.
  *
  * \returns Generated integer
  */
-Uint64 SDLTest_RandomUint64();
+Uint64 SDLTest_RandomUint64(void);
 
 
 /**
@@ -121,29 +121,29 @@ Uint64 SDLTest_RandomUint64();
  *
  * \returns Generated signed integer
  */
-Sint64 SDLTest_RandomSint64();
+Sint64 SDLTest_RandomSint64(void);
 
 /**
  * \returns random float in range [0.0 - 1.0[
  */
-float SDLTest_RandomUnitFloat();
+float SDLTest_RandomUnitFloat(void);
 
 /**
  * \returns random double in range [0.0 - 1.0[
  */
-double SDLTest_RandomUnitDouble();
+double SDLTest_RandomUnitDouble(void);
 
 /**
  * \returns random float.
  *
  */
-float SDLTest_RandomFloat();
+float SDLTest_RandomFloat(void);
 
 /**
  * \returns random double.
  *
  */
-double SDLTest_RandomDouble();
+double SDLTest_RandomDouble(void);
 
 /**
  * Returns a random boundary value for Uint8 within the given boundaries.
@@ -338,7 +338,7 @@ Sint32 SDLTest_RandomIntegerInRange(Sint32 min, Sint32 max);
  *
  * \returns Newly allocated random string; or NULL if length was invalid or string could not be allocated.
  */
-char * SDLTest_RandomAsciiString();
+char * SDLTest_RandomAsciiString(void);
 
 
 /**
@@ -371,7 +371,7 @@ char * SDLTest_RandomAsciiStringOfSize(int size);
 /**
  * Returns the invocation count for the fuzzer since last ...FuzzerInit.
  */
-int SDLTest_GetFuzzerInvocationCount();
+int SDLTest_GetFuzzerInvocationCount(void);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
