@@ -69,7 +69,7 @@ int SDLTest_Crc32Init(SDLTest_Crc32Context *crcContext)
 }
 
 /* Complete CRC32 calculation on a memory block */
-
+/* un-used
 int SDLTest_Crc32Calc(SDLTest_Crc32Context * crcContext, CrcUint8 *inBuf, CrcUint32 inLen, CrcUint32 *crc32)
 {
   if (SDLTest_Crc32CalcStart(crcContext,crc32)) {
@@ -86,6 +86,7 @@ int SDLTest_Crc32Calc(SDLTest_Crc32Context * crcContext, CrcUint8 *inBuf, CrcUin
 
   return 0;
 }
+*/
 
 /* Start crc calculation */
 

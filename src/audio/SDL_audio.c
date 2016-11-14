@@ -33,36 +33,6 @@
 static SDL_AudioDriver current_audio;
 static SDL_AudioDevice *open_devices[16];
 
-/*
- * Not all of these will be compiled and linked in, but it's convenient
- *  to have a complete list here and saves yet-another block of #ifdefs...
- *  Please see bootstrap[], below, for the actual #ifdef mess.
- */
-extern AudioBootStrap PULSEAUDIO_bootstrap;
-extern AudioBootStrap ALSA_bootstrap;
-extern AudioBootStrap SNDIO_bootstrap;
-extern AudioBootStrap BSD_AUDIO_bootstrap;
-extern AudioBootStrap DSP_bootstrap;
-extern AudioBootStrap QSAAUDIO_bootstrap;
-extern AudioBootStrap SUNAUDIO_bootstrap;
-extern AudioBootStrap ARTS_bootstrap;
-extern AudioBootStrap ESD_bootstrap;
-extern AudioBootStrap NACLAUDIO_bootstrap;
-extern AudioBootStrap NAS_bootstrap;
-extern AudioBootStrap XAUDIO2_bootstrap;
-extern AudioBootStrap DSOUND_bootstrap;
-extern AudioBootStrap WINMM_bootstrap;
-extern AudioBootStrap PAUDIO_bootstrap;
-extern AudioBootStrap HAIKUAUDIO_bootstrap;
-extern AudioBootStrap COREAUDIO_bootstrap;
-extern AudioBootStrap DISKAUDIO_bootstrap;
-extern AudioBootStrap DUMMYAUDIO_bootstrap;
-extern AudioBootStrap FUSIONSOUND_bootstrap;
-extern AudioBootStrap ANDROIDAUDIO_bootstrap;
-extern AudioBootStrap PSPAUDIO_bootstrap;
-extern AudioBootStrap SNDIO_bootstrap;
-extern AudioBootStrap EMSCRIPTENAUDIO_bootstrap;
-
 /* Available audio drivers */
 static const AudioBootStrap *const bootstrap[] = {
 #if SDL_AUDIO_DRIVER_PULSEAUDIO

@@ -214,7 +214,7 @@ static int GLES_LoadFunctions(GLES_RenderData * data)
 
 static SDL_GLContext SDL_CurrentContext = NULL;
 
-GLES_FBOList *
+static GLES_FBOList *
 GLES_GetFBO(GLES_RenderData *data, Uint32 w, Uint32 h)
 {
    GLES_FBOList *result = data->framebuffers;

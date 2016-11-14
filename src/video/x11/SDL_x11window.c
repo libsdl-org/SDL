@@ -44,7 +44,7 @@
 
 #define _NET_WM_STATE_REMOVE    0l
 #define _NET_WM_STATE_ADD       1l
-#define _NET_WM_STATE_TOGGLE    2l
+/* #define _NET_WM_STATE_TOGGLE    2l */
 
 static Bool isMapNotify(Display *dpy, XEvent *ev, XPointer win)
 {

@@ -82,7 +82,7 @@ typedef struct {
    This is only intended as a fallback if getting real thread-local
    storage fails or isn't supported on this platform.
  */
-extern SDL_TLSData *SDL_Generic_GetTLSData();
+extern SDL_TLSData *SDL_Generic_GetTLSData(void);
 
 /* Set cross-platform, slow, thread local storage for this thread.
    This is only intended as a fallback if getting real thread-local

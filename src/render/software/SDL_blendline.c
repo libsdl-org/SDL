@@ -685,7 +685,7 @@ SDL_CalculateBlendLineFunc(const SDL_PixelFormat * fmt)
         } else {
             return SDL_BlendLine_RGB2;
         }
-        break;
+        /* break; -Wunreachable-code-break */
     case 4:
         if (fmt->Rmask == 0x00FF0000) {
             if (fmt->Amask) {

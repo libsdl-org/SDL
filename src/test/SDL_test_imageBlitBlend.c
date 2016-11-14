@@ -24,7 +24,7 @@
 
 /* GIMP RGB C-Source image dump (alpha.c) */
 
-const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendAdd = {
+static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendAdd = {
   80, 60, 3,
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
@@ -601,7 +601,7 @@ SDL_Surface *SDLTest_ImageBlitBlendAdd()
    return surface;
 }
 
-const SDLTest_SurfaceImage_t SDLTest_imageBlitBlend = {
+static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlend = {
   80, 60, 3,
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
@@ -1131,7 +1131,7 @@ SDL_Surface *SDLTest_ImageBlitBlend()
    return surface;
 }
 
-const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendMod = {
+static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendMod = {
   80, 60, 3,
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
@@ -1561,7 +1561,7 @@ SDL_Surface *SDLTest_ImageBlitBlendMod()
    return surface;
 }
 
-const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendNone = {
+static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendNone = {
   80, 60, 3,
   "\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377"
   "\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377"
@@ -2374,7 +2374,7 @@ SDL_Surface *SDLTest_ImageBlitBlendNone()
    return surface;
 }
 
-const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendAll = {
+static const SDLTest_SurfaceImage_t SDLTest_imageBlitBlendAll = {
   80, 60, 3,
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"

@@ -32,6 +32,7 @@
 #include <fcntl.h>
 
 #include "SDL_power.h"
+#include "../SDL_syspower.h"
 
 static const char *proc_apm_path = "/proc/apm";
 static const char *proc_acpi_battery_path = "/proc/acpi/battery";

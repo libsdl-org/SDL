@@ -46,8 +46,10 @@
 #include "SDL_opengles2.h"
 #endif /* SDL_VIDEO_OPENGL_ES2 && !SDL_VIDEO_OPENGL */
 
+#if !SDL_VIDEO_OPENGL
 #ifndef GL_CONTEXT_RELEASE_BEHAVIOR_KHR
 #define GL_CONTEXT_RELEASE_BEHAVIOR_KHR 0x82FB
+#endif
 #endif
 
 /* On Windows, windows.h defines CreateWindow */
@@ -3617,8 +3619,9 @@ SDL_IsScreenKeyboardShown(SDL_Window *window)
 #include "x11/SDL_x11messagebox.h"
 #endif
 
-// This function will be unused if none of the above video drivers are present.
-SDL_UNUSED static SDL_bool SDL_MessageboxValidForDriver(const SDL_MessageBoxData *messageboxdata, SDL_SYSWM_TYPE drivertype)
+
+#if SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_WINRT || SDL_VIDEO_DRIVER_COCOA || SDL_VIDEO_DRIVER_UIKIT || SDL_VIDEO_DRIVER_X11
+static SDL_bool SDL_MessageboxValidForDriver(const SDL_MessageBoxData *messageboxdata, SDL_SYSWM_TYPE drivertype)
 {
     SDL_SysWMinfo info;
     SDL_Window *window = messageboxdata->window;
@@ -3634,6 +3637,7 @@ SDL_UNUSED static SDL_bool SDL_MessageboxValidForDriver(const SDL_MessageBoxData
         return (info.subsystem == drivertype);
     }
 }
+#endif
 
 int
 SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)

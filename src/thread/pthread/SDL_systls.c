@@ -20,6 +20,7 @@
 */
 #include "../../SDL_internal.h"
 #include "SDL_thread.h"
+#include "../SDL_systhread.h"
 #include "../SDL_thread_c.h"
 
 #include <pthread.h>

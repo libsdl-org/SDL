@@ -24,7 +24,7 @@
 
 /* GIMP RGBA C-Source image dump (face.c) */
 
-const SDLTest_SurfaceImage_t SDLTest_imageFace = {
+static const SDLTest_SurfaceImage_t SDLTest_imageFace = {
   32, 32, 4,
   "\377\377\377\0\377\377\377\0\377\377\377\0\377\377\377\0\377\377\377\0\377"
   "\377\377\0\377\377\377\0\377\377\377\0\377\377\377\0\377\377\377\0\377\377"

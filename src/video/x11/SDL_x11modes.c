@@ -134,14 +134,14 @@ X11_GetPixelFormatFromVisualInfo(Display * display, XVisualInfo * vinfo)
             } else {
                 return SDL_PIXELFORMAT_INDEX4MSB;
             }
-            break;
+            /* break; -Wunreachable-code-break */
         case 1:
             if (BitmapBitOrder(display) == LSBFirst) {
                 return SDL_PIXELFORMAT_INDEX1LSB;
             } else {
                 return SDL_PIXELFORMAT_INDEX1MSB;
             }
-            break;
+            /* break; -Wunreachable-code-break */
         }
     }
 
@@ -149,7 +149,7 @@ X11_GetPixelFormatFromVisualInfo(Display * display, XVisualInfo * vinfo)
 }
 
 /* Global for the error handler */
-int vm_event, vm_error = -1;
+static int vm_event, vm_error = -1;
 
 #if SDL_VIDEO_DRIVER_X11_XINERAMA
 static SDL_bool
@@ -349,7 +349,7 @@ SetXRandRDisplayName(Display *dpy, Atom EDID, char *name, const size_t namelen, 
 }
 
 
-int
+static int
 X11_InitModes_XRandR(_THIS)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
@@ -569,7 +569,7 @@ CalculateXVidModeRefreshRate(const XF86VidModeModeInfo * info)
                                                          info->vtotal)) : 0;
 }
 
-SDL_bool
+static SDL_bool
 SetXVidModeModeInfo(const XF86VidModeModeInfo *info, SDL_DisplayMode *mode)
 {
     mode->w = info->hdisplay;
@@ -584,7 +584,7 @@ int
 X11_InitModes(_THIS)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
-    int snum, screen, screencount;
+    int snum, screen, screencount = 0;
 #if SDL_VIDEO_DRIVER_X11_XINERAMA
     int xinerama_major, xinerama_minor;
     int use_xinerama = 0;

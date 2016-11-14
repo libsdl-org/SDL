@@ -200,6 +200,78 @@ typedef struct AudioBootStrap
     int demand_only;  /* 1==request explicitly, or it won't be available. */
 } AudioBootStrap;
 
+#if SDL_AUDIO_DRIVER_PULSEAUDIO
+extern AudioBootStrap PULSEAUDIO_bootstrap;
+#endif
+#if SDL_AUDIO_DRIVER_ALSA
+extern AudioBootStrap ALSA_bootstrap;
+#endif
+#if SDL_AUDIO_DRIVER_SNDIO
+extern AudioBootStrap SNDIO_bootstrap;
+#endif
+#if SDL_AUDIO_DRIVER_BSD
+extern AudioBootStrap BSD_AUDIO_bootstrap;
+#endif
+#if SDL_AUDIO_DRIVER_OSS
+extern AudioBootStrap DSP_bootstrap;
+#endif
+#if SDL_AUDIO_DRIVER_QSA
+extern AudioBootStrap QSAAUDIO_bootstrap;
+#endif
+#if SDL_AUDIO_DRIVER_SUNAUDIO
+extern AudioBootStrap SUNAUDIO_bootstrap;
+#endif
+#if SDL_AUDIO_DRIVER_ARTS
+extern AudioBootStrap ARTS_bootstrap;
+#endif
+#if SDL_AUDIO_DRIVER_ESD
+extern AudioBootStrap ESD_bootstrap;
+#endif
+#if SDL_AUDIO_DRIVER_NACL
+extern AudioBootStrap NACLAUDIO_bootstrap;
+#endif
+#if SDL_AUDIO_DRIVER_NAS
+extern AudioBootStrap NAS_bootstrap;
+#endif
+#if SDL_AUDIO_DRIVER_XAUDIO2
+extern AudioBootStrap XAUDIO2_bootstrap;
+#endif
+#if SDL_AUDIO_DRIVER_DSOUND
+extern AudioBootStrap DSOUND_bootstrap;
+#endif
+#if SDL_AUDIO_DRIVER_WINMM
+extern AudioBootStrap WINMM_bootstrap;
+#endif
+#if SDL_AUDIO_DRIVER_PAUDIO
+extern AudioBootStrap PAUDIO_bootstrap;
+#endif
+#if SDL_AUDIO_DRIVER_HAIKU
+extern AudioBootStrap HAIKUAUDIO_bootstrap;
+#endif
+#if SDL_AUDIO_DRIVER_COREAUDIO
+extern AudioBootStrap COREAUDIO_bootstrap;
+#endif
+#if SDL_AUDIO_DRIVER_DISK
+extern AudioBootStrap DISKAUDIO_bootstrap;
+#endif
+#if SDL_AUDIO_DRIVER_DUMMY
+extern AudioBootStrap DUMMYAUDIO_bootstrap;
+#endif
+#if SDL_AUDIO_DRIVER_FUSIONSOUND
+extern AudioBootStrap FUSIONSOUND_bootstrap;
+#endif
+#if SDL_AUDIO_DRIVER_ANDROID
+extern AudioBootStrap ANDROIDAUDIO_bootstrap;
+#endif
+#if SDL_AUDIO_DRIVER_PSP
+extern AudioBootStrap PSPAUDIO_bootstrap;
+#endif
+#if SDL_AUDIO_DRIVER_EMSCRIPTEN
+extern AudioBootStrap EMSCRIPTENAUDIO_bootstrap;
+#endif
+
+
+
 #endif /* _SDL_sysaudio_h */
 
 /* vi: set ts=4 sw=4 expandtab: */

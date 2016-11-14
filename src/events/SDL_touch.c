@@ -92,7 +92,7 @@ SDL_GetFingerIndex(const SDL_Touch * touch, SDL_FingerID fingerid)
     return -1;
 }
 
-SDL_Finger *
+static SDL_Finger *
 SDL_GetFinger(const SDL_Touch * touch, SDL_FingerID id)
 {
     int index = SDL_GetFingerIndex(touch, id);

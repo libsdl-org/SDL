@@ -24,7 +24,7 @@
 
 /* GIMP RGB C-Source image dump (primitives.c) */
 
-const SDLTest_SurfaceImage_t SDLTest_imagePrimitives = {
+static const SDLTest_SurfaceImage_t SDLTest_imagePrimitives = {
   80, 60, 3,
   "\5ii\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"
   "\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0"

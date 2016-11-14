@@ -25,7 +25,7 @@
 #include "../joystick/SDL_joystick_c.h" /* For SDL_PrivateJoystickValid */
 #include "SDL_assert.h"
 
-SDL_Haptic *SDL_haptics = NULL;
+static SDL_Haptic *SDL_haptics = NULL;
 
 
 /*

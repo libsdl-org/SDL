@@ -196,7 +196,7 @@ SDLTest_RandomIntegerInRange(Sint32 pMin, Sint32 pMax)
  *
  * \returns Returns a random boundary value for the domain or 0 in case of error
  */
-Uint64
+static Uint64
 SDLTest_GenerateUnsignedBoundaryValues(const Uint64 maxValue, Uint64 boundary1, Uint64 boundary2, SDL_bool validDomain)
 {
         Uint64 b1, b2;
@@ -328,7 +328,7 @@ SDLTest_RandomUint64BoundaryValue(Uint64 boundary1, Uint64 boundary2, SDL_bool v
  *
  * \returns Returns a random boundary value for the domain or 0 in case of error
  */
-Sint64
+static Sint64
 SDLTest_GenerateSignedBoundaryValues(const Sint64 minValue, const Sint64 maxValue, Sint64 boundary1, Sint64 boundary2, SDL_bool validDomain)
 {
         Sint64 b1, b2;

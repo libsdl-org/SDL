@@ -27,6 +27,7 @@
 #include "SDL_x11video.h"
 #include "SDL_x11dyn.h"
 #include "SDL_assert.h"
+#include "SDL_x11messagebox.h"
 
 #include <X11/keysym.h>
 #include <locale.h>

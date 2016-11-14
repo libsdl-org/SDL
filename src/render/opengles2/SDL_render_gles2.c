@@ -307,7 +307,7 @@ static int GLES2_LoadFunctions(GLES2_DriverContext * data)
     return 0;
 }
 
-GLES2_FBOList *
+static GLES2_FBOList *
 GLES2_GetFBO(GLES2_DriverContext *data, Uint32 w, Uint32 h)
 {
    GLES2_FBOList *result = data->framebuffers;
@@ -1923,7 +1923,9 @@ static int GLES2_UnbindTexture (SDL_Renderer * renderer, SDL_Texture *texture)
  * Renderer instantiation                                                                        *
  *************************************************************************************************/
 
+#ifdef ZUNE_HD
 #define GL_NVIDIA_PLATFORM_BINARY_NV 0x890B
+#endif
 
 static void
 GLES2_ResetState(SDL_Renderer *renderer)
@@ -1963,7 +1965,7 @@ GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
 #ifndef ZUNE_HD
     GLboolean hasCompiler;
 #endif
-    Uint32 window_flags;
+    Uint32 window_flags = 0; /* -Wconditional-uninitialized */
     GLint window_framebuffer;
     GLint value;
     int profile_mask = 0, major = 0, minor = 0;

@@ -62,7 +62,7 @@ struct _SDL_Haptic
 extern int SDL_SYS_HapticInit(void);
 
 /* Function to return the number of haptic devices plugged in right now */
-extern int SDL_SYS_NumHaptics();
+extern int SDL_SYS_NumHaptics(void);
 
 /*
  * Gets the device dependent name of the haptic device

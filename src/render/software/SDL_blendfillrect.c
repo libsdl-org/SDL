@@ -245,7 +245,7 @@ SDL_BlendFillRect(SDL_Surface * dst, const SDL_Rect * rect,
             } else {
                 return SDL_BlendFillRect_ARGB8888(dst, rect, blendMode, r, g, b, a);
             }
-            break;
+            /* break; -Wunreachable-code-break */
         }
         break;
     default:

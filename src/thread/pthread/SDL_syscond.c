@@ -129,7 +129,7 @@ SDL_CondWaitTimeout(SDL_cond * cond, SDL_mutex * mutex, Uint32 ms)
     switch (retval) {
     case EINTR:
         goto tryagain;
-        break;
+        /* break; -Wunreachable-code-break */
     case ETIMEDOUT:
         retval = SDL_MUTEX_TIMEDOUT;
         break;

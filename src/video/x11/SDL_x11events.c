@@ -201,7 +201,7 @@ X11_IsWheelEvent(Display * display,XEvent * event,int * xticks,int * yticks)
 
    On error, -1 is returned.
  */
-int X11_URIDecode(char *buf, int len) {
+static int X11_URIDecode(char *buf, int len) {
     int ri, wi, di;
     char decode = '\0';
     if (buf == NULL || len < 0) {

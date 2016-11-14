@@ -282,6 +282,7 @@ MaybeRemoveDevice(const char *path)
 }
 #endif
 
+#if ! SDL_USE_LIBUDEV
 static int
 JoystickInitWithoutUdev(void)
 {
@@ -298,7 +299,7 @@ JoystickInitWithoutUdev(void)
 
     return numjoysticks;
 }
-
+#endif
 
 #if SDL_USE_LIBUDEV
 static int
@@ -342,9 +343,9 @@ SDL_SYS_JoystickInit(void)
 
 #if SDL_USE_LIBUDEV
     return JoystickInitWithUdev();
-#endif
-
+#else 
     return JoystickInitWithoutUdev();
+#endif
 }
 
 int SDL_SYS_NumJoysticks()
