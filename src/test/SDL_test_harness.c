@@ -50,7 +50,7 @@ static Uint32 SDLTest_TestCaseTimeout = 3600;
 *
 * \returns The generated seed string
 */
-static char *
+char *
 SDLTest_GenerateRunSeed(const int length)
 {
     char *seed = NULL;
