@@ -25,8 +25,8 @@
 #include "../joystick/SDL_joystick_c.h" /* For SDL_PrivateJoystickValid */
 #include "SDL_assert.h"
 
-static SDL_Haptic *SDL_haptics = NULL;
-
+/* Global for SDL_windowshaptic.c */
+SDL_Haptic *SDL_haptics = NULL;
 
 /*
  * Initializes the Haptic devices.
