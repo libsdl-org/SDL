@@ -239,7 +239,10 @@ SW_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     SDL_SetSurfaceAlphaMod(texture->driverdata, texture->a);
     SDL_SetSurfaceBlendMode(texture->driverdata, texture->blendMode);
 
-    if (texture->access == SDL_TEXTUREACCESS_STATIC) {
+    /* Only RLE encode textures without an alpha channel since the RLE coder
+     * discards the color values of pixels with an alpha value of zero.
+     */
+    if (texture->access == SDL_TEXTUREACCESS_STATIC && !Amask) {
         SDL_SetSurfaceRLE(texture->driverdata, 1);
     }
 
@@ -599,9 +602,15 @@ SW_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
     SDL_Surface *surface = SW_ActivateRenderer(renderer);
     SDL_Surface *src = (SDL_Surface *) texture->driverdata;
     SDL_Rect final_rect, tmp_rect;
-    SDL_Surface *surface_rotated, *surface_scaled;
-    int retval, dstwidth, dstheight, abscenterx, abscentery;
+    SDL_Surface *src_clone, *src_rotated, *src_scaled;
+    SDL_Surface *mask = NULL, *mask_rotated = NULL;
+    int retval = 0, dstwidth, dstheight, abscenterx, abscentery;
     double cangle, sangle, px, py, p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y;
+    SDL_BlendMode blendmode;
+    Uint8 alphaMod, rMod, gMod, bMod;
+    int applyModulation = SDL_FALSE;
+    int blitRequired = SDL_FALSE;
+    int isOpaque = SDL_FALSE;
 
     if (!surface) {
         return -1;
@@ -617,69 +626,104 @@ SW_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
     final_rect.w = (int)dstrect->w;
     final_rect.h = (int)dstrect->h;
 
-    /* SDLgfx_rotateSurface doesn't accept a source rectangle, so crop and scale if we need to */
     tmp_rect = final_rect;
     tmp_rect.x = 0;
     tmp_rect.y = 0;
-    if (srcrect->w == final_rect.w && srcrect->h == final_rect.h && srcrect->x == 0 && srcrect->y == 0) {
-        surface_scaled = src; /* but if we don't need to, just use the original */
-        retval = 0;
-    } else {
-        SDL_Surface *blit_src = src;
-        Uint32 colorkey;
-        SDL_BlendMode blendMode;
-        Uint8 alphaMod, r, g, b;
-        SDL_bool cloneSource = SDL_FALSE;
 
-        surface_scaled = SDL_CreateRGBSurface(SDL_SWSURFACE, final_rect.w, final_rect.h, src->format->BitsPerPixel,
-                                              src->format->Rmask, src->format->Gmask,
-                                              src->format->Bmask, src->format->Amask );
-        if (!surface_scaled) {
-            return -1;
+    /* It is possible to encounter an RLE encoded surface here and locking it is
+     * necessary because this code is going to access the pixel buffer directly.
+     */
+    if (SDL_MUSTLOCK(src)) {
+        SDL_LockSurface(src);
+    }
+
+    /* Clone the source surface but use its pixel buffer directly.
+     * The original source surface must be treated as read-only.
+     */
+    src_clone = SDL_CreateRGBSurfaceFrom(src->pixels, src->w, src->h, src->format->BitsPerPixel, src->pitch,
+                                         src->format->Rmask, src->format->Gmask,
+                                         src->format->Bmask, src->format->Amask);
+    if (src_clone == NULL) {
+        if (SDL_MUSTLOCK(src)) {
+            SDL_UnlockSurface(src);
         }
+        return -1;
+    }
 
-        /* copy the color key, alpha mod, blend mode, and color mod so the scaled surface behaves like the source */
-        if (SDL_GetColorKey(src, &colorkey) == 0) {
-            SDL_SetColorKey(surface_scaled, SDL_TRUE, colorkey);
-            cloneSource = SDL_TRUE;
-        }
-        SDL_GetSurfaceAlphaMod(src, &alphaMod); /* these will be copied to surface_scaled below if necessary */
-        SDL_GetSurfaceBlendMode(src, &blendMode);
-        SDL_GetSurfaceColorMod(src, &r, &g, &b);
+    SDL_GetSurfaceBlendMode(src, &blendmode);
+    SDL_GetSurfaceAlphaMod(src, &alphaMod);
+    SDL_GetSurfaceColorMod(src, &rMod, &gMod, &bMod);
 
-        /* now we need to blit the src into surface_scaled. since we want to copy the colors from the source to
-         * surface_scaled rather than blend them, etc. we'll need to disable the blend mode, alpha mod, etc.
-         * but we don't want to modify src (in case it's being used on other threads), so we'll need to clone it
-         * before changing the blend options
-         */
-        cloneSource |= blendMode != SDL_BLENDMODE_NONE || (alphaMod & r & g & b) != 255;
-        if (cloneSource) {
-            blit_src = SDL_ConvertSurface(src, src->format, src->flags); /* clone src */
-            if (!blit_src) {
-                SDL_FreeSurface(surface_scaled);
-                return -1;
-            }
-            SDL_SetSurfaceAlphaMod(blit_src, 255); /* disable all blending options in blit_src */
-            SDL_SetSurfaceBlendMode(blit_src, SDL_BLENDMODE_NONE);
-            SDL_SetColorKey(blit_src, 0, 0);
-            SDL_SetSurfaceColorMod(blit_src, 255, 255, 255);
-            SDL_SetSurfaceRLE(blit_src, 0); /* don't RLE encode a surface we'll only use once */
+    /* SDLgfx_rotateSurface only accepts 32-bit surfaces with a 8888 layout. Everything else has to be converted. */
+    if (src->format->BitsPerPixel != 32 || SDL_PIXELLAYOUT(src->format->format) != SDL_PACKEDLAYOUT_8888 || !src->format->Amask) {
+        blitRequired = SDL_TRUE;
+    }
 
-            SDL_SetSurfaceAlphaMod(surface_scaled, alphaMod); /* copy blending options to surface_scaled */
-            SDL_SetSurfaceBlendMode(surface_scaled, blendMode);
-            SDL_SetSurfaceColorMod(surface_scaled, r, g, b);
-        }
+    /* If scaling and cropping is necessary, it has to be taken care of before the rotation. */
+    if (!(srcrect->w == final_rect.w && srcrect->h == final_rect.h && srcrect->x == 0 && srcrect->y == 0)) {
+        blitRequired = SDL_TRUE;
+    }
 
-        retval = SDL_BlitScaled(blit_src, srcrect, surface_scaled, &tmp_rect);
-        if (blit_src != src) {
-            SDL_FreeSurface(blit_src);
+    /* The color and alpha modulation has to be applied before the rotation when using the NONE and MOD blend modes. */
+    if ((blendmode == SDL_BLENDMODE_NONE || blendmode == SDL_BLENDMODE_MOD) && (alphaMod & rMod & gMod & bMod) != 255) {
+        applyModulation = SDL_TRUE;
+        SDL_SetSurfaceAlphaMod(src_clone, alphaMod);
+        SDL_SetSurfaceColorMod(src_clone, rMod, gMod, bMod);
+    }
+
+    /* Opaque surfaces are much easier to handle with the NONE blend mode. */
+    if (blendmode == SDL_BLENDMODE_NONE && !src->format->Amask && alphaMod == 255) {
+        isOpaque = SDL_TRUE;
+    }
+
+    /* The NONE blend mode requires a mask for non-opaque surfaces. This mask will be used
+     * to clear the pixels in the destination surface. The other steps are explained below.
+     */
+    if (blendmode == SDL_BLENDMODE_NONE && !isOpaque) {
+        mask = SDL_CreateRGBSurface(0, final_rect.w, final_rect.h, 32,
+                                    0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
+        if (mask == NULL) {
+            retval = -1;
+        } else {
+            SDL_SetSurfaceBlendMode(mask, SDL_BLENDMODE_MOD);
         }
     }
 
+    /* Create a new surface should there be a format mismatch or if scaling, cropping,
+     * or modulation is required. It's possible to use the source surface directly otherwise.
+     */
+    if (!retval && (blitRequired || applyModulation)) {
+        SDL_Rect scale_rect = tmp_rect;
+        src_scaled = SDL_CreateRGBSurface(0, final_rect.w, final_rect.h, 32,
+                                          0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
+        if (src_scaled == NULL) {
+            retval = -1;
+        } else {
+            SDL_SetSurfaceBlendMode(src_clone, SDL_BLENDMODE_NONE);
+            retval = SDL_BlitScaled(src_clone, srcrect, src_scaled, &scale_rect);
+            SDL_FreeSurface(src_clone);
+            src_clone = src_scaled;
+            src_scaled = NULL;
+        }
+    }
+
+    /* SDLgfx_rotateSurface is going to make decisions depending on the blend mode. */
+    SDL_SetSurfaceBlendMode(src_clone, blendmode);
+
     if (!retval) {
         SDLgfx_rotozoomSurfaceSizeTrig(tmp_rect.w, tmp_rect.h, angle, &dstwidth, &dstheight, &cangle, &sangle);
-        surface_rotated = SDLgfx_rotateSurface(surface_scaled, angle, dstwidth/2, dstheight/2, GetScaleQuality(), flip & SDL_FLIP_HORIZONTAL, flip & SDL_FLIP_VERTICAL, dstwidth, dstheight, cangle, sangle);
-        if(surface_rotated) {
+        src_rotated = SDLgfx_rotateSurface(src_clone, angle, dstwidth/2, dstheight/2, GetScaleQuality(), flip & SDL_FLIP_HORIZONTAL, flip & SDL_FLIP_VERTICAL, dstwidth, dstheight, cangle, sangle);
+        if (src_rotated == NULL) {
+            retval = -1;
+        }
+        if (!retval && mask != NULL) {
+            /* The mask needed for the NONE blend mode gets rotated with the same parameters. */
+            mask_rotated = SDLgfx_rotateSurface(mask, angle, dstwidth/2, dstheight/2, SDL_FALSE, 0, 0, dstwidth, dstheight, cangle, sangle);
+            if (mask_rotated == NULL) {
+                retval = -1;
+            }
+        }
+        if (!retval) {
             /* Find out where the new origin is by rotating the four final_rect points around the center and then taking the extremes */
             abscenterx = final_rect.x + (int)center->x;
             abscentery = final_rect.y + (int)center->y;
@@ -715,13 +759,69 @@ SW_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
             tmp_rect.w = dstwidth;
             tmp_rect.h = dstheight;
 
-            retval = SDL_BlitSurface(surface_rotated, NULL, surface, &tmp_rect);
-            SDL_FreeSurface(surface_rotated);
+            /* The NONE blend mode needs some special care with non-opaque surfaces.
+             * Other blend modes or opaque surfaces can be blitted directly.
+             */
+            if (blendmode != SDL_BLENDMODE_NONE || isOpaque) {
+                if (applyModulation == SDL_FALSE) {
+                    /* If the modulation wasn't already applied, make it happen now. */
+                    SDL_SetSurfaceAlphaMod(src_rotated, alphaMod);
+                    SDL_SetSurfaceColorMod(src_rotated, rMod, gMod, bMod);
+                }
+                retval = SDL_BlitSurface(src_rotated, NULL, surface, &tmp_rect);
+            } else {
+                /* The NONE blend mode requires three steps to get the pixels onto the destination surface.
+                 * First, the area where the rotated pixels will be blitted to get set to zero.
+                 * This is accomplished by simply blitting a mask with the NONE blend mode.
+                 * The colorkey set by the rotate function will discard the correct pixels.
+                 */
+                SDL_Rect mask_rect = tmp_rect;
+                SDL_SetSurfaceBlendMode(mask_rotated, SDL_BLENDMODE_NONE);
+                retval = SDL_BlitSurface(mask_rotated, NULL, surface, &mask_rect);
+                if (!retval) {
+                    /* The next step copies the alpha value. This is done with the BLEND blend mode and
+                     * by modulating the source colors with 0. Since the destination is all zeros, this
+                     * will effectively set the destination alpha to the source alpha.
+                     */
+                    SDL_SetSurfaceColorMod(src_rotated, 0, 0, 0);
+                    mask_rect = tmp_rect;
+                    retval = SDL_BlitSurface(src_rotated, NULL, surface, &mask_rect);
+                    if (!retval) {
+                        /* The last step gets the color values in place. The ADD blend mode simply adds them to
+                         * the destination (where the color values are all zero). However, because the ADD blend
+                         * mode modulates the colors with the alpha channel, a surface without an alpha mask needs
+                         * to be created. This makes all source pixels opaque and the colors get copied correctly.
+                         */
+                        SDL_Surface *src_rotated_rgb;
+                        src_rotated_rgb = SDL_CreateRGBSurfaceFrom(src_rotated->pixels, src_rotated->w, src_rotated->h,
+                                                                   src_rotated->format->BitsPerPixel, src_rotated->pitch,
+                                                                   src_rotated->format->Rmask, src_rotated->format->Gmask,
+                                                                   src_rotated->format->Bmask, 0);
+                        if (src_rotated_rgb == NULL) {
+                            retval = -1;
+                        } else {
+                            SDL_SetSurfaceBlendMode(src_rotated_rgb, SDL_BLENDMODE_ADD);
+                            retval = SDL_BlitSurface(src_rotated_rgb, NULL, surface, &tmp_rect);
+                            SDL_FreeSurface(src_rotated_rgb);
+                        }
+                    }
+                }
+                SDL_FreeSurface(mask_rotated);
+            }
+            if (src_rotated != NULL) {
+                SDL_FreeSurface(src_rotated);
+            }
         }
     }
 
-    if (surface_scaled != src) {
-        SDL_FreeSurface(surface_scaled);
+    if (SDL_MUSTLOCK(src)) {
+        SDL_UnlockSurface(src);
+    }
+    if (mask != NULL) {
+        SDL_FreeSurface(mask);
+    }
+    if (src_clone != NULL) {
+        SDL_FreeSurface(src_clone);
     }
     return retval;
 }

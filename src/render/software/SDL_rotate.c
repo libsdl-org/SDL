@@ -142,7 +142,7 @@ SDLgfx_rotozoomSurfaceSizeTrig(int width, int height, double angle,
         cy = *cangle * y;
         sx = *sangle * x;
         sy = *sangle * y;
-        
+
         dstwidthhalf = MAX((int)
             SDL_ceil(MAX(MAX(MAX(SDL_fabs(cx + sy), SDL_fabs(cx - sy)), SDL_fabs(-cx + sy)), SDL_fabs(-cx - sy))), 1);
         dstheighthalf = MAX((int)
@@ -390,10 +390,14 @@ transformSurfaceY(SDL_Surface * src, SDL_Surface * dst, int cx, int cy, int isin
 /* !
 \brief Rotates and zooms a surface with different horizontal and vertival scaling factors and optional anti-aliasing.
 
-Rotates a 32bit or 8bit 'src' surface to newly created 'dst' surface.
+Rotates a 32-bit or 8-bit 'src' surface to newly created 'dst' surface.
 'angle' is the rotation in degrees, 'centerx' and 'centery' the rotation center. If 'smooth' is set
-then the destination 32bit surface is anti-aliased. If the surface is not 8bit
-or 32bit RGBA/ABGR it will be converted into a 32bit RGBA format on the fly.
+then the destination 32-bit surface is anti-aliased. 8-bit surfaces must have a colorkey. 32-bit
+surfaces must have a 8888 layout with red, green, blue and alpha masks (any ordering goes).
+The blend mode of the 'src' surface has some effects on generation of the 'dst' surface: The NONE
+mode will set the BLEND mode on the 'dst' surface. The MOD mode either generates a white 'dst'
+surface and sets the colorkey or fills the it with the colorkey before copying the pixels.
+When using the NONE and MOD modes, color and alpha modulation must be applied before using this function.
 
 \param src The surface to rotozoom.
 \param angle The angle to rotate in degrees.
@@ -413,69 +417,47 @@ or 32bit RGBA/ABGR it will be converted into a 32bit RGBA format on the fly.
 SDL_Surface *
 SDLgfx_rotateSurface(SDL_Surface * src, double angle, int centerx, int centery, int smooth, int flipx, int flipy, int dstwidth, int dstheight, double cangle, double sangle)
 {
-    SDL_Surface *rz_src;
     SDL_Surface *rz_dst;
-    int is32bit, angle90;
+    int is8bit, angle90;
     int i;
-    Uint8 r = 0, g = 0, b = 0, a = 0;
+    SDL_BlendMode blendmode;
     Uint32 colorkey = 0;
-    int colorKeyAvailable = 0;
+    int colorKeyAvailable = SDL_FALSE;
     double sangleinv, cangleinv;
 
-    /*
-    * Sanity check
-    */
+    /* Sanity check */
     if (src == NULL)
-        return (NULL);
+        return NULL;
 
-    if (src->flags & SDL_TRUE/* SDL_SRCCOLORKEY */) {
-        colorkey = _colorkey(src);
-        SDL_GetRGBA(colorkey, src->format, &r, &g, &b, &a);
-        colorKeyAvailable = 1;
+    if (SDL_GetColorKey(src, &colorkey) == 0) {
+        colorKeyAvailable = SDL_TRUE;
     }
 
-    /*
-    * Determine if source surface is 32bit or 8bit
-    */
-    is32bit = (src->format->BitsPerPixel == 32);
-    if ((is32bit) || (src->format->BitsPerPixel == 8)) {
-        /*
-        * Use source surface 'as is'
-        */
-        rz_src = src;
-    } else {
-        rz_src = SDL_ConvertSurfaceFormat(src, SDL_PIXELFORMAT_ARGB32, src->flags);
-        if (rz_src == NULL) {
-            return NULL;
-        }
-        is32bit = 1;
-    }
+    /* This function requires a 32-bit surface or 8-bit surface with a colorkey */
+    is8bit = src->format->BitsPerPixel == 8 && colorKeyAvailable;
+    if (!(is8bit || (src->format->BitsPerPixel == 32 && src->format->Amask)))
+        return NULL;
 
-    /* Determine target size */
-    /* _rotozoomSurfaceSizeTrig(rz_src->w, rz_src->h, angle, &dstwidth, &dstheight, &cangle, &sangle); */
-
-    /*
-    * Calculate target factors from sin/cos and zoom
-    */
+    /* Calculate target factors from sin/cos and zoom */
     sangleinv = sangle*65536.0;
     cangleinv = cangle*65536.0;
 
-    /*
-    * Alloc space to completely contain the rotated surface
-    */
-    if (is32bit) {
-        /*
-        * Target surface is 32bit with source RGBA/ABGR ordering
-        */
-        rz_dst =
-            SDL_CreateRGBSurface(SDL_SWSURFACE, dstwidth, dstheight + GUARD_ROWS, 32,
-            rz_src->format->Rmask, rz_src->format->Gmask,
-            rz_src->format->Bmask, rz_src->format->Amask);
+    /* Alloc space to completely contain the rotated surface */
+    rz_dst = NULL;
+    if (is8bit) {
+        /* Target surface is 8 bit */
+        rz_dst = SDL_CreateRGBSurface(0, dstwidth, dstheight + GUARD_ROWS, 8, 0, 0, 0, 0);
+        if (rz_dst != NULL) {
+            for (i = 0; i < src->format->palette->ncolors; i++) {
+                rz_dst->format->palette->colors[i] = src->format->palette->colors[i];
+            }
+            rz_dst->format->palette->ncolors = src->format->palette->ncolors;
+        }
     } else {
-        /*
-        * Target surface is 8bit
-        */
-        rz_dst = SDL_CreateRGBSurface(SDL_SWSURFACE, dstwidth, dstheight + GUARD_ROWS, 8, 0, 0, 0, 0);
+        /* Target surface is 32 bit with source RGBA ordering */
+        rz_dst = SDL_CreateRGBSurface(0, dstwidth, dstheight + GUARD_ROWS, 32,
+                                      src->format->Rmask, src->format->Gmask,
+                                      src->format->Bmask, src->format->Amask);
     }
 
     /* Check target */
@@ -485,17 +467,32 @@ SDLgfx_rotateSurface(SDL_Surface * src, double angle, int centerx, int centery, 
     /* Adjust for guard rows */
     rz_dst->h = dstheight;
 
-    if (colorKeyAvailable == 1) {
-        colorkey = SDL_MapRGBA(rz_dst->format, r, g, b, a);
+    SDL_GetSurfaceBlendMode(src, &blendmode);
 
+    if (colorKeyAvailable == SDL_TRUE) {
+        /* If available, the colorkey will be used to discard the pixels that are outside of the rotated area. */
+        SDL_SetColorKey(rz_dst, SDL_TRUE, colorkey);
         SDL_FillRect(rz_dst, NULL, colorkey);
+    } else if (blendmode == SDL_BLENDMODE_NONE) {
+        blendmode = SDL_BLENDMODE_BLEND;
+    } else if (blendmode == SDL_BLENDMODE_MOD) {
+        /* Without a colorkey, the target texture has to be white for the MOD blend mode so
+         * that the pixels outside the rotated area don't affect the destination surface.
+         */
+        colorkey = SDL_MapRGBA(rz_dst->format, 255, 255, 255, 0);
+        SDL_FillRect(rz_dst, NULL, colorkey);
+        /* Setting a white colorkey for the destination surface makes the final blit discard
+         * all pixels outside of the rotated area. This doesn't interfere with anything because
+         * white pixels are already a no-op and the MOD blend mode does not interact with alpha.
+         */
+        SDL_SetColorKey(rz_dst, SDL_TRUE, colorkey);
     }
 
-    /*
-    * Lock source surface
-    */
-    if (SDL_MUSTLOCK(rz_src)) {
-        SDL_LockSurface(rz_src);
+    SDL_SetSurfaceBlendMode(rz_dst, blendmode);
+
+    /* Lock source surface */
+    if (SDL_MUSTLOCK(src)) {
+        SDL_LockSurface(src);
     }
 
     /* check if the rotation is a multiple of 90 degrees so we can take a fast path and also somewhat reduce
@@ -510,74 +507,29 @@ SDLgfx_rotateSurface(SDL_Surface * src, double angle, int centerx, int centery, 
         angle90 = -1;
     }
 
-    /*
-    * Check which kind of surface we have
-    */
-    if (is32bit) {
-        /*
-        * Call the 32bit transformation routine to do the rotation (using alpha)
-        */
-        if (angle90 >= 0) {
-            transformSurfaceRGBA90(rz_src, rz_dst, angle90, flipx, flipy);
-        } else {
-            _transformSurfaceRGBA(rz_src, rz_dst, centerx, centery, (int) (sangleinv), (int) (cangleinv), flipx, flipy, smooth);
-        }
-        /*
-         * Turn on source-alpha support
-         */
-        /* SDL_SetAlpha(rz_dst, SDL_SRCALPHA, 255); */
-    } else {
-        /*
-        * Copy palette and colorkey info
-        */
-        for (i = 0; i < rz_src->format->palette->ncolors; i++) {
-            rz_dst->format->palette->colors[i] = rz_src->format->palette->colors[i];
-        }
-        rz_dst->format->palette->ncolors = rz_src->format->palette->ncolors;
-        /*
-        * Call the 8bit transformation routine to do the rotation
-        */
+    if (is8bit) {
+        /* Call the 8-bit transformation routine to do the rotation */
         if(angle90 >= 0) {
-            transformSurfaceY90(rz_src, rz_dst, angle90, flipx, flipy);
+            transformSurfaceY90(src, rz_dst, angle90, flipx, flipy);
         } else {
-            transformSurfaceY(rz_src, rz_dst, centerx, centery, (int)(sangleinv), (int)(cangleinv), flipx, flipy);
+            transformSurfaceY(src, rz_dst, centerx, centery, (int)sangleinv, (int)cangleinv,
+                              flipx, flipy);
+        }
+    } else {
+        /* Call the 32-bit transformation routine to do the rotation */
+        if (angle90 >= 0) {
+            transformSurfaceRGBA90(src, rz_dst, angle90, flipx, flipy);
+        } else {
+            _transformSurfaceRGBA(src, rz_dst, centerx, centery, (int)sangleinv, (int)cangleinv,
+                                  flipx, flipy, smooth);
         }
     }
 
-    if (colorKeyAvailable == 1) {
-       SDL_SetColorKey(rz_dst, /* SDL_SRCCOLORKEY */ SDL_TRUE | SDL_RLEACCEL, colorkey);
-    } else {
-       SDL_SetColorKey(rz_dst, SDL_FALSE, 0);
+    /* Unlock source surface */
+    if (SDL_MUSTLOCK(src)) {
+        SDL_UnlockSurface(src);
     }
 
-    /* copy alpha mod, color mod, and blend mode */
-    {
-      SDL_BlendMode blendMode;
-      Uint8 alphaMod, cr, cg, cb;
-      SDL_GetSurfaceAlphaMod(src, &alphaMod);
-      SDL_GetSurfaceBlendMode(src, &blendMode);
-      SDL_GetSurfaceColorMod(src, &cr, &cg, &cb);
-      SDL_SetSurfaceAlphaMod(rz_dst, alphaMod);
-      SDL_SetSurfaceBlendMode(rz_dst, blendMode);
-      SDL_SetSurfaceColorMod(rz_dst, cr, cg, cb);
-    }
-
-    /*
-    * Unlock source surface
-    */
-    if (SDL_MUSTLOCK(rz_src)) {
-        SDL_UnlockSurface(rz_src);
-    }
-
-    /*
-    * Cleanup temp surface
-    */
-    if (rz_src != src) {
-        SDL_FreeSurface(rz_src);
-    }
-
-    /*
-    * Return destination surface
-    */
-    return (rz_dst);
+    /* Return rotated surface */
+    return rz_dst;
 }
