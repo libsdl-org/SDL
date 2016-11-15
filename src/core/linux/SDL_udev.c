@@ -280,7 +280,6 @@ SDL_UDEV_LoadLibrary(void)
 #define BITS_PER_LONG           (sizeof(unsigned long) * 8)
 #define NBITS(x)                ((((x)-1)/BITS_PER_LONG)+1)
 #define OFF(x)                  ((x)%BITS_PER_LONG)
-/* #define BIT(x)                  (1UL<<OFF(x)) */
 #define LONG(x)                 ((x)/BITS_PER_LONG)
 #define test_bit(bit, array)    ((array[LONG(bit)] >> OFF(bit)) & 1)
 
