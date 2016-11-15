@@ -77,11 +77,6 @@ to a situation where the program can segfault.
 #define GUARD_ROWS (2)
 
 /* !
-\brief Lower limit of absolute zoom factor or rotation degrees.
-*/
-/* #define VALUE_LIMIT 0.001 */
-
-/* !
 \brief Returns colorkey info for a surface
 */
 static Uint32
