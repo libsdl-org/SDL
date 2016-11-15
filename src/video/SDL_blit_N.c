@@ -1113,6 +1113,7 @@ Blit_RGB101010_index8(SDL_BlitInfo * info)
                                 (((*src)&0x0000F800)>>6)| \
                                 (((*src)&0x000000F8)>>3)); \
 }
+#ifndef USE_DUFFS_LOOP
 #define RGB888_RGB555_TWO(dst, src) { \
     *(Uint32 *)(dst) = (((((src[HI])&0x00F80000)>>9)| \
                          (((src[HI])&0x0000F800)>>6)| \
@@ -1121,6 +1122,7 @@ Blit_RGB101010_index8(SDL_BlitInfo * info)
                          (((src[LO])&0x0000F800)>>6)| \
                          (((src[LO])&0x000000F8)>>3); \
 }
+#endif
 static void
 Blit_RGB888_RGB555(SDL_BlitInfo * info)
 {
@@ -1237,6 +1239,7 @@ Blit_RGB888_RGB555(SDL_BlitInfo * info)
                                 (((*src)&0x0000FC00)>>5)| \
                                 (((*src)&0x000000F8)>>3)); \
 }
+#ifndef USE_DUFFS_LOOP
 #define RGB888_RGB565_TWO(dst, src) { \
     *(Uint32 *)(dst) = (((((src[HI])&0x00F80000)>>8)| \
                          (((src[HI])&0x0000FC00)>>5)| \
@@ -1245,6 +1248,7 @@ Blit_RGB888_RGB555(SDL_BlitInfo * info)
                          (((src[LO])&0x0000FC00)>>5)| \
                          (((src[LO])&0x000000F8)>>3); \
 }
+#endif
 static void
 Blit_RGB888_RGB565(SDL_BlitInfo * info)
 {
@@ -2459,6 +2463,9 @@ BlitNto2101010(SDL_BlitInfo * info)
 }
 
 /* Normal N to N optimized blitters */
+#define NO_ALPHA   1
+#define SET_ALPHA  2
+#define COPY_ALPHA 4
 struct blit_table
 {
     Uint32 srcR, srcG, srcB;
@@ -2466,8 +2473,7 @@ struct blit_table
     Uint32 dstR, dstG, dstB;
     Uint32 blit_features;
     SDL_BlitFunc blitfunc;
-    enum
-    { NO_ALPHA = 1, SET_ALPHA = 2, COPY_ALPHA = 4 } alpha;
+    Uint32 alpha; // bitwise NO_ALPHA, SET_ALPHA, COPY_ALPHA
 };
 static const struct blit_table normal_blit_1[] = {
     /* Default for 8-bit RGB source, never optimized */
