@@ -37,17 +37,19 @@ DirectFB_CreateShapedWindow(const char *title,unsigned int x,unsigned int y,unsi
 SDL_WindowShaper*
 DirectFB_CreateShaper(SDL_Window* window) {
     SDL_WindowShaper* result = NULL;
+    SDL_ShapeData* data;
+    int resized_properly;
 
     result = malloc(sizeof(SDL_WindowShaper));
     result->window = window;
     result->mode.mode = ShapeModeDefault;
     result->mode.parameters.binarizationCutoff = 1;
     result->userx = result->usery = 0;
-    SDL_ShapeData* data = SDL_malloc(sizeof(SDL_ShapeData));
+    data = SDL_malloc(sizeof(SDL_ShapeData));
     result->driverdata = data;
     data->surface = NULL;
     window->shaper = result;
-    int resized_properly = DirectFB_ResizeWindowShape(window);
+    resized_properly = DirectFB_ResizeWindowShape(window);
     SDL_assert(resized_properly == 0);
 
     return result;
