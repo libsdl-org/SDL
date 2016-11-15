@@ -443,7 +443,7 @@ SDLTest_RandomSint64BoundaryValue(Sint64 boundary1, Sint64 boundary2, SDL_bool v
 float
 SDLTest_RandomUnitFloat()
 {
-    return (float) SDLTest_RandomUint32() / UINT_MAX;
+    return SDLTest_RandomUint32() / (float) UINT_MAX;
 }
 
 float

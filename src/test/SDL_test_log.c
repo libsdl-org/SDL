@@ -26,7 +26,9 @@
 */
 
 /* quiet windows compiler warnings */
-#define _CRT_SECURE_NO_WARNINGS
+#if defined(_MSC_VER)
+# define _CRT_SECURE_NO_WARNINGS
+#endif
 
 #include "SDL_config.h"
 

@@ -206,7 +206,7 @@ SDLTest_SetTestTimeout(int timeout, void (*callback)())
 /**
 * \brief Timeout handler. Aborts test run and exits harness process.
 */
-static void
+static SDL_NORETURN void
 SDLTest_BailOut()
 {
     SDLTest_LogError("TestCaseTimeout timer expired. Aborting test run.");

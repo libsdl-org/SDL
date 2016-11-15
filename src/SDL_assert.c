@@ -111,7 +111,8 @@ static void SDL_GenerateAssertionReport(void)
     }
 }
 
-static void SDL_ExitProcess(int exitcode)
+
+static SDL_NORETURN void SDL_ExitProcess(int exitcode)
 {
 #ifdef __WIN32__
     ExitProcess(exitcode);
@@ -120,7 +121,8 @@ static void SDL_ExitProcess(int exitcode)
 #endif
 }
 
-static void SDL_AbortAssertion(void)
+
+static SDL_NORETURN void SDL_AbortAssertion(void)
 {
     SDL_Quit();
     SDL_ExitProcess(42);

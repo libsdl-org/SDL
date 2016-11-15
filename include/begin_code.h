@@ -134,6 +134,16 @@
 #endif
 #endif /* SDL_FORCE_INLINE not defined */
 
+#ifndef SDL_NORETURN
+#if defined(__GNUC__)
+#define SDL_NORETURN __attribute__((noreturn))
+#elif defined(_MSC_VER)
+#define SDL_NORETURN __declspec(noreturn)
+#else
+#define SDL_NORETURN
+#endif
+#endif /* SDL_NORETURN not defined */
+
 /* Apparently this is needed by several Windows compilers */
 #if !defined(__MACH__)
 #ifndef NULL
