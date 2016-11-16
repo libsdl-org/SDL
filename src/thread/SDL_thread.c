@@ -121,7 +121,7 @@ static SDL_TLSEntry *SDL_generic_TLS;
 
 
 SDL_TLSData *
-SDL_Generic_GetTLSData()
+SDL_Generic_GetTLSData(void)
 {
     SDL_threadID thread = SDL_ThreadID();
     SDL_TLSEntry *entry;

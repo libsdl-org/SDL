@@ -363,12 +363,14 @@ SDL_SYS_JoystickInit(void)
 
 }
 
-int SDL_SYS_NumJoysticks()
+int
+SDL_SYS_NumJoysticks(void)
 {
     return numjoysticks;
 }
 
-void SDL_SYS_JoystickDetect()
+void
+SDL_SYS_JoystickDetect(void)
 {
     /* Support for device connect/disconnect is API >= 16 only,
      * so we poll every three seconds

@@ -307,7 +307,7 @@ SDL_SYS_JoystickInit(void)
 
 /* return the number of joysticks that are connected right now */
 int
-SDL_SYS_NumJoysticks()
+SDL_SYS_NumJoysticks(void)
 {
     int nJoysticks = 0;
     JoyStick_DeviceData *device = SYS_Joystick;
@@ -321,7 +321,7 @@ SDL_SYS_NumJoysticks()
 
 /* detect any new joysticks being inserted into the system */
 void
-SDL_SYS_JoystickDetect()
+SDL_SYS_JoystickDetect(void)
 {
     JoyStick_DeviceData *pCurList = NULL;
 

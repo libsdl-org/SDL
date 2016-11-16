@@ -326,12 +326,14 @@ SDL_SYS_JoystickInit(void)
     return numjoysticks;
 }
 
-int SDL_SYS_NumJoysticks()
+int
+SDL_SYS_NumJoysticks(void)
 {
     return numjoysticks;
 }
 
-void SDL_SYS_JoystickDetect()
+void
+SDL_SYS_JoystickDetect(void)
 {
 }
 

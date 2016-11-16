@@ -189,7 +189,7 @@ SDL_SYS_HapticInit(void)
 }
 
 int
-SDL_SYS_NumHaptics()
+SDL_SYS_NumHaptics(void)
 {
     return numhaptics;
 }
