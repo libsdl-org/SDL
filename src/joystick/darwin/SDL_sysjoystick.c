@@ -580,7 +580,7 @@ SDL_SYS_JoystickInit(void)
 
 /* Function to return the number of joystick devices plugged in right now */
 int
-SDL_SYS_NumJoysticks()
+SDL_SYS_NumJoysticks(void)
 {
     recDevice *device = gpDeviceList;
     int nJoySticks = 0;
@@ -598,7 +598,7 @@ SDL_SYS_NumJoysticks()
 /* Function to cause any queued joystick insertions to be processed
  */
 void
-SDL_SYS_JoystickDetect()
+SDL_SYS_JoystickDetect(void)
 {
     recDevice *device = gpDeviceList;
     while (device) {

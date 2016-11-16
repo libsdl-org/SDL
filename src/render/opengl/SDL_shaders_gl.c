@@ -369,7 +369,7 @@ DestroyShaderProgram(GL_ShaderContext *ctx, GL_ShaderData *data)
 }
 
 GL_ShaderContext *
-GL_CreateShaderContext()
+GL_CreateShaderContext(void)
 {
     GL_ShaderContext *ctx;
     SDL_bool shaders_supported;

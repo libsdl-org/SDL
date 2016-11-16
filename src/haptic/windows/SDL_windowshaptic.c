@@ -98,7 +98,7 @@ SDL_SYS_RemoveHapticDevice(SDL_hapticlist_item *prev, SDL_hapticlist_item *item)
 }
 
 int
-SDL_SYS_NumHaptics()
+SDL_SYS_NumHaptics(void)
 {
     return numhaptics;
 }

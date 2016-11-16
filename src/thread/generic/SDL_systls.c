@@ -24,7 +24,7 @@
 
 
 SDL_TLSData *
-SDL_SYS_GetTLSData()
+SDL_SYS_GetTLSData(void)
 {
     return SDL_Generic_GetTLSData();
 }
