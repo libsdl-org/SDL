@@ -271,6 +271,7 @@ Wayland_add_display(SDL_VideoData *d, uint32_t id)
     output = wl_registry_bind(d->registry, id, &wl_output_interface, 2);
     if (!output) {
         SDL_SetError("Failed to retrieve output.");
+        SDL_free(display);
         return;
     }
 
