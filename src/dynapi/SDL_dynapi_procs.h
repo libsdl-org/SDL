@@ -653,3 +653,4 @@ SDL_DYNAPI_PROC(Uint16,SDL_JoystickGetProductVersion,(SDL_Joystick *a),(a),retur
 SDL_DYNAPI_PROC(Uint16,SDL_GameControllerGetVendor,(SDL_GameController *a),(a),return)
 SDL_DYNAPI_PROC(Uint16,SDL_GameControllerGetProduct,(SDL_GameController *a),(a),return)
 SDL_DYNAPI_PROC(Uint16,SDL_GameControllerGetProductVersion,(SDL_GameController *a),(a),return)
+SDL_DYNAPI_PROC(SDL_bool,SDL_HasNEON,(void),(),return)

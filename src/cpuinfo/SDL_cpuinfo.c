@@ -50,6 +50,15 @@
 #include <setjmp.h>
 #endif
 
+#if defined(__ANDROID__)
+#include <cpu-features.h>
+#endif
+
+#if defined(__LINUX__) && HAVE_GETAUXVAL
+#include <sys/auxv.h>
+#include <asm/hwcap.h>
+#endif
+
 #define CPU_HAS_RDTSC   0x00000001
 #define CPU_HAS_ALTIVEC 0x00000002
 #define CPU_HAS_MMX     0x00000004
@@ -61,6 +70,7 @@
 #define CPU_HAS_SSE42   0x00000200
 #define CPU_HAS_AVX     0x00000400
 #define CPU_HAS_AVX2    0x00000800
+#define CPU_HAS_NEON    0x00001000
 
 #if SDL_ALTIVEC_BLITTERS && HAVE_SETJMP && !__MACOSX__ && !__OpenBSD__
 /* This is the brute force way of detecting instruction sets...
@@ -286,6 +296,40 @@ CPU_haveAltiVec(void)
 #endif
 #endif
     return altivec;
+}
+
+static int
+CPU_haveNEON(void)
+{
+    int neon = 0;
+
+/* The way you detect NEON is a privileged instruction on ARM, so you have
+   query the OS kernel in a platform-specific way. :/ */
+#ifndef SDL_CPUINFO_DISABLED
+#if defined(__APPLE__) && defined(__ARM_ARCH)
+    /* all hardware that runs iOS 5 and later support NEON, but check anyhow */
+    size_t length = sizeof (neon);
+    const int error = sysctlbyname("hw.optional.neon", &neon, &length, NULL, 0);
+    if (!error)
+        neon = (neon != 0);
+#elif defined(__ANDROID__)
+    if ( (android_getCpuFamily() == ANDROID_CPU_FAMILY_ARM) &&
+         ((android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0) ) {
+        neon = 1;
+    }
+#elif defined(__LINUX__) && HAVE_GETAUXVAL && defined(__arm__)
+    if (getauxval(AT_HWCAP) & HWCAP_NEON) {
+        neon = 1;
+    }
+#elif (defined(__WINDOWS__) || defined(__WINRT__)) && defined(_M_ARM)
+    /* All WinRT ARM devices are required to support NEON, but just in case. */
+    if (IsProcessorFeaturePresent(PF_ARM_NEON_INSTRUCTIONS_AVAILABLE)) {
+        neon = 1;
+    }
+#endif
+#endif
+
+    return neon;
 }
 
 static int
@@ -527,6 +571,9 @@ SDL_GetCPUFeatures(void)
         if (CPU_haveAVX2()) {
             SDL_CPUFeatures |= CPU_HAS_AVX2;
         }
+        if (CPU_haveNEON()) {
+            SDL_CPUFeatures |= CPU_HAS_NEON;
+        }
     }
     return SDL_CPUFeatures;
 }
@@ -598,6 +645,12 @@ SDL_HasAVX2(void)
     return CPU_FEATURE_AVAILABLE(CPU_HAS_AVX2);
 }
 
+SDL_bool
+SDL_HasNEON(void)
+{
+    return CPU_FEATURE_AVAILABLE(CPU_HAS_NEON);
+}
+
 static int SDL_SystemRAM = 0;
 
 int
@@ -667,6 +720,7 @@ main()
     printf("SSE4.2: %d\n", SDL_HasSSE42());
     printf("AVX: %d\n", SDL_HasAVX());
     printf("AVX2: %d\n", SDL_HasAVX2());
+    printf("NEON: %d\n", SDL_HasNEON());
     printf("RAM: %d MB\n", SDL_GetSystemRAM());
     return 0;
 }

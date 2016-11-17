@@ -615,7 +615,7 @@ if(LIBC)
             _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull
             atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp
             vsscanf vsnprintf fseeko fseeko64 sigaction setjmp
-            nanosleep sysconf sysctlbyname
+            nanosleep sysconf sysctlbyname getauxval
             )
       string(TOUPPER ${_FN} _UPPER)
       set(_HAVEVAR "HAVE_${_UPPER}")
