@@ -697,9 +697,15 @@ WIN_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
 {
     const SDL_WindowData *data = (const SDL_WindowData *) window->driverdata;
     if (info->version.major <= SDL_MAJOR_VERSION) {
+        int versionnum = SDL_VERSIONNUM(info->version.major, info->version.minor, info->version.patch);
+
         info->subsystem = SDL_SYSWM_WINDOWS;
         info->info.win.window = data->hwnd;
-        info->info.win.hdc = data->hdc;
+
+        if (versionnum >= SDL_VERSIONNUM(2, 0, 4)) {
+            info->info.win.hdc = data->hdc;
+        }
+
         return SDL_TRUE;
     } else {
         SDL_SetError("Application not compiled with SDL %d.%d\n",
