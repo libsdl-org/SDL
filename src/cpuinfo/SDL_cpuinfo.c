@@ -50,8 +50,10 @@
 #include <setjmp.h>
 #endif
 
+#if 0  /* !!! FIXME */
 #if defined(__ANDROID__) && defined(__ARM_ARCH)
 #include <cpu-features.h>
+#endif
 #endif
 
 #if defined(__LINUX__) && defined(__ARM_ARCH) && HAVE_GETAUXVAL
@@ -312,7 +314,7 @@ CPU_haveNEON(void)
     const int error = sysctlbyname("hw.optional.neon", &neon, &length, NULL, 0);
     if (!error)
         neon = (neon != 0);
-#elif defined(__ANDROID__) && defined(__ARM_ARCH)
+#elif 0 && defined(__ANDROID__) && defined(__ARM_ARCH)  /* !!! FIXME */
     if ( (android_getCpuFamily() == ANDROID_CPU_FAMILY_ARM) &&
          ((android_getCpuFeatures() & ANDROID_CPU_ARM_FEATURE_NEON) != 0) ) {
         neon = 1;
