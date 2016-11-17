@@ -621,3 +621,4 @@
 #define SDL_GameControllerGetVendor SDL_GameControllerGetVendor_REAL
 #define SDL_GameControllerGetProduct SDL_GameControllerGetProduct_REAL
 #define SDL_GameControllerGetProductVersion SDL_GameControllerGetProductVersion_REAL
+#define SDL_HasNEON SDL_HasNEON_REAL
