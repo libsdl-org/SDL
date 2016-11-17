@@ -51,7 +51,13 @@
 #endif
 
 #if (defined(__LINUX__) || defined(__ANDROID__)) && defined(__ARM_ARCH)
-#include <asm/hwcap.h>
+/*#include <asm/hwcap.h>*/
+#ifndef AT_HWCAP
+#define AT_HWCAP 16
+#endif
+#ifndef HWCAP_NEON
+#define HWCAP_NEON (1 << 12)
+#endif
 #if defined HAVE_GETAUXVAL
 #include <sys/auxv.h>
 #else
