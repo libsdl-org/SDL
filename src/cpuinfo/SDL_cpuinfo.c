@@ -362,6 +362,7 @@ CPU_haveAVX2(void)
 {
     if (CPU_OSSavesYMM && (CPU_CPUIDMaxFunction >= 7)) {
         int a, b, c, d;
+        (void) a; (void) b; (void) c; (void) d;  /* compiler warnings... */
         cpuid(7, a, b, c, d);
         return (b & 0x00000020);
     }
