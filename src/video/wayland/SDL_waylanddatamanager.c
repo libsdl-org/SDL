@@ -347,10 +347,10 @@ Wayland_data_offer_receive(SDL_WaylandDataOffer *offer,
 
     if (offer == NULL) {
         SDL_SetError("Invalid data offer");
-    } else if (pipe2(pipefd, O_CLOEXEC|O_NONBLOCK) == -1) {
-        SDL_SetError("Could not read pipe");
     } else if ((data_device = offer->data_device) == NULL) {
         SDL_SetError("Data device not initialized");
+    } else if (pipe2(pipefd, O_CLOEXEC|O_NONBLOCK) == -1) {
+        SDL_SetError("Could not read pipe");
     } else {
         wl_data_offer_receive(offer->offer, mime_type, pipefd[1]);
 
