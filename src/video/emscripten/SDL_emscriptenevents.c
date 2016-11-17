@@ -336,7 +336,10 @@ EM_BOOL
 Emscripten_HandleMouseButton(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
-    uint32_t sdl_button;
+    Uint8 sdl_button;
+    Uint8 sdl_button_state;
+    SDL_EventType sdl_event_type;
+
     switch (mouseEvent->button) {
         case 0:
             sdl_button = SDL_BUTTON_LEFT;
@@ -351,8 +354,14 @@ Emscripten_HandleMouseButton(int eventType, const EmscriptenMouseEvent *mouseEve
             return 0;
     }
 
-    SDL_EventType sdl_event_type = (eventType == EMSCRIPTEN_EVENT_MOUSEDOWN ? SDL_PRESSED : SDL_RELEASED);
-    SDL_SendMouseButton(window_data->window, 0, sdl_event_type, sdl_button);
+    if (eventType == EMSCRIPTEN_EVENT_MOUSEDOWN) {
+        sdl_button_state = SDL_PRESSED;
+        sdl_event_type = SDL_MOUSEBUTTONDOWN;
+    } else {
+        sdl_button_state = SDL_RELEASED;
+        sdl_event_type = SDL_MOUSEBUTTONUP;
+    }
+    SDL_SendMouseButton(window_data->window, 0, sdl_button_state, sdl_button);
     return SDL_GetEventState(sdl_event_type) == SDL_ENABLE;
 }
 
