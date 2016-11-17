@@ -341,7 +341,7 @@ CPU_haveNEON(void)
     const int error = sysctlbyname("hw.optional.neon", &neon, &length, NULL, 0);
     return (!error) && (neon != 0);
 #elif (defined(__LINUX__) || defined(__ANDROID__)) && defined(HAVE_GETAUXVAL)
-    return ((getauxval(AT_HWCAP) & HWCAP_NEON) == HWCAP_NEON)
+    return ((getauxval(AT_HWCAP) & HWCAP_NEON) == HWCAP_NEON);
 #elif (defined(__LINUX__) || defined(__ANDROID__))
     return readProcAuxvForNeon();   /* Android offers a static library for this, but it just parses /proc/self/auxv */
 #elif (defined(__WINDOWS__) || defined(__WINRT__)) && defined(_M_ARM)
