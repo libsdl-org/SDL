@@ -50,10 +50,11 @@
 #include <setjmp.h>
 #endif
 
-#if defined(__LINUX__) || defined(__ANDROID__) && defined(__ARM_ARCH)
-#include <sys/auxv.h>
+#if (defined(__LINUX__) || defined(__ANDROID__)) && defined(__ARM_ARCH)
 #include <asm/hwcap.h>
-#if !defined HAVE_GETAUXVAL
+#if defined HAVE_GETAUXVAL
+#include <sys/auxv.h>
+#else
 #include <fcntl.h>
 #endif
 #endif
@@ -297,27 +298,22 @@ CPU_haveAltiVec(void)
     return altivec;
 }
 
-#if (defined(__LINUX__) || defined(__ANDROID__)) && !defined(HAVE_GETAUXVAL)
+#if (defined(__LINUX__) || defined(__ANDROID__)) && defined(__ARM_ARCH) && !defined(HAVE_GETAUXVAL)
 static int
 readProcAuxvForNeon(void)
 {
     int neon = 0;
     int kv[2];
     const int fd = open("/proc/self/auxv", O_RDONLY);
-
-    if (fd == -1) {
-        return 0;
-    }
-
-    while (read(fd, kv, sizeof (kv)) == sizeof (kv)) {
-        if (kv[0] == AT_HWCAP) {
-            neon = ((kv[1] & HWCAP_NEON) == HWCAP_NEON);
-            break;
+    if (fd != -1) {
+        while (read(fd, kv, sizeof (kv)) == sizeof (kv)) {
+            if (kv[0] == AT_HWCAP) {
+                neon = ((kv[1] & HWCAP_NEON) == HWCAP_NEON);
+                break;
+            }
         }
+        close(fd);
     }
-
-    close(fd);
-
     return neon;
 }
 #endif
@@ -338,11 +334,10 @@ CPU_haveNEON(void)
     size_t length = sizeof (neon);
     const int error = sysctlbyname("hw.optional.neon", &neon, &length, NULL, 0);
     return (!error) && (neon != 0);
-/* Android offers a static library for this but all it does is parse /proc/cpuinfo */
 #elif (defined(__LINUX__) || defined(__ANDROID__)) && defined(HAVE_GETAUXVAL)
     return ((getauxval(AT_HWCAP) & HWCAP_NEON) == HWCAP_NEON)
 #elif (defined(__LINUX__) || defined(__ANDROID__))
-    return readProcAuxvForNeon();
+    return readProcAuxvForNeon();   /* Android offers a static library for this, but it just parses /proc/self/auxv */
 #elif (defined(__WINDOWS__) || defined(__WINRT__)) && defined(_M_ARM)
     /* All WinRT ARM devices are required to support NEON, but just in case. */
     return IsProcessorFeaturePresent(PF_ARM_NEON_INSTRUCTIONS_AVAILABLE) != 0;
