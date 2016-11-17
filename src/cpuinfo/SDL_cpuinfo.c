@@ -50,9 +50,12 @@
 #include <setjmp.h>
 #endif
 
-#if defined(__LINUX__) && defined(__ARM_ARCH)
+#if defined(__LINUX__) || defined(__ANDROID__) && defined(__ARM_ARCH)
 #include <sys/auxv.h>
 #include <asm/hwcap.h>
+#if !defined HAVE_GETAUXVAL
+#include <fcntl.h>
+#endif
 #endif
 
 #define CPU_HAS_RDTSC   0x00000001
@@ -294,7 +297,7 @@ CPU_haveAltiVec(void)
     return altivec;
 }
 
-#if (defined(__LINUX__) || defined(__ANDROID__)) && !HAVE_GETAUXVAL
+#if (defined(__LINUX__) || defined(__ANDROID__)) && !defined(HAVE_GETAUXVAL)
 static int
 readProcAuxvForNeon(void)
 {
@@ -326,7 +329,7 @@ CPU_haveNEON(void)
 /* The way you detect NEON is a privileged instruction on ARM, so you have
    query the OS kernel in a platform-specific way. :/ */
 #if defined(SDL_CPUINFO_DISABLED) || !defined(__ARM_ARCH)
-    return 0;
+    return 0;  /* disabled or not an ARM CPU at all. */
 #elif __ARM_ARCH >= 8
     return 1;  // ARMv8 always has non-optional NEON support.
 #elif defined(__APPLE__)
@@ -336,18 +339,16 @@ CPU_haveNEON(void)
     const int error = sysctlbyname("hw.optional.neon", &neon, &length, NULL, 0);
     return (!error) && (neon != 0);
 /* Android offers a static library for this but all it does is parse /proc/cpuinfo */
-#elif (defined(__LINUX__) || defined(__ANDROID__)) && HAVE_GETAUXVAL
+#elif (defined(__LINUX__) || defined(__ANDROID__)) && defined(HAVE_GETAUXVAL)
     return ((getauxval(AT_HWCAP) & HWCAP_NEON) == HWCAP_NEON)
 #elif (defined(__LINUX__) || defined(__ANDROID__))
     return readProcAuxvForNeon();
 #elif (defined(__WINDOWS__) || defined(__WINRT__)) && defined(_M_ARM)
     /* All WinRT ARM devices are required to support NEON, but just in case. */
-    if (IsProcessorFeaturePresent(PF_ARM_NEON_INSTRUCTIONS_AVAILABLE)) {
-        neon = 1;
-    }
+    return IsProcessorFeaturePresent(PF_ARM_NEON_INSTRUCTIONS_AVAILABLE) != 0;
 #else
 #warning SDL_HasNEON is not implemented for this ARM platform. Write me.
-#endif
+    return 0;
 #endif
 }
 
