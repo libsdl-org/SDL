@@ -675,6 +675,9 @@ SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID, const char *mappingString, 
             pControllerMapping->priority = priority;
             /* refresh open controllers */
             SDL_PrivateGameControllerRefreshMapping(pControllerMapping);
+        } else {
+            SDL_free(pchName);
+            SDL_free(pchMapping);
         }
         *existing = SDL_TRUE;
     } else {
