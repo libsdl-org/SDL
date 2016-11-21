@@ -33,6 +33,7 @@ typedef struct
     HWND hwnd;
     HDC hdc;
     HDC mdc;
+    HINSTANCE hinstance;
     HBITMAP hbm;
     WNDPROC wndproc;
     SDL_bool created;
