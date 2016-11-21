@@ -304,7 +304,7 @@ SDL_LogMessageV(int category, SDL_LogPriority priority, const char *fmt, va_list
     SDL_stack_free(message);
 }
 
-#if defined(__WIN32__)
+#if defined(__WIN32__) && !defined(HAVE_STDIO_H) && !defined(__WINRT__)
 /* Flag tracking the attachment of the console: 0=unattached, 1=attached, -1=error */
 static int consoleAttached = 0;
 
