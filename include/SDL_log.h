@@ -34,8 +34,8 @@
  *      Others: standard error output (stderr)
  */
 
-#ifndef _SDL_log_h
-#define _SDL_log_h
+#ifndef SDL_log_h_
+#define SDL_log_h_
 
 #include "SDL_stdinc.h"
 
@@ -206,6 +206,6 @@ extern DECLSPEC void SDLCALL SDL_LogSetOutputFunction(SDL_LogOutputFunction call
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_log_h */
+#endif /* SDL_log_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -22,8 +22,8 @@
 
 /* These are functions that need to be implemented by a port of SDL */
 
-#ifndef _SDL_syspower_h
-#define _SDL_syspower_h
+#ifndef SDL_syspower_h_
+#define SDL_syspower_h_
 
 #include "SDL_power.h"
 
@@ -63,6 +63,6 @@ SDL_bool SDL_GetPowerInfo_Hardwired(SDL_PowerState *, int *, int *);
 #endif
 #endif
 
-#endif /* _SDL_syspower_h */
+#endif /* SDL_syspower_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_assert_h
-#define _SDL_assert_h
+#ifndef SDL_assert_h_
+#define SDL_assert_h_
 
 #include "SDL_config.h"
 
@@ -284,6 +284,6 @@ extern DECLSPEC void SDLCALL SDL_ResetAssertionReport(void);
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_assert_h */
+#endif /* SDL_assert_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

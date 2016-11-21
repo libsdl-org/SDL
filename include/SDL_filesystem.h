@@ -25,8 +25,8 @@
  *  \brief Include file for filesystem SDL API functions
  */
 
-#ifndef _SDL_filesystem_h
-#define _SDL_filesystem_h
+#ifndef SDL_filesystem_h_
+#define SDL_filesystem_h_
 
 #include "SDL_stdinc.h"
 
@@ -131,6 +131,6 @@ extern DECLSPEC char *SDLCALL SDL_GetPrefPath(const char *org, const char *app);
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_filesystem_h */
+#endif /* SDL_filesystem_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

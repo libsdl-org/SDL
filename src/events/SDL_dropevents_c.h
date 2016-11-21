@@ -20,13 +20,13 @@
 */
 #include "../SDL_internal.h"
 
-#ifndef _SDL_dropevents_c_h
-#define _SDL_dropevents_c_h
+#ifndef SDL_dropevents_c_h_
+#define SDL_dropevents_c_h_
 
 extern int SDL_SendDropFile(SDL_Window *window, const char *file);
 extern int SDL_SendDropText(SDL_Window *window, const char *text);
 extern int SDL_SendDropComplete(SDL_Window *window);
 
-#endif /* _SDL_dropevents_c_h */
+#endif /* SDL_dropevents_c_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

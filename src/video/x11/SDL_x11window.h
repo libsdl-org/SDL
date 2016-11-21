@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_x11window_h
-#define _SDL_x11window_h
+#ifndef SDL_x11window_h_
+#define SDL_x11window_h_
 
 /* We need to queue the focus in/out changes because they may occur during
    video mode changes and we can respond to them by triggering more mode
@@ -105,6 +105,6 @@ extern SDL_bool X11_GetWindowWMInfo(_THIS, SDL_Window * window,
                                     struct SDL_SysWMinfo *info);
 extern int X11_SetWindowHitTest(SDL_Window *window, SDL_bool enabled);
 
-#endif /* _SDL_x11window_h */
+#endif /* SDL_x11window_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

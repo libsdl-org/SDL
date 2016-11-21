@@ -25,8 +25,8 @@
  *  Include file for platform specific SDL API functions
  */
 
-#ifndef _SDL_system_h
-#define _SDL_system_h
+#ifndef SDL_system_h_
+#define SDL_system_h_
 
 #include "SDL_stdinc.h"
 #include "SDL_keyboard.h"
@@ -211,6 +211,6 @@ extern DECLSPEC const char * SDLCALL SDL_WinRTGetFSPathUTF8(SDL_WinRT_Path pathT
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_system_h */
+#endif /* SDL_system_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

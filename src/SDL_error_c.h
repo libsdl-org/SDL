@@ -24,8 +24,8 @@
    error messages
 */
 
-#ifndef _SDL_error_c_h
-#define _SDL_error_c_h
+#ifndef SDL_error_c_h_
+#define SDL_error_c_h_
 
 #define ERR_MAX_STRLEN  128
 #define ERR_MAX_ARGS    5
@@ -59,6 +59,6 @@ typedef struct SDL_error
 /* Defined in SDL_thread.c */
 extern SDL_error *SDL_GetErrBuf(void);
 
-#endif /* _SDL_error_c_h */
+#endif /* SDL_error_c_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

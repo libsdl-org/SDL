@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_config_h
-#define _SDL_config_h
+#ifndef SDL_config_h_
+#define SDL_config_h_
 
 /* This is a set of defines to configure the SDL features */
 
@@ -124,4 +124,4 @@
 #define SDL_VIDEO_RENDER_OGL_ES 1
 #define SDL_VIDEO_OPENGL_ES 1
 
-#endif /* _SDL_config_h */
+#endif /* SDL_config_h_ */

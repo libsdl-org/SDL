@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_ime_h
-#define _SDL_ime_h
+#ifndef SDL_ime_h_
+#define SDL_ime_h_
 
 #include "../../SDL_internal.h"
 
@@ -35,4 +35,4 @@ extern SDL_bool SDL_IME_ProcessKeyEvent(Uint32 keysym, Uint32 keycode);
 extern void SDL_IME_UpdateTextRect(SDL_Rect *rect);
 extern void SDL_IME_PumpEvents(void);
 
-#endif /* _SDL_ime_h */
+#endif /* SDL_ime_h_ */

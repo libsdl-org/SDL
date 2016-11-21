@@ -25,8 +25,8 @@
  *  Access to the raw audio mixing buffer for the SDL library.
  */
 
-#ifndef _SDL_audio_h
-#define _SDL_audio_h
+#ifndef SDL_audio_h_
+#define SDL_audio_h_
 
 #include "SDL_stdinc.h"
 #include "SDL_error.h"
@@ -667,6 +667,6 @@ extern DECLSPEC void SDLCALL SDL_CloseAudioDevice(SDL_AudioDeviceID dev);
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_audio_h */
+#endif /* SDL_audio_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

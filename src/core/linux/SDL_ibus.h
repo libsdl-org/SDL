@@ -21,8 +21,8 @@
 
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_ibus_h
-#define _SDL_ibus_h
+#ifndef SDL_ibus_h_
+#define SDL_ibus_h_
 
 #ifdef HAVE_IBUS_IBUS_H
 #define SDL_USE_IBUS 1
@@ -53,6 +53,6 @@ extern void SDL_IBus_PumpEvents();
 
 #endif /* HAVE_IBUS_IBUS_H */
 
-#endif /* _SDL_ibus_h */
+#endif /* SDL_ibus_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -20,12 +20,12 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_x11events_h
-#define _SDL_x11events_h
+#ifndef SDL_x11events_h_
+#define SDL_x11events_h_
 
 extern void X11_PumpEvents(_THIS);
 extern void X11_SuspendScreenSaver(_THIS);
 
-#endif /* _SDL_x11events_h */
+#endif /* SDL_x11events_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

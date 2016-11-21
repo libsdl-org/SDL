@@ -20,13 +20,13 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_mutex_c_h
-#define _SDL_mutex_c_h
+#ifndef SDL_mutex_c_h_
+#define SDL_mutex_c_h_
 
 struct SDL_mutex
 {
     pthread_mutex_t id;
 };
 
-#endif /* _SDL_mutex_c_h */
+#endif /* SDL_mutex_c_h_ */
 /* vi: set ts=4 sw=4 expandtab: */

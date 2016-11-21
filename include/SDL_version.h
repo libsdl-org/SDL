@@ -25,8 +25,8 @@
  *  This header defines the current SDL version.
  */
 
-#ifndef _SDL_version_h
-#define _SDL_version_h
+#ifndef SDL_version_h_
+#define SDL_version_h_
 
 #include "SDL_stdinc.h"
 
@@ -157,6 +157,6 @@ extern DECLSPEC int SDLCALL SDL_GetRevisionNumber(void);
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_version_h */
+#endif /* SDL_version_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

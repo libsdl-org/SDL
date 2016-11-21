@@ -25,8 +25,8 @@
  *  Include file for SDL keyboard event handling
  */
 
-#ifndef _SDL_keyboard_h
-#define _SDL_keyboard_h
+#ifndef SDL_keyboard_h_
+#define SDL_keyboard_h_
 
 #include "SDL_stdinc.h"
 #include "SDL_error.h"
@@ -212,6 +212,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IsScreenKeyboardShown(SDL_Window *window);
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_keyboard_h */
+#endif /* SDL_keyboard_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

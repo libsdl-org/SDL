@@ -25,8 +25,8 @@
  *  Try to get a standard set of platform defines.
  */
 
-#ifndef _SDL_platform_h
-#define _SDL_platform_h
+#ifndef SDL_platform_h_
+#define SDL_platform_h_
 
 #if defined(_AIX)
 #undef __AIX__
@@ -180,6 +180,6 @@ extern DECLSPEC const char * SDLCALL SDL_GetPlatform (void);
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_platform_h */
+#endif /* SDL_platform_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

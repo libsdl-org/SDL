@@ -33,8 +33,8 @@
 
 */
 
-#ifndef _SDL_test_fuzzer_h
-#define _SDL_test_fuzzer_h
+#ifndef SDL_test_fuzzer_h_
+#define SDL_test_fuzzer_h_
 
 #include "begin_code.h"
 /* Set up for C function definitions, even when using C++ */
@@ -379,6 +379,6 @@ int SDLTest_GetFuzzerInvocationCount(void);
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_test_fuzzer_h */
+#endif /* SDL_test_fuzzer_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

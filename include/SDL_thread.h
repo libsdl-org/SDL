@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_thread_h
-#define _SDL_thread_h
+#ifndef SDL_thread_h_
+#define SDL_thread_h_
 
 /**
  *  \file SDL_thread.h
@@ -282,6 +282,6 @@ extern DECLSPEC int SDLCALL SDL_TLSSet(SDL_TLSID id, const void *value, void (*d
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_thread_h */
+#endif /* SDL_thread_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

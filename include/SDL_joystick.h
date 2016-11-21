@@ -36,8 +36,8 @@
  *
  */
 
-#ifndef _SDL_joystick_h
-#define _SDL_joystick_h
+#ifndef SDL_joystick_h_
+#define SDL_joystick_h_
 
 #include "SDL_stdinc.h"
 #include "SDL_error.h"
@@ -310,6 +310,6 @@ extern DECLSPEC SDL_JoystickPowerLevel SDLCALL SDL_JoystickCurrentPowerLevel(SDL
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_joystick_h */
+#endif /* SDL_joystick_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

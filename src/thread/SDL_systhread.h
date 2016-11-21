@@ -22,8 +22,8 @@
 
 /* These are functions that need to be implemented by a port of SDL */
 
-#ifndef _SDL_systhread_h
-#define _SDL_systhread_h
+#ifndef SDL_systhread_h_
+#define SDL_systhread_h_
 
 #include "SDL_thread.h"
 #include "SDL_thread_c.h"
@@ -65,6 +65,6 @@ extern SDL_Thread *
 SDL_CreateThreadInternal(int (SDLCALL * fn) (void *), const char *name,
                          const size_t stacksize, void *data);
 
-#endif /* _SDL_systhread_h */
+#endif /* SDL_systhread_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

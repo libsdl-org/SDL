@@ -20,8 +20,8 @@
 */
 #include "../SDL_internal.h"
 
-#ifndef _SDL_sysvideo_h
-#define _SDL_sysvideo_h
+#ifndef SDL_sysvideo_h_
+#define SDL_sysvideo_h_
 
 #include "SDL_messagebox.h"
 #include "SDL_shape.h"
@@ -443,6 +443,6 @@ extern SDL_bool SDL_ShouldAllowTopmost(void);
 
 extern float SDL_ComputeDiagonalDPI(int hpix, int vpix, float hinches, float vinches);
 
-#endif /* _SDL_sysvideo_h */
+#endif /* SDL_sysvideo_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

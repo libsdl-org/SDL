@@ -104,8 +104,8 @@
  * \endcode
  */
 
-#ifndef _SDL_haptic_h
-#define _SDL_haptic_h
+#ifndef SDL_h_aptic_h
+#define SDL_h_aptic_h
 
 #include "SDL_stdinc.h"
 #include "SDL_error.h"
@@ -1218,6 +1218,6 @@ extern DECLSPEC int SDLCALL SDL_HapticRumbleStop(SDL_Haptic * haptic);
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_haptic_h */
+#endif /* SDL_h_aptic_h */
 
 /* vi: set ts=4 sw=4 expandtab: */

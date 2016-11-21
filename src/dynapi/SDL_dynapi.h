@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_dynapi_h
-#define _SDL_dynapi_h
+#ifndef SDL_dynapi_h_
+#define SDL_dynapi_h_
 
 /* IMPORTANT:
    This is the master switch to disabling the dynamic API. We made it so you

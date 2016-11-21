@@ -21,8 +21,8 @@
 
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_udev_h
-#define _SDL_udev_h
+#ifndef SDL_udev_h_
+#define SDL_udev_h_
 
 #if HAVE_LIBUDEV_H
 
@@ -116,4 +116,4 @@ extern void SDL_UDEV_DelCallback(SDL_UDEV_Callback cb);
 
 #endif /* HAVE_LIBUDEV_H */
 
-#endif /* _SDL_udev_h */
+#endif /* SDL_udev_h_ */

@@ -25,8 +25,8 @@
  *  Header for the enumerated pixel format definitions.
  */
 
-#ifndef _SDL_pixels_h
-#define _SDL_pixels_h
+#ifndef SDL_pixels_h_
+#define SDL_pixels_h_
 
 #include "SDL_stdinc.h"
 #include "SDL_endian.h"
@@ -463,6 +463,6 @@ extern DECLSPEC void SDLCALL SDL_CalculateGammaRamp(float gamma, Uint16 * ramp);
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_pixels_h */
+#endif /* SDL_pixels_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

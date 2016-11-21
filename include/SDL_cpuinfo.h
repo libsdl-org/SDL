@@ -25,8 +25,8 @@
  *  CPU feature detection for SDL.
  */
 
-#ifndef _SDL_cpuinfo_h
-#define _SDL_cpuinfo_h
+#ifndef SDL_cpuinfo_h_
+#define SDL_cpuinfo_h_
 
 #include "SDL_stdinc.h"
 
@@ -161,6 +161,6 @@ extern DECLSPEC int SDLCALL SDL_GetSystemRAM(void);
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_cpuinfo_h */
+#endif /* SDL_cpuinfo_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

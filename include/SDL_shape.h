@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_shape_h
-#define _SDL_shape_h
+#ifndef SDL_shape_h_
+#define SDL_shape_h_
 
 #include "SDL_stdinc.h"
 #include "SDL_pixels.h"
@@ -140,4 +140,4 @@ extern DECLSPEC int SDLCALL SDL_GetShapedWindowMode(SDL_Window *window,SDL_Windo
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_shape_h */
+#endif /* SDL_shape_h_ */

@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_mutex_h
-#define _SDL_mutex_h
+#ifndef SDL_mutex_h_
+#define SDL_mutex_h_
 
 /**
  *  \file SDL_mutex.h
@@ -246,6 +246,6 @@ extern DECLSPEC int SDLCALL SDL_CondWaitTimeout(SDL_cond * cond,
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_mutex_h */
+#endif /* SDL_mutex_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

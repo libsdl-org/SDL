@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDLname_h_
-#define _SDLname_h_
+#ifndef SDLname_h_
+#define SDLname_h_
 
 #if defined(__STDC__) || defined(__cplusplus)
 #define NeedFunctionPrototypes 1
@@ -28,6 +28,6 @@
 
 #define SDL_NAME(X) SDL_##X
 
-#endif /* _SDLname_h_ */
+#endif /* SDLname_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

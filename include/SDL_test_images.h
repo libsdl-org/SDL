@@ -33,8 +33,8 @@
 
 */
 
-#ifndef _SDL_test_images_h
-#define _SDL_test_images_h
+#ifndef SDL_test_images_h_
+#define SDL_test_images_h_
 
 #include "SDL.h"
 
@@ -73,6 +73,6 @@ SDL_Surface *SDLTest_ImagePrimitivesBlend(void);
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_test_images_h */
+#endif /* SDL_test_images_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

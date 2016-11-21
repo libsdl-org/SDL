@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_timer_h
-#define _SDL_timer_h
+#ifndef SDL_timer_h_
+#define SDL_timer_h_
 
 /**
  *  \file SDL_timer.h
@@ -110,6 +110,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_RemoveTimer(SDL_TimerID id);
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_timer_h */
+#endif /* SDL_timer_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

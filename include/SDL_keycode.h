@@ -25,8 +25,8 @@
  *  Defines constants which identify keyboard keys and modifiers.
  */
 
-#ifndef _SDL_keycode_h
-#define _SDL_keycode_h
+#ifndef SDL_keycode_h_
+#define SDL_keycode_h_
 
 #include "SDL_stdinc.h"
 #include "SDL_scancode.h"
@@ -336,6 +336,6 @@ typedef enum
 #define KMOD_ALT    (KMOD_LALT|KMOD_RALT)
 #define KMOD_GUI    (KMOD_LGUI|KMOD_RGUI)
 
-#endif /* _SDL_keycode_h */
+#endif /* SDL_keycode_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -25,8 +25,8 @@
  *  Header file declaring the SDL_BlendMode enumeration
  */
 
-#ifndef _SDL_blendmode_h
-#define _SDL_blendmode_h
+#ifndef SDL_blendmode_h_
+#define SDL_blendmode_h_
 
 #include "begin_code.h"
 /* Set up for C function definitions, even when using C++ */
@@ -58,6 +58,6 @@ typedef enum
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_blendmode_h */
+#endif /* SDL_blendmode_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

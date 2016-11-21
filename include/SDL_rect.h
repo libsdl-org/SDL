@@ -25,8 +25,8 @@
  *  Header file for SDL_rect definition and management functions.
  */
 
-#ifndef _SDL_rect_h
-#define _SDL_rect_h
+#ifndef SDL_rect_h_
+#define SDL_rect_h_
 
 #include "SDL_stdinc.h"
 #include "SDL_error.h"
@@ -143,6 +143,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IntersectRectAndLine(const SDL_Rect *
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_rect_h */
+#endif /* SDL_rect_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
