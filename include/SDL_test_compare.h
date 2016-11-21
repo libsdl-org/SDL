@@ -33,8 +33,8 @@
 
 */
 
-#ifndef _SDL_test_compare_h
-#define _SDL_test_compare_h
+#ifndef SDL_test_compare_h_
+#define SDL_test_compare_h_
 
 #include "SDL.h"
 
@@ -64,6 +64,6 @@ int SDLTest_CompareSurfaces(SDL_Surface *surface, SDL_Surface *referenceSurface,
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_test_compare_h */
+#endif /* SDL_test_compare_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

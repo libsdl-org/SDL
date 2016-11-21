@@ -45,8 +45,8 @@
  *  See this bug for details: http://bugzilla.libsdl.org/show_bug.cgi?id=1995
  */
 
-#ifndef _SDL_render_h
-#define _SDL_render_h
+#ifndef SDL_render_h_
+#define SDL_render_h_
 
 #include "SDL_stdinc.h"
 #include "SDL_rect.h"
@@ -900,6 +900,6 @@ extern DECLSPEC int SDLCALL SDL_GL_UnbindTexture(SDL_Texture *texture);
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_render_h */
+#endif /* SDL_render_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

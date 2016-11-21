@@ -56,8 +56,8 @@
  * All of the atomic operations that modify memory are full memory barriers.
  */
 
-#ifndef _SDL_atomic_h_
-#define _SDL_atomic_h_
+#ifndef SDL_atomic_h_
+#define SDL_atomic_h_
 
 #include "SDL_stdinc.h"
 #include "SDL_platform.h"
@@ -263,6 +263,6 @@ extern DECLSPEC void* SDLCALL SDL_AtomicGetPtr(void **a);
 
 #include "close_code.h"
 
-#endif /* _SDL_atomic_h_ */
+#endif /* SDL_atomic_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

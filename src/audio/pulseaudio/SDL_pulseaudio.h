@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_pulseaudio_h
-#define _SDL_pulseaudio_h
+#ifndef SDL_pulseaudio_h_
+#define SDL_pulseaudio_h_
 
 #include <pulse/simple.h>
 
@@ -47,6 +47,6 @@ struct SDL_PrivateAudioData
     int capturelen;
 };
 
-#endif /* _SDL_pulseaudio_h */
+#endif /* SDL_pulseaudio_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

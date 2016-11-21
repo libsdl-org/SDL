@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_x11video_h
-#define _SDL_x11video_h
+#ifndef SDL_x11video_h_
+#define SDL_x11video_h_
 
 #include "SDL_keycode.h"
 
@@ -141,6 +141,6 @@ typedef struct SDL_VideoData
 
 extern SDL_bool X11_UseDirectColorVisuals(void);
 
-#endif /* _SDL_x11video_h */
+#endif /* SDL_x11video_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

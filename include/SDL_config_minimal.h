@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_config_minimal_h
-#define _SDL_config_minimal_h
+#ifndef SDL_config_minimal_h_
+#define SDL_config_minimal_h_
 
 #include "SDL_platform.h"
 
@@ -78,4 +78,4 @@ typedef unsigned long uintptr_t;
 /* Enable the dummy filesystem driver (src/filesystem/dummy/\*.c) */
 #define SDL_FILESYSTEM_DUMMY  1
 
-#endif /* _SDL_config_minimal_h */
+#endif /* SDL_config_minimal_h_ */

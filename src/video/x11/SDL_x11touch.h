@@ -20,12 +20,12 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_x11touch_h
-#define _SDL_x11touch_h
+#ifndef SDL_x11touch_h_
+#define SDL_x11touch_h_
 
 extern void X11_InitTouch(_THIS);
 extern void X11_QuitTouch(_THIS);
 
-#endif /* _SDL_x11touch_h */
+#endif /* SDL_x11touch_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

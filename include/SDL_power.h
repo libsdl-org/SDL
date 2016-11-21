@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_power_h
-#define _SDL_power_h
+#ifndef SDL_power_h_
+#define SDL_power_h_
 
 /**
  *  \file SDL_power.h
@@ -70,6 +70,6 @@ extern DECLSPEC SDL_PowerState SDLCALL SDL_GetPowerInfo(int *secs, int *pct);
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_power_h */
+#endif /* SDL_power_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

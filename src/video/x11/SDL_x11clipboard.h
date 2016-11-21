@@ -20,14 +20,14 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_x11clipboard_h
-#define _SDL_x11clipboard_h
+#ifndef SDL_x11clipboard_h_
+#define SDL_x11clipboard_h_
 
 extern int X11_SetClipboardText(_THIS, const char *text);
 extern char *X11_GetClipboardText(_THIS);
 extern SDL_bool X11_HasClipboardText(_THIS);
 extern Atom X11_GetSDLCutBufferClipboardType(Display *display);
 
-#endif /* _SDL_x11clipboard_h */
+#endif /* SDL_x11clipboard_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

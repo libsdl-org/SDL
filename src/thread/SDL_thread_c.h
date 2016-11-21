@@ -20,8 +20,8 @@
 */
 #include "../SDL_internal.h"
 
-#ifndef _SDL_thread_c_h
-#define _SDL_thread_c_h
+#ifndef SDL_thread_c_h_
+#define SDL_thread_c_h_
 
 #include "SDL_thread.h"
 
@@ -90,6 +90,6 @@ extern SDL_TLSData *SDL_Generic_GetTLSData(void);
  */
 extern int SDL_Generic_SetTLSData(SDL_TLSData *data);
 
-#endif /* _SDL_thread_c_h */
+#endif /* SDL_thread_c_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

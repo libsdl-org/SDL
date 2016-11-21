@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_dummyaudio_h
-#define _SDL_dummyaudio_h
+#ifndef SDL_dummyaudio_h_
+#define SDL_dummyaudio_h_
 
 #include "../SDL_sysaudio.h"
 
@@ -37,5 +37,5 @@ struct SDL_PrivateAudioData
     Uint32 initial_calls;
 };
 
-#endif /* _SDL_dummyaudio_h */
+#endif /* SDL_dummyaudio_h_ */
 /* vi: set ts=4 sw=4 expandtab: */

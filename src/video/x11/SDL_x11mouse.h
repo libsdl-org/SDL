@@ -20,12 +20,12 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_x11mouse_h
-#define _SDL_x11mouse_h
+#ifndef SDL_x11mouse_h_
+#define SDL_x11mouse_h_
 
 extern void X11_InitMouse(_THIS);
 extern void X11_QuitMouse(_THIS);
 
-#endif /* _SDL_x11mouse_h */
+#endif /* SDL_x11mouse_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

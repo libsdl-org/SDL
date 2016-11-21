@@ -25,8 +25,8 @@
  *  Functions for reading and writing endian-specific values
  */
 
-#ifndef _SDL_endian_h
-#define _SDL_endian_h
+#ifndef SDL_endian_h_
+#define SDL_endian_h_
 
 #include "SDL_stdinc.h"
 
@@ -234,6 +234,6 @@ SDL_SwapFloat(float x)
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_endian_h */
+#endif /* SDL_endian_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -21,8 +21,8 @@
 
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_evdev_h
-#define _SDL_evdev_h
+#ifndef SDL_evdev_h_
+#define SDL_evdev_h_
 
 #ifdef SDL_INPUT_LINUXEV
 
@@ -34,6 +34,6 @@ extern void SDL_EVDEV_Poll(void);
 
 #endif /* SDL_INPUT_LINUXEV */
 
-#endif /* _SDL_evdev_h */
+#endif /* SDL_evdev_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -18,8 +18,8 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#ifndef _SDL_internal_h
-#define _SDL_internal_h
+#ifndef SDL_internal_h_
+#define SDL_internal_h_
 
 /* Many of SDL's features require _GNU_SOURCE on various platforms */
 #ifndef _GNU_SOURCE
@@ -38,6 +38,6 @@
 
 #include "SDL_config.h"
 
-#endif /* _SDL_internal_h */
+#endif /* SDL_internal_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

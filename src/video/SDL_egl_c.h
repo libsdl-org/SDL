@@ -20,8 +20,8 @@
 */
 #include "../SDL_internal.h"
 
-#ifndef _SDL_egl_h
-#define _SDL_egl_h
+#ifndef SDL_egl_h_
+#define SDL_egl_h_
 
 #if SDL_VIDEO_OPENGL_EGL
 
@@ -125,6 +125,6 @@ BACKEND ## _GLES_CreateContext(_THIS, SDL_Window * window) \
 
 #endif /* SDL_VIDEO_OPENGL_EGL */
 
-#endif /* _SDL_egl_h */
+#endif /* SDL_egl_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

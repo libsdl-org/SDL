@@ -26,8 +26,8 @@
  *  data streams.  It can easily be extended to files, memory, etc.
  */
 
-#ifndef _SDL_rwops_h
-#define _SDL_rwops_h
+#ifndef SDL_rwops_h_
+#define SDL_rwops_h_
 
 #include "SDL_stdinc.h"
 #include "SDL_error.h"
@@ -226,6 +226,6 @@ extern DECLSPEC size_t SDLCALL SDL_WriteBE64(SDL_RWops * dst, Uint64 value);
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_rwops_h */
+#endif /* SDL_rwops_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

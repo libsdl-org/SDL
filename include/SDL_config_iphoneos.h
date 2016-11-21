@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_config_iphoneos_h
-#define _SDL_config_iphoneos_h
+#ifndef SDL_config_iphoneos_h_
+#define SDL_config_iphoneos_h_
 
 #include "SDL_platform.h"
 
@@ -155,4 +155,4 @@
 /* enable filesystem support */
 #define SDL_FILESYSTEM_COCOA   1
 
-#endif /* _SDL_config_iphoneos_h */
+#endif /* SDL_config_iphoneos_h_ */

@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_config_h
-#define _SDL_config_h
+#ifndef SDL_config_h_
+#define SDL_config_h_
 
 #include "SDL_platform.h"
 
@@ -50,4 +50,4 @@
 #error Wrong SDL_config.h, check your include path?
 #endif
 
-#endif /* _SDL_config_h */
+#endif /* SDL_config_h_ */

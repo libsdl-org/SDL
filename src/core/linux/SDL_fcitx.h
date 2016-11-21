@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_fcitx_h
-#define _SDL_fcitx_h
+#ifndef SDL_fcitx_h_
+#define SDL_fcitx_h_
 
 #include "../../SDL_internal.h"
 
@@ -35,6 +35,6 @@ extern SDL_bool SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode);
 extern void SDL_Fcitx_UpdateTextRect(SDL_Rect *rect);
 extern void SDL_Fcitx_PumpEvents();
 
-#endif /* _SDL_fcitx_h */
+#endif /* SDL_fcitx_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

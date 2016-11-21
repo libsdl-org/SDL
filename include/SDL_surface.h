@@ -25,8 +25,8 @@
  *  Header file for ::SDL_Surface definition and management functions.
  */
 
-#ifndef _SDL_surface_h
-#define _SDL_surface_h
+#ifndef SDL_surface_h_
+#define SDL_surface_h_
 
 #include "SDL_stdinc.h"
 #include "SDL_pixels.h"
@@ -508,6 +508,6 @@ extern DECLSPEC int SDLCALL SDL_LowerBlitScaled
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_surface_h */
+#endif /* SDL_surface_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

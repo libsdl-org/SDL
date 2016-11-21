@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_x11shape_h
-#define _SDL_x11shape_h
+#ifndef SDL_x11shape_h_
+#define SDL_x11shape_h_
 
 #include "SDL_video.h"
 #include "SDL_shape.h"
@@ -37,4 +37,4 @@ extern SDL_WindowShaper* X11_CreateShaper(SDL_Window* window);
 extern int X11_ResizeWindowShape(SDL_Window* window);
 extern int X11_SetWindowShape(SDL_WindowShaper *shaper,SDL_Surface *shape,SDL_WindowShapeMode *shapeMode);
 
-#endif /* _SDL_x11shape_h */
+#endif /* SDL_x11shape_h_ */

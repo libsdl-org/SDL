@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_main_h
-#define _SDL_main_h
+#ifndef SDL_main_h_
+#define SDL_main_h_
 
 #include "SDL_stdinc.h"
 
@@ -156,6 +156,6 @@ extern DECLSPEC int SDLCALL SDL_WinRTRunApp(int (*mainFunction)(int, char **), v
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_main_h */
+#endif /* SDL_main_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

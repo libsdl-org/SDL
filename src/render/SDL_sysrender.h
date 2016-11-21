@@ -20,8 +20,8 @@
 */
 #include "../SDL_internal.h"
 
-#ifndef _SDL_sysrender_h
-#define _SDL_sysrender_h
+#ifndef SDL_sysrender_h_
+#define SDL_sysrender_h_
 
 #include "SDL_render.h"
 #include "SDL_events.h"
@@ -200,6 +200,6 @@ extern SDL_RenderDriver SW_RenderDriver;
 
 #endif /* !SDL_RENDER_DISABLED */
 
-#endif /* _SDL_sysrender_h */
+#endif /* SDL_sysrender_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

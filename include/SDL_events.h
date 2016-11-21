@@ -25,8 +25,8 @@
  *  Include file for SDL event handling.
  */
 
-#ifndef _SDL_events_h
-#define _SDL_events_h
+#ifndef SDL_events_h_
+#define SDL_events_h_
 
 #include "SDL_stdinc.h"
 #include "SDL_error.h"
@@ -749,6 +749,6 @@ extern DECLSPEC Uint32 SDLCALL SDL_RegisterEvents(int numevents);
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_events_h */
+#endif /* SDL_events_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -20,8 +20,8 @@
 */
 #include "../SDL_internal.h"
 
-#ifndef _SDL_blit_h
-#define _SDL_blit_h
+#ifndef SDL_blit_h_
+#define SDL_blit_h_
 
 #include "SDL_cpuinfo.h"
 #include "SDL_endian.h"
@@ -547,6 +547,6 @@ do {                                                                    \
 #pragma warning(disable: 4550)
 #endif
 
-#endif /* _SDL_blit_h */
+#endif /* SDL_blit_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

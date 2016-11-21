@@ -20,11 +20,11 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_nullvideo_h
-#define _SDL_nullvideo_h
+#ifndef SDL_nullvideo_h_
+#define SDL_nullvideo_h_
 
 #include "../SDL_sysvideo.h"
 
-#endif /* _SDL_nullvideo_h */
+#endif /* SDL_nullvideo_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

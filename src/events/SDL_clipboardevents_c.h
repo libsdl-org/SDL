@@ -20,11 +20,11 @@
 */
 #include "../SDL_internal.h"
 
-#ifndef _SDL_clipboardevents_c_h
-#define _SDL_clipboardevents_c_h
+#ifndef SDL_clipboardevents_c_h_
+#define SDL_clipboardevents_c_h_
 
 extern int SDL_SendClipboardUpdate(void);
 
-#endif /* _SDL_clipboardevents_c_h */
+#endif /* SDL_clipboardevents_c_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -20,8 +20,8 @@
 */
 #include "../SDL_internal.h"
 
-#ifndef _SDL_keyboard_c_h
-#define _SDL_keyboard_c_h
+#ifndef SDL_keyboard_c_h_
+#define SDL_keyboard_c_h_
 
 #include "SDL_keycode.h"
 #include "SDL_events.h"
@@ -65,6 +65,6 @@ extern char *SDL_UCS4ToUTF8(Uint32 ch, char *dst);
 /* Toggle on or off pieces of the keyboard mod state. */
 extern void SDL_ToggleModState(const SDL_Keymod modstate, const SDL_bool toggle);
 
-#endif /* _SDL_keyboard_c_h */
+#endif /* SDL_keyboard_c_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

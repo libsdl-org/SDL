@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_config_android_h
-#define _SDL_config_android_h
+#ifndef SDL_config_android_h_
+#define SDL_config_android_h_
 
 #include "SDL_platform.h"
 
@@ -145,4 +145,4 @@
 /* Enable the filesystem driver */
 #define SDL_FILESYSTEM_ANDROID   1
 
-#endif /* _SDL_config_android_h */
+#endif /* SDL_config_android_h_ */

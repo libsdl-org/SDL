@@ -29,8 +29,8 @@
 
 /* Ported from original test\common.h file. */
 
-#ifndef _SDL_test_common_h
-#define _SDL_test_common_h
+#ifndef SDL_test_common_h_
+#define SDL_test_common_h_
 
 #include "SDL.h"
 
@@ -183,6 +183,6 @@ void SDLTest_CommonQuit(SDLTest_CommonState * state);
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_test_common_h */
+#endif /* SDL_test_common_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

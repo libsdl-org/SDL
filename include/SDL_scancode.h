@@ -25,8 +25,8 @@
  *  Defines keyboard scancodes.
  */
 
-#ifndef _SDL_scancode_h
-#define _SDL_scancode_h
+#ifndef SDL_scancode_h_
+#define SDL_scancode_h_
 
 #include "SDL_stdinc.h"
 
@@ -396,6 +396,6 @@ typedef enum
                                  for array bounds */
 } SDL_Scancode;
 
-#endif /* _SDL_scancode_h */
+#endif /* SDL_scancode_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

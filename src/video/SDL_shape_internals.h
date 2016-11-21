@@ -20,8 +20,8 @@
 */
 #include "../SDL_internal.h"
 
-#ifndef _SDL_shape_internals_h
-#define _SDL_shape_internals_h
+#ifndef SDL_shape_internals_h_
+#define SDL_shape_internals_h_
 
 #include "SDL_rect.h"
 #include "SDL_shape.h"

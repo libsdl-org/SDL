@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_nasaudio_h
-#define _SDL_nasaudio_h
+#ifndef SDL_nasaudio_h_
+#define SDL_nasaudio_h_
 
 #ifdef __sgi
 #include <nas/audiolib.h>
@@ -51,6 +51,6 @@ struct SDL_PrivateAudioData
     struct timeval last_tv;
     int buf_free;
 };
-#endif /* _SDL_nasaudio_h */
+#endif /* SDL_nasaudio_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

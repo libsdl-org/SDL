@@ -32,8 +32,8 @@
  *  version included in SDL_opengl.h.
  */
 
-#ifndef _SDL_opengl_h
-#define _SDL_opengl_h
+#ifndef SDL_opengl_h_
+#define SDL_opengl_h_
 
 #include "SDL_config.h"
 
@@ -2171,6 +2171,6 @@ typedef void (APIENTRYP PFNGLEGLIMAGETARGETRENDERBUFFERSTORAGEOESPROC) (GLenum t
 
 #endif /* !__IPHONEOS__ */
 
-#endif /* _SDL_opengl_h */
+#endif /* SDL_opengl_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

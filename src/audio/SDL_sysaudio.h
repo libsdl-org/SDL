@@ -20,8 +20,8 @@
 */
 #include "../SDL_internal.h"
 
-#ifndef _SDL_sysaudio_h
-#define _SDL_sysaudio_h
+#ifndef SDL_sysaudio_h_
+#define SDL_sysaudio_h_
 
 #include "SDL_mutex.h"
 #include "SDL_thread.h"
@@ -272,6 +272,6 @@ extern AudioBootStrap EMSCRIPTENAUDIO_bootstrap;
 
 
 
-#endif /* _SDL_sysaudio_h */
+#endif /* SDL_sysaudio_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -20,8 +20,8 @@
 */
 #include "../SDL_internal.h"
 
-#ifndef _SDL_gesture_c_h
-#define _SDL_gesture_c_h
+#ifndef SDL_gesture_c_h_
+#define SDL_gesture_c_h_
 
 extern int SDL_GestureAddTouch(SDL_TouchID touchId);
 
@@ -29,6 +29,6 @@ extern void SDL_GestureProcessEvent(SDL_Event* event);
 
 extern int SDL_RecordGesture(SDL_TouchID touchId);
 
-#endif /* _SDL_gesture_c_h */
+#endif /* SDL_gesture_c_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

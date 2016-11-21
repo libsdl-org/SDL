@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_config_windows_h
-#define _SDL_config_windows_h
+#ifndef SDL_config_windows_h_
+#define SDL_config_windows_h_
 
 #include "SDL_platform.h"
 
@@ -218,4 +218,4 @@ typedef unsigned int uintptr_t;
 #define SDL_ASSEMBLY_ROUTINES   1
 #endif
 
-#endif /* _SDL_config_windows_h */
+#endif /* SDL_config_windows_h_ */

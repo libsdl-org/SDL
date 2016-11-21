@@ -20,8 +20,8 @@
 */
 #include "../SDL_internal.h"
 
-#ifndef _SDL_mouse_c_h
-#define _SDL_mouse_c_h
+#ifndef SDL_mouse_c_h_
+#define SDL_mouse_c_h_
 
 #include "SDL_mouse.h"
 
@@ -128,6 +128,6 @@ extern int SDL_SendMouseWheel(SDL_Window * window, SDL_MouseID mouseID, int x, i
 /* Shutdown the mouse subsystem */
 extern void SDL_MouseQuit(void);
 
-#endif /* _SDL_mouse_c_h */
+#endif /* SDL_mouse_c_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

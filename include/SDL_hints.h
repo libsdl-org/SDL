@@ -36,8 +36,8 @@
  *  to how they would like the library to work.
  */
 
-#ifndef _SDL_hints_h
-#define _SDL_hints_h
+#ifndef SDL_h_ints_h
+#define SDL_h_ints_h
 
 #include "SDL_stdinc.h"
 
@@ -821,6 +821,6 @@ extern DECLSPEC void SDLCALL SDL_ClearHints(void);
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_hints_h */
+#endif /* SDL_h_ints_h */
 
 /* vi: set ts=4 sw=4 expandtab: */

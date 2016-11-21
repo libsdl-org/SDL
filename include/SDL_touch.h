@@ -25,8 +25,8 @@
  *  Include file for SDL touch event handling.
  */
 
-#ifndef _SDL_touch_h
-#define _SDL_touch_h
+#ifndef SDL_touch_h_
+#define SDL_touch_h_
 
 #include "SDL_stdinc.h"
 #include "SDL_error.h"
@@ -81,6 +81,6 @@ extern DECLSPEC SDL_Finger * SDLCALL SDL_GetTouchFinger(SDL_TouchID touchID, int
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_touch_h */
+#endif /* SDL_touch_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

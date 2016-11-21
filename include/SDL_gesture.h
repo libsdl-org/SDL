@@ -25,8 +25,8 @@
  *  Include file for SDL gesture event handling.
  */
 
-#ifndef _SDL_gesture_h
-#define _SDL_gesture_h
+#ifndef SDL_gesture_h_
+#define SDL_gesture_h_
 
 #include "SDL_stdinc.h"
 #include "SDL_error.h"
@@ -82,6 +82,6 @@ extern DECLSPEC int SDLCALL SDL_LoadDollarTemplates(SDL_TouchID touchId, SDL_RWo
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_gesture_h */
+#endif /* SDL_gesture_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

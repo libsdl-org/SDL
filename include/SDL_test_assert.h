@@ -33,8 +33,8 @@
  *
  */
 
-#ifndef _SDL_test_assert_h
-#define _SDL_test_assert_h
+#ifndef SDL_test_assert_h_
+#define SDL_test_assert_h_
 
 #include "begin_code.h"
 /* Set up for C function definitions, even when using C++ */
@@ -100,6 +100,6 @@ int SDLTest_AssertSummaryToTestResult(void);
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_test_assert_h */
+#endif /* SDL_test_assert_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
