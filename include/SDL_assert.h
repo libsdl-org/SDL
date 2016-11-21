@@ -201,7 +201,7 @@ typedef SDL_AssertState (SDLCALL *SDL_AssertionHandler)(
  *
  *  This callback is NOT reset to SDL's internal handler upon SDL_Quit()!
  *
- *  \return SDL_AssertState value of how to handle the assertion failure.
+ *  Return SDL_AssertState value of how to handle the assertion failure.
  *
  *  \param handler Callback function, called when an assertion fails.
  *  \param userdata A pointer passed to the callback as-is.
@@ -250,7 +250,7 @@ extern DECLSPEC SDL_AssertionHandler SDLCALL SDL_GetAssertionHandler(void **puse
  *  <code>
  *  const SDL_AssertData *item = SDL_GetAssertionReport();
  *  while (item) {
- *      printf("'%s', %s (%s:%d), triggered %u times, always ignore: %s.\n",
+ *      printf("'%s', %s (%s:%d), triggered %u times, always ignore: %s.\\n",
  *             item->condition, item->function, item->filename,
  *             item->linenum, item->trigger_count,
  *             item->always_ignore ? "yes" : "no");
