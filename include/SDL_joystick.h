@@ -60,7 +60,9 @@ extern "C" {
  *  SDL_Init(): SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS
  */
 
-/* The joystick structure used to identify an SDL joystick */
+/**
+ * The joystick structure used to identify an SDL joystick
+ */
 struct _SDL_Joystick;
 typedef struct _SDL_Joystick SDL_Joystick;
 

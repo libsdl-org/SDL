@@ -51,7 +51,9 @@ extern "C" {
  *  SDL_Init(): SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS
  */
 
-/* The gamecontroller structure used to identify an SDL game controller */
+/**
+ * The gamecontroller structure used to identify an SDL game controller
+ */
 struct _SDL_GameController;
 typedef struct _SDL_GameController SDL_GameController;
 
