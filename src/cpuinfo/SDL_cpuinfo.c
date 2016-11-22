@@ -333,13 +333,12 @@ CPU_haveNEON(void)
 #if defined(SDL_CPUINFO_DISABLED) || !defined(__ARM_ARCH)
     return 0;  /* disabled or not an ARM CPU at all. */
 #elif __ARM_ARCH >= 8
-    return 1;  // ARMv8 always has non-optional NEON support.
+    return 1;  /* ARMv8 always has non-optional NEON support. */
+#elif defined(__APPLE__) && (__ARM_ARCH >= 7)
+    /* (note that sysctlbyname("hw.optional.neon") doesn't work!) */
+    return 1;  /* all Apple ARMv7 chips and later have NEON. */
 #elif defined(__APPLE__)
-    /* all hardware that runs iOS 5 and later support NEON, but check anyhow */
-    int neon = 0;
-    size_t length = sizeof (neon);
-    const int error = sysctlbyname("hw.optional.neon", &neon, &length, NULL, 0);
-    return (!error) && (neon != 0);
+    return 0;  /* assune anything else from Apple doesn't have NEON. */
 #elif (defined(__LINUX__) || defined(__ANDROID__)) && defined(HAVE_GETAUXVAL)
     return ((getauxval(AT_HWCAP) & HWCAP_NEON) == HWCAP_NEON);
 #elif (defined(__LINUX__) || defined(__ANDROID__))
