@@ -41,6 +41,19 @@
 
 #include "SDL_test.h"
 
+/* work around compiler warning on older GCCs. */
+#if (defined(__GNUC__) && (__GNUC__ <= 2))
+static size_t
+strftime_gcc2_workaround(char *s, size_t max, const char *fmt, const struct tm *tm)
+{
+    return strftime(s, max, fmt, tm);
+}
+#ifdef strftime
+#undef strftime
+#endif
+#define strftime strftime_gcc2_workaround
+#endif
+
 /* !
  * Converts unix timestamp to its ascii representation in localtime
  *

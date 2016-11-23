@@ -1210,10 +1210,10 @@ SDLTest_PrintEvent(SDL_Event * event)
                 event->tfinger.dx, event->tfinger.dy, event->tfinger.pressure);
         break;
     case SDL_DOLLARGESTURE:
-        SDL_Log("SDL_EVENT: Dollar gesture detect: %"SDL_PRIs64, (Sint64) event->dgesture.gestureId);
+        SDL_Log("SDL_EVENT: Dollar gesture detect: %lld", (long long) event->dgesture.gestureId);
         break;
     case SDL_DOLLARRECORD:
-        SDL_Log("SDL_EVENT: Dollar gesture record: %"SDL_PRIs64, (Sint64) event->dgesture.gestureId);
+        SDL_Log("SDL_EVENT: Dollar gesture record: %lld", (long long) event->dgesture.gestureId);
         break;
     case SDL_MULTIGESTURE:
         SDL_Log("SDL_EVENT: Multi gesture fingers: %d", event->mgesture.numFingers);

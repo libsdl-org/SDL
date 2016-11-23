@@ -116,8 +116,68 @@ SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
     return -1;
 }
 
+static char *SDL_GetErrorMsg(char *errstr, int maxlen);
+
+/* Available for backwards compatibility */
+const char *
+SDL_GetError(void)
+{
+    static char errmsg[SDL_ERRBUFIZE];
+
+    return SDL_GetErrorMsg(errmsg, SDL_ERRBUFIZE);
+}
+
+void
+SDL_ClearError(void)
+{
+    SDL_error *error;
+
+    error = SDL_GetErrBuf();
+    error->error = 0;
+}
+
+/* Very common errors go here */
+int
+SDL_Error(SDL_errorcode code)
+{
+    switch (code) {
+    case SDL_ENOMEM:
+        return SDL_SetError("Out of memory");
+    case SDL_EFREAD:
+        return SDL_SetError("Error reading from datastream");
+    case SDL_EFWRITE:
+        return SDL_SetError("Error writing to datastream");
+    case SDL_EFSEEK:
+        return SDL_SetError("Error seeking in datastream");
+    case SDL_UNSUPPORTED:
+        return SDL_SetError("That operation is not supported");
+    default:
+        return SDL_SetError("Unknown SDL error");
+    }
+}
+
+#ifdef TEST_ERROR
+int
+main(int argc, char *argv[])
+{
+    char buffer[BUFSIZ + 1];
+
+    SDL_SetError("Hi there!");
+    printf("Error 1: %s\n", SDL_GetError());
+    SDL_ClearError();
+    SDL_memset(buffer, '1', BUFSIZ);
+    buffer[BUFSIZ] = 0;
+    SDL_SetError("This is the error: %s (%f)", buffer, 1.0);
+    printf("Error 2: %s\n", SDL_GetError());
+    exit(0);
+}
+#endif
+
+
+/* keep this at the end of the file so it works with GCC builds that don't
+   support "#pragma GCC diagnostic push" ... we'll just leave the warning
+   disabled after this. */
 #ifdef __GNUC__
-#pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #endif
 /* This function has a bit more overhead than most error functions
@@ -220,63 +280,5 @@ SDL_GetErrorMsg(char *errstr, int maxlen)
     }
     return (errstr);
 }
-#ifdef __GNUC__
-#pragma GCC diagnostic pop
-#endif
-
-/* Available for backwards compatibility */
-const char *
-SDL_GetError(void)
-{
-    static char errmsg[SDL_ERRBUFIZE];
-
-    return SDL_GetErrorMsg(errmsg, SDL_ERRBUFIZE);
-}
-
-void
-SDL_ClearError(void)
-{
-    SDL_error *error;
-
-    error = SDL_GetErrBuf();
-    error->error = 0;
-}
-
-/* Very common errors go here */
-int
-SDL_Error(SDL_errorcode code)
-{
-    switch (code) {
-    case SDL_ENOMEM:
-        return SDL_SetError("Out of memory");
-    case SDL_EFREAD:
-        return SDL_SetError("Error reading from datastream");
-    case SDL_EFWRITE:
-        return SDL_SetError("Error writing to datastream");
-    case SDL_EFSEEK:
-        return SDL_SetError("Error seeking in datastream");
-    case SDL_UNSUPPORTED:
-        return SDL_SetError("That operation is not supported");
-    default:
-        return SDL_SetError("Unknown SDL error");
-    }
-}
-
-#ifdef TEST_ERROR
-int
-main(int argc, char *argv[])
-{
-    char buffer[BUFSIZ + 1];
-
-    SDL_SetError("Hi there!");
-    printf("Error 1: %s\n", SDL_GetError());
-    SDL_ClearError();
-    SDL_memset(buffer, '1', BUFSIZ);
-    buffer[BUFSIZ] = 0;
-    SDL_SetError("This is the error: %s (%f)", buffer, 1.0);
-    printf("Error 2: %s\n", SDL_GetError());
-    exit(0);
-}
-#endif
 
 /* vi: set ts=4 sw=4 expandtab: */
