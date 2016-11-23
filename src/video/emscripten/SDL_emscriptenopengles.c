@@ -39,11 +39,15 @@ Emscripten_GLES_LoadLibrary(_THIS, const char *path) {
     if (!_this->egl_data) {
         return SDL_OutOfMemory();
     }
-    
+
+    /* Emscripten forces you to manually cast eglGetProcAddress to the real
+       function type; grep for "__eglMustCastToProperFunctionPointerType" in
+       Emscripten's egl.h for details. */
+    _this->egl_data->eglGetProcAddress = (void *(EGLAPIENTRY *)(const char *)) eglGetProcAddress;
+
     LOAD_FUNC(eglGetDisplay);
     LOAD_FUNC(eglInitialize);
     LOAD_FUNC(eglTerminate);
-    LOAD_FUNC(eglGetProcAddress);
     LOAD_FUNC(eglChooseConfig);
     LOAD_FUNC(eglGetConfigAttrib);
     LOAD_FUNC(eglCreateContext);
