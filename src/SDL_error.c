@@ -177,9 +177,11 @@ main(int argc, char *argv[])
 /* keep this at the end of the file so it works with GCC builds that don't
    support "#pragma GCC diagnostic push" ... we'll just leave the warning
    disabled after this. */
-#ifdef __GNUC__
+/* this pragma arrived in GCC 4.2 and causes a warning on older GCCs! Sigh. */
+#if defined(__clang__) || (defined(__GNUC__) && ((__GNUC__ > 4) || (__GNUC__ == 4 && (__GNUC_MINOR__ >= 2))))
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
 #endif
+
 /* This function has a bit more overhead than most error functions
    so that it supports internationalization and thread-safe errors.
 */
