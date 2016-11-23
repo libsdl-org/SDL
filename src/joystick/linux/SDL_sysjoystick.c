@@ -449,16 +449,16 @@ ConfigJoystick(SDL_Joystick * joystick, int fd)
 #ifdef DEBUG_INPUT_EVENTS
                 printf("Joystick has button: 0x%x\n", i);
 #endif
-                joystick->hwdata->key_map[i - BTN_MISC] = joystick->nbuttons;
+                joystick->hwdata->key_map[i] = joystick->nbuttons;
                 ++joystick->nbuttons;
             }
         }
-        for (i = BTN_MISC; i < BTN_JOYSTICK; ++i) {
+        for (i = 0; i < BTN_JOYSTICK; ++i) {
             if (test_bit(i, keybit)) {
 #ifdef DEBUG_INPUT_EVENTS
                 printf("Joystick has button: 0x%x\n", i);
 #endif
-                joystick->hwdata->key_map[i - BTN_MISC] = joystick->nbuttons;
+                joystick->hwdata->key_map[i] = joystick->nbuttons;
                 ++joystick->nbuttons;
             }
         }
@@ -715,12 +715,9 @@ HandleInputEvents(SDL_Joystick * joystick)
             code = events[i].code;
             switch (events[i].type) {
             case EV_KEY:
-                if (code >= BTN_MISC) {
-                    code -= BTN_MISC;
-                    SDL_PrivateJoystickButton(joystick,
-                                              joystick->hwdata->key_map[code],
-                                              events[i].value);
-                }
+                SDL_PrivateJoystickButton(joystick,
+                                          joystick->hwdata->key_map[code],
+                                          events[i].value);
                 break;
             case EV_ABS:
                 switch (code) {
