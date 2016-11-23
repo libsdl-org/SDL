@@ -43,7 +43,7 @@ struct joystick_hwdata
     } *balls;
 
     /* Support for the Linux 2.4 unified input interface */
-    Uint8 key_map[KEY_MAX - BTN_MISC];
+    Uint8 key_map[KEY_MAX];
     Uint8 abs_map[ABS_MAX];
     struct axis_correct
     {
