@@ -523,8 +523,8 @@ DSOUND_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
             bufsize = numchunks * this->spec.size;
             if ((bufsize < DSBSIZE_MIN) || (bufsize > DSBSIZE_MAX)) {
                 SDL_SetError("Sound buffer size must be between %d and %d",
-                             (DSBSIZE_MIN < numchunks) ? 1 : DSBSIZE_MIN / numchunks,
-                             DSBSIZE_MAX / numchunks);
+                             (int) ((DSBSIZE_MIN < numchunks) ? 1 : DSBSIZE_MIN / numchunks),
+                             (int) (DSBSIZE_MAX / numchunks));
             } else {
                 int rc;
 				WAVEFORMATEX wfmt;
