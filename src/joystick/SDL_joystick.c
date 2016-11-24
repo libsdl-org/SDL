@@ -822,11 +822,11 @@ static void GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *p
 
     /* If the GUID fits the form of BUS 0000 VENDOR 0000 PRODUCT 0000, return the data */
     if (/* guid16[0] is device bus type */
-        guid16[1] == 0x00 &&
+        guid16[1] == 0x0000 &&
         /* guid16[2] is vendor ID */
-        guid16[3] == 0x00 &&
+        guid16[3] == 0x0000 &&
         /* guid16[4] is product ID */
-        guid16[5] == 0x00
+        guid16[5] == 0x0000
         /* guid16[6] is product version */
     ) {
         if (vendor) {
