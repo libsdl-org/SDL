@@ -1068,7 +1068,7 @@ GLES2_CacheShader(SDL_Renderer *renderer, GLES2_ShaderType type, SDL_BlendMode b
     /* Compile or load the selected shader instance */
     entry->id = data->glCreateShader(instance->type);
     if (instance->format == (GLenum)-1) {
-        data->glShaderSource(entry->id, 1, (const char **)&instance->data, NULL);
+        data->glShaderSource(entry->id, 1, (const char **)(char *)&instance->data, NULL);
         data->glCompileShader(entry->id);
         data->glGetShaderiv(entry->id, GL_COMPILE_STATUS, &compileSuccessful);
     } else {
