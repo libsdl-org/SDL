@@ -104,8 +104,57 @@ GetXInputName(const Uint8 userid, BYTE SubType)
     return SDL_strdup(name);
 }
 
+/* We can't really tell what device is being used for XInput, but we can guess
+   and we'll be correct for the case where only one device is connected.
+ */
 static void
-AddXInputDevice(const Uint8 userid, BYTE SubType, JoyStick_DeviceData **pContext)
+GuessXInputDevice(UINT device_index, Uint16 *pVID, Uint16 *pPID, Uint16 *pVersion)
+{
+    PRAWINPUTDEVICELIST devices = NULL;
+    UINT i, found_count = 0, device_count = 0;
+
+    if ((GetRawInputDeviceList(NULL, &device_count, sizeof(RAWINPUTDEVICELIST)) == -1) || (!device_count)) {
+        return;  /* oh well. */
+    }
+
+    devices = (PRAWINPUTDEVICELIST)SDL_malloc(sizeof(RAWINPUTDEVICELIST) * device_count);
+    if (devices == NULL) {
+        return;
+    }
+
+    if (GetRawInputDeviceList(devices, &device_count, sizeof(RAWINPUTDEVICELIST)) == -1) {
+        SDL_free(devices);
+        return;  /* oh well. */
+    }
+
+    for (i = 0; i < device_count; i++) {
+        RID_DEVICE_INFO rdi;
+        char devName[128];
+        UINT rdiSize = sizeof(rdi);
+        UINT nameSize = SDL_arraysize(devName);
+
+        rdi.cbSize = sizeof(rdi);
+        if ((devices[i].dwType == RIM_TYPEHID) &&
+            (GetRawInputDeviceInfoA(devices[i].hDevice, RIDI_DEVICEINFO, &rdi, &rdiSize) != ((UINT)-1)) &&
+            (GetRawInputDeviceInfoA(devices[i].hDevice, RIDI_DEVICENAME, devName, &nameSize) != ((UINT)-1)) &&
+            (SDL_strstr(devName, "IG_") != NULL)) {
+            *pVID = (Uint16)rdi.hid.dwVendorId;
+            *pPID = (Uint16)rdi.hid.dwProductId;
+            *pVersion = (Uint16)rdi.hid.dwVersionNumber;
+
+            if (found_count++ == device_index) {
+                /* We don't really know the order of the devices relative to XInput,
+                   but we'll guess that this is the correct one
+                 */
+                break;
+            }
+        }
+    }
+    SDL_free(devices);
+}
+
+static void
+AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pContext)
 {
     JoyStick_DeviceData *pPrevJoystick = NULL;
     JoyStick_DeviceData *pNewJoystick = *pContext;
@@ -150,13 +199,26 @@ AddXInputDevice(const Uint8 userid, BYTE SubType, JoyStick_DeviceData **pContext
     if (SDL_XInputUseOldJoystickMapping()) {
         SDL_zero(pNewJoystick->guid);
     } else {
-        pNewJoystick->guid.data[0] = 'x';
-        pNewJoystick->guid.data[1] = 'i';
-        pNewJoystick->guid.data[2] = 'n';
-        pNewJoystick->guid.data[3] = 'p';
-        pNewJoystick->guid.data[4] = 'u';
-        pNewJoystick->guid.data[5] = 't';
-        pNewJoystick->guid.data[6] = SubType;
+        const Uint16 BUS_USB = 0x03;
+        Uint16 vendor = 0;
+        Uint16 product = 0;
+        Uint16 version = 0;
+        Uint16 *guid16 = (Uint16 *)pNewJoystick->guid.data;
+
+        GuessXInputDevice(userid, &vendor, &product, &version);
+
+        *guid16++ = SDL_SwapLE16(BUS_USB);
+        *guid16++ = 0;
+        *guid16++ = SDL_SwapLE16(vendor);
+        *guid16++ = 0;
+        *guid16++ = SDL_SwapLE16(product);
+        *guid16++ = 0;
+        *guid16++ = SDL_SwapLE16(version);
+        *guid16++ = 0;
+
+        /* Note that this is an XInput device and what subtype it is */
+        pNewJoystick->guid.data[14] = 'x';
+        pNewJoystick->guid.data[15] = SubType;
     }
     pNewJoystick->SubType = SubType;
     pNewJoystick->XInputUserId = userid;
