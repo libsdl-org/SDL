@@ -152,9 +152,6 @@ Cocoa_VideoInit(_THIS)
 
     data->allow_spaces = ((floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6) && SDL_GetHintBoolean(SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES, SDL_TRUE));
 
-    /* The IOPM assertion API can disable the screensaver as of 10.7. */
-    data->screensaver_use_iopm = floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6;
-
     return 0;
 }
 
