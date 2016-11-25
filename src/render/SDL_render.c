@@ -734,8 +734,8 @@ SDL_UpdateTextureYUV(SDL_Texture * texture, const SDL_Rect * rect,
 
     if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
         /* We can lock the texture and copy to it */
-        void *native_pixels;
-        int native_pitch;
+        void *native_pixels = NULL;
+        int native_pitch = 0;
 
         if (SDL_LockTexture(native, rect, &native_pixels, &native_pitch) < 0) {
             return -1;
@@ -745,18 +745,18 @@ SDL_UpdateTextureYUV(SDL_Texture * texture, const SDL_Rect * rect,
         SDL_UnlockTexture(native);
     } else {
         /* Use a temporary buffer for updating */
-        void *temp_pixels;
-        int temp_pitch;
-
-        temp_pitch = (((rect->w * SDL_BYTESPERPIXEL(native->format)) + 3) & ~3);
-        temp_pixels = SDL_malloc(rect->h * temp_pitch);
-        if (!temp_pixels) {
-            return SDL_OutOfMemory();
+        const int temp_pitch = (((rect->w * SDL_BYTESPERPIXEL(native->format)) + 3) & ~3);
+        const size_t alloclen = rect->h * temp_pitch;
+        if (alloclen > 0) {
+            void *temp_pixels = SDL_malloc(alloclen);
+            if (!temp_pixels) {
+                return SDL_OutOfMemory();
+            }
+            SDL_SW_CopyYUVToRGB(texture->yuv, rect, native->format,
+                                rect->w, rect->h, temp_pixels, temp_pitch);
+            SDL_UpdateTexture(native, rect, temp_pixels, temp_pitch);
+            SDL_free(temp_pixels);
         }
-        SDL_SW_CopyYUVToRGB(texture->yuv, rect, native->format,
-                            rect->w, rect->h, temp_pixels, temp_pitch);
-        SDL_UpdateTexture(native, rect, temp_pixels, temp_pitch);
-        SDL_free(temp_pixels);
     }
     return 0;
 }
@@ -767,10 +767,14 @@ SDL_UpdateTextureNative(SDL_Texture * texture, const SDL_Rect * rect,
 {
     SDL_Texture *native = texture->native;
 
+    if (!rect->w || !rect->h) {
+        return 0;  /* nothing to do. */
+    }
+
     if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
         /* We can lock the texture and copy to it */
-        void *native_pixels;
-        int native_pitch;
+        void *native_pixels = NULL;
+        int native_pitch = 0;
 
         if (SDL_LockTexture(native, rect, &native_pixels, &native_pitch) < 0) {
             return -1;
@@ -781,19 +785,19 @@ SDL_UpdateTextureNative(SDL_Texture * texture, const SDL_Rect * rect,
         SDL_UnlockTexture(native);
     } else {
         /* Use a temporary buffer for updating */
-        void *temp_pixels;
-        int temp_pitch;
-
-        temp_pitch = (((rect->w * SDL_BYTESPERPIXEL(native->format)) + 3) & ~3);
-        temp_pixels = SDL_malloc(rect->h * temp_pitch);
-        if (!temp_pixels) {
-            return SDL_OutOfMemory();
+        const int temp_pitch = (((rect->w * SDL_BYTESPERPIXEL(native->format)) + 3) & ~3);
+        const size_t alloclen = rect->h * temp_pitch;
+        if (alloclen > 0) {
+            void *temp_pixels = SDL_malloc(alloclen);
+            if (!temp_pixels) {
+                return SDL_OutOfMemory();
+            }
+            SDL_ConvertPixels(rect->w, rect->h,
+                              texture->format, pixels, pitch,
+                              native->format, temp_pixels, temp_pitch);
+            SDL_UpdateTexture(native, rect, temp_pixels, temp_pitch);
+            SDL_free(temp_pixels);
         }
-        SDL_ConvertPixels(rect->w, rect->h,
-                          texture->format, pixels, pitch,
-                          native->format, temp_pixels, temp_pitch);
-        SDL_UpdateTexture(native, rect, temp_pixels, temp_pitch);
-        SDL_free(temp_pixels);
     }
     return 0;
 }
@@ -853,10 +857,14 @@ SDL_UpdateTextureYUVPlanar(SDL_Texture * texture, const SDL_Rect * rect,
     full_rect.h = texture->h;
     rect = &full_rect;
 
+    if (!rect->w || !rect->h) {
+        return 0;  /* nothing to do. */
+    }
+
     if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
         /* We can lock the texture and copy to it */
-        void *native_pixels;
-        int native_pitch;
+        void *native_pixels = NULL;
+        int native_pitch = 0;
 
         if (SDL_LockTexture(native, rect, &native_pixels, &native_pitch) < 0) {
             return -1;
@@ -866,18 +874,18 @@ SDL_UpdateTextureYUVPlanar(SDL_Texture * texture, const SDL_Rect * rect,
         SDL_UnlockTexture(native);
     } else {
         /* Use a temporary buffer for updating */
-        void *temp_pixels;
-        int temp_pitch;
-
-        temp_pitch = (((rect->w * SDL_BYTESPERPIXEL(native->format)) + 3) & ~3);
-        temp_pixels = SDL_malloc(rect->h * temp_pitch);
-        if (!temp_pixels) {
-            return SDL_OutOfMemory();
+        const int temp_pitch = (((rect->w * SDL_BYTESPERPIXEL(native->format)) + 3) & ~3);
+        const size_t alloclen = rect->h * temp_pitch;
+        if (alloclen > 0) {
+            void *temp_pixels = SDL_malloc(alloclen);
+            if (!temp_pixels) {
+                return SDL_OutOfMemory();
+            }
+            SDL_SW_CopyYUVToRGB(texture->yuv, rect, native->format,
+                                rect->w, rect->h, temp_pixels, temp_pitch);
+            SDL_UpdateTexture(native, rect, temp_pixels, temp_pitch);
+            SDL_free(temp_pixels);
         }
-        SDL_SW_CopyYUVToRGB(texture->yuv, rect, native->format,
-                            rect->w, rect->h, temp_pixels, temp_pitch);
-        SDL_UpdateTexture(native, rect, temp_pixels, temp_pitch);
-        SDL_free(temp_pixels);
     }
     return 0;
 }
@@ -922,6 +930,10 @@ int SDL_UpdateYUVTexture(SDL_Texture * texture, const SDL_Rect * rect,
         full_rect.w = texture->w;
         full_rect.h = texture->h;
         rect = &full_rect;
+    }
+
+    if (!rect->w || !rect->h) {
+        return 0;  /* nothing to do. */
     }
 
     if (texture->yuv) {
@@ -1882,29 +1894,12 @@ SDL_RenderPresent(SDL_Renderer * renderer)
     renderer->RenderPresent(renderer);
 }
 
-void
-SDL_DestroyTexture(SDL_Texture * texture)
+/* this isn't responsible for removing the deleted texture from the list!
+   (this is to keep static analysis happy in SDL_DestroyRenderer().) */
+static void
+SDL_DestroyTextureInternal(SDL_Texture * texture)
 {
-    SDL_Renderer *renderer;
-
-    CHECK_TEXTURE_MAGIC(texture, );
-
-    renderer = texture->renderer;
-    if (texture == renderer->target) {
-        SDL_SetRenderTarget(renderer, NULL);
-    }
-
-    texture->magic = NULL;
-
-    if (texture->next) {
-        texture->next->prev = texture->prev;
-    }
-    if (texture->prev) {
-        texture->prev->next = texture->next;
-    } else {
-        renderer->textures = texture->next;
-    }
-
+    SDL_Renderer *renderer = texture->renderer;
     if (texture->native) {
         SDL_DestroyTexture(texture->native);
     }
@@ -1918,16 +1913,49 @@ SDL_DestroyTexture(SDL_Texture * texture)
 }
 
 void
+SDL_DestroyTexture(SDL_Texture * texture)
+{
+    SDL_Renderer *renderer;
+
+    CHECK_TEXTURE_MAGIC(texture, );
+
+    renderer = texture->renderer;
+    if (texture == renderer->target) {
+        SDL_SetRenderTarget(renderer, NULL);
+    }
+
+    texture->magic = NULL;  /* just in case, but we're about to free this... */
+
+    if (texture->next) {
+        texture->next->prev = texture->prev;
+    }
+    if (texture->prev) {
+        texture->prev->next = texture->next;
+    } else {
+        renderer->textures = texture->next;
+    }
+
+    SDL_DestroyTextureInternal(texture);
+}
+
+void
 SDL_DestroyRenderer(SDL_Renderer * renderer)
 {
+    SDL_Texture *texture = NULL;
+    SDL_Texture *nexttexture = NULL;
+
     CHECK_RENDERER_MAGIC(renderer, );
 
     SDL_DelEventWatch(SDL_RendererEventWatch, renderer);
 
     /* Free existing textures for this renderer */
-    while (renderer->textures) {
-        SDL_DestroyTexture(renderer->textures);
+    SDL_SetRenderTarget(renderer, NULL);
+
+    for (texture = renderer->textures; texture; texture = nexttexture) {
+        nexttexture = texture->next;
+        SDL_DestroyTexture(texture);
     }
+    renderer->textures = NULL;
 
     if (renderer->window) {
         SDL_SetWindowData(renderer->window, SDL_WINDOWRENDERDATA, NULL);

@@ -1430,16 +1430,19 @@ GL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
 
     GL_ActivateRenderer(renderer);
 
+    if (!convert_format(data, temp_format, &internalFormat, &format, &type)) {
+        return SDL_SetError("Texture format %s not supported by OpenGL",
+                            SDL_GetPixelFormatName(temp_format));
+    }
+
+    if (!rect->w || !rect->h) {
+        return 0;  /* nothing to do. */
+    }
+
     temp_pitch = rect->w * SDL_BYTESPERPIXEL(temp_format);
     temp_pixels = SDL_malloc(rect->h * temp_pitch);
     if (!temp_pixels) {
         return SDL_OutOfMemory();
-    }
-
-    if (!convert_format(data, temp_format, &internalFormat, &format, &type)) {
-        SDL_free(temp_pixels);
-        return SDL_SetError("Texture format %s not supported by OpenGL",
-                            SDL_GetPixelFormatName(temp_format));
     }
 
     SDL_GetRendererOutputSize(renderer, &w, &h);
