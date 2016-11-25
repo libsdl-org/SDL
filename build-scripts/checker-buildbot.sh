@@ -11,7 +11,7 @@
 
 FINALDIR="$1"
 
-CHECKERDIR="/usr/local/checker-276"
+CHECKERDIR="/usr/local/checker-279"
 if [ ! -d "$CHECKERDIR" ]; then
     echo "$CHECKERDIR not found. Trying /usr/share/clang ..." 1>&2
     CHECKERDIR="/usr/share/clang/scan-build"
@@ -61,16 +61,22 @@ mkdir checker-buildbot
 cd checker-buildbot
 
 # You might want to do this for CMake-backed builds instead...
-PATH="$CHECKERDIR:$PATH" scan-build -o analysis cmake -DCMAKE_BUILD_TYPE=Debug -DASSERTIONS=enabled ..
+PATH="$CHECKERDIR/bin:$PATH" scan-build -o analysis cmake -DCMAKE_BUILD_TYPE=Debug -DASSERTIONS=enabled ..
 
 # ...or run configure without the scan-build wrapper...
 #CC="$CHECKERDIR/libexec/ccc-analyzer" CFLAGS="-O0" ../configure --enable-assertions=enabled
 
 # ...but this works for our buildbots just fine (EXCEPT ON LATEST MAC OS X).
-#CFLAGS="-O0" PATH="$CHECKERDIR:$PATH" scan-build -o analysis ../configure --enable-assertions=enabled
+#CFLAGS="-O0" PATH="$CHECKERDIR/bin:$PATH" scan-build -o analysis ../configure --enable-assertions=enabled
 
 rm -rf analysis
-PATH="$CHECKERDIR:$PATH" scan-build -o analysis $MAKE
+PATH="$CHECKERDIR/bin:$PATH" scan-build -o analysis $MAKE
+
+if [ `ls -A analysis |wc -l` == 0 ] ; then
+    mkdir analysis/zarro
+    echo '<html><head><title>Zarro boogs</title></head><body>Static analysis: no issues to report.</body></html>' >analysis/zarro/index.html
+fi
+
 mv analysis/* ../analysis
 rmdir analysis   # Make sure this is empty.
 cd ..
