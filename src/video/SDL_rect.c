@@ -22,7 +22,7 @@
 
 #include "SDL_rect.h"
 #include "SDL_rect_c.h"
-
+#include "SDL_assert.h"
 
 SDL_bool
 SDL_HasIntersection(const SDL_Rect * A, const SDL_Rect * B)
@@ -441,9 +441,15 @@ SDL_IntersectRectAndLine(const SDL_Rect * rect, int *X1, int *Y1, int *X2,
                 y = recty2;
                 x = x1 + ((x2 - x1) * (y - y1)) / (y2 - y1);
             } else if (outcode2 & CODE_LEFT) {
+                /* If this assertion ever fires, here's the static analysis that warned about it:
+                   http://buildbot.libsdl.org/sdl-static-analysis/sdl-macosx-static-analysis/sdl-macosx-static-analysis-1101/report-b0d01a.html#EndPath */
+                SDL_assert(x2 != x1);  /* if equal: division by zero. */
                 x = rectx1;
                 y = y1 + ((y2 - y1) * (x - x1)) / (x2 - x1);
             } else if (outcode2 & CODE_RIGHT) {
+                /* If this assertion ever fires, here's the static analysis that warned about it:
+                   http://buildbot.libsdl.org/sdl-static-analysis/sdl-macosx-static-analysis/sdl-macosx-static-analysis-1101/report-39b114.html#EndPath */
+                SDL_assert(x2 != x1);  /* if equal: division by zero. */
                 x = rectx2;
                 y = y1 + ((y2 - y1) * (x - x1)) / (x2 - x1);
             }

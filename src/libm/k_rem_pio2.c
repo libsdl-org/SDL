@@ -204,8 +204,13 @@ __kernel_rem_pio2(x, y, e0, nx, prec, ipio2)
 
     /* compute q[0],q[1],...q[jk] */
     for (i = 0; i <= jk; i++) {
-        for (j = 0, fw = 0.0; j <= jx; j++)
-            fw += x[j] * f[jx + i - j];
+        for (j = 0, fw = 0.0; j <= jx; j++) {
+            const int32_t idx = jx + i - j;
+            SDL_assert(idx >= 0);
+            SDL_assert(idx < 20);
+            SDL_assert(idx <= m);
+            fw += x[j] * f[idx];
+        }
         q[i] = fw;
     }
 

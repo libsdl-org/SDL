@@ -875,14 +875,16 @@ number_of_bits_set(Uint32 a)
  * Low performance, do not call often.
  */
 static int
+free_bits_at_bottom_nonzero(Uint32 a)
+{
+    SDL_assert(a != 0);
+    return (((Sint32) a) & 1l) ? 0 : 1 + free_bits_at_bottom_nonzero(a >> 1);
+}
+
+static SDL_INLINE int
 free_bits_at_bottom(Uint32 a)
 {
-    /* assume char is 8 bits */
-    if (!a)
-        return sizeof(Uint32) * 8;
-    if (((Sint32) a) & 1l)
-        return 0;
-    return 1 + free_bits_at_bottom(a >> 1);
+    return a ? free_bits_at_bottom_nonzero(a) : 32;
 }
 
 static int
@@ -894,6 +896,7 @@ SDL_SW_SetupYUVDisplay(SDL_SW_YUVTexture * swdata, Uint32 target_format)
     int i;
     int bpp;
     Uint32 Rmask, Gmask, Bmask, Amask;
+    int freebits;
 
     if (!SDL_PixelFormatEnumToMasks
         (target_format, &bpp, &Rmask, &Gmask, &Bmask, &Amask) || bpp < 15) {
@@ -910,13 +913,24 @@ SDL_SW_SetupYUVDisplay(SDL_SW_YUVTexture * swdata, Uint32 target_format)
      */
     for (i = 0; i < 256; ++i) {
         r_2_pix_alloc[i + 256] = i >> (8 - number_of_bits_set(Rmask));
-        r_2_pix_alloc[i + 256] <<= free_bits_at_bottom(Rmask);
+        freebits = free_bits_at_bottom(Rmask);
+        if (freebits < 32) {
+            r_2_pix_alloc[i + 256] <<= freebits;
+        }
         r_2_pix_alloc[i + 256] |= Amask;
+
         g_2_pix_alloc[i + 256] = i >> (8 - number_of_bits_set(Gmask));
-        g_2_pix_alloc[i + 256] <<= free_bits_at_bottom(Gmask);
+        freebits = free_bits_at_bottom(Gmask);
+        if (freebits < 32) {
+            g_2_pix_alloc[i + 256] <<= freebits;
+        }
         g_2_pix_alloc[i + 256] |= Amask;
+
         b_2_pix_alloc[i + 256] = i >> (8 - number_of_bits_set(Bmask));
-        b_2_pix_alloc[i + 256] <<= free_bits_at_bottom(Bmask);
+        freebits = free_bits_at_bottom(Bmask);
+        if (freebits < 32) {
+            b_2_pix_alloc[i + 256] <<= freebits;
+        }
         b_2_pix_alloc[i + 256] |= Amask;
     }
 

@@ -24,6 +24,8 @@ static const char rcsid[] =
 #include "math_libm.h"
 #include "math_private.h"
 
+#include "SDL_assert.h"
+
 libm_hidden_proto(fabs)
 
 /*
@@ -189,7 +191,12 @@ __ieee754_rem_pio2(x, y)
     }
     tx[2] = z;
     nx = 3;
-    while (tx[nx - 1] == zero)
+
+    /* If this assertion ever fires, here's the static analysis that warned about it:
+        http://buildbot.libsdl.org/sdl-static-analysis/sdl-macosx-static-analysis/sdl-macosx-static-analysis-1101/report-8c6ccb.html#EndPath */
+    SDL_assert((tx[0] != zero) || (tx[1] != zero) || (tx[2] != zero));
+
+    while (nx && tx[nx - 1] == zero)
         nx--;                   /* skip zero term */
     n = __kernel_rem_pio2(tx, y, e0, nx, 2, two_over_pi);
     if (hx < 0) {
