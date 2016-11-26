@@ -26,6 +26,7 @@
 #include "SDL_cocoamouse.h"
 
 extern void Cocoa_InitMouseEventTap(SDL_MouseData *driverdata);
+extern void Cocoa_EnableMouseEventTap(SDL_MouseData *driverdata, SDL_bool enabled);
 extern void Cocoa_QuitMouseEventTap(SDL_MouseData *driverdata);
 
 #endif /* _SDL_cocoamousetap_h */
