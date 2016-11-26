@@ -203,6 +203,8 @@ Cocoa_InitMouseEventTap(SDL_MouseData* driverdata)
                                         kCGEventTapOptionDefault, allGrabbedEventsMask,
                                         &Cocoa_MouseTapCallback, tapdata);
         if (tapdata->tap) {
+            /* Tap starts disabled, until app requests mouse grab */
+            CGEventTapEnable(tapdata->tap, false);
             tapdata->thread = SDL_CreateThreadInternal(&Cocoa_MouseTapThread, "Event Tap Loop", 512 * 1024, tapdata);
             if (tapdata->thread) {
                 /* Success - early out. Ownership transferred to thread. */
@@ -222,7 +224,7 @@ Cocoa_EnableMouseEventTap(SDL_MouseData *driverdata, SDL_bool enabled)
     SDL_MouseEventTapData *tapdata = (SDL_MouseEventTapData*)driverdata->tapdata;
     if (tapdata && tapdata->tap)
     {
-        CGEventTapEnable(tapdata->tap, enabled);
+        CGEventTapEnable(tapdata->tap, !!enabled);
     }
 }
 
