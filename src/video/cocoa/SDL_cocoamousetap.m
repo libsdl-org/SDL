@@ -74,6 +74,9 @@ Cocoa_MouseTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event
                 return NULL;
             }
         case kCGEventTapDisabledByUserInput:
+            {
+                return NULL;
+            }
         default:
             break;
     }
