@@ -69,11 +69,11 @@ Cocoa_MouseTapCallback(CGEventTapProxy proxy, CGEventType type, CGEventRef event
 
     switch (type) {
         case kCGEventTapDisabledByTimeout:
-        case kCGEventTapDisabledByUserInput:
             {
                 CGEventTapEnable(tapdata->tap, true);
                 return NULL;
             }
+        case kCGEventTapDisabledByUserInput:
         default:
             break;
     }
