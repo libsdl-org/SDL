@@ -1,4 +1,10 @@
-libsdl2 (2.0.4) UNRELEASED; urgency=low
+libsdl2 (2.0.5ubuntu1) UNRELEASED; urgency=low
+
+  * Updated SDL to version 2.0.5
+
+ -- Sam Lantinga <slouken@libsdl.org>  Mon, 28 Nov 2016 07:32:52 -0800
+
+libsdl2 (2.0.4ubuntu1) UNRELEASED; urgency=low
 
   * Updated SDL to version 2.0.4
 
