@@ -259,6 +259,17 @@ main(int argc, char *argv[])
     
     SDL_GameControllerAddMappingsFromFile("gamecontrollerdb.txt");
 
+    /* Print information about the mappings */
+    SDL_Log("Supported mappings:\n");
+    for (i = 0; i < SDL_GameControllerNumMappings(); ++i) {
+        char *mapping = SDL_GameControllerMappingForIndex(i);
+        if (mapping) {
+            SDL_Log("\t%s\n", mapping);
+            SDL_free(mapping);
+        }
+    }
+    SDL_Log("\n");
+
     /* Print information about the controller */
     for (i = 0; i < SDL_NumJoysticks(); ++i) {
         const char *name;

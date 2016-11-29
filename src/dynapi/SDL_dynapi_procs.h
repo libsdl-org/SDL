@@ -654,3 +654,5 @@ SDL_DYNAPI_PROC(Uint16,SDL_GameControllerGetVendor,(SDL_GameController *a),(a),r
 SDL_DYNAPI_PROC(Uint16,SDL_GameControllerGetProduct,(SDL_GameController *a),(a),return)
 SDL_DYNAPI_PROC(Uint16,SDL_GameControllerGetProductVersion,(SDL_GameController *a),(a),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_HasNEON,(void),(),return)
+SDL_DYNAPI_PROC(int,SDL_GameControllerNumMappings,(void),(),return)
+SDL_DYNAPI_PROC(char*,SDL_GameControllerMappingForIndex,(int a),(a),return)
