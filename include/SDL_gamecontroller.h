@@ -136,6 +136,20 @@ extern DECLSPEC int SDLCALL SDL_GameControllerAddMappingsFromRW(SDL_RWops * rw, 
 extern DECLSPEC int SDLCALL SDL_GameControllerAddMapping(const char* mappingString);
 
 /**
+ *  Get the number of mappings installed
+ *
+ *  \return the number of mappings
+ */
+extern DECLSPEC int SDLCALL SDL_GameControllerNumMappings();
+
+/**
+ *  Get the mapping at a particular index.
+ *
+ *  \return the mapping string.  Must be freed with SDL_free().  Returns NULL if the index is out of range.
+ */
+extern DECLSPEC char * SDLCALL SDL_GameControllerMappingForIndex(int mapping_index);
+
+/**
  *  Get a mapping string for a GUID
  *
  *  \return the mapping string.  Must be freed with SDL_free().  Returns NULL if no mapping is available

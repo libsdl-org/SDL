@@ -96,6 +96,7 @@ typedef struct _ControllerMapping_t
     struct _ControllerMapping_t *next;
 } ControllerMapping_t;
 
+static SDL_JoystickGUID s_zeroGUID;
 static ControllerMapping_t *s_pSupportedControllers = NULL;
 static ControllerMapping_t *s_pXInputMapping = NULL;
 static ControllerMapping_t *s_pEmscriptenMapping = NULL;
@@ -870,6 +871,57 @@ int
 SDL_GameControllerAddMapping(const char *mappingString)
 {
     return SDL_PrivateGameControllerAddMapping(mappingString, SDL_CONTROLLER_MAPPING_PRIORITY_API);
+}
+
+/**
+ *  Get the number of mappings installed
+ */
+int
+SDL_GameControllerNumMappings()
+{
+    int num_mappings = 0;
+    ControllerMapping_t *mapping;
+
+    for (mapping = s_pSupportedControllers; mapping; mapping = mapping->next) {
+        if (SDL_memcmp(&mapping->guid, &s_zeroGUID, sizeof(mapping->guid)) == 0) {
+            continue;
+        }
+        ++num_mappings;
+    }
+    return num_mappings;
+}
+
+/**
+ *  Get the mapping at a particular index.
+ */
+char *
+SDL_GameControllerMappingForIndex(int mapping_index)
+{
+    ControllerMapping_t *mapping;
+
+    for (mapping = s_pSupportedControllers; mapping; mapping = mapping->next) {
+        if (SDL_memcmp(&mapping->guid, &s_zeroGUID, sizeof(mapping->guid)) == 0) {
+            continue;
+        }
+        if (mapping_index == 0) {
+            char *pMappingString;
+            char pchGUID[33];
+            size_t needed;
+
+            SDL_JoystickGetGUIDString(mapping->guid, pchGUID, sizeof(pchGUID));
+            /* allocate enough memory for GUID + ',' + name + ',' + mapping + \0 */
+            needed = SDL_strlen(pchGUID) + 1 + SDL_strlen(mapping->name) + 1 + SDL_strlen(mapping->mapping) + 1;
+            pMappingString = SDL_malloc(needed);
+            if (!pMappingString) {
+                SDL_OutOfMemory();
+                return NULL;
+            }
+            SDL_snprintf(pMappingString, needed, "%s,%s,%s", pchGUID, mapping->name, mapping->mapping);
+            return pMappingString;
+        }
+        --mapping_index;
+    }
+    return NULL;
 }
 
 /*
