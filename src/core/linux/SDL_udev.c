@@ -33,7 +33,14 @@
 
 #include "SDL.h"
 
-static const char* SDL_UDEV_LIBS[] = { "libudev.so.1", "libudev.so.0" };
+static const char *SDL_UDEV_LIBS[] = {
+#ifdef SDL_UDEV_DYNAMIC
+	SDL_UDEV_DYNAMIC
+#else
+	"libudev.so.1",
+	"libudev.so.0"
+#endif
+};
 
 #define _THIS SDL_UDEV_PrivateData *_this
 static _THIS = NULL;
@@ -252,8 +259,12 @@ SDL_UDEV_LoadLibrary(void)
     if (_this == NULL) {
         return SDL_SetError("UDEV not initialized");
     }
-    
-   
+ 
+    /* See if there is a udev library already loaded */
+    if (SDL_UDEV_load_syms() == 0) {
+        return 0;
+    }
+
     if (_this->udev_handle == NULL) {
         for( i = 0 ; i < SDL_arraysize(SDL_UDEV_LIBS); i++) {
             _this->udev_handle = SDL_LoadObject(SDL_UDEV_LIBS[i]);
@@ -536,3 +547,5 @@ SDL_UDEV_DelCallback(SDL_UDEV_Callback cb)
 
 
 #endif /* SDL_USE_LIBUDEV */
+
+/* vi: set ts=4 sw=4 expandtab: */
