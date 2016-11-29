@@ -360,4 +360,7 @@
 /* Enable ime support */
 #undef SDL_USE_IME
 
+/* Enable dynamic udev support */
+#undef SDL_UDEV_DYNAMIC
+
 #endif /* SDL_config_h_ */

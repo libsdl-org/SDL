@@ -2231,6 +2231,12 @@ AC_HELP_STRING([--enable-libudev], [enable libudev support [[default=yes]]]),
                         have_libudev_h_hdr=no)
         if test x$have_libudev_h_hdr = xyes; then
             AC_DEFINE(HAVE_LIBUDEV_H, 1, [ ])
+
+            udev_lib=[`find_lib "libudev.so.*" "" | sed 's/.*\/\(.*\)/\1/; q'`]
+            if test x$udev_lib != x; then
+                echo "-- dynamic udev -> $udev_lib"
+                AC_DEFINE_UNQUOTED(SDL_UDEV_DYNAMIC, "$udev_lib", [ ])
+            fi
         fi
     fi
 }
