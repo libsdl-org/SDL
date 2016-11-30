@@ -431,7 +431,7 @@ typedef struct SDL_MultiGestureEvent
 {
     Uint32 type;        /**< ::SDL_MULTIGESTURE */
     Uint32 timestamp;
-    SDL_TouchID touchId; /**< The touch device index */
+    SDL_TouchID touchId; /**< The touch device id */
     float dTheta;
     float dDist;
     float x;
