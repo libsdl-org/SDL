@@ -822,8 +822,6 @@ SDL_JoystickUpdate(void)
         if (joystick->ref_count <= 0) {
             SDL_JoystickClose(joystick);
         }
-
-        joystick = joysticknext;
     }
 
     /* this needs to happen AFTER walking the joystick list above, so that any
