@@ -394,6 +394,17 @@ void
 Cocoa_PumpEvents(_THIS)
 { @autoreleasepool
 {
+    /* Update activity every 30 seconds to prevent screensaver */
+    SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+    if (_this->suspend_screensaver && !data->screensaver_use_iopm) {
+        Uint32 now = SDL_GetTicks();
+        if (!data->screensaver_activity ||
+            SDL_TICKS_PASSED(now, data->screensaver_activity + 30000)) {
+            UpdateSystemActivity(UsrActivity);
+            data->screensaver_activity = now;
+        }
+    }
+
     for ( ; ; ) {
         NSEvent *event = [NSApp nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantPast] inMode:NSDefaultRunLoopMode dequeue:YES ];
         if ( event == nil ) {
@@ -414,6 +425,10 @@ Cocoa_SuspendScreenSaver(_THIS)
 { @autoreleasepool
 {
     SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
+
+    if (!data->screensaver_use_iopm) {
+        return;
+    }
 
     if (data->screensaver_assertion) {
         IOPMAssertionRelease(data->screensaver_assertion);

@@ -52,6 +52,7 @@ typedef struct SDL_VideoData
     SDLTranslatorResponder *fieldEdit;
     NSInteger clipboard_count;
     Uint32 screensaver_activity;
+    BOOL screensaver_use_iopm;
     IOPMAssertionID screensaver_assertion;
 
 } SDL_VideoData;
