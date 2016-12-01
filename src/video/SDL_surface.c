@@ -778,8 +778,8 @@ SDL_UpperBlitScaled(SDL_Surface * src, const SDL_Rect * srcrect,
 
     final_src.x = (int)SDL_floor(src_x0 + 0.5);
     final_src.y = (int)SDL_floor(src_y0 + 0.5);
-    final_src.w = (int)SDL_floor(src_x1 - src_x0 + 1.5);
-    final_src.h = (int)SDL_floor(src_y1 - src_y0 + 1.5);
+    final_src.w = (int)SDL_floor(src_x1 + 1 + 0.5) - (int)SDL_floor(src_x0 + 0.5);
+    final_src.h = (int)SDL_floor(src_y1 + 1 + 0.5) - (int)SDL_floor(src_y0 + 0.5);
 
     final_dst.x = (int)SDL_floor(dst_x0 + 0.5);
     final_dst.y = (int)SDL_floor(dst_y0 + 0.5);
