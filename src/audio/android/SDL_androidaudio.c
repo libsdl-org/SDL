@@ -215,6 +215,10 @@ void ANDROIDAUDIO_ResumeDevices(void)
     }
 }
 
+#else 
+
+void ANDROIDAUDIO_ResumeDevices(void) {}
+void ANDROIDAUDIO_PauseDevices(void) {}
 
 #endif /* SDL_AUDIO_DRIVER_ANDROID */
 

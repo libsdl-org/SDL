@@ -82,6 +82,13 @@ jclass Android_JNI_GetActivityClass(void);
 /* Generic messages */
 int Android_JNI_SendMessage(int command, int param);
 
+/* Init */
+JNIEXPORT void JNICALL SDL_Android_Init(JNIEnv* mEnv, jclass cls);
+
+/* MessageBox */
+#include "SDL_messagebox.h"
+int Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 /* *INDENT-OFF* */

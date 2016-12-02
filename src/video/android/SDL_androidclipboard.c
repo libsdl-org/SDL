@@ -23,7 +23,7 @@
 #if SDL_VIDEO_DRIVER_ANDROID
 
 #include "SDL_androidvideo.h"
-
+#include "SDL_androidclipboard.h"
 #include "../../core/android/SDL_android.h"
 
 int

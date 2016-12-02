@@ -33,6 +33,7 @@
 #include "../../events/SDL_windowevents_c.h"
 
 #include "SDL_androidvideo.h"
+#include "SDL_androidgl.h"
 #include "SDL_androidclipboard.h"
 #include "SDL_androidevents.h"
 #include "SDL_androidkeyboard.h"
@@ -47,11 +48,6 @@ static int Android_VideoInit(_THIS);
 static void Android_VideoQuit(_THIS);
 
 #include "../SDL_egl_c.h"
-/* GL functions (SDL_androidgl.c) */
-extern SDL_GLContext Android_GLES_CreateContext(_THIS, SDL_Window * window);
-extern int Android_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context);
-extern void Android_GLES_SwapWindow(_THIS, SDL_Window * window);
-extern int Android_GLES_LoadLibrary(_THIS, const char *path);
 #define Android_GLES_GetProcAddress SDL_EGL_GetProcAddress
 #define Android_GLES_UnloadLibrary SDL_EGL_UnloadLibrary
 #define Android_GLES_SetSwapInterval SDL_EGL_SetSwapInterval
@@ -65,7 +61,7 @@ extern int Android_GLES_LoadLibrary(_THIS, const char *path);
 int Android_ScreenWidth = 0;
 int Android_ScreenHeight = 0;
 Uint32 Android_ScreenFormat = SDL_PIXELFORMAT_UNKNOWN;
-int Android_ScreenRate = 0;
+static int Android_ScreenRate = 0;
 
 SDL_sem *Android_PauseSem = NULL, *Android_ResumeSem = NULL;
 

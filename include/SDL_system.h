@@ -96,7 +96,7 @@ extern DECLSPEC void SDLCALL SDL_iPhoneSetEventPump(SDL_bool enabled);
 
    This returns JNIEnv*, but the prototype is void* so we don't need jni.h
  */
-extern DECLSPEC void * SDLCALL SDL_AndroidGetJNIEnv();
+extern DECLSPEC void * SDLCALL SDL_AndroidGetJNIEnv(void);
 
 /**
    \brief Get the SDL Activity object for the application
@@ -106,7 +106,7 @@ extern DECLSPEC void * SDLCALL SDL_AndroidGetJNIEnv();
    It is the caller's responsibility to properly release it
    (using env->Push/PopLocalFrame or manually with env->DeleteLocalRef)
  */
-extern DECLSPEC void * SDLCALL SDL_AndroidGetActivity();
+extern DECLSPEC void * SDLCALL SDL_AndroidGetActivity(void);
 
 /**
    See the official Android developer guide for more information:
@@ -121,7 +121,7 @@ extern DECLSPEC void * SDLCALL SDL_AndroidGetActivity();
    This path is unique to your application and cannot be written to
    by other applications.
  */
-extern DECLSPEC const char * SDLCALL SDL_AndroidGetInternalStoragePath();
+extern DECLSPEC const char * SDLCALL SDL_AndroidGetInternalStoragePath(void);
 
 /**
    \brief Get the current state of external storage, a bitmask of these values:
@@ -130,7 +130,7 @@ extern DECLSPEC const char * SDLCALL SDL_AndroidGetInternalStoragePath();
 
    If external storage is currently unavailable, this will return 0.
 */
-extern DECLSPEC int SDLCALL SDL_AndroidGetExternalStorageState();
+extern DECLSPEC int SDLCALL SDL_AndroidGetExternalStorageState(void);
 
 /**
    \brief Get the path used for external storage for this application.
@@ -138,7 +138,7 @@ extern DECLSPEC int SDLCALL SDL_AndroidGetExternalStorageState();
    This path is unique to your application, but is public and can be
    written to by other applications.
  */
-extern DECLSPEC const char * SDLCALL SDL_AndroidGetExternalStoragePath();
+extern DECLSPEC const char * SDLCALL SDL_AndroidGetExternalStoragePath(void);
 
 #endif /* __ANDROID__ */
 

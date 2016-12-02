@@ -24,6 +24,7 @@
 #if SDL_POWER_ANDROID
 
 #include "SDL_power.h"
+#include "../SDL_syspower.h"
 
 #include "../../core/android/SDL_android.h"
 
