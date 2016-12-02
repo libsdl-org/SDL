@@ -29,19 +29,12 @@
 #include "SDL_events.h"
 #include "SDL_androidwindow.h"
 
+/* Can't include sysaudio "../../audio/android/SDL_androidaudio.h"
+ * because of THIS redefinition */
+extern void ANDROIDAUDIO_ResumeDevices(void);
+extern void ANDROIDAUDIO_PauseDevices(void);
 
-void android_egl_context_backup();
-void android_egl_context_restore();
-
-#if SDL_AUDIO_DRIVER_ANDROID
-void ANDROIDAUDIO_ResumeDevices(void);
-void ANDROIDAUDIO_PauseDevices(void);
-#else
-static void ANDROIDAUDIO_ResumeDevices(void) {}
-static void ANDROIDAUDIO_PauseDevices(void) {}
-#endif
-
-void 
+static void 
 android_egl_context_restore() 
 {
     SDL_Event event;
@@ -55,7 +48,7 @@ android_egl_context_restore()
     }
 }
 
-void 
+static void 
 android_egl_context_backup() 
 {
     /* Keep a copy of the EGL Context so we can try to restore it when we resume */

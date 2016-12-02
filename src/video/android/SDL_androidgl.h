@@ -20,43 +20,15 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_ANDROID
+#ifndef _SDL_androidgl_h
+#define _SDL_androidgl_h
 
-/* Android SDL video driver implementation */
+SDL_GLContext Android_GLES_CreateContext(_THIS, SDL_Window * window);
+int Android_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context);
+void Android_GLES_SwapWindow(_THIS, SDL_Window * window);
+int Android_GLES_LoadLibrary(_THIS, const char *path);
 
-#include "SDL_video.h"
-#include "../SDL_egl_c.h"
-#include "SDL_androidwindow.h"
 
-#include "SDL_androidvideo.h"
-#include "SDL_androidgl.h"
-#include "../../core/android/SDL_android.h"
-
-#include <android/log.h>
-
-#include <dlfcn.h>
-
-SDL_EGL_CreateContext_impl(Android)
-SDL_EGL_MakeCurrent_impl(Android)
-
-void
-Android_GLES_SwapWindow(_THIS, SDL_Window * window)
-{
-    /* The following two calls existed in the original Java code
-     * If you happen to have a device that's affected by their removal,
-     * please report to Bugzilla. -- Gabriel
-     */
-    
-    /*_this->egl_data->eglWaitNative(EGL_CORE_NATIVE_ENGINE);
-    _this->egl_data->eglWaitGL();*/
-    SDL_EGL_SwapBuffers(_this, ((SDL_WindowData *) window->driverdata)->egl_surface);
-}
-
-int
-Android_GLES_LoadLibrary(_THIS, const char *path) {
-    return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType) 0);
-}
-
-#endif /* SDL_VIDEO_DRIVER_ANDROID */
+#endif /* _SDL_androidgl_h */
 
 /* vi: set ts=4 sw=4 expandtab: */

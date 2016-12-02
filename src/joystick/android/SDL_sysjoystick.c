@@ -167,7 +167,7 @@ keycode_to_SDL(int keycode)
             
         default:
             return -1;
-            break;
+            /* break; -Wunreachable-code-break */
     }
     
     /* This is here in case future generations, probably with six fingers per hand, 
