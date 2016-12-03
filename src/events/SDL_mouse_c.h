@@ -83,6 +83,10 @@ typedef struct
     Uint32 buttonstate;
     SDL_bool relative_mode;
     SDL_bool relative_mode_warp;
+    float normal_speed_scale;
+    float relative_speed_scale;
+    float scale_accum_x;
+    float scale_accum_y;
 
     /* Data for double-click tracking */
     int num_clickstates;

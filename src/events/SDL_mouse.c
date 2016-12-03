@@ -40,11 +40,33 @@ static int SDL_double_click_radius = 1;
 static int
 SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relative, int x, int y);
 
+static void
+SDL_MouseNormalSpeedScaleChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_Mouse *mouse = (SDL_Mouse *)userdata;
+
+    mouse->normal_speed_scale = SDL_atof(hint);
+}
+
+static void
+SDL_MouseRelativeSpeedScaleChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_Mouse *mouse = (SDL_Mouse *)userdata;
+
+    mouse->relative_speed_scale = SDL_atof(hint);
+}
+
 /* Public functions */
 int
 SDL_MouseInit(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
+
+    SDL_AddHintCallback(SDL_HINT_MOUSE_NORMAL_SPEED_SCALE,
+                        SDL_MouseNormalSpeedScaleChanged, mouse);
+
+    SDL_AddHintCallback(SDL_HINT_MOUSE_RELATIVE_SPEED_SCALE,
+                        SDL_MouseRelativeSpeedScaleChanged, mouse);
 
     mouse->cursor_shown = SDL_TRUE;
 
@@ -200,6 +222,21 @@ SDL_SendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relative, int 
 }
 
 static int
+GetScaledMouseDelta(float scale, int value, float *accum)
+{
+    if (scale != 1.0f) {
+        *accum += scale * value;
+        if (*accum >= 0.0f) {
+            value = (int)SDL_floor(*accum);
+        } else {
+            value = (int)SDL_ceil(*accum);
+        }
+        *accum -= value;
+    }
+    return value;
+}
+
+static int
 SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relative, int x, int y)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
@@ -221,6 +258,13 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
     }
 
     if (relative) {
+        if (mouse->relative_mode) {
+            x = GetScaledMouseDelta(mouse->relative_speed_scale, x, &mouse->scale_accum_x);
+            y = GetScaledMouseDelta(mouse->relative_speed_scale, y, &mouse->scale_accum_y);
+        } else {
+            x = GetScaledMouseDelta(mouse->normal_speed_scale, x, &mouse->scale_accum_x);
+            y = GetScaledMouseDelta(mouse->normal_speed_scale, y, &mouse->scale_accum_y);
+        }
         xrel = x;
         yrel = y;
         x = (mouse->last_x + xrel);
@@ -475,6 +519,12 @@ SDL_MouseQuit(void)
     }
 
     SDL_zerop(mouse);
+
+    SDL_DelHintCallback(SDL_HINT_MOUSE_NORMAL_SPEED_SCALE,
+                        SDL_MouseNormalSpeedScaleChanged, mouse);
+
+    SDL_DelHintCallback(SDL_HINT_MOUSE_RELATIVE_SPEED_SCALE,
+                        SDL_MouseRelativeSpeedScaleChanged, mouse);
 }
 
 Uint32
@@ -603,6 +653,8 @@ SDL_SetRelativeMouseMode(SDL_bool enabled)
         }
     }
     mouse->relative_mode = enabled;
+    mouse->scale_accum_x = 0.0f;
+    mouse->scale_accum_y = 0.0f;
 
     if (mouse->focus) {
         SDL_UpdateWindowGrab(mouse->focus);
