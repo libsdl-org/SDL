@@ -45,7 +45,7 @@ SDL_MouseNormalSpeedScaleChanged(void *userdata, const char *name, const char *o
 {
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
 
-    mouse->normal_speed_scale = SDL_atof(hint);
+    mouse->normal_speed_scale = (float)SDL_atof(hint);
 }
 
 static void
@@ -53,7 +53,7 @@ SDL_MouseRelativeSpeedScaleChanged(void *userdata, const char *name, const char 
 {
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
 
-    mouse->relative_speed_scale = SDL_atof(hint);
+    mouse->relative_speed_scale = (float)SDL_atof(hint);
 }
 
 /* Public functions */
