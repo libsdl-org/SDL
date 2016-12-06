@@ -406,6 +406,10 @@
 		56C5237F1D8F4985001F2F30 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A7381E951D8B69D600B177DD /* CoreAudio.framework */; };
 		56C523801D8F498B001F2F30 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00D0D08310675DD9004B05EF /* CoreFoundation.framework */; };
 		56C523811D8F498C001F2F30 /* CoreFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 00D0D08310675DD9004B05EF /* CoreFoundation.framework */; };
+		56F9D55C1DF73B6B00C15B5D /* SDL_dataqueue.c in Sources */ = {isa = PBXBuildFile; fileRef = 56115BB91DF72C6D00F47E1E /* SDL_dataqueue.c */; };
+		56F9D55D1DF73B6C00C15B5D /* SDL_dataqueue.c in Sources */ = {isa = PBXBuildFile; fileRef = 56115BB91DF72C6D00F47E1E /* SDL_dataqueue.c */; };
+		56F9D55E1DF73B7C00C15B5D /* SDL_dataqueue.h in Headers */ = {isa = PBXBuildFile; fileRef = 56115BBA1DF72C6D00F47E1E /* SDL_dataqueue.h */; };
+		56F9D55F1DF73B7D00C15B5D /* SDL_dataqueue.h in Headers */ = {isa = PBXBuildFile; fileRef = 56115BBA1DF72C6D00F47E1E /* SDL_dataqueue.h */; };
 		A7381E961D8B69D600B177DD /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A7381E951D8B69D600B177DD /* CoreAudio.framework */; };
 		A7381E971D8B6A0300B177DD /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A7381E931D8B69C300B177DD /* AudioToolbox.framework */; };
 		A77E6EB4167AB0A90010E40B /* SDL_gamecontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = A77E6EB3167AB0A90010E40B /* SDL_gamecontroller.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1974,6 +1978,7 @@
 				AA7558451595D4D800BBD41B /* SDL_rwops.h in Headers */,
 				AA7558471595D4D800BBD41B /* SDL_scancode.h in Headers */,
 				AA7558491595D4D800BBD41B /* SDL_shape.h in Headers */,
+				56F9D55E1DF73B7C00C15B5D /* SDL_dataqueue.h in Headers */,
 				56A6702B185654B40007D20F /* SDL_dynapi_overrides.h in Headers */,
 				AA75584B1595D4D800BBD41B /* SDL_stdinc.h in Headers */,
 				AA75584D1595D4D800BBD41B /* SDL_surface.h in Headers */,
@@ -2128,6 +2133,7 @@
 				DB313FEC17554B71006C0E22 /* SDL_rwops.h in Headers */,
 				DB313FED17554B71006C0E22 /* SDL_scancode.h in Headers */,
 				DB313FEE17554B71006C0E22 /* SDL_shape.h in Headers */,
+				56F9D55F1DF73B7D00C15B5D /* SDL_dataqueue.h in Headers */,
 				56A6702C185654B40007D20F /* SDL_dynapi_overrides.h in Headers */,
 				DB313FEF17554B71006C0E22 /* SDL_stdinc.h in Headers */,
 				DB313FF017554B71006C0E22 /* SDL_surface.h in Headers */,
@@ -2517,6 +2523,7 @@
 			files = (
 				04BD021712E6671800899322 /* SDL_atomic.c in Sources */,
 				04BD021812E6671800899322 /* SDL_spinlock.c in Sources */,
+				56F9D55C1DF73B6B00C15B5D /* SDL_dataqueue.c in Sources */,
 				04BD022412E6671800899322 /* SDL_diskaudio.c in Sources */,
 				04BD022C12E6671800899322 /* SDL_dummyaudio.c in Sources */,
 				04BD024212E6671800899322 /* SDL_audio.c in Sources */,
@@ -2636,6 +2643,7 @@
 			files = (
 				DB313FFE17554B71006C0E22 /* SDL_atomic.c in Sources */,
 				DB313FFF17554B71006C0E22 /* SDL_spinlock.c in Sources */,
+				56F9D55D1DF73B6C00C15B5D /* SDL_dataqueue.c in Sources */,
 				DB31400017554B71006C0E22 /* SDL_diskaudio.c in Sources */,
 				DB31400117554B71006C0E22 /* SDL_dummyaudio.c in Sources */,
 				DB31400317554B71006C0E22 /* SDL_audio.c in Sources */,
