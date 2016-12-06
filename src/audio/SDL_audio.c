@@ -510,11 +510,11 @@ SDL_GetQueuedAudioSize(SDL_AudioDeviceID devid)
     /* Nothing to do unless we're set up for queueing. */
     if (device->spec.callback == SDL_BufferQueueDrainCallback) {
         current_audio.impl.LockDevice(device);
-        retval = SDL_CountDataQueue(device->buffer_queue) + current_audio.impl.GetPendingBytes(device);
+        retval = ((Uint32) SDL_CountDataQueue(device->buffer_queue)) + current_audio.impl.GetPendingBytes(device);
         current_audio.impl.UnlockDevice(device);
     } else if (device->spec.callback == SDL_BufferQueueFillCallback) {
         current_audio.impl.LockDevice(device);
-        retval = SDL_CountDataQueue(device->buffer_queue);
+        retval = (Uint32) SDL_CountDataQueue(device->buffer_queue);
         current_audio.impl.UnlockDevice(device);
     }
 
