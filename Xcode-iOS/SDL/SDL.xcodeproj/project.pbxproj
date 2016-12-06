@@ -80,6 +80,7 @@
 		56EA86FC13E9EC2B002E47EB /* SDL_coreaudio.h in Headers */ = {isa = PBXBuildFile; fileRef = 56EA86FA13E9EC2B002E47EB /* SDL_coreaudio.h */; };
 		56ED04E1118A8EE200A56AA6 /* SDL_power.c in Sources */ = {isa = PBXBuildFile; fileRef = 56ED04E0118A8EE200A56AA6 /* SDL_power.c */; };
 		56ED04E3118A8EFD00A56AA6 /* SDL_syspower.m in Sources */ = {isa = PBXBuildFile; fileRef = 56ED04E2118A8EFD00A56AA6 /* SDL_syspower.m */; };
+		56F9D5601DF73BA400C15B5D /* SDL_dataqueue.c in Sources */ = {isa = PBXBuildFile; fileRef = 566726431DF72CF5001DD3DB /* SDL_dataqueue.c */; };
 		93CB792313FC5E5200BD3E05 /* SDL_uikitviewcontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = 93CB792213FC5E5200BD3E05 /* SDL_uikitviewcontroller.h */; };
 		93CB792613FC5F5300BD3E05 /* SDL_uikitviewcontroller.m in Sources */ = {isa = PBXBuildFile; fileRef = 93CB792513FC5F5300BD3E05 /* SDL_uikitviewcontroller.m */; };
 		AA0AD06216647BBB00CE5896 /* SDL_gamecontroller.c in Sources */ = {isa = PBXBuildFile; fileRef = AA0AD06116647BBB00CE5896 /* SDL_gamecontroller.c */; };
@@ -1293,6 +1294,7 @@
 				FAB598561BB5C31600BE72C5 /* SDL_sysloadso.c in Sources */,
 				FAB598571BB5C31600BE72C5 /* SDL_power.c in Sources */,
 				FAB598581BB5C31600BE72C5 /* SDL_syspower.m in Sources */,
+				56F9D5601DF73BA400C15B5D /* SDL_dataqueue.c in Sources */,
 				FAB598591BB5C31600BE72C5 /* SDL_render_gles.c in Sources */,
 				FAB5985A1BB5C31600BE72C5 /* SDL_render_gles2.c in Sources */,
 				FAB5985B1BB5C31600BE72C5 /* SDL_shaders_gles2.c in Sources */,
