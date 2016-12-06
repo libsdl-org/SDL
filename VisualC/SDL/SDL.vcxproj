@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -288,10 +288,9 @@
     <ClInclude Include="..\..\include\SDL_video.h" />
     <ClInclude Include="..\..\src\events\blank_cursor.h" />
     <ClInclude Include="..\..\src\events\default_cursor.h" />
-    <ClInclude Include="..\..\src\libm\math.h" />
+    <ClInclude Include="..\..\src\libm\math_libm.h" />
     <ClInclude Include="..\..\src\libm\math_private.h" />
     <ClInclude Include="..\..\src\render\mmx.h" />
-    <ClInclude Include="resource.h" />
     <ClInclude Include="..\..\src\audio\SDL_audio_c.h" />
     <ClInclude Include="..\..\src\audio\SDL_audiodev_c.h" />
     <ClInclude Include="..\..\src\render\software\SDL_blendfillrect.h" />
@@ -319,9 +318,8 @@
     <ClInclude Include="..\..\src\SDL_error_c.h" />
     <ClInclude Include="..\..\src\events\SDL_events_c.h" />
     <ClInclude Include="..\..\src\events\SDL_gesture_c.h" />
-    <ClInclude Include="..\..\src\video\SDL_glesfuncs.h" />
-    <ClInclude Include="..\..\src\video\SDL_glfuncs.h" />
-    <ClInclude Include="..\..\src\SDL_hints_c.h" />
+    <ClInclude Include="..\..\src\render\opengles\SDL_glesfuncs.h" />
+    <ClInclude Include="..\..\src\render\opengl\SDL_glfuncs.h" />
     <ClInclude Include="..\..\src\joystick\SDL_joystick_c.h" />
     <ClInclude Include="..\..\src\events\SDL_keyboard_c.h" />
     <ClInclude Include="..\..\src\events\SDL_mouse_c.h" />
@@ -342,7 +340,6 @@
     <ClInclude Include="..\..\src\render\SDL_sysrender.h" />
     <ClInclude Include="..\..\src\thread\SDL_systhread.h" />
     <ClInclude Include="..\..\src\thread\windows\SDL_systhread_c.h" />
-    <ClInclude Include="..\..\src\timer\SDL_systimer.h" />
     <ClInclude Include="..\..\src\video\SDL_sysvideo.h" />
     <ClInclude Include="..\..\src\thread\SDL_thread_c.h" />
     <ClInclude Include="..\..\src\timer\SDL_timer_c.h" />
