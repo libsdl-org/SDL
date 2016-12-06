@@ -103,7 +103,10 @@ void RunBasicTest()
 #define NInter (CountTo/CountInc/NThreads)
 #define Expect (CountTo-NInter*CountInc*NThreads)
 
-SDL_COMPILE_TIME_ASSERT(size, CountTo>0); /* check for rollover */
+enum {
+   CountTo_GreaterThanZero = CountTo > 0,
+};
+SDL_COMPILE_TIME_ASSERT(size, CountTo_GreaterThanZero); /* check for rollover */
 
 static SDL_atomic_t good = { 42 };
 
