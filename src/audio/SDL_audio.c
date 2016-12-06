@@ -418,136 +418,23 @@ SDL_RemoveAudioDevice(const int iscapture, void *handle)
 
 /* buffer queueing support... */
 
-/* this expects that you managed thread safety elsewhere. */
-static void
-free_audio_queue(SDL_AudioBufferQueue *packet)
-{
-    while (packet) {
-        SDL_AudioBufferQueue *next = packet->next;
-        SDL_free(packet);
-        packet = next;
-    }
-}
-
-/* NOTE: This assumes you'll hold the mixer lock before calling! */
-static int
-queue_audio_to_device(SDL_AudioDevice *device, const Uint8 *data, Uint32 len)
-{
-    SDL_AudioBufferQueue *orighead;
-    SDL_AudioBufferQueue *origtail;
-    Uint32 origlen;
-    Uint32 datalen;
-
-    orighead = device->buffer_queue_head;
-    origtail = device->buffer_queue_tail;
-    origlen = origtail ? origtail->datalen : 0;
-
-    while (len > 0) {
-        SDL_AudioBufferQueue *packet = device->buffer_queue_tail;
-        SDL_assert(!packet || (packet->datalen <= SDL_AUDIOBUFFERQUEUE_PACKETLEN));
-        if (!packet || (packet->datalen >= SDL_AUDIOBUFFERQUEUE_PACKETLEN)) {
-            /* tail packet missing or completely full; we need a new packet. */
-            packet = device->buffer_queue_pool;
-            if (packet != NULL) {
-                /* we have one available in the pool. */
-                device->buffer_queue_pool = packet->next;
-            } else {
-                /* Have to allocate a new one! */
-                packet = (SDL_AudioBufferQueue *) SDL_malloc(sizeof (SDL_AudioBufferQueue));
-                if (packet == NULL) {
-                    /* uhoh, reset so we've queued nothing new, free what we can. */
-                    if (!origtail) {
-                        packet = device->buffer_queue_head;  /* whole queue. */
-                    } else {
-                        packet = origtail->next;  /* what we added to existing queue. */
-                        origtail->next = NULL;
-                        origtail->datalen = origlen;
-                    }
-                    device->buffer_queue_head = orighead;
-                    device->buffer_queue_tail = origtail;
-                    device->buffer_queue_pool = NULL;
-
-                    free_audio_queue(packet);  /* give back what we can. */
-
-                    return SDL_OutOfMemory();
-                }
-            }
-            packet->datalen = 0;
-            packet->startpos = 0;
-            packet->next = NULL;
-
-            SDL_assert((device->buffer_queue_head != NULL) == (device->queued_bytes != 0));
-            if (device->buffer_queue_tail == NULL) {
-                device->buffer_queue_head = packet;
-            } else {
-                device->buffer_queue_tail->next = packet;
-            }
-            device->buffer_queue_tail = packet;
-        }
-
-        datalen = SDL_min(len, SDL_AUDIOBUFFERQUEUE_PACKETLEN - packet->datalen);
-        SDL_memcpy(packet->data + packet->datalen, data, datalen);
-        data += datalen;
-        len -= datalen;
-        packet->datalen += datalen;
-        device->queued_bytes += datalen;
-    }
-
-    return 0;
-}
-
-/* NOTE: This assumes you'll hold the mixer lock before calling! */
-static Uint32
-dequeue_audio_from_device(SDL_AudioDevice *device, Uint8 *stream, Uint32 len)
-{
-    SDL_AudioBufferQueue *packet;
-    Uint8 *ptr = stream;
-
-    while ((len > 0) && ((packet = device->buffer_queue_head) != NULL)) {
-        const Uint32 avail = packet->datalen - packet->startpos;
-        const Uint32 cpy = SDL_min(len, avail);
-        SDL_assert(device->queued_bytes >= avail);
-
-        SDL_memcpy(ptr, packet->data + packet->startpos, cpy);
-        packet->startpos += cpy;
-        ptr += cpy;
-        device->queued_bytes -= cpy;
-        len -= cpy;
-
-        if (packet->startpos == packet->datalen) {  /* packet is done, put it in the pool. */
-            device->buffer_queue_head = packet->next;
-            SDL_assert((packet->next != NULL) || (packet == device->buffer_queue_tail));
-            packet->next = device->buffer_queue_pool;
-            device->buffer_queue_pool = packet;
-        }
-    }
-
-    SDL_assert((device->buffer_queue_head != NULL) == (device->queued_bytes != 0));
-
-    if (device->buffer_queue_head == NULL) {
-        device->buffer_queue_tail = NULL;  /* in case we drained the queue entirely. */
-    }
-
-    return (Uint32) (ptr - stream);
-}
-
 static void SDLCALL
 SDL_BufferQueueDrainCallback(void *userdata, Uint8 *stream, int len)
 {
     /* this function always holds the mixer lock before being called. */
     SDL_AudioDevice *device = (SDL_AudioDevice *) userdata;
-    Uint32 written;
+    size_t dequeued;
 
     SDL_assert(device != NULL);  /* this shouldn't ever happen, right?! */
     SDL_assert(!device->iscapture);  /* this shouldn't ever happen, right?! */
     SDL_assert(len >= 0);  /* this shouldn't ever happen, right?! */
 
-    written = dequeue_audio_from_device(device, stream, (Uint32) len);
-    stream += written;
-    len -= (int) written;
+    dequeued = SDL_ReadFromDataQueue(device->buffer_queue, stream, len);
+    stream += dequeued;
+    len -= (int) dequeued;
 
     if (len > 0) {  /* fill any remaining space in the stream with silence. */
-        SDL_assert(device->buffer_queue_head == NULL);
+        SDL_assert(SDL_CountDataQueue(device->buffer_queue) == 0);
         SDL_memset(stream, device->spec.silence, len);
     }
 }
@@ -565,7 +452,7 @@ SDL_BufferQueueFillCallback(void *userdata, Uint8 *stream, int len)
     /* note that if this needs to allocate more space and run out of memory,
        we have no choice but to quietly drop the data and hope it works out
        later, but you probably have bigger problems in this case anyhow. */
-    queue_audio_to_device(device, stream, (Uint32) len);
+    SDL_WriteToDataQueue(device->buffer_queue, stream, len);
 }
 
 int
@@ -584,7 +471,7 @@ SDL_QueueAudio(SDL_AudioDeviceID devid, const void *data, Uint32 len)
 
     if (len > 0) {
         current_audio.impl.LockDevice(device);
-        rc = queue_audio_to_device(device, data, len);
+        rc = SDL_WriteToDataQueue(device->buffer_queue, data, len);
         current_audio.impl.UnlockDevice(device);
     }
 
@@ -605,7 +492,7 @@ SDL_DequeueAudio(SDL_AudioDeviceID devid, void *data, Uint32 len)
     }
 
     current_audio.impl.LockDevice(device);
-    rc = dequeue_audio_from_device(device, data, len);
+    rc = (Uint32) SDL_ReadFromDataQueue(device->buffer_queue, data, len);
     current_audio.impl.UnlockDevice(device);
     return rc;
 }
@@ -623,11 +510,11 @@ SDL_GetQueuedAudioSize(SDL_AudioDeviceID devid)
     /* Nothing to do unless we're set up for queueing. */
     if (device->spec.callback == SDL_BufferQueueDrainCallback) {
         current_audio.impl.LockDevice(device);
-        retval = device->queued_bytes + current_audio.impl.GetPendingBytes(device);
+        retval = SDL_CountDataQueue(device->buffer_queue) + current_audio.impl.GetPendingBytes(device);
         current_audio.impl.UnlockDevice(device);
     } else if (device->spec.callback == SDL_BufferQueueFillCallback) {
         current_audio.impl.LockDevice(device);
-        retval = device->queued_bytes;
+        retval = SDL_CountDataQueue(device->buffer_queue);
         current_audio.impl.UnlockDevice(device);
     }
 
@@ -638,7 +525,6 @@ void
 SDL_ClearQueuedAudio(SDL_AudioDeviceID devid)
 {
     SDL_AudioDevice *device = get_audio_device(devid);
-    SDL_AudioBufferQueue *packet;
 
     if (!device) {
         return;  /* nothing to do. */
@@ -647,35 +533,10 @@ SDL_ClearQueuedAudio(SDL_AudioDeviceID devid)
     /* Blank out the device and release the mutex. Free it afterwards. */
     current_audio.impl.LockDevice(device);
 
-    /* merge the available pool and the current queue into one list. */
-    packet = device->buffer_queue_head;
-    if (packet) {
-        device->buffer_queue_tail->next = device->buffer_queue_pool;
-    } else {
-        packet = device->buffer_queue_pool;
-    }
-
-    /* Remove the queued packets from the device. */
-    device->buffer_queue_tail = NULL;
-    device->buffer_queue_head = NULL;
-    device->queued_bytes = 0;
-    device->buffer_queue_pool = packet;
-
     /* Keep up to two packets in the pool to reduce future malloc pressure. */
-    if (packet) {
-        if (!packet->next) {
-            packet = NULL;  /* one packet (the only one) for the pool. */
-        } else {
-            SDL_AudioBufferQueue *next = packet->next->next;
-            packet->next->next = NULL;  /* two packets for the pool. */
-            packet = next;  /* rest will be freed. */
-        }
-    }
+    SDL_ClearDataQueue(device->buffer_queue, SDL_AUDIOBUFFERQUEUE_PACKETLEN * 2);
 
     current_audio.impl.UnlockDevice(device);
-
-    /* free any extra packets we didn't keep in the pool. */
-    free_audio_queue(packet);
 }
 
 
@@ -1076,9 +937,7 @@ close_audio_device(SDL_AudioDevice * device)
         current_audio.impl.CloseDevice(device);
     }
 
-    free_audio_queue(device->buffer_queue_head);
-    free_audio_queue(device->buffer_queue_pool);
-
+    SDL_FreeDataQueue(device->buffer_queue);
     SDL_free(device);
 }
 
@@ -1348,19 +1207,13 @@ open_audio_device(const char *devname, int iscapture,
 
     if (device->spec.callback == NULL) {  /* use buffer queueing? */
         /* pool a few packets to start. Enough for two callbacks. */
-        const int packetlen = SDL_AUDIOBUFFERQUEUE_PACKETLEN;
-        const int wantbytes = ((device->convert.needed) ? device->convert.len : device->spec.size) * 2;
-        const int wantpackets = (wantbytes / packetlen) + ((wantbytes % packetlen) ? packetlen : 0);
-        for (i = 0; i < wantpackets; i++) {
-            SDL_AudioBufferQueue *packet = (SDL_AudioBufferQueue *) SDL_malloc(sizeof (SDL_AudioBufferQueue));
-            if (packet) { /* don't care if this fails, we'll deal later. */
-                packet->datalen = 0;
-                packet->startpos = 0;
-                packet->next = device->buffer_queue_pool;
-                device->buffer_queue_pool = packet;
-            }
+        const size_t slack = ((device->convert.needed) ? device->convert.len : device->spec.size) * 2;
+        device->buffer_queue = SDL_NewDataQueue(SDL_AUDIOBUFFERQUEUE_PACKETLEN, slack);
+        if (!device->buffer_queue) {
+            close_audio_device(device);
+            SDL_SetError("Couldn't create audio buffer queue");
+            return 0;
         }
-
         device->spec.callback = iscapture ? SDL_BufferQueueFillCallback : SDL_BufferQueueDrainCallback;
         device->spec.userdata = device;
     }
