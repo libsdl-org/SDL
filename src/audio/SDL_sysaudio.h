@@ -25,6 +25,7 @@
 
 #include "SDL_mutex.h"
 #include "SDL_thread.h"
+#include "../SDL_dataqueue.h"
 
 /* !!! FIXME: These are wordy and unlocalized... */
 #define DEFAULT_OUTPUT_DEVNAME "System audio output device"
@@ -49,7 +50,6 @@ extern void SDL_RemoveAudioDevice(const int iscapture, void *handle);
    as appropriate so SDL's list of devices is accurate. */
 extern void SDL_OpenedAudioDeviceDisconnected(SDL_AudioDevice *device);
 
-
 /* This is the size of a packet when using SDL_QueueAudio(). We allocate
    these as necessary and pool them, under the assumption that we'll
    eventually end up with a handful that keep recycling, meeting whatever
@@ -60,15 +60,6 @@ extern void SDL_OpenedAudioDeviceDisconnected(SDL_AudioDevice *device);
    if this is crippling for some embedded system, we can #ifdef this.
    The system preallocates enough packets for 2 callbacks' worth of data. */
 #define SDL_AUDIOBUFFERQUEUE_PACKETLEN (8 * 1024)
-
-/* Used by apps that queue audio instead of using the callback. */
-typedef struct SDL_AudioBufferQueue
-{
-    Uint8 data[SDL_AUDIOBUFFERQUEUE_PACKETLEN];  /* packet data. */
-    Uint32 datalen;  /* bytes currently in use in this packet. */
-    Uint32 startpos;  /* bytes currently consumed in this packet. */
-    struct SDL_AudioBufferQueue *next;  /* next item in linked list. */
-} SDL_AudioBufferQueue;
 
 typedef struct SDL_AudioDriverImpl
 {
@@ -175,10 +166,7 @@ struct SDL_AudioDevice
     SDL_threadID threadid;
 
     /* Queued buffers (if app not using callback). */
-    SDL_AudioBufferQueue *buffer_queue_head; /* device fed from here. */
-    SDL_AudioBufferQueue *buffer_queue_tail; /* queue fills to here. */
-    SDL_AudioBufferQueue *buffer_queue_pool; /* these are unused packets. */
-    Uint32 queued_bytes;  /* number of bytes of audio data in the queue. */
+    SDL_DataQueue *buffer_queue;
 
     /* * * */
     /* Data private to this driver */

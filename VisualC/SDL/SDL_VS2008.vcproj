@@ -962,6 +962,14 @@
 			>
 		</File>
 		<File
+			RelativePath="..\..\src\SDL_dataqueue.c"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\SDL_dataqueue.h"
+			>
+		</File>
+		<File
 			RelativePath="..\..\src\SDL_error.c"
 			>
 		</File>
