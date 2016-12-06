@@ -278,7 +278,6 @@
     <ClInclude Include="..\..\src\render\SDL_sysrender.h" />
     <ClInclude Include="..\..\src\thread\SDL_systhread.h" />
     <ClInclude Include="..\..\src\thread\windows\SDL_systhread_c.h" />
-    <ClInclude Include="..\..\src\timer\SDL_systimer.h" />
     <ClInclude Include="..\..\src\video\SDL_sysvideo.h" />
     <ClInclude Include="..\..\src\thread\SDL_thread_c.h" />
     <ClInclude Include="..\..\src\timer\SDL_timer_c.h" />

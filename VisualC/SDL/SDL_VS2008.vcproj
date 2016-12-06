@@ -690,7 +690,7 @@
 			>
 		</File>
 		<File
-			RelativePath="..\..\src\libm\math.h"
+			RelativePath="..\..\src\libm\math_libm.h"
 			>
 		</File>
 		<File
@@ -699,10 +699,6 @@
 		</File>
 		<File
 			RelativePath="..\..\src\render\mmx.h"
-			>
-		</File>
-		<File
-			RelativePath=".\resource.h"
 			>
 		</File>
 		<File
@@ -1002,11 +998,11 @@
 			>
 		</File>
 		<File
-			RelativePath="..\..\src\video\SDL_glesfuncs.h"
+			RelativePath="..\..\src\render\opengles\SDL_glesfuncs.h"
 			>
 		</File>
 		<File
-			RelativePath="..\..\src\video\SDL_glfuncs.h"
+			RelativePath="..\..\src\render\opengl\SDL_glfuncs.h"
 			>
 		</File>
 		<File
@@ -1015,10 +1011,6 @@
 		</File>
 		<File
 			RelativePath="..\..\src\SDL_hints.c"
-			>
-		</File>
-		<File
-			RelativePath="..\..\src\SDL_hints_c.h"
 			>
 		</File>
 		<File
@@ -1263,10 +1255,6 @@
 		</File>
 		<File
 			RelativePath="..\..\src\timer\windows\SDL_systimer.c"
-			>
-		</File>
-		<File
-			RelativePath="..\..\src\timer\SDL_systimer.h"
 			>
 		</File>
 		<File
