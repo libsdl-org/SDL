@@ -335,7 +335,8 @@ SDL_LogOutput(void *userdata, int category, SDL_LogPriority priority,
             if (!attachResult) {
                     attachError = GetLastError();
                     if (attachError == ERROR_INVALID_HANDLE) {
-                        OutputDebugString(TEXT("Parent process has no console\r\n"));
+                        /* This is expected when running from Visual Studio */
+                        /*OutputDebugString(TEXT("Parent process has no console\r\n"));*/
                         consoleAttached = -1;
                     } else if (attachError == ERROR_GEN_FAILURE) {
                          OutputDebugString(TEXT("Could not attach to console of parent process\r\n"));
