@@ -31,6 +31,9 @@ extern void SDL_JoystickQuit(void);
 extern int SDL_GameControllerInit(void);
 extern void SDL_GameControllerQuit(void);
 
+/* Locking for multi-threaded access to the joystick API */
+extern void SDL_LockJoystickList(void);
+extern void SDL_UnlockJoystickList(void);
 
 /* Internal event queueing functions */
 extern void SDL_PrivateJoystickAdded(int device_index);
