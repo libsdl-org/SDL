@@ -25,6 +25,7 @@
 #include "SDL_events.h"
 #include "SDL_assert.h"
 #include "SDL_sysjoystick.h"
+#include "SDL_joystick_c.h"
 #include "SDL_hints.h"
 #include "SDL_gamecontrollerdb.h"
 
@@ -1086,12 +1087,15 @@ SDL_GameControllerOpen(int device_index)
         return (NULL);
     }
 
+    SDL_LockJoystickList();
+
     gamecontrollerlist = SDL_gamecontrollers;
     /* If the controller is already open, return it */
     while (gamecontrollerlist) {
         if (SDL_SYS_GetInstanceIdOfDeviceIndex(device_index) == gamecontrollerlist->joystick->instance_id) {
                 gamecontroller = gamecontrollerlist;
                 ++gamecontroller->ref_count;
+                SDL_UnlockJoystickList();
                 return (gamecontroller);
         }
         gamecontrollerlist = gamecontrollerlist->next;
@@ -1101,13 +1105,15 @@ SDL_GameControllerOpen(int device_index)
     pSupportedController =  SDL_PrivateGetControllerMapping(device_index);
     if (!pSupportedController) {
         SDL_SetError("Couldn't find mapping for device (%d)", device_index);
-        return (NULL);
+        SDL_UnlockJoystickList();
+        return NULL;
     }
 
     /* Create and initialize the joystick */
     gamecontroller = (SDL_GameController *) SDL_malloc((sizeof *gamecontroller));
     if (gamecontroller == NULL) {
         SDL_OutOfMemory();
+        SDL_UnlockJoystickList();
         return NULL;
     }
 
@@ -1115,6 +1121,7 @@ SDL_GameControllerOpen(int device_index)
     gamecontroller->joystick = SDL_JoystickOpen(device_index);
     if (!gamecontroller->joystick) {
         SDL_free(gamecontroller);
+        SDL_UnlockJoystickList();
         return NULL;
     }
 
@@ -1140,7 +1147,7 @@ SDL_GameControllerOpen(int device_index)
     gamecontroller->next = SDL_gamecontrollers;
     SDL_gamecontrollers = gamecontroller;
 
-    SDL_SYS_JoystickUpdate(gamecontroller->joystick);
+    SDL_UnlockJoystickList();
 
     return (gamecontroller);
 }
@@ -1274,14 +1281,18 @@ SDL_Joystick *SDL_GameControllerGetJoystick(SDL_GameController * gamecontroller)
 SDL_GameController *
 SDL_GameControllerFromInstanceID(SDL_JoystickID joyid)
 {
-    SDL_GameController *gamecontroller = SDL_gamecontrollers;
+    SDL_GameController *gamecontroller;
+
+    SDL_LockJoystickList();
+    gamecontroller = SDL_gamecontrollers;
     while (gamecontroller) {
         if (gamecontroller->joystick->instance_id == joyid) {
+            SDL_UnlockJoystickList();
             return gamecontroller;
         }
         gamecontroller = gamecontroller->next;
     }
-
+    SDL_UnlockJoystickList();
     return NULL;
 }
 
@@ -1344,8 +1355,11 @@ SDL_GameControllerClose(SDL_GameController * gamecontroller)
     if (!gamecontroller)
         return;
 
+    SDL_LockJoystickList();
+
     /* First decrement ref count */
     if (--gamecontroller->ref_count > 0) {
+        SDL_UnlockJoystickList();
         return;
     }
 
@@ -1361,7 +1375,6 @@ SDL_GameControllerClose(SDL_GameController * gamecontroller)
             } else {
                 SDL_gamecontrollers = gamecontroller->next;
             }
-
             break;
         }
         gamecontrollerlistprev = gamecontrollerlist;
@@ -1369,6 +1382,8 @@ SDL_GameControllerClose(SDL_GameController * gamecontroller)
     }
 
     SDL_free(gamecontroller);
+
+    SDL_UnlockJoystickList();
 }
 
 
@@ -1379,10 +1394,13 @@ void
 SDL_GameControllerQuit(void)
 {
     ControllerMapping_t *pControllerMap;
+
+    SDL_LockJoystickList();
     while (SDL_gamecontrollers) {
         SDL_gamecontrollers->ref_count = 1;
         SDL_GameControllerClose(SDL_gamecontrollers);
     }
+    SDL_UnlockJoystickList();
 
     while (s_pSupportedControllers) {
         pControllerMap = s_pSupportedControllers;

@@ -37,16 +37,16 @@ static SDL_Joystick *SDL_joysticks = NULL;
 static SDL_Joystick *SDL_updating_joystick = NULL;
 static SDL_mutex *SDL_joystick_lock = NULL; /* This needs to support recursive locks */
 
-static void
-SDL_LockJoystickList()
+void
+SDL_LockJoystickList(void)
 {
     if (SDL_joystick_lock) {
         SDL_LockMutex(SDL_joystick_lock);
     }
 }
 
-static void
-SDL_UnlockJoystickList()
+void
+SDL_UnlockJoystickList(void)
 {
     if (SDL_joystick_lock) {
         SDL_UnlockMutex(SDL_joystick_lock);
@@ -216,9 +216,9 @@ SDL_JoystickOpen(int device_index)
     joystick->next = SDL_joysticks;
     SDL_joysticks = joystick;
 
-    SDL_SYS_JoystickUpdate(joystick);
-
     SDL_UnlockJoystickList();
+
+    SDL_SYS_JoystickUpdate(joystick);
 
     return (joystick);
 }
@@ -787,6 +787,12 @@ SDL_JoystickUpdate(void)
 
     SDL_LockJoystickList();
 
+    if (SDL_updating_joystick) {
+        /* The joysticks are already being updated */
+        SDL_UnlockJoystickList();
+        return;
+    }
+
     for (joystick = SDL_joysticks; joystick; joystick = joysticknext) {
         /* save off the next pointer, the Update call may cause a joystick removed event
          * and cause our joystick pointer to be freed
@@ -794,6 +800,9 @@ SDL_JoystickUpdate(void)
         joysticknext = joystick->next;
 
         SDL_updating_joystick = joystick;
+
+        /* Make sure the list is unlocked while dispatching events to prevent application deadlocks */
+        SDL_UnlockJoystickList();
 
         SDL_SYS_JoystickUpdate(joystick);
 
@@ -815,6 +824,8 @@ SDL_JoystickUpdate(void)
 
             joystick->force_recentering = SDL_FALSE;
         }
+
+        SDL_LockJoystickList();
 
         SDL_updating_joystick = NULL;
 
