@@ -156,7 +156,7 @@ NACL_GLES_SwapWindow(_THIS, SDL_Window * window)
 {
     SDL_VideoData *driverdata = (SDL_VideoData *) _this->driverdata;
     struct PP_CompletionCallback callback = { NULL, 0, PP_COMPLETIONCALLBACK_FLAG_NONE };
-    if (driverdata->ppb_graphics->SwapBuffers((PP_Resource) SDL_GL_GetCurrentContext(), callback ) != PP_OK) {
+    if (driverdata->ppb_graphics->SwapBuffers((PP_Resource) SDL_GL_GetCurrentContext(), callback ) != 0) {
         return SDL_SetError("SwapBuffers failed");
     }
     return 0;
