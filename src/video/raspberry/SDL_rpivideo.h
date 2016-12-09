@@ -90,7 +90,7 @@ SDL_GLContext RPI_GLES_CreateContext(_THIS, SDL_Window * window);
 int RPI_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context);
 int RPI_GLES_SetSwapInterval(_THIS, int interval);
 int RPI_GLES_GetSwapInterval(_THIS);
-void RPI_GLES_SwapWindow(_THIS, SDL_Window * window);
+int RPI_GLES_SwapWindow(_THIS, SDL_Window * window);
 void RPI_GLES_DeleteContext(_THIS, SDL_GLContext context);
 
 #endif /* __SDL_RPIVIDEO_H__ */

@@ -54,13 +54,15 @@ Wayland_GLES_CreateContext(_THIS, SDL_Window * window)
     return context;
 }
 
-void
+int
 Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
 {
-    SDL_EGL_SwapBuffers(_this, ((SDL_WindowData *) window->driverdata)->egl_surface);
+    if (SDL_EGL_SwapBuffers(_this, ((SDL_WindowData *) window->driverdata)->egl_surface) < 0) {
+        return -1;
+    }
     WAYLAND_wl_display_flush( ((SDL_VideoData*)_this->driverdata)->display );
+    return 0;
 }
-
 
 int
 Wayland_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
