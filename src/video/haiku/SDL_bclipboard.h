@@ -29,3 +29,5 @@ extern char *BE_GetClipboardText(_THIS);
 extern SDL_bool BE_HasClipboardText(_THIS);
 
 #endif
+
+/* vi: set ts=4 sw=4 expandtab: */

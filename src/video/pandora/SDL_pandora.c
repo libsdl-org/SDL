@@ -774,15 +774,14 @@ PND_gl_getswapinterval(_THIS)
     return ((SDL_VideoData *) _this->driverdata)->swapinterval;
 }
 
-void
+int
 PND_gl_swapwindow(_THIS, SDL_Window * window)
 {
     SDL_VideoData *phdata = (SDL_VideoData *) _this->driverdata;
     SDL_WindowData *wdata = (SDL_WindowData *) window->driverdata;
 
     if (phdata->egl_initialized != SDL_TRUE) {
-        SDL_SetError("PND: GLES initialization failed, no OpenGL ES support");
-        return;
+        return SDL_SetError("PND: GLES initialization failed, no OpenGL ES support");
     }
 
     /* Many applications do not uses glFinish(), so we call it for them */
@@ -792,6 +791,7 @@ PND_gl_swapwindow(_THIS, SDL_Window * window)
     eglWaitGL();
 
     eglSwapBuffers(phdata->egl_display, wdata->gles_surface);
+    return 0;
 }
 
 void

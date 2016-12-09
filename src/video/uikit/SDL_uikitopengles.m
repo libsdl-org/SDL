@@ -111,7 +111,7 @@ UIKit_GL_LoadLibrary(_THIS, const char *path)
     return 0;
 }
 
-void UIKit_GL_SwapWindow(_THIS, SDL_Window * window)
+int UIKit_GL_SwapWindow(_THIS, SDL_Window * window)
 {
     @autoreleasepool {
         SDLEAGLContext *context = (__bridge SDLEAGLContext *) SDL_GL_GetCurrentContext();
@@ -127,6 +127,7 @@ void UIKit_GL_SwapWindow(_THIS, SDL_Window * window)
          * We don't pump events here because we don't want iOS application events
          * (low memory, terminate, etc.) to happen inside low level rendering. */
     }
+    return 0;
 }
 
 SDL_GLContext

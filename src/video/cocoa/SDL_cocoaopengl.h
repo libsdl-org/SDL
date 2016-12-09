@@ -58,7 +58,7 @@ extern void Cocoa_GL_GetDrawableSize(_THIS, SDL_Window * window,
                                      int * w, int * h);
 extern int Cocoa_GL_SetSwapInterval(_THIS, int interval);
 extern int Cocoa_GL_GetSwapInterval(_THIS);
-extern void Cocoa_GL_SwapWindow(_THIS, SDL_Window * window);
+extern int Cocoa_GL_SwapWindow(_THIS, SDL_Window * window);
 extern void Cocoa_GL_DeleteContext(_THIS, SDL_GLContext context);
 
 #endif /* SDL_VIDEO_OPENGL_CGL */

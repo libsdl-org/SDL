@@ -383,13 +383,14 @@ Cocoa_GL_GetSwapInterval(_THIS)
     return status;
 }}
 
-void
+int
 Cocoa_GL_SwapWindow(_THIS, SDL_Window * window)
 { @autoreleasepool
 {
     SDLOpenGLContext* nscontext = (SDLOpenGLContext*)SDL_GL_GetCurrentContext();
     [nscontext flushBuffer];
     [nscontext updateIfNeeded];
+    return 0;
 }}
 
 void

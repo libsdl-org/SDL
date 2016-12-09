@@ -783,13 +783,14 @@ X11_GL_GetSwapInterval(_THIS)
     }
 }
 
-void
+int
 X11_GL_SwapWindow(_THIS, SDL_Window * window)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
     Display *display = data->videodata->display;
 
     _this->gl_data->glXSwapBuffers(display, data->xwindow);
+    return 0;
 }
 
 void

@@ -252,3 +252,5 @@ int32 BE_UpdateOnce(SDL_Window *window) {
 #endif
 
 #endif /* SDL_VIDEO_DRIVER_HAIKU */
+
+/* vi: set ts=4 sw=4 expandtab: */

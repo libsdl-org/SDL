@@ -62,7 +62,7 @@ extern int WIN_GL_MakeCurrent(_THIS, SDL_Window * window,
                               SDL_GLContext context);
 extern int WIN_GL_SetSwapInterval(_THIS, int interval);
 extern int WIN_GL_GetSwapInterval(_THIS);
-extern void WIN_GL_SwapWindow(_THIS, SDL_Window * window);
+extern int WIN_GL_SwapWindow(_THIS, SDL_Window * window);
 extern void WIN_GL_DeleteContext(_THIS, SDL_GLContext context);
 extern void WIN_GL_InitExtensions(_THIS);
 extern SDL_bool WIN_GL_SetPixelFormatFrom(_THIS, SDL_Window * fromWindow, SDL_Window * toWindow);
