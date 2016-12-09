@@ -1195,7 +1195,7 @@ extern DECLSPEC int SDLCALL SDL_GL_GetSwapInterval(void);
  * \brief Swap the OpenGL buffers for a window, if double-buffering is
  *        supported.
  */
-extern DECLSPEC void SDLCALL SDL_GL_SwapWindow(SDL_Window * window);
+extern DECLSPEC int SDLCALL SDL_GL_SwapWindow(SDL_Window * window);
 
 /**
  *  \brief Delete an OpenGL context.

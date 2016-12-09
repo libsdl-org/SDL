@@ -766,12 +766,15 @@ WIN_GL_GetSwapInterval(_THIS)
     return retval;
 }
 
-void
+int
 WIN_GL_SwapWindow(_THIS, SDL_Window * window)
 {
     HDC hdc = ((SDL_WindowData *) window->driverdata)->hdc;
 
-    SwapBuffers(hdc);
+    if (!SwapBuffers(hdc)) {
+        return WIN_SetError("SwapBuffers()");
+    }
+    return 0;
 }
 
 void

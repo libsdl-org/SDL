@@ -34,7 +34,7 @@
 #define MIR_GL_GetSwapInterval SDL_EGL_GetSwapInterval
 #define MIR_GL_SetSwapInterval SDL_EGL_SetSwapInterval
 
-extern void
+extern int
 MIR_GL_SwapWindow(_THIS, SDL_Window* window);
 
 extern int

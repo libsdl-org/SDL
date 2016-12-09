@@ -31,12 +31,12 @@
 
 #include "SDL_mirdyn.h"
 
-void
+int
 MIR_GL_SwapWindow(_THIS, SDL_Window* window)
 {
     MIR_Window* mir_wind = window->driverdata;
 
-    SDL_EGL_SwapBuffers(_this, mir_wind->egl_surface);
+    return SDL_EGL_SwapBuffers(_this, mir_wind->egl_surface);
 }
 
 int

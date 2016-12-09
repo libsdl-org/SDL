@@ -50,7 +50,7 @@ extern int DirectFB_GL_MakeCurrent(_THIS, SDL_Window * window,
                                    SDL_GLContext context);
 extern int DirectFB_GL_SetSwapInterval(_THIS, int interval);
 extern int DirectFB_GL_GetSwapInterval(_THIS);
-extern void DirectFB_GL_SwapWindow(_THIS, SDL_Window * window);
+extern int DirectFB_GL_SwapWindow(_THIS, SDL_Window * window);
 extern void DirectFB_GL_DeleteContext(_THIS, SDL_GLContext context);
 
 extern void DirectFB_GL_FreeWindowContexts(_THIS, SDL_Window * window);

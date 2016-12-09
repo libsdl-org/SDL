@@ -44,3 +44,5 @@ extern int BE_SetDisplayMode(_THIS, SDL_VideoDisplay *display,
 #endif
 
 #endif
+
+/* vi: set ts=4 sw=4 expandtab: */

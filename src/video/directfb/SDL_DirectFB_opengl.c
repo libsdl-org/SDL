@@ -246,7 +246,7 @@ DirectFB_GL_GetSwapInterval(_THIS)
     return 0;
 }
 
-void
+int
 DirectFB_GL_SwapWindow(_THIS, SDL_Window * window)
 {
     SDL_DFB_WINDOWDATA(window);
@@ -273,9 +273,9 @@ DirectFB_GL_SwapWindow(_THIS, SDL_Window * window)
         }
 
     SDL_DFB_CHECKERR(windata->window_surface->Flip(windata->window_surface,NULL,  DSFLIP_PIPELINE |DSFLIP_BLIT | DSFLIP_ONSYNC ));
-    return;
+    return 0;
   error:
-    return;
+    return -1;
 }
 
 void

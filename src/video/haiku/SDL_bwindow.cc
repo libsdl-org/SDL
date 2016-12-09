@@ -227,3 +227,5 @@ SDL_bool BE_GetWindowWMInfo(_THIS, SDL_Window * window,
 #endif
 
 #endif /* SDL_VIDEO_DRIVER_HAIKU */
+
+/* vi: set ts=4 sw=4 expandtab: */

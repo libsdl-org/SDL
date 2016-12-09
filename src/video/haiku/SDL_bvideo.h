@@ -40,3 +40,5 @@ extern int BE_Available(void);
 #endif
 
 #endif
+
+/* vi: set ts=4 sw=4 expandtab: */

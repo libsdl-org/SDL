@@ -96,14 +96,14 @@ extern void SDL_EGL_DestroySurface(_THIS, EGLSurface egl_surface);
 /* These need to be wrapped to get the surface for the window by the platform GLES implementation */
 extern SDL_GLContext SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface);
 extern int SDL_EGL_MakeCurrent(_THIS, EGLSurface egl_surface, SDL_GLContext context);
-extern void SDL_EGL_SwapBuffers(_THIS, EGLSurface egl_surface);
+extern int SDL_EGL_SwapBuffers(_THIS, EGLSurface egl_surface);
 
 /* A few of useful macros */
 
-#define SDL_EGL_SwapWindow_impl(BACKEND) void \
+#define SDL_EGL_SwapWindow_impl(BACKEND) int \
 BACKEND ## _GLES_SwapWindow(_THIS, SDL_Window * window) \
 {\
-    SDL_EGL_SwapBuffers(_this, ((SDL_WindowData *) window->driverdata)->egl_surface);\
+    return SDL_EGL_SwapBuffers(_this, ((SDL_WindowData *) window->driverdata)->egl_surface);\
 }
 
 #define SDL_EGL_MakeCurrent_impl(BACKEND) int \

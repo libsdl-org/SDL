@@ -63,7 +63,7 @@ extern int X11_GL_MakeCurrent(_THIS, SDL_Window * window,
                               SDL_GLContext context);
 extern int X11_GL_SetSwapInterval(_THIS, int interval);
 extern int X11_GL_GetSwapInterval(_THIS);
-extern void X11_GL_SwapWindow(_THIS, SDL_Window * window);
+extern int X11_GL_SwapWindow(_THIS, SDL_Window * window);
 extern void X11_GL_DeleteContext(_THIS, SDL_GLContext context);
 
 #endif /* SDL_VIDEO_OPENGL_GLX */
