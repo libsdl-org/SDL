@@ -565,10 +565,13 @@ SDL_EGL_GetSwapInterval(_THIS)
     return _this->egl_data->egl_swapinterval;
 }
 
-void
+int
 SDL_EGL_SwapBuffers(_THIS, EGLSurface egl_surface)
 {
-    _this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, egl_surface);
+    if (!_this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, egl_surface)) {
+        return SDL_SetError("eglSwapBuffers() failed");
+    }
+    return 0;
 }
 
 void
