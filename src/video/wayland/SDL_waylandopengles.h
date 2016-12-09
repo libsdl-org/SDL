@@ -39,7 +39,7 @@ typedef struct SDL_PrivateGLESData
 
 extern int Wayland_GLES_LoadLibrary(_THIS, const char *path);
 extern SDL_GLContext Wayland_GLES_CreateContext(_THIS, SDL_Window * window);
-extern void Wayland_GLES_SwapWindow(_THIS, SDL_Window * window);
+extern int Wayland_GLES_SwapWindow(_THIS, SDL_Window * window);
 extern int Wayland_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context);
 extern void Wayland_GLES_DeleteContext(_THIS, SDL_GLContext context);
 

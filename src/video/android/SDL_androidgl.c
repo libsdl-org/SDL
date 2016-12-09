@@ -39,7 +39,7 @@
 SDL_EGL_CreateContext_impl(Android)
 SDL_EGL_MakeCurrent_impl(Android)
 
-void
+int
 Android_GLES_SwapWindow(_THIS, SDL_Window * window)
 {
     /* The following two calls existed in the original Java code
@@ -49,7 +49,7 @@ Android_GLES_SwapWindow(_THIS, SDL_Window * window)
     
     /*_this->egl_data->eglWaitNative(EGL_CORE_NATIVE_ENGINE);
     _this->egl_data->eglWaitGL();*/
-    SDL_EGL_SwapBuffers(_this, ((SDL_WindowData *) window->driverdata)->egl_surface);
+    return SDL_EGL_SwapBuffers(_this, ((SDL_WindowData *) window->driverdata)->egl_surface);
 }
 
 int

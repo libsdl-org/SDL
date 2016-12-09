@@ -151,12 +151,15 @@ NACL_GLES_GetSwapInterval(_THIS)
     return 0;
 }
 
-void
+int
 NACL_GLES_SwapWindow(_THIS, SDL_Window * window)
 {
     SDL_VideoData *driverdata = (SDL_VideoData *) _this->driverdata;
     struct PP_CompletionCallback callback = { NULL, 0, PP_COMPLETIONCALLBACK_FLAG_NONE };
-    driverdata->ppb_graphics->SwapBuffers((PP_Resource) SDL_GL_GetCurrentContext(), callback );
+    if (driverdata->ppb_graphics->SwapBuffers((PP_Resource) SDL_GL_GetCurrentContext(), callback ) != PP_OK) {
+        return SDL_SetError("SwapBuffers failed");
+    }
+    return 0;
 }
 
 void
