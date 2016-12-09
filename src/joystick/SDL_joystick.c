@@ -486,6 +486,7 @@ SDL_JoystickClose(SDL_Joystick * joystick)
 
     /* Free the data associated with this joystick */
     SDL_free(joystick->axes);
+    SDL_free(joystick->axes_zero);
     SDL_free(joystick->hats);
     SDL_free(joystick->balls);
     SDL_free(joystick->buttons);
