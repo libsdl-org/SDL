@@ -372,6 +372,9 @@
     <ClInclude Include="..\..\src\video\winrt\SDL_winrtgamebar_cpp.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\SDL_dataqueue.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\atomic\SDL_atomic.c">
@@ -675,6 +678,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\video\winrt\SDL_winrtgamebar.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\SDL_dataqueue.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
