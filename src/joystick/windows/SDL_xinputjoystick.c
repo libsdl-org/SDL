@@ -38,11 +38,16 @@ static SDL_bool s_bXInputEnabled = SDL_TRUE;
 static SDL_bool
 SDL_XInputUseOldJoystickMapping()
 {
+#ifdef __WINRT__
+    /* TODO: remove this __WINRT__ block, but only after integrating with UWP/WinRT's HID API */
+    return SDL_TRUE;
+#else
     static int s_XInputUseOldJoystickMapping = -1;
     if (s_XInputUseOldJoystickMapping < 0) {
         s_XInputUseOldJoystickMapping = SDL_GetHintBoolean(SDL_HINT_XINPUT_USE_OLD_JOYSTICK_MAPPING, SDL_FALSE);
     }
     return (s_XInputUseOldJoystickMapping > 0);
+#endif
 }
 
 SDL_bool SDL_XINPUT_Enabled(void)
@@ -110,6 +115,8 @@ GetXInputName(const Uint8 userid, BYTE SubType)
 static void
 GuessXInputDevice(UINT device_index, Uint16 *pVID, Uint16 *pPID, Uint16 *pVersion)
 {
+#ifndef __WINRT__   /* TODO: remove this ifndef __WINRT__ block, but only after integrating with UWP/WinRT's HID API */
+
     PRAWINPUTDEVICELIST devices = NULL;
     UINT i, found_count = 0, device_count = 0;
 
@@ -151,6 +158,7 @@ GuessXInputDevice(UINT device_index, Uint16 *pVID, Uint16 *pPID, Uint16 *pVersio
         }
     }
     SDL_free(devices);
+#endif  /* ifndef __WINRT__ */
 }
 
 static void
