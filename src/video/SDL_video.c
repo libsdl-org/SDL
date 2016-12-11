@@ -172,6 +172,11 @@ ShouldUseTextureFramebuffer()
         return SDL_TRUE;
     }
 
+    /* If this is the dummy driver there is no texture support */
+    if (_this->is_dummy) {
+        return SDL_FALSE;
+    }
+
     /* If the user has specified a software renderer we can't use a
        texture framebuffer, or renderer creation will go recursive.
      */
@@ -1175,7 +1180,7 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
     if (window->is_destroying && (window->last_fullscreen_flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN_DESKTOP)
         return 0;
     
-    if (SDL_strcmp(_this->name, "dummy") != 0) {
+    if (!_this->is_dummy) {
         /* If we're switching between a fullscreen Space and "normal" fullscreen, we need to get back to normal first. */
         if (fullscreen && ((window->last_fullscreen_flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN_DESKTOP) && ((window->flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN)) {
             if (!Cocoa_SetWindowFullscreenSpace(window, SDL_FALSE)) {
@@ -1369,7 +1374,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
 
     /* Some platforms have OpenGL enabled by default */
 #if (SDL_VIDEO_OPENGL && __MACOSX__) || __IPHONEOS__ || __ANDROID__ || __NACL__
-    if (SDL_strcmp(_this->name, "dummy") != 0) {
+    if (!_this->is_dummy) {
         flags |= SDL_WINDOW_OPENGL;
     }
 #endif

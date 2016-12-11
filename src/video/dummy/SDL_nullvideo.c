@@ -84,6 +84,7 @@ DUMMY_CreateDevice(int devindex)
         SDL_OutOfMemory();
         return (0);
     }
+    device->is_dummy = SDL_TRUE;
 
     /* Set the function pointers */
     device->VideoInit = DUMMY_VideoInit;
