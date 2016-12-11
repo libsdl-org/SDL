@@ -288,6 +288,7 @@ struct SDL_VideoDevice
 
     /* * * */
     /* Data common to all drivers */
+    SDL_bool is_dummy;
     SDL_bool suspend_screensaver;
     int num_displays;
     SDL_VideoDisplay *displays;
@@ -295,7 +296,7 @@ struct SDL_VideoDevice
     SDL_Window *grabbed_window;
     Uint8 window_magic;
     Uint32 next_object_id;
-    char * clipboard_text;
+    char *clipboard_text;
 
     /* * * */
     /* Data used by the GL drivers */
