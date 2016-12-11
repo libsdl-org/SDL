@@ -3390,20 +3390,22 @@ SDL_GL_GetSwapInterval(void)
     }
 }
 
-int
+void
 SDL_GL_SwapWindow(SDL_Window * window)
 {
-    CHECK_WINDOW_MAGIC(window,-1);
+    CHECK_WINDOW_MAGIC(window,);
 
     if (!(window->flags & SDL_WINDOW_OPENGL)) {
-        return SDL_SetError("The specified window isn't an OpenGL window");
+        SDL_SetError("The specified window isn't an OpenGL window");
+        return;
     }
 
     if (SDL_GL_GetCurrentWindow() != window) {
-        return SDL_SetError("The specified window has not been made current");
+        SDL_SetError("The specified window has not been made current");
+        return;
     }
 
-    return _this->GL_SwapWindow(_this, window);
+    _this->GL_SwapWindow(_this, window);
 }
 
 void
