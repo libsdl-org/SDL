@@ -74,7 +74,7 @@ struct DetailedTiming
 	    int negative_vsync;
 	    int negative_hsync;
 	} digital;
-    };
+    } ad;
 };
 
 struct MonitorInfo
@@ -118,7 +118,7 @@ struct MonitorInfo
 	    int		serration_on_vsync;
 	    ColorType	color_type;
 	} analog;
-    };
+    } ad;
 
     int			width_mm;		/* -1 if not specified */
     int			height_mm;		/* -1 if not specified */

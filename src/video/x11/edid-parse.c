@@ -140,14 +140,14 @@ decode_display_parameters (const uchar *edid, MonitorInfo *info)
 	};
 
 	bits = get_bits (edid[0x14], 4, 6);
-	info->digital.bits_per_primary = bit_depth[bits];
+	info->ad.digital.bits_per_primary = bit_depth[bits];
 
 	bits = get_bits (edid[0x14], 0, 3);
 	
 	if (bits <= 5)
-	    info->digital.interface = interfaces[bits];
+	    info->ad.digital.interface = interfaces[bits];
 	else
-	    info->digital.interface = UNDEFINED;
+	    info->ad.digital.interface = UNDEFINED;
     }
     else
     {
@@ -161,17 +161,17 @@ decode_display_parameters (const uchar *edid, MonitorInfo *info)
 	    { 0.7,   0.0,    0.7 },
 	};
 
-	info->analog.video_signal_level = levels[bits][0];
-	info->analog.sync_signal_level = levels[bits][1];
-	info->analog.total_signal_level = levels[bits][2];
+	info->ad.analog.video_signal_level = levels[bits][0];
+	info->ad.analog.sync_signal_level = levels[bits][1];
+	info->ad.analog.total_signal_level = levels[bits][2];
 
-	info->analog.blank_to_black = get_bit (edid[0x14], 4);
+	info->ad.analog.blank_to_black = get_bit (edid[0x14], 4);
 
-	info->analog.separate_hv_sync = get_bit (edid[0x14], 3);
-	info->analog.composite_sync_on_h = get_bit (edid[0x14], 2);
-	info->analog.composite_sync_on_green = get_bit (edid[0x14], 1);
+	info->ad.analog.separate_hv_sync = get_bit (edid[0x14], 3);
+	info->ad.analog.composite_sync_on_h = get_bit (edid[0x14], 2);
+	info->ad.analog.composite_sync_on_green = get_bit (edid[0x14], 1);
 
-	info->analog.serration_on_vsync = get_bit (edid[0x14], 0);
+	info->ad.analog.serration_on_vsync = get_bit (edid[0x14], 0);
     }
 
     /* Screen Size / Aspect Ratio */
@@ -213,11 +213,11 @@ decode_display_parameters (const uchar *edid, MonitorInfo *info)
 
     if (info->is_digital)
     {
-	info->digital.rgb444 = TRUE;
+	info->ad.digital.rgb444 = TRUE;
 	if (get_bit (edid[0x18], 3))
-	    info->digital.ycrcb444 = 1;
+	    info->ad.digital.ycrcb444 = 1;
 	if (get_bit (edid[0x18], 4))
-	    info->digital.ycrcb422 = 1;
+	    info->ad.digital.ycrcb422 = 1;
     }
     else
     {
@@ -227,7 +227,7 @@ decode_display_parameters (const uchar *edid, MonitorInfo *info)
 	    MONOCHROME, RGB, OTHER_COLOR, UNDEFINED_COLOR
 	};
 
-	info->analog.color_type = color_type[bits];
+	info->ad.analog.color_type = color_type[bits];
     }
 
     info->srgb_is_standard = get_bit (edid[0x18], 2);
@@ -455,26 +455,26 @@ decode_detailed_timing (const uchar *timing,
     detailed->digital_sync = get_bit (bits, 4);
     if (detailed->digital_sync)
     {
-	detailed->digital.composite = !get_bit (bits, 3);
+	detailed->ad.digital.composite = !get_bit (bits, 3);
 
-	if (detailed->digital.composite)
+	if (detailed->ad.digital.composite)
 	{
-	    detailed->digital.serrations = get_bit (bits, 2);
-	    detailed->digital.negative_vsync = FALSE;
+	    detailed->ad.digital.serrations = get_bit (bits, 2);
+	    detailed->ad.digital.negative_vsync = FALSE;
 	}
 	else
 	{
-	    detailed->digital.serrations = FALSE;
-	    detailed->digital.negative_vsync = !get_bit (bits, 2);
+	    detailed->ad.digital.serrations = FALSE;
+	    detailed->ad.digital.negative_vsync = !get_bit (bits, 2);
 	}
 
-	detailed->digital.negative_hsync = !get_bit (bits, 0);
+	detailed->ad.digital.negative_hsync = !get_bit (bits, 0);
     }
     else
     {
-	detailed->analog.bipolar = get_bit (bits, 3);
-	detailed->analog.serrations = get_bit (bits, 2);
-	detailed->analog.sync_on_green = !get_bit (bits, 1);
+	detailed->ad.analog.bipolar = get_bit (bits, 3);
+	detailed->ad.analog.serrations = get_bit (bits, 2);
+	detailed->ad.analog.sync_on_green = !get_bit (bits, 1);
     }
 }
 
@@ -579,12 +579,12 @@ dump_monitor_info (MonitorInfo *info)
     if (info->is_digital)
     {
 	const char *interface;
-	if (info->digital.bits_per_primary != -1)
-	    printf ("Bits Per Primary: %d\n", info->digital.bits_per_primary);
+	if (info->ad.digital.bits_per_primary != -1)
+	    printf ("Bits Per Primary: %d\n", info->ad.digital.bits_per_primary);
 	else
 	    printf ("Bits Per Primary: undefined\n");
 	
-	switch (info->digital.interface)
+	switch (info->ad.digital.interface)
 	{
 	case DVI: interface = "DVI"; break;
 	case HDMI_A: interface = "HDMI-a"; break;
@@ -596,27 +596,27 @@ dump_monitor_info (MonitorInfo *info)
 	}
 	printf ("Interface: %s\n", interface);
 	
-	printf ("RGB 4:4:4: %s\n", yesno (info->digital.rgb444));
-	printf ("YCrCb 4:4:4: %s\n", yesno (info->digital.ycrcb444));
-	printf ("YCrCb 4:2:2: %s\n", yesno (info->digital.ycrcb422));
+	printf ("RGB 4:4:4: %s\n", yesno (info->ad.digital.rgb444));
+	printf ("YCrCb 4:4:4: %s\n", yesno (info->ad.digital.ycrcb444));
+	printf ("YCrCb 4:2:2: %s\n", yesno (info->ad.digital.ycrcb422));
     }
     else
     {
        const char *s;
-	printf ("Video Signal Level: %f\n", info->analog.video_signal_level);
-	printf ("Sync Signal Level: %f\n", info->analog.sync_signal_level);
-	printf ("Total Signal Level: %f\n", info->analog.total_signal_level);
+	printf ("Video Signal Level: %f\n", info->ad.analog.video_signal_level);
+	printf ("Sync Signal Level: %f\n", info->ad.analog.sync_signal_level);
+	printf ("Total Signal Level: %f\n", info->ad.analog.total_signal_level);
 	
 	printf ("Blank to Black: %s\n",
-		yesno (info->analog.blank_to_black));
+		yesno (info->ad.analog.blank_to_black));
 	printf ("Separate HV Sync: %s\n",
-		yesno (info->analog.separate_hv_sync));
+		yesno (info->ad.analog.separate_hv_sync));
 	printf ("Composite Sync on H: %s\n",
-		yesno (info->analog.composite_sync_on_h));
+		yesno (info->ad.analog.composite_sync_on_h));
 	printf ("Serration on VSync: %s\n",
-		yesno (info->analog.serration_on_vsync));
+		yesno (info->ad.analog.serration_on_vsync));
 	
-	switch (info->analog.color_type)
+	switch (info->ad.analog.color_type)
 	{
 	case UNDEFINED_COLOR: s = "undefined"; break;
 	case MONOCHROME: s = "monochrome"; break;
@@ -729,20 +729,20 @@ dump_monitor_info (MonitorInfo *info)
 	if (timing->digital_sync)
 	{
 	    printf ("  Digital Sync:\n");
-	    printf ("    composite: %s\n", yesno (timing->digital.composite));
-	    printf ("    serrations: %s\n", yesno (timing->digital.serrations));
+	    printf ("    composite: %s\n", yesno (timing->ad.digital.composite));
+	    printf ("    serrations: %s\n", yesno (timing->ad.digital.serrations));
 	    printf ("    negative vsync: %s\n",
-		    yesno (timing->digital.negative_vsync));
+		    yesno (timing->ad.digital.negative_vsync));
 	    printf ("    negative hsync: %s\n",
-		    yesno (timing->digital.negative_hsync));
+		    yesno (timing->ad.digital.negative_hsync));
 	}
 	else
 	{
 	    printf ("  Analog Sync:\n");
-	    printf ("    bipolar: %s\n", yesno (timing->analog.bipolar));
-	    printf ("    serrations: %s\n", yesno (timing->analog.serrations));
+	    printf ("    bipolar: %s\n", yesno (timing->ad.analog.bipolar));
+	    printf ("    serrations: %s\n", yesno (timing->ad.analog.serrations));
 	    printf ("    sync on green: %s\n", yesno (
-			timing->analog.sync_on_green));
+			timing->ad.analog.sync_on_green));
 	}
     }
     
