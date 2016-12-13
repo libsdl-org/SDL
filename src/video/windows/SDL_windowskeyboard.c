@@ -1036,7 +1036,7 @@ STDMETHODIMP_(ULONG) TSFSink_AddRef(TSFSink *sink)
     return ++sink->refcount;
 }
 
-STDMETHODIMP_(ULONG)TSFSink_Release(TSFSink *sink)
+STDMETHODIMP_(ULONG) TSFSink_Release(TSFSink *sink)
 {
     --sink->refcount;
     if (sink->refcount == 0) {
