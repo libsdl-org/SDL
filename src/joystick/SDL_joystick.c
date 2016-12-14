@@ -34,7 +34,7 @@
 
 static SDL_bool SDL_joystick_allows_background_events = SDL_FALSE;
 static SDL_Joystick *SDL_joysticks = NULL;
-static SDL_Joystick *SDL_updating_joystick = NULL;
+static SDL_bool SDL_updating_joystick = SDL_FALSE;
 static SDL_mutex *SDL_joystick_lock = NULL; /* This needs to support recursive locks */
 
 void
@@ -458,7 +458,7 @@ SDL_JoystickClose(SDL_Joystick * joystick)
         return;
     }
 
-    if (joystick == SDL_updating_joystick) {
+    if (SDL_updating_joystick) {
         SDL_UnlockJoystickList();
         return;
     }
@@ -784,7 +784,7 @@ SDL_PrivateJoystickButton(SDL_Joystick * joystick, Uint8 button, Uint8 state)
 void
 SDL_JoystickUpdate(void)
 {
-    SDL_Joystick *joystick, *joysticknext;
+    SDL_Joystick *joystick;
 
     SDL_LockJoystickList();
 
@@ -794,17 +794,12 @@ SDL_JoystickUpdate(void)
         return;
     }
 
-    for (joystick = SDL_joysticks; joystick; joystick = joysticknext) {
-        /* save off the next pointer, the Update call may cause a joystick removed event
-         * and cause our joystick pointer to be freed
-         */
-        joysticknext = joystick->next;
+    SDL_updating_joystick = SDL_TRUE;
 
-        SDL_updating_joystick = joystick;
+    /* Make sure the list is unlocked while dispatching events to prevent application deadlocks */
+    SDL_UnlockJoystickList();
 
-        /* Make sure the list is unlocked while dispatching events to prevent application deadlocks */
-        SDL_UnlockJoystickList();
-
+    for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
         SDL_SYS_JoystickUpdate(joystick);
 
         if (joystick->force_recentering) {
@@ -825,12 +820,14 @@ SDL_JoystickUpdate(void)
 
             joystick->force_recentering = SDL_FALSE;
         }
+    }
 
-        SDL_LockJoystickList();
+    SDL_LockJoystickList();
 
-        SDL_updating_joystick = NULL;
+    SDL_updating_joystick = SDL_FALSE;
 
-        /* If the joystick was closed while updating, free it here */
+    /* If any joysticks were closed while updating, free them here */
+    for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
         if (joystick->ref_count <= 0) {
             SDL_JoystickClose(joystick);
         }
