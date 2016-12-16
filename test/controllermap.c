@@ -233,7 +233,6 @@ WatchJoystick(SDL_Joystick * joystick)
     SDL_Rect dst;
     Uint8 alpha=200, alpha_step = -1;
     Uint32 alpha_ticks = 0;
-    Uint32 bound_ticks = 0;
     SDL_JoystickID nJoystickID;
     Uint32 unDeflectedAxes = 0;
 
