@@ -321,6 +321,7 @@ main(int argc, char *argv[])
                     || (event.type == SDL_MOUSEBUTTONDOWN)) {
                     keepGoing = SDL_FALSE;
                 } else if (event.type == SDL_JOYDEVICEADDED) {
+                    device = event.jdevice.which;
                     joystick = SDL_JoystickOpen(device);
                     if (joystick != NULL) {
                         SDL_assert(SDL_JoystickFromInstanceID(SDL_JoystickInstanceID(joystick)) == joystick);
