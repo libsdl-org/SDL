@@ -422,6 +422,26 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     return YES;
 }
 
+- (UIWindow *)window
+{
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    if (_this) {
+        SDL_Window *window = NULL;
+        for (window = _this->windows; window != NULL; window = window->next) {
+            SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
+            if (data != nil) {
+                return data.uiwindow;
+            }
+        }
+    }
+    return nil;
+}
+
+- (void)setWindow:(UIWindow *)window
+{
+    /* Do nothing. */
+}
+
 - (void)applicationWillTerminate:(UIApplication *)application
 {
     SDL_SendAppEvent(SDL_APP_TERMINATING);
@@ -467,7 +487,7 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
     if (_this) {
         SDL_Window *window;
-        for (window = _this->windows; window != nil; window = window->next) {
+        for (window = _this->windows; window != NULL; window = window->next) {
             SDL_SendWindowEvent(window, SDL_WINDOWEVENT_FOCUS_LOST, 0, 0);
             SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MINIMIZED, 0, 0);
         }
