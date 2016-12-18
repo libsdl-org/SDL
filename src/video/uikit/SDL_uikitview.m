@@ -42,6 +42,25 @@
 - (instancetype)initWithFrame:(CGRect)frame
 {
     if ((self = [super initWithFrame:frame])) {
+        /* Apple TV Remote touchpad swipe gestures. */
+#if TARGET_OS_TV
+        UISwipeGestureRecognizer *swipeUp = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
+        swipeUp.direction = UISwipeGestureRecognizerDirectionUp;
+        [self addGestureRecognizer:swipeUp];
+
+        UISwipeGestureRecognizer *swipeDown = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
+        swipeDown.direction = UISwipeGestureRecognizerDirectionDown;
+        [self addGestureRecognizer:swipeDown];
+
+        UISwipeGestureRecognizer *swipeLeft = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
+        swipeLeft.direction = UISwipeGestureRecognizerDirectionLeft;
+        [self addGestureRecognizer:swipeLeft];
+
+        UISwipeGestureRecognizer *swipeRight = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
+        swipeRight.direction = UISwipeGestureRecognizerDirectionRight;
+        [self addGestureRecognizer:swipeRight];
+#endif
+
         self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         self.autoresizesSubviews = YES;
 
@@ -263,6 +282,35 @@
     [super pressesChanged:presses withEvent:event];
 }
 #endif /* TARGET_OS_TV || defined(__IPHONE_9_1) */
+
+#if TARGET_OS_TV
+-(void)swipeGesture:(UISwipeGestureRecognizer *)gesture
+{
+    /* Swipe gestures don't trigger begin states. */
+    if (gesture.state == UIGestureRecognizerStateEnded) {
+        /* Send arrow key presses for now, as we don't have an external API
+         * which better maps to swipe gestures. */
+        switch (gesture.direction) {
+        case UISwipeGestureRecognizerDirectionUp:
+            SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_UP);
+            SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_UP);
+            break;
+        case UISwipeGestureRecognizerDirectionDown:
+            SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_DOWN);
+            SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_DOWN);
+            break;
+        case UISwipeGestureRecognizerDirectionLeft:
+            SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_LEFT);
+            SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LEFT);
+            break;
+        case UISwipeGestureRecognizerDirectionRight:
+            SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_RIGHT);
+            SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_RIGHT);
+            break;
+        }
+    }
+}
+#endif /* TARGET_OS_TV */
 
 @end
 
