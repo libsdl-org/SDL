@@ -283,11 +283,11 @@ SDL_Downsample_Arbitrary(SDL_AudioCVT *cvt, const int channels)
     SDL_memcpy(last_sample, src, cpy);
 
     while (dst < target) {
-        src += 8;
+        src += channels;
         eps += dstsize;
         if ((eps << 1) >= srcsize) {
             SDL_memcpy(dst, sample, cpy);
-            dst += 8;
+            dst += channels;
             for (i = 0; i < channels; i++) {
                 sample[i] = (float) ((((double) src[i]) + ((double) last_sample[i])) * 0.5);
             }
