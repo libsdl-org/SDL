@@ -1191,8 +1191,10 @@ open_audio_device(const char *devname, int iscapture,
             return 0;
         }
         if (device->convert.needed) {
-            device->convert.len = (int) (((double) device->spec.size) /
+            device->convert.len = (int) (((double) device->spec.samples) /
                                          device->convert.len_ratio);
+            device->convert.len *= SDL_AUDIO_BITSIZE(device->spec.format) / 8;
+            device->convert.len *= device->spec.channels;
 
             device->convert.buf =
                 (Uint8 *) SDL_malloc(device->convert.len *
