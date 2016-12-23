@@ -345,7 +345,7 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
             value =
                 (int) (((float) pos[i] +
                         transaxis[i].offset) * transaxis[i].scale);
-            change = (value - joystick->axes[i]);
+            change = (value - joystick->axes[i].value);
             if ((change < -JOY_AXIS_THRESHOLD)
                 || (change > JOY_AXIS_THRESHOLD)) {
                 SDL_PrivateJoystickAxis(joystick, (Uint8) i, (Sint16) value);
