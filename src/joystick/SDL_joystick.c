@@ -170,20 +170,16 @@ SDL_JoystickOpen(int device_index)
         joystick->name = NULL;
 
     if (joystick->naxes > 0) {
-        joystick->axes = (Sint16 *) SDL_malloc(joystick->naxes * sizeof(Sint16));
-        joystick->axes_zero = (Sint16 *) SDL_malloc(joystick->naxes * sizeof(Sint16));
+        joystick->axes = (SDL_JoystickAxisInfo *) SDL_calloc(joystick->naxes, sizeof(SDL_JoystickAxisInfo));
     }
     if (joystick->nhats > 0) {
-        joystick->hats = (Uint8 *) SDL_malloc
-            (joystick->nhats * sizeof(Uint8));
+        joystick->hats = (Uint8 *) SDL_calloc(joystick->nhats, sizeof(Uint8));
     }
     if (joystick->nballs > 0) {
-        joystick->balls = (struct balldelta *) SDL_malloc
-            (joystick->nballs * sizeof(*joystick->balls));
+        joystick->balls = (struct balldelta *) SDL_calloc(joystick->nballs, sizeof(*joystick->balls));
     }
     if (joystick->nbuttons > 0) {
-        joystick->buttons = (Uint8 *) SDL_malloc
-            (joystick->nbuttons * sizeof(Uint8));
+        joystick->buttons = (Uint8 *) SDL_calloc(joystick->nbuttons, sizeof(Uint8));
     }
     if (((joystick->naxes > 0) && !joystick->axes)
         || ((joystick->nhats > 0) && !joystick->hats)
@@ -193,20 +189,6 @@ SDL_JoystickOpen(int device_index)
         SDL_JoystickClose(joystick);
         SDL_UnlockJoystickList();
         return NULL;
-    }
-    if (joystick->axes) {
-        SDL_memset(joystick->axes, 0, joystick->naxes * sizeof(Sint16));
-        SDL_memset(joystick->axes_zero, 0, joystick->naxes * sizeof(Sint16));
-    }
-    if (joystick->hats) {
-        SDL_memset(joystick->hats, 0, joystick->nhats * sizeof(Uint8));
-    }
-    if (joystick->balls) {
-        SDL_memset(joystick->balls, 0,
-            joystick->nballs * sizeof(*joystick->balls));
-    }
-    if (joystick->buttons) {
-        SDL_memset(joystick->buttons, 0, joystick->nbuttons * sizeof(Uint8));
     }
     joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
 
@@ -302,7 +284,7 @@ SDL_JoystickGetAxis(SDL_Joystick * joystick, int axis)
         return (0);
     }
     if (axis < joystick->naxes) {
-        state = joystick->axes[axis];
+        state = joystick->axes[axis].value;
     } else {
         SDL_SetError("Joystick only has %d axes", joystick->naxes);
         state = 0;
@@ -486,7 +468,6 @@ SDL_JoystickClose(SDL_Joystick * joystick)
 
     /* Free the data associated with this joystick */
     SDL_free(joystick->axes);
-    SDL_free(joystick->axes_zero);
     SDL_free(joystick->hats);
     SDL_free(joystick->balls);
     SDL_free(joystick->buttons);
@@ -621,22 +602,34 @@ SDL_PrivateJoystickAxis(SDL_Joystick * joystick, Uint8 axis, Sint16 value)
     if (axis >= joystick->naxes) {
         return 0;
     }
-    if (value == joystick->axes[axis]) {
+    if (value == joystick->axes[axis].value) {
         return 0;
+    }
+    if (!joystick->axes[axis].moved) {
+        if (joystick->axes[axis].intial_value == 0) {
+            joystick->axes[axis].intial_value = value;
+            return 0;
+        }
+        if (value == joystick->axes[axis].intial_value) {
+            return 0;
+        }
+
+        /* We got more than 0 and the initial value from the joystick, consider it as having actually moved */
+        joystick->axes[axis].moved = SDL_TRUE;
     }
 
     /* We ignore events if we don't have keyboard focus, except for centering
      * events.
      */
     if (SDL_PrivateJoystickShouldIgnoreEvent()) {
-        if ((value > joystick->axes_zero[axis] && value >= joystick->axes[axis]) ||
-            (value < joystick->axes_zero[axis] && value <= joystick->axes[axis])) {
+        if ((value > joystick->axes[axis].zero && value >= joystick->axes[axis].value) ||
+            (value < joystick->axes[axis].zero && value <= joystick->axes[axis].value)) {
             return 0;
         }
     }
 
     /* Update internal joystick state */
-    joystick->axes[axis] = value;
+    joystick->axes[axis].value = value;
 
     /* Post the event, if desired */
     posted = 0;
@@ -807,7 +800,7 @@ SDL_JoystickUpdate(void)
 
             /* Tell the app that everything is centered/unpressed...  */
             for (i = 0; i < joystick->naxes; i++) {
-                SDL_PrivateJoystickAxis(joystick, i, joystick->axes_zero[i]);
+                SDL_PrivateJoystickAxis(joystick, i, joystick->axes[i].zero);
             }
 
             for (i = 0; i < joystick->nbuttons; i++) {

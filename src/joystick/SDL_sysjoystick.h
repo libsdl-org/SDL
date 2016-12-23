@@ -29,14 +29,21 @@
 #include "SDL_joystick_c.h"
 
 /* The SDL joystick structure */
+typedef struct _SDL_JoystickAxisInfo
+{
+    Sint16 value;           /* Current axis states */
+    Sint16 zero;            /* Zero point on the axis (-32768 for triggers) */
+    Sint16 intial_value;    /* The very first value we saw on this axis */
+    SDL_bool moved;         /* Whether the axis has moved */
+} SDL_JoystickAxisInfo;
+
 struct _SDL_Joystick
 {
     SDL_JoystickID instance_id; /* Device instance, monotonically increasing from 0 */
     char *name;                 /* Joystick name - system dependent */
 
     int naxes;                  /* Number of axis controls on the joystick */
-    Sint16 *axes;               /* Current axis states */
-    Sint16 *axes_zero;          /* Zero point on the axis (-32768 for triggers) */
+    SDL_JoystickAxisInfo *axes;
 
     int nhats;                  /* Number of hats on the joystick */
     Uint8 *hats;                /* Current hat states */
