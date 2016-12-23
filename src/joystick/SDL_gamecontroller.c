@@ -1132,12 +1132,12 @@ SDL_GameControllerOpen(int device_index)
         int leftTriggerMapping = gamecontroller->mapping.axes[SDL_CONTROLLER_AXIS_TRIGGERLEFT];
         int rightTriggerMapping = gamecontroller->mapping.axes[SDL_CONTROLLER_AXIS_TRIGGERRIGHT];
         if (leftTriggerMapping >= 0) {
-            gamecontroller->joystick->axes[leftTriggerMapping] =
-            gamecontroller->joystick->axes_zero[leftTriggerMapping] = (Sint16)-32768;
+            gamecontroller->joystick->axes[leftTriggerMapping].value =
+            gamecontroller->joystick->axes[leftTriggerMapping].zero = (Sint16)-32768;
         }
         if (rightTriggerMapping >= 0) {
-            gamecontroller->joystick->axes[rightTriggerMapping] =
-            gamecontroller->joystick->axes_zero[rightTriggerMapping] = (Sint16)-32768;
+            gamecontroller->joystick->axes[rightTriggerMapping].value =
+            gamecontroller->joystick->axes[rightTriggerMapping].zero = (Sint16)-32768;
         }
     }
 
