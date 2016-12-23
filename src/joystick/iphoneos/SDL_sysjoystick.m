@@ -516,7 +516,7 @@ SDL_SYS_MFIJoystickUpdate(SDL_Joystick * joystick)
                  * initializes its values to 0. We only want to make sure the
                  * player index is up to date if the user actually moves an axis. */
                 if ((i != 2 && i != 5) || axes[i] != -32768) {
-                    updateplayerindex |= (joystick->axes[i] != axes[i]);
+                    updateplayerindex |= (joystick->axes[i].value != axes[i]);
                 }
                 SDL_PrivateJoystickAxis(joystick, i, axes[i]);
             }

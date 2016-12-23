@@ -197,7 +197,7 @@ extern "C"
 
         /* Generate axis motion events */
         for (i = 0; i < joystick->naxes; ++i) {
-            change = ((int32) axes[i] - joystick->axes[i]);
+            change = ((int32) axes[i] - joystick->axes[i].value);
             if ((change > JITTER) || (change < -JITTER)) {
                 SDL_PrivateJoystickAxis(joystick, i, axes[i]);
             }
