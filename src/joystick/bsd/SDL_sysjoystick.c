@@ -563,7 +563,7 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joy)
                             v *= 32768 /
                                 ((hitem.logical_maximum -
                                   hitem.logical_minimum + 1) / 2);
-                            if (v != joy->axes[naxe]) {
+                            if (v != joy->axes[naxe].value) {
                                 SDL_PrivateJoystickAxis(joy, naxe, v);
                             }
                         } else if (usage == HUG_HAT_SWITCH) {
