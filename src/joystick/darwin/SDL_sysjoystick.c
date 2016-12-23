@@ -134,7 +134,6 @@ GetHIDScaledCalibratedState(recDevice * pDevice, recElement * pElement, SInt32 m
     const float deviceScale = max - min;
     const float readScale = pElement->maxReport - pElement->minReport;
     const SInt32 value = GetHIDElementState(pDevice, pElement);
-printf("MIN/MAX = %d/%d, value = %d\n", pElement->minReport, pElement->maxReport, value);
     if (readScale == 0) {
         return value;           /* no scaling at all */
     }
@@ -692,7 +691,6 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
     element = device->firstAxis;
     i = 0;
     while (element) {
-printf("Getting axis %d ", i);
         value = GetHIDScaledCalibratedState(device, element, -32768, 32767);
         if (value != joystick->axes[i].value) {
             SDL_PrivateJoystickAxis(joystick, i, value);
