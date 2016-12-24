@@ -1276,13 +1276,6 @@ Cocoa_CreateWindow(_THIS, SDL_Window * window)
     [nswindow setContentView:contentView];
     [contentView release];
 
-    /* The app's content is likely authored expecting sRGB output. If we don't
-     * specify the window's color space, it will default to the device color
-     * space, which will be P3 on capable displays. The mismatch causes the
-     * content authored in sRGB to appear extremely saturated on the P3 display.
-     */
-    [nswindow setColorSpace:[NSColorSpace sRGBColorSpace]];
-
     /* Allow files and folders to be dragged onto the window by users */
     [nswindow registerForDraggedTypes:[NSArray arrayWithObject:(NSString *)kUTTypeFileURL]];
 
