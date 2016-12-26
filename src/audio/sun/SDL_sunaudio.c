@@ -193,6 +193,10 @@ SUNAUDIO_CloseDevice(_THIS)
 static int
 SUNAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 {
+#ifdef AUDIO_SETINFO
+    int enc;
+#endif
+    int desired_freq = 0;
     const int flags = ((iscapture) ? OPEN_FLAGS_INPUT : OPEN_FLAGS_OUTPUT);
     SDL_AudioFormat format = 0;
     audio_info_t info;
@@ -220,10 +224,7 @@ SUNAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         return SDL_SetError("Couldn't open %s: %s", devname, strerror(errno));
     }
 
-#ifdef AUDIO_SETINFO
-    int enc;
-#endif
-    int desired_freq = this->spec.freq;
+    desired_freq = this->spec.freq;
 
     /* Determine the audio parameters from the AudioSpec */
     switch (SDL_AUDIO_BITSIZE(this->spec.format)) {
