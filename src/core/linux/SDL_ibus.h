@@ -49,7 +49,7 @@ extern void SDL_IBus_UpdateTextRect(SDL_Rect *window_relative_rect);
 
 /* Checks DBus for new IBus events, and calls SDL_SendKeyboardText / 
    SDL_SendEditingText for each event it finds */
-extern void SDL_IBus_PumpEvents();
+extern void SDL_IBus_PumpEvents(void);
 
 #endif /* HAVE_IBUS_IBUS_H */
 

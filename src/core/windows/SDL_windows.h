@@ -57,7 +57,7 @@ extern HRESULT WIN_CoInitialize(void);
 extern void WIN_CoUninitialize(void);
 
 /* Returns SDL_TRUE if we're running on Windows Vista and newer */
-extern BOOL WIN_IsWindowsVistaOrGreater();
+extern BOOL WIN_IsWindowsVistaOrGreater(void);
 
 /* You need to SDL_free() the result of this call. */
 extern char *WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid);

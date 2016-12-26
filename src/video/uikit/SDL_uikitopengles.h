@@ -33,7 +33,7 @@ extern void UIKit_GL_DeleteContext(_THIS, SDL_GLContext context);
 extern void *UIKit_GL_GetProcAddress(_THIS, const char *proc);
 extern int UIKit_GL_LoadLibrary(_THIS, const char *path);
 
-extern void UIKit_GL_RestoreCurrentContext();
+extern void UIKit_GL_RestoreCurrentContext(void);
 
 #endif
 

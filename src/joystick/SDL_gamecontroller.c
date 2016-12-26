@@ -891,7 +891,7 @@ SDL_GameControllerAddMapping(const char *mappingString)
  *  Get the number of mappings installed
  */
 int
-SDL_GameControllerNumMappings()
+SDL_GameControllerNumMappings(void)
 {
     int num_mappings = 0;
     ControllerMapping_t *mapping;

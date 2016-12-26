@@ -41,7 +41,7 @@ extern "C" {
 static SDL_Scancode keymap[KEYMAP_SIZE];
 static int8 keystate[KEYMAP_SIZE];
 
-void BE_InitOSKeymap() {
+void BE_InitOSKeymap(void) {
 		for( uint i = 0; i < SDL_TABLESIZE(keymap); ++i ) {
 			keymap[i] = SDL_SCANCODE_UNKNOWN;
 		}

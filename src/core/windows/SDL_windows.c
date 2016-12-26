@@ -115,7 +115,7 @@ IsWindowsVersionOrGreater(WORD wMajorVersion, WORD wMinorVersion, WORD wServiceP
 }
 #endif
 
-BOOL WIN_IsWindowsVistaOrGreater()
+BOOL WIN_IsWindowsVistaOrGreater(void)
 {
 #ifdef __WINRT__
     return TRUE;

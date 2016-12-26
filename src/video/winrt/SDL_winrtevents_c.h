@@ -75,7 +75,7 @@ extern SDL_bool WINRT_IsScreenKeyboardShown(_THIS, SDL_Window *window);
 #endif  // NTDDI_VERSION >= ...
 
 /* XAML Thread Management */
-extern void WINRT_CycleXAMLThread();
+extern void WINRT_CycleXAMLThread(void);
 
 #endif // ifdef __cplusplus_winrt
 
