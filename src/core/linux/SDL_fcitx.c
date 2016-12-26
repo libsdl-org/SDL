@@ -535,7 +535,7 @@ SDL_Fcitx_UpdateTextRect(SDL_Rect *rect)
 }
 
 void
-SDL_Fcitx_PumpEvents()
+SDL_Fcitx_PumpEvents(void)
 {
     SDL_DBusContext *dbus = fcitx_client.dbus;
     DBusConnection *conn = dbus->session_conn;

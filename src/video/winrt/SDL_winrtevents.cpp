@@ -105,7 +105,7 @@ WINRT_XAMLThreadMain(void * userdata)
 }
 
 void
-WINRT_CycleXAMLThread()
+WINRT_CycleXAMLThread(void)
 {
     switch (_threadState) {
         case ThreadState_NotLaunched:

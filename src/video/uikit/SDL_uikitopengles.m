@@ -228,7 +228,7 @@ UIKit_GL_DeleteContext(_THIS, SDL_GLContext context)
 }
 
 void
-UIKit_GL_RestoreCurrentContext()
+UIKit_GL_RestoreCurrentContext(void)
 {
     @autoreleasepool {
         /* Some iOS system functionality (such as Dictation on the on-screen

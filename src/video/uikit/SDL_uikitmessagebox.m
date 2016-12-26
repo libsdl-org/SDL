@@ -31,7 +31,7 @@
 static SDL_bool s_showingMessageBox = SDL_FALSE;
 
 SDL_bool
-UIKit_ShowingMessageBox()
+UIKit_ShowingMessageBox(void)
 {
     return s_showingMessageBox;
 }

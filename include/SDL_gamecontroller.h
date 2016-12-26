@@ -140,7 +140,7 @@ extern DECLSPEC int SDLCALL SDL_GameControllerAddMapping(const char* mappingStri
  *
  *  \return the number of mappings
  */
-extern DECLSPEC int SDLCALL SDL_GameControllerNumMappings();
+extern DECLSPEC int SDLCALL SDL_GameControllerNumMappings(void);
 
 /**
  *  Get the mapping at a particular index.
