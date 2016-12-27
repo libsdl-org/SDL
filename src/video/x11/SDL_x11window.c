@@ -41,6 +41,7 @@
 #include "SDL_timer.h"
 #include "SDL_syswm.h"
 #include "SDL_assert.h"
+#include "SDL_log.h"
 
 #define _NET_WM_STATE_REMOVE    0l
 #define _NET_WM_STATE_ADD       1l
@@ -1483,14 +1484,24 @@ X11_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 
     if (oldstyle_fullscreen || grabbed) {
         /* Try to grab the mouse */
-        for (;;) {
-            int result =
-                X11_XGrabPointer(display, data->xwindow, True, 0, GrabModeAsync,
-                             GrabModeAsync, data->xwindow, None, CurrentTime);
-            if (result == GrabSuccess) {
-                break;
+        if (!data->videodata->broken_pointer_grab) {
+            int attempts;
+            int result;
+
+            /* Try for up to ~250ms to grab. If it still fails, stop trying. */
+            for (attempts = 0; attempts < 5; attempts++) {
+                result = X11_XGrabPointer(display, data->xwindow, True, 0, GrabModeAsync,
+                                 GrabModeAsync, data->xwindow, None, CurrentTime);
+                if (result == GrabSuccess) {
+                    break;
+                }
+                SDL_Delay(50);
             }
-            SDL_Delay(50);
+
+            if (result != GrabSuccess) {
+                SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "The X server refused to let us grab the mouse. You might experience input bugs.");
+                data->videodata->broken_pointer_grab = SDL_TRUE;  /* don't try again. */
+            }
         }
 
         /* Raise the window if we grab the mouse */
