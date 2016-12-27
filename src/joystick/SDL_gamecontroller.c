@@ -1279,7 +1279,7 @@ SDL_GameControllerGetAxis(SDL_GameController * gamecontroller, SDL_GameControlle
             } else {
                 valid_output_range = (value >= binding->output.axis.axis_max && value <= binding->output.axis.axis_min);
             }
-            // If the value is zero, there might be another binding that makes it non-zero
+            /* If the value is zero, there might be another binding that makes it non-zero */
             if (value != 0 && valid_output_range) {
                 return (Sint16)value;
             }
