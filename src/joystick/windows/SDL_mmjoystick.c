@@ -41,10 +41,8 @@
 #define MAX_JOYSTICKS   16
 #define MAX_AXES    6       /* each joystick can have up to 6 axes */
 #define MAX_BUTTONS 32      /* and 32 buttons                      */
-#define AXIS_MIN    -32768  /* minimum value for axis coordinate */
-#define AXIS_MAX    32767   /* maximum value for axis coordinate */
 /* limit axis to 256 possible positions to filter out noise */
-#define JOY_AXIS_THRESHOLD      (((AXIS_MAX)-(AXIS_MIN))/256)
+#define JOY_AXIS_THRESHOLD      (((SDL_JOYSTICK_AXIS_MAX)-(SDL_JOYSTICK_AXIS_MIN))/256)
 #define JOY_BUTTON_FLAG(n)  (1<<n)
 
 
@@ -253,9 +251,9 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
     joystick->hwdata->id = SYS_JoystickID[index];
     for (i = 0; i < MAX_AXES; ++i) {
         if ((i < 2) || (SYS_Joystick[index].wCaps & caps_flags[i - 2])) {
-            joystick->hwdata->transaxis[i].offset = AXIS_MIN - axis_min[i];
+            joystick->hwdata->transaxis[i].offset = SDL_JOYSTICK_AXIS_MIN - axis_min[i];
             joystick->hwdata->transaxis[i].scale =
-                (float) (AXIS_MAX - AXIS_MIN) / (axis_max[i] - axis_min[i]);
+                (float) (SDL_JOYSTICK_AXIS_MAX - SDL_JOYSTICK_AXIS_MIN) / (axis_max[i] - axis_min[i]);
         } else {
             joystick->hwdata->transaxis[i].offset = 0;
             joystick->hwdata->transaxis[i].scale = 1.0; /* Just in case */
