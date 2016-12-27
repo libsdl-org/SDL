@@ -5,7 +5,7 @@ echo "This may take a while ..."
 
 srcdir=`dirname $0`
 test -z "$srcdir" && srcdir=.
-pushd $srcdir
+cd "$srcdir"
 
 # Regenerate configuration files
 cat acinclude/* >aclocal.m4
@@ -18,8 +18,6 @@ if test x$found = xfalse; then
     exit 1
 fi
 (cd test; sh autogen.sh)
-
-popd
 
 # Run configure for this platform
 echo "Now you are ready to run ./configure"
