@@ -32,7 +32,22 @@
 #define MARKER_BUTTON 1
 #define MARKER_AXIS 2
 
-#define BINDING_COUNT (SDL_CONTROLLER_BUTTON_MAX + SDL_CONTROLLER_AXIS_MAX)
+enum
+{
+    SDL_CONTROLLER_BINDING_AXIS_LEFTX_NEGATIVE,
+    SDL_CONTROLLER_BINDING_AXIS_LEFTX_POSITIVE,
+    SDL_CONTROLLER_BINDING_AXIS_LEFTY_NEGATIVE,
+    SDL_CONTROLLER_BINDING_AXIS_LEFTY_POSITIVE,
+    SDL_CONTROLLER_BINDING_AXIS_RIGHTX_NEGATIVE,
+    SDL_CONTROLLER_BINDING_AXIS_RIGHTX_POSITIVE,
+    SDL_CONTROLLER_BINDING_AXIS_RIGHTY_NEGATIVE,
+    SDL_CONTROLLER_BINDING_AXIS_RIGHTY_POSITIVE,
+    SDL_CONTROLLER_BINDING_AXIS_TRIGGERLEFT,
+    SDL_CONTROLLER_BINDING_AXIS_TRIGGERRIGHT,
+    SDL_CONTROLLER_BINDING_AXIS_MAX,
+};
+
+#define BINDING_COUNT (SDL_CONTROLLER_BUTTON_MAX + SDL_CONTROLLER_BINDING_AXIS_MAX)
 
 static struct 
 {
@@ -56,12 +71,16 @@ static struct
     { 154, 249, 0.0, MARKER_BUTTON }, /* SDL_CONTROLLER_BUTTON_DPAD_DOWN */
     { 116, 217, 0.0, MARKER_BUTTON }, /* SDL_CONTROLLER_BUTTON_DPAD_LEFT */
     { 186, 217, 0.0, MARKER_BUTTON }, /* SDL_CONTROLLER_BUTTON_DPAD_RIGHT */
-    {  75, 154, 0.0,   MARKER_AXIS }, /* SDL_CONTROLLER_AXIS_LEFTX */
-    {  75, 154, 90.0,  MARKER_AXIS }, /* SDL_CONTROLLER_AXIS_LEFTY */
-    { 305, 230, 0.0,   MARKER_AXIS }, /* SDL_CONTROLLER_AXIS_RIGHTX */
-    { 305, 230, 90.0,  MARKER_AXIS }, /* SDL_CONTROLLER_AXIS_RIGHTY */
-    {  91,   0, 90.0,  MARKER_AXIS }, /* SDL_CONTROLLER_AXIS_TRIGGERLEFT */
-    { 375,   0, 90.0,  MARKER_AXIS }, /* SDL_CONTROLLER_AXIS_TRIGGERRIGHT */
+    {  74, 153, 270.0, MARKER_AXIS }, /* SDL_CONTROLLER_BINDING_AXIS_LEFTX_NEGATIVE */
+    {  74, 153, 90.0,  MARKER_AXIS }, /* SDL_CONTROLLER_BINDING_AXIS_LEFTX_POSITIVE */
+    {  74, 153, 0.0,   MARKER_AXIS }, /* SDL_CONTROLLER_BINDING_AXIS_LEFTY_NEGATIVE */
+    {  74, 153, 180.0, MARKER_AXIS }, /* SDL_CONTROLLER_BINDING_AXIS_LEFTY_POSITIVE */
+    { 306, 231, 270.0, MARKER_AXIS }, /* SDL_CONTROLLER_BINDING_AXIS_RIGHTX_NEGATIVE */
+    { 306, 231, 90.0,  MARKER_AXIS }, /* SDL_CONTROLLER_BINDING_AXIS_RIGHTX_POSITIVE */
+    { 306, 231, 0.0,   MARKER_AXIS }, /* SDL_CONTROLLER_BINDING_AXIS_RIGHTY_NEGATIVE */
+    { 306, 231, 180.0, MARKER_AXIS }, /* SDL_CONTROLLER_BINDING_AXIS_RIGHTY_POSITIVE */
+    {  91, -20, 180.0, MARKER_AXIS }, /* SDL_CONTROLLER_BINDING_AXIS_TRIGGERLEFT */
+    { 375, -20, 180.0, MARKER_AXIS }, /* SDL_CONTROLLER_BINDING_AXIS_TRIGGERRIGHT */
 };
 
 static int s_arrBindingOrder[BINDING_COUNT] = {
@@ -69,16 +88,20 @@ static int s_arrBindingOrder[BINDING_COUNT] = {
     SDL_CONTROLLER_BUTTON_B,
     SDL_CONTROLLER_BUTTON_Y,
     SDL_CONTROLLER_BUTTON_X,
-    SDL_CONTROLLER_BUTTON_MAX + SDL_CONTROLLER_AXIS_LEFTX,
-    SDL_CONTROLLER_BUTTON_MAX + SDL_CONTROLLER_AXIS_LEFTY,
+    SDL_CONTROLLER_BUTTON_MAX + SDL_CONTROLLER_BINDING_AXIS_LEFTX_NEGATIVE,
+    SDL_CONTROLLER_BUTTON_MAX + SDL_CONTROLLER_BINDING_AXIS_LEFTX_POSITIVE,
+    SDL_CONTROLLER_BUTTON_MAX + SDL_CONTROLLER_BINDING_AXIS_LEFTY_NEGATIVE,
+    SDL_CONTROLLER_BUTTON_MAX + SDL_CONTROLLER_BINDING_AXIS_LEFTY_POSITIVE,
     SDL_CONTROLLER_BUTTON_LEFTSTICK,
-    SDL_CONTROLLER_BUTTON_MAX + SDL_CONTROLLER_AXIS_RIGHTX,
-    SDL_CONTROLLER_BUTTON_MAX + SDL_CONTROLLER_AXIS_RIGHTY,
+    SDL_CONTROLLER_BUTTON_MAX + SDL_CONTROLLER_BINDING_AXIS_RIGHTX_NEGATIVE,
+    SDL_CONTROLLER_BUTTON_MAX + SDL_CONTROLLER_BINDING_AXIS_RIGHTX_POSITIVE,
+    SDL_CONTROLLER_BUTTON_MAX + SDL_CONTROLLER_BINDING_AXIS_RIGHTY_NEGATIVE,
+    SDL_CONTROLLER_BUTTON_MAX + SDL_CONTROLLER_BINDING_AXIS_RIGHTY_POSITIVE,
     SDL_CONTROLLER_BUTTON_RIGHTSTICK,
     SDL_CONTROLLER_BUTTON_LEFTSHOULDER,
-    SDL_CONTROLLER_BUTTON_MAX + SDL_CONTROLLER_AXIS_TRIGGERLEFT,
+    SDL_CONTROLLER_BUTTON_MAX + SDL_CONTROLLER_BINDING_AXIS_TRIGGERLEFT,
     SDL_CONTROLLER_BUTTON_RIGHTSHOULDER,
-    SDL_CONTROLLER_BUTTON_MAX + SDL_CONTROLLER_AXIS_TRIGGERRIGHT,
+    SDL_CONTROLLER_BUTTON_MAX + SDL_CONTROLLER_BINDING_AXIS_TRIGGERRIGHT,
     SDL_CONTROLLER_BUTTON_DPAD_UP,
     SDL_CONTROLLER_BUTTON_DPAD_RIGHT,
     SDL_CONTROLLER_BUTTON_DPAD_DOWN,
@@ -88,7 +111,40 @@ static int s_arrBindingOrder[BINDING_COUNT] = {
     SDL_CONTROLLER_BUTTON_START,
 };
 
-static SDL_GameControllerButtonBind s_arrBindings[BINDING_COUNT];
+typedef struct
+{
+    SDL_GameControllerBindType bindType;
+    union
+    {
+        int button;
+
+        struct {
+            int axis;
+            int axis_min;
+            int axis_max;
+        } axis;
+
+        struct {
+            int hat;
+            int hat_mask;
+        } hat;
+
+    } value;
+
+} SDL_GameControllerExtendedBind;
+
+static SDL_GameControllerExtendedBind s_arrBindings[BINDING_COUNT];
+
+typedef struct
+{
+    SDL_bool m_bMoving;
+    int m_nStartingValue;
+    int m_nFarthestValue;
+} AxisState;
+
+static int s_nNumAxes;
+static AxisState *s_arrAxisState;
+    
 static int s_iCurrentBinding;
 static Uint32 s_unPendingAdvanceTime;
 static SDL_bool s_bBindingComplete;
@@ -110,23 +166,6 @@ LoadTexture(SDL_Renderer *renderer, const char *file, SDL_bool transparent)
     if (transparent) {
         if (temp->format->palette) {
             SDL_SetColorKey(temp, SDL_TRUE, *(Uint8 *) temp->pixels);
-        } else {
-            switch (temp->format->BitsPerPixel) {
-            case 15:
-                SDL_SetColorKey(temp, SDL_TRUE,
-                                (*(Uint16 *) temp->pixels) & 0x00007FFF);
-                break;
-            case 16:
-                SDL_SetColorKey(temp, SDL_TRUE, *(Uint16 *) temp->pixels);
-                break;
-            case 24:
-                SDL_SetColorKey(temp, SDL_TRUE,
-                                (*(Uint32 *) temp->pixels) & 0x00FFFFFF);
-                break;
-            case 32:
-                SDL_SetColorKey(temp, SDL_TRUE, *(Uint32 *) temp->pixels);
-                break;
-            }
         }
     }
 
@@ -143,9 +182,22 @@ LoadTexture(SDL_Renderer *renderer, const char *file, SDL_bool transparent)
     return texture;
 }
 
-void SetCurrentBinding(int iBinding)
+static int
+StandardizeAxisValue(int nValue)
 {
-    SDL_GameControllerButtonBind *pBinding;
+    if (nValue > SDL_JOYSTICK_AXIS_MAX/2) {
+        return SDL_JOYSTICK_AXIS_MAX;
+    } else if (nValue < SDL_JOYSTICK_AXIS_MIN/2) {
+        return SDL_JOYSTICK_AXIS_MIN;
+    } else {
+        return 0;
+    }
+}
+
+static void
+SetCurrentBinding(int iBinding)
+{
+    SDL_GameControllerExtendedBind *pBinding;
 
     if (iBinding < 0) {
         return;
@@ -161,14 +213,15 @@ void SetCurrentBinding(int iBinding)
     pBinding = &s_arrBindings[s_arrBindingOrder[s_iCurrentBinding]];
     SDL_zerop(pBinding);
 
+    SDL_memset(s_arrAxisState, 0, s_nNumAxes*sizeof(*s_arrAxisState));
+
     s_unPendingAdvanceTime = 0;
 }
 
-
 static void
-ConfigureBinding(const SDL_GameControllerButtonBind *pBinding)
+ConfigureBinding(const SDL_GameControllerExtendedBind *pBinding)
 {
-    SDL_GameControllerButtonBind *pCurrent;
+    SDL_GameControllerExtendedBind *pCurrent;
     int iIndex;
     int iCurrentElement = s_arrBindingOrder[s_iCurrentBinding];
 
@@ -219,6 +272,24 @@ ConfigureBinding(const SDL_GameControllerButtonBind *pBinding)
     *pCurrent = *pBinding;
 
     s_unPendingAdvanceTime = SDL_GetTicks();
+}
+
+static SDL_bool
+BMergeAxisBindings(int iIndex)
+{
+    SDL_GameControllerExtendedBind *pBindingA = &s_arrBindings[iIndex];
+    SDL_GameControllerExtendedBind *pBindingB = &s_arrBindings[iIndex+1];
+    if (pBindingA->bindType == SDL_CONTROLLER_BINDTYPE_AXIS &&
+        pBindingB->bindType == SDL_CONTROLLER_BINDTYPE_AXIS &&
+        pBindingA->value.axis.axis == pBindingB->value.axis.axis) {
+        if (pBindingA->value.axis.axis_min == pBindingB->value.axis.axis_min) {
+            pBindingA->value.axis.axis_min = pBindingA->value.axis.axis_max;
+            pBindingA->value.axis.axis_max = pBindingB->value.axis.axis_max;
+            pBindingB->bindType = SDL_CONTROLLER_BINDTYPE_NONE;
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
 }
 
 static void
@@ -279,6 +350,9 @@ WatchJoystick(SDL_Joystick * joystick)
 
     nJoystickID = SDL_JoystickInstanceID(joystick);
 
+    s_nNumAxes = SDL_JoystickNumAxes(joystick);
+    s_arrAxisState = SDL_calloc(s_nNumAxes, sizeof(*s_arrAxisState));
+
     /* Loop, getting joystick events! */
     while (!done && !s_bBindingComplete) {
         int iElement = s_arrBindingOrder[s_iCurrentBinding];
@@ -326,26 +400,35 @@ WatchJoystick(SDL_Joystick * joystick)
                 break;
             case SDL_JOYAXISMOTION:
                 if (event.jaxis.which == nJoystickID) {
-                    uint32_t unAxisMask = (1 << event.jaxis.axis);
-                    SDL_bool bDeflected = (event.jaxis.value <= -20000 || event.jaxis.value >= 20000);
-                    if (bDeflected && !(unDeflectedAxes & unAxisMask)) {
-                        SDL_GameControllerButtonBind binding;
+                    AxisState *pAxisState = &s_arrAxisState[event.jaxis.axis];
+                    int nValue = event.jaxis.value;
+                    int nCurrentDistance, nFarthestDistance;
+                    if (!pAxisState->m_bMoving) {
+                        pAxisState->m_bMoving = SDL_TRUE;
+                        pAxisState->m_nStartingValue = nValue;
+                        pAxisState->m_nFarthestValue = nValue;
+                    }
+                    nCurrentDistance = SDL_abs(nValue - pAxisState->m_nStartingValue);
+                    nFarthestDistance = SDL_abs(pAxisState->m_nFarthestValue - pAxisState->m_nStartingValue);
+                    if (nCurrentDistance > nFarthestDistance) {
+                        pAxisState->m_nFarthestValue = nValue;
+                    }
+                    if (nCurrentDistance < 10000 && nFarthestDistance > 20000) {
+                        /* We've gone out and back, let's bind this axis */
+                        SDL_GameControllerExtendedBind binding;
                         SDL_zero(binding);
                         binding.bindType = SDL_CONTROLLER_BINDTYPE_AXIS;
-                        binding.value.axis = event.jaxis.axis;
+                        binding.value.axis.axis = event.jaxis.axis;
+                        binding.value.axis.axis_min = StandardizeAxisValue(pAxisState->m_nStartingValue);
+                        binding.value.axis.axis_max = StandardizeAxisValue(pAxisState->m_nFarthestValue);
                         ConfigureBinding(&binding);
-                    }
-                    if (bDeflected) {
-                        unDeflectedAxes |= unAxisMask;
-                    } else {
-                        unDeflectedAxes &= ~unAxisMask;
                     }
                 }
                 break;
             case SDL_JOYHATMOTION:
                 if (event.jhat.which == nJoystickID) {
                     if (event.jhat.value != SDL_HAT_CENTERED) {
-                        SDL_GameControllerButtonBind binding;
+                        SDL_GameControllerExtendedBind binding;
                         SDL_zero(binding);
                         binding.bindType = SDL_CONTROLLER_BINDTYPE_HAT;
                         binding.value.hat.hat = event.jhat.hat;
@@ -358,7 +441,7 @@ WatchJoystick(SDL_Joystick * joystick)
                 break;
             case SDL_JOYBUTTONDOWN:
                 if (event.jbutton.which == nJoystickID) {
-                    SDL_GameControllerButtonBind binding;
+                    SDL_GameControllerExtendedBind binding;
                     SDL_zero(binding);
                     binding.bindType = SDL_CONTROLLER_BINDTYPE_BUTTON;
                     binding.value.button = event.jbutton.button;
@@ -430,7 +513,7 @@ WatchJoystick(SDL_Joystick * joystick)
         SDL_strlcat(mapping, ",", SDL_arraysize(mapping));
 
         for (iIndex = 0; iIndex < SDL_arraysize(s_arrBindings); ++iIndex) {
-            SDL_GameControllerButtonBind *pBinding = &s_arrBindings[iIndex];
+            SDL_GameControllerExtendedBind *pBinding = &s_arrBindings[iIndex];
             if (pBinding->bindType == SDL_CONTROLLER_BINDTYPE_NONE) {
                 continue;
             }
@@ -439,8 +522,56 @@ WatchJoystick(SDL_Joystick * joystick)
                 SDL_GameControllerButton eButton = (SDL_GameControllerButton)iIndex;
                 SDL_strlcat(mapping, SDL_GameControllerGetStringForButton(eButton), SDL_arraysize(mapping));
             } else {
-                SDL_GameControllerAxis eAxis = (SDL_GameControllerAxis)(iIndex - SDL_CONTROLLER_BUTTON_MAX);
-                SDL_strlcat(mapping, SDL_GameControllerGetStringForAxis(eAxis), SDL_arraysize(mapping));
+                const char *pszAxisName;
+                switch (iIndex - SDL_CONTROLLER_BUTTON_MAX) {
+                case SDL_CONTROLLER_BINDING_AXIS_LEFTX_NEGATIVE:
+                    if (!BMergeAxisBindings(iIndex)) {
+                        SDL_strlcat(mapping, "-", SDL_arraysize(mapping));
+                    }
+                    pszAxisName = SDL_GameControllerGetStringForAxis(SDL_CONTROLLER_AXIS_LEFTX);
+                    break;
+                case SDL_CONTROLLER_BINDING_AXIS_LEFTX_POSITIVE:
+                    SDL_strlcat(mapping, "+", SDL_arraysize(mapping));
+                    pszAxisName = SDL_GameControllerGetStringForAxis(SDL_CONTROLLER_AXIS_LEFTX);
+                    break;
+                case SDL_CONTROLLER_BINDING_AXIS_LEFTY_NEGATIVE:
+                    if (!BMergeAxisBindings(iIndex)) {
+                        SDL_strlcat(mapping, "-", SDL_arraysize(mapping));
+                    }
+                    pszAxisName = SDL_GameControllerGetStringForAxis(SDL_CONTROLLER_AXIS_LEFTY);
+                    break;
+                case SDL_CONTROLLER_BINDING_AXIS_LEFTY_POSITIVE:
+                    SDL_strlcat(mapping, "+", SDL_arraysize(mapping));
+                    pszAxisName = SDL_GameControllerGetStringForAxis(SDL_CONTROLLER_AXIS_LEFTY);
+                    break;
+                case SDL_CONTROLLER_BINDING_AXIS_RIGHTX_NEGATIVE:
+                    if (!BMergeAxisBindings(iIndex)) {
+                        SDL_strlcat(mapping, "-", SDL_arraysize(mapping));
+                    }
+                    pszAxisName = SDL_GameControllerGetStringForAxis(SDL_CONTROLLER_AXIS_RIGHTX);
+                    break;
+                case SDL_CONTROLLER_BINDING_AXIS_RIGHTX_POSITIVE:
+                    SDL_strlcat(mapping, "+", SDL_arraysize(mapping));
+                    pszAxisName = SDL_GameControllerGetStringForAxis(SDL_CONTROLLER_AXIS_RIGHTX);
+                    break;
+                case SDL_CONTROLLER_BINDING_AXIS_RIGHTY_NEGATIVE:
+                    if (!BMergeAxisBindings(iIndex)) {
+                        SDL_strlcat(mapping, "-", SDL_arraysize(mapping));
+                    }
+                    pszAxisName = SDL_GameControllerGetStringForAxis(SDL_CONTROLLER_AXIS_RIGHTY);
+                    break;
+                case SDL_CONTROLLER_BINDING_AXIS_RIGHTY_POSITIVE:
+                    SDL_strlcat(mapping, "+", SDL_arraysize(mapping));
+                    pszAxisName = SDL_GameControllerGetStringForAxis(SDL_CONTROLLER_AXIS_RIGHTY);
+                    break;
+                case SDL_CONTROLLER_BINDING_AXIS_TRIGGERLEFT:
+                    pszAxisName = SDL_GameControllerGetStringForAxis(SDL_CONTROLLER_AXIS_TRIGGERLEFT);
+                    break;
+                case SDL_CONTROLLER_BINDING_AXIS_TRIGGERRIGHT:
+                    pszAxisName = SDL_GameControllerGetStringForAxis(SDL_CONTROLLER_AXIS_TRIGGERRIGHT);
+                    break;
+                }
+                SDL_strlcat(mapping, pszAxisName, SDL_arraysize(mapping));
             }
             SDL_strlcat(mapping, ":", SDL_arraysize(mapping));
 
@@ -450,7 +581,19 @@ WatchJoystick(SDL_Joystick * joystick)
                 SDL_snprintf(pszElement, sizeof(pszElement), "b%d", pBinding->value.button);
                 break;
             case SDL_CONTROLLER_BINDTYPE_AXIS:
-                SDL_snprintf(pszElement, sizeof(pszElement), "a%d", pBinding->value.axis);
+                if (pBinding->value.axis.axis_min == 0 && pBinding->value.axis.axis_max == SDL_JOYSTICK_AXIS_MIN) {
+                    /* The negative half axis */
+                    SDL_snprintf(pszElement, sizeof(pszElement), "-a%d", pBinding->value.axis.axis);
+                } else if (pBinding->value.axis.axis_min == 0 && pBinding->value.axis.axis_max == SDL_JOYSTICK_AXIS_MAX) {
+                    /* The positive half axis */
+                    SDL_snprintf(pszElement, sizeof(pszElement), "+a%d", pBinding->value.axis.axis);
+                } else {
+                    SDL_snprintf(pszElement, sizeof(pszElement), "a%d", pBinding->value.axis.axis);
+                    if (pBinding->value.axis.axis_min > pBinding->value.axis.axis_max) {
+                        /* Invert the axis */
+                        SDL_strlcat(pszElement, "~", SDL_arraysize(pszElement));
+                    }
+                }
                 break;
             case SDL_CONTROLLER_BINDTYPE_HAT:
                 SDL_snprintf(pszElement, sizeof(pszElement), "h%d.%d", pBinding->value.hat.hat, pBinding->value.hat.hat_mask);
@@ -467,6 +610,9 @@ WatchJoystick(SDL_Joystick * joystick)
         /* Print to stdout as well so the user can cat the output somewhere */
         printf("%s\n", mapping);
     }
+
+    SDL_free(s_arrAxisState);
+    s_arrAxisState = NULL;
     
     SDL_DestroyRenderer(screen);
     SDL_DestroyWindow(window);

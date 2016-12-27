@@ -33,9 +33,7 @@
 #endif
 
 #define INPUT_QSIZE 32      /* Buffer up to 32 input messages */
-#define AXIS_MIN    -32768  /* minimum value for axis coordinate */
-#define AXIS_MAX    32767   /* maximum value for axis coordinate */
-#define JOY_AXIS_THRESHOLD  (((AXIS_MAX)-(AXIS_MIN))/100)   /* 1% motion */
+#define JOY_AXIS_THRESHOLD  (((SDL_JOYSTICK_AXIS_MAX)-(SDL_JOYSTICK_AXIS_MIN))/100)   /* 1% motion */
 
 /* external variables referenced. */
 extern HWND SDL_HelperWindow;
@@ -481,8 +479,8 @@ EnumDevObjectsCallback(LPCDIDEVICEOBJECTINSTANCE dev, LPVOID pvRef)
         diprg.diph.dwHeaderSize = sizeof(diprg.diph);
         diprg.diph.dwObj = dev->dwType;
         diprg.diph.dwHow = DIPH_BYID;
-        diprg.lMin = AXIS_MIN;
-        diprg.lMax = AXIS_MAX;
+        diprg.lMin = SDL_JOYSTICK_AXIS_MIN;
+        diprg.lMax = SDL_JOYSTICK_AXIS_MAX;
 
         result =
             IDirectInputDevice8_SetProperty(joystick->hwdata->InputDevice,
