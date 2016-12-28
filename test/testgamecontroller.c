@@ -109,11 +109,11 @@ loop(void *arg)
     while (SDL_PollEvent(&event)) {
         switch (event.type) {
         case SDL_CONTROLLERAXISMOTION:
-            SDL_Log("Controller axis %s changed to %d\n", SDL_GameControllerGetStringForAxis(event.caxis.axis), event.caxis.value);
+            SDL_Log("Controller axis %s changed to %d\n", SDL_GameControllerGetStringForAxis((SDL_GameControllerAxis)event.caxis.axis), event.caxis.value);
             break;
         case SDL_CONTROLLERBUTTONDOWN:
         case SDL_CONTROLLERBUTTONUP:
-            SDL_Log("Controller button %s %s\n", SDL_GameControllerGetStringForButton(event.cbutton.button), event.cbutton.state ? "pressed" : "released");
+            SDL_Log("Controller button %s %s\n", SDL_GameControllerGetStringForButton((SDL_GameControllerButton)event.cbutton.button), event.cbutton.state ? "pressed" : "released");
             break;
         case SDL_KEYDOWN:
             if (event.key.keysym.sym != SDLK_ESCAPE) {
