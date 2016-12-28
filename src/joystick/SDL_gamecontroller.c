@@ -1205,8 +1205,27 @@ SDL_GameControllerOpen(int device_index)
         return NULL;
     }
 
-    gamecontroller->last_match_axis = (SDL_ExtendedGameControllerBind **)SDL_calloc(gamecontroller->joystick->naxes, sizeof(*gamecontroller->last_match_axis));
-    gamecontroller->last_hat_mask = (Uint8 *)SDL_calloc(gamecontroller->joystick->nhats, sizeof(*gamecontroller->last_hat_mask));
+    if (gamecontroller->joystick->naxes) {
+        gamecontroller->last_match_axis = (SDL_ExtendedGameControllerBind **)SDL_calloc(gamecontroller->joystick->naxes, sizeof(*gamecontroller->last_match_axis));
+        if (!gamecontroller->last_match_axis) {
+            SDL_OutOfMemory();
+            SDL_JoystickClose(gamecontroller->joystick);
+            SDL_free(gamecontroller);
+            SDL_UnlockJoystickList();
+            return NULL;
+        }
+    }
+    if (gamecontroller->joystick->nhats) {
+        gamecontroller->last_hat_mask = (Uint8 *)SDL_calloc(gamecontroller->joystick->nhats, sizeof(*gamecontroller->last_hat_mask));
+        if (!gamecontroller->last_hat_mask) {
+            SDL_OutOfMemory();
+            SDL_JoystickClose(gamecontroller->joystick);
+            SDL_free(gamecontroller->last_match_axis);
+            SDL_free(gamecontroller);
+            SDL_UnlockJoystickList();
+            return NULL;
+        }
+    }
 
     SDL_PrivateLoadButtonMapping(gamecontroller, pSupportedController->guid, pSupportedController->name, pSupportedController->mapping);
 
