@@ -79,6 +79,8 @@ typedef struct SDL_EGL_VideoData
     
     EGLBoolean(EGLAPIENTRY *eglBindAPI)(EGLenum);
 
+    EGLint(EGLAPIENTRY *eglGetError)(void);
+
 } SDL_EGL_VideoData;
 
 /* OpenGLES functions */
@@ -97,6 +99,10 @@ extern void SDL_EGL_DestroySurface(_THIS, EGLSurface egl_surface);
 extern SDL_GLContext SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface);
 extern int SDL_EGL_MakeCurrent(_THIS, EGLSurface egl_surface, SDL_GLContext context);
 extern int SDL_EGL_SwapBuffers(_THIS, EGLSurface egl_surface);
+
+/* SDL Error-reporting */
+extern int SDL_EGL_SetErrorEx(const char * message, const char * eglFunctionName, EGLint eglErrorCode);
+#define SDL_EGL_SetError(message, eglFunctionName) SDL_EGL_SetErrorEx(message, eglFunctionName, _this->egl_data->eglGetError())
 
 /* A few of useful macros */
 

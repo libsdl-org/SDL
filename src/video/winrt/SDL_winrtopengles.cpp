@@ -28,6 +28,7 @@
 extern "C" {
 #include "SDL_winrtopengles.h"
 #include "SDL_loadso.h"
+#include "../SDL_egl_c.h"
 }
 
 /* Windows includes */
@@ -87,11 +88,11 @@ WINRT_GLES_LoadLibrary(_THIS, const char *path)
         Microsoft::WRL::ComPtr<IUnknown> cpp_display = video_data->winrtEglWindow;
         _this->egl_data->egl_display = ((eglGetDisplay_Old_Function)_this->egl_data->eglGetDisplay)(cpp_display);
         if (!_this->egl_data->egl_display) {
-            return SDL_SetError("Could not get Windows 8.0 EGL display");
+            return SDL_EGL_SetError("Could not get Windows 8.0 EGL display", "eglGetDisplay");
         }
 
         if (_this->egl_data->eglInitialize(_this->egl_data->egl_display, NULL, NULL) != EGL_TRUE) {
-            return SDL_SetError("Could not initialize Windows 8.0 EGL");
+            return SDL_EGL_SetError("Could not initialize Windows 8.0 EGL", "eglInitialize");
         }
     } else {
         /* Declare some ANGLE/EGL initialization property-sets, as suggested by
@@ -132,7 +133,7 @@ WINRT_GLES_LoadLibrary(_THIS, const char *path)
          */
         eglGetPlatformDisplayEXT_Function eglGetPlatformDisplayEXT = (eglGetPlatformDisplayEXT_Function)_this->egl_data->eglGetProcAddress("eglGetPlatformDisplayEXT");
         if (!eglGetPlatformDisplayEXT) {
-            return SDL_SetError("Could not retrieve ANGLE/WinRT display function(s)");
+            return SDL_EGL_SetError("Could not retrieve ANGLE/WinRT display function(s)", "eglGetProcAddress");
         }
 
 #if (WINAPI_FAMILY != WINAPI_FAMILY_PHONE_APP)
@@ -141,7 +142,7 @@ WINRT_GLES_LoadLibrary(_THIS, const char *path)
          */
         _this->egl_data->egl_display = eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, EGL_DEFAULT_DISPLAY, defaultDisplayAttributes);
         if (!_this->egl_data->egl_display) {
-            return SDL_SetError("Could not get 10_0+ EGL display");
+            return SDL_EGL_SetError("Could not get EGL display for Direct3D 10_0+", "eglGetPlatformDisplayEXT");
         }
 
         if (_this->egl_data->eglInitialize(_this->egl_data->egl_display, NULL, NULL) != EGL_TRUE)
@@ -153,7 +154,7 @@ WINRT_GLES_LoadLibrary(_THIS, const char *path)
              */
             _this->egl_data->egl_display = eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, EGL_DEFAULT_DISPLAY, fl9_3DisplayAttributes);
             if (!_this->egl_data->egl_display) {
-                return SDL_SetError("Could not get 9_3 EGL display");
+                return SDL_EGL_SetError("Could not get EGL display for Direct3D 9_3", "eglGetPlatformDisplayEXT");
             }
 
             if (_this->egl_data->eglInitialize(_this->egl_data->egl_display, NULL, NULL) != EGL_TRUE) {
@@ -162,11 +163,11 @@ WINRT_GLES_LoadLibrary(_THIS, const char *path)
                  */
                 _this->egl_data->egl_display = eglGetPlatformDisplayEXT(EGL_PLATFORM_ANGLE_ANGLE, EGL_DEFAULT_DISPLAY, warpDisplayAttributes);
                 if (!_this->egl_data->egl_display) {
-                    return SDL_SetError("Could not get WARP EGL display");
+                    return SDL_EGL_SetError("Could not get EGL display for Direct3D WARP", "eglGetPlatformDisplayEXT");
                 }
 
                 if (_this->egl_data->eglInitialize(_this->egl_data->egl_display, NULL, NULL) != EGL_TRUE) {
-                    return SDL_SetError("Could not initialize WinRT 8.x+ EGL");
+                    return SDL_EGL_SetError("Could not initialize WinRT 8.x+ EGL", "eglInitialize");
                 }
             }
         }

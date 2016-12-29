@@ -621,7 +621,7 @@ WINRT_CreateWindow(_THIS, SDL_Window * window)
                 _this->egl_data->egl_config,
                 cpp_winrtEglWindow, NULL);
             if (data->egl_surface == NULL) {
-                return SDL_SetError("eglCreateWindowSurface failed");
+                return SDL_EGL_SetError("unable to create EGL native-window surface", "eglCreateWindowSurface");
             }
         } else if (data->coreWindow.Get() != nullptr) {
             /* Attempt to create a window surface using newer versions of
@@ -634,7 +634,7 @@ WINRT_CreateWindow(_THIS, SDL_Window * window)
                 coreWindowAsIInspectable,
                 NULL);
             if (data->egl_surface == NULL) {
-                return SDL_SetError("eglCreateWindowSurface failed");
+                return SDL_EGL_SetError("unable to create EGL native-window surface", "eglCreateWindowSurface");
             }
         } else {
             return SDL_SetError("No supported means to create an EGL window surface are available");
