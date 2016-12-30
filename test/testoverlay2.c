@@ -150,7 +150,7 @@ int paused = 0;
 int i;
 SDL_bool done = SDL_FALSE;
 Uint32 pixel_format = SDL_PIXELFORMAT_YV12;
-int fpsdelay;
+static int fpsdelay;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -328,7 +328,6 @@ main(int argc, char **argv)
     SDL_Window *window;
     int j;
     int fps = 12;
-    int fpsdelay;
     int nodelay = 0;
 #ifdef TEST_NV12
     Uint32 pixel_format = SDL_PIXELFORMAT_NV12;
