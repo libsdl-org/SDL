@@ -1753,7 +1753,7 @@ SDL_SetWindowPosition(SDL_Window * window, int x, int y)
     if (SDL_WINDOWPOS_ISCENTERED(x) || SDL_WINDOWPOS_ISCENTERED(y)) {
         int displayIndex = (x & 0xFFFF);
         SDL_Rect bounds;
-        if (displayIndex > _this->num_displays) {
+        if (displayIndex >= _this->num_displays) {
             displayIndex = 0;
         }
 
