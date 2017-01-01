@@ -78,8 +78,8 @@
 #else
 #  define SDL_XAUDIO2_HAS_SDK 1
 #endif
-#endif
 #endif /* 0 */
+#endif /* __GNUC__ */
 
 #ifdef SDL_XAUDIO2_HAS_SDK
 
