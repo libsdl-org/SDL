@@ -1484,7 +1484,7 @@ SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, 
     if (!fmt) {
         fmt = "";
     }
-    while (*fmt) {
+    while (*fmt && left > 1) {
         if (*fmt == '%') {
             SDL_bool done = SDL_FALSE;
             size_t len = 0;
@@ -1646,12 +1646,8 @@ SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, 
                 left -= len;
             }
         } else {
-            if (left > 1) {
-                *text = *fmt;
-                --left;
-            }
-            ++fmt;
-            ++text;
+            *text++ = *fmt++;
+            --left;
         }
     }
     if (left > 0) {
