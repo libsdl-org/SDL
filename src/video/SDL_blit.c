@@ -219,6 +219,12 @@ SDL_CalculateBlit(SDL_Surface * surface)
     SDL_BlitMap *map = surface->map;
     SDL_Surface *dst = map->dst;
 
+    /* We don't currently support blitting to < 8 bpp surfaces */
+    if (dst->format->BitsPerPixel < 8) {
+        SDL_InvalidateMap(map);
+        return SDL_SetError("Blit combination not supported");
+    }
+
     /* Clean everything out to start */
     if ((surface->flags & SDL_RLEACCEL) == SDL_RLEACCEL) {
         SDL_UnRLESurface(surface, 1);
