@@ -47,10 +47,6 @@
 int
 PSP_GL_LoadLibrary(_THIS, const char *path)
 {
-  if (!_this->gl_config.driver_loaded) {
-        _this->gl_config.driver_loaded = 1;
-  }
-
   return 0;
 }
 

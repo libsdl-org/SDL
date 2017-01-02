@@ -70,8 +70,6 @@ Emscripten_GLES_LoadLibrary(_THIS, const char *path) {
         return SDL_SetError("Could not initialize EGL");
     }
 
-    _this->gl_config.driver_loaded = 1;
-
     if (path) {
         SDL_strlcpy(_this->gl_config.driver_path, path, sizeof(_this->gl_config.driver_path) - 1);
     } else {
