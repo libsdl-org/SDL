@@ -133,7 +133,6 @@ DirectFB_GL_LoadLibrary(_THIS, const char *path)
     SDL_DFB_DEBUG("Loaded library: %s\n", path);
 
     _this->gl_config.dll_handle = handle;
-    _this->gl_config.driver_loaded = 1;
     if (path) {
         SDL_strlcpy(_this->gl_config.driver_path, path,
                     SDL_arraysize(_this->gl_config.driver_path));
@@ -151,16 +150,10 @@ static void
 DirectFB_GL_UnloadLibrary(_THIS)
 {
  #if 0
-    int ret;
-
-    if (_this->gl_config.driver_loaded) {
-
-        ret = GL_UnloadObject(_this->gl_config.dll_handle);
-        if (ret)
-            SDL_DFB_ERR("Error #%d trying to unload library.\n", ret);
-        _this->gl_config.dll_handle = NULL;
-        _this->gl_config.driver_loaded = 0;
-    }
+    int ret = GL_UnloadObject(_this->gl_config.dll_handle);
+    if (ret)
+        SDL_DFB_ERR("Error #%d trying to unload library.\n", ret);
+    _this->gl_config.dll_handle = NULL;
 #endif
     /* Free OpenGL memory */
     SDL_free(_this->gl_data);
