@@ -255,7 +255,7 @@ MIR_InitDisplayFromOutput(_THIS, MirOutput* output)
 
     MirPixelFormat format = MIR_mir_output_get_current_pixel_format(output);
     int num_modes         = MIR_mir_output_get_num_modes(output);
-    SDL_DisplayMode current_mode = MIR_ConvertModeToSDLMode(mir_output_get_current_mode(output), format);
+    SDL_DisplayMode current_mode = MIR_ConvertModeToSDLMode(MIR_mir_output_get_current_mode(output), format);
 
     SDL_zero(display);
 
