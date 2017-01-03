@@ -221,6 +221,7 @@ display_handle_mode(void *data,
     SDL_DisplayMode mode;
 
     SDL_zero(mode);
+    mode.format = SDL_PIXELFORMAT_RGB888;
     mode.w = width;
     mode.h = height;
     mode.refresh_rate = refresh / 1000; // mHz to Hz
