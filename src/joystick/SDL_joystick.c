@@ -125,13 +125,17 @@ SDL_JoystickAxesCenteredAtZero(SDL_Joystick *joystick)
         Uint16 vendor;
         Uint16 product;
     } zero_centered_joysticks[] = {
-        { 0x0810, 0xe501 }, /* NEXT SNES Controller */
         { 0x0e8f, 0x3013 }, /* HuiJia SNES USB adapter */
     };
 
     int i;
     Uint16 vendor = SDL_JoystickGetVendor(joystick);
     Uint16 product = SDL_JoystickGetProduct(joystick);
+
+    if (joystick->naxes == 2) {
+        /* Assume D-pad or thumbstick style axes are centered at 0 */
+        return SDL_TRUE;
+    }
 
     for (i = 0; i < SDL_arraysize(zero_centered_joysticks); ++i) {
         if (vendor == zero_centered_joysticks[i].vendor &&
