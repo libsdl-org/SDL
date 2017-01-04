@@ -335,6 +335,25 @@ SDL_JoystickGetAxis(SDL_Joystick * joystick, int axis)
 }
 
 /*
+ * Get the initial state of an axis control on a joystick
+ */
+SDL_bool
+SDL_JoystickGetAxisInitialState(SDL_Joystick * joystick, int axis, Sint16 *state)
+{
+    if (!SDL_PrivateJoystickValid(joystick)) {
+        return SDL_FALSE;
+    }
+    if (axis >= joystick->naxes) {
+        SDL_SetError("Joystick only has %d axes", joystick->naxes);
+        return SDL_FALSE;
+    }
+    if (state) {
+        *state = joystick->axes[axis].initial_value;
+    }
+    return joystick->axes[axis].has_initial_value;
+}
+
+/*
  * Get the current state of a hat on a joystick
  */
 Uint8
@@ -646,6 +665,7 @@ SDL_PrivateJoystickAxis(SDL_Joystick * joystick, Uint8 axis, Sint16 value)
         return 0;
     }
     if (!joystick->axes[axis].has_initial_value) {
+        joystick->axes[axis].initial_value = value;
         joystick->axes[axis].value = value;
         joystick->axes[axis].zero = value;
         joystick->axes[axis].has_initial_value = SDL_TRUE;
@@ -654,10 +674,9 @@ SDL_PrivateJoystickAxis(SDL_Joystick * joystick, Uint8 axis, Sint16 value)
         return 0;
     }
     if (!joystick->axes[axis].sent_initial_value) {
-        int initial_value = joystick->axes[axis].value;
         joystick->axes[axis].sent_initial_value = SDL_TRUE;
         joystick->axes[axis].value = value; /* Just so we pass the check above */
-        SDL_PrivateJoystickAxis(joystick, axis, initial_value);
+        SDL_PrivateJoystickAxis(joystick, axis, joystick->axes[axis].initial_value);
     }
 
     /* We ignore events if we don't have keyboard focus, except for centering
