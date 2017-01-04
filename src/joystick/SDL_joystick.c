@@ -114,6 +114,34 @@ SDL_JoystickNameForIndex(int device_index)
 }
 
 /*
+ * Return true if this joystick is known to have all axes centered at zero
+ * This isn't generally needed unless the joystick never generates an initial axis value near zero,
+ * e.g. it's emulating axes with digital buttons
+ */
+static SDL_bool
+SDL_JoystickAxesCenteredAtZero(SDL_Joystick *joystick)
+{
+    struct {
+        Uint16 vendor;
+        Uint16 product;
+    } zero_centered_joysticks[] = {
+        { 0x0e8f, 0x3013 }, /* Unknown Super NES USB adapter */
+    };
+
+    int i;
+    Uint16 vendor = SDL_JoystickGetVendor(joystick);
+    Uint16 product = SDL_JoystickGetProduct(joystick);
+
+    for (i = 0; i < SDL_arraysize(zero_centered_joysticks); ++i) {
+        if (vendor == zero_centered_joysticks[i].vendor &&
+            product == zero_centered_joysticks[i].product) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
+/*
  * Open a joystick for use - the index passed as an argument refers to
  * the N'th joystick on the system.  This index is the value which will
  * identify this joystick in future joystick events.
@@ -191,6 +219,15 @@ SDL_JoystickOpen(int device_index)
         return NULL;
     }
     joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
+
+    /* If this joystick is known to have all zero centered axes, skip the auto-centering code */
+    if (SDL_JoystickAxesCenteredAtZero(joystick)) {
+        int i;
+
+        for (i = 0; i < joystick->naxes; ++i) {
+            joystick->axes[i].has_initial_value = SDL_TRUE;
+        }
+    }
 
     /* Add joystick to list */
     ++joystick->ref_count;
@@ -597,25 +634,25 @@ int
 SDL_PrivateJoystickAxis(SDL_Joystick * joystick, Uint8 axis, Sint16 value)
 {
     int posted;
+    const int MAX_ALLOWED_JITTER = SDL_JOYSTICK_AXIS_MAX / 256;
 
     /* Make sure we're not getting garbage or duplicate events */
     if (axis >= joystick->naxes) {
         return 0;
     }
-    if (value == joystick->axes[axis].value) {
+    if (!joystick->axes[axis].has_initial_value) {
+        joystick->axes[axis].value = value;
+        joystick->axes[axis].zero = value;
+        joystick->axes[axis].has_initial_value = SDL_TRUE;
+    }
+    if (SDL_abs(value - joystick->axes[axis].value) <= MAX_ALLOWED_JITTER) {
         return 0;
     }
-    if (!joystick->axes[axis].moved) {
-        if (joystick->axes[axis].intial_value == 0) {
-            joystick->axes[axis].intial_value = value;
-            return 0;
-        }
-        if (value == joystick->axes[axis].intial_value) {
-            return 0;
-        }
-
-        /* We got more than 0 and the initial value from the joystick, consider it as having actually moved */
-        joystick->axes[axis].moved = SDL_TRUE;
+    if (!joystick->axes[axis].sent_initial_value) {
+        int initial_value = joystick->axes[axis].value;
+        joystick->axes[axis].sent_initial_value = SDL_TRUE;
+        joystick->axes[axis].value = value; /* Just so we pass the check above */
+        SDL_PrivateJoystickAxis(joystick, axis, initial_value);
     }
 
     /* We ignore events if we don't have keyboard focus, except for centering
@@ -798,9 +835,11 @@ SDL_JoystickUpdate(void)
         if (joystick->force_recentering) {
             int i;
 
-            /* Tell the app that everything is centered/unpressed...  */
+            /* Tell the app that everything is centered/unpressed... */
             for (i = 0; i < joystick->naxes; i++) {
-                SDL_PrivateJoystickAxis(joystick, i, joystick->axes[i].zero);
+                if (joystick->axes[i].has_initial_value) {
+                    SDL_PrivateJoystickAxis(joystick, i, joystick->axes[i].zero);
+                }
             }
 
             for (i = 0; i < joystick->nbuttons; i++) {
