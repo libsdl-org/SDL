@@ -245,6 +245,18 @@ extern DECLSPEC Sint16 SDLCALL SDL_JoystickGetAxis(SDL_Joystick * joystick,
                                                    int axis);
 
 /**
+ *  Get the initial state of an axis control on a joystick.
+ *
+ *  The state is a value ranging from -32768 to 32767.
+ *
+ *  The axis indices start at index 0.
+ *
+ *  \return SDL_TRUE if this axis has any initial value, or SDL_FALSE if not.
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_JoystickGetAxisInitialState(SDL_Joystick * joystick,
+                                                   int axis, Sint16 *state);
+
+/**
  *  \name Hat positions
  */
 /* @{ */
