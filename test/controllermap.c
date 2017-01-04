@@ -444,7 +444,7 @@ WatchJoystick(SDL_Joystick * joystick)
                     if (nCurrentDistance > nFarthestDistance) {
                         pAxisState->m_nFarthestValue = nValue;
                     }
-                    if (nFarthestDistance >= 20000 && nCurrentDistance <= 10000) {
+                    if (nFarthestDistance >= 16000 && nCurrentDistance <= 10000) {
                         /* We've gone out far enough and started to come back, let's bind this axis */
                         SDL_GameControllerExtendedBind binding;
                         SDL_zero(binding);
