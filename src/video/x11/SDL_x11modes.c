@@ -464,8 +464,8 @@ X11_InitModes_XRandR(_THIS)
                 displaydata->screen = screen;
                 displaydata->visual = vinfo.visual;
                 displaydata->depth = vinfo.depth;
-                displaydata->hdpi = ((float) mode.w) * 25.4f / display_mm_width;
-                displaydata->vdpi = ((float) mode.h) * 25.4f / display_mm_height;
+                displaydata->hdpi = display_mm_width ? (((float) mode.w) * 25.4f / display_mm_width) : 0.0f;
+                displaydata->vdpi = display_mm_height ? (((float) mode.h) * 25.4f / display_mm_height) : 0.0f;
                 displaydata->ddpi = SDL_ComputeDiagonalDPI(mode.w, mode.h, ((float) display_mm_width) / 25.4f,((float) display_mm_height) / 25.4f);
                 displaydata->scanline_pad = scanline_pad;
                 displaydata->x = display_x;

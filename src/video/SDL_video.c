@@ -3797,7 +3797,8 @@ SDL_SetWindowHitTest(SDL_Window * window, SDL_HitTest callback, void *userdata)
     return 0;
 }
 
-float SDL_ComputeDiagonalDPI(int hpix, int vpix, float hinches, float vinches)
+float
+SDL_ComputeDiagonalDPI(int hpix, int vpix, float hinches, float vinches)
 {
 	float den2 = hinches * hinches + vinches * vinches;
 	if (den2 <= 0.0f) {
