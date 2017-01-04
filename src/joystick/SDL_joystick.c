@@ -125,7 +125,8 @@ SDL_JoystickAxesCenteredAtZero(SDL_Joystick *joystick)
         Uint16 vendor;
         Uint16 product;
     } zero_centered_joysticks[] = {
-        { 0x0e8f, 0x3013 }, /* Unknown Super NES USB adapter */
+        { 0x0810, 0xe501 }, /* NEXT SNES Controller */
+        { 0x0e8f, 0x3013 }, /* HuiJia SNES USB adapter */
     };
 
     int i;
