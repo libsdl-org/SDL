@@ -41,8 +41,6 @@
 #define MAX_JOYSTICKS   16
 #define MAX_AXES    6       /* each joystick can have up to 6 axes */
 #define MAX_BUTTONS 32      /* and 32 buttons                      */
-/* limit axis to 256 possible positions to filter out noise */
-#define JOY_AXIS_THRESHOLD      (((SDL_JOYSTICK_AXIS_MAX)-(SDL_JOYSTICK_AXIS_MIN))/256)
 #define JOY_BUTTON_FLAG(n)  (1<<n)
 
 
@@ -340,14 +338,8 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
     transaxis = joystick->hwdata->transaxis;
     for (i = 0; i < joystick->naxes; i++) {
         if (joyinfo.dwFlags & flags[i]) {
-            value =
-                (int) (((float) pos[i] +
-                        transaxis[i].offset) * transaxis[i].scale);
-            change = (value - joystick->axes[i].value);
-            if ((change < -JOY_AXIS_THRESHOLD)
-                || (change > JOY_AXIS_THRESHOLD)) {
-                SDL_PrivateJoystickAxis(joystick, (Uint8) i, (Sint16) value);
-            }
+            value = (int) (((float) pos[i] + transaxis[i].offset) * transaxis[i].scale);
+            SDL_PrivateJoystickAxis(joystick, (Uint8) i, (Sint16) value);
         }
     }
 
@@ -355,15 +347,9 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
     if (joyinfo.dwFlags & JOY_RETURNBUTTONS) {
         for (i = 0; i < joystick->nbuttons; ++i) {
             if (joyinfo.dwButtons & JOY_BUTTON_FLAG(i)) {
-                if (!joystick->buttons[i]) {
-                    SDL_PrivateJoystickButton(joystick, (Uint8) i,
-                                              SDL_PRESSED);
-                }
+                SDL_PrivateJoystickButton(joystick, (Uint8) i, SDL_PRESSED);
             } else {
-                if (joystick->buttons[i]) {
-                    SDL_PrivateJoystickButton(joystick, (Uint8) i,
-                                              SDL_RELEASED);
-                }
+                SDL_PrivateJoystickButton(joystick, (Uint8) i, SDL_RELEASED);
             }
         }
     }
@@ -373,9 +359,7 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
         Uint8 pos;
 
         pos = TranslatePOV(joyinfo.dwPOV);
-        if (pos != joystick->hats[0]) {
-            SDL_PrivateJoystickHat(joystick, 0, pos);
-        }
+        SDL_PrivateJoystickHat(joystick, 0, pos);
     }
 }
 

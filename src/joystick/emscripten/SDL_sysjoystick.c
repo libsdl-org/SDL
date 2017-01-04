@@ -146,7 +146,7 @@ Emscripten_JoyStickDisconnected(int eventType, const EmscriptenGamepadEvent *gam
     /* Need to decrement the joystick count before we post the event */
     --numjoysticks;
 
-	SDL_PrivateJoystickRemoved(item->device_instance);
+    SDL_PrivateJoystickRemoved(item->device_instance);
 
 #ifdef DEBUG_JOYSTICK
     SDL_Log("Removed joystick with id %d", item->device_instance);

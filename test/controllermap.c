@@ -197,6 +197,7 @@ StandardizeAxisValue(int nValue)
 static void
 SetCurrentBinding(int iBinding)
 {
+    int iIndex;
     SDL_GameControllerExtendedBind *pBinding;
 
     if (iBinding < 0) {
@@ -213,9 +214,37 @@ SetCurrentBinding(int iBinding)
     pBinding = &s_arrBindings[s_arrBindingOrder[s_iCurrentBinding]];
     SDL_zerop(pBinding);
 
-    SDL_memset(s_arrAxisState, 0, s_nNumAxes*sizeof(*s_arrAxisState));
+    for (iIndex = 0; iIndex < s_nNumAxes; ++iIndex) {
+        s_arrAxisState[iIndex].m_nFarthestValue = s_arrAxisState[iIndex].m_nStartingValue;
+    }
 
     s_unPendingAdvanceTime = 0;
+}
+
+static SDL_bool
+BBindingContainsBinding(const SDL_GameControllerExtendedBind *pBindingA, const SDL_GameControllerExtendedBind *pBindingB)
+{
+    if (pBindingA->bindType != pBindingB->bindType)
+    {
+        return SDL_FALSE;
+    }
+    switch (pBindingA->bindType)
+    {
+    case SDL_CONTROLLER_BINDTYPE_AXIS:
+        if (pBindingA->value.axis.axis != pBindingB->value.axis.axis) {
+            return SDL_FALSE;
+        }
+        {
+            int minA = SDL_min(pBindingA->value.axis.axis_min, pBindingA->value.axis.axis_max);
+            int maxA = SDL_max(pBindingA->value.axis.axis_min, pBindingA->value.axis.axis_max);
+            int minB = SDL_min(pBindingB->value.axis.axis_min, pBindingB->value.axis.axis_max);
+            int maxB = SDL_max(pBindingB->value.axis.axis_min, pBindingB->value.axis.axis_max);
+            return (minA <= minB && maxA >= maxB);
+        }
+        /* Not reached */
+    default:
+        return SDL_memcmp(pBindingA, pBindingB, sizeof(*pBindingA)) == 0;
+    }
 }
 
 static void
@@ -227,7 +256,8 @@ ConfigureBinding(const SDL_GameControllerExtendedBind *pBinding)
 
     /* Do we already have this binding? */
     for (iIndex = 0; iIndex < SDL_arraysize(s_arrBindings); ++iIndex) {
-        if (SDL_memcmp(pBinding, &s_arrBindings[iIndex], sizeof(*pBinding)) == 0) {
+        pCurrent = &s_arrBindings[iIndex];
+        if (BBindingContainsBinding(pCurrent, pBinding)) {
             if (iIndex == SDL_CONTROLLER_BUTTON_A && iCurrentElement != SDL_CONTROLLER_BUTTON_B) {
                 /* Skip to the next binding */
                 SetCurrentBinding(s_iCurrentBinding + 1);
@@ -263,7 +293,9 @@ ConfigureBinding(const SDL_GameControllerExtendedBind *pBinding)
 
         bNativeAxis = (iCurrentElement >= SDL_CONTROLLER_BUTTON_MAX);
         bCurrentAxis = (pCurrent->bindType == SDL_CONTROLLER_BINDTYPE_AXIS);
-        if (bNativeAxis == bCurrentAxis) {
+        if (bNativeAxis == bCurrentAxis &&
+            (pBinding->bindType != SDL_CONTROLLER_BINDTYPE_AXIS ||
+             pBinding->value.axis.axis != pCurrent->value.axis.axis)) {
             /* We already have a binding of the type we want, ignore the new one */
             return;
         }
@@ -412,8 +444,8 @@ WatchJoystick(SDL_Joystick * joystick)
                     if (nCurrentDistance > nFarthestDistance) {
                         pAxisState->m_nFarthestValue = nValue;
                     }
-                    if (nCurrentDistance <= 8000 && nFarthestDistance >= 20000) {
-                        /* We've gone out and back, let's bind this axis */
+                    if (nFarthestDistance >= 20000 && nCurrentDistance <= 10000) {
+                        /* We've gone out far enough and started to come back, let's bind this axis */
                         SDL_GameControllerExtendedBind binding;
                         SDL_zero(binding);
                         binding.bindType = SDL_CONTROLLER_BINDTYPE_AXIS;

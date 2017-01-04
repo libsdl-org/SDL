@@ -692,9 +692,7 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
     i = 0;
     while (element) {
         value = GetHIDScaledCalibratedState(device, element, -32768, 32767);
-        if (value != joystick->axes[i].value) {
-            SDL_PrivateJoystickAxis(joystick, i, value);
-        }
+        SDL_PrivateJoystickAxis(joystick, i, value);
         element = element->pNext;
         ++i;
     }
@@ -706,9 +704,7 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
         if (value > 1) {          /* handle pressure-sensitive buttons */
             value = 1;
         }
-        if (value != joystick->buttons[i]) {
-            SDL_PrivateJoystickButton(joystick, i, value);
-        }
+        SDL_PrivateJoystickButton(joystick, i, value);
         element = element->pNext;
         ++i;
     }
@@ -759,9 +755,7 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
             break;
         }
 
-        if (pos != joystick->hats[i]) {
-            SDL_PrivateJoystickHat(joystick, i, pos);
-        }
+        SDL_PrivateJoystickHat(joystick, i, pos);
 
         element = element->pNext;
         ++i;

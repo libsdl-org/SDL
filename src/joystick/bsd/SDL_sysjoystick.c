@@ -522,12 +522,8 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joy)
                 v *= 32768 / ((ymax - ymin + 1) / 2);
                 SDL_PrivateJoystickAxis(joy, 1, v);
             }
-            if (gameport.b1 != joy->buttons[0]) {
-                SDL_PrivateJoystickButton(joy, 0, gameport.b1);
-            }
-            if (gameport.b2 != joy->buttons[1]) {
-                SDL_PrivateJoystickButton(joy, 1, gameport.b2);
-            }
+            SDL_PrivateJoystickButton(joy, 0, gameport.b1);
+            SDL_PrivateJoystickButton(joy, 1, gameport.b2);
         }
         return;
     }
@@ -563,9 +559,7 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joy)
                             v *= 32768 /
                                 ((hitem.logical_maximum -
                                   hitem.logical_minimum + 1) / 2);
-                            if (v != joy->axes[naxe].value) {
-                                SDL_PrivateJoystickAxis(joy, naxe, v);
-                            }
+                            SDL_PrivateJoystickAxis(joy, naxe, v);
                         } else if (usage == HUG_HAT_SWITCH) {
                             v = (Sint32) hid_get_data(REP_BUF_DATA(rep), &hitem);
                             SDL_PrivateJoystickHat(joy, 0,
@@ -576,9 +570,7 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joy)
                     }
                 case HUP_BUTTON:
                     v = (Sint32) hid_get_data(REP_BUF_DATA(rep), &hitem);
-                    if (joy->buttons[nbutton] != v) {
-                        SDL_PrivateJoystickButton(joy, nbutton, v);
-                    }
+                    SDL_PrivateJoystickButton(joy, nbutton, v);
                     nbutton++;
                     break;
                 default:
