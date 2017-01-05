@@ -178,7 +178,7 @@ extern "C"
         };
 
         BJoystick *stick;
-        int i, change;
+        int i;
         int16 *axes;
         uint8 *hats;
         uint32 buttons;
