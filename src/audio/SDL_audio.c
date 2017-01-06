@@ -605,7 +605,7 @@ SDL_RunAudio(void *devicep)
                     SDL_Delay(delay);
                     break;
                 } else {
-                    const int got = SDL_AudioStreamGet(device->stream, device->spec.size, stream, device->spec.size);
+                    const int got = SDL_AudioStreamGet(device->stream, stream, device->spec.size);
                     SDL_assert((got < 0) || (got == device->spec.size));
                     if (got != device->spec.size) {
                         SDL_memset(stream, device->spec.silence, device->spec.size);
@@ -702,7 +702,7 @@ SDL_CaptureAudio(void *devicep)
             SDL_AudioStreamPut(device->stream, stream, stream_len);
 
             while (SDL_AudioStreamAvailable(device->stream) >= ((int) device->callbackspec.size)) {
-                const int got = SDL_AudioStreamGet(device->stream, device->callbackspec.size, device->fake_stream, device->fake_stream_len);
+                const int got = SDL_AudioStreamGet(device->stream, device->fake_stream, device->callbackspec.size);
                 SDL_assert((got < 0) || (got == device->callbackspec.size));
                 if (got != device->callbackspec.size) {
                     SDL_memset(device->fake_stream, device->spec.silence, device->callbackspec.size);

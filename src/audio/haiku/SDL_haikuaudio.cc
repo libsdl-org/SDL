@@ -77,7 +77,7 @@ FillSound(void *device, void *stream, size_t len,
             }
         }
 
-        const int got = SDL_AudioStreamGet(audio->stream, ilen, stream, ilen);
+        const int got = SDL_AudioStreamGet(audio->stream, stream, ilen);
         SDL_assert((got < 0) || (got == ilen));
         if (got != ilen) {
             SDL_memset(stream, audio->spec.silence, len);

@@ -832,7 +832,7 @@ SDL_AudioStreamClear(SDL_AudioStream *stream)
 
 /* get converted/resampled data from the stream */
 int
-SDL_AudioStreamGet(SDL_AudioStream *stream, Uint32 len, void *buf, const Uint32 buflen)
+SDL_AudioStreamGet(SDL_AudioStream *stream, void *buf, const Uint32 len)
 {
     if (!stream) {
         return SDL_InvalidParamError("stream");
@@ -844,7 +844,7 @@ SDL_AudioStreamGet(SDL_AudioStream *stream, Uint32 len, void *buf, const Uint32 
         return SDL_SetError("Can't request partial sample frames");
     }
 
-    return (int) SDL_ReadFromDataQueue(stream->queue, buf, buflen);
+    return (int) SDL_ReadFromDataQueue(stream->queue, buf, len);
 }
 
 /* number of converted/resampled bytes available */
