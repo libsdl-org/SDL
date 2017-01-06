@@ -547,8 +547,8 @@ SDL_RunAudio(void *devicep)
     SDL_AudioDevice *device = (SDL_AudioDevice *) devicep;
     const int silence = (int) device->spec.silence;
     const Uint32 delay = ((device->spec.samples * 1000) / device->spec.freq);
-    const int stream_len = device->callbackspec.size;
-    Uint8 *stream;
+    const int data_len = device->callbackspec.size;
+    Uint8 *data;
     void *udata = device->spec.userdata;
     SDL_AudioCallback callback = device->spec.callback;
 
@@ -565,8 +565,8 @@ SDL_RunAudio(void *devicep)
     while (!SDL_AtomicGet(&device->shutdown)) {
         /* Fill the current buffer with sound */
         if (!device->stream && SDL_AtomicGet(&device->enabled)) {
-            SDL_assert(device->spec.size == device->callbackspec.size);
-            stream = current_audio.impl.GetDeviceBuf(device);
+            SDL_assert(data_len == device->spec.size);
+            data = current_audio.impl.GetDeviceBuf(device);
         } else {
             /* if the device isn't enabled, we still write to the
                work_buffer, so the app's callback will fire with
@@ -574,48 +574,48 @@ SDL_RunAudio(void *devicep)
                for timing or progress. They can use hotplug
                now to know if the device failed.
                Streaming playback uses work_buffer, too. */
-            stream = NULL;
+            data = NULL;
         }
 
-        if (stream == NULL) {
-            stream = device->work_buffer;
+        if (data == NULL) {
+            data = device->work_buffer;
         }
 
         if ( SDL_AtomicGet(&device->enabled) ) {
             /* !!! FIXME: this should be LockDevice. */
             SDL_LockMutex(device->mixer_lock);
             if (SDL_AtomicGet(&device->paused)) {
-                SDL_memset(stream, silence, stream_len);
+                SDL_memset(data, silence, data_len);
             } else {
-                callback(udata, stream, stream_len);
+                callback(udata, data, data_len);
             }
             SDL_UnlockMutex(device->mixer_lock);
         } else {
-            SDL_memset(stream, silence, stream_len);
+            SDL_memset(data, silence, data_len);
         }
 
         if (device->stream) {
             /* Stream available audio to device, converting/resampling. */
             /* if this fails...oh well. We'll play silence here. */
-            SDL_AudioStreamPut(device->stream, stream, stream_len);
+            SDL_AudioStreamPut(device->stream, data, data_len);
 
             while (SDL_AudioStreamAvailable(device->stream) >= ((int) device->spec.size)) {
-                stream = SDL_AtomicGet(&device->enabled) ? current_audio.impl.GetDeviceBuf(device) : NULL;
-                if (stream == NULL) {
+                data = SDL_AtomicGet(&device->enabled) ? current_audio.impl.GetDeviceBuf(device) : NULL;
+                if (data == NULL) {
                     SDL_AudioStreamClear(device->stream);
                     SDL_Delay(delay);
                     break;
                 } else {
-                    const int got = SDL_AudioStreamGet(device->stream, stream, device->spec.size);
+                    const int got = SDL_AudioStreamGet(device->stream, data, device->spec.size);
                     SDL_assert((got < 0) || (got == device->spec.size));
                     if (got != device->spec.size) {
-                        SDL_memset(stream, device->spec.silence, device->spec.size);
+                        SDL_memset(data, device->spec.silence, device->spec.size);
                     }
                     current_audio.impl.PlayDevice(device);
                     current_audio.impl.WaitDevice(device);
                 }
             }
-        } else if (stream == device->work_buffer) {
+        } else if (data == device->work_buffer) {
             /* nothing to do; pause like we queued a buffer to play. */
             SDL_Delay(delay);
         } else {  /* writing directly to the device. */
@@ -640,8 +640,8 @@ SDL_CaptureAudio(void *devicep)
     SDL_AudioDevice *device = (SDL_AudioDevice *) devicep;
     const int silence = (int) device->spec.silence;
     const Uint32 delay = ((device->spec.samples * 1000) / device->spec.freq);
-    const int stream_len = device->spec.size;
-    Uint8 *stream;
+    const int data_len = device->spec.size;
+    Uint8 *data;
     void *udata = device->spec.userdata;
     SDL_AudioCallback callback = device->spec.callback;
 
@@ -669,13 +669,13 @@ SDL_CaptureAudio(void *devicep)
         }
 
         /* Fill the current buffer with sound */
-        still_need = stream_len;
+        still_need = data_len;
 
         /* Use the work_buffer to hold data read from the device. */
-        stream = device->work_buffer;
-        SDL_assert(stream != NULL);
+        data = device->work_buffer;
+        SDL_assert(data != NULL);
 
-        ptr = stream;
+        ptr = data;
 
         /* We still read from the device when "paused" to keep the state sane,
            and block when there isn't data so this thread isn't eating CPU.
@@ -700,7 +700,7 @@ SDL_CaptureAudio(void *devicep)
 
         if (device->stream) {
             /* if this fails...oh well. */
-            SDL_AudioStreamPut(device->stream, stream, stream_len);
+            SDL_AudioStreamPut(device->stream, data, data_len);
 
             while (SDL_AudioStreamAvailable(device->stream) >= ((int) device->callbackspec.size)) {
                 const int got = SDL_AudioStreamGet(device->stream, device->work_buffer, device->callbackspec.size);
@@ -720,7 +720,7 @@ SDL_CaptureAudio(void *devicep)
             /* !!! FIXME: this should be LockDevice. */
             SDL_LockMutex(device->mixer_lock);
             if (!SDL_AtomicGet(&device->paused)) {
-                callback(udata, stream, device->callbackspec.size);
+                callback(udata, data, device->callbackspec.size);
             }
             SDL_UnlockMutex(device->mixer_lock);
         }
