@@ -220,14 +220,14 @@ void
 SDL_Upsample_Arbitrary(SDL_AudioCVT *cvt, const int channels)
 {
     const int srcsize = cvt->len_cvt - (64 * channels);
-    const int dstsize = (int) (((double)(cvt->len_cvt/(channels*4))) * cvt->rate_incr) * (channels*4);
+    const int dstsize = (int) ((((double)(cvt->len_cvt/(channels*4))) * cvt->rate_incr)) * (channels*4);
     register int eps = 0;
     float *dst = ((float *) (cvt->buf + dstsize)) - channels;
     const float *src = ((float *) (cvt->buf + cvt->len_cvt)) - channels;
     const float *target = ((const float *) cvt->buf);
     const size_t cpy = sizeof (float) * channels;
-    float last_sample[8];
     float sample[8];
+    float last_sample[8];
     int i;
 
 #if DEBUG_CONVERT
@@ -236,7 +236,9 @@ SDL_Upsample_Arbitrary(SDL_AudioCVT *cvt, const int channels)
 
     SDL_assert(channels <= 8);
 
-    SDL_memcpy(sample, src, cpy);
+    for (i = 0; i < channels; i++) {
+        sample[i] = (float) ((((double) src[i]) + ((double) src[i - channels])) * 0.5);
+    }
     SDL_memcpy(last_sample, src, cpy);
 
     while (dst > target) {
@@ -244,11 +246,15 @@ SDL_Upsample_Arbitrary(SDL_AudioCVT *cvt, const int channels)
         dst -= channels;
         eps += srcsize;
         if ((eps << 1) >= dstsize) {
-            src -= channels;
-            for (i = 0; i < channels; i++) {
-                sample[i] = (float) ((((double) src[i]) + ((double) last_sample[i])) * 0.5);
+            if (src > target) {
+                src -= channels;
+                for (i = 0; i < channels; i++) {
+                    sample[i] = (float) ((((double) src[i]) + ((double) last_sample[i])) * 0.5);
+                }
+            } else {
+
             }
-            SDL_memcpy(last_sample, sample, cpy);
+            SDL_memcpy(last_sample, src, cpy);
             eps -= dstsize;
         }
     }
@@ -291,7 +297,7 @@ SDL_Downsample_Arbitrary(SDL_AudioCVT *cvt, const int channels)
             for (i = 0; i < channels; i++) {
                 sample[i] = (float) ((((double) src[i]) + ((double) last_sample[i])) * 0.5);
             }
-            SDL_memcpy(last_sample, sample, cpy);
+            SDL_memcpy(last_sample, src, cpy);
             eps -= srcsize;
         }
     }
@@ -303,32 +309,43 @@ SDL_Downsample_Arbitrary(SDL_AudioCVT *cvt, const int channels)
 }
 
 void
-SDL_Upsample_x2(SDL_AudioCVT *cvt, const int channels)
+SDL_Upsample_Multiple(SDL_AudioCVT *cvt, const int channels)
 {
-    const int dstsize = cvt->len_cvt * 2;
-    float *dst = ((float *) (cvt->buf + dstsize)) - (channels * 2);
+    const int multiple = (int) cvt->rate_incr;
+    const int dstsize = cvt->len_cvt * multiple;
+    float *buf = (float *) cvt->buf;
+    float *dst = ((float *) (cvt->buf + dstsize)) - channels;
     const float *src = ((float *) (cvt->buf + cvt->len_cvt)) - channels;
-    const float *target = ((const float *) cvt->buf);
+    const float *target = buf + channels;
     const size_t cpy = sizeof (float) * channels;
     float last_sample[8];
     int i;
 
 #if DEBUG_CONVERT
-    fprintf(stderr, "Upsample (x2), %d channels.\n", channels);
+    fprintf(stderr, "Upsample (x%d), %d channels.\n", multiple, channels);
 #endif
 
     SDL_assert(channels <= 8);
+
     SDL_memcpy(last_sample, src, cpy);
 
     while (dst > target) {
+        SDL_assert(src >= buf);
+
         for (i = 0; i < channels; i++) {
             dst[i] = (float) ((((double)src[i]) + ((double)last_sample[i])) * 0.5);
         }
         dst -= channels;
-        SDL_memcpy(dst, src, cpy);
-        SDL_memcpy(last_sample, src, cpy);
+
+        for (i = 1; i < multiple; i++) {
+            SDL_memcpy(dst, dst + channels, cpy);
+            dst -= channels;
+        }
+
         src -= channels;
-        dst -= channels;
+        if (src > buf) {
+            SDL_memcpy(last_sample, src - channels, cpy);
+        }
     }
 
     cvt->len_cvt = dstsize;
@@ -338,51 +355,9 @@ SDL_Upsample_x2(SDL_AudioCVT *cvt, const int channels)
 }
 
 void
-SDL_Upsample_x4(SDL_AudioCVT *cvt, const int channels)
+SDL_Downsample_Multiple(SDL_AudioCVT *cvt, const int channels)
 {
-    const int dstsize = cvt->len_cvt * 4;
-    float *dst = ((float *) (cvt->buf + dstsize)) - (channels * 4);
-    const float *src = ((float *) (cvt->buf + cvt->len_cvt)) - channels;
-    const float *target = ((const float *) cvt->buf);
-    const size_t cpy = sizeof (float) * channels;
-    float last_sample[8];
-    int i;
-
-#if DEBUG_CONVERT
-    fprintf(stderr, "Upsample (x4), %d channels.\n", channels);
-#endif
-
-    SDL_assert(channels <= 8);
-    SDL_memcpy(last_sample, src, cpy);
-
-    while (dst > target) {
-        for (i = 0; i < channels; i++) {
-            dst[i] = (float) ((((double) src[i]) + (3.0 * ((double) last_sample[i]))) * 0.25);
-        }
-        dst -= channels;
-        for (i = 0; i < channels; i++) {
-            dst[i] = (float) ((((double) src[i]) + ((double) last_sample[i])) * 0.25);
-        }
-        dst -= channels;
-        for (i = 0; i < channels; i++) {
-            dst[i] = (float) (((3.0 * ((double) src[i])) + ((double) last_sample[i])) * 0.25);
-        }
-        dst -= channels;
-        SDL_memcpy(dst, src, cpy);
-        dst -= channels;
-        SDL_memcpy(last_sample, src, cpy);
-        src -= channels;
-    }
-
-    cvt->len_cvt = dstsize;
-    if (cvt->filters[++cvt->filter_index]) {
-        cvt->filters[cvt->filter_index](cvt, AUDIO_F32SYS);
-    }
-}
-
-void
-SDL_Downsample_Multiple(SDL_AudioCVT *cvt, const int multiple, const int channels)
-{
+    const int multiple = (int) (1.0 / cvt->rate_incr);
     const int dstsize = cvt->len_cvt / multiple;
     float *dst = (float *) cvt->buf;
     const float *src = (float *) cvt->buf;

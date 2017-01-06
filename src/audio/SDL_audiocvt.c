@@ -331,14 +331,43 @@ SDL_BuildAudioTypeCVTFromFloat(SDL_AudioCVT *cvt, const SDL_AudioFormat dst_fmt)
     return retval;
 }
 
+
+/* !!! FIXME: We only have this macro salsa because SDL_AudioCVT doesn't store
+   !!! FIXME:  channel info or integer sample rates, so we have to have
+   !!! FIXME:  function entry points for each supported channel count and
+   !!! FIXME:  multiple vs arbitrary. When we rev the ABI, remove this. */
+#define RESAMPLER_FUNCS(chans) \
+    static void SDLCALL \
+    SDL_Upsample_Multiple_c##chans(SDL_AudioCVT *cvt, SDL_AudioFormat format) { \
+        SDL_assert(format == AUDIO_F32SYS); \
+        SDL_Upsample_Multiple(cvt, chans); \
+    } \
+    static void SDLCALL \
+    SDL_Upsample_Arbitrary_c##chans(SDL_AudioCVT *cvt, SDL_AudioFormat format) { \
+        SDL_assert(format == AUDIO_F32SYS); \
+        SDL_Upsample_Arbitrary(cvt, chans); \
+    }\
+    static void SDLCALL \
+    SDL_Downsample_Multiple_c##chans(SDL_AudioCVT *cvt, SDL_AudioFormat format) { \
+        SDL_assert(format == AUDIO_F32SYS); \
+        SDL_Downsample_Multiple(cvt, chans); \
+    } \
+    static void SDLCALL \
+    SDL_Downsample_Arbitrary_c##chans(SDL_AudioCVT *cvt, SDL_AudioFormat format) { \
+        SDL_assert(format == AUDIO_F32SYS); \
+        SDL_Downsample_Arbitrary(cvt, chans); \
+    }
+RESAMPLER_FUNCS(1)
+RESAMPLER_FUNCS(2)
+RESAMPLER_FUNCS(4)
+RESAMPLER_FUNCS(6)
+RESAMPLER_FUNCS(8)
+#undef RESAMPLER_FUNCS
+
 static int
 SDL_FindFrequencyMultiple(const int src_rate, const int dst_rate)
 {
-    int retval = 0;
-
-    /* If we only built with the arbitrary resamplers, ignore multiples. */
     int lo, hi;
-    int div;
 
     SDL_assert(src_rate != 0);
     SDL_assert(dst_rate != 0);
@@ -352,110 +381,73 @@ SDL_FindFrequencyMultiple(const int src_rate, const int dst_rate)
         hi = src_rate;
     }
 
-    /* zero means "not a supported multiple" ... we only do 2x and 4x. */
     if ((hi % lo) != 0)
         return 0;               /* not a multiple. */
 
-    div = hi / lo;
-    retval = ((div == 2) || (div == 4)) ? div : 0;
-
-    return retval;
+    return hi / lo;
 }
 
-#define RESAMPLER_FUNCS(chans) \
-    static void SDLCALL \
-    SDL_Upsample_Arbitrary_c##chans(SDL_AudioCVT *cvt, SDL_AudioFormat format) { \
-        SDL_assert(format == AUDIO_F32SYS); \
-        SDL_Upsample_Arbitrary(cvt, chans); \
-    }\
-    static void SDLCALL \
-    SDL_Downsample_Arbitrary_c##chans(SDL_AudioCVT *cvt, SDL_AudioFormat format) { \
-        SDL_assert(format == AUDIO_F32SYS); \
-        SDL_Downsample_Arbitrary(cvt, chans); \
-    } \
-    static void SDLCALL \
-    SDL_Upsample_x2_c##chans(SDL_AudioCVT *cvt, SDL_AudioFormat format) { \
-        SDL_assert(format == AUDIO_F32SYS); \
-        SDL_Upsample_x2(cvt, chans); \
-    } \
-    static void SDLCALL \
-    SDL_Downsample_x2_c##chans(SDL_AudioCVT *cvt, SDL_AudioFormat format) { \
-        SDL_assert(format == AUDIO_F32SYS); \
-        SDL_Downsample_Multiple(cvt, 2, chans); \
-    } \
-    static void SDLCALL \
-    SDL_Upsample_x4_c##chans(SDL_AudioCVT *cvt, SDL_AudioFormat format) { \
-        SDL_assert(format == AUDIO_F32SYS); \
-        SDL_Upsample_x4(cvt, chans); \
-    } \
-    static void SDLCALL \
-    SDL_Downsample_x4_c##chans(SDL_AudioCVT *cvt, SDL_AudioFormat format) { \
-        SDL_assert(format == AUDIO_F32SYS); \
-        SDL_Downsample_Multiple(cvt, 4, chans); \
+static SDL_AudioFilter
+ChooseResampler(const int dst_channels, const int src_rate, const int dst_rate)
+{
+    const int upsample = (src_rate < dst_rate) ? 1 : 0;
+    const int multiple = SDL_FindFrequencyMultiple(src_rate, dst_rate);
+    SDL_AudioFilter filter = NULL;
+
+    #define PICK_CHANNEL_FILTER(upordown, resampler) switch (dst_channels) { \
+        case 1: filter = SDL_##upordown##_##resampler##_c1; break; \
+        case 2: filter = SDL_##upordown##_##resampler##_c2; break; \
+        case 4: filter = SDL_##upordown##_##resampler##_c4; break; \
+        case 6: filter = SDL_##upordown##_##resampler##_c6; break; \
+        case 8: filter = SDL_##upordown##_##resampler##_c8; break; \
+        default: break; \
     }
-RESAMPLER_FUNCS(1)
-RESAMPLER_FUNCS(2)
-RESAMPLER_FUNCS(4)
-RESAMPLER_FUNCS(6)
-RESAMPLER_FUNCS(8)
-#undef RESAMPLER_FUNCS
+
+    if (upsample) {
+        if (multiple) {
+            PICK_CHANNEL_FILTER(Upsample, Multiple);
+        } else {
+            PICK_CHANNEL_FILTER(Upsample, Arbitrary);
+        }
+    } else {
+        if (multiple) {
+            PICK_CHANNEL_FILTER(Downsample, Multiple);
+        } else {
+            PICK_CHANNEL_FILTER(Downsample, Arbitrary);
+        }
+    }
+
+    #undef PICK_CHANNEL_FILTER
+
+    return filter;
+}
 
 static int
-SDL_BuildAudioResampleCVT(SDL_AudioCVT * cvt, int dst_channels,
-                          int src_rate, int dst_rate)
+SDL_BuildAudioResampleCVT(SDL_AudioCVT * cvt, const int dst_channels,
+                          const int src_rate, const int dst_rate)
 {
-    if (src_rate != dst_rate) {
-        const int upsample = (src_rate < dst_rate) ? 1 : 0;
-        const int multiple = SDL_FindFrequencyMultiple(src_rate, dst_rate);
-        SDL_AudioFilter filter = NULL;
+    SDL_AudioFilter filter;
 
-        #define PICK_CHANNEL_FILTER(upordown, resampler) switch (dst_channels) { \
-            case 1: filter = SDL_##upordown##_##resampler##_c1; break; \
-            case 2: filter = SDL_##upordown##_##resampler##_c2; break; \
-            case 4: filter = SDL_##upordown##_##resampler##_c4; break; \
-            case 6: filter = SDL_##upordown##_##resampler##_c6; break; \
-            case 8: filter = SDL_##upordown##_##resampler##_c8; break; \
-            default: break; \
-        }
-
-        if (upsample) {
-            if (multiple == 0) {
-                PICK_CHANNEL_FILTER(Upsample, Arbitrary);
-            } else if (multiple == 2) {
-                PICK_CHANNEL_FILTER(Upsample, x2);
-            } else if (multiple == 4) {
-                PICK_CHANNEL_FILTER(Upsample, x4);
-            }
-        } else {
-            if (multiple == 0) {
-                PICK_CHANNEL_FILTER(Downsample, Arbitrary);
-            } else if (multiple == 2) {
-                PICK_CHANNEL_FILTER(Downsample, x2);
-            } else if (multiple == 4) {
-                PICK_CHANNEL_FILTER(Downsample, x4);
-            }
-        }
-
-        #undef PICK_CHANNEL_FILTER
-
-        if (filter == NULL) {
-            return SDL_SetError("No conversion available for these rates");
-        }
-
-        /* Update (cvt) with filter details... */
-        cvt->filters[cvt->filter_index++] = filter;
-        if (src_rate < dst_rate) {
-            const double mult = ((double) dst_rate) / ((double) src_rate);
-            cvt->len_mult *= (int) SDL_ceil(mult);
-            cvt->len_ratio *= mult;
-        } else {
-            cvt->len_ratio /= ((double) src_rate) / ((double) dst_rate);
-        }
-
-        return 1;               /* added a converter. */
+    if (src_rate == dst_rate) {
+        return 0;  /* no conversion necessary. */
     }
 
-    return 0;                   /* no conversion necessary. */
+    filter = ChooseResampler(dst_channels, src_rate, dst_rate);
+    if (filter == NULL) {
+        return SDL_SetError("No conversion available for these rates");
+    }
+
+    /* Update (cvt) with filter details... */
+    cvt->filters[cvt->filter_index++] = filter;
+    if (src_rate < dst_rate) {
+        const double mult = ((double) dst_rate) / ((double) src_rate);
+        cvt->len_mult *= (int) SDL_ceil(mult);
+        cvt->len_ratio *= mult;
+    } else {
+        cvt->len_ratio /= ((double) src_rate) / ((double) dst_rate);
+    }
+
+    return 1;               /* added a converter. */
 }
 
 
@@ -514,7 +506,7 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
 
        The expectation is we can process data faster in float32
        (possibly with SIMD), and making several passes over the same
-       buffer in is likely to be CPU cache-friendly, avoiding the
+       buffer is likely to be CPU cache-friendly, avoiding the
        biggest performance hit in modern times. Previously we had
        (script-generated) custom converters for every data type and
        it was a bloat on SDL compile times and final library size. */
@@ -585,11 +577,11 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
     }
 
     /* Do rate conversion, if necessary. Updates (cvt). */
-    if (SDL_BuildAudioResampleCVT(cvt, dst_channels, src_rate, dst_rate) ==
-        -1) {
+    if (SDL_BuildAudioResampleCVT(cvt, dst_channels, src_rate, dst_rate) == -1) {
         return -1;              /* shouldn't happen, but just in case... */
     }
 
+    /* Move to final data type. */
     if (SDL_BuildAudioTypeCVTFromFloat(cvt, dst_fmt) == -1) {
         return -1;              /* shouldn't happen, but just in case... */
     }

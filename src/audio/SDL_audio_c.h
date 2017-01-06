@@ -50,9 +50,8 @@ void SDLCALL SDL_Convert_F32_to_S16(SDL_AudioCVT *cvt, SDL_AudioFormat format);
 void SDLCALL SDL_Convert_F32_to_U16(SDL_AudioCVT *cvt, SDL_AudioFormat format);
 void SDLCALL SDL_Convert_F32_to_S32(SDL_AudioCVT *cvt, SDL_AudioFormat format);
 void SDL_Upsample_Arbitrary(SDL_AudioCVT *cvt, const int channels);
+void SDL_Upsample_Multiple(SDL_AudioCVT *cvt, const int channels);
 void SDL_Downsample_Arbitrary(SDL_AudioCVT *cvt, const int channels);
-void SDL_Upsample_x2(SDL_AudioCVT *cvt, const int channels);
-void SDL_Upsample_x4(SDL_AudioCVT *cvt, const int channels);
-void SDL_Downsample_Multiple(SDL_AudioCVT *cvt, const int multiple, const int channels);
+void SDL_Downsample_Multiple(SDL_AudioCVT *cvt, const int channels);
 
 /* vi: set ts=4 sw=4 expandtab: */
