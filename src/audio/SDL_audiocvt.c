@@ -729,7 +729,7 @@ ResampleAudioStream(SDL_AudioStream *stream, const float *inbuf, const int inbuf
         stream->resampler_state[i] = last_sample[i];
     }
 
-    return (dst - outbuf) * sizeof (float);
+    return (int) ((dst - outbuf) * sizeof (float));
 }
 
 static Uint8 *
@@ -844,7 +844,7 @@ SDL_AudioStreamGet(SDL_AudioStream *stream, Uint32 len, void *buf, const Uint32 
         return SDL_SetError("Can't request partial sample frames");
     }
 
-    return SDL_ReadFromDataQueue(stream->queue, buf, buflen);
+    return (int) SDL_ReadFromDataQueue(stream->queue, buf, buflen);
 }
 
 /* number of converted/resampled bytes available */
