@@ -150,7 +150,7 @@ static const char* EVDEV_consoles[] = {
 };
 
 static int SDL_EVDEV_is_console(int fd) {
-    int type;
+    char type;
     
     return isatty(fd) && ioctl(fd, KDGKBTYPE, &type) == 0 &&
         (type == KB_101 || type == KB_84);
