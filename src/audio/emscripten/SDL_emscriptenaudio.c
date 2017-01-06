@@ -73,6 +73,7 @@ HandleAudioProcess(_THIS)
             if (SDL_AudioStreamPut(this->stream, this->fake_stream, stream_len) == -1) {
                 SDL_AudioStreamClear(this->stream);
                 SDL_AtomicSet(&this->enabled, 0);
+                break;
             }
         }
 
