@@ -45,29 +45,46 @@
 static void nacl_audio_callback(void* samples, uint32_t buffer_size, PP_TimeDelta latency, void* data);
 
 /* FIXME: Make use of latency if needed */
-static void nacl_audio_callback(void* samples, uint32_t buffer_size, PP_TimeDelta latency, void* data) {
+static void nacl_audio_callback(void* stream, uint32_t buffer_size, PP_TimeDelta latency, void* data) {
+    const int len = (int) buffer_size;
     SDL_AudioDevice* _this = (SDL_AudioDevice*) data;
+    SDL_AudioCallback callback = _this->spec.callback;
     
     SDL_LockMutex(private->mutex);  /* !!! FIXME: is this mutex necessary? */
 
-    if (SDL_AtomicGet(&_this->enabled) && !SDL_AtomicGet(&_this->paused)) {
-        if (_this->convert.needed) {
-            SDL_LockMutex(_this->mixer_lock);
-            (*_this->spec.callback) (_this->spec.userdata,
-                                     (Uint8 *) _this->convert.buf,
-                                     _this->convert.len);
-            SDL_UnlockMutex(_this->mixer_lock);
-            SDL_ConvertAudio(&_this->convert);
-            SDL_memcpy(samples, _this->convert.buf, _this->convert.len_cvt);
-        } else {
-            SDL_LockMutex(_this->mixer_lock);
-            (*_this->spec.callback) (_this->spec.userdata, (Uint8 *) samples, buffer_size);
-            SDL_UnlockMutex(_this->mixer_lock);
+    /* Only do something if audio is enabled */
+    if (!SDL_AtomicGet(&_this->enabled) || SDL_AtomicGet(&_this->paused)) {
+        if (_this->stream) {
+            SDL_AudioStreamClear(_this->stream);
         }
-    } else {
-        SDL_memset(samples, _this->spec.silence, buffer_size);
+        SDL_memset(stream, _this->spec.silence, len);
+        return;
     }
-    
+
+    SDL_assert(_this->spec.size == len);
+
+    if (_this->stream == NULL) {  /* no conversion necessary. */
+        SDL_LockMutex(_this->mixer_lock);
+        callback(_this->spec.userdata, stream, len);
+        SDL_UnlockMutex(_this->mixer_lock);
+    } else {  /* streaming/converting */
+        const int stream_len = _this->callbackspec.size;
+        while (SDL_AudioStreamAvailable(_this->stream) < len) {
+            callback(_this->spec.userdata, _this->fake_stream, stream_len);
+            if (SDL_AudioStreamPut(_this->stream, _this->fake_stream, stream_len) == -1) {
+                SDL_AudioStreamClear(_this->stream);
+                SDL_AtomicSet(&_this->enabled, 0);
+                break;
+            }
+        }
+
+        const int got = SDL_AudioStreamGet(_this->stream, len, stream, len);
+        SDL_assert((got < 0) || (got == len));
+        if (got != len) {
+            SDL_memset(stream, _this->spec.silence, len);
+        }
+    }
+
     SDL_UnlockMutex(private->mutex);
 }
 
