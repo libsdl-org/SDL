@@ -63,7 +63,7 @@ FillSound(void *device, void *stream, size_t len,
 
     if (audio->stream == NULL) {  /* no conversion necessary. */
         SDL_LockMutex(audio->mixer_lock);
-        callback(audio->spec.userdata, stream, len);
+        callback(audio->spec.userdata, (Uint8 *) stream, len);
         SDL_UnlockMutex(audio->mixer_lock);
     } else {  /* streaming/converting */
         const int stream_len = audio->callbackspec.size;
