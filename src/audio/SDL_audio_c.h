@@ -18,6 +18,10 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
+#ifndef SDL_audio_c_h_
+#define SDL_audio_c_h_
+
 #include "../SDL_internal.h"
 
 #ifndef DEBUG_CONVERT
@@ -93,5 +97,7 @@ int SDL_AudioStreamAvailable(SDL_AudioStream *stream);
 
 /* dispose of a stream */
 void SDL_FreeAudioStream(SDL_AudioStream *stream);
+
+#endif
 
 /* vi: set ts=4 sw=4 expandtab: */

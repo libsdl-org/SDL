@@ -26,6 +26,7 @@
 #include "SDL_mutex.h"
 #include "SDL_thread.h"
 #include "../SDL_dataqueue.h"
+#include "./SDL_audio_c.h"
 
 /* !!! FIXME: These are wordy and unlocalized... */
 #define DEFAULT_OUTPUT_DEVNAME "System audio output device"
@@ -34,8 +35,6 @@
 /* The SDL audio driver */
 typedef struct SDL_AudioDevice SDL_AudioDevice;
 #define _THIS   SDL_AudioDevice *_this
-
-typedef struct SDL_AudioStream SDL_AudioStream;
 
 /* Audio targets should call this as devices are added to the system (such as
    a USB headset being plugged in), and should also be called for
