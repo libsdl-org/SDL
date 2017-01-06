@@ -26,6 +26,7 @@
 #include "SDL_audio_c.h"
 
 #include "SDL_assert.h"
+#include "../SDL_dataqueue.h"
 
 
 /* Effectively mix right and left channels into a single channel */
@@ -588,6 +589,281 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
 
     cvt->needed = (cvt->filter_index != 0);
     return (cvt->needed);
+}
+
+
+struct SDL_AudioStream
+{
+    SDL_AudioCVT cvt_before_resampling;
+    SDL_AudioCVT cvt_after_resampling;
+    SDL_DataQueue *queue;
+    Uint8 *work_buffer;
+    int work_buffer_len;
+    Uint8 *resample_buffer;
+    int resample_buffer_len;
+    int src_sample_frame_size;
+    SDL_AudioFormat src_format;
+    Uint8 src_channels;
+    int src_rate;
+    int dst_sample_frame_size;
+    SDL_AudioFormat dst_format;
+    Uint8 dst_channels;
+    int dst_rate;
+    double rate_incr;
+    Uint8 pre_resample_channels;
+    SDL_bool resampler_seeded;
+    float resampler_state[8];
+    int packetlen;
+};
+
+SDL_AudioStream *SDL_NewAudioStream(const SDL_AudioFormat src_format,
+                                    const Uint8 src_channels,
+                                    const int src_rate,
+                                    const SDL_AudioFormat dst_format,
+                                    const Uint8 dst_channels,
+                                    const int dst_rate)
+{
+    const int packetlen = 4096;  /* !!! FIXME: good enough for now. */
+    Uint8 pre_resample_channels;
+    SDL_AudioStream *retval;
+
+    retval = (SDL_AudioStream *) SDL_calloc(1, sizeof (SDL_AudioStream));
+    if (!retval) {
+        return NULL;
+    }
+
+    /* If increasing channels, do it after resampling, since we'd just
+       do more work to resample duplicate channels. If we're decreasing, do
+       it first so we resample the interpolated data instead of interpolating
+       the resampled data (!!! FIXME: decide if that works in practice, though!). */
+    pre_resample_channels = SDL_min(src_channels, dst_channels);
+
+    retval->src_sample_frame_size = SDL_AUDIO_BITSIZE(src_format) * src_channels;
+    retval->src_format = src_format;
+    retval->src_channels = src_channels;
+    retval->src_rate = src_rate;
+    retval->dst_sample_frame_size = SDL_AUDIO_BITSIZE(dst_format) * dst_channels;
+    retval->dst_format = dst_format;
+    retval->dst_channels = dst_channels;
+    retval->dst_rate = dst_rate;
+    retval->pre_resample_channels = pre_resample_channels;
+    retval->packetlen = packetlen;
+    retval->rate_incr = ((double) dst_rate) / ((double) src_rate);
+
+    /* Not resampling? It's an easy conversion (and maybe not even that!). */
+    if (src_rate == dst_rate) {
+        retval->cvt_before_resampling.needed = SDL_FALSE;
+        retval->cvt_before_resampling.len_mult = 1;
+        if (SDL_BuildAudioCVT(&retval->cvt_after_resampling, src_format, src_channels, dst_rate, dst_format, dst_channels, dst_rate) == -1) {
+            SDL_free(retval);
+            return NULL;  /* SDL_BuildAudioCVT should have called SDL_SetError. */
+        }
+    } else {
+        /* Don't resample at first. Just get us to Float32 format. */
+        /* !!! FIXME: convert to int32 on devices without hardware float. */
+        if (SDL_BuildAudioCVT(&retval->cvt_before_resampling, src_format, src_channels, src_rate, AUDIO_F32SYS, pre_resample_channels, src_rate) == -1) {
+            SDL_free(retval);
+            return NULL;  /* SDL_BuildAudioCVT should have called SDL_SetError. */
+        }
+
+        /* Convert us to the final format after resampling. */
+        if (SDL_BuildAudioCVT(&retval->cvt_after_resampling, AUDIO_F32SYS, pre_resample_channels, dst_rate, dst_format, dst_channels, dst_rate) == -1) {
+            SDL_free(retval);
+            return NULL;  /* SDL_BuildAudioCVT should have called SDL_SetError. */
+        }
+    }
+
+    retval->queue = SDL_NewDataQueue(packetlen, packetlen * 2);
+    if (!retval->queue) {
+        SDL_free(retval);
+        return NULL;  /* SDL_NewDataQueue should have called SDL_SetError. */
+    }
+
+    return retval;
+}
+
+
+static int
+ResampleAudioStream(SDL_AudioStream *stream, const float *inbuf, const int inbuflen, float *outbuf, const int outbuflen)
+{
+    /* !!! FIXME: this resampler sucks, but not much worse than our usual resampler.  :)  */  /* ... :( */
+    const int chans = (int) stream->pre_resample_channels;
+    const int framelen = chans * sizeof (float);
+    const int total = (inbuflen / framelen);
+    const int finalpos = total - chans;
+    const double src_incr = 1.0 / stream->rate_incr;
+    double idx = 0.0;
+    float *dst = outbuf;
+    float last_sample[SDL_arraysize(stream->resampler_state)];
+    int consumed = 0;
+    int i;
+
+    SDL_assert(chans <= SDL_arraysize(last_sample));
+    SDL_assert((inbuflen % framelen) == 0);
+
+    if (!stream->resampler_seeded) {
+        for (i = 0; i < chans; i++) {
+            stream->resampler_state[i] = inbuf[i];
+        }
+        stream->resampler_seeded = SDL_TRUE;
+    }
+
+    for (i = 0; i < chans; i++) {
+        last_sample[i] = stream->resampler_state[i];
+    }
+
+    while (consumed < total) {
+        const int pos = ((int) idx) * chans;
+        const float *src = &inbuf[(pos >= finalpos) ? finalpos : pos];
+        SDL_assert(dst < (outbuf + (outbuflen / framelen)));
+        for (i = 0; i < chans; i++) {
+            const float val = *(src++);
+            *(dst++) = (val + last_sample[i]) * 0.5f;
+            last_sample[i] = val;
+        }
+        consumed = pos + chans;
+        idx += src_incr;
+    }
+
+    for (i = 0; i < chans; i++) {
+        stream->resampler_state[i] = last_sample[i];
+    }
+
+    return (dst - outbuf) * sizeof (float);
+}
+
+static Uint8 *
+EnsureBufferSize(Uint8 **buf, int *len, const int newlen)
+{
+    if (*len < newlen) {
+        void *ptr = SDL_realloc(*buf, newlen);
+        if (!ptr) {
+            SDL_OutOfMemory();
+            return NULL;
+        }
+        *buf = (Uint8 *) ptr;
+        *len = newlen;
+    }
+    return *buf;
+}
+
+int
+SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, const Uint32 _buflen)
+{
+    int buflen = (int) _buflen;
+
+    if (!stream) {
+        return SDL_InvalidParamError("stream");
+    } else if (!buf) {
+        return SDL_InvalidParamError("buf");
+    } else if (buflen == 0) {
+        return 0;  /* nothing to do. */
+    } else if ((buflen % stream->src_sample_frame_size) != 0) {
+        return SDL_SetError("Can't add partial sample frames");
+    }
+
+    if (stream->cvt_before_resampling.needed) {
+        const int workbuflen = buflen * stream->cvt_before_resampling.len_mult;  /* will be "* 1" if not needed */
+        Uint8 *workbuf = EnsureBufferSize(&stream->work_buffer, &stream->work_buffer_len, workbuflen);
+        if (workbuf == NULL) {
+            return -1;  /* probably out of memory. */
+        }
+        SDL_memcpy(workbuf, buf, buflen);
+        stream->cvt_before_resampling.buf = workbuf;
+        stream->cvt_before_resampling.len = buflen;
+        if (SDL_ConvertAudio(&stream->cvt_before_resampling) == -1) {
+            return -1;   /* uhoh! */
+        }
+        buf = workbuf;
+        buflen = stream->cvt_before_resampling.len_cvt;
+    }
+
+    if (stream->dst_rate != stream->src_rate) {
+        const int workbuflen = buflen * ((int) SDL_ceil(stream->rate_incr));
+        float *workbuf = (float *) EnsureBufferSize(&stream->resample_buffer, &stream->resample_buffer_len, workbuflen);
+        if (workbuf == NULL) {
+            return -1;  /* probably out of memory. */
+        }
+        buflen = ResampleAudioStream(stream, (float *) buf, buflen, workbuf, workbuflen);
+        buf = workbuf;
+    }
+
+    if (stream->cvt_after_resampling.needed) {
+        const int workbuflen = buflen * stream->cvt_before_resampling.len_mult;  /* will be "* 1" if not needed */
+        Uint8 *workbuf;
+
+        if (buf == stream->resample_buffer) {
+            workbuf = EnsureBufferSize(&stream->resample_buffer, &stream->resample_buffer_len, workbuflen);
+        } else {
+            const int inplace = (buf == stream->work_buffer);
+            workbuf = EnsureBufferSize(&stream->work_buffer, &stream->work_buffer_len, workbuflen);
+            if (workbuf && !inplace) {
+                SDL_memcpy(workbuf, buf, buflen);
+            }
+        }
+
+        if (workbuf == NULL) {
+            return -1;  /* probably out of memory. */
+        }
+
+        stream->cvt_after_resampling.buf = workbuf;
+        stream->cvt_after_resampling.len = buflen;
+        if (SDL_ConvertAudio(&stream->cvt_after_resampling) == -1) {
+            return -1;   /* uhoh! */
+        }
+        buf = workbuf;
+        buflen = stream->cvt_after_resampling.len_cvt;
+    }
+
+    return SDL_WriteToDataQueue(stream->queue, buf, buflen);
+}
+
+void
+SDL_AudioStreamClear(SDL_AudioStream *stream)
+{
+    if (!stream) {
+        SDL_InvalidParamError("stream");
+    } else {
+        SDL_ClearDataQueue(stream->queue, stream->packetlen * 2);
+        stream->resampler_seeded = SDL_FALSE;
+    }
+}
+
+
+/* get converted/resampled data from the stream */
+int
+SDL_AudioStreamGet(SDL_AudioStream *stream, Uint32 len, void *buf, const Uint32 buflen)
+{
+    if (!stream) {
+        return SDL_InvalidParamError("stream");
+    } else if (!buf) {
+        return SDL_InvalidParamError("buf");
+    } else if (len == 0) {
+        return 0;  /* nothing to do. */
+    } else if ((len % stream->dst_sample_frame_size) != 0) {
+        return SDL_SetError("Can't request partial sample frames");
+    }
+
+    return SDL_ReadFromDataQueue(stream->queue, buf, buflen);
+}
+
+/* number of converted/resampled bytes available */
+int
+SDL_AudioStreamAvailable(SDL_AudioStream *stream)
+{
+    return stream ? (int) SDL_CountDataQueue(stream->queue) : 0;
+}
+
+/* dispose of a stream */
+void
+SDL_FreeAudioStream(SDL_AudioStream *stream)
+{
+    if (stream) {
+        SDL_FreeDataQueue(stream->queue);
+        SDL_free(stream->work_buffer);
+        SDL_free(stream->resample_buffer);
+        SDL_free(stream);
+    }
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

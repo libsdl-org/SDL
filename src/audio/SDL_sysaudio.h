@@ -35,6 +35,8 @@
 typedef struct SDL_AudioDevice SDL_AudioDevice;
 #define _THIS   SDL_AudioDevice *_this
 
+typedef struct SDL_AudioStream SDL_AudioStream;
+
 /* Audio targets should call this as devices are added to the system (such as
    a USB headset being plugged in), and should also be called for
    for every device found during DetectDevices(). */
@@ -123,15 +125,6 @@ typedef struct SDL_AudioDriver
 } SDL_AudioDriver;
 
 
-/* Streamer */
-typedef struct
-{
-    Uint8 *buffer;
-    int max_len;                /* the maximum length in bytes */
-    int read_pos, write_pos;    /* the position of the write and read heads in bytes */
-} SDL_AudioStreamer;
-
-
 /* Define the SDL audio driver structure */
 struct SDL_AudioDevice
 {
@@ -139,15 +132,14 @@ struct SDL_AudioDevice
     /* Data common to all devices */
     SDL_AudioDeviceID id;
 
-    /* The current audio specification (shared with audio thread) */
+    /* The device's current audio specification */
     SDL_AudioSpec spec;
 
-    /* An audio conversion block for audio format emulation */
-    SDL_AudioCVT convert;
+    /* The callback's expected audio specification (converted vs device's spec). */
+    SDL_AudioSpec callbackspec;
 
-    /* The streamer, if sample rate conversion necessitates it */
-    int use_streamer;
-    SDL_AudioStreamer streamer;
+    /* Stream that converts and resamples. NULL if not needed. */
+    SDL_AudioStream *stream;
 
     /* Current state flags */
     SDL_atomic_t shutdown; /* true if we are signaling the play thread to end. */
@@ -157,6 +149,9 @@ struct SDL_AudioDevice
 
     /* Fake audio buffer for when the audio hardware is busy */
     Uint8 *fake_stream;
+
+    /* Size, in bytes, of fake_stream. */
+    Uint32 fake_stream_len;
 
     /* A mutex for locking the mixing buffers */
     SDL_mutex *mixer_lock;
