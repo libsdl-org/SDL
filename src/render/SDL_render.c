@@ -1951,11 +1951,9 @@ SDL_DestroyRenderer(SDL_Renderer * renderer)
     /* Free existing textures for this renderer */
     SDL_SetRenderTarget(renderer, NULL);
 
-    for (texture = renderer->textures; texture; texture = nexttexture) {
-        nexttexture = texture->next;
-        SDL_DestroyTexture(texture);
+    while (renderer->textures) {
+        SDL_DestroyTexture(renderer->textures);
     }
-    renderer->textures = NULL;
 
     if (renderer->window) {
         SDL_SetWindowData(renderer->window, SDL_WINDOWRENDERDATA, NULL);
