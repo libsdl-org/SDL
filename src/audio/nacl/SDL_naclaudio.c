@@ -78,7 +78,7 @@ static void nacl_audio_callback(void* stream, uint32_t buffer_size, PP_TimeDelta
             }
         }
 
-        const int got = SDL_AudioStreamGet(_this->stream, len, stream, len);
+        const int got = SDL_AudioStreamGet(_this->stream, stream, len);
         SDL_assert((got < 0) || (got == len));
         if (got != len) {
             SDL_memset(stream, _this->spec.silence, len);

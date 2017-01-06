@@ -87,7 +87,7 @@ SDL_AudioStream *SDL_NewAudioStream(const SDL_AudioFormat src_format,
 int SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, const Uint32 len);
 
 /* get converted/resampled data from the stream */
-int SDL_AudioStreamGet(SDL_AudioStream *stream, Uint32 len, void *buf, const Uint32 buflen);
+int SDL_AudioStreamGet(SDL_AudioStream *stream, void *buf, const Uint32 len);
 
 /* clear any pending data in the stream without converting it. */
 void SDL_AudioStreamClear(SDL_AudioStream *stream);
