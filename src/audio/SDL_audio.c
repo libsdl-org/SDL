@@ -1243,6 +1243,21 @@ open_audio_device(const char *devname, int iscapture,
         device->spec.userdata = device;
     }
 
+    /* !!! FIXME: rename this from fake_stream */
+    /* Allocate a scratch audio buffer */
+    device->fake_stream_len = build_stream ? device->callbackspec.size : 0;
+    if (device->spec.size > device->fake_stream_len) {
+        device->fake_stream_len = device->spec.size;
+    }
+    SDL_assert(device->fake_stream_len > 0);
+
+    device->fake_stream = (Uint8 *) SDL_malloc(device->fake_stream_len);
+    if (device->fake_stream == NULL) {
+        close_audio_device(device);
+        SDL_OutOfMemory();
+        return 0;
+    }
+
     open_devices[id] = device;  /* add it to our list of open devices. */
 
     /* Start the audio thread if necessary */
@@ -1252,20 +1267,6 @@ open_audio_device(const char *devname, int iscapture,
         /* buffer queueing callback only needs a few bytes, so make the stack tiny. */
         const size_t stacksize = is_internal_thread ? 64 * 1024 : 0;
         char threadname[64];
-
-        /* Allocate a fake audio buffer; only used by our internal threads. */
-        device->fake_stream_len = build_stream ? device->callbackspec.size : 0;
-        if (device->spec.size > device->fake_stream_len) {
-            device->fake_stream_len = device->spec.size;
-        }
-        SDL_assert(device->fake_stream_len > 0);
-
-        device->fake_stream = (Uint8 *) SDL_malloc(device->fake_stream_len);
-        if (device->fake_stream == NULL) {
-            close_audio_device(device);
-            SDL_OutOfMemory();
-            return 0;
-        }
 
         SDL_snprintf(threadname, sizeof (threadname), "SDLAudioDev%d", (int) device->id);
         device->thread = SDL_CreateThreadInternal(iscapture ? SDL_CaptureAudio : SDL_RunAudio, threadname, stacksize, device);
