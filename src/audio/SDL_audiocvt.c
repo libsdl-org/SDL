@@ -467,6 +467,9 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
         return SDL_InvalidParamError("cvt");
     }
 
+    /* Make sure we zero out the audio conversion before error checking */
+    SDL_zerop(cvt);
+
     /* there are no unsigned types over 16 bits, so catch this up front. */
     if ((SDL_AUDIO_BITSIZE(src_fmt) > 16) && (!SDL_AUDIO_ISSIGNED(src_fmt))) {
         return SDL_SetError("Invalid source format");
@@ -488,7 +491,6 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
 #endif
 
     /* Start off with no conversion necessary */
-    SDL_zerop(cvt);
     cvt->src_format = src_fmt;
     cvt->dst_format = dst_fmt;
     cvt->needed = 0;
@@ -512,17 +514,22 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
        (script-generated) custom converters for every data type and
        it was a bloat on SDL compile times and final library size. */
 
-    /* see if we can skip float conversion entirely (just a byteswap needed). */
-    if ((src_rate == dst_rate) && (src_channels == dst_channels) &&
-        ((src_fmt != dst_fmt) &&
-         ((src_fmt & ~SDL_AUDIO_MASK_ENDIAN) == (dst_fmt & ~SDL_AUDIO_MASK_ENDIAN)))) {
-        cvt->filters[cvt->filter_index++] = SDL_Convert_Byteswap;
-        cvt->needed = 1;
-        return 1;
+    /* see if we can skip float conversion entirely. */
+    if (src_rate == dst_rate && src_channels == dst_channels) {
+        if (src_fmt == dst_fmt) {
+            return 0;
+        }
+
+        /* just a byteswap needed? */
+        if ((src_fmt & ~SDL_AUDIO_MASK_ENDIAN) == (dst_fmt & ~SDL_AUDIO_MASK_ENDIAN)) {
+            cvt->filters[cvt->filter_index++] = SDL_Convert_Byteswap;
+            cvt->needed = 1;
+            return 1;
+        }
     }
 
     /* Convert data types, if necessary. Updates (cvt). */
-    if (SDL_BuildAudioTypeCVTToFloat(cvt, src_fmt) == -1) {
+    if (SDL_BuildAudioTypeCVTToFloat(cvt, src_fmt) < 0) {
         return -1;              /* shouldn't happen, but just in case... */
     }
 
@@ -578,12 +585,12 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
     }
 
     /* Do rate conversion, if necessary. Updates (cvt). */
-    if (SDL_BuildAudioResampleCVT(cvt, dst_channels, src_rate, dst_rate) == -1) {
+    if (SDL_BuildAudioResampleCVT(cvt, dst_channels, src_rate, dst_rate) < 0) {
         return -1;              /* shouldn't happen, but just in case... */
     }
 
     /* Move to final data type. */
-    if (SDL_BuildAudioTypeCVTFromFloat(cvt, dst_fmt) == -1) {
+    if (SDL_BuildAudioTypeCVTFromFloat(cvt, dst_fmt) < 0) {
         return -1;              /* shouldn't happen, but just in case... */
     }
 
