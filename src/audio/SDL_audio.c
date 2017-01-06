@@ -568,16 +568,16 @@ SDL_RunAudio(void *devicep)
             stream = current_audio.impl.GetDeviceBuf(device);
         } else {
             /* if the device isn't enabled, we still write to the
-               fake_stream, so the app's callback will fire with
+               work_buffer, so the app's callback will fire with
                a regular frequency, in case they depend on that
                for timing or progress. They can use hotplug
                now to know if the device failed.
-               Streaming playback uses fake_stream as a work buffer, too. */
+               Streaming playback uses work_buffer, too. */
             stream = NULL;
         }
 
         if (stream == NULL) {
-            stream = device->fake_stream;
+            stream = device->work_buffer;
         }
 
         if ( SDL_AtomicGet(&device->enabled) ) {
@@ -614,7 +614,7 @@ SDL_RunAudio(void *devicep)
                     current_audio.impl.WaitDevice(device);
                 }
             }
-        } else if (stream == device->fake_stream) {
+        } else if (stream == device->work_buffer) {
             /* nothing to do; pause like we queued a buffer to play. */
             SDL_Delay(delay);
         } else {  /* writing directly to the device. */
@@ -670,8 +670,8 @@ SDL_CaptureAudio(void *devicep)
         /* Fill the current buffer with sound */
         still_need = stream_len;
 
-        /* just use the "fake" stream to hold data read from the device. */
-        stream = device->fake_stream;
+        /* Use the work_buffer to hold data read from the device. */
+        stream = device->work_buffer;
         SDL_assert(stream != NULL);
 
         ptr = stream;
@@ -702,16 +702,16 @@ SDL_CaptureAudio(void *devicep)
             SDL_AudioStreamPut(device->stream, stream, stream_len);
 
             while (SDL_AudioStreamAvailable(device->stream) >= ((int) device->callbackspec.size)) {
-                const int got = SDL_AudioStreamGet(device->stream, device->fake_stream, device->callbackspec.size);
+                const int got = SDL_AudioStreamGet(device->stream, device->work_buffer, device->callbackspec.size);
                 SDL_assert((got < 0) || (got == device->callbackspec.size));
                 if (got != device->callbackspec.size) {
-                    SDL_memset(device->fake_stream, device->spec.silence, device->callbackspec.size);
+                    SDL_memset(device->work_buffer, device->spec.silence, device->callbackspec.size);
                 }
 
                 /* !!! FIXME: this should be LockDevice. */
                 SDL_LockMutex(device->mixer_lock);
                 if (!SDL_AtomicGet(&device->paused)) {
-                    callback(udata, device->fake_stream, device->callbackspec.size);
+                    callback(udata, device->work_buffer, device->callbackspec.size);
                 }
                 SDL_UnlockMutex(device->mixer_lock);
             }
@@ -958,7 +958,7 @@ close_audio_device(SDL_AudioDevice * device)
         SDL_DestroyMutex(device->mixer_lock);
     }
 
-    SDL_free(device->fake_stream);
+    SDL_free(device->work_buffer);
     SDL_FreeAudioStream(device->stream);
 
     if (device->hidden != NULL) {
@@ -1243,16 +1243,15 @@ open_audio_device(const char *devname, int iscapture,
         device->spec.userdata = device;
     }
 
-    /* !!! FIXME: rename this from fake_stream */
     /* Allocate a scratch audio buffer */
-    device->fake_stream_len = build_stream ? device->callbackspec.size : 0;
-    if (device->spec.size > device->fake_stream_len) {
-        device->fake_stream_len = device->spec.size;
+    device->work_buffer_len = build_stream ? device->callbackspec.size : 0;
+    if (device->spec.size > device->work_buffer_len) {
+        device->work_buffer_len = device->spec.size;
     }
-    SDL_assert(device->fake_stream_len > 0);
+    SDL_assert(device->work_buffer_len > 0);
 
-    device->fake_stream = (Uint8 *) SDL_malloc(device->fake_stream_len);
-    if (device->fake_stream == NULL) {
+    device->work_buffer = (Uint8 *) SDL_malloc(device->work_buffer_len);
+    if (device->work_buffer == NULL) {
         close_audio_device(device);
         SDL_OutOfMemory();
         return 0;

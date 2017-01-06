@@ -65,26 +65,26 @@ HandleAudioProcess(_THIS)
 
     if (this->stream == NULL) {  /* no conversion necessary. */
         SDL_assert(this->spec.size == stream_len);
-        callback(this->spec.userdata, this->fake_stream, stream_len);
+        callback(this->spec.userdata, this->work_buffer, stream_len);
     } else {  /* streaming/converting */
         int got;
         while (SDL_AudioStreamAvailable(this->stream) < ((int) this->spec.size)) {
-            callback(this->spec.userdata, this->fake_stream, stream_len);
-            if (SDL_AudioStreamPut(this->stream, this->fake_stream, stream_len) == -1) {
+            callback(this->spec.userdata, this->work_buffer, stream_len);
+            if (SDL_AudioStreamPut(this->stream, this->work_buffer, stream_len) == -1) {
                 SDL_AudioStreamClear(this->stream);
                 SDL_AtomicSet(&this->enabled, 0);
                 break;
             }
         }
 
-        got = SDL_AudioStreamGet(this->stream, this->fake_stream, this->spec.size);
+        got = SDL_AudioStreamGet(this->stream, this->work_buffer, this->spec.size);
         SDL_assert((got < 0) || (got == this->spec.size));
         if (got != this->spec.size) {
-            SDL_memset(this->fake_stream, this->spec.silence, this->spec.size);
+            SDL_memset(this->work_buffer, this->spec.silence, this->spec.size);
         }
     }
 
-    FeedAudioDevice(this, this->fake_stream, this->spec.size);
+    FeedAudioDevice(this, this->work_buffer, this->spec.size);
 }
 
 static void
@@ -117,25 +117,25 @@ HandleCaptureProcess(_THIS)
                 }
             }
         }
-    }, this->fake_stream, (this->spec.size / sizeof (float)) / this->spec.channels);
+    }, this->work_buffer, (this->spec.size / sizeof (float)) / this->spec.channels);
 
     /* okay, we've got an interleaved float32 array in C now. */
 
     if (this->stream == NULL) {  /* no conversion necessary. */
         SDL_assert(this->spec.size == stream_len);
-        callback(this->spec.userdata, this->fake_stream, stream_len);
+        callback(this->spec.userdata, this->work_buffer, stream_len);
     } else {  /* streaming/converting */
-        if (SDL_AudioStreamPut(this->stream, this->fake_stream, this->spec.size) == -1) {
+        if (SDL_AudioStreamPut(this->stream, this->work_buffer, this->spec.size) == -1) {
             SDL_AtomicSet(&this->enabled, 0);
         }
 
         while (SDL_AudioStreamAvailable(this->stream) >= stream_len) {
-            const int got = SDL_AudioStreamGet(this->stream, this->fake_stream, stream_len);
+            const int got = SDL_AudioStreamGet(this->stream, this->work_buffer, stream_len);
             SDL_assert((got < 0) || (got == stream_len));
             if (got != stream_len) {
-                SDL_memset(this->fake_stream, this->callbackspec.silence, stream_len);
+                SDL_memset(this->work_buffer, this->callbackspec.silence, stream_len);
             }
-            callback(this->spec.userdata, this->fake_stream, stream_len);  /* Send it to the app. */
+            callback(this->spec.userdata, this->work_buffer, stream_len);  /* Send it to the app. */
         }
     }
 }

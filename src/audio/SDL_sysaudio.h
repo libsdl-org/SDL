@@ -146,11 +146,11 @@ struct SDL_AudioDevice
     SDL_atomic_t paused;
     SDL_bool iscapture;
 
-    /* Fake audio buffer for when the audio hardware is busy */
-    Uint8 *fake_stream;
+    /* Scratch buffer used in the bridge between SDL and the user callback. */
+    Uint8 *work_buffer;
 
-    /* Size, in bytes, of fake_stream. */
-    Uint32 fake_stream_len;
+    /* Size, in bytes, of work_buffer. */
+    Uint32 work_buffer_len;
 
     /* A mutex for locking the mixing buffers */
     SDL_mutex *mixer_lock;

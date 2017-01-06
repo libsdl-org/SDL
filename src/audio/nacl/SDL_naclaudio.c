@@ -70,8 +70,8 @@ static void nacl_audio_callback(void* stream, uint32_t buffer_size, PP_TimeDelta
     } else {  /* streaming/converting */
         const int stream_len = _this->callbackspec.size;
         while (SDL_AudioStreamAvailable(_this->stream) < len) {
-            callback(_this->spec.userdata, _this->fake_stream, stream_len);
-            if (SDL_AudioStreamPut(_this->stream, _this->fake_stream, stream_len) == -1) {
+            callback(_this->spec.userdata, _this->work_buffer, stream_len);
+            if (SDL_AudioStreamPut(_this->stream, _this->work_buffer, stream_len) == -1) {
                 SDL_AudioStreamClear(_this->stream);
                 SDL_AtomicSet(&_this->enabled, 0);
                 break;

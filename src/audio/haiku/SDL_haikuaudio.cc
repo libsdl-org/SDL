@@ -69,8 +69,8 @@ FillSound(void *device, void *stream, size_t len,
         const int stream_len = audio->callbackspec.size;
         const int ilen = (int) len;
         while (SDL_AudioStreamAvailable(audio->stream) < ilen) {
-            callback(audio->spec.userdata, audio->fake_stream, stream_len);
-            if (SDL_AudioStreamPut(audio->stream, audio->fake_stream, stream_len) == -1) {
+            callback(audio->spec.userdata, audio->work_buffer, stream_len);
+            if (SDL_AudioStreamPut(audio->stream, audio->work_buffer, stream_len) == -1) {
                 SDL_AudioStreamClear(audio->stream);
                 SDL_AtomicSet(&audio->enabled, 0);
                 break;
