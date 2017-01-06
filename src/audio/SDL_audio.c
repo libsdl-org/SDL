@@ -565,6 +565,7 @@ SDL_RunAudio(void *devicep)
     while (!SDL_AtomicGet(&device->shutdown)) {
         /* Fill the current buffer with sound */
         if (!device->stream && SDL_AtomicGet(&device->enabled)) {
+            SDL_assert(device->spec.size == device->callbackspec.size);
             stream = current_audio.impl.GetDeviceBuf(device);
         } else {
             /* if the device isn't enabled, we still write to the
