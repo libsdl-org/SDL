@@ -36,6 +36,7 @@ extern "C"
 #include "../SDL_audio_c.h"
 #include "../SDL_sysaudio.h"
 #include "SDL_haikuaudio.h"
+#include "SDL_assert.h"
 
 }
 
@@ -47,26 +48,39 @@ FillSound(void *device, void *stream, size_t len,
           const media_raw_audio_format & format)
 {
     SDL_AudioDevice *audio = (SDL_AudioDevice *) device;
+    SDL_AudioCallback callback = audio->spec.callback;
 
-    /* Only do soemthing if audio is enabled */
-    if (!SDL_AtomicGet(&audio->enabled)) {
+    /* Only do something if audio is enabled */
+    if (!SDL_AtomicGet(&audio->enabled) || SDL_AtomicGet(&audio->paused)) {
+        if (audio->stream) {
+            SDL_AudioStreamClear(audio->stream);
+        }
+        SDL_memset(stream, audio->spec.silence, len);
         return;
     }
 
-    if (!SDL_AtomicGet(&audio->paused)) {
-        if (audio->convert.needed) {
-            SDL_LockMutex(audio->mixer_lock);
-            (*audio->spec.callback) (audio->spec.userdata,
-                                     (Uint8 *) audio->convert.buf,
-                                     audio->convert.len);
-            SDL_UnlockMutex(audio->mixer_lock);
-            SDL_ConvertAudio(&audio->convert);
-            SDL_memcpy(stream, audio->convert.buf, audio->convert.len_cvt);
-        } else {
-            SDL_LockMutex(audio->mixer_lock);
-            (*audio->spec.callback) (audio->spec.userdata,
-                                     (Uint8 *) stream, len);
-            SDL_UnlockMutex(audio->mixer_lock);
+    SDL_assert(audio->spec.size == len);
+
+    if (audio->stream == NULL) {  /* no conversion necessary. */
+        SDL_LockMutex(audio->mixer_lock);
+        callback(audio->spec.userdata, stream, len);
+        SDL_UnlockMutex(audio->mixer_lock);
+    } else {  /* streaming/converting */
+        const int stream_len = audio->callbackspec.size;
+        const int ilen = (int) len;
+        while (SDL_AudioStreamAvailable(audio->stream) < ilen) {
+            callback(audio->spec.userdata, audio->fake_stream, stream_len);
+            if (SDL_AudioStreamPut(audio->stream, audio->fake_stream, stream_len) == -1) {
+                SDL_AudioStreamClear(audio->stream);
+                SDL_AtomicSet(&audio->enabled, 0);
+                break;
+            }
+        }
+
+        const int got = SDL_AudioStreamGet(audio->stream, ilen, stream, ilen);
+        SDL_assert((got < 0) || (got == ilen));
+        if (got != ilen) {
+            SDL_memset(stream, audio->spec.silence, len);
         }
     }
 }
