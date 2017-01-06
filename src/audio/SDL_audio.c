@@ -598,7 +598,7 @@ SDL_RunAudio(void *devicep)
             /* if this fails...oh well. We'll play silence here. */
             SDL_AudioStreamPut(device->stream, stream, stream_len);
 
-            while (SDL_AudioStreamAvailable(device->stream) >= device->spec.size) {
+            while (SDL_AudioStreamAvailable(device->stream) >= ((int) device->spec.size)) {
                 stream = SDL_AtomicGet(&device->enabled) ? current_audio.impl.GetDeviceBuf(device) : NULL;
                 if (stream == NULL) {
                     SDL_AudioStreamClear(device->stream);
@@ -701,7 +701,7 @@ SDL_CaptureAudio(void *devicep)
             /* if this fails...oh well. */
             SDL_AudioStreamPut(device->stream, stream, stream_len);
 
-            while (SDL_AudioStreamAvailable(device->stream) >= device->callbackspec.size) {
+            while (SDL_AudioStreamAvailable(device->stream) >= ((int) device->callbackspec.size)) {
                 const int got = SDL_AudioStreamGet(device->stream, device->callbackspec.size, device->fake_stream, device->fake_stream_len);
                 SDL_assert((got < 0) || (got == device->callbackspec.size));
                 if (got != device->callbackspec.size) {
