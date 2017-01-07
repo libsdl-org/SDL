@@ -83,6 +83,7 @@
 #cmakedefine HAVE_DBUS_DBUS_H 1
 #cmakedefine HAVE_IBUS_IBUS_H 1
 #cmakedefine HAVE_FCITX_FRONTEND_H 1
+#cmakedefine HAVE_LIBSAMPLERATE_H 1
 
 /* C library functions */
 #cmakedefine HAVE_MALLOC 1
@@ -358,6 +359,8 @@
 #cmakedefine SDL_ASSEMBLY_ROUTINES @SDL_ASSEMBLY_ROUTINES@
 #cmakedefine SDL_ALTIVEC_BLITTERS @SDL_ALTIVEC_BLITTERS@
 
+/* Enable dynamic libsamplerate support */
+#cmakedefine SDL_LIBSAMPLERATE_DYNAMIC @SDL_LIBSAMPLERATE_DYNAMIC@
 
 /* Platform specific definitions */
 #if !defined(__WIN32__)

@@ -316,6 +316,29 @@ macro(CheckFusionSound)
 endmacro()
 
 # Requires:
+# - LIBSAMPLERATE
+# Optional:
+# - LIBSAMPLERATE_SHARED opt
+# - HAVE_DLOPEN opt
+macro(CheckLibSampleRate)
+  if(LIBSAMPLERATE)
+    check_include_file(samplerate.h HAVE_LIBSAMPLERATE_H)
+    if(HAVE_LIBSAMPLERATE_H)
+      if(LIBSAMPLERATE_SHARED)
+        if(NOT HAVE_DLOPEN)
+          message_warn("You must have SDL_LoadObject() support for dynamic libsamplerate loading")
+        else()
+          FindLibraryAndSONAME("samplerate")
+          set(SDL_LIBSAMPLERATE_DYNAMIC "\"${SAMPLERATE_LIB_SONAME}\"")
+        endif()
+      else()
+        list(APPEND EXTRA_LDFLAGS -lsamplerate)
+      endif()
+    endif()
+  endif()
+endmacro()
+
+# Requires:
 # - n/a
 # Optional:
 # - X11_SHARED opt

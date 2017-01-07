@@ -29,7 +29,7 @@
 #include "SDL_assert.h"
 #include "../SDL_dataqueue.h"
 
-#ifdef HAVE_LIBSAMPLERATE
+#if HAVE_LIBSAMPLERATE_H
 #include "samplerate.h"
 #endif
 
@@ -633,7 +633,7 @@ struct SDL_AudioStream
     SDL_CleanupAudioStreamResamplerFunc cleanup_resampler_func;
 };
 
-#ifdef HAVE_LIBSAMPLERATE
+#ifdef HAVE_LIBSAMPLERATE_H
 
 typedef struct
 {
@@ -651,8 +651,8 @@ typedef struct
 static SDL_bool
 LoadLibSampleRate(SDL_AudioStreamResamplerState_SRC *state)
 {
-#ifdef LIBSAMPLERATE_DYNAMIC
-    state->SRC_lib = SDL_LoadObject(LIBSAMPLERATE_DYNAMIC);
+#ifdef SDL_LIBSAMPLERATE_DYNAMIC
+    state->SRC_lib = SDL_LoadObject(SDL_LIBSAMPLERATE_DYNAMIC);
     if (!state->SRC_lib) {
         return SDL_FALSE;
     }
@@ -676,7 +676,7 @@ SDL_ResampleAudioStream_SRC(SDL_AudioStream *stream, const float *inbuf, const i
     SRC_DATA data;
     int result;
 
-    data.data_in = inbuf;
+    data.data_in = (float *)inbuf; /* Older versions of libsamplerate had a non-const pointer, but didn't write to it */
     data.input_frames = inbuflen / ( sizeof(float) * stream->pre_resample_channels );
     data.input_frames_used = 0;
 
@@ -752,7 +752,7 @@ SetupLibSampleRateResampling(SDL_AudioStream *stream)
     return SDL_TRUE;
 }
 
-#endif /* HAVE_LIBSAMPLERATE */
+#endif /* HAVE_LIBSAMPLERATE_H */
 
 typedef struct
 {
@@ -873,7 +873,7 @@ SDL_AudioStream *SDL_NewAudioStream(const SDL_AudioFormat src_format,
             return NULL;  /* SDL_BuildAudioCVT should have called SDL_SetError. */
         }
 
-#ifdef HAVE_LIBSAMPLERATE
+#ifdef HAVE_LIBSAMPLERATE_H
         SetupLibSampleRateResampling(retval);
 #endif
 
