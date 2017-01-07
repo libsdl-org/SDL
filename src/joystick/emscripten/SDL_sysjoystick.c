@@ -331,7 +331,7 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
 
                 for(i = 0; i < item->naxes; i++) {
                     if(item->axis[i] != gamepadState.axis[i]) {
-                        // do we need to do conversion?
+                        /* do we need to do conversion? */
                         SDL_PrivateJoystickAxis(item->joystick, i,
                                                   (Sint16) (32767.*gamepadState.axis[i]));
                     }
