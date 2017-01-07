@@ -1,9 +1,13 @@
 #!/bin/bash
 
-SDKDIR="/emsdk_portable"
+if [ -z "$SDKDIR" ]; then
+    SDKDIR="/emsdk_portable"
+fi
+
 ENVSCRIPT="$SDKDIR/emsdk_env.sh"
 if [ ! -f "$ENVSCRIPT" ]; then
    echo "ERROR: This script expects the Emscripten SDK to be in '$SDKDIR'." 1>&2
+   echo "ERROR: Set the \$SDKDIR environment variable to override this." 1>&2
    exit 1
 fi
 
