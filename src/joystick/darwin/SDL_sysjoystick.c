@@ -609,8 +609,8 @@ SDL_SYS_JoystickDetect(void)
         }
     }
 
-	// run this after the checks above so we don't set device->removed and delete the device before
-	// SDL_SYS_JoystickUpdate can run to clean up the SDL_Joystick object that owns this device
+	/* run this after the checks above so we don't set device->removed and delete the device before
+	   SDL_SYS_JoystickUpdate can run to clean up the SDL_Joystick object that owns this device */
 	while (CFRunLoopRunInMode(SDL_JOYSTICK_RUNLOOP_MODE,0,TRUE) == kCFRunLoopRunHandledSource) {
 		/* no-op. Pending callbacks will fire in CFRunLoopRunInMode(). */
 	}

@@ -434,7 +434,6 @@ CreateCaptureBuffer(_THIS, const DWORD bufsize, WAVEFORMATEX *wfmt)
     LPDIRECTSOUNDCAPTURE capture = this->hidden->capture;
     LPDIRECTSOUNDCAPTUREBUFFER *capturebuf = &this->hidden->capturebuf;
     DSCBUFFERDESC format;
-//    DWORD junk, cursor;
     HRESULT result;
 
     SDL_zero(format);

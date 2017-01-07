@@ -741,9 +741,9 @@ X11_InitModes(_THIS)
         displaydata->visual = vinfo.visual;
         displaydata->depth = vinfo.depth;
 
-        // We use the displaydata screen index here so that this works
-        // for both the Xinerama case, where we get the overall DPI,
-        // and the regular X11 screen info case.
+        /* We use the displaydata screen index here so that this works
+           for both the Xinerama case, where we get the overall DPI,
+           and the regular X11 screen info case. */
         displaydata->hdpi = (float)DisplayWidth(data->display, displaydata->screen) * 25.4f /
             DisplayWidthMM(data->display, displaydata->screen);
         displaydata->vdpi = (float)DisplayHeight(data->display, displaydata->screen) * 25.4f /
