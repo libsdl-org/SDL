@@ -998,7 +998,9 @@ SDL_AudioStreamClear(SDL_AudioStream *stream)
         SDL_InvalidParamError("stream");
     } else {
         SDL_ClearDataQueue(stream->queue, stream->packetlen * 2);
-        stream->reset_resampler_func(stream);
+        if (stream->reset_resampler_func) {
+            stream->reset_resampler_func(stream);
+        }
     }
 }
 
