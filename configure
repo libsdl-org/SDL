@@ -18730,16 +18730,23 @@ else
 fi
 
 
-            if test x$enable_libsamplerate_shared = xyes; then
-                samplerate_lib=`find_lib "libsamplerate.so.*" "" | sed 's/.*\/\(.*\)/\1/; q'`
-                if test x$samplerate_lib != x; then
-                    echo "-- dynamic samplerate -> $samplerate_lib"
+            samplerate_lib=`find_lib "libsamplerate.so.*" "" | sed 's/.*\/\(.*\)/\1/; q'`
+
+            if test x$have_loadso != xyes && \
+               test x$enable_libsamplerate_shared = xyes; then
+                { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: You must have SDL_LoadObject() support for dynamic libsamplerate loading" >&5
+$as_echo "$as_me: WARNING: You must have SDL_LoadObject() support for dynamic libsamplerate loading" >&2;}
+            fi
+            if test x$have_loadso = xyes && \
+               test x$enable_libsamplerate_shared = xyes && test x$samplerate_lib != x; then
+                echo "-- dynamic libsamplerate -> $samplerate_lib"
 
 cat >>confdefs.h <<_ACEOF
 #define SDL_LIBSAMPLERATE_DYNAMIC "$samplerate_lib"
 _ACEOF
 
-                fi
+            else
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lsamplerate"
             fi
         fi
     fi
