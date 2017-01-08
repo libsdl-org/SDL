@@ -107,6 +107,72 @@ static const AudioBootStrap *const bootstrap[] = {
     NULL
 };
 
+
+#ifdef HAVE_LIBSAMPLERATE_H
+#ifdef SDL_LIBSAMPLERATE_DYNAMIC
+static void *SRC_lib = NULL;
+#endif
+SDL_bool SRC_available = SDL_FALSE;
+SRC_STATE* (*SRC_src_new)(int converter_type, int channels, int *error) = NULL;
+int (*SRC_src_process)(SRC_STATE *state, SRC_DATA *data) = NULL;
+int (*SRC_src_reset)(SRC_STATE *state) = NULL;
+SRC_STATE* (*SRC_src_delete)(SRC_STATE *state) = NULL;
+const char* (*SRC_src_strerror)(int error) = NULL;
+
+static SDL_bool
+LoadLibSampleRate(void)
+{
+    SRC_available = SDL_FALSE;
+
+    if (!SDL_GetHintBoolean("SDL_AUDIO_ALLOW_LIBRESAMPLE", SDL_TRUE)) {
+        return SDL_FALSE;
+    }
+
+#ifdef SDL_LIBSAMPLERATE_DYNAMIC
+    SDL_assert(SRC_lib == NULL);
+    SRC_lib = SDL_LoadObject(SDL_LIBSAMPLERATE_DYNAMIC);
+    if (!SRC_lib) {
+        return SDL_FALSE;
+    }
+#endif
+
+    SRC_src_new = (SRC_STATE* (*)(int converter_type, int channels, int *error))SDL_LoadFunction(state->SRC_lib, "src_new");
+    SRC_src_process = (int (*)(SRC_STATE *state, SRC_DATA *data))SDL_LoadFunction(state->SRC_lib, "src_process");
+    SRC_src_reset = (int(*)(SRC_STATE *state))SDL_LoadFunction(state->SRC_lib, "src_reset");
+    SRC_src_delete = (SRC_STATE* (*)(SRC_STATE *state))SDL_LoadFunction(state->SRC_lib, "src_delete");
+    SRC_src_strerror = (const char* (*)(int error))SDL_LoadFunction(state->SRC_lib, "src_strerror");
+
+    if (!SRC_src_new || !SRC_src_process || !SRC_src_reset || !SRC_src_delete || !SRC_src_strerror) {
+        #ifdef SDL_LIBSAMPLERATE_DYNAMIC
+        SDL_UnloadObject(SRC_lib);
+        SRC_lib = NULL;
+        #endif
+        return SDL_FALSE;
+    }
+
+    SRC_available = SDL_TRUE;
+    return SDL_TRUE;
+}
+
+static void
+UnloadLibSampleRate(void)
+{
+#ifdef SDL_LIBSAMPLERATE_DYNAMIC
+    if (SRC_lib != NULL) {
+        SDL_UnloadObject(SRC_lib);
+    }
+    SRC_lib = NULL;
+#endif
+
+    SRC_available = SDL_FALSE;
+    SRC_src_new = NULL;
+    SRC_src_process = NULL;
+    SRC_src_reset = NULL;
+    SRC_src_delete = NULL;
+    SRC_src_strerror = NULL;
+}
+#endif
+
 static SDL_AudioDevice *
 get_audio_device(SDL_AudioDeviceID id)
 {
@@ -828,6 +894,10 @@ SDL_AudioInit(const char *driver_name)
     /* Make sure we have a list of devices available at startup. */
     current_audio.impl.DetectDevices();
 
+#ifdef HAVE_LIBSAMPLERATE_H
+    LoadLibSampleRate();
+#endif
+
     return 0;
 }
 
@@ -1427,6 +1497,10 @@ SDL_AudioQuit(void)
 
     SDL_zero(current_audio);
     SDL_zero(open_devices);
+
+#ifdef HAVE_LIBSAMPLERATE_H
+    UnloadLibSampleRate();
+#endif
 }
 
 #define NUM_FORMATS 10
