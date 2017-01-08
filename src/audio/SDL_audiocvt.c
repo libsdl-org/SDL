@@ -29,11 +29,6 @@
 #include "SDL_assert.h"
 #include "../SDL_dataqueue.h"
 
-#if HAVE_LIBSAMPLERATE_H
-#include "samplerate.h"
-#endif
-
-
 /* Effectively mix right and left channels into a single channel */
 static void SDLCALL
 SDL_ConvertMono(SDL_AudioCVT * cvt, SDL_AudioFormat format)
