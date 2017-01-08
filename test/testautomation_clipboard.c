@@ -121,7 +121,7 @@ clipboard_testClipboardTextFunctions(void *arg)
     SDLTest_AssertCheck(
         charResult[0] == '\0',
         "Verify SDL_GetClipboardText returned string with length 0, got length %i",
-        SDL_strlen(charResult));
+        (int) SDL_strlen(charResult));
     intResult = SDL_SetClipboardText((const char *)text);
     SDLTest_AssertPass("Call to SDL_SetClipboardText succeeded");
     SDLTest_AssertCheck(

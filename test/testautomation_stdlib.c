@@ -25,13 +25,13 @@ stdlib_strlcpy(void *arg)
   expected = "foo";
   SDLTest_AssertPass("Call to SDL_strlcpy(\"foo\")");
   SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: %s, got: %s", expected, text);
-  SDLTest_AssertCheck(result == SDL_strlen(text), "Check result value, expected: %d, got: %d", SDL_strlen(text), result);
+  SDLTest_AssertCheck(result == SDL_strlen(text), "Check result value, expected: %d, got: %d", (int) SDL_strlen(text), (int) result);
 
   result = SDL_strlcpy(text, "foo", 2);
   expected = "f";
   SDLTest_AssertPass("Call to SDL_strlcpy(\"foo\") with buffer size 2");
   SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: %s, got: %s", expected, text);
-  SDLTest_AssertCheck(result == 3, "Check result value, expected: 3, got: %d", result);
+  SDLTest_AssertCheck(result == 3, "Check result value, expected: 3, got: %d", (int) result);
 
   return TEST_COMPLETED;
 }
@@ -51,7 +51,7 @@ stdlib_snprintf(void *arg)
   expected = "foo";
   SDLTest_AssertPass("Call to SDL_snprintf(\"%%s\", \"foo\")");
   SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: %s, got: %s", expected, text);
-  SDLTest_AssertCheck(result == SDL_strlen(text), "Check result value, expected: %d, got: %d", SDL_strlen(text), result);
+  SDLTest_AssertCheck(result == SDL_strlen(text), "Check result value, expected: %d, got: %d", (int) SDL_strlen(text), result);
 
   result = SDL_snprintf(text, 2, "%s", "foo");
   expected = "f";
@@ -66,49 +66,49 @@ stdlib_snprintf(void *arg)
   expected = "1.000000";
   SDLTest_AssertPass("Call to SDL_snprintf(\"%%f\", 1.0)");
   SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: %s, got: %s", expected, text);
-  SDLTest_AssertCheck(result == SDL_strlen(text), "Check result value, expected: %d, got: %d", SDL_strlen(text), result);
+  SDLTest_AssertCheck(result == SDL_strlen(text), "Check result value, expected: %d, got: %d", (int) SDL_strlen(text), result);
 
   result = SDL_snprintf(text, sizeof(text), "%.f", 1.0);
   expected = "1";
   SDLTest_AssertPass("Call to SDL_snprintf(\"%%.f\", 1.0)");
   SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: %s, got: %s", expected, text);
-  SDLTest_AssertCheck(result == SDL_strlen(text), "Check result value, expected: %d, got: %d", SDL_strlen(text), result);
+  SDLTest_AssertCheck(result == SDL_strlen(text), "Check result value, expected: %d, got: %d", (int) SDL_strlen(text), result);
 
   result = SDL_snprintf(text, sizeof(text), "%#.f", 1.0);
   expected = "1.";
   SDLTest_AssertPass("Call to SDL_snprintf(\"%%#.f\", 1.0)");
   SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: %s, got: %s", expected, text);
-  SDLTest_AssertCheck(result == SDL_strlen(text), "Check result value, expected: %d, got: %d", SDL_strlen(text), result);
+  SDLTest_AssertCheck(result == SDL_strlen(text), "Check result value, expected: %d, got: %d", (int) SDL_strlen(text), result);
 
   result = SDL_snprintf(text, sizeof(text), "%f", 1.0 + 1.0 / 3.0);
   expected = "1.333333";
   SDLTest_AssertPass("Call to SDL_snprintf(\"%%f\", 1.0 + 1.0 / 3.0)");
   SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: %s, got: %s", expected, text);
-  SDLTest_AssertCheck(result == SDL_strlen(text), "Check result value, expected: %d, got: %d", SDL_strlen(text), result);
+  SDLTest_AssertCheck(result == SDL_strlen(text), "Check result value, expected: %d, got: %d", (int) SDL_strlen(text), result);
 
   result = SDL_snprintf(text, sizeof(text), "%+f", 1.0 + 1.0 / 3.0);
   expected = "+1.333333";
   SDLTest_AssertPass("Call to SDL_snprintf(\"%%+f\", 1.0 + 1.0 / 3.0)");
   SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: %s, got: %s", expected, text);
-  SDLTest_AssertCheck(result == SDL_strlen(text), "Check result value, expected: %d, got: %d", SDL_strlen(text), result);
+  SDLTest_AssertCheck(result == SDL_strlen(text), "Check result value, expected: %d, got: %d", (int) SDL_strlen(text), result);
 
   result = SDL_snprintf(text, sizeof(text), "%.2f", 1.0 + 1.0 / 3.0);
   expected = "1.33";
   SDLTest_AssertPass("Call to SDL_snprintf(\"%%.2f\", 1.0 + 1.0 / 3.0)");
   SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: %s, got: %s", expected, text);
-  SDLTest_AssertCheck(result == SDL_strlen(text), "Check result value, expected: %d, got: %d", SDL_strlen(text), result);
+  SDLTest_AssertCheck(result == SDL_strlen(text), "Check result value, expected: %d, got: %d", (int) SDL_strlen(text), result);
 
   result = SDL_snprintf(text, sizeof(text), "%6.2f", 1.0 + 1.0 / 3.0);
   expected = "  1.33";
   SDLTest_AssertPass("Call to SDL_snprintf(\"%%6.2f\", 1.0 + 1.0 / 3.0)");
   SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: '%s', got: '%s'", expected, text);
-  SDLTest_AssertCheck(result == SDL_strlen(text), "Check result value, expected: %d, got: %d", SDL_strlen(text), result);
+  SDLTest_AssertCheck(result == SDL_strlen(text), "Check result value, expected: %d, got: %d", (int) SDL_strlen(text), result);
 
   result = SDL_snprintf(text, sizeof(text), "%06.2f", 1.0 + 1.0 / 3.0);
   expected = "001.33";
   SDLTest_AssertPass("Call to SDL_snprintf(\"%%06.2f\", 1.0 + 1.0 / 3.0)");
   SDLTest_AssertCheck(SDL_strcmp(text, expected) == 0, "Check text, expected: '%s', got: '%s'", expected, text);
-  SDLTest_AssertCheck(result == SDL_strlen(text), "Check result value, expected: %d, got: %d", SDL_strlen(text), result);
+  SDLTest_AssertCheck(result == SDL_strlen(text), "Check result value, expected: %d, got: %d", (int) SDL_strlen(text), result);
 
   result = SDL_snprintf(text, 5, "%06.2f", 1.0 + 1.0 / 3.0);
   expected = "001.";
@@ -146,7 +146,7 @@ stdlib_getsetenv(void *arg)
     text = SDL_getenv(name);
     SDLTest_AssertPass("Call to SDL_getenv('%s')", name);
     if (text != NULL) {
-      SDLTest_Log("Expected: NULL, Got: '%s' (%i)", text, SDL_strlen(text));
+      SDLTest_Log("Expected: NULL, Got: '%s' (%i)", text, (int) SDL_strlen(text));
     }
   } while (text != NULL);
    
