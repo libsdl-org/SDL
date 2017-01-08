@@ -20,7 +20,7 @@ libtool libasound2-dev libpulse-dev libaudio-dev libx11-dev libxext-dev \
 libxrandr-dev libxcursor-dev libxi-dev libxinerama-dev libxxf86vm-dev \
 libxss-dev libgl1-mesa-dev libesd0-dev libdbus-1-dev libudev-dev \
 libgles1-mesa-dev libgles2-mesa-dev libegl1-mesa-dev libibus-1.0-dev \
-fcitx-libs-dev
+fcitx-libs-dev libsamplerate0-dev
 
 Ubuntu 16.04 can also add "libwayland-dev libxkbcommon-dev wayland-protocols"
 to that command line for Wayland support.
@@ -31,6 +31,10 @@ line for Mir support.
 NOTES:
 - This includes all the audio targets except arts, because Ubuntu pulled the 
   artsc0-dev package, but in theory SDL still supports it.
+- libsamplerate0-dev lets SDL optionally link to libresamplerate at runtime
+  for higher-quality audio resampling. SDL will work without it if the library
+  is missing, so it's safe to build in support even if the end user doesn't
+  have this library installed.
 - DirectFB isn't included because the configure script (currently) fails to find
   it at all. You can do "sudo apt-get install libdirectfb-dev" and fix the 
   configure script to include DirectFB support. Send patches.  :)
