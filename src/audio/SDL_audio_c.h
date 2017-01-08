@@ -37,8 +37,8 @@
 /* Functions and variables exported from SDL_audio.c for SDL_sysaudio.c */
 
 #ifdef HAVE_LIBSAMPLERATE_H
+#include "samplerate.h"
 extern SDL_bool SRC_available;
-typedef struct SRC_STATE SRC_STATE;
 extern SRC_STATE* (*SRC_src_new)(int converter_type, int channels, int *error);
 extern int (*SRC_src_process)(SRC_STATE *state, SRC_DATA *data);
 extern int (*SRC_src_reset)(SRC_STATE *state);
