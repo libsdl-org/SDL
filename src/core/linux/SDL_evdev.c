@@ -52,17 +52,18 @@
 #include "../../events/SDL_events_c.h"
 #include "../../events/scancodes_linux.h" /* adds linux_scancode_table */
 
-/* This isn't defined in older Linux kernel headers */
+/* These are not defined in older Linux kernel headers */
 #ifndef SYN_DROPPED
 #define SYN_DROPPED 3
 #endif
-
-/* These are not defined in older Linux kernel headers */
 #ifndef ABS_MT_SLOT
 #define ABS_MT_SLOT         0x2f
 #define ABS_MT_POSITION_X   0x35
 #define ABS_MT_POSITION_Y   0x36
 #define ABS_MT_TRACKING_ID  0x39
+#endif
+#ifndef K_OFF
+#define K_OFF 0x04
 #endif
 
 typedef struct SDL_evdevlist_item
