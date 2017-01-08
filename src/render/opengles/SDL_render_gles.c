@@ -633,8 +633,6 @@ GLES_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
     GLES_TextureData *texturedata = NULL;
     GLenum status;
 
-    GLES_ActivateRenderer(renderer);
-
     if (!data->GL_OES_framebuffer_object_supported) {
         return SDL_SetError("Can't enable render target support in this renderer");
     }
