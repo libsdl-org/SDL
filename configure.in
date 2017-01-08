@@ -1144,12 +1144,18 @@ AC_HELP_STRING([--enable-libsamplerate], [use libsamplerate for audio rate conve
 AC_HELP_STRING([--enable-libsamplerate-shared], [dynamically load libsamplerate [[default=yes]]]),
                           , enable_libsamplerate_shared=yes)
 
-            if test x$enable_libsamplerate_shared = xyes; then
-                samplerate_lib=[`find_lib "libsamplerate.so.*" "" | sed 's/.*\/\(.*\)/\1/; q'`]
-                if test x$samplerate_lib != x; then
-                    echo "-- dynamic samplerate -> $samplerate_lib"
-                    AC_DEFINE_UNQUOTED(SDL_LIBSAMPLERATE_DYNAMIC, "$samplerate_lib", [ ])
-                fi
+            samplerate_lib=[`find_lib "libsamplerate.so.*" "" | sed 's/.*\/\(.*\)/\1/; q'`]
+
+            if test x$have_loadso != xyes && \
+               test x$enable_libsamplerate_shared = xyes; then
+                AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic libsamplerate loading])
+            fi
+            if test x$have_loadso = xyes && \
+               test x$enable_libsamplerate_shared = xyes && test x$samplerate_lib != x; then
+                echo "-- dynamic libsamplerate -> $samplerate_lib"
+                AC_DEFINE_UNQUOTED(SDL_LIBSAMPLERATE_DYNAMIC, "$samplerate_lib", [ ])
+            else
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lsamplerate"
             fi
         fi
     fi
