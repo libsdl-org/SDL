@@ -196,15 +196,15 @@ SDL_EVDEV_Init(void)
 #else
         /* TODO: Scan the devices manually, like a caveman */
 #endif /* SDL_USE_LIBUDEV */
-        
+
+        /* This might fail if we're not connected to a tty (e.g. on the Steam Link) */
         _this->console_fd = open("/dev/tty", O_RDONLY);
-        if( _this->console_fd < 0 ) {
-            return SDL_SetError("Failed to open /dev/tty");
-        }
-        
+
         /* Mute the keyboard so keystrokes only generate evdev events and do not
            leak through to the console */
-        SDL_EVDEV_mute_keyboard(_this->console_fd, &_this->old_kb_mode);
+        if (_this->console_fd >= 0) {
+            SDL_EVDEV_mute_keyboard(_this->console_fd, &_this->old_kb_mode);
+        }
     }
     
     _this->ref_count += 1;
@@ -274,7 +274,8 @@ void SDL_EVDEV_udev_callback(SDL_UDEV_deviceevent udev_event, int udev_class,
 #ifdef SDL_INPUT_LINUXKD
 /* this logic is pulled from kbd_keycode() in drivers/tty/vt/keyboard.c in the
    Linux kernel source */
-static void SDL_EVDEV_do_text_input(unsigned short keycode) {
+static void SDL_EVDEV_do_text_input(unsigned short keycode)
+{
     char shift_state;
     int locks_state;
     struct kbentry kbe;
