@@ -312,7 +312,7 @@ keyboard_getSetModState(void *arg)
    /* Get state, cache for later reset */
    result = SDL_GetModState();
    SDLTest_AssertPass("Call to SDL_GetModState()");
-   SDLTest_AssertCheck(result >=0 && result <= allStates, "Verify result from call is valid, expected: 0 <= result <= %i, got: %i", allStates, result);
+   SDLTest_AssertCheck(/*result >= 0 &&*/ result <= allStates, "Verify result from call is valid, expected: 0 <= result <= %i, got: %i", allStates, result);
    currentState = result;
 
    /* Set random state */
