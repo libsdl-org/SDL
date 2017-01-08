@@ -202,7 +202,7 @@ ShouldUseTextureFramebuffer()
     return SDL_FALSE;
 
 #elif defined(__MACOSX__)
-    /* Mac OS X uses OpenGL as the native fast path */
+    /* Mac OS X uses OpenGL as the native fast path (for cocoa and X11) */
     return SDL_TRUE;
 
 #elif defined(__LINUX__)
@@ -1177,29 +1177,31 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
     /* if the window is going away and no resolution change is necessary,
        do nothing, or else we may trigger an ugly double-transition
      */
-    if (window->is_destroying && (window->last_fullscreen_flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN_DESKTOP)
-        return 0;
-    
-    if (!_this->is_dummy) {
-        /* If we're switching between a fullscreen Space and "normal" fullscreen, we need to get back to normal first. */
-        if (fullscreen && ((window->last_fullscreen_flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN_DESKTOP) && ((window->flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN)) {
-            if (!Cocoa_SetWindowFullscreenSpace(window, SDL_FALSE)) {
-                return -1;
-            }
-        } else if (fullscreen && ((window->last_fullscreen_flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN) && ((window->flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN_DESKTOP)) {
-            display = SDL_GetDisplayForWindow(window);
-            SDL_SetDisplayModeForDisplay(display, NULL);
-            if (_this->SetWindowFullscreen) {
-                _this->SetWindowFullscreen(_this, window, display, SDL_FALSE);
-            }
-        }
-
-        if (Cocoa_SetWindowFullscreenSpace(window, fullscreen)) {
-            if (Cocoa_IsWindowInFullscreenSpace(window) != fullscreen) {
-                return -1;
-            }
-            window->last_fullscreen_flags = window->flags;
+    if (SDL_strcmp(_this->name, "cocoa") == 0) {  /* don't do this for X11, etc */
+        if (window->is_destroying && (window->last_fullscreen_flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN_DESKTOP)
             return 0;
+    
+        if (!_this->is_dummy) {
+            /* If we're switching between a fullscreen Space and "normal" fullscreen, we need to get back to normal first. */
+            if (fullscreen && ((window->last_fullscreen_flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN_DESKTOP) && ((window->flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN)) {
+                if (!Cocoa_SetWindowFullscreenSpace(window, SDL_FALSE)) {
+                    return -1;
+                }
+            } else if (fullscreen && ((window->last_fullscreen_flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN) && ((window->flags & FULLSCREEN_MASK) == SDL_WINDOW_FULLSCREEN_DESKTOP)) {
+                display = SDL_GetDisplayForWindow(window);
+                SDL_SetDisplayModeForDisplay(display, NULL);
+                if (_this->SetWindowFullscreen) {
+                    _this->SetWindowFullscreen(_this, window, display, SDL_FALSE);
+                }
+            }
+
+            if (Cocoa_SetWindowFullscreenSpace(window, fullscreen)) {
+                if (Cocoa_IsWindowInFullscreenSpace(window) != fullscreen) {
+                    return -1;
+                }
+                window->last_fullscreen_flags = window->flags;
+                return 0;
+            }
         }
     }
 #elif __WINRT__ && (NTDDI_VERSION < NTDDI_WIN10)
@@ -2521,8 +2523,10 @@ ShouldMinimizeOnFocusLoss(SDL_Window * window)
     }
 
 #ifdef __MACOSX__
-    if (Cocoa_IsWindowInFullscreenSpace(window)) {
-        return SDL_FALSE;
+    if (SDL_strcmp(_this->name, "cocoa") == 0) {  /* don't do this for X11, etc */
+        if (Cocoa_IsWindowInFullscreenSpace(window)) {
+            return SDL_FALSE;
+        }
     }
 #endif
 
