@@ -443,18 +443,18 @@ do {                                                                    \
 /* Blend the RGB values of two pixels with an alpha value */
 #define ALPHA_BLEND_RGB(sR, sG, sB, A, dR, dG, dB)                      \
 do {                                                                    \
-    dR = (Uint8)((((int)(sR-dR)*A)/255)+dR);                            \
-    dG = (Uint8)((((int)(sG-dG)*A)/255)+dG);                            \
-    dB = (Uint8)((((int)(sB-dB)*A)/255)+dB);                            \
+    dR = (Uint8)((((int)(sR-dR)*(int)A)/255)+dR);                       \
+    dG = (Uint8)((((int)(sG-dG)*(int)A)/255)+dG);                       \
+    dB = (Uint8)((((int)(sB-dB)*(int)A)/255)+dB);                       \
 } while(0)
 
 
 /* Blend the RGBA values of two pixels */
 #define ALPHA_BLEND_RGBA(sR, sG, sB, sA, dR, dG, dB, dA)                \
 do {                                                                    \
-    dR = (Uint8)((((int)(sR-dR)*sA)/255)+dR);                           \
-    dG = (Uint8)((((int)(sG-dG)*sA)/255)+dG);                           \
-    dB = (Uint8)((((int)(sB-dB)*sA)/255)+dB);                           \
+    dR = (Uint8)((((int)(sR-dR)*(int)sA)/255)+dR);                      \
+    dG = (Uint8)((((int)(sG-dG)*(int)sA)/255)+dG);                      \
+    dB = (Uint8)((((int)(sB-dB)*(int)sA)/255)+dB);                      \
     dA = (Uint8)((int)sA+dA-((int)sA*dA)/255);                          \
 } while(0)
 
