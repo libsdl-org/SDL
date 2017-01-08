@@ -634,45 +634,10 @@ struct SDL_AudioStream
 };
 
 #ifdef HAVE_LIBSAMPLERATE_H
-
-typedef struct
-{
-    void *SRC_lib;
-
-    SRC_STATE* (*src_new)(int converter_type, int channels, int *error);
-    int (*src_process)(SRC_STATE *state, SRC_DATA *data);
-    int (*src_reset)(SRC_STATE *state);
-    SRC_STATE* (*src_delete)(SRC_STATE *state);
-    const char* (*src_strerror)(int error);
-
-    SRC_STATE *SRC_state;
-} SDL_AudioStreamResamplerState_SRC;
-
-static SDL_bool
-LoadLibSampleRate(SDL_AudioStreamResamplerState_SRC *state)
-{
-#ifdef SDL_LIBSAMPLERATE_DYNAMIC
-    state->SRC_lib = SDL_LoadObject(SDL_LIBSAMPLERATE_DYNAMIC);
-    if (!state->SRC_lib) {
-        return SDL_FALSE;
-    }
-#endif
-
-    state->src_new = (SRC_STATE* (*)(int converter_type, int channels, int *error))SDL_LoadFunction(state->SRC_lib, "src_new");
-    state->src_process = (int (*)(SRC_STATE *state, SRC_DATA *data))SDL_LoadFunction(state->SRC_lib, "src_process");
-    state->src_reset = (int(*)(SRC_STATE *state))SDL_LoadFunction(state->SRC_lib, "src_reset");
-    state->src_delete = (SRC_STATE* (*)(SRC_STATE *state))SDL_LoadFunction(state->SRC_lib, "src_delete");
-    state->src_strerror = (const char* (*)(int error))SDL_LoadFunction(state->SRC_lib, "src_strerror");
-    if (!state->src_new || !state->src_process || !state->src_reset || !state->src_delete || !state->src_strerror) {
-        return SDL_FALSE;
-    }
-    return SDL_TRUE;
-}
-
 static int
 SDL_ResampleAudioStream_SRC(SDL_AudioStream *stream, const float *inbuf, const int inbuflen, float *outbuf, const int outbuflen)
 {
-    SDL_AudioStreamResamplerState_SRC *state = (SDL_AudioStreamResamplerState_SRC*)stream->resampler_state;
+    SRC_STATE *state = (SRC_STATE *)stream->resampler_state;
     SRC_DATA data;
     int result;
 
@@ -686,9 +651,9 @@ SDL_ResampleAudioStream_SRC(SDL_AudioStream *stream, const float *inbuf, const i
     data.end_of_input = 0;
     data.src_ratio = stream->rate_incr;
 
-    result = state->src_process(state->SRC_state, &data);
+    result = SRC_src_process(state, &data);
     if (result != 0) {
-        SDL_SetError("src_process() failed: %s", state->src_strerror(result));
+        SDL_SetError("src_process() failed: %s", SRC_src_strerror(result));
         return 0;
     }
 
@@ -701,20 +666,15 @@ SDL_ResampleAudioStream_SRC(SDL_AudioStream *stream, const float *inbuf, const i
 static void
 SDL_ResetAudioStreamResampler_SRC(SDL_AudioStream *stream)
 {
-    SDL_AudioStreamResamplerState_SRC *state = (SDL_AudioStreamResamplerState_SRC*)stream->resampler_state;
-    state->src_reset(state->SRC_state);
+    SRC_src_reset((SRC_STATE *)stream->resampler_state);
 }
 
 static void
 SDL_CleanupAudioStreamResampler_SRC(SDL_AudioStream *stream)
 {
-    SDL_AudioStreamResamplerState_SRC *state = (SDL_AudioStreamResamplerState_SRC*)stream->resampler_state;
+    SRC_STATE *state = (SRC_STATE *)stream->resampler_state;
     if (state) {
-        if (state->SRC_lib) {
-            SDL_UnloadObject(state->SRC_lib);
-        }
-        state->src_delete(state->SRC_state);
-        SDL_free(state);
+        SRC_src_delete(state);
     }
 
     stream->resampler_state = NULL;
@@ -726,15 +686,18 @@ SDL_CleanupAudioStreamResampler_SRC(SDL_AudioStream *stream)
 static SDL_bool
 SetupLibSampleRateResampling(SDL_AudioStream *stream)
 {
-    int result;
+    int result = 0;
+    SRC_STATE *state = NULL;
 
-    SDL_AudioStreamResamplerState_SRC *state = (SDL_AudioStreamResamplerState_SRC *)SDL_calloc(1, sizeof(*state));
-    if (!state) {
-        return SDL_FALSE;
+    if (SRC_available) {
+        state = SRC_src_new(SRC_SINC_FASTEST, stream->pre_resample_channels, &result);
+        if (!state) {
+            SDL_SetError("src_new() failed: %s", SRC_src_strerror(result));
+        }
     }
 
-    if (!LoadLibSampleRate(state)) {
-        SDL_free(state);
+    if (!state) {
+        SDL_CleanupAudioStreamResampler_SRC(stream);
         return SDL_FALSE;
     }
 
@@ -743,16 +706,10 @@ SetupLibSampleRateResampling(SDL_AudioStream *stream)
     stream->reset_resampler_func = SDL_ResetAudioStreamResampler_SRC;
     stream->cleanup_resampler_func = SDL_CleanupAudioStreamResampler_SRC;
 
-    state->SRC_state = state->src_new(SRC_SINC_FASTEST, stream->pre_resample_channels, &result);
-    if (!state->SRC_state) {
-        SDL_SetError("src_new() failed: %s", state->src_strerror(result));
-        SDL_CleanupAudioStreamResampler_SRC(stream);
-        return SDL_FALSE;
-    }
     return SDL_TRUE;
 }
-
 #endif /* HAVE_LIBSAMPLERATE_H */
+
 
 typedef struct
 {
