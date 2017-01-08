@@ -391,12 +391,17 @@ X11_GL_InitExtensions(_THIS)
 
 /* glXChooseVisual and glXChooseFBConfig have some small differences in
  * the attribute encoding, it can be chosen with the for_FBConfig parameter.
+ * Some targets fail if you use GLX_X_VISUAL_TYPE_EXT/GLX_DIRECT_COLOR_EXT,
+ *  so it gets specified last if used and is pointed to by *_pvistypeattr.
+ *  In case of failure, if that pointer is not NULL, set that pointer to None
+ *  and try again.
  */
 static int
-X11_GL_GetAttributes(_THIS, Display * display, int screen, int * attribs, int size, Bool for_FBConfig)
+X11_GL_GetAttributes(_THIS, Display * display, int screen, int * attribs, int size, Bool for_FBConfig, int **_pvistypeattr)
 {
     int i = 0;
     const int MAX_ATTRIBUTES = 64;
+    int *pvistypeattr = NULL;
 
     /* assert buffer is large enough to hold all SDL attributes. */
     SDL_assert(size >= MAX_ATTRIBUTES);
@@ -488,6 +493,7 @@ X11_GL_GetAttributes(_THIS, Display * display, int screen, int * attribs, int si
        EXT_visual_info extension, then add GLX_X_VISUAL_TYPE_EXT. */
     if (X11_UseDirectColorVisuals() &&
         _this->gl_data->HAS_GLX_EXT_visual_info) {
+        pvistypeattr = &attribs[i];
         attribs[i++] = GLX_X_VISUAL_TYPE_EXT;
         attribs[i++] = GLX_DIRECT_COLOR_EXT;
     }
@@ -495,6 +501,10 @@ X11_GL_GetAttributes(_THIS, Display * display, int screen, int * attribs, int si
     attribs[i++] = None;
 
     SDL_assert(i <= MAX_ATTRIBUTES);
+
+    if (_pvistypeattr) {
+        *_pvistypeattr = pvistypeattr;
+    }
 
     return i;
 }
@@ -505,14 +515,21 @@ X11_GL_GetVisual(_THIS, Display * display, int screen)
     /* 64 seems nice. */
     int attribs[64];
     XVisualInfo *vinfo;
+    int *pvistypeattr = NULL;
 
     if (!_this->gl_data) {
         /* The OpenGL library wasn't loaded, SDL_GetError() should have info */
         return NULL;
     }
 
-    X11_GL_GetAttributes(_this, display, screen, attribs, 64, SDL_FALSE);
+    X11_GL_GetAttributes(_this, display, screen, attribs, 64, SDL_FALSE, &pvistypeattr);
     vinfo = _this->gl_data->glXChooseVisual(display, screen, attribs);
+
+    if (!vinfo && (pvistypeattr != NULL)) {
+        *pvistypeattr = None;
+        vinfo = _this->gl_data->glXChooseVisual(display, screen, attribs);
+    }
+
     if (!vinfo) {
         SDL_SetError("Couldn't find matching GLX visual");
     }
@@ -626,20 +643,28 @@ X11_GL_CreateContext(_THIS, SDL_Window * window)
                 /* Create a GL 3.x context */
                 GLXFBConfig *framebuffer_config = NULL;
                 int fbcount = 0;
+                int *pvistypeattr = NULL;
 
-                X11_GL_GetAttributes(_this,display,screen,glxAttribs,64,SDL_TRUE);
+                X11_GL_GetAttributes(_this,display,screen,glxAttribs,64,SDL_TRUE,&pvistypeattr);
 
-                if (!_this->gl_data->glXChooseFBConfig
-                    || !(framebuffer_config =
-                        _this->gl_data->glXChooseFBConfig(display,
+                if (_this->gl_data->glXChooseFBConfig) {
+                    framebuffer_config = _this->gl_data->glXChooseFBConfig(display,
                                           DefaultScreen(display), glxAttribs,
-                                          &fbcount))) {
-                    SDL_SetError("No good framebuffers found. OpenGL 3.0 and later unavailable");
-                } else {
-                    context = _this->gl_data->glXCreateContextAttribsARB(display,
-                                                    framebuffer_config[0],
-                                                    share_context, True, attribs);
-                    X11_XFree(framebuffer_config);
+                                          &fbcount);
+
+                    if (!framebuffer_config && (pvistypeattr != NULL)) {
+                        *pvistypeattr = None;
+                        framebuffer_config = _this->gl_data->glXChooseFBConfig(display,
+                                          DefaultScreen(display), glxAttribs,
+                                          &fbcount);
+                    }
+            
+                    if (framebuffer_config) {
+                        context = _this->gl_data->glXCreateContextAttribsARB(display,
+                                                        framebuffer_config[0],
+                                                        share_context, True, attribs);
+                        X11_XFree(framebuffer_config);
+                    }
                 }
             }
         }
