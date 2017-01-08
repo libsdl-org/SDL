@@ -823,12 +823,13 @@ SDL_CleanupAudioStreamResampler(SDL_AudioStream *stream)
     SDL_free(stream->resampler_state);
 }
 
-SDL_AudioStream *SDL_NewAudioStream(const SDL_AudioFormat src_format,
-                                    const Uint8 src_channels,
-                                    const int src_rate,
-                                    const SDL_AudioFormat dst_format,
-                                    const Uint8 dst_channels,
-                                    const int dst_rate)
+SDL_AudioStream *
+SDL_NewAudioStream(const SDL_AudioFormat src_format,
+                   const Uint8 src_channels,
+                   const int src_rate,
+                   const SDL_AudioFormat dst_format,
+                   const Uint8 dst_channels,
+                   const int dst_rate)
 {
     const int packetlen = 4096;  /* !!! FIXME: good enough for now. */
     Uint8 pre_resample_channels;
