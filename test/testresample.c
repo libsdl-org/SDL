@@ -89,7 +89,7 @@ main(int argc, char **argv)
     avgbytes = cvtfreq * blockalign;
 
     SDL_WriteLE32(io, 0x46464952);      /* RIFF */
-    SDL_WriteLE32(io, len * cvt.len_mult + 36);
+    SDL_WriteLE32(io, cvt.len_cvt + 36);
     SDL_WriteLE32(io, 0x45564157);      /* WAVE */
     SDL_WriteLE32(io, 0x20746D66);      /* fmt */
     SDL_WriteLE32(io, 16);      /* chunk size */
