@@ -134,7 +134,6 @@ LoadLibSampleRate(void)
     if (!SRC_lib) {
         return SDL_FALSE;
     }
-#endif
 
     SRC_src_new = (SRC_STATE* (*)(int converter_type, int channels, int *error))SDL_LoadFunction(SRC_lib, "src_new");
     SRC_src_process = (int (*)(SRC_STATE *state, SRC_DATA *data))SDL_LoadFunction(SRC_lib, "src_process");
@@ -143,12 +142,17 @@ LoadLibSampleRate(void)
     SRC_src_strerror = (const char* (*)(int error))SDL_LoadFunction(SRC_lib, "src_strerror");
 
     if (!SRC_src_new || !SRC_src_process || !SRC_src_reset || !SRC_src_delete || !SRC_src_strerror) {
-        #ifdef SDL_LIBSAMPLERATE_DYNAMIC
         SDL_UnloadObject(SRC_lib);
         SRC_lib = NULL;
-        #endif
         return SDL_FALSE;
     }
+#else
+    SRC_src_new = src_new;
+    SRC_src_process = src_process;
+    SRC_src_reset = src_reset;
+    SRC_src_delete = src_delete;
+    SRC_src_strerror = src_strerror;
+#endif
 
     SRC_available = SDL_TRUE;
     return SDL_TRUE;
