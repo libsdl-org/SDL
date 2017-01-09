@@ -135,20 +135,9 @@ static Uint8 EVDEV_MouseButtons[] = {
     SDL_BUTTON_X2 + 3           /*  BTN_TASK        0x117 */
 };
 
-static int SDL_EVDEV_is_console(int fd) {
-    char type;
-    
-    return isatty(fd) && ioctl(fd, KDGKBTYPE, &type) == 0 &&
-        (type == KB_101 || type == KB_84);
-}
-
 /* Prevent keystrokes from reaching the tty */
 static int SDL_EVDEV_mute_keyboard(int tty_fd, int* old_kb_mode)
 {
-    if (!SDL_EVDEV_is_console(tty_fd)) {
-        return SDL_SetError("Tried to mute an invalid tty");
-    }
-    
     if (ioctl(tty_fd, KDGKBMODE, old_kb_mode) < 0) {
         return SDL_SetError("Failed to get keyboard mode during muting");
     }
@@ -164,7 +153,7 @@ static int SDL_EVDEV_mute_keyboard(int tty_fd, int* old_kb_mode)
 static void SDL_EVDEV_unmute_keyboard(int tty_fd, int old_kb_mode)
 {
     if (ioctl(tty_fd, KDSKBMODE, old_kb_mode) < 0) {
-        SDL_Log("Failed to set keyboard mode");
+        SDL_SetError("Failed to set keyboard mode during unmuting");
     }
 }
 
