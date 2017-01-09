@@ -377,53 +377,16 @@ SDL_ResampleCVT(SDL_AudioCVT *cvt, const int chans, const SDL_AudioFormat format
     const int srclen = cvt->len_cvt;
     float *dst = (float *) (cvt->buf + srclen);
     const int dstlen = (cvt->len * cvt->len_mult) - srclen;
-    SDL_bool do_simple = SDL_TRUE;
+    float state[8];
+    int i;
 
     SDL_assert(format == AUDIO_F32SYS);
 
-#ifdef HAVE_LIBSAMPLERATE_H
-    if (SRC_available) {
-        int result = 0;
-        SRC_STATE *state = SRC_src_new(SRC_SINC_FASTEST, chans, &result);
-        if (state) {
-            const int framelen = sizeof(float) * chans;
-            SRC_DATA data;
-
-            data.data_in = (float *)src; /* Older versions of libsamplerate had a non-const pointer, but didn't write to it */
-            data.input_frames = srclen / framelen;
-            data.input_frames_used = 0;
-
-            data.data_out = dst;
-            data.output_frames = dstlen / framelen;
-
-            data.end_of_input = 0;
-            data.src_ratio = cvt->rate_incr;
-
-            result = SRC_src_process(state, &data);
-            SDL_assert(result == 0);  /* what to do if this fails? Can it fail? */
-
-            /* What to do if this fails...? */
-            SDL_assert(data.input_frames_used == data.input_frames);
-
-            SRC_src_delete(state);
-            cvt->len_cvt = data.output_frames_gen * (sizeof(float) * chans);
-            do_simple = SDL_FALSE;
-        }
-
-        /* failed to create state? Fall back to simple method. */
+    for (i = 0; i < chans; i++) {
+        state[i] = src[i];
     }
-#endif
 
-    if (do_simple) {
-        float state[8];
-        int i;
-
-        for (i = 0; i < chans; i++) {
-            state[i] = src[i];
-        }
-
-        cvt->len_cvt = SDL_ResampleAudioSimple(chans, cvt->rate_incr, state, src, srclen, dst, dstlen);
-    }
+    cvt->len_cvt = SDL_ResampleAudioSimple(chans, cvt->rate_incr, state, src, srclen, dst, dstlen);
 
     SDL_memcpy(cvt->buf, dst, cvt->len_cvt);
     if (cvt->filters[++cvt->filter_index]) {
