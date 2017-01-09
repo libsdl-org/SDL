@@ -191,6 +191,38 @@ SDL_ConvertStereoToQuad(SDL_AudioCVT * cvt, SDL_AudioFormat format)
     }
 }
 
+static int
+SDL_ResampleAudioSimple(const int chans, const double rate_incr,
+                        float *last_sample, const float *inbuf,
+                        const int inbuflen, float *outbuf, const int outbuflen)
+{
+    const int framelen = chans * sizeof(float);
+    const int total = (inbuflen / framelen);
+    const int finalpos = total - chans;
+    const double src_incr = 1.0 / rate_incr;
+    double idx = 0.0;
+    float *dst = outbuf;
+    int consumed = 0;
+    int i;
+
+    SDL_assert((inbuflen % framelen) == 0);
+
+    while (consumed < total) {
+        const int pos = ((int)idx) * chans;
+        const float *src = &inbuf[(pos >= finalpos) ? finalpos : pos];
+        SDL_assert(dst < (outbuf + (outbuflen / framelen)));
+        for (i = 0; i < chans; i++) {
+            const float val = *(src++);
+            *(dst++) = (val + last_sample[i]) * 0.5f;
+            last_sample[i] = val;
+        }
+        consumed = pos + chans;
+        idx += src_incr;
+    }
+
+    return (int)((dst - outbuf) * sizeof(float));
+}
+
 
 int
 SDL_ConvertAudio(SDL_AudioCVT * cvt)
@@ -338,31 +370,75 @@ SDL_BuildAudioTypeCVTFromFloat(SDL_AudioCVT *cvt, const SDL_AudioFormat dst_fmt)
     return retval;
 }
 
+static void
+SDL_ResampleCVT(SDL_AudioCVT *cvt, const int chans, const SDL_AudioFormat format)
+{
+    const float *src = (const float *) cvt->buf;
+    const int srclen = cvt->len_cvt;
+    float *dst = (float *) (cvt->buf + srclen);
+    const int dstlen = (cvt->len * cvt->len_mult) - srclen;
+    SDL_bool do_simple = SDL_TRUE;
 
-/* !!! FIXME: We only have this macro salsa because SDL_AudioCVT doesn't store
-   !!! FIXME:  channel info or integer sample rates, so we have to have
-   !!! FIXME:  function entry points for each supported channel count and
-   !!! FIXME:  multiple vs arbitrary. When we rev the ABI, remove this. */
+    SDL_assert(format == AUDIO_F32SYS);
+
+#ifdef HAVE_LIBSAMPLERATE_H
+    if (SRC_available) {
+        int result = 0;
+        SRC_STATE *state = SRC_src_new(SRC_SINC_FASTEST, chans, &result);
+        if (state) {
+            const int framelen = sizeof(float) * chans;
+            SRC_DATA data;
+
+            data.data_in = (float *)src; /* Older versions of libsamplerate had a non-const pointer, but didn't write to it */
+            data.input_frames = srclen / framelen;
+            data.input_frames_used = 0;
+
+            data.data_out = dst;
+            data.output_frames = dstlen / framelen;
+
+            data.end_of_input = 0;
+            data.src_ratio = cvt->rate_incr;
+
+            result = SRC_src_process(state, &data);
+            SDL_assert(result == 0);  /* what to do if this fails? Can it fail? */
+
+            /* What to do if this fails...? */
+            SDL_assert(data.input_frames_used == data.input_frames);
+
+            SRC_src_delete(state);
+            cvt->len_cvt = data.output_frames_gen * (sizeof(float) * chans);
+            do_simple = SDL_FALSE;
+        }
+
+        /* failed to create state? Fall back to simple method. */
+    }
+#endif
+
+    if (do_simple) {
+        float state[8];
+        int i;
+
+        for (i = 0; i < chans; i++) {
+            state[i] = src[i];
+        }
+
+        cvt->len_cvt = SDL_ResampleAudioSimple(chans, cvt->rate_incr, state, src, srclen, dst, dstlen);
+    }
+
+    SDL_memcpy(cvt->buf, dst, cvt->len_cvt);
+    if (cvt->filters[++cvt->filter_index]) {
+        cvt->filters[cvt->filter_index](cvt, format);
+    }
+}
+
+/* !!! FIXME: We only have this macro salsa because SDL_AudioCVT doesn't
+   !!! FIXME:  store channel info, so we have to have function entry
+   !!! FIXME:  points for each supported channel count and multiple
+   !!! FIXME:  vs arbitrary. When we rev the ABI, clean this up. */
 #define RESAMPLER_FUNCS(chans) \
     static void SDLCALL \
-    SDL_Upsample_Multiple_c##chans(SDL_AudioCVT *cvt, SDL_AudioFormat format) { \
-        SDL_assert(format == AUDIO_F32SYS); \
-        SDL_Upsample_Multiple(cvt, chans); \
-    } \
-    static void SDLCALL \
-    SDL_Upsample_Arbitrary_c##chans(SDL_AudioCVT *cvt, SDL_AudioFormat format) { \
-        SDL_assert(format == AUDIO_F32SYS); \
-        SDL_Upsample_Arbitrary(cvt, chans); \
-    }\
-    static void SDLCALL \
-    SDL_Downsample_Multiple_c##chans(SDL_AudioCVT *cvt, SDL_AudioFormat format) { \
-        SDL_assert(format == AUDIO_F32SYS); \
-        SDL_Downsample_Multiple(cvt, chans); \
-    } \
-    static void SDLCALL \
-    SDL_Downsample_Arbitrary_c##chans(SDL_AudioCVT *cvt, SDL_AudioFormat format) { \
-        SDL_assert(format == AUDIO_F32SYS); \
-        SDL_Downsample_Arbitrary(cvt, chans); \
+    SDL_ResampleCVT_c##chans(SDL_AudioCVT *cvt, SDL_AudioFormat format) { \
+        SDL_ResampleCVT(cvt, chans, format); \
     }
 RESAMPLER_FUNCS(1)
 RESAMPLER_FUNCS(2)
@@ -371,62 +447,19 @@ RESAMPLER_FUNCS(6)
 RESAMPLER_FUNCS(8)
 #undef RESAMPLER_FUNCS
 
-static int
-SDL_FindFrequencyMultiple(const int src_rate, const int dst_rate)
-{
-    int lo, hi;
-
-    SDL_assert(src_rate != 0);
-    SDL_assert(dst_rate != 0);
-    SDL_assert(src_rate != dst_rate);
-
-    if (src_rate < dst_rate) {
-        lo = src_rate;
-        hi = dst_rate;
-    } else {
-        lo = dst_rate;
-        hi = src_rate;
-    }
-
-    if ((hi % lo) != 0)
-        return 0;               /* not a multiple. */
-
-    return hi / lo;
-}
-
 static SDL_AudioFilter
-ChooseResampler(const int dst_channels, const int src_rate, const int dst_rate)
+ChooseCVTResampler(const int dst_channels)
 {
-    const int upsample = (src_rate < dst_rate) ? 1 : 0;
-    const int multiple = SDL_FindFrequencyMultiple(src_rate, dst_rate);
-    SDL_AudioFilter filter = NULL;
-
-    #define PICK_CHANNEL_FILTER(upordown, resampler) switch (dst_channels) { \
-        case 1: filter = SDL_##upordown##_##resampler##_c1; break; \
-        case 2: filter = SDL_##upordown##_##resampler##_c2; break; \
-        case 4: filter = SDL_##upordown##_##resampler##_c4; break; \
-        case 6: filter = SDL_##upordown##_##resampler##_c6; break; \
-        case 8: filter = SDL_##upordown##_##resampler##_c8; break; \
-        default: break; \
+    switch (dst_channels) {
+        case 1: return SDL_ResampleCVT_c1;
+        case 2: return SDL_ResampleCVT_c2;
+        case 4: return SDL_ResampleCVT_c4;
+        case 6: return SDL_ResampleCVT_c6;
+        case 8: return SDL_ResampleCVT_c8;
+        default: break;
     }
 
-    if (upsample) {
-        if (multiple) {
-            PICK_CHANNEL_FILTER(Upsample, Multiple);
-        } else {
-            PICK_CHANNEL_FILTER(Upsample, Arbitrary);
-        }
-    } else {
-        if (multiple) {
-            PICK_CHANNEL_FILTER(Downsample, Multiple);
-        } else {
-            PICK_CHANNEL_FILTER(Downsample, Arbitrary);
-        }
-    }
-
-    #undef PICK_CHANNEL_FILTER
-
-    return filter;
+    return NULL;
 }
 
 static int
@@ -439,7 +472,7 @@ SDL_BuildAudioResampleCVT(SDL_AudioCVT * cvt, const int dst_channels,
         return 0;  /* no conversion necessary. */
     }
 
-    filter = ChooseResampler(dst_channels, src_rate, dst_rate);
+    filter = ChooseCVTResampler(dst_channels);
     if (filter == NULL) {
         return SDL_SetError("No conversion available for these rates");
     }
@@ -453,6 +486,10 @@ SDL_BuildAudioResampleCVT(SDL_AudioCVT * cvt, const int dst_channels,
     } else {
         cvt->len_ratio /= ((double) src_rate) / ((double) dst_rate);
     }
+
+    /* the buffer is big enough to hold the destination now, but
+       we need it large enough to hold a separate scratch buffer. */
+    cvt->len_mult *= 2;
 
     return 1;               /* added a converter. */
 }
@@ -638,16 +675,17 @@ struct SDL_AudioStream
 static int
 SDL_ResampleAudioStream_SRC(SDL_AudioStream *stream, const float *inbuf, const int inbuflen, float *outbuf, const int outbuflen)
 {
+    const int framelen = sizeof(float) * stream->pre_resample_channels;
     SRC_STATE *state = (SRC_STATE *)stream->resampler_state;
     SRC_DATA data;
     int result;
 
     data.data_in = (float *)inbuf; /* Older versions of libsamplerate had a non-const pointer, but didn't write to it */
-    data.input_frames = inbuflen / ( sizeof(float) * stream->pre_resample_channels );
+    data.input_frames = inbuflen / framelen;
     data.input_frames_used = 0;
 
     data.data_out = outbuf;
-    data.output_frames = outbuflen / (sizeof(float) * stream->pre_resample_channels);
+    data.output_frames = outbuflen / framelen;
 
     data.end_of_input = 0;
     data.src_ratio = stream->rate_incr;
@@ -721,51 +759,20 @@ typedef struct
 static int
 SDL_ResampleAudioStream(SDL_AudioStream *stream, const float *inbuf, const int inbuflen, float *outbuf, const int outbuflen)
 {
-    /* !!! FIXME: this resampler sucks, but not much worse than our usual resampler.  :)  */  /* ... :( */
     SDL_AudioStreamResamplerState *state = (SDL_AudioStreamResamplerState*)stream->resampler_state;
     const int chans = (int)stream->pre_resample_channels;
-    const int framelen = chans * sizeof(float);
-    const int total = (inbuflen / framelen);
-    const int finalpos = total - chans;
-    const double src_incr = 1.0 / stream->rate_incr;
-    double idx = 0.0;
-    float *dst = outbuf;
-    float last_sample[SDL_arraysize(state->resampler_state)];
-    int consumed = 0;
-    int i;
 
-    SDL_assert(chans <= SDL_arraysize(last_sample));
-    SDL_assert((inbuflen % framelen) == 0);
+    SDL_assert(chans <= SDL_arraysize(state->resampler_state));
 
     if (!state->resampler_seeded) {
+        int i;
         for (i = 0; i < chans; i++) {
             state->resampler_state[i] = inbuf[i];
         }
         state->resampler_seeded = SDL_TRUE;
     }
 
-    for (i = 0; i < chans; i++) {
-        last_sample[i] = state->resampler_state[i];
-    }
-
-    while (consumed < total) {
-        const int pos = ((int)idx) * chans;
-        const float *src = &inbuf[(pos >= finalpos) ? finalpos : pos];
-        SDL_assert(dst < (outbuf + (outbuflen / framelen)));
-        for (i = 0; i < chans; i++) {
-            const float val = *(src++);
-            *(dst++) = (val + last_sample[i]) * 0.5f;
-            last_sample[i] = val;
-        }
-        consumed = pos + chans;
-        idx += src_incr;
-    }
-
-    for (i = 0; i < chans; i++) {
-        state->resampler_state[i] = last_sample[i];
-    }
-
-    return (int)((dst - outbuf) * sizeof(float));
+    return SDL_ResampleAudioSimple(chans, stream->rate_incr, state->resampler_state, inbuf, inbuflen, outbuf, outbuflen);
 }
 
 static void
