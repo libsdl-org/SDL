@@ -968,8 +968,10 @@ SDL_GetKeyFromName(const char *name)
 {
     SDL_Keycode key;
 
-        /* Check input */
-        if (name == NULL) return SDLK_UNKNOWN;
+    /* Check input */
+    if (name == NULL) {
+        return SDLK_UNKNOWN;
+    }
 
     /* If it's a single UTF-8 character, then that's the keycode itself */
     key = *(const unsigned char *)name;
