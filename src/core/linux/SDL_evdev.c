@@ -289,6 +289,12 @@ static void SDL_EVDEV_do_text_input(unsigned short keycode)
         return;
     }
     
+    if (kbe.kb_value == K_HOLE || kbe.kb_value == K_NOSUCHMAP) {
+        return;
+    }
+
+    kbe.kb_value ^= 0xf000;
+
     type = KTYP(kbe.kb_value);
     
     if (type < 0xf0) {
