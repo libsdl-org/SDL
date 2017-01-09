@@ -183,7 +183,9 @@ RPI_VideoInit(_THIS)
     SDL_AddVideoDisplay(&display);
 
 #ifdef SDL_INPUT_LINUXEV    
-    SDL_EVDEV_Init();
+    if (SDL_EVDEV_Init() < 0) {
+        return -1;
+    }
 #endif    
     
     RPI_InitMouse(_this);
