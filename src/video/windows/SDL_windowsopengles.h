@@ -33,9 +33,7 @@
 #define WIN_GLES_GetProcAddress SDL_EGL_GetProcAddress
 #define WIN_GLES_UnloadLibrary SDL_EGL_UnloadLibrary
 #define WIN_GLES_GetSwapInterval SDL_EGL_GetSwapInterval
-/* See the WIN_GLES_GetSwapInterval implementation to see why this is commented out */
-/*#define WIN_GLES_SetSwapInterval SDL_EGL_SetSwapInterval*/
-extern int WIN_GLES_SetSwapInterval(_THIS, int interval);
+#define WIN_GLES_SetSwapInterval SDL_EGL_SetSwapInterval
 
 extern int WIN_GLES_LoadLibrary(_THIS, const char *path);
 extern SDL_GLContext WIN_GLES_CreateContext(_THIS, SDL_Window * window);
