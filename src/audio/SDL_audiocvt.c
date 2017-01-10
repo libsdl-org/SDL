@@ -378,13 +378,10 @@ SDL_ResampleCVT(SDL_AudioCVT *cvt, const int chans, const SDL_AudioFormat format
     float *dst = (float *) (cvt->buf + srclen);
     const int dstlen = (cvt->len * cvt->len_mult) - srclen;
     float state[8];
-    int i;
 
     SDL_assert(format == AUDIO_F32SYS);
 
-    for (i = 0; i < chans; i++) {
-        state[i] = src[i];
-    }
+    SDL_memcpy(state, src, chans*sizeof(*src));
 
     cvt->len_cvt = SDL_ResampleAudioSimple(chans, cvt->rate_incr, state, src, srclen, dst, dstlen);
 
