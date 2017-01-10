@@ -426,6 +426,8 @@ extern SDL_bool SDL_AddDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayM
 extern SDL_VideoDisplay *SDL_GetDisplayForWindow(SDL_Window *window);
 extern void *SDL_GetDisplayDriverData( int displayIndex );
 
+extern void SDL_GL_DeduceMaxSupportedESProfile(int* major, int* minor);
+
 extern int SDL_RecreateWindow(SDL_Window * window, Uint32 flags);
 
 extern void SDL_OnWindowShown(SDL_Window * window);
