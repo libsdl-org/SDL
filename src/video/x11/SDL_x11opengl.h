@@ -34,8 +34,16 @@ struct SDL_GLDriverData
     SDL_bool HAS_GLX_EXT_visual_rating;
     SDL_bool HAS_GLX_EXT_visual_info;
     SDL_bool HAS_GLX_EXT_swap_control_tear;
-    SDL_bool HAS_GLX_EXT_create_context_es2_profile;
     SDL_bool HAS_GLX_ARB_context_flush_control;
+
+	/* Max version of OpenGL ES context that can be created if the
+	   implementation supports WGL_EXT_create_context_es2_profile.
+	   major = minor = 0 when unsupported.
+	 */
+	struct {
+		int major;
+		int minor;
+	} es_profile_max_supported_version;
 
     Bool (*glXQueryExtension) (Display*,int*,int*);
     void *(*glXGetProcAddress) (const GLubyte*);
@@ -57,6 +65,7 @@ struct SDL_GLDriverData
 extern int X11_GL_LoadLibrary(_THIS, const char *path);
 extern void *X11_GL_GetProcAddress(_THIS, const char *proc);
 extern void X11_GL_UnloadLibrary(_THIS);
+extern SDL_bool X11_GL_UseEGL(_THIS);
 extern XVisualInfo *X11_GL_GetVisual(_THIS, Display * display, int screen);
 extern SDL_GLContext X11_GL_CreateContext(_THIS, SDL_Window * window);
 extern int X11_GL_MakeCurrent(_THIS, SDL_Window * window,

@@ -336,6 +336,10 @@
 			CopyLocalSatelliteAssemblies="false"
 			RelativePathToProject=".\SDLmain\SDLmain_VS2008.vcproj"
 		/>
+		<ProjectReference
+			ReferencedProjectIdentifier="{DA956FD3-E143-46F2-9FE5-C77BEBC56B1A}"
+			RelativePathToProject=".\SDLtest\SDLtest_VS2008.vcproj"
+		/>
 	</References>
 	<Files>
 		<File

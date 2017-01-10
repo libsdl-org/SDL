@@ -29,10 +29,18 @@ struct SDL_GLDriverData
 {
     SDL_bool HAS_WGL_ARB_pixel_format;
     SDL_bool HAS_WGL_EXT_swap_control_tear;
-    SDL_bool HAS_WGL_EXT_create_context_es2_profile;
     SDL_bool HAS_WGL_ARB_context_flush_control;
 
-    void *(WINAPI * wglGetProcAddress) (const char *proc);
+	/* Max version of OpenGL ES context that can be created if the
+	   implementation supports WGL_EXT_create_context_es2_profile.
+	   major = minor = 0 when unsupported.
+	 */
+	struct {
+		int major;
+		int minor;
+	} es_profile_max_supported_version;
+
+	void *(WINAPI * wglGetProcAddress) (const char *proc);
       HGLRC(WINAPI * wglCreateContext) (HDC hdc);
       BOOL(WINAPI * wglDeleteContext) (HGLRC hglrc);
       BOOL(WINAPI * wglMakeCurrent) (HDC hdc, HGLRC hglrc);
@@ -56,6 +64,7 @@ struct SDL_GLDriverData
 extern int WIN_GL_LoadLibrary(_THIS, const char *path);
 extern void *WIN_GL_GetProcAddress(_THIS, const char *proc);
 extern void WIN_GL_UnloadLibrary(_THIS);
+extern SDL_bool WIN_GL_UseEGL(_THIS);
 extern int WIN_GL_SetupWindow(_THIS, SDL_Window * window);
 extern SDL_GLContext WIN_GL_CreateContext(_THIS, SDL_Window * window);
 extern int WIN_GL_MakeCurrent(_THIS, SDL_Window * window,

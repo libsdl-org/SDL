@@ -2886,6 +2886,37 @@ SDL_GL_ExtensionSupported(const char *extension)
 #endif
 }
 
+/* Deduce supported ES profile versions from the supported
+   ARB_ES*_compatibility extensions. There is no direct query.
+   
+   This is normally only called when the OpenGL driver supports
+   {GLX,WGL}_EXT_create_context_es2_profile.
+ */
+void
+SDL_GL_DeduceMaxSupportedESProfile(int* major, int* minor)
+{
+#if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
+	/* XXX This is fragile; it will break in the event of release of
+	 * new versions of OpenGL ES.
+     */
+    if (SDL_GL_ExtensionSupported("GL_ARB_ES3_2_compatibility")) {
+        *major = 3;
+        *minor = 2;
+    } else if (SDL_GL_ExtensionSupported("GL_ARB_ES3_1_compatibility")) {
+        *major = 3;
+        *minor = 1;
+    } else if (SDL_GL_ExtensionSupported("GL_ARB_ES3_compatibility")) {
+        *major = 3;
+        *minor = 0;
+    } else {
+        *major = 2;
+        *minor = 0;
+    }
+#else
+    return SDL_FALSE;
+#endif
+}
+
 void
 SDL_GL_ResetAttributes()
 {
