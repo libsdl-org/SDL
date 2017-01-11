@@ -27,7 +27,6 @@ Build-Depends: debhelper (>= 9),
                libxinerama-dev,
                libxrandr-dev,
                libxss-dev,
-               libxt-dev,
                libxxf86vm-dev
 Homepage: http://www.libsdl.org/
 
