@@ -1169,12 +1169,12 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         {
             // Accept any
         }
-        else if (requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT)
+        else if (requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT || requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT)
         {
             if (mWidth > mHeight) {
                skip = true;
             }
-        } else if (requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
+        } else if (requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE || requestedOrientation == ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE) {
             if (mWidth < mHeight) {
                skip = true;
             }
