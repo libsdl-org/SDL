@@ -37,7 +37,7 @@ struct SDL_GLDriverData
     SDL_bool HAS_GLX_ARB_context_flush_control;
 
 	/* Max version of OpenGL ES context that can be created if the
-	   implementation supports WGL_EXT_create_context_es2_profile.
+	   implementation supports GLX_EXT_create_context_es2_profile.
 	   major = minor = 0 when unsupported.
 	 */
 	struct {
