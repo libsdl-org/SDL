@@ -969,7 +969,7 @@ SDL_GameControllerAddMapping(const char *mappingString)
     return SDL_PrivateGameControllerAddMapping(mappingString, SDL_CONTROLLER_MAPPING_PRIORITY_API);
 }
 
-/**
+/*
  *  Get the number of mappings installed
  */
 int
@@ -987,7 +987,7 @@ SDL_GameControllerNumMappings(void)
     return num_mappings;
 }
 
-/**
+/*
  *  Get the mapping at a particular index.
  */
 char *
@@ -1190,7 +1190,7 @@ SDL_GameControllerOpen(int device_index)
         return NULL;
     }
 
-    /* Create and initialize the joystick */
+    /* Create and initialize the controller */
     gamecontroller = (SDL_GameController *) SDL_calloc(1, sizeof(*gamecontroller));
     if (gamecontroller == NULL) {
         SDL_OutOfMemory();
@@ -1229,9 +1229,9 @@ SDL_GameControllerOpen(int device_index)
 
     SDL_PrivateLoadButtonMapping(gamecontroller, pSupportedController->guid, pSupportedController->name, pSupportedController->mapping);
 
-    /* Add joystick to list */
+    /* Add the controller to list */
     ++gamecontroller->ref_count;
-    /* Link the joystick in the list */
+    /* Link the controller in the list */
     gamecontroller->next = SDL_gamecontrollers;
     SDL_gamecontrollers = gamecontroller;
 
@@ -1376,7 +1376,7 @@ SDL_GameControllerGetProductVersion(SDL_GameController * gamecontroller)
 }
 
 /*
- * Return if the joystick in question is currently attached to the system,
+ * Return if the controller in question is currently attached to the system,
  *  \return 0 if not plugged in, 1 if still present.
  */
 SDL_bool
@@ -1422,7 +1422,7 @@ SDL_GameControllerFromInstanceID(SDL_JoystickID joyid)
 }
 
 
-/**
+/*
  * Get the SDL joystick layer binding for this controller axis mapping
  */
 SDL_GameControllerButtonBind SDL_GameControllerGetBindForAxis(SDL_GameController * gamecontroller, SDL_GameControllerAxis axis)
@@ -1454,7 +1454,7 @@ SDL_GameControllerButtonBind SDL_GameControllerGetBindForAxis(SDL_GameController
 }
 
 
-/**
+/*
  * Get the SDL joystick layer binding for this controller button mapping
  */
 SDL_GameControllerButtonBind SDL_GameControllerGetBindForButton(SDL_GameController * gamecontroller, SDL_GameControllerButton button)
