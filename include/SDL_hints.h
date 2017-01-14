@@ -759,11 +759,11 @@ extern "C" {
  *    or emulator, e.g. those from ARM, Imagination or Qualcomm.
  *  - Resolving OpenGL ES function addresses at link time by linking with
  *    the OpenGL ES library instead of querying them at run time with
- *    SDL_GL_GetProcAddress.
+ *    SDL_GL_GetProcAddress().
  *
  *  Caution: for an application to work with the default behaviour across
- *  different OpenGL drivers it \i must query the OpenGL ES function
- *  addresses at run time using SDL_GL_GetProcAddress.
+ *  different OpenGL drivers it must query the OpenGL ES function
+ *  addresses at run time using SDL_GL_GetProcAddress().
  *
  *  This variable is ignored on most platforms because OpenGL ES is native
  *  or not supported.
