@@ -196,7 +196,7 @@ SDL_ResampleAudioSimple(const int chans, const double rate_incr,
                         float *last_sample, const float *inbuf,
                         const int inbuflen, float *outbuf, const int outbuflen)
 {
-    const int framelen = chans * sizeof(float);
+    const int framelen = chans * sizeof (float);
     const int total = (inbuflen / framelen);
     const int finalpos = total - chans;
     const double src_incr = 1.0 / rate_incr;
@@ -220,7 +220,7 @@ SDL_ResampleAudioSimple(const int chans, const double rate_incr,
         idx += src_incr;
     }
 
-    return (int)((dst - outbuf) * sizeof(float));
+    return (int) ((dst - outbuf) * sizeof (float));
 }
 
 
