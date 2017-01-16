@@ -843,6 +843,8 @@ SDL_GetAudioDriver(int index)
     return NULL;
 }
 
+extern void SDL_ChooseAudioConverters(void);
+
 int
 SDL_AudioInit(const char *driver_name)
 {
@@ -856,6 +858,8 @@ SDL_AudioInit(const char *driver_name)
 
     SDL_zero(current_audio);
     SDL_zero(open_devices);
+
+    SDL_ChooseAudioConverters();
 
     /* Select the proper audio driver */
     if (driver_name == NULL) {

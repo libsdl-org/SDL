@@ -53,16 +53,17 @@ extern SDL_AudioFormat SDL_NextAudioFormat(void);
 /* Function to calculate the size and silence for a SDL_AudioSpec */
 extern void SDL_CalculateAudioSpec(SDL_AudioSpec * spec);
 
-void SDLCALL SDL_Convert_S8_to_F32(SDL_AudioCVT *cvt, SDL_AudioFormat format);
-void SDLCALL SDL_Convert_U8_to_F32(SDL_AudioCVT *cvt, SDL_AudioFormat format);
-void SDLCALL SDL_Convert_S16_to_F32(SDL_AudioCVT *cvt, SDL_AudioFormat format);
-void SDLCALL SDL_Convert_U16_to_F32(SDL_AudioCVT *cvt, SDL_AudioFormat format);
-void SDLCALL SDL_Convert_S32_to_F32(SDL_AudioCVT *cvt, SDL_AudioFormat format);
-void SDLCALL SDL_Convert_F32_to_S8(SDL_AudioCVT *cvt, SDL_AudioFormat format);
-void SDLCALL SDL_Convert_F32_to_U8(SDL_AudioCVT *cvt, SDL_AudioFormat format);
-void SDLCALL SDL_Convert_F32_to_S16(SDL_AudioCVT *cvt, SDL_AudioFormat format);
-void SDLCALL SDL_Convert_F32_to_U16(SDL_AudioCVT *cvt, SDL_AudioFormat format);
-void SDLCALL SDL_Convert_F32_to_S32(SDL_AudioCVT *cvt, SDL_AudioFormat format);
+/* These pointers get set during init to various SIMD implementations. */
+extern SDL_AudioFilter SDL_Convert_S8_to_F32;
+extern SDL_AudioFilter SDL_Convert_U8_to_F32;
+extern SDL_AudioFilter SDL_Convert_S16_to_F32;
+extern SDL_AudioFilter SDL_Convert_U16_to_F32;
+extern SDL_AudioFilter SDL_Convert_S32_to_F32;
+extern SDL_AudioFilter SDL_Convert_F32_to_S8;
+extern SDL_AudioFilter SDL_Convert_F32_to_U8;
+extern SDL_AudioFilter SDL_Convert_F32_to_S16;
+extern SDL_AudioFilter SDL_Convert_F32_to_U16;
+extern SDL_AudioFilter SDL_Convert_F32_to_S32;
 
 
 /* SDL_AudioStream is a new audio conversion interface. It
