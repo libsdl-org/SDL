@@ -1016,6 +1016,19 @@ SDL_DINPUT_HapticUpdateEffect(SDL_Haptic * haptic, struct haptic_effect *effect,
     /* Create the actual effect. */
     ret =
         IDirectInputEffect_SetParameters(effect->hweffect->ref, &temp, flags);
+    if (ret == DIERR_NOTEXCLUSIVEACQUIRED) {
+        IDirectInputDevice8_Unacquire(haptic->hwdata->device);
+        ret = IDirectInputDevice8_SetCooperativeLevel(haptic->hwdata->device, SDL_HelperWindow, DISCL_EXCLUSIVE | DISCL_BACKGROUND);
+        if (SUCCEEDED(ret)) {
+            ret = DIERR_NOTACQUIRED;
+        }
+    }
+    if (ret == DIERR_INPUTLOST || ret == DIERR_NOTACQUIRED) {
+        ret = IDirectInputDevice8_Acquire(haptic->hwdata->device);
+        if (SUCCEEDED(ret)) {
+            ret = IDirectInputEffect_SetParameters(effect->hweffect->ref, &temp, flags);
+        }
+    }
     if (FAILED(ret)) {
         DI_SetError("Unable to update effect", ret);
         goto err_update;
