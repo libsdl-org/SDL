@@ -409,7 +409,7 @@ WIN_SetWindowIcon(_THIS, SDL_Window * window, SDL_Surface * icon)
     SDL_RWops *dst;
 
     /* Create temporary bitmap buffer */
-    icon_len = 40 + icon->h * icon->w * 4;
+    icon_len = 40 + icon->h * icon->w * sizeof(Uint32);
     icon_bmp = SDL_stack_alloc(BYTE, icon_len);
     dst = SDL_RWFromMem(icon_bmp, icon_len);
     if (!dst) {
@@ -424,7 +424,7 @@ WIN_SetWindowIcon(_THIS, SDL_Window * window, SDL_Surface * icon)
     SDL_WriteLE16(dst, 1);
     SDL_WriteLE16(dst, 32);
     SDL_WriteLE32(dst, BI_RGB);
-    SDL_WriteLE32(dst, icon->h * icon->w * 4);
+    SDL_WriteLE32(dst, icon->h * icon->w * sizeof(Uint32));
     SDL_WriteLE32(dst, 0);
     SDL_WriteLE32(dst, 0);
     SDL_WriteLE32(dst, 0);
@@ -435,7 +435,7 @@ WIN_SetWindowIcon(_THIS, SDL_Window * window, SDL_Surface * icon)
     y = icon->h;
     while (y--) {
         Uint8 *src = (Uint8 *) icon->pixels + y * icon->pitch;
-        SDL_RWwrite(dst, src, icon->pitch, 1);
+        SDL_RWwrite(dst, src, icon->w * sizeof(Uint32), 1);
     }
 
     hicon = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
