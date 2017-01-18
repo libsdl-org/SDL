@@ -196,31 +196,31 @@ SDL_ResampleAudioSimple(const int chans, const double rate_incr,
                         float *last_sample, const float *inbuf,
                         const int inbuflen, float *outbuf, const int outbuflen)
 {
-    const int framelen = chans * sizeof (float);
+    const int framelen = chans * (int)sizeof (float);
     const int total = (inbuflen / framelen);
-    const int finalpos = total - chans;
+    const int finalpos = (total * chans) - chans;
+    const int dest_samples = (int)(((double)total) * rate_incr);
     const double src_incr = 1.0 / rate_incr;
-    double idx = 0.0;
     float *dst = outbuf;
-    int consumed = 0;
+    float *target = (dst + (dest_samples * chans));
+    double idx = 0.0;
     int i;
 
+    SDL_assert((dest_samples * framelen) <= outbuflen);
     SDL_assert((inbuflen % framelen) == 0);
 
-    while (consumed < total) {
+    while(dst < target) {
         const int pos = ((int)idx) * chans;
         const float *src = &inbuf[(pos >= finalpos) ? finalpos : pos];
-        SDL_assert(dst < (outbuf + (outbuflen / framelen)));
         for (i = 0; i < chans; i++) {
             const float val = *(src++);
             *(dst++) = (val + last_sample[i]) * 0.5f;
             last_sample[i] = val;
         }
-        consumed = pos + chans;
         idx += src_incr;
     }
 
-    return (int) ((dst - outbuf) * sizeof (float));
+    return (int) ((dst - outbuf) * (int)sizeof(float));
 }
 
 
