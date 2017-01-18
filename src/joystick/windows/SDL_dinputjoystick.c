@@ -363,7 +363,6 @@ EnumJoysticksCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext)
 		};
 #undef MAKE_TABLE_ENTRY
 		unsigned int i;
-		SDL_bool should_ignore = SDL_FALSE;
 
 		for (i = 0; i < SDL_arraysize(ignored_devices); ++i) {
 			if (pdidInstance->guidProduct.Data1 == ignored_devices[i]) {
