@@ -85,7 +85,12 @@ GetJoystickName(int index, const char *szRegKey)
     char regvalue[256];
     char regname[256];
 
-    SDL_snprintf(regkey, SDL_arraysize(regkey), "%s\\%s\\%s",
+    SDL_snprintf(regkey, SDL_arraysize(regkey),
+#ifdef UNICODE
+                 "%S\\%s\\%S",
+#else
+                 "%s\\%s\\%s",
+#endif
                  REGSTR_PATH_JOYCONFIG, szRegKey, REGSTR_KEY_JOYCURR);
     hTopKey = HKEY_LOCAL_MACHINE;
     regresult = RegOpenKeyExA(hTopKey, regkey, 0, KEY_READ, &hKey);
@@ -110,8 +115,13 @@ GetJoystickName(int index, const char *szRegKey)
     }
 
     /* open that registry key */
-    SDL_snprintf(regkey, SDL_arraysize(regkey), "%s\\%s", REGSTR_PATH_JOYOEM,
-                 regname);
+    SDL_snprintf(regkey, SDL_arraysize(regkey),
+#ifdef UNICODE
+                 "%S\\%s",
+#else
+                 "%s\\%s",
+#endif
+                 REGSTR_PATH_JOYOEM, regname);
     regresult = RegOpenKeyExA(hTopKey, regkey, 0, KEY_READ, &hKey);
     if (regresult != ERROR_SUCCESS) {
         return NULL;
@@ -313,7 +323,7 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
     };
     DWORD pos[MAX_AXES];
     struct _transaxis *transaxis;
-    int value, change;
+    int value;
     JOYINFOEX joyinfo;
 
     joyinfo.dwSize = sizeof(joyinfo);
