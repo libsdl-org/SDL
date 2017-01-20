@@ -209,9 +209,10 @@ SDL_ResampleAudioSimple(const int chans, const double rate_incr,
     SDL_assert((dest_samples * framelen) <= outbuflen);
     SDL_assert((inbuflen % framelen) == 0);
 
-    while(dst < target) {
+    while (dst < target) {
         const int pos = ((int)idx) * chans;
-        const float *src = &inbuf[(pos >= finalpos) ? finalpos : pos];
+        const float *src = &inbuf[pos];
+        SDL_assert(pos <= finalpos);
         for (i = 0; i < chans; i++) {
             const float val = *(src++);
             *(dst++) = (val + last_sample[i]) * 0.5f;
