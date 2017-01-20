@@ -126,11 +126,14 @@ SDL_JoystickAxesCenteredAtZero(SDL_Joystick *joystick)
         Uint16 product;
     } zero_centered_joysticks[] = {
         { 0x0e8f, 0x3013 }, /* HuiJia SNES USB adapter */
+        { 0x05a0, 0x3232 }, /* 8Bitdo Zero Gamepad */
     };
 
     int i;
     Uint16 vendor = SDL_JoystickGetVendor(joystick);
     Uint16 product = SDL_JoystickGetProduct(joystick);
+
+/*printf("JOYSTICK '%s' VID/PID 0x%.4x/0x%.4x AXES: %d\n", joystick->name, vendor, product, joystick->naxes);*/
 
     if (joystick->naxes == 2) {
         /* Assume D-pad or thumbstick style axes are centered at 0 */
