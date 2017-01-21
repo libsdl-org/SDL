@@ -131,6 +131,8 @@ typedef struct
 
     } value;
 
+    SDL_bool committed;
+
 } SDL_GameControllerExtendedBind;
 
 static SDL_GameControllerExtendedBind s_arrBindings[BINDING_COUNT];
@@ -234,6 +236,9 @@ BBindingContainsBinding(const SDL_GameControllerExtendedBind *pBindingA, const S
         if (pBindingA->value.axis.axis != pBindingB->value.axis.axis) {
             return SDL_FALSE;
         }
+        if (!pBindingA->committed) {
+            return SDL_FALSE;
+        }
         {
             int minA = SDL_min(pBindingA->value.axis.axis_min, pBindingA->value.axis.axis_max);
             int maxA = SDL_max(pBindingA->value.axis.axis_min, pBindingA->value.axis.axis_max);
@@ -275,6 +280,23 @@ ConfigureBinding(const SDL_GameControllerExtendedBind *pBinding)
         }
     }
 
+#ifdef DEBUG_CONTROLLERMAP
+    switch ( pBinding->bindType )
+    {
+    case SDL_CONTROLLER_BINDTYPE_NONE:
+            break;
+    case SDL_CONTROLLER_BINDTYPE_BUTTON:
+            SDL_Log("Configuring button binding for button %d\n", pBinding->value.button);
+            break;
+    case SDL_CONTROLLER_BINDTYPE_AXIS:
+            SDL_Log("Configuring axis binding for axis %d %d/%d committed = %s\n", pBinding->value.axis.axis, pBinding->value.axis.axis_min, pBinding->value.axis.axis_max, pBinding->committed ? "true" : "false");
+            break;
+    case SDL_CONTROLLER_BINDTYPE_HAT:
+            SDL_Log("Configuring hat binding for hat %d %d\n", pBinding->value.hat.hat, pBinding->value.hat.hat_mask);
+            break;
+    }
+#endif /* DEBUG_CONTROLLERMAP */
+
     /* Should the new binding override the existing one? */
     pCurrent = &s_arrBindings[iCurrentElement];
     if (pCurrent->bindType != SDL_CONTROLLER_BINDTYPE_NONE) {
@@ -286,7 +308,7 @@ ConfigureBinding(const SDL_GameControllerExtendedBind *pBinding)
                        iCurrentElement == SDL_CONTROLLER_BUTTON_DPAD_LEFT ||
                        iCurrentElement == SDL_CONTROLLER_BUTTON_DPAD_RIGHT);
         bCurrentDPad = (pCurrent->bindType == SDL_CONTROLLER_BINDTYPE_HAT);
-        if (bNativeDPad == bCurrentDPad) {
+        if (bNativeDPad && bCurrentDPad) {
             /* We already have a binding of the type we want, ignore the new one */
             return;
         }
@@ -303,7 +325,11 @@ ConfigureBinding(const SDL_GameControllerExtendedBind *pBinding)
 
     *pCurrent = *pBinding;
 
-    s_unPendingAdvanceTime = SDL_GetTicks();
+    if (pBinding->committed) {
+        s_unPendingAdvanceTime = SDL_GetTicks();
+    } else {
+        s_unPendingAdvanceTime = 0;
+    }
 }
 
 static SDL_bool
@@ -451,15 +477,22 @@ WatchJoystick(SDL_Joystick * joystick)
                     nFarthestDistance = SDL_abs(pAxisState->m_nFarthestValue - pAxisState->m_nStartingValue);
                     if (nCurrentDistance > nFarthestDistance) {
                         pAxisState->m_nFarthestValue = nValue;
+                        nFarthestDistance = SDL_abs(pAxisState->m_nFarthestValue - pAxisState->m_nStartingValue);
                     }
-                    if (nFarthestDistance >= 16000 && nCurrentDistance <= 10000) {
-                        /* We've gone out far enough and started to come back, let's bind this axis */
+
+#ifdef DEBUG_CONTROLLERMAP
+                    SDL_Log("AXIS %d nValue %d nCurrentDistance %d nFarthestDistance %d\n", event.jaxis.axis, nValue, nCurrentDistance, nFarthestDistance);
+#endif
+                    if (nFarthestDistance >= 16000) {
+                        /* If we've gone out far enough and started to come back, let's bind this axis */
+                        SDL_bool bCommitBinding = (nCurrentDistance <= 10000) ? SDL_TRUE : SDL_FALSE;
                         SDL_GameControllerExtendedBind binding;
                         SDL_zero(binding);
                         binding.bindType = SDL_CONTROLLER_BINDTYPE_AXIS;
                         binding.value.axis.axis = event.jaxis.axis;
                         binding.value.axis.axis_min = StandardizeAxisValue(pAxisState->m_nStartingValue);
                         binding.value.axis.axis_max = StandardizeAxisValue(pAxisState->m_nFarthestValue);
+                        binding.committed = bCommitBinding;
                         ConfigureBinding(&binding);
                     }
                 }
@@ -468,10 +501,15 @@ WatchJoystick(SDL_Joystick * joystick)
                 if (event.jhat.which == nJoystickID) {
                     if (event.jhat.value != SDL_HAT_CENTERED) {
                         SDL_GameControllerExtendedBind binding;
+
+#ifdef DEBUG_CONTROLLERMAP
+                        SDL_Log("HAT %d %d\n", event.jhat.hat, event.jhat.value);
+#endif
                         SDL_zero(binding);
                         binding.bindType = SDL_CONTROLLER_BINDTYPE_HAT;
                         binding.value.hat.hat = event.jhat.hat;
                         binding.value.hat.hat_mask = event.jhat.value;
+                        binding.committed = SDL_TRUE;
                         ConfigureBinding(&binding);
                     }
                 }
@@ -481,9 +519,14 @@ WatchJoystick(SDL_Joystick * joystick)
             case SDL_JOYBUTTONDOWN:
                 if (event.jbutton.which == nJoystickID) {
                     SDL_GameControllerExtendedBind binding;
+
+#ifdef DEBUG_CONTROLLERMAP
+                    SDL_Log("BUTTON %d\n", event.jbutton.button);
+#endif
                     SDL_zero(binding);
                     binding.bindType = SDL_CONTROLLER_BINDTYPE_BUTTON;
                     binding.value.button = event.jbutton.button;
+                    binding.committed = SDL_TRUE;
                     ConfigureBinding(&binding);
                 }
                 break;
