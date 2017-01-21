@@ -2912,8 +2912,6 @@ SDL_GL_DeduceMaxSupportedESProfile(int* major, int* minor)
         *major = 2;
         *minor = 0;
     }
-#else
-    return SDL_FALSE;
 #endif
 }
 
