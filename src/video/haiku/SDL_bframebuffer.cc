@@ -76,6 +76,7 @@ int BE_CreateWindowFramebuffer(_THIS, SDL_Window * window,
 			true);	/* Contiguous memory required */
 			
 	if(bitmap->InitCheck() != B_OK) {
+		delete bitmap;
 		return SDL_SetError("Could not initialize back buffer!\n");
 	}
 
