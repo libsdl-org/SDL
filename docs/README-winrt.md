@@ -81,7 +81,7 @@ Here is a rough list of what works, and what doens't:
   * keyboard input.  Most of WinRT's documented virtual keys are supported, as
     well as many keys with documented hardware scancodes.  Converting
     SDL_Scancodes to or from SDL_Keycodes may not work, due to missing APIs
-    (MapVirualKey()) in Microsoft's Windows Store / UWP APIs.
+    (MapVirtualKey()) in Microsoft's Windows Store / UWP APIs.
   * SDLmain.  WinRT uses a different signature for each app's main() function.
     SDL-based apps that use this port must compile in SDL_winrt_main_NonXAML.cpp
     (in `SDL\src\main\winrt\`) directly in order for their C-style main()
