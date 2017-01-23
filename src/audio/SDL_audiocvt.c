@@ -371,8 +371,8 @@ SDL_ResampleCVT_si16_c2(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
     const Sint16 *src = (const Sint16 *) cvt->buf;
     const int srclen = cvt->len_cvt;
-    Sint16 *dst = (Sint16 *) (cvt->buf + srclen);
-    const int dstlen = (cvt->len * cvt->len_mult) - srclen;
+    Sint16 *dst = (Sint16 *) cvt->buf;
+    const int dstlen = (cvt->len * cvt->len_mult);
     Sint16 state[2] = { src[0], src[1] };
 
     SDL_assert(format == AUDIO_S16SYS);
