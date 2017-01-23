@@ -798,6 +798,7 @@ enable_mmx
 enable_3dnow
 enable_sse
 enable_sse2
+enable_sse3
 enable_altivec
 enable_oss
 enable_alsa
@@ -1527,7 +1528,8 @@ Optional Features:
   --enable-mmx            use MMX assembly routines [[default=yes]]
   --enable-3dnow          use 3DNow! assembly routines [[default=yes]]
   --enable-sse            use SSE assembly routines [[default=yes]]
-  --enable-sse2           use SSE2 assembly routines [[default=no]]
+  --enable-sse2           use SSE2 assembly routines [[default=maybe]]
+  --enable-sse3           use SSE3 assembly routines [[default=maybe]]
   --enable-altivec        use Altivec assembly routines [[default=yes]]
   --enable-oss            support the OSS audio API [[default=maybe]]
   --enable-alsa           support the ALSA audio API [[default=yes]]
@@ -17305,6 +17307,63 @@ $as_echo "$have_gcc_sse2" >&6; }
         if test x$have_gcc_sse2 = xyes; then
             EXTRA_CFLAGS="$EXTRA_CFLAGS $sse2_CFLAGS"
             SUMMARY_math="${SUMMARY_math} sse2"
+        fi
+    fi
+
+    # Check whether --enable-sse3 was given.
+if test "${enable_sse3+set}" = set; then :
+  enableval=$enable_sse3;
+else
+  enable_sse3=$default_ssemath
+fi
+
+    if test x$enable_sse3 = xyes; then
+        save_CFLAGS="$CFLAGS"
+        have_gcc_sse3=no
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for GCC -msse3 option" >&5
+$as_echo_n "checking for GCC -msse3 option... " >&6; }
+        sse3_CFLAGS="-msse3"
+        CFLAGS="$save_CFLAGS $sse3_CFLAGS"
+
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+        #ifdef __MINGW32__
+        #include <_mingw.h>
+        #ifdef __MINGW64_VERSION_MAJOR
+        #include <intrin.h>
+        #else
+        #include <pmmintrin.h>
+        #endif
+        #else
+        #include <pmmintrin.h>
+        #endif
+        #ifndef __SSE2__
+        #error Assembler CPP flag not enabled
+        #endif
+
+int
+main ()
+{
+
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+        have_gcc_sse3=yes
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_gcc_sse3" >&5
+$as_echo "$have_gcc_sse3" >&6; }
+        CFLAGS="$save_CFLAGS"
+
+        if test x$have_gcc_sse3 = xyes; then
+            EXTRA_CFLAGS="$EXTRA_CFLAGS $sse3_CFLAGS"
+            SUMMARY_math="${SUMMARY_math} sse3"
         fi
     fi
 

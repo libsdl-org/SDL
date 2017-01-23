@@ -61,6 +61,9 @@
 #ifdef __SSE2__
 #include <emmintrin.h>
 #endif
+#ifdef __SSE3__
+#include <pmmintrin.h>
+#endif
 #endif
 
 #include "begin_code.h"

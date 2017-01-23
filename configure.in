@@ -593,7 +593,7 @@ AC_HELP_STRING([--enable-sse], [use SSE assembly routines [[default=yes]]]),
     fi
 
     AC_ARG_ENABLE(sse2,
-AC_HELP_STRING([--enable-sse2], [use SSE2 assembly routines [[default=no]]]),
+AC_HELP_STRING([--enable-sse2], [use SSE2 assembly routines [[default=maybe]]]),
                   , enable_sse2=$default_ssemath)
     if test x$enable_sse2 = xyes; then
         save_CFLAGS="$CFLAGS"
@@ -626,6 +626,43 @@ AC_HELP_STRING([--enable-sse2], [use SSE2 assembly routines [[default=no]]]),
         if test x$have_gcc_sse2 = xyes; then
             EXTRA_CFLAGS="$EXTRA_CFLAGS $sse2_CFLAGS"
             SUMMARY_math="${SUMMARY_math} sse2"
+        fi
+    fi
+
+    AC_ARG_ENABLE(sse3,
+AC_HELP_STRING([--enable-sse3], [use SSE3 assembly routines [[default=maybe]]]),
+                  , enable_sse3=$default_ssemath)
+    if test x$enable_sse3 = xyes; then
+        save_CFLAGS="$CFLAGS"
+        have_gcc_sse3=no
+        AC_MSG_CHECKING(for GCC -msse3 option)
+        sse3_CFLAGS="-msse3"
+        CFLAGS="$save_CFLAGS $sse3_CFLAGS"
+
+        AC_TRY_COMPILE([
+        #ifdef __MINGW32__
+        #include <_mingw.h>
+        #ifdef __MINGW64_VERSION_MAJOR
+        #include <intrin.h>
+        #else
+        #include <pmmintrin.h>
+        #endif
+        #else
+        #include <pmmintrin.h>
+        #endif
+        #ifndef __SSE2__
+        #error Assembler CPP flag not enabled
+        #endif
+        ],[
+        ],[
+        have_gcc_sse3=yes
+        ])
+        AC_MSG_RESULT($have_gcc_sse3)
+        CFLAGS="$save_CFLAGS"
+
+        if test x$have_gcc_sse3 = xyes; then
+            EXTRA_CFLAGS="$EXTRA_CFLAGS $sse3_CFLAGS"
+            SUMMARY_math="${SUMMARY_math} sse3"
         fi
     fi
 
