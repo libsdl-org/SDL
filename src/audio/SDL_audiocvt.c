@@ -249,49 +249,115 @@ SDL_ResampleAudioSimple(const int chans, const double rate_incr,
     SDL_assert((dest_samples * framelen) <= outbuflen);
     SDL_assert((inbuflen % framelen) == 0);
 
-    if (rate_incr > 1.0) {
+    if (rate_incr > 1.0) {  /* upsample */
         float *target = (outbuf + chans);
-        const float *earlier_sample = &inbuf[finalpos];
-        float final_sample[8];
         dst = outbuf + (dest_samples * chans);
         idx = (double) total;
 
-        /* save this off so we can correctly maintain state between runs. */
-        SDL_memcpy(final_sample, &inbuf[finalpos], framelen);
-
-        while (dst > target) {
-            const int pos = ((int) idx) * chans;
-            const float *src = &inbuf[pos];
-            SDL_assert(pos >= 0.0);
-            for (i = chans - 1; i >= 0; i--) {
+        if (chans == 1) {
+            const float final_sample = inbuf[finalpos];
+            float earlier_sample = inbuf[finalpos];
+            while (dst > target) {
+                const int pos = ((int) idx) * chans;
+                const float *src = &inbuf[pos];
                 const float val = *(--src);
-                *(--dst) = (val + earlier_sample[i]) * 0.5f;
+                SDL_assert(pos >= 0.0);
+                *(--dst) = (val + earlier_sample) * 0.5f;
+                earlier_sample = val;
+                idx -= src_incr;
             }
-            earlier_sample = src;
-            idx -= src_incr;
+            /* do last sample, interpolated against previous run's state. */
+            *(--dst) = (inbuf[0] + last_sample[0]) * 0.5f;
+            *last_sample = final_sample;
+        } else if (chans == 2) {
+            const float final_sample2 = inbuf[finalpos+1];
+            const float final_sample1 = inbuf[finalpos];
+            float earlier_sample2 = inbuf[finalpos];
+            float earlier_sample1 = inbuf[finalpos-1];
+            while (dst > target) {
+                const int pos = ((int) idx) * chans;
+                const float *src = &inbuf[pos];
+                const float val2 = *(--src);
+                const float val1 = *(--src);
+                SDL_assert(pos >= 0.0);
+                *(--dst) = (val2 + earlier_sample2) * 0.5f;
+                *(--dst) = (val1 + earlier_sample1) * 0.5f;
+                earlier_sample2 = val2;
+                earlier_sample1 = val1;
+                idx -= src_incr;
+            }
+            /* do last sample, interpolated against previous run's state. */
+            *(--dst) = (inbuf[1] + last_sample[1]) * 0.5f;
+            *(--dst) = (inbuf[0] + last_sample[0]) * 0.5f;
+            last_sample[1] = final_sample2;
+            last_sample[0] = final_sample1;
+        } else {
+            const float *earlier_sample = &inbuf[finalpos];
+            float final_sample[8];
+            SDL_memcpy(final_sample, &inbuf[finalpos], framelen);
+            while (dst > target) {
+                const int pos = ((int) idx) * chans;
+                const float *src = &inbuf[pos];
+                SDL_assert(pos >= 0.0);
+                for (i = chans - 1; i >= 0; i--) {
+                    const float val = *(--src);
+                    *(--dst) = (val + earlier_sample[i]) * 0.5f;
+                }
+                earlier_sample = src;
+                idx -= src_incr;
+            }
+            /* do last sample, interpolated against previous run's state. */
+            for (i = chans - 1; i >= 0; i--) {
+                const float val = inbuf[i];
+                *(--dst) = (val + last_sample[i]) * 0.5f;
+            }
+            SDL_memcpy(last_sample, final_sample, framelen);
         }
 
-        /* do last sample, interpolated against previous run's state. */
-        for (i = chans - 1; i >= 0; i--) {
-            const float val = inbuf[i];
-            *(--dst) = (val + last_sample[i]) * 0.5f;
-        }
-        SDL_memcpy(last_sample, final_sample, framelen);
         dst = (outbuf + (dest_samples * chans)) - 1;
-    } else {
+    } else {  /* downsample */
         float *target = (outbuf + (dest_samples * chans));
         dst = outbuf;
         idx = 0.0;
-        while (dst < target) {
-            const int pos = ((int) idx) * chans;
-            const float *src = &inbuf[pos];
-            SDL_assert(pos <= finalpos);
-            for (i = 0; i < chans; i++) {
-                const float val = *(src++);
-                *(dst++) = (val + last_sample[i]) * 0.5f;
-                last_sample[i] = val;
+        if (chans == 1) {
+            float last = *last_sample;
+            while (dst < target) {
+                const int pos = ((int) idx) * chans;
+                const float val = inbuf[pos];
+                SDL_assert(pos <= finalpos);
+                *(dst++) = (val + last) * 0.5f;
+                last = val;
+                idx += src_incr;
             }
-            idx += src_incr;
+            *last_sample = last;
+        } else if (chans == 2) {
+            float last1 = last_sample[0];
+            float last2 = last_sample[1];
+            while (dst < target) {
+                const int pos = ((int) idx) * chans;
+                const float val1 = inbuf[pos];
+                const float val2 = inbuf[pos+1];
+                SDL_assert(pos <= finalpos);
+                *(dst++) = (val1 + last1) * 0.5f;
+                *(dst++) = (val2 + last2) * 0.5f;
+                last1 = val1;
+                last2 = val2;
+                idx += src_incr;
+            }
+            last_sample[0] = last1;
+            last_sample[1] = last2;
+        } else {
+            while (dst < target) {
+                const int pos = ((int) idx) * chans;
+                const float *src = &inbuf[pos];
+                SDL_assert(pos <= finalpos);
+                for (i = 0; i < chans; i++) {
+                    const float val = *(src++);
+                    *(dst++) = (val + last_sample[i]) * 0.5f;
+                    last_sample[i] = val;
+                }
+                idx += src_incr;
+            }
         }
     }
 
