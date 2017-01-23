@@ -245,27 +245,60 @@ SDL_ResampleAudioSimple(const int chans, const double rate_incr,
     const int finalpos = (total * chans) - chans;
     const int dest_samples = (int)(((double)total) * rate_incr);
     const double src_incr = 1.0 / rate_incr;
-    float *dst = outbuf;
-    float *target = (dst + (dest_samples * chans));
-    double idx = 0.0;
+    float *dst;
+    double idx;
     int i;
 
     SDL_assert((dest_samples * framelen) <= outbuflen);
     SDL_assert((inbuflen % framelen) == 0);
 
-    while (dst < target) {
-        const int pos = ((int)idx) * chans;
-        const float *src = &inbuf[pos];
-        SDL_assert(pos <= finalpos);
-        for (i = 0; i < chans; i++) {
-            const float val = *(src++);
-            *(dst++) = (val + last_sample[i]) * 0.5f;
-            last_sample[i] = val;
+    if (rate_incr > 1.0) {
+        float *target = (outbuf + chans);
+        const float *earlier_sample = &inbuf[finalpos];
+        float final_sample[8];
+        dst = outbuf + (dest_samples * chans);
+        idx = (double) total;
+
+        /* save this off so we can correctly maintain state between runs. */
+        SDL_memcpy(final_sample, &inbuf[finalpos], framelen);
+
+        while (dst > target) {
+            const int pos = ((int) idx) * chans;
+            const float *src = &inbuf[pos];
+            SDL_assert(pos >= 0.0);
+            for (i = chans - 1; i >= 0; i--) {
+                const float val = *(--src);
+                *(--dst) = (val + earlier_sample[i]) * 0.5f;
+            }
+            earlier_sample = src;
+            idx -= src_incr;
         }
-        idx += src_incr;
+
+        /* do last sample, interpolated against previous run's state. */
+        for (i = chans - 1; i >= 0; i--) {
+            const float val = inbuf[i];
+            *(--dst) = (val + last_sample[i]) * 0.5f;
+        }
+        SDL_memcpy(last_sample, final_sample, framelen);
+        dst = (outbuf + (dest_samples * chans)) - 1;
+    } else {
+        float *target = (outbuf + (dest_samples * chans));
+        dst = outbuf;
+        idx = 0.0;
+        while (dst < target) {
+            const int pos = ((int) idx) * chans;
+            const float *src = &inbuf[pos];
+            SDL_assert(pos <= finalpos);
+            for (i = 0; i < chans; i++) {
+                const float val = *(src++);
+                *(dst++) = (val + last_sample[i]) * 0.5f;
+                last_sample[i] = val;
+            }
+            idx += src_incr;
+        }
     }
 
-    return (int) ((dst - outbuf) * (int)sizeof(float));
+    return (int) ((dst - outbuf) * ((int) sizeof (float)));
 }
 
 
@@ -420,8 +453,8 @@ SDL_ResampleCVT(SDL_AudioCVT *cvt, const int chans, const SDL_AudioFormat format
 {
     const float *src = (const float *) cvt->buf;
     const int srclen = cvt->len_cvt;
-    float *dst = (float *) (cvt->buf + srclen);
-    const int dstlen = (cvt->len * cvt->len_mult) - srclen;
+    float *dst = (float *) cvt->buf;
+    const int dstlen = (cvt->len * cvt->len_mult);
     float state[8];
 
     SDL_assert(format == AUDIO_F32SYS);
@@ -429,8 +462,6 @@ SDL_ResampleCVT(SDL_AudioCVT *cvt, const int chans, const SDL_AudioFormat format
     SDL_memcpy(state, src, chans*sizeof(*src));
 
     cvt->len_cvt = SDL_ResampleAudioSimple(chans, cvt->rate_incr, state, src, srclen, dst, dstlen);
-
-    SDL_memcpy(cvt->buf, dst, cvt->len_cvt);
     if (cvt->filters[++cvt->filter_index]) {
         cvt->filters[cvt->filter_index](cvt, format);
     }
@@ -491,10 +522,6 @@ SDL_BuildAudioResampleCVT(SDL_AudioCVT * cvt, const int dst_channels,
     } else {
         cvt->len_ratio /= ((double) src_rate) / ((double) dst_rate);
     }
-
-    /* the buffer is big enough to hold the destination now, but
-       we need it large enough to hold a separate scratch buffer. */
-    cvt->len_mult *= 2;
 
     return 1;               /* added a converter. */
 }
