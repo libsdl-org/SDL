@@ -501,7 +501,7 @@ SDL_Convert_S32_to_F32_SSE2(SDL_AudioCVT *cvt, SDL_AudioFormat format)
             const __m128d doubles1 = _mm_mul_pd(_mm_cvtepi32_pd(_mm_srli_si128(ints, 8)), divby2147483647);
             const __m128d doubles2 = _mm_mul_pd(_mm_cvtepi32_pd(ints), divby2147483647);
             /* convert to float32, bitshift/or to get these into a vector to store. */
-            _mm_store_ps(dst, _mm_castsi128_ps(_mm_or_si128(_mm_bslli_si128(_mm_castps_si128(_mm_cvtpd_ps(doubles1)), 8), _mm_castps_si128(_mm_cvtpd_ps(doubles2)))));
+            _mm_store_ps(dst, _mm_castsi128_ps(_mm_or_si128(_mm_slli_si128(_mm_castps_si128(_mm_cvtpd_ps(doubles1)), 8), _mm_castps_si128(_mm_cvtpd_ps(doubles2)))));
             i -= 4; mmsrc++; dst += 4;
         }
         src = (const Sint32 *) mmsrc;
@@ -725,7 +725,7 @@ SDL_Convert_F32_to_S32_SSE2(SDL_AudioCVT *cvt, SDL_AudioFormat format)
             /* bitshift the whole register over, so _mm_cvtps_pd can read the top floats in the bottom of the vector. */
             const __m128d doubles1 = _mm_mul_pd(_mm_cvtps_pd(_mm_castsi128_ps(_mm_srli_si128(_mm_castps_si128(floats), 8))), mulby2147483647);
             const __m128d doubles2 = _mm_mul_pd(_mm_cvtps_pd(floats), mulby2147483647);
-            _mm_store_si128(mmdst, _mm_or_si128(_mm_bslli_si128(_mm_cvtpd_epi32(doubles1), 8), _mm_cvtpd_epi32(doubles2)));
+            _mm_store_si128(mmdst, _mm_or_si128(_mm_slli_si128(_mm_cvtpd_epi32(doubles1), 8), _mm_cvtpd_epi32(doubles2)));
             i -= 4; src += 4; mmdst++;
         }
         dst = (Sint32 *) mmdst;
