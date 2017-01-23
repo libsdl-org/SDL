@@ -41,7 +41,7 @@ SDL_ConvertStereoToMono(SDL_AudioCVT * cvt, SDL_AudioFormat format)
     SDL_assert(format == AUDIO_F32SYS);
 
     for (i = cvt->len_cvt / 8; i; --i, src += 2) {
-        *(dst++) = (float) ((((double) src[0]) + ((double) src[1])) * 0.5);
+        *(dst++) = (src[0] + src[1]) * 0.5f;
     }
 
     cvt->len_cvt /= 2;
