@@ -301,6 +301,91 @@ SDL_ResampleAudioSimple(const int chans, const double rate_incr,
     return (int) ((dst - outbuf) * ((int) sizeof (float)));
 }
 
+/* We keep one special-case fast path around for an extremely common audio format. */
+static int
+SDL_ResampleAudioSimple_si16_c2(const double rate_incr,
+                        Sint16 *last_sample, const Sint16 *inbuf,
+                        const int inbuflen, Sint16 *outbuf, const int outbuflen)
+{
+    const int chans = 2;
+    const int framelen = 4;  /* stereo 16 bit */
+    const int total = (inbuflen / framelen);
+    const int finalpos = (total * chans) - chans;
+    const int dest_samples = (int)(((double)total) * rate_incr);
+    const double src_incr = 1.0 / rate_incr;
+    Sint16 *dst;
+    double idx;
+
+    SDL_assert((dest_samples * framelen) <= outbuflen);
+    SDL_assert((inbuflen % framelen) == 0);
+
+    if (rate_incr > 1.0) {
+        Sint16 *target = (outbuf + chans);
+        const Sint16 final_right = inbuf[finalpos+1];
+        const Sint16 final_left = inbuf[finalpos];
+        Sint16 earlier_right = inbuf[finalpos-1];
+        Sint16 earlier_left = inbuf[finalpos-2];
+        dst = outbuf + (dest_samples * chans);
+        idx = (double) total;
+
+        while (dst > target) {
+            const int pos = ((int) idx) * chans;
+            const Sint16 *src = &inbuf[pos];
+            const Sint16 right = *(--src);
+            const Sint16 left = *(--src);
+            SDL_assert(pos >= 0.0);
+            *(--dst) = (((Sint32) right) + ((Sint32) earlier_right)) >> 1;
+            *(--dst) = (((Sint32) left) + ((Sint32) earlier_left)) >> 1;
+            earlier_right = right;
+            earlier_left = left;
+            idx -= src_incr;
+        }
+
+        /* do last sample, interpolated against previous run's state. */
+        *(--dst) = (((Sint32) inbuf[1]) + ((Sint32) last_sample[1])) >> 1;
+        *(--dst) = (((Sint32) inbuf[0]) + ((Sint32) last_sample[0])) >> 1;
+        last_sample[1] = final_right;
+        last_sample[0] = final_left;
+
+        dst = (outbuf + (dest_samples * chans)) - 1;
+    } else {
+        Sint16 *target = (outbuf + (dest_samples * chans));
+        dst = outbuf;
+        idx = 0.0;
+        while (dst < target) {
+            const int pos = ((int) idx) * chans;
+            const Sint16 *src = &inbuf[pos];
+            const Sint16 left = *(src++);
+            const Sint16 right = *(src++);
+            SDL_assert(pos <= finalpos);
+            *(dst++) = (((Sint32) left) + ((Sint32) last_sample[0])) >> 1;
+            *(dst++) = (((Sint32) right) + ((Sint32) last_sample[1])) >> 1;
+            last_sample[0] = left;
+            last_sample[1] = right;
+            idx += src_incr;
+        }
+    }
+
+    return (int) ((dst - outbuf) * ((int) sizeof (Sint16)));
+}
+
+static void SDLCALL
+SDL_ResampleCVT_si16_c2(SDL_AudioCVT *cvt, SDL_AudioFormat format)
+{
+    const Sint16 *src = (const Sint16 *) cvt->buf;
+    const int srclen = cvt->len_cvt;
+    Sint16 *dst = (Sint16 *) (cvt->buf + srclen);
+    const int dstlen = (cvt->len * cvt->len_mult) - srclen;
+    Sint16 state[2] = { src[0], src[1] };
+
+    SDL_assert(format == AUDIO_S16SYS);
+
+    cvt->len_cvt = SDL_ResampleAudioSimple_si16_c2(cvt->rate_incr, state, src, srclen, dst, dstlen);
+    if (cvt->filters[++cvt->filter_index]) {
+        cvt->filters[cvt->filter_index](cvt, format);
+    }
+}
+
 
 int
 SDL_ConvertAudio(SDL_AudioCVT * cvt)
@@ -574,6 +659,30 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
     cvt->len_mult = 1;
     cvt->len_ratio = 1.0;
     cvt->rate_incr = ((double) dst_rate) / ((double) src_rate);
+
+    /* SDL now favors float32 as its preferred internal format, and considers
+       everything else to be a degenerate case that we might have to make
+       multiple passes over the data to convert to and from float32 as
+       necessary. That being said, we keep one special case around for
+       efficiency: stereo data in Sint16 format, in the native byte order,
+       that only needs resampling. This is likely to be the most popular
+       legacy format, that apps, hardware and the OS are likely to be able
+       to process directly, so we handle this one case directly without
+       unnecessary conversions. This means that apps on embedded devices
+       without floating point hardware should consider aiming for this
+       format as well. */
+    if ((src_channels == 2) && (dst_channels == 2) && (src_fmt == AUDIO_S16SYS) && (dst_fmt == AUDIO_S16SYS) && (src_rate != dst_rate)) {
+        cvt->needed = 1;
+        cvt->filters[cvt->filter_index++] = SDL_ResampleCVT_si16_c2;
+        if (src_rate < dst_rate) {
+            const double mult = ((double) dst_rate) / ((double) src_rate);
+            cvt->len_mult *= (int) SDL_ceil(mult);
+            cvt->len_ratio *= mult;
+        } else {
+            cvt->len_ratio /= ((double) src_rate) / ((double) dst_rate);
+        }
+        return 1;
+    }
 
     /* Type conversion goes like this now:
         - byteswap to CPU native format first if necessary.
