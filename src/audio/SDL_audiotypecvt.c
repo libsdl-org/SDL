@@ -639,7 +639,7 @@ SDL_Convert_F32_to_S16_SSE2(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 
     /* Finish off any leftovers with scalar operations. */
     while (i) {
-        *dst = (((float) *src) * DIVBY32767);
+        *dst = (Sint16) (*src * 32767.0f);
         i--; src++; dst++;
     }
 
