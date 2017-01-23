@@ -29,6 +29,50 @@
 #include "SDL_assert.h"
 #include "../SDL_dataqueue.h"
 
+/* !!! FIXME: wire this up to the configure script, etc. */
+#include "SDL_cpuinfo.h"
+#define HAVE_SSE3_INTRINSICS 0
+
+#if HAVE_SSE3_INTRINSICS
+#include <pmmintrin.h>
+#endif
+
+#if HAVE_SSE3_INTRINSICS
+/* Effectively mix right and left channels into a single channel */
+static void SDLCALL
+SDL_ConvertStereoToMono_SSE3(SDL_AudioCVT * cvt, SDL_AudioFormat format)
+{
+    float *dst = (float *) cvt->buf;
+    const float *src = dst;
+    int i = cvt->len_cvt / 8;
+
+    LOG_DEBUG_CONVERT("stereo", "mono (using SSE3)");
+    SDL_assert(format == AUDIO_F32SYS);
+
+    /* We can only do this if dst is aligned to 16 bytes; since src is the
+       same pointer and it moves by 2, it can't be forcibly aligned. */
+    if ((((size_t) dst) & 15) == 0) {
+        /* Aligned! Do SSE blocks as long as we have 16 bytes available. */
+        const __m128 divby2 = _mm_set1_ps(0.5f);
+        while (i >= 4) {   /* 4 * float32 */
+            _mm_store_ps(dst, _mm_mul_ps(_mm_hadd_ps(_mm_load_ps(src), _mm_load_ps(src+4)), divby2));
+            i -= 4; src += 8; dst += 4;
+        }
+    }
+
+    /* Finish off any leftovers with scalar operations. */
+    while (i) {
+        *dst = (src[0] + src[1]) * 0.5f;
+        dst++; i--; src += 2;
+    }
+
+    cvt->len_cvt /= 2;
+    if (cvt->filters[++cvt->filter_index]) {
+        cvt->filters[cvt->filter_index] (cvt, format);
+    }
+}
+#endif
+
 /* Effectively mix right and left channels into a single channel */
 static void SDLCALL
 SDL_ConvertStereoToMono(SDL_AudioCVT * cvt, SDL_AudioFormat format)
@@ -579,7 +623,20 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
          */
         while (((src_channels % 2) == 0) &&
                ((src_channels / 2) >= dst_channels)) {
-            cvt->filters[cvt->filter_index++] = SDL_ConvertStereoToMono;
+            SDL_AudioFilter filter = NULL;
+
+            #if HAVE_SSE3_INTRINSICS
+            if (SDL_HasSSE3()) {
+                filter = SDL_ConvertStereoToMono_SSE3;
+            }
+            #endif
+
+            if (!filter) {
+                filter = SDL_ConvertStereoToMono;
+            }
+
+            cvt->filters[cvt->filter_index++] = filter;
+
             src_channels /= 2;
             cvt->len_ratio /= 2;
         }
