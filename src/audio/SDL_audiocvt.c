@@ -28,13 +28,10 @@
 #include "SDL_loadso.h"
 #include "SDL_assert.h"
 #include "../SDL_dataqueue.h"
-
-/* !!! FIXME: wire this up to the configure script, etc. */
 #include "SDL_cpuinfo.h"
-#define HAVE_SSE3_INTRINSICS 0
 
-#if HAVE_SSE3_INTRINSICS
-#include <pmmintrin.h>
+#ifdef __SSE3__
+#define HAVE_SSE3_INTRINSICS 1
 #endif
 
 #if HAVE_SSE3_INTRINSICS

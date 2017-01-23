@@ -262,6 +262,7 @@ set_option(MMX                 "Use MMX assembly routines" ${OPT_DEF_ASM})
 set_option(3DNOW               "Use 3Dnow! MMX assembly routines" ${OPT_DEF_ASM})
 set_option(SSE                 "Use SSE assembly routines" ${OPT_DEF_ASM})
 set_option(SSE2                "Use SSE2 assembly routines" ${OPT_DEF_SSEMATH})
+set_option(SSE3                "Use SSE3 assembly routines" ${OPT_DEF_SSEMATH})
 set_option(ALTIVEC             "Use Altivec assembly routines" ${OPT_DEF_ASM})
 set_option(DISKAUDIO           "Support the disk writer audio driver" ON)
 set_option(DUMMYAUDIO          "Support the dummy audio driver" ON)
@@ -516,8 +517,31 @@ if(ASSEMBLY)
       set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
     endif()
 
+    if(SSE3)
+      set(CMAKE_REQUIRED_FLAGS "-msse3")
+      check_c_source_compiles("
+          #ifdef __MINGW32__
+          #include <_mingw.h>
+          #ifdef __MINGW64_VERSION_MAJOR
+          #include <intrin.h>
+          #else
+          #include <pmmintrin.h>
+          #endif
+          #else
+          #include <pmmintrin.h>
+          #endif
+          #ifndef __SSE3__
+          #error Assembler CPP flag not enabled
+          #endif
+          int main(int argc, char **argv) { }" HAVE_SSE3)
+      if(HAVE_SSE3)
+        list(APPEND EXTRA_CFLAGS "-msse3")
+      endif()
+      set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
+    endif()
+
     if(SSEMATH)
-      if(SSE OR SSE2)
+      if(SSE OR SSE2 OR SSE3)
         if(USE_GCC)
           list(APPEND EXTRA_CFLAGS "-mfpmath=387")
         endif()
@@ -557,12 +581,13 @@ if(ASSEMBLY)
     endif()
     set(HAVE_SSE TRUE)
     set(HAVE_SSE2 TRUE)
+    set(HAVE_SSE3 TRUE)
     set(SDL_ASSEMBLY_ROUTINES 1)
   endif()
 # TODO:
 #else()
 #  if(USE_GCC OR USE_CLANG)
-#    list(APPEND EXTRA_CFLAGS "-mno-sse" "-mno-sse2" "-mno-mmx")
+#    list(APPEND EXTRA_CFLAGS "-mno-sse" "-mno-sse2" "-mno-sse3" "-mno-mmx")
 #  endif()
 endif()
 

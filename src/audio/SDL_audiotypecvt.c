@@ -28,11 +28,8 @@
 /* !!! FIXME: write NEON code. */
 #define HAVE_NEON_INTRINSICS 0
 
-/* !!! FIXME: wire this up to the configure script, etc. */
-#define HAVE_SSE2_INTRINSICS 0
-
-#if HAVE_SSE2_INTRINSICS
-#include <emmintrin.h>
+#ifdef __SSE2__
+#define HAVE_SSE2_INTRINSICS 1
 #endif
 
 #if defined(__x86_64__) && HAVE_SSE2_INTRINSICS
