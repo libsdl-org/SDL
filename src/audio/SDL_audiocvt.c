@@ -869,8 +869,6 @@ struct SDL_AudioStream
     SDL_DataQueue *queue;
     Uint8 *work_buffer;
     int work_buffer_len;
-    Uint8 *resample_buffer;
-    int resample_buffer_len;
     int src_sample_frame_size;
     SDL_AudioFormat src_format;
     Uint8 src_channels;
@@ -1145,6 +1143,7 @@ int
 SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, const Uint32 _buflen)
 {
     int buflen = (int) _buflen;
+    SDL_bool copied = SDL_FALSE;
 
     if (!stream) {
         return SDL_InvalidParamError("stream");
@@ -1162,6 +1161,7 @@ SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, const Uint32 _bufle
         if (workbuf == NULL) {
             return -1;  /* probably out of memory. */
         }
+        copied = SDL_TRUE;
         SDL_memcpy(workbuf, buf, buflen);
         stream->cvt_before_resampling.buf = workbuf;
         stream->cvt_before_resampling.len = buflen;
@@ -1174,30 +1174,27 @@ SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, const Uint32 _bufle
 
     if (stream->dst_rate != stream->src_rate) {
         const int workbuflen = buflen * ((int) SDL_ceil(stream->rate_incr));
-        void *workbuf = EnsureBufferSize(&stream->resample_buffer, &stream->resample_buffer_len, workbuflen);
+        void *workbuf = EnsureBufferSize(&stream->work_buffer, &stream->work_buffer_len, workbuflen);
         if (workbuf == NULL) {
             return -1;  /* probably out of memory. */
         }
-        buflen = stream->resampler_func(stream, buf, buflen, workbuf, workbuflen);
+        if (!copied) {
+            SDL_memcpy(workbuf, buf, buflen);
+            copied = SDL_TRUE;
+        }
+        buflen = stream->resampler_func(stream, workbuf, buflen, workbuf, workbuflen);
         buf = workbuf;
     }
 
     if (stream->cvt_after_resampling.needed) {
         const int workbuflen = buflen * stream->cvt_after_resampling.len_mult;  /* will be "* 1" if not needed */
-        Uint8 *workbuf;
-
-        if (buf == stream->resample_buffer) {
-            workbuf = EnsureBufferSize(&stream->resample_buffer, &stream->resample_buffer_len, workbuflen);
-        } else {
-            const int inplace = (buf == stream->work_buffer);
-            workbuf = EnsureBufferSize(&stream->work_buffer, &stream->work_buffer_len, workbuflen);
-            if (workbuf && !inplace) {
-                SDL_memcpy(workbuf, buf, buflen);
-            }
-        }
-
+        Uint8 *workbuf = EnsureBufferSize(&stream->work_buffer, &stream->work_buffer_len, workbuflen);
         if (workbuf == NULL) {
             return -1;  /* probably out of memory. */
+        }
+        if (!copied) {
+            SDL_memcpy(workbuf, buf, buflen);
+            copied = SDL_TRUE;
         }
 
         stream->cvt_after_resampling.buf = workbuf;
@@ -1260,7 +1257,6 @@ SDL_FreeAudioStream(SDL_AudioStream *stream)
         }
         SDL_FreeDataQueue(stream->queue);
         SDL_free(stream->work_buffer);
-        SDL_free(stream->resample_buffer);
         SDL_free(stream);
     }
 }
