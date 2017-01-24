@@ -1147,7 +1147,7 @@ int
 SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, const Uint32 _buflen)
 {
     int buflen = (int) _buflen;
-    SDL_bool copied = SDL_FALSE;
+    const void *origbuf = buf;
 
     /* !!! FIXME: several converters can take advantage of SIMD, but only
        !!! FIXME:  if the data is aligned to 16 bytes. EnsureStreamBufferSize()
@@ -1173,7 +1173,7 @@ SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, const Uint32 _bufle
         if (workbuf == NULL) {
             return -1;  /* probably out of memory. */
         }
-        copied = SDL_TRUE;
+        SDL_assert(buf == origbuf);
         SDL_memcpy(workbuf, buf, buflen);
         stream->cvt_before_resampling.buf = workbuf;
         stream->cvt_before_resampling.len = buflen;
@@ -1190,9 +1190,8 @@ SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, const Uint32 _bufle
         if (workbuf == NULL) {
             return -1;  /* probably out of memory. */
         }
-        if (!copied) {
+        if (buf == origbuf) {  /* copy if we haven't before. */
             SDL_memcpy(workbuf, buf, buflen);
-            copied = SDL_TRUE;
         }
         buflen = stream->resampler_func(stream, workbuf, buflen, workbuf, workbuflen);
         buf = workbuf;
@@ -1204,11 +1203,9 @@ SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, const Uint32 _bufle
         if (workbuf == NULL) {
             return -1;  /* probably out of memory. */
         }
-        if (!copied) {
+        if (buf == origbuf) {  /* copy if we haven't before. */
             SDL_memcpy(workbuf, buf, buflen);
-            copied = SDL_TRUE;
         }
-
         stream->cvt_after_resampling.buf = workbuf;
         stream->cvt_after_resampling.len = buflen;
         if (SDL_ConvertAudio(&stream->cvt_after_resampling) == -1) {
