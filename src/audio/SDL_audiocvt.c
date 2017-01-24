@@ -947,7 +947,7 @@ SetupLibSampleRateResampling(SDL_AudioStream *stream)
     SRC_STATE *state = NULL;
 
     if (SRC_available) {
-        state = SRC_src_new(SRC_SINC_FASTEST, stream->pre_resample_channels, &result);
+        state = SRC_src_new(SRC_converter, stream->pre_resample_channels, &result);
         if (!state) {
             SDL_SetError("src_new() failed: %s", SRC_src_strerror(result));
         }
