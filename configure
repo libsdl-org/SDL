@@ -1524,7 +1524,7 @@ Optional Features:
   --enable-cpuinfo        Enable the cpuinfo subsystem [[default=yes]]
   --enable-assembly       Enable assembly routines [[default=yes]]
   --enable-ssemath        Allow GCC to use SSE floating point math
-                          [[default=no]]
+                          [[default=maybe]]
   --enable-mmx            use MMX assembly routines [[default=yes]]
   --enable-3dnow          use 3DNow! assembly routines [[default=yes]]
   --enable-sse            use SSE assembly routines [[default=yes]]
@@ -17083,7 +17083,7 @@ else
 fi
 
     if test x$enable_ssemath = xno; then
-        if test x$have_gcc_sse = xyes -o x$have_gcc_sse2 = xyes; then
+        if test x$have_gcc_sse = xyes -o x$have_gcc_sse2 = xyes -o x$have_gcc_sse3 = xyes; then
             EXTRA_CFLAGS="$EXTRA_CFLAGS -mfpmath=387"
         fi
     fi

@@ -479,10 +479,10 @@ if test x$enable_assembly = xyes; then
             ;;
     esac
     AC_ARG_ENABLE(ssemath,
-AC_HELP_STRING([--enable-ssemath], [Allow GCC to use SSE floating point math [[default=no]]]),
+AC_HELP_STRING([--enable-ssemath], [Allow GCC to use SSE floating point math [[default=maybe]]]),
                   , enable_ssemath=$default_ssemath)
     if test x$enable_ssemath = xno; then
-        if test x$have_gcc_sse = xyes -o x$have_gcc_sse2 = xyes; then
+        if test x$have_gcc_sse = xyes -o x$have_gcc_sse2 = xyes -o x$have_gcc_sse3 = xyes; then
             EXTRA_CFLAGS="$EXTRA_CFLAGS -mfpmath=387"
         fi
     fi
