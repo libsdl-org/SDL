@@ -113,6 +113,7 @@ static const AudioBootStrap *const bootstrap[] = {
 static void *SRC_lib = NULL;
 #endif
 SDL_bool SRC_available = SDL_FALSE;
+int SRC_converter = 0;
 SRC_STATE* (*SRC_src_new)(int converter_type, int channels, int *error) = NULL;
 int (*SRC_src_process)(SRC_STATE *state, SRC_DATA *data) = NULL;
 int (*SRC_src_reset)(SRC_STATE *state) = NULL;
@@ -122,10 +123,25 @@ const char* (*SRC_src_strerror)(int error) = NULL;
 static SDL_bool
 LoadLibSampleRate(void)
 {
-    SRC_available = SDL_FALSE;
+    const char *hint = SDL_GetHint(SDL_HINT_AUDIO_RESAMPLER_MODE);
 
-    if (!SDL_GetHintBoolean("SDL_AUDIO_ALLOW_LIBRESAMPLE", SDL_TRUE)) {
-        return SDL_FALSE;
+    SRC_available = SDL_FALSE;
+    SRC_converter = 0;
+
+    if (!hint || (SDL_strcasecmp(hint, "default") == 0)) {
+        return SDL_FALSE;  /* don't load anything. */
+    } else if (SDL_strcasecmp(hint, "linear") == 0) {
+        SRC_converter = SRC_LINEAR;
+    } else if (SDL_strcasecmp(hint, "zero_order_hold") == 0) {
+        SRC_converter = SRC_ZERO_ORDER_HOLD;
+    } else if (SDL_strcasecmp(hint, "sinc_fastest") == 0) {
+        SRC_converter = SRC_SINC_FASTEST;
+    } else if (SDL_strcasecmp(hint, "sinc_medium") == 0) {
+        SRC_converter = SRC_SINC_MEDIUM_QUALITY;
+    } else if (SDL_strcasecmp(hint, "sinc_best") == 0) {
+        SRC_converter = SRC_SINC_BEST_QUALITY;
+    } else {
+        return SDL_FALSE;  /* treat it like "default", don't load anything. */
     }
 
 #ifdef SDL_LIBSAMPLERATE_DYNAMIC
