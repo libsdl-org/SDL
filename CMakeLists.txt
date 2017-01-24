@@ -540,7 +540,7 @@ if(ASSEMBLY)
       set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
     endif()
 
-    if(SSEMATH)
+    if(NOT SSEMATH)
       if(SSE OR SSE2 OR SSE3)
         if(USE_GCC)
           list(APPEND EXTRA_CFLAGS "-mfpmath=387")
