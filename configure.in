@@ -3791,30 +3791,35 @@ if test x$have_x = xyes; then
     SUMMARY="${SUMMARY}X11 libraries   :${SUMMARY_video_x11}\n"
 fi
 SUMMARY="${SUMMARY}Input drivers   :${SUMMARY_input}\n"
-if test x$have_libudev_h_hdr = xyes; then
-    SUMMARY="${SUMMARY}Using libudev   : YES\n"
+if test x$have_samplerate_h_hdr = xyes; then
+    SUMMARY="${SUMMARY}Using libsamplerate : YES\n"
 else
-    SUMMARY="${SUMMARY}Using libudev   : NO\n"
+    SUMMARY="${SUMMARY}Using libsamplerate : NO\n"
+fi
+if test x$have_libudev_h_hdr = xyes; then
+    SUMMARY="${SUMMARY}Using libudev       : YES\n"
+else
+    SUMMARY="${SUMMARY}Using libudev       : NO\n"
 fi
 if test x$have_dbus_dbus_h_hdr = xyes; then
-    SUMMARY="${SUMMARY}Using dbus      : YES\n"
+    SUMMARY="${SUMMARY}Using dbus          : YES\n"
 else
-    SUMMARY="${SUMMARY}Using dbus      : NO\n"
+    SUMMARY="${SUMMARY}Using dbus          : NO\n"
 fi
 if test x$enable_ime = xyes; then
-    SUMMARY="${SUMMARY}Using ime       : YES\n"
+    SUMMARY="${SUMMARY}Using ime           : YES\n"
 else
-    SUMMARY="${SUMMARY}Using ime       : NO\n"
+    SUMMARY="${SUMMARY}Using ime           : NO\n"
 fi
 if test x$have_ibus_ibus_h_hdr = xyes; then
-    SUMMARY="${SUMMARY}Using ibus      : YES\n"
+    SUMMARY="${SUMMARY}Using ibus          : YES\n"
 else
-    SUMMARY="${SUMMARY}Using ibus      : NO\n"
+    SUMMARY="${SUMMARY}Using ibus          : NO\n"
 fi
 if test x$have_fcitx_frontend_h_hdr = xyes; then
-    SUMMARY="${SUMMARY}Using fcitx     : YES\n"
+    SUMMARY="${SUMMARY}Using fcitx         : YES\n"
 else
-    SUMMARY="${SUMMARY}Using fcitx     : NO\n"
+    SUMMARY="${SUMMARY}Using fcitx         : NO\n"
 fi
 AC_CONFIG_COMMANDS([summary], [echo -en "$SUMMARY"], [SUMMARY="$SUMMARY"])
 
