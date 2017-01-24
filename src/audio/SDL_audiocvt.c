@@ -314,7 +314,7 @@ SDL_ResampleAudioSimple(const int chans, const double rate_incr,
             SDL_memcpy(last_sample, final_sample, framelen);
         }
 
-        dst = (outbuf + (dest_samples * chans)) - 1;
+        dst = (outbuf + (dest_samples * chans));
     } else {  /* downsample */
         float *target = (outbuf + (dest_samples * chans));
         dst = outbuf;
@@ -410,7 +410,7 @@ SDL_ResampleAudioSimple_si16_c2(const double rate_incr,
         last_sample[1] = final_right;
         last_sample[0] = final_left;
 
-        dst = (outbuf + (dest_samples * chans)) - 1;
+        dst = (outbuf + (dest_samples * chans));
     } else {
         Sint16 *target = (outbuf + (dest_samples * chans));
         dst = outbuf;
