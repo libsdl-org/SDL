@@ -867,7 +867,8 @@ struct SDL_AudioStream
     SDL_AudioCVT cvt_before_resampling;
     SDL_AudioCVT cvt_after_resampling;
     SDL_DataQueue *queue;
-    Uint8 *work_buffer;
+    Uint8 *work_buffer;  /* always aligned to 16 bytes. */
+    Uint8 *work_buffer_base;  /* maybe unaligned pointer from SDL_realloc(). */
     int work_buffer_len;
     int src_sample_frame_size;
     SDL_AudioFormat src_format;
@@ -1125,18 +1126,21 @@ SDL_NewAudioStream(const SDL_AudioFormat src_format,
 }
 
 static Uint8 *
-EnsureBufferSize(Uint8 **buf, int *len, const int newlen)
+EnsureStreamBufferSize(SDL_AudioStream *stream, const int newlen)
 {
-    if (*len < newlen) {
-        void *ptr = SDL_realloc(*buf, newlen);
+    if (stream->work_buffer_len < newlen) {
+        Uint8 *ptr = (Uint8 *) SDL_realloc(stream->work_buffer_base, newlen + 32);
+        const size_t offset = ((size_t) ptr) & 15;
         if (!ptr) {
             SDL_OutOfMemory();
             return NULL;
         }
-        *buf = (Uint8 *) ptr;
-        *len = newlen;
+        /* Make sure we're aligned to 16 bytes for SIMD code. */
+        stream->work_buffer = offset ? ptr + (16 - offset) : ptr;
+        stream->work_buffer_base = ptr;
+        stream->work_buffer_len = newlen;
     }
-    return *buf;
+    return stream->work_buffer;
 }
 
 int
@@ -1144,6 +1148,14 @@ SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, const Uint32 _bufle
 {
     int buflen = (int) _buflen;
     SDL_bool copied = SDL_FALSE;
+
+    /* !!! FIXME: several converters can take advantage of SIMD, but only
+       !!! FIXME:  if the data is aligned to 16 bytes. EnsureStreamBufferSize()
+       !!! FIXME:  guarantees the buffer will align, but the
+       !!! FIXME:  converters will iterate over the data backwards if
+       !!! FIXME:  the output grows, and this means we won't align if buflen
+       !!! FIXME:  isn't a multiple of 16. In these cases, we should chop off
+       !!! FIXME:  a few samples at the end and convert them separately. */
 
     if (!stream) {
         return SDL_InvalidParamError("stream");
@@ -1157,7 +1169,7 @@ SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, const Uint32 _bufle
 
     if (stream->cvt_before_resampling.needed) {
         const int workbuflen = buflen * stream->cvt_before_resampling.len_mult;  /* will be "* 1" if not needed */
-        Uint8 *workbuf = EnsureBufferSize(&stream->work_buffer, &stream->work_buffer_len, workbuflen);
+        Uint8 *workbuf = EnsureStreamBufferSize(stream, workbuflen);
         if (workbuf == NULL) {
             return -1;  /* probably out of memory. */
         }
@@ -1174,7 +1186,7 @@ SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, const Uint32 _bufle
 
     if (stream->dst_rate != stream->src_rate) {
         const int workbuflen = buflen * ((int) SDL_ceil(stream->rate_incr));
-        void *workbuf = EnsureBufferSize(&stream->work_buffer, &stream->work_buffer_len, workbuflen);
+        Uint8 *workbuf = EnsureStreamBufferSize(stream, workbuflen);
         if (workbuf == NULL) {
             return -1;  /* probably out of memory. */
         }
@@ -1188,7 +1200,7 @@ SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, const Uint32 _bufle
 
     if (stream->cvt_after_resampling.needed) {
         const int workbuflen = buflen * stream->cvt_after_resampling.len_mult;  /* will be "* 1" if not needed */
-        Uint8 *workbuf = EnsureBufferSize(&stream->work_buffer, &stream->work_buffer_len, workbuflen);
+        Uint8 *workbuf = EnsureStreamBufferSize(stream, workbuflen);
         if (workbuf == NULL) {
             return -1;  /* probably out of memory. */
         }
@@ -1256,7 +1268,7 @@ SDL_FreeAudioStream(SDL_AudioStream *stream)
             stream->cleanup_resampler_func(stream);
         }
         SDL_FreeDataQueue(stream->queue);
-        SDL_free(stream->work_buffer);
+        SDL_free(stream->work_buffer_base);
         SDL_free(stream);
     }
 }
