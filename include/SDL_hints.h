@@ -780,36 +780,26 @@ extern "C" {
  *
  *  If available, SDL can use libsamplerate ( http://www.mega-nerd.com/SRC/ )
  *  to handle audio resampling. There are different resampling modes available
- *  that produce different levels of quality, possibly using more CPU.
+ *  that produce different levels of quality, using more CPU.
  *
  *  If this hint isn't specified to a valid setting, or libsamplerate isn't
- *  available, SDL will act as if this hint was set to "fast".
+ *  available, SDL will use the default, internal resampling algorithm.
  *
  *  Note that this is currently only applicable to resampling audio that is
  *  being written to a device for playback or audio being read from a device
- *  for capture. SDL_AudioCVT always uses the "fast" resampler (although this
+ *  for capture. SDL_AudioCVT always uses the default resampler (although this
  *  might change for SDL 2.1).
  *
- *  Most things can probably live with the "fast" resampler, but if quality
- *  is important or you can spare some CPU cycles, the other options are
- *  worth exploring!
- *
- *  libsamplerate's interpolators, that these hints map to, are explained here:
- *     http://www.mega-nerd.com/SRC/api_misc.html#Converters
- *
- *  This hint is only checked at audio subsystem init time and changes to it
- *  at other times are ignored.
+ *  This hint is currently only checked at audio subsystem initialization.
  *
  *  This variable can be set to the following values:
  *
- *    "default"  - Use SDL's internal, resampler. (Default when not set. low quality, fast.)
- *    "linear" - Use libsamplerate's Linear interpolator (low quality, fast).
- *    "zero_order_hold" - Use libsamplerate's Zero Order Hold interpolator (low quality, fast).
- *    "sinc_fastest" - Use libsamplerate's fastest (lowest quality) sinc interpolator.
- *    "sinc_medium" - Use libsamplerate's medium quality sinc interpolator.
- *    "sinc_best" - Use libsamplerate's best quality sinc interpolator.
+ *    "0" or "default" - Use SDL's internal resampling (Default when not set - low quality, fast)
+ *    "1" or "fast"    - Use fast, slightly higher quality resampling, if available
+ *    "2" or "medium"  - Use medium quality resampling, if available
+ *    "3" or "best"    - Use high quality resampling, if available
  */
-#define SDL_HINT_AUDIO_RESAMPLER_MODE   "SDL_AUDIO_RESAMPLER_MODE"
+#define SDL_HINT_AUDIO_RESAMPLING_MODE   "SDL_AUDIO_RESAMPLING_MODE"
 
 /**
  *  \brief  An enumeration of hint priorities
