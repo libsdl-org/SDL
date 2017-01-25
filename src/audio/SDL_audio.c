@@ -123,22 +123,18 @@ const char* (*SRC_src_strerror)(int error) = NULL;
 static SDL_bool
 LoadLibSampleRate(void)
 {
-    const char *hint = SDL_GetHint(SDL_HINT_AUDIO_RESAMPLER_MODE);
+    const char *hint = SDL_GetHint(SDL_HINT_AUDIO_RESAMPLING_MODE);
 
     SRC_available = SDL_FALSE;
     SRC_converter = 0;
 
-    if (!hint || (SDL_strcasecmp(hint, "default") == 0)) {
+    if (!hint || *hint == '0' || SDL_strcasecmp(hint, "default") == 0) {
         return SDL_FALSE;  /* don't load anything. */
-    } else if (SDL_strcasecmp(hint, "linear") == 0) {
-        SRC_converter = SRC_LINEAR;
-    } else if (SDL_strcasecmp(hint, "zero_order_hold") == 0) {
-        SRC_converter = SRC_ZERO_ORDER_HOLD;
-    } else if (SDL_strcasecmp(hint, "sinc_fastest") == 0) {
+    } else if (*hint == '1' || SDL_strcasecmp(hint, "fast") == 0) {
         SRC_converter = SRC_SINC_FASTEST;
-    } else if (SDL_strcasecmp(hint, "sinc_medium") == 0) {
+    } else if (*hint == '2' || SDL_strcasecmp(hint, "medium") == 0) {
         SRC_converter = SRC_SINC_MEDIUM_QUALITY;
-    } else if (SDL_strcasecmp(hint, "sinc_best") == 0) {
+    } else if (*hint == '3' || SDL_strcasecmp(hint, "best") == 0) {
         SRC_converter = SRC_SINC_BEST_QUALITY;
     } else {
         return SDL_FALSE;  /* treat it like "default", don't load anything. */
