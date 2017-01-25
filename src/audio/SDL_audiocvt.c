@@ -867,7 +867,6 @@ struct SDL_AudioStream
     SDL_AudioCVT cvt_before_resampling;
     SDL_AudioCVT cvt_after_resampling;
     SDL_DataQueue *queue;
-    Uint8 *work_buffer;  /* always aligned to 16 bytes. */
     Uint8 *work_buffer_base;  /* maybe unaligned pointer from SDL_realloc(). */
     int work_buffer_len;
     int src_sample_frame_size;
@@ -887,6 +886,29 @@ struct SDL_AudioStream
     SDL_CleanupAudioStreamResamplerFunc cleanup_resampler_func;
 };
 
+static Uint8 *
+EnsureStreamBufferSize(SDL_AudioStream *stream, const int newlen)
+{
+    Uint8 *ptr;
+    size_t offset;
+
+    if (stream->work_buffer_len >= newlen) {
+        ptr = stream->work_buffer_base;
+    } else {
+        ptr = (Uint8 *) SDL_realloc(stream->work_buffer_base, newlen + 32);
+        if (!ptr) {
+            SDL_OutOfMemory();
+            return NULL;
+        }
+        /* Make sure we're aligned to 16 bytes for SIMD code. */
+        stream->work_buffer_base = ptr;
+        stream->work_buffer_len = newlen;
+    }
+
+    offset = ((size_t) ptr) & 15;
+    return offset ? ptr + (16 - offset) : ptr;
+}
+
 #ifdef HAVE_LIBSAMPLERATE_H
 static int
 SDL_ResampleAudioStream_SRC(SDL_AudioStream *stream, const void *_inbuf, const int inbuflen, void *_outbuf, const int outbuflen)
@@ -897,6 +919,17 @@ SDL_ResampleAudioStream_SRC(SDL_AudioStream *stream, const void *_inbuf, const i
     SRC_STATE *state = (SRC_STATE *)stream->resampler_state;
     SRC_DATA data;
     int result;
+
+    if (inbuf == ((const float *) outbuf)) {  /* libsamplerate can't work in-place. */
+        Uint8 *ptr = EnsureStreamBufferSize(stream, inbuflen + outbuflen);
+        if (ptr == NULL) {
+            SDL_OutOfMemory();
+            return 0;
+        }
+        SDL_memcpy(ptr + outbuflen, ptr, inbuflen);
+        inbuf = (const float *) (ptr + outbuflen);
+        outbuf = (float *) ptr;
+    }
 
     data.data_in = (float *)inbuf; /* Older versions of libsamplerate had a non-const pointer, but didn't write to it */
     data.input_frames = inbuflen / framelen;
@@ -1125,24 +1158,6 @@ SDL_NewAudioStream(const SDL_AudioFormat src_format,
     return retval;
 }
 
-static Uint8 *
-EnsureStreamBufferSize(SDL_AudioStream *stream, const int newlen)
-{
-    if (stream->work_buffer_len < newlen) {
-        Uint8 *ptr = (Uint8 *) SDL_realloc(stream->work_buffer_base, newlen + 32);
-        const size_t offset = ((size_t) ptr) & 15;
-        if (!ptr) {
-            SDL_OutOfMemory();
-            return NULL;
-        }
-        /* Make sure we're aligned to 16 bytes for SIMD code. */
-        stream->work_buffer = offset ? ptr + (16 - offset) : ptr;
-        stream->work_buffer_base = ptr;
-        stream->work_buffer_len = newlen;
-    }
-    return stream->work_buffer;
-}
-
 int
 SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, const Uint32 _buflen)
 {
@@ -1190,11 +1205,14 @@ SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, const Uint32 _bufle
         if (workbuf == NULL) {
             return -1;  /* probably out of memory. */
         }
-        if (buf == origbuf) {  /* copy if we haven't before. */
-            SDL_memcpy(workbuf, buf, buflen);
+        /* don't SDL_memcpy(workbuf, buf, buflen) here; our resampler can work inplace or not,
+           libsamplerate needs buffers to be separate; either way, avoid a copy here if possible. */
+        if (buf != origbuf) {
+            buf = workbuf;  /* in case we realloc()'d the pointer. */
         }
-        buflen = stream->resampler_func(stream, workbuf, buflen, workbuf, workbuflen);
-        buf = workbuf;
+        buflen = stream->resampler_func(stream, buf, buflen, workbuf, workbuflen);
+        buf = EnsureStreamBufferSize(stream, workbuflen);
+        SDL_assert(buf != NULL);  /* shouldn't be growing, just aligning. */
     }
 
     if (stream->cvt_after_resampling.needed) {
