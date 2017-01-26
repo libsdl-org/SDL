@@ -248,6 +248,8 @@ AddHIDElement(const void *value, void *parameter)
                         switch (usage) {
                             case kHIDUsage_Sim_Rudder:
                             case kHIDUsage_Sim_Throttle:
+                            case kHIDUsage_Sim_Accelerator:
+                            case kHIDUsage_Sim_Brake:
                                 if (!ElementAlreadyAdded(cookie, pDevice->firstAxis)) {
                                     element = (recElement *) SDL_calloc(1, sizeof (recElement));
                                     if (element) {
