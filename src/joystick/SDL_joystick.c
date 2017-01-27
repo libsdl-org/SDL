@@ -32,6 +32,8 @@
 #include "../events/SDL_events_c.h"
 #endif
 
+#define MAKE_VIDPID(VID, PID)   (((Uint32)(VID))<<16|(PID))
+
 static SDL_bool SDL_joystick_allows_background_events = SDL_FALSE;
 static SDL_Joystick *SDL_joysticks = NULL;
 static SDL_bool SDL_updating_joystick = SDL_FALSE;
@@ -121,17 +123,14 @@ SDL_JoystickNameForIndex(int device_index)
 static SDL_bool
 SDL_JoystickAxesCenteredAtZero(SDL_Joystick *joystick)
 {
-    struct {
-        Uint16 vendor;
-        Uint16 product;
-    } zero_centered_joysticks[] = {
-        { 0x0e8f, 0x3013 }, /* HuiJia SNES USB adapter */
-        { 0x05a0, 0x3232 }, /* 8Bitdo Zero Gamepad */
+    static Uint32 zero_centered_joysticks[] = {
+        MAKE_VIDPID(0x0e8f, 0x3013),    /* HuiJia SNES USB adapter */
+        MAKE_VIDPID(0x05a0, 0x3232),    /* 8Bitdo Zero Gamepad */
     };
 
     int i;
-    Uint16 vendor = SDL_JoystickGetVendor(joystick);
-    Uint16 product = SDL_JoystickGetProduct(joystick);
+    Uint32 id = MAKE_VIDPID(SDL_JoystickGetVendor(joystick),
+                            SDL_JoystickGetProduct(joystick));
 
 /*printf("JOYSTICK '%s' VID/PID 0x%.4x/0x%.4x AXES: %d\n", joystick->name, vendor, product, joystick->naxes);*/
 
@@ -141,8 +140,7 @@ SDL_JoystickAxesCenteredAtZero(SDL_Joystick *joystick)
     }
 
     for (i = 0; i < SDL_arraysize(zero_centered_joysticks); ++i) {
-        if (vendor == zero_centered_joysticks[i].vendor &&
-            product == zero_centered_joysticks[i].product) {
+        if (id == zero_centered_joysticks[i]) {
             return SDL_TRUE;
         }
     }
@@ -185,14 +183,13 @@ SDL_JoystickOpen(int device_index)
     }
 
     /* Create and initialize the joystick */
-    joystick = (SDL_Joystick *) SDL_malloc((sizeof *joystick));
+    joystick = (SDL_Joystick *) SDL_calloc(sizeof(*joystick), 1);
     if (joystick == NULL) {
         SDL_OutOfMemory();
         SDL_UnlockJoystickList();
         return NULL;
     }
 
-    SDL_memset(joystick, 0, (sizeof *joystick));
     if (SDL_SYS_JoystickOpen(joystick, device_index) < 0) {
         SDL_free(joystick);
         SDL_UnlockJoystickList();
@@ -236,6 +233,8 @@ SDL_JoystickOpen(int device_index)
             joystick->axes[i].has_initial_value = SDL_TRUE;
         }
     }
+
+    joystick->is_game_controller = SDL_IsGameController(device_index);
 
     /* Add joystick to list */
     ++joystick->ref_count;
@@ -932,7 +931,7 @@ SDL_JoystickEventState(int state)
 #endif /* SDL_EVENTS_DISABLED */
 }
 
-static void GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *product, Uint16 *version)
+static void SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *product, Uint16 *version)
 {
     Uint16 *guid16 = (Uint16 *)guid.data;
 
@@ -967,6 +966,73 @@ static void GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *p
     }
 }
 
+static SDL_bool SDL_IsJoystickGUIDWheel(SDL_JoystickGUID guid)
+{
+    static Uint32 wheel_joysticks[] = {
+        MAKE_VIDPID(0x046d, 0xc294),    /* Logitech generic wheel */
+        MAKE_VIDPID(0x046d, 0xc295),    /* Logitech Momo Force */
+        MAKE_VIDPID(0x046d, 0xc298),    /* Logitech Driving Force Pro */
+        MAKE_VIDPID(0x046d, 0xc299),    /* Logitech G25 */
+        MAKE_VIDPID(0x046d, 0xc29a),    /* Logitech Driving Force GT */
+        MAKE_VIDPID(0x046d, 0xc29b),    /* Logitech G27 */
+        MAKE_VIDPID(0x046d, 0xc261),    /* Logitech G920 (initial mode) */
+        MAKE_VIDPID(0x046d, 0xc262),    /* Logitech G920 (active mode) */
+        MAKE_VIDPID(0x044f, 0xb65d),    /* Thrustmaster Wheel FFB */
+        MAKE_VIDPID(0x044f, 0xb677),    /* Thrustmaster T150 */
+        MAKE_VIDPID(0x044f, 0xb664),    /* Thrustmaster TX (initial mode) */
+        MAKE_VIDPID(0x044f, 0xb669),    /* Thrustmaster TX (active mode) */
+    };
+    Uint16 vendor;
+    Uint16 product;
+    Uint32 id;
+    int i;
+
+    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL);
+    id = MAKE_VIDPID(vendor, product);
+
+    for (i = 0; i < SDL_arraysize(wheel_joysticks); ++i) {
+        if (id == wheel_joysticks[i]) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
+static SDL_JoystickType SDL_GetJoystickGUIDType(SDL_JoystickGUID guid)
+{
+    if (guid.data[14] == 'x') {
+        /* XInput GUID, get the type based on the XInput device subtype */
+        switch (guid.data[15]) {
+        case 0x01:  /* XINPUT_DEVSUBTYPE_GAMEPAD */
+            return SDL_JOYSTICK_TYPE_GAMECONTROLLER;
+        case 0x02:  /* XINPUT_DEVSUBTYPE_WHEEL */
+            return SDL_JOYSTICK_TYPE_WHEEL;
+        case 0x03:  /* XINPUT_DEVSUBTYPE_ARCADE_STICK */
+            return SDL_JOYSTICK_TYPE_ARCADE_STICK;
+        case 0x04:  /* XINPUT_DEVSUBTYPE_FLIGHT_STICK */
+            return SDL_JOYSTICK_TYPE_FLIGHT_STICK;
+        case 0x05:  /* XINPUT_DEVSUBTYPE_DANCE_PAD */
+            return SDL_JOYSTICK_TYPE_DANCE_PAD;
+        case 0x06:  /* XINPUT_DEVSUBTYPE_GUITAR */
+        case 0x07:  /* XINPUT_DEVSUBTYPE_GUITAR_ALTERNATE */
+        case 0x0B:  /* XINPUT_DEVSUBTYPE_GUITAR_BASS */
+            return SDL_JOYSTICK_TYPE_GUITAR;
+        case 0x08:  /* XINPUT_DEVSUBTYPE_DRUM_KIT */
+            return SDL_JOYSTICK_TYPE_DRUM_KIT;
+        case 0x13:  /* XINPUT_DEVSUBTYPE_ARCADE_PAD */
+            return SDL_JOYSTICK_TYPE_ARCADE_PAD;
+        default:
+            return SDL_JOYSTICK_TYPE_UNKNOWN;
+        }
+    }
+
+    if (SDL_IsJoystickGUIDWheel(guid)) {
+        return SDL_JOYSTICK_TYPE_WHEEL;
+    }
+
+    return SDL_JOYSTICK_TYPE_UNKNOWN;
+}
+
 /* return the guid for this index */
 SDL_JoystickGUID SDL_JoystickGetDeviceGUID(int device_index)
 {
@@ -984,7 +1050,7 @@ Uint16 SDL_JoystickGetDeviceVendor(int device_index)
     Uint16 vendor;
     SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(device_index);
 
-    GetJoystickGUIDInfo(guid, &vendor, NULL, NULL);
+    SDL_GetJoystickGUIDInfo(guid, &vendor, NULL, NULL);
     return vendor;
 }
 
@@ -993,7 +1059,7 @@ Uint16 SDL_JoystickGetDeviceProduct(int device_index)
     Uint16 product;
     SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(device_index);
 
-    GetJoystickGUIDInfo(guid, NULL, &product, NULL);
+    SDL_GetJoystickGUIDInfo(guid, NULL, &product, NULL);
     return product;
 }
 
@@ -1002,8 +1068,22 @@ Uint16 SDL_JoystickGetDeviceProductVersion(int device_index)
     Uint16 version;
     SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(device_index);
 
-    GetJoystickGUIDInfo(guid, NULL, NULL, &version);
+    SDL_GetJoystickGUIDInfo(guid, NULL, NULL, &version);
     return version;
+}
+
+SDL_JoystickType SDL_JoystickGetDeviceType(int device_index)
+{
+    SDL_JoystickType type;
+    SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(device_index);
+
+    type = SDL_GetJoystickGUIDType(guid);
+    if (type == SDL_JOYSTICK_TYPE_UNKNOWN) {
+        if (SDL_IsGameController(device_index)) {
+            type = SDL_JOYSTICK_TYPE_GAMECONTROLLER;
+        }
+    }
+    return type;
 }
 
 /* return the guid for this opened device */
@@ -1022,7 +1102,7 @@ Uint16 SDL_JoystickGetVendor(SDL_Joystick * joystick)
     Uint16 vendor;
     SDL_JoystickGUID guid = SDL_JoystickGetGUID(joystick);
 
-    GetJoystickGUIDInfo(guid, &vendor, NULL, NULL);
+    SDL_GetJoystickGUIDInfo(guid, &vendor, NULL, NULL);
     return vendor;
 }
 
@@ -1031,7 +1111,7 @@ Uint16 SDL_JoystickGetProduct(SDL_Joystick * joystick)
     Uint16 product;
     SDL_JoystickGUID guid = SDL_JoystickGetGUID(joystick);
 
-    GetJoystickGUIDInfo(guid, NULL, &product, NULL);
+    SDL_GetJoystickGUIDInfo(guid, NULL, &product, NULL);
     return product;
 }
 
@@ -1040,8 +1120,22 @@ Uint16 SDL_JoystickGetProductVersion(SDL_Joystick * joystick)
     Uint16 version;
     SDL_JoystickGUID guid = SDL_JoystickGetGUID(joystick);
 
-    GetJoystickGUIDInfo(guid, NULL, NULL, &version);
+    SDL_GetJoystickGUIDInfo(guid, NULL, NULL, &version);
     return version;
+}
+
+SDL_JoystickType SDL_JoystickGetType(SDL_Joystick * joystick)
+{
+    SDL_JoystickType type;
+    SDL_JoystickGUID guid = SDL_JoystickGetGUID(joystick);
+
+    type = SDL_GetJoystickGUIDType(guid);
+    if (type == SDL_JOYSTICK_TYPE_UNKNOWN) {
+        if (joystick && joystick->is_game_controller) {
+            type = SDL_JOYSTICK_TYPE_GAMECONTROLLER;
+        }
+    }
+    return type;
 }
 
 /* convert the guid to a printable string */
