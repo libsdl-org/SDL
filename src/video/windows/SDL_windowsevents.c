@@ -515,7 +515,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                             initialMousePoint.y = rawmouse->lLastY;
                         }
 
-                        SDL_SendMouseMotion(data->window, 0, 1, (int)(rawmouse->lLastX-initialMousePoint.x), (int)(rawmouse->lLastY-initialMousePoint.y) );
+                        SDL_SendMouseMotion(data->window, 0, 1, (int)(rawmouse->lLastX-initialMousePoint.x), (int)(rawmouse->lLastY-initialMousePoint.y));
 
                         initialMousePoint.x = rawmouse->lLastX;
                         initialMousePoint.y = rawmouse->lLastY;
@@ -525,14 +525,16 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     /* we check for where Windows thinks the system cursor lives in this case, so we don't really lose mouse accel, etc. */
                     POINT pt;
                     RECT hwndRect;
+                    HWND currentHnd;
+
                     GetCursorPos(&pt);
-                    HWND currentHnd = WindowFromPoint( pt );
-                    ScreenToClient( hwnd, &pt );
-                    GetClientRect( hwnd, &hwndRect );
+                    currentHnd = WindowFromPoint(pt);
+                    ScreenToClient(hwnd, &pt);
+                    GetClientRect(hwnd, &hwndRect);
 
                     /* if in the window, WM_MOUSEMOVE, etc, will cover it. */
-                    if( currentHnd != hwnd || pt.x < 0 || pt.y < 0 || pt.x > hwndRect.right || pt.y > hwndRect.right ) {
-                        SDL_SendMouseMotion(data->window, 0, 0, (int) pt.x, (int) pt.y);
+                    if(currentHnd != hwnd || pt.x < 0 || pt.y < 0 || pt.x > hwndRect.right || pt.y > hwndRect.right) {
+                        SDL_SendMouseMotion(data->window, 0, 0, (int)pt.x, (int)pt.y);
                         SDL_SendMouseButton(data->window, 0, GetAsyncKeyState(VK_LBUTTON) & 0x8000 ? SDL_PRESSED : SDL_RELEASED, SDL_BUTTON_LEFT);
                         SDL_SendMouseButton(data->window, 0, GetAsyncKeyState(VK_RBUTTON) & 0x8000 ? SDL_PRESSED : SDL_RELEASED, SDL_BUTTON_RIGHT);
                         SDL_SendMouseButton(data->window, 0, GetAsyncKeyState(VK_MBUTTON) & 0x8000 ? SDL_PRESSED : SDL_RELEASED, SDL_BUTTON_MIDDLE);
