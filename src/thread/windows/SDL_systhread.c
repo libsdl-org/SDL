@@ -164,26 +164,53 @@ typedef struct tagTHREADNAME_INFO
 } THREADNAME_INFO;
 #pragma pack(pop)
 
+
+typedef HRESULT (WINAPI *pfnSetThreadDescription)(HANDLE, PCWSTR);
+
 void
 SDL_SYS_SetupThread(const char *name)
 {
-    if ((name != NULL) && IsDebuggerPresent()) {
-        THREADNAME_INFO inf;
+    if (name != NULL) {
+        static HMODULE kernel32 = 0;
+        static pfnSetThreadDescription pSetThreadDescription = NULL;
 
-        /* C# and friends will try to catch this Exception, let's avoid it. */
-        if (SDL_GetHintBoolean(SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING, SDL_FALSE)) {
-            return;
+        if (!kernel32) {
+            kernel32 = LoadLibrary(L"kernel32.dll");
+            if (kernel32) {
+                pSetThreadDescription = (pfnSetThreadDescription) GetProcAddress(kernel32, "SetThreadDescription");
+            }
         }
 
-        /* This magic tells the debugger to name a thread if it's listening. */
-        SDL_zero(inf);
-        inf.dwType = 0x1000;
-        inf.szName = name;
-        inf.dwThreadID = (DWORD) -1;
-        inf.dwFlags = 0;
+        if (pSetThreadDescription != NULL) {
+            WCHAR *strw = WIN_UTF8ToString(name);
+            if (strw) {
+                pSetThreadDescription(GetCurrentThread(), strw);
+                SDL_free(strw);
+            }
+        }
 
-        /* The debugger catches this, renames the thread, continues on. */
-        RaiseException(0x406D1388, 0, sizeof(inf) / sizeof(ULONG), (const ULONG_PTR*) &inf);
+        /* Presumably some version of Visual Studio will understand SetThreadDescription(),
+           but we still need to deal with older OSes and debuggers. Set it with the arcane
+           exception magic, too. */
+
+        if (IsDebuggerPresent()) {
+            THREADNAME_INFO inf;
+
+            /* C# and friends will try to catch this Exception, let's avoid it. */
+            if (SDL_GetHintBoolean(SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING, SDL_FALSE)) {
+                return;
+            }
+
+            /* This magic tells the debugger to name a thread if it's listening. */
+            SDL_zero(inf);
+            inf.dwType = 0x1000;
+            inf.szName = name;
+            inf.dwThreadID = (DWORD) -1;
+            inf.dwFlags = 0;
+
+            /* The debugger catches this, renames the thread, continues on. */
+            RaiseException(0x406D1388, 0, sizeof(inf) / sizeof(ULONG), (const ULONG_PTR*) &inf);
+        }
     }
 }
 
