@@ -966,7 +966,7 @@ static void SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint1
     }
 }
 
-static SDL_bool SDL_IsJoystickGUIDWheel(SDL_JoystickGUID guid)
+static SDL_bool SDL_IsJoystickGUIDWheel(Uint32 vidpid)
 {
     static Uint32 wheel_joysticks[] = {
         MAKE_VIDPID(0x046d, 0xc294),    /* Logitech generic wheel */
@@ -983,16 +983,25 @@ static SDL_bool SDL_IsJoystickGUIDWheel(SDL_JoystickGUID guid)
         MAKE_VIDPID(0x044f, 0xb664),    /* Thrustmaster TX (initial mode) */
         MAKE_VIDPID(0x044f, 0xb669),    /* Thrustmaster TX (active mode) */
     };
-    Uint16 vendor;
-    Uint16 product;
-    Uint32 id;
     int i;
 
-    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL);
-    id = MAKE_VIDPID(vendor, product);
-
     for (i = 0; i < SDL_arraysize(wheel_joysticks); ++i) {
-        if (id == wheel_joysticks[i]) {
+        if (vidpid == wheel_joysticks[i]) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
+static SDL_bool SDL_IsJoystickGUIDFlightStick(Uint32 vidpid)
+{
+    static Uint32 flightstick_joysticks[] = {
+        MAKE_VIDPID(0x044f, 0x0402),    /* HOTAS Warthog */
+    };
+    int i;
+
+    for (i = 0; i < SDL_arraysize(flightstick_joysticks); ++i) {
+        if (vidpid == flightstick_joysticks[i]) {
             return SDL_TRUE;
         }
     }
@@ -1001,6 +1010,10 @@ static SDL_bool SDL_IsJoystickGUIDWheel(SDL_JoystickGUID guid)
 
 static SDL_JoystickType SDL_GetJoystickGUIDType(SDL_JoystickGUID guid)
 {
+    Uint16 vendor;
+    Uint16 product;
+    Uint32 vidpid;
+
     if (guid.data[14] == 'x') {
         /* XInput GUID, get the type based on the XInput device subtype */
         switch (guid.data[15]) {
@@ -1027,8 +1040,15 @@ static SDL_JoystickType SDL_GetJoystickGUIDType(SDL_JoystickGUID guid)
         }
     }
 
-    if (SDL_IsJoystickGUIDWheel(guid)) {
+    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL);
+    vidpid = MAKE_VIDPID(vendor, product);
+
+    if (SDL_IsJoystickGUIDWheel(vidpid)) {
         return SDL_JOYSTICK_TYPE_WHEEL;
+    }
+
+    if (SDL_IsJoystickGUIDFlightStick(vidpid)) {
+        return SDL_JOYSTICK_TYPE_FLIGHT_STICK;
     }
 
     return SDL_JOYSTICK_TYPE_UNKNOWN;
