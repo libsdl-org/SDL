@@ -239,7 +239,7 @@ WatchJoystick(SDL_Joystick * joystick)
 int
 main(int argc, char *argv[])
 {
-    const char *name;
+    const char *name, *type;
     int i;
     SDL_Joystick *joystick;
 
@@ -268,6 +268,36 @@ main(int argc, char *argv[])
             SDL_assert(SDL_JoystickFromInstanceID(SDL_JoystickInstanceID(joystick)) == joystick);
             SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joystick),
                                       guid, sizeof (guid));
+            switch (SDL_JoystickGetType(joystick)) {
+            case SDL_JOYSTICK_TYPE_GAMECONTROLLER:
+                type = "Game Controller";
+                break;
+            case SDL_JOYSTICK_TYPE_WHEEL:
+                type = "Wheel";
+                break;
+            case SDL_JOYSTICK_TYPE_ARCADE_STICK:
+                type = "Arcade Stick";
+                break;
+            case SDL_JOYSTICK_TYPE_FLIGHT_STICK:
+                type = "Flight Stick";
+                break;
+            case SDL_JOYSTICK_TYPE_DANCE_PAD:
+                type = "Dance Pad";
+                break;
+            case SDL_JOYSTICK_TYPE_GUITAR:
+                type = "Guitar";
+                break;
+            case SDL_JOYSTICK_TYPE_DRUM_KIT:
+                type = "Drum Kit";
+                break;
+            case SDL_JOYSTICK_TYPE_ARCADE_PAD:
+                type = "Arcade Pad";
+                break;
+            default:
+                type = "Unknown";
+                break;
+            }
+            SDL_Log("       type: %s\n", type);
             SDL_Log("       axes: %d\n", SDL_JoystickNumAxes(joystick));
             SDL_Log("      balls: %d\n", SDL_JoystickNumBalls(joystick));
             SDL_Log("       hats: %d\n", SDL_JoystickNumHats(joystick));
