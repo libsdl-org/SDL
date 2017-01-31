@@ -996,7 +996,8 @@ static SDL_bool SDL_IsJoystickProductWheel(Uint32 vidpid)
 static SDL_bool SDL_IsJoystickProductFlightStick(Uint32 vidpid)
 {
     static Uint32 flightstick_joysticks[] = {
-        MAKE_VIDPID(0x044f, 0x0402),    /* HOTAS Warthog */
+        MAKE_VIDPID(0x044f, 0x0402),    /* HOTAS Warthog Joystick */
+        MAKE_VIDPID(0x0738, 0x2221),    /* Saitek Pro Flight X-56 Rhino Stick */
     };
     int i;
 
@@ -1011,7 +1012,8 @@ static SDL_bool SDL_IsJoystickProductFlightStick(Uint32 vidpid)
 static SDL_bool SDL_IsJoystickProductThrottle(Uint32 vidpid)
 {
     static Uint32 throttle_joysticks[] = {
-        MAKE_VIDPID(0x044f, 0x0404),    /* HOTAS Warthog */
+        MAKE_VIDPID(0x044f, 0x0404),    /* HOTAS Warthog Throttle */
+        MAKE_VIDPID(0x0738, 0xa221),    /* Saitek Pro Flight X-56 Rhino Throttle */
     };
     int i;
 
