@@ -966,7 +966,7 @@ static void SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint1
     }
 }
 
-static SDL_bool SDL_IsJoystickGUIDWheel(Uint32 vidpid)
+static SDL_bool SDL_IsJoystickProductWheel(Uint32 vidpid)
 {
     static Uint32 wheel_joysticks[] = {
         MAKE_VIDPID(0x046d, 0xc294),    /* Logitech generic wheel */
@@ -993,7 +993,7 @@ static SDL_bool SDL_IsJoystickGUIDWheel(Uint32 vidpid)
     return SDL_FALSE;
 }
 
-static SDL_bool SDL_IsJoystickGUIDFlightStick(Uint32 vidpid)
+static SDL_bool SDL_IsJoystickProductFlightStick(Uint32 vidpid)
 {
     static Uint32 flightstick_joysticks[] = {
         MAKE_VIDPID(0x044f, 0x0402),    /* HOTAS Warthog */
@@ -1002,6 +1002,21 @@ static SDL_bool SDL_IsJoystickGUIDFlightStick(Uint32 vidpid)
 
     for (i = 0; i < SDL_arraysize(flightstick_joysticks); ++i) {
         if (vidpid == flightstick_joysticks[i]) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
+static SDL_bool SDL_IsJoystickProductThrottle(Uint32 vidpid)
+{
+    static Uint32 throttle_joysticks[] = {
+        MAKE_VIDPID(0x044f, 0x0404),    /* HOTAS Warthog */
+    };
+    int i;
+
+    for (i = 0; i < SDL_arraysize(throttle_joysticks); ++i) {
+        if (vidpid == throttle_joysticks[i]) {
             return SDL_TRUE;
         }
     }
@@ -1043,12 +1058,16 @@ static SDL_JoystickType SDL_GetJoystickGUIDType(SDL_JoystickGUID guid)
     SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL);
     vidpid = MAKE_VIDPID(vendor, product);
 
-    if (SDL_IsJoystickGUIDWheel(vidpid)) {
+    if (SDL_IsJoystickProductWheel(vidpid)) {
         return SDL_JOYSTICK_TYPE_WHEEL;
     }
 
-    if (SDL_IsJoystickGUIDFlightStick(vidpid)) {
+    if (SDL_IsJoystickProductFlightStick(vidpid)) {
         return SDL_JOYSTICK_TYPE_FLIGHT_STICK;
+    }
+
+    if (SDL_IsJoystickProductThrottle(vidpid)) {
+        return SDL_JOYSTICK_TYPE_THROTTLE;
     }
 
     return SDL_JOYSTICK_TYPE_UNKNOWN;
