@@ -293,6 +293,9 @@ main(int argc, char *argv[])
             case SDL_JOYSTICK_TYPE_ARCADE_PAD:
                 type = "Arcade Pad";
                 break;
+            case SDL_JOYSTICK_TYPE_THROTTLE:
+                type = "Throttle";
+                break;
             default:
                 type = "Unknown";
                 break;
