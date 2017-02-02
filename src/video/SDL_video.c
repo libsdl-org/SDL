@@ -1969,7 +1969,8 @@ SDL_SetWindowMinimumSize(SDL_Window * window, int min_w, int min_h)
         return;
     }
 
-    if (min_w >= window->max_w || min_h >= window->max_h) {
+    if ((window->max_w && min_w >= window->max_w) ||
+        (window->max_h && min_h >= window->max_h)) {
         SDL_SetError("SDL_SetWindowMinimumSize(): Tried to set minimum size larger than maximum size");
         return;
     }
