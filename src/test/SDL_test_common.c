@@ -483,7 +483,7 @@ SDLTest_PrintPixelFormat(Uint32 format)
 {
     switch (format) {
     case SDL_PIXELFORMAT_UNKNOWN:
-        SDL_Log("Unknwon");
+        SDL_Log("Unknown");
         break;
     case SDL_PIXELFORMAT_INDEX1LSB:
         SDL_Log("Index1LSB");
