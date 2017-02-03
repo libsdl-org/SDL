@@ -33,6 +33,7 @@
  * Internal stuff.
  */
 static SDL_bool s_bXInputEnabled = SDL_TRUE;
+static char *s_arrXInputDevicePath[XUSER_MAX_COUNT];
 
 
 static SDL_bool
@@ -113,12 +114,12 @@ GetXInputName(const Uint8 userid, BYTE SubType)
    and we'll be correct for the case where only one device is connected.
  */
 static void
-GuessXInputDevice(UINT device_index, Uint16 *pVID, Uint16 *pPID, Uint16 *pVersion)
+GuessXInputDevice(Uint8 userid, Uint16 *pVID, Uint16 *pPID, Uint16 *pVersion)
 {
 #ifndef __WINRT__   /* TODO: remove this ifndef __WINRT__ block, but only after integrating with UWP/WinRT's HID API */
 
     PRAWINPUTDEVICELIST devices = NULL;
-    UINT i, found_count = 0, device_count = 0;
+    UINT i, j, found_count = 0, device_count = 0;
 
     if ((GetRawInputDeviceList(NULL, &device_count, sizeof(RAWINPUTDEVICELIST)) == -1) || (!device_count)) {
         return;  /* oh well. */
@@ -145,16 +146,36 @@ GuessXInputDevice(UINT device_index, Uint16 *pVID, Uint16 *pPID, Uint16 *pVersio
             (GetRawInputDeviceInfoA(devices[i].hDevice, RIDI_DEVICEINFO, &rdi, &rdiSize) != ((UINT)-1)) &&
             (GetRawInputDeviceInfoA(devices[i].hDevice, RIDI_DEVICENAME, devName, &nameSize) != ((UINT)-1)) &&
             (SDL_strstr(devName, "IG_") != NULL)) {
+            SDL_bool found = SDL_FALSE;
+            for (j = 0; j < SDL_arraysize(s_arrXInputDevicePath); ++j) {
+                if (j == userid) {
+                    continue;
+                }
+                if (!s_arrXInputDevicePath[j]) {
+                    continue;
+                }
+                if (SDL_strcmp(devName, s_arrXInputDevicePath[j]) == 0) {
+                    found = SDL_TRUE;
+                    break;
+                }
+            }
+            if (found) {
+                /* We already have this device in our XInput device list */
+                continue;
+            }
+
+            /* We don't actually know if this is the right device for this
+             * userid, but we'll record it so we'll at least be consistent
+             * when the raw device list changes.
+             */
             *pVID = (Uint16)rdi.hid.dwVendorId;
             *pPID = (Uint16)rdi.hid.dwProductId;
             *pVersion = (Uint16)rdi.hid.dwVersionNumber;
-
-            if (found_count++ == device_index) {
-                /* We don't really know the order of the devices relative to XInput,
-                   but we'll guess that this is the correct one
-                 */
-                break;
+            if (s_arrXInputDevicePath[userid]) {
+                SDL_free(s_arrXInputDevicePath[userid]);
             }
+            s_arrXInputDevicePath[userid] = SDL_strdup(devName);
+            break;
         }
     }
     SDL_free(devices);
@@ -290,14 +311,12 @@ SDL_XINPUT_JoystickOpen(SDL_Joystick * joystick, JoyStick_DeviceData *joystickde
 static void 
 UpdateXInputJoystickBatteryInformation(SDL_Joystick * joystick, XINPUT_BATTERY_INFORMATION_EX *pBatteryInformation)
 {
-    if ( pBatteryInformation->BatteryType != BATTERY_TYPE_UNKNOWN )
-    {
+    if (pBatteryInformation->BatteryType != BATTERY_TYPE_UNKNOWN) {
         SDL_JoystickPowerLevel ePowerLevel = SDL_JOYSTICK_POWER_UNKNOWN;
         if (pBatteryInformation->BatteryType == BATTERY_TYPE_WIRED) {
             ePowerLevel = SDL_JOYSTICK_POWER_WIRED;
         } else {
-            switch ( pBatteryInformation->BatteryLevel )
-            {
+            switch (pBatteryInformation->BatteryLevel) {
             case BATTERY_LEVEL_EMPTY:
                 ePowerLevel = SDL_JOYSTICK_POWER_EMPTY;
                 break;
@@ -314,7 +333,7 @@ UpdateXInputJoystickBatteryInformation(SDL_Joystick * joystick, XINPUT_BATTERY_I
             }
         }
 
-        SDL_PrivateJoystickBatteryLevel( joystick, ePowerLevel );
+        SDL_PrivateJoystickBatteryLevel(joystick, ePowerLevel);
     }
 }
 
@@ -342,7 +361,7 @@ UpdateXInputJoystickState_OLD(SDL_Joystick * joystick, XINPUT_STATE_EX *pXInputS
         SDL_PrivateJoystickButton(joystick, button, (wButtons & s_XInputButtons[button]) ? SDL_PRESSED : SDL_RELEASED);
     }
 
-    UpdateXInputJoystickBatteryInformation( joystick, pBatteryInformation );
+    UpdateXInputJoystickBatteryInformation(joystick, pBatteryInformation);
 }
 
 static void
@@ -383,7 +402,7 @@ UpdateXInputJoystickState(SDL_Joystick * joystick, XINPUT_STATE_EX *pXInputState
     }
     SDL_PrivateJoystickHat(joystick, 0, hat);
 
-    UpdateXInputJoystickBatteryInformation( joystick, pBatteryInformation );
+    UpdateXInputJoystickBatteryInformation(joystick, pBatteryInformation);
 }
 
 void
@@ -398,15 +417,20 @@ SDL_XINPUT_JoystickUpdate(SDL_Joystick * joystick)
 
     result = XINPUTGETSTATE(joystick->hwdata->userid, &XInputState);
     if (result == ERROR_DEVICE_NOT_CONNECTED) {
+        Uint8 userid = joystick->hwdata->userid;
+
         joystick->hwdata->send_remove_event = SDL_TRUE;
         joystick->hwdata->removed = SDL_TRUE;
+        if (s_arrXInputDevicePath[userid]) {
+            SDL_free(s_arrXInputDevicePath[userid]);
+            s_arrXInputDevicePath[userid] = NULL;
+        }
         return;
     }
 
-    SDL_zero( XBatteryInformation );
-    if ( XINPUTGETBATTERYINFORMATION )
-    {
-        result = XINPUTGETBATTERYINFORMATION( joystick->hwdata->userid, BATTERY_DEVTYPE_GAMEPAD, &XBatteryInformation );
+    SDL_zero(XBatteryInformation);
+    if (XINPUTGETBATTERYINFORMATION) {
+        result = XINPUTGETBATTERYINFORMATION(joystick->hwdata->userid, BATTERY_DEVTYPE_GAMEPAD, &XBatteryInformation);
     }
 
     /* only fire events if the data changed from last time */
