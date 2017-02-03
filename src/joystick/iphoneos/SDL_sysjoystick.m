@@ -553,7 +553,7 @@ SDL_SYS_MFIJoystickUpdate(SDL_Joystick * joystick)
             };
 
             for (i = 0; i < SDL_arraysize(axes); i++) {
-                updateplayerindex |= (joystick->axes[i] != axes[i]);
+                updateplayerindex |= (joystick->axes[i].value != axes[i]);
                 SDL_PrivateJoystickAxis(joystick, i, axes[i]);
             }
 
