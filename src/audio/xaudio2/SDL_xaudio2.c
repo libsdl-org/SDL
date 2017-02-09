@@ -453,6 +453,7 @@ XAUDIO2_Init(SDL_AudioDriverImpl * impl)
 #else
     /* XAudio2Create() is a macro that uses COM; we don't load the .dll */
     IXAudio2 *ixa2 = NULL;
+    HRESULT hr = S_FALSE;
 #if defined(__WIN32__)
     // TODO, WinRT: Investigate using CoInitializeEx here
     if (FAILED(WIN_CoInitialize())) {
@@ -461,11 +462,12 @@ XAUDIO2_Init(SDL_AudioDriverImpl * impl)
     }
 #endif
 
-    if (XAudio2Create(&ixa2, 0, XAUDIO2_DEFAULT_PROCESSOR) != S_OK) {
+    hr = XAudio2Create( &ixa2, 0, XAUDIO2_DEFAULT_PROCESSOR );
+    if ( hr != S_OK) {
 #if defined(__WIN32__)
         WIN_CoUninitialize();
 #endif
-        SDL_SetError("XAudio2: XAudio2Create() failed at initialization");
+        SDL_SetError("XAudio2: XAudio2Create() failed at initialization: 0x%.8x", hr );
         return 0;  /* not available. */
     }
     IXAudio2_Release(ixa2);
