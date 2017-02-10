@@ -27,12 +27,6 @@
 #error You should not be here.
 #endif
 
-/* so annoying. */
-#if defined(__thumb__) && (defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6T2__) || defined(__ARM_ARCH_6Z__) || defined(__ARM_ARCH_6ZK__))
-#define SDL_MemoryBarrierRelease SDL_MemoryBarrierRelease_REAL
-#define SDL_MemoryBarrierAcquire SDL_MemoryBarrierAcquire_REAL
-#endif
-
 #define SDL_SetError SDL_SetError_REAL
 #define SDL_Log SDL_Log_REAL
 #define SDL_LogVerbose SDL_LogVerbose_REAL
@@ -627,3 +621,5 @@
 #define SDL_JoystickGetAxisInitialState SDL_JoystickGetAxisInitialState_REAL
 #define SDL_JoystickGetDeviceType SDL_JoystickGetDeviceType_REAL
 #define SDL_JoystickGetType SDL_JoystickGetType_REAL
+#define SDL_MemoryBarrierReleaseFunction SDL_MemoryBarrierReleaseFunction_REAL
+#define SDL_MemoryBarrierAcquireFunction SDL_MemoryBarrierAcquireFunction_REAL
