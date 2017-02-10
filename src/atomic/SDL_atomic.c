@@ -228,19 +228,16 @@ SDL_AtomicGetPtr(void **a)
     return value;
 }
 
-#ifdef __thumb__
-#if defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6T2__) || defined(__ARM_ARCH_6Z__) || defined(__ARM_ARCH_6ZK__)
-__asm__(
-"   .align 2\n"
-"   .globl _SDL_MemoryBarrierRelease\n"
-"   .globl _SDL_MemoryBarrierAcquire\n"
-"_SDL_MemoryBarrierRelease:\n"
-"_SDL_MemoryBarrierAcquire:\n"
-"   mov r0, #0\n"
-"   mcr p15, 0, r0, c7, c10, 5\n"
-"   bx lr\n"
-);
-#endif
-#endif
+void
+SDL_MemoryBarrierReleaseFunction(void)
+{
+    SDL_MemoryBarrierRelease();
+}
+
+void
+SDL_MemoryBarrierAcquireFunction(void)
+{
+    SDL_MemoryBarrierAcquire();
+}
 
 /* vi: set ts=4 sw=4 expandtab: */

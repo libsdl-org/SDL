@@ -60,12 +60,6 @@ SDL_DYNAPI_PROC(SDL_RWops*,SDL_RWFromFP,(FILE *a, SDL_bool b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_RWops*,SDL_RWFromFP,(void *a, SDL_bool b),(a,b),return)
 #endif
 
-/* so annoying. */
-#if defined(__thumb__) && (defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6T2__) || defined(__ARM_ARCH_6Z__) || defined(__ARM_ARCH_6ZK__))
-SDL_DYNAPI_PROC(void,SDL_MemoryBarrierRelease,(void),(),)
-SDL_DYNAPI_PROC(void,SDL_MemoryBarrierAcquire,(void),(),)
-#endif
-
 #ifdef __WIN32__
 SDL_DYNAPI_PROC(int,SDL_RegisterApp,(char *a, Uint32 b, void *c),(a,b,c),return)
 SDL_DYNAPI_PROC(void,SDL_UnregisterApp,(void),(),)
@@ -659,3 +653,5 @@ SDL_DYNAPI_PROC(char*,SDL_GameControllerMappingForIndex,(int a),(a),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_JoystickGetAxisInitialState,(SDL_Joystick *a, int b, Sint16 *c),(a,b,c),return)
 SDL_DYNAPI_PROC(SDL_JoystickType,SDL_JoystickGetDeviceType,(int a),(a),return)
 SDL_DYNAPI_PROC(SDL_JoystickType,SDL_JoystickGetType,(SDL_Joystick *a),(a),return)
+SDL_DYNAPI_PROC(void,SDL_MemoryBarrierReleaseFunction,(void),(),)
+SDL_DYNAPI_PROC(void,SDL_MemoryBarrierAcquireFunction,(void),(),)
