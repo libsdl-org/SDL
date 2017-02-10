@@ -25,6 +25,9 @@
 #if SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_WINRT
 #include "../core/windows/SDL_windows.h"
 #endif
+#if SDL_VIDEO_DRIVER_ANDROID
+#include <android/native_window.h>
+#endif
 
 #include "SDL_sysvideo.h"
 #include "SDL_egl_c.h"
@@ -642,7 +645,7 @@ SDL_EGL_CreateSurface(_THIS, NativeWindowType nw)
         return EGL_NO_SURFACE;
     }
     
-#if __ANDROID__
+#if SDL_VIDEO_DRIVER_ANDROID
     {
         /* Android docs recommend doing this!
          * Ref: http://developer.android.com/reference/android/app/NativeActivity.html 
