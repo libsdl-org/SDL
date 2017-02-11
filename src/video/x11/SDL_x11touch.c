@@ -42,6 +42,13 @@ X11_QuitTouch(_THIS)
     SDL_TouchQuit();
 }
 
+void
+X11_ResetTouch(_THIS)
+{
+    X11_QuitTouch(_this);
+    X11_InitTouch(_this);
+}
+
 #endif /* SDL_VIDEO_DRIVER_X11 */
 
 /* vi: set ts=4 sw=4 expandtab: */

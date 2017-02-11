@@ -163,6 +163,11 @@ struct SDL_VideoDevice
      */
     void (*VideoQuit) (_THIS);
 
+    /*
+     * Reinitialize the touch devices -- called if an unknown touch ID occurs.
+     */
+    void (*ResetTouch) (_THIS);
+
     /* * * */
     /*
      * Display functions
