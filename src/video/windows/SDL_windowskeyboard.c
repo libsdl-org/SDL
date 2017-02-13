@@ -331,9 +331,6 @@ static DWORD IME_GetId(SDL_VideoData *videodata, UINT uIndex);
 static void IME_SendEditingEvent(SDL_VideoData *videodata);
 static void IME_DestroyTextures(SDL_VideoData *videodata);
 
-#define SDL_IsEqualIID(riid1, riid2) SDL_IsEqualGUID(riid1, riid2)
-#define SDL_IsEqualGUID(rguid1, rguid2) (!SDL_memcmp(rguid1, rguid2, sizeof(GUID)))
-
 static SDL_bool UILess_SetupSinks(SDL_VideoData *videodata);
 static void UILess_ReleaseSinks(SDL_VideoData *videodata);
 static void UILess_EnableUIUpdates(SDL_VideoData *videodata);
@@ -1052,9 +1049,9 @@ STDMETHODIMP UIElementSink_QueryInterface(TSFSink *sink, REFIID riid, PVOID *ppv
         return E_INVALIDARG;
 
     *ppv = 0;
-    if (SDL_IsEqualIID(riid, &IID_IUnknown))
+    if (WIN_IsEqualIID(riid, &IID_IUnknown))
         *ppv = (IUnknown *)sink;
-    else if (SDL_IsEqualIID(riid, &IID_ITfUIElementSink))
+    else if (WIN_IsEqualIID(riid, &IID_ITfUIElementSink))
         *ppv = (ITfUIElementSink *)sink;
 
     if (*ppv) {
@@ -1158,9 +1155,9 @@ STDMETHODIMP IPPASink_QueryInterface(TSFSink *sink, REFIID riid, PVOID *ppv)
         return E_INVALIDARG;
 
     *ppv = 0;
-    if (SDL_IsEqualIID(riid, &IID_IUnknown))
+    if (WIN_IsEqualIID(riid, &IID_IUnknown))
         *ppv = (IUnknown *)sink;
-    else if (SDL_IsEqualIID(riid, &IID_ITfInputProcessorProfileActivationSink))
+    else if (WIN_IsEqualIID(riid, &IID_ITfInputProcessorProfileActivationSink))
         *ppv = (ITfInputProcessorProfileActivationSink *)sink;
 
     if (*ppv) {
@@ -1174,8 +1171,8 @@ STDMETHODIMP IPPASink_OnActivated(TSFSink *sink, DWORD dwProfileType, LANGID lan
 {
     static const GUID TF_PROFILE_DAYI = { 0x037B2C25, 0x480C, 0x4D7F, { 0xB0, 0x27, 0xD6, 0xCA, 0x6B, 0x69, 0x78, 0x8A } };
     SDL_VideoData *videodata = (SDL_VideoData *)sink->data;
-    videodata->ime_candlistindexbase = SDL_IsEqualGUID(&TF_PROFILE_DAYI, guidProfile) ? 0 : 1;
-    if (SDL_IsEqualIID(catid, &GUID_TFCAT_TIP_KEYBOARD) && (dwFlags & TF_IPSINK_FLAG_ACTIVE))
+    videodata->ime_candlistindexbase = WIN_IsEqualGUID(&TF_PROFILE_DAYI, guidProfile) ? 0 : 1;
+    if (WIN_IsEqualIID(catid, &GUID_TFCAT_TIP_KEYBOARD) && (dwFlags & TF_IPSINK_FLAG_ACTIVE))
         IME_InputLangChanged((SDL_VideoData *)sink->data);
 
     IME_HideCandidateList(videodata);
