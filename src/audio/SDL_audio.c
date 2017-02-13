@@ -222,6 +222,11 @@ SDL_AudioThreadInit_Default(_THIS)
 }
 
 static void
+SDL_AudioThreadDeinit_Default(_THIS)
+{                               /* no-op. */
+}
+
+static void
 SDL_AudioWaitDevice_Default(_THIS)
 {                               /* no-op. */
 }
@@ -340,6 +345,7 @@ finish_audio_entry_points_init(void)
     FILL_STUB(DetectDevices);
     FILL_STUB(OpenDevice);
     FILL_STUB(ThreadInit);
+    FILL_STUB(ThreadDeinit);
     FILL_STUB(WaitDevice);
     FILL_STUB(PlayDevice);
     FILL_STUB(GetPendingBytes);
@@ -712,6 +718,8 @@ SDL_RunAudio(void *devicep)
     /* Wait for the audio to drain. */
     SDL_Delay(((device->spec.samples * 1000) / device->spec.freq) * 2);
 
+    current_audio.impl.ThreadDeinit(device);
+
     return 0;
 }
 
@@ -809,6 +817,8 @@ SDL_CaptureAudio(void *devicep)
     }
 
     current_audio.impl.FlushCapture(device);
+
+    current_audio.impl.ThreadDeinit(device);
 
     return 0;
 }
