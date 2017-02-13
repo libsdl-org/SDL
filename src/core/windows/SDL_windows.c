@@ -158,7 +158,7 @@ WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid)
     DWORD len = 0;
     char *retval = NULL;
 
-    if (SDL_memcmp(guid, &nullguid, sizeof (*guid)) == 0) {
+    if (WIN_IsEqualGUID(guid, &nullguid)) {
         return WIN_StringToUTF8(name);  /* No GUID, go with what we've got. */
     }
 
@@ -200,6 +200,18 @@ WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid)
     SDL_free(strw);
     return retval ? retval : WIN_StringToUTF8(name);
 #endif /* if __WINRT__ / else */
+}
+
+BOOL
+WIN_IsEqualGUID(const GUID * a, const GUID * b)
+{
+    return (SDL_memcmp(a, b, sizeof (*a)) == 0);
+}
+
+BOOL
+WIN_IsEqualIID(REFIID a, REFIID b)
+{
+    return (SDL_memcmp(a, b, sizeof (*a)) == 0);
 }
 
 #endif /* __WIN32__ || __WINRT__ */

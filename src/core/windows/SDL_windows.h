@@ -62,6 +62,10 @@ extern BOOL WIN_IsWindowsVistaOrGreater(void);
 /* You need to SDL_free() the result of this call. */
 extern char *WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid);
 
+/* Checks to see if two GUID are the same. */
+extern BOOL WIN_IsEqualGUID(const GUID * a, const GUID * b);
+extern BOOL WIN_IsEqualIID(REFIID a, REFIID b);
+
 #endif /* _INCLUDED_WINDOWS_H */
 
 /* vi: set ts=4 sw=4 expandtab: */

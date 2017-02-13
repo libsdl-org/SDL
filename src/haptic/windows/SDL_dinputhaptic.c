@@ -59,15 +59,6 @@ DI_SetError(const char *str, HRESULT err)
 }
 
 /*
- * Checks to see if two GUID are the same.
- */
-static int
-DI_GUIDIsSame(const GUID * a, const GUID * b)
-{
-    return (SDL_memcmp(a, b, sizeof (GUID)) == 0);
-}
-
-/*
  * Callback to find the haptic devices.
  */
 static BOOL CALLBACK
@@ -219,17 +210,17 @@ DI_DeviceObjectCallback(LPCDIDEVICEOBJECTINSTANCE dev, LPVOID pvRef)
     if ((dev->dwType & DIDFT_AXIS) && (dev->dwFlags & DIDOI_FFACTUATOR)) {
         const GUID *guid = &dev->guidType;
         DWORD offset = 0;
-        if (DI_GUIDIsSame(guid, &GUID_XAxis)) {
+        if (WIN_IsEqualGUID(guid, &GUID_XAxis)) {
             offset = DIJOFS_X;
-        } else if (DI_GUIDIsSame(guid, &GUID_YAxis)) {
+        } else if (WIN_IsEqualGUID(guid, &GUID_YAxis)) {
             offset = DIJOFS_Y;
-        } else if (DI_GUIDIsSame(guid, &GUID_ZAxis)) {
+        } else if (WIN_IsEqualGUID(guid, &GUID_ZAxis)) {
             offset = DIJOFS_Z;
-        } else if (DI_GUIDIsSame(guid, &GUID_RxAxis)) {
+        } else if (WIN_IsEqualGUID(guid, &GUID_RxAxis)) {
             offset = DIJOFS_RX;
-        } else if (DI_GUIDIsSame(guid, &GUID_RyAxis)) {
+        } else if (WIN_IsEqualGUID(guid, &GUID_RyAxis)) {
             offset = DIJOFS_RY;
-        } else if (DI_GUIDIsSame(guid, &GUID_RzAxis)) {
+        } else if (WIN_IsEqualGUID(guid, &GUID_RzAxis)) {
             offset = DIJOFS_RZ;
         } else {
             return DIENUM_CONTINUE;   /* can't use this, go on. */
@@ -251,7 +242,7 @@ DI_DeviceObjectCallback(LPCDIDEVICEOBJECTINSTANCE dev, LPVOID pvRef)
  * Callback to get all supported effects.
  */
 #define EFFECT_TEST(e,s)               \
-if (DI_GUIDIsSame(&pei->guid, &(e)))   \
+if (WIN_IsEqualGUID(&pei->guid, &(e)))   \
    haptic->supported |= (s)
 static BOOL CALLBACK
 DI_EffectCallback(LPCDIEFFECTINFO pei, LPVOID pv)
@@ -481,7 +472,7 @@ SDL_DINPUT_JoystickSameHaptic(SDL_Haptic * haptic, SDL_Joystick * joystick)
         return 0;
     }
 
-    return DI_GUIDIsSame(&hap_instance.guidInstance, &joy_instance.guidInstance);
+    return WIN_IsEqualGUID(&hap_instance.guidInstance, &joy_instance.guidInstance);
 }
 
 int
@@ -500,7 +491,7 @@ SDL_DINPUT_HapticOpenFromJoystick(SDL_Haptic * haptic, SDL_Joystick * joystick)
 
     /* Since it comes from a joystick we have to try to match it with a haptic device on our haptic list. */
     for (item = SDL_hapticlist; item != NULL; item = item->next) {
-        if (!item->bXInputHaptic && DI_GUIDIsSame(&item->instance.guidInstance, &joy_instance.guidInstance)) {
+        if (!item->bXInputHaptic && WIN_IsEqualGUID(&item->instance.guidInstance, &joy_instance.guidInstance)) {
             haptic->index = index;
             return SDL_DINPUT_HapticOpenFromDevice(haptic, joystick->hwdata->InputDevice, SDL_TRUE);
         }
