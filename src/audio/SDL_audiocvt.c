@@ -1087,11 +1087,11 @@ SDL_NewAudioStream(const SDL_AudioFormat src_format,
        the resampled data (!!! FIXME: decide if that works in practice, though!). */
     pre_resample_channels = SDL_min(src_channels, dst_channels);
 
-    retval->src_sample_frame_size = SDL_AUDIO_BITSIZE(src_format) * src_channels;
+    retval->src_sample_frame_size = (SDL_AUDIO_BITSIZE(src_format) / 8) * src_channels;
     retval->src_format = src_format;
     retval->src_channels = src_channels;
     retval->src_rate = src_rate;
-    retval->dst_sample_frame_size = SDL_AUDIO_BITSIZE(dst_format) * dst_channels;
+    retval->dst_sample_frame_size = (SDL_AUDIO_BITSIZE(dst_format) / 8) * dst_channels;
     retval->dst_format = dst_format;
     retval->dst_channels = dst_channels;
     retval->dst_rate = dst_rate;
