@@ -142,6 +142,8 @@ Registry, and a unhelpful "Microphone(Yeti Stereo Microph" in winmm. Sigh.
 
 (Also, DirectSound shouldn't be limited to 32 chars, but its device enum
 has the same problem.)
+
+WASAPI doesn't need this. This is just for DirectSound/WinMM.
 */
 char *
 WIN_LookupAudioDeviceName(const WCHAR *name, const GUID *guid)
