@@ -1438,6 +1438,14 @@
 			>
 		</File>
 		<File
+			RelativePath="..\..\src\audio\wasapi\SDL_wasapi.c"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\audio\wasapi\SDL_wasapi.h"
+			>
+		</File>
+		<File
 			RelativePath="..\..\src\audio\winmm\SDL_winmm.c"
 			>
 		</File>
