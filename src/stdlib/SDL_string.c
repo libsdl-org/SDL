@@ -1313,6 +1313,10 @@ SDL_PrintString(char *text, size_t maxlen, SDL_FormatInfo *info, const char *str
     size_t length = 0;
     size_t slen;
 
+    if (string == NULL) {
+        string = "(null)";
+    }
+
     if (info && info->width && (size_t)info->width > SDL_strlen(string)) {
         char fill = info->pad_zeroes ? '0' : ' ';
         size_t width = info->width - SDL_strlen(string);
