@@ -6,7 +6,7 @@ designed to make it easy to write multi-media software, such as games
 and emulators.
 
 The Simple DirectMedia Layer library source code is available from:
-http://www.libsdl.org/
+https://www.libsdl.org/
 
 This library is distributed under the terms of the zlib license:
 http://www.zlib.net/zlib_license.html
