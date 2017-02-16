@@ -4,10 +4,10 @@ Android
 Requirements:
 
 Android SDK (version 12 or later)
-http://developer.android.com/sdk/index.html
+https://developer.android.com/sdk/index.html
 
 Android NDK r7 or later
-http://developer.android.com/tools/sdk/ndk/index.html
+https://developer.android.com/tools/sdk/ndk/index.html
 
 Minimum API level supported by SDL: 10 (Android 2.3.3)
 Joystick support is available for API level >=12 devices.
@@ -229,7 +229,7 @@ under iOS, if the OS can not restore your GL context it will just kill your app)
 ================================================================================
 
 For a quick tour on how Linux native threads interoperate with the Java VM, take
-a look here: http://developer.android.com/guide/practices/jni.html
+a look here: https://developer.android.com/guide/practices/jni.html
 
 If you want to use threads in your SDL app, it's strongly recommended that you
 do so by creating them using SDL functions. This way, the required attach/detach
@@ -265,7 +265,7 @@ The best place to start is with docs/OVERVIEW.TXT
 ================================================================================
 
 First make sure that you've installed Eclipse and the Android extensions as described here:
-	http://developer.android.com/tools/sdk/eclipse-adt.html
+	https://developer.android.com/tools/sdk/eclipse-adt.html
 
 Once you've copied the SDL android project and customized it, you can create an Eclipse project from it:
  * File -> New -> Other
@@ -281,7 +281,7 @@ Once you've copied the SDL android project and customized it, you can create an 
 ================================================================================
 
 There are some good tips and tricks for getting the most out of the
-emulator here: http://developer.android.com/tools/devices/emulator.html
+emulator here: https://developer.android.com/tools/devices/emulator.html
 
 Especially useful is the info on setting up OpenGL ES 2.0 emulation.
 
@@ -446,7 +446,7 @@ Support for native OpenGL ES and ES2 applications was introduced in the NDK for
 API level 4 and 8. EGL was made a stable API in the NDK for API level 9, which
 has since then been obsoleted, with the recommendation to developers to bump the
 required API level to 10.
-As of this writing, according to http://developer.android.com/about/dashboards/index.html
+As of this writing, according to https://developer.android.com/about/dashboards/index.html
 about 90% of the Android devices accessing Google Play support API level 10 or
 higher (March 2013).
 
