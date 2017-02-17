@@ -22,8 +22,6 @@ To build one of the tests:
 
 Uses GLES2 renderer or software
 
-tests: https://dl.dropboxusercontent.com/u/17360362/SDL2-em/index.html
-
 Some other SDL2 libraries can be easily built (assuming SDL2 is installed somewhere):
 
 SDL_mixer (http://www.libsdl.org/projects/SDL_mixer/):
