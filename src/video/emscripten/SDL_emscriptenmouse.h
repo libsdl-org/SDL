@@ -23,9 +23,12 @@
 #ifndef _SDL_emscriptenmouse_h
 #define _SDL_emscriptenmouse_h
 
+#include "SDL_stdinc.h"
+
 typedef struct _Emscripten_CursorData
 {
     const char *system_cursor;
+    SDL_bool is_custom;
 } Emscripten_CursorData;
 
 extern void
