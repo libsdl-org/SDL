@@ -403,6 +403,10 @@ IMA_ADPCM_decode(Uint8 ** audio_buf, Uint32 * audio_len)
     return (0);
 }
 
+/* GUIDs that are used by WAVE_FORMAT_EXTENSIBLE */
+static const Uint8 extensible_pcm_guid[16] = { 1, 0, 0, 0, 0, 0, 16, 0, 128, 0, 0, 170, 0, 56, 155, 113 };
+static const Uint8 extensible_ieee_guid[16] = { 3, 0, 0, 0, 0, 0, 16, 0, 128, 0, 0, 170, 0, 56, 155, 113 };
+
 SDL_AudioSpec *
 SDL_LoadWAV_RW(SDL_RWops * src, int freesrc,
                SDL_AudioSpec * spec, Uint8 ** audio_buf, Uint32 * audio_len)
@@ -421,6 +425,7 @@ SDL_LoadWAV_RW(SDL_RWops * src, int freesrc,
 
     /* FMT chunk */
     WaveFMT *format = NULL;
+    WaveExtensibleFMT *ext = NULL;
 
     SDL_zero(chunk);
 
@@ -493,6 +498,24 @@ SDL_LoadWAV_RW(SDL_RWops * src, int freesrc,
             goto done;
         }
         IMA_ADPCM_encoded = 1;
+        break;
+    case EXTENSIBLE_CODE:
+        /* note that this ignores channel masks, smaller valid bit counts
+           inside a larger container, and most subtypes. This is just enough
+           to get things that didn't really _need_ WAVE_FORMAT_EXTENSIBLE
+           to be useful working when they use this format flag. */
+        ext = (WaveExtensibleFMT *) format;
+        if (SDL_SwapLE16(ext->size) < 22) {
+            SDL_SetError("bogus extended .wav header");
+            was_error = 1;
+            goto done;
+        }
+        if (SDL_memcmp(ext->subformat, extensible_pcm_guid, 16) == 0) {
+            break;  /* cool. */
+        } else if (SDL_memcmp(ext->subformat, extensible_ieee_guid, 16) == 0) {
+            IEEE_float_encoded = 1;
+            break;
+        }
         break;
     case MP3_CODE:
         SDL_SetError("MPEG Layer 3 data not supported");
