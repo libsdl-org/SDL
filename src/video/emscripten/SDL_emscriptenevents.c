@@ -556,7 +556,9 @@ Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *uiEvent, void *u
     SDL_WindowData *window_data = userData;
 
     /* update pixel ratio */
-    window_data->pixel_ratio = emscripten_get_device_pixel_ratio();
+    if (window_data->window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+        window_data->pixel_ratio = emscripten_get_device_pixel_ratio();
+    }
 
     if(!(window_data->window->flags & FULLSCREEN_MASK))
     {
