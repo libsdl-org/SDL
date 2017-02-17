@@ -38,6 +38,7 @@
 #define IEEE_FLOAT_CODE 0x0003
 #define IMA_ADPCM_CODE  0x0011
 #define MP3_CODE        0x0055
+#define EXTENSIBLE_CODE 0xFFFE
 #define WAVE_MONO       1
 #define WAVE_STEREO     2
 
@@ -63,5 +64,14 @@ typedef struct Chunk
     Uint32 length;
     Uint8 *data;
 } Chunk;
+
+typedef struct WaveExtensibleFMT
+{
+    WaveFMT format;
+    Uint16 size;
+    Uint16 validbits;
+    Uint32 channelmask;
+    Uint8 subformat[16];  /* a GUID. */
+} WaveExtensibleFMT;
 
 /* vi: set ts=4 sw=4 expandtab: */
