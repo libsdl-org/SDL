@@ -32,9 +32,8 @@
 #include "../../events/SDL_mouse_c.h"
 #include "SDL_assert.h"
 
-
 static SDL_Cursor*
-Emscripten_CreateDefaultCursor()
+Emscripten_CreateCursorFromString(const char* cursor_str)
 {
     SDL_Cursor* cursor;
     Emscripten_CursorData *curdata;
@@ -48,7 +47,7 @@ Emscripten_CreateDefaultCursor()
             return NULL;
         }
 
-        curdata->system_cursor = "default";
+        curdata->system_cursor = cursor_str;
         cursor->driverdata = curdata;
     }
     else {
@@ -56,6 +55,12 @@ Emscripten_CreateDefaultCursor()
     }
 
     return cursor;
+}
+
+static SDL_Cursor*
+Emscripten_CreateDefaultCursor()
+{
+    return Emscripten_CreateCursorFromString("default");
 }
 
 /*
@@ -69,8 +74,6 @@ Emscripten_CreateCursor(SDL_Surface* sruface, int hot_x, int hot_y)
 static SDL_Cursor*
 Emscripten_CreateSystemCursor(SDL_SystemCursor id)
 {
-    SDL_Cursor *cursor;
-    Emscripten_CursorData *curdata;
     const char *cursor_name = NULL;
 
     switch(id) {
@@ -114,22 +117,7 @@ Emscripten_CreateSystemCursor(SDL_SystemCursor id)
             return NULL;
     }
 
-    cursor = (SDL_Cursor *) SDL_calloc(1, sizeof(*cursor));
-    if (!cursor) {
-        SDL_OutOfMemory();
-        return NULL;
-    }
-    curdata = (Emscripten_CursorData *) SDL_calloc(1, sizeof(*curdata));
-    if (!curdata) {
-        SDL_OutOfMemory();
-        SDL_free(cursor);
-        return NULL;
-    }
-
-    curdata->system_cursor = cursor_name;
-    cursor->driverdata = curdata;
-
-    return cursor;
+    return Emscripten_CreateCursorFromString(cursor_name);
 }
 
 static void
