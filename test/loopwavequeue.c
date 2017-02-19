@@ -25,7 +25,7 @@
 #include <signal.h>
 #endif
 
-struct
+static struct
 {
     SDL_AudioSpec spec;
     Uint8 *sound;               /* Pointer to wave data */
