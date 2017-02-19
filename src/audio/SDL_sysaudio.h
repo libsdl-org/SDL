@@ -67,7 +67,7 @@ typedef struct SDL_AudioDriverImpl
     void (*DetectDevices) (void);
     int (*OpenDevice) (_THIS, void *handle, const char *devname, int iscapture);
     void (*ThreadInit) (_THIS); /* Called by audio thread at start */
-    void (*ThreadDeinit) (_THIS); /* Called by audio thread at start */
+    void (*ThreadDeinit) (_THIS); /* Called by audio thread at end */
     void (*WaitDevice) (_THIS);
     void (*PlayDevice) (_THIS);
     int (*GetPendingBytes) (_THIS);
