@@ -21,6 +21,7 @@
 
 #ifndef SDL_config_winrt_h_
 #define SDL_config_winrt_h_
+#define SDL_config_h_
 
 #include "SDL_platform.h"
 
