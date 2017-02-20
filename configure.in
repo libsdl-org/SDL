@@ -3346,9 +3346,7 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         SOURCES="$srcdir/src/main/haiku/*.cc $SOURCES"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lroot -lbe -lmedia -lgame -ldevice -ltextencoding"
         ;;
-    arm*-apple-darwin*)
-        # iOS - We are not writing anything to confdefs.h because you have to replace
-        # SDL_config.h for SDL_config_iphoneos.h anyway
+    arm*-apple-darwin*|*-ios-*)
         ARCH=ios
 
         CheckVisibilityHidden
@@ -3357,18 +3355,18 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN
-        CheckCOCOA
         CheckPTHREAD
-
 
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
+            AC_DEFINE(SDL_AUDIO_DRIVER_COREAUDIO, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/audio/coreaudio/*.m"
             SUMMARY_audio="${SUMMARY_audio} coreaudio"
             have_audio=yes
         fi
         # Set up files for the joystick library
         if test x$enable_joystick = xyes; then
+            AC_DEFINE(SDL_JOYSTICK_MFI, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/joystick/iphoneos/*.m"
             have_joystick=yes
         fi
@@ -3380,6 +3378,7 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         #fi
         # Set up files for the power library
         if test x$enable_power = xyes; then
+            AC_DEFINE(SDL_POWER_UIKIT, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/power/uikit/*.m"
             have_power=yes
         fi
@@ -3388,28 +3387,36 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
             SOURCES="$SOURCES $srcdir/src/filesystem/cocoa/*.m"
             have_filesystem=yes
         fi
+        # Set up additional files for the file library
+        if test x$enable_file = xyes; then
+            AC_DEFINE(SDL_FILESYSTEM_COCOA, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/file/cocoa/*.m"
+        fi
         # Set up files for the timer library
         if test x$enable_timers = xyes; then
+            AC_DEFINE(SDL_TIMER_UNIX, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/timer/unix/*.c"
             have_timers=yes
         fi
-        # Set up additional files for the file library
-        if test x$enable_file = xyes; then
-            SOURCES="$SOURCES $srcdir/src/file/cocoa/*.m"
-        fi
         # The iOS platform requires special setup.
+        AC_DEFINE(SDL_VIDEO_DRIVER_UIKIT, 1, [ ])
+        AC_DEFINE(SDL_VIDEO_OPENGL_ES2, 1, [ ])
+        AC_DEFINE(SDL_VIDEO_OPENGL_ES, 1, [ ])
+        AC_DEFINE(SDL_VIDEO_RENDER_OGL_ES, 1, [ ])
+        AC_DEFINE(SDL_VIDEO_RENDER_OGL_ES2, 1, [ ])
         SOURCES="$SOURCES $srcdir/src/video/uikit/*.m"
         EXTRA_CFLAGS="$EXTRA_CFLAGS -fpascal-strings"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lm -liconv -lobjc"
-        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,Foundation"
-        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,UIKit"
-        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,OpenGLES"
-        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,QuartzCore"
-        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,CoreAudio"
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,AVFoundation"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,AudioToolbox"
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,CoreAudio"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,CoreGraphics"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,CoreMotion"
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,Foundation"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,GameController"
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,OpenGLES"
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,QuartzCore"
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,UIKit"
         ;;
     *-*-darwin* )
         # This could be either full "Mac OS X", or plain "Darwin" which is
