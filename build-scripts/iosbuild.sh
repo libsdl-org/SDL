@@ -1,7 +1,6 @@
 #!/bin/sh
 #
 # Build a fat binary for iOS
-# Based on fatbuild.sh and code from the Ignifuga Game Engine
 
 # Number of CPUs (for make -j)
 NCPU=`sysctl -n hw.ncpu`
@@ -9,269 +8,181 @@ if test x$NJOB = x; then
     NJOB=$NCPU
 fi
 
-# SDK path
-XCODE_PATH=`xcode-select --print-path`
-if [ -z "$XCODE_PATH" ]; then
-    echo "Could not find XCode location (use xcode-select -switch to set the correct path)"
-    exit 1
-fi
-
-prepare_environment() {
-    ARCH=$1
-    
-    if test x$SDK_VERSION = x; then
-      export SDK_VERSION=`xcodebuild -showsdks | grep iphoneos | sed "s|.*iphoneos||"`
-      if [ -z "$XCODE_PATH" ]; then
-          echo "Could not find a valid iOS SDK"
-          exit 1
-      fi  
-    fi
-    
-    case $ARCH in
-        armv6)
-            DEV_PATH="$XCODE_PATH/Platforms/iPhoneOS.platform/Developer"
-            SDK_PATH="$DEV_PATH/SDKs/iPhoneOS$SDK_VERSION.sdk"
-            ;;
-        armv7)
-            DEV_PATH="$XCODE_PATH/Platforms/iPhoneOS.platform/Developer"
-            SDK_PATH="$DEV_PATH/SDKs/iPhoneOS$SDK_VERSION.sdk"
-            ;;
-        i386)
-            DEV_PATH="$XCODE_PATH/Platforms/iPhoneSimulator.platform/Developer"
-            SDK_PATH="$DEV_PATH/SDKs/iPhoneSimulator$SDK_VERSION.sdk"
-            ;;
-        *)
-            echo "Unknown Architecture $ARCH"
-            exit 1
-            ;;
-    esac
-
-    if [ ! -d "$SDK_PATH" ]; then
-        echo "Could not find iOS SDK at $SDK_PATH"
-        exit 1
-    fi
-
-    if test x$MIN_OS_VERSION = x; then
-        export MIN_OS_VERSION="3.0"
-    fi
-    
-    # Environment flags
-    CFLAGS="-g -O2 -pipe -no-cpp-precomp -isysroot $SDK_PATH \
-            -miphoneos-version-min=$MIN_OS_VERSION -I$SDK_PATH/usr/include/"
-    LDFLAGS="-L$SDK_PATH/usr/lib/ -isysroot $SDK_PATH \
-             -miphoneos-version-min=$MIN_OS_VERSION -static-libgcc"
-    export CXXFLAGS="$CFLAGS"
-    export CXXCPP="$DEV_PATH/usr/bin/llvm-cpp-4.2"
-    export CPP="$CXXCPP"
-    export CXX="$DEV_PATH/usr/bin/llvm-g++-4.2"
-    export CC="$DEV_PATH/usr/bin/llvm-gcc-4.2"
-    export LD="$DEV_PATH/usr/bin/ld"
-    export AR="$DEV_PATH/usr/bin/ar"
-    export AS="$DEV_PATH/usr/bin/ls"
-    export NM="$DEV_PATH/usr/bin/nm"
-    export RANLIB="$DEV_PATH/usr/bin/ranlib"
-    export STRIP="$DEV_PATH/usr/bin/strip"
-    
-    # We dynamically load X11, so using the system X11 headers is fine.
-    CONFIG_FLAGS="--disable-shared --enable-static"
-    
-    case $ARCH in
-        armv6)
-            export CONFIG_FLAGS="$CONFIG_FLAGS --host=armv6-apple-darwin"
-            export CFLAGS="$CFLAGS -arch armv6"
-            export LDFLAGS="$LDFLAGS -arch armv6"
-            ;;
-        armv7)
-            export CONFIG_FLAGS="$CONFIG_FLAGS --host=armv7-apple-darwin"
-            export CFLAGS="$CFLAGS -arch armv7"
-            export LDFLAGS="$LDFLAGS -arch armv7"
-            ;;
-        i386)
-            export CONFIG_FLAGS="$CONFIG_FLAGS --host=i386-apple-darwin"
-            export CFLAGS="$CFLAGS -arch i386"
-            export LDFLAGS="$LDFLAGS -arch i386"
-            ;;
-        *)
-            echo "Unknown Architecture $ARCH"
-            exit 1
-            ;;
-    esac
-}
-
-prepare_environment "armv6"
-echo "Building with iOS SDK v$SDK_VERSION for iOS >= $MIN_OS_VERSION"
-
-#
-# Find the configure script
-#
-srcdir=`dirname $0`/..
-srcdir=`cd $srcdir && pwd`
-auxdir=$srcdir/build-scripts
-cd $srcdir
-
-#
-# Figure out which phase to build:
-# all,
-# configure, configure-armv6, configure-armv7, configure-i386
-# make, make-armv6, make-armv7, make-i386, merge
-# clean
-if test x"$1" = x; then
-    phase=all
+SRC_DIR=$(cd `dirname $0`/..; pwd)
+if [ "$PWD" = "$SRC_DIR" ]; then
+    PREFIX=$SRC_DIR/ios-build
+    mkdir $PREFIX
 else
-    phase="$1"
-fi
-case $phase in
-    all)
-        configure_armv6="yes"
-        configure_armv7="yes"
-        configure_i386="yes"
-        make_armv6="yes"
-        make_armv7="yes"
-        make_i386="yes"
-        merge="yes"
-        ;;
-    configure)
-        configure_armv6="yes"
-        configure_armv7="yes"
-        configure_i386="yes"
-        ;;
-    configure-armv6)
-        configure_armv6="yes"
-        ;;
-    configure-armv7)
-        configure_armv7="yes"
-        ;;
-    configure-i386)
-        configure_i386="yes"
-        ;;
-    make)
-        make_armv6="yes"
-        make_armv7="yes"
-        make_i386="yes"
-        merge="yes"
-        ;;
-    make-armv6)
-        make_armv6="yes"
-        ;;
-    make-armv7)
-        make_armv7="yes"
-        ;;
-    make-i386)
-        make_i386="yes"
-        ;;
-    merge)
-        merge="yes"
-        ;;
-    clean)
-        clean_armv6="yes"
-        clean_armv7="yes"
-        clean_i386="yes"
-        ;;
-    clean-armv6)
-        clean_armv6="yes"
-        ;;
-    clean-armv7)
-        clean_armv7="yes"
-        ;;
-    clean-i386)
-        clean_i386="yes"
-        ;;
-    *)
-        echo "Usage: $0 [all|configure[-armv6|-armv7|-i386]|make[-armv6|-armv7|-i386]|merge|clean[-armv6|-armv7|-i386]]"
-        exit 1
-        ;;
-esac
-
-#
-# Create the build directories
-#
-for dir in build build/armv6 build/armv7 build/i386; do
-    if test -d $dir; then
-        :
-    else
-        mkdir $dir || exit 1
-    fi
-done
-
-#
-# Build the armv6 binary
-#
-prepare_environment "armv6"
-if test x$configure_armv6 = xyes; then
-    (cd build/armv6 && \
-     sh ../../configure $CONFIG_FLAGS CC="$CC" CXX="$CXX" CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS") || exit 2
-     # configure is not yet fully ready for iOS, some manual patching is required
-     cp include/* build/armv6/include
-     cp include/SDL_config_iphoneos.h build/armv6/include/SDL_config.h || exit 2
-     sed -i "" -e "s|^EXTRA_CFLAGS.*|EXTRA_CFLAGS=-I./include|g" build/armv6/Makefile || exit 2
-     sed -i "" -e "s|^EXTRA_LDFLAGS.*|EXTRA_LDFLAGS=-lm|g" build/armv6/Makefile || exit 2
-fi
-if test x$make_armv6 = xyes; then
-    (cd build/armv6 && make -j$NJOB) || exit 3
-fi
-#
-# Build the armv7 binary
-#
-prepare_environment "armv7"
-if test x$configure_armv7 = xyes; then
-    (cd build/armv7 && \
-     sh ../../configure $CONFIG_FLAGS CC="$CC" CXX="$CXX" CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS") || exit 2
-     # configure is not yet fully ready for iOS, some manual patching is required
-     cp include/* build/armv7/include
-     cp include/SDL_config_iphoneos.h build/armv7/include/SDL_config.h || exit 2
-     sed -i "" -e "s|^EXTRA_CFLAGS.*|EXTRA_CFLAGS=-I./include|g" build/armv7/Makefile || exit 2
-     sed -i "" -e "s|^EXTRA_LDFLAGS.*|EXTRA_LDFLAGS=-lm|g" build/armv7/Makefile || exit 2
-fi
-if test x$make_armv7 = xyes; then
-    (cd build/armv7 && make -j$NJOB) || exit 3
-fi
-#
-# Build the i386 binary
-#
-prepare_environment "i386"
-if test x$configure_i386 = xyes; then
-    (cd build/i386 && \
-     sh ../../configure $CONFIG_FLAGS CC="$CC" CXX="$CXX" CFLAGS="$CFLAGS" LDFLAGS="$LDFLAGS") || exit 2
-     # configure is not yet fully ready for iOS, some manual patching is required
-     cp include/* build/i386/include
-     cp include/SDL_config_iphoneos.h build/i386/include/SDL_config.h || exit 2
-     sed -i "" -e "s|^EXTRA_CFLAGS.*|EXTRA_CFLAGS=-I./include|g" build/i386/Makefile || exit 2
-     sed -i "" -e "s|^EXTRA_LDFLAGS.*|EXTRA_LDFLAGS=-lm|g" build/i386/Makefile || exit 2
-fi
-if test x$make_i386 = xyes; then
-    (cd build/i386 && make -j$NJOB) || exit 3
+    PREFIX=$PWD
 fi
 
-#
-# Combine into fat binary
-#
-if test x$merge = xyes; then
-    output=ios/lib
-    sh $auxdir/mkinstalldirs build/$output
-    cd build
-    target=`find . -mindepth 4 -maxdepth 4 -type f -name '*.dylib' | head -1 | sed 's|.*/||'`
-    (lipo -create -o $output/libSDL2.a armv6/build/.libs/libSDL2.a armv7/build/.libs/libSDL2.a i386/build/.libs/libSDL2.a &&
-     lipo -create -o $output/libSDL2main.a armv6/build/libSDL2main.a armv7/build/libSDL2main.a i386/build/libSDL2main.a &&
-     cp -r armv6/include ios
-     echo "Build complete!" &&
-     echo "Files can be found under the build/ios directory.") || exit 4
-    cd ..
+BUILD_I386_IOSSIM=YES
+BUILD_X86_64_IOSSIM=YES
+
+BUILD_IOS_ARMV7=YES
+BUILD_IOS_ARMV7S=YES
+BUILD_IOS_ARM64=YES
+
+# 13.4.0 - Mavericks
+# 14.0.0 - Yosemite
+# 15.0.0 - El Capitan
+DARWIN=darwin15.0.0
+
+XCODEDIR=`xcode-select --print-path`
+IOS_SDK_VERSION=`xcrun --sdk iphoneos --show-sdk-version`
+MIN_SDK_VERSION=6.0
+
+IPHONEOS_PLATFORM=`xcrun --sdk iphoneos --show-sdk-platform-path`
+IPHONEOS_SYSROOT=`xcrun --sdk iphoneos --show-sdk-path`
+
+IPHONESIMULATOR_PLATFORM=`xcrun --sdk iphonesimulator --show-sdk-platform-path`
+IPHONESIMULATOR_SYSROOT=`xcrun --sdk iphonesimulator --show-sdk-path`
+
+# Uncomment if you want to see more information about each invocation
+# of clang as the builds proceed.
+# CLANG_VERBOSE="--verbose"
+
+CC=clang
+CXX=clang
+
+SILENCED_WARNINGS="-Wno-unused-local-typedef -Wno-unused-function"
+
+CFLAGS="${CLANG_VERBOSE} ${SILENCED_WARNINGS} -DNDEBUG -g -O0 -pipe -fPIC -fobjc-arc"
+
+echo "PREFIX ..................... ${PREFIX}"
+echo "BUILD_MACOSX_X86_64 ........ ${BUILD_MACOSX_X86_64}"
+echo "BUILD_I386_IOSSIM .......... ${BUILD_I386_IOSSIM}"
+echo "BUILD_X86_64_IOSSIM ........ ${BUILD_X86_64_IOSSIM}"
+echo "BUILD_IOS_ARMV7 ............ ${BUILD_IOS_ARMV7}"
+echo "BUILD_IOS_ARMV7S ........... ${BUILD_IOS_ARMV7S}"
+echo "BUILD_IOS_ARM64 ............ ${BUILD_IOS_ARM64}"
+echo "DARWIN ..................... ${DARWIN}"
+echo "XCODEDIR ................... ${XCODEDIR}"
+echo "IOS_SDK_VERSION ............ ${IOS_SDK_VERSION}"
+echo "MIN_SDK_VERSION ............ ${MIN_SDK_VERSION}"
+echo "IPHONEOS_PLATFORM .......... ${IPHONEOS_PLATFORM}"
+echo "IPHONEOS_SYSROOT ........... ${IPHONEOS_SYSROOT}"
+echo "IPHONESIMULATOR_PLATFORM ... ${IPHONESIMULATOR_PLATFORM}"
+echo "IPHONESIMULATOR_SYSROOT .... ${IPHONESIMULATOR_SYSROOT}"
+echo "CC ......................... ${CC}"
+echo "CFLAGS ..................... ${CFLAGS}"
+echo "CXX ........................ ${CXX}"
+echo "CXXFLAGS ................... ${CXXFLAGS}"
+echo "LDFLAGS .................... ${LDFLAGS}"
+
+###################################################################
+# This section contains the build commands for each of the 
+# architectures that will be included in the universal binaries.
+###################################################################
+
+echo "$(tput setaf 2)"
+echo "###########################"
+echo "# i386 for iPhone Simulator"
+echo "###########################"
+echo "$(tput sgr0)"
+
+if [ "${BUILD_I386_IOSSIM}" == "YES" ]
+then
+    (
+        cd ${PREFIX}
+        make clean
+        ../configure --build=x86_64-apple-${DARWIN} --host=i386-ios-${DARWIN} --disable-shared --prefix=${PREFIX}/platform/i386-sim "CC=${CC}" "CFLAGS=${CFLAGS} -mios-simulator-version-min=${MIN_SDK_VERSION} -arch i386 -isysroot ${IPHONESIMULATOR_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -mios-simulator-version-min=${MIN_SDK_VERSION} -arch i386 -isysroot ${IPHONESIMULATOR_SYSROOT}" LDFLAGS="-arch i386 -mios-simulator-version-min=${MIN_SDK_VERSION} ${LDFLAGS} -L${IPHONESIMULATOR_SYSROOT}/usr/lib/ -L${IPHONESIMULATOR_SYSROOT}/usr/lib/system" || exit 2
+	cp $SRC_DIR/include/SDL_config_iphoneos.h include/SDL_config.h
+        make -j10 || exit 3
+        make install
+    ) || exit $?
 fi
 
-#
-# Clean up
-#
-do_clean()
-{
-    echo $*
-    $* || exit 6
-}
-if test x$clean_armv6 = xyes; then
-    do_clean rm -r build/armv6
+echo "$(tput setaf 2)"
+echo "#############################"
+echo "# x86_64 for iPhone Simulator"
+echo "#############################"
+echo "$(tput sgr0)"
+
+if [ "${BUILD_X86_64_IOSSIM}" == "YES" ]
+then
+    (
+        cd ${PREFIX}
+        make clean
+        ../configure --build=x86_64-apple-${DARWIN} --host=x86_64-ios-${DARWIN} --disable-shared --prefix=${PREFIX}/platform/x86_64-sim "CC=${CC}" "CFLAGS=${CFLAGS} -mios-simulator-version-min=${MIN_SDK_VERSION} -arch x86_64 -isysroot ${IPHONESIMULATOR_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -mios-simulator-version-min=${MIN_SDK_VERSION} -arch x86_64 -isysroot ${IPHONESIMULATOR_SYSROOT}" LDFLAGS="-arch x86_64 -mios-simulator-version-min=${MIN_SDK_VERSION} ${LDFLAGS} -L${IPHONESIMULATOR_SYSROOT}/usr/lib/ -L${IPHONESIMULATOR_SYSROOT}/usr/lib/system" || exit 2
+	cp $SRC_DIR/include/SDL_config_iphoneos.h include/SDL_config.h
+        make -j$NJOB || exit 3
+        make install
+    ) || exit $?
 fi
-if test x$clean_armv7 = xyes; then
-    do_clean rm -r build/armv7
+
+echo "$(tput setaf 2)"
+echo "##################"
+echo "# armv7 for iPhone"
+echo "##################"
+echo "$(tput sgr0)"
+
+if [ "${BUILD_IOS_ARMV7}" == "YES" ]
+then
+    (
+        cd ${PREFIX}
+        make clean
+        ../configure --build=x86_64-apple-${DARWIN} --host=armv7-ios-${DARWIN} --disable-shared --prefix=${PREFIX}/platform/armv7-ios "CC=${CC}" "CFLAGS=${CFLAGS} -miphoneos-version-min=${MIN_SDK_VERSION} -arch armv7 -isysroot ${IPHONEOS_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -arch armv7 -isysroot ${IPHONEOS_SYSROOT}" LDFLAGS="-arch armv7 -miphoneos-version-min=${MIN_SDK_VERSION} ${LDFLAGS}" || exit 2
+	cp $SRC_DIR/include/SDL_config_iphoneos.h include/SDL_config.h
+        make -j$NJOB || exit 3
+        make install
+    ) || exit $?
 fi
-if test x$clean_i386 = xyes; then
-    do_clean rm -r build/i386
+
+echo "$(tput setaf 2)"
+echo "###################"
+echo "# armv7s for iPhone"
+echo "###################"
+echo "$(tput sgr0)"
+
+if [ "${BUILD_IOS_ARMV7S}" == "YES" ]
+then
+    (
+        cd ${PREFIX}
+        make clean
+        ../configure --build=x86_64-apple-${DARWIN} --host=armv7s-ios-${DARWIN} --disable-shared --prefix=${PREFIX}/platform/armv7s-ios "CC=${CC}" "CFLAGS=${CFLAGS} -miphoneos-version-min=${MIN_SDK_VERSION} -arch armv7s -isysroot ${IPHONEOS_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -miphoneos-version-min=${MIN_SDK_VERSION} -arch armv7s -isysroot ${IPHONEOS_SYSROOT}" LDFLAGS="-arch armv7s -miphoneos-version-min=${MIN_SDK_VERSION} ${LDFLAGS}" || exit 2
+	cp $SRC_DIR/include/SDL_config_iphoneos.h include/SDL_config.h
+        make -j$NJOB || exit 3
+        make install
+    ) || exit $?
 fi
+
+echo "$(tput setaf 2)"
+echo "##################"
+echo "# arm64 for iPhone"
+echo "##################"
+echo "$(tput sgr0)"
+
+if [ "${BUILD_IOS_ARM64}" == "YES" ]
+then
+    (
+        cd ${PREFIX}
+        make clean
+        ../configure --build=x86_64-apple-${DARWIN} --host=arm-ios-${DARWIN} --disable-shared --prefix=${PREFIX}/platform/arm64-ios "CC=${CC}" "CFLAGS=${CFLAGS} -miphoneos-version-min=${MIN_SDK_VERSION} -arch arm64 -isysroot ${IPHONEOS_SYSROOT}" "CXX=${CXX}" "CXXFLAGS=${CXXFLAGS} -miphoneos-version-min=${MIN_SDK_VERSION} -arch arm64 -isysroot ${IPHONEOS_SYSROOT}" LDFLAGS="-arch arm64 -miphoneos-version-min=${MIN_SDK_VERSION} ${LDFLAGS}" || exit 2
+	cp $SRC_DIR/include/SDL_config_iphoneos.h include/SDL_config.h
+        make -j$NJOB || exit 3
+        make install
+    ) || exit $?
+fi
+
+echo "$(tput setaf 2)"
+echo "###################################################################"
+echo "# Create Universal Libraries and Finalize the packaging"
+echo "###################################################################"
+echo "$(tput sgr0)"
+
+(
+    cd ${PREFIX}/platform
+    mkdir -p universal
+    lipo x86_64-sim/lib/libSDL2.a i386-sim/lib/libSDL2.a arm64-ios/lib/libSDL2.a armv7s-ios/lib/libSDL2.a armv7-ios/lib/libSDL2.a -create -output universal/libSDL2.a
+)
+
+(
+    cd ${PREFIX}
+    mkdir -p lib
+    cp -r platform/universal/* lib
+    #rm -rf platform
+    lipo -info lib/libSDL2.a
+)
+
+echo Done!
