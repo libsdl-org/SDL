@@ -734,6 +734,13 @@ COREAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     if (!update_audio_session(this, SDL_TRUE)) {
         return -1;
     }
+
+    /* Stop CoreAudio from doing expensive audio rate conversion */
+    @autoreleasepool {
+        AVAudioSession* session = [AVAudioSession sharedInstance];
+        [session setPreferredSampleRate:this->spec.freq error:nil];
+        this->spec.freq = (int)session.sampleRate;
+    }
 #endif
 
     /* Setup a AudioStreamBasicDescription with the requested format */
