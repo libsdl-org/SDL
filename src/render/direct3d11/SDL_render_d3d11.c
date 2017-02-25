@@ -36,6 +36,11 @@
 
 #ifdef __WINRT__
 
+#define STRING2(x) #x  
+#define STRING(x) STRING2(x)  
+#pragma message("NTDDI_VERSION is " STRING(NTDDI_VERSION))
+#pragma message("NTDDI_WIN8 is " STRING(NTDDI_WIN8))
+
 #if NTDDI_VERSION > NTDDI_WIN8
 #include <DXGI1_3.h>
 #endif
