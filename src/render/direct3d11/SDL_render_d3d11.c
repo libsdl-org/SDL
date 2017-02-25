@@ -40,6 +40,8 @@
 #define STRING(x) STRING2(x)  
 #pragma message("NTDDI_VERSION is " STRING(NTDDI_VERSION))
 #pragma message("NTDDI_WIN8 is " STRING(NTDDI_WIN8))
+#pragma message("_MSC_VER is " STRING(_MSC_VER))
+#pragma message("_MSC_FULL_VER is " STRING(_MSC_FULL_VER))
 
 #if NTDDI_VERSION > NTDDI_WIN8
 #include <DXGI1_3.h>
