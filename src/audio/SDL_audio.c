@@ -89,12 +89,6 @@ static const AudioBootStrap *const bootstrap[] = {
 #if SDL_AUDIO_DRIVER_COREAUDIO
     &COREAUDIO_bootstrap,
 #endif
-#if SDL_AUDIO_DRIVER_DISK
-    &DISKAUDIO_bootstrap,
-#endif
-#if SDL_AUDIO_DRIVER_DUMMY
-    &DUMMYAUDIO_bootstrap,
-#endif
 #if SDL_AUDIO_DRIVER_FUSIONSOUND
     &FUSIONSOUND_bootstrap,
 #endif
@@ -106,6 +100,12 @@ static const AudioBootStrap *const bootstrap[] = {
 #endif
 #if SDL_AUDIO_DRIVER_EMSCRIPTEN
     &EMSCRIPTENAUDIO_bootstrap,
+#endif
+#if SDL_AUDIO_DRIVER_DISK
+    &DISKAUDIO_bootstrap,
+#endif
+#if SDL_AUDIO_DRIVER_DUMMY
+    &DUMMYAUDIO_bootstrap,
 #endif
     NULL
 };
