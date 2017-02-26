@@ -173,32 +173,15 @@ struct SDL_RenderDriver
     SDL_RendererInfo info;
 };
 
-#if !SDL_RENDER_DISABLED
-
-#if SDL_VIDEO_RENDER_D3D
+/* Not all of these are available in a given build. Use #ifdefs, etc. */
 extern SDL_RenderDriver D3D_RenderDriver;
-#endif
-#if SDL_VIDEO_RENDER_D3D11
 extern SDL_RenderDriver D3D11_RenderDriver;
-#endif
-#if SDL_VIDEO_RENDER_OGL
 extern SDL_RenderDriver GL_RenderDriver;
-#endif
-#if SDL_VIDEO_RENDER_OGL_ES2
 extern SDL_RenderDriver GLES2_RenderDriver;
-#endif
-#if SDL_VIDEO_RENDER_OGL_ES
 extern SDL_RenderDriver GLES_RenderDriver;
-#endif
-#if SDL_VIDEO_RENDER_DIRECTFB
 extern SDL_RenderDriver DirectFB_RenderDriver;
-#endif
-#if SDL_VIDEO_RENDER_PSP
 extern SDL_RenderDriver PSP_RenderDriver;
-#endif
 extern SDL_RenderDriver SW_RenderDriver;
-
-#endif /* !SDL_RENDER_DISABLED */
 
 #endif /* SDL_sysrender_h_ */
 
