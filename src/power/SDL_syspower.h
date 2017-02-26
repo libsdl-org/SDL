@@ -27,41 +27,19 @@
 
 #include "SDL_power.h"
 
-#ifndef SDL_POWER_DISABLED
-#ifdef SDL_POWER_LINUX          /* in order of preference. More than could work. */
+/* Not all of these are available in a given build. Use #ifdefs, etc. */
 SDL_bool SDL_GetPowerInfo_Linux_sys_class_power_supply(SDL_PowerState *, int *, int *);
 SDL_bool SDL_GetPowerInfo_Linux_proc_acpi(SDL_PowerState *, int *, int *);
 SDL_bool SDL_GetPowerInfo_Linux_proc_apm(SDL_PowerState *, int *, int *);
-#endif
-#ifdef SDL_POWER_WINDOWS        /* handles Win32, Win64, PocketPC. */
 SDL_bool SDL_GetPowerInfo_Windows(SDL_PowerState *, int *, int *);
-#endif
-#ifdef SDL_POWER_UIKIT          /* handles iPhone/iPad/etc */
 SDL_bool SDL_GetPowerInfo_UIKit(SDL_PowerState *, int *, int *);
-#endif
-#ifdef SDL_POWER_MACOSX         /* handles Mac OS X, Darwin. */
 SDL_bool SDL_GetPowerInfo_MacOSX(SDL_PowerState *, int *, int *);
-#endif
-#ifdef SDL_POWER_HAIKU          /* with BeOS euc.jp apm driver. Does this work on Haiku? */
 SDL_bool SDL_GetPowerInfo_Haiku(SDL_PowerState *, int *, int *);
-#endif
-#ifdef SDL_POWER_ANDROID        /* handles Android. */
 SDL_bool SDL_GetPowerInfo_Android(SDL_PowerState *, int *, int *);
-#endif
-#ifdef SDL_POWER_PSP        /* handles PSP. */
 SDL_bool SDL_GetPowerInfo_PSP(SDL_PowerState *, int *, int *);
-#endif
-#ifdef SDL_POWER_WINRT          /* handles WinRT */
 SDL_bool SDL_GetPowerInfo_WinRT(SDL_PowerState *, int *, int *);
-#endif
-#ifdef SDL_POWER_EMSCRIPTEN     /* handles Emscripten */
 SDL_bool SDL_GetPowerInfo_Emscripten(SDL_PowerState *, int *, int *);
-#endif
-
-#ifdef SDL_POWER_HARDWIRED
 SDL_bool SDL_GetPowerInfo_Hardwired(SDL_PowerState *, int *, int *);
-#endif
-#endif
 
 #endif /* SDL_syspower_h_ */
 

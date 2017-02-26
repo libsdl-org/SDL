@@ -20,7 +20,9 @@
 */
 #include "../../SDL_internal.h"
 
+/* uses BeOS euc.jp apm driver. */
 /* !!! FIXME: does this thing even work on Haiku? */
+
 #ifndef SDL_POWER_DISABLED
 #if SDL_POWER_HAIKU
 
