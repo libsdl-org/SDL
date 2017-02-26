@@ -2,7 +2,6 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup>
-    <LibSDL2-DeviceType Condition="'$(TargetPlatformIdentifier)' == 'Windows' and '$(TargetPlatformVersion)' == '8.0'">WinRT80</LibSDL2-DeviceType>
     <LibSDL2-DeviceType Condition="'$(TargetPlatformIdentifier)' == 'Windows' and '$(TargetPlatformVersion)' == '8.1'">WinRT81</LibSDL2-DeviceType>
     <LibSDL2-DeviceType Condition="'$(TargetPlatformIdentifier)' == 'Windows Phone' and '$(TargetPlatformVersion)' == '8.0'">WinPhone80</LibSDL2-DeviceType>
     <LibSDL2-DeviceType Condition="'$(TargetPlatformIdentifier)' == 'WindowsPhoneApp' and '$(TargetPlatformVersion)' == '8.1'">WinPhone81</LibSDL2-DeviceType>
