@@ -23421,6 +23421,7 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
                 ac_default_prefix=$BUILD_PREFIX
             fi
         fi
+        CheckDeclarationAfterStatement
         CheckDummyVideo
         CheckDiskAudio
         CheckDummyAudio
