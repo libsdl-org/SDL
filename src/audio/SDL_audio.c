@@ -672,18 +672,14 @@ SDL_RunAudio(void *devicep)
             data = device->work_buffer;
         }
 
-        if ( SDL_AtomicGet(&device->enabled) ) {
-            /* !!! FIXME: this should be LockDevice. */
-            SDL_LockMutex(device->mixer_lock);
-            if (SDL_AtomicGet(&device->paused)) {
-                SDL_memset(data, silence, data_len);
-            } else {
-                callback(udata, data, data_len);
-            }
-            SDL_UnlockMutex(device->mixer_lock);
-        } else {
+        /* !!! FIXME: this should be LockDevice. */
+        SDL_LockMutex(device->mixer_lock);
+        if (SDL_AtomicGet(&device->paused)) {
             SDL_memset(data, silence, data_len);
+        } else {
+            callback(udata, data, data_len);
         }
+        SDL_UnlockMutex(device->mixer_lock);
 
         if (device->stream) {
             /* Stream available audio to device, converting/resampling. */
@@ -752,7 +748,7 @@ SDL_CaptureAudio(void *devicep)
         int still_need;
         Uint8 *ptr;
 
-        if (!SDL_AtomicGet(&device->enabled) || SDL_AtomicGet(&device->paused)) {
+        if (SDL_AtomicGet(&device->paused)) {
             SDL_Delay(delay);  /* just so we don't cook the CPU. */
             if (device->stream) {
                 SDL_AudioStreamClear(device->stream);
@@ -774,7 +770,7 @@ SDL_CaptureAudio(void *devicep)
            and block when there isn't data so this thread isn't eating CPU.
            But we don't process it further or call the app's callback. */
 
-        while (still_need > 0) {
+        while (SDL_AtomicGet(&device->enabled) && (still_need > 0)) {
             const int rc = current_audio.impl.CaptureFromDevice(device, ptr, still_need);
             SDL_assert(rc <= still_need);  /* device should not overflow buffer. :) */
             if (rc > 0) {
