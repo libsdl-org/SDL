@@ -2473,7 +2473,7 @@ struct blit_table
     Uint32 dstR, dstG, dstB;
     Uint32 blit_features;
     SDL_BlitFunc blitfunc;
-    Uint32 alpha; // bitwise NO_ALPHA, SET_ALPHA, COPY_ALPHA
+    Uint32 alpha;  /* bitwise NO_ALPHA, SET_ALPHA, COPY_ALPHA */
 };
 static const struct blit_table normal_blit_1[] = {
     /* Default for 8-bit RGB source, never optimized */
