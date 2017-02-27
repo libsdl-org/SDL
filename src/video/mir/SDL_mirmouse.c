@@ -41,6 +41,7 @@ typedef struct
 {
     MirCursorConfiguration* conf;
     MirBufferStream*        stream;
+    char const*             name;
 } MIR_Cursor;
 
 static SDL_Cursor*
@@ -55,6 +56,7 @@ MIR_CreateDefaultCursor()
         if (mir_cursor) {
             mir_cursor->conf   = NULL;
             mir_cursor->stream = NULL;
+            mir_cursor->name   = NULL;
             cursor->driverdata = mir_cursor;
         }
         else {
@@ -188,7 +190,7 @@ MIR_CreateSystemCursor(SDL_SystemCursor id)
             return NULL;
     }
 
-    mir_cursor->conf = MIR_mir_cursor_configuration_from_name(cursor_name);
+    mir_cursor->name = cursor_name;
 
     return cursor;
 }
@@ -220,18 +222,25 @@ MIR_ShowCursor(SDL_Cursor* cursor)
     MIR_Window* mir_window  = mir_data->current_window;
 
     if (cursor && cursor->driverdata) {
-        if (mir_window && MIR_mir_surface_is_valid(mir_window->surface)) {
+        if (mir_window && MIR_mir_window_is_valid(mir_window->window)) {
             MIR_Cursor* mir_cursor = (MIR_Cursor*)cursor->driverdata;
 
+            if (mir_cursor->name != NULL) {
+                MirWindowSpec* spec = MIR_mir_create_window_spec(mir_data->connection);
+                MIR_mir_window_spec_set_cursor_name(spec, mir_cursor->name);
+                MIR_mir_window_apply_spec(mir_window->window, spec);
+                MIR_mir_window_spec_release(spec);
+            }
+
             if (mir_cursor->conf) {
-                MIR_mir_surface_configure_cursor(mir_window->surface, mir_cursor->conf);
+                MIR_mir_window_configure_cursor(mir_window->window, mir_cursor->conf);
             }
         }
     }
-    else if(mir_window && MIR_mir_surface_is_valid(mir_window->surface)) {
-        MIR_mir_surface_configure_cursor(mir_window->surface, NULL);
+    else if(mir_window && MIR_mir_window_is_valid(mir_window->window)) {
+        MIR_mir_window_configure_cursor(mir_window->window, NULL);
     }
-    
+
     return 0;
 }
 

@@ -70,7 +70,7 @@ MIR_UpdateWindowFramebuffer(_THIS, SDL_Window* window,
     char* s_dest;
     char* pixels;
 
-    bs = MIR_mir_surface_get_buffer_stream(mir_window->surface);
+    bs = MIR_mir_window_get_buffer_stream(mir_window->window);
     MIR_mir_buffer_stream_get_graphics_region(bs, &region);
 
     s_dest = region.vaddr;

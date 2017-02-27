@@ -270,23 +270,23 @@ MIR_HandleResize(MirResizeEvent const* resize_event, SDL_Window* window)
 }
 
 static void
-MIR_HandleSurface(MirSurfaceEvent const* surface_event, SDL_Window* window)
+MIR_HandleWindow(MirWindowEvent const* event, SDL_Window* window)
 {
-    MirSurfaceAttrib attrib = MIR_mir_surface_event_get_attribute(surface_event);
-    int value               = MIR_mir_surface_event_get_attribute_value(surface_event);
+    MirWindowAttrib attrib = MIR_mir_window_event_get_attribute(event);
+    int value              = MIR_mir_window_event_get_attribute_value(event);
 
-    if (attrib == mir_surface_attrib_focus) {
-        if (value == mir_surface_focused) {
+    if (attrib == mir_window_attrib_focus) {
+        if (value == mir_window_focus_state_focused) {
             SDL_SetKeyboardFocus(window);
         }
-        else if (value == mir_surface_unfocused) {
+        else if (value == mir_window_focus_state_unfocused) {
             SDL_SetKeyboardFocus(NULL);
         }
     }
 }
 
 void
-MIR_HandleEvent(MirSurface* surface, MirEvent const* ev, void* context)
+MIR_HandleEvent(MirWindow* mirwindow, MirEvent const* ev, void* context)
 {
     MirEventType event_type = MIR_mir_event_get_type(ev);
     SDL_Window* window      = (SDL_Window*)context;
@@ -299,8 +299,8 @@ MIR_HandleEvent(MirSurface* surface, MirEvent const* ev, void* context)
             case (mir_event_type_resize):
                 MIR_HandleResize(MIR_mir_event_get_resize_event(ev), window);
                 break;
-            case (mir_event_type_surface):
-                MIR_HandleSurface(MIR_mir_event_get_surface_event(ev), window);
+            case (mir_event_type_window):
+                MIR_HandleWindow(MIR_mir_event_get_window_event(ev), window);
                 break;
             default:
                 break;

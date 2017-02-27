@@ -1414,11 +1414,11 @@ AC_HELP_STRING([--enable-video-mir], [use Mir video driver [[default=yes]]]),
                 save_CFLAGS="$CFLAGS"
                 CFLAGS="$save_CFLAGS $MIR_CFLAGS"
 
-                dnl This will disable Mir if >= v0.25 is not available
+                dnl This will disable Mir if >= v0.26 is not available
                 AC_TRY_COMPILE([
                 #include <mir_toolkit/mir_client_library.h>
                 ],[
-                    MirTouchAction actions = mir_touch_actions
+                    MirWindowAttrib attrib = mir_window_attrib_state
                 ],[
                 video_mir=yes
                 ])
