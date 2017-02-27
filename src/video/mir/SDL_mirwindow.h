@@ -35,7 +35,7 @@ struct MIR_Window {
     SDL_Window* sdl_window;
     MIR_Data*   mir_data;
 
-    MirSurface* surface;
+    MirWindow*  window;
     EGLSurface  egl_surface;
 };
 
