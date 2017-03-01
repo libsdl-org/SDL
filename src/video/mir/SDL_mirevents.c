@@ -237,7 +237,7 @@ HandleMouseEvent(MirPointerEvent const* pointer, SDL_Window* sdl_window)
 }
 
 static void
-MIR_HandleInput(MirInputEvent const* input_event, SDL_Window* window)
+HandleInput(MirInputEvent const* input_event, SDL_Window* window)
 {
     switch (MIR_mir_input_event_get_type(input_event)) {
         case (mir_input_event_type_key):
@@ -257,7 +257,7 @@ MIR_HandleInput(MirInputEvent const* input_event, SDL_Window* window)
 }
 
 static void
-MIR_HandleResize(MirResizeEvent const* resize_event, SDL_Window* window)
+HandleResize(MirResizeEvent const* resize_event, SDL_Window* window)
 {
     int new_w = MIR_mir_resize_event_get_width (resize_event);
     int new_h = MIR_mir_resize_event_get_height(resize_event);
@@ -270,7 +270,7 @@ MIR_HandleResize(MirResizeEvent const* resize_event, SDL_Window* window)
 }
 
 static void
-MIR_HandleWindow(MirWindowEvent const* event, SDL_Window* window)
+HandleWindow(MirWindowEvent const* event, SDL_Window* window)
 {
     MirWindowAttrib attrib = MIR_mir_window_event_get_attribute(event);
     int value              = MIR_mir_window_event_get_attribute_value(event);
@@ -294,13 +294,13 @@ MIR_HandleEvent(MirWindow* mirwindow, MirEvent const* ev, void* context)
     if (window) {
         switch (event_type) {
             case (mir_event_type_input):
-                MIR_HandleInput(MIR_mir_event_get_input_event(ev), window);
+                HandleInput(MIR_mir_event_get_input_event(ev), window);
                 break;
             case (mir_event_type_resize):
-                MIR_HandleResize(MIR_mir_event_get_resize_event(ev), window);
+                HandleResize(MIR_mir_event_get_resize_event(ev), window);
                 break;
             case (mir_event_type_window):
-                MIR_HandleWindow(MIR_mir_event_get_window_event(ev), window);
+                HandleWindow(MIR_mir_event_get_window_event(ev), window);
                 break;
             default:
                 break;
