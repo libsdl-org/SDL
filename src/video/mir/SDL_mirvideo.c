@@ -27,6 +27,8 @@
 
 #if SDL_VIDEO_DRIVER_MIR
 
+#include "SDL_log.h"
+
 #include "SDL_mirwindow.h"
 #include "SDL_video.h"
 
@@ -98,7 +100,19 @@ MIR_Available()
     int available = 0;
 
     if (SDL_MIR_LoadSymbols()) {
-        /* !!! FIXME: try to make a MirConnection here. */
+
+        /* Lets ensure we can connect to the mir server */
+        MirConnection* connection = MIR_mir_connect_sync(NULL, __PRETTY_FUNCTION__);
+
+        if (!MIR_mir_connection_is_valid(connection)) {
+            SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "Unable to connect to the mir server %s",
+                MIR_mir_connection_get_error_message(connection));
+
+            return available;
+        }
+
+        MIR_mir_connection_release(connection);
+
         available = 1;
         SDL_MIR_UnloadSymbols();
     }
