@@ -78,7 +78,7 @@ SDL_PrivateShouldInitSubsystem(Uint32 subsystem)
 {
     int subsystem_index = SDL_MostSignificantBitIndex32(subsystem);
     SDL_assert(SDL_SubsystemRefCount[subsystem_index] < 255);
-    return (SDL_SubsystemRefCount[subsystem_index] == 0);
+    return (SDL_SubsystemRefCount[subsystem_index] == 0) ? SDL_TRUE : SDL_FALSE;
 }
 
 /* Private helper to check if a system needs to be quit. */
@@ -92,7 +92,7 @@ SDL_PrivateShouldQuitSubsystem(Uint32 subsystem) {
     /* If we're in SDL_Quit, we shut down every subsystem, even if refcount
      * isn't zero.
      */
-    return SDL_SubsystemRefCount[subsystem_index] == 1 || SDL_bInMainQuit;
+    return (SDL_SubsystemRefCount[subsystem_index] == 1 || SDL_bInMainQuit) ? SDL_TRUE : SDL_FALSE;
 }
 
 void

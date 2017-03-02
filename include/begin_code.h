@@ -111,7 +111,7 @@
 #elif defined(_MSC_VER) || defined(__BORLANDC__) || \
       defined(__DMC__) || defined(__SC__) || \
       defined(__WATCOMC__) || defined(__LCC__) || \
-      defined(__DECC)
+      defined(__DECC) || defined(__CC_ARM)
 #define SDL_INLINE __inline
 #ifndef __inline__
 #define __inline__ __inline
