@@ -229,7 +229,7 @@ done:
 }
 #else
 #define cpuid(func, a, b, c, d) \
-    a = b = c = d = 0
+    do { a = b = c = d = 0; (void) a; (void) b; (void) c; (void) d; } while (0)
 #endif
 
 static int CPU_CPUIDFeatures[4];

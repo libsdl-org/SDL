@@ -1317,9 +1317,9 @@ SDL_CalculateBlitA(SDL_Surface * surface)
 
         case 3:
         default:
-            return BlitNtoNPixelAlpha;
+            break;
         }
-        break;
+        return BlitNtoNPixelAlpha;
 
     case SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND:
         if (sf->Amask == 0) {

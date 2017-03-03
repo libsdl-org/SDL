@@ -124,6 +124,9 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
     Uint32 biClrUsed = 0;
     /* Uint32 biClrImportant = 0; */
 
+    (void) haveRGBMasks;
+    (void) haveAlphaMask;
+
     /* Make sure we are passed a valid data source */
     surface = NULL;
     was_error = SDL_FALSE;

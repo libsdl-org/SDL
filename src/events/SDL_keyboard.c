@@ -569,7 +569,7 @@ SDL_ResetKeyboard(void)
 #ifdef DEBUG_KEYBOARD
     printf("Resetting keyboard\n");
 #endif
-    for (scancode = 0; scancode < SDL_NUM_SCANCODES; ++scancode) {
+    for (scancode = (SDL_Scancode) 0; scancode < SDL_NUM_SCANCODES; ++scancode) {
         if (keyboard->keystate[scancode] == SDL_PRESSED) {
             SDL_SendKeyboardKey(SDL_RELEASED, scancode);
         }
@@ -834,7 +834,7 @@ SDL_GetModState(void)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
 
-    return keyboard->modstate;
+    return (SDL_Keymod) keyboard->modstate;
 }
 
 void
@@ -863,7 +863,7 @@ SDL_GetKeyFromScancode(SDL_Scancode scancode)
 {
     SDL_Keyboard *keyboard = &SDL_keyboard;
 
-    if (scancode < SDL_SCANCODE_UNKNOWN || scancode >= SDL_NUM_SCANCODES) {
+    if (((int)scancode) < ((int)SDL_SCANCODE_UNKNOWN) || scancode >= SDL_NUM_SCANCODES) {
           SDL_InvalidParamError("scancode");
           return 0;
     }
@@ -890,7 +890,7 @@ const char *
 SDL_GetScancodeName(SDL_Scancode scancode)
 {
     const char *name;
-    if (scancode < SDL_SCANCODE_UNKNOWN || scancode >= SDL_NUM_SCANCODES) {
+    if (((int)scancode) < ((int)SDL_SCANCODE_UNKNOWN) || scancode >= SDL_NUM_SCANCODES) {
           SDL_InvalidParamError("scancode");
           return "";
     }

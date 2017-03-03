@@ -382,7 +382,7 @@ SDL_GameControllerAxis SDL_GameControllerGetAxisFromString(const char *pchString
 
     for (entry = 0; map_StringForControllerAxis[entry]; ++entry) {
         if (!SDL_strcasecmp(pchString, map_StringForControllerAxis[entry]))
-            return entry;
+            return (SDL_GameControllerAxis) entry;
     }
     return SDL_CONTROLLER_AXIS_INVALID;
 }
@@ -428,7 +428,7 @@ SDL_GameControllerButton SDL_GameControllerGetButtonFromString(const char *pchSt
 
     for (entry = 0; map_StringForControllerButton[entry]; ++entry) {
         if (SDL_strcasecmp(pchString, map_StringForControllerButton[entry]) == 0)
-            return entry;
+            return (SDL_GameControllerButton) entry;
     }
     return SDL_CONTROLLER_BUTTON_INVALID;
 }
@@ -803,6 +803,8 @@ static ControllerMapping_t *SDL_PrivateGetControllerMapping(int device_index)
 {
     SDL_JoystickGUID jGUID = SDL_JoystickGetDeviceGUID(device_index);
     ControllerMapping_t *mapping;
+
+    (void) s_pEmscriptenMapping;  /* pacify ARMCC */
 
     mapping = SDL_PrivateGetControllerMappingForGUID(&jGUID);
 #if SDL_JOYSTICK_XINPUT
