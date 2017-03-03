@@ -1038,9 +1038,8 @@ SDL_ResampleAudioStream_si16_c2(SDL_AudioStream *stream, const void *_inbuf, con
     const Sint16 *inbuf = (const Sint16 *) _inbuf;
     Sint16 *outbuf = (Sint16 *) _outbuf;
     SDL_AudioStreamResamplerState *state = (SDL_AudioStreamResamplerState*)stream->resampler_state;
-    const int chans = (int)stream->pre_resample_channels;
 
-    SDL_assert(chans <= SDL_arraysize(state->resampler_state.si16));
+    SDL_assert(((int)stream->pre_resample_channels) <= SDL_arraysize(state->resampler_state.si16));
 
     if (!state->resampler_seeded) {
         state->resampler_state.si16[0] = inbuf[0];

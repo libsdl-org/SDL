@@ -1938,7 +1938,7 @@ SDL_DestroyRenderer(SDL_Renderer * renderer)
 
     /* Free existing textures for this renderer */
     while (renderer->textures) {
-        SDL_Texture *tex = renderer->textures;
+        SDL_Texture *tex = renderer->textures; (void) tex;
         SDL_DestroyTexture(renderer->textures);
         SDL_assert(tex != renderer->textures);  /* satisfy static analysis. */
     }
