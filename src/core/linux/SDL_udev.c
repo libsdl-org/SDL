@@ -216,7 +216,7 @@ SDL_UDEV_Scan(void)
     enumerate = _this->udev_enumerate_new(_this->udev);
     if (enumerate == NULL) {
         SDL_UDEV_Quit();
-        SDL_SetError("udev_monitor_new_from_netlink() failed");
+        SDL_SetError("udev_enumerate_new() failed");
         return;
     }
     
