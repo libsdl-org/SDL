@@ -140,11 +140,13 @@ MIR_CreateSystemCursor(SDL_SystemCursor id)
 {
     char const* cursor_name = NULL;
     SDL_Cursor* cursor      = MIR_CreateDefaultCursor();
-    MIR_Cursor* mir_cursor  = (MIR_Cursor*)cursor->driverdata;
+    MIR_Cursor* mir_cursor;
 
     if (!cursor) {
         return NULL;
     }
+
+    mir_cursor = (MIR_Cursor*)cursor->driverdata;
 
     switch(id) {
         case SDL_SYSTEM_CURSOR_ARROW:
