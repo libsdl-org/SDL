@@ -409,7 +409,7 @@ WatchJoystick(SDL_Joystick * joystick)
     nJoystickID = SDL_JoystickInstanceID(joystick);
 
     s_nNumAxes = SDL_JoystickNumAxes(joystick);
-    s_arrAxisState = SDL_calloc(s_nNumAxes, sizeof(*s_arrAxisState));
+    s_arrAxisState = (AxisState *)SDL_calloc(s_nNumAxes, sizeof(*s_arrAxisState));
     for (iIndex = 0; iIndex < s_nNumAxes; ++iIndex) {
         AxisState *pAxisState = &s_arrAxisState[iIndex];
         Sint16 nInitialValue;
