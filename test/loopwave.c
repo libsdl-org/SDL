@@ -38,6 +38,7 @@ static struct
     int soundpos;               /* Current play position */
 } wave;
 
+static SDL_AudioDeviceID device;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
 static void
@@ -45,6 +46,37 @@ quit(int rc)
 {
     SDL_Quit();
     exit(rc);
+}
+
+static void
+close_audio()
+{
+	if (device != 0) {
+		SDL_CloseAudioDevice(device);
+		device = 0;
+	}
+}
+
+static void
+open_audio()
+{
+	/* Initialize fillerup() variables */
+	device = SDL_OpenAudioDevice(NULL, SDL_FALSE, &wave.spec, NULL, 0);
+	if (!device) {
+		SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open audio: %s\n", SDL_GetError());
+		SDL_FreeWAV(wave.sound);
+		quit(2);
+	}
+
+
+	/* Let the audio run */
+	SDL_PauseAudioDevice(device, SDL_FALSE);
+}
+
+static void reopen_audio()
+{
+	close_audio();
+	open_audio();
 }
 
 
@@ -82,7 +114,7 @@ poked(int sig)
 void
 loop()
 {
-    if(done || (SDL_GetAudioStatus() != SDL_AUDIO_PLAYING))
+    if(done || (SDL_GetAudioDeviceStatus(device) != SDL_AUDIO_PLAYING))
         emscripten_cancel_main_loop();
 }
 #endif
@@ -97,7 +129,7 @@ main(int argc, char *argv[])
     SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
 
     /* Load the SDL library */
-    if (SDL_Init(SDL_INIT_AUDIO) < 0) {
+    if (SDL_Init(SDL_INIT_AUDIO|SDL_INIT_EVENTS) < 0) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't initialize SDL: %s\n", SDL_GetError());
         return (1);
     }
@@ -114,45 +146,40 @@ main(int argc, char *argv[])
     }
 
     wave.spec.callback = fillerup;
-#if HAVE_SIGNAL_H
-    /* Set the signals */
-#ifdef SIGHUP
-    signal(SIGHUP, poked);
-#endif
-    signal(SIGINT, poked);
-#ifdef SIGQUIT
-    signal(SIGQUIT, poked);
-#endif
-    signal(SIGTERM, poked);
-#endif /* HAVE_SIGNAL_H */
 
     /* Show the list of available drivers */
     SDL_Log("Available audio drivers:");
     for (i = 0; i < SDL_GetNumAudioDrivers(); ++i) {
         SDL_Log("%i: %s", i, SDL_GetAudioDriver(i));
-    }
+	}
 
-    /* Initialize fillerup() variables */
-    if (SDL_OpenAudio(&wave.spec, NULL) < 0) {
-        SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't open audio: %s\n", SDL_GetError());
-        SDL_FreeWAV(wave.sound);
-        quit(2);
-    }
+	SDL_Log("Using audio driver: %s\n", SDL_GetCurrentAudioDriver());
 
-    SDL_Log("Using audio driver: %s\n", SDL_GetCurrentAudioDriver());
+	open_audio();
 
-    /* Let the audio run */
-    SDL_PauseAudio(0);
+	SDL_FlushEvents(SDL_AUDIODEVICEADDED, SDL_AUDIODEVICEREMOVED);
 
 #ifdef __EMSCRIPTEN__
     emscripten_set_main_loop(loop, 0, 1);
 #else
-    while (!done && (SDL_GetAudioStatus() == SDL_AUDIO_PLAYING))
-        SDL_Delay(1000);
+	while (!done) {
+		SDL_Event event;
+
+		while (SDL_PollEvent(&event) > 0) {
+			if (event.type == SDL_QUIT) {
+				done = 1;
+			}
+			if ((event.type == SDL_AUDIODEVICEADDED && !event.adevice.iscapture) ||
+				(event.type == SDL_AUDIODEVICEREMOVED && !event.adevice.iscapture && event.adevice.which == device)) {
+				reopen_audio();
+			}
+		}
+		SDL_Delay(100);
+	}
 #endif
 
     /* Clean up on signal */
-    SDL_CloseAudio();
+	close_audio();
     SDL_FreeWAV(wave.sound);
     SDL_Quit();
     return (0);
