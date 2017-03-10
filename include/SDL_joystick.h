@@ -71,6 +71,13 @@ typedef struct {
     Uint8 data[16];
 } SDL_JoystickGUID;
 
+/**
+ * This is a unique ID for a joystick for the time it is connected to the system,
+ * and is never reused for the lifetime of the application. If the joystick is
+ * disconnected and reconnected, it will get a new ID.
+ *
+ * The ID value starts at 0 and increments from there. The value -1 is an invalid ID.
+ */
 typedef Sint32 SDL_JoystickID;
 
 typedef enum
@@ -143,6 +150,13 @@ extern DECLSPEC Uint16 SDLCALL SDL_JoystickGetDeviceProductVersion(int device_in
  *  This can be called before any joysticks are opened.
  */
 extern DECLSPEC SDL_JoystickType SDLCALL SDL_JoystickGetDeviceType(int device_index);
+
+/**
+ *  Get the instance ID of a joystick.
+ *  This can be called before any joysticks are opened.
+ *  If the index is out of range, this function will return -1.
+ */
+extern DECLSPEC SDL_JoystickID SDLCALL SDL_JoystickGetDeviceInstanceID(int device_index);
 
 /**
  *  Open a joystick for use.

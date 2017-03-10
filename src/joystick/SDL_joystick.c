@@ -108,7 +108,7 @@ SDL_NumJoysticks(void)
 const char *
 SDL_JoystickNameForIndex(int device_index)
 {
-    if ((device_index < 0) || (device_index >= SDL_NumJoysticks())) {
+    if (device_index < 0 || device_index >= SDL_NumJoysticks()) {
         SDL_SetError("There are %d joysticks available", SDL_NumJoysticks());
         return (NULL);
     }
@@ -170,10 +170,10 @@ SDL_JoystickOpen(int device_index)
 
     joysticklist = SDL_joysticks;
     /* If the joystick is already open, return it
-    * it is important that we have a single joystick * for each instance id
-    */
+     * it is important that we have a single joystick * for each instance id
+     */
     while (joysticklist) {
-        if (SDL_SYS_GetInstanceIdOfDeviceIndex(device_index) == joysticklist->instance_id) {
+        if (SDL_JoystickGetDeviceInstanceID(device_index) == joysticklist->instance_id) {
                 joystick = joysticklist;
                 ++joystick->ref_count;
                 SDL_UnlockJoystickList();
@@ -1078,7 +1078,7 @@ static SDL_JoystickType SDL_GetJoystickGUIDType(SDL_JoystickGUID guid)
 /* return the guid for this index */
 SDL_JoystickGUID SDL_JoystickGetDeviceGUID(int device_index)
 {
-    if ((device_index < 0) || (device_index >= SDL_NumJoysticks())) {
+    if (device_index < 0 || device_index >= SDL_NumJoysticks()) {
         SDL_JoystickGUID emptyGUID;
         SDL_SetError("There are %d joysticks available", SDL_NumJoysticks());
         SDL_zero(emptyGUID);
@@ -1128,7 +1128,15 @@ SDL_JoystickType SDL_JoystickGetDeviceType(int device_index)
     return type;
 }
 
-/* return the guid for this opened device */
+SDL_JoystickID SDL_JoystickGetDeviceInstanceID(int device_index)
+{
+    if (device_index < 0 || device_index >= SDL_NumJoysticks()) {
+        SDL_SetError("There are %d joysticks available", SDL_NumJoysticks());
+        return -1;
+    }
+    return SDL_SYS_GetInstanceIdOfDeviceIndex(device_index);
+}
+
 SDL_JoystickGUID SDL_JoystickGetGUID(SDL_Joystick * joystick)
 {
     if (!SDL_PrivateJoystickValid(joystick)) {
