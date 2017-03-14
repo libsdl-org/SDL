@@ -364,6 +364,13 @@ ALSA_PlayDevice(_THIS)
             }
             continue;
         }
+        else if (status == 0) {
+            /* No frames were written (no available space in pcm device).
+               Allow other threads to catch up. */
+            Uint32 delay = (frames_left / 2 * 1000) / this->spec.freq;
+            SDL_Delay(delay);
+        }
+
         sample_buf += status * frame_size;
         frames_left -= status;
     }
@@ -383,23 +390,22 @@ ALSA_CaptureFromDevice(_THIS, void *buffer, int buflen)
                                 this->spec.channels;
     const int total_frames = buflen / frame_size;
     snd_pcm_uframes_t frames_left = total_frames;
+    snd_pcm_uframes_t wait_time = frame_size / 2;
 
     SDL_assert((buflen % frame_size) == 0);
 
     while ( frames_left > 0 && SDL_AtomicGet(&this->enabled) ) {
-        /* !!! FIXME: This works, but needs more testing before going live */
-        /* ALSA_snd_pcm_wait(this->hidden->pcm_handle, -1); */
-        int status = ALSA_snd_pcm_readi(this->hidden->pcm_handle,
+        int status;
+
+        status = ALSA_snd_pcm_readi(this->hidden->pcm_handle,
                                         sample_buf, frames_left);
 
-        if (status < 0) {
+        if (status == -EAGAIN) {
+            ALSA_snd_pcm_wait(this->hidden->pcm_handle, wait_time);
+            status = 0;
+        }
+        else if (status < 0) {
             /*printf("ALSA: capture error %d\n", status);*/
-            if (status == -EAGAIN) {
-                /* Apparently snd_pcm_recover() doesn't handle this case -
-                   does it assume snd_pcm_wait() above? */
-                SDL_Delay(1);
-                continue;
-            }
             status = ALSA_snd_pcm_recover(this->hidden->pcm_handle, status, 0);
             if (status < 0) {
                 /* Hmm, not much we can do - abort */
@@ -745,8 +751,9 @@ ALSA_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         SDL_memset(this->hidden->mixbuf, this->spec.silence, this->hidden->mixlen);
     }
 
-    /* Switch to blocking mode for playback */
-    ALSA_snd_pcm_nonblock(pcm_handle, 0);
+    if (!iscapture) {
+        ALSA_snd_pcm_nonblock(pcm_handle, 0);
+    }
 
     /* We're ready to rock and roll. :-) */
     return 0;
@@ -763,16 +770,26 @@ static void
 add_device(const int iscapture, const char *name, void *hint, ALSA_Device **pSeen)
 {
     ALSA_Device *dev = SDL_malloc(sizeof (ALSA_Device));
-    char *desc = ALSA_snd_device_name_get_hint(hint, "DESC");
+    char *desc;
     char *handle = NULL;
     char *ptr;
 
-    if (!desc) {
-        SDL_free(dev);
+    if (!dev) {
         return;
-    } else if (!dev) {
-        free(desc);
-        return;
+    }
+
+    /* Not all alsa devices are enumerable via snd_device_name_get_hint
+       (i.e. bluetooth devices).  Therefore if hint is passed in to this
+       function as  NULL, assume name contains desc.
+       Make sure not to free the storage associated with desc in this case */
+    if (hint) {
+        desc = ALSA_snd_device_name_get_hint(hint, "DESC");
+        if (!desc) {
+            SDL_free(dev);
+            return;
+        }
+    } else {
+        desc = (char *) name;
     }
 
     SDL_assert(name != NULL);
@@ -788,14 +805,16 @@ add_device(const int iscapture, const char *name, void *hint, ALSA_Device **pSee
 
     handle = SDL_strdup(name);
     if (!handle) {
-        free(desc);
+        if (hint) {
+            free(desc);
+        }
         SDL_free(dev);
         return;
     }
 
     SDL_AddAudioDevice(iscapture, desc, handle);
-    free(desc);
-
+    if (hint)
+        free(desc);
     dev->name = handle;
     dev->iscapture = iscapture;
     dev->next = *pSeen;
@@ -815,12 +834,15 @@ ALSA_HotplugThread(void *arg)
     ALSA_Device *dev;
     Uint32 ticks;
 
+    SDL_SetThreadPriority(SDL_THREAD_PRIORITY_LOW);
+
     while (!SDL_AtomicGet(&ALSA_hotplug_shutdown)) {
         void **hints = NULL;
+        ALSA_Device *unseen;
+        ALSA_Device *seen;
+        ALSA_Device *prev;
+
         if (ALSA_snd_device_name_hint(-1, "pcm", &hints) != -1) {
-            ALSA_Device *unseen = devices;
-            ALSA_Device *seen = NULL;
-            ALSA_Device *prev;
             int i, j;
             const char *match = NULL;
             int bestmatch = 0xFFFF;
@@ -830,6 +852,8 @@ ALSA_HotplugThread(void *arg)
                 "hw:", "sysdefault:", "default:", NULL
             };
 
+            unseen = devices;
+            seen = NULL;
             /* Apparently there are several different ways that ALSA lists
                actual hardware. It could be prefixed with "hw:" or "default:"
                or "sysdefault:" and maybe others. Go through the list and see
@@ -924,7 +948,7 @@ ALSA_HotplugThread(void *arg)
 
             /* report anything still in unseen as removed. */
             for (dev = unseen; dev; dev = next) {
-                /*printf("ALSA: removing %s device '%s'\n", dev->iscapture ? "capture" : "output", dev->name);*/
+                /*printf("ALSA: removing usb %s device '%s'\n", dev->iscapture ? "capture" : "output", dev->name);*/
                 next = dev->next;
                 SDL_RemoveAudioDevice(dev->iscapture, dev->name);
                 SDL_free(dev->name);
