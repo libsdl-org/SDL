@@ -9,7 +9,6 @@ LIBS	= @LIBS@
 
 TARGETS = \
 	checkkeys$(EXE) \
-	loopbackaudio$(EXE) \
 	loopwave$(EXE) \
 	loopwavequeue$(EXE) \
 	testatomic$(EXE) \
@@ -74,9 +73,6 @@ Makefile: $(srcdir)/Makefile.in
 	$(SHELL) config.status $@
 
 checkkeys$(EXE): $(srcdir)/checkkeys.c
-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
-
-loopbackaudio$(EXE): $(srcdir)/loopbackaudio.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 loopwave$(EXE): $(srcdir)/loopwave.c

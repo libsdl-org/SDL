@@ -2,7 +2,6 @@
 These are test programs for the SDL library:
 
 	checkkeys	Watch the key events to check the keyboard
-	loopbackaudio	Audio test -- record from the microphone and play it back immediately
 	loopwave	Audio test -- loop playing a WAV file
 	loopwavequeue	Audio test -- loop playing a WAV file with SDL_QueueAudio
 	testaudioinfo	Lists audio device capabilities
