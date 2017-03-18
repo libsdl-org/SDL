@@ -249,35 +249,49 @@ MIR_HideWindow(_THIS, SDL_Window* window)
     UpdateMirWindowState(_this->driverdata, window->driverdata, mir_window_state_hidden);
 }
 
-static void
-UpdateMirWindowSize(MIR_Data* mir_data, MIR_Window* mir_window, int width, int height)
-{
-    if (IsMirWindowValid(mir_window)) {
-        MirWindowSpec* spec = MIR_mir_create_window_spec(mir_data->connection);
-        MIR_mir_window_spec_set_width (spec, width);
-        MIR_mir_window_spec_set_height(spec, height);
-
-        MIR_mir_window_apply_spec(mir_window->window, spec);
-        MIR_mir_window_spec_release(spec);
-    }
-}
-
 void
 MIR_SetWindowSize(_THIS, SDL_Window* window)
 {
-    UpdateMirWindowSize(_this->driverdata, window->driverdata, window->w, window->h);
+    MIR_Data* mir_data     = _this->driverdata;
+    MIR_Window* mir_window = window->driverdata;
+
+    if (IsMirWindowValid(mir_window)) {
+        MirWindowSpec* spec = MIR_mir_create_window_spec(mir_data->connection);
+        MIR_mir_window_spec_set_width (spec, window->w);
+        MIR_mir_window_spec_set_height(spec, window->h);
+
+        MIR_mir_window_apply_spec(mir_window->window, spec);
+    }
 }
 
 void
 MIR_SetWindowMinimumSize(_THIS, SDL_Window* window)
 {
-    UpdateMirWindowSize(_this->driverdata, window->driverdata, window->min_w, window->min_h);
+    MIR_Data* mir_data     = _this->driverdata;
+    MIR_Window* mir_window = window->driverdata;
+
+    if (IsMirWindowValid(mir_window)) {
+        MirWindowSpec* spec = MIR_mir_create_window_spec(mir_data->connection);
+        MIR_mir_window_spec_set_min_width (spec, window->min_w);
+        MIR_mir_window_spec_set_min_height(spec, window->min_h);
+
+        MIR_mir_window_apply_spec(mir_window->window, spec);
+    }
 }
 
 void
 MIR_SetWindowMaximumSize(_THIS, SDL_Window* window)
 {
-    UpdateMirWindowSize(_this->driverdata, window->driverdata, window->max_w, window->max_h);
+    MIR_Data* mir_data     = _this->driverdata;
+    MIR_Window* mir_window = window->driverdata;
+
+    if (IsMirWindowValid(mir_window)) {
+        MirWindowSpec* spec = MIR_mir_create_window_spec(mir_data->connection);
+        MIR_mir_window_spec_set_max_width (spec, window->max_w);
+        MIR_mir_window_spec_set_max_height(spec, window->max_h);
+
+        MIR_mir_window_apply_spec(mir_window->window, spec);
+    }
 }
 
 void
