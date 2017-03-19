@@ -25,7 +25,6 @@
 #define WIDTH 640
 #define HEIGHT 480
 #define BPP 4
-#define DEPTH 32
 
 /* MUST BE A POWER OF 2! */
 #define EVENT_BUF_SIZE 256
