@@ -25,7 +25,7 @@ There are two basic ways of building SDL at the moment:
    If you're using an IDE or other non-configure build system, you'll probably
    want to create a custom SDL_config.h for your platform.  Edit SDL_config.h,
    add a section for your platform, and create a custom SDL_config_{platform}.h,
-   based on SDL_config.h.minimal and SDL_config.h.in
+   based on SDL_config_minimal.h and SDL_config.h.in
 
    Add the top level include directory to the header search path, and then add
    the following sources to the project:
