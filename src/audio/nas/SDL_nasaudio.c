@@ -116,7 +116,7 @@ LoadNASLibrary(void)
             char *err = (char *) alloca(len);
             SDL_strlcpy(err, origerr, len);
             retval = -1;
-            SDL_SetError("NAS: SDL_LoadObject('%s') failed: %s\n",
+            SDL_SetError("NAS: SDL_LoadObject('%s') failed: %s",
                          nas_library, err);
         } else {
             retval = load_nas_syms();

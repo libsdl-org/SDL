@@ -374,7 +374,7 @@ static int dollarNormalize(const SDL_DollarPath *path,SDL_FloatPoint *points)
         dist += d;
     }
     if (numPoints < DOLLARNPOINTS-1) {
-        SDL_SetError("ERROR: NumPoints = %i\n",numPoints);
+        SDL_SetError("ERROR: NumPoints = %i", numPoints);
         return 0;
     }
     /* copy the last point */

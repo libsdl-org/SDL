@@ -310,7 +310,7 @@ int BE_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode){
 	}
 
 	if(bscreen.SetMode(bmode) != B_OK) {
-		return SDL_SetError("Bad video mode\n");
+		return SDL_SetError("Bad video mode");
 	}
 	
 	free(bmode_list);

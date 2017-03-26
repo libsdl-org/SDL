@@ -304,7 +304,7 @@ PND_getwindowwminfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info)
     if (info->version.major <= SDL_MAJOR_VERSION) {
         return SDL_TRUE;
     } else {
-        SDL_SetError("application not compiled with SDL %d.%d\n",
+        SDL_SetError("application not compiled with SDL %d.%d",
                      SDL_MAJOR_VERSION, SDL_MINOR_VERSION);
         return SDL_FALSE;
     }
@@ -637,7 +637,7 @@ PND_gl_createcontext(_THIS, SDL_Window * window)
 
 
     if (wdata->gles_surface == 0) {
-        SDL_SetError("Error : eglCreateWindowSurface failed;\n");
+        SDL_SetError("Error : eglCreateWindowSurface failed;");
         return NULL;
     }
 
