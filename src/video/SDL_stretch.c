@@ -102,7 +102,7 @@ generate_rowbytes(int src_w, int dst_w, int bpp)
         store = STORE_WORD;
         break;
     default:
-        return SDL_SetError("ASM stretch of %d bytes isn't supported\n", bpp);
+        return SDL_SetError("ASM stretch of %d bytes isn't supported", bpp);
     }
 #ifdef HAVE_MPROTECT
     /* Make the code writeable */

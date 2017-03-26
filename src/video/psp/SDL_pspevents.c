@@ -260,12 +260,12 @@ void PSP_EventInit(_THIS)
 #endif
     /* Start thread to read data */
     if((event_sem =  SDL_CreateSemaphore(1)) == NULL) {
-        SDL_SetError("Can't create input semaphore\n");
+        SDL_SetError("Can't create input semaphore");
         return;
     }
     running = 1;
     if((thread = SDL_CreateThreadInternal(EventUpdate, "PSPInputThread", 4096, NULL)) == NULL) {
-        SDL_SetError("Can't create input thread\n");
+        SDL_SetError("Can't create input thread");
         return;
     }
 }
