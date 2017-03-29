@@ -211,21 +211,29 @@ SDL_AtomicAdd(SDL_atomic_t *a, int v)
 int
 SDL_AtomicGet(SDL_atomic_t *a)
 {
+#ifdef HAVE_GCC_ATOMICS
+    return __atomic_load_n(&a->value, __ATOMIC_SEQ_CST);
+#else
     int value;
     do {
         value = a->value;
     } while (!SDL_AtomicCAS(a, value, value));
     return value;
+#endif
 }
 
 void *
 SDL_AtomicGetPtr(void **a)
 {
+#ifdef HAVE_GCC_ATOMICS
+    return __atomic_load_n(a, __ATOMIC_SEQ_CST);
+#else
     void *value;
     do {
         value = *a;
     } while (!SDL_AtomicCASPtr(a, value, value));
     return value;
+#endif
 }
 
 void
