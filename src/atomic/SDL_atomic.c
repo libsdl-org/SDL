@@ -211,7 +211,8 @@ SDL_AtomicAdd(SDL_atomic_t *a, int v)
 int
 SDL_AtomicGet(SDL_atomic_t *a)
 {
-#ifdef HAVE_GCC_ATOMICS
+/* !!! FIXME: __atomic_load_n is only in newer GCCs and Clang, I think, and apparently not on Android. This #ifdef should be more exact. */
+#if defined(HAVE_GCC_ATOMICS) && !defined(__ANDROID__) && !defined(__FreeBSD__) && !defined(__OpenBSD__)
     return __atomic_load_n(&a->value, __ATOMIC_SEQ_CST);
 #else
     int value;
@@ -225,7 +226,8 @@ SDL_AtomicGet(SDL_atomic_t *a)
 void *
 SDL_AtomicGetPtr(void **a)
 {
-#ifdef HAVE_GCC_ATOMICS
+/* !!! FIXME: __atomic_load_n is only in newer GCCs and Clang, I think, and apparently not on Android. This #ifdef should be more exact. */
+#if defined(HAVE_GCC_ATOMICS) && !defined(__ANDROID__) && !defined(__FreeBSD__) && !defined(__OpenBSD__)
     return __atomic_load_n(a, __ATOMIC_SEQ_CST);
 #else
     void *value;
