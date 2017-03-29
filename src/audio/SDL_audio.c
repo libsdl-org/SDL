@@ -636,12 +636,9 @@ static int SDLCALL
 SDL_RunAudio(void *devicep)
 {
     SDL_AudioDevice *device = (SDL_AudioDevice *) devicep;
-    const int silence = (int) device->spec.silence;
-    const Uint32 delay = ((device->spec.samples * 1000) / device->spec.freq);
-    const int data_len = device->callbackspec.size;
+    void *udata = device->callbackspec.userdata;
+    SDL_AudioCallback callback = device->callbackspec.callback;
     Uint8 *data;
-    void *udata = device->spec.userdata;
-    SDL_AudioCallback callback = device->spec.callback;
 
     SDL_assert(!device->iscapture);
 
@@ -654,6 +651,8 @@ SDL_RunAudio(void *devicep)
 
     /* Loop, filling the audio buffers */
     while (!SDL_AtomicGet(&device->shutdown)) {
+        const int data_len = device->callbackspec.size;
+
         /* Fill the current buffer with sound */
         if (!device->stream && SDL_AtomicGet(&device->enabled)) {
             SDL_assert(data_len == device->spec.size);
@@ -675,7 +674,7 @@ SDL_RunAudio(void *devicep)
         /* !!! FIXME: this should be LockDevice. */
         SDL_LockMutex(device->mixer_lock);
         if (SDL_AtomicGet(&device->paused)) {
-            SDL_memset(data, silence, data_len);
+            SDL_memset(data, device->spec.silence, data_len);
         } else {
             callback(udata, data, data_len);
         }
@@ -693,6 +692,7 @@ SDL_RunAudio(void *devicep)
                 SDL_assert((got < 0) || (got == device->spec.size));
 
                 if (data == NULL) {  /* device is having issues... */
+                    const Uint32 delay = ((device->spec.samples * 1000) / device->spec.freq);
                     SDL_Delay(delay);  /* wait for as long as this buffer would have played. Maybe device recovers later? */
                 } else {
                     if (got != device->spec.size) {
@@ -704,6 +704,7 @@ SDL_RunAudio(void *devicep)
             }
         } else if (data == device->work_buffer) {
             /* nothing to do; pause like we queued a buffer to play. */
+            const Uint32 delay = ((device->spec.samples * 1000) / device->spec.freq);
             SDL_Delay(delay);
         } else {  /* writing directly to the device. */
             /* queue this buffer and wait for it to finish playing. */
