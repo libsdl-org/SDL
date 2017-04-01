@@ -1,4 +1,3 @@
-sdfsdf
 /*
   Simple DirectMedia Layer
   Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
