@@ -7,9 +7,9 @@ You may report bugs there, and search to see if a given issue has already
  been reported, discussed, and maybe even fixed.
 
 
-You may also find help on the SDL mailing list. Subscription information:
+You may also find help at the SDL forums/mailing list:
 
-    http://lists.libsdl.org/listinfo.cgi/sdl-libsdl.org
+    https://discourse.libsdl.org/
 
 Bug reports are welcome here, but we really appreciate if you use Bugzilla, as
  bugs discussed on the mailing list may be forgotten or missed.
