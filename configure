@@ -19209,7 +19209,7 @@ int
 main ()
 {
 
-                    MirTouchAction actions = mir_touch_actions
+                    MirWindowAttrib attrib = mir_window_attrib_state
 
   ;
   return 0;
