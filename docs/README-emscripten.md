@@ -5,7 +5,7 @@ Build:
 
     $ mkdir build
     $ cd build
-    $ emconfigure ../configure --host=asmjs-unknown-emscripten --disable-assembly --disable-threads --enable-cpuinfo=false CFLAGS="-O2"
+    $ emconfigure ../configure --host=asmjs-unknown-emscripten --disable-assembly --disable-threads --disable-cpuinfo CFLAGS="-O2"
     $ emmake make
 
 Or with cmake:
