@@ -36,7 +36,7 @@
 
 #include "SDL_mirdyn.h"
 
-int
+static int
 IsMirWindowValid(MIR_Window* mir_window)
 {
     if (!MIR_mir_window_is_valid(mir_window->window)) {
@@ -47,7 +47,7 @@ IsMirWindowValid(MIR_Window* mir_window)
     return 1;
 }
 
-MirPixelFormat
+static MirPixelFormat
 FindValidPixelFormat(MIR_Data* mir_data)
 {
     unsigned int pf_size = 32;
