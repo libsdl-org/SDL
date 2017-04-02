@@ -108,7 +108,7 @@ int SDL_SemWaitTimeout(SDL_sem *sem, Uint32 timeout)
                case SCE_KERNEL_ERROR_WAIT_TIMEOUT:
                        return SDL_MUTEX_TIMEDOUT;
                default:
-                       return SDL_SetError("WaitForSingleObject() failed");
+                       return SDL_SetError("sceKernelWaitSema() failed");
     }
 }
 
