@@ -97,7 +97,7 @@ X11_CreateWindowFramebuffer(_THIS, SDL_Window * window, Uint32 * format,
                 shm_error = False;
                 X_handler = X11_XSetErrorHandler(shm_errhandler);
                 X11_XShmAttach(display, shminfo);
-                X11_XSync(display, True);
+                X11_XSync(display, False);
                 X11_XSetErrorHandler(X_handler);
                 if ( shm_error )
                     shmdt(shminfo->shmaddr);
