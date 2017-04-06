@@ -1488,8 +1488,8 @@ X11_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
             int attempts;
             int result;
 
-            /* Try for up to ~250ms to grab. If it still fails, stop trying. */
-            for (attempts = 0; attempts < 5; attempts++) {
+            /* Try for up to 5000ms (5s) to grab. If it still fails, stop trying. */
+            for (attempts = 0; attempts < 100; attempts++) {
                 result = X11_XGrabPointer(display, data->xwindow, True, 0, GrabModeAsync,
                                  GrabModeAsync, data->xwindow, None, CurrentTime);
                 if (result == GrabSuccess) {
