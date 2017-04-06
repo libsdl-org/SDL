@@ -834,7 +834,11 @@ IME_GetCandidateList(HIMC himc, SDL_VideoData *videodata)
                     videodata->ime_candpgsize = i - page_start;
                 } else {
                     videodata->ime_candpgsize = SDL_min(cand_list->dwPageSize, MAX_CANDLIST);
-                    page_start = (cand_list->dwSelection / videodata->ime_candpgsize) * videodata->ime_candpgsize;
+                    if (videodata->ime_candpgsize > 0) {
+                        page_start = (cand_list->dwSelection / videodata->ime_candpgsize) * videodata->ime_candpgsize;
+                    } else {
+                        page_start = 0;
+                    }
                 }
                 SDL_memset(&videodata->ime_candidates, 0, sizeof(videodata->ime_candidates));
                 for (i = page_start, j = 0; (DWORD)i < cand_list->dwCount && j < (int)videodata->ime_candpgsize; i++, j++) {
