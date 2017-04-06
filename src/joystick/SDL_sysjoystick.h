@@ -68,6 +68,9 @@ struct _SDL_Joystick
     struct _SDL_Joystick *next; /* pointer to next joystick we have allocated */
 };
 
+/* Macro to combine a USB vendor ID and product ID into a single Uint32 value */
+#define MAKE_VIDPID(VID, PID)   (((Uint32)(VID))<<16|(PID))
+
 /* Function to scan the system for joysticks.
  * Joystick 0 should be the system default joystick.
  * This function should return the number of available joysticks, or -1

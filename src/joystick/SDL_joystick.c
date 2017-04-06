@@ -32,7 +32,6 @@
 #include "../events/SDL_events_c.h"
 #endif
 
-#define MAKE_VIDPID(VID, PID)   (((Uint32)(VID))<<16|(PID))
 
 static SDL_bool SDL_joystick_allows_background_events = SDL_FALSE;
 static SDL_Joystick *SDL_joysticks = NULL;
