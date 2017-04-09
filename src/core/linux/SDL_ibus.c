@@ -45,7 +45,7 @@ static char *input_ctx_path = NULL;
 static SDL_Rect ibus_cursor_rect = { 0, 0, 0, 0 };
 static DBusConnection *ibus_conn = NULL;
 static char *ibus_addr_file = NULL;
-int inotify_fd = -1, inotify_wd = -1;
+static int inotify_fd = -1, inotify_wd = -1;
 
 static Uint32
 IBus_ModState(void)
