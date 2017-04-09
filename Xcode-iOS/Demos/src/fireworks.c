@@ -365,9 +365,6 @@ main(int argc, char *argv[])
     SDL_Window *window;         /* main window */
     SDL_GLContext context;
     int drawableW, drawableH;
-    Uint32 startFrame;          /* time frame began to process */
-    Uint32 endFrame;            /* time frame ended processing */
-    Uint32 delay;               /* time to pause waiting to draw next frame */
     int done;                   /* should we clean up and exit? */
 
     /* initialize SDL */
