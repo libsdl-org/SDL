@@ -41,7 +41,7 @@ IsMirWindowValid(MIR_Window* mir_window)
 {
     if (!MIR_mir_window_is_valid(mir_window->window)) {
         const char* error = MIR_mir_window_get_error_message(mir_window->window);
-        return SDL_SetError("Failed to created a mir surface: %s", error);
+        return SDL_SetError("Failed to create a mir surface: %s", error);
     }
 
     return 1;
@@ -134,7 +134,7 @@ MIR_CreateWindow(_THIS, SDL_Window* window)
     MIR_mir_window_spec_release(spec);
 
     if (!MIR_mir_window_is_valid(mir_window->window)) {
-        return SDL_SetError("Failed to created a mir surface: %s",
+        return SDL_SetError("Failed to create a mir surface: %s",
             MIR_mir_window_get_error_message(mir_window->window));
     }
 
@@ -146,7 +146,7 @@ MIR_CreateWindow(_THIS, SDL_Window* window)
         mir_window->egl_surface = SDL_EGL_CreateSurface(_this, egl_native_window);
 
         if (mir_window->egl_surface == EGL_NO_SURFACE) {
-            return SDL_SetError("Failed to created a window surface %p",
+            return SDL_SetError("Failed to create a window surface %p",
                                 _this->egl_data->egl_display);
         }
     }
