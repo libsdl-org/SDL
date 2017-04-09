@@ -42,7 +42,7 @@ MIR_CreateWindowFramebuffer(_THIS, SDL_Window* window, Uint32* format,
     mir_data->software = SDL_TRUE;
 
     if (MIR_CreateWindow(_this, window) < 0)
-        return SDL_SetError("Failed to created a mir window.");
+        return SDL_SetError("Failed to create a mir window.");
 
     *format = MIR_GetSDLPixelFormat(mir_data->pixel_format);
     if (*format == SDL_PIXELFORMAT_UNKNOWN)
