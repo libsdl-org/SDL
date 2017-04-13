@@ -35,6 +35,19 @@
 #include <atomic.h>
 #endif
 
+/* The __atomic_load_n() intrinsic showed up in different times for different compilers. */
+#if defined(HAVE_GCC_ATOMICS)
+# if defined(__clang__)
+#   if __has_builtin(__atomic_load_n)
+#     define HAVE_ATOMIC_LOAD_N 1
+#   endif
+# elif defined(__GNUC__)
+#   if (__GNUC__ >= 5)
+#     define HAVE_ATOMIC_LOAD_N 1
+#   endif
+# endif
+#endif
+
 /*
   If any of the operations are not provided then we must emulate some
   of them. That means we need a nice implementation of spin locks
@@ -211,7 +224,7 @@ SDL_AtomicAdd(SDL_atomic_t *a, int v)
 int
 SDL_AtomicGet(SDL_atomic_t *a)
 {
-#if defined(HAVE_GCC_ATOMICS) && (__GNUC__ >= 5)
+#ifdef HAVE_ATOMIC_LOAD_N
     return __atomic_load_n(&a->value, __ATOMIC_SEQ_CST);
 #else
     int value;
@@ -225,7 +238,7 @@ SDL_AtomicGet(SDL_atomic_t *a)
 void *
 SDL_AtomicGetPtr(void **a)
 {
-#if defined(HAVE_GCC_ATOMICS) && (__GNUC__ >= 5)
+#ifdef HAVE_ATOMIC_LOAD_N
     return __atomic_load_n(a, __ATOMIC_SEQ_CST);
 #else
     void *value;
