@@ -1344,8 +1344,8 @@ open_audio_device(const char *devname, int iscapture,
             SDL_SetError("Couldn't create audio buffer queue");
             return 0;
         }
-        device->spec.callback = iscapture ? SDL_BufferQueueFillCallback : SDL_BufferQueueDrainCallback;
-        device->spec.userdata = device;
+        device->callbackspec.callback = iscapture ? SDL_BufferQueueFillCallback : SDL_BufferQueueDrainCallback;
+        device->callbackspec.userdata = device;
     }
 
     /* Allocate a scratch audio buffer */
