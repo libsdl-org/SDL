@@ -297,23 +297,29 @@ Emscripten_ConvertUTF32toUTF8(Uint32 codepoint, char * text)
     return SDL_TRUE;
 }
 
+static EM_BOOL
+Emscripten_HandlePointerLockChange(int eventType, const EmscriptenPointerlockChangeEvent *changeEvent, void *userData)
+{
+    SDL_WindowData *window_data = (SDL_WindowData *) userData;
+    /* keep track of lock losses, so we can regrab if/when appropriate. */
+    window_data->has_pointer_lock = changeEvent->isActive;
+    return 0;
+}
+
+
 EM_BOOL
 Emscripten_HandleMouseMove(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
+    const int isPointerLocked = window_data->has_pointer_lock;
     int mx, my;
     static double residualx = 0, residualy = 0;
-    EmscriptenPointerlockChangeEvent pointerlock_status;
 
     /* rescale (in case canvas is being scaled)*/
     double client_w, client_h, xscale, yscale;
     emscripten_get_element_css_size(NULL, &client_w, &client_h);
     xscale = window_data->window->w / client_w;
     yscale = window_data->window->h / client_h;
-
-    /* check for pointer lock */
-    int isPointerLockSupported = emscripten_get_pointerlock_status(&pointerlock_status);
-    int isPointerLocked = isPointerLockSupported == EMSCRIPTEN_RESULT_SUCCESS  ? pointerlock_status.isActive : SDL_FALSE;
 
     if (isPointerLocked) {
         residualx += mouseEvent->movementX * xscale;
@@ -355,6 +361,9 @@ Emscripten_HandleMouseButton(int eventType, const EmscriptenMouseEvent *mouseEve
     }
 
     if (eventType == EMSCRIPTEN_EVENT_MOUSEDOWN) {
+        if (SDL_GetMouse()->relative_mode && !window_data->has_pointer_lock) {
+            emscripten_request_pointerlock(NULL, 0);  /* try to regrab lost pointer lock. */
+        }
         sdl_button_state = SDL_PRESSED;
         sdl_event_type = SDL_MOUSEBUTTONDOWN;
     } else {
@@ -371,11 +380,7 @@ Emscripten_HandleMouseFocus(int eventType, const EmscriptenMouseEvent *mouseEven
     SDL_WindowData *window_data = userData;
 
     int mx = mouseEvent->canvasX, my = mouseEvent->canvasY;
-    EmscriptenPointerlockChangeEvent pointerlock_status;
-
-    /* check for pointer lock */
-    int isPointerLockSupported = emscripten_get_pointerlock_status(&pointerlock_status);
-    int isPointerLocked = isPointerLockSupported == EMSCRIPTEN_RESULT_SUCCESS  ? pointerlock_status.isActive : SDL_FALSE;
+    const int isPointerLocked = window_data->has_pointer_lock;
 
     if (!isPointerLocked) {
         /* rescale (in case canvas is being scaled)*/
@@ -631,6 +636,8 @@ Emscripten_RegisterEventHandlers(SDL_WindowData *data)
     emscripten_set_touchend_callback("#canvas", data, 0, Emscripten_HandleTouch);
     emscripten_set_touchmove_callback("#canvas", data, 0, Emscripten_HandleTouch);
     emscripten_set_touchcancel_callback("#canvas", data, 0, Emscripten_HandleTouch);
+
+    emscripten_set_pointerlockchange_callback(NULL, data, 0, Emscripten_HandlePointerLockChange);
 
     /* Keyboard events are awkward */
     const char *keyElement = SDL_GetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT);
