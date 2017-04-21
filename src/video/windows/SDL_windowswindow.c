@@ -91,7 +91,7 @@ WIN_SetWindowPositionInternal(_THIS, SDL_Window * window, UINT flags)
     int w, h;
 
     /* Figure out what the window area will be */
-    if (SDL_ShouldAllowTopmost() && (window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_INPUT_FOCUS)) == (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_INPUT_FOCUS)) {
+    if (SDL_ShouldAllowTopmost() && ((window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_INPUT_FOCUS)) == (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_INPUT_FOCUS) || window->flags & SDL_WINDOW_ALWAYS_ON_TOP)) {
         top = HWND_TOPMOST;
     } else {
         top = HWND_NOTOPMOST;
@@ -560,7 +560,7 @@ WIN_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, 
     int x, y;
     int w, h;
 
-    if (SDL_ShouldAllowTopmost() && (window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_INPUT_FOCUS)) == (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_INPUT_FOCUS)) {
+    if (SDL_ShouldAllowTopmost() && ((window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_INPUT_FOCUS)) == (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_INPUT_FOCUS) || window->flags & SDL_WINDOW_ALWAYS_ON_TOP)) {
         top = HWND_TOPMOST;
     } else {
         top = HWND_NOTOPMOST;
@@ -791,20 +791,27 @@ SDL_HelperWindowDestroy(void)
 
 void WIN_OnWindowEnter(_THIS, SDL_Window * window)
 {
-#ifdef WM_MOUSELEAVE
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-    TRACKMOUSEEVENT trackMouseEvent;
 
     if (!data || !data->hwnd) {
         /* The window wasn't fully initialized */
         return;
     }
 
-    trackMouseEvent.cbSize = sizeof(TRACKMOUSEEVENT);
-    trackMouseEvent.dwFlags = TME_LEAVE;
-    trackMouseEvent.hwndTrack = data->hwnd;
+    if (window->flags & SDL_WINDOW_ALWAYS_ON_TOP) {
+        WIN_SetWindowPositionInternal(_this, window, SWP_NOCOPYBITS | SWP_NOSIZE | SWP_NOACTIVATE);
+    }
 
-    TrackMouseEvent(&trackMouseEvent);
+#ifdef WM_MOUSELEAVE
+    {
+        TRACKMOUSEEVENT trackMouseEvent;
+
+        trackMouseEvent.cbSize = sizeof(TRACKMOUSEEVENT);
+        trackMouseEvent.dwFlags = TME_LEAVE;
+        trackMouseEvent.hwndTrack = data->hwnd;
+
+        TrackMouseEvent(&trackMouseEvent);
+    }
 #endif /* WM_MOUSELEAVE */
 }
 
