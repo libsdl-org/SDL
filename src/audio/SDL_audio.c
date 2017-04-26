@@ -733,7 +733,7 @@ SDL_CaptureAudio(void *devicep)
     const int data_len = device->spec.size;
     Uint8 *data;
     void *udata = device->spec.userdata;
-    SDL_AudioCallback callback = device->spec.callback;
+    SDL_AudioCallback callback = device->callbackspec.callback;
 
     SDL_assert(device->iscapture);
 
