@@ -204,7 +204,7 @@ WIN_ShouldIgnoreFocusClick()
     return !SDL_GetHintBoolean(SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH, SDL_FALSE);
 }
 
-void
+static void
 WIN_CheckWParamMouseButton(SDL_bool bwParamMousePressed, SDL_bool bSDLMousePressed, SDL_WindowData *data, Uint8 button, SDL_MouseID mouseID)
 {
     if (data->focus_click_pending & SDL_BUTTON(button)) {
@@ -231,7 +231,7 @@ WIN_CheckWParamMouseButton(SDL_bool bwParamMousePressed, SDL_bool bSDLMousePress
 * Some windows systems fail to send a WM_LBUTTONDOWN sometimes, but each mouse move contains the current button state also
 *  so this funciton reconciles our view of the world with the current buttons reported by windows
 */
-void
+static void
 WIN_CheckWParamMouseButtons(WPARAM wParam, SDL_WindowData *data, SDL_MouseID mouseID)
 {
     if (wParam != data->mouse_button_flags) {
@@ -246,7 +246,7 @@ WIN_CheckWParamMouseButtons(WPARAM wParam, SDL_WindowData *data, SDL_MouseID mou
 }
 
 
-void
+static void
 WIN_CheckRawMouseButtons(ULONG rawButtons, SDL_WindowData *data)
 {
     if (rawButtons != data->mouse_button_flags) {
@@ -275,7 +275,7 @@ WIN_CheckRawMouseButtons(ULONG rawButtons, SDL_WindowData *data)
     }
 }
 
-void
+static void
 WIN_CheckAsyncMouseRelease(SDL_WindowData *data)
 {
     Uint32 mouseFlags;
@@ -309,7 +309,7 @@ WIN_CheckAsyncMouseRelease(SDL_WindowData *data)
     data->mouse_button_flags = 0;
 }
 
-BOOL 
+static BOOL
 WIN_ConvertUTF32toUTF8(UINT32 codepoint, char * text)
 {
     if (codepoint <= 0x7F) {
