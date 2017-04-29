@@ -45,7 +45,7 @@ Win32_CreateShaper(SDL_Window * window) {
     return result;
 }
 
-void
+static void
 CombineRectRegions(SDL_ShapeTree* node,void* closure) {
     HRGN mask_region = *((HRGN*)closure),temp_region = NULL;
     if(node->kind == OpaqueShape) {
