@@ -276,7 +276,7 @@ if test x$enable_libc = xyes; then
     AC_CHECK_LIB(iconv, iconv_open, [LIBS="$LIBS -liconv"; EXTRA_LDFLAGS="$EXTRA_LDFLAGS -liconv"])
     AC_CHECK_FUNCS(iconv)
 
-    AC_CHECK_MEMBER(struct sigaction.sa_sigaction,[AC_DEFINE(HAVE_SA_SIGACTION)], ,[#include <signal.h>])
+    AC_CHECK_MEMBER(struct sigaction.sa_sigaction,[AC_DEFINE([HAVE_SA_SIGACTION], [], [Description])], ,[#include <signal.h>])
 fi
 
 dnl AC_CHECK_SIZEOF(void*)
@@ -1619,7 +1619,7 @@ AC_HELP_STRING([--enable-x11-shared], [dynamically load X11 support [[default=ma
             ],[
             ],[
             have_const_param_XextAddDisplay=yes
-            AC_DEFINE(SDL_VIDEO_DRIVER_X11_CONST_PARAM_XEXTADDDISPLAY)
+            AC_DEFINE([SDL_VIDEO_DRIVER_X11_CONST_PARAM_XEXTADDDISPLAY], [], [Description])
             ])
             AC_MSG_RESULT($have_const_param_XextAddDisplay)
 
@@ -1637,7 +1637,7 @@ XGetEventData(display, cookie);
 XFreeEventData(display, cookie);
             ],[
                 have_XGenericEvent=yes
-                AC_DEFINE(SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS)
+                AC_DEFINE([SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS], [], [Description])
             ])
             AC_MSG_RESULT($have_XGenericEvent)
 
@@ -1751,7 +1751,7 @@ int event_type = XI_TouchBegin;
 XITouchClassInfo *t;
             	],[
             	have_xinput2_multitouch=yes
-            	AC_DEFINE(SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH)
+            	AC_DEFINE([SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH], [], [Description])
                 SUMMARY_video_x11="${SUMMARY_video_x11} xinput2_multitouch"
             	])
             	AC_MSG_RESULT($have_xinput2_multitouch)
@@ -2605,7 +2605,7 @@ AC_HELP_STRING([--enable-pthread-sem], [use pthread semaphores [[default=yes]]])
                   sem_timedwait(NULL, NULL);
                 ],[
                 have_sem_timedwait=yes
-                AC_DEFINE(HAVE_SEM_TIMEDWAIT)
+                AC_DEFINE([HAVE_SEM_TIMEDWAIT], [], [Description])
                 ])
                 AC_MSG_RESULT($have_sem_timedwait)
             fi
@@ -3345,7 +3345,7 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         fi
         # The Haiku platform requires special setup.
         SOURCES="$srcdir/src/main/haiku/*.cc $SOURCES"
-        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lroot -lbe -lmedia -lgame -ldevice -ltextencoding"
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lroot -lbe -lmedia -lgame -ldevice -ltextencoding -lstdc++.r4"
         ;;
     arm*-apple-darwin*|*-ios-*)
         ARCH=ios

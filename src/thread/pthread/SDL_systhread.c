@@ -52,7 +52,7 @@
 #endif
 
 #ifdef __HAIKU__
-#include <be/kernel/OS.h>
+#include <kernel/OS.h>
 #endif
 
 #include "SDL_assert.h"
