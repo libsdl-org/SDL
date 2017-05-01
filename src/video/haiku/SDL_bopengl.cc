@@ -94,7 +94,8 @@ int BE_GL_SwapWindow(_THIS, SDL_Window * window) {
 }
 
 int BE_GL_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context) {
-    _GetBeApp()->SetCurrentContext(((SDL_BWin*)context)->GetGLView());
+    SDL_BWin* win = (SDL_BWin*)context;
+    _GetBeApp()->SetCurrentContext(win ? win->GetGLView() : NULL);
     return 0;
 }
 

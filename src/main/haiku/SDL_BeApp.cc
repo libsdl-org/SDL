@@ -25,8 +25,10 @@
 /* Handle the BeApp specific portions of the application */
 
 #include <AppKit.h>
+#include <storage/AppFileInfo.h>
 #include <storage/Path.h>
 #include <storage/Entry.h>
+#include <storage/File.h>
 #include <unistd.h>
 
 #include "SDL_BApp.h"	/* SDL_BApp class definition */
@@ -51,7 +53,24 @@ StartBeApp(void *unused)
 {
     BApplication *App;
 
-    App = new SDL_BApp("application/x-SDL-executable");
+	// default application signature
+	const char *signature = "application/x-SDL-executable";
+	// dig resources for correct signature
+	image_info info;
+	int32 cookie = 0;
+	if (get_next_image_info(B_CURRENT_TEAM, &cookie, &info) == B_OK) {
+		BFile f(info.name, O_RDONLY);
+		if (f.InitCheck() == B_OK) {
+			BAppFileInfo app_info(&f);
+			if (app_info.InitCheck() == B_OK) {
+				char sig[B_MIME_TYPE_LENGTH];
+				if (app_info.GetSignature(sig) == B_OK)
+					signature = strndup(sig, B_MIME_TYPE_LENGTH);
+			}
+		}
+	}
+
+	App = new SDL_BApp(signature);
 
     App->Run();
     delete App;

@@ -16744,7 +16744,8 @@ done
     ac_fn_c_check_member "$LINENO" "struct sigaction" "sa_sigaction" "ac_cv_member_struct_sigaction_sa_sigaction" "#include <signal.h>
 "
 if test "x$ac_cv_member_struct_sigaction_sa_sigaction" = xyes; then :
-  $as_echo "#define HAVE_SA_SIGACTION 1" >>confdefs.h
+
+$as_echo "#define HAVE_SA_SIGACTION /**/" >>confdefs.h
 
 fi
 
@@ -20173,7 +20174,8 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
 
             have_const_param_XextAddDisplay=yes
-            $as_echo "#define SDL_VIDEO_DRIVER_X11_CONST_PARAM_XEXTADDDISPLAY 1" >>confdefs.h
+
+$as_echo "#define SDL_VIDEO_DRIVER_X11_CONST_PARAM_XEXTADDDISPLAY /**/" >>confdefs.h
 
 
 fi
@@ -20207,7 +20209,8 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
 
                 have_XGenericEvent=yes
-                $as_echo "#define SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS 1" >>confdefs.h
+
+$as_echo "#define SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS /**/" >>confdefs.h
 
 
 fi
@@ -20552,7 +20555,8 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
 
             	have_xinput2_multitouch=yes
-            	$as_echo "#define SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH 1" >>confdefs.h
+
+$as_echo "#define SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH /**/" >>confdefs.h
 
                 SUMMARY_video_x11="${SUMMARY_video_x11} xinput2_multitouch"
 
@@ -22278,7 +22282,8 @@ _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
 
                 have_sem_timedwait=yes
-                $as_echo "#define HAVE_SEM_TIMEDWAIT 1" >>confdefs.h
+
+$as_echo "#define HAVE_SEM_TIMEDWAIT /**/" >>confdefs.h
 
 
 fi
@@ -23670,7 +23675,7 @@ $as_echo "#define SDL_FILESYSTEM_HAIKU 1" >>confdefs.h
         fi
         # The Haiku platform requires special setup.
         SOURCES="$srcdir/src/main/haiku/*.cc $SOURCES"
-        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lroot -lbe -lmedia -lgame -ldevice -ltextencoding"
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lroot -lbe -lmedia -lgame -ldevice -ltextencoding -lstdc++.r4"
         ;;
     arm*-apple-darwin*|*-ios-*)
         ARCH=ios

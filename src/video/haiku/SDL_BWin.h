@@ -38,9 +38,9 @@ extern "C" {
 #include <stdio.h>
 #include <AppKit.h>
 #include <InterfaceKit.h>
-#include <be/game/DirectWindow.h>
+#include <game/DirectWindow.h>
 #if SDL_VIDEO_OPENGL
-#include <be/opengl/GLView.h>
+#include <opengl/GLView.h>
 #endif
 #include "SDL_events.h"
 #include "../../main/haiku/SDL_BApp.h"
