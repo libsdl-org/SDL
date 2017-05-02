@@ -20569,8 +20569,7 @@ _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
 
             	have_xinput2_multitouch=yes
-
-$as_echo "#define SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH /**/" >>confdefs.h
+            	$as_echo "#define SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH 1" >>confdefs.h
 
                 SUMMARY_video_x11="${SUMMARY_video_x11} xinput2_multitouch"
 
