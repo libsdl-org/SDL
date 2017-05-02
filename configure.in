@@ -1751,7 +1751,7 @@ int event_type = XI_TouchBegin;
 XITouchClassInfo *t;
             	],[
             	have_xinput2_multitouch=yes
-            	AC_DEFINE([SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH], [], [Description])
+            	AC_DEFINE([SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH], 1, [])
                 SUMMARY_video_x11="${SUMMARY_video_x11} xinput2_multitouch"
             	])
             	AC_MSG_RESULT($have_xinput2_multitouch)
