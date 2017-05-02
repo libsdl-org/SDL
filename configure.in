@@ -276,7 +276,7 @@ if test x$enable_libc = xyes; then
     AC_CHECK_LIB(iconv, iconv_open, [LIBS="$LIBS -liconv"; EXTRA_LDFLAGS="$EXTRA_LDFLAGS -liconv"])
     AC_CHECK_FUNCS(iconv)
 
-    AC_CHECK_MEMBER(struct sigaction.sa_sigaction,[AC_DEFINE([HAVE_SA_SIGACTION], [], [Description])], ,[#include <signal.h>])
+    AC_CHECK_MEMBER(struct sigaction.sa_sigaction,[AC_DEFINE([HAVE_SA_SIGACTION], 1, [Description])], ,[#include <signal.h>])
 fi
 
 dnl AC_CHECK_SIZEOF(void*)
@@ -1479,8 +1479,8 @@ CheckNativeClient()
           #endif
         ],[
         ],[
-        AC_DEFINE(SDL_VIDEO_DRIVER_NACL)
-        AC_DEFINE(SDL_AUDIO_DRIVER_NACL)
+        AC_DEFINE(SDL_VIDEO_DRIVER_NACL, 1, [ ])
+        AC_DEFINE(SDL_AUDIO_DRIVER_NACL, 1, [ ])
         AC_DEFINE(HAVE_POW, 1, [ ])
         AC_DEFINE(HAVE_OPENGLES2, 1, [ ])
         AC_DEFINE(SDL_VIDEO_OPENGL_ES2, 1, [ ])
@@ -1619,7 +1619,7 @@ AC_HELP_STRING([--enable-x11-shared], [dynamically load X11 support [[default=ma
             ],[
             ],[
             have_const_param_XextAddDisplay=yes
-            AC_DEFINE([SDL_VIDEO_DRIVER_X11_CONST_PARAM_XEXTADDDISPLAY], [], [Description])
+            AC_DEFINE([SDL_VIDEO_DRIVER_X11_CONST_PARAM_XEXTADDDISPLAY], 1, [ ])
             ])
             AC_MSG_RESULT($have_const_param_XextAddDisplay)
 
@@ -1637,7 +1637,7 @@ XGetEventData(display, cookie);
 XFreeEventData(display, cookie);
             ],[
                 have_XGenericEvent=yes
-                AC_DEFINE([SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS], [], [Description])
+                AC_DEFINE([SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS], 1, [ ])
             ])
             AC_MSG_RESULT($have_XGenericEvent)
 
@@ -2605,7 +2605,7 @@ AC_HELP_STRING([--enable-pthread-sem], [use pthread semaphores [[default=yes]]])
                   sem_timedwait(NULL, NULL);
                 ],[
                 have_sem_timedwait=yes
-                AC_DEFINE([HAVE_SEM_TIMEDWAIT], [], [Description])
+                AC_DEFINE([HAVE_SEM_TIMEDWAIT], 1, [ ])
                 ])
                 AC_MSG_RESULT($have_sem_timedwait)
             fi
@@ -3502,7 +3502,7 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         
         # Set up files for the timer library
         if test x$enable_timers = xyes; then
-            AC_DEFINE(SDL_TIMER_UNIX)
+            AC_DEFINE(SDL_TIMER_UNIX, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/timer/unix/*.c"
             have_timers=yes
         fi
