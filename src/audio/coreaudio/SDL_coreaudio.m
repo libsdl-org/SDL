@@ -285,9 +285,9 @@ static void interruption_begin(_THIS)
 static void interruption_end(_THIS)
 {
     if (this != NULL && this->hidden != NULL && this->hidden->audioQueue != NULL
-    && this->hidden->interrupted) {
+    && this->hidden->interrupted
+    && AudioQueueStart(this->hidden->audioQueue, NULL) == AVAudioSessionErrorCodeNone) {
         this->hidden->interrupted = SDL_FALSE;
-        AudioQueueStart(this->hidden->audioQueue, NULL);
     }
 }
 
