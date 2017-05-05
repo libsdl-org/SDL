@@ -724,7 +724,7 @@ extern DECLSPEC void SDLCALL SDL_FilterEvents(SDL_EventFilter filter,
 /**
  *  This function allows you to set the state of processing certain events.
  *   - If \c state is set to ::SDL_IGNORE, that event will be automatically
- *     dropped from the event queue and will not event be filtered.
+ *     dropped from the event queue and will not be filtered.
  *   - If \c state is set to ::SDL_ENABLE, that event will be processed
  *     normally.
  *   - If \c state is set to ::SDL_QUERY, SDL_EventState() will return the
