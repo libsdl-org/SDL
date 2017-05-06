@@ -31,8 +31,9 @@ Emscripten_RegisterEventHandlers(SDL_WindowData *data);
 extern void
 Emscripten_UnregisterEventHandlers(SDL_WindowData *data);
 
-extern int
+extern EM_BOOL
 Emscripten_HandleCanvasResize(int eventType, const void *reserved, void *userData);
+
 #endif /* _SDL_emscriptenevents_h */
 
 /* vi: set ts=4 sw=4 expandtab: */
