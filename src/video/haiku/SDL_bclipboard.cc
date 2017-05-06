@@ -22,7 +22,7 @@
 
 #if SDL_VIDEO_DRIVER_HAIKU
 
-/* BWindow based framebuffer implementation */
+/* BWindow based clipboard implementation */
 
 #include <unistd.h>
 #include <TypeConstants.h>
