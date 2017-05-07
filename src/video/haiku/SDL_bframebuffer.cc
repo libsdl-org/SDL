@@ -35,7 +35,7 @@
 extern "C" {
 #endif
 
-int32 BE_UpdateOnce(SDL_Window *window);
+static int32 BE_UpdateOnce(SDL_Window *window);
 
 static SDL_INLINE SDL_BWin *_ToBeWin(SDL_Window *window) {
 	return ((SDL_BWin*)(window->driverdata));
@@ -200,7 +200,7 @@ void BE_DestroyWindowFramebuffer(_THIS, SDL_Window * window) {
  * The specific issues have since become rare enough that they may have been
  * solved, but I doubt it- they were pretty sporadic before now.
  */
-int32 BE_UpdateOnce(SDL_Window *window) {
+static int32 BE_UpdateOnce(SDL_Window *window) {
 	SDL_BWin *bwin = _ToBeWin(window);
 	BScreen bscreen;
 	if(!bscreen.IsValid()) {
