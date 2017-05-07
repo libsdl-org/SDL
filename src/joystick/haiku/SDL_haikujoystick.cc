@@ -228,12 +228,12 @@ extern "C"
     {
         int i;
 
-        for (i = 0; SDL_joyport[i]; ++i) {
+        for (i = 0; i < SDL_SYS_numjoysticks; ++i) {
             SDL_free(SDL_joyport[i]);
         }
         SDL_joyport[0] = NULL;
 
-        for (i = 0; SDL_joyname[i]; ++i) {
+        for (i = 0; i < SDL_SYS_numjoysticks; ++i) {
             SDL_free(SDL_joyname[i]);
         }
         SDL_joyname[0] = NULL;
