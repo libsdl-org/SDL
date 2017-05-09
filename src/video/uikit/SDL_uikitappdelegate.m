@@ -442,16 +442,6 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     /* Do nothing. */
 }
 
-- (void)applicationWillTerminate:(UIApplication *)application
-{
-    SDL_SendAppEvent(SDL_APP_TERMINATING);
-}
-
-- (void)applicationDidReceiveMemoryWarning:(UIApplication *)application
-{
-    SDL_SendAppEvent(SDL_APP_LOWMEMORY);
-}
-
 #if !TARGET_OS_TV
 - (void)application:(UIApplication *)application didChangeStatusBarOrientation:(UIInterfaceOrientation)oldStatusBarOrientation
 {
@@ -482,41 +472,34 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 }
 #endif
 
+- (void)applicationWillTerminate:(UIApplication *)application
+{
+    SDL_OnApplicationWillTerminate();
+}
+
+- (void)applicationDidReceiveMemoryWarning:(UIApplication *)application
+{
+    SDL_OnApplicationDidReceiveMemoryWarning();
+}
+
 - (void)applicationWillResignActive:(UIApplication*)application
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
-    if (_this) {
-        SDL_Window *window;
-        for (window = _this->windows; window != NULL; window = window->next) {
-            SDL_SendWindowEvent(window, SDL_WINDOWEVENT_FOCUS_LOST, 0, 0);
-            SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MINIMIZED, 0, 0);
-        }
-    }
-    SDL_SendAppEvent(SDL_APP_WILLENTERBACKGROUND);
+    SDL_OnApplicationWillResignActive();
 }
 
 - (void)applicationDidEnterBackground:(UIApplication*)application
 {
-    SDL_SendAppEvent(SDL_APP_DIDENTERBACKGROUND);
+    SDL_OnApplicationDidEnterBackground();
 }
 
 - (void)applicationWillEnterForeground:(UIApplication*)application
 {
-    SDL_SendAppEvent(SDL_APP_WILLENTERFOREGROUND);
+    SDL_OnApplicationWillEnterForeground();
 }
 
 - (void)applicationDidBecomeActive:(UIApplication*)application
 {
-    SDL_SendAppEvent(SDL_APP_DIDENTERFOREGROUND);
-
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
-    if (_this) {
-        SDL_Window *window;
-        for (window = _this->windows; window != nil; window = window->next) {
-            SDL_SendWindowEvent(window, SDL_WINDOWEVENT_FOCUS_GAINED, 0, 0);
-            SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESTORED, 0, 0);
-        }
-    }
+    SDL_OnApplicationDidBecomeActive();
 }
 
 - (void)sendDropFileForURL:(NSURL *)url

@@ -3857,4 +3857,51 @@ SDL_ComputeDiagonalDPI(int hpix, int vpix, float hinches, float vinches)
 				   SDL_sqrt((double)den2));
 }
 
+void SDL_OnApplicationWillTerminate()
+{
+    SDL_SendAppEvent(SDL_APP_TERMINATING);
+}
+
+void SDL_OnApplicationDidReceiveMemoryWarning()
+{
+    SDL_SendAppEvent(SDL_APP_LOWMEMORY);
+}
+
+void SDL_OnApplicationWillResignActive()
+{
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    if (_this) {
+        SDL_Window *window;
+        for (window = _this->windows; window != NULL; window = window->next) {
+            SDL_SendWindowEvent(window, SDL_WINDOWEVENT_FOCUS_LOST, 0, 0);
+            SDL_SendWindowEvent(window, SDL_WINDOWEVENT_MINIMIZED, 0, 0);
+        }
+    }
+    SDL_SendAppEvent(SDL_APP_WILLENTERBACKGROUND);
+}
+
+void SDL_OnApplicationDidEnterBackground()
+{
+    SDL_SendAppEvent(SDL_APP_DIDENTERBACKGROUND);
+}
+
+void SDL_OnApplicationWillEnterForeground()
+{
+    SDL_SendAppEvent(SDL_APP_WILLENTERFOREGROUND);
+}
+
+void SDL_OnApplicationDidBecomeActive()
+{
+    SDL_SendAppEvent(SDL_APP_DIDENTERFOREGROUND);
+
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    if (_this) {
+        SDL_Window *window;
+        for (window = _this->windows; window != NULL; window = window->next) {
+            SDL_SendWindowEvent(window, SDL_WINDOWEVENT_FOCUS_GAINED, 0, 0);
+            SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESTORED, 0, 0);
+        }
+    }
+}
+
 /* vi: set ts=4 sw=4 expandtab: */
