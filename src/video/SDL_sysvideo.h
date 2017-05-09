@@ -418,6 +418,13 @@ extern SDL_bool SDL_ShouldAllowTopmost(void);
 
 extern float SDL_ComputeDiagonalDPI(int hpix, int vpix, float hinches, float vinches);
 
+extern void SDL_OnApplicationWillTerminate();
+extern void SDL_OnApplicationDidReceiveMemoryWarning();
+extern void SDL_OnApplicationWillResignActive();
+extern void SDL_OnApplicationDidEnterBackground();
+extern void SDL_OnApplicationWillEnterForeground();
+extern void SDL_OnApplicationDidBecomeActive();
+
 #endif /* SDL_sysvideo_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
