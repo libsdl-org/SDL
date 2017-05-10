@@ -48,7 +48,7 @@ static void nacl_audio_callback(void* samples, uint32_t buffer_size, PP_TimeDelt
 static void nacl_audio_callback(void* stream, uint32_t buffer_size, PP_TimeDelta latency, void* data) {
     const int len = (int) buffer_size;
     SDL_AudioDevice* _this = (SDL_AudioDevice*) data;
-    SDL_AudioCallback callback = _this->spec.callback;
+    SDL_AudioCallback callback = _this->callbackspec.callback;
     
     SDL_LockMutex(private->mutex);  /* !!! FIXME: is this mutex necessary? */
 
@@ -65,12 +65,12 @@ static void nacl_audio_callback(void* stream, uint32_t buffer_size, PP_TimeDelta
 
     if (_this->stream == NULL) {  /* no conversion necessary. */
         SDL_LockMutex(_this->mixer_lock);
-        callback(_this->spec.userdata, stream, len);
+        callback(_this->callbackspec.userdata, stream, len);
         SDL_UnlockMutex(_this->mixer_lock);
     } else {  /* streaming/converting */
         const int stream_len = _this->callbackspec.size;
         while (SDL_AudioStreamAvailable(_this->stream) < len) {
-            callback(_this->spec.userdata, _this->work_buffer, stream_len);
+            callback(_this->callbackspec.userdata, _this->work_buffer, stream_len);
             if (SDL_AudioStreamPut(_this->stream, _this->work_buffer, stream_len) == -1) {
                 SDL_AudioStreamClear(_this->stream);
                 SDL_AtomicSet(&_this->enabled, 0);
