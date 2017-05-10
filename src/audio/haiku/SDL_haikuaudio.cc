@@ -48,7 +48,7 @@ FillSound(void *device, void *stream, size_t len,
           const media_raw_audio_format & format)
 {
     SDL_AudioDevice *audio = (SDL_AudioDevice *) device;
-    SDL_AudioCallback callback = audio->spec.callback;
+    SDL_AudioCallback callback = audio->callbackspec.callback;
 
     /* Only do something if audio is enabled */
     if (!SDL_AtomicGet(&audio->enabled) || SDL_AtomicGet(&audio->paused)) {
@@ -63,13 +63,13 @@ FillSound(void *device, void *stream, size_t len,
 
     if (audio->stream == NULL) {  /* no conversion necessary. */
         SDL_LockMutex(audio->mixer_lock);
-        callback(audio->spec.userdata, (Uint8 *) stream, len);
+        callback(audio->callbackspec.userdata, (Uint8 *) stream, len);
         SDL_UnlockMutex(audio->mixer_lock);
     } else {  /* streaming/converting */
         const int stream_len = audio->callbackspec.size;
         const int ilen = (int) len;
         while (SDL_AudioStreamAvailable(audio->stream) < ilen) {
-            callback(audio->spec.userdata, audio->work_buffer, stream_len);
+            callback(audio->callbackspec.userdata, audio->work_buffer, stream_len);
             if (SDL_AudioStreamPut(audio->stream, audio->work_buffer, stream_len) == -1) {
                 SDL_AudioStreamClear(audio->stream);
                 SDL_AtomicSet(&audio->enabled, 0);
