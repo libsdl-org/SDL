@@ -178,7 +178,7 @@ DirectFB_DeviceInformation(IDirectFB * dfb)
     SDL_DFB_LOG( "Driver Version: %d.%d", desc.driver.major,
             desc.driver.minor);
 
-    SDL_DFB_LOG( "Video memoory:  %d", desc.video_memory);
+    SDL_DFB_LOG( "Video memory:   %d", desc.video_memory);
 
     SDL_DFB_LOG( "Blitting flags:");
     for (n = 0; blitting_flags[n].flag; n++) {
