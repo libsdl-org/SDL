@@ -243,13 +243,7 @@ int
 DirectFB_GL_SwapWindow(_THIS, SDL_Window * window)
 {
     SDL_DFB_WINDOWDATA(window);
-    DFBRegion region;
     DirectFB_GLContext *p;
-
-    region.x1 = 0;
-    region.y1 = 0;
-    region.x2 = window->w;
-    region.y2 = window->h;
 
 #if 0
     if (devdata->glFinish)
