@@ -3872,8 +3872,6 @@ void SDL_OnApplicationDidReceiveMemoryWarning()
 
 void SDL_OnApplicationWillResignActive()
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
-
     if (_this) {
         SDL_Window *window;
         for (window = _this->windows; window != NULL; window = window->next) {
@@ -3896,8 +3894,6 @@ void SDL_OnApplicationWillEnterForeground()
 
 void SDL_OnApplicationDidBecomeActive()
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
-
     SDL_SendAppEvent(SDL_APP_DIDENTERFOREGROUND);
 
     if (_this) {
