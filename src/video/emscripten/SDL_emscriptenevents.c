@@ -270,7 +270,7 @@ static const SDL_Scancode emscripten_scancode_table[] = {
 
 
 /* "borrowed" from SDL_windowsevents.c */
-int
+static int
 Emscripten_ConvertUTF32toUTF8(Uint32 codepoint, char * text)
 {
     if (codepoint <= 0x7F) {
@@ -307,7 +307,7 @@ Emscripten_HandlePointerLockChange(int eventType, const EmscriptenPointerlockCha
 }
 
 
-EM_BOOL
+static EM_BOOL
 Emscripten_HandleMouseMove(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
@@ -338,7 +338,7 @@ Emscripten_HandleMouseMove(int eventType, const EmscriptenMouseEvent *mouseEvent
     return 0;
 }
 
-EM_BOOL
+static EM_BOOL
 Emscripten_HandleMouseButton(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
@@ -374,7 +374,7 @@ Emscripten_HandleMouseButton(int eventType, const EmscriptenMouseEvent *mouseEve
     return SDL_GetEventState(sdl_event_type) == SDL_ENABLE;
 }
 
-EM_BOOL
+static EM_BOOL
 Emscripten_HandleMouseFocus(int eventType, const EmscriptenMouseEvent *mouseEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
@@ -396,7 +396,7 @@ Emscripten_HandleMouseFocus(int eventType, const EmscriptenMouseEvent *mouseEven
     return SDL_GetEventState(SDL_WINDOWEVENT) == SDL_ENABLE;
 }
 
-EM_BOOL
+static EM_BOOL
 Emscripten_HandleWheel(int eventType, const EmscriptenWheelEvent *wheelEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
@@ -404,7 +404,7 @@ Emscripten_HandleWheel(int eventType, const EmscriptenWheelEvent *wheelEvent, vo
     return SDL_GetEventState(SDL_MOUSEWHEEL) == SDL_ENABLE;
 }
 
-EM_BOOL
+static EM_BOOL
 Emscripten_HandleFocus(int eventType, const EmscriptenFocusEvent *wheelEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
@@ -419,7 +419,7 @@ Emscripten_HandleFocus(int eventType, const EmscriptenFocusEvent *wheelEvent, vo
     return SDL_GetEventState(SDL_WINDOWEVENT) == SDL_ENABLE;
 }
 
-EM_BOOL
+static EM_BOOL
 Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent *touchEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
@@ -482,7 +482,7 @@ Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent *touchEvent, vo
     return preventDefault;
 }
 
-EM_BOOL
+static EM_BOOL
 Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData)
 {
     Uint32 scancode;
@@ -524,7 +524,7 @@ Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent *keyEvent, voi
     return prevent_default;
 }
 
-EM_BOOL
+static EM_BOOL
 Emscripten_HandleKeyPress(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData)
 {
     char text[5];
@@ -534,7 +534,7 @@ Emscripten_HandleKeyPress(int eventType, const EmscriptenKeyboardEvent *keyEvent
     return SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE;
 }
 
-EM_BOOL
+static EM_BOOL
 Emscripten_HandleFullscreenChange(int eventType, const EmscriptenFullscreenChangeEvent *fullscreenChangeEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
@@ -555,7 +555,7 @@ Emscripten_HandleFullscreenChange(int eventType, const EmscriptenFullscreenChang
     return 0;
 }
 
-EM_BOOL
+static EM_BOOL
 Emscripten_HandleResize(int eventType, const EmscriptenUiEvent *uiEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
@@ -607,7 +607,7 @@ Emscripten_HandleCanvasResize(int eventType, const void *reserved, void *userDat
     return 0;
 }
 
-EM_BOOL
+static EM_BOOL
 Emscripten_HandleVisibilityChange(int eventType, const EmscriptenVisibilityChangeEvent *visEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
