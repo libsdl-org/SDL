@@ -108,8 +108,6 @@ DirectFB_CreateDevice(int devindex)
     SDL_DFB_ALLOC_CLEAR(device, sizeof(SDL_VideoDevice));
 
     /* Set the function pointers */
-
-    /* Set the function pointers */
     device->VideoInit = DirectFB_VideoInit;
     device->VideoQuit = DirectFB_VideoQuit;
     device->GetDisplayModes = DirectFB_GetDisplayModes;
