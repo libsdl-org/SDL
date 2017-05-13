@@ -40,6 +40,7 @@ There are two basic ways of building SDL at the moment:
 	src/joystick/*.c
 	src/power/*.c
 	src/render/*.c
+	src/render/software/*.c
 	src/stdlib/*.c
 	src/thread/*.c
 	src/timer/*.c
