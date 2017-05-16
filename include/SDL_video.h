@@ -116,7 +116,8 @@ typedef enum
     SDL_WINDOW_SKIP_TASKBAR  = 0x00010000,      /**< window should not be added to the taskbar */
     SDL_WINDOW_UTILITY       = 0x00020000,      /**< window should be treated as a utility window */
     SDL_WINDOW_TOOLTIP       = 0x00040000,      /**< window should be treated as a tooltip */
-    SDL_WINDOW_POPUP_MENU    = 0x00080000       /**< window should be treated as a popup menu */
+    SDL_WINDOW_POPUP_MENU    = 0x00080000,      /**< window should be treated as a popup menu */
+    SDL_WINDOW_VULKAN        = 0x00100000       /**< window usable for Vulkan surface */
 } SDL_WindowFlags;
 
 /**
