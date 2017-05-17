@@ -808,6 +808,8 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             switch (wParam) {
             case SIZE_MAXIMIZED:
                 SDL_SendWindowEvent(data->window,
+                    SDL_WINDOWEVENT_RESTORED, 0, 0);
+                SDL_SendWindowEvent(data->window,
                     SDL_WINDOWEVENT_MAXIMIZED, 0, 0);
                 break;
             case SIZE_MINIMIZED:
