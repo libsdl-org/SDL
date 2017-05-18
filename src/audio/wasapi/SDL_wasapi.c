@@ -610,7 +610,7 @@ WASAPI_FlushCapture(_THIS)
 
         /* just read until we stop getting packets, throwing them away. */
         while (SDL_TRUE) {
-            const HRESULT ret = IAudioCaptureClient_GetBuffer(this->hidden->capture, &ptr, &frames, &flags, NULL, NULL));
+            const HRESULT ret = IAudioCaptureClient_GetBuffer(this->hidden->capture, &ptr, &frames, &flags, NULL, NULL);
             if (ret == AUDCLNT_S_BUFFER_EMPTY) {
                 break;  /* no more buffered data; we're done. */
             } else if (WasapiFailed(this, ret)) {
