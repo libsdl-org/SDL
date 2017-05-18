@@ -706,7 +706,9 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
         }
 
         if (state->verbose & VERBOSE_MODES) {
-            SDL_Rect bounds;
+            SDL_Rect bounds, usablebounds;
+            float hdpi = 0;
+            float vdpi = 0;
             SDL_DisplayMode mode;
             int bpp;
             Uint32 Rmask, Gmask, Bmask, Amask;
@@ -721,7 +723,15 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
 
                 SDL_zero(bounds);
                 SDL_GetDisplayBounds(i, &bounds);
+
+                SDL_zero(usablebounds);
+                SDL_GetDisplayUsableBounds(i, &usablebounds);
+
+                SDL_GetDisplayDPI(i, NULL, &hdpi, &vdpi);
+
                 SDL_Log("Bounds: %dx%d at %d,%d\n", bounds.w, bounds.h, bounds.x, bounds.y);
+                SDL_Log("Usable bounds: %dx%d at %d,%d\n", usablebounds.w, usablebounds.h, usablebounds.x, usablebounds.y);
+                SDL_Log("DPI: %fx%f\n", hdpi, vdpi);
 
                 SDL_GetDesktopDisplayMode(i, &mode);
                 SDL_PixelFormatEnumToMasks(mode.format, &bpp, &Rmask, &Gmask,
