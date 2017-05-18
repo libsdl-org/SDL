@@ -49,8 +49,8 @@ static SDL_atomic_t default_capture_generation;
 /* This is a list of device id strings we have inflight, so we have consistent pointers to the same device. */
 typedef struct DevIdList
 {
-	WCHAR *str;
-	struct DevIdList *next;
+    WCHAR *str;
+    struct DevIdList *next;
 } DevIdList;
 
 static DevIdList *deviceid_list = NULL;
@@ -113,7 +113,7 @@ SDLMMNotificationClient_QueryInterface(IMMNotificationClient *this, REFIID iid, 
 static ULONG STDMETHODCALLTYPE
 SDLMMNotificationClient_AddRef(IMMNotificationClient *ithis)
 {
-	SDLMMNotificationClient *this = (SDLMMNotificationClient *) ithis;
+    SDLMMNotificationClient *this = (SDLMMNotificationClient *) ithis;
     return (ULONG) (SDL_AtomicIncRef(&this->refcount) + 1);
 }
 
@@ -121,7 +121,7 @@ static ULONG STDMETHODCALLTYPE
 SDLMMNotificationClient_Release(IMMNotificationClient *ithis)
 {
     /* this is a static object; we don't ever free it. */
-	SDLMMNotificationClient *this = (SDLMMNotificationClient *) ithis;
+    SDLMMNotificationClient *this = (SDLMMNotificationClient *) ithis;
     const ULONG retval = SDL_AtomicDecRef(&this->refcount);
     if (retval == 0) {
         SDL_AtomicSet(&this->refcount, 0);  /* uhh... */
@@ -134,21 +134,21 @@ SDLMMNotificationClient_Release(IMMNotificationClient *ithis)
 static HRESULT STDMETHODCALLTYPE
 SDLMMNotificationClient_OnDefaultDeviceChanged(IMMNotificationClient *ithis, EDataFlow flow, ERole role, LPCWSTR pwstrDeviceId)
 {
-	if (role != SDL_WASAPI_role) {
-		return S_OK;  /* ignore it. */
-	}
+    if (role != SDL_WASAPI_role) {
+        return S_OK;  /* ignore it. */
+    }
 
     /* Increment the "generation," so opened devices will pick this up in their threads. */
-	switch (flow) {
-    	case eRender:
+    switch (flow) {
+        case eRender:
             SDL_AtomicAdd(&default_playback_generation, 1);
             break;
 
-	    case eCapture:
+        case eCapture:
             SDL_AtomicAdd(&default_capture_generation, 1);
             break;
 
-    	case eAll:
+        case eAll:
             SDL_AtomicAdd(&default_playback_generation, 1);
             SDL_AtomicAdd(&default_capture_generation, 1);
             break;
@@ -156,53 +156,53 @@ SDLMMNotificationClient_OnDefaultDeviceChanged(IMMNotificationClient *ithis, EDa
         default:
             SDL_assert(!"uhoh, unexpected OnDefaultDeviceChange flow!");
             break;
-	}
+    }
 
-	return S_OK;
+    return S_OK;
 }
 
 static HRESULT STDMETHODCALLTYPE
 SDLMMNotificationClient_OnDeviceAdded(IMMNotificationClient *ithis, LPCWSTR pwstrDeviceId)
 {
-	/* we ignore this; devices added here then progress to ACTIVE, if appropriate, in 
-	   OnDeviceStateChange, making that a better place to deal with device adds. More 
-	   importantly: the first time you plug in a USB audio device, this callback will 
-	   fire, but when you unplug it, it isn't removed (it's state changes to NOTPRESENT).
-	   Plugging it back in won't fire this callback again. */
-	return S_OK;
+    /* we ignore this; devices added here then progress to ACTIVE, if appropriate, in 
+       OnDeviceStateChange, making that a better place to deal with device adds. More 
+       importantly: the first time you plug in a USB audio device, this callback will 
+       fire, but when you unplug it, it isn't removed (it's state changes to NOTPRESENT).
+       Plugging it back in won't fire this callback again. */
+    return S_OK;
 }
 
 static HRESULT STDMETHODCALLTYPE
 SDLMMNotificationClient_OnDeviceRemoved(IMMNotificationClient *ithis, LPCWSTR pwstrDeviceId)
 {
-	/* See notes in OnDeviceAdded handler about why we ignore this. */
-	return S_OK;
+    /* See notes in OnDeviceAdded handler about why we ignore this. */
+    return S_OK;
 }
 
 static HRESULT STDMETHODCALLTYPE
 SDLMMNotificationClient_OnDeviceStateChanged(IMMNotificationClient *ithis, LPCWSTR pwstrDeviceId, DWORD dwNewState)
 {
-	SDLMMNotificationClient *this = (SDLMMNotificationClient *) ithis;
-	IMMDevice *device = NULL;
+    SDLMMNotificationClient *this = (SDLMMNotificationClient *) ithis;
+    IMMDevice *device = NULL;
 
-	if (SUCCEEDED(IMMDeviceEnumerator_GetDevice(enumerator, pwstrDeviceId, &device))) {
-		IMMEndpoint *endpoint = NULL;
-		if (SUCCEEDED(IMMDevice_QueryInterface(device, &SDL_IID_IMMEndpoint, (void **) &endpoint))) {
-			EDataFlow flow;
-			if (SUCCEEDED(IMMEndpoint_GetDataFlow(endpoint, &flow))) {
-				const SDL_bool iscapture = (flow == eCapture);
-				if (dwNewState == DEVICE_STATE_ACTIVE) {
-					AddWASAPIDevice(iscapture, device, pwstrDeviceId);
-				} else {
-					RemoveWASAPIDevice(iscapture, pwstrDeviceId);
-				}
-			}
-			IMMEndpoint_Release(endpoint);
-		}
-		IMMDevice_Release(device);
-	}
+    if (SUCCEEDED(IMMDeviceEnumerator_GetDevice(enumerator, pwstrDeviceId, &device))) {
+        IMMEndpoint *endpoint = NULL;
+        if (SUCCEEDED(IMMDevice_QueryInterface(device, &SDL_IID_IMMEndpoint, (void **) &endpoint))) {
+            EDataFlow flow;
+            if (SUCCEEDED(IMMEndpoint_GetDataFlow(endpoint, &flow))) {
+                const SDL_bool iscapture = (flow == eCapture);
+                if (dwNewState == DEVICE_STATE_ACTIVE) {
+                    AddWASAPIDevice(iscapture, device, pwstrDeviceId);
+                } else {
+                    RemoveWASAPIDevice(iscapture, pwstrDeviceId);
+                }
+            }
+            IMMEndpoint_Release(endpoint);
+        }
+        IMMDevice_Release(device);
+    }
 
-	return S_OK;
+    return S_OK;
 }
 
 static HRESULT STDMETHODCALLTYPE
@@ -227,58 +227,58 @@ static SDLMMNotificationClient notification_client = { &notification_client_vtbl
 static SDL_bool
 WStrEqual(const WCHAR *a, const WCHAR *b)
 {
-	while (*a) {
-		if (*a != *b) {
-			return SDL_FALSE;
-		}
-		a++;
-		b++;
-	}
-	return *b == 0;
+    while (*a) {
+        if (*a != *b) {
+            return SDL_FALSE;
+        }
+        a++;
+        b++;
+    }
+    return *b == 0;
 }
 
 static WCHAR *
 WStrDupe(const WCHAR *wstr)
 {
-	const int len = (lstrlenW(wstr) + 1) * sizeof (WCHAR);
-	WCHAR *retval = (WCHAR *) SDL_malloc(len);
-	if (retval) {
-		SDL_memcpy(retval, wstr, len);
-	}
-	return retval;
+    const int len = (lstrlenW(wstr) + 1) * sizeof (WCHAR);
+    WCHAR *retval = (WCHAR *) SDL_malloc(len);
+    if (retval) {
+        SDL_memcpy(retval, wstr, len);
+    }
+    return retval;
 }
 
 static void 
 RemoveWASAPIDevice(const SDL_bool iscapture, LPCWSTR devid)
 {
-	DevIdList *i;
-	DevIdList *next;
-	DevIdList *prev = NULL;
-	for (i = deviceid_list; i; i = next) {
-		next = i->next;
-		if (WStrEqual(i->str, devid)) {
-			if (prev) {
-				prev->next = next;
-			} else {
-				deviceid_list = next;
-			}
-			SDL_RemoveAudioDevice(iscapture, i->str);
-			SDL_free(i->str);
-			SDL_free(i);
-		}
-		prev = i;
-	}
+    DevIdList *i;
+    DevIdList *next;
+    DevIdList *prev = NULL;
+    for (i = deviceid_list; i; i = next) {
+        next = i->next;
+        if (WStrEqual(i->str, devid)) {
+            if (prev) {
+                prev->next = next;
+            } else {
+                deviceid_list = next;
+            }
+            SDL_RemoveAudioDevice(iscapture, i->str);
+            SDL_free(i->str);
+            SDL_free(i);
+        }
+        prev = i;
+    }
 }
 
 static void
 AddWASAPIDevice(const SDL_bool iscapture, IMMDevice *device, LPCWSTR devid)
 {
-	IPropertyStore *props = NULL;
+    IPropertyStore *props = NULL;
     char *utf8dev = NULL;
-	DevIdList *devidlist;
+    DevIdList *devidlist;
     PROPVARIANT var;
 
-	/* You can have multiple endpoints on a device that are mutually exclusive ("Speakers" vs "Line Out" or whatever).
+    /* You can have multiple endpoints on a device that are mutually exclusive ("Speakers" vs "Line Out" or whatever).
        In a perfect world, things that are unplugged won't be in this collection. The only gotcha is probably for
        phones and tablets, where you might have an internal speaker and a headphone jack and expect both to be
        available and switch automatically. (!!! FIXME...?) */
@@ -287,40 +287,40 @@ AddWASAPIDevice(const SDL_bool iscapture, IMMDevice *device, LPCWSTR devid)
        "SoundBlaster Pro (Speakers)" but I guess that's developers vs users. Windows uses the FriendlyName in
        its own UIs, like Volume Control, etc. */
 
-	/* see if we already have this one. */
-	for (devidlist = deviceid_list; devidlist; devidlist = devidlist->next) {
-		if (WStrEqual(devidlist->str, devid)) {
-			return;  /* we already have this. */
-		}
-	}
+    /* see if we already have this one. */
+    for (devidlist = deviceid_list; devidlist; devidlist = devidlist->next) {
+        if (WStrEqual(devidlist->str, devid)) {
+            return;  /* we already have this. */
+        }
+    }
 
-	devidlist = (DevIdList *) SDL_malloc(sizeof (*devidlist));
-	if (!devidlist) {
-		return;  /* oh well. */
-	}
+    devidlist = (DevIdList *) SDL_malloc(sizeof (*devidlist));
+    if (!devidlist) {
+        return;  /* oh well. */
+    }
 
-	devid = WStrDupe(devid);
-	if (!devid) {
-		SDL_free(devidlist);
-		return;  /* oh well. */
-	}
+    devid = WStrDupe(devid);
+    if (!devid) {
+        SDL_free(devidlist);
+        return;  /* oh well. */
+    }
 
-	devidlist->str = (WCHAR *) devid;
-	devidlist->next = deviceid_list;
-	deviceid_list = devidlist;
+    devidlist->str = (WCHAR *) devid;
+    devidlist->next = deviceid_list;
+    deviceid_list = devidlist;
 
     if (SUCCEEDED(IMMDevice_OpenPropertyStore(device, STGM_READ, &props))) {
-	    PropVariantInit(&var);
-	    if (SUCCEEDED(IPropertyStore_GetValue(props, &SDL_PKEY_Device_FriendlyName, &var))) {
-			utf8dev = WIN_StringToUTF8(var.pwszVal);
-			if (utf8dev) {
-				SDL_AddAudioDevice(iscapture, utf8dev, (void *) devid);
-		        SDL_free(utf8dev);
-			}
-		}
-	    PropVariantClear(&var);
-	    IPropertyStore_Release(props);
-	}
+        PropVariantInit(&var);
+        if (SUCCEEDED(IPropertyStore_GetValue(props, &SDL_PKEY_Device_FriendlyName, &var))) {
+            utf8dev = WIN_StringToUTF8(var.pwszVal);
+            if (utf8dev) {
+                SDL_AddAudioDevice(iscapture, utf8dev, (void *) devid);
+                SDL_free(utf8dev);
+            }
+        }
+        PropVariantClear(&var);
+        IPropertyStore_Release(props);
+    }
 }
 
 static void
@@ -344,14 +344,14 @@ EnumerateEndpoints(const SDL_bool iscapture)
     for (i = 0; i < total; i++) {
         IMMDevice *device = NULL;
         if (SUCCEEDED(IMMDeviceCollection_Item(collection, i, &device))) {
-			LPWSTR devid = NULL;
-			if (SUCCEEDED(IMMDevice_GetId(device, &devid))) {
-				AddWASAPIDevice(iscapture, device, devid);
-				CoTaskMemFree(devid);
-			}
-	        IMMDevice_Release(device);
-		}
-	}
+            LPWSTR devid = NULL;
+            if (SUCCEEDED(IMMDevice_GetId(device, &devid))) {
+                AddWASAPIDevice(iscapture, device, devid);
+                CoTaskMemFree(devid);
+            }
+            IMMDevice_Release(device);
+        }
+    }
 
     IMMDeviceCollection_Release(collection);
 }
@@ -389,8 +389,8 @@ WasapiFailed(_THIS, const HRESULT err)
     if (err == AUDCLNT_E_DEVICE_INVALIDATED) {
         this->hidden->device_lost = SDL_TRUE;
     } else if (SDL_AtomicGet(&this->enabled)) {
-    	IAudioClient_Stop(this->hidden->client);
-	    SDL_OpenedAudioDeviceDisconnected(this);
+        IAudioClient_Stop(this->hidden->client);
+        SDL_OpenedAudioDeviceDisconnected(this);
         SDL_assert(!SDL_AtomicGet(&this->enabled));
     }
 
@@ -531,18 +531,18 @@ WASAPI_PlayDevice(_THIS)
 static void
 WASAPI_WaitDevice(_THIS)
 {
-	const UINT32 maxpadding = this->spec.samples;
+    const UINT32 maxpadding = this->spec.samples;
     while (RecoverWasapiIfLost(this)) {
-		UINT32 padding = 0;
+        UINT32 padding = 0;
 
         if (!WasapiFailed(this, IAudioClient_GetCurrentPadding(this->hidden->client, &padding))) {
             if (padding <= maxpadding) {
-	            break;
+                break;
             }
-		    /* Sleep long enough for half the buffer to be free. */
-    		SDL_Delay(((padding - maxpadding) * 1000) / this->spec.freq);
+            /* Sleep long enough for half the buffer to be free. */
+            SDL_Delay(((padding - maxpadding) * 1000) / this->spec.freq);
         }
-	}
+    }
 }
 
 static int
@@ -626,7 +626,7 @@ WASAPI_FlushCapture(_THIS)
 static void
 ReleaseWasapiDevice(_THIS)
 {
-	if (this->hidden->client) {
+    if (this->hidden->client) {
         IAudioClient_Stop(this->hidden->client);
         this->hidden->client = NULL;
     }
@@ -757,15 +757,15 @@ PrepWasapiDevice(_THIS, const int iscapture, IMMDevice *device)
         return WIN_SetErrorFromHRESULT("WASAPI can't initialize audio client", ret);
     }
 
-	ret = IAudioClient_GetBufferSize(client, &bufsize);
+    ret = IAudioClient_GetBufferSize(client, &bufsize);
     if (FAILED(ret)) {
         return WIN_SetErrorFromHRESULT("WASAPI can't determine buffer size", ret);
     }
 
     this->spec.samples = (Uint16) bufsize;
-	if (!iscapture) {
-		this->spec.samples /= 2;  /* fill half of the DMA buffer on each run. */
-	}
+    if (!iscapture) {
+        this->spec.samples /= 2;  /* fill half of the DMA buffer on each run. */
+    }
 
     /* Update the fragment size as size in bytes */
     SDL_CalculateAudioSpec(&this->spec);
@@ -827,7 +827,7 @@ WASAPI_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         const EDataFlow dataflow = iscapture ? eCapture : eRender;
         this->hidden->default_device_generation = SDL_AtomicGet(iscapture ? &default_capture_generation : &default_playback_generation);
         ret = IMMDeviceEnumerator_GetDefaultAudioEndpoint(enumerator, dataflow, SDL_WASAPI_role, &device);
-	} else {
+    } else {
         ret = IMMDeviceEnumerator_GetDevice(enumerator, (LPCWSTR) handle, &device);
     }
 
@@ -871,8 +871,8 @@ WASAPI_ThreadDeinit(_THIS)
 static void
 WASAPI_Deinitialize(void)
 {
-	DevIdList *devidlist;
-	DevIdList *next;
+    DevIdList *devidlist;
+    DevIdList *next;
 
     if (enumerator) {
         IMMDeviceEnumerator_UnregisterEndpointNotificationCallback(enumerator, (IMMNotificationClient *) &notification_client);
@@ -890,12 +890,12 @@ WASAPI_Deinitialize(void)
     pAvSetMmThreadCharacteristicsW = NULL;
     pAvRevertMmThreadCharacteristics = NULL;
 
-	for (devidlist = deviceid_list; devidlist; devidlist = next) {
-		next = devidlist->next;
-		SDL_free(devidlist->str);
-		SDL_free(devidlist);
-	}
-	deviceid_list = NULL;
+    for (devidlist = deviceid_list; devidlist; devidlist = next) {
+        next = devidlist->next;
+        SDL_free(devidlist->str);
+        SDL_free(devidlist);
+    }
+    deviceid_list = NULL;
 
     WIN_CoUninitialize();
 }
@@ -903,22 +903,22 @@ WASAPI_Deinitialize(void)
 static int
 WASAPI_Init(SDL_AudioDriverImpl * impl)
 {
-	HRESULT ret;
+    HRESULT ret;
 
-	/* just skip the discussion with COM here. */
-	if (!WIN_IsWindowsVistaOrGreater()) {
-		return SDL_SetError("WASAPI support requires Windows Vista or later");
-	}
+    /* just skip the discussion with COM here. */
+    if (!WIN_IsWindowsVistaOrGreater()) {
+        return SDL_SetError("WASAPI support requires Windows Vista or later");
+    }
 
     SDL_AtomicSet(&default_playback_generation, 1);
     SDL_AtomicSet(&default_capture_generation, 1);
 
-	if (FAILED(WIN_CoInitialize())) {
+    if (FAILED(WIN_CoInitialize())) {
         SDL_SetError("WASAPI: CoInitialize() failed");
         return 0;
     }
 
-	ret = CoCreateInstance(&SDL_CLSID_MMDeviceEnumerator, NULL, CLSCTX_INPROC_SERVER, &SDL_IID_IMMDeviceEnumerator, (LPVOID) &enumerator);
+    ret = CoCreateInstance(&SDL_CLSID_MMDeviceEnumerator, NULL, CLSCTX_INPROC_SERVER, &SDL_IID_IMMDeviceEnumerator, (LPVOID) &enumerator);
     if (FAILED(ret)) {
         WIN_CoUninitialize();
         WIN_SetErrorFromHRESULT("WASAPI CoCreateInstance(MMDeviceEnumerator)", ret);
