@@ -563,7 +563,9 @@ WASAPI_CaptureFromDevice(_THIS, void *buffer, int buflen)
         DWORD flags = 0;
 
         ret = IAudioCaptureClient_GetBuffer(this->hidden->capture, &ptr, &frames, &flags, NULL, NULL);
-        WasapiFailed(this, ret); /* mark device lost/failed if necessary. */
+        if (ret != AUDCLNT_S_BUFFER_EMPTY) {
+            WasapiFailed(this, ret); /* mark device lost/failed if necessary. */
+        }
 
         if ((ret == AUDCLNT_S_BUFFER_EMPTY) || !frames) {
             WASAPI_WaitDevice(this);
