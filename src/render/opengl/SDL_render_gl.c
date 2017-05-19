@@ -1523,6 +1523,11 @@ GL_DestroyRenderer(SDL_Renderer * renderer)
     GL_RenderData *data = (GL_RenderData *) renderer->driverdata;
 
     if (data) {
+        if (data->context != NULL) {
+            /* make sure we delete the right resources! */
+            GL_ActivateRenderer(renderer);
+        }
+
         GL_ClearErrors(renderer);
         if (data->GL_ARB_debug_output_supported) {
             PFNGLDEBUGMESSAGECALLBACKARBPROC glDebugMessageCallbackARBFunc = (PFNGLDEBUGMESSAGECALLBACKARBPROC) SDL_GL_GetProcAddress("glDebugMessageCallbackARB");
