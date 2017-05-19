@@ -44,6 +44,11 @@
 #endif
 #endif
 
+#if defined(__EMSCRIPTEN__)
+#include <emscripten.h>
+#endif
+
+
 static SDL_assert_state
 SDL_PromptAssertion(const SDL_assert_data *data, void *userdata);
 
@@ -119,6 +124,10 @@ static SDL_NORETURN void SDL_ExitProcess(int exitcode)
 {
 #ifdef __WIN32__
     ExitProcess(exitcode);
+#elif defined(__EMSCRIPTEN__)
+    emscripten_cancel_main_loop();  /* this should "kill" the app. */
+    emscripten_force_exit(exitcode);  /* this should "kill" the app. */
+    exit(exitcode);
 #else
     _exit(exitcode);
 #endif
@@ -221,9 +230,45 @@ SDL_PromptAssertion(const SDL_assert_data *data, void *userdata)
             state = (SDL_assert_state)selected;
         }
     }
-#ifdef HAVE_STDIO_H
+
     else
     {
+#if defined(__EMSCRIPTEN__)
+        /* This is nasty, but we can't block on a custom UI. */
+        for ( ; ; ) {
+            SDL_bool okay = SDL_TRUE;
+            char *buf = (char *) EM_ASM_INT({
+                var str =
+                    Pointer_stringify($0) + '\n\n' +
+                    'Abort/Retry/Ignore/AlwaysIgnore? [ariA] :';
+                var reply = window.prompt(str, "i");
+                if (reply === null) {
+                    reply = "i";
+                }
+                return allocate(intArrayFromString(reply), 'i8', ALLOC_NORMAL);
+            }, message);
+
+            if (SDL_strcmp(buf, "a") == 0) {
+                state = SDL_ASSERTION_ABORT;
+            /* (currently) no break functionality on Emscripten
+            } else if (SDL_strcmp(buf, "b") == 0) {
+                state = SDL_ASSERTION_BREAK; */
+            } else if (SDL_strcmp(buf, "r") == 0) {
+                state = SDL_ASSERTION_RETRY;
+            } else if (SDL_strcmp(buf, "i") == 0) {
+                state = SDL_ASSERTION_IGNORE;
+            } else if (SDL_strcmp(buf, "A") == 0) {
+                state = SDL_ASSERTION_ALWAYS_IGNORE;
+            } else {
+                okay = SDL_FALSE;
+            }
+            free(buf);
+
+            if (okay) {
+                break;
+            }
+        }
+#elif defined(HAVE_STDIO_H)
         /* this is a little hacky. */
         for ( ; ; ) {
             char buf[32];
@@ -250,8 +295,8 @@ SDL_PromptAssertion(const SDL_assert_data *data, void *userdata)
                 break;
             }
         }
-    }
 #endif /* HAVE_STDIO_H */
+    }
 
     /* Re-enter fullscreen mode */
     if (window) {
