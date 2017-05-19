@@ -53,7 +53,10 @@ SDL_PromptAssertion(const SDL_assert_data *data, void *userdata);
  */
 static SDL_assert_data *triggered_assertions = NULL;
 
+#ifndef SDL_THREADS_DISABLED
 static SDL_mutex *assertion_mutex = NULL;
+#endif
+
 static SDL_AssertionHandler assertion_handler = SDL_PromptAssertion;
 static void *assertion_userdata = NULL;
 
@@ -265,10 +268,11 @@ SDL_assert_state
 SDL_ReportAssertion(SDL_assert_data *data, const char *func, const char *file,
                     int line)
 {
-    static int assertion_running = 0;
-    static SDL_SpinLock spinlock = 0;
     SDL_assert_state state = SDL_ASSERTION_IGNORE;
+    static int assertion_running = 0;
 
+#ifndef SDL_THREADS_DISABLED
+    static SDL_SpinLock spinlock = 0;
     SDL_AtomicLock(&spinlock);
     if (assertion_mutex == NULL) { /* never called SDL_Init()? */
         assertion_mutex = SDL_CreateMutex();
@@ -282,6 +286,7 @@ SDL_ReportAssertion(SDL_assert_data *data, const char *func, const char *file,
     if (SDL_LockMutex(assertion_mutex) < 0) {
         return SDL_ASSERTION_IGNORE;   /* oh well, I guess. */
     }
+#endif
 
     /* doing this because Visual C is upset over assigning in the macro. */
     if (data->trigger_count == 0) {
@@ -325,7 +330,10 @@ SDL_ReportAssertion(SDL_assert_data *data, const char *func, const char *file,
     }
 
     assertion_running--;
+
+#ifndef SDL_THREADS_DISABLED
     SDL_UnlockMutex(assertion_mutex);
+#endif
 
     return state;
 }
@@ -334,10 +342,12 @@ SDL_ReportAssertion(SDL_assert_data *data, const char *func, const char *file,
 void SDL_AssertionsQuit(void)
 {
     SDL_GenerateAssertionReport();
+#ifndef SDL_THREADS_DISABLED
     if (assertion_mutex != NULL) {
         SDL_DestroyMutex(assertion_mutex);
         assertion_mutex = NULL;
     }
+#endif
 }
 
 void SDL_SetAssertionHandler(SDL_AssertionHandler handler, void *userdata)
