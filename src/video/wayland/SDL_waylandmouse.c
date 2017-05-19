@@ -392,23 +392,5 @@ Wayland_FiniMouse(void)
     /* This effectively assumes that nobody else
      * touches SDL_Mouse which is effectively
      * a singleton */
-
-    SDL_Mouse *mouse = SDL_GetMouse();
-
-    /* Free the current cursor if not the same pointer as
-     * the default cursor */
-    if (mouse->def_cursor != mouse->cur_cursor)
-        Wayland_FreeCursor (mouse->cur_cursor);
-
-    Wayland_FreeCursor (mouse->def_cursor);
-    mouse->def_cursor = NULL;
-    mouse->cur_cursor = NULL;
-
-    mouse->CreateCursor =  NULL;
-    mouse->CreateSystemCursor = NULL;
-    mouse->ShowCursor = NULL;
-    mouse->FreeCursor = NULL;
-    mouse->WarpMouse = NULL;
-    mouse->SetRelativeMouseMode = NULL;
 }
 #endif  /* SDL_VIDEO_DRIVER_WAYLAND */
