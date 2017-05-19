@@ -262,17 +262,6 @@ Emscripten_InitMouse()
 void
 Emscripten_FiniMouse()
 {
-    SDL_Mouse* mouse = SDL_GetMouse();
-
-    Emscripten_FreeCursor(mouse->def_cursor);
-    mouse->def_cursor = NULL;
-
-    mouse->CreateCursor         = NULL;
-    mouse->ShowCursor           = NULL;
-    mouse->FreeCursor           = NULL;
-    mouse->WarpMouse            = NULL;
-    mouse->CreateSystemCursor   = NULL;
-    mouse->SetRelativeMouseMode = NULL;
 }
 
 #endif /* SDL_VIDEO_DRIVER_EMSCRIPTEN */
