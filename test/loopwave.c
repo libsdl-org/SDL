@@ -20,10 +20,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#if HAVE_SIGNAL_H
-#include <signal.h>
-#endif
-
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
 #endif
@@ -104,11 +100,6 @@ fillerup(void *unused, Uint8 * stream, int len)
 }
 
 static int done = 0;
-void
-poked(int sig)
-{
-    done = 1;
-}
 
 #ifdef __EMSCRIPTEN__
 void
