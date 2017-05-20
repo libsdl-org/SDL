@@ -403,7 +403,6 @@ main(int argc, char **argv)
     RawMooseData = (Uint8 *) malloc(MOOSEFRAME_SIZE * MOOSEFRAMES_COUNT);
     if (RawMooseData == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Can't allocate memory for movie !\n");
-        free(RawMooseData);
         quit(1);
     }
 
