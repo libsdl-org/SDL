@@ -665,11 +665,11 @@ prepare_audioqueue(_THIS)
     }
 
     /* Make sure we can feed the device at least 50 milliseconds at a time. */
-    const double msecs = (this->spec.size / ((double) this->spec.freq)) * 1000.0;
-    if (msecs >= 50.0) {
+    const double msecs = (this->spec.samples / ((double) this->spec.freq)) * 1000.0;
+    if (msecs >= 10.0) {
         this->hidden->numAudioBuffers = 2;
     } else {
-        this->hidden->numAudioBuffers = (int) (SDL_ceil(50.0 / msecs) * 2);
+        this->hidden->numAudioBuffers = (int) (SDL_ceil(10.0 / msecs) * 2);
     }
 
     this->hidden->audioBuffer = SDL_calloc(1, sizeof (AudioQueueBufferRef) * this->hidden->numAudioBuffers);
