@@ -522,7 +522,14 @@ Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent *keyEvent, voi
     /* if TEXTINPUT events are enabled we can't prevent keydown or we won't get keypress
      * we need to ALWAYS prevent backspace and tab otherwise chrome takes action and does bad navigation UX
      */
-    if (eventType == EMSCRIPTEN_EVENT_KEYDOWN && SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE && keyEvent->keyCode != 8 /* backspace */ && keyEvent->keyCode != 9 /* tab */)
+    SDL_bool is_nav_key = keyEvent->keyCode == 8 /* backspace */ ||
+                          keyEvent->keyCode == 9 /* tab */ ||
+                          keyEvent->keyCode == 37 /* left */ ||
+                          keyEvent->keyCode == 38 /* up */ ||
+                          keyEvent->keyCode == 39 /* right */ ||
+                          keyEvent->keyCode == 40 /* down */;
+
+    if (eventType == EMSCRIPTEN_EVENT_KEYDOWN && SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE && !is_nav_key)
         prevent_default = SDL_FALSE;
 
     return prevent_default;
