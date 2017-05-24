@@ -20,10 +20,10 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_AUDIO_DRIVER_BSD
+#if SDL_AUDIO_DRIVER_NETBSD
 
 /*
- * Driver for native OpenBSD/NetBSD audio(4).
+ * Driver for native NetBSD audio(4).
  * vedge@vedge.com.ar.
  */
 
@@ -50,14 +50,14 @@
 
 
 static void
-BSDAUDIO_DetectDevices(void)
+NETBSDAUDIO_DetectDevices(void)
 {
     SDL_EnumUnixAudioDevices(0, NULL);
 }
 
 
 static void
-BSDAUDIO_Status(_THIS)
+NETBSDAUDIO_Status(_THIS)
 {
 #ifdef DEBUG_AUDIO
     /* *INDENT-OFF* */
@@ -121,7 +121,7 @@ BSDAUDIO_Status(_THIS)
 
 /* This function waits until it is possible to write a full sound buffer */
 static void
-BSDAUDIO_WaitDevice(_THIS)
+NETBSDAUDIO_WaitDevice(_THIS)
 {
 #ifndef USE_BLOCKING_WRITES     /* Not necessary when using blocking writes */
     /* See if we need to use timed audio synchronization */
@@ -169,7 +169,7 @@ BSDAUDIO_WaitDevice(_THIS)
 }
 
 static void
-BSDAUDIO_PlayDevice(_THIS)
+NETBSDAUDIO_PlayDevice(_THIS)
 {
     int written, p = 0;
 
@@ -208,14 +208,14 @@ BSDAUDIO_PlayDevice(_THIS)
 }
 
 static Uint8 *
-BSDAUDIO_GetDeviceBuf(_THIS)
+NETBSDAUDIO_GetDeviceBuf(_THIS)
 {
     return (this->hidden->mixbuf);
 }
 
 
 static int
-BSDAUDIO_CaptureFromDevice(_THIS, void *_buffer, int buflen)
+NETBSDAUDIO_CaptureFromDevice(_THIS, void *_buffer, int buflen)
 {
     Uint8 *buffer = (Uint8 *) _buffer;
     int br, p = 0;
@@ -243,7 +243,7 @@ BSDAUDIO_CaptureFromDevice(_THIS, void *_buffer, int buflen)
 }
 
 static void
-BSDAUDIO_FlushCapture(_THIS)
+NETBSDAUDIO_FlushCapture(_THIS)
 {
     audio_info_t info;
     size_t remain;
@@ -265,7 +265,7 @@ BSDAUDIO_FlushCapture(_THIS)
 }
 
 static void
-BSDAUDIO_CloseDevice(_THIS)
+NETBSDAUDIO_CloseDevice(_THIS)
 {
     if (this->hidden->audio_fd >= 0) {
         close(this->hidden->audio_fd);
@@ -275,7 +275,7 @@ BSDAUDIO_CloseDevice(_THIS)
 }
 
 static int
-BSDAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
+NETBSDAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 {
     const int flags = iscapture ? OPEN_FLAGS_INPUT : OPEN_FLAGS_OUTPUT;
     SDL_AudioFormat format = 0;
@@ -383,24 +383,24 @@ BSDAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         SDL_memset(this->hidden->mixbuf, this->spec.silence, this->spec.size);
     }
 
-    BSDAUDIO_Status(this);
+    NETBSDAUDIO_Status(this);
 
     /* We're ready to rock and roll. :-) */
     return 0;
 }
 
 static int
-BSDAUDIO_Init(SDL_AudioDriverImpl * impl)
+NETBSDAUDIO_Init(SDL_AudioDriverImpl * impl)
 {
     /* Set the function pointers */
-    impl->DetectDevices = BSDAUDIO_DetectDevices;
-    impl->OpenDevice = BSDAUDIO_OpenDevice;
-    impl->PlayDevice = BSDAUDIO_PlayDevice;
-    impl->WaitDevice = BSDAUDIO_WaitDevice;
-    impl->GetDeviceBuf = BSDAUDIO_GetDeviceBuf;
-    impl->CloseDevice = BSDAUDIO_CloseDevice;
-    impl->CaptureFromDevice = BSDAUDIO_CaptureFromDevice;
-    impl->FlushCapture = BSDAUDIO_FlushCapture;
+    impl->DetectDevices = NETBSDAUDIO_DetectDevices;
+    impl->OpenDevice = NETBSDAUDIO_OpenDevice;
+    impl->PlayDevice = NETBSDAUDIO_PlayDevice;
+    impl->WaitDevice = NETBSDAUDIO_WaitDevice;
+    impl->GetDeviceBuf = NETBSDAUDIO_GetDeviceBuf;
+    impl->CloseDevice = NETBSDAUDIO_CloseDevice;
+    impl->CaptureFromDevice = NETBSDAUDIO_CaptureFromDevice;
+    impl->FlushCapture = NETBSDAUDIO_FlushCapture;
 
     impl->HasCaptureSupport = SDL_TRUE;
     impl->AllowsArbitraryDeviceNames = 1;
@@ -409,10 +409,10 @@ BSDAUDIO_Init(SDL_AudioDriverImpl * impl)
 }
 
 
-AudioBootStrap BSD_AUDIO_bootstrap = {
-    "bsd", "BSD audio", BSDAUDIO_Init, 0
+AudioBootStrap NETBSDAUDIO_bootstrap = {
+    "netbsd", "NetBSD audio", NETBSDAUDIO_Init, 0
 };
 
-#endif /* SDL_AUDIO_DRIVER_BSD */
+#endif /* SDL_AUDIO_DRIVER_NETBSD */
 
 /* vi: set ts=4 sw=4 expandtab: */

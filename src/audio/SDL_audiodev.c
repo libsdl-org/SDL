@@ -22,7 +22,7 @@
 
 /* Get the name of the audio device we use for output */
 
-#if SDL_AUDIO_DRIVER_BSD || SDL_AUDIO_DRIVER_OSS || SDL_AUDIO_DRIVER_SUNAUDIO
+#if SDL_AUDIO_DRIVER_NETBSD || SDL_AUDIO_DRIVER_OSS || SDL_AUDIO_DRIVER_SUNAUDIO
 
 #include <fcntl.h>
 #include <sys/types.h>
