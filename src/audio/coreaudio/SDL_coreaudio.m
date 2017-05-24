@@ -667,23 +667,22 @@ prepare_audioqueue(_THIS)
 
     /* Make sure we can feed the device at least 50 milliseconds at a time. */
     const double msecs = (this->spec.samples / ((double) this->spec.freq)) * 1000.0;
-    if (msecs >= 10.0) {
-        this->hidden->numAudioBuffers = 2;
-    } else {
-        this->hidden->numAudioBuffers = (int) (SDL_ceil(10.0 / msecs) * 2);
+    int numAudioBuffers = 2;
+    if (msecs < 10.0) {  /* use more buffers if we have a VERY small sample set. */
+        numAudioBuffers = (int) (SDL_ceil(10.0 / msecs) * 2);
     }
 
-    this->hidden->audioBuffer = SDL_calloc(1, sizeof (AudioQueueBufferRef) * this->hidden->numAudioBuffers);
+    this->hidden->audioBuffer = SDL_calloc(1, sizeof (AudioQueueBufferRef) * numAudioBuffers);
     if (this->hidden->audioBuffer == NULL) {
         SDL_OutOfMemory();
         return 0;
     }
 
 #if DEBUG_COREAUDIO
-    printf("COREAUDIO: numAudioBuffers == %d\n", this->hidden->numAudioBuffers);
+    printf("COREAUDIO: numAudioBuffers == %d\n", numAudioBuffers);
 #endif
 
-    for (i = 0; i < this->hidden->numAudioBuffers; i++) {
+    for (i = 0; i < numAudioBuffers; i++) {
         result = AudioQueueAllocateBuffer(this->hidden->audioQueue, this->spec.size, &this->hidden->audioBuffer[i]);
         CHECK_RESULT("AudioQueueAllocateBuffer");
         SDL_memset(this->hidden->audioBuffer[i]->mAudioData, this->spec.silence, this->hidden->audioBuffer[i]->mAudioDataBytesCapacity);

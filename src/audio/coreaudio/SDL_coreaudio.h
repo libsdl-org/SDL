@@ -47,7 +47,6 @@ struct SDL_PrivateAudioData
 {
     SDL_Thread *thread;
     AudioQueueRef audioQueue;
-    int numAudioBuffers;
     AudioQueueBufferRef *audioBuffer;
     void *buffer;
     UInt32 bufferOffset;
