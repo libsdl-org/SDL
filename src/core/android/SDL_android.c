@@ -1712,14 +1712,12 @@ int Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *bu
 //////////////////////////////////////////////////////////////////////////////
 */
 
-void *SDL_AndroidGetJNIEnv()
+void *SDL_AndroidGetJNIEnv(void)
 {
     return Android_JNI_GetEnv();
 }
 
-
-
-void *SDL_AndroidGetActivity()
+void *SDL_AndroidGetActivity(void)
 {
     /* See SDL_system.h for caveats on using this function. */
 
@@ -1736,7 +1734,7 @@ void *SDL_AndroidGetActivity()
     return (*env)->CallStaticObjectMethod(env, mActivityClass, mid);
 }
 
-const char * SDL_AndroidGetInternalStoragePath()
+const char * SDL_AndroidGetInternalStoragePath(void)
 {
     static char *s_AndroidInternalFilesPath = NULL;
 
@@ -1783,7 +1781,7 @@ const char * SDL_AndroidGetInternalStoragePath()
     return s_AndroidInternalFilesPath;
 }
 
-int SDL_AndroidGetExternalStorageState()
+int SDL_AndroidGetExternalStorageState(void)
 {
     struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
     jmethodID mid;
@@ -1822,7 +1820,7 @@ int SDL_AndroidGetExternalStorageState()
     return stateFlags;
 }
 
-const char * SDL_AndroidGetExternalStoragePath()
+const char * SDL_AndroidGetExternalStoragePath(void)
 {
     static char *s_AndroidExternalFilesPath = NULL;
 
