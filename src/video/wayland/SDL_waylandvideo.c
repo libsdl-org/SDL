@@ -448,7 +448,7 @@ Wayland_VideoQuit(_THIS)
     }
 
     SDL_free(data->classname);
-    free(data);
+    SDL_free(data);
     _this->driverdata = NULL;
 }
 
