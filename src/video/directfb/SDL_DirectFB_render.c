@@ -332,7 +332,7 @@ DirectFB_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
    }
 }
 
-int
+static int
 DirectFB_RenderClear(SDL_Renderer * renderer)
 {
     DirectFB_RenderData *data = (DirectFB_RenderData *) renderer->driverdata;
@@ -343,7 +343,6 @@ DirectFB_RenderClear(SDL_Renderer * renderer)
     PrepareDraw(renderer);
 
     destsurf->Clear(destsurf, renderer->r, renderer->g, renderer->b, renderer->a);
-
 
     return 0;
 }
