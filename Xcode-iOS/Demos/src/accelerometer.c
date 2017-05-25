@@ -5,7 +5,7 @@
  */
 
 #include "SDL.h"
-#include "math.h"
+#include <math.h>
 #include "common.h"
 
 #define DAMPING 0.5f;           /* after bouncing off a wall, damping coefficient determines final speed */

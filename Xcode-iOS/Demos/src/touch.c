@@ -5,7 +5,7 @@
  */
 
 #include "SDL.h"
-#include "math.h"
+#include <math.h>
 #include "common.h"
 
 #define BRUSH_SIZE 32           /* width and height of the brush */
