@@ -490,6 +490,8 @@ static EM_BOOL
 Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent *keyEvent, void *userData)
 {
     Uint32 scancode;
+    SDL_bool prevent_default;
+    SDL_bool is_nav_key;
 
     /* .keyCode is deprecated, but still the most reliable way to get keys */
     if (keyEvent->keyCode < SDL_arraysize(emscripten_scancode_table)) {
@@ -517,17 +519,17 @@ Emscripten_HandleKey(int eventType, const EmscriptenKeyboardEvent *keyEvent, voi
         }
     }
 
-    SDL_bool prevent_default = SDL_GetEventState(eventType == EMSCRIPTEN_EVENT_KEYDOWN ? SDL_KEYDOWN : SDL_KEYUP) == SDL_ENABLE;
+    prevent_default = SDL_GetEventState(eventType == EMSCRIPTEN_EVENT_KEYDOWN ? SDL_KEYDOWN : SDL_KEYUP) == SDL_ENABLE;
 
     /* if TEXTINPUT events are enabled we can't prevent keydown or we won't get keypress
      * we need to ALWAYS prevent backspace and tab otherwise chrome takes action and does bad navigation UX
      */
-    SDL_bool is_nav_key = keyEvent->keyCode == 8 /* backspace */ ||
-                          keyEvent->keyCode == 9 /* tab */ ||
-                          keyEvent->keyCode == 37 /* left */ ||
-                          keyEvent->keyCode == 38 /* up */ ||
-                          keyEvent->keyCode == 39 /* right */ ||
-                          keyEvent->keyCode == 40 /* down */;
+    is_nav_key = keyEvent->keyCode == 8 /* backspace */ ||
+                 keyEvent->keyCode == 9 /* tab */ ||
+                 keyEvent->keyCode == 37 /* left */ ||
+                 keyEvent->keyCode == 38 /* up */ ||
+                 keyEvent->keyCode == 39 /* right */ ||
+                 keyEvent->keyCode == 40 /* down */;
 
     if (eventType == EMSCRIPTEN_EVENT_KEYDOWN && SDL_GetEventState(SDL_TEXTINPUT) == SDL_ENABLE && !is_nav_key)
         prevent_default = SDL_FALSE;
@@ -629,6 +631,8 @@ Emscripten_HandleVisibilityChange(int eventType, const EmscriptenVisibilityChang
 void
 Emscripten_RegisterEventHandlers(SDL_WindowData *data)
 {
+    const char *keyElement;
+
     /* There is only one window and that window is the canvas */
     emscripten_set_mousemove_callback("#canvas", data, 0, Emscripten_HandleMouseMove);
 
@@ -651,7 +655,7 @@ Emscripten_RegisterEventHandlers(SDL_WindowData *data)
     emscripten_set_pointerlockchange_callback(NULL, data, 0, Emscripten_HandlePointerLockChange);
 
     /* Keyboard events are awkward */
-    const char *keyElement = SDL_GetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT);
+    keyElement = SDL_GetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT);
     if (!keyElement) keyElement = "#window";
 
     emscripten_set_keydown_callback(keyElement, data, 0, Emscripten_HandleKey);
@@ -668,6 +672,8 @@ Emscripten_RegisterEventHandlers(SDL_WindowData *data)
 void
 Emscripten_UnregisterEventHandlers(SDL_WindowData *data)
 {
+    const char *target;
+
     /* only works due to having one window */
     emscripten_set_mousemove_callback("#canvas", NULL, 0, NULL);
 
@@ -689,7 +695,7 @@ Emscripten_UnregisterEventHandlers(SDL_WindowData *data)
 
     emscripten_set_pointerlockchange_callback(NULL, NULL, 0, NULL);
 
-    const char *target = SDL_GetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT);
+    target = SDL_GetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT);
     if (!target) {
         target = "#window";
     }
