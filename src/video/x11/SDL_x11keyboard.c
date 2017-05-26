@@ -380,7 +380,7 @@ X11_InitKeyboard(_THIS)
         SDL_Keycode keymap[SDL_NUM_SCANCODES];
 
         printf
-            ("Keyboard layout unknown, please send the following to the SDL mailing list (sdl@libsdl.org):\n");
+            ("Keyboard layout unknown, please report the following to the SDL forums/mailing list (https://discourse.libsdl.org/):\n");
 
         /* Determine key_layout - only works on US QWERTY layout */
         SDL_GetDefaultKeymap(keymap);

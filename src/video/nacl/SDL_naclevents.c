@@ -314,7 +314,7 @@ SDL_NACL_translate_keycode(int keycode)
         scancode = NACL_Keycodes[keycode];
     }
     if (scancode == SDL_SCANCODE_UNKNOWN) {
-        SDL_Log("The key you just pressed is not recognized by SDL. To help get this fixed, please report this to the SDL mailing list <sdl@libsdl.org> NACL KeyCode %d \n", keycode);
+        SDL_Log("The key you just pressed is not recognized by SDL. To help get this fixed, please report this to the SDL forums/mailing list <https://discourse.libsdl.org/> NACL KeyCode %d", keycode);
     }
     return scancode;
 }
