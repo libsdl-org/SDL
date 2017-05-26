@@ -679,7 +679,7 @@ Cocoa_HandleKeyEvent(_THIS, NSEvent *event)
         SDL_SendKeyboardKey(SDL_PRESSED, code);
 #if 1
         if (code == SDL_SCANCODE_UNKNOWN) {
-            fprintf(stderr, "The key you just pressed is not recognized by SDL. To help get this fixed, report this to the SDL mailing list <sdl@libsdl.org> or to Christian Walther <cwalther@gmx.ch>. Mac virtual key code is %d.\n", scancode);
+            fprintf(stderr, "The key you just pressed is not recognized by SDL. To help get this fixed, report this to the SDL forums/mailing list <https://discourse.libsdl.org/> or to Christian Walther <cwalther@gmx.ch>. Mac virtual key code is %d.\n", scancode);
         }
 #endif
         if (SDL_EventState(SDL_TEXTINPUT, SDL_QUERY)) {
