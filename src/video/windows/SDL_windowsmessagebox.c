@@ -354,6 +354,7 @@ WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     wchar_t* wmessage;
     TEXTMETRIC TM;
 
+    HWND ParentWindow = NULL;
 
     const int ButtonWidth = 88;
     const int ButtonHeight = 26;
@@ -469,8 +470,13 @@ WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         x += ButtonWidth + ButtonMargin;
     }
 
-    /* FIXME: If we have a parent window, get the Instance and HWND for them */
-    which = DialogBoxIndirect(NULL, (DLGTEMPLATE*)dialog->lpDialog, NULL, (DLGPROC)MessageBoxDialogProc);
+    /* If we have a parent window, get the Instance and HWND for them
+     * so that our little dialog gets exclusive focus at all times. */
+    if (messageboxdata->window)
+        ParentWindow = ((SDL_WindowData*)messageboxdata->window->driverdata)->hwnd;
+
+
+    which = DialogBoxIndirect(NULL, (DLGTEMPLATE*)dialog->lpDialog, ParentWindow, (DLGPROC)MessageBoxDialogProc);
     *buttonid = buttons[which].buttonid;
 
     FreeDialogData(dialog);
