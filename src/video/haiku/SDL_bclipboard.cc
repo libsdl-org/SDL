@@ -69,8 +69,8 @@ char *BE_GetClipboardText(_THIS) {
 		result = SDL_strdup("");
 	} else {
 		/* Copy the data and pass on to SDL */
-		result = (char*)SDL_calloc(1, sizeof(char*)*length);
-		SDL_strlcpy(result, text, length);
+		result = (char *)SDL_malloc((length + 1) * sizeof(char));
+		SDL_strlcpy(result, text, length + 1);
 	}
 	
 	return result;
