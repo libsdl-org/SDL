@@ -472,9 +472,9 @@ WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 
     /* If we have a parent window, get the Instance and HWND for them
      * so that our little dialog gets exclusive focus at all times. */
-    if (messageboxdata->window)
+    if (messageboxdata->window) {
         ParentWindow = ((SDL_WindowData*)messageboxdata->window->driverdata)->hwnd;
-
+    }
 
     which = DialogBoxIndirect(NULL, (DLGTEMPLATE*)dialog->lpDialog, ParentWindow, (DLGPROC)MessageBoxDialogProc);
     *buttonid = buttons[which].buttonid;
