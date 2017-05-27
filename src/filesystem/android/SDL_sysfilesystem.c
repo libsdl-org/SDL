@@ -26,7 +26,6 @@
 /* System dependent filesystem routines                                */
 
 #include <unistd.h>
-#include <errno.h>
 
 #include "SDL_error.h"
 #include "SDL_filesystem.h"

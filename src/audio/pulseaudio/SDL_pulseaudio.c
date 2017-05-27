@@ -37,7 +37,6 @@
 #endif
 #include <unistd.h>
 #include <sys/types.h>
-#include <errno.h>
 #include <pulse/pulseaudio.h>
 
 #include "SDL_timer.h"

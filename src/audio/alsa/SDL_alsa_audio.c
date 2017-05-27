@@ -26,7 +26,6 @@
 
 #include <sys/types.h>
 #include <signal.h>             /* For kill() */
-#include <errno.h>
 #include <string.h>
 
 #include "SDL_assert.h"
