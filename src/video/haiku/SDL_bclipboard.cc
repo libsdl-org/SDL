@@ -43,7 +43,7 @@ int BE_SetClipboardText(_THIS, const char *text) {
 			/* Presumably the string of characters is ascii-format */
 			ssize_t asciiLength = 0;
 			for(; text[asciiLength] != 0; ++asciiLength) {}
-			clip->AddData("text/plain", B_MIME_TYPE, &text, asciiLength);
+			clip->AddData("text/plain", B_MIME_TYPE, text, asciiLength);
 			be_clipboard->Commit();
 		}
 		be_clipboard->Unlock();
