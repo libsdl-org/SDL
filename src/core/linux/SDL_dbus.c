@@ -112,14 +112,15 @@ SDL_DBus_Init(void)
         DBusError err;
         dbus.error_init(&err);
         dbus.session_conn = dbus.bus_get_private(DBUS_BUS_SESSION, &err);
+        if (!dbus.error_is_set(&err)) {
+            dbus.system_conn = dbus.bus_get_private(DBUS_BUS_SYSTEM, &err);
+        }
         if (dbus.error_is_set(&err)) {
             dbus.error_free(&err);
-            if (dbus.session_conn) {
-                dbus.connection_unref(dbus.session_conn);
-                dbus.session_conn = NULL;
-            }
+            SDL_DBus_Quit();
             return;  /* oh well */
         }
+        dbus.connection_set_exit_on_disconnect(dbus.system_conn, 0);
         dbus.connection_set_exit_on_disconnect(dbus.session_conn, 0);
     }
 }
@@ -127,12 +128,18 @@ SDL_DBus_Init(void)
 void
 SDL_DBus_Quit(void)
 {
+    if (dbus.system_conn) {
+        dbus.connection_close(dbus.system_conn);
+        dbus.connection_unref(dbus.system_conn);
+    }
     if (dbus.session_conn) {
         dbus.connection_close(dbus.session_conn);
         dbus.connection_unref(dbus.session_conn);
-        dbus.shutdown();
-        SDL_memset(&dbus, 0, sizeof(dbus));
     }
+    if (dbus.shutdown) {
+        dbus.shutdown();
+    }
+    SDL_zero(dbus);
     UnloadDBUSLibrary();
 }
 

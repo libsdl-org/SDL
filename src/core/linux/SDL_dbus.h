@@ -32,6 +32,7 @@
 
 typedef struct SDL_DBusContext {
     DBusConnection *session_conn;
+    DBusConnection *system_conn;
 
     DBusConnection *(*bus_get_private)(DBusBusType, DBusError *);
     dbus_bool_t (*bus_register)(DBusConnection *, DBusError *);
