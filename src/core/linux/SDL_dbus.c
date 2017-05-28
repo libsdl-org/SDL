@@ -70,6 +70,7 @@ LoadDBUSSyms(void)
     SDL_DBUS_SYM(error_free);
     SDL_DBUS_SYM(get_local_machine_id);
     SDL_DBUS_SYM(free);
+    SDL_DBUS_SYM(free_string_array);
     SDL_DBUS_SYM(shutdown);
 
     #undef SDL_DBUS_SYM

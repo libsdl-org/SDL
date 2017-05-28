@@ -48,6 +48,7 @@ SDL_GetPowerInfo_Hardwired(SDL_PowerState * state, int *seconds, int *percent)
 static SDL_GetPowerInfo_Impl implementations[] = {
 #ifndef SDL_POWER_DISABLED
 #ifdef SDL_POWER_LINUX          /* in order of preference. More than could work. */
+    SDL_GetPowerInfo_Linux_org_freedesktop_upower,
     SDL_GetPowerInfo_Linux_sys_class_power_supply,
     SDL_GetPowerInfo_Linux_proc_acpi,
     SDL_GetPowerInfo_Linux_proc_apm,
