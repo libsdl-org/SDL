@@ -357,7 +357,6 @@ QSA_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     if (this->hidden == NULL) {
         return SDL_OutOfMemory();
     }
-    SDL_zerop(this->hidden);
 
     /* Initialize channel transfer parameters to default */
     QSA_InitAudioParams(&cparams);
