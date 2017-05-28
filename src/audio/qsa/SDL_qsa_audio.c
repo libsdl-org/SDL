@@ -722,7 +722,6 @@ static int
 QSA_Init(SDL_AudioDriverImpl * impl)
 {
     snd_pcm_t *handle = NULL;
-    int32_t status = 0;
 
     /* Clear devices array */
     SDL_zero(qsa_playback_device);
@@ -750,13 +749,6 @@ QSA_Init(SDL_AudioDriverImpl * impl)
     impl->HasCaptureSupport = 1;
     impl->OnlyHasDefaultOutputDevice = 0;
     impl->OnlyHasDefaultCaptureDevice = 0;
-
-    /* Check if io-audio manager is running or not */
-    status = snd_cards();
-    if (status == 0) {
-        /* if no, return immediately */
-        return 1;
-    }
 
     return 1;   /* this audio target is available. */
 }
