@@ -231,33 +231,10 @@ DBus_MessageFilter(DBusConnection *conn, DBusMessage *msg, void *data)
     return DBUS_HANDLER_RESULT_NOT_YET_HANDLED;
 }
 
-static DBusMessage*
-FcitxClientICNewMethod(FcitxClient *client,
-        const char *method)
-{
-    SDL_DBusContext *dbus = client->dbus;
-    return dbus->message_new_method_call(
-            client->servicename,
-            client->icname,
-            FCITX_IC_DBUS_INTERFACE,
-            method);
-}
-
 static void
-FcitxClientICCallMethod(FcitxClient *client,
-        const char *method)
+FcitxClientICCallMethod(FcitxClient *client, const char *method)
 {
-    SDL_DBusContext *dbus = client->dbus;
-    DBusMessage *msg = FcitxClientICNewMethod(client, method);
-
-    if (msg == NULL)
-        return ;
-
-    if (dbus->connection_send(dbus->session_conn, msg, NULL)) {
-        dbus->connection_flush(dbus->session_conn);
-    }
-
-    dbus->message_unref(msg);
+    SDL_DBus_CallVoidMethod(client->servicename, client->icname, FCITX_IC_DBUS_INTERFACE, method, DBUS_TYPE_INVALID);
 }
 
 static void
@@ -267,80 +244,35 @@ Fcitx_SetCapabilities(void *data,
         const char *internal_editing)
 {
     FcitxClient *client = (FcitxClient *)data;
-    SDL_DBusContext *dbus = client->dbus;
     Uint32 caps = CAPACITY_NONE;
-
-    DBusMessage *msg = FcitxClientICNewMethod(client, "SetCapacity");
-    if (msg == NULL)
-        return ;
 
     if (!(internal_editing && *internal_editing == '1')) {
         caps |= CAPACITY_PREEDIT;
     }
 
-    dbus->message_append_args(msg,
-            DBUS_TYPE_UINT32, &caps,
-            DBUS_TYPE_INVALID);
-    if (dbus->connection_send(dbus->session_conn, msg, NULL)) {
-        dbus->connection_flush(dbus->session_conn);
-    }
-
-    dbus->message_unref(msg);
+    SDL_DBus_CallVoidMethod(client->servicename, client->icname, FCITX_IC_DBUS_INTERFACE, "SetCapacity", DBUS_TYPE_UINT32, &caps, DBUS_TYPE_INVALID);
 }
 
 static void
 FcitxClientCreateIC(FcitxClient *client)
 {
-    char *appname = NULL;
-    pid_t pid = 0;
-    int id = 0;
-    SDL_bool enable;
-    Uint32 arg1, arg2, arg3, arg4;
+    char *appname = GetAppName();
+    pid_t pid = getpid();
+    int id = -1;
+    Uint32 enable, arg1, arg2, arg3, arg4;
 
-    SDL_DBusContext *dbus = client->dbus;
-    DBusMessage *reply = NULL;
-    DBusMessage *msg = dbus->message_new_method_call(
-            client->servicename,
-            FCITX_IM_DBUS_PATH,
-            FCITX_IM_DBUS_INTERFACE,
-            "CreateICv3"
-            );
+    SDL_DBus_CallMethod(client->servicename, FCITX_IM_DBUS_PATH, FCITX_IM_DBUS_INTERFACE, "CreateICv3",
+        DBUS_TYPE_STRING, &appname, DBUS_TYPE_INT32, &pid, DBUS_TYPE_INVALID,
+        DBUS_TYPE_INT32, &id, DBUS_TYPE_BOOLEAN, &enable, DBUS_TYPE_UINT32, &arg1, DBUS_TYPE_UINT32, &arg2, DBUS_TYPE_UINT32, &arg3, DBUS_TYPE_UINT32, &arg4, DBUS_TYPE_INVALID);
 
-    if (msg == NULL)
-        return ;
+    SDL_free(appname);
 
-    appname = GetAppName();
-    pid = getpid();
-    dbus->message_append_args(msg,
-            DBUS_TYPE_STRING, &appname,
-            DBUS_TYPE_INT32, &pid,
-            DBUS_TYPE_INVALID);
+    if (id >= 0) {
+        SDL_DBusContext *dbus = client->dbus;
 
-    do {
-        reply = dbus->connection_send_with_reply_and_block(
-                dbus->session_conn,
-                msg,
-                DBUS_TIMEOUT,
-                NULL);
-
-        if (!reply)
-            break;
-        if (!dbus->message_get_args(reply, NULL,
-                DBUS_TYPE_INT32, &id,
-                DBUS_TYPE_BOOLEAN, &enable,
-                DBUS_TYPE_UINT32, &arg1,
-                DBUS_TYPE_UINT32, &arg2,
-                DBUS_TYPE_UINT32, &arg3,
-                DBUS_TYPE_UINT32, &arg4,
-                DBUS_TYPE_INVALID))
-            break;
-
-        if (id < 0)
-            break;
         client->id = id;
 
-        SDL_snprintf(client->icname, IC_NAME_MAX,
-                FCITX_IC_DBUS_PATH, client->id);
+        SDL_snprintf(client->icname, IC_NAME_MAX, FCITX_IC_DBUS_PATH, client->id);
 
         dbus->bus_add_match(dbus->session_conn,
                 "type='signal', interface='org.fcitx.Fcitx.InputContext'",
@@ -352,12 +284,6 @@ FcitxClientCreateIC(FcitxClient *client)
 
         SDL_AddHintCallback(SDL_HINT_IME_INTERNAL_EDITING, &Fcitx_SetCapabilities, client);
     }
-    while (0);
-
-    if (reply)
-        dbus->message_unref(reply);
-    dbus->message_unref(msg);
-    SDL_free(appname);
 }
 
 static Uint32
@@ -422,47 +348,21 @@ SDL_Fcitx_Reset(void)
 SDL_bool
 SDL_Fcitx_ProcessKeyEvent(Uint32 keysym, Uint32 keycode)
 {
-    DBusMessage *msg = NULL;
-    DBusMessage *reply = NULL;
-    SDL_DBusContext *dbus = fcitx_client.dbus;
-
-    Uint32 state = 0;
-    SDL_bool handled = SDL_FALSE;
+    Uint32 state = Fcitx_ModState();
+    Uint32 handled = SDL_FALSE;
     int type = FCITX_PRESS_KEY;
     Uint32 event_time = 0;
 
-    msg = FcitxClientICNewMethod(&fcitx_client, "ProcessKeyEvent");
-    if (msg == NULL)
-        return SDL_FALSE;
-
-    state = Fcitx_ModState();
-    dbus->message_append_args(msg,
-            DBUS_TYPE_UINT32, &keysym,
-            DBUS_TYPE_UINT32, &keycode,
-            DBUS_TYPE_UINT32, &state,
-            DBUS_TYPE_INT32, &type,
-            DBUS_TYPE_UINT32, &event_time,
-            DBUS_TYPE_INVALID);
-
-    reply = dbus->connection_send_with_reply_and_block(dbus->session_conn,
-            msg,
-            -1,
-            NULL);
-
-    if (reply) {
-        dbus->message_get_args(reply,
-                NULL,
-                DBUS_TYPE_INT32, &handled,
-                DBUS_TYPE_INVALID);
-
-        dbus->message_unref(reply);
+    if (SDL_DBus_CallMethod(fcitx_client.servicename, fcitx_client.icname, FCITX_IC_DBUS_INTERFACE, "ProcessKeyEvent",
+            DBUS_TYPE_UINT32, &keysym, DBUS_TYPE_UINT32, &keycode, DBUS_TYPE_UINT32, &state, DBUS_TYPE_INT32, &type, DBUS_TYPE_UINT32, &event_time, DBUS_TYPE_INVALID,
+            DBUS_TYPE_INT32, &handled, DBUS_TYPE_INVALID)) {
+        if (handled) {
+            SDL_Fcitx_UpdateTextRect(NULL);
+            return SDL_TRUE;
+        }
     }
 
-    if (handled) {
-        SDL_Fcitx_UpdateTextRect(NULL);
-    }
-
-    return handled;
+    return SDL_FALSE;
 }
 
 void
@@ -472,10 +372,6 @@ SDL_Fcitx_UpdateTextRect(SDL_Rect *rect)
     SDL_SysWMinfo info;
     int x = 0, y = 0;
     SDL_Rect *cursor = &fcitx_client.cursor_rect;
-
-    SDL_DBusContext *dbus = fcitx_client.dbus;
-    DBusMessage *msg = NULL;
-    DBusConnection *conn;
 
     if (rect) {
         SDL_memcpy(cursor, rect, sizeof(SDL_Rect));
@@ -516,22 +412,8 @@ SDL_Fcitx_UpdateTextRect(SDL_Rect *rect)
     x += cursor->x;
     y += cursor->y;
 
-    msg = FcitxClientICNewMethod(&fcitx_client, "SetCursorRect");
-    if (msg == NULL)
-        return ;
-
-    dbus->message_append_args(msg,
-            DBUS_TYPE_INT32, &x,
-            DBUS_TYPE_INT32, &y,
-            DBUS_TYPE_INT32, &cursor->w,
-            DBUS_TYPE_INT32, &cursor->h,
-            DBUS_TYPE_INVALID);
-
-    conn = dbus->session_conn;
-    if (dbus->connection_send(conn, msg, NULL))
-        dbus->connection_flush(conn);
-
-    dbus->message_unref(msg);
+    SDL_DBus_CallVoidMethod(fcitx_client.servicename, fcitx_client.icname, FCITX_IC_DBUS_INTERFACE, "SetCursorRect",
+        DBUS_TYPE_INT32, &x, DBUS_TYPE_INT32, &y, DBUS_TYPE_INT32, &cursor->w, DBUS_TYPE_INT32, &cursor->h, DBUS_TYPE_INVALID);
 }
 
 void

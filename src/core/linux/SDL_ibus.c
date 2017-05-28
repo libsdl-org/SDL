@@ -309,28 +309,13 @@ IBus_SetCapabilities(void *data, const char *name, const char *old_val,
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
     
     if (IBus_CheckConnection(dbus)) {
+        Uint32 caps = IBUS_CAP_FOCUS;
+        if (!(internal_editing && *internal_editing == '1')) {
+            caps |= IBUS_CAP_PREEDIT_TEXT;
+        }
 
-        DBusMessage *msg = dbus->message_new_method_call(IBUS_SERVICE,
-                                                         input_ctx_path,
-                                                         IBUS_INPUT_INTERFACE,
-                                                         "SetCapabilities");
-        if (msg) {
-            Uint32 caps = IBUS_CAP_FOCUS;
-            if (!(internal_editing && *internal_editing == '1')) {
-                caps |= IBUS_CAP_PREEDIT_TEXT;
-            }
-            
-            dbus->message_append_args(msg,
-                                      DBUS_TYPE_UINT32, &caps,
-                                      DBUS_TYPE_INVALID);
-        }
-        
-        if (msg) {
-            if (dbus->connection_send(ibus_conn, msg, NULL)) {
-                dbus->connection_flush(ibus_conn);
-            }
-            dbus->message_unref(msg);
-        }
+        SDL_DBus_CallVoidMethod(IBUS_SERVICE, input_ctx_path, IBUS_INPUT_INTERFACE, "SetCapabilities",
+                                DBUS_TYPE_UINT32, &caps, DBUS_TYPE_INVALID);
     }
 }
 
@@ -338,9 +323,9 @@ IBus_SetCapabilities(void *data, const char *name, const char *old_val,
 static SDL_bool
 IBus_SetupConnection(SDL_DBusContext *dbus, const char* addr)
 {
+    const char *client_name = "SDL2_Application";
     const char *path = NULL;
     SDL_bool result = SDL_FALSE;
-    DBusMessage *msg;
     DBusObjectPathVTable ibus_vtable;
 
     SDL_zero(ibus_vtable);
@@ -361,34 +346,11 @@ IBus_SetupConnection(SDL_DBusContext *dbus, const char* addr)
     
     dbus->connection_flush(ibus_conn);
 
-    msg = dbus->message_new_method_call(IBUS_SERVICE, IBUS_PATH, IBUS_INTERFACE, "CreateInputContext");
-    if (msg) {
-        const char *client_name = "SDL2_Application";
-        dbus->message_append_args(msg,
-                                  DBUS_TYPE_STRING, &client_name,
-                                  DBUS_TYPE_INVALID);
-    }
-    
-    if (msg) {
-        DBusMessage *reply;
-        
-        reply = dbus->connection_send_with_reply_and_block(ibus_conn, msg, 1000, NULL);
-        if (reply) {
-            if (dbus->message_get_args(reply, NULL,
-                                       DBUS_TYPE_OBJECT_PATH, &path,
-                                       DBUS_TYPE_INVALID)) {
-                if (input_ctx_path) {
-                    SDL_free(input_ctx_path);
-                }
-                input_ctx_path = SDL_strdup(path);
-                result = SDL_TRUE;                          
-            }
-            dbus->message_unref(reply);
-        }
-        dbus->message_unref(msg);
-    }
-
-    if (result) {
+    if (SDL_DBus_CallMethodOnConnection(ibus_conn, IBUS_SERVICE, IBUS_PATH, IBUS_INTERFACE, "CreateInputContext",
+            DBUS_TYPE_STRING, &client_name, DBUS_TYPE_INVALID,
+            DBUS_TYPE_OBJECT_PATH, &path, DBUS_TYPE_INVALID)) {
+        SDL_free(input_ctx_path);
+        input_ctx_path = SDL_strdup(path);
         SDL_AddHintCallback(SDL_HINT_IME_INTERNAL_EDITING, &IBus_SetCapabilities, NULL);
         
         dbus->bus_add_match(ibus_conn, "type='signal',interface='org.freedesktop.IBus.InputContext'", NULL);
@@ -532,16 +494,7 @@ IBus_SimpleMessage(const char *method)
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
     
     if (IBus_CheckConnection(dbus)) {
-        DBusMessage *msg = dbus->message_new_method_call(IBUS_SERVICE,
-                                                         input_ctx_path,
-                                                         IBUS_INPUT_INTERFACE,
-                                                         method);
-        if (msg) {
-            if (dbus->connection_send(ibus_conn, msg, NULL)) {
-                dbus->connection_flush(ibus_conn);
-            }
-            dbus->message_unref(msg);
-        }
+        SDL_DBus_CallVoidMethodOnConnection(ibus_conn, IBUS_SERVICE, input_ctx_path, IBUS_INPUT_INTERFACE, method);
     }
 }
 
@@ -561,43 +514,21 @@ SDL_IBus_Reset(void)
 SDL_bool
 SDL_IBus_ProcessKeyEvent(Uint32 keysym, Uint32 keycode)
 { 
-    SDL_bool result = SDL_FALSE;   
+    Uint32 result = 0;
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
     
     if (IBus_CheckConnection(dbus)) {
-        DBusMessage *msg = dbus->message_new_method_call(IBUS_SERVICE,
-                                                         input_ctx_path,
-                                                         IBUS_INPUT_INTERFACE,
-                                                         "ProcessKeyEvent");
-        if (msg) {
-            Uint32 mods = IBus_ModState();
-            dbus->message_append_args(msg,
-                                      DBUS_TYPE_UINT32, &keysym,
-                                      DBUS_TYPE_UINT32, &keycode,
-                                      DBUS_TYPE_UINT32, &mods,
-                                      DBUS_TYPE_INVALID);
+        Uint32 mods = IBus_ModState();
+        if (!SDL_DBus_CallMethodOnConnection(ibus_conn, IBUS_SERVICE, input_ctx_path, IBUS_INPUT_INTERFACE, "ProcessKeyEvent",
+                DBUS_TYPE_UINT32, &keysym, DBUS_TYPE_UINT32, &keycode, DBUS_TYPE_UINT32, &mods, DBUS_TYPE_INVALID,
+                DBUS_TYPE_BOOLEAN, &result, DBUS_TYPE_INVALID)) {
+            result = 0;
         }
-        
-        if (msg) {
-            DBusMessage *reply;
-            
-            reply = dbus->connection_send_with_reply_and_block(ibus_conn, msg, 300, NULL);
-            if (reply) {
-                if (!dbus->message_get_args(reply, NULL,
-                                           DBUS_TYPE_BOOLEAN, &result,
-                                           DBUS_TYPE_INVALID)) {
-                    result = SDL_FALSE;                         
-                }
-                dbus->message_unref(reply);
-            }
-            dbus->message_unref(msg);
-        }
-        
     }
     
     SDL_IBus_UpdateTextRect(NULL);
 
-    return result;
+    return result ? SDL_TRUE : SDL_FALSE;
 }
 
 void
@@ -643,25 +574,8 @@ SDL_IBus_UpdateTextRect(SDL_Rect *rect)
     dbus = SDL_DBus_GetContext();
     
     if (IBus_CheckConnection(dbus)) {
-        DBusMessage *msg = dbus->message_new_method_call(IBUS_SERVICE,
-                                                         input_ctx_path,
-                                                         IBUS_INPUT_INTERFACE,
-                                                         "SetCursorLocation");
-        if (msg) {
-            dbus->message_append_args(msg,
-                                      DBUS_TYPE_INT32, &x,
-                                      DBUS_TYPE_INT32, &y,
-                                      DBUS_TYPE_INT32, &ibus_cursor_rect.w,
-                                      DBUS_TYPE_INT32, &ibus_cursor_rect.h,
-                                      DBUS_TYPE_INVALID);
-        }
-        
-        if (msg) {
-            if (dbus->connection_send(ibus_conn, msg, NULL)) {
-                dbus->connection_flush(ibus_conn);
-            }
-            dbus->message_unref(msg);
-        }
+        SDL_DBus_CallVoidMethodOnConnection(ibus_conn, IBUS_SERVICE, input_ctx_path, IBUS_INPUT_INTERFACE, "SetCursorLocation",
+                DBUS_TYPE_INT32, &x, DBUS_TYPE_INT32, &y, DBUS_TYPE_INT32, &ibus_cursor_rect.w, DBUS_TYPE_INT32, &ibus_cursor_rect.h, DBUS_TYPE_INVALID);
     }
 }
 
