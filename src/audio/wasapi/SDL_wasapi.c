@@ -909,7 +909,8 @@ WASAPI_Init(SDL_AudioDriverImpl * impl)
 
     /* just skip the discussion with COM here. */
     if (!WIN_IsWindowsVistaOrGreater()) {
-        return SDL_SetError("WASAPI support requires Windows Vista or later");
+        SDL_SetError("WASAPI support requires Windows Vista or later");
+        return 0;
     }
 
     SDL_AtomicSet(&default_playback_generation, 1);
