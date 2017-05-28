@@ -68,6 +68,7 @@ typedef struct SDL_DBusContext {
     void (*error_free)(DBusError *);
     char *(*get_local_machine_id)(void);
     void (*free)(void *);
+    void (*free_string_array)(char **);
     void (*shutdown)(void);
 
 } SDL_DBusContext;
