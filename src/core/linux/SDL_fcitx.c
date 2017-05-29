@@ -188,7 +188,7 @@ Fcitx_SetCapabilities(void *data,
     SDL_DBus_CallVoidMethod(client->servicename, client->icname, FCITX_IC_DBUS_INTERFACE, "SetCapacity", DBUS_TYPE_UINT32, &caps, DBUS_TYPE_INVALID);
 }
 
-static void
+static SDL_bool
 FcitxClientCreateIC(FcitxClient *client)
 {
     char *appname = GetAppName();
@@ -196,9 +196,11 @@ FcitxClientCreateIC(FcitxClient *client)
     int id = -1;
     Uint32 enable, arg1, arg2, arg3, arg4;
 
-    SDL_DBus_CallMethod(client->servicename, FCITX_IM_DBUS_PATH, FCITX_IM_DBUS_INTERFACE, "CreateICv3",
-        DBUS_TYPE_STRING, &appname, DBUS_TYPE_INT32, &pid, DBUS_TYPE_INVALID,
-        DBUS_TYPE_INT32, &id, DBUS_TYPE_BOOLEAN, &enable, DBUS_TYPE_UINT32, &arg1, DBUS_TYPE_UINT32, &arg2, DBUS_TYPE_UINT32, &arg3, DBUS_TYPE_UINT32, &arg4, DBUS_TYPE_INVALID);
+    if (!SDL_DBus_CallMethod(client->servicename, FCITX_IM_DBUS_PATH, FCITX_IM_DBUS_INTERFACE, "CreateICv3",
+            DBUS_TYPE_STRING, &appname, DBUS_TYPE_INT32, &pid, DBUS_TYPE_INVALID,
+            DBUS_TYPE_INT32, &id, DBUS_TYPE_BOOLEAN, &enable, DBUS_TYPE_UINT32, &arg1, DBUS_TYPE_UINT32, &arg2, DBUS_TYPE_UINT32, &arg3, DBUS_TYPE_UINT32, &arg4, DBUS_TYPE_INVALID)) {
+        id = -1;  /* just in case. */
+    }
 
     SDL_free(appname);
 
@@ -218,7 +220,10 @@ FcitxClientCreateIC(FcitxClient *client)
         dbus->connection_flush(dbus->session_conn);
 
         SDL_AddHintCallback(SDL_HINT_IME_INTERNAL_EDITING, &Fcitx_SetCapabilities, client);
+        return SDL_TRUE;
     }
+
+    return SDL_FALSE;
 }
 
 static Uint32
@@ -252,9 +257,7 @@ SDL_Fcitx_Init()
             "%s-%d",
             FCITX_DBUS_SERVICE, GetDisplayNumber());
 
-    FcitxClientCreateIC(&fcitx_client);
-
-    return SDL_TRUE;
+    return FcitxClientCreateIC(&fcitx_client);
 }
 
 void
