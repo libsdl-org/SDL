@@ -510,6 +510,23 @@ size_t SDL_utf8strlcpy(SDL_OUT_Z_CAP(dst_bytes) char *dst, const char *src, size
 }
 
 size_t
+SDL_utf8strlen(const char *str)
+{
+    size_t retval = 0;
+    const char *p = str;
+    char ch;
+
+    while ((ch = *(p++))) {
+        /* if top two bits are 1 and 0, it's a continuation byte. */
+        if ((ch & 0xc0) != 0x80) {
+            retval++;
+        }
+    }
+    
+    return retval;
+}
+
+size_t
 SDL_strlcat(SDL_INOUT_Z_CAP(maxlen) char *dst, const char *src, size_t maxlen)
 {
 #if defined(HAVE_STRLCAT)
