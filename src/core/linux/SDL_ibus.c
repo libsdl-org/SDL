@@ -107,21 +107,6 @@ IBus_GetVariantText(DBusConnection *conn, DBusMessageIter *iter, SDL_DBusContext
     return text;
 }
 
-static size_t 
-IBus_utf8_strlen(const char *str)
-{
-    size_t utf8_len = 0;
-    const char *p;
-    
-    for (p = str; *p; ++p) {
-        if (!((*p & 0x80) && !(*p & 0x40))) {
-            ++utf8_len;
-        }
-    }
-    
-    return utf8_len;
-}
-
 static DBusHandlerResult
 IBus_MessageHandler(DBusConnection *conn, DBusMessage *msg, void *user_data)
 {
@@ -162,8 +147,8 @@ IBus_MessageHandler(DBusConnection *conn, DBusMessage *msg, void *user_data)
             size_t cursor = 0;
             
             do {
-                size_t sz = SDL_utf8strlcpy(buf, text+i, sizeof(buf));
-                size_t chars = IBus_utf8_strlen(buf);
+                const size_t sz = SDL_utf8strlcpy(buf, text+i, sizeof(buf));
+                const size_t chars = SDL_utf8strlen(buf);
                 
                 SDL_SendEditingText(buf, cursor, chars);
 
