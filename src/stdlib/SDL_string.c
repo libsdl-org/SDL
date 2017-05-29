@@ -477,7 +477,8 @@ SDL_strlcpy(SDL_OUT_Z_CAP(maxlen) char *dst, const char *src, size_t maxlen)
 #endif /* HAVE_STRLCPY */
 }
 
-size_t SDL_utf8strlcpy(SDL_OUT_Z_CAP(dst_bytes) char *dst, const char *src, size_t dst_bytes)
+size_t
+SDL_utf8strlcpy(SDL_OUT_Z_CAP(dst_bytes) char *dst, const char *src, size_t dst_bytes)
 {
     size_t src_bytes = SDL_strlen(src);
     size_t bytes = SDL_min(src_bytes, dst_bytes - 1);
