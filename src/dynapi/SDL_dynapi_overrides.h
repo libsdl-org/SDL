@@ -624,3 +624,4 @@
 #define SDL_MemoryBarrierReleaseFunction SDL_MemoryBarrierReleaseFunction_REAL
 #define SDL_MemoryBarrierAcquireFunction SDL_MemoryBarrierAcquireFunction_REAL
 #define SDL_JoystickGetDeviceInstanceID SDL_JoystickGetDeviceInstanceID_REAL
+#define SDL_utf8strlen SDL_utf8strlen_REAL

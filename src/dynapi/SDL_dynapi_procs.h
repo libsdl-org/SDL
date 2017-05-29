@@ -656,3 +656,4 @@ SDL_DYNAPI_PROC(SDL_JoystickType,SDL_JoystickGetType,(SDL_Joystick *a),(a),retur
 SDL_DYNAPI_PROC(void,SDL_MemoryBarrierReleaseFunction,(void),(),)
 SDL_DYNAPI_PROC(void,SDL_MemoryBarrierAcquireFunction,(void),(),)
 SDL_DYNAPI_PROC(SDL_JoystickID,SDL_JoystickGetDeviceInstanceID,(int a),(a),return)
+SDL_DYNAPI_PROC(size_t,SDL_utf8strlen,(const char *a),(a),return)
