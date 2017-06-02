@@ -35,6 +35,10 @@ SDL_CreateShapedWindow(const char *title,unsigned int x,unsigned int y,unsigned 
     SDL_Window *result = NULL;
     result = SDL_CreateWindow(title,-1000,-1000,w,h,(flags | SDL_WINDOW_BORDERLESS) & (~SDL_WINDOW_FULLSCREEN) & (~SDL_WINDOW_RESIZABLE) /* & (~SDL_WINDOW_SHOWN) */);
     if(result != NULL) {
+        if (SDL_GetVideoDevice()->shape_driver.CreateShaper == NULL) {
+            SDL_DestroyWindow(result);
+            return NULL;
+        }
         result->shaper = SDL_GetVideoDevice()->shape_driver.CreateShaper(result);
         if(result->shaper != NULL) {
             result->shaper->userx = x;
