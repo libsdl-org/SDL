@@ -45,7 +45,7 @@ extern "C" {
 #include "../../thread/SDL_systhread.h"
 
 /* Flag to tell whether or not the Be application is active or not */
-int SDL_BeAppActive = 0;
+static int SDL_BeAppActive = 0;
 static SDL_Thread *SDL_AppThread = NULL;
 
 static int
