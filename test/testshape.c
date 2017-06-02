@@ -81,7 +81,6 @@ int main(int argc,char** argv)
         pictures[i].surface = SDL_LoadBMP(argv[i+1]);
         pictures[i].name = argv[i+1];
         if(pictures[i].surface == NULL) {
-            j = 0;
             for(j=0;j<num_pictures;j++)
                 SDL_FreeSurface(pictures[j].surface);
             SDL_free(pictures);
@@ -130,8 +129,7 @@ int main(int argc,char** argv)
     for(i=0;i<num_pictures;i++) {
         pictures[i].texture = SDL_CreateTextureFromSurface(renderer,pictures[i].surface);
         if(pictures[i].texture == NULL) {
-            j = 0;
-            for(j=0;j<num_pictures;i++)
+            for(i=0;i<num_pictures;i++)
                 if(pictures[i].texture != NULL)
                     SDL_DestroyTexture(pictures[i].texture);
             for(i=0;i<num_pictures;i++)
