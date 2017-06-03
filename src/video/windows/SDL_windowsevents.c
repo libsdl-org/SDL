@@ -82,6 +82,64 @@
 #endif
 
 static SDL_Scancode
+VKeytoScancode(WPARAM vkey)
+{
+    switch (vkey) {
+    case VK_CLEAR: return SDL_SCANCODE_CLEAR;
+    case VK_MODECHANGE: return SDL_SCANCODE_MODE;
+    case VK_SELECT: return SDL_SCANCODE_SELECT;
+    case VK_EXECUTE: return SDL_SCANCODE_EXECUTE;
+    case VK_HELP: return SDL_SCANCODE_HELP;
+    case VK_PAUSE: return SDL_SCANCODE_PAUSE;
+    case VK_NUMLOCK: return SDL_SCANCODE_NUMLOCKCLEAR;
+
+    case VK_F13: return SDL_SCANCODE_F13;
+    case VK_F14: return SDL_SCANCODE_F14;
+    case VK_F15: return SDL_SCANCODE_F15;
+    case VK_F16: return SDL_SCANCODE_F16;
+    case VK_F17: return SDL_SCANCODE_F17;
+    case VK_F18: return SDL_SCANCODE_F18;
+    case VK_F19: return SDL_SCANCODE_F19;
+    case VK_F20: return SDL_SCANCODE_F20;
+    case VK_F21: return SDL_SCANCODE_F21;
+    case VK_F22: return SDL_SCANCODE_F22;
+    case VK_F23: return SDL_SCANCODE_F23;
+    case VK_F24: return SDL_SCANCODE_F24;
+
+    case VK_OEM_NEC_EQUAL: return SDL_SCANCODE_KP_EQUALS;
+    case VK_BROWSER_BACK: return SDL_SCANCODE_AC_BACK;
+    case VK_BROWSER_FORWARD: return SDL_SCANCODE_AC_FORWARD;
+    case VK_BROWSER_REFRESH: return SDL_SCANCODE_AC_REFRESH;
+    case VK_BROWSER_STOP: return SDL_SCANCODE_AC_STOP;
+    case VK_BROWSER_SEARCH: return SDL_SCANCODE_AC_SEARCH;
+    case VK_BROWSER_FAVORITES: return SDL_SCANCODE_AC_BOOKMARKS;
+    case VK_BROWSER_HOME: return SDL_SCANCODE_AC_HOME;
+    case VK_VOLUME_MUTE: return SDL_SCANCODE_AUDIOMUTE;
+    case VK_VOLUME_DOWN: return SDL_SCANCODE_VOLUMEDOWN;
+    case VK_VOLUME_UP: return SDL_SCANCODE_VOLUMEUP;
+
+    case VK_MEDIA_NEXT_TRACK: return SDL_SCANCODE_AUDIONEXT;
+    case VK_MEDIA_PREV_TRACK: return SDL_SCANCODE_AUDIOPREV;
+    case VK_MEDIA_STOP: return SDL_SCANCODE_AUDIOSTOP;
+    case VK_MEDIA_PLAY_PAUSE: return SDL_SCANCODE_AUDIOPLAY;
+    case VK_LAUNCH_MAIL: return SDL_SCANCODE_MAIL;
+    case VK_LAUNCH_MEDIA_SELECT: return SDL_SCANCODE_MEDIASELECT;
+
+    case VK_OEM_102: return SDL_SCANCODE_NONUSBACKSLASH;
+
+    case VK_ATTN: return SDL_SCANCODE_SYSREQ;
+    case VK_CRSEL: return SDL_SCANCODE_CRSEL;
+    case VK_EXSEL: return SDL_SCANCODE_EXSEL;
+    case VK_OEM_CLEAR: return SDL_SCANCODE_CLEAR;
+
+    case VK_LAUNCH_APP1: return SDL_SCANCODE_APP1;
+    case VK_LAUNCH_APP2: return SDL_SCANCODE_APP2;
+
+    default: return SDL_SCANCODE_UNKNOWN;
+    }
+}
+
+static SDL_Scancode
 WindowsScanCodeToSDLScanCode(LPARAM lParam, WPARAM wParam)
 {
     SDL_Scancode code;
@@ -90,59 +148,7 @@ WindowsScanCodeToSDLScanCode(LPARAM lParam, WPARAM wParam)
 
     /* 0x45 here to work around both pause and numlock sharing the same scancode, so use the VK key to tell them apart */
     if (nScanCode == 0 || nScanCode == 0x45) {
-        switch(wParam) {
-        case VK_CLEAR: return SDL_SCANCODE_CLEAR;
-        case VK_MODECHANGE: return SDL_SCANCODE_MODE;
-        case VK_SELECT: return SDL_SCANCODE_SELECT;
-        case VK_EXECUTE: return SDL_SCANCODE_EXECUTE;
-        case VK_HELP: return SDL_SCANCODE_HELP;
-        case VK_PAUSE: return SDL_SCANCODE_PAUSE;
-        case VK_NUMLOCK: return SDL_SCANCODE_NUMLOCKCLEAR;
-
-        case VK_F13: return SDL_SCANCODE_F13;
-        case VK_F14: return SDL_SCANCODE_F14;
-        case VK_F15: return SDL_SCANCODE_F15;
-        case VK_F16: return SDL_SCANCODE_F16;
-        case VK_F17: return SDL_SCANCODE_F17;
-        case VK_F18: return SDL_SCANCODE_F18;
-        case VK_F19: return SDL_SCANCODE_F19;
-        case VK_F20: return SDL_SCANCODE_F20;
-        case VK_F21: return SDL_SCANCODE_F21;
-        case VK_F22: return SDL_SCANCODE_F22;
-        case VK_F23: return SDL_SCANCODE_F23;
-        case VK_F24: return SDL_SCANCODE_F24;
-
-        case VK_OEM_NEC_EQUAL: return SDL_SCANCODE_KP_EQUALS;
-        case VK_BROWSER_BACK: return SDL_SCANCODE_AC_BACK;
-        case VK_BROWSER_FORWARD: return SDL_SCANCODE_AC_FORWARD;
-        case VK_BROWSER_REFRESH: return SDL_SCANCODE_AC_REFRESH;
-        case VK_BROWSER_STOP: return SDL_SCANCODE_AC_STOP;
-        case VK_BROWSER_SEARCH: return SDL_SCANCODE_AC_SEARCH;
-        case VK_BROWSER_FAVORITES: return SDL_SCANCODE_AC_BOOKMARKS;
-        case VK_BROWSER_HOME: return SDL_SCANCODE_AC_HOME;
-        case VK_VOLUME_MUTE: return SDL_SCANCODE_AUDIOMUTE;
-        case VK_VOLUME_DOWN: return SDL_SCANCODE_VOLUMEDOWN;
-        case VK_VOLUME_UP: return SDL_SCANCODE_VOLUMEUP;
-
-        case VK_MEDIA_NEXT_TRACK: return SDL_SCANCODE_AUDIONEXT;
-        case VK_MEDIA_PREV_TRACK: return SDL_SCANCODE_AUDIOPREV;
-        case VK_MEDIA_STOP: return SDL_SCANCODE_AUDIOSTOP;
-        case VK_MEDIA_PLAY_PAUSE: return SDL_SCANCODE_AUDIOPLAY;
-        case VK_LAUNCH_MAIL: return SDL_SCANCODE_MAIL;
-        case VK_LAUNCH_MEDIA_SELECT: return SDL_SCANCODE_MEDIASELECT;
-
-        case VK_OEM_102: return SDL_SCANCODE_NONUSBACKSLASH;
-
-        case VK_ATTN: return SDL_SCANCODE_SYSREQ;
-        case VK_CRSEL: return SDL_SCANCODE_CRSEL;
-        case VK_EXSEL: return SDL_SCANCODE_EXSEL;
-        case VK_OEM_CLEAR: return SDL_SCANCODE_CLEAR;
-
-        case VK_LAUNCH_APP1: return SDL_SCANCODE_APP1;
-        case VK_LAUNCH_APP2: return SDL_SCANCODE_APP2;
-
-        default: return SDL_SCANCODE_UNKNOWN;
-        }
+        return VKeytoScancode(wParam);
     }
 
     if (nScanCode > 127)
@@ -178,20 +184,26 @@ WindowsScanCodeToSDLScanCode(LPARAM lParam, WPARAM wParam)
         default:
             break;
         }
+        /* prefer virtual keycodes over scancodes for extended keys */
     } else {
-        switch (code) {
-        case SDL_SCANCODE_RETURN:
-            return SDL_SCANCODE_KP_ENTER;
-        case SDL_SCANCODE_LALT:
-            return SDL_SCANCODE_RALT;
-        case SDL_SCANCODE_LCTRL:
-            return SDL_SCANCODE_RCTRL;
-        case SDL_SCANCODE_SLASH:
-            return SDL_SCANCODE_KP_DIVIDE;
-        case SDL_SCANCODE_CAPSLOCK:
-            return SDL_SCANCODE_KP_PLUS;
-        default:
-            break;
+        SDL_Scancode vc = VKeytoScancode(wParam);
+        if (vc != SDL_SCANCODE_UNKNOWN) {
+            code = vc;
+        } else {
+            switch (code) {
+            case SDL_SCANCODE_RETURN:
+                return SDL_SCANCODE_KP_ENTER;
+            case SDL_SCANCODE_LALT:
+                return SDL_SCANCODE_RALT;
+            case SDL_SCANCODE_LCTRL:
+                return SDL_SCANCODE_RCTRL;
+            case SDL_SCANCODE_SLASH:
+                return SDL_SCANCODE_KP_DIVIDE;
+            case SDL_SCANCODE_CAPSLOCK:
+                return SDL_SCANCODE_KP_PLUS;
+            default:
+                break;
+            }
         }
     }
 
