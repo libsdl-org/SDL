@@ -668,6 +668,11 @@ int Android_JNI_SetupThread(void)
     return 1;
 }
 
+jclass Android_JNI_GetActivityClass(void)
+{
+    return mActivityClass;
+}
+
 /*
  * Audio support
  */
@@ -1867,12 +1872,6 @@ const char * SDL_AndroidGetExternalStoragePath(void)
     return s_AndroidExternalFilesPath;
 }
 
-jclass Android_JNI_GetActivityClass(void)
-{
-    return mActivityClass;
-}
-
 #endif /* __ANDROID__ */
 
 /* vi: set ts=4 sw=4 expandtab: */
-
