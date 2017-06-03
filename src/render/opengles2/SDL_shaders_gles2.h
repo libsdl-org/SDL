@@ -22,8 +22,8 @@
 
 #if SDL_VIDEO_RENDER_OGL_ES2
 
-#ifndef SDL_shaderdata_h_
-#define SDL_shaderdata_h_
+#ifndef SDL_shaders_gles2_h_
+#define SDL_shaders_gles2_h_
 
 typedef struct GLES2_ShaderInstance
 {
@@ -56,7 +56,7 @@ typedef enum
 
 const GLES2_Shader *GLES2_GetShader(GLES2_ShaderType type, SDL_BlendMode blendMode);
 
-#endif /* SDL_shaderdata_h_ */
+#endif /* SDL_shaders_gles2_h_ */
 
 #endif /* SDL_VIDEO_RENDER_OGL_ES2 */
 
