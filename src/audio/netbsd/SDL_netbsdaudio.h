@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_bsdaudio_h
-#define _SDL_bsdaudio_h
+#ifndef _SDL_netbsdaudio_h
+#define _SDL_netbsdaudio_h
 
 #include "../SDL_sysaudio.h"
 
@@ -46,6 +46,6 @@ struct SDL_PrivateAudioData
 
 #define FUDGE_TICKS 10      /* The scheduler overhead ticks per frame */
 
-#endif /* _SDL_bsdaudio_h */
+#endif /* _SDL_netbsdaudio_h */
 
 /* vi: set ts=4 sw=4 expandtab: */
