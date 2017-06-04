@@ -38,7 +38,7 @@
 extern "C" {
 #endif
 
-typedef struct SDL_Cursor SDL_Cursor;   /* Implementation dependent */
+typedef struct SDL_Cursor SDL_Cursor;   /**< Implementation dependent */
 
 /**
  * \brief Cursor types for SDL_CreateSystemCursor().
