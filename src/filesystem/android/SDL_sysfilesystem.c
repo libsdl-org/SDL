@@ -36,6 +36,7 @@ char *
 SDL_GetBasePath(void)
 {
     /* The current working directory is / on Android */
+    SDL_Unsupported();
     return NULL;
 }
 
