@@ -22,14 +22,10 @@
 
 #if SDL_VIDEO_DRIVER_DIRECTFB
 
-#include "SDL_DirectFB_video.h"
-
-#include "SDL_DirectFB_events.h"
 /*
  * #include "SDL_DirectFB_keyboard.h"
  */
 #include "SDL_DirectFB_modes.h"
-#include "SDL_DirectFB_mouse.h"
 #include "SDL_DirectFB_opengl.h"
 #include "SDL_DirectFB_window.h"
 #include "SDL_DirectFB_WM.h"

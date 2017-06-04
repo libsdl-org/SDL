@@ -37,7 +37,6 @@ extern "C" {
 
 /* Local includes */
 #include "../../events/SDL_events_c.h"
-#include "../../video/haiku/SDL_bkeyboard.h"
 #include "../../video/haiku/SDL_bframebuffer.h"
 
 #ifdef __cplusplus
