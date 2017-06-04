@@ -116,7 +116,7 @@ void BE_GL_DeleteContext(_THIS, SDL_GLContext context) {
 
 int BE_GL_SetSwapInterval(_THIS, int interval) {
     /* TODO: Implement this, if necessary? */
-    return 0;
+    return SDL_Unsupported();
 }
 
 int BE_GL_GetSwapInterval(_THIS) {
