@@ -137,7 +137,9 @@ endif()
 
 # Default option knobs
 if(APPLE OR ARCH_64)
-  set(OPT_DEF_SSEMATH ON)
+  if(NOT "${CMAKE_OSX_ARCHITECTURES}" MATCHES "arm")
+    set(OPT_DEF_SSEMATH ON)
+  endif()
 endif()
 if(UNIX OR MINGW OR MSYS)
   set(OPT_DEF_LIBC ON)
@@ -543,7 +545,10 @@ if(ASSEMBLY)
     if(NOT SSEMATH)
       if(SSE OR SSE2 OR SSE3)
         if(USE_GCC)
-          list(APPEND EXTRA_CFLAGS "-mfpmath=387")
+          check_c_compiler_flag(-mfpmath=387 HAVE_FP_387)
+          if(HAVE_FP_387)
+            list(APPEND EXTRA_CFLAGS "-mfpmath=387")
+          endif()
         endif()
         set(HAVE_SSEMATH TRUE)
       endif()
@@ -752,8 +757,19 @@ endif()
 if(ANDROID)
   file(GLOB ANDROID_CORE_SOURCES ${SDL2_SOURCE_DIR}/src/core/android/*.c)
   set(SOURCE_FILES ${SOURCE_FILES} ${ANDROID_CORE_SOURCES})
+
+  # SDL_spinlock.c Needs to be compiled in ARM mode.
+  # There seems to be no better way currently to set the ARM mode.
+  # see: https://issuetracker.google.com/issues/62264618
+  # Another option would be to set ARM mode to all compiled files
+  check_c_compiler_flag(-marm HAVE_ARM_MODE)
+  if(HAVE_ARM_MODE)
+    set_source_files_properties(${SDL2_SOURCE_DIR}/src/atomic/SDL_spinlock.c PROPERTIES COMPILE_FLAGS -marm)
+  endif()
+
   file(GLOB ANDROID_MAIN_SOURCES ${SDL2_SOURCE_DIR}/src/main/android/*.c)
-  set(SOURCE_FILES ${SOURCE_FILES} ${ANDROID_MAIN_SOURCES})
+  set(SDLMAIN_SOURCES ${SDLMAIN_SOURCES} ${ANDROID_MAIN_SOURCES})
+
   if(SDL_AUDIO)
     set(SDL_AUDIO_DRIVER_ANDROID 1)
     file(GLOB ANDROID_AUDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/android/*.c)
@@ -784,12 +800,23 @@ if(ANDROID)
     set(SOURCE_FILES ${SOURCE_FILES} ${ANDROID_VIDEO_SOURCES})
     set(HAVE_SDL_VIDEO TRUE)
 
+    # Core stuff
+    find_library(ANDROID_DL_LIBRARY dl)
+    find_library(ANDROID_LOG_LIBRARY log)
+    find_library(ANDROID_LIBRARY_LIBRARY android)
+    list(APPEND EXTRA_LIBS ${ANDROID_DL_LIBRARY} ${ANDROID_LOG_LIBRARY} ${ANDROID_LIBRARY_LIBRARY})
+    add_definitions(-DGL_GLEXT_PROTOTYPES)
+
     #enable gles
     if(VIDEO_OPENGLES)
       set(SDL_VIDEO_OPENGL_EGL 1)
       set(HAVE_VIDEO_OPENGLES TRUE)
       set(SDL_VIDEO_OPENGL_ES2 1)
       set(SDL_VIDEO_RENDER_OGL_ES2 1)
+
+      find_library(OpenGLES1_LIBRARY GLESv1_CM)
+      find_library(OpenGLES2_LIBRARY GLESv2)
+      list(APPEND EXTRA_LIBS ${OpenGLES1_LIBRARY} ${OpenGLES2_LIBRARY})
     endif()
   endif()
   list(APPEND EXTRA_LDFLAGS "-Wl,--undefined=Java_org_libsdl_app_SDLActivity_nativeInit")
@@ -848,7 +875,7 @@ if(EMSCRIPTEN)
       set(SDL_VIDEO_RENDER_OGL_ES2 1)
     endif()
   endif()
-elseif(UNIX AND NOT APPLE)
+elseif(UNIX AND NOT APPLE AND NOT ANDROID)
   if(SDL_AUDIO)
     if(SYSV5 OR SOLARIS OR HPUX)
         set(SDL_AUDIO_DRIVER_SUNAUDIO 1)
@@ -1573,7 +1600,7 @@ set(_INSTALL_LIBS "SDL2main")
 
 if(SDL_SHARED)
   add_library(SDL2 SHARED ${SOURCE_FILES} ${VERSION_SOURCES})
-  if(UNIX)
+  if(UNIX AND NOT ANDROID)
     set_target_properties(SDL2 PROPERTIES
       VERSION ${LT_VERSION}
       SOVERSION ${LT_REVISION}
