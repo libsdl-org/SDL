@@ -141,7 +141,7 @@ int
 NACL_GLES_SetSwapInterval(_THIS, int interval)
 {
     /* STUB */
-    return 0;
+    return SDL_Unsupported();
 }
 
 int
