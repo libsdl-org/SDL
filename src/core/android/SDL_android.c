@@ -155,7 +155,6 @@ static void Android_JNI_ThreadDestroyed(void*);
  This file links the Java side of Android with libsdl
 *******************************************************************************/
 #include <jni.h>
-#include <android/log.h>
 
 
 /*******************************************************************************
