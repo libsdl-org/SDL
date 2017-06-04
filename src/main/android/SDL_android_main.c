@@ -1,7 +1,9 @@
 /*
     SDL_android_main.c, placed in the public domain by Sam Lantinga  3/13/14
 */
-#include "../../SDL_internal.h"
+
+#include "SDL_config.h"
+#include "SDL.h"
 
 #ifdef __ANDROID__
 
