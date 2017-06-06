@@ -652,7 +652,7 @@ Emscripten_RegisterEventHandlers(SDL_WindowData *data)
     emscripten_set_touchmove_callback("#canvas", data, 0, Emscripten_HandleTouch);
     emscripten_set_touchcancel_callback("#canvas", data, 0, Emscripten_HandleTouch);
 
-    emscripten_set_pointerlockchange_callback(NULL, data, 0, Emscripten_HandlePointerLockChange);
+    emscripten_set_pointerlockchange_callback("#document", data, 0, Emscripten_HandlePointerLockChange);
 
     /* Keyboard events are awkward */
     keyElement = SDL_GetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT);
@@ -693,7 +693,7 @@ Emscripten_UnregisterEventHandlers(SDL_WindowData *data)
     emscripten_set_touchmove_callback("#canvas", NULL, 0, NULL);
     emscripten_set_touchcancel_callback("#canvas", NULL, 0, NULL);
 
-    emscripten_set_pointerlockchange_callback(NULL, NULL, 0, NULL);
+    emscripten_set_pointerlockchange_callback("#document", NULL, 0, NULL);
 
     target = SDL_GetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT);
     if (!target) {
