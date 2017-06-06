@@ -199,7 +199,7 @@ SDL_SYS_SetupThread(const char *name)
             THREADNAME_INFO inf;
 
             /* C# and friends will try to catch this Exception, let's avoid it. */
-            if (SDL_GetHintBoolean(SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING, SDL_FALSE)) {
+            if (SDL_GetHintBoolean(SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING, SDL_TRUE)) {
                 return;
             }
 
