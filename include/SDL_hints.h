@@ -127,7 +127,7 @@ extern "C" {
  *
  *  By default letterbox is used
  */
-#define SDL_HINT_RENDER_LOGICAL_SIZE_MODE       "SDL_HINT_RENDER_LOGICAL_SIZE_MODE"
+#define SDL_HINT_RENDER_LOGICAL_SIZE_MODE       "SDL_RENDER_LOGICAL_SIZE_MODE"
 
 /**
  *  \brief  A variable controlling the scaling quality
