@@ -101,6 +101,9 @@ static const AudioBootStrap *const bootstrap[] = {
 #if SDL_AUDIO_DRIVER_EMSCRIPTEN
     &EMSCRIPTENAUDIO_bootstrap,
 #endif
+#if SDL_AUDIO_DRIVER_JACK
+    &JACK_bootstrap,
+#endif
 #if SDL_AUDIO_DRIVER_DISK
     &DISKAUDIO_bootstrap,
 #endif
@@ -723,6 +726,7 @@ SDL_RunAudio(void *devicep)
     return 0;
 }
 
+/* !!! FIXME: this needs to deal with device spec changes. */
 /* The general capture thread function */
 static int SDLCALL
 SDL_CaptureAudio(void *devicep)
