@@ -48,7 +48,6 @@ int main(int argc,char** argv)
     SDL_Renderer *renderer;
     SDL_Color black = {0,0,0,0xff};
     SDL_Event event;
-    int event_pending = 0;
     int should_exit = 0;
     unsigned int current_picture;
     int button_down;
@@ -143,9 +142,7 @@ int main(int argc,char** argv)
         }
     }
 
-    event_pending = 0;
     should_exit = 0;
-    event_pending = SDL_PollEvent(&event);
     current_picture = 0;
     button_down = 0;
     texture_dimensions.h = 0;
@@ -157,8 +154,7 @@ int main(int argc,char** argv)
     SDL_SetWindowSize(window,texture_dimensions.w,texture_dimensions.h);
     SDL_SetWindowShape(window,pictures[current_picture].surface,&pictures[current_picture].mode);
     while(should_exit == 0) {
-        event_pending = SDL_PollEvent(&event);
-        if(event_pending == 1) {
+        if (SDL_PollEvent(&event)) {
             if(event.type == SDL_KEYDOWN) {
                 button_down = 1;
                 if(event.key.keysym.sym == SDLK_ESCAPE) {
@@ -178,7 +174,6 @@ int main(int argc,char** argv)
             }
             if(event.type == SDL_QUIT)
                 should_exit = 1;
-            event_pending = 0;
         }
         render(renderer,pictures[current_picture].texture,texture_dimensions);
         SDL_Delay(10);
