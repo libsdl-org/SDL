@@ -161,6 +161,36 @@ endmacro()
 # Requires:
 # - PkgCheckModules
 # Optional:
+# - JACK_SHARED opt
+# - HAVE_DLOPEN opt
+macro(CheckJACK)
+  if(JACK)
+    pkg_check_modules(PKG_JACK jack)
+    if(PKG_JACK_FOUND)
+      set(HAVE_JACK TRUE)
+      file(GLOB JACK_SOURCES ${SDL2_SOURCE_DIR}/src/audio/jack/*.c)
+      set(SOURCE_FILES ${SOURCE_FILES} ${JACK_SOURCES})
+      set(SDL_AUDIO_DRIVER_JACK 1)
+      list(APPEND EXTRA_CFLAGS ${PKG_JACK_CFLAGS})
+      if(JACK_SHARED)
+        if(NOT HAVE_DLOPEN)
+          message_warn("You must have SDL_LoadObject() support for dynamic JACK audio loading")
+        else()
+          FindLibraryAndSONAME("jack")
+          set(SDL_AUDIO_DRIVER_JACK_DYNAMIC "\"${JACK_LIB_SONAME}\"")
+          set(HAVE_JACK_SHARED TRUE)
+        endif()
+      else()
+        list(APPEND EXTRA_LDFLAGS ${PKG_JACK_LDFLAGS})
+      endif()
+      set(HAVE_SDL_AUDIO TRUE)
+    endif()
+  endif()
+endmacro()
+
+# Requires:
+# - PkgCheckModules
+# Optional:
 # - ESD_SHARED opt
 # - HAVE_DLOPEN opt
 macro(CheckESD)

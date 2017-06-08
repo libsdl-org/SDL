@@ -182,6 +182,7 @@ typedef struct AudioBootStrap
 /* Not all of these are available in a given build. Use #ifdefs, etc. */
 extern AudioBootStrap PULSEAUDIO_bootstrap;
 extern AudioBootStrap ALSA_bootstrap;
+extern AudioBootStrap JACK_bootstrap;
 extern AudioBootStrap SNDIO_bootstrap;
 extern AudioBootStrap NETBSDAUDIO_bootstrap;
 extern AudioBootStrap DSP_bootstrap;
