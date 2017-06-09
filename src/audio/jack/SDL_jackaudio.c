@@ -367,8 +367,6 @@ JACK_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 
     /* once activated, we can connect all the ports. */
     for (i = 0; i < channels; i++) {
-        char portname[32];
-        SDL_snprintf(portname, sizeof (portname), "sdl_jack_%s_%d", sdlportstr, i);
         const char *sdlport = JACK_jack_port_name(this->hidden->sdlports[i]);
         const char *srcport = iscapture ? devports[i] : sdlport;
         const char *dstport = iscapture ? sdlport : devports[i];
