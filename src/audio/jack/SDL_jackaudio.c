@@ -32,17 +32,6 @@
 #include "../../thread/SDL_systhread.h"
 
 
-/* !!! FIXME: my understanding is each JACK port is a _channel_ (like: stereo, mono...)
-   !!! FIXME:  and not a logical device. So we'll have to figure out:
-   !!! FIXME:   a) Can there be more than one device?
-   !!! FIXME:   b) If so, how do you decide what port goes to what?
-   !!! FIXME: (code in BROKEN_MULTI_DEVICE blocks was written when I assumed
-   !!! FIXME:  enumerating ports meant listing separate devices. As such, it's
-   !!! FIXME:  incomplete, as I discovered this as I went along writing.
-*/
-#define BROKEN_MULTI_DEVICE 0  /* !!! FIXME */
-
-
 static jack_client_t * (*JACK_jack_client_open) (const char *, jack_options_t, jack_status_t *, ...);
 static int (*JACK_jack_client_close) (jack_client_t *);
 static void (*JACK_jack_on_shutdown) (jack_client_t *, JackShutdownCallback, void *);
@@ -380,81 +369,6 @@ JACK_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     return 0;
 }
 
-#if BROKEN_MULTI_DEVICE  /* !!! FIXME */
-static void
-JackHotplugCallback(jack_port_id_t port_id, int register, void *arg)
-{
-    JackPortFlags flags;
-    jack_port_t *port = JACK_jack_port_by_id(JACK_client, port_id);
-    SDL_bool iscapture;
-    const char *name;
-
-    if (!port) {
-        return;
-    }
-
-    name = JACK_jack_port_name(port);
-    if (!name) {
-        return;
-    }
-
-    flags = JACK_jack_port_flags(port);
-    if ((flags & JackPortIsPhysical) == 0) {
-        return;  /* not a physical device, don't care. */
-    }
-
-
-    if ((flags & JackPortIsInput|JackPortIsOutput) == 0) {
-        return;  /* no input OR output? Don't care...? */
-    }
-
-    /* make sure it's not both, I guess. */
-    SDL_assert((flags & JackPortIsInput|JackPortIsOutput) != (JackPortIsInput|JackPortIsOutput));
-
-    /* JACK uses "output" for capture devices (they output audio data to us)
-        and "input" for playback (we input audio data to them) */
-    iscapture = ((flags & JackPortIsOutput) != 0);
-    if (register) {
-        SDL_AddAudioDevice(iscapture, name, port);
-    } else {
-        SDL_RemoveAudioDevice(iscapture, port);
-    }
-}
-
-static void
-JackEnumerateDevices(const SDL_bool iscapture)
-{
-    const JackPortFlags flags = (iscapture ? JackPortIsOutput : JackPortIsInput);
-    const char **ports = JACK_jack_get_ports(JACK_client, NULL, NULL,
-                                        JackPortIsPhysical | flags);
-    const char **i;
-
-    if (!ports) {
-        return;
-    }
-
-    for (i = ports; *i != NULL; i++) {
-        jack_port_t *port = JACK_jack_port_by_name(JACK_client, *i);
-        if (port != NULL) {
-            SDL_AddAudioDevice(iscapture, *i, port);
-        }
-    }
-
-    JACK_jack_free(ports);
-}
-
-static void
-JACK_DetectDevices()
-{
-    JackEnumerateDevices(SDL_FALSE);
-    JackEnumerateDevices(SDL_TRUE);
-
-    /* make JACK fire this callback automatically from now on. */
-    JACK_jack_set_port_registration_callback(JACK_client, JackHotplugCallback, NULL);
-}
-#endif  /* BROKEN_MULTI_DEVICE */
-
-
 static void
 JACK_Deinitialize(void)
 {
@@ -476,12 +390,8 @@ JACK_Init(SDL_AudioDriverImpl * impl)
 
     /* Set the function pointers */
 
-    #if BROKEN_MULTI_DEVICE  /* !!! FIXME */
-    impl->DetectDevices = JACK_DetectDevices;
-    #else
     impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
     // !!! FIXME impl->OnlyHasDefaultCaptureDevice = SDL_TRUE;
-    #endif
 
     impl->OpenDevice = JACK_OpenDevice;
     impl->WaitDevice = JACK_WaitDevice;
