@@ -203,22 +203,53 @@ JACK_GetDeviceBuf(_THIS)
 }
 
 
-#if 0 // !!! FIXME
-/* JACK thread calls this. */
 static int
 jackProcessCaptureCallback(jack_nframes_t nframes, void *arg)
 {
-    jack_port_get_buffer(
-asdasd
+    SDL_AudioDevice *this = (SDL_AudioDevice *) arg;
+    if (SDL_AtomicGet(&this->enabled)) {
+        jack_port_t **ports = this->hidden->sdlports;
+        const int total_channels = this->spec.channels;
+        const int total_frames = this->spec.samples;
+        int channelsi;
+    
+        for (channelsi = 0; channelsi < total_channels; channelsi++) {
+            const float *src = (const float *) JACK_jack_port_get_buffer(ports[channelsi], nframes);
+            if (src) {
+                float *dst = ((float *) this->hidden->iobuffer) + channelsi;
+                int framesi;
+                for (framesi = 0; framesi < total_frames; framesi++) {
+                    *dst = *(src++);
+                    dst += total_channels;
+                }
+            }
+        }
+    }
+
+    SDL_SemPost(this->hidden->iosem);  /* tell SDL thread we're done; new buffer is ready! */
+    return 0;  /* success */
 }
 
-/* SDL thread calls this. */
 static int
 JACK_CaptureFromDevice(_THIS, void *buffer, int buflen)
 {
-    return SDL_SemWait(this->hidden->iosem) == 0) ? buflen : -1;
+    SDL_assert(buflen == this->spec.size);  /* we always fill a full buffer. */
+
+    /* Wait for JACK to fill the iobuffer */
+    if (SDL_SemWait(this->hidden->iosem) == -1) {
+        return -1;
+    }
+
+    SDL_memcpy(buffer, this->hidden->iobuffer, buflen);
+    return buflen;
 }
-#endif
+
+static void
+JACK_FlushCapture(_THIS)
+{
+    SDL_SemWait(this->hidden->iosem);
+}
+
 
 static void
 JACK_CloseDevice(_THIS)
@@ -258,6 +289,7 @@ JACK_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         and capture will be "input" (we read data in). */
     const unsigned long sysportflags = iscapture ? JackPortIsOutput : JackPortIsInput;
     const unsigned long sdlportflags = iscapture ? JackPortIsInput : JackPortIsOutput;
+    const JackProcessCallback callback = iscapture ? jackProcessCaptureCallback : jackProcessPlaybackCallback;
     const char *sdlportstr = iscapture ? "input" : "output";
     const char **devports = NULL;
     jack_client_t *client = NULL;
@@ -323,7 +355,7 @@ JACK_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         }
     }
 
-    if (JACK_jack_set_process_callback(client, jackProcessPlaybackCallback, this) != 0) {
+    if (JACK_jack_set_process_callback(client, callback, this) != 0) {
         return SDL_SetError("JACK: Couldn't set process callback");
     }
 
@@ -376,17 +408,16 @@ JACK_Init(SDL_AudioDriverImpl * impl)
     }
 
     /* Set the function pointers */
-
-    impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
-    // !!! FIXME impl->OnlyHasDefaultCaptureDevice = SDL_TRUE;
-
     impl->OpenDevice = JACK_OpenDevice;
     impl->WaitDevice = JACK_WaitDevice;
     impl->GetDeviceBuf = JACK_GetDeviceBuf;
     impl->CloseDevice = JACK_CloseDevice;
     impl->Deinitialize = JACK_Deinitialize;
-    // !!! FIXME impl->CaptureFromDevice = JACK_CaptureFromDevice;
-    // !!! FIXME impl->HasCaptureSupport = SDL_TRUE;
+    impl->CaptureFromDevice = JACK_CaptureFromDevice;
+    impl->FlushCapture = JACK_FlushCapture;
+    impl->OnlyHasDefaultOutputDevice = SDL_TRUE;
+    impl->OnlyHasDefaultCaptureDevice = SDL_TRUE;
+    impl->HasCaptureSupport = SDL_TRUE;
 
     return 1;   /* this audio target is available. */
 }
