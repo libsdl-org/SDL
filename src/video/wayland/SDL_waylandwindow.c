@@ -129,6 +129,24 @@ SDL_bool
 Wayland_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    const Uint32 version = ((((Uint32) info->version.major) * 1000000) +
+                            (((Uint32) info->version.minor) * 10000) +
+                            (((Uint32) info->version.patch)));
+
+    /* Before 2.0.6, it was possible to build an SDL with Wayland support
+       (SDL_SysWMinfo will be large enough to hold Wayland info), but build
+       your app against SDL headers that didn't have Wayland support
+       (SDL_SysWMinfo could be smaller than Wayland needs. This would lead
+       to an app properly using SDL_GetWindowWMInfo() but we'd accidentally
+       overflow memory on the stack or heap. To protect against this, we've
+       padded out the struct unconditionally in the headers and Wayland will
+       just return an error for older apps using this function. Those apps
+       will need to be recompiled against newer headers or not use Wayland,
+       maybe by forcing SDL_VIDEODRIVER=x11. */
+    if (version < 2000006) {
+        info->subsystem = SDL_SYSWM_UNKNOWN;
+        return SDL_FALSE;
+    }
 
     info->info.wl.display = data->waylandData->display;
     info->info.wl.surface = data->surface;
