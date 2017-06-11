@@ -21278,7 +21278,7 @@ $as_echo "#define SDL_VIDEO_RENDER_DIRECTFB 1" >>confdefs.h
             { $as_echo "$as_me:${as_lineno-$LINENO}: checking for directfb dynamic loading support" >&5
 $as_echo_n "checking for directfb dynamic loading support... " >&6; }
             directfb_shared=no
-            directfb_lib=`find_lib "libdirectfb.so.*" "$DIRECTFB_LIBS"`
+            directfb_lib=`find_lib "libdirectfb*.so.*" "$DIRECTFB_LIBS"`
             # | sed 's/.*\/\(.*\)/\1/; q'`]
 { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: \"directfb $directfb_lib\"" >&5
 $as_echo "$as_me: WARNING: \"directfb $directfb_lib\"" >&2;}

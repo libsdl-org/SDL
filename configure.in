@@ -2060,7 +2060,7 @@ AC_HELP_STRING([--enable-directfb-shared], [dynamically load directfb support [[
 
             AC_MSG_CHECKING(for directfb dynamic loading support)
             directfb_shared=no
-            directfb_lib=[`find_lib "libdirectfb.so.*" "$DIRECTFB_LIBS"`]
+            directfb_lib=[`find_lib "libdirectfb*.so.*" "$DIRECTFB_LIBS"`]
             # | sed 's/.*\/\(.*\)/\1/; q'`]
 AC_MSG_WARN("directfb $directfb_lib")
             if test x$have_loadso != xyes && \
