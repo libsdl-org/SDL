@@ -477,6 +477,7 @@ DirectFB_GetWindowWMInfo(_THIS, SDL_Window * window,
        maybe by forcing SDL_VIDEODRIVER=x11. */
     if (version < 2000006) {
         info->subsystem = SDL_SYSWM_UNKNOWN;
+        SDL_SetError("Version must be 2.0.6 or newer");
         return SDL_FALSE;
     }
 
