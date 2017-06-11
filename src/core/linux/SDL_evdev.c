@@ -110,7 +110,7 @@ static int SDL_EVDEV_device_removed(const char *dev_path);
 
 #if SDL_USE_LIBUDEV
 static int SDL_EVDEV_device_added(const char *dev_path, int udev_class);
-void SDL_EVDEV_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class,
+static void SDL_EVDEV_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class,
     const char *dev_path);
 #endif /* SDL_USE_LIBUDEV */
 
@@ -195,7 +195,7 @@ SDL_EVDEV_Quit(void)
 }
 
 #if SDL_USE_LIBUDEV
-void SDL_EVDEV_udev_callback(SDL_UDEV_deviceevent udev_event, int udev_class,
+static void SDL_EVDEV_udev_callback(SDL_UDEV_deviceevent udev_event, int udev_class,
     const char* dev_path)
 {
     if (dev_path == NULL) {
