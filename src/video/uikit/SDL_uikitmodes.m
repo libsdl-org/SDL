@@ -68,21 +68,33 @@ UIKit_FreeDisplayModeData(SDL_DisplayMode * mode)
     }
 }
 
+static NSUInteger
+UIKit_GetDisplayModeRefreshRate(UIScreen *uiscreen)
+{
+#ifdef __IPHONE_10_3
+    if ([uiscreen respondsToSelector:@selector(maximumFramesPerSecond)]) {
+        return uiscreen.maximumFramesPerSecond;
+    }
+#endif
+    return 0;
+}
+
 static int
 UIKit_AddSingleDisplayMode(SDL_VideoDisplay * display, int w, int h,
-    UIScreenMode * uiscreenmode)
+    UIScreen * uiscreen, UIScreenMode * uiscreenmode)
 {
     SDL_DisplayMode mode;
     SDL_zero(mode);
 
-    mode.format = SDL_PIXELFORMAT_ABGR8888;
-    mode.refresh_rate = 0;
     if (UIKit_AllocateDisplayModeData(&mode, uiscreenmode) < 0) {
         return -1;
     }
 
+    mode.format = SDL_PIXELFORMAT_ABGR8888;
+    mode.refresh_rate = (int) UIKit_GetDisplayModeRefreshRate(uiscreen);
     mode.w = w;
     mode.h = h;
+
     if (SDL_AddDisplayMode(display, &mode)) {
         return 0;
     } else {
@@ -92,16 +104,16 @@ UIKit_AddSingleDisplayMode(SDL_VideoDisplay * display, int w, int h,
 }
 
 static int
-UIKit_AddDisplayMode(SDL_VideoDisplay * display, int w, int h,
+UIKit_AddDisplayMode(SDL_VideoDisplay * display, int w, int h, UIScreen * uiscreen,
                      UIScreenMode * uiscreenmode, SDL_bool addRotation)
 {
-    if (UIKit_AddSingleDisplayMode(display, w, h, uiscreenmode) < 0) {
+    if (UIKit_AddSingleDisplayMode(display, w, h, uiscreen, uiscreenmode) < 0) {
         return -1;
     }
 
     if (addRotation) {
         /* Add the rotated version */
-        if (UIKit_AddSingleDisplayMode(display, h, w, uiscreenmode) < 0) {
+        if (UIKit_AddSingleDisplayMode(display, h, w, uiscreen, uiscreenmode) < 0) {
             return -1;
         }
     }
@@ -112,7 +124,11 @@ UIKit_AddDisplayMode(SDL_VideoDisplay * display, int w, int h,
 static int
 UIKit_AddDisplay(UIScreen *uiscreen)
 {
+    UIScreenMode *uiscreenmode = uiscreen.currentMode;
     CGSize size = uiscreen.bounds.size;
+    SDL_VideoDisplay display;
+    SDL_DisplayMode mode;
+    SDL_zero(mode);
 
     /* Make sure the width/height are oriented correctly */
     if (UIKit_IsDisplayLandscape(uiscreen) != (size.width > size.height)) {
@@ -121,14 +137,10 @@ UIKit_AddDisplay(UIScreen *uiscreen)
         size.height = height;
     }
 
-    SDL_VideoDisplay display;
-    SDL_DisplayMode mode;
-    SDL_zero(mode);
     mode.format = SDL_PIXELFORMAT_ABGR8888;
+    mode.refresh_rate = (int) UIKit_GetDisplayModeRefreshRate(uiscreen);
     mode.w = (int) size.width;
     mode.h = (int) size.height;
-
-    UIScreenMode *uiscreenmode = uiscreen.currentMode;
 
     if (UIKit_AllocateDisplayModeData(&mode, uiscreenmode) < 0) {
         return -1;
@@ -220,7 +232,7 @@ UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
                 h = tmp;
             }
 
-            UIKit_AddDisplayMode(display, w, h, uimode, addRotation);
+            UIKit_AddDisplayMode(display, w, h, data.uiscreen, uimode, addRotation);
         }
     }
 }
