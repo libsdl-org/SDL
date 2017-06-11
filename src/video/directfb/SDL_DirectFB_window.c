@@ -468,7 +468,7 @@ DirectFB_GetWindowWMInfo(_THIS, SDL_Window * window,
     /* Before 2.0.6, it was possible to build an SDL with DirectFB support
        (SDL_SysWMinfo will be large enough to hold DirectFB info), but build
        your app against SDL headers that didn't have DirectFB support
-       (SDL_SysWMinfo could be smaller than Wayland needs. This would lead
+       (SDL_SysWMinfo could be smaller than DirectFB needs. This would lead
        to an app properly using SDL_GetWindowWMInfo() but we'd accidentally
        overflow memory on the stack or heap. To protect against this, we've
        padded out the struct unconditionally in the headers and DirectFB will
