@@ -217,7 +217,9 @@ static SDL_INLINE IDirectFBSurface *get_dfb_surface(SDL_Window *window)
     SDL_memset(&wm_info, 0, sizeof(SDL_SysWMinfo));
 
     SDL_VERSION(&wm_info.version);
-    SDL_GetWindowWMInfo(window, &wm_info);
+    if (!SDL_GetWindowWMInfo(window, &wm_info)) {
+        return NULL;
+    }
 
     return wm_info.info.dfb.surface;
 }
@@ -228,7 +230,9 @@ static SDL_INLINE IDirectFBWindow *get_dfb_window(SDL_Window *window)
     SDL_memset(&wm_info, 0, sizeof(SDL_SysWMinfo));
 
     SDL_VERSION(&wm_info.version);
-    SDL_GetWindowWMInfo(window, &wm_info);
+    if (!SDL_GetWindowWMInfo(window, &wm_info)) {
+        return NULL;
+    }
 
     return wm_info.info.dfb.window;
 }
@@ -355,6 +359,10 @@ DirectFB_CreateRenderer(SDL_Window * window, Uint32 flags)
     SDL_Renderer *renderer = NULL;
     DirectFB_RenderData *data = NULL;
     DFBSurfaceCapabilities scaps;
+
+    if (!winsurf) {
+        return NULL;
+    }
 
     SDL_DFB_ALLOC_CLEAR(renderer, sizeof(*renderer));
     SDL_DFB_ALLOC_CLEAR(data, sizeof(*data));
