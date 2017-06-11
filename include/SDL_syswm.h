@@ -280,8 +280,9 @@ struct SDL_SysWMinfo
         } vivante;
 #endif
 
-        /* Can't have an empty union */
-        int dummy;
+        /* Make sure this union is always 64 bytes (8 64-bit pointers). */
+        /* Be careful not to overflow this if you add a new target! */
+        Uint8 dummy[64];
     } info;
 };
 
