@@ -514,6 +514,19 @@ SDL_Convert_Byteswap(SDL_AudioCVT *cvt, SDL_AudioFormat format)
     }
 }
 
+static int
+SDL_AddAudioCVTFilter(SDL_AudioCVT *cvt, const SDL_AudioFilter filter)
+{
+    if (cvt->filter_index >= SDL_AUDIOCVT_MAX_FILTERS) {
+        return SDL_SetError("Too many filters needed for conversion, exceeded maximum of %d", SDL_AUDIOCVT_MAX_FILTERS);
+    }
+    if (filter == NULL) {
+        return SDL_SetError("Audio filter pointer is NULL");
+    }
+    cvt->filters[cvt->filter_index++] = filter;
+    cvt->filters[cvt->filter_index] = NULL; /* Moving terminator */
+    return 0;
+}
 
 static int
 SDL_BuildAudioTypeCVTToFloat(SDL_AudioCVT *cvt, const SDL_AudioFormat src_fmt)
@@ -521,7 +534,9 @@ SDL_BuildAudioTypeCVTToFloat(SDL_AudioCVT *cvt, const SDL_AudioFormat src_fmt)
     int retval = 0;  /* 0 == no conversion necessary. */
 
     if ((SDL_AUDIO_ISBIGENDIAN(src_fmt) != 0) == (SDL_BYTEORDER == SDL_LIL_ENDIAN)) {
-        cvt->filters[cvt->filter_index++] = SDL_Convert_Byteswap;
+        if (SDL_AddAudioCVTFilter(cvt, SDL_Convert_Byteswap) < 0) {
+            return -1;
+        }
         retval = 1;  /* added a converter. */
     }
 
@@ -543,7 +558,9 @@ SDL_BuildAudioTypeCVTToFloat(SDL_AudioCVT *cvt, const SDL_AudioFormat src_fmt)
             return SDL_SetError("No conversion available for these formats");
         }
 
-        cvt->filters[cvt->filter_index++] = filter;
+        if (SDL_AddAudioCVTFilter(cvt, filter) < 0) {
+            return -1;
+        }
         if (src_bitsize < dst_bitsize) {
             const int mult = (dst_bitsize / src_bitsize);
             cvt->len_mult *= mult;
@@ -580,7 +597,9 @@ SDL_BuildAudioTypeCVTFromFloat(SDL_AudioCVT *cvt, const SDL_AudioFormat dst_fmt)
             return SDL_SetError("No conversion available for these formats");
         }
 
-        cvt->filters[cvt->filter_index++] = filter;
+        if (SDL_AddAudioCVTFilter(cvt, filter) < 0) {
+            return -1;
+        }
         if (src_bitsize < dst_bitsize) {
             const int mult = (dst_bitsize / src_bitsize);
             cvt->len_mult *= mult;
@@ -592,7 +611,9 @@ SDL_BuildAudioTypeCVTFromFloat(SDL_AudioCVT *cvt, const SDL_AudioFormat dst_fmt)
     }
 
     if ((SDL_AUDIO_ISBIGENDIAN(dst_fmt) != 0) == (SDL_BYTEORDER == SDL_LIL_ENDIAN)) {
-        cvt->filters[cvt->filter_index++] = SDL_Convert_Byteswap;
+        if (SDL_AddAudioCVTFilter(cvt, SDL_Convert_Byteswap) < 0) {
+            return -1;
+        }
         retval = 1;  /* added a converter. */
     }
 
@@ -665,7 +686,9 @@ SDL_BuildAudioResampleCVT(SDL_AudioCVT * cvt, const int dst_channels,
     }
 
     /* Update (cvt) with filter details... */
-    cvt->filters[cvt->filter_index++] = filter;
+    if (SDL_AddAudioCVTFilter(cvt, filter) < 0) {
+        return -1;
+    }
     if (src_rate < dst_rate) {
         const double mult = ((double) dst_rate) / ((double) src_rate);
         cvt->len_mult *= (int) SDL_ceil(mult);
@@ -739,7 +762,9 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
        format as well. */
     if ((src_channels == 2) && (dst_channels == 2) && (src_fmt == AUDIO_S16SYS) && (dst_fmt == AUDIO_S16SYS) && (src_rate != dst_rate)) {
         cvt->needed = 1;
-        cvt->filters[cvt->filter_index++] = SDL_ResampleCVT_si16_c2;
+        if (SDL_AddAudioCVTFilter(cvt, SDL_ResampleCVT_si16_c2) < 0) {
+            return -1;
+        }
         if (src_rate < dst_rate) {
             const double mult = ((double) dst_rate) / ((double) src_rate);
             cvt->len_mult *= (int) SDL_ceil(mult);
@@ -772,7 +797,9 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
 
         /* just a byteswap needed? */
         if ((src_fmt & ~SDL_AUDIO_MASK_ENDIAN) == (dst_fmt & ~SDL_AUDIO_MASK_ENDIAN)) {
-            cvt->filters[cvt->filter_index++] = SDL_Convert_Byteswap;
+            if (SDL_AddAudioCVTFilter(cvt, SDL_Convert_Byteswap) < 0) {
+                return -1;
+            }
             cvt->needed = 1;
             return 1;
         }
@@ -786,36 +813,48 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
     /* Channel conversion */
     if (src_channels != dst_channels) {
         if ((src_channels == 1) && (dst_channels > 1)) {
-            cvt->filters[cvt->filter_index++] = SDL_ConvertMonoToStereo;
+            if (SDL_AddAudioCVTFilter(cvt, SDL_ConvertMonoToStereo) < 0) {
+                return -1;
+            }
             cvt->len_mult *= 2;
             src_channels = 2;
             cvt->len_ratio *= 2;
         }
         if ((src_channels == 2) && (dst_channels == 6)) {
-            cvt->filters[cvt->filter_index++] = SDL_ConvertStereoTo51;
+            if (SDL_AddAudioCVTFilter(cvt, SDL_ConvertStereoTo51) < 0) {
+                return -1;
+            }
             src_channels = 6;
             cvt->len_mult *= 3;
             cvt->len_ratio *= 3;
         }
         if ((src_channels == 2) && (dst_channels == 4)) {
-            cvt->filters[cvt->filter_index++] = SDL_ConvertStereoToQuad;
+            if (SDL_AddAudioCVTFilter(cvt, SDL_ConvertStereoToQuad) < 0) {
+                return -1;
+            }
             src_channels = 4;
             cvt->len_mult *= 2;
             cvt->len_ratio *= 2;
         }
         while ((src_channels * 2) <= dst_channels) {
-            cvt->filters[cvt->filter_index++] = SDL_ConvertMonoToStereo;
+            if (SDL_AddAudioCVTFilter(cvt, SDL_ConvertMonoToStereo) < 0) {
+                return -1;
+            }
             cvt->len_mult *= 2;
             src_channels *= 2;
             cvt->len_ratio *= 2;
         }
         if ((src_channels == 6) && (dst_channels <= 2)) {
-            cvt->filters[cvt->filter_index++] = SDL_Convert51ToStereo;
+            if (SDL_AddAudioCVTFilter(cvt, SDL_Convert51ToStereo) < 0) {
+                return -1;
+            }
             src_channels = 2;
             cvt->len_ratio /= 3;
         }
         if ((src_channels == 6) && (dst_channels == 4)) {
-            cvt->filters[cvt->filter_index++] = SDL_Convert51ToQuad;
+            if (SDL_AddAudioCVTFilter(cvt, SDL_Convert51ToQuad) < 0) {
+                return -1;
+            }
             src_channels = 4;
             cvt->len_ratio /= 2;
         }
@@ -837,7 +876,9 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
                 filter = SDL_ConvertStereoToMono;
             }
 
-            cvt->filters[cvt->filter_index++] = filter;
+            if (SDL_AddAudioCVTFilter(cvt, filter) < 0) {
+                return -1;
+            }
 
             src_channels /= 2;
             cvt->len_ratio /= 2;
