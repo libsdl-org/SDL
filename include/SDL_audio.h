@@ -184,7 +184,17 @@ typedef void (SDLCALL * SDL_AudioFilter) (struct SDL_AudioCVT * cvt,
                                           SDL_AudioFormat format);
 
 /**
- *  A structure to hold a set of audio conversion filters and buffers.
+ *  \brief Upper limit of filters in SDL_AudioCVT
+ *
+ *  The maximum number of SDL_AudioFilter functions in SDL_AudioCVT is
+ *  currently limited to 9. The SDL_AudioCVT.filters array has 10 pointers,
+ *  one of which is the terminating NULL pointer.
+ */
+#define SDL_AUDIOCVT_MAX_FILTERS 9
+
+/**
+ *  \struct SDL_AudioCVT
+ *  \brief A structure to hold a set of audio conversion filters and buffers.
  *
  *  Note that various parts of the conversion pipeline can take advantage
  *  of SIMD operations (like SSE2, for example). SDL_AudioCVT doesn't require
@@ -214,7 +224,7 @@ typedef struct SDL_AudioCVT
     int len_cvt;                /**< Length of converted audio buffer */
     int len_mult;               /**< buffer must be len*len_mult big */
     double len_ratio;           /**< Given len, final size is len*len_ratio */
-    SDL_AudioFilter filters[10];        /**< Filter list */
+    SDL_AudioFilter filters[SDL_AUDIOCVT_MAX_FILTERS + 1]; /**< NULL-terminated list of filter functions */
     int filter_index;           /**< Current audio conversion function */
 } SDL_AUDIOCVT_PACKED SDL_AudioCVT;
 
