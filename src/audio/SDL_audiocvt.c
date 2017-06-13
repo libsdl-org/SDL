@@ -700,6 +700,47 @@ SDL_BuildAudioResampleCVT(SDL_AudioCVT * cvt, const int dst_channels,
     return 1;               /* added a converter. */
 }
 
+static SDL_bool
+SDL_SupportedAudioFormat(const SDL_AudioFormat fmt)
+{
+    switch (fmt) {
+        case AUDIO_U8:
+        case AUDIO_S8:
+        case AUDIO_U16LSB:
+        case AUDIO_S16LSB:
+        case AUDIO_U16MSB:
+        case AUDIO_S16MSB:
+        case AUDIO_S32LSB:
+        case AUDIO_S32MSB:
+        case AUDIO_F32LSB:
+        case AUDIO_F32MSB:
+            return SDL_TRUE;  /* supported. */
+
+        default:
+            break;
+    }
+
+    return SDL_FALSE;  /* unsupported. */
+}
+
+static SDL_bool
+SDL_SupportedChannelCount(const int channels)
+{
+    switch (channels) {
+        case 1:  /* mono */
+        case 2:  /* stereo */
+        case 4:  /* quad */
+        case 6:  /* 5.1 */
+            return SDL_TRUE;  /* supported. */
+
+        case 8:  /* !!! FIXME: 7.1 */
+        default:
+            break;
+    }
+
+    return SDL_FALSE;  /* unsupported. */
+}
+
 
 /* Creates a set of audio filters to convert from one format to another.
    Returns -1 if the format conversion is not supported, 0 if there's
@@ -719,21 +760,20 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
     /* Make sure we zero out the audio conversion before error checking */
     SDL_zerop(cvt);
 
-    /* there are no unsigned types over 16 bits, so catch this up front. */
-    if ((SDL_AUDIO_BITSIZE(src_fmt) > 16) && (!SDL_AUDIO_ISSIGNED(src_fmt))) {
+    if (!SDL_SupportedAudioFormat(src_fmt)) {
         return SDL_SetError("Invalid source format");
-    }
-    if ((SDL_AUDIO_BITSIZE(dst_fmt) > 16) && (!SDL_AUDIO_ISSIGNED(dst_fmt))) {
+    } else if (!SDL_SupportedAudioFormat(dst_fmt)) {
         return SDL_SetError("Invalid destination format");
+    } else if (!SDL_SupportedChannelCount(src_channels)) {
+        return SDL_SetError("Invalid source channels");
+    } else if (!SDL_SupportedChannelCount(dst_channels)) {
+        return SDL_SetError("Invalid destination channels");
+    } else if (src_rate == 0) {
+        return SDL_SetError("Source rate is zero");
+    } else if (dst_rate == 0) {
+        return SDL_SetError("Destination rate is zero");
     }
 
-    /* prevent possible divisions by zero, etc. */
-    if ((src_channels == 0) || (dst_channels == 0)) {
-        return SDL_SetError("Source or destination channels is zero");
-    }
-    if ((src_rate == 0) || (dst_rate == 0)) {
-        return SDL_SetError("Source or destination rate is zero");
-    }
 #if DEBUG_CONVERT
     printf("Build format %04x->%04x, channels %u->%u, rate %d->%d\n",
            src_fmt, dst_fmt, src_channels, dst_channels, src_rate, dst_rate);
