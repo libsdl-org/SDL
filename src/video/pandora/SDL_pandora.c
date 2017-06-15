@@ -116,7 +116,9 @@ PND_create()
     device->RestoreWindow = PND_restorewindow;
     device->SetWindowGrab = PND_setwindowgrab;
     device->DestroyWindow = PND_destroywindow;
+#if 0
     device->GetWindowWMInfo = PND_getwindowwminfo;
+#endif
     device->GL_LoadLibrary = PND_gl_loadlibrary;
     device->GL_GetProcAddress = PND_gl_getprocaddres;
     device->GL_UnloadLibrary = PND_gl_unloadlibrary;
@@ -298,6 +300,7 @@ PND_destroywindow(_THIS, SDL_Window * window)
 /*****************************************************************************/
 /* SDL Window Manager function                                               */
 /*****************************************************************************/
+#if 0
 SDL_bool
 PND_getwindowwminfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info)
 {
@@ -312,6 +315,7 @@ PND_getwindowwminfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info)
     /* Failed to get window manager information */
     return SDL_FALSE;
 }
+#endif
 
 /*****************************************************************************/
 /* SDL OpenGL/OpenGL ES functions                                            */

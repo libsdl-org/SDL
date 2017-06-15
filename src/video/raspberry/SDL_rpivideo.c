@@ -111,7 +111,9 @@ RPI_Create()
     device->RestoreWindow = RPI_RestoreWindow;
     device->SetWindowGrab = RPI_SetWindowGrab;
     device->DestroyWindow = RPI_DestroyWindow;
+#if 0
     device->GetWindowWMInfo = RPI_GetWindowWMInfo;
+#endif
     device->GL_LoadLibrary = RPI_GLES_LoadLibrary;
     device->GL_GetProcAddress = RPI_GLES_GetProcAddress;
     device->GL_UnloadLibrary = RPI_GLES_UnloadLibrary;
@@ -367,6 +369,7 @@ RPI_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed)
 /*****************************************************************************/
 /* SDL Window Manager function                                               */
 /*****************************************************************************/
+#if 0
 SDL_bool
 RPI_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info)
 {
@@ -381,6 +384,7 @@ RPI_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info)
     /* Failed to get window manager information */
     return SDL_FALSE;
 }
+#endif
 
 #endif /* SDL_VIDEO_DRIVER_RPI */
 
