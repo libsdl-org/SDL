@@ -127,7 +127,9 @@ PSP_Create()
     device->RestoreWindow = PSP_RestoreWindow;
     device->SetWindowGrab = PSP_SetWindowGrab;
     device->DestroyWindow = PSP_DestroyWindow;
+#if 0
     device->GetWindowWMInfo = PSP_GetWindowWMInfo;
+#endif
     device->GL_LoadLibrary = PSP_GL_LoadLibrary;
     device->GL_GetProcAddress = PSP_GL_GetProcAddress;
     device->GL_UnloadLibrary = PSP_GL_UnloadLibrary;
@@ -291,6 +293,7 @@ PSP_DestroyWindow(_THIS, SDL_Window * window)
 /*****************************************************************************/
 /* SDL Window Manager function                                               */
 /*****************************************************************************/
+#if 0
 SDL_bool
 PSP_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info)
 {
@@ -305,6 +308,7 @@ PSP_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info)
     /* Failed to get window manager information */
     return SDL_FALSE;
 }
+#endif
 
 
 /* TO Write Me */
