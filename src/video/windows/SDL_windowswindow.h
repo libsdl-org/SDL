@@ -31,6 +31,7 @@ typedef struct
 {
     SDL_Window *window;
     HWND hwnd;
+    HWND parent;
     HDC hdc;
     HDC mdc;
     HINSTANCE hinstance;
