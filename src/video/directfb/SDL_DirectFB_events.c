@@ -743,9 +743,6 @@ void
 DirectFB_QuitKeyboard(_THIS)
 {
     /* SDL_DFB_DEVICEDATA(_this); */
-
-    SDL_KeyboardQuit();
-
 }
 
 #endif /* SDL_VIDEO_DRIVER_DIRECTFB */
