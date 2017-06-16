@@ -329,7 +329,7 @@ void NACL_PumpEvents(_THIS) {
   struct PP_Point location;
   struct PP_Var var;
   const char *str;
-  char text[64];
+  char text[SDL_TEXTINPUTEVENT_TEXT_SIZE];
   Uint32 str_len;
   SDL_VideoData *driverdata = (SDL_VideoData *) _this->driverdata;
   SDL_Mouse *mouse = SDL_GetMouse();
