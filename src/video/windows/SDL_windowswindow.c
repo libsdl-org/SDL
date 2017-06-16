@@ -114,7 +114,7 @@ WIN_SetWindowPositionInternal(_THIS, SDL_Window * window, UINT flags)
 }
 
 static int
-SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, SDL_bool created)
+SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, HWND parent, SDL_bool created)
 {
     SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
     SDL_WindowData *data;
@@ -126,6 +126,7 @@ SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, SDL_bool created)
     }
     data->window = window;
     data->hwnd = hwnd;
+    data->parent = parent;
     data->hdc = GetDC(hwnd);
     data->hinstance = (HINSTANCE) GetWindowLongPtr(hwnd, GWLP_HINSTANCE);
     data->created = created;
@@ -300,8 +301,11 @@ WIN_CreateWindow(_THIS, SDL_Window * window)
 
     WIN_PumpEvents(_this);
 
-    if (SetupWindowData(_this, window, hwnd, SDL_TRUE) < 0) {
+    if (SetupWindowData(_this, window, hwnd, parent, SDL_TRUE) < 0) {
         DestroyWindow(hwnd);
+        if (parent) {
+            DestroyWindow(parent);
+        }
         return -1;
     }
 
@@ -362,7 +366,7 @@ WIN_CreateWindowFrom(_THIS, SDL_Window * window, const void *data)
         SDL_stack_free(title);
     }
 
-    if (SetupWindowData(_this, window, hwnd, SDL_FALSE) < 0) {
+    if (SetupWindowData(_this, window, hwnd, NULL, SDL_FALSE) < 0) {
         return -1;
     }
 
@@ -680,6 +684,9 @@ WIN_DestroyWindow(_THIS, SDL_Window * window)
         RemoveProp(data->hwnd, TEXT("SDL_WindowData"));
         if (data->created) {
             DestroyWindow(data->hwnd);
+            if (data->parent) {
+                DestroyWindow(data->parent);
+            }
         } else {
             /* Restore any original event handler... */
             if (data->wndproc != NULL) {
