@@ -72,6 +72,7 @@ class SDL_BWin:public BDirectWindow
 
 #if SDL_VIDEO_OPENGL
         _SDL_GLView = NULL;
+        _gl_type = 0;
 #endif
         _shown = false;
         _inhibit_resize = false;
@@ -133,6 +134,7 @@ class SDL_BWin:public BDirectWindow
                                      B_FOLLOW_ALL_SIDES,
                                      (B_WILL_DRAW | B_FRAME_EVENTS),
                                      gl_flags);
+            _gl_type = gl_flags;
         }
         AddChild(_SDL_GLView);
         _SDL_GLView->EnableDirectMode(true);
@@ -443,6 +445,7 @@ class SDL_BWin:public BDirectWindow
     BBitmap *GetBitmap() { return _bitmap; }
 #if SDL_VIDEO_OPENGL
     BGLView *GetGLView() { return _SDL_GLView; }
+    Uint32 GetGLType() { return _gl_type; }
 #endif
 
     /* Setter methods */
@@ -625,6 +628,7 @@ private:
     /* Members */
 #if SDL_VIDEO_OPENGL
     BGLView * _SDL_GLView;
+    Uint32 _gl_type;
 #endif
 
     int32 _last_buttons;
