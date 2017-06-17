@@ -35,8 +35,6 @@ extern "C" {
 #endif
 
 
-#define BGL_FLAGS BGL_RGB | BGL_DOUBLE
-
 static SDL_INLINE SDL_BWin *_ToBeWin(SDL_Window *window) {
     return ((SDL_BWin*)(window->driverdata));
 }
@@ -104,7 +102,28 @@ SDL_GLContext BE_GL_CreateContext(_THIS, SDL_Window * window) {
     /* FIXME: Not sure what flags should be included here; may want to have
        most of them */
     SDL_BWin *bwin = _ToBeWin(window);
-    bwin->CreateGLView(BGL_FLAGS);
+    Uint32 gl_flags = BGL_RGB;
+    if (_this->gl_config.alpha_size) {
+        gl_flags |= BGL_ALPHA;
+    }
+    if (_this->gl_config.depth_size) {
+        gl_flags |= BGL_DEPTH;
+    }
+    if (_this->gl_config.stencil_size) {
+        gl_flags |= BGL_STENCIL;
+    }
+    if (_this->gl_config.double_buffer) {
+        gl_flags |= BGL_DOUBLE;
+    } else {
+        gl_flags |= BGL_SINGLE;
+    }
+    if (_this->gl_config.accum_red_size ||
+            _this->gl_config.accum_green_size ||
+            _this->gl_config.accum_blue_size ||
+            _this->gl_config.accum_alpha_size) {
+        gl_flags |= BGL_ACCUM;
+    }
+    bwin->CreateGLView(gl_flags);
     return (SDL_GLContext)(bwin);
 }
 
@@ -140,7 +159,7 @@ void BE_GL_RebootContexts(_THIS) {
         if(bwin->GetGLView()) {
             bwin->LockLooper();
             bwin->RemoveGLView();
-            bwin->CreateGLView(BGL_FLAGS);
+            bwin->CreateGLView(bwin->GetGLType());
             bwin->UnlockLooper();
         }
         window = window->next;
