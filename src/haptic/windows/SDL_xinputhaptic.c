@@ -278,8 +278,9 @@ SDL_XINPUT_HapticUpdateEffect(SDL_Haptic * haptic, struct haptic_effect *effect,
 {
     XINPUT_VIBRATION *vib = &effect->hweffect->vibration;
     SDL_assert(data->type == SDL_HAPTIC_LEFTRIGHT);
-    vib->wLeftMotorSpeed = data->leftright.large_magnitude;
-    vib->wRightMotorSpeed = data->leftright.small_magnitude;
+    /* SDL_HapticEffect has max magnitude of 32767, XInput expects 65535 max, so multiply */
+    vib->wLeftMotorSpeed = data->leftright.large_magnitude * 2;
+    vib->wRightMotorSpeed = data->leftright.small_magnitude * 2;
     SDL_LockMutex(haptic->hwdata->mutex);
     if (haptic->hwdata->stopTicks) {  /* running right now? Update it. */
         XINPUTSETSTATE(haptic->hwdata->userid, vib);
