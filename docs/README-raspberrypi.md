@@ -23,7 +23,7 @@ Raspbian (other Linux distros may work as well).
 sudo apt-get install libudev-dev libasound2-dev libdbus-1-dev
 
 You also need the VideoCore binary stuff that ships in /opt/vc for EGL and 
-OpenGL ES 2.x, it usually comes pre installed, but in any case:
+OpenGL ES 2.x, it usually comes pre-installed, but in any case:
     
 sudo apt-get install libraspberrypi0 libraspberrypi-bin libraspberrypi-dev
 
@@ -37,7 +37,7 @@ will be placed in /opt/rpi-tools
 
     sudo git clone --depth 1 https://github.com/raspberrypi/tools /opt/rpi-tools
 
-You'll also need a Rasbian binary image.
+You'll also need a Raspbian binary image.
 Get it from: http://downloads.raspberrypi.org/raspbian_latest 
 After unzipping, you'll get file with a name like: "<date>-wheezy-raspbian.img"
 Let's assume the sysroot will be built in /opt/rpi-sysroot.
@@ -136,9 +136,9 @@ your app has read access to one of the following:
 This is usually not a problem if you run from the physical terminal (as opposed
 to running from a pseudo terminal, such as via SSH). If running from a PTS, a 
 quick workaround is to run your app as root or add yourself to the tty group,
-then re login to the system.
+then re-login to the system.
 
-   sudo usermod -aG tty `whoami`
+    sudo usermod -aG tty `whoami`
     
 The keyboard layout used by SDL is the same as the one the kernel uses.
 To configure the layout on Raspbian:
