@@ -28,7 +28,7 @@
 
 
 /* SDL-specific includes */
-#include <SDL.h>
+#include "SDL.h"
 #include "SDL_winrtevents_c.h"
 
 extern "C" {
