@@ -154,7 +154,7 @@ int main(int argc,char** argv)
     SDL_SetWindowSize(window,texture_dimensions.w,texture_dimensions.h);
     SDL_SetWindowShape(window,pictures[current_picture].surface,&pictures[current_picture].mode);
     while(should_exit == 0) {
-        if (SDL_PollEvent(&event)) {
+        while (SDL_PollEvent(&event)) {
             if(event.type == SDL_KEYDOWN) {
                 button_down = 1;
                 if(event.key.keysym.sym == SDLK_ESCAPE) {
@@ -172,8 +172,10 @@ int main(int argc,char** argv)
                 SDL_SetWindowSize(window,texture_dimensions.w,texture_dimensions.h);
                 SDL_SetWindowShape(window,pictures[current_picture].surface,&pictures[current_picture].mode);
             }
-            if(event.type == SDL_QUIT)
+            if (event.type == SDL_QUIT) {
                 should_exit = 1;
+                break;
+            }
         }
         render(renderer,pictures[current_picture].texture,texture_dimensions);
         SDL_Delay(10);
