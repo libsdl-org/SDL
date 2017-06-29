@@ -32,9 +32,6 @@ struct SDL_PrivateAudioData
     /* The file descriptor for the audio device */
     int audio_fd;
 
-    /* The parent process id, to detect when application quits */
-    pid_t parent;
-
     /* Raw mixing buffer */
     Uint8 *mixbuf;
     int mixlen;
