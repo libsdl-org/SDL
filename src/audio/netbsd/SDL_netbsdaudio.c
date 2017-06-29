@@ -40,7 +40,7 @@
 #include "SDL_audio.h"
 #include "../SDL_audio_c.h"
 #include "../SDL_audiodev_c.h"
-#include "SDL_bsdaudio.h"
+#include "SDL_netbsdaudio.h"
 
 /* Use timer for synchronization */
 /* #define USE_TIMER_SYNC */
