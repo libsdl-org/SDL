@@ -510,11 +510,11 @@ PAUDIO_Init(SDL_AudioDriverImpl * impl)
     close(fd);
 
     /* Set the function pointers */
-    impl->OpenDevice = DSP_OpenDevice;
-    impl->PlayDevice = DSP_PlayDevice;
-    impl->PlayDevice = DSP_WaitDevice;
-    impl->GetDeviceBuf = DSP_GetDeviceBuf;
-    impl->CloseDevice = DSP_CloseDevice;
+    impl->OpenDevice = PAUDIO_OpenDevice;
+    impl->PlayDevice = PAUDIO_PlayDevice;
+    impl->PlayDevice = PAUDIO_WaitDevice;
+    impl->GetDeviceBuf = PAUDIO_GetDeviceBuf;
+    impl->CloseDevice = PAUDIO_CloseDevice;
     impl->OnlyHasDefaultOutputDevice = 1;       /* !!! FIXME: add device enum! */
 
     return 1;   /* this audio target is available. */
