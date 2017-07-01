@@ -220,7 +220,7 @@ NETBSDAUDIO_CaptureFromDevice(_THIS, void *_buffer, int buflen)
     Uint8 *buffer = (Uint8 *) _buffer;
     int br, p = 0;
 
-    /* Write the audio data, checking for EAGAIN on broken audio drivers */
+    /* Capture the audio data, checking for EAGAIN on broken audio drivers */
     do {
         br = read(this->hidden->audio_fd, buffer + p, buflen - p);
         if (br > 0)
