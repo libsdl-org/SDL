@@ -216,7 +216,7 @@ static SDL_INLINE void *get_sdlapi_entry(const char *fname, const char *sym)
     return retval;
 }
 
-#elif defined(unix) || defined(__unix__) || defined(__APPLE__) || defined(__HAIKU__)
+#elif defined(unix) || defined(__unix__) || defined(__APPLE__) || defined(__HAIKU__) || defined(__QNX__)
 #include <dlfcn.h>
 static SDL_INLINE void *get_sdlapi_entry(const char *fname, const char *sym)
 {
@@ -302,4 +302,3 @@ SDL_InitDynamicAPI(void)
 #endif  /* SDL_DYNAMIC_API */
 
 /* vi: set ts=4 sw=4 expandtab: */
-
