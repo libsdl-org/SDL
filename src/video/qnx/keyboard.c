@@ -30,7 +30,7 @@
  * A map thta translates Screen key names to SDL scan codes.
  * This map is incomplete, but should include most major keys.
  */
-static int  key_to_sdl[] = {
+static int key_to_sdl[] = {
     [KEYCODE_SPACE] = SDL_SCANCODE_SPACE,
     [KEYCODE_APOSTROPHE] = SDL_SCANCODE_APOSTROPHE,
     [KEYCODE_COMMA] = SDL_SCANCODE_COMMA,
@@ -107,7 +107,7 @@ handleKeyboardEvent(screen_event_t event)
     }
 
     // Skip unrecognized keys.
-    if ((val < 0) || (val > (sizeof(key_to_sdl) / sizeof(int)))) {
+    if ((val < 0) || (val >= SDL_TABLESIZE(key_to_sdl))) {
         return;
     }
 
