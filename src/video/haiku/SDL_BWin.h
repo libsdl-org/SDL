@@ -115,6 +115,8 @@ class SDL_BWin:public BDirectWindow
         }
 #endif
 
+        delete _prev_frame;
+
         /* Clean up framebuffer stuff */
         _buffer_locker->Lock();
 #ifdef DRAWTHREAD
