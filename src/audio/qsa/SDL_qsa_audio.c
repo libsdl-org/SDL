@@ -370,13 +370,13 @@ QSA_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         this->hidden->cardno = device->cardno;
         status = snd_pcm_open(&this->hidden->audio_handle,
                               device->cardno, device->deviceno,
-                              iscapture ? SND_PCM_OPEN_PLAYBACK : SND_PCM_OPEN_CAPTURE);
+                              iscapture ? SND_PCM_OPEN_CAPTURE : SND_PCM_OPEN_PLAYBACK);
     } else {
         /* Open system default audio device */
         status = snd_pcm_open_preferred(&this->hidden->audio_handle,
                                         &this->hidden->cardno,
                                         &this->hidden->deviceno,
-                                        iscapture ? SND_PCM_OPEN_PLAYBACK : SND_PCM_OPEN_CAPTURE);
+                                        iscapture ? SND_PCM_OPEN_CAPTURE : SND_PCM_OPEN_PLAYBACK);
     }
 
     /* Check if requested device is opened */
@@ -385,6 +385,7 @@ QSA_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         return QSA_SetError("snd_pcm_open", status);
     }
 
+#if 0
     if (!QSA_CheckBuggyCards(this, QSA_MMAP_WORKAROUND)) {
         /* Disable QSA MMAP plugin for buggy audio drivers */
         status =
@@ -394,6 +395,7 @@ QSA_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
             return QSA_SetError("snd_pcm_plugin_set_disable", status);
         }
     }
+#endif
 
     /* Try for a closest match on audio format */
     format = 0;
