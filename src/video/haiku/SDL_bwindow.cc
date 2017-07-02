@@ -66,7 +66,7 @@ static int _InitWindow(_THIS, SDL_Window *window) {
 
     SDL_BWin *bwin = new(std::nothrow) SDL_BWin(bounds, look, flags);
     if(bwin == NULL)
-    	return ENOMEM;
+        return -1;
 
     window->driverdata = bwin;
     int32 winID = _GetBeApp()->GetID(window);
@@ -76,8 +76,9 @@ static int _InitWindow(_THIS, SDL_Window *window) {
 }
 
 int BE_CreateWindow(_THIS, SDL_Window *window) {
-	if(_InitWindow(_this, window) == ENOMEM)
-		return ENOMEM;
+    if (_InitWindow(_this, window) < 0) {
+        return -1;
+    }
 	
 	/* Start window loop */
     _ToBeWin(window)->Show();
@@ -102,8 +103,9 @@ int BE_CreateWindowFrom(_THIS, SDL_Window * window, const void *data) {
 	}
 	
 	/* If we are out of memory, return the error code */
-	if(_InitWindow(_this, window) == ENOMEM)
-		return ENOMEM;
+    if (_InitWindow(_this, window) < 0) {
+        return -1;
+    }
 	
 	/* TODO: Add any other SDL-supported window attributes here */
     _ToBeWin(window)->SetTitle(otherBWin->Title());
