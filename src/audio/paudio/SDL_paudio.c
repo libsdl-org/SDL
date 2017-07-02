@@ -38,7 +38,7 @@
 #include "../SDL_audio_c.h"
 #include "SDL_paudio.h"
 
-#define DEBUG_AUDIO 0
+/* #define DEBUG_AUDIO */
 
 /* A conflict within AIX 4.3.3 <sys/> headers and probably others as well.
  * I guess nobody ever uses audio... Shame over AIX header files.  */
