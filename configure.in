@@ -2116,7 +2116,7 @@ CheckQNXAudio()
     if test x$enable_audio = xyes; then
         AC_DEFINE(SDL_AUDIO_DRIVER_QSA, 1, [ ])
         SOURCES="$SOURCES $srcdir/src/audio/qsa/*.c"
-        have_video=yes
+        have_audio=yes
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lasound"
         SUMMARY_audio="${SUMMARY_audio} qsa"
     fi
