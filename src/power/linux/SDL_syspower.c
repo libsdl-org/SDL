@@ -460,6 +460,16 @@ SDL_GetPowerInfo_Linux_sys_class_power_supply(SDL_PowerState *state, int *second
             continue;  /* we don't care about UPS and such. */
         }
 
+        /* if the scope is "device," it might be something like a PS4
+           controller reporting its own battery, and not something that powers
+           the system. Most system batteries don't list a scope at all; we
+           assume it's a system battery if not specified. */
+        if (read_power_file(base, name, "scope", str, sizeof (str))) {
+            if (SDL_strcmp(str, "device\n") != 0) {
+                continue;  /* skip external devices with their own batteries. */
+            }
+        }
+
         /* some drivers don't offer this, so if it's not explicitly reported assume it's present. */
         if (read_power_file(base, name, "present", str, sizeof (str)) && (SDL_strcmp(str, "0\n") == 0)) {
             st = SDL_POWERSTATE_NO_BATTERY;
