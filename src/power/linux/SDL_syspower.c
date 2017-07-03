@@ -465,7 +465,7 @@ SDL_GetPowerInfo_Linux_sys_class_power_supply(SDL_PowerState *state, int *second
            the system. Most system batteries don't list a scope at all; we
            assume it's a system battery if not specified. */
         if (read_power_file(base, name, "scope", str, sizeof (str))) {
-            if (SDL_strcmp(str, "device\n") != 0) {
+            if (SDL_strcmp(str, "device\n") == 0) {
                 continue;  /* skip external devices with their own batteries. */
             }
         }
