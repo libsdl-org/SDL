@@ -375,7 +375,7 @@ X11_CreateWindow(_THIS, SDL_Window * window)
     Atom _NET_WM_WINDOW_TYPE;
     Atom wintype;
     const char *wintype_name = NULL;
-    int compositor = 1;
+    long compositor = 1;
     Atom _NET_WM_PID;
     Atom XdndAware, xdnd_version = 5;
     long fevent = 0;
