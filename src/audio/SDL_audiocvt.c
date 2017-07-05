@@ -1305,7 +1305,7 @@ SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, const Uint32 _bufle
             return -1;  /* probably out of memory. */
         }
         if (buf == origbuf) {  /* copy if we haven't before. */
-            SDL_memcpy(workbuf, buf, buflen);
+            SDL_memcpy(workbuf, origbuf, buflen);
         }
         stream->cvt_after_resampling.buf = workbuf;
         stream->cvt_after_resampling.len = buflen;
