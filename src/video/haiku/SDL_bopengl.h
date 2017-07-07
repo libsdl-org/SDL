@@ -22,6 +22,8 @@
 #ifndef SDL_BOPENGL_H
 #define SDL_BOPENGL_H
 
+#if SDL_VIDEO_DRIVER_HAIKU && SDL_VIDEO_OPENGL
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -45,6 +47,8 @@ extern void BE_GL_RebootContexts(_THIS);
 #ifdef __cplusplus
 }
 #endif
+
+#endif /* SDL_VIDEO_DRIVER_HAIKU && SDL_VIDEO_OPENGL */
 
 #endif
 
