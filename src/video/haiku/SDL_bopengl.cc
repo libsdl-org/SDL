@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_HAIKU
+#if SDL_VIDEO_DRIVER_HAIKU && SDL_VIDEO_OPENGL
 
 #include "SDL_bopengl.h"
 
@@ -171,6 +171,6 @@ void BE_GL_RebootContexts(_THIS) {
 }
 #endif
 
-#endif /* SDL_VIDEO_DRIVER_HAIKU */
+#endif /* SDL_VIDEO_DRIVER_HAIKU && SDL_VIDEO_OPENGL */
 
 /* vi: set ts=4 sw=4 expandtab: */
