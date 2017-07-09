@@ -21328,6 +21328,32 @@ $as_echo "#define SDL_VIDEO_DRIVER_DUMMY 1" >>confdefs.h
     fi
 }
 
+CheckQNXVideo()
+{
+    if test x$enable_video = xyes; then
+
+$as_echo "#define SDL_VIDEO_DRIVER_QNX 1" >>confdefs.h
+
+        SOURCES="$SOURCES $srcdir/src/video/qnx/*.c"
+        have_video=yes
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lscreen -lEGL -lGLESv2"
+        SUMMARY_video="${SUMMARY_video} qnx"
+    fi
+}
+
+CheckQNXAudio()
+{
+    if test x$enable_audio = xyes; then
+
+$as_echo "#define SDL_AUDIO_DRIVER_QSA 1" >>confdefs.h
+
+        SOURCES="$SOURCES $srcdir/src/audio/qsa/*.c"
+        have_audio=yes
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lasound"
+        SUMMARY_audio="${SUMMARY_audio} qsa"
+    fi
+}
+
 # Check whether --enable-video-opengl was given.
 if test "${enable_video_opengl+set}" = set; then :
   enableval=$enable_video_opengl;
@@ -22224,6 +22250,10 @@ fi
             pthread_lib="-L/usr/lib -lpthread"
             ;;
         *-*-haiku*)
+            pthread_cflags="-D_REENTRANT"
+            pthread_lib=""
+            ;;
+        *-*-nto*)
             pthread_cflags="-D_REENTRANT"
             pthread_lib=""
             ;;
@@ -23306,7 +23336,7 @@ fi
 CheckWarnAll
 
 case "$host" in
-    *-*-linux*|*-*-uclinux*|*-*-gnu*|*-*-k*bsd*-gnu|*-*-bsdi*|*-*-freebsd*|*-*-dragonfly*|*-*-netbsd*|*-*-openbsd*|*-*-sysv5*|*-*-solaris*|*-*-hpux*|*-*-aix*|*-*-minix*)
+    *-*-linux*|*-*-uclinux*|*-*-gnu*|*-*-k*bsd*-gnu|*-*-bsdi*|*-*-freebsd*|*-*-dragonfly*|*-*-netbsd*|*-*-openbsd*|*-*-sysv5*|*-*-solaris*|*-*-hpux*|*-*-aix*|*-*-minix*|*-*-nto*)
         case "$host" in
             *-raspberry-linux*)
                 # Raspberry Pi
@@ -23371,6 +23401,9 @@ case "$host" in
             *-*-hpux*)          ARCH=hpux ;;
             *-*-aix*)           ARCH=aix ;;
             *-*-minix*)         ARCH=minix ;;
+            *-*-nto*)           ARCH=nto
+                CheckQNXVideo
+                ;;
         esac
         CheckVisibilityHidden
         CheckDeclarationAfterStatement
@@ -23412,6 +23445,7 @@ case "$host" in
         CheckLinuxVersion
         CheckRPATH
         CheckVivanteVideo
+
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
           case $ARCH in
@@ -23420,6 +23454,7 @@ case "$host" in
 $as_echo "#define SDL_AUDIO_DRIVER_SUNAUDIO 1" >>confdefs.h
 
                 SOURCES="$SOURCES $srcdir/src/audio/sun/*.c"
+                SUMMARY_audio="${SUMMARY_audio} sun"
                 have_audio=yes
             ;;
             netbsd)  # Don't use this on OpenBSD, it's busted.
@@ -23427,6 +23462,7 @@ $as_echo "#define SDL_AUDIO_DRIVER_SUNAUDIO 1" >>confdefs.h
 $as_echo "#define SDL_AUDIO_DRIVER_NETBSD 1" >>confdefs.h
 
                 SOURCES="$SOURCES $srcdir/src/audio/netbsd/*.c"
+                SUMMARY_audio="${SUMMARY_audio} netbsd"
                 have_audio=yes
             ;;
             aix)
@@ -23434,6 +23470,7 @@ $as_echo "#define SDL_AUDIO_DRIVER_NETBSD 1" >>confdefs.h
 $as_echo "#define SDL_AUDIO_DRIVER_PAUDIO 1" >>confdefs.h
 
                 SOURCES="$SOURCES $srcdir/src/audio/paudio/*.c"
+                SUMMARY_audio="${SUMMARY_audio} paudio"
                 have_audio=yes
             ;;
             android)
@@ -23443,6 +23480,9 @@ $as_echo "#define SDL_AUDIO_DRIVER_ANDROID 1" >>confdefs.h
                 SOURCES="$SOURCES $srcdir/src/audio/android/*.c"
                 SUMMARY_audio="${SUMMARY_audio} android"
                 have_audio=yes
+            ;;
+            nto)
+                CheckQNXAudio
             ;;
           esac
         fi
@@ -23758,6 +23798,7 @@ fi
 $as_echo "#define SDL_AUDIO_DRIVER_HAIKU 1" >>confdefs.h
 
             SOURCES="$SOURCES $srcdir/src/audio/haiku/*.cc"
+            SUMMARY_audio="${SUMMARY_audio} haiku"
             have_audio=yes
         fi
         # Set up files for the joystick library
