@@ -146,7 +146,7 @@ static void unifont_init(const char *fontname)
             break; /* EOF */
         if ((numGlyphs == 0 && bytesRead == 0) || (numGlyphs > 0 && bytesRead < 9))
         {
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unfiont: Unexpected end of hex file.\n");
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Unexpected end of hex file.\n");
             exit(-1);
         }
 
