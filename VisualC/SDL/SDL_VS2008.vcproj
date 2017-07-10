@@ -870,6 +870,14 @@
 			>
 		</File>
 		<File
+			RelativePath="..\..\src\SDL_dataqueue.c"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\SDL_dataqueue.h"
+			>
+		</File>
+		<File
 			RelativePath="..\..\src\haptic\windows\SDL_dinputhaptic.c"
 			>
 		</File>
@@ -959,14 +967,6 @@
 		</File>
 		<File
 			RelativePath="..\..\src\video\SDL_egl.c"
-			>
-		</File>
-		<File
-			RelativePath="..\..\src\SDL_dataqueue.c"
-			>
-		</File>
-		<File
-			RelativePath="..\..\src\SDL_dataqueue.h"
 			>
 		</File>
 		<File
@@ -1306,6 +1306,14 @@
 			>
 		</File>
 		<File
+			RelativePath="..\..\src\audio\wasapi\SDL_wasapi.c"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\audio\wasapi\SDL_wasapi.h"
+			>
+		</File>
+		<File
 			RelativePath="..\..\src\audio\SDL_wave.c"
 			>
 		</File>
@@ -1435,14 +1443,6 @@
 		</File>
 		<File
 			RelativePath="..\..\src\video\windows\SDL_windowswindow.h"
-			>
-		</File>
-		<File
-			RelativePath="..\..\src\audio\wasapi\SDL_wasapi.c"
-			>
-		</File>
-		<File
-			RelativePath="..\..\src\audio\wasapi\SDL_wasapi.h"
 			>
 		</File>
 		<File
