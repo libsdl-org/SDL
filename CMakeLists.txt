@@ -1095,6 +1095,16 @@ elseif(WINDOWS)
         #include <windows.h>
         #include <xinput.h>
         int main(int argc, char **argv) { }" HAVE_XINPUT_H)
+      check_c_source_compiles("
+        #include <windows.h>
+        #include <xinput.h>
+        XINPUT_GAMEPAD_EX x1;
+        int main(int argc, char **argv) { }" HAVE_XINPUT_GAMEPAD_EX)
+      check_c_source_compiles("
+        #include <windows.h>
+        #include <xinput.h>
+        XINPUT_STATE_EX s1;
+        int main(int argc, char **argv) { }" HAVE_XINPUT_STATE_EX)
     else()
       check_include_file(xinput.h HAVE_XINPUT_H)
     endif()

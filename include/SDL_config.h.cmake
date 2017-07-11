@@ -55,6 +55,8 @@
 #cmakedefine HAVE_XAUDIO2_H @HAVE_XAUDIO2_H@
 #cmakedefine HAVE_XINPUT_H @HAVE_XINPUT_H@
 #cmakedefine HAVE_DXGI_H @HAVE_DXGI_H@
+#cmakedefine HAVE_XINPUT_GAMEPAD_EX @HAVE_XINPUT_GAMEPAD_EX@
+#cmakedefine HAVE_XINPUT_STATE_EX @HAVE_XINPUT_STATE_EX@
 
 /* Comment this if you want to build without any C library requirements */
 #cmakedefine HAVE_LIBC 1
