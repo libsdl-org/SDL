@@ -74,11 +74,14 @@ SDL_CalculateShapeBitmap(SDL_WindowShapeMode mode,SDL_Surface *shape,Uint8* bitm
     int y = 0;
     Uint8 r = 0,g = 0,b = 0,alpha = 0;
     Uint8* pixel = NULL;
-    Uint32 bitmap_pixel,pixel_value = 0,mask_value = 0;
+    Uint32 pixel_value = 0,mask_value = 0;
+    int bytes_per_scanline = (shape->w + (ppb - 1)) / ppb;
+    Uint8 *bitmap_scanline;
     SDL_Color key;
     if(SDL_MUSTLOCK(shape))
         SDL_LockSurface(shape);
     for(y = 0;y<shape->h;y++) {
+        bitmap_scanline = bitmap + y * bytes_per_scanline;
         for(x=0;x<shape->w;x++) {
             alpha = 0;
             pixel_value = 0;
@@ -98,7 +101,6 @@ SDL_CalculateShapeBitmap(SDL_WindowShapeMode mode,SDL_Surface *shape,Uint8* bitm
                     break;
             }
             SDL_GetRGBA(pixel_value,shape->format,&r,&g,&b,&alpha);
-            bitmap_pixel = y*shape->w + x;
             switch(mode.mode) {
                 case(ShapeModeDefault):
                     mask_value = (alpha >= 1 ? 1 : 0);
@@ -114,7 +116,7 @@ SDL_CalculateShapeBitmap(SDL_WindowShapeMode mode,SDL_Surface *shape,Uint8* bitm
                     mask_value = ((key.r != r || key.g != g || key.b != b) ? 1 : 0);
                     break;
             }
-            bitmap[bitmap_pixel / ppb] |= mask_value << (7 - ((ppb - 1) - (bitmap_pixel % ppb)));
+            bitmap_scanline[x / ppb] |= mask_value << (x % ppb);
         }
     }
     if(SDL_MUSTLOCK(shape))
