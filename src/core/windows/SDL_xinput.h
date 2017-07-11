@@ -101,13 +101,7 @@
 
 /* typedef's for XInput structs we use */
 
-/* Don't redeclare these on MinGW with gcc >= 5.0.2 */
-#if defined(__MINGW32__) && (((__GNUC__ * 10000) + (__GNUC_MINOR__ * 100) + __GNUC_PATCHLEVEL__) >= 50002)
-#define HAS_XINPUT_GAMEPAD_EX
-#define HAS_XINPUT_STATE_EX
-#endif
-
-#ifndef HAS_XINPUT_GAMEPAD_EX
+#ifndef HAVE_XINPUT_GAMEPAD_EX
 typedef struct
 {
     WORD wButtons;
@@ -121,7 +115,7 @@ typedef struct
 } XINPUT_GAMEPAD_EX;
 #endif
 
-#ifndef HAS_XINPUT_STATE_EX
+#ifndef HAVE_XINPUT_STATE_EX
 typedef struct
 {
     DWORD dwPacketNumber;

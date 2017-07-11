@@ -35,6 +35,7 @@
 #endif
 
 #include <windows.h>
+#include <basetyps.h>   /* for REFIID with broken mingw.org headers */
 
 /* Routines to convert from UTF8 to native Windows text */
 #if UNICODE

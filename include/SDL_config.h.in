@@ -55,6 +55,8 @@
 #undef HAVE_DSOUND_H
 #undef HAVE_DXGI_H
 #undef HAVE_XINPUT_H
+#undef HAVE_XINPUT_GAMEPAD_EX
+#undef HAVE_XINPUT_STATE_EX
 
 /* Comment this if you want to build without any C library requirements */
 #undef HAVE_LIBC
