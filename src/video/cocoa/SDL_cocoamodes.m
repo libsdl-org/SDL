@@ -392,7 +392,10 @@ Cocoa_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
 #endif
 
     modes = CGDisplayCopyAllDisplayModes(data->display, dict);
-    CFRelease(dict);
+
+    if (dict != NULL) {
+        CFRelease(dict);
+    }
 
     if (modes) {
         CVDisplayLinkRef link = NULL;
