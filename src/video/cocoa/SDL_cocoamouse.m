@@ -26,6 +26,7 @@
 #include "SDL_events.h"
 #include "SDL_cocoamouse.h"
 #include "SDL_cocoamousetap.h"
+#include "SDL_cocoavideo.h"
 
 #include "../../events/SDL_mouse_c.h"
 
@@ -363,10 +364,10 @@ void
 Cocoa_HandleMouseEvent(_THIS, NSEvent *event)
 {
     switch ([event type]) {
-        case NSMouseMoved:
-        case NSLeftMouseDragged:
-        case NSRightMouseDragged:
-        case NSOtherMouseDragged:
+        case NSEventTypeMouseMoved:
+        case NSEventTypeLeftMouseDragged:
+        case NSEventTypeRightMouseDragged:
+        case NSEventTypeOtherMouseDragged:
             break;
 
         default:

@@ -83,7 +83,7 @@
 {
     [super sendEvent:event];
 
-    if ([event type] != NSLeftMouseUp) {
+    if ([event type] != NSEventTypeLeftMouseUp) {
         return;
     }
 
@@ -221,15 +221,15 @@ GetWindowStyle(SDL_Window * window)
     NSUInteger style = 0;
 
     if (window->flags & SDL_WINDOW_FULLSCREEN) {
-        style = NSBorderlessWindowMask;
+        style = NSWindowStyleMaskBorderless;
     } else {
         if (window->flags & SDL_WINDOW_BORDERLESS) {
-            style = NSBorderlessWindowMask;
+            style = NSWindowStyleMaskBorderless;
         } else {
-            style = (NSTitledWindowMask|NSClosableWindowMask|NSMiniaturizableWindowMask);
+            style = (NSWindowStyleMaskTitled|NSWindowStyleMaskClosable|NSWindowStyleMaskMiniaturizable);
         }
         if (window->flags & SDL_WINDOW_RESIZABLE) {
-            style |= NSResizableWindowMask;
+            style |= NSWindowStyleMaskResizable;
         }
     }
     return style;
@@ -595,8 +595,8 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
         [NSMenu setMenuBarVisible:NO];
     }
 
-    const unsigned int newflags = [NSEvent modifierFlags] & NSAlphaShiftKeyMask;
-    _data->videodata->modifierFlags = (_data->videodata->modifierFlags & ~NSAlphaShiftKeyMask) | newflags;
+    const unsigned int newflags = [NSEvent modifierFlags] & NSEventModifierFlagCapsLock;
+    _data->videodata->modifierFlags = (_data->videodata->modifierFlags & ~NSEventModifierFlagCapsLock) | newflags;
     SDL_ToggleModState(KMOD_CAPS, newflags != 0);
 }
 
@@ -642,7 +642,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 {
     SDL_Window *window = _data->window;
 
-    SetWindowStyle(window, (NSTitledWindowMask|NSClosableWindowMask|NSMiniaturizableWindowMask|NSResizableWindowMask));
+    SetWindowStyle(window, (NSWindowStyleMaskTitled|NSWindowStyleMaskClosable|NSWindowStyleMaskMiniaturizable|NSWindowStyleMaskResizable));
 
     isFullscreenSpace = YES;
     inFullscreenTransition = YES;
@@ -696,7 +696,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     /* As of OS X 10.11, the window seems to need to be resizable when exiting
        a Space, in order for it to resize back to its windowed-mode size.
      */
-    SetWindowStyle(window, GetWindowStyle(window) | NSResizableWindowMask);
+    SetWindowStyle(window, GetWindowStyle(window) | NSWindowStyleMaskResizable);
 
     isFullscreenSpace = NO;
     inFullscreenTransition = YES;
@@ -710,7 +710,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
         return;
     }
 
-    SetWindowStyle(window, (NSTitledWindowMask|NSClosableWindowMask|NSMiniaturizableWindowMask|NSResizableWindowMask));
+    SetWindowStyle(window, (NSWindowStyleMaskTitled|NSWindowStyleMaskClosable|NSWindowStyleMaskMiniaturizable|NSWindowStyleMaskResizable));
     
     isFullscreenSpace = YES;
     inFullscreenTransition = NO;
@@ -841,7 +841,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 
     switch ([theEvent buttonNumber]) {
     case 0:
-        if (([theEvent modifierFlags] & NSControlKeyMask) &&
+        if (([theEvent modifierFlags] & NSEventModifierFlagControl) &&
 		    GetHintCtrlClickEmulateRightClick()) {
             wasCtrlLeft = YES;
             button = SDL_BUTTON_RIGHT;
@@ -1170,12 +1170,12 @@ SetupWindowData(_THIS, SDL_Window * window, NSWindow *nswindow, SDL_bool created
     {
         unsigned long style = [nswindow styleMask];
 
-        if (style == NSBorderlessWindowMask) {
+        if (style == NSWindowStyleMaskBorderless) {
             window->flags |= SDL_WINDOW_BORDERLESS;
         } else {
             window->flags &= ~SDL_WINDOW_BORDERLESS;
         }
-        if (style & NSResizableWindowMask) {
+        if (style & NSWindowStyleMaskResizable) {
             window->flags |= SDL_WINDOW_RESIZABLE;
         } else {
             window->flags &= ~SDL_WINDOW_RESIZABLE;
@@ -1536,7 +1536,7 @@ Cocoa_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display
             rect.origin.y += (screenRect.size.height - rect.size.height);
         }
 
-        [nswindow setStyleMask:NSBorderlessWindowMask];
+        [nswindow setStyleMask:NSWindowStyleMaskBorderless];
     } else {
         rect.origin.x = window->windowed.x;
         rect.origin.y = window->windowed.y;

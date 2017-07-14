@@ -40,6 +40,59 @@
 #include "SDL_cocoaopengl.h"
 #include "SDL_cocoawindow.h"
 
+#ifndef MAC_OS_X_VERSION_10_12
+#define DECLARE_EVENT(name) static const NSEventType NSEventType##name = NS##name
+DECLARE_EVENT(LeftMouseDown);
+DECLARE_EVENT(LeftMouseUp);
+DECLARE_EVENT(RightMouseDown);
+DECLARE_EVENT(RightMouseUp);
+DECLARE_EVENT(OtherMouseDown);
+DECLARE_EVENT(OtherMouseUp);
+DECLARE_EVENT(MouseMoved);
+DECLARE_EVENT(LeftMouseDragged);
+DECLARE_EVENT(RightMouseDragged);
+DECLARE_EVENT(OtherMouseDragged);
+DECLARE_EVENT(ScrollWheel);
+DECLARE_EVENT(KeyDown);
+DECLARE_EVENT(KeyUp);
+DECLARE_EVENT(FlagsChanged);
+DECLARE_EVENT(Any);
+#undef DECLARE_EVENT
+
+#define DECLARE_MODIFIER_FLAG(name) static const NSUInteger NSEventModifierFlag##name = NS##name##KeyMask
+DECLARE_MODIFIER_FLAG(Shift);
+DECLARE_MODIFIER_FLAG(Control);
+DECLARE_MODIFIER_FLAG(Command);
+DECLARE_MODIFIER_FLAG(NumericPad);
+DECLARE_MODIFIER_FLAG(Help);
+DECLARE_MODIFIER_FLAG(Function);
+#undef DECLARE_MODIFIER_FLAG
+static const unsigned int NSEventModifierFlagCapsLock = NSAlphaShiftKeyMask;
+static const unsigned int NSEventModifierFlagOption = NSAlternateKeyMask;
+
+#define DECLARE_WINDOW_MASK(name) static const unsigned int NSWindowStyleMask##name = NS##name##WindowMask
+DECLARE_WINDOW_MASK(Borderless);
+DECLARE_WINDOW_MASK(Titled);
+DECLARE_WINDOW_MASK(Closable);
+DECLARE_WINDOW_MASK(Miniaturizable);
+DECLARE_WINDOW_MASK(Resizable);
+DECLARE_WINDOW_MASK(TexturedBackground);
+DECLARE_WINDOW_MASK(UnifiedTitleAndToolbar);
+DECLARE_WINDOW_MASK(Fullscreen);
+DECLARE_WINDOW_MASK(FullSizeContentView);
+DECLARE_WINDOW_MASK(NonactivatingPanel);
+DECLARE_WINDOW_MASK(HUDWindow);
+static const unsigned int NSWindowStyleMaskUtilityWindow = NSUtilityWindowMask;
+static const unsigned int NSWindowStyleMaskDocModalWindow = NSDocModalWindowMask;
+#undef DECLARE_WINDOW_MASK
+
+#define DECLARE_ALERT_STYLE(name) static NSUInteger NSAlertStyle##name = NS##name##AlertStyle
+DECLARE_ALERT_STYLE(Warning);
+DECLARE_ALERT_STYLE(Informational);
+DECLARE_ALERT_STYLE(Critical);
+#undef DECLARE_ALERT_STYLE
+#endif
+
 /* Private display data */
 
 @class SDLTranslatorResponder;

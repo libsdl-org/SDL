@@ -86,11 +86,11 @@ Cocoa_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     NSAlert* alert = [[[NSAlert alloc] init] autorelease];
 
     if (messageboxdata->flags & SDL_MESSAGEBOX_ERROR) {
-        [alert setAlertStyle:NSCriticalAlertStyle];
+        [alert setAlertStyle:NSAlertStyleCritical];
     } else if (messageboxdata->flags & SDL_MESSAGEBOX_WARNING) {
-        [alert setAlertStyle:NSWarningAlertStyle];
+        [alert setAlertStyle:NSAlertStyleWarning];
     } else {
-        [alert setAlertStyle:NSInformationalAlertStyle];
+        [alert setAlertStyle:NSAlertStyleInformational];
     }
 
     [alert setMessageText:[NSString stringWithUTF8String:messageboxdata->title]];

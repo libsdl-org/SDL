@@ -55,22 +55,22 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
     SDL_VideoDevice *_this = SDL_GetVideoDevice();
 
     switch ([theEvent type]) {
-        case NSLeftMouseDown:
-        case NSOtherMouseDown:
-        case NSRightMouseDown:
-        case NSLeftMouseUp:
-        case NSOtherMouseUp:
-        case NSRightMouseUp:
-        case NSLeftMouseDragged:
-        case NSRightMouseDragged:
-        case NSOtherMouseDragged: /* usually middle mouse dragged */
-        case NSMouseMoved:
-        case NSScrollWheel:
+        case NSEventTypeLeftMouseDown:
+        case NSEventTypeOtherMouseDown:
+        case NSEventTypeRightMouseDown:
+        case NSEventTypeLeftMouseUp:
+        case NSEventTypeOtherMouseUp:
+        case NSEventTypeRightMouseUp:
+        case NSEventTypeLeftMouseDragged:
+        case NSEventTypeRightMouseDragged:
+        case NSEventTypeOtherMouseDragged: /* usually middle mouse dragged */
+        case NSEventTypeMouseMoved:
+        case NSEventTypeScrollWheel:
             Cocoa_HandleMouseEvent(_this, theEvent);
             break;
-        case NSKeyDown:
-        case NSKeyUp:
-        case NSFlagsChanged:
+        case NSEventTypeKeyDown:
+        case NSEventTypeKeyUp:
+        case NSEventTypeFlagsChanged:
             Cocoa_HandleKeyEvent(_this, theEvent);
             break;
         default:
@@ -289,7 +289,7 @@ CreateApplicationMenus(void)
     [appleMenu addItemWithTitle:title action:@selector(hide:) keyEquivalent:@"h"];
 
     menuItem = (NSMenuItem *)[appleMenu addItemWithTitle:@"Hide Others" action:@selector(hideOtherApplications:) keyEquivalent:@"h"];
-    [menuItem setKeyEquivalentModifierMask:(NSAlternateKeyMask|NSCommandKeyMask)];
+    [menuItem setKeyEquivalentModifierMask:(NSEventModifierFlagOption|NSEventModifierFlagCommand)];
 
     [appleMenu addItemWithTitle:@"Show All" action:@selector(unhideAllApplications:) keyEquivalent:@""];
 
@@ -335,7 +335,7 @@ CreateApplicationMenus(void)
 
         /* Add menu items */
         menuItem = [viewMenu addItemWithTitle:@"Toggle Full Screen" action:@selector(toggleFullScreen:) keyEquivalent:@"f"];
-        [menuItem setKeyEquivalentModifierMask:NSControlKeyMask | NSCommandKeyMask];
+        [menuItem setKeyEquivalentModifierMask:NSEventModifierFlagControl | NSEventModifierFlagCommand];
 
         /* Put menu into the menubar */
         menuItem = [[NSMenuItem alloc] initWithTitle:@"View" action:nil keyEquivalent:@""];
@@ -406,7 +406,7 @@ Cocoa_PumpEvents(_THIS)
     }
 
     for ( ; ; ) {
-        NSEvent *event = [NSApp nextEventMatchingMask:NSAnyEventMask untilDate:[NSDate distantPast] inMode:NSDefaultRunLoopMode dequeue:YES ];
+        NSEvent *event = [NSApp nextEventMatchingMask:NSEventMaskAny untilDate:[NSDate distantPast] inMode:NSDefaultRunLoopMode dequeue:YES ];
         if ( event == nil ) {
             break;
         }
