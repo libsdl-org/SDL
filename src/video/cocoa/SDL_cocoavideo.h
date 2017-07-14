@@ -86,7 +86,7 @@ static const unsigned int NSWindowStyleMaskUtilityWindow = NSUtilityWindowMask;
 static const unsigned int NSWindowStyleMaskDocModalWindow = NSDocModalWindowMask;
 #undef DECLARE_WINDOW_MASK
 
-#define DECLARE_ALERT_STYLE(name) static NSUInteger NSAlertStyle##name = NS##name##AlertStyle
+#define DECLARE_ALERT_STYLE(name) static const NSUInteger NSAlertStyle##name = NS##name##AlertStyle
 DECLARE_ALERT_STYLE(Warning);
 DECLARE_ALERT_STYLE(Informational);
 DECLARE_ALERT_STYLE(Critical);

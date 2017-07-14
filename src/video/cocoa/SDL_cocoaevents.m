@@ -394,6 +394,7 @@ void
 Cocoa_PumpEvents(_THIS)
 { @autoreleasepool
 {
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 1070
     /* Update activity every 30 seconds to prevent screensaver */
     SDL_VideoData *data = (SDL_VideoData *)_this->driverdata;
     if (_this->suspend_screensaver && !data->screensaver_use_iopm) {
@@ -404,6 +405,7 @@ Cocoa_PumpEvents(_THIS)
             data->screensaver_activity = now;
         }
     }
+#endif
 
     for ( ; ; ) {
         NSEvent *event = [NSApp nextEventMatchingMask:NSEventMaskAny untilDate:[NSDate distantPast] inMode:NSDefaultRunLoopMode dequeue:YES ];
