@@ -57,11 +57,24 @@
 - (void)showAlert:(NSAlert*)alert
 {
     if (nswindow) {
-        [alert beginSheetModalForWindow:nswindow modalDelegate:self didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:) contextInfo:nil];
+#ifdef MAC_OS_X_VERSION_10_9
+        if ([alert respondsToSelector:@selector(beginSheetModalForWindow:completionHandler:)]) {
+            [alert beginSheetModalForWindow:nswindow completionHandler:^(NSModalResponse returnCode) {
+                clicked = returnCode;
+            }];
+        } else
+#endif
+        {
+#if MAC_OS_X_VERSION_MIN_REQUIRED < 1090
+            [alert beginSheetModalForWindow:nswindow modalDelegate:self didEndSelector:@selector(alertDidEnd:returnCode:contextInfo:) contextInfo:nil];
+#endif
+        }
+
         while (clicked < 0) {
             SDL_PumpEvents();
             SDL_Delay(100);
         }
+
         [nswindow release];
     } else {
         clicked = [alert runModal];
