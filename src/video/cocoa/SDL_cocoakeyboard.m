@@ -460,7 +460,7 @@ DoSidedModifiers(unsigned short scancode,
     unsigned int i, bit;
 
     /* Iterate through the bits, testing each against the old modifiers */
-    for (i = 0, bit = NSShiftKeyMask; bit <= NSCommandKeyMask; bit <<= 1, ++i) {
+    for (i = 0, bit = NSEventModifierFlagShift; bit <= NSEventModifierFlagCommand; bit <<= 1, ++i) {
         unsigned int oldMask, newMask;
 
         oldMask = oldMods & bit;
@@ -581,7 +581,7 @@ Cocoa_InitKeyboard(_THIS)
     SDL_SetScancodeName(SDL_SCANCODE_RGUI, "Right Command");
 
     data->modifierFlags = [NSEvent modifierFlags];
-    SDL_ToggleModState(KMOD_CAPS, (data->modifierFlags & NSAlphaShiftKeyMask) != 0);
+    SDL_ToggleModState(KMOD_CAPS, (data->modifierFlags & NSEventModifierFlagCapsLock) != 0);
 
     InitHIDCallback();
 }
@@ -670,7 +670,7 @@ Cocoa_HandleKeyEvent(_THIS, NSEvent *event)
     }
 
     switch ([event type]) {
-    case NSKeyDown:
+    case NSEventTypeKeyDown:
         if (![event isARepeat]) {
             /* See if we need to rebuild the keyboard layout */
             UpdateKeymap(data, SDL_TRUE);
@@ -694,10 +694,10 @@ Cocoa_HandleKeyEvent(_THIS, NSEvent *event)
 #endif
         }
         break;
-    case NSKeyUp:
+    case NSEventTypeKeyUp:
         SDL_SendKeyboardKey(SDL_RELEASED, code);
         break;
-    case NSFlagsChanged:
+    case NSEventTypeFlagsChanged:
         /* FIXME CW 2007-08-14: check if this whole mess that takes up half of this file is really necessary */
         HandleModifiers(_this, scancode, [event modifierFlags]);
         break;

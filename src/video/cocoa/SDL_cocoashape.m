@@ -35,7 +35,7 @@ Cocoa_CreateShaper(SDL_Window* window)
     SDL_WindowData* windata = (SDL_WindowData*)window->driverdata;
     [windata->nswindow setOpaque:NO];
 
-    [windata->nswindow setStyleMask:NSBorderlessWindowMask];
+    [windata->nswindow setStyleMask:NSWindowStyleMaskBorderless];
 
     SDL_WindowShaper* result = result = malloc(sizeof(SDL_WindowShaper));
     result->window = window;
