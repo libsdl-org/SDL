@@ -56,8 +56,9 @@ DECLARE_EVENT(ScrollWheel);
 DECLARE_EVENT(KeyDown);
 DECLARE_EVENT(KeyUp);
 DECLARE_EVENT(FlagsChanged);
-DECLARE_EVENT(Any);
 #undef DECLARE_EVENT
+
+static const NSEventMask NSEventMaskAny = NSAnyEventMask;
 
 #define DECLARE_MODIFIER_FLAG(name) static const NSUInteger NSEventModifierFlag##name = NS##name##KeyMask
 DECLARE_MODIFIER_FLAG(Shift);
@@ -67,8 +68,8 @@ DECLARE_MODIFIER_FLAG(NumericPad);
 DECLARE_MODIFIER_FLAG(Help);
 DECLARE_MODIFIER_FLAG(Function);
 #undef DECLARE_MODIFIER_FLAG
-static const unsigned int NSEventModifierFlagCapsLock = NSAlphaShiftKeyMask;
-static const unsigned int NSEventModifierFlagOption = NSAlternateKeyMask;
+static const NSUInteger NSEventModifierFlagCapsLock = NSAlphaShiftKeyMask;
+static const NSUInteger NSEventModifierFlagOption = NSAlternateKeyMask;
 
 #define DECLARE_WINDOW_MASK(name) static const unsigned int NSWindowStyleMask##name = NS##name##WindowMask
 DECLARE_WINDOW_MASK(Borderless);
@@ -78,12 +79,11 @@ DECLARE_WINDOW_MASK(Miniaturizable);
 DECLARE_WINDOW_MASK(Resizable);
 DECLARE_WINDOW_MASK(TexturedBackground);
 DECLARE_WINDOW_MASK(UnifiedTitleAndToolbar);
-DECLARE_WINDOW_MASK(Fullscreen);
+DECLARE_WINDOW_MASK(FullScreen);
 DECLARE_WINDOW_MASK(FullSizeContentView);
-DECLARE_WINDOW_MASK(NonactivatingPanel);
-DECLARE_WINDOW_MASK(HUDWindow);
 static const unsigned int NSWindowStyleMaskUtilityWindow = NSUtilityWindowMask;
 static const unsigned int NSWindowStyleMaskDocModalWindow = NSDocModalWindowMask;
+static const unsigned int NSWindowStyleMaskHUDWindow = NSHUDWindowMask;
 #undef DECLARE_WINDOW_MASK
 
 #define DECLARE_ALERT_STYLE(name) static const NSUInteger NSAlertStyle##name = NS##name##AlertStyle
