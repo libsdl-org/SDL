@@ -114,7 +114,22 @@ SDL_AppleTVControllerUIHintChanged(void *userdata, const char *name, const char 
 - (void)startAnimation
 {
     displayLink = [CADisplayLink displayLinkWithTarget:self selector:@selector(doLoop:)];
-    [displayLink setFrameInterval:animationInterval];
+
+#ifdef __IPHONE_10_3
+    SDL_WindowData *data = (__bridge SDL_WindowData *) window->driverdata;
+
+    if ([displayLink respondsToSelector:@selector(preferredFramesPerSecond)]
+        && data != nil && data.uiwindow != nil
+        && [data.uiwindow.screen respondsToSelector:@selector(maximumFramesPerSecond)]) {
+        displayLink.preferredFramesPerSecond = data.uiwindow.screen.maximumFramesPerSecond / animationInterval;
+    } else
+#endif
+    {
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < 100300
+        [displayLink setFrameInterval:animationInterval];
+#endif
+    }
+
     [displayLink addToRunLoop:[NSRunLoop currentRunLoop] forMode:NSDefaultRunLoopMode];
 }
 
@@ -155,10 +170,12 @@ SDL_AppleTVControllerUIHintChanged(void *userdata, const char *name, const char 
     return UIKit_GetSupportedOrientations(window);
 }
 
+#if __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_7_0
 - (BOOL)shouldAutorotateToInterfaceOrientation:(UIInterfaceOrientation)orient
 {
     return ([self supportedInterfaceOrientations] & (1 << orient)) != 0;
 }
+#endif
 
 - (BOOL)prefersStatusBarHidden
 {
