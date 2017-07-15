@@ -3863,17 +3863,17 @@ SDL_ComputeDiagonalDPI(int hpix, int vpix, float hinches, float vinches)
 /*
  * Functions used by iOS application delegates
  */
-void SDL_OnApplicationWillTerminate()
+void SDL_OnApplicationWillTerminate(void)
 {
     SDL_SendAppEvent(SDL_APP_TERMINATING);
 }
 
-void SDL_OnApplicationDidReceiveMemoryWarning()
+void SDL_OnApplicationDidReceiveMemoryWarning(void)
 {
     SDL_SendAppEvent(SDL_APP_LOWMEMORY);
 }
 
-void SDL_OnApplicationWillResignActive()
+void SDL_OnApplicationWillResignActive(void)
 {
     if (_this) {
         SDL_Window *window;
@@ -3885,17 +3885,17 @@ void SDL_OnApplicationWillResignActive()
     SDL_SendAppEvent(SDL_APP_WILLENTERBACKGROUND);
 }
 
-void SDL_OnApplicationDidEnterBackground()
+void SDL_OnApplicationDidEnterBackground(void)
 {
     SDL_SendAppEvent(SDL_APP_DIDENTERBACKGROUND);
 }
 
-void SDL_OnApplicationWillEnterForeground()
+void SDL_OnApplicationWillEnterForeground(void)
 {
     SDL_SendAppEvent(SDL_APP_WILLENTERFOREGROUND);
 }
 
-void SDL_OnApplicationDidBecomeActive()
+void SDL_OnApplicationDidBecomeActive(void)
 {
     SDL_SendAppEvent(SDL_APP_DIDENTERFOREGROUND);
 

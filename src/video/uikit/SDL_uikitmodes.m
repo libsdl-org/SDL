@@ -273,6 +273,7 @@ UIKit_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay * display, SDL_Rect * rect)
     @autoreleasepool {
         int displayIndex = (int) (display - _this->displays);
         SDL_DisplayData *data = (__bridge SDL_DisplayData *) display->driverdata;
+        CGRect frame = data.uiscreen.bounds;
 
         /* the default function iterates displays to make a fake offset,
          as if all the displays were side-by-side, which is fine for iOS. */
@@ -280,9 +281,7 @@ UIKit_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay * display, SDL_Rect * rect)
             return -1;
         }
 
-        CGRect frame = data.uiscreen.bounds;
-
-#if !TARGET_OS_TV
+#if !TARGET_OS_TV && __IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_7_0
         if (!UIKit_IsSystemVersionAtLeast(7.0)) {
             frame = [data.uiscreen applicationFrame];
         }
