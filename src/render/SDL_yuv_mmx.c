@@ -91,22 +91,11 @@ void ColorRGBDitherYV12MMX1X( int *colortab, Uint32 *rgb_2_pix,
     mod = (mod+cols+mod)*4;               /* increment for row1 in byte */
 
     __asm__ __volatile__ (
-        /* tap dance to workaround the inability to use %%ebx at will... */
-        /*  move one thing to the stack... */
-        "pushl $0\n"  /* save a slot on the stack. */
-        "pushl %%ebx\n"  /* save %%ebx. */
-        "movl %0, %%ebx\n"  /* put the thing in ebx. */
-        "movl %%ebx,4(%%esp)\n"  /* put the thing in the stack slot. */
-        "popl %%ebx\n"  /* get back %%ebx (the PIC register). */
-
         ".align 8\n"
         "1:\n"
 
         /* create Cr (result in mm1) */
-        "pushl %%ebx\n"
-        "movl 4(%%esp),%%ebx\n"
-        "movd (%%ebx),%%mm1\n"   /*         0  0  0  0  v3 v2 v1 v0 */
-        "popl %%ebx\n"
+        "movd (%0),%%mm1\n"   /*         0  0  0  0  v3 v2 v1 v0 */
         "pxor %%mm7,%%mm7\n"      /*         00 00 00 00 00 00 00 00 */
         "movd (%2), %%mm2\n"           /*    0  0  0  0 l3 l2 l1 l0 */
         "punpcklbw %%mm7,%%mm1\n" /*         0  v3 0  v2 00 v1 00 v0 */
@@ -214,7 +203,7 @@ void ColorRGBDitherYV12MMX1X( int *colortab, Uint32 *rgb_2_pix,
         "addl $4,%2\n"            /* lum+4 */
         "leal 16(%3),%3\n"        /* row1+16 */
         "leal 16(%5),%5\n"        /* row2+16 */
-        "addl $2,(%%esp)\n"        /* cr+2 */
+        "addl $2,%0\n"        /* cr+2 */
         "addl $2,%1\n"           /* cb+2 */
 
         "addl $4,%6\n"            /* x+4 */
@@ -228,10 +217,9 @@ void ColorRGBDitherYV12MMX1X( int *colortab, Uint32 *rgb_2_pix,
         "cmpl %7,%2\n"
         "jl 1b\n"
 
-        "addl $4,%%esp\n"  /* get rid of the stack slot we reserved. */
         "emms\n"  /* reset MMX registers. */
         :
-        : "m" (cr), "r"(cb),"r"(lum),
+        : "r" (cr), "r"(cb),"r"(lum),
           "r"(row1),"r"(cols),"r"(row2),"m"(x),"m"(y),"m"(mod),
           "m"(MMX_0080w),"m"(MMX_VgrnRGB),"m"(MMX_VredRGB),
           "m"(MMX_FF00w),"m"(MMX_00FFw),"m"(MMX_UgrnRGB),
@@ -254,23 +242,12 @@ void Color565DitherYV12MMX1X( int *colortab, Uint32 *rgb_2_pix,
     mod = (mod+cols+mod)*2;               /* increment for row1 in byte */
 
     __asm__ __volatile__(
-        /* tap dance to workaround the inability to use %%ebx at will... */
-        /*  move one thing to the stack... */
-        "pushl $0\n"  /* save a slot on the stack. */
-        "pushl %%ebx\n"  /* save %%ebx. */
-        "movl %0, %%ebx\n"  /* put the thing in ebx. */
-        "movl %%ebx, 4(%%esp)\n"  /* put the thing in the stack slot. */
-        "popl %%ebx\n"  /* get back %%ebx (the PIC register). */
-
         ".align 8\n"
         "1:\n"
 
         "movd           (%1),                   %%mm0\n" /* 4 Cb         0  0  0  0 u3 u2 u1 u0 */
         "pxor           %%mm7,                  %%mm7\n"
-        "pushl %%ebx\n"
-        "movl 4(%%esp), %%ebx\n"
-        "movd (%%ebx), %%mm1\n"   /* 4 Cr                0  0  0  0 v3 v2 v1 v0 */
-        "popl %%ebx\n"
+        "movd (%0), %%mm1\n"   /* 4 Cr                0  0  0  0 v3 v2 v1 v0 */
 
         "punpcklbw      %%mm7,                  %%mm0\n" /* 4 W cb   0 u3  0 u2  0 u1  0 u0 */
         "punpcklbw      %%mm7,                  %%mm1\n" /* 4 W cr   0 v3  0 v2  0 v1  0 v0 */
@@ -400,7 +377,7 @@ void Color565DitherYV12MMX1X( int *colortab, Uint32 *rgb_2_pix,
 
         "addl           $8,                     %6\n"
         "addl           $8,                     %2\n"
-        "addl           $4,                     (%%esp)\n"
+        "addl           $4,                     %0\n"
         "addl           $4,                     %1\n"
         "cmpl           %4,                     %6\n"
         "leal           16(%3),                 %3\n"
@@ -413,10 +390,9 @@ void Color565DitherYV12MMX1X( int *colortab, Uint32 *rgb_2_pix,
         "movl           $0,     %6\n" /* x=0 */
         "cmpl           %7,     %2\n"
         "jl             1b\n"
-        "addl $4, %%esp\n"  /* get rid of the stack slot we reserved. */
         "emms\n"
         :
-        : "m" (cr), "r"(cb),"r"(lum),
+        : "r" (cr), "r"(cb),"r"(lum),
           "r"(row1),"r"(cols),"r"(row2),"m"(x),"m"(y),"m"(mod),
           "m"(MMX_0080w),"m"(MMX_Ugrn565),"m"(MMX_Ublu5x5),
           "m"(MMX_00FFw),"m"(MMX_Vgrn565),"m"(MMX_Vred5x5),
