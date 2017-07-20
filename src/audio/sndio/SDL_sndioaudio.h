@@ -23,6 +23,7 @@
 #ifndef _SDL_sndioaudio_h
 #define _SDL_sndioaudio_h
 
+#include <poll.h>
 #include <sndio.h>
 
 #include "../SDL_sysaudio.h"
@@ -38,6 +39,9 @@ struct SDL_PrivateAudioData
     /* Raw mixing buffer */
     Uint8 *mixbuf;
     int mixlen;
+
+    /* Polling structures for non-blocking sndio devices */
+    struct pollfd *pfd;
 };
 
 #endif /* _SDL_sndioaudio_h */
