@@ -38,7 +38,7 @@
  *  SDL_Event structure.
  *
  *  The values in this enumeration are based on the USB usage page standard:
- *  http://www.usb.org/developers/devclass_docs/Hut1_12v2.pdf
+ *  http://www.usb.org/developers/hidpage/Hut1_12v2.pdf
  */
 typedef enum
 {
@@ -389,6 +389,18 @@ typedef enum
     SDL_SCANCODE_APP2 = 284,
 
     /* @} *//* Walther keys */
+
+    /**
+     *  \name Usage page 0x0C (additional media keys)
+     *
+     *  These values are mapped from usage page 0x0C (USB consumer page).
+     */
+    /* @{ */
+
+    SDL_SCANCODE_AUDIOREWIND = 285,
+    SDL_SCANCODE_AUDIOFASTFORWARD = 286,
+
+    /* @} *//* Usage page 0x0C (additional media keys) */
 
     /* Add any other keys here. */
 
