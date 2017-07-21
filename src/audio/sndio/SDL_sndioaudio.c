@@ -184,7 +184,7 @@ SNDIO_CaptureFromDevice(_THIS, void *buffer, int buflen)
     r = SNDIO_sio_read(this->hidden->dev, buffer, buflen);
     while (r == 0 && !SNDIO_sio_eof(this->hidden->dev)) {
         if ((nfds = SNDIO_sio_pollfd(this->hidden->dev, this->hidden->pfd, POLLIN)) <= 0
-            || poll(this->hidden->pfd, nfds, INFTIM) <= 0) {
+            || poll(this->hidden->pfd, nfds, INFTIM) < 0) {
             return -1;
         }
         revents = SNDIO_sio_revents(this->hidden->dev, this->hidden->pfd);
