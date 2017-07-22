@@ -80,7 +80,7 @@ DECLARE_WINDOW_MASK(Resizable);
 DECLARE_WINDOW_MASK(TexturedBackground);
 DECLARE_WINDOW_MASK(UnifiedTitleAndToolbar);
 DECLARE_WINDOW_MASK(FullScreen);
-DECLARE_WINDOW_MASK(FullSizeContentView);
+/*DECLARE_WINDOW_MASK(FullSizeContentView);*/ /* Not used, fails compile on older SDKs */
 static const unsigned int NSWindowStyleMaskUtilityWindow = NSUtilityWindowMask;
 static const unsigned int NSWindowStyleMaskDocModalWindow = NSDocModalWindowMask;
 static const unsigned int NSWindowStyleMaskHUDWindow = NSHUDWindowMask;
