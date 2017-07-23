@@ -227,13 +227,15 @@ glSetSwapInterval(_THIS, int interval)
 /**
  * Swaps the EGL buffers associated with the given window
  * @param   _THIS
- * @paran   window  Window to swap buffers for
+ * @param   window  Window to swap buffers for
+ * @return  0 if successful, -1 on error
  */
-void
+int
 glSwapWindow(_THIS, SDL_Window *window)
 {
+    /* !!! FIXME: should we migrate this all over to use SDL_egl.c? */
     window_impl_t   *impl = (window_impl_t *)window->driverdata;
-    eglSwapBuffers(egl_disp, impl->surface);
+    return eglSwapBuffers(egl_disp, impl->surface) == EGL_TRUE ? 0 : -1;
 }
 
 /**
