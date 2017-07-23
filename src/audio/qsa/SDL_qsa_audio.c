@@ -56,24 +56,6 @@
 #define DEFAULT_CPARAMS_FRAGS_MIN 1
 #define DEFAULT_CPARAMS_FRAGS_MAX 1
 
-#define QSA_NO_WORKAROUNDS  0x00000000
-#define QSA_MMAP_WORKAROUND 0x00000001
-
-struct BuggyCards
-{
-    char *cardname;
-    unsigned long bugtype;
-};
-
-#define QSA_WA_CARDS             3
-#define QSA_MAX_CARD_NAME_LENGTH 33
-
-struct BuggyCards buggycards[QSA_WA_CARDS] = {
-    {"Sound Blaster Live!", QSA_MMAP_WORKAROUND},
-    {"Vortex 8820", QSA_MMAP_WORKAROUND},
-    {"Vortex 8830", QSA_MMAP_WORKAROUND},
-};
-
 /* List of found devices */
 #define QSA_MAX_DEVICES       32
 #define QSA_MAX_NAME_LENGTH   81+16     /* Hardcoded in QSA, can't be changed */
@@ -97,40 +79,16 @@ QSA_SetError(const char *fn, int status)
     return SDL_SetError("QSA: %s() failed: %s", fn, snd_strerror(status));
 }
 
-/* card names check to apply the workarounds */
-static int
-QSA_CheckBuggyCards(_THIS, unsigned long checkfor)
-{
-    char scardname[QSA_MAX_CARD_NAME_LENGTH];
-    int it;
-
-    if (snd_card_get_name
-        (this->hidden->cardno, scardname, QSA_MAX_CARD_NAME_LENGTH - 1) < 0) {
-        return 0;
-    }
-
-    for (it = 0; it < QSA_WA_CARDS; it++) {
-        if (SDL_strcmp(buggycards[it].cardname, scardname) == 0) {
-            if (buggycards[it].bugtype == checkfor) {
-                return 1;
-            }
-        }
-    }
-
-    return 0;
-}
-
 /* !!! FIXME: does this need to be here? Does the SDL version not work? */
 static void
 QSA_ThreadInit(_THIS)
 {
-    struct sched_param param;
-    int status;
-
     /* Increase default 10 priority to 25 to avoid jerky sound */
-    status = SchedGet(0, 0, &param);
-    param.sched_priority = param.sched_curpriority + 15;
-    status = SchedSet(0, 0, SCHED_NOCHANGE, &param);
+    struct sched_param param;
+    if (SchedGet(0, 0, &param) != -1) {
+        param.sched_priority = param.sched_curpriority + 15;
+        SchedSet(0, 0, SCHED_NOCHANGE, &param);
+    }
 }
 
 /* PCM channel parameters initialize function */
@@ -384,18 +342,6 @@ QSA_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         this->hidden->audio_handle = NULL;
         return QSA_SetError("snd_pcm_open", status);
     }
-
-#if 0
-    if (!QSA_CheckBuggyCards(this, QSA_MMAP_WORKAROUND)) {
-        /* Disable QSA MMAP plugin for buggy audio drivers */
-        status =
-            snd_pcm_plugin_set_disable(this->hidden->audio_handle,
-                                       PLUGIN_DISABLE_MMAP);
-        if (status < 0) {
-            return QSA_SetError("snd_pcm_plugin_set_disable", status);
-        }
-    }
-#endif
 
     /* Try for a closest match on audio format */
     format = 0;
@@ -723,8 +669,6 @@ QSA_Deinitialize(void)
 static int
 QSA_Init(SDL_AudioDriverImpl * impl)
 {
-    snd_pcm_t *handle = NULL;
-
     /* Clear devices array */
     SDL_zero(qsa_playback_device);
     SDL_zero(qsa_capture_device);
