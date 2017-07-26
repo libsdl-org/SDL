@@ -20,7 +20,8 @@
 */
 #include "../SDL_internal.h"
 
-#if (__GNUC__ > 2) && defined(__i386__) && __OPTIMIZE__ && SDL_ASSEMBLY_ROUTINES
+/* !!! FIXME: this broke on Clang (if it wasn't broken _before_) in https://hg.libsdl.org/SDL/rev/2ee7d2fa299b */
+#if (__GNUC__ > 2) && defined(__i386__) && __OPTIMIZE__ && SDL_ASSEMBLY_ROUTINES && !defined(__clang__)
 
 #include "SDL_stdinc.h"
 
