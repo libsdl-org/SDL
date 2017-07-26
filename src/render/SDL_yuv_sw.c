@@ -90,7 +90,12 @@
 
 /* The colorspace conversion functions */
 
+/* !!! FIXME: this broke on Clang (if it wasn't broken _before_) in https://hg.libsdl.org/SDL/rev/2ee7d2fa299b */
 #if (__GNUC__ > 2) && defined(__i386__) && __OPTIMIZE__ && SDL_ASSEMBLY_ROUTINES
+#define USE_MMX_ASSEMBLY 1
+#endif
+
+#ifdef USE_MMX_ASSEMBLY
 extern void Color565DitherYV12MMX1X(int *colortab, Uint32 * rgb_2_pix,
                                     unsigned char *lum, unsigned char *cr,
                                     unsigned char *cb, unsigned char *out,
@@ -967,7 +972,7 @@ SDL_SW_SetupYUVDisplay(SDL_SW_YUVTexture * swdata, Uint32 target_format)
     case SDL_PIXELFORMAT_YV12:
     case SDL_PIXELFORMAT_IYUV:
         if (SDL_BYTESPERPIXEL(target_format) == 2) {
-#if (__GNUC__ > 2) && defined(__i386__) && __OPTIMIZE__ && SDL_ASSEMBLY_ROUTINES
+#ifdef USE_MMX_ASSEMBLY
             /* inline assembly functions */
             if (SDL_HasMMX() && (Rmask == 0xF800) &&
                 (Gmask == 0x07E0) && (Bmask == 0x001F)
@@ -988,7 +993,7 @@ SDL_SW_SetupYUVDisplay(SDL_SW_YUVTexture * swdata, Uint32 target_format)
             swdata->Display2X = Color24DitherYV12Mod2X;
         }
         if (SDL_BYTESPERPIXEL(target_format) == 4) {
-#if (__GNUC__ > 2) && defined(__i386__) && __OPTIMIZE__ && SDL_ASSEMBLY_ROUTINES
+#ifdef USE_MMX_ASSEMBLY
             /* inline assembly functions */
             if (SDL_HasMMX() && (Rmask == 0x00FF0000) &&
                 (Gmask == 0x0000FF00) &&
