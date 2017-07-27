@@ -33,6 +33,7 @@
 #define MIR_GL_DeleteContext   SDL_EGL_DeleteContext
 #define MIR_GL_GetSwapInterval SDL_EGL_GetSwapInterval
 #define MIR_GL_SetSwapInterval SDL_EGL_SetSwapInterval
+#define MIR_GL_UnloadLibrary   SDL_EGL_UnloadLibrary
 
 extern int
 MIR_GL_SwapWindow(_THIS, SDL_Window* window);
