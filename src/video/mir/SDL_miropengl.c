@@ -73,12 +73,6 @@ MIR_GL_LoadLibrary(_THIS, const char* path)
     return 0;
 }
 
-void
-MIR_GL_UnloadLibrary(_THIS)
-{
-    SDL_EGL_UnloadLibrary(_this);
-}
-
 void*
 MIR_GL_GetProcAddress(_THIS, const char* proc)
 {
