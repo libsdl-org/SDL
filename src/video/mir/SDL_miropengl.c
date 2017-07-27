@@ -73,18 +73,6 @@ MIR_GL_LoadLibrary(_THIS, const char* path)
     return 0;
 }
 
-void*
-MIR_GL_GetProcAddress(_THIS, const char* proc)
-{
-    void* proc_addr = SDL_EGL_GetProcAddress(_this, proc);
-
-    if (!proc_addr) {
-        SDL_SetError("Failed to find proc address!");
-    }
-
-    return proc_addr;
-}
-
 #endif /* SDL_VIDEO_DRIVER_MIR */
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -34,6 +34,7 @@
 #define MIR_GL_GetSwapInterval SDL_EGL_GetSwapInterval
 #define MIR_GL_SetSwapInterval SDL_EGL_SetSwapInterval
 #define MIR_GL_UnloadLibrary   SDL_EGL_UnloadLibrary
+#define MIR_GL_GetProcAddress  SDL_EGL_GetProcAddress
 
 extern int
 MIR_GL_SwapWindow(_THIS, SDL_Window* window);
@@ -49,9 +50,6 @@ MIR_GL_LoadLibrary(_THIS, const char* path);
 
 extern void
 MIR_GL_UnloadLibrary(_THIS);
-
-extern void*
-MIR_GL_GetProcAddress(_THIS, const char* proc);
 
 #endif /* _SDL_miropengl_h */
 
