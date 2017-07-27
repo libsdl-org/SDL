@@ -640,7 +640,7 @@ ReleaseWasapiDevice(_THIS)
 
     if (this->hidden->capture) {
         IAudioCaptureClient_Release(this->hidden->capture);
-        this->hidden->client = NULL;
+        this->hidden->capture = NULL;
     }
 
     if (this->hidden->waveformat) {
