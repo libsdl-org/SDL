@@ -196,7 +196,8 @@ SDL_EVDEV_kbd_init(void)
 {
     SDL_EVDEV_keyboard_state *kbd;
     int i;
-    char shift_state, flag_state;
+    char flag_state;
+    char shift_state[2] = {TIOCL_GETSHIFTSTATE, 0};
 
     kbd = (SDL_EVDEV_keyboard_state *)SDL_calloc(1, sizeof(*kbd));
     if (!kbd) {
@@ -208,9 +209,8 @@ SDL_EVDEV_kbd_init(void)
     /* This might fail if we're not connected to a tty (e.g. on the Steam Link) */
     kbd->console_fd = open("/dev/tty", O_RDONLY);
 
-    shift_state = TIOCL_GETSHIFTSTATE;
-    if (ioctl(kbd->console_fd, TIOCLINUX, &shift_state) == 0) {
-        kbd->shift_state = shift_state;
+    if (ioctl(kbd->console_fd, TIOCLINUX, shift_state) == 0) {
+        kbd->shift_state = *shift_state;
     }
 
     if (ioctl(kbd->console_fd, KDGKBLED, &flag_state) == 0) {
