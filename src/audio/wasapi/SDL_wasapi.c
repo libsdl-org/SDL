@@ -372,7 +372,8 @@ WASAPI_GetPendingBytes(_THIS)
     UINT32 frames = 0;
 
     /* it's okay to fail here; we'll deal with failures in the audio thread. */
-    if (FAILED(IAudioClient_GetCurrentPadding(this->hidden->client, &frames))) {
+    /* FIXME: need a lock around checking this->hidden->client */
+    if (!this->hidden->client || FAILED(IAudioClient_GetCurrentPadding(this->hidden->client, &frames))) {
         return 0;  /* oh well. */
     }
 
