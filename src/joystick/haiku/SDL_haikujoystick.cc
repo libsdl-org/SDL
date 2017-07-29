@@ -24,8 +24,8 @@
 
 /* This is the Haiku implementation of the SDL joystick API */
 
-#include <os/support/String.h>
-#include <os/device/Joystick.h>
+#include <support/String.h>
+#include <device/Joystick.h>
 
 extern "C"
 {
