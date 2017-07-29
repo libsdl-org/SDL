@@ -245,7 +245,6 @@ PAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     SDL_AudioFormat test_format;
     audio_init paud_init;
     audio_buffer paud_bufinfo;
-    audio_status paud_status;
     audio_control paud_control;
     audio_change paud_change;
     int fd = -1;
