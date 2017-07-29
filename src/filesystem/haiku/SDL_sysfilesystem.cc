@@ -25,10 +25,10 @@
 /* * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * */
 /* System dependent filesystem routines                                */
 
-#include <os/kernel/image.h>
-#include <os/storage/Directory.h>
-#include <os/storage/Entry.h>
-#include <os/storage/Path.h>
+#include <kernel/image.h>
+#include <storage/Directory.h>
+#include <storage/Entry.h>
+#include <storage/Path.h>
 
 #include "SDL_error.h"
 #include "SDL_stdinc.h"

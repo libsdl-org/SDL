@@ -22,7 +22,7 @@
 
 #ifdef SDL_TIMER_HAIKU
 
-#include <os/kernel/OS.h>
+#include <kernel/OS.h>
 
 #include "SDL_timer.h"
 
