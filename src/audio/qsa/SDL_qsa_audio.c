@@ -441,7 +441,7 @@ QSA_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     /* Setup the transfer parameters according to cparams */
     status = snd_pcm_plugin_params(this->hidden->audio_handle, &cparams);
     if (status < 0) {
-        return QSA_SetError("snd_pcm_channel_params", status);
+        return QSA_SetError("snd_pcm_plugin_params", status);
     }
 
     /* Make sure channel is setup right one last time */
