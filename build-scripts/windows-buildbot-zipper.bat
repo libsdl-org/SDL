@@ -8,7 +8,7 @@ echo Please run from root of source tree after doing a Release build.
 GOTO done
 
 :okaywin32dir
-IF EXIST VisualC\Win64\Release GOTO okaydirs
+IF EXIST VisualC\x64\Release GOTO okaydirs
 echo Please run from root of source tree after doing a Release build.
 GOTO done
 
