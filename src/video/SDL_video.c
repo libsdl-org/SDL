@@ -3113,8 +3113,16 @@ SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
     GLenum attachmentattrib = 0;
 #endif
 
+    if (!value) {
+        return SDL_InvalidParamError("value");
+    }
+
     /* Clear value in any case */
     *value = 0;
+
+    if (!_this) {
+        return SDL_UninitializedVideo();
+    }
 
     switch (attr) {
     case SDL_GL_RED_SIZE:
