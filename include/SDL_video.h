@@ -1111,11 +1111,16 @@ extern DECLSPEC void SDLCALL SDL_GL_ResetAttributes(void);
 
 /**
  *  \brief Set an OpenGL window attribute before window creation.
+ *
+ *  \return 0 on success, or -1 if the attribute could not be set.
  */
 extern DECLSPEC int SDLCALL SDL_GL_SetAttribute(SDL_GLattr attr, int value);
 
 /**
  *  \brief Get the actual value for an attribute from the current context.
+ *
+ *  \return 0 on success, or -1 if the attribute could not be retrieved.
+ *          The integer at \c value will be modified in either case.
  */
 extern DECLSPEC int SDLCALL SDL_GL_GetAttribute(SDL_GLattr attr, int *value);
 
