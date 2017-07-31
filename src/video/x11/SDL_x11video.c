@@ -449,6 +449,10 @@ X11_VideoQuit(_THIS)
 {
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
 
+    if (data->clipboard_window) {
+        X11_XDestroyWindow(data->display, data->clipboard_window);
+    }
+
     SDL_free(data->classname);
 #ifdef X_HAVE_UTF8_STRING
     if (data->im) {
