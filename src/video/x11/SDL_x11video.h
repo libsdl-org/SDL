@@ -82,6 +82,7 @@ typedef struct SDL_VideoData
     SDL_WindowData **windowlist;
     int windowlistlength;
     XID window_group;
+    Window clipboard_window;
 
     /* This is true for ICCCM2.0-compliant window managers */
     SDL_bool net_wm;
