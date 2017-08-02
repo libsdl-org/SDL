@@ -667,6 +667,8 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 - (void)windowDidEnterFullScreen:(NSNotification *)aNotification
 {
     SDL_Window *window = _data->window;
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    NSWindow *nswindow = data->nswindow;
 
     inFullscreenTransition = NO;
 
@@ -674,6 +676,11 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
         pendingWindowOperation = PENDING_OPERATION_NONE;
         [self setFullscreenSpace:NO];
     } else {
+        /* Unset the resizable flag. 
+           This is a workaround for https://bugzilla.libsdl.org/show_bug.cgi?id=3697
+         */
+        SetWindowStyle(window, [nswindow styleMask] & (~NSWindowStyleMaskResizable));
+
         if ((window->flags & SDL_WINDOW_FULLSCREEN_DESKTOP) == SDL_WINDOW_FULLSCREEN_DESKTOP) {
             [NSMenu setMenuBarVisible:NO];
         }
