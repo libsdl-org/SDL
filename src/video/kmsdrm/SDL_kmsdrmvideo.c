@@ -96,7 +96,7 @@ KMSDRM_Create(int devindex)
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
     if (device == NULL) {
         SDL_OutOfMemory();
-        goto cleanup;
+        return NULL;
     }
 
     /* Initialize internal data */
