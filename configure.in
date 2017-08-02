@@ -2084,6 +2084,81 @@ AC_MSG_WARN("directfb $directfb_lib")
     fi
 }
 
+dnl Find KMSDRM
+CheckKMSDRM()
+{
+    AC_ARG_ENABLE(video-kmsdrm,
+AC_HELP_STRING([--enable-video-kmsdrm], [use KMSDRM video driver [[default=no]]]),
+                  , enable_video_kmsdrm=no)
+
+    if test x$enable_video = xyes -a x$enable_video_kmsdrm = xyes; then
+        video_kmsdrm=no
+        libdrm_avail=no
+        libgbm_avail=no
+
+        LIBDRM_REQUIRED_VERSION=2.4.46
+        LIBGBM_REQUIRED_VERSION=9.0.0
+
+        AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
+        if test x$PKG_CONFIG != xno; then
+            if $PKG_CONFIG --atleast-pkgconfig-version 0.7; then
+                if $PKG_CONFIG --atleast-version $LIBDRM_REQUIRED_VERSION libdrm; then
+                    LIBDRM_CFLAGS=`$PKG_CONFIG --cflags libdrm`
+                    LIBDRM_LIBS=`$PKG_CONFIG --libs libdrm`
+                    LIBDRM_PREFIX=`$PKG_CONFIG --variable=prefix libdrm`
+                    libdrm_avail=yes
+                fi
+                if $PKG_CONFIG --atleast-version $LIBGBM_REQUIRED_VERSION gbm; then
+                    LIBGBM_CFLAGS=`$PKG_CONFIG --cflags gbm`
+                    LIBGBM_LIBS=`$PKG_CONFIG --libs gbm`
+                    LIBGBM_PREFIX=`$PKG_CONFIG --variable=prefix gbm`
+                    libgbm_avail=yes
+                fi
+                if test x$libdrm_avail = xyes -a x$libgbm_avail = xyes; then
+                    video_kmsdrm=yes
+                fi
+ 
+                AC_MSG_CHECKING(for libdrm $LIBDRM_REQUIRED_VERSION library for kmsdrm support)
+                AC_MSG_RESULT($libdrm_avail)
+                AC_MSG_CHECKING(for libgbm $LIBGBM_REQUIRED_VERSION library for kmsdrm support)
+                AC_MSG_RESULT($libgbm_avail)
+
+                if test x$video_kmsdrm = xyes; then
+                    AC_ARG_ENABLE(kmsdrm-shared,
+AC_HELP_STRING([--enable-kmsdrm-shared], [dynamically load kmsdrm support [[default=yes]]]),
+                              , enable_kmsdrm_shared=yes)
+
+                    AC_DEFINE(SDL_VIDEO_DRIVER_KMSDRM, 1, [ ])
+                    SOURCES="$SOURCES $srcdir/src/video/kmsdrm/*.c"
+                    EXTRA_CFLAGS="$EXTRA_CFLAGS $LIBDRM_CFLAGS $LIBGBM_CFLAGS"
+
+                    AC_MSG_CHECKING(for kmsdrm dynamic loading support)
+                    kmsdrm_shared=no
+                    drm_lib=[`find_lib "libdrm.so.*" "$DRM_LIBS"`]
+                    gbm_lib=[`find_lib "libgbm.so.*" "$DRM_LIBS"`]
+                    if test x$have_loadso != xyes && \
+                       test x$enable_kmsdrm_shared = xyes; then
+                        AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic kmsdrm loading])
+                    fi
+                    if test x$have_loadso = xyes && \
+                       test x$enable_kmsdrm_shared = xyes && test x$drm_lib != x && test x$gbm_lib != x; then
+                        kmsdrm_shared=yes
+                        AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC, "$drm_lib", [ ])
+                        AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC_GBM, "$gbm_lib", [ ])
+                        AC_DEFINE_UNQUOTED(HAVE_KMSDRM_SHARED, "TRUE", [ ])
+                        SUMMARY_video="${SUMMARY_video} kmsdrm(dynamic)"
+                    else
+                        EXTRA_LDFLAGS="$EXTRA_LDFLAGS $LIBDRM_LIBS $LIBGBM_LIBS"
+                        SUMMARY_video="${SUMMARY_video} kmsdrm"
+                    fi
+                    AC_MSG_RESULT($kmsdrm_shared)
+                    have_video=yes
+                fi
+            fi
+        fi
+    fi
+}
+
 dnl rcg04172001 Set up the Null video driver.
 CheckDummyVideo()
 {
@@ -3148,6 +3223,7 @@ case "$host" in
         CheckLibSampleRate
         CheckX11
         CheckDirectFB
+        CheckKMSDRM
         CheckOpenGLX11
         CheckOpenGLESX11
         CheckMir

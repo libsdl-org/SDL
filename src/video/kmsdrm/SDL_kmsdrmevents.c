@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -18,25 +18,28 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_RPI && SDL_VIDEO_OPENGL_EGL
+#if SDL_VIDEO_DRIVER_KMSDRM
 
-#include "SDL_rpivideo.h"
-#include "SDL_rpiopengles.h"
+#include "../../events/SDL_sysevents.h"
+#include "../../events/SDL_events_c.h"
+#include "../../events/SDL_keyboard_c.h"
+#include "SDL_kmsdrmvideo.h"
+#include "SDL_kmsdrmevents_c.h"
 
-/* EGL implementation of SDL OpenGL support */
+#ifdef SDL_INPUT_LINUXEV
+#include "../../core/linux/SDL_evdev.h"
+#endif
 
-int
-RPI_GLES_LoadLibrary(_THIS, const char *path) {
-    return SDL_EGL_LoadLibrary(_this, path, EGL_DEFAULT_DISPLAY, 0);
+void KMSDRM_PumpEvents(_THIS)
+{
+#ifdef SDL_INPUT_LINUXEV
+    SDL_EVDEV_Poll();
+#endif
+
 }
 
-SDL_EGL_CreateContext_impl(RPI)
-SDL_EGL_SwapWindow_impl(RPI)
-SDL_EGL_MakeCurrent_impl(RPI)
-
-#endif /* SDL_VIDEO_DRIVER_RPI && SDL_VIDEO_OPENGL_EGL */
-
-/* vi: set ts=4 sw=4 expandtab: */
+#endif /* SDL_VIDEO_DRIVER_KMSDRM */
 

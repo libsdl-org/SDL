@@ -35,7 +35,7 @@ Wayland_GLES_LoadLibrary(_THIS, const char *path) {
     int ret;
     SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
     
-    ret = SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType) data->display);
+    ret = SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType) data->display, 0);
 
     Wayland_PumpEvents(_this);
     WAYLAND_wl_display_flush(data->display);

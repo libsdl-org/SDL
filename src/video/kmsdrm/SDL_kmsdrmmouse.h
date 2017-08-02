@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -18,25 +18,25 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_RPI && SDL_VIDEO_OPENGL_EGL
+#ifndef _SDL_KMSDRM_mouse_h
+#define _SDL_KMSDRM_mouse_h
 
-#include "SDL_rpivideo.h"
-#include "SDL_rpiopengles.h"
+#include <gbm.h>
 
-/* EGL implementation of SDL OpenGL support */
+#include "../SDL_sysvideo.h"
 
-int
-RPI_GLES_LoadLibrary(_THIS, const char *path) {
-    return SDL_EGL_LoadLibrary(_this, path, EGL_DEFAULT_DISPLAY, 0);
-}
+typedef struct _KMSDRM_CursorData
+{
+    struct gbm_bo *bo;
+    uint32_t       crtc_id;
+    int            hot_x, hot_y;
+    int            w, h;
+} KMSDRM_CursorData;
 
-SDL_EGL_CreateContext_impl(RPI)
-SDL_EGL_SwapWindow_impl(RPI)
-SDL_EGL_MakeCurrent_impl(RPI)
+extern void KMSDRM_InitMouse(_THIS);
+extern void KMSDRM_QuitMouse(_THIS);
 
-#endif /* SDL_VIDEO_DRIVER_RPI && SDL_VIDEO_OPENGL_EGL */
+#endif /* _SDL_KMSDRM_mouse_h */
 
 /* vi: set ts=4 sw=4 expandtab: */
-

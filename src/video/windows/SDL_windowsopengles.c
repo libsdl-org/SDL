@@ -52,7 +52,7 @@ WIN_GLES_LoadLibrary(_THIS, const char *path) {
     }
     
     if (_this->egl_data == NULL) {
-        return SDL_EGL_LoadLibrary(_this, NULL, EGL_DEFAULT_DISPLAY);
+        return SDL_EGL_LoadLibrary(_this, NULL, EGL_DEFAULT_DISPLAY, 0);
     }
 
     return 0;
@@ -110,7 +110,7 @@ WIN_GLES_SetupWindow(_THIS, SDL_Window * window)
 
 
     if (_this->egl_data == NULL) {
-        if (SDL_EGL_LoadLibrary(_this, NULL, EGL_DEFAULT_DISPLAY) < 0) {
+        if (SDL_EGL_LoadLibrary(_this, NULL, EGL_DEFAULT_DISPLAY, 0) < 0) {
             SDL_EGL_UnloadLibrary(_this);
             return -1;
         }

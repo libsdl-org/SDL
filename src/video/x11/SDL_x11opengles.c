@@ -52,7 +52,7 @@ X11_GLES_LoadLibrary(_THIS, const char *path)
         #endif
     }
     
-    return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType) data->display);
+    return SDL_EGL_LoadLibrary(_this, path, (NativeDisplayType) data->display, 0);
 }
 
 XVisualInfo *

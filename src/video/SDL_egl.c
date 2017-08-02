@@ -30,6 +30,7 @@
 #endif
 
 #include "SDL_sysvideo.h"
+#include "SDL_log.h"
 #include "SDL_egl_c.h"
 #include "SDL_loadso.h"
 #include "SDL_hints.h"
@@ -114,38 +115,82 @@ int SDL_EGL_SetErrorEx(const char * message, const char * eglFunctionName, EGLin
 }
 
 /* EGL implementation of SDL OpenGL ES support */
-#ifdef EGL_KHR_create_context        
-static int SDL_EGL_HasExtension(_THIS, const char *ext)
+typedef enum {
+    SDL_EGL_DISPLAY_EXTENSION,
+    SDL_EGL_CLIENT_EXTENSION
+} SDL_EGL_ExtensionType;
+
+static SDL_bool SDL_EGL_HasExtension(_THIS, SDL_EGL_ExtensionType type, const char *ext)
 {
-    int i;
-    int len = 0;
     size_t ext_len;
-    const char *exts;
-    const char *ext_word;
+    const char *ext_override;
+    const char *egl_extstr;
+    const char *ext_start;
+
+    /* Invalid extensions can be rejected early */
+    if (ext == NULL || *ext == 0 || SDL_strchr(ext, ' ') != NULL) {
+        /* SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "SDL_EGL_HasExtension: Invalid EGL extension"); */
+        return SDL_FALSE;
+    }
+
+    /* Extensions can be masked with an environment variable.
+     * Unlike the OpenGL override, this will use the set bits of an integer
+     * to disable the extension.
+     *  Bit   Action
+     *  0     If set, the display extension is masked and not present to SDL.
+     *  1     If set, the client extension is masked and not present to SDL.
+     */
+    ext_override = SDL_getenv(ext);
+    if (ext_override != NULL) {
+        int disable_ext = SDL_atoi(ext_override);
+        if (disable_ext & 0x01 && type == SDL_EGL_DISPLAY_EXTENSION) {
+            return SDL_FALSE;
+        } else if (disable_ext & 0x02 && type == SDL_EGL_CLIENT_EXTENSION) {
+            return SDL_FALSE;
+        }
+    }
 
     ext_len = SDL_strlen(ext);
-    exts = _this->egl_data->eglQueryString(_this->egl_data->egl_display, EGL_EXTENSIONS);
+    switch (type) {
+    case SDL_EGL_DISPLAY_EXTENSION:
+        egl_extstr = _this->egl_data->eglQueryString(_this->egl_data->egl_display, EGL_EXTENSIONS);
+        break;
+    case SDL_EGL_CLIENT_EXTENSION:
+        /* EGL_EXT_client_extensions modifies eglQueryString to return client extensions
+         * if EGL_NO_DISPLAY is passed. Implementations without it are required to return NULL.
+         * This behavior is included in EGL 1.5.
+         */
+        egl_extstr = _this->egl_data->eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
+        break;
+    default:
+        /* SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "SDL_EGL_HasExtension: Invalid extension type"); */
+        return SDL_FALSE;
+    }
 
-    if (exts) {
-        ext_word = exts;
+    if (egl_extstr != NULL) {
+        ext_start = egl_extstr;
 
-        for (i = 0; exts[i] != 0; i++) {
-            if (exts[i] == ' ') {
-                if (ext_len == len && !SDL_strncmp(ext_word, ext, len)) {
-                    return 1;
+        while (*ext_start) {
+            ext_start = SDL_strstr(ext_start, ext);
+            if (ext_start == NULL) {
+                return SDL_FALSE;
+            }
+            /* Check if the match is not just a substring of one of the extensions */
+            if (ext_start == egl_extstr || *(ext_start - 1) == ' ') {
+                if (ext_start[ext_len] == ' ' || ext_start[ext_len] == 0) {
+                    return SDL_TRUE;
                 }
-
-                len = 0;
-                ext_word = &exts[i + 1];
-            } else {
-                len++;
+            }
+            /* If the search stopped in the middle of an extension, skip to the end of it */
+            ext_start += ext_len;
+            while (*ext_start != ' ' && *ext_start != 0) {
+                ext_start++;
             }
         }
     }
 
-    return 0;
+    return SDL_FALSE;
 }
-#endif /* EGL_KHR_create_context */
 
 void *
 SDL_EGL_GetProcAddress(_THIS, const char *proc)
@@ -196,10 +241,11 @@ SDL_EGL_UnloadLibrary(_THIS)
 }
 
 int
-SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_display)
+SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_display, EGLenum platform)
 {
     void *dll_handle = NULL, *egl_dll_handle = NULL; /* The naming is counter intuitive, but hey, I just work here -- Gabriel */
     const char *path = NULL;
+    int egl_version_major = 0, egl_version_minor = 0;
 #if SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_WINRT
     const char *d3dcompiler;
 #endif
@@ -305,9 +351,41 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
     LOAD_FUNC(eglQueryString);
     LOAD_FUNC(eglGetError);
 
+    if (_this->egl_data->eglQueryString) {
+        /* EGL 1.5 allows querying for client version */
+        const char *egl_version = _this->egl_data->eglQueryString(EGL_NO_DISPLAY, EGL_VERSION);
+        if (egl_version != NULL) {
+            if (SDL_sscanf(egl_version, "%d.%d", &egl_version_major, &egl_version_minor) != 2) {
+                egl_version_major = 0;
+                egl_version_minor = 0;
+                SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "Could not parse EGL version string: %s", egl_version);
+            }
+        }
+    }
+
+    if (egl_version_major == 1 && egl_version_minor == 5) {
+        LOAD_FUNC(eglGetPlatformDisplay);
+    }
+
+    _this->egl_data->egl_display = EGL_NO_DISPLAY;
 #if !defined(__WINRT__)
-    _this->egl_data->egl_display = _this->egl_data->eglGetDisplay(native_display);
-    if (!_this->egl_data->egl_display) {
+    if (platform) {
+        if (egl_version_major == 1 && egl_version_minor == 5) {
+            _this->egl_data->egl_display = _this->egl_data->eglGetPlatformDisplay(platform, native_display, NULL);
+        } else {
+            if (SDL_EGL_HasExtension(_this, SDL_EGL_CLIENT_EXTENSION, "EGL_EXT_platform_base")) {
+                _this->egl_data->eglGetPlatformDisplayEXT = SDL_EGL_GetProcAddress(_this, "eglGetPlatformDisplayEXT");
+                if (_this->egl_data->eglGetPlatformDisplayEXT) {
+                    _this->egl_data->egl_display = _this->egl_data->eglGetPlatformDisplayEXT(platform, native_display, NULL);
+                }
+            }
+        }
+    }
+    /* Try the implementation-specific eglGetDisplay even if eglGetPlatformDisplay fails */
+    if (_this->egl_data->egl_display == EGL_NO_DISPLAY) {
+        _this->egl_data->egl_display = _this->egl_data->eglGetDisplay(native_display);
+    }
+    if (_this->egl_data->egl_display == EGL_NO_DISPLAY) {
         return SDL_SetError("Could not get EGL display");
     }
     
@@ -328,13 +406,19 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
 int
 SDL_EGL_ChooseConfig(_THIS) 
 {
-    /* 64 seems nice. */
+/* 64 seems nice. */
     EGLint attribs[64];
     EGLint found_configs = 0, value;
+#ifdef SDL_VIDEO_DRIVER_KMSDRM
+    /* Intel EGL on KMS/DRM (al least) returns invalid configs that confuse the bitdiff search used */
+    /* later in this function, so we simply use the first one when using the KMSDRM driver for now. */
+    EGLConfig configs[1];
+#else
     /* 128 seems even nicer here */
     EGLConfig configs[128];
+#endif
     int i, j, best_bitdiff = -1, bitdiff;
-    
+   
     if (!_this->egl_data) {
         /* The EGL library wasn't loaded, SDL_GetError() should have info */
         return -1;
@@ -379,7 +463,7 @@ SDL_EGL_ChooseConfig(_THIS)
 
     if (_this->gl_config.framebuffer_srgb_capable) {
 #ifdef EGL_KHR_gl_colorspace
-        if (SDL_EGL_HasExtension(_this, "EGL_KHR_gl_colorspace")) {
+        if (SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_KHR_gl_colorspace")) {
             attribs[i++] = EGL_GL_COLORSPACE_KHR;
             attribs[i++] = EGL_GL_COLORSPACE_SRGB_KHR;
         } else
@@ -393,7 +477,7 @@ SDL_EGL_ChooseConfig(_THIS)
     if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) {
 #ifdef EGL_KHR_create_context
         if (_this->gl_config.major_version >= 3 &&
-            SDL_EGL_HasExtension(_this, "EGL_KHR_create_context")) {
+            SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_KHR_create_context")) {
             attribs[i++] = EGL_OPENGL_ES3_BIT_KHR;
         } else
 #endif
@@ -495,7 +579,7 @@ SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
         /* The Major/minor version, context profiles, and context flags can
          * only be specified when this extension is available.
          */
-        if (SDL_EGL_HasExtension(_this, "EGL_KHR_create_context")) {
+        if (SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_KHR_create_context")) {
             attribs[attr++] = EGL_CONTEXT_MAJOR_VERSION_KHR;
             attribs[attr++] = major_version;
             attribs[attr++] = EGL_CONTEXT_MINOR_VERSION_KHR;

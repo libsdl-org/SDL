@@ -58,7 +58,7 @@ WINRT_GLES_LoadLibrary(_THIS, const char *path)
 {
     SDL_VideoData *video_data = (SDL_VideoData *)_this->driverdata;
 
-    if (SDL_EGL_LoadLibrary(_this, path, EGL_DEFAULT_DISPLAY) != 0) {
+    if (SDL_EGL_LoadLibrary(_this, path, EGL_DEFAULT_DISPLAY, 0) != 0) {
         return -1;
     }
 

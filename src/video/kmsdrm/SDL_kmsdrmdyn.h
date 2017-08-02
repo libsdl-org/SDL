@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -18,25 +18,37 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
+#ifndef _SDL_kmsdrmdyn_h
+#define _SDL_kmsdrmdyn_h
+
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_RPI && SDL_VIDEO_OPENGL_EGL
+#include <xf86drm.h>
+#include <xf86drmMode.h>
+#include <gbm.h>
+#include <EGL/egl.h>
 
-#include "SDL_rpivideo.h"
-#include "SDL_rpiopengles.h"
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-/* EGL implementation of SDL OpenGL support */
+int SDL_KMSDRM_LoadSymbols(void);
+void SDL_KMSDRM_UnloadSymbols(void);
 
-int
-RPI_GLES_LoadLibrary(_THIS, const char *path) {
-    return SDL_EGL_LoadLibrary(_this, path, EGL_DEFAULT_DISPLAY, 0);
+/* Declare all the function pointers and wrappers... */
+#define SDL_KMSDRM_SYM(rc,fn,params) \
+    typedef rc (*SDL_DYNKMSDRMFN_##fn) params; \
+    extern SDL_DYNKMSDRMFN_##fn KMSDRM_##fn;
+#define SDL_KMSDRM_SYM_CONST(type, name) \
+    typedef type SDL_DYNKMSDRMCONST_##name; \
+    extern SDL_DYNKMSDRMCONST_##name KMSDRM_##name;
+#include "SDL_kmsdrmsym.h"
+
+#ifdef __cplusplus
 }
+#endif
 
-SDL_EGL_CreateContext_impl(RPI)
-SDL_EGL_SwapWindow_impl(RPI)
-SDL_EGL_MakeCurrent_impl(RPI)
-
-#endif /* SDL_VIDEO_DRIVER_RPI && SDL_VIDEO_OPENGL_EGL */
+#endif /* !defined _SDL_kmsdrmdyn_h */
 
 /* vi: set ts=4 sw=4 expandtab: */
-
