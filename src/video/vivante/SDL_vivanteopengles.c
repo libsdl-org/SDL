@@ -34,7 +34,7 @@ VIVANTE_GLES_LoadLibrary(_THIS, const char *path)
 
     displaydata = SDL_GetDisplayDriverData(0);
 
-    return SDL_EGL_LoadLibrary(_this, path, displaydata->native_display);
+    return SDL_EGL_LoadLibrary(_this, path, displaydata->native_display, 0);
 }
 
 SDL_EGL_CreateContext_impl(VIVANTE)
