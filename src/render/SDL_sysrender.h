@@ -154,6 +154,9 @@ struct SDL_Renderer
     SDL_FPoint scale;
     SDL_FPoint scale_backup;
 
+    /* The pixel to point coordinate scale */
+    SDL_FPoint dpi_scale;
+
     /* The list of textures */
     SDL_Texture *textures;
     SDL_Texture *target;

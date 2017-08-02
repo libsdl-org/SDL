@@ -168,29 +168,29 @@ SDL_RendererEventWatch(void *userdata, SDL_Event *event)
     } else if (event->type == SDL_MOUSEMOTION) {
         SDL_Window *window = SDL_GetWindowFromID(event->motion.windowID);
         if (renderer->logical_w && window == renderer->window) {
-            event->motion.x -= renderer->viewport.x;
-            event->motion.y -= renderer->viewport.y;
-            event->motion.x = (int)(event->motion.x / renderer->scale.x);
-            event->motion.y = (int)(event->motion.y / renderer->scale.y);
+            event->motion.x -= (renderer->viewport.x * renderer->dpi_scale.x);
+            event->motion.y -= (renderer->viewport.y * renderer->dpi_scale.y);
+            event->motion.x = (int)(event->motion.x / (renderer->scale.x * renderer->dpi_scale.x));
+            event->motion.y = (int)(event->motion.y / (renderer->scale.y * renderer->dpi_scale.y));
             if (event->motion.xrel > 0) {
-                event->motion.xrel = SDL_max(1, (int)(event->motion.xrel / renderer->scale.x));
+                event->motion.xrel = SDL_max(1, (int)(event->motion.xrel / (renderer->scale.x * renderer->dpi_scale.x)));
             } else if (event->motion.xrel < 0) {
-                event->motion.xrel = SDL_min(-1, (int)(event->motion.xrel / renderer->scale.x));
+                event->motion.xrel = SDL_min(-1, (int)(event->motion.xrel / (renderer->scale.x * renderer->dpi_scale.x)));
             }
             if (event->motion.yrel > 0) {
-                event->motion.yrel = SDL_max(1, (int)(event->motion.yrel / renderer->scale.y));
+                event->motion.yrel = SDL_max(1, (int)(event->motion.yrel / (renderer->scale.y * renderer->dpi_scale.y)));
             } else if (event->motion.yrel < 0) {
-                event->motion.yrel = SDL_min(-1, (int)(event->motion.yrel / renderer->scale.y));
+                event->motion.yrel = SDL_min(-1, (int)(event->motion.yrel / (renderer->scale.y * renderer->dpi_scale.y)));
             }
         }
     } else if (event->type == SDL_MOUSEBUTTONDOWN ||
                event->type == SDL_MOUSEBUTTONUP) {
         SDL_Window *window = SDL_GetWindowFromID(event->button.windowID);
         if (renderer->logical_w && window == renderer->window) {
-            event->button.x -= renderer->viewport.x;
-            event->button.y -= renderer->viewport.y;
-            event->button.x = (int)(event->button.x / renderer->scale.x);
-            event->button.y = (int)(event->button.y / renderer->scale.y);
+            event->motion.x -= (renderer->viewport.x * renderer->dpi_scale.x);
+            event->motion.y -= (renderer->viewport.y * renderer->dpi_scale.y);
+            event->motion.x = (int)(event->motion.x / (renderer->scale.x * renderer->dpi_scale.x));
+            event->motion.y = (int)(event->motion.y / (renderer->scale.y * renderer->dpi_scale.y));
         }
     }
     return 0;
@@ -289,6 +289,18 @@ SDL_CreateRenderer(SDL_Window * window, int index, Uint32 flags)
         renderer->window = window;
         renderer->scale.x = 1.0f;
         renderer->scale.y = 1.0f;
+        renderer->dpi_scale.x = 1.0f;
+        renderer->dpi_scale.y = 1.0f;
+
+        if (window && renderer->GetOutputSize) {
+            int window_w, window_h;
+            int output_w, output_h;
+            if (renderer->GetOutputSize(renderer, &output_w, &output_h) == 0) {
+                SDL_GetWindowSize(renderer->window, &window_w, &window_h);
+                renderer->dpi_scale.x = (float)window_w / output_w;
+                renderer->dpi_scale.y = (float)window_h / output_h;
+            }
+        }
 
         if (SDL_GetWindowFlags(window) & (SDL_WINDOW_HIDDEN|SDL_WINDOW_MINIMIZED)) {
             renderer->hidden = SDL_TRUE;
