@@ -74,6 +74,8 @@ KMSDRM_Destroy(SDL_VideoDevice * device)
         SDL_free(device->driverdata);
         device->driverdata = NULL;
     }
+
+    SDL_free(device);
     SDL_KMSDRM_UnloadSymbols();
 }
 
