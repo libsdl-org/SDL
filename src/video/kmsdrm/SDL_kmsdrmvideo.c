@@ -542,9 +542,13 @@ KMSDRM_DestroyWindow(_THIS, SDL_Window * window)
     if(data) {
         /* Wait for any pending page flips and unlock buffer */
         KMSDRM_WaitPageFlip(_this, data, -1);
-        if (data->locked_bo != NULL) {
-            KMSDRM_gbm_surface_release_buffer(data->gs, data->locked_bo);
-            data->locked_bo = NULL;
+        if (data->next_bo != NULL) {
+            KMSDRM_gbm_surface_release_buffer(data->gs, data->next_bo);
+            data->next_bo = NULL;
+        }
+        if (data->current_bo != NULL) {
+            KMSDRM_gbm_surface_release_buffer(data->gs, data->current_bo);
+            data->current_bo = NULL;
         }
 #if SDL_VIDEO_OPENGL_EGL
         SDL_EGL_MakeCurrent(_this, EGL_NO_SURFACE, EGL_NO_CONTEXT);
