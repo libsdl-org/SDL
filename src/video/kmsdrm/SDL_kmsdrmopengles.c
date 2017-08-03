@@ -73,10 +73,12 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
     }
 
     /* Release previously displayed buffer (which is now the backbuffer) and lock a new one */
-    if (wdata->locked_bo != NULL) {
-        KMSDRM_gbm_surface_release_buffer(wdata->gs, wdata->locked_bo);
-        /* SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Released GBM surface %p", (void *)wdata->locked_bo); */
-        wdata->locked_bo = NULL;
+    if (wdata->next_bo != NULL) {
+        KMSDRM_gbm_surface_release_buffer(wdata->gs, wdata->current_bo);
+        /* SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Released GBM surface %p", (void *)wdata->next_bo); */
+
+        wdata->current_bo = wdata->next_bo;
+        wdata->next_bo = NULL;
     }
 
     if (!(_this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, wdata->egl_surface))) {
@@ -84,15 +86,22 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
         return 0;
     }
 
-    wdata->locked_bo = KMSDRM_gbm_surface_lock_front_buffer(wdata->gs);
-    if (wdata->locked_bo == NULL) {
+    if (wdata->current_bo == NULL) {
+        wdata->current_bo = KMSDRM_gbm_surface_lock_front_buffer(wdata->gs);
+        if (wdata->current_bo == NULL) {
+            return 0;
+        }
+    }
+
+    wdata->next_bo = KMSDRM_gbm_surface_lock_front_buffer(wdata->gs);
+    if (wdata->next_bo == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not lock GBM surface front buffer");
         return 0;
     /* } else {
-        SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Locked GBM surface %p", (void *)wdata->locked_bo); */
+        SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Locked GBM surface %p", (void *)wdata->next_bo); */
     }
 
-    fb_info = KMSDRM_FBFromBO(_this, wdata->locked_bo);
+    fb_info = KMSDRM_FBFromBO(_this, wdata->next_bo);
     if (_this->egl_data->egl_swapinterval == 0) {
         /* Swap buffers instantly, possible tearing */
         /* SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "drmModeSetCrtc(%d, %u, %u, 0, 0, &%u, 1, &%ux%u@%u)",
