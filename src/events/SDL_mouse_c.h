@@ -87,6 +87,7 @@ typedef struct
     float relative_speed_scale;
     float scale_accum_x;
     float scale_accum_y;
+    SDL_bool touch_mouse_events;
 
     /* Data for double-click tracking */
     int num_clickstates;

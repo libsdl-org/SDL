@@ -64,6 +64,18 @@ SDL_MouseRelativeSpeedScaleChanged(void *userdata, const char *name, const char 
     }
 }
 
+static void
+SDL_TouchMouseEventsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_Mouse *mouse = (SDL_Mouse *)userdata;
+
+    if (hint && (*hint == '0' || SDL_strcasecmp(hint, "false") == 0)) {
+        mouse->touch_mouse_events = SDL_FALSE;
+    } else {
+        mouse->touch_mouse_events = SDL_TRUE;
+    }
+}
+
 /* Public functions */
 int
 SDL_MouseInit(void)
@@ -75,6 +87,9 @@ SDL_MouseInit(void)
 
     SDL_AddHintCallback(SDL_HINT_MOUSE_RELATIVE_SPEED_SCALE,
                         SDL_MouseRelativeSpeedScaleChanged, mouse);
+
+    SDL_AddHintCallback(SDL_HINT_TOUCH_MOUSE_EVENTS,
+                        SDL_TouchMouseEventsChanged, mouse);
 
     mouse->cursor_shown = SDL_TRUE;
 
@@ -252,6 +267,10 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
     int xrel;
     int yrel;
 
+    if (mouseID == SDL_TOUCH_MOUSEID && !mouse->touch_mouse_events) {
+        return 0;
+    }
+
     if (mouse->relative_mode_warp) {
         int center_x = 0, center_y = 0;
         SDL_GetWindowSize(window, &center_x, &center_y);
@@ -383,6 +402,10 @@ SDL_PrivateSendMouseButton(SDL_Window * window, SDL_MouseID mouseID, Uint8 state
     int posted;
     Uint32 type;
     Uint32 buttonstate = mouse->buttonstate;
+
+    if (mouseID == SDL_TOUCH_MOUSEID && !mouse->touch_mouse_events) {
+        return 0;
+    }
 
     /* Figure out which event to perform */
     switch (state) {

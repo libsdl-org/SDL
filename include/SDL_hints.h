@@ -276,6 +276,17 @@ extern "C" {
 #define SDL_HINT_MOUSE_FOCUS_CLICKTHROUGH "SDL_MOUSE_FOCUS_CLICKTHROUGH"
 
 /**
+ *  \brief  A variable controlling whether touch events should generate synthetic mouse events
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Touch events will not generate mouse events
+ *    "1"       - Touch events will generate mouse events
+ *
+ *  By default SDL will generate mouse events for touch events
+ */
+#define SDL_HINT_TOUCH_MOUSE_EVENTS    "SDL_TOUCH_MOUSE_EVENTS"
+
+/**
  *  \brief Minimize your SDL_Window if it loses key focus when in fullscreen mode. Defaults to true.
  *
  */
