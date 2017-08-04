@@ -847,6 +847,8 @@ enable_video_vivante
 enable_video_cocoa
 enable_video_directfb
 enable_directfb_shared
+enable_video_kmsdrm
+enable_kmsdrm_shared
 enable_video_dummy
 enable_video_opengl
 enable_video_opengles
@@ -1592,6 +1594,8 @@ Optional Features:
   --enable-video-directfb use DirectFB video driver [[default=no]]
   --enable-directfb-shared
                           dynamically load directfb support [[default=yes]]
+  --enable-video-kmsdrm   use KMSDRM video driver [[default=no]]
+  --enable-kmsdrm-shared  dynamically load kmsdrm support [[default=yes]]
   --enable-video-dummy    use dummy video driver [[default=yes]]
   --enable-video-opengl   include OpenGL support [[default=yes]]
   --enable-video-opengles include OpenGL ES support [[default=yes]]
@@ -21309,6 +21313,149 @@ $as_echo "$directfb_shared" >&6; }
     fi
 }
 
+CheckKMSDRM()
+{
+    # Check whether --enable-video-kmsdrm was given.
+if test "${enable_video_kmsdrm+set}" = set; then :
+  enableval=$enable_video_kmsdrm;
+else
+  enable_video_kmsdrm=no
+fi
+
+
+    if test x$enable_video = xyes -a x$enable_video_kmsdrm = xyes; then
+        video_kmsdrm=no
+        libdrm_avail=no
+        libgbm_avail=no
+
+        LIBDRM_REQUIRED_VERSION=2.4.46
+        LIBGBM_REQUIRED_VERSION=9.0.0
+
+        # Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_PKG_CONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_path_PKG_CONFIG" && ac_cv_path_PKG_CONFIG="no"
+  ;;
+esac
+fi
+PKG_CONFIG=$ac_cv_path_PKG_CONFIG
+if test -n "$PKG_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
+$as_echo "$PKG_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+        if test x$PKG_CONFIG != xno; then
+            if $PKG_CONFIG --atleast-pkgconfig-version 0.7; then
+                if $PKG_CONFIG --atleast-version $LIBDRM_REQUIRED_VERSION libdrm; then
+                    LIBDRM_CFLAGS=`$PKG_CONFIG --cflags libdrm`
+                    LIBDRM_LIBS=`$PKG_CONFIG --libs libdrm`
+                    LIBDRM_PREFIX=`$PKG_CONFIG --variable=prefix libdrm`
+                    libdrm_avail=yes
+                fi
+                if $PKG_CONFIG --atleast-version $LIBGBM_REQUIRED_VERSION gbm; then
+                    LIBGBM_CFLAGS=`$PKG_CONFIG --cflags gbm`
+                    LIBGBM_LIBS=`$PKG_CONFIG --libs gbm`
+                    LIBGBM_PREFIX=`$PKG_CONFIG --variable=prefix gbm`
+                    libgbm_avail=yes
+                fi
+                if test x$libdrm_avail = xyes -a x$libgbm_avail = xyes; then
+                    video_kmsdrm=yes
+                fi
+
+                { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libdrm $LIBDRM_REQUIRED_VERSION library for kmsdrm support" >&5
+$as_echo_n "checking for libdrm $LIBDRM_REQUIRED_VERSION library for kmsdrm support... " >&6; }
+                { $as_echo "$as_me:${as_lineno-$LINENO}: result: $libdrm_avail" >&5
+$as_echo "$libdrm_avail" >&6; }
+                { $as_echo "$as_me:${as_lineno-$LINENO}: checking for libgbm $LIBGBM_REQUIRED_VERSION library for kmsdrm support" >&5
+$as_echo_n "checking for libgbm $LIBGBM_REQUIRED_VERSION library for kmsdrm support... " >&6; }
+                { $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgbm_avail" >&5
+$as_echo "$libgbm_avail" >&6; }
+
+                if test x$video_kmsdrm = xyes; then
+                    # Check whether --enable-kmsdrm-shared was given.
+if test "${enable_kmsdrm_shared+set}" = set; then :
+  enableval=$enable_kmsdrm_shared;
+else
+  enable_kmsdrm_shared=yes
+fi
+
+
+
+$as_echo "#define SDL_VIDEO_DRIVER_KMSDRM 1" >>confdefs.h
+
+                    SOURCES="$SOURCES $srcdir/src/video/kmsdrm/*.c"
+                    EXTRA_CFLAGS="$EXTRA_CFLAGS $LIBDRM_CFLAGS $LIBGBM_CFLAGS"
+
+                    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for kmsdrm dynamic loading support" >&5
+$as_echo_n "checking for kmsdrm dynamic loading support... " >&6; }
+                    kmsdrm_shared=no
+                    drm_lib=`find_lib "libdrm.so.*" "$DRM_LIBS"`
+                    gbm_lib=`find_lib "libgbm.so.*" "$DRM_LIBS"`
+                    if test x$have_loadso != xyes && \
+                       test x$enable_kmsdrm_shared = xyes; then
+                        { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: You must have SDL_LoadObject() support for dynamic kmsdrm loading" >&5
+$as_echo "$as_me: WARNING: You must have SDL_LoadObject() support for dynamic kmsdrm loading" >&2;}
+                    fi
+                    if test x$have_loadso = xyes && \
+                       test x$enable_kmsdrm_shared = xyes && test x$drm_lib != x && test x$gbm_lib != x; then
+                        kmsdrm_shared=yes
+
+cat >>confdefs.h <<_ACEOF
+#define SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC "$drm_lib"
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC_GBM "$gbm_lib"
+_ACEOF
+
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_KMSDRM_SHARED "TRUE"
+_ACEOF
+
+                        SUMMARY_video="${SUMMARY_video} kmsdrm(dynamic)"
+                    else
+                        EXTRA_LDFLAGS="$EXTRA_LDFLAGS $LIBDRM_LIBS $LIBGBM_LIBS"
+                        SUMMARY_video="${SUMMARY_video} kmsdrm"
+                    fi
+                    { $as_echo "$as_me:${as_lineno-$LINENO}: result: $kmsdrm_shared" >&5
+$as_echo "$kmsdrm_shared" >&6; }
+                    have_video=yes
+                fi
+            fi
+        fi
+    fi
+}
+
 CheckDummyVideo()
 {
     # Check whether --enable-video-dummy was given.
@@ -23471,6 +23618,7 @@ case "$host" in
         CheckLibSampleRate
         CheckX11
         CheckDirectFB
+        CheckKMSDRM
         CheckOpenGLX11
         CheckOpenGLESX11
         CheckMir
