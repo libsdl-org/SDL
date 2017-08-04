@@ -80,6 +80,7 @@ PSPAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     if (this->spec.channels == 1) {
         format = PSP_AUDIO_FORMAT_MONO;
     } else {
+        this->spec.channels = 2;
         format = PSP_AUDIO_FORMAT_STEREO;
     }
     this->hidden->channel = sceAudioChReserve(PSP_AUDIO_NEXT_CHANNEL, this->spec.samples, format);
