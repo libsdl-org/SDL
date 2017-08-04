@@ -138,6 +138,7 @@ KMSDRM_Create(int devindex)
     device->SetWindowGrab = KMSDRM_SetWindowGrab;
     device->DestroyWindow = KMSDRM_DestroyWindow;
     device->GetWindowWMInfo = KMSDRM_GetWindowWMInfo;
+#if SDL_VIDEO_OPENGL_EGL
     device->GL_LoadLibrary = KMSDRM_GLES_LoadLibrary;
     device->GL_GetProcAddress = KMSDRM_GLES_GetProcAddress;
     device->GL_UnloadLibrary = KMSDRM_GLES_UnloadLibrary;
@@ -147,6 +148,7 @@ KMSDRM_Create(int devindex)
     device->GL_GetSwapInterval = KMSDRM_GLES_GetSwapInterval;
     device->GL_SwapWindow = KMSDRM_GLES_SwapWindow;
     device->GL_DeleteContext = KMSDRM_GLES_DeleteContext;
+#endif
 
     device->PumpEvents = KMSDRM_PumpEvents;
 
@@ -477,7 +479,8 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     /* Allocate window internal data */
     wdata = (SDL_WindowData *) SDL_calloc(1, sizeof(SDL_WindowData));
     if (wdata == NULL) {
-        return SDL_OutOfMemory();
+        SDL_OutOfMemory();
+        goto error;
     }
 
     wdata->waiting_for_flip = SDL_FALSE;
