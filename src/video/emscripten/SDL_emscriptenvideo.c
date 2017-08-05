@@ -111,6 +111,7 @@ Emscripten_CreateDevice(int devindex)
     device->UpdateWindowFramebuffer = Emscripten_UpdateWindowFramebuffer;
     device->DestroyWindowFramebuffer = Emscripten_DestroyWindowFramebuffer;
 
+#if SDL_VIDEO_OPENGL_EGL
     device->GL_LoadLibrary = Emscripten_GLES_LoadLibrary;
     device->GL_GetProcAddress = Emscripten_GLES_GetProcAddress;
     device->GL_UnloadLibrary = Emscripten_GLES_UnloadLibrary;
@@ -121,6 +122,7 @@ Emscripten_CreateDevice(int devindex)
     device->GL_SwapWindow = Emscripten_GLES_SwapWindow;
     device->GL_DeleteContext = Emscripten_GLES_DeleteContext;
     device->GL_GetDrawableSize = Emscripten_GLES_GetDrawableSize;
+#endif
 
     device->free = Emscripten_DeleteDevice;
 
@@ -228,6 +230,7 @@ Emscripten_CreateWindow(_THIS, SDL_Window * window)
         }
     }
 
+#if SDL_VIDEO_OPENGL_EGL
     if (window->flags & SDL_WINDOW_OPENGL) {
         if (!_this->egl_data) {
             if (SDL_GL_LoadLibrary(NULL) < 0) {
@@ -240,6 +243,7 @@ Emscripten_CreateWindow(_THIS, SDL_Window * window)
             return SDL_SetError("Could not create GLES window surface");
         }
     }
+#endif
 
     wdata->window = window;
 
@@ -284,10 +288,12 @@ Emscripten_DestroyWindow(_THIS, SDL_Window * window)
         data = (SDL_WindowData *) window->driverdata;
 
         Emscripten_UnregisterEventHandlers(data);
+#if SDL_VIDEO_OPENGL_EGL
         if (data->egl_surface != EGL_NO_SURFACE) {
             SDL_EGL_DestroySurface(_this, data->egl_surface);
             data->egl_surface = EGL_NO_SURFACE;
         }
+#endif
         SDL_free(window->driverdata);
         window->driverdata = NULL;
     }

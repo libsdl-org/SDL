@@ -28,7 +28,9 @@
 #include <emscripten/emscripten.h>
 #include <emscripten/html5.h>
 
+#if SDL_VIDEO_OPENGL_EGL
 #include <EGL/egl.h>
+#endif
 
 typedef struct SDL_WindowData
 {
