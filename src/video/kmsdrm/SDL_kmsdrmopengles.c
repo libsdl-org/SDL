@@ -102,6 +102,9 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
     }
 
     fb_info = KMSDRM_FBFromBO(_this, wdata->next_bo);
+    if (fb_info == NULL) {
+        return 0;
+    }
     if (_this->egl_data->egl_swapinterval == 0) {
         /* Swap buffers instantly, possible tearing */
         /* SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "drmModeSetCrtc(%d, %u, %u, 0, 0, &%u, 1, &%ux%u@%u)",

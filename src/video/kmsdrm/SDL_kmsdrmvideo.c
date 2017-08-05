@@ -199,6 +199,10 @@ KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo)
 
     /* Here a new DRM FB must be created */
     fb_info = (KMSDRM_FBInfo *)SDL_calloc(1, sizeof(KMSDRM_FBInfo));
+    if (fb_info == NULL) {
+        SDL_OutOfMemory();
+        return NULL;
+    }
     fb_info->drm_fd = vdata->drm_fd;
 
     w  = KMSDRM_gbm_bo_get_width(bo);
@@ -280,6 +284,10 @@ KMSDRM_VideoInit(_THIS)
 
     /* Open /dev/dri/cardNN */
     devname = (char *) SDL_calloc(1, 16);
+    if (devname == NULL) {
+        ret = SDL_OutOfMemory();
+        goto cleanup;
+    }
     SDL_snprintf(devname, 16, "/dev/dri/card%d", vdata->devindex);
     vdata->drm_fd = open(devname, O_RDWR | O_CLOEXEC);
     SDL_free(devname);
