@@ -48,10 +48,6 @@ MIR_GL_CreateContext(_THIS, SDL_Window* window);
 extern int
 MIR_GL_LoadLibrary(_THIS, const char* path);
 
-extern void
-MIR_GL_UnloadLibrary(_THIS);
-
 #endif /* _SDL_miropengl_h */
 
 /* vi: set ts=4 sw=4 expandtab: */
-
