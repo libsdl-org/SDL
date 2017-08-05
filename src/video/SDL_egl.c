@@ -371,12 +371,12 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
 #if !defined(__WINRT__)
     if (platform) {
         if (egl_version_major == 1 && egl_version_minor == 5) {
-            _this->egl_data->egl_display = _this->egl_data->eglGetPlatformDisplay(platform, native_display, NULL);
+            _this->egl_data->egl_display = _this->egl_data->eglGetPlatformDisplay(platform, (void *)native_display, NULL);
         } else {
             if (SDL_EGL_HasExtension(_this, SDL_EGL_CLIENT_EXTENSION, "EGL_EXT_platform_base")) {
                 _this->egl_data->eglGetPlatformDisplayEXT = SDL_EGL_GetProcAddress(_this, "eglGetPlatformDisplayEXT");
                 if (_this->egl_data->eglGetPlatformDisplayEXT) {
-                    _this->egl_data->egl_display = _this->egl_data->eglGetPlatformDisplayEXT(platform, native_display, NULL);
+                    _this->egl_data->egl_display = _this->egl_data->eglGetPlatformDisplayEXT(platform, (void *)native_display, NULL);
                 }
             }
         }
@@ -768,4 +768,4 @@ SDL_EGL_DestroySurface(_THIS, EGLSurface egl_surface)
 #endif /* SDL_VIDEO_OPENGL_EGL */
 
 /* vi: set ts=4 sw=4 expandtab: */
-    
+
