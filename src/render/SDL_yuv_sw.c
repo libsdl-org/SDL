@@ -86,14 +86,10 @@
 #include "SDL_video.h"
 #include "SDL_cpuinfo.h"
 #include "SDL_yuv_sw_c.h"
+#include "SDL_yuv_mmx_c.h"
 
 
 /* The colorspace conversion functions */
-
-/* !!! FIXME: this broke on Clang (if it wasn't broken _before_) in https://hg.libsdl.org/SDL/rev/2ee7d2fa299b */
-#if (__GNUC__ > 2) && defined(__i386__) && __OPTIMIZE__ && SDL_ASSEMBLY_ROUTINES && !defined(__clang__)
-#define USE_MMX_ASSEMBLY 1
-#endif
 
 #ifdef USE_MMX_ASSEMBLY
 extern void Color565DitherYV12MMX1X(int *colortab, Uint32 * rgb_2_pix,
