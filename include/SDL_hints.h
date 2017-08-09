@@ -359,7 +359,6 @@ extern "C" {
  */
 #define SDL_HINT_ACCELEROMETER_AS_JOYSTICK "SDL_ACCELEROMETER_AS_JOYSTICK"
 
-
 /**
  *  \brief  A variable that lets you disable the detection and use of Xinput gamepad devices
  *
@@ -368,7 +367,6 @@ extern "C" {
  *    "1"       - Enable XInput detection (the default)
  */
 #define SDL_HINT_XINPUT_ENABLED "SDL_XINPUT_ENABLED"
-
 
 /**
  *  \brief  A variable that causes SDL to use the old axis and button mapping for XInput devices.
@@ -379,9 +377,8 @@ extern "C" {
  */
 #define SDL_HINT_XINPUT_USE_OLD_JOYSTICK_MAPPING "SDL_XINPUT_USE_OLD_JOYSTICK_MAPPING"
 
-
 /**
- *  \brief  A variable that lets you manually hint extra gamecontroller db entries
+ *  \brief  A variable that lets you manually hint extra gamecontroller db entries.
  *
  *  The variable should be newline delimited rows of gamecontroller config data, see SDL_gamecontroller.h
  *
@@ -390,6 +387,31 @@ extern "C" {
  */
 #define SDL_HINT_GAMECONTROLLERCONFIG "SDL_GAMECONTROLLERCONFIG"
 
+/**
+ *  \brief  A variable containing a list of devices to skip when scanning for game controllers.
+ *
+ *  The format of the string is a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ */
+#define SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES "SDL_GAMECONTROLLER_IGNORE_DEVICES"
+
+/**
+ *  \brief  If set, all devices will be skipped when scanning for game controllers except for the ones listed in this variable.
+ *
+ *  The format of the string is a comma separated list of USB VID/PID pairs
+ *  in hexadecimal form, e.g.
+ *
+ *      0xAAAA/0xBBBB,0xCCCC/0xDDDD
+ *
+ *  The variable can also take the form of @file, in which case the named
+ *  file will be loaded and interpreted as the value of the variable.
+ */
+#define SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT "SDL_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT"
 
 /**
  *  \brief  A variable that lets you enable joystick (and gamecontroller) events even when your app is in the background.
@@ -404,7 +426,6 @@ extern "C" {
  */
 #define SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS "SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"
 
-
 /**
  *  \brief If set to "0" then never set the top most bit on a SDL Window, even if the video mode expects it.
  *      This is a debugging aid for developers and not expected to be used by end users. The default is "1"
@@ -414,7 +435,6 @@ extern "C" {
  *    "1"       - allow topmost
  */
 #define SDL_HINT_ALLOW_TOPMOST "SDL_ALLOW_TOPMOST"
-
 
 /**
  *  \brief A variable that controls the timer resolution, in milliseconds.

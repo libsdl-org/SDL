@@ -445,6 +445,12 @@ JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender, IOHIDDevic
         return;   /* not a device we care about, probably. */
     }
 
+    if (SDL_IsGameControllerNameAndGUID(device->product, device->guid) &&
+        SDL_ShouldIgnoreGameController(device->product, device->guid)) {
+        SDL_free(device);
+        return;
+    }
+
     /* Get notified when this device is disconnected. */
     IOHIDDeviceRegisterRemovalCallback(ioHIDDeviceObject, JoystickDeviceWasRemovedCallback, device);
     IOHIDDeviceScheduleWithRunLoop(ioHIDDeviceObject, CFRunLoopGetCurrent(), SDL_JOYSTICK_RUNLOOP_MODE);

@@ -112,6 +112,74 @@ struct _SDL_GameController
 };
 
 
+typedef struct
+{
+    int num_entries;
+    int max_entries;
+    Uint32 *entries;
+} SDL_vidpid_list;
+
+static SDL_vidpid_list SDL_allowed_controllers;
+static SDL_vidpid_list SDL_ignored_controllers;
+
+static void
+SDL_LoadVIDPIDListFromHint(const char *hint, SDL_vidpid_list *list)
+{
+    Uint32 entry;
+    char *spot;
+    char *file = NULL;
+
+    list->num_entries = 0;
+
+    if (hint && *hint == '@') {
+        spot = file = (char *)SDL_LoadFile(hint+1, NULL);
+    } else {
+        spot = (char *)hint;
+    }
+
+    if (!spot) {
+        return;
+    }
+
+    while ((spot = SDL_strstr(spot, "0x")) != NULL) {
+        entry = SDL_strtol(spot, &spot, 0);
+        entry <<= 16;
+        spot = SDL_strstr(spot, "0x");
+        if (!spot) {
+            break;
+        }
+        entry |= SDL_strtol(spot, &spot, 0);
+
+        if (list->num_entries == list->max_entries) {
+            int max_entries = list->max_entries + 16;
+            Uint32 *entries = (Uint32 *)SDL_realloc(list->entries, max_entries*sizeof(*list->entries));
+            if (entries == NULL) {
+                /* Out of memory, go with what we have already */
+                break;
+            }
+            list->entries = entries;
+            list->max_entries = max_entries;
+        }
+        list->entries[list->num_entries++] = entry;
+    }
+
+    if (file) {
+        SDL_free(file);
+    }
+}
+
+static void
+SDL_GameControllerIgnoreDevicesChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_LoadVIDPIDListFromHint(hint, &SDL_ignored_controllers);
+}
+
+static void
+SDL_GameControllerIgnoreDevicesExceptChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_LoadVIDPIDListFromHint(hint, &SDL_allowed_controllers);
+}
+
 static int SDL_PrivateGameControllerAxis(SDL_GameController * gamecontroller, SDL_GameControllerAxis axis, Sint16 value);
 static int SDL_PrivateGameControllerButton(SDL_GameController * gamecontroller, SDL_GameControllerButton button, Uint8 state);
 
@@ -799,47 +867,48 @@ SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID, const char *mappingString, 
 /*
  * Helper function to determine pre-calculated offset to certain joystick mappings
  */
-static ControllerMapping_t *SDL_PrivateGetControllerMapping(int device_index)
+static ControllerMapping_t *SDL_PrivateGetControllerMappingForNameAndGUID(const char *name, SDL_JoystickGUID guid)
 {
-    SDL_JoystickGUID jGUID = SDL_JoystickGetDeviceGUID(device_index);
     ControllerMapping_t *mapping;
 
+    mapping = SDL_PrivateGetControllerMappingForGUID(&guid);
+#if defined(SDL_JOYSTICK_EMSCRIPTEN)
+    if (!mapping && s_pEmscriptenMapping) {
+        mapping = s_pEmscriptenMapping;
+    }
+#else
     (void) s_pEmscriptenMapping;  /* pacify ARMCC */
+#endif
+#ifdef __LINUX__
+    if (!mapping && name) {
+        if (SDL_strstr(name, "Xbox 360 Wireless Receiver")) {
+            /* The Linux driver xpad.c maps the wireless dpad to buttons */
+            SDL_bool existing;
+            mapping = SDL_PrivateAddMappingForGUID(jGUID,
+"none,X360 Wireless Controller,a:b0,b:b1,back:b6,dpdown:b14,dpleft:b11,dpright:b12,dpup:b13,guide:b8,leftshoulder:b4,leftstick:b9,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b10,righttrigger:a5,rightx:a3,righty:a4,start:b7,x:b2,y:b3,",
+                          &existing, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
+        }
+    }
+#endif /* __LINUX__ */
 
-    mapping = SDL_PrivateGetControllerMappingForGUID(&jGUID);
+    if (!mapping && name) {
+        if (SDL_strstr(name, "Xbox") || SDL_strstr(name, "X-Box")) {
+            mapping = s_pXInputMapping;
+        }
+    }
+    return mapping;
+}
+
+static ControllerMapping_t *SDL_PrivateGetControllerMapping(int device_index)
+{
+    const char *name = SDL_JoystickNameForIndex(device_index);
+    SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(device_index);
+    ControllerMapping_t *mapping = SDL_PrivateGetControllerMappingForNameAndGUID(name, guid);
 #if SDL_JOYSTICK_XINPUT
     if (!mapping && SDL_SYS_IsXInputGamepad_DeviceIndex(device_index)) {
         mapping = s_pXInputMapping;
     }
 #endif
-#if defined(SDL_JOYSTICK_EMSCRIPTEN)
-    if (!mapping && s_pEmscriptenMapping) {
-        mapping = s_pEmscriptenMapping;
-    }
-#endif
-#ifdef __LINUX__
-    if (!mapping) {
-        const char *name = SDL_JoystickNameForIndex(device_index);
-        if (name) {
-            if (SDL_strstr(name, "Xbox 360 Wireless Receiver")) {
-                /* The Linux driver xpad.c maps the wireless dpad to buttons */
-                SDL_bool existing;
-                mapping = SDL_PrivateAddMappingForGUID(jGUID,
-"none,X360 Wireless Controller,a:b0,b:b1,back:b6,dpdown:b14,dpleft:b11,dpright:b12,dpup:b13,guide:b8,leftshoulder:b4,leftstick:b9,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,rightstick:b10,righttrigger:a5,rightx:a3,righty:a4,start:b7,x:b2,y:b3,",
-                              &existing, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
-            }
-        }
-    }
-#endif /* __LINUX__ */
-
-    if (!mapping) {
-        const char *name = SDL_JoystickNameForIndex(device_index);
-        if (name) {
-            if (SDL_strstr(name, "Xbox") || SDL_strstr(name, "X-Box")) {
-                mapping = s_pXInputMapping;
-            }
-        }
-    }
     return mapping;
 }
 
@@ -1092,7 +1161,7 @@ SDL_GameControllerLoadHints()
  * Initialize the game controller system, mostly load our DB of controller config mappings
  */
 int
-SDL_GameControllerInit(void)
+SDL_GameControllerInitMappings(void)
 {
     int i = 0;
     const char *pMappingString = NULL;
@@ -1106,6 +1175,19 @@ SDL_GameControllerInit(void)
 
     /* load in any user supplied config */
     SDL_GameControllerLoadHints();
+
+    SDL_AddHintCallback(SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES,
+                        SDL_GameControllerIgnoreDevicesChanged, NULL);
+    SDL_AddHintCallback(SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT,
+                        SDL_GameControllerIgnoreDevicesExceptChanged, NULL);
+
+    return (0);
+}
+
+int
+SDL_GameControllerInit(void)
+{
+    int i;
 
     /* watch for joy events and fire controller ones if needed */
     SDL_AddEventWatch(SDL_GameControllerEventWatcher, NULL);
@@ -1139,6 +1221,19 @@ SDL_GameControllerNameForIndex(int device_index)
 
 
 /*
+ * Return 1 if the joystick with this name and GUID is a supported controller
+ */
+SDL_bool
+SDL_IsGameControllerNameAndGUID(const char *name, SDL_JoystickGUID guid)
+{
+    ControllerMapping_t *pSupportedController = SDL_PrivateGetControllerMappingForNameAndGUID(name, guid);
+    if (pSupportedController) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
+}
+
+/*
  * Return 1 if the joystick at this device index is a supported controller
  */
 SDL_bool
@@ -1149,6 +1244,41 @@ SDL_IsGameController(int device_index)
         return SDL_TRUE;
     }
     return SDL_FALSE;
+}
+
+/*
+ * Return 1 if the game controller should be ignored by SDL
+ */
+SDL_bool SDL_ShouldIgnoreGameController(const char *name, SDL_JoystickGUID guid)
+{
+    int i;
+    Uint16 vendor;
+    Uint16 product;
+    Uint32 vidpid;
+
+    if (SDL_allowed_controllers.num_entries == 0 &&
+        SDL_ignored_controllers.num_entries == 0) {
+        return SDL_FALSE;
+    }
+
+    SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL);
+    vidpid = MAKE_VIDPID(vendor, product);
+
+    if (SDL_allowed_controllers.num_entries > 0) {
+        for (i = 0; i < SDL_allowed_controllers.num_entries; ++i) {
+            if (vidpid == SDL_allowed_controllers.entries[i]) {
+                return SDL_FALSE;
+            }
+        }
+        return SDL_TRUE;
+    } else {
+        for (i = 0; i < SDL_ignored_controllers.num_entries; ++i) {
+            if (vidpid == SDL_ignored_controllers.entries[i]) {
+                return SDL_TRUE;
+            }
+        }
+        return SDL_FALSE;
+    }
 }
 
 /*
@@ -1536,14 +1666,18 @@ SDL_GameControllerClose(SDL_GameController * gamecontroller)
 void
 SDL_GameControllerQuit(void)
 {
-    ControllerMapping_t *pControllerMap;
-
     SDL_LockJoystickList();
     while (SDL_gamecontrollers) {
         SDL_gamecontrollers->ref_count = 1;
         SDL_GameControllerClose(SDL_gamecontrollers);
     }
     SDL_UnlockJoystickList();
+}
+
+void
+SDL_GameControllerQuitMappings(void)
+{
+    ControllerMapping_t *pControllerMap;
 
     while (s_pSupportedControllers) {
         pControllerMap = s_pSupportedControllers;
@@ -1555,6 +1689,19 @@ SDL_GameControllerQuit(void)
 
     SDL_DelEventWatch(SDL_GameControllerEventWatcher, NULL);
 
+    SDL_DelHintCallback(SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES,
+                        SDL_GameControllerIgnoreDevicesChanged, NULL);
+    SDL_DelHintCallback(SDL_HINT_GAMECONTROLLER_IGNORE_DEVICES_EXCEPT,
+                        SDL_GameControllerIgnoreDevicesExceptChanged, NULL);
+
+    if (SDL_allowed_controllers.entries) {
+        SDL_free(SDL_allowed_controllers.entries);
+        SDL_zero(SDL_allowed_controllers);
+    }
+    if (SDL_ignored_controllers.entries) {
+        SDL_free(SDL_ignored_controllers.entries);
+        SDL_zero(SDL_ignored_controllers);
+    }
 }
 
 /*
