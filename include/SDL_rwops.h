@@ -191,6 +191,29 @@ extern DECLSPEC void SDLCALL SDL_FreeRW(SDL_RWops * area);
 
 
 /**
+ *  Load all the data from an SDL data stream.
+ *
+ *  The data is allocated with a zero byte at the end (null terminated)
+ *
+ *  If \c datasize is not NULL, it is filled with the size of the data read.
+ *
+ *  If \c freesrc is non-zero, the stream will be closed after being read.
+ *
+ *  The data should be freed with SDL_free().
+ *
+ *  \return the data, or NULL if there was an error.
+ */
+extern DECLSPEC void *SDLCALL SDL_LoadFile_RW(SDL_RWops * src, size_t *datasize,
+                                                    int freesrc);
+
+/**
+ *  Load an entire file.
+ *
+ *  Convenience macro.
+ */
+#define SDL_LoadFile(file, datasize)   SDL_LoadFile_RW(SDL_RWFromFile(file, "rb"), datasize, 1)
+
+/**
  *  \name Read endian functions
  *
  *  Read an item of the specified endianness and return in native format.

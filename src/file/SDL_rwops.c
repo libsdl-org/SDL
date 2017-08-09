@@ -653,6 +653,59 @@ SDL_FreeRW(SDL_RWops * area)
     SDL_free(area);
 }
 
+/* Load all the data from an SDL data stream */
+void *
+SDL_LoadFile_RW(SDL_RWops * src, size_t *datasize, int freesrc)
+{
+    const int FILE_CHUNK_SIZE = 1024;
+    Sint64 size;
+    size_t size_read, size_total;
+    void *data = NULL, *newdata;
+
+    if (!src) {
+        SDL_InvalidParamError("src");
+        return NULL;
+    }
+
+    size = SDL_RWsize(src);
+    if (size < 0) {
+        size = FILE_CHUNK_SIZE;
+    }
+    data = SDL_malloc(size+1);
+
+    size_total = 0;
+    for (;;) {
+        if ((size_total + FILE_CHUNK_SIZE) > size) {
+            size = (size_total + FILE_CHUNK_SIZE);
+            newdata = SDL_realloc(data, size + 1);
+            if (!newdata) {
+                SDL_free(data);
+                data = NULL;
+                SDL_OutOfMemory();
+                goto done;
+            }
+            data = newdata;
+        }
+
+        size_read = SDL_RWread(src, (char *)data+size_total, 1, (size_t)(size-size_total));
+        if (size_read == 0) {
+            break;
+        }
+        size_total += size_read;
+    }
+
+    if (datasize) {
+        *datasize = size_total;
+    }
+    ((char *)data)[size_total] = '\0';
+
+done:
+    if (freesrc && src) {
+        SDL_RWclose(src);
+    }
+    return data;
+}
+
 /* Functions for dynamically reading and writing endian-specific values */
 
 Uint8
