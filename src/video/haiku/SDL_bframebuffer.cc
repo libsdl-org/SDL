@@ -35,7 +35,9 @@
 extern "C" {
 #endif
 
+#ifndef DRAWTHREAD
 static int32 BE_UpdateOnce(SDL_Window *window);
+#endif
 
 static SDL_INLINE SDL_BWin *_ToBeWin(SDL_Window *window) {
 	return ((SDL_BWin*)(window->driverdata));
