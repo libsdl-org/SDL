@@ -118,8 +118,11 @@ typedef int (*SDL_blit) (struct SDL_Surface * src, SDL_Rect * srcrect,
 extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurface
     (Uint32 flags, int width, int height, int depth,
      Uint32 Rmask, Uint32 Gmask, Uint32 Bmask, Uint32 Amask);
+
+/* !!! FIXME for 2.1: why does this ask for depth? Format provides that. */
 extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceWithFormat
     (Uint32 flags, int width, int height, int depth, Uint32 format);
+
 extern DECLSPEC SDL_Surface *SDLCALL SDL_CreateRGBSurfaceFrom(void *pixels,
                                                               int width,
                                                               int height,
