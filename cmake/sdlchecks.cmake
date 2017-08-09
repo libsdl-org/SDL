@@ -856,7 +856,10 @@ endmacro()
 # PTHREAD_LIBS
 macro(CheckPTHREAD)
   if(PTHREADS)
-    if(LINUX)
+    if(ANDROID)
+      # the android libc provides built-in support for pthreads, so no
+      # additional linking or compile flags are necessary
+    elseif(LINUX)
       set(PTHREAD_CFLAGS "-D_REENTRANT")
       set(PTHREAD_LDFLAGS "-pthread")
     elseif(ANDROID)
