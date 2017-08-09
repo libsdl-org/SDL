@@ -70,6 +70,8 @@ SDL_JoystickInit(void)
 {
     int status;
 
+    SDL_GameControllerInitMappings();
+
     /* Create the joystick list lock */
     if (!SDL_joystick_lock) {
         SDL_joystick_lock = SDL_CreateMutex();
@@ -561,10 +563,15 @@ SDL_JoystickQuit(void)
     SDL_QuitSubSystem(SDL_INIT_EVENTS);
 #endif
 
+    SDL_DelHintCallback(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS,
+                        SDL_JoystickAllowBackgroundEventsChanged, NULL);
+
     if (SDL_joystick_lock) {
         SDL_DestroyMutex(SDL_joystick_lock);
         SDL_joystick_lock = NULL;
     }
+
+    SDL_GameControllerQuitMappings();
 }
 
 
@@ -930,7 +937,7 @@ SDL_JoystickEventState(int state)
 #endif /* SDL_EVENTS_DISABLED */
 }
 
-static void SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *product, Uint16 *version)
+void SDL_GetJoystickGUIDInfo(SDL_JoystickGUID guid, Uint16 *vendor, Uint16 *product, Uint16 *version)
 {
     Uint16 *guid16 = (Uint16 *)guid.data;
 
@@ -1272,6 +1279,5 @@ SDL_JoystickPowerLevel SDL_JoystickCurrentPowerLevel(SDL_Joystick * joystick)
     }
     return joystick->epowerlevel;
 }
-
 
 /* vi: set ts=4 sw=4 expandtab: */

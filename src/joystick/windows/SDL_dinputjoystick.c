@@ -428,6 +428,12 @@ EnumJoysticksCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext)
         SDL_strlcpy((char*)guid16, pNewJoystick->joystickname, sizeof(pNewJoystick->guid.data) - 4);
     }
 
+    if (SDL_IsGameControllerNameAndGUID(pNewJoystick->joystickname, pNewJoystick->guid) &&
+        SDL_ShouldIgnoreGameController(pNewJoystick->joystickname, pNewJoystick->guid)) {
+        SDL_free(pNewJoystick);
+        return DIENUM_CONTINUE;
+    }
+
     SDL_SYS_AddJoystickDevice(pNewJoystick);
 
     return DIENUM_CONTINUE; /* get next device, please */

@@ -251,6 +251,12 @@ AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pContext)
     }
     pNewJoystick->SubType = SubType;
     pNewJoystick->XInputUserId = userid;
+
+    if (SDL_ShouldIgnoreGameController(pNewJoystick->joystickname, pNewJoystick->guid)) {
+        SDL_free(pNewJoystick);
+        return;
+    }
+
     SDL_SYS_AddJoystickDevice(pNewJoystick);
 }
 
