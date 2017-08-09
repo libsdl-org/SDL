@@ -1264,6 +1264,22 @@ SDL_bool SDL_ShouldIgnoreGameController(const char *name, SDL_JoystickGUID guid)
     SDL_GetJoystickGUIDInfo(guid, &vendor, &product, NULL);
     vidpid = MAKE_VIDPID(vendor, product);
 
+    if (SDL_GetHintBoolean("SDL_GAMECONTROLLER_ALLOW_STEAM_VIRTUAL_GAMEPAD", SDL_FALSE)) {
+        /* We shouldn't ignore Steam's virtual gamepad since it's using the hints to filter out the real controllers so it can remap input for the virtual controller */
+        SDL_bool bSteamVirtualGamepad = SDL_FALSE;
+#if defined(__LINUX__)
+        bSteamVirtualGamepad = (vendor == 0x28DE && product == 0x11FF);
+#elif defined(__MACOSX__)
+        bSteamVirtualGamepad = (SDL_strncmp(name, "GamePad-", 8) == 0);
+#elif defined(__WIN32__)
+        /* We can't tell on Windows, but Steam will block others in input hooks */
+        bSteamVirtualGamepad = SDL_TRUE;
+#endif
+        if (bSteamVirtualGamepad) {
+            return SDL_FALSE;
+        }
+    }
+
     if (SDL_allowed_controllers.num_entries > 0) {
         for (i = 0; i < SDL_allowed_controllers.num_entries; ++i) {
             if (vidpid == SDL_allowed_controllers.entries[i]) {
