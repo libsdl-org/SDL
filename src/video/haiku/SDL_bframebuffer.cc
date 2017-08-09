@@ -144,7 +144,6 @@ int32 BE_DrawThread(void *data) {
 			/* Blit each clipping rectangle */
 			bscreen.WaitForRetrace();
 			for(i = 0; i < numClips; ++i) {
-				clipping_rect rc = clips[i];
 				/* Get addresses of the start of each clipping rectangle */
 				int32 width = clips[i].right - clips[i].left + 1;
 				int32 height = clips[i].bottom - clips[i].top + 1;
@@ -200,6 +199,7 @@ void BE_DestroyWindowFramebuffer(_THIS, SDL_Window * window) {
  * The specific issues have since become rare enough that they may have been
  * solved, but I doubt it- they were pretty sporadic before now.
  */
+#ifndef DRAWTHREAD
 static int32 BE_UpdateOnce(SDL_Window *window) {
 	SDL_BWin *bwin = _ToBeWin(window);
 	BScreen bscreen;
@@ -225,7 +225,6 @@ static int32 BE_UpdateOnce(SDL_Window *window) {
 		/* Blit each clipping rectangle */
 		bscreen.WaitForRetrace();
 		for(i = 0; i < numClips; ++i) {
-			clipping_rect rc = clips[i];
 			/* Get addresses of the start of each clipping rectangle */
 			int32 width = clips[i].right - clips[i].left + 1;
 			int32 height = clips[i].bottom - clips[i].top + 1;
@@ -247,6 +246,7 @@ static int32 BE_UpdateOnce(SDL_Window *window) {
 	}
 	return 0;
 }
+#endif
 
 #ifdef __cplusplus
 }
