@@ -884,7 +884,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         break;
 
     case WM_TOUCH:
-        {
+        if (data->videodata->GetTouchInputInfo && data->videodata->CloseTouchInputHandle) {
             UINT i, num_inputs = LOWORD(wParam);
             PTOUCHINPUT inputs = SDL_stack_alloc(TOUCHINPUT, num_inputs);
             if (data->videodata->GetTouchInputInfo((HTOUCHINPUT)lParam, num_inputs, inputs, sizeof(TOUCHINPUT))) {
