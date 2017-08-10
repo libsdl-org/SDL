@@ -265,15 +265,15 @@ public class SDLActivity extends Activity {
     protected void onDestroy() {
         Log.v(TAG, "onDestroy()");
 
-        mNextNativeState = NativeState.PAUSED;
-        SDLActivity.handleNativeState();
-
         if (SDLActivity.mBrokenLibraries) {
            super.onDestroy();
            // Reset everything in case the user re opens the app
            SDLActivity.initialize();
            return;
         }
+
+        mNextNativeState = NativeState.PAUSED;
+        SDLActivity.handleNativeState();
 
         // Send a quit message to the application
         SDLActivity.mExitCalledFromJava = true;
