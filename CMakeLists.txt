@@ -1642,7 +1642,9 @@ set(_INSTALL_LIBS "SDL2main")
 
 if(SDL_SHARED)
   add_library(SDL2 SHARED ${SOURCE_FILES} ${VERSION_SOURCES})
-  if(UNIX AND NOT ANDROID)
+  if(APPLE)
+    set_target_properties(SDL2 PROPERTIES MACOSX_RPATH 1)
+  elseif(UNIX AND NOT ANDROID)
     set_target_properties(SDL2 PROPERTIES
       VERSION ${LT_VERSION}
       SOVERSION ${LT_REVISION}
