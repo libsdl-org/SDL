@@ -2,7 +2,7 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
   message(FATAL_ERROR "Prevented in-tree built. Please create a build directory outside of the SDL source code and call cmake from there")
 endif()
 
-cmake_minimum_required(VERSION 2.8.5)
+cmake_minimum_required(VERSION 2.8.11)
 project(SDL2 C)
 
 # !!! FIXME: this should probably do "MACOSX_RPATH ON" as a target property
@@ -45,6 +45,12 @@ set(SDL_MICRO_VERSION 5)
 set(SDL_INTERFACE_AGE 1)
 set(SDL_BINARY_AGE 5)
 set(SDL_VERSION "${SDL_MAJOR_VERSION}.${SDL_MINOR_VERSION}.${SDL_MICRO_VERSION}")
+
+# Set defaults preventing destination file conflicts
+set(CMAKE_DEBUG_POSTFIX "d"
+    CACHE STRING "Name suffix for debug builds")
+
+mark_as_advanced(CMAKE_IMPORT_LIBRARY_SUFFIX CMAKE_DEBUG_POSTFIX)
 
 # Calculate a libtool-like version number
 math(EXPR LT_CURRENT "${SDL_MICRO_VERSION} - ${SDL_INTERFACE_AGE}")
@@ -1093,9 +1099,9 @@ elseif(WINDOWS)
 
   if(MSVC)
     # Prevent codegen that would use the VC runtime libraries.
-    add_definitions(/GS-)
+    set_property(DIRECTORY . APPEND PROPERTY COMPILE_OPTIONS "/GS-")
     if(NOT ARCH_64)
-      add_definitions(/arch:SSE)
+      set_property(DIRECTORY . APPEND PROPERTY COMPILE_OPTIONS "/arch:SSE")
     endif()
   endif()
 
@@ -1631,6 +1637,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS}")
 
 # Always build SDLmain
 add_library(SDL2main STATIC ${SDLMAIN_SOURCES})
+target_include_directories(SDL2main PUBLIC $<INSTALL_INTERFACE:include>)
 set(_INSTALL_LIBS "SDL2main")
 
 if(SDL_SHARED)
@@ -1654,12 +1661,19 @@ if(SDL_SHARED)
   endif()
   set(_INSTALL_LIBS "SDL2" ${_INSTALL_LIBS})
   target_link_libraries(SDL2 ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
+  target_include_directories(SDL2 PUBLIC $<INSTALL_INTERFACE:include>)
 endif()
 
 if(SDL_STATIC)
   set (BUILD_SHARED_LIBS FALSE)
   add_library(SDL2-static STATIC ${SOURCE_FILES})
-  set_target_properties(SDL2-static PROPERTIES OUTPUT_NAME "SDL2")
+  if (NOT SDL_SHARED OR NOT WIN32)
+    set_target_properties(SDL2-static PROPERTIES OUTPUT_NAME "SDL2")
+    # Note: Apparently, OUTPUT_NAME must really be unique; even when
+    # CMAKE_IMPORT_LIBRARY_SUFFIX or the like are given. Otherwise
+    # the static build may race with the import lib and one will get
+    # clobbered, when the suffix is realized via subsequent rename.
+  endif()
   set_target_properties(SDL2-static PROPERTIES POSITION_INDEPENDENT_CODE ${SDL_STATIC_PIC})
   if(MSVC AND NOT LIBC)
     set_target_properties(SDL2-static PROPERTIES LINK_FLAGS_RELEASE "/NODEFAULTLIB")
@@ -1670,13 +1684,42 @@ if(SDL_STATIC)
   # libraries - do we need to consider this?
   set(_INSTALL_LIBS "SDL2-static" ${_INSTALL_LIBS})
   target_link_libraries(SDL2-static ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
+  target_include_directories(SDL2-static PUBLIC $<INSTALL_INTERFACE:include>)
 endif()
 
 ##### Installation targets #####
-install(TARGETS ${_INSTALL_LIBS}
+install(TARGETS ${_INSTALL_LIBS} EXPORT SDL2Targets
   LIBRARY DESTINATION "lib${LIB_SUFFIX}"
   ARCHIVE DESTINATION "lib${LIB_SUFFIX}"
   RUNTIME DESTINATION bin)
+
+##### Export files #####
+if (APPLE)
+  set(PKG_PREFIX "SDL2.framework/Resources")
+elseif (WINDOWS)
+  set(PKG_PREFIX "cmake")
+else ()
+  set(PKG_PREFIX "lib/cmake/SDL2")
+endif ()
+
+include(CMakePackageConfigHelpers)
+write_basic_package_version_file("${CMAKE_BINARY_DIR}/SDL2ConfigVersion.cmake"
+  VERSION ${SDL_VERSION}
+  COMPATIBILITY AnyNewerVersion
+)
+
+install(EXPORT SDL2Targets
+  FILE SDL2Targets.cmake
+  NAMESPACE SDL2::
+  DESTINATION ${PKG_PREFIX}
+)
+install(
+  FILES
+    ${CMAKE_SOURCE_DIR}/SDL2Config.cmake
+    ${CMAKE_BINARY_DIR}/SDL2ConfigVersion.cmake
+  DESTINATION ${PKG_PREFIX}
+  COMPONENT Devel
+)
 
 file(GLOB INCLUDE_FILES ${SDL2_SOURCE_DIR}/include/*.h)
 file(GLOB BIN_INCLUDE_FILES ${SDL2_BINARY_DIR}/include/*.h)
