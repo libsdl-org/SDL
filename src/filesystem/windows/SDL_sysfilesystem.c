@@ -118,6 +118,14 @@ SDL_GetPrefPath(const char *org, const char *app)
     size_t new_wpath_len = 0;
     BOOL api_result = FALSE;
 
+    if (!app) {
+        SDL_InvalidParamError("app");
+        return NULL;
+    }
+    if (!org) {
+        org = "";
+    }
+
     if (!SUCCEEDED(SHGetFolderPathW(NULL, CSIDL_APPDATA | CSIDL_FLAG_CREATE, NULL, 0, path))) {
         WIN_SetError("Couldn't locate our prefpath");
         return NULL;
@@ -145,8 +153,10 @@ SDL_GetPrefPath(const char *org, const char *app)
         return NULL;
     }
 
-    lstrcatW(path, L"\\");
-    lstrcatW(path, worg);
+    if (*worg) {
+        lstrcatW(path, L"\\");
+        lstrcatW(path, worg);
+    }
     SDL_free(worg);
 
     api_result = CreateDirectoryW(path, NULL);

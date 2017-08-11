@@ -152,6 +152,14 @@ SDL_GetPrefPath(const char *org, const char *app)
     size_t new_wpath_len = 0;
     BOOL api_result = FALSE;
 
+    if (!app) {
+        SDL_InvalidParamError("app");
+        return NULL;
+    }
+    if (!org) {
+        org = "";
+    }
+
     srcPath = SDL_WinRTGetFSPathUNICODE(SDL_WINRT_PATH_LOCAL_FOLDER);
     if ( ! srcPath) {
         SDL_SetError("Unable to find a source path");
@@ -186,9 +194,11 @@ SDL_GetPrefPath(const char *org, const char *app)
         return NULL;
     }
 
-    SDL_wcslcat(path, L"\\", new_wpath_len + 1);
-    SDL_wcslcat(path, worg, new_wpath_len + 1);
-    SDL_free(worg);
+    if (*worg) {
+        SDL_wcslcat(path, L"\\", new_wpath_len + 1);
+        SDL_wcslcat(path, worg, new_wpath_len + 1);
+        SDL_free(worg);
+    }
 
     api_result = CreateDirectoryW(path, NULL);
     if (api_result == FALSE) {
@@ -219,3 +229,5 @@ SDL_GetPrefPath(const char *org, const char *app)
 }
 
 #endif /* __WINRT__ */
+
+/* vi: set ts=4 sw=4 expandtab: */

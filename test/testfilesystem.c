@@ -46,6 +46,15 @@ main(int argc, char *argv[])
     SDL_Log("pref path: '%s'\n", pref_path); 
     SDL_free(pref_path);
 
+    pref_path = SDL_GetPrefPath(NULL, "testfilesystem");
+    if(pref_path == NULL){
+      SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't find pref path without organization: %s\n",
+                   SDL_GetError());
+      return 1;
+    }
+    SDL_Log("pref path: '%s'\n", pref_path); 
+    SDL_free(pref_path);
+
     SDL_Quit();
     return 0;
 }
