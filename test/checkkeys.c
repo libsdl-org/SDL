@@ -168,7 +168,19 @@ loop()
             PrintText("INPUT", event.text.text);
             break;
         case SDL_MOUSEBUTTONDOWN:
-            /* Any button press quits the app... */
+            /* Left button quits the app, other buttons toggles text input */
+            if (event.button.button == SDL_BUTTON_LEFT) {
+                done = 1;
+            } else {
+                if (SDL_IsTextInputActive()) {
+                    SDL_Log("Stopping text input\n");
+                    SDL_StopTextInput();
+                } else {
+                    SDL_Log("Starting text input\n");
+                    SDL_StartTextInput();
+                }
+            }
+            break;
         case SDL_QUIT:
             done = 1;
             break;
