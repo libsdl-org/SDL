@@ -26,16 +26,12 @@
 typedef struct
 {
     TCHAR DeviceName[32];
+    HMONITOR MonitorHandle;
 } SDL_DisplayData;
 
 typedef struct
 {
     DEVMODE DeviceMode;
-    float ScaleX;
-    float ScaleY;
-    float DiagDPI;
-    float HorzDPI;
-    float VertDPI;
 } SDL_DisplayModeData;
 
 extern int WIN_InitModes(_THIS);
