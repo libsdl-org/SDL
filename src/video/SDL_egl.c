@@ -269,7 +269,9 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
         }
     }
     if (SDL_strcasecmp(d3dcompiler, "none") != 0) {
-        SDL_LoadObject(d3dcompiler);
+        if (SDL_LoadObject(d3dcompiler) == NULL) {
+            SDL_ClearError();
+        }
     }
 #endif
 
