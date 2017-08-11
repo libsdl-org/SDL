@@ -1748,6 +1748,9 @@ class SDLGenericMotionListener_API12 implements View.OnGenericMotionListener {
                 return SDLActivity.handleJoystickMotionEvent(event);
 
             case InputDevice.SOURCE_MOUSE:
+                if (!SDLActivity.mSeparateMouseAndTouch) {
+                    break;
+                }
                 action = event.getActionMasked();
                 switch (action) {
                     case MotionEvent.ACTION_SCROLL:
