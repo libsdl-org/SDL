@@ -325,6 +325,7 @@ KMSDRM_VideoInit(_THIS)
         }
 
         KMSDRM_drmModeFreeConnector(connector);
+        connector = NULL;
     }
 
     if (i == resources->count_connectors) {
@@ -345,6 +346,7 @@ KMSDRM_VideoInit(_THIS)
         }
 
         KMSDRM_drmModeFreeEncoder(encoder);
+        encoder = NULL;
     }
 
     if (i == resources->count_encoders) {
