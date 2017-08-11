@@ -150,6 +150,7 @@ LoadLibSampleRate(void)
     SDL_assert(SRC_lib == NULL);
     SRC_lib = SDL_LoadObject(SDL_LIBSAMPLERATE_DYNAMIC);
     if (!SRC_lib) {
+        SDL_ClearError();
         return SDL_FALSE;
     }
 

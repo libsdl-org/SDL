@@ -351,6 +351,7 @@ IME_Init(SDL_VideoData *videodata, HWND hwnd)
     videodata->ime_himm32 = SDL_LoadObject("imm32.dll");
     if (!videodata->ime_himm32) {
         videodata->ime_available = SDL_FALSE;
+        SDL_ClearError();
         return;
     }
     videodata->ImmLockIMC = (LPINPUTCONTEXT2 (WINAPI *)(HIMC))SDL_LoadFunction(videodata->ime_himm32, "ImmLockIMC");
