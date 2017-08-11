@@ -1380,6 +1380,49 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
                 }
             }
             break;
+        case SDLK_UP:
+        case SDLK_DOWN:
+        case SDLK_LEFT:
+        case SDLK_RIGHT:
+            if (withAlt) {
+                /* Alt-Up/Down/Left/Right switches between displays */
+                SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
+                if (window) {
+                    int currentIndex = SDL_GetWindowDisplayIndex(window);
+                    int numDisplays = SDL_GetNumVideoDisplays();
+
+                    if (currentIndex >= 0 && numDisplays >= 1) {
+                        int dest;
+                        if (event->key.keysym.sym == SDLK_UP || event->key.keysym.sym == SDLK_LEFT) {
+                            dest = (currentIndex + numDisplays - 1) % numDisplays;
+                        } else {
+                            dest = (currentIndex + numDisplays + 1) % numDisplays;
+                        }
+                        SDL_Log("Centering on display %d\n", dest);
+                        SDL_SetWindowPosition(window,
+                            SDL_WINDOWPOS_CENTERED_DISPLAY(dest),
+                            SDL_WINDOWPOS_CENTERED_DISPLAY(dest));
+                    }
+                }
+            }
+            if (withShift) {
+                /* Shift-Up/Down/Left/Right shift the window by 100px */
+                SDL_Window *window = SDL_GetWindowFromID(event->key.windowID);
+                if (window) {
+                    const int delta = 100;
+                    int x, y;
+                    SDL_GetWindowPosition(window, &x, &y);
+                    
+                    if (event->key.keysym.sym == SDLK_UP)    y -= delta;
+                    if (event->key.keysym.sym == SDLK_DOWN)  y += delta;
+                    if (event->key.keysym.sym == SDLK_LEFT)  x -= delta;
+                    if (event->key.keysym.sym == SDLK_RIGHT) x += delta;
+
+                    SDL_Log("Setting position to (%d, %d)\n", x, y);
+                    SDL_SetWindowPosition(window, x, y);
+                }
+            }
+            break;
         case SDLK_o:
             if (withControl) {
                 /* Ctrl-O (or Ctrl-Shift-O) changes window opacity. */
