@@ -71,8 +71,15 @@ char *
 SDL_GetPrefPath(const char *org, const char *app)
 { @autoreleasepool
 {
-    char *retval = NULL;
+    if (!app) {
+        SDL_InvalidParamError("app");
+        return NULL;
+    }
+    if (!org) {
+        org = "";
+    }
 
+    char *retval = NULL;
     NSArray *array = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
 
     if ([array count] > 0) {  /* we only want the first item in the list. */
@@ -85,7 +92,11 @@ SDL_GetPrefPath(const char *org, const char *app)
                 SDL_OutOfMemory();
             } else {
                 char *ptr;
-                SDL_snprintf(retval, len, "%s/%s/%s/", base, org, app);
+                if (*org) {
+                    SDL_snprintf(retval, len, "%s/%s/%s/", base, org, app);
+                } else {
+                    SDL_snprintf(retval, len, "%s/%s/", base, app);
+                }
                 for (ptr = retval+1; *ptr; ptr++) {
                     if (*ptr == '/') {
                         *ptr = '\0';

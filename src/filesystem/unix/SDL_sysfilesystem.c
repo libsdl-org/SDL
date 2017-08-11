@@ -180,6 +180,14 @@ SDL_GetPrefPath(const char *org, const char *app)
     char *ptr = NULL;
     size_t len = 0;
 
+    if (!app) {
+        SDL_InvalidParamError("app");
+        return NULL;
+    }
+    if (!org) {
+        org = "";
+    }
+
     if (!envr) {
         /* You end up with "$HOME/.local/share/Game Name 2" */
         envr = SDL_getenv("HOME");
@@ -204,7 +212,11 @@ SDL_GetPrefPath(const char *org, const char *app)
         return NULL;
     }
 
-    SDL_snprintf(retval, len, "%s%s%s/%s/", envr, append, org, app);
+    if (*org) {
+        SDL_snprintf(retval, len, "%s%s%s/%s/", envr, append, org, app);
+    } else {
+        SDL_snprintf(retval, len, "%s%s%s/", envr, append, app);
+    }
 
     for (ptr = retval+1; *ptr; ptr++) {
         if (*ptr == '/') {
