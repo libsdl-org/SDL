@@ -313,6 +313,7 @@ SDL_HapticOpenFromJoystick(SDL_Joystick * joystick)
     SDL_memset(haptic, 0, sizeof(SDL_Haptic));
     haptic->rumble_id = -1;
     if (SDL_SYS_HapticOpenFromJoystick(haptic, joystick) < 0) {
+        SDL_SetError("Haptic: SDL_SYS_HapticOpenFromJoystick failed.");
         SDL_free(haptic);
         return NULL;
     }

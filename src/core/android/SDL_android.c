@@ -37,6 +37,7 @@
 #include "../../video/android/SDL_androidvideo.h"
 #include "../../video/android/SDL_androidwindow.h"
 #include "../../joystick/android/SDL_sysjoystick_c.h"
+#include "../../haptic/android/SDL_syshaptic_c.h"
 
 #include <android/log.h>
 #include <pthread.h>
@@ -177,6 +178,8 @@ static jmethodID midCaptureReadShortBuffer;
 static jmethodID midCaptureReadByteBuffer;
 static jmethodID midCaptureClose;
 static jmethodID midPollInputDevices;
+static jmethodID midPollHapticDevices;
+static jmethodID midHapticRun;
 
 /* Accelerometer data storage */
 static float fLastAccelerometer[3];
@@ -237,13 +240,17 @@ JNIEXPORT void JNICALL SDL_Android_Init(JNIEnv* mEnv, jclass cls)
                                 "captureClose", "()V");
     midPollInputDevices = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
                                 "pollInputDevices", "()V");
+    midPollHapticDevices = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
+                                "pollHapticDevices", "()V");
+    midHapticRun = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
+                                "hapticRun", "(II)V");
 
     bHasNewData = SDL_FALSE;
 
     if (!midGetNativeSurface ||
        !midAudioOpen || !midAudioWriteShortBuffer || !midAudioWriteByteBuffer || !midAudioClose ||
        !midCaptureOpen || !midCaptureReadShortBuffer || !midCaptureReadByteBuffer || !midCaptureClose ||
-       !midPollInputDevices) {
+       !midPollInputDevices || !midPollHapticDevices || !midHapticRun) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "SDL: Couldn't locate Java callbacks, check that they're named and typed correctly");
     }
     __android_log_print(ANDROID_LOG_INFO, "SDL", "SDL_Android_Init() finished!");
@@ -321,6 +328,25 @@ JNIEXPORT jint JNICALL SDL_JAVA_INTERFACE(nativeRemoveJoystick)(
                                     jint device_id)
 {
     return Android_RemoveJoystick(device_id);
+}
+
+JNIEXPORT jint JNICALL Java_org_libsdl_app_SDLActivity_nativeAddHaptic(
+    JNIEnv* env, jclass jcls, jint device_id, jstring device_name)
+{
+    int retval;
+    const char *name = (*env)->GetStringUTFChars(env, device_name, NULL);
+
+    retval = Android_AddHaptic(device_id, name);
+
+    (*env)->ReleaseStringUTFChars(env, device_name, name);
+
+    return retval;
+}
+
+JNIEXPORT jint JNICALL Java_org_libsdl_app_SDLActivity_nativeRemoveHaptic(
+    JNIEnv* env, jclass jcls, jint device_id)
+{
+    return Android_RemoveHaptic(device_id);
 }
 
 
@@ -1569,6 +1595,19 @@ void Android_JNI_PollInputDevices(void)
     JNIEnv *env = Android_JNI_GetEnv();
     (*env)->CallStaticVoidMethod(env, mActivityClass, midPollInputDevices);    
 }
+
+void Android_JNI_PollHapticDevices(void)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    (*env)->CallStaticVoidMethod(env, mActivityClass, midPollHapticDevices);
+}
+    
+void Android_JNI_HapticRun(int device_id, int length)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    (*env)->CallStaticVoidMethod(env, mActivityClass, midHapticRun, device_id, length);
+}
+
 
 /* See SDLActivity.java for constants. */
 #define COMMAND_SET_KEEP_SCREEN_ON    5
