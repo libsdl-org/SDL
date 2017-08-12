@@ -30,6 +30,7 @@
 
 #include "../../core/android/SDL_android.h"
 
+/* See Android's MotionEvent class for constants */
 #define ACTION_DOWN 0
 #define ACTION_UP 1
 #define ACTION_MOVE 2
@@ -41,41 +42,59 @@
 #define BUTTON_BACK 8
 #define BUTTON_FORWARD 16
 
-static Uint8 SDLButton;
+/* Last known Android mouse button state (includes all buttons) */
+static int last_state;
 
 void
 Android_InitMouse(void)
 {
-    SDLButton = 0;
+    last_state = 0;
 }
 
-void Android_OnMouse( int androidButton, int action, float x, float y) {
+/* Translate Android mouse button state to SDL mouse button */
+static Uint8
+TranslateButton(int state)
+{
+    if (state & BUTTON_PRIMARY) {
+        return SDL_BUTTON_LEFT;
+    } else if (state & BUTTON_SECONDARY) {
+        return SDL_BUTTON_RIGHT;
+    } else if (state & BUTTON_TERTIARY) {
+        return SDL_BUTTON_MIDDLE;
+    } else if (state & BUTTON_FORWARD) {
+        return SDL_BUTTON_X1;
+    } else if (state & BUTTON_BACK) {
+        return SDL_BUTTON_X2;
+    } else {
+        return 0;
+    }
+}
+
+void
+Android_OnMouse(int state, int action, float x, float y)
+{
+    int changes;
+    Uint8 button;
+
     if (!Android_Window) {
         return;
     }
 
     switch(action) {
         case ACTION_DOWN:
-            // Determine which button originated the event, and store it for ACTION_UP
-            SDLButton = SDL_BUTTON_LEFT;
-            if (androidButton == BUTTON_SECONDARY) {
-                SDLButton = SDL_BUTTON_RIGHT;
-            } else if (androidButton == BUTTON_TERTIARY) {
-                SDLButton = SDL_BUTTON_MIDDLE;
-            } else if (androidButton == BUTTON_FORWARD) {
-                SDLButton = SDL_BUTTON_X1;
-            } else if (androidButton == BUTTON_BACK) {
-                SDLButton = SDL_BUTTON_X2;
-            }
+            changes = state & ~last_state;
+            button = TranslateButton(changes);
+            last_state = state;
             SDL_SendMouseMotion(Android_Window, 0, 0, x, y);
-            SDL_SendMouseButton(Android_Window, 0, SDL_PRESSED, SDLButton);
+            SDL_SendMouseButton(Android_Window, 0, SDL_PRESSED, button);
             break;
 
         case ACTION_UP:
-            // Android won't give us the button that originated the ACTION_DOWN event, so we'll
-            // assume it's the one we stored
+            changes = last_state & ~state;
+            button = TranslateButton(changes);
+            last_state = state;
             SDL_SendMouseMotion(Android_Window, 0, 0, x, y);
-            SDL_SendMouseButton(Android_Window, 0, SDL_RELEASED, SDLButton);
+            SDL_SendMouseButton(Android_Window, 0, SDL_RELEASED, button);
             break;
 
         case ACTION_MOVE:
