@@ -22,6 +22,10 @@
 #include "../../SDL_internal.h"
 
 #ifdef SDL_JOYSTICK_ANDROID
+
+#ifndef _SDL_sysjoystick_c_h
+#define _SDL_sysjoystick_c_h
+
 #include "../SDL_sysjoystick.h"
 
 extern int Android_OnPadDown(int device_id, int keycode);
@@ -46,6 +50,8 @@ typedef struct SDL_joylist_item
 } SDL_joylist_item;
 
 typedef SDL_joylist_item joystick_hwdata;
+
+#endif /* _SDL_sysjoystick_c_h */
 
 #endif /* SDL_JOYSTICK_ANDROID */
 
