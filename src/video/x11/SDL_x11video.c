@@ -186,8 +186,8 @@ X11_CreateDevice(int devindex)
        }
      */
     data->display = X11_XOpenDisplay(display);
-#if defined(__osf__) && defined(SDL_VIDEO_DRIVER_X11_DYNAMIC)
-    /* On Tru64 if linking without -lX11, it fails and you get following message.
+#ifdef SDL_VIDEO_DRIVER_X11_DYNAMIC
+    /* On some systems if linking without -lX11, it fails and you get following message.
      * Xlib: connection to ":0.0" refused by server
      * Xlib: XDM authorization key matches an existing client!
      *
