@@ -949,11 +949,11 @@ PSP_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
     vertices[3].y = y + sw - ch;
     vertices[3].z = 0;
 
-    if (flip & SDL_FLIP_HORIZONTAL) {
+    if (flip & SDL_FLIP_VERTICAL) {
                 Swap(&vertices[0].v, &vertices[2].v);
                 Swap(&vertices[1].v, &vertices[3].v);
     }
-    if (flip & SDL_FLIP_VERTICAL) {
+    if (flip & SDL_FLIP_HORIZONTAL) {
                 Swap(&vertices[0].u, &vertices[2].u);
                 Swap(&vertices[1].u, &vertices[3].u);
     }
