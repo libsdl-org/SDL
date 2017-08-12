@@ -233,6 +233,8 @@ extern DECLSPEC int SDLCALL SDL_GetRendererOutputSize(SDL_Renderer * renderer,
  *          active,  the format was unsupported, or the width or height were out
  *          of range.
  *
+ *  \note The contents of the texture are not defined at creation.
+ *
  *  \sa SDL_QueryTexture()
  *  \sa SDL_UpdateTexture()
  *  \sa SDL_DestroyTexture()
