@@ -463,7 +463,7 @@ WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         } else {
             isDefault = SDL_FALSE;
         }
-        if (!AddDialogButton(dialog, x, y, ButtonWidth, ButtonHeight, buttons[i].text, i, isDefault)) {
+        if (!AddDialogButton(dialog, x, y, ButtonWidth, ButtonHeight, buttons[i].text, buttons[i].buttonid, isDefault)) {
             FreeDialogData(dialog);
             return -1;
         }
@@ -476,8 +476,7 @@ WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         ParentWindow = ((SDL_WindowData*)messageboxdata->window->driverdata)->hwnd;
     }
 
-    which = DialogBoxIndirect(NULL, (DLGTEMPLATE*)dialog->lpDialog, ParentWindow, (DLGPROC)MessageBoxDialogProc);
-    *buttonid = buttons[which].buttonid;
+    *buttonid = DialogBoxIndirect(NULL, (DLGTEMPLATE*)dialog->lpDialog, ParentWindow, (DLGPROC)MessageBoxDialogProc);
 
     FreeDialogData(dialog);
     return 0;
