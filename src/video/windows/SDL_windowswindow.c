@@ -65,12 +65,10 @@ GetWindowStyle(SDL_Window * window)
 
     if (window->flags & SDL_WINDOW_FULLSCREEN) {
         style |= STYLE_FULLSCREEN;
+    } else if (window->flags & SDL_WINDOW_BORDERLESS) {
+        style |= STYLE_BORDERLESS;
     } else {
-        if (window->flags & SDL_WINDOW_BORDERLESS) {
-            style |= STYLE_BORDERLESS;
-        } else {
-            style |= STYLE_NORMAL;
-        }
+        style |= STYLE_NORMAL;
         if (window->flags & SDL_WINDOW_RESIZABLE) {
             style |= STYLE_RESIZABLE;
         }
@@ -513,15 +511,11 @@ WIN_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     HWND hwnd = data->hwnd;
-    DWORD style = GetWindowLong(hwnd, GWL_STYLE);
+    DWORD style;
 
-    if (bordered) {
-        style &= ~STYLE_BORDERLESS;
-        style |= STYLE_NORMAL;
-    } else {
-        style &= ~STYLE_NORMAL;
-        style |= STYLE_BORDERLESS;
-    }
+    style = GetWindowLong(hwnd, GWL_STYLE);
+    style &= ~STYLE_MASK;
+    style |= GetWindowStyle(window);
 
     data->in_border_change = SDL_TRUE;
     SetWindowLong(hwnd, GWL_STYLE, style);
@@ -534,13 +528,11 @@ WIN_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizable)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     HWND hwnd = data->hwnd;
-    DWORD style = GetWindowLong(hwnd, GWL_STYLE);
+    DWORD style;
 
-    if (resizable) {
-        style |= STYLE_RESIZABLE;
-    } else {
-        style &= ~STYLE_RESIZABLE;
-    }
+    style = GetWindowLong(hwnd, GWL_STYLE);
+    style &= ~STYLE_MASK;
+    style |= GetWindowStyle(window);
 
     SetWindowLong(hwnd, GWL_STYLE, style);
 }
