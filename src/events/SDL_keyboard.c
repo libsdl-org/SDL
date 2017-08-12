@@ -672,7 +672,6 @@ SDL_SendKeyboardKey(Uint8 state, SDL_Scancode scancode)
     int posted;
     SDL_Keymod modifier;
     SDL_Keycode keycode;
-    Uint16 modstate;
     Uint32 type;
     Uint8 repeat;
 
@@ -745,7 +744,6 @@ SDL_SendKeyboardKey(Uint8 state, SDL_Scancode scancode)
         break;
     }
     if (SDL_KEYDOWN == type) {
-        modstate = keyboard->modstate;
         switch (keycode) {
         case SDLK_NUMLOCKCLEAR:
             keyboard->modstate ^= KMOD_NUM;
@@ -759,7 +757,6 @@ SDL_SendKeyboardKey(Uint8 state, SDL_Scancode scancode)
         }
     } else {
         keyboard->modstate &= ~modifier;
-        modstate = keyboard->modstate;
     }
 
     /* Post the event, if desired */
@@ -771,7 +768,7 @@ SDL_SendKeyboardKey(Uint8 state, SDL_Scancode scancode)
         event.key.repeat = repeat;
         event.key.keysym.scancode = scancode;
         event.key.keysym.sym = keycode;
-        event.key.keysym.mod = modstate;
+        event.key.keysym.mod = keyboard->modstate;
         event.key.windowID = keyboard->focus ? keyboard->focus->id : 0;
         posted = (SDL_PushEvent(&event) > 0);
     }
