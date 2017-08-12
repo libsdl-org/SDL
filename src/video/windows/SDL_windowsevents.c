@@ -143,70 +143,74 @@ static SDL_Scancode
 WindowsScanCodeToSDLScanCode(LPARAM lParam, WPARAM wParam)
 {
     SDL_Scancode code;
-    char bIsExtended;
     int nScanCode = (lParam >> 16) & 0xFF;
+    SDL_bool bIsExtended = (lParam & (1 << 24)) != 0;
 
-    /* 0x45 here to work around both pause and numlock sharing the same scancode, so use the VK key to tell them apart */
-    if (nScanCode == 0 || nScanCode == 0x45) {
-        return VKeytoScancode(wParam);
-    }
+    code = VKeytoScancode(wParam);
 
-    if (nScanCode > 127)
-        return SDL_SCANCODE_UNKNOWN;
+    if (code == SDL_SCANCODE_UNKNOWN && nScanCode <= 127) {
+        code = windows_scancode_table[nScanCode];
 
-    code = windows_scancode_table[nScanCode];
-
-    bIsExtended = (lParam & (1 << 24)) != 0;
-    if (!bIsExtended) {
-        switch (code) {
-        case SDL_SCANCODE_HOME:
-            return SDL_SCANCODE_KP_7;
-        case SDL_SCANCODE_UP:
-            return SDL_SCANCODE_KP_8;
-        case SDL_SCANCODE_PAGEUP:
-            return SDL_SCANCODE_KP_9;
-        case SDL_SCANCODE_LEFT:
-            return SDL_SCANCODE_KP_4;
-        case SDL_SCANCODE_RIGHT:
-            return SDL_SCANCODE_KP_6;
-        case SDL_SCANCODE_END:
-            return SDL_SCANCODE_KP_1;
-        case SDL_SCANCODE_DOWN:
-            return SDL_SCANCODE_KP_2;
-        case SDL_SCANCODE_PAGEDOWN:
-            return SDL_SCANCODE_KP_3;
-        case SDL_SCANCODE_INSERT:
-            return SDL_SCANCODE_KP_0;
-        case SDL_SCANCODE_DELETE:
-            return SDL_SCANCODE_KP_PERIOD;
-        case SDL_SCANCODE_PRINTSCREEN:
-            return SDL_SCANCODE_KP_MULTIPLY;
-        default:
-            break;
-        }
-        /* prefer virtual keycodes over scancodes for extended keys */
-    } else {
-        SDL_Scancode vc = VKeytoScancode(wParam);
-        if (vc != SDL_SCANCODE_UNKNOWN) {
-            code = vc;
-        } else {
+        if (bIsExtended) {
             switch (code) {
             case SDL_SCANCODE_RETURN:
-                return SDL_SCANCODE_KP_ENTER;
+                code = SDL_SCANCODE_KP_ENTER;
+                break;
             case SDL_SCANCODE_LALT:
-                return SDL_SCANCODE_RALT;
+                code = SDL_SCANCODE_RALT;
+                break;
             case SDL_SCANCODE_LCTRL:
-                return SDL_SCANCODE_RCTRL;
+                code = SDL_SCANCODE_RCTRL;
+                break;
             case SDL_SCANCODE_SLASH:
-                return SDL_SCANCODE_KP_DIVIDE;
+                code = SDL_SCANCODE_KP_DIVIDE;
+                break;
             case SDL_SCANCODE_CAPSLOCK:
-                return SDL_SCANCODE_KP_PLUS;
+                code = SDL_SCANCODE_KP_PLUS;
+                break;
+            default:
+                break;
+            }
+        } else {
+            switch (code) {
+            case SDL_SCANCODE_HOME:
+                code = SDL_SCANCODE_KP_7;
+                break;
+            case SDL_SCANCODE_UP:
+                code = SDL_SCANCODE_KP_8;
+                break;
+            case SDL_SCANCODE_PAGEUP:
+                code = SDL_SCANCODE_KP_9;
+                break;
+            case SDL_SCANCODE_LEFT:
+                code = SDL_SCANCODE_KP_4;
+                break;
+            case SDL_SCANCODE_RIGHT:
+                code = SDL_SCANCODE_KP_6;
+                break;
+            case SDL_SCANCODE_END:
+                code = SDL_SCANCODE_KP_1;
+                break;
+            case SDL_SCANCODE_DOWN:
+                code = SDL_SCANCODE_KP_2;
+                break;
+            case SDL_SCANCODE_PAGEDOWN:
+                code = SDL_SCANCODE_KP_3;
+                break;
+            case SDL_SCANCODE_INSERT:
+                code = SDL_SCANCODE_KP_0;
+                break;
+            case SDL_SCANCODE_DELETE:
+                code = SDL_SCANCODE_KP_PERIOD;
+                break;
+            case SDL_SCANCODE_PRINTSCREEN:
+                code = SDL_SCANCODE_KP_MULTIPLY;
+                break;
             default:
                 break;
             }
         }
     }
-
     return code;
 }
 
