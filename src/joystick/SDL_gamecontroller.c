@@ -142,13 +142,13 @@ SDL_LoadVIDPIDListFromHint(const char *hint, SDL_vidpid_list *list)
     }
 
     while ((spot = SDL_strstr(spot, "0x")) != NULL) {
-        entry = SDL_strtol(spot, &spot, 0);
+        entry = (Uint16)SDL_strtol(spot, &spot, 0);
         entry <<= 16;
         spot = SDL_strstr(spot, "0x");
         if (!spot) {
             break;
         }
-        entry |= SDL_strtol(spot, &spot, 0);
+        entry |= (Uint16)SDL_strtol(spot, &spot, 0);
 
         if (list->num_entries == list->max_entries) {
             int max_entries = list->max_entries + 16;
