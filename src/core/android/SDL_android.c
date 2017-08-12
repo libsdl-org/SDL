@@ -181,6 +181,9 @@ static jmethodID midPollInputDevices;
 static jmethodID midPollHapticDevices;
 static jmethodID midHapticRun;
 
+/* static fields */
+static jfieldID fidSeparateMouseAndTouch;
+
 /* Accelerometer data storage */
 static float fLastAccelerometer[3];
 static SDL_bool bHasNewData;
@@ -253,6 +256,13 @@ JNIEXPORT void JNICALL SDL_Android_Init(JNIEnv* mEnv, jclass cls)
        !midPollInputDevices || !midPollHapticDevices || !midHapticRun) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "SDL: Couldn't locate Java callbacks, check that they're named and typed correctly");
     }
+
+    fidSeparateMouseAndTouch = (*mEnv)->GetStaticFieldID(mEnv, mActivityClass, "mSeparateMouseAndTouch", "Z");
+    
+    if (!fidSeparateMouseAndTouch) {
+        __android_log_print(ANDROID_LOG_WARN, "SDL", "SDL: Couldn't locate Java static fields, check that they're named and typed correctly");
+    }
+
     __android_log_print(ANDROID_LOG_INFO, "SDL", "SDL_Android_Init() finished!");
 }
 
@@ -691,11 +701,6 @@ int Android_JNI_SetupThread(void)
 {
     Android_JNI_GetEnv();
     return 1;
-}
-
-jclass Android_JNI_GetActivityClass(void)
-{
-    return mActivityClass;
 }
 
 /*
@@ -1588,6 +1593,13 @@ int Android_JNI_GetTouchDeviceIds(int **ids) {
         (*env)->DeleteLocalRef(env, array);
     }
     return number;
+}
+
+/* sets the mSeparateMouseAndTouch field */
+void Android_JNI_SetSeparateMouseAndTouch(SDL_bool new_value)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    (*env)->SetStaticBooleanField(env, mActivityClass, fidSeparateMouseAndTouch, new_value ? JNI_TRUE : JNI_FALSE);
 }
 
 void Android_JNI_PollInputDevices(void)
