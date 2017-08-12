@@ -986,7 +986,7 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
     /* Enable alpha blending by default if the new surface has an
      * alpha channel or alpha modulation */
     if ((surface->format->Amask && format->Amask) ||
-        (copy_flags & (SDL_COPY_COLORKEY|SDL_COPY_MODULATE_ALPHA))) {
+        (copy_flags & SDL_COPY_MODULATE_ALPHA)) {
         SDL_SetSurfaceBlendMode(convert, SDL_BLENDMODE_BLEND);
     }
     if ((copy_flags & SDL_COPY_RLE_DESIRED) || (flags & SDL_RLEACCEL)) {
