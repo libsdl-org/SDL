@@ -320,7 +320,7 @@ GL_ResetState(SDL_Renderer *renderer)
     }
 
     data->current.shader = SHADER_NONE;
-    data->current.color = 0;
+    data->current.color = 0xffffffff;
     data->current.blendMode = -1;
 
     data->glDisable(GL_DEPTH_TEST);

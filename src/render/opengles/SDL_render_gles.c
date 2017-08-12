@@ -261,7 +261,7 @@ GLES_ResetState(SDL_Renderer *renderer)
         GLES_ActivateRenderer(renderer);
     }
 
-    data->current.color = 0;
+    data->current.color = 0xffffffff;
     data->current.blendMode = -1;
     data->current.tex_coords = SDL_FALSE;
 
