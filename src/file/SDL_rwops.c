@@ -307,6 +307,8 @@ windows_file_close(SDL_RWops * context)
 #define fseek_off_t __int64
 #define fseek   _fseeki64
 #define ftell   _ftelli64
+#else
+#define fseek_off_t long
 #endif
 
 /* Functions to read/write stdio file pointers */
