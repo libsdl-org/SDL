@@ -161,6 +161,7 @@
 #undef HAVE_SQRTF
 #undef HAVE_TAN
 #undef HAVE_TANF
+#undef HAVE_FOPEN64
 #undef HAVE_FSEEKO
 #undef HAVE_FSEEKO64
 #undef HAVE_SIGACTION
