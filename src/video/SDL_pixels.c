@@ -403,6 +403,13 @@ SDL_MasksToPixelFormatEnum(int bpp, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask,
             Amask == 0x0000) {
             return SDL_PIXELFORMAT_BGR565;
         }
+        if (Rmask == 0x003F &&
+            Gmask == 0x07C0 &&
+            Bmask == 0xF800 &&
+            Amask == 0x0000) {
+            /* Technically this would be BGR556, but Witek says this works in bug 3158 */
+            return SDL_PIXELFORMAT_RGB565;
+        }
         break;
     case 24:
         switch (Rmask) {
