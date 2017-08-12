@@ -134,7 +134,7 @@ SDL_TryLockMutex(SDL_mutex * mutex)
          We set the locking thread id after we obtain the lock
          so unlocks from other threads will fail.
          */
-        if (pthread_mutex_lock(&mutex->id) == 0) {
+        if (pthread_mutex_trylock(&mutex->id) == 0) {
             mutex->owner = this_thread;
             mutex->recursive = 0;
         } else if (errno == EBUSY) {
