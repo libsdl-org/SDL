@@ -173,6 +173,7 @@ SDL_SetMouseFocus(SDL_Window * window)
     }
 
     mouse->focus = window;
+    mouse->has_position = SDL_FALSE;
 
     if (mouse->focus) {
         SDL_SendWindowEvent(mouse->focus, SDL_WINDOWEVENT_ENTER, 0, 0);
@@ -223,10 +224,10 @@ SDL_UpdateMouseFocus(SDL_Window * window, int x, int y, Uint32 buttonstate)
 
     if (window != mouse->focus) {
 #ifdef DEBUG_MOUSE
-         printf("Mouse entered window, synthesizing focus gain & move event\n");
+        printf("Mouse entered window, synthesizing focus gain & move event\n");
 #endif
-         SDL_SetMouseFocus(window);
-         SDL_PrivateSendMouseMotion(window, mouse->mouseID, 0, x, y);
+        SDL_SetMouseFocus(window);
+        SDL_PrivateSendMouseMotion(window, mouse->mouseID, 0, x, y);
     }
     return SDL_TRUE;
 }
@@ -271,7 +272,7 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
         return 0;
     }
 
-    if (mouse->relative_mode_warp) {
+    if (mouseID != SDL_TOUCH_MOUSEID && mouse->relative_mode_warp) {
         int center_x = 0, center_y = 0;
         SDL_GetWindowSize(window, &center_x, &center_y);
         center_x /= 2;
@@ -307,6 +308,19 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
         printf("Mouse event didn't change state - dropped!\n");
 #endif
         return 0;
+    }
+
+    /* Ignore relative motion when first positioning the mouse */
+    if (!mouse->has_position) {
+        xrel = 0;
+        yrel = 0;
+        mouse->has_position = SDL_TRUE;
+    }
+
+    /* Ignore relative motion positioning the first touch */
+    if (mouseID == SDL_TOUCH_MOUSEID && !mouse->buttonstate) {
+        xrel = 0;
+        yrel = 0;
     }
 
     /* Update internal mouse coordinates */
