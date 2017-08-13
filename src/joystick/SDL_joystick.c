@@ -31,6 +31,7 @@
 #if !SDL_EVENTS_DISABLED
 #include "../events/SDL_events_c.h"
 #endif
+#include "../video/SDL_sysvideo.h"
 
 
 static SDL_bool SDL_joystick_allows_background_events = SDL_FALSE;
@@ -582,16 +583,10 @@ SDL_PrivateJoystickShouldIgnoreEvent()
         return SDL_FALSE;
     }
 
-    if (SDL_WasInit(SDL_INIT_VIDEO)) {
-        if (SDL_GetKeyboardFocus() == NULL) {
-            /* Video is initialized and we don't have focus, ignore the event. */
-            return SDL_TRUE;
-        } else {
-            return SDL_FALSE;
-        }
+    if (SDL_HasWindows() && SDL_GetKeyboardFocus() == NULL) {
+        /* We have windows but we don't have focus, ignore the event. */
+        return SDL_TRUE;
     }
-
-    /* Video subsystem wasn't initialized, always allow the event */
     return SDL_FALSE;
 }
 

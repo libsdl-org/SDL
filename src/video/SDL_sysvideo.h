@@ -403,6 +403,7 @@ extern void *SDL_GetDisplayDriverData( int displayIndex );
 extern void SDL_GL_DeduceMaxSupportedESProfile(int* major, int* minor);
 
 extern int SDL_RecreateWindow(SDL_Window * window, Uint32 flags);
+extern SDL_bool SDL_HasWindows();
 
 extern void SDL_OnWindowShown(SDL_Window * window);
 extern void SDL_OnWindowHidden(SDL_Window * window);
