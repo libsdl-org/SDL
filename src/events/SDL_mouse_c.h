@@ -81,6 +81,7 @@ typedef struct
     int ydelta;
     int last_x, last_y;         /* the last reported x and y coordinates */
     Uint32 buttonstate;
+    SDL_bool has_position;
     SDL_bool relative_mode;
     SDL_bool relative_mode_warp;
     float normal_speed_scale;
