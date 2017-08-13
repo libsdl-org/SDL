@@ -1077,7 +1077,7 @@ SDLTest_PrintEvent(SDL_Event * event)
             SDL_Log("SDL EVENT: Window %d hit test", event->window.windowID);
             break;
         default:
-            SDL_Log("SDL EVENT: Window %d got unknown event %d",
+            SDL_Log("SDL EVENT: Window %d got unknown event 0x%4.4x",
                     event->window.windowID, event->window.event);
             break;
         }
@@ -1206,6 +1206,13 @@ SDLTest_PrintEvent(SDL_Event * event)
         SDL_Log("SDL EVENT: Clipboard updated");
         break;
 
+    case SDL_FINGERMOTION:
+        SDL_Log("SDL EVENT: Finger: motion touch=%ld, finger=%ld, x=%f, y=%f, dx=%f, dy=%f, pressure=%f",
+                (long) event->tfinger.touchId,
+                (long) event->tfinger.fingerId,
+                event->tfinger.x, event->tfinger.y,
+                event->tfinger.dx, event->tfinger.dy, event->tfinger.pressure);
+        break;
     case SDL_FINGERDOWN:
     case SDL_FINGERUP:
         SDL_Log("SDL EVENT: Finger: %s touch=%ld, finger=%ld, x=%f, y=%f, dx=%f, dy=%f, pressure=%f",
@@ -1232,6 +1239,25 @@ SDLTest_PrintEvent(SDL_Event * event)
         SDL_Log("SDL EVENT: render targets reset");
         break;
 
+    case SDL_APP_TERMINATING:
+        SDL_Log("SDL EVENT: App terminating");
+        break;
+    case SDL_APP_LOWMEMORY:
+        SDL_Log("SDL EVENT: App running low on memory");
+        break;
+    case SDL_APP_WILLENTERBACKGROUND:
+        SDL_Log("SDL EVENT: App will enter the background");
+        break;
+    case SDL_APP_DIDENTERBACKGROUND:
+        SDL_Log("SDL EVENT: App entered the background");
+        break;
+    case SDL_APP_WILLENTERFOREGROUND:
+        SDL_Log("SDL EVENT: App will enter the foreground");
+        break;
+    case SDL_APP_DIDENTERFOREGROUND:
+        SDL_Log("SDL EVENT: App entered the foreground");
+        break;
+
     case SDL_QUIT:
         SDL_Log("SDL EVENT: Quit requested");
         break;
@@ -1239,7 +1265,7 @@ SDLTest_PrintEvent(SDL_Event * event)
         SDL_Log("SDL EVENT: User event %d", event->user.code);
         break;
     default:
-        SDL_Log("Unknown event %04x", event->type);
+        SDL_Log("Unknown event 0x%4.4x", event->type);
         break;
     }
 }
