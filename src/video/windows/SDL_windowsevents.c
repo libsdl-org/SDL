@@ -28,6 +28,7 @@
 #include "SDL_syswm.h"
 #include "SDL_timer.h"
 #include "SDL_vkeys.h"
+#include "SDL_hints.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_touch_c.h"
 #include "../../events/scancodes_windows.h"
@@ -1070,6 +1071,7 @@ HINSTANCE SDL_Instance = NULL;
 int
 SDL_RegisterApp(char *name, Uint32 style, void *hInst)
 {
+    const char *hint;
     WNDCLASSEX wcex;
     TCHAR path[MAX_PATH];
 
@@ -1106,9 +1108,19 @@ SDL_RegisterApp(char *name, Uint32 style, void *hInst)
     wcex.cbClsExtra     = 0;
     wcex.cbWndExtra     = 0;
 
-    /* Use the first icon as a default icon, like in the Explorer */
-    GetModuleFileName(SDL_Instance, path, MAX_PATH);
-    ExtractIconEx(path, 0, &wcex.hIcon, &wcex.hIconSm, 1);
+    hint = SDL_GetHint(SDL_HINT_WINDOWS_INTRESOURCE_ICON);
+    if (hint && *hint) {
+        wcex.hIcon = LoadIcon(SDL_Instance, MAKEINTRESOURCE(SDL_atoi(hint)));
+
+        hint = SDL_GetHint(SDL_HINT_WINDOWS_INTRESOURCE_ICON_SMALL);
+        if (hint && *hint) {
+            wcex.hIconSm = LoadIcon(SDL_Instance, MAKEINTRESOURCE(SDL_atoi(hint)));
+        }
+    } else {
+        /* Use the first icon as a default icon, like in the Explorer */
+        GetModuleFileName(SDL_Instance, path, MAX_PATH);
+        ExtractIconEx(path, 0, &wcex.hIcon, &wcex.hIconSm, 1);
+    }
 
     if (!RegisterClassEx(&wcex)) {
         return SDL_SetError("Couldn't register application class");
