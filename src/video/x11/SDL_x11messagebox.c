@@ -378,10 +378,11 @@ X11_MessageBoxCreateWindow( SDL_MessageBoxDataX11 *data )
     int x, y;
     XSizeHints *sizehints;
     XSetWindowAttributes wnd_attr;
-    Atom _NET_WM_WINDOW_TYPE, _NET_WM_WINDOW_TYPE_DIALOG, _NET_WM_NAME, UTF8_STRING;
+    Atom _NET_WM_WINDOW_TYPE, _NET_WM_WINDOW_TYPE_DIALOG, _NET_WM_NAME;
     Display *display = data->display;
     SDL_WindowData *windowdata = NULL;
     const SDL_MessageBoxData *messageboxdata = data->messageboxdata;
+    char *title_locale = NULL;
 
     if ( messageboxdata->window ) {
         SDL_DisplayData *displaydata =
@@ -414,10 +415,30 @@ X11_MessageBoxCreateWindow( SDL_MessageBoxDataX11 *data )
 
     X11_XStoreName( display, data->window, messageboxdata->title );
     _NET_WM_NAME = X11_XInternAtom(display, "_NET_WM_NAME", False);
-    UTF8_STRING = X11_XInternAtom(display, "UTF8_STRING", False);
-    X11_XChangeProperty(display, data->window, _NET_WM_NAME, UTF8_STRING, 8,
-                    PropModeReplace, (unsigned char *) messageboxdata->title,
-                    strlen(messageboxdata->title) + 1 );
+
+    title_locale = SDL_iconv_utf8_locale(messageboxdata->title);
+    if (title_locale) {
+        XTextProperty titleprop;
+        Status status = X11_XStringListToTextProperty(&title_locale, 1, &titleprop);
+        SDL_free(title_locale);
+        if (status) {
+            X11_XSetTextProperty(display, data->xwindow, &titleprop, XA_WM_NAME);
+            X11_XFree(titleprop.value);
+        }
+    }
+
+#ifdef X_HAVE_UTF8_STRING
+    if (SDL_X11_HAVE_UTF8) {
+        XTextProperty titleprop;
+        status = X11_Xutf8TextListToTextProperty(display, (char **) &messageboxdata->title, 1,
+                                            XUTF8StringStyle, &titleprop);
+        if (status == Success) {
+            X11_XSetTextProperty(display, data->window, &titleprop,
+                                 _NET_WM_NAME);
+            X11_XFree(titleprop.value);
+        }
+    }
+#endif
 
     /* Let the window manager know this is a dialog box */
     _NET_WM_WINDOW_TYPE = X11_XInternAtom(display, "_NET_WM_WINDOW_TYPE", False);
