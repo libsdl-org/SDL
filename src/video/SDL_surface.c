@@ -988,7 +988,7 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
             tmp2 = SDL_ConvertSurface(tmp, format, 0);
 
             /* Get the converted colorkey */
-            memcpy(&converted_colorkey, tmp2->pixels, tmp2->format->BytesPerPixel);
+            SDL_memcpy(&converted_colorkey, tmp2->pixels, tmp2->format->BytesPerPixel);
 
             SDL_FreeSurface(tmp);
             SDL_FreeSurface(tmp2);
