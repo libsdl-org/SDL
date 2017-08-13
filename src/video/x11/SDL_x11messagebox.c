@@ -422,7 +422,7 @@ X11_MessageBoxCreateWindow( SDL_MessageBoxDataX11 *data )
         Status status = X11_XStringListToTextProperty(&title_locale, 1, &titleprop);
         SDL_free(title_locale);
         if (status) {
-            X11_XSetTextProperty(display, data->xwindow, &titleprop, XA_WM_NAME);
+            X11_XSetTextProperty(display, data->window, &titleprop, XA_WM_NAME);
             X11_XFree(titleprop.value);
         }
     }
@@ -430,7 +430,7 @@ X11_MessageBoxCreateWindow( SDL_MessageBoxDataX11 *data )
 #ifdef X_HAVE_UTF8_STRING
     if (SDL_X11_HAVE_UTF8) {
         XTextProperty titleprop;
-        status = X11_Xutf8TextListToTextProperty(display, (char **) &messageboxdata->title, 1,
+        Status status = X11_Xutf8TextListToTextProperty(display, (char **) &messageboxdata->title, 1,
                                             XUTF8StringStyle, &titleprop);
         if (status == Success) {
             X11_XSetTextProperty(display, data->window, &titleprop,
