@@ -1606,6 +1606,12 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
     return 0;
 }
 
+SDL_bool
+SDL_HasWindows()
+{
+    return (_this && _this->windows != NULL);
+}
+
 Uint32
 SDL_GetWindowID(SDL_Window * window)
 {
