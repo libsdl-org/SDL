@@ -59,6 +59,7 @@ public class SDLActivity extends Activity {
     protected static SDLActivity mSingleton;
     protected static SDLSurface mSurface;
     protected static View mTextEdit;
+    protected static boolean mScreenKeyboardShown;
     protected static ViewGroup mLayout;
     protected static SDLJoystickHandler mJoystickHandler;
     protected static SDLHapticHandler mHapticHandler;
@@ -440,6 +441,8 @@ public class SDLActivity extends Activity {
 
                     InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(mTextEdit.getWindowToken(), 0);
+                    
+                    mScreenKeyboardShown = false;
                 }
                 break;
             case COMMAND_SET_KEEP_SCREEN_ON:
@@ -568,6 +571,45 @@ public class SDLActivity extends Activity {
       return;
     }
 
+
+    /**
+     * This method is called by SDL using JNI.
+     */
+    public static boolean isScreenKeyboardShown() 
+    {
+       if (mTextEdit == null) {
+          return false;
+       }
+
+       if (mScreenKeyboardShown == false) {
+          return false;
+       }
+
+       InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+       if (imm.isAcceptingText()) {
+          return true;
+       }
+
+       return false;
+    }
+
+
+
+    /**
+     * This method is called by SDL using JNI.
+     */
+    public static int openURL(String url)
+    {
+       try {
+          Intent i = new Intent(Intent.ACTION_VIEW);
+          i.setData(Uri.parse(url));
+          mSingleton.startActivity(i);
+       } catch (Exception ex) {
+          return -1;
+       }
+       return 0;
+    }
+
     /**
      * This method is called by SDL using JNI.
      */
@@ -647,6 +689,8 @@ public class SDLActivity extends Activity {
 
             InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.showSoftInput(mTextEdit, 0);
+
+            mScreenKeyboardShown = true;
         }
     }
 

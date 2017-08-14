@@ -357,7 +357,7 @@ Android_HasScreenKeyboardSupport(_THIS)
 SDL_bool
 Android_IsScreenKeyboardShown(_THIS, SDL_Window * window)
 {
-    return SDL_IsTextInputActive();
+    return Android_JNI_IsScreenKeyboardShown();
 }
 
 void
