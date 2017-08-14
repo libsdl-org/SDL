@@ -445,7 +445,7 @@ RLEClipBlit(int w, Uint8 * srcbuf, SDL_Surface * surf_dst,
 
 
 /* blit a colorkeyed RLE surface */
-int
+int SDLCALL
 SDL_RLEBlit(SDL_Surface * surf_src, SDL_Rect * srcrect,
             SDL_Surface * surf_dst, SDL_Rect * dstrect)
 {
@@ -723,7 +723,7 @@ RLEAlphaClipBlit(int w, Uint8 * srcbuf, SDL_Surface * surf_dst,
 }
 
 /* blit a pixel-alpha RLE surface */
-int
+int SDLCALL
 SDL_RLEAlphaBlit(SDL_Surface * surf_src, SDL_Rect * srcrect,
                  SDL_Surface * surf_dst, SDL_Rect * dstrect)
 {

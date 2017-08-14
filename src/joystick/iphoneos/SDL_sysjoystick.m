@@ -251,7 +251,7 @@ SDL_SYS_RemoveJoystickDevice(SDL_JoystickDeviceItem *device)
 }
 
 #if TARGET_OS_TV
-static void
+static void SDLCALL
 SDL_AppleTVRemoteRotationHintChanged(void *udata, const char *name, const char *oldValue, const char *newValue)
 {
     BOOL allowRotation = newValue != NULL && *newValue != '0';

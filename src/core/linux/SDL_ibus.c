@@ -287,7 +287,7 @@ IBus_GetDBusAddressFilename(void)
 
 static SDL_bool IBus_CheckConnection(SDL_DBusContext *dbus);
 
-static void
+static void SDLCALL
 IBus_SetCapabilities(void *data, const char *name, const char *old_val,
                                                    const char *internal_editing)
 {
@@ -336,7 +336,7 @@ IBus_SetupConnection(SDL_DBusContext *dbus, const char* addr)
             DBUS_TYPE_OBJECT_PATH, &path, DBUS_TYPE_INVALID)) {
         SDL_free(input_ctx_path);
         input_ctx_path = SDL_strdup(path);
-        SDL_AddHintCallback(SDL_HINT_IME_INTERNAL_EDITING, &IBus_SetCapabilities, NULL);
+        SDL_AddHintCallback(SDL_HINT_IME_INTERNAL_EDITING, IBus_SetCapabilities, NULL);
         
         dbus->bus_add_match(ibus_conn, "type='signal',interface='org.freedesktop.IBus.InputContext'", NULL);
         dbus->connection_try_register_object_path(ibus_conn, input_ctx_path, &ibus_vtable, dbus, NULL);
@@ -468,7 +468,7 @@ SDL_IBus_Quit(void)
         inotify_wd = -1;
     }
     
-    SDL_DelHintCallback(SDL_HINT_IME_INTERNAL_EDITING, &IBus_SetCapabilities, NULL);
+    SDL_DelHintCallback(SDL_HINT_IME_INTERNAL_EDITING, IBus_SetCapabilities, NULL);
     
     SDL_memset(&ibus_cursor_rect, 0, sizeof(ibus_cursor_rect));
 }

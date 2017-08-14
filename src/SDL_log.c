@@ -50,9 +50,7 @@ typedef struct SDL_LogLevel
 } SDL_LogLevel;
 
 /* The default log output function */
-static void SDL_LogOutput(void *userdata,
-                          int category, SDL_LogPriority priority,
-                          const char *message);
+static void SDLCALL SDL_LogOutput(void *userdata, int category, SDL_LogPriority priority, const char *message);
 
 static SDL_LogLevel *SDL_loglevels;
 static SDL_LogPriority SDL_default_priority = DEFAULT_PRIORITY;
@@ -312,7 +310,7 @@ static int consoleAttached = 0;
 static HANDLE stderrHandle = NULL;
 #endif
 
-static void
+static void SDLCALL
 SDL_LogOutput(void *userdata, int category, SDL_LogPriority priority,
               const char *message)
 {
