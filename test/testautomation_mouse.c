@@ -447,11 +447,23 @@ mouse_warpMouseInWindow(void *arg)
 {
     const int w = MOUSE_TESTWINDOW_WIDTH, h = MOUSE_TESTWINDOW_HEIGHT;
     int numPositions = 6;
-    int xPositions[] = {-1, 0, 1, w-1, w, w+1 };
-    int yPositions[] = {-1, 0, 1, h-1, h, h+1 };
+    int xPositions[6];
+    int yPositions[6];
     int x, y, i, j;
     SDL_Window *window;
 
+    xPositions[0] = -1;
+    xPositions[1] = 0;
+    xPositions[2] = 1;
+    xPositions[3] = w-1;
+    xPositions[4] = w;
+    xPositions[5] = w+1;
+    yPositions[0] = -1;
+    yPositions[1] = 0;
+    yPositions[2] = 1;
+    yPositions[3] = h-1;
+    yPositions[4] = h;
+    yPositions[5] = h+1;
     /* Create test window */
     window = _createMouseSuiteTestWindow();
     if (window == NULL) return TEST_ABORTED;
