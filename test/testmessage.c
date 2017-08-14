@@ -46,12 +46,13 @@ button_messagebox(void *eventNumber)
         "Custom MessageBox",
         "This is a custom messagebox",
         2,
-        buttons,
+        NULL,/* buttons */
         NULL /* Default color scheme */
     };
 
     int button = -1;
     int success = 0;
+    data.buttons = buttons;
     if (eventNumber) {
         data.message = "This is a custom messagebox from a background thread.";
     }
