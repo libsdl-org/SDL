@@ -593,23 +593,6 @@ public class SDLActivity extends Activity {
        return false;
     }
 
-
-
-    /**
-     * This method is called by SDL using JNI.
-     */
-    public static int openURL(String url)
-    {
-       try {
-          Intent i = new Intent(Intent.ACTION_VIEW);
-          i.setData(Uri.parse(url));
-          mSingleton.startActivity(i);
-       } catch (Exception ex) {
-          return -1;
-       }
-       return 0;
-    }
-
     /**
      * This method is called by SDL using JNI.
      */
@@ -889,6 +872,24 @@ public class SDLActivity extends Activity {
     public static void pollInputDevices() {
         if (SDLActivity.mSDLThread != null) {
             mJoystickHandler.pollInputDevices();
+        }
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
+    public static void pollHapticDevices() {
+        if (SDLActivity.mSDLThread != null) {
+            mHapticHandler.pollHapticDevices();
+        }
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
+    public static void hapticRun(int device_id, int length) {
+        if (SDLActivity.mSDLThread != null) {
+            mHapticHandler.run(device_id, length);
         }
     }
 
@@ -1808,18 +1809,6 @@ class SDLJoystickHandler_API12 extends SDLJoystickHandler {
         return null;
     }
 
-    public static void pollHapticDevices() {
-        if (SDLActivity.mSDLThread != null) {
-            mHapticHandler.pollHapticDevices();
-        }
-    }
-
-    public static void hapticRun(int device_id, int length) {
-        if (SDLActivity.mSDLThread != null) {
-            mHapticHandler.run(device_id, length);
-        }
-    }
-
     @Override
     public boolean handleMotionEvent(MotionEvent event) {
         if ((event.getSource() & InputDevice.SOURCE_JOYSTICK) != 0) {
@@ -1918,6 +1907,10 @@ class SDLHapticHandler {
     }
 
     public void pollHapticDevices() {
+        
+        final int deviceId_VIBRATOR_SERVICE = 999999;
+        boolean hasVibrator = false;
+
         int[] deviceIds = InputDevice.getDeviceIds();
         // It helps processing the device ids in reverse order
         // For example, in the case of the XBox 360 wireless dongle,
@@ -1940,6 +1933,23 @@ class SDLHapticHandler {
             }
         }
 
+        /* Check VIBRATOR_SERVICE */
+        {
+           Vibrator vib = (Vibrator) SDLActivity.mSingleton.getContext().getSystemService(Context.VIBRATOR_SERVICE);
+           if (vib != null && vib.hasVibrator()) {
+              hasVibrator = true;
+              SDLHaptic haptic = getHaptic(deviceId_VIBRATOR_SERVICE);
+              if (haptic == null) {
+                 haptic = new SDLHaptic();
+                 haptic.device_id = deviceId_VIBRATOR_SERVICE;
+                 haptic.name = "VIBRATOR_SERVICE";
+                 haptic.vib = vib; 
+                 mHaptics.add(haptic);
+                 SDLActivity.nativeAddHaptic(haptic.device_id, haptic.name);
+              }
+           }
+        }
+
         /* Check removed devices */
         ArrayList<Integer> removedDevices = new ArrayList<Integer>();
         for(int i=0; i < mHaptics.size(); i++) {
@@ -1948,7 +1958,10 @@ class SDLHapticHandler {
             for (j=0; j < deviceIds.length; j++) {
                 if (device_id == deviceIds[j]) break;
             }
-            if (j == deviceIds.length) {
+
+            if (device_id == deviceId_VIBRATOR_SERVICE && hasVibrator) {
+               // don't remove the vibrator if it is still present
+            } else if (j == deviceIds.length) {
                 removedDevices.add(device_id);
             }
         }
