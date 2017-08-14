@@ -461,6 +461,22 @@ SDL_wcslcat(SDL_INOUT_Z_CAP(maxlen) wchar_t *dst, const wchar_t *src, size_t max
 #endif /* HAVE_WCSLCAT */
 }
 
+int
+SDL_wcscmp(const wchar_t *str1, const wchar_t *str2)
+{
+#if defined(HAVE_WCSCMP)
+    return wcscmp(str1, str2);
+#else
+    while (*str1 && *str2) {
+        if (*str1 != *str2)
+            break;
+        ++str1;
+        ++str2;
+    }
+    return (int)(*str1 - *str2);
+#endif /* HAVE_WCSCMP */
+}
+
 size_t
 SDL_strlcpy(SDL_OUT_Z_CAP(maxlen) char *dst, const char *src, size_t maxlen)
 {
@@ -925,7 +941,7 @@ SDL_strcmp(const char *str1, const char *str2)
         ++str1;
         ++str2;
     }
-    return (int) ((unsigned char) *str1 - (unsigned char) *str2);
+    return (int)((unsigned char) *str1 - (unsigned char) *str2);
 #endif /* HAVE_STRCMP */
 }
 
