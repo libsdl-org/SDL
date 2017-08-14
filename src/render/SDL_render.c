@@ -187,10 +187,10 @@ SDL_RendererEventWatch(void *userdata, SDL_Event *event)
                event->type == SDL_MOUSEBUTTONUP) {
         SDL_Window *window = SDL_GetWindowFromID(event->button.windowID);
         if (renderer->logical_w && window == renderer->window) {
-            event->motion.x -= (int)(renderer->viewport.x * renderer->dpi_scale.x);
-            event->motion.y -= (int)(renderer->viewport.y * renderer->dpi_scale.y);
-            event->motion.x = (int)(event->motion.x / (renderer->scale.x * renderer->dpi_scale.x));
-            event->motion.y = (int)(event->motion.y / (renderer->scale.y * renderer->dpi_scale.y));
+            event->button.x -= (int)(renderer->viewport.x * renderer->dpi_scale.x);
+            event->button.y -= (int)(renderer->viewport.y * renderer->dpi_scale.y);
+            event->button.x = (int)(event->button.x / (renderer->scale.x * renderer->dpi_scale.x));
+            event->button.y = (int)(event->button.y / (renderer->scale.y * renderer->dpi_scale.y));
         }
     }
     return 0;
