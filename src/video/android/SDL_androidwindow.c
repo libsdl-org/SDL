@@ -29,6 +29,7 @@
 
 #include "SDL_androidvideo.h"
 #include "SDL_androidwindow.h"
+#include "SDL_hints.h"
 
 int
 Android_CreateWindow(_THIS, SDL_Window * window)
@@ -41,6 +42,9 @@ Android_CreateWindow(_THIS, SDL_Window * window)
     
     Android_PauseSem = SDL_CreateSemaphore(0);
     Android_ResumeSem = SDL_CreateSemaphore(0);
+
+    /* Set orientation */
+    Android_JNI_SetOrientation(window->w, window->h, window->flags & SDL_WINDOW_RESIZABLE, SDL_GetHint(SDL_HINT_ORIENTATIONS));
 
     /* Adjust the window data to match the screen */
     window->x = 0;
