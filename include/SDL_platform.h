@@ -97,7 +97,7 @@
 #undef __OPENBSD__
 #define __OPENBSD__ 1
 #endif
-#if defined(__OS2__)
+#if defined(__OS2__) || defined(__EMX__)
 #undef __OS2__
 #define __OS2__     1
 #endif
