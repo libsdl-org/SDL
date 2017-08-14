@@ -371,9 +371,14 @@ SW_UpdateClipRect(SDL_Renderer * renderer)
     SDL_Surface *surface = data->surface;
     if (surface) {
         if (renderer->clipping_enabled) {
-            SDL_SetClipRect(surface, &renderer->clip_rect);
+            SDL_Rect clip_rect;
+            clip_rect = renderer->clip_rect;
+            clip_rect.x += renderer->viewport.x;
+            clip_rect.y += renderer->viewport.y;
+            SDL_IntersectRect(&renderer->viewport, &clip_rect, &clip_rect);
+            SDL_SetClipRect(surface, &clip_rect);
         } else {
-            SDL_SetClipRect(surface, NULL);
+            SDL_SetClipRect(surface, &renderer->viewport);
         }
     }
     return 0;
