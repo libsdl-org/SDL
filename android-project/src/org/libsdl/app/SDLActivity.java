@@ -515,6 +515,61 @@ public class SDLActivity extends Activity {
 
     /**
      * This method is called by SDL using JNI.
+     * This is a static method for JNI convenience, it calls a non-static method
+     * so that is can be overridden  
+     */
+    public static void setOrientation(int w, int h, boolean resizable, String hint)
+    {
+      mSingleton.setOrientationBis(w, h, resizable, hint);
+      return;
+    }
+   
+    /**
+     * This can be overridden
+     */
+    public void setOrientationBis(int w, int h, boolean resizable, String hint) 
+    {
+      int orientation = -1;
+
+      if (hint != "") {
+         if (hint.contains("LandscapeRight") && hint.contains("LandscapeLeft")) {
+            orientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
+         } else if (hint.contains("LandscapeRight")) {
+            orientation = ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE;
+         } else if (hint.contains("LandscapeLeft")) {
+            orientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE;
+         } else if (hint.contains("Portrait") && hint.contains("PortraitUpsideDown")) {
+            orientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT;
+         } else if (hint.contains("Portrait")) {
+            orientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT;
+         } else if (hint.contains("PortraitUpsideDown")) {
+            orientation = ActivityInfo.SCREEN_ORIENTATION_REVERSE_PORTRAIT;
+         }
+      }
+
+      /* no valid hint */
+      if (orientation == -1) {
+         if (resizable) {
+            /* no fixed orientation */
+         } else {
+            if (w > h) {
+               orientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
+            } else {
+               orientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_PORTRAIT;
+            }
+         }
+      }
+
+      Log.v("SDL", "setOrientation() orientation=" + orientation + " width=" + w +" height="+ h +" resizable=" + resizable + " hint=" + hint);
+      if (orientation != -1) {
+         mSingleton.setRequestedOrientation(orientation);
+      }
+ 
+      return;
+    }
+
+    /**
+     * This method is called by SDL using JNI.
      */
     public static boolean sendMessage(int command, int param) {
         return mSingleton.sendCommand(command, Integer.valueOf(param));

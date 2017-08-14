@@ -636,6 +636,18 @@ void Android_JNI_SetActivityTitle(const char *title)
     }
 }
 
+void Android_JNI_SetOrientation(int w, int h, int resizable, const char *hint)
+{
+    jmethodID mid;
+    JNIEnv *mEnv = Android_JNI_GetEnv();
+    mid = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,"setOrientation","(IIZLjava/lang/String;)V");
+    if (mid) {
+        jstring jhint = (jstring)((*mEnv)->NewStringUTF(mEnv, (hint ? hint : "")));
+        (*mEnv)->CallStaticVoidMethod(mEnv, mActivityClass, mid, w, h, (resizable? 1 : 0), jhint);
+        (*mEnv)->DeleteLocalRef(mEnv, jhint);
+    }
+}
+
 SDL_bool Android_JNI_GetAccelerometerValues(float values[3])
 {
     int i;
