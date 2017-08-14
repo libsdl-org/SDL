@@ -2,17 +2,20 @@
  * SDL_test test suite
  */
 
+#include <limits.h>
 /* Visual Studio 2008 doesn't have stdint.h */
 #if defined(_MSC_VER) && _MSC_VER <= 1500
-#define UINT8_MAX   ~(Uint8)0
-#define UINT16_MAX  ~(Uint16)0
-#define UINT32_MAX  ~(Uint32)0
-#define UINT64_MAX  ~(Uint64)0
+#define UINT8_MAX   _UI8_MAX
+#define UINT16_MAX  _UI16_MAX
+#define UINT32_MAX  _UI32_MAX
+#define INT64_MIN    _I64_MIN
+#define INT64_MAX    _I64_MAX
+#define UINT64_MAX  _UI64_MAX
 #else
 #include <stdint.h>
 #endif
+
 #include <stdio.h>
-#include <limits.h>
 #include <float.h>
 #include <ctype.h>
 
@@ -988,38 +991,38 @@ sdltest_randomBoundaryNumberSint64(void *arg)
     "Validate result value for parameters (1,20,SDL_FALSE); expected: 0|21, got: %"SDL_PRIs64, sresult);
 
   /* RandomSintXBoundaryValue(LLONG_MIN, 99, SDL_FALSE) returns 100 */
-  sresult = (Sint64)SDLTest_RandomSint64BoundaryValue(LLONG_MIN, 99, SDL_FALSE);
+  sresult = (Sint64)SDLTest_RandomSint64BoundaryValue(INT64_MIN, 99, SDL_FALSE);
   SDLTest_AssertPass("Call to SDLTest_RandomSint64BoundaryValue");
   SDLTest_AssertCheck(
     sresult == 100,
     "Validate result value for parameters (LLONG_MIN,99,SDL_FALSE); expected: 100, got: %"SDL_PRIs64, sresult);
 
   /* RandomSintXBoundaryValue(LLONG_MIN + 1, LLONG_MAX, SDL_FALSE) returns LLONG_MIN (no error) */
-  sresult = (Sint64)SDLTest_RandomSint64BoundaryValue(LLONG_MIN + 1, LLONG_MAX, SDL_FALSE);
+  sresult = (Sint64)SDLTest_RandomSint64BoundaryValue(INT64_MIN + 1, INT64_MAX, SDL_FALSE);
   SDLTest_AssertPass("Call to SDLTest_RandomSint64BoundaryValue");
   SDLTest_AssertCheck(
-    sresult == LLONG_MIN,
-    "Validate result value for parameters (LLONG_MIN+1,LLONG_MAX,SDL_FALSE); expected: %"SDL_PRIs64", got: %"SDL_PRIs64, LLONG_MIN, sresult);
+    sresult == INT64_MIN,
+    "Validate result value for parameters (LLONG_MIN+1,LLONG_MAX,SDL_FALSE); expected: %"SDL_PRIs64", got: %"SDL_PRIs64, INT64_MIN, sresult);
   lastError = (char *)SDL_GetError();
   SDLTest_AssertPass("SDL_GetError()");
   SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
 
   /* RandomSintXBoundaryValue(LLONG_MIN, LLONG_MAX - 1, SDL_FALSE) returns LLONG_MAX (no error) */
-  sresult = (Sint64)SDLTest_RandomSint64BoundaryValue(LLONG_MIN, LLONG_MAX - 1, SDL_FALSE);
+  sresult = (Sint64)SDLTest_RandomSint64BoundaryValue(INT64_MIN, INT64_MAX - 1, SDL_FALSE);
   SDLTest_AssertPass("Call to SDLTest_RandomSint64BoundaryValue");
   SDLTest_AssertCheck(
-    sresult == LLONG_MAX,
-    "Validate result value for parameters (LLONG_MIN,LLONG_MAX - 1,SDL_FALSE); expected: %"SDL_PRIs64", got: %"SDL_PRIs64, LLONG_MAX, sresult);
+    sresult == INT64_MAX,
+    "Validate result value for parameters (LLONG_MIN,LLONG_MAX - 1,SDL_FALSE); expected: %"SDL_PRIs64", got: %"SDL_PRIs64, INT64_MAX, sresult);
   lastError = (char *)SDL_GetError();
   SDLTest_AssertPass("SDL_GetError()");
   SDLTest_AssertCheck(lastError == NULL || lastError[0] == '\0', "Validate no error message was set");
 
   /* RandomSintXBoundaryValue(LLONG_MIN, LLONG_MAX, SDL_FALSE) returns 0 (sets error) */
-  sresult = (Sint64)SDLTest_RandomSint64BoundaryValue(LLONG_MIN, LLONG_MAX, SDL_FALSE);
+  sresult = (Sint64)SDLTest_RandomSint64BoundaryValue(INT64_MIN, INT64_MAX, SDL_FALSE);
   SDLTest_AssertPass("Call to SDLTest_RandomSint64BoundaryValue");
   SDLTest_AssertCheck(
-    sresult == LLONG_MIN,
-    "Validate result value for parameters(LLONG_MIN,LLONG_MAX,SDL_FALSE); expected: %"SDL_PRIs64", got: %"SDL_PRIs64, LLONG_MIN, sresult);
+    sresult == INT64_MIN,
+    "Validate result value for parameters(LLONG_MIN,LLONG_MAX,SDL_FALSE); expected: %"SDL_PRIs64", got: %"SDL_PRIs64, INT64_MIN, sresult);
   lastError = (char *)SDL_GetError();
   SDLTest_AssertPass("SDL_GetError()");
   SDLTest_AssertCheck(lastError != NULL && SDL_strcmp(lastError, expectedError) == 0,
