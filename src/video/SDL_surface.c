@@ -871,6 +871,15 @@ SDL_UnlockSurface(SDL_Surface * surface)
 }
 
 /*
+ * Creates a new surface identical to the existing surface
+ */
+SDL_Surface *
+SDL_DuplicateSurface(SDL_Surface * surface)
+{
+    return SDL_ConvertSurface(surface, surface->format, surface->flags);
+}
+
+/*
  * Convert a surface into the specified pixel format.
  */
 SDL_Surface *
@@ -881,6 +890,15 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
     Uint32 copy_flags;
     SDL_Color copy_color;
     SDL_Rect bounds;
+
+    if (!surface) {
+        SDL_InvalidParamError("surface");
+        return NULL;
+    }
+    if (!format) {
+        SDL_InvalidParamError("format");
+        return NULL;
+    }
 
     /* Check for empty destination palette! (results in empty image) */
     if (format->palette != NULL) {

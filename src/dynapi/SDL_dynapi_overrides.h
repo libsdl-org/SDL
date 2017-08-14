@@ -628,3 +628,4 @@
 #define SDL_LoadFile_RW SDL_LoadFile_RW_REAL
 #define SDL_wcscmp SDL_wcscmp_REAL
 #define SDL_ComposeCustomBlendMode SDL_ComposeCustomBlendMode_REAL
+#define SDL_DuplicateSurface SDL_DuplicateSurface_REAL
