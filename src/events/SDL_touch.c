@@ -352,6 +352,9 @@ SDL_DelTouch(SDL_TouchID id)
 
     SDL_num_touch--;
     SDL_touchDevices[index] = SDL_touchDevices[SDL_num_touch];
+
+    /* Delete this touch device for gestures */
+    SDL_GestureDelTouch(id);
 }
 
 void
@@ -366,6 +369,7 @@ SDL_TouchQuit(void)
 
     SDL_free(SDL_touchDevices);
     SDL_touchDevices = NULL;
+    SDL_GestureQuit();
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
