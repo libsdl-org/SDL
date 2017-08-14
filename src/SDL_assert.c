@@ -49,7 +49,7 @@
 #endif
 
 
-static SDL_assert_state
+static SDL_assert_state SDLCALL
 SDL_PromptAssertion(const SDL_assert_data *data, void *userdata);
 
 /*
@@ -141,7 +141,7 @@ static SDL_NORETURN void SDL_AbortAssertion(void)
 }
 
 
-static SDL_assert_state
+static SDL_assert_state SDLCALL
 SDL_PromptAssertion(const SDL_assert_data *data, void *userdata)
 {
 #ifdef __WIN32__

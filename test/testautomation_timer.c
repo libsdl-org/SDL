@@ -104,7 +104,7 @@ timer_delayAndGetTicks(void *arg)
 }
 
 /* Test callback */
-Uint32 _timerTestCallback(Uint32 interval, void *param)
+Uint32 SDLCALL _timerTestCallback(Uint32 interval, void *param)
 {
    _timerCallbackCalled = 1;
 
