@@ -93,6 +93,13 @@ typedef struct
     SDL_Rect locked_rect;
 } D3D11_TextureData;
 
+/* Blend mode data */
+typedef struct
+{
+    SDL_BlendMode blendMode;
+    ID3D11BlendState *blendState;
+} D3D11_BlendMode;
+
 /* Private renderer data */
 typedef struct
 {
@@ -112,9 +119,8 @@ typedef struct
     ID3D11PixelShader *colorPixelShader;
     ID3D11PixelShader *texturePixelShader;
     ID3D11PixelShader *yuvPixelShader;
-    ID3D11BlendState *blendModeBlend;
-    ID3D11BlendState *blendModeAdd;
-    ID3D11BlendState *blendModeMod;
+    int blendModesCount;
+    D3D11_BlendMode *blendModes;
     ID3D11SamplerState *nearestPixelSampler;
     ID3D11SamplerState *linearSampler;
     D3D_FEATURE_LEVEL featureLevel;
@@ -716,6 +722,7 @@ static const DWORD D3D11_VertexShader[] = {
 static SDL_Renderer *D3D11_CreateRenderer(SDL_Window * window, Uint32 flags);
 static void D3D11_WindowEvent(SDL_Renderer * renderer,
                             const SDL_WindowEvent *event);
+static SDL_bool D3D11_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode);
 static int D3D11_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture);
 static int D3D11_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                              const SDL_Rect * rect, const void *srcPixels,
@@ -826,6 +833,7 @@ D3D11_CreateRenderer(SDL_Window * window, Uint32 flags)
     }
 
     renderer->WindowEvent = D3D11_WindowEvent;
+    renderer->SupportsBlendMode = D3D11_SupportsBlendMode;
     renderer->CreateTexture = D3D11_CreateTexture;
     renderer->UpdateTexture = D3D11_UpdateTexture;
     renderer->UpdateTextureYUV = D3D11_UpdateTextureYUV;
@@ -898,6 +906,8 @@ D3D11_ReleaseAll(SDL_Renderer * renderer)
 
     /* Release/reset everything else */
     if (data) {
+        int i;
+
         SAFE_RELEASE(data->dxgiFactory);
         SAFE_RELEASE(data->dxgiAdapter);
         SAFE_RELEASE(data->d3dDevice);
@@ -911,9 +921,14 @@ D3D11_ReleaseAll(SDL_Renderer * renderer)
         SAFE_RELEASE(data->colorPixelShader);
         SAFE_RELEASE(data->texturePixelShader);
         SAFE_RELEASE(data->yuvPixelShader);
-        SAFE_RELEASE(data->blendModeBlend);
-        SAFE_RELEASE(data->blendModeAdd);
-        SAFE_RELEASE(data->blendModeMod);
+        if (data->blendModesCount > 0) {
+            for (i = 0; i < data->blendModesCount; ++i) {
+                SAFE_RELEASE(data->blendModes[i].blendState);
+            }
+            SDL_free(data->blendModes);
+
+            data->blendModesCount = 0;
+        }
         SAFE_RELEASE(data->nearestPixelSampler);
         SAFE_RELEASE(data->linearSampler);
         SAFE_RELEASE(data->mainRasterizer);
@@ -954,37 +969,96 @@ D3D11_DestroyRenderer(SDL_Renderer * renderer)
     SDL_free(renderer);
 }
 
-static HRESULT
-D3D11_CreateBlendMode(SDL_Renderer * renderer,
-                      BOOL enableBlending,
-                      D3D11_BLEND srcBlend,
-                      D3D11_BLEND destBlend,
-                      D3D11_BLEND srcBlendAlpha,
-                      D3D11_BLEND destBlendAlpha,
-                      ID3D11BlendState ** blendStateOutput)
+static D3D11_BLEND GetBlendFunc(SDL_BlendFactor factor)
+{
+    switch (factor) {
+    case SDL_BLENDFACTOR_ZERO:
+        return D3D11_BLEND_ZERO;
+    case SDL_BLENDFACTOR_ONE:
+        return D3D11_BLEND_ONE;
+    case SDL_BLENDFACTOR_SRC_COLOR:
+        return D3D11_BLEND_SRC_COLOR;
+    case SDL_BLENDFACTOR_ONE_MINUS_SRC_COLOR:
+        return D3D11_BLEND_INV_SRC_COLOR;
+    case SDL_BLENDFACTOR_SRC_ALPHA:
+        return D3D11_BLEND_SRC_ALPHA;
+    case SDL_BLENDFACTOR_ONE_MINUS_SRC_ALPHA:
+        return D3D11_BLEND_INV_SRC_ALPHA;
+    case SDL_BLENDFACTOR_DST_COLOR:
+        return D3D11_BLEND_DEST_COLOR;
+    case SDL_BLENDFACTOR_ONE_MINUS_DST_COLOR:
+        return D3D11_BLEND_INV_DEST_COLOR;
+    case SDL_BLENDFACTOR_DST_ALPHA:
+        return D3D11_BLEND_DEST_ALPHA;
+    case SDL_BLENDFACTOR_ONE_MINUS_DST_ALPHA:
+        return D3D11_BLEND_INV_DEST_ALPHA;
+    default:
+        return (D3D11_BLEND)0;
+    }
+}
+
+static D3D11_BLEND_OP GetBlendEquation(SDL_BlendOperation operation)
+{
+    switch (operation) {
+    case SDL_BLENDOPERATION_ADD:
+        return D3D11_BLEND_OP_ADD;
+    case SDL_BLENDOPERATION_SUBTRACT:
+        return D3D11_BLEND_OP_SUBTRACT;
+    case SDL_BLENDOPERATION_REV_SUBTRACT:
+        return D3D11_BLEND_OP_REV_SUBTRACT;
+    case SDL_BLENDOPERATION_MINIMUM:
+        return D3D11_BLEND_OP_MIN;
+    case SDL_BLENDOPERATION_MAXIMUM:
+        return D3D11_BLEND_OP_MAX;
+    default:
+        return (D3D11_BLEND_OP)0;
+    }
+}
+
+static SDL_bool
+D3D11_CreateBlendState(SDL_Renderer * renderer, SDL_BlendMode blendMode)
 {
     D3D11_RenderData *data = (D3D11_RenderData *) renderer->driverdata;
+    SDL_BlendFactor srcColorFactor = SDL_GetBlendModeSrcColorFactor(blendMode);
+    SDL_BlendFactor srcAlphaFactor = SDL_GetBlendModeSrcAlphaFactor(blendMode);
+    SDL_BlendOperation colorOperation = SDL_GetBlendModeColorOperation(blendMode);
+    SDL_BlendFactor dstColorFactor = SDL_GetBlendModeDstColorFactor(blendMode);
+    SDL_BlendFactor dstAlphaFactor = SDL_GetBlendModeDstAlphaFactor(blendMode);
+    SDL_BlendOperation alphaOperation = SDL_GetBlendModeAlphaOperation(blendMode);
+    ID3D11BlendState *blendState = NULL;
+    D3D11_BlendMode *blendModes;
     HRESULT result = S_OK;
 
     D3D11_BLEND_DESC blendDesc;
     SDL_zero(blendDesc);
     blendDesc.AlphaToCoverageEnable = FALSE;
     blendDesc.IndependentBlendEnable = FALSE;
-    blendDesc.RenderTarget[0].BlendEnable = enableBlending;
-    blendDesc.RenderTarget[0].SrcBlend = srcBlend;
-    blendDesc.RenderTarget[0].DestBlend = destBlend;
-    blendDesc.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-    blendDesc.RenderTarget[0].SrcBlendAlpha = srcBlendAlpha;
-    blendDesc.RenderTarget[0].DestBlendAlpha = destBlendAlpha;
-    blendDesc.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+    blendDesc.RenderTarget[0].BlendEnable = TRUE;
+    blendDesc.RenderTarget[0].SrcBlend = GetBlendFunc(srcColorFactor);
+    blendDesc.RenderTarget[0].DestBlend = GetBlendFunc(dstColorFactor);
+    blendDesc.RenderTarget[0].BlendOp = GetBlendEquation(colorOperation);
+    blendDesc.RenderTarget[0].SrcBlendAlpha = GetBlendFunc(srcAlphaFactor);
+    blendDesc.RenderTarget[0].DestBlendAlpha = GetBlendFunc(dstAlphaFactor);
+    blendDesc.RenderTarget[0].BlendOpAlpha = GetBlendEquation(alphaOperation);
     blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
-    result = ID3D11Device_CreateBlendState(data->d3dDevice, &blendDesc, blendStateOutput);
+    result = ID3D11Device_CreateBlendState(data->d3dDevice, &blendDesc, &blendState);
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateBlendState"), result);
-        return result;
+        return SDL_FALSE;
     }
 
-    return S_OK;
+    blendModes = (D3D11_BlendMode *)SDL_realloc(data->blendModes, (data->blendModesCount + 1) * sizeof(*blendModes));
+    if (!blendModes) {
+        SAFE_RELEASE(blendState);
+        SDL_OutOfMemory();
+        return SDL_FALSE;
+    }
+    blendModes[data->blendModesCount].blendMode = blendMode;
+    blendModes[data->blendModesCount].blendState = blendState;
+    data->blendModes = blendModes;
+    ++data->blendModesCount;
+
+    return SDL_TRUE;
 }
 
 /* Create resources that depend on the device. */
@@ -1286,41 +1360,9 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
     }
 
     /* Create blending states: */
-    result = D3D11_CreateBlendMode(
-        renderer,
-        TRUE,
-        D3D11_BLEND_SRC_ALPHA,          /* srcBlend */
-        D3D11_BLEND_INV_SRC_ALPHA,      /* destBlend */
-        D3D11_BLEND_ONE,                /* srcBlendAlpha */
-        D3D11_BLEND_INV_SRC_ALPHA,      /* destBlendAlpha */
-        &data->blendModeBlend);
-    if (FAILED(result)) {
-        /* D3D11_CreateBlendMode will set the SDL error, if it fails */
-        goto done;
-    }
-
-    result = D3D11_CreateBlendMode(
-        renderer,
-        TRUE,
-        D3D11_BLEND_SRC_ALPHA,          /* srcBlend */
-        D3D11_BLEND_ONE,                /* destBlend */
-        D3D11_BLEND_ZERO,               /* srcBlendAlpha */
-        D3D11_BLEND_ONE,                /* destBlendAlpha */
-        &data->blendModeAdd);
-    if (FAILED(result)) {
-        /* D3D11_CreateBlendMode will set the SDL error, if it fails */
-        goto done;
-    }
-
-    result = D3D11_CreateBlendMode(
-        renderer,
-        TRUE,
-        D3D11_BLEND_ZERO,               /* srcBlend */
-        D3D11_BLEND_SRC_COLOR,          /* destBlend */
-        D3D11_BLEND_ZERO,               /* srcBlendAlpha */
-        D3D11_BLEND_ONE,                /* destBlendAlpha */
-        &data->blendModeMod);
-    if (FAILED(result)) {
+    if (!D3D11_CreateBlendState(renderer, SDL_BLENDMODE_BLEND) ||
+        !D3D11_CreateBlendState(renderer, SDL_BLENDMODE_ADD) ||
+        !D3D11_CreateBlendState(renderer, SDL_BLENDMODE_MOD)) {
         /* D3D11_CreateBlendMode will set the SDL error, if it fails */
         goto done;
     }
@@ -1692,6 +1734,25 @@ D3D11_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
     if (event->event == SDL_WINDOWEVENT_SIZE_CHANGED) {
         D3D11_UpdateForWindowSizeChange(renderer);
     }
+}
+
+static SDL_bool
+D3D11_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
+{
+    SDL_BlendFactor srcColorFactor = SDL_GetBlendModeSrcColorFactor(blendMode);
+    SDL_BlendFactor srcAlphaFactor = SDL_GetBlendModeSrcAlphaFactor(blendMode);
+    SDL_BlendOperation colorOperation = SDL_GetBlendModeColorOperation(blendMode);
+    SDL_BlendFactor dstColorFactor = SDL_GetBlendModeDstColorFactor(blendMode);
+    SDL_BlendFactor dstAlphaFactor = SDL_GetBlendModeDstAlphaFactor(blendMode);
+    SDL_BlendOperation alphaOperation = SDL_GetBlendModeAlphaOperation(blendMode);
+
+    if (!GetBlendFunc(srcColorFactor) || !GetBlendFunc(srcAlphaFactor) ||
+        !GetBlendEquation(colorOperation) ||
+        !GetBlendFunc(dstColorFactor) || !GetBlendFunc(dstAlphaFactor) ||
+        !GetBlendEquation(alphaOperation)) {
+        return SDL_FALSE;
+    }
+    return SDL_TRUE;
 }
 
 static D3D11_FILTER
@@ -2443,19 +2504,21 @@ D3D11_RenderSetBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
 {
     D3D11_RenderData *rendererData = (D3D11_RenderData *)renderer->driverdata;
     ID3D11BlendState *blendState = NULL;
-    switch (blendMode) {
-    case SDL_BLENDMODE_BLEND:
-        blendState = rendererData->blendModeBlend;
-        break;
-    case SDL_BLENDMODE_ADD:
-        blendState = rendererData->blendModeAdd;
-        break;
-    case SDL_BLENDMODE_MOD:
-        blendState = rendererData->blendModeMod;
-        break;
-    case SDL_BLENDMODE_NONE:
-        blendState = NULL;
-        break;
+    if (blendMode != SDL_BLENDMODE_NONE) {
+        int i;
+        for (i = 0; i < rendererData->blendModesCount; ++i) {
+            if (blendMode == rendererData->blendModes[i].blendMode) {
+                blendState = rendererData->blendModes[i].blendState;
+                break;
+            }
+        }
+        if (!blendState) {
+            if (D3D11_CreateBlendState(renderer, blendMode)) {
+                /* Successfully created the blend state, try again */
+                D3D11_RenderSetBlendMode(renderer, blendMode);
+            }
+            return;
+        }
     }
     if (blendState != rendererData->currentBlendState) {
         ID3D11DeviceContext_OMSetBlendState(rendererData->d3dContext, blendState, 0, 0xFFFFFFFF);

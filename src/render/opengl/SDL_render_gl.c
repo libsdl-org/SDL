@@ -55,6 +55,7 @@ static SDL_Renderer *GL_CreateRenderer(SDL_Window * window, Uint32 flags);
 static void GL_WindowEvent(SDL_Renderer * renderer,
                            const SDL_WindowEvent *event);
 static int GL_GetOutputSize(SDL_Renderer * renderer, int *w, int *h);
+static SDL_bool GL_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode);
 static int GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture);
 static int GL_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                             const SDL_Rect * rect, const void *pixels,
@@ -126,7 +127,7 @@ typedef struct
     struct {
         GL_Shader shader;
         Uint32 color;
-        int blendMode;
+        SDL_BlendMode blendMode;
     } current;
 
     SDL_bool GL_EXT_framebuffer_object_supported;
@@ -321,7 +322,7 @@ GL_ResetState(SDL_Renderer *renderer)
 
     data->current.shader = SHADER_NONE;
     data->current.color = 0xffffffff;
-    data->current.blendMode = -1;
+    data->current.blendMode = SDL_BLENDMODE_INVALID;
 
     data->glDisable(GL_DEPTH_TEST);
     data->glDisable(GL_CULL_FACE);
@@ -428,6 +429,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
 
     renderer->WindowEvent = GL_WindowEvent;
     renderer->GetOutputSize = GL_GetOutputSize;
+    renderer->SupportsBlendMode = GL_SupportsBlendMode;
     renderer->CreateTexture = GL_CreateTexture;
     renderer->UpdateTexture = GL_UpdateTexture;
     renderer->UpdateTextureYUV = GL_UpdateTextureYUV;
@@ -593,6 +595,73 @@ GL_GetOutputSize(SDL_Renderer * renderer, int *w, int *h)
 {
     SDL_GL_GetDrawableSize(renderer->window, w, h);
     return 0;
+}
+
+static GLenum GetBlendFunc(SDL_BlendFactor factor)
+{
+    switch (factor) {
+    case SDL_BLENDFACTOR_ZERO:
+        return GL_ZERO;
+    case SDL_BLENDFACTOR_ONE:
+        return GL_ONE;
+    case SDL_BLENDFACTOR_SRC_COLOR:
+        return GL_SRC_COLOR;
+    case SDL_BLENDFACTOR_ONE_MINUS_SRC_COLOR:
+        return GL_ONE_MINUS_SRC_COLOR;
+    case SDL_BLENDFACTOR_SRC_ALPHA:
+        return GL_SRC_ALPHA;
+    case SDL_BLENDFACTOR_ONE_MINUS_SRC_ALPHA:
+        return GL_ONE_MINUS_SRC_ALPHA;
+    case SDL_BLENDFACTOR_DST_COLOR:
+        return GL_DST_COLOR;
+    case SDL_BLENDFACTOR_ONE_MINUS_DST_COLOR:
+        return GL_ONE_MINUS_DST_COLOR;
+    case SDL_BLENDFACTOR_DST_ALPHA:
+        return GL_DST_ALPHA;
+    case SDL_BLENDFACTOR_ONE_MINUS_DST_ALPHA:
+        return GL_ONE_MINUS_DST_ALPHA;
+    default:
+        return GL_INVALID_ENUM;
+    }
+}
+
+static GLenum GetBlendEquation(SDL_BlendOperation operation)
+{
+    switch (operation) {
+    case SDL_BLENDOPERATION_ADD:
+        return GL_FUNC_ADD;
+    case SDL_BLENDOPERATION_SUBTRACT:
+        return GL_FUNC_SUBTRACT;
+    case SDL_BLENDOPERATION_REV_SUBTRACT:
+        return GL_FUNC_REVERSE_SUBTRACT;
+    default:
+        return GL_INVALID_ENUM;
+    }
+}
+
+static SDL_bool
+GL_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
+{
+    GL_RenderData *data = (GL_RenderData *) renderer->driverdata;
+    SDL_BlendFactor srcColorFactor = SDL_GetBlendModeSrcColorFactor(blendMode);
+    SDL_BlendFactor srcAlphaFactor = SDL_GetBlendModeSrcAlphaFactor(blendMode);
+    SDL_BlendOperation colorOperation = SDL_GetBlendModeColorOperation(blendMode);
+    SDL_BlendFactor dstColorFactor = SDL_GetBlendModeDstColorFactor(blendMode);
+    SDL_BlendFactor dstAlphaFactor = SDL_GetBlendModeDstAlphaFactor(blendMode);
+    SDL_BlendOperation alphaOperation = SDL_GetBlendModeAlphaOperation(blendMode);
+
+    if (GetBlendFunc(srcColorFactor) == GL_INVALID_ENUM ||
+        GetBlendFunc(srcAlphaFactor) == GL_INVALID_ENUM ||
+        GetBlendEquation(colorOperation) == GL_INVALID_ENUM ||
+        GetBlendFunc(dstColorFactor) == GL_INVALID_ENUM ||
+        GetBlendFunc(dstAlphaFactor) == GL_INVALID_ENUM ||
+        GetBlendEquation(alphaOperation) == GL_INVALID_ENUM) {
+        return SDL_FALSE;
+    }
+    if (colorOperation != alphaOperation) {
+        return SDL_FALSE;
+    }
+    return SDL_TRUE;
 }
 
 SDL_FORCE_INLINE int
@@ -1092,25 +1161,18 @@ GL_SetColor(GL_RenderData * data, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
 }
 
 static void
-GL_SetBlendMode(GL_RenderData * data, int blendMode)
+GL_SetBlendMode(GL_RenderData * data, SDL_BlendMode blendMode)
 {
     if (blendMode != data->current.blendMode) {
-        switch (blendMode) {
-        case SDL_BLENDMODE_NONE:
+        if (blendMode == SDL_BLENDMODE_NONE) {
             data->glDisable(GL_BLEND);
-            break;
-        case SDL_BLENDMODE_BLEND:
+        } else {
             data->glEnable(GL_BLEND);
-            data->glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-            break;
-        case SDL_BLENDMODE_ADD:
-            data->glEnable(GL_BLEND);
-            data->glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE, GL_ZERO, GL_ONE);
-            break;
-        case SDL_BLENDMODE_MOD:
-            data->glEnable(GL_BLEND);
-            data->glBlendFuncSeparate(GL_ZERO, GL_SRC_COLOR, GL_ZERO, GL_ONE);
-            break;
+            data->glBlendFuncSeparate(GetBlendFunc(SDL_GetBlendModeSrcColorFactor(blendMode)),
+                                      GetBlendFunc(SDL_GetBlendModeDstColorFactor(blendMode)),
+                                      GetBlendFunc(SDL_GetBlendModeSrcAlphaFactor(blendMode)),
+                                      GetBlendFunc(SDL_GetBlendModeDstAlphaFactor(blendMode)));
+            data->glBlendEquation(GetBlendEquation(SDL_GetBlendModeColorOperation(blendMode)));
         }
         data->current.blendMode = blendMode;
     }
