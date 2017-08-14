@@ -168,6 +168,7 @@ SDL_TimerThread(void *_data)
 
             if (interval > 0) {
                 /* Reschedule this timer */
+                current->interval = interval;
                 current->scheduled = tick + interval;
                 SDL_AddTimerInternal(data, current);
             } else {
