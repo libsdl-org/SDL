@@ -15,6 +15,9 @@
 *******************************************************************************/
 #include <jni.h>
 
+/* Dummy symbol so '-u SDL_main_dummy' forces ld to link in libSDL2main.a */
+JNIEXPORT int SDL_main_dummy;
+
 /* Called before SDL_main() to initialize JNI bindings in SDL library */
 extern void SDL_Android_Init(JNIEnv* env, jclass cls);
 
