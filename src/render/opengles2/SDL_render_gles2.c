@@ -1754,7 +1754,7 @@ GLES2_SetupCopy(SDL_Renderer *renderer, SDL_Texture *texture)
     }
 
     /* Configure texture blending */
-    GLES2_SetBlendMode(data, renderer->blendMode);
+    GLES2_SetBlendMode(data, texture->blendMode);
 
     GLES2_SetTexCoords(data, SDL_TRUE);
     return 0;
