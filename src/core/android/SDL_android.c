@@ -1684,6 +1684,20 @@ void Android_JNI_HideTextInput(void)
     Android_JNI_SendMessage(COMMAND_TEXTEDIT_HIDE, 0);
 }
 
+SDL_bool Android_JNI_IsScreenKeyboardShown()
+{
+    jmethodID mid;
+    jboolean is_shown = 0;
+    JNIEnv *mEnv = Android_JNI_GetEnv();
+    mid = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,"isScreenKeyboardShown","()Z");
+    if (mid) {
+        is_shown = (*mEnv)->CallStaticBooleanMethod(mEnv, mActivityClass, mid);
+    }
+
+    return is_shown;
+}
+
+
 int Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 {
     JNIEnv *env;
