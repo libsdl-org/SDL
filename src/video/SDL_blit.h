@@ -70,7 +70,8 @@ typedef struct
     Uint8 r, g, b, a;
 } SDL_BlitInfo;
 
-typedef void (SDLCALL * SDL_BlitFunc) (SDL_BlitInfo * info);
+typedef void (*SDL_BlitFunc) (SDL_BlitInfo *info);
+
 
 typedef struct
 {
