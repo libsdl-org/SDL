@@ -354,6 +354,7 @@ EnumJoysticksCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext)
     JoyStick_DeviceData *pPrevJoystick = NULL;
     const DWORD devtype = (pdidInstance->dwDevType & 0xFF);
     Uint16 *guid16;
+    WCHAR hidPath[MAX_PATH];
 
     if (devtype == DI8DEVTYPE_SUPPLEMENTAL) {
         /* Add any supplemental devices that should be ignored here */
@@ -375,15 +376,51 @@ EnumJoysticksCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext)
         return DIENUM_CONTINUE;  /* ignore XInput devices here, keep going. */
     }
 
+    {
+        HRESULT result;
+        LPDIRECTINPUTDEVICE8 device;
+        LPDIRECTINPUTDEVICE8 InputDevice;
+        DIPROPGUIDANDPATH dipdw2;
+
+        result = IDirectInput8_CreateDevice(dinput, &(pdidInstance->guidInstance), &device, NULL);
+        if (FAILED(result)) {
+            return DIENUM_CONTINUE; /* better luck next time? */
+        }
+
+        /* Now get the IDirectInputDevice8 interface, instead. */
+        result = IDirectInputDevice8_QueryInterface(device, &IID_IDirectInputDevice8, (LPVOID *)&InputDevice);
+        /* We are done with this object.  Use the stored one from now on. */
+        IDirectInputDevice8_Release(device);
+        if (FAILED(result)) {
+            return DIENUM_CONTINUE; /* better luck next time? */
+        }
+        dipdw2.diph.dwSize = sizeof(dipdw2);
+        dipdw2.diph.dwHeaderSize = sizeof(dipdw2.diph);
+        dipdw2.diph.dwObj = 0; // device property
+        dipdw2.diph.dwHow = DIPH_DEVICE;
+
+        result = IDirectInputDevice8_GetProperty(InputDevice, DIPROP_GUIDANDPATH, &dipdw2.diph);
+        IDirectInputDevice8_Release(InputDevice);
+        if (FAILED(result)) {
+            return DIENUM_CONTINUE; /* better luck next time? */
+        }
+
+        /* Get device path, compare that instead of GUID, additionally update GUIDs of joysticks with matching paths, in case they're not open yet. */
+        SDL_wcslcpy(hidPath, dipdw2.wszPath, SDL_arraysize(hidPath));
+    }
+
     pNewJoystick = *(JoyStick_DeviceData **)pContext;
     while (pNewJoystick) {
-        if (!SDL_memcmp(&pNewJoystick->dxdevice.guidInstance, &pdidInstance->guidInstance, sizeof(pNewJoystick->dxdevice.guidInstance))) {
+        if (SDL_wcscmp(pNewJoystick->hidPath, hidPath) == 0) {
             /* if we are replacing the front of the list then update it */
             if (pNewJoystick == *(JoyStick_DeviceData **)pContext) {
                 *(JoyStick_DeviceData **)pContext = pNewJoystick->pNext;
             } else if (pPrevJoystick) {
                 pPrevJoystick->pNext = pNewJoystick->pNext;
             }
+
+            // Update with new guid/etc, if it has changed
+            pNewJoystick->dxdevice = *pdidInstance;
 
             pNewJoystick->pNext = SYS_Joystick;
             SYS_Joystick = pNewJoystick;
@@ -401,6 +438,7 @@ EnumJoysticksCallback(const DIDEVICEINSTANCE * pdidInstance, VOID * pContext)
     }
 
     SDL_zerop(pNewJoystick);
+    SDL_wcslcpy(pNewJoystick->hidPath, hidPath, SDL_arraysize(pNewJoystick->hidPath));
     pNewJoystick->joystickname = WIN_StringToUTF8(pdidInstance->tszProductName);
     if (!pNewJoystick->joystickname) {
         SDL_free(pNewJoystick);
