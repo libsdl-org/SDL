@@ -1041,7 +1041,8 @@ X11_ShowWindow(_THIS, SDL_Window * window)
         /* Blocking wait for "MapNotify" event.
          * We use X11_XIfEvent because pXWindowEvent takes a mask rather than a type,
          * and XCheckTypedWindowEvent doesn't block */
-        X11_XIfEvent(display, &event, &isMapNotify, (XPointer)&data->xwindow);
+        if(!(window->flags & SDL_WINDOW_FOREIGN))
+            X11_XIfEvent(display, &event, &isMapNotify, (XPointer)&data->xwindow);
         X11_XFlush(display);
     }
 
@@ -1063,7 +1064,8 @@ X11_HideWindow(_THIS, SDL_Window * window)
     if (X11_IsWindowMapped(_this, window)) {
         X11_XWithdrawWindow(display, data->xwindow, displaydata->screen);
         /* Blocking wait for "UnmapNotify" event */
-        X11_XIfEvent(display, &event, &isUnmapNotify, (XPointer)&data->xwindow);
+        if(!(window->flags & SDL_WINDOW_FOREIGN))
+            X11_XIfEvent(display, &event, &isUnmapNotify, (XPointer)&data->xwindow);
         X11_XFlush(display);
     }
 }
