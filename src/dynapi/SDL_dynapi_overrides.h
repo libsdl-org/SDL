@@ -626,3 +626,4 @@
 #define SDL_JoystickGetDeviceInstanceID SDL_JoystickGetDeviceInstanceID_REAL
 #define SDL_utf8strlen SDL_utf8strlen_REAL
 #define SDL_LoadFile_RW SDL_LoadFile_RW_REAL
+#define SDL_wcscmp SDL_wcscmp_REAL

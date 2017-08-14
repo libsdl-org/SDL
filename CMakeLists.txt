@@ -623,6 +623,7 @@ if(LIBC)
     set(HAVE_SIGNAL_H 1)
     foreach(_FN
             malloc calloc realloc free qsort abs memset memcpy memmove memcmp
+            wcslen wcslcpy wcslcat wcscmp
             strlen _strrev _strupr _strlwr strchr strrchr strstr itoa _ltoa
             _ultoa strtol strtoul strtoll strtod atoi atof strcmp strncmp
             _stricmp _strnicmp sscanf atan atan2 acos asin ceil copysign cos

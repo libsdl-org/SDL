@@ -106,6 +106,10 @@
 #cmakedefine HAVE_MEMCPY 1
 #cmakedefine HAVE_MEMMOVE 1
 #cmakedefine HAVE_MEMCMP 1
+#cmakedefine HAVE_WCSLEN 1
+#cmakedefine HAVE_WCSLCPY 1
+#cmakedefine HAVE_WCSLCAT 1
+#cmakedefine HAVE_WCSCMP 1
 #cmakedefine HAVE_STRLEN 1
 #cmakedefine HAVE_STRLCPY 1
 #cmakedefine HAVE_STRLCAT 1
