@@ -54,7 +54,7 @@ typedef enum
 
 #define GLES2_SOURCE_SHADER (GLenum)-1
 
-const GLES2_Shader *GLES2_GetShader(GLES2_ShaderType type, SDL_BlendMode blendMode);
+const GLES2_Shader *GLES2_GetShader(GLES2_ShaderType type);
 
 #endif /* SDL_shaders_gles2_h_ */
 

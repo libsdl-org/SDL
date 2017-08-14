@@ -99,7 +99,12 @@ LoadSprite(const char *file)
             SDL_FreeSurface(temp);
             return (-1);
         }
-        SDL_SetTextureBlendMode(sprites[i], blendMode);
+        if (SDL_SetTextureBlendMode(sprites[i], blendMode) < 0) {
+            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set blend mode: %s\n", SDL_GetError());
+            SDL_FreeSurface(temp);
+            SDL_DestroyTexture(sprites[i]);
+            return (-1);
+        }
     }
     SDL_FreeSurface(temp);
 
@@ -294,6 +299,9 @@ main(int argc, char *argv[])
                         consumed = 2;
                     } else if (SDL_strcasecmp(argv[i + 1], "mod") == 0) {
                         blendMode = SDL_BLENDMODE_MOD;
+                        consumed = 2;
+                    } else if (SDL_strcasecmp(argv[i + 1], "sub") == 0) {
+                        blendMode = SDL_ComposeCustomBlendMode(SDL_BLENDFACTOR_SRC_ALPHA, SDL_BLENDFACTOR_ONE, SDL_BLENDOPERATION_SUBTRACT, SDL_BLENDFACTOR_ZERO, SDL_BLENDFACTOR_ONE, SDL_BLENDOPERATION_SUBTRACT);
                         consumed = 2;
                     }
                 }

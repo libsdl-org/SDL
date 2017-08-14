@@ -21,6 +21,8 @@
 
 SDL_PROC(void, glBindTexture, (GLenum, GLuint))
 SDL_PROC(void, glBlendFunc, (GLenum, GLenum))
+SDL_PROC_OES(void, glBlendEquationOES, (GLenum))
+SDL_PROC_OES(void, glBlendEquationSeparateOES, (GLenum, GLenum))
 SDL_PROC_OES(void, glBlendFuncSeparateOES, (GLenum, GLenum, GLenum, GLenum))
 SDL_PROC(void, glClear, (GLbitfield))
 SDL_PROC(void, glClearColor, (GLclampf, GLclampf, GLclampf, GLclampf))

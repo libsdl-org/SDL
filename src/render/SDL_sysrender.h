@@ -79,6 +79,7 @@ struct SDL_Renderer
 
     void (*WindowEvent) (SDL_Renderer * renderer, const SDL_WindowEvent *event);
     int (*GetOutputSize) (SDL_Renderer * renderer, int *w, int *h);
+    SDL_bool (*SupportsBlendMode)(SDL_Renderer * renderer, SDL_BlendMode blendMode);
     int (*CreateTexture) (SDL_Renderer * renderer, SDL_Texture * texture);
     int (*SetTextureColorMod) (SDL_Renderer * renderer,
                                SDL_Texture * texture);
@@ -185,6 +186,14 @@ extern SDL_RenderDriver GLES_RenderDriver;
 extern SDL_RenderDriver DirectFB_RenderDriver;
 extern SDL_RenderDriver PSP_RenderDriver;
 extern SDL_RenderDriver SW_RenderDriver;
+
+/* Blend mode functions */
+extern SDL_BlendFactor SDL_GetBlendModeSrcColorFactor(SDL_BlendMode blendMode);
+extern SDL_BlendFactor SDL_GetBlendModeDstColorFactor(SDL_BlendMode blendMode);
+extern SDL_BlendOperation SDL_GetBlendModeColorOperation(SDL_BlendMode blendMode);
+extern SDL_BlendFactor SDL_GetBlendModeSrcAlphaFactor(SDL_BlendMode blendMode);
+extern SDL_BlendFactor SDL_GetBlendModeDstAlphaFactor(SDL_BlendMode blendMode);
+extern SDL_BlendOperation SDL_GetBlendModeAlphaOperation(SDL_BlendMode blendMode);
 
 #endif /* SDL_sysrender_h_ */
 
