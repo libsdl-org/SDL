@@ -333,7 +333,7 @@ static void HandleJoystickHat(SDL_GameController *gamecontroller, int hat, Uint8
 /*
  * Event filter to fire controller events from joystick ones
  */
-static int SDL_GameControllerEventWatcher(void *userdata, SDL_Event * event)
+static int SDLCALL SDL_GameControllerEventWatcher(void *userdata, SDL_Event * event)
 {
     switch(event->type) {
     case SDL_JOYAXISMOTION:

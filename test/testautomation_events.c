@@ -25,7 +25,7 @@ int _userdataValue1 = 1;
 int _userdataValue2 = 2;
 
 /* Event filter that sets some flags and optionally checks userdata */
-int _events_sampleNullEventFilter(void *userdata, SDL_Event *event)
+int SDLCALL _events_sampleNullEventFilter(void *userdata, SDL_Event *event)
 {
    _eventFilterCalled = 1;
 

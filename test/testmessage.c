@@ -25,7 +25,7 @@ quit(int rc)
     exit(rc);
 }
 
-static int
+static int SDLCALL
 button_messagebox(void *eventNumber)
 {
     const SDL_MessageBoxButtonData buttons[] = {
