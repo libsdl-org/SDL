@@ -73,6 +73,7 @@
 #undef HAVE_MEMORY_H
 #undef HAVE_STRING_H
 #undef HAVE_STRINGS_H
+#undef HAVE_WCHAR_H
 #undef HAVE_INTTYPES_H
 #undef HAVE_STDINT_H
 #undef HAVE_CTYPE_H

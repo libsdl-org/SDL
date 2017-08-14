@@ -234,7 +234,7 @@ if test x$enable_libc = xyes; then
 
     dnl Check for C library headers
     AC_HEADER_STDC
-    AC_CHECK_HEADERS(sys/types.h stdio.h stdlib.h stddef.h stdarg.h malloc.h memory.h string.h strings.h inttypes.h stdint.h ctype.h math.h iconv.h signal.h)
+    AC_CHECK_HEADERS(sys/types.h stdio.h stdlib.h stddef.h stdarg.h malloc.h memory.h string.h strings.h wchar.h inttypes.h stdint.h ctype.h math.h iconv.h signal.h)
 
     dnl Check for typedefs, structures, etc.
     AC_TYPE_SIZE_T
