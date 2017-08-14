@@ -101,6 +101,12 @@ int SDL_RecordGesture(SDL_TouchID touchId)
     return (touchId < 0);
 }
 
+void SDL_GestureQuit()
+{
+    SDL_free(SDL_gestureTouch);
+    SDL_gestureTouch = NULL;
+}
+
 static unsigned long SDL_HashDollar(SDL_FloatPoint* points)
 {
     unsigned long hash = 5381;
@@ -454,6 +460,28 @@ int SDL_GestureAddTouch(SDL_TouchID touchId)
     SDL_zero(SDL_gestureTouch[SDL_numGestureTouches]);
     SDL_gestureTouch[SDL_numGestureTouches].id = touchId;
     SDL_numGestureTouches++;
+    return 0;
+}
+
+int SDL_GestureDelTouch(SDL_TouchID touchId)
+{
+    int i;
+    for (i = 0; i < SDL_numGestureTouches; i++) {
+        if (SDL_gestureTouch[i].id == touchId) {
+            break;
+        }
+    }
+
+    if (i == SDL_numGestureTouches) {
+        /* not found */
+        return -1;
+    }
+
+    SDL_free(SDL_gestureTouch[i].dollarTemplate);
+    SDL_zero(SDL_gestureTouch[i]);
+
+    SDL_numGestureTouches--;
+    SDL_gestureTouch[i] = SDL_gestureTouch[SDL_numGestureTouches];
     return 0;
 }
 

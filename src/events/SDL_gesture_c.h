@@ -24,8 +24,11 @@
 #define SDL_gesture_c_h_
 
 extern int SDL_GestureAddTouch(SDL_TouchID touchId);
+extern int SDL_GestureDelTouch(SDL_TouchID touchId);
 
 extern void SDL_GestureProcessEvent(SDL_Event* event);
+
+extern void SDL_GestureQuit(void);
 
 #endif /* SDL_gesture_c_h_ */
 
