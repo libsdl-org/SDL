@@ -186,7 +186,7 @@ extern DECLSPEC void SDLCALL SDL_LogMessageV(int category,
 /**
  *  \brief The prototype for the log output function
  */
-typedef void (*SDL_LogOutputFunction)(void *userdata, int category, SDL_LogPriority priority, const char *message);
+typedef void (SDLCALL *SDL_LogOutputFunction)(void *userdata, int category, SDL_LogPriority priority, const char *message);
 
 /**
  *  \brief Get the current log output function.

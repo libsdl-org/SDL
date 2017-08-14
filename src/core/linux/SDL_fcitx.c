@@ -172,7 +172,7 @@ FcitxClientICCallMethod(FcitxClient *client, const char *method)
     SDL_DBus_CallVoidMethod(client->servicename, client->icname, FCITX_IC_DBUS_INTERFACE, method, DBUS_TYPE_INVALID);
 }
 
-static void
+static void SDLCALL
 Fcitx_SetCapabilities(void *data,
         const char *name,
         const char *old_val,
@@ -219,7 +219,7 @@ FcitxClientCreateIC(FcitxClient *client)
                 NULL);
         dbus->connection_flush(dbus->session_conn);
 
-        SDL_AddHintCallback(SDL_HINT_IME_INTERNAL_EDITING, &Fcitx_SetCapabilities, client);
+        SDL_AddHintCallback(SDL_HINT_IME_INTERNAL_EDITING, Fcitx_SetCapabilities, client);
         return SDL_TRUE;
     }
 

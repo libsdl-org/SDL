@@ -56,7 +56,7 @@ SDL_UnlockJoystickList(void)
 }
 
 
-static void
+static void SDLCALL
 SDL_JoystickAllowBackgroundEventsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     if (hint && *hint == '1') {

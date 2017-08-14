@@ -30,7 +30,7 @@
 #include "SDL_pixels_c.h"
 
 /* The general purpose software blit routine */
-static int
+static int SDLCALL
 SDL_SoftBlit(SDL_Surface * src, SDL_Rect * srcrect,
              SDL_Surface * dst, SDL_Rect * dstrect)
 {

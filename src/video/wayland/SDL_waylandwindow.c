@@ -178,7 +178,8 @@ void Wayland_ShowWindow(_THIS, SDL_Window *window)
 }
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
-static void QtExtendedSurface_OnHintChanged(void *userdata, const char *name,
+static void SDLCALL
+QtExtendedSurface_OnHintChanged(void *userdata, const char *name,
         const char *oldValue, const char *newValue)
 {
     struct qt_extended_surface *qt_extended_surface = userdata;

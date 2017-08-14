@@ -60,7 +60,7 @@ SDL_SetSystemTimerResolution(const UINT uPeriod)
 #endif
 }
 
-static void
+static void SDLCALL
 SDL_TimerResolutionChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     UINT uPeriod;

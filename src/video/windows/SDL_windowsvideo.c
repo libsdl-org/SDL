@@ -42,7 +42,8 @@ static void WIN_VideoQuit(_THIS);
 SDL_bool g_WindowsEnableMessageLoop = SDL_TRUE;
 SDL_bool g_WindowFrameUsableWhileCursorHidden = SDL_TRUE;
 
-static void UpdateWindowsEnableMessageLoop(void *userdata, const char *name, const char *oldValue, const char *newValue)
+static void SDLCALL
+UpdateWindowsEnableMessageLoop(void *userdata, const char *name, const char *oldValue, const char *newValue)
 {
     if (newValue && *newValue == '0') {
         g_WindowsEnableMessageLoop = SDL_FALSE;
@@ -51,7 +52,8 @@ static void UpdateWindowsEnableMessageLoop(void *userdata, const char *name, con
     }
 }
 
-static void UpdateWindowFrameUsableWhileCursorHidden(void *userdata, const char *name, const char *oldValue, const char *newValue)
+static void SDLCALL
+UpdateWindowFrameUsableWhileCursorHidden(void *userdata, const char *name, const char *oldValue, const char *newValue)
 {
     if (newValue && *newValue == '0') {
         g_WindowFrameUsableWhileCursorHidden = SDL_FALSE;

@@ -50,7 +50,7 @@ SDL_TLSGet(SDL_TLSID id)
 }
 
 int
-SDL_TLSSet(SDL_TLSID id, const void *value, void (*destructor)(void *))
+SDL_TLSSet(SDL_TLSID id, const void *value, void (SDLCALL *destructor)(void *))
 {
     SDL_TLSData *storage;
 

@@ -69,7 +69,7 @@ int main(int argc, char **argv)
     return exit_status;
 }
 
-static void
+static void SDLCALL
 SDL_IdleTimerDisabledChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
 {
     BOOL disable = (hint && *hint != '0');
