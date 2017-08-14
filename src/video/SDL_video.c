@@ -130,6 +130,7 @@ static SDL_VideoDevice *_this = NULL;
         SDL_UninitializedVideo(); \
         return retval; \
     } \
+    SDL_assert(window && window->magic == &_this->window_magic); \
     if (!window || window->magic != &_this->window_magic) { \
         SDL_SetError("Invalid window"); \
         return retval; \
@@ -141,6 +142,7 @@ static SDL_VideoDevice *_this = NULL;
         return retval; \
     } \
     SDL_assert(_this->displays != NULL); \
+    SDL_assert(displayIndex >= 0 && displayIndex < _this->num_displays); \
     if (displayIndex < 0 || displayIndex >= _this->num_displays) { \
         SDL_SetError("displayIndex must be in the range 0 - %d", \
                      _this->num_displays - 1); \
