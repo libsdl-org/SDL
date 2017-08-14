@@ -228,8 +228,7 @@ DirectFB_VideoInit(_THIS)
             DirectFBSetOption("disable-module", "x11input");
     }
 
-    /* FIXME: Reenable as default once multi kbd/mouse interface is sorted out */
-    devdata->use_linux_input = readBoolEnv(DFBENV_USE_LINUX_INPUT, 0);       /* default: on */
+    devdata->use_linux_input = readBoolEnv(DFBENV_USE_LINUX_INPUT, 1);       /* default: on */
 
     if (!devdata->use_linux_input)
     {
