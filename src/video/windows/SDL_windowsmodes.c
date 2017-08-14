@@ -36,7 +36,6 @@
 static void
 WIN_UpdateDisplayMode(_THIS, LPCTSTR deviceName, DWORD index, SDL_DisplayMode * mode)
 {
-    SDL_VideoData *vid_data = (SDL_VideoData *) _this->driverdata;
     SDL_DisplayModeData *data = (SDL_DisplayModeData *) mode->driverdata;
     HDC hdc;
 
