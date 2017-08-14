@@ -73,6 +73,7 @@
 #cmakedefine HAVE_MEMORY_H 1
 #cmakedefine HAVE_STRING_H 1
 #cmakedefine HAVE_STRINGS_H 1
+#cmakedefine HAVE_WCHAR_H 1
 #cmakedefine HAVE_INTTYPES_H 1
 #cmakedefine HAVE_STDINT_H 1
 #cmakedefine HAVE_CTYPE_H 1
