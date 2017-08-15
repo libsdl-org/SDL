@@ -411,14 +411,24 @@ WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     {
         /* Get the metrics to try and figure our DLU conversion. */
         GetTextMetrics(FontDC, &TM);
-        s_BaseUnitsX = TM.tmAveCharWidth + 1;
+
+        /* Calculation from the following documentation:
+         * https://support.microsoft.com/en-gb/help/125681/how-to-calculate-dialog-base-units-with-non-system-based-font
+         * This fixes bug 2137, dialog box calculation with a fixed-width system font
+         */
+        {
+            SIZE extent;
+            GetTextExtentPoint32A(FontDC, "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz", 52, &extent);
+            s_BaseUnitsX = (extent.cx / 26 + 1) / 2;
+        }
+        /*s_BaseUnitsX = TM.tmAveCharWidth + 1;*/
         s_BaseUnitsY = TM.tmHeight;
     }
 
     /* Measure the *pixel* size of the string. */
     wmessage = WIN_UTF8ToString(messageboxdata->message);
     SDL_zero(TextSize);
-    Size.cx = DrawText(FontDC, wmessage, -1, &TextSize, DT_CALCRECT);
+    DrawText(FontDC, wmessage, -1, &TextSize, DT_CALCRECT);
 
     /* Add some padding for hangs, etc. */
     TextSize.right += 2;
