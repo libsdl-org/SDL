@@ -16631,7 +16631,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 
-    for ac_func in malloc calloc realloc free getenv setenv putenv unsetenv qsort abs bcopy memset memcpy memmove wcslen wcslcpy wcslcat wcscmp strlen strlcpy strlcat strdup _strrev _strupr _strlwr strchr strrchr strstr itoa _ltoa _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction setjmp nanosleep sysconf sysctlbyname getauxval
+    for ac_func in malloc calloc realloc free getenv setenv putenv unsetenv qsort abs bcopy memset memcpy memmove wcslen wcslcpy wcslcat wcscmp strlen strlcpy strlcat strdup _strrev _strupr _strlwr strchr strrchr strstr itoa _ltoa _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction setjmp nanosleep sysconf sysctlbyname getauxval poll
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -23771,6 +23771,8 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
         if test x$use_input_events = xyes; then
             SOURCES="$SOURCES $srcdir/src/core/linux/SDL_evdev*.c"
         fi
+        # Set up other core UNIX files
+        SOURCES="$SOURCES $srcdir/src/core/unix/*.c"
         ;;
     *-*-cygwin* | *-*-mingw32*)
         ARCH=win32

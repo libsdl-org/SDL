@@ -183,6 +183,7 @@
 #undef HAVE_PTHREAD_SET_NAME_NP
 #undef HAVE_SEM_TIMEDWAIT
 #undef HAVE_GETAUXVAL
+#undef HAVE_POLL
 
 #else
 #define HAVE_STDARG_H   1

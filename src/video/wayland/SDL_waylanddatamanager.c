@@ -30,6 +30,7 @@
 
 #include "SDL_stdinc.h"
 #include "SDL_assert.h"
+#include "../../core/unix/SDL_poll.h"
 
 #include "SDL_waylandvideo.h"
 #include "SDL_waylanddatamanager.h"
@@ -46,16 +47,8 @@ write_pipe(int fd, const void* buffer, size_t total_length, size_t *pos)
     sigset_t sig_set;
     sigset_t old_sig_set;
     struct timespec zerotime = {0};
-    fd_set set;
-    struct timeval timeout;
 
-    FD_ZERO(&set);
-    FD_SET(fd, &set);
-
-    timeout.tv_sec = 1;
-    timeout.tv_usec = 0;
-
-    ready = select(fd + 1, NULL, &set, NULL, &timeout);
+    ready = SDL_IOReady(fd, SDL_TRUE, 1 * 1000);
 
     sigemptyset(&sig_set);
     sigaddset(&sig_set, SIGPIPE);  
@@ -92,16 +85,7 @@ read_pipe(int fd, void** buffer, size_t* total_length, SDL_bool null_terminate)
     ssize_t bytes_read = 0;
     size_t pos = 0;
 
-    fd_set set;
-    struct timeval timeout;
-
-    FD_ZERO(&set);
-    FD_SET(fd, &set);
-
-    timeout.tv_sec = 1;
-    timeout.tv_usec = 0;
-
-    ready = select(fd + 1, &set, NULL, NULL, &timeout);  
+    ready = SDL_IOReady(fd, SDL_FALSE, 1 * 1000);
   
     if (ready == 0) {
         bytes_read = SDL_SetError("Pipe timeout");

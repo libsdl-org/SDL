@@ -31,7 +31,10 @@
 
 #include <linux/input.h>
 
-#include "SDL.h"
+#include "SDL_assert.h"
+#include "SDL_loadso.h"
+#include "SDL_timer.h"
+#include "../unix/SDL_poll.h"
 
 static const char *SDL_UDEV_LIBS[] = {
 #ifdef SDL_UDEV_DYNAMIC
@@ -105,14 +108,7 @@ SDL_UDEV_hotplug_update_available(void)
 {
     if (_this->udev_mon != NULL) {
         const int fd = _this->udev_monitor_get_fd(_this->udev_mon);
-        fd_set fds;
-        struct timeval tv;
-
-        FD_ZERO(&fds);
-        FD_SET(fd, &fds);
-        tv.tv_sec = 0;
-        tv.tv_usec = 0;
-        if ((select(fd+1, &fds, NULL, NULL, &tv) > 0) && (FD_ISSET(fd, &fds))) {
+        if (SDL_IOReady(fd, SDL_FALSE, 0)) {
             return SDL_TRUE;
         }
     }
