@@ -88,7 +88,7 @@ HapticByDevId (int device_id)
     SDL_hapticlist_item *item;
     for (item = SDL_hapticlist; item != NULL; item = item->next) {
         if (device_id == item->device_id) {
-            SDL_Log("=+=+=+=+=+= HapticByDevId id [%d]", device_id);
+            /*SDL_Log("=+=+=+=+=+= HapticByDevId id [%d]", device_id);*/
             return item;
         }
     }
