@@ -237,10 +237,10 @@ pointer_handle_axis_common(struct SDL_WaylandInput *input,
         switch (a) {
             case WL_POINTER_AXIS_VERTICAL_SCROLL:
                 x = 0;
-                y = wl_fixed_to_float(value);
+                y = (float)wl_fixed_to_double(value);
                 break;
             case WL_POINTER_AXIS_HORIZONTAL_SCROLL:
-                x = wl_fixed_to_float(value);
+                x = (float)wl_fixed_to_double(value);
                 y = 0;
                 break;
             default:
