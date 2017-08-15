@@ -642,7 +642,6 @@ static GLenum GetBlendEquation(SDL_BlendOperation operation)
 static SDL_bool
 GL_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
 {
-    GL_RenderData *data = (GL_RenderData *) renderer->driverdata;
     SDL_BlendFactor srcColorFactor = SDL_GetBlendModeSrcColorFactor(blendMode);
     SDL_BlendFactor srcAlphaFactor = SDL_GetBlendModeSrcAlphaFactor(blendMode);
     SDL_BlendOperation colorOperation = SDL_GetBlendModeColorOperation(blendMode);

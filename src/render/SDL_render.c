@@ -2095,35 +2095,37 @@ int SDL_GL_UnbindTexture(SDL_Texture *texture)
 static SDL_BlendMode
 SDL_GetShortBlendMode(SDL_BlendMode blendMode)
 {
-    switch (blendMode) {
-    case SDL_BLENDMODE_NONE_FULL:
+    if (blendMode == SDL_BLENDMODE_NONE_FULL) {
         return SDL_BLENDMODE_NONE;
-    case SDL_BLENDMODE_BLEND_FULL:
-        return SDL_BLENDMODE_BLEND;
-    case SDL_BLENDMODE_ADD_FULL:
-        return SDL_BLENDMODE_ADD;
-    case SDL_BLENDMODE_MOD_FULL:
-        return SDL_BLENDMODE_MOD;
-    default:
-        return blendMode;
     }
+    if (blendMode == SDL_BLENDMODE_BLEND_FULL) {
+        return SDL_BLENDMODE_BLEND;
+    }
+    if (blendMode == SDL_BLENDMODE_ADD_FULL) {
+        return SDL_BLENDMODE_ADD;
+    }
+    if (blendMode == SDL_BLENDMODE_MOD_FULL) {
+        return SDL_BLENDMODE_MOD;
+    }
+    return blendMode;
 }
 
 static SDL_BlendMode
 SDL_GetLongBlendMode(SDL_BlendMode blendMode)
 {
-    switch (blendMode) {
-    case SDL_BLENDMODE_NONE:
+    if (blendMode == SDL_BLENDMODE_NONE) {
         return SDL_BLENDMODE_NONE_FULL;
-    case SDL_BLENDMODE_BLEND:
-        return SDL_BLENDMODE_BLEND_FULL;
-    case SDL_BLENDMODE_ADD:
-        return SDL_BLENDMODE_ADD_FULL;
-    case SDL_BLENDMODE_MOD:
-        return SDL_BLENDMODE_MOD_FULL;
-    default:
-        return blendMode;
     }
+    if (blendMode == SDL_BLENDMODE_BLEND) {
+        return SDL_BLENDMODE_BLEND_FULL;
+    }
+    if (blendMode == SDL_BLENDMODE_ADD) {
+        return SDL_BLENDMODE_ADD_FULL;
+    }
+    if (blendMode == SDL_BLENDMODE_MOD) {
+        return SDL_BLENDMODE_MOD_FULL;
+    }
+    return blendMode;
 }
 
 SDL_BlendMode
