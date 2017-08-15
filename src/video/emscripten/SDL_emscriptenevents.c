@@ -400,7 +400,7 @@ static EM_BOOL
 Emscripten_HandleWheel(int eventType, const EmscriptenWheelEvent *wheelEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
-    SDL_SendMouseWheel(window_data->window, 0, wheelEvent->deltaX, -wheelEvent->deltaY, SDL_MOUSEWHEEL_NORMAL);
+    SDL_SendMouseWheel(window_data->window, 0, (float)wheelEvent->deltaX, (float)-wheelEvent->deltaY, SDL_MOUSEWHEEL_NORMAL);
     return SDL_GetEventState(SDL_MOUSEWHEEL) == SDL_ENABLE;
 }
 

@@ -432,17 +432,7 @@ Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event)
         }
     }
 
-    if (x > 0) {
-        x = SDL_ceil(x);
-    } else if (x < 0) {
-        x = SDL_floor(x);
-    }
-    if (y > 0) {
-        y = SDL_ceil(y);
-    } else if (y < 0) {
-        y = SDL_floor(y);
-    }
-    SDL_SendMouseWheel(window, mouse->mouseID, (int)x, (int)y, direction);
+    SDL_SendMouseWheel(window, mouse->mouseID, x, y, direction);
 }
 
 void
