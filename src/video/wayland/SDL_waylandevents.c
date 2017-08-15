@@ -27,6 +27,7 @@
 #include "SDL_assert.h"
 #include "SDL_log.h"
 
+#include "../../core/unix/SDL_poll.h"
 #include "../../events/SDL_sysevents.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/scancodes_xfree86.h"
@@ -74,16 +75,14 @@ void
 Wayland_PumpEvents(_THIS)
 {
     SDL_VideoData *d = _this->driverdata;
-    struct pollfd pfd[1];
 
-    pfd[0].fd = WAYLAND_wl_display_get_fd(d->display);
-    pfd[0].events = POLLIN;
-    poll(pfd, 1, 0);
-
-    if (pfd[0].revents & POLLIN)
+    if (SDL_IOReady(WAYLAND_wl_display_get_fd(d->display), SDL_FALSE, 0)) {
         WAYLAND_wl_display_dispatch(d->display);
+    }
     else
+    {
         WAYLAND_wl_display_dispatch_pending(d->display);
+    }
 }
 
 static void

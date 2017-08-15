@@ -36,6 +36,7 @@
 #include "SDL_audio.h"
 #include "SDL_stdinc.h"
 #include "../SDL_audio_c.h"
+#include "../../core/unix/SDL_poll.h"
 #include "SDL_paudio.h"
 
 /* #define DEBUG_AUDIO */
@@ -137,44 +138,31 @@ PAUDIO_WaitDevice(_THIS)
             SDL_Delay(ticks);
         }
     } else {
+        int timeoutMS;
         audio_buffer paud_bufinfo;
-
-        /* Use select() for audio synchronization */
-        struct timeval timeout;
-        FD_ZERO(&fdset);
-        FD_SET(this->hidden->audio_fd, &fdset);
 
         if (ioctl(this->hidden->audio_fd, AUDIO_BUFFER, &paud_bufinfo) < 0) {
 #ifdef DEBUG_AUDIO
             fprintf(stderr, "Couldn't get audio buffer information\n");
 #endif
-            timeout.tv_sec = 10;
-            timeout.tv_usec = 0;
+            timeoutMS = 10 * 1000;
         } else {
-            long ms_in_buf = paud_bufinfo.write_buf_time;
-            timeout.tv_sec = ms_in_buf / 1000;
-            ms_in_buf = ms_in_buf - timeout.tv_sec * 1000;
-            timeout.tv_usec = ms_in_buf * 1000;
+            timeoutMS = paud_bufinfo.write_buf_time;
 #ifdef DEBUG_AUDIO
-            fprintf(stderr,
-                    "Waiting for write_buf_time=%ld,%ld\n",
-                    timeout.tv_sec, timeout.tv_usec);
+            fprintf(stderr, "Waiting for write_buf_time=%d ms\n", timeoutMS);
 #endif
         }
 
 #ifdef DEBUG_AUDIO
         fprintf(stderr, "Waiting for audio to get ready\n");
 #endif
-        if (select(this->hidden->audio_fd + 1, NULL, &fdset, NULL, &timeout)
-            <= 0) {
-            const char *message =
-                "Audio timeout - buggy audio driver? (disabled)";
+        if (SDL_IOReady(this->hidden->audio_fd, SDL_TRUE, timeoutMS) <= 0) {
             /*
              * In general we should never print to the screen,
              * but in this case we have no other way of letting
              * the user know what happened.
              */
-            fprintf(stderr, "SDL: %s - %s\n", strerror(errno), message);
+            fprintf(stderr, "SDL: %s - Audio timeout - buggy audio driver? (disabled)\n", strerror(errno));
             SDL_OpenedAudioDeviceDisconnected(this);
             /* Don't try to close - may hang */
             this->hidden->audio_fd = -1;
@@ -486,7 +474,7 @@ PAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         return SDL_SetError("Can't start audio play");
     }
 
-    /* Check to see if we need to use select() workaround */
+    /* Check to see if we need to use SDL_IOReady() workaround */
     if (workaround != NULL) {
         this->hidden->frame_ticks = (float) (this->spec.samples * 1000) /
             this->spec.freq;

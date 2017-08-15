@@ -45,6 +45,7 @@
 
 #include "SDL_timer.h"
 #include "SDL_audio.h"
+#include "../../core/unix/SDL_poll.h"
 #include "../SDL_audio_c.h"
 #include "SDL_qsa_audio.h"
 
@@ -113,67 +114,25 @@ QSA_InitAudioParams(snd_pcm_channel_params_t * cpars)
 static void
 QSA_WaitDevice(_THIS)
 {
-    fd_set wfds;
-    fd_set rfds;
-    int selectret;
-    struct timeval timeout;
+    int result;
 
-    if (!this->hidden->iscapture) {
-        FD_ZERO(&wfds);
-        FD_SET(this->hidden->audio_fd, &wfds);
-    } else {
-        FD_ZERO(&rfds);
-        FD_SET(this->hidden->audio_fd, &rfds);
-    }
-
-    do {
-        /* Setup timeout for playing one fragment equal to 2 seconds          */
-        /* If timeout occured than something wrong with hardware or driver    */
-        /* For example, Vortex 8820 audio driver stucks on second DAC because */
-        /* it doesn't exist !                                                 */
-        timeout.tv_sec = 2;
-        timeout.tv_usec = 0;
+    /* Setup timeout for playing one fragment equal to 2 seconds          */
+    /* If timeout occured than something wrong with hardware or driver    */
+    /* For example, Vortex 8820 audio driver stucks on second DAC because */
+    /* it doesn't exist !                                                 */
+    result = SDL_IOReady(this->hidden->audio_fd, !this->hidden->iscapture, 2 * 1000);
+    switch (result) {
+    case -1:
+        SDL_SetError("QSA: SDL_IOReady() failed: %s", strerror(errno));
+        break;
+    case 0:
+        SDL_SetError("QSA: timeout on buffer waiting occured");
+        this->hidden->timeout_on_wait = 1;
+        break;
+    default:
         this->hidden->timeout_on_wait = 0;
-
-        if (!this->hidden->iscapture) {
-            selectret =
-                select(this->hidden->audio_fd + 1, NULL, &wfds, NULL,
-                       &timeout);
-        } else {
-            selectret =
-                select(this->hidden->audio_fd + 1, &rfds, NULL, NULL,
-                       &timeout);
-        }
-
-        switch (selectret) {
-        case -1:
-            {
-                SDL_SetError("QSA: select() failed: %s", strerror(errno));
-                return;
-            }
-            break;
-        case 0:
-            {
-                SDL_SetError("QSA: timeout on buffer waiting occured");
-                this->hidden->timeout_on_wait = 1;
-                return;
-            }
-            break;
-        default:
-            {
-                if (!this->hidden->iscapture) {
-                    if (FD_ISSET(this->hidden->audio_fd, &wfds)) {
-                        return;
-                    }
-                } else {
-                    if (FD_ISSET(this->hidden->audio_fd, &rfds)) {
-                        return;
-                    }
-                }
-            }
-            break;
-        }
-    } while (1);
+        break;
+    }
 }
 
 static void

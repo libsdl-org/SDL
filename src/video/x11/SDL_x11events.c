@@ -31,6 +31,7 @@
 #include "SDL_x11video.h"
 #include "SDL_x11touch.h"
 #include "SDL_x11xinput2.h"
+#include "../../core/unix/SDL_poll.h"
 #include "../../events/SDL_events_c.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_touch_c.h"
@@ -1409,17 +1410,8 @@ X11_Pending(Display * display)
     }
 
     /* More drastic measures are required -- see if X is ready to talk */
-    {
-        static struct timeval zero_time;        /* static == 0 */
-        int x11_fd;
-        fd_set fdset;
-
-        x11_fd = ConnectionNumber(display);
-        FD_ZERO(&fdset);
-        FD_SET(x11_fd, &fdset);
-        if (select(x11_fd + 1, &fdset, NULL, NULL, &zero_time) == 1) {
-            return (X11_XPending(display));
-        }
+    if (SDL_IOReady(ConnectionNumber(display), SDL_FALSE, 0)) {
+        return (X11_XPending(display));
     }
 
     /* Oh well, nothing is ready .. */

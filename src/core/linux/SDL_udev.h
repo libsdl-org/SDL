@@ -117,3 +117,5 @@ extern void SDL_UDEV_DelCallback(SDL_UDEV_Callback cb);
 #endif /* HAVE_LIBUDEV_H */
 
 #endif /* SDL_udev_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

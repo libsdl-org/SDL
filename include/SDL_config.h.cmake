@@ -181,6 +181,7 @@
 #cmakedefine HAVE_PTHREAD_SET_NAME_NP 1
 #cmakedefine HAVE_SEM_TIMEDWAIT 1
 #cmakedefine HAVE_GETAUXVAL 1
+#cmakedefine HAVE_POLL 1
 
 #elif __WIN32__
 #cmakedefine HAVE_STDARG_H 1

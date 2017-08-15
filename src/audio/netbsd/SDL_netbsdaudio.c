@@ -38,6 +38,7 @@
 
 #include "SDL_timer.h"
 #include "SDL_audio.h"
+#include "../../core/unix/SDL_poll.h"
 #include "../SDL_audio_c.h"
 #include "../SDL_audiodev_c.h"
 #include "SDL_netbsdaudio.h"
@@ -134,18 +135,11 @@ NETBSDAUDIO_WaitDevice(_THIS)
             SDL_Delay(ticks);
         }
     } else {
-        /* Use select() for audio synchronization */
-        fd_set fdset;
-        struct timeval timeout;
-
-        FD_ZERO(&fdset);
-        FD_SET(this->hidden->audio_fd, &fdset);
-        timeout.tv_sec = 10;
-        timeout.tv_usec = 0;
+        /* Use SDL_IOReady() for audio synchronization */
 #ifdef DEBUG_AUDIO
         fprintf(stderr, "Waiting for audio to get ready\n");
 #endif
-        if (select(this->hidden->audio_fd + 1, NULL, &fdset, NULL, &timeout)
+        if (SDL_IOReady(this->hidden->audio_fd, SDL_TRUE, 10 * 1000)
             <= 0) {
             const char *message =
                 "Audio timeout - buggy audio driver? (disabled)";
