@@ -2178,7 +2178,7 @@ SDL_BlendOperation
 SDL_GetBlendModeAlphaOperation(SDL_BlendMode blendMode)
 {
     blendMode = SDL_GetLongBlendMode(blendMode);
-    return (SDL_BlendFactor)(((Uint32)blendMode >> 16) & 0xF);
+    return (SDL_BlendOperation)(((Uint32)blendMode >> 16) & 0xF);
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
