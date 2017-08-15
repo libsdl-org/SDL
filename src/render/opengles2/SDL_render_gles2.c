@@ -416,7 +416,6 @@ static GLenum GetBlendEquation(SDL_BlendOperation operation)
 static SDL_bool
 GLES2_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
 {
-    GLES2_DriverContext *data = (GLES2_DriverContext *) renderer->driverdata;
     SDL_BlendFactor srcColorFactor = SDL_GetBlendModeSrcColorFactor(blendMode);
     SDL_BlendFactor srcAlphaFactor = SDL_GetBlendModeSrcAlphaFactor(blendMode);
     SDL_BlendOperation colorOperation = SDL_GetBlendModeColorOperation(blendMode);
