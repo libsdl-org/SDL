@@ -1005,7 +1005,7 @@ X11_DispatchEvent(_THIS)
                 printf("Protocol version to use : %d\n", xdnd_version);
                 printf("More then 3 data types : %d\n", (int) use_list);
 #endif
- 
+
                 if (use_list) {
                     /* fetch conversion targets */
                     SDL_x11Prop p;
@@ -1019,7 +1019,7 @@ X11_DispatchEvent(_THIS)
                 }
             }
             else if (xevent.xclient.message_type == videodata->XdndPosition) {
-            
+
 #ifdef DEBUG_XEVENTS
                 Atom act= videodata->XdndActionCopy;
                 if(xdnd_version >= 2) {
@@ -1027,7 +1027,7 @@ X11_DispatchEvent(_THIS)
                 }
                 printf("Action requested by user is : %s\n", X11_XGetAtomName(display , act));
 #endif
-                
+
 
                 /* reply with status */
                 memset(&m, 0, sizeof(XClientMessageEvent));
@@ -1130,7 +1130,7 @@ X11_DispatchEvent(_THIS)
             printf("window %p: ButtonPress (X11 button = %d)\n", data, xevent.xbutton.button);
 #endif
             if (X11_IsWheelEvent(display,&xevent,&xticks, &yticks)) {
-                SDL_SendMouseWheel(data->window, 0, xticks, yticks, SDL_MOUSEWHEEL_NORMAL);
+                SDL_SendMouseWheel(data->window, 0, (float) xticks, (float) yticks, SDL_MOUSEWHEEL_NORMAL);
             } else {
                 SDL_bool ignore_click = SDL_FALSE;
                 int button = xevent.xbutton.button;

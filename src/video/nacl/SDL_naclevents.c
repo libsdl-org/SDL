@@ -298,7 +298,7 @@ static Uint8 SDL_NACL_translate_mouse_button(int32_t button) {
             return SDL_BUTTON_MIDDLE;
         case PP_INPUTEVENT_MOUSEBUTTON_RIGHT:
             return SDL_BUTTON_RIGHT;
-            
+
         case PP_INPUTEVENT_MOUSEBUTTON_NONE:
         default:
             return 0;
@@ -321,7 +321,7 @@ SDL_NACL_translate_keycode(int keycode)
 
 void NACL_PumpEvents(_THIS) {
   PSEvent* ps_event;
-  PP_Resource event;  
+  PP_Resource event;
   PP_InputEvent_Type type;
   PP_InputEvent_Modifier modifiers;
   struct PP_Rect rect;
@@ -333,7 +333,7 @@ void NACL_PumpEvents(_THIS) {
   Uint32 str_len;
   SDL_VideoData *driverdata = (SDL_VideoData *) _this->driverdata;
   SDL_Mouse *mouse = SDL_GetMouse();
-  
+
   if (driverdata->window) {
     while ((ps_event = PSEventTryAcquire()) != NULL) {
         event = ps_event->as_resource;
@@ -344,9 +344,9 @@ void NACL_PumpEvents(_THIS) {
                 NACL_SetScreenResolution(rect.size.width, rect.size.height, SDL_PIXELFORMAT_UNKNOWN);
                 // FIXME: Rebuild context? See life.c UpdateContext
                 break;
-            
+
             /* From HandleInputEvent, contains an input resource. */
-            case PSE_INSTANCE_HANDLEINPUT: 
+            case PSE_INSTANCE_HANDLEINPUT:
                 type = driverdata->ppb_input_event->GetType(event);
                 modifiers = driverdata->ppb_input_event->GetModifiers(event);
                 switch(type) {
@@ -359,35 +359,35 @@ void NACL_PumpEvents(_THIS) {
                     case PP_INPUTEVENT_TYPE_WHEEL:
                         /* FIXME: GetTicks provides high resolution scroll events */
                         fp = driverdata->ppb_wheel_input_event->GetDelta(event);
-                        SDL_SendMouseWheel(mouse->focus, mouse->mouseID, (int) fp.x, (int) fp.y, SDL_MOUSEWHEEL_NORMAL);
+                        SDL_SendMouseWheel(mouse->focus, mouse->mouseID, fp.x, fp.y, SDL_MOUSEWHEEL_NORMAL);
                         break;
-                        
+
                     case PP_INPUTEVENT_TYPE_MOUSEENTER:
                     case PP_INPUTEVENT_TYPE_MOUSELEAVE:
                         /* FIXME: Mouse Focus */
                         break;
-                        
-                        
-                    case PP_INPUTEVENT_TYPE_MOUSEMOVE: 
+
+
+                    case PP_INPUTEVENT_TYPE_MOUSEMOVE:
                         location = driverdata->ppb_mouse_input_event->GetPosition(event);
                         SDL_SendMouseMotion(mouse->focus, mouse->mouseID, SDL_FALSE, location.x, location.y);
                         break;
-                  
+
                     case PP_INPUTEVENT_TYPE_TOUCHSTART:
                     case PP_INPUTEVENT_TYPE_TOUCHMOVE:
                     case PP_INPUTEVENT_TYPE_TOUCHEND:
                     case PP_INPUTEVENT_TYPE_TOUCHCANCEL:
                         /* FIXME: Touch events */
                         break;
-                      
+
                     case PP_INPUTEVENT_TYPE_KEYDOWN:
                         SDL_SendKeyboardKey(SDL_PRESSED, SDL_NACL_translate_keycode(driverdata->ppb_keyboard_input_event->GetKeyCode(event)));
                         break;
-                        
+
                     case PP_INPUTEVENT_TYPE_KEYUP:
                         SDL_SendKeyboardKey(SDL_RELEASED, SDL_NACL_translate_keycode(driverdata->ppb_keyboard_input_event->GetKeyCode(event)));
                         break;
-                        
+
                     case PP_INPUTEVENT_TYPE_CHAR:
                         var = driverdata->ppb_keyboard_input_event->GetCharacterText(event);
                         str = driverdata->ppb_var->VarToUtf8(var, &str_len);
@@ -397,17 +397,17 @@ void NACL_PumpEvents(_THIS) {
                         }
                         SDL_strlcpy(text, str, str_len );
                         text[str_len] = '\0';
-                        
+
                         SDL_SendKeyboardText(text);
                         /* FIXME: Do we have to handle ref counting? driverdata->ppb_var->Release(var);*/
                         break;
-                        
+
                     default:
                         break;
                 }
                 break;
-                
-        
+
+
             /* From HandleMessage, contains a PP_Var. */
             case PSE_INSTANCE_HANDLEMESSAGE:
                 break;
@@ -419,7 +419,7 @@ void NACL_PumpEvents(_THIS) {
             /* When the 3D context is lost, no resource. */
             case PSE_GRAPHICS3D_GRAPHICS3DCONTEXTLOST:
                 break;
-                
+
             /* When the mouse lock is lost. */
             case PSE_MOUSELOCK_MOUSELOCKLOST:
                 break;
@@ -427,7 +427,7 @@ void NACL_PumpEvents(_THIS) {
             default:
                 break;
         }
-        
+
         PSEventRelease(ps_event);
     }
   }

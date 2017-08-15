@@ -80,6 +80,8 @@ typedef struct
     int xdelta;
     int ydelta;
     int last_x, last_y;         /* the last reported x and y coordinates */
+    float accumulated_wheel_x;
+    float accumulated_wheel_y;
     Uint32 buttonstate;
     SDL_bool has_position;
     SDL_bool relative_mode;
@@ -129,7 +131,7 @@ extern int SDL_SendMouseButton(SDL_Window * window, SDL_MouseID mouseID, Uint8 s
 extern int SDL_SendMouseButtonClicks(SDL_Window * window, SDL_MouseID mouseID, Uint8 state, Uint8 button, int clicks);
 
 /* Send a mouse wheel event */
-extern int SDL_SendMouseWheel(SDL_Window * window, SDL_MouseID mouseID, int x, int y, SDL_MouseWheelDirection direction);
+extern int SDL_SendMouseWheel(SDL_Window * window, SDL_MouseID mouseID, float x, float y, SDL_MouseWheelDirection direction);
 
 /* Shutdown the mouse subsystem */
 extern void SDL_MouseQuit(void);

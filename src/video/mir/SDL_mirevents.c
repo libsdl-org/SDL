@@ -141,7 +141,7 @@ HandleTouchMotion(int device_id, int source_id, float x, float y, float pressure
 }
 
 static void
-HandleMouseScroll(SDL_Window* sdl_window, int hscroll, int vscroll)
+HandleMouseScroll(SDL_Window* sdl_window, float hscroll, float vscroll)
 {
     SDL_SendMouseWheel(sdl_window, 0, hscroll, vscroll, SDL_MOUSEWHEEL_NORMAL);
 }
@@ -205,7 +205,7 @@ HandleMouseEvent(MirPointerEvent const* pointer, SDL_Window* sdl_window)
             break;
         case mir_pointer_action_motion: {
             int x, y;
-            int hscroll, vscroll;
+            float hscroll, vscroll;
             SDL_Mouse* mouse = SDL_GetMouse();
             x = MIR_mir_pointer_event_axis_value(pointer, mir_pointer_axis_x);
             y = MIR_mir_pointer_event_axis_value(pointer, mir_pointer_axis_y);

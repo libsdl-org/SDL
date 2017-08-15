@@ -440,11 +440,11 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 if (SDL_GetKeyboardFocus() != data->window) {
                     SDL_SetKeyboardFocus(data->window);
                 }
-                
+
                 GetCursorPos(&cursorPos);
                 ScreenToClient(hwnd, &cursorPos);
                 SDL_SendMouseMotion(data->window, 0, 0, cursorPos.x, cursorPos.y);
-                
+
                 WIN_CheckAsyncMouseRelease(data);
 
                 /*
@@ -566,40 +566,14 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         break;
 
     case WM_MOUSEWHEEL:
-        {
-            static short s_AccumulatedMotion;
-
-            s_AccumulatedMotion += GET_WHEEL_DELTA_WPARAM(wParam);
-            if (s_AccumulatedMotion > 0) {
-                while (s_AccumulatedMotion >= WHEEL_DELTA) {
-                    SDL_SendMouseWheel(data->window, 0, 0, 1, SDL_MOUSEWHEEL_NORMAL);
-                    s_AccumulatedMotion -= WHEEL_DELTA;
-                }
-            } else {
-                while (s_AccumulatedMotion <= -WHEEL_DELTA) {
-                    SDL_SendMouseWheel(data->window, 0, 0, -1, SDL_MOUSEWHEEL_NORMAL);
-                    s_AccumulatedMotion += WHEEL_DELTA;
-                }
-            }
-        }
-        break;
-
     case WM_MOUSEHWHEEL:
         {
-            static short s_AccumulatedMotion;
-
-            s_AccumulatedMotion += GET_WHEEL_DELTA_WPARAM(wParam);
-            if (s_AccumulatedMotion > 0) {
-                while (s_AccumulatedMotion >= WHEEL_DELTA) {
-                    SDL_SendMouseWheel(data->window, 0, 1, 0, SDL_MOUSEWHEEL_NORMAL);
-                    s_AccumulatedMotion -= WHEEL_DELTA;
-                }
-            } else {
-                while (s_AccumulatedMotion <= -WHEEL_DELTA) {
-                    SDL_SendMouseWheel(data->window, 0, -1, 0, SDL_MOUSEWHEEL_NORMAL);
-                    s_AccumulatedMotion += WHEEL_DELTA;
-                }
-            }
+            short amount = GET_WHEEL_DELTA_WPARAM(wParam);
+            float fAmount = (float) amount / WHEEL_DELTA;
+            if (msg == WM_MOUSEWHEEL)
+                SDL_SendMouseWheel(data->window, 0, 0.0f, fAmount, SDL_MOUSEWHEEL_NORMAL);
+            else
+                SDL_SendMouseWheel(data->window, 0, fAmount, 0.0f, SDL_MOUSEWHEEL_NORMAL);
         }
         break;
 
@@ -636,7 +610,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 SDL_SendKeyboardKey(SDL_PRESSED, code);
             }
         }
- 
+
         returnCode = 0;
         break;
 
@@ -793,7 +767,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             RECT rect;
             int x, y;
             int w, h;
-            
+
             if (data->initializing || data->in_border_change) {
                 break;
             }
