@@ -165,7 +165,7 @@ typedef enum
 typedef struct SDL_CommonEvent
 {
     Uint32 type;
-    Uint32 timestamp;
+    Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
 } SDL_CommonEvent;
 
 /**
@@ -174,7 +174,7 @@ typedef struct SDL_CommonEvent
 typedef struct SDL_WindowEvent
 {
     Uint32 type;        /**< ::SDL_WINDOWEVENT */
-    Uint32 timestamp;
+    Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
     Uint32 windowID;    /**< The associated window */
     Uint8 event;        /**< ::SDL_WindowEventID */
     Uint8 padding1;
@@ -190,7 +190,7 @@ typedef struct SDL_WindowEvent
 typedef struct SDL_KeyboardEvent
 {
     Uint32 type;        /**< ::SDL_KEYDOWN or ::SDL_KEYUP */
-    Uint32 timestamp;
+    Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
     Uint32 windowID;    /**< The window with keyboard focus, if any */
     Uint8 state;        /**< ::SDL_PRESSED or ::SDL_RELEASED */
     Uint8 repeat;       /**< Non-zero if this is a key repeat */
@@ -206,7 +206,7 @@ typedef struct SDL_KeyboardEvent
 typedef struct SDL_TextEditingEvent
 {
     Uint32 type;                                /**< ::SDL_TEXTEDITING */
-    Uint32 timestamp;
+    Uint32 timestamp;                           /**< In milliseconds, populated using SDL_GetTicks() */
     Uint32 windowID;                            /**< The window with keyboard focus, if any */
     char text[SDL_TEXTEDITINGEVENT_TEXT_SIZE];  /**< The editing text */
     Sint32 start;                               /**< The start cursor of selected editing text */
@@ -221,7 +221,7 @@ typedef struct SDL_TextEditingEvent
 typedef struct SDL_TextInputEvent
 {
     Uint32 type;                              /**< ::SDL_TEXTINPUT */
-    Uint32 timestamp;
+    Uint32 timestamp;                         /**< In milliseconds, populated using SDL_GetTicks() */
     Uint32 windowID;                          /**< The window with keyboard focus, if any */
     char text[SDL_TEXTINPUTEVENT_TEXT_SIZE];  /**< The input text */
 } SDL_TextInputEvent;
@@ -232,7 +232,7 @@ typedef struct SDL_TextInputEvent
 typedef struct SDL_MouseMotionEvent
 {
     Uint32 type;        /**< ::SDL_MOUSEMOTION */
-    Uint32 timestamp;
+    Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
     Uint32 windowID;    /**< The window with mouse focus, if any */
     Uint32 which;       /**< The mouse instance id, or SDL_TOUCH_MOUSEID */
     Uint32 state;       /**< The current button state */
@@ -248,7 +248,7 @@ typedef struct SDL_MouseMotionEvent
 typedef struct SDL_MouseButtonEvent
 {
     Uint32 type;        /**< ::SDL_MOUSEBUTTONDOWN or ::SDL_MOUSEBUTTONUP */
-    Uint32 timestamp;
+    Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
     Uint32 windowID;    /**< The window with mouse focus, if any */
     Uint32 which;       /**< The mouse instance id, or SDL_TOUCH_MOUSEID */
     Uint8 button;       /**< The mouse button index */
@@ -265,7 +265,7 @@ typedef struct SDL_MouseButtonEvent
 typedef struct SDL_MouseWheelEvent
 {
     Uint32 type;        /**< ::SDL_MOUSEWHEEL */
-    Uint32 timestamp;
+    Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
     Uint32 windowID;    /**< The window with mouse focus, if any */
     Uint32 which;       /**< The mouse instance id, or SDL_TOUCH_MOUSEID */
     Sint32 x;           /**< The amount scrolled horizontally, positive to the right and negative to the left */
@@ -279,7 +279,7 @@ typedef struct SDL_MouseWheelEvent
 typedef struct SDL_JoyAxisEvent
 {
     Uint32 type;        /**< ::SDL_JOYAXISMOTION */
-    Uint32 timestamp;
+    Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
     SDL_JoystickID which; /**< The joystick instance id */
     Uint8 axis;         /**< The joystick axis index */
     Uint8 padding1;
@@ -295,7 +295,7 @@ typedef struct SDL_JoyAxisEvent
 typedef struct SDL_JoyBallEvent
 {
     Uint32 type;        /**< ::SDL_JOYBALLMOTION */
-    Uint32 timestamp;
+    Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
     SDL_JoystickID which; /**< The joystick instance id */
     Uint8 ball;         /**< The joystick trackball index */
     Uint8 padding1;
@@ -311,7 +311,7 @@ typedef struct SDL_JoyBallEvent
 typedef struct SDL_JoyHatEvent
 {
     Uint32 type;        /**< ::SDL_JOYHATMOTION */
-    Uint32 timestamp;
+    Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
     SDL_JoystickID which; /**< The joystick instance id */
     Uint8 hat;          /**< The joystick hat index */
     Uint8 value;        /**< The hat position value.
@@ -331,7 +331,7 @@ typedef struct SDL_JoyHatEvent
 typedef struct SDL_JoyButtonEvent
 {
     Uint32 type;        /**< ::SDL_JOYBUTTONDOWN or ::SDL_JOYBUTTONUP */
-    Uint32 timestamp;
+    Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
     SDL_JoystickID which; /**< The joystick instance id */
     Uint8 button;       /**< The joystick button index */
     Uint8 state;        /**< ::SDL_PRESSED or ::SDL_RELEASED */
@@ -345,7 +345,7 @@ typedef struct SDL_JoyButtonEvent
 typedef struct SDL_JoyDeviceEvent
 {
     Uint32 type;        /**< ::SDL_JOYDEVICEADDED or ::SDL_JOYDEVICEREMOVED */
-    Uint32 timestamp;
+    Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
     Sint32 which;       /**< The joystick device index for the ADDED event, instance id for the REMOVED event */
 } SDL_JoyDeviceEvent;
 
@@ -356,7 +356,7 @@ typedef struct SDL_JoyDeviceEvent
 typedef struct SDL_ControllerAxisEvent
 {
     Uint32 type;        /**< ::SDL_CONTROLLERAXISMOTION */
-    Uint32 timestamp;
+    Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
     SDL_JoystickID which; /**< The joystick instance id */
     Uint8 axis;         /**< The controller axis (SDL_GameControllerAxis) */
     Uint8 padding1;
@@ -373,7 +373,7 @@ typedef struct SDL_ControllerAxisEvent
 typedef struct SDL_ControllerButtonEvent
 {
     Uint32 type;        /**< ::SDL_CONTROLLERBUTTONDOWN or ::SDL_CONTROLLERBUTTONUP */
-    Uint32 timestamp;
+    Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
     SDL_JoystickID which; /**< The joystick instance id */
     Uint8 button;       /**< The controller button (SDL_GameControllerButton) */
     Uint8 state;        /**< ::SDL_PRESSED or ::SDL_RELEASED */
@@ -388,7 +388,7 @@ typedef struct SDL_ControllerButtonEvent
 typedef struct SDL_ControllerDeviceEvent
 {
     Uint32 type;        /**< ::SDL_CONTROLLERDEVICEADDED, ::SDL_CONTROLLERDEVICEREMOVED, or ::SDL_CONTROLLERDEVICEREMAPPED */
-    Uint32 timestamp;
+    Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
     Sint32 which;       /**< The joystick device index for the ADDED event, instance id for the REMOVED or REMAPPED event */
 } SDL_ControllerDeviceEvent;
 
@@ -398,7 +398,7 @@ typedef struct SDL_ControllerDeviceEvent
 typedef struct SDL_AudioDeviceEvent
 {
     Uint32 type;        /**< ::SDL_AUDIODEVICEADDED, or ::SDL_AUDIODEVICEREMOVED */
-    Uint32 timestamp;
+    Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
     Uint32 which;       /**< The audio device index for the ADDED event (valid until next SDL_GetNumAudioDevices() call), SDL_AudioDeviceID for the REMOVED event */
     Uint8 iscapture;    /**< zero if an output device, non-zero if a capture device. */
     Uint8 padding1;
@@ -413,7 +413,7 @@ typedef struct SDL_AudioDeviceEvent
 typedef struct SDL_TouchFingerEvent
 {
     Uint32 type;        /**< ::SDL_FINGERMOTION or ::SDL_FINGERDOWN or ::SDL_FINGERUP */
-    Uint32 timestamp;
+    Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
     SDL_TouchID touchId; /**< The touch device id */
     SDL_FingerID fingerId;
     float x;            /**< Normalized in the range 0...1 */
@@ -430,7 +430,7 @@ typedef struct SDL_TouchFingerEvent
 typedef struct SDL_MultiGestureEvent
 {
     Uint32 type;        /**< ::SDL_MULTIGESTURE */
-    Uint32 timestamp;
+    Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
     SDL_TouchID touchId; /**< The touch device id */
     float dTheta;
     float dDist;
@@ -447,7 +447,7 @@ typedef struct SDL_MultiGestureEvent
 typedef struct SDL_DollarGestureEvent
 {
     Uint32 type;        /**< ::SDL_DOLLARGESTURE or ::SDL_DOLLARRECORD */
-    Uint32 timestamp;
+    Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
     SDL_TouchID touchId; /**< The touch device id */
     SDL_GestureID gestureId;
     Uint32 numFingers;
@@ -465,7 +465,7 @@ typedef struct SDL_DollarGestureEvent
 typedef struct SDL_DropEvent
 {
     Uint32 type;        /**< ::SDL_DROPBEGIN or ::SDL_DROPFILE or ::SDL_DROPTEXT or ::SDL_DROPCOMPLETE */
-    Uint32 timestamp;
+    Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
     char *file;         /**< The file name, which should be freed with SDL_free(), is NULL on begin/complete */
     Uint32 windowID;    /**< The window that was dropped on, if any */
 } SDL_DropEvent;
@@ -477,7 +477,7 @@ typedef struct SDL_DropEvent
 typedef struct SDL_QuitEvent
 {
     Uint32 type;        /**< ::SDL_QUIT */
-    Uint32 timestamp;
+    Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
 } SDL_QuitEvent;
 
 /**
@@ -486,7 +486,7 @@ typedef struct SDL_QuitEvent
 typedef struct SDL_OSEvent
 {
     Uint32 type;        /**< ::SDL_QUIT */
-    Uint32 timestamp;
+    Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
 } SDL_OSEvent;
 
 /**
@@ -495,7 +495,7 @@ typedef struct SDL_OSEvent
 typedef struct SDL_UserEvent
 {
     Uint32 type;        /**< ::SDL_USEREVENT through ::SDL_LASTEVENT-1 */
-    Uint32 timestamp;
+    Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
     Uint32 windowID;    /**< The associated window if any */
     Sint32 code;        /**< User defined event code */
     void *data1;        /**< User defined data pointer */
@@ -515,7 +515,7 @@ typedef struct SDL_SysWMmsg SDL_SysWMmsg;
 typedef struct SDL_SysWMEvent
 {
     Uint32 type;        /**< ::SDL_SYSWMEVENT */
-    Uint32 timestamp;
+    Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
     SDL_SysWMmsg *msg;  /**< driver dependent data, defined in SDL_syswm.h */
 } SDL_SysWMEvent;
 
