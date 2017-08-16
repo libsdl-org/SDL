@@ -10,16 +10,15 @@
 #define GLYPH_SIZE_IMAGE 16     /* size of glyphs (characters) in the bitmap font file */
 #define GLYPH_SIZE_SCREEN 32    /* size of glyphs (characters) as shown on the screen */
 
-static SDL_Texture *texture; /* texture where we'll hold our font */
+#define MAX_CHARS 1024
 
-/* function declarations */
-void cleanup(void);
-void drawBlank(int x, int y);
+static SDL_Texture *texture; /* texture where we'll hold our font */
 
 static SDL_Renderer *renderer;
 static int numChars = 0;        /* number of characters we've typed so far */
-static SDL_bool lastCharWasColon = 0;   /* we use this to detect sequences such as :) */
 static SDL_Color bg_color = { 50, 50, 100, 255 };       /* color of background */
+
+static int glyphs[MAX_CHARS];
 
 /* this structure maps a scancode to an index in our bitmap font.
    it also contains data about under which modifiers the mapping is valid
@@ -107,7 +106,7 @@ fontMapping map[TABLE_SIZE] = {
     If there is no entry for the key, -1 is returned
 */
 int
-keyToIndex(SDL_Keysym key)
+keyToGlyphIndex(SDL_Keysym key)
 {
     int i, index = -1;
     for (i = 0; i < TABLE_SIZE; i++) {
@@ -141,53 +140,17 @@ getPositionForCharNumber(int n, int *x, int *y)
     int max_x_chars = (renderW - 2 * x_padding) / GLYPH_SIZE_SCREEN;
     int line_separation = 5;    /* pixels between each line */
     *x = (n % max_x_chars) * GLYPH_SIZE_SCREEN + x_padding;
-    *y = (n / max_x_chars) * (GLYPH_SIZE_SCREEN + line_separation) +
-        y_padding;
+    *y = (n / max_x_chars) * (GLYPH_SIZE_SCREEN + line_separation) + y_padding;
 }
 
 void
-drawIndex(int index)
+drawGlyph(int glyph, int positionIndex)
 {
     int x, y;
-    getPositionForCharNumber(numChars, &x, &y);
-    SDL_Rect srcRect =
-        { GLYPH_SIZE_IMAGE * index, 0, GLYPH_SIZE_IMAGE, GLYPH_SIZE_IMAGE };
+    getPositionForCharNumber(positionIndex, &x, &y);
+    SDL_Rect srcRect = { GLYPH_SIZE_IMAGE * glyph, 0, GLYPH_SIZE_IMAGE, GLYPH_SIZE_IMAGE };
     SDL_Rect dstRect = { x, y, GLYPH_SIZE_SCREEN, GLYPH_SIZE_SCREEN };
-    drawBlank(x, y);
     SDL_RenderCopy(renderer, texture, &srcRect, &dstRect);
-}
-
-/*  draws the cursor icon at the current end position of the text */
-void
-drawCursor(void)
-{
-    drawIndex(29);              /* cursor is at index 29 in the bitmap font */
-}
-
-/* paints over a glyph sized region with the background color
-   in effect it erases the area
-*/
-void
-drawBlank(int x, int y)
-{
-    SDL_Rect rect = { x, y, GLYPH_SIZE_SCREEN, GLYPH_SIZE_SCREEN };
-    SDL_SetRenderDrawColor(renderer, bg_color.r, bg_color.g, bg_color.b, bg_color.a);
-    SDL_RenderFillRect(renderer, &rect);
-}
-
-/* moves backwards one character, erasing the last one put down */
-void
-backspace(void)
-{
-    int x, y;
-    if (numChars > 0) {
-        getPositionForCharNumber(numChars, &x, &y);
-        drawBlank(x, y);
-        numChars--;
-        getPositionForCharNumber(numChars, &x, &y);
-        drawBlank(x, y);
-        drawCursor();
-    }
 }
 
 /* this function loads our font into an SDL_Texture and returns the SDL_Texture  */
@@ -214,8 +177,7 @@ loadFont(void)
                                  Bmask, Amask);
         SDL_BlitSurface(surface, NULL, converted, NULL);
         /* create our texture */
-        texture =
-            SDL_CreateTextureFromSurface(renderer, converted);
+        texture = SDL_CreateTextureFromSurface(renderer, converted);
         if (texture == 0) {
             printf("texture creation failed: %s\n", SDL_GetError());
         } else {
@@ -228,13 +190,27 @@ loadFont(void)
     }
 }
 
+void
+draw()
+{
+    SDL_SetRenderDrawColor(renderer, bg_color.r, bg_color.g, bg_color.b, bg_color.a);
+    SDL_RenderClear(renderer);
+
+    for (int i = 0; i < numChars; i++) {
+        drawGlyph(glyphs[i], i);
+    }
+
+    drawGlyph(29, numChars); /* cursor is at index 29 in the bitmap font */
+
+    SDL_RenderPresent(renderer);
+}
+
 int
 main(int argc, char *argv[])
 {
     int index;                  /* index of last key we pushed in the bitmap font */
     SDL_Window *window;
     SDL_Event event;            /* last event received */
-    SDL_Keymod mod;             /* key modifiers of last key we pushed */
     SDL_Scancode scancode;      /* scancode of last key we pushed */
     int width;
     int height;
@@ -245,7 +221,7 @@ main(int argc, char *argv[])
     /* create window */
     window = SDL_CreateWindow("iPhone keyboard test", 0, 0, 320, 480, SDL_WINDOW_ALLOW_HIGHDPI);
     /* create renderer */
-    renderer = SDL_CreateRenderer(window, -1, 0);
+    renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
 
     SDL_GetWindowSize(window, &width, &height);
     SDL_RenderSetLogicalSize(renderer, width, height);
@@ -253,65 +229,45 @@ main(int argc, char *argv[])
     /* load up our font */
     loadFont();
 
-    /* draw the background, we'll just paint over it */
-    SDL_SetRenderDrawColor(renderer, bg_color.r, bg_color.g, bg_color.b, bg_color.a);
-    SDL_RenderFillRect(renderer, NULL);
-    SDL_RenderPresent(renderer);
-
     int done = 0;
-    /* loop till we get SDL_Quit */
-    while (!done && SDL_WaitEvent(&event)) {
-        switch (event.type) {
-        case SDL_QUIT:
-            done = 1;
-            break;
-        case SDL_KEYDOWN:
-            index = keyToIndex(event.key.keysym);
-            scancode = event.key.keysym.scancode;
-            mod = event.key.keysym.mod;
-            if (scancode == SDL_SCANCODE_DELETE) {
-                /* if user hit delete, delete the last character */
-                backspace();
-                lastCharWasColon = 0;
-            } else if (lastCharWasColon && scancode == SDL_SCANCODE_0
-                       && (mod & KMOD_SHIFT)) {
-                /* if our last key was a colon and this one is a close paren, the make a hoppy face */
-                backspace();
-                drawIndex(32);  /* index for happy face */
-                numChars++;
-                drawCursor();
-                lastCharWasColon = 0;
-            } else if (index != -1) {
-                /* if we aren't doing a happy face, then just draw the normal character */
-                drawIndex(index);
-                numChars++;
-                drawCursor();
-                lastCharWasColon =
-                    (event.key.keysym.scancode == SDL_SCANCODE_SEMICOLON
-                     && (event.key.keysym.mod & KMOD_SHIFT));
-            }
-            /* check if the key was a colon */
-            /* draw our updates to the screen */
-            SDL_RenderPresent(renderer);
-            break;
-        case SDL_MOUSEBUTTONUP:
-            /*      mouse up toggles onscreen keyboard visibility */
-            if (SDL_IsTextInputActive()) {
-                SDL_StopTextInput();
-            } else {
-                SDL_StartTextInput();
-            }
-            break;
-        }
-    }
-    cleanup();
-    return 0;
-}
 
-/* clean up after ourselves like a good kiddy */
-void
-cleanup(void)
-{
+    while (!done) {
+        while (SDL_PollEvent(&event)) {
+            switch (event.type) {
+            case SDL_QUIT:
+                done = 1;
+                break;
+            case SDL_TEXTINPUT:
+                break;
+            case SDL_KEYDOWN:
+                if (event.key.keysym.scancode == SDL_SCANCODE_BACKSPACE) {
+                    if (numChars > 0) {
+                        numChars--;
+                    }
+                } else if (numChars + 1 < MAX_CHARS) {
+                    int index = keyToGlyphIndex(event.key.keysym);
+                    if (index >= 0) {
+                        glyphs[numChars++] = index;
+                    }
+                }
+                break;
+            case SDL_MOUSEBUTTONUP:
+                /* mouse up toggles onscreen keyboard visibility */
+                if (SDL_IsTextInputActive()) {
+                    SDL_StopTextInput();
+                } else {
+                    SDL_StartTextInput();
+                }
+                break;
+            }
+        }
+
+        draw();
+        SDL_Delay(15);
+    }
+
     SDL_DestroyTexture(texture);
-    SDL_Quit();
+    SDL_DestroyRenderer(renderer);
+    SDL_DestroyWindow(window);
+    return 0;
 }
