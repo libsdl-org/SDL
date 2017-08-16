@@ -157,7 +157,6 @@ drawGlyph(int glyph, int positionIndex)
 SDL_Texture*
 loadFont(void)
 {
-
     SDL_Surface *surface = SDL_LoadBMP("kromasky_16x16.bmp");
 
     if (!surface) {
@@ -208,18 +207,18 @@ draw()
 int
 main(int argc, char *argv[])
 {
-    int index;                  /* index of last key we pushed in the bitmap font */
     SDL_Window *window;
     SDL_Event event;            /* last event received */
     SDL_Scancode scancode;      /* scancode of last key we pushed */
     int width;
     int height;
+    int done;
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         printf("Error initializing SDL: %s", SDL_GetError());
     }
     /* create window */
-    window = SDL_CreateWindow("iPhone keyboard test", 0, 0, 320, 480, SDL_WINDOW_ALLOW_HIGHDPI);
+    window = SDL_CreateWindow("iOS keyboard test", 0, 0, 320, 480, SDL_WINDOW_ALLOW_HIGHDPI);
     /* create renderer */
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
 
@@ -229,15 +228,12 @@ main(int argc, char *argv[])
     /* load up our font */
     loadFont();
 
-    int done = 0;
-
+    done = 0;
     while (!done) {
         while (SDL_PollEvent(&event)) {
             switch (event.type) {
             case SDL_QUIT:
                 done = 1;
-                break;
-            case SDL_TEXTINPUT:
                 break;
             case SDL_KEYDOWN:
                 if (event.key.keysym.scancode == SDL_SCANCODE_BACKSPACE) {
@@ -269,5 +265,6 @@ main(int argc, char *argv[])
     SDL_DestroyTexture(texture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
+    SDL_Quit();
     return 0;
 }
