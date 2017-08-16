@@ -179,15 +179,13 @@ UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
 #if !TARGET_OS_TV && (__IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_7_0)
     BOOL hasiOS7 = UIKit_IsSystemVersionAtLeast(7.0);
 
-    if (hasiOS7 || (window->flags & (SDL_WINDOW_BORDERLESS|SDL_WINDOW_FULLSCREEN))) {
-        /* The view should always show behind the status bar in iOS 7+. */
-        return screen.bounds;
-    } else {
+    /* The view should always show behind the status bar in iOS 7+. */
+    if (!hasiOS7 && !(window->flags & (SDL_WINDOW_BORDERLESS|SDL_WINDOW_FULLSCREEN))) {
         return screen.applicationFrame;
     }
-#else
-    return screen.bounds;
 #endif
+
+    return screen.bounds;
 }
 
 /*
