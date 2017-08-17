@@ -50,6 +50,10 @@
 #include <setjmp.h>
 #endif
 
+#if defined(__QNXNTO__)
+#include <sys/syspage.h>
+#endif
+
 #if (defined(__LINUX__) || defined(__ANDROID__)) && defined(__ARM_ARCH)
 /*#include <asm/hwcap.h>*/
 #ifndef AT_HWCAP
@@ -339,6 +343,8 @@ CPU_haveNEON(void)
     return 1;  /* all Apple ARMv7 chips and later have NEON. */
 #elif defined(__APPLE__)
     return 0;  /* assune anything else from Apple doesn't have NEON. */
+#elif defined(__QNXNTO__)
+    return SYSPAGE_ENTRY(cpuinfo)->flags & ARM_CPU_FLAG_NEON;
 #elif (defined(__LINUX__) || defined(__ANDROID__)) && defined(HAVE_GETAUXVAL)
     return ((getauxval(AT_HWCAP) & HWCAP_NEON) == HWCAP_NEON);
 #elif (defined(__LINUX__) || defined(__ANDROID__))
