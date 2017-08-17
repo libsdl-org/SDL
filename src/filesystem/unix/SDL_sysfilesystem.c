@@ -43,36 +43,7 @@
 #include "SDL_filesystem.h"
 
 /* QNX's /proc/self/exefile is a text file and not a symlink. */
-#if defined(__QNXNTO__)
-static char *
-readWholeFile(const char *path)
-{
-    char *retval = (char *) SDL_malloc(PATH_MAX+1);
-    if (retval != NULL)
-    {
-        const int fd = open(path, O_RDONLY);
-        const ssize_t br = (fd == -1) ? -1 : read(fd, retval, PATH_MAX);
-        char *ptr;
-
-        if (fd != -1)
-            close(fd);
-
-        if ((br < 0) || (br > PATH_MAX))
-        {
-            free(retval);
-            return NULL;
-        } /* if */
-
-        retval[br] = '\0';
-
-        ptr = (char *) SDL_realloc(retval, br + 1);
-        if (ptr != NULL)  /* just shrinking buffer; don't care if it failed. */
-            retval = ptr;
-    } /* else */
-
-    return retval;
-}
-#else
+#if !defined(__QNXNTO__)
 static char *
 readSymLink(const char *path)
 {
@@ -159,7 +130,7 @@ SDL_GetBasePath(void)
 #elif defined(__NETBSD__)
         retval = readSymLink("/proc/curproc/exe");
 #elif defined(__QNXNTO__)
-        retval = readWholeFile("/proc/self/exefile");
+        retval = SDL_LoadFile("/proc/self/exefile", NULL);
 #else
         retval = readSymLink("/proc/self/exe");  /* linux. */
         if (retval == NULL) {
