@@ -32,6 +32,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <limits.h>
+#include <fcntl.h>
 
 #if defined(__FREEBSD__) || defined(__OPENBSD__)
 #include <sys/sysctl.h>
@@ -41,6 +42,37 @@
 #include "SDL_stdinc.h"
 #include "SDL_filesystem.h"
 
+/* QNX's /proc/self/exefile is a text file and not a symlink. */
+#if defined(__QNXNTO__)
+static char *
+readWholeFile(const char *path)
+{
+    char *retval = (char *) SDL_malloc(PATH_MAX+1);
+    if (retval != NULL)
+    {
+        const int fd = open(path, O_RDONLY);
+        const ssize_t br = (fd == -1) ? -1 : read(fd, retval, PATH_MAX);
+        char *ptr;
+
+        if (fd != -1)
+            close(fd);
+
+        if ((br < 0) || (br > PATH_MAX))
+        {
+            free(retval);
+            return NULL;
+        } /* if */
+
+        retval[br] = '\0';
+
+        ptr = (char *) SDL_realloc(retval, br + 1);
+        if (ptr != NULL)  /* just shrinking buffer; don't care if it failed. */
+            retval = ptr;
+    } /* else */
+
+    return retval;
+}
+#else
 static char *
 readSymLink(const char *path)
 {
@@ -72,7 +104,7 @@ readSymLink(const char *path)
     SDL_free(retval);
     return NULL;
 }
-
+#endif
 
 char *
 SDL_GetBasePath(void)
@@ -126,9 +158,10 @@ SDL_GetBasePath(void)
         retval = readSymLink("/proc/curproc/file");
 #elif defined(__NETBSD__)
         retval = readSymLink("/proc/curproc/exe");
+#elif defined(__QNXNTO__)
+        retval = readWholeFile("/proc/self/exefile");
 #else
         retval = readSymLink("/proc/self/exe");  /* linux. */
-#endif
         if (retval == NULL) {
             /* older kernels don't have /proc/self ... try PID version... */
             char path[64];
@@ -139,6 +172,7 @@ SDL_GetBasePath(void)
                 retval = readSymLink(path);
             }
         }
+#endif
     }
 
     /* If we had access to argv[0] here, we could check it for a path,
