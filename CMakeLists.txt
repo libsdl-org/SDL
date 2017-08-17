@@ -948,6 +948,11 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID)
     CheckKMSDRM()
   endif()
 
+  if(UNIX)
+    file(GLOB CORE_UNIX_SOURCES ${SDL2_SOURCE_DIR}/src/core/unix/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${CORE_UNIX_SOURCES})
+  endif()
+
   if(LINUX)
     check_c_source_compiles("
         #include <linux/input.h>
@@ -967,8 +972,8 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID)
             ioctl(0, KDGKBENT, &kbe);
         }" HAVE_INPUT_KD)
 
-    file(GLOB CORE_SOURCES ${SDL2_SOURCE_DIR}/src/core/linux/*.c)
-    set(SOURCE_FILES ${SOURCE_FILES} ${CORE_SOURCES})
+    file(GLOB CORE_LINUX_SOURCES ${SDL2_SOURCE_DIR}/src/core/linux/*.c)
+    set(SOURCE_FILES ${SOURCE_FILES} ${CORE_LINUX_SOURCES})
 
     if(HAVE_INPUT_EVENTS)
       set(SDL_INPUT_LINUXEV 1)
