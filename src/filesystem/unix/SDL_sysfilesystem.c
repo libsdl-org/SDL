@@ -41,6 +41,7 @@
 #include "SDL_error.h"
 #include "SDL_stdinc.h"
 #include "SDL_filesystem.h"
+#include "SDL_rwops.h"
 
 /* QNX's /proc/self/exefile is a text file and not a symlink. */
 #if !defined(__QNXNTO__)
@@ -125,6 +126,9 @@ SDL_GetBasePath(void)
 
     /* is a Linux-style /proc filesystem available? */
     if (!retval && (access("/proc", F_OK) == 0)) {
+        /* !!! FIXME: after 2.0.6 ships, let's delete this code and just
+                      use the /proc/%llu version. There's no reason to have
+                      two copies of this plus all the #ifdefs. --ryan. */
 #if defined(__FREEBSD__)
         retval = readSymLink("/proc/curproc/file");
 #elif defined(__NETBSD__)
