@@ -96,6 +96,12 @@ SDL_Swap16(Uint16 x)
   __asm__("rorw #8,%0": "=d"(x): "0"(x):"cc");
     return x;
 }
+#elif defined(__WATCOMC__) && defined(__386__)
+extern _inline Uint16 SDL_Swap16(Uint16);
+#pragma aux SDL_Swap16 = \
+  "xchg al, ah" \
+  parm   [ax]   \
+  modify [ax];
 #else
 SDL_FORCE_INLINE Uint16
 SDL_Swap16(Uint16 x)
@@ -136,6 +142,21 @@ SDL_Swap32(Uint32 x)
   __asm__("rorw #8,%0\n\tswap %0\n\trorw #8,%0": "=d"(x): "0"(x):"cc");
     return x;
 }
+#elif defined(__WATCOMC__) && defined(__386__)
+extern _inline Uint32 SDL_Swap32(Uint32);
+#ifndef __SW_3 /* 486+ */
+#pragma aux SDL_Swap32 = \
+  "bswap eax"  \
+  parm   [eax] \
+  modify [eax];
+#else  /* 386-only */
+#pragma aux SDL_Swap32 = \
+  "xchg al, ah"  \
+  "ror  eax, 16" \
+  "xchg al, ah"  \
+  parm   [eax]   \
+  modify [eax];
+#endif
 #else
 SDL_FORCE_INLINE Uint32
 SDL_Swap32(Uint32 x)
