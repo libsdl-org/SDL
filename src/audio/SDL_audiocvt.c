@@ -22,6 +22,7 @@
 
 /* Functions for audio drivers to perform runtime conversion of audio format */
 
+#include "SDL.h"
 #include "SDL_audio.h"
 #include "SDL_audio_c.h"
 
@@ -555,7 +556,7 @@ SDL_BuildAudioTypeCVTToFloat(SDL_AudioCVT *cvt, const SDL_AudioFormat src_fmt)
         }
 
         if (!filter) {
-            return SDL_SetError("No conversion available for these formats");
+            return SDL_SetError("No conversion from source format to float available");
         }
 
         if (SDL_AddAudioCVTFilter(cvt, filter) < 0) {
@@ -594,7 +595,7 @@ SDL_BuildAudioTypeCVTFromFloat(SDL_AudioCVT *cvt, const SDL_AudioFormat dst_fmt)
         }
 
         if (!filter) {
-            return SDL_SetError("No conversion available for these formats");
+            return SDL_SetError("No conversion from float to destination format available");
         }
 
         if (SDL_AddAudioCVTFilter(cvt, filter) < 0) {
@@ -743,8 +744,8 @@ SDL_SupportedChannelCount(const int channels)
 
 
 /* Creates a set of audio filters to convert from one format to another.
-   Returns -1 if the format conversion is not supported, 0 if there's
-   no conversion needed, or 1 if the audio filter is set up.
+   Returns 0 if no conversion is needed, 1 if the audio filter is set up,
+   or -1 if an error like invalid parameter, unsupported format, etc. occurred.
 */
 
 int
@@ -755,6 +756,11 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
     /* Sanity check target pointer */
     if (cvt == NULL) {
         return SDL_InvalidParamError("cvt");
+    }
+
+    /* Conversions from and to float require the audio subsystem to be initialized */
+    if (!SDL_WasInit(SDL_INIT_AUDIO)) {
+        return SDL_SetError("Audio subsystem has not been initialized");
     }
 
     /* Make sure we zero out the audio conversion before error checking */

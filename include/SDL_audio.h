@@ -450,10 +450,11 @@ extern DECLSPEC void SDLCALL SDL_FreeWAV(Uint8 * audio_buf);
  *  This function takes a source format and rate and a destination format
  *  and rate, and initializes the \c cvt structure with information needed
  *  by SDL_ConvertAudio() to convert a buffer of audio data from one format
- *  to the other.
+ *  to the other. An unsupported format causes an error and -1 will be returned.
+ *  The audio subsystem must be initialized before calling this function.
  *
- *  \return -1 if the format conversion is not supported, 0 if there's
- *  no conversion needed, or 1 if the audio filter is set up.
+ *  \return 0 if no conversion is needed, 1 if the audio filter is set up,
+ *  or -1 on error.
  */
 extern DECLSPEC int SDLCALL SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
                                               SDL_AudioFormat src_format,
@@ -472,6 +473,8 @@ extern DECLSPEC int SDLCALL SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
  *  The data conversion may expand the size of the audio data, so the buffer
  *  \c cvt->buf should be allocated after the \c cvt structure is initialized by
  *  SDL_BuildAudioCVT(), and should be \c cvt->len*cvt->len_mult bytes long.
+ *
+ *  \return 0 on success or -1 if \c cvt->buf is NULL.
  */
 extern DECLSPEC int SDLCALL SDL_ConvertAudio(SDL_AudioCVT * cvt);
 
