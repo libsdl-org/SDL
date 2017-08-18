@@ -32,6 +32,16 @@
 #include <atomic.h>
 #endif
 
+#if defined(__WATCOMC__) && defined(__386__)
+SDL_COMPILE_TIME_ASSERT(locksize, 4==sizeof(SDL_SpinLock));
+extern _inline int _SDL_xchg_watcom(volatile int *a, int v);
+#pragma aux _SDL_xchg_watcom = \
+  "xchg [ecx], eax" \
+  parm [ecx] [eax] \
+  value [eax] \
+  modify exact [eax];
+#endif /* __WATCOMC__ && __386__ */
+
 /* This function is where all the magic happens... */
 SDL_bool
 SDL_AtomicTryLock(SDL_SpinLock *lock)
@@ -57,6 +67,9 @@ SDL_AtomicTryLock(SDL_SpinLock *lock)
 #elif defined(_MSC_VER)
     SDL_COMPILE_TIME_ASSERT(locksize, sizeof(*lock) == sizeof(long));
     return (InterlockedExchange((long*)lock, 1) == 0);
+
+#elif defined(__WATCOMC__) && defined(__386__)
+    return _SDL_xchg_watcom(lock, 1) == 0;
 
 #elif HAVE_GCC_ATOMICS || HAVE_GCC_SYNC_LOCK_TEST_AND_SET
     return (__sync_lock_test_and_set(lock, 1) == 0);
@@ -117,6 +130,10 @@ SDL_AtomicUnlock(SDL_SpinLock *lock)
 {
 #if defined(_MSC_VER)
     _ReadWriteBarrier();
+    *lock = 0;
+
+#elif defined(__WATCOMC__) && defined(__386__)
+    SDL_CompilerBarrier ();
     *lock = 0;
 
 #elif HAVE_GCC_ATOMICS || HAVE_GCC_SYNC_LOCK_TEST_AND_SET
