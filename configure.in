@@ -3595,6 +3595,8 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
             SOURCES="$SOURCES $srcdir/src/timer/unix/*.c"
             have_timers=yes
         fi
+        # Set up other core UNIX files
+        SOURCES="$SOURCES $srcdir/src/core/unix/*.c"
         # The iOS platform requires special setup.
         AC_DEFINE(SDL_VIDEO_DRIVER_UIKIT, 1, [ ])
         AC_DEFINE(SDL_VIDEO_OPENGL_ES2, 1, [ ])
@@ -3680,6 +3682,8 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         if test x$enable_file = xyes; then
             SOURCES="$SOURCES $srcdir/src/file/cocoa/*.m"
         fi
+        # Set up other core UNIX files
+        SOURCES="$SOURCES $srcdir/src/core/unix/*.c"
         # The Mac OS X platform requires special setup.
         EXTRA_CFLAGS="$EXTRA_CFLAGS -fpascal-strings"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lobjc"
