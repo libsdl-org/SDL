@@ -24143,7 +24143,6 @@ $as_echo "#define SDL_VIDEO_RENDER_OGL_ES 1" >>confdefs.h
 $as_echo "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
 
         SOURCES="$SOURCES $srcdir/src/video/uikit/*.m"
-        EXTRA_CFLAGS="$EXTRA_CFLAGS -fpascal-strings"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lm -liconv -lobjc"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,AVFoundation"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,AudioToolbox"
@@ -24236,7 +24235,6 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
         # Set up other core UNIX files
         SOURCES="$SOURCES $srcdir/src/core/unix/*.c"
         # The Mac OS X platform requires special setup.
-        EXTRA_CFLAGS="$EXTRA_CFLAGS -fpascal-strings"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lobjc"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,CoreVideo"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,Cocoa"
