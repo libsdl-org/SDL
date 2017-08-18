@@ -47,6 +47,16 @@ extern "C" {
  *
  *  \return Index of the most significant bit, or -1 if the value is 0.
  */
+#if defined(__WATCOMC__) && defined(__386__)
+extern _inline int _SDL_clz_watcom (Uint32);
+#pragma aux _SDL_clz_watcom = \
+    "bsr eax, eax" \
+    "xor eax, 31" \
+    parm [eax] nomemory \
+    value [eax] \
+    modify exact [eax] nomemory;
+#endif
+
 SDL_FORCE_INLINE int
 SDL_MostSignificantBitIndex32(Uint32 x)
 {
@@ -58,6 +68,11 @@ SDL_MostSignificantBitIndex32(Uint32 x)
         return -1;
     }
     return 31 - __builtin_clz(x);
+#elif defined(__WATCOMC__) && defined(__386__)
+    if (x == 0) {
+        return -1;
+    }
+    return 31 - _SDL_clz_watcom(x);
 #else
     /* Based off of Bit Twiddling Hacks by Sean Eron Anderson
      * <seander@cs.stanford.edu>, released in the public domain.
