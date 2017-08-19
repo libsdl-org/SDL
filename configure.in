@@ -3405,6 +3405,8 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
                 AC_DEFINE(SDL_AUDIO_DRIVER_XAUDIO2, 1, [ ])
                 SOURCES="$SOURCES $srcdir/src/audio/xaudio2/*.c"
             fi
+            AC_DEFINE(SDL_AUDIO_DRIVER_WASAPI, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/audio/wasapi/*.c"
             have_audio=yes
         fi
         # Set up files for the joystick library
