@@ -394,6 +394,11 @@ X11_GL_InitExtensions(_THIS)
     if (HasExtension("GLX_ARB_context_flush_control", extensions)) {
         _this->gl_data->HAS_GLX_ARB_context_flush_control = SDL_TRUE;
     }
+
+    /* Check for GLX_ARB_create_context_robustness */
+    if (HasExtension("GLX_ARB_create_context_robustness", extensions)) {
+        _this->gl_data->HAS_GLX_ARB_create_context_robustness = SDL_TRUE;
+    }
 }
 
 /* glXChooseVisual and glXChooseFBConfig have some small differences in
@@ -621,8 +626,8 @@ X11_GL_CreateContext(_THIS, SDL_Window * window)
             context =
                 _this->gl_data->glXCreateContext(display, vinfo, share_context, True);
         } else {
-            /* max 10 attributes plus terminator */
-            int attribs[11] = {
+            /* max 12 attributes plus terminator */
+            int attribs[13] = {
                 GLX_CONTEXT_MAJOR_VERSION_ARB,
                 _this->gl_config.major_version,
                 GLX_CONTEXT_MINOR_VERSION_ARB,
@@ -650,6 +655,15 @@ X11_GL_CreateContext(_THIS, SDL_Window * window)
                     _this->gl_config.release_behavior ? 
                     GLX_CONTEXT_RELEASE_BEHAVIOR_FLUSH_ARB : 
                     GLX_CONTEXT_RELEASE_BEHAVIOR_NONE_ARB;
+            }
+
+            /* only set if glx extension is available */
+            if( _this->gl_data->HAS_GLX_ARB_create_context_robustness ) {
+                attribs[iattr++] = GLX_CONTEXT_RESET_NOTIFICATION_STRATEGY_ARB;
+                attribs[iattr++] =
+                    _this->gl_config.reset_notification ?
+                    GLX_LOSE_CONTEXT_ON_RESET_ARB :
+                    GLX_NO_RESET_NOTIFICATION_ARB;
             }
 
             attribs[iattr++] = 0;
