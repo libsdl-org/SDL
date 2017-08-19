@@ -453,9 +453,14 @@ WIN_GL_InitExtensions(_THIS)
         );
     }
 
-    /* Check for GLX_ARB_context_flush_control */
+    /* Check for WGL_ARB_context_flush_control */
     if (HasExtension("WGL_ARB_context_flush_control", extensions)) {
         _this->gl_data->HAS_WGL_ARB_context_flush_control = SDL_TRUE;
+    }
+
+    /* Check for WGL_ARB_create_context_robustness */
+    if (HasExtension("WGL_ARB_create_context_robustness", extensions)) {
+        _this->gl_data->HAS_WGL_ARB_create_context_robustness = SDL_TRUE;
     }
 
     _this->gl_data->wglMakeCurrent(hdc, NULL);
@@ -713,8 +718,8 @@ WIN_GL_CreateContext(_THIS, SDL_Window * window)
             SDL_SetError("GL 3.x is not supported");
             context = temp_context;
         } else {
-        /* max 10 attributes plus terminator */
-            int attribs[11] = {
+        /* max 12 attributes plus terminator */
+            int attribs[13] = {
                 WGL_CONTEXT_MAJOR_VERSION_ARB, _this->gl_config.major_version,
                 WGL_CONTEXT_MINOR_VERSION_ARB, _this->gl_config.minor_version,
                 0
@@ -739,6 +744,14 @@ WIN_GL_CreateContext(_THIS, SDL_Window * window)
                 attribs[iattr++] = _this->gl_config.release_behavior ?
                                     WGL_CONTEXT_RELEASE_BEHAVIOR_FLUSH_ARB :
                                     WGL_CONTEXT_RELEASE_BEHAVIOR_NONE_ARB;
+            }
+
+            /* only set if wgl extension is available */
+            if (_this->gl_data->HAS_WGL_ARB_create_context_robustness) {
+                attribs[iattr++] = WGL_CONTEXT_RESET_NOTIFICATION_STRATEGY_ARB;
+                attribs[iattr++] = _this->gl_config.reset_notification ?
+                                    WGL_LOSE_CONTEXT_ON_RESET_ARB :
+                                    WGL_NO_RESET_NOTIFICATION_ARB;
             }
 
             attribs[iattr++] = 0;

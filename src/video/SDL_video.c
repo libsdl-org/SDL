@@ -2990,6 +2990,7 @@ SDL_GL_ResetAttributes()
     _this->gl_config.flags = 0;
     _this->gl_config.framebuffer_srgb_capable = 0;
     _this->gl_config.release_behavior = SDL_GL_CONTEXT_RELEASE_BEHAVIOR_FLUSH;
+    _this->gl_config.reset_notification = SDL_GL_CONTEXT_RESET_NO_NOTIFICATION;
 
     _this->gl_config.share_with_current_context = 0;
 }
@@ -3098,6 +3099,9 @@ SDL_GL_SetAttribute(SDL_GLattr attr, int value)
         break;
     case SDL_GL_CONTEXT_RELEASE_BEHAVIOR:
         _this->gl_config.release_behavior = value;
+        break;
+    case SDL_GL_CONTEXT_RESET_NOTIFICATION:
+        _this->gl_config.reset_notification = value;
         break;
     default:
         retval = SDL_SetError("Unknown OpenGL attribute");
