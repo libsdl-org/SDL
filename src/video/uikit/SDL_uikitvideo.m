@@ -176,16 +176,39 @@ UIKit_IsSystemVersionAtLeast(double version)
 CGRect
 UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen)
 {
+    CGRect frame = screen.bounds;
+
 #if !TARGET_OS_TV && (__IPHONE_OS_VERSION_MIN_REQUIRED < __IPHONE_7_0)
     BOOL hasiOS7 = UIKit_IsSystemVersionAtLeast(7.0);
 
     /* The view should always show behind the status bar in iOS 7+. */
     if (!hasiOS7 && !(window->flags & (SDL_WINDOW_BORDERLESS|SDL_WINDOW_FULLSCREEN))) {
-        return screen.applicationFrame;
+        frame = screen.applicationFrame;
     }
 #endif
 
-    return screen.bounds;
+#if !TARGET_OS_TV
+    /* iOS 10 seems to have a bug where, in certain conditions, putting the
+     * device to sleep with the a landscape-only app open, re-orienting the
+     * device to portrait, and turning it back on will result in the screen
+     * bounds returning portrait orientation despite the app being in landscape.
+     * This is a workaround until a better solution can be found.
+     * https://bugzilla.libsdl.org/show_bug.cgi?id=3505
+     * https://bugzilla.libsdl.org/show_bug.cgi?id=3465
+     * https://forums.developer.apple.com/thread/65337 */
+    if (UIKit_IsSystemVersionAtLeast(8.0)) {
+        UIInterfaceOrientation orient = [UIApplication sharedApplication].statusBarOrientation;
+        BOOL isLandscape = UIInterfaceOrientationIsLandscape(orient);
+
+        if (isLandscape != (frame.size.width > frame.size.height)) {
+            float height = frame.size.width;
+            frame.size.width = frame.size.height;
+            frame.size.height = height;
+        }
+    }
+#endif
+
+    return frame;
 }
 
 /*

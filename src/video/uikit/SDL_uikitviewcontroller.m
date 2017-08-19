@@ -293,8 +293,9 @@ SDL_AppleTVControllerUIHintChanged(void *userdata, const char *name, const char 
 
 - (void)keyboardWillHide:(NSNotification *)notification
 {
-    if (!rotatingOrientation)
+    if (!rotatingOrientation) {
         SDL_StopTextInput();
+    }
     [self setKeyboardHeight:0];
 }
 
