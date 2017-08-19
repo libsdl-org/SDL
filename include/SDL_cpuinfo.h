@@ -33,6 +33,12 @@
 /* Need to do this here because intrin.h has C++ code in it */
 /* Visual Studio 2005 has a bug where intrin.h conflicts with winnt.h */
 #if defined(_MSC_VER) && (_MSC_VER >= 1500) && (defined(_M_IX86) || defined(_M_X64))
+#ifdef __clang__
+/* Many of the intrinsics SDL uses are not implemented by clang with Visual Studio */
+#undef __MMX__
+#undef __SSE__
+#undef __SSE2__
+#else
 #include <intrin.h>
 #ifndef _WIN64
 #define __MMX__
@@ -40,6 +46,7 @@
 #endif
 #define __SSE__
 #define __SSE2__
+#endif /* __clang__ */
 #elif defined(__MINGW64_VERSION_MAJOR)
 #include <intrin.h>
 #else

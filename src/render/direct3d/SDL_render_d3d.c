@@ -761,6 +761,7 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
             const char *error = (const char *)pErrorMsgs->lpVtbl->GetBufferPointer(pErrorMsgs);
             SDL_SetError("Couldn't assemble shader: %s", error);
         }
+        if (shader_data != NULL)
 #else
         const DWORD shader_data[] = {
             0xffff0200, 0x05000051, 0xa00f0000, 0xbd808081, 0xbf008081, 0xbf008081,
@@ -780,7 +781,7 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
             0x80e40000, 0x0000ffff
         };
 #endif
-        if (shader_data != NULL) {
+        {
             result = IDirect3DDevice9_CreatePixelShader(data->device, shader_data, &data->ps_yuv);
             if (!FAILED(result)) {
                 renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_YV12;
