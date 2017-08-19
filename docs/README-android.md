@@ -1,7 +1,14 @@
 Android
 ================================================================================
 
-Requirements:
+Matt Styles wrote a tutorial on building SDL for Android with Visual Studio:
+http://trederia.blogspot.de/2017/03/building-sdl2-for-android-with-visual.html
+
+The rest of this README covers the old style build process.
+
+================================================================================
+ Requirements
+================================================================================
 
 Android SDK (version 12 or later)
 https://developer.android.com/sdk/index.html
