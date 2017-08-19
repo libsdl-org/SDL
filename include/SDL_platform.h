@@ -120,21 +120,29 @@
 
 #if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__) || defined(__MINGW32__)
 /* Try to find out if we're compiling for WinRT or non-WinRT */
-/* If _USING_V110_SDK71_ is defined it means we are using the v110_xp or v120_xp toolset. */
-#if (defined(_MSC_VER) && (_MSC_VER >= 1700) && !_USING_V110_SDK71_)	/* _MSC_VER==1700 for MSVC 2012 */
+#if defined(_MSC_VER) && _MSC_VER >= 1910                               /* _MSC_VER == 1910 for Visual Studio 2017 */
+#define HAVE_WINAPIFAMILY_H __has_include(<winapifamily.h>)
+/* If _USING_V110_SDK71_ is defined it means we are using the Windows XP toolset. */
+#elif defined(_MSC_VER) && (_MSC_VER >= 1700 && !_USING_V110_SDK71_)    /* _MSC_VER == 1700 for Visual Studio 2012 */
+#define HAVE_WINAPIFAMILY_H 1
+#else
+#define HAVE_WINAPIFAMILY_H 0
+#endif
+
+#if HAVE_WINAPIFAMILY_H
 #include <winapifamily.h>
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP)
-#undef __WINDOWS__
-#define __WINDOWS__   1
-/* See if we're compiling for WinRT: */
-#elif WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
+#define WINAPI_FAMILY_WINRT (!WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_DESKTOP) && WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP))
+#else
+#define WINAPI_FAMILY_WINRT 0
+#endif /* HAVE_WINAPIFAMILY_H */
+
+#if WINAPI_FAMILY_WINRT
 #undef __WINRT__
 #define __WINRT__ 1
-#endif
 #else
 #undef __WINDOWS__
-#define __WINDOWS__   1
-#endif /* _MSC_VER < 1700 */
+#define __WINDOWS__ 1
+#endif
 #endif /* defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__) */
 
 #if defined(__WINDOWS__)
