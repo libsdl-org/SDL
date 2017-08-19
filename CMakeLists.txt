@@ -1320,7 +1320,16 @@ elseif(WINDOWS)
     list(APPEND SDL_LIBS "-lmingw32" "-lSDL2main" "-mwindows")
   endif()
 elseif(APPLE)
-  # TODO: rework this for proper MacOS X, iOS and Darwin support
+  # TODO: rework this all for proper MacOS X, iOS and Darwin support
+
+  # We always need these libs on macOS at the moment.
+  # !!! FIXME: we need Carbon for some very old API calls in
+  # !!! FIXME:  src/video/cocoa/SDL_cocoakeyboard.c, but we should figure out
+  # !!! FIXME:  how to dump those.
+  if (APPLE AND NOT IOS)
+    set(SDL_FRAMEWORK_COCOA 1)
+    set(SDL_FRAMEWORK_CARBON 1)
+  endif()
 
   # Requires the darwin file implementation
   if(SDL_FILE)
@@ -1329,7 +1338,7 @@ elseif(APPLE)
     # !!! FIXME: modern CMake doesn't need "LANGUAGE C" for Objective-C.
     set_source_files_properties(${EXTRA_SOURCES} PROPERTIES LANGUAGE C)
     set(HAVE_SDL_FILE TRUE)
-    set(SDL_FRAMEWORK_COCOA 1)
+    # !!! FIXME: why is COREVIDEO inside this if() block?
     set(SDL_FRAMEWORK_COREVIDEO 1)
   else()
     message_error("SDL_FILE must be enabled to build on MacOS X")
@@ -1383,7 +1392,6 @@ elseif(APPLE)
     endif()
     set(SOURCE_FILES ${SOURCE_FILES} ${POWER_SOURCES})
     set(HAVE_SDL_POWER TRUE)
-    set(SDL_FRAMEWORK_CARBON 1)
     set(SDL_FRAMEWORK_IOKIT 1)
   endif()
 
