@@ -23840,6 +23840,10 @@ $as_echo "#define SDL_AUDIO_DRIVER_XAUDIO2 1" >>confdefs.h
 
                 SOURCES="$SOURCES $srcdir/src/audio/xaudio2/*.c"
             fi
+
+$as_echo "#define SDL_AUDIO_DRIVER_WASAPI 1" >>confdefs.h
+
+            SOURCES="$SOURCES $srcdir/src/audio/wasapi/*.c"
             have_audio=yes
         fi
         # Set up files for the joystick library
