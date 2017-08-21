@@ -2876,6 +2876,8 @@ AC_HELP_STRING([--enable-directx], [use DirectX for Windows audio/video [[defaul
         AC_CHECK_HEADER(dxgi.h, have_dxgi=yes)
         AC_CHECK_HEADER(xaudio2.h, have_xaudio2=yes)
         AC_CHECK_HEADER(xinput.h, have_xinput=yes)
+        AC_CHECK_HEADER(mmdeviceapi.h, have_wasapi=yes)
+        AC_CHECK_HEADER(audioclient.h,,have_wasapi=no)
         AC_TRY_COMPILE([
 #include <windows.h>
 #include <xinput.h>
@@ -3405,8 +3407,10 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
                 AC_DEFINE(SDL_AUDIO_DRIVER_XAUDIO2, 1, [ ])
                 SOURCES="$SOURCES $srcdir/src/audio/xaudio2/*.c"
             fi
-            AC_DEFINE(SDL_AUDIO_DRIVER_WASAPI, 1, [ ])
-            SOURCES="$SOURCES $srcdir/src/audio/wasapi/*.c"
+            if test x$have_wasapi = xyes; then
+                AC_DEFINE(SDL_AUDIO_DRIVER_WASAPI, 1, [ ])
+                SOURCES="$SOURCES $srcdir/src/audio/wasapi/*.c"
+            fi
             have_audio=yes
         fi
         # Set up files for the joystick library
