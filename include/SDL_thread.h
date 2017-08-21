@@ -118,6 +118,19 @@ SDL_CreateThread(SDL_ThreadFunction fn, const char *name, void *data,
 #define SDL_CreateThread(fn, name, data) SDL_CreateThread(fn, name, data, (pfnSDL_CurrentBeginThread)_beginthreadex, (pfnSDL_CurrentEndThread)_endthreadex)
 #endif
 
+#elif defined(__OS2__)
+
+/*
+ * just like the windows case above:  We compile SDL2
+ * into a dll with Watcom's runtime statically linked.
+ */
+#define SDL_PASSED_BEGINTHREAD_ENDTHREAD
+#include <process.h>
+typedef int (*pfnSDL_CurrentBeginThread)(void (*func)(void *), void *, unsigned, void *arg);
+typedef void (*pfnSDL_CurrentEndThread)(void);
+#undef SDL_CreateThread
+#define SDL_CreateThread(fn, name, data) SDL_CreateThread(fn, name, data, (pfnSDL_CurrentBeginThread)_beginthread, (pfnSDL_CurrentEndThread)_endthread)
+
 #else
 
 /**
