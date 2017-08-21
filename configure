@@ -22834,6 +22834,20 @@ if test "x$ac_cv_header_xinput_h" = xyes; then :
 fi
 
 
+        ac_fn_c_check_header_mongrel "$LINENO" "mmdeviceapi.h" "ac_cv_header_mmdeviceapi_h" "$ac_includes_default"
+if test "x$ac_cv_header_mmdeviceapi_h" = xyes; then :
+  have_wasapi=yes
+fi
+
+
+        ac_fn_c_check_header_mongrel "$LINENO" "audioclient.h" "ac_cv_header_audioclient_h" "$ac_includes_default"
+if test "x$ac_cv_header_audioclient_h" = xyes; then :
+
+else
+  have_wasapi=no
+fi
+
+
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -23840,10 +23854,12 @@ $as_echo "#define SDL_AUDIO_DRIVER_XAUDIO2 1" >>confdefs.h
 
                 SOURCES="$SOURCES $srcdir/src/audio/xaudio2/*.c"
             fi
+            if test x$have_wasapi = xyes; then
 
 $as_echo "#define SDL_AUDIO_DRIVER_WASAPI 1" >>confdefs.h
 
-            SOURCES="$SOURCES $srcdir/src/audio/wasapi/*.c"
+                SOURCES="$SOURCES $srcdir/src/audio/wasapi/*.c"
+            fi
             have_audio=yes
         fi
         # Set up files for the joystick library
