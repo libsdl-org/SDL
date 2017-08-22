@@ -27,7 +27,6 @@
 #include <xf86drm.h>
 #include <xf86drmMode.h>
 #include <gbm.h>
-#include <EGL/egl.h>
 
 #ifdef __cplusplus
 extern "C" {

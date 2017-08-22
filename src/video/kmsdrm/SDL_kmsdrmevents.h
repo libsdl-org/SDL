@@ -21,22 +21,11 @@
 
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_DRIVER_KMSDRM
+#ifndef _SDL_kmsdrmevents_h
+#define _SDL_kmsdrmevents_h
 
-#include "SDL_kmsdrmvideo.h"
-#include "SDL_kmsdrmevents.h"
+extern void KMSDRM_PumpEvents(_THIS);
+extern void KMSDRM_EventInit(_THIS);
+extern void KMSDRM_EventQuit(_THIS);
 
-#ifdef SDL_INPUT_LINUXEV
-#include "../../core/linux/SDL_evdev.h"
-#endif
-
-void KMSDRM_PumpEvents(_THIS)
-{
-#ifdef SDL_INPUT_LINUXEV
-    SDL_EVDEV_Poll();
-#endif
-
-}
-
-#endif /* SDL_VIDEO_DRIVER_KMSDRM */
-
+#endif /* _SDL_kmsdrmevents_h */

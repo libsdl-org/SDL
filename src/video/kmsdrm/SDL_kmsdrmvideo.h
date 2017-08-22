@@ -19,10 +19,11 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+#include "../../SDL_internal.h"
+
 #ifndef __SDL_KMSDRMVIDEO_H__
 #define __SDL_KMSDRMVIDEO_H__
 
-#include "../../SDL_internal.h"
 #include "../SDL_sysvideo.h"
 
 #include <fcntl.h>
