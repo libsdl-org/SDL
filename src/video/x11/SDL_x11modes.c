@@ -825,8 +825,6 @@ X11_GetDisplayModes(_THIS, SDL_VideoDisplay * sdl_display)
     int nmodes;
     XF86VidModeModeInfo ** modes;
 #endif
-    int screen_w;
-    int screen_h;
     SDL_DisplayMode mode;
 
     /* Unfortunately X11 requires the window to be created with the correct
@@ -838,11 +836,14 @@ X11_GetDisplayModes(_THIS, SDL_VideoDisplay * sdl_display)
     mode.format = sdl_display->current_mode.format;
     mode.driverdata = NULL;
 
-    screen_w = DisplayWidth(display, data->screen);
-    screen_h = DisplayHeight(display, data->screen);
-
 #if SDL_VIDEO_DRIVER_X11_XINERAMA
     if (data->use_xinerama) {
+        int screen_w;
+        int screen_h;
+
+        screen_w = DisplayWidth(display, data->screen);
+        screen_h = DisplayHeight(display, data->screen);
+
         if (data->use_vidmode && !data->xinerama_info.x_org && !data->xinerama_info.y_org &&
            (screen_w > data->xinerama_info.width || screen_h > data->xinerama_info.height)) {
             SDL_DisplayModeData *modedata;
