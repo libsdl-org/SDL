@@ -19,12 +19,12 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+#include "../../SDL_internal.h"
+
 #ifndef _SDL_KMSDRM_mouse_h
 #define _SDL_KMSDRM_mouse_h
 
 #include <gbm.h>
-
-#include "../SDL_sysvideo.h"
 
 typedef struct _KMSDRM_CursorData
 {

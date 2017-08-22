@@ -18,21 +18,17 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
 #include "../../SDL_internal.h"
 
 #if SDL_VIDEO_DRIVER_KMSDRM
-
-#include "SDL_assert.h"
-#include "SDL_surface.h"
 
 #include "SDL_kmsdrmvideo.h"
 #include "SDL_kmsdrmmouse.h"
 #include "SDL_kmsdrmdyn.h"
 
-#include "../SDL_sysvideo.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/default_cursor.h"
-
 
 static SDL_Cursor *KMSDRM_CreateDefaultCursor(void);
 static SDL_Cursor *KMSDRM_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y);
