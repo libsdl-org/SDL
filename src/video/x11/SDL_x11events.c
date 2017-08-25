@@ -604,7 +604,7 @@ X11_HandleClipboardEvent(_THIS, const XEvent *xevent)
         case SelectionNotify: {
 #ifdef DEBUG_XEVENTS
             printf("window CLIPBOARD: SelectionNotify (requestor = %ld, target = %ld)\n",
-                xevent.xselection.requestor, xevent.xselection.target);
+                xevent->xselection.requestor, xevent->xselection.target);
 #endif
             videodata->selection_waiting = SDL_FALSE;
         }
@@ -616,7 +616,7 @@ X11_HandleClipboardEvent(_THIS, const XEvent *xevent)
 
 #ifdef DEBUG_XEVENTS
             printf("window CLIPBOARD: SelectionClear (requestor = %ld, target = %ld)\n",
-                xevent.xselection.requestor, xevent.xselection.target);
+                xevent->xselection.requestor, xevent->xselection.target);
 #endif
 
             if (xevent->xselectionclear.selection == XA_PRIMARY ||
