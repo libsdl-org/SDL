@@ -728,13 +728,13 @@ WIN_GL_CreateContext(_THIS, SDL_Window * window)
             SDL_SetError("GL 3.x is not supported");
             context = temp_context;
         } else {
-        /* max 14 attributes plus terminator */
-            int attribs[15] = {
-                WGL_CONTEXT_MAJOR_VERSION_ARB, _this->gl_config.major_version,
-                WGL_CONTEXT_MINOR_VERSION_ARB, _this->gl_config.minor_version,
-                0
-            };
-            int iattr = 4;
+            int attribs[15];  /* max 14 attributes plus terminator */
+            int iattr = 0;
+
+            attribs[iattr++] = WGL_CONTEXT_MAJOR_VERSION_ARB;
+            attribs[iattr++] = _this->gl_config.major_version;
+            attribs[iattr++] = WGL_CONTEXT_MINOR_VERSION_ARB;
+            attribs[iattr++] = _this->gl_config.minor_version;
 
             /* SDL profile bits match WGL profile bits */
             if (_this->gl_config.profile_mask != 0) {
