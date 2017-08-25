@@ -244,7 +244,7 @@ static SDL_INLINE void *get_sdlapi_entry(const char *fname, const char *sym)
     PFN retval = NULL;
     char error[256];
     if (NO_ERROR == DosLoadModule(&error, sizeof(error), fname, &hmodule)) {
-        if (NO_ERROR == DosQueryProcAddr(hmodule, 0, sym, &retval)) {
+        if (NO_ERROR != DosQueryProcAddr(hmodule, 0, sym, &retval)) {
             DosFreeModule(hmodule);
         }
     }
