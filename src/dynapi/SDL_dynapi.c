@@ -24,6 +24,12 @@
 
 #if SDL_DYNAMIC_API
 
+#if defined(__OS2__)
+#define INCL_DOS
+#define INCL_DOSERRORS
+#include <dos.h>
+#endif
+
 #include "SDL.h"
 
 /* !!! FIXME: Shouldn't these be included in SDL.h? */
@@ -232,16 +238,13 @@ static SDL_INLINE void *get_sdlapi_entry(const char *fname, const char *sym)
 }
 
 #elif defined(__OS2__)
-#define INCL_DOS
-#define INCL_DOSERRORS
-#include <dos.h>
 static SDL_INLINE void *get_sdlapi_entry(const char *fname, const char *sym)
 {
     HMODULE hmodule;
     PFN retval = NULL;
     char error[256];
     if (NO_ERROR == DosLoadModule(&error, sizeof(error), fname, &hmodule)) {
-        if (NO_ERROR == DosQueryProcAddr(handle, 0, sym, &retval)) {
+        if (NO_ERROR == DosQueryProcAddr(hmodule, 0, sym, &retval)) {
             DosFreeModule(hmodule);
         }
     }
