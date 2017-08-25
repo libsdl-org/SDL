@@ -463,18 +463,6 @@ SDL_EGL_ChooseConfig(_THIS)
         attribs[i++] = _this->gl_config.multisamplesamples;
     }
 
-    if (_this->gl_config.no_error) {
-#ifdef GL_KHR_no_error
-        if (SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "GL_KHR_no_error")) {
-            attribs[i++] = EGL_CONTEXT_OPENGL_NO_ERROR_KHR;
-            attribs[i++] = _this->gl_config.no_error;
-        } else
-#endif
-        {
-            return SDL_SetError("EGL implementation does not support no_error contexts");
-        }
-    }
-
     if (_this->gl_config.framebuffer_srgb_capable) {
 #ifdef EGL_KHR_gl_colorspace
         if (SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_KHR_gl_colorspace")) {
@@ -614,6 +602,19 @@ SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
 #endif /* EGL_KHR_create_context */
         {
             SDL_SetError("Could not create EGL context (context attributes are not supported)");
+            return NULL;
+        }
+    }
+
+    if (_this->gl_config.no_error) {
+#ifdef EGL_KHR_create_context_no_error
+        if (SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_KHR_create_context_no_error")) {
+            attribs[attr++] = EGL_CONTEXT_OPENGL_NO_ERROR_KHR;
+            attribs[attr++] = _this->gl_config.no_error;
+        } else
+#endif
+        {
+            SDL_SetError("EGL implementation does not support no_error contexts");
             return NULL;
         }
     }

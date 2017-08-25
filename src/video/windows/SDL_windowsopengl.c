@@ -468,6 +468,11 @@ WIN_GL_InitExtensions(_THIS)
         _this->gl_data->HAS_WGL_ARB_create_context_robustness = SDL_TRUE;
     }
 
+    /* Check for WGL_ARB_create_context_no_error */
+    if (HasExtension("WGL_ARB_create_context_no_error", extensions)) {
+        _this->gl_data->HAS_WGL_ARB_create_context_no_error = SDL_TRUE;
+    }
+
     _this->gl_data->wglMakeCurrent(hdc, NULL);
     _this->gl_data->wglDeleteContext(hglrc);
     ReleaseDC(hwnd, hdc);
@@ -598,11 +603,6 @@ WIN_GL_SetupWindowInternal(_THIS, SDL_Window * window)
         *iAttr++ = _this->gl_config.framebuffer_srgb_capable;
     }
 
-    if (_this->gl_config.no_error) {
-        *iAttr++ = WGL_CONTEXT_OPENGL_NO_ERROR_ARB;
-        *iAttr++ = _this->gl_config.no_error;
-    }
-
     /* We always choose either FULL or NO accel on Windows, because of flaky
        drivers. If the app didn't specify, we use FULL, because that's
        probably what they wanted (and if you didn't care and got FULL, that's
@@ -728,8 +728,8 @@ WIN_GL_CreateContext(_THIS, SDL_Window * window)
             SDL_SetError("GL 3.x is not supported");
             context = temp_context;
         } else {
-        /* max 12 attributes plus terminator */
-            int attribs[13] = {
+        /* max 14 attributes plus terminator */
+            int attribs[15] = {
                 WGL_CONTEXT_MAJOR_VERSION_ARB, _this->gl_config.major_version,
                 WGL_CONTEXT_MINOR_VERSION_ARB, _this->gl_config.minor_version,
                 0
@@ -762,6 +762,12 @@ WIN_GL_CreateContext(_THIS, SDL_Window * window)
                 attribs[iattr++] = _this->gl_config.reset_notification ?
                                     WGL_LOSE_CONTEXT_ON_RESET_ARB :
                                     WGL_NO_RESET_NOTIFICATION_ARB;
+            }
+
+            /* only set if wgl extension is available */
+            if (_this->gl_data->HAS_WGL_ARB_create_context_no_error) {
+                attribs[iattr++] = WGL_CONTEXT_OPENGL_NO_ERROR_ARB;
+                attribs[iattr++] = _this->gl_config.no_error;
             }
 
             attribs[iattr++] = 0;
