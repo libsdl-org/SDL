@@ -82,6 +82,11 @@
 #define WGL_CONTEXT_RELEASE_BEHAVIOR_FLUSH_ARB          0x2098
 #endif
 
+#ifndef WGL_ARB_create_context_no_error
+#define WGL_ARB_create_context_no_error
+#define WGL_CONTEXT_OPENGL_NO_ERROR_ARB                 0x31B3
+#endif
+
 typedef HGLRC(APIENTRYP PFNWGLCREATECONTEXTATTRIBSARBPROC) (HDC hDC,
                                                             HGLRC
                                                             hShareContext,
@@ -591,6 +596,11 @@ WIN_GL_SetupWindowInternal(_THIS, SDL_Window * window)
     if (_this->gl_config.framebuffer_srgb_capable) {
         *iAttr++ = WGL_FRAMEBUFFER_SRGB_CAPABLE_ARB;
         *iAttr++ = _this->gl_config.framebuffer_srgb_capable;
+    }
+
+    if (_this->gl_config.no_error) {
+        *iAttr++ = WGL_CONTEXT_OPENGL_NO_ERROR_ARB;
+        *iAttr++ = _this->gl_config.no_error;
     }
 
     /* We always choose either FULL or NO accel on Windows, because of flaky
