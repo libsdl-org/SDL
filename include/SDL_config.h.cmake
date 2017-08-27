@@ -265,6 +265,7 @@
 #cmakedefine SDL_HAPTIC_IOKIT @SDL_HAPTIC_IOKIT@
 #cmakedefine SDL_HAPTIC_DINPUT @SDL_HAPTIC_DINPUT@
 #cmakedefine SDL_HAPTIC_XINPUT @SDL_HAPTIC_XINPUT@
+#cmakedefine SDL_HAPTIC_ANDROID @SDL_HAPTIC_ANDROID@
 
 /* Enable various shared object loading systems */
 #cmakedefine SDL_LOADSO_DLOPEN @SDL_LOADSO_DLOPEN@
