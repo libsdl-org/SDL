@@ -26,9 +26,6 @@
  * how to add a CAMetalLayer backed view.
  */
 
-/* this is (currently) only used with Vulkan. Remove this #if when that changes! */
-#if SDL_VIDEO_VULKAN_SURFACE && SDL_VIDEO_DRIVER_COCOA
-
 #import "SDL_cocoametalview.h"
 
 #include "SDL_assert.h"
@@ -117,8 +114,6 @@ Cocoa_Mtl_GetDrawableSize(SDL_Window * window, int * w, int * h)
             *h = layer.drawableSize.height;
     }
 }
-
-#endif
 
 /* vi: set ts=4 sw=4 expandtab: */
 

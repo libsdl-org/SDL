@@ -329,10 +329,6 @@ dep_option(VIDEO_VULKAN        "Enable Vulkan surface creation" ON "ANDROID OR A
 set_option(VIDEO_KMSDRM        "Use KMS DRM video driver" ${UNIX_SYS})
 dep_option(KMSDRM_SHARED       "Dynamically load KMS DRM support" ON "VIDEO_KMSDRM" OFF)
 
-if(VIDEO_VULKAN)
-  set(VULKAN_SDK $ENV{VULKAN_SDK} CACHE PATH "Location of Vulkan headers' grandparent, e.g. /foo when headers are in /foo/include/vulkan.")
-endif()
-
 # TODO: We should (should we?) respect cmake's ${BUILD_SHARED_LIBS} flag here
 # The options below are for compatibility to configure's default behaviour.
 set(SDL_SHARED ${SDL_SHARED_ENABLED_BY_DEFAULT} CACHE BOOL "Build a shared version of the library")
@@ -874,8 +870,6 @@ if(ANDROID)
     if(NOT VULKAN_PASSED_ANDROID_CHECKS)
       set(VIDEO_VULKAN OFF)
       message(STATUS "Vulkan doesn't work on this configuration")
-    else()
-      CheckVulkanHeaders()
     endif()
   endif()
 
@@ -1041,8 +1035,6 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID)
     endif()
 
     check_include_file("fcitx/frontend.h" HAVE_FCITX_FRONTEND_H)
-
-    CheckVulkanHeaders()
   endif()
 
   if(INPUT_TSLIB)
@@ -1301,8 +1293,6 @@ elseif(WINDOWS)
       set(SDL_VIDEO_RENDER_OGL_ES2 1)
       set(HAVE_VIDEO_OPENGLES TRUE)
     endif()
-
-    CheckVulkanHeaders()
   endif()
 
   if(SDL_JOYSTICK)
@@ -1445,11 +1435,8 @@ elseif(APPLE)
 
   # Actually load the frameworks at the end so we don't duplicate include.
   if (VIDEO_VULKAN)
-    CheckVulkanHeaders()
-    if(HAVE_VULKAN_H)
-      find_library(QUARTZCORE QuartzCore)
-      list(APPEND EXTRA_LIBS ${QUARTZCORE})
-    endif()
+    find_library(QUARTZCORE QuartzCore)
+    list(APPEND EXTRA_LIBS ${QUARTZCORE})
   endif()
   if(SDL_FRAMEWORK_COREVIDEO)
     find_library(COREVIDEO CoreVideo)
@@ -1530,7 +1517,7 @@ elseif(HAIKU)
   CheckPTHREAD()
 endif()
 
-if(VIDEO_VULKAN AND HAVE_VULKAN_H AND (NOT APPLE OR QUARTZCORE))
+if(VIDEO_VULKAN AND (NOT APPLE OR QUARTZCORE))
   set(SDL_VIDEO_VULKAN_SURFACE 1)
 endif()
 
