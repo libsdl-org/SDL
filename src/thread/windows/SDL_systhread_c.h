@@ -20,13 +20,13 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_systhread_c_h
-#define _SDL_systhread_c_h
+#ifndef SDL_systhread_c_h_
+#define SDL_systhread_c_h_
 
 #include "../../core/windows/SDL_windows.h"
 
 typedef HANDLE SYS_ThreadHandle;
 
-#endif /* _SDL_systhread_c_h */
+#endif /* SDL_systhread_c_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

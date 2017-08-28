@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_windowsvideo_h
-#define _SDL_windowsvideo_h
+#ifndef SDL_windowsvideo_h_
+#define SDL_windowsvideo_h_
 
 #include "../../core/windows/SDL_windows.h"
 
@@ -194,6 +194,6 @@ extern SDL_bool g_WindowFrameUsableWhileCursorHidden;
 typedef struct IDirect3D9 IDirect3D9;
 extern SDL_bool D3D_LoadDLL( void **pD3DDLL, IDirect3D9 **pDirect3D9Interface );
 
-#endif /* _SDL_windowsvideo_h */
+#endif /* SDL_windowsvideo_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

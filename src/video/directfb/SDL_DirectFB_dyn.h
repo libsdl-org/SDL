@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_DirectFB_dyn_h
-#define _SDL_DirectFB_dyn_h
+#ifndef SDL_DirectFB_dyn_h_
+#define SDL_DirectFB_dyn_h_
 
 #define DFB_SYMS \
     DFB_SYM(DFBResult, DirectFBError, (const char *msg, DFBResult result), (msg, result), return) \
@@ -36,4 +36,6 @@
 int SDL_DirectFB_LoadLibrary(void);
 void SDL_DirectFB_UnLoadLibrary(void);
 
-#endif
+#endif /* SDL_DirectFB_dyn_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

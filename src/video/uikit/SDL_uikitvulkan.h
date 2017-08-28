@@ -26,8 +26,8 @@
 
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_uikitvulkan_h
-#define _SDL_uikitvulkan_h
+#ifndef SDL_uikitvulkan_h_
+#define SDL_uikitvulkan_h_
 
 #include "../SDL_vulkan_internal.h"
 #include "../SDL_sysvideo.h"
@@ -49,6 +49,6 @@ void UIKit_Vulkan_GetDrawableSize(_THIS, SDL_Window *window, int *w, int *h);
 
 #endif
 
-#endif /* _SDL_uikitvulkan_h */
+#endif /* SDL_uikitvulkan_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

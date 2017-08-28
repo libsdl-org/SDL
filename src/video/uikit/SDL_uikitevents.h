@@ -18,13 +18,13 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#ifndef _SDL_uikitevents_h
-#define _SDL_uikitevents_h
+#ifndef SDL_uikitevents_h_
+#define SDL_uikitevents_h_
 
 #include "../SDL_sysvideo.h"
 
 extern void UIKit_PumpEvents(_THIS);
 
-#endif /* _SDL_uikitevents_h */
+#endif /* SDL_uikitevents_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

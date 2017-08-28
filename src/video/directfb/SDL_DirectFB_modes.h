@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_directfb_modes_h
-#define _SDL_directfb_modes_h
+#ifndef SDL_directfb_modes_h_
+#define SDL_directfb_modes_h_
 
 #include <directfb.h>
 
@@ -54,6 +54,6 @@ extern void DirectFB_QuitModes(_THIS);
 
 extern void DirectFB_SetContext(_THIS, SDL_Window *window);
 
-#endif /* _SDL_directfb_modes_h */
+#endif /* SDL_directfb_modes_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

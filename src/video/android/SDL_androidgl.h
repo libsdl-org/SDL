@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_androidgl_h
-#define _SDL_androidgl_h
+#ifndef SDL_androidgl_h_
+#define SDL_androidgl_h_
 
 SDL_GLContext Android_GLES_CreateContext(_THIS, SDL_Window * window);
 int Android_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context);
@@ -29,6 +29,6 @@ int Android_GLES_SwapWindow(_THIS, SDL_Window * window);
 int Android_GLES_LoadLibrary(_THIS, const char *path);
 
 
-#endif /* _SDL_androidgl_h */
+#endif /* SDL_androidgl_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -21,8 +21,8 @@
 
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_naclaudio_h
-#define _SDL_naclaudio_h
+#ifndef SDL_naclaudio_h_
+#define SDL_naclaudio_h_
 
 #include "SDL_audio.h"
 #include "../SDL_sysaudio.h"
@@ -38,4 +38,6 @@ typedef struct SDL_PrivateAudioData {
   PP_Resource audio;
 } SDL_PrivateAudioData;
 
-#endif /* _SDL_naclaudio_h */
+#endif /* SDL_naclaudio_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

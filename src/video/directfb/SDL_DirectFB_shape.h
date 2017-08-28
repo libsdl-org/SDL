@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_DirectFB_shape_h
-#define _SDL_DirectFB_shape_h
+#ifndef SDL_DirectFB_shape_h_
+#define SDL_DirectFB_shape_h_
 
 #include <directfb.h>
 
@@ -35,4 +35,4 @@ extern SDL_WindowShaper* DirectFB_CreateShaper(SDL_Window* window);
 extern int DirectFB_ResizeWindowShape(SDL_Window* window);
 extern int DirectFB_SetWindowShape(SDL_WindowShaper *shaper,SDL_Surface *shape,SDL_WindowShapeMode *shapeMode);
 
-#endif /* _SDL_DirectFB_shape_h */
+#endif /* SDL_DirectFB_shape_h_ */

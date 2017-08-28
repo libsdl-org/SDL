@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_sunaudio_h
-#define _SDL_sunaudio_h
+#ifndef SDL_sunaudio_h_
+#define SDL_sunaudio_h_
 
 #include "../SDL_sysaudio.h"
 
@@ -42,6 +42,6 @@ struct SDL_PrivateAudioData
     int frequency;              /* The audio frequency in KHz */
 };
 
-#endif /* _SDL_sunaudio_h */
+#endif /* SDL_sunaudio_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

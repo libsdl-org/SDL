@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_directx_h
-#define _SDL_directx_h
+#ifndef SDL_directx_h_
+#define SDL_directx_h_
 
 /* Include all of the DirectX 8.0 headers and adds any necessary tweaks */
 
@@ -106,6 +106,6 @@
 typedef struct { int unused; } DIDEVICEINSTANCE;
 #endif
 
-#endif /* _SDL_directx_h */
+#endif /* SDL_directx_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

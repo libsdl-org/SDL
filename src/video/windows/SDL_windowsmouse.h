@@ -20,14 +20,14 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_windowsmouse_h
-#define _SDL_windowsmouse_h
+#ifndef SDL_windowsmouse_h_
+#define SDL_windowsmouse_h_
 
 extern HCURSOR SDL_cursor;
 
 extern void WIN_InitMouse(_THIS);
 extern void WIN_QuitMouse(_THIS);
 
-#endif /* _SDL_windowsmouse_h */
+#endif /* SDL_windowsmouse_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

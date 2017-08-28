@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_kmsdrmopengles_h
-#define _SDL_kmsdrmopengles_h
+#ifndef SDL_kmsdrmopengles_h_
+#define SDL_kmsdrmopengles_h_
 
 #if SDL_VIDEO_DRIVER_KMSDRM && SDL_VIDEO_OPENGL_EGL
 
@@ -43,6 +43,6 @@ extern int KMSDRM_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext con
 
 #endif /* SDL_VIDEO_DRIVER_KMSDRM && SDL_VIDEO_OPENGL_EGL */
 
-#endif /* _SDL_kmsdrmopengles_h */
+#endif /* SDL_kmsdrmopengles_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

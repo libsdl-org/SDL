@@ -7,8 +7,8 @@
 
 #include <SDL_rwops.h>
 
-#ifndef _SDL_visualtest_rwhelper_h
-#define _SDL_visualtest_rwhelper_h
+#ifndef SDL_visualtest_rwhelper_h_
+#define SDL_visualtest_rwhelper_h_
 
 /** Length of the buffer in SDLVisualTest_RWHelperBuffer */
 #define RWOPS_BUFFER_LEN 256
@@ -82,4 +82,6 @@ int SDLVisualTest_RWHelperCountNonEmptyLines(SDL_RWops* rw,
 }
 #endif
 
-#endif /* _SDL_visualtest_rwhelper_h */
+#endif /* SDL_visualtest_rwhelper_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

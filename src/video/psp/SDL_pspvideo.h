@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_pspvideo_h
-#define _SDL_pspvideo_h
+#ifndef SDL_pspvideo_h_
+#define SDL_pspvideo_h_
 
 #include <GLES/egl.h>
 
@@ -97,6 +97,6 @@ void PSP_ShowScreenKeyboard(_THIS, SDL_Window *window);
 void PSP_HideScreenKeyboard(_THIS, SDL_Window *window);
 SDL_bool PSP_IsScreenKeyboardShown(_THIS, SDL_Window *window);
 
-#endif /* _SDL_pspvideo_h */
+#endif /* SDL_pspvideo_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

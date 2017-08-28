@@ -4,8 +4,8 @@
  * Header with miscellaneous helper functions.
  */
 
-#ifndef _SDL_visualtest_mischelper_h
-#define _SDL_visualtest_mischelper_h
+#ifndef SDL_visualtest_mischelper_h_
+#define SDL_visualtest_mischelper_h_
 
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
@@ -23,4 +23,6 @@ void SDLVisualTest_HashString(char* str, char hash[33]);
 }
 #endif
 
-#endif /* _SDL_visualtest_mischelper_h */
+#endif /* SDL_visualtest_mischelper_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

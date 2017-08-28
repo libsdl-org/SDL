@@ -23,8 +23,8 @@
   Contributed by Brandon Schaefer, <brandon.schaefer@canonical.com>
 */
 
-#ifndef _SDL_miropengl_h
-#define _SDL_miropengl_h
+#ifndef SDL_miropengl_h_
+#define SDL_miropengl_h_
 
 #include "SDL_mirwindow.h"
 
@@ -48,6 +48,6 @@ MIR_GL_CreateContext(_THIS, SDL_Window* window);
 extern int
 MIR_GL_LoadLibrary(_THIS, const char* path);
 
-#endif /* _SDL_miropengl_h */
+#endif /* SDL_miropengl_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_directsound_h
-#define _SDL_directsound_h
+#ifndef SDL_directsound_h_
+#define SDL_directsound_h_
 
 #include "../../core/windows/SDL_directx.h"
 
@@ -42,6 +42,6 @@ struct SDL_PrivateAudioData
     Uint8 *locked_buf;
 };
 
-#endif /* _SDL_directsound_h */
+#endif /* SDL_directsound_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

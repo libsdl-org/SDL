@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_emscriptenaudio_h
-#define _SDL_emscriptenaudio_h
+#ifndef SDL_emscriptenaudio_h_
+#define SDL_emscriptenaudio_h_
 
 #include "../SDL_sysaudio.h"
 
@@ -33,5 +33,6 @@ struct SDL_PrivateAudioData
     int unused;
 };
 
-#endif /* _SDL_emscriptenaudio_h */
+#endif /* SDL_emscriptenaudio_h_ */
+
 /* vi: set ts=4 sw=4 expandtab: */

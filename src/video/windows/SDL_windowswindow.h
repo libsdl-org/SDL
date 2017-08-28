@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_windowswindow_h
-#define _SDL_windowswindow_h
+#ifndef SDL_windowswindow_h_
+#define SDL_windowswindow_h_
 
 #if SDL_VIDEO_OPENGL_EGL   
 #include "../SDL_egl_c.h"
@@ -78,6 +78,6 @@ extern void WIN_OnWindowEnter(_THIS, SDL_Window * window);
 extern void WIN_UpdateClipCursor(SDL_Window *window);
 extern int WIN_SetWindowHitTest(SDL_Window *window, SDL_bool enabled);
 
-#endif /* _SDL_windowswindow_h */
+#endif /* SDL_windowswindow_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

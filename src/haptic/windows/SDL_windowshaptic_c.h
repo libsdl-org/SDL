@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_windowshaptic_c_h
-#define _SDL_windowshaptic_c_h
+#ifndef SDL_windowshaptic_c_h_
+#define SDL_windowshaptic_c_h_
 
 #include "SDL_thread.h"
 #include "../SDL_syshaptic.h"
@@ -82,7 +82,7 @@ extern SDL_hapticlist_item *SDL_hapticlist;
 extern int SDL_SYS_AddHapticDevice(SDL_hapticlist_item *item);
 extern int SDL_SYS_RemoveHapticDevice(SDL_hapticlist_item *prev, SDL_hapticlist_item *item);
 
-#endif /* _SDL_windowshaptic_c_h */
+#endif /* SDL_windowshaptic_c_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
 

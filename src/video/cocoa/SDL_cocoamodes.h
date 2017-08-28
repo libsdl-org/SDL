@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_cocoamodes_h
-#define _SDL_cocoamodes_h
+#ifndef SDL_cocoamodes_h_
+#define SDL_cocoamodes_h_
 
 typedef struct
 {
@@ -41,6 +41,6 @@ extern int Cocoa_GetDisplayDPI(_THIS, SDL_VideoDisplay * display, float * ddpi, 
 extern int Cocoa_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode);
 extern void Cocoa_QuitModes(_THIS);
 
-#endif /* _SDL_cocoamodes_h */
+#endif /* SDL_cocoamodes_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

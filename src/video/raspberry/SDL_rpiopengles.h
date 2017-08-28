@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_rpiopengles_h
-#define _SDL_rpiopengles_h
+#ifndef SDL_rpiopengles_h_
+#define SDL_rpiopengles_h_
 
 #if SDL_VIDEO_DRIVER_RPI && SDL_VIDEO_OPENGL_EGL
 
@@ -43,6 +43,6 @@ extern int RPI_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext contex
 
 #endif /* SDL_VIDEO_DRIVER_RPI && SDL_VIDEO_OPENGL_EGL */
 
-#endif /* _SDL_rpiopengles_h */
+#endif /* SDL_rpiopengles_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_x11vulkan_h
-#define _SDL_x11vulkan_h
+#ifndef SDL_x11vulkan_h_
+#define SDL_x11vulkan_h_
 
 #include "../SDL_vulkan_internal.h"
 
@@ -43,6 +43,6 @@ SDL_bool X11_Vulkan_CreateSurface(_THIS,
 
 #endif
 
-#endif /* _SDL_x11vulkan_h */
+#endif /* SDL_x11vulkan_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

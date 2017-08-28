@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_emscriptenopengles_h
-#define _SDL_emscriptenopengles_h
+#ifndef SDL_emscriptenopengles_h_
+#define SDL_emscriptenopengles_h_
 
 #if SDL_VIDEO_DRIVER_EMSCRIPTEN && SDL_VIDEO_OPENGL_EGL
 
@@ -44,6 +44,6 @@ extern void Emscripten_GLES_GetDrawableSize(_THIS, SDL_Window * window, int * w,
 
 #endif /* SDL_VIDEO_DRIVER_EMSCRIPTEN && SDL_VIDEO_OPENGL_EGL */
 
-#endif /* _SDL_emscriptenopengles_h */
+#endif /* SDL_emscriptenopengles_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

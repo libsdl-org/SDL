@@ -23,8 +23,8 @@
 
 #ifdef SDL_JOYSTICK_ANDROID
 
-#ifndef _SDL_sysjoystick_c_h
-#define _SDL_sysjoystick_c_h
+#ifndef SDL_sysjoystick_c_h_
+#define SDL_sysjoystick_c_h_
 
 #include "../SDL_sysjoystick.h"
 
@@ -51,7 +51,7 @@ typedef struct SDL_joylist_item
 
 typedef SDL_joylist_item joystick_hwdata;
 
-#endif /* _SDL_sysjoystick_c_h */
+#endif /* SDL_sysjoystick_c_h_ */
 
 #endif /* SDL_JOYSTICK_ANDROID */
 

@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_directfb_window_h
-#define _SDL_directfb_window_h
+#ifndef SDL_directfb_window_h_
+#define SDL_directfb_window_h_
 
 #include "SDL_DirectFB_video.h"
 #include "SDL_DirectFB_WM.h"
@@ -77,6 +77,6 @@ extern SDL_bool DirectFB_GetWindowWMInfo(_THIS, SDL_Window * window,
 extern void DirectFB_AdjustWindowSurface(SDL_Window * window);
 extern int DirectFB_SetWindowOpacity(_THIS, SDL_Window * window, float opacity);
 
-#endif /* _SDL_directfb_window_h */
+#endif /* SDL_directfb_window_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

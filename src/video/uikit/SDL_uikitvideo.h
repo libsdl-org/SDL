@@ -18,8 +18,8 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#ifndef _SDL_uikitvideo_h
-#define _SDL_uikitvideo_h
+#ifndef SDL_uikitvideo_h_
+#define SDL_uikitvideo_h_
 
 #include "../SDL_sysvideo.h"
 
@@ -41,6 +41,6 @@ void UIKit_SuspendScreenSaver(_THIS);
 
 SDL_bool UIKit_IsSystemVersionAtLeast(double version);
 
-#endif /* _SDL_uikitvideo_h */
+#endif /* SDL_uikitvideo_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

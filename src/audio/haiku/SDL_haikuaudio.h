@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_haikuaudio_h
-#define _SDL_haikuaudio_h
+#ifndef SDL_haikuaudio_h_
+#define SDL_haikuaudio_h_
 
 #include "../SDL_sysaudio.h"
 
@@ -33,6 +33,6 @@ struct SDL_PrivateAudioData
     BSoundPlayer *audio_obj;
 };
 
-#endif /* _SDL_haikuaudio_h */
+#endif /* SDL_haikuaudio_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

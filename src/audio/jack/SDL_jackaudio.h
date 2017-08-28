@@ -18,8 +18,8 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#ifndef _SDL_jackaudio_h
-#define _SDL_jackaudio_h
+#ifndef SDL_jackaudio_h_
+#define SDL_jackaudio_h_
 
 #include <jack/jack.h>
 
@@ -37,6 +37,6 @@ struct SDL_PrivateAudioData
     jack_port_t **sdlports;
 };
 
-#endif /* _SDL_jackaudio_h */
+#endif /* SDL_jackaudio_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

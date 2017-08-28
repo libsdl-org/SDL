@@ -21,8 +21,8 @@
 
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_cocoashape_h
-#define _SDL_cocoashape_h
+#ifndef SDL_cocoashape_h_
+#define SDL_cocoashape_h_
 
 #include "SDL_stdinc.h"
 #include "SDL_video.h"
@@ -40,4 +40,6 @@ extern SDL_WindowShaper* Cocoa_CreateShaper(SDL_Window* window);
 extern int Cocoa_SetWindowShape(SDL_WindowShaper *shaper,SDL_Surface *shape,SDL_WindowShapeMode *shape_mode);
 extern int Cocoa_ResizeWindowShape(SDL_Window *window);
 
-#endif
+#endif /* SDL_cocoashape_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

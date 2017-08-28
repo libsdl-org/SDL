@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_windowsclipboard_h
-#define _SDL_windowsclipboard_h
+#ifndef SDL_windowsclipboard_h_
+#define SDL_windowsclipboard_h_
 
 /* Forward declaration */
 struct SDL_VideoData;
@@ -31,6 +31,6 @@ extern char *WIN_GetClipboardText(_THIS);
 extern SDL_bool WIN_HasClipboardText(_THIS);
 extern void WIN_CheckClipboardUpdate(struct SDL_VideoData * data);
 
-#endif /* _SDL_windowsclipboard_h */
+#endif /* SDL_windowsclipboard_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

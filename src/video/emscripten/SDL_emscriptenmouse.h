@@ -20,8 +20,8 @@
 */
 
 
-#ifndef _SDL_emscriptenmouse_h
-#define _SDL_emscriptenmouse_h
+#ifndef SDL_emscriptenmouse_h_
+#define SDL_emscriptenmouse_h_
 
 #include "SDL_stdinc.h"
 
@@ -37,6 +37,6 @@ Emscripten_InitMouse();
 extern void
 Emscripten_FiniMouse();
 
-#endif /* _SDL_emscriptenmouse_h */
+#endif /* SDL_emscriptenmouse_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

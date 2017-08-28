@@ -21,11 +21,11 @@
 
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_kmsdrmevents_h
-#define _SDL_kmsdrmevents_h
+#ifndef SDL_kmsdrmevents_h_
+#define SDL_kmsdrmevents_h_
 
 extern void KMSDRM_PumpEvents(_THIS);
 extern void KMSDRM_EventInit(_THIS);
 extern void KMSDRM_EventQuit(_THIS);
 
-#endif /* _SDL_kmsdrmevents_h */
+#endif /* SDL_kmsdrmevents_h_ */

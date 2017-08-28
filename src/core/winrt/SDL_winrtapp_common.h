@@ -20,12 +20,12 @@
 */
 #include "SDL_config.h"
 
-#ifndef _SDL_winrtapp_common_h
-#define _SDL_winrtapp_common_h
+#ifndef SDL_winrtapp_common_h_
+#define SDL_winrtapp_common_h_
 
 /* A pointer to the app's C-style main() function (which is a different
    function than the WinRT app's actual entry point).
  */
 extern int (*WINRT_SDLAppEntryPoint)(int, char **);
 
-#endif // ifndef _SDL_winrtapp_common_h
+#endif // SDL_winrtapp_common_h_

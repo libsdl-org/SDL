@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_sndioaudio_h
-#define _SDL_sndioaudio_h
+#ifndef SDL_sndioaudio_h_
+#define SDL_sndioaudio_h_
 
 #include <poll.h>
 #include <sndio.h>
@@ -44,6 +44,6 @@ struct SDL_PrivateAudioData
     struct pollfd *pfd;
 };
 
-#endif /* _SDL_sndioaudio_h */
+#endif /* SDL_sndioaudio_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
