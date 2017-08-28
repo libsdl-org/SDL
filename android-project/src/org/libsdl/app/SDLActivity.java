@@ -63,6 +63,8 @@ public class SDLActivity extends Activity {
     protected static ViewGroup mLayout;
     protected static SDLJoystickHandler mJoystickHandler;
     protected static SDLHapticHandler mHapticHandler;
+    protected static SDLClipboardHandler mClipboardHandler;
+
 
     // This is what SDL runs in. It invokes SDL_main(), eventually
     protected static Thread mSDLThread;
@@ -116,6 +118,7 @@ public class SDLActivity extends Activity {
         mLayout = null;
         mJoystickHandler = null;
         mHapticHandler = null;
+        mClipboardHandler = null;
         mSDLThread = null;
         mAudioTrack = null;
         mAudioRecord = null;
@@ -186,6 +189,13 @@ public class SDLActivity extends Activity {
             mJoystickHandler = new SDLJoystickHandler();
         }
         mHapticHandler = new SDLHapticHandler();
+
+        if (Build.VERSION.SDK_INT >= 11) {
+            mClipboardHandler = new SDLClipboardHandler_API11();
+        } else {
+            /* Before API 11, no clipboard notification (eg no SDL_CLIPBOARDUPDATE) */
+            mClipboardHandler = new SDLClipboardHandler_Old();
+        }
 
         mLayout = new RelativeLayout(this);
         mLayout.addView(mSurface);
@@ -498,6 +508,7 @@ public class SDLActivity extends Activity {
                                             int action, float x,
                                             float y, float p);
     public static native void onNativeAccel(float x, float y, float z);
+    public static native void onNativeClipboardChanged();
     public static native void onNativeSurfaceChanged();
     public static native void onNativeSurfaceDestroyed();
     public static native int nativeAddJoystick(int device_id, String name,
@@ -605,35 +616,6 @@ public class SDLActivity extends Activity {
      */
     public static Context getContext() {
         return mSingleton;
-    }
-
-    /**
-     * This method is called by SDL using JNI.
-     * @return result of getSystemService(name) but executed on UI thread.
-     */
-    public Object getSystemServiceFromUiThread(final String name) {
-        final Object lock = new Object();
-        final Object[] results = new Object[2]; // array for writable variables
-        synchronized (lock) {
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    synchronized (lock) {
-                        results[0] = getSystemService(name);
-                        results[1] = Boolean.TRUE;
-                        lock.notify();
-                    }
-                }
-            });
-            if (results[1] == null) {
-                try {
-                    lock.wait();
-                } catch (InterruptedException ex) {
-                    ex.printStackTrace();
-                }
-            }
-        }
-        return results[0];
     }
 
     static class ShowTextInputTask implements Runnable {
@@ -1182,6 +1164,29 @@ public class SDLActivity extends Activity {
 
         return dialog;
     }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
+    public static boolean clipboardHasText() {
+        return mClipboardHandler.clipboardHasText();
+    }
+    
+    /**
+     * This method is called by SDL using JNI.
+     */
+    public static String clipboardGetText() {
+        return mClipboardHandler.clipboardGetText();
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
+    public static void clipboardSetText(String string) {
+        mClipboardHandler.clipboardSetText(string);
+        return;
+    }
+
 }
 
 /**
@@ -1993,3 +1998,86 @@ class SDLHapticHandler {
         return null;
     }   
 }
+
+
+interface SDLClipboardHandler {
+
+    public boolean clipboardHasText();
+    public String clipboardGetText();
+    public void clipboardSetText(String string);
+
+}
+
+
+class SDLClipboardHandler_API11 implements
+    SDLClipboardHandler, 
+    android.content.ClipboardManager.OnPrimaryClipChangedListener {
+
+    protected android.content.ClipboardManager mClipMgr;
+
+    SDLClipboardHandler_API11() {
+       mClipMgr = (android.content.ClipboardManager) SDLActivity.mSingleton.getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+       mClipMgr.addPrimaryClipChangedListener(this);
+    }
+
+    @Override
+    public boolean clipboardHasText() {
+       return mClipMgr.hasText();
+    }
+
+    @Override
+    public String clipboardGetText() {
+        CharSequence text;
+        text = mClipMgr.getText();
+        if (text != null) {
+           return text.toString();
+        }
+        return null;
+    }
+
+    @Override
+    public void clipboardSetText(String string) {
+       mClipMgr.removePrimaryClipChangedListener(this);
+       mClipMgr.setText(string);
+       mClipMgr.addPrimaryClipChangedListener(this);
+    }
+    
+    @Override
+    public void onPrimaryClipChanged() {
+        SDLActivity.onNativeClipboardChanged();
+    }
+
+}
+
+class SDLClipboardHandler_Old implements
+    SDLClipboardHandler {
+   
+    protected android.text.ClipboardManager mClipMgrOld;
+  
+    SDLClipboardHandler_Old() {
+       mClipMgrOld = (android.text.ClipboardManager) SDLActivity.mSingleton.getContext().getSystemService(Context.CLIPBOARD_SERVICE);
+    }
+
+    @Override
+    public boolean clipboardHasText() {
+       return mClipMgrOld.hasText();
+    }
+
+    @Override
+    public String clipboardGetText() {
+       CharSequence text;
+       text = mClipMgrOld.getText();
+       if (text != null) {
+          return text.toString();
+       }
+       return null;
+    }
+
+    @Override
+    public void clipboardSetText(String string) {
+       mClipMgrOld.setText(string);
+       return;
+    }
+}
+
+

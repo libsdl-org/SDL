@@ -91,6 +91,14 @@ JNIEXPORT jint JNICALL SDL_JAVA_INTERFACE(nativeRemoveJoystick)(
         JNIEnv* env, jclass jcls,
         jint device_id);
 
+JNIEXPORT jint JNICALL SDL_JAVA_INTERFACE(nativeAddHaptic)(
+        JNIEnv* env, jclass jcls,
+        jint device_id, jstring device_name);
+
+JNIEXPORT jint JNICALL SDL_JAVA_INTERFACE(nativeRemoveHaptic)(
+        JNIEnv* env, jclass jcls,
+        jint device_id);
+
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceChanged)(
         JNIEnv* env, jclass jcls);
 
@@ -120,6 +128,9 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeMouse)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeAccel)(
         JNIEnv* env, jclass jcls,
         jfloat x, jfloat y, jfloat z);
+
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeClipboardChanged)(
+        JNIEnv* env, jclass jcls);
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeLowMemory)(
         JNIEnv* env, jclass cls);
@@ -187,7 +198,10 @@ static jmethodID midInputGetInputDeviceIds;
 static jmethodID midSendMessage;
 static jmethodID midShowTextInput;
 static jmethodID midIsScreenKeyboardShown;
-static jmethodID midGetSystemServiceFromUiThread;
+static jmethodID midClipboardSetText;
+static jmethodID midClipboardGetText;
+static jmethodID midClipboardHasText;
+
 
 /* static fields */
 static jfieldID fidSeparateMouseAndTouch;
@@ -269,8 +283,12 @@ JNIEXPORT void JNICALL SDL_Android_Init(JNIEnv* mEnv, jclass cls)
                                 "showTextInput", "(IIII)Z");
     midIsScreenKeyboardShown = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
                                 "isScreenKeyboardShown","()Z");
-    midGetSystemServiceFromUiThread = (*mEnv)->GetMethodID(mEnv, mActivityClass,
-                                "getSystemServiceFromUiThread", "(Ljava/lang/String;)Ljava/lang/Object;");
+    midClipboardSetText = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
+                                "clipboardSetText", "(Ljava/lang/String;)V");
+    midClipboardGetText = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
+                                "clipboardGetText", "()Ljava/lang/String;");
+    midClipboardHasText = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
+                                "clipboardHasText", "()Z");
 
     bHasNewData = SDL_FALSE;
 
@@ -279,7 +297,8 @@ JNIEXPORT void JNICALL SDL_Android_Init(JNIEnv* mEnv, jclass cls)
        !midCaptureOpen || !midCaptureReadShortBuffer || !midCaptureReadByteBuffer || !midCaptureClose ||
        !midPollInputDevices || !midPollHapticDevices || !midHapticRun ||
        !midSetActivityTitle || !midSetOrientation || !midGetContext || !midInputGetInputDeviceIds ||
-       !midSendMessage || !midShowTextInput || !midIsScreenKeyboardShown || !midGetSystemServiceFromUiThread) {
+       !midSendMessage || !midShowTextInput || !midIsScreenKeyboardShown || 
+       !midClipboardSetText || !midClipboardGetText || !midClipboardHasText) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "SDL: Couldn't locate Java callbacks, check that they're named and typed correctly");
     }
 
@@ -366,7 +385,7 @@ JNIEXPORT jint JNICALL SDL_JAVA_INTERFACE(nativeRemoveJoystick)(
     return Android_RemoveJoystick(device_id);
 }
 
-JNIEXPORT jint JNICALL Java_org_libsdl_app_SDLActivity_nativeAddHaptic(
+JNIEXPORT jint JNICALL SDL_JAVA_INTERFACE(nativeAddHaptic)(
     JNIEnv* env, jclass jcls, jint device_id, jstring device_name)
 {
     int retval;
@@ -379,7 +398,7 @@ JNIEXPORT jint JNICALL Java_org_libsdl_app_SDLActivity_nativeAddHaptic(
     return retval;
 }
 
-JNIEXPORT jint JNICALL Java_org_libsdl_app_SDLActivity_nativeRemoveHaptic(
+JNIEXPORT jint JNICALL SDL_JAVA_INTERFACE(nativeRemoveHaptic)(
     JNIEnv* env, jclass jcls, jint device_id)
 {
     return Android_RemoveHaptic(device_id);
@@ -490,6 +509,13 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeAccel)(
     fLastAccelerometer[1] = y;
     fLastAccelerometer[2] = z;
     bHasNewData = SDL_TRUE;
+}
+
+/* Clipboard */
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeClipboardChanged)(
+                                    JNIEnv* env, jclass jcls)
+{
+    SDL_SendClipboardUpdate();
 }
 
 /* Low memory */
@@ -1363,117 +1389,40 @@ int Android_JNI_FileClose(SDL_RWops* ctx)
     return Internal_Android_JNI_FileClose(ctx, SDL_TRUE);
 }
 
-/* returns a new global reference which needs to be released later */
-static jobject Android_JNI_GetSystemServiceObject(const char* name)
-{
-    struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__);
-    JNIEnv* env = Android_JNI_GetEnv();
-    jobject retval = NULL;
-    jstring service;
-    jobject context;
-    jobject manager;
-
-    if (!LocalReferenceHolder_Init(&refs, env)) {
-        LocalReferenceHolder_Cleanup(&refs);
-        return NULL;
-    }
-
-    service = (*env)->NewStringUTF(env, name);
-
-    /* context = SDLActivity.getContext(); */
-    context = (*env)->CallStaticObjectMethod(env, mActivityClass, midGetContext);
-
-    manager = (*env)->CallObjectMethod(env, context, midGetSystemServiceFromUiThread, service);
-
-    (*env)->DeleteLocalRef(env, service);
-
-    retval = manager ? (*env)->NewGlobalRef(env, manager) : NULL;
-    LocalReferenceHolder_Cleanup(&refs);
-    return retval;
-}
-
-#define SETUP_CLIPBOARD(error) \
-    struct LocalReferenceHolder refs = LocalReferenceHolder_Setup(__FUNCTION__); \
-    JNIEnv* env = Android_JNI_GetEnv(); \
-    jobject clipboard; \
-    if (!LocalReferenceHolder_Init(&refs, env)) { \
-        LocalReferenceHolder_Cleanup(&refs); \
-        return error; \
-    } \
-    clipboard = Android_JNI_GetSystemServiceObject("clipboard"); \
-    if (!clipboard) { \
-        LocalReferenceHolder_Cleanup(&refs); \
-        return error; \
-    }
-
-#define CLEANUP_CLIPBOARD() \
-    LocalReferenceHolder_Cleanup(&refs);
-
 int Android_JNI_SetClipboardText(const char* text)
 {
-    /* Watch out for C89 scoping rules because of the macro */
-    SETUP_CLIPBOARD(-1)
-
-    /* Nest the following in a scope to avoid C89 declaration rules triggered by the macro */
-    {
-        jmethodID mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, clipboard), "setText", "(Ljava/lang/CharSequence;)V");
-        jstring string = (*env)->NewStringUTF(env, text);
-        (*env)->CallVoidMethod(env, clipboard, mid, string);
-        (*env)->DeleteGlobalRef(env, clipboard);
-        (*env)->DeleteLocalRef(env, string);
-    }
-    CLEANUP_CLIPBOARD();
-
+    JNIEnv* env = Android_JNI_GetEnv();
+    jstring string = (*env)->NewStringUTF(env, text);
+    (*env)->CallStaticVoidMethod(env, mActivityClass, midClipboardSetText, string);
+    (*env)->DeleteLocalRef(env, string);
     return 0;
 }
 
 char* Android_JNI_GetClipboardText(void)
 {
-    /* Watch out for C89 scoping rules because of the macro */
-    SETUP_CLIPBOARD(SDL_strdup(""))
-
-    /* Nest the following in a scope to avoid C89 declaration rules triggered by the macro */
-    {
-        jmethodID mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, clipboard), "getText", "()Ljava/lang/CharSequence;");
-        jobject sequence = (*env)->CallObjectMethod(env, clipboard, mid);
-        (*env)->DeleteGlobalRef(env, clipboard);
-        if (sequence) {
-            jstring string;
-            const char* utf;
-            mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, sequence), "toString", "()Ljava/lang/String;");
-            string = (jstring)((*env)->CallObjectMethod(env, sequence, mid));
-            utf = (*env)->GetStringUTFChars(env, string, 0);
-            if (utf) {
-                char* text = SDL_strdup(utf);
-                (*env)->ReleaseStringUTFChars(env, string, utf);
-
-                CLEANUP_CLIPBOARD();
-
-                return text;
-            }
+    JNIEnv* env = Android_JNI_GetEnv();
+    char* text = NULL;
+    jstring string;
+    
+    string = (*env)->CallStaticObjectMethod(env, mActivityClass, midClipboardGetText);
+    if (string) {
+        const char* utf = (*env)->GetStringUTFChars(env, string, 0);
+        if (utf) {
+            text = SDL_strdup(utf);
+            (*env)->ReleaseStringUTFChars(env, string, utf);
         }
+        (*env)->DeleteLocalRef(env, string);
     }
-    CLEANUP_CLIPBOARD();
-
-    return SDL_strdup("");
+    
+    return (text == NULL) ? SDL_strdup("") : text;
 }
 
 SDL_bool Android_JNI_HasClipboardText(void)
 {
-    jmethodID mid;
-    jboolean has;
-    /* Watch out for C89 scoping rules because of the macro */
-    SETUP_CLIPBOARD(SDL_FALSE)
-
-    mid = (*env)->GetMethodID(env, (*env)->GetObjectClass(env, clipboard), "hasText", "()Z");
-    has = (*env)->CallBooleanMethod(env, clipboard, mid);
-    (*env)->DeleteGlobalRef(env, clipboard);
-
-    CLEANUP_CLIPBOARD();
-
-    return has ? SDL_TRUE : SDL_FALSE;
+    JNIEnv* env = Android_JNI_GetEnv();
+    jboolean retval = (*env)->CallStaticBooleanMethod(env, mActivityClass, midClipboardHasText);
+    return (retval == JNI_TRUE) ? SDL_TRUE : SDL_FALSE;
 }
-
 
 /* returns 0 on success or -1 on error (others undefined then)
  * returns truthy or falsy value in plugged, charged and battery
