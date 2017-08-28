@@ -99,7 +99,7 @@ static Uint8 validate_hex(const char *cp, size_t len, Uint32 *np)
     return 1;
 }
 
-static void unifont_init(const char *fontname)
+static int unifont_init(const char *fontname)
 {
     Uint8 hexBuffer[65];
     Uint32 numGlyphs = 0;
@@ -114,7 +114,7 @@ static void unifont_init(const char *fontname)
     if (unifontGlyph == NULL)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Failed to allocate %d KiB for glyph data.\n", (int)(unifontGlyphSize + 1023) / 1024);
-        exit(-1);
+        return -1;
     }
     SDL_memset(unifontGlyph, 0, unifontGlyphSize);
 
@@ -123,7 +123,7 @@ static void unifont_init(const char *fontname)
     if (unifontTexture == NULL)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Failed to allocate %d KiB for texture pointer data.\n", (int)(unifontTextureSize + 1023) / 1024);
-        exit(-1);
+        return -1;
     }
     SDL_memset(unifontTexture, 0, unifontTextureSize);
 
@@ -131,7 +131,7 @@ static void unifont_init(const char *fontname)
     if (hexFile == NULL)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Failed to open font file: %s\n", fontname);
-        exit(-1);
+        return -1;
     }
 
     /* Read all the glyph data into memory to make it accessible later when textures are created. */
@@ -147,7 +147,7 @@ static void unifont_init(const char *fontname)
         if ((numGlyphs == 0 && bytesRead == 0) || (numGlyphs > 0 && bytesRead < 9))
         {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Unexpected end of hex file.\n");
-            exit(-1);
+            return -1;
         }
 
         /* Looking for the colon that separates the codepoint and glyph data at position 2, 4, 6 and 8. */
@@ -162,13 +162,13 @@ static void unifont_init(const char *fontname)
         else
         {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Could not find codepoint and glyph data separator symbol in hex file on line %d.\n", lineNumber);
-            exit(-1);
+            return -1;
         }
 
         if (!validate_hex((const char *)hexBuffer, codepointHexSize, &codepoint))
         {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Malformed hexadecimal number in hex file on line %d.\n", lineNumber);
-            exit(-1);
+            return -1;
         }
         if (codepoint > UNIFONT_MAX_CODEPOINT)
             SDL_LogWarn(SDL_LOG_CATEGORY_APPLICATION, "unifont: Codepoint on line %d exceeded limit of 0x%x.\n", lineNumber, UNIFONT_MAX_CODEPOINT);
@@ -181,7 +181,7 @@ static void unifont_init(const char *fontname)
         if (bytesRead < (33 - bytesOverread))
         {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Unexpected end of hex file.\n");
-            exit(-1);
+            return -1;
         }
         if (hexBuffer[32] == '\n')
             glyphWidth = 8;
@@ -192,14 +192,14 @@ static void unifont_init(const char *fontname)
             if (bytesRead < 32)
             {
                 SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Unexpected end of hex file.\n");
-                exit(-1);
+                return -1;
             }
         }
 
         if (!validate_hex((const char *)hexBuffer, glyphWidth * 4, NULL))
         {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Malformed hexadecimal glyph data in hex file on line %d.\n", lineNumber);
-            exit(-1);
+            return -1;
         }
 
         if (codepoint <= UNIFONT_MAX_CODEPOINT)
@@ -221,6 +221,7 @@ static void unifont_init(const char *fontname)
 
     SDL_RWclose(hexFile);
     SDL_Log("unifont: Loaded %u glyphs.\n", numGlyphs);
+    return 0;
 }
 
 static void unifont_make_rgba(Uint8 *src, Uint8 *dst, Uint8 width)
@@ -259,7 +260,7 @@ static void unifont_make_rgba(Uint8 *src, Uint8 *dst, Uint8 width)
     }
 }
 
-static void unifont_load_texture(Uint32 textureID)
+static int unifont_load_texture(Uint32 textureID)
 {
     int i;
     Uint8 * textureRGBA;
@@ -267,14 +268,14 @@ static void unifont_load_texture(Uint32 textureID)
     if (textureID >= UNIFONT_NUM_TEXTURES)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Tried to load out of range texture %u.\n", textureID);
-        exit(-1);
+        return -1;
     }
 
     textureRGBA = (Uint8 *)SDL_malloc(UNIFONT_TEXTURE_SIZE);
     if (textureRGBA == NULL)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Failed to allocate %d MiB for a texture.\n", UNIFONT_TEXTURE_SIZE / 1024 / 1024);
-        exit(-1);
+        return -1;
     }
     SDL_memset(textureRGBA, 0, UNIFONT_TEXTURE_SIZE);
 
@@ -301,7 +302,7 @@ static void unifont_load_texture(Uint32 textureID)
         if (tex == NULL)
         {
             SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "unifont: Failed to create texture %u for renderer %d.\n", textureID, i);
-            exit(-1);
+            return -1;
         }
         unifontTexture[UNIFONT_NUM_TEXTURES * i + textureID] = tex;
         SDL_SetTextureBlendMode(tex, SDL_BLENDMODE_BLEND);
@@ -313,6 +314,7 @@ static void unifont_load_texture(Uint32 textureID)
 
     SDL_free(textureRGBA);
     unifontTextureLoaded[textureID] = 1;
+    return 0;
 }
 
 static Sint32 unifont_draw_glyph(Uint32 codepoint, int rendererID, SDL_Rect *dstrect)
@@ -321,10 +323,14 @@ static Sint32 unifont_draw_glyph(Uint32 codepoint, int rendererID, SDL_Rect *dst
     const Uint32 textureID = codepoint / UNIFONT_GLYPHS_IN_TEXTURE;
     SDL_Rect srcrect;
     srcrect.w = srcrect.h = 16;
-    if (codepoint > UNIFONT_MAX_CODEPOINT)
+    if (codepoint > UNIFONT_MAX_CODEPOINT) {
         return 0;
-    if (!unifontTextureLoaded[textureID])
-        unifont_load_texture(textureID);
+    }
+    if (!unifontTextureLoaded[textureID]) {
+        if (unifont_load_texture(textureID) < 0) {
+            return 0;
+        }
+    }
     texture = unifontTexture[UNIFONT_NUM_TEXTURES * rendererID + textureID];
     if (texture != NULL)
     {
@@ -430,12 +436,10 @@ Uint32 utf8_decode(char *p, size_t len)
 void usage()
 {
     SDL_Log("usage: testime [--font fontfile]\n");
-    exit(0);
 }
 
 void InitInput()
 {
-
     /* Prepare a rect for text input */
     textRect.x = textRect.y = 100;
     textRect.w = DEFAULT_WINDOW_WIDTH - 2 * textRect.x;
@@ -459,7 +463,8 @@ void CleanupVideo()
 #endif
 }
 
-void _Redraw(int rendererID) {
+void _Redraw(int rendererID)
+{
     SDL_Renderer * renderer = state->renderers[rendererID];
     SDL_Rect drawnTextRect, cursorRect, underlineRect;
     drawnTextRect = textRect;
@@ -607,7 +612,8 @@ void _Redraw(int rendererID) {
     SDL_SetTextInputRect(&markedRect);
 }
 
-void Redraw() {
+void Redraw()
+{
     int i;
     for (i = 0; i < state->num_windows; ++i) {
         SDL_Renderer *renderer = state->renderers[i];
@@ -623,7 +629,8 @@ void Redraw() {
     }
 }
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     int i, done;
     SDL_Event event;
     const char *fontname = DEFAULT_FONT;
@@ -673,14 +680,15 @@ int main(int argc, char *argv[]) {
     if (! font)
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Failed to find font: %s\n", TTF_GetError());
-        exit(-1);
+        return -1;
     }
 #else
-    unifont_init(fontname);
+    if (unifont_init(fontname) < 0) {
+        return -1;
+    }
 #endif
 
     SDL_Log("Using font: %s\n", fontname);
-    atexit(SDL_Quit);
 
     InitInput();
     /* Create the windows and initialize the renderers */
