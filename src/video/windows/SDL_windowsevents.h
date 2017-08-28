@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_windowsevents_h
-#define _SDL_windowsevents_h
+#ifndef SDL_windowsevents_h_
+#define SDL_windowsevents_h_
 
 extern LPTSTR SDL_Appname;
 extern Uint32 SDL_Appstyle;
@@ -31,6 +31,6 @@ extern LRESULT CALLBACK WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam,
                                        LPARAM lParam);
 extern void WIN_PumpEvents(_THIS);
 
-#endif /* _SDL_windowsevents_h */
+#endif /* SDL_windowsevents_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

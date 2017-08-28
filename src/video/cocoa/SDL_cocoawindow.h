@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_cocoawindow_h
-#define _SDL_cocoawindow_h
+#ifndef SDL_cocoawindow_h_
+#define SDL_cocoawindow_h_
 
 #import <Cocoa/Cocoa.h>
 
@@ -142,6 +142,6 @@ extern void Cocoa_DestroyWindow(_THIS, SDL_Window * window);
 extern SDL_bool Cocoa_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo *info);
 extern int Cocoa_SetWindowHitTest(SDL_Window *window, SDL_bool enabled);
 
-#endif /* _SDL_cocoawindow_h */
+#endif /* SDL_cocoawindow_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

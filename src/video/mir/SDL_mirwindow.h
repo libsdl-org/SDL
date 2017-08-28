@@ -23,8 +23,8 @@
   Contributed by Brandon Schaefer, <brandon.schaefer@canonical.com>
 */
 
-#ifndef _SDL_mirwindow_h
-#define _SDL_mirwindow_h
+#ifndef SDL_mirwindow_h_
+#define SDL_mirwindow_h_
 
 #include "../SDL_sysvideo.h"
 #include "SDL_syswm.h"
@@ -87,7 +87,7 @@ MIR_SetWindowGammaRamp(_THIS, SDL_Window* window, Uint16 const* ramp);
 extern int
 MIR_GetWindowGammaRamp(_THIS, SDL_Window* window, Uint16* ramp);
 
-#endif /* _SDL_mirwindow_h */
+#endif /* SDL_mirwindow_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
 

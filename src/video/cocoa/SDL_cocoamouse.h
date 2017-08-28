@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_cocoamouse_h
-#define _SDL_cocoamouse_h
+#ifndef SDL_cocoamouse_h_
+#define SDL_cocoamouse_h_
 
 #include "SDL_cocoavideo.h"
 
@@ -47,6 +47,6 @@ typedef struct {
 + (NSCursor *)invisibleCursor;
 @end
 
-#endif /* _SDL_cocoamouse_h */
+#endif /* SDL_cocoamouse_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

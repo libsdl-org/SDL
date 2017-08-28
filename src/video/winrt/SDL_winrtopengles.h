@@ -20,8 +20,8 @@
 */
 #include "SDL_config.h"
 
-#ifndef _SDL_winrtopengles_h
-#define _SDL_winrtopengles_h
+#ifndef SDL_winrtopengles_h_
+#define SDL_winrtopengles_h_
 
 #if SDL_VIDEO_DRIVER_WINRT && SDL_VIDEO_OPENGL_EGL
 
@@ -65,6 +65,6 @@ typedef EGLDisplay (EGLAPIENTRY *eglGetPlatformDisplayEXT_Function)(EGLenum, voi
 
 #endif /* SDL_VIDEO_DRIVER_WINRT && SDL_VIDEO_OPENGL_EGL */
 
-#endif /* _SDL_winrtopengles_h */
+#endif /* SDL_winrtopengles_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

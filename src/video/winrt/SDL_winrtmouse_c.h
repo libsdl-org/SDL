@@ -20,8 +20,8 @@
 */
 #include "SDL_config.h"
 
-#ifndef _SDL_winrtmouse_h
-#define _SDL_winrtmouse_h
+#ifndef SDL_winrtmouse_h_
+#define SDL_winrtmouse_h_
 
 #ifdef __cplusplus
 extern "C" {
@@ -35,6 +35,6 @@ extern SDL_bool WINRT_UsingRelativeMouseMode;
 }
 #endif
 
-#endif /* _SDL_winrtmouse_h */
+#endif /* SDL_winrtmouse_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

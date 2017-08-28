@@ -7,8 +7,8 @@
 
 #include "SDL_visualtest_process.h"
 
-#ifndef _SDL_visualtest_screenshot_h
-#define _SDL_visualtest_screenshot_h
+#ifndef SDL_visualtest_screenshot_h_
+#define SDL_visualtest_screenshot_h_
 
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
@@ -47,4 +47,6 @@ int SDLVisualTest_VerifyScreenshots(char* args, char* test_dir, char* verify_dir
 }
 #endif
 
-#endif /* _SDL_visualtest_screenshot_h */
+#endif /* SDL_visualtest_screenshot_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

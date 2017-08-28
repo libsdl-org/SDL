@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_pspaudio_h
-#define _SDL_pspaudio_h
+#ifndef SDL_pspaudio_h_
+#define SDL_pspaudio_h_
 
 #include "../SDL_sysaudio.h"
 
@@ -40,6 +40,6 @@ struct SDL_PrivateAudioData {
     int     next_buffer;
 };
 
-#endif /* _SDL_pspaudio_h */
-/* vim: ts=4 sw=4
- */
+#endif /* SDL_pspaudio_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_coreaudio_h
-#define _SDL_coreaudio_h
+#ifndef SDL_coreaudio_h_
+#define SDL_coreaudio_h_
 
 #include "../SDL_sysaudio.h"
 
@@ -63,5 +63,6 @@ struct SDL_PrivateAudioData
 #endif
 };
 
-#endif /* _SDL_coreaudio_h */
+#endif /* SDL_coreaudio_h_ */
+
 /* vi: set ts=4 sw=4 expandtab: */

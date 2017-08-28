@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_androidwindow_h
-#define _SDL_androidwindow_h
+#ifndef SDL_androidwindow_h_
+#define SDL_androidwindow_h_
 
 #include "../../core/android/SDL_android.h"
 #include "../SDL_egl_c.h"
@@ -39,6 +39,6 @@ typedef struct
     
 } SDL_WindowData;
 
-#endif /* _SDL_androidwindow_h */
+#endif /* SDL_androidwindow_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

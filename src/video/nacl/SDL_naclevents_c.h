@@ -20,11 +20,11 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_naclevents_c_h
-#define _SDL_naclevents_c_h
+#ifndef SDL_naclevents_c_h_
+#define SDL_naclevents_c_h_
 
 #include "SDL_naclvideo.h"
 
 extern void NACL_PumpEvents(_THIS);
 
-#endif /* _SDL_naclevents_c_h */
+#endif /* SDL_naclevents_c_h_ */

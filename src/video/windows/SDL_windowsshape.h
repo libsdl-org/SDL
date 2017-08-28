@@ -21,8 +21,8 @@
 
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_windowsshape_h
-#define _SDL_windowsshape_h
+#ifndef SDL_windowsshape_h_
+#define SDL_windowsshape_h_
 
 #include "SDL_video.h"
 #include "SDL_shape.h"
@@ -37,4 +37,4 @@ extern SDL_WindowShaper* Win32_CreateShaper(SDL_Window * window);
 extern int Win32_SetWindowShape(SDL_WindowShaper *shaper,SDL_Surface *shape,SDL_WindowShapeMode *shape_mode);
 extern int Win32_ResizeWindowShape(SDL_Window *window);
 
-#endif /* _SDL_windowsshape_h */
+#endif /* SDL_windowsshape_h_ */

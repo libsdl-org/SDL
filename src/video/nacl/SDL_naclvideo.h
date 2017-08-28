@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_naclvideo_h
-#define _SDL_naclvideo_h
+#ifndef SDL_naclvideo_h_
+#define SDL_naclvideo_h_
 
 #include "../SDL_sysvideo.h"
 #include "ppapi_simple/ps_interface.h"
@@ -64,4 +64,4 @@ typedef struct SDL_VideoData {
 extern void NACL_SetScreenResolution(int width, int height, Uint32 format);
 
 
-#endif /* _SDL_naclvideo_h */
+#endif /* SDL_naclvideo_h_ */

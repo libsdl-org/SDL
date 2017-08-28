@@ -21,8 +21,8 @@
 
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_waylandevents_h
-#define _SDL_waylandevents_h
+#ifndef SDL_waylandevents_h_
+#define SDL_waylandevents_h_
 
 #include "SDL_waylandvideo.h"
 #include "SDL_waylandwindow.h"
@@ -46,6 +46,6 @@ extern int Wayland_input_unlock_pointer(struct SDL_WaylandInput *input);
 extern void Wayland_display_add_relative_pointer_manager(SDL_VideoData *d, uint32_t id);
 extern void Wayland_display_destroy_relative_pointer_manager(SDL_VideoData *d);
 
-#endif /* _SDL_waylandevents_h */
+#endif /* SDL_waylandevents_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

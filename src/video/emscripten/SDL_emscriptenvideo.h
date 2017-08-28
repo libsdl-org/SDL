@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_emscriptenvideo_h
-#define _SDL_emscriptenvideo_h
+#ifndef SDL_emscriptenvideo_h_
+#define SDL_emscriptenvideo_h_
 
 #include "../SDL_sysvideo.h"
 #include "../../events/SDL_touch_c.h"
@@ -53,6 +53,6 @@ typedef struct SDL_WindowData
     SDL_bool has_pointer_lock;
 } SDL_WindowData;
 
-#endif /* _SDL_emscriptenvideo_h */
+#endif /* SDL_emscriptenvideo_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

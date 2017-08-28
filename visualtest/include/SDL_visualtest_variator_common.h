@@ -8,8 +8,8 @@
 #include <SDL_types.h>
 #include "SDL_visualtest_sut_configparser.h"
 
-#ifndef _SDL_visualtest_variator_common_h
-#define _SDL_visualtest_variator_common_h
+#ifndef SDL_visualtest_variator_common_h_
+#define SDL_visualtest_variator_common_h_
 
 /** The number of variations one integer option would generate */
 #define SDL_SUT_INTEGER_OPTION_TEST_STEPS 3
@@ -117,4 +117,6 @@ int SDLVisualTest_InitVariation(SDLVisualTest_Variation* variation,
 }
 #endif
 
-#endif /* _SDL_visualtest_variator_common_h */
+#endif /* SDL_visualtest_variator_common_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

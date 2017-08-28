@@ -20,8 +20,8 @@
 */
 #include "SDL_config.h"
 
-#ifndef _SDL_winrtapp_xaml_h
-#define _SDL_winrtapp_xaml_h
+#ifndef SDL_winrtapp_xaml_h_
+#define SDL_winrtapp_xaml_h_
 
 #include "SDL_stdinc.h"
 
@@ -30,4 +30,4 @@ extern SDL_bool WINRT_XAMLWasEnabled;
 extern int SDL_WinRTInitXAMLApp(int (*mainFunction)(int, char **), void * backgroundPanelAsIInspectable);
 #endif // ifdef __cplusplus
 
-#endif // ifndef _SDL_winrtapp_xaml_h
+#endif // SDL_winrtapp_xaml_h_

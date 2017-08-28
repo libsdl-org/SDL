@@ -8,8 +8,8 @@
 #include "SDL_visualtest_harness_argparser.h"
 #include "SDL_visualtest_variator_common.h"
 
-#ifndef _SDL_visualtest_exhaustive_variator_h
-#define _SDL_visualtest_exhaustive_variator_h
+#ifndef SDL_visualtest_exhaustive_variator_h_
+#define SDL_visualtest_exhaustive_variator_h_
 
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
@@ -59,4 +59,6 @@ void SDLVisualTest_FreeExhaustiveVariator(SDLVisualTest_ExhaustiveVariator* vari
 }
 #endif
 
-#endif /* _SDL_visualtest_exhaustive_variator_h */
+#endif /* SDL_visualtest_exhaustive_variator_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

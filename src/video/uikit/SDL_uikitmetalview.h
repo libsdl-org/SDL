@@ -26,8 +26,8 @@
  * how to add a CAMetalLayer backed view.
  */
 
-#ifndef _SDL_uikitmetalview_h
-#define _SDL_uikitmetalview_h
+#ifndef SDL_uikitmetalview_h_
+#define SDL_uikitmetalview_h_
 
 #import "../SDL_sysvideo.h"
 #import "SDL_uikitwindow.h"
@@ -50,4 +50,6 @@ SDL_uikitmetalview* UIKit_Mtl_AddMetalView(SDL_Window* window);
 
 void UIKit_Mtl_GetDrawableSize(SDL_Window * window, int * w, int * h);
 
-#endif /* _SDL_uikitmetalview_h */
+#endif /* SDL_uikitmetalview_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

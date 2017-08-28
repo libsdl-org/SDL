@@ -20,13 +20,13 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_waylandclipboard_h
-#define _SDL_waylandclipboard_h
+#ifndef SDL_waylandclipboard_h_
+#define SDL_waylandclipboard_h_
 
 extern int Wayland_SetClipboardText(_THIS, const char *text);
 extern char *Wayland_GetClipboardText(_THIS);
 extern SDL_bool Wayland_HasClipboardText(_THIS);
 
-#endif /* _SDL_waylandclipboard_h */
+#endif /* SDL_waylandclipboard_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

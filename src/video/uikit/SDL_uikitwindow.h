@@ -18,8 +18,8 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#ifndef _SDL_uikitwindow_h
-#define _SDL_uikitwindow_h
+#ifndef SDL_uikitwindow_h_
+#define SDL_uikitwindow_h_
 
 #include "../SDL_sysvideo.h"
 #import "SDL_uikitvideo.h"
@@ -51,6 +51,6 @@ extern NSUInteger UIKit_GetSupportedOrientations(SDL_Window * window);
 
 @end
 
-#endif /* _SDL_uikitwindow_h */
+#endif /* SDL_uikitwindow_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

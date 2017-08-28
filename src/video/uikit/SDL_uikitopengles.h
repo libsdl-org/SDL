@@ -18,8 +18,8 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#ifndef _SDL_uikitopengles
-#define _SDL_uikitopengles
+#ifndef SDL_uikitopengles_
+#define SDL_uikitopengles_
 
 #include "../SDL_sysvideo.h"
 
@@ -35,6 +35,6 @@ extern int UIKit_GL_LoadLibrary(_THIS, const char *path);
 
 extern void UIKit_GL_RestoreCurrentContext(void);
 
-#endif
+#endif /* SDL_uikitopengles_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

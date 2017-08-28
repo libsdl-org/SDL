@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_naclopengles_h
-#define _SDL_naclopengles_h
+#ifndef SDL_naclopengles_h_
+#define SDL_naclopengles_h_
 
 extern int NACL_GLES_LoadLibrary(_THIS, const char *path);
 extern void *NACL_GLES_GetProcAddress(_THIS, const char *proc);
@@ -33,6 +33,6 @@ extern int NACL_GLES_GetSwapInterval(_THIS);
 extern int NACL_GLES_SwapWindow(_THIS, SDL_Window * window);
 extern void NACL_GLES_DeleteContext(_THIS, SDL_GLContext context);
 
-#endif /* _SDL_naclopengles_h */
+#endif /* SDL_naclopengles_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

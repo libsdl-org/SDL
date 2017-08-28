@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_androidvideo_h
-#define _SDL_androidvideo_h
+#ifndef SDL_androidvideo_h_
+#define SDL_androidvideo_h_
 
 #include "SDL_mutex.h"
 #include "SDL_rect.h"
@@ -44,6 +44,6 @@ extern SDL_sem *Android_PauseSem, *Android_ResumeSem;
 extern SDL_Window *Android_Window;
 
 
-#endif /* _SDL_androidvideo_h */
+#endif /* SDL_androidvideo_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

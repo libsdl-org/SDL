@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_vivantevideo_h
-#define _SDL_vivantevideo_h
+#ifndef SDL_vivantevideo_h_
+#define SDL_vivantevideo_h_
 
 #include "../../SDL_internal.h"
 #include "../SDL_sysvideo.h"
@@ -86,6 +86,6 @@ SDL_bool VIVANTE_GetWindowWMInfo(_THIS, SDL_Window * window,
 /* Event functions */
 void VIVANTE_PumpEvents(_THIS);
 
-#endif /* _SDL_vivantevideo_h */
+#endif /* SDL_vivantevideo_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -20,8 +20,8 @@
 */
 #include "SDL_config.h"
 
-#ifndef _SDL_winrtgamebar_h
-#define _SDL_winrtgamebar_h
+#ifndef SDL_winrtgamebar_h_
+#define SDL_winrtgamebar_h_
 
 #ifdef __cplusplus
 /* These are exported as C++ functions, rather than C, to fix a compilation
@@ -30,6 +30,6 @@ extern void WINRT_InitGameBar(_THIS);
 extern void WINRT_QuitGameBar(_THIS);
 #endif
 
-#endif /* _SDL_winrtgamebar_h */
+#endif /* SDL_winrtgamebar_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_directfb_wm_h
-#define _SDL_directfb_wm_h
+#ifndef SDL_directfb_wm_h_
+#define SDL_directfb_wm_h_
 
 #include "SDL_DirectFB_video.h"
 
@@ -51,6 +51,6 @@ extern DFBResult DirectFB_WM_GetClientSize(_THIS, SDL_Window * window,
                                            int *cw, int *ch);
 
 
-#endif /* _SDL_directfb_wm_h */
+#endif /* SDL_directfb_wm_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

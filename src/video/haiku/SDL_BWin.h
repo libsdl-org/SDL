@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_BWin_h
-#define _SDL_BWin_h
+#ifndef SDL_BWin_h_
+#define SDL_BWin_h_
 
 #ifdef __cplusplus
 extern "C" {
@@ -674,6 +674,6 @@ private:
  *                         through a draw cycle.  Occurs when the previous
  *                         buffer provided by DirectConnected() is invalidated.
  */
-#endif
+#endif /* SDL_BWin_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

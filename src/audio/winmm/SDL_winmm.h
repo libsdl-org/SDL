@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_winmm_h
-#define _SDL_winmm_h
+#ifndef SDL_winmm_h_
+#define SDL_winmm_h_
 
 #include "../SDL_sysaudio.h"
 
@@ -40,6 +40,6 @@ struct SDL_PrivateAudioData
     int next_buffer;
 };
 
-#endif /* _SDL_winmm_h */
+#endif /* SDL_winmm_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

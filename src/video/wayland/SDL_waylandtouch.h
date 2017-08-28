@@ -23,8 +23,8 @@
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
 
-#ifndef _SDL_waylandtouch_h
-#define _SDL_waylandtouch_h
+#ifndef SDL_waylandtouch_h_
+#define SDL_waylandtouch_h_
 
 #include "SDL_waylandvideo.h"
 #include <stdint.h>
@@ -347,6 +347,6 @@ qt_windowmanager_open_url(struct qt_windowmanager *qt_windowmanager, uint32_t re
              QT_WINDOWMANAGER_OPEN_URL, remaining, url);
 }
 
-#endif /* _SDL_waylandtouch_h */
+#endif /* SDL_waylandtouch_h_ */
 
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */

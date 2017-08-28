@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_fsaudio_h
-#define _SDL_fsaudio_h
+#ifndef SDL_fsaudio_h_
+#define SDL_fsaudio_h_
 
 #include <fusionsound/fusionsound.h>
 
@@ -45,5 +45,6 @@ struct SDL_PrivateAudioData
 
 };
 
-#endif /* _SDL_fsaudio_h */
+#endif /* SDL_fsaudio_h_ */
+
 /* vi: set ts=4 sw=4 expandtab: */

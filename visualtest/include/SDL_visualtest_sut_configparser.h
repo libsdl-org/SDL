@@ -5,8 +5,8 @@
  * Header for the parser for SUT config files.
  */
 
-#ifndef _SDL_visualtest_sut_configparser_h
-#define _SDL_visualtest_sut_configparser_h
+#ifndef SDL_visualtest_sut_configparser_h_
+#define SDL_visualtest_sut_configparser_h_
 
 /** Maximum length of the name of an SUT option */
 #define MAX_SUTOPTION_NAME_LEN 100
@@ -100,4 +100,6 @@ void SDLVisualTest_FreeSUTConfig(SDLVisualTest_SUTConfig* config);
 }
 #endif
 
-#endif /* _SDL_visualtest_sut_configparser_h */
+#endif /* SDL_visualtest_sut_configparser_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

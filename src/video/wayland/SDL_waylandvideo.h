@@ -21,8 +21,8 @@
 
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_waylandvideo_h
-#define _SDL_waylandvideo_h
+#ifndef SDL_waylandvideo_h_
+#define SDL_waylandvideo_h_
 
 #include <EGL/egl.h>
 #include "wayland-util.h"
@@ -66,6 +66,6 @@ typedef struct {
     int relative_mouse_mode;
 } SDL_VideoData;
 
-#endif /* _SDL_waylandvideo_h */
+#endif /* SDL_waylandvideo_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

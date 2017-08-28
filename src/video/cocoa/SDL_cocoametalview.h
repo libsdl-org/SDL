@@ -26,8 +26,8 @@
  * how to add a CAMetalLayer backed view.
  */
 
-#ifndef _SDL_cocoametalview_h
-#define _SDL_cocoametalview_h
+#ifndef SDL_cocoametalview_h_
+#define SDL_cocoametalview_h_
 
 #import "../SDL_sysvideo.h"
 #import "SDL_cocoawindow.h"
@@ -55,7 +55,7 @@ SDL_cocoametalview* Cocoa_Mtl_AddMetalView(SDL_Window* window);
 
 void Cocoa_Mtl_GetDrawableSize(SDL_Window * window, int * w, int * h);
 
-#endif /* _SDL_cocoametalview_h */
+#endif /* SDL_cocoametalview_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
 

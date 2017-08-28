@@ -23,8 +23,8 @@
   Contributed by Brandon Schaefer, <brandon.schaefer@canonical.com>
 */
 
-#ifndef _SDL_mirvideo_h_
-#define _SDL_mirvideo_h_
+#ifndef SDL_mirvideo_h__
+#define SDL_mirvideo_h__
 
 #include <EGL/egl.h>
 #include <mir_toolkit/mir_client_library.h>
@@ -44,6 +44,6 @@ typedef struct
 extern Uint32
 MIR_GetSDLPixelFormat(MirPixelFormat format);
 
-#endif /* _SDL_mirvideo_h_ */
+#endif /* SDL_mirvideo_h__ */
 
 /* vi: set ts=4 sw=4 expandtab: */

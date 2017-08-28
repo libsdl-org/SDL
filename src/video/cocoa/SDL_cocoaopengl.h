@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_cocoaopengl_h
-#define _SDL_cocoaopengl_h
+#ifndef SDL_cocoaopengl_h_
+#define SDL_cocoaopengl_h_
 
 #if SDL_VIDEO_OPENGL_CGL
 
@@ -63,6 +63,6 @@ extern void Cocoa_GL_DeleteContext(_THIS, SDL_GLContext context);
 
 #endif /* SDL_VIDEO_OPENGL_CGL */
 
-#endif /* _SDL_cocoaopengl_h */
+#endif /* SDL_cocoaopengl_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

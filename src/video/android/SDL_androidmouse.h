@@ -19,14 +19,14 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_androidmouse_h
-#define _SDL_androidmouse_h
+#ifndef SDL_androidmouse_h_
+#define SDL_androidmouse_h_
 
 #include "SDL_androidvideo.h"
 
 extern void Android_InitMouse(void);
 extern void Android_OnMouse( int button, int action, float x, float y);
 
-#endif /* _SDL_androidmouse_h */
+#endif /* SDL_androidmouse_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

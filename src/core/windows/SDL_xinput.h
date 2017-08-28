@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_xinput_h
-#define _SDL_xinput_h
+#ifndef SDL_xinput_h_
+#define SDL_xinput_h_
 
 #ifdef HAVE_XINPUT_H
 
@@ -172,6 +172,6 @@ extern DWORD SDL_XInputVersion;  /* ((major << 16) & 0xFF00) | (minor & 0xFF) */
 
 #endif /* HAVE_XINPUT_H */
 
-#endif /* _SDL_xinput_h */
+#endif /* SDL_xinput_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

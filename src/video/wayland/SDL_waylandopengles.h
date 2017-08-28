@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_waylandopengles_h
-#define _SDL_waylandopengles_h
+#ifndef SDL_waylandopengles_h_
+#define SDL_waylandopengles_h_
 
 #include "../SDL_sysvideo.h"
 #include "../SDL_egl_c.h"
@@ -43,4 +43,6 @@ extern int Wayland_GLES_SwapWindow(_THIS, SDL_Window * window);
 extern int Wayland_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context);
 extern void Wayland_GLES_DeleteContext(_THIS, SDL_GLContext context);
 
-#endif /* _SDL_waylandopengles_h */
+#endif /* SDL_waylandopengles_h_ */
+
+/* vi: set ts=4 sw=4 expandtab: */

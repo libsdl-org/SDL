@@ -20,8 +20,8 @@
 */
 
 
-#ifndef _SDL_emscriptenevents_h
-#define _SDL_emscriptenevents_h
+#ifndef SDL_emscriptenevents_h_
+#define SDL_emscriptenevents_h_
 
 #include "SDL_emscriptenvideo.h"
 
@@ -34,7 +34,7 @@ Emscripten_UnregisterEventHandlers(SDL_WindowData *data);
 extern EM_BOOL
 Emscripten_HandleCanvasResize(int eventType, const void *reserved, void *userData);
 
-#endif /* _SDL_emscriptenevents_h */
+#endif /* SDL_emscriptenevents_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
 

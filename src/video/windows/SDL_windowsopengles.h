@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_winopengles_h
-#define _SDL_winopengles_h
+#ifndef SDL_winopengles_h_
+#define SDL_winopengles_h_
 
 #if SDL_VIDEO_OPENGL_EGL
 
@@ -44,6 +44,6 @@ extern int WIN_GLES_SetupWindow(_THIS, SDL_Window * window);
 
 #endif /* SDL_VIDEO_OPENGL_EGL */
 
-#endif /* _SDL_winopengles_h */
+#endif /* SDL_winopengles_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

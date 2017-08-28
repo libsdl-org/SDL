@@ -23,8 +23,8 @@
   Contributed by Brandon Schaefer, <brandon.schaefer@canonical.com>
 */
 
-#ifndef _SDL_mirframebuffer_h
-#define _SDL_mirframebuffer_h
+#ifndef SDL_mirframebuffer_h_
+#define SDL_mirframebuffer_h_
 
 #include "../SDL_sysvideo.h"
 
@@ -41,7 +41,7 @@ MIR_UpdateWindowFramebuffer(_THIS, SDL_Window* sdl_window,
 extern void
 MIR_DestroyWindowFramebuffer(_THIS, SDL_Window* sdl_window);
 
-#endif /* _SDL_mirframebuffer_h */
+#endif /* SDL_mirframebuffer_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
 

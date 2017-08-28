@@ -20,8 +20,8 @@
 */
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_androidaudio_h
-#define _SDL_androidaudio_h
+#ifndef SDL_androidaudio_h_
+#define SDL_androidaudio_h_
 
 #include "../SDL_sysaudio.h"
 
@@ -37,6 +37,6 @@ struct SDL_PrivateAudioData
 void ANDROIDAUDIO_ResumeDevices(void);
 void ANDROIDAUDIO_PauseDevices(void);
 
-#endif /* _SDL_androidaudio_h */
+#endif /* SDL_androidaudio_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

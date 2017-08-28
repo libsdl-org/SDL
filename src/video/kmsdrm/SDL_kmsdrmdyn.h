@@ -19,8 +19,8 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-#ifndef _SDL_kmsdrmdyn_h
-#define _SDL_kmsdrmdyn_h
+#ifndef SDL_kmsdrmdyn_h_
+#define SDL_kmsdrmdyn_h_
 
 #include "../../SDL_internal.h"
 
@@ -48,6 +48,6 @@ void SDL_KMSDRM_UnloadSymbols(void);
 }
 #endif
 
-#endif /* !defined _SDL_kmsdrmdyn_h */
+#endif /* SDL_kmsdrmdyn_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

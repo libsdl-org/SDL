@@ -21,8 +21,8 @@
 
 #include "../../SDL_internal.h"
 
-#ifndef _SDL_waylanddatamanager_h
-#define _SDL_waylanddatamanager_h
+#ifndef SDL_waylanddatamanager_h_
+#define SDL_waylanddatamanager_h_
 
 #include "SDL_waylandvideo.h"
 #include "SDL_waylandwindow.h"
@@ -97,9 +97,7 @@ extern int Wayland_data_device_set_selection(SDL_WaylandDataDevice *device,
                                              SDL_WaylandDataSource *source);
 extern int Wayland_data_device_set_serial(SDL_WaylandDataDevice *device,
                                           uint32_t serial);
-#endif /* _SDL_waylanddatamanager_h */
+#endif /* SDL_waylanddatamanager_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
-
-
 
