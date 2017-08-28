@@ -208,6 +208,7 @@ typedef unsigned int uintptr_t;
 #define SDL_VIDEO_OPENGL_EGL    1
 #endif
 
+#define SDL_VIDEO_VULKAN_SURFACE 1
 
 /* Enable system power support */
 #define SDL_POWER_WINDOWS 1

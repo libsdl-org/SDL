@@ -52,7 +52,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="$(SolutionDir)/../include"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../include&quot;;&quot;$(VULKAN_SDK)/include&quot;"
 				AdditionalUsingDirectories=""
 				PreprocessorDefinitions="_DEBUG;_WINDOWS"
 				RuntimeLibrary="2"
@@ -135,7 +135,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="$(SolutionDir)/../include"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../include&quot;;&quot;$(VULKAN_SDK)/include&quot;"
 				AdditionalUsingDirectories=""
 				PreprocessorDefinitions="_DEBUG;_WINDOWS"
 				RuntimeLibrary="2"
@@ -216,7 +216,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="$(SolutionDir)/../include"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../include&quot;;&quot;$(VULKAN_SDK)/include&quot;"
 				AdditionalUsingDirectories=""
 				PreprocessorDefinitions="NDEBUG;_WINDOWS"
 				RuntimeLibrary="2"
@@ -299,7 +299,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				InlineFunctionExpansion="1"
-				AdditionalIncludeDirectories="$(SolutionDir)/../include"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../include&quot;;&quot;$(VULKAN_SDK)/include&quot;"
 				AdditionalUsingDirectories=""
 				PreprocessorDefinitions="NDEBUG;_WINDOWS"
 				RuntimeLibrary="2"
@@ -644,6 +644,10 @@
 				RelativePath="..\..\include\SDL_video.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\include\SDL_vulkan.h"
+				>
+			</File>
 		</Filter>
 		<File
 			RelativePath="..\..\src\events\blank_cursor.h"
@@ -867,6 +871,14 @@
 		</File>
 		<File
 			RelativePath="..\..\src\render\SDL_d3dmath.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\SDL_dataqueue.c"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\SDL_dataqueue.h"
 			>
 		</File>
 		<File
@@ -1314,6 +1326,22 @@
 			>
 		</File>
 		<File
+			RelativePath="..\..\src\video\SDL_vulkan_internal.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\video\SDL_vulkan_utils.c"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\audio\wasapi\SDL_wasapi.c"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\audio\wasapi\SDL_wasapi.h"
+			>
+		</File>
+		<File
 			RelativePath="..\..\src\audio\SDL_wave.c"
 			>
 		</File>
@@ -1435,6 +1463,14 @@
 		</File>
 		<File
 			RelativePath="..\..\src\video\windows\SDL_windowsvideo.h"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\video\windows\SDL_windowsvulkan.c"
+			>
+		</File>
+		<File
+			RelativePath="..\..\src\video\windows\SDL_windowsvulkan.h"
 			>
 		</File>
 		<File

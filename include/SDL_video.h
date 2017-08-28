@@ -233,7 +233,6 @@ typedef enum
     SDL_GL_CONTEXT_RESET_LOSE_CONTEXT    = 0x0001
 } SDL_GLContextResetNotification;
 
-
 /* Function prototypes */
 
 /**
@@ -457,17 +456,32 @@ extern DECLSPEC Uint32 SDLCALL SDL_GetWindowPixelFormat(SDL_Window * window);
  *               ::SDL_WINDOW_HIDDEN,        ::SDL_WINDOW_BORDERLESS,
  *               ::SDL_WINDOW_RESIZABLE,     ::SDL_WINDOW_MAXIMIZED,
  *               ::SDL_WINDOW_MINIMIZED,     ::SDL_WINDOW_INPUT_GRABBED,
- *               ::SDL_WINDOW_ALLOW_HIGHDPI.
+ *               ::SDL_WINDOW_ALLOW_HIGHDPI, ::SDL_WINDOW_VULKAN.
  *
  *  \return The created window, or NULL if window creation failed.
  *
  *  If the window is created with the SDL_WINDOW_ALLOW_HIGHDPI flag, its size
  *  in pixels may differ from its size in screen coordinates on platforms with
  *  high-DPI support (e.g. iOS and Mac OS X). Use SDL_GetWindowSize() to query
- *  the client area's size in screen coordinates, and SDL_GL_GetDrawableSize()
- *  or SDL_GetRendererOutputSize() to query the drawable size in pixels.
+ *  the client area's size in screen coordinates, and SDL_GL_GetDrawableSize(),
+ *  SDL_Vulkan_GetDrawableSize(), or SDL_GetRendererOutputSize() to query the
+ *  drawable size in pixels.
+ *
+ *  If the window is created with any of the SDL_WINDOW_OPENGL or
+ *  SDL_WINDOW_VULKAN flags, then the corresponding LoadLibrary function
+ *  (SDL_GL_LoadLibrary or SDL_Vulkan_LoadLibrary) is called and the
+ *  corrensponding UnloadLibrary function is called by SDL_DestroyWindow().
+ *
+ *  If SDL_WINDOW_VULKAN is specified and there isn't a working Vulkan driver,
+ *  SDL_CreateWindow() will fail because SDL_Vulkan_LoadLibrary() will fail.
+ *
+ *  \note On non-Apple devices, SDL requires you to either not link to the
+ *        Vulkan loader or link to a dynamic library version. This limitation
+ *        may be removed in a future version of SDL.
  *
  *  \sa SDL_DestroyWindow()
+ *  \sa SDL_GL_LoadLibrary()
+ *  \sa SDL_Vulkan_LoadLibrary()
  */
 extern DECLSPEC SDL_Window * SDLCALL SDL_CreateWindow(const char *title,
                                                       int x, int y, int w,
@@ -879,7 +893,7 @@ extern DECLSPEC float SDLCALL SDL_GetWindowBrightness(SDL_Window * window);
  *  \param window The window which will be made transparent or opaque
  *  \param opacity Opacity (0.0f - transparent, 1.0f - opaque) This will be
  *                 clamped internally between 0.0f and 1.0f.
- * 
+ *
  *  \return 0 on success, or -1 if setting the opacity isn't supported.
  *
  *  \sa SDL_GetWindowOpacity()
@@ -906,7 +920,7 @@ extern DECLSPEC int SDLCALL SDL_GetWindowOpacity(SDL_Window * window, float * ou
  *
  *  \param modal_window The window that should be modal
  *  \param parent_window The parent window
- * 
+ *
  *  \return 0 on success, or -1 otherwise.
  */
 extern DECLSPEC int SDLCALL SDL_SetWindowModalFor(SDL_Window * modal_window, SDL_Window * parent_window);
@@ -919,7 +933,7 @@ extern DECLSPEC int SDLCALL SDL_SetWindowModalFor(SDL_Window * modal_window, SDL
  *  obscured by other windows.
  *
  *  \param window The window that should get the input focus
- * 
+ *
  *  \return 0 on success, or -1 otherwise.
  *  \sa SDL_RaiseWindow()
  */

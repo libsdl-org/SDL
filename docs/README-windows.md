@@ -38,4 +38,8 @@ Known Bugs:
     * SDL_GL_SetSwapInterval is currently a no op when using ANGLE. It appears
       that there's a bug in the library which prevents the window contents from
       refreshing if this is set to anything other than the default value.
-      
+     
+Vulkan Surface Support
+==============
+
+Support for creating Vulkan surfaces is configured on by default. To disable it change the value of `SDL_VIDEO_VULKAN_SURFACE` to 0 in `SDL_config_windows`. When it is on you must install a  [Vulkan SDK](https://www.lunarg.com/vulkan-sdk/) in order to build libSDL.

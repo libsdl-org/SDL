@@ -26,6 +26,7 @@
 #include "SDL_endian.h"
 #include "SDL_cocoavideo.h"
 #include "SDL_cocoashape.h"
+#include "SDL_cocoavulkan.h"
 #include "SDL_assert.h"
 
 /* Initialization/Query functions */
@@ -120,6 +121,14 @@ Cocoa_CreateDevice(int devindex)
     device->GL_GetSwapInterval = Cocoa_GL_GetSwapInterval;
     device->GL_SwapWindow = Cocoa_GL_SwapWindow;
     device->GL_DeleteContext = Cocoa_GL_DeleteContext;
+#endif
+
+#if SDL_VIDEO_VULKAN_SURFACE
+    device->Vulkan_LoadLibrary = Cocoa_Vulkan_LoadLibrary;
+    device->Vulkan_UnloadLibrary = Cocoa_Vulkan_UnloadLibrary;
+    device->Vulkan_GetInstanceExtensions = Cocoa_Vulkan_GetInstanceExtensions;
+    device->Vulkan_CreateSurface = Cocoa_Vulkan_CreateSurface;
+    device->Vulkan_GetDrawableSize = Cocoa_Vulkan_GetDrawableSize;
 #endif
 
     device->StartTextInput = Cocoa_StartTextInput;

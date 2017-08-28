@@ -8,8 +8,11 @@ Building the Simple DirectMedia Layer for iOS 5.1+
 Requirements: Mac OS X 10.8 or later and the iOS 7+ SDK.
 
 Instructions:
-1.  Open SDL.xcodeproj (located in Xcode-iOS/SDL) in Xcode.
-2.  Select your desired target, and hit build.
+
+1.  Either download [Molten](https://moltengl.com/free-trial/) and unzip it or download the Vulkan headers from Khronos's [Vulkan-Docs](https://github.com/KhronosGroup/Vulkan-Docs/tree/1.0/src/vulkan) repo and put them in a directory hierarchy `include/vulkan`.
+2.  Open SDL.xcodeproj (located in Xcode-iOS/SDL) in Xcode.
+3.  Set a `VULKAN_SDK` custom path in the Xcode preferences. Select *Custom Paths* on the *Locations* tab. The value should be either the `MoltenVK` directory within the unzipped Molten package or the parent of the `include/vulkan` hierarchy.
+4.  Select your desired target, and hit build.
 
 There are three build targets:
 - libSDL.a:
@@ -24,7 +27,9 @@ There are three build targets:
 Build SDL for iOS from the command line
 ==============================================================================
 
-1. cd (PATH WHERE THE SDL CODE IS)/build-scripts
+1. Follow step 1 above.
+2. Either create and export a `VULKAN_SDK` environment variable with the value described in step 3 above or open Xcode, set the custom path described in step 3 above and close Xcode.
+3. cd (PATH WHERE THE SDL CODE IS)/build-scripts
 2. ./iosbuild.sh
 
 If everything goes fine, you should see a build/ios directory, inside there's

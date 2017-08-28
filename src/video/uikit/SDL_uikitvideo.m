@@ -37,6 +37,7 @@
 #include "SDL_uikitwindow.h"
 #include "SDL_uikitopengles.h"
 #include "SDL_uikitclipboard.h"
+#include "SDL_uikitvulkan.h"
 
 #define UIKITVID_DRIVER_NAME "uikit"
 
@@ -122,6 +123,15 @@ UIKit_CreateDevice(int devindex)
         device->GL_GetProcAddress   = UIKit_GL_GetProcAddress;
         device->GL_LoadLibrary      = UIKit_GL_LoadLibrary;
         device->free = UIKit_DeleteDevice;
+
+    #if SDL_VIDEO_VULKAN_SURFACE
+        device->Vulkan_LoadLibrary = UIKit_Vulkan_LoadLibrary;
+        device->Vulkan_UnloadLibrary = UIKit_Vulkan_UnloadLibrary;
+        device->Vulkan_GetInstanceExtensions
+                                     = UIKit_Vulkan_GetInstanceExtensions;
+        device->Vulkan_CreateSurface = UIKit_Vulkan_CreateSurface;
+        device->Vulkan_GetDrawableSize = UIKit_Vulkan_GetDrawableSize;
+    #endif
 
         device->gl_config.accelerated = 1;
 

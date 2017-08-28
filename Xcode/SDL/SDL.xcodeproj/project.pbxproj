@@ -377,6 +377,25 @@
 		04F7805D12FB74A200FC43C0 /* SDL_drawline.h in Headers */ = {isa = PBXBuildFile; fileRef = 04F7804512FB74A200FC43C0 /* SDL_drawline.h */; };
 		04F7805E12FB74A200FC43C0 /* SDL_drawpoint.c in Sources */ = {isa = PBXBuildFile; fileRef = 04F7804612FB74A200FC43C0 /* SDL_drawpoint.c */; };
 		04F7805F12FB74A200FC43C0 /* SDL_drawpoint.h in Headers */ = {isa = PBXBuildFile; fileRef = 04F7804712FB74A200FC43C0 /* SDL_drawpoint.h */; };
+		4D16644B1EDD5FE8003DE88E /* SDL_vulkan.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D16644A1EDD5FE8003DE88E /* SDL_vulkan.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		4D16644E1EDD6023003DE88E /* SDL_vulkan_internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D16644C1EDD6023003DE88E /* SDL_vulkan_internal.h */; };
+		4D16644F1EDD6023003DE88E /* SDL_vulkan_utils.c in Sources */ = {isa = PBXBuildFile; fileRef = 4D16644D1EDD6023003DE88E /* SDL_vulkan_utils.c */; };
+		4D1664531EDD60AD003DE88E /* SDL_cocoametalview.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D1664501EDD60AD003DE88E /* SDL_cocoametalview.m */; };
+		4D1664541EDD60AD003DE88E /* SDL_cocoavulkan.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D1664511EDD60AD003DE88E /* SDL_cocoavulkan.h */; };
+		4D1664551EDD60AD003DE88E /* SDL_cocoavulkan.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D1664521EDD60AD003DE88E /* SDL_cocoavulkan.m */; };
+		4D1664561EDD61DA003DE88E /* SDL_vulkan_utils.c in Sources */ = {isa = PBXBuildFile; fileRef = 4D16644D1EDD6023003DE88E /* SDL_vulkan_utils.c */; };
+		4D1664571EDD61F0003DE88E /* SDL_cocoametalview.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D1664501EDD60AD003DE88E /* SDL_cocoametalview.m */; };
+		4D1664581EDD61F0003DE88E /* SDL_cocoavulkan.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D1664521EDD60AD003DE88E /* SDL_cocoavulkan.m */; };
+		4D1664591EDD621B003DE88E /* SDL_vulkan_utils.c in Sources */ = {isa = PBXBuildFile; fileRef = 4D16644D1EDD6023003DE88E /* SDL_vulkan_utils.c */; };
+		4D16645A1EDD6235003DE88E /* SDL_cocoametalview.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D1664501EDD60AD003DE88E /* SDL_cocoametalview.m */; };
+		4D16645B1EDD6235003DE88E /* SDL_cocoavulkan.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D1664521EDD60AD003DE88E /* SDL_cocoavulkan.m */; };
+		4D16645E1EDD73E0003DE88E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D16645D1EDD73E0003DE88E /* Metal.framework */; };
+		4D16645F1EDD73FE003DE88E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D16645D1EDD73E0003DE88E /* Metal.framework */; };
+		4D1664601EDD741F003DE88E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D16645D1EDD73E0003DE88E /* Metal.framework */; };
+		4D1664641EDD7528003DE88E /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D1664611EDD74A9003DE88E /* QuartzCore.framework */; };
+		4D1664651EDD7727003DE88E /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D1664611EDD74A9003DE88E /* QuartzCore.framework */; };
+		4D1664661EDD776A003DE88E /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D1664611EDD74A9003DE88E /* QuartzCore.framework */; };
+		4D7517291EE2562B00820EEA /* SDL_cocoametalview.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D7517281EE2562B00820EEA /* SDL_cocoametalview.h */; };
 		56115BBB1DF72C6D00F47E1E /* SDL_dataqueue.c in Sources */ = {isa = PBXBuildFile; fileRef = 56115BB91DF72C6D00F47E1E /* SDL_dataqueue.c */; };
 		56115BBC1DF72C6D00F47E1E /* SDL_dataqueue.h in Headers */ = {isa = PBXBuildFile; fileRef = 56115BBA1DF72C6D00F47E1E /* SDL_dataqueue.h */; };
 		562C4AE91D8F496200AF9EBE /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A7381E931D8B69C300B177DD /* AudioToolbox.framework */; };
@@ -1015,6 +1034,16 @@
 		04F7804512FB74A200FC43C0 /* SDL_drawline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_drawline.h; sourceTree = "<group>"; };
 		04F7804612FB74A200FC43C0 /* SDL_drawpoint.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_drawpoint.c; sourceTree = "<group>"; };
 		04F7804712FB74A200FC43C0 /* SDL_drawpoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_drawpoint.h; sourceTree = "<group>"; };
+		4D16644A1EDD5FE8003DE88E /* SDL_vulkan.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_vulkan.h; sourceTree = "<group>"; };
+		4D16644C1EDD6023003DE88E /* SDL_vulkan_internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_vulkan_internal.h; sourceTree = "<group>"; };
+		4D16644D1EDD6023003DE88E /* SDL_vulkan_utils.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_vulkan_utils.c; sourceTree = "<group>"; };
+		4D1664501EDD60AD003DE88E /* SDL_cocoametalview.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_cocoametalview.m; sourceTree = "<group>"; };
+		4D1664511EDD60AD003DE88E /* SDL_cocoavulkan.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_cocoavulkan.h; sourceTree = "<group>"; };
+		4D1664521EDD60AD003DE88E /* SDL_cocoavulkan.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_cocoavulkan.m; sourceTree = "<group>"; };
+		4D16645D1EDD73E0003DE88E /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		4D1664611EDD74A9003DE88E /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		4D4820431F0F10B400EDC31C /* SDL_vulkan.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SDL_vulkan.h; path = ../../include/SDL_vulkan.h; sourceTree = "<group>"; };
+		4D7517281EE2562B00820EEA /* SDL_cocoametalview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_cocoametalview.h; sourceTree = "<group>"; };
 		56115BB91DF72C6D00F47E1E /* SDL_dataqueue.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_dataqueue.c; path = ../../src/SDL_dataqueue.c; sourceTree = "<group>"; };
 		56115BBA1DF72C6D00F47E1E /* SDL_dataqueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_dataqueue.h; path = ../../src/SDL_dataqueue.h; sourceTree = "<group>"; };
 		566CDE8D148F0AC200C5A9BB /* SDL_dropevents_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_dropevents_c.h; sourceTree = "<group>"; };
@@ -1123,6 +1152,8 @@
 				00D0D08410675DD9004B05EF /* CoreFoundation.framework in Frameworks */,
 				00D0D0D810675E46004B05EF /* Carbon.framework in Frameworks */,
 				00CFA89D106B4BA100758660 /* ForceFeedback.framework in Frameworks */,
+				4D16645E1EDD73E0003DE88E /* Metal.framework in Frameworks */,
+				4D1664651EDD7727003DE88E /* QuartzCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1138,6 +1169,8 @@
 				007317C30858E15000B2BC32 /* Carbon.framework in Frameworks */,
 				DB31408B17554D37006C0E22 /* ForceFeedback.framework in Frameworks */,
 				562C4AE91D8F496200AF9EBE /* AudioToolbox.framework in Frameworks */,
+				4D16645F1EDD73FE003DE88E /* Metal.framework in Frameworks */,
+				4D1664661EDD776A003DE88E /* QuartzCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1153,6 +1186,8 @@
 				DB31407217554B71006C0E22 /* Carbon.framework in Frameworks */,
 				DB31408D17554D3C006C0E22 /* ForceFeedback.framework in Frameworks */,
 				562C4AEA1D8F496300AF9EBE /* AudioToolbox.framework in Frameworks */,
+				4D1664601EDD741F003DE88E /* Metal.framework in Frameworks */,
+				4D1664641EDD7528003DE88E /* QuartzCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1221,6 +1256,7 @@
 				AA7557F61595D4D800BBD41B /* SDL_types.h */,
 				AA7557F71595D4D800BBD41B /* SDL_version.h */,
 				AA7557F81595D4D800BBD41B /* SDL_video.h */,
+				4D16644A1EDD5FE8003DE88E /* SDL_vulkan.h */,
 			);
 			name = "Public Headers";
 			path = ../../include;
@@ -1573,6 +1609,8 @@
 				04BDFF7412E6671800899322 /* SDL_surface.c */,
 				04BDFF7512E6671800899322 /* SDL_sysvideo.h */,
 				04BDFF7612E6671800899322 /* SDL_video.c */,
+				4D16644C1EDD6023003DE88E /* SDL_vulkan_internal.h */,
+				4D16644D1EDD6023003DE88E /* SDL_vulkan_utils.c */,
 			);
 			name = video;
 			path = ../../src/video;
@@ -1589,6 +1627,8 @@
 				04BDFEC712E6671800899322 /* SDL_cocoakeyboard.m */,
 				AABCC38B164063D200AB8930 /* SDL_cocoamessagebox.h */,
 				AABCC38C164063D200AB8930 /* SDL_cocoamessagebox.m */,
+				4D7517281EE2562B00820EEA /* SDL_cocoametalview.h */,
+				4D1664501EDD60AD003DE88E /* SDL_cocoametalview.m */,
 				04BDFEC812E6671800899322 /* SDL_cocoamodes.h */,
 				04BDFEC912E6671800899322 /* SDL_cocoamodes.m */,
 				04BDFECA12E6671800899322 /* SDL_cocoamouse.h */,
@@ -1601,6 +1641,8 @@
 				04BDFECF12E6671800899322 /* SDL_cocoashape.m */,
 				04BDFED012E6671800899322 /* SDL_cocoavideo.h */,
 				04BDFED112E6671800899322 /* SDL_cocoavideo.m */,
+				4D1664511EDD60AD003DE88E /* SDL_cocoavulkan.h */,
+				4D1664521EDD60AD003DE88E /* SDL_cocoavulkan.m */,
 				04BDFED212E6671800899322 /* SDL_cocoawindow.h */,
 				04BDFED312E6671800899322 /* SDL_cocoawindow.m */,
 			);
@@ -1662,6 +1704,7 @@
 		0867D691FE84028FC02AAC07 /* SDLFramework */ = {
 			isa = PBXGroup;
 			children = (
+				4D4820431F0F10B400EDC31C /* SDL_vulkan.h */,
 				F5A2EF3900C6A39A01000001 /* BUGS.txt */,
 				F59C70FC00D5CB5801000001 /* pkg-support */,
 				0153844A006D81B07F000001 /* Public Headers */,
@@ -1669,6 +1712,7 @@
 				034768DDFF38A45A11DB9C8B /* Products */,
 				BECDF66B0761BA81005FE872 /* Info-Framework.plist */,
 				BEC562FE0761C0E800A33029 /* Linked Frameworks */,
+				4D16645C1EDD73E0003DE88E /* Frameworks */,
 			);
 			comments = "To build Universal Binaries, we have experimented with a variety of different options.\nThe complication is that we must retain compatibility with at least 10.2. \nThe Universal Binary defaults only work for > 10.3.9\n\nSo far, we have found:\ngcc 4.0.0 with Xcode 2.1 always links against libgcc_s. gcc 4.0.1 from Xcode 2.2 fixes this problem.\n\nBut gcc 4.0 will not work with < 10.3.9 because we continue to get an undefined symbol to _fprintf$LDBL128.\nSo we must use gcc 3.3 on PPC to accomplish 10.2 support. (But 4.0 is required for i386.)\n\nSetting the deployment target to 10.4 will disable prebinding, so for PPC, we set it less than 10.4 to preserve prebinding for legacy support.\n\nSetting the PPC SDKROOT to /Developers/SDKs/MacOSX10.2.8.sdk will link to 63.0.0 libSystem.B.dylib. Leaving it at current or 10.4u links to 88.1.2. However, as long as we are using gcc 3.3, it doesn't seem to matter as testing has demonstrated both will run. We have decided not to invoke the 10.2.8 SDK because it is not a default installed component with Xcode which will probably cause most people problems. However, rather than deleting the SDKROOT_ppc entry entirely, we have mapped it to 10.4u in case we decide we need to change this setting.\n\nTo use Altivec or SSE, we needed architecture specific flags:\nOTHER_CFLAGS_ppc\nOTHER_CFLAGS_i386\nOTHER_CFLAGS=$(OTHER_CFLAGS_($CURRENT_ARCH))\n\nThe general OTHER_CFLAGS needed to be manually mapped to architecture specific options because Xcode didn't do this automatically for us.\n\n\n";
 			indentWidth = 4;
@@ -1715,6 +1759,15 @@
 				04BDFE5C12E6671700899322 /* SDL.c */,
 			);
 			name = "Library Source";
+			sourceTree = "<group>";
+		};
+		4D16645C1EDD73E0003DE88E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				4D1664611EDD74A9003DE88E /* QuartzCore.framework */,
+				4D16645D1EDD73E0003DE88E /* Metal.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		567E2F1F17C44BBB005F1892 /* filesystem */ = {
@@ -1834,8 +1887,10 @@
 				AA7558541595D4D800BBD41B /* SDL_timer.h in Headers */,
 				AA7558561595D4D800BBD41B /* SDL_touch.h in Headers */,
 				AA7558581595D4D800BBD41B /* SDL_types.h in Headers */,
-				AA75585A1595D4D800BBD41B /* SDL_version.h in Headers */,
 				AA75585C1595D4D800BBD41B /* SDL_video.h in Headers */,
+				AA75585A1595D4D800BBD41B /* SDL_version.h in Headers */,
+				4D16644B1EDD5FE8003DE88E /* SDL_vulkan.h in Headers */,
+				4D7517291EE2562B00820EEA /* SDL_cocoametalview.h in Headers */,
 				04BD000912E6671800899322 /* SDL_diskaudio.h in Headers */,
 				04BD001112E6671800899322 /* SDL_dummyaudio.h in Headers */,
 				04BD001912E6671800899322 /* SDL_coreaudio.h in Headers */,
@@ -1871,6 +1926,7 @@
 				04BD00CB12E6671800899322 /* SDL_thread_c.h in Headers */,
 				04BD00D812E6671800899322 /* SDL_timer_c.h in Headers */,
 				04BD00F312E6671800899322 /* SDL_cocoaclipboard.h in Headers */,
+				4D1664541EDD60AD003DE88E /* SDL_cocoavulkan.h in Headers */,
 				04BD00F512E6671800899322 /* SDL_cocoaevents.h in Headers */,
 				04BD00F712E6671800899322 /* SDL_cocoakeyboard.h in Headers */,
 				04BD00F912E6671800899322 /* SDL_cocoamodes.h in Headers */,
@@ -1891,6 +1947,7 @@
 				04BD019912E6671800899322 /* SDL_shape_internals.h in Headers */,
 				04BD019C12E6671800899322 /* SDL_sysvideo.h in Headers */,
 				04BD01DC12E6671800899322 /* imKStoUCS.h in Headers */,
+				4D16644E1EDD6023003DE88E /* SDL_vulkan_internal.h in Headers */,
 				04BD01DE12E6671800899322 /* SDL_x11clipboard.h in Headers */,
 				04BD01E012E6671800899322 /* SDL_x11dyn.h in Headers */,
 				04BD01E212E6671800899322 /* SDL_x11events.h in Headers */,
@@ -2325,14 +2382,6 @@
 			isa = PBXProject;
 			attributes = {
 				LastUpgradeCheck = 0730;
-				TargetAttributes = {
-					BECDF5FE0761BA81005FE872 = {
-						DevelopmentTeam = EH385AYQ6F;
-					};
-					BECDF6BB0761BA81005FE872 = {
-						DevelopmentTeam = EH385AYQ6F;
-					};
-				};
 			};
 			buildConfigurationList = 0073178E0858DB0500B2BC32 /* Build configuration list for PBXProject "SDL" */;
 			compatibilityVersion = "Xcode 3.2";
@@ -2425,12 +2474,14 @@
 				04BD005A12E6671800899322 /* SDL_rwops.c in Sources */,
 				04BD005B12E6671800899322 /* SDL_syshaptic.c in Sources */,
 				04BD005F12E6671800899322 /* SDL_haptic.c in Sources */,
+				4D1664551EDD60AD003DE88E /* SDL_cocoavulkan.m in Sources */,
 				04BD006612E6671800899322 /* SDL_sysjoystick.c in Sources */,
 				04BD007012E6671800899322 /* SDL_joystick.c in Sources */,
 				04BD008812E6671800899322 /* SDL_sysloadso.c in Sources */,
 				04BD009412E6671800899322 /* SDL_syspower.c in Sources */,
 				04BD009612E6671800899322 /* SDL_power.c in Sources */,
 				04BD009C12E6671800899322 /* SDL_assert.c in Sources */,
+				4D1664531EDD60AD003DE88E /* SDL_cocoametalview.m in Sources */,
 				04BD009F12E6671800899322 /* SDL_error.c in Sources */,
 				04BD00A212E6671800899322 /* SDL.c in Sources */,
 				04BD00A312E6671800899322 /* SDL_getenv.c in Sources */,
@@ -2451,6 +2502,7 @@
 				04BD00F612E6671800899322 /* SDL_cocoaevents.m in Sources */,
 				04BD00F812E6671800899322 /* SDL_cocoakeyboard.m in Sources */,
 				04BD00FA12E6671800899322 /* SDL_cocoamodes.m in Sources */,
+				4D16644F1EDD6023003DE88E /* SDL_vulkan_utils.c in Sources */,
 				04BD00FC12E6671800899322 /* SDL_cocoamouse.m in Sources */,
 				04BD00FE12E6671800899322 /* SDL_cocoaopengl.m in Sources */,
 				04BD010012E6671800899322 /* SDL_cocoashape.m in Sources */,
@@ -2521,6 +2573,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4D1664571EDD61F0003DE88E /* SDL_cocoametalview.m in Sources */,
+				4D1664581EDD61F0003DE88E /* SDL_cocoavulkan.m in Sources */,
+				4D1664561EDD61DA003DE88E /* SDL_vulkan_utils.c in Sources */,
 				04BD021712E6671800899322 /* SDL_atomic.c in Sources */,
 				04BD021812E6671800899322 /* SDL_spinlock.c in Sources */,
 				56F9D55C1DF73B6B00C15B5D /* SDL_dataqueue.c in Sources */,
@@ -2641,6 +2696,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4D16645A1EDD6235003DE88E /* SDL_cocoametalview.m in Sources */,
+				4D16645B1EDD6235003DE88E /* SDL_cocoavulkan.m in Sources */,
+				4D1664591EDD621B003DE88E /* SDL_vulkan_utils.c in Sources */,
 				DB313FFE17554B71006C0E22 /* SDL_atomic.c in Sources */,
 				DB313FFF17554B71006C0E22 /* SDL_spinlock.c in Sources */,
 				56F9D55D1DF73B6C00C15B5D /* SDL_dataqueue.c in Sources */,
@@ -2810,7 +2868,10 @@
 				DYLIB_COMPATIBILITY_VERSION = 1.0.0;
 				DYLIB_CURRENT_VERSION = 7.0.0;
 				FRAMEWORK_VERSION = A;
-				HEADER_SEARCH_PATHS = /usr/X11R6/include;
+				HEADER_SEARCH_PATHS = (
+					/usr/X11R6/include,
+					"$(VULKAN_SDK)/include",
+				);
 				INFOPLIST_FILE = "Info-Framework.plist";
 				INSTALL_PATH = "@rpath";
 				OTHER_LDFLAGS = "-liconv";
@@ -2833,7 +2894,10 @@
 					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_4)",
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
-				HEADER_SEARCH_PATHS = /usr/X11R6/include;
+				HEADER_SEARCH_PATHS = (
+					/usr/X11R6/include,
+					"$(VULKAN_SDK)/include",
+				);
 				PRODUCT_NAME = SDL2;
 				SKIP_INSTALL = YES;
 			};
@@ -2889,7 +2953,10 @@
 				DYLIB_COMPATIBILITY_VERSION = 1.0.0;
 				DYLIB_CURRENT_VERSION = 7.0.0;
 				FRAMEWORK_VERSION = A;
-				HEADER_SEARCH_PATHS = /usr/X11R6/include;
+				HEADER_SEARCH_PATHS = (
+					/usr/X11R6/include,
+					"$(VULKAN_SDK)/include",
+				);
 				INFOPLIST_FILE = "Info-Framework.plist";
 				INSTALL_PATH = "@rpath";
 				OTHER_LDFLAGS = "-liconv";
@@ -2912,7 +2979,10 @@
 					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_4)",
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
-				HEADER_SEARCH_PATHS = /usr/X11R6/include;
+				HEADER_SEARCH_PATHS = (
+					/usr/X11R6/include,
+					"$(VULKAN_SDK)/include",
+				);
 				PRODUCT_NAME = SDL2;
 				SKIP_INSTALL = YES;
 			};
@@ -2939,7 +3009,10 @@
 					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_4)",
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
-				HEADER_SEARCH_PATHS = /usr/X11R6/include;
+				HEADER_SEARCH_PATHS = (
+					/usr/X11R6/include,
+					"$(VULKAN_SDK)/include",
+				);
 				INSTALL_PATH = "@rpath";
 				PRODUCT_NAME = SDL2;
 				SKIP_INSTALL = YES;
@@ -2959,7 +3032,10 @@
 					"$(GCC_PREPROCESSOR_DEFINITIONS_QUOTED_4)",
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = YES;
-				HEADER_SEARCH_PATHS = /usr/X11R6/include;
+				HEADER_SEARCH_PATHS = (
+					/usr/X11R6/include,
+					"$(VULKAN_SDK)/include",
+				);
 				INSTALL_PATH = "@rpath";
 				PRODUCT_NAME = SDL2;
 				SKIP_INSTALL = YES;
