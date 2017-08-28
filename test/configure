@@ -195,8 +195,7 @@ test -x / || exit 1"
   as_suggested="  as_lineno_1=";as_suggested=$as_suggested$LINENO;as_suggested=$as_suggested" as_lineno_1a=\$LINENO
   as_lineno_2=";as_suggested=$as_suggested$LINENO;as_suggested=$as_suggested" as_lineno_2a=\$LINENO
   eval 'test \"x\$as_lineno_1'\$as_run'\" != \"x\$as_lineno_2'\$as_run'\" &&
-  test \"x\`expr \$as_lineno_1'\$as_run' + 1\`\" = \"x\$as_lineno_2'\$as_run'\"' || exit 1
-test \$(( 1 + 1 )) = 2 || exit 1"
+  test \"x\`expr \$as_lineno_1'\$as_run' + 1\`\" = \"x\$as_lineno_2'\$as_run'\"' || exit 1"
   if (eval "$as_required") 2>/dev/null; then :
   as_have_required=yes
 else
@@ -583,47 +582,9 @@ PACKAGE_BUGREPORT=
 PACKAGE_URL=
 
 ac_unique_file="README"
-# Factoring default headers for most tests.
-ac_includes_default="\
-#include <stdio.h>
-#ifdef HAVE_SYS_TYPES_H
-# include <sys/types.h>
-#endif
-#ifdef HAVE_SYS_STAT_H
-# include <sys/stat.h>
-#endif
-#ifdef STDC_HEADERS
-# include <stdlib.h>
-# include <stddef.h>
-#else
-# ifdef HAVE_STDLIB_H
-#  include <stdlib.h>
-# endif
-#endif
-#ifdef HAVE_STRING_H
-# if !defined STDC_HEADERS && defined HAVE_MEMORY_H
-#  include <memory.h>
-# endif
-# include <string.h>
-#endif
-#ifdef HAVE_STRINGS_H
-# include <strings.h>
-#endif
-#ifdef HAVE_INTTYPES_H
-# include <inttypes.h>
-#endif
-#ifdef HAVE_STDINT_H
-# include <stdint.h>
-#endif
-#ifdef HAVE_UNISTD_H
-# include <unistd.h>
-#endif"
-
 ac_subst_vars='LTLIBOBJS
 LIBOBJS
 SDL_TTF_LIB
-EGREP
-GREP
 XLIB
 GLES2LIB
 GLESLIB
@@ -676,7 +637,6 @@ infodir
 docdir
 oldincludedir
 includedir
-runstatedir
 localstatedir
 sharedstatedir
 sysconfdir
@@ -757,7 +717,6 @@ datadir='${datarootdir}'
 sysconfdir='${prefix}/etc'
 sharedstatedir='${prefix}/com'
 localstatedir='${prefix}/var'
-runstatedir='${localstatedir}/run'
 includedir='${prefix}/include'
 oldincludedir='/usr/include'
 docdir='${datarootdir}/doc/${PACKAGE}'
@@ -1010,15 +969,6 @@ do
   | -silent | --silent | --silen | --sile | --sil)
     silent=yes ;;
 
-  -runstatedir | --runstatedir | --runstatedi | --runstated \
-  | --runstate | --runstat | --runsta | --runst | --runs \
-  | --run | --ru | --r)
-    ac_prev=runstatedir ;;
-  -runstatedir=* | --runstatedir=* | --runstatedi=* | --runstated=* \
-  | --runstate=* | --runstat=* | --runsta=* | --runst=* | --runs=* \
-  | --run=* | --ru=* | --r=*)
-    runstatedir=$ac_optarg ;;
-
   -sbindir | --sbindir | --sbindi | --sbind | --sbin | --sbi | --sb)
     ac_prev=sbindir ;;
   -sbindir=* | --sbindir=* | --sbindi=* | --sbind=* | --sbin=* \
@@ -1156,7 +1106,7 @@ fi
 for ac_var in	exec_prefix prefix bindir sbindir libexecdir datarootdir \
 		datadir sysconfdir sharedstatedir localstatedir includedir \
 		oldincludedir docdir infodir htmldir dvidir pdfdir psdir \
-		libdir localedir mandir runstatedir
+		libdir localedir mandir
 do
   eval ac_val=\$$ac_var
   # Remove trailing slashes.
@@ -1309,7 +1259,6 @@ Fine tuning of the installation directories:
   --sysconfdir=DIR        read-only single-machine data [PREFIX/etc]
   --sharedstatedir=DIR    modifiable architecture-independent data [PREFIX/com]
   --localstatedir=DIR     modifiable single-machine data [PREFIX/var]
-  --runstatedir=DIR       modifiable per-process data [LOCALSTATEDIR/run]
   --libdir=DIR            object code libraries [EPREFIX/lib]
   --includedir=DIR        C header files [PREFIX/include]
   --oldincludedir=DIR     C header files for non-gcc [/usr/include]
@@ -1614,124 +1563,6 @@ fi
   as_fn_set_status $ac_retval
 
 } # ac_fn_c_try_cpp
-
-# ac_fn_c_check_header_mongrel LINENO HEADER VAR INCLUDES
-# -------------------------------------------------------
-# Tests whether HEADER exists, giving a warning if it cannot be compiled using
-# the include files in INCLUDES and setting the cache variable VAR
-# accordingly.
-ac_fn_c_check_header_mongrel ()
-{
-  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
-  if eval \${$3+:} false; then :
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
-$as_echo_n "checking for $2... " >&6; }
-if eval \${$3+:} false; then :
-  $as_echo_n "(cached) " >&6
-fi
-eval ac_res=\$$3
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-else
-  # Is the header compilable?
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking $2 usability" >&5
-$as_echo_n "checking $2 usability... " >&6; }
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-$4
-#include <$2>
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  ac_header_compiler=yes
-else
-  ac_header_compiler=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_header_compiler" >&5
-$as_echo "$ac_header_compiler" >&6; }
-
-# Is the header present?
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking $2 presence" >&5
-$as_echo_n "checking $2 presence... " >&6; }
-cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <$2>
-_ACEOF
-if ac_fn_c_try_cpp "$LINENO"; then :
-  ac_header_preproc=yes
-else
-  ac_header_preproc=no
-fi
-rm -f conftest.err conftest.i conftest.$ac_ext
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_header_preproc" >&5
-$as_echo "$ac_header_preproc" >&6; }
-
-# So?  What about this header?
-case $ac_header_compiler:$ac_header_preproc:$ac_c_preproc_warn_flag in #((
-  yes:no: )
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: $2: accepted by the compiler, rejected by the preprocessor!" >&5
-$as_echo "$as_me: WARNING: $2: accepted by the compiler, rejected by the preprocessor!" >&2;}
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: $2: proceeding with the compiler's result" >&5
-$as_echo "$as_me: WARNING: $2: proceeding with the compiler's result" >&2;}
-    ;;
-  no:yes:* )
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: $2: present but cannot be compiled" >&5
-$as_echo "$as_me: WARNING: $2: present but cannot be compiled" >&2;}
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: $2:     check for missing prerequisite headers?" >&5
-$as_echo "$as_me: WARNING: $2:     check for missing prerequisite headers?" >&2;}
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: $2: see the Autoconf documentation" >&5
-$as_echo "$as_me: WARNING: $2: see the Autoconf documentation" >&2;}
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: $2:     section \"Present But Cannot Be Compiled\"" >&5
-$as_echo "$as_me: WARNING: $2:     section \"Present But Cannot Be Compiled\"" >&2;}
-    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: $2: proceeding with the compiler's result" >&5
-$as_echo "$as_me: WARNING: $2: proceeding with the compiler's result" >&2;}
-    ;;
-esac
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
-$as_echo_n "checking for $2... " >&6; }
-if eval \${$3+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  eval "$3=\$ac_header_compiler"
-fi
-eval ac_res=\$$3
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-fi
-  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
-
-} # ac_fn_c_check_header_mongrel
-
-# ac_fn_c_check_header_compile LINENO HEADER VAR INCLUDES
-# -------------------------------------------------------
-# Tests whether HEADER exists and can be compiled using the include files in
-# INCLUDES, setting the cache variable VAR accordingly.
-ac_fn_c_check_header_compile ()
-{
-  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $2" >&5
-$as_echo_n "checking for $2... " >&6; }
-if eval \${$3+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-$4
-#include <$2>
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  eval "$3=yes"
-else
-  eval "$3=no"
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-fi
-eval ac_res=\$$3
-	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
-$as_echo "$ac_res" >&6; }
-  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
-
-} # ac_fn_c_check_header_compile
 cat >config.log <<_ACEOF
 This file contains any messages produced by compilers while
 running configure, to aid debugging if configure makes a mistake.
@@ -4087,289 +3918,6 @@ fi
 
 
 
-
-have_vulkan_hdr=no
-vsdk_include_dir="${VULKAN_SDK}/include"
-vulkan_header="vulkan/vulkan.h"
-save_CPPFLAGS="$CPPFLAGS"
-CPPFLAGS="${save_CPPFLAGS} -I$vsdk_include_dir"
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for grep that handles long lines and -e" >&5
-$as_echo_n "checking for grep that handles long lines and -e... " >&6; }
-if ${ac_cv_path_GREP+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if test -z "$GREP"; then
-  ac_path_GREP_found=false
-  # Loop through the user's path and test for each of PROGNAME-LIST
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH$PATH_SEPARATOR/usr/xpg4/bin
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_prog in grep ggrep; do
-    for ac_exec_ext in '' $ac_executable_extensions; do
-      ac_path_GREP="$as_dir/$ac_prog$ac_exec_ext"
-      as_fn_executable_p "$ac_path_GREP" || continue
-# Check for GNU ac_path_GREP and select it if it is found.
-  # Check for GNU $ac_path_GREP
-case `"$ac_path_GREP" --version 2>&1` in
-*GNU*)
-  ac_cv_path_GREP="$ac_path_GREP" ac_path_GREP_found=:;;
-*)
-  ac_count=0
-  $as_echo_n 0123456789 >"conftest.in"
-  while :
-  do
-    cat "conftest.in" "conftest.in" >"conftest.tmp"
-    mv "conftest.tmp" "conftest.in"
-    cp "conftest.in" "conftest.nl"
-    $as_echo 'GREP' >> "conftest.nl"
-    "$ac_path_GREP" -e 'GREP$' -e '-(cannot match)-' < "conftest.nl" >"conftest.out" 2>/dev/null || break
-    diff "conftest.out" "conftest.nl" >/dev/null 2>&1 || break
-    as_fn_arith $ac_count + 1 && ac_count=$as_val
-    if test $ac_count -gt ${ac_path_GREP_max-0}; then
-      # Best one so far, save it but keep looking for a better one
-      ac_cv_path_GREP="$ac_path_GREP"
-      ac_path_GREP_max=$ac_count
-    fi
-    # 10*(2^10) chars as input seems more than enough
-    test $ac_count -gt 10 && break
-  done
-  rm -f conftest.in conftest.tmp conftest.nl conftest.out;;
-esac
-
-      $ac_path_GREP_found && break 3
-    done
-  done
-  done
-IFS=$as_save_IFS
-  if test -z "$ac_cv_path_GREP"; then
-    as_fn_error $? "no acceptable grep could be found in $PATH$PATH_SEPARATOR/usr/xpg4/bin" "$LINENO" 5
-  fi
-else
-  ac_cv_path_GREP=$GREP
-fi
-
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_path_GREP" >&5
-$as_echo "$ac_cv_path_GREP" >&6; }
- GREP="$ac_cv_path_GREP"
-
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for egrep" >&5
-$as_echo_n "checking for egrep... " >&6; }
-if ${ac_cv_path_EGREP+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  if echo a | $GREP -E '(a|b)' >/dev/null 2>&1
-   then ac_cv_path_EGREP="$GREP -E"
-   else
-     if test -z "$EGREP"; then
-  ac_path_EGREP_found=false
-  # Loop through the user's path and test for each of PROGNAME-LIST
-  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
-for as_dir in $PATH$PATH_SEPARATOR/usr/xpg4/bin
-do
-  IFS=$as_save_IFS
-  test -z "$as_dir" && as_dir=.
-    for ac_prog in egrep; do
-    for ac_exec_ext in '' $ac_executable_extensions; do
-      ac_path_EGREP="$as_dir/$ac_prog$ac_exec_ext"
-      as_fn_executable_p "$ac_path_EGREP" || continue
-# Check for GNU ac_path_EGREP and select it if it is found.
-  # Check for GNU $ac_path_EGREP
-case `"$ac_path_EGREP" --version 2>&1` in
-*GNU*)
-  ac_cv_path_EGREP="$ac_path_EGREP" ac_path_EGREP_found=:;;
-*)
-  ac_count=0
-  $as_echo_n 0123456789 >"conftest.in"
-  while :
-  do
-    cat "conftest.in" "conftest.in" >"conftest.tmp"
-    mv "conftest.tmp" "conftest.in"
-    cp "conftest.in" "conftest.nl"
-    $as_echo 'EGREP' >> "conftest.nl"
-    "$ac_path_EGREP" 'EGREP$' < "conftest.nl" >"conftest.out" 2>/dev/null || break
-    diff "conftest.out" "conftest.nl" >/dev/null 2>&1 || break
-    as_fn_arith $ac_count + 1 && ac_count=$as_val
-    if test $ac_count -gt ${ac_path_EGREP_max-0}; then
-      # Best one so far, save it but keep looking for a better one
-      ac_cv_path_EGREP="$ac_path_EGREP"
-      ac_path_EGREP_max=$ac_count
-    fi
-    # 10*(2^10) chars as input seems more than enough
-    test $ac_count -gt 10 && break
-  done
-  rm -f conftest.in conftest.tmp conftest.nl conftest.out;;
-esac
-
-      $ac_path_EGREP_found && break 3
-    done
-  done
-  done
-IFS=$as_save_IFS
-  if test -z "$ac_cv_path_EGREP"; then
-    as_fn_error $? "no acceptable egrep could be found in $PATH$PATH_SEPARATOR/usr/xpg4/bin" "$LINENO" 5
-  fi
-else
-  ac_cv_path_EGREP=$EGREP
-fi
-
-   fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_path_EGREP" >&5
-$as_echo "$ac_cv_path_EGREP" >&6; }
- EGREP="$ac_cv_path_EGREP"
-
-
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for ANSI C header files" >&5
-$as_echo_n "checking for ANSI C header files... " >&6; }
-if ${ac_cv_header_stdc+:} false; then :
-  $as_echo_n "(cached) " >&6
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <stdlib.h>
-#include <stdarg.h>
-#include <string.h>
-#include <float.h>
-
-int
-main ()
-{
-
-  ;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_compile "$LINENO"; then :
-  ac_cv_header_stdc=yes
-else
-  ac_cv_header_stdc=no
-fi
-rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-
-if test $ac_cv_header_stdc = yes; then
-  # SunOS 4.x string.h does not declare mem*, contrary to ANSI.
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <string.h>
-
-_ACEOF
-if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
-  $EGREP "memchr" >/dev/null 2>&1; then :
-
-else
-  ac_cv_header_stdc=no
-fi
-rm -f conftest*
-
-fi
-
-if test $ac_cv_header_stdc = yes; then
-  # ISC 2.0.2 stdlib.h does not declare free, contrary to ANSI.
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <stdlib.h>
-
-_ACEOF
-if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
-  $EGREP "free" >/dev/null 2>&1; then :
-
-else
-  ac_cv_header_stdc=no
-fi
-rm -f conftest*
-
-fi
-
-if test $ac_cv_header_stdc = yes; then
-  # /bin/cc in Irix-4.0.5 gets non-ANSI ctype macros unless using -ansi.
-  if test "$cross_compiling" = yes; then :
-  :
-else
-  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
-/* end confdefs.h.  */
-#include <ctype.h>
-#include <stdlib.h>
-#if ((' ' & 0x0FF) == 0x020)
-# define ISLOWER(c) ('a' <= (c) && (c) <= 'z')
-# define TOUPPER(c) (ISLOWER(c) ? 'A' + ((c) - 'a') : (c))
-#else
-# define ISLOWER(c) \
-		   (('a' <= (c) && (c) <= 'i') \
-		     || ('j' <= (c) && (c) <= 'r') \
-		     || ('s' <= (c) && (c) <= 'z'))
-# define TOUPPER(c) (ISLOWER(c) ? ((c) | 0x40) : (c))
-#endif
-
-#define XOR(e, f) (((e) && !(f)) || (!(e) && (f)))
-int
-main ()
-{
-  int i;
-  for (i = 0; i < 256; i++)
-    if (XOR (islower (i), ISLOWER (i))
-	|| toupper (i) != TOUPPER (i))
-      return 2;
-  return 0;
-}
-_ACEOF
-if ac_fn_c_try_run "$LINENO"; then :
-
-else
-  ac_cv_header_stdc=no
-fi
-rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
-  conftest.$ac_objext conftest.beam conftest.$ac_ext
-fi
-
-fi
-fi
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_header_stdc" >&5
-$as_echo "$ac_cv_header_stdc" >&6; }
-if test $ac_cv_header_stdc = yes; then
-
-$as_echo "#define STDC_HEADERS 1" >>confdefs.h
-
-fi
-
-# On IRIX 5.3, sys/types and inttypes.h are conflicting.
-for ac_header in sys/types.h sys/stat.h stdlib.h string.h memory.h strings.h \
-		  inttypes.h stdint.h unistd.h
-do :
-  as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
-ac_fn_c_check_header_compile "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default
-"
-if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
-  cat >>confdefs.h <<_ACEOF
-#define `$as_echo "HAVE_$ac_header" | $as_tr_cpp` 1
-_ACEOF
-
-fi
-
-done
-
-
-as_ac_Header=`$as_echo "ac_cv_header_$vulkan_header" | $as_tr_sh`
-ac_fn_c_check_header_mongrel "$LINENO" "$vulkan_header" "$as_ac_Header" "$ac_includes_default"
-if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
-  have_vulkan_hdr=yes
-else
-  have_vulkan_hdr=no
-fi
-
-
-CPPFLAGS="$save_CPPFLAGS"
-if test x$have_vulkan_hdr = xyes; then
-    # vulkan.h has been found in either $VULKAN_SDK/include or along the
-    # the standard include path. Unfortunately there seems no easy
-    # way to find out which, so...
-    if test -n "$VULKAN_SDK" -a -f "$vsdk_include_dir/$vulkan_header"; then
-        CFLAGS="$CFLAGS -I$vsdk_include_dir"
-    fi
-fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for TTF_Init in -lSDL2_ttf" >&5
 $as_echo_n "checking for TTF_Init in -lSDL2_ttf... " >&6; }
