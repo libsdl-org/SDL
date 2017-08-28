@@ -29,9 +29,11 @@
 #include "SDL_x11vulkan.h"
 
 #include <X11/Xlib.h>
-//#include <xcb/xcb.h>
+/*#include <xcb/xcb.h>*/
+/*
 typedef uint32_t xcb_window_t;
 typedef uint32_t xcb_visualid_t;
+*/
 
 int X11_Vulkan_LoadLibrary(_THIS, const char *path)
 {
