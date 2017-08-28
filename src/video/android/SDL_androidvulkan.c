@@ -123,7 +123,7 @@ SDL_bool Android_Vulkan_GetInstanceExtensions(_THIS,
         return SDL_FALSE;
     }
     return SDL_Vulkan_GetInstanceExtensions_Helper(
-            count, names, SDL_arraysize(extensionsForMir),
+            count, names, SDL_arraysize(extensionsForAndroid),
             extensionsForAndroid);
 }
 
@@ -150,11 +150,11 @@ SDL_bool Android_Vulkan_CreateSurface(_THIS,
 
     if(!vkCreateAndroidSurfaceKHR)
     {
-        SDL_SetError(VK_KHR_Android_SURFACE_EXTENSION_NAME
+        SDL_SetError(VK_KHR_ANDROID_SURFACE_EXTENSION_NAME
                      " extension is not enabled in the Vulkan instance.");
         return SDL_FALSE;
     }
-    createInfo.sType = VK_STRUCTURE_TYPE_Android_SURFACE_CREATE_INFO_KHR;
+    createInfo.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
     createInfo.pNext = NULL;
     createInfo.flags = 0;
     createInfo.window = windowData->native_window;
