@@ -140,12 +140,12 @@
 #define SDL_VIDEO_RENDER_OGL_ES 1
 #define SDL_VIDEO_RENDER_OGL_ES2    1
 
-/* Enable Vulkan surface support */
+/* Enable Vulkan support */
 /* Android does not support Vulkan in native code using the "armeabi" ABI. */
-#if !defined(__ARM_EABI__) || defined(__ARM_ARCH_7A__)
-#define SDL_VIDEO_VULKAN_SURFACE 1
+#if defined(__ARM_ARCH) && __ARM_ARCH < 7
+#define SDL_VIDEO_VULKAN 0
 #else
-#define SDL_VIDEO_VULKAN_SURFACE 0
+#define SDL_VIDEO_VULKAN 1
 #endif
 
 /* Enable system power support */

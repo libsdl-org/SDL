@@ -325,7 +325,7 @@ set_option(VIDEO_COCOA         "Use Cocoa video driver" ${APPLE})
 set_option(DIRECTX             "Use DirectX for Windows audio/video" ${WINDOWS})
 set_option(RENDER_D3D          "Enable the Direct3D render driver" ${WINDOWS})
 set_option(VIDEO_VIVANTE       "Use Vivante EGL video driver" ${UNIX_SYS})
-dep_option(VIDEO_VULKAN        "Enable Vulkan surface creation" ON "ANDROID OR APPLE OR LINUX OR WINDOWS" OFF)
+dep_option(VIDEO_VULKAN        "Enable Vulkan support" ON "ANDROID OR APPLE OR LINUX OR WINDOWS" OFF)
 set_option(VIDEO_KMSDRM        "Use KMS DRM video driver" ${UNIX_SYS})
 dep_option(KMSDRM_SHARED       "Dynamically load KMS DRM support" ON "VIDEO_KMSDRM" OFF)
 
@@ -1518,7 +1518,7 @@ elseif(HAIKU)
 endif()
 
 if(VIDEO_VULKAN AND (NOT APPLE OR QUARTZCORE))
-  set(SDL_VIDEO_VULKAN_SURFACE 1)
+  set(SDL_VIDEO_VULKAN 1)
 endif()
 
 # Dummies

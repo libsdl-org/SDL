@@ -23,7 +23,7 @@
 #include "SDL_vulkan_internal.h"
 #include "SDL_error.h"
 
-#if SDL_VIDEO_VULKAN_SURFACE
+#if SDL_VIDEO_VULKAN
 
 /* Based on the headers found in
  * https://github.com/KhronosGroup/Vulkan-LoaderAndValidationLayers

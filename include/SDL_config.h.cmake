@@ -354,8 +354,8 @@
 #cmakedefine SDL_VIDEO_OPENGL_OSMESA @SDL_VIDEO_OPENGL_OSMESA@
 #cmakedefine SDL_VIDEO_OPENGL_OSMESA_DYNAMIC @SDL_VIDEO_OPENGL_OSMESA_DYNAMIC@
 
-/* Enable Vulkan surface support */
-#cmakedefine SDL_VIDEO_VULKAN_SURFACE @SDL_VIDEO_VULKAN_SURFACE@
+/* Enable Vulkan support */
+#cmakedefine SDL_VIDEO_VULKAN @SDL_VIDEO_VULKAN@
 
 /* Enable system power support */
 #cmakedefine SDL_POWER_ANDROID @SDL_POWER_ANDROID@

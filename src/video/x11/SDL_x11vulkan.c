@@ -20,7 +20,7 @@
 */
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_VULKAN_SURFACE && SDL_VIDEO_DRIVER_X11
+#if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_X11
 
 #include "SDL_x11video.h"
 #include "SDL_assert.h"

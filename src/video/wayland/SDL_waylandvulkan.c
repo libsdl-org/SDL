@@ -26,7 +26,7 @@
 
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_VULKAN_SURFACE && SDL_VIDEO_DRIVER_WAYLAND
+#if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_WAYLAND
 
 #include "SDL_waylandvideo.h"
 #include "SDL_waylandwindow.h"

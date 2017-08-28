@@ -21957,7 +21957,7 @@ $as_echo "$as_me: WARNING: Sorry, Vulkan does not work on this configuration." >
     fi
     if test x$enable_video_vulkan = xyes; then
 
-$as_echo "#define SDL_VIDEO_VULKAN_SURFACE 1" >>confdefs.h
+$as_echo "#define SDL_VIDEO_VULKAN 1" >>confdefs.h
 
         SUMMARY_video="${SUMMARY_video} vulkan"
     fi

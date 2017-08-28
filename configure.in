@@ -2403,7 +2403,7 @@ CheckEmscriptenGLES()
 
 dnl Check to see if Vulkan surface support is desired
 AC_ARG_ENABLE(video-vulkan,
-AC_HELP_STRING([--enable-video-vulkan], [include Vulkan surface support [[default=yes]]]),
+AC_HELP_STRING([--enable-video-vulkan], [include Vulkan support [[default=yes]]]),
               , enable_video_vulkan=yes)
 
 dnl Find Vulkan Header
@@ -2435,7 +2435,7 @@ CheckVulkan()
         fi
     fi
     if test x$enable_video_vulkan = xyes; then
-        AC_DEFINE(SDL_VIDEO_VULKAN_SURFACE, 1, [ ])
+        AC_DEFINE(SDL_VIDEO_VULKAN, 1, [ ])
         SUMMARY_video="${SUMMARY_video} vulkan"
     fi
 }

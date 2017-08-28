@@ -351,8 +351,8 @@
 #undef SDL_VIDEO_OPENGL_OSMESA
 #undef SDL_VIDEO_OPENGL_OSMESA_DYNAMIC
 
-/* Enable Vulkan surface support */
-#undef SDL_VIDEO_VULKAN_SURFACE
+/* Enable Vulkan support */
+#undef SDL_VIDEO_VULKAN
 
 /* Enable system power support */
 #undef SDL_POWER_LINUX
