@@ -182,12 +182,15 @@ public class SDLActivity extends Activity {
         // Set up the surface
         mSurface = new SDLSurface(getApplication());
 
-        if(Build.VERSION.SDK_INT >= 12) {
+
+        if(Build.VERSION.SDK_INT >= 16) {
+            mJoystickHandler = new SDLJoystickHandler_API16();
+        } else if(Build.VERSION.SDK_INT >= 12) {
             mJoystickHandler = new SDLJoystickHandler_API12();
-        }
-        else {
+        } else {
             mJoystickHandler = new SDLJoystickHandler();
         }
+
         mHapticHandler = new SDLHapticHandler();
 
         if (Build.VERSION.SDK_INT >= 11) {
@@ -511,7 +514,7 @@ public class SDLActivity extends Activity {
     public static native void onNativeClipboardChanged();
     public static native void onNativeSurfaceChanged();
     public static native void onNativeSurfaceDestroyed();
-    public static native int nativeAddJoystick(int device_id, String name,
+    public static native int nativeAddJoystick(int device_id, String name, String desc,
                                                int is_accelerometer, int nbuttons,
                                                int naxes, int nhats, int nballs);
     public static native int nativeRemoveJoystick(int device_id);
@@ -1737,6 +1740,7 @@ class SDLJoystickHandler_API12 extends SDLJoystickHandler {
     static class SDLJoystick {
         public int device_id;
         public String name;
+        public String desc;
         public ArrayList<InputDevice.MotionRange> axes;
         public ArrayList<InputDevice.MotionRange> hats;
     }
@@ -1770,6 +1774,7 @@ class SDLJoystickHandler_API12 extends SDLJoystickHandler {
                 if (SDLActivity.isDeviceSDLJoystick(deviceIds[i])) {
                     joystick.device_id = deviceIds[i];
                     joystick.name = joystickDevice.getName();
+                    joystick.desc = getJoystickDescriptor(joystickDevice);
                     joystick.axes = new ArrayList<InputDevice.MotionRange>();
                     joystick.hats = new ArrayList<InputDevice.MotionRange>();
 
@@ -1788,7 +1793,7 @@ class SDLJoystickHandler_API12 extends SDLJoystickHandler {
                     }
 
                     mJoysticks.add(joystick);
-                    SDLActivity.nativeAddJoystick(joystick.device_id, joystick.name, 0, -1,
+                    SDLActivity.nativeAddJoystick(joystick.device_id, joystick.name, joystick.desc, 0, -1,
                                                   joystick.axes.size(), joystick.hats.size()/2, 0);
                 }
             }
@@ -1855,6 +1860,25 @@ class SDLJoystickHandler_API12 extends SDLJoystickHandler {
             }
         }
         return true;
+    }
+
+    public String getJoystickDescriptor(InputDevice joystickDevice) {
+        return joystickDevice.getName();
+    }
+}
+
+
+class SDLJoystickHandler_API16 extends SDLJoystickHandler_API12 {
+
+    @Override
+    public String getJoystickDescriptor(InputDevice joystickDevice) {
+        String desc = joystickDevice.getDescriptor();
+
+        if (desc != null && desc != "") {
+            return desc;
+        }
+
+        return super.getJoystickDescriptor(joystickDevice);
     }
 }
 
