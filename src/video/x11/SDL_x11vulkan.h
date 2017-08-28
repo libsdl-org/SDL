@@ -27,7 +27,7 @@
 
 #if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_X11
 
-typedef struct xcb_connection_t xcb_connection_t;
+/*typedef struct xcb_connection_t xcb_connection_t;*/
 typedef xcb_connection_t *(*PFN_XGetXCBConnection)(Display *dpy);
 
 int X11_Vulkan_LoadLibrary(_THIS, const char *path);
