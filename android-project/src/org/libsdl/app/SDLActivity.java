@@ -1683,10 +1683,16 @@ class SDLInputConnection extends BaseInputConnection {
     @Override
     public boolean deleteSurroundingText(int beforeLength, int afterLength) {
         // Workaround to capture backspace key. Ref: http://stackoverflow.com/questions/14560344/android-backspace-in-webview-baseinputconnection
-        if (beforeLength == 1 && afterLength == 0) {
-            // backspace
-            return super.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL))
-                && super.sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL));
+        // and https://bugzilla.libsdl.org/show_bug.cgi?id=2265
+        if (beforeLength > 0 && afterLength == 0) {
+            boolean ret = true;
+            // backspace(s)
+            while (beforeLength-- > 0) {
+               boolean ret_key = sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL))
+                              && sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL));
+               ret = ret && ret_key; 
+            }
+            return ret;
         }
 
         return super.deleteSurroundingText(beforeLength, afterLength);
