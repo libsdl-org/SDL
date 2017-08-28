@@ -74,6 +74,29 @@ public class SDLActivity extends Activity {
     protected static AudioRecord mAudioRecord;
 
     /**
+     * This method returns the name of the shared object with the application entry point
+     * It can be overridden by derived classes.
+     */
+    protected String getMainSharedObject() {
+        String library;
+        String[] libraries = SDLActivity.mSingleton.getLibraries();
+        if (libraries.length > 0) {
+            library = "lib" + libraries[libraries.length - 1] + ".so";
+        } else {
+            library = "libmain.so";
+        }
+        return library;
+    }
+
+    /**
+     * This method returns the name of the application entry point
+     * It can be overridden by derived classes.
+     */
+    protected String getMainFunction() {
+        return "SDL_main";
+    }
+
+    /**
      * This method is called by SDL before loading the native shared libraries.
      * It can be overridden to provide names of shared libraries to be loaded.
      * The default implementation returns the defaults. It never returns null.
@@ -1218,17 +1241,12 @@ class SDLMain implements Runnable {
     @Override
     public void run() {
         // Runs SDL_main()
-        String library;
-        String[] libraries = SDLActivity.mSingleton.getLibraries();
-        if (libraries.length > 0) {
-            library = "lib" + libraries[libraries.length - 1] + ".so";
-        } else {
-            library = "libmain.so";
-        }
-        String function = "SDL_main";
+        String library = SDLActivity.mSingleton.getMainSharedObject();
+        String function = SDLActivity.mSingleton.getMainFunction();
+        String[] arguments = SDLActivity.mSingleton.getArguments();
 
         Log.v("SDL", "Running main function " + function + " from library " + library);
-        SDLActivity.nativeRunMain(library, function, SDLActivity.mSingleton.getArguments());
+        SDLActivity.nativeRunMain(library, function, arguments);
 
         Log.v("SDL", "Finished main function");
     }
