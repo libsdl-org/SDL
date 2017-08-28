@@ -31,7 +31,12 @@ int main(int argc, char *argv[])
 #else
 
 #define VK_NO_PROTOTYPES
+#ifdef HAVE_VULKAN_H
+#include <vulkan/vulkan.h>
+#else
+/* SDL includes a copy for building on systems without the Vulkan SDK */
 #include "../src/video/khronos/vulkan/vulkan.h"
+#endif
 
 #define VULKAN_FUNCTIONS()                                              \
     VULKAN_DEVICE_FUNCTION(vkAcquireNextImageKHR)                       \
