@@ -667,6 +667,21 @@ public class SDLActivity extends Activity {
         return mSingleton.commandHandler.post(new ShowTextInputTask(x, y, w, h));
     }
 
+    public static boolean isTextInputEvent(KeyEvent event) {
+      
+        // Key pressed with Ctrl should be sent as SDL_KEYDOWN/SDL_KEYUP and not SDL_TEXTINPUT
+        if (android.os.Build.VERSION.SDK_INT >= 11) {
+            if (event.isCtrlPressed()) {
+                return false;
+            }  
+        }
+
+        if (event.isPrintingKey() || event.getKeyCode() == KeyEvent.KEYCODE_SPACE) {
+            return true;
+        }
+        return false;
+    }
+
     /**
      * This method is called by SDL using JNI.
      */
@@ -1587,23 +1602,19 @@ class DummyEdit extends View implements View.OnKeyListener {
 
     @Override
     public boolean onKey(View v, int keyCode, KeyEvent event) {
-
-        // This handles the hardware keyboard input
-        if (event.isPrintingKey() || keyCode == KeyEvent.KEYCODE_SPACE) {
-            if (event.getAction() == KeyEvent.ACTION_DOWN) {
+        /* 
+         * This handles the hardware keyboard input
+         */
+        if (event.getAction() == KeyEvent.ACTION_DOWN) {
+            if (SDLActivity.isTextInputEvent(event)) {
                 ic.commitText(String.valueOf((char) event.getUnicodeChar()), 1);
             }
-            return true;
-        }
-
-        if (event.getAction() == KeyEvent.ACTION_DOWN) {
             SDLActivity.onNativeKeyDown(keyCode);
             return true;
         } else if (event.getAction() == KeyEvent.ACTION_UP) {
             SDLActivity.onNativeKeyUp(keyCode);
             return true;
         }
-
         return false;
     }
 
@@ -1645,20 +1656,17 @@ class SDLInputConnection extends BaseInputConnection {
 
     @Override
     public boolean sendKeyEvent(KeyEvent event) {
-
         /*
-         * This handles the keycodes from soft keyboard (and IME-translated
-         * input from hardkeyboard)
+         * This handles the keycodes from soft keyboard (and IME-translated input from hardkeyboard)
          */
         int keyCode = event.getKeyCode();
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
-            if (event.isPrintingKey() || keyCode == KeyEvent.KEYCODE_SPACE) {
+            if (SDLActivity.isTextInputEvent(event)) {
                 commitText(String.valueOf((char) event.getUnicodeChar()), 1);
             }
             SDLActivity.onNativeKeyDown(keyCode);
             return true;
         } else if (event.getAction() == KeyEvent.ACTION_UP) {
-
             SDLActivity.onNativeKeyUp(keyCode);
             return true;
         }
