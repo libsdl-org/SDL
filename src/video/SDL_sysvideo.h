@@ -26,7 +26,8 @@
 #include "SDL_messagebox.h"
 #include "SDL_shape.h"
 #include "SDL_thread.h"
-#include "SDL_vulkan.h"
+
+#include "SDL_vulkan_internal.h"
 
 /* The SDL video driver */
 
