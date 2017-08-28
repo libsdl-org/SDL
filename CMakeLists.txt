@@ -859,7 +859,7 @@ if(ANDROID)
     endif()
 
     CHECK_C_SOURCE_COMPILES("
-    #if defined(__ANDROID__) && defined(__ARM_EABI__) && !defined(__ARM_ARCH_7A__)
+    #if defined(__ANDROID__) && defined(__ARM_ARCH) && __ARM_ARCH < 7
     #error Vulkan doesn't work on this configuration
     #endif
     int main()
