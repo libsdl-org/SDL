@@ -713,7 +713,7 @@ static SDL_bool createSwapchain(void)
     }
 
     // get size
-    SDL_GL_GetDrawableSize(state->windows[0], &w, &h);
+    SDL_Vulkan_GetDrawableSize(state->windows[0], &w, &h);
     vulkanContext.swapchainSize.width = w;
     vulkanContext.swapchainSize.height = h;
     if(w == 0 || h == 0)
@@ -1102,7 +1102,7 @@ static SDL_bool render(void)
                      getVulkanResultString(result));
         quit(2);
     }
-    SDL_GL_GetDrawableSize(state->windows[0], &w, &h);
+    SDL_Vulkan_GetDrawableSize(state->windows[0], &w, &h);
     if(w != (int)vulkanContext.swapchainSize.width || h != (int)vulkanContext.swapchainSize.height)
     {
         return createNewSwapchainAndSwapchainSpecificStuff();
@@ -1159,7 +1159,7 @@ int main(int argc, char *argv[])
     SDL_Log("Screen BPP    : %d\n", SDL_BITSPERPIXEL(mode.format));
     SDL_GetWindowSize(state->windows[0], &dw, &dh);
     SDL_Log("Window Size   : %d,%d\n", dw, dh);
-    SDL_GL_GetDrawableSize(state->windows[0], &dw, &dh);
+    SDL_Vulkan_GetDrawableSize(state->windows[0], &dw, &dh);
     SDL_Log("Draw Size     : %d,%d\n", dw, dh);
     SDL_Log("\n");
 
