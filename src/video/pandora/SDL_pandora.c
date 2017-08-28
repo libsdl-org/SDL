@@ -102,8 +102,8 @@ PND_create()
     device->VideoQuit = PND_videoquit;
     device->GetDisplayModes = PND_getdisplaymodes;
     device->SetDisplayMode = PND_setdisplaymode;
-    device->CreateWindow = PND_createwindow;
-    device->CreateWindowFrom = PND_createwindowfrom;
+    device->CreateSDLWindow = PND_createwindow;
+    device->CreateSDLWindowFrom = PND_createwindowfrom;
     device->SetWindowTitle = PND_setwindowtitle;
     device->SetWindowIcon = PND_setwindowicon;
     device->SetWindowPosition = PND_setwindowposition;

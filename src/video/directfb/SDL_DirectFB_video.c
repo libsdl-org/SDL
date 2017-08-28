@@ -109,8 +109,8 @@ DirectFB_CreateDevice(int devindex)
     device->GetDisplayModes = DirectFB_GetDisplayModes;
     device->SetDisplayMode = DirectFB_SetDisplayMode;
     device->PumpEvents = DirectFB_PumpEventsWindow;
-    device->CreateWindow = DirectFB_CreateWindow;
-    device->CreateWindowFrom = DirectFB_CreateWindowFrom;
+    device->CreateSDLWindow = DirectFB_CreateWindow;
+    device->CreateSDLWindowFrom = DirectFB_CreateWindowFrom;
     device->SetWindowTitle = DirectFB_SetWindowTitle;
     device->SetWindowIcon = DirectFB_SetWindowIcon;
     device->SetWindowPosition = DirectFB_SetWindowPosition;

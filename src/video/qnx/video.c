@@ -330,7 +330,7 @@ createDevice(int devindex)
     device->driverdata = NULL;
     device->VideoInit = videoInit;
     device->VideoQuit = videoQuit;
-    device->CreateWindow = createWindow;
+    device->CreateSDLWindow = createWindow;
     device->CreateWindowFramebuffer = createWindowFramebuffer;
     device->UpdateWindowFramebuffer = updateWindowFramebuffer;
     device->SetWindowSize = setWindowSize;

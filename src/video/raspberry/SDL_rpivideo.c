@@ -97,8 +97,8 @@ RPI_Create()
     device->VideoQuit = RPI_VideoQuit;
     device->GetDisplayModes = RPI_GetDisplayModes;
     device->SetDisplayMode = RPI_SetDisplayMode;
-    device->CreateWindow = RPI_CreateWindow;
-    device->CreateWindowFrom = RPI_CreateWindowFrom;
+    device->CreateSDLWindow = RPI_CreateWindow;
+    device->CreateSDLWindowFrom = RPI_CreateWindowFrom;
     device->SetWindowTitle = RPI_SetWindowTitle;
     device->SetWindowIcon = RPI_SetWindowIcon;
     device->SetWindowPosition = RPI_SetWindowPosition;

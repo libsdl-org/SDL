@@ -140,7 +140,7 @@ WINRT_CreateDevice(int devindex)
     /* Set the function pointers */
     device->VideoInit = WINRT_VideoInit;
     device->VideoQuit = WINRT_VideoQuit;
-    device->CreateWindow = WINRT_CreateWindow;
+    device->CreateSDLWindow = WINRT_CreateWindow;
     device->SetWindowSize = WINRT_SetWindowSize;
     device->SetWindowFullscreen = WINRT_SetWindowFullscreen;
     device->DestroyWindow = WINRT_DestroyWindow;

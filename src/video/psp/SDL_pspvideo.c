@@ -113,8 +113,8 @@ PSP_Create()
     device->VideoQuit = PSP_VideoQuit;
     device->GetDisplayModes = PSP_GetDisplayModes;
     device->SetDisplayMode = PSP_SetDisplayMode;
-    device->CreateWindow = PSP_CreateWindow;
-    device->CreateWindowFrom = PSP_CreateWindowFrom;
+    device->CreateSDLWindow = PSP_CreateWindow;
+    device->CreateSDLWindowFrom = PSP_CreateWindowFrom;
     device->SetWindowTitle = PSP_SetWindowTitle;
     device->SetWindowIcon = PSP_SetWindowIcon;
     device->SetWindowPosition = PSP_SetWindowPosition;

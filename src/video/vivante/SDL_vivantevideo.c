@@ -88,7 +88,7 @@ VIVANTE_Create()
     device->VideoQuit = VIVANTE_VideoQuit;
     device->GetDisplayModes = VIVANTE_GetDisplayModes;
     device->SetDisplayMode = VIVANTE_SetDisplayMode;
-    device->CreateWindow = VIVANTE_CreateWindow;
+    device->CreateSDLWindow = VIVANTE_CreateWindow;
     device->SetWindowTitle = VIVANTE_SetWindowTitle;
     device->SetWindowPosition = VIVANTE_SetWindowPosition;
     device->SetWindowSize = VIVANTE_SetWindowSize;
