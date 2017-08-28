@@ -485,7 +485,7 @@ WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         ParentWindow = ((SDL_WindowData*)messageboxdata->window->driverdata)->hwnd;
     }
 
-    *buttonid = DialogBoxIndirect(NULL, (DLGTEMPLATE*)dialog->lpDialog, ParentWindow, (DLGPROC)MessageBoxDialogProc);
+    *buttonid = (int)DialogBoxIndirect(NULL, (DLGTEMPLATE*)dialog->lpDialog, ParentWindow, (DLGPROC)MessageBoxDialogProc);
 
     FreeDialogData(dialog);
     return 0;
