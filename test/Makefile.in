@@ -66,6 +66,7 @@ TARGETS = \
 	testdisplayinfo$(EXE) \
 	testqsort$(EXE) \
 	controllermap$(EXE) \
+	testvulkan$(EXE) \
 	
 all: Makefile $(TARGETS) copydatafiles
 
@@ -287,6 +288,9 @@ testcustomcursor$(EXE): $(srcdir)/testcustomcursor.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 controllermap$(EXE): $(srcdir)/controllermap.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testvulkan$(EXE): $(srcdir)/testvulkan.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 

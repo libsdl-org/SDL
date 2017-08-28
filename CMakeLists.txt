@@ -20,6 +20,7 @@ include(CheckLibraryExists)
 include(CheckIncludeFiles)
 include(CheckIncludeFile)
 include(CheckSymbolExists)
+include(CheckCSourceCompiles)
 include(CheckCSourceRuns)
 include(CheckCCompilerFlag)
 include(CheckTypeSize)
@@ -324,8 +325,13 @@ set_option(VIDEO_COCOA         "Use Cocoa video driver" ${APPLE})
 set_option(DIRECTX             "Use DirectX for Windows audio/video" ${WINDOWS})
 set_option(RENDER_D3D          "Enable the Direct3D render driver" ${WINDOWS})
 set_option(VIDEO_VIVANTE       "Use Vivante EGL video driver" ${UNIX_SYS})
+dep_option(VIDEO_VULKAN        "Enable Vulkan surface creation" ON "ANDROID OR APPLE OR LINUX OR WINDOWS" OFF)
 set_option(VIDEO_KMSDRM        "Use KMS DRM video driver" ${UNIX_SYS})
 dep_option(KMSDRM_SHARED       "Dynamically load KMS DRM support" ON "VIDEO_KMSDRM" OFF)
+
+if(VIDEO_VULKAN)
+  set(VULKAN_SDK $ENV{VULKAN_SDK} CACHE PATH "Location of Vulkan headers' grandparent, e.g. /foo when headers are in /foo/include/vulkan.")
+endif()
 
 # TODO: We should (should we?) respect cmake's ${BUILD_SHARED_LIBS} flag here
 # The options below are for compatibility to configure's default behaviour.
@@ -855,6 +861,22 @@ if(ANDROID)
       find_library(OpenGLES2_LIBRARY GLESv2)
       list(APPEND EXTRA_LIBS ${OpenGLES1_LIBRARY} ${OpenGLES2_LIBRARY})
     endif()
+
+    CHECK_C_SOURCE_COMPILES("
+    #if defined(__ANDROID__) && defined(__ARM_EABI__) && !defined(__ARM_ARCH_7A__)
+    #error Vulkan doesn't work on this configuration
+    #endif
+    int main()
+    {
+        return 0;
+    }
+    " VULKAN_PASSED_ANDROID_CHECKS)
+    if(NOT VULKAN_PASSED_ANDROID_CHECKS)
+      set(VIDEO_VULKAN OFF)
+      message(STATUS "Vulkan doesn't work on this configuration")
+    else()
+      CheckVulkanHeaders()
+    endif()
   endif()
 
   CheckPTHREAD()
@@ -1020,6 +1042,7 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID)
 
     check_include_file("fcitx/frontend.h" HAVE_FCITX_FRONTEND_H)
 
+    CheckVulkanHeaders()
   endif()
 
   if(INPUT_TSLIB)
@@ -1278,6 +1301,8 @@ elseif(WINDOWS)
       set(SDL_VIDEO_RENDER_OGL_ES2 1)
       set(HAVE_VIDEO_OPENGLES TRUE)
     endif()
+
+    CheckVulkanHeaders()
   endif()
 
   if(SDL_JOYSTICK)
@@ -1419,6 +1444,13 @@ elseif(APPLE)
   endif()
 
   # Actually load the frameworks at the end so we don't duplicate include.
+  if (VIDEO_VULKAN)
+    CheckVulkanHeaders()
+    if(HAVE_VULKAN_H)
+      find_library(QUARTZCORE QuartzCore)
+      list(APPEND EXTRA_LIBS ${QUARTZCORE})
+    endif()
+  endif()
   if(SDL_FRAMEWORK_COREVIDEO)
     find_library(COREVIDEO CoreVideo)
     list(APPEND EXTRA_LIBS ${COREVIDEO})
@@ -1496,6 +1528,10 @@ elseif(HAIKU)
   endif()
 
   CheckPTHREAD()
+endif()
+
+if(VIDEO_VULKAN AND HAVE_VULKAN_H AND (NOT APPLE OR QUARTZCORE))
+  set(SDL_VIDEO_VULKAN_SURFACE 1)
 endif()
 
 # Dummies

@@ -36,6 +36,7 @@
 #include "SDL_mirmouse.h"
 #include "SDL_miropengl.h"
 #include "SDL_mirvideo.h"
+#include "SDL_mirvulkan.h"
 
 #include "SDL_mirdyn.h"
 
@@ -231,6 +232,13 @@ MIR_CreateDevice(int device_index)
     device->HasClipboardText = NULL;
 
     device->ShowMessageBox = NULL;
+
+#if SDL_VIDEO_VULKAN_SURFACE
+    device->Vulkan_LoadLibrary = MIR_Vulkan_LoadLibrary;
+    device->Vulkan_UnloadLibrary = MIR_Vulkan_UnloadLibrary;
+    device->Vulkan_GetInstanceExtensions = MIR_Vulkan_GetInstanceExtensions;
+    device->Vulkan_CreateSurface = MIR_Vulkan_CreateSurface;
+#endif
 
     return device;
 }

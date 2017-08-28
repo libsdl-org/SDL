@@ -33,6 +33,7 @@
 #include "SDL_windowsvideo.h"
 #include "SDL_windowsframebuffer.h"
 #include "SDL_windowsshape.h"
+#include "SDL_windowsvulkan.h"
 
 /* Initialization/Query functions */
 static int WIN_VideoInit(_THIS);
@@ -190,6 +191,13 @@ WIN_CreateDevice(int devindex)
     device->GL_SwapWindow = WIN_GLES_SwapWindow;
     device->GL_DeleteContext = WIN_GLES_DeleteContext;
 #endif
+#if SDL_VIDEO_VULKAN_SURFACE
+    device->Vulkan_LoadLibrary = WIN_Vulkan_LoadLibrary;
+    device->Vulkan_UnloadLibrary = WIN_Vulkan_UnloadLibrary;
+    device->Vulkan_GetInstanceExtensions = WIN_Vulkan_GetInstanceExtensions;
+    device->Vulkan_CreateSurface = WIN_Vulkan_CreateSurface;
+#endif
+
     device->StartTextInput = WIN_StartTextInput;
     device->StopTextInput = WIN_StopTextInput;
     device->SetTextInputRect = WIN_SetTextInputRect;

@@ -35,6 +35,7 @@
 #include "SDL_waylandmouse.h"
 #include "SDL_waylandtouch.h"
 #include "SDL_waylandclipboard.h"
+#include "SDL_waylandvulkan.h"
 
 #include <sys/types.h>
 #include <unistd.h>
@@ -180,6 +181,13 @@ Wayland_CreateDevice(int devindex)
     device->SetClipboardText = Wayland_SetClipboardText;
     device->GetClipboardText = Wayland_GetClipboardText;
     device->HasClipboardText = Wayland_HasClipboardText;
+
+#if SDL_VIDEO_VULKAN_SURFACE
+    device->Vulkan_LoadLibrary = Wayland_Vulkan_LoadLibrary;
+    device->Vulkan_UnloadLibrary = Wayland_Vulkan_UnloadLibrary;
+    device->Vulkan_GetInstanceExtensions = Wayland_Vulkan_GetInstanceExtensions;
+    device->Vulkan_CreateSurface = Wayland_Vulkan_CreateSurface;
+#endif
 
     device->free = Wayland_DeleteDevice;
 

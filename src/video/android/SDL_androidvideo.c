@@ -40,6 +40,7 @@
 #include "SDL_androidmouse.h"
 #include "SDL_androidtouch.h"
 #include "SDL_androidwindow.h"
+#include "SDL_androidvulkan.h"
 
 #define ANDROID_VID_DRIVER_NAME "Android"
 
@@ -131,6 +132,13 @@ Android_CreateDevice(int devindex)
     device->GL_GetSwapInterval = Android_GLES_GetSwapInterval;
     device->GL_SwapWindow = Android_GLES_SwapWindow;
     device->GL_DeleteContext = Android_GLES_DeleteContext;
+
+#if SDL_VIDEO_VULKAN_SURFACE
+    device->Vulkan_LoadLibrary = Android_Vulkan_LoadLibrary;
+    device->Vulkan_UnloadLibrary = Android_Vulkan_UnloadLibrary;
+    device->Vulkan_GetInstanceExtensions = Android_Vulkan_GetInstanceExtensions;
+    device->Vulkan_CreateSurface = Android_Vulkan_CreateSurface;
+#endif
 
     /* Screensaver */
     device->SuspendScreenSaver = Android_SuspendScreenSaver;

@@ -139,6 +139,13 @@
 #define SDL_VIDEO_RENDER_OGL_ES 1
 #define SDL_VIDEO_RENDER_OGL_ES2    1
 
+/* Enable Vulkan surface support */
+#if !TARGET_OS_SIMULATOR && !TARGET_CPU_ARM // Only 64-bit devices have Metal
+#define SDL_VIDEO_VULKAN_SURFACE 1
+#else
+#define SDL_VIDEO_VULKAN_SURFACE 0
+#endif
+
 /* Enable system power support */
 #define SDL_POWER_UIKIT 1
 

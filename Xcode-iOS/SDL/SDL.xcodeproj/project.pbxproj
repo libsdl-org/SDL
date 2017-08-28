@@ -67,6 +67,13 @@
 		04F7808512FB753F00FC43C0 /* SDL_nullframebuffer.c in Sources */ = {isa = PBXBuildFile; fileRef = 04F7808312FB753F00FC43C0 /* SDL_nullframebuffer.c */; };
 		04FFAB8B12E23B8D00BA343D /* SDL_atomic.c in Sources */ = {isa = PBXBuildFile; fileRef = 04FFAB8912E23B8D00BA343D /* SDL_atomic.c */; };
 		04FFAB8C12E23B8D00BA343D /* SDL_spinlock.c in Sources */ = {isa = PBXBuildFile; fileRef = 04FFAB8A12E23B8D00BA343D /* SDL_spinlock.c */; };
+		4D7516FB1EE1C28A00820EEA /* SDL_uikitmetalview.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D7516F81EE1C28A00820EEA /* SDL_uikitmetalview.m */; };
+		4D7516FC1EE1C28A00820EEA /* SDL_uikitvulkan.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D7516F91EE1C28A00820EEA /* SDL_uikitvulkan.h */; };
+		4D7516FD1EE1C28A00820EEA /* SDL_uikitvulkan.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D7516FA1EE1C28A00820EEA /* SDL_uikitvulkan.m */; };
+		4D7516FF1EE1C5B400820EEA /* SDL_vulkan.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D7516FE1EE1C5B400820EEA /* SDL_vulkan.h */; };
+		4D75171A1EE1D32200820EEA /* SDL_uikitmetalview.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D7517191EE1D32200820EEA /* SDL_uikitmetalview.h */; };
+		4D75171F1EE1D98200820EEA /* SDL_vulkan_internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D75171D1EE1D98200820EEA /* SDL_vulkan_internal.h */; };
+		4D7517201EE1D98200820EEA /* SDL_vulkan_utils.c in Sources */ = {isa = PBXBuildFile; fileRef = 4D75171E1EE1D98200820EEA /* SDL_vulkan_utils.c */; };
 		566726451DF72CF5001DD3DB /* SDL_dataqueue.c in Sources */ = {isa = PBXBuildFile; fileRef = 566726431DF72CF5001DD3DB /* SDL_dataqueue.c */; };
 		566726461DF72CF5001DD3DB /* SDL_dataqueue.h in Headers */ = {isa = PBXBuildFile; fileRef = 566726441DF72CF5001DD3DB /* SDL_dataqueue.h */; };
 		56A6702E18565E450007D20F /* SDL_internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 56A6702D18565E450007D20F /* SDL_internal.h */; };
@@ -364,6 +371,13 @@
 		04F7808312FB753F00FC43C0 /* SDL_nullframebuffer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_nullframebuffer.c; sourceTree = "<group>"; };
 		04FFAB8912E23B8D00BA343D /* SDL_atomic.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_atomic.c; sourceTree = "<group>"; };
 		04FFAB8A12E23B8D00BA343D /* SDL_spinlock.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_spinlock.c; sourceTree = "<group>"; };
+		4D7516F81EE1C28A00820EEA /* SDL_uikitmetalview.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_uikitmetalview.m; sourceTree = "<group>"; };
+		4D7516F91EE1C28A00820EEA /* SDL_uikitvulkan.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_uikitvulkan.h; sourceTree = "<group>"; };
+		4D7516FA1EE1C28A00820EEA /* SDL_uikitvulkan.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_uikitvulkan.m; sourceTree = "<group>"; };
+		4D7516FE1EE1C5B400820EEA /* SDL_vulkan.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_vulkan.h; sourceTree = "<group>"; };
+		4D7517191EE1D32200820EEA /* SDL_uikitmetalview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_uikitmetalview.h; sourceTree = "<group>"; };
+		4D75171D1EE1D98200820EEA /* SDL_vulkan_internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_vulkan_internal.h; sourceTree = "<group>"; };
+		4D75171E1EE1D98200820EEA /* SDL_vulkan_utils.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_vulkan_utils.c; sourceTree = "<group>"; };
 		566726431DF72CF5001DD3DB /* SDL_dataqueue.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_dataqueue.c; path = ../../src/SDL_dataqueue.c; sourceTree = "<group>"; };
 		566726441DF72CF5001DD3DB /* SDL_dataqueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_dataqueue.h; path = ../../src/SDL_dataqueue.h; sourceTree = "<group>"; };
 		56A6702D18565E450007D20F /* SDL_internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_internal.h; path = ../../src/SDL_internal.h; sourceTree = "<group>"; };
@@ -759,6 +773,8 @@
 				FD689F0D0E26E5D900F90B21 /* SDL_uikitevents.m */,
 				AABCC3921640643D00AB8930 /* SDL_uikitmessagebox.h */,
 				AABCC3931640643D00AB8930 /* SDL_uikitmessagebox.m */,
+				4D7517191EE1D32200820EEA /* SDL_uikitmetalview.h */,
+				4D7516F81EE1C28A00820EEA /* SDL_uikitmetalview.m */,
 				AA126AD21617C5E6005ABC8F /* SDL_uikitmodes.h */,
 				AA126AD31617C5E6005ABC8F /* SDL_uikitmodes.m */,
 				FD689F0E0E26E5D900F90B21 /* SDL_uikitopengles.h */,
@@ -771,6 +787,8 @@
 				FD689F130E26E5D900F90B21 /* SDL_uikitview.m */,
 				93CB792213FC5E5200BD3E05 /* SDL_uikitviewcontroller.h */,
 				93CB792513FC5F5300BD3E05 /* SDL_uikitviewcontroller.m */,
+				4D7516F91EE1C28A00820EEA /* SDL_uikitvulkan.h */,
+				4D7516FA1EE1C28A00820EEA /* SDL_uikitvulkan.m */,
 				FD689F140E26E5D900F90B21 /* SDL_uikitwindow.h */,
 				FD689F150E26E5D900F90B21 /* SDL_uikitwindow.m */,
 			);
@@ -852,6 +870,7 @@
 				AA7558941595D55500BBD41B /* SDL_types.h */,
 				AA7558951595D55500BBD41B /* SDL_version.h */,
 				AA7558961595D55500BBD41B /* SDL_video.h */,
+				4D7516FE1EE1C5B400820EEA /* SDL_vulkan.h */,
 			);
 			name = "Public Headers";
 			path = ../../include;
@@ -1041,6 +1060,8 @@
 				FDA683190DF2374E00F98A1A /* SDL_surface.c */,
 				FDA6831A0DF2374E00F98A1A /* SDL_sysvideo.h */,
 				FDA6831B0DF2374E00F98A1A /* SDL_video.c */,
+				4D75171D1EE1D98200820EEA /* SDL_vulkan_internal.h */,
+				4D75171E1EE1D98200820EEA /* SDL_vulkan_utils.c */,
 			);
 			name = video;
 			path = ../../src/video;
@@ -1067,6 +1088,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				FDA6844E0DF2374E00F98A1A /* SDL_blit.h in Headers */,
+				4D75171A1EE1D32200820EEA /* SDL_uikitmetalview.h in Headers */,
+				4D75171F1EE1D98200820EEA /* SDL_vulkan_internal.h in Headers */,
 				FDA684530DF2374E00F98A1A /* SDL_blit_auto.h in Headers */,
 				FDA684550DF2374E00F98A1A /* SDL_blit_copy.h in Headers */,
 				FDA6845D0DF2374E00F98A1A /* SDL_pixels_c.h in Headers */,
@@ -1159,8 +1182,10 @@
 				AA7558C61595D55500BBD41B /* SDL_touch.h in Headers */,
 				AA7558C71595D55500BBD41B /* SDL_types.h in Headers */,
 				AA7558C81595D55500BBD41B /* SDL_version.h in Headers */,
+				4D7516FF1EE1C5B400820EEA /* SDL_vulkan.h in Headers */,
 				AA7558C91595D55500BBD41B /* SDL_video.h in Headers */,
 				AA7558CA1595D55500BBD41B /* SDL.h in Headers */,
+				4D7516FC1EE1C28A00820EEA /* SDL_uikitvulkan.h in Headers */,
 				AA126AD41617C5E7005ABC8F /* SDL_uikitmodes.h in Headers */,
 				AA704DD6162AA90A0076D1C1 /* SDL_dropevents_c.h in Headers */,
 				AA9FF9511637C6E5000DF050 /* SDL_messagebox.h in Headers */,
@@ -1213,8 +1238,15 @@
 			attributes = {
 				LastUpgradeCheck = 0800;
 				TargetAttributes = {
+					00B4F48B12F6A69C0084EC00 = {
+						DevelopmentTeam = UZ5V327NE3;
+					};
 					FAB598131BB5C1B100BE72C5 = {
 						CreatedOnToolsVersion = 7.1;
+						DevelopmentTeam = UZ5V327NE3;
+					};
+					FD6526620DE8FCCB002AD96B = {
+						DevelopmentTeam = UZ5V327NE3;
 					};
 				};
 			};
@@ -1373,6 +1405,7 @@
 				FD65266A0DE8FCDD002AD96B /* SDL_audiotypecvt.c in Sources */,
 				FD65266B0DE8FCDD002AD96B /* SDL_mixer.c in Sources */,
 				FD65266F0DE8FCDD002AD96B /* SDL_wave.c in Sources */,
+				4D7516FD1EE1C28A00820EEA /* SDL_uikitvulkan.m in Sources */,
 				FA1DC2731C62BE65008F99A0 /* SDL_uikitclipboard.m in Sources */,
 				FD6526700DE8FCDD002AD96B /* SDL_cpuinfo.c in Sources */,
 				FD6526710DE8FCDD002AD96B /* SDL_events.c in Sources */,
@@ -1381,7 +1414,9 @@
 				FD6526730DE8FCDD002AD96B /* SDL_mouse.c in Sources */,
 				FD6526740DE8FCDD002AD96B /* SDL_quit.c in Sources */,
 				FD6526750DE8FCDD002AD96B /* SDL_windowevents.c in Sources */,
+				4D7516FB1EE1C28A00820EEA /* SDL_uikitmetalview.m in Sources */,
 				FD6526760DE8FCDD002AD96B /* SDL_rwops.c in Sources */,
+				4D7517201EE1D98200820EEA /* SDL_vulkan_utils.c in Sources */,
 				FD6526780DE8FCDD002AD96B /* SDL_error.c in Sources */,
 				FD65267A0DE8FCDD002AD96B /* SDL.c in Sources */,
 				FD65267B0DE8FCDD002AD96B /* SDL_syscond.c in Sources */,
@@ -1613,6 +1648,7 @@
 				GCC_WARN_MULTIPLE_DEFINITION_TYPES_FOR_SELECTOR = YES;
 				GCC_WARN_STRICT_SELECTOR_MATCH = YES;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				HEADER_SEARCH_PATHS = "$(VULKAN_SDK)/include";
 				PRODUCT_NAME = SDL2;
 				SKIP_INSTALL = YES;
 			};
@@ -1628,6 +1664,7 @@
 				GCC_WARN_MULTIPLE_DEFINITION_TYPES_FOR_SELECTOR = YES;
 				GCC_WARN_STRICT_SELECTOR_MATCH = YES;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				HEADER_SEARCH_PATHS = "$(VULKAN_SDK)/include";
 				PRODUCT_NAME = SDL2;
 				SKIP_INSTALL = YES;
 			};

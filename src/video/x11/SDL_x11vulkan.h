@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -18,32 +18,31 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include "../../SDL_internal.h"
 
-/*
-  Contributed by Brandon Schaefer, <brandon.schaefer@canonical.com>
-*/
+#ifndef _SDL_x11vulkan_h
+#define _SDL_x11vulkan_h
 
-#ifndef _SDL_mirvideo_h_
-#define _SDL_mirvideo_h_
+#include "../SDL_vulkan_internal.h"
 
-#include <EGL/egl.h>
-#include <mir_toolkit/mir_client_library.h>
-#include "SDL_stdinc.h"
+#if SDL_VIDEO_VULKAN_SURFACE && SDL_VIDEO_DRIVER_X11
 
-typedef struct MIR_Window MIR_Window;
+typedef struct xcb_connection_t xcb_connection_t;
+typedef xcb_connection_t *(*PFN_XGetXCBConnection)(Display *dpy);
 
-typedef struct
-{
-    MirConnection*    connection;
-    MirDisplayConfig* display_config;
-    MIR_Window*       current_window;
-    SDL_bool          software;
-    MirPixelFormat    pixel_format;
-} MIR_Data;
+int X11_Vulkan_LoadLibrary(_THIS, const char *path);
+void X11_Vulkan_UnloadLibrary(_THIS);
+SDL_bool X11_Vulkan_GetInstanceExtensions(_THIS,
+                                          SDL_Window *window,
+                                          unsigned *count,
+                                          const char **names);
+SDL_bool X11_Vulkan_CreateSurface(_THIS,
+                                  SDL_Window *window,
+                                  VkInstance instance,
+                                  VkSurfaceKHR *surface);
 
-extern Uint32
-MIR_GetSDLPixelFormat(MirPixelFormat format);
+#endif
 
-#endif /* _SDL_mirvideo_h_ */
+#endif /* _SDL_x11vulkan_h */
 
 /* vi: set ts=4 sw=4 expandtab: */

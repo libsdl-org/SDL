@@ -179,6 +179,25 @@ AC_SUBST(GLESLIB)
 AC_SUBST(GLES2LIB)
 AC_SUBST(XLIB)
 
+dnl Check for Vulkan Header
+have_vulkan_hdr=no
+vsdk_include_dir="${VULKAN_SDK}/include"
+vulkan_header="vulkan/vulkan.h"
+save_CPPFLAGS="$CPPFLAGS"
+CPPFLAGS="${save_CPPFLAGS} -I$vsdk_include_dir"
+AC_CHECK_HEADER($vulkan_header,
+                have_vulkan_hdr=yes,
+                have_vulkan_hdr=no)
+CPPFLAGS="$save_CPPFLAGS"
+if test x$have_vulkan_hdr = xyes; then
+    # vulkan.h has been found in either $VULKAN_SDK/include or along the
+    # the standard include path. Unfortunately there seems no easy
+    # way to find out which, so...
+    if test -n "$VULKAN_SDK" -a -f "$vsdk_include_dir/$vulkan_header"; then 
+        CFLAGS="$CFLAGS -I$vsdk_include_dir"
+    fi
+fi
+
 dnl Check for SDL_ttf
 AC_CHECK_LIB(SDL2_ttf, TTF_Init, have_SDL_ttf=yes)
 if test x$have_SDL_ttf = xyes; then
