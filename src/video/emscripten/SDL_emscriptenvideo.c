@@ -91,8 +91,7 @@ Emscripten_CreateDevice(int devindex)
 
     device->PumpEvents = Emscripten_PumpEvents;
 
-    device->CreateWindow = Emscripten_CreateWindow;
-    /*device->CreateWindowFrom = Emscripten_CreateWindowFrom;*/
+    device->CreateSDLWindow = Emscripten_CreateWindow;
     device->SetWindowTitle = Emscripten_SetWindowTitle;
     /*device->SetWindowIcon = Emscripten_SetWindowIcon;
     device->SetWindowPosition = Emscripten_SetWindowPosition;*/

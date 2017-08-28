@@ -24,7 +24,6 @@
 
 #include "SDL.h"
 #include "SDL_events.h"
-#include "SDL_syswm.h"
 #include "SDL_thread.h"
 #include "SDL_events_c.h"
 #include "../timer/SDL_timer_c.h"
@@ -32,6 +31,7 @@
 #include "../joystick/SDL_joystick_c.h"
 #endif
 #include "../video/SDL_sysvideo.h"
+#include "SDL_syswm.h"
 
 /*#define SDL_DEBUG_EVENTS 1*/
 

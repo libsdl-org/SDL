@@ -107,7 +107,7 @@ static SDL_VideoDevice *NACL_CreateDevice(int devindex) {
     device->VideoQuit = NACL_VideoQuit;
     device->PumpEvents = NACL_PumpEvents;
     
-    device->CreateWindow = NACL_CreateWindow;
+    device->CreateSDLWindow = NACL_CreateWindow;
     device->SetWindowTitle = NACL_SetWindowTitle;
     device->DestroyWindow = NACL_DestroyWindow;
     

@@ -52,11 +52,6 @@
 #endif
 #endif
 
-/* On Windows, windows.h defines CreateWindow */
-#ifdef CreateWindow
-#undef CreateWindow
-#endif
-
 #ifdef __EMSCRIPTEN__
 #include <emscripten.h>
 #endif
@@ -1479,7 +1474,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
     }
     _this->windows = window;
 
-    if (_this->CreateWindow && _this->CreateWindow(_this, window) < 0) {
+    if (_this->CreateSDLWindow && _this->CreateSDLWindow(_this, window) < 0) {
         SDL_DestroyWindow(window);
         return NULL;
     }
@@ -1516,7 +1511,7 @@ SDL_CreateWindowFrom(const void *data)
         SDL_UninitializedVideo();
         return NULL;
     }
-    if (!_this->CreateWindowFrom) {
+    if (!_this->CreateSDLWindowFrom) {
         SDL_Unsupported();
         return NULL;
     }
@@ -1538,7 +1533,7 @@ SDL_CreateWindowFrom(const void *data)
     }
     _this->windows = window;
 
-    if (_this->CreateWindowFrom(_this, window, data) < 0) {
+    if (_this->CreateSDLWindowFrom(_this, window, data) < 0) {
         SDL_DestroyWindow(window);
         return NULL;
     }
@@ -1602,8 +1597,8 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
     window->last_fullscreen_flags = window->flags;
     window->is_destroying = SDL_FALSE;
 
-    if (_this->CreateWindow && !(flags & SDL_WINDOW_FOREIGN)) {
-        if (_this->CreateWindow(_this, window) < 0) {
+    if (_this->CreateSDLWindow && !(flags & SDL_WINDOW_FOREIGN)) {
+        if (_this->CreateSDLWindow(_this, window) < 0) {
             if (loaded_opengl) {
                 SDL_GL_UnloadLibrary();
                 window->flags &= ~SDL_WINDOW_OPENGL;

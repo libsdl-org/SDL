@@ -120,8 +120,8 @@ KMSDRM_Create(int devindex)
     device->VideoQuit = KMSDRM_VideoQuit;
     device->GetDisplayModes = KMSDRM_GetDisplayModes;
     device->SetDisplayMode = KMSDRM_SetDisplayMode;
-    device->CreateWindow = KMSDRM_CreateWindow;
-    device->CreateWindowFrom = KMSDRM_CreateWindowFrom;
+    device->CreateSDLWindow = KMSDRM_CreateWindow;
+    device->CreateSDLWindowFrom = KMSDRM_CreateWindowFrom;
     device->SetWindowTitle = KMSDRM_SetWindowTitle;
     device->SetWindowIcon = KMSDRM_SetWindowIcon;
     device->SetWindowPosition = KMSDRM_SetWindowPosition;

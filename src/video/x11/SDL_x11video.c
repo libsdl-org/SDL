@@ -231,8 +231,8 @@ X11_CreateDevice(int devindex)
     device->SuspendScreenSaver = X11_SuspendScreenSaver;
     device->PumpEvents = X11_PumpEvents;
 
-    device->CreateWindow = X11_CreateWindow;
-    device->CreateWindowFrom = X11_CreateWindowFrom;
+    device->CreateSDLWindow = X11_CreateWindow;
+    device->CreateSDLWindowFrom = X11_CreateWindowFrom;
     device->SetWindowTitle = X11_SetWindowTitle;
     device->SetWindowIcon = X11_SetWindowIcon;
     device->SetWindowPosition = X11_SetWindowPosition;

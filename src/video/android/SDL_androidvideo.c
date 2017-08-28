@@ -115,7 +115,7 @@ Android_CreateDevice(int devindex)
     device->VideoQuit = Android_VideoQuit;
     device->PumpEvents = Android_PumpEvents;
 
-    device->CreateWindow = Android_CreateWindow;
+    device->CreateSDLWindow = Android_CreateWindow;
     device->SetWindowTitle = Android_SetWindowTitle;
     device->DestroyWindow = Android_DestroyWindow;
     device->GetWindowWMInfo = Android_GetWindowWMInfo;

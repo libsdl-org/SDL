@@ -180,7 +180,7 @@ MIR_CreateDevice(int device_index)
     device->GL_GetProcAddress  = MIR_GL_GetProcAddress;
 
     /* mirwindow */
-    device->CreateWindow         = MIR_CreateWindow;
+    device->CreateSDLWindow         = MIR_CreateWindow;
     device->DestroyWindow        = MIR_DestroyWindow;
     device->GetWindowWMInfo      = MIR_GetWindowWMInfo;
     device->SetWindowFullscreen  = MIR_SetWindowFullscreen;
@@ -197,7 +197,7 @@ MIR_CreateDevice(int device_index)
     device->SetWindowGammaRamp   = MIR_SetWindowGammaRamp;
     device->GetWindowGammaRamp   = MIR_GetWindowGammaRamp;
 
-    device->CreateWindowFrom     = NULL;
+    device->CreateSDLWindowFrom     = NULL;
     device->SetWindowIcon        = NULL;
     device->RaiseWindow          = NULL;
     device->SetWindowBordered    = NULL;
