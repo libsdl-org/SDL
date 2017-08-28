@@ -1398,21 +1398,17 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
         }
     }
 
-    if(flags & SDL_WINDOW_VULKAN)
-    {
-        if(!_this->Vulkan_CreateSurface)
-        {
+    if (flags & SDL_WINDOW_VULKAN) {
+        if (!_this->Vulkan_CreateSurface) {
             SDL_SetError("Vulkan support is either not configured in SDL "
             		     "or not available in video driver");
             return NULL;
         }
-        if(flags & SDL_WINDOW_OPENGL)
-        {
+        if (flags & SDL_WINDOW_OPENGL) {
             SDL_SetError("Vulkan and OpenGL not supported on same window");
             return NULL;
         }
-        if(SDL_Vulkan_LoadLibrary(NULL) < 0)
-        {
+        if (SDL_Vulkan_LoadLibrary(NULL) < 0) {
             return NULL;
         }
     }
@@ -1927,20 +1923,16 @@ SDL_SetWindowSize(SDL_Window * window, int w, int h)
     }
 
     /* Make sure we don't exceed any window size limits */
-    if (window->min_w && w < window->min_w)
-    {
+    if (window->min_w && w < window->min_w) {
         w = window->min_w;
     }
-    if (window->max_w && w > window->max_w)
-    {
+    if (window->max_w && w > window->max_w) {
         w = window->max_w;
     }
-    if (window->min_h && h < window->min_h)
-    {
+    if (window->min_h && h < window->min_h) {
         h = window->min_h;
     }
-    if (window->max_h && h > window->max_h)
-    {
+    if (window->max_h && h > window->max_h) {
         h = window->max_h;
     }
 
@@ -3978,34 +3970,27 @@ void SDL_OnApplicationDidBecomeActive(void)
     }
 }
 
-#define NOT_A_VULKAN_WINDOW "The specified window isn't a Vulkan window."
+#define NOT_A_VULKAN_WINDOW "The specified window isn't a Vulkan window"
 
 int SDL_Vulkan_LoadLibrary(const char *path)
 {
     int retval;
-    if(!_this)
-    {
+    if (!_this) {
         SDL_UninitializedVideo();
         return -1;
     }
-    if(_this->vulkan_config.loader_loaded)
-    {
-        if(path && SDL_strcmp(path, _this->vulkan_config.loader_path) != 0)
-        {
+    if (_this->vulkan_config.loader_loaded) {
+        if (path && SDL_strcmp(path, _this->vulkan_config.loader_path) != 0) {
             return SDL_SetError("Vulkan loader library already loaded");
         }
         retval = 0;
-    }
-    else
-    {
-        if(!_this->Vulkan_LoadLibrary)
-        {
+    } else {
+        if (!_this->Vulkan_LoadLibrary) {
             return SDL_SetError("No Vulkan support in video driver");
         }
         retval = _this->Vulkan_LoadLibrary(_this, path);
     }
-    if(retval == 0)
-    {
+    if (retval == 0) {
         _this->vulkan_config.loader_loaded++;
     }
     return retval;
@@ -4013,13 +3998,11 @@ int SDL_Vulkan_LoadLibrary(const char *path)
 
 void *SDL_Vulkan_GetVkGetInstanceProcAddr(void)
 {
-    if(!_this)
-    {
+    if (!_this) {
         SDL_UninitializedVideo();
         return NULL;
     }
-    if(!_this->vulkan_config.loader_loaded)
-    {
+    if (!_this->vulkan_config.loader_loaded) {
         SDL_SetError("No Vulkan loader has been loaded");
     }
     return _this->vulkan_config.vkGetInstanceProcAddr;
@@ -4027,19 +4010,15 @@ void *SDL_Vulkan_GetVkGetInstanceProcAddr(void)
 
 void SDL_Vulkan_UnloadLibrary(void)
 {
-    if(!_this)
-    {
+    if (!_this) {
         SDL_UninitializedVideo();
         return;
     }
-    if(_this->vulkan_config.loader_loaded > 0)
-    {
-        if(--_this->vulkan_config.loader_loaded > 0)
-        {
+    if (_this->vulkan_config.loader_loaded > 0) {
+        if (--_this->vulkan_config.loader_loaded > 0) {
             return;
         }
-        if(_this->Vulkan_UnloadLibrary)
-        {
+        if (_this->Vulkan_UnloadLibrary) {
             _this->Vulkan_UnloadLibrary(_this);
         }
     }
@@ -4049,15 +4028,13 @@ SDL_bool SDL_Vulkan_GetInstanceExtensions(SDL_Window *window, unsigned *count, c
 {
     CHECK_WINDOW_MAGIC(window, SDL_FALSE);
 
-    if(!(window->flags & SDL_WINDOW_VULKAN))
-    {
+    if (!(window->flags & SDL_WINDOW_VULKAN)) {
         SDL_SetError(NOT_A_VULKAN_WINDOW);
         return SDL_FALSE;
     }
 
-    if(!count)
-    {
-        SDL_SetError("invalid count");
+    if (!count) {
+        SDL_InvalidParamError("count");
         return SDL_FALSE;
     }
 
@@ -4070,21 +4047,18 @@ SDL_bool SDL_Vulkan_CreateSurface(SDL_Window *window,
 {
     CHECK_WINDOW_MAGIC(window, SDL_FALSE);
 
-    if(!(window->flags & SDL_WINDOW_VULKAN))
-    {
+    if (!(window->flags & SDL_WINDOW_VULKAN)) {
         SDL_SetError(NOT_A_VULKAN_WINDOW);
         return SDL_FALSE;
     }
 
-    if(!instance)
-    {
-        SDL_SetError("invalid instance");
+    if (!instance) {
+        SDL_InvalidParamError("instance");
         return SDL_FALSE;
     }
 
-    if(!surface)
-    {
-        SDL_SetError("invalid surface");
+    if (!surface) {
+        SDL_InvalidParamError("surface");
         return SDL_FALSE;
     }
 
