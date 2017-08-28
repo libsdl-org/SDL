@@ -90,7 +90,7 @@
 #endif
 #endif
 
-#if !defined(_SDL_XAUDIO2_H)
+#if !defined(SDL_XAUDIO2_H_)
 #define INITGUID 1
 #include <xaudio2.h>
 #endif
