@@ -32,9 +32,9 @@
 
 #include "SDL.h"
 
-/* !!! FIXME: Shouldn't these be included in SDL.h? */
-#include "SDL_shape.h"
+/* These headers have system specific definitions, so aren't included above */
 #include "SDL_syswm.h"
+#include "SDL_vulkan.h"
 
 /* This is the version of the dynamic API. This doesn't match the SDL version
    and should not change until there's been a major revamp in API/ABI.

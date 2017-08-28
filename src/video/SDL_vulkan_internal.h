@@ -18,8 +18,8 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#ifndef _SDL_vulkan_internal_h
-#define _SDL_vulkan_internal_h
+#ifndef SDL_vulkan_internal_h_
+#define SDL_vulkan_internal_h_
 
 #include "../SDL_internal.h"
 
@@ -53,13 +53,12 @@
 #define VK_USE_PLATFORM_XCB_KHR
 #endif
 
-#if SDL_VIDEO_VULKAN_SURFACE
-
-/* Need vulkan.h for the following declarations. Must ensure the first
- * inclusion of vulkan has the appropriate USE_PLATFORM defined, hence
- * the above. */
 #define VK_NO_PROTOTYPES
 #include "./khronos/vulkan/vulkan.h"
+
+#include "SDL_vulkan.h"
+
+#if SDL_VIDEO_VULKAN_SURFACE
 
 extern const char *SDL_Vulkan_GetResultString(VkResult result);
 
@@ -73,8 +72,8 @@ extern SDL_bool SDL_Vulkan_GetInstanceExtensions_Helper(unsigned *userCount,
                                                         const char **userNames,
                                                         unsigned nameCount,
                                                         const char *const *names);
+#endif /* SDL_VIDEO_VULKAN_SURFACE */
 
-#endif
+#endif /* SDL_vulkan_internal_h_ */
 
-#endif
 /* vi: set ts=4 sw=4 expandtab: */
