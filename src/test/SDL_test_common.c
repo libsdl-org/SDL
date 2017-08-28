@@ -822,13 +822,13 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
         fullscreen_mode.refresh_rate = state->refresh_rate;
 
         state->windows =
-            (SDL_Window **) SDL_malloc(state->num_windows *
+            (SDL_Window **) SDL_calloc(state->num_windows,
                                         sizeof(*state->windows));
         state->renderers =
-            (SDL_Renderer **) SDL_malloc(state->num_windows *
+            (SDL_Renderer **) SDL_calloc(state->num_windows,
                                         sizeof(*state->renderers));
         state->targets =
-            (SDL_Texture **) SDL_malloc(state->num_windows *
+            (SDL_Texture **) SDL_calloc(state->num_windows,
                                         sizeof(*state->targets));
         if (!state->windows || !state->renderers) {
             SDL_Log("Out of memory!\n");
@@ -880,9 +880,6 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
             }
 
             SDL_ShowWindow(state->windows[i]);
-
-            state->renderers[i] = NULL;
-            state->targets[i] = NULL;
 
             if (!state->skip_renderer
                 && (state->renderdriver
