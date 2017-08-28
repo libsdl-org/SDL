@@ -94,8 +94,9 @@ Cocoa_Mtl_AddMetalView(SDL_Window* window)
     SDL_cocoametalview *metalview
         = [[SDL_cocoametalview alloc] initWithFrame:view.frame
                        useHighDPI:(window->flags & SDL_WINDOW_ALLOW_HIGHDPI)];
+    // Instantiate the CAMetalLayer
+    metalview.wantsLayer = YES;
     [view addSubview:metalview];
-  
     return metalview;
 }
 
