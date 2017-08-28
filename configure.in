@@ -2409,7 +2409,6 @@ AC_HELP_STRING([--enable-video-vulkan], [include Vulkan surface support [[defaul
 dnl Find Vulkan Header
 CheckVulkan()
 {
-    have_vulkan_hdr=no
     if test x$enable_video = xyes -a x$enable_video_vulkan = xyes; then
         case "$host" in
             *-*-androideabi*)
@@ -2434,24 +2433,8 @@ CheckVulkan()
             # I put this in the AC_TRY_COMPILE.
             AC_MSG_WARN([Sorry, Vulkan does not work on this configuration.])
         fi
-        if test x$enable_video_vulkan = xyes; then
-            vsdk_include_dir="${VULKAN_SDK}/include"
-            vulkan_header="vulkan/vulkan.h"
-            save_CPPFLAGS="$CPPFLAGS"
-            CPPFLAGS="${save_CPPFLAGS} -I$vsdk_include_dir"
-            AC_CHECK_HEADER($vulkan_header,
-                            have_vulkan_hdr=yes,
-                            have_vulkan_hdr=no)
-            CPPFLAGS="$save_CPPFLAGS"
-        fi
     fi
-    if test x$have_vulkan_hdr = xyes; then
-        # vulkan.h has been found in either $VULKAN_SDK/include or along the
-        # the standard include path. Unfortunately there seems no easy
-        # way to find out which, so...
-        if test -n "$VULKAN_SDK" -a -f "$vsdk_include_dir/$vulkan_header"; then 
-            EXTRA_CFLAGS="$EXTRA_CFLAGS -I$vsdk_include_dir"
-        fi
+    if test x$enable_video_vulkan = xyes; then
         AC_DEFINE(SDL_VIDEO_VULKAN_SURFACE, 1, [ ])
         SUMMARY_video="${SUMMARY_video} vulkan"
     fi
@@ -3680,7 +3663,7 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,OpenGLES"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,QuartzCore"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,UIKit"
-        if test x$ac_cv_header_vulkan_vulkan_h = xyes; then
+        if test x$enable_video_vulkan = xyes; then
             EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,QuartzCore"
         fi
         ;;
@@ -3758,7 +3741,7 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,Cocoa"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,Carbon"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,IOKit"
-        if test x$ac_cv_header_vulkan_vulkan_h = xyes; then
+        if test x$enable_video_vulkan = xyes; then
             EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,QuartzCore"
         fi
         ;;

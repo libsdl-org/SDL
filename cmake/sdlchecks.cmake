@@ -1153,25 +1153,6 @@ macro(CheckRPI)
   endif(VIDEO_RPI)
 endmacro(CheckRPI)
 
-macro(CheckVulkanHeaders)
-  if(VIDEO_VULKAN)
-    # ${VULKAN_SDK} could be unset during the first configure run with
-    # cmake-gui resulting in vulkan.h not being found. If it's been
-    # subsequently changed, unset is necessary to ensure check is run again.
-    unset(HAVE_VULKAN_H CACHE)
-    # Prefer ${VULKAN_SDK} header
-    set(CMAKE_REQUIRED_INCLUDES "${VULKAN_SDK}/include")
-    check_include_file("vulkan/vulkan.h" HAVE_VULKAN_H)
-    if(HAVE_VULKAN_H)
-      list(APPEND EXTRA_CFLAGS "-I${VULKAN_SDK}/include")
-    else()
-      # Check system includes.
-      unset(HAVE_VULKAN_H CACHE)
-      check_include_file("vulkan/vulkan.h" HAVE_VULKAN_H)
-    endif()
-  endif()
-endmacro(CheckVulkanHeaders)
-
 # Requires:
 # - EGL
 # - PkgCheckModules

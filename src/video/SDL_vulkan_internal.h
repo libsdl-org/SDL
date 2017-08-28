@@ -59,7 +59,7 @@
  * inclusion of vulkan has the appropriate USE_PLATFORM defined, hence
  * the above. */
 #define VK_NO_PROTOTYPES
-#include "vulkan/vulkan.h"
+#include "./khronos/vulkan/vulkan.h"
 
 extern const char *SDL_Vulkan_GetResultString(VkResult result);
 

@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
 #else
 
 #define VK_NO_PROTOTYPES
-#include "vulkan/vulkan.h"
+#include "../src/video/khronos/vulkan/vulkan.h"
 
 #define VULKAN_FUNCTIONS()                                              \
     VULKAN_DEVICE_FUNCTION(vkAcquireNextImageKHR)                       \

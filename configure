@@ -21915,7 +21915,6 @@ fi
 
 CheckVulkan()
 {
-    have_vulkan_hdr=no
     if test x$enable_video = xyes -a x$enable_video_vulkan = xyes; then
         case "$host" in
             *-*-androideabi*)
@@ -21955,30 +21954,8 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
             { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: Sorry, Vulkan does not work on this configuration." >&5
 $as_echo "$as_me: WARNING: Sorry, Vulkan does not work on this configuration." >&2;}
         fi
-        if test x$enable_video_vulkan = xyes; then
-            vsdk_include_dir="${VULKAN_SDK}/include"
-            vulkan_header="vulkan/vulkan.h"
-            save_CPPFLAGS="$CPPFLAGS"
-            CPPFLAGS="${save_CPPFLAGS} -I$vsdk_include_dir"
-            as_ac_Header=`$as_echo "ac_cv_header_$vulkan_header" | $as_tr_sh`
-ac_fn_c_check_header_mongrel "$LINENO" "$vulkan_header" "$as_ac_Header" "$ac_includes_default"
-if eval test \"x\$"$as_ac_Header"\" = x"yes"; then :
-  have_vulkan_hdr=yes
-else
-  have_vulkan_hdr=no
-fi
-
-
-            CPPFLAGS="$save_CPPFLAGS"
-        fi
     fi
-    if test x$have_vulkan_hdr = xyes; then
-        # vulkan.h has been found in either $VULKAN_SDK/include or along the
-        # the standard include path. Unfortunately there seems no easy
-        # way to find out which, so...
-        if test -n "$VULKAN_SDK" -a -f "$vsdk_include_dir/$vulkan_header"; then
-            EXTRA_CFLAGS="$EXTRA_CFLAGS -I$vsdk_include_dir"
-        fi
+    if test x$enable_video_vulkan = xyes; then
 
 $as_echo "#define SDL_VIDEO_VULKAN_SURFACE 1" >>confdefs.h
 
@@ -24272,7 +24249,7 @@ $as_echo "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,OpenGLES"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,QuartzCore"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,UIKit"
-        if test x$ac_cv_header_vulkan_vulkan_h = xyes; then
+        if test x$enable_video_vulkan = xyes; then
             EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,QuartzCore"
         fi
         ;;
@@ -24362,7 +24339,7 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,Cocoa"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,Carbon"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,IOKit"
-        if test x$ac_cv_header_vulkan_vulkan_h = xyes; then
+        if test x$enable_video_vulkan = xyes; then
             EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,QuartzCore"
         fi
         ;;
