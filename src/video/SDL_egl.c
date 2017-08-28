@@ -72,12 +72,17 @@
 #define DEFAULT_OGL_ES "libGLESv1_CM.so.1"
 #endif /* SDL_VIDEO_DRIVER_RPI */
 
+#ifdef SDL_VIDEO_STATIC_ANGLE
+#define LOAD_FUNC(NAME) \
+_this->egl_data->NAME = (void *)NAME;
+#else
 #define LOAD_FUNC(NAME) \
 _this->egl_data->NAME = SDL_LoadFunction(_this->egl_data->dll_handle, #NAME); \
 if (!_this->egl_data->NAME) \
 { \
     return SDL_SetError("Could not retrieve EGL function " #NAME); \
 }
+#endif
 
 static const char * SDL_EGL_GetErrorName(EGLint eglErrorCode)
 {
@@ -275,6 +280,7 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
     }
 #endif
 
+#ifndef SDL_VIDEO_STATIC_ANGLE
     /* A funny thing, loading EGL.so first does not work on the Raspberry, so we load libGL* first */
     path = SDL_getenv("SDL_VIDEO_GL_DRIVER");
     if (path != NULL) {
@@ -330,6 +336,7 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
         }
         SDL_ClearError();
     }
+#endif
 
     _this->egl_data->dll_handle = dll_handle;
 
