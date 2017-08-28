@@ -244,7 +244,7 @@ Android_OnHat(int device_id, int hat_id, int x, int y)
 
 
 int
-Android_AddJoystick(int device_id, const char *name, SDL_bool is_accelerometer, int nbuttons, int naxes, int nhats, int nballs)
+Android_AddJoystick(int device_id, const char *name, const char *desc, SDL_bool is_accelerometer, int nbuttons, int naxes, int nhats, int nballs)
 {
     SDL_JoystickGUID guid;
     SDL_joylist_item *item;
@@ -255,7 +255,7 @@ Android_AddJoystick(int device_id, const char *name, SDL_bool is_accelerometer, 
     
     /* the GUID is just the first 16 chars of the name for now */
     SDL_zero( guid );
-    SDL_memcpy( &guid, name, SDL_min( sizeof(guid), SDL_strlen( name ) ) );
+    SDL_memcpy( &guid, desc, SDL_min( sizeof(guid), SDL_strlen( desc) ) );
 
     item = (SDL_joylist_item *) SDL_malloc(sizeof (SDL_joylist_item));
     if (item == NULL) {
@@ -356,7 +356,7 @@ SDL_SYS_JoystickInit(void)
     
     if (SDL_GetHintBoolean(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, SDL_TRUE)) {
         /* Default behavior, accelerometer as joystick */
-        Android_AddJoystick(ANDROID_ACCELEROMETER_DEVICE_ID, ANDROID_ACCELEROMETER_NAME, SDL_TRUE, 0, 3, 0, 0);
+        Android_AddJoystick(ANDROID_ACCELEROMETER_DEVICE_ID, ANDROID_ACCELEROMETER_NAME, ANDROID_ACCELEROMETER_NAME, SDL_TRUE, 0, 3, 0, 0);
     }
    
     return (numjoysticks);
