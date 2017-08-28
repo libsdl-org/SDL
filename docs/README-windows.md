@@ -42,4 +42,4 @@ Known Bugs:
 Vulkan Surface Support
 ==============
 
-Support for creating Vulkan surfaces is configured on by default. To disable it change the value of `SDL_VIDEO_VULKAN_SURFACE` to 0 in `SDL_config_windows`. When it is on you must install a  [Vulkan SDK](https://www.lunarg.com/vulkan-sdk/) in order to build libSDL.
+Support for creating Vulkan surfaces is configured on by default. To disable it change the value of `SDL_VIDEO_VULKAN` to 0 in `SDL_config_windows.h`. You must install the [Vulkan SDK](https://www.lunarg.com/vulkan-sdk/) in order to use Vulkan graphics in your application.

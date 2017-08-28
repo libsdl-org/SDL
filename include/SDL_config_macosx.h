@@ -174,12 +174,12 @@
 #define SDL_VIDEO_OPENGL_GLX    1
 #endif
 
-/* enable Vulkan surface support */
+/* Enable Vulkan support */
+/* Metal/MoltenVK/Vulkan only supported on 64-bit architectures */
 #if TARGET_CPU_X86_64
-/* Metal/MoltenVK/Vulkan not supported on 32-bit architectures. */
-#define SDL_VIDEO_VULKAN_SURFACE 1
+#define SDL_VIDEO_VULKAN 1
 #else
-#define  SDL_VIDEO_VULKAN_SURFACE 0
+#define  SDL_VIDEO_VULKAN 0
 #endif
 
 /* Enable system power support */

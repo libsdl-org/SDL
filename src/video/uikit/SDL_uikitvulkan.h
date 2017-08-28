@@ -32,7 +32,7 @@
 #include "../SDL_vulkan_internal.h"
 #include "../SDL_sysvideo.h"
 
-#if SDL_VIDEO_VULKAN_SURFACE && SDL_VIDEO_DRIVER_UIKIT
+#if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_UIKIT
 
 int UIKit_Vulkan_LoadLibrary(_THIS, const char *path);
 void UIKit_Vulkan_UnloadLibrary(_THIS);

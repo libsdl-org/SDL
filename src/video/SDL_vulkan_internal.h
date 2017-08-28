@@ -25,18 +25,12 @@
 
 #include "SDL_stdinc.h"
 
-#if defined(__ANDROID__) && defined(__ARM_ARCH) && __ARM_ARCH < 7
-/* Vulkan isn't supported for the 'armeabi' NDK ABI, error in vk_platform.h */
-#undef SDL_VIDEO_VULKAN_SURFACE
-#define SDL_VIDEO_VULKAN_SURFACE 0
-#endif
-
 #if defined(SDL_LOADSO_DISABLED)
-#undef SDL_VIDEO_VULKAN_SURFACE
-#define SDL_VIDEO_VULKAN_SURFACE 0
+#undef SDL_VIDEO_VULKAN
+#define SDL_VIDEO_VULKAN 0
 #endif
 
-#if SDL_VIDEO_VULKAN_SURFACE
+#if SDL_VIDEO_VULKAN
 
 #if SDL_VIDEO_DRIVER_ANDROID
 #define VK_USE_PLATFORM_ANDROID_KHR
@@ -85,7 +79,7 @@ extern SDL_bool SDL_Vulkan_GetInstanceExtensions_Helper(unsigned *userCount,
 /* No SDL Vulkan support, just include the header for typedefs */
 #include "SDL_vulkan.h"
 
-#endif /* SDL_VIDEO_VULKAN_SURFACE */
+#endif /* SDL_VIDEO_VULKAN */
 
 #endif /* SDL_vulkan_internal_h_ */
 

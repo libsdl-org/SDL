@@ -26,7 +26,7 @@
 
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_VULKAN_SURFACE && SDL_VIDEO_DRIVER_MIR
+#if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_MIR
 
 #include "SDL_mirvideo.h"
 #include "SDL_mirwindow.h"
