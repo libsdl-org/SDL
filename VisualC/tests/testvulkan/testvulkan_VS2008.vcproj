@@ -50,7 +50,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../include&quot;;&quot;$(VULKAN_SDK)/include&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../include&quot;"
 				AdditionalUsingDirectories=""
 				PreprocessorDefinitions="_DEBUG,WIN32,_WINDOWS,HAVE_OPENGL"
 				RuntimeLibrary="2"
@@ -127,7 +127,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../include&quot;;&quot;$(VULKAN_SDK)/include&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../include&quot;"
 				AdditionalUsingDirectories=""
 				PreprocessorDefinitions="_DEBUG,WIN32,_WINDOWS,HAVE_OPENGL"
 				RuntimeLibrary="3"
@@ -203,7 +203,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../include&quot;;&quot;$(VULKAN_SDK)/include&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../include&quot;"
 				AdditionalUsingDirectories=""
 				PreprocessorDefinitions="NDEBUG,WIN32,_WINDOWS,HAVE_OPENGL"
 				RuntimeLibrary="2"
@@ -277,7 +277,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../include&quot;;&quot;$(VULKAN_SDK)/include&quot;"
+				AdditionalIncludeDirectories="&quot;$(SolutionDir)/../include&quot;"
 				AdditionalUsingDirectories=""
 				PreprocessorDefinitions="NDEBUG,WIN32,_WINDOWS,HAVE_OPENGL"
 				RuntimeLibrary="2"
