@@ -329,6 +329,8 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv* env, jclass cls,
     const char *library_file;
     void *library_handle;
 
+    __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeRunMain()");
+
     library_file = (*env)->GetStringUTFChars(env, library, NULL);
     library_handle = dlopen(library_file, RTLD_GLOBAL);
     if (library_handle) {
