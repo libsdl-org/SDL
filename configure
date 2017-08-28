@@ -1616,7 +1616,7 @@ Optional Features:
                           include OpenGL ES 1.1 support [[default=yes]]
   --enable-video-opengles2
                           include OpenGL ES 2.0 support [[default=yes]]
-  --enable-video-vulkan   include Vulkan surface support [[default=yes]]
+  --enable-video-vulkan   include Vulkan support [[default=yes]]
   --enable-libudev        enable libudev support [[default=yes]]
   --enable-dbus           enable D-Bus support [[default=yes]]
   --enable-ime            enable IME support [[default=yes]]
@@ -23641,7 +23641,6 @@ case "$host" in
                 ANDROID_CFLAGS="-DGL_GLEXT_PROTOTYPES"
                 CFLAGS="$CFLAGS $ANDROID_CFLAGS"
                 SDL_CFLAGS="$SDL_CFLAGS $ANDROID_CFLAGS"
-                SDL_LIBS="$SDL_LIBS -lSDL2main -Wl,-u,SDL_main_dummy"
                 EXTRA_CFLAGS="$EXTRA_CFLAGS $ANDROID_CFLAGS"
                 EXTRA_LDFLAGS="$EXTRA_LDFLAGS -ldl -lGLESv1_CM -lGLESv2 -llog -landroid"
                 SDLMAIN_SOURCES="$srcdir/src/main/android/*.c"

@@ -107,7 +107,7 @@
 /**
  *  The prototype for the application's main() function
  */
-extern C_LINKAGE int SDL_main(int argc, char *argv[]);
+extern C_LINKAGE DECLSPEC int SDL_main(int argc, char *argv[]);
 
 
 #include "begin_code.h"

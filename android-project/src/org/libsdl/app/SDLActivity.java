@@ -136,10 +136,11 @@ public class SDLActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         Log.v(TAG, "Device: " + android.os.Build.DEVICE);
         Log.v(TAG, "Model: " + android.os.Build.MODEL);
-        Log.v(TAG, "onCreate(): " + mSingleton);
+        Log.v(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
 
         SDLActivity.initialize();
+
         // So we can call stuff from static callbacks
         mSingleton = this;
 
@@ -179,18 +180,16 @@ public class SDLActivity extends Activity {
            return;
         }
 
-        // Set up the surface
-        mSurface = new SDLSurface(getApplication());
+        // Set up JNI
+        SDLActivity.nativeSetupJNI();
 
-
-        if(Build.VERSION.SDK_INT >= 16) {
+        if (Build.VERSION.SDK_INT >= 16) {
             mJoystickHandler = new SDLJoystickHandler_API16();
-        } else if(Build.VERSION.SDK_INT >= 12) {
+        } else if (Build.VERSION.SDK_INT >= 12) {
             mJoystickHandler = new SDLJoystickHandler_API12();
         } else {
             mJoystickHandler = new SDLJoystickHandler();
         }
-
         mHapticHandler = new SDLHapticHandler();
 
         if (Build.VERSION.SDK_INT >= 11) {
@@ -200,6 +199,9 @@ public class SDLActivity extends Activity {
             mClipboardHandler = new SDLClipboardHandler_Old();
         }
 
+        // Set up the surface
+        mSurface = new SDLSurface(getApplication());
+
         mLayout = new RelativeLayout(this);
         mLayout.addView(mSurface);
 
@@ -207,7 +209,6 @@ public class SDLActivity extends Activity {
         
         // Get filename from "Open with" of another application
         Intent intent = getIntent();
-
         if (intent != null && intent.getData() != null) {
             String filename = intent.getData().getPath();
             if (filename != null) {
@@ -309,6 +310,7 @@ public class SDLActivity extends Activity {
         }
 
         super.onDestroy();
+
         // Reset everything in case the user re opens the app
         SDLActivity.initialize();
     }
@@ -358,43 +360,42 @@ public class SDLActivity extends Activity {
 
         // Try a transition to resumed state
         if (mNextNativeState == NativeState.RESUMED) {
+            if (mIsSurfaceReady && mHasFocus && mIsResumedCalled) {
+                if (mSDLThread == null) {
+                    // This is the entry point to the C app.
+                    // Start up the C app thread and enable sensor input for the first time
+                    // FIXME: Why aren't we enabling sensor input at start?
 
-           if (mIsSurfaceReady && mHasFocus && mIsResumedCalled) {
+                    final Thread sdlThread = new Thread(new SDLMain(), "SDLThread");
+                    mSurface.enableSensor(Sensor.TYPE_ACCELEROMETER, true);
+                    sdlThread.start();
 
-              if (mSDLThread == null) {
-                  // This is the entry point to the C app.
-                  // Start up the C app thread and enable sensor input for the first time
+                    // Set up a listener thread to catch when the native thread ends
+                    mSDLThread = new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                sdlThread.join();
+                            } catch (Exception e) {
+                                // Ignore any exception
+                            } finally {
+                                // Native thread has finished
+                                if (!mExitCalledFromJava) {
+                                    handleNativeExit();
+                                }
+                            }
+                        }
+                    }, "SDLThreadListener");
 
-                  final Thread sdlThread = new Thread(new SDLMain(), "SDLThread");
-                  mSurface.enableSensor(Sensor.TYPE_ACCELEROMETER, true);
-                  sdlThread.start();
+                    mSDLThread.start();
+                }
 
-                  // Set up a listener thread to catch when the native thread ends
-                  mSDLThread = new Thread(new Runnable(){
-                      @Override
-                      public void run(){
-                          try {
-                              sdlThread.join();
-                          }
-                          catch(Exception e){}
-                          finally{
-                              // Native thread has finished
-                              if (! mExitCalledFromJava) {
-                                  handleNativeExit();
-                              }
-                          }
-                      }
-                  }, "SDLThreadListener");
-                  mSDLThread.start();
-              }
-
-
-              nativeResume();
-              mSurface.handleResume();
-              mCurrentNativeState = mNextNativeState;
-          }
-          return;
-       }
+                nativeResume();
+                mSurface.handleResume();
+                mCurrentNativeState = mNextNativeState;
+            }
+            return;
+        }
     }
 
     /* The native thread has finished */
@@ -460,12 +461,14 @@ public class SDLActivity extends Activity {
                 break;
             case COMMAND_SET_KEEP_SCREEN_ON:
             {
-                Window window = ((Activity) context).getWindow();
-                if (window != null) {
-                    if ((msg.obj instanceof Integer) && (((Integer) msg.obj).intValue() != 0)) {
-                        window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
-                    } else {
-                        window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                if (context instanceof Activity) {
+                    Window window = ((Activity) context).getWindow();
+                    if (window != null) {
+                        if ((msg.obj instanceof Integer) && (((Integer) msg.obj).intValue() != 0)) {
+                            window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                        } else {
+                            window.clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+                        }
                     }
                 }
                 break;
@@ -490,7 +493,8 @@ public class SDLActivity extends Activity {
     }
 
     // C functions we call
-    public static native int nativeInit(Object arguments);
+    public static native int nativeSetupJNI();
+    public static native int nativeRunMain(String library, String function, Object arguments);
     public static native void nativeLowMemory();
     public static native void nativeQuit();
     public static native void nativePause();
@@ -1208,15 +1212,25 @@ public class SDLActivity extends Activity {
 }
 
 /**
-    Simple nativeInit() runnable
+    Simple runnable to start the SDL application
 */
 class SDLMain implements Runnable {
     @Override
     public void run() {
         // Runs SDL_main()
-        SDLActivity.nativeInit(SDLActivity.mSingleton.getArguments());
+        String library;
+        String[] libraries = SDLActivity.mSingleton.getLibraries();
+        if (libraries.length > 0) {
+            library = "lib" + libraries[libraries.length - 1] + ".so";
+        } else {
+            library = "libmain.so";
+        }
+        String function = "SDL_main";
 
-        //Log.v("SDL", "SDL thread terminated");
+        Log.v("SDL", "Running main function " + function + " from library " + library);
+        SDLActivity.nativeRunMain(library, function, SDLActivity.mSingleton.getArguments());
+
+        Log.v("SDL", "Finished main function");
     }
 }
 
@@ -1251,7 +1265,7 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         mDisplay = ((WindowManager)context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
         mSensorManager = (SensorManager)context.getSystemService(Context.SENSOR_SERVICE);
 
-        if(Build.VERSION.SDK_INT >= 12) {
+        if (Build.VERSION.SDK_INT >= 12) {
             setOnGenericMotionListener(new SDLGenericMotionListener_API12());
         }
 
@@ -1964,8 +1978,8 @@ class SDLHapticHandler {
             SDLHaptic haptic = getHaptic(deviceIds[i]);
             if (haptic == null) {
                 InputDevice device = InputDevice.getDevice(deviceIds[i]);
-                Vibrator vib = device.getVibrator ();
-                if(vib.hasVibrator ()) {
+                Vibrator vib = device.getVibrator();
+                if (vib.hasVibrator()) {
                     haptic = new SDLHaptic();
                     haptic.device_id = deviceIds[i];
                     haptic.name = device.getName();
