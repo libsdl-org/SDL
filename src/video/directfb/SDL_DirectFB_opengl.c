@@ -117,9 +117,9 @@ DirectFB_GL_LoadLibrary(_THIS, const char *path)
 
 
     if (path == NULL) {
-        path = SDL_getenv("SDL_VIDEO_GL_DRIVER");
+        path = SDL_getenv("SDL_OPENGL_LIBRARY");
         if (path == NULL) {
-            path = "libGL.so";
+            path = "libGL.so.1";
         }
     }
 
