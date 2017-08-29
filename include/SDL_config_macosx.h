@@ -175,8 +175,8 @@
 #endif
 
 /* Enable Vulkan support */
-/* Metal/MoltenVK/Vulkan only supported on 64-bit architectures */
-#if TARGET_CPU_X86_64
+/* Metal/MoltenVK/Vulkan only supported on 64-bit architectures with 10.11+ */
+#if TARGET_CPU_X86_64 && (MAC_OS_X_VERSION_MIN_REQUIRED >= 101100)
 #define SDL_VIDEO_VULKAN 1
 #else
 #define  SDL_VIDEO_VULKAN 0
