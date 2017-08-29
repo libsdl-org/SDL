@@ -752,7 +752,7 @@ void SDL_ChooseAudioConverters(void)
         return;
     }
 
-    #define SET_CONVERTER_FUNCS(fntype) \
+#define SET_CONVERTER_FUNCS(fntype) \
         SDL_Convert_S8_to_F32 = SDL_Convert_S8_to_F32_##fntype; \
         SDL_Convert_U8_to_F32 = SDL_Convert_U8_to_F32_##fntype; \
         SDL_Convert_S16_to_F32 = SDL_Convert_S16_to_F32_##fntype; \
@@ -765,18 +765,18 @@ void SDL_ChooseAudioConverters(void)
         SDL_Convert_F32_to_S32 = SDL_Convert_F32_to_S32_##fntype; \
         converters_chosen = SDL_TRUE
 
-    #if HAVE_SSE2_INTRINSICS
+#if HAVE_SSE2_INTRINSICS
     if (SDL_HasSSE2()) {
         SET_CONVERTER_FUNCS(SSE2);
         return;
     }
-    #endif
+#endif
 
-    #if NEED_SCALAR_CONVERTER_FALLBACKS
+#if NEED_SCALAR_CONVERTER_FALLBACKS
     SET_CONVERTER_FUNCS(Scalar);
-    #endif
+#endif
 
-    #undef SET_CONVERTER_FUNCS
+#undef SET_CONVERTER_FUNCS
 
     SDL_assert(converters_chosen == SDL_TRUE);
 }

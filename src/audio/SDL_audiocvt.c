@@ -895,11 +895,6 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
         return SDL_InvalidParamError("cvt");
     }
 
-    /* Conversions from and to float require the audio subsystem to be initialized */
-    if (!SDL_WasInit(SDL_INIT_AUDIO)) {
-        return SDL_SetError("Audio subsystem has not been initialized");
-    }
-
     /* Make sure we zero out the audio conversion before error checking */
     SDL_zerop(cvt);
 
@@ -931,6 +926,9 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
     cvt->len_mult = 1;
     cvt->len_ratio = 1.0;
     cvt->rate_incr = ((double) dst_rate) / ((double) src_rate);
+
+    /* Make sure we've chosen audio conversion functions (MMX, scalar, etc.) */
+    SDL_ChooseAudioConverters();
 
     /* SDL now favors float32 as its preferred internal format, and considers
        everything else to be a degenerate case that we might have to make

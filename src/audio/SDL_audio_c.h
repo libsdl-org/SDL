@@ -54,7 +54,10 @@ extern SDL_AudioFormat SDL_NextAudioFormat(void);
 /* Function to calculate the size and silence for a SDL_AudioSpec */
 extern void SDL_CalculateAudioSpec(SDL_AudioSpec * spec);
 
-/* These pointers get set during init to various SIMD implementations. */
+/* Choose the audio filter functions below */
+extern void SDL_ChooseAudioConverters(void);
+
+/* These pointers get set during SDL_ChooseAudioConverters() to various SIMD implementations. */
 extern SDL_AudioFilter SDL_Convert_S8_to_F32;
 extern SDL_AudioFilter SDL_Convert_U8_to_F32;
 extern SDL_AudioFilter SDL_Convert_S16_to_F32;
