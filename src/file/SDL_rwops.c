@@ -686,7 +686,7 @@ SDL_LoadFile_RW(SDL_RWops * src, size_t *datasize, int freesrc)
 
     size_total = 0;
     for (;;) {
-        if ((size_total + FILE_CHUNK_SIZE) > size) {
+        if ((((Sint64)size_total) + FILE_CHUNK_SIZE) > size) {
             size = (size_total + FILE_CHUNK_SIZE);
             newdata = SDL_realloc(data, (size_t)(size + 1));
             if (!newdata) {

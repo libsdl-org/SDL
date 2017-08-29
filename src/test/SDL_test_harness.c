@@ -103,11 +103,11 @@ SDLTest_GenerateExecKey(const char *runSeed, char *suiteName, char *testName, in
     SDLTest_Md5Context md5Context;
     Uint64 *keys;
     char iterationString[16];
-    Uint32 runSeedLength;
-    Uint32 suiteNameLength;
-    Uint32 testNameLength;
-    Uint32 iterationStringLength;
-    Uint32 entireStringLength;
+    size_t runSeedLength;
+    size_t suiteNameLength;
+    size_t testNameLength;
+    size_t iterationStringLength;
+    size_t entireStringLength;
     char *buffer;
 
     if (runSeed == NULL || runSeed[0] == '\0') {
@@ -150,7 +150,7 @@ SDLTest_GenerateExecKey(const char *runSeed, char *suiteName, char *testName, in
 
     /* Hash string and use half of the digest as 64bit exec key */
     SDLTest_Md5Init(&md5Context);
-    SDLTest_Md5Update(&md5Context, (unsigned char *)buffer, entireStringLength);
+    SDLTest_Md5Update(&md5Context, (unsigned char *)buffer, (unsigned int) entireStringLength);
     SDLTest_Md5Final(&md5Context);
     SDL_free(buffer);
     keys = (Uint64 *)md5Context.digest;
