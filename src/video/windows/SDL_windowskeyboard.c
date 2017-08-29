@@ -268,7 +268,7 @@ void IME_Present(SDL_VideoData *videodata)
 
 #else
 
-#ifdef _SDL_msctf_h
+#ifdef SDL_msctf_h_
 #define USE_INIT_GUID
 #elif defined(__GNUC__)
 #define USE_INIT_GUID
