@@ -28,6 +28,8 @@
 
 #import "SDL_cocoametalview.h"
 
+#if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_COCOA
+
 #include "SDL_assert.h"
 #include "SDL_loadso.h"
 #include <dlfcn.h>
@@ -116,5 +118,6 @@ Cocoa_Mtl_GetDrawableSize(SDL_Window * window, int * w, int * h)
     }
 }
 
-/* vi: set ts=4 sw=4 expandtab: */
+#endif /* SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_COCOA */
 
+/* vi: set ts=4 sw=4 expandtab: */
