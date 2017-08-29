@@ -40,7 +40,7 @@
 /* Return a Metal-compatible layer. */
 + (Class)layerClass
 {
-  return [CAMetalLayer class];
+  return NSClassFromString(@"CAMetalLayer");
 }
 
 /* Indicate the view wants to draw using a backing layer instead of drawRect. */
