@@ -56,6 +56,7 @@ public class SDLActivity extends Activity {
     public static boolean mSeparateMouseAndTouch;
 
     // Main components
+    protected static Context mContext;
     protected static SDLActivity mSingleton;
     protected static SDLSurface mSurface;
     protected static View mTextEdit;
@@ -135,6 +136,7 @@ public class SDLActivity extends Activity {
     public static void initialize() {
         // The static nature of the singleton and Android quirkyness force us to initialize everything here
         // Otherwise, when exiting the app and returning to it, these variables *keep* their pre exit values
+        mContext = null;
         mSingleton = null;
         mSurface = null;
         mTextEdit = null;
@@ -155,6 +157,9 @@ public class SDLActivity extends Activity {
     }
 
     // Setup
+    public static void setContext(Context context) {
+        mContext = context;
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         Log.v(TAG, "Device: " + android.os.Build.DEVICE);
@@ -165,7 +170,7 @@ public class SDLActivity extends Activity {
         SDLActivity.initialize();
 
         // So we can call stuff from static callbacks
-        mSingleton = this;
+        mContext = mSingleton = this;
 
         // Load shared libraries
         String errorMsgBrokenLib = "";
@@ -564,8 +569,9 @@ public class SDLActivity extends Activity {
      */
     public static void setOrientation(int w, int h, boolean resizable, String hint)
     {
-      mSingleton.setOrientationBis(w, h, resizable, hint);
-      return;
+        if (mSingleton != null) {
+            mSingleton.setOrientationBis(w, h, resizable, hint);
+        }
     }
    
     /**
@@ -638,6 +644,9 @@ public class SDLActivity extends Activity {
      * This method is called by SDL using JNI.
      */
     public static boolean sendMessage(int command, int param) {
+        if (mSingleton == null) {
+            return false;
+        }
         return mSingleton.sendCommand(command, Integer.valueOf(param));
     }
 
@@ -645,7 +654,7 @@ public class SDLActivity extends Activity {
      * This method is called by SDL using JNI.
      */
     public static Context getContext() {
-        return mSingleton;
+        return mContext;
     }
 
     static class ShowTextInputTask implements Runnable {
@@ -716,6 +725,9 @@ public class SDLActivity extends Activity {
      * This method is called by SDL using JNI.
      */
     public static Surface getNativeSurface() {
+        if (SDLActivity.mSurface == null) {
+            return null;
+        }
         return SDLActivity.mSurface.getNativeSurface();
     }
 
