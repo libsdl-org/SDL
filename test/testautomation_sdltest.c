@@ -35,6 +35,7 @@ sdltest_generateRunSeed(void *arg)
 {
   char* result;
   size_t i, l;
+  int j;
   
   for (i = 1; i <= 10; i += 3) {   
      result = SDLTest_GenerateRunSeed((const int)i);
@@ -48,8 +49,8 @@ sdltest_generateRunSeed(void *arg)
   }
 
   /* Negative cases */
-  for (i = -2; i <= 0; i++) {   
-     result = SDLTest_GenerateRunSeed((const int)i);
+  for (j = -2; j <= 0; i++) {   
+     result = SDLTest_GenerateRunSeed((const int)j);
      SDLTest_AssertPass("Call to SDLTest_GenerateRunSeed()");
      SDLTest_AssertCheck(result == NULL, "Verify returned value is not NULL");
   }
