@@ -3678,9 +3678,6 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,OpenGLES"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,QuartzCore"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,UIKit"
-        if test x$enable_video_vulkan = xyes; then
-            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,QuartzCore"
-        fi
         ;;
     *-*-darwin* )
         # This could be either full "Mac OS X", or plain "Darwin" which is
@@ -3756,9 +3753,6 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,Cocoa"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,Carbon"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,IOKit"
-        if test x$enable_video_vulkan = xyes; then
-            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,QuartzCore"
-        fi
         ;;
     *-nacl|*-pnacl)
         ARCH=nacl
