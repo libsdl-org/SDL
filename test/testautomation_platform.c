@@ -112,7 +112,7 @@ int platform_testGetFunctions (void *arg)
    char *platform;
    char *revision;
    int ret;
-   int len;
+   size_t len;
 
    platform = (char *)SDL_GetPlatform();
    SDLTest_AssertPass("SDL_GetPlatform()");
@@ -122,7 +122,7 @@ int platform_testGetFunctions (void *arg)
      SDLTest_AssertCheck(len > 0,
              "SDL_GetPlatform(): expected non-empty platform, was platform: '%s', len: %i",
              platform,
-             len);
+             (int) len);
    }
 
    ret = SDL_GetCPUCount();
@@ -282,7 +282,7 @@ int platform_testGetSetClearError(void *arg)
    int result;
    const char *testError = "Testing";
    char *lastError;
-   int len;
+   size_t len;
 
    SDL_ClearError();
    SDLTest_AssertPass("SDL_ClearError()");
@@ -295,7 +295,7 @@ int platform_testGetSetClearError(void *arg)
    {
      len = SDL_strlen(lastError);
      SDLTest_AssertCheck(len == 0,
-             "SDL_GetError(): no message expected, len: %i", len);
+             "SDL_GetError(): no message expected, len: %i", (int) len);
    }
 
    result = SDL_SetError("%s", testError);
@@ -310,7 +310,7 @@ int platform_testGetSetClearError(void *arg)
      SDLTest_AssertCheck(len == SDL_strlen(testError),
              "SDL_GetError(): expected message len %i, was len: %i",
              (int) SDL_strlen(testError),
-             len);
+             (int) len);
      SDLTest_AssertCheck(SDL_strcmp(lastError, testError) == 0,
              "SDL_GetError(): expected message %s, was message: %s",
              testError,
@@ -334,7 +334,7 @@ int platform_testSetErrorEmptyInput(void *arg)
    int result;
    const char *testError = "";
    char *lastError;
-   int len;
+   size_t len;
 
    result = SDL_SetError("%s", testError);
    SDLTest_AssertPass("SDL_SetError()");
@@ -348,7 +348,7 @@ int platform_testSetErrorEmptyInput(void *arg)
      SDLTest_AssertCheck(len == SDL_strlen(testError),
              "SDL_GetError(): expected message len %i, was len: %i",
              (int) SDL_strlen(testError),
-             len);
+             (int) len);
      SDLTest_AssertCheck(SDL_strcmp(lastError, testError) == 0,
              "SDL_GetError(): expected message '%s', was message: '%s'",
              testError,
@@ -373,7 +373,7 @@ int platform_testSetErrorInvalidInput(void *arg)
    const char *invalidError = NULL;
    const char *probeError = "Testing";
    char *lastError;
-   int len;
+   size_t len;
 
    /* Reset */
    SDL_ClearError();
@@ -391,7 +391,7 @@ int platform_testSetErrorInvalidInput(void *arg)
      len = SDL_strlen(lastError);
      SDLTest_AssertCheck(len == 0,
              "SDL_GetError(): expected message len 0, was len: %i",
-             len);
+             (int) len);
    }
 
    /* Set */
@@ -411,7 +411,7 @@ int platform_testSetErrorInvalidInput(void *arg)
      len = SDL_strlen(lastError);
      SDLTest_AssertCheck(len == 0,
              "SDL_GetError(): expected message len 0, was len: %i",
-             len);
+             (int) len);
    }
 
    /* Reset */
@@ -431,7 +431,7 @@ int platform_testSetErrorInvalidInput(void *arg)
      SDLTest_AssertCheck(len == SDL_strlen(probeError),
              "SDL_GetError(): expected message len %i, was len: %i",
              (int) SDL_strlen(probeError),
-             len);
+             (int) len);
      SDLTest_AssertCheck(SDL_strcmp(lastError, probeError) == 0,
              "SDL_GetError(): expected message '%s', was message: '%s'",
              probeError,

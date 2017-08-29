@@ -32,9 +32,9 @@ static const char RWopsAlphabetString[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 void
 RWopsSetUp(void *arg)
 {
-    int fileLen;
+    size_t fileLen;
     FILE *handle;
-    int writtenLen;
+    size_t writtenLen;
     int result;
 
     /* Clean up from previous runs (if any); ignore errors */
@@ -49,8 +49,8 @@ RWopsSetUp(void *arg)
 
     /* Write some known text into it */
     fileLen = SDL_strlen(RWopsHelloWorldTestString);
-    writtenLen = (int)fwrite(RWopsHelloWorldTestString, 1, fileLen, handle);
-    SDLTest_AssertCheck(fileLen == writtenLen, "Verify number of written bytes, expected %i, got %i", fileLen, writtenLen);
+    writtenLen = fwrite(RWopsHelloWorldTestString, 1, fileLen, handle);
+    SDLTest_AssertCheck(fileLen == writtenLen, "Verify number of written bytes, expected %i, got %i", (int) fileLen, (int) writtenLen);
     result = fclose(handle);
     SDLTest_AssertCheck(result == 0, "Verify result from fclose, expected 0, got %i", result);
 
@@ -61,8 +61,8 @@ RWopsSetUp(void *arg)
 
     /* Write alphabet text into it */
     fileLen = SDL_strlen(RWopsAlphabetString);
-    writtenLen = (int)fwrite(RWopsAlphabetString, 1, fileLen, handle);
-    SDLTest_AssertCheck(fileLen == writtenLen, "Verify number of written bytes, expected %i, got %i", fileLen, writtenLen);
+    writtenLen = fwrite(RWopsAlphabetString, 1, fileLen, handle);
+    SDLTest_AssertCheck(fileLen == writtenLen, "Verify number of written bytes, expected %i, got %i", (int) fileLen, (int) writtenLen);
     result = fclose(handle);
     SDLTest_AssertCheck(result == 0, "Verify result from fclose, expected 0, got %i", result);
 

@@ -600,7 +600,7 @@ static void RunFIFOTest(SDL_bool lock_free)
     int i, j;
     int grand_total;
     char textBuffer[1024];
-    int len;
+    size_t len;
 
     SDL_Log("\nFIFO test---------------------------------------\n\n");
     SDL_Log("Mode: %s\n", lock_free ? "LockFree" : "Mutex");

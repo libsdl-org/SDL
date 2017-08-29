@@ -34,7 +34,7 @@ int
 sdltest_generateRunSeed(void *arg)
 {
   char* result;
-  int i, l;
+  size_t i, l;
   
   for (i = 1; i <= 10; i += 3) {   
      result = SDLTest_GenerateRunSeed((const int)i);
@@ -42,7 +42,7 @@ sdltest_generateRunSeed(void *arg)
      SDLTest_AssertCheck(result != NULL, "Verify returned value is not NULL");
      if (result != NULL) {
        l = SDL_strlen(result);
-       SDLTest_AssertCheck(l == i, "Verify length of returned value is %d, got: %d", i, l);
+       SDLTest_AssertCheck(l == i, "Verify length of returned value is %d, got: %d", (int) i, (int) l);
        SDL_free(result);
      }
   }
@@ -1119,16 +1119,16 @@ int
 sdltest_randomAsciiString(void *arg)
 {
   char* result;
-  int len;
+  size_t len;
   int nonAsciiCharacters;
-  int i;
+  size_t i;
 
   result = SDLTest_RandomAsciiString();
   SDLTest_AssertPass("Call to SDLTest_RandomAsciiString()");
   SDLTest_AssertCheck(result != NULL, "Validate that result is not NULL");
   if (result != NULL) {
      len = SDL_strlen(result);
-     SDLTest_AssertCheck(len >= 0 && len <= 255, "Validate that result length; expected: len=[1,255], got: %d", len);
+     SDLTest_AssertCheck(len >= 1 && len <= 255, "Validate that result length; expected: len=[1,255], got: %d", (int) len);
      nonAsciiCharacters = 0;
      for (i=0; i<len; i++) {
        if (iscntrl(result[i])) {
@@ -1155,10 +1155,10 @@ sdltest_randomAsciiStringWithMaximumLength(void *arg)
   const char* expectedError = "Parameter 'maxLength' is invalid";
   char* lastError;
   char* result;
-  int targetLen;
-  int len;
+  size_t targetLen;
+  size_t len;
   int nonAsciiCharacters;
-  int i;
+  size_t i;
 
   targetLen = 16 + SDLTest_RandomUint8();
   result = SDLTest_RandomAsciiStringWithMaximumLength(targetLen);
@@ -1166,7 +1166,7 @@ sdltest_randomAsciiStringWithMaximumLength(void *arg)
   SDLTest_AssertCheck(result != NULL, "Validate that result is not NULL");
   if (result != NULL) {
      len = SDL_strlen(result);
-     SDLTest_AssertCheck(len >= 0 && len <= targetLen, "Validate that result length; expected: len=[1,%d], got: %d", targetLen, len);
+     SDLTest_AssertCheck(len >= 1 && len <= targetLen, "Validate that result length; expected: len=[1,%d], got: %d", (int) targetLen, (int) len);
      nonAsciiCharacters = 0;
      for (i=0; i<len; i++) {
        if (iscntrl(result[i])) {
@@ -1208,10 +1208,10 @@ sdltest_randomAsciiStringOfSize(void *arg)
   const char* expectedError = "Parameter 'size' is invalid";
   char* lastError;
   char* result;
-  int targetLen;
-  int len;
+  size_t targetLen;
+  size_t len;
   int nonAsciiCharacters;
-  int i;
+  size_t i;
 
   /* Positive test */
   targetLen = 16 + SDLTest_RandomUint8();
@@ -1220,7 +1220,7 @@ sdltest_randomAsciiStringOfSize(void *arg)
   SDLTest_AssertCheck(result != NULL, "Validate that result is not NULL");
   if (result != NULL) {
      len = SDL_strlen(result);
-     SDLTest_AssertCheck(len == targetLen, "Validate that result length; expected: len=%d, got: %d", targetLen, len);
+     SDLTest_AssertCheck(len == targetLen, "Validate that result length; expected: len=%d, got: %d", (int) targetLen, (int) len);
      nonAsciiCharacters = 0;
      for (i=0; i<len; i++) {
        if (iscntrl(result[i])) {
