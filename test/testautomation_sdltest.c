@@ -49,7 +49,7 @@ sdltest_generateRunSeed(void *arg)
   }
 
   /* Negative cases */
-  for (j = -2; j <= 0; i++) {   
+  for (j = -2; j <= 0; j++) {
      result = SDLTest_GenerateRunSeed((const int)j);
      SDLTest_AssertPass("Call to SDLTest_GenerateRunSeed()");
      SDLTest_AssertCheck(result == NULL, "Verify returned value is not NULL");
