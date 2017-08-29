@@ -34,9 +34,9 @@
 
 #if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_COCOA
 
-#import <Cocoa/Cocoa.h>
-#import <Metal/Metal.h>
-#import <QuartzCore/CAMetalLayer.h>
+#include <Cocoa/Cocoa.h>
+#include <Metal/Metal.h>
+#include <QuartzCore/CAMetalLayer.h>
 
 #define METALVIEW_TAG 255
 
