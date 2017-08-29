@@ -859,7 +859,7 @@ if(ANDROID)
     endif()
 
     CHECK_C_SOURCE_COMPILES("
-    #if defined(__ANDROID__) && defined(__ARM_ARCH) && __ARM_ARCH < 7
+    #if defined(__ARM_ARCH) && __ARM_ARCH < 7
     #error Vulkan doesn't work on this configuration
     #endif
     int main()
@@ -1434,10 +1434,6 @@ elseif(APPLE)
   endif()
 
   # Actually load the frameworks at the end so we don't duplicate include.
-  if (VIDEO_VULKAN)
-    find_library(QUARTZCORE QuartzCore)
-    list(APPEND EXTRA_LIBS ${QUARTZCORE})
-  endif()
   if(SDL_FRAMEWORK_COREVIDEO)
     find_library(COREVIDEO CoreVideo)
     list(APPEND EXTRA_LIBS ${COREVIDEO})
@@ -1517,7 +1513,7 @@ elseif(HAIKU)
   CheckPTHREAD()
 endif()
 
-if(VIDEO_VULKAN AND (NOT APPLE OR QUARTZCORE))
+if(VIDEO_VULKAN)
   set(SDL_VIDEO_VULKAN 1)
 endif()
 
