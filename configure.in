@@ -1983,7 +1983,7 @@ AC_HELP_STRING([--enable-video-cocoa], [use Cocoa video driver [[default=yes]]])
                   , enable_video_cocoa=yes)
     if test x$enable_video = xyes -a x$enable_video_cocoa = xyes; then
         save_CFLAGS="$CFLAGS"
-        dnl work around that we don't have Objective-C support in autoconf
+        dnl Work around that we don't have Objective-C support in autoconf
         CFLAGS="$CFLAGS -x objective-c"
         AC_MSG_CHECKING(for Cocoa framework)
         have_cocoa=no
@@ -2401,7 +2401,7 @@ CheckEmscriptenGLES()
     fi
 }
 
-dnl Check to see if Vulkan surface support is desired
+dnl Check to see if Vulkan support is desired
 AC_ARG_ENABLE(video-vulkan,
 AC_HELP_STRING([--enable-video-vulkan], [include Vulkan support [[default=yes]]]),
               , enable_video_vulkan=yes)
@@ -2413,17 +2413,33 @@ CheckVulkan()
         case "$host" in
             *-*-androideabi*)
                 AC_TRY_COMPILE([
-                  #if defined(__ANDROID__) && defined(__ARM_EABI__) && !defined(__ARM_ARCH_7A__)
+                  #if defined(__ARM_ARCH) && __ARM_ARCH < 7
                   #error Vulkan doesn't work on this configuration
                   #endif
-                  int main()
-                  {
-                     return 0;
-                  }
+                ],[
+                ],[
                 ],[
                     enable_video_vulkan=no
-                ],[
                 ])
+                ;;
+            *-*-darwin*)
+                save_CFLAGS="$CFLAGS"
+                dnl Work around that we don't have Objective-C support in autoconf
+                CFLAGS="$CFLAGS -x objective-c"
+                AC_TRY_COMPILE([
+                  #include <Cocoa/Cocoa.h>
+                  #include <Metal/Metal.h>
+                  #include <QuartzCore/CAMetalLayer.h>
+
+                  #if !TARGET_CPU_X86_64
+                  #error Vulkan doesn't work on this configuration
+                  #endif
+                ],[
+                ],[
+                ],[
+                    enable_video_vulkan=no
+                ])
+                CFLAGS="$save_CFLAGS"
                 ;;
             *)
                 ;;
@@ -2431,7 +2447,7 @@ CheckVulkan()
         if test x$enable_video_vulkan = xno; then
             # For reasons I am totally unable to see, I get an undefined macro error if
             # I put this in the AC_TRY_COMPILE.
-            AC_MSG_WARN([Sorry, Vulkan does not work on this configuration.])
+            AC_MSG_WARN([Vulkan does not work on this configuration.])
         fi
     fi
     if test x$enable_video_vulkan = xyes; then
