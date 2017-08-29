@@ -377,7 +377,6 @@
 		04F7805D12FB74A200FC43C0 /* SDL_drawline.h in Headers */ = {isa = PBXBuildFile; fileRef = 04F7804512FB74A200FC43C0 /* SDL_drawline.h */; };
 		04F7805E12FB74A200FC43C0 /* SDL_drawpoint.c in Sources */ = {isa = PBXBuildFile; fileRef = 04F7804612FB74A200FC43C0 /* SDL_drawpoint.c */; };
 		04F7805F12FB74A200FC43C0 /* SDL_drawpoint.h in Headers */ = {isa = PBXBuildFile; fileRef = 04F7804712FB74A200FC43C0 /* SDL_drawpoint.h */; };
-		4D16644B1EDD5FE8003DE88E /* SDL_vulkan.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D16644A1EDD5FE8003DE88E /* SDL_vulkan.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		4D16644E1EDD6023003DE88E /* SDL_vulkan_internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D16644C1EDD6023003DE88E /* SDL_vulkan_internal.h */; };
 		4D16644F1EDD6023003DE88E /* SDL_vulkan_utils.c in Sources */ = {isa = PBXBuildFile; fileRef = 4D16644D1EDD6023003DE88E /* SDL_vulkan_utils.c */; };
 		4D1664531EDD60AD003DE88E /* SDL_cocoametalview.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D1664501EDD60AD003DE88E /* SDL_cocoametalview.m */; };
@@ -389,12 +388,6 @@
 		4D1664591EDD621B003DE88E /* SDL_vulkan_utils.c in Sources */ = {isa = PBXBuildFile; fileRef = 4D16644D1EDD6023003DE88E /* SDL_vulkan_utils.c */; };
 		4D16645A1EDD6235003DE88E /* SDL_cocoametalview.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D1664501EDD60AD003DE88E /* SDL_cocoametalview.m */; };
 		4D16645B1EDD6235003DE88E /* SDL_cocoavulkan.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D1664521EDD60AD003DE88E /* SDL_cocoavulkan.m */; };
-		4D16645E1EDD73E0003DE88E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D16645D1EDD73E0003DE88E /* Metal.framework */; };
-		4D16645F1EDD73FE003DE88E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D16645D1EDD73E0003DE88E /* Metal.framework */; };
-		4D1664601EDD741F003DE88E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D16645D1EDD73E0003DE88E /* Metal.framework */; };
-		4D1664641EDD7528003DE88E /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D1664611EDD74A9003DE88E /* QuartzCore.framework */; };
-		4D1664651EDD7727003DE88E /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D1664611EDD74A9003DE88E /* QuartzCore.framework */; };
-		4D1664661EDD776A003DE88E /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 4D1664611EDD74A9003DE88E /* QuartzCore.framework */; };
 		4D7517291EE2562B00820EEA /* SDL_cocoametalview.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D7517281EE2562B00820EEA /* SDL_cocoametalview.h */; };
 		56115BBB1DF72C6D00F47E1E /* SDL_dataqueue.c in Sources */ = {isa = PBXBuildFile; fileRef = 56115BB91DF72C6D00F47E1E /* SDL_dataqueue.c */; };
 		56115BBC1DF72C6D00F47E1E /* SDL_dataqueue.h in Headers */ = {isa = PBXBuildFile; fileRef = 56115BBA1DF72C6D00F47E1E /* SDL_dataqueue.h */; };
@@ -1034,15 +1027,12 @@
 		04F7804512FB74A200FC43C0 /* SDL_drawline.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_drawline.h; sourceTree = "<group>"; };
 		04F7804612FB74A200FC43C0 /* SDL_drawpoint.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_drawpoint.c; sourceTree = "<group>"; };
 		04F7804712FB74A200FC43C0 /* SDL_drawpoint.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_drawpoint.h; sourceTree = "<group>"; };
-		4D16644A1EDD5FE8003DE88E /* SDL_vulkan.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_vulkan.h; sourceTree = "<group>"; };
 		4D16644C1EDD6023003DE88E /* SDL_vulkan_internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_vulkan_internal.h; sourceTree = "<group>"; };
 		4D16644D1EDD6023003DE88E /* SDL_vulkan_utils.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_vulkan_utils.c; sourceTree = "<group>"; };
 		4D1664501EDD60AD003DE88E /* SDL_cocoametalview.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_cocoametalview.m; sourceTree = "<group>"; };
 		4D1664511EDD60AD003DE88E /* SDL_cocoavulkan.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_cocoavulkan.h; sourceTree = "<group>"; };
 		4D1664521EDD60AD003DE88E /* SDL_cocoavulkan.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_cocoavulkan.m; sourceTree = "<group>"; };
-		4D16645D1EDD73E0003DE88E /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
-		4D1664611EDD74A9003DE88E /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
-		4D4820431F0F10B400EDC31C /* SDL_vulkan.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; name = SDL_vulkan.h; path = ../../include/SDL_vulkan.h; sourceTree = "<group>"; };
+		4D4820431F0F10B400EDC31C /* SDL_vulkan.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SDL_vulkan.h; sourceTree = "<group>"; };
 		4D7517281EE2562B00820EEA /* SDL_cocoametalview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_cocoametalview.h; sourceTree = "<group>"; };
 		56115BB91DF72C6D00F47E1E /* SDL_dataqueue.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_dataqueue.c; path = ../../src/SDL_dataqueue.c; sourceTree = "<group>"; };
 		56115BBA1DF72C6D00F47E1E /* SDL_dataqueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_dataqueue.h; path = ../../src/SDL_dataqueue.h; sourceTree = "<group>"; };
@@ -1152,8 +1142,6 @@
 				00D0D08410675DD9004B05EF /* CoreFoundation.framework in Frameworks */,
 				00D0D0D810675E46004B05EF /* Carbon.framework in Frameworks */,
 				00CFA89D106B4BA100758660 /* ForceFeedback.framework in Frameworks */,
-				4D16645E1EDD73E0003DE88E /* Metal.framework in Frameworks */,
-				4D1664651EDD7727003DE88E /* QuartzCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1169,8 +1157,6 @@
 				007317C30858E15000B2BC32 /* Carbon.framework in Frameworks */,
 				DB31408B17554D37006C0E22 /* ForceFeedback.framework in Frameworks */,
 				562C4AE91D8F496200AF9EBE /* AudioToolbox.framework in Frameworks */,
-				4D16645F1EDD73FE003DE88E /* Metal.framework in Frameworks */,
-				4D1664661EDD776A003DE88E /* QuartzCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1186,8 +1172,6 @@
 				DB31407217554B71006C0E22 /* Carbon.framework in Frameworks */,
 				DB31408D17554D3C006C0E22 /* ForceFeedback.framework in Frameworks */,
 				562C4AEA1D8F496300AF9EBE /* AudioToolbox.framework in Frameworks */,
-				4D1664601EDD741F003DE88E /* Metal.framework in Frameworks */,
-				4D1664641EDD7528003DE88E /* QuartzCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1199,15 +1183,14 @@
 			children = (
 				AA7557C71595D4D800BBD41B /* begin_code.h */,
 				AA7557C81595D4D800BBD41B /* close_code.h */,
-				AA7557F91595D4D800BBD41B /* SDL.h */,
 				AA7557C91595D4D800BBD41B /* SDL_assert.h */,
 				AA7557CA1595D4D800BBD41B /* SDL_atomic.h */,
 				AA7557CB1595D4D800BBD41B /* SDL_audio.h */,
 				AADA5B8616CCAB3000107CF7 /* SDL_bits.h */,
 				AA7557CC1595D4D800BBD41B /* SDL_blendmode.h */,
 				AA7557CD1595D4D800BBD41B /* SDL_clipboard.h */,
-				AA7557CF1595D4D800BBD41B /* SDL_config.h */,
 				AA7557CE1595D4D800BBD41B /* SDL_config_macosx.h */,
+				AA7557CF1595D4D800BBD41B /* SDL_config.h */,
 				AA7557D01595D4D800BBD41B /* SDL_copying.h */,
 				AA7557D11595D4D800BBD41B /* SDL_cpuinfo.h */,
 				AA7557D21595D4D800BBD41B /* SDL_endian.h */,
@@ -1228,14 +1211,14 @@
 				AA7557DF1595D4D800BBD41B /* SDL_mouse.h */,
 				AA7557E01595D4D800BBD41B /* SDL_mutex.h */,
 				AA7557E11595D4D800BBD41B /* SDL_name.h */,
-				AA7557E21595D4D800BBD41B /* SDL_opengl.h */,
 				AAC070F4195606770073DCDF /* SDL_opengl_glext.h */,
+				AA7557E21595D4D800BBD41B /* SDL_opengl.h */,
 				AA7557E31595D4D800BBD41B /* SDL_opengles.h */,
-				AA7557E41595D4D800BBD41B /* SDL_opengles2.h */,
 				AAC070F5195606770073DCDF /* SDL_opengles2_gl2.h */,
 				AAC070F6195606770073DCDF /* SDL_opengles2_gl2ext.h */,
 				AAC070F7195606770073DCDF /* SDL_opengles2_gl2platform.h */,
 				AAC070F8195606770073DCDF /* SDL_opengles2_khrplatform.h */,
+				AA7557E41595D4D800BBD41B /* SDL_opengles2.h */,
 				AA7557E51595D4D800BBD41B /* SDL_pixels.h */,
 				AA7557E61595D4D800BBD41B /* SDL_platform.h */,
 				AA7557E71595D4D800BBD41B /* SDL_power.h */,
@@ -1256,7 +1239,8 @@
 				AA7557F61595D4D800BBD41B /* SDL_types.h */,
 				AA7557F71595D4D800BBD41B /* SDL_version.h */,
 				AA7557F81595D4D800BBD41B /* SDL_video.h */,
-				4D16644A1EDD5FE8003DE88E /* SDL_vulkan.h */,
+				4D4820431F0F10B400EDC31C /* SDL_vulkan.h */,
+				AA7557F91595D4D800BBD41B /* SDL.h */,
 			);
 			name = "Public Headers";
 			path = ../../include;
@@ -1704,7 +1688,6 @@
 		0867D691FE84028FC02AAC07 /* SDLFramework */ = {
 			isa = PBXGroup;
 			children = (
-				4D4820431F0F10B400EDC31C /* SDL_vulkan.h */,
 				F5A2EF3900C6A39A01000001 /* BUGS.txt */,
 				F59C70FC00D5CB5801000001 /* pkg-support */,
 				0153844A006D81B07F000001 /* Public Headers */,
@@ -1712,7 +1695,6 @@
 				034768DDFF38A45A11DB9C8B /* Products */,
 				BECDF66B0761BA81005FE872 /* Info-Framework.plist */,
 				BEC562FE0761C0E800A33029 /* Linked Frameworks */,
-				4D16645C1EDD73E0003DE88E /* Frameworks */,
 			);
 			comments = "To build Universal Binaries, we have experimented with a variety of different options.\nThe complication is that we must retain compatibility with at least 10.2. \nThe Universal Binary defaults only work for > 10.3.9\n\nSo far, we have found:\ngcc 4.0.0 with Xcode 2.1 always links against libgcc_s. gcc 4.0.1 from Xcode 2.2 fixes this problem.\n\nBut gcc 4.0 will not work with < 10.3.9 because we continue to get an undefined symbol to _fprintf$LDBL128.\nSo we must use gcc 3.3 on PPC to accomplish 10.2 support. (But 4.0 is required for i386.)\n\nSetting the deployment target to 10.4 will disable prebinding, so for PPC, we set it less than 10.4 to preserve prebinding for legacy support.\n\nSetting the PPC SDKROOT to /Developers/SDKs/MacOSX10.2.8.sdk will link to 63.0.0 libSystem.B.dylib. Leaving it at current or 10.4u links to 88.1.2. However, as long as we are using gcc 3.3, it doesn't seem to matter as testing has demonstrated both will run. We have decided not to invoke the 10.2.8 SDK because it is not a default installed component with Xcode which will probably cause most people problems. However, rather than deleting the SDKROOT_ppc entry entirely, we have mapped it to 10.4u in case we decide we need to change this setting.\n\nTo use Altivec or SSE, we needed architecture specific flags:\nOTHER_CFLAGS_ppc\nOTHER_CFLAGS_i386\nOTHER_CFLAGS=$(OTHER_CFLAGS_($CURRENT_ARCH))\n\nThe general OTHER_CFLAGS needed to be manually mapped to architecture specific options because Xcode didn't do this automatically for us.\n\n\n";
 			indentWidth = 4;
@@ -1759,15 +1741,6 @@
 				04BDFE5C12E6671700899322 /* SDL.c */,
 			);
 			name = "Library Source";
-			sourceTree = "<group>";
-		};
-		4D16645C1EDD73E0003DE88E /* Frameworks */ = {
-			isa = PBXGroup;
-			children = (
-				4D1664611EDD74A9003DE88E /* QuartzCore.framework */,
-				4D16645D1EDD73E0003DE88E /* Metal.framework */,
-			);
-			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		567E2F1F17C44BBB005F1892 /* filesystem */ = {
@@ -1889,7 +1862,6 @@
 				AA7558581595D4D800BBD41B /* SDL_types.h in Headers */,
 				AA75585C1595D4D800BBD41B /* SDL_video.h in Headers */,
 				AA75585A1595D4D800BBD41B /* SDL_version.h in Headers */,
-				4D16644B1EDD5FE8003DE88E /* SDL_vulkan.h in Headers */,
 				4D7517291EE2562B00820EEA /* SDL_cocoametalview.h in Headers */,
 				04BD000912E6671800899322 /* SDL_diskaudio.h in Headers */,
 				04BD001112E6671800899322 /* SDL_dummyaudio.h in Headers */,
