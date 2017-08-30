@@ -876,7 +876,6 @@ if(ANDROID)
 
   CheckPTHREAD()
 
-  list(APPEND EXTRA_LDFLAGS "-Wl,--undefined=Java_org_libsdl_app_SDLActivity_nativeInit")
 endif()
 
 # Platform-specific options and settings
