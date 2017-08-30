@@ -478,11 +478,17 @@ static void
 SDLTest_PrintRendererFlag(char *text, size_t maxlen, Uint32 flag)
 {
     switch (flag) {
-    case SDL_RENDERER_PRESENTVSYNC:
-        SDL_snprintfcat(text, maxlen, "PresentVSync");
+    case SDL_RENDERER_SOFTWARE:
+        SDL_snprintfcat(text, maxlen, "Software");
         break;
     case SDL_RENDERER_ACCELERATED:
         SDL_snprintfcat(text, maxlen, "Accelerated");
+        break;
+    case SDL_RENDERER_PRESENTVSYNC:
+        SDL_snprintfcat(text, maxlen, "PresentVSync");
+        break;
+    case SDL_RENDERER_TARGETTEXTURE:
+        SDL_snprintfcat(text, maxlen, "TargetTexturesSupported");
         break;
     default:
         SDL_snprintfcat(text, maxlen, "0x%8.8x", flag);
