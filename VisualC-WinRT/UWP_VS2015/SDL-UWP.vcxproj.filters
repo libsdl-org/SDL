@@ -393,9 +393,6 @@
     <ClInclude Include="..\..\src\video\winrt\SDL_winrtvideo_cpp.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\haptic\windows\SDL_dinputhaptic_c.h" />
-    <ClInclude Include="..\..\src\haptic\windows\SDL_windowshaptic_c.h" />
-    <ClInclude Include="..\..\src\haptic\windows\SDL_xinputhaptic_c.h" />
     <ClInclude Include="..\..\src\audio\xaudio2\SDL_xaudio2.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -403,6 +400,15 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\SDL_dataqueue.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\haptic\windows\SDL_xinputhaptic_c.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\haptic\windows\SDL_dinputhaptic_c.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\haptic\windows\SDL_windowshaptic_c.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -713,9 +719,6 @@
     <ClCompile Include="..\..\src\video\winrt\SDL_winrtvideo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\haptic\windows\SDL_dinputhaptic.c" />
-    <ClCompile Include="..\..\src\haptic\windows\SDL_windowshaptic.c" />
-    <ClCompile Include="..\..\src\haptic\windows\SDL_xinputhaptic.c" />
     <ClCompile Include="..\..\src\audio\xaudio2\SDL_xaudio2.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -723,6 +726,15 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\SDL_dataqueue.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\haptic\windows\SDL_dinputhaptic.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\haptic\windows\SDL_windowshaptic.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\haptic\windows\SDL_xinputhaptic.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
