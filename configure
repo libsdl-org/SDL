@@ -15677,7 +15677,7 @@ case "$host" in
         ;;
 esac
 
-INCLUDE="-I$srcdir/include"
+INCLUDE="-I$srcdir/include -I$srcdir/src/video/khronos"
 if test x$srcdir != x.; then
     INCLUDE="-Iinclude $INCLUDE"
 elif test -d .hg; then
