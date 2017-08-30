@@ -752,12 +752,21 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
         [NSMenu setMenuBarVisible:YES];
 
         pendingWindowOperation = PENDING_OPERATION_NONE;
-        /* Force the size change event in case it was delivered earlier
-           while the window was still animating into place.
-         */
-        window->w = 0;
-        window->h = 0;
-        [self windowDidResize:aNotification];
+
+        /* Restore windowed size and position in case it changed while fullscreen */
+        {
+            NSRect rect;
+            rect.origin.x = window->windowed.x;
+            rect.origin.y = window->windowed.y;
+            rect.size.width = window->windowed.w;
+            rect.size.height = window->windowed.h;
+            ConvertNSRect([nswindow screen], NO, &rect);
+
+            s_moveHack = 0;
+            [nswindow setContentSize:rect.size];
+            [nswindow setFrameOrigin:rect.origin];
+            s_moveHack = SDL_GetTicks();
+        }
 
         /* FIXME: Why does the window get hidden? */
         if (window->flags & SDL_WINDOW_SHOWN) {
