@@ -1093,9 +1093,16 @@ SDLTest_PrintEvent(SDL_Event * event)
                 SDL_GetScancodeName(event->key.keysym.scancode),
                 event->key.keysym.sym, SDL_GetKeyName(event->key.keysym.sym));
         break;
+    case SDL_TEXTEDITING:
+        SDL_Log("SDL EVENT: Keyboard: text editing \"%s\" in window %d",
+                event->edit.text, event->edit.windowID);
+        break;
     case SDL_TEXTINPUT:
         SDL_Log("SDL EVENT: Keyboard: text input \"%s\" in window %d",
                 event->text.text, event->text.windowID);
+        break;
+    case SDL_KEYMAPCHANGED:
+        SDL_Log("SDL EVENT: Keymap changed");
         break;
     case SDL_MOUSEMOTION:
         SDL_Log("SDL EVENT: Mouse: moved to %d,%d (%d,%d) in window %d",
