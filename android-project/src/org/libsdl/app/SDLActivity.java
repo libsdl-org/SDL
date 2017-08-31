@@ -355,8 +355,8 @@ public class SDLActivity extends Activity {
         if (keyCode == KeyEvent.KEYCODE_VOLUME_DOWN ||
             keyCode == KeyEvent.KEYCODE_VOLUME_UP ||
             keyCode == KeyEvent.KEYCODE_CAMERA ||
-            keyCode == 168 || /* API 11: KeyEvent.KEYCODE_ZOOM_IN */
-            keyCode == 169 /* API 11: KeyEvent.KEYCODE_ZOOM_OUT */
+            keyCode == KeyEvent.KEYCODE_ZOOM_IN || /* API 11 */
+            keyCode == KeyEvent.KEYCODE_ZOOM_OUT /* API 11 */
             ) {
             return false;
         }
@@ -1166,7 +1166,7 @@ public class SDLActivity extends Activity {
                     mapping.put(KeyEvent.KEYCODE_ENTER, button);
                 }
                 if ((buttonFlags[i] & 0x00000002) != 0) {
-                    mapping.put(111, button); /* API 11: KeyEvent.KEYCODE_ESCAPE */
+                    mapping.put(KeyEvent.KEYCODE_ESCAPE, button); /* API 11 */
                 }
             }
             button.setText(buttonTexts[i]);
@@ -1688,7 +1688,7 @@ class DummyEdit extends View implements View.OnKeyListener {
 
         outAttrs.inputType = InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_VISIBLE_PASSWORD;
         outAttrs.imeOptions = EditorInfo.IME_FLAG_NO_EXTRACT_UI
-                | 33554432 /* API 11: EditorInfo.IME_FLAG_NO_FULLSCREEN */;
+                | EditorInfo.IME_FLAG_NO_FULLSCREEN /* API 11 */;
 
         return ic;
     }
@@ -1994,9 +1994,9 @@ class SDLHapticHandler {
     }
 
     public void pollHapticDevices() {
-        
+
         final int deviceId_VIBRATOR_SERVICE = 999999;
-        boolean hasVibrator = false;
+        boolean hasVibratorService = false;
 
         int[] deviceIds = InputDevice.getDeviceIds();
         // It helps processing the device ids in reverse order
@@ -2004,37 +2004,45 @@ class SDLHapticHandler {
         // so the first controller seen by SDL matches what the receiver
         // considers to be the first controller
 
-        for(int i=deviceIds.length-1; i>-1; i--) {
-            SDLHaptic haptic = getHaptic(deviceIds[i]);
-            if (haptic == null) {
-                InputDevice device = InputDevice.getDevice(deviceIds[i]);
-                Vibrator vib = device.getVibrator();
-                if (vib.hasVibrator()) {
-                    haptic = new SDLHaptic();
-                    haptic.device_id = deviceIds[i];
-                    haptic.name = device.getName();
-                    haptic.vib = vib;
-                    mHaptics.add(haptic);
-                    SDLActivity.nativeAddHaptic(haptic.device_id, haptic.name);
+        if (Build.VERSION.SDK_INT >= 16)
+        {
+            for (int i = deviceIds.length-1; i > -1; i--) {
+                SDLHaptic haptic = getHaptic(deviceIds[i]);
+                if (haptic == null) {
+                    InputDevice device = InputDevice.getDevice(deviceIds[i]);
+                    Vibrator vib = device.getVibrator();
+                    if (vib.hasVibrator()) {
+                        haptic = new SDLHaptic();
+                        haptic.device_id = deviceIds[i];
+                        haptic.name = device.getName();
+                        haptic.vib = vib;
+                        mHaptics.add(haptic);
+                        SDLActivity.nativeAddHaptic(haptic.device_id, haptic.name);
+                    }
                 }
             }
         }
 
         /* Check VIBRATOR_SERVICE */
-        {
-           Vibrator vib = (Vibrator) SDLActivity.mSingleton.getContext().getSystemService(Context.VIBRATOR_SERVICE);
-           if (vib != null && vib.hasVibrator()) {
-              hasVibrator = true;
-              SDLHaptic haptic = getHaptic(deviceId_VIBRATOR_SERVICE);
-              if (haptic == null) {
-                 haptic = new SDLHaptic();
-                 haptic.device_id = deviceId_VIBRATOR_SERVICE;
-                 haptic.name = "VIBRATOR_SERVICE";
-                 haptic.vib = vib; 
-                 mHaptics.add(haptic);
-                 SDLActivity.nativeAddHaptic(haptic.device_id, haptic.name);
-              }
-           }
+        Vibrator vib = (Vibrator) SDLActivity.mSingleton.getContext().getSystemService(Context.VIBRATOR_SERVICE);
+        if (vib != null) {
+            if (Build.VERSION.SDK_INT >= 11) {
+                hasVibratorService = vib.hasVibrator();
+            } else {
+                hasVibratorService = true;
+            }
+
+            if (hasVibratorService) {
+                SDLHaptic haptic = getHaptic(deviceId_VIBRATOR_SERVICE);
+                if (haptic == null) {
+                    haptic = new SDLHaptic();
+                    haptic.device_id = deviceId_VIBRATOR_SERVICE;
+                    haptic.name = "VIBRATOR_SERVICE";
+                    haptic.vib = vib; 
+                    mHaptics.add(haptic);
+                    SDLActivity.nativeAddHaptic(haptic.device_id, haptic.name);
+                }
+            }
         }
 
         /* Check removed devices */
@@ -2046,8 +2054,8 @@ class SDLHapticHandler {
                 if (device_id == deviceIds[j]) break;
             }
 
-            if (device_id == deviceId_VIBRATOR_SERVICE && hasVibrator) {
-               // don't remove the vibrator if it is still present
+            if (device_id == deviceId_VIBRATOR_SERVICE && hasVibratorService) {
+                // don't remove the vibrator if it is still present
             } else if (j == deviceIds.length) {
                 removedDevices.add(device_id);
             }
