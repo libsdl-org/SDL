@@ -29,6 +29,7 @@ def write_controllers():
     global controller_guids
     for entry in sorted(controllers, key=lambda entry: entry[2]):
         line = "".join(entry) + "\n"
+        line = line.replace("\t", "    ")
         if not line.endswith(",\n") and not line.endswith("*/\n"):
             print("Warning: '%s' is missing a comma at the end of the line" % (line))
         if (entry[1] in controller_guids):
