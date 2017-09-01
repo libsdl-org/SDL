@@ -333,7 +333,8 @@ X11_GL_InitExtensions(_THIS)
     const int screen = DefaultScreen(display);
     XVisualInfo *vinfo = NULL;
     Window w = 0;
-    GLXContext current_context = 0;
+    GLXContext prev_ctx = 0;
+    GLXDrawable prev_drawable = 0;
     GLXContext context = 0;
     const char *(*glXQueryExtensionsStringFunc) (Display *, int);
     const char *extensions;
@@ -342,11 +343,16 @@ X11_GL_InitExtensions(_THIS)
     if (vinfo) {
         GLXContext (*glXGetCurrentContextFunc) (void) =
             (GLXContext(*)(void))
-                X11_GL_GetProcAddress(_this, "glXGetCurrentContextFunc");
+                X11_GL_GetProcAddress(_this, "glXGetCurrentContext");
 
-        if (glXGetCurrentContextFunc) {
+        GLXDrawable (*glXGetCurrentDrawableFunc) (void) =
+            (GLXDrawable(*)(void))
+                X11_GL_GetProcAddress(_this, "glXGetCurrentDrawable");
+
+        if (glXGetCurrentContextFunc && glXGetCurrentDrawableFunc) {
             XSetWindowAttributes xattr;
-            current_context = glXGetCurrentContextFunc();
+            prev_ctx = glXGetCurrentContextFunc();
+            prev_drawable = glXGetCurrentDrawableFunc();
 
             xattr.background_pixel = 0;
             xattr.border_pixel = 0;
@@ -452,8 +458,8 @@ X11_GL_InitExtensions(_THIS)
     if (context) {
         _this->gl_data->glXMakeCurrent(display, None, NULL);
         _this->gl_data->glXDestroyContext(display, context);
-        if (current_context) {
-            _this->gl_data->glXMakeCurrent(display, w, current_context);
+        if (prev_ctx && prev_drawable) {
+            _this->gl_data->glXMakeCurrent(display, prev_drawable, prev_ctx);
         }
     }
 
