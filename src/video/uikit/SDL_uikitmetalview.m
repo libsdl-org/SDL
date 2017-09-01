@@ -129,18 +129,23 @@ UIKit_Mtl_AddMetalView(SDL_Window* window)
 void
 UIKit_Mtl_GetDrawableSize(SDL_Window * window, int * w, int * h)
 {
-    SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
-    SDL_uikitview *view = (SDL_uikitview*)data.uiwindow.rootViewController.view;
-    SDL_uikitmetalview* metalview = [view viewWithTag:METALVIEW_TAG];
-    if (metalview) {
-        CAMetalLayer *layer = (CAMetalLayer*)metalview.layer;
-        assert(layer != NULL);
-        if (w)
-            *w = layer.drawableSize.width;
-        if (h)
-            *h = layer.drawableSize.height;
-    } else
-        SDL_GetWindowSize(window, w, h);
+    @autoreleasepool {
+        SDL_WindowData *data = (__bridge SDL_WindowData *)window->driverdata;
+        SDL_uikitview *view = (SDL_uikitview*)data.uiwindow.rootViewController.view;
+        SDL_uikitmetalview* metalview = [view viewWithTag:METALVIEW_TAG];
+        if (metalview) {
+            CAMetalLayer *layer = (CAMetalLayer*)metalview.layer;
+            assert(layer != NULL);
+            if (w) {
+                *w = layer.drawableSize.width;
+            }
+            if (h) {
+                *h = layer.drawableSize.height;
+            }
+        } else {
+            SDL_GetWindowSize(window, w, h);
+        }
+    }
 }
 
 #endif

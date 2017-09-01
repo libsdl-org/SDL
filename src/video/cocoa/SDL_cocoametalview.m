@@ -42,31 +42,37 @@
 /* Return a Metal-compatible layer. */
 + (Class)layerClass
 {
-  return NSClassFromString(@"CAMetalLayer");
+	return NSClassFromString(@"CAMetalLayer");
 }
 
 /* Indicate the view wants to draw using a backing layer instead of drawRect. */
--(BOOL) wantsUpdateLayer { return YES; }
+-(BOOL) wantsUpdateLayer
+{
+    return YES;
+}
 
 /* When the wantsLayer property is set to YES, this method will be invoked to
  * return a layer instance.
  */
--(CALayer*) makeBackingLayer { return [self.class.layerClass layer]; }
+-(CALayer*) makeBackingLayer
+{
+    return [self.class.layerClass layer];
+}
 
 - (instancetype)initWithFrame:(NSRect)frame
                    useHighDPI:(bool)useHighDPI
 {
-  if ((self = [super initWithFrame:frame])) {
+	if ((self = [super initWithFrame:frame])) {
     
-    /* Allow resize. */
-    self.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
-    _tag = METALVIEW_TAG;
+        /* Allow resize. */
+        self.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
+        _tag = METALVIEW_TAG;
       
-    _useHighDPI = useHighDPI;
-    [self updateDrawableSize];
-  }
+        _useHighDPI = useHighDPI;
+        [self updateDrawableSize];
+	}
   
-  return self;
+	return self;
 }
 
 /* Set the size of the metal drawables when the view is resized. */
@@ -77,12 +83,11 @@
 
 - (void)updateDrawableSize
 {
+    NSRect bounds = [self bounds];
     if (_useHighDPI) {
-        NSSize size = [self convertRectToBacking:[self bounds]].size;
-         /* Isn't there a better way to convert from NSSize to CGSize? */
-        CGSize cgsize = *(CGSize*)&size;
-        ((CAMetalLayer *) self.layer).drawableSize = cgsize;
+        bounds = [self convertRectToBacking:bounds];
     }
+    ((CAMetalLayer *) self.layer).drawableSize = NSSizeToCGSize(bounds.size);
 }
 
 @end
@@ -111,10 +116,12 @@ Cocoa_Mtl_GetDrawableSize(SDL_Window * window, int * w, int * h)
     if (metalview) {
         CAMetalLayer *layer = (CAMetalLayer*)metalview.layer;
         assert(layer != NULL);
-        if (w)
+        if (w) {
             *w = layer.drawableSize.width;
-        if (h)
+        }
+        if (h) {
             *h = layer.drawableSize.height;
+        }
     }
 }
 
