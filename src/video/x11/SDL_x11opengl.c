@@ -331,31 +331,41 @@ X11_GL_InitExtensions(_THIS)
 {
     Display *display = ((SDL_VideoData *) _this->driverdata)->display;
     const int screen = DefaultScreen(display);
-    XVisualInfo *vinfo;
-    XSetWindowAttributes xattr;
-    Window w;
-    GLXContext context;
+    XVisualInfo *vinfo = NULL;
+    Window w = 0;
+    GLXContext current_context = 0;
+    GLXContext context = 0;
     const char *(*glXQueryExtensionsStringFunc) (Display *, int);
     const char *extensions;
 
     vinfo = X11_GL_GetVisual(_this, display, screen);
-    if (!vinfo) {
-        return;
-    }
+    if (vinfo) {
+        GLXContext (*glXGetCurrentContextFunc) (void) =
+            (GLXContext(*)(void))
+                X11_GL_GetProcAddress(_this, "glXGetCurrentContextFunc");
 
-    xattr.background_pixel = 0;
-    xattr.border_pixel = 0;
-    xattr.colormap =
-        X11_XCreateColormap(display, RootWindow(display, screen), vinfo->visual,
-                        AllocNone);
-    w = X11_XCreateWindow(display, RootWindow(display, screen), 0, 0, 32, 32, 0,
-                      vinfo->depth, InputOutput, vinfo->visual,
-                      (CWBackPixel | CWBorderPixel | CWColormap), &xattr);
-    context = _this->gl_data->glXCreateContext(display, vinfo, NULL, True);
-    if (context) {
-        _this->gl_data->glXMakeCurrent(display, w, context);
+        if (glXGetCurrentContextFunc) {
+            XSetWindowAttributes xattr;
+            current_context = glXGetCurrentContextFunc();
+
+            xattr.background_pixel = 0;
+            xattr.border_pixel = 0;
+            xattr.colormap =
+                X11_XCreateColormap(display, RootWindow(display, screen),
+                                    vinfo->visual, AllocNone);
+            w = X11_XCreateWindow(display, RootWindow(display, screen), 0, 0,
+                        32, 32, 0, vinfo->depth, InputOutput, vinfo->visual,
+                        (CWBackPixel | CWBorderPixel | CWColormap), &xattr);
+
+            context = _this->gl_data->glXCreateContext(display, vinfo,
+                                                        NULL, True);
+            if (context) {
+                _this->gl_data->glXMakeCurrent(display, w, context);
+            }
+        }
+
+        X11_XFree(vinfo);
     }
-    X11_XFree(vinfo);
 
     glXQueryExtensionsStringFunc =
         (const char *(*)(Display *, int)) X11_GL_GetProcAddress(_this,
@@ -442,6 +452,7 @@ X11_GL_InitExtensions(_THIS)
     if (context) {
         _this->gl_data->glXMakeCurrent(display, None, NULL);
         _this->gl_data->glXDestroyContext(display, context);
+        _this->gl_data->glXMakeCurrent(display, w, current_context);
     }
 
     X11_XDestroyWindow(display, w);
