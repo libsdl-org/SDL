@@ -500,7 +500,7 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     /* Maybe you didn't ask for a fullscreen OpenGL window, but that's what you get */
     window->flags |= (SDL_WINDOW_FULLSCREEN | SDL_WINDOW_OPENGL);
 
-    surface_fmt = GBM_BO_FORMAT_XRGB8888;
+    surface_fmt = GBM_FORMAT_XRGB8888;
     surface_flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
 
     if (!KMSDRM_gbm_device_is_format_supported(vdata->gbm, surface_fmt, surface_flags)) {
