@@ -452,7 +452,9 @@ X11_GL_InitExtensions(_THIS)
     if (context) {
         _this->gl_data->glXMakeCurrent(display, None, NULL);
         _this->gl_data->glXDestroyContext(display, context);
-        _this->gl_data->glXMakeCurrent(display, w, current_context);
+        if (current_context) {
+            _this->gl_data->glXMakeCurrent(display, w, current_context);
+        }
     }
 
     X11_XDestroyWindow(display, w);
