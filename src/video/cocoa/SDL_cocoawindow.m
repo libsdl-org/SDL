@@ -65,9 +65,30 @@
 - (NSDragOperation)draggingEntered:(id <NSDraggingInfo>)sender;
 - (BOOL)performDragOperation:(id <NSDraggingInfo>)sender;
 - (BOOL)wantsPeriodicDraggingUpdates;
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem;
+
+- (SDL_Window*)findSDLWindow;
 @end
 
 @implementation SDLWindow
+
+- (BOOL)validateMenuItem:(NSMenuItem *)menuItem
+{
+    /* Only allow using the macOS native fullscreen toggle menubar item if the
+     * window is resizable and not in a SDL fullscreen mode.
+     */
+    if ([menuItem action] == @selector(toggleFullScreen:)) {
+        SDL_Window *window = [self findSDLWindow];
+        if (window == NULL) {
+            return YES;
+        } else if ((window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_FULLSCREEN_DESKTOP)) != 0) {
+            return NO;
+        } else if ((window->flags & SDL_WINDOW_RESIZABLE) == 0) {
+            return NO;
+        }
+    }
+    return YES;
+}
 
 - (BOOL)canBecomeKeyWindow
 {
@@ -117,11 +138,10 @@
 - (BOOL)performDragOperation:(id <NSDraggingInfo>)sender
 { @autoreleasepool
 {
-    SDL_VideoDevice *_this = SDL_GetVideoDevice();
     NSPasteboard *pasteboard = [sender draggingPasteboard];
     NSArray *types = [NSArray arrayWithObject:NSFilenamesPboardType];
     NSString *desiredType = [pasteboard availableTypeFromArray:types];
-    SDL_Window *sdlwindow = nil;
+    SDL_Window *sdlwindow = [self findSDLWindow];
 
     if (desiredType == nil) {
         return NO;  /* can't accept anything that's being dropped here. */
@@ -158,16 +178,6 @@
             }
         }
 
-        /* !!! FIXME: is there a better way to do this? */
-        if (_this) {
-            for (sdlwindow = _this->windows; sdlwindow; sdlwindow = sdlwindow->next) {
-                NSWindow *nswindow = ((SDL_WindowData *) sdlwindow->driverdata)->nswindow;
-                if (nswindow == self) {
-                    break;
-                }
-            }
-        }
-
         if (!SDL_SendDropFile(sdlwindow, [[fileURL path] UTF8String])) {
             return NO;
         }
@@ -180,6 +190,24 @@
 - (BOOL)wantsPeriodicDraggingUpdates
 {
     return NO;
+}
+
+- (SDL_Window*)findSDLWindow
+{
+    SDL_Window *sdlwindow = NULL;
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+
+    /* !!! FIXME: is there a better way to do this? */
+    if (_this) {
+        for (sdlwindow = _this->windows; sdlwindow; sdlwindow = sdlwindow->next) {
+            NSWindow *nswindow = ((SDL_WindowData *) sdlwindow->driverdata)->nswindow;
+            if (nswindow == self) {
+                break;
+            }
+        }
+    }
+
+    return sdlwindow;
 }
 
 @end
