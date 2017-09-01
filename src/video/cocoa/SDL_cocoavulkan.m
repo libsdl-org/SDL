@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2016 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -50,17 +50,17 @@ int Cocoa_Vulkan_LoadLibrary(_THIS, const char *path)
     SDL_bool hasSurfaceExtension = SDL_FALSE;
     SDL_bool hasMacOSSurfaceExtension = SDL_FALSE;
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
-    if(_this->vulkan_config.loader_handle)
-    {
+
+    if (_this->vulkan_config.loader_handle) {
         SDL_SetError("MoltenVK/Vulkan already loaded");
         return -1;
     }
 
     /* Load the Vulkan loader library */
-    if(!path)
+    if (!path) {
         path = SDL_getenv("SDL_VULKAN_LIBRARY");
-    if(!path)
-    {
+    }
+    if (!path) {
         /* MoltenVK framework, currently, v0.17.0, has a static library and is
          * the recommended way to use the package. There is likely no object to
          * load. */
@@ -69,28 +69,25 @@ int Cocoa_Vulkan_LoadLibrary(_THIS, const char *path)
                                           "vkGetInstanceProcAddr");
     }
     
-    if(vkGetInstanceProcAddr)
-    {
+    if (vkGetInstanceProcAddr) {
         _this->vulkan_config.loader_handle = DEFAULT_HANDLE;
-    }
-    else
-    {
-        if (!path)
-        {
+    } else {
+        if (!path) {
             /* Look for the .dylib packaged with the application instead. */
             path = DEFAULT_MOLTENVK;
         }
         
         _this->vulkan_config.loader_handle = SDL_LoadObject(path);
-        if(!_this->vulkan_config.loader_handle)
+        if (!_this->vulkan_config.loader_handle) {
             return -1;
+        }
         SDL_strlcpy(_this->vulkan_config.loader_path, path,
                     SDL_arraysize(_this->vulkan_config.loader_path));
         vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)SDL_LoadFunction(
             _this->vulkan_config.loader_handle, "vkGetInstanceProcAddr");
     }
-    if(!vkGetInstanceProcAddr)
-    {
+
+    if (!vkGetInstanceProcAddr) {
         SDL_SetError("Failed to find %s in either executable or %s: %s",
                      "vkGetInstanceProcAddr",
                      DEFAULT_MOLTENVK,
@@ -102,30 +99,29 @@ int Cocoa_Vulkan_LoadLibrary(_THIS, const char *path)
     _this->vulkan_config.vkEnumerateInstanceExtensionProperties =
         (void *)((PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr)(
             VK_NULL_HANDLE, "vkEnumerateInstanceExtensionProperties");
-    if(!_this->vulkan_config.vkEnumerateInstanceExtensionProperties)
+    if (!_this->vulkan_config.vkEnumerateInstanceExtensionProperties) {
         goto fail;
+    }
     extensions = SDL_Vulkan_CreateInstanceExtensionsList(
         (PFN_vkEnumerateInstanceExtensionProperties)
             _this->vulkan_config.vkEnumerateInstanceExtensionProperties,
         &extensionCount);
-    if(!extensions)
+    if (!extensions) {
         goto fail;
-    for(Uint32 i = 0; i < extensionCount; i++)
-    {
-        if(SDL_strcmp(VK_KHR_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0)
+    }
+    for (Uint32 i = 0; i < extensionCount; i++) {
+        if (SDL_strcmp(VK_KHR_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
             hasSurfaceExtension = SDL_TRUE;
-        else if(SDL_strcmp(VK_MVK_MACOS_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0)
+        } else if (SDL_strcmp(VK_MVK_MACOS_SURFACE_EXTENSION_NAME, extensions[i].extensionName) == 0) {
             hasMacOSSurfaceExtension = SDL_TRUE;
+        }
     }
     SDL_free(extensions);
-    if(!hasSurfaceExtension)
-    {
+    if (!hasSurfaceExtension) {
         SDL_SetError("Installed MoltenVK/Vulkan doesn't implement the "
                      VK_KHR_SURFACE_EXTENSION_NAME " extension");
         goto fail;
-    }
-    else if(!hasMacOSSurfaceExtension)
-    {
+    } else if (!hasMacOSSurfaceExtension) {
         SDL_SetError("Installed MoltenVK/Vulkan doesn't implement the "
                      VK_MVK_MACOS_SURFACE_EXTENSION_NAME "extension");
         goto fail;
@@ -140,10 +136,10 @@ fail:
 
 void Cocoa_Vulkan_UnloadLibrary(_THIS)
 {
-    if(_this->vulkan_config.loader_handle)
-    {
-        if (_this->vulkan_config.loader_handle != DEFAULT_HANDLE)
+    if (_this->vulkan_config.loader_handle) {
+        if (_this->vulkan_config.loader_handle != DEFAULT_HANDLE) {
             SDL_UnloadObject(_this->vulkan_config.loader_handle);
+        }
         _this->vulkan_config.loader_handle = NULL;
     }
 }
@@ -156,8 +152,7 @@ SDL_bool Cocoa_Vulkan_GetInstanceExtensions(_THIS,
     static const char *const extensionsForCocoa[] = {
         VK_KHR_SURFACE_EXTENSION_NAME, VK_MVK_MACOS_SURFACE_EXTENSION_NAME
     };
-    if(!_this->vulkan_config.loader_handle)
-    {
+    if (!_this->vulkan_config.loader_handle) {
         SDL_SetError("Vulkan is not loaded");
         return SDL_FALSE;
     }
@@ -180,14 +175,12 @@ SDL_bool Cocoa_Vulkan_CreateSurface(_THIS,
     VkMacOSSurfaceCreateInfoMVK createInfo = {};
     VkResult result;
 
-    if(!_this->vulkan_config.loader_handle)
-    {
+    if (!_this->vulkan_config.loader_handle) {
         SDL_SetError("Vulkan is not loaded");
         return SDL_FALSE;
     }
 
-    if(!vkCreateMacOSSurfaceMVK)
-    {
+    if (!vkCreateMacOSSurfaceMVK) {
         SDL_SetError(VK_MVK_MACOS_SURFACE_EXTENSION_NAME
                      " extension is not enabled in the Vulkan instance.");
         return SDL_FALSE;
@@ -198,8 +191,7 @@ SDL_bool Cocoa_Vulkan_CreateSurface(_THIS,
     createInfo.pView = Cocoa_Mtl_AddMetalView(window);
     result = vkCreateMacOSSurfaceMVK(instance, &createInfo,
                                        NULL, surface);
-    if(result != VK_SUCCESS)
-    {
+    if (result != VK_SUCCESS) {
         SDL_SetError("vkCreateMacOSSurfaceMVK failed: %s",
                      SDL_Vulkan_GetResultString(result));
         return SDL_FALSE;
