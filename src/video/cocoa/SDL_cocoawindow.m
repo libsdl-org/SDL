@@ -80,14 +80,14 @@
     if ([menuItem action] == @selector(toggleFullScreen:)) {
         SDL_Window *window = [self findSDLWindow];
         if (window == NULL) {
-            return YES;
+            return NO;
         } else if ((window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_FULLSCREEN_DESKTOP)) != 0) {
             return NO;
         } else if ((window->flags & SDL_WINDOW_RESIZABLE) == 0) {
             return NO;
         }
     }
-    return YES;
+    return [super validateMenuItem:menuItem];
 }
 
 - (BOOL)canBecomeKeyWindow
