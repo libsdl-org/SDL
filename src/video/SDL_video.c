@@ -2941,8 +2941,8 @@ SDL_GL_ExtensionSupported(const char *extension)
 void
 SDL_GL_DeduceMaxSupportedESProfile(int* major, int* minor)
 {
-/* This function breaks games because OpenGL functions are being called before a context is current - see bug 3725 */
-#if 0
+/* THIS REQUIRES AN EXISTING GL CONTEXT THAT HAS BEEN MADE CURRENT. */
+/*  Please refer to https://bugzilla.libsdl.org/show_bug.cgi?id=3725 for discussion. */
 #if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
 	/* XXX This is fragile; it will break in the event of release of
 	 * new versions of OpenGL ES.
@@ -2961,10 +2961,6 @@ SDL_GL_DeduceMaxSupportedESProfile(int* major, int* minor)
         *minor = 0;
     }
 #endif
-#else
-        *major = 2;
-        *minor = 0;
-#endif /* 0 */
 }
 
 void

@@ -331,8 +331,31 @@ X11_GL_InitExtensions(_THIS)
 {
     Display *display = ((SDL_VideoData *) _this->driverdata)->display;
     const int screen = DefaultScreen(display);
+    XVisualInfo *vinfo;
+    XSetWindowAttributes xattr;
+    Window w;
+    GLXContext context;
     const char *(*glXQueryExtensionsStringFunc) (Display *, int);
     const char *extensions;
+
+    vinfo = X11_GL_GetVisual(_this, display, screen);
+    if (!vinfo) {
+        return;
+    }
+
+    xattr.background_pixel = 0;
+    xattr.border_pixel = 0;
+    xattr.colormap =
+        X11_XCreateColormap(display, RootWindow(display, screen), vinfo->visual,
+                        AllocNone);
+    w = X11_XCreateWindow(display, RootWindow(display, screen), 0, 0, 32, 32, 0,
+                      vinfo->depth, InputOutput, vinfo->visual,
+                      (CWBackPixel | CWBorderPixel | CWColormap), &xattr);
+    context = _this->gl_data->glXCreateContext(display, vinfo, NULL, True);
+    if (context) {
+        _this->gl_data->glXMakeCurrent(display, w, context);
+    }
+    X11_XFree(vinfo);
 
     glXQueryExtensionsStringFunc =
         (const char *(*)(Display *, int)) X11_GL_GetProcAddress(_this,
@@ -391,10 +414,14 @@ X11_GL_InitExtensions(_THIS)
     
     /* Check for GLX_EXT_create_context_es2_profile */
     if (HasExtension("GLX_EXT_create_context_es2_profile", extensions)) {
-        SDL_GL_DeduceMaxSupportedESProfile(
-            &_this->gl_data->es_profile_max_supported_version.major,
-            &_this->gl_data->es_profile_max_supported_version.minor
-        );
+        /* this wants to call glGetString(), so it needs a context. */
+        /* !!! FIXME: it would be nice not to make a context here though! */
+        if (context) {
+            SDL_GL_DeduceMaxSupportedESProfile(
+                &_this->gl_data->es_profile_max_supported_version.major,
+                &_this->gl_data->es_profile_max_supported_version.minor
+            );
+        }
     }
 
     /* Check for GLX_ARB_context_flush_control */
@@ -411,6 +438,14 @@ X11_GL_InitExtensions(_THIS)
     if (HasExtension("GLX_ARB_create_context_no_error", extensions)) {
         _this->gl_data->HAS_GLX_ARB_create_context_no_error = SDL_TRUE;
     }
+
+    if (context) {
+        _this->gl_data->glXMakeCurrent(display, None, NULL);
+        _this->gl_data->glXDestroyContext(display, context);
+    }
+
+    X11_XDestroyWindow(display, w);
+    X11_PumpEvents(_this);
 }
 
 /* glXChooseVisual and glXChooseFBConfig have some small differences in
