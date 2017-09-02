@@ -27,6 +27,14 @@
 
 /* EGL implementation of SDL OpenGL support */
 
+void
+RPI_GLES_DefaultProfileConfig(_THIS, int *mask, int *major, int *minor)
+{
+    *mask = SDL_GL_CONTEXT_PROFILE_ES;
+    *major = 2;
+    *minor = 0;
+}
+
 int
 RPI_GLES_LoadLibrary(_THIS, const char *path) {
     return SDL_EGL_LoadLibrary(_this, path, EGL_DEFAULT_DISPLAY, 0);

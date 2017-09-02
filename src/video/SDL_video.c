@@ -2987,19 +2987,27 @@ SDL_GL_ResetAttributes()
     _this->gl_config.multisamplesamples = 0;
     _this->gl_config.retained_backing = 1;
     _this->gl_config.accelerated = -1;  /* accelerated or not, both are fine */
-    _this->gl_config.profile_mask = 0;
+
+    if (_this->GL_DefaultProfileConfig) {
+        _this->GL_DefaultProfileConfig(_this, &_this->gl_config.profile_mask,
+                                       &_this->gl_config.major_version,
+                                       &_this->gl_config.minor_version);
+    } else {
 #if SDL_VIDEO_OPENGL
-    _this->gl_config.major_version = 2;
-    _this->gl_config.minor_version = 1;
+        _this->gl_config.major_version = 2;
+        _this->gl_config.minor_version = 1;
+        _this->gl_config.profile_mask = 0;
 #elif SDL_VIDEO_OPENGL_ES2
-    _this->gl_config.major_version = 2;
-    _this->gl_config.minor_version = 0;
-    _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
+        _this->gl_config.major_version = 2;
+        _this->gl_config.minor_version = 0;
+        _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
 #elif SDL_VIDEO_OPENGL_ES
-    _this->gl_config.major_version = 1;
-    _this->gl_config.minor_version = 1;
-    _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
+        _this->gl_config.major_version = 1;
+        _this->gl_config.minor_version = 1;
+        _this->gl_config.profile_mask = SDL_GL_CONTEXT_PROFILE_ES;
 #endif
+    }
+
     _this->gl_config.flags = 0;
     _this->gl_config.framebuffer_srgb_capable = 0;
     _this->gl_config.no_error = 0;
