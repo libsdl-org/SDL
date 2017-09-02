@@ -48,6 +48,10 @@
 #define INFTIM -1
 #endif
 
+#ifndef SIO_DEVANY
+#define SIO_DEVANY "default"
+#endif
+
 static struct sio_hdl * (*SNDIO_sio_open)(const char *, unsigned int, int);
 static void (*SNDIO_sio_close)(struct sio_hdl *);
 static int (*SNDIO_sio_setpar)(struct sio_hdl *, struct sio_par *);
