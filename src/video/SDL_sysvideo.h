@@ -261,6 +261,7 @@ struct SDL_VideoDevice
     int (*GL_GetSwapInterval) (_THIS);
     int (*GL_SwapWindow) (_THIS, SDL_Window * window);
     void (*GL_DeleteContext) (_THIS, SDL_GLContext context);
+    void (*GL_DefaultProfileConfig) (_THIS, int *mask, int *major, int *minor);
 
     /* * * */
     /*
