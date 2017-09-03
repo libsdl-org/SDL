@@ -796,6 +796,13 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
             s_moveHack = SDL_GetTicks();
         }
 
+        /* Force the size change event in case it was delivered earlier
+           while the window was still animating into place.
+         */
+        window->w = 0;
+        window->h = 0;
+        [self windowDidResize:aNotification];
+
         /* FIXME: Why does the window get hidden? */
         if (window->flags & SDL_WINDOW_SHOWN) {
             Cocoa_ShowWindow(SDL_GetVideoDevice(), window);
