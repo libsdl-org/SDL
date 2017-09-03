@@ -16,13 +16,22 @@ Some of the operating systems that include WinRT, are:
 Requirements
 ------------
 
-* Microsoft Visual C++ (aka Visual Studio), either 2015, 2013, or 2012
+* Microsoft Visual C++ (aka Visual Studio), either 2017, 2015, 2013, or 2012
   - Free, "Community" or "Express" editions may be used, so long as they
     include  support for either "Windows Store" or "Windows Phone" apps.
     "Express" versions marked as supporting "Windows Desktop" development
     typically do not include support for creating WinRT apps, to note.
     (The "Community" editions of Visual C++ do, however, support both
     desktop/Win32 and WinRT development).
+  - Visual Studio 2017 can be used, however it is recommented that you install
+    the Visual C++ 2015 build tools.  These build tools can be installed
+    using VS 2017's installer.  Be sure to also install the workload for
+    "Universal Windows Platform development", its optional component, the
+    "C++ Universal Windows Platform tools", and for UWP / Windows 10
+    development, the "Windows 10 SDK (10.0.10240.0)".  Please note that
+    targeting UWP / Windows 10 apps from development machine(s) running
+    earlier versions of Windows, such as Windows 7, is not always supported
+    by Visual Studio, and you may get error(s) when attempting to do so.
   - Visual C++ 2012 can only build apps that target versions 8.0 of Windows,
     or  Windows Phone.  8.0-targetted apps will run on devices running 8.1
     editions of Windows, however they will not be able to take advantage of
@@ -476,3 +485,38 @@ SDL provides a workaround for this, but it requires that an app links to a
 set of Win32-style cursor image-resource files.  A copy of suitable resource
 files can be found in `src/main/winrt/`.  Adding them to an app's Visual C++
 project file should be sufficient to get the app to use them.
+
+
+#### SDL's Visual Studio project file fails to open, with message, "The system can't find the file specified."
+
+This can be caused for any one of a few reasons, which Visual Studio can
+report, but won't always do so in an up-front manner.
+
+To help determine why this error comes up:
+
+1. open a copy of Visual Studio without opening a project file.  This can be
+   accomplished via Windows' Start Menu, among other means.
+2. show Visual Studio's Output window.  This can be done by going to VS'
+   menu bar, then to View, and then to Output.
+3. try opening the SDL project file directly by going to VS' menu bar, then
+   to File, then to Open, then to Project/Solution.  When a File-Open dialog
+   appears, open the SDL project (such as the one in SDL's source code, in its
+   directory, VisualC-WinRT/UWP_VS2015/).
+4. after attempting to open SDL's Visual Studio project file, additional error
+   information will be output to the Output window.
+
+If Visual Studio reports (via its Output window) that the project:
+
+"could not be loaded because it's missing install components. To fix this launch Visual Studio setup with the following selections:
+Microsoft.VisualStudio.ComponentGroup.UWP.VC"
+
+... then you will need to re-launch Visual Studio's installer, and make sure that
+the workflow for "Universal Windows Platform development" is checked, and that its
+optional component, "C++ Universal Windows Platform tools" is also checked.  While
+you are there, if you are planning on targeting UWP / Windows 10, also make sure
+that you check the optional component, "Windows 10 SDK (10.0.10240.0)".  After
+making sure these items are checked as-appropriate, install them.
+
+Once you install these components, try re-launching Visual Studio, and re-opening
+the SDL project file.  If you still get the error dialog, try using the Output
+window, again, seeing what Visual Studio says about it.
