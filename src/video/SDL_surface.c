@@ -1193,6 +1193,10 @@ SDL_FreeSurface(SDL_Surface * surface)
     if (surface->flags & SDL_DONTFREE) {
         return;
     }
+    if (surface->map != NULL) {
+        SDL_FreeBlitMap(surface->map);
+        surface->map = NULL;
+    }
     if (--surface->refcount > 0) {
         return;
     }
@@ -1206,10 +1210,6 @@ SDL_FreeSurface(SDL_Surface * surface)
         SDL_SetSurfacePalette(surface, NULL);
         SDL_FreeFormat(surface->format);
         surface->format = NULL;
-    }
-    if (surface->map != NULL) {
-        SDL_FreeBlitMap(surface->map);
-        surface->map = NULL;
     }
     if (!(surface->flags & SDL_PREALLOC)) {
         SDL_free(surface->pixels);
