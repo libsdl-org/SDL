@@ -309,22 +309,26 @@ X11_ShowCursor(SDL_Cursor * cursor)
 }
 
 static void
+WarpMouseInternal(Window xwindow, const int x, const int y)
+{
+    SDL_VideoData *videodata = (SDL_VideoData *) SDL_GetVideoDevice()->driverdata;
+    Display *display = videodata->display;
+    X11_XWarpPointer(display, None, xwindow, 0, 0, 0, 0, x, y);
+    X11_XSync(display, False);
+    videodata->global_mouse_changed = SDL_TRUE;
+}
+
+static void
 X11_WarpMouse(SDL_Window * window, int x, int y)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-    Display *display = data->videodata->display;
-
-    X11_XWarpPointer(display, None, data->xwindow, 0, 0, 0, 0, x, y);
-    X11_XSync(display, False);
+    WarpMouseInternal(data->xwindow, x, y);
 }
 
 static int
 X11_WarpMouseGlobal(int x, int y)
 {
-    Display *display = GetDisplay();
-
-    X11_XWarpPointer(display, None, DefaultRootWindow(display), 0, 0, 0, 0, x, y);
-    X11_XSync(display, False);
+    WarpMouseInternal(DefaultRootWindow(GetDisplay()), x, y);
     return 0;
 }
 
