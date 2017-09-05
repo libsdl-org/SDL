@@ -539,6 +539,7 @@
 		AA75585D1595D4D800BBD41B /* SDL_video.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557F81595D4D800BBD41B /* SDL_video.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		AA75585E1595D4D800BBD41B /* SDL.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557F91595D4D800BBD41B /* SDL.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		AA75585F1595D4D800BBD41B /* SDL.h in Headers */ = {isa = PBXBuildFile; fileRef = AA7557F91595D4D800BBD41B /* SDL.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		AA8167541F5E727800518735 /* SDL_vulkan.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D4820431F0F10B400EDC31C /* SDL_vulkan.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		AA9E4093163BE51E007A2AD0 /* SDL_x11messagebox.c in Sources */ = {isa = PBXBuildFile; fileRef = AA9E4092163BE51E007A2AD0 /* SDL_x11messagebox.c */; };
 		AA9E4094163BE51E007A2AD0 /* SDL_x11messagebox.c in Sources */ = {isa = PBXBuildFile; fileRef = AA9E4092163BE51E007A2AD0 /* SDL_x11messagebox.c */; };
 		AA9FF95A1637CBF9000DF050 /* SDL_messagebox.h in Headers */ = {isa = PBXBuildFile; fileRef = AA9FF9591637CBF9000DF050 /* SDL_messagebox.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1860,8 +1861,9 @@
 				AA7558541595D4D800BBD41B /* SDL_timer.h in Headers */,
 				AA7558561595D4D800BBD41B /* SDL_touch.h in Headers */,
 				AA7558581595D4D800BBD41B /* SDL_types.h in Headers */,
-				AA75585C1595D4D800BBD41B /* SDL_video.h in Headers */,
 				AA75585A1595D4D800BBD41B /* SDL_version.h in Headers */,
+				AA75585C1595D4D800BBD41B /* SDL_video.h in Headers */,
+				AA8167541F5E727800518735 /* SDL_vulkan.h in Headers */,
 				4D7517291EE2562B00820EEA /* SDL_cocoametalview.h in Headers */,
 				04BD000912E6671800899322 /* SDL_diskaudio.h in Headers */,
 				04BD001112E6671800899322 /* SDL_dummyaudio.h in Headers */,
