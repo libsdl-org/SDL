@@ -1197,7 +1197,7 @@ SDL_vsscanf(const char *text, const char *fmt, va_list ap)
                     /* Fall through to unsigned handling */
                 case 'u':
                     if (inttype == DO_LONGLONG) {
-                        Uint64 value;
+                        Uint64 value = 0;
                         advance = SDL_ScanUnsignedLongLong(text, radix, &value);
                         text += advance;
                         if (advance && !suppress) {
@@ -1206,7 +1206,7 @@ SDL_vsscanf(const char *text, const char *fmt, va_list ap)
                             ++retval;
                         }
                     } else {
-                        unsigned long value;
+                        unsigned long value = 0;
                         advance = SDL_ScanUnsignedLong(text, radix, &value);
                         text += advance;
                         if (advance && !suppress) {
@@ -1240,7 +1240,7 @@ SDL_vsscanf(const char *text, const char *fmt, va_list ap)
                     break;
                 case 'p':
                     {
-                        uintptr_t value;
+                        uintptr_t value = 0;
                         advance = SDL_ScanUintPtrT(text, 16, &value);
                         text += advance;
                         if (advance && !suppress) {
