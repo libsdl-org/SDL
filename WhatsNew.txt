@@ -50,8 +50,8 @@ Windows:
 * The new default audio driver on Windows is WASAPI and supports hot-plugging devices and changing the default audio device
 * The old XAudio2 audio driver is deprecated and will be removed in the next release
 * Added hints SDL_HINT_WINDOWS_INTRESOURCE_ICON and SDL_HINT_WINDOWS_INTRESOURCE_ICON_SMALL to specify a custom icon resource ID for SDL windows
-* The hint SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING is now on by default for compatbility with .NET languages and various Windows debuggers
-* Updated the GUID format for game controller mappings, older mappings will be cautomatically converted on load
+* The hint SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING is now on by default for compatibility with .NET languages and various Windows debuggers
+* Updated the GUID format for game controller mappings, older mappings will be automatically converted on load
 * Implemented the SDL_WINDOW_ALWAYS_ON_TOP flag on Windows
 
 Linux:
