@@ -396,9 +396,16 @@ X11_InitModes_XRandR(_THIS)
                 X11_XFree(pixmapformats);
             }
 
-            res = X11_XRRGetScreenResources(dpy, RootWindow(dpy, screen));
-            if (!res) {
-                continue;
+            res = X11_XRRGetScreenResourcesCurrent(dpy, RootWindow(dpy, screen));
+            if (!res || res->noutput == 0) {
+                if (res) {
+                    X11_XRRFreeScreenResources(res);
+                }
+
+                res = X11_XRRGetScreenResources(dpy, RootWindow(dpy, screen));
+                if (!res) {
+                    continue;
+                }
             }
 
             for (output = 0; output < res->noutput; output++) {
