@@ -16,6 +16,7 @@ General:
   This is all the platform-specific code you need to bring up Vulkan on all SDL platforms. You can look at an example in test/testvulkan.c
 * Added SDL_ComposeCustomBlendMode() to create custom blend modes for 2D rendering
 * Added SDL_HasNEON() which returns whether the CPU has NEON instruction support
+* Added support for many game controllers, including the Nintendo Switch Pro Controller
 * Added support for inverted axes and separate axis directions in game controller mappings
 * Added functions to return information about a joystick before it's opened:
 	SDL_JoystickGetDeviceVendor()
@@ -36,6 +37,7 @@ General:
 * Added SDL_GameControllerNumMappings() and SDL_GameControllerMappingForIndex() to be able to enumerate the built-in game controller mappings
 * Added SDL_LoadFile() and SDL_LoadFile_RW() to load a file into memory
 * Added SDL_DuplicateSurface() to make a copy of a surface
+* Added an experimental JACK audio driver
 * Implemented non-power-of-two audio resampling, optionally using libsamplerate to perform the resampling
 * Added the hint SDL_HINT_AUDIO_RESAMPLING_MODE to control the quality of resampling
 * Added the hint SDL_HINT_RENDER_LOGICAL_SIZE_MODE to control the scaling policy for SDL_RenderSetLogicalSize():
@@ -45,9 +47,12 @@ General:
 * Added the hint SDL_HINT_TOUCH_MOUSE_EVENTS to control whether SDL will synthesize mouse events from touch events
 
 Windows:
+* The new default audio driver on Windows is WASAPI and supports hot-plugging devices and changing the default audio device
+* The old XAudio2 audio driver is deprecated and will be removed in the next release
 * Added hints SDL_HINT_WINDOWS_INTRESOURCE_ICON and SDL_HINT_WINDOWS_INTRESOURCE_ICON_SMALL to specify a custom icon resource ID for SDL windows
 * The hint SDL_HINT_WINDOWS_DISABLE_THREAD_NAMING is now on by default for compatbility with .NET languages and various Windows debuggers
 * Updated the GUID format for game controller mappings, older mappings will be cautomatically converted on load
+* Implemented the SDL_WINDOW_ALWAYS_ON_TOP flag on Windows
 
 Linux:
 * Added an experimental KMS/DRM video driver for embedded development
