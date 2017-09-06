@@ -65,10 +65,14 @@ GetWindowStyle(SDL_Window * window)
 
     if (window->flags & SDL_WINDOW_FULLSCREEN) {
         style |= STYLE_FULLSCREEN;
-    } else if (window->flags & SDL_WINDOW_BORDERLESS) {
-        style |= STYLE_BORDERLESS;
     } else {
-        style |= STYLE_NORMAL;
+        if (window->flags & SDL_WINDOW_BORDERLESS) {
+            style |= STYLE_BORDERLESS;
+        } else {
+            style |= STYLE_NORMAL;
+        }
+
+        /* You can have a borderless resizable window */
         if (window->flags & SDL_WINDOW_RESIZABLE) {
             style |= STYLE_RESIZABLE;
         }
