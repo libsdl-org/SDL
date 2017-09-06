@@ -50,7 +50,7 @@ int Android_Vulkan_LoadLibrary(_THIS, const char *path)
     if(!path)
         path = SDL_getenv("SDL_VULKAN_LIBRARY");
     if(!path)
-        path = "libvulkan.so.1";
+        path = "libvulkan.so";
     _this->vulkan_config.loader_handle = SDL_LoadObject(path);
     if(!_this->vulkan_config.loader_handle)
         return -1;
