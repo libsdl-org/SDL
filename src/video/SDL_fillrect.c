@@ -144,13 +144,13 @@ SDL_FillRect1(Uint8 * pixels, int pitch, Uint32 color, int w, int h)
             switch ((uintptr_t) p & 3) {
             case 1:
                 *p++ = (Uint8) color;
-                --n;
+                --n;                    /* fallthrough */
             case 2:
                 *p++ = (Uint8) color;
-                --n;
+                --n;                    /* fallthrough */
             case 3:
                 *p++ = (Uint8) color;
-                --n;
+                --n;                    /* fallthrough */
             }
             SDL_memset4(p, color, (n >> 2));
         }
@@ -158,11 +158,11 @@ SDL_FillRect1(Uint8 * pixels, int pitch, Uint32 color, int w, int h)
             p += (n & ~3);
             switch (n & 3) {
             case 3:
-                *p++ = (Uint8) color;
+                *p++ = (Uint8) color;   /* fallthrough */
             case 2:
-                *p++ = (Uint8) color;
+                *p++ = (Uint8) color;   /* fallthrough */
             case 1:
-                *p++ = (Uint8) color;
+                *p++ = (Uint8) color;   /* fallthrough */
             }
         }
         pixels += pitch;
