@@ -150,7 +150,7 @@ extern DECLSPEC void SDLCALL SDL_Vulkan_UnloadLibrary(void);
  *  \note \c window should have been created with the \c SDL_WINDOW_VULKAN flag.
  *
  *  \code
- *  unsigned count;
+ *  unsigned int count;
  *  // get count of required extensions
  *  if(!SDL_Vulkan_GetInstanceExtensions(window, &count, NULL))
  *      handle_error();
@@ -188,7 +188,7 @@ extern DECLSPEC void SDLCALL SDL_Vulkan_UnloadLibrary(void);
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_Vulkan_GetInstanceExtensions(
 														SDL_Window *window,
-														unsigned *pCount,
+														unsigned int *pCount,
 														const char **pNames);
 
 /**
