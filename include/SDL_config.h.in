@@ -50,14 +50,6 @@
 #undef HAVE_GCC_ATOMICS
 #undef HAVE_GCC_SYNC_LOCK_TEST_AND_SET
 
-#undef HAVE_DDRAW_H
-#undef HAVE_DINPUT_H
-#undef HAVE_DSOUND_H
-#undef HAVE_DXGI_H
-#undef HAVE_XINPUT_H
-#undef HAVE_XINPUT_GAMEPAD_EX
-#undef HAVE_XINPUT_STATE_EX
-
 /* Comment this if you want to build without any C library requirements */
 #undef HAVE_LIBC
 #if HAVE_LIBC
@@ -81,13 +73,7 @@
 #undef HAVE_FLOAT_H
 #undef HAVE_ICONV_H
 #undef HAVE_SIGNAL_H
-#undef HAVE_ALTIVEC_H
 #undef HAVE_PTHREAD_NP_H
-#undef HAVE_LIBUDEV_H
-#undef HAVE_DBUS_DBUS_H
-#undef HAVE_IBUS_IBUS_H
-#undef HAVE_FCITX_FRONTEND_H
-#undef HAVE_LIBSAMPLERATE_H
 
 /* C library functions */
 #undef HAVE_MALLOC
@@ -191,6 +177,21 @@
 #define HAVE_STDDEF_H   1
 #define HAVE_STDINT_H   1
 #endif /* HAVE_LIBC */
+
+#undef HAVE_ALTIVEC_H
+#undef HAVE_LIBUDEV_H
+#undef HAVE_DBUS_DBUS_H
+#undef HAVE_IBUS_IBUS_H
+#undef HAVE_FCITX_FRONTEND_H
+#undef HAVE_LIBSAMPLERATE_H
+
+#undef HAVE_DDRAW_H
+#undef HAVE_DINPUT_H
+#undef HAVE_DSOUND_H
+#undef HAVE_DXGI_H
+#undef HAVE_XINPUT_H
+#undef HAVE_XINPUT_GAMEPAD_EX
+#undef HAVE_XINPUT_STATE_EX
 
 /* SDL internal assertion support */
 #undef SDL_DEFAULT_ASSERT_LEVEL
