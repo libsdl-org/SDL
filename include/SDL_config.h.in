@@ -78,6 +78,7 @@
 #undef HAVE_STDINT_H
 #undef HAVE_CTYPE_H
 #undef HAVE_MATH_H
+#undef HAVE_FLOAT_H
 #undef HAVE_ICONV_H
 #undef HAVE_SIGNAL_H
 #undef HAVE_ALTIVEC_H
