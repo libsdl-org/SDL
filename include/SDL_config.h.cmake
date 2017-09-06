@@ -78,6 +78,7 @@
 #cmakedefine HAVE_STDINT_H 1
 #cmakedefine HAVE_CTYPE_H 1
 #cmakedefine HAVE_MATH_H 1
+#cmakedefine HAVE_FLOAT_H 1
 #cmakedefine HAVE_ICONV_H 1
 #cmakedefine HAVE_SIGNAL_H 1
 #cmakedefine HAVE_ALTIVEC_H 1

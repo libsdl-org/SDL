@@ -91,6 +91,7 @@ typedef unsigned int uintptr_t;
 #define HAVE_STRING_H 1
 #define HAVE_CTYPE_H 1
 #define HAVE_MATH_H 1
+#define HAVE_FLOAT_H 1
 #define HAVE_SIGNAL_H 1
 
 /* C library functions */
