@@ -403,6 +403,43 @@ IMA_ADPCM_decode(Uint8 ** audio_buf, Uint32 * audio_len)
     return (0);
 }
 
+
+static int
+ConvertSint24ToSint32(Uint8 ** audio_buf, Uint32 * audio_len)
+{
+    const double DIVBY8388608 = 0.00000011920928955078125;
+    const Uint32 original_len = *audio_len;
+    const Uint32 samples = original_len / 3;
+    const Uint32 expanded_len = samples * sizeof (Uint32);
+    Uint8 *ptr = (Uint8 *) SDL_realloc(*audio_buf, expanded_len);
+    const Uint8 *src;
+    Uint32 *dst;
+    Uint32 i;
+
+    if (!ptr) {
+        return SDL_OutOfMemory();
+    }
+
+    *audio_buf = ptr;
+    *audio_len = expanded_len;
+
+    /* work from end to start, since we're expanding in-place. */
+    src = (ptr + original_len) - 3;
+    dst = ((Uint32 *) (ptr + expanded_len)) - 1;
+    for (i = 0; i < samples; i++) {
+        /* There's probably a faster way to do all this. */
+        const Sint32 converted = ((Sint32) ( (((Uint32) src[2]) << 24) |
+                                             (((Uint32) src[1]) << 16) |
+                                             (((Uint32) src[0]) << 8) )) >> 8;
+        const double scaled = (((double) converted) * DIVBY8388608);
+        src -= 3;
+        *(dst--) = (Sint32) (scaled * 2147483647.0);
+    }
+
+    return 0;
+}
+
+
 /* GUIDs that are used by WAVE_FORMAT_EXTENSIBLE */
 static const Uint8 extensible_pcm_guid[16] = { 1, 0, 0, 0, 0, 0, 16, 0, 128, 0, 0, 170, 0, 56, 155, 113 };
 static const Uint8 extensible_ieee_guid[16] = { 3, 0, 0, 0, 0, 0, 16, 0, 128, 0, 0, 170, 0, 56, 155, 113 };
@@ -551,6 +588,9 @@ SDL_LoadWAV_RW(SDL_RWops * src, int freesrc,
         case 16:
             spec->format = AUDIO_S16;
             break;
+        case 24:  /* convert this. */
+            spec->format = AUDIO_S32;
+            break;
         case 32:
             spec->format = AUDIO_S32;
             break;
@@ -593,6 +633,13 @@ SDL_LoadWAV_RW(SDL_RWops * src, int freesrc,
     }
     if (IMA_ADPCM_encoded) {
         if (IMA_ADPCM_decode(audio_buf, audio_len) < 0) {
+            was_error = 1;
+            goto done;
+        }
+    }
+
+    if (SDL_SwapLE16(format->bitspersample) == 24) {
+        if (ConvertSint24ToSint32(audio_buf, audio_len) < 0) {
             was_error = 1;
             goto done;
         }
