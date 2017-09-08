@@ -68,7 +68,7 @@ int SDLTest_DrawString(SDL_Renderer *renderer, int x, int y, const char *s);
 /**
  *  \brief Cleanup textures used by font drawing functions.
  */
-void SDLTest_CleanupTextDrawing(SDL_Renderer *renderer);
+void SDLTest_CleanupTextDrawing(void);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
