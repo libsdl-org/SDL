@@ -510,3 +510,5 @@ SDL_Surface *SDLTest_ImagePrimitives()
          );
    return surface;
 }
+
+/* vi: set ts=4 sw=4 expandtab: */
