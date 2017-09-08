@@ -120,7 +120,7 @@
 
 #if defined(WIN32) || defined(_WIN32) || defined(__CYGWIN__) || defined(__MINGW32__)
 /* Try to find out if we're compiling for WinRT or non-WinRT */
-#if defined(_MSC_VER) && _MSC_VER >= 1910                               /* _MSC_VER == 1910 for Visual Studio 2017 */
+#if defined(_MSC_VER) && defined(__has_include)
 #define HAVE_WINAPIFAMILY_H __has_include(<winapifamily.h>)
 /* If _USING_V110_SDK71_ is defined it means we are using the Windows XP toolset. */
 #elif defined(_MSC_VER) && (_MSC_VER >= 1700 && !_USING_V110_SDK71_)    /* _MSC_VER == 1700 for Visual Studio 2012 */
