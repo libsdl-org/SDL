@@ -519,7 +519,7 @@ extern void qsortG(void *base, size_t nmemb, size_t size,
            int (*compare)(const void *, const void *)) {
 
   if (nmemb<=1) return;
-  if (((int)base|size)&(WORD_BYTES-1))
+  if (((size_t)base|size)&(WORD_BYTES-1))
     qsort_nonaligned(base,nmemb,size,compare);
   else if (size!=WORD_BYTES)
     qsort_aligned(base,nmemb,size,compare);
