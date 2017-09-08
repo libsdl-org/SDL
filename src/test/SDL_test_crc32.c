@@ -164,3 +164,5 @@ int SDLTest_Crc32Done(SDLTest_Crc32Context * crcContext)
 
   return 0;
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

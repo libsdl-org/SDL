@@ -114,3 +114,5 @@ void SDLTest_LogError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
     /* Log with timestamp and newline */
     SDL_LogMessage(SDL_LOG_CATEGORY_TEST, SDL_LOG_PRIORITY_ERROR, "%s: %s", SDLTest_TimestampToString(time(0)), logMessage);
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

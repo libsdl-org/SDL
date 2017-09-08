@@ -244,3 +244,4 @@ SDL_Surface *SDLTest_ImageFace()
    return surface;
 }
 
+/* vi: set ts=4 sw=4 expandtab: */

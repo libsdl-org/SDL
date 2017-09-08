@@ -334,3 +334,5 @@ static void SDLTest_Md5Transform(MD5UINT4 * buf, MD5UINT4 * in)
   buf[2] += c;
   buf[3] += d;
 }
+
+/* vi: set ts=4 sw=4 expandtab: */

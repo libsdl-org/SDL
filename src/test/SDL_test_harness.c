@@ -676,3 +676,5 @@ int SDLTest_RunSuites(SDLTest_TestSuiteReference *testSuites[], const char *user
     SDLTest_Log("Exit code: %d", runResult);
     return runResult;
 }
+
+/* vi: set ts=4 sw=4 expandtab: */
