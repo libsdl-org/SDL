@@ -3239,9 +3239,9 @@ int SDLTest_DrawString(SDL_Renderer * renderer, int x, int y, const char *s)
 void SDLTest_CleanupTextDrawing(SDL_Renderer *renderer)
 {
     int i;
-    for (i = 0; i < SDL_ARRAYSIZE(SDLTest_CharTextureCache); ++i) {
+    for (i = 0; i < SDL_arraysize(SDLTest_CharTextureCache); ++i) {
         if (SDLTest_CharTextureCache[i]) {
-            SDL_TextureDestroy(SDLTest_CharTextureCache[i]);
+            SDL_DestroyTexture(SDLTest_CharTextureCache[i]);
             SDLTest_CharTextureCache[i] = NULL;
         }
     }
