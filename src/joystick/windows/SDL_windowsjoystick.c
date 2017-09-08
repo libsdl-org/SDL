@@ -89,9 +89,10 @@ SDL_CreateDeviceNotification(SDL_DeviceNotificationData *data)
     return 0;
 }
 
-static void
-SDL_CheckDeviceNotification(SDL_DeviceNotificationData *data)
+static SDL_bool
+SDL_WaitForDeviceNotification(SDL_DeviceNotificationData *data, SDL_mutex *mutex)
 {
+    return SDL_FALSE;
 }
 
 #else /* !__WINRT__ */
@@ -104,6 +105,8 @@ typedef struct
     HDEVNOTIFY hNotify;
 } SDL_DeviceNotificationData;
 
+#define IDT_SDL_DEVICE_CHANGE_TIMER_1 1200
+#define IDT_SDL_DEVICE_CHANGE_TIMER_2 1201
 
 /* windowproc for our joystick detect thread message only window, to detect any USB device addition/removal */
 static LRESULT CALLBACK
@@ -113,16 +116,18 @@ SDL_PrivateJoystickDetectProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lPa
     case WM_DEVICECHANGE:
         switch (wParam) {
         case DBT_DEVICEARRIVAL:
-            if (((DEV_BROADCAST_HDR*)lParam)->dbch_devicetype == DBT_DEVTYP_DEVICEINTERFACE) {
-                s_bWindowsDeviceChanged = SDL_TRUE;
-            }
-            break;
         case DBT_DEVICEREMOVECOMPLETE:
             if (((DEV_BROADCAST_HDR*)lParam)->dbch_devicetype == DBT_DEVTYP_DEVICEINTERFACE) {
-                s_bWindowsDeviceChanged = SDL_TRUE;
+                /* notify 300ms and 2 seconds later to ensure all APIs have updated status */
+                SetTimer(hwnd, IDT_SDL_DEVICE_CHANGE_TIMER_1, 300, NULL);
+                SetTimer(hwnd, IDT_SDL_DEVICE_CHANGE_TIMER_2, 2000, NULL);
             }
             break;
         }
+        return 0;
+    case WM_TIMER:
+        KillTimer(hwnd, wParam);
+        s_bWindowsDeviceChanged = SDL_TRUE;
         return 0;
     }
 
@@ -187,21 +192,26 @@ SDL_CreateDeviceNotification(SDL_DeviceNotificationData *data)
     return 0;
 }
 
-static void
-SDL_CheckDeviceNotification(SDL_DeviceNotificationData *data)
+static SDL_bool
+SDL_WaitForDeviceNotification(SDL_DeviceNotificationData *data, SDL_mutex *mutex)
 {
     MSG msg;
+    int lastret = 1;
 
     if (!data->messageWindow) {
-        return;
+        return SDL_FALSE; /* device notifications require a window */
     }
 
-    while (PeekMessage(&msg, data->messageWindow, 0, 0, PM_NOREMOVE)) {
-        if (GetMessage(&msg, data->messageWindow, 0, 0) != 0)  {
+    SDL_UnlockMutex(mutex);
+    while (lastret > 0 && s_bWindowsDeviceChanged == SDL_FALSE) {
+        lastret = GetMessage(&msg, NULL, 0, 0); /* WM_QUIT causes return value of 0 */
+        if (lastret > 0) {
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }
     }
+    SDL_LockMutex(mutex);
+    return (lastret != -1) ? SDL_TRUE : SDL_FALSE;
 }
 
 #endif /* __WINRT__ */
@@ -225,31 +235,30 @@ SDL_JoystickThread(void *_data)
     while (s_bJoystickThreadQuit == SDL_FALSE) {
         SDL_bool bXInputChanged = SDL_FALSE;
 
-        SDL_CondWaitTimeout(s_condJoystickThread, s_mutexJoyStickEnum, 300);
-
-        SDL_CheckDeviceNotification(&notification_data);
-
+        if (SDL_WaitForDeviceNotification(&notification_data, s_mutexJoyStickEnum) == SDL_FALSE) {
 #if SDL_JOYSTICK_XINPUT
-        if (SDL_XINPUT_Enabled() && XINPUTGETCAPABILITIES) {
-            /* scan for any change in XInput devices */
-            Uint8 userId;
-            for (userId = 0; userId < XUSER_MAX_COUNT; userId++) {
-                XINPUT_CAPABILITIES capabilities;
-                const DWORD result = XINPUTGETCAPABILITIES(userId, XINPUT_FLAG_GAMEPAD, &capabilities);
-                const SDL_bool available = (result == ERROR_SUCCESS);
-                if (bOpenedXInputDevices[userId] != available) {
-                    bXInputChanged = SDL_TRUE;
-                    bOpenedXInputDevices[userId] = available;
+            /* WM_DEVICECHANGE not working, poll for new XINPUT controllers */
+            SDL_CondWaitTimeout(s_condJoystickThread, s_mutexJoyStickEnum, 1000);
+            if (SDL_XINPUT_Enabled() && XINPUTGETCAPABILITIES) {
+                /* scan for any change in XInput devices */
+                Uint8 userId;
+                for (userId = 0; userId < XUSER_MAX_COUNT; userId++) {
+                    XINPUT_CAPABILITIES capabilities;
+                    const DWORD result = XINPUTGETCAPABILITIES(userId, XINPUT_FLAG_GAMEPAD, &capabilities);
+                    const SDL_bool available = (result == ERROR_SUCCESS);
+                    if (bOpenedXInputDevices[userId] != available) {
+                        bXInputChanged = SDL_TRUE;
+                        bOpenedXInputDevices[userId] = available;
+                    }
                 }
             }
-        }
+#else
+            /* WM_DEVICECHANGE not working, no XINPUT, no point in keeping thread alive */
+            break;
 #endif /* SDL_JOYSTICK_XINPUT */
+		}
 
         if (s_bWindowsDeviceChanged || bXInputChanged) {
-            SDL_UnlockMutex(s_mutexJoyStickEnum);  /* let main thread go while we SDL_Delay(). */
-            SDL_Delay(300); /* wait for direct input to find out about this device */
-            SDL_LockMutex(s_mutexJoyStickEnum);
-
             s_bDeviceRemoved = SDL_TRUE;
             s_bDeviceAdded = SDL_TRUE;
             s_bWindowsDeviceChanged = SDL_FALSE;
@@ -496,6 +505,9 @@ SDL_SYS_JoystickQuit(void)
         s_bJoystickThreadQuit = SDL_TRUE;
         SDL_CondBroadcast(s_condJoystickThread); /* signal the joystick thread to quit */
         SDL_UnlockMutex(s_mutexJoyStickEnum);
+#ifndef __WINRT__
+        PostThreadMessage(SDL_GetThreadID(s_threadJoystick), WM_QUIT, 0, 0);
+#endif
         SDL_WaitThread(s_threadJoystick, NULL); /* wait for it to bugger off */
 
         SDL_DestroyMutex(s_mutexJoyStickEnum);
