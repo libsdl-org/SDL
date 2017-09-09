@@ -520,6 +520,11 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     NSRect rect = [nswindow contentRectForFrameRect:[nswindow frame]];
     ConvertNSRect([nswindow screen], fullscreen, &rect);
 
+    if (inFullscreenTransition) {
+        /* We'll take care of this at the end of the transition */
+        return;
+    }
+
     if (s_moveHack) {
         SDL_bool blockMove = ((SDL_GetTicks() - s_moveHack) < 500);
 
@@ -719,6 +724,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
          */
         window->w = 0;
         window->h = 0;
+        [self windowDidMove:aNotification];
         [self windowDidResize:aNotification];
     }
 }
@@ -727,13 +733,13 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 {
     SDL_Window *window = _data->window;
 
+    isFullscreenSpace = NO;
+    inFullscreenTransition = YES;
+
     /* As of OS X 10.11, the window seems to need to be resizable when exiting
        a Space, in order for it to resize back to its windowed-mode size.
      */
     SetWindowStyle(window, GetWindowStyle(window) | NSWindowStyleMaskResizable);
-
-    isFullscreenSpace = NO;
-    inFullscreenTransition = YES;
 }
 
 - (void)windowDidFailToExitFullScreen:(NSNotification *)aNotification
@@ -801,6 +807,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
          */
         window->w = 0;
         window->h = 0;
+        [self windowDidMove:aNotification];
         [self windowDidResize:aNotification];
 
         /* FIXME: Why does the window get hidden? */
