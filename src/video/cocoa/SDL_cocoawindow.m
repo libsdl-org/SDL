@@ -787,6 +787,13 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 
         pendingWindowOperation = PENDING_OPERATION_NONE;
 
+#if 0
+/* This fixed bug 3719, which is that changing window size while fullscreen
+   doesn't take effect when leaving fullscreen, but introduces bug 3809,
+   which is that a maximized window doesn't go back to normal size when
+   restored, so this code is disabled until we can properly handle the
+   beginning and end of maximize and restore.
+ */
         /* Restore windowed size and position in case it changed while fullscreen */
         {
             NSRect rect;
@@ -801,6 +808,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
             [nswindow setFrameOrigin:rect.origin];
             s_moveHack = SDL_GetTicks();
         }
+#endif /* 0 */
 
         /* Force the size change event in case it was delivered earlier
            while the window was still animating into place.
