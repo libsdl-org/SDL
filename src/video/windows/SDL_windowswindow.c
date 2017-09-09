@@ -81,33 +81,33 @@ GetWindowStyle(SDL_Window * window)
 }
 
 static void
-WIN_AdjustWindowRectWithStyle( SDL_Window * window, DWORD style, BOOL menu, int * x, int * y, int * width, int * height )
+WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL menu, int *x, int *y, int *width, int *height, SDL_bool use_current)
 {
     RECT rect;
 
     rect.left = 0;
     rect.top = 0;
-    rect.right = window->w;
-    rect.bottom = window->h;
-    AdjustWindowRectEx( &rect, style, menu, 0 );
+    rect.right = (use_current ? window->w : window->windowed.w);
+    rect.bottom = (use_current ? window->h : window->windowed.h);
+    AdjustWindowRectEx(&rect, style, menu, 0);
 
-    *x = window->x + rect.left;
-    *y = window->y + rect.top;
+    *x = (use_current ? window->x : window->windowed.x) + rect.left;
+    *y = (use_current ? window->y : window->windowed.y) + rect.top;
     *width = (rect.right - rect.left);
     *height = (rect.bottom - rect.top);
 }
 
 static void
-WIN_AdjustWindowRect( SDL_Window * window, int * x, int * y, int * width, int * height )
+WIN_AdjustWindowRect(SDL_Window *window, int *x, int *y, int *width, int *height, SDL_bool use_current)
 {
     SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
     HWND hwnd = data->hwnd;
     DWORD style;
     BOOL menu;
 
-    style = GetWindowLong( hwnd, GWL_STYLE );
-    menu = (style & WS_CHILDWINDOW) ? FALSE : (GetMenu( hwnd ) != NULL);
-    WIN_AdjustWindowRectWithStyle( window, style, menu, x, y, width, height );
+    style = GetWindowLong(hwnd, GWL_STYLE);
+    menu = (style & WS_CHILDWINDOW) ? FALSE : (GetMenu(hwnd) != NULL);
+    WIN_AdjustWindowRectWithStyle(window, style, menu, x, y, width, height, use_current);
 }
 
 static void
@@ -126,7 +126,7 @@ WIN_SetWindowPositionInternal(_THIS, SDL_Window * window, UINT flags)
         top = HWND_NOTOPMOST;
     }
 
-    WIN_AdjustWindowRect( window, &x, &y, &w, &h );    
+    WIN_AdjustWindowRect(window, &x, &y, &w, &h, SDL_TRUE);    
 
     data->expected_resize = SDL_TRUE;
     SetWindowPos(hwnd, top, x, y, w, h, flags);
@@ -192,7 +192,7 @@ SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, HWND parent, SDL_bool cre
                 int w, h;
 
                 /* Figure out what the window area will be */
-                WIN_AdjustWindowRect( window, &x, &y, &w, &h );
+                WIN_AdjustWindowRect(window, &x, &y, &w, &h, SDL_TRUE);
                 SetWindowPos(hwnd, HWND_NOTOPMOST, x, y, w, h, SWP_NOCOPYBITS | SWP_NOZORDER | SWP_NOACTIVATE);
             } else {
                 window->w = w;
@@ -287,7 +287,7 @@ WIN_CreateWindow(_THIS, SDL_Window * window)
     style |= GetWindowStyle(window);
 
     /* Figure out what the window area will be */
-    WIN_AdjustWindowRectWithStyle( window, style, FALSE, &x, &y, &w, &h );
+    WIN_AdjustWindowRectWithStyle(window, style, FALSE, &x, &y, &w, &h, SDL_TRUE);
 
     hwnd =
         CreateWindow(SDL_Appname, TEXT(""), style, x, y, w, h, parent, NULL,
@@ -594,7 +594,7 @@ WIN_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, 
             data->windowed_mode_was_maximized = SDL_FALSE;
         }
 
-        WIN_AdjustWindowRect( window, &x, &y, &w, &h );
+        WIN_AdjustWindowRect(window, &x, &y, &w, &h, SDL_FALSE);
     }
     SetWindowLong(hwnd, GWL_STYLE, style);
     data->expected_resize = SDL_TRUE;
