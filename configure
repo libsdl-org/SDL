@@ -16171,7 +16171,7 @@ $as_echo "#define STDC_HEADERS 1" >>confdefs.h
 
 fi
 
-    for ac_header in sys/types.h stdio.h stdlib.h stddef.h stdarg.h malloc.h memory.h string.h strings.h wchar.h inttypes.h stdint.h ctype.h math.h float.h iconv.h signal.h
+    for ac_header in sys/types.h stdio.h stdlib.h stddef.h stdarg.h malloc.h memory.h string.h strings.h wchar.h inttypes.h stdint.h limits.h ctype.h math.h float.h iconv.h signal.h
 do :
   as_ac_Header=`$as_echo "ac_cv_header_$ac_header" | $as_tr_sh`
 ac_fn_c_check_header_mongrel "$LINENO" "$ac_header" "$as_ac_Header" "$ac_includes_default"
