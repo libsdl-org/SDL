@@ -33,8 +33,8 @@
    into the general blitting mechanism.
 */
 
-#if ((defined(_MFC_VER) && defined(_M_IX86)) || \
-     defined(__WATCOMC__) || \
+#if ((defined(_MSC_VER) && defined(_M_IX86))    || \
+     (defined(__WATCOMC__) && defined(__386__)) || \
      (defined(__GNUC__) && defined(__i386__))) && SDL_ASSEMBLY_ROUTINES
 /* There's a bug with gcc 4.4.1 and -O2 where srcp doesn't get the correct
  * value after the first scanline.  FIXME? */
@@ -53,7 +53,7 @@
 #define PAGE_ALIGNED
 #endif
 
-#if defined(_M_IX86) || defined(i386)
+#if defined(_M_IX86) || defined(__i386__) || defined(__386__)
 #define PREFIX16    0x66
 #define STORE_BYTE  0xAA
 #define STORE_WORD  0xAB
