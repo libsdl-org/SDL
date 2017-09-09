@@ -1554,11 +1554,56 @@ CheckNativeClient()
 }
 
 
+CheckRPI()
+{
+    AC_ARG_ENABLE(video-rpi,
+AC_HELP_STRING([--enable-video-rpi], [use Raspberry Pi video driver [[default=yes]]]),
+                  , enable_video_rpi=yes)
+    if test x$enable_video = xyes -a x$enable_video_rpi = xyes; then
+        if test x$ARCH = xnetbsd; then
+            RPI_CFLAGS="-I/usr/pkg/include -I/usr/pkg/include/interface/vcos/pthreads -I/usr/pkg/include/interface/vmcs_host/linux"
+            RPI_LDFLAGS="-Wl,-R/usr/pkg/lib -L/usr/pkg/lib -lbcm_host"
+        else
+            RPI_CFLAGS="-I/opt/vc/include -I/opt/vc/include/interface/vcos/pthreads -I/opt/vc/include/interface/vmcs_host/linux"
+            RPI_LDFLAGS="-L/opt/vc/lib -lbcm_host"
+        fi
+
+        # Save the original compiler flags and libraries
+        ac_save_cflags="$CFLAGS"; ac_save_libs="$LIBS"
+
+        # Add the Raspberry Pi compiler flags and libraries
+        CFLAGS="$CFLAGS $RPI_CFLAGS"; LIBS="$LIBS $RPI_LDFLAGS"
+
+        AC_MSG_CHECKING(for Raspberry Pi)
+        have_video_rpi=no
+        AC_TRY_LINK([
+          #include <bcm_host.h>
+        ],[
+          bcm_host_init();
+        ],[
+        have_video_rpi=yes
+        ],[
+        ])
+        AC_MSG_RESULT($have_video_rpi)
+
+        # Restore the compiler flags and libraries
+        CFLAGS="$ac_save_cflags"; LIBS="$ac_save_libs"
+        
+        if test x$have_video_rpi = xyes; then
+            CFLAGS="$CFLAGS $RPI_CFLAGS"
+            SDL_CFLAGS="$SDL_CFLAGS $RPI_CFLAGS"
+            EXTRA_CFLAGS="$EXTRA_CFLAGS $RPI_CFLAGS"
+            EXTRA_LDFLAGS="$EXTRA_LDFLAGS $RPI_LDFLAGS"
+            SOURCES="$SOURCES $srcdir/src/video/raspberry/*.c"
+            AC_DEFINE(SDL_VIDEO_DRIVER_RPI, 1, [ ])
+            SUMMARY_video="${SUMMARY_video} rpi"
+        fi
+    fi
+}
+
 dnl Find the X11 include and library directories
 CheckX11()
 {
-
-
     AC_ARG_ENABLE(video-x11,
 AC_HELP_STRING([--enable-video-x11], [use X11 video driver [[default=yes]]]),
                   , enable_video_x11=yes)
@@ -3195,22 +3240,6 @@ dnl Set up the configuration based on the host platform!
 case "$host" in
     *-*-linux*|*-*-uclinux*|*-*-gnu*|*-*-k*bsd*-gnu|*-*-bsdi*|*-*-freebsd*|*-*-dragonfly*|*-*-netbsd*|*-*-openbsd*|*-*-sysv5*|*-*-solaris*|*-*-hpux*|*-*-aix*|*-*-minix*|*-*-nto*)
         case "$host" in
-            *-raspberry-linux*)
-                # Raspberry Pi
-                ARCH=linux
-                RPI_CFLAGS="-I/opt/vc/include -I/opt/vc/include/interface/vcos/pthreads -I/opt/vc/include/interface/vmcs_host/linux"
-                CFLAGS="$CFLAGS $RPI_CFLAGS"
-                SDL_CFLAGS="$SDL_CFLAGS $RPI_CFLAGS"
-                EXTRA_CFLAGS="$EXTRA_CFLAGS $RPI_CFLAGS"
-                EXTRA_LDFLAGS="$EXTRA_LDFLAGS -L/opt/vc/lib -lbcm_host -ldl"
-
-                if test x$enable_video = xyes; then
-                    SOURCES="$SOURCES $srcdir/src/video/raspberry/*.c"
-                    # FIXME: confdefs? Not AC_DEFINE?
-                    $as_echo "#define SDL_VIDEO_DRIVER_RPI 1" >>confdefs.h
-                    SUMMARY_video="${SUMMARY_video} rpi"
-                fi
-                ;;
             *-*-androideabi*)
                 # Android
                 ARCH=android
@@ -3237,21 +3266,6 @@ case "$host" in
             *-*-bsdi*)          ARCH=bsdi ;;
             *-*-freebsd*)       ARCH=freebsd ;;
             *-*-dragonfly*)     ARCH=freebsd ;;
-            *-raspberry-netbsd*)
-                # Raspberry Pi
-                ARCH=netbsd
-                RPI_CFLAGS="-I/usr/pkg/include -I/usr/pkg/include/interface/vcos/pthreads -I/usr/pkg/include/interface/vmcs_host/linux"
-                CFLAGS="$CFLAGS $RPI_CFLAGS"
-                SDL_CFLAGS="$SDL_CFLAGS $RPI_CFLAGS"
-                EXTRA_CFLAGS="$EXTRA_CFLAGS $RPI_CFLAGS"
-                EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-R/usr/pkg/lib -L/usr/pkg/lib -lbcm_host -ldl"
-
-                if test x$enable_video = xyes; then
-                    SOURCES="$SOURCES $srcdir/src/video/raspberry/*.c"
-                    $as_echo "#define SDL_VIDEO_DRIVER_RPI 1" >>confdefs.h
-                    SUMMARY_video="${SUMMARY_video} raspberry"
-                fi
-                ;;
             *-*-netbsd*)        ARCH=netbsd ;;
             *-*-openbsd*)       ARCH=openbsd ;;
             *-*-sysv5*)         ARCH=sysv5 ;;
@@ -3279,6 +3293,8 @@ case "$host" in
         CheckSNDIO
         CheckFusionSound
         CheckLibSampleRate
+        # Need to check for Raspberry PI first and add platform specific compiler flags, otherwise the test for GLES fails!
+        CheckRPI
         CheckX11
         CheckDirectFB
         CheckKMSDRM

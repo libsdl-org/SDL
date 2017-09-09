@@ -25,7 +25,7 @@
 #include "../../SDL_internal.h"
 #include "../SDL_sysvideo.h"
 
-#include "bcm_host.h"
+#include <bcm_host.h>
 #include "GLES/gl.h"
 #include "EGL/egl.h"
 #include "EGL/eglext.h"
