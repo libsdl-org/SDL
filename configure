@@ -832,6 +832,7 @@ enable_video_wayland_qt_touch
 enable_wayland_shared
 enable_video_mir
 enable_mir_shared
+enable_video_rpi
 enable_video_x11
 with_x
 enable_x11_shared
@@ -1572,6 +1573,7 @@ Optional Features:
   --enable-wayland-shared dynamically load Wayland support [[default=maybe]]
   --enable-video-mir      use Mir video driver [[default=yes]]
   --enable-mir-shared     dynamically load Mir support [[default=maybe]]
+  --enable-video-rpi      use Raspberry Pi video driver [[default=yes]]
   --enable-video-x11      use X11 video driver [[default=yes]]
   --enable-x11-shared     dynamically load X11 support [[default=maybe]]
   --enable-video-x11-xcursor
@@ -19460,10 +19462,77 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 }
 
 
-CheckX11()
+CheckRPI()
+{
+    # Check whether --enable-video-rpi was given.
+if test "${enable_video_rpi+set}" = set; then :
+  enableval=$enable_video_rpi;
+else
+  enable_video_rpi=yes
+fi
+
+    if test x$enable_video = xyes -a x$enable_video_rpi = xyes; then
+        if test x$ARCH = xnetbsd; then
+            RPI_CFLAGS="-I/usr/pkg/include -I/usr/pkg/include/interface/vcos/pthreads -I/usr/pkg/include/interface/vmcs_host/linux"
+            RPI_LDFLAGS="-Wl,-R/usr/pkg/lib -L/usr/pkg/lib -lbcm_host"
+        else
+            RPI_CFLAGS="-I/opt/vc/include -I/opt/vc/include/interface/vcos/pthreads -I/opt/vc/include/interface/vmcs_host/linux"
+            RPI_LDFLAGS="-L/opt/vc/lib -lbcm_host"
+        fi
+
+        # Save the original compiler flags and libraries
+        ac_save_cflags="$CFLAGS"; ac_save_libs="$LIBS"
+
+        # Add the Raspberry Pi compiler flags and libraries
+        CFLAGS="$CFLAGS $RPI_CFLAGS"; LIBS="$LIBS $RPI_LDFLAGS"
+
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Raspberry Pi" >&5
+$as_echo_n "checking for Raspberry Pi... " >&6; }
+        have_video_rpi=no
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+          #include <bcm_host.h>
+
+int
+main ()
 {
 
+          bcm_host_init();
 
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+
+        have_video_rpi=yes
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_video_rpi" >&5
+$as_echo "$have_video_rpi" >&6; }
+
+        # Restore the compiler flags and libraries
+        CFLAGS="$ac_save_cflags"; LIBS="$ac_save_libs"
+
+        if test x$have_video_rpi = xyes; then
+            CFLAGS="$CFLAGS $RPI_CFLAGS"
+            SDL_CFLAGS="$SDL_CFLAGS $RPI_CFLAGS"
+            EXTRA_CFLAGS="$EXTRA_CFLAGS $RPI_CFLAGS"
+            EXTRA_LDFLAGS="$EXTRA_LDFLAGS $RPI_LDFLAGS"
+            SOURCES="$SOURCES $srcdir/src/video/raspberry/*.c"
+
+$as_echo "#define SDL_VIDEO_DRIVER_RPI 1" >>confdefs.h
+
+            SUMMARY_video="${SUMMARY_video} rpi"
+        fi
+    fi
+}
+
+CheckX11()
+{
     # Check whether --enable-video-x11 was given.
 if test "${enable_video_x11+set}" = set; then :
   enableval=$enable_video_x11;
@@ -23640,22 +23709,6 @@ CheckWarnAll
 case "$host" in
     *-*-linux*|*-*-uclinux*|*-*-gnu*|*-*-k*bsd*-gnu|*-*-bsdi*|*-*-freebsd*|*-*-dragonfly*|*-*-netbsd*|*-*-openbsd*|*-*-sysv5*|*-*-solaris*|*-*-hpux*|*-*-aix*|*-*-minix*|*-*-nto*)
         case "$host" in
-            *-raspberry-linux*)
-                # Raspberry Pi
-                ARCH=linux
-                RPI_CFLAGS="-I/opt/vc/include -I/opt/vc/include/interface/vcos/pthreads -I/opt/vc/include/interface/vmcs_host/linux"
-                CFLAGS="$CFLAGS $RPI_CFLAGS"
-                SDL_CFLAGS="$SDL_CFLAGS $RPI_CFLAGS"
-                EXTRA_CFLAGS="$EXTRA_CFLAGS $RPI_CFLAGS"
-                EXTRA_LDFLAGS="$EXTRA_LDFLAGS -L/opt/vc/lib -lbcm_host -ldl"
-
-                if test x$enable_video = xyes; then
-                    SOURCES="$SOURCES $srcdir/src/video/raspberry/*.c"
-                    # FIXME: confdefs? Not AC_DEFINE?
-                    $as_echo "#define SDL_VIDEO_DRIVER_RPI 1" >>confdefs.h
-                    SUMMARY_video="${SUMMARY_video} rpi"
-                fi
-                ;;
             *-*-androideabi*)
                 # Android
                 ARCH=android
@@ -23682,21 +23735,6 @@ case "$host" in
             *-*-bsdi*)          ARCH=bsdi ;;
             *-*-freebsd*)       ARCH=freebsd ;;
             *-*-dragonfly*)     ARCH=freebsd ;;
-            *-raspberry-netbsd*)
-                # Raspberry Pi
-                ARCH=netbsd
-                RPI_CFLAGS="-I/usr/pkg/include -I/usr/pkg/include/interface/vcos/pthreads -I/usr/pkg/include/interface/vmcs_host/linux"
-                CFLAGS="$CFLAGS $RPI_CFLAGS"
-                SDL_CFLAGS="$SDL_CFLAGS $RPI_CFLAGS"
-                EXTRA_CFLAGS="$EXTRA_CFLAGS $RPI_CFLAGS"
-                EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-R/usr/pkg/lib -L/usr/pkg/lib -lbcm_host -ldl"
-
-                if test x$enable_video = xyes; then
-                    SOURCES="$SOURCES $srcdir/src/video/raspberry/*.c"
-                    $as_echo "#define SDL_VIDEO_DRIVER_RPI 1" >>confdefs.h
-                    SUMMARY_video="${SUMMARY_video} raspberry"
-                fi
-                ;;
             *-*-netbsd*)        ARCH=netbsd ;;
             *-*-openbsd*)       ARCH=openbsd ;;
             *-*-sysv5*)         ARCH=sysv5 ;;
@@ -23724,6 +23762,8 @@ case "$host" in
         CheckSNDIO
         CheckFusionSound
         CheckLibSampleRate
+        # Need to check for Raspberry PI first and add platform specific compiler flags, otherwise the test for GLES fails!
+        CheckRPI
         CheckX11
         CheckDirectFB
         CheckKMSDRM
