@@ -604,8 +604,8 @@ extern DECLSPEC void SDLCALL SDL_GetWindowPosition(SDL_Window * window,
  *  \param w        The width of the window, in screen coordinates. Must be >0.
  *  \param h        The height of the window, in screen coordinates. Must be >0.
  *
- *  \note You can't change the size of a fullscreen window, it automatically
- *        matches the size of the display mode.
+ *  \note Fullscreen windows automatically match the size of the display mode,
+ *        and you should use SDL_SetWindowDisplayMode() to change their size.
  *
  *  The window size in screen coordinates may differ from the size in pixels, if
  *  the window was created with SDL_WINDOW_ALLOW_HIGHDPI on a platform with
@@ -613,6 +613,7 @@ extern DECLSPEC void SDLCALL SDL_GetWindowPosition(SDL_Window * window,
  *  SDL_GetRendererOutputSize() to get the real client area size in pixels.
  *
  *  \sa SDL_GetWindowSize()
+ *  \sa SDL_SetWindowDisplayMode()
  */
 extern DECLSPEC void SDLCALL SDL_SetWindowSize(SDL_Window * window, int w,
                                                int h);
