@@ -61,7 +61,7 @@
 #  else
 #   define DECLSPEC __declspec(dllexport)
 #  endif
-# elif defined(__OS2__) && defined(__WATCOMC__)
+# elif defined(__OS2__)
 #   ifdef BUILD_SDL
 #    define DECLSPEC    __declspec(dllexport)
 #   else
