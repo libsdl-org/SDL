@@ -622,7 +622,7 @@ endif()
 if(LIBC)
   if(WINDOWS AND NOT MINGW)
     set(HAVE_LIBC TRUE)
-    foreach(_HEADER stdio.h string.h wchar.h ctype.h math.h)
+    foreach(_HEADER stdio.h string.h wchar.h ctype.h math.h limits.h)
       string(TOUPPER "HAVE_${_HEADER}" _UPPER)
       string(REPLACE "." "_" _HAVE_H ${_UPPER})
       set(${_HAVE_H} 1)
@@ -648,7 +648,7 @@ if(LIBC)
     set(HAVE_LIBC TRUE)
     check_include_file(sys/types.h HAVE_SYS_TYPES_H)
     foreach(_HEADER
-            stdio.h stdlib.h stddef.h stdarg.h malloc.h memory.h string.h
+            stdio.h stdlib.h stddef.h stdarg.h malloc.h memory.h string.h limits.h
             strings.h wchar.h inttypes.h stdint.h ctype.h math.h iconv.h signal.h)
       string(TOUPPER "HAVE_${_HEADER}" _UPPER)
       string(REPLACE "." "_" _HAVE_H ${_UPPER})

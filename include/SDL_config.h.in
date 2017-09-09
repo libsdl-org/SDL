@@ -55,24 +55,25 @@
 #if HAVE_LIBC
 
 /* Useful headers */
-#undef HAVE_ALLOCA_H
-#undef HAVE_SYS_TYPES_H
-#undef HAVE_STDIO_H
 #undef STDC_HEADERS
-#undef HAVE_STDLIB_H
-#undef HAVE_STDARG_H
-#undef HAVE_MALLOC_H
-#undef HAVE_MEMORY_H
-#undef HAVE_STRING_H
-#undef HAVE_STRINGS_H
-#undef HAVE_WCHAR_H
-#undef HAVE_INTTYPES_H
-#undef HAVE_STDINT_H
+#undef HAVE_ALLOCA_H
 #undef HAVE_CTYPE_H
-#undef HAVE_MATH_H
 #undef HAVE_FLOAT_H
 #undef HAVE_ICONV_H
+#undef HAVE_INTTYPES_H
+#undef HAVE_LIMITS_H
+#undef HAVE_MALLOC_H
+#undef HAVE_MATH_H
+#undef HAVE_MEMORY_H
 #undef HAVE_SIGNAL_H
+#undef HAVE_STDARG_H
+#undef HAVE_STDINT_H
+#undef HAVE_STDIO_H
+#undef HAVE_STDLIB_H
+#undef HAVE_STRINGS_H
+#undef HAVE_STRING_H
+#undef HAVE_SYS_TYPES_H
+#undef HAVE_WCHAR_H
 #undef HAVE_PTHREAD_NP_H
 
 /* C library functions */
