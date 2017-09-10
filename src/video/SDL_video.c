@@ -722,21 +722,21 @@ int SDL_GetDisplayUsableBounds(int displayIndex, SDL_Rect * rect)
 int
 SDL_GetDisplayDPI(int displayIndex, float * ddpi, float * hdpi, float * vdpi)
 {
-	SDL_VideoDisplay *display;
+    SDL_VideoDisplay *display;
 
     CHECK_DISPLAY_INDEX(displayIndex, -1);
 
     display = &_this->displays[displayIndex];
 
-	if (_this->GetDisplayDPI) {
-		if (_this->GetDisplayDPI(_this, display, ddpi, hdpi, vdpi) == 0) {
-			return 0;
-		}
+    if (_this->GetDisplayDPI) {
+        if (_this->GetDisplayDPI(_this, display, ddpi, hdpi, vdpi) == 0) {
+            return 0;
+        }
     } else {
         return SDL_Unsupported();
     }
 
-	return -1;
+    return -1;
 }
 
 SDL_bool
@@ -1394,7 +1394,7 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
     if (flags & SDL_WINDOW_VULKAN) {
         if (!_this->Vulkan_CreateSurface) {
             SDL_SetError("Vulkan support is either not configured in SDL "
-            		     "or not available in video driver");
+                         "or not available in video driver");
             return NULL;
         }
         if (flags & SDL_WINDOW_OPENGL) {
@@ -2093,13 +2093,13 @@ SDL_HideWindow(SDL_Window * window)
         return;
     }
 
-	window->is_hiding = SDL_TRUE;
+    window->is_hiding = SDL_TRUE;
     SDL_UpdateFullscreenMode(window, SDL_FALSE);
 
     if (_this->HideWindow) {
         _this->HideWindow(_this, window);
     }
-	window->is_hiding = SDL_FALSE;
+    window->is_hiding = SDL_FALSE;
     SDL_SendWindowEvent(window, SDL_WINDOWEVENT_HIDDEN, 0, 0);
 }
 
@@ -2944,8 +2944,8 @@ SDL_GL_DeduceMaxSupportedESProfile(int* major, int* minor)
 /* THIS REQUIRES AN EXISTING GL CONTEXT THAT HAS BEEN MADE CURRENT. */
 /*  Please refer to https://bugzilla.libsdl.org/show_bug.cgi?id=3725 for discussion. */
 #if SDL_VIDEO_OPENGL || SDL_VIDEO_OPENGL_ES || SDL_VIDEO_OPENGL_ES2
-	/* XXX This is fragile; it will break in the event of release of
-	 * new versions of OpenGL ES.
+    /* XXX This is fragile; it will break in the event of release of
+     * new versions of OpenGL ES.
      */
     if (SDL_GL_ExtensionSupported("GL_ARB_ES3_2_compatibility")) {
         *major = 3;
@@ -3910,13 +3910,13 @@ SDL_SetWindowHitTest(SDL_Window * window, SDL_HitTest callback, void *userdata)
 float
 SDL_ComputeDiagonalDPI(int hpix, int vpix, float hinches, float vinches)
 {
-	float den2 = hinches * hinches + vinches * vinches;
-	if (den2 <= 0.0f) {
-		return 0.0f;
-	}
-		
-	return (float)(SDL_sqrt((double)hpix * (double)hpix + (double)vpix * (double)vpix) /
-				   SDL_sqrt((double)den2));
+    float den2 = hinches * hinches + vinches * vinches;
+    if (den2 <= 0.0f) {
+        return 0.0f;
+    }
+
+    return (float)(SDL_sqrt((double)hpix * (double)hpix + (double)vpix * (double)vpix) /
+                   SDL_sqrt((double)den2));
 }
 
 /*
