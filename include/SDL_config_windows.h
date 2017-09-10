@@ -142,7 +142,7 @@ typedef unsigned int uintptr_t;
 #define HAVE_SQRTF 1
 #define HAVE_TAN 1
 #define HAVE_TANF 1
-#define HAVE_COPYSIGN 1
+#define HAVE__COPYSIGN 1
 #if defined(_MSC_VER)
 /* These functions were added with the VC++ 2013 C runtime library */
 #if _MSC_VER >= 1800
