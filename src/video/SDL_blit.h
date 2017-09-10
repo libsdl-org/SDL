@@ -488,10 +488,10 @@ do {                                                                    \
 #define DUFFS_LOOP4(pixel_copy_increment, width)                        \
 { int n = (width+3)/4;                                                  \
     switch (width & 3) {                                                \
-    case 0: do {    pixel_copy_increment;                               \
-    case 3:     pixel_copy_increment;                                   \
-    case 2:     pixel_copy_increment;                                   \
-    case 1:     pixel_copy_increment;                                   \
+    case 0: do {    pixel_copy_increment;   /* fallthrough */           \
+    case 3:     pixel_copy_increment;       /* fallthrough */           \
+    case 2:     pixel_copy_increment;       /* fallthrough */           \
+    case 1:     pixel_copy_increment;       /* fallthrough */           \
         } while (--n > 0);                                              \
     }                                                                   \
 }
