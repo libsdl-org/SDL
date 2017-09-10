@@ -562,10 +562,10 @@ do { \
     while (height--) { \
         { int n = (width+3)/4; \
             switch (width & 3) { \
-            case 0: do {   op; pixel++; \
-            case 3:        op; pixel++; \
-            case 2:        op; pixel++; \
-            case 1:        op; pixel++; \
+            case 0: do {   op; pixel++; /* fallthrough */ \
+            case 3:        op; pixel++; /* fallthrough */ \
+            case 2:        op; pixel++; /* fallthrough */ \
+            case 1:        op; pixel++; /* fallthrough */ \
                     } while ( --n > 0 ); \
             } \
         } \
