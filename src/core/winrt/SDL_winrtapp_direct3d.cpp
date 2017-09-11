@@ -827,7 +827,7 @@ static void WINRT_OnBackButtonPressed(BackButtonEventArgs ^ args)
     }
 }
 
-#if NTDDI_VERSION == NTDDI_WIN10
+#if NTDDI_VERSION >= NTDDI_WIN10
 void SDL_WinRTApp::OnBackButtonPressed(Platform::Object^ sender, Windows::UI::Core::BackRequestedEventArgs^ args)
 
 {
