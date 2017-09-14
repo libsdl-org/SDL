@@ -998,6 +998,11 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
                                    surface->format->Gmask, surface->format->Bmask,
                                    surface->format->Amask);
 
+            /* Share the palette, if any */
+            if (surface->format->palette) {
+                SDL_SetSurfacePalette(tmp, surface->format->palette);
+            }
+            
             SDL_FillRect(tmp, NULL, surface->map->info.colorkey);
 
             tmp->map->info.flags &= ~SDL_COPY_COLORKEY;
