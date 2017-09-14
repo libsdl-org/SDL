@@ -7,6 +7,8 @@
 #include "SDL.h"
 #include "common.h"
 
+#define TEST_INPUT_RECT
+
 #define GLYPH_SIZE_IMAGE 16     /* size of glyphs (characters) in the bitmap font file */
 #define GLYPH_SIZE_SCREEN 32    /* size of glyphs (characters) as shown on the screen */
 
@@ -140,7 +142,11 @@ getPositionForCharNumber(int n, int *x, int *y)
     int max_x_chars = (renderW - 2 * x_padding) / GLYPH_SIZE_SCREEN;
     int line_separation = 5;    /* pixels between each line */
     *x = (n % max_x_chars) * GLYPH_SIZE_SCREEN + x_padding;
+#ifdef TEST_INPUT_RECT
+    *y = renderH - GLYPH_SIZE_SCREEN;
+#else
     *y = (n / max_x_chars) * (GLYPH_SIZE_SCREEN + line_separation) + y_padding;
+#endif
 }
 
 void
@@ -213,12 +219,13 @@ main(int argc, char *argv[])
     int width;
     int height;
     int done;
+    SDL_Rect textrect;
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) {
         printf("Error initializing SDL: %s", SDL_GetError());
     }
     /* create window */
-    window = SDL_CreateWindow("iOS keyboard test", 0, 0, 320, 480, SDL_WINDOW_ALLOW_HIGHDPI);
+    window = SDL_CreateWindow("iOS keyboard test", 0, 0, 0, 0, SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
     /* create renderer */
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_PRESENTVSYNC);
 
@@ -227,6 +234,16 @@ main(int argc, char *argv[])
 
     /* load up our font */
     loadFont();
+    
+    /* Show onscreen keyboard */
+#ifdef TEST_INPUT_RECT
+    textrect.x = 0;
+    textrect.y = height - GLYPH_SIZE_IMAGE;
+    textrect.w = width;
+    textrect.h = GLYPH_SIZE_IMAGE;
+    SDL_SetTextInputRect(&textrect);
+#endif
+    SDL_StartTextInput();
 
     done = 0;
     while (!done) {
@@ -234,6 +251,20 @@ main(int argc, char *argv[])
             switch (event.type) {
             case SDL_QUIT:
                 done = 1;
+                break;
+            case SDL_WINDOWEVENT:
+                if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
+					width = event.window.data1;
+					height = event.window.data2;
+                    SDL_RenderSetLogicalSize(renderer, width, height);
+#ifdef TEST_INPUT_RECT
+                    textrect.x = 0;
+                    textrect.y = height - GLYPH_SIZE_IMAGE;
+                    textrect.w = width;
+                    textrect.h = GLYPH_SIZE_IMAGE;
+                    SDL_SetTextInputRect(&textrect);
+#endif
+                }
                 break;
             case SDL_KEYDOWN:
                 if (event.key.keysym.scancode == SDL_SCANCODE_BACKSPACE) {
