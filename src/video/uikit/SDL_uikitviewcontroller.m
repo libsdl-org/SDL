@@ -281,7 +281,7 @@ SDL_AppleTVControllerUIHintChanged(void *userdata, const char *name, const char 
 - (void)keyboardWillShow:(NSNotification *)notification
 {
 #if !TARGET_OS_TV
-    CGRect kbrect = [[notification userInfo][UIKeyboardFrameBeginUserInfoKey] CGRectValue];
+    CGRect kbrect = [[notification userInfo][UIKeyboardFrameEndUserInfoKey] CGRectValue];
 
     /* The keyboard rect is in the coordinate space of the screen/window, but we
      * want its height in the coordinate space of the view. */
