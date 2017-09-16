@@ -855,6 +855,19 @@ extern "C" {
 #define SDL_HINT_AUDIO_RESAMPLING_MODE   "SDL_AUDIO_RESAMPLING_MODE"
 
 /**
+ *  \brief  A variable controlling the audio category on iOS and Mac OS X
+ *
+ *  This variable can be set to the following values:
+ *
+ *    "ambient"     - Use the AVAudioSessionCategoryAmbient audio category, will be muted by the phone mute switch (default)
+ *    "playback"    - Use the AVAudioSessionCategoryPlayback category
+ *
+ *  For more information, see Apple's documentation:
+ *  https://developer.apple.com/library/content/documentation/Audio/Conceptual/AudioSessionProgrammingGuide/AudioSessionCategoriesandModes/AudioSessionCategoriesandModes.html
+ */
+#define SDL_HINT_AUDIO_CATEGORY   "SDL_AUDIO_CATEGORY"
+
+/**
  *  \brief  An enumeration of hint priorities
  */
 typedef enum

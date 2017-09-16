@@ -25,6 +25,7 @@
 /* !!! FIXME: clean out some of the macro salsa in here. */
 
 #include "SDL_audio.h"
+#include "SDL_hints.h"
 #include "../SDL_audio_c.h"
 #include "../SDL_sysaudio.h"
 #include "SDL_coreaudio.h"
@@ -325,7 +326,8 @@ static BOOL update_audio_session(_THIS, SDL_bool open)
     @autoreleasepool {
         AVAudioSession *session = [AVAudioSession sharedInstance];
         NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
-        NSString *category;
+		/* Set category to ambient by default so that other music continues playing. */
+        NSString *category = AVAudioSessionCategoryAmbient;
         NSError *err = nil;
 
         if (open_playback_devices && open_capture_devices) {
@@ -333,10 +335,17 @@ static BOOL update_audio_session(_THIS, SDL_bool open)
         } else if (open_capture_devices) {
             category = AVAudioSessionCategoryRecord;
         } else {
-            /* Set category to ambient so that other music continues playing.
-             You can change this at runtime in your own code if you need different
-             behavior. If this is common, we can add an SDL hint for this. */
-            category = AVAudioSessionCategoryAmbient;
+            const char *hint = SDL_GetHint(SDL_HINT_AUDIO_CATEGORY);
+            if (hint) {
+                if (SDL_strcasecmp(hint, "AVAudioSessionCategoryAmbient") == 0) {
+                    category = AVAudioSessionCategoryAmbient;
+                } else if (SDL_strcasecmp(hint, "AVAudioSessionCategorySoloAmbient") == 0) {
+                    category = AVAudioSessionCategorySoloAmbient;
+                } else if (SDL_strcasecmp(hint, "AVAudioSessionCategoryPlayback") == 0 ||
+                           SDL_strcasecmp(hint, "playback") == 0) {
+                    category = AVAudioSessionCategoryPlayback;
+                }
+            }
         }
 
         if (![session setCategory:category error:&err]) {

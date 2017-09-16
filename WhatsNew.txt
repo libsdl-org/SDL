@@ -57,6 +57,8 @@ Windows:
 Linux:
 * Added an experimental KMS/DRM video driver for embedded development
 
+iOS:
+* Added a hint SDL_HINT_AUDIO_CATEGORY to control the audio category, determining whether the phone mute switch affects the audio
 
 ---------------------------------------------------------------------------
 2.0.5:
