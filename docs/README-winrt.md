@@ -526,6 +526,7 @@ Once you install these components, try re-launching Visual Studio, and re-openin
 the SDL project file.  If you still get the error dialog, try using the Output
 window, again, seeing what Visual Studio says about it.
 
+
 #### Game controllers / joysticks aren't working!
 
 Windows only permits certain game controllers and joysticks to work within
