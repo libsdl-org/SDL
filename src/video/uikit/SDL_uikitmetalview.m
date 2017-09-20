@@ -35,10 +35,6 @@
 #import "SDL_uikitmetalview.h"
 
 #include "SDL_assert.h"
-#include "SDL_loadso.h"
-#include <dlfcn.h>
-
-static void* loader_handle;
 
 @implementation SDL_uikitmetalview
 
