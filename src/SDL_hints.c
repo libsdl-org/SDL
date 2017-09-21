@@ -122,7 +122,7 @@ SDL_bool
 SDL_GetHintBoolean(const char *name, SDL_bool default_value)
 {
     const char *hint = SDL_GetHint(name);
-    if (!hint) {
+    if (!hint || !*hint) {
         return default_value;
     }
     if (*hint == '0' || SDL_strcasecmp(hint, "false") == 0) {
