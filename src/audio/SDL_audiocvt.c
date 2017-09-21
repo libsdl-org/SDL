@@ -369,227 +369,156 @@ SDL_Convert51To71(SDL_AudioCVT * cvt, SDL_AudioFormat format)
     }
 }
 
+/* SDL's resampler uses a "bandlimited interpolation" algorithm:
+     https://ccrma.stanford.edu/~jos/resample/ */
+
+#define RESAMPLER_ZERO_CROSSINGS 5
+#define RESAMPLER_BITS_PER_SAMPLE 16
+#define RESAMPLER_SAMPLES_PER_ZERO_CROSSING  (1 << ((RESAMPLER_BITS_PER_SAMPLE / 2) + 1))
+#define RESAMPLER_FILTER_SIZE ((RESAMPLER_SAMPLES_PER_ZERO_CROSSING * RESAMPLER_ZERO_CROSSINGS) + 1)
+
+/* This is a "modified" bessel function, so you can't use POSIX j0() */
+static double
+bessel(const double x)
+{
+    const double xdiv2 = x / 2.0;
+    double i0 = 1.0f;
+    double f = 1.0f;
+    int i = 1;
+
+    while (SDL_TRUE) {
+        const double diff = SDL_pow(xdiv2, i * 2) / SDL_pow(f, 2);
+        if (diff < 1.0e-21f) {
+            break;
+        }
+        i0 += diff;
+        i++;
+        f *= (double) i;
+    }
+
+    return i0;
+}
+
+/* build kaiser table with cardinal sine applied to it, and array of differences between elements. */
+static void
+kaiser_and_sinc(float *table, float *diffs, const int tablelen, const double beta)
+{
+    const int lenm1 = tablelen - 1;
+    const int lenm1div2 = lenm1 / 2;
+    int i;
+
+    table[0] = 1.0f;
+    for (i = 1; i < tablelen; i++) {
+        const double kaiser = bessel(beta * SDL_sqrt(1.0 - SDL_pow(((i - lenm1) / 2.0) / lenm1div2, 2.0))) / bessel(beta);
+        table[tablelen - i] = (float) kaiser;
+    }
+
+    for (i = 1; i < tablelen; i++) {
+        const float x = (((float) i) / ((float) RESAMPLER_SAMPLES_PER_ZERO_CROSSING)) * ((float) M_PI);
+        table[i] *= SDL_sinf(x) / x;
+        diffs[i - 1] = table[i] - table[i - 1];
+    }
+    diffs[lenm1] = 0.0f;
+}
+
+
+static SDL_SpinLock ResampleFilterSpinlock = 0;
+static float *ResamplerFilter = NULL;
+static float *ResamplerFilterDifference = NULL;
+
+int
+SDL_PrepareResampleFilter(void)
+{
+    SDL_AtomicLock(&ResampleFilterSpinlock);
+    if (!ResamplerFilter) {
+        /* if dB > 50, beta=(0.1102 * (dB - 8.7)), according to Matlab. */
+        const double dB = 80.0;
+        const double beta = 0.1102 * (dB - 8.7);
+        const size_t alloclen = RESAMPLER_FILTER_SIZE * sizeof (float);
+
+        ResamplerFilter = (float *) SDL_malloc(alloclen);
+        if (!ResamplerFilter) {
+            SDL_AtomicUnlock(&ResampleFilterSpinlock);
+            return SDL_OutOfMemory();
+        }
+
+        ResamplerFilterDifference = (float *) SDL_malloc(alloclen);
+        if (!ResamplerFilterDifference) {
+            SDL_free(ResamplerFilter);
+            ResamplerFilter = NULL;
+            SDL_AtomicUnlock(&ResampleFilterSpinlock);
+            return SDL_OutOfMemory();
+        }
+        kaiser_and_sinc(ResamplerFilter, ResamplerFilterDifference, RESAMPLER_FILTER_SIZE, beta);
+    }
+    SDL_AtomicUnlock(&ResampleFilterSpinlock);
+    return 0;
+}
+
+void
+SDL_FreeResampleFilter(void)
+{
+    SDL_free(ResamplerFilter);
+    SDL_free(ResamplerFilterDifference);
+    ResamplerFilter = NULL;
+    ResamplerFilterDifference = NULL;
+}
+
 
 static int
-SDL_ResampleAudioSimple(const int chans, const double rate_incr,
+SDL_ResampleAudio(const int chans, const int inrate, const int outrate,
                         float *last_sample, const float *inbuf,
                         const int inbuflen, float *outbuf, const int outbuflen)
 {
+    const float outtimeincr = 1.0f / ((float) outrate);
+    const float ratio = ((float) outrate) / ((float) inrate);
+    /*const int padding_len = (ratio < 1.0f) ? (int) SDL_ceilf(((float) (RESAMPLER_SAMPLES_PER_ZERO_CROSSING * inrate) / ((float) outrate))) : RESAMPLER_SAMPLES_PER_ZERO_CROSSING;*/
     const int framelen = chans * (int)sizeof (float);
-    const int total = (inbuflen / framelen);
-    const int finalpos = (total * chans) - chans;
-    const int dest_samples = (int)(((double)total) * rate_incr);
-    const double src_incr = 1.0 / rate_incr;
-    float *dst;
-    double idx;
-    int i;
+    const int inframes = inbuflen / framelen;
+    const int wantedoutframes = (int) ((inbuflen / framelen) * ratio);  /* outbuflen isn't total to write, it's total available. */
+    const int maxoutframes = outbuflen / framelen;
+    const int outframes = (wantedoutframes < maxoutframes) ? wantedoutframes : maxoutframes;
+    float *dst = outbuf;
+    float outtime = 0.0f;
+    int i, j, chan;
 
-    SDL_assert((dest_samples * framelen) <= outbuflen);
-    SDL_assert((inbuflen % framelen) == 0);
+    for (i = 0; i < outframes; i++) {
+        const int srcindex = (int) (outtime * inrate);
+        const float finrate = (float) inrate;
+        const float intime = ((float) srcindex) / finrate;
+        const float innexttime = ((float) (srcindex + 1)) / finrate;
 
-    if (rate_incr > 1.0) {  /* upsample */
-        float *target = (outbuf + chans);
-        dst = outbuf + (dest_samples * chans);
-        idx = (double) total;
+        const float interpolation1 = 1.0f - (innexttime - outtime) / (innexttime - intime);
+        const int filterindex1 = (int) (interpolation1 * RESAMPLER_SAMPLES_PER_ZERO_CROSSING);
+        const float interpolation2 = 1.0f - interpolation1;
+        const int filterindex2 = interpolation2 * RESAMPLER_SAMPLES_PER_ZERO_CROSSING;
 
-        if (chans == 1) {
-            const float final_sample = inbuf[finalpos];
-            float earlier_sample = inbuf[finalpos];
-            while (dst > target) {
-                const int pos = ((int) idx) * chans;
-                const float *src = &inbuf[pos];
-                const float val = *(--src);
-                SDL_assert(pos >= 0.0);
-                *(--dst) = (val + earlier_sample) * 0.5f;
-                earlier_sample = val;
-                idx -= src_incr;
+        for (chan = 0; chan < chans; chan++) {
+            float outsample = 0.0f;
+
+            /* do this twice to calculate the sample, once for the "left wing" and then same for the right. */
+            /* !!! FIXME: do both wings in one loop */
+            for (j = 0; (filterindex1 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)) < RESAMPLER_FILTER_SIZE; j++) {
+                /* !!! FIXME: insample uses zero for padding samples, but it should use prior state from last_sample. */
+                const int srcframe = srcindex - j;
+                const float insample = (srcframe < 0) ? 0.0f : inbuf[(srcframe * chans) + chan];  /* !!! FIXME: we can bubble this conditional out of here by doing a pre loop. */
+                outsample += (insample * (ResamplerFilter[filterindex1 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)] + (interpolation1 * ResamplerFilterDifference[filterindex1 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)])));
             }
-            /* do last sample, interpolated against previous run's state. */
-            *(--dst) = (inbuf[0] + last_sample[0]) * 0.5f;
-            *last_sample = final_sample;
-        } else if (chans == 2) {
-            const float final_sample2 = inbuf[finalpos+1];
-            const float final_sample1 = inbuf[finalpos];
-            float earlier_sample2 = inbuf[finalpos];
-            float earlier_sample1 = inbuf[finalpos-1];
-            while (dst > target) {
-                const int pos = ((int) idx) * chans;
-                const float *src = &inbuf[pos];
-                const float val2 = *(--src);
-                const float val1 = *(--src);
-                SDL_assert(pos >= 0.0);
-                *(--dst) = (val2 + earlier_sample2) * 0.5f;
-                *(--dst) = (val1 + earlier_sample1) * 0.5f;
-                earlier_sample2 = val2;
-                earlier_sample1 = val1;
-                idx -= src_incr;
+
+            for (j = 0; (filterindex2 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)) < RESAMPLER_FILTER_SIZE; j++) {
+                const int srcframe = srcindex + 1 + j;
+                /* !!! FIXME: insample uses zero for padding samples, but it should use prior state from last_sample. */
+                const float insample = (srcframe >= inframes) ? 0.0f : inbuf[(srcframe * chans) + chan];  /* !!! FIXME: we can bubble this conditional out of here by doing a post loop. */
+                outsample += (insample * (ResamplerFilter[filterindex2 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)] + (interpolation2 * ResamplerFilterDifference[filterindex2 + (j * RESAMPLER_SAMPLES_PER_ZERO_CROSSING)])));
             }
-            /* do last sample, interpolated against previous run's state. */
-            *(--dst) = (inbuf[1] + last_sample[1]) * 0.5f;
-            *(--dst) = (inbuf[0] + last_sample[0]) * 0.5f;
-            last_sample[1] = final_sample2;
-            last_sample[0] = final_sample1;
-        } else {
-            const float *earlier_sample = &inbuf[finalpos];
-            float final_sample[8];
-            SDL_memcpy(final_sample, &inbuf[finalpos], framelen);
-            while (dst > target) {
-                const int pos = ((int) idx) * chans;
-                const float *src = &inbuf[pos];
-                SDL_assert(pos >= 0.0);
-                for (i = chans - 1; i >= 0; i--) {
-                    const float val = *(--src);
-                    *(--dst) = (val + earlier_sample[i]) * 0.5f;
-                }
-                earlier_sample = src;
-                idx -= src_incr;
-            }
-            /* do last sample, interpolated against previous run's state. */
-            for (i = chans - 1; i >= 0; i--) {
-                const float val = inbuf[i];
-                *(--dst) = (val + last_sample[i]) * 0.5f;
-            }
-            SDL_memcpy(last_sample, final_sample, framelen);
+            *(dst++) = outsample;
         }
 
-        dst = (outbuf + (dest_samples * chans));
-    } else {  /* downsample */
-        float *target = (outbuf + (dest_samples * chans));
-        dst = outbuf;
-        idx = 0.0;
-        if (chans == 1) {
-            float last = *last_sample;
-            while (dst < target) {
-                const int pos = ((int) idx) * chans;
-                const float val = inbuf[pos];
-                SDL_assert(pos <= finalpos);
-                *(dst++) = (val + last) * 0.5f;
-                last = val;
-                idx += src_incr;
-            }
-            *last_sample = last;
-        } else if (chans == 2) {
-            float last1 = last_sample[0];
-            float last2 = last_sample[1];
-            while (dst < target) {
-                const int pos = ((int) idx) * chans;
-                const float val1 = inbuf[pos];
-                const float val2 = inbuf[pos+1];
-                SDL_assert(pos <= finalpos);
-                *(dst++) = (val1 + last1) * 0.5f;
-                *(dst++) = (val2 + last2) * 0.5f;
-                last1 = val1;
-                last2 = val2;
-                idx += src_incr;
-            }
-            last_sample[0] = last1;
-            last_sample[1] = last2;
-        } else {
-            while (dst < target) {
-                const int pos = ((int) idx) * chans;
-                const float *src = &inbuf[pos];
-                SDL_assert(pos <= finalpos);
-                for (i = 0; i < chans; i++) {
-                    const float val = *(src++);
-                    *(dst++) = (val + last_sample[i]) * 0.5f;
-                    last_sample[i] = val;
-                }
-                idx += src_incr;
-            }
-        }
+        outtime += outtimeincr;
     }
 
-    return (int) ((dst - outbuf) * ((int) sizeof (float)));
+    return outframes * chans * sizeof (float);
 }
-
-/* We keep one special-case fast path around for an extremely common audio format. */
-static int
-SDL_ResampleAudioSimple_si16_c2(const double rate_incr,
-                        Sint16 *last_sample, const Sint16 *inbuf,
-                        const int inbuflen, Sint16 *outbuf, const int outbuflen)
-{
-    const int chans = 2;
-    const int framelen = 4;  /* stereo 16 bit */
-    const int total = (inbuflen / framelen);
-    const int finalpos = (total * chans) - chans;
-    const int dest_samples = (int)(((double)total) * rate_incr);
-    const double src_incr = 1.0 / rate_incr;
-    Sint16 *dst;
-    double idx;
-
-    SDL_assert((dest_samples * framelen) <= outbuflen);
-    SDL_assert((inbuflen % framelen) == 0);
-
-    if (rate_incr > 1.0) {
-        Sint16 *target = (outbuf + chans);
-        const Sint16 final_right = inbuf[finalpos+1];
-        const Sint16 final_left = inbuf[finalpos];
-        Sint16 earlier_right = inbuf[finalpos-1];
-        Sint16 earlier_left = inbuf[finalpos-2];
-        dst = outbuf + (dest_samples * chans);
-        idx = (double) total;
-
-        while (dst > target) {
-            const int pos = ((int) idx) * chans;
-            const Sint16 *src = &inbuf[pos];
-            const Sint16 right = *(--src);
-            const Sint16 left = *(--src);
-            SDL_assert(pos >= 0.0);
-            *(--dst) = (((Sint32) right) + ((Sint32) earlier_right)) >> 1;
-            *(--dst) = (((Sint32) left) + ((Sint32) earlier_left)) >> 1;
-            earlier_right = right;
-            earlier_left = left;
-            idx -= src_incr;
-        }
-
-        /* do last sample, interpolated against previous run's state. */
-        *(--dst) = (((Sint32) inbuf[1]) + ((Sint32) last_sample[1])) >> 1;
-        *(--dst) = (((Sint32) inbuf[0]) + ((Sint32) last_sample[0])) >> 1;
-        last_sample[1] = final_right;
-        last_sample[0] = final_left;
-
-        dst = (outbuf + (dest_samples * chans));
-    } else {
-        Sint16 *target = (outbuf + (dest_samples * chans));
-        dst = outbuf;
-        idx = 0.0;
-        while (dst < target) {
-            const int pos = ((int) idx) * chans;
-            const Sint16 *src = &inbuf[pos];
-            const Sint16 left = *(src++);
-            const Sint16 right = *(src++);
-            SDL_assert(pos <= finalpos);
-            *(dst++) = (((Sint32) left) + ((Sint32) last_sample[0])) >> 1;
-            *(dst++) = (((Sint32) right) + ((Sint32) last_sample[1])) >> 1;
-            last_sample[0] = left;
-            last_sample[1] = right;
-            idx += src_incr;
-        }
-    }
-
-    return (int) ((dst - outbuf) * ((int) sizeof (Sint16)));
-}
-
-static void SDLCALL
-SDL_ResampleCVT_si16_c2(SDL_AudioCVT *cvt, SDL_AudioFormat format)
-{
-    const Sint16 *src = (const Sint16 *) cvt->buf;
-    const int srclen = cvt->len_cvt;
-    Sint16 *dst = (Sint16 *) cvt->buf;
-    const int dstlen = (cvt->len * cvt->len_mult);
-    Sint16 state[2];
-
-    state[0] = src[0];
-    state[1] = src[1];
-
-    SDL_assert(format == AUDIO_S16SYS);
-
-    cvt->len_cvt = SDL_ResampleAudioSimple_si16_c2(cvt->rate_incr, state, src, srclen, dst, dstlen);
-    if (cvt->filters[++cvt->filter_index]) {
-        cvt->filters[cvt->filter_index](cvt, format);
-    }
-}
-
 
 int
 SDL_ConvertAudio(SDL_AudioCVT * cvt)
@@ -761,17 +690,28 @@ SDL_BuildAudioTypeCVTFromFloat(SDL_AudioCVT *cvt, const SDL_AudioFormat dst_fmt)
 static void
 SDL_ResampleCVT(SDL_AudioCVT *cvt, const int chans, const SDL_AudioFormat format)
 {
+    /* !!! FIXME in 2.1: there are ten slots in the filter list, and the theoretical maximum we use is six (seven with NULL terminator).
+       !!! FIXME in 2.1:   We need to store data for this resampler, because the cvt structure doesn't store the original sample rates,
+       !!! FIXME in 2.1:   so we steal the ninth and tenth slot.  :( */
+    const int srcrate = (int) (size_t) cvt->filters[SDL_AUDIOCVT_MAX_FILTERS-1];
+    const int dstrate = (int) (size_t) cvt->filters[SDL_AUDIOCVT_MAX_FILTERS];
     const float *src = (const float *) cvt->buf;
     const int srclen = cvt->len_cvt;
-    float *dst = (float *) cvt->buf;
-    const int dstlen = (cvt->len * cvt->len_mult);
+    /*float *dst = (float *) cvt->buf;
+    const int dstlen = (cvt->len * cvt->len_mult);*/
+    /* !!! FIXME: remove this if we can get the resampler to work in-place again. */
+    float *dst = (float *) (cvt->buf + srclen);
+    const int dstlen = (cvt->len * cvt->len_mult) - srclen;
     float state[8];
 
     SDL_assert(format == AUDIO_F32SYS);
 
-    SDL_memcpy(state, src, chans*sizeof(*src));
+    SDL_zero(state);
 
-    cvt->len_cvt = SDL_ResampleAudioSimple(chans, cvt->rate_incr, state, src, srclen, dst, dstlen);
+    cvt->len_cvt = SDL_ResampleAudio(chans, srcrate, dstrate, state, src, srclen, dst, dstlen);
+
+    SDL_memcpy(cvt->buf, dst, cvt->len_cvt);  /* !!! FIXME: remove this if we can get the resampler to work in-place again. */
+
     if (cvt->filters[++cvt->filter_index]) {
         cvt->filters[cvt->filter_index](cvt, format);
     }
@@ -823,10 +763,24 @@ SDL_BuildAudioResampleCVT(SDL_AudioCVT * cvt, const int dst_channels,
         return SDL_SetError("No conversion available for these rates");
     }
 
+    if (SDL_PrepareResampleFilter() < 0) {
+        return -1;
+    }
+
     /* Update (cvt) with filter details... */
     if (SDL_AddAudioCVTFilter(cvt, filter) < 0) {
         return -1;
     }
+
+    /* !!! FIXME in 2.1: there are ten slots in the filter list, and the theoretical maximum we use is six (seven with NULL terminator).
+       !!! FIXME in 2.1:   We need to store data for this resampler, because the cvt structure doesn't store the original sample rates,
+       !!! FIXME in 2.1:   so we steal the ninth and tenth slot.  :( */
+    if (cvt->filter_index >= (SDL_AUDIOCVT_MAX_FILTERS-2)) {
+        return SDL_SetError("Too many filters needed for conversion, exceeded maximum of %d", SDL_AUDIOCVT_MAX_FILTERS-2);
+    }
+    cvt->filters[SDL_AUDIOCVT_MAX_FILTERS-1] = (SDL_AudioFilter) (size_t) src_rate;
+    cvt->filters[SDL_AUDIOCVT_MAX_FILTERS] = (SDL_AudioFilter) (size_t) dst_rate;
+
     if (src_rate < dst_rate) {
         const double mult = ((double) dst_rate) / ((double) src_rate);
         cvt->len_mult *= (int) SDL_ceil(mult);
@@ -834,6 +788,11 @@ SDL_BuildAudioResampleCVT(SDL_AudioCVT * cvt, const int dst_channels,
     } else {
         cvt->len_ratio /= ((double) src_rate) / ((double) dst_rate);
     }
+
+    /* !!! FIXME: remove this if we can get the resampler to work in-place again. */
+    /* the buffer is big enough to hold the destination now, but
+       we need it large enough to hold a separate scratch buffer. */
+    cvt->len_mult *= 2;
 
     return 1;               /* added a converter. */
 }
@@ -922,39 +881,13 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
     cvt->dst_format = dst_fmt;
     cvt->needed = 0;
     cvt->filter_index = 0;
-    cvt->filters[0] = NULL;
+    SDL_zero(cvt->filters);
     cvt->len_mult = 1;
     cvt->len_ratio = 1.0;
     cvt->rate_incr = ((double) dst_rate) / ((double) src_rate);
 
     /* Make sure we've chosen audio conversion functions (MMX, scalar, etc.) */
     SDL_ChooseAudioConverters();
-
-    /* SDL now favors float32 as its preferred internal format, and considers
-       everything else to be a degenerate case that we might have to make
-       multiple passes over the data to convert to and from float32 as
-       necessary. That being said, we keep one special case around for
-       efficiency: stereo data in Sint16 format, in the native byte order,
-       that only needs resampling. This is likely to be the most popular
-       legacy format, that apps, hardware and the OS are likely to be able
-       to process directly, so we handle this one case directly without
-       unnecessary conversions. This means that apps on embedded devices
-       without floating point hardware should consider aiming for this
-       format as well. */
-    if ((src_channels == 2) && (dst_channels == 2) && (src_fmt == AUDIO_S16SYS) && (dst_fmt == AUDIO_S16SYS) && (src_rate != dst_rate)) {
-        cvt->needed = 1;
-        if (SDL_AddAudioCVTFilter(cvt, SDL_ResampleCVT_si16_c2) < 0) {
-            return -1;
-        }
-        if (src_rate < dst_rate) {
-            const double mult = ((double) dst_rate) / ((double) src_rate);
-            cvt->len_mult *= (int) SDL_ceil(mult);
-            cvt->len_ratio *= mult;
-        } else {
-            cvt->len_ratio /= ((double) src_rate) / ((double) dst_rate);
-        }
-        return 1;
-    }
 
     /* Type conversion goes like this now:
         - byteswap to CPU native format first if necessary.
@@ -1282,30 +1215,23 @@ SDL_ResampleAudioStream(SDL_AudioStream *stream, const void *_inbuf, const int i
 
     SDL_assert(chans <= SDL_arraysize(state->resampler_state.f));
 
+    if (inbuf == ((const float *) outbuf)) {  /* !!! FIXME can't work in-place (for now!). */
+        Uint8 *ptr = EnsureStreamBufferSize(stream, inbuflen + outbuflen);
+        if (ptr == NULL) {
+            SDL_OutOfMemory();
+            return 0;
+        }
+        SDL_memcpy(ptr + outbuflen, ptr, inbuflen);
+        inbuf = (const float *) (ptr + outbuflen);
+        outbuf = (float *) ptr;
+    }
+
     if (!state->resampler_seeded) {
-        SDL_memcpy(state->resampler_state.f, inbuf, chans * sizeof (float));
+        SDL_zero(state->resampler_state.f);
         state->resampler_seeded = SDL_TRUE;
     }
 
-    return SDL_ResampleAudioSimple(chans, stream->rate_incr, state->resampler_state.f, inbuf, inbuflen, outbuf, outbuflen);
-}
-
-static int
-SDL_ResampleAudioStream_si16_c2(SDL_AudioStream *stream, const void *_inbuf, const int inbuflen, void *_outbuf, const int outbuflen)
-{
-    const Sint16 *inbuf = (const Sint16 *) _inbuf;
-    Sint16 *outbuf = (Sint16 *) _outbuf;
-    SDL_AudioStreamResamplerState *state = (SDL_AudioStreamResamplerState*)stream->resampler_state;
-
-    SDL_assert(((int)stream->pre_resample_channels) <= SDL_arraysize(state->resampler_state.si16));
-
-    if (!state->resampler_seeded) {
-        state->resampler_state.si16[0] = inbuf[0];
-        state->resampler_state.si16[1] = inbuf[1];
-        state->resampler_seeded = SDL_TRUE;
-    }
-
-    return SDL_ResampleAudioSimple_si16_c2(stream->rate_incr, state->resampler_state.si16, inbuf, inbuflen, outbuf, outbuflen);
+    return SDL_ResampleAudio(chans, stream->src_rate, stream->dst_rate, state->resampler_state.f, inbuf, inbuflen, outbuf, outbuflen);
 }
 
 static void
@@ -1332,9 +1258,6 @@ SDL_NewAudioStream(const SDL_AudioFormat src_format,
     const int packetlen = 4096;  /* !!! FIXME: good enough for now. */
     Uint8 pre_resample_channels;
     SDL_AudioStream *retval;
-#ifndef HAVE_LIBSAMPLERATE_H
-    const SDL_bool SRC_available = SDL_FALSE;
-#endif
 
     retval = (SDL_AudioStream *) SDL_calloc(1, sizeof (SDL_AudioStream));
     if (!retval) {
@@ -1366,18 +1289,6 @@ SDL_NewAudioStream(const SDL_AudioFormat src_format,
             SDL_FreeAudioStream(retval);
             return NULL;  /* SDL_BuildAudioCVT should have called SDL_SetError. */
         }
-    /* fast path special case for stereo Sint16 data that just needs resampling. */
-    } else if ((!SRC_available) && (src_channels == 2) && (dst_channels == 2) && (src_format == AUDIO_S16SYS) && (dst_format == AUDIO_S16SYS)) {
-        SDL_assert(src_rate != dst_rate);
-        retval->resampler_state = SDL_calloc(1, sizeof(SDL_AudioStreamResamplerState));
-        if (!retval->resampler_state) {
-            SDL_FreeAudioStream(retval);
-            SDL_OutOfMemory();
-            return NULL;
-        }
-        retval->resampler_func = SDL_ResampleAudioStream_si16_c2;
-        retval->reset_resampler_func = SDL_ResetAudioStreamResampler;
-        retval->cleanup_resampler_func = SDL_CleanupAudioStreamResampler;
     } else {
         /* Don't resample at first. Just get us to Float32 format. */
         /* !!! FIXME: convert to int32 on devices without hardware float. */
@@ -1397,6 +1308,14 @@ SDL_NewAudioStream(const SDL_AudioFormat src_format,
                 SDL_OutOfMemory();
                 return NULL;
             }
+
+            if (SDL_PrepareResampleFilter() < 0) {
+                SDL_free(retval->resampler_state);
+                retval->resampler_state = NULL;
+                SDL_FreeAudioStream(retval);
+                return NULL;
+            }
+
             retval->resampler_func = SDL_ResampleAudioStream;
             retval->reset_resampler_func = SDL_ResetAudioStreamResampler;
             retval->cleanup_resampler_func = SDL_CleanupAudioStreamResampler;

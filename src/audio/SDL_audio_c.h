@@ -69,6 +69,11 @@ extern SDL_AudioFilter SDL_Convert_F32_to_S16;
 extern SDL_AudioFilter SDL_Convert_F32_to_U16;
 extern SDL_AudioFilter SDL_Convert_F32_to_S32;
 
+/* You need to call SDL_PrepareResampleFilter() before using the internal resampler.
+   SDL_AudioQuit() calls SDL_FreeResamplerFilter(), you should never call it yourself. */
+int SDL_PrepareResampleFilter(void);
+void SDL_FreeResampleFilter(void);
+
 
 /* SDL_AudioStream is a new audio conversion interface. It
     might eventually become a public API.
