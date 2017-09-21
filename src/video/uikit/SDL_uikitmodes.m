@@ -211,11 +211,13 @@ UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
         availableModes = data.uiscreen.availableModes;
 #endif
 
+#ifdef __IPHONE_8_0
         /* The UIScreenMode of an iPhone 6 Plus should be 1080x1920 rather than
          * 1242x2208 (414x736@3x), so we should use the native scale. */
         if ([data.uiscreen respondsToSelector:@selector(nativeScale)]) {
             scale = data.uiscreen.nativeScale;
         }
+#endif
 
         for (UIScreenMode *uimode in availableModes) {
             /* The size of a UIScreenMode is in pixels, but we deal exclusively
