@@ -71,8 +71,8 @@ extern SDL_AudioFilter SDL_Convert_F32_to_S32;
 
 /* You need to call SDL_PrepareResampleFilter() before using the internal resampler.
    SDL_AudioQuit() calls SDL_FreeResamplerFilter(), you should never call it yourself. */
-int SDL_PrepareResampleFilter(void);
-void SDL_FreeResampleFilter(void);
+extern int SDL_PrepareResampleFilter(void);
+extern void SDL_FreeResampleFilter(void);
 
 
 /* SDL_AudioStream is a new audio conversion interface. It
@@ -92,28 +92,28 @@ void SDL_FreeResampleFilter(void);
 typedef struct SDL_AudioStream SDL_AudioStream;
 
 /* create a new stream */
-SDL_AudioStream *SDL_NewAudioStream(const SDL_AudioFormat src_format,
-                                    const Uint8 src_channels,
-                                    const int src_rate,
-                                    const SDL_AudioFormat dst_format,
-                                    const Uint8 dst_channels,
-                                    const int dst_rate);
+extern SDL_AudioStream *SDL_NewAudioStream(const SDL_AudioFormat src_format,
+                                           const Uint8 src_channels,
+                                           const int src_rate,
+                                           const SDL_AudioFormat dst_format,
+                                           const Uint8 dst_channels,
+                                           const int dst_rate);
 
 /* add data to be converted/resampled to the stream */
-int SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, const Uint32 len);
+extern int SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, const Uint32 len);
 
 /* get converted/resampled data from the stream */
-int SDL_AudioStreamGet(SDL_AudioStream *stream, void *buf, const Uint32 len);
+extern int SDL_AudioStreamGet(SDL_AudioStream *stream, void *buf, const Uint32 len);
 
 /* clear any pending data in the stream without converting it. */
-void SDL_AudioStreamClear(SDL_AudioStream *stream);
+extern void SDL_AudioStreamClear(SDL_AudioStream *stream);
 
 /* number of converted/resampled bytes available */
-int SDL_AudioStreamAvailable(SDL_AudioStream *stream);
+extern int SDL_AudioStreamAvailable(SDL_AudioStream *stream);
 
 /* dispose of a stream */
-void SDL_FreeAudioStream(SDL_AudioStream *stream);
+extern void SDL_FreeAudioStream(SDL_AudioStream *stream);
 
-#endif
+#endif /* SDL_audio_c_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
