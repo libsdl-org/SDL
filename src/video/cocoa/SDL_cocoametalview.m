@@ -31,8 +31,6 @@
 #if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_COCOA
 
 #include "SDL_assert.h"
-#include "SDL_loadso.h"
-#include <dlfcn.h>
 
 @implementation SDL_cocoametalview
 
