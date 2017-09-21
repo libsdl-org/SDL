@@ -92,9 +92,12 @@ UIKit_Mtl_AddMetalView(SDL_Window* window)
          * backing dimensions of the Metal view will match the pixel
          * dimensions of the screen rather than the dimensions in points.
          */
+#ifdef __IPHONE_8_0
         if ([data.uiwindow.screen respondsToSelector:@selector(nativeScale)]) {
             scale = data.uiwindow.screen.nativeScale;
-        } else {
+        } else
+#endif
+        {
             scale = data.uiwindow.screen.scale;
         }
     }
