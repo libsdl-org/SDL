@@ -672,6 +672,9 @@ SDL_PrivateJoystickAxis(SDL_Joystick * joystick, Uint8 axis, Sint16 value)
         joystick->axes[axis].zero = value;
         joystick->axes[axis].has_initial_value = SDL_TRUE;
     }
+    if (value == joystick->axes[axis].value) {
+        return 0;
+    }
     if (!joystick->axes[axis].sent_initial_value) {
         /* Make sure we don't send motion until there's real activity on this axis */
         const int MAX_ALLOWED_JITTER = SDL_JOYSTICK_AXIS_MAX / 80;  /* ShanWan PS3 controller needed 96 */
