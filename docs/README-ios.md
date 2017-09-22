@@ -266,3 +266,20 @@ e.g.
     #endif
         return 0;
     }
+
+==============================================================================
+Deploying to older versions of iOS
+==============================================================================
+
+SDL supports deploying to older versions of iOS than are supported by the latest version of Xcode, all the way back to iOS 6.1
+
+In order to do that you need to download an older version of Xcode:
+https://developer.apple.com/download/more/?name=Xcode
+
+Open the package contents of the older Xcode and your newer version of Xcode and copy over the folders in Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/DeviceSupport
+
+Then open the file Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS.sdk/SDKSettings.plist and add the versions of iOS you want to deploy to the key Root/DefaultProperties/DEPLOYMENT_TARGET_SUGGESTED_VALUES
+
+Open your project and set your deployment target to the desired version of iOS
+
+Finally, remove GameController from the list of frameworks linked by your application and edit the build settings for "Other Linker Flags" and add -weak_framework GameController
