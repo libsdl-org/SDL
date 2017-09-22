@@ -99,9 +99,13 @@ VkExtensionProperties *SDL_Vulkan_CreateInstanceExtensionsList(
     VkExtensionProperties *retval;
     if(result == VK_ERROR_INCOMPATIBLE_DRIVER)
     {
+        /* Avoid the ERR_MAX_STRLEN limit by passing part of the message
+         * as a string argument.
+         */
         SDL_SetError(
-            "You probably don't have a working Vulkan driver installed: getting Vulkan "
-            "extensions failed: vkEnumerateInstanceExtensionProperties returned %s(%d)",
+            "You probably don't have a working Vulkan driver installed. %s %s %s(%d)",
+            "Getting Vulkan extensions failed:",
+            "vkEnumerateInstanceExtensionProperties returned",
             SDL_Vulkan_GetResultString(result),
             (int)result);
         return NULL;
