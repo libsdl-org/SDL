@@ -36,6 +36,8 @@
 #endif
 
 extern int VIVANTE_SetupPlatform(_THIS);
+extern char *VIVANTE_GetDisplayName(_THIS);
+extern void VIVANTE_UpdateDisplayScale(_THIS);
 extern void VIVANTE_CleanupPlatform(_THIS);
 
 #endif /* SDL_VIDEO_DRIVER_VIVANTE */
