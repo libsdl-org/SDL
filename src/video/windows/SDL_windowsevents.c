@@ -949,6 +949,14 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         }
         break;
 
+    case WM_NCCALCSIZE:
+        {
+            // When borderless, need to tell windows that the size of the non-client area is 0
+            if ( wParam == TRUE && SDL_GetWindowFlags( data->window ) & SDL_WINDOW_BORDERLESS )
+                return 0;
+        }
+        break;
+
     case WM_NCHITTEST:
         {
             SDL_Window *window = data->window;
@@ -976,7 +984,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             }
         }
         break;
-
     }
 
     /* If there's a window proc, assume it's going to handle messages */
