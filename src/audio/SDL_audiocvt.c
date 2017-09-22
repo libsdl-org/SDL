@@ -709,14 +709,21 @@ SDL_ResampleCVT(SDL_AudioCVT *cvt, const int chans, const SDL_AudioFormat format
     float *dst = (float *) (cvt->buf + srclen);
     const int dstlen = (cvt->len * cvt->len_mult) - srclen;
     const int paddingsamples = (ResamplerPadding(inrate, outrate) * chans);
-    float *padding = SDL_stack_alloc(float, paddingsamples);
+    float *padding;
 
     SDL_assert(format == AUDIO_F32SYS);
 
     /* we keep no streaming state here, so pad with silence on both ends. */
+    padding = SDL_stack_alloc(float, paddingsamples);
+    if (!padding) {
+        SDL_OutOfMemory();
+        return;
+    }
     SDL_memset(padding, '\0', paddingsamples * sizeof (float));
 
     cvt->len_cvt = SDL_ResampleAudio(chans, inrate, outrate, padding, padding, src, srclen, dst, dstlen);
+
+    SDL_stack_free(padding);
 
     SDL_memcpy(cvt->buf, dst, cvt->len_cvt);  /* !!! FIXME: remove this if we can get the resampler to work in-place again. */
 
@@ -1214,7 +1221,7 @@ SDL_ResampleAudioStream(SDL_AudioStream *stream, const void *_inbuf, const int i
     const int paddingsamples = ResamplerPadding(inrate, outrate) * chans;
     const int paddingbytes = paddingsamples * sizeof (float);
     float *lpadding = (float *) stream->resampler_state;
-    float *rpadding = SDL_stack_alloc(float, paddingsamples);
+    float *rpadding;
     int retval;
 
     if (inbuf == ((const float *) outbuf)) {  /* !!! FIXME can't work in-place (for now!). */
@@ -1229,8 +1236,16 @@ SDL_ResampleAudioStream(SDL_AudioStream *stream, const void *_inbuf, const int i
     }
 
     /* !!! FIXME: streaming current resamples on Put, because of probably good reasons I can't remember right now, but if we resample on Get, we'd be able to access legit right padding values. */
+    rpadding = SDL_stack_alloc(float, paddingsamples);
+    if (!rpadding) {
+        SDL_OutOfMemory();
+        return 0;
+    }
     SDL_memset(rpadding, '\0', paddingbytes);
+
     retval = SDL_ResampleAudio(chans, inrate, outrate, lpadding, rpadding, inbuf, inbuflen, outbuf, outbuflen);
+
+    SDL_stack_free(rpadding);
 
     /* update our left padding with end of current input, for next run. */
     SDL_memcpy(lpadding, ((const Uint8 *) inbuf) + (inbuflen - paddingbytes), paddingbytes);
