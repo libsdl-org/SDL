@@ -326,7 +326,7 @@ static BOOL update_audio_session(_THIS, SDL_bool open)
     @autoreleasepool {
         AVAudioSession *session = [AVAudioSession sharedInstance];
         NSNotificationCenter *center = [NSNotificationCenter defaultCenter];
-		/* Set category to ambient by default so that other music continues playing. */
+        /* Set category to ambient by default so that other music continues playing. */
         NSString *category = AVAudioSessionCategoryAmbient;
         NSError *err = nil;
 
@@ -674,11 +674,19 @@ prepare_audioqueue(_THIS)
         return 0;
     }
 
-    /* Make sure we can feed the device at least 50 milliseconds at a time. */
+    /* Make sure we can feed the device a minimum amount of time */
+    double MINIMUM_AUDIO_BUFFER_TIME_MS;
+    if (floor(NSFoundationVersionNumber) <= NSFoundationVersionNumber_iOS_7_1) {
+        /* Older hardware, use 40 ms as a minimum time */
+        MINIMUM_AUDIO_BUFFER_TIME_MS = 40.0;
+    } else {
+        /* Newer hardware, use 15 ms as a minimum time */
+        MINIMUM_AUDIO_BUFFER_TIME_MS = 15.0;
+    }
     const double msecs = (this->spec.samples / ((double) this->spec.freq)) * 1000.0;
     int numAudioBuffers = 2;
-    if (msecs < 10.0) {  /* use more buffers if we have a VERY small sample set. */
-        numAudioBuffers = (int) (SDL_ceil(10.0 / msecs) * 2);
+    if (msecs < MINIMUM_AUDIO_BUFFER_TIME_MS) {  /* use more buffers if we have a VERY small sample set. */
+        numAudioBuffers = ((int)SDL_ceil(MINIMUM_AUDIO_BUFFER_TIME_MS / msecs) * 2);
     }
 
     this->hidden->audioBuffer = SDL_calloc(1, sizeof (AudioQueueBufferRef) * numAudioBuffers);
