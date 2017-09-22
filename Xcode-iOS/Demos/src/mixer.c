@@ -250,7 +250,7 @@ audioCallback(void *userdata, Uint8 * stream, int len)
 
         /* mix this sound effect with the output */
         SDL_MixAudioFormat(stream, mixer.channels[i].position,
-                           mixer.outputSpec.format, copy_amt, 150);
+                           mixer.outputSpec.format, copy_amt, SDL_MIX_MAXVOLUME);
 
         /* update buffer position in sound effect and the number of bytes left */
         mixer.channels[i].position += copy_amt;
