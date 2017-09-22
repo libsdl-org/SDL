@@ -675,14 +675,13 @@ prepare_audioqueue(_THIS)
     }
 
     /* Make sure we can feed the device a minimum amount of time */
-    double MINIMUM_AUDIO_BUFFER_TIME_MS;
+    double MINIMUM_AUDIO_BUFFER_TIME_MS = 15.0;
+#if defined(__IPHONEOS__)
     if (floor(NSFoundationVersionNumber) <= NSFoundationVersionNumber_iOS_7_1) {
-        /* Older hardware, use 40 ms as a minimum time */
+        /* Older iOS hardware, use 40 ms as a minimum time */
         MINIMUM_AUDIO_BUFFER_TIME_MS = 40.0;
-    } else {
-        /* Newer hardware, use 15 ms as a minimum time */
-        MINIMUM_AUDIO_BUFFER_TIME_MS = 15.0;
     }
+#endif
     const double msecs = (this->spec.samples / ((double) this->spec.freq)) * 1000.0;
     int numAudioBuffers = 2;
     if (msecs < MINIMUM_AUDIO_BUFFER_TIME_MS) {  /* use more buffers if we have a VERY small sample set. */
