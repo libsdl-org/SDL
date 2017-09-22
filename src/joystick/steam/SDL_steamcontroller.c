@@ -18,43 +18,35 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+#include "../../SDL_internal.h"
 
-#include <linux/input.h>
+#include "../SDL_sysjoystick.h"
+#include "../SDL_joystick_c.h"
+#include "SDL_steamcontroller.h"
 
-struct SDL_joylist_item;
 
-/* The private structure used to keep track of a joystick */
-struct joystick_hwdata
+void SDL_InitSteamControllers(SteamControllerConnectedCallback_t connectedCallback,
+                              SteamControllerDisconnectedCallback_t disconnectedCallback)
 {
-    int fd;
-    struct SDL_joylist_item *item;
-    SDL_JoystickGUID guid;
-    char *fname;                /* Used in haptic subsystem */
+}
 
-    /* The current Linux joystick driver maps hats to two axes */
-    struct hwdata_hat
-    {
-        int axis[2];
-    } *hats;
-    /* The current Linux joystick driver maps balls to two axes */
-    struct hwdata_ball
-    {
-        int axis[2];
-    } *balls;
+void SDL_GetSteamControllerInputs(int *nbuttons, int *naxes, int *nhats)
+{
+    *nbuttons = 0;
+    *naxes = 0;
+    *nhats = 0;
+}
 
-    /* Support for the Linux 2.4 unified input interface */
-    Uint8 key_map[KEY_MAX];
-    Uint8 abs_map[ABS_MAX];
-    struct axis_correct
-    {
-        int used;
-        int coef[3];
-    } abs_correct[ABS_MAX];
+void SDL_UpdateSteamControllers()
+{
+}
 
-    int fresh;
+void SDL_UpdateSteamController(SDL_Joystick *joystick)
+{
+}
 
-    /* Steam Controller support */
-    SDL_bool m_bSteamController;
-};
+void SDL_QuitSteamControllers()
+{
+}
 
 /* vi: set ts=4 sw=4 expandtab: */

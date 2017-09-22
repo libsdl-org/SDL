@@ -33,6 +33,11 @@
 #include "../events/SDL_events_c.h"
 #endif
 
+#if defined(__ANDROID__)
+#include "SDL_system.h"
+#endif
+
+
 #define SDL_CONTROLLER_PLATFORM_FIELD "platform:"
 
 /* a list of currently opened game controllers */
@@ -1158,11 +1163,29 @@ SDL_GameControllerLoadHints()
 }
 
 /*
+ * Fill the given buffer with the expected controller mapping filepath. 
+ * Usually this will just be CONTROLLER_MAPPING_FILE, but for Android,
+ * we want to get the internal storage path.
+ */
+static SDL_bool SDL_GetControllerMappingFilePath(char *path, size_t size)
+{
+#ifdef CONTROLLER_MAPPING_FILE
+#define STRING(X) SDL_STRINGIFY_ARG(X)
+    return SDL_strlcpy(path, STRING(CONTROLLER_MAPPING_FILE), size) < size;
+#elif defined(__ANDROID__)
+    return SDL_snprintf(path, size, "%s/controller_map.txt", SDL_AndroidGetInternalStoragePath()) < size;
+#else
+    return SDL_FALSE;
+#endif
+}
+
+/*
  * Initialize the game controller system, mostly load our DB of controller config mappings
  */
 int
 SDL_GameControllerInitMappings(void)
 {
+    char szControllerMapPath[1024];
     int i = 0;
     const char *pMappingString = NULL;
     pMappingString = s_ControllerMappings[i];
@@ -1171,6 +1194,10 @@ SDL_GameControllerInitMappings(void)
 
         i++;
         pMappingString = s_ControllerMappings[i];
+    }
+
+    if (SDL_GetControllerMappingFilePath(szControllerMapPath, sizeof(szControllerMapPath))) {
+        SDL_GameControllerAddMappingsFromFile(szControllerMapPath);        
     }
 
     /* load in any user supplied config */

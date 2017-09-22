@@ -325,6 +325,7 @@ fi
 SOURCES="$SOURCES $srcdir/src/*.c"
 SOURCES="$SOURCES $srcdir/src/atomic/*.c"
 SOURCES="$SOURCES $srcdir/src/audio/*.c"
+SOURCES="$SOURCES $srcdir/src/audio/marvell/*.c"
 SOURCES="$SOURCES $srcdir/src/cpuinfo/*.c"
 SOURCES="$SOURCES $srcdir/src/dynapi/*.c"
 SOURCES="$SOURCES $srcdir/src/events/*.c"
@@ -3360,6 +3361,7 @@ case "$host" in
             linux)
                 AC_DEFINE(SDL_JOYSTICK_LINUX, 1, [ ])
                 SOURCES="$SOURCES $srcdir/src/joystick/linux/*.c"
+                SOURCES="$SOURCES $srcdir/src/joystick/steam/*.c"
                 have_joystick=yes
             ;;
             android)

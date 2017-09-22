@@ -35,6 +35,7 @@
 #include "SDL_sysjoystick_c.h"
 #include "../SDL_joystick_c.h"
 #include "../../core/android/SDL_android.h"
+#include "../steam/SDL_steamcontroller.h"
 
 #include "android/keycodes.h"
 
@@ -216,7 +217,7 @@ Android_OnJoy(int device_id, int axis, float value)
     /* Android gives joy info normalized as [-1.0, 1.0] or [0.0, 1.0] */
     SDL_joylist_item *item = JoystickByDeviceId(device_id);
     if (item && item->joystick) {
-        SDL_PrivateJoystickAxis(item->joystick, axis, (Sint16) (32767.*value) );
+        SDL_PrivateJoystickAxis(item->joystick, axis, (Sint16) (32767.*value));
     }
     
     return 0;
@@ -234,7 +235,7 @@ Android_OnHat(int device_id, int hat_id, int x, int y)
     if (x >= -1 && x <=1 && y >= -1 && y <= 1) {
         SDL_joylist_item *item = JoystickByDeviceId(device_id);
         if (item && item->joystick) {
-            SDL_PrivateJoystickHat(item->joystick, hat_id, position_map[y+1][x+1] );
+            SDL_PrivateJoystickHat(item->joystick, hat_id, position_map[y+1][x+1]);
         }
         return 0;
     }
@@ -254,8 +255,8 @@ Android_AddJoystick(int device_id, const char *name, const char *desc, SDL_bool 
     }
     
     /* the GUID is just the first 16 chars of the name for now */
-    SDL_zero( guid );
-    SDL_memcpy( &guid, desc, SDL_min( sizeof(guid), SDL_strlen( desc) ) );
+    SDL_zero(guid);
+    SDL_memcpy(&guid, desc, SDL_min(sizeof(guid), SDL_strlen(desc)));
 
     item = (SDL_joylist_item *) SDL_malloc(sizeof (SDL_joylist_item));
     if (item == NULL) {
@@ -266,7 +267,7 @@ Android_AddJoystick(int device_id, const char *name, const char *desc, SDL_bool 
     item->guid = guid;
     item->device_id = device_id;
     item->name = SDL_strdup(name);
-    if ( item->name == NULL ) {
+    if (item->name == NULL) {
          SDL_free(item);
          return -1;
     }
@@ -349,6 +350,79 @@ Android_RemoveJoystick(int device_id)
 }
 
 
+static SDL_bool SteamControllerConnectedCallback(const char *name, SDL_JoystickGUID guid, int *device_instance)
+{
+    SDL_joylist_item *item;
+    
+    item = (SDL_joylist_item *)SDL_calloc(1, sizeof (SDL_joylist_item));
+    if (item == NULL) {
+        return SDL_FALSE;
+    }
+
+    *device_instance = item->device_instance = instance_counter++;
+    item->device_id = -1;
+    item->name = SDL_strdup(name);
+    item->guid = guid;
+    SDL_GetSteamControllerInputs(&item->nbuttons,
+                                 &item->naxes,
+                                 &item->nhats);
+    item->m_bSteamController = SDL_TRUE;
+
+    if (SDL_joylist_tail == NULL) {
+        SDL_joylist = SDL_joylist_tail = item;
+    } else {
+        SDL_joylist_tail->next = item;
+        SDL_joylist_tail = item;
+    }
+
+    /* Need to increment the joystick count before we post the event */
+    ++numjoysticks;
+
+    SDL_PrivateJoystickAdded(numjoysticks - 1);
+
+    return SDL_TRUE;
+}
+
+static void SteamControllerDisconnectedCallback(int device_instance)
+{
+    SDL_joylist_item *item = SDL_joylist;
+    SDL_joylist_item *prev = NULL;
+    
+    while (item != NULL) {
+        if (item->device_instance == device_instance) {
+            break;
+        }
+        prev = item;
+        item = item->next;
+    }
+    
+    if (item == NULL) {
+        return;
+    }
+
+    if (item->joystick) {
+        item->joystick->hwdata = NULL;
+    }
+        
+    if (prev != NULL) {
+        prev->next = item->next;
+    } else {
+        SDL_assert(SDL_joylist == item);
+        SDL_joylist = item->next;
+    }
+    if (item == SDL_joylist_tail) {
+        SDL_joylist_tail = prev;
+    }
+
+    /* Need to decrement the joystick count before we post the event */
+    --numjoysticks;
+
+    SDL_PrivateJoystickRemoved(item->device_instance);
+
+    SDL_free(item->name);
+    SDL_free(item);
+}
+
 int
 SDL_SYS_JoystickInit(void)
 {
@@ -359,6 +433,9 @@ SDL_SYS_JoystickInit(void)
         Android_AddJoystick(ANDROID_ACCELEROMETER_DEVICE_ID, ANDROID_ACCELEROMETER_NAME, ANDROID_ACCELEROMETER_NAME, SDL_TRUE, 0, 3, 0, 0);
     }
    
+    SDL_InitSteamControllers(SteamControllerConnectedCallback,
+                             SteamControllerDisconnectedCallback);
+
     return (numjoysticks);
 
 }
@@ -381,6 +458,8 @@ SDL_SYS_JoystickDetect(void)
         timeout = SDL_GetTicks() + 3000;
         Android_JNI_PollInputDevices();
     }
+
+    SDL_UpdateSteamControllers();
 }
 
 static SDL_joylist_item *
@@ -449,7 +528,7 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
 {
     SDL_joylist_item *item = JoystickByDevIndex(device_index);
 
-    if (item == NULL ) {
+    if (item == NULL) {
         return SDL_SetError("No such device");
     }
     
@@ -477,30 +556,34 @@ SDL_bool SDL_SYS_JoystickAttached(SDL_Joystick *joystick)
 void
 SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
 {
-    int i;
-    Sint16 value;
-    float values[3];
-    SDL_joylist_item *item = SDL_joylist;
+    SDL_joylist_item *item = (SDL_joylist_item *) joystick->hwdata;
 
-    while (item) {
-        if (item->is_accelerometer) {
-            if (item->joystick) {
-                if (Android_JNI_GetAccelerometerValues(values)) {
-                    for ( i = 0; i < 3; i++ ) {
-                        if (values[i] > 1.0f) {
-                            values[i] = 1.0f;
-                        } else if (values[i] < -1.0f) {
-                            values[i] = -1.0f;
-                        }
+    if (item == NULL) {
+        return;
+    }
+ 
+    if (item->m_bSteamController) {
+        SDL_UpdateSteamController(joystick);
+        return;
+    }
 
-                        value = (Sint16)(values[i] * 32767.0f);
-                        SDL_PrivateJoystickAxis(item->joystick, i, value);
-                    }
+    if (item->is_accelerometer) {
+        int i;
+        Sint16 value;
+        float values[3];
+
+        if (Android_JNI_GetAccelerometerValues(values)) {
+            for (i = 0; i < 3; i++) {
+                if (values[i] > 1.0f) {
+                    values[i] = 1.0f;
+                } else if (values[i] < -1.0f) {
+                    values[i] = -1.0f;
                 }
+
+                value = (Sint16)(values[i] * 32767.0f);
+                SDL_PrivateJoystickAxis(item->joystick, i, value);
             }
-            break;
         }
-        item = item->next;
     }
 }
 
@@ -518,6 +601,10 @@ SDL_SYS_JoystickClose(SDL_Joystick * joystick)
 void
 SDL_SYS_JoystickQuit(void)
 {
+/* We don't have any way to scan for joysticks at init, so don't wipe the list
+ * of joysticks here in case this is a reinit.
+ */
+#if 0
     SDL_joylist_item *item = NULL;
     SDL_joylist_item *next = NULL;
 
@@ -531,9 +618,12 @@ SDL_SYS_JoystickQuit(void)
 
     numjoysticks = 0;
     instance_counter = 0;
+#endif /* 0 */
+
+    SDL_QuitSteamControllers();
 }
 
-SDL_JoystickGUID SDL_SYS_JoystickGetDeviceGUID( int device_index )
+SDL_JoystickGUID SDL_SYS_JoystickGetDeviceGUID(int device_index)
 {
     return JoystickByDevIndex(device_index)->guid;
 }

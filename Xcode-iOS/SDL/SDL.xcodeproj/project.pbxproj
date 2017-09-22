@@ -90,6 +90,8 @@
 		56F9D5601DF73BA400C15B5D /* SDL_dataqueue.c in Sources */ = {isa = PBXBuildFile; fileRef = 566726431DF72CF5001DD3DB /* SDL_dataqueue.c */; };
 		93CB792313FC5E5200BD3E05 /* SDL_uikitviewcontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = 93CB792213FC5E5200BD3E05 /* SDL_uikitviewcontroller.h */; };
 		93CB792613FC5F5300BD3E05 /* SDL_uikitviewcontroller.m in Sources */ = {isa = PBXBuildFile; fileRef = 93CB792513FC5F5300BD3E05 /* SDL_uikitviewcontroller.m */; };
+		A7A9EEA91F702631002A5589 /* SDL_steamcontroller.c in Sources */ = {isa = PBXBuildFile; fileRef = A7A9EEA71F702631002A5589 /* SDL_steamcontroller.c */; };
+		A7A9EEAA1F702631002A5589 /* SDL_steamcontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = A7A9EEA81F702631002A5589 /* SDL_steamcontroller.h */; };
 		AA0AD06216647BBB00CE5896 /* SDL_gamecontroller.c in Sources */ = {isa = PBXBuildFile; fileRef = AA0AD06116647BBB00CE5896 /* SDL_gamecontroller.c */; };
 		AA0AD06516647BD400CE5896 /* SDL_gamecontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = AA0AD06416647BD400CE5896 /* SDL_gamecontroller.h */; };
 		AA0F8495178D5F1A00823F9D /* SDL_systls.c in Sources */ = {isa = PBXBuildFile; fileRef = AA0F8494178D5F1A00823F9D /* SDL_systls.c */; };
@@ -393,6 +395,8 @@
 		56ED04E2118A8EFD00A56AA6 /* SDL_syspower.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SDL_syspower.m; path = ../../src/power/uikit/SDL_syspower.m; sourceTree = SOURCE_ROOT; };
 		93CB792213FC5E5200BD3E05 /* SDL_uikitviewcontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_uikitviewcontroller.h; sourceTree = "<group>"; };
 		93CB792513FC5F5300BD3E05 /* SDL_uikitviewcontroller.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_uikitviewcontroller.m; sourceTree = "<group>"; };
+		A7A9EEA71F702631002A5589 /* SDL_steamcontroller.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_steamcontroller.c; sourceTree = "<group>"; };
+		A7A9EEA81F702631002A5589 /* SDL_steamcontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_steamcontroller.h; sourceTree = "<group>"; };
 		AA0AD06116647BBB00CE5896 /* SDL_gamecontroller.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_gamecontroller.c; sourceTree = "<group>"; };
 		AA0AD06416647BD400CE5896 /* SDL_gamecontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_gamecontroller.h; sourceTree = "<group>"; };
 		AA0F8494178D5F1A00823F9D /* SDL_systls.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_systls.c; sourceTree = "<group>"; };
@@ -725,6 +729,15 @@
 			name = uikit;
 			sourceTree = "<group>";
 		};
+		A7A9EEA61F702607002A5589 /* steam */ = {
+			isa = PBXGroup;
+			children = (
+				A7A9EEA71F702631002A5589 /* SDL_steamcontroller.c */,
+				A7A9EEA81F702631002A5589 /* SDL_steamcontroller.h */,
+			);
+			path = steam;
+			sourceTree = "<group>";
+		};
 		FD3F4A6F0DEA620800C5B771 /* stdlib */ = {
 			isa = PBXGroup;
 			children = (
@@ -742,6 +755,7 @@
 		FD5F9D080E0E08B3008E885B /* joystick */ = {
 			isa = PBXGroup;
 			children = (
+				A7A9EEA61F702607002A5589 /* steam */,
 				FD689EFF0E26E5B600F90B21 /* iphoneos */,
 				AA0AD06116647BBB00CE5896 /* SDL_gamecontroller.c */,
 				FD5F9D1E0E0E08B3008E885B /* SDL_joystick.c */,
@@ -1124,6 +1138,7 @@
 				04F7807E12FB751400FC43C0 /* SDL_drawline.h in Headers */,
 				04F7808012FB751400FC43C0 /* SDL_drawpoint.h in Headers */,
 				04F7808412FB753F00FC43C0 /* SDL_nullframebuffer_c.h in Headers */,
+				A7A9EEAA1F702631002A5589 /* SDL_steamcontroller.h in Headers */,
 				0442EC5012FE1C1E004C9285 /* SDL_render_sw_c.h in Headers */,
 				FA1DC2721C62BE65008F99A0 /* SDL_uikitclipboard.h in Headers */,
 				0402A85A12FE70C600CECEE3 /* SDL_shaders_gles2.h in Headers */,
@@ -1398,6 +1413,7 @@
 			files = (
 				FD6526810DE8FCDD002AD96B /* SDL_systimer.c in Sources */,
 				FD6526800DE8FCDD002AD96B /* SDL_timer.c in Sources */,
+				A7A9EEA91F702631002A5589 /* SDL_steamcontroller.c in Sources */,
 				FD3F4A7B0DEA620800C5B771 /* SDL_string.c in Sources */,
 				FD6526660DE8FCDD002AD96B /* SDL_dummyaudio.c in Sources */,
 				FD6526670DE8FCDD002AD96B /* SDL_audio.c in Sources */,
