@@ -97,8 +97,8 @@ WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL menu, int *x
 
     // borderless windows will have WM_NCCALCSIZE return 0 for the non-client area. When this happens, it looks like windows will send a resize message
     // expanding the window client area to the previous window + chrome size, so shouldn't need to adjust the window size for the set styles.
-    if ( !(window->flags & SDL_WINDOW_BORDERLESS) )
-        AdjustWindowRectEx( &rect, style, menu, 0 );
+    if (!(window->flags & SDL_WINDOW_BORDERLESS))
+        AdjustWindowRectEx(&rect, style, menu, 0);
 
     *x = (use_current ? window->x : window->windowed.x) + rect.left;
     *y = (use_current ? window->y : window->windowed.y) + rect.top;
@@ -316,7 +316,7 @@ WIN_CreateWindow(_THIS, SDL_Window * window)
     }
 
     // Inform Windows of the frame change so we can respond to WM_NCCALCSIZE
-    SetWindowPos( hwnd, NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOZORDER | SWP_NOMOVE | SWP_NOACTIVATE  );
+    SetWindowPos(hwnd, NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOZORDER | SWP_NOMOVE | SWP_NOACTIVATE);
 
     if (!(window->flags & SDL_WINDOW_OPENGL)) {
         return 0;
