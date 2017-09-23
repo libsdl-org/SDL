@@ -497,7 +497,7 @@ SDL_ResampleAudio(const int chans, const int inrate, const int outrate,
         const float interpolation1 = 1.0f - (innexttime - outtime) / (innexttime - intime);
         const int filterindex1 = (int) (interpolation1 * RESAMPLER_SAMPLES_PER_ZERO_CROSSING);
         const float interpolation2 = 1.0f - interpolation1;
-        const int filterindex2 = interpolation2 * RESAMPLER_SAMPLES_PER_ZERO_CROSSING;
+        const int filterindex2 = (int) (interpolation2 * RESAMPLER_SAMPLES_PER_ZERO_CROSSING);
 
         for (chan = 0; chan < chans; chan++) {
             float outsample = 0.0f;
