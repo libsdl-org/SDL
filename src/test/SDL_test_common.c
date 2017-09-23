@@ -661,6 +661,52 @@ SDLTest_LoadIcon(const char *file)
     return (icon);
 }
 
+static SDL_HitTestResult
+SDLTest_ExampleHitTestCallback(SDL_Window *win, const SDL_Point *area, void *data)
+{
+    int w, h;
+    const int RESIZE_BORDER = 8;
+    const int DRAGGABLE_TITLE = 32;
+
+    /*SDL_Log("Hit test point %d,%d\n", area->x, area->y);*/
+
+    SDL_GetWindowSize(win, &w, &h);
+
+    if (area->x < RESIZE_BORDER) {
+        if (area->y < RESIZE_BORDER) {
+            SDL_Log("SDL_HITTEST_RESIZE_TOPLEFT\n");
+            return SDL_HITTEST_RESIZE_TOPLEFT;
+        } else if (area->y >= (h-RESIZE_BORDER)) {
+            SDL_Log("SDL_HITTEST_RESIZE_BOTTOMLEFT\n");
+            return SDL_HITTEST_RESIZE_BOTTOMLEFT;
+        } else {
+            SDL_Log("SDL_HITTEST_RESIZE_LEFT\n");
+            return SDL_HITTEST_RESIZE_LEFT;
+        }
+    } else if (area->x >= (w-RESIZE_BORDER)) {
+        if (area->y < RESIZE_BORDER) {
+            SDL_Log("SDL_HITTEST_RESIZE_TOPRIGHT\n");
+            return SDL_HITTEST_RESIZE_TOPRIGHT;
+        } else if (area->y >= (h-RESIZE_BORDER)) {
+            SDL_Log("SDL_HITTEST_RESIZE_BOTTOMRIGHT\n");
+            return SDL_HITTEST_RESIZE_BOTTOMRIGHT;
+        } else {
+            SDL_Log("SDL_HITTEST_RESIZE_RIGHT\n");
+            return SDL_HITTEST_RESIZE_RIGHT;
+        }
+    } else if (area->y >= (h-RESIZE_BORDER)) {
+        SDL_Log("SDL_HITTEST_RESIZE_BOTTOM\n");
+        return SDL_HITTEST_RESIZE_BOTTOM;
+    } else if (area->y < RESIZE_BORDER) {
+        SDL_Log("SDL_HITTEST_RESIZE_TOP\n");
+        return SDL_HITTEST_RESIZE_TOP;
+    } else if (area->y < DRAGGABLE_TITLE) {
+        SDL_Log("SDL_HITTEST_DRAGGABLE\n");
+        return SDL_HITTEST_DRAGGABLE;
+    }
+    return SDL_HITTEST_NORMAL;
+}
+
 SDL_bool
 SDLTest_CommonInit(SDLTest_CommonState * state)
 {
@@ -734,8 +780,8 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
             int bpp;
             Uint32 Rmask, Gmask, Bmask, Amask;
 #if SDL_VIDEO_DRIVER_WINDOWS
-			int adapterIndex = 0;
-			int outputIndex = 0;
+            int adapterIndex = 0;
+            int outputIndex = 0;
 #endif
             n = SDL_GetNumVideoDisplays();
             SDL_Log("Number of displays: %d\n", n);
@@ -778,7 +824,7 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
                         SDL_GetDisplayMode(i, j, &mode);
                         SDL_PixelFormatEnumToMasks(mode.format, &bpp, &Rmask,
                                                    &Gmask, &Bmask, &Amask);
-						SDL_Log("    Mode %d: %dx%d@%dHz, %d bits-per-pixel (%s)\n",
+                        SDL_Log("    Mode %d: %dx%d@%dHz, %d bits-per-pixel (%s)\n",
                                 j, mode.w, mode.h, mode.refresh_rate, bpp,
                                 SDL_GetPixelFormatName(mode.format));
                         if (Rmask || Gmask || Bmask) {
@@ -789,20 +835,20 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
                             SDL_Log("        Blue Mask  = 0x%.8x\n",
                                     Bmask);
                             if (Amask)
-								SDL_Log("        Alpha Mask = 0x%.8x\n",
+                                SDL_Log("        Alpha Mask = 0x%.8x\n",
                                         Amask);
                         }
                     }
                 }
 
 #if SDL_VIDEO_DRIVER_WINDOWS
-				/* Print the D3D9 adapter index */
-				adapterIndex = SDL_Direct3D9GetAdapterIndex( i );
-				SDL_Log("D3D9 Adapter Index: %d", adapterIndex);
+                /* Print the D3D9 adapter index */
+                adapterIndex = SDL_Direct3D9GetAdapterIndex( i );
+                SDL_Log("D3D9 Adapter Index: %d", adapterIndex);
 
-				/* Print the DXGI adapter and output indices */
-				SDL_DXGIGetOutputInfo(i, &adapterIndex, &outputIndex);
-				SDL_Log("DXGI Adapter Index: %d  Output Index: %d", adapterIndex, outputIndex);
+                /* Print the DXGI adapter and output indices */
+                SDL_DXGIGetOutputInfo(i, &adapterIndex, &outputIndex);
+                SDL_Log("DXGI Adapter Index: %d  Output Index: %d", adapterIndex, outputIndex);
 #endif
             }
         }
@@ -892,6 +938,12 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
                 return SDL_FALSE;
             }
 
+            /* Add resize/drag areas for windows that are borderless and resizable */
+            if ((state->window_flags & SDL_WINDOW_RESIZABLE|SDL_WINDOW_BORDERLESS) ==
+                (SDL_WINDOW_RESIZABLE|SDL_WINDOW_BORDERLESS)) {
+                SDL_SetWindowHitTest(state->windows[i], SDLTest_ExampleHitTestCallback, NULL);
+            }
+
             if (state->window_icon) {
                 SDL_Surface *icon = SDLTest_LoadIcon(state->window_icon);
                 if (icon) {
@@ -918,7 +970,7 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
                         }
                     }
                     if (m == -1) {
-						SDL_Log("Couldn't find render driver named %s",
+                        SDL_Log("Couldn't find render driver named %s",
                                 state->renderdriver);
                         return SDL_FALSE;
                     }
