@@ -216,6 +216,18 @@ static void Cocoa_DispatchEvent(NSEvent *theEvent)
 {
     return (BOOL)SDL_SendDropFile(NULL, [filename UTF8String]) && SDL_SendDropComplete(NULL);
 }
+
+- (void)applicationDidFinishLaunching:(NSNotification *)notification
+{
+    /* The menu bar of SDL apps which don't have the typical .app bundle
+     * structure fails to work the first time a window is created (until it's
+     * de-focused and re-focused), if this call is in Cocoa_RegisterApp instead
+     * of here. https://bugzilla.libsdl.org/show_bug.cgi?id=3051
+     */
+    if (!SDL_GetHintBoolean(SDL_HINT_MAC_BACKGROUND_APP, SDL_FALSE)) {
+        [NSApp activateIgnoringOtherApps:YES];
+    }
+}
 @end
 
 static SDLAppDelegate *appDelegate = nil;
@@ -361,7 +373,6 @@ Cocoa_RegisterApp(void)
 
         if (!SDL_GetHintBoolean(SDL_HINT_MAC_BACKGROUND_APP, SDL_FALSE)) {
             [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
-            [NSApp activateIgnoringOtherApps:YES];
 		}
 		
         if ([NSApp mainMenu] == nil) {
