@@ -961,7 +961,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         {
             SDL_Window *window = data->window;
             if (window->hit_test) {
-                POINT winpoint = { (int) LOWORD(lParam), (int) HIWORD(lParam) };
+                POINT winpoint = { GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam) };
                 if (ScreenToClient(hwnd, &winpoint)) {
                     const SDL_Point point = { (int) winpoint.x, (int) winpoint.y };
                     const SDL_HitTestResult rc = window->hit_test(window, &point, window->hit_test_data);
