@@ -9,8 +9,8 @@ Requirements: Mac OS X 10.8 or later and the iOS 7+ SDK.
 
 Instructions:
 
-2.  Open SDL.xcodeproj (located in Xcode-iOS/SDL) in Xcode.
-4.  Select your desired target, and hit build.
+1.  Open SDL.xcodeproj (located in Xcode-iOS/SDL) in Xcode.
+2.  Select your desired target, and hit build.
 
 There are three build targets:
 - libSDL.a:
@@ -25,9 +25,8 @@ There are three build targets:
 Build SDL for iOS from the command line
 ==============================================================================
 
-1. Follow step 1 above.
-2. cd (PATH WHERE THE SDL CODE IS)/build-scripts
-3. ./iosbuild.sh
+1. cd (PATH WHERE THE SDL CODE IS)/build-scripts
+2. ./iosbuild.sh
 
 If everything goes fine, you should see a build/ios directory, inside there's
 two directories "lib" and "include". 
