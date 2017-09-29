@@ -47,6 +47,7 @@ SDL_LoadObject(const char *sofile)
     }
 #endif
 
+    printf("SOFILE: %s\n", sofile);
     handle = dlopen(sofile, RTLD_NOW|RTLD_LOCAL);
     loaderror = (char *) dlerror();
     if (handle == NULL) {

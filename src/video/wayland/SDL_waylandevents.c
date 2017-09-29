@@ -366,6 +366,10 @@ static const struct wl_pointer_listener pointer_listener = {
     pointer_handle_motion,
     pointer_handle_button,
     pointer_handle_axis,
+    NULL, /* frame */
+    NULL, /* axis_source */
+    NULL, /* axis_stop */
+    NULL, /* axis_discrete */
 };
 
 static void
@@ -428,7 +432,9 @@ static const struct wl_touch_listener touch_listener = {
     touch_handler_up,
     touch_handler_motion,
     touch_handler_frame,
-    touch_handler_cancel
+    touch_handler_cancel,
+    NULL, /* shape */
+    NULL, /* orientation */
 };
 
 static void
@@ -564,6 +570,7 @@ static const struct wl_keyboard_listener keyboard_listener = {
     keyboard_handle_leave,
     keyboard_handle_key,
     keyboard_handle_modifiers,
+    NULL, /* repeat_info */
 };
 
 static void
@@ -608,6 +615,7 @@ seat_handle_capabilities(void *data, struct wl_seat *seat,
 
 static const struct wl_seat_listener seat_listener = {
     seat_handle_capabilities,
+    NULL, /* name */
 };
 
 static void

@@ -344,7 +344,8 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
 }
 
 static const struct wl_registry_listener registry_listener = {
-    display_handle_global
+    display_handle_global,
+    NULL, /* global_remove */
 };
 
 int
