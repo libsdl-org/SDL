@@ -167,7 +167,6 @@ void
 SDL_UDEV_Quit(void)
 {
     SDL_UDEV_CallbackList *item;
-    printf("We do indeed get here\n");
     
     if (_this == NULL) {
         return;
