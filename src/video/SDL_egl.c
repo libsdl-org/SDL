@@ -177,8 +177,6 @@ static SDL_bool SDL_EGL_HasExtension(_THIS, SDL_EGL_ExtensionType type, const ch
     if (egl_extstr != NULL) {
         ext_start = egl_extstr;
 
-        printf("%s\n", ext_start);
-
         while (*ext_start) {
             ext_start = SDL_strstr(ext_start, ext);
             if (ext_start == NULL) {

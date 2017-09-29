@@ -261,8 +261,6 @@ main(int argc, char *argv[])
     state->gl_blue_size = 5;
     state->gl_depth_size = 16;
     state->gl_double_buffer = 1;
-    state->gl_major_version = 3;
-    state->gl_minor_version = 3;
     if (fsaa) {
         state->gl_multisamplebuffers = 1;
         state->gl_multisamplesamples = fsaa;
