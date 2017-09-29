@@ -1198,10 +1198,8 @@ SDL_FreeSurface(SDL_Surface * surface)
     if (surface->flags & SDL_DONTFREE) {
         return;
     }
-    if (surface->map != NULL) {
-        SDL_FreeBlitMap(surface->map);
-        surface->map = NULL;
-    }
+    SDL_InvalidateMap(surface->map);
+
     if (--surface->refcount > 0) {
         return;
     }
