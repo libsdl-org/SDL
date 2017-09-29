@@ -1366,6 +1366,7 @@ CheckWarnAll()
 dnl Check for Wayland
 CheckWayland()
 {
+    EXTRA_CFLAGS="$EXTRA_CFLAGS -Wall -Wmissing-field-initializers"
     AC_ARG_ENABLE(video-wayland,
 AC_HELP_STRING([--enable-video-wayland], [use Wayland video driver [[default=yes]]]),
                   ,enable_video_wayland=yes)
