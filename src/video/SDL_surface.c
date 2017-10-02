@@ -1217,6 +1217,9 @@ SDL_FreeSurface(SDL_Surface * surface)
     if (!(surface->flags & SDL_PREALLOC)) {
         SDL_free(surface->pixels);
     }
+    if (surface->map) {
+        SDL_FreeBlitMap(surface->map);
+    }
     SDL_free(surface);
 }
 
