@@ -752,12 +752,12 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         if (texture->format == SDL_PIXELFORMAT_YV12 ||
             texture->format == SDL_PIXELFORMAT_IYUV) {
             /* Need to add size for the U and V planes */
-            size += (2 * (texture->h * data->pitch) / 4);
+            size += 2 * ((texture->h + 1) / 2) * ((data->pitch + 1) / 2);
         }
         if (texture->format == SDL_PIXELFORMAT_NV12 ||
             texture->format == SDL_PIXELFORMAT_NV21) {
             /* Need to add size for the U/V plane */
-            size += ((texture->h * data->pitch) / 2);
+            size += 2 * ((texture->h + 1) / 2) * ((data->pitch + 1) / 2);
         }
         data->pixels = SDL_calloc(1, size);
         if (!data->pixels) {
@@ -875,8 +875,8 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
                                     GL_CLAMP_TO_EDGE);
         renderdata->glTexParameteri(data->type, GL_TEXTURE_WRAP_T,
                                     GL_CLAMP_TO_EDGE);
-        renderdata->glTexImage2D(data->type, 0, internalFormat, texture_w/2,
-                                 texture_h/2, 0, format, type, NULL);
+        renderdata->glTexImage2D(data->type, 0, internalFormat, (texture_w+1)/2,
+                                 (texture_h+1)/2, 0, format, type, NULL);
 
         renderdata->glBindTexture(data->type, data->vtexture);
         renderdata->glTexParameteri(data->type, GL_TEXTURE_MIN_FILTER,
@@ -887,8 +887,8 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
                                     GL_CLAMP_TO_EDGE);
         renderdata->glTexParameteri(data->type, GL_TEXTURE_WRAP_T,
                                     GL_CLAMP_TO_EDGE);
-        renderdata->glTexImage2D(data->type, 0, internalFormat, texture_w/2,
-                                 texture_h/2, 0, format, type, NULL);
+        renderdata->glTexImage2D(data->type, 0, internalFormat, (texture_w+1)/2,
+                                 (texture_h+1)/2, 0, format, type, NULL);
 
         renderdata->glDisable(data->type);
     }
@@ -909,8 +909,8 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
                                     GL_CLAMP_TO_EDGE);
         renderdata->glTexParameteri(data->type, GL_TEXTURE_WRAP_T,
                                     GL_CLAMP_TO_EDGE);
-        renderdata->glTexImage2D(data->type, 0, GL_LUMINANCE_ALPHA, texture_w/2,
-                                 texture_h/2, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, NULL);
+        renderdata->glTexImage2D(data->type, 0, GL_LUMINANCE_ALPHA, (texture_w+1)/2,
+                                 (texture_h+1)/2, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, NULL);
         renderdata->glDisable(data->type);
     }
 
@@ -937,7 +937,7 @@ GL_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                                 rect->h, data->format, data->formattype,
                                 pixels);
     if (data->yuv) {
-        renderdata->glPixelStorei(GL_UNPACK_ROW_LENGTH, (pitch / 2));
+        renderdata->glPixelStorei(GL_UNPACK_ROW_LENGTH, ((pitch + 1) / 2));
 
         /* Skip to the correct offset into the next texture */
         pixels = (const void*)((const Uint8*)pixels + rect->h * pitch);
@@ -947,29 +947,29 @@ GL_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
             renderdata->glBindTexture(data->type, data->utexture);
         }
         renderdata->glTexSubImage2D(data->type, 0, rect->x/2, rect->y/2,
-                                    rect->w/2, rect->h/2,
+                                    (rect->w+1)/2, (rect->h+1)/2,
                                     data->format, data->formattype, pixels);
 
         /* Skip to the correct offset into the next texture */
-        pixels = (const void*)((const Uint8*)pixels + (rect->h * pitch)/4);
+        pixels = (const void*)((const Uint8*)pixels + ((rect->h + 1) / 2) * ((pitch + 1) / 2));
         if (texture->format == SDL_PIXELFORMAT_YV12) {
             renderdata->glBindTexture(data->type, data->utexture);
         } else {
             renderdata->glBindTexture(data->type, data->vtexture);
         }
         renderdata->glTexSubImage2D(data->type, 0, rect->x/2, rect->y/2,
-                                    rect->w/2, rect->h/2,
+                                    (rect->w+1)/2, (rect->h+1)/2,
                                     data->format, data->formattype, pixels);
     }
 
     if (data->nv12) {
-        renderdata->glPixelStorei(GL_UNPACK_ROW_LENGTH, (pitch / 2));
+        renderdata->glPixelStorei(GL_UNPACK_ROW_LENGTH, ((pitch + 1) / 2));
 
         /* Skip to the correct offset into the next texture */
         pixels = (const void*)((const Uint8*)pixels + rect->h * pitch);
         renderdata->glBindTexture(data->type, data->utexture);
         renderdata->glTexSubImage2D(data->type, 0, rect->x/2, rect->y/2,
-                                    rect->w/2, rect->h/2,
+                                    (rect->w + 1)/2, (rect->h + 1)/2,
                                     GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, pixels);
     }
     renderdata->glDisable(data->type);
@@ -1000,13 +1000,13 @@ GL_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
     renderdata->glPixelStorei(GL_UNPACK_ROW_LENGTH, Upitch);
     renderdata->glBindTexture(data->type, data->utexture);
     renderdata->glTexSubImage2D(data->type, 0, rect->x/2, rect->y/2,
-                                rect->w/2, rect->h/2,
+                                (rect->w + 1)/2, (rect->h + 1)/2,
                                 data->format, data->formattype, Uplane);
 
     renderdata->glPixelStorei(GL_UNPACK_ROW_LENGTH, Vpitch);
     renderdata->glBindTexture(data->type, data->vtexture);
     renderdata->glTexSubImage2D(data->type, 0, rect->x/2, rect->y/2,
-                                rect->w/2, rect->h/2,
+                                (rect->w + 1)/2, (rect->h + 1)/2,
                                 data->format, data->formattype, Vplane);
     renderdata->glDisable(data->type);
 
