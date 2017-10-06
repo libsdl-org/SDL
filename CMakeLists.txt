@@ -1767,7 +1767,7 @@ install(EXPORT SDL2Targets
 )
 install(
   FILES
-    ${CMAKE_SOURCE_DIR}/SDL2Config.cmake
+    ${CMAKE_CURRENT_SOURCE_DIR}/SDL2Config.cmake
     ${CMAKE_BINARY_DIR}/SDL2ConfigVersion.cmake
   DESTINATION ${PKG_PREFIX}
   COMPONENT Devel
