@@ -1176,7 +1176,7 @@ int SDL_ConvertPixels(int width, int height,
                         dst_pitch = (dst_pitch + 1) / 2;
                         for (i = height * 2; i--;) {
                             SDL_memcpy(dst, src, width);
-                            src = (Uint8*)src + src_pitch;
+                            src = (const Uint8*)src + src_pitch;
                             dst = (Uint8*)dst + dst_pitch;
                         }
                     } else if (src_format == SDL_PIXELFORMAT_NV12 || src_format == SDL_PIXELFORMAT_NV21) {
@@ -1187,7 +1187,7 @@ int SDL_ConvertPixels(int width, int height,
                         dst_pitch = (dst_pitch + 1) / 2;
                         for (i = height; i--;) {
                             SDL_memcpy(dst, src, 2 * width);
-                            src = (Uint8*)src + 2 * src_pitch;
+                            src = (const Uint8*)src + 2 * src_pitch;
                             dst = (Uint8*)dst + 2 * dst_pitch;
                         }
                     }
@@ -1321,14 +1321,30 @@ SDL_FreeSurface(SDL_Surface * surface)
 /* YUV-RGB conversion */
 #define CLAMP(val) ((val) > 0 ? ((val) < 255 ? (val) : 255) : 0)
 
+#if 1
+
+/* Coefficients from CCIR 601 */
+#define MAKE_Y(r, g, b) (int)( 0.29900f * (r) + 0.58700f * (g) + 0.11400f * (b))
+#define MAKE_U(r, g, b) (int)(-0.16874f * (r) - 0.33126f * (g) + 0.50000f * (b) + 128)
+#define MAKE_V(r, g, b) (int)( 0.50000f * (r) - 0.41869f * (g) - 0.08131f * (b) + 128)
+
+#define MAKE_R(y, u, v) CLAMP((int)((y)                          + 1.40200f * ((v) - 128)))
+#define MAKE_G(y, u, v) CLAMP((int)((y) - 0.34414f * ((u) - 128) - 0.71414f * ((v) - 128)))
+#define MAKE_B(y, u, v) CLAMP((int)((y) + 1.77200f * ((u) - 128)                         ))
+
+#else
+
+/* Coefficients from Video Demystified */
 #define MAKE_Y(r, g, b) (((  66 * (r) + 129 * (g) +  25 * (b) + 128) >> 8) + 16)
 #define MAKE_U(r, g, b) ((( -38 * (r) -  74 * (g) + 112 * (b) + 128) >> 8) + 128)
 #define MAKE_V(r, g, b) ((( 112 * (r) -  94 * (g) -  18 * (b) + 128) >> 8) + 128)
 
-
 #define MAKE_R(y, u, v) CLAMP(( 298 * ((y) - 16)                     + 409 * ((v) - 128) + 128) >> 8) 
 #define MAKE_G(y, u, v) CLAMP(( 298 * ((y) - 16) - 100 * ((u) - 128) - 208 * ((v) - 128) + 128) >> 8)
 #define MAKE_B(y, u, v) CLAMP(( 298 * ((y) - 16) + 516 * ((u) - 128)                     + 128) >> 8)
+
+#endif
+
 
 static int
 SDL_ConvertPixels_YUV_to_ARGB8888(int width, int height,
@@ -1465,7 +1481,8 @@ SDL_ConvertPixels_YUV_to_ARGB8888(int width, int height,
                             WRITE_RGB_PIXEL(y1, u, v);
                         }
                         if (width_remainder) {
-                            READ_PACKED_YUV(y, u, y1, v); /* y1 unused */
+                            READ_PACKED_YUV(y, u, y1, v); 
+                            (void)y1; /* y1 unused */
                             WRITE_RGB_PIXEL(y, u, v);
                         }
                         curr_row += curr_row_padding;
@@ -1480,7 +1497,8 @@ SDL_ConvertPixels_YUV_to_ARGB8888(int width, int height,
                             WRITE_RGB_PIXEL(y1, u, v);
                         }
                         if (width_remainder) {
-                            READ_PACKED_YUV(u, y, v, y1); /* y1 unused */
+                            READ_PACKED_YUV(u, y, v, y1);
+                            (void) y1; /* y1 unused */
                             WRITE_RGB_PIXEL(y, u, v);
                         }
                         curr_row += curr_row_padding;
@@ -1495,7 +1513,8 @@ SDL_ConvertPixels_YUV_to_ARGB8888(int width, int height,
                             WRITE_RGB_PIXEL(y1, u, v);
                         }
                         if (width_remainder) {
-                            READ_PACKED_YUV(y, v, y1, u); /* y1 unused */
+                            READ_PACKED_YUV(y, v, y1, u);
+                            (void) y1; /* y1 unused */
                             WRITE_RGB_PIXEL(y, u, v);
                         }
                         curr_row += curr_row_padding;
@@ -1557,10 +1576,10 @@ SDL_ConvertPixels_ARGB8888_to_YUV(int width, int height, const void *src, int sr
 #if 1
 /* slightly faster */
 #define READ_2x2_PIXELS                                                                                                 \
-                const Uint32 p1 = ((Uint32 *)curr_row)[2 * i];                                                          \
-                const Uint32 p2 = ((Uint32 *)curr_row)[2 * i + 1];                                                      \
-                const Uint32 p3 = ((Uint32 *)next_row)[2 * i];                                                          \
-                const Uint32 p4 = ((Uint32 *)next_row)[2 * i + 1];                                                      \
+                const Uint32 p1 = ((const Uint32 *)curr_row)[2 * i];                                                    \
+                const Uint32 p2 = ((const Uint32 *)curr_row)[2 * i + 1];                                                \
+                const Uint32 p3 = ((const Uint32 *)next_row)[2 * i];                                                    \
+                const Uint32 p4 = ((const Uint32 *)next_row)[2 * i + 1];                                                \
                 const Uint32 b = ((p1 & 0x000000ff) + (p2 & 0x000000ff) + (p3 & 0x000000ff) + (p4 & 0x000000ff)) >> 2;  \
                 const Uint32 g = ((p1 & 0x0000ff00) + (p2 & 0x0000ff00) + (p3 & 0x0000ff00) + (p4 & 0x0000ff00)) >> 10; \
                 const Uint32 r = ((p1 & 0x00ff0000) + (p2 & 0x00ff0000) + (p3 & 0x00ff0000) + (p4 & 0x00ff0000)) >> 18; \
