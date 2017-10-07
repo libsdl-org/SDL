@@ -595,6 +595,8 @@ WIN_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, 
             style &= ~WS_MAXIMIZE;
         }
     } else {
+        BOOL menu;
+
         /* Restore window-maximization state, as applicable.
            Special care is taken to *not* do this if and when we're
            alt-tab'ing away (to some other window; as indicated by
@@ -606,7 +608,8 @@ WIN_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, 
             data->windowed_mode_was_maximized = SDL_FALSE;
         }
 
-        WIN_AdjustWindowRect(window, &x, &y, &w, &h, SDL_FALSE);
+        menu = (style & WS_CHILDWINDOW) ? FALSE : (GetMenu(hwnd) != NULL);
+        WIN_AdjustWindowRectWithStyle(window, style, menu, &x, &y, &w, &h, SDL_FALSE);
     }
     SetWindowLong(hwnd, GWL_STYLE, style);
     data->expected_resize = SDL_TRUE;
