@@ -906,14 +906,20 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForNameAndGUID(const 
 
 static ControllerMapping_t *SDL_PrivateGetControllerMapping(int device_index)
 {
-    const char *name = SDL_JoystickNameForIndex(device_index);
-    SDL_JoystickGUID guid = SDL_JoystickGetDeviceGUID(device_index);
-    ControllerMapping_t *mapping = SDL_PrivateGetControllerMappingForNameAndGUID(name, guid);
+    const char *name;
+    SDL_JoystickGUID guid;
+    ControllerMapping_t *mapping;
+
+    SDL_LockJoystickList();
+    name = SDL_JoystickNameForIndex(device_index);
+    guid = SDL_JoystickGetDeviceGUID(device_index);
+    mapping = SDL_PrivateGetControllerMappingForNameAndGUID(name, guid);
 #if SDL_JOYSTICK_XINPUT
     if (!mapping && SDL_SYS_IsXInputGamepad_DeviceIndex(device_index)) {
         mapping = s_pXInputMapping;
     }
 #endif
+    SDL_UnlockJoystickList();
     return mapping;
 }
 
