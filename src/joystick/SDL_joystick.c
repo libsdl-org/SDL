@@ -40,7 +40,7 @@ static SDL_bool SDL_updating_joystick = SDL_FALSE;
 static SDL_mutex *SDL_joystick_lock = NULL; /* This needs to support recursive locks */
 
 void
-SDL_LockJoystickList(void)
+SDL_LockJoysticks(void)
 {
     if (SDL_joystick_lock) {
         SDL_LockMutex(SDL_joystick_lock);
@@ -48,7 +48,7 @@ SDL_LockJoystickList(void)
 }
 
 void
-SDL_UnlockJoystickList(void)
+SDL_UnlockJoysticks(void)
 {
     if (SDL_joystick_lock) {
         SDL_UnlockMutex(SDL_joystick_lock);
@@ -168,7 +168,7 @@ SDL_JoystickOpen(int device_index)
         return (NULL);
     }
 
-    SDL_LockJoystickList();
+    SDL_LockJoysticks();
 
     joysticklist = SDL_joysticks;
     /* If the joystick is already open, return it
@@ -178,7 +178,7 @@ SDL_JoystickOpen(int device_index)
         if (SDL_JoystickGetDeviceInstanceID(device_index) == joysticklist->instance_id) {
                 joystick = joysticklist;
                 ++joystick->ref_count;
-                SDL_UnlockJoystickList();
+                SDL_UnlockJoysticks();
                 return (joystick);
         }
         joysticklist = joysticklist->next;
@@ -188,13 +188,13 @@ SDL_JoystickOpen(int device_index)
     joystick = (SDL_Joystick *) SDL_calloc(sizeof(*joystick), 1);
     if (joystick == NULL) {
         SDL_OutOfMemory();
-        SDL_UnlockJoystickList();
+        SDL_UnlockJoysticks();
         return NULL;
     }
 
     if (SDL_SYS_JoystickOpen(joystick, device_index) < 0) {
         SDL_free(joystick);
-        SDL_UnlockJoystickList();
+        SDL_UnlockJoysticks();
         return NULL;
     }
 
@@ -222,7 +222,7 @@ SDL_JoystickOpen(int device_index)
         || ((joystick->nbuttons > 0) && !joystick->buttons)) {
         SDL_OutOfMemory();
         SDL_JoystickClose(joystick);
-        SDL_UnlockJoystickList();
+        SDL_UnlockJoysticks();
         return NULL;
     }
     joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
@@ -244,7 +244,7 @@ SDL_JoystickOpen(int device_index)
     joystick->next = SDL_joysticks;
     SDL_joysticks = joystick;
 
-    SDL_UnlockJoystickList();
+    SDL_UnlockJoysticks();
 
     SDL_SYS_JoystickUpdate(joystick);
 
@@ -460,14 +460,14 @@ SDL_JoystickFromInstanceID(SDL_JoystickID joyid)
 {
     SDL_Joystick *joystick;
 
-    SDL_LockJoystickList();
+    SDL_LockJoysticks();
     for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
         if (joystick->instance_id == joyid) {
-            SDL_UnlockJoystickList();
+            SDL_UnlockJoysticks();
             return joystick;
         }
     }
-    SDL_UnlockJoystickList();
+    SDL_UnlockJoysticks();
     return NULL;
 }
 
@@ -497,16 +497,16 @@ SDL_JoystickClose(SDL_Joystick * joystick)
         return;
     }
 
-    SDL_LockJoystickList();
+    SDL_LockJoysticks();
 
     /* First decrement ref count */
     if (--joystick->ref_count > 0) {
-        SDL_UnlockJoystickList();
+        SDL_UnlockJoysticks();
         return;
     }
 
     if (SDL_updating_joystick) {
-        SDL_UnlockJoystickList();
+        SDL_UnlockJoysticks();
         return;
     }
 
@@ -538,7 +538,7 @@ SDL_JoystickClose(SDL_Joystick * joystick)
     SDL_free(joystick->buttons);
     SDL_free(joystick);
 
-    SDL_UnlockJoystickList();
+    SDL_UnlockJoysticks();
 }
 
 void
@@ -547,7 +547,7 @@ SDL_JoystickQuit(void)
     /* Make sure we're not getting called in the middle of updating joysticks */
     SDL_assert(!SDL_updating_joystick);
 
-    SDL_LockJoystickList();
+    SDL_LockJoysticks();
 
     /* Stop the event polling */
     while (SDL_joysticks) {
@@ -558,7 +558,7 @@ SDL_JoystickQuit(void)
     /* Quit the joystick setup */
     SDL_SYS_JoystickQuit();
 
-    SDL_UnlockJoystickList();
+    SDL_UnlockJoysticks();
 
 #if !SDL_EVENTS_DISABLED
     SDL_QuitSubSystem(SDL_INIT_EVENTS);
@@ -847,18 +847,18 @@ SDL_JoystickUpdate(void)
 {
     SDL_Joystick *joystick;
 
-    SDL_LockJoystickList();
+    SDL_LockJoysticks();
 
     if (SDL_updating_joystick) {
         /* The joysticks are already being updated */
-        SDL_UnlockJoystickList();
+        SDL_UnlockJoysticks();
         return;
     }
 
     SDL_updating_joystick = SDL_TRUE;
 
     /* Make sure the list is unlocked while dispatching events to prevent application deadlocks */
-    SDL_UnlockJoystickList();
+    SDL_UnlockJoysticks();
 
     for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
         SDL_SYS_JoystickUpdate(joystick);
@@ -885,7 +885,7 @@ SDL_JoystickUpdate(void)
         }
     }
 
-    SDL_LockJoystickList();
+    SDL_LockJoysticks();
 
     SDL_updating_joystick = SDL_FALSE;
 
@@ -901,7 +901,7 @@ SDL_JoystickUpdate(void)
      */
     SDL_SYS_JoystickDetect();
 
-    SDL_UnlockJoystickList();
+    SDL_UnlockJoysticks();
 }
 
 int

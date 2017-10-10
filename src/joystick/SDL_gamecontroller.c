@@ -24,9 +24,9 @@
 
 #include "SDL_events.h"
 #include "SDL_assert.h"
+#include "SDL_hints.h"
 #include "SDL_sysjoystick.h"
 #include "SDL_joystick_c.h"
-#include "SDL_hints.h"
 #include "SDL_gamecontrollerdb.h"
 
 #if !SDL_EVENTS_DISABLED
@@ -910,7 +910,7 @@ static ControllerMapping_t *SDL_PrivateGetControllerMapping(int device_index)
     SDL_JoystickGUID guid;
     ControllerMapping_t *mapping;
 
-    SDL_LockJoystickList();
+    SDL_LockJoysticks();
     name = SDL_JoystickNameForIndex(device_index);
     guid = SDL_JoystickGetDeviceGUID(device_index);
     mapping = SDL_PrivateGetControllerMappingForNameAndGUID(name, guid);
@@ -919,7 +919,7 @@ static ControllerMapping_t *SDL_PrivateGetControllerMapping(int device_index)
         mapping = s_pXInputMapping;
     }
 #endif
-    SDL_UnlockJoystickList();
+    SDL_UnlockJoysticks();
     return mapping;
 }
 
@@ -1349,7 +1349,7 @@ SDL_GameControllerOpen(int device_index)
         return (NULL);
     }
 
-    SDL_LockJoystickList();
+    SDL_LockJoysticks();
 
     gamecontrollerlist = SDL_gamecontrollers;
     /* If the controller is already open, return it */
@@ -1357,7 +1357,7 @@ SDL_GameControllerOpen(int device_index)
         if (SDL_SYS_GetInstanceIdOfDeviceIndex(device_index) == gamecontrollerlist->joystick->instance_id) {
                 gamecontroller = gamecontrollerlist;
                 ++gamecontroller->ref_count;
-                SDL_UnlockJoystickList();
+                SDL_UnlockJoysticks();
                 return (gamecontroller);
         }
         gamecontrollerlist = gamecontrollerlist->next;
@@ -1367,7 +1367,7 @@ SDL_GameControllerOpen(int device_index)
     pSupportedController =  SDL_PrivateGetControllerMapping(device_index);
     if (!pSupportedController) {
         SDL_SetError("Couldn't find mapping for device (%d)", device_index);
-        SDL_UnlockJoystickList();
+        SDL_UnlockJoysticks();
         return NULL;
     }
 
@@ -1375,14 +1375,14 @@ SDL_GameControllerOpen(int device_index)
     gamecontroller = (SDL_GameController *) SDL_calloc(1, sizeof(*gamecontroller));
     if (gamecontroller == NULL) {
         SDL_OutOfMemory();
-        SDL_UnlockJoystickList();
+        SDL_UnlockJoysticks();
         return NULL;
     }
 
     gamecontroller->joystick = SDL_JoystickOpen(device_index);
     if (!gamecontroller->joystick) {
         SDL_free(gamecontroller);
-        SDL_UnlockJoystickList();
+        SDL_UnlockJoysticks();
         return NULL;
     }
 
@@ -1392,7 +1392,7 @@ SDL_GameControllerOpen(int device_index)
             SDL_OutOfMemory();
             SDL_JoystickClose(gamecontroller->joystick);
             SDL_free(gamecontroller);
-            SDL_UnlockJoystickList();
+            SDL_UnlockJoysticks();
             return NULL;
         }
     }
@@ -1403,7 +1403,7 @@ SDL_GameControllerOpen(int device_index)
             SDL_JoystickClose(gamecontroller->joystick);
             SDL_free(gamecontroller->last_match_axis);
             SDL_free(gamecontroller);
-            SDL_UnlockJoystickList();
+            SDL_UnlockJoysticks();
             return NULL;
         }
     }
@@ -1416,7 +1416,7 @@ SDL_GameControllerOpen(int device_index)
     gamecontroller->next = SDL_gamecontrollers;
     SDL_gamecontrollers = gamecontroller;
 
-    SDL_UnlockJoystickList();
+    SDL_UnlockJoysticks();
 
     return (gamecontroller);
 }
@@ -1589,16 +1589,16 @@ SDL_GameControllerFromInstanceID(SDL_JoystickID joyid)
 {
     SDL_GameController *gamecontroller;
 
-    SDL_LockJoystickList();
+    SDL_LockJoysticks();
     gamecontroller = SDL_gamecontrollers;
     while (gamecontroller) {
         if (gamecontroller->joystick->instance_id == joyid) {
-            SDL_UnlockJoystickList();
+            SDL_UnlockJoysticks();
             return gamecontroller;
         }
         gamecontroller = gamecontroller->next;
     }
-    SDL_UnlockJoystickList();
+    SDL_UnlockJoysticks();
     return NULL;
 }
 
@@ -1674,11 +1674,11 @@ SDL_GameControllerClose(SDL_GameController * gamecontroller)
     if (!gamecontroller)
         return;
 
-    SDL_LockJoystickList();
+    SDL_LockJoysticks();
 
     /* First decrement ref count */
     if (--gamecontroller->ref_count > 0) {
-        SDL_UnlockJoystickList();
+        SDL_UnlockJoysticks();
         return;
     }
 
@@ -1705,7 +1705,7 @@ SDL_GameControllerClose(SDL_GameController * gamecontroller)
     SDL_free(gamecontroller->last_hat_mask);
     SDL_free(gamecontroller);
 
-    SDL_UnlockJoystickList();
+    SDL_UnlockJoysticks();
 }
 
 
@@ -1715,12 +1715,12 @@ SDL_GameControllerClose(SDL_GameController * gamecontroller)
 void
 SDL_GameControllerQuit(void)
 {
-    SDL_LockJoystickList();
+    SDL_LockJoysticks();
     while (SDL_gamecontrollers) {
         SDL_gamecontrollers->ref_count = 1;
         SDL_GameControllerClose(SDL_gamecontrollers);
     }
-    SDL_UnlockJoystickList();
+    SDL_UnlockJoysticks();
 }
 
 void
