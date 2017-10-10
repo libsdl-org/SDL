@@ -226,6 +226,31 @@ SDL_WriteToDataQueue(SDL_DataQueue *queue, const void *_data, const size_t _len)
 }
 
 size_t
+SDL_PeekIntoDataQueue(SDL_DataQueue *queue, void *_buf, const size_t _len)
+{
+    size_t len = _len;
+    Uint8 *buf = (Uint8 *) _buf;
+    Uint8 *ptr = buf;
+    SDL_DataQueuePacket *packet;
+
+    if (!queue) {
+        return 0;
+    }
+
+    for (packet = queue->head; len && packet; packet = packet->next) {
+        const size_t avail = packet->datalen - packet->startpos;
+        const size_t cpy = SDL_min(len, avail);
+        SDL_assert(queue->queued_bytes >= avail);
+
+        SDL_memcpy(ptr, packet->data + packet->startpos, cpy);
+        ptr += cpy;
+        len -= cpy;
+    }
+
+    return (size_t) (ptr - buf);
+}
+
+size_t
 SDL_ReadFromDataQueue(SDL_DataQueue *queue, void *_buf, const size_t _len)
 {
     size_t len = _len;

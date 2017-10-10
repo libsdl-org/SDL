@@ -31,6 +31,7 @@ void SDL_FreeDataQueue(SDL_DataQueue *queue);
 void SDL_ClearDataQueue(SDL_DataQueue *queue, const size_t slack);
 int SDL_WriteToDataQueue(SDL_DataQueue *queue, const void *data, const size_t len);
 size_t SDL_ReadFromDataQueue(SDL_DataQueue *queue, void *buf, const size_t len);
+size_t SDL_PeekIntoDataQueue(SDL_DataQueue *queue, void *buf, const size_t len);
 size_t SDL_CountDataQueue(SDL_DataQueue *queue);
 
 /* this sets a section of the data queue aside (possibly allocating memory for it)
