@@ -36,14 +36,7 @@
 #include "SDL_timer.h"
 #include "../unix/SDL_poll.h"
 
-static const char *SDL_UDEV_LIBS[] = {
-#ifdef SDL_UDEV_DYNAMIC
-	SDL_UDEV_DYNAMIC
-#else
-	"libudev.so.1",
-	"libudev.so.0"
-#endif
-};
+static const char *SDL_UDEV_LIBS[] = { "libudev.so.1", "libudev.so.0" };
 
 #define _THIS SDL_UDEV_PrivateData *_this
 static _THIS = NULL;
@@ -260,6 +253,19 @@ SDL_UDEV_LoadLibrary(void)
     if (SDL_UDEV_load_syms() == 0) {
         return 0;
     }
+
+#ifdef SDL_UDEV_DYNAMIC
+    /* Check for the build environment's libudev first */
+    if (_this->udev_handle == NULL) {
+        _this->udev_handle = SDL_LoadObject(SDL_UDEV_DYNAMIC);
+        if (_this->udev_handle != NULL) {
+            retval = SDL_UDEV_load_syms();
+            if (retval < 0) {
+                SDL_UDEV_UnloadLibrary();
+            }
+        }
+    }
+#endif
 
     if (_this->udev_handle == NULL) {
         for( i = 0 ; i < SDL_arraysize(SDL_UDEV_LIBS); i++) {
