@@ -705,7 +705,7 @@ SDL_PushEvent(SDL_Event * event)
 {
     event->common.timestamp = SDL_GetTicks();
 
-    if (SDL_EventOK.callback || SDL_event_watchers_count != 0) {
+    if (SDL_EventOK.callback || SDL_event_watchers_count > 0) {
         if (!SDL_event_watchers_lock || SDL_LockMutex(SDL_event_watchers_lock) == 0) {
             if (SDL_EventOK.callback && !SDL_EventOK.callback(SDL_EventOK.userdata, event)) {
                 if (SDL_event_watchers_lock) {
@@ -731,7 +731,7 @@ SDL_PushEvent(SDL_Event * event)
                         if (SDL_event_watchers[i].removed) {
                             --SDL_event_watchers_count;
                             if (i < SDL_event_watchers_count) {
-                                SDL_memcpy(&SDL_event_watchers[i], &SDL_event_watchers[i+1], (SDL_event_watchers_count - i) * sizeof(SDL_event_watchers[i]));
+                                SDL_memmove(&SDL_event_watchers[i], &SDL_event_watchers[i+1], (SDL_event_watchers_count - i) * sizeof(SDL_event_watchers[i]));
                             }
                         }
                     }
@@ -831,7 +831,7 @@ SDL_DelEventWatch(SDL_EventFilter filter, void *userdata)
                 } else {
                     --SDL_event_watchers_count;
                     if (i < SDL_event_watchers_count) {
-                        SDL_memcpy(&SDL_event_watchers[i], &SDL_event_watchers[i+1], (SDL_event_watchers_count - i) * sizeof(SDL_event_watchers[i]));
+                        SDL_memmove(&SDL_event_watchers[i], &SDL_event_watchers[i+1], (SDL_event_watchers_count - i) * sizeof(SDL_event_watchers[i]));
                     }
                 }
                 break;
