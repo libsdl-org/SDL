@@ -46,8 +46,4 @@ extern void SDL_QuitQuit(void);
 
 extern void SDL_SendPendingQuit(void);
 
-/* The event filter function */
-extern SDL_EventFilter SDL_EventOK;
-extern void *SDL_EventOKParam;
-
 /* vi: set ts=4 sw=4 expandtab: */

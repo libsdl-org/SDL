@@ -38,17 +38,15 @@
 /* An arbitrary limit so we don't have unbounded growth */
 #define SDL_MAX_QUEUED_EVENTS   65535
 
-/* Public data -- the event filter */
-SDL_EventFilter SDL_EventOK = NULL;
-void *SDL_EventOKParam;
-
 typedef struct SDL_EventWatcher {
     SDL_EventFilter callback;
     void *userdata;
-    struct SDL_EventWatcher *next;
 } SDL_EventWatcher;
 
+static SDL_mutex *SDL_event_watchers_lock;
+static SDL_EventWatcher SDL_EventOK;
 static SDL_EventWatcher *SDL_event_watchers = NULL;
+static int SDL_event_watchers_count = 0;
 
 typedef struct {
     Uint32 bits[8];
@@ -367,12 +365,17 @@ SDL_StopEventLoop(void)
         SDL_disabled_events[i] = NULL;
     }
 
-    while (SDL_event_watchers) {
-        SDL_EventWatcher *tmp = SDL_event_watchers;
-        SDL_event_watchers = tmp->next;
-        SDL_free(tmp);
+    if (SDL_event_watchers_lock) {
+        SDL_UnlockMutex(SDL_event_watchers_lock);
+        SDL_DestroyMutex(SDL_event_watchers_lock);
+        SDL_event_watchers_lock = NULL;
     }
-    SDL_EventOK = NULL;
+    if (SDL_event_watchers_count > 0) {
+        SDL_free(SDL_event_watchers);
+        SDL_event_watchers = NULL;
+        SDL_event_watchers_count = 0;
+    }
+    SDL_zero(SDL_EventOK);
 
     if (SDL_EventQ.lock) {
         SDL_UnlockMutex(SDL_EventQ.lock);
@@ -395,9 +398,16 @@ SDL_StartEventLoop(void)
 #if !SDL_THREADS_DISABLED
     if (!SDL_EventQ.lock) {
         SDL_EventQ.lock = SDL_CreateMutex();
+        if (SDL_EventQ.lock == NULL) {
+            return -1;
+        }
     }
-    if (SDL_EventQ.lock == NULL) {
-        return -1;
+
+    if (!SDL_event_watchers_lock) {
+        SDL_event_watchers_lock = SDL_CreateMutex();
+        if (SDL_event_watchers_lock == NULL) {
+            return -1;
+        }
     }
 #endif /* !SDL_THREADS_DISABLED */
 
@@ -606,7 +616,7 @@ SDL_FlushEvents(Uint32 minType, Uint32 maxType)
 #endif
 
     /* Lock the event queue */
-    if (SDL_EventQ.lock && SDL_LockMutex(SDL_EventQ.lock) == 0) {
+    if (!SDL_EventQ.lock || SDL_LockMutex(SDL_EventQ.lock) == 0) {
         SDL_EventEntry *entry, *next;
         Uint32 type;
         for (entry = SDL_EventQ.head; entry; entry = next) {
@@ -616,7 +626,9 @@ SDL_FlushEvents(Uint32 minType, Uint32 maxType)
                 SDL_CutEvent(entry);
             }
         }
-        SDL_UnlockMutex(SDL_EventQ.lock);
+        if (SDL_EventQ.lock) {
+            SDL_UnlockMutex(SDL_EventQ.lock);
+        }
     }
 }
 
@@ -688,16 +700,41 @@ SDL_WaitEventTimeout(SDL_Event * event, int timeout)
 int
 SDL_PushEvent(SDL_Event * event)
 {
-    SDL_EventWatcher *curr;
-
     event->common.timestamp = SDL_GetTicks();
 
-    if (SDL_EventOK && !SDL_EventOK(SDL_EventOKParam, event)) {
-        return 0;
-    }
+    if (SDL_EventOK.callback || SDL_event_watchers_count != 0) {
+        SDL_EventWatcher event_ok;
+        SDL_EventWatcher *event_watchers = NULL;
+        int i, event_watchers_count = 0;
 
-    for (curr = SDL_event_watchers; curr; curr = curr->next) {
-        curr->callback(curr->userdata, event);
+        if (!SDL_event_watchers_lock || SDL_LockMutex(SDL_event_watchers_lock) == 0) {
+            event_ok = SDL_EventOK;
+
+            if (SDL_event_watchers_count > 0) {
+                event_watchers = SDL_stack_alloc(SDL_EventWatcher, SDL_event_watchers_count);
+                if (event_watchers) {
+                    SDL_memcpy(event_watchers, SDL_event_watchers, SDL_event_watchers_count * sizeof(*event_watchers));
+                    event_watchers_count = SDL_event_watchers_count;
+                }
+            }
+
+            if (SDL_event_watchers_lock) {
+                SDL_UnlockMutex(SDL_event_watchers_lock);
+            }
+        } else {
+            event_ok = SDL_EventOK;
+        }
+
+        if (event_ok.callback && !event_ok.callback(event_ok.userdata, event)) {
+            return 0;
+        }
+
+        if (event_watchers_count > 0) {
+            for (i = 0; i < event_watchers_count; ++i) {
+                event_watchers[i].callback(event_watchers[i].userdata, event);
+            }
+            SDL_stack_free(event_watchers);
+        }
     }
 
     if (SDL_PeepEvents(event, 1, SDL_ADDEVENT, 0, 0) <= 0) {
@@ -712,69 +749,83 @@ SDL_PushEvent(SDL_Event * event)
 void
 SDL_SetEventFilter(SDL_EventFilter filter, void *userdata)
 {
-    /* Set filter and discard pending events */
-    SDL_EventOK = NULL;
-    SDL_FlushEvents(SDL_FIRSTEVENT, SDL_LASTEVENT);
-    SDL_EventOKParam = userdata;
-    SDL_EventOK = filter;
+    if (!SDL_event_watchers_lock || SDL_LockMutex(SDL_event_watchers_lock) == 0) {
+        /* Set filter and discard pending events */
+        SDL_EventOK.callback = filter;
+        SDL_EventOK.userdata = userdata;
+        SDL_FlushEvents(SDL_FIRSTEVENT, SDL_LASTEVENT);
+
+        if (SDL_event_watchers_lock) {
+            SDL_UnlockMutex(SDL_event_watchers_lock);
+        }
+    }
 }
 
 SDL_bool
 SDL_GetEventFilter(SDL_EventFilter * filter, void **userdata)
 {
+    SDL_EventWatcher event_ok;
+
+    if (!SDL_event_watchers_lock || SDL_LockMutex(SDL_event_watchers_lock) == 0) {
+        event_ok = SDL_EventOK;
+
+        if (SDL_event_watchers_lock) {
+            SDL_UnlockMutex(SDL_event_watchers_lock);
+        }
+    } else {
+        SDL_zero(event_ok);
+    }
+
     if (filter) {
-        *filter = SDL_EventOK;
+        *filter = event_ok.callback;
     }
     if (userdata) {
-        *userdata = SDL_EventOKParam;
+        *userdata = event_ok.userdata;
     }
-    return SDL_EventOK ? SDL_TRUE : SDL_FALSE;
+    return event_ok.callback ? SDL_TRUE : SDL_FALSE;
 }
 
-/* FIXME: This is not thread-safe yet */
 void
 SDL_AddEventWatch(SDL_EventFilter filter, void *userdata)
 {
-    SDL_EventWatcher *watcher, *tail;
+    if (!SDL_event_watchers_lock || SDL_LockMutex(SDL_event_watchers_lock) == 0) {
+        SDL_EventWatcher *event_watchers;
 
-    watcher = (SDL_EventWatcher *)SDL_malloc(sizeof(*watcher));
-    if (!watcher) {
-        /* Uh oh... */
-        return;
-    }
+        event_watchers = SDL_realloc(SDL_event_watchers, (SDL_event_watchers_count + 1) * sizeof(event_watchers));
+        if (event_watchers) {
+            SDL_EventWatcher *watcher;
 
-    /* create the watcher */
-    watcher->callback = filter;
-    watcher->userdata = userdata;
-    watcher->next = NULL;
-
-    /* add the watcher to the end of the list */
-    if (SDL_event_watchers) {
-        for (tail = SDL_event_watchers; tail->next; tail = tail->next) {
-            continue;
+            SDL_event_watchers = event_watchers;
+            watcher = &SDL_event_watchers[SDL_event_watchers_count];
+            watcher->callback = filter;
+            watcher->userdata = userdata;
+            ++SDL_event_watchers_count;
         }
-        tail->next = watcher;
-    } else {
-        SDL_event_watchers = watcher;
+
+        if (SDL_event_watchers_lock) {
+            SDL_UnlockMutex(SDL_event_watchers_lock);
+        }
     }
 }
 
-/* FIXME: This is not thread-safe yet */
 void
 SDL_DelEventWatch(SDL_EventFilter filter, void *userdata)
 {
-    SDL_EventWatcher *prev = NULL;
-    SDL_EventWatcher *curr;
+    if (!SDL_event_watchers_lock || SDL_LockMutex(SDL_event_watchers_lock) == 0) {
+        int i;
 
-    for (curr = SDL_event_watchers; curr; prev = curr, curr = curr->next) {
-        if (curr->callback == filter && curr->userdata == userdata) {
-            if (prev) {
-                prev->next = curr->next;
-            } else {
-                SDL_event_watchers = curr->next;
+        for (i = 0; i < SDL_event_watchers_count; ++i) {
+            if (SDL_event_watchers[i].callback == filter && SDL_event_watchers[i].userdata == userdata) {
+                --SDL_event_watchers_count;
+                if (i < SDL_event_watchers_count) {
+                    SDL_memcpy(&SDL_event_watchers[i], &SDL_event_watchers[i+1], (SDL_event_watchers_count - i) * sizeof(SDL_event_watchers[i]));
+                }
+                break;
             }
-            SDL_free(curr);
-            break;
+        }
+
+        if (SDL_event_watchers_lock) {
+            SDL_UnlockMutex(SDL_event_watchers_lock);
         }
     }
 }
@@ -782,7 +833,7 @@ SDL_DelEventWatch(SDL_EventFilter filter, void *userdata)
 void
 SDL_FilterEvents(SDL_EventFilter filter, void *userdata)
 {
-    if (SDL_EventQ.lock && SDL_LockMutex(SDL_EventQ.lock) == 0) {
+    if (!SDL_EventQ.lock || SDL_LockMutex(SDL_EventQ.lock) == 0) {
         SDL_EventEntry *entry, *next;
         for (entry = SDL_EventQ.head; entry; entry = next) {
             next = entry->next;
@@ -790,7 +841,9 @@ SDL_FilterEvents(SDL_EventFilter filter, void *userdata)
                 SDL_CutEvent(entry);
             }
         }
-        SDL_UnlockMutex(SDL_EventQ.lock);
+        if (SDL_EventQ.lock) {
+            SDL_UnlockMutex(SDL_EventQ.lock);
+        }
     }
 }
 
