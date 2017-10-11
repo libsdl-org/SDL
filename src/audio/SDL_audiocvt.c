@@ -485,8 +485,8 @@ SDL_ResampleAudio(const int chans, const int inrate, const int outrate,
                         float *outbuf, const int outbuflen)
 {
     const double finrate = (double) inrate;
-    const float outtimeincr = 1.0f / ((float) outrate);
-    const float ratio = ((float) outrate) / ((float) inrate);
+    const double outtimeincr = 1.0 / ((float) outrate);
+    const double  ratio = ((float) outrate) / ((float) inrate);
     const int paddinglen = ResamplerPadding(inrate, outrate);
     const int framelen = chans * (int)sizeof (float);
     const int inframes = inbuflen / framelen;
@@ -494,16 +494,16 @@ SDL_ResampleAudio(const int chans, const int inrate, const int outrate,
     const int maxoutframes = outbuflen / framelen;
     const int outframes = SDL_min(wantedoutframes, maxoutframes);
     float *dst = outbuf;
-    float outtime = 0.0f;
+    double outtime = 0.0;
     int i, j, chan;
 
     for (i = 0; i < outframes; i++) {
         const int srcindex = (int) (outtime * inrate);
-        const float intime = ((float) srcindex) / finrate;
-        const float innexttime = ((float) (srcindex + 1)) / finrate;
-        const float interpolation1 = SDL_max(0.0f, 1.0f - (innexttime - outtime) / (innexttime - intime));
+        const double intime = ((double) srcindex) / finrate;
+        const double innexttime = ((double) (srcindex + 1)) / finrate;
+        const double interpolation1 = 1.0 - ((innexttime - outtime) / (innexttime - intime));
         const int filterindex1 = (int) (interpolation1 * RESAMPLER_SAMPLES_PER_ZERO_CROSSING);
-        const float interpolation2 = SDL_max(0.0f, 1.0f - interpolation1);
+        const double interpolation2 = 1.0 - interpolation1;
         const int filterindex2 = (int) (interpolation2 * RESAMPLER_SAMPLES_PER_ZERO_CROSSING);
 
         for (chan = 0; chan < chans; chan++) {
