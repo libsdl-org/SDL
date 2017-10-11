@@ -527,7 +527,7 @@ SDL_ResampleAudio(const int chans, const int inrate, const int outrate,
             *(dst++) = outsample;
         }
 
-        outtime = i * outtimeincr;
+        outtime += outtimeincr;
     }
 
     return outframes * chans * sizeof (float);
