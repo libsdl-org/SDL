@@ -41,12 +41,15 @@
 typedef struct SDL_EventWatcher {
     SDL_EventFilter callback;
     void *userdata;
+    SDL_bool removed;
 } SDL_EventWatcher;
 
 static SDL_mutex *SDL_event_watchers_lock;
 static SDL_EventWatcher SDL_EventOK;
 static SDL_EventWatcher *SDL_event_watchers = NULL;
 static int SDL_event_watchers_count = 0;
+static SDL_bool SDL_event_watchers_dispatching = SDL_FALSE;
+static SDL_bool SDL_event_watchers_removed = SDL_FALSE;
 
 typedef struct {
     Uint32 bits[8];
@@ -370,7 +373,7 @@ SDL_StopEventLoop(void)
         SDL_DestroyMutex(SDL_event_watchers_lock);
         SDL_event_watchers_lock = NULL;
     }
-    if (SDL_event_watchers_count > 0) {
+    if (SDL_event_watchers) {
         SDL_free(SDL_event_watchers);
         SDL_event_watchers = NULL;
         SDL_event_watchers_count = 0;
@@ -703,37 +706,42 @@ SDL_PushEvent(SDL_Event * event)
     event->common.timestamp = SDL_GetTicks();
 
     if (SDL_EventOK.callback || SDL_event_watchers_count != 0) {
-        SDL_EventWatcher event_ok;
-        SDL_EventWatcher *event_watchers = NULL;
-        int i, event_watchers_count = 0;
-
         if (!SDL_event_watchers_lock || SDL_LockMutex(SDL_event_watchers_lock) == 0) {
-            event_ok = SDL_EventOK;
+            if (SDL_EventOK.callback && !SDL_EventOK.callback(SDL_EventOK.userdata, event)) {
+                if (SDL_event_watchers_lock) {
+                    SDL_UnlockMutex(SDL_event_watchers_lock);
+                }
+                return 0;
+            }
 
             if (SDL_event_watchers_count > 0) {
-                event_watchers = SDL_stack_alloc(SDL_EventWatcher, SDL_event_watchers_count);
-                if (event_watchers) {
-                    SDL_memcpy(event_watchers, SDL_event_watchers, SDL_event_watchers_count * sizeof(*event_watchers));
-                    event_watchers_count = SDL_event_watchers_count;
+                /* Make sure we only dispatch the current watcher list */
+                int i, event_watchers_count = SDL_event_watchers_count;
+
+                SDL_event_watchers_dispatching = SDL_TRUE;
+                for (i = 0; i < event_watchers_count; ++i) {
+                    if (!SDL_event_watchers[i].removed) {
+                        SDL_event_watchers[i].callback(SDL_event_watchers[i].userdata, event);
+                    }
+                }
+                SDL_event_watchers_dispatching = SDL_FALSE;
+
+                if (SDL_event_watchers_removed) {
+                    for (i = SDL_event_watchers_count; i--; ) {
+                        if (SDL_event_watchers[i].removed) {
+                            --SDL_event_watchers_count;
+                            if (i < SDL_event_watchers_count) {
+                                SDL_memcpy(&SDL_event_watchers[i], &SDL_event_watchers[i+1], (SDL_event_watchers_count - i) * sizeof(SDL_event_watchers[i]));
+                            }
+                        }
+                    }
+                    SDL_event_watchers_removed = SDL_FALSE;
                 }
             }
 
             if (SDL_event_watchers_lock) {
                 SDL_UnlockMutex(SDL_event_watchers_lock);
             }
-        } else {
-            event_ok = SDL_EventOK;
-        }
-
-        if (event_ok.callback && !event_ok.callback(event_ok.userdata, event)) {
-            return 0;
-        }
-
-        if (event_watchers_count > 0) {
-            for (i = 0; i < event_watchers_count; ++i) {
-                event_watchers[i].callback(event_watchers[i].userdata, event);
-            }
-            SDL_stack_free(event_watchers);
         }
     }
 
@@ -799,6 +807,7 @@ SDL_AddEventWatch(SDL_EventFilter filter, void *userdata)
             watcher = &SDL_event_watchers[SDL_event_watchers_count];
             watcher->callback = filter;
             watcher->userdata = userdata;
+            watcher->removed = SDL_FALSE;
             ++SDL_event_watchers_count;
         }
 
@@ -816,9 +825,14 @@ SDL_DelEventWatch(SDL_EventFilter filter, void *userdata)
 
         for (i = 0; i < SDL_event_watchers_count; ++i) {
             if (SDL_event_watchers[i].callback == filter && SDL_event_watchers[i].userdata == userdata) {
-                --SDL_event_watchers_count;
-                if (i < SDL_event_watchers_count) {
-                    SDL_memcpy(&SDL_event_watchers[i], &SDL_event_watchers[i+1], (SDL_event_watchers_count - i) * sizeof(SDL_event_watchers[i]));
+                if (SDL_event_watchers_dispatching) {
+                    SDL_event_watchers[i].removed = SDL_TRUE;
+                    SDL_event_watchers_removed = SDL_TRUE;
+                } else {
+                    --SDL_event_watchers_count;
+                    if (i < SDL_event_watchers_count) {
+                        SDL_memcpy(&SDL_event_watchers[i], &SDL_event_watchers[i+1], (SDL_event_watchers_count - i) * sizeof(SDL_event_watchers[i]));
+                    }
                 }
                 break;
             }
