@@ -722,16 +722,15 @@ SDL_ResampleCVT(SDL_AudioCVT *cvt, const int chans, const SDL_AudioFormat format
     SDL_assert(format == AUDIO_F32SYS);
 
     /* we keep no streaming state here, so pad with silence on both ends. */
-    padding = SDL_stack_alloc(float, paddingsamples);
+    padding = (float *) SDL_calloc(paddingsamples, sizeof (float));
     if (!padding) {
         SDL_OutOfMemory();
         return;
     }
-    SDL_memset(padding, '\0', paddingsamples * sizeof (float));
 
     cvt->len_cvt = SDL_ResampleAudio(chans, inrate, outrate, padding, padding, src, srclen, dst, dstlen);
 
-    SDL_stack_free(padding);
+    SDL_free(padding);
 
     SDL_memcpy(cvt->buf, dst, cvt->len_cvt);  /* !!! FIXME: remove this if we can get the resampler to work in-place again. */
 
