@@ -799,7 +799,7 @@ SDL_AddEventWatch(SDL_EventFilter filter, void *userdata)
     if (!SDL_event_watchers_lock || SDL_LockMutex(SDL_event_watchers_lock) == 0) {
         SDL_EventWatcher *event_watchers;
 
-        event_watchers = SDL_realloc(SDL_event_watchers, (SDL_event_watchers_count + 1) * sizeof(event_watchers));
+        event_watchers = SDL_realloc(SDL_event_watchers, (SDL_event_watchers_count + 1) * sizeof(*event_watchers));
         if (event_watchers) {
             SDL_EventWatcher *watcher;
 
