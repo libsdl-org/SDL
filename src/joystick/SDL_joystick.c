@@ -601,10 +601,7 @@ void SDL_PrivateJoystickAdded(int device_index)
 
     if (SDL_GetEventState(event.type) == SDL_ENABLE) {
         event.jdevice.which = device_index;
-        if ((SDL_EventOK == NULL) ||
-             (*SDL_EventOK) (SDL_EventOKParam, &event)) {
-            SDL_PushEvent(&event);
-        }
+        SDL_PushEvent(&event);
     }
 #endif /* !SDL_EVENTS_DISABLED */
 }
@@ -647,10 +644,7 @@ void SDL_PrivateJoystickRemoved(SDL_JoystickID device_instance)
 
     if (SDL_GetEventState(event.type) == SDL_ENABLE) {
         event.jdevice.which = device_instance;
-        if ((SDL_EventOK == NULL) ||
-             (*SDL_EventOK) (SDL_EventOKParam, &event)) {
-            SDL_PushEvent(&event);
-        }
+        SDL_PushEvent(&event);
     }
 
     UpdateEventsForDeviceRemoval();
