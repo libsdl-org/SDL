@@ -1356,7 +1356,7 @@ SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, const Uint32 _bufle
     Uint8 *workbuf;
     Uint8 *resamplebuf = NULL;
     int resamplebuflen = 0;
-    const int neededpaddingbytes = stream ? stream->resampler_padding_samples * sizeof (float) : 0;
+    int neededpaddingbytes;
     int paddingbytes;
 
     /* !!! FIXME: several converters can take advantage of SIMD, but only
@@ -1379,11 +1379,12 @@ SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, const Uint32 _bufle
         return 0;  /* nothing to do. */
     } else if ((buflen % stream->src_sample_frame_size) != 0) {
         return SDL_SetError("Can't add partial sample frames");
-    } else if (buflen < (neededpaddingbytes * 2)) {
+    } else if (buflen < ((stream->resampler_padding_samples / stream->pre_resample_channels) * stream->src_sample_frame_size)) {
         return SDL_SetError("Need to put a larger buffer");
     }
 
     /* no padding prepended on first run. */
+    neededpaddingbytes = stream->resampler_padding_samples * sizeof (float);
     paddingbytes = stream->first_run ? 0 : neededpaddingbytes;
     stream->first_run = SDL_FALSE;
 
