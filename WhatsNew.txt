@@ -2,6 +2,22 @@
 This is a list of major changes in SDL's version history.
 
 ---------------------------------------------------------------------------
+2.0.7:
+---------------------------------------------------------------------------
+
+General:
+* Added locking functions for multi-threaded access to the joystick and game controller APIs:
+	SDL_LockJoysticks()
+	SDL_UnlockJoysticks()
+* The following functions are now thread-safe:
+	SDL_SetEventFilter()
+	SDL_GetEventFilter()
+	SDL_AddEventWatch()
+	SDL_DelEventWatch()
+
+
+General:
+---------------------------------------------------------------------------
 2.0.6:
 ---------------------------------------------------------------------------
 
