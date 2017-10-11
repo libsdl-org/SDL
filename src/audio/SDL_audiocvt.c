@@ -484,6 +484,7 @@ SDL_ResampleAudio(const int chans, const int inrate, const int outrate,
                         const float *inbuf, const int inbuflen,
                         float *outbuf, const int outbuflen)
 {
+    const double finrate = (double) inrate;
     const float outtimeincr = 1.0f / ((float) outrate);
     const float ratio = ((float) outrate) / ((float) inrate);
     const int paddinglen = ResamplerPadding(inrate, outrate);
@@ -498,7 +499,6 @@ SDL_ResampleAudio(const int chans, const int inrate, const int outrate,
 
     for (i = 0; i < outframes; i++) {
         const int srcindex = (int) (outtime * inrate);
-        const float finrate = (float) inrate;
         const float intime = ((float) srcindex) / finrate;
         const float innexttime = ((float) (srcindex + 1)) / finrate;
 
