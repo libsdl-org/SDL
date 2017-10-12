@@ -21,6 +21,8 @@
 		AA1EE46D176059AB0029C7A5 /* SDL_test_log.c in Sources */ = {isa = PBXBuildFile; fileRef = AA1EE45F176059AB0029C7A5 /* SDL_test_log.c */; };
 		AA1EE46E176059AB0029C7A5 /* SDL_test_md5.c in Sources */ = {isa = PBXBuildFile; fileRef = AA1EE460176059AB0029C7A5 /* SDL_test_md5.c */; };
 		AA1EE46F176059AB0029C7A5 /* SDL_test_random.c in Sources */ = {isa = PBXBuildFile; fileRef = AA1EE461176059AB0029C7A5 /* SDL_test_random.c */; };
+		AAF030011F9009B100B9A9FB /* SDL_test_memory.c in Sources */ = {isa = PBXBuildFile; fileRef = AAF02FFF1F9009B100B9A9FB /* SDL_test_memory.c */; };
+		AAF030021F9009B100B9A9FB /* SDL_test_assert.c in Sources */ = {isa = PBXBuildFile; fileRef = AAF030001F9009B100B9A9FB /* SDL_test_assert.c */; };
 		FA3D99011BC4E5BC002C96C8 /* SDL_test_common.c in Sources */ = {isa = PBXBuildFile; fileRef = AA1EE454176059AB0029C7A5 /* SDL_test_common.c */; };
 		FA3D99021BC4E5BC002C96C8 /* SDL_test_compare.c in Sources */ = {isa = PBXBuildFile; fileRef = AA1EE455176059AB0029C7A5 /* SDL_test_compare.c */; };
 		FA3D99031BC4E5BC002C96C8 /* SDL_test_crc32.c in Sources */ = {isa = PBXBuildFile; fileRef = AA1EE456176059AB0029C7A5 /* SDL_test_crc32.c */; };
@@ -65,6 +67,8 @@
 		AA1EE45F176059AB0029C7A5 /* SDL_test_log.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_test_log.c; path = ../../src/test/SDL_test_log.c; sourceTree = "<group>"; };
 		AA1EE460176059AB0029C7A5 /* SDL_test_md5.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_test_md5.c; path = ../../src/test/SDL_test_md5.c; sourceTree = "<group>"; };
 		AA1EE461176059AB0029C7A5 /* SDL_test_random.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_test_random.c; path = ../../src/test/SDL_test_random.c; sourceTree = "<group>"; };
+		AAF02FFF1F9009B100B9A9FB /* SDL_test_memory.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_test_memory.c; path = ../../src/test/SDL_test_memory.c; sourceTree = "<group>"; };
+		AAF030001F9009B100B9A9FB /* SDL_test_assert.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_test_assert.c; path = ../../src/test/SDL_test_assert.c; sourceTree = "<group>"; };
 		FA3D98F81BC4E5A2002C96C8 /* libSDL2test-TV.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libSDL2test-TV.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -106,6 +110,7 @@
 		AA1EE453176059770029C7A5 /* Library Source */ = {
 			isa = PBXGroup;
 			children = (
+				AAF030001F9009B100B9A9FB /* SDL_test_assert.c */,
 				AA1EE454176059AB0029C7A5 /* SDL_test_common.c */,
 				AA1EE455176059AB0029C7A5 /* SDL_test_compare.c */,
 				AA1EE456176059AB0029C7A5 /* SDL_test_crc32.c */,
@@ -119,6 +124,7 @@
 				AA1EE45E176059AB0029C7A5 /* SDL_test_imagePrimitivesBlend.c */,
 				AA1EE45F176059AB0029C7A5 /* SDL_test_log.c */,
 				AA1EE460176059AB0029C7A5 /* SDL_test_md5.c */,
+				AAF02FFF1F9009B100B9A9FB /* SDL_test_memory.c */,
 				AA1EE461176059AB0029C7A5 /* SDL_test_random.c */,
 			);
 			name = "Library Source";
@@ -213,12 +219,14 @@
 				AA1EE464176059AB0029C7A5 /* SDL_test_crc32.c in Sources */,
 				AA1EE465176059AB0029C7A5 /* SDL_test_font.c in Sources */,
 				AA1EE466176059AB0029C7A5 /* SDL_test_fuzzer.c in Sources */,
+				AAF030021F9009B100B9A9FB /* SDL_test_assert.c in Sources */,
 				AA1EE467176059AB0029C7A5 /* SDL_test_harness.c in Sources */,
 				AA1EE468176059AB0029C7A5 /* SDL_test_imageBlit.c in Sources */,
 				AA1EE469176059AB0029C7A5 /* SDL_test_imageBlitBlend.c in Sources */,
 				AA1EE46A176059AB0029C7A5 /* SDL_test_imageFace.c in Sources */,
 				AA1EE46B176059AB0029C7A5 /* SDL_test_imagePrimitives.c in Sources */,
 				AA1EE46C176059AB0029C7A5 /* SDL_test_imagePrimitivesBlend.c in Sources */,
+				AAF030011F9009B100B9A9FB /* SDL_test_memory.c in Sources */,
 				AA1EE46D176059AB0029C7A5 /* SDL_test_log.c in Sources */,
 				AA1EE46E176059AB0029C7A5 /* SDL_test_md5.c in Sources */,
 				AA1EE46F176059AB0029C7A5 /* SDL_test_random.c in Sources */,

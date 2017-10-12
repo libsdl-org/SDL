@@ -671,3 +671,6 @@ SDL_DYNAPI_PROC(SDL_bool,SDL_Vulkan_CreateSurface,(SDL_Window *a, VkInstance b, 
 SDL_DYNAPI_PROC(void,SDL_Vulkan_GetDrawableSize,(SDL_Window *a, int *b, int *c),(a,b,c),)
 SDL_DYNAPI_PROC(void,SDL_LockJoysticks,(void),(),)
 SDL_DYNAPI_PROC(void,SDL_UnlockJoysticks,(void),(),)
+SDL_DYNAPI_PROC(void,SDL_GetMemoryFunctions,(SDL_malloc_func *a, SDL_calloc_func *b, SDL_realloc_func *c, SDL_free_func *d),(a,b,c,d),)
+SDL_DYNAPI_PROC(int,SDL_SetMemoryFunctions,(SDL_malloc_func a, SDL_calloc_func b, SDL_realloc_func c, SDL_free_func d),(a,b,c,d),return)
+SDL_DYNAPI_PROC(int,SDL_GetNumAllocations,(void),(),return)

@@ -47,7 +47,18 @@ static void SDL_snprintfcat(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL
 SDLTest_CommonState *
 SDLTest_CommonCreateState(char **argv, Uint32 flags)
 {
-    SDLTest_CommonState *state = (SDLTest_CommonState *)SDL_calloc(1, sizeof(*state));
+    int i;
+    SDLTest_CommonState *state;
+
+    /* Do this first so we catch all allocations */
+    for (i = 1; argv[i]; ++i) {
+        if (SDL_strcasecmp(argv[i], "--trackmem") == 0) {
+            SDLTest_TrackAllocations();
+            break;
+        }
+    }
+
+    state = (SDLTest_CommonState *)SDL_calloc(1, sizeof(*state));
     if (!state) {
         SDL_OutOfMemory();
         return NULL;
@@ -447,6 +458,10 @@ SDLTest_CommonArg(SDLTest_CommonState * state, int index)
         state->audiospec.samples = (Uint16) SDL_atoi(argv[index]);
         return 2;
     }
+    if (SDL_strcasecmp(argv[index], "--trackmem") == 0) {
+        /* Already handled in SDLTest_CommonCreateState() */
+        return 1;
+    }
     if ((SDL_strcasecmp(argv[index], "-h") == 0)
         || (SDL_strcasecmp(argv[index], "--help") == 0)) {
         /* Print the usage message */
@@ -464,13 +479,13 @@ SDLTest_CommonUsage(SDLTest_CommonState * state)
 {
     switch (state->flags & (SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
     case SDL_INIT_VIDEO:
-        return VIDEO_USAGE;
+        return "[--trackmem] " VIDEO_USAGE;
     case SDL_INIT_AUDIO:
-        return AUDIO_USAGE;
+        return "[--trackmem] " AUDIO_USAGE;
     case (SDL_INIT_VIDEO | SDL_INIT_AUDIO):
-        return VIDEO_USAGE " " AUDIO_USAGE;
+        return "[--trackmem] " VIDEO_USAGE " " AUDIO_USAGE;
     default:
-        return "";
+        return "[--trackmem]";
     }
 }
 
@@ -1762,6 +1777,7 @@ SDLTest_CommonQuit(SDLTest_CommonState * state)
     }
     SDL_free(state);
     SDL_Quit();
+    SDLTest_LogAllocations();
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
