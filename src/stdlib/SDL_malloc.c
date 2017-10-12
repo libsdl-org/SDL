@@ -5370,7 +5370,7 @@ void SDL_free(void *ptr)
     }
 
     s_mem.free_func(ptr);
-    SDL_AtomicDecRef(&s_mem.num_allocations);
+    (void)SDL_AtomicDecRef(&s_mem.num_allocations);
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
