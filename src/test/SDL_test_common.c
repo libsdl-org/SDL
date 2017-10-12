@@ -939,7 +939,7 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
             }
 
             /* Add resize/drag areas for windows that are borderless and resizable */
-            if ((state->window_flags & SDL_WINDOW_RESIZABLE|SDL_WINDOW_BORDERLESS) ==
+            if ((state->window_flags & (SDL_WINDOW_RESIZABLE|SDL_WINDOW_BORDERLESS)) ==
                 (SDL_WINDOW_RESIZABLE|SDL_WINDOW_BORDERLESS)) {
                 SDL_SetWindowHitTest(state->windows[i], SDLTest_ExampleHitTestCallback, NULL);
             }
