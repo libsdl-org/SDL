@@ -219,7 +219,35 @@ SDL_RendererEventWatch(void *userdata, SDL_Event *event)
             event->button.x = (int)(event->button.x / (renderer->scale.x * renderer->dpi_scale.x));
             event->button.y = (int)(event->button.y / (renderer->scale.y * renderer->dpi_scale.y));
         }
+    } else if (event->type == SDL_FINGERDOWN ||
+               event->type == SDL_FINGERUP ||
+               event->type == SDL_FINGERMOTION) {
+        if (renderer->logical_w) {
+            int w = 1;
+            int h = 1;
+            SDL_GetRendererOutputSize(renderer, &w, &h);
+
+            event->tfinger.x *= (w - 1);
+            event->tfinger.y *= (h - 1);
+
+            event->tfinger.x -= (renderer->viewport.x * renderer->dpi_scale.x);
+            event->tfinger.y -= (renderer->viewport.y * renderer->dpi_scale.y);
+            event->tfinger.x = (event->tfinger.x / (renderer->scale.x * renderer->dpi_scale.x));
+            event->tfinger.y = (event->tfinger.y / (renderer->scale.y * renderer->dpi_scale.y));
+
+            if (renderer->logical_w > 1) {
+                event->tfinger.x = event->tfinger.x / (renderer->logical_w - 1);
+            } else {
+                event->tfinger.x = 0.5f;
+            }
+            if (renderer->logical_h > 1) {
+                event->tfinger.y = event->tfinger.y / (renderer->logical_h - 1);
+            } else {
+                event->tfinger.y = 0.5f;
+            }
+        }
     }
+
     return 0;
 }
 
