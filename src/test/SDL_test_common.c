@@ -676,7 +676,7 @@ SDLTest_LoadIcon(const char *file)
     return (icon);
 }
 
-static SDL_HitTestResult
+static SDL_HitTestResult SDLCALL
 SDLTest_ExampleHitTestCallback(SDL_Window *win, const SDL_Point *area, void *data)
 {
     int w, h;
