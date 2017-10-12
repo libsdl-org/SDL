@@ -637,3 +637,6 @@
 #define SDL_Vulkan_GetDrawableSize SDL_Vulkan_GetDrawableSize_REAL
 #define SDL_LockJoysticks SDL_LockJoysticks_REAL
 #define SDL_UnlockJoysticks SDL_UnlockJoysticks_REAL
+#define SDL_GetMemoryFunctions SDL_GetMemoryFunctions_REAL
+#define SDL_SetMemoryFunctions SDL_SetMemoryFunctions_REAL
+#define SDL_GetNumAllocations SDL_GetNumAllocations_REAL

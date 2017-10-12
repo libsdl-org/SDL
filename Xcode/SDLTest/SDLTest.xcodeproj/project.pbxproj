@@ -348,6 +348,7 @@
 		00794EF009D23739003FC8A1 /* utf8.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E6309D20839003FC8A1 /* utf8.txt */; };
 		00794EF709D237DE003FC8A1 /* moose.dat in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E5E09D20839003FC8A1 /* moose.dat */; };
 		453774A5120915E3002F0F45 /* testshape.c in Sources */ = {isa = PBXBuildFile; fileRef = 453774A4120915E3002F0F45 /* testshape.c */; };
+		AAF02FFA1F90092700B9A9FB /* SDL_test_memory.c in Sources */ = {isa = PBXBuildFile; fileRef = AAF02FF41F90089800B9A9FB /* SDL_test_memory.c */; };
 		BBFC08C0164C6862003E6A99 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002F33A709CA188600EBEB88 /* Cocoa.framework */; };
 		BBFC08C1164C6862003E6A99 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863B10730545007319AE /* CoreAudio.framework */; };
 		BBFC08C2164C6862003E6A99 /* ForceFeedback.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863C10730545007319AE /* ForceFeedback.framework */; };
@@ -1152,6 +1153,7 @@
 		092D6D75FFB313BB7F000001 /* testlock.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = testlock.c; path = ../../test/testlock.c; sourceTree = SOURCE_ROOT; };
 		4537749212091504002F0F45 /* testshape */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testshape; sourceTree = BUILT_PRODUCTS_DIR; };
 		453774A4120915E3002F0F45 /* testshape.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testshape.c; path = ../../test/testshape.c; sourceTree = SOURCE_ROOT; };
+		AAF02FF41F90089800B9A9FB /* SDL_test_memory.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_test_memory.c; path = ../../src/test/SDL_test_memory.c; sourceTree = "<group>"; };
 		BBFC088E164C6820003E6A99 /* testgamecontroller.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testgamecontroller.c; path = ../../test/testgamecontroller.c; sourceTree = "<group>"; };
 		BBFC08CD164C6862003E6A99 /* testgamecontroller */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testgamecontroller; sourceTree = BUILT_PRODUCTS_DIR; };
 		BEC566B60761D90300A33029 /* checkkeys */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = checkkeys; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -2212,6 +2214,7 @@
 				DB166D8F16A1D1A500A1396C /* SDL_test_imagePrimitivesBlend.c */,
 				DB166D9016A1D1A500A1396C /* SDL_test_log.c */,
 				DB166D9116A1D1A500A1396C /* SDL_test_md5.c */,
+				AAF02FF41F90089800B9A9FB /* SDL_test_memory.c */,
 				DB166D9216A1D1A500A1396C /* SDL_test_random.c */,
 			);
 			name = SDL_Test;
@@ -3393,6 +3396,7 @@
 				DB166D9E16A1D1A500A1396C /* SDL_test_imagePrimitivesBlend.c in Sources */,
 				DB166D9F16A1D1A500A1396C /* SDL_test_log.c in Sources */,
 				DB166DA016A1D1A500A1396C /* SDL_test_md5.c in Sources */,
+				AAF02FFA1F90092700B9A9FB /* SDL_test_memory.c in Sources */,
 				DB166DA116A1D1A500A1396C /* SDL_test_random.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

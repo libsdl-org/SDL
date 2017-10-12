@@ -561,16 +561,12 @@ SDL_strlcat(SDL_INOUT_Z_CAP(maxlen) char *dst, const char *src, size_t maxlen)
 char *
 SDL_strdup(const char *string)
 {
-#if defined(HAVE_STRDUP)
-    return strdup(string);
-#else
     size_t len = SDL_strlen(string) + 1;
     char *newstr = SDL_malloc(len);
     if (newstr) {
         SDL_strlcpy(newstr, string, len);
     }
     return newstr;
-#endif /* HAVE_STRDUP */
 }
 
 char *

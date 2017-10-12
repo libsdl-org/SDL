@@ -26,39 +26,11 @@
 #include "../SDL_internal.h"
 
 /* This file contains portable memory management functions for SDL */
-
 #include "SDL_stdinc.h"
+#include "SDL_atomic.h"
+#include "SDL_error.h"
 
-#if defined(HAVE_MALLOC)
-
-void *SDL_malloc(size_t size)
-{
-    if (!size) {
-        return malloc(1);
-    }
-    return malloc(size);
-}
-
-void *SDL_calloc(size_t nmemb, size_t size)
-{
-    if (!size || !nmemb) {
-        return calloc(1,1);
-    }
-    return calloc(nmemb, size);
-}
-
-void *SDL_realloc(void *ptr, size_t size)
-{
-    return realloc(ptr, size);
-}
-
-void SDL_free(void *ptr)
-{
-    free(ptr);
-}
-
-#else  /* the rest of this is a LOT of tapdancing to implement malloc. :) */
-
+#ifndef HAVE_MALLOC
 #define LACKS_SYS_TYPES_H
 #define LACKS_STDIO_H
 #define LACKS_STRINGS_H
@@ -66,6 +38,7 @@ void SDL_free(void *ptr)
 #define LACKS_STDLIB_H
 #define ABORT
 #define USE_LOCKS 1
+#define USE_DL_PREFIX
 
 /*
   This is a version (aka dlmalloc) of malloc/free/realloc written by
@@ -642,12 +615,12 @@ DEFAULT_MMAP_THRESHOLD       default: 256K
 #define MALLINFO_FIELD_TYPE size_t
 #endif /* MALLINFO_FIELD_TYPE */
 
+#ifndef memset
 #define memset  SDL_memset
+#endif
+#ifndef memcpy
 #define memcpy  SDL_memcpy
-#define malloc  SDL_malloc
-#define calloc  SDL_calloc
-#define realloc SDL_realloc
-#define free    SDL_free
+#endif
 
 /*
   mallopt tuning options.  SVID/XPG defines four standard parameter
@@ -5270,5 +5243,134 @@ History:
 */
 
 #endif /* !HAVE_MALLOC */
+
+#ifdef HAVE_MALLOC
+#define real_malloc malloc
+#define real_calloc calloc
+#define real_realloc realloc
+#define real_free free
+#else
+#define real_malloc dlmalloc
+#define real_calloc dlcalloc
+#define real_realloc dlrealloc
+#define real_free dlfree
+#endif
+
+/* Memory functions used by SDL that can be replaced by the application */
+static struct
+{
+    SDL_malloc_func malloc_func;
+    SDL_calloc_func calloc_func;
+    SDL_realloc_func realloc_func;
+    SDL_free_func free_func;
+    SDL_atomic_t num_allocations;
+} s_mem = {
+    real_malloc, real_calloc, real_realloc, real_free, { 0 }
+};
+
+void SDL_GetMemoryFunctions(SDL_malloc_func *malloc_func,
+                            SDL_calloc_func *calloc_func,
+                            SDL_realloc_func *realloc_func,
+                            SDL_free_func *free_func)
+{
+    if (malloc_func) {
+        *malloc_func = s_mem.malloc_func;
+    }
+    if (calloc_func) {
+        *calloc_func = s_mem.calloc_func;
+    }
+    if (realloc_func) {
+        *realloc_func = s_mem.realloc_func;
+    }
+    if (free_func) {
+        *free_func = s_mem.free_func;
+    }
+}
+
+int SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
+                           SDL_calloc_func calloc_func,
+                           SDL_realloc_func realloc_func,
+                           SDL_free_func free_func)
+{
+    if (!malloc_func) {
+        return SDL_InvalidParamError("malloc_func");
+    }
+    if (!calloc_func) {
+        return SDL_InvalidParamError("calloc_func");
+    }
+    if (!realloc_func) {
+        return SDL_InvalidParamError("realloc_func");
+    }
+    if (!free_func) {
+        return SDL_InvalidParamError("free_func");
+    }
+
+    s_mem.malloc_func = malloc_func;
+    s_mem.calloc_func = calloc_func;
+    s_mem.realloc_func = realloc_func;
+    s_mem.free_func = free_func;
+    return 0;
+}
+
+int SDL_GetNumAllocations()
+{
+    return SDL_AtomicGet(&s_mem.num_allocations);
+}
+
+void *SDL_malloc(size_t size)
+{
+    void *mem;
+
+    if (!size) {
+        size = 1;
+    }
+
+    mem = s_mem.malloc_func(size);
+    if (mem) {
+        SDL_AtomicIncRef(&s_mem.num_allocations);
+    }
+    return mem;
+}
+
+void *SDL_calloc(size_t nmemb, size_t size)
+{
+    void *mem;
+
+    if (!nmemb || !size) {
+        nmemb = 1;
+        size = 1;
+    }
+
+    mem = s_mem.calloc_func(nmemb, size);
+    if (mem) {
+        SDL_AtomicIncRef(&s_mem.num_allocations);
+    }
+    return mem;
+}
+
+void *SDL_realloc(void *ptr, size_t size)
+{
+    void *mem;
+
+    if (!ptr && !size) {
+        size = 1;
+    }
+
+    mem = s_mem.realloc_func(ptr, size);
+    if (mem && !ptr) {
+        SDL_AtomicIncRef(&s_mem.num_allocations);
+    }
+    return mem;
+}
+
+void SDL_free(void *ptr)
+{
+    if (!ptr) {
+        return;
+    }
+
+    s_mem.free_func(ptr);
+    SDL_AtomicDecRef(&s_mem.num_allocations);
+}
 
 /* vi: set ts=4 sw=4 expandtab: */

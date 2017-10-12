@@ -6,6 +6,10 @@ This is a list of major changes in SDL's version history.
 ---------------------------------------------------------------------------
 
 General:
+* Added functions to query and set the SDL memory allocation functions:
+	SDL_GetMemoryFunctions()
+	SDL_SetMemoryFunctions()
+	SDL_GetNumAllocations()
 * Added locking functions for multi-threaded access to the joystick and game controller APIs:
 	SDL_LockJoysticks()
 	SDL_UnlockJoysticks()

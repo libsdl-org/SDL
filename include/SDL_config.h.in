@@ -75,6 +75,7 @@
 #undef HAVE_SYS_TYPES_H
 #undef HAVE_WCHAR_H
 #undef HAVE_PTHREAD_NP_H
+#undef HAVE_LIBUNWIND_H
 
 /* C library functions */
 #undef HAVE_MALLOC
@@ -102,7 +103,6 @@
 #undef HAVE_STRLEN
 #undef HAVE_STRLCPY
 #undef HAVE_STRLCAT
-#undef HAVE_STRDUP
 #undef HAVE__STRREV
 #undef HAVE__STRUPR
 #undef HAVE__STRLWR

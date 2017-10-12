@@ -72,6 +72,7 @@
 #cmakedefine HAVE_SYS_TYPES_H 1
 #cmakedefine HAVE_WCHAR_H 1
 #cmakedefine HAVE_PTHREAD_NP_H 1
+#cmakedefine HAVE_LIBUNWIND_H 1
 
 /* C library functions */
 #cmakedefine HAVE_MALLOC 1
@@ -99,7 +100,6 @@
 #cmakedefine HAVE_STRLEN 1
 #cmakedefine HAVE_STRLCPY 1
 #cmakedefine HAVE_STRLCAT 1
-#cmakedefine HAVE_STRDUP 1
 #cmakedefine HAVE__STRREV 1
 #cmakedefine HAVE__STRUPR 1
 #cmakedefine HAVE__STRLWR 1

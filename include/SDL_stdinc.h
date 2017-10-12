@@ -347,6 +347,37 @@ extern DECLSPEC void *SDLCALL SDL_calloc(size_t nmemb, size_t size);
 extern DECLSPEC void *SDLCALL SDL_realloc(void *mem, size_t size);
 extern DECLSPEC void SDLCALL SDL_free(void *mem);
 
+typedef void *(SDLCALL *SDL_malloc_func)(size_t size);
+typedef void *(SDLCALL *SDL_calloc_func)(size_t nmemb, size_t size);
+typedef void *(SDLCALL *SDL_realloc_func)(void *mem, size_t size);
+typedef void (SDLCALL *SDL_free_func)(void *mem);
+
+/**
+ *  \brief Get the current set of SDL memory functions
+ */
+extern DECLSPEC void SDLCALL SDL_GetMemoryFunctions(SDL_malloc_func *malloc_func,
+                                                    SDL_calloc_func *calloc_func,
+                                                    SDL_realloc_func *realloc_func,
+                                                    SDL_free_func *free_func);
+
+/**
+ *  \brief Replace SDL's memory allocation functions with a custom set
+ *
+ *  \note If you are replacing SDL's memory functions, you should call
+ *        SDL_GetNumAllocations() and be very careful if it returns non-zero.
+ *        That means that your free function will be called with memory
+ *        allocated by the previous memory allocation functions.
+ */
+extern DECLSPEC int SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
+                                                   SDL_calloc_func calloc_func,
+                                                   SDL_realloc_func realloc_func,
+                                                   SDL_free_func free_func);
+
+/**
+ *  \brief Get the number of outstanding (unfreed) allocations
+ */
+extern DECLSPEC int SDLCALL SDL_GetNumAllocations();
+
 extern DECLSPEC char *SDLCALL SDL_getenv(const char *name);
 extern DECLSPEC int SDLCALL SDL_setenv(const char *name, const char *value, int overwrite);
 
