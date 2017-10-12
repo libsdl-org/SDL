@@ -81,6 +81,8 @@ SDL_MouseInit(void)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
 
+    SDL_zerop(mouse);
+
     SDL_AddHintCallback(SDL_HINT_MOUSE_NORMAL_SPEED_SCALE,
                         SDL_MouseNormalSpeedScaleChanged, mouse);
 
@@ -586,8 +588,6 @@ SDL_MouseQuit(void)
     if (mouse->clickstate) {
         SDL_free(mouse->clickstate);
     }
-
-    SDL_zerop(mouse);
 
     SDL_DelHintCallback(SDL_HINT_MOUSE_NORMAL_SPEED_SCALE,
                         SDL_MouseNormalSpeedScaleChanged, mouse);
