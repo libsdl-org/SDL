@@ -257,7 +257,7 @@ void SDLTest_LogAllocations()
                 if (!entry->stack[stack_index]) {
                     break;
                 }
-                SDL_snprintf(line, sizeof(line), "\t0x%"SDL_PRIX64": %s\n", entry->stack[stack_index], entry->stack_names[stack_index]);
+                SDL_snprintf(line, sizeof(line), "\t0x%"SDL_PRIx64": %s\n", entry->stack[stack_index], entry->stack_names[stack_index]);
                 ADD_LINE();
             }
             total_allocated += entry->size;
