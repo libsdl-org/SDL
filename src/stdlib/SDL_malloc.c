@@ -33,11 +33,17 @@
 
 void *SDL_malloc(size_t size)
 {
+    if (!size) {
+        return malloc(1);
+    }
     return malloc(size);
 }
 
 void *SDL_calloc(size_t nmemb, size_t size)
 {
+    if (!size || !nmemb) {
+        return calloc(1,1);
+    }
     return calloc(nmemb, size);
 }
 
