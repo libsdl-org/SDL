@@ -144,7 +144,7 @@ static void SDL_UntrackAllocation(void *mem)
     }
 }
 
-static void *SDLTest_TrackedMalloc(size_t size)
+static void * SDLCALL SDLTest_TrackedMalloc(size_t size)
 {
     void *mem;
 
@@ -155,7 +155,7 @@ static void *SDLTest_TrackedMalloc(size_t size)
     return mem;
 }
 
-static void *SDLTest_TrackedCalloc(size_t nmemb, size_t size)
+static void * SDLCALL SDLTest_TrackedCalloc(size_t nmemb, size_t size)
 {
     void *mem;
 
@@ -166,7 +166,7 @@ static void *SDLTest_TrackedCalloc(size_t nmemb, size_t size)
     return mem;
 }
 
-static void *SDLTest_TrackedRealloc(void *ptr, size_t size)
+static void * SDLCALL SDLTest_TrackedRealloc(void *ptr, size_t size)
 {
     void *mem;
 
@@ -181,7 +181,7 @@ static void *SDLTest_TrackedRealloc(void *ptr, size_t size)
     return mem;
 }
 
-static void SDLTest_TrackedFree(void *ptr)
+static void SDLCALL SDLTest_TrackedFree(void *ptr)
 {
     if (!ptr) {
         return;
