@@ -541,13 +541,16 @@ COREAUDIO_CloseDevice(_THIS)
     update_audio_session(this, SDL_FALSE);
 #endif
 
-    if (this->hidden->thread) {
-        SDL_AtomicSet(&this->hidden->shutdown, 1);
-        SDL_WaitThread(this->hidden->thread, NULL);
-    }
+    /* if callback fires again, feed silence; don't call into the app. */
+    SDL_AtomicSet(&this->paused, 1);
 
     if (this->hidden->audioQueue) {
         AudioQueueDispose(this->hidden->audioQueue, 1);
+    }
+
+    if (this->hidden->thread) {
+        SDL_AtomicSet(&this->hidden->shutdown, 1);
+        SDL_WaitThread(this->hidden->thread, NULL);
     }
 
     if (this->hidden->ready_semaphore) {
@@ -731,12 +734,9 @@ audioqueue_thread(void *arg)
         CFRunLoopRunInMode(kCFRunLoopDefaultMode, 0.10, 1);
     }
 
-    if (this->iscapture) {  /* just stop immediately for capture devices. */
-        AudioQueueStop(this->hidden->audioQueue, 1);
-    } else {  /* Drain off any pending playback. */
+    if (!this->iscapture) {  /* Drain off any pending playback. */
         const CFTimeInterval secs = (((this->spec.size / (SDL_AUDIO_BITSIZE(this->spec.format) / 8)) / this->spec.channels) / ((CFTimeInterval) this->spec.freq)) * 2.0;
         CFRunLoopRunInMode(kCFRunLoopDefaultMode, secs, 0);
-        AudioQueueStop(this->hidden->audioQueue, 0);
     }
 
     return 0;
