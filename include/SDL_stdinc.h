@@ -376,7 +376,7 @@ extern DECLSPEC int SDLCALL SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
 /**
  *  \brief Get the number of outstanding (unfreed) allocations
  */
-extern DECLSPEC int SDLCALL SDL_GetNumAllocations();
+extern DECLSPEC int SDLCALL SDL_GetNumAllocations(void);
 
 extern DECLSPEC char *SDLCALL SDL_getenv(const char *name);
 extern DECLSPEC int SDLCALL SDL_setenv(const char *name, const char *value, int overwrite);
