@@ -5312,7 +5312,7 @@ int SDL_SetMemoryFunctions(SDL_malloc_func malloc_func,
     return 0;
 }
 
-int SDL_GetNumAllocations()
+int SDL_GetNumAllocations(void)
 {
     return SDL_AtomicGet(&s_mem.num_allocations);
 }
