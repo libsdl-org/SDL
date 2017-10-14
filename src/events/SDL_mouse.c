@@ -580,13 +580,16 @@ SDL_MouseQuit(void)
         SDL_FreeCursor(cursor);
         cursor = next;
     }
+    mouse->cursors = NULL;
 
     if (mouse->def_cursor && mouse->FreeCursor) {
         mouse->FreeCursor(mouse->def_cursor);
+        mouse->def_cursor = NULL;
     }
 
     if (mouse->clickstate) {
         SDL_free(mouse->clickstate);
+        mouse->clickstate = NULL;
     }
 
     SDL_DelHintCallback(SDL_HINT_MOUSE_NORMAL_SPEED_SCALE,
