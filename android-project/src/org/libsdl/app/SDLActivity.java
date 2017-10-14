@@ -2,12 +2,9 @@ package org.libsdl.app;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 import java.lang.reflect.Method;
+import java.util.Objects;
 
 import android.app.*;
 import android.content.*;
@@ -26,7 +23,6 @@ import android.util.Log;
 import android.util.SparseArray;
 import android.graphics.*;
 import android.graphics.drawable.Drawable;
-import android.media.*;
 import android.hardware.*;
 import android.content.pm.ActivityInfo;
 
@@ -400,7 +396,6 @@ public class SDLActivity extends Activity {
                 mSurface.handleResume();
                 mCurrentNativeState = mNextNativeState;
             }
-            return;
         }
     }
 
@@ -547,7 +542,7 @@ public class SDLActivity extends Activity {
     {
       int orientation = -1;
 
-      if (hint != "") {
+      if (!Objects.equals(hint, "")) {
          if (hint.contains("LandscapeRight") && hint.contains("LandscapeLeft")) {
             orientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
          } else if (hint.contains("LandscapeRight")) {
@@ -580,8 +575,6 @@ public class SDLActivity extends Activity {
       if (orientation != -1) {
          mSingleton.setRequestedOrientation(orientation);
       }
- 
-      return;
     }
 
 
@@ -590,20 +583,17 @@ public class SDLActivity extends Activity {
      */
     public static boolean isScreenKeyboardShown() 
     {
-       if (mTextEdit == null) {
-          return false;
-       }
+        if (mTextEdit == null) {
+            return false;
+        }
 
-       if (mScreenKeyboardShown == false) {
-          return false;
-       }
+        if (!mScreenKeyboardShown) {
+            return false;
+        }
 
-       InputMethodManager imm = (InputMethodManager) SDL.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-       if (imm.isAcceptingText()) {
-          return true;
-       }
+        InputMethodManager imm = (InputMethodManager) SDL.getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        return imm.isAcceptingText();
 
-       return false;
     }
 
     /**
@@ -681,10 +671,7 @@ public class SDLActivity extends Activity {
             }  
         }
 
-        if (event.isPrintingKey() || event.getKeyCode() == KeyEvent.KEYCODE_SPACE) {
-            return true;
-        }
-        return false;
+        return event.isPrintingKey() || event.getKeyCode() == KeyEvent.KEYCODE_SPACE;
     }
 
     /**
@@ -1010,7 +997,6 @@ public class SDLActivity extends Activity {
      */
     public static void clipboardSetText(String string) {
         mClipboardHandler.clipboardSetText(string);
-        return;
     }
 
 }
@@ -1604,7 +1590,6 @@ class SDLClipboardHandler_Old implements
     @Override
     public void clipboardSetText(String string) {
        mClipMgrOld.setText(string);
-       return;
     }
 }
 

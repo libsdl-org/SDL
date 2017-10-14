@@ -1,14 +1,12 @@
 package org.libsdl.app;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 
-import android.app.*;
 import android.content.Context;
-import android.hardware.*;
 import android.os.*;
 import android.view.*;
 import android.util.Log;
@@ -268,7 +266,7 @@ class SDLJoystickHandler_API16 extends SDLJoystickHandler_API12 {
     public String getJoystickDescriptor(InputDevice joystickDevice) {
         String desc = joystickDevice.getDescriptor();
 
-        if (desc != null && desc != "") {
+        if (desc != null && !Objects.equals(desc, "")) {
             return desc;
         }
 
