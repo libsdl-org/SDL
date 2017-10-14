@@ -1,7 +1,6 @@
 package org.libsdl.app;
 
 import android.media.*;
-import android.hardware.*;
 import android.util.Log;
 
 public class SDLAudioManager
