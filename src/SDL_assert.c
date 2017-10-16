@@ -278,19 +278,19 @@ SDL_PromptAssertion(const SDL_assert_data *data, void *userdata)
                 break;
             }
 
-            if (SDL_strcmp(buf, "a") == 0) {
+            if (SDL_strncmp(buf, "a", 1) == 0) {
                 state = SDL_ASSERTION_ABORT;
                 break;
-            } else if (SDL_strcmp(buf, "b") == 0) {
+            } else if (SDL_strncmp(buf, "b", 1) == 0) {
                 state = SDL_ASSERTION_BREAK;
                 break;
-            } else if (SDL_strcmp(buf, "r") == 0) {
+            } else if (SDL_strncmp(buf, "r", 1) == 0) {
                 state = SDL_ASSERTION_RETRY;
                 break;
-            } else if (SDL_strcmp(buf, "i") == 0) {
+            } else if (SDL_strncmp(buf, "i", 1) == 0) {
                 state = SDL_ASSERTION_IGNORE;
                 break;
-            } else if (SDL_strcmp(buf, "A") == 0) {
+            } else if (SDL_strncmp(buf, "A", 1) == 0) {
                 state = SDL_ASSERTION_ALWAYS_IGNORE;
                 break;
             }
