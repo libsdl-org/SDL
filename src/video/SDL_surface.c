@@ -37,6 +37,10 @@ SDL_ConvertPixels_ARGB8888_to_YUV(int width, int height,
         const void *src, int src_pitch,
         Uint32 dst_format, void *dst);
 
+/* Check to make sure we can safely check multiplication of surface w and pitch and it won't overflow size_t */
+SDL_COMPILE_TIME_ASSERT(surface_size_assumptions,
+    sizeof(int) == sizeof(Sint32) && sizeof(size_t) >= sizeof(Sint32));
+
 /* Public routines */
 
 /*
@@ -91,15 +95,16 @@ SDL_CreateRGBSurfaceWithFormat(Uint32 flags, int width, int height, int depth,
 
     /* Get the pixels */
     if (surface->w && surface->h) {
-        int size = (surface->h * surface->pitch);
-        if (size < 0 || (size / surface->pitch) != surface->h) {
+        /* Assumptions checked in surface_size_assumptions assert above */
+        Sint64 size = ((Sint64)surface->h * surface->pitch);
+        if (size < 0 || size > SDL_MAX_SINT32) {
             /* Overflow... */
             SDL_FreeSurface(surface);
             SDL_OutOfMemory();
             return NULL;
         }
 
-        surface->pixels = SDL_malloc(size);
+        surface->pixels = SDL_malloc((size_t)size);
         if (!surface->pixels) {
             SDL_FreeSurface(surface);
             SDL_OutOfMemory();
