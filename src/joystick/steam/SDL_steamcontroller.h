@@ -26,8 +26,8 @@ typedef void (*SteamControllerDisconnectedCallback_t)(int device_instance);
 void SDL_InitSteamControllers(SteamControllerConnectedCallback_t connectedCallback,
                               SteamControllerDisconnectedCallback_t disconnectedCallback);
 void SDL_GetSteamControllerInputs(int *nbuttons, int *naxes, int *nhats);
-void SDL_UpdateSteamControllers();
+void SDL_UpdateSteamControllers(void);
 void SDL_UpdateSteamController(SDL_Joystick *joystick);
-void SDL_QuitSteamControllers();
+void SDL_QuitSteamControllers(void);
 
 /* vi: set ts=4 sw=4 expandtab: */

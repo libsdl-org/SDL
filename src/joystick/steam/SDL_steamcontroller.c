@@ -37,7 +37,7 @@ void SDL_GetSteamControllerInputs(int *nbuttons, int *naxes, int *nhats)
     *nhats = 0;
 }
 
-void SDL_UpdateSteamControllers()
+void SDL_UpdateSteamControllers(void)
 {
 }
 
@@ -45,7 +45,7 @@ void SDL_UpdateSteamController(SDL_Joystick *joystick)
 {
 }
 
-void SDL_QuitSteamControllers()
+void SDL_QuitSteamControllers(void)
 {
 }
 
