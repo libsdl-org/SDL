@@ -2031,8 +2031,9 @@ GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
     }
 
     window_flags = SDL_GetWindowFlags(window);
+    /* OpenGL ES 3.0 is a superset of OpenGL ES 2.0 */
     if (!(window_flags & SDL_WINDOW_OPENGL) ||
-        profile_mask != SDL_GL_CONTEXT_PROFILE_ES || major != RENDERER_CONTEXT_MAJOR || minor != RENDERER_CONTEXT_MINOR) {
+        profile_mask != SDL_GL_CONTEXT_PROFILE_ES || major < RENDERER_CONTEXT_MAJOR) {
 
         changed_window = SDL_TRUE;
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
