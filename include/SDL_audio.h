@@ -477,6 +477,106 @@ extern DECLSPEC int SDLCALL SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
  */
 extern DECLSPEC int SDLCALL SDL_ConvertAudio(SDL_AudioCVT * cvt);
 
+/* SDL_AudioStream is a new audio conversion interface.
+   The benefits vs SDL_AudioCVT:
+    - it can handle resampling data in chunks without generating
+      artifacts, when it doesn't have the complete buffer available.
+    - it can handle incoming data in any variable size.
+    - You push data as you have it, and pull it when you need it
+ */
+/* this is opaque to the outside world. */
+struct _SDL_AudioStream;
+typedef struct _SDL_AudioStream SDL_AudioStream;
+
+/**
+ *  Create a new audio stream
+ *
+ *  \param src_format The format of the source audio
+ *  \param src_channels The number of channels of the source audio
+ *  \param src_rate The sampling rate of the source audio
+ *  \param dst_format The format of the desired audio output
+ *  \param dst_channels The number of channels of the desired audio output
+ *  \param dst_rate The sampling rate of the desired audio output
+ *  \return 0 on success, or -1 on error.
+ *
+ *  \sa SDL_AudioStreamPut
+ *  \sa SDL_AudioStreamGet
+ *  \sa SDL_AudioStreamAvailable
+ *  \sa SDL_AudioStreamClear
+ *  \sa SDL_FreeAudioStream
+ */
+extern DECLSPEC SDL_AudioStream * SDLCALL SDL_NewAudioStream(const SDL_AudioFormat src_format,
+                                           const Uint8 src_channels,
+                                           const int src_rate,
+                                           const SDL_AudioFormat dst_format,
+                                           const Uint8 dst_channels,
+                                           const int dst_rate);
+
+/**
+ *  Add data to be converted/resampled to the stream
+ *
+ *  \param stream The stream the audio data is being added to
+ *  \param buf A pointer to the audio data to add
+ *  \param int The number of bytes to write to the stream
+ *  \return 0 on success, or -1 on error.
+ *
+ *  \sa SDL_NewAudioStream
+ *  \sa SDL_AudioStreamGet
+ *  \sa SDL_AudioStreamAvailable
+ *  \sa SDL_AudioStreamClear
+ *  \sa SDL_FreeAudioStream
+ */
+extern DECLSPEC int SDLCALL SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, int len);
+
+/**
+ *  Get converted/resampled data from the stream
+ *
+ *  \param stream The stream the audio is being requested from
+ *  \param buf A buffer to fill with audio data
+ *  \param len The maximum number of bytes to fill
+ *  \return The number of bytes read from the stream, or -1 on error
+ *
+ *  \sa SDL_NewAudioStream
+ *  \sa SDL_AudioStreamPut
+ *  \sa SDL_AudioStreamAvailable
+ *  \sa SDL_AudioStreamClear
+ *  \sa SDL_FreeAudioStream
+ */
+extern DECLSPEC int SDLCALL SDL_AudioStreamGet(SDL_AudioStream *stream, void *buf, int len);
+
+/**
+ * Get the number of converted/resampled bytes available
+ *
+ *  \sa SDL_NewAudioStream
+ *  \sa SDL_AudioStreamPut
+ *  \sa SDL_AudioStreamGet
+ *  \sa SDL_AudioStreamClear
+ *  \sa SDL_FreeAudioStream
+ */
+extern DECLSPEC int SDLCALL SDL_AudioStreamAvailable(SDL_AudioStream *stream);
+
+/**
+ *  Clear any pending data in the stream without converting it
+ *
+ *  \sa SDL_NewAudioStream
+ *  \sa SDL_AudioStreamPut
+ *  \sa SDL_AudioStreamGet
+ *  \sa SDL_AudioStreamAvailable
+ *  \sa SDL_FreeAudioStream
+ */
+extern DECLSPEC void SDLCALL SDL_AudioStreamClear(SDL_AudioStream *stream);
+
+/**
+ * Free an audio stream
+ *
+ *  \sa SDL_NewAudioStream
+ *  \sa SDL_AudioStreamPut
+ *  \sa SDL_AudioStreamGet
+ *  \sa SDL_AudioStreamAvailable
+ *  \sa SDL_AudioStreamClear
+ */
+extern DECLSPEC void SDLCALL SDL_FreeAudioStream(SDL_AudioStream *stream);
+
 #define SDL_MIX_MAXVOLUME 128
 /**
  *  This takes two audio buffers of the playing audio format and mixes
@@ -532,7 +632,7 @@ extern DECLSPEC void SDLCALL SDL_MixAudioFormat(Uint8 * dst,
  *  \param dev The device ID to which we will queue audio.
  *  \param data The data to queue to the device for later playback.
  *  \param len The number of bytes (not samples!) to which (data) points.
- *  \return zero on success, -1 on error.
+ *  \return 0 on success, or -1 on error.
  *
  *  \sa SDL_GetQueuedAudioSize
  *  \sa SDL_ClearQueuedAudio

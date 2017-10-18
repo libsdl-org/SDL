@@ -640,3 +640,9 @@
 #define SDL_GetMemoryFunctions SDL_GetMemoryFunctions_REAL
 #define SDL_SetMemoryFunctions SDL_SetMemoryFunctions_REAL
 #define SDL_GetNumAllocations SDL_GetNumAllocations_REAL
+#define SDL_NewAudioStream SDL_NewAudioStream_REAL
+#define SDL_AudioStreamPut SDL_AudioStreamPut_REAL
+#define SDL_AudioStreamGet SDL_AudioStreamGet_REAL
+#define SDL_AudioStreamClear SDL_AudioStreamClear_REAL
+#define SDL_AudioStreamAvailable SDL_AudioStreamAvailable_REAL
+#define SDL_FreeAudioStream SDL_FreeAudioStream_REAL

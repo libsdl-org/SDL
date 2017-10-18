@@ -6,6 +6,13 @@ This is a list of major changes in SDL's version history.
 ---------------------------------------------------------------------------
 
 General:
+* Added audio stream conversion functions:
+	SDL_NewAudioStream
+	SDL_AudioStreamPut
+	SDL_AudioStreamGet
+	SDL_AudioStreamAvailable
+	SDL_AudioStreamClear
+	SDL_FreeAudioStream
 * Added functions to query and set the SDL memory allocation functions:
 	SDL_GetMemoryFunctions()
 	SDL_SetMemoryFunctions()
