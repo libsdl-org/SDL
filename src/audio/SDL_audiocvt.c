@@ -1077,7 +1077,7 @@ typedef int (*SDL_ResampleAudioStreamFunc)(SDL_AudioStream *stream, const void *
 typedef void (*SDL_ResetAudioStreamResamplerFunc)(SDL_AudioStream *stream);
 typedef void (*SDL_CleanupAudioStreamResamplerFunc)(SDL_AudioStream *stream);
 
-struct SDL_AudioStream
+struct _SDL_AudioStream
 {
     SDL_AudioCVT cvt_before_resampling;
     SDL_AudioCVT cvt_after_resampling;
@@ -1349,9 +1349,9 @@ SDL_NewAudioStream(const SDL_AudioFormat src_format,
 }
 
 int
-SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, const Uint32 _buflen)
+SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, int len)
 {
-    int buflen = (int) _buflen;
+    int buflen = len;
     int workbuflen;
     Uint8 *workbuf;
     Uint8 *resamplebuf = NULL;
@@ -1495,34 +1495,19 @@ SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, const Uint32 _bufle
     return buflen ? SDL_WriteToDataQueue(stream->queue, resamplebuf, buflen) : 0;
 }
 
-void
-SDL_AudioStreamClear(SDL_AudioStream *stream)
-{
-    if (!stream) {
-        SDL_InvalidParamError("stream");
-    } else {
-        SDL_ClearDataQueue(stream->queue, stream->packetlen * 2);
-        if (stream->reset_resampler_func) {
-            stream->reset_resampler_func(stream);
-        }
-        stream->first_run = SDL_TRUE;
-    }
-}
-
-
 /* get converted/resampled data from the stream */
 int
-SDL_AudioStreamGet(SDL_AudioStream *stream, void *buf, const Uint32 len)
+SDL_AudioStreamGet(SDL_AudioStream *stream, void *buf, int len)
 {
     #if DEBUG_AUDIOSTREAM
-    printf("AUDIOSTREAM: want to get %u converted bytes\n", (unsigned int) len);
+    printf("AUDIOSTREAM: want to get %d converted bytes\n", len);
     #endif
 
     if (!stream) {
         return SDL_InvalidParamError("stream");
     } else if (!buf) {
         return SDL_InvalidParamError("buf");
-    } else if (len == 0) {
+    } else if (len <= 0) {
         return 0;  /* nothing to do. */
     } else if ((len % stream->dst_sample_frame_size) != 0) {
         return SDL_SetError("Can't request partial sample frames");
@@ -1536,6 +1521,20 @@ int
 SDL_AudioStreamAvailable(SDL_AudioStream *stream)
 {
     return stream ? (int) SDL_CountDataQueue(stream->queue) : 0;
+}
+
+void
+SDL_AudioStreamClear(SDL_AudioStream *stream)
+{
+    if (!stream) {
+        SDL_InvalidParamError("stream");
+    } else {
+        SDL_ClearDataQueue(stream->queue, stream->packetlen * 2);
+        if (stream->reset_resampler_func) {
+            stream->reset_resampler_func(stream);
+        }
+        stream->first_run = SDL_TRUE;
+    }
 }
 
 /* dispose of a stream */

@@ -74,46 +74,6 @@ extern SDL_AudioFilter SDL_Convert_F32_to_S32;
 extern int SDL_PrepareResampleFilter(void);
 extern void SDL_FreeResampleFilter(void);
 
-
-/* SDL_AudioStream is a new audio conversion interface. It
-    might eventually become a public API.
-   The benefits vs SDL_AudioCVT:
-    - it can handle resampling data in chunks without generating
-      artifacts, when it doesn't have the complete buffer available.
-    - it can handle incoming data in any variable size.
-    - You push data as you have it, and pull it when you need it
-
-    (Note that currently this converts as data is put into the stream, so
-    you need to push more than a handful of bytes if you want decent
-    resampling. This can be changed later.)
- */
-
-/* this is opaque to the outside world. */
-typedef struct SDL_AudioStream SDL_AudioStream;
-
-/* create a new stream */
-extern SDL_AudioStream *SDL_NewAudioStream(const SDL_AudioFormat src_format,
-                                           const Uint8 src_channels,
-                                           const int src_rate,
-                                           const SDL_AudioFormat dst_format,
-                                           const Uint8 dst_channels,
-                                           const int dst_rate);
-
-/* add data to be converted/resampled to the stream */
-extern int SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, const Uint32 len);
-
-/* get converted/resampled data from the stream */
-extern int SDL_AudioStreamGet(SDL_AudioStream *stream, void *buf, const Uint32 len);
-
-/* clear any pending data in the stream without converting it. */
-extern void SDL_AudioStreamClear(SDL_AudioStream *stream);
-
-/* number of converted/resampled bytes available */
-extern int SDL_AudioStreamAvailable(SDL_AudioStream *stream);
-
-/* dispose of a stream */
-extern void SDL_FreeAudioStream(SDL_AudioStream *stream);
-
 #endif /* SDL_audio_c_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
