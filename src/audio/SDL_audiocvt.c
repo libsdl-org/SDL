@@ -1362,7 +1362,7 @@ SDL_NewAudioStream(const SDL_AudioFormat src_format,
 }
 
 static int
-SDL_AudioStreamPutInternal(SDL_AudioStream *stream, const void *buf, int len)
+SDL_AudioStreamPutInternal(SDL_AudioStream *stream, const void *buf, int len, int *maxputbytes)
 {
     int buflen = len;
     int workbuflen;
@@ -1479,6 +1479,13 @@ SDL_AudioStreamPutInternal(SDL_AudioStream *stream, const void *buf, int len)
     printf("AUDIOSTREAM: Final output is %d bytes\n", buflen);
     #endif
 
+    if (maxputbytes) {
+        const int maxbytes = *maxputbytes;
+        if (buflen > maxbytes)
+            buflen = maxbytes;
+        *maxputbytes -= buflen;
+    }
+
     /* resamplebuf holds the final output, even if we didn't resample. */
     return buflen ? SDL_WriteToDataQueue(stream->queue, resamplebuf, buflen) : 0;
 }
@@ -1524,7 +1531,7 @@ SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, int len)
            we don't need to store it for later, skip the staging process.
          */
         if (!stream->staging_buffer_filled && len >= stream->staging_buffer_size) {
-            return SDL_AudioStreamPutInternal(stream, buf, len);
+            return SDL_AudioStreamPutInternal(stream, buf, len, NULL);
         }
 
         /* If there's not enough data to fill the staging buffer, just save it */
@@ -1539,12 +1546,64 @@ SDL_AudioStreamPut(SDL_AudioStream *stream, const void *buf, int len)
         SDL_assert(amount > 0);
         SDL_memcpy(stream->staging_buffer + stream->staging_buffer_filled, buf, amount);
         stream->staging_buffer_filled = 0;
-        if (SDL_AudioStreamPutInternal(stream, stream->staging_buffer, stream->staging_buffer_size) < 0) {
+        if (SDL_AudioStreamPutInternal(stream, stream->staging_buffer, stream->staging_buffer_size, NULL) < 0) {
             return -1;
         }
         buf = (void *)((Uint8 *)buf + amount);
         len -= amount;
     }
+    return 0;
+}
+
+int SDL_AudioStreamFlush(SDL_AudioStream *stream)
+{
+    if (!stream) {
+        return SDL_InvalidParamError("stream");
+    }
+
+    #if DEBUG_AUDIOSTREAM
+    printf("AUDIOSTREAM: flushing! staging_buffer_filled=%d bytes\n", stream->staging_buffer_filled);
+    #endif
+
+    /* shouldn't use a staging buffer if we're not resampling. */
+    SDL_assert((stream->dst_rate != stream->src_rate) || (stream->staging_buffer_filled == 0));
+
+    if (stream->staging_buffer_filled > 0) {
+        /* push the staging buffer + silence. We need to flush out not just
+           the staging buffer, but the piece that the stream was saving off
+           for right-side resampler padding. */
+        const SDL_bool first_run = stream->first_run;
+        const int filled = stream->staging_buffer_filled;
+        int actual_input_frames = filled / stream->src_sample_frame_size;
+        if (!first_run)
+            actual_input_frames += stream->resampler_padding_samples / stream->pre_resample_channels;
+
+        if (actual_input_frames > 0) {  /* don't bother if nothing to flush. */
+            /* This is how many bytes we're expecting without silence appended. */
+            int flush_remaining = ((int) SDL_ceil(actual_input_frames * stream->rate_incr)) * stream->dst_sample_frame_size;
+
+            #if DEBUG_AUDIOSTREAM
+            printf("AUDIOSTREAM: flushing with padding to get max %d bytes!\n", flush_remaining);
+            #endif
+
+            SDL_memset(stream->staging_buffer + filled, '\0', stream->staging_buffer_size - filled);
+            if (SDL_AudioStreamPutInternal(stream, stream->staging_buffer, stream->staging_buffer_size, &flush_remaining) < 0) {
+                return -1;
+            }
+
+            /* we have flushed out (or initially filled) the pending right-side
+               resampler padding, but we need to push more silence to guarantee
+               the staging buffer is fully flushed out, too. */
+            SDL_memset(stream->staging_buffer, '\0', filled);
+            if (SDL_AudioStreamPutInternal(stream, stream->staging_buffer, stream->staging_buffer_size, &flush_remaining) < 0) {
+                return -1;
+            }
+        }
+    }
+
+    stream->staging_buffer_filled = 0;
+    stream->first_run = SDL_TRUE;
+
     return 0;
 }
 
@@ -1587,6 +1646,7 @@ SDL_AudioStreamClear(SDL_AudioStream *stream)
             stream->reset_resampler_func(stream);
         }
         stream->first_run = SDL_TRUE;
+        stream->staging_buffer_filled = 0;
     }
 }
 
