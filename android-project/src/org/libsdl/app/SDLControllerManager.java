@@ -101,7 +101,9 @@ public class SDLControllerManager
             Log.v(TAG, "Input device " + device.getName() + " is a gamepad.");
         }
 
-        return ((sources & (InputDevice.SOURCE_CLASS_JOYSTICK|InputDevice.SOURCE_GAMEPAD)) != 0);
+        return (((sources & InputDevice.SOURCE_CLASS_JOYSTICK) == InputDevice.SOURCE_CLASS_JOYSTICK) ||
+                ((sources & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD)
+        );
     }
 
 }
