@@ -646,3 +646,4 @@
 #define SDL_AudioStreamClear SDL_AudioStreamClear_REAL
 #define SDL_AudioStreamAvailable SDL_AudioStreamAvailable_REAL
 #define SDL_FreeAudioStream SDL_FreeAudioStream_REAL
+#define SDL_AudioStreamFlush SDL_AudioStreamFlush_REAL

@@ -545,7 +545,27 @@ extern DECLSPEC int SDLCALL SDL_AudioStreamPut(SDL_AudioStream *stream, const vo
 extern DECLSPEC int SDLCALL SDL_AudioStreamGet(SDL_AudioStream *stream, void *buf, int len);
 
 /**
- * Get the number of converted/resampled bytes available
+ * Get the number of converted/resampled bytes available. The stream may be
+ *  buffering data behind the scenes until it has enough to resample
+ *  correctly, so this number might be lower than what you expect, or even
+ *  be zero. Add more data or flush the stream if you need the data now.
+ *
+ *  \sa SDL_NewAudioStream
+ *  \sa SDL_AudioStreamPut
+ *  \sa SDL_AudioStreamGet
+ *  \sa SDL_AudioStreamClear
+ *  \sa SDL_AudioStreamFlush
+ *  \sa SDL_FreeAudioStream
+ */
+extern DECLSPEC int SDLCALL SDL_AudioStreamAvailable(SDL_AudioStream *stream);
+
+/**
+ * Tell the stream that you're done sending data, and anything being buffered
+ *  should be converted/resampled and made available immediately.
+ *
+ * It is legal to add more data to a stream after flushing, but there will
+ *  be audio gaps in the output. Generally this is intended to signal the
+ *  end of input, so the complete output becomes available.
  *
  *  \sa SDL_NewAudioStream
  *  \sa SDL_AudioStreamPut
@@ -553,7 +573,7 @@ extern DECLSPEC int SDLCALL SDL_AudioStreamGet(SDL_AudioStream *stream, void *bu
  *  \sa SDL_AudioStreamClear
  *  \sa SDL_FreeAudioStream
  */
-extern DECLSPEC int SDLCALL SDL_AudioStreamAvailable(SDL_AudioStream *stream);
+extern DECLSPEC int SDLCALL SDL_AudioStreamFlush(SDL_AudioStream *stream);
 
 /**
  *  Clear any pending data in the stream without converting it

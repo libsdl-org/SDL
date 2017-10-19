@@ -680,3 +680,4 @@ SDL_DYNAPI_PROC(int,SDL_AudioStreamGet,(SDL_AudioStream *a, void *b, int c),(a,b
 SDL_DYNAPI_PROC(void,SDL_AudioStreamClear,(SDL_AudioStream *a),(a),)
 SDL_DYNAPI_PROC(int,SDL_AudioStreamAvailable,(SDL_AudioStream *a),(a),return)
 SDL_DYNAPI_PROC(void,SDL_FreeAudioStream,(SDL_AudioStream *a),(a),)
+SDL_DYNAPI_PROC(int,SDL_AudioStreamFlush,(SDL_AudioStream *a),(a),return)
