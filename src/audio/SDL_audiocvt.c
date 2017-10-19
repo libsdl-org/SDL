@@ -1299,7 +1299,7 @@ SDL_NewAudioStream(const SDL_AudioFormat src_format,
     retval->staging_buffer_size = ((retval->resampler_padding_samples / retval->pre_resample_channels) * retval->src_sample_frame_size);
     if (retval->staging_buffer_size > 0) {
         retval->staging_buffer = (Uint8 *) SDL_malloc(retval->staging_buffer_size);
-        if (retval->resampler_padding == NULL) {
+        if (retval->staging_buffer == NULL) {
             SDL_FreeAudioStream(retval);
             SDL_OutOfMemory();
             return NULL;
