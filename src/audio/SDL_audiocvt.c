@@ -139,7 +139,7 @@ SDL_ConvertQuadToStereo(SDL_AudioCVT * cvt, SDL_AudioFormat format)
         dst[1] = (src[1] + src[3]) * 0.5f; /* right */
     }
 
-    cvt->len_cvt /= 3;
+    cvt->len_cvt /= 2;
     if (cvt->filters[++cvt->filter_index]) {
         cvt->filters[cvt->filter_index] (cvt, format);
     }
