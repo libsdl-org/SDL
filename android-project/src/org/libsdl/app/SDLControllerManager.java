@@ -92,16 +92,15 @@ public class SDLControllerManager
         if ((sources & InputDevice.SOURCE_CLASS_JOYSTICK) == InputDevice.SOURCE_CLASS_JOYSTICK) {
             Log.v(TAG, "Input device " + device.getName() + " is a joystick.");
         }
-        /* A lot of things are a DPAD that we don't want to use as a joystick (e.g. gpio input, etc.)
         if ((sources & InputDevice.SOURCE_DPAD) == InputDevice.SOURCE_DPAD) {
             Log.v(TAG, "Input device " + device.getName() + " is a dpad.");
         }
-        */
         if ((sources & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
             Log.v(TAG, "Input device " + device.getName() + " is a gamepad.");
         }
 
         return (((sources & InputDevice.SOURCE_CLASS_JOYSTICK) == InputDevice.SOURCE_CLASS_JOYSTICK) ||
+                ((sources & InputDevice.SOURCE_DPAD) == InputDevice.SOURCE_DPAD) ||
                 ((sources & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD)
         );
     }
