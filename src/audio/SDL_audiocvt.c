@@ -22,6 +22,9 @@
 
 /* Functions for audio drivers to perform runtime conversion of audio format */
 
+/* FIXME: Channel weights when converting from more channels to fewer may need to be adjusted, see https://msdn.microsoft.com/en-us/library/windows/desktop/ff819070(v=vs.85).aspx
+*/
+
 #include "SDL.h"
 #include "SDL_audio.h"
 #include "SDL_audio_c.h"
