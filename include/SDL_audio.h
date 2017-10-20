@@ -502,6 +502,7 @@ typedef struct _SDL_AudioStream SDL_AudioStream;
  *  \sa SDL_AudioStreamPut
  *  \sa SDL_AudioStreamGet
  *  \sa SDL_AudioStreamAvailable
+ *  \sa SDL_AudioStreamFlush
  *  \sa SDL_AudioStreamClear
  *  \sa SDL_FreeAudioStream
  */
@@ -523,6 +524,7 @@ extern DECLSPEC SDL_AudioStream * SDLCALL SDL_NewAudioStream(const SDL_AudioForm
  *  \sa SDL_NewAudioStream
  *  \sa SDL_AudioStreamGet
  *  \sa SDL_AudioStreamAvailable
+ *  \sa SDL_AudioStreamFlush
  *  \sa SDL_AudioStreamClear
  *  \sa SDL_FreeAudioStream
  */
@@ -539,6 +541,7 @@ extern DECLSPEC int SDLCALL SDL_AudioStreamPut(SDL_AudioStream *stream, const vo
  *  \sa SDL_NewAudioStream
  *  \sa SDL_AudioStreamPut
  *  \sa SDL_AudioStreamAvailable
+ *  \sa SDL_AudioStreamFlush
  *  \sa SDL_AudioStreamClear
  *  \sa SDL_FreeAudioStream
  */
@@ -553,8 +556,8 @@ extern DECLSPEC int SDLCALL SDL_AudioStreamGet(SDL_AudioStream *stream, void *bu
  *  \sa SDL_NewAudioStream
  *  \sa SDL_AudioStreamPut
  *  \sa SDL_AudioStreamGet
- *  \sa SDL_AudioStreamClear
  *  \sa SDL_AudioStreamFlush
+ *  \sa SDL_AudioStreamClear
  *  \sa SDL_FreeAudioStream
  */
 extern DECLSPEC int SDLCALL SDL_AudioStreamAvailable(SDL_AudioStream *stream);
@@ -570,6 +573,7 @@ extern DECLSPEC int SDLCALL SDL_AudioStreamAvailable(SDL_AudioStream *stream);
  *  \sa SDL_NewAudioStream
  *  \sa SDL_AudioStreamPut
  *  \sa SDL_AudioStreamGet
+ *  \sa SDL_AudioStreamAvailable
  *  \sa SDL_AudioStreamClear
  *  \sa SDL_FreeAudioStream
  */
@@ -582,6 +586,7 @@ extern DECLSPEC int SDLCALL SDL_AudioStreamFlush(SDL_AudioStream *stream);
  *  \sa SDL_AudioStreamPut
  *  \sa SDL_AudioStreamGet
  *  \sa SDL_AudioStreamAvailable
+ *  \sa SDL_AudioStreamFlush
  *  \sa SDL_FreeAudioStream
  */
 extern DECLSPEC void SDLCALL SDL_AudioStreamClear(SDL_AudioStream *stream);
@@ -593,6 +598,7 @@ extern DECLSPEC void SDLCALL SDL_AudioStreamClear(SDL_AudioStream *stream);
  *  \sa SDL_AudioStreamPut
  *  \sa SDL_AudioStreamGet
  *  \sa SDL_AudioStreamAvailable
+ *  \sa SDL_AudioStreamFlush
  *  \sa SDL_AudioStreamClear
  */
 extern DECLSPEC void SDLCALL SDL_FreeAudioStream(SDL_AudioStream *stream);
