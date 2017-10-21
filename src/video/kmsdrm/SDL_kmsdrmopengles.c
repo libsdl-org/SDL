@@ -42,6 +42,40 @@ KMSDRM_GLES_LoadLibrary(_THIS, const char *path) {
 
 SDL_EGL_CreateContext_impl(KMSDRM)
 
+SDL_bool
+KMSDRM_GLES_SetupCrtc(_THIS, SDL_Window * window) {
+    SDL_WindowData *wdata = ((SDL_WindowData *) window->driverdata);
+    SDL_DisplayData *displaydata = (SDL_DisplayData *) SDL_GetDisplayForWindow(window)->driverdata;
+    SDL_VideoData *vdata = ((SDL_VideoData *)_this->driverdata);
+    KMSDRM_FBInfo *fb_info;
+
+    if (!(_this->egl_data->eglSwapBuffers(_this->egl_data->egl_display, wdata->egl_surface))) {
+	SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "eglSwapBuffers failed on CRTC setup");
+	return SDL_FALSE;
+    }
+
+    wdata->next_bo = KMSDRM_gbm_surface_lock_front_buffer(wdata->gs);
+    if (wdata->next_bo == NULL) {
+	SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not lock GBM surface front buffer on CRTC setup");
+	return SDL_FALSE;
+    }
+
+    fb_info = KMSDRM_FBFromBO(_this, wdata->next_bo);
+    if (fb_info == NULL) {
+	return SDL_FALSE;
+    }
+
+    if(KMSDRM_drmModeSetCrtc(vdata->drm_fd, displaydata->crtc_id, fb_info->fb_id,
+			    0, 0, &vdata->saved_conn_id, 1, &displaydata->cur_mode) != 0) {
+       SDL_LogWarn(SDL_LOG_CATEGORY_VIDEO, "Could not set up CRTC to a GBM buffer");
+       return SDL_FALSE;
+
+    }
+    
+    wdata->crtc_ready = SDL_TRUE;
+    return SDL_TRUE;
+}
+
 int KMSDRM_GLES_SetSwapInterval(_THIS, int interval) {
     if (!_this->egl_data) {
         return SDL_SetError("EGL not initialized");
@@ -118,6 +152,16 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
         }
     } else {
         /* Queue page flip at vsync */
+
+	/* Have we already setup the CRTC to one of the GBM buffers? Do so if we have not,
+           or FlipPage won't work in some cases. */
+	if (!wdata->crtc_ready) {
+            if(!KMSDRM_GLES_SetupCrtc(_this, window)) {
+                SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not set up CRTC for doing vsync-ed pageflips");
+                return 0;
+            } 
+	}
+
         /* SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "drmModePageFlip(%d, %u, %u, DRM_MODE_PAGE_FLIP_EVENT, &wdata->waiting_for_flip)",
             vdata->drm_fd, displaydata->crtc_id, fb_info->fb_id); */
         ret = KMSDRM_drmModePageFlip(vdata->drm_fd, displaydata->crtc_id, fb_info->fb_id,

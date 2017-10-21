@@ -522,6 +522,12 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     }
 #endif /* SDL_VIDEO_OPENGL_EGL */
 
+    /* Window is created, but we have yet to set up CRTC to one of the GBM buffers if we want
+       drmModePageFlip to work, and we can't do it until EGL is completely setup, because we
+       need to do eglSwapBuffers so we can get a valid GBM buffer object to call 
+       drmModeSetCrtc on it. */
+    wdata->crtc_ready = SDL_FALSE;    
+
     /* Setup driver data for this window */
     window->driverdata = wdata;
 
