@@ -1,0 +1,26 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SDL2-WinPhone80", "SDL-WinPhone80.vcxproj", "{33048AF1-031A-4CE6-B61E-FAD2DB832E9E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|ARM = Debug|ARM
+		Debug|Win32 = Debug|Win32
+		Release|ARM = Release|ARM
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{33048AF1-031A-4CE6-B61E-FAD2DB832E9E}.Debug|ARM.ActiveCfg = Debug|ARM
+		{33048AF1-031A-4CE6-B61E-FAD2DB832E9E}.Debug|ARM.Build.0 = Debug|ARM
+		{33048AF1-031A-4CE6-B61E-FAD2DB832E9E}.Debug|Win32.ActiveCfg = Debug|Win32
+		{33048AF1-031A-4CE6-B61E-FAD2DB832E9E}.Debug|Win32.Build.0 = Debug|Win32
+		{33048AF1-031A-4CE6-B61E-FAD2DB832E9E}.Release|ARM.ActiveCfg = Release|ARM
+		{33048AF1-031A-4CE6-B61E-FAD2DB832E9E}.Release|ARM.Build.0 = Release|ARM
+		{33048AF1-031A-4CE6-B61E-FAD2DB832E9E}.Release|Win32.ActiveCfg = Release|Win32
+		{33048AF1-031A-4CE6-B61E-FAD2DB832E9E}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
