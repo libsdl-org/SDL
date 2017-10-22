@@ -463,7 +463,9 @@ X11_GL_InitExtensions(_THIS)
         }
     }
 
-    X11_XDestroyWindow(display, w);
+    if (w) {
+        X11_XDestroyWindow(display, w);
+    }
     X11_PumpEvents(_this);
 }
 
