@@ -36,7 +36,7 @@ public class SDLActivity extends Activity {
 
     // Handle the state of the native layer
     public enum NativeState {
-           INIT, RESUMED, PAUSED 
+           INIT, RESUMED, PAUSED
     }
 
     public static NativeState mNextNativeState;
@@ -208,7 +208,7 @@ public class SDLActivity extends Activity {
         mLayout.addView(mSurface);
 
         setContentView(mLayout);
-        
+
         // Get filename from "Open with" of another application
         Intent intent = getIntent();
         if (intent != null && intent.getData() != null) {
@@ -265,7 +265,7 @@ public class SDLActivity extends Activity {
         } else {
            mNextNativeState = NativeState.PAUSED;
         }
-        
+
         SDLActivity.handleNativeState();
     }
 
@@ -542,7 +542,7 @@ public class SDLActivity extends Activity {
     {
       int orientation = -1;
 
-      if (!Objects.equals(hint, "")) {
+      if (hint != "") {
          if (hint.contains("LandscapeRight") && hint.contains("LandscapeLeft")) {
             orientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE;
          } else if (hint.contains("LandscapeRight")) {
@@ -1152,7 +1152,7 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         SDLActivity.onNativeResize(width, height, sdlFormat, mDisplay.getRefreshRate());
         Log.v("SDL", "Window size: " + width + "x" + height);
 
- 
+
         boolean skip = false;
         int requestedOrientation = SDLActivity.mSingleton.getRequestedOrientation();
 
@@ -1175,7 +1175,7 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         if (skip) {
            double min = Math.min(mWidth, mHeight);
            double max = Math.max(mWidth, mHeight);
-           
+
            if (max / min < 1.20) {
               Log.v("SDL", "Don't skip on such aspect-ratio. Could be a square resolution.");
               skip = false;
@@ -1187,7 +1187,7 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
            SDLActivity.mIsSurfaceReady = false;
            return;
         }
-        
+
         /* Surface is ready */
         SDLActivity.mIsSurfaceReady = true;
 

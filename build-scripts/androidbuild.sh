@@ -33,22 +33,23 @@ fi
 
 SDLPATH="$( cd "$(dirname "$0")/.." ; pwd -P )"
 
+if [ -z "$ANDROID_HOME" ];then
+    echo "Please set the ANDROID_HOME directory to the path of the Android SDK"
+    exit 1
+fi
+
 NDKBUILD=`which ndk-build`
 if [ -z "$NDKBUILD" ];then
     echo "Could not find the ndk-build utility, install Android's NDK and add it to the path"
     exit 1
 fi
 
-ANDROID=`which android`
+ANDROID="$ANDROID_HOME/tools/android"
+if [ ! -f "$ANDROID" ]; then
+    ANDROID=`which android`
+fi
 if [ -z "$ANDROID" ];then
     echo "Could not find the android utility, install Android's SDK and add it to the path"
-    exit 1
-fi
-
-ANT=`which ant`
-
-if [ -z "$ANT" ];then
-    echo "Could not find the ant utility, install Android's SDK and add it to the path"
     exit 1
 fi
 
@@ -77,27 +78,28 @@ mkdir -p $BUILDPATH
 cp -r $SDLPATH/android-project/* $BUILDPATH
 
 # Copy SDL sources
-mkdir -p $BUILDPATH/jni/SDL
+mkdir -p $BUILDPATH/app/jni/SDL
 if [ -z "$COPYSOURCE" ]; then
-    ln -s $SDLPATH/src $BUILDPATH/jni/SDL
-    ln -s $SDLPATH/include $BUILDPATH/jni/SDL
+    ln -s $SDLPATH/src $BUILDPATH/app/jni/SDL
+    ln -s $SDLPATH/include $BUILDPATH/app/jni/SDL
 else
-    cp -r $SDLPATH/src $BUILDPATH/jni/SDL
-    cp -r $SDLPATH/include $BUILDPATH/jni/SDL
+    cp -r $SDLPATH/src $BUILDPATH/app/jni/SDL
+    cp -r $SDLPATH/include $BUILDPATH/app/jni/SDL
 fi
 
-cp -r $SDLPATH/Android.mk $BUILDPATH/jni/SDL
-sed -i -e "s|YourSourceHere.c|$MKSOURCES|g" $BUILDPATH/jni/src/Android.mk
-sed -i -e "s|org\.libsdl\.app|$APP|g" $BUILDPATH/AndroidManifest.xml
+cp -r $SDLPATH/Android.mk $BUILDPATH/app/jni/SDL
+sed -i -e "s|YourSourceHere.c|$MKSOURCES|g" $BUILDPATH/app/jni/src/Android.mk
+sed -i -e "s|org\.libsdl\.app|$APP|g" $BUILDPATH/app/build.gradle
+sed -i -e "s|org\.libsdl\.app|$APP|g" $BUILDPATH/app/src/main/AndroidManifest.xml
 
 # Copy user sources
 for src in "${SOURCES[@]}"
 do
-    cp $src $BUILDPATH/jni/src
+    cp $src $BUILDPATH/app/jni/src
 done
 
 # Create an inherited Activity
-cd $BUILDPATH/src
+cd $BUILDPATH/app/src/main/java
 for folder in "${APPARR[@]}"
 do
     mkdir -p $folder
@@ -105,29 +107,36 @@ do
 done
 
 ACTIVITY="${folder}Activity"
-sed -i -e "s|SDLActivity|$ACTIVITY|g" $BUILDPATH/AndroidManifest.xml
-sed -i -e "s|SDLActivity|$APP|g" $BUILDPATH/build.xml
+sed -i -e "s|\"SDLActivity\"|\"$ACTIVITY\"|g" $BUILDPATH/app/src/main/AndroidManifest.xml
 
 # Fill in a default Activity
-echo "package $APP;" >  "$ACTIVITY.java"
-echo "import org.libsdl.app.SDLActivity;" >> "$ACTIVITY.java"
-echo "public class $ACTIVITY extends SDLActivity {}" >> "$ACTIVITY.java"
+cat >"$ACTIVITY.java" <<__EOF__
+package $APP;
+
+import org.libsdl.app.SDLActivity;
+
+public class $ACTIVITY extends SDLActivity
+{
+}
+__EOF__
 
 # Update project and build
 cd $BUILDPATH
-$ANDROID update project --path $BUILDPATH
+pushd $BUILDPATH/app/jni
 $NDKBUILD -j $NCPUS $NDKARGS
-$ANT debug
+popd
+
+# Start gradle build
+$BUILDPATH/gradlew build
 
 cd $CURDIR
 
-APK="$BUILDPATH/bin/$APP-debug.apk"
+APK="$BUILDPATH/app/build/outputs/apk/app-debug.apk"
 
 if [ -f "$APK" ]; then
     echo "Your APK is ready at $APK"
     echo "To install to your device: "
-    echo "cd  $BUILDPATH"
-    echo "ant debug install"
+    echo "$ANDROID_HOME/platform-tools/adb install -r $APK"
     exit 0
 fi
 
