@@ -8,6 +8,10 @@
     android:versionName="1.0"
     android:installLocation="auto">
 
+    <!-- Example of setting SDL hints from AndroidManifest.xml:
+    <meta-data android:value="0" android:name="SDL_ENV.SDL_ACCELEROMETER_AS_JOYSTICK"/>
+     -->
+     
     <!-- Android 4.0.1 -->
     <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="16" />
 
