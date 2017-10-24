@@ -59,6 +59,9 @@ size_t Android_JNI_FileRead(SDL_RWops* ctx, void* buffer, size_t size, size_t ma
 size_t Android_JNI_FileWrite(SDL_RWops* ctx, const void* buffer, size_t size, size_t num);
 int Android_JNI_FileClose(SDL_RWops* ctx);
 
+/* Environment support */
+char *SDL_AndroidGetManifestEnvironmentVariable(const char *variableName);
+
 /* Clipboard support */
 int Android_JNI_SetClipboardText(const char* text);
 char* Android_JNI_GetClipboardText(void);

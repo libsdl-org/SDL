@@ -29,6 +29,10 @@
 #include "../core/windows/SDL_windows.h"
 #endif
 
+#if defined(__ANDROID__)
+#include "../core/android/SDL_android.h"
+#endif
+
 #include "SDL_stdinc.h"
 
 #if defined(__WIN32__) && (!defined(HAVE_SETENV) || !defined(HAVE_GETENV))
@@ -167,7 +171,18 @@ SDL_setenv(const char *name, const char *value, int overwrite)
 #endif
 
 /* Retrieve a variable named "name" from the environment */
-#if defined(HAVE_GETENV)
+#if defined(__ANDROID__)
+char *
+SDL_getenv(const char *name)
+{
+    /* Input validation */
+    if (!name || SDL_strlen(name)==0) {
+        return NULL;
+    }
+
+    return SDL_AndroidGetManifestEnvironmentVariable(name);    
+}
+#elif defined(HAVE_GETENV)
 char *
 SDL_getenv(const char *name)
 {

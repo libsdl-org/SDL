@@ -211,6 +211,7 @@ static jmethodID midClipboardSetText;
 static jmethodID midClipboardGetText;
 static jmethodID midClipboardHasText;
 static jmethodID midOpenAPKExpansionInputStream;
+static jmethodID midGetManifestEnvironmentVariable;
 
 /* audio manager */
 static jclass mAudioManagerClass;
@@ -310,11 +311,14 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv* mEnv, jclass c
     midOpenAPKExpansionInputStream = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
                                 "openAPKExpansionInputStream", "(Ljava/lang/String;)Ljava/io/InputStream;");
 
+    midGetManifestEnvironmentVariable = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
+                                "getManifestEnvironmentVariable", "(Ljava/lang/String;)Ljava/lang/String;");
+
     if (!midGetNativeSurface ||
        !midSetActivityTitle || !midSetOrientation || !midGetContext || !midInputGetInputDeviceIds ||
        !midSendMessage || !midShowTextInput || !midIsScreenKeyboardShown || 
        !midClipboardSetText || !midClipboardGetText || !midClipboardHasText ||
-       !midOpenAPKExpansionInputStream) {
+       !midOpenAPKExpansionInputStream || !midGetManifestEnvironmentVariable) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLActivity.java?");
     }
 
@@ -2032,6 +2036,41 @@ const char * SDL_AndroidGetExternalStoragePath(void)
         LocalReferenceHolder_Cleanup(&refs);
     }
     return s_AndroidExternalFilesPath;
+}
+
+// Ugh, but we have to SDL_strdup() our result to pass it safely back
+// out into normal SDL_getenv flow.  So we'll just do the same sort
+// of trick as on Win32 over in SDL_getenv.c.
+char *SDL_AndroidEnvMem;
+
+char *SDL_AndroidGetManifestEnvironmentVariable(const char *variableName)
+{
+    if ((mActivityClass == NULL) || (midGetManifestEnvironmentVariable == 0)) {
+        __android_log_print(ANDROID_LOG_WARN, "SDL", "request to get environment variable before JNI is ready: %s", variableName);
+        return NULL;
+    }
+
+    JNIEnv *env = Android_JNI_GetEnv();
+
+    jstring jVariableName = (*env)->NewStringUTF(env, variableName);
+    jstring jResult = (jstring)((*env)->CallStaticObjectMethod(env, mActivityClass, midGetManifestEnvironmentVariable, jVariableName));
+
+    if (jResult == NULL) {
+        return NULL;        
+    }
+
+    if (SDL_AndroidEnvMem) {
+        SDL_free(SDL_AndroidEnvMem);
+        SDL_AndroidEnvMem = NULL;
+    }
+
+    const char *result = (*env)->GetStringUTFChars(env, jResult, NULL);
+    SDL_AndroidEnvMem = SDL_strdup(result);
+    (*env)->ReleaseStringUTFChars(env, jResult, result);
+    (*env)->DeleteLocalRef(env, jResult);
+
+    __android_log_print(ANDROID_LOG_INFO, "SDL", "environment variable in metadata: %s = %s", variableName, SDL_AndroidEnvMem);
+    return SDL_AndroidEnvMem;
 }
 
 #endif /* __ANDROID__ */

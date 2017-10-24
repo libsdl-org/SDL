@@ -24,6 +24,8 @@ import android.graphics.*;
 import android.graphics.drawable.Drawable;
 import android.hardware.*;
 import android.content.pm.ActivityInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.ApplicationInfo;
 
 /**
     SDL Activity
@@ -611,6 +613,29 @@ public class SDLActivity extends Activity {
      */
     public static Context getContext() {
         return SDL.getContext();
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
+    public static String getManifestEnvironmentVariable(String variableName) {
+        try {
+            ApplicationInfo applicationInfo = getContext().getPackageManager().getApplicationInfo(getContext().getPackageName(), PackageManager.GET_META_DATA);
+            if (applicationInfo.metaData == null) {
+                return null;
+            }
+
+            String key = "SDL_ENV." + variableName;
+            if (!applicationInfo.metaData.containsKey(key)) {
+                return null;
+            }
+
+            return applicationInfo.metaData.get(key).toString();
+        }
+        catch (PackageManager.NameNotFoundException e)
+        {
+            return null;
+        }
     }
 
     static class ShowTextInputTask implements Runnable {
