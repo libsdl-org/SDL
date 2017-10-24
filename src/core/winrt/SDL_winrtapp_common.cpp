@@ -24,6 +24,8 @@
 #include "SDL_winrtapp_direct3d.h"
 #include "SDL_winrtapp_xaml.h"
 
+#include <wrl.h>
+
 int (*WINRT_SDLAppEntryPoint)(int, char **) = NULL;
 
 extern "C" DECLSPEC int
@@ -32,6 +34,9 @@ SDL_WinRTRunApp(int (*mainFunction)(int, char **), void * xamlBackgroundPanel)
     if (xamlBackgroundPanel) {
         return SDL_WinRTInitXAMLApp(mainFunction, xamlBackgroundPanel);
     } else {
+        if (FAILED(Windows::Foundation::Initialize(RO_INIT_MULTITHREADED))) {
+            return 1;
+        }
         return SDL_WinRTInitNonXAMLApp(mainFunction);
     }
 }
