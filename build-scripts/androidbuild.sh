@@ -25,11 +25,8 @@ if [ -z "$1" ] || [ -z "$SOURCES" ]; then
     echo "Usage: androidbuild.sh com.yourcompany.yourapp < sources.list"
     echo "Usage: androidbuild.sh com.yourcompany.yourapp source1.c source2.c ...sourceN.c"
     echo "To copy SDL source instead of symlinking: COPYSOURCE=1 androidbuild.sh ... "
-    echo "You can pass additional arguments to ndk-build with the NDKARGS variable: NDKARGS=\"-s\" androidbuild.sh ..."
     exit 1
 fi
-
-
 
 SDLPATH="$( cd "$(dirname "$0")/.." ; pwd -P )"
 
@@ -38,33 +35,10 @@ if [ -z "$ANDROID_HOME" ];then
     exit 1
 fi
 
-NDKBUILD=`which ndk-build`
-if [ -z "$NDKBUILD" ];then
-    echo "Could not find the ndk-build utility, install Android's NDK and add it to the path"
+if [ ! -d "$ANDROID_HOME/ndk-bundle" -a -z "$ANDROID_NDK_HOME" ]; then
+    echo "Please set the ANDROID_NDK_HOME directory to the path of the Android NDK"
     exit 1
 fi
-
-ANDROID="$ANDROID_HOME/tools/android"
-if [ ! -f "$ANDROID" ]; then
-    ANDROID=`which android`
-fi
-if [ -z "$ANDROID" ];then
-    echo "Could not find the android utility, install Android's SDK and add it to the path"
-    exit 1
-fi
-
-NCPUS="1"
-case "$OSTYPE" in
-    darwin*)
-        NCPU=`sysctl -n hw.ncpu`
-        ;; 
-    linux*)
-        if [ -n `which nproc` ]; then
-            NCPUS=`nproc`
-        fi  
-        ;;
-  *);;
-esac
 
 APP="$1"
 APPARR=(${APP//./ })
@@ -121,24 +95,6 @@ public class $ACTIVITY extends SDLActivity
 __EOF__
 
 # Update project and build
-cd $BUILDPATH
-pushd $BUILDPATH/app/jni
-$NDKBUILD -j $NCPUS $NDKARGS
-popd
-
-# Start gradle build
-$BUILDPATH/gradlew build
-
-cd $CURDIR
-
-APK="$BUILDPATH/app/build/outputs/apk/app-debug.apk"
-
-if [ -f "$APK" ]; then
-    echo "Your APK is ready at $APK"
-    echo "To install to your device: "
-    echo "$ANDROID_HOME/platform-tools/adb install -r $APK"
-    exit 0
-fi
-
-echo "There was an error building the APK"
-exit 1
+echo "To build and install to a device for testing, run the following:"
+echo "cd $BUILDPATH"
+echo "./gradlew installDebug"
