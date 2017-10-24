@@ -354,7 +354,8 @@ public class SDLActivity extends Activity {
         // Try a transition to paused state
         if (mNextNativeState == NativeState.PAUSED) {
             nativePause();
-            mSurface.handlePause();
+            if (mSurface != null)
+                mSurface.handlePause();
             mCurrentNativeState = mNextNativeState;
             return;
         }
