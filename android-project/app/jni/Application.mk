@@ -6,4 +6,4 @@
 APP_ABI := all
 
 # Min SDK level
-APP_PLATFORM=android-10
+APP_PLATFORM=android-14

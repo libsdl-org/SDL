@@ -14,11 +14,10 @@ The rest of this README covers the traditional style build process.
 Android SDK (version 16 or later)
 https://developer.android.com/sdk/index.html
 
-Android NDK r7 or later
+Android NDK r10e or later
 https://developer.android.com/tools/sdk/ndk/index.html
 
-Minimum API level supported by SDL: 10 (Android 2.3.3)
-Joystick support is available for API level >= 12 devices.
+Minimum API level supported by SDL: 14 (Android 4.0.1)
 
 
 ================================================================================
@@ -393,22 +392,13 @@ https://developer.nvidia.com/tegra-graphics-debugger
 
 
 ================================================================================
- Why is API level 10 the minimum required?
+ Why is API level 14 the minimum required?
 ================================================================================
 
-API level 10 is the minimum required level at runtime (that is, on the device) 
-because SDL requires some functionality for running not
-available on older devices. Since the incorporation of joystick support into SDL,
-the minimum SDK required to *build* SDL is version 16. Devices running API levels
-10-11 are still supported, only with the joystick functionality disabled.
-
-Support for native OpenGL ES and ES2 applications was introduced in the NDK for
-API level 4 and 8. EGL was made a stable API in the NDK for API level 9, which
-has since then been obsoleted, with the recommendation to developers to bump the
-required API level to 10.
+The latest NDK toolchain doesn't support targeting earlier than API level 14.
 As of this writing, according to https://developer.android.com/about/dashboards/index.html
-about 90% of the Android devices accessing Google Play support API level 10 or
-higher (March 2013).
+about 99% of the Android devices accessing Google Play support API level 14 or
+higher (October 2017).
 
 
 ================================================================================
