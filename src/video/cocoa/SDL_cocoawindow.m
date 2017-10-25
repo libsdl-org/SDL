@@ -1152,6 +1152,11 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 
 - (void)drawRect:(NSRect)dirtyRect
 {
+    /* Force the graphics context to clear to black so we don't get a flash of
+       white until the app is ready to draw. In practice on modern macOS, this
+       only gets called for window creation and other extraordinary events. */
+    [[NSColor blackColor] setFill];
+    NSRectFill(dirtyRect);
     SDL_SendWindowEvent(_sdlWindow, SDL_WINDOWEVENT_EXPOSED, 0, 0);
 }
 
@@ -1316,7 +1321,6 @@ Cocoa_CreateWindow(_THIS, SDL_Window * window)
     @catch (NSException *e) {
         return SDL_SetError("%s", [[e reason] UTF8String]);
     }
-    [nswindow setBackgroundColor:[NSColor blackColor]];
 
     if (videodata->allow_spaces) {
         SDL_assert(floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6);
