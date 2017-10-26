@@ -18,6 +18,28 @@
 			name = PrepareXcodeProjectTemplate;
 			productName = PrepareXcodeProjectTemplate;
 		};
+		C143576D1F4C4DAA000B792B /* All (iOS) */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = C143576E1F4C4DAB000B792B /* Build configuration list for PBXAggregateTarget "All (iOS)" */;
+			buildPhases = (
+				C14357711F4C4DB2000B792B /* ShellScript */,
+			);
+			dependencies = (
+			);
+			name = "All (iOS)";
+			productName = "All (iOS)";
+		};
+		C14357721F4C4F2A000B792B /* All (tvOS) */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = C14357741F4C4F2A000B792B /* Build configuration list for PBXAggregateTarget "All (tvOS)" */;
+			buildPhases = (
+				C14357731F4C4F2A000B792B /* ShellScript */,
+			);
+			dependencies = (
+			);
+			name = "All (tvOS)";
+			productName = "All (iOS)";
+		};
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
@@ -1214,9 +1236,9 @@
 /* End PBXHeadersBuildPhase section */
 
 /* Begin PBXNativeTarget section */
-		FAB598131BB5C1B100BE72C5 /* libSDL-tv */ = {
+		FAB598131BB5C1B100BE72C5 /* libSDL (tvOS) */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = FAB5981A1BB5C1B100BE72C5 /* Build configuration list for PBXNativeTarget "libSDL-tv" */;
+			buildConfigurationList = FAB5981A1BB5C1B100BE72C5 /* Build configuration list for PBXNativeTarget "libSDL (tvOS)" */;
 			buildPhases = (
 				FAB598101BB5C1B100BE72C5 /* Sources */,
 			);
@@ -1224,14 +1246,14 @@
 			);
 			dependencies = (
 			);
-			name = "libSDL-tv";
+			name = "libSDL (tvOS)";
 			productName = "libSDL-tv";
 			productReference = FAB598141BB5C1B100BE72C5 /* libSDL2.a */;
 			productType = "com.apple.product-type.library.static";
 		};
-		FD6526620DE8FCCB002AD96B /* libSDL */ = {
+		FD6526620DE8FCCB002AD96B /* libSDL (iOS) */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = FD6526990DE8FD14002AD96B /* Build configuration list for PBXNativeTarget "libSDL" */;
+			buildConfigurationList = FD6526990DE8FD14002AD96B /* Build configuration list for PBXNativeTarget "libSDL (iOS)" */;
 			buildPhases = (
 				FD65265F0DE8FCCB002AD96B /* Headers */,
 				FD6526600DE8FCCB002AD96B /* Sources */,
@@ -1240,7 +1262,7 @@
 			);
 			dependencies = (
 			);
-			name = libSDL;
+			name = "libSDL (iOS)";
 			productName = iPhoneSDLStaticLib;
 			productReference = FD6526630DE8FCCB002AD96B /* libSDL2.a */;
 			productType = "com.apple.product-type.library.static";
@@ -1279,9 +1301,11 @@
 			projectDirPath = "";
 			projectRoot = ../..;
 			targets = (
-				FD6526620DE8FCCB002AD96B /* libSDL */,
-				FAB598131BB5C1B100BE72C5 /* libSDL-tv */,
+				FD6526620DE8FCCB002AD96B /* libSDL (iOS) */,
+				FAB598131BB5C1B100BE72C5 /* libSDL (tvOS) */,
 				00B4F48B12F6A69C0084EC00 /* PrepareXcodeProjectTemplate */,
+				C143576D1F4C4DAA000B792B /* All (iOS) */,
+				C14357721F4C4F2A000B792B /* All (tvOS) */,
 			);
 		};
 /* End PBXProject section */
@@ -1300,6 +1324,36 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "# clean up the framework, remove headers, extra files\n\ntemp=$BUILD_DIR/$BUILD_STYLE-template\n# Wrong! 1. Can't assume location of Xcode directory (use xcode-select)\n# 2. Project templates should go in Application Support directories anyway.\ntemplate_dir_name=\"SDL iOS Application\"\n# dest=\"$(HOME)/Library/Application Support/Developer/Shared/Xcode/Project Templates/SDL/SDL iOS Application\"\nrsync_flags=\"--exclude *.svn --links -r\"\n\n# mkdir -p $dest\nmkdir -p $temp\nmkdir -p \"$temp/$template_dir_name/SDL/lib/\"\nmkdir -p \"$temp/$template_dir_name/SDL/include\"\n\n# copy template\nrsync $rsync_flags \"../template/$template_dir_name\" $temp/\n\n# copy Universal libSDL.a\nrsync $rsync_flags -r $SYMROOT/$CONFIGURATION-Universal/libSDL.a \"$temp/$template_dir_name/SDL/lib/\"\n\n# copy headers\nrsync $rsync_flags ../../include/ \"$temp/$template_dir_name/SDL/include\"\n\n#install (nah, don't install)\n# cp -fr \"$temp/$template_dir_name\" \"$dest\"";
+		};
+		C14357711F4C4DB2000B792B /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/../ios/release/libSDL2.a",
+				"${TARGET_BUILD_DIR}/../ios/debug/libSDL2.a",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "xcodebuild -target \"libSDL (iOS)\" ONLY_ACTIVE_ARCH=NO -configuration Release -sdk iphoneos  BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" clean build\nxcodebuild -target \"libSDL (iOS)\" ONLY_ACTIVE_ARCH=NO -configuration Debug -sdk iphoneos  BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" clean build\nxcodebuild -target \"libSDL (iOS)\" -configuration Release -sdk iphonesimulator ONLY_ACTIVE_ARCH=NO BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" clean build\nxcodebuild -target \"libSDL (iOS)\" -configuration Debug -sdk iphonesimulator ONLY_ACTIVE_ARCH=NO BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" clean build\n\n# make output folders\nmkdir -p ${TARGET_BUILD_DIR}/../ios/release\nmkdir -p ${TARGET_BUILD_DIR}/../ios/debug\n\n# combine lib files for various platforms into one\nlipo -create \"${TARGET_BUILD_DIR}/../Release-iphoneos/libSDL2.a\" \"${TARGET_BUILD_DIR}/../Release-iphonesimulator/libSDL2.a\" -output \"${TARGET_BUILD_DIR}/../ios/release/libSDL2.a\"\nlipo -create \"${TARGET_BUILD_DIR}/../Debug-iphoneos/libSDL2.a\" \"${TARGET_BUILD_DIR}/../Debug-iphonesimulator/libSDL2.a\" -output \"${TARGET_BUILD_DIR}/../ios/debug/libSDL2.a\"\n";
+		};
+		C14357731F4C4F2A000B792B /* ShellScript */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			outputPaths = (
+				"${TARGET_BUILD_DIR}/../tvos/release/libSDL2.a",
+				"${TARGET_BUILD_DIR}/../tvos/debug/libSDL2.a",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "xcodebuild -target \"libSDL (tvOS)\" ONLY_ACTIVE_ARCH=NO -configuration Release -sdk appletvos  BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" clean build\nxcodebuild -target \"libSDL (tvOS)\" ONLY_ACTIVE_ARCH=NO -configuration Debug -sdk appletvos  BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" clean build\nxcodebuild -target \"libSDL (tvOS)\" -configuration Release -sdk appletvsimulator ONLY_ACTIVE_ARCH=NO BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" clean build\nxcodebuild -target \"libSDL (tvOS)\" -configuration Debug -sdk appletvsimulator ONLY_ACTIVE_ARCH=NO BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" clean build\n\n# make output folders\nmkdir -p ${TARGET_BUILD_DIR}/../tvos/release\nmkdir -p ${TARGET_BUILD_DIR}/../tvos/debug\n\n# combine lib files for various platforms into one\nlipo -create \"${TARGET_BUILD_DIR}/../Release-appletvos/libSDL2.a\" \"${TARGET_BUILD_DIR}/../Release-appletvsimulator/libSDL2.a\" -output \"${TARGET_BUILD_DIR}/../tvos/release/libSDL2.a\"\nlipo -create \"${TARGET_BUILD_DIR}/../Debug-appletvos/libSDL2.a\" \"${TARGET_BUILD_DIR}/../Debug-appletvsimulator/libSDL2.a\" -output \"${TARGET_BUILD_DIR}/../tvos/debug/libSDL2.a\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -1612,6 +1666,36 @@
 			};
 			name = Release;
 		};
+		C143576F1F4C4DAB000B792B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		C14357701F4C4DAB000B792B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		C14357751F4C4F2A000B792B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ENABLE_BITCODE = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		C14357761F4C4F2A000B792B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ENABLE_BITCODE = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		FAB5981B1BB5C1B100BE72C5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1707,6 +1791,7 @@
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_OBJC_IMPLICIT_ATOMIC_PROPERTIES = YES;
 				COPY_PHASE_STRIP = NO;
+				ENABLE_BITCODE = NO;
 				GCC_WARN_MULTIPLE_DEFINITION_TYPES_FOR_SELECTOR = YES;
 				GCC_WARN_STRICT_SELECTOR_MATCH = YES;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -1723,6 +1808,7 @@
 				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
 				CLANG_WARN_OBJC_IMPLICIT_ATOMIC_PROPERTIES = YES;
 				COPY_PHASE_STRIP = YES;
+				ENABLE_BITCODE = NO;
 				GCC_WARN_MULTIPLE_DEFINITION_TYPES_FOR_SELECTOR = YES;
 				GCC_WARN_STRICT_SELECTOR_MATCH = YES;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -1753,7 +1839,25 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		FAB5981A1BB5C1B100BE72C5 /* Build configuration list for PBXNativeTarget "libSDL-tv" */ = {
+		C143576E1F4C4DAB000B792B /* Build configuration list for PBXAggregateTarget "All (iOS)" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C143576F1F4C4DAB000B792B /* Debug */,
+				C14357701F4C4DAB000B792B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C14357741F4C4F2A000B792B /* Build configuration list for PBXAggregateTarget "All (tvOS)" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				C14357751F4C4F2A000B792B /* Debug */,
+				C14357761F4C4F2A000B792B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		FAB5981A1BB5C1B100BE72C5 /* Build configuration list for PBXNativeTarget "libSDL (tvOS)" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				FAB5981B1BB5C1B100BE72C5 /* Debug */,
@@ -1762,7 +1866,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		FD6526990DE8FD14002AD96B /* Build configuration list for PBXNativeTarget "libSDL" */ = {
+		FD6526990DE8FD14002AD96B /* Build configuration list for PBXNativeTarget "libSDL (iOS)" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				FD6526640DE8FCCB002AD96B /* Debug */,
