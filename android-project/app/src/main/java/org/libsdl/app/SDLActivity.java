@@ -1248,6 +1248,9 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         if ((event.getSource() & InputDevice.SOURCE_KEYBOARD) != 0) {
             if (event.getAction() == KeyEvent.ACTION_DOWN) {
                 //Log.v("SDL", "key down: " + keyCode);
+                if (SDLActivity.isTextInputEvent(event)) {
+                    SDLInputConnection.nativeCommitText(String.valueOf((char) event.getUnicodeChar()), 1);
+                }
                 SDLActivity.onNativeKeyDown(keyCode);
                 return true;
             }
@@ -1435,6 +1438,7 @@ class DummyEdit extends View implements View.OnKeyListener {
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
             if (SDLActivity.isTextInputEvent(event)) {
                 ic.commitText(String.valueOf((char) event.getUnicodeChar()), 1);
+                return true;
             }
             SDLActivity.onNativeKeyDown(keyCode);
             return true;
@@ -1484,26 +1488,23 @@ class SDLInputConnection extends BaseInputConnection {
     @Override
     public boolean sendKeyEvent(KeyEvent event) {
         /*
-         * This handles the keycodes from soft keyboard (and IME-translated input from hardkeyboard)
+         * This used to handle the keycodes from soft keyboard (and IME-translated input from hardkeyboard)
+         * However, as of Ice Cream Sandwich and later, almost all soft keyboard doesn't generate key presses
+         * and so we need to generate them ourselves in commitText.  To avoid duplicates on the handful of keys
+         * that still do, we empty this out.
          */
-        int keyCode = event.getKeyCode();
-        if (event.getAction() == KeyEvent.ACTION_DOWN) {
-            if (SDLActivity.isTextInputEvent(event)) {
-                commitText(String.valueOf((char) event.getUnicodeChar()), 1);
-            }
-            SDLActivity.onNativeKeyDown(keyCode);
-            return true;
-        } else if (event.getAction() == KeyEvent.ACTION_UP) {
-            SDLActivity.onNativeKeyUp(keyCode);
-            return true;
-        }
         return super.sendKeyEvent(event);
     }
 
     @Override
     public boolean commitText(CharSequence text, int newCursorPosition) {
 
-        nativeCommitText(text.toString(), newCursorPosition);
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
+            nativeGenerateScancodeForUnichar(c);
+        }
+
+        SDLInputConnection.nativeCommitText(text.toString(), newCursorPosition);
 
         return super.commitText(text, newCursorPosition);
     }
@@ -1516,7 +1517,9 @@ class SDLInputConnection extends BaseInputConnection {
         return super.setComposingText(text, newCursorPosition);
     }
 
-    public native void nativeCommitText(String text, int newCursorPosition);
+    public static native void nativeCommitText(String text, int newCursorPosition);
+
+    public native void nativeGenerateScancodeForUnichar(char c);
 
     public native void nativeSetComposingText(String text, int newCursorPosition);
 

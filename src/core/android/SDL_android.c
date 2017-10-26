@@ -31,6 +31,8 @@
 #include "SDL_android.h"
 #include <EGL/egl.h>
 
+#include "keyinfotable.h"
+
 #include "../../events/SDL_events_c.h"
 #include "../../video/android/SDL_androidkeyboard.h"
 #include "../../video/android/SDL_androidmouse.h"
@@ -748,6 +750,36 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeCommitText)(
 
     (*env)->ReleaseStringUTFChars(env, text, utftext);
 }
+
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeGenerateScancodeForUnichar)(
+                                    JNIEnv* env, jclass cls,
+                                    jchar chUnicode)
+{
+    SDL_Scancode code = SDL_SCANCODE_UNKNOWN;
+    uint16_t mod = 0;
+
+    // We do not care about bigger than 127.
+    if (chUnicode < 127) {
+        AndroidKeyInfo info = unicharToAndroidKeyInfoTable[chUnicode];
+        code = info.code;
+        mod = info.mod;
+    }
+
+    if (mod & KMOD_SHIFT) {
+        /* If character uses shift, press shift down */
+        SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_LSHIFT);
+    }
+
+    /* send a keydown and keyup even for the character */
+    SDL_SendKeyboardKey(SDL_PRESSED, code);
+    SDL_SendKeyboardKey(SDL_RELEASED, code);
+
+    if (mod & KMOD_SHIFT) {
+        /* If character uses shift, press shift back up */
+        SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LSHIFT);
+    }
+}
+
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeSetComposingText)(
                                     JNIEnv* env, jclass cls,
