@@ -71,7 +71,7 @@ KMSDRM_GLES_SetupCrtc(_THIS, SDL_Window * window) {
        return SDL_FALSE;
 
     }
-    
+
     wdata->crtc_ready = SDL_TRUE;
     return SDL_TRUE;
 }
@@ -159,7 +159,7 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
             if(!KMSDRM_GLES_SetupCrtc(_this, window)) {
                 SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not set up CRTC for doing vsync-ed pageflips");
                 return 0;
-            } 
+            }
 	}
 
         /* SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "drmModePageFlip(%d, %u, %u, DRM_MODE_PAGE_FLIP_EVENT, &wdata->waiting_for_flip)",
@@ -170,6 +170,12 @@ KMSDRM_GLES_SwapWindow(_THIS, SDL_Window * window) {
             wdata->waiting_for_flip = SDL_TRUE;
         } else {
             SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not queue pageflip: %d", ret);
+        }
+
+        /* Wait immediately for vsync (as if we only had two buffers), for low input-lag scenarios.
+           Run your SDL2 program with "SDL_KMSDRM_DOUBLE_BUFFER=1 <program_name>" to enable this. */
+        if (wdata->double_buffer) {
+            KMSDRM_WaitPageFlip(_this, wdata, -1);
         }
     }
 

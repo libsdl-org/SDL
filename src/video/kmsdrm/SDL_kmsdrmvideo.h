@@ -63,6 +63,7 @@ typedef struct SDL_WindowData
     struct gbm_bo *next_bo;
     SDL_bool waiting_for_flip;
     SDL_bool crtc_ready;
+    SDL_bool double_buffer;
 #if SDL_VIDEO_OPENGL_EGL
     EGLSurface egl_surface;
 #endif

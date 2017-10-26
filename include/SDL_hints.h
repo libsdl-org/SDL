@@ -798,6 +798,16 @@ extern "C" {
 #define SDL_HINT_RPI_VIDEO_LAYER           "SDL_RPI_VIDEO_LAYER"
 
 /**
+ * \brief Tell SDL the KMS/DRM video driver that we want double buffer only.
+ *
+ * By default KMS/DRM will use a triple buffer solution that wastes no CPU
+ * time on waiting for vsync after issuing a flip, but introduces a frame of
+ * latency. Waiting for vsync immediately after issuing a flip on the other
+ * hand is recommended for cases where low latency is an important factor.
+ */
+#define SDL_HINT_KMSDRM_DOUBLE_BUFFER      "SDL_KMSDRM_DOUBLE_BUFFER"
+
+/**
  *  \brief  A variable controlling what driver to use for OpenGL ES contexts.
  *
  *  On some platforms, currently Windows and X11, OpenGL drivers may support

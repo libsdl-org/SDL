@@ -27,6 +27,7 @@
 #include "../SDL_sysvideo.h"
 #include "SDL_syswm.h"
 #include "SDL_log.h"
+#include "SDL_hints.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_keyboard_c.h"
 
@@ -522,11 +523,17 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
     }
 #endif /* SDL_VIDEO_OPENGL_EGL */
 
+    /* In case we want low-latency, double-buffer video, we take note here */
+    wdata->double_buffer = SDL_FALSE;
+    if (SDL_GetHintBoolean(SDL_HINT_KMSDRM_DOUBLE_BUFFER, SDL_FALSE)) {
+        wdata->double_buffer = SDL_TRUE;
+    }
+
     /* Window is created, but we have yet to set up CRTC to one of the GBM buffers if we want
        drmModePageFlip to work, and we can't do it until EGL is completely setup, because we
-       need to do eglSwapBuffers so we can get a valid GBM buffer object to call 
+       need to do eglSwapBuffers so we can get a valid GBM buffer object to call
        drmModeSetCrtc on it. */
-    wdata->crtc_ready = SDL_FALSE;    
+    wdata->crtc_ready = SDL_FALSE;
 
     /* Setup driver data for this window */
     window->driverdata = wdata;
