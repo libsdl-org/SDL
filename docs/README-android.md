@@ -4,7 +4,10 @@ Android
 Matt Styles wrote a tutorial on building SDL for Android with Visual Studio:
 http://trederia.blogspot.de/2017/03/building-sdl2-for-android-with-visual.html
 
-The rest of this README covers the traditional style build process.
+The rest of this README covers the Android gradle style build process.
+
+If you are using the older ant build process, it is no longer officially
+supported, but you can use the "android-project-ant" directory as a template.
 
 
 ================================================================================
