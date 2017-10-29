@@ -76,6 +76,16 @@ SDL_SetError(SDL_PRINTF_FORMAT_STRING const char *fmt, ...)
             case 0:            /* Malformed format string.. */
                 --fmt;
                 break;
+            case 'l':
+                switch (*fmt++) {
+                case 0:        /* Malformed format string.. */
+                    --fmt;
+                    break;
+                case 'i': case 'd': case 'u':
+                    error->args[error->argc++].value_l = va_arg(ap, long);
+                    break;
+                }
+                break;
             case 'c':
             case 'i':
             case 'd':
@@ -218,6 +228,22 @@ SDL_GetErrorMsg(char *errstr, int maxlen)
                 while ((*fmt == '.' || (*fmt >= '0' && *fmt <= '9'))
                        && spot < (tmp + SDL_arraysize(tmp) - 2)) {
                     *spot++ = *fmt++;
+                }
+                if (*fmt == 'l') {
+                    *spot++ = *fmt++;
+                    *spot++ = *fmt++;
+                    *spot++ = '\0';
+                    switch (spot[-2]) {
+                    case 'i': case 'd': case 'u':
+                      len = SDL_snprintf(msg, maxlen, tmp,
+                                         error->args[argi++].value_l);
+                      if (len > 0) {
+                          msg += len;
+                          maxlen -= len;
+                      }
+                      break;
+                    }
+                    continue;
                 }
                 *spot++ = *fmt++;
                 *spot++ = '\0';
