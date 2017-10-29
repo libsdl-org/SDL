@@ -51,6 +51,7 @@ typedef struct SDL_error
         unsigned char value_c;
 #endif
         int value_i;
+        long value_l;
         double value_f;
         char buf[ERR_MAX_STRLEN];
     } args[ERR_MAX_ARGS];
