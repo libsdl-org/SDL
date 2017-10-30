@@ -265,7 +265,7 @@ class SDLJoystickHandler_API16 extends SDLJoystickHandler_API12 {
     public String getJoystickDescriptor(InputDevice joystickDevice) {
         String desc = joystickDevice.getDescriptor();
 
-        if (desc != null && desc != "") {
+        if (desc != null && !desc.isEmpty()) {
             return desc;
         }
 
