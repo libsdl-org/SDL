@@ -18,6 +18,7 @@ import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.os.*;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.SparseArray;
 import android.graphics.*;
@@ -611,6 +612,10 @@ public class SDLActivity extends Activity {
      */
     public static Context getContext() {
         return SDL.getContext();
+    }
+
+    public static DisplayMetrics getDisplayDPI() {
+        return getContext().getResources().getDisplayMetrics();
     }
 
     /**
