@@ -42,6 +42,8 @@ extern void Android_JNI_HideTextInput(void);
 extern SDL_bool Android_JNI_IsScreenKeyboardShown(void);
 extern ANativeWindow* Android_JNI_GetNativeWindow(void);
 
+extern int Android_JNI_GetDisplayDPI(float *ddpi, float *xdpi, float *ydpi);
+
 /* Audio support */
 extern int Android_JNI_OpenAudioDevice(int iscapture, int sampleRate, int is16Bit, int channelCount, int desiredBufferFrames);
 extern void* Android_JNI_GetAudioBuffer(void);

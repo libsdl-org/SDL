@@ -47,6 +47,7 @@
 /* Initialization/Query functions */
 static int Android_VideoInit(_THIS);
 static void Android_VideoQuit(_THIS);
+int Android_GetDisplayDPI(_THIS, SDL_VideoDisplay * display, float * ddpi, float * hdpi, float * vdpi);
 
 #include "../SDL_egl_c.h"
 #define Android_GLES_GetProcAddress SDL_EGL_GetProcAddress
@@ -114,6 +115,8 @@ Android_CreateDevice(int devindex)
     device->VideoInit = Android_VideoInit;
     device->VideoQuit = Android_VideoQuit;
     device->PumpEvents = Android_PumpEvents;
+
+    device->GetDisplayDPI = Android_GetDisplayDPI;
 
     device->CreateSDLWindow = Android_CreateWindow;
     device->SetWindowTitle = Android_SetWindowTitle;
@@ -196,6 +199,12 @@ void
 Android_VideoQuit(_THIS)
 {
     Android_QuitTouch();
+}
+
+int
+Android_GetDisplayDPI(_THIS, SDL_VideoDisplay * display, float * ddpi, float * hdpi, float * vdpi)
+{
+    return Android_JNI_GetDisplayDPI(ddpi, hdpi, vdpi);
 }
 
 void

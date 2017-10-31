@@ -214,6 +214,7 @@ static jmethodID midClipboardGetText;
 static jmethodID midClipboardHasText;
 static jmethodID midOpenAPKExpansionInputStream;
 static jmethodID midGetManifestEnvironmentVariable;
+static jmethodID midGetDisplayDPI;
 
 /* audio manager */
 static jclass mAudioManagerClass;
@@ -316,11 +317,13 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv* mEnv, jclass c
     midGetManifestEnvironmentVariable = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
                                 "getManifestEnvironmentVariable", "(Ljava/lang/String;)Ljava/lang/String;");
 
+    midGetDisplayDPI = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass, "getDisplayDPI", "()Landroid/util/DisplayMetrics;");
+
     if (!midGetNativeSurface ||
        !midSetActivityTitle || !midSetOrientation || !midGetContext || !midInputGetInputDeviceIds ||
        !midSendMessage || !midShowTextInput || !midIsScreenKeyboardShown || 
        !midClipboardSetText || !midClipboardGetText || !midClipboardHasText ||
-       !midOpenAPKExpansionInputStream || !midGetManifestEnvironmentVariable) {
+       !midOpenAPKExpansionInputStream || !midGetManifestEnvironmentVariable || !midGetDisplayDPI) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLActivity.java?");
     }
 
@@ -1045,6 +1048,28 @@ int Android_JNI_OpenAudioDevice(int iscapture, int sampleRate, int is16Bit, int 
     }
 
     return audioBufferFrames;
+}
+
+int Android_JNI_GetDisplayDPI(float *ddpi, float *xdpi, float *ydpi)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+
+    jobject jDisplayObj = (*env)->CallStaticObjectMethod(env, mActivityClass, midGetDisplayDPI);
+    jclass jDisplayClass = (*env)->GetObjectClass(env, jDisplayObj);
+
+    jfieldID fidXdpi = (*env)->GetFieldID(env, jDisplayClass, "xdpi", "F");
+    jfieldID fidYdpi = (*env)->GetFieldID(env, jDisplayClass, "ydpi", "F");
+    jfieldID fidDdpi = (*env)->GetFieldID(env, jDisplayClass, "densityDpi", "I");
+
+    float nativeXdpi = (*env)->GetFloatField(env, jDisplayObj, fidXdpi);
+    float nativeYdpi = (*env)->GetFloatField(env, jDisplayObj, fidYdpi);
+    int nativeDdpi = (*env)->GetIntField(env, jDisplayObj, fidDdpi);
+
+    *ddpi = (float)nativeDdpi;
+    *xdpi = nativeXdpi;
+    *ydpi = nativeYdpi;
+
+    return 0;
 }
 
 void * Android_JNI_GetAudioBuffer(void)
