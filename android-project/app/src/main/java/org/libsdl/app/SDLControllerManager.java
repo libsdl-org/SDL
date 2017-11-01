@@ -88,6 +88,8 @@ public class SDLControllerManager
         }
         int sources = device.getSources();
 
+        /* This is called for every button press, so let's not spam the logs */
+        /**
         if ((sources & InputDevice.SOURCE_CLASS_JOYSTICK) == InputDevice.SOURCE_CLASS_JOYSTICK) {
             Log.v(TAG, "Input device " + device.getName() + " is a joystick.");
         }
@@ -97,6 +99,7 @@ public class SDLControllerManager
         if ((sources & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
             Log.v(TAG, "Input device " + device.getName() + " is a gamepad.");
         }
+        **/
 
         return (((sources & InputDevice.SOURCE_CLASS_JOYSTICK) == InputDevice.SOURCE_CLASS_JOYSTICK) ||
                 ((sources & InputDevice.SOURCE_DPAD) == InputDevice.SOURCE_DPAD) ||
