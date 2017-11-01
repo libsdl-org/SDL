@@ -919,6 +919,15 @@ static ControllerMapping_t *SDL_PrivateGetControllerMapping(int device_index)
         mapping = s_pXInputMapping;
     }
 #endif
+#if defined(__ANDROID__)
+    if (!mapping && SDL_SYS_IsDPAD_DeviceIndex(device_index)) {
+        SDL_bool existing;
+        char mapping_string[1024];
+        SDL_snprintf(mapping_string, sizeof(mapping_string), "none,%s,a:b0,b:b1,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,", name);
+        mapping = SDL_PrivateAddMappingForGUID(guid, mapping_string,
+                          &existing, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
+#endif /* __ANDROID__ */
+    }
     SDL_UnlockJoysticks();
     return mapping;
 }
