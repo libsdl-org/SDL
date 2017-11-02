@@ -2121,6 +2121,7 @@ char *SDL_AndroidGetManifestEnvironmentVariable(const char *variableName)
 
     jstring jVariableName = (*env)->NewStringUTF(env, variableName);
     jstring jResult = (jstring)((*env)->CallStaticObjectMethod(env, mActivityClass, midGetManifestEnvironmentVariable, jVariableName));
+    (*env)->DeleteLocalRef(env, jVariableName);
 
     if (jResult == NULL) {
         return NULL;        
