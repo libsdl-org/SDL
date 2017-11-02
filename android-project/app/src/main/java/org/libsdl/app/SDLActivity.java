@@ -371,27 +371,8 @@ public class SDLActivity extends Activity {
                     // Start up the C app thread and enable sensor input for the first time
                     // FIXME: Why aren't we enabling sensor input at start?
 
-                    final Thread sdlThread = new Thread(new SDLMain(), "SDLThread");
+                    mSDLThread = new Thread(new SDLMain(), "SDLThread");
                     mSurface.enableSensor(Sensor.TYPE_ACCELEROMETER, true);
-                    sdlThread.start();
-
-                    // Set up a listener thread to catch when the native thread ends
-                    mSDLThread = new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                sdlThread.join();
-                            } catch (Exception e) {
-                                // Ignore any exception
-                            } finally {
-                                // Native thread has finished
-                                if (!mExitCalledFromJava) {
-                                    handleNativeExit();
-                                }
-                            }
-                        }
-                    }, "SDLThreadListener");
-
                     mSDLThread.start();
                 }
 
@@ -1044,6 +1025,11 @@ class SDLMain implements Runnable {
         SDLActivity.nativeRunMain(library, function, arguments);
 
         Log.v("SDL", "Finished main function");
+
+        // Native thread has finished, let's finish the Activity
+        if (!SDLActivity.mExitCalledFromJava) {
+            SDLActivity.handleNativeExit();
+        }
     }
 }
 
