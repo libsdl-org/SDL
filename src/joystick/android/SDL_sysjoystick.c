@@ -460,7 +460,7 @@ SDL_SYS_JoystickDetect(void)
      * Ref: http://developer.android.com/reference/android/hardware/input/InputManager.InputDeviceListener.html
      */
     static Uint32 timeout = 0;
-    if (SDL_TICKS_PASSED(SDL_GetTicks(), timeout)) {
+    if (!timeout || SDL_TICKS_PASSED(SDL_GetTicks(), timeout)) {
         timeout = SDL_GetTicks() + 3000;
         Android_JNI_PollInputDevices();
     }
