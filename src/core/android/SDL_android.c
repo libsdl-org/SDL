@@ -1065,9 +1065,19 @@ int Android_JNI_GetDisplayDPI(float *ddpi, float *xdpi, float *ydpi)
     float nativeYdpi = (*env)->GetFloatField(env, jDisplayObj, fidYdpi);
     int nativeDdpi = (*env)->GetIntField(env, jDisplayObj, fidDdpi);
 
-    *ddpi = (float)nativeDdpi;
-    *xdpi = nativeXdpi;
-    *ydpi = nativeYdpi;
+
+    (*env)->DeleteLocalRef(env, jDisplayObj);
+    (*env)->DeleteLocalRef(env, jDisplayClass);
+
+    if (ddpi) {
+        *ddpi = (float)nativeDdpi;
+    }
+    if (xdpi) {
+        *xdpi = nativeXdpi;
+    }
+    if (ydpi) {
+        *ydpi = nativeYdpi;
+    }
 
     return 0;
 }
