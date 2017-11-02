@@ -211,6 +211,20 @@ public class SDLActivity extends Activity {
 
         setContentView(mLayout);
 
+        /* 
+         * Per SDL_androidwindow.c, Android will only ever have one window, and that window 
+         * is always flagged SDL_WINDOW_FULLSCREEN.  Let's treat it as an immersive fullscreen 
+         * window for Android UI purposes, as a result.
+         */
+        int iFlags = 
+            View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY |
+            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+            View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+            View.SYSTEM_UI_FLAG_FULLSCREEN;
+
+        getWindow().getDecorView().setSystemUiVisibility(iFlags);        
+
         // Get filename from "Open with" of another application
         Intent intent = getIntent();
         if (intent != null && intent.getData() != null) {
