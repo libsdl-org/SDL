@@ -2459,7 +2459,7 @@ CheckVulkan()
 {
     if test x$enable_video = xyes -a x$enable_video_vulkan = xyes; then
         case "$host" in
-            *-*-androideabi*)
+            *-*-android*)
                 AC_TRY_COMPILE([
                   #if defined(__ARM_ARCH) && __ARM_ARCH < 7
                   #error Vulkan doesn't work on this configuration
@@ -2715,7 +2715,7 @@ AC_HELP_STRING([--enable-pthreads], [use POSIX threads for multi-threading [[def
 AC_HELP_STRING([--enable-pthread-sem], [use pthread semaphores [[default=yes]]]),
                   , enable_pthread_sem=yes)
     case "$host" in
-         *-*-androideabi*)
+         *-*-android*)
             pthread_cflags="-D_REENTRANT -D_THREAD_SAFE"
             pthread_lib=""
             ;;
@@ -3243,7 +3243,7 @@ dnl Set up the configuration based on the host platform!
 case "$host" in
     *-*-linux*|*-*-uclinux*|*-*-gnu*|*-*-k*bsd*-gnu|*-*-bsdi*|*-*-freebsd*|*-*-dragonfly*|*-*-netbsd*|*-*-openbsd*|*-*-sysv5*|*-*-solaris*|*-*-hpux*|*-*-aix*|*-*-minix*|*-*-nto*)
         case "$host" in
-            *-*-androideabi*)
+            *-*-android*)
                 # Android
                 ARCH=android
                 ANDROID_CFLAGS="-DGL_GLEXT_PROTOTYPES"
@@ -3376,15 +3376,20 @@ case "$host" in
         fi
         # Set up files for the haptic library
         if test x$enable_haptic = xyes; then
-           if test x$use_input_events = xyes; then
-             case $ARCH in
-               linux)
-                   AC_DEFINE(SDL_HAPTIC_LINUX, 1, [ ])
-                   SOURCES="$SOURCES $srcdir/src/haptic/linux/*.c"
-                   have_haptic=yes
-               ;;
-             esac
-           fi
+          case $ARCH in
+            linux)
+                if test x$use_input_events = xyes; then
+                    AC_DEFINE(SDL_HAPTIC_LINUX, 1, [ ])
+                    SOURCES="$SOURCES $srcdir/src/haptic/linux/*.c"
+                    have_haptic=yes
+                fi
+            ;;
+            android)
+                AC_DEFINE(SDL_HAPTIC_ANDROID, 1, [ ])
+                SOURCES="$SOURCES $srcdir/src/haptic/android/*.c"
+                have_haptic=yes
+            ;;
+          esac
         fi
         # Set up files for the power library
         if test x$enable_power = xyes; then
