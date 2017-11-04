@@ -527,6 +527,11 @@ SDL_EGL_ChooseConfig(_THIS)
         _this->egl_data->eglBindAPI(EGL_OPENGL_API);
     }
 
+    if (_this->egl_data->egl_surfacetype) {
+        attribs[i++] = EGL_SURFACE_TYPE;
+        attribs[i++] = _this->egl_data->egl_surfacetype;
+    }
+
     attribs[i++] = EGL_NONE;
 
     if (_this->egl_data->eglChooseConfig(_this->egl_data->egl_display,

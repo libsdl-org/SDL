@@ -35,6 +35,7 @@ typedef struct SDL_EGL_VideoData
     EGLDisplay egl_display;
     EGLConfig egl_config;
     int egl_swapinterval;
+    int egl_surfacetype;
     
     EGLDisplay(EGLAPIENTRY *eglGetDisplay) (NativeDisplayType display);
     EGLDisplay(EGLAPIENTRY *eglGetPlatformDisplay) (EGLenum platform,
