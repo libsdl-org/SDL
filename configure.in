@@ -271,7 +271,7 @@ if test x$enable_libc = xyes; then
     AC_CHECK_FUNCS(malloc calloc realloc free getenv setenv putenv unsetenv qsort abs bcopy memset memcpy memmove wcslen wcscmp strlen strlcpy strlcat _strrev _strupr _strlwr strchr strrchr strstr itoa _ltoa _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction setjmp nanosleep sysconf sysctlbyname getauxval poll)
 
     AC_CHECK_LIB(m, pow, [LIBS="$LIBS -lm"; EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lm"])
-    AC_CHECK_FUNCS(atan atan2 acos asin ceil copysign cos cosf fabs floor log pow scalbn sin sinf sqrt sqrtf tan tanf)
+    AC_CHECK_FUNCS(acos acosf asin asinf atan atanf atan2 atan2f ceil ceilf copysign copysignf cos cosf fabs fabsf floor floorf log logf pow powf scalbn scalbnf sin sinf sqrt sqrtf tan tanf)
 
     AC_CHECK_LIB(iconv, iconv_open, [LIBS="$LIBS -liconv"; EXTRA_LDFLAGS="$EXTRA_LDFLAGS -liconv"])
     AC_CHECK_FUNCS(iconv)

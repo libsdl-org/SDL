@@ -501,18 +501,29 @@ extern DECLSPEC int SDLCALL SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size
 #endif
 
 extern DECLSPEC double SDLCALL SDL_acos(double x);
+extern DECLSPEC float SDLCALL SDL_acosf(float x);
 extern DECLSPEC double SDLCALL SDL_asin(double x);
+extern DECLSPEC float SDLCALL SDL_asinf(float x);
 extern DECLSPEC double SDLCALL SDL_atan(double x);
+extern DECLSPEC float SDLCALL SDL_atanf(float x);
 extern DECLSPEC double SDLCALL SDL_atan2(double x, double y);
+extern DECLSPEC float SDLCALL SDL_atan2f(float x, float y);
 extern DECLSPEC double SDLCALL SDL_ceil(double x);
+extern DECLSPEC float SDLCALL SDL_ceilf(float x);
 extern DECLSPEC double SDLCALL SDL_copysign(double x, double y);
+extern DECLSPEC float SDLCALL SDL_copysignf(float x, float y);
 extern DECLSPEC double SDLCALL SDL_cos(double x);
 extern DECLSPEC float SDLCALL SDL_cosf(float x);
 extern DECLSPEC double SDLCALL SDL_fabs(double x);
+extern DECLSPEC float SDLCALL SDL_fabsf(float x);
 extern DECLSPEC double SDLCALL SDL_floor(double x);
+extern DECLSPEC float SDLCALL SDL_floorf(float x);
 extern DECLSPEC double SDLCALL SDL_log(double x);
+extern DECLSPEC float SDLCALL SDL_logf(float x);
 extern DECLSPEC double SDLCALL SDL_pow(double x, double y);
+extern DECLSPEC float SDLCALL SDL_powf(float x, float y);
 extern DECLSPEC double SDLCALL SDL_scalbn(double x, int n);
+extern DECLSPEC float SDLCALL SDL_scalbnf(float x, int n);
 extern DECLSPEC double SDLCALL SDL_sin(double x);
 extern DECLSPEC float SDLCALL SDL_sinf(float x);
 extern DECLSPEC double SDLCALL SDL_sqrt(double x);
