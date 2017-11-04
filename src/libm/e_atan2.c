@@ -57,8 +57,8 @@ double attribute_hidden __ieee754_atan2(double y, double x)
 	ix = hx&0x7fffffff;
 	EXTRACT_WORDS(hy,ly,y);
 	iy = hy&0x7fffffff;
-	if(((ix|((lx|-(int32_t)lx)>>31))>0x7ff00000)||
-	   ((iy|((ly|-(int32_t)ly)>>31))>0x7ff00000))	/* x or y is NaN */
+	if(((ix|((lx|-lx)>>31))>0x7ff00000)||
+	   ((iy|((ly|-ly)>>31))>0x7ff00000))	/* x or y is NaN */
 	   return x+y;
 	if(((hx-0x3ff00000)|lx)==0) return atan(y);   /* x=1.0 */
 	m = ((hy>>31)&1)|((hx>>30)&2);	/* 2*sign(x)+sign(y) */
@@ -81,8 +81,8 @@ double attribute_hidden __ieee754_atan2(double y, double x)
 		switch(m) {
 		    case 0: return  pi_o_4+tiny;/* atan(+INF,+INF) */
 		    case 1: return -pi_o_4-tiny;/* atan(-INF,+INF) */
-		    case 2: return  3.0*pi_o_4+tiny;/* atan(+INF,-INF) */
-		    case 3: return -3.0*pi_o_4-tiny;/* atan(-INF,-INF) */
+		    case 2: return  3.0*pi_o_4+tiny;/*atan(+INF,-INF)*/
+		    case 3: return -3.0*pi_o_4-tiny;/*atan(-INF,-INF)*/
 		}
 	    } else {
 		switch(m) {
@@ -114,3 +114,21 @@ double attribute_hidden __ieee754_atan2(double y, double x)
 	    	    return  (z-pi_lo)-pi;/* atan(-,-) */
 	}
 }
+
+/*
+ * wrapper atan2(y,x)
+ */
+#ifndef _IEEE_LIBM
+double atan2(double y, double x)
+{
+	double z = __ieee754_atan2(y, x);
+	if (_LIB_VERSION == _IEEE_ || isnan(x) || isnan(y))
+		return z;
+	if (x == 0.0 && y == 0.0)
+		return __kernel_standard(y,x,3); /* atan2(+-0,+-0) */
+	return z;
+}
+#else
+strong_alias(__ieee754_atan2, atan2)
+#endif
+libm_hidden_def(atan2)

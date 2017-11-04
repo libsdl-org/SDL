@@ -1,4 +1,3 @@
-/* @(#)s_sin.c 5.1 93/09/24 */
 /*
  * ====================================================
  * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
@@ -9,11 +8,6 @@
  * is preserved.
  * ====================================================
  */
-
-#if defined(LIBM_SCCS) && !defined(lint)
-static const char rcsid[] =
-    "$NetBSD: s_sin.c,v 1.7 1995/05/10 20:48:15 jtc Exp $";
-#endif
 
 /* sin(x)
  * Return sine function of x.
@@ -49,43 +43,31 @@ static const char rcsid[] =
 #include "math_libm.h"
 #include "math_private.h"
 
-libm_hidden_proto(sin)
-#ifdef __STDC__
-     double sin(double x)
-#else
-     double sin(x)
-     double x;
-#endif
+double sin(double x)
 {
-    double y[2], z = 0.0;
-    int32_t n, ix;
+	double y[2],z=0.0;
+	int32_t n, ix;
 
     /* High word of x. */
-    GET_HIGH_WORD(ix, x);
+	GET_HIGH_WORD(ix,x);
 
     /* |x| ~< pi/4 */
-    ix &= 0x7fffffff;
-    if (ix <= 0x3fe921fb)
-        return __kernel_sin(x, z, 0);
+	ix &= 0x7fffffff;
+	if(ix <= 0x3fe921fb) return __kernel_sin(x,z,0);
 
     /* sin(Inf or NaN) is NaN */
-    else if (ix >= 0x7ff00000)
-        return x - x;
+	else if (ix>=0x7ff00000) return x-x;
 
     /* argument reduction needed */
-    else {
-        n = __ieee754_rem_pio2(x, y);
-        switch (n & 3) {
-        case 0:
-            return __kernel_sin(y[0], y[1], 1);
-        case 1:
-            return __kernel_cos(y[0], y[1]);
-        case 2:
-            return -__kernel_sin(y[0], y[1], 1);
-        default:
-            return -__kernel_cos(y[0], y[1]);
-        }
-    }
+	else {
+	    n = __ieee754_rem_pio2(x,y);
+	    switch(n&3) {
+		case 0: return  __kernel_sin(y[0],y[1],1);
+		case 1: return  __kernel_cos(y[0],y[1]);
+		case 2: return -__kernel_sin(y[0],y[1],1);
+		default:
+			return -__kernel_cos(y[0],y[1]);
+	    }
+	}
 }
-
 libm_hidden_def(sin)
