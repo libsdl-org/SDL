@@ -79,7 +79,9 @@ Emscripten_CreateCursor(SDL_Surface* surface, int hot_x, int hot_y)
     cursor_url = (const char *)EM_ASM_INT({
         var w = $0;
         var h = $1;
-        var pixels = $2;
+        var hot_x = $2;
+        var hot_y = $3;
+        var pixels = $4;
 
         var canvas = document.createElement("canvas");
         canvas.width = w;
@@ -114,13 +116,15 @@ Emscripten_CreateCursor(SDL_Surface* surface, int hot_x, int hot_y)
         }
 
         ctx.putImageData(image, 0, 0);
-        var url = "url(" + canvas.toDataURL() + "), auto";
+        var url = hot_x === 0 && hot_y === 0
+            ? "url(" + canvas.toDataURL() + "), auto"
+            : "url(" + canvas.toDataURL() + ") " + hot_x + " " + hot_y + ", auto";
 
         var urlBuf = _malloc(url.length + 1);
         stringToUTF8(url, urlBuf, url.length + 1);
 
         return urlBuf;
-    }, surface->w, surface->h, conv_surf->pixels);
+    }, surface->w, surface->h, hot_x, hot_y, conv_surf->pixels);
 
     SDL_FreeSurface(conv_surf);
 
