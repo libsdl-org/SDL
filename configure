@@ -16688,7 +16688,7 @@ if test "x$ac_cv_lib_m_pow" = xyes; then :
   LIBS="$LIBS -lm"; EXTRA_LDFLAGS="$EXTRA_LDFLAGS -lm"
 fi
 
-    for ac_func in atan atan2 acos asin ceil copysign cos cosf fabs floor log pow scalbn sin sinf sqrt sqrtf tan tanf
+    for ac_func in acos acosf asin asinf atan atanf atan2 atan2f ceil ceilf copysign copysignf cos cosf fabs fabsf floor floorf log logf pow powf scalbn scalbnf sin sinf sqrt sqrtf tan tanf
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -21987,7 +21987,7 @@ CheckVulkan()
 {
     if test x$enable_video = xyes -a x$enable_video_vulkan = xyes; then
         case "$host" in
-            *-*-androideabi*)
+            *-*-android*)
                 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -22515,7 +22515,7 @@ else
 fi
 
     case "$host" in
-         *-*-androideabi*)
+         *-*-android*)
             pthread_cflags="-D_REENTRANT -D_THREAD_SAFE"
             pthread_lib=""
             ;;
@@ -23722,7 +23722,7 @@ CheckWarnAll
 case "$host" in
     *-*-linux*|*-*-uclinux*|*-*-gnu*|*-*-k*bsd*-gnu|*-*-bsdi*|*-*-freebsd*|*-*-dragonfly*|*-*-netbsd*|*-*-openbsd*|*-*-sysv5*|*-*-solaris*|*-*-hpux*|*-*-aix*|*-*-minix*|*-*-nto*)
         case "$host" in
-            *-*-androideabi*)
+            *-*-android*)
                 # Android
                 ARCH=android
                 ANDROID_CFLAGS="-DGL_GLEXT_PROTOTYPES"
@@ -23867,17 +23867,24 @@ $as_echo "#define SDL_JOYSTICK_ANDROID 1" >>confdefs.h
         fi
         # Set up files for the haptic library
         if test x$enable_haptic = xyes; then
-           if test x$use_input_events = xyes; then
-             case $ARCH in
-               linux)
+          case $ARCH in
+            linux)
+                if test x$use_input_events = xyes; then
 
 $as_echo "#define SDL_HAPTIC_LINUX 1" >>confdefs.h
 
-                   SOURCES="$SOURCES $srcdir/src/haptic/linux/*.c"
-                   have_haptic=yes
-               ;;
-             esac
-           fi
+                    SOURCES="$SOURCES $srcdir/src/haptic/linux/*.c"
+                    have_haptic=yes
+                fi
+            ;;
+            android)
+
+$as_echo "#define SDL_HAPTIC_ANDROID 1" >>confdefs.h
+
+                SOURCES="$SOURCES $srcdir/src/haptic/android/*.c"
+                have_haptic=yes
+            ;;
+          esac
         fi
         # Set up files for the power library
         if test x$enable_power = xyes; then
