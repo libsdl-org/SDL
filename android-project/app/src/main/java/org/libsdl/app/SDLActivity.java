@@ -512,6 +512,8 @@ public class SDLActivity extends Activity {
     public static native void onNativeSurfaceChanged();
     public static native void onNativeSurfaceDestroyed();
     public static native String nativeGetHint(String name);
+    public static native void nativeSetenv(String name, String value);
+    public static native void nativeEnvironmentVariablesSet();
 
     /**
      * This method is called by SDL using JNI.
@@ -616,23 +618,25 @@ public class SDLActivity extends Activity {
     /**
      * This method is called by SDL using JNI.
      */
-    public static String getManifestEnvironmentVariable(String variableName) {
+    public static void getManifestEnvironmentVariables() {
         try {
             ApplicationInfo applicationInfo = getContext().getPackageManager().getApplicationInfo(getContext().getPackageName(), PackageManager.GET_META_DATA);
-            if (applicationInfo.metaData == null) {
-                return null;
+            Bundle bundle = applicationInfo.metaData;
+            if (bundle == null) {
+                return;
             }
-
-            String key = "SDL_ENV." + variableName;
-            if (!applicationInfo.metaData.containsKey(key)) {
-                return null;
+			String prefix = "SDL_ENV.";
+            final int trimLength = prefix.length();
+            for (String key : bundle.keySet()) {
+                if (key.startsWith(prefix)) {
+                    String name = key.substring(trimLength);
+                    String value = bundle.get(key).toString();
+                    nativeSetenv(name, value);
+                }
             }
-
-            return applicationInfo.metaData.get(key).toString();
-        }
-        catch (PackageManager.NameNotFoundException e)
-        {
-            return null;
+			nativeEnvironmentVariablesSet();
+        } catch (Exception e) {
+           Log.v("SDL", "exception " + e.toString());
         }
     }
 
