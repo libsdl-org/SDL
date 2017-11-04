@@ -97,11 +97,11 @@ static VideoBootStrap *bootstrap[] = {
 #if SDL_VIDEO_DRIVER_PSP
     &PSP_bootstrap,
 #endif
-#if SDL_VIDEO_DRIVER_RPI
-    &RPI_bootstrap,
-#endif 
 #if SDL_VIDEO_DRIVER_KMSDRM
     &KMSDRM_bootstrap,
+#endif
+#if SDL_VIDEO_DRIVER_RPI
+    &RPI_bootstrap,
 #endif
 #if SDL_VIDEO_DRIVER_NACL
     &NACL_bootstrap,
