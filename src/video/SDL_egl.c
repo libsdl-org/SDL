@@ -44,12 +44,12 @@
 
 #if SDL_VIDEO_DRIVER_RPI
 /* Raspbian places the OpenGL ES/EGL binaries in a non standard path */
-#define DEFAULT_EGL "/opt/vc/lib/libbrcmEGL.so"
-#define DEFAULT_OGL_ES2 "/opt/vc/lib/libbrcmGLESv2.so"
+#define DEFAULT_EGL ( vc4 ? "libEGL.so.1" : "/opt/vc/lib/libbrcmEGL.so" )
+#define DEFAULT_OGL_ES2 ( vc4 ? "libGLESv2.so.2" : "/opt/vc/lib/libbrcmGLESv2.so" )
 #define ALT_EGL "/opt/vc/lib/libEGL.so"
 #define ALT_OGL_ES2 "/opt/vc/lib/libGLESv2.so"
-#define DEFAULT_OGL_ES_PVR "/opt/vc/lib/libGLES_CM.so"
-#define DEFAULT_OGL_ES "/opt/vc/lib/libGLESv1_CM.so"
+#define DEFAULT_OGL_ES_PVR ( vc4 ? "libGLES_CM.so.1" : "/opt/vc/lib/libbrcmGLESv2.so" )
+#define DEFAULT_OGL_ES ( vc4 ? "libGLESv1_CM.so.1" : "/opt/vc/lib/libbrcmGLESv2.so" )
 
 #elif SDL_VIDEO_DRIVER_ANDROID || SDL_VIDEO_DRIVER_VIVANTE
 /* Android */
@@ -256,6 +256,9 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
 #if SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_WINRT
     const char *d3dcompiler;
 #endif
+#if SDL_VIDEO_DRIVER_RPI
+    SDL_bool vc4 = (0 == access("/sys/module/vc4/", F_OK));
+#endif
 
     if (_this->egl_data) {
         return SDL_SetError("OpenGL ES context already created");
@@ -295,7 +298,7 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
                 path = DEFAULT_OGL_ES2;
                 egl_dll_handle = SDL_LoadObject(path);
 #ifdef ALT_OGL_ES2
-                if (egl_dll_handle == NULL) {
+                if (egl_dll_handle == NULL && !vc4) {
                     path = ALT_OGL_ES2;
                     egl_dll_handle = SDL_LoadObject(path);
                 }
@@ -308,6 +311,12 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
                     path = DEFAULT_OGL_ES_PVR;
                     egl_dll_handle = SDL_LoadObject(path);
                 }
+#ifdef ALT_OGL_ES2
+                if (egl_dll_handle == NULL && !vc4) {
+                    path = ALT_OGL_ES2;
+                    egl_dll_handle = SDL_LoadObject(path);
+                }
+#endif
             }
         }
 #ifdef DEFAULT_OGL         
@@ -339,7 +348,7 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
         dll_handle = SDL_LoadObject(path);
 
 #ifdef ALT_EGL
-        if (dll_handle == NULL) {
+        if (dll_handle == NULL && !vc4) {
             path = ALT_EGL;
             dll_handle = SDL_LoadObject(path);
         }
