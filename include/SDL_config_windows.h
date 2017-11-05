@@ -109,13 +109,15 @@ typedef unsigned int uintptr_t;
 #define HAVE_MEMCMP 1
 #define HAVE_STRLEN 1
 #define HAVE__STRREV 1
-#define HAVE__STRUPR 1
-#define HAVE__STRLWR 1
+/* These functions have security warnings, so we won't use them */
+/* #undef HAVE__STRUPR */
+/* #undef HAVE__STRLWR */
 #define HAVE_STRCHR 1
 #define HAVE_STRRCHR 1
 #define HAVE_STRSTR 1
-#define HAVE__LTOA 1
-#define HAVE__ULTOA 1
+/* These functions have security warnings, so we won't use them */
+/* #undef HAVE__LTOA */
+/* #undef HAVE__ULTOA */
 #define HAVE_STRTOL 1
 #define HAVE_STRTOUL 1
 #define HAVE_STRTOD 1
