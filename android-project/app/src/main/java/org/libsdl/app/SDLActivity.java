@@ -513,7 +513,6 @@ public class SDLActivity extends Activity {
     public static native void onNativeSurfaceDestroyed();
     public static native String nativeGetHint(String name);
     public static native void nativeSetenv(String name, String value);
-    public static native void nativeEnvironmentVariablesSet();
 
     /**
      * This method is called by SDL using JNI.
@@ -618,12 +617,12 @@ public class SDLActivity extends Activity {
     /**
      * This method is called by SDL using JNI.
      */
-    public static void getManifestEnvironmentVariables() {
+    public static boolean getManifestEnvironmentVariables() {
         try {
             ApplicationInfo applicationInfo = getContext().getPackageManager().getApplicationInfo(getContext().getPackageName(), PackageManager.GET_META_DATA);
             Bundle bundle = applicationInfo.metaData;
             if (bundle == null) {
-                return;
+                return false;
             }
 			String prefix = "SDL_ENV.";
             final int trimLength = prefix.length();
@@ -634,10 +633,12 @@ public class SDLActivity extends Activity {
                     nativeSetenv(name, value);
                 }
             }
-			nativeEnvironmentVariablesSet();
+            /* environment variables set! */
+            return true; 
         } catch (Exception e) {
            Log.v("SDL", "exception " + e.toString());
         }
+        return false;
     }
 
     static class ShowTextInputTask implements Runnable {

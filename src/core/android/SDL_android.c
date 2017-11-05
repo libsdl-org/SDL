@@ -251,7 +251,7 @@ static jfieldID fidSeparateMouseAndTouch;
 static float fLastAccelerometer[3];
 static SDL_bool bHasNewData;
 
-static SDL_bool bHasEnvironmentVariables;
+static SDL_bool bHasEnvironmentVariables = SDL_FALSE;
 
 /*******************************************************************************
                  Functions called by JNI
@@ -324,7 +324,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv* mEnv, jclass c
                                 "openAPKExpansionInputStream", "(Ljava/lang/String;)Ljava/io/InputStream;");
 
     midGetManifestEnvironmentVariables = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
-                                "getManifestEnvironmentVariables", "()V");
+                                "getManifestEnvironmentVariables", "()Z");
 
     midGetDisplayDPI = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass, "getDisplayDPI", "()Landroid/util/DisplayMetrics;");
 
@@ -829,12 +829,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetenv)(
     (*env)->ReleaseStringUTFChars(env, name, utfname);
     (*env)->ReleaseStringUTFChars(env, value, utfvalue);
 
-}
-
-JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeEnvironmentVariablesSet)(
-        JNIEnv* env, jclass cls)
-{
-    bHasEnvironmentVariables = SDL_TRUE;
 }
 
 /*******************************************************************************
@@ -2143,7 +2137,10 @@ void Android_JNI_GetManifestEnvironmentVariables(void)
 
     if (!bHasEnvironmentVariables) {
         JNIEnv *env = Android_JNI_GetEnv();
-        (*env)->CallStaticVoidMethod(env, mActivityClass, midGetManifestEnvironmentVariables);
+        SDL_bool ret = (*env)->CallStaticBooleanMethod(env, mActivityClass, midGetManifestEnvironmentVariables);
+        if (ret) {
+            bHasEnvironmentVariables = SDL_TRUE;
+        }
     }
 }
 
