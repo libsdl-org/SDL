@@ -1,22 +1,28 @@
-libsdl2 (2.0.7ubuntu1) UNRELEASED; urgency=low
+libsdl2 (2.0.8) UNRELEASED; urgency=low
+
+  * Updated SDL to version 2.0.8
+
+ -- Sam Lantinga <slouken@libsdl.org>  Sat, 4 Nov 2017 21:21:53 -0800
+
+libsdl2 (2.0.7) UNRELEASED; urgency=low
 
   * Updated SDL to version 2.0.7
 
  -- Sam Lantinga <slouken@libsdl.org>  Thu, 12 Oct 2017 08:01:16 -0800
 
-libsdl2 (2.0.6ubuntu1) UNRELEASED; urgency=low
+libsdl2 (2.0.6) UNRELEASED; urgency=low
 
   * Updated SDL to version 2.0.6
 
  -- Sam Lantinga <slouken@libsdl.org>  Sat, 9 Sep 2017 07:29:36 -0800
 
-libsdl2 (2.0.5ubuntu1) UNRELEASED; urgency=low
+libsdl2 (2.0.5) UNRELEASED; urgency=low
 
   * Updated SDL to version 2.0.5
 
  -- Sam Lantinga <slouken@libsdl.org>  Mon, 28 Nov 2016 07:32:52 -0800
 
-libsdl2 (2.0.4ubuntu1) UNRELEASED; urgency=low
+libsdl2 (2.0.4) UNRELEASED; urgency=low
 
   * Updated SDL to version 2.0.4
 
