@@ -148,9 +148,6 @@ X11_GetPixelFormatFromVisualInfo(Display * display, XVisualInfo * vinfo)
     return SDL_PIXELFORMAT_UNKNOWN;
 }
 
-/* Global for the error handler */
-static int vm_event, vm_error = -1;
-
 #if SDL_VIDEO_DRIVER_X11_XINERAMA
 static SDL_bool
 CheckXinerama(Display * display, int *major, int *minor)
@@ -509,6 +506,7 @@ X11_InitModes_XRandR(_THIS)
 static SDL_bool
 CheckVidMode(Display * display, int *major, int *minor)
 {
+    int vm_event, vm_error = -1;
     /* Default the extension not available */
     *major = *minor = 0;
 
@@ -528,7 +526,6 @@ CheckVidMode(Display * display, int *major, int *minor)
     }
 
     /* Query the extension version */
-    vm_error = -1;
     if (!X11_XF86VidModeQueryExtension(display, &vm_event, &vm_error)
         || !X11_XF86VidModeQueryVersion(display, major, minor)) {
 #ifdef X11MODES_DEBUG
