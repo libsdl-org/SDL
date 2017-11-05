@@ -148,7 +148,7 @@ SDL_ceilf(float x)
 #if defined(HAVE_CEILF)
     return ceilf(x);
 #else
-    return (float)ceil((float)x);
+    return (float)SDL_ceil((float)x);
 #endif
 }
 
@@ -237,6 +237,26 @@ SDL_floorf(float x)
     return floorf(x);
 #else
     return (float)SDL_floor((double)x);
+#endif
+}
+
+double
+SDL_fmod(double x, double y)
+{
+#if defined(HAVE_FMOD)
+    return fmod(x, y);
+#else
+    return SDL_uclibc_fmod(x, y);
+#endif
+}
+
+float
+SDL_fmodf(float x, float y)
+{
+#if defined(HAVE_FMODF)
+    return fmodf(x, y);
+#else
+    return (float)SDL_fmod((double)x, (double)y);
 #endif
 }
 

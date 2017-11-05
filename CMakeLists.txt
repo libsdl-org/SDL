@@ -639,8 +639,8 @@ if(LIBC)
             _ultoa strtol strtoul strtoll strtod atoi atof strcmp strncmp
             _stricmp _strnicmp sscanf
             acos acosf asin asinf atan atanf atan2 atan2f ceil ceilf
-            copysign copysignf cos cosf fabs fabsf floor floorf log logf
-            pow powf scalbn scalbnf sin sinf sqrt sqrtf tan tanf)
+            copysign copysignf cos cosf fabs fabsf floor floorf fmod fmodf
+            log logf pow powf scalbn scalbnf sin sinf sqrt sqrtf tan tanf)
       string(TOUPPER ${_FN} _UPPER)
       set(HAVE_${_UPPER} 1)
     endforeach()

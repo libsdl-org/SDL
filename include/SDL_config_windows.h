@@ -125,30 +125,41 @@ typedef unsigned int uintptr_t;
 #define HAVE_STRNCMP 1
 #define HAVE__STRICMP 1
 #define HAVE__STRNICMP 1
-#define HAVE_ATAN 1
-#define HAVE_ATAN2 1
-#define HAVE_ACOS  1
-#define HAVE_ASIN  1
-#define HAVE_CEIL 1
-#define HAVE_COS 1
-#define HAVE_COSF 1
-#define HAVE_FABS 1
-#define HAVE_FLOOR 1
-#define HAVE_LOG 1
-#define HAVE_POW 1
-#define HAVE_SIN 1
-#define HAVE_SINF 1
-#define HAVE_SQRT 1
-#define HAVE_SQRTF 1
-#define HAVE_TAN 1
-#define HAVE_TANF 1
-#define HAVE__COPYSIGN 1
+#define HAVE_ACOS   1
+#define HAVE_ACOSF  1
+#define HAVE_ASIN   1
+#define HAVE_ASINF  1
+#define HAVE_ATAN   1
+#define HAVE_ATANF  1
+#define HAVE_ATAN2  1
+#define HAVE_ATAN2F 1
+#define HAVE_CEILF  1
+#define HAVE__COPYSIGN  1
+#define HAVE_COS    1
+#define HAVE_COSF   1
+#define HAVE_FABS   1
+#define HAVE_FABSF  1
+#define HAVE_FLOOR  1
+#define HAVE_FLOORF 1
+#define HAVE_FMOD   1
+#define HAVE_FMODF  1
+#define HAVE_LOG    1
+#define HAVE_LOGF   1
+#define HAVE_POW    1
+#define HAVE_POWF   1
+#define HAVE_SIN    1
+#define HAVE_SINF   1
+#define HAVE_SQRT   1
+#define HAVE_SQRTF  1
+#define HAVE_TAN    1
+#define HAVE_TANF   1
 #if defined(_MSC_VER)
 /* These functions were added with the VC++ 2013 C runtime library */
 #if _MSC_VER >= 1800
 #define HAVE_STRTOLL 1
 #define HAVE_VSSCANF 1
 #define HAVE_SCALBN 1
+#define HAVE_SCALBNF    1
 #endif
 /* This function is available with at least the VC++ 2008 C runtime library */
 #if _MSC_VER >= 1400
@@ -194,7 +205,7 @@ typedef unsigned int uintptr_t;
 #define SDL_VIDEO_RENDER_D3D    1
 #endif
 #ifndef SDL_VIDEO_RENDER_D3D11
-#define SDL_VIDEO_RENDER_D3D11	0
+#define SDL_VIDEO_RENDER_D3D11  0
 #endif
 
 /* Enable OpenGL support */
