@@ -518,6 +518,8 @@ extern DECLSPEC double SDLCALL SDL_fabs(double x);
 extern DECLSPEC float SDLCALL SDL_fabsf(float x);
 extern DECLSPEC double SDLCALL SDL_floor(double x);
 extern DECLSPEC float SDLCALL SDL_floorf(float x);
+extern DECLSPEC double SDLCALL SDL_fmod(double x, double y);
+extern DECLSPEC float SDLCALL SDL_fmodf(float x, float y);
 extern DECLSPEC double SDLCALL SDL_log(double x);
 extern DECLSPEC float SDLCALL SDL_logf(float x);
 extern DECLSPEC double SDLCALL SDL_pow(double x, double y);

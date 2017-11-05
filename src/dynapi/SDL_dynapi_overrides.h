@@ -658,3 +658,5 @@
 #define SDL_logf SDL_logf_REAL
 #define SDL_powf SDL_powf_REAL
 #define SDL_scalbnf SDL_scalbnf_REAL
+#define SDL_fmod SDL_fmod_REAL
+#define SDL_fmodf SDL_fmodf_REAL

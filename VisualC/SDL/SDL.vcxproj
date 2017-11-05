@@ -414,6 +414,7 @@
     <ClCompile Include="..\..\src\joystick\windows\SDL_windowsjoystick.c" />
     <ClCompile Include="..\..\src\joystick\windows\SDL_xinputjoystick.c" />
     <ClCompile Include="..\..\src\libm\e_atan2.c" />
+    <ClCompile Include="..\..\src\libm\e_fmod.c" />
     <ClCompile Include="..\..\src\libm\e_log.c" />
     <ClCompile Include="..\..\src\libm\e_pow.c" />
     <ClCompile Include="..\..\src\libm\e_rem_pio2.c" />

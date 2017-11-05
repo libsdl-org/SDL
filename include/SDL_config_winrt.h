@@ -44,7 +44,7 @@
 
 #if !defined(_STDINT_H_) && (!defined(HAVE_STDINT_H) || !_HAVE_STDINT_H)
 #if defined(__GNUC__) || defined(__DMC__) || defined(__WATCOMC__)
-#define HAVE_STDINT_H	1
+#define HAVE_STDINT_H   1
 #elif defined(_MSC_VER)
 typedef signed __int8 int8_t;
 typedef unsigned __int8 uint8_t;
@@ -122,13 +122,13 @@ typedef unsigned int uintptr_t;
 #define HAVE_STRLEN 1
 #define HAVE__STRREV 1
 #define HAVE__STRUPR 1
-//#define HAVE__STRLWR 1	// TODO, WinRT: consider using _strlwr_s instead
+//#define HAVE__STRLWR 1    // TODO, WinRT: consider using _strlwr_s instead
 #define HAVE_STRCHR 1
 #define HAVE_STRRCHR 1
 #define HAVE_STRSTR 1
 //#define HAVE_ITOA 1   // TODO, WinRT: consider using _itoa_s instead
-//#define HAVE__LTOA 1	// TODO, WinRT: consider using _ltoa_s instead
-//#define HAVE__ULTOA 1	// TODO, WinRT: consider using _ultoa_s instead
+//#define HAVE__LTOA 1  // TODO, WinRT: consider using _ltoa_s instead
+//#define HAVE__ULTOA 1 // TODO, WinRT: consider using _ultoa_s instead
 #define HAVE_STRTOL 1
 #define HAVE_STRTOUL 1
 //#define HAVE_STRTOLL 1
@@ -140,44 +140,56 @@ typedef unsigned int uintptr_t;
 #define HAVE__STRICMP 1
 #define HAVE__STRNICMP 1
 #define HAVE_VSNPRINTF 1
-//#define HAVE_SSCANF 1	// TODO, WinRT: consider using sscanf_s instead
+//#define HAVE_SSCANF 1 // TODO, WinRT: consider using sscanf_s instead
 #define HAVE_M_PI 1
-#define HAVE_ATAN 1
-#define HAVE_ATAN2 1
-#define HAVE_CEIL 1
+#define HAVE_ACOS   1
+#define HAVE_ACOSF  1
+#define HAVE_ASIN   1
+#define HAVE_ASINF  1
+#define HAVE_ATAN   1
+#define HAVE_ATANF  1
+#define HAVE_ATAN2  1
+#define HAVE_ATAN2F 1
+#define HAVE_CEIL   1
+#define HAVE_CEILF  1
 #define HAVE__COPYSIGN 1
-#define HAVE_COS 1
-#define HAVE_COSF 1
-#define HAVE_FABS 1
-#define HAVE_FLOOR 1
-#define HAVE_LOG 1
-#define HAVE_POW 1
-//#define HAVE_SCALBN 1
+#define HAVE_COS    1
+#define HAVE_COSF   1
+#define HAVE_FABS   1
+#define HAVE_FABSF  1
+#define HAVE_FLOOR  1
+#define HAVE_FLOORF 1
+#define HAVE_FMOD   1
+#define HAVE_FMODF  1
+#define HAVE_LOG    1
+#define HAVE_LOGF   1
+#define HAVE_POW    1
+#define HAVE_POWF   1
 #define HAVE__SCALB 1
-#define HAVE_SIN 1
-#define HAVE_SINF 1
-#define HAVE_SQRT 1
-#define HAVE_SQRTF 1
-#define HAVE_TAN 1
-#define HAVE_TANF 1
+#define HAVE_SIN    1
+#define HAVE_SINF   1
+#define HAVE_SQRT   1
+#define HAVE_SQRTF  1
+#define HAVE_TAN    1
+#define HAVE_TANF   1
 #define HAVE__FSEEKI64 1
 
 /* Enable various audio drivers */
-#define SDL_AUDIO_DRIVER_XAUDIO2	1
-#define SDL_AUDIO_DRIVER_DISK	1
-#define SDL_AUDIO_DRIVER_DUMMY	1
+#define SDL_AUDIO_DRIVER_XAUDIO2    1
+#define SDL_AUDIO_DRIVER_DISK   1
+#define SDL_AUDIO_DRIVER_DUMMY  1
 
 /* Enable various input drivers */
 #if WINAPI_FAMILY == WINAPI_FAMILY_PHONE_APP
 #define SDL_JOYSTICK_DISABLED 1
-#define SDL_HAPTIC_DISABLED	1
+#define SDL_HAPTIC_DISABLED 1
 #else
 #define SDL_JOYSTICK_XINPUT 1
 #define SDL_HAPTIC_XINPUT   1
 #endif
 
 /* Enable various shared object loading systems */
-#define SDL_LOADSO_WINDOWS	1
+#define SDL_LOADSO_WINDOWS  1
 
 /* Enable various threading systems */
 #if (NTDDI_VERSION >= NTDDI_WINBLUE)
@@ -188,10 +200,10 @@ typedef unsigned int uintptr_t;
 #endif
 
 /* Enable various timer systems */
-#define SDL_TIMER_WINDOWS	1
+#define SDL_TIMER_WINDOWS   1
 
 /* Enable various video drivers */
-#define SDL_VIDEO_DRIVER_WINRT	1
+#define SDL_VIDEO_DRIVER_WINRT  1
 #define SDL_VIDEO_DRIVER_DUMMY  1
 
 /* Enable OpenGL ES 2.0 (via a modified ANGLE library) */
@@ -210,7 +222,7 @@ typedef unsigned int uintptr_t;
 
 /* Enable assembly routines (Win64 doesn't have inline asm) */
 #ifndef _WIN64
-#define SDL_ASSEMBLY_ROUTINES	1
+#define SDL_ASSEMBLY_ROUTINES   1
 #endif
 
 #endif /* SDL_config_winrt_h_ */

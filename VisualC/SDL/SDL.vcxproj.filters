@@ -444,6 +444,7 @@
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi.c" />
     <ClCompile Include="..\..\src\video\SDL_vulkan_utils.c" />
     <ClCompile Include="..\..\src\video\windows\SDL_windowsvulkan.c" />
+    <ClCompile Include="..\..\src\libm\e_fmod.c" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\main\windows\version.rc" />
