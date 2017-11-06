@@ -646,7 +646,6 @@ SDL_GetGlobalMouseState(int *x, int *y)
     *x = *y = 0;
 
     if (!mouse->GetGlobalMouseState) {
-        SDL_assert(0 && "This should really be implemented for every target.");
         return 0;
     }
 
