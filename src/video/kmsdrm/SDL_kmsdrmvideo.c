@@ -525,7 +525,7 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
 
     /* In case we want low-latency, double-buffer video, we take note here */
     wdata->double_buffer = SDL_FALSE;
-    if (SDL_GetHintBoolean(SDL_HINT_KMSDRM_DOUBLE_BUFFER, SDL_FALSE)) {
+    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_DOUBLE_BUFFER, SDL_FALSE)) {
         wdata->double_buffer = SDL_TRUE;
     }
 

@@ -214,6 +214,16 @@ RPI_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMode * mode)
     return 0;
 }
 
+static void
+RPI_vsync_callback(DISPMANX_UPDATE_HANDLE_T u, void *data)
+{
+   SDL_WindowData *wdata = ((SDL_WindowData *) data);
+
+   SDL_LockMutex(wdata->vsync_cond_mutex);
+   SDL_CondSignal(wdata->vsync_cond);
+   SDL_UnlockMutex(wdata->vsync_cond_mutex);
+}
+
 int
 RPI_CreateWindow(_THIS, SDL_Window * window)
 {
@@ -289,9 +299,18 @@ RPI_CreateWindow(_THIS, SDL_Window * window)
         return SDL_SetError("Could not create GLES window surface");
     }
 
+    /* Start generating vsync callbacks if necesary */
+    wdata->double_buffer = SDL_FALSE;
+    if (SDL_GetHintBoolean(SDL_HINT_VIDEO_DOUBLE_BUFFER, SDL_FALSE)) {
+        wdata->vsync_cond = SDL_CreateCond();
+        wdata->vsync_cond_mutex = SDL_CreateMutex();
+        wdata->double_buffer = SDL_TRUE;
+        vc_dispmanx_vsync_callback(displaydata->dispman_display, RPI_vsync_callback, (void*)wdata);
+    }
+
     /* Setup driver data for this window */
     window->driverdata = wdata;
-    
+
     /* One window, it always has focus */
     SDL_SetMouseFocus(window);
     SDL_SetKeyboardFocus(window);
@@ -304,7 +323,22 @@ void
 RPI_DestroyWindow(_THIS, SDL_Window * window)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    SDL_VideoDisplay *display = SDL_GetDisplayForWindow(window);
+    SDL_DisplayData *displaydata = (SDL_DisplayData *) display->driverdata;
+
     if(data) {
+	if (data->double_buffer) {
+	    /* Wait for vsync, and then stop vsync callbacks and destroy related stuff, if needed */
+	    SDL_LockMutex(data->vsync_cond_mutex);
+	    SDL_CondWait(data->vsync_cond, data->vsync_cond_mutex);
+	    SDL_UnlockMutex(data->vsync_cond_mutex);
+
+	    vc_dispmanx_vsync_callback(displaydata->dispman_display, NULL, NULL);
+
+	    SDL_DestroyCond(data->vsync_cond);
+	    SDL_DestroyMutex(data->vsync_cond_mutex);
+	}
+
 #if SDL_VIDEO_OPENGL_EGL
         if (data->egl_surface != EGL_NO_SURFACE) {
             SDL_EGL_DestroySurface(_this, data->egl_surface);

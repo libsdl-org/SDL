@@ -48,6 +48,12 @@ typedef struct SDL_WindowData
 #if SDL_VIDEO_OPENGL_EGL  
     EGLSurface egl_surface;
 #endif    
+
+    /* Vsync callback cond and mutex */
+    SDL_cond  *vsync_cond;
+    SDL_mutex *vsync_cond_mutex;
+    SDL_bool double_buffer;
+
 } SDL_WindowData;
 
 #define SDL_RPI_VIDEOLAYER 10000 /* High enough so to occlude everything */
