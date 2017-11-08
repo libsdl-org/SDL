@@ -100,46 +100,14 @@ CG_SetError(const char *prefix, CGDisplayErr result)
 }
 
 static SDL_bool
-GetDisplayMode(_THIS, CGDisplayModeRef vidmode, CFArrayRef modelist, CVDisplayLinkRef link, SDL_DisplayMode *mode)
+GetDisplayMode(_THIS, CGDisplayModeRef vidmode, CVDisplayLinkRef link, SDL_DisplayMode *mode)
 {
     SDL_DisplayModeData *data;
-    int width = (int) CGDisplayModeGetWidth(vidmode);
-    int height = (int) CGDisplayModeGetHeight(vidmode);
+    int width = 0;
+    int height = 0;
     int bpp = 0;
     int refreshRate = 0;
     CFStringRef fmt;
-
-    /* Ignore this mode if it's low-dpi (@1x) and we have a high-dpi mode in the
-     * list with the same size in points.
-     */
-#ifdef MAC_OS_X_VERSION_10_8
-    if (modelist != NULL && floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_7) {
-        int pixelW = (int) CGDisplayModeGetPixelWidth(vidmode);
-        int pixelH = (int) CGDisplayModeGetPixelHeight(vidmode);
-
-        if (width == pixelW && height == pixelH) {
-            CFIndex modescount = CFArrayGetCount(modelist);
-
-            for (int i = 0; i < modescount; i++) {
-                CGDisplayModeRef othermode = (CGDisplayModeRef) CFArrayGetValueAtIndex(modelist, i);
-
-                if (CFEqual(vidmode, othermode)) {
-                    continue;
-                }
-
-                int otherW = (int) CGDisplayModeGetWidth(othermode);
-                int otherH = (int) CGDisplayModeGetHeight(othermode);
-
-                int otherpixelW = (int) CGDisplayModeGetPixelWidth(othermode);
-                int otherpixelH = (int) CGDisplayModeGetPixelHeight(othermode);
-
-                if (width == otherW && height == otherH && (otherpixelW != otherW || otherpixelH != otherH)) {
-                    return SDL_FALSE;
-                }
-            }
-        }
-    }
-#endif
 
     data = (SDL_DisplayModeData *) SDL_malloc(sizeof(*data));
     if (!data) {
@@ -148,6 +116,8 @@ GetDisplayMode(_THIS, CGDisplayModeRef vidmode, CFArrayRef modelist, CVDisplayLi
     data->moderef = vidmode;
 
     fmt = CGDisplayModeCopyPixelEncoding(vidmode);
+    width = (int) CGDisplayModeGetWidth(vidmode);
+    height = (int) CGDisplayModeGetHeight(vidmode);
     refreshRate = (int) (CGDisplayModeGetRefreshRate(vidmode) + 0.5);
 
     if (CFStringCompare(fmt, CFSTR(IO32BitDirectPixels),
@@ -273,7 +243,7 @@ Cocoa_InitModes(_THIS)
             SDL_zero(display);
             /* this returns a stddup'ed string */
             display.name = (char *)Cocoa_GetDisplayName(displays[i]);
-            if (!GetDisplayMode(_this, moderef, NULL, link, &mode)) {
+            if (!GetDisplayMode(_this, moderef, link, &mode)) {
                 CVDisplayLinkRelease(link);
                 CGDisplayModeRelease(moderef);
                 SDL_free(display.name);
@@ -370,32 +340,7 @@ void
 Cocoa_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
 {
     SDL_DisplayData *data = (SDL_DisplayData *) display->driverdata;
-    CFDictionaryRef dict = NULL;
-    CFArrayRef modes;
-
-    /* By default, CGDisplayCopyAllDisplayModes will only get a subset of the
-     * system's available modes. For example on a 15" 2016 MBP, users can
-     * choose 1920x1080@2x in System Preferences but it won't show up here,
-     * unless we specify the option below.
-     */
-#ifdef MAC_OS_X_VERSION_10_8
-    if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_7) {
-        const CFStringRef dictkeys[] = {kCGDisplayShowDuplicateLowResolutionModes};
-        const CFBooleanRef dictvalues[] = {kCFBooleanTrue};
-        dict = CFDictionaryCreate(NULL,
-                                  (const void **)dictkeys,
-                                  (const void **)dictvalues,
-                                  1,
-                                  &kCFCopyStringDictionaryKeyCallBacks,
-                                  &kCFTypeDictionaryValueCallBacks);
-    }
-#endif
-
-    modes = CGDisplayCopyAllDisplayModes(data->display, dict);
-
-    if (dict != NULL) {
-        CFRelease(dict);
-    }
+    CFArrayRef modes = CGDisplayCopyAllDisplayModes(data->display, NULL);
 
     if (modes) {
         CVDisplayLinkRef link = NULL;
@@ -407,7 +352,7 @@ Cocoa_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
         for (i = 0; i < count; i++) {
             CGDisplayModeRef moderef = (CGDisplayModeRef) CFArrayGetValueAtIndex(modes, i);
             SDL_DisplayMode mode;
-            if (GetDisplayMode(_this, moderef, modes, link, &mode)) {
+            if (GetDisplayMode(_this, moderef, link, &mode)) {
                 CGDisplayModeRetain(moderef);
                 SDL_AddDisplayMode(display, &mode);
             }
