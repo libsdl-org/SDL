@@ -349,7 +349,7 @@ CPU_haveNEON(void)
     /* (note that sysctlbyname("hw.optional.neon") doesn't work!) */
     return 1;  /* all Apple ARMv7 chips and later have NEON. */
 #elif defined(__APPLE__)
-    return 0;  /* assune anything else from Apple doesn't have NEON. */
+    return 0;  /* assume anything else from Apple doesn't have NEON. */
 #elif defined(__QNXNTO__)
     return SYSPAGE_ENTRY(cpuinfo)->flags & ARM_CPU_FLAG_NEON;
 #elif (defined(__LINUX__) || defined(__ANDROID__)) && defined(HAVE_GETAUXVAL)
