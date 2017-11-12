@@ -59,7 +59,9 @@
 #ifdef __3dNOW__
 #include <mm3dnow.h>
 #endif
+#if defined(__i386__) || defined(__x86_64__)
 #include <immintrin.h>
+#endif
 #endif
 
 #include "begin_code.h"
