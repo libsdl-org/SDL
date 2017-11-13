@@ -343,6 +343,7 @@ SOURCES="$SOURCES $srcdir/src/stdlib/*.c"
 SOURCES="$SOURCES $srcdir/src/thread/*.c"
 SOURCES="$SOURCES $srcdir/src/timer/*.c"
 SOURCES="$SOURCES $srcdir/src/video/*.c"
+SOURCES="$SOURCES $srcdir/src/video/yuv2rgb/*.c"
 
 dnl Enable/disable various subsystems of the SDL library
 

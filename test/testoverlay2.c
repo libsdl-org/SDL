@@ -16,15 +16,13 @@
  *                                                                              *
  ********************************************************************************/
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
 #endif
 
 #include "SDL.h"
+
+#include "testyuv_cvt.h"
 
 #define MOOSEPIC_W 64
 #define MOOSEPIC_H 88
@@ -149,7 +147,6 @@ SDL_Renderer *renderer;
 int paused = 0;
 int i;
 SDL_bool done = SDL_FALSE;
-Uint32 pixel_format = SDL_PIXELFORMAT_YV12;
 static int fpsdelay;
 
 /* Call this instead of exit(), so we can clean up SDL: atexit() is evil. */
@@ -158,91 +155,6 @@ quit(int rc)
 {
     SDL_Quit();
     exit(rc);
-}
-
-/* All RGB2YUV conversion code and some other parts of code has been taken from testoverlay.c */
-
-/* NOTE: These RGB conversion functions are not intended for speed,
-         only as examples.
-*/
-
-void
-RGBtoYUV(Uint8 * rgb, int *yuv, int monochrome, int luminance)
-{
-    if (monochrome) {
-#if 1                           /* these are the two formulas that I found on the FourCC site... */
-        yuv[0] = (int)(0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]);
-        yuv[1] = 128;
-        yuv[2] = 128;
-#else
-        yuv[0] = (int)(0.257 * rgb[0]) + (0.504 * rgb[1]) + (0.098 * rgb[2]) + 16;
-        yuv[1] = 128;
-        yuv[2] = 128;
-#endif
-    } else {
-#if 1                           /* these are the two formulas that I found on the FourCC site... */
-        yuv[0] = (int)(0.299 * rgb[0] + 0.587 * rgb[1] + 0.114 * rgb[2]);
-        yuv[1] = (int)((rgb[2] - yuv[0]) * 0.565 + 128);
-        yuv[2] = (int)((rgb[0] - yuv[0]) * 0.713 + 128);
-#else
-        yuv[0] = (0.257 * rgb[0]) + (0.504 * rgb[1]) + (0.098 * rgb[2]) + 16;
-        yuv[1] = 128 - (0.148 * rgb[0]) - (0.291 * rgb[1]) + (0.439 * rgb[2]);
-        yuv[2] = 128 + (0.439 * rgb[0]) - (0.368 * rgb[1]) - (0.071 * rgb[2]);
-#endif
-    }
-
-    if (luminance != 100) {
-        yuv[0] = yuv[0] * luminance / 100;
-        if (yuv[0] > 255)
-            yuv[0] = 255;
-    }
-}
-
-void
-ConvertRGBtoYV12(Uint8 *rgb, Uint8 *out, int w, int h,
-                 int monochrome, int luminance)
-{
-    int x, y;
-    int yuv[3];
-    Uint8 *op[3];
-
-    op[0] = out;
-    op[1] = op[0] + w*h;
-    op[2] = op[1] + w*h/4;
-    for (y = 0; y < h; ++y) {
-        for (x = 0; x < w; ++x) {
-            RGBtoYUV(rgb, yuv, monochrome, luminance);
-            *(op[0]++) = yuv[0];
-            if (x % 2 == 0 && y % 2 == 0) {
-                *(op[1]++) = yuv[2];
-                *(op[2]++) = yuv[1];
-            }
-            rgb += 3;
-        }
-    }
-}
-
-void
-ConvertRGBtoNV12(Uint8 *rgb, Uint8 *out, int w, int h,
-                 int monochrome, int luminance)
-{
-    int x, y;
-    int yuv[3];
-    Uint8 *op[2];
-
-    op[0] = out;
-    op[1] = op[0] + w*h;
-    for (y = 0; y < h; ++y) {
-        for (x = 0; x < w; ++x) {
-            RGBtoYUV(rgb, yuv, monochrome, luminance);
-            *(op[0]++) = yuv[0];
-            if (x % 2 == 0 && y % 2 == 0) {
-                *(op[1]++) = yuv[1];
-                *(op[1]++) = yuv[2];
-            }
-            rgb += 3;
-        }
-    }
 }
 
 static void
@@ -307,7 +219,7 @@ loop()
     if (!paused) {
         i = (i + 1) % MOOSEFRAMES_COUNT;
 
-        SDL_UpdateTexture(MooseTexture, NULL, MooseFrame[i], MOOSEPIC_W*SDL_BYTESPERPIXEL(pixel_format));
+        SDL_UpdateTexture(MooseTexture, NULL, MooseFrame[i], MOOSEPIC_W);
     }
     SDL_RenderClear(renderer);
     SDL_RenderCopy(renderer, MooseTexture, NULL, &displayrect);
@@ -329,11 +241,6 @@ main(int argc, char **argv)
     int j;
     int fps = 12;
     int nodelay = 0;
-#ifdef TEST_NV12
-    Uint32 pixel_format = SDL_PIXELFORMAT_NV12;
-#else
-    Uint32 pixel_format = SDL_PIXELFORMAT_YV12;
-#endif
     int scale = 5;
 
     /* Enable standard application logging */
@@ -439,7 +346,7 @@ main(int argc, char **argv)
         quit(4);
     }
 
-    MooseTexture = SDL_CreateTexture(renderer, pixel_format, SDL_TEXTUREACCESS_STREAMING, MOOSEPIC_W, MOOSEPIC_H);
+    MooseTexture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_YV12, SDL_TEXTUREACCESS_STREAMING, MOOSEPIC_W, MOOSEPIC_H);
     if (!MooseTexture) {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Couldn't set create texture: %s\n", SDL_GetError());
         free(RawMooseData);
@@ -461,17 +368,9 @@ main(int argc, char **argv)
             rgb[2] = MooseColors[frame[j]].b;
             rgb += 3;
         }
-        switch (pixel_format) {
-        case SDL_PIXELFORMAT_YV12:
-            ConvertRGBtoYV12(MooseFrameRGB, MooseFrame[i], MOOSEPIC_W, MOOSEPIC_H, 0, 100);
-            break;
-        case SDL_PIXELFORMAT_NV12:
-            ConvertRGBtoNV12(MooseFrameRGB, MooseFrame[i], MOOSEPIC_W, MOOSEPIC_H, 0, 100);
-            break;
-        default:
-            SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Unsupported pixel format\n");
-            break;
-        }
+        ConvertRGBtoYUV(SDL_PIXELFORMAT_YV12, MooseFrameRGB, MOOSEPIC_W*3, MooseFrame[i], MOOSEPIC_W, MOOSEPIC_H,
+            SDL_GetYUVConversionModeForResolution(MOOSEPIC_W, MOOSEPIC_H),
+            0, 100);
     }
 
     free(RawMooseData);

@@ -235,7 +235,7 @@
     <ClInclude Include="..\..\src\joystick\SDL_sysjoystick.h" />
     <ClInclude Include="..\..\src\joystick\windows\SDL_xinputjoystick_c.h" />
     <ClInclude Include="..\..\src\render\direct3d11\SDL_render_winrt.h" />
-    <ClInclude Include="..\..\src\render\mmx.h" />
+    <ClInclude Include="..\..\src\render\direct3d11\SDL_shaders_d3d11.h" />
     <ClInclude Include="..\..\src\render\opengles2\SDL_gles2funcs.h" />
     <ClInclude Include="..\..\src\render\opengles2\SDL_shaders_gles2.h" />
     <ClInclude Include="..\..\src\render\SDL_d3dmath.h" />
@@ -272,12 +272,14 @@
     <ClInclude Include="..\..\src\video\SDL_RLEaccel_c.h" />
     <ClInclude Include="..\..\src\video\SDL_shape_internals.h" />
     <ClInclude Include="..\..\src\video\SDL_sysvideo.h" />
+    <ClInclude Include="..\..\src\video\SDL_yuv_c.h" />
     <ClInclude Include="..\..\src\video\winrt\SDL_winrtevents_c.h" />
     <ClInclude Include="..\..\src\video\winrt\SDL_winrtgamebar_cpp.h" />
     <ClInclude Include="..\..\src\video\winrt\SDL_winrtmessagebox.h" />
     <ClInclude Include="..\..\src\video\winrt\SDL_winrtmouse_c.h" />
     <ClInclude Include="..\..\src\video\winrt\SDL_winrtopengles.h" />
     <ClInclude Include="..\..\src\video\winrt\SDL_winrtvideo_cpp.h" />
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\atomic\SDL_atomic.c" />
@@ -350,11 +352,11 @@
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
     </ClCompile>
+    <ClCompile Include="..\..\src\render\direct3d11\SDL_shaders_d3d11.c" />
     <ClCompile Include="..\..\src\render\opengles2\SDL_render_gles2.c" />
     <ClCompile Include="..\..\src\render\opengles2\SDL_shaders_gles2.c" />
     <ClCompile Include="..\..\src\render\SDL_d3dmath.c" />
     <ClCompile Include="..\..\src\render\SDL_render.c" />
-    <ClCompile Include="..\..\src\render\SDL_yuv_mmx.c" />
     <ClCompile Include="..\..\src\render\SDL_yuv_sw.c" />
     <ClCompile Include="..\..\src\render\software\SDL_blendfillrect.c" />
     <ClCompile Include="..\..\src\render\software\SDL_blendline.c" />
@@ -404,6 +406,7 @@
     <ClCompile Include="..\..\src\video\SDL_stretch.c" />
     <ClCompile Include="..\..\src\video\SDL_surface.c" />
     <ClCompile Include="..\..\src\video\SDL_video.c" />
+    <ClCompile Include="..\..\src\video\SDL_yuv.c" />
     <ClCompile Include="..\..\src\video\winrt\SDL_winrtevents.cpp">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">true</CompileAsWinRT>
@@ -452,6 +455,7 @@
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</CompileAsWinRT>
     </ClCompile>
+    <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb.c" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsPhone\v$(TargetPlatformVersion)\Microsoft.Cpp.WindowsPhone.$(TargetPlatformVersion).targets" />

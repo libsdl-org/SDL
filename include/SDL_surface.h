@@ -98,6 +98,17 @@ typedef int (SDLCALL *SDL_blit) (struct SDL_Surface * src, SDL_Rect * srcrect,
                                  struct SDL_Surface * dst, SDL_Rect * dstrect);
 
 /**
+ * \brief The formula used for converting between YUV and RGB
+ */
+typedef enum
+{
+    SDL_YUV_CONVERSION_JPEG,        /**< Full range JPEG */
+    SDL_YUV_CONVERSION_BT601,       /**< BT.601 (the default) */
+    SDL_YUV_CONVERSION_BT709,       /**< BT.709 */
+    SDL_YUV_CONVERSION_AUTOMATIC    /**< BT.601 for SD content, BT.709 for HD content */
+} SDL_YUV_CONVERSION_MODE;
+
+/**
  *  Allocate and free an RGB surface.
  *
  *  If the depth is 4 or 8 bits, an empty palette is allocated for the surface.
@@ -509,6 +520,20 @@ extern DECLSPEC int SDLCALL SDL_LowerBlitScaled
     (SDL_Surface * src, SDL_Rect * srcrect,
     SDL_Surface * dst, SDL_Rect * dstrect);
 
+/**
+ *  \brief Set the YUV conversion mode
+ */
+extern DECLSPEC void SDLCALL SDL_SetYUVConversionMode(SDL_YUV_CONVERSION_MODE mode);
+
+/**
+ *  \brief Get the YUV conversion mode
+ */
+extern DECLSPEC SDL_YUV_CONVERSION_MODE SDLCALL SDL_GetYUVConversionMode(void);
+
+/**
+ *  \brief Get the YUV conversion mode, returning the correct mode for the resolution when the current conversion mode is SDL_YUV_CONVERSION_AUTOMATIC
+ */
+extern DECLSPEC SDL_YUV_CONVERSION_MODE SDLCALL SDL_GetYUVConversionModeForResolution(int width, int height);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus

@@ -950,7 +950,7 @@ static void GLES2_EvictShader(SDL_Renderer *renderer, GLES2_ShaderCacheEntry *en
 static GLES2_ProgramCacheEntry *GLES2_CacheProgram(SDL_Renderer *renderer,
                                                    GLES2_ShaderCacheEntry *vertex,
                                                    GLES2_ShaderCacheEntry *fragment);
-static int GLES2_SelectProgram(SDL_Renderer *renderer, GLES2_ImageSource source);
+static int GLES2_SelectProgram(SDL_Renderer *renderer, GLES2_ImageSource source, int w, int h);
 
 static GLES2_ProgramCacheEntry *
 GLES2_CacheProgram(SDL_Renderer *renderer, GLES2_ShaderCacheEntry *vertex,
@@ -1189,7 +1189,7 @@ GLES2_EvictShader(SDL_Renderer *renderer, GLES2_ShaderCacheEntry *entry)
 }
 
 static int
-GLES2_SelectProgram(SDL_Renderer *renderer, GLES2_ImageSource source)
+GLES2_SelectProgram(SDL_Renderer *renderer, GLES2_ImageSource source, int w, int h)
 {
     GLES2_DriverContext *data = (GLES2_DriverContext *)renderer->driverdata;
     GLES2_ShaderCacheEntry *vertex = NULL;
@@ -1216,13 +1216,52 @@ GLES2_SelectProgram(SDL_Renderer *renderer, GLES2_ImageSource source)
         ftype = GLES2_SHADER_FRAGMENT_TEXTURE_BGR_SRC;
         break;
     case GLES2_IMAGESOURCE_TEXTURE_YUV:
-        ftype = GLES2_SHADER_FRAGMENT_TEXTURE_YUV_SRC;
+        switch (SDL_GetYUVConversionModeForResolution(w, h)) {
+        case SDL_YUV_CONVERSION_JPEG:
+            ftype = GLES2_SHADER_FRAGMENT_TEXTURE_YUV_JPEG_SRC;
+            break;
+        case SDL_YUV_CONVERSION_BT601:
+            ftype = GLES2_SHADER_FRAGMENT_TEXTURE_YUV_BT601_SRC;
+            break;
+        case SDL_YUV_CONVERSION_BT709:
+            ftype = GLES2_SHADER_FRAGMENT_TEXTURE_YUV_BT709_SRC;
+            break;
+        default:
+            SDL_SetError("Unsupported YUV conversion mode: %d\n", SDL_GetYUVConversionModeForResolution(w, h));
+            goto fault;
+        }
         break;
     case GLES2_IMAGESOURCE_TEXTURE_NV12:
-        ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_SRC;
+        switch (SDL_GetYUVConversionModeForResolution(w, h)) {
+        case SDL_YUV_CONVERSION_JPEG:
+            ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_JPEG_SRC;
+            break;
+        case SDL_YUV_CONVERSION_BT601:
+            ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_BT601_SRC;
+            break;
+        case SDL_YUV_CONVERSION_BT709:
+            ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV12_BT709_SRC;
+            break;
+        default:
+            SDL_SetError("Unsupported YUV conversion mode: %d\n", SDL_GetYUVConversionModeForResolution(w, h));
+            goto fault;
+        }
         break;
     case GLES2_IMAGESOURCE_TEXTURE_NV21:
-        ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV21_SRC;
+        switch (SDL_GetYUVConversionModeForResolution(w, h)) {
+        case SDL_YUV_CONVERSION_JPEG:
+            ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV21_JPEG_SRC;
+            break;
+        case SDL_YUV_CONVERSION_BT601:
+            ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV21_BT601_SRC;
+            break;
+        case SDL_YUV_CONVERSION_BT709:
+            ftype = GLES2_SHADER_FRAGMENT_TEXTURE_NV21_BT709_SRC;
+            break;
+        default:
+            SDL_SetError("Unsupported YUV conversion mode: %d\n", SDL_GetYUVConversionModeForResolution(w, h));
+            goto fault;
+        }
         break;
     default:
         goto fault;
@@ -1445,7 +1484,7 @@ GLES2_SetDrawingState(SDL_Renderer * renderer)
     GLES2_SetTexCoords(data, SDL_FALSE);
 
     /* Activate an appropriate shader and set the projection matrix */
-    if (GLES2_SelectProgram(renderer, GLES2_IMAGESOURCE_SOLID) < 0) {
+    if (GLES2_SelectProgram(renderer, GLES2_IMAGESOURCE_SOLID, 0, 0) < 0) {
         return -1;
     }
 
@@ -1707,7 +1746,7 @@ GLES2_SetupCopy(SDL_Renderer *renderer, SDL_Texture *texture)
         }
     }
 
-    if (GLES2_SelectProgram(renderer, sourceType) < 0) {
+    if (GLES2_SelectProgram(renderer, sourceType, texture->w, texture->h) < 0) {
         return -1;
     }
 

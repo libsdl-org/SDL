@@ -62,6 +62,151 @@ struct GL_ShaderContext
     GL_ShaderData shaders[NUM_SHADERS];
 };
 
+#define COLOR_VERTEX_SHADER                                     \
+"varying vec4 v_color;\n"                                       \
+"\n"                                                            \
+"void main()\n"                                                 \
+"{\n"                                                           \
+"    gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\n" \
+"    v_color = gl_Color;\n"                                     \
+"}"                                                             \
+
+#define TEXTURE_VERTEX_SHADER                                   \
+"varying vec4 v_color;\n"                                       \
+"varying vec2 v_texCoord;\n"                                    \
+"\n"                                                            \
+"void main()\n"                                                 \
+"{\n"                                                           \
+"    gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\n" \
+"    v_color = gl_Color;\n"                                     \
+"    v_texCoord = vec2(gl_MultiTexCoord0);\n"                   \
+"}"                                                             \
+
+#define JPEG_SHADER_CONSTANTS                                   \
+"// YUV offset \n"                                              \
+"const vec3 offset = vec3(0, -0.501960814, -0.501960814);\n"    \
+"\n"                                                            \
+"// RGB coefficients \n"                                        \
+"const vec3 Rcoeff = vec3(1,  0.000,  1.402);\n"                \
+"const vec3 Gcoeff = vec3(1, -0.3441, -0.7141);\n"              \
+"const vec3 Bcoeff = vec3(1,  1.772,  0.000);\n"                \
+
+#define BT601_SHADER_CONSTANTS                                  \
+"// YUV offset \n"                                              \
+"const vec3 offset = vec3(-0.0627451017, -0.501960814, -0.501960814);\n" \
+"\n"                                                            \
+"// RGB coefficients \n"                                        \
+"const vec3 Rcoeff = vec3(1.1644,  0.000,  1.596);\n"           \
+"const vec3 Gcoeff = vec3(1.1644, -0.3918, -0.813);\n"          \
+"const vec3 Bcoeff = vec3(1.1644,  2.0172,  0.000);\n"          \
+
+#define BT709_SHADER_CONSTANTS                                  \
+"// YUV offset \n"                                              \
+"const vec3 offset = vec3(-0.0627451017, -0.501960814, -0.501960814);\n" \
+"\n"                                                            \
+"// RGB coefficients \n"                                        \
+"const vec3 Rcoeff = vec3(1.1644,  0.000,  1.7927);\n"          \
+"const vec3 Gcoeff = vec3(1.1644, -0.2132, -0.5329);\n"         \
+"const vec3 Bcoeff = vec3(1.1644,  2.1124,  0.000);\n"          \
+
+#define YUV_SHADER_PROLOGUE                                     \
+"varying vec4 v_color;\n"                                       \
+"varying vec2 v_texCoord;\n"                                    \
+"uniform sampler2D tex0; // Y \n"                               \
+"uniform sampler2D tex1; // U \n"                               \
+"uniform sampler2D tex2; // V \n"                               \
+"\n"                                                            \
+
+#define YUV_SHADER_BODY                                         \
+"\n"                                                            \
+"void main()\n"                                                 \
+"{\n"                                                           \
+"    vec2 tcoord;\n"                                            \
+"    vec3 yuv, rgb;\n"                                          \
+"\n"                                                            \
+"    // Get the Y value \n"                                     \
+"    tcoord = v_texCoord;\n"                                    \
+"    yuv.x = texture2D(tex0, tcoord).r;\n"                      \
+"\n"                                                            \
+"    // Get the U and V values \n"                              \
+"    tcoord *= UVCoordScale;\n"                                 \
+"    yuv.y = texture2D(tex1, tcoord).r;\n"                      \
+"    yuv.z = texture2D(tex2, tcoord).r;\n"                      \
+"\n"                                                            \
+"    // Do the color transform \n"                              \
+"    yuv += offset;\n"                                          \
+"    rgb.r = dot(yuv, Rcoeff);\n"                               \
+"    rgb.g = dot(yuv, Gcoeff);\n"                               \
+"    rgb.b = dot(yuv, Bcoeff);\n"                               \
+"\n"                                                            \
+"    // That was easy. :) \n"                                   \
+"    gl_FragColor = vec4(rgb, 1.0) * v_color;\n"                \
+"}"                                                             \
+
+#define NV12_SHADER_PROLOGUE                                    \
+"varying vec4 v_color;\n"                                       \
+"varying vec2 v_texCoord;\n"                                    \
+"uniform sampler2D tex0; // Y \n"                               \
+"uniform sampler2D tex1; // U/V \n"                             \
+"\n"                                                            \
+
+#define NV12_SHADER_BODY                                        \
+"\n"                                                            \
+"void main()\n"                                                 \
+"{\n"                                                           \
+"    vec2 tcoord;\n"                                            \
+"    vec3 yuv, rgb;\n"                                          \
+"\n"                                                            \
+"    // Get the Y value \n"                                     \
+"    tcoord = v_texCoord;\n"                                    \
+"    yuv.x = texture2D(tex0, tcoord).r;\n"                      \
+"\n"                                                            \
+"    // Get the U and V values \n"                              \
+"    tcoord *= UVCoordScale;\n"                                 \
+"    yuv.yz = texture2D(tex1, tcoord).ra;\n"                    \
+"\n"                                                            \
+"    // Do the color transform \n"                              \
+"    yuv += offset;\n"                                          \
+"    rgb.r = dot(yuv, Rcoeff);\n"                               \
+"    rgb.g = dot(yuv, Gcoeff);\n"                               \
+"    rgb.b = dot(yuv, Bcoeff);\n"                               \
+"\n"                                                            \
+"    // That was easy. :) \n"                                   \
+"    gl_FragColor = vec4(rgb, 1.0) * v_color;\n"                \
+"}"                                                             \
+
+#define NV21_SHADER_PROLOGUE                                    \
+"varying vec4 v_color;\n"                                       \
+"varying vec2 v_texCoord;\n"                                    \
+"uniform sampler2D tex0; // Y \n"                               \
+"uniform sampler2D tex1; // U/V \n"                             \
+"\n"                                                            \
+
+#define NV21_SHADER_BODY                                        \
+"\n"                                                            \
+"void main()\n"                                                 \
+"{\n"                                                           \
+"    vec2 tcoord;\n"                                            \
+"    vec3 yuv, rgb;\n"                                          \
+"\n"                                                            \
+"    // Get the Y value \n"                                     \
+"    tcoord = v_texCoord;\n"                                    \
+"    yuv.x = texture2D(tex0, tcoord).r;\n"                      \
+"\n"                                                            \
+"    // Get the U and V values \n"                              \
+"    tcoord *= UVCoordScale;\n"                                 \
+"    yuv.yz = texture2D(tex1, tcoord).ar;\n"                    \
+"\n"                                                            \
+"    // Do the color transform \n"                              \
+"    yuv += offset;\n"                                          \
+"    rgb.r = dot(yuv, Rcoeff);\n"                               \
+"    rgb.g = dot(yuv, Gcoeff);\n"                               \
+"    rgb.b = dot(yuv, Bcoeff);\n"                               \
+"\n"                                                            \
+"    // That was easy. :) \n"                                   \
+"    gl_FragColor = vec4(rgb, 1.0) * v_color;\n"                \
+"}"                                                             \
+
 /*
  * NOTE: Always use sampler2D, etc here. We'll #define them to the
  *  texture_rectangle versions if we choose to use that extension.
@@ -74,13 +219,7 @@ static const char *shader_source[NUM_SHADERS][2] =
     /* SHADER_SOLID */
     {
         /* vertex shader */
-"varying vec4 v_color;\n"
-"\n"
-"void main()\n"
-"{\n"
-"    gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
-"    v_color = gl_Color;\n"
-"}",
+        COLOR_VERTEX_SHADER,
         /* fragment shader */
 "varying vec4 v_color;\n"
 "\n"
@@ -93,15 +232,7 @@ static const char *shader_source[NUM_SHADERS][2] =
     /* SHADER_RGB */
     {
         /* vertex shader */
-"varying vec4 v_color;\n"
-"varying vec2 v_texCoord;\n"
-"\n"
-"void main()\n"
-"{\n"
-"    gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
-"    v_color = gl_Color;\n"
-"    v_texCoord = vec2(gl_MultiTexCoord0);\n"
-"}",
+        TEXTURE_VERTEX_SHADER,
         /* fragment shader */
 "varying vec4 v_color;\n"
 "varying vec2 v_texCoord;\n"
@@ -113,156 +244,86 @@ static const char *shader_source[NUM_SHADERS][2] =
 "}"
     },
 
-    /* SHADER_YUV */
+    /* SHADER_YUV_JPEG */
     {
         /* vertex shader */
-"varying vec4 v_color;\n"
-"varying vec2 v_texCoord;\n"
-"\n"
-"void main()\n"
-"{\n"
-"    gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
-"    v_color = gl_Color;\n"
-"    v_texCoord = vec2(gl_MultiTexCoord0);\n"
-"}",
+        TEXTURE_VERTEX_SHADER,
         /* fragment shader */
-"varying vec4 v_color;\n"
-"varying vec2 v_texCoord;\n"
-"uniform sampler2D tex0; // Y \n"
-"uniform sampler2D tex1; // U \n"
-"uniform sampler2D tex2; // V \n"
-"\n"
-"// YUV offset \n"
-"const vec3 offset = vec3(-0.0627451017, -0.501960814, -0.501960814);\n"
-"\n"
-"// RGB coefficients \n"
-"const vec3 Rcoeff = vec3(1.164,  0.000,  1.596);\n"
-"const vec3 Gcoeff = vec3(1.164, -0.391, -0.813);\n"
-"const vec3 Bcoeff = vec3(1.164,  2.018,  0.000);\n"
-"\n"
-"void main()\n"
-"{\n"
-"    vec2 tcoord;\n"
-"    vec3 yuv, rgb;\n"
-"\n"
-"    // Get the Y value \n"
-"    tcoord = v_texCoord;\n"
-"    yuv.x = texture2D(tex0, tcoord).r;\n"
-"\n"
-"    // Get the U and V values \n"
-"    tcoord *= UVCoordScale;\n"
-"    yuv.y = texture2D(tex1, tcoord).r;\n"
-"    yuv.z = texture2D(tex2, tcoord).r;\n"
-"\n"
-"    // Do the color transform \n"
-"    yuv += offset;\n"
-"    rgb.r = dot(yuv, Rcoeff);\n"
-"    rgb.g = dot(yuv, Gcoeff);\n"
-"    rgb.b = dot(yuv, Bcoeff);\n"
-"\n"
-"    // That was easy. :) \n"
-"    gl_FragColor = vec4(rgb, 1.0) * v_color;\n"
-"}"
+        YUV_SHADER_PROLOGUE
+        JPEG_SHADER_CONSTANTS
+        YUV_SHADER_BODY
     },
-
-    /* SHADER_NV12 */
+    /* SHADER_YUV_BT601 */
     {
         /* vertex shader */
-"varying vec4 v_color;\n"
-"varying vec2 v_texCoord;\n"
-"\n"
-"void main()\n"
-"{\n"
-"    gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
-"    v_color = gl_Color;\n"
-"    v_texCoord = vec2(gl_MultiTexCoord0);\n"
-"}",
+        TEXTURE_VERTEX_SHADER,
         /* fragment shader */
-"varying vec4 v_color;\n"
-"varying vec2 v_texCoord;\n"
-"uniform sampler2D tex0; // Y \n"
-"uniform sampler2D tex1; // U/V \n"
-"\n"
-"// YUV offset \n"
-"const vec3 offset = vec3(-0.0627451017, -0.501960814, -0.501960814);\n"
-"\n"
-"// RGB coefficients \n"
-"const vec3 Rcoeff = vec3(1.164,  0.000,  1.596);\n"
-"const vec3 Gcoeff = vec3(1.164, -0.391, -0.813);\n"
-"const vec3 Bcoeff = vec3(1.164,  2.018,  0.000);\n"
-"\n"
-"void main()\n"
-"{\n"
-"    vec2 tcoord;\n"
-"    vec3 yuv, rgb;\n"
-"\n"
-"    // Get the Y value \n"
-"    tcoord = v_texCoord;\n"
-"    yuv.x = texture2D(tex0, tcoord).r;\n"
-"\n"
-"    // Get the U and V values \n"
-"    tcoord *= UVCoordScale;\n"
-"    yuv.yz = texture2D(tex1, tcoord).ra;\n"
-"\n"
-"    // Do the color transform \n"
-"    yuv += offset;\n"
-"    rgb.r = dot(yuv, Rcoeff);\n"
-"    rgb.g = dot(yuv, Gcoeff);\n"
-"    rgb.b = dot(yuv, Bcoeff);\n"
-"\n"
-"    // That was easy. :) \n"
-"    gl_FragColor = vec4(rgb, 1.0) * v_color;\n"
-"}"
+        YUV_SHADER_PROLOGUE
+        BT601_SHADER_CONSTANTS
+        YUV_SHADER_BODY
     },
-
-    /* SHADER_NV21 */
+    /* SHADER_YUV_BT709 */
     {
         /* vertex shader */
-"varying vec4 v_color;\n"
-"varying vec2 v_texCoord;\n"
-"\n"
-"void main()\n"
-"{\n"
-"    gl_Position = gl_ModelViewProjectionMatrix * gl_Vertex;\n"
-"    v_color = gl_Color;\n"
-"    v_texCoord = vec2(gl_MultiTexCoord0);\n"
-"}",
+        TEXTURE_VERTEX_SHADER,
         /* fragment shader */
-"varying vec4 v_color;\n"
-"varying vec2 v_texCoord;\n"
-"uniform sampler2D tex0; // Y \n"
-"uniform sampler2D tex1; // U/V \n"
-"\n"
-"// YUV offset \n"
-"const vec3 offset = vec3(-0.0627451017, -0.501960814, -0.501960814);\n"
-"\n"
-"// RGB coefficients \n"
-"const vec3 Rcoeff = vec3(1.164,  0.000,  1.596);\n"
-"const vec3 Gcoeff = vec3(1.164, -0.391, -0.813);\n"
-"const vec3 Bcoeff = vec3(1.164,  2.018,  0.000);\n"
-"\n"
-"void main()\n"
-"{\n"
-"    vec2 tcoord;\n"
-"    vec3 yuv, rgb;\n"
-"\n"
-"    // Get the Y value \n"
-"    tcoord = v_texCoord;\n"
-"    yuv.x = texture2D(tex0, tcoord).r;\n"
-"\n"
-"    // Get the U and V values \n"
-"    tcoord *= UVCoordScale;\n"
-"    yuv.yz = texture2D(tex1, tcoord).ar;\n"
-"\n"
-"    // Do the color transform \n"
-"    yuv += offset;\n"
-"    rgb.r = dot(yuv, Rcoeff);\n"
-"    rgb.g = dot(yuv, Gcoeff);\n"
-"    rgb.b = dot(yuv, Bcoeff);\n"
-"\n"
-"    // That was easy. :) \n"
-"    gl_FragColor = vec4(rgb, 1.0) * v_color;\n"
-"}"
+        YUV_SHADER_PROLOGUE
+        BT709_SHADER_CONSTANTS
+        YUV_SHADER_BODY
+    },
+    /* SHADER_NV12_JPEG */
+    {
+        /* vertex shader */
+        TEXTURE_VERTEX_SHADER,
+        /* fragment shader */
+        NV12_SHADER_PROLOGUE
+        JPEG_SHADER_CONSTANTS
+        NV12_SHADER_BODY
+    },
+    /* SHADER_NV12_BT601 */
+    {
+        /* vertex shader */
+        TEXTURE_VERTEX_SHADER,
+        /* fragment shader */
+        NV12_SHADER_PROLOGUE
+        BT601_SHADER_CONSTANTS
+        NV12_SHADER_BODY
+    },
+    /* SHADER_NV12_BT709 */
+    {
+        /* vertex shader */
+        TEXTURE_VERTEX_SHADER,
+        /* fragment shader */
+        NV12_SHADER_PROLOGUE
+        BT709_SHADER_CONSTANTS
+        NV12_SHADER_BODY
+    },
+    /* SHADER_NV21_JPEG */
+    {
+        /* vertex shader */
+        TEXTURE_VERTEX_SHADER,
+        /* fragment shader */
+        NV21_SHADER_PROLOGUE
+        JPEG_SHADER_CONSTANTS
+        NV21_SHADER_BODY
+    },
+    /* SHADER_NV21_BT601 */
+    {
+        /* vertex shader */
+        TEXTURE_VERTEX_SHADER,
+        /* fragment shader */
+        NV21_SHADER_PROLOGUE
+        BT601_SHADER_CONSTANTS
+        NV21_SHADER_BODY
+    },
+    /* SHADER_NV21_BT709 */
+    {
+        /* vertex shader */
+        TEXTURE_VERTEX_SHADER,
+        /* fragment shader */
+        NV21_SHADER_PROLOGUE
+        BT709_SHADER_CONSTANTS
+        NV21_SHADER_BODY
     },
 };
 

@@ -18,11 +18,26 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../SDL_internal.h"
+#include "../../SDL_internal.h"
 
-/* FIXME: This breaks on various versions of GCC and should be rewritten using intrinsics */
-#if 0 /* (__GNUC__ > 2) && defined(__i386__) && __OPTIMIZE__ && SDL_ASSEMBLY_ROUTINES && !defined(__clang__) */
-#define USE_MMX_ASSEMBLY 1
-#endif
+/* D3D11 shader implementation */
+
+typedef enum {
+    SHADER_SOLID,
+    SHADER_RGB,
+    SHADER_YUV_JPEG,
+    SHADER_YUV_BT601,
+    SHADER_YUV_BT709,
+    SHADER_NV12_JPEG,
+    SHADER_NV12_BT601,
+    SHADER_NV12_BT709,
+    SHADER_NV21_JPEG,
+    SHADER_NV21_BT601,
+    SHADER_NV21_BT709,
+    NUM_SHADERS
+} D3D11_Shader;
+
+extern int D3D11_CreateVertexShader(ID3D11Device1 *d3dDevice, ID3D11VertexShader **vertexShader, ID3D11InputLayout **inputLayout);
+extern int D3D11_CreatePixelShader(ID3D11Device1 *d3dDevice, D3D11_Shader shader, ID3D11PixelShader **pixelShader);
 
 /* vi: set ts=4 sw=4 expandtab: */

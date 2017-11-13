@@ -20,28 +20,15 @@
 */
 #include "../../SDL_internal.h"
 
-/* OpenGL shader implementation */
+/* D3D9 shader implementation */
 
 typedef enum {
-    SHADER_NONE,
-    SHADER_SOLID,
-    SHADER_RGB,
     SHADER_YUV_JPEG,
     SHADER_YUV_BT601,
     SHADER_YUV_BT709,
-    SHADER_NV12_JPEG,
-    SHADER_NV12_BT601,
-    SHADER_NV12_BT709,
-    SHADER_NV21_JPEG,
-    SHADER_NV21_BT601,
-    SHADER_NV21_BT709,
     NUM_SHADERS
-} GL_Shader;
+} D3D9_Shader;
 
-typedef struct GL_ShaderContext GL_ShaderContext;
-
-extern GL_ShaderContext * GL_CreateShaderContext(void);
-extern void GL_SelectShader(GL_ShaderContext *ctx, GL_Shader shader);
-extern void GL_DestroyShaderContext(GL_ShaderContext *ctx);
+extern HRESULT D3D9_CreatePixelShader(IDirect3DDevice9 *d3dDevice, D3D9_Shader shader, IDirect3DPixelShader9 **pixelShader);
 
 /* vi: set ts=4 sw=4 expandtab: */

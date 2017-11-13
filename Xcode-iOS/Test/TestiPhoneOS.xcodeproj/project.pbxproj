@@ -36,6 +36,22 @@
 		56ED0508118A8FE400A56AA6 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A89D0E2D111A00EA573E /* Foundation.framework */; };
 		56ED0509118A8FE400A56AA6 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A89E0E2D111A00EA573E /* CoreAudio.framework */; };
 		56ED0511118A904200A56AA6 /* testpower.c in Sources */ = {isa = PBXBuildFile; fileRef = 56ED0510118A904200A56AA6 /* testpower.c */; };
+		AA13B3171FB8AEBC00D9FEE6 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FABA34761D8B4EAD00915323 /* AVFoundation.framework */; };
+		AA13B3181FB8AEBC00D9FEE6 /* libSDL2test.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AA1EE452176059230029C7A5 /* libSDL2test.a */; };
+		AA13B3191FB8AEBC00D9FEE6 /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FD1B48B80E3131CA007AB34E /* libSDL2.a */; };
+		AA13B31A1FB8AEBC00D9FEE6 /* GameController.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA684F7A1BAF1A4400DCFD1A /* GameController.framework */; };
+		AA13B31B1FB8AEBC00D9FEE6 /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BAC1967076F00F8EB7C /* CoreMotion.framework */; };
+		AA13B31C1FB8AEBC00D9FEE6 /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A8980E2D111A00EA573E /* AudioToolbox.framework */; };
+		AA13B31D1FB8AEBC00D9FEE6 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A8990E2D111A00EA573E /* QuartzCore.framework */; };
+		AA13B31E1FB8AEBC00D9FEE6 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A89A0E2D111A00EA573E /* OpenGLES.framework */; };
+		AA13B31F1FB8AEBC00D9FEE6 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A89B0E2D111A00EA573E /* CoreGraphics.framework */; };
+		AA13B3201FB8AEBC00D9FEE6 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A89C0E2D111A00EA573E /* UIKit.framework */; };
+		AA13B3211FB8AEBC00D9FEE6 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A89D0E2D111A00EA573E /* Foundation.framework */; };
+		AA13B3221FB8AEBC00D9FEE6 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A89E0E2D111A00EA573E /* CoreAudio.framework */; };
+		AA13B32F1FB8AF0C00D9FEE6 /* testyuv.bmp in Resources */ = {isa = PBXBuildFile; fileRef = AA13B32E1FB8AF0C00D9FEE6 /* testyuv.bmp */; };
+		AA13B3301FB8AF2300D9FEE6 /* testyuv.bmp in Resources */ = {isa = PBXBuildFile; fileRef = AA13B32E1FB8AF0C00D9FEE6 /* testyuv.bmp */; };
+		AA13B35D1FB8B4E200D9FEE6 /* testyuv.c in Sources */ = {isa = PBXBuildFile; fileRef = AA13B35B1FB8B4D600D9FEE6 /* testyuv.c */; };
+		AA13B3611FB8B52500D9FEE6 /* testyuv_cvt.c in Sources */ = {isa = PBXBuildFile; fileRef = AA13B35E1FB8B50D00D9FEE6 /* testyuv_cvt.c */; };
 		AA1EE470176059D00029C7A5 /* libSDL2test.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AA1EE452176059230029C7A5 /* libSDL2test.a */; };
 		AA1EE47117605A7F0029C7A5 /* libSDL2test.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AA1EE452176059230029C7A5 /* libSDL2test.a */; };
 		AA1EE47417605B5C0029C7A5 /* libSDL2test.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AA1EE452176059230029C7A5 /* libSDL2test.a */; };
@@ -407,6 +423,10 @@
 		1D6058910D05DD3D006BFB54 /* testwm2.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testwm2.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		56ED050D118A8FE400A56AA6 /* testpower.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testpower.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		56ED0510118A904200A56AA6 /* testpower.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testpower.c; path = ../../test/testpower.c; sourceTree = SOURCE_ROOT; };
+		AA13B3261FB8AEBC00D9FEE6 /* testyuv.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testyuv.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		AA13B32E1FB8AF0C00D9FEE6 /* testyuv.bmp */ = {isa = PBXFileReference; lastKnownFileType = image.bmp; name = testyuv.bmp; path = ../../test/testyuv.bmp; sourceTree = "<group>"; };
+		AA13B35B1FB8B4D600D9FEE6 /* testyuv.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testyuv.c; path = ../../test/testyuv.c; sourceTree = "<group>"; };
+		AA13B35E1FB8B50D00D9FEE6 /* testyuv_cvt.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testyuv_cvt.c; path = ../../test/testyuv_cvt.c; sourceTree = "<group>"; };
 		AA1EE44D176059220029C7A5 /* SDL2test.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL2test.xcodeproj; path = ../SDLtest/SDL2test.xcodeproj; sourceTree = "<group>"; };
 		AAE7DEEC14CBB1E100DF1A0E /* testscale.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testscale.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AAE7DF4514CBB43900DF1A0E /* testscale.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testscale.c; path = ../../test/testscale.c; sourceTree = "<group>"; };
@@ -549,6 +569,25 @@
 				56ED0507118A8FE400A56AA6 /* UIKit.framework in Frameworks */,
 				56ED0508118A8FE400A56AA6 /* Foundation.framework in Frameworks */,
 				56ED0509118A8FE400A56AA6 /* CoreAudio.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA13B3161FB8AEBC00D9FEE6 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA13B3171FB8AEBC00D9FEE6 /* AVFoundation.framework in Frameworks */,
+				AA13B3181FB8AEBC00D9FEE6 /* libSDL2test.a in Frameworks */,
+				AA13B3191FB8AEBC00D9FEE6 /* libSDL2.a in Frameworks */,
+				AA13B31A1FB8AEBC00D9FEE6 /* GameController.framework in Frameworks */,
+				AA13B31B1FB8AEBC00D9FEE6 /* CoreMotion.framework in Frameworks */,
+				AA13B31C1FB8AEBC00D9FEE6 /* AudioToolbox.framework in Frameworks */,
+				AA13B31D1FB8AEBC00D9FEE6 /* QuartzCore.framework in Frameworks */,
+				AA13B31E1FB8AEBC00D9FEE6 /* OpenGLES.framework in Frameworks */,
+				AA13B31F1FB8AEBC00D9FEE6 /* CoreGraphics.framework in Frameworks */,
+				AA13B3201FB8AEBC00D9FEE6 /* UIKit.framework in Frameworks */,
+				AA13B3211FB8AEBC00D9FEE6 /* Foundation.framework in Frameworks */,
+				AA13B3221FB8AEBC00D9FEE6 /* CoreAudio.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1003,6 +1042,7 @@
 				FA3D99341BC4E644002C96C8 /* testgamecontroller-TV.app */,
 				FABA34911D8B575200915323 /* testaudiocapture.app */,
 				FABA34AA1D8B582100915323 /* loopwav-TV.app */,
+				AA13B3261FB8AEBC00D9FEE6 /* testyuv.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1051,9 +1091,9 @@
 		FDA8A73B0E2D0F0400EA573E /* src */ = {
 			isa = PBXGroup;
 			children = (
-				FABA34931D8B578200915323 /* testaudiocapture.c */,
 				047A63F013285CD100CD7973 /* checkkeys.c */,
 				FDA8A78B0E2D0F3D00EA573E /* loopwave.c */,
+				FABA34931D8B578200915323 /* testaudiocapture.c */,
 				FDA8A7410E2D0F1600EA573E /* testaudioinfo.c */,
 				FDC430090F0D86BF009C87E1 /* testdraw2.c */,
 				FDA8A7470E2D0F1600EA573E /* testerror.c */,
@@ -1076,6 +1116,8 @@
 				FDA8A75A0E2D0F1600EA573E /* testtimer.c */,
 				FDA8A75B0E2D0F1600EA573E /* testver.c */,
 				FDA8A75F0E2D0F1600EA573E /* testwm2.c */,
+				AA13B35E1FB8B50D00D9FEE6 /* testyuv_cvt.c */,
+				AA13B35B1FB8B4D600D9FEE6 /* testyuv.c */,
 				FDA8A7610E2D0F1600EA573E /* torturethread.c */,
 			);
 			name = src;
@@ -1103,12 +1145,13 @@
 				FA0EF2281BAF4487000E07A6 /* axis.bmp */,
 				FA0EF2291BAF4487000E07A6 /* button.bmp */,
 				FA0EF22A1BAF4487000E07A6 /* controllermap.bmp */,
-				FDD2C18A0E2E52FE00B7A85F /* utf8.txt */,
 				FDA8AAD90E2D33B000EA573E /* icon.bmp */,
 				FDA8AADA0E2D33BA00EA573E /* moose.dat */,
 				FDA8AADB0E2D33BA00EA573E /* picture.xbm */,
 				FDA8AADE0E2D33C100EA573E /* sample.bmp */,
 				FDA8AAE20E2D33C600EA573E /* sample.wav */,
+				AA13B32E1FB8AF0C00D9FEE6 /* testyuv.bmp */,
+				FDD2C18A0E2E52FE00B7A85F /* utf8.txt */,
 			);
 			name = Resources;
 			sourceTree = "<group>";
@@ -1182,6 +1225,23 @@
 			name = testpower;
 			productName = Test;
 			productReference = 56ED050D118A8FE400A56AA6 /* testpower.app */;
+			productType = "com.apple.product-type.application";
+		};
+		AA13B3111FB8AEBC00D9FEE6 /* testyuv */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AA13B3231FB8AEBC00D9FEE6 /* Build configuration list for PBXNativeTarget "testyuv" */;
+			buildPhases = (
+				AA13B3121FB8AEBC00D9FEE6 /* Resources */,
+				AA13B3141FB8AEBC00D9FEE6 /* Sources */,
+				AA13B3161FB8AEBC00D9FEE6 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = testyuv;
+			productName = Test;
+			productReference = AA13B3261FB8AEBC00D9FEE6 /* testyuv.app */;
 			productType = "com.apple.product-type.application";
 		};
 		AAE7DEDA14CBB1E100DF1A0E /* testscale */ = {
@@ -1584,6 +1644,9 @@
 			attributes = {
 				LastUpgradeCheck = 0630;
 				TargetAttributes = {
+					AA13B3111FB8AEBC00D9FEE6 = {
+						DevelopmentTeam = EH385AYQ6F;
+					};
 					FA3D99331BC4E644002C96C8 = {
 						CreatedOnToolsVersion = 7.1;
 					};
@@ -1643,6 +1706,7 @@
 				FDD2C5740E2E8C7400B7A85F /* testtimer */,
 				FDD2C5B30E2E8CFC00B7A85F /* testver */,
 				1D6058900D05DD3D006BFB54 /* testwm2 */,
+				AA13B3111FB8AEBC00D9FEE6 /* testyuv */,
 				FDD2C6E20E2E959E00B7A85F /* torturethread */,
 			);
 		};
@@ -1692,6 +1756,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA13B32F1FB8AF0C00D9FEE6 /* testyuv.bmp in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1707,6 +1772,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				56ED04FE118A8FE400A56AA6 /* icon.bmp in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA13B3121FB8AEBC00D9FEE6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA13B3301FB8AF2300D9FEE6 /* testyuv.bmp in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1923,6 +1996,15 @@
 			buildActionMask = 2147483647;
 			files = (
 				56ED0511118A904200A56AA6 /* testpower.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA13B3141FB8AEBC00D9FEE6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AA13B3611FB8B52500D9FEE6 /* testyuv_cvt.c in Sources */,
+				AA13B35D1FB8B4E200D9FEE6 /* testyuv.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2185,6 +2267,24 @@
 			};
 			name = Release;
 		};
+		AA13B3241FB8AEBC00D9FEE6 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEVELOPMENT_TEAM = EH385AYQ6F;
+				INFOPLIST_FILE = Info.plist;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		AA13B3251FB8AEBC00D9FEE6 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEVELOPMENT_TEAM = EH385AYQ6F;
+				INFOPLIST_FILE = Info.plist;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
 		AAE7DEEA14CBB1E100DF1A0E /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -2221,8 +2321,10 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				ENABLE_BITCODE = NO;
 				GCC_OPTIMIZATION_LEVEL = 0;
 				HEADER_SEARCH_PATHS = ../../include;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				ONLY_ACTIVE_ARCH = YES;
 				OTHER_LDFLAGS = "-ObjC";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
@@ -2235,7 +2337,9 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				ENABLE_BITCODE = NO;
 				HEADER_SEARCH_PATHS = ../../include;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				OTHER_LDFLAGS = "-ObjC";
 				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
 				SDKROOT = iphoneos;
@@ -2692,6 +2796,15 @@
 			buildConfigurations = (
 				56ED050B118A8FE400A56AA6 /* Debug */,
 				56ED050C118A8FE400A56AA6 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AA13B3231FB8AEBC00D9FEE6 /* Build configuration list for PBXNativeTarget "testyuv" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AA13B3241FB8AEBC00D9FEE6 /* Debug */,
+				AA13B3251FB8AEBC00D9FEE6 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

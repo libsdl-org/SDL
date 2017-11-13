@@ -252,9 +252,6 @@
     <ClInclude Include="..\..\src\render\direct3d11\SDL_render_winrt.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\render\mmx.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\render\opengles2\SDL_gles2funcs.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -384,9 +381,6 @@
     <ClInclude Include="..\..\src\joystick\windows\SDL_dinputjoystick_c.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\haptic\windows\SDL_windowshaptic_c.h" />
-    <ClInclude Include="..\..\src\haptic\windows\SDL_dinputhaptic_c.h" />
-    <ClInclude Include="..\..\src\haptic\windows\SDL_xinputhaptic_c.h" />
     <ClInclude Include="..\..\src\thread\windows\SDL_systhread_c.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -394,6 +388,24 @@
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\SDL_dataqueue.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\haptic\windows\SDL_dinputhaptic_c.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\haptic\windows\SDL_windowshaptic_c.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\haptic\windows\SDL_xinputhaptic_c.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\SDL_yuv_c.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\direct3d11\SDL_shaders_d3d11.h">
       <Filter>Source Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -525,9 +537,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\render\SDL_render.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\render\SDL_yuv_mmx.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\render\SDL_yuv_sw.c">
@@ -695,9 +704,6 @@
     <ClCompile Include="..\..\src\joystick\windows\SDL_dinputjoystick.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\haptic\windows\SDL_windowshaptic.c" />
-    <ClCompile Include="..\..\src\haptic\windows\SDL_xinputhaptic.c" />
-    <ClCompile Include="..\..\src\haptic\windows\SDL_dinputhaptic.c" />
     <ClCompile Include="..\..\src\thread\windows\SDL_sysmutex.c">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -717,6 +723,24 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\SDL_dataqueue.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\haptic\windows\SDL_dinputhaptic.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\haptic\windows\SDL_windowshaptic.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\haptic\windows\SDL_xinputhaptic.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\video\SDL_yuv.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\render\direct3d11\SDL_shaders_d3d11.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
