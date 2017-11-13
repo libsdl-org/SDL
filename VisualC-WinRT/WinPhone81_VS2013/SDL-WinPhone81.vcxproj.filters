@@ -252,9 +252,6 @@
     <ClInclude Include="..\..\src\render\direct3d11\SDL_render_winrt.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\render\mmx.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\render\opengles2\SDL_gles2funcs.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -384,6 +381,13 @@
     <ClInclude Include="..\..\src\SDL_dataqueue.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\video\SDL_yuv_c.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\render\direct3d11\SDL_shaders_d3d11.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\atomic\SDL_atomic.c">
@@ -513,9 +517,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\render\SDL_render.c">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\src\render\SDL_yuv_mmx.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\render\SDL_yuv_sw.c">
@@ -695,5 +696,12 @@
     <ClCompile Include="..\..\src\SDL_dataqueue.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\video\SDL_yuv.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\render\direct3d11\SDL_shaders_d3d11.c" />
   </ItemGroup>
 </Project>

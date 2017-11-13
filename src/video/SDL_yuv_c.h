@@ -18,30 +18,13 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
-#include "../../SDL_internal.h"
+#include "../SDL_internal.h"
 
-/* OpenGL shader implementation */
 
-typedef enum {
-    SHADER_NONE,
-    SHADER_SOLID,
-    SHADER_RGB,
-    SHADER_YUV_JPEG,
-    SHADER_YUV_BT601,
-    SHADER_YUV_BT709,
-    SHADER_NV12_JPEG,
-    SHADER_NV12_BT601,
-    SHADER_NV12_BT709,
-    SHADER_NV21_JPEG,
-    SHADER_NV21_BT601,
-    SHADER_NV21_BT709,
-    NUM_SHADERS
-} GL_Shader;
+/* YUV conversion functions */
 
-typedef struct GL_ShaderContext GL_ShaderContext;
-
-extern GL_ShaderContext * GL_CreateShaderContext(void);
-extern void GL_SelectShader(GL_ShaderContext *ctx, GL_Shader shader);
-extern void GL_DestroyShaderContext(GL_ShaderContext *ctx);
+extern int SDL_ConvertPixels_YUV_to_RGB(int width, int height, Uint32 src_format, const void *src, int src_pitch, Uint32 dst_format, void *dst, int dst_pitch);
+extern int SDL_ConvertPixels_RGB_to_YUV(int width, int height, Uint32 src_format, const void *src, int src_pitch, Uint32 dst_format, void *dst, int dst_pitch);
+extern int SDL_ConvertPixels_YUV_to_YUV(int width, int height, Uint32 src_format, const void *src, int src_pitch, Uint32 dst_format, void *dst, int dst_pitch);
 
 /* vi: set ts=4 sw=4 expandtab: */

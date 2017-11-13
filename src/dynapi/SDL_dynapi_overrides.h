@@ -660,3 +660,6 @@
 #define SDL_scalbnf SDL_scalbnf_REAL
 #define SDL_fmod SDL_fmod_REAL
 #define SDL_fmodf SDL_fmodf_REAL
+#define SDL_SetYUVConversionMode SDL_SetYUVConversionMode_REAL
+#define SDL_GetYUVConversionMode SDL_GetYUVConversionMode_REAL
+#define SDL_GetYUVConversionModeForResolution SDL_GetYUVConversionModeForResolution_REAL

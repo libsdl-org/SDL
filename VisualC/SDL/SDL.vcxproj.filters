@@ -262,7 +262,6 @@
     <ClInclude Include="..\..\src\joystick\windows\SDL_xinputjoystick_c.h" />
     <ClInclude Include="..\..\src\libm\math_libm.h" />
     <ClInclude Include="..\..\src\libm\math_private.h" />
-    <ClInclude Include="..\..\src\render\mmx.h" />
     <ClInclude Include="..\..\src\render\opengl\SDL_glfuncs.h" />
     <ClInclude Include="..\..\src\render\opengl\SDL_shaders_gl.h" />
     <ClInclude Include="..\..\src\render\opengles\SDL_glesfuncs.h" />
@@ -310,6 +309,10 @@
     <ClInclude Include="..\..\src\video\windows\SDL_windowsvulkan.h" />
     <ClInclude Include="..\..\src\video\windows\SDL_windowswindow.h" />
     <ClInclude Include="..\..\src\video\windows\wmmsg.h" />
+    <ClInclude Include="..\..\src\video\SDL_yuv_c.h" />
+    <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb.h" />
+    <ClInclude Include="..\..\src\render\direct3d11\SDL_shaders_d3d11.h" />
+    <ClInclude Include="..\..\src\render\direct3d\SDL_shaders_d3d.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\libm\e_atan2.c" />
@@ -439,12 +442,15 @@
     <ClCompile Include="..\..\src\core\windows\SDL_xinput.c" />
     <ClCompile Include="..\..\src\haptic\windows\SDL_xinputhaptic.c" />
     <ClCompile Include="..\..\src\joystick\windows\SDL_xinputjoystick.c" />
-    <ClCompile Include="..\..\src\render\SDL_yuv_mmx.c" />
     <ClCompile Include="..\..\src\render\SDL_yuv_sw.c" />
     <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi.c" />
     <ClCompile Include="..\..\src\video\SDL_vulkan_utils.c" />
     <ClCompile Include="..\..\src\video\windows\SDL_windowsvulkan.c" />
     <ClCompile Include="..\..\src\libm\e_fmod.c" />
+    <ClCompile Include="..\..\src\video\SDL_yuv.c" />
+    <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb.c" />
+    <ClCompile Include="..\..\src\render\direct3d11\SDL_shaders_d3d11.c" />
+    <ClCompile Include="..\..\src\render\direct3d\SDL_shaders_d3d.c" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\main\windows\version.rc" />

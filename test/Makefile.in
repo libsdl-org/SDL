@@ -9,19 +9,23 @@ LIBS	= @LIBS@
 
 TARGETS = \
 	checkkeys$(EXE) \
+	controllermap$(EXE) \
 	loopwave$(EXE) \
 	loopwavequeue$(EXE) \
 	testatomic$(EXE) \
-	testaudioinfo$(EXE) \
 	testaudiocapture$(EXE) \
+	testaudiohotplug$(EXE) \
+	testaudioinfo$(EXE) \
 	testautomation$(EXE) \
 	testbounds$(EXE) \
 	testcustomcursor$(EXE) \
+	testdisplayinfo$(EXE) \
 	testdraw2$(EXE) \
 	testdrawchessboard$(EXE) \
 	testdropfile$(EXE) \
 	testerror$(EXE) \
 	testfile$(EXE) \
+	testfilesystem$(EXE) \
 	testgamecontroller$(EXE) \
 	testgesture$(EXE) \
 	testgl2$(EXE) \
@@ -29,26 +33,26 @@ TARGETS = \
 	testgles2$(EXE) \
 	testhaptic$(EXE) \
 	testhittesting$(EXE) \
-	testrumble$(EXE) \
 	testhotplug$(EXE) \
-	testthread$(EXE) \
 	testiconv$(EXE) \
 	testime$(EXE) \
 	testintersections$(EXE) \
-	testrelative$(EXE) \
 	testjoystick$(EXE) \
 	testkeys$(EXE) \
 	testloadso$(EXE) \
 	testlock$(EXE) \
+	testmessage$(EXE) \
 	testmultiaudio$(EXE) \
-	testaudiohotplug$(EXE) \
 	testnative$(EXE) \
 	testoverlay2$(EXE) \
 	testplatform$(EXE) \
 	testpower$(EXE) \
-	testfilesystem$(EXE) \
+	testqsort$(EXE) \
+	testrelative$(EXE) \
+	testrendercopyex$(EXE) \
 	testrendertarget$(EXE) \
 	testresample$(EXE) \
+	testrumble$(EXE) \
 	testscale$(EXE) \
 	testsem$(EXE) \
 	testshader$(EXE) \
@@ -56,17 +60,14 @@ TARGETS = \
 	testsprite2$(EXE) \
 	testspriteminimal$(EXE) \
 	teststreaming$(EXE) \
+	testthread$(EXE) \
 	testtimer$(EXE) \
 	testver$(EXE) \
 	testviewport$(EXE) \
-	testwm2$(EXE) \
-	torturethread$(EXE) \
-	testrendercopyex$(EXE) \
-	testmessage$(EXE) \
-	testdisplayinfo$(EXE) \
-	testqsort$(EXE) \
-	controllermap$(EXE) \
 	testvulkan$(EXE) \
+	testwm2$(EXE) \
+	testyuv$(EXE) \
+	torturethread$(EXE) \
 	
 all: Makefile $(TARGETS) copydatafiles
 
@@ -264,6 +265,9 @@ testviewport$(EXE): $(srcdir)/testviewport.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testwm2$(EXE): $(srcdir)/testwm2.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testyuv$(EXE): $(srcdir)/testyuv.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 torturethread$(EXE): $(srcdir)/torturethread.c
