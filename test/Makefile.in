@@ -219,7 +219,7 @@ endif
 endif
 endif
 
-testoverlay2$(EXE): $(srcdir)/testoverlay2.c
+testoverlay2$(EXE): $(srcdir)/testoverlay2.c $(srcdir)/testyuv_cvt.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testplatform$(EXE): $(srcdir)/testplatform.c
@@ -267,7 +267,7 @@ testviewport$(EXE): $(srcdir)/testviewport.c
 testwm2$(EXE): $(srcdir)/testwm2.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
-testyuv$(EXE): $(srcdir)/testyuv.c
+testyuv$(EXE): $(srcdir)/testyuv.c $(srcdir)/testyuv_cvt.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 torturethread$(EXE): $(srcdir)/torturethread.c
