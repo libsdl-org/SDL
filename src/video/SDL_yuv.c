@@ -214,7 +214,7 @@ static SDL_bool yuv_rgb_sse(
             return SDL_TRUE;
         case SDL_PIXELFORMAT_BGR888:
         case SDL_PIXELFORMAT_ABGR8888:
-            yuv420_bgra_sseu(width, height, y, u, v, y_stride, uv_stride, rgb, rgb_stride, yuv_type);
+            yuv420_abgr_sseu(width, height, y, u, v, y_stride, uv_stride, rgb, rgb_stride, yuv_type);
             return SDL_TRUE;
         default:
             break;
@@ -246,7 +246,7 @@ static SDL_bool yuv_rgb_sse(
             return SDL_TRUE;
         case SDL_PIXELFORMAT_BGR888:
         case SDL_PIXELFORMAT_ABGR8888:
-            yuv422_bgra_sseu(width, height, y, u, v, y_stride, uv_stride, rgb, rgb_stride, yuv_type);
+            yuv422_abgr_sseu(width, height, y, u, v, y_stride, uv_stride, rgb, rgb_stride, yuv_type);
             return SDL_TRUE;
         default:
             break;
@@ -277,7 +277,7 @@ static SDL_bool yuv_rgb_sse(
             return SDL_TRUE;
         case SDL_PIXELFORMAT_BGR888:
         case SDL_PIXELFORMAT_ABGR8888:
-            yuvnv12_bgra_sseu(width, height, y, u, v, y_stride, uv_stride, rgb, rgb_stride, yuv_type);
+            yuvnv12_abgr_sseu(width, height, y, u, v, y_stride, uv_stride, rgb, rgb_stride, yuv_type);
             return SDL_TRUE;
         default:
             break;
@@ -318,7 +318,7 @@ static SDL_bool yuv_rgb_std(
             return SDL_TRUE;
         case SDL_PIXELFORMAT_BGR888:
         case SDL_PIXELFORMAT_ABGR8888:
-            yuv420_bgra_std(width, height, y, u, v, y_stride, uv_stride, rgb, rgb_stride, yuv_type);
+            yuv420_abgr_std(width, height, y, u, v, y_stride, uv_stride, rgb, rgb_stride, yuv_type);
             return SDL_TRUE;
         default:
             break;
@@ -350,7 +350,7 @@ static SDL_bool yuv_rgb_std(
             return SDL_TRUE;
         case SDL_PIXELFORMAT_BGR888:
         case SDL_PIXELFORMAT_ABGR8888:
-            yuv422_bgra_std(width, height, y, u, v, y_stride, uv_stride, rgb, rgb_stride, yuv_type);
+            yuv422_abgr_std(width, height, y, u, v, y_stride, uv_stride, rgb, rgb_stride, yuv_type);
             return SDL_TRUE;
         default:
             break;
@@ -381,7 +381,7 @@ static SDL_bool yuv_rgb_std(
             return SDL_TRUE;
         case SDL_PIXELFORMAT_BGR888:
         case SDL_PIXELFORMAT_ABGR8888:
-            yuvnv12_bgra_std(width, height, y, u, v, y_stride, uv_stride, rgb, rgb_stride, yuv_type);
+            yuvnv12_abgr_std(width, height, y, u, v, y_stride, uv_stride, rgb, rgb_stride, yuv_type);
             return SDL_TRUE;
         default:
             break;
