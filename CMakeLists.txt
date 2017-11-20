@@ -356,7 +356,7 @@ file(GLOB SOURCE_FILES
   ${SDL2_SOURCE_DIR}/src/stdlib/*.c
   ${SDL2_SOURCE_DIR}/src/thread/*.c
   ${SDL2_SOURCE_DIR}/src/timer/*.c
-  ${SDL2_SOURCE_DIR}/src/video/*.c)
+  ${SDL2_SOURCE_DIR}/src/video/*.c
   ${SDL2_SOURCE_DIR}/src/video/yuv2rgb/*.c)
 
 
