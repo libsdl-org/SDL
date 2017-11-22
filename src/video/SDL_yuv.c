@@ -91,8 +91,8 @@ static SDL_bool IsPacked4Format(Uint32 format)
 static int GetYUVPlanes(int width, int height, Uint32 format, const void *yuv, int yuv_pitch,
 	                    const Uint8 **y, const Uint8 **u, const Uint8 **v, Uint32 *y_stride, Uint32 *uv_stride)
 {
-    const Uint8 *planes[3];
-    int pitches[3];
+	const Uint8 *planes[3] = { NULL, NULL, NULL };
+	int pitches[3] = { 0, 0, 0 };
 
     switch (format) {
     case SDL_PIXELFORMAT_YV12:
@@ -395,12 +395,12 @@ SDL_ConvertPixels_YUV_to_RGB(int width, int height,
          Uint32 src_format, const void *src, int src_pitch,
          Uint32 dst_format, void *dst, int dst_pitch)
 {
-	const Uint8 *y;
-    const Uint8 *u;
-    const Uint8 *v;
-    Uint32 y_stride;
-    Uint32 uv_stride;
-    YCbCrType yuv_type;
+	const Uint8 *y = NULL;
+    const Uint8 *u = NULL;
+    const Uint8 *v = NULL;
+    Uint32 y_stride = 0;
+    Uint32 uv_stride = 0;
+    YCbCrType yuv_type = YCBCR_601;
 
     if (GetYUVPlanes(width, height, src_format, src, src_pitch, &y, &u, &v, &y_stride, &uv_stride) < 0) {
         return -1;
