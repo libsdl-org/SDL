@@ -354,7 +354,9 @@ Cocoa_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
             SDL_DisplayMode mode;
             if (GetDisplayMode(_this, moderef, link, &mode)) {
                 CGDisplayModeRetain(moderef);
-                SDL_AddDisplayMode(display, &mode);
+                if (!SDL_AddDisplayMode(display, &mode)) {
+                    SDL_free(mode.driverdata);
+                }
             }
         }
 
