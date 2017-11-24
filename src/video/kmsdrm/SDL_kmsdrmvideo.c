@@ -362,6 +362,7 @@ KMSDRM_VideoInit(_THIS)
                  vdata->saved_crtc->y, vdata->saved_crtc->width, vdata->saved_crtc->height);
     data->crtc_id = encoder->crtc_id;
     data->cur_mode = vdata->saved_crtc->mode;
+    vdata->crtc_id = encoder->crtc_id;
 
     SDL_zero(current_mode);
 
