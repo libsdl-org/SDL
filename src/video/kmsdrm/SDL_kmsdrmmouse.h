@@ -26,6 +26,9 @@
 
 #include <gbm.h>
 
+#define MAX_CURSOR_W 512
+#define MAX_CURSOR_H 512
+
 typedef struct _KMSDRM_CursorData
 {
     struct gbm_bo *bo;
