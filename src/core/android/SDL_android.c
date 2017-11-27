@@ -29,7 +29,6 @@
 
 #include "SDL_system.h"
 #include "SDL_android.h"
-#include <EGL/egl.h>
 
 #include "keyinfotable.h"
 
