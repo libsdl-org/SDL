@@ -261,7 +261,7 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
 #endif
 
     if (_this->egl_data) {
-        return SDL_SetError("OpenGL ES context already created");
+        return SDL_SetError("EGL context already created");
     }
 
     _this->egl_data = (struct SDL_EGL_VideoData *) SDL_calloc(1, sizeof(SDL_EGL_VideoData));
@@ -375,6 +375,7 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
     LOAD_FUNC(eglGetConfigAttrib);
     LOAD_FUNC(eglCreateContext);
     LOAD_FUNC(eglDestroyContext);
+    LOAD_FUNC(eglCreatePBufferSurface);
     LOAD_FUNC(eglCreateWindowSurface);
     LOAD_FUNC(eglDestroySurface);
     LOAD_FUNC(eglMakeCurrent);
