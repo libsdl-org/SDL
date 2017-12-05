@@ -357,7 +357,6 @@ SDL_LogOutput(void *userdata, int category, SDL_LogPriority priority,
 
                         if (GetConsoleMode(stderrHandle, &consoleMode) == 0) {
                             /* WriteConsole fails if the output is redirected to a file. Must use WriteFile instead. */
-                            OutputDebugString(TEXT("Console ouput is being redirected\r\n"));
                             consoleAttached = 2;
                         }
                 }
