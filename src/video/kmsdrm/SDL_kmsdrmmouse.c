@@ -423,8 +423,13 @@ KMSDRM_WarpMouseGlobal(int x, int y)
     SDL_Mouse *mouse = SDL_GetMouse();
 
     if (mouse != NULL && mouse->cur_cursor != NULL && mouse->cur_cursor->driverdata != NULL) {
+        /* Update internal mouse position. */
+        SDL_SendMouseMotion(mouse->focus, mouse->mouseID, 0, x, y);
+
+        /* And now update the cursor graphic position on screen. */
         curdata = (KMSDRM_CursorData *) mouse->cur_cursor->driverdata;
         if (curdata->bo != NULL) {
+
             if (curdata->crtc_id != 0) {
                 int ret, drm_fd;
                 drm_fd = KMSDRM_gbm_device_get_fd(KMSDRM_gbm_bo_get_device(curdata->bo));
@@ -475,7 +480,20 @@ static void
 KMSDRM_MoveCursor(SDL_Cursor * cursor)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
-    KMSDRM_WarpMouse(mouse->focus, mouse->x, mouse->y);
+    KMSDRM_CursorData *curdata;
+    int drm_fd, ret;
+
+    /* We must NOT call SDL_SendMouseMotion() here or we will enter recursivity!
+       That's why we move the cursor graphic ONLY. */
+    if (mouse != NULL && mouse->cur_cursor != NULL && mouse->cur_cursor->driverdata != NULL) {
+        curdata = (KMSDRM_CursorData *) mouse->cur_cursor->driverdata;
+	drm_fd = KMSDRM_gbm_device_get_fd(KMSDRM_gbm_bo_get_device(curdata->bo));
+	ret = KMSDRM_drmModeMoveCursor(drm_fd, curdata->crtc_id, mouse->x, mouse->y);
+
+	if (ret) {
+	    SDL_SetError("drmModeMoveCursor() failed.");
+	}
+    }
 }
 
 #endif /* SDL_VIDEO_DRIVER_KMSDRM */

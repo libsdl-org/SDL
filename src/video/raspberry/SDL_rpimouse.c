@@ -247,6 +247,65 @@ RPI_WarpMouseGlobal(int x, int y)
         return 0;
     }
 
+    /* Update internal mouse position. */
+    SDL_SendMouseMotion(mouse->focus, mouse->mouseID, 0, x, y);
+
+    curdata = (RPI_CursorData *) mouse->cur_cursor->driverdata;
+    if (curdata->element == DISPMANX_NO_HANDLE) {
+        return 0;
+    }
+
+    update = vc_dispmanx_update_start(10);
+    if (!update) {
+        return 0;
+    }
+
+    src_rect.x = 0;
+    src_rect.y = 0;
+    src_rect.width  = curdata->w << 16;
+    src_rect.height = curdata->h << 16;
+    dst_rect.x = x;
+    dst_rect.y = y;
+    dst_rect.width  = curdata->w;
+    dst_rect.height = curdata->h;
+
+    ret = vc_dispmanx_element_change_attributes(
+        update,
+        curdata->element,
+        0,
+        0,
+        0,
+        &dst_rect,
+        &src_rect,
+        DISPMANX_NO_HANDLE,
+        DISPMANX_NO_ROTATE);
+    if (ret != DISPMANX_SUCCESS) {
+        return SDL_SetError("vc_dispmanx_element_change_attributes() failed");
+    }
+
+    /* Submit asynchronously, otherwise the peformance suffers a lot */
+    ret = vc_dispmanx_update_submit(update, 0, NULL);
+    if (ret != DISPMANX_SUCCESS) {
+        return SDL_SetError("vc_dispmanx_update_submit() failed");
+    }
+    return 0;
+}
+
+/* Warp the mouse to (x,y) */
+static int
+RPI_WarpMouseGlobalGraphicOnly(int x, int y)
+{
+    RPI_CursorData *curdata;
+    DISPMANX_UPDATE_HANDLE_T update;
+    int ret;
+    VC_RECT_T dst_rect;
+    VC_RECT_T src_rect;
+    SDL_Mouse *mouse = SDL_GetMouse();
+    
+    if (mouse == NULL || mouse->cur_cursor == NULL || mouse->cur_cursor->driverdata == NULL) {
+        return 0;
+    }
+
     curdata = (RPI_CursorData *) mouse->cur_cursor->driverdata;
     if (curdata->element == DISPMANX_NO_HANDLE) {
         return 0;
@@ -317,7 +376,9 @@ static void
 RPI_MoveCursor(SDL_Cursor * cursor)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
-    RPI_WarpMouse(mouse->focus, mouse->x, mouse->y);
+    /* We must NOT call SDL_SendMouseMotion() on the next call or we will enter recursivity, 
+     * so we create a version of WarpMouseGlobal without it. */
+    RPI_WarpMouseGlobalGraphicOnly(mouse->x, mouse->y);
 }
 
 #endif /* SDL_VIDEO_DRIVER_RPI */
