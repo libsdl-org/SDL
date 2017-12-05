@@ -64,7 +64,7 @@ level of indirection, we can do things like this:
     export SDL_DYNAMIC_API=/my/actual/libSDL-2.0.so.0
     ./MyGameThatIsStaticallyLinkedToSDL2
 
-And now, this game that is staticallly linked to SDL, can still be overridden 
+And now, this game that is statically linked to SDL, can still be overridden 
 with a newer, or better, SDL. The statically linked one will only be used as 
 far as calling into the jump table in this case. But in cases where no override
 is desired, the statically linked version will provide its own jump table, 
