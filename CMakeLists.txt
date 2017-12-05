@@ -1486,6 +1486,13 @@ elseif(APPLE)
         set(SDL_VIDEO_RENDER_OGL 1)
         set(HAVE_VIDEO_OPENGL TRUE)
       endif()
+
+      if(VIDEO_OPENGLES)
+        set(SDL_VIDEO_OPENGL_EGL 1)
+        set(SDL_VIDEO_OPENGL_ES2 1)
+        set(SDL_VIDEO_RENDER_OGL_ES2 1)
+        set(HAVE_VIDEO_OPENGLES TRUE)
+      endif()
     endif()
   endif()
 

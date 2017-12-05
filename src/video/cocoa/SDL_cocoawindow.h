@@ -25,6 +25,10 @@
 
 #import <Cocoa/Cocoa.h>
 
+#if SDL_VIDEO_OPENGL_EGL
+#include "../SDL_egl_c.h"
+#endif
+
 typedef struct SDL_WindowData SDL_WindowData;
 
 typedef enum
@@ -114,6 +118,9 @@ struct SDL_WindowData
     SDL_bool inWindowMove;
     Cocoa_WindowListener *listener;
     struct SDL_VideoData *videodata;
+#if SDL_VIDEO_OPENGL_EGL
+    EGLSurface egl_surface;
+#endif
 };
 
 extern int Cocoa_CreateWindow(_THIS, SDL_Window * window);

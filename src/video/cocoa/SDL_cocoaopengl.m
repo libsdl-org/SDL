@@ -25,6 +25,7 @@
 #if SDL_VIDEO_OPENGL_CGL
 #include "SDL_cocoavideo.h"
 #include "SDL_cocoaopengl.h"
+#include "SDL_cocoaopengles.h"
 
 #include <OpenGL/CGLTypes.h>
 #include <OpenGL/OpenGL.h>
@@ -165,8 +166,27 @@ Cocoa_GL_CreateContext(_THIS, SDL_Window * window)
     int glversion_minor;
 
     if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) {
-        SDL_SetError ("OpenGL ES is not supported on this platform");
+#if SDL_VIDEO_OPENGL_EGL
+        /* Switch to EGL based functions */
+        Cocoa_GL_UnloadLibrary(_this);
+        _this->GL_LoadLibrary = Cocoa_GLES_LoadLibrary;
+        _this->GL_GetProcAddress = Cocoa_GLES_GetProcAddress;
+        _this->GL_UnloadLibrary = Cocoa_GLES_UnloadLibrary;
+        _this->GL_CreateContext = Cocoa_GLES_CreateContext;
+        _this->GL_MakeCurrent = Cocoa_GLES_MakeCurrent;
+        _this->GL_SetSwapInterval = Cocoa_GLES_SetSwapInterval;
+        _this->GL_GetSwapInterval = Cocoa_GLES_GetSwapInterval;
+        _this->GL_SwapWindow = Cocoa_GLES_SwapWindow;
+        _this->GL_DeleteContext = Cocoa_GLES_DeleteContext;
+        
+        if (Cocoa_GLES_LoadLibrary(_this, NULL) != 0) {
+            return NULL;
+        }
+        return Cocoa_GLES_CreateContext(_this, window);
+#else
+        SDL_SetError("SDL not configured with EGL support");
         return NULL;
+#endif
     }
     if ((_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_CORE) && !lion_or_later) {
         SDL_SetError ("OpenGL Core Profile is not supported on this platform version");
