@@ -65,6 +65,13 @@
 #define DEFAULT_OGL_ES_PVR "libGLES_CM.dll"
 #define DEFAULT_OGL_ES "libGLESv1_CM.dll"
 
+#elif SDL_VIDEO_DRIVER_COCOA
+/* EGL AND OpenGL ES support via ANGLE */
+#define DEFAULT_EGL "libEGL.dylib"
+#define DEFAULT_OGL_ES2 "libGLESv2.dylib"
+#define DEFAULT_OGL_ES_PVR "libGLES_CM.dylib"   //???
+#define DEFAULT_OGL_ES "libGLESv1_CM.dylib"     //???
+
 #else
 /* Desktop Linux */
 #define DEFAULT_OGL "libGL.so.1"
