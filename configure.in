@@ -2978,7 +2978,6 @@ AC_HELP_STRING([--enable-directx], [use DirectX for Windows audio/video [[defaul
         AC_CHECK_HEADER(dsound.h, have_dsound=yes)
         AC_CHECK_HEADER(dinput.h, have_dinput=yes)
         AC_CHECK_HEADER(dxgi.h, have_dxgi=yes)
-        AC_CHECK_HEADER(xaudio2.h, have_xaudio2=yes)
         AC_CHECK_HEADER(xinput.h, have_xinput=yes)
         AC_CHECK_HEADER(mmdeviceapi.h, have_wasapi=yes)
         AC_CHECK_HEADER(audioclient.h,,have_wasapi=no)
@@ -3485,10 +3484,6 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
             if test x$have_dsound = xyes; then
                 AC_DEFINE(SDL_AUDIO_DRIVER_DSOUND, 1, [ ])
                 SOURCES="$SOURCES $srcdir/src/audio/directsound/*.c"
-            fi
-            if test x$have_xaudio2 = xyes; then
-                AC_DEFINE(SDL_AUDIO_DRIVER_XAUDIO2, 1, [ ])
-                SOURCES="$SOURCES $srcdir/src/audio/xaudio2/*.c"
             fi
             if test x$have_wasapi = xyes; then
                 AC_DEFINE(SDL_AUDIO_DRIVER_WASAPI, 1, [ ])

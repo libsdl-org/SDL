@@ -23,14 +23,23 @@
 #ifndef SDL_wasapi_h_
 #define SDL_wasapi_h_
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #include "../SDL_sysaudio.h"
 
 /* Hidden "this" pointer for the audio functions */
+#ifdef __cplusplus
+#define _THIS SDL_AudioDevice *_this
+#else
 #define _THIS SDL_AudioDevice *this
+#endif
 
 struct SDL_PrivateAudioData
 {
-    IMMDevice *device;
+    SDL_atomic_t refcount;
+    WCHAR *devid;
     WAVEFORMATEX *waveformat;
     IAudioClient *client;
     IAudioRenderClient *render;
@@ -41,7 +50,34 @@ struct SDL_PrivateAudioData
     int framesize;
     int default_device_generation;
     SDL_bool device_lost;
+    void *activation_handler;
+    SDL_atomic_t just_activated;
 };
+
+/* these increment as default devices change. Opened default devices pick up changes in their threads. */
+extern SDL_atomic_t WASAPI_DefaultPlaybackGeneration;
+extern SDL_atomic_t WASAPI_DefaultCaptureGeneration;
+
+/* win32 and winrt implementations call into these. */
+int WASAPI_PrepDevice(_THIS, const SDL_bool updatestream);
+void WASAPI_RefDevice(_THIS);
+void WASAPI_UnrefDevice(_THIS);
+void WASAPI_AddDevice(const SDL_bool iscapture, const char *devname, LPCWSTR devid);
+void WASAPI_RemoveDevice(const SDL_bool iscapture, LPCWSTR devid);
+
+/* These are functions that are implemented differently for Windows vs WinRT. */
+int WASAPI_PlatformInit(void);
+void WASAPI_PlatformDeinit(void);
+void WASAPI_EnumerateEndpoints(void);
+int WASAPI_ActivateDevice(_THIS, const SDL_bool isrecovery);
+void WASAPI_PlatformThreadInit(_THIS);
+void WASAPI_PlatformThreadDeinit(_THIS);
+void WASAPI_PlatformDeleteActivationHandler(void *handler);
+void WASAPI_BeginLoopIteration(_THIS);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* SDL_wasapi_h_ */
 

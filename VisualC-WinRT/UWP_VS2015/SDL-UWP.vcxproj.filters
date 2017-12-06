@@ -183,9 +183,6 @@
     <ClInclude Include="..\..\src\audio\SDL_wave.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\audio\xaudio2\SDL_xaudio2_winrthelpers.h">
-      <Filter>Source Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\src\core\windows\SDL_directx.h">
       <Filter>Source Files</Filter>
     </ClInclude>
@@ -390,7 +387,7 @@
     <ClInclude Include="..\..\src\video\winrt\SDL_winrtvideo_cpp.h">
       <Filter>Source Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\src\audio\xaudio2\SDL_xaudio2.h">
+    <ClInclude Include="..\..\src\audio\wasapi\SDL_wasapi.h">
       <Filter>Source Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\src\video\winrt\SDL_winrtgamebar_cpp.h">
@@ -449,7 +446,7 @@
     <ClCompile Include="..\..\src\audio\SDL_wave.c">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\audio\xaudio2\SDL_xaudio2_winrthelpers.cpp">
+    <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi_winrt.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\core\windows\SDL_windows.c">
@@ -722,7 +719,7 @@
     <ClCompile Include="..\..\src\video\winrt\SDL_winrtvideo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\src\audio\xaudio2\SDL_xaudio2.c">
+    <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi.c">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\video\winrt\SDL_winrtgamebar.cpp">
