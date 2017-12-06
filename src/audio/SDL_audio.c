@@ -71,9 +71,6 @@ static const AudioBootStrap *const bootstrap[] = {
 #if SDL_AUDIO_DRIVER_WASAPI
     &WASAPI_bootstrap,
 #endif
-#if SDL_AUDIO_DRIVER_XAUDIO2
-    &XAUDIO2_bootstrap,
-#endif
 #if SDL_AUDIO_DRIVER_DSOUND
     &DSOUND_bootstrap,
 #endif
@@ -234,6 +231,11 @@ SDL_AudioThreadDeinit_Default(_THIS)
 }
 
 static void
+SDL_AudioBeginLoopIteration_Default(_THIS)
+{                               /* no-op. */
+}
+
+static void
 SDL_AudioWaitDevice_Default(_THIS)
 {                               /* no-op. */
 }
@@ -353,6 +355,7 @@ finish_audio_entry_points_init(void)
     FILL_STUB(OpenDevice);
     FILL_STUB(ThreadInit);
     FILL_STUB(ThreadDeinit);
+    FILL_STUB(BeginLoopIteration);
     FILL_STUB(WaitDevice);
     FILL_STUB(PlayDevice);
     FILL_STUB(GetPendingBytes);
@@ -642,6 +645,7 @@ SDL_RunAudio(void *devicep)
     SDL_AudioDevice *device = (SDL_AudioDevice *) devicep;
     void *udata = device->callbackspec.userdata;
     SDL_AudioCallback callback = device->callbackspec.callback;
+    int data_len = 0;
     Uint8 *data;
 
     SDL_assert(!device->iscapture);
@@ -655,7 +659,8 @@ SDL_RunAudio(void *devicep)
 
     /* Loop, filling the audio buffers */
     while (!SDL_AtomicGet(&device->shutdown)) {
-        const int data_len = device->callbackspec.size;
+        current_audio.impl.BeginLoopIteration(device);
+        data_len = device->callbackspec.size;
 
         /* Fill the current buffer with sound */
         if (!device->stream && SDL_AtomicGet(&device->enabled)) {
@@ -753,6 +758,8 @@ SDL_CaptureAudio(void *devicep)
     while (!SDL_AtomicGet(&device->shutdown)) {
         int still_need;
         Uint8 *ptr;
+
+        current_audio.impl.BeginLoopIteration(device);
 
         if (SDL_AtomicGet(&device->paused)) {
             SDL_Delay(delay);  /* just so we don't cook the CPU. */

@@ -70,7 +70,10 @@ Here is a rough list of what works, and what doesn't:
     SDL_GetPerformanceFrequency(), etc.)
   * file I/O via SDL_RWops
   * mouse input  (unsupported on Windows Phone)
-  * audio, via a modified version of SDL's XAudio2 backend
+  * audio, via SDL's WASAPI backend (if you want to record, your app must 
+    have "Microphone" capabilities enabled in its manifest, and the user must 
+    not have blocked access. Otherwise, capture devices will fail to work,
+    presenting as a device disconnect shortly after opening it.)
   * .DLL file loading.  Libraries *MUST* be packaged inside applications.  Loading
     anything outside of the app is not supported.
   * system path retrieval via SDL's filesystem APIs

@@ -84,8 +84,7 @@
     <ClInclude Include="..\..\src\audio\SDL_audio_c.h" />
     <ClInclude Include="..\..\src\audio\SDL_sysaudio.h" />
     <ClInclude Include="..\..\src\audio\SDL_wave.h" />
-    <ClInclude Include="..\..\src\audio\xaudio2\SDL_xaudio2.h" />
-    <ClInclude Include="..\..\src\audio\xaudio2\SDL_xaudio2_winrthelpers.h" />
+    <ClInclude Include="..\..\src\audio\wasapi\SDL_wasapi.h" />
     <ClInclude Include="..\..\src\core\windows\SDL_directx.h" />
     <ClInclude Include="..\..\src\core\windows\SDL_windows.h" />
     <ClInclude Include="..\..\src\core\windows\SDL_xinput.h" />
@@ -175,8 +174,8 @@
     <ClCompile Include="..\..\src\audio\SDL_audiotypecvt.c" />
     <ClCompile Include="..\..\src\audio\SDL_mixer.c" />
     <ClCompile Include="..\..\src\audio\SDL_wave.c" />
-    <ClCompile Include="..\..\src\audio\xaudio2\SDL_xaudio2.c" />
-    <ClCompile Include="..\..\src\audio\xaudio2\SDL_xaudio2_winrthelpers.cpp">
+    <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi.c" />
+    <ClCompile Include="..\..\src\audio\wasapi\SDL_wasapi_winrt.cpp">
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">true</CompileAsWinRT>
       <CompileAsWinRT Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</CompileAsWinRT>

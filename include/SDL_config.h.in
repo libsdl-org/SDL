@@ -259,7 +259,6 @@
 #undef SDL_AUDIO_DRIVER_SUNAUDIO
 #undef SDL_AUDIO_DRIVER_WASAPI
 #undef SDL_AUDIO_DRIVER_WINMM
-#undef SDL_AUDIO_DRIVER_XAUDIO2
 
 /* Enable various input drivers */
 #undef SDL_INPUT_LINUXEV
