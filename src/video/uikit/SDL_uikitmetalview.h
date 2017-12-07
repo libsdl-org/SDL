@@ -38,7 +38,7 @@
 
 #define METALVIEW_TAG 255
 
-@interface SDL_uikitmetalview : UIView
+@interface SDL_uikitmetalview : SDL_uikitview
 
 - (instancetype)initWithFrame:(CGRect)frame
                         scale:(CGFloat)scale

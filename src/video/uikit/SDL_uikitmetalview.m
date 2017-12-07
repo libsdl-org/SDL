@@ -49,9 +49,6 @@
                           tag:(int)tag
 {
     if ((self = [super initWithFrame:frame])) {
-        /* Resize properly when rotated. */
-        self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
-
         /* Set the appropriate scale (for retina display support) */
         self.contentScaleFactor = scale;
         self.tag = tag;
@@ -105,19 +102,7 @@ UIKit_Mtl_AddMetalView(SDL_Window* window)
          = [[SDL_uikitmetalview alloc] initWithFrame:view.frame
                                           scale:scale
                                             tag:METALVIEW_TAG];
-#if 1
-    [view addSubview:metalview];
-#else
-    /* Sets this view as the controller's view, and adds the view to
-     * the window hierarchy.
-     *
-     * Left here for information. Not used because I suspect that for correct
-     * operation it will be necesary to copy everything from the window's
-     * current SDL_uikitview instance to the SDL_uikitview portion of the
-     * SDL_metalview. The latter would be derived from SDL_uikitview rather
-     * than UIView. */
     [metalview setSDLWindow:window];
-#endif
 
     return metalview;
 }
