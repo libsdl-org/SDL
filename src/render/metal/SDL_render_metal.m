@@ -119,7 +119,7 @@ IsMetalAvailable(const SDL_SysWMinfo *syswm)
     }
 
     // this checks a weak symbol.
-#if defined(__MACOSX__)
+#if (defined(__MACOSX__) && (MAC_OS_X_VERSION_MIN_REQUIRED < 101100))
     if (MTLCreateSystemDefaultDevice == NULL) {  // probably on 10.10 or lower.
         return SDL_SetError("Metal framework not available on this system");
     }
