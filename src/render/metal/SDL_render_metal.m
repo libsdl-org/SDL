@@ -370,17 +370,17 @@ METAL_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
 
 static int
 METAL_GetOutputSize(SDL_Renderer * renderer, int *w, int *h)
-{
+{ @autoreleasepool {
     METAL_ActivateRenderer(renderer);
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
     *w = (int) data.mtlbackbuffer.texture.width;
     *h = (int) data.mtlbackbuffer.texture.height;
     return 0;
-}
+}}
 
 static int
 METAL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
-{
+{ @autoreleasepool {
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
     MTLPixelFormat mtlpixfmt;
 
@@ -405,12 +405,12 @@ METAL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     texture->driverdata = (void*)CFBridgingRetain(mtltexture);
 
     return 0;
-}
+}}
 
 static int
 METAL_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                  const SDL_Rect * rect, const void *pixels, int pitch)
-{
+{ @autoreleasepool {
     // !!! FIXME: this is a synchronous call; it doesn't return until data is uploaded in some form.
     // !!! FIXME:  Maybe move this off to a thread that marks the texture as uploaded and only stall the main thread if we try to
     // !!! FIXME:  use this texture before the marking is done? Is it worth it? Or will we basically always be uploading a bunch of
@@ -418,7 +418,7 @@ METAL_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     id<MTLTexture> mtltexture = (__bridge id<MTLTexture>) texture->driverdata;
     [mtltexture replaceRegion:MTLRegionMake2D(rect->x, rect->y, rect->w, rect->h) mipmapLevel:0 withBytes:pixels bytesPerRow:pitch];
     return 0;
-}
+}}
 
 static int
 METAL_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
@@ -445,17 +445,17 @@ METAL_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 
 static int
 METAL_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
-{
+{ @autoreleasepool {
     METAL_ActivateRenderer(renderer);
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
     id<MTLTexture> mtltexture = texture ? (__bridge id<MTLTexture>) texture->driverdata : nil;
     data.mtlpassdesc.colorAttachments[0].texture = mtltexture;
     return 0;
-}
+}}
 
 static int
 METAL_UpdateViewport(SDL_Renderer * renderer)
-{
+{ @autoreleasepool {
     METAL_ActivateRenderer(renderer);
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
     MTLViewport viewport;
@@ -467,15 +467,15 @@ METAL_UpdateViewport(SDL_Renderer * renderer)
     viewport.zfar = 1.0;
     [data.mtlcmdencoder setViewport:viewport];
     return 0;
-}
+}}
 
 static int
 METAL_UpdateClipRect(SDL_Renderer * renderer)
-{
-    // !!! FIXME: should this care about the viewport?
+{ @autoreleasepool {
     METAL_ActivateRenderer(renderer);
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
     MTLScissorRect mtlrect;
+    // !!! FIXME: should this care about the viewport?
     if (renderer->clipping_enabled) {
         const SDL_Rect *rect = &renderer->clip_rect;
         mtlrect.x = renderer->viewport.x + rect->x;
@@ -492,11 +492,11 @@ METAL_UpdateClipRect(SDL_Renderer * renderer)
         [data.mtlcmdencoder setScissorRect:mtlrect];
     }
     return 0;
-}
+}}
 
 static int
 METAL_RenderClear(SDL_Renderer * renderer)
-{
+{ @autoreleasepool {
     // We could dump the command buffer and force a clear on a new one, but this will respect the scissor state.
     METAL_ActivateRenderer(renderer);
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
@@ -528,7 +528,7 @@ METAL_RenderClear(SDL_Renderer * renderer)
     [data.mtlcmdencoder setViewport:viewport];
 
     return 0;
-}
+}}
 
 // normalize a value from 0.0f to len into -1.0f to 1.0f.
 static inline float
@@ -556,7 +556,7 @@ normtex(const float _val, const float len)
 static int
 DrawVerts(SDL_Renderer * renderer, const SDL_FPoint * points, int count,
           const MTLPrimitiveType primtype)
-{
+{ @autoreleasepool {
     METAL_ActivateRenderer(renderer);
 
     const size_t vertlen = (sizeof (float) * 2) * count;
@@ -588,7 +588,7 @@ DrawVerts(SDL_Renderer * renderer, const SDL_FPoint * points, int count,
 
     SDL_free(verts);
     return 0;
-}
+}}
 
 static int
 METAL_RenderDrawPoints(SDL_Renderer * renderer, const SDL_FPoint * points, int count)
@@ -604,7 +604,7 @@ METAL_RenderDrawLines(SDL_Renderer * renderer, const SDL_FPoint * points, int co
 
 static int
 METAL_RenderFillRects(SDL_Renderer * renderer, const SDL_FRect * rects, int count)
-{
+{ @autoreleasepool {
     METAL_ActivateRenderer(renderer);
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
 
@@ -633,12 +633,12 @@ METAL_RenderFillRects(SDL_Renderer * renderer, const SDL_FRect * rects, int coun
     }
 
     return 0;
-}
+}}
 
 static int
 METAL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
               const SDL_Rect * srcrect, const SDL_FRect * dstrect)
-{
+{ @autoreleasepool {
     METAL_ActivateRenderer(renderer);
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
     id<MTLTexture> mtltexture = (__bridge id<MTLTexture>) texture->driverdata;
@@ -679,7 +679,7 @@ METAL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
     [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:5];
 
     return 0;
-}
+}}
 
 static int
 METAL_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
@@ -692,7 +692,7 @@ METAL_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
 static int
 METAL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
                     Uint32 pixel_format, void * pixels, int pitch)
-{
+{ @autoreleasepool {
     METAL_ActivateRenderer(renderer);
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
     MTLRenderPassColorAttachmentDescriptor *colorAttachment = data.mtlpassdesc.colorAttachments[0];
@@ -719,11 +719,11 @@ METAL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     const int status = SDL_ConvertPixels(rect->w, rect->h, temp_format, temp_pixels, temp_pitch, pixel_format, pixels, pitch);
     SDL_free(temp_pixels);
     return status;
-}
+}}
 
 static void
 METAL_RenderPresent(SDL_Renderer * renderer)
-{
+{ @autoreleasepool {
     METAL_ActivateRenderer(renderer);
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
 
@@ -739,21 +739,21 @@ METAL_RenderPresent(SDL_Renderer * renderer)
     data.mtlcmdbuffer = nil;
     data.mtlbackbuffer = nil;
     data.beginScene = YES;
-}
+}}
 
 static void
 METAL_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
-{
+{ @autoreleasepool {
     id<MTLTexture> mtltexture = CFBridgingRelease(texture->driverdata);
 #if !__has_feature(objc_arc)
     [mtltexture release];
 #endif
     texture->driverdata = NULL;
-}
+}}
 
 static void
 METAL_DestroyRenderer(SDL_Renderer * renderer)
-{
+{ @autoreleasepool {
     if (renderer->driverdata) {
         METAL_RenderData *data = CFBridgingRelease(renderer->driverdata);
 
@@ -784,7 +784,7 @@ METAL_DestroyRenderer(SDL_Renderer * renderer)
 #endif
     }
     SDL_free(renderer);
-}
+}}
 
 #endif /* SDL_VIDEO_RENDER_METAL && !SDL_RENDER_DISABLED */
 
