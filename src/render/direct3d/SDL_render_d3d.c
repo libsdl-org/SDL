@@ -1412,6 +1412,10 @@ D3D_UpdateTextureScaleMode(D3D_RenderData *data, D3D_TextureData *texturedata, u
                                          texturedata->scaleMode);
         IDirect3DDevice9_SetSamplerState(data->device, index, D3DSAMP_MAGFILTER,
                                          texturedata->scaleMode);
+        IDirect3DDevice9_SetSamplerState(data->device, index, D3DSAMP_ADDRESSU,
+                                         D3DTADDRESS_CLAMP);
+        IDirect3DDevice9_SetSamplerState(data->device, index, D3DSAMP_ADDRESSV,
+                                         D3DTADDRESS_CLAMP);
         data->scaleMode[index] = texturedata->scaleMode;
     }
 }
