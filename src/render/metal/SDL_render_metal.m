@@ -394,14 +394,10 @@ METAL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         default: return SDL_SetError("Texture format %s not supported by Metal", SDL_GetPixelFormatName(texture->format));
     }
 
-    // !!! FIXME: autorelease or nah?
     MTLTextureDescriptor *mtltexdesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:mtlpixfmt
                                             width:(NSUInteger)texture->w height:(NSUInteger)texture->h mipmapped:NO];
 
     id<MTLTexture> mtltexture = [data.mtldevice newTextureWithDescriptor:mtltexdesc];
-#if !__has_feature(objc_arc)
-    [mtltexdesc release];
-#endif
     if (mtltexture == nil) {
         return SDL_SetError("Texture allocation failed");
     }
@@ -734,11 +730,6 @@ METAL_RenderPresent(SDL_Renderer * renderer)
     [data.mtlcmdencoder endEncoding];
     [data.mtlcmdbuffer presentDrawable:data.mtlbackbuffer];
     [data.mtlcmdbuffer commit];
-#if !__has_feature(objc_arc)
-    [data.mtlcmdencoder release];
-    [data.mtlcmdbuffer release];
-    [data.mtlbackbuffer release];
-#endif
     data.mtlcmdencoder = nil;
     data.mtlcmdbuffer = nil;
     data.mtlbackbuffer = nil;
@@ -761,17 +752,14 @@ METAL_DestroyRenderer(SDL_Renderer * renderer)
     if (renderer->driverdata) {
         METAL_RenderData *data = CFBridgingRelease(renderer->driverdata);
 
-#if !__has_feature(objc_arc)
-        if (data.mtlbackbuffer != nil) {
-            [data.mtlbackbuffer release];
-        }
         if (data.mtlcmdencoder != nil) {
             [data.mtlcmdencoder endEncoding];
-            [data.mtlcmdencoder release];
         }
-        if (data.mtlcmdbuffer != nil) {
-            [data.mtlcmdbuffer release];
-        }
+
+#if !__has_feature(objc_arc)
+        [data.mtlbackbuffer release];
+        [data.mtlcmdencoder release];
+        [data.mtlcmdbuffer release];
         [data.mtlcmdqueue release];
         for (int i = 0; i < 4; i++) {
             [data.mtlpipelineprims[i] release];
@@ -784,9 +772,9 @@ METAL_DestroyRenderer(SDL_Renderer * renderer)
         [data.mtldevice release];
         [data.mtlpassdesc release];
         [data.mtllayer release];
-        [data release];
 #endif
     }
+
     SDL_free(renderer);
 }}
 
