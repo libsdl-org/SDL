@@ -81,6 +81,8 @@ static int METAL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect
 static void METAL_RenderPresent(SDL_Renderer * renderer);
 static void METAL_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture);
 static void METAL_DestroyRenderer(SDL_Renderer * renderer);
+static void *METAL_GetMetalLayer(SDL_Renderer * renderer);
+static void *METAL_GetMetalCommandEncoder(SDL_Renderer * renderer);
 
 SDL_RenderDriver METAL_RenderDriver = {
     METAL_CreateRenderer,
@@ -328,6 +330,8 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->RenderPresent = METAL_RenderPresent;
     renderer->DestroyTexture = METAL_DestroyTexture;
     renderer->DestroyRenderer = METAL_DestroyRenderer;
+    renderer->GetMetalLayer = METAL_GetMetalLayer;
+    renderer->GetMetalCommandEncoder = METAL_GetMetalCommandEncoder;
 
     renderer->info = METAL_RenderDriver.info;
     renderer->info.flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
@@ -784,6 +788,19 @@ METAL_DestroyRenderer(SDL_Renderer * renderer)
 #endif
     }
     SDL_free(renderer);
+}}
+
+void *METAL_GetMetalLayer(SDL_Renderer * renderer)
+{ @autoreleasepool {
+    METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
+    return (__bridge void*)data.mtllayer;
+}}
+
+void *METAL_GetMetalCommandEncoder(SDL_Renderer * renderer)
+{ @autoreleasepool {
+    METAL_ActivateRenderer(renderer);
+    METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
+    return (__bridge void*)data.mtlcmdencoder;
 }}
 
 #endif /* SDL_VIDEO_RENDER_METAL && !SDL_RENDER_DISABLED */

@@ -2123,6 +2123,28 @@ int SDL_GL_UnbindTexture(SDL_Texture *texture)
     return SDL_Unsupported();
 }
 
+void *
+SDL_RenderGetMetalLayer(SDL_Renderer * renderer)
+{
+    CHECK_RENDERER_MAGIC(renderer, NULL);
+
+    if (renderer->GetMetalLayer) {
+        return renderer->GetMetalLayer(renderer);
+    }
+    return NULL;
+}
+
+void *
+SDL_RenderGetMetalCommandEncoder(SDL_Renderer * renderer)
+{
+    CHECK_RENDERER_MAGIC(renderer, NULL);
+
+    if (renderer->GetMetalCommandEncoder) {
+        return renderer->GetMetalCommandEncoder(renderer);
+    }
+    return NULL;
+}
+
 static SDL_BlendMode
 SDL_GetShortBlendMode(SDL_BlendMode blendMode)
 {
