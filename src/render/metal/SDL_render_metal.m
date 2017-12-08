@@ -1,6 +1,6 @@
 /*
   Simple DirectMedia Layer
-  Copyright (C) 1997-2015 Sam Lantinga <slouken@libsdl.org>
+  Copyright (C) 1997-2017 Sam Lantinga <slouken@libsdl.org>
 
   This software is provided 'as-is', without any express or implied
   warranty.  In no event will the authors be held liable for any damages
@@ -32,10 +32,12 @@
 #include <Metal/Metal.h>
 #include <QuartzCore/CAMetalLayer.h>
 
-// these are in SDL_shaders_metal.c, regenerate it with build-metal-shaders.sh
-extern const unsigned char sdl_metallib[];
-extern const unsigned int sdl_metallib_len;
-
+/* Regenerate these with build-metal-shaders.sh */
+#ifdef __MACOSX__
+#include "SDL_shaders_metal_osx.h"
+#else
+#include "SDL_shaders_metal_ios.h"
+#endif
 
 /* Apple Metal renderer implementation */
 
@@ -141,10 +143,6 @@ MakePipelineState(METAL_RenderData *data, NSString *label, NSString *vertfn,
     mtlpipedesc.colorAttachments[0].pixelFormat = data->mtlbackbuffer.texture.pixelFormat;
 
     switch (blendmode) {
-        case SDL_BLENDMODE_NONE:
-            mtlpipedesc.colorAttachments[0].blendingEnabled = NO;
-            break;
-
         case SDL_BLENDMODE_BLEND:
             mtlpipedesc.colorAttachments[0].blendingEnabled = YES;
             mtlpipedesc.colorAttachments[0].rgbBlendOperation = MTLBlendOperationAdd;
@@ -173,6 +171,10 @@ MakePipelineState(METAL_RenderData *data, NSString *label, NSString *vertfn,
             mtlpipedesc.colorAttachments[0].destinationRGBBlendFactor = MTLBlendFactorSourceColor;
             mtlpipedesc.colorAttachments[0].sourceAlphaBlendFactor = MTLBlendFactorZero;
             mtlpipedesc.colorAttachments[0].destinationAlphaBlendFactor = MTLBlendFactorOne;
+            break;
+
+        default:
+            mtlpipedesc.colorAttachments[0].blendingEnabled = NO;
             break;
     }
 
@@ -204,10 +206,10 @@ static inline id<MTLRenderPipelineState>
 ChoosePipelineState(id<MTLRenderPipelineState> *states, const SDL_BlendMode blendmode)
 {
     switch (blendmode) {
-        case SDL_BLENDMODE_NONE: return states[0];
         case SDL_BLENDMODE_BLEND: return states[1];
         case SDL_BLENDMODE_ADD: return states[2];
         case SDL_BLENDMODE_MOD: return states[3];
+        default: return states[0];
     }
     return nil;
 }
@@ -244,8 +246,9 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->driverdata = data;
     renderer->window = window;
 
-    data->mtldevice = MTLCreateSystemDefaultDevice();  // !!! FIXME: MTLCopyAllDevices() can find other GPUs...
-    if (data->mtldevice == nil) {
+#ifdef __MACOSX__
+    id<MTLDevice> mtldevice = MTLCreateSystemDefaultDevice();  // !!! FIXME: MTLCopyAllDevices() can find other GPUs...
+    if (mtldevice == nil) {
         SDL_free(renderer);
         SDL_free(data);
         SDL_SetError("Failed to obtain Metal device");
@@ -256,10 +259,10 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
 
     NSView *nsview = [syswm.info.cocoa.window contentView];
 
-    // !!! FIXME: on iOS, we need to override +[UIView layerClass] to return [CAMetalLayer class] right from the start, and that's more complicated.
-    CAMetalLayer *layer = [CAMetalLayer layer];
+    // CAMetalLayer is available in QuartzCore starting at OSX 10.11
+    CAMetalLayer *layer = [NSClassFromString( @"CAMetalLayer" ) layer];
 
-    layer.device = data->mtldevice;
+    layer.device = mtldevice;
     //layer.pixelFormat = MTLPixelFormatBGRA8Unorm;  // !!! FIXME: MTLPixelFormatBGRA8Unorm_sRGB ?
     layer.framebufferOnly = YES;
     //layer.drawableSize = (CGSize) [nsview convertRectToBacking:[nsview bounds]].size;
@@ -269,6 +272,11 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     [nsview setLayer:layer];
 
     [layer retain];
+#else
+
+#endif
+
+    data->mtldevice = layer.device;
     data->mtllayer = layer;
     data->mtlcmdqueue = [data->mtldevice newCommandQueue];
     data->mtlcmdqueue.label = @"SDL Metal Renderer";
@@ -318,8 +326,8 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
 
     NSError *err = nil;
 
-    // The compiled .metallib is embedded in a static array in SDL_shaders_metal.c,
-    //  but the original shader source code is in SDL_shaders_metal.metal.
+    // The compiled .metallib is embedded in a static array in a header file
+    // but the original shader source code is in SDL_shaders_metal.metal.
     dispatch_data_t mtllibdata = dispatch_data_create(sdl_metallib, sdl_metallib_len, dispatch_get_global_queue(0, 0), ^{});
     data->mtllibrary = [data->mtldevice newLibraryWithData:mtllibdata error:&err];
     SDL_assert(err == nil);

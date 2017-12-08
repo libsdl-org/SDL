@@ -846,6 +846,7 @@ enable_video_x11_xshape
 enable_video_x11_vm
 enable_video_vivante
 enable_video_cocoa
+enable_render_metal
 enable_video_directfb
 enable_directfb_shared
 enable_video_kmsdrm
@@ -1594,6 +1595,7 @@ Optional Features:
   --enable-video-x11-vm   use X11 VM extension for fullscreen [[default=yes]]
   --enable-video-vivante  use Vivante EGL video driver [[default=yes]]
   --enable-video-cocoa    use Cocoa video driver [[default=yes]]
+  --enable-render-metal   enable the Metal render driver [[default=yes]]
   --enable-video-directfb use DirectFB video driver [[default=no]]
   --enable-directfb-shared
                           dynamically load directfb support [[default=yes]]
@@ -21204,6 +21206,24 @@ $as_echo "#define SDL_VIDEO_DRIVER_COCOA 1" >>confdefs.h
     fi
 }
 
+CheckMETAL()
+{
+    # Check whether --enable-render-metal was given.
+if test "${enable_render_metal+set}" = set; then :
+  enableval=$enable_render_metal;
+else
+  enable_render_metal=yes
+fi
+
+    if test x$enable_render = xyes -a x$enable_render_metal = xyes; then
+
+$as_echo "#define SDL_VIDEO_RENDER_METAL 1" >>confdefs.h
+
+        SOURCES="$SOURCES $srcdir/src/render/metal/*.m"
+    fi
+}
+
+
 CheckDirectFB()
 {
     # Check whether --enable-video-directfb was given.
@@ -21357,9 +21377,6 @@ fi
 
 
 $as_echo "#define SDL_VIDEO_DRIVER_DIRECTFB 1" >>confdefs.h
-
-
-$as_echo "#define SDL_VIDEO_RENDER_DIRECTFB 1" >>confdefs.h
 
             SOURCES="$SOURCES $srcdir/src/video/directfb/*.c"
             EXTRA_CFLAGS="$EXTRA_CFLAGS $DIRECTFB_CFLAGS"
@@ -22998,12 +23015,6 @@ if test "x$ac_cv_header_dxgi_h" = xyes; then :
 fi
 
 
-        ac_fn_c_check_header_mongrel "$LINENO" "xaudio2.h" "ac_cv_header_xaudio2_h" "$ac_includes_default"
-if test "x$ac_cv_header_xaudio2_h" = xyes; then :
-  have_xaudio2=yes
-fi
-
-
         ac_fn_c_check_header_mongrel "$LINENO" "xinput.h" "ac_cv_header_xinput_h" "$ac_includes_default"
 if test "x$ac_cv_header_xinput_h" = xyes; then :
   have_xinput=yes
@@ -24005,12 +24016,6 @@ $as_echo "#define SDL_AUDIO_DRIVER_DSOUND 1" >>confdefs.h
 
                 SOURCES="$SOURCES $srcdir/src/audio/directsound/*.c"
             fi
-            if test x$have_xaudio2 = xyes; then
-
-$as_echo "#define SDL_AUDIO_DRIVER_XAUDIO2 1" >>confdefs.h
-
-                SOURCES="$SOURCES $srcdir/src/audio/xaudio2/*.c"
-            fi
             if test x$have_wasapi = xyes; then
 
 $as_echo "#define SDL_AUDIO_DRIVER_WASAPI 1" >>confdefs.h
@@ -24248,8 +24253,9 @@ fi
         CheckDiskAudio
         CheckDummyAudio
         CheckDLOPEN
-        CheckPTHREAD
+        CheckMETAL
         CheckVulkan
+        CheckPTHREAD
 
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
@@ -24333,6 +24339,10 @@ $as_echo "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,OpenGLES"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,QuartzCore"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,UIKit"
+
+        if test x$enable_render = xyes -a x$enable_render_metal = xyes; then
+            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,Metal"
+        fi
         ;;
     *-*-darwin* )
         # This could be either full "Mac OS X", or plain "Darwin" which is
@@ -24351,6 +24361,7 @@ $as_echo "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
         CheckDummyAudio
         CheckDLOPEN
         CheckCOCOA
+        CheckMETAL
         CheckX11
         CheckMacGL
         CheckOpenGLX11
@@ -24420,6 +24431,10 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,Cocoa"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,Carbon"
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,IOKit"
+
+        if test x$enable_render = xyes -a x$enable_render_metal = xyes; then
+            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,QuartzCore -Wl,-weak_framework,Metal"
+        fi
         ;;
     *-nacl|*-pnacl)
         ARCH=nacl
