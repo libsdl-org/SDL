@@ -123,6 +123,9 @@ struct SDL_Renderer
     int (*GL_BindTexture) (SDL_Renderer * renderer, SDL_Texture *texture, float *texw, float *texh);
     int (*GL_UnbindTexture) (SDL_Renderer * renderer, SDL_Texture *texture);
 
+    void *(*GetMetalLayer) (SDL_Renderer * renderer);
+    void *(*GetMetalCommandEncoder) (SDL_Renderer * renderer);
+
     /* The current renderer info */
     SDL_RendererInfo info;
 

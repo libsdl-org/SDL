@@ -898,6 +898,27 @@ extern DECLSPEC int SDLCALL SDL_GL_BindTexture(SDL_Texture *texture, float *texw
  */
 extern DECLSPEC int SDLCALL SDL_GL_UnbindTexture(SDL_Texture *texture);
 
+/**
+ *  \brief Get the CAMetalLayer associated with the given Metal renderer
+ *
+ *  \param renderer The renderer to query
+ *
+ *  \return CAMetalLayer* on success, or NULL if the renderer isn't a Metal renderer
+ *
+ *  \sa SDL_RenderGetMetalCommandEncoder()
+ */
+extern DECLSPEC void *SDLCALL SDL_RenderGetMetalLayer(SDL_Renderer * renderer);
+
+/**
+ *  \brief Get the Metal command encoder for the current frame
+ *
+ *  \param renderer The renderer to query
+ *
+ *  \return id<MTLRenderCommandEncoder> on success, or NULL if the renderer isn't a Metal renderer
+ *
+ *  \sa SDL_RenderGetMetalLayer()
+ */
+extern DECLSPEC void *SDLCALL SDL_RenderGetMetalCommandEncoder(SDL_Renderer * renderer);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
