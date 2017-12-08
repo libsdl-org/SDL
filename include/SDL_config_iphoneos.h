@@ -154,8 +154,9 @@
 #define SDL_VIDEO_RENDER_OGL_ES 1
 #define SDL_VIDEO_RENDER_OGL_ES2    1
 
-/* Enable Vulkan support on 64-bit devices when an iOS 8+ SDK is used. */
+/* Enable Metal and Vulkan support on 64-bit devices when an iOS 8+ SDK is used. */
 #if !TARGET_OS_SIMULATOR && !TARGET_CPU_ARM && defined(__IPHONE_8_0)
+#define SDL_VIDEO_RENDER_METAL  1
 #define SDL_VIDEO_VULKAN 1
 #else
 #define SDL_VIDEO_VULKAN 0
