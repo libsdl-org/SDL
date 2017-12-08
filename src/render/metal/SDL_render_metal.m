@@ -726,20 +726,18 @@ METAL_RenderPresent(SDL_Renderer * renderer)
 {
     METAL_ActivateRenderer(renderer);
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
-    id<CAMetalDrawable> mtlbackbuffer = data.mtlbackbuffer;
 
     [data.mtlcmdencoder endEncoding];
-    [data.mtlcmdbuffer presentDrawable:mtlbackbuffer];
-#if !__has_feature(objc_arc)
-    [data.mtlcmdbuffer addCompletedHandler:^(id <MTLCommandBuffer> mtlcmdbuffer) {
-        [mtlbackbuffer release];
-    }];
-#endif
+    [data.mtlcmdbuffer presentDrawable:data.mtlbackbuffer];
     [data.mtlcmdbuffer commit];
 #if !__has_feature(objc_arc)
     [data.mtlcmdencoder release];
     [data.mtlcmdbuffer release];
+    [data.mtlbackbuffer release];
 #endif
+    data.mtlcmdencoder = nil;
+    data.mtlcmdbuffer = nil;
+    data.mtlbackbuffer = nil;
     data.beginScene = YES;
 }
 
@@ -760,15 +758,23 @@ METAL_DestroyRenderer(SDL_Renderer * renderer)
         METAL_RenderData *data = CFBridgingRelease(renderer->driverdata);
 
 #if !__has_feature(objc_arc)
-        int i;
-        [data.mtlcmdencoder endEncoding];
-        [data.mtlcmdencoder release];
-        [data.mtlcmdbuffer release];
+        if (data.mtlbackbuffer != nil) {
+            [data.mtlbackbuffer release];
+        }
+        if (data.mtlcmdencoder != nil) {
+            [data.mtlcmdencoder endEncoding];
+            [data.mtlcmdencoder release];
+        }
+        if (data.mtlcmdbuffer != nil) {
+            [data.mtlcmdbuffer release];
+        }
         [data.mtlcmdqueue release];
-        for (i = 0; i < 4; i++) {
+        for (int i = 0; i < 4; i++) {
             [data.mtlpipelineprims[i] release];
             [data.mtlpipelinecopy[i] release];
         }
+        [data.mtlpipelineprims release];
+        [data.mtlpipelinecopy release];
         [data.mtlbufclearverts release];
         [data.mtllibrary release];
         [data.mtldevice release];
