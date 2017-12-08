@@ -28,7 +28,7 @@
 
 #include "../../SDL_internal.h"
 
-#if SDL_VIDEO_VULKAN && SDL_VIDEO_DRIVER_UIKIT
+#if SDL_VIDEO_DRIVER_UIKIT && (SDL_VIDEO_RENDER_METAL || SDL_VIDEO_VULKAN)
 
 #import "../SDL_sysvideo.h"
 #import "SDL_uikitwindow.h"
@@ -133,4 +133,4 @@ UIKit_Mtl_GetDrawableSize(SDL_Window * window, int * w, int * h)
     }
 }
 
-#endif
+#endif /* SDL_VIDEO_DRIVER_UIKIT && (SDL_VIDEO_RENDER_METAL || SDL_VIDEO_VULKAN) */
