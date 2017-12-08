@@ -148,18 +148,25 @@
 #define SDL_VIDEO_DRIVER_UIKIT  1
 #define SDL_VIDEO_DRIVER_DUMMY  1
 
-/* enable OpenGL ES */
+/* Enable OpenGL ES */
 #define SDL_VIDEO_OPENGL_ES2 1
 #define SDL_VIDEO_OPENGL_ES 1
 #define SDL_VIDEO_RENDER_OGL_ES 1
 #define SDL_VIDEO_RENDER_OGL_ES2    1
 
-/* Enable Metal and Vulkan support on 64-bit devices when an iOS 8+ SDK is used. */
-#if !TARGET_OS_SIMULATOR && !TARGET_CPU_ARM && defined(__IPHONE_8_0)
-#define SDL_VIDEO_RENDER_METAL  1
-#define SDL_VIDEO_VULKAN 1
+/* Metal supported on 64-bit devices running iOS 8.0 and tvOS 9.0 and newer */
+#if !TARGET_OS_SIMULATOR && !TARGET_CPU_ARM && ((__IPHONE_OS_VERSION_MIN_REQUIRED >= 80000) || (__TV_OS_VERSION_MIN_REQUIRED >= 90000))
+#define SDL_PLATFORM_SUPPORTS_METAL	1
 #else
-#define SDL_VIDEO_VULKAN 0
+#define SDL_PLATFORM_SUPPORTS_METAL	0
+#endif
+
+#if SDL_PLATFORM_SUPPORTS_METAL
+#define SDL_VIDEO_RENDER_METAL  1
+#endif
+
+#if SDL_PLATFORM_SUPPORTS_METAL
+#define SDL_VIDEO_VULKAN 1
 #endif
 
 /* Enable system power support */

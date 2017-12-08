@@ -113,12 +113,12 @@ SDL_RenderDriver METAL_RenderDriver = {
 static int
 IsMetalAvailable(const SDL_SysWMinfo *syswm)
 {
-    if (syswm->subsystem != SDL_SYSWM_COCOA) {  // !!! FIXME: SDL_SYSWM_UIKIT for iOS, too!
-        return SDL_SetError("Metal render target only supports Cocoa video target at the moment.");
+    if (syswm->subsystem != SDL_SYSWM_COCOA && syswm->subsystem != SDL_SYSWM_UIKIT) {
+        return SDL_SetError("Metal render target only supports Cocoa and UIKit video targets at the moment.");
     }
 
     // this checks a weak symbol.
-#if MAC_OS_X_VERSION_MIN_REQUIRED < 101100
+#if defined(__MACOSX__)
     if (MTLCreateSystemDefaultDevice == NULL) {  // probably on 10.10 or lower.
         return SDL_SetError("Metal framework not available on this system");
     }

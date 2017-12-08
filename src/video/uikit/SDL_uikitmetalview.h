@@ -32,6 +32,8 @@
 #import "../SDL_sysvideo.h"
 #import "SDL_uikitwindow.h"
 
+#if SDL_VIDEO_DRIVER_UIKIT && (SDL_VIDEO_RENDER_METAL || SDL_VIDEO_VULKAN)
+
 #import <UIKit/UIKit.h>
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
@@ -49,6 +51,8 @@
 SDL_uikitmetalview* UIKit_Mtl_AddMetalView(SDL_Window* window);
 
 void UIKit_Mtl_GetDrawableSize(SDL_Window * window, int * w, int * h);
+
+#endif /* SDL_VIDEO_DRIVER_UIKIT && (SDL_VIDEO_RENDER_METAL || SDL_VIDEO_VULKAN) */
 
 #endif /* SDL_uikitmetalview_h_ */
 
