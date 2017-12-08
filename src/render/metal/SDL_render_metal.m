@@ -736,6 +736,10 @@ METAL_RenderPresent(SDL_Renderer * renderer)
     }];
 #endif
     [data.mtlcmdbuffer commit];
+#if !__has_feature(objc_arc)
+    [data.mtlcmdencoder release];
+    [data.mtlcmdbuffer release];
+#endif
     data.beginScene = YES;
 }
 
