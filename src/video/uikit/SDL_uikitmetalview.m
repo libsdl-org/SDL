@@ -84,6 +84,10 @@ UIKit_Mtl_AddMetalView(SDL_Window* window)
     SDL_uikitview *view = (SDL_uikitview*)data.uiwindow.rootViewController.view;
     CGFloat scale = 1.0;
 
+	if ([view isKindOfClass:[SDL_uikitmetalview class]]) {
+		return (SDL_uikitmetalview *)view;
+	}
+
     if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
         /* Set the scale to the natural scale factor of the screen - the
          * backing dimensions of the Metal view will match the pixel

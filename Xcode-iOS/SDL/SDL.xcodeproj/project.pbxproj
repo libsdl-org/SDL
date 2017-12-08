@@ -186,6 +186,13 @@
 		AABCC3941640643D00AB8930 /* SDL_uikitmessagebox.h in Headers */ = {isa = PBXBuildFile; fileRef = AABCC3921640643D00AB8930 /* SDL_uikitmessagebox.h */; };
 		AABCC3951640643D00AB8930 /* SDL_uikitmessagebox.m in Sources */ = {isa = PBXBuildFile; fileRef = AABCC3931640643D00AB8930 /* SDL_uikitmessagebox.m */; };
 		AADA5B8F16CCAB7C00107CF7 /* SDL_bits.h in Headers */ = {isa = PBXBuildFile; fileRef = AADA5B8E16CCAB7C00107CF7 /* SDL_bits.h */; };
+		AADC5A5D1FDA104400960936 /* yuv_rgb.c in Sources */ = {isa = PBXBuildFile; fileRef = AA13B3561FB8B46300D9FEE6 /* yuv_rgb.c */; };
+		AADC5A5E1FDA105300960936 /* SDL_yuv.c in Sources */ = {isa = PBXBuildFile; fileRef = AA13B34F1FB8B3CC00D9FEE6 /* SDL_yuv.c */; };
+		AADC5A5F1FDA105600960936 /* SDL_vulkan_utils.c in Sources */ = {isa = PBXBuildFile; fileRef = 4D75171E1EE1D98200820EEA /* SDL_vulkan_utils.c */; };
+		AADC5A601FDA10A400960936 /* SDL_uikitvulkan.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D7516FA1EE1C28A00820EEA /* SDL_uikitvulkan.m */; };
+		AADC5A631FDA10C800960936 /* SDL_shaders_metal_ios.h in Headers */ = {isa = PBXBuildFile; fileRef = AADC5A611FDA10C800960936 /* SDL_shaders_metal_ios.h */; };
+		AADC5A641FDA10C800960936 /* SDL_render_metal.m in Sources */ = {isa = PBXBuildFile; fileRef = AADC5A621FDA10C800960936 /* SDL_render_metal.m */; };
+		AADC5A651FDA10CB00960936 /* SDL_render_metal.m in Sources */ = {isa = PBXBuildFile; fileRef = AADC5A621FDA10C800960936 /* SDL_render_metal.m */; };
 		FA1DC2721C62BE65008F99A0 /* SDL_uikitclipboard.h in Headers */ = {isa = PBXBuildFile; fileRef = FA1DC2701C62BE65008F99A0 /* SDL_uikitclipboard.h */; };
 		FA1DC2731C62BE65008F99A0 /* SDL_uikitclipboard.m in Sources */ = {isa = PBXBuildFile; fileRef = FA1DC2711C62BE65008F99A0 /* SDL_uikitclipboard.m */; };
 		FAB5981D1BB5C31500BE72C5 /* SDL_atomic.c in Sources */ = {isa = PBXBuildFile; fileRef = 04FFAB8912E23B8D00BA343D /* SDL_atomic.c */; };
@@ -499,6 +506,8 @@
 		AABCC3921640643D00AB8930 /* SDL_uikitmessagebox.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_uikitmessagebox.h; sourceTree = "<group>"; };
 		AABCC3931640643D00AB8930 /* SDL_uikitmessagebox.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_uikitmessagebox.m; sourceTree = "<group>"; };
 		AADA5B8E16CCAB7C00107CF7 /* SDL_bits.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_bits.h; sourceTree = "<group>"; };
+		AADC5A611FDA10C800960936 /* SDL_shaders_metal_ios.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_shaders_metal_ios.h; sourceTree = "<group>"; };
+		AADC5A621FDA10C800960936 /* SDL_render_metal.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_render_metal.m; sourceTree = "<group>"; };
 		FA1DC2701C62BE65008F99A0 /* SDL_uikitclipboard.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_uikitclipboard.h; sourceTree = "<group>"; };
 		FA1DC2711C62BE65008F99A0 /* SDL_uikitclipboard.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_uikitclipboard.m; sourceTree = "<group>"; };
 		FAB598141BB5C1B100BE72C5 /* libSDL2.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSDL2.a; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -622,6 +631,7 @@
 		041B2CE312FA0F680087D585 /* render */ = {
 			isa = PBXGroup;
 			children = (
+				AADC5A5C1FDA100800960936 /* metal */,
 				041B2CE812FA0F680087D585 /* opengles */,
 				0402A85412FE70C600CECEE3 /* opengles2 */,
 				041B2CEC12FA0F680087D585 /* software */,
@@ -784,6 +794,15 @@
 				AA13B3551FB8B46300D9FEE6 /* yuv_rgb.h */,
 			);
 			path = yuv2rgb;
+			sourceTree = "<group>";
+		};
+		AADC5A5C1FDA100800960936 /* metal */ = {
+			isa = PBXGroup;
+			children = (
+				AADC5A621FDA10C800960936 /* SDL_render_metal.m */,
+				AADC5A611FDA10C800960936 /* SDL_shaders_metal_ios.h */,
+			);
+			path = metal;
 			sourceTree = "<group>";
 		};
 		FD3F4A6F0DEA620800C5B771 /* stdlib */ = {
@@ -1238,6 +1257,7 @@
 				AA7558B21595D55500BBD41B /* SDL_name.h in Headers */,
 				AA7558B31595D55500BBD41B /* SDL_opengl.h in Headers */,
 				AA7558B41595D55500BBD41B /* SDL_opengles.h in Headers */,
+				AADC5A631FDA10C800960936 /* SDL_shaders_metal_ios.h in Headers */,
 				AA7558B51595D55500BBD41B /* SDL_opengles2.h in Headers */,
 				AA7558B61595D55500BBD41B /* SDL_pixels.h in Headers */,
 				AA7558B71595D55500BBD41B /* SDL_platform.h in Headers */,
@@ -1426,12 +1446,16 @@
 				FAB598491BB5C31600BE72C5 /* SDL_rwopsbundlesupport.m in Sources */,
 				FAB5984A1BB5C31600BE72C5 /* SDL_rwops.c in Sources */,
 				FAB5984B1BB5C31600BE72C5 /* SDL_sysfilesystem.m in Sources */,
+				AADC5A5D1FDA104400960936 /* yuv_rgb.c in Sources */,
 				FAB5984C1BB5C31600BE72C5 /* SDL_syshaptic.c in Sources */,
+				AADC5A5F1FDA105600960936 /* SDL_vulkan_utils.c in Sources */,
+				AADC5A5E1FDA105300960936 /* SDL_yuv.c in Sources */,
 				FAB5984D1BB5C31600BE72C5 /* SDL_haptic.c in Sources */,
 				FAB598501BB5C31600BE72C5 /* SDL_sysjoystick.m in Sources */,
 				FAB598511BB5C31600BE72C5 /* SDL_gamecontroller.c in Sources */,
 				FAB598521BB5C31600BE72C5 /* SDL_joystick.c in Sources */,
 				FAB598551BB5C31600BE72C5 /* SDL_sysloadso.c in Sources */,
+				AADC5A651FDA10CB00960936 /* SDL_render_metal.m in Sources */,
 				FAB598561BB5C31600BE72C5 /* SDL_sysloadso.c in Sources */,
 				FAB598571BB5C31600BE72C5 /* SDL_power.c in Sources */,
 				FAB598581BB5C31600BE72C5 /* SDL_syspower.m in Sources */,
@@ -1455,6 +1479,7 @@
 				FAB598761BB5C31600BE72C5 /* SDL_stdlib.c in Sources */,
 				FAB598771BB5C31600BE72C5 /* SDL_string.c in Sources */,
 				FAB598781BB5C31600BE72C5 /* SDL_syscond.c in Sources */,
+				AADC5A601FDA10A400960936 /* SDL_uikitvulkan.m in Sources */,
 				FAB598791BB5C31600BE72C5 /* SDL_sysmutex.c in Sources */,
 				FAB5987B1BB5C31600BE72C5 /* SDL_syssem.c in Sources */,
 				FAB5987C1BB5C31600BE72C5 /* SDL_systhread.c in Sources */,
@@ -1529,6 +1554,7 @@
 				FD6526780DE8FCDD002AD96B /* SDL_error.c in Sources */,
 				FD65267A0DE8FCDD002AD96B /* SDL.c in Sources */,
 				FD65267B0DE8FCDD002AD96B /* SDL_syscond.c in Sources */,
+				AADC5A641FDA10C800960936 /* SDL_render_metal.m in Sources */,
 				FD65267C0DE8FCDD002AD96B /* SDL_sysmutex.c in Sources */,
 				FD65267D0DE8FCDD002AD96B /* SDL_syssem.c in Sources */,
 				FD65267E0DE8FCDD002AD96B /* SDL_systhread.c in Sources */,

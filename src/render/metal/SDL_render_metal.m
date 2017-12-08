@@ -28,7 +28,11 @@
 #include "SDL_syswm.h"
 #include "../SDL_sysrender.h"
 
+#ifdef __MACOSX__
 #include <Cocoa/Cocoa.h>
+#else
+#include "../../video/uikit/SDL_uikitmetalview.h"
+#endif
 #include <Metal/Metal.h>
 #include <QuartzCore/CAMetalLayer.h>
 
@@ -89,27 +93,22 @@ SDL_RenderDriver METAL_RenderDriver = {
      4096}
 };
 
-typedef struct METAL_BufferList
-{
-    id<MTLBuffer> mtlbuffer;
-    struct METAL_BufferPool *next;
-} METAL_BufferList;
+@interface METAL_RenderData : NSObject
+    @property (atomic, retain) id<MTLDevice> mtldevice;
+    @property (atomic, retain) id<MTLCommandQueue> mtlcmdqueue;
+    @property (atomic, retain) id<MTLCommandBuffer> mtlcmdbuffer;
+    @property (atomic, retain) id<MTLRenderCommandEncoder> mtlcmdencoder;
+    @property (atomic, retain) id<MTLLibrary> mtllibrary;
+    @property (atomic, retain) id<CAMetalDrawable> mtlbackbuffer;
+    @property (atomic, retain) NSMutableArray *mtlpipelineprims;
+    @property (atomic, retain) NSMutableArray *mtlpipelinecopy;
+    @property (atomic, retain) id<MTLBuffer> mtlbufclearverts;
+    @property (atomic, retain) CAMetalLayer *mtllayer;
+    @property (atomic, retain) MTLRenderPassDescriptor *mtlpassdesc;
+@end
 
-typedef struct
-{
-    id<MTLDevice> mtldevice;
-    id<MTLCommandQueue> mtlcmdqueue;
-    id<MTLCommandBuffer> mtlcmdbuffer;
-    id<MTLRenderCommandEncoder> mtlcmdencoder;
-    id<MTLLibrary> mtllibrary;
-    id<CAMetalDrawable> mtlbackbuffer;
-    id<MTLRenderPipelineState> mtlpipelineprims[4];
-    id<MTLRenderPipelineState> mtlpipelinecopy[4];
-    id<MTLBuffer> mtlbufclearverts;
-    CAMetalLayer *mtllayer;
-    MTLRenderPassDescriptor *mtlpassdesc;
-} METAL_RenderData;
-
+@implementation METAL_RenderData
+@end
 
 static int
 IsMetalAvailable(const SDL_SysWMinfo *syswm)
@@ -132,15 +131,15 @@ static id<MTLRenderPipelineState>
 MakePipelineState(METAL_RenderData *data, NSString *label, NSString *vertfn,
                   NSString *fragfn, const SDL_BlendMode blendmode)
 {
-    id<MTLFunction> mtlvertfn = [data->mtllibrary newFunctionWithName:vertfn];
-    id<MTLFunction> mtlfragfn = [data->mtllibrary newFunctionWithName:fragfn];
+    id<MTLFunction> mtlvertfn = [data.mtllibrary newFunctionWithName:vertfn];
+    id<MTLFunction> mtlfragfn = [data.mtllibrary newFunctionWithName:fragfn];
     SDL_assert(mtlvertfn != nil);
     SDL_assert(mtlfragfn != nil);
 
     MTLRenderPipelineDescriptor *mtlpipedesc = [[MTLRenderPipelineDescriptor alloc] init];
     mtlpipedesc.vertexFunction = mtlvertfn;
     mtlpipedesc.fragmentFunction = mtlfragfn;
-    mtlpipedesc.colorAttachments[0].pixelFormat = data->mtlbackbuffer.texture.pixelFormat;
+    mtlpipedesc.colorAttachments[0].pixelFormat = data.mtlbackbuffer.texture.pixelFormat;
 
     switch (blendmode) {
         case SDL_BLENDMODE_BLEND:
@@ -181,35 +180,35 @@ MakePipelineState(METAL_RenderData *data, NSString *label, NSString *vertfn,
     mtlpipedesc.label = label;
 
     NSError *err = nil;
-    id<MTLRenderPipelineState> retval = [data->mtldevice newRenderPipelineStateWithDescriptor:mtlpipedesc error:&err];
+    id<MTLRenderPipelineState> retval = [data.mtldevice newRenderPipelineStateWithDescriptor:mtlpipedesc error:&err];
     SDL_assert(err == nil);
+#if !__has_feature(objc_arc)
     [mtlpipedesc release];  // !!! FIXME: can these be reused for each creation, or does the pipeline obtain it?
     [mtlvertfn release];
     [mtlfragfn release];
     [label release];
-
+#endif
     return retval;
 }
 
 static void
-MakePipelineStates(METAL_RenderData *data, id<MTLRenderPipelineState> *states,
+MakePipelineStates(METAL_RenderData *data, NSMutableArray *states,
                    NSString *label, NSString *vertfn, NSString *fragfn)
 {
-    int i = 0;
-    states[i++] = MakePipelineState(data, [label stringByAppendingString:@" (blendmode=none)"], vertfn, fragfn, SDL_BLENDMODE_NONE);
-    states[i++] = MakePipelineState(data, [label stringByAppendingString:@" (blendmode=blend)"], vertfn, fragfn, SDL_BLENDMODE_BLEND);
-    states[i++] = MakePipelineState(data, [label stringByAppendingString:@" (blendmode=add)"], vertfn, fragfn, SDL_BLENDMODE_ADD);
-    states[i++] = MakePipelineState(data, [label stringByAppendingString:@" (blendmode=mod)"], vertfn, fragfn, SDL_BLENDMODE_MOD);
+    [states addObject:MakePipelineState(data, [label stringByAppendingString:@" (blendmode=none)"], vertfn, fragfn, SDL_BLENDMODE_NONE)];
+    [states addObject:MakePipelineState(data, [label stringByAppendingString:@" (blendmode=blend)"], vertfn, fragfn, SDL_BLENDMODE_BLEND)];
+    [states addObject:MakePipelineState(data, [label stringByAppendingString:@" (blendmode=add)"], vertfn, fragfn, SDL_BLENDMODE_ADD)];
+    [states addObject:MakePipelineState(data, [label stringByAppendingString:@" (blendmode=mod)"], vertfn, fragfn, SDL_BLENDMODE_MOD)];
 }
 
 static inline id<MTLRenderPipelineState>
-ChoosePipelineState(id<MTLRenderPipelineState> *states, const SDL_BlendMode blendmode)
+ChoosePipelineState(NSMutableArray *states, const SDL_BlendMode blendmode)
 {
     switch (blendmode) {
-        case SDL_BLENDMODE_BLEND: return states[1];
-        case SDL_BLENDMODE_ADD: return states[2];
-        case SDL_BLENDMODE_MOD: return states[3];
-        default: return states[0];
+        case SDL_BLENDMODE_BLEND: return (id<MTLRenderPipelineState>)states[1];
+        case SDL_BLENDMODE_ADD: return (id<MTLRenderPipelineState>)states[2];
+        case SDL_BLENDMODE_MOD: return (id<MTLRenderPipelineState>)states[3];
+        default: return (id<MTLRenderPipelineState>)states[0];
     }
     return nil;
 }
@@ -230,27 +229,28 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
         return NULL;
     }
 
-    data = (METAL_RenderData *) SDL_calloc(1, sizeof(*data));
-    if (!data) {
-        SDL_OutOfMemory();
-        return NULL;
-    }
-
     renderer = (SDL_Renderer *) SDL_calloc(1, sizeof(*renderer));
     if (!renderer) {
-        SDL_free(data);
         SDL_OutOfMemory();
         return NULL;
     }
 
+    data = [[METAL_RenderData alloc] init];
+
+#if __has_feature(objc_arc)
+    renderer->driverdata = (void*)CFBridgingRetain(data);
+#else
     renderer->driverdata = data;
+#endif
     renderer->window = window;
 
 #ifdef __MACOSX__
     id<MTLDevice> mtldevice = MTLCreateSystemDefaultDevice();  // !!! FIXME: MTLCopyAllDevices() can find other GPUs...
     if (mtldevice == nil) {
         SDL_free(renderer);
-        SDL_free(data);
+#if !__has_feature(objc_arc)
+        [data release];
+#endif
         SDL_SetError("Failed to obtain Metal device");
         return NULL;
     }
@@ -273,27 +273,28 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
 
     [layer retain];
 #else
-
+    UIView *view = UIKit_Mtl_AddMetalView(window);
+    CAMetalLayer *layer = (CAMetalLayer *)[view layer];
 #endif
 
-    data->mtldevice = layer.device;
-    data->mtllayer = layer;
-    data->mtlcmdqueue = [data->mtldevice newCommandQueue];
-    data->mtlcmdqueue.label = @"SDL Metal Renderer";
+    data.mtldevice = layer.device;
+    data.mtllayer = layer;
+    data.mtlcmdqueue = [data.mtldevice newCommandQueue];
+    data.mtlcmdqueue.label = @"SDL Metal Renderer";
 
-    data->mtlpassdesc = [MTLRenderPassDescriptor renderPassDescriptor];  // !!! FIXME: is this autoreleased?
+    data.mtlpassdesc = [MTLRenderPassDescriptor renderPassDescriptor];  // !!! FIXME: is this autoreleased?
 
     // we don't specify a depth or stencil buffer because the render API doesn't currently use them.
-    MTLRenderPassColorAttachmentDescriptor *colorAttachment = data->mtlpassdesc.colorAttachments[0];
-    data->mtlbackbuffer = [data->mtllayer nextDrawable];
-    colorAttachment.texture = data->mtlbackbuffer.texture;
+    MTLRenderPassColorAttachmentDescriptor *colorAttachment = data.mtlpassdesc.colorAttachments[0];
+    data.mtlbackbuffer = [data.mtllayer nextDrawable];
+    colorAttachment.texture = data.mtlbackbuffer.texture;
     colorAttachment.loadAction = MTLLoadActionClear;
     colorAttachment.clearColor = MTLClearColorMake(0.0f, 0.0f, 0.0f, 1.0f);
-    data->mtlcmdbuffer = [data->mtlcmdqueue commandBuffer];
+    data.mtlcmdbuffer = [data.mtlcmdqueue commandBuffer];
 
     // Just push a clear to the screen to start so we're in a good state.
-    data->mtlcmdencoder = [data->mtlcmdbuffer renderCommandEncoderWithDescriptor:data->mtlpassdesc];
-    data->mtlcmdencoder.label = @"Initial drawable clear";
+    data.mtlcmdencoder = [data.mtlcmdbuffer renderCommandEncoderWithDescriptor:data.mtlpassdesc];
+    data.mtlcmdencoder.label = @"Initial drawable clear";
 
     METAL_RenderPresent(renderer);
 
@@ -329,17 +330,21 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     // The compiled .metallib is embedded in a static array in a header file
     // but the original shader source code is in SDL_shaders_metal.metal.
     dispatch_data_t mtllibdata = dispatch_data_create(sdl_metallib, sdl_metallib_len, dispatch_get_global_queue(0, 0), ^{});
-    data->mtllibrary = [data->mtldevice newLibraryWithData:mtllibdata error:&err];
+    data.mtllibrary = [data.mtldevice newLibraryWithData:mtllibdata error:&err];
     SDL_assert(err == nil);
+#if !__has_feature(objc_arc)
     dispatch_release(mtllibdata);
-    data->mtllibrary.label = @"SDL Metal renderer shader library";
+#endif
+    data.mtllibrary.label = @"SDL Metal renderer shader library";
 
-    MakePipelineStates(data, data->mtlpipelineprims, @"SDL primitives pipeline", @"SDL_Simple_vertex", @"SDL_Simple_fragment");
-    MakePipelineStates(data, data->mtlpipelinecopy, @"SDL_RenderCopy pipeline", @"SDL_Copy_vertex", @"SDL_Copy_fragment");
+    data.mtlpipelineprims = [[NSMutableArray alloc] init];
+    MakePipelineStates(data, data.mtlpipelineprims, @"SDL primitives pipeline", @"SDL_Simple_vertex", @"SDL_Simple_fragment");
+    data.mtlpipelinecopy = [[NSMutableArray alloc] init];
+    MakePipelineStates(data, data.mtlpipelinecopy, @"SDL_RenderCopy pipeline", @"SDL_Copy_vertex", @"SDL_Copy_fragment");
 
     static const float clearverts[] = { -1, -1, -1, 1, 1, 1, 1, -1, -1, -1 };
-    data->mtlbufclearverts = [data->mtldevice newBufferWithBytes:clearverts length:sizeof(clearverts) options:MTLResourceCPUCacheModeWriteCombined|MTLResourceStorageModePrivate];
-    data->mtlbufclearverts.label = @"SDL_RenderClear vertices";
+    data.mtlbufclearverts = [data.mtldevice newBufferWithBytes:clearverts length:sizeof(clearverts) options:MTLResourceCPUCacheModeWriteCombined|MTLResourceStorageModePrivate];
+    data.mtlbufclearverts.label = @"SDL_RenderClear vertices";
 
     // !!! FIXME: force more clears here so all the drawables are sane to start, and our static buffers are definitely flushed.
 
@@ -359,16 +364,16 @@ METAL_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
 static int
 METAL_GetOutputSize(SDL_Renderer * renderer, int *w, int *h)
 {
-    METAL_RenderData *data = (METAL_RenderData *) renderer->driverdata;
-    *w = (int) data->mtlbackbuffer.texture.width;
-    *h = (int) data->mtlbackbuffer.texture.height;
+    METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
+    *w = (int) data.mtlbackbuffer.texture.width;
+    *h = (int) data.mtlbackbuffer.texture.height;
     return 0;
 }
 
 static int
 METAL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
-    METAL_RenderData *data = (METAL_RenderData *) renderer->driverdata;
+    METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
     MTLPixelFormat mtlpixfmt;
 
     switch (texture->format) {
@@ -381,13 +386,15 @@ METAL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     MTLTextureDescriptor *mtltexdesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:mtlpixfmt
                                             width:(NSUInteger)texture->w height:(NSUInteger)texture->h mipmapped:NO];
 
-    id<MTLTexture> mtltexture = [data->mtldevice newTextureWithDescriptor:mtltexdesc];
+    id<MTLTexture> mtltexture = [data.mtldevice newTextureWithDescriptor:mtltexdesc];
+#if !__has_feature(objc_arc)
     [mtltexdesc release];
+#endif
     if (mtltexture == nil) {
         return SDL_SetError("Texture allocation failed");
     }
 
-    texture->driverdata = mtltexture;
+    texture->driverdata = (void*)CFBridgingRetain(mtltexture);
 
     return 0;
 }
@@ -400,7 +407,7 @@ METAL_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     // !!! FIXME:  Maybe move this off to a thread that marks the texture as uploaded and only stall the main thread if we try to
     // !!! FIXME:  use this texture before the marking is done? Is it worth it? Or will we basically always be uploading a bunch of
     // !!! FIXME:  stuff way ahead of time and/or using it immediately after upload?
-    id<MTLTexture> mtltexture = (id<MTLTexture>) texture->driverdata;
+    id<MTLTexture> mtltexture = (__bridge id<MTLTexture>) texture->driverdata;
     [mtltexture replaceRegion:MTLRegionMake2D(rect->x, rect->y, rect->w, rect->h) mipmapLevel:0 withBytes:pixels bytesPerRow:pitch];
     return 0;
 }
@@ -431,17 +438,17 @@ METAL_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 static int
 METAL_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
 {
-    METAL_RenderData *data = (METAL_RenderData *) renderer->driverdata;
-    id<MTLTexture> mtltexture = texture ? (id<MTLTexture>) texture->driverdata : nil;
-    data->mtlpassdesc.colorAttachments[0].texture = mtltexture;
+    METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
+    id<MTLTexture> mtltexture = texture ? (__bridge id<MTLTexture>) texture->driverdata : nil;
+    data.mtlpassdesc.colorAttachments[0].texture = mtltexture;
     return 0;
 }
 
 static int
 METAL_UpdateViewport(SDL_Renderer * renderer)
 {
-    METAL_RenderData *data = (METAL_RenderData *) renderer->driverdata;
-    if (data->mtlcmdencoder != nil) {
+    METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
+    if (data.mtlcmdencoder != nil) {
         MTLViewport viewport;
         viewport.originX = renderer->viewport.x;
         viewport.originY = renderer->viewport.y;
@@ -449,7 +456,7 @@ METAL_UpdateViewport(SDL_Renderer * renderer)
         viewport.height = renderer->viewport.h;
         viewport.znear = 0.0;
         viewport.zfar = 1.0;
-        [data->mtlcmdencoder setViewport:viewport];
+        [data.mtlcmdencoder setViewport:viewport];
     }
     return 0;
 }
@@ -458,8 +465,8 @@ static int
 METAL_UpdateClipRect(SDL_Renderer * renderer)
 {
     // !!! FIXME: should this care about the viewport?
-    METAL_RenderData *data = (METAL_RenderData *) renderer->driverdata;
-    if (data->mtlcmdencoder != nil) {
+    METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
+    if (data.mtlcmdencoder != nil) {
         MTLScissorRect mtlrect;
         if (renderer->clipping_enabled) {
             const SDL_Rect *rect = &renderer->clip_rect;
@@ -473,7 +480,7 @@ METAL_UpdateClipRect(SDL_Renderer * renderer)
             mtlrect.width = renderer->viewport.w;
             mtlrect.height = renderer->viewport.h;
         }
-        [data->mtlcmdencoder setScissorRect:mtlrect];
+        [data.mtlcmdencoder setScissorRect:mtlrect];
     }
     return 0;
 }
@@ -482,24 +489,24 @@ static int
 METAL_RenderClear(SDL_Renderer * renderer)
 {
     // We could dump the command buffer and force a clear on a new one, but this will respect the scissor state.
-    METAL_RenderData *data = (METAL_RenderData *) renderer->driverdata;
+    METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
 
     // !!! FIXME: render color should live in a dedicated uniform buffer.
     const float color[4] = { ((float)renderer->r) / 255.0f, ((float)renderer->g) / 255.0f, ((float)renderer->b) / 255.0f, ((float)renderer->a) / 255.0f };
 
     MTLViewport viewport;  // RenderClear ignores the viewport state, though, so reset that.
     viewport.originX = viewport.originY = 0.0;
-    viewport.width = data->mtlbackbuffer.texture.width;
-    viewport.height = data->mtlbackbuffer.texture.height;
+    viewport.width = data.mtlbackbuffer.texture.width;
+    viewport.height = data.mtlbackbuffer.texture.height;
     viewport.znear = 0.0;
     viewport.zfar = 1.0;
 
     // Draw as if we're doing a simple filled rect to the screen now.
-    [data->mtlcmdencoder setViewport:viewport];
-    [data->mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data->mtlpipelineprims, renderer->blendMode)];
-    [data->mtlcmdencoder setVertexBuffer:data->mtlbufclearverts offset:0 atIndex:0];
-    [data->mtlcmdencoder setFragmentBytes:color length:sizeof(color) atIndex:0];
-    [data->mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:5];
+    [data.mtlcmdencoder setViewport:viewport];
+    [data.mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data.mtlpipelineprims, renderer->blendMode)];
+    [data.mtlcmdencoder setVertexBuffer:data.mtlbufclearverts offset:0 atIndex:0];
+    [data.mtlcmdencoder setFragmentBytes:color length:sizeof(color) atIndex:0];
+    [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:5];
 
     // reset the viewport for the rest of our usual drawing work...
     viewport.originX = renderer->viewport.x;
@@ -508,7 +515,7 @@ METAL_RenderClear(SDL_Renderer * renderer)
     viewport.height = renderer->viewport.h;
     viewport.znear = 0.0;
     viewport.zfar = 1.0;
-    [data->mtlcmdencoder setViewport:viewport];
+    [data.mtlcmdencoder setViewport:viewport];
 
     return 0;
 }
@@ -546,16 +553,16 @@ DrawVerts(SDL_Renderer * renderer, const SDL_FPoint * points, int count,
         return SDL_OutOfMemory();
     }
 
-    METAL_RenderData *data = (METAL_RenderData *) renderer->driverdata;
+    METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
 
     // !!! FIXME: render color should live in a dedicated uniform buffer.
     const float color[4] = { ((float)renderer->r) / 255.0f, ((float)renderer->g) / 255.0f, ((float)renderer->b) / 255.0f, ((float)renderer->a) / 255.0f };
 
-    [data->mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data->mtlpipelineprims, renderer->blendMode)];
-    [data->mtlcmdencoder setFragmentBytes:color length:sizeof(color) atIndex:0];
+    [data.mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data.mtlpipelineprims, renderer->blendMode)];
+    [data.mtlcmdencoder setFragmentBytes:color length:sizeof(color) atIndex:0];
 
-    const float w = (float) data->mtlpassdesc.colorAttachments[0].texture.width;
-    const float h = (float) data->mtlpassdesc.colorAttachments[0].texture.height;
+    const float w = (float) data.mtlpassdesc.colorAttachments[0].texture.width;
+    const float h = (float) data.mtlpassdesc.colorAttachments[0].texture.height;
 
     // !!! FIXME: we can convert this in the shader. This will save the malloc and for-loop, but we still need to upload.
     float *ptr = verts;
@@ -564,8 +571,8 @@ DrawVerts(SDL_Renderer * renderer, const SDL_FPoint * points, int count,
         *ptr = normy(points->y, h); ptr++;
     }
 
-    [data->mtlcmdencoder setVertexBytes:verts length:vertlen atIndex:0];
-    [data->mtlcmdencoder drawPrimitives:primtype vertexStart:0 vertexCount:count];
+    [data.mtlcmdencoder setVertexBytes:verts length:vertlen atIndex:0];
+    [data.mtlcmdencoder drawPrimitives:primtype vertexStart:0 vertexCount:count];
 
     SDL_free(verts);
     return 0;
@@ -586,16 +593,16 @@ METAL_RenderDrawLines(SDL_Renderer * renderer, const SDL_FPoint * points, int co
 static int
 METAL_RenderFillRects(SDL_Renderer * renderer, const SDL_FRect * rects, int count)
 {
-    METAL_RenderData *data = (METAL_RenderData *) renderer->driverdata;
+    METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
 
     // !!! FIXME: render color should live in a dedicated uniform buffer.
     const float color[4] = { ((float)renderer->r) / 255.0f, ((float)renderer->g) / 255.0f, ((float)renderer->b) / 255.0f, ((float)renderer->a) / 255.0f };
 
-    [data->mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data->mtlpipelineprims, renderer->blendMode)];
-    [data->mtlcmdencoder setFragmentBytes:color length:sizeof(color) atIndex:0];
+    [data.mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data.mtlpipelineprims, renderer->blendMode)];
+    [data.mtlcmdencoder setFragmentBytes:color length:sizeof(color) atIndex:0];
 
-    const float w = (float) data->mtlpassdesc.colorAttachments[0].texture.width;
-    const float h = (float) data->mtlpassdesc.colorAttachments[0].texture.height;
+    const float w = (float) data.mtlpassdesc.colorAttachments[0].texture.width;
+    const float h = (float) data.mtlpassdesc.colorAttachments[0].texture.height;
 
     for (int i = 0; i < count; i++, rects++) {
         if ((rects->w <= 0.0f) || (rects->h <= 0.0f)) continue;
@@ -608,8 +615,8 @@ METAL_RenderFillRects(SDL_Renderer * renderer, const SDL_FRect * rects, int coun
             norm(rects->x + rects->w, w), normy(rects->y + rects->h, h)
         };
 
-        [data->mtlcmdencoder setVertexBytes:verts length:sizeof(verts) atIndex:0];
-        [data->mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:5];
+        [data.mtlcmdencoder setVertexBytes:verts length:sizeof(verts) atIndex:0];
+        [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:5];
     }
 
     return 0;
@@ -619,10 +626,10 @@ static int
 METAL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
               const SDL_Rect * srcrect, const SDL_FRect * dstrect)
 {
-    METAL_RenderData *data = (METAL_RenderData *) renderer->driverdata;
-    id<MTLTexture> mtltexture = (id<MTLTexture>) texture->driverdata;
-    const float w = (float) data->mtlpassdesc.colorAttachments[0].texture.width;
-    const float h = (float) data->mtlpassdesc.colorAttachments[0].texture.height;
+    METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
+    id<MTLTexture> mtltexture = (__bridge id<MTLTexture>) texture->driverdata;
+    const float w = (float) data.mtlpassdesc.colorAttachments[0].texture.width;
+    const float h = (float) data.mtlpassdesc.colorAttachments[0].texture.height;
     const float texw = (float) mtltexture.width;
     const float texh = (float) mtltexture.height;
 
@@ -650,12 +657,12 @@ METAL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
         color[3] = ((float)texture->a) / 255.0f;
     }
 
-    [data->mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data->mtlpipelinecopy, texture->blendMode)];
-    [data->mtlcmdencoder setFragmentBytes:color length:sizeof(color) atIndex:0];
-    [data->mtlcmdencoder setFragmentTexture:mtltexture atIndex:0];
-    [data->mtlcmdencoder setVertexBytes:xy length:sizeof(xy) atIndex:0];
-    [data->mtlcmdencoder setVertexBytes:uv length:sizeof(uv) atIndex:1];
-    [data->mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:5];
+    [data.mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data.mtlpipelinecopy, texture->blendMode)];
+    [data.mtlcmdencoder setFragmentBytes:color length:sizeof(color) atIndex:0];
+    [data.mtlcmdencoder setFragmentTexture:mtltexture atIndex:0];
+    [data.mtlcmdencoder setVertexBytes:xy length:sizeof(xy) atIndex:0];
+    [data.mtlcmdencoder setVertexBytes:uv length:sizeof(uv) atIndex:1];
+    [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:5];
 
     return 0;
 }
@@ -672,8 +679,8 @@ static int
 METAL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
                     Uint32 pixel_format, void * pixels, int pitch)
 {
-    METAL_RenderData *data = (METAL_RenderData *) renderer->driverdata;
-    MTLRenderPassColorAttachmentDescriptor *colorAttachment = data->mtlpassdesc.colorAttachments[0];
+    METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
+    MTLRenderPassColorAttachmentDescriptor *colorAttachment = data.mtlpassdesc.colorAttachments[0];
     id<MTLTexture> mtltexture = colorAttachment.texture;
     MTLRegion mtlregion;
 
@@ -702,28 +709,30 @@ METAL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
 static void
 METAL_RenderPresent(SDL_Renderer * renderer)
 {
-    METAL_RenderData *data = (METAL_RenderData *) renderer->driverdata;
-    MTLRenderPassColorAttachmentDescriptor *colorAttachment = data->mtlpassdesc.colorAttachments[0];
-    id<CAMetalDrawable> mtlbackbuffer = data->mtlbackbuffer;
+    METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
+    MTLRenderPassColorAttachmentDescriptor *colorAttachment = data.mtlpassdesc.colorAttachments[0];
+    id<CAMetalDrawable> mtlbackbuffer = data.mtlbackbuffer;
 
-    [data->mtlcmdencoder endEncoding];
-    [data->mtlcmdbuffer presentDrawable:mtlbackbuffer];
+    [data.mtlcmdencoder endEncoding];
+    [data.mtlcmdbuffer presentDrawable:mtlbackbuffer];
 
-    [data->mtlcmdbuffer addCompletedHandler:^(id <MTLCommandBuffer> mtlcmdbuffer){
+    [data.mtlcmdbuffer addCompletedHandler:^(id <MTLCommandBuffer> mtlcmdbuffer) {
+#if !__has_feature(objc_arc)
         [mtlbackbuffer release];
+#endif
     }];
 
-    [data->mtlcmdbuffer commit];
+    [data.mtlcmdbuffer commit];
 
     // Start next frame, once we can.
     // we don't specify a depth or stencil buffer because the render API doesn't currently use them.
-    data->mtlbackbuffer = [data->mtllayer nextDrawable];
-    SDL_assert(data->mtlbackbuffer);
-    colorAttachment.texture = data->mtlbackbuffer.texture;
+    data.mtlbackbuffer = [data.mtllayer nextDrawable];
+    SDL_assert(data.mtlbackbuffer);
+    colorAttachment.texture = data.mtlbackbuffer.texture;
     colorAttachment.loadAction = MTLLoadActionDontCare;
-    data->mtlcmdbuffer = [data->mtlcmdqueue commandBuffer];
-    data->mtlcmdencoder = [data->mtlcmdbuffer renderCommandEncoderWithDescriptor:data->mtlpassdesc];
-    data->mtlcmdencoder.label = @"SDL metal renderer frame";
+    data.mtlcmdbuffer = [data.mtlcmdqueue commandBuffer];
+    data.mtlcmdencoder = [data.mtlcmdbuffer renderCommandEncoderWithDescriptor:data.mtlpassdesc];
+    data.mtlcmdencoder.label = @"SDL metal renderer frame";
 
     // Set up our current renderer state for the next frame...
     METAL_UpdateViewport(renderer);
@@ -733,32 +742,36 @@ METAL_RenderPresent(SDL_Renderer * renderer)
 static void
 METAL_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
-    id<MTLTexture> mtltexture = (id<MTLTexture>) texture->driverdata;
+    id<MTLTexture> mtltexture = CFBridgingRelease(texture->driverdata);
+#if !__has_feature(objc_arc)
     [mtltexture release];
+#endif
     texture->driverdata = NULL;
 }
 
 static void
 METAL_DestroyRenderer(SDL_Renderer * renderer)
 {
-    METAL_RenderData *data = (METAL_RenderData *) renderer->driverdata;
+    if (renderer->driverdata) {
+        METAL_RenderData *data = CFBridgingRelease(renderer->driverdata);
 
-    if (data) {
+#if !__has_feature(objc_arc)
         int i;
-        [data->mtlcmdencoder endEncoding];
-        [data->mtlcmdencoder release];
-        [data->mtlcmdbuffer release];
-        [data->mtlcmdqueue release];
+        [data.mtlcmdencoder endEncoding];
+        [data.mtlcmdencoder release];
+        [data.mtlcmdbuffer release];
+        [data.mtlcmdqueue release];
         for (i = 0; i < 4; i++) {
-            [data->mtlpipelineprims[i] release];
-            [data->mtlpipelinecopy[i] release];
+            [data.mtlpipelineprims[i] release];
+            [data.mtlpipelinecopy[i] release];
         }
-        [data->mtlbufclearverts release];
-        [data->mtllibrary release];
-        [data->mtldevice release];
-        [data->mtlpassdesc release];
-        [data->mtllayer release];
-        SDL_free(data);
+        [data.mtlbufclearverts release];
+        [data.mtllibrary release];
+        [data.mtldevice release];
+        [data.mtlpassdesc release];
+        [data.mtllayer release];
+        [data release];
+#endif
     }
     SDL_free(renderer);
 }
