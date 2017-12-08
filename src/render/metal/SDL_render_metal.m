@@ -343,7 +343,7 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     MakePipelineStates(data, data.mtlpipelinecopy, @"SDL_RenderCopy pipeline", @"SDL_Copy_vertex", @"SDL_Copy_fragment");
 
     static const float clearverts[] = { -1, -1, -1, 1, 1, 1, 1, -1, -1, -1 };
-    data.mtlbufclearverts = [data.mtldevice newBufferWithBytes:clearverts length:sizeof(clearverts) options:MTLResourceCPUCacheModeWriteCombined|MTLResourceStorageModePrivate];
+    data.mtlbufclearverts = [data.mtldevice newBufferWithBytes:clearverts length:sizeof(clearverts) options:MTLResourceCPUCacheModeWriteCombined];
     data.mtlbufclearverts.label = @"SDL_RenderClear vertices";
 
     // !!! FIXME: force more clears here so all the drawables are sane to start, and our static buffers are definitely flushed.
@@ -480,7 +480,9 @@ METAL_UpdateClipRect(SDL_Renderer * renderer)
             mtlrect.width = renderer->viewport.w;
             mtlrect.height = renderer->viewport.h;
         }
-        [data.mtlcmdencoder setScissorRect:mtlrect];
+        if (mtlrect.width > 0 && mtlrect.height > 0) {
+            [data.mtlcmdencoder setScissorRect:mtlrect];
+        }
     }
     return 0;
 }
