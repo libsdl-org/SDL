@@ -21220,6 +21220,7 @@ fi
 $as_echo "#define SDL_VIDEO_RENDER_METAL 1" >>confdefs.h
 
         SOURCES="$SOURCES $srcdir/src/render/metal/*.m"
+        SUMMARY_video="${SUMMARY_video} metal"
     fi
 }
 
@@ -24433,7 +24434,7 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
         EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,IOKit"
 
         if test x$enable_render = xyes -a x$enable_render_metal = xyes; then
-            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-framework,QuartzCore -Wl,-weak_framework,Metal"
+            EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,-weak_framework,QuartzCore -Wl,-weak_framework,Metal"
         fi
         ;;
     *-nacl|*-pnacl)

@@ -2062,6 +2062,7 @@ AC_HELP_STRING([--enable-render-metal], [enable the Metal render driver [[defaul
         dnl This should maybe make sure you have a supported SDK version.
         AC_DEFINE(SDL_VIDEO_RENDER_METAL, 1, [ ])
         SOURCES="$SOURCES $srcdir/src/render/metal/*.m"
+        SUMMARY_video="${SUMMARY_video} metal"
     fi
 }
 
