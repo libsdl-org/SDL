@@ -1077,7 +1077,9 @@ D3D_SetRenderTargetInternal(SDL_Renderer * renderer, SDL_Texture * texture)
 static int
 D3D_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
 {
-    D3D_ActivateRenderer(renderer);
+    if (D3D_ActivateRenderer(renderer) < 0) {
+        return -1;
+    }
 
     return D3D_SetRenderTargetInternal(renderer, texture);
 }
