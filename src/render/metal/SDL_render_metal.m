@@ -359,7 +359,7 @@ static void METAL_ActivateRenderer(SDL_Renderer * renderer)
         data.mtlpassdesc.colorAttachments[0].loadAction = MTLLoadActionDontCare;
         data.mtlcmdbuffer = [data.mtlcmdqueue commandBuffer];
         data.mtlcmdencoder = [data.mtlcmdbuffer renderCommandEncoderWithDescriptor:data.mtlpassdesc];
-        data.mtlcmdencoder.label = @"SDL metal renderer frame";
+        data.mtlcmdencoder.label = @"SDL metal renderer start of frame";
 
         // Set up our current renderer state for the next frame...
         METAL_UpdateViewport(renderer);
@@ -401,7 +401,15 @@ METAL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 
     MTLTextureDescriptor *mtltexdesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:mtlpixfmt
                                             width:(NSUInteger)texture->w height:(NSUInteger)texture->h mipmapped:NO];
-
+ 
+    if (texture->access == SDL_TEXTUREACCESS_TARGET) {
+        mtltexdesc.usage = MTLTextureUsageShaderRead | MTLTextureUsageRenderTarget;
+    } else {
+        mtltexdesc.usage = MTLTextureUsageShaderRead;
+    }
+    //mtltexdesc.resourceOptions = MTLResourceCPUCacheModeDefaultCache | MTLResourceStorageModeManaged;
+    //mtltexdesc.storageMode = MTLStorageModeManaged;
+    
     id<MTLTexture> mtltexture = [data.mtldevice newTextureWithDescriptor:mtltexdesc];
     if (mtltexture == nil) {
         return SDL_SetError("Texture allocation failed");
@@ -453,8 +461,22 @@ METAL_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
 { @autoreleasepool {
     METAL_ActivateRenderer(renderer);
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
-    id<MTLTexture> mtltexture = texture ? (__bridge id<MTLTexture>) texture->driverdata : nil;
+
+    // commit the current command buffer, so that any work on a render target
+    //  will be available to the next one we're about to queue up.
+    [data.mtlcmdencoder endEncoding];
+    [data.mtlcmdbuffer commit];
+
+    id<MTLTexture> mtltexture = texture ? (__bridge id<MTLTexture>) texture->driverdata : data.mtlbackbuffer.texture;
     data.mtlpassdesc.colorAttachments[0].texture = mtltexture;
+    // !!! FIXME: this can be MTLLoadActionDontCare for textures (not the backbuffer) if SDL doesn't guarantee the texture contents should survive.
+    data.mtlpassdesc.colorAttachments[0].loadAction = MTLLoadActionLoad;
+    data.mtlcmdbuffer = [data.mtlcmdqueue commandBuffer];
+    data.mtlcmdencoder = [data.mtlcmdbuffer renderCommandEncoderWithDescriptor:data.mtlpassdesc];
+    data.mtlcmdencoder.label = texture ? @"SDL metal renderer render texture" : @"SDL metal renderer backbuffer";
+
+    // The higher level will reset the viewport and scissor after this call returns.
+
     return 0;
 }}
 
@@ -511,8 +533,8 @@ METAL_RenderClear(SDL_Renderer * renderer)
 
     MTLViewport viewport;  // RenderClear ignores the viewport state, though, so reset that.
     viewport.originX = viewport.originY = 0.0;
-    viewport.width = data.mtlbackbuffer.texture.width;
-    viewport.height = data.mtlbackbuffer.texture.height;
+    viewport.width = data.mtlpassdesc.colorAttachments[0].texture.width;
+    viewport.height = data.mtlpassdesc.colorAttachments[0].texture.height;
     viewport.znear = 0.0;
     viewport.zfar = 1.0;
 
