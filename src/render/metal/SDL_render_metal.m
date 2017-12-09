@@ -91,7 +91,12 @@ SDL_RenderDriver METAL_RenderDriver = {
      (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE),
      2,
      {SDL_PIXELFORMAT_ARGB8888, SDL_PIXELFORMAT_ABGR8888},
-     4096,  // !!! FIXME: how do you query Metal for this?
+
+     // !!! FIXME: how do you query Metal for this?
+     // (the weakest GPU supported by Metal on iOS has 4k texture max, and
+     //  other models might be 2x or 4x more. On macOS, it's 16k across the
+     //  board right now.)
+     4096,
      4096}
 };
 
@@ -285,7 +290,7 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     data.mtllayer = layer;
     data.mtlcmdqueue = [data.mtldevice newCommandQueue];
     data.mtlcmdqueue.label = @"SDL Metal Renderer";
-    data.mtlpassdesc = [MTLRenderPassDescriptor renderPassDescriptor];  // !!! FIXME: is this autoreleased?
+    data.mtlpassdesc = [MTLRenderPassDescriptor renderPassDescriptor];
 
     NSError *err = nil;
 
@@ -694,6 +699,7 @@ METAL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
                     Uint32 pixel_format, void * pixels, int pitch)
 { @autoreleasepool {
     METAL_ActivateRenderer(renderer);
+    // !!! FIXME: this probably needs to commit the current command buffer, and probably waitUntilCompleted
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
     MTLRenderPassColorAttachmentDescriptor *colorAttachment = data.mtlpassdesc.colorAttachments[0];
     id<MTLTexture> mtltexture = colorAttachment.texture;
