@@ -96,8 +96,12 @@ SDL_RenderDriver METAL_RenderDriver = {
      // (the weakest GPU supported by Metal on iOS has 4k texture max, and
      //  other models might be 2x or 4x more. On macOS, it's 16k across the
      //  board right now.)
-     4096,
-     4096}
+#ifdef __MACOSX__
+     16384, 16384
+#else
+     4096, 4096
+#endif
+    }
 };
 
 @interface METAL_RenderData : NSObject
@@ -305,7 +309,7 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     data.mtllibrary.label = @"SDL Metal renderer shader library";
 
     data.mtlpipelineprims = [[NSMutableArray alloc] init];
-    MakePipelineStates(data, data.mtlpipelineprims, @"SDL primitives pipeline", @"SDL_Simple_vertex", @"SDL_Simple_fragment");
+    MakePipelineStates(data, data.mtlpipelineprims, @"SDL primitives pipeline", @"SDL_Solid_vertex", @"SDL_Solid_fragment");
     data.mtlpipelinecopy = [[NSMutableArray alloc] init];
     MakePipelineStates(data, data.mtlpipelinecopy, @"SDL_RenderCopy pipeline", @"SDL_Copy_vertex", @"SDL_Copy_fragment");
 
@@ -559,17 +563,18 @@ METAL_RenderClear(SDL_Renderer * renderer)
 
 // normalize a value from 0.0f to len into -1.0f to 1.0f.
 static inline float
-norm(const float _val, const float len)
+normx(const float _val, const float len)
 {
     const float val = (_val < 0.0f) ? 0.0f : (_val > len) ? len : _val;
-    return ((val / len) * 2.0f) - 1.0f;  // !!! FIXME: is this right?
+    return (((val + 0.5f) / len) * 2.0f) - 1.0f;
 }
 
 // normalize a value from 0.0f to len into -1.0f to 1.0f.
 static inline float
 normy(const float _val, const float len)
 {
-    return norm(len - ((_val < 0.0f) ? 0.0f : (_val > len) ? len : _val), len);
+    const float val = (_val <= 0.0f) ? len : (_val >= len) ? 0.0f : (len - _val);
+    return (((val - 0.5f) / len) * 2.0f) - 1.0f;
 }
 
 // normalize a value from 0.0f to len into 0.0f to 1.0f.
@@ -577,7 +582,7 @@ static inline float
 normtex(const float _val, const float len)
 {
     const float val = (_val < 0.0f) ? 0.0f : (_val > len) ? len : _val;
-    return (val / len);
+    return ((val + 0.5f) / len);
 }
 
 static int
@@ -606,7 +611,7 @@ DrawVerts(SDL_Renderer * renderer, const SDL_FPoint * points, int count,
     // !!! FIXME: we can convert this in the shader. This will save the malloc and for-loop, but we still need to upload.
     float *ptr = verts;
     for (int i = 0; i < count; i++, points++) {
-        *ptr = norm(points->x, w); ptr++;
+        *ptr = normx(points->x, w); ptr++;
         *ptr = normy(points->y, h); ptr++;
     }
 
@@ -648,11 +653,11 @@ METAL_RenderFillRects(SDL_Renderer * renderer, const SDL_FRect * rects, int coun
         if ((rects->w <= 0.0f) || (rects->h <= 0.0f)) continue;
 
         const float verts[] = {
-            norm(rects->x, w), normy(rects->y + rects->h, h),
-            norm(rects->x, w), normy(rects->y, h),
-            norm(rects->x + rects->w, w), normy(rects->y, h),
-            norm(rects->x, w), normy(rects->y + rects->h, h),
-            norm(rects->x + rects->w, w), normy(rects->y + rects->h, h)
+            normx(rects->x, w), normy(rects->y + rects->h, h),
+            normx(rects->x, w), normy(rects->y, h),
+            normx(rects->x + rects->w, w), normy(rects->y, h),
+            normx(rects->x, w), normy(rects->y + rects->h, h),
+            normx(rects->x + rects->w, w), normy(rects->y + rects->h, h)
         };
 
         [data.mtlcmdencoder setVertexBytes:verts length:sizeof(verts) atIndex:0];
@@ -675,11 +680,11 @@ METAL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
     const float texh = (float) mtltexture.height;
 
     const float xy[] = {
-        norm(dstrect->x, w), normy(dstrect->y + dstrect->h, h),
-        norm(dstrect->x, w), normy(dstrect->y, h),
-        norm(dstrect->x + dstrect->w, w), normy(dstrect->y, h),
-        norm(dstrect->x, w), normy(dstrect->y + dstrect->h, h),
-        norm(dstrect->x + dstrect->w, w), normy(dstrect->y + dstrect->h, h)
+        normx(dstrect->x, w), normy(dstrect->y + dstrect->h, h),
+        normx(dstrect->x, w), normy(dstrect->y, h),
+        normx(dstrect->x + dstrect->w, w), normy(dstrect->y, h),
+        normx(dstrect->x, w), normy(dstrect->y + dstrect->h, h),
+        normx(dstrect->x + dstrect->w, w), normy(dstrect->y + dstrect->h, h)
     };
 
     const float uv[] = {
@@ -768,7 +773,9 @@ static void
 METAL_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 { @autoreleasepool {
     id<MTLTexture> mtltexture = CFBridgingRelease(texture->driverdata);
-#if !__has_feature(objc_arc)
+#if __has_feature(objc_arc)
+    mtltexture = nil;
+#else
     [mtltexture release];
 #endif
     texture->driverdata = NULL;
