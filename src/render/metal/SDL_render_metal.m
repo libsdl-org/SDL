@@ -113,13 +113,22 @@ SDL_RenderDriver METAL_RenderDriver = {
     @property (nonatomic, retain) id<MTLLibrary> mtllibrary;
     @property (nonatomic, retain) id<CAMetalDrawable> mtlbackbuffer;
     @property (nonatomic, retain) NSMutableArray *mtlpipelineprims;
-    @property (nonatomic, retain) NSMutableArray *mtlpipelinecopy;
+    @property (nonatomic, retain) NSMutableArray *mtlpipelinecopynearest;
+    @property (nonatomic, retain) NSMutableArray *mtlpipelinecopylinear;
     @property (nonatomic, retain) id<MTLBuffer> mtlbufclearverts;
     @property (nonatomic, retain) CAMetalLayer *mtllayer;
     @property (nonatomic, retain) MTLRenderPassDescriptor *mtlpassdesc;
 @end
 
 @implementation METAL_RenderData
+@end
+
+@interface METAL_TextureData : NSObject
+    @property (nonatomic, retain) id<MTLTexture> mtltexture;
+    @property (nonatomic, retain) NSMutableArray *mtlpipeline;
+@end
+
+@implementation METAL_TextureData
 @end
 
 static int
@@ -310,8 +319,10 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
 
     data.mtlpipelineprims = [[NSMutableArray alloc] init];
     MakePipelineStates(data, data.mtlpipelineprims, @"SDL primitives pipeline", @"SDL_Solid_vertex", @"SDL_Solid_fragment");
-    data.mtlpipelinecopy = [[NSMutableArray alloc] init];
-    MakePipelineStates(data, data.mtlpipelinecopy, @"SDL_RenderCopy pipeline", @"SDL_Copy_vertex", @"SDL_Copy_fragment");
+    data.mtlpipelinecopynearest = [[NSMutableArray alloc] init];
+    MakePipelineStates(data, data.mtlpipelinecopynearest, @"SDL texture pipeline (nearest)", @"SDL_Copy_vertex", @"SDL_Copy_fragment_nearest");
+    data.mtlpipelinecopylinear = [[NSMutableArray alloc] init];
+    MakePipelineStates(data, data.mtlpipelinecopylinear, @"SDL texture pipeline (linear)", @"SDL_Copy_vertex", @"SDL_Copy_fragment_linear");
 
     static const float clearverts[] = { -1, -1, -1, 1, 1, 1, 1, -1, -1, -1 };
     data.mtlbufclearverts = [data.mtldevice newBufferWithBytes:clearverts length:sizeof(clearverts) options:MTLResourceCPUCacheModeWriteCombined];
@@ -419,7 +430,16 @@ METAL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         return SDL_SetError("Texture allocation failed");
     }
 
-    texture->driverdata = (void*)CFBridgingRetain(mtltexture);
+    METAL_TextureData *texturedata = [[METAL_TextureData alloc] init];
+    const char *hint = SDL_GetHint(SDL_HINT_RENDER_SCALE_QUALITY);
+    if (!hint || *hint == '0' || SDL_strcasecmp(hint, "nearest") == 0) {
+        texturedata.mtlpipeline = data.mtlpipelinecopynearest;
+    } else {
+        texturedata.mtlpipeline = data.mtlpipelinecopylinear;
+    }
+    texturedata.mtltexture = mtltexture;
+
+    texture->driverdata = (void*)CFBridgingRetain(texturedata);
 
     return 0;
 }}
@@ -432,7 +452,7 @@ METAL_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
     // !!! FIXME:  Maybe move this off to a thread that marks the texture as uploaded and only stall the main thread if we try to
     // !!! FIXME:  use this texture before the marking is done? Is it worth it? Or will we basically always be uploading a bunch of
     // !!! FIXME:  stuff way ahead of time and/or using it immediately after upload?
-    id<MTLTexture> mtltexture = (__bridge id<MTLTexture>) texture->driverdata;
+    id<MTLTexture> mtltexture = ((__bridge METAL_TextureData *)texture->driverdata).mtltexture;
     [mtltexture replaceRegion:MTLRegionMake2D(rect->x, rect->y, rect->w, rect->h) mipmapLevel:0 withBytes:pixels bytesPerRow:pitch];
     return 0;
 }}
@@ -471,7 +491,7 @@ METAL_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
     [data.mtlcmdencoder endEncoding];
     [data.mtlcmdbuffer commit];
 
-    id<MTLTexture> mtltexture = texture ? (__bridge id<MTLTexture>) texture->driverdata : data.mtlbackbuffer.texture;
+    id<MTLTexture> mtltexture = texture ? ((__bridge METAL_TextureData *)texture->driverdata).mtltexture : data.mtlbackbuffer.texture;
     data.mtlpassdesc.colorAttachments[0].texture = mtltexture;
     // !!! FIXME: this can be MTLLoadActionDontCare for textures (not the backbuffer) if SDL doesn't guarantee the texture contents should survive.
     data.mtlpassdesc.colorAttachments[0].loadAction = MTLLoadActionLoad;
@@ -577,14 +597,6 @@ normy(const float _val, const float len)
     return (((val - 0.5f) / len) * 2.0f) - 1.0f;
 }
 
-// normalize a value from 0.0f to len into 0.0f to 1.0f.
-static inline float
-normtex(const float _val, const float len)
-{
-    const float val = (_val < 0.0f) ? 0.0f : (_val > len) ? len : _val;
-    return ((val + 0.5f) / len);
-}
-
 static int
 DrawVerts(SDL_Renderer * renderer, const SDL_FPoint * points, int count,
           const MTLPrimitiveType primtype)
@@ -673,11 +685,11 @@ METAL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
 { @autoreleasepool {
     METAL_ActivateRenderer(renderer);
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
-    id<MTLTexture> mtltexture = (__bridge id<MTLTexture>) texture->driverdata;
+    METAL_TextureData *texturedata = (__bridge METAL_TextureData *)texture->driverdata;
     const float w = (float) data.mtlpassdesc.colorAttachments[0].texture.width;
     const float h = (float) data.mtlpassdesc.colorAttachments[0].texture.height;
-    const float texw = (float) mtltexture.width;
-    const float texh = (float) mtltexture.height;
+    const float texw = (float) texturedata.mtltexture.width;
+    const float texh = (float) texturedata.mtltexture.height;
 
     const float xy[] = {
         normx(dstrect->x, w), normy(dstrect->y + dstrect->h, h),
@@ -688,11 +700,11 @@ METAL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
     };
 
     const float uv[] = {
-        normtex(srcrect->x, texw), normtex(srcrect->y + srcrect->h, texh),
-        normtex(srcrect->x, texw), normtex(srcrect->y, texh),
-        normtex(srcrect->x + srcrect->w, texw), normtex(srcrect->y, texh),
-        normtex(srcrect->x, texw), normtex(srcrect->y + srcrect->h, texh),
-        normtex(srcrect->x + srcrect->w, texw), normtex(srcrect->y + srcrect->h, texh)
+        srcrect->x, srcrect->y + srcrect->h,
+        srcrect->x, srcrect->y,
+        srcrect->x + srcrect->w, srcrect->y,
+        srcrect->x, srcrect->y + srcrect->h,
+        srcrect->x + srcrect->w, srcrect->y + srcrect->h
     };
 
     float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -703,9 +715,9 @@ METAL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
         color[3] = ((float)texture->a) / 255.0f;
     }
 
-    [data.mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data.mtlpipelinecopy, texture->blendMode)];
+    [data.mtlcmdencoder setRenderPipelineState:ChoosePipelineState(texturedata.mtlpipeline, texture->blendMode)];
     [data.mtlcmdencoder setFragmentBytes:color length:sizeof(color) atIndex:0];
-    [data.mtlcmdencoder setFragmentTexture:mtltexture atIndex:0];
+    [data.mtlcmdencoder setFragmentTexture:texturedata.mtltexture atIndex:0];
     [data.mtlcmdencoder setVertexBytes:xy length:sizeof(xy) atIndex:0];
     [data.mtlcmdencoder setVertexBytes:uv length:sizeof(uv) atIndex:1];
     [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:5];
@@ -772,11 +784,12 @@ METAL_RenderPresent(SDL_Renderer * renderer)
 static void
 METAL_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 { @autoreleasepool {
-    id<MTLTexture> mtltexture = CFBridgingRelease(texture->driverdata);
+    METAL_TextureData *texturedata = CFBridgingRelease(texture->driverdata);
 #if __has_feature(objc_arc)
-    mtltexture = nil;
+    texturedata = nil;
 #else
-    [mtltexture release];
+    [texturedata.mtltexture release];
+    [texturedata release];
 #endif
     texture->driverdata = NULL;
 }}
