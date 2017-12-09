@@ -527,7 +527,7 @@ extern DECLSPEC SDL_AudioStream * SDLCALL SDL_NewAudioStream(const SDL_AudioForm
  *
  *  \param stream The stream the audio data is being added to
  *  \param buf A pointer to the audio data to add
- *  \param int The number of bytes to write to the stream
+ *  \param len The number of bytes to write to the stream
  *  \return 0 on success, or -1 on error.
  *
  *  \sa SDL_NewAudioStream
