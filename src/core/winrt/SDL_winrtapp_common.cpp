@@ -40,3 +40,25 @@ SDL_WinRTRunApp(int (*mainFunction)(int, char **), void * xamlBackgroundPanel)
         return SDL_WinRTInitNonXAMLApp(mainFunction);
     }
 }
+
+
+extern "C" DECLSPEC SDL_WinRT_DeviceFamily
+SDL_WinRTGetDeviceFamily()
+{
+    Platform::String^ deviceFamily = Windows::System::Profile::AnalyticsInfo::VersionInfo->DeviceFamily;
+
+    if (deviceFamily->Equals("Windows.Desktop"))
+    {
+        return SDL_WINRT_DEVICEFAMILY_DESKTOP;
+    }
+    else if (deviceFamily->Equals("Windows.Mobile"))
+    {
+        return SDL_WINRT_DEVICEFAMILY_MOBILE;
+    }
+    else if (deviceFamily->Equals("Windows.Xbox"))
+    {
+        return SDL_WINRT_DEVICEFAMILY_XBOX;
+    }
+
+    return SDL_WINRT_DEVICEFAMILY_UNKNOWN;
+}
