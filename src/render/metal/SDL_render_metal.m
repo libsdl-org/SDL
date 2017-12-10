@@ -617,8 +617,8 @@ DrawVerts(SDL_Renderer * renderer, const SDL_FPoint * points, int count,
     [data.mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data.mtlpipelineprims, renderer->blendMode)];
     [data.mtlcmdencoder setFragmentBytes:color length:sizeof(color) atIndex:0];
 
-    const float w = (float) data.mtlpassdesc.colorAttachments[0].texture.width;
-    const float h = (float) data.mtlpassdesc.colorAttachments[0].texture.height;
+    const float w = (float)renderer->viewport.w;
+    const float h = (float)renderer->viewport.h;
 
     // !!! FIXME: we can convert this in the shader. This will save the malloc and for-loop, but we still need to upload.
     float *ptr = verts;
@@ -658,8 +658,8 @@ METAL_RenderFillRects(SDL_Renderer * renderer, const SDL_FRect * rects, int coun
     [data.mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data.mtlpipelineprims, renderer->blendMode)];
     [data.mtlcmdencoder setFragmentBytes:color length:sizeof(color) atIndex:0];
 
-    const float w = (float) data.mtlpassdesc.colorAttachments[0].texture.width;
-    const float h = (float) data.mtlpassdesc.colorAttachments[0].texture.height;
+    const float w = (float)renderer->viewport.w;
+    const float h = (float)renderer->viewport.h;
 
     for (int i = 0; i < count; i++, rects++) {
         if ((rects->w <= 0.0f) || (rects->h <= 0.0f)) continue;
@@ -686,8 +686,8 @@ METAL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
     METAL_ActivateRenderer(renderer);
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
     METAL_TextureData *texturedata = (__bridge METAL_TextureData *)texture->driverdata;
-    const float w = (float) data.mtlpassdesc.colorAttachments[0].texture.width;
-    const float h = (float) data.mtlpassdesc.colorAttachments[0].texture.height;
+    const float w = (float)renderer->viewport.w;
+    const float h = (float)renderer->viewport.h;
     const float texw = (float) texturedata.mtltexture.width;
     const float texh = (float) texturedata.mtltexture.height;
 
