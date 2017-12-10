@@ -359,6 +359,11 @@ ShouldGenerateWindowCloseOnAltF4(void)
     return !SDL_GetHintBoolean(SDL_HINT_WINDOWS_NO_CLOSE_ON_ALT_F4, SDL_FALSE);
 }
 
+/* Win10 "Fall Creators Update" introduced the bug that SetCursorPos() (as used by SDL_WarpMouseInWindow())
+   doesn't reliably generate WM_MOUSEMOVE events anymore (see #3931) which breaks relative mouse mode via warping.
+   This is used to implement a workaround.. */
+static SDL_bool isWin10FCUorNewer = SDL_FALSE;
+
 LRESULT CALLBACK
 WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -476,6 +481,17 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             if (!mouse->relative_mode || mouse->relative_mode_warp) {
                 SDL_MouseID mouseID = (((GetMessageExtraInfo() & MOUSEEVENTF_FROMTOUCH) == MOUSEEVENTF_FROMTOUCH) ? SDL_TOUCH_MOUSEID : 0);
                 SDL_SendMouseMotion(data->window, mouseID, 0, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+                if (isWin10FCUorNewer && mouseID != SDL_TOUCH_MOUSEID && mouse->relative_mode_warp) {
+                    /* To work around #3931, Win10 bug introduced in Fall Creators Update, where
+                       SetCursorPos() (SDL_WarpMouseInWindow()) doesn't reliably generate mouse events anymore,
+                       after each windows mouse event generate a fake event for the middle of the window
+                       if relative_mode_warp is used */
+                    int center_x = 0, center_y = 0;
+                    SDL_GetWindowSize(data->window, &center_x, &center_y);
+                    center_x /= 2;
+                    center_y /= 2;
+                    SDL_SendMouseMotion(data->window, mouseID, 0, center_x, center_y);
+                }
             }
         }
         /* don't break here, fall through to check the wParam like the button presses */
@@ -1051,6 +1067,44 @@ WIN_PumpEvents(_THIS)
     }
 }
 
+/* to work around #3931, a bug introduced in Win10 Fall Creators Update (build nr. 16299)
+   we need to detect the windows version. this struct and the function below does that.
+   usually this struct and the corresponding function (RtlGetVersion) are in <Ntddk.h>
+   but here we just load it dynamically */
+struct SDL_WIN_OSVERSIONINFOW {
+    ULONG dwOSVersionInfoSize;
+    ULONG dwMajorVersion;
+    ULONG dwMinorVersion;
+    ULONG dwBuildNumber;
+    ULONG dwPlatformId;
+    WCHAR szCSDVersion[128];
+};
+
+static SDL_bool
+IsWin10FCUorNewer(void)
+{
+    typedef LONG(WINAPI* RtlGetVersionPtr)(struct SDL_WIN_OSVERSIONINFOW*);
+    struct SDL_WIN_OSVERSIONINFOW info;
+    SDL_zero(info);
+
+    HMODULE handle = GetModuleHandleW(L"ntdll.dll");
+    if (handle) {
+        RtlGetVersionPtr getVersionPtr = (RtlGetVersionPtr)GetProcAddress(handle, "RtlGetVersion");
+        if (getVersionPtr != NULL) {
+            info.dwOSVersionInfoSize = sizeof(info);
+            if (getVersionPtr(&info) == 0) { /* STATUS_SUCCESS == 0 */
+                if (   (info.dwMajorVersion == 10 && info.dwMinorVersion == 0 && info.dwBuildNumber >= 16299)
+                    || (info.dwMajorVersion == 10 && info.dwMinorVersion > 0)
+                    || (info.dwMajorVersion > 10) )
+                {
+                    return SDL_TRUE;
+                }
+            }
+        }
+    }
+    return SDL_FALSE;
+}
+
 static int app_registered = 0;
 LPTSTR SDL_Appname = NULL;
 Uint32 SDL_Appstyle = 0;
@@ -1114,6 +1168,8 @@ SDL_RegisterApp(char *name, Uint32 style, void *hInst)
     if (!RegisterClassEx(&wcex)) {
         return SDL_SetError("Couldn't register application class");
     }
+
+    isWin10FCUorNewer = IsWin10FCUorNewer();
 
     app_registered = 1;
     return 0;
