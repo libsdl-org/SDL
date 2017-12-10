@@ -597,6 +597,14 @@ normy(const float _val, const float len)
     return (((val - 0.5f) / len) * 2.0f) - 1.0f;
 }
 
+// normalize a value from 0.0f to len into 0.0f to 1.0f.
+static inline float
+normtex(const float _val, const float len)
+{
+    const float val = (_val < 0.0f) ? 0.0f : (_val > len) ? len : _val;
+    return ((val + 0.5f) / len);
+}
+
 static int
 DrawVerts(SDL_Renderer * renderer, const SDL_FPoint * points, int count,
           const MTLPrimitiveType primtype)
@@ -700,11 +708,11 @@ METAL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
     };
 
     const float uv[] = {
-        srcrect->x, srcrect->y + srcrect->h,
-        srcrect->x, srcrect->y,
-        srcrect->x + srcrect->w, srcrect->y,
-        srcrect->x, srcrect->y + srcrect->h,
-        srcrect->x + srcrect->w, srcrect->y + srcrect->h
+        normtex(srcrect->x, texw), normtex(srcrect->y + srcrect->h, texh),
+        normtex(srcrect->x, texw), normtex(srcrect->y, texh),
+        normtex(srcrect->x + srcrect->w, texw), normtex(srcrect->y, texh),
+        normtex(srcrect->x, texw), normtex(srcrect->y + srcrect->h, texh),
+        normtex(srcrect->x + srcrect->w, texw), normtex(srcrect->y + srcrect->h, texh)
     };
 
     float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };

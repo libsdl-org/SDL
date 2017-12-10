@@ -37,13 +37,13 @@ vertex CopyVertex SDL_Copy_vertex(constant float2 *position [[buffer(0)]], const
 
 fragment float4 SDL_Copy_fragment_nearest(CopyVertex vert [[stage_in]], constant float4 &col [[buffer(0)]], texture2d<float> tex [[texture(0)]])
 {
-    constexpr sampler s(coord::pixel, address::clamp_to_edge, filter::nearest);
+    constexpr sampler s(coord::normalized, address::clamp_to_edge, filter::nearest);
     return tex.sample(s, vert.texcoord) * col;
 }
 
 fragment float4 SDL_Copy_fragment_linear(CopyVertex vert [[stage_in]], constant float4 &col [[buffer(0)]], texture2d<float> tex [[texture(0)]])
 {
-    constexpr sampler s(coord::pixel, address::clamp_to_edge, filter::linear);
+    constexpr sampler s(coord::normalized, address::clamp_to_edge, filter::linear);
     return tex.sample(s, vert.texcoord) * col;
 }
 
