@@ -59,6 +59,9 @@
 		AA1EE47617605B9E0029C7A5 /* libSDL2test.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AA1EE452176059230029C7A5 /* libSDL2test.a */; };
 		AA1EE47717605BAB0029C7A5 /* libSDL2test.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AA1EE452176059230029C7A5 /* libSDL2test.a */; };
 		AA1EE47817605BF60029C7A5 /* libSDL2test.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AA1EE452176059230029C7A5 /* libSDL2test.a */; };
+		AA2F57AA1FDB544800832AD7 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA2F57A91FDB544800832AD7 /* Metal.framework */; };
+		AA2F57AB1FDB5A0900832AD7 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA2F57A91FDB544800832AD7 /* Metal.framework */; };
+		AA2F57AC1FDB5AB600832AD7 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA2F57A91FDB544800832AD7 /* Metal.framework */; };
 		AAE7DEDC14CBB1E100DF1A0E /* icon.bmp in Resources */ = {isa = PBXBuildFile; fileRef = FDA8AAD90E2D33B000EA573E /* icon.bmp */; };
 		AAE7DEE114CBB1E100DF1A0E /* libSDL2.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FD1B48B80E3131CA007AB34E /* libSDL2.a */; };
 		AAE7DEE214CBB1E100DF1A0E /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A8980E2D111A00EA573E /* AudioToolbox.framework */; };
@@ -168,7 +171,6 @@
 		FABA34A41D8B582100915323 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A89C0E2D111A00EA573E /* UIKit.framework */; };
 		FABA34A51D8B582100915323 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A89D0E2D111A00EA573E /* Foundation.framework */; };
 		FABA34A61D8B582100915323 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FDA8A89E0E2D111A00EA573E /* CoreAudio.framework */; };
-		FABA34AD1D8B58A700915323 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FABA34AC1D8B58A700915323 /* AVFoundation.framework */; };
 		FABA34AE1D8B58B200915323 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FABA34761D8B4EAD00915323 /* AVFoundation.framework */; };
 		FABA34AF1D8B59F800915323 /* testaudiocapture.c in Sources */ = {isa = PBXBuildFile; fileRef = FABA34931D8B578200915323 /* testaudiocapture.c */; };
 		FABA34B01D8B5B6400915323 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FABA34761D8B4EAD00915323 /* AVFoundation.framework */; };
@@ -428,6 +430,7 @@
 		AA13B35B1FB8B4D600D9FEE6 /* testyuv.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testyuv.c; path = ../../test/testyuv.c; sourceTree = "<group>"; };
 		AA13B35E1FB8B50D00D9FEE6 /* testyuv_cvt.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testyuv_cvt.c; path = ../../test/testyuv_cvt.c; sourceTree = "<group>"; };
 		AA1EE44D176059220029C7A5 /* SDL2test.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL2test.xcodeproj; path = ../SDLtest/SDL2test.xcodeproj; sourceTree = "<group>"; };
+		AA2F57A91FDB544800832AD7 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		AAE7DEEC14CBB1E100DF1A0E /* testscale.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testscale.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		AAE7DF4514CBB43900DF1A0E /* testscale.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testscale.c; path = ../../test/testscale.c; sourceTree = "<group>"; };
 		AAE7DFB114CBB54E00DF1A0E /* testrendertarget.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testrendertarget.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -443,7 +446,6 @@
 		FABA34911D8B575200915323 /* testaudiocapture.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testaudiocapture.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FABA34931D8B578200915323 /* testaudiocapture.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testaudiocapture.c; path = ../../test/testaudiocapture.c; sourceTree = "<group>"; };
 		FABA34AA1D8B582100915323 /* loopwav-TV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "loopwav-TV.app"; sourceTree = BUILT_PRODUCTS_DIR; };
-		FABA34AC1D8B58A700915323 /* AVFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AVFoundation.framework; path = Platforms/AppleTVOS.platform/Developer/SDKs/AppleTVOS10.0.sdk/System/Library/Frameworks/AVFoundation.framework; sourceTree = DEVELOPER_DIR; };
 		FAE0E9931BAF9B230098DFA4 /* testgamecontroller.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = testgamecontroller.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		FD1B48AC0E3131CA007AB34E /* SDL.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; name = SDL.xcodeproj; path = ../SDL/SDL.xcodeproj; sourceTree = SOURCE_ROOT; };
 		FDA8A7410E2D0F1600EA573E /* testaudioinfo.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testaudioinfo.c; path = ../../test/testaudioinfo.c; sourceTree = SOURCE_ROOT; };
@@ -614,6 +616,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA2F57AA1FDB544800832AD7 /* Metal.framework in Frameworks */,
 				FABA34BD1D8B5BAB00915323 /* AVFoundation.framework in Frameworks */,
 				AA1EE47517605B930029C7A5 /* libSDL2test.a in Frameworks */,
 				AAE7DFA614CBB54E00DF1A0E /* libSDL2.a in Frameworks */,
@@ -633,7 +636,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FABA34AD1D8B58A700915323 /* AVFoundation.framework in Frameworks */,
 				FAA8CEE41BDF06D600D3BD45 /* libSDL2.a in Frameworks */,
 				FA3D99481BC4E6AD002C96C8 /* GameController.framework in Frameworks */,
 				FA3D994A1BC4E6AD002C96C8 /* AudioToolbox.framework in Frameworks */,
@@ -795,6 +797,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA2F57AB1FDB5A0900832AD7 /* Metal.framework in Frameworks */,
 				FABA34B21D8B5B7300915323 /* AVFoundation.framework in Frameworks */,
 				AA1EE47117605A7F0029C7A5 /* libSDL2test.a in Frameworks */,
 				FDC42FF40F0D866D009C87E1 /* libSDL2.a in Frameworks */,
@@ -940,6 +943,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AA2F57AC1FDB5AB600832AD7 /* Metal.framework in Frameworks */,
 				FABA34C01D8B5BBA00915323 /* AVFoundation.framework in Frameworks */,
 				AA1EE47717605BAB0029C7A5 /* libSDL2test.a in Frameworks */,
 				FDBDE5CA0E313712006BAC0B /* libSDL2.a in Frameworks */,
@@ -1073,7 +1077,7 @@
 		FABA34751D8B4EAC00915323 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				FABA34AC1D8B58A700915323 /* AVFoundation.framework */,
+				AA2F57A91FDB544800832AD7 /* Metal.framework */,
 				FABA34761D8B4EAD00915323 /* AVFoundation.framework */,
 			);
 			name = Frameworks;
