@@ -9,6 +9,16 @@ General:
 * Added SDL_fmod()
 * Each of the SDL math functions now has the corresponding float version
 
+Windows:
+* Implemented WASAPI support on Windows UWP and removed the deprecated XAudio2 implementation
+
+Windows UWP:
+* Added SDL_WinRTGetDeviceFamily() to find out what type of device your application is running on
+
+Mac OSX / iOS / tvOS:
+* Added a Metal 2D render implementation
+* Added SDL_RenderGetMetalLayer() and SDL_RenderGetMetalCommandEncoder() to insert your own drawing into SDL rendering when using the Metal implementation
+
 
 ---------------------------------------------------------------------------
 2.0.7:

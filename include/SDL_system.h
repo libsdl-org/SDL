@@ -170,6 +170,25 @@ typedef enum
 
 
 /**
+ *  \brief WinRT Device Family
+ */
+typedef enum
+{
+    /** \brief Unknown family  */
+    SDL_WINRT_DEVICEFAMILY_UNKNOWN,
+
+    /** \brief Desktop family*/
+    SDL_WINRT_DEVICEFAMILY_DESKTOP,
+
+    /** \brief Mobile family (for example smartphone) */
+    SDL_WINRT_DEVICEFAMILY_MOBILE,
+
+    /** \brief XBox family */
+    SDL_WINRT_DEVICEFAMILY_XBOX,
+} SDL_WinRT_DeviceFamily;
+
+
+/**
  *  \brief Retrieves a WinRT defined path on the local file system
  *
  *  \note Documentation on most app-specific path types on WinRT
@@ -202,6 +221,13 @@ extern DECLSPEC const wchar_t * SDLCALL SDL_WinRTGetFSPathUNICODE(SDL_WinRT_Path
  *      supported where.
  */
 extern DECLSPEC const char * SDLCALL SDL_WinRTGetFSPathUTF8(SDL_WinRT_Path pathType);
+
+/**
+ *  \brief Detects the device family of WinRT plattform on runtime
+ *
+ *  \return Device family
+ */
+extern DECLSPEC SDL_WinRT_DeviceFamily SDLCALL SDL_WinRTGetDeviceFamily();
 
 #endif /* __WINRT__ */
 
