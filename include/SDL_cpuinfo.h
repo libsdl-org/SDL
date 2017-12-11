@@ -59,10 +59,26 @@
 #ifdef __3dNOW__
 #include <mm3dnow.h>
 #endif
-#if defined(__i386__) || defined(__x86_64__)
+#if HAVE_IMMINTRIN_H
 #include <immintrin.h>
+#else
+#ifdef __MMX__
+#include <mmintrin.h>
 #endif
+#ifdef __3dNOW__
+#include <mm3dnow.h>
 #endif
+#ifdef __SSE__
+#include <xmmintrin.h>
+#endif
+#ifdef __SSE2__
+#include <emmintrin.h>
+#endif
+#ifdef __SSE3__
+#include <pmmintrin.h>
+#endif
+#endif /* HAVE_IMMINTRIN_H */
+#endif /* compiler version */
 
 #include "begin_code.h"
 /* Set up for C function definitions, even when using C++ */

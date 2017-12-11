@@ -670,6 +670,13 @@ AC_HELP_STRING([--enable-sse3], [use SSE3 assembly routines [[default=maybe]]]),
         fi
     fi
 
+    AC_CHECK_HEADER(immintrin.h,
+                    have_immintrin_h_hdr=yes,
+                    have_immintrin_h_hdr=no)
+    if test x$have_immintrin_h_hdr = xyes; then
+        AC_DEFINE(HAVE_IMMINTRIN_H, 1, [ ])
+    fi
+
     AC_ARG_ENABLE(altivec,
 AC_HELP_STRING([--enable-altivec], [use Altivec assembly routines [[default=yes]]]),
                   , enable_altivec=yes)
