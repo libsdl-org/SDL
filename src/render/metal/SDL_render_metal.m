@@ -121,19 +121,6 @@ SDL_RenderDriver METAL_RenderDriver = {
 @end
 
 @implementation METAL_RenderData
-	@synthesize beginScene;
-    @synthesize mtldevice;
-    @synthesize mtlcmdqueue;
-    @synthesize mtlcmdbuffer;
-    @synthesize mtlcmdencoder;
-    @synthesize mtllibrary;
-    @synthesize mtlbackbuffer;
-    @synthesize mtlpipelineprims;
-    @synthesize mtlpipelinecopynearest;
-    @synthesize mtlpipelinecopylinear;
-    @synthesize mtlbufclearverts;
-    @synthesize mtllayer;
-    @synthesize mtlpassdesc;
 @end
 
 @interface METAL_TextureData : NSObject
