@@ -1083,14 +1083,13 @@ struct SDL_WIN_OSVERSIONINFOW {
 static SDL_bool
 IsWin10FCUorNewer(void)
 {
-    typedef LONG(WINAPI* RtlGetVersionPtr)(struct SDL_WIN_OSVERSIONINFOW*);
-    struct SDL_WIN_OSVERSIONINFOW info;
-    SDL_zero(info);
-
     HMODULE handle = GetModuleHandleW(L"ntdll.dll");
     if (handle) {
+        typedef LONG(WINAPI* RtlGetVersionPtr)(struct SDL_WIN_OSVERSIONINFOW*);
         RtlGetVersionPtr getVersionPtr = (RtlGetVersionPtr)GetProcAddress(handle, "RtlGetVersion");
         if (getVersionPtr != NULL) {
+            struct SDL_WIN_OSVERSIONINFOW info;
+            SDL_zero(info);
             info.dwOSVersionInfoSize = sizeof(info);
             if (getVersionPtr(&info) == 0) { /* STATUS_SUCCESS == 0 */
                 if (   (info.dwMajorVersion == 10 && info.dwMinorVersion == 0 && info.dwBuildNumber >= 16299)
