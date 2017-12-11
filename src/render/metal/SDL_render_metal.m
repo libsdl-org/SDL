@@ -121,6 +121,19 @@ SDL_RenderDriver METAL_RenderDriver = {
 @end
 
 @implementation METAL_RenderData
+	@synthesize beginScene;
+    @synthesize mtldevice;
+    @synthesize mtlcmdqueue;
+    @synthesize mtlcmdbuffer;
+    @synthesize mtlcmdencoder;
+    @synthesize mtllibrary;
+    @synthesize mtlbackbuffer;
+    @synthesize mtlpipelineprims;
+    @synthesize mtlpipelinecopynearest;
+    @synthesize mtlpipelinecopylinear;
+    @synthesize mtlbufclearverts;
+    @synthesize mtllayer;
+    @synthesize mtlpassdesc;
 @end
 
 @interface METAL_TextureData : NSObject
@@ -819,10 +832,12 @@ METAL_DestroyRenderer(SDL_Renderer * renderer)
         [data.mtlcmdqueue release];
         for (int i = 0; i < 4; i++) {
             [data.mtlpipelineprims[i] release];
-            [data.mtlpipelinecopy[i] release];
+            [data.mtlpipelinecopynearest[i] release];
+            [data.mtlpipelinecopylinear[i] release];
         }
         [data.mtlpipelineprims release];
-        [data.mtlpipelinecopy release];
+        [data.mtlpipelinecopynearest release];
+        [data.mtlpipelinecopylinear release];
         [data.mtlbufclearverts release];
         [data.mtllibrary release];
         [data.mtldevice release];
