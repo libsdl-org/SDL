@@ -165,8 +165,7 @@ SDL_SYS_JoystickIsHaptic(SDL_Joystick *joystick)
 {
     SDL_hapticlist_item *item;
     item = HapticByDevId(((joystick_hwdata *)joystick->hwdata)->device_id);
-    int ret = (item != NULL ? 1 : 0);
-    return ret;
+    return (item != NULL) ? 1 : 0;
 }
 
 
