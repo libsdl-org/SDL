@@ -191,11 +191,12 @@
 #endif /* HAVE_LIBC */
 
 #cmakedefine HAVE_ALTIVEC_H 1
-#cmakedefine HAVE_LIBUDEV_H 1
 #cmakedefine HAVE_DBUS_DBUS_H 1
-#cmakedefine HAVE_IBUS_IBUS_H 1
 #cmakedefine HAVE_FCITX_FRONTEND_H 1
+#cmakedefine HAVE_IBUS_IBUS_H 1
+#cmakedefine HAVE_IMMINTRIN_H 1
 #cmakedefine HAVE_LIBSAMPLERATE_H 1
+#cmakedefine HAVE_LIBUDEV_H 1
 
 #cmakedefine HAVE_D3D_H @HAVE_D3D_H@
 #cmakedefine HAVE_D3D11_H @HAVE_D3D11_H@

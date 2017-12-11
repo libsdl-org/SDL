@@ -17396,6 +17396,20 @@ $as_echo "$have_gcc_sse3" >&6; }
         fi
     fi
 
+    ac_fn_c_check_header_mongrel "$LINENO" "immintrin.h" "ac_cv_header_immintrin_h" "$ac_includes_default"
+if test "x$ac_cv_header_immintrin_h" = xyes; then :
+  have_immintrin_h_hdr=yes
+else
+  have_immintrin_h_hdr=no
+fi
+
+
+    if test x$have_immintrin_h_hdr = xyes; then
+
+$as_echo "#define HAVE_IMMINTRIN_H 1" >>confdefs.h
+
+    fi
+
     # Check whether --enable-altivec was given.
 if test "${enable_altivec+set}" = set; then :
   enableval=$enable_altivec;

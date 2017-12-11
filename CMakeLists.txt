@@ -580,6 +580,8 @@ if(ASSEMBLY)
       endif()
     endif()
 
+    check_include_file("immintrin.h" HAVE_IMMINTRIN_H)
+
     if(ALTIVEC)
       set(CMAKE_REQUIRED_FLAGS "-maltivec")
       check_c_source_compiles("
