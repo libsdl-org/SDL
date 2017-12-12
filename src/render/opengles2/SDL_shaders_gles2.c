@@ -275,6 +275,21 @@ static const Uint8 GLES2_FragmentSrc_TextureNV21BT709Src_[] = \
         NV21_SHADER_BODY \
 ;
 
+/* Custom Android video format texture */
+static const Uint8 GLES2_FragmentSrc_TextureExternalOESSrc_[] = " \
+    #extension GL_OES_EGL_image_external : require\n\
+    precision mediump float; \
+    uniform samplerExternalOES u_texture; \
+    uniform vec4 u_modulation; \
+    varying vec2 v_texCoord; \
+    \
+    void main() \
+    { \
+        gl_FragColor = texture2D(u_texture, v_texCoord); \
+        gl_FragColor *= u_modulation; \
+    } \
+";
+
 static const GLES2_ShaderInstance GLES2_VertexSrc_Default = {
     GL_VERTEX_SHADER,
     GLES2_SOURCE_SHADER,
@@ -378,6 +393,13 @@ static const GLES2_ShaderInstance GLES2_FragmentSrc_TextureNV12BT709Src = {
     GLES2_SOURCE_SHADER,
     sizeof(GLES2_FragmentSrc_TextureNV12BT709Src_),
     GLES2_FragmentSrc_TextureNV12BT709Src_
+};
+
+static const GLES2_ShaderInstance GLES2_FragmentSrc_TextureExternalOESSrc = {
+    GL_FRAGMENT_SHADER,
+    GLES2_SOURCE_SHADER,
+    sizeof(GLES2_FragmentSrc_TextureExternalOESSrc_),
+    GLES2_FragmentSrc_TextureExternalOESSrc_
 };
 
 
@@ -490,6 +512,13 @@ static GLES2_Shader GLES2_FragmentShader_TextureNV21BT709Src = {
     }
 };
 
+static GLES2_Shader GLES2_FragmentShader_TextureExternalOESSrc = {
+    1,
+    {
+        &GLES2_FragmentSrc_TextureExternalOESSrc
+    }
+};
+
 
 /*************************************************************************************************
  * Shader selector                                                                               *
@@ -528,6 +557,8 @@ const GLES2_Shader *GLES2_GetShader(GLES2_ShaderType type)
         return &GLES2_FragmentShader_TextureNV21BT601Src;
     case GLES2_SHADER_FRAGMENT_TEXTURE_NV21_BT709_SRC:
         return &GLES2_FragmentShader_TextureNV21BT709Src;
+    case GLES2_SHADER_FRAGMENT_TEXTURE_EXTERNAL_OES_SRC:
+        return &GLES2_FragmentShader_TextureExternalOESSrc;
     default:
         return NULL;
     }
