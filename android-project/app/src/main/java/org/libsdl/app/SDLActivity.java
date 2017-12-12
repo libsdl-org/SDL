@@ -1501,6 +1501,25 @@ class SDLInputConnection extends BaseInputConnection {
          * and so we need to generate them ourselves in commitText.  To avoid duplicates on the handful of keys
          * that still do, we empty this out.
          */
+
+        /*
+         * Return DOES still generate a key event, however.  So rather than using it as the 'click a button' key
+         * as we do with physical keyboards, let's just use it to hide the keyboard.
+         */
+
+        if (event.getKeyCode() == 66) {
+            String imeHide = SDLActivity.nativeGetHint("SDL_ANDROID_RETURN_HIDES_IME");
+            if ((imeHide != null) && imeHide.equals("1")) {
+                Context c = SDL.getContext();
+                if (c instanceof SDLActivity) {
+                    SDLActivity activity = (SDLActivity)c;
+                    activity.sendCommand(SDLActivity.COMMAND_TEXTEDIT_HIDE, null);
+                    return true;
+                }
+            }
+        }
+
+
         return super.sendKeyEvent(event);
     }
 
