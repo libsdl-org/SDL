@@ -112,6 +112,7 @@
 		93CB792613FC5F5300BD3E05 /* SDL_uikitviewcontroller.m in Sources */ = {isa = PBXBuildFile; fileRef = 93CB792513FC5F5300BD3E05 /* SDL_uikitviewcontroller.m */; };
 		A7A9EEA91F702631002A5589 /* SDL_steamcontroller.c in Sources */ = {isa = PBXBuildFile; fileRef = A7A9EEA71F702631002A5589 /* SDL_steamcontroller.c */; };
 		A7A9EEAA1F702631002A5589 /* SDL_steamcontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = A7A9EEA81F702631002A5589 /* SDL_steamcontroller.h */; };
+		A7F629241FE06523002F9CC9 /* SDL_uikitmetalview.m in Sources */ = {isa = PBXBuildFile; fileRef = 4D7516F81EE1C28A00820EEA /* SDL_uikitmetalview.m */; };
 		AA0AD06216647BBB00CE5896 /* SDL_gamecontroller.c in Sources */ = {isa = PBXBuildFile; fileRef = AA0AD06116647BBB00CE5896 /* SDL_gamecontroller.c */; };
 		AA0AD06516647BD400CE5896 /* SDL_gamecontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = AA0AD06416647BD400CE5896 /* SDL_gamecontroller.h */; };
 		AA0F8495178D5F1A00823F9D /* SDL_systls.c in Sources */ = {isa = PBXBuildFile; fileRef = AA0F8494178D5F1A00823F9D /* SDL_systls.c */; };
@@ -1437,6 +1438,7 @@
 				FAB598361BB5C31500BE72C5 /* SDL_clipboardevents.c in Sources */,
 				FAB598381BB5C31500BE72C5 /* SDL_dropevents.c in Sources */,
 				FAB5983A1BB5C31500BE72C5 /* SDL_events.c in Sources */,
+				A7F629241FE06523002F9CC9 /* SDL_uikitmetalview.m in Sources */,
 				FAB5983C1BB5C31500BE72C5 /* SDL_gesture.c in Sources */,
 				FAB5983E1BB5C31500BE72C5 /* SDL_keyboard.c in Sources */,
 				FAB598401BB5C31500BE72C5 /* SDL_mouse.c in Sources */,
