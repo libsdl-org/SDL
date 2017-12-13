@@ -369,7 +369,6 @@ SDL_StopEventLoop(void)
     }
 
     if (SDL_event_watchers_lock) {
-        SDL_UnlockMutex(SDL_event_watchers_lock);
         SDL_DestroyMutex(SDL_event_watchers_lock);
         SDL_event_watchers_lock = NULL;
     }
