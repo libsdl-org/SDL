@@ -296,11 +296,11 @@ int
 SDL_GetColorKey(SDL_Surface * surface, Uint32 * key)
 {
     if (!surface) {
-        return -1;
+        return SDL_InvalidParamError("surface");
     }
 
     if (!(surface->map->info.flags & SDL_COPY_COLORKEY)) {
-        return -1;
+        return SDL_SetError("Surface doesn't have a colorkey");
     }
 
     if (key) {
