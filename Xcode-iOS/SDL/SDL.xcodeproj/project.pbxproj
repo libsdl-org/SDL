@@ -1308,7 +1308,7 @@
 			dependencies = (
 			);
 			name = "libSDL-tvOS";
-			productName = "libSDL-tv";
+			productName = "libSDL-tvOS";
 			productReference = FAB598141BB5C1B100BE72C5 /* libSDL2.a */;
 			productType = "com.apple.product-type.library.static";
 		};
@@ -1394,12 +1394,12 @@
 			inputPaths = (
 			);
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/../ios/release/libSDL2.a",
-				"${TARGET_BUILD_DIR}/../ios/debug/libSDL2.a",
+				output/iOS/debug/libSDL2.a,
+				output/iOS/release/libSDL2.a,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "xcodebuild -target \"libSDL-iOS\" ONLY_ACTIVE_ARCH=NO -configuration Release -sdk iphoneos  BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" clean build\nxcodebuild -target \"libSDL-iOS\" ONLY_ACTIVE_ARCH=NO -configuration Debug -sdk iphoneos  BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" clean build\nxcodebuild -target \"libSDL-iOS\" -configuration Release -sdk iphonesimulator ONLY_ACTIVE_ARCH=NO BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" clean build\nxcodebuild -target \"libSDL-iOS\" -configuration Debug -sdk iphonesimulator ONLY_ACTIVE_ARCH=NO BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" clean build\n\n# make output folders\nmkdir -p ${TARGET_BUILD_DIR}/../ios/release\nmkdir -p ${TARGET_BUILD_DIR}/../ios/debug\n\n# combine lib files for various platforms into one\nlipo -create \"${TARGET_BUILD_DIR}/../Release-iphoneos/libSDL2.a\" \"${TARGET_BUILD_DIR}/../Release-iphonesimulator/libSDL2.a\" -output \"${TARGET_BUILD_DIR}/../ios/release/libSDL2.a\"\nlipo -create \"${TARGET_BUILD_DIR}/../Debug-iphoneos/libSDL2.a\" \"${TARGET_BUILD_DIR}/../Debug-iphonesimulator/libSDL2.a\" -output \"${TARGET_BUILD_DIR}/../ios/debug/libSDL2.a\"\n";
+			shellScript = "TARGET=libSDL-iOS\nOUTPUT=libSDL2.a\n\nxcodebuild -target \"$TARGET\" -configuration Debug -sdk iphonesimulator ONLY_ACTIVE_ARCH=NO BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" clean build\nxcodebuild -target \"$TARGET\" -configuration Release -sdk iphonesimulator ONLY_ACTIVE_ARCH=NO BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" clean build\nxcodebuild -target \"$TARGET\" ONLY_ACTIVE_ARCH=NO -configuration Debug -sdk iphoneos  BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" clean build\nxcodebuild -target \"$TARGET\" ONLY_ACTIVE_ARCH=NO -configuration Release -sdk iphoneos  BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" clean build\n\n# make output folders\nmkdir -p output/iOS/debug\nmkdir -p output/iOS/release\n\n# combine lib files for various platforms into one\necho \"Creating output/iOS/debug/$OUTPUT\"\nlipo -create \"${TARGET_BUILD_DIR}/../Debug-iphoneos/$OUTPUT\" \"${TARGET_BUILD_DIR}/../Debug-iphonesimulator/$OUTPUT\" -output \"output/iOS/debug/$OUTPUT\"\necho \"Creating output/iOS/release/$OUTPUT\"\nlipo -create \"${TARGET_BUILD_DIR}/../Release-iphoneos/$OUTPUT\" \"${TARGET_BUILD_DIR}/../Release-iphonesimulator/$OUTPUT\" -output \"output/iOS/release/$OUTPUT\"\n";
 		};
 		C14357731F4C4F2A000B792B /* ShellScript */ = {
 			isa = PBXShellScriptBuildPhase;
@@ -1409,12 +1409,12 @@
 			inputPaths = (
 			);
 			outputPaths = (
-				"${TARGET_BUILD_DIR}/../tvos/release/libSDL2.a",
-				"${TARGET_BUILD_DIR}/../tvos/debug/libSDL2.a",
+				output/tvOS/debug/libSDL2.a,
+				output/tvOS/release/libSDL2.a,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
-			shellScript = "xcodebuild -target \"libSDL-tvOS\" ONLY_ACTIVE_ARCH=NO -configuration Release -sdk appletvos  BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" clean build\nxcodebuild -target \"libSDL-tvOS\" ONLY_ACTIVE_ARCH=NO -configuration Debug -sdk appletvos  BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" clean build\nxcodebuild -target \"libSDL-tvOS\" -configuration Release -sdk appletvsimulator ONLY_ACTIVE_ARCH=NO BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" clean build\nxcodebuild -target \"libSDL-tvOS\" -configuration Debug -sdk appletvsimulator ONLY_ACTIVE_ARCH=NO BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" clean build\n\n# make output folders\nmkdir -p ${TARGET_BUILD_DIR}/../tvos/release\nmkdir -p ${TARGET_BUILD_DIR}/../tvos/debug\n\n# combine lib files for various platforms into one\nlipo -create \"${TARGET_BUILD_DIR}/../Release-appletvos/libSDL2.a\" \"${TARGET_BUILD_DIR}/../Release-appletvsimulator/libSDL2.a\" -output \"${TARGET_BUILD_DIR}/../tvos/release/libSDL2.a\"\nlipo -create \"${TARGET_BUILD_DIR}/../Debug-appletvos/libSDL2.a\" \"${TARGET_BUILD_DIR}/../Debug-appletvsimulator/libSDL2.a\" -output \"${TARGET_BUILD_DIR}/../tvos/debug/libSDL2.a\"\n";
+			shellScript = "TARGET=libSDL-tvOS\nOUTPUT=libSDL2.a\n\nxcodebuild -target \"$TARGET\" -configuration Debug -sdk appletvsimulator ONLY_ACTIVE_ARCH=NO BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" clean build\nxcodebuild -target \"$TARGET\" -configuration Release -sdk appletvsimulator ONLY_ACTIVE_ARCH=NO BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" clean build\nxcodebuild -target \"$TARGET\" ONLY_ACTIVE_ARCH=NO -configuration Debug -sdk appletvos  BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" clean build\nxcodebuild -target \"$TARGET\" ONLY_ACTIVE_ARCH=NO -configuration Release -sdk appletvos  BUILD_DIR=\"${BUILD_DIR}\" BUILD_ROOT=\"${BUILD_ROOT}\" clean build\n\n# make output folders\nmkdir -p output/tvOS/debug\nmkdir -p output/tvOS/release\n\n# combine lib files for various platforms into one\necho \"Creating output/tvOS/debug/$OUTPUT\"\nlipo -create \"${TARGET_BUILD_DIR}/../Debug-appletvos/$OUTPUT\" \"${TARGET_BUILD_DIR}/../Debug-appletvsimulator/$OUTPUT\" -output \"output/tvOS/debug/$OUTPUT\"\necho \"Creating output/tvOS/release/$OUTPUT\"\nlipo -create \"${TARGET_BUILD_DIR}/../Release-appletvos/$OUTPUT\" \"${TARGET_BUILD_DIR}/../Release-appletvsimulator/$OUTPUT\" -output \"output/tvOS/release/$OUTPUT\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
