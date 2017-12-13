@@ -45,6 +45,7 @@ struct SDL_PrivateAudioData
     IAudioRenderClient *render;
     IAudioCaptureClient *capture;
     SDL_AudioStream *capturestream;
+    HANDLE event;
     HANDLE task;
     SDL_bool coinitialized;
     int framesize;
