@@ -33,7 +33,7 @@
 #endif
 
 
-/* Sets an error message based on GetLastError() */
+/* Sets an error message based on an HRESULT */
 int
 WIN_SetErrorFromHRESULT(const char *prefix, HRESULT hr)
 {
