@@ -1248,7 +1248,7 @@ UpdateLogicalSize(SDL_Renderer *renderer)
     SDL_Rect viewport;
     /* 0 is for letterbox, 1 is for overscan */
     int scale_policy = 0;
-    const char *hint = SDL_GetHint(SDL_HINT_RENDER_LOGICAL_SIZE_MODE);
+    const char *hint;
 
     if (!renderer->logical_w || !renderer->logical_h) {
         return 0;
@@ -1257,23 +1257,20 @@ UpdateLogicalSize(SDL_Renderer *renderer)
         return -1;
     }
 
-    if (!hint) {
-        scale_policy = 0;
-    } else if ( *hint == '1' || SDL_strcasecmp(hint, "overscan") == 0)  {
-        /* Unfortunately, Direct3D 9 does't support negative viewport numbers
-        which the main overscan implementation relies on.
-        D3D11 does support negative values and uses a different id string
-        so overscan will work for D3D11.
+    hint = SDL_GetHint(SDL_HINT_RENDER_LOGICAL_SIZE_MODE);
+    if (hint && (*hint == '1' || SDL_strcasecmp(hint, "overscan") == 0))  {
+        SDL_bool overscan_supported = SDL_TRUE;
+        /* Unfortunately, Direct3D 9 doesn't support negative viewport numbers
+           which the overscan implementation relies on.
         */
-        if(SDL_strcasecmp("direct3d", SDL_GetCurrentVideoDriver())) {
-            scale_policy = 0;
-        } else {
+        if (SDL_strcasecmp(SDL_GetCurrentVideoDriver(), "direct3d") == 0) {
+            overscan_supported = SDL_FALSE;
+        }
+        if (overscan_supported) {
             scale_policy = 1;
         }
-    } else {
-        scale_policy = 0;
     }
-    
+
     want_aspect = (float)renderer->logical_w / renderer->logical_h;
     real_aspect = (float)w / h;
 
