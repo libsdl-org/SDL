@@ -78,7 +78,7 @@ static int instance_counter = 0;
 static int
 keycode_to_SDL(int keycode)
 {
-    /* FIXME: If this function gets too unwiedly in the future, replace with a lookup table */
+    /* FIXME: If this function gets too unwieldy in the future, replace with a lookup table */
     int button = 0;
     switch(keycode) 
     {
@@ -110,6 +110,7 @@ keycode_to_SDL(int keycode)
         case AKEYCODE_BUTTON_START:
             button = SDL_CONTROLLER_BUTTON_START;
             break;
+        case AKEYCODE_BACK:
         case AKEYCODE_BUTTON_SELECT:
             button = SDL_CONTROLLER_BUTTON_BACK;
             break;
@@ -146,10 +147,6 @@ keycode_to_SDL(int keycode)
             /* This is handled better by applications as the A button */
             /*button = SDL_CONTROLLER_BUTTON_MAX+4; /* Not supported by GameController */
             button = SDL_CONTROLLER_BUTTON_A;
-            break;
-
-        case AKEYCODE_BACK:
-            button = SDL_CONTROLLER_BUTTON_B;
             break;
 
         /* More gamepad buttons (API 12), these get mapped to 20...35*/
