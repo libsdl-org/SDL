@@ -911,6 +911,13 @@ static ControllerMapping_t *SDL_PrivateGetControllerMapping(int device_index)
     ControllerMapping_t *mapping;
 
     SDL_LockJoysticks();
+
+    if ((device_index < 0) || (device_index >= SDL_NumJoysticks())) {
+        SDL_SetError("There are %d joysticks available", SDL_NumJoysticks());
+        SDL_UnlockJoysticks();
+        return (NULL);
+    }
+
     name = SDL_JoystickNameForIndex(device_index);
     guid = SDL_JoystickGetDeviceGUID(device_index);
     mapping = SDL_PrivateGetControllerMappingForNameAndGUID(name, guid);
@@ -1353,12 +1360,13 @@ SDL_GameControllerOpen(int device_index)
     SDL_GameController *gamecontrollerlist;
     ControllerMapping_t *pSupportedController = NULL;
 
+    SDL_LockJoysticks();
+
     if ((device_index < 0) || (device_index >= SDL_NumJoysticks())) {
         SDL_SetError("There are %d joysticks available", SDL_NumJoysticks());
+        SDL_UnlockJoysticks();
         return (NULL);
     }
-
-    SDL_LockJoysticks();
 
     gamecontrollerlist = SDL_gamecontrollers;
     /* If the controller is already open, return it */
