@@ -1508,7 +1508,7 @@ class SDLInputConnection extends BaseInputConnection {
          */
 
         if (event.getKeyCode() == 66) {
-            String imeHide = SDLActivity.nativeGetHint("SDL_ANDROID_RETURN_HIDES_IME");
+            String imeHide = SDLActivity.nativeGetHint("SDL_RETURN_KEY_HIDES_IME");
             if ((imeHide != null) && imeHide.equals("1")) {
                 Context c = SDL.getContext();
                 if (c instanceof SDLActivity) {
