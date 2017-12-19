@@ -166,6 +166,7 @@ public class SDLActivity extends Activity {
 
         if (mBrokenLibraries)
         {
+            mSingleton = this;
             AlertDialog.Builder dlgAlert  = new AlertDialog.Builder(this);
             dlgAlert.setMessage("An error occurred while trying to start the application. Please try again and/or reinstall."
                   + System.getProperty("line.separator")
