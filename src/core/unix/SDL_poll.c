@@ -24,7 +24,6 @@
 #include "SDL_assert.h"
 #include "SDL_poll.h"
 
-#undef HAVE_POLL
 #ifdef HAVE_POLL
 #include <poll.h>
 #else
