@@ -391,6 +391,18 @@
 		562C4AEA1D8F496300AF9EBE /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A7381E931D8B69C300B177DD /* AudioToolbox.framework */; };
 		562D3C7C1D8F4933003FEEE6 /* SDL_coreaudio.m in Sources */ = {isa = PBXBuildFile; fileRef = FABA34C61D8B5DB100915323 /* SDL_coreaudio.m */; };
 		562D3C7D1D8F4933003FEEE6 /* SDL_coreaudio.m in Sources */ = {isa = PBXBuildFile; fileRef = FABA34C61D8B5DB100915323 /* SDL_coreaudio.m */; };
+		564624361FF821C20074AC87 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 564624351FF821B80074AC87 /* QuartzCore.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		564624381FF821DA0074AC87 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 564624371FF821CB0074AC87 /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		564624391FF821EF0074AC87 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 564624351FF821B80074AC87 /* QuartzCore.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		5646243A1FF821FF0074AC87 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 564624371FF821CB0074AC87 /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		5646243B1FF822100074AC87 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 564624351FF821B80074AC87 /* QuartzCore.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		5646243C1FF822170074AC87 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 564624371FF821CB0074AC87 /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		565AF96A1FF8238D0077498A /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 565AF9691FF823840077498A /* QuartzCore.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		565AF96B1FF8238E0077498A /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 565AF9691FF823840077498A /* QuartzCore.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		565AF96C1FF8238E0077498A /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 565AF9691FF823840077498A /* QuartzCore.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		565AF96D1FF823980077498A /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 565AF9681FF8237A0077498A /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		565AF96E1FF823980077498A /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 565AF9681FF8237A0077498A /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		565AF96F1FF823990077498A /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 565AF9681FF8237A0077498A /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		566CDE8F148F0AC200C5A9BB /* SDL_dropevents_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 566CDE8D148F0AC200C5A9BB /* SDL_dropevents_c.h */; };
 		566CDE90148F0AC200C5A9BB /* SDL_dropevents.c in Sources */ = {isa = PBXBuildFile; fileRef = 566CDE8E148F0AC200C5A9BB /* SDL_dropevents.c */; };
 		567E2F1C17C44BB2005F1892 /* SDL_sysfilesystem.m in Sources */ = {isa = PBXBuildFile; fileRef = 567E2F1B17C44BB2005F1892 /* SDL_sysfilesystem.m */; };
@@ -610,7 +622,6 @@
 		AADC5A4E1FDA05D400960936 /* SDL_vulkan_internal.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D16644C1EDD6023003DE88E /* SDL_vulkan_internal.h */; };
 		AADC5A4F1FDA05E600960936 /* SDL_cocoavulkan.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D1664511EDD60AD003DE88E /* SDL_cocoavulkan.h */; };
 		AADC5A501FDA05E600960936 /* SDL_cocoavulkan.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D1664511EDD60AD003DE88E /* SDL_cocoavulkan.h */; };
-		AADC5A5B1FDA0E3B00960936 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AADC5A591FDA0E0800960936 /* QuartzCore.framework */; };
 		BBFC088D164C6647003E6A99 /* SDL_gamecontroller.c in Sources */ = {isa = PBXBuildFile; fileRef = BBFC088A164C6514003E6A99 /* SDL_gamecontroller.c */; };
 		D55A1B81179F262300625D7C /* SDL_cocoamousetap.h in Headers */ = {isa = PBXBuildFile; fileRef = D55A1B7F179F262300625D7C /* SDL_cocoamousetap.h */; };
 		D55A1B82179F262300625D7C /* SDL_cocoamousetap.m in Sources */ = {isa = PBXBuildFile; fileRef = D55A1B80179F262300625D7C /* SDL_cocoamousetap.m */; };
@@ -1080,6 +1091,10 @@
 		4D7517281EE2562B00820EEA /* SDL_cocoametalview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_cocoametalview.h; sourceTree = "<group>"; };
 		56115BB91DF72C6D00F47E1E /* SDL_dataqueue.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_dataqueue.c; path = ../../src/SDL_dataqueue.c; sourceTree = "<group>"; };
 		56115BBA1DF72C6D00F47E1E /* SDL_dataqueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_dataqueue.h; path = ../../src/SDL_dataqueue.h; sourceTree = "<group>"; };
+		564624351FF821B80074AC87 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
+		564624371FF821CB0074AC87 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		565AF9681FF8237A0077498A /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Metal.framework; sourceTree = "<group>"; };
+		565AF9691FF823840077498A /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/QuartzCore.framework; sourceTree = DEVELOPER_DIR; };
 		566CDE8D148F0AC200C5A9BB /* SDL_dropevents_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_dropevents_c.h; sourceTree = "<group>"; };
 		566CDE8E148F0AC200C5A9BB /* SDL_dropevents.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_dropevents.c; sourceTree = "<group>"; };
 		567E2F1B17C44BB2005F1892 /* SDL_sysfilesystem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SDL_sysfilesystem.m; path = ../../src/filesystem/cocoa/SDL_sysfilesystem.m; sourceTree = "<group>"; };
@@ -1173,7 +1188,6 @@
 		AADA5B8616CCAB3000107CF7 /* SDL_bits.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_bits.h; sourceTree = "<group>"; };
 		AADC5A411FDA035D00960936 /* SDL_shaders_metal_osx.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_shaders_metal_osx.h; sourceTree = "<group>"; };
 		AADC5A421FDA035D00960936 /* SDL_render_metal.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_render_metal.m; sourceTree = "<group>"; };
-		AADC5A591FDA0E0800960936 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = QuartzCore.framework; sourceTree = "<group>"; };
 		BBFC088A164C6514003E6A99 /* SDL_gamecontroller.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_gamecontroller.c; sourceTree = "<group>"; };
 		BECDF66B0761BA81005FE872 /* Info-Framework.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "Info-Framework.plist"; sourceTree = "<group>"; };
 		BECDF66C0761BA81005FE872 /* SDL2.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SDL2.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1195,15 +1209,18 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				564624381FF821DA0074AC87 /* Metal.framework in Frameworks */,
+				564624361FF821C20074AC87 /* QuartzCore.framework in Frameworks */,
 				A7381E971D8B6A0300B177DD /* AudioToolbox.framework in Frameworks */,
+				565AF96A1FF8238D0077498A /* QuartzCore.framework in Frameworks */,
 				00D0D0D810675E46004B05EF /* Carbon.framework in Frameworks */,
 				007317A40858DECD00B2BC32 /* Cocoa.framework in Frameworks */,
 				A7381E961D8B69D600B177DD /* CoreAudio.framework in Frameworks */,
 				00D0D08410675DD9004B05EF /* CoreFoundation.framework in Frameworks */,
 				FA73671D19A540EF004122E4 /* CoreVideo.framework in Frameworks */,
 				00CFA89D106B4BA100758660 /* ForceFeedback.framework in Frameworks */,
+				565AF96D1FF823980077498A /* Metal.framework in Frameworks */,
 				007317A60858DECD00B2BC32 /* IOKit.framework in Frameworks */,
-				AADC5A5B1FDA0E3B00960936 /* QuartzCore.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1211,13 +1228,17 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5646243A1FF821FF0074AC87 /* Metal.framework in Frameworks */,
+				564624391FF821EF0074AC87 /* QuartzCore.framework in Frameworks */,
 				56C5237E1D8F4985001F2F30 /* CoreAudio.framework in Frameworks */,
+				565AF96B1FF8238E0077498A /* QuartzCore.framework in Frameworks */,
 				FA73671E19A54140004122E4 /* CoreVideo.framework in Frameworks */,
 				007317AB0858DECD00B2BC32 /* Cocoa.framework in Frameworks */,
 				007317AD0858DECD00B2BC32 /* IOKit.framework in Frameworks */,
 				56C523801D8F498B001F2F30 /* CoreFoundation.framework in Frameworks */,
 				007317C30858E15000B2BC32 /* Carbon.framework in Frameworks */,
 				DB31408B17554D37006C0E22 /* ForceFeedback.framework in Frameworks */,
+				565AF96E1FF823980077498A /* Metal.framework in Frameworks */,
 				562C4AE91D8F496200AF9EBE /* AudioToolbox.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1226,13 +1247,17 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				5646243C1FF822170074AC87 /* Metal.framework in Frameworks */,
+				5646243B1FF822100074AC87 /* QuartzCore.framework in Frameworks */,
 				56C5237F1D8F4985001F2F30 /* CoreAudio.framework in Frameworks */,
+				565AF96C1FF8238E0077498A /* QuartzCore.framework in Frameworks */,
 				FA73671F19A54144004122E4 /* CoreVideo.framework in Frameworks */,
 				DB31406E17554B71006C0E22 /* Cocoa.framework in Frameworks */,
 				DB31407017554B71006C0E22 /* IOKit.framework in Frameworks */,
 				56C523811D8F498C001F2F30 /* CoreFoundation.framework in Frameworks */,
 				DB31407217554B71006C0E22 /* Carbon.framework in Frameworks */,
 				DB31408D17554D3C006C0E22 /* ForceFeedback.framework in Frameworks */,
+				565AF96F1FF823990077498A /* Metal.framework in Frameworks */,
 				562C4AEA1D8F496300AF9EBE /* AudioToolbox.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1766,6 +1791,7 @@
 				034768DDFF38A45A11DB9C8B /* Products */,
 				BECDF66B0761BA81005FE872 /* Info-Framework.plist */,
 				BEC562FE0761C0E800A33029 /* Linked Frameworks */,
+				564624341FF821B70074AC87 /* Frameworks */,
 			);
 			comments = "To build Universal Binaries, we have experimented with a variety of different options.\nThe complication is that we must retain compatibility with at least 10.2. \nThe Universal Binary defaults only work for > 10.3.9\n\nSo far, we have found:\ngcc 4.0.0 with Xcode 2.1 always links against libgcc_s. gcc 4.0.1 from Xcode 2.2 fixes this problem.\n\nBut gcc 4.0 will not work with < 10.3.9 because we continue to get an undefined symbol to _fprintf$LDBL128.\nSo we must use gcc 3.3 on PPC to accomplish 10.2 support. (But 4.0 is required for i386.)\n\nSetting the deployment target to 10.4 will disable prebinding, so for PPC, we set it less than 10.4 to preserve prebinding for legacy support.\n\nSetting the PPC SDKROOT to /Developers/SDKs/MacOSX10.2.8.sdk will link to 63.0.0 libSystem.B.dylib. Leaving it at current or 10.4u links to 88.1.2. However, as long as we are using gcc 3.3, it doesn't seem to matter as testing has demonstrated both will run. We have decided not to invoke the 10.2.8 SDK because it is not a default installed component with Xcode which will probably cause most people problems. However, rather than deleting the SDKROOT_ppc entry entirely, we have mapped it to 10.4u in case we decide we need to change this setting.\n\nTo use Altivec or SSE, we needed architecture specific flags:\nOTHER_CFLAGS_ppc\nOTHER_CFLAGS_i386\nOTHER_CFLAGS=$(OTHER_CFLAGS_($CURRENT_ARCH))\n\nThe general OTHER_CFLAGS needed to be manually mapped to architecture specific options because Xcode didn't do this automatically for us.\n\n\n";
 			indentWidth = 4;
@@ -1812,6 +1838,15 @@
 				04BDFE5C12E6671700899322 /* SDL.c */,
 			);
 			name = "Library Source";
+			sourceTree = "<group>";
+		};
+		564624341FF821B70074AC87 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				564624371FF821CB0074AC87 /* Metal.framework */,
+				564624351FF821B80074AC87 /* QuartzCore.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		567E2F1F17C44BBB005F1892 /* filesystem */ = {
@@ -1866,6 +1901,8 @@
 		BEC562FE0761C0E800A33029 /* Linked Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				565AF9691FF823840077498A /* QuartzCore.framework */,
+				565AF9681FF8237A0077498A /* Metal.framework */,
 				A7381E931D8B69C300B177DD /* AudioToolbox.framework */,
 				007317C10858E15000B2BC32 /* Carbon.framework */,
 				0073179D0858DECD00B2BC32 /* Cocoa.framework */,
@@ -1874,7 +1911,6 @@
 				FA73671C19A540EF004122E4 /* CoreVideo.framework */,
 				00CFA89C106B4BA100758660 /* ForceFeedback.framework */,
 				0073179F0858DECD00B2BC32 /* IOKit.framework */,
-				AADC5A591FDA0E0800960936 /* QuartzCore.framework */,
 			);
 			name = "Linked Frameworks";
 			sourceTree = "<group>";
