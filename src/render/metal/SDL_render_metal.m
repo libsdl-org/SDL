@@ -324,7 +324,7 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     data.mtlpipelinecopylinear = [[NSMutableArray alloc] init];
     MakePipelineStates(data, data.mtlpipelinecopylinear, @"SDL texture pipeline (linear)", @"SDL_Copy_vertex", @"SDL_Copy_fragment_linear");
 
-    static const float clearverts[] = { -1, -1, -1, 1, 1, 1, 1, -1, -1, -1 };
+    static const float clearverts[] = { -1, -1,  -1, 3,  3, -1 };
     data.mtlbufclearverts = [data.mtldevice newBufferWithBytes:clearverts length:sizeof(clearverts) options:MTLResourceCPUCacheModeWriteCombined];
     data.mtlbufclearverts.label = @"SDL_RenderClear vertices";
 
@@ -562,12 +562,12 @@ METAL_RenderClear(SDL_Renderer * renderer)
     viewport.znear = 0.0;
     viewport.zfar = 1.0;
 
-    // Draw as if we're doing a simple filled rect to the screen now.
+    // Draw a simple filled fullscreen triangle now.
     [data.mtlcmdencoder setViewport:viewport];
     [data.mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data.mtlpipelineprims, renderer->blendMode)];
     [data.mtlcmdencoder setVertexBuffer:data.mtlbufclearverts offset:0 atIndex:0];
     [data.mtlcmdencoder setFragmentBytes:color length:sizeof(color) atIndex:0];
-    [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:5];
+    [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:3];
 
     // reset the viewport for the rest of our usual drawing work...
     viewport.originX = renderer->viewport.x;
@@ -675,13 +675,12 @@ METAL_RenderFillRects(SDL_Renderer * renderer, const SDL_FRect * rects, int coun
         const float verts[] = {
             normx(rects->x, w), normy(rects->y + rects->h, h),
             normx(rects->x, w), normy(rects->y, h),
-            normx(rects->x + rects->w, w), normy(rects->y, h),
-            normx(rects->x, w), normy(rects->y + rects->h, h),
-            normx(rects->x + rects->w, w), normy(rects->y + rects->h, h)
+            normx(rects->x + rects->w, w), normy(rects->y + rects->h, h),
+            normx(rects->x + rects->w, w), normy(rects->y, h)
         };
 
         [data.mtlcmdencoder setVertexBytes:verts length:sizeof(verts) atIndex:0];
-        [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:5];
+        [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:4];
     }
 
     return 0;
@@ -702,17 +701,15 @@ METAL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
     const float xy[] = {
         normx(dstrect->x, w), normy(dstrect->y + dstrect->h, h),
         normx(dstrect->x, w), normy(dstrect->y, h),
-        normx(dstrect->x + dstrect->w, w), normy(dstrect->y, h),
-        normx(dstrect->x, w), normy(dstrect->y + dstrect->h, h),
-        normx(dstrect->x + dstrect->w, w), normy(dstrect->y + dstrect->h, h)
+        normx(dstrect->x + dstrect->w, w), normy(dstrect->y + dstrect->h, h),
+        normx(dstrect->x + dstrect->w, w), normy(dstrect->y, h)
     };
 
     const float uv[] = {
         normtex(srcrect->x, texw), normtex(srcrect->y + srcrect->h, texh),
         normtex(srcrect->x, texw), normtex(srcrect->y, texh),
-        normtex(srcrect->x + srcrect->w, texw), normtex(srcrect->y, texh),
-        normtex(srcrect->x, texw), normtex(srcrect->y + srcrect->h, texh),
-        normtex(srcrect->x + srcrect->w, texw), normtex(srcrect->y + srcrect->h, texh)
+        normtex(srcrect->x + srcrect->w, texw), normtex(srcrect->y + srcrect->h, texh),
+        normtex(srcrect->x + srcrect->w, texw), normtex(srcrect->y, texh)
     };
 
     float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
@@ -728,7 +725,7 @@ METAL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
     [data.mtlcmdencoder setFragmentTexture:texturedata.mtltexture atIndex:0];
     [data.mtlcmdencoder setVertexBytes:xy length:sizeof(xy) atIndex:0];
     [data.mtlcmdencoder setVertexBytes:uv length:sizeof(uv) atIndex:1];
-    [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:5];
+    [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:4];
 
     return 0;
 }}
