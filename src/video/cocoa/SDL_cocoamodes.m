@@ -340,29 +340,53 @@ void
 Cocoa_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
 {
     SDL_DisplayData *data = (SDL_DisplayData *) display->driverdata;
-    CFArrayRef modes = CGDisplayCopyAllDisplayModes(data->display, NULL);
+    CVDisplayLinkRef link = NULL;
+    CGDisplayModeRef desktopmoderef;
+    SDL_DisplayMode desktopmode;
+    CFArrayRef modes;
+
+    CVDisplayLinkCreateWithCGDisplay(data->display, &link);
+
+    desktopmoderef = CGDisplayCopyDisplayMode(data->display);
+
+    /* CopyAllDisplayModes won't always contain the desktop display mode (if
+     * NULL is passed in) - for example on a retina 15" MBP, System Preferences
+     * allows choosing 1920x1200 but it's not in the list. AddDisplayMode makes
+     * sure there are no duplicates so it's safe to always add the desktop mode
+     * even in cases where it is in the CopyAllDisplayModes list.
+     */
+    if (desktopmoderef && GetDisplayMode(_this, desktopmoderef, link, &desktopmode)) {
+        if (!SDL_AddDisplayMode(display, &desktopmode)) {
+            CGDisplayModeRelease(desktopmoderef);
+            SDL_free(desktopmode.driverdata);
+        }
+    } else {
+        CGDisplayModeRelease(desktopmoderef);
+    }
+
+    modes = CGDisplayCopyAllDisplayModes(data->display, NULL);
 
     if (modes) {
-        CVDisplayLinkRef link = NULL;
-        const CFIndex count = CFArrayGetCount(modes);
         CFIndex i;
-
-        CVDisplayLinkCreateWithCGDisplay(data->display, &link);
+        const CFIndex count = CFArrayGetCount(modes);
 
         for (i = 0; i < count; i++) {
             CGDisplayModeRef moderef = (CGDisplayModeRef) CFArrayGetValueAtIndex(modes, i);
             SDL_DisplayMode mode;
+
             if (GetDisplayMode(_this, moderef, link, &mode)) {
-                CGDisplayModeRetain(moderef);
-                if (!SDL_AddDisplayMode(display, &mode)) {
+                if (SDL_AddDisplayMode(display, &mode)) {
+                    CGDisplayModeRetain(moderef);
+                } else {
                     SDL_free(mode.driverdata);
                 }
             }
         }
 
-        CVDisplayLinkRelease(link);
         CFRelease(modes);
     }
+
+    CVDisplayLinkRelease(link);
 }
 
 int
