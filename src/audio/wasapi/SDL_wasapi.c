@@ -84,7 +84,7 @@ WStrLen(const WCHAR *wstr)
 static WCHAR *
 WStrDupe(const WCHAR *wstr)
 {
-    const int len = (WStrLen(wstr) + 1) * sizeof (WCHAR);
+    const size_t len = (WStrLen(wstr) + 1) * sizeof (WCHAR);
     WCHAR *retval = (WCHAR *) SDL_malloc(len);
     if (retval) {
         SDL_memcpy(retval, wstr, len);
@@ -323,7 +323,7 @@ WASAPI_WaitDevice(_THIS)
 {
     while (RecoverWasapiIfLost(this) && this->hidden->client && this->hidden->event) {
         /*SDL_Log("WAITDEVICE");*/
-        if (WaitForSingleObject(this->hidden->event, INFINITE) == WAIT_OBJECT_0) {
+        if (WaitForSingleObjectEx(this->hidden->event, INFINITE, FALSE) == WAIT_OBJECT_0) {
             const UINT32 maxpadding = this->spec.samples;
             UINT32 padding = 0;
             if (!WasapiFailed(this, IAudioClient_GetCurrentPadding(this->hidden->client, &padding))) {
@@ -530,7 +530,12 @@ WASAPI_PrepDevice(_THIS, const SDL_bool updatestream)
 
     SDL_assert(client != NULL);
 
+#ifdef __WINRT__  /* CreateEventEx() arrived in Vista, so we need an #ifdef for XP. */
+    this->hidden->event = CreateEventEx(NULL, NULL, 0, EVENT_ALL_ACCESS);
+#else
     this->hidden->event = CreateEventW(NULL, 0, 0, NULL);
+#endif
+
     if (this->hidden->event == NULL) {
         return WIN_SetError("WASAPI can't create an event handle");
     }
