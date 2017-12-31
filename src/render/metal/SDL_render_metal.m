@@ -324,7 +324,7 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     data.mtlpipelinecopylinear = [[NSMutableArray alloc] init];
     MakePipelineStates(data, data.mtlpipelinecopylinear, @"SDL texture pipeline (linear)", @"SDL_Copy_vertex", @"SDL_Copy_fragment_linear");
 
-    static const float clearverts[] = { -1, -1,  -1, 3,  3, -1 };
+    static const float clearverts[] = { 0, 0,  0, 3,  3, 0 };
     data.mtlbufclearverts = [data.mtldevice newBufferWithBytes:clearverts length:sizeof(clearverts) options:MTLResourceCPUCacheModeWriteCombined];
     data.mtlbufclearverts.label = @"SDL_RenderClear vertices";
 
@@ -505,6 +505,39 @@ METAL_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
 }}
 
 static int
+METAL_SetOrthographicProjection(SDL_Renderer *renderer, int w, int h)
+{ @autoreleasepool {
+    METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
+    float projection[4][4];
+
+    if (!w || !h) {
+        return 0;
+    }
+
+    /* Prepare an orthographic projection */
+    projection[0][0] = 2.0f / w;
+    projection[0][1] = 0.0f;
+    projection[0][2] = 0.0f;
+    projection[0][3] = 0.0f;
+    projection[1][0] = 0.0f;
+    projection[1][1] = -2.0f / h;
+    projection[1][2] = 0.0f;
+    projection[1][3] = 0.0f;
+    projection[2][0] = 0.0f;
+    projection[2][1] = 0.0f;
+    projection[2][2] = 0.0f;
+    projection[2][3] = 0.0f;
+    projection[3][0] = -1.0f;
+    projection[3][1] = 1.0f;
+    projection[3][2] = 0.0f;
+    projection[3][3] = 1.0f;
+
+    // !!! FIXME: This should be in a buffer...
+    [data.mtlcmdencoder setVertexBytes:projection length:sizeof(float)*16 atIndex:2];
+    return 0;
+}}
+
+static int
 METAL_UpdateViewport(SDL_Renderer * renderer)
 { @autoreleasepool {
     METAL_ActivateRenderer(renderer);
@@ -517,6 +550,7 @@ METAL_UpdateViewport(SDL_Renderer * renderer)
     viewport.znear = 0.0;
     viewport.zfar = 1.0;
     [data.mtlcmdencoder setViewport:viewport];
+    METAL_SetOrthographicProjection(renderer, renderer->viewport.w, renderer->viewport.h);
     return 0;
 }}
 
@@ -563,6 +597,7 @@ METAL_RenderClear(SDL_Renderer * renderer)
     viewport.zfar = 1.0;
 
     // Draw a simple filled fullscreen triangle now.
+    METAL_SetOrthographicProjection(renderer, 1, 1);
     [data.mtlcmdencoder setViewport:viewport];
     [data.mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data.mtlpipelineprims, renderer->blendMode)];
     [data.mtlcmdencoder setVertexBuffer:data.mtlbufclearverts offset:0 atIndex:0];
@@ -577,25 +612,10 @@ METAL_RenderClear(SDL_Renderer * renderer)
     viewport.znear = 0.0;
     viewport.zfar = 1.0;
     [data.mtlcmdencoder setViewport:viewport];
+    METAL_SetOrthographicProjection(renderer, renderer->viewport.w, renderer->viewport.h);
 
     return 0;
 }}
-
-// normalize a value from 0.0f to len into -1.0f to 1.0f.
-static inline float
-normx(const float _val, const float len)
-{
-    const float val = (_val < 0.0f) ? 0.0f : (_val > len) ? len : _val;
-    return (((val + 0.5f) / len) * 2.0f) - 1.0f;
-}
-
-// normalize a value from 0.0f to len into -1.0f to 1.0f.
-static inline float
-normy(const float _val, const float len)
-{
-    const float val = (_val <= 0.0f) ? len : (_val >= len) ? 0.0f : (len - _val);
-    return (((val - 0.5f) / len) * 2.0f) - 1.0f;
-}
 
 // normalize a value from 0.0f to len into 0.0f to 1.0f.
 static inline float
@@ -611,12 +631,7 @@ DrawVerts(SDL_Renderer * renderer, const SDL_FPoint * points, int count,
 { @autoreleasepool {
     METAL_ActivateRenderer(renderer);
 
-    const size_t vertlen = (sizeof (float) * 2) * count;
-    float *verts = SDL_malloc(vertlen);
-    if (!verts) {
-        return SDL_OutOfMemory();
-    }
-
+    const size_t vertlen = sizeof(SDL_FPoint) * count;
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
 
     // !!! FIXME: render color should live in a dedicated uniform buffer.
@@ -624,21 +639,8 @@ DrawVerts(SDL_Renderer * renderer, const SDL_FPoint * points, int count,
 
     [data.mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data.mtlpipelineprims, renderer->blendMode)];
     [data.mtlcmdencoder setFragmentBytes:color length:sizeof(color) atIndex:0];
-
-    const float w = (float)renderer->viewport.w;
-    const float h = (float)renderer->viewport.h;
-
-    // !!! FIXME: we can convert this in the shader. This will save the malloc and for-loop, but we still need to upload.
-    float *ptr = verts;
-    for (int i = 0; i < count; i++, points++) {
-        *ptr = normx(points->x, w); ptr++;
-        *ptr = normy(points->y, h); ptr++;
-    }
-
-    [data.mtlcmdencoder setVertexBytes:verts length:vertlen atIndex:0];
+    [data.mtlcmdencoder setVertexBytes:points length:vertlen atIndex:0];
     [data.mtlcmdencoder drawPrimitives:primtype vertexStart:0 vertexCount:count];
-
-    SDL_free(verts);
     return 0;
 }}
 
@@ -666,17 +668,14 @@ METAL_RenderFillRects(SDL_Renderer * renderer, const SDL_FRect * rects, int coun
     [data.mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data.mtlpipelineprims, renderer->blendMode)];
     [data.mtlcmdencoder setFragmentBytes:color length:sizeof(color) atIndex:0];
 
-    const float w = (float)renderer->viewport.w;
-    const float h = (float)renderer->viewport.h;
-
     for (int i = 0; i < count; i++, rects++) {
         if ((rects->w <= 0.0f) || (rects->h <= 0.0f)) continue;
 
         const float verts[] = {
-            normx(rects->x, w), normy(rects->y + rects->h, h),
-            normx(rects->x, w), normy(rects->y, h),
-            normx(rects->x + rects->w, w), normy(rects->y + rects->h, h),
-            normx(rects->x + rects->w, w), normy(rects->y, h)
+            rects->x, rects->y + rects->h,
+            rects->x, rects->y,
+            rects->x + rects->w, rects->y + rects->h,
+            rects->x + rects->w, rects->y,
         };
 
         [data.mtlcmdencoder setVertexBytes:verts length:sizeof(verts) atIndex:0];
@@ -693,16 +692,14 @@ METAL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
     METAL_ActivateRenderer(renderer);
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
     METAL_TextureData *texturedata = (__bridge METAL_TextureData *)texture->driverdata;
-    const float w = (float)renderer->viewport.w;
-    const float h = (float)renderer->viewport.h;
     const float texw = (float) texturedata.mtltexture.width;
     const float texh = (float) texturedata.mtltexture.height;
 
     const float xy[] = {
-        normx(dstrect->x, w), normy(dstrect->y + dstrect->h, h),
-        normx(dstrect->x, w), normy(dstrect->y, h),
-        normx(dstrect->x + dstrect->w, w), normy(dstrect->y + dstrect->h, h),
-        normx(dstrect->x + dstrect->w, w), normy(dstrect->y, h)
+        dstrect->x, dstrect->y + dstrect->h,
+        dstrect->x, dstrect->y,
+        dstrect->x + dstrect->w, dstrect->y + dstrect->h,
+        dstrect->x + dstrect->w, dstrect->y
     };
 
     const float uv[] = {
