@@ -356,8 +356,14 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->info = METAL_RenderDriver.info;
     renderer->info.flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
 
-    // !!! FIXME: how do you control this in Metal?
-    renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
+#if defined(__MACOSX__) && defined(MAC_OS_X_VERSION_10_13)
+    if (@available(macOS 10.13, *)) {
+        layer.displaySyncEnabled = (flags & SDL_RENDERER_PRESENTVSYNC) != 0;
+    } else
+#endif
+    {
+        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
+    }
 
     return renderer;
 }
