@@ -29,12 +29,12 @@
 #include "../SDL_sysrender.h"
 
 #ifdef __MACOSX__
-#include <Cocoa/Cocoa.h>
+#include "../../video/cocoa/SDL_cocoametalview.h"
 #else
 #include "../../video/uikit/SDL_uikitmetalview.h"
 #endif
-#include <Metal/Metal.h>
-#include <QuartzCore/CAMetalLayer.h>
+#import <Metal/Metal.h>
+#import <QuartzCore/CAMetalLayer.h>
 
 /* Regenerate these with build-metal-shaders.sh */
 #ifdef __MACOSX__
@@ -279,21 +279,15 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
 
     // !!! FIXME: error checking on all of this.
 
-    NSView *nsview = [syswm.info.cocoa.window contentView];
-
-    // CAMetalLayer is available in QuartzCore starting at OSX 10.11
-    CAMetalLayer *layer = [NSClassFromString( @"CAMetalLayer" ) layer];
+    NSView *view = Cocoa_Mtl_AddMetalView(window);
+    CAMetalLayer *layer = (CAMetalLayer *)[view layer];
 
     layer.device = mtldevice;
-    //layer.pixelFormat = MTLPixelFormatBGRA8Unorm;  // !!! FIXME: MTLPixelFormatBGRA8Unorm_sRGB ?
+
+    // !!! FIXME: We might want this to be NO for RenderReadPixels.
     layer.framebufferOnly = YES;
-    //layer.drawableSize = (CGSize) [nsview convertRectToBacking:[nsview bounds]].size;
     //layer.colorspace = nil;
 
-    [nsview setWantsLayer:YES];
-    [nsview setLayer:layer];
-
-    [layer retain];
 #else
     UIView *view = UIKit_Mtl_AddMetalView(window);
     CAMetalLayer *layer = (CAMetalLayer *)[view layer];
@@ -358,7 +352,7 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
 
 #if defined(__MACOSX__) && defined(MAC_OS_X_VERSION_10_13)
     if (@available(macOS 10.13, *)) {
-        layer.displaySyncEnabled = (flags & SDL_RENDERER_PRESENTVSYNC) != 0;
+        data.mtllayer.displaySyncEnabled = (flags & SDL_RENDERER_PRESENTVSYNC) != 0;
     } else
 #endif
     {
@@ -401,10 +395,16 @@ METAL_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
 static int
 METAL_GetOutputSize(SDL_Renderer * renderer, int *w, int *h)
 { @autoreleasepool {
-    METAL_ActivateRenderer(renderer);
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
-    *w = (int) data.mtlbackbuffer.texture.width;
-    *h = (int) data.mtlbackbuffer.texture.height;
+    // !!! FIXME: We shouldn't need ActivateRenderer, but drawableSize is 0
+    // in the first frame without it.
+    METAL_ActivateRenderer(renderer);
+    if (w) {
+        *w = (int)data.mtllayer.drawableSize.width;
+    }
+    if (h) {
+        *h = (int)data.mtllayer.drawableSize.height;
+    }
     return 0;
 }}
 
