@@ -184,7 +184,12 @@
 #endif
 
 #ifndef SDL_VIDEO_RENDER_METAL
+/* Metal only supported on 64-bit architectures with 10.11+ */
+#if TARGET_CPU_X86_64 && (MAC_OS_X_VERSION_MAX_ALLOWED >= 101100)
 #define SDL_VIDEO_RENDER_METAL    1
+#else
+#define SDL_VIDEO_RENDER_METAL    0
+#endif
 #endif
 
 /* Enable OpenGL support */
@@ -209,7 +214,7 @@
 #if TARGET_CPU_X86_64 && (MAC_OS_X_VERSION_MAX_ALLOWED >= 101100)
 #define SDL_VIDEO_VULKAN 1
 #else
-#define  SDL_VIDEO_VULKAN 0
+#define SDL_VIDEO_VULKAN 0
 #endif
 
 /* Enable system power support */
