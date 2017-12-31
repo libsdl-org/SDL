@@ -90,11 +90,7 @@ SDL_SemWaitTimeout(SDL_sem * sem, Uint32 timeout)
     } else {
         dwMilliseconds = (DWORD) timeout;
     }
-#if __WINRT__
     switch (WaitForSingleObjectEx(sem->id, dwMilliseconds, FALSE)) {
-#else
-    switch (WaitForSingleObject(sem->id, dwMilliseconds)) {
-#endif
     case WAIT_OBJECT_0:
         InterlockedDecrement(&sem->count);
         retval = 0;
