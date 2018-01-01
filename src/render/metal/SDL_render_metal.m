@@ -116,6 +116,7 @@ SDL_RenderDriver METAL_RenderDriver = {
     @property (nonatomic, retain) NSMutableArray *mtlpipelinecopynearest;
     @property (nonatomic, retain) NSMutableArray *mtlpipelinecopylinear;
     @property (nonatomic, retain) id<MTLBuffer> mtlbufclearverts;
+    @property (nonatomic, retain) id<MTLBuffer> mtlbufidentitytransform;
     @property (nonatomic, retain) CAMetalLayer *mtllayer;
     @property (nonatomic, retain) MTLRenderPassDescriptor *mtlpassdesc;
 @end
@@ -322,6 +323,12 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     data.mtlbufclearverts = [data.mtldevice newBufferWithBytes:clearverts length:sizeof(clearverts) options:MTLResourceCPUCacheModeWriteCombined];
     data.mtlbufclearverts.label = @"SDL_RenderClear vertices";
 
+    float identitytx[16];
+    SDL_memset(identitytx, 0, sizeof(identitytx));
+    identitytx[0] = identitytx[5] = identitytx[10] = identitytx[15] = 1.0f;
+    data.mtlbufidentitytransform = [data.mtldevice newBufferWithBytes:identitytx length:sizeof(identitytx) options:0];
+    data.mtlbufidentitytransform.label = @"SDL_RenderCopy identity transform";
+
     // !!! FIXME: force more clears here so all the drawables are sane to start, and our static buffers are definitely flushed.
 
     renderer->WindowEvent = METAL_WindowEvent;
@@ -446,6 +453,10 @@ METAL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     texturedata.mtltexture = mtltexture;
 
     texture->driverdata = (void*)CFBridgingRetain(texturedata);
+
+#if !__has_feature(objc_arc)
+    [mtltexture release];
+#endif
 
     return 0;
 }}
@@ -724,10 +735,11 @@ METAL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
     }
 
     [data.mtlcmdencoder setRenderPipelineState:ChoosePipelineState(texturedata.mtlpipeline, texture->blendMode)];
-    [data.mtlcmdencoder setFragmentBytes:color length:sizeof(color) atIndex:0];
-    [data.mtlcmdencoder setFragmentTexture:texturedata.mtltexture atIndex:0];
     [data.mtlcmdencoder setVertexBytes:xy length:sizeof(xy) atIndex:0];
     [data.mtlcmdencoder setVertexBytes:uv length:sizeof(uv) atIndex:1];
+    [data.mtlcmdencoder setVertexBuffer:data.mtlbufidentitytransform offset:0 atIndex:3];
+    [data.mtlcmdencoder setFragmentBytes:color length:sizeof(color) atIndex:0];
+    [data.mtlcmdencoder setFragmentTexture:texturedata.mtltexture atIndex:0];
     [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:4];
 
     return 0;
@@ -737,9 +749,83 @@ static int
 METAL_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
               const SDL_Rect * srcrect, const SDL_FRect * dstrect,
               const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip)
-{
-    return SDL_Unsupported();  // !!! FIXME
-}
+{ @autoreleasepool {
+    METAL_ActivateRenderer(renderer);
+    METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
+    METAL_TextureData *texturedata = (__bridge METAL_TextureData *)texture->driverdata;
+    const float texw = (float) texturedata.mtltexture.width;
+    const float texh = (float) texturedata.mtltexture.height;
+    float transform[16];
+    float minu, maxu, minv, maxv;
+
+    minu = normtex(srcrect->x, texw);
+    maxu = normtex(srcrect->x + srcrect->w, texw);
+    minv = normtex(srcrect->y, texh);
+    maxv = normtex(srcrect->y + srcrect->h, texh);
+
+    if (flip & SDL_FLIP_HORIZONTAL) {
+        float tmp = maxu;
+        maxu = minu;
+        minu = tmp;
+    }
+    if (flip & SDL_FLIP_VERTICAL) {
+        float tmp = maxv;
+        maxv = minv;
+        minv = tmp;
+    }
+
+    const float uv[] = {
+        minu, maxv,
+        minu, minv,
+        maxu, maxv,
+        maxu, minv
+    };
+
+    const float xy[] = {
+        -center->x, dstrect->h - center->y,
+        -center->x, -center->y,
+        dstrect->w - center->x, dstrect->h - center->y,
+        dstrect->w - center->x, -center->y,
+    };
+
+    {
+        float rads = (float)(M_PI * (float) angle / 180.0f);
+        float c = cosf(rads), s = sinf(rads);
+        SDL_memset(transform, 0, sizeof(transform));
+
+        // matrix multiplication carried out on paper:
+        // |1     x+c| |c -s    |
+        // |  1   y+c| |s  c    |
+        // |    1    | |     1  |
+        // |        1| |       1|
+        //     move      rotate
+        transform[10] = transform[15] = 1.0f;
+        transform[0]  = c;
+        transform[1]  = s;
+        transform[4]  = -s;
+        transform[5]  = c;
+        transform[12] = dstrect->x + center->x;
+        transform[13] = dstrect->y + center->y;
+    }
+
+    float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+    if (texture->modMode) {
+        color[0] = ((float)texture->r) / 255.0f;
+        color[1] = ((float)texture->g) / 255.0f;
+        color[2] = ((float)texture->b) / 255.0f;
+        color[3] = ((float)texture->a) / 255.0f;
+    }
+
+    [data.mtlcmdencoder setRenderPipelineState:ChoosePipelineState(texturedata.mtlpipeline, texture->blendMode)];
+    [data.mtlcmdencoder setVertexBytes:xy length:sizeof(xy) atIndex:0];
+    [data.mtlcmdencoder setVertexBytes:uv length:sizeof(uv) atIndex:1];
+    [data.mtlcmdencoder setVertexBytes:transform length:sizeof(transform) atIndex:3];
+    [data.mtlcmdencoder setFragmentBytes:color length:sizeof(color) atIndex:0];
+    [data.mtlcmdencoder setFragmentTexture:texturedata.mtltexture atIndex:0];
+    [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:4];
+
+    return 0;
+}}
 
 static int
 METAL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
@@ -826,6 +912,7 @@ METAL_DestroyRenderer(SDL_Renderer * renderer)
         [data.mtlpipelinecopynearest release];
         [data.mtlpipelinecopylinear release];
         [data.mtlbufclearverts release];
+        [data.mtlbufidentitytransform release];
         [data.mtllibrary release];
         [data.mtldevice release];
         [data.mtlpassdesc release];
