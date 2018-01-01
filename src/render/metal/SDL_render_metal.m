@@ -424,7 +424,7 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     data.mtlpipelineprims = MakePipelineCache(data, "SDL primitives pipeline ", SDL_METAL_VERTEX_SOLID, SDL_METAL_FRAGMENT_SOLID);
     data.mtlpipelinecopy = MakePipelineCache(data, "SDL texture pipeline ", SDL_METAL_VERTEX_COPY, SDL_METAL_FRAGMENT_COPY);
 
-    MTLSamplerDescriptor *samplerdesc = [[[MTLSamplerDescriptor alloc] init] autorelease];
+    MTLSamplerDescriptor *samplerdesc = [[MTLSamplerDescriptor alloc] init];
 
     samplerdesc.minFilter = MTLSamplerMinMagFilterNearest;
     samplerdesc.magFilter = MTLSamplerMinMagFilterNearest;
@@ -433,6 +433,10 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     samplerdesc.minFilter = MTLSamplerMinMagFilterLinear;
     samplerdesc.magFilter = MTLSamplerMinMagFilterLinear;
     data.mtlsamplerlinear = [data.mtldevice newSamplerStateWithDescriptor:samplerdesc];
+
+#if !__has_feature(objc_arc)
+    [samplerdesc release];
+#endif
 
     static const float clearverts[] = { 0, 0,  0, 3,  3, 0 };
     data.mtlbufclearverts = [data.mtldevice newBufferWithBytes:clearverts length:sizeof(clearverts) options:MTLResourceCPUCacheModeWriteCombined];
