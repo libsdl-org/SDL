@@ -114,8 +114,7 @@ typedef enum SDL_MetalVertexFunction
 typedef enum SDL_MetalFragmentFunction
 {
     SDL_METAL_FRAGMENT_SOLID,
-    SDL_METAL_FRAGMENT_COPY_NEAREST,
-    SDL_METAL_FRAGMENT_COPY_LINEAR,
+    SDL_METAL_FRAGMENT_COPY,
 } SDL_MetalFragmentFunction;
 
 typedef struct METAL_PipelineState
@@ -142,8 +141,9 @@ typedef struct METAL_PipelineCache
     @property (nonatomic, retain) id<MTLLibrary> mtllibrary;
     @property (nonatomic, retain) id<CAMetalDrawable> mtlbackbuffer;
     @property (nonatomic) METAL_PipelineCache *mtlpipelineprims;
-    @property (nonatomic) METAL_PipelineCache *mtlpipelinecopynearest;
-    @property (nonatomic) METAL_PipelineCache *mtlpipelinecopylinear;
+    @property (nonatomic) METAL_PipelineCache *mtlpipelinecopy;
+    @property (nonatomic, retain) id<MTLSamplerState> mtlsamplernearest;
+    @property (nonatomic, retain) id<MTLSamplerState> mtlsamplerlinear;
     @property (nonatomic, retain) id<MTLBuffer> mtlbufclearverts;
     @property (nonatomic, retain) id<MTLBuffer> mtlbufidentitytransform;
     @property (nonatomic, retain) CAMetalLayer *mtllayer;
@@ -155,7 +155,7 @@ typedef struct METAL_PipelineCache
 
 @interface METAL_TextureData : NSObject
     @property (nonatomic, retain) id<MTLTexture> mtltexture;
-    @property (nonatomic) METAL_PipelineCache *mtlpipeline;
+    @property (nonatomic, retain) id<MTLSamplerState> mtlsampler;
 @end
 
 @implementation METAL_TextureData
@@ -227,8 +227,7 @@ GetFragmentFunctionName(SDL_MetalFragmentFunction function)
 {
     switch (function) {
         case SDL_METAL_FRAGMENT_SOLID: return @"SDL_Solid_fragment";
-        case SDL_METAL_FRAGMENT_COPY_NEAREST: return @"SDL_Copy_fragment_nearest";
-        case SDL_METAL_FRAGMENT_COPY_LINEAR: return @"SDL_Copy_fragment_linear";
+        case SDL_METAL_FRAGMENT_COPY: return @"SDL_Copy_fragment";
         default: return nil;
     }
 }
@@ -423,8 +422,17 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     data.mtllibrary.label = @"SDL Metal renderer shader library";
 
     data.mtlpipelineprims = MakePipelineCache(data, "SDL primitives pipeline ", SDL_METAL_VERTEX_SOLID, SDL_METAL_FRAGMENT_SOLID);
-    data.mtlpipelinecopynearest = MakePipelineCache(data, "SDL texture pipeline (nearest) ", SDL_METAL_VERTEX_COPY, SDL_METAL_FRAGMENT_COPY_NEAREST);
-    data.mtlpipelinecopylinear = MakePipelineCache(data, "SDL texture pipeline (linear) ", SDL_METAL_VERTEX_COPY, SDL_METAL_FRAGMENT_COPY_LINEAR);
+    data.mtlpipelinecopy = MakePipelineCache(data, "SDL texture pipeline ", SDL_METAL_VERTEX_COPY, SDL_METAL_FRAGMENT_COPY);
+
+    MTLSamplerDescriptor *samplerdesc = [[[MTLSamplerDescriptor alloc] init] autorelease];
+
+    samplerdesc.minFilter = MTLSamplerMinMagFilterNearest;
+    samplerdesc.magFilter = MTLSamplerMinMagFilterNearest;
+    data.mtlsamplernearest = [data.mtldevice newSamplerStateWithDescriptor:samplerdesc];
+
+    samplerdesc.minFilter = MTLSamplerMinMagFilterLinear;
+    samplerdesc.magFilter = MTLSamplerMinMagFilterLinear;
+    data.mtlsamplerlinear = [data.mtldevice newSamplerStateWithDescriptor:samplerdesc];
 
     static const float clearverts[] = { 0, 0,  0, 3,  3, 0 };
     data.mtlbufclearverts = [data.mtldevice newBufferWithBytes:clearverts length:sizeof(clearverts) options:MTLResourceCPUCacheModeWriteCombined];
@@ -575,9 +583,9 @@ METAL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     METAL_TextureData *texturedata = [[METAL_TextureData alloc] init];
     const char *hint = SDL_GetHint(SDL_HINT_RENDER_SCALE_QUALITY);
     if (!hint || *hint == '0' || SDL_strcasecmp(hint, "nearest") == 0) {
-        texturedata.mtlpipeline = data.mtlpipelinecopynearest;
+        texturedata.mtlsampler = data.mtlsamplernearest;
     } else {
-        texturedata.mtlpipeline = data.mtlpipelinecopylinear;
+        texturedata.mtlsampler = data.mtlsamplerlinear;
     }
     texturedata.mtltexture = mtltexture;
 
@@ -863,12 +871,13 @@ METAL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
         color[3] = ((float)texture->a) / 255.0f;
     }
 
-    [data.mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data, texturedata.mtlpipeline, texture->blendMode)];
+    [data.mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data, data.mtlpipelinecopy, texture->blendMode)];
     [data.mtlcmdencoder setVertexBytes:xy length:sizeof(xy) atIndex:0];
     [data.mtlcmdencoder setVertexBytes:uv length:sizeof(uv) atIndex:1];
     [data.mtlcmdencoder setVertexBuffer:data.mtlbufidentitytransform offset:0 atIndex:3];
     [data.mtlcmdencoder setFragmentBytes:color length:sizeof(color) atIndex:0];
     [data.mtlcmdencoder setFragmentTexture:texturedata.mtltexture atIndex:0];
+    [data.mtlcmdencoder setFragmentSamplerState:texturedata.mtlsampler atIndex:0];
     [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:4];
 
     return 0;
@@ -945,12 +954,13 @@ METAL_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
         color[3] = ((float)texture->a) / 255.0f;
     }
 
-    [data.mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data, texturedata.mtlpipeline, texture->blendMode)];
+    [data.mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data, data.mtlpipelinecopy, texture->blendMode)];
     [data.mtlcmdencoder setVertexBytes:xy length:sizeof(xy) atIndex:0];
     [data.mtlcmdencoder setVertexBytes:uv length:sizeof(uv) atIndex:1];
     [data.mtlcmdencoder setVertexBytes:transform length:sizeof(transform) atIndex:3];
     [data.mtlcmdencoder setFragmentBytes:color length:sizeof(color) atIndex:0];
     [data.mtlcmdencoder setFragmentTexture:texturedata.mtltexture atIndex:0];
+    [data.mtlcmdencoder setFragmentSamplerState:texturedata.mtlsampler atIndex:0];
     [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:4];
 
     return 0;
@@ -1025,6 +1035,8 @@ METAL_DestroyRenderer(SDL_Renderer * renderer)
         [data.mtlcmdencoder release];
         [data.mtlcmdbuffer release];
         [data.mtlcmdqueue release];
+        [data.mtlsamplernearest release];
+        [data.mtlsamplerlinear release];
         [data.mtlbufclearverts release];
         [data.mtlbufidentitytransform release];
         [data.mtllibrary release];
@@ -1034,8 +1046,7 @@ METAL_DestroyRenderer(SDL_Renderer * renderer)
 #endif
 
         DestroyPipelineCache(data.mtlpipelineprims);
-        DestroyPipelineCache(data.mtlpipelinecopynearest);
-        DestroyPipelineCache(data.mtlpipelinecopylinear);
+        DestroyPipelineCache(data.mtlpipelinecopy);
     }
 
     SDL_free(renderer);

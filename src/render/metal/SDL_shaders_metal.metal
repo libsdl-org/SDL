@@ -42,19 +42,10 @@ vertex CopyVertexOutput SDL_Copy_vertex(const device float2 *position [[buffer(0
     return v;
 }
 
-fragment float4 SDL_Copy_fragment_nearest(CopyVertexOutput vert [[stage_in]],
-                                          constant float4 &col [[buffer(0)]],
-                                          texture2d<float> tex [[texture(0)]])
+fragment float4 SDL_Copy_fragment(CopyVertexOutput vert [[stage_in]],
+                                  constant float4 &col [[buffer(0)]],
+                                  texture2d<float> tex [[texture(0)]],
+                                  sampler s [[sampler(0)]])
 {
-    constexpr sampler s(coord::normalized, address::clamp_to_edge, filter::nearest);
     return tex.sample(s, vert.texcoord) * col;
 }
-
-fragment float4 SDL_Copy_fragment_linear(CopyVertexOutput vert [[stage_in]],
-                                         constant float4 &col [[buffer(0)]],
-                                         texture2d<float> tex [[texture(0)]])
-{
-    constexpr sampler s(coord::normalized, address::clamp_to_edge, filter::linear);
-    return tex.sample(s, vert.texcoord) * col;
-}
-
