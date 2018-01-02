@@ -151,7 +151,7 @@ typedef struct METAL_PipelineCache
 @end
 
 @implementation METAL_RenderData
-#if !__has_feature(obc_arc)
+#if !__has_feature(objc_arc)
 - (void)dealloc
 {
     [_mtldevice release];
@@ -177,7 +177,7 @@ typedef struct METAL_PipelineCache
 @end
 
 @implementation METAL_TextureData
-#if !__has_feature(obc_arc)
+#if !__has_feature(objc_arc)
 - (void)dealloc
 {
     [_mtltexture release];
