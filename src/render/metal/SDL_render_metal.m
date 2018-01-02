@@ -816,6 +816,18 @@ METAL_RenderClear(SDL_Renderer * renderer)
     return 0;
 }}
 
+// adjust pixel center for x and y coordinates
+static inline float
+adjustx(const float val)
+{
+	return (val + 0.5f);
+}
+static inline float
+adjusty(const float val)
+{
+	return (val - 0.5f);
+}
+
 // normalize a value from 0.0f to len into 0.0f to 1.0f.
 static inline float
 normtex(const float _val, const float len)
@@ -830,7 +842,12 @@ DrawVerts(SDL_Renderer * renderer, const SDL_FPoint * points, int count,
 { @autoreleasepool {
     METAL_ActivateRenderer(renderer);
 
-    const size_t vertlen = sizeof(SDL_FPoint) * count;
+    const size_t vertlen = (sizeof (float) * 2) * count;
+    float *verts = SDL_malloc(vertlen);
+    if (!verts) {
+        return SDL_OutOfMemory();
+    }
+
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
 
     // !!! FIXME: render color should live in a dedicated uniform buffer.
@@ -838,8 +855,17 @@ DrawVerts(SDL_Renderer * renderer, const SDL_FPoint * points, int count,
 
     [data.mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data, data.mtlpipelineprims, renderer->blendMode)];
     [data.mtlcmdencoder setFragmentBytes:color length:sizeof(color) atIndex:0];
-    [data.mtlcmdencoder setVertexBytes:points length:vertlen atIndex:0];
+
+    float *ptr = verts;
+    for (int i = 0; i < count; i++, points++) {
+        *ptr = adjustx(points->x); ptr++;
+        *ptr = adjusty(points->y); ptr++;
+    }
+
+    [data.mtlcmdencoder setVertexBytes:verts length:vertlen atIndex:0];
     [data.mtlcmdencoder drawPrimitives:primtype vertexStart:0 vertexCount:count];
+
+    SDL_free(verts);
     return 0;
 }}
 
@@ -871,10 +897,10 @@ METAL_RenderFillRects(SDL_Renderer * renderer, const SDL_FRect * rects, int coun
         if ((rects->w <= 0.0f) || (rects->h <= 0.0f)) continue;
 
         const float verts[] = {
-            rects->x, rects->y + rects->h,
-            rects->x, rects->y,
-            rects->x + rects->w, rects->y + rects->h,
-            rects->x + rects->w, rects->y,
+            adjustx(rects->x), adjusty(rects->y + rects->h),
+            adjustx(rects->x), adjusty(rects->y),
+            adjustx(rects->x + rects->w), adjusty(rects->y + rects->h),
+            adjustx(rects->x + rects->w), adjusty(rects->y)
         };
 
         [data.mtlcmdencoder setVertexBytes:verts length:sizeof(verts) atIndex:0];
@@ -895,10 +921,10 @@ METAL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
     const float texh = (float) texturedata.mtltexture.height;
 
     const float xy[] = {
-        dstrect->x, dstrect->y + dstrect->h,
-        dstrect->x, dstrect->y,
-        dstrect->x + dstrect->w, dstrect->y + dstrect->h,
-        dstrect->x + dstrect->w, dstrect->y
+        adjustx(dstrect->x), adjusty(dstrect->y + dstrect->h),
+        adjustx(dstrect->x), adjusty(dstrect->y),
+        adjustx(dstrect->x + dstrect->w), adjusty(dstrect->y + dstrect->h),
+        adjustx(dstrect->x + dstrect->w), adjusty(dstrect->y)
     };
 
     const float uv[] = {
@@ -965,10 +991,10 @@ METAL_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
     };
 
     const float xy[] = {
-        -center->x, dstrect->h - center->y,
-        -center->x, -center->y,
-        dstrect->w - center->x, dstrect->h - center->y,
-        dstrect->w - center->x, -center->y,
+        adjustx(-center->x), adjusty(dstrect->h - center->y),
+        adjustx(-center->x), adjusty(-center->y),
+        adjustx(dstrect->w - center->x), adjusty(dstrect->h - center->y),
+        adjustx(dstrect->w - center->x), adjusty(-center->y)
     };
 
     {
