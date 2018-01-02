@@ -140,8 +140,8 @@ typedef struct METAL_PipelineCache
     @property (nonatomic, retain) id<MTLRenderCommandEncoder> mtlcmdencoder;
     @property (nonatomic, retain) id<MTLLibrary> mtllibrary;
     @property (nonatomic, retain) id<CAMetalDrawable> mtlbackbuffer;
-    @property (nonatomic) METAL_PipelineCache *mtlpipelineprims;
-    @property (nonatomic) METAL_PipelineCache *mtlpipelinecopy;
+    @property (nonatomic, assign) METAL_PipelineCache *mtlpipelineprims;
+    @property (nonatomic, assign) METAL_PipelineCache *mtlpipelinecopy;
     @property (nonatomic, retain) id<MTLSamplerState> mtlsamplernearest;
     @property (nonatomic, retain) id<MTLSamplerState> mtlsamplerlinear;
     @property (nonatomic, retain) id<MTLBuffer> mtlbufclearverts;
@@ -151,6 +151,24 @@ typedef struct METAL_PipelineCache
 @end
 
 @implementation METAL_RenderData
+#if !__has_feature(obc_arc)
+- (void)dealloc
+{
+    [_mtldevice release];
+    [_mtlcmdqueue release];
+    [_mtlcmdbuffer release];
+    [_mtlcmdencoder release];
+    [_mtllibrary release];
+    [_mtlbackbuffer release];
+    [_mtlsamplernearest release];
+    [_mtlsamplerlinear release];
+    [_mtlbufclearverts release];
+    [_mtlbufidentitytransform release];
+    [_mtllayer release];
+    [_mtlpassdesc release];
+    [super dealloc];
+}
+#endif
 @end
 
 @interface METAL_TextureData : NSObject
@@ -159,6 +177,14 @@ typedef struct METAL_PipelineCache
 @end
 
 @implementation METAL_TextureData
+#if !__has_feature(obc_arc)
+- (void)dealloc
+{
+    [_mtltexture release];
+    [_mtlsampler release];
+    [super dealloc];
+}
+#endif
 @end
 
 static int
@@ -368,11 +394,7 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     data = [[METAL_RenderData alloc] init];
     data.beginScene = YES;
 
-#if __has_feature(objc_arc)
     renderer->driverdata = (void*)CFBridgingRetain(data);
-#else
-    renderer->driverdata = data;
-#endif
     renderer->window = window;
 
 #ifdef __MACOSX__
@@ -405,7 +427,8 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
 
     data.mtldevice = layer.device;
     data.mtllayer = layer;
-    data.mtlcmdqueue = [data.mtldevice newCommandQueue];
+    id<MTLCommandQueue> mtlcmdqueue = [data.mtldevice newCommandQueue];
+    data.mtlcmdqueue = mtlcmdqueue;
     data.mtlcmdqueue.label = @"SDL Metal Renderer";
     data.mtlpassdesc = [MTLRenderPassDescriptor renderPassDescriptor];
 
@@ -414,7 +437,8 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     // The compiled .metallib is embedded in a static array in a header file
     // but the original shader source code is in SDL_shaders_metal.metal.
     dispatch_data_t mtllibdata = dispatch_data_create(sdl_metallib, sdl_metallib_len, dispatch_get_global_queue(0, 0), ^{});
-    data.mtllibrary = [data.mtldevice newLibraryWithData:mtllibdata error:&err];
+    id<MTLLibrary> mtllibrary = [data.mtldevice newLibraryWithData:mtllibdata error:&err];
+    data.mtllibrary = mtllibrary;
     SDL_assert(err == nil);
 #if !__has_feature(objc_arc)
     dispatch_release(mtllibdata);
@@ -428,24 +452,24 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
 
     samplerdesc.minFilter = MTLSamplerMinMagFilterNearest;
     samplerdesc.magFilter = MTLSamplerMinMagFilterNearest;
-    data.mtlsamplernearest = [data.mtldevice newSamplerStateWithDescriptor:samplerdesc];
+    id<MTLSamplerState> mtlsamplernearest = [data.mtldevice newSamplerStateWithDescriptor:samplerdesc];
+    data.mtlsamplernearest = mtlsamplernearest;
 
     samplerdesc.minFilter = MTLSamplerMinMagFilterLinear;
     samplerdesc.magFilter = MTLSamplerMinMagFilterLinear;
-    data.mtlsamplerlinear = [data.mtldevice newSamplerStateWithDescriptor:samplerdesc];
-
-#if !__has_feature(objc_arc)
-    [samplerdesc release];
-#endif
+    id<MTLSamplerState> mtlsamplerlinear = [data.mtldevice newSamplerStateWithDescriptor:samplerdesc];
+    data.mtlsamplerlinear = mtlsamplerlinear;
 
     static const float clearverts[] = { 0, 0,  0, 3,  3, 0 };
-    data.mtlbufclearverts = [data.mtldevice newBufferWithBytes:clearverts length:sizeof(clearverts) options:MTLResourceCPUCacheModeWriteCombined];
+    id<MTLBuffer> mtlbufclearverts = [data.mtldevice newBufferWithBytes:clearverts length:sizeof(clearverts) options:MTLResourceCPUCacheModeWriteCombined];
+    data.mtlbufclearverts = mtlbufclearverts;
     data.mtlbufclearverts.label = @"SDL_RenderClear vertices";
 
     float identitytx[16];
     SDL_memset(identitytx, 0, sizeof(identitytx));
     identitytx[0] = identitytx[5] = identitytx[10] = identitytx[15] = 1.0f;
-    data.mtlbufidentitytransform = [data.mtldevice newBufferWithBytes:identitytx length:sizeof(identitytx) options:0];
+    id<MTLBuffer> mtlbufidentitytransform = [data.mtldevice newBufferWithBytes:identitytx length:sizeof(identitytx) options:0];
+    data.mtlbufidentitytransform = mtlbufidentitytransform;
     data.mtlbufidentitytransform.label = @"SDL_RenderCopy identity transform";
 
     // !!! FIXME: force more clears here so all the drawables are sane to start, and our static buffers are definitely flushed.
@@ -486,10 +510,26 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
         renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
     }
 
+#if !__has_feature(objc_arc)
+    [mtlcmdqueue release];
+    [mtllibrary release];
+    [samplerdesc release];
+    [mtlsamplernearest release];
+    [mtlsamplerlinear release];
+    [mtlbufclearverts release];
+    [mtlbufidentitytransform release];
+    [view release];
+    [data release];
+#ifdef __MACOSX__
+    [mtldevice release];
+#endif
+#endif
+
     return renderer;
 }
 
-static void METAL_ActivateRenderer(SDL_Renderer * renderer)
+static void
+METAL_ActivateRenderer(SDL_Renderer * renderer)
 {
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
 
@@ -596,6 +636,7 @@ METAL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     texture->driverdata = (void*)CFBridgingRetain(texturedata);
 
 #if !__has_feature(objc_arc)
+    [texturedata release];
     [mtltexture release];
 #endif
 
@@ -977,8 +1018,7 @@ METAL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     METAL_ActivateRenderer(renderer);
     // !!! FIXME: this probably needs to commit the current command buffer, and probably waitUntilCompleted
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
-    MTLRenderPassColorAttachmentDescriptor *colorAttachment = data.mtlpassdesc.colorAttachments[0];
-    id<MTLTexture> mtltexture = colorAttachment.texture;
+    id<MTLTexture> mtltexture = data.mtlpassdesc.colorAttachments[0].texture;
     MTLRegion mtlregion = MTLRegionMake2D(rect->x, rect->y, rect->w, rect->h);
 
     // we only do BGRA8 or RGBA8 at the moment, so 4 will do.
@@ -1014,13 +1054,7 @@ METAL_RenderPresent(SDL_Renderer * renderer)
 static void
 METAL_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 { @autoreleasepool {
-    METAL_TextureData *texturedata = CFBridgingRelease(texture->driverdata);
-#if __has_feature(objc_arc)
-    texturedata = nil;
-#else
-    [texturedata.mtltexture release];
-    [texturedata release];
-#endif
+    CFBridgingRelease(texture->driverdata);
     texture->driverdata = NULL;
 }}
 
@@ -1034,21 +1068,6 @@ METAL_DestroyRenderer(SDL_Renderer * renderer)
             [data.mtlcmdencoder endEncoding];
         }
 
-#if !__has_feature(objc_arc)
-        [data.mtlbackbuffer release];
-        [data.mtlcmdencoder release];
-        [data.mtlcmdbuffer release];
-        [data.mtlcmdqueue release];
-        [data.mtlsamplernearest release];
-        [data.mtlsamplerlinear release];
-        [data.mtlbufclearverts release];
-        [data.mtlbufidentitytransform release];
-        [data.mtllibrary release];
-        [data.mtldevice release];
-        [data.mtlpassdesc release];
-        [data.mtllayer release];
-#endif
-
         DestroyPipelineCache(data.mtlpipelineprims);
         DestroyPipelineCache(data.mtlpipelinecopy);
     }
@@ -1056,13 +1075,15 @@ METAL_DestroyRenderer(SDL_Renderer * renderer)
     SDL_free(renderer);
 }}
 
-void *METAL_GetMetalLayer(SDL_Renderer * renderer)
+static void *
+METAL_GetMetalLayer(SDL_Renderer * renderer)
 { @autoreleasepool {
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
     return (__bridge void*)data.mtllayer;
 }}
 
-void *METAL_GetMetalCommandEncoder(SDL_Renderer * renderer)
+static void *
+METAL_GetMetalCommandEncoder(SDL_Renderer * renderer)
 { @autoreleasepool {
     METAL_ActivateRenderer(renderer);
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
