@@ -21230,11 +21230,47 @@ else
 fi
 
     if test x$enable_render = xyes -a x$enable_render_metal = xyes; then
+        save_CFLAGS="$CFLAGS"
+                CFLAGS="$CFLAGS -x objective-c"
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for Metal framework" >&5
+$as_echo_n "checking for Metal framework... " >&6; }
+        have_metal=no
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+          #import <Cocoa/Cocoa.h>
+          #import <Metal/Metal.h>
+          #import <QuartzCore/CAMetalLayer.h>
+
+          #if !TARGET_CPU_X86_64
+          #error Metal doesn't work on this configuration
+          #endif
+
+int
+main ()
+{
+
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+
+        have_metal=yes
+
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+        CFLAGS="$save_CFLAGS"
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_metal" >&5
+$as_echo "$have_metal" >&6; }
+        if test x$have_metal = xyes; then
 
 $as_echo "#define SDL_VIDEO_RENDER_METAL 1" >>confdefs.h
 
-        SOURCES="$SOURCES $srcdir/src/render/metal/*.m"
-        SUMMARY_video="${SUMMARY_video} metal"
+            SOURCES="$SOURCES $srcdir/src/render/metal/*.m"
+            SUMMARY_video="${SUMMARY_video} metal"
+        fi
     fi
 }
 

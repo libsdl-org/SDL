@@ -2066,10 +2066,30 @@ CheckMETAL()
 AC_HELP_STRING([--enable-render-metal], [enable the Metal render driver [[default=yes]]]),
                                 , enable_render_metal=yes)
     if test x$enable_render = xyes -a x$enable_render_metal = xyes; then
-        dnl This should maybe make sure you have a supported SDK version.
-        AC_DEFINE(SDL_VIDEO_RENDER_METAL, 1, [ ])
-        SOURCES="$SOURCES $srcdir/src/render/metal/*.m"
-        SUMMARY_video="${SUMMARY_video} metal"
+        save_CFLAGS="$CFLAGS"
+        dnl Work around that we don't have Objective-C support in autoconf
+        CFLAGS="$CFLAGS -x objective-c"
+        AC_MSG_CHECKING(for Metal framework)
+        have_metal=no
+        AC_TRY_COMPILE([
+          #import <Cocoa/Cocoa.h>
+          #import <Metal/Metal.h>
+          #import <QuartzCore/CAMetalLayer.h>
+
+          #if !TARGET_CPU_X86_64
+          #error Metal doesn't work on this configuration
+          #endif
+        ],[
+        ],[
+        have_metal=yes
+        ])
+        CFLAGS="$save_CFLAGS"
+        AC_MSG_RESULT($have_metal)
+        if test x$have_metal = xyes; then
+            AC_DEFINE(SDL_VIDEO_RENDER_METAL, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/render/metal/*.m"
+            SUMMARY_video="${SUMMARY_video} metal"
+        fi
     fi
 }
 
