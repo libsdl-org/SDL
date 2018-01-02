@@ -446,16 +446,12 @@ IME_GetReadingString(SDL_VideoData *videodata, HWND hwnd)
     INT err = 0;
     BOOL vertical = FALSE;
     UINT maxuilen = 0;
-    static OSVERSIONINFOA osversion;
 
     if (videodata->ime_uiless)
         return;
 
     videodata->ime_readingstring[0] = 0;
-    if (!osversion.dwOSVersionInfoSize) {
-        osversion.dwOSVersionInfoSize = sizeof(osversion);
-        GetVersionExA(&osversion);
-    }
+    
     id = IME_GetId(videodata, 0);
     if (!id)
         return;
@@ -516,9 +512,6 @@ IME_GetReadingString(SDL_VideoData *videodata, HWND hwnd)
             }
             break;
         case IMEID_CHS_VER42:
-            if (osversion.dwPlatformId != VER_PLATFORM_WIN32_NT)
-                break;
-
             p = *(LPBYTE *)((LPBYTE)videodata->ImmLockIMCC(lpimc->hPrivate) + 1*4 + 1*4 + 6*4);
             if (!p)
                 break;
