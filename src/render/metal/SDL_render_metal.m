@@ -825,7 +825,7 @@ adjustx(const float val)
 static inline float
 adjusty(const float val)
 {
-	return (val - 0.5f);
+	return (val + 0.5f);
 }
 
 // normalize a value from 0.0f to len into 0.0f to 1.0f.
