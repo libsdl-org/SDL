@@ -479,6 +479,49 @@ WIN_SetWindowSize(_THIS, SDL_Window * window)
     WIN_SetWindowPositionInternal(_this, window, SWP_NOCOPYBITS | SWP_NOMOVE | SWP_NOACTIVATE);
 }
 
+int
+WIN_GetWindowBordersSize(_THIS, SDL_Window * window, int *top, int *left, int *bottom, int *right)
+{
+    HWND hwnd = ((SDL_WindowData *) window->driverdata)->hwnd;
+    RECT rcClient, rcWindow;
+    POINT ptDiff;
+
+    /* rcClient stores the size of the inner window, while rcWindow stores the outer size relative to the top-left
+     * screen position; so the top/left values of rcClient are always {0,0} and bottom/right are {height,width} */
+    GetClientRect(hwnd, &rcClient);
+    GetWindowRect(hwnd, &rcWindow);
+
+    /* convert the top/left values to make them relative to
+     * the window; they will end up being slightly negative */
+    ptDiff.y = rcWindow.top;
+    ptDiff.x = rcWindow.left;
+
+    ScreenToClient(hwnd, &ptDiff);
+
+    rcWindow.top  = ptDiff.y;
+    rcWindow.left = ptDiff.x;
+
+    /* convert the bottom/right values to make them relative to the window,
+     * these will be slightly bigger than the inner width/height */
+    ptDiff.y = rcWindow.bottom;
+    ptDiff.x = rcWindow.right;
+
+    ScreenToClient(hwnd, &ptDiff);
+
+    rcWindow.bottom = ptDiff.y;
+    rcWindow.right  = ptDiff.x;
+
+    /* Now that both the inner and outer rects use the same coordinate system we can substract them to get the border size.
+     * Keep in mind that the top/left coordinates of rcWindow are negative because the border lies slightly before {0,0},
+     * so switch them around because SDL2 wants them in positive. */
+    *top    = rcClient.top    - rcWindow.top;
+    *left   = rcClient.left   - rcWindow.left;
+    *bottom = rcWindow.bottom - rcClient.bottom;
+    *right  = rcWindow.right  - rcClient.right;
+
+    return 0;
+}
+
 void
 WIN_ShowWindow(_THIS, SDL_Window * window)
 {
