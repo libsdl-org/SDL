@@ -563,9 +563,6 @@ static int
 METAL_GetOutputSize(SDL_Renderer * renderer, int *w, int *h)
 { @autoreleasepool {
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
-    // !!! FIXME: We shouldn't need ActivateRenderer, but drawableSize is 0
-    // in the first frame without it.
-    METAL_ActivateRenderer(renderer);
     if (w) {
         *w = (int)data.mtllayer.drawableSize.width;
     }
