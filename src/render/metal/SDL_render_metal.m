@@ -105,6 +105,20 @@ SDL_RenderDriver METAL_RenderDriver = {
     }
 };
 
+/* macOS requires constants in a buffer to have a 256 byte alignment. */
+#ifdef __MACOSX__
+#define CONSTANT_ALIGN 256
+#else
+#define CONSTANT_ALIGN 4
+#endif
+
+#define ALIGN_CONSTANTS(size) ((size + CONSTANT_ALIGN - 1) & (~(CONSTANT_ALIGN - 1)))
+
+static const size_t CONSTANTS_OFFSET_IDENTITY = 0;
+static const size_t CONSTANTS_OFFSET_HALF_PIXEL_TRANSFORM = ALIGN_CONSTANTS(CONSTANTS_OFFSET_IDENTITY + sizeof(float) * 16);
+static const size_t CONSTANTS_OFFSET_CLEAR_VERTS = ALIGN_CONSTANTS(CONSTANTS_OFFSET_HALF_PIXEL_TRANSFORM + sizeof(float) * 16);
+static const size_t CONSTANTS_LENGTH = CONSTANTS_OFFSET_CLEAR_VERTS + sizeof(float) * 6;
+
 typedef enum SDL_MetalVertexFunction
 {
     SDL_METAL_VERTEX_SOLID,
@@ -144,8 +158,7 @@ typedef struct METAL_PipelineCache
     @property (nonatomic, assign) METAL_PipelineCache *mtlpipelinecopy;
     @property (nonatomic, retain) id<MTLSamplerState> mtlsamplernearest;
     @property (nonatomic, retain) id<MTLSamplerState> mtlsamplerlinear;
-    @property (nonatomic, retain) id<MTLBuffer> mtlbufclearverts;
-    @property (nonatomic, retain) id<MTLBuffer> mtlbufidentitytransform;
+    @property (nonatomic, retain) id<MTLBuffer> mtlbufconstants;
     @property (nonatomic, retain) CAMetalLayer *mtllayer;
     @property (nonatomic, retain) MTLRenderPassDescriptor *mtlpassdesc;
 @end
@@ -162,8 +175,7 @@ typedef struct METAL_PipelineCache
     [_mtlbackbuffer release];
     [_mtlsamplernearest release];
     [_mtlsamplerlinear release];
-    [_mtlbufclearverts release];
-    [_mtlbufidentitytransform release];
+    [_mtlbufconstants release];
     [_mtllayer release];
     [_mtlpassdesc release];
     [super dealloc];
@@ -460,17 +472,39 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     id<MTLSamplerState> mtlsamplerlinear = [data.mtldevice newSamplerStateWithDescriptor:samplerdesc];
     data.mtlsamplerlinear = mtlsamplerlinear;
 
-    static const float clearverts[] = { 0, 0,  0, 3,  3, 0 };
-    id<MTLBuffer> mtlbufclearverts = [data.mtldevice newBufferWithBytes:clearverts length:sizeof(clearverts) options:MTLResourceCPUCacheModeWriteCombined];
-    data.mtlbufclearverts = mtlbufclearverts;
-    data.mtlbufclearverts.label = @"SDL_RenderClear vertices";
+    /* Note: matrices are column major. */
+    float identitytransform[16] = {
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f,
+    };
 
-    float identitytx[16];
-    SDL_memset(identitytx, 0, sizeof(identitytx));
-    identitytx[0] = identitytx[5] = identitytx[10] = identitytx[15] = 1.0f;
-    id<MTLBuffer> mtlbufidentitytransform = [data.mtldevice newBufferWithBytes:identitytx length:sizeof(identitytx) options:0];
-    data.mtlbufidentitytransform = mtlbufidentitytransform;
-    data.mtlbufidentitytransform.label = @"SDL_RenderCopy identity transform";
+    float halfpixeltransform[16] = {
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.5f, 0.5f, 0.0f, 1.0f,
+    };
+
+    float clearverts[6] = {0.0f, 0.0f,  0.0f, 2.0f,  2.0f, 0.0f};
+
+    MTLResourceOptions constantsopts = 0;
+#ifdef __MACOSX__
+    constantsopts |= MTLResourceStorageModeManaged;
+#endif
+
+    id<MTLBuffer> mtlbufconstants = [data.mtldevice newBufferWithLength:CONSTANTS_LENGTH options:constantsopts];
+    data.mtlbufconstants = mtlbufconstants;
+    data.mtlbufconstants.label = @"SDL constant data";
+
+    char *constantdata = [data.mtlbufconstants contents];
+    SDL_memcpy(constantdata + CONSTANTS_OFFSET_IDENTITY, identitytransform, sizeof(identitytransform));
+    SDL_memcpy(constantdata + CONSTANTS_OFFSET_HALF_PIXEL_TRANSFORM, halfpixeltransform, sizeof(halfpixeltransform));
+    SDL_memcpy(constantdata + CONSTANTS_OFFSET_CLEAR_VERTS, clearverts, sizeof(clearverts));
+#ifdef __MACOSX__
+    [data.mtlbufconstants didModifyRange:NSMakeRange(0, CONSTANTS_LENGTH)];
+#endif
 
     // !!! FIXME: force more clears here so all the drawables are sane to start, and our static buffers are definitely flushed.
 
@@ -516,8 +550,7 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     [samplerdesc release];
     [mtlsamplernearest release];
     [mtlsamplerlinear release];
-    [mtlbufclearverts release];
-    [mtlbufidentitytransform release];
+    [mtlbufconstants release];
     [view release];
     [data release];
 #ifdef __MACOSX__
@@ -607,11 +640,14 @@ METAL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 
     MTLTextureDescriptor *mtltexdesc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:mtlpixfmt
                                             width:(NSUInteger)texture->w height:(NSUInteger)texture->h mipmapped:NO];
- 
-    if (texture->access == SDL_TEXTUREACCESS_TARGET) {
-        mtltexdesc.usage = MTLTextureUsageShaderRead | MTLTextureUsageRenderTarget;
-    } else {
-        mtltexdesc.usage = MTLTextureUsageShaderRead;
+
+    /* Not available in iOS 8. */
+    if ([mtltexdesc respondsToSelector:@selector(usage)]) {
+        if (texture->access == SDL_TEXTUREACCESS_TARGET) {
+            mtltexdesc.usage = MTLTextureUsageShaderRead | MTLTextureUsageRenderTarget;
+        } else {
+            mtltexdesc.usage = MTLTextureUsageShaderRead;
+        }
     }
     //mtltexdesc.resourceOptions = MTLResourceCPUCacheModeDefaultCache | MTLResourceStorageModeManaged;
     //mtltexdesc.storageMode = MTLStorageModeManaged;
@@ -796,7 +832,8 @@ METAL_RenderClear(SDL_Renderer * renderer)
     METAL_SetOrthographicProjection(renderer, 1, 1);
     [data.mtlcmdencoder setViewport:viewport];
     [data.mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data, data.mtlpipelineprims, SDL_BLENDMODE_NONE)];
-    [data.mtlcmdencoder setVertexBuffer:data.mtlbufclearverts offset:0 atIndex:0];
+    [data.mtlcmdencoder setVertexBuffer:data.mtlbufconstants offset:CONSTANTS_OFFSET_CLEAR_VERTS atIndex:0];
+    [data.mtlcmdencoder setVertexBuffer:data.mtlbufconstants offset:CONSTANTS_OFFSET_IDENTITY atIndex:3];
     [data.mtlcmdencoder setFragmentBytes:color length:sizeof(color) atIndex:0];
     [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:3];
 
@@ -813,24 +850,11 @@ METAL_RenderClear(SDL_Renderer * renderer)
     return 0;
 }}
 
-// adjust pixel center for x and y coordinates
-static inline float
-adjustx(const float val)
-{
-	return (val + 0.5f);
-}
-static inline float
-adjusty(const float val)
-{
-	return (val + 0.5f);
-}
-
 // normalize a value from 0.0f to len into 0.0f to 1.0f.
 static inline float
 normtex(const float _val, const float len)
 {
-    const float val = (_val < 0.0f) ? 0.0f : (_val > len) ? len : _val;
-    return ((val + 0.5f) / len);
+    return _val / len;
 }
 
 static int
@@ -840,11 +864,6 @@ DrawVerts(SDL_Renderer * renderer, const SDL_FPoint * points, int count,
     METAL_ActivateRenderer(renderer);
 
     const size_t vertlen = (sizeof (float) * 2) * count;
-    float *verts = SDL_malloc(vertlen);
-    if (!verts) {
-        return SDL_OutOfMemory();
-    }
-
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
 
     // !!! FIXME: render color should live in a dedicated uniform buffer.
@@ -853,16 +872,10 @@ DrawVerts(SDL_Renderer * renderer, const SDL_FPoint * points, int count,
     [data.mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data, data.mtlpipelineprims, renderer->blendMode)];
     [data.mtlcmdencoder setFragmentBytes:color length:sizeof(color) atIndex:0];
 
-    float *ptr = verts;
-    for (int i = 0; i < count; i++, points++) {
-        *ptr = adjustx(points->x); ptr++;
-        *ptr = adjusty(points->y); ptr++;
-    }
-
-    [data.mtlcmdencoder setVertexBytes:verts length:vertlen atIndex:0];
+    [data.mtlcmdencoder setVertexBytes:points length:vertlen atIndex:0];
+    [data.mtlcmdencoder setVertexBuffer:data.mtlbufconstants offset:CONSTANTS_OFFSET_HALF_PIXEL_TRANSFORM atIndex:3];
     [data.mtlcmdencoder drawPrimitives:primtype vertexStart:0 vertexCount:count];
 
-    SDL_free(verts);
     return 0;
 }}
 
@@ -889,15 +902,16 @@ METAL_RenderFillRects(SDL_Renderer * renderer, const SDL_FRect * rects, int coun
 
     [data.mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data, data.mtlpipelineprims, renderer->blendMode)];
     [data.mtlcmdencoder setFragmentBytes:color length:sizeof(color) atIndex:0];
+    [data.mtlcmdencoder setVertexBuffer:data.mtlbufconstants offset:CONSTANTS_OFFSET_IDENTITY atIndex:3];
 
     for (int i = 0; i < count; i++, rects++) {
         if ((rects->w <= 0.0f) || (rects->h <= 0.0f)) continue;
 
         const float verts[] = {
-            adjustx(rects->x), adjusty(rects->y + rects->h),
-            adjustx(rects->x), adjusty(rects->y),
-            adjustx(rects->x + rects->w), adjusty(rects->y + rects->h),
-            adjustx(rects->x + rects->w), adjusty(rects->y)
+            rects->x, rects->y + rects->h,
+            rects->x, rects->y,
+            rects->x + rects->w, rects->y + rects->h,
+            rects->x + rects->w, rects->y
         };
 
         [data.mtlcmdencoder setVertexBytes:verts length:sizeof(verts) atIndex:0];
@@ -918,10 +932,10 @@ METAL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
     const float texh = (float) texturedata.mtltexture.height;
 
     const float xy[] = {
-        adjustx(dstrect->x), adjusty(dstrect->y + dstrect->h),
-        adjustx(dstrect->x), adjusty(dstrect->y),
-        adjustx(dstrect->x + dstrect->w), adjusty(dstrect->y + dstrect->h),
-        adjustx(dstrect->x + dstrect->w), adjusty(dstrect->y)
+        dstrect->x, dstrect->y + dstrect->h,
+        dstrect->x, dstrect->y,
+        dstrect->x + dstrect->w, dstrect->y + dstrect->h,
+        dstrect->x + dstrect->w, dstrect->y
     };
 
     const float uv[] = {
@@ -942,7 +956,7 @@ METAL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
     [data.mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data, data.mtlpipelinecopy, texture->blendMode)];
     [data.mtlcmdencoder setVertexBytes:xy length:sizeof(xy) atIndex:0];
     [data.mtlcmdencoder setVertexBytes:uv length:sizeof(uv) atIndex:1];
-    [data.mtlcmdencoder setVertexBuffer:data.mtlbufidentitytransform offset:0 atIndex:3];
+    [data.mtlcmdencoder setVertexBuffer:data.mtlbufconstants offset:CONSTANTS_OFFSET_IDENTITY atIndex:3];
     [data.mtlcmdencoder setFragmentBytes:color length:sizeof(color) atIndex:0];
     [data.mtlcmdencoder setFragmentTexture:texturedata.mtltexture atIndex:0];
     [data.mtlcmdencoder setFragmentSamplerState:texturedata.mtlsampler atIndex:0];
@@ -988,10 +1002,10 @@ METAL_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
     };
 
     const float xy[] = {
-        adjustx(-center->x), adjusty(dstrect->h - center->y),
-        adjustx(-center->x), adjusty(-center->y),
-        adjustx(dstrect->w - center->x), adjusty(dstrect->h - center->y),
-        adjustx(dstrect->w - center->x), adjusty(-center->y)
+        -center->x, dstrect->h - center->y,
+        -center->x, -center->y,
+        dstrect->w - center->x, dstrect->h - center->y,
+        dstrect->w - center->x, -center->y
     };
 
     {
