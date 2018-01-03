@@ -143,6 +143,7 @@ WIN_CreateDevice(int devindex)
     device->SetWindowIcon = WIN_SetWindowIcon;
     device->SetWindowPosition = WIN_SetWindowPosition;
     device->SetWindowSize = WIN_SetWindowSize;
+    device->GetWindowBordersSize = WIN_GetWindowBordersSize;
     device->SetWindowOpacity = WIN_SetWindowOpacity;
     device->ShowWindow = WIN_ShowWindow;
     device->HideWindow = WIN_HideWindow;
