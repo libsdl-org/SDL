@@ -11,10 +11,11 @@ struct SolidVertexOutput
 
 vertex SolidVertexOutput SDL_Solid_vertex(const device float2 *position [[buffer(0)]],
                                           constant float4x4 &projection [[buffer(2)]],
+                                          constant float4x4 &transform [[buffer(3)]],
                                           uint vid [[vertex_id]])
 {
     SolidVertexOutput v;
-    v.position = projection * float4(position[vid], 0.0f, 1.0f);
+    v.position = (projection * transform) * float4(position[vid], 0.0f, 1.0f);
     v.pointSize = 0.5f;
     return v;
 }
