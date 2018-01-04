@@ -147,7 +147,6 @@ typedef struct METAL_PipelineCache
 } METAL_PipelineCache;
 
 @interface METAL_RenderData : NSObject
-    @property (nonatomic, assign) BOOL beginScene;
     @property (nonatomic, retain) id<MTLDevice> mtldevice;
     @property (nonatomic, retain) id<MTLCommandQueue> mtlcmdqueue;
     @property (nonatomic, retain) id<MTLCommandBuffer> mtlcmdbuffer;
@@ -404,7 +403,6 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     }
 
     data = [[METAL_RenderData alloc] init];
-    data.beginScene = YES;
 
     renderer->driverdata = (void*)CFBridgingRetain(data);
     renderer->window = window;
@@ -562,21 +560,50 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
 }
 
 static void
-METAL_ActivateRenderer(SDL_Renderer * renderer)
+METAL_ActivateRenderCommandEncoder(SDL_Renderer * renderer, MTLLoadAction load)
 {
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
 
-    if (data.beginScene) {
-        data.beginScene = NO;
-        data.mtlbackbuffer = [data.mtllayer nextDrawable];
-        SDL_assert(data.mtlbackbuffer);
-        data.mtlpassdesc.colorAttachments[0].texture = data.mtlbackbuffer.texture;
-        data.mtlpassdesc.colorAttachments[0].loadAction = MTLLoadActionDontCare;
+    /* Our SetRenderTarget just signals that the next render operation should
+     * set up a new render pass. This is where that work happens. */
+    if (data.mtlcmdencoder == nil) {
+        id<MTLTexture> mtltexture = nil;
+
+        if (renderer->target != NULL) {
+            METAL_TextureData *texdata = (__bridge METAL_TextureData *)renderer->target->driverdata;
+            mtltexture = texdata.mtltexture;
+        } else {
+            if (data.mtlbackbuffer == nil) {
+                /* The backbuffer's contents aren't guaranteed to persist after
+                 * presenting, so we can leave it undefined when loading it. */
+                data.mtlbackbuffer = [data.mtllayer nextDrawable];
+                if (load == MTLLoadActionLoad) {
+                    load = MTLLoadActionDontCare;
+                }
+            }
+            mtltexture = data.mtlbackbuffer.texture;
+        }
+
+        SDL_assert(mtltexture);
+
+        if (load == MTLLoadActionClear) {
+            MTLClearColor color = MTLClearColorMake(renderer->r/255.0, renderer->g/255.0, renderer->b/255.0, renderer->a/255.0);
+            data.mtlpassdesc.colorAttachments[0].clearColor = color;
+        }
+
+        data.mtlpassdesc.colorAttachments[0].loadAction = load;
+        data.mtlpassdesc.colorAttachments[0].texture = mtltexture;
+
         data.mtlcmdbuffer = [data.mtlcmdqueue commandBuffer];
         data.mtlcmdencoder = [data.mtlcmdbuffer renderCommandEncoderWithDescriptor:data.mtlpassdesc];
-        data.mtlcmdencoder.label = @"SDL metal renderer start of frame";
 
-        // Set up our current renderer state for the next frame...
+        if (data.mtlbackbuffer != nil && mtltexture == data.mtlbackbuffer.texture) {
+            data.mtlcmdencoder.label = @"SDL metal renderer backbuffer";
+        } else {
+            data.mtlcmdencoder.label = @"SDL metal renderer render target";
+        }
+
+        /* Make sure the viewport and clip rect are set on the new render pass. */
         METAL_UpdateViewport(renderer);
         METAL_UpdateClipRect(renderer);
     }
@@ -715,24 +742,21 @@ METAL_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 static int
 METAL_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
 { @autoreleasepool {
-    METAL_ActivateRenderer(renderer);
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
 
-    // commit the current command buffer, so that any work on a render target
-    //  will be available to the next one we're about to queue up.
-    [data.mtlcmdencoder endEncoding];
-    [data.mtlcmdbuffer commit];
+    if (data.mtlcmdencoder) {
+        /* End encoding for the previous render target so we can set up a new
+         * render pass for this one. */
+        [data.mtlcmdencoder endEncoding];
+        [data.mtlcmdbuffer commit];
 
-    id<MTLTexture> mtltexture = texture ? ((__bridge METAL_TextureData *)texture->driverdata).mtltexture : data.mtlbackbuffer.texture;
-    data.mtlpassdesc.colorAttachments[0].texture = mtltexture;
-    // !!! FIXME: this can be MTLLoadActionDontCare for textures (not the backbuffer) if SDL doesn't guarantee the texture contents should survive.
-    data.mtlpassdesc.colorAttachments[0].loadAction = MTLLoadActionLoad;
-    data.mtlcmdbuffer = [data.mtlcmdqueue commandBuffer];
-    data.mtlcmdencoder = [data.mtlcmdbuffer renderCommandEncoderWithDescriptor:data.mtlpassdesc];
-    data.mtlcmdencoder.label = texture ? @"SDL metal renderer render texture" : @"SDL metal renderer backbuffer";
+        data.mtlcmdencoder = nil;
+        data.mtlcmdbuffer = nil;
+    }
 
-    // The higher level will reset the viewport and scissor after this call returns.
-
+    /* We don't begin a new render pass right away - we delay it until an actual
+     * draw or clear happens. That way we can use hardware clears when possible,
+     * which are only available when beginning a new render pass. */
     return 0;
 }}
 
@@ -772,41 +796,43 @@ METAL_SetOrthographicProjection(SDL_Renderer *renderer, int w, int h)
 static int
 METAL_UpdateViewport(SDL_Renderer * renderer)
 { @autoreleasepool {
-    METAL_ActivateRenderer(renderer);
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
-    MTLViewport viewport;
-    viewport.originX = renderer->viewport.x;
-    viewport.originY = renderer->viewport.y;
-    viewport.width = renderer->viewport.w;
-    viewport.height = renderer->viewport.h;
-    viewport.znear = 0.0;
-    viewport.zfar = 1.0;
-    [data.mtlcmdencoder setViewport:viewport];
-    METAL_SetOrthographicProjection(renderer, renderer->viewport.w, renderer->viewport.h);
+    if (data.mtlcmdencoder) {
+        MTLViewport viewport;
+        viewport.originX = renderer->viewport.x;
+        viewport.originY = renderer->viewport.y;
+        viewport.width = renderer->viewport.w;
+        viewport.height = renderer->viewport.h;
+        viewport.znear = 0.0;
+        viewport.zfar = 1.0;
+        [data.mtlcmdencoder setViewport:viewport];
+        METAL_SetOrthographicProjection(renderer, renderer->viewport.w, renderer->viewport.h);
+    }
     return 0;
 }}
 
 static int
 METAL_UpdateClipRect(SDL_Renderer * renderer)
 { @autoreleasepool {
-    METAL_ActivateRenderer(renderer);
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
-    MTLScissorRect mtlrect;
-    // !!! FIXME: should this care about the viewport?
-    if (renderer->clipping_enabled) {
-        const SDL_Rect *rect = &renderer->clip_rect;
-        mtlrect.x = renderer->viewport.x + rect->x;
-        mtlrect.y = renderer->viewport.x + rect->y;
-        mtlrect.width = rect->w;
-        mtlrect.height = rect->h;
-    } else {
-        mtlrect.x = renderer->viewport.x;
-        mtlrect.y = renderer->viewport.y;
-        mtlrect.width = renderer->viewport.w;
-        mtlrect.height = renderer->viewport.h;
-    }
-    if (mtlrect.width > 0 && mtlrect.height > 0) {
-        [data.mtlcmdencoder setScissorRect:mtlrect];
+    if (data.mtlcmdencoder) {
+        MTLScissorRect mtlrect;
+        // !!! FIXME: should this care about the viewport?
+        if (renderer->clipping_enabled) {
+            const SDL_Rect *rect = &renderer->clip_rect;
+            mtlrect.x = renderer->viewport.x + rect->x;
+            mtlrect.y = renderer->viewport.x + rect->y;
+            mtlrect.width = rect->w;
+            mtlrect.height = rect->h;
+        } else {
+            mtlrect.x = renderer->viewport.x;
+            mtlrect.y = renderer->viewport.y;
+            mtlrect.width = renderer->viewport.w;
+            mtlrect.height = renderer->viewport.h;
+        }
+        if (mtlrect.width > 0 && mtlrect.height > 0) {
+            [data.mtlcmdencoder setScissorRect:mtlrect];
+        }
     }
     return 0;
 }}
@@ -814,38 +840,43 @@ METAL_UpdateClipRect(SDL_Renderer * renderer)
 static int
 METAL_RenderClear(SDL_Renderer * renderer)
 { @autoreleasepool {
-    // We could dump the command buffer and force a clear on a new one, but this will respect the scissor state.
-    METAL_ActivateRenderer(renderer);
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
 
-    // !!! FIXME: render color should live in a dedicated uniform buffer.
-    const float color[4] = { ((float)renderer->r) / 255.0f, ((float)renderer->g) / 255.0f, ((float)renderer->b) / 255.0f, ((float)renderer->a) / 255.0f };
+    /* Since we set up the render command encoder lazily when a draw is
+     * requested, we can do the fast path hardware clear if no draws have
+     * happened since the last SetRenderTarget. */
+    if (data.mtlcmdencoder == nil) {
+        METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionClear);
+    } else {
+        // !!! FIXME: render color should live in a dedicated uniform buffer.
+        const float color[4] = { ((float)renderer->r) / 255.0f, ((float)renderer->g) / 255.0f, ((float)renderer->b) / 255.0f, ((float)renderer->a) / 255.0f };
 
-    MTLViewport viewport;  // RenderClear ignores the viewport state, though, so reset that.
-    viewport.originX = viewport.originY = 0.0;
-    viewport.width = data.mtlpassdesc.colorAttachments[0].texture.width;
-    viewport.height = data.mtlpassdesc.colorAttachments[0].texture.height;
-    viewport.znear = 0.0;
-    viewport.zfar = 1.0;
+        MTLViewport viewport;  // RenderClear ignores the viewport state, though, so reset that.
+        viewport.originX = viewport.originY = 0.0;
+        viewport.width = data.mtlpassdesc.colorAttachments[0].texture.width;
+        viewport.height = data.mtlpassdesc.colorAttachments[0].texture.height;
+        viewport.znear = 0.0;
+        viewport.zfar = 1.0;
 
-    // Draw a simple filled fullscreen triangle now.
-    METAL_SetOrthographicProjection(renderer, 1, 1);
-    [data.mtlcmdencoder setViewport:viewport];
-    [data.mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data, data.mtlpipelineprims, SDL_BLENDMODE_NONE)];
-    [data.mtlcmdencoder setVertexBuffer:data.mtlbufconstants offset:CONSTANTS_OFFSET_CLEAR_VERTS atIndex:0];
-    [data.mtlcmdencoder setVertexBuffer:data.mtlbufconstants offset:CONSTANTS_OFFSET_IDENTITY atIndex:3];
-    [data.mtlcmdencoder setFragmentBytes:color length:sizeof(color) atIndex:0];
-    [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:3];
+        // Slow path for clearing: draw a filled fullscreen triangle.
+        METAL_SetOrthographicProjection(renderer, 1, 1);
+        [data.mtlcmdencoder setViewport:viewport];
+        [data.mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data, data.mtlpipelineprims, SDL_BLENDMODE_NONE)];
+        [data.mtlcmdencoder setVertexBuffer:data.mtlbufconstants offset:CONSTANTS_OFFSET_CLEAR_VERTS atIndex:0];
+        [data.mtlcmdencoder setVertexBuffer:data.mtlbufconstants offset:CONSTANTS_OFFSET_IDENTITY atIndex:3];
+        [data.mtlcmdencoder setFragmentBytes:color length:sizeof(color) atIndex:0];
+        [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangle vertexStart:0 vertexCount:3];
 
-    // reset the viewport for the rest of our usual drawing work...
-    viewport.originX = renderer->viewport.x;
-    viewport.originY = renderer->viewport.y;
-    viewport.width = renderer->viewport.w;
-    viewport.height = renderer->viewport.h;
-    viewport.znear = 0.0;
-    viewport.zfar = 1.0;
-    [data.mtlcmdencoder setViewport:viewport];
-    METAL_SetOrthographicProjection(renderer, renderer->viewport.w, renderer->viewport.h);
+        // reset the viewport for the rest of our usual drawing work...
+        viewport.originX = renderer->viewport.x;
+        viewport.originY = renderer->viewport.y;
+        viewport.width = renderer->viewport.w;
+        viewport.height = renderer->viewport.h;
+        viewport.znear = 0.0;
+        viewport.zfar = 1.0;
+        [data.mtlcmdencoder setViewport:viewport];
+        METAL_SetOrthographicProjection(renderer, renderer->viewport.w, renderer->viewport.h);
+    }
 
     return 0;
 }}
@@ -861,7 +892,7 @@ static int
 DrawVerts(SDL_Renderer * renderer, const SDL_FPoint * points, int count,
           const MTLPrimitiveType primtype)
 { @autoreleasepool {
-    METAL_ActivateRenderer(renderer);
+    METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad);
 
     const size_t vertlen = (sizeof (float) * 2) * count;
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
@@ -894,7 +925,7 @@ METAL_RenderDrawLines(SDL_Renderer * renderer, const SDL_FPoint * points, int co
 static int
 METAL_RenderFillRects(SDL_Renderer * renderer, const SDL_FRect * rects, int count)
 { @autoreleasepool {
-    METAL_ActivateRenderer(renderer);
+    METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad);
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
 
     // !!! FIXME: render color should live in a dedicated uniform buffer.
@@ -925,7 +956,7 @@ static int
 METAL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
               const SDL_Rect * srcrect, const SDL_FRect * dstrect)
 { @autoreleasepool {
-    METAL_ActivateRenderer(renderer);
+    METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad);
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
     METAL_TextureData *texturedata = (__bridge METAL_TextureData *)texture->driverdata;
     const float texw = (float) texturedata.mtltexture.width;
@@ -970,7 +1001,7 @@ METAL_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
               const SDL_Rect * srcrect, const SDL_FRect * dstrect,
               const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip)
 { @autoreleasepool {
-    METAL_ActivateRenderer(renderer);
+    METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad);
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
     METAL_TextureData *texturedata = (__bridge METAL_TextureData *)texture->driverdata;
     const float texw = (float) texturedata.mtltexture.width;
@@ -1052,7 +1083,8 @@ static int
 METAL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
                     Uint32 pixel_format, void * pixels, int pitch)
 { @autoreleasepool {
-    METAL_ActivateRenderer(renderer);
+    METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad);
+
     // !!! FIXME: this probably needs to commit the current command buffer, and probably waitUntilCompleted
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
     id<MTLTexture> mtltexture = data.mtlpassdesc.colorAttachments[0].texture;
@@ -1076,16 +1108,20 @@ METAL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
 static void
 METAL_RenderPresent(SDL_Renderer * renderer)
 { @autoreleasepool {
-    METAL_ActivateRenderer(renderer);
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
 
-    [data.mtlcmdencoder endEncoding];
-    [data.mtlcmdbuffer presentDrawable:data.mtlbackbuffer];
-    [data.mtlcmdbuffer commit];
+    if (data.mtlcmdencoder != nil) {
+        [data.mtlcmdencoder endEncoding];
+    }
+    if (data.mtlbackbuffer != nil) {
+        [data.mtlcmdbuffer presentDrawable:data.mtlbackbuffer];
+    }
+    if (data.mtlcmdbuffer != nil) {
+        [data.mtlcmdbuffer commit];
+    }
     data.mtlcmdencoder = nil;
     data.mtlcmdbuffer = nil;
     data.mtlbackbuffer = nil;
-    data.beginScene = YES;
 }}
 
 static void
@@ -1122,7 +1158,7 @@ METAL_GetMetalLayer(SDL_Renderer * renderer)
 static void *
 METAL_GetMetalCommandEncoder(SDL_Renderer * renderer)
 { @autoreleasepool {
-    METAL_ActivateRenderer(renderer);
+    METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad);
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
     return (__bridge void*)data.mtlcmdencoder;
 }}
