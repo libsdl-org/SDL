@@ -487,22 +487,25 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
 
     float clearverts[6] = {0.0f, 0.0f,  0.0f, 2.0f,  2.0f, 0.0f};
 
-    MTLResourceOptions constantsopts = 0;
-#ifdef __MACOSX__
-    constantsopts |= MTLResourceStorageModeManaged;
-#endif
+    id<MTLBuffer> mtlbufconstantstaging = [data.mtldevice newBufferWithLength:CONSTANTS_LENGTH options:MTLResourceStorageModeShared];
+    mtlbufconstantstaging.label = @"SDL constant staging data";
 
-    id<MTLBuffer> mtlbufconstants = [data.mtldevice newBufferWithLength:CONSTANTS_LENGTH options:constantsopts];
+    id<MTLBuffer> mtlbufconstants = [data.mtldevice newBufferWithLength:CONSTANTS_LENGTH options:MTLResourceStorageModePrivate];
     data.mtlbufconstants = mtlbufconstants;
     data.mtlbufconstants.label = @"SDL constant data";
 
-    char *constantdata = [data.mtlbufconstants contents];
+    char *constantdata = [mtlbufconstantstaging contents];
     SDL_memcpy(constantdata + CONSTANTS_OFFSET_IDENTITY, identitytransform, sizeof(identitytransform));
     SDL_memcpy(constantdata + CONSTANTS_OFFSET_HALF_PIXEL_TRANSFORM, halfpixeltransform, sizeof(halfpixeltransform));
     SDL_memcpy(constantdata + CONSTANTS_OFFSET_CLEAR_VERTS, clearverts, sizeof(clearverts));
-#ifdef __MACOSX__
-    [data.mtlbufconstants didModifyRange:NSMakeRange(0, CONSTANTS_LENGTH)];
-#endif
+
+    id<MTLCommandBuffer> cmdbuffer = [data.mtlcmdqueue commandBuffer];
+    id<MTLBlitCommandEncoder> blitcmd = [cmdbuffer blitCommandEncoder];
+
+    [blitcmd copyFromBuffer:mtlbufconstantstaging sourceOffset:0 toBuffer:data.mtlbufconstants destinationOffset:0 size:CONSTANTS_LENGTH];
+
+    [blitcmd endEncoding];
+    [cmdbuffer commit];
 
     // !!! FIXME: force more clears here so all the drawables are sane to start, and our static buffers are definitely flushed.
 
