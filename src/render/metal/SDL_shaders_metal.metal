@@ -16,7 +16,7 @@ vertex SolidVertexOutput SDL_Solid_vertex(const device float2 *position [[buffer
 {
     SolidVertexOutput v;
     v.position = (projection * transform) * float4(position[vid], 0.0f, 1.0f);
-    v.pointSize = 0.5f;
+    v.pointSize = 1.0f;
     return v;
 }
 
@@ -49,4 +49,61 @@ fragment float4 SDL_Copy_fragment(CopyVertexOutput vert [[stage_in]],
                                   sampler s [[sampler(0)]])
 {
     return tex.sample(s, vert.texcoord) * col;
+}
+
+struct YUVDecode
+{
+    float3 offset;
+    float3 Rcoeff;
+    float3 Gcoeff;
+    float3 Bcoeff;
+};
+
+fragment float4 SDL_YUV_fragment(CopyVertexOutput vert [[stage_in]],
+                                 constant float4 &col [[buffer(0)]],
+                                 constant YUVDecode &decode [[buffer(1)]],
+                                 texture2d<float> texY [[texture(0)]],
+                                 texture2d_array<float> texUV [[texture(1)]],
+                                 sampler s [[sampler(0)]])
+{
+    float3 yuv;
+    yuv.x = texY.sample(s, vert.texcoord).r;
+    yuv.y = texUV.sample(s, vert.texcoord, 0).r;
+    yuv.z = texUV.sample(s, vert.texcoord, 1).r;
+
+    yuv += decode.offset;
+
+    return col * float4(dot(yuv, decode.Rcoeff), dot(yuv, decode.Gcoeff), dot(yuv, decode.Bcoeff), 1.0);
+}
+
+fragment float4 SDL_NV12_fragment(CopyVertexOutput vert [[stage_in]],
+                                 constant float4 &col [[buffer(0)]],
+                                 constant YUVDecode &decode [[buffer(1)]],
+                                 texture2d<float> texY [[texture(0)]],
+                                 texture2d<float> texUV [[texture(1)]],
+                                 sampler s [[sampler(0)]])
+{
+    float3 yuv;
+    yuv.x = texY.sample(s, vert.texcoord).r;
+    yuv.yz = texUV.sample(s, vert.texcoord).rg;
+
+    yuv += decode.offset;
+
+    return col * float4(dot(yuv, decode.Rcoeff), dot(yuv, decode.Gcoeff), dot(yuv, decode.Bcoeff), 1.0);
+}
+
+fragment float4 SDL_NV21_fragment(CopyVertexOutput vert [[stage_in]],
+                                 constant float4 &col [[buffer(0)]],
+                                 constant YUVDecode &decode [[buffer(1)]],
+                                 texture2d<float> texY [[texture(0)]],
+                                 texture2d<float> texUV [[texture(1)]],
+                                 sampler s [[sampler(0)]])
+{
+    float3 yuv;
+    yuv.x = texY.sample(s, vert.texcoord).r;
+    yuv.yz = texUV.sample(s, vert.texcoord).gr;
+
+    yuv += decode.offset;
+
+    return col * float4(dot(yuv, decode.Rcoeff), dot(yuv, decode.Gcoeff), dot(yuv, decode.Bcoeff), 1.0);
 }
