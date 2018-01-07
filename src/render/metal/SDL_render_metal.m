@@ -157,15 +157,19 @@ typedef struct METAL_PipelineCache
     int count;
     SDL_MetalVertexFunction vertexFunction;
     SDL_MetalFragmentFunction fragmentFunction;
+    MTLPixelFormat renderTargetFormat;
     const char *label;
 } METAL_PipelineCache;
 
 /* Each shader combination used by drawing functions has a separate pipeline
- * cache. This is more efficient than iterating over a global cache to find
- * the pipeline based on the specified shader combination, since we know what
- * the shader combination is inside each drawing function's code. */
+ * cache, and we have a separate list of caches for each render target pixel
+ * format. This is more efficient than iterating over a global cache to find
+ * the pipeline based on the specified shader combination and RT pixel format,
+ * since we know what the RT pixel format is when we set the render target, and
+ * we know what the shader combination is inside each drawing function's code. */
 typedef struct METAL_ShaderPipelines
 {
+    MTLPixelFormat renderTargetFormat;
     METAL_PipelineCache caches[SDL_METAL_FRAGMENT_COUNT];
 } METAL_ShaderPipelines;
 
@@ -181,7 +185,9 @@ typedef struct METAL_ShaderPipelines
     @property (nonatomic, retain) id<MTLBuffer> mtlbufconstants;
     @property (nonatomic, retain) CAMetalLayer *mtllayer;
     @property (nonatomic, retain) MTLRenderPassDescriptor *mtlpassdesc;
-    @property (nonatomic, assign) METAL_ShaderPipelines *pipelines;
+    @property (nonatomic, assign) METAL_ShaderPipelines *activepipelines;
+    @property (nonatomic, assign) METAL_ShaderPipelines *allpipelines;
+    @property (nonatomic, assign) int pipelinescount;
 @end
 
 @implementation METAL_RenderData
@@ -315,8 +321,7 @@ MakePipelineState(METAL_RenderData *data, METAL_PipelineCache *cache,
 
     MTLRenderPipelineColorAttachmentDescriptor *rtdesc = mtlpipedesc.colorAttachments[0];
 
-    // !!! FIXME: This should be part of the pipeline state cache.
-    rtdesc.pixelFormat = data.mtllayer.pixelFormat;
+    rtdesc.pixelFormat = cache->renderTargetFormat;
 
     if (blendmode != SDL_BLENDMODE_NONE) {
         rtdesc.blendingEnabled = YES;
@@ -361,12 +366,14 @@ MakePipelineState(METAL_RenderData *data, METAL_PipelineCache *cache,
 }
 
 static void
-MakePipelineCache(METAL_RenderData *data, METAL_PipelineCache *cache, const char *label, SDL_MetalVertexFunction vertfn, SDL_MetalFragmentFunction fragfn)
+MakePipelineCache(METAL_RenderData *data, METAL_PipelineCache *cache, const char *label,
+                  MTLPixelFormat rtformat, SDL_MetalVertexFunction vertfn, SDL_MetalFragmentFunction fragfn)
 {
     SDL_zerop(cache);
 
     cache->vertexFunction = vertfn;
     cache->fragmentFunction = fragfn;
+    cache->renderTargetFormat = rtformat;
     cache->label = label;
 
     /* Create pipeline states for the default blend modes. Custom blend modes
@@ -389,33 +396,58 @@ DestroyPipelineCache(METAL_PipelineCache *cache)
     }
 }
 
-static METAL_ShaderPipelines *
-MakeShaderPipelines(METAL_RenderData *data)
+void
+MakeShaderPipelines(METAL_RenderData *data, METAL_ShaderPipelines *pipelines, MTLPixelFormat rtformat)
 {
-    METAL_ShaderPipelines *pipelines = SDL_calloc(1, sizeof(METAL_ShaderPipelines));
-    if (!pipelines) {
+    SDL_zerop(pipelines);
+
+    pipelines->renderTargetFormat = rtformat;
+
+    MakePipelineCache(data, &pipelines->caches[SDL_METAL_FRAGMENT_SOLID], "SDL primitives pipeline", rtformat, SDL_METAL_VERTEX_SOLID, SDL_METAL_FRAGMENT_SOLID);
+    MakePipelineCache(data, &pipelines->caches[SDL_METAL_FRAGMENT_COPY], "SDL copy pipeline", rtformat, SDL_METAL_VERTEX_COPY, SDL_METAL_FRAGMENT_COPY);
+    MakePipelineCache(data, &pipelines->caches[SDL_METAL_FRAGMENT_YUV], "SDL YUV pipeline", rtformat, SDL_METAL_VERTEX_COPY, SDL_METAL_FRAGMENT_YUV);
+    MakePipelineCache(data, &pipelines->caches[SDL_METAL_FRAGMENT_NV12], "SDL NV12 pipeline", rtformat, SDL_METAL_VERTEX_COPY, SDL_METAL_FRAGMENT_NV12);
+    MakePipelineCache(data, &pipelines->caches[SDL_METAL_FRAGMENT_NV21], "SDL NV21 pipeline", rtformat, SDL_METAL_VERTEX_COPY, SDL_METAL_FRAGMENT_NV21);
+}
+
+static METAL_ShaderPipelines *
+ChooseShaderPipelines(METAL_RenderData *data, MTLPixelFormat rtformat)
+{
+    METAL_ShaderPipelines *allpipelines = data.allpipelines;
+    int count = data.pipelinescount;
+
+    for (int i = 0; i < count; i++) {
+        if (allpipelines[i].renderTargetFormat == rtformat) {
+            return &allpipelines[i];
+        }
+    }
+
+    allpipelines = SDL_realloc(allpipelines, (count + 1) * sizeof(METAL_ShaderPipelines));
+
+    if (allpipelines == NULL) {
         SDL_OutOfMemory();
         return NULL;
     }
 
-    MakePipelineCache(data, &pipelines->caches[SDL_METAL_FRAGMENT_SOLID], "SDL primitives pipeline", SDL_METAL_VERTEX_SOLID, SDL_METAL_FRAGMENT_SOLID);
-    MakePipelineCache(data, &pipelines->caches[SDL_METAL_FRAGMENT_COPY], "SDL copy pipeline", SDL_METAL_VERTEX_COPY, SDL_METAL_FRAGMENT_COPY);
-    MakePipelineCache(data, &pipelines->caches[SDL_METAL_FRAGMENT_YUV], "SDL YUV pipeline", SDL_METAL_VERTEX_COPY, SDL_METAL_FRAGMENT_YUV);
-    MakePipelineCache(data, &pipelines->caches[SDL_METAL_FRAGMENT_NV12], "SDL NV12 pipeline", SDL_METAL_VERTEX_COPY, SDL_METAL_FRAGMENT_NV12);
-    MakePipelineCache(data, &pipelines->caches[SDL_METAL_FRAGMENT_NV21], "SDL NV21 pipeline", SDL_METAL_VERTEX_COPY, SDL_METAL_FRAGMENT_NV21);
+    MakeShaderPipelines(data, &allpipelines[count], rtformat);
 
-    return pipelines;
+    data.allpipelines = allpipelines;
+    data.pipelinescount = count + 1;
+
+    return &data.allpipelines[count];
 }
 
 static void
-DestroyShaderPipelines(METAL_ShaderPipelines *pipelines)
+DestroyAllPipelines(METAL_ShaderPipelines *allpipelines, int count)
 {
-    if (pipelines != NULL) {
-        for (int i = 0; i < SDL_METAL_FRAGMENT_COUNT; i++) {
-            DestroyPipelineCache(&pipelines->caches[i]);
+    if (allpipelines != NULL) {
+        for (int i = 0; i < count; i++) {
+            for (int cache = 0; cache < SDL_METAL_FRAGMENT_COUNT; cache++) {
+                DestroyPipelineCache(&allpipelines[i].caches[cache]);
+            }
         }
 
-        SDL_free(pipelines);
+        SDL_free(allpipelines);
     }
 }
 
@@ -508,7 +540,10 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
 #endif
     data.mtllibrary.label = @"SDL Metal renderer shader library";
 
-    data.pipelines = MakeShaderPipelines(data);
+    /* Do some shader pipeline state loading up-front rather than on demand. */
+    data.pipelinescount = 0;
+    data.allpipelines = NULL;
+    ChooseShaderPipelines(data, MTLPixelFormatBGRA8Unorm);
 
     MTLSamplerDescriptor *samplerdesc = [[MTLSamplerDescriptor alloc] init];
 
@@ -683,6 +718,8 @@ METAL_ActivateRenderCommandEncoder(SDL_Renderer * renderer, MTLLoadAction load)
             data.mtlcmdencoder.label = @"SDL metal renderer render target";
         }
 
+        data.activepipelines = ChooseShaderPipelines(data, mtltexture.pixelFormat);
+
         /* Make sure the viewport and clip rect are set on the new render pass. */
         METAL_UpdateViewport(renderer);
         METAL_UpdateClipRect(renderer);
@@ -844,11 +881,9 @@ METAL_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
 { @autoreleasepool {
     METAL_TextureData *texturedata = (__bridge METAL_TextureData *)texture->driverdata;
 
-    // !!! FIXME: this is a synchronous call; it doesn't return until data is uploaded in some form.
-    // !!! FIXME:  Maybe move this off to a thread that marks the texture as uploaded and only stall the main thread if we try to
-    // !!! FIXME:  use this texture before the marking is done? Is it worth it? Or will we basically always be uploading a bunch of
-    // !!! FIXME:  stuff way ahead of time and/or using it immediately after upload?
-
+    /* !!! FIXME: replaceRegion does not do any synchronization, so it might
+     * !!! FIXME: stomp on a previous frame's data that's currently being read
+     * !!! FIXME: by the GPU. */
     [texturedata.mtltexture replaceRegion:MTLRegionMake2D(rect->x, rect->y, rect->w, rect->h)
                               mipmapLevel:0
                                 withBytes:pixels
@@ -1064,7 +1099,7 @@ METAL_RenderClear(SDL_Renderer * renderer)
         // Slow path for clearing: draw a filled fullscreen triangle.
         METAL_SetOrthographicProjection(renderer, 1, 1);
         [data.mtlcmdencoder setViewport:viewport];
-        [data.mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data, data.pipelines, SDL_METAL_FRAGMENT_SOLID, SDL_BLENDMODE_NONE)];
+        [data.mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data, data.activepipelines, SDL_METAL_FRAGMENT_SOLID, SDL_BLENDMODE_NONE)];
         [data.mtlcmdencoder setVertexBuffer:data.mtlbufconstants offset:CONSTANTS_OFFSET_CLEAR_VERTS atIndex:0];
         [data.mtlcmdencoder setVertexBuffer:data.mtlbufconstants offset:CONSTANTS_OFFSET_IDENTITY atIndex:3];
         [data.mtlcmdencoder setFragmentBytes:color length:sizeof(color) atIndex:0];
@@ -1103,7 +1138,7 @@ DrawVerts(SDL_Renderer * renderer, const SDL_FPoint * points, int count,
     // !!! FIXME: render color should live in a dedicated uniform buffer.
     const float color[4] = { ((float)renderer->r) / 255.0f, ((float)renderer->g) / 255.0f, ((float)renderer->b) / 255.0f, ((float)renderer->a) / 255.0f };
 
-    [data.mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data, data.pipelines, SDL_METAL_FRAGMENT_SOLID, renderer->blendMode)];
+    [data.mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data, data.activepipelines, SDL_METAL_FRAGMENT_SOLID, renderer->blendMode)];
     [data.mtlcmdencoder setFragmentBytes:color length:sizeof(color) atIndex:0];
 
     [data.mtlcmdencoder setVertexBytes:points length:vertlen atIndex:0];
@@ -1134,7 +1169,7 @@ METAL_RenderFillRects(SDL_Renderer * renderer, const SDL_FRect * rects, int coun
     // !!! FIXME: render color should live in a dedicated uniform buffer.
     const float color[4] = { ((float)renderer->r) / 255.0f, ((float)renderer->g) / 255.0f, ((float)renderer->b) / 255.0f, ((float)renderer->a) / 255.0f };
 
-    [data.mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data, data.pipelines, SDL_METAL_FRAGMENT_SOLID, renderer->blendMode)];
+    [data.mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data, data.activepipelines, SDL_METAL_FRAGMENT_SOLID, renderer->blendMode)];
     [data.mtlcmdencoder setFragmentBytes:color length:sizeof(color) atIndex:0];
     [data.mtlcmdencoder setVertexBuffer:data.mtlbufconstants offset:CONSTANTS_OFFSET_IDENTITY atIndex:3];
 
@@ -1166,7 +1201,7 @@ METAL_SetupRenderCopy(METAL_RenderData *data, SDL_Texture *texture, METAL_Textur
         color[3] = ((float)texture->a) / 255.0f;
     }
 
-    [data.mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data, data.pipelines, texturedata.fragmentFunction, texture->blendMode)];
+    [data.mtlcmdencoder setRenderPipelineState:ChoosePipelineState(data, data.activepipelines, texturedata.fragmentFunction, texture->blendMode)];
     [data.mtlcmdencoder setFragmentBytes:color length:sizeof(color) atIndex:0];
     [data.mtlcmdencoder setFragmentSamplerState:texturedata.mtlsampler atIndex:0];
 
@@ -1347,7 +1382,7 @@ METAL_DestroyRenderer(SDL_Renderer * renderer)
             [data.mtlcmdencoder endEncoding];
         }
 
-        DestroyShaderPipelines(data.pipelines);
+        DestroyAllPipelines(data.allpipelines, data.pipelinescount);
     }
 
     SDL_free(renderer);
