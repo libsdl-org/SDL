@@ -33,6 +33,7 @@
 #else
 #include "../../video/uikit/SDL_uikitmetalview.h"
 #endif
+#include <Availability.h>
 #import <Metal/Metal.h>
 #import <QuartzCore/CAMetalLayer.h>
 
@@ -88,27 +89,18 @@ static void *METAL_GetMetalCommandEncoder(SDL_Renderer * renderer);
 SDL_RenderDriver METAL_RenderDriver = {
     METAL_CreateRenderer,
     {
-     "metal",
-     (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE),
-     6,
-     {
-         SDL_PIXELFORMAT_ARGB8888,
-         SDL_PIXELFORMAT_ABGR8888,
-         SDL_PIXELFORMAT_YV12,
-         SDL_PIXELFORMAT_IYUV,
-         SDL_PIXELFORMAT_NV12,
-         SDL_PIXELFORMAT_NV21
-     },
-
-     // !!! FIXME: how do you query Metal for this?
-     // (the weakest GPU supported by Metal on iOS has 4k texture max, and
-     //  other models might be 2x or 4x more. On macOS, it's 16k across the
-     //  board right now.)
-#ifdef __MACOSX__
-     16384, 16384
-#else
-     4096, 4096
-#endif
+        "metal",
+        (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE),
+        6,
+        {
+            SDL_PIXELFORMAT_ARGB8888,
+            SDL_PIXELFORMAT_ABGR8888,
+            SDL_PIXELFORMAT_YV12,
+            SDL_PIXELFORMAT_IYUV,
+            SDL_PIXELFORMAT_NV12,
+            SDL_PIXELFORMAT_NV21
+        },
+    0, 0,
     }
 };
 
@@ -467,9 +459,10 @@ ChoosePipelineState(METAL_RenderData *data, METAL_ShaderPipelines *pipelines, SD
 
 static SDL_Renderer *
 METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
-{
+{ @autoreleasepool {
     SDL_Renderer *renderer = NULL;
     METAL_RenderData *data = NULL;
+    id<MTLDevice> mtldevice = nil;
     SDL_SysWMinfo syswm;
 
     SDL_VERSION(&syswm.version);
@@ -487,24 +480,22 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
         return NULL;
     }
 
+    // !!! FIXME: MTLCopyAllDevices() can find other GPUs on macOS...
+    mtldevice = MTLCreateSystemDefaultDevice();
+
+    if (mtldevice == nil) {
+        SDL_free(renderer);
+        SDL_SetError("Failed to obtain Metal device");
+        return NULL;
+    }
+
+    // !!! FIXME: error checking on all of this.
     data = [[METAL_RenderData alloc] init];
 
     renderer->driverdata = (void*)CFBridgingRetain(data);
     renderer->window = window;
 
 #ifdef __MACOSX__
-    id<MTLDevice> mtldevice = MTLCreateSystemDefaultDevice();  // !!! FIXME: MTLCopyAllDevices() can find other GPUs...
-    if (mtldevice == nil) {
-        SDL_free(renderer);
-#if !__has_feature(objc_arc)
-        [data release];
-#endif
-        SDL_SetError("Failed to obtain Metal device");
-        return NULL;
-    }
-
-    // !!! FIXME: error checking on all of this.
-
     NSView *view = Cocoa_Mtl_AddMetalView(window);
     CAMetalLayer *layer = (CAMetalLayer *)[view layer];
 
@@ -657,6 +648,40 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
         renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
     }
 
+    /* https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf */
+    int maxtexsize = 4096;
+#if defined(__MACOSX__)
+    maxtexsize = 16384;
+#elif defined(__TVOS__)
+#ifdef __TVOS_11_0
+    if ([mtldevice supportsFeatureSet:MTLFeatureSet_tvOS_GPUFamily2_v1]) {
+        maxtexsize = 16384;
+    } else
+#endif
+    {
+        maxtexsize = 8192;
+    }
+#else
+#ifdef __IPHONE_11_0
+    if ([mtldevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily4_v1]) {
+        maxtexsize = 16384;
+    } else
+#endif
+#ifdef __IPHONE_10_0
+    if ([mtldevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily3_v1]) {
+        maxtexsize = 16384;
+    } else
+#endif
+    if ([mtldevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily2_v2] || [mtldevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily1_v2]) {
+        maxtexsize = 8192;
+    } else {
+        maxtexsize = 4096;
+    }
+#endif
+
+    renderer->info.max_texture_width = maxtexsize;
+    renderer->info.max_texture_height = maxtexsize;
+
 #if !__has_feature(objc_arc)
     [mtlcmdqueue release];
     [mtllibrary release];
@@ -666,13 +691,11 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     [mtlbufconstants release];
     [view release];
     [data release];
-#ifdef __MACOSX__
     [mtldevice release];
-#endif
 #endif
 
     return renderer;
-}
+}}
 
 static void
 METAL_ActivateRenderCommandEncoder(SDL_Renderer * renderer, MTLLoadAction load)
@@ -1297,17 +1320,15 @@ METAL_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
         float c = cosf(rads), s = sinf(rads);
         SDL_memset(transform, 0, sizeof(transform));
 
-        // matrix multiplication carried out on paper:
-        // |1     x+c| |c -s    |
-        // |  1   y+c| |s  c    |
-        // |    1    | |     1  |
-        // |        1| |       1|
-        //     move      rotate
         transform[10] = transform[15] = 1.0f;
+
+        /* Rotation */
         transform[0]  = c;
         transform[1]  = s;
         transform[4]  = -s;
         transform[5]  = c;
+
+        /* Translation */
         transform[12] = dstrect->x + center->x;
         transform[13] = dstrect->y + center->y;
     }
