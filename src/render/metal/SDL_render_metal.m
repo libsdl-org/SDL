@@ -653,14 +653,14 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
 #if defined(__MACOSX__)
     maxtexsize = 16384;
 #elif defined(__TVOS__)
+    maxtexsize = 8192;
 #ifdef __TVOS_11_0
-    if ([mtldevice supportsFeatureSet:MTLFeatureSet_tvOS_GPUFamily2_v1]) {
-        maxtexsize = 16384;
-    } else
-#endif
-    {
-        maxtexsize = 8192;
+    if (@available(tvOS 11.0, *)) {
+        if ([mtldevice supportsFeatureSet:MTLFeatureSet_tvOS_GPUFamily2_v1]) {
+            maxtexsize = 16384;
+        }
     }
+#endif
 #else
 #ifdef __IPHONE_11_0
     if ([mtldevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily4_v1]) {
