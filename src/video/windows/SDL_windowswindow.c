@@ -51,14 +51,17 @@ static WCHAR *SDL_HelperWindowClassName = TEXT("SDLHelperWindowInputCatcher");
 static WCHAR *SDL_HelperWindowName = TEXT("SDLHelperWindowInputMsgWindow");
 static ATOM SDL_HelperWindowClass = 0;
 
-// for borderless Windows, still want the following flags:
-// - WS_CAPTION: this seems to enable the Windows minimize animation
-// - WS_SYSMENU: enables system context menu on task bar
-// - WS_MINIMIZEBOX: window will respond to Windows minimize commands sent to all windows, such as windows key + m, shaking title bar, etc.
+/* For borderless Windows, still want the following flags:
+   - WS_CAPTION: this seems to enable the Windows minimize animation
+   - WS_SYSMENU: enables system context menu on task bar
+   - WS_MINIMIZEBOX: window will respond to Windows minimize commands sent to all windows, such as windows key + m, shaking title bar, etc.
+   This will also cause the task bar to overlap the window and other windowed behaviors, so only use this for windows that shouldn't appear to be fullscreen
+ */
 
 #define STYLE_BASIC         (WS_CLIPSIBLINGS | WS_CLIPCHILDREN)
 #define STYLE_FULLSCREEN    (WS_POPUP)
-#define STYLE_BORDERLESS    (WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX)
+#define STYLE_BORDERLESS    (WS_POPUP)
+#define STYLE_BORDERLESS_WINDOWED (WS_POPUP | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX)
 #define STYLE_NORMAL        (WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX)
 #define STYLE_RESIZABLE     (WS_THICKFRAME | WS_MAXIMIZEBOX)
 #define STYLE_MASK          (STYLE_FULLSCREEN | STYLE_BORDERLESS | STYLE_NORMAL | STYLE_RESIZABLE)
@@ -72,7 +75,20 @@ GetWindowStyle(SDL_Window * window)
         style |= STYLE_FULLSCREEN;
     } else {
         if (window->flags & SDL_WINDOW_BORDERLESS) {
-            style |= STYLE_BORDERLESS;
+            /* SDL 2.1:
+               This behavior more closely matches other platform where the window is borderless
+               but still interacts with the window manager (e.g. task bar shows above it, it can
+               be resized to fit within usable desktop area, etc.) so this should be the behavior
+               for a future SDL release.
+
+               If you want a borderless window the size of the desktop that looks like a fullscreen
+               window, then you should use the SDL_WINDOW_FULLSCREEN_DESKTOP flag.
+             */
+            if (SDL_GetHintBoolean("SDL_BORDERLESS_WINDOWED_STYLE", SDL_FALSE)) {
+                style |= STYLE_BORDERLESS_WINDOWED;
+            } else {
+                style |= STYLE_BORDERLESS;
+            }
         } else {
             style |= STYLE_NORMAL;
         }
