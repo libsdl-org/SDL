@@ -156,10 +156,10 @@ SDL_bool SDL_Vulkan_GetInstanceExtensions_Helper(unsigned *userCount,
     {
 		unsigned int i;
 
-        if(*userCount != nameCount)
+        if(*userCount < nameCount)
         {
             SDL_SetError(
-                "Count doesn't match count from previous call of SDL_Vulkan_GetInstanceExtensions");
+                "Ouput array for SDL_Vulkan_GetInstanceExtensions is too small");
             return SDL_FALSE;
         }
         for(i = 0; i < nameCount; i++)
@@ -167,10 +167,7 @@ SDL_bool SDL_Vulkan_GetInstanceExtensions_Helper(unsigned *userCount,
             userNames[i] = names[i];
         }
     }
-    else
-    {
-        *userCount = nameCount;
-    }
+    *userCount = nameCount;
     return SDL_TRUE;
 }
 
