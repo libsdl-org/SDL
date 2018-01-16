@@ -519,18 +519,6 @@ SDL_EGL_ChooseConfig(_THIS)
         attribs[i++] = _this->gl_config.multisamplesamples;
     }
 
-    if (_this->gl_config.framebuffer_srgb_capable) {
-#ifdef EGL_KHR_gl_colorspace
-        if (SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_KHR_gl_colorspace")) {
-            attribs[i++] = EGL_GL_COLORSPACE_KHR;
-            attribs[i++] = EGL_GL_COLORSPACE_SRGB_KHR;
-        } else
-#endif
-        {
-            return SDL_SetError("EGL implementation does not support sRGB system framebuffers");
-        }
-    }
-
     attribs[i++] = EGL_RENDERABLE_TYPE;
     if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) {
 #ifdef EGL_KHR_create_context
@@ -799,6 +787,10 @@ SDL_EGL_DeleteContext(_THIS, SDL_GLContext context)
 EGLSurface *
 SDL_EGL_CreateSurface(_THIS, NativeWindowType nw) 
 {
+    /* max 2 values plus terminator. */
+    EGLint attribs[3];
+    int attr = 0;
+	
     EGLSurface * surface;
 
     if (SDL_EGL_ChooseConfig(_this) != 0) {
@@ -818,11 +810,25 @@ SDL_EGL_CreateSurface(_THIS, NativeWindowType nw)
         ANativeWindow_setBuffersGeometry(nw, 0, 0, format);
     }
 #endif    
+    if (_this->gl_config.framebuffer_srgb_capable) {
+#ifdef EGL_KHR_gl_colorspace
+        if (SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_KHR_gl_colorspace")) {
+            attribs[attr++] = EGL_GL_COLORSPACE_KHR;
+            attribs[attr++] = EGL_GL_COLORSPACE_SRGB_KHR;
+        } else
+#endif
+        {
+            SDL_SetError("EGL implementation does not support sRGB system framebuffers");
+            return EGL_NO_SURFACE;
+        }
+    }
+	
+    attribs[attr++] = EGL_NONE;
     
     surface = _this->egl_data->eglCreateWindowSurface(
             _this->egl_data->egl_display,
             _this->egl_data->egl_config,
-            nw, NULL);
+            nw, &attribs[0]);
     if (surface == EGL_NO_SURFACE) {
         SDL_EGL_SetError("unable to create an EGL window surface", "eglCreateWindowSurface");
     }
