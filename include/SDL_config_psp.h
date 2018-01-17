@@ -105,6 +105,8 @@
 #define HAVE_FMODF  1
 #define HAVE_LOG    1
 #define HAVE_LOGF   1
+#define HAVE_LOG10  1
+#define HAVE_LOG10F 1
 #define HAVE_POW    1
 #define HAVE_POWF   1
 #define HAVE_SCALBN 1

@@ -39,6 +39,7 @@ typedef unsigned int u_int32_t;
 #define floor           SDL_uclibc_floor
 #define __ieee754_fmod  SDL_uclibc_fmod
 #define __ieee754_log   SDL_uclibc_log
+#define __ieee754_log10 SDL_uclibc_log10
 #define __ieee754_pow   SDL_uclibc_pow
 #define scalbln         SDL_uclibc_scalbln
 #define scalbn          SDL_uclibc_scalbn

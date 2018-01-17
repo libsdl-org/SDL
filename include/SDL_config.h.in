@@ -157,6 +157,8 @@
 #undef HAVE_FMODF
 #undef HAVE_LOG
 #undef HAVE_LOGF
+#undef HAVE_LOG10
+#undef HAVE_LOG10F
 #undef HAVE_POW
 #undef HAVE_POWF
 #undef HAVE_SCALBN
