@@ -152,18 +152,14 @@ SDL_bool SDL_Vulkan_GetInstanceExtensions_Helper(unsigned *userCount,
                                                  unsigned nameCount,
                                                  const char *const *names)
 {
-    if(userNames)
-    {
-		unsigned int i;
+    if (userNames) {
+        unsigned i;
 
-        if(*userCount < nameCount)
-        {
-            SDL_SetError(
-                "Ouput array for SDL_Vulkan_GetInstanceExtensions is too small");
+        if (*userCount < nameCount) {
+            SDL_SetError("Output array for SDL_Vulkan_GetInstanceExtensions needs to be at least %d big", nameCount);
             return SDL_FALSE;
         }
-        for(i = 0; i < nameCount; i++)
-        {
+        for (i = 0; i < nameCount; i++) {
             userNames[i] = names[i];
         }
     }
@@ -172,3 +168,5 @@ SDL_bool SDL_Vulkan_GetInstanceExtensions_Helper(unsigned *userCount,
 }
 
 #endif
+
+/* vi: set ts=4 sw=4 expandtab: */
