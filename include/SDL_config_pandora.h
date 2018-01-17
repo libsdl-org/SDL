@@ -93,6 +93,7 @@
 #define HAVE_FABS 1
 #define HAVE_FLOOR 1
 #define HAVE_LOG 1
+#define HAVE_LOG10 1
 #define HAVE_SCALBN 1
 #define HAVE_SIN 1
 #define HAVE_SINF 1

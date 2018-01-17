@@ -317,6 +317,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\src\libm\e_atan2.c" />
     <ClCompile Include="..\..\src\libm\e_log.c" />
+    <ClCompile Include="..\..\src\libm\e_log10.c" />
     <ClCompile Include="..\..\src\libm\e_pow.c" />
     <ClCompile Include="..\..\src\libm\e_rem_pio2.c" />
     <ClCompile Include="..\..\src\libm\e_sqrt.c" />

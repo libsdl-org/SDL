@@ -281,6 +281,26 @@ SDL_logf(float x)
 }
 
 double
+SDL_log10(double x)
+{
+#if defined(HAVE_LOG10)
+    return log10(x);
+#else
+    return SDL_uclibc_log10(x);
+#endif
+}
+
+float
+SDL_log10f(float x)
+{
+#if defined(HAVE_LOG10F)
+    return log10f(x);
+#else
+    return (float)SDL_log10((double)x);
+#endif
+}
+
+double
 SDL_pow(double x, double y)
 {
 #if defined(HAVE_POW)

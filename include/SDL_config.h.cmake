@@ -152,6 +152,8 @@
 #cmakedefine HAVE_FMODF 1
 #cmakedefine HAVE_LOG 1
 #cmakedefine HAVE_LOGF 1
+#cmakedefine HAVE_LOG10 1
+#cmakedefine HAVE_LOG10F 1
 #cmakedefine HAVE_POW 1
 #cmakedefine HAVE_POWF 1
 #cmakedefine HAVE_SCALBN 1
