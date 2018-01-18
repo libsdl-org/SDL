@@ -356,6 +356,16 @@ extern "C" {
 #define SDL_HINT_APPLE_TV_REMOTE_ALLOW_ROTATION "SDL_APPLE_TV_REMOTE_ALLOW_ROTATION"
 
 /**
+ * \brief  A variable controlling whether the Apple TV remote swipes are
+ *         translated into arrow key events
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Swipes are not translated into arrow key events
+ *    "1"       - Swipes are translated into arrow key events (the default)
+ */
+#define SDL_HINT_APPLE_TV_REMOTE_SWIPES_AS_ARROW_KEYS "SDL_APPLE_TV_REMOTE_SWIPES_AS_ARROW_KEYS"
+
+/**
  *  \brief  A variable controlling whether the Android / iOS built-in
  *  accelerometer should be listed as a joystick device, rather than listing
  *  actual joysticks only.
