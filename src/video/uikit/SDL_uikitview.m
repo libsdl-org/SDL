@@ -24,6 +24,7 @@
 
 #include "SDL_uikitview.h"
 
+#include "SDL_hints.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_touch_c.h"
 #include "../../events/SDL_events_c.h"
@@ -42,23 +43,25 @@
 - (instancetype)initWithFrame:(CGRect)frame
 {
     if ((self = [super initWithFrame:frame])) {
-        /* Apple TV Remote touchpad swipe gestures. */
 #if TARGET_OS_TV
-        UISwipeGestureRecognizer *swipeUp = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
-        swipeUp.direction = UISwipeGestureRecognizerDirectionUp;
-        [self addGestureRecognizer:swipeUp];
+        if (SDL_GetHintBoolean(SDL_HINT_APPLE_TV_REMOTE_SWIPES_AS_ARROW_KEYS, SDL_TRUE)) {
+            /* Apple TV Remote touchpad swipe gestures. */
+            UISwipeGestureRecognizer *swipeUp = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
+            swipeUp.direction = UISwipeGestureRecognizerDirectionUp;
+            [self addGestureRecognizer:swipeUp];
 
-        UISwipeGestureRecognizer *swipeDown = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
-        swipeDown.direction = UISwipeGestureRecognizerDirectionDown;
-        [self addGestureRecognizer:swipeDown];
+            UISwipeGestureRecognizer *swipeDown = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
+            swipeDown.direction = UISwipeGestureRecognizerDirectionDown;
+            [self addGestureRecognizer:swipeDown];
 
-        UISwipeGestureRecognizer *swipeLeft = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
-        swipeLeft.direction = UISwipeGestureRecognizerDirectionLeft;
-        [self addGestureRecognizer:swipeLeft];
+            UISwipeGestureRecognizer *swipeLeft = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
+            swipeLeft.direction = UISwipeGestureRecognizerDirectionLeft;
+            [self addGestureRecognizer:swipeLeft];
 
-        UISwipeGestureRecognizer *swipeRight = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
-        swipeRight.direction = UISwipeGestureRecognizerDirectionRight;
-        [self addGestureRecognizer:swipeRight];
+            UISwipeGestureRecognizer *swipeRight = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
+            swipeRight.direction = UISwipeGestureRecognizerDirectionRight;
+            [self addGestureRecognizer:swipeRight];
+        }
 #endif
 
         self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
