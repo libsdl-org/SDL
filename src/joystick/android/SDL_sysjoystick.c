@@ -145,7 +145,7 @@ keycode_to_SDL(int keycode)
             break;
         case AKEYCODE_DPAD_CENTER:
             /* This is handled better by applications as the A button */
-            /*button = SDL_CONTROLLER_BUTTON_MAX+4; /* Not supported by GameController */
+            /*button = SDL_CONTROLLER_BUTTON_MAX+4;*/ /* Not supported by GameController */
             button = SDL_CONTROLLER_BUTTON_A;
             break;
 
