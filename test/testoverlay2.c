@@ -254,7 +254,7 @@ main(int argc, char **argv)
     while (argc > 1) {
         if (strcmp(argv[1], "-fps") == 0) {
             if (argv[2]) {
-                fps = atoi(argv[2]);
+                fps = SDL_atoi(argv[2]);
                 if (fps == 0) {
                     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                             "The -fps option requires an argument [from 1 to 1000], default is 12.\n");
@@ -278,7 +278,7 @@ main(int argc, char **argv)
             argc -= 1;
         } else if (strcmp(argv[1], "-scale") == 0) {
             if (argv[2]) {
-                scale = atoi(argv[2]);
+                scale = SDL_atoi(argv[2]);
                 if (scale == 0) {
                     SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                             "The -scale option requires an argument [from 1 to 50], default is 5.\n");
