@@ -111,8 +111,9 @@ WIN_AdjustWindowRectWithStyle(SDL_Window *window, DWORD style, BOOL menu, int *x
     rect.right = (use_current ? window->w : window->windowed.w);
     rect.bottom = (use_current ? window->h : window->windowed.h);
 
-    // borderless windows will have WM_NCCALCSIZE return 0 for the non-client area. When this happens, it looks like windows will send a resize message
-    // expanding the window client area to the previous window + chrome size, so shouldn't need to adjust the window size for the set styles.
+    /* borderless windows will have WM_NCCALCSIZE return 0 for the non-client area. When this happens, it looks like windows will send a resize message
+       expanding the window client area to the previous window + chrome size, so shouldn't need to adjust the window size for the set styles.
+     */
     if (!(window->flags & SDL_WINDOW_BORDERLESS))
         AdjustWindowRectEx(&rect, style, menu, 0);
 
@@ -211,13 +212,13 @@ SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, HWND parent, SDL_bool cre
         if (GetClientRect(hwnd, &rect)) {
             int w = rect.right;
             int h = rect.bottom;
-            if ((window->w && window->w != w) || (window->h && window->h != h)) {
+            if ((window->windowed.w && window->windowed.w != w) || (window->windowed.h && window->windowed.h != h)) {
                 /* We tried to create a window larger than the desktop and Windows didn't allow it.  Override! */
                 int x, y;
                 int w, h;
 
                 /* Figure out what the window area will be */
-                WIN_AdjustWindowRect(window, &x, &y, &w, &h, SDL_TRUE);
+                WIN_AdjustWindowRect(window, &x, &y, &w, &h, SDL_FALSE);
                 SetWindowPos(hwnd, HWND_NOTOPMOST, x, y, w, h, SWP_NOCOPYBITS | SWP_NOZORDER | SWP_NOACTIVATE);
             } else {
                 window->w = w;
@@ -312,7 +313,7 @@ WIN_CreateWindow(_THIS, SDL_Window * window)
     style |= GetWindowStyle(window);
 
     /* Figure out what the window area will be */
-    WIN_AdjustWindowRectWithStyle(window, style, FALSE, &x, &y, &w, &h, SDL_TRUE);
+    WIN_AdjustWindowRectWithStyle(window, style, FALSE, &x, &y, &w, &h, SDL_FALSE);
 
     hwnd =
         CreateWindow(SDL_Appname, TEXT(""), style, x, y, w, h, parent, NULL,
@@ -331,7 +332,7 @@ WIN_CreateWindow(_THIS, SDL_Window * window)
         return -1;
     }
 
-    // Inform Windows of the frame change so we can respond to WM_NCCALCSIZE
+    /* Inform Windows of the frame change so we can respond to WM_NCCALCSIZE */
     SetWindowPos(hwnd, NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOZORDER | SWP_NOMOVE | SWP_NOACTIVATE);
 
     if (!(window->flags & SDL_WINDOW_OPENGL)) {
