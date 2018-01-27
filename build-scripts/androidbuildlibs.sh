@@ -68,7 +68,7 @@ ndk-build \
   NDK_OUT=$obj \
   NDK_LIBS_OUT=$lib \
   APP_BUILD_SCRIPT=Android.mk \
-  APP_ABI="all" \
-  APP_PLATFORM=android-12 \
+  APP_ABI="armeabi-v7a arm64-v8a x86 x86_64" \
+  APP_PLATFORM=android-14 \
   APP_MODULES="SDL2 SDL2_main" \
   $ndk_args
