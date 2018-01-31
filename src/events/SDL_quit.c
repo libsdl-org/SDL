@@ -55,7 +55,7 @@ SDL_QuitInit_Internal(void)
     struct sigaction action;
     sigaction(SIGINT, NULL, &action);
 #ifdef HAVE_SA_SIGACTION
-    if ( action.sa_handler == SIG_DFL && (__sighandler_t)action.sa_sigaction == SIG_DFL ) {
+    if ( action.sa_handler == SIG_DFL && (void (*)(int))action.sa_sigaction == SIG_DFL ) {
 #else
     if ( action.sa_handler == SIG_DFL ) {
 #endif
@@ -65,7 +65,7 @@ SDL_QuitInit_Internal(void)
     sigaction(SIGTERM, NULL, &action);
 
 #ifdef HAVE_SA_SIGACTION
-    if ( action.sa_handler == SIG_DFL && (__sighandler_t)action.sa_sigaction == SIG_DFL ) {
+    if ( action.sa_handler == SIG_DFL && (void (*)(int))action.sa_sigaction == SIG_DFL ) {
 #else
     if ( action.sa_handler == SIG_DFL ) {
 #endif
