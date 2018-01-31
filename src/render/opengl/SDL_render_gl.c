@@ -260,10 +260,8 @@ GL_CheckAllErrors (const char *prefix, SDL_Renderer *renderer, const char *file,
 
 #if 0
 #define GL_CheckError(prefix, renderer)
-#elif defined(_MSC_VER) || defined(__WATCOMC__)
-#define GL_CheckError(prefix, renderer) GL_CheckAllErrors(prefix, renderer, __FILE__, __LINE__, __FUNCTION__)
 #else
-#define GL_CheckError(prefix, renderer) GL_CheckAllErrors(prefix, renderer, __FILE__, __LINE__, __PRETTY_FUNCTION__)
+#define GL_CheckError(prefix, renderer) GL_CheckAllErrors(prefix, renderer, SDL_FILE, SDL_LINE, SDL_FUNCTION)
 #endif
 
 static int
@@ -274,7 +272,7 @@ GL_LoadFunctions(GL_RenderData * data)
 #else
 #define SDL_PROC(ret,func,params) \
     do { \
-        data->func = SDL_GL_GetProcAddress(#func); \
+        *(void **)&data->func = SDL_GL_GetProcAddress(#func); \
         if ( ! data->func ) { \
             return SDL_SetError("Couldn't load GL function %s: %s", #func, SDL_GetError()); \
         } \
@@ -492,7 +490,9 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
         data->debug_enabled = SDL_TRUE;
     }
     if (data->debug_enabled && SDL_GL_ExtensionSupported("GL_ARB_debug_output")) {
-        PFNGLDEBUGMESSAGECALLBACKARBPROC glDebugMessageCallbackARBFunc = (PFNGLDEBUGMESSAGECALLBACKARBPROC) SDL_GL_GetProcAddress("glDebugMessageCallbackARB");
+        PFNGLDEBUGMESSAGECALLBACKARBPROC glDebugMessageCallbackARBFunc;
+       
+        *(void **)&glDebugMessageCallbackARBFunc = SDL_GL_GetProcAddress("glDebugMessageCallbackARB");
 
         data->GL_ARB_debug_output_supported = SDL_TRUE;
         data->glGetPointerv(GL_DEBUG_CALLBACK_FUNCTION_ARB, (GLvoid **)(char *)&data->next_error_callback);
@@ -521,7 +521,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
 
     /* Check for multitexture support */
     if (SDL_GL_ExtensionSupported("GL_ARB_multitexture")) {
-        data->glActiveTextureARB = (PFNGLACTIVETEXTUREARBPROC) SDL_GL_GetProcAddress("glActiveTextureARB");
+        *(void **)&data->glActiveTextureARB = SDL_GL_GetProcAddress("glActiveTextureARB");
         if (data->glActiveTextureARB) {
             data->GL_ARB_multitexture_supported = SDL_TRUE;
             data->glGetIntegerv(GL_MAX_TEXTURE_UNITS_ARB, &data->num_texture_units);
@@ -549,16 +549,11 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
 
     if (SDL_GL_ExtensionSupported("GL_EXT_framebuffer_object")) {
         data->GL_EXT_framebuffer_object_supported = SDL_TRUE;
-        data->glGenFramebuffersEXT = (PFNGLGENFRAMEBUFFERSEXTPROC)
-            SDL_GL_GetProcAddress("glGenFramebuffersEXT");
-        data->glDeleteFramebuffersEXT = (PFNGLDELETEFRAMEBUFFERSEXTPROC)
-            SDL_GL_GetProcAddress("glDeleteFramebuffersEXT");
-        data->glFramebufferTexture2DEXT = (PFNGLFRAMEBUFFERTEXTURE2DEXTPROC)
-            SDL_GL_GetProcAddress("glFramebufferTexture2DEXT");
-        data->glBindFramebufferEXT = (PFNGLBINDFRAMEBUFFEREXTPROC)
-            SDL_GL_GetProcAddress("glBindFramebufferEXT");
-        data->glCheckFramebufferStatusEXT = (PFNGLCHECKFRAMEBUFFERSTATUSEXTPROC)
-            SDL_GL_GetProcAddress("glCheckFramebufferStatusEXT");
+        *(void**)&data->glGenFramebuffersEXT = SDL_GL_GetProcAddress("glGenFramebuffersEXT");
+        *(void**)&data->glDeleteFramebuffersEXT = SDL_GL_GetProcAddress("glDeleteFramebuffersEXT");
+        *(void**)&data->glFramebufferTexture2DEXT = SDL_GL_GetProcAddress("glFramebufferTexture2DEXT");
+        *(void**)&data->glBindFramebufferEXT = SDL_GL_GetProcAddress("glBindFramebufferEXT");
+        *(void**)&data->glCheckFramebufferStatusEXT = SDL_GL_GetProcAddress("glCheckFramebufferStatusEXT");
         renderer->info.flags |= SDL_RENDERER_TARGETTEXTURE;
     }
     data->framebuffers = NULL;
@@ -1615,7 +1610,9 @@ GL_DestroyRenderer(SDL_Renderer * renderer)
 
         GL_ClearErrors(renderer);
         if (data->GL_ARB_debug_output_supported) {
-            PFNGLDEBUGMESSAGECALLBACKARBPROC glDebugMessageCallbackARBFunc = (PFNGLDEBUGMESSAGECALLBACKARBPROC) SDL_GL_GetProcAddress("glDebugMessageCallbackARB");
+            PFNGLDEBUGMESSAGECALLBACKARBPROC glDebugMessageCallbackARBFunc;
+            
+            *(void **)&glDebugMessageCallbackARBFunc = SDL_GL_GetProcAddress("glDebugMessageCallbackARB");
 
             /* Uh oh, we don't have a safe way of removing ourselves from the callback chain, if it changed after we set our callback. */
             /* For now, just always replace the callback with the original one */

@@ -453,20 +453,20 @@ GL_CreateShaderContext(void)
         SDL_GL_ExtensionSupported("GL_ARB_shading_language_100") &&
         SDL_GL_ExtensionSupported("GL_ARB_vertex_shader") &&
         SDL_GL_ExtensionSupported("GL_ARB_fragment_shader")) {
-        ctx->glGetError = (GLenum (*)(void)) SDL_GL_GetProcAddress("glGetError");
-        ctx->glAttachObjectARB = (PFNGLATTACHOBJECTARBPROC) SDL_GL_GetProcAddress("glAttachObjectARB");
-        ctx->glCompileShaderARB = (PFNGLCOMPILESHADERARBPROC) SDL_GL_GetProcAddress("glCompileShaderARB");
-        ctx->glCreateProgramObjectARB = (PFNGLCREATEPROGRAMOBJECTARBPROC) SDL_GL_GetProcAddress("glCreateProgramObjectARB");
-        ctx->glCreateShaderObjectARB = (PFNGLCREATESHADEROBJECTARBPROC) SDL_GL_GetProcAddress("glCreateShaderObjectARB");
-        ctx->glDeleteObjectARB = (PFNGLDELETEOBJECTARBPROC) SDL_GL_GetProcAddress("glDeleteObjectARB");
-        ctx->glGetInfoLogARB = (PFNGLGETINFOLOGARBPROC) SDL_GL_GetProcAddress("glGetInfoLogARB");
-        ctx->glGetObjectParameterivARB = (PFNGLGETOBJECTPARAMETERIVARBPROC) SDL_GL_GetProcAddress("glGetObjectParameterivARB");
-        ctx->glGetUniformLocationARB = (PFNGLGETUNIFORMLOCATIONARBPROC) SDL_GL_GetProcAddress("glGetUniformLocationARB");
-        ctx->glLinkProgramARB = (PFNGLLINKPROGRAMARBPROC) SDL_GL_GetProcAddress("glLinkProgramARB");
-        ctx->glShaderSourceARB = (PFNGLSHADERSOURCEARBPROC) SDL_GL_GetProcAddress("glShaderSourceARB");
-        ctx->glUniform1iARB = (PFNGLUNIFORM1IARBPROC) SDL_GL_GetProcAddress("glUniform1iARB");
-        ctx->glUniform1fARB = (PFNGLUNIFORM1FARBPROC) SDL_GL_GetProcAddress("glUniform1fARB");
-        ctx->glUseProgramObjectARB = (PFNGLUSEPROGRAMOBJECTARBPROC) SDL_GL_GetProcAddress("glUseProgramObjectARB");
+        *(void**)&ctx->glGetError = SDL_GL_GetProcAddress("glGetError");
+        *(void **)&ctx->glAttachObjectARB = SDL_GL_GetProcAddress("glAttachObjectARB");
+        *(void **)&ctx->glCompileShaderARB = SDL_GL_GetProcAddress("glCompileShaderARB");
+        *(void **)&ctx->glCreateProgramObjectARB = SDL_GL_GetProcAddress("glCreateProgramObjectARB");
+        *(void **)&ctx->glCreateShaderObjectARB = SDL_GL_GetProcAddress("glCreateShaderObjectARB");
+        *(void **)&ctx->glDeleteObjectARB = SDL_GL_GetProcAddress("glDeleteObjectARB");
+        *(void **)&ctx->glGetInfoLogARB = SDL_GL_GetProcAddress("glGetInfoLogARB");
+        *(void **)&ctx->glGetObjectParameterivARB = SDL_GL_GetProcAddress("glGetObjectParameterivARB");
+        *(void **)&ctx->glGetUniformLocationARB = SDL_GL_GetProcAddress("glGetUniformLocationARB");
+        *(void **)&ctx->glLinkProgramARB = SDL_GL_GetProcAddress("glLinkProgramARB");
+        *(void **)&ctx->glShaderSourceARB = SDL_GL_GetProcAddress("glShaderSourceARB");
+        *(void **)&ctx->glUniform1iARB = SDL_GL_GetProcAddress("glUniform1iARB");
+        *(void **)&ctx->glUniform1fARB = SDL_GL_GetProcAddress("glUniform1fARB");
+        *(void **)&ctx->glUseProgramObjectARB = SDL_GL_GetProcAddress("glUseProgramObjectARB");
         if (ctx->glGetError &&
             ctx->glAttachObjectARB &&
             ctx->glCompileShaderARB &&

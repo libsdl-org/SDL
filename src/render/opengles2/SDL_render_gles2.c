@@ -22,6 +22,7 @@
 
 #if SDL_VIDEO_RENDER_OGL_ES2 && !SDL_RENDER_DISABLED
 
+#include "SDL_assert.h"
 #include "SDL_hints.h"
 #include "SDL_opengles2.h"
 #include "../SDL_sysrender.h"
@@ -259,10 +260,8 @@ GL_CheckAllErrors (const char *prefix, SDL_Renderer *renderer, const char *file,
 
 #if 0
 #define GL_CheckError(prefix, renderer)
-#elif defined(_MSC_VER) || defined(__WATCOMC__)
-#define GL_CheckError(prefix, renderer) GL_CheckAllErrors(prefix, renderer, __FILE__, __LINE__, __FUNCTION__)
 #else
-#define GL_CheckError(prefix, renderer) GL_CheckAllErrors(prefix, renderer, __FILE__, __LINE__, __PRETTY_FUNCTION__)
+#define GL_CheckError(prefix, renderer) GL_CheckAllErrors(prefix, renderer, SDL_FILE, SDL_LINE, SDL_FUNCTION)
 #endif
 
 
@@ -295,7 +294,7 @@ static int GLES2_LoadFunctions(GLES2_DriverContext * data)
 #else
 #define SDL_PROC(ret,func,params) \
     do { \
-        data->func = SDL_GL_GetProcAddress(#func); \
+        *(void **)&data->func = SDL_GL_GetProcAddress(#func); \
         if ( ! data->func ) { \
             return SDL_SetError("Couldn't load GLES2 function %s: %s", #func, SDL_GetError()); \
         } \

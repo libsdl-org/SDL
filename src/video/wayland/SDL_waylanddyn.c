@@ -147,7 +147,7 @@ SDL_WAYLAND_LoadSymbols(void)
 #include "SDL_waylandsym.h"
 
 #define SDL_WAYLAND_MODULE(modname) thismod = &SDL_WAYLAND_HAVE_##modname;
-#define SDL_WAYLAND_SYM(rc,fn,params) WAYLAND_##fn = (SDL_DYNWAYLANDFN_##fn) WAYLAND_GetSym(#fn,thismod);
+#define SDL_WAYLAND_SYM(rc,fn,params) *(void**)&WAYLAND_##fn = WAYLAND_GetSym(#fn,thismod);
 #define SDL_WAYLAND_INTERFACE(iface) WAYLAND_##iface = (struct wl_interface *) WAYLAND_GetSym(#iface,thismod);
 #include "SDL_waylandsym.h"
 

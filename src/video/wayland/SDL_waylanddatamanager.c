@@ -61,7 +61,7 @@ write_pipe(int fd, const void* buffer, size_t total_length, size_t *pos)
         bytes_written = SDL_SetError("Pipe select error");
     } else {
         if (length > 0) {
-            bytes_written = write(fd, buffer + *pos, SDL_min(length, PIPE_BUF));
+            bytes_written = write(fd, (Uint8*)buffer + *pos, SDL_min(length, PIPE_BUF));
         }
 
         if (bytes_written > 0) {
@@ -114,10 +114,10 @@ read_pipe(int fd, void** buffer, size_t* total_length, SDL_bool null_terminate)
         if (output_buffer == NULL) {
             bytes_read = SDL_OutOfMemory();
         } else {
-            SDL_memcpy(output_buffer + pos, temp, bytes_read);
+            SDL_memcpy((Uint8*)output_buffer + pos, temp, bytes_read);
 
             if (null_terminate == SDL_TRUE) {
-                SDL_memset(output_buffer + (new_buffer_length - 1), 0, 1);
+                SDL_memset((Uint8*)output_buffer + (new_buffer_length - 1), 0, 1);
             }
             
             *buffer = output_buffer;

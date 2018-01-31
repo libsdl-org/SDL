@@ -56,13 +56,12 @@ int Wayland_Vulkan_LoadLibrary(_THIS, const char *path)
         return -1;
     SDL_strlcpy(_this->vulkan_config.loader_path, path,
                 SDL_arraysize(_this->vulkan_config.loader_path));
-    vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)SDL_LoadFunction(
-        _this->vulkan_config.loader_handle, "vkGetInstanceProcAddr");
+    *(void**)&vkGetInstanceProcAddr = SDL_LoadFunction(_this->vulkan_config.loader_handle, "vkGetInstanceProcAddr");
     if(!vkGetInstanceProcAddr)
         goto fail;
-    _this->vulkan_config.vkGetInstanceProcAddr = (void *)vkGetInstanceProcAddr;
+    _this->vulkan_config.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
     _this->vulkan_config.vkEnumerateInstanceExtensionProperties =
-        (void *)((PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr)(
+        (PFN_vkEnumerateInstanceExtensionProperties)_this->vulkan_config.vkGetInstanceProcAddr(
             VK_NULL_HANDLE, "vkEnumerateInstanceExtensionProperties");
     if(!_this->vulkan_config.vkEnumerateInstanceExtensionProperties)
         goto fail;
@@ -139,7 +138,7 @@ SDL_bool Wayland_Vulkan_CreateSurface(_THIS,
         (PFN_vkCreateWaylandSurfaceKHR)vkGetInstanceProcAddr(
                                             (VkInstance)instance,
                                             "vkCreateWaylandSurfaceKHR");
-    VkWaylandSurfaceCreateInfoKHR createInfo = {};
+    VkWaylandSurfaceCreateInfoKHR createInfo;
     VkResult result;
 
     if(!_this->vulkan_config.loader_handle)
@@ -154,6 +153,7 @@ SDL_bool Wayland_Vulkan_CreateSurface(_THIS,
                      " extension is not enabled in the Vulkan instance.");
         return SDL_FALSE;
     }
+    SDL_zero(createInfo);
     createInfo.sType = VK_STRUCTURE_TYPE_WAYLAND_SURFACE_CREATE_INFO_KHR;
     createInfo.pNext = NULL;
     createInfo.flags = 0;

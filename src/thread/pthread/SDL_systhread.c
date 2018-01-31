@@ -91,11 +91,7 @@ SDL_SYS_CreateThread(SDL_Thread * thread, void *args)
     #if defined(__MACOSX__) || defined(__IPHONEOS__) || defined(__LINUX__)
     if (!checked_setname) {
         void *fn = dlsym(RTLD_DEFAULT, "pthread_setname_np");
-        #if defined(__MACOSX__) || defined(__IPHONEOS__)
-        ppthread_setname_np = (int(*)(const char*)) fn;
-        #elif defined(__LINUX__)
-        ppthread_setname_np = (int(*)(pthread_t, const char*)) fn;
-        #endif
+        *(void **)&ppthread_setname_np = fn;
         checked_setname = SDL_TRUE;
     }
     #endif

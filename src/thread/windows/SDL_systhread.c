@@ -178,7 +178,7 @@ SDL_SYS_SetupThread(const char *name)
         if (!kernel32) {
             kernel32 = LoadLibraryW(L"kernel32.dll");
             if (kernel32) {
-                pSetThreadDescription = (pfnSetThreadDescription) GetProcAddress(kernel32, "SetThreadDescription");
+                *(void**)&pSetThreadDescription = GetProcAddress(kernel32, "SetThreadDescription");
             }
         }
 

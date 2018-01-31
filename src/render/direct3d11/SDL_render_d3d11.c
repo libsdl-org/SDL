@@ -568,7 +568,7 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
         goto done;
     }
 
-    CreateDXGIFactoryFunc = (PFN_CREATE_DXGI_FACTORY)SDL_LoadFunction(data->hDXGIMod, "CreateDXGIFactory");
+    *(void**)&CreateDXGIFactoryFunc = SDL_LoadFunction(data->hDXGIMod, "CreateDXGIFactory");
     if (!CreateDXGIFactoryFunc) {
         result = E_FAIL;
         goto done;
@@ -580,7 +580,7 @@ D3D11_CreateDeviceResources(SDL_Renderer * renderer)
         goto done;
     }
 
-    D3D11CreateDeviceFunc = (PFN_D3D11_CREATE_DEVICE)SDL_LoadFunction(data->hD3D11Mod, "D3D11CreateDevice");
+    *(void**)D3D11CreateDeviceFunc = SDL_LoadFunction(data->hD3D11Mod, "D3D11CreateDevice");
     if (!D3D11CreateDeviceFunc) {
         result = E_FAIL;
         goto done;

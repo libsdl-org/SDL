@@ -263,7 +263,7 @@ SDL_InitDynamicAPILocked(void)
     SDL_DYNAPI_ENTRYFN entry = SDL_DYNAPI_entry;  /* funcs from here by default. */
 
     if (libname) {
-        entry = (SDL_DYNAPI_ENTRYFN) get_sdlapi_entry(libname, "SDL_DYNAPI_entry");
+        *(void **)&entry = get_sdlapi_entry(libname, "SDL_DYNAPI_entry");
         if (!entry) {
             /* !!! FIXME: fail to startup here instead? */
             /* !!! FIXME: definitely warn user. */

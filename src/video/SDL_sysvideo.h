@@ -365,8 +365,8 @@ struct SDL_VideoDevice
     /* Data used by the Vulkan drivers */
     struct
     {
-        void *vkGetInstanceProcAddr;
-        void *vkEnumerateInstanceExtensionProperties;
+        PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr;
+        PFN_vkEnumerateInstanceExtensionProperties vkEnumerateInstanceExtensionProperties;
         int loader_loaded;
         char loader_path[256];
         void *loader_handle;

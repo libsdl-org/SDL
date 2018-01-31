@@ -28,6 +28,7 @@
 
 typedef struct SDL_PrivateGLESData
 {
+    int dummy;
 } SDL_PrivateGLESData;
 
 /* OpenGLES functions */

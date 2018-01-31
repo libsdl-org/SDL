@@ -57,13 +57,13 @@ int WIN_Vulkan_LoadLibrary(_THIS, const char *path)
         return -1;
     SDL_strlcpy(_this->vulkan_config.loader_path, path,
                 SDL_arraysize(_this->vulkan_config.loader_path));
-    vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)SDL_LoadFunction(
+    *(void**)vkGetInstanceProcAddr = SDL_LoadFunction(
         _this->vulkan_config.loader_handle, "vkGetInstanceProcAddr");
     if(!vkGetInstanceProcAddr)
         goto fail;
-    _this->vulkan_config.vkGetInstanceProcAddr = (void *)vkGetInstanceProcAddr;
+    _this->vulkan_config.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
     _this->vulkan_config.vkEnumerateInstanceExtensionProperties =
-        (void *)((PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr)(
+        (PFN_vkEnumerateInstanceExtensionProperties)_this->vulkan_config.vkGetInstanceProcAddr(
             VK_NULL_HANDLE, "vkEnumerateInstanceExtensionProperties");
     if(!_this->vulkan_config.vkEnumerateInstanceExtensionProperties)
         goto fail;
