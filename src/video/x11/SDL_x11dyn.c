@@ -172,14 +172,12 @@ SDL_X11_LoadSymbols(void)
 #include "SDL_x11sym.h"
 
 #define SDL_X11_MODULE(modname) thismod = &SDL_X11_HAVE_##modname;
-#define SDL_X11_SYM(a,fn,x,y,z) X11_##fn = (SDL_DYNX11FN_##fn) X11_GetSym(#fn,thismod);
+#define SDL_X11_SYM(a,fn,x,y,z) *(void**)&X11_##fn = X11_GetSym(#fn,thismod);
 #include "SDL_x11sym.h"
 
 #ifdef X_HAVE_UTF8_STRING
-        X11_XCreateIC = (SDL_DYNX11FN_XCreateIC)
-                        X11_GetSym("XCreateIC", &SDL_X11_HAVE_UTF8);
-        X11_XGetICValues = (SDL_DYNX11FN_XGetICValues)
-                        X11_GetSym("XGetICValues", &SDL_X11_HAVE_UTF8);
+        *(void**)&X11_XCreateIC = X11_GetSym("XCreateIC", &SDL_X11_HAVE_UTF8);
+        *(void**)&X11_XGetICValues = X11_GetSym("XGetICValues", &SDL_X11_HAVE_UTF8);
 #endif
 
         if (SDL_X11_HAVE_BASEXLIB) {

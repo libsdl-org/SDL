@@ -74,7 +74,7 @@ DSOUND_Load(void)
     } else {
         /* Now make sure we have DirectX 8 or better... */
         #define DSOUNDLOAD(f) { \
-            p##f = (fn##f) SDL_LoadFunction(DSoundDLL, #f); \
+            *(void**)&p##f = SDL_LoadFunction(DSoundDLL, #f); \
             if (!p##f) loaded = 0; \
         }
         loaded = 1;  /* will reset if necessary. */

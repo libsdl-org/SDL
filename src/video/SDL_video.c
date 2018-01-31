@@ -224,7 +224,7 @@ ShouldUseTextureFramebuffer()
                 const GLubyte *(APIENTRY * glGetStringFunc) (GLenum);
                 const char *vendor = NULL;
 
-                glGetStringFunc = SDL_GL_GetProcAddress("glGetString");
+                *(void**)&glGetStringFunc = SDL_GL_GetProcAddress("glGetString");
                 if (glGetStringFunc) {
                     vendor = (const char *) glGetStringFunc(GL_VENDOR);
                 }
@@ -2870,7 +2870,7 @@ SDL_GL_ExtensionSupported(const char *extension)
 
     /* Lookup the available extensions */
 
-    glGetStringFunc = SDL_GL_GetProcAddress("glGetString");
+    *(void**)&glGetStringFunc = SDL_GL_GetProcAddress("glGetString");
     if (!glGetStringFunc) {
         return SDL_FALSE;
     }
@@ -2881,8 +2881,8 @@ SDL_GL_ExtensionSupported(const char *extension)
         GLint num_exts = 0;
         GLint i;
 
-        glGetStringiFunc = SDL_GL_GetProcAddress("glGetStringi");
-        glGetIntegervFunc = SDL_GL_GetProcAddress("glGetIntegerv");
+        *(void**)&glGetStringiFunc = SDL_GL_GetProcAddress("glGetStringi");
+        *(void**)&glGetIntegervFunc = SDL_GL_GetProcAddress("glGetIntegerv");
         if ((!glGetStringiFunc) || (!glGetIntegervFunc)) {
             return SDL_FALSE;
         }
@@ -3342,13 +3342,13 @@ SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
     }
 
 #if SDL_VIDEO_OPENGL
-    glGetStringFunc = SDL_GL_GetProcAddress("glGetString");
+    *(void**)&glGetStringFunc = SDL_GL_GetProcAddress("glGetString");
     if (!glGetStringFunc) {
         return -1;
     }
 
     if (attachmentattrib && isAtLeastGL3((const char *) glGetStringFunc(GL_VERSION))) {
-        glGetFramebufferAttachmentParameterivFunc = SDL_GL_GetProcAddress("glGetFramebufferAttachmentParameteriv");
+        *(void**)&glGetFramebufferAttachmentParameterivFunc = SDL_GL_GetProcAddress("glGetFramebufferAttachmentParameteriv");
 
         if (glGetFramebufferAttachmentParameterivFunc) {
             glGetFramebufferAttachmentParameterivFunc(GL_FRAMEBUFFER, attachment, attachmentattrib, (GLint *) value);
@@ -3359,7 +3359,7 @@ SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
 #endif
     {
         void (APIENTRY *glGetIntegervFunc) (GLenum pname, GLint * params);
-        glGetIntegervFunc = SDL_GL_GetProcAddress("glGetIntegerv");
+        *(void**)&glGetIntegervFunc = SDL_GL_GetProcAddress("glGetIntegerv");
         if (glGetIntegervFunc) {
             glGetIntegervFunc(attrib, (GLint *) value);
         } else {
@@ -3367,7 +3367,7 @@ SDL_GL_GetAttribute(SDL_GLattr attr, int *value)
         }
     }
 
-    glGetErrorFunc = SDL_GL_GetProcAddress("glGetError");
+    *(void**)&glGetErrorFunc = SDL_GL_GetProcAddress("glGetError");
     if (!glGetErrorFunc) {
         return -1;
     }
@@ -3995,14 +3995,17 @@ int SDL_Vulkan_LoadLibrary(const char *path)
 
 void *SDL_Vulkan_GetVkGetInstanceProcAddr(void)
 {
+    void *func = NULL;
     if (!_this) {
         SDL_UninitializedVideo();
         return NULL;
     }
     if (!_this->vulkan_config.loader_loaded) {
         SDL_SetError("No Vulkan loader has been loaded");
+        return NULL;
     }
-    return _this->vulkan_config.vkGetInstanceProcAddr;
+    *(PFN_vkGetInstanceProcAddr*)&func =  _this->vulkan_config.vkGetInstanceProcAddr;
+    return func;
 }
 
 void SDL_Vulkan_UnloadLibrary(void)

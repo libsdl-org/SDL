@@ -139,7 +139,7 @@ SDL_MIR_LoadSymbols(void)
 #include "SDL_mirsym.h"
 
 #define SDL_MIR_MODULE(modname) thismod = &SDL_MIR_HAVE_##modname;
-#define SDL_MIR_SYM(rc,fn,params) MIR_##fn = (SDL_DYNMIRFN_##fn) MIR_GetSym(#fn,thismod);
+#define SDL_MIR_SYM(rc,fn,params) *(void**)&MIR_##fn = MIR_GetSym(#fn,thismod);
 #define SDL_MIR_SYM_CONST(type,name) MIR_##name = *(SDL_DYMMIRCONST_##name*) MIR_GetSym(#name,thismod);
 #include "SDL_mirsym.h"
 

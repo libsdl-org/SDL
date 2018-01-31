@@ -57,14 +57,14 @@ int X11_Vulkan_LoadLibrary(_THIS, const char *path)
     if(!_this->vulkan_config.loader_handle)
         return -1;
     SDL_strlcpy(_this->vulkan_config.loader_path, path, SDL_arraysize(_this->vulkan_config.loader_path));
-    vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)SDL_LoadFunction(
+    *(void**)&vkGetInstanceProcAddr = SDL_LoadFunction(
         _this->vulkan_config.loader_handle, "vkGetInstanceProcAddr");
     if(!vkGetInstanceProcAddr)
         goto fail;
-    _this->vulkan_config.vkGetInstanceProcAddr = (void *)vkGetInstanceProcAddr;
+    _this->vulkan_config.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
     _this->vulkan_config.vkEnumerateInstanceExtensionProperties =
-        (void *)((PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr)(
-            VK_NULL_HANDLE, "vkEnumerateInstanceExtensionProperties");
+        (PFN_vkEnumerateInstanceExtensionProperties)
+        _this->vulkan_config.vkGetInstanceProcAddr(VK_NULL_HANDLE, "vkEnumerateInstanceExtensionProperties");
     if(!_this->vulkan_config.vkEnumerateInstanceExtensionProperties)
         goto fail;
     extensions = SDL_Vulkan_CreateInstanceExtensionsList(
@@ -108,7 +108,7 @@ int X11_Vulkan_LoadLibrary(_THIS, const char *path)
         videoData->vulkan_xlib_xcb_library = SDL_LoadObject(libX11XCBLibraryName);
         if(!videoData->vulkan_xlib_xcb_library)
             goto fail;
-        videoData->vulkan_XGetXCBConnection =
+        *(void**)&videoData->vulkan_XGetXCBConnection =
             SDL_LoadFunction(videoData->vulkan_xlib_xcb_library, "XGetXCBConnection");
         if(!videoData->vulkan_XGetXCBConnection)
         {
@@ -184,7 +184,7 @@ SDL_bool X11_Vulkan_CreateSurface(_THIS,
         PFN_vkCreateXcbSurfaceKHR vkCreateXcbSurfaceKHR =
             (PFN_vkCreateXcbSurfaceKHR)vkGetInstanceProcAddr((VkInstance)instance,
                                                              "vkCreateXcbSurfaceKHR");
-        VkXcbSurfaceCreateInfoKHR createInfo = {};
+        VkXcbSurfaceCreateInfoKHR createInfo;
         VkResult result;
         if(!vkCreateXcbSurfaceKHR)
         {
@@ -192,6 +192,7 @@ SDL_bool X11_Vulkan_CreateSurface(_THIS,
                          " extension is not enabled in the Vulkan instance.");
             return SDL_FALSE;
         }
+        SDL_zero(createInfo);
         createInfo.sType = VK_STRUCTURE_TYPE_XCB_SURFACE_CREATE_INFO_KHR;
         createInfo.connection = videoData->vulkan_XGetXCBConnection(videoData->display);
         if(!createInfo.connection)
@@ -214,7 +215,7 @@ SDL_bool X11_Vulkan_CreateSurface(_THIS,
         PFN_vkCreateXlibSurfaceKHR vkCreateXlibSurfaceKHR =
             (PFN_vkCreateXlibSurfaceKHR)vkGetInstanceProcAddr((VkInstance)instance,
                                                               "vkCreateXlibSurfaceKHR");
-        VkXlibSurfaceCreateInfoKHR createInfo = {};
+        VkXlibSurfaceCreateInfoKHR createInfo;
         VkResult result;
         if(!vkCreateXlibSurfaceKHR)
         {
@@ -222,6 +223,7 @@ SDL_bool X11_Vulkan_CreateSurface(_THIS,
                          " extension is not enabled in the Vulkan instance.");
             return SDL_FALSE;
         }
+        SDL_zero(createInfo);
         createInfo.sType = VK_STRUCTURE_TYPE_XLIB_SURFACE_CREATE_INFO_KHR;
         createInfo.dpy = videoData->display;
         createInfo.window = (xcb_window_t)windowData->xwindow;

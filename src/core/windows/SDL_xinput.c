@@ -104,13 +104,13 @@ WIN_LoadXInputDLL(void)
     s_XInputDLLRefCount = 1;
 
     /* 100 is the ordinal for _XInputGetStateEx, which returns the same struct as XinputGetState, but with extra data in wButtons for the guide button, we think... */
-    SDL_XInputGetState = (XInputGetState_t)GetProcAddress((HMODULE)s_pXInputDLL, (LPCSTR)100);
+    *(void**)&SDL_XInputGetState = GetProcAddress((HMODULE)s_pXInputDLL, (LPCSTR)100);
     if (!SDL_XInputGetState) {
-        SDL_XInputGetState = (XInputGetState_t)GetProcAddress((HMODULE)s_pXInputDLL, "XInputGetState");
+        *(void**)&SDL_XInputGetState = GetProcAddress((HMODULE)s_pXInputDLL, "XInputGetState");
     }
-    SDL_XInputSetState = (XInputSetState_t)GetProcAddress((HMODULE)s_pXInputDLL, "XInputSetState");
-    SDL_XInputGetCapabilities = (XInputGetCapabilities_t)GetProcAddress((HMODULE)s_pXInputDLL, "XInputGetCapabilities");
-    SDL_XInputGetBatteryInformation = (XInputGetBatteryInformation_t)GetProcAddress( (HMODULE)s_pXInputDLL, "XInputGetBatteryInformation" );
+    *(void**)&SDL_XInputSetState = GetProcAddress((HMODULE)s_pXInputDLL, "XInputSetState");
+    *(void**)&SDL_XInputGetCapabilities = GetProcAddress((HMODULE)s_pXInputDLL, "XInputGetCapabilities");
+    *(void**)&SDL_XInputGetBatteryInformation = GetProcAddress( (HMODULE)s_pXInputDLL, "XInputGetBatteryInformation" );
     if (!SDL_XInputGetState || !SDL_XInputSetState || !SDL_XInputGetCapabilities) {
         WIN_UnloadXInputDLL();
         return -1;

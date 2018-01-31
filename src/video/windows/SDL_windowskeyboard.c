@@ -354,10 +354,10 @@ IME_Init(SDL_VideoData *videodata, HWND hwnd)
         SDL_ClearError();
         return;
     }
-    videodata->ImmLockIMC = (LPINPUTCONTEXT2 (WINAPI *)(HIMC))SDL_LoadFunction(videodata->ime_himm32, "ImmLockIMC");
-    videodata->ImmUnlockIMC = (BOOL (WINAPI *)(HIMC))SDL_LoadFunction(videodata->ime_himm32, "ImmUnlockIMC");
-    videodata->ImmLockIMCC = (LPVOID (WINAPI *)(HIMCC))SDL_LoadFunction(videodata->ime_himm32, "ImmLockIMCC");
-    videodata->ImmUnlockIMCC = (BOOL (WINAPI *)(HIMCC))SDL_LoadFunction(videodata->ime_himm32, "ImmUnlockIMCC");
+    *(void**)&videodata->ImmLockIMC = SDL_LoadFunction(videodata->ime_himm32, "ImmLockIMC");
+    *(void**)&videodata->ImmUnlockIMC = SDL_LoadFunction(videodata->ime_himm32, "ImmUnlockIMC");
+    *(void**)&videodata->ImmLockIMCC = SDL_LoadFunction(videodata->ime_himm32, "ImmLockIMCC");
+    *(void**)&videodata->ImmUnlockIMCC = SDL_LoadFunction(videodata->ime_himm32, "ImmUnlockIMCC");
 
     IME_SetWindow(videodata, hwnd);
     videodata->ime_himc = ImmGetContext(hwnd);
@@ -654,9 +654,9 @@ IME_SetupAPI(SDL_VideoData *videodata)
     if (!hime)
         return;
 
-    videodata->GetReadingString = (UINT (WINAPI *)(HIMC, UINT, LPWSTR, PINT, BOOL*, PUINT))
+    *(void**)&videodata->GetReadingString =
         SDL_LoadFunction(hime, "GetReadingString");
-    videodata->ShowReadingWindow = (BOOL (WINAPI *)(HIMC, BOOL))
+    *(void**)&videodata->ShowReadingWindow =
         SDL_LoadFunction(hime, "ShowReadingWindow");
 
     if (videodata->ShowReadingWindow) {
