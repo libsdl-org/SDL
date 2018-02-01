@@ -99,8 +99,8 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
         SDL_AddHintCallback(SDL_HINT_IOS_HIDE_HOME_INDICATOR,
                             SDL_HideHomeIndicatorHintChanged,
                             (__bridge void *) self);
-    }
 #endif
+    }
     return self;
 }
 
