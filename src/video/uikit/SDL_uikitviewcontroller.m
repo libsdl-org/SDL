@@ -50,6 +50,21 @@ SDL_AppleTVControllerUIHintChanged(void *userdata, const char *name, const char 
 }
 #endif
 
+#if !TARGET_OS_TV
+static void SDLCALL
+SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    @autoreleasepool {
+        SDL_uikitviewcontroller *viewcontroller = (__bridge SDL_uikitviewcontroller *) userdata;
+        viewcontroller.homeIndicatorHidden = (hint && *hint) ? SDL_atoi(hint) : -1;
+        if (@available(iOS 11.0, *)) {
+            [viewcontroller setNeedsUpdateOfHomeIndicatorAutoHidden];
+            [viewcontroller setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
+        }
+    }
+}
+#endif
+
 @implementation SDL_uikitviewcontroller {
     CADisplayLink *displayLink;
     int animationInterval;
@@ -79,7 +94,13 @@ SDL_AppleTVControllerUIHintChanged(void *userdata, const char *name, const char 
                             SDL_AppleTVControllerUIHintChanged,
                             (__bridge void *) self);
 #endif
+
+#if !TARGET_OS_TV
+        SDL_AddHintCallback(SDL_HINT_IOS_HIDE_HOME_INDICATOR,
+                            SDL_HideHomeIndicatorHintChanged,
+                            (__bridge void *) self);
     }
+#endif
     return self;
 }
 
@@ -92,6 +113,12 @@ SDL_AppleTVControllerUIHintChanged(void *userdata, const char *name, const char 
 #if TARGET_OS_TV
     SDL_DelHintCallback(SDL_HINT_APPLE_TV_CONTROLLER_UI_EVENTS,
                         SDL_AppleTVControllerUIHintChanged,
+                        (__bridge void *) self);
+#endif
+
+#if !TARGET_OS_TV
+    SDL_DelHintCallback(SDL_HINT_IOS_HIDE_HOME_INDICATOR,
+                        SDL_HideHomeIndicatorHintChanged,
                         (__bridge void *) self);
 #endif
 }
@@ -179,7 +206,35 @@ SDL_AppleTVControllerUIHintChanged(void *userdata, const char *name, const char 
 
 - (BOOL)prefersStatusBarHidden
 {
-    return (window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_BORDERLESS)) != 0;
+    BOOL hidden = (window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_BORDERLESS)) != 0;
+    return hidden;
+}
+
+- (BOOL)prefersHomeIndicatorAutoHidden
+{
+    BOOL hidden = NO;
+    if (self.homeIndicatorHidden == 1) {
+        hidden = YES;
+    }
+    return hidden;
+}
+
+- (UIRectEdge)preferredScreenEdgesDeferringSystemGestures
+{
+    if (self.homeIndicatorHidden >= 0) {
+        if (self.homeIndicatorHidden == 2) {
+            return UIRectEdgeAll;
+        } else {
+            return UIRectEdgeNone;
+        }
+    }
+
+    /* By default, fullscreen and borderless windows get all screen gestures */
+    if ((window->flags & (SDL_WINDOW_FULLSCREEN|SDL_WINDOW_BORDERLESS)) != 0) {
+        return UIRectEdgeAll;
+    } else {
+        return UIRectEdgeNone;
+    }
 }
 #endif
 
