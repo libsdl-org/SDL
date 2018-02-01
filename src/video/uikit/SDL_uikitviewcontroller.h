@@ -58,6 +58,10 @@
 #if !TARGET_OS_TV
 - (NSUInteger)supportedInterfaceOrientations;
 - (BOOL)prefersStatusBarHidden;
+- (BOOL)prefersHomeIndicatorAutoHidden;
+- (UIRectEdge)preferredScreenEdgesDeferringSystemGestures;
+
+@property (nonatomic, assign) int homeIndicatorHidden;
 #endif
 
 #if SDL_IPHONE_KEYBOARD
