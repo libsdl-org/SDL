@@ -105,10 +105,11 @@ FreeDevice(recDevice *removeDevice)
     return pDeviceNext;
 }
 
-static SInt32
-GetHIDElementState(recDevice *pDevice, recElement *pElement)
+static SDL_bool
+GetHIDElementState(recDevice *pDevice, recElement *pElement, SInt32 *pValue)
 {
     SInt32 value = 0;
+    int returnValue = SDL_FALSE;
 
     if (pDevice && pElement) {
         IOHIDValueRef valueRef;
@@ -122,24 +123,33 @@ GetHIDElementState(recDevice *pDevice, recElement *pElement)
             if (value > pElement->maxReport) {
                 pElement->maxReport = value;
             }
+            *pValue = value;
+
+            returnValue = SDL_TRUE;
         }
     }
-
-    return value;
+    return returnValue;
 }
 
-static SInt32
-GetHIDScaledCalibratedState(recDevice * pDevice, recElement * pElement, SInt32 min, SInt32 max)
+static SDL_bool
+GetHIDScaledCalibratedState(recDevice * pDevice, recElement * pElement, SInt32 min, SInt32 max, SInt32 *pValue)
 {
     const float deviceScale = max - min;
     const float readScale = pElement->maxReport - pElement->minReport;
-    const SInt32 value = GetHIDElementState(pDevice, pElement);
-    if (readScale == 0) {
-        return value;           /* no scaling at all */
-    }
-    return ((value - pElement->minReport) * deviceScale / readScale) + min;
+    int returnValue = SDL_FALSE;
+    if (GetHIDElementState(pDevice, pElement, pValue))
+    {
+        if (readScale == 0) {
+            returnValue = SDL_TRUE;           /* no scaling at all */
+        }
+        else
+        {
+            *pValue = ((*pValue - pElement->minReport) * deviceScale / readScale) + min;
+            returnValue = SDL_TRUE;
+        }
+    } 
+    return returnValue;
 }
-
 
 static void
 JoystickDeviceWasRemovedCallback(void *ctx, IOReturn result, void *sender)
@@ -698,9 +708,14 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
 
     element = device->firstAxis;
     i = 0;
+
+    int goodRead = SDL_FALSE;
     while (element) {
-        value = GetHIDScaledCalibratedState(device, element, -32768, 32767);
-        SDL_PrivateJoystickAxis(joystick, i, value);
+        goodRead = GetHIDScaledCalibratedState(device, element, -32768, 32767, &value);
+        if (goodRead) {
+            SDL_PrivateJoystickAxis(joystick, i, value);
+        }
+
         element = element->pNext;
         ++i;
     }
@@ -708,63 +723,70 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
     element = device->firstButton;
     i = 0;
     while (element) {
-        value = GetHIDElementState(device, element);
-        if (value > 1) {          /* handle pressure-sensitive buttons */
-            value = 1;
+        goodRead = GetHIDElementState(device, element, &value);
+        if (goodRead) {
+            if (value > 1) {          /* handle pressure-sensitive buttons */
+                value = 1;
+            }
+            SDL_PrivateJoystickButton(joystick, i, value);
         }
-        SDL_PrivateJoystickButton(joystick, i, value);
+
         element = element->pNext;
         ++i;
     }
 
     element = device->firstHat;
     i = 0;
+    
     while (element) {
         Uint8 pos = 0;
 
         range = (element->max - element->min + 1);
-        value = GetHIDElementState(device, element) - element->min;
-        if (range == 4) {         /* 4 position hatswitch - scale up value */
-            value *= 2;
-        } else if (range != 8) {    /* Neither a 4 nor 8 positions - fall back to default position (centered) */
-            value = -1;
-        }
-        switch (value) {
-        case 0:
-            pos = SDL_HAT_UP;
-            break;
-        case 1:
-            pos = SDL_HAT_RIGHTUP;
-            break;
-        case 2:
-            pos = SDL_HAT_RIGHT;
-            break;
-        case 3:
-            pos = SDL_HAT_RIGHTDOWN;
-            break;
-        case 4:
-            pos = SDL_HAT_DOWN;
-            break;
-        case 5:
-            pos = SDL_HAT_LEFTDOWN;
-            break;
-        case 6:
-            pos = SDL_HAT_LEFT;
-            break;
-        case 7:
-            pos = SDL_HAT_LEFTUP;
-            break;
-        default:
-            /* Every other value is mapped to center. We do that because some
-             * joysticks use 8 and some 15 for this value, and apparently
-             * there are even more variants out there - so we try to be generous.
-             */
-            pos = SDL_HAT_CENTERED;
-            break;
-        }
+        goodRead = GetHIDElementState(device, element, &value);
+        if (goodRead) {
+            value -= element->min;
+            if (range == 4) {         /* 4 position hatswitch - scale up value */
+                value *= 2;
+            } else if (range != 8) {    /* Neither a 4 nor 8 positions - fall back to default position (centered) */
+                value = -1;
+            }
+            switch (value) {
+            case 0:
+                pos = SDL_HAT_UP;
+                break;
+            case 1:
+                pos = SDL_HAT_RIGHTUP;
+                break;
+            case 2:
+                pos = SDL_HAT_RIGHT;
+                break;
+            case 3:
+                pos = SDL_HAT_RIGHTDOWN;
+                break;
+            case 4:
+                pos = SDL_HAT_DOWN;
+                break;
+            case 5:
+                pos = SDL_HAT_LEFTDOWN;
+                break;
+            case 6:
+                pos = SDL_HAT_LEFT;
+                break;
+            case 7:
+                pos = SDL_HAT_LEFTUP;
+                break;
+            default:
+                /* Every other value is mapped to center. We do that because some
+                 * joysticks use 8 and some 15 for this value, and apparently
+                 * there are even more variants out there - so we try to be generous.
+                 */
+                pos = SDL_HAT_CENTERED;
+                break;
+            }
 
-        SDL_PrivateJoystickHat(joystick, i, pos);
-
+            SDL_PrivateJoystickHat(joystick, i, pos);
+        }
+        
         element = element->pNext;
         ++i;
     }
