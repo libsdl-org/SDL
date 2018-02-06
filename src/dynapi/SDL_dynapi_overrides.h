@@ -665,3 +665,5 @@
 #define SDL_GetYUVConversionModeForResolution SDL_GetYUVConversionModeForResolution_REAL
 #define SDL_RenderGetMetalLayer SDL_RenderGetMetalLayer_REAL
 #define SDL_RenderGetMetalCommandEncoder SDL_RenderGetMetalCommandEncoder_REAL
+#define SDL_IsAndroidTV SDL_IsAndroidTV_REAL
+#define SDL_WinRTGetDeviceFamily SDL_WinRTGetDeviceFamily_REAL

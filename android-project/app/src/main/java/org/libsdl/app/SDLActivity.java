@@ -7,6 +7,7 @@ import java.lang.reflect.Method;
 
 import android.app.*;
 import android.content.*;
+import android.content.res.Configuration;
 import android.text.InputType;
 import android.view.*;
 import android.view.inputmethod.BaseInputConnection;
@@ -611,6 +612,17 @@ public class SDLActivity extends Activity {
         return SDL.getContext();
     }
 
+    /**
+     * This method is called by SDL using JNI.
+     */
+    public static boolean isAndroidTV() {
+        UiModeManager uiModeManager = (UiModeManager) getContext().getSystemService(UI_MODE_SERVICE);
+        return (uiModeManager.getCurrentModeType() == Configuration.UI_MODE_TYPE_TELEVISION);
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
     public static DisplayMetrics getDisplayDPI() {
         return getContext().getResources().getDisplayMetrics();
     }
@@ -1027,7 +1039,6 @@ public class SDLActivity extends Activity {
     public static void clipboardSetText(String string) {
         mClipboardHandler.clipboardSetText(string);
     }
-
 }
 
 /**

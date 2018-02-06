@@ -109,6 +109,11 @@ extern DECLSPEC void * SDLCALL SDL_AndroidGetJNIEnv(void);
 extern DECLSPEC void * SDLCALL SDL_AndroidGetActivity(void);
 
 /**
+   \brief Return true if the application is running on Android TV
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_IsAndroidTV(void);
+
+/**
    See the official Android developer guide for more information:
    http://developer.android.com/guide/topics/data/data-storage.html
 */
