@@ -150,6 +150,15 @@ SDL_SYS_AddJoystickDevice(GCController *controller, SDL_bool accelerometer)
 {
     SDL_JoystickDeviceItem *device = deviceList;
 
+#if TARGET_OS_TV
+    if (!SDL_GetHintBoolean(SDL_HINT_TV_REMOTE_AS_JOYSTICK, SDL_TRUE)) {
+        /* Ignore devices that aren't actually controllers (e.g. remotes), they'll be handled as keyboard input */
+        if (controller && !controller.extendedGamepad && !controller.gamepad && controller.microGamepad) {
+            return;
+        }
+    }
+#endif
+
     while (device != NULL) {
         if (device->controller == controller) {
             return;
@@ -157,12 +166,10 @@ SDL_SYS_AddJoystickDevice(GCController *controller, SDL_bool accelerometer)
         device = device->next;
     }
 
-    device = (SDL_JoystickDeviceItem *) SDL_malloc(sizeof(SDL_JoystickDeviceItem));
+    device = (SDL_JoystickDeviceItem *) SDL_calloc(1, sizeof(SDL_JoystickDeviceItem));
     if (device == NULL) {
         return;
     }
-
-    SDL_zerop(device);
 
     device->accelerometer = accelerometer;
     device->instance_id = instancecounter++;
@@ -277,11 +284,11 @@ static SDL_bool SteamControllerConnectedCallback(const char *name, SDL_JoystickG
     }
 
     *device_instance = device->instance_id = instancecounter++;
-	device->name = SDL_strdup(name);
-	device->guid = guid;
-	SDL_GetSteamControllerInputs(&device->nbuttons,
-								 &device->naxes,
-								 &device->nhats);
+    device->name = SDL_strdup(name);
+    device->guid = guid;
+    SDL_GetSteamControllerInputs(&device->nbuttons,
+                                 &device->naxes,
+                                 &device->nhats);
     device->m_bSteamController = SDL_TRUE;
 
     if (deviceList == NULL) {
@@ -305,10 +312,10 @@ static void SteamControllerDisconnectedCallback(int device_instance)
 {
     SDL_JoystickDeviceItem *item;
 
-	for (item = deviceList; item; item = item->next) {
+    for (item = deviceList; item; item = item->next) {
         if (item->instance_id == device_instance) {
-			SDL_SYS_RemoveJoystickDevice(item);
-			break;
+            SDL_SYS_RemoveJoystickDevice(item);
+            break;
         }
     }
 }
@@ -608,9 +615,6 @@ SDL_SYS_MFIJoystickUpdate(SDL_Joystick * joystick)
                 SDL_PrivateJoystickAxis(joystick, i, axes[i]);
             }
 
-            /* Apparently the dpad values are not accurate enough to be useful. */
-            /* hatstate = SDL_SYS_MFIJoystickHatStateForDPad(gamepad.dpad); */
-
             Uint8 buttons[] = {
                 gamepad.buttonA.isPressed,
                 gamepad.buttonX.isPressed,
@@ -620,8 +624,6 @@ SDL_SYS_MFIJoystickUpdate(SDL_Joystick * joystick)
                 updateplayerindex |= (joystick->buttons[i] != buttons[i]);
                 SDL_PrivateJoystickButton(joystick, i, buttons[i]);
             }
-
-            /* TODO: Figure out what to do with reportsAbsoluteDpadValues */
         }
 #endif /* TARGET_OS_TV */
 

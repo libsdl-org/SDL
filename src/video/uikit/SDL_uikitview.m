@@ -44,7 +44,7 @@
 {
     if ((self = [super initWithFrame:frame])) {
 #if TARGET_OS_TV
-        if (SDL_GetHintBoolean(SDL_HINT_APPLE_TV_REMOTE_SWIPES_AS_ARROW_KEYS, SDL_TRUE)) {
+        if (!SDL_GetHintBoolean(SDL_HINT_TV_REMOTE_AS_JOYSTICK, SDL_TRUE)) {
             /* Apple TV Remote touchpad swipe gestures. */
             UISwipeGestureRecognizer *swipeUp = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
             swipeUp.direction = UISwipeGestureRecognizerDirectionUp;
@@ -237,10 +237,10 @@
         return SDL_SCANCODE_RIGHT;
     case UIPressTypeSelect:
         /* HIG says: "primary button behavior" */
-        return SDL_SCANCODE_SELECT;
+        return SDL_SCANCODE_RETURN;
     case UIPressTypeMenu:
         /* HIG says: "returns to previous screen" */
-        return SDL_SCANCODE_MENU;
+        return SDL_SCANCODE_ESCAPE;
     case UIPressTypePlayPause:
         /* HIG says: "secondary button behavior" */
         return SDL_SCANCODE_PAUSE;
@@ -251,31 +251,34 @@
 
 - (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event
 {
-    for (UIPress *press in presses) {
-        SDL_Scancode scancode = [self scancodeFromPressType:press.type];
-        SDL_SendKeyboardKey(SDL_PRESSED, scancode);
-    }
-
+	if (!SDL_GetHintBoolean(SDL_HINT_TV_REMOTE_AS_JOYSTICK, SDL_TRUE)) {
+    	for (UIPress *press in presses) {
+        	SDL_Scancode scancode = [self scancodeFromPressType:press.type];
+        	SDL_SendKeyboardKey(SDL_PRESSED, scancode);
+    	}
+	}
     [super pressesBegan:presses withEvent:event];
 }
 
 - (void)pressesEnded:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event
 {
-    for (UIPress *press in presses) {
-        SDL_Scancode scancode = [self scancodeFromPressType:press.type];
-        SDL_SendKeyboardKey(SDL_RELEASED, scancode);
-    }
-
+	if (!SDL_GetHintBoolean(SDL_HINT_TV_REMOTE_AS_JOYSTICK, SDL_TRUE)) {
+		for (UIPress *press in presses) {
+			SDL_Scancode scancode = [self scancodeFromPressType:press.type];
+			SDL_SendKeyboardKey(SDL_RELEASED, scancode);
+		}
+	}
     [super pressesEnded:presses withEvent:event];
 }
 
 - (void)pressesCancelled:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event
 {
-    for (UIPress *press in presses) {
-        SDL_Scancode scancode = [self scancodeFromPressType:press.type];
-        SDL_SendKeyboardKey(SDL_RELEASED, scancode);
-    }
-
+	if (!SDL_GetHintBoolean(SDL_HINT_TV_REMOTE_AS_JOYSTICK, SDL_TRUE)) {
+		for (UIPress *press in presses) {
+			SDL_Scancode scancode = [self scancodeFromPressType:press.type];
+			SDL_SendKeyboardKey(SDL_RELEASED, scancode);
+		}
+	}
     [super pressesCancelled:presses withEvent:event];
 }
 
