@@ -356,16 +356,6 @@ extern "C" {
 #define SDL_HINT_APPLE_TV_REMOTE_ALLOW_ROTATION "SDL_APPLE_TV_REMOTE_ALLOW_ROTATION"
 
 /**
- * \brief  A variable controlling whether the Apple TV remote swipes are
- *         translated into arrow key events
- *
- *  This variable can be set to the following values:
- *    "0"       - Swipes are not translated into arrow key events
- *    "1"       - Swipes are translated into arrow key events (the default)
- */
-#define SDL_HINT_APPLE_TV_REMOTE_SWIPES_AS_ARROW_KEYS "SDL_APPLE_TV_REMOTE_SWIPES_AS_ARROW_KEYS"
-
-/**
  * \brief  A variable controlling whether the home indicator bar on iPhone X
  *         should be hidden.
  *
@@ -378,14 +368,23 @@ extern "C" {
 
 /**
  *  \brief  A variable controlling whether the Android / iOS built-in
- *  accelerometer should be listed as a joystick device, rather than listing
- *  actual joysticks only.
+ *  accelerometer should be listed as a joystick device.
  *
  *  This variable can be set to the following values:
- *    "0"       - List only real joysticks and accept input from them
- *    "1"       - List real joysticks along with the accelerometer as if it were a 3 axis joystick (the default).
+ *    "0"       - The accelerometer is not listed as a joystick
+ *    "1"       - The accelerometer is available as a 3 axis joystick (the default).
  */
 #define SDL_HINT_ACCELEROMETER_AS_JOYSTICK "SDL_ACCELEROMETER_AS_JOYSTICK"
+
+/**
+ *  \brief  A variable controlling whether the Android / iOS remotes
+ *  should be listed as joystick devices, instead of sending keyboard events.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - Remotes send enter/escape/arrow key events
+ *    "1"       - Remotes are available as 2 axis, 2 button joysticks (the default).
+ */
+#define SDL_HINT_TV_REMOTE_AS_JOYSTICK "SDL_TV_REMOTE_AS_JOYSTICK"
 
 /**
  *  \brief  A variable that lets you disable the detection and use of Xinput gamepad devices
