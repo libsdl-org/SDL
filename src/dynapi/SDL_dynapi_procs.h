@@ -69,12 +69,12 @@ SDL_DYNAPI_PROC(int,SDL_Direct3D9GetAdapterIndex,(int a),(a),return)
 SDL_DYNAPI_PROC(IDirect3DDevice9*,SDL_RenderGetD3D9Device,(SDL_Renderer *a),(a),return)
 #endif
 
-#if defined(__IPHONEOS__) && __IPHONEOS__
+#ifdef __IPHONEOS__
 SDL_DYNAPI_PROC(int,SDL_iPhoneSetAnimationCallback,(SDL_Window *a, int b, void c, void *d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(void,SDL_iPhoneSetEventPump,(SDL_bool a),(a),)
 #endif
 
-#if defined(__ANDROID__) && __ANDROID__
+#ifdef __ANDROID__
 SDL_DYNAPI_PROC(void*,SDL_AndroidGetJNIEnv,(void),(),return)
 SDL_DYNAPI_PROC(void*,SDL_AndroidGetActivity,(void),(),return)
 SDL_DYNAPI_PROC(const char*,SDL_AndroidGetInternalStoragePath,(void),(),return)
@@ -699,3 +699,9 @@ SDL_DYNAPI_PROC(SDL_YUV_CONVERSION_MODE,SDL_GetYUVConversionMode,(void),(),retur
 SDL_DYNAPI_PROC(SDL_YUV_CONVERSION_MODE,SDL_GetYUVConversionModeForResolution,(int a, int b),(a,b),return)
 SDL_DYNAPI_PROC(void*,SDL_RenderGetMetalLayer,(SDL_Renderer *a),(a),return)
 SDL_DYNAPI_PROC(void*,SDL_RenderGetMetalCommandEncoder,(SDL_Renderer *a),(a),return)
+#ifdef __WINRT__
+SDL_DYNAPI_PROC(SDL_WinRT_DeviceFamily,SDL_WinRTGetDeviceFamily,(void),(),return)
+#endif
+#ifdef __ANDROID__
+SDL_DYNAPI_PROC(SDL_bool,SDL_IsAndroidTV,(void),(),return)
+#endif
