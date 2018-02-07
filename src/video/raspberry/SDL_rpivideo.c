@@ -63,6 +63,23 @@ RPI_Destroy(SDL_VideoDevice * device)
     SDL_free(device);
 }
 
+static int 
+RPI_GetRefreshRate()
+{
+    TV_DISPLAY_STATE_T tvstate;
+    if (vc_tv_get_display_state( &tvstate ) == 0) {
+        //The width/height parameters are in the same position in the union
+        //for HDMI and SDTV
+        HDMI_PROPERTY_PARAM_T property;
+        property.property = HDMI_PROPERTY_PIXEL_CLOCK_TYPE;
+        vc_tv_hdmi_get_property(&property);
+        return property.param1 == HDMI_PIXEL_CLOCK_TYPE_NTSC ? 
+            tvstate.display.hdmi.frame_rate * (1000.0f/1001.0f) : 
+            tvstate.display.hdmi.frame_rate;
+    } 
+    return 60;  /* Failed to get display state, default to 60 */
+}
+
 static SDL_VideoDevice *
 RPI_Create()
 {
@@ -159,8 +176,7 @@ RPI_VideoInit(_THIS)
 
     current_mode.w = w;
     current_mode.h = h;
-    /* FIXME: Is there a way to tell the actual refresh rate? */
-    current_mode.refresh_rate = 60;
+    current_mode.refresh_rate = RPI_GetRefreshRate();
     /* 32 bpp for default */
     current_mode.format = SDL_PIXELFORMAT_ABGR8888;
 
