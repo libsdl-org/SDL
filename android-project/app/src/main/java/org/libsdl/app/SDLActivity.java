@@ -1519,7 +1519,7 @@ class SDLInputConnection extends BaseInputConnection {
          * as we do with physical keyboards, let's just use it to hide the keyboard.
          */
 
-        if (event.getKeyCode() == 66) {
+        if (event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
             String imeHide = SDLActivity.nativeGetHint("SDL_RETURN_KEY_HIDES_IME");
             if ((imeHide != null) && imeHide.equals("1")) {
                 Context c = SDL.getContext();
