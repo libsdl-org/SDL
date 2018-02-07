@@ -45,6 +45,8 @@
 #include "SDL_waylanddyn.h"
 #include <wayland-util.h>
 
+#include "xdg-shell-unstable-v6-client-protocol.h"
+
 #define WAYLANDVID_DRIVER_NAME "wayland"
 
 /* Initialization/Query functions */
@@ -64,6 +66,12 @@ Wayland_VideoQuit(_THIS);
 static char *
 get_classname()
 {
+/* !!! FIXME: this is probably wrong, albeit harmless in many common cases. From protocol spec:
+	"The surface class identifies the general class of applications
+	to which the surface belongs. A common convention is to use the
+	file name (or the full path if it is a non-standard location) of
+	the application's .desktop file as the class." */
+
     char *spot;
 #if defined(__LINUX__) || defined(__FREEBSD__)
     char procfile[1024];
@@ -307,6 +315,18 @@ static const struct qt_windowmanager_listener windowmanager_listener = {
 };
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
 
+
+static void
+handle_ping_zxdg_shell(void *data, struct zxdg_shell_v6 *zxdg, uint32_t serial)
+{
+    zxdg_shell_v6_pong(zxdg, serial);
+}
+
+static const struct zxdg_shell_v6_listener shell_listener_zxdg = {
+    handle_ping_zxdg_shell
+};
+
+
 static void
 display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
                       const char *interface, uint32_t version)
@@ -319,8 +339,11 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
         Wayland_add_display(d, id);
     } else if (strcmp(interface, "wl_seat") == 0) {
         Wayland_display_add_input(d, id);
+    } else if (strcmp(interface, "zxdg_shell_v6") == 0) {
+        d->shell.zxdg = wl_registry_bind(d->registry, id, &zxdg_shell_v6_interface, 1);
+        zxdg_shell_v6_add_listener(d->shell.zxdg, &shell_listener_zxdg, NULL);
     } else if (strcmp(interface, "wl_shell") == 0) {
-        d->shell = wl_registry_bind(d->registry, id, &wl_shell_interface, 1);
+        d->shell.wl = wl_registry_bind(d->registry, id, &wl_shell_interface, 1);
     } else if (strcmp(interface, "wl_shm") == 0) {
         d->shm = wl_registry_bind(registry, id, &wl_shm_interface, 1);
         d->cursor_theme = WAYLAND_wl_cursor_theme_load(NULL, 32, d->shm);
@@ -330,6 +353,7 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
         Wayland_display_add_pointer_constraints(d, id);
     } else if (strcmp(interface, "wl_data_device_manager") == 0) {
         d->data_device_manager = wl_registry_bind(d->registry, id, &wl_data_device_manager_interface, 3);
+
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
     } else if (strcmp(interface, "qt_touch_extension") == 0) {
         Wayland_touch_create(d, id);
@@ -448,8 +472,11 @@ Wayland_VideoQuit(_THIS)
     if (data->cursor_theme)
         WAYLAND_wl_cursor_theme_destroy(data->cursor_theme);
 
-    if (data->shell)
-        wl_shell_destroy(data->shell);
+    if (data->shell.wl)
+        wl_shell_destroy(data->shell.wl);
+
+    if (data->shell.zxdg)
+        zxdg_shell_v6_destroy(data->shell.zxdg);
 
     if (data->compositor)
         wl_compositor_destroy(data->compositor);
