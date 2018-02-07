@@ -33,6 +33,9 @@
 #import "SDL_uikitmodes.h"
 #import "SDL_uikitwindow.h"
 
+/* This is defined in SDL_sysjoystick.m */
+extern int SDL_AppleTVRemoteOpenedAsJoystick;
+
 @implementation SDL_uikitview {
     SDL_Window *sdlwindow;
 
@@ -44,24 +47,22 @@
 {
     if ((self = [super initWithFrame:frame])) {
 #if TARGET_OS_TV
-        if (!SDL_GetHintBoolean(SDL_HINT_TV_REMOTE_AS_JOYSTICK, SDL_TRUE)) {
-            /* Apple TV Remote touchpad swipe gestures. */
-            UISwipeGestureRecognizer *swipeUp = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
-            swipeUp.direction = UISwipeGestureRecognizerDirectionUp;
-            [self addGestureRecognizer:swipeUp];
+        /* Apple TV Remote touchpad swipe gestures. */
+        UISwipeGestureRecognizer *swipeUp = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
+        swipeUp.direction = UISwipeGestureRecognizerDirectionUp;
+        [self addGestureRecognizer:swipeUp];
 
-            UISwipeGestureRecognizer *swipeDown = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
-            swipeDown.direction = UISwipeGestureRecognizerDirectionDown;
-            [self addGestureRecognizer:swipeDown];
+        UISwipeGestureRecognizer *swipeDown = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
+        swipeDown.direction = UISwipeGestureRecognizerDirectionDown;
+        [self addGestureRecognizer:swipeDown];
 
-            UISwipeGestureRecognizer *swipeLeft = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
-            swipeLeft.direction = UISwipeGestureRecognizerDirectionLeft;
-            [self addGestureRecognizer:swipeLeft];
+        UISwipeGestureRecognizer *swipeLeft = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
+        swipeLeft.direction = UISwipeGestureRecognizerDirectionLeft;
+        [self addGestureRecognizer:swipeLeft];
 
-            UISwipeGestureRecognizer *swipeRight = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
-            swipeRight.direction = UISwipeGestureRecognizerDirectionRight;
-            [self addGestureRecognizer:swipeRight];
-        }
+        UISwipeGestureRecognizer *swipeRight = [[UISwipeGestureRecognizer alloc] initWithTarget:self action:@selector(swipeGesture:)];
+        swipeRight.direction = UISwipeGestureRecognizerDirectionRight;
+        [self addGestureRecognizer:swipeRight];
 #endif
 
         self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
@@ -251,7 +252,7 @@
 
 - (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event
 {
-	if (!SDL_GetHintBoolean(SDL_HINT_TV_REMOTE_AS_JOYSTICK, SDL_TRUE)) {
+	if (!SDL_AppleTVRemoteOpenedAsJoystick) {
     	for (UIPress *press in presses) {
         	SDL_Scancode scancode = [self scancodeFromPressType:press.type];
         	SDL_SendKeyboardKey(SDL_PRESSED, scancode);
@@ -262,7 +263,7 @@
 
 - (void)pressesEnded:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event
 {
-	if (!SDL_GetHintBoolean(SDL_HINT_TV_REMOTE_AS_JOYSTICK, SDL_TRUE)) {
+	if (!SDL_AppleTVRemoteOpenedAsJoystick) {
 		for (UIPress *press in presses) {
 			SDL_Scancode scancode = [self scancodeFromPressType:press.type];
 			SDL_SendKeyboardKey(SDL_RELEASED, scancode);
@@ -273,7 +274,7 @@
 
 - (void)pressesCancelled:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event
 {
-	if (!SDL_GetHintBoolean(SDL_HINT_TV_REMOTE_AS_JOYSTICK, SDL_TRUE)) {
+	if (!SDL_AppleTVRemoteOpenedAsJoystick) {
 		for (UIPress *press in presses) {
 			SDL_Scancode scancode = [self scancodeFromPressType:press.type];
 			SDL_SendKeyboardKey(SDL_RELEASED, scancode);
@@ -294,25 +295,27 @@
 {
     /* Swipe gestures don't trigger begin states. */
     if (gesture.state == UIGestureRecognizerStateEnded) {
-        /* Send arrow key presses for now, as we don't have an external API
-         * which better maps to swipe gestures. */
-        switch (gesture.direction) {
-        case UISwipeGestureRecognizerDirectionUp:
-            SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_UP);
-            SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_UP);
-            break;
-        case UISwipeGestureRecognizerDirectionDown:
-            SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_DOWN);
-            SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_DOWN);
-            break;
-        case UISwipeGestureRecognizerDirectionLeft:
-            SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_LEFT);
-            SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LEFT);
-            break;
-        case UISwipeGestureRecognizerDirectionRight:
-            SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_RIGHT);
-            SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_RIGHT);
-            break;
+        if (!SDL_AppleTVRemoteOpenedAsJoystick) {
+            /* Send arrow key presses for now, as we don't have an external API
+             * which better maps to swipe gestures. */
+            switch (gesture.direction) {
+            case UISwipeGestureRecognizerDirectionUp:
+                SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_UP);
+                SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_UP);
+                break;
+            case UISwipeGestureRecognizerDirectionDown:
+                SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_DOWN);
+                SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_DOWN);
+                break;
+            case UISwipeGestureRecognizerDirectionLeft:
+                SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_LEFT);
+                SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_LEFT);
+                break;
+            case UISwipeGestureRecognizerDirectionRight:
+                SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_RIGHT);
+                SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_RIGHT);
+                break;
+            }
         }
     }
 }

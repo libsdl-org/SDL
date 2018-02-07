@@ -31,6 +31,7 @@
 typedef struct joystick_hwdata
 {
     SDL_bool accelerometer;
+    SDL_bool remote;
 
     GCController __unsafe_unretained *controller;
     int num_pause_presses;
