@@ -44,7 +44,6 @@
 
 #if SDL_VIDEO_DRIVER_RPI
 /* Raspbian places the OpenGL ES/EGL binaries in a non standard path */
-static const char g_rpi_opt_path[] = "/opt/vc/lib";
 #define DEFAULT_EGL ( vc4 ? "libEGL.so.1" : "libbrcmEGL.so" )
 #define DEFAULT_OGL_ES2 ( vc4 ? "libGLESv2.so.2" : "libbrcmGLESv2.so" )
 #define ALT_EGL "libEGL.so"
@@ -266,20 +265,6 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
 #endif
 #if SDL_VIDEO_DRIVER_RPI
     SDL_bool vc4 = (0 == access("/sys/module/vc4/", F_OK));
-
-    path = SDL_getenv("LD_LIBRARY_PATH");
-    if (path) {
-        const int path_size = SDL_strlen(path) + 1 + sizeof(g_rpi_opt_path);
-        char *new_path = SDL_calloc(1, path_size);
-        strcat(new_path, path);
-        strcat(new_path, ":");
-        strcat(new_path, g_rpi_opt_path);
-        SDL_setenv("LD_LIBRARY_PATH", new_path, 1);
-        SDL_free(new_path);
-    } else {
-        SDL_setenv("LD_LIBRARY_PATH", g_rpi_opt_path, 1);
-    }
-    path = NULL;
 #endif
 
     if (_this->egl_data) {
