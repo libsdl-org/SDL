@@ -19220,7 +19220,7 @@ $as_echo "#define SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH 1" >>confdefs.h
 
             fi
 
-            WAYLAND_PROTOCOLS_UNSTABLE="relative-pointer-unstable-v1 pointer-constraints-unstable-v1"
+            WAYLAND_PROTOCOLS_UNSTABLE="relative-pointer-unstable-v1 pointer-constraints-unstable-v1 xdg-shell-unstable-v6"
 
             SOURCES="$SOURCES $srcdir/src/video/wayland/*.c"
             EXTRA_CFLAGS="$EXTRA_CFLAGS $WAYLAND_CFLAGS -I\$(gen)"

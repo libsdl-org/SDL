@@ -32,10 +32,22 @@
 struct SDL_WaylandInput;
 
 typedef struct {
+    struct zxdg_surface_v6 *surface;
+    union {
+        struct zxdg_toplevel_v6 *toplevel;
+        struct zxdg_popup_v6 *popup;
+    } roleobj;
+} SDL_zxdg_shell_surface;
+
+typedef struct {
     SDL_Window *sdlwindow;
     SDL_VideoData *waylandData;
     struct wl_surface *surface;
-    struct wl_shell_surface *shell_surface;
+    union {
+        /* !!! FIXME: add stable xdg_shell from 1.12 */
+        SDL_zxdg_shell_surface zxdg;
+        struct wl_shell_surface *wl;
+    } shell_surface;
     struct wl_egl_window *egl_window;
     struct SDL_WaylandInput *keyboard_device;
     EGLSurface egl_surface;

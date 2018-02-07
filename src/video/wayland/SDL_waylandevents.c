@@ -40,6 +40,7 @@
 
 #include "pointer-constraints-unstable-v1-client-protocol.h"
 #include "relative-pointer-unstable-v1-client-protocol.h"
+#include "xdg-shell-unstable-v6-client-protocol.h"
 
 #include <linux/input.h>
 #include <sys/select.h>
@@ -248,15 +249,25 @@ ProcessHitTest(struct SDL_WaylandInput *input, uint32_t serial)
     if (window->hit_test) {
         const SDL_Point point = { wl_fixed_to_int(input->sx_w), wl_fixed_to_int(input->sy_w) };
         const SDL_HitTestResult rc = window->hit_test(window, &point, window->hit_test_data);
-        static const uint32_t directions[] = {
+
+        static const uint32_t directions_wl[] = {
             WL_SHELL_SURFACE_RESIZE_TOP_LEFT, WL_SHELL_SURFACE_RESIZE_TOP,
             WL_SHELL_SURFACE_RESIZE_TOP_RIGHT, WL_SHELL_SURFACE_RESIZE_RIGHT,
             WL_SHELL_SURFACE_RESIZE_BOTTOM_RIGHT, WL_SHELL_SURFACE_RESIZE_BOTTOM,
             WL_SHELL_SURFACE_RESIZE_BOTTOM_LEFT, WL_SHELL_SURFACE_RESIZE_LEFT
         };
+
+        /* the names are different (ZXDG_TOPLEVEL_V6_RESIZE_EDGE_* vs
+           WL_SHELL_SURFACE_RESIZE_*), but the values are the same. */
+        const uint32_t *directions_zxdg = directions_wl;
+
         switch (rc) {
             case SDL_HITTEST_DRAGGABLE:
-                wl_shell_surface_move(window_data->shell_surface, input->seat, serial);
+                if (input->display->shell.zxdg) {
+                    zxdg_toplevel_v6_move(window_data->shell_surface.zxdg.roleobj.toplevel, input->seat, serial);
+                } else {
+                    wl_shell_surface_move(window_data->shell_surface.wl, input->seat, serial);
+                }
                 return SDL_TRUE;
 
             case SDL_HITTEST_RESIZE_TOPLEFT:
@@ -267,7 +278,11 @@ ProcessHitTest(struct SDL_WaylandInput *input, uint32_t serial)
             case SDL_HITTEST_RESIZE_BOTTOM:
             case SDL_HITTEST_RESIZE_BOTTOMLEFT:
             case SDL_HITTEST_RESIZE_LEFT:
-                wl_shell_surface_resize(window_data->shell_surface, input->seat, serial, directions[rc - SDL_HITTEST_RESIZE_TOPLEFT]);
+                if (input->display->shell.zxdg) {
+                    zxdg_toplevel_v6_resize(window_data->shell_surface.zxdg.roleobj.toplevel, input->seat, serial, directions_zxdg[rc - SDL_HITTEST_RESIZE_TOPLEFT]);
+                } else {
+                    wl_shell_surface_resize(window_data->shell_surface.wl, input->seat, serial, directions_wl[rc - SDL_HITTEST_RESIZE_TOPLEFT]);
+                }
                 return SDL_TRUE;
 
             default: return SDL_FALSE;
@@ -950,6 +965,7 @@ SDL_WaylandDataDevice* Wayland_get_data_device(struct SDL_WaylandInput *input)
     return input->data_device;
 }
 
+/* !!! FIXME: just merge these into display_handle_global(). */
 void Wayland_display_add_relative_pointer_manager(SDL_VideoData *d, uint32_t id)
 {
     d->relative_pointer_manager =
