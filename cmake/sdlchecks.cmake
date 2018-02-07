@@ -610,7 +610,7 @@ macro(WaylandProtocolGen _SCANNER _XML _PROTL)
         ARGS code "${_XML}" "${_WAYLAND_PROT_C_CODE}"
     )
 
-    set(SOURCE_FILES ${SOURCE_FILES} "${CMAKE_CURRENT_BINARY_DIR}/wayland-generated-protocols/${_PROTL}-protocol.c")
+    set(SOURCE_FILES ${SOURCE_FILES} "${_WAYLAND_PROT_C_CODE}")
 endmacro()
 
 # Requires:
