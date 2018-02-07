@@ -1580,7 +1580,7 @@ AC_HELP_STRING([--enable-video-rpi], [use Raspberry Pi video driver [[default=ye
             RPI_LDFLAGS="-Wl,-R/usr/pkg/lib -L/usr/pkg/lib -lbcm_host"
         else
             RPI_CFLAGS="-I/opt/vc/include -I/opt/vc/include/interface/vcos/pthreads -I/opt/vc/include/interface/vmcs_host/linux"
-            RPI_LDFLAGS="-L/opt/vc/lib -lbcm_host"
+            RPI_LDFLAGS="-Wl,-rpath,/opt/vc/lib -L/opt/vc/lib -lbcm_host"
         fi
 
         # Save the original compiler flags and libraries
