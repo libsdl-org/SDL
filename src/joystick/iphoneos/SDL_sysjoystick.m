@@ -60,6 +60,7 @@ static SDL_JoystickDeviceItem *deviceList = NULL;
 
 static int numjoysticks = 0;
 static SDL_JoystickID instancecounter = 0;
+int SDL_AppleTVRemoteOpenedAsJoystick = 0;
 
 static SDL_JoystickDeviceItem *
 GetDeviceForIndex(int device_index)
@@ -116,6 +117,7 @@ SDL_SYS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *contr
 #if TARGET_OS_TV
     else if (controller.microGamepad) {
         device->guid.data[10] = 3;
+        device->remote = SDL_TRUE;
     }
 #endif /* TARGET_OS_TV */
 
@@ -455,6 +457,9 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
 #endif /* SDL_JOYSTICK_MFI */
         }
     }
+    if (device->remote) {
+        ++SDL_AppleTVRemoteOpenedAsJoystick;
+    }
 
     return 0;
 }
@@ -718,6 +723,9 @@ SDL_SYS_JoystickClose(SDL_Joystick * joystick)
             controller.playerIndex = -1;
 #endif
         }
+    }
+    if (device->remote) {
+        --SDL_AppleTVRemoteOpenedAsJoystick;
     }
 }
 
