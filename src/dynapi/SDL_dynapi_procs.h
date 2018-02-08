@@ -705,3 +705,5 @@ SDL_DYNAPI_PROC(SDL_WinRT_DeviceFamily,SDL_WinRTGetDeviceFamily,(void),(),return
 #ifdef __ANDROID__
 SDL_DYNAPI_PROC(SDL_bool,SDL_IsAndroidTV,(void),(),return)
 #endif
+SDL_DYNAPI_PROC(double,SDL_log10,(double a),(a),return)
+SDL_DYNAPI_PROC(float,SDL_log10f,(float a),(a),return)
