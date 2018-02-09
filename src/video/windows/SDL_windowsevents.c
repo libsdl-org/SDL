@@ -697,8 +697,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             int w, h;
             int min_w, min_h;
             int max_w, max_h;
-            int style;
-            BOOL menu;
             BOOL constrain_max_size;
 
             if (SDL_IsShapedWindow(data->window))
@@ -731,21 +729,23 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 constrain_max_size = FALSE;
             }
 
-            size.top = 0;
-            size.left = 0;
-            size.bottom = h;
-            size.right = w;
+            if (!(SDL_GetWindowFlags(data->window) & SDL_WINDOW_BORDERLESS)) {
+                LONG style = GetWindowLong(hwnd, GWL_STYLE);
+                /* DJM - according to the docs for GetMenu(), the
+                   return value is undefined if hwnd is a child window.
+                   Apparently it's too difficult for MS to check
+                   inside their function, so I have to do it here.
+                 */
+                BOOL menu = (style & WS_CHILDWINDOW) ? FALSE : (GetMenu(hwnd) != NULL);
+                size.top = 0;
+                size.left = 0;
+                size.bottom = h;
+                size.right = w;
 
-            style = GetWindowLong(hwnd, GWL_STYLE);
-            /* DJM - according to the docs for GetMenu(), the
-               return value is undefined if hwnd is a child window.
-               Apparently it's too difficult for MS to check
-               inside their function, so I have to do it here.
-             */
-            menu = (style & WS_CHILDWINDOW) ? FALSE : (GetMenu(hwnd) != NULL);
-            AdjustWindowRectEx(&size, style, menu, 0);
-            w = size.right - size.left;
-            h = size.bottom - size.top;
+                AdjustWindowRectEx(&size, style, menu, 0);
+                w = size.right - size.left;
+                h = size.bottom - size.top;
+            }
 
             /* Fix our size to the current size */
             info = (MINMAXINFO *) lParam;
