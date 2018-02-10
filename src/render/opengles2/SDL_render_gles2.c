@@ -290,7 +290,7 @@ static int GLES2_LoadFunctions(GLES2_DriverContext * data)
 #endif
 
 #if defined __SDL_NOGETPROCADDR__
-#define SDL_PROC(ret,func,params) data->func=func;
+#define SDL_PROC(ret,func,params) *(void**)&data->func=func;
 #else
 #define SDL_PROC(ret,func,params) \
     do { \
