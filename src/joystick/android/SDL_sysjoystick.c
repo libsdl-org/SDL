@@ -34,6 +34,7 @@
 #include "SDL_log.h"
 #include "SDL_sysjoystick_c.h"
 #include "../SDL_joystick_c.h"
+#include "../../events/SDL_keyboard_c.h"
 #include "../../core/android/SDL_android.h"
 #include "../steam/SDL_steamcontroller.h"
 
