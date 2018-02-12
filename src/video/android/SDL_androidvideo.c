@@ -120,6 +120,7 @@ Android_CreateDevice(int devindex)
 
     device->CreateSDLWindow = Android_CreateWindow;
     device->SetWindowTitle = Android_SetWindowTitle;
+    device->SetWindowFullscreen = Android_SetWindowFullscreen;
     device->DestroyWindow = Android_DestroyWindow;
     device->GetWindowWMInfo = Android_GetWindowWMInfo;
 
@@ -220,7 +221,7 @@ Android_SetScreenResolution(int width, int height, Uint32 format, float rate)
     /*
       Update the resolution of the desktop mode, so that the window
       can be properly resized. The screen resolution change can for
-      example happen when the Activity enters or exists immersive mode,
+      example happen when the Activity enters or exits immersive mode,
       which can happen after VideoInit().
     */
     device = SDL_GetVideoDevice();
@@ -234,16 +235,17 @@ Android_SetScreenResolution(int width, int height, Uint32 format, float rate)
     }
 
     if (Android_Window) {
-        SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_RESIZED, width, height);
-
         /* Force the current mode to match the resize otherwise the SDL_WINDOWEVENT_RESTORED event
          * will fall back to the old mode */
         display = SDL_GetDisplayForWindow(Android_Window);
 
-        display->current_mode.format = format;
-        display->current_mode.w = width;
-        display->current_mode.h = height;
-        display->current_mode.refresh_rate = rate;
+        display->display_modes[0].format = format;
+        display->display_modes[0].w = width;
+        display->display_modes[0].h = height;
+        display->display_modes[0].refresh_rate = rate;
+        display->current_mode = display->display_modes[0];
+
+        SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_RESIZED, width, height);
     }
 }
 

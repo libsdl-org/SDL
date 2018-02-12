@@ -209,6 +209,7 @@ static jclass mActivityClass;
 /* method signatures */
 static jmethodID midGetNativeSurface;
 static jmethodID midSetActivityTitle;
+static jmethodID midSetWindowStyle;
 static jmethodID midSetOrientation;
 static jmethodID midGetContext;
 static jmethodID midIsAndroidTV;
@@ -302,6 +303,8 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv* mEnv, jclass c
                                 "getNativeSurface","()Landroid/view/Surface;");
     midSetActivityTitle = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
                                 "setActivityTitle","(Ljava/lang/String;)Z");
+    midSetWindowStyle = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
+                                "setWindowStyle","(Z)V");
     midSetOrientation = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
                                 "setOrientation","(IIZLjava/lang/String;)V");
     midGetContext = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
@@ -332,7 +335,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv* mEnv, jclass c
     midGetDisplayDPI = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass, "getDisplayDPI", "()Landroid/util/DisplayMetrics;");
 
     if (!midGetNativeSurface ||
-       !midSetActivityTitle || !midSetOrientation || !midGetContext || !midIsAndroidTV || !midInputGetInputDeviceIds ||
+       !midSetActivityTitle || !midSetWindowStyle || !midSetOrientation || !midGetContext || !midIsAndroidTV || !midInputGetInputDeviceIds ||
        !midSendMessage || !midShowTextInput || !midIsScreenKeyboardShown ||
        !midClipboardSetText || !midClipboardGetText || !midClipboardHasText ||
        !midOpenAPKExpansionInputStream || !midGetManifestEnvironmentVariables|| !midGetDisplayDPI) {
@@ -905,6 +908,12 @@ void Android_JNI_SetActivityTitle(const char *title)
     jstring jtitle = (jstring)((*mEnv)->NewStringUTF(mEnv, title));
     (*mEnv)->CallStaticBooleanMethod(mEnv, mActivityClass, midSetActivityTitle, jtitle);
     (*mEnv)->DeleteLocalRef(mEnv, jtitle);
+}
+
+void Android_JNI_SetWindowStyle(SDL_bool fullscreen)
+{
+    JNIEnv *mEnv = Android_JNI_GetEnv();
+    (*mEnv)->CallStaticVoidMethod(mEnv, mActivityClass, midSetWindowStyle, fullscreen ? 1 : 0);
 }
 
 void Android_JNI_SetOrientation(int w, int h, int resizable, const char *hint)

@@ -14,7 +14,7 @@ supported, but you can use the "android-project-ant" directory as a template.
  Requirements
 ================================================================================
 
-Android SDK (version 16 or later)
+Android SDK (version 19 or later)
 https://developer.android.com/sdk/index.html
 
 Android NDK r10e or later
