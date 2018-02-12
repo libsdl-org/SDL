@@ -33,7 +33,7 @@ static int
 LoadDBUSSyms(void)
 {
     #define SDL_DBUS_SYM2(x, y) \
-        if (!(*(void**)&dbus.x = SDL_LoadFunction(dbus_handle, #y))) return -1
+        if (!(dbus.x = SDL_LoadFunction(dbus_handle, #y))) return -1
         
     #define SDL_DBUS_SYM(x) \
         SDL_DBUS_SYM2(x, dbus_##x)

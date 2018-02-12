@@ -119,15 +119,15 @@ WIN_GL_LoadLibrary(_THIS, const char *path)
 
     /* Load function pointers */
     handle = _this->gl_config.dll_handle;
-    *(void**)&_this->gl_data->wglGetProcAddress =
+    _this->gl_data->wglGetProcAddress = (void *(WINAPI *) (const char *))
         SDL_LoadFunction(handle, "wglGetProcAddress");
-    *(void**)&_this->gl_data->wglCreateContext =
+    _this->gl_data->wglCreateContext = (HGLRC(WINAPI *) (HDC))
         SDL_LoadFunction(handle, "wglCreateContext");
-    *(void**)&_this->gl_data->wglDeleteContext =
+    _this->gl_data->wglDeleteContext = (BOOL(WINAPI *) (HGLRC))
         SDL_LoadFunction(handle, "wglDeleteContext");
-    *(void**)&_this->gl_data->wglMakeCurrent =
+    _this->gl_data->wglMakeCurrent = (BOOL(WINAPI *) (HDC, HGLRC))
         SDL_LoadFunction(handle, "wglMakeCurrent");
-    *(void**)&_this->gl_data->wglShareLists =
+    _this->gl_data->wglShareLists = (BOOL(WINAPI *) (HGLRC, HGLRC))
         SDL_LoadFunction(handle, "wglShareLists");
 
     if (!_this->gl_data->wglGetProcAddress ||
@@ -409,7 +409,7 @@ WIN_GL_InitExtensions(_THIS)
     }
     _this->gl_data->wglMakeCurrent(hdc, hglrc);
 
-    *(void**)&wglGetExtensionsStringARB =
+    wglGetExtensionsStringARB = (const char *(WINAPI *) (HDC))
         _this->gl_data->wglGetProcAddress("wglGetExtensionsStringARB");
     if (wglGetExtensionsStringARB) {
         extensions = wglGetExtensionsStringARB(hdc);
@@ -420,9 +420,13 @@ WIN_GL_InitExtensions(_THIS)
     /* Check for WGL_ARB_pixel_format */
     _this->gl_data->HAS_WGL_ARB_pixel_format = SDL_FALSE;
     if (HasExtension("WGL_ARB_pixel_format", extensions)) {
-        *(void**)&_this->gl_data->wglChoosePixelFormatARB =
+        _this->gl_data->wglChoosePixelFormatARB = (BOOL(WINAPI *)
+                                                   (HDC, const int *,
+                                                    const FLOAT *, UINT,
+                                                    int *, UINT *))
             WIN_GL_GetProcAddress(_this, "wglChoosePixelFormatARB");
-        *(void**)&_this->gl_data->wglGetPixelFormatAttribivARB =
+        _this->gl_data->wglGetPixelFormatAttribivARB =
+            (BOOL(WINAPI *) (HDC, int, int, UINT, const int *, int *))
             WIN_GL_GetProcAddress(_this, "wglGetPixelFormatAttribivARB");
 
         if ((_this->gl_data->wglChoosePixelFormatARB != NULL) &&
@@ -434,9 +438,9 @@ WIN_GL_InitExtensions(_THIS)
     /* Check for WGL_EXT_swap_control */
     _this->gl_data->HAS_WGL_EXT_swap_control_tear = SDL_FALSE;
     if (HasExtension("WGL_EXT_swap_control", extensions)) {
-        *(void**)&_this->gl_data->wglSwapIntervalEXT =
+        _this->gl_data->wglSwapIntervalEXT =
             WIN_GL_GetProcAddress(_this, "wglSwapIntervalEXT");
-        *(void**)&_this->gl_data->wglGetSwapIntervalEXT =
+        _this->gl_data->wglGetSwapIntervalEXT =
             WIN_GL_GetProcAddress(_this, "wglGetSwapIntervalEXT");
         if (HasExtension("WGL_EXT_swap_control_tear", extensions)) {
             _this->gl_data->HAS_WGL_EXT_swap_control_tear = SDL_TRUE;
@@ -717,8 +721,9 @@ WIN_GL_CreateContext(_THIS, SDL_Window * window)
             return NULL;
         }
 
-        *(void**)&wglCreateContextAttribsARB =
-            _this->gl_data->wglGetProcAddress("wglCreateContextAttribsARB");
+        wglCreateContextAttribsARB =
+            (PFNWGLCREATECONTEXTATTRIBSARBPROC) _this->gl_data->
+            wglGetProcAddress("wglCreateContextAttribsARB");
         if (!wglCreateContextAttribsARB) {
             SDL_SetError("GL 3.x is not supported");
             context = temp_context;
