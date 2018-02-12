@@ -213,19 +213,7 @@ public class SDLActivity extends Activity {
 
         setContentView(mLayout);
 
-        /* 
-         * Per SDL_androidwindow.c, Android will only ever have one window, and that window 
-         * is always flagged SDL_WINDOW_FULLSCREEN.  Let's treat it as an immersive fullscreen 
-         * window for Android UI purposes, as a result.
-         */
-        int iFlags = 
-            //View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY | // Only available since API 19
-            View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
-            View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
-            View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
-            View.SYSTEM_UI_FLAG_FULLSCREEN;
-
-        getWindow().getDecorView().setSystemUiVisibility(iFlags);        
+        setWindowStyle(false);
 
         // Get filename from "Open with" of another application
         Intent intent = getIntent();
@@ -408,7 +396,7 @@ public class SDLActivity extends Activity {
 
     // Messages from the SDLMain thread
     static final int COMMAND_CHANGE_TITLE = 1;
-    static final int COMMAND_UNUSED = 2;
+    static final int COMMAND_CHANGE_WINDOW_STYLE = 2;
     static final int COMMAND_TEXTEDIT_HIDE = 3;
     static final int COMMAND_SET_KEEP_SCREEN_ON = 5;
 
@@ -443,6 +431,29 @@ public class SDLActivity extends Activity {
             case COMMAND_CHANGE_TITLE:
                 if (context instanceof Activity) {
                     ((Activity) context).setTitle((String)msg.obj);
+                } else {
+                    Log.e(TAG, "error handling message, getContext() returned no Activity");
+                }
+                break;
+            case COMMAND_CHANGE_WINDOW_STYLE:
+                if (context instanceof Activity) {
+                    Window window = ((Activity) context).getWindow();
+                    if (window != null) {
+                        if ((msg.obj instanceof Integer) && (((Integer) msg.obj).intValue() != 0)) {
+                            int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE |
+                                        View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
+                                        View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
+                                        View.SYSTEM_UI_FLAG_HIDE_NAVIGATION |
+                                        View.SYSTEM_UI_FLAG_FULLSCREEN |
+                                        View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+                            window.getDecorView().setSystemUiVisibility(flags);        
+                            window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                        } else {
+                            int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE;
+                            window.getDecorView().setSystemUiVisibility(flags);        
+                            window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                        }
+                    }
                 } else {
                     Log.e(TAG, "error handling message, getContext() returned no Activity");
                 }
@@ -522,6 +533,14 @@ public class SDLActivity extends Activity {
     public static boolean setActivityTitle(String title) {
         // Called from SDLMain() thread and can't directly affect the view
         return mSingleton.sendCommand(COMMAND_CHANGE_TITLE, title);
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
+    public static void setWindowStyle(boolean fullscreen) {
+        // Called from SDLMain() thread and can't directly affect the view
+        mSingleton.sendCommand(COMMAND_CHANGE_WINDOW_STYLE, fullscreen ? 1 : 0);
     }
 
     /**
@@ -637,7 +656,7 @@ public class SDLActivity extends Activity {
             if (bundle == null) {
                 return false;
             }
-			String prefix = "SDL_ENV.";
+            String prefix = "SDL_ENV.";
             final int trimLength = prefix.length();
             for (String key : bundle.keySet()) {
                 if (key.startsWith(prefix)) {

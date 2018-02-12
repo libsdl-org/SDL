@@ -28,6 +28,7 @@
 
 extern int Android_CreateWindow(_THIS, SDL_Window * window);
 extern void Android_SetWindowTitle(_THIS, SDL_Window * window);
+extern void Android_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen);
 extern void Android_DestroyWindow(_THIS, SDL_Window * window);
 extern SDL_bool Android_GetWindowWMInfo(_THIS, SDL_Window * window, struct SDL_SysWMinfo * info);
 

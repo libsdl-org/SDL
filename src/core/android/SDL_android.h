@@ -34,6 +34,7 @@ extern "C" {
 
 /* Interface from the SDL library into the Android Java activity */
 extern void Android_JNI_SetActivityTitle(const char *title);
+extern void Android_JNI_SetWindowStyle(SDL_bool fullscreen);
 extern void Android_JNI_SetOrientation(int w, int h, int resizable, const char *hint);
 
 extern SDL_bool Android_JNI_GetAccelerometerValues(float values[3]);
