@@ -21314,6 +21314,8 @@ $as_echo "#define SDL_VIDEO_RENDER_METAL 1" >>confdefs.h
 
             SOURCES="$SOURCES $srcdir/src/render/metal/*.m"
             SUMMARY_video="${SUMMARY_video} metal"
+        else
+            enable_render_metal=no
         fi
     fi
 }
