@@ -256,8 +256,8 @@ WASAPI_PlatformInit(void)
 
     libavrt = LoadLibraryW(L"avrt.dll");  /* this library is available in Vista and later. No WinXP, so have to LoadLibrary to use it for now! */
     if (libavrt) {
-        *(void **)&pAvSetMmThreadCharacteristicsW = GetProcAddress(libavrt, "AvSetMmThreadCharacteristicsW");
-        *(void **)&pAvRevertMmThreadCharacteristics = GetProcAddress(libavrt, "AvRevertMmThreadCharacteristics");
+        pAvSetMmThreadCharacteristicsW = (pfnAvSetMmThreadCharacteristicsW) GetProcAddress(libavrt, "AvSetMmThreadCharacteristicsW");
+        pAvRevertMmThreadCharacteristics = (pfnAvRevertMmThreadCharacteristics) GetProcAddress(libavrt, "AvRevertMmThreadCharacteristics");
     }
 
     return 0;

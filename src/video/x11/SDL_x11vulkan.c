@@ -57,14 +57,14 @@ int X11_Vulkan_LoadLibrary(_THIS, const char *path)
     if(!_this->vulkan_config.loader_handle)
         return -1;
     SDL_strlcpy(_this->vulkan_config.loader_path, path, SDL_arraysize(_this->vulkan_config.loader_path));
-    *(void**)&vkGetInstanceProcAddr = SDL_LoadFunction(
+    vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)SDL_LoadFunction(
         _this->vulkan_config.loader_handle, "vkGetInstanceProcAddr");
     if(!vkGetInstanceProcAddr)
         goto fail;
-    _this->vulkan_config.vkGetInstanceProcAddr = vkGetInstanceProcAddr;
+    _this->vulkan_config.vkGetInstanceProcAddr = (void *)vkGetInstanceProcAddr;
     _this->vulkan_config.vkEnumerateInstanceExtensionProperties =
-        (PFN_vkEnumerateInstanceExtensionProperties)
-        _this->vulkan_config.vkGetInstanceProcAddr(VK_NULL_HANDLE, "vkEnumerateInstanceExtensionProperties");
+        (void *)((PFN_vkGetInstanceProcAddr)_this->vulkan_config.vkGetInstanceProcAddr)(
+            VK_NULL_HANDLE, "vkEnumerateInstanceExtensionProperties");
     if(!_this->vulkan_config.vkEnumerateInstanceExtensionProperties)
         goto fail;
     extensions = SDL_Vulkan_CreateInstanceExtensionsList(
@@ -108,7 +108,7 @@ int X11_Vulkan_LoadLibrary(_THIS, const char *path)
         videoData->vulkan_xlib_xcb_library = SDL_LoadObject(libX11XCBLibraryName);
         if(!videoData->vulkan_xlib_xcb_library)
             goto fail;
-        *(void**)&videoData->vulkan_XGetXCBConnection =
+        videoData->vulkan_XGetXCBConnection =
             SDL_LoadFunction(videoData->vulkan_xlib_xcb_library, "XGetXCBConnection");
         if(!videoData->vulkan_XGetXCBConnection)
         {

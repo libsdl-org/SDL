@@ -82,7 +82,7 @@ SDL_SoftBlit(SDL_Surface * src, SDL_Rect * srcrect,
         info->dst_pitch = dst->pitch;
         info->dst_skip =
             info->dst_pitch - info->dst_w * info->dst_fmt->BytesPerPixel;
-        *(void**)&RunBlit = src->map->data;
+        RunBlit = (SDL_BlitFunc) src->map->data;
 
         /* Run the actual software blit */
         RunBlit(info);
@@ -282,7 +282,7 @@ SDL_CalculateBlit(SDL_Surface * surface)
             blit = SDL_Blit_Slow;
         }
     }
-    *(SDL_BlitFunc *)&map->data = blit;
+    map->data = blit;
 
     /* Make sure we have a blit function */
     if (blit == NULL) {

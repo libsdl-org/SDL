@@ -50,7 +50,7 @@ SDL_GetBasePath(void)
         return NULL;
     }
 
-    *(void**)&pGetModuleFileNameExW = GetProcAddress(psapi, "GetModuleFileNameExW");
+    pGetModuleFileNameExW = (GetModuleFileNameExW_t)GetProcAddress(psapi, "GetModuleFileNameExW");
     if (!pGetModuleFileNameExW) {
         WIN_SetError("Couldn't find GetModuleFileNameExW");
         FreeLibrary(psapi);

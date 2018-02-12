@@ -113,16 +113,16 @@ WIN_CreateDevice(int devindex)
 
     data->userDLL = SDL_LoadObject("USER32.DLL");
     if (data->userDLL) {
-        *(void**)&data->CloseTouchInputHandle = SDL_LoadFunction(data->userDLL, "CloseTouchInputHandle");
-        *(void**)&data->GetTouchInputInfo = SDL_LoadFunction(data->userDLL, "GetTouchInputInfo");
-        *(void**)&data->RegisterTouchWindow = SDL_LoadFunction(data->userDLL, "RegisterTouchWindow");
+        data->CloseTouchInputHandle = (BOOL (WINAPI *)(HTOUCHINPUT)) SDL_LoadFunction(data->userDLL, "CloseTouchInputHandle");
+        data->GetTouchInputInfo = (BOOL (WINAPI *)(HTOUCHINPUT, UINT, PTOUCHINPUT, int)) SDL_LoadFunction(data->userDLL, "GetTouchInputInfo");
+        data->RegisterTouchWindow = (BOOL (WINAPI *)(HWND, ULONG)) SDL_LoadFunction(data->userDLL, "RegisterTouchWindow");
     } else {
         SDL_ClearError();
     }
 
     data->shcoreDLL = SDL_LoadObject("SHCORE.DLL");
     if (data->shcoreDLL) {
-        *(void**)&data->GetDpiForMonitor = SDL_LoadFunction(data->shcoreDLL, "GetDpiForMonitor");
+        data->GetDpiForMonitor = (HRESULT (WINAPI *)(HMONITOR, MONITOR_DPI_TYPE, UINT *, UINT *)) SDL_LoadFunction(data->shcoreDLL, "GetDpiForMonitor");
     } else {
         SDL_ClearError();
     }
@@ -256,7 +256,7 @@ D3D_LoadDLL(void **pD3DDLL, IDirect3D9 **pDirect3D9Interface)
         typedef HRESULT (WINAPI *Direct3DCreate9Ex_t)(UINT SDKVersion, IDirect3D9Ex **ppD3D);
         Direct3DCreate9Ex_t Direct3DCreate9ExFunc;
 
-        *(void**)&Direct3DCreate9ExFunc = SDL_LoadFunction(*pD3DDLL, "Direct3DCreate9Ex");
+        Direct3DCreate9ExFunc = (Direct3DCreate9Ex_t)SDL_LoadFunction(*pD3DDLL, "Direct3DCreate9Ex");
         if (Direct3DCreate9ExFunc) {
             IDirect3D9Ex *pDirect3D9ExInterface;
             HRESULT hr = Direct3DCreate9ExFunc(D3D_SDK_VERSION, &pDirect3D9ExInterface);
@@ -271,7 +271,7 @@ D3D_LoadDLL(void **pD3DDLL, IDirect3D9 **pDirect3D9Interface)
         }
 #endif /* USE_D3D9EX */
 
-        *(void**)&Direct3DCreate9Func = SDL_LoadFunction(*pD3DDLL, "Direct3DCreate9");
+        Direct3DCreate9Func = (Direct3DCreate9_t)SDL_LoadFunction(*pD3DDLL, "Direct3DCreate9");
         if (Direct3DCreate9Func) {
             *pDirect3D9Interface = Direct3DCreate9Func(D3D_SDK_VERSION);
             if (*pDirect3D9Interface) {
@@ -338,7 +338,9 @@ DXGI_LoadDLL(void **pDXGIDLL, IDXGIFactory **pDXGIFactory)
     if (*pDXGIDLL) {
         HRESULT (WINAPI *CreateDXGI)(REFIID riid, void **ppFactory);
 
-        *(void**)&CreateDXGI = SDL_LoadFunction(*pDXGIDLL, "CreateDXGIFactory");
+        CreateDXGI =
+            (HRESULT (WINAPI *) (REFIID, void**)) SDL_LoadFunction(*pDXGIDLL,
+            "CreateDXGIFactory");
         if (CreateDXGI) {
             GUID dxgiGUID = {0x7b7166ec,0x21c7,0x44ae,{0xb2,0x1a,0xc9,0xae,0x32,0x1a,0xe3,0x69}};
             if (!SUCCEEDED(CreateDXGI(&dxgiGUID, (void**)pDXGIFactory))) {
