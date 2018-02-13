@@ -685,7 +685,7 @@ macro(CheckWayland)
 
       WaylandProtocolGen("${WAYLAND_SCANNER}" "${WAYLAND_CORE_PROTOCOL_DIR}/wayland.xml" "wayland")
 
-      foreach(_PROTL relative-pointer-unstable-v1 pointer-constraints-unstable-v1, xdg-shell-unstable-v6)
+      foreach(_PROTL relative-pointer-unstable-v1 pointer-constraints-unstable-v1 xdg-shell-unstable-v6)
         string(REGEX REPLACE "\\-unstable\\-.*$" "" PROTSUBDIR ${_PROTL})
         WaylandProtocolGen("${WAYLAND_SCANNER}" "${WAYLAND_PROTOCOLS_DIR}/unstable/${PROTSUBDIR}/${_PROTL}.xml" "${_PROTL}")
       endforeach()
