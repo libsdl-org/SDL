@@ -299,7 +299,7 @@ IBus_SetCapabilities(void *data, const char *name, const char *old_val,
             caps |= IBUS_CAP_PREEDIT_TEXT;
         }
 
-        SDL_DBus_CallVoidMethod(IBUS_SERVICE, input_ctx_path, IBUS_INPUT_INTERFACE, "SetCapabilities",
+        SDL_DBus_CallVoidMethodOnConnection(ibus_conn, IBUS_SERVICE, input_ctx_path, IBUS_INPUT_INTERFACE, "SetCapabilities",
                                 DBUS_TYPE_UINT32, &caps, DBUS_TYPE_INVALID);
     }
 }
@@ -341,6 +341,7 @@ IBus_SetupConnection(SDL_DBusContext *dbus, const char* addr)
         dbus->bus_add_match(ibus_conn, "type='signal',interface='org.freedesktop.IBus.InputContext'", NULL);
         dbus->connection_try_register_object_path(ibus_conn, input_ctx_path, &ibus_vtable, dbus, NULL);
         dbus->connection_flush(ibus_conn);
+        result = SDL_TRUE;
     }
 
     SDL_IBus_SetFocus(SDL_GetKeyboardFocus() != NULL);
