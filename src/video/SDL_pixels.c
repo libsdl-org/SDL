@@ -490,16 +490,20 @@ SDL_MasksToPixelFormatEnum(int bpp, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask,
 }
 
 static SDL_PixelFormat *formats;
+static SDL_SpinLock formats_lock = 0;
 
 SDL_PixelFormat *
 SDL_AllocFormat(Uint32 pixel_format)
 {
     SDL_PixelFormat *format;
 
+    SDL_AtomicLock(&formats_lock);
+
     /* Look it up in our list of previously allocated formats */
     for (format = formats; format; format = format->next) {
         if (pixel_format == format->format) {
             ++format->refcount;
+            SDL_AtomicUnlock(&formats_lock);
             return format;
         }
     }
@@ -507,10 +511,12 @@ SDL_AllocFormat(Uint32 pixel_format)
     /* Allocate an empty pixel format structure, and initialize it */
     format = SDL_malloc(sizeof(*format));
     if (format == NULL) {
+        SDL_AtomicUnlock(&formats_lock);
         SDL_OutOfMemory();
         return NULL;
     }
     if (SDL_InitFormat(format, pixel_format) < 0) {
+        SDL_AtomicUnlock(&formats_lock);
         SDL_free(format);
         SDL_InvalidParamError("format");
         return NULL;
@@ -521,6 +527,9 @@ SDL_AllocFormat(Uint32 pixel_format)
         format->next = formats;
         formats = format;
     }
+
+    SDL_AtomicUnlock(&formats_lock);
+
     return format;
 }
 
@@ -598,7 +607,11 @@ SDL_FreeFormat(SDL_PixelFormat *format)
         SDL_InvalidParamError("format");
         return;
     }
+
+    SDL_AtomicLock(&formats_lock);
+
     if (--format->refcount > 0) {
+        SDL_AtomicUnlock(&formats_lock);
         return;
     }
 
@@ -613,6 +626,8 @@ SDL_FreeFormat(SDL_PixelFormat *format)
             }
         }
     }
+
+    SDL_AtomicUnlock(&formats_lock);
 
     if (format->palette) {
         SDL_FreePalette(format->palette);
