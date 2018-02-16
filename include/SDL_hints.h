@@ -212,6 +212,18 @@ extern "C" {
 #define SDL_HINT_VIDEO_X11_NET_WM_PING      "SDL_VIDEO_X11_NET_WM_PING"
 
 /**
+ * \brief A variable controlling whether the X11 _NET_WM_BYPASS_COMPOSITOR hint should be used.
+ * 
+ * This variable can be set to the following values:
+ * "0" - Disable _NET_WM_BYPASS_COMPOSITOR
+ * "1" - Enable _NET_WM_BYPASS_COMPOSITOR
+ * 
+ * By default SDL will use _NET_WM_BYPASS_COMPOSITOR
+ * 
+ */
+#define SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR "SDL_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR"
+
+/**
  *  \brief  A variable controlling whether the window frame and title bar are interactive when the cursor is hidden 
  *
  *  This variable can be set to the following values:
