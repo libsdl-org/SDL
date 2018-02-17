@@ -250,12 +250,6 @@ getAppName(void)
 }
 
 static void
-stream_operation_complete_no_op(pa_stream *s, int success, void *userdata)
-{
-    /* no-op for pa_stream_drain(), etc, to use for callback. */
-}
-
-static void
 WaitForPulseOperation(pa_mainloop *mainloop, pa_operation *o)
 {
     /* This checks for NO errors currently. Either fix that, check results elsewhere, or do things you don't care about. */
@@ -426,6 +420,8 @@ static void
 PULSEAUDIO_FlushCapture(_THIS)
 {
     struct SDL_PrivateAudioData *h = this->hidden;
+    const void *data = NULL;
+    size_t nbytes = 0;
 
     if (h->capturebuf != NULL) {
         PULSEAUDIO_pa_stream_drop(h->stream);
@@ -433,7 +429,22 @@ PULSEAUDIO_FlushCapture(_THIS)
         h->capturelen = 0;
     }
 
-    WaitForPulseOperation(h->mainloop, PULSEAUDIO_pa_stream_flush(h->stream, stream_operation_complete_no_op, NULL));
+    while (SDL_TRUE) {
+        if (PULSEAUDIO_pa_context_get_state(h->context) != PA_CONTEXT_READY ||
+            PULSEAUDIO_pa_stream_get_state(h->stream) != PA_STREAM_READY ||
+            PULSEAUDIO_pa_mainloop_iterate(h->mainloop, 1, NULL) < 0) {
+            SDL_OpenedAudioDeviceDisconnected(this);
+            return;  /* uhoh, pulse failed! */
+        }
+
+        if (PULSEAUDIO_pa_stream_readable_size(h->stream) == 0) {
+            break;  /* no data available, so we're done. */
+        }
+
+        /* a new fragment is available! Just dump it. */
+        PULSEAUDIO_pa_stream_peek(h->stream, &data, &nbytes);
+        PULSEAUDIO_pa_stream_drop(h->stream);  /* drop this fragment. */
+    }
 }
 
 static void
