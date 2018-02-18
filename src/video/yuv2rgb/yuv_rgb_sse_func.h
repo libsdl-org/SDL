@@ -416,8 +416,8 @@ void SSE_FUNCTION_NAME(uint32_t width, uint32_t height,
 #endif
 
 	if (width >= 32) {
-		uint32_t x, y;
-		for(y=0; y<(height-(uv_y_sample_interval-1)); y+=uv_y_sample_interval)
+		uint32_t xpos, ypos;
+		for(ypos=0; ypos<(height-(uv_y_sample_interval-1)); ypos+=uv_y_sample_interval)
 		{
 			const uint8_t *y_ptr1=Y+y*Y_stride,
 				*y_ptr2=Y+(y+1)*Y_stride,
@@ -427,7 +427,7 @@ void SSE_FUNCTION_NAME(uint32_t width, uint32_t height,
 			uint8_t *rgb_ptr1=RGB+y*RGB_stride,
 				*rgb_ptr2=RGB+(y+1)*RGB_stride;
 			
-			for(x=0; x<(width-31); x+=32)
+			for(xpos=0; xpos<(width-31); xpos+=32)
 			{
 				YUV2RGB_32
 				{
@@ -449,7 +449,7 @@ void SSE_FUNCTION_NAME(uint32_t width, uint32_t height,
 		}
 
 		/* Catch the last line, if needed */
-		if (uv_y_sample_interval == 2 && y == (height-1))
+		if (uv_y_sample_interval == 2 && ypos == (height-1))
 		{
 			const uint8_t *y_ptr=Y+y*Y_stride,
 				*u_ptr=U+(y/uv_y_sample_interval)*UV_stride,
