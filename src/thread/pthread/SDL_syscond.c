@@ -42,7 +42,7 @@ SDL_CreateCond(void)
 
     cond = (SDL_cond *) SDL_malloc(sizeof(SDL_cond));
     if (cond) {
-        if (pthread_cond_init(&cond->cond, NULL) < 0) {
+        if (pthread_cond_init(&cond->cond, NULL) != 0) {
             SDL_SetError("pthread_cond_init() failed");
             SDL_free(cond);
             cond = NULL;

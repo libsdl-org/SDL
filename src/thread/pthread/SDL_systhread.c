@@ -212,7 +212,7 @@ SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
     int policy;
     pthread_t thread = pthread_self();
 
-    if (pthread_getschedparam(thread, &policy, &sched) < 0) {
+    if (pthread_getschedparam(thread, &policy, &sched) != 0) {
         return SDL_SetError("pthread_getschedparam() failed");
     }
     if (priority == SDL_THREAD_PRIORITY_LOW) {
@@ -224,7 +224,7 @@ SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
         int max_priority = sched_get_priority_max(policy);
         sched.sched_priority = (min_priority + (max_priority - min_priority) / 2);
     }
-    if (pthread_setschedparam(thread, policy, &sched) < 0) {
+    if (pthread_setschedparam(thread, policy, &sched) != 0) {
         return SDL_SetError("pthread_setschedparam() failed");
     }
     return 0;
