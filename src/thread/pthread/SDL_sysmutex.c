@@ -105,7 +105,7 @@ SDL_LockMutex(SDL_mutex * mutex)
         }
     }
 #else
-    if (pthread_mutex_lock(&mutex->id) < 0) {
+    if (pthread_mutex_lock(&mutex->id) != 0) {
         return SDL_SetError("pthread_mutex_lock() failed");
     }
 #endif
@@ -181,7 +181,7 @@ SDL_UnlockMutex(SDL_mutex * mutex)
     }
 
 #else
-    if (pthread_mutex_unlock(&mutex->id) < 0) {
+    if (pthread_mutex_unlock(&mutex->id) != 0) {
         return SDL_SetError("pthread_mutex_unlock() failed");
     }
 #endif /* FAKE_RECURSIVE_MUTEX */
