@@ -451,7 +451,9 @@ SDL_GetPlatform()
 #endif
 }
 
-#if defined(__WIN32__) && defined(__WATCOMC__) && defined(BUILD_DLL)
+#if defined(__WIN32__)
+
+#if !defined(HAVE_LIBC) || (defined(__WATCOMC__) && defined(BUILD_DLL))
 /* Need to include DllMain() on Watcom C for some reason.. */
 
 BOOL APIENTRY
@@ -468,5 +470,7 @@ _DllMainCRTStartup(HANDLE hModule,
     return TRUE;
 }
 #endif /* building DLL with Watcom C */
+
+#endif /* __WIN32__ */
 
 /* vi: set sts=4 ts=4 sw=4 expandtab: */
