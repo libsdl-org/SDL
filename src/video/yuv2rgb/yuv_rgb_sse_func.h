@@ -419,13 +419,13 @@ void SSE_FUNCTION_NAME(uint32_t width, uint32_t height,
 		uint32_t xpos, ypos;
 		for(ypos=0; ypos<(height-(uv_y_sample_interval-1)); ypos+=uv_y_sample_interval)
 		{
-			const uint8_t *y_ptr1=Y+y*Y_stride,
-				*y_ptr2=Y+(y+1)*Y_stride,
-				*u_ptr=U+(y/uv_y_sample_interval)*UV_stride,
-				*v_ptr=V+(y/uv_y_sample_interval)*UV_stride;
+			const uint8_t *y_ptr1=Y+ypos*Y_stride,
+				*y_ptr2=Y+(ypos+1)*Y_stride,
+				*u_ptr=U+(ypos/uv_y_sample_interval)*UV_stride,
+				*v_ptr=V+(ypos/uv_y_sample_interval)*UV_stride;
 			
-			uint8_t *rgb_ptr1=RGB+y*RGB_stride,
-				*rgb_ptr2=RGB+(y+1)*RGB_stride;
+			uint8_t *rgb_ptr1=RGB+ypos*RGB_stride,
+				*rgb_ptr2=RGB+(ypos+1)*RGB_stride;
 			
 			for(xpos=0; xpos<(width-31); xpos+=32)
 			{
@@ -451,11 +451,11 @@ void SSE_FUNCTION_NAME(uint32_t width, uint32_t height,
 		/* Catch the last line, if needed */
 		if (uv_y_sample_interval == 2 && ypos == (height-1))
 		{
-			const uint8_t *y_ptr=Y+y*Y_stride,
-				*u_ptr=U+(y/uv_y_sample_interval)*UV_stride,
-				*v_ptr=V+(y/uv_y_sample_interval)*UV_stride;
+			const uint8_t *y_ptr=Y+ypos*Y_stride,
+				*u_ptr=U+(ypos/uv_y_sample_interval)*UV_stride,
+				*v_ptr=V+(ypos/uv_y_sample_interval)*UV_stride;
 			
-			uint8_t *rgb_ptr=RGB+y*RGB_stride;
+			uint8_t *rgb_ptr=RGB+ypos*RGB_stride;
 
 			STD_FUNCTION_NAME(width, 1, y_ptr, u_ptr, v_ptr, Y_stride, UV_stride, rgb_ptr, RGB_stride, yuv_type);
 		}
