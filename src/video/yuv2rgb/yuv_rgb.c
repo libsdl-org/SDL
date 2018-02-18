@@ -622,13 +622,13 @@ void rgb24_yuv420_sse(uint32_t width, uint32_t height,
 	uint32_t xpos, ypos;
 	for(ypos=0; ypos<(height-1); ypos+=2)
 	{
-		const uint8_t *rgb_ptr1=RGB+y*RGB_stride,
-			*rgb_ptr2=RGB+(y+1)*RGB_stride;
+		const uint8_t *rgb_ptr1=RGB+ypos*RGB_stride,
+			*rgb_ptr2=RGB+(ypos+1)*RGB_stride;
 		
-		uint8_t *y_ptr1=Y+y*Y_stride,
-			*y_ptr2=Y+(y+1)*Y_stride,
-			*u_ptr=U+(y/2)*UV_stride,
-			*v_ptr=V+(y/2)*UV_stride;
+		uint8_t *y_ptr1=Y+ypos*Y_stride,
+			*y_ptr2=Y+(ypos+1)*Y_stride,
+			*u_ptr=U+(ypos/2)*UV_stride,
+			*v_ptr=V+(ypos/2)*UV_stride;
 		
 		for(xpos=0; xpos<(width-31); xpos+=32)
 		{
@@ -658,13 +658,13 @@ void rgb24_yuv420_sseu(uint32_t width, uint32_t height,
 	uint32_t xpos, ypos;
 	for(ypos=0; ypos<(height-1); ypos+=2)
 	{
-		const uint8_t *rgb_ptr1=RGB+y*RGB_stride,
-			*rgb_ptr2=RGB+(y+1)*RGB_stride;
+		const uint8_t *rgb_ptr1=RGB+ypos*RGB_stride,
+			*rgb_ptr2=RGB+(ypos+1)*RGB_stride;
 		
-		uint8_t *y_ptr1=Y+y*Y_stride,
-			*y_ptr2=Y+(y+1)*Y_stride,
-			*u_ptr=U+(y/2)*UV_stride,
-			*v_ptr=V+(y/2)*UV_stride;
+		uint8_t *y_ptr1=Y+ypos*Y_stride,
+			*y_ptr2=Y+(ypos+1)*Y_stride,
+			*u_ptr=U+(ypos/2)*UV_stride,
+			*v_ptr=V+(ypos/2)*UV_stride;
 		
 		for(xpos=0; xpos<(width-31); xpos+=32)
 		{
