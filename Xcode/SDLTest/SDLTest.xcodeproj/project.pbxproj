@@ -348,6 +348,53 @@
 		00794EF009D23739003FC8A1 /* utf8.txt in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E6309D20839003FC8A1 /* utf8.txt */; };
 		00794EF709D237DE003FC8A1 /* moose.dat in CopyFiles */ = {isa = PBXBuildFile; fileRef = 00794E5E09D20839003FC8A1 /* moose.dat */; };
 		453774A5120915E3002F0F45 /* testshape.c in Sources */ = {isa = PBXBuildFile; fileRef = 453774A4120915E3002F0F45 /* testshape.c */; };
+		66E88E5C203B733D0004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E5D203B73530004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E5E203B74490004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E5F203B74860004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E60203B74C20004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E61203B74CC0004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E62203B74D50004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E63203B74DC0004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E64203B74E50004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E65203B74EC0004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E66203B75140004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E67203B751D0004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E68203B75250004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E69203B75390004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E6A203B75450004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E6B203B754C0004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E6C203B75540004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E6D203B755B0004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E6E203B75620004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E6F203B756A0004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E70203B75710004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E71203B75780004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E72203B757F0004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E73203B758C0004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E74203B75AF0004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E75203B75B90004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E76203B75BF0004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E77203B75C70004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E78203B75CE0004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E79203B75D50004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E7A203B75DE0004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E7B203B75E40004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E7C203B75EB0004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E7D203B75F30004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E7E203B75F90004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E7F203B76000004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E80203B76060004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E81203B760D0004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E82203B76140004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E83203B761D0004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E84203B76230004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E85203B762D0004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E86203B76340004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E87203B763B0004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E88203B76420004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E89203B764A0004D44E /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 66E88E5B203B733C0004D44E /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
+		66E88E8B203B778F0004D44E /* testyuv_cvt.c in Sources */ = {isa = PBXBuildFile; fileRef = 66E88E8A203B778F0004D44E /* testyuv_cvt.c */; };
 		AAF02FFA1F90092700B9A9FB /* SDL_test_memory.c in Sources */ = {isa = PBXBuildFile; fileRef = AAF02FF41F90089800B9A9FB /* SDL_test_memory.c */; };
 		BBFC08C0164C6862003E6A99 /* Cocoa.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002F33A709CA188600EBEB88 /* Cocoa.framework */; };
 		BBFC08C1164C6862003E6A99 /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 002A863B10730545007319AE /* CoreAudio.framework */; };
@@ -1153,6 +1200,8 @@
 		092D6D75FFB313BB7F000001 /* testlock.c */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = sourcecode.c.c; name = testlock.c; path = ../../test/testlock.c; sourceTree = SOURCE_ROOT; };
 		4537749212091504002F0F45 /* testshape */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testshape; sourceTree = BUILT_PRODUCTS_DIR; };
 		453774A4120915E3002F0F45 /* testshape.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testshape.c; path = ../../test/testshape.c; sourceTree = SOURCE_ROOT; };
+		66E88E5B203B733C0004D44E /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
+		66E88E8A203B778F0004D44E /* testyuv_cvt.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; name = testyuv_cvt.c; path = ../../test/testyuv_cvt.c; sourceTree = "<group>"; };
 		AAF02FF41F90089800B9A9FB /* SDL_test_memory.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_test_memory.c; path = ../../src/test/SDL_test_memory.c; sourceTree = "<group>"; };
 		BBFC088E164C6820003E6A99 /* testgamecontroller.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = testgamecontroller.c; path = ../../test/testgamecontroller.c; sourceTree = "<group>"; };
 		BBFC08CD164C6862003E6A99 /* testgamecontroller */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = testgamecontroller; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1227,6 +1276,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E5F203B74860004D44E /* Metal.framework in Frameworks */,
 				FA73672919A54AB9004122E4 /* CoreVideo.framework in Frameworks */,
 				0017957C10741F7900F5D044 /* Cocoa.framework in Frameworks */,
 				0017957D10741F7900F5D044 /* CoreAudio.framework in Frameworks */,
@@ -1244,6 +1294,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E89203B764A0004D44E /* Metal.framework in Frameworks */,
 				FA73672A19A54AC0004122E4 /* CoreVideo.framework in Frameworks */,
 				0017959D107421BF00F5D044 /* Cocoa.framework in Frameworks */,
 				0017959E107421BF00F5D044 /* CoreAudio.framework in Frameworks */,
@@ -1261,6 +1312,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E80203B76060004D44E /* Metal.framework in Frameworks */,
 				FA73673319A54AD8004122E4 /* CoreVideo.framework in Frameworks */,
 				0017971110742F3200F5D044 /* Cocoa.framework in Frameworks */,
 				0017971210742F3200F5D044 /* CoreAudio.framework in Frameworks */,
@@ -1279,6 +1331,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E7F203B76000004D44E /* Metal.framework in Frameworks */,
 				FA73673419A54ADB004122E4 /* CoreVideo.framework in Frameworks */,
 				00179738107430D600F5D044 /* Cocoa.framework in Frameworks */,
 				00179739107430D600F5D044 /* CoreAudio.framework in Frameworks */,
@@ -1296,6 +1349,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E88203B76420004D44E /* Metal.framework in Frameworks */,
 				FA73672B19A54AC2004122E4 /* CoreVideo.framework in Frameworks */,
 				0017975E107431B300F5D044 /* Cocoa.framework in Frameworks */,
 				0017975F107431B300F5D044 /* CoreAudio.framework in Frameworks */,
@@ -1314,6 +1368,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E7C203B75EB0004D44E /* Metal.framework in Frameworks */,
 				FA73673719A54AE3004122E4 /* CoreVideo.framework in Frameworks */,
 				0017977E107432AE00F5D044 /* Cocoa.framework in Frameworks */,
 				0017977F107432AE00F5D044 /* CoreAudio.framework in Frameworks */,
@@ -1332,6 +1387,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E7B203B75E40004D44E /* Metal.framework in Frameworks */,
 				FA73673819A54AE6004122E4 /* CoreVideo.framework in Frameworks */,
 				0017979E1074334C00F5D044 /* Cocoa.framework in Frameworks */,
 				0017979F1074334C00F5D044 /* CoreAudio.framework in Frameworks */,
@@ -1350,6 +1406,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E78203B75CE0004D44E /* Metal.framework in Frameworks */,
 				FA73673B19A54AED004122E4 /* CoreVideo.framework in Frameworks */,
 				001797C0107433C600F5D044 /* Cocoa.framework in Frameworks */,
 				001797C1107433C600F5D044 /* CoreAudio.framework in Frameworks */,
@@ -1367,6 +1424,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E75203B75B90004D44E /* Metal.framework in Frameworks */,
 				FA73673E19A54AF6004122E4 /* CoreVideo.framework in Frameworks */,
 				001798021074355200F5D044 /* Cocoa.framework in Frameworks */,
 				001798031074355200F5D044 /* CoreAudio.framework in Frameworks */,
@@ -1384,6 +1442,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E74203B75AF0004D44E /* Metal.framework in Frameworks */,
 				FA73673F19A54AF8004122E4 /* CoreVideo.framework in Frameworks */,
 				001798841074392D00F5D044 /* Cocoa.framework in Frameworks */,
 				001798851074392D00F5D044 /* CoreAudio.framework in Frameworks */,
@@ -1401,6 +1460,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E71203B75780004D44E /* Metal.framework in Frameworks */,
 				FA73674219A54B01004122E4 /* CoreVideo.framework in Frameworks */,
 				001798A5107439DF00F5D044 /* Cocoa.framework in Frameworks */,
 				001798A6107439DF00F5D044 /* CoreAudio.framework in Frameworks */,
@@ -1418,6 +1478,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E6D203B755B0004D44E /* Metal.framework in Frameworks */,
 				FA73674619A54B0B004122E4 /* CoreVideo.framework in Frameworks */,
 				001798E210743BEC00F5D044 /* Cocoa.framework in Frameworks */,
 				001798E310743BEC00F5D044 /* CoreAudio.framework in Frameworks */,
@@ -1435,6 +1496,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E67203B751D0004D44E /* Metal.framework in Frameworks */,
 				FA73674C19A54B1F004122E4 /* CoreVideo.framework in Frameworks */,
 				0017990610743F1000F5D044 /* Cocoa.framework in Frameworks */,
 				0017990710743F1000F5D044 /* CoreAudio.framework in Frameworks */,
@@ -1453,6 +1515,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E61203B74CC0004D44E /* Metal.framework in Frameworks */,
 				FA73675219A54B32004122E4 /* CoreVideo.framework in Frameworks */,
 				0017992810743FB700F5D044 /* Cocoa.framework in Frameworks */,
 				0017992910743FB700F5D044 /* CoreAudio.framework in Frameworks */,
@@ -1471,6 +1534,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E84203B76230004D44E /* Metal.framework in Frameworks */,
 				FA73672F19A54ACC004122E4 /* CoreVideo.framework in Frameworks */,
 				002F340B09CA1BFF00EBEB88 /* Cocoa.framework in Frameworks */,
 				002A866B10730548007319AE /* CoreAudio.framework in Frameworks */,
@@ -1488,6 +1552,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E7D203B75F30004D44E /* Metal.framework in Frameworks */,
 				FA73673619A54AE1004122E4 /* CoreVideo.framework in Frameworks */,
 				002F342A09CA1F0300EBEB88 /* Cocoa.framework in Frameworks */,
 				002A866210730547007319AE /* CoreAudio.framework in Frameworks */,
@@ -1505,6 +1570,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E73203B758C0004D44E /* Metal.framework in Frameworks */,
 				FA73674019A54AFB004122E4 /* CoreVideo.framework in Frameworks */,
 				002F344609CA1FB300EBEB88 /* Cocoa.framework in Frameworks */,
 				002A868010730549007319AE /* CoreAudio.framework in Frameworks */,
@@ -1522,6 +1588,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E72203B757F0004D44E /* Metal.framework in Frameworks */,
 				FA73674119A54AFE004122E4 /* CoreVideo.framework in Frameworks */,
 				002F346309CA204F00EBEB88 /* Cocoa.framework in Frameworks */,
 				002A868610730549007319AE /* CoreAudio.framework in Frameworks */,
@@ -1539,6 +1606,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E68203B75250004D44E /* Metal.framework in Frameworks */,
 				FA73674B19A54B1B004122E4 /* CoreVideo.framework in Frameworks */,
 				DB166D7116A1CFB200A1396C /* AudioToolbox.framework in Frameworks */,
 				DB166D7216A1CFB200A1396C /* AudioUnit.framework in Frameworks */,
@@ -1557,6 +1625,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E82203B76140004D44E /* Metal.framework in Frameworks */,
 				FA73673119A54AD3004122E4 /* CoreVideo.framework in Frameworks */,
 				BBFC08C0164C6862003E6A99 /* Cocoa.framework in Frameworks */,
 				BBFC08C1164C6862003E6A99 /* CoreAudio.framework in Frameworks */,
@@ -1574,6 +1643,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E5C203B733D0004D44E /* Metal.framework in Frameworks */,
 				FA73672319A54A90004122E4 /* CoreVideo.framework in Frameworks */,
 				002F33C109CA188600EBEB88 /* Cocoa.framework in Frameworks */,
 				002A863010730405007319AE /* libSDL2.a in Frameworks */,
@@ -1591,6 +1661,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E5E203B74490004D44E /* Metal.framework in Frameworks */,
 				FA73672819A54AB6004122E4 /* CoreVideo.framework in Frameworks */,
 				002F33BF09CA188600EBEB88 /* Cocoa.framework in Frameworks */,
 				002A865310730547007319AE /* CoreAudio.framework in Frameworks */,
@@ -1608,6 +1679,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E85203B762D0004D44E /* Metal.framework in Frameworks */,
 				FA73672E19A54ACA004122E4 /* CoreVideo.framework in Frameworks */,
 				002F33BC09CA188600EBEB88 /* Cocoa.framework in Frameworks */,
 				002A866E10730548007319AE /* CoreAudio.framework in Frameworks */,
@@ -1625,6 +1697,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E64203B74E50004D44E /* Metal.framework in Frameworks */,
 				FA73674F19A54B28004122E4 /* CoreVideo.framework in Frameworks */,
 				002F33B809CA188600EBEB88 /* Cocoa.framework in Frameworks */,
 				002A868F1073054A007319AE /* CoreAudio.framework in Frameworks */,
@@ -1642,6 +1715,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E7A203B75DE0004D44E /* Metal.framework in Frameworks */,
 				FA73673919A54AE8004122E4 /* CoreVideo.framework in Frameworks */,
 				002F33B709CA188600EBEB88 /* Cocoa.framework in Frameworks */,
 				002A867410730548007319AE /* CoreAudio.framework in Frameworks */,
@@ -1659,6 +1733,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E79203B75D50004D44E /* Metal.framework in Frameworks */,
 				FA73673A19A54AEB004122E4 /* CoreVideo.framework in Frameworks */,
 				002F33B509CA188600EBEB88 /* Cocoa.framework in Frameworks */,
 				002A867710730548007319AE /* CoreAudio.framework in Frameworks */,
@@ -1676,6 +1751,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E77203B75C70004D44E /* Metal.framework in Frameworks */,
 				FA73673C19A54AF0004122E4 /* CoreVideo.framework in Frameworks */,
 				002F33B609CA188600EBEB88 /* Cocoa.framework in Frameworks */,
 				002A867A10730549007319AE /* CoreAudio.framework in Frameworks */,
@@ -1693,6 +1769,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E6A203B75450004D44E /* Metal.framework in Frameworks */,
 				FA73674919A54B16004122E4 /* CoreVideo.framework in Frameworks */,
 				002F33B209CA188600EBEB88 /* Cocoa.framework in Frameworks */,
 				002A868910730549007319AE /* CoreAudio.framework in Frameworks */,
@@ -1710,6 +1787,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E63203B74DC0004D44E /* Metal.framework in Frameworks */,
 				FA73675019A54B2B004122E4 /* CoreVideo.framework in Frameworks */,
 				002F33B009CA188600EBEB88 /* Cocoa.framework in Frameworks */,
 				002A86981073054A007319AE /* CoreAudio.framework in Frameworks */,
@@ -1727,6 +1805,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E62203B74D50004D44E /* Metal.framework in Frameworks */,
 				FA73675119A54B2F004122E4 /* CoreVideo.framework in Frameworks */,
 				002F33AF09CA188600EBEB88 /* Cocoa.framework in Frameworks */,
 				002A86951073054A007319AE /* CoreAudio.framework in Frameworks */,
@@ -1744,6 +1823,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E60203B74C20004D44E /* Metal.framework in Frameworks */,
 				FA73675319A54B35004122E4 /* CoreVideo.framework in Frameworks */,
 				002F33AA09CA188600EBEB88 /* Cocoa.framework in Frameworks */,
 				002A864110730546007319AE /* CoreAudio.framework in Frameworks */,
@@ -1761,6 +1841,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E87203B763B0004D44E /* Metal.framework in Frameworks */,
 				FA73672C19A54AC5004122E4 /* CoreVideo.framework in Frameworks */,
 				DB0F48DD17CA51E5008798C5 /* Cocoa.framework in Frameworks */,
 				DB0F48DE17CA51E5008798C5 /* CoreAudio.framework in Frameworks */,
@@ -1778,6 +1859,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E83203B761D0004D44E /* Metal.framework in Frameworks */,
 				FA73673019A54AD0004122E4 /* CoreVideo.framework in Frameworks */,
 				DB0F48F317CA5212008798C5 /* Cocoa.framework in Frameworks */,
 				DB0F48F417CA5212008798C5 /* CoreAudio.framework in Frameworks */,
@@ -1802,6 +1884,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E81203B760D0004D44E /* Metal.framework in Frameworks */,
 				FA73673219A54AD5004122E4 /* CoreVideo.framework in Frameworks */,
 				DB166DB116A1D2F600A1396C /* Cocoa.framework in Frameworks */,
 				DB166DB216A1D2F600A1396C /* CoreAudio.framework in Frameworks */,
@@ -1819,6 +1902,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E76203B75BF0004D44E /* Metal.framework in Frameworks */,
 				FA73673D19A54AF3004122E4 /* CoreVideo.framework in Frameworks */,
 				DB166DC816A1D36A00A1396C /* Cocoa.framework in Frameworks */,
 				DB166DC916A1D36A00A1396C /* CoreAudio.framework in Frameworks */,
@@ -1836,6 +1920,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E70203B75710004D44E /* Metal.framework in Frameworks */,
 				FA73674319A54B04004122E4 /* CoreVideo.framework in Frameworks */,
 				DB166DE016A1D50C00A1396C /* Cocoa.framework in Frameworks */,
 				DB166DE116A1D50C00A1396C /* CoreAudio.framework in Frameworks */,
@@ -1854,6 +1939,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E6F203B756A0004D44E /* Metal.framework in Frameworks */,
 				FA73674419A54B06004122E4 /* CoreVideo.framework in Frameworks */,
 				DB166DF716A1D57C00A1396C /* Cocoa.framework in Frameworks */,
 				DB166DF816A1D57C00A1396C /* CoreAudio.framework in Frameworks */,
@@ -1872,6 +1958,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E6E203B75620004D44E /* Metal.framework in Frameworks */,
 				FA73674519A54B09004122E4 /* CoreVideo.framework in Frameworks */,
 				DB166E0E16A1D5AD00A1396C /* Cocoa.framework in Frameworks */,
 				DB166E0F16A1D5AD00A1396C /* CoreAudio.framework in Frameworks */,
@@ -1890,6 +1977,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E6C203B75540004D44E /* Metal.framework in Frameworks */,
 				FA73674719A54B0F004122E4 /* CoreVideo.framework in Frameworks */,
 				DB166E2B16A1D64D00A1396C /* Cocoa.framework in Frameworks */,
 				DB166E2C16A1D64D00A1396C /* CoreAudio.framework in Frameworks */,
@@ -1907,6 +1995,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E6B203B754C0004D44E /* Metal.framework in Frameworks */,
 				FA73674819A54B13004122E4 /* CoreVideo.framework in Frameworks */,
 				DB166E4116A1D69000A1396C /* Cocoa.framework in Frameworks */,
 				DB166E4216A1D69000A1396C /* CoreAudio.framework in Frameworks */,
@@ -1925,6 +2014,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E69203B75390004D44E /* Metal.framework in Frameworks */,
 				FA73674A19A54B19004122E4 /* CoreVideo.framework in Frameworks */,
 				DB166E5B16A1D6F300A1396C /* Cocoa.framework in Frameworks */,
 				DB166E5C16A1D6F300A1396C /* CoreAudio.framework in Frameworks */,
@@ -1942,6 +2032,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E66203B75140004D44E /* Metal.framework in Frameworks */,
 				FA73674D19A54B22004122E4 /* CoreVideo.framework in Frameworks */,
 				DB166E7116A1D78400A1396C /* Cocoa.framework in Frameworks */,
 				DB166E7216A1D78400A1396C /* CoreAudio.framework in Frameworks */,
@@ -1959,6 +2050,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E65203B74EC0004D44E /* Metal.framework in Frameworks */,
 				FA73674E19A54B25004122E4 /* CoreVideo.framework in Frameworks */,
 				DB166E8416A1D78C00A1396C /* Cocoa.framework in Frameworks */,
 				DB166E8516A1D78C00A1396C /* CoreAudio.framework in Frameworks */,
@@ -1976,6 +2068,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E86203B76340004D44E /* Metal.framework in Frameworks */,
 				FA73672D19A54AC7004122E4 /* CoreVideo.framework in Frameworks */,
 				DB445EEA18184B7000B306B0 /* Cocoa.framework in Frameworks */,
 				DB445EEB18184B7000B306B0 /* CoreAudio.framework in Frameworks */,
@@ -1994,6 +2087,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E7E203B75F90004D44E /* Metal.framework in Frameworks */,
 				FA73673519A54ADE004122E4 /* CoreVideo.framework in Frameworks */,
 				DB89957118A19ABA0092407C /* Cocoa.framework in Frameworks */,
 				DB89957218A19ABA0092407C /* CoreAudio.framework in Frameworks */,
@@ -2011,6 +2105,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				66E88E5D203B73530004D44E /* Metal.framework in Frameworks */,
 				DBEC54DD1A1A81C3005B1EAB /* CoreVideo.framework in Frameworks */,
 				DBEC54DE1A1A81C3005B1EAB /* Cocoa.framework in Frameworks */,
 				DBEC54DF1A1A81C3005B1EAB /* libSDL2.a in Frameworks */,
@@ -2081,6 +2176,7 @@
 				002F33A209CA183B00EBEB88 /* Linked Frameworks */,
 				00794E4609D207B4003FC8A1 /* Resources */,
 				1AB674ADFE9D54B511CA2CBB /* Products */,
+				66E88E56203B733C0004D44E /* Frameworks */,
 			);
 			comments = "I made these tests link against our \"default\" framework which includes X11 stuff. If you didn't install the X11 headers with Xcode, you might have problems building the SDL.framework (which is a dependency). You can swap the dependencies around to get around this, or you can modify the default SDL.framework target to not include X11 stuff. (Go into its target build options and remove all the Preprocessor macros.)\n\n\n\nWe are sort of in a half-way state at the moment. Going \"all-the-way\" means we copy the SDL.framework inside the app bundle so we can run the test without the step of the user \"installing\" the framework. But there is an oversight/bug in Xcode that doesn't correctly find the location of the framework when in an embedded/nested Xcode project. We could probably try to hack this with a shell script that checks multiple directories for existence, but this is messier and more work than I prefer, so I rather just wait for Apple to fix this. In the meantime...\n\nThe \"All\" target will build the SDL framework from the Xcode project. The other targets do not have this dependency set (for flexibility reasons in case we make changes). If you have not built the framework, you will probably be unable to link. You will either need to build the framework, or you need to add \"-framework SDL\" to the link options and make sure you have the SDL.framework installed somewhere where it can be seen (like /Library/Frameworks...I think we already set this one up.) \n\nTo run though, you should have a copy of the SDL.framework in /Library/Frameworks or ~/Library/Frameworks.\n\n\n\n\ntestgl and testdyngl need -DHAVE_OPENGL\ntestgl needs to link against OpenGL.framework\n\n";
 			name = SDLTest;
@@ -2120,6 +2216,7 @@
 				0017985C107436ED00F5D044 /* testnativecocoa.m */,
 				00179872107438D000F5D044 /* testnativex11.c */,
 				002F345209CA201C00EBEB88 /* testoverlay2.c */,
+				66E88E8A203B778F0004D44E /* testyuv_cvt.c */,
 				002F346F09CA20A600EBEB88 /* testplatform.c */,
 				001798B910743A4900F5D044 /* testpower.c */,
 				DB166CBF16A1C74100A1396C /* testrelative.c */,
@@ -2195,6 +2292,14 @@
 				DBEC54EA1A1A81C3005B1EAB /* controllermap */,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		66E88E56203B733C0004D44E /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				66E88E5B203B733C0004D44E /* Metal.framework */,
+			);
+			name = Frameworks;
 			sourceTree = "<group>";
 		};
 		DB166D8316A1D17E00A1396C /* SDL_Test */ = {
@@ -3247,6 +3352,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				002F345409CA202000EBEB88 /* testoverlay2.c in Sources */,
+				66E88E8B203B778F0004D44E /* testyuv_cvt.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
