@@ -46,14 +46,12 @@
 
 - (instancetype)initWithFrame:(CGRect)frame
                         scale:(CGFloat)scale
-                          tag:(int)tag
 {
     if ((self = [super initWithFrame:frame])) {
-        /* Set the appropriate scale (for retina display support) */
-        self.contentScaleFactor = scale;
-        self.tag = tag;
-
-        [self updateDrawableSize];
+        self.tag = METALVIEW_TAG;
+        /* Set the desired scale. The default drawableSize of a CAMetalLayer
+         * is its bounds x its scale so nothing further needs to be done. */
+        self.layer.contentsScale = scale;
     }
 
     return self;
@@ -63,16 +61,6 @@
 - (void)layoutSubviews
 {
     [super layoutSubviews];
-    [self updateDrawableSize];
-}
-
-- (void)updateDrawableSize
-{
-    CGSize size  = self.bounds.size;
-    size.width  *= self.contentScaleFactor;
-    size.height *= self.contentScaleFactor;
-
-    ((CAMetalLayer *) self.layer).drawableSize = size;
 }
 
 @end
@@ -89,9 +77,10 @@ UIKit_Mtl_AddMetalView(SDL_Window* window)
 	}
 
     if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
-        /* Set the scale to the natural scale factor of the screen - the
-         * backing dimensions of the Metal view will match the pixel
-         * dimensions of the screen rather than the dimensions in points.
+        /* Set the scale to the natural scale factor of the screen - then
+         * the backing dimensions of the Metal view will match the pixel
+         * dimensions of the screen rather than the dimensions in points
+         * yielding high resolution on retine displays.
          */
 #ifdef __IPHONE_8_0
         if ([data.uiwindow.screen respondsToSelector:@selector(nativeScale)]) {
@@ -104,8 +93,7 @@ UIKit_Mtl_AddMetalView(SDL_Window* window)
     }
     SDL_uikitmetalview *metalview
          = [[SDL_uikitmetalview alloc] initWithFrame:view.frame
-                                          scale:scale
-                                            tag:METALVIEW_TAG];
+                                               scale:scale];
     [metalview setSDLWindow:window];
 
     return metalview;

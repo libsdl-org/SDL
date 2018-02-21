@@ -41,11 +41,10 @@
 
 @interface SDL_cocoametalview : NSView {
     NSInteger _tag;
-    bool _useHighDPI;
 }
 
 - (instancetype)initWithFrame:(NSRect)frame
-                   useHighDPI:(bool)useHighDPI;
+                        scale:(CGFloat)scale;
 
 /* Override superclass tag so this class can set it. */
 @property (assign, readonly) NSInteger tag;

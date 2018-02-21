@@ -43,8 +43,7 @@
 @interface SDL_uikitmetalview : SDL_uikitview
 
 - (instancetype)initWithFrame:(CGRect)frame
-                        scale:(CGFloat)scale
-                        tag:(int)tag;
+                        scale:(CGFloat)scale;
 
 @end
 

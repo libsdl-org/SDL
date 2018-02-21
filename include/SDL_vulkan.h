@@ -240,6 +240,9 @@ extern DECLSPEC SDL_bool SDLCALL SDL_Vulkan_CreateSurface(
  * platform with high-DPI support (Apple calls this "Retina"), and not disabled
  * by the \c SDL_HINT_VIDEO_HIGHDPI_DISABLED hint.
  *
+ *  \note On macOS high-DPI support must be enabled for an application by
+ *        setting NSHighResolutionCapable to true in its Info.plist.
+ *
  *  \sa SDL_GetWindowSize()
  *  \sa SDL_CreateWindow()
  */

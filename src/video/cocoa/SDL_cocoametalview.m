@@ -57,17 +57,19 @@
 }
 
 - (instancetype)initWithFrame:(NSRect)frame
-                   useHighDPI:(bool)useHighDPI
+                        scale:(CGFloat)scale
 {
 	if ((self = [super initWithFrame:frame])) {
+        _tag = METALVIEW_TAG;
         self.wantsLayer = YES;
 
         /* Allow resize. */
         self.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
-        _tag = METALVIEW_TAG;
 
-        _useHighDPI = useHighDPI;
-        [self updateDrawableSize];
+        /* Set the desired scale. The default drawableSize of a CAMetalLayer
+         * is its bounds x its scale so nothing further needs to be done.
+         */
+        self.layer.contentsScale = scale;
 	}
   
 	return self;
@@ -77,16 +79,6 @@
 - (void)resizeWithOldSuperviewSize:(NSSize)oldSize
 {
     [super resizeWithOldSuperviewSize:oldSize];
-    [self updateDrawableSize];
-}
-
-- (void)updateDrawableSize
-{
-    NSRect bounds = [self bounds];
-    if (_useHighDPI) {
-        bounds = [self convertRectToBacking:bounds];
-    }
-    ((CAMetalLayer *) self.layer).drawableSize = NSSizeToCGSize(bounds.size);
 }
 
 @end
@@ -94,12 +86,26 @@
 SDL_cocoametalview*
 Cocoa_Mtl_AddMetalView(SDL_Window* window)
 {
-    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData* data = (__bridge SDL_WindowData *)window->driverdata;
     NSView *view = data->nswindow.contentView;
+    CGFloat scale = 1.0;
 
+    if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+        /* Set the scale to the natural scale factor of the screen - then
+         * the backing dimensions of the Metal view will match the pixel
+         * dimensions of the screen rather than the dimensions in points
+         * yielding high resolution on retine displays.
+         *
+         * N.B. In order for backingScaleFactor to be > 1,
+         * NSHighResolutionCapable must be set to true in the app's Info.plist.
+         */
+        NSWindow* nswindow = data->nswindow;
+        if ([nswindow.screen respondsToSelector:@selector(backingScaleFactor)])
+            scale = data->nswindow.screen.backingScaleFactor;
+    }
+        
     SDL_cocoametalview *metalview
-        = [[SDL_cocoametalview alloc] initWithFrame:view.frame
-                       useHighDPI:(window->flags & SDL_WINDOW_ALLOW_HIGHDPI)];
+        = [[SDL_cocoametalview alloc] initWithFrame:view.frame scale:scale];
     [view addSubview:metalview];
     return metalview;
 }
@@ -119,6 +125,8 @@ Cocoa_Mtl_GetDrawableSize(SDL_Window * window, int * w, int * h)
         if (h) {
             *h = layer.drawableSize.height;
         }
+    } else {
+        SDL_GetWindowSize(window, w, h);
     }
 }
 
