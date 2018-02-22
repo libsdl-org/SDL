@@ -124,6 +124,15 @@ BOOL WIN_IsWindowsVistaOrGreater(void)
 #endif
 }
 
+BOOL WIN_IsWindows7OrGreater(void)
+{
+#ifdef __WINRT__
+    return TRUE;
+#else
+    return IsWindowsVersionOrGreater(HIBYTE(_WIN32_WINNT_WIN7), LOBYTE(_WIN32_WINNT_WIN7), 0);
+#endif
+}
+
 /*
 WAVExxxCAPS gives you 31 bytes for the device name, and just truncates if it's
 longer. However, since WinXP, you can use the WAVExxxCAPS2 structure, which
