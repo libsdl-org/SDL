@@ -402,7 +402,7 @@ void
 WASAPI_PlatformDeleteActivationHandler(void *handler)
 {
     /* not asynchronous. */
-    SDL_assert(!"This function should have only be called on WinRT.");
+    SDL_assert(!"This function should have only been called on WinRT.");
 }
 
 void
