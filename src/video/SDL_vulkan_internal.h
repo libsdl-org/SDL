@@ -81,8 +81,8 @@ extern SDL_bool SDL_Vulkan_GetInstanceExtensions_Helper(unsigned *userCount,
 /* No SDL Vulkan support, just include the header for typedefs */
 #include "SDL_vulkan.h"
 
-typedef void (*PFN_vkGetInstanceProcAddr) ();
-typedef int  (*PFN_vkEnumerateInstanceExtensionProperties) ();
+typedef void (*PFN_vkGetInstanceProcAddr) (void);
+typedef int  (*PFN_vkEnumerateInstanceExtensionProperties) (void);
 
 #endif /* SDL_VIDEO_VULKAN */
 
