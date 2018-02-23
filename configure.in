@@ -1468,8 +1468,8 @@ dnl Check for Mir
 CheckMir()
 {
     AC_ARG_ENABLE(video-mir,
-AC_HELP_STRING([--enable-video-mir], [use Mir video driver [[default=yes]]]),
-                  ,enable_video_mir=yes)
+AC_HELP_STRING([--enable-video-mir], [use Mir video driver [[default=no]]]),
+                  ,enable_video_mir=no)
 
     if test x$enable_video = xyes -a x$enable_video_mir = xyes; then
         AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
