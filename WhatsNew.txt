@@ -25,11 +25,11 @@ iOS:
 * Added the hint SDL_HINT_IOS_HIDE_HOME_INDICATOR to control whether the home indicator bar on iPhone X should be hidden. This defaults to dimming the indicator for fullscreen applications and showing the indicator for windowed applications.
 
 iOS / Android:
-* Added SDL_IsAndroidTV() to tell whether the application is running on Android TV
 * Added the hint SDL_HINT_RETURN_KEY_HIDES_IME to control whether the return key on the software keyboard should hide the keyboard or send a key event (the default)
 
 Android:
 * SDL now requires the API 19 SDK to build, but can still target devices down to API 14 (Android 4.0.1)
+* Added SDL_IsAndroidTV() to tell whether the application is running on Android TV
 
 Android / tvOS:
 * Added the hint SDL_HINT_TV_REMOTE_AS_JOYSTICK to control whether TV remotes should be listed as joystick devices (the default) or send keyboard events.
