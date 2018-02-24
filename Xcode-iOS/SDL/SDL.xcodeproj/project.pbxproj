@@ -194,6 +194,7 @@
 		AADC5A631FDA10C800960936 /* SDL_shaders_metal_ios.h in Headers */ = {isa = PBXBuildFile; fileRef = AADC5A611FDA10C800960936 /* SDL_shaders_metal_ios.h */; };
 		AADC5A641FDA10C800960936 /* SDL_render_metal.m in Sources */ = {isa = PBXBuildFile; fileRef = AADC5A621FDA10C800960936 /* SDL_render_metal.m */; };
 		AADC5A651FDA10CB00960936 /* SDL_render_metal.m in Sources */ = {isa = PBXBuildFile; fileRef = AADC5A621FDA10C800960936 /* SDL_render_metal.m */; };
+		AAE7A4222041CCA90096E65A /* SDL_steamcontroller.c in Sources */ = {isa = PBXBuildFile; fileRef = A7A9EEA71F702631002A5589 /* SDL_steamcontroller.c */; };
 		FA1DC2721C62BE65008F99A0 /* SDL_uikitclipboard.h in Headers */ = {isa = PBXBuildFile; fileRef = FA1DC2701C62BE65008F99A0 /* SDL_uikitclipboard.h */; };
 		FA1DC2731C62BE65008F99A0 /* SDL_uikitclipboard.m in Sources */ = {isa = PBXBuildFile; fileRef = FA1DC2711C62BE65008F99A0 /* SDL_uikitclipboard.m */; };
 		FAB5981D1BB5C31500BE72C5 /* SDL_atomic.c in Sources */ = {isa = PBXBuildFile; fileRef = 04FFAB8912E23B8D00BA343D /* SDL_atomic.c */; };
@@ -1485,6 +1486,7 @@
 				FAB598791BB5C31600BE72C5 /* SDL_sysmutex.c in Sources */,
 				FAB5987B1BB5C31600BE72C5 /* SDL_syssem.c in Sources */,
 				FAB5987C1BB5C31600BE72C5 /* SDL_systhread.c in Sources */,
+				AAE7A4222041CCA90096E65A /* SDL_steamcontroller.c in Sources */,
 				FAB5987E1BB5C31600BE72C5 /* SDL_systls.c in Sources */,
 				FAB598801BB5C31600BE72C5 /* SDL_thread.c in Sources */,
 				FAB598821BB5C31600BE72C5 /* SDL_systimer.c in Sources */,
