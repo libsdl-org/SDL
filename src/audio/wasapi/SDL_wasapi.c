@@ -37,6 +37,11 @@
 
 #include "SDL_wasapi.h"
 
+/* This constant isn't available on MinGW-w64 */
+#ifndef AUDCLNT_STREAMFLAGS_RATEADJUST
+#define AUDCLNT_STREAMFLAGS_RATEADJUST  0x00100000
+#endif
+
 /* these increment as default devices change. Opened default devices pick up changes in their threads. */
 SDL_atomic_t WASAPI_DefaultPlaybackGeneration;
 SDL_atomic_t WASAPI_DefaultCaptureGeneration;
