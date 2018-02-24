@@ -12,6 +12,7 @@ General:
 
 Windows:
 * Implemented WASAPI support on Windows UWP and removed the deprecated XAudio2 implementation
+* Added resampling support on WASAPI on Windows 7 and above
 
 Windows UWP:
 * Added SDL_WinRTGetDeviceFamily() to find out what type of device your application is running on
