@@ -6,8 +6,9 @@ This is a list of major changes in SDL's version history.
 ---------------------------------------------------------------------------
 
 General:
-* Added SDL_fmod()
+* Added SDL_fmod() and SDL_log10()
 * Each of the SDL math functions now has the corresponding float version
+* Added SDL_SetYUVConversionMode() and SDL_GetYUVConversionMode() to control the formula used when converting to and from YUV colorspace. The options are JPEG, BT.601, and BT.709
 
 Windows:
 * Implemented WASAPI support on Windows UWP and removed the deprecated XAudio2 implementation
@@ -18,6 +19,23 @@ Windows UWP:
 Mac OSX / iOS / tvOS:
 * Added a Metal 2D render implementation
 * Added SDL_RenderGetMetalLayer() and SDL_RenderGetMetalCommandEncoder() to insert your own drawing into SDL rendering when using the Metal implementation
+
+iOS:
+* Added the hint SDL_HINT_IOS_HIDE_HOME_INDICATOR to control whether the home indicator bar on iPhone X should be hidden. This defaults to dimming the indicator for fullscreen applications and showing the indicator for windowed applications.
+
+iOS / Android:
+* Added SDL_IsAndroidTV() to tell whether the application is running on Android TV
+* Added the hint SDL_HINT_RETURN_KEY_HIDES_IME to control whether the return key on the software keyboard should hide the keyboard or send a key event (the default)
+
+Android:
+* SDL now requires the API 19 SDK to build, but can still target devices down to API 14 (Android 4.0.1)
+
+Android / tvOS:
+* Added the hint SDL_HINT_TV_REMOTE_AS_JOYSTICK to control whether TV remotes should be listed as joystick devices (the default) or send keyboard events.
+
+Linux:
+* Added the hint SDL_HINT_VIDEO_X11_NET_WM_BYPASS_COMPOSITOR to control whether the X server should skip the compositor for the SDL application. This defaults to "1"
+* Added the hint SDL_HINT_VIDEO_DOUBLE_BUFFER to control whether the Raspberry Pi and KMSDRM video drivers should use double or triple buffering (the default)
 
 
 ---------------------------------------------------------------------------
