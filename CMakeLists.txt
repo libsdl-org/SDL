@@ -340,6 +340,7 @@ set(SDL_SHARED ${SDL_SHARED_ENABLED_BY_DEFAULT} CACHE BOOL "Build a shared versi
 set(SDL_STATIC ON CACHE BOOL "Build a static version of the library")
 
 dep_option(SDL_STATIC_PIC      "Static version of the library should be built with Position Independent Code" OFF "SDL_STATIC" OFF)
+set_option(SDL_TEST            "Build the test directory" OFF)
 
 # General source files
 file(GLOB SOURCE_FILES
@@ -1744,6 +1745,15 @@ if(SDL_STATIC)
   set(_INSTALL_LIBS "SDL2-static" ${_INSTALL_LIBS})
   target_link_libraries(SDL2-static ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
   target_include_directories(SDL2-static PUBLIC $<INSTALL_INTERFACE:include>)
+endif()
+
+##### Tests #####
+
+if(SDL_TEST)
+  file(GLOB TEST_SOURCES ${SDL2_SOURCE_DIR}/src/test/*.c)
+  add_library(SDL2_test STATIC ${TEST_SOURCES})
+  
+  add_subdirectory(test)
 endif()
 
 ##### Installation targets #####
