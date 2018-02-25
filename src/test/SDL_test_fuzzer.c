@@ -126,29 +126,35 @@ SDLTest_RandomUint32()
 Uint64
 SDLTest_RandomUint64()
 {
-    Uint64 value = 0;
-    Uint32 *vp = (void *)&value;
+    union {
+        Uint64 v64;
+        Uint32 v32[2];
+    } value;
+    value.v64 = 0;
 
     fuzzerInvocationCounter++;
 
-    vp[0] = SDLTest_RandomSint32();
-    vp[1] = SDLTest_RandomSint32();
+    value.v32[0] = SDLTest_RandomSint32();
+    value.v32[1] = SDLTest_RandomSint32();
 
-    return value;
+    return value.v64;
 }
 
 Sint64
 SDLTest_RandomSint64()
 {
-    Uint64 value = 0;
-    Uint32 *vp = (void *)&value;
+    union {
+        Uint64 v64;
+        Uint32 v32[2];
+    } value;
+    value.v64 = 0;
 
     fuzzerInvocationCounter++;
 
-    vp[0] = SDLTest_RandomSint32();
-    vp[1] = SDLTest_RandomSint32();
+    value.v32[0] = SDLTest_RandomSint32();
+    value.v32[1] = SDLTest_RandomSint32();
 
-    return value;
+    return (Sint64)value.v64;
 }
 
 
