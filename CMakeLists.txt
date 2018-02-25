@@ -48,10 +48,10 @@ set(SDL_BINARY_AGE 8)
 set(SDL_VERSION "${SDL_MAJOR_VERSION}.${SDL_MINOR_VERSION}.${SDL_MICRO_VERSION}")
 
 # Set defaults preventing destination file conflicts
-set(CMAKE_DEBUG_POSTFIX "d"
+set(SDL_CMAKE_DEBUG_POSTFIX "d"
     CACHE STRING "Name suffix for debug builds")
 
-mark_as_advanced(CMAKE_IMPORT_LIBRARY_SUFFIX CMAKE_DEBUG_POSTFIX)
+mark_as_advanced(CMAKE_IMPORT_LIBRARY_SUFFIX SDL_CMAKE_DEBUG_POSTFIX)
 
 # Calculate a libtool-like version number
 math(EXPR LT_CURRENT "${SDL_MICRO_VERSION} - ${SDL_INTERFACE_AGE}")
@@ -1697,6 +1697,9 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${EXTRA_CFLAGS}")
 add_library(SDL2main STATIC ${SDLMAIN_SOURCES})
 target_include_directories(SDL2main PUBLIC $<INSTALL_INTERFACE:include>)
 set(_INSTALL_LIBS "SDL2main")
+if (NOT ANDROID)
+  set_target_properties(SDL2main PROPERTIES DEBUG_POSTFIX ${SDL_CMAKE_DEBUG_POSTFIX})
+endif()
 
 if(SDL_SHARED)
   add_library(SDL2 SHARED ${SOURCE_FILES} ${VERSION_SOURCES})
@@ -1722,6 +1725,9 @@ if(SDL_SHARED)
   set(_INSTALL_LIBS "SDL2" ${_INSTALL_LIBS})
   target_link_libraries(SDL2 ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
   target_include_directories(SDL2 PUBLIC $<INSTALL_INTERFACE:include>)
+  if (NOT ANDROID)
+    set_target_properties(SDL2 PROPERTIES DEBUG_POSTFIX ${SDL_CMAKE_DEBUG_POSTFIX})
+  endif()
 endif()
 
 if(SDL_STATIC)
@@ -1745,6 +1751,9 @@ if(SDL_STATIC)
   set(_INSTALL_LIBS "SDL2-static" ${_INSTALL_LIBS})
   target_link_libraries(SDL2-static ${EXTRA_LIBS} ${EXTRA_LDFLAGS})
   target_include_directories(SDL2-static PUBLIC $<INSTALL_INTERFACE:include>)
+  if (NOT ANDROID)
+    set_target_properties(SDL2-static PROPERTIES DEBUG_POSTFIX ${SDL_CMAKE_DEBUG_POSTFIX})
+  endif()
 endif()
 
 ##### Tests #####
