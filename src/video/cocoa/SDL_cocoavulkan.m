@@ -39,7 +39,13 @@
 
 #include <dlfcn.h>
 
-#define DEFAULT_MOLTENVK  "libMoltenVK.dylib"
+const char* defaultPaths[] = {
+    "vulkan.framework/vulkan",
+    "libvulkan.1.dylib",
+    "MoltenVK.framework/MoltenVK",
+    "libMoltenVK.dylib"
+};
+
 /* Since libSDL is most likely a .dylib, need RTLD_DEFAULT not RTLD_SELF. */
 #define DEFAULT_HANDLE RTLD_DEFAULT
 
@@ -52,7 +58,7 @@ int Cocoa_Vulkan_LoadLibrary(_THIS, const char *path)
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
 
     if (_this->vulkan_config.loader_handle) {
-        SDL_SetError("MoltenVK/Vulkan already loaded");
+        SDL_SetError("Vulkan/MoltenVK already loaded");
         return -1;
     }
 
@@ -60,6 +66,7 @@ int Cocoa_Vulkan_LoadLibrary(_THIS, const char *path)
     if (!path) {
         path = SDL_getenv("SDL_VULKAN_LIBRARY");
     }
+
     if (!path) {
         /* MoltenVK framework, currently, v0.17.0, has a static library and is
          * the recommended way to use the package. There is likely no object to
@@ -68,20 +75,35 @@ int Cocoa_Vulkan_LoadLibrary(_THIS, const char *path)
          (PFN_vkGetInstanceProcAddr)dlsym(DEFAULT_HANDLE,
                                           "vkGetInstanceProcAddr");
     }
-    
+
     if (vkGetInstanceProcAddr) {
         _this->vulkan_config.loader_handle = DEFAULT_HANDLE;
     } else {
-        if (!path) {
-            /* Look for the .dylib packaged with the application instead. */
-            path = DEFAULT_MOLTENVK;
+        const char** paths;
+        int numPaths;
+        int i;
+
+        if (path) {
+            paths = &path;
+            numPaths = 1;
+        } else {
+            /* Look for framework or .dylib packaged with the application
+             * instead. */
+            paths = defaultPaths;
+            numPaths = SDL_arraysize(defaultPaths);
         }
         
-        _this->vulkan_config.loader_handle = SDL_LoadObject(path);
-        if (!_this->vulkan_config.loader_handle) {
-            return -1;
+        for (i=0; i < numPaths; i++) {
+            _this->vulkan_config.loader_handle = SDL_LoadObject(paths[i]);
+            if (_this->vulkan_config.loader_handle)
+                break;
+            else
+                continue;
         }
-        SDL_strlcpy(_this->vulkan_config.loader_path, path,
+        if (i == numPaths)
+            return -1;
+
+        SDL_strlcpy(_this->vulkan_config.loader_path, paths[i],
                     SDL_arraysize(_this->vulkan_config.loader_path));
         vkGetInstanceProcAddr = (PFN_vkGetInstanceProcAddr)SDL_LoadFunction(
             _this->vulkan_config.loader_handle, "vkGetInstanceProcAddr");
@@ -90,7 +112,7 @@ int Cocoa_Vulkan_LoadLibrary(_THIS, const char *path)
     if (!vkGetInstanceProcAddr) {
         SDL_SetError("Failed to find %s in either executable or %s: %s",
                      "vkGetInstanceProcAddr",
-                     DEFAULT_MOLTENVK,
+                     _this->vulkan_config.loader_path,
                      (const char *) dlerror());
         goto fail;
     }

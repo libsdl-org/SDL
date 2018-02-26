@@ -69,30 +69,43 @@ typedef VkSurfaceKHR SDL_vulkanSurface; /* for compatibility with Tizen */
  *  \brief Dynamically load a Vulkan loader library.
  *
  *  \param [in] path The platform dependent Vulkan loader library name, or
- *              \c NULL to open the default Vulkan loader library.
+ *              \c NULL.
  *
  *  \return \c 0 on success, or \c -1 if the library couldn't be loaded.
  *
- *  This should be done after initializing the video driver, but before
+ *  If \a path is NULL SDL will use the value of the environment variable
+ *  \c SDL_VULKAN_LIBRARY, if set, otherwise it loads the default Vulkan
+ *  loader library.
+ *
+ *  This should be called after initializing the video driver, but before
  *  creating any Vulkan windows. If no Vulkan loader library is loaded, the
  *  default library will be loaded upon creation of the first Vulkan window.
  *
- *  \note If you specify a non-NULL \a path, you should retrieve all of the
- *        Vulkan functions used in your program from the dynamic library using
+ *  \note It is fairly common for Vulkan applications to link with \a libvulkan
+ *        instead of explicitly loading it at run time. This will work with
+ *        SDL provided the application links to a dynamic library and both it
+ *        and SDL use the same search path.
+ *
+ *  \note If you specify a non-NULL \c path, an application should retrieve all
+ *        of the Vulkan functions it uses from the dynamic library using
  *        \c SDL_Vulkan_GetVkGetInstanceProcAddr() unless you can guarantee
- *        \a path points to the same vulkan loader library that you linked to.
+ *        \c path points to the same vulkan loader library the application
+ *        linked to.
  *
  *  \note On Apple devices, if \a path is NULL, SDL will attempt to find
  *        the vkGetInstanceProcAddr address within all the mach-o images of
- *        the current process. This is because the currently (v0.17.0)
- *        recommended MoltenVK (Vulkan on Metal) usage is as a static library.
- *        If it is not found then SDL will attempt to load \c libMoltenVK.dylib.
- *        Applications using the dylib alternative therefore do not need to do
- *        anything special when calling SDL.
+ *        the current process. This is because it is fairly common for Vulkan
+ *        applications to link with libvulkan (and historically MoltenVK was
+ *        provided as a static library). If it is not found then, on macOS, SDL
+ *        will attempt to load \c vulkan.framework/vulkan, \c libvulkan.1.dylib,
+ *        \c MoltenVK.framework/MoltenVK and \c libMoltenVK.dylib in that order.
+ *        On iOS SDL will attempt to load \c libMoltenVK.dylib. Applications
+ *        using a dynamic framework or .dylib must ensure it is included in its
+ *        application bundle.
  *
- *  \note On non-Apple devices, SDL requires you to either not link to the
- *        Vulkan loader or link to a dynamic library version. This limitation
- *        may be removed in a future version of SDL.
+ *  \note On non-Apple devices, application linking with a static libvulkan is
+ *        not supported. Either do not link to the Vulkan loader or link to a
+ *        dynamic library version.
  *
  *  \note This function will fail if there are no working Vulkan drivers
  *        installed.
