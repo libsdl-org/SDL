@@ -91,7 +91,10 @@ SDL_SemWait(SDL_sem * sem)
         return SDL_SetError("Passed a NULL semaphore");
     }
 
-    retval = sem_wait(&sem->sem);
+    do {
+        retval = sem_wait(&sem->sem);
+    } while (retval < 0 && errno == EINTR);
+
     if (retval < 0) {
         retval = SDL_SetError("sem_wait() failed");
     }
