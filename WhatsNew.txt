@@ -17,7 +17,11 @@ Windows:
 Windows UWP:
 * Added SDL_WinRTGetDeviceFamily() to find out what type of device your application is running on
 
-Mac OSX / iOS / tvOS:
+Mac OS X:
+* Added support for the Vulkan SDK for Mac:
+  https://www.lunarg.com/lunarg-releases-vulkan-sdk-1-0-69-0-for-mac/
+
+Mac OS X / iOS / tvOS:
 * Added a Metal 2D render implementation
 * Added SDL_RenderGetMetalLayer() and SDL_RenderGetMetalCommandEncoder() to insert your own drawing into SDL rendering when using the Metal implementation
 
