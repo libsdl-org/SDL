@@ -26,7 +26,7 @@
 
 #include "SDL_assert.h"
 #include "SDL_windowsvideo.h"
-#include "SDL_windowstaskdialog.h"
+
 
 #ifndef SS_EDITCONTROL
 #define SS_EDITCONTROL  0x2000
@@ -341,9 +341,8 @@ static WIN_DialogData *CreateDialogData(int w, int h, const char *caption)
     return dialog;
 }
 
-/* This function is called if a Task Dialog is unsupported. */
-static int
-WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
+int
+WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 {
     WIN_DialogData *dialog;
     int i, x, y;
@@ -490,121 +489,6 @@ WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 
     FreeDialogData(dialog);
     return 0;
-}
-
-/* TaskDialogIndirect procedure
- * This is because SDL targets Windows XP (0x501), so this is not defined in the platform SDK.
- */
-typedef HRESULT(FAR WINAPI *TASKDIALOGINDIRECTPROC)(const TASKDIALOGCONFIG *pTaskConfig, int *pnButton, int *pnRadioButton, BOOL *pfVerificationFlagChecked);
-
-int
-WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
-{
-    HWND ParentWindow = NULL;
-    wchar_t *wmessage;
-    wchar_t *wtitle;
-    TASKDIALOGCONFIG TaskConfig;
-    TASKDIALOG_BUTTON *pButtons;
-    TASKDIALOG_BUTTON *pButton;
-    HMODULE hComctl32;
-    TASKDIALOGINDIRECTPROC pfnTaskDialogIndirect;
-    HRESULT hr;
-    int nButton;
-    int nCancelButton;
-    int i;
-
-    /* If we cannot load comctl32.dll use the old messagebox! */
-    hComctl32 = LoadLibrary(TEXT("Comctl32.dll"));
-    if (hComctl32 == NULL) {
-        return WIN_ShowOldMessageBox(messageboxdata,buttonid);
-    }
-    
-    /* If TaskDialogIndirect doesn't exist use the old messagebox!
-       This will fail prior to Windows Vista.
-       The manifest file in the application may require targeting version 6 of comctl32.dll, even
-       when we use LoadLibrary here!
-       If you don't want to bother with manifests, put this #pragma in your app's source code somewhere:
-       pragma comment(linker,"\"/manifestdependency:type='win32' name='Microsoft.Windows.Common-Controls' version='6.0.0.0'  processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
-     */
-    pfnTaskDialogIndirect = (TASKDIALOGINDIRECTPROC) GetProcAddress(hComctl32, "TaskDialogIndirect");
-    if (pfnTaskDialogIndirect == NULL) {
-        FreeLibrary(hComctl32);
-        return WIN_ShowOldMessageBox(messageboxdata, buttonid);
-    }
-
-    /* If we have a parent window, get the Instance and HWND for them
-       so that our little dialog gets exclusive focus at all times. */
-    if (messageboxdata->window) {
-        ParentWindow = ((SDL_WindowData *) messageboxdata->window->driverdata)->hwnd;
-    }
-
-    wmessage = WIN_UTF8ToString(messageboxdata->message);
-    wtitle = WIN_UTF8ToString(messageboxdata->title);
-
-    SDL_zero(TaskConfig);
-    TaskConfig.cbSize = sizeof (TASKDIALOGCONFIG);
-    TaskConfig.hwndParent = ParentWindow;
-    TaskConfig.dwFlags = TDF_SIZE_TO_CONTENT;
-    TaskConfig.pszWindowTitle = wtitle;
-    if (messageboxdata->flags & SDL_MESSAGEBOX_ERROR) {
-        TaskConfig.pszMainIcon = TD_ERROR_ICON;
-    } else if (messageboxdata->flags & SDL_MESSAGEBOX_WARNING) {
-        TaskConfig.pszMainIcon = TD_WARNING_ICON;
-    } else if (messageboxdata->flags & SDL_MESSAGEBOX_INFORMATION) {
-        TaskConfig.pszMainIcon = TD_INFORMATION_ICON;
-    } else {
-        TaskConfig.pszMainIcon = NULL;
-    }
-
-    TaskConfig.pszContent = wmessage;
-    TaskConfig.cButtons = messageboxdata->numbuttons;
-    pButtons = SDL_malloc(sizeof (TASKDIALOG_BUTTON) * messageboxdata->numbuttons);
-    TaskConfig.nDefaultButton = 0;
-    for (i = 0; i < messageboxdata->numbuttons; i++)
-    {
-        pButton = &pButtons[messageboxdata->numbuttons-1-i];
-        if (messageboxdata->buttons[i].flags & SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT) {
-            nCancelButton = messageboxdata->buttons[i].buttonid;
-            pButton->nButtonID = 2;
-        } else {
-            pButton->nButtonID = messageboxdata->buttons[i].buttonid + 1;
-            if (pButton->nButtonID >= 2) {
-                pButton->nButtonID++;
-            }
-        }
-        pButton->pszButtonText = WIN_UTF8ToString(messageboxdata->buttons[i].text);
-        if (messageboxdata->buttons[i].flags & SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT) {
-            TaskConfig.nDefaultButton = pButton->nButtonID;
-        }
-    }
-    TaskConfig.pButtons = pButtons;
-
-    /* Show the Task Dialog */
-    hr = pfnTaskDialogIndirect(&TaskConfig, &nButton, NULL, NULL);
-
-    /* Free everything */
-    FreeLibrary(hComctl32);
-    SDL_free(wmessage);
-    SDL_free(wtitle);
-    for (i = 0; i < messageboxdata->numbuttons; i++) {
-        SDL_free((wchar_t *) pButtons[i].pszButtonText);
-    }
-    SDL_free(pButtons);
-
-    /* Check the Task Dialog was successful and give the result */
-    if (SUCCEEDED(hr)) {
-        if (nButton == 2) {
-            *buttonid = nCancelButton;
-        } else if (nButton > 2) {
-            *buttonid = nButton-1-1;
-        } else {
-            *buttonid = nButton-1;
-        }
-        return 0;
-    }
-
-    /* We failed showing the Task Dialog, use the old message box! */
-    return WIN_ShowOldMessageBox(messageboxdata, buttonid);
 }
 
 #endif /* SDL_VIDEO_DRIVER_WINDOWS */
