@@ -436,6 +436,12 @@ public class SDLActivity extends Activity {
                 }
                 break;
             case COMMAND_CHANGE_WINDOW_STYLE:
+                if (Build.VERSION.SDK_INT < 19) {
+                    // This version of Android doesn't support the immersive fullscreen mode
+                    break;
+                }
+/* This needs more testing, per bug 4096 - Enabling fullscreen on Android causes the app to toggle fullscreen mode continuously in a loop
+ ***
                 if (context instanceof Activity) {
                     Window window = ((Activity) context).getWindow();
                     if (window != null) {
@@ -457,6 +463,7 @@ public class SDLActivity extends Activity {
                 } else {
                     Log.e(TAG, "error handling message, getContext() returned no Activity");
                 }
+***/
                 break;
             case COMMAND_TEXTEDIT_HIDE:
                 if (mTextEdit != null) {
@@ -725,7 +732,7 @@ public class SDLActivity extends Activity {
     public static boolean isTextInputEvent(KeyEvent event) {
       
         // Key pressed with Ctrl should be sent as SDL_KEYDOWN/SDL_KEYUP and not SDL_TEXTINPUT
-        if (android.os.Build.VERSION.SDK_INT >= 11) {
+        if (Build.VERSION.SDK_INT >= 11) {
             if (event.isCtrlPressed()) {
                 return false;
             }  
