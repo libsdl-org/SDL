@@ -20,6 +20,7 @@ Windows UWP:
 Mac OS X:
 * Added support for the Vulkan SDK for Mac:
   https://www.lunarg.com/lunarg-releases-vulkan-sdk-1-0-69-0-for-mac/
+* Added support for OpenGL ES using ANGLE when it's available
 
 Mac OS X / iOS / tvOS:
 * Added a Metal 2D render implementation
