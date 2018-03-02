@@ -1263,7 +1263,11 @@ SDL_GameControllerNameForIndex(int device_index)
 {
     ControllerMapping_t *pSupportedController = SDL_PrivateGetControllerMapping(device_index);
     if (pSupportedController) {
-        return pSupportedController->name;
+        if (SDL_strcmp(pSupportedController->name, "*") == 0) {
+            return SDL_JoystickNameForIndex(device_index);
+        } else {
+            return pSupportedController->name;
+        }
     }
     return NULL;
 }
@@ -1552,7 +1556,11 @@ SDL_GameControllerName(SDL_GameController * gamecontroller)
     if (!gamecontroller)
         return NULL;
 
-    return gamecontroller->name;
+    if (SDL_strcmp(gamecontroller->name, "*") == 0) {
+        return SDL_JoystickName(SDL_GameControllerGetJoystick(gamecontroller));
+    } else {
+        return gamecontroller->name;
+    }
 }
 
 Uint16
