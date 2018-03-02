@@ -60,7 +60,14 @@
 /* Set the size of the metal drawables when the view is resized. */
 - (void)layoutSubviews
 {
+    CGSize bounds;
+
     [super layoutSubviews];
+
+    bounds = [self bounds].size;
+    bounds.width *= self.layer.contentsScale;
+    bounds.height *= self.layer.contentsScale;
+    ((CAMetalLayer *) self.layer).drawableSize = bounds;
 }
 
 @end
@@ -72,9 +79,9 @@ UIKit_Mtl_AddMetalView(SDL_Window* window)
     SDL_uikitview *view = (SDL_uikitview*)data.uiwindow.rootViewController.view;
     CGFloat scale = 1.0;
 
-	if ([view isKindOfClass:[SDL_uikitmetalview class]]) {
-		return (SDL_uikitmetalview *)view;
-	}
+    if ([view isKindOfClass:[SDL_uikitmetalview class]]) {
+        return (SDL_uikitmetalview *)view;
+    }
 
     if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
         /* Set the scale to the natural scale factor of the screen - then
