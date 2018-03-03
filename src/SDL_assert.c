@@ -120,7 +120,7 @@ static void SDL_GenerateAssertionReport(void)
 }
 
 
-static SDL_NORETURN void SDL_ExitProcess(int exitcode)
+static void SDL_ExitProcess(int exitcode)
 {
 #ifdef __WIN32__
     /* "if you do not know the state of all threads in your process, it is
@@ -138,7 +138,7 @@ static SDL_NORETURN void SDL_ExitProcess(int exitcode)
 }
 
 
-static SDL_NORETURN void SDL_AbortAssertion(void)
+static void SDL_AbortAssertion(void)
 {
     SDL_Quit();
     SDL_ExitProcess(42);
