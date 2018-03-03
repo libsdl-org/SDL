@@ -560,6 +560,7 @@ WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     TaskConfig.cButtons = messageboxdata->numbuttons;
     pButtons = SDL_malloc(sizeof (TASKDIALOG_BUTTON) * messageboxdata->numbuttons);
     TaskConfig.nDefaultButton = 0;
+    nCancelButton = 0;
     for (i = 0; i < messageboxdata->numbuttons; i++)
     {
         pButton = &pButtons[messageboxdata->numbuttons-1-i];
