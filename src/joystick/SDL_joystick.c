@@ -105,6 +105,23 @@ SDL_NumJoysticks(void)
 }
 
 /*
+ * Perform any needed fixups for joystick names
+ */
+static const char *
+SDL_FixupJoystickName(const char *name)
+{
+    if (name) {
+        const char *skip_prefix = "NVIDIA Corporation ";
+
+        if (SDL_strncmp(name, skip_prefix, SDL_strlen(skip_prefix)) == 0) {
+            name += SDL_strlen(skip_prefix);
+        }
+    }
+    return name;
+}
+
+
+/*
  * Get the implementation dependent name of a joystick
  */
 const char *
@@ -114,7 +131,7 @@ SDL_JoystickNameForIndex(int device_index)
         SDL_SetError("There are %d joysticks available", SDL_NumJoysticks());
         return (NULL);
     }
-    return (SDL_SYS_JoystickNameForDeviceIndex(device_index));
+    return SDL_FixupJoystickName(SDL_SYS_JoystickNameForDeviceIndex(device_index));
 }
 
 /*
@@ -481,7 +498,7 @@ SDL_JoystickName(SDL_Joystick * joystick)
         return (NULL);
     }
 
-    return (joystick->name);
+    return SDL_FixupJoystickName(joystick->name);
 }
 
 /*
