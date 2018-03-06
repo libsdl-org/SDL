@@ -169,8 +169,8 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeHat)(
 
 JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick)(
         JNIEnv* env, jclass jcls,
-        jint device_id, jstring device_name, jstring device_desc, jint is_accelerometer,
-        jint nbuttons, jint naxes, jint nhats, jint nballs);
+        jint device_id, jstring device_name, jstring device_desc, jint vendor_id, jint product_id,
+        jboolean is_accelerometer, jint button_mask, jint naxes, jint nhats, jint nballs);
 
 JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveJoystick)(
         JNIEnv* env, jclass jcls,
@@ -543,14 +543,15 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(onNativeHat)(
 
 JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeAddJoystick)(
                                     JNIEnv* env, jclass jcls,
-                                    jint device_id, jstring device_name, jstring device_desc, jint is_accelerometer,
-                                    jint nbuttons, jint naxes, jint nhats, jint nballs)
+                                    jint device_id, jstring device_name, jstring device_desc,
+                                    jint vendor_id, jint product_id, jboolean is_accelerometer,
+                                    jint button_mask, jint naxes, jint nhats, jint nballs)
 {
     int retval;
     const char *name = (*env)->GetStringUTFChars(env, device_name, NULL);
     const char *desc = (*env)->GetStringUTFChars(env, device_desc, NULL);
 
-    retval = Android_AddJoystick(device_id, name, desc, (SDL_bool) is_accelerometer, nbuttons, naxes, nhats, nballs);
+    retval = Android_AddJoystick(device_id, name, desc, vendor_id, product_id, is_accelerometer ? SDL_TRUE : SDL_FALSE, button_mask, naxes, nhats, nballs);
 
     (*env)->ReleaseStringUTFChars(env, device_name, name);
     (*env)->ReleaseStringUTFChars(env, device_desc, desc);

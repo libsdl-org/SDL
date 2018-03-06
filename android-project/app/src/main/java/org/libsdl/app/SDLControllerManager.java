@@ -17,7 +17,8 @@ public class SDLControllerManager
     public static native int nativeSetupJNI();
 
     public static native int nativeAddJoystick(int device_id, String name, String desc,
-                                               int is_accelerometer, int nbuttons,
+                                               int vendor_id, int product_id,
+                                               boolean is_accelerometer, int button_mask,
                                                int naxes, int nhats, int nballs);
     public static native int nativeRemoveJoystick(int device_id);
     public static native int nativeAddHaptic(int device_id, String name);
@@ -42,7 +43,9 @@ public class SDLControllerManager
     }
 
     public static void setup() {
-        if (Build.VERSION.SDK_INT >= 16) {
+        if (Build.VERSION.SDK_INT >= 19) {
+            mJoystickHandler = new SDLJoystickHandler_API19();
+        } else if (Build.VERSION.SDK_INT >= 16) {
             mJoystickHandler = new SDLJoystickHandler_API16();
         } else if (Build.VERSION.SDK_INT >= 12) {
             mJoystickHandler = new SDLJoystickHandler_API12();
@@ -155,12 +158,7 @@ class SDLJoystickHandler_API12 extends SDLJoystickHandler {
     @Override
     public void pollInputDevices() {
         int[] deviceIds = InputDevice.getDeviceIds();
-        // It helps processing the device ids in reverse order
-        // For example, in the case of the XBox 360 wireless dongle,
-        // so the first controller seen by SDL matches what the receiver
-        // considers to be the first controller
-
-        for(int i=deviceIds.length-1; i>-1; i--) {
+        for(int i=0; i < deviceIds.length; ++i) {
             SDLJoystick joystick = getJoystick(deviceIds[i]);
             if (joystick == null) {
                 joystick = new SDLJoystick();
@@ -187,8 +185,7 @@ class SDLJoystickHandler_API12 extends SDLJoystickHandler {
                     }
 
                     mJoysticks.add(joystick);
-                    SDLControllerManager.nativeAddJoystick(joystick.device_id, joystick.name, joystick.desc, 0, -1,
-                                                           joystick.axes.size(), joystick.hats.size()/2, 0);
+                    SDLControllerManager.nativeAddJoystick(joystick.device_id, joystick.name, joystick.desc, getVendorId(joystickDevice), getProductId(joystickDevice), false, getButtonMask(joystickDevice), joystick.axes.size(), joystick.hats.size()/2, 0);
                 }
             }
         }
@@ -259,8 +256,16 @@ class SDLJoystickHandler_API12 extends SDLJoystickHandler {
     public String getJoystickDescriptor(InputDevice joystickDevice) {
         return joystickDevice.getName();
     }
+    public int getProductId(InputDevice joystickDevice) {
+        return 0;
+    }
+    public int getVendorId(InputDevice joystickDevice) {
+        return 0;
+    }
+    public int getButtonMask(InputDevice joystickDevice) {
+        return -1;
+    }
 }
-
 
 class SDLJoystickHandler_API16 extends SDLJoystickHandler_API12 {
 
@@ -273,6 +278,112 @@ class SDLJoystickHandler_API16 extends SDLJoystickHandler_API12 {
         }
 
         return super.getJoystickDescriptor(joystickDevice);
+    }
+}
+
+class SDLJoystickHandler_API19 extends SDLJoystickHandler_API16 {
+
+    @Override
+    public int getProductId(InputDevice joystickDevice) {
+        return joystickDevice.getProductId();
+    }
+
+    @Override
+    public int getVendorId(InputDevice joystickDevice) {
+        return joystickDevice.getVendorId();
+    }
+
+    @Override
+    public int getButtonMask(InputDevice joystickDevice) {
+        int button_mask = 0;
+        int[] keys = new int[] {
+            KeyEvent.KEYCODE_BUTTON_A,
+            KeyEvent.KEYCODE_BUTTON_B,
+            KeyEvent.KEYCODE_BUTTON_X,
+            KeyEvent.KEYCODE_BUTTON_Y,
+            KeyEvent.KEYCODE_BACK,
+            KeyEvent.KEYCODE_BUTTON_MODE,
+            KeyEvent.KEYCODE_BUTTON_START,
+            KeyEvent.KEYCODE_BUTTON_THUMBL,
+            KeyEvent.KEYCODE_BUTTON_THUMBR,
+            KeyEvent.KEYCODE_BUTTON_L1,
+            KeyEvent.KEYCODE_BUTTON_R1,
+            KeyEvent.KEYCODE_DPAD_UP,
+            KeyEvent.KEYCODE_DPAD_DOWN,
+            KeyEvent.KEYCODE_DPAD_LEFT,
+            KeyEvent.KEYCODE_DPAD_RIGHT,
+            KeyEvent.KEYCODE_BUTTON_SELECT,
+            KeyEvent.KEYCODE_DPAD_CENTER,
+
+            // These don't map into any SDL controller buttons directly
+            KeyEvent.KEYCODE_BUTTON_L2,
+            KeyEvent.KEYCODE_BUTTON_R2,
+            KeyEvent.KEYCODE_BUTTON_C,
+            KeyEvent.KEYCODE_BUTTON_Z,
+            KeyEvent.KEYCODE_BUTTON_1,
+            KeyEvent.KEYCODE_BUTTON_2,
+            KeyEvent.KEYCODE_BUTTON_3,
+            KeyEvent.KEYCODE_BUTTON_4,
+            KeyEvent.KEYCODE_BUTTON_5,
+            KeyEvent.KEYCODE_BUTTON_6,
+            KeyEvent.KEYCODE_BUTTON_7,
+            KeyEvent.KEYCODE_BUTTON_8,
+            KeyEvent.KEYCODE_BUTTON_9,
+            KeyEvent.KEYCODE_BUTTON_10,
+            KeyEvent.KEYCODE_BUTTON_11,
+            KeyEvent.KEYCODE_BUTTON_12,
+            KeyEvent.KEYCODE_BUTTON_13,
+            KeyEvent.KEYCODE_BUTTON_14,
+            KeyEvent.KEYCODE_BUTTON_15,
+            KeyEvent.KEYCODE_BUTTON_16,
+        };
+        int[] masks = new int[] {
+            (1 << 0),   // A -> A
+            (1 << 1),   // B -> B
+            (1 << 2),   // X -> X
+            (1 << 3),   // Y -> Y
+            (1 << 4),   // BACK -> BACK
+            (1 << 5),   // MODE -> GUIDE
+            (1 << 6),   // START -> START
+            (1 << 7),   // THUMBL -> LEFTSTICK
+            (1 << 8),   // THUMBR -> RIGHTSTICK
+            (1 << 9),   // L1 -> LEFTSHOULDER
+            (1 << 10),  // R1 -> RIGHTSHOULDER
+            (1 << 11),  // DPAD_UP -> DPAD_UP
+            (1 << 12),  // DPAD_DOWN -> DPAD_DOWN
+            (1 << 13),  // DPAD_LEFT -> DPAD_LEFT
+            (1 << 14),  // DPAD_RIGHT -> DPAD_RIGHT
+            (1 << 4),   // SELECT -> BACK
+            (1 << 0),   // DPAD_CENTER -> A
+            (1 << 15),  // L2 -> ??
+            (1 << 16),  // R2 -> ??
+            (1 << 17),  // C -> ??
+            (1 << 18),  // Z -> ??
+            (1 << 20),  // 1 -> ??
+            (1 << 21),  // 2 -> ??
+            (1 << 22),  // 3 -> ??
+            (1 << 23),  // 4 -> ??
+            (1 << 24),  // 5 -> ??
+            (1 << 25),  // 6 -> ??
+            (1 << 26),  // 7 -> ??
+            (1 << 27),  // 8 -> ??
+            (1 << 28),  // 9 -> ??
+            (1 << 29),  // 10 -> ??
+            (1 << 30),  // 11 -> ??
+            (1 << 31),  // 12 -> ??
+            // We're out of room...
+            0xFFFFFFFF,  // 13 -> ??
+            0xFFFFFFFF,  // 14 -> ??
+            0xFFFFFFFF,  // 15 -> ??
+            0xFFFFFFFF,  // 16 -> ??
+        };
+        boolean[] has_keys = joystickDevice.hasKeys(keys);
+        for (int i = 0; i < keys.length; ++i) {
+            if (has_keys[i]) {
+                button_mask |= masks[i];
+            }
+        }
+        return button_mask;
     }
 }
 
