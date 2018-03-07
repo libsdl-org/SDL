@@ -176,6 +176,14 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IsGameController(int joystick_index);
 extern DECLSPEC const char *SDLCALL SDL_GameControllerNameForIndex(int joystick_index);
 
 /**
+ *  Get the mapping of a game controller.
+ *  This can be called before any controllers are opened.
+ *
+ *  \return the mapping string.  Must be freed with SDL_free().  Returns NULL if no mapping is available
+ */
+extern DECLSPEC char *SDLCALL SDL_GameControllerMappingForDeviceIndex(int joystick_index);
+
+/**
  *  Open a game controller for use.
  *  The index passed as an argument refers to the N'th game controller on the system.
  *  This index is not the value which will identify this controller in future

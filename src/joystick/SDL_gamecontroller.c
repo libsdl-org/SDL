@@ -425,6 +425,12 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickG
         }
         pSupportedController = pSupportedController->next;
     }
+#if SDL_JOYSTICK_XINPUT
+    if (guid->data[14] == 'x') {
+        /* This is an XInput device */
+        return s_pXInputMapping;
+    }
+#endif
     return NULL;
 }
 
@@ -1033,11 +1039,6 @@ static ControllerMapping_t *SDL_PrivateGetControllerMapping(int device_index)
     name = SDL_JoystickNameForIndex(device_index);
     guid = SDL_JoystickGetDeviceGUID(device_index);
     mapping = SDL_PrivateGetControllerMappingForNameAndGUID(name, guid);
-#if SDL_JOYSTICK_XINPUT
-    if (!mapping && SDL_SYS_IsXInputGamepad_DeviceIndex(device_index)) {
-        mapping = s_pXInputMapping;
-    }
-#endif
     SDL_UnlockJoysticks();
     return mapping;
 }
@@ -1371,6 +1372,40 @@ SDL_GameControllerNameForIndex(int device_index)
         }
     }
     return NULL;
+}
+
+
+/**
+ *  Get the mapping of a game controller.
+ *  This can be called before any controllers are opened.
+ *  If no mapping can be found, this function returns NULL.
+ */
+char *
+SDL_GameControllerMappingForDeviceIndex(int joystick_index)
+{
+    char *pMappingString = NULL;
+    ControllerMapping_t *mapping;
+
+    SDL_LockJoysticks();
+    mapping = SDL_PrivateGetControllerMapping(joystick_index);
+    if (mapping) {
+        SDL_JoystickGUID guid;
+        char pchGUID[33];
+        size_t needed;
+        guid = SDL_JoystickGetDeviceGUID(joystick_index);
+        SDL_JoystickGetGUIDString(guid, pchGUID, sizeof(pchGUID));
+        /* allocate enough memory for GUID + ',' + name + ',' + mapping + \0 */
+        needed = SDL_strlen(pchGUID) + 1 + SDL_strlen(mapping->name) + 1 + SDL_strlen(mapping->mapping) + 1;
+        pMappingString = SDL_malloc(needed);
+        if (!pMappingString) {
+            SDL_OutOfMemory();
+            SDL_UnlockJoysticks();
+            return NULL;
+        }
+        SDL_snprintf(pMappingString, needed, "%s,%s,%s", pchGUID, mapping->name, mapping->mapping);
+    }
+    SDL_UnlockJoysticks();
+    return pMappingString;
 }
 
 
