@@ -464,18 +464,6 @@ SDL_XINPUT_JoystickQuit(void)
     }
 }
 
-SDL_bool
-SDL_SYS_IsXInputGamepad_DeviceIndex(int device_index)
-{
-    JoyStick_DeviceData *device = SYS_Joystick;
-    int index;
-
-    for (index = device_index; index > 0; index--)
-        device = device->pNext;
-
-    return device->bXInputDevice;
-}
-
 #else /* !SDL_JOYSTICK_XINPUT */
 
 typedef struct JoyStick_DeviceData JoyStick_DeviceData;

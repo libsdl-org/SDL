@@ -121,11 +121,6 @@ extern SDL_JoystickGUID SDL_SYS_JoystickGetDeviceGUID(int device_index);
 /* Function to return the stable GUID for a opened joystick */
 extern SDL_JoystickGUID SDL_SYS_JoystickGetGUID(SDL_Joystick * joystick);
 
-#if SDL_JOYSTICK_XINPUT
-/* Function returns SDL_TRUE if this device is an XInput gamepad */
-extern SDL_bool SDL_SYS_IsXInputGamepad_DeviceIndex(int device_index);
-#endif
-
 #endif /* SDL_sysjoystick_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
