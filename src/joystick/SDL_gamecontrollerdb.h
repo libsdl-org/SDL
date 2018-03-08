@@ -215,9 +215,9 @@ static const char *s_ControllerMappings [] =
     "050000005e04000091020000ff073f00,Xbox Wireless Controller,a:b0,b:b1,back:b4,guide:b5,leftshoulder:b9,leftstick:b7,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a5,rightx:a3,righty:a4,start:b6,x:b2,y:b3,", /* The DPAD doesn't seem to work on this controller on Android TV? */
 #endif
 #if defined(SDL_JOYSTICK_MFI)
-    "4d466947616d65706164010000000000,*,a:b0,b:b1,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b4,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,righttrigger:a5,rightx:a3,righty:a4,start:b6,x:b2,y:b3,",
-    "4d466947616d65706164020000000000,*,a:b0,b:b1,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b4,rightshoulder:b5,start:b6,x:b2,y:b3,",
-    "4d466947616d65706164030000000000,Remote,a:b0,b:b2,leftx:a0,lefty:a1,",
+    "05000000ac0500000100000000006d01,*,a:b0,b:b1,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b4,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,righttrigger:a5,rightx:a3,righty:a4,guide:b6,x:b2,y:b3,",
+    "05000000ac0500000200000000006d02,*,a:b0,b:b1,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b4,rightshoulder:b5,guide:b6,x:b2,y:b3,",
+    "05000000ac0500000300000000006d03,Remote,a:b0,b:b2,leftx:a0,lefty:a1,",
     "05000000de2800000511000001000000,Steam Controller,a:b0,b:b1,back:b6,guide:b8,leftshoulder:b4,leftstick:b9,lefttrigger:a2,leftx:a0,lefty:a1,rightshoulder:b5,righttrigger:a3,start:b7,x:b2,y:b3,",
 #endif
 #if defined(SDL_JOYSTICK_EMSCRIPTEN)
