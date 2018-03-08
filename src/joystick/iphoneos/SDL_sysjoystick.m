@@ -83,6 +83,14 @@ static void
 SDL_SYS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *controller)
 {
 #ifdef SDL_JOYSTICK_MFI
+    const Uint16 BUS_BLUETOOTH = 0x05;
+	const Uint16 VENDOR_APPLE = 0x05AC;
+    Uint16 *guid16 = (Uint16 *)device->guid.data;
+	Uint16 vendor = 0;
+	Uint16 product = 0;
+	Uint16 version = 0;
+	Uint8 subtype = 0;
+
     const char *name = NULL;
     /* Explicitly retain the controller because SDL_JoystickDeviceItem is a
      * struct, and ARC doesn't work with structs. */
@@ -98,40 +106,26 @@ SDL_SYS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *contr
 
     device->name = SDL_strdup(name);
 
-    device->guid.data[0] = 'M';
-    device->guid.data[1] = 'F';
-    device->guid.data[2] = 'i';
-    device->guid.data[3] = 'G';
-    device->guid.data[4] = 'a';
-    device->guid.data[5] = 'm';
-    device->guid.data[6] = 'e';
-    device->guid.data[7] = 'p';
-    device->guid.data[8] = 'a';
-    device->guid.data[9] = 'd';
-
     if (controller.extendedGamepad) {
-        device->guid.data[10] = 1;
-    } else if (controller.gamepad) {
-        device->guid.data[10] = 2;
-    }
-#if TARGET_OS_TV
-    else if (controller.microGamepad) {
-        device->guid.data[10] = 3;
-        device->remote = SDL_TRUE;
-    }
-#endif /* TARGET_OS_TV */
-
-    if (controller.extendedGamepad) {
+		vendor = VENDOR_APPLE;
+		product = 1;
+		subtype = 1;
         device->naxes = 6; /* 2 thumbsticks and 2 triggers */
         device->nhats = 1; /* d-pad */
         device->nbuttons = 7; /* ABXY, shoulder buttons, pause button */
     } else if (controller.gamepad) {
+		vendor = VENDOR_APPLE;
+		product = 2;
+		subtype = 2;
         device->naxes = 0; /* no traditional analog inputs */
         device->nhats = 1; /* d-pad */
         device->nbuttons = 7; /* ABXY, shoulder buttons, pause button */
     }
 #if TARGET_OS_TV
     else if (controller.microGamepad) {
+		vendor = VENDOR_APPLE;
+		product = 3;
+		subtype = 3;
         device->naxes = 2; /* treat the touch surface as two axes */
         device->nhats = 0; /* apparently the touch surface-as-dpad is buggy */
         device->nbuttons = 3; /* AX, pause button */
@@ -139,6 +133,21 @@ SDL_SYS_AddMFIJoystickDevice(SDL_JoystickDeviceItem *device, GCController *contr
         controller.microGamepad.allowsRotation = SDL_GetHintBoolean(SDL_HINT_APPLE_TV_REMOTE_ALLOW_ROTATION, SDL_FALSE);
     }
 #endif /* TARGET_OS_TV */
+
+    /* We only need 16 bits for each of these; space them out to fill 128. */
+    /* Byteswap so devices get same GUID on little/big endian platforms. */
+    *guid16++ = SDL_SwapLE16(BUS_BLUETOOTH);
+    *guid16++ = 0;
+	*guid16++ = SDL_SwapLE16(vendor);
+	*guid16++ = 0;
+	*guid16++ = SDL_SwapLE16(product);
+	*guid16++ = 0;
+	*guid16++ = SDL_SwapLE16(version);
+	*guid16++ = 0;
+
+	/* Note that this is an MFI controller and what subtype it is */
+	device->guid.data[14] = 'm';
+	device->guid.data[15] = subtype;
 
     /* This will be set when the first button press of the controller is
      * detected. */
