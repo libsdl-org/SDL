@@ -51,7 +51,7 @@
 #include <intrin.h>
 #else
 #ifdef __ALTIVEC__
-#if HAVE_ALTIVEC_H && !defined(__APPLE_ALTIVEC__) && !defined(SDL_DISABLE_ALTIVEC_H)
+#if defined(HAVE_ALTIVEC_H) && !defined(__APPLE_ALTIVEC__) && !defined(SDL_DISABLE_ALTIVEC_H)
 #include <altivec.h>
 #undef pixel
 #undef bool
@@ -60,7 +60,7 @@
 #if defined(__3dNOW__) && !defined(SDL_DISABLE_MM3DNOW_H)
 #include <mm3dnow.h>
 #endif
-#if HAVE_IMMINTRIN_H && !defined(SDL_DISABLE_IMMINTRIN_H)
+#if defined(HAVE_IMMINTRIN_H) && !defined(SDL_DISABLE_IMMINTRIN_H)
 #include <immintrin.h>
 #else
 #if defined(__MMX__) && !defined(SDL_DISABLE_MMINTRIN_H)
