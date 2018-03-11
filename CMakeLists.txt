@@ -1261,7 +1261,7 @@ elseif(WINDOWS)
   endif()
 
   # Libraries for Win32 native and MinGW
-  list(APPEND EXTRA_LIBS user32 gdi32 winmm imm32 ole32 oleaut32 version uuid)
+  list(APPEND EXTRA_LIBS user32 gdi32 winmm imm32 ole32 oleaut32 version uuid advapi32 shell32)
 
   # TODO: in configure.in the check for timers is set on
   # cygwin | mingw32* - does this include mingw32CE?
