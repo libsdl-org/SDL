@@ -22018,6 +22018,24 @@ $as_echo "#define SDL_VIDEO_RENDER_OGL 1" >>confdefs.h
     fi
 }
 
+CheckMacGLES()
+{
+    if test x$enable_video = xyes -a x$enable_video_opengles = xyes; then
+        video_opengl_egl=yes
+
+$as_echo "#define SDL_VIDEO_OPENGL_EGL 1" >>confdefs.h
+
+        video_opengles_v2=yes
+
+$as_echo "#define SDL_VIDEO_OPENGL_ES2 1" >>confdefs.h
+
+
+$as_echo "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
+
+        SUMMARY_video="${SUMMARY_video} opengl_es2"
+    fi
+}
+
 CheckEmscriptenGLES()
 {
     if test x$enable_video = xyes -a x$enable_video_opengles = xyes; then
@@ -24461,6 +24479,7 @@ $as_echo "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
         CheckMETAL
         CheckX11
         CheckMacGL
+        CheckMacGLES
         CheckOpenGLX11
         CheckVulkan
         CheckPTHREAD
