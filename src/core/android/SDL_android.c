@@ -335,17 +335,16 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv* mEnv, jclass c
                                 "getManifestEnvironmentVariables", "()Z");
 
     midGetDisplayDPI = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass, "getDisplayDPI", "()Landroid/util/DisplayMetrics;");
-
-    /* Custom cursor implementation is only available on API 24 and above */
     midCreateCustomCursor = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass, "createCustomCursor", "([IIIII)I");
-    midSetCustomCursor = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass, "setCustomCursor", "(I)V");
-    midSetSystemCursor = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass, "setSystemCursor", "(I)V");
+    midSetCustomCursor = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass, "setCustomCursor", "(I)Z");
+    midSetSystemCursor = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass, "setSystemCursor", "(I)Z");
 
     if (!midGetNativeSurface ||
        !midSetActivityTitle || !midSetWindowStyle || !midSetOrientation || !midGetContext || !midIsAndroidTV || !midInputGetInputDeviceIds ||
        !midSendMessage || !midShowTextInput || !midIsScreenKeyboardShown ||
        !midClipboardSetText || !midClipboardGetText || !midClipboardHasText ||
-       !midOpenAPKExpansionInputStream || !midGetManifestEnvironmentVariables|| !midGetDisplayDPI) {
+       !midOpenAPKExpansionInputStream || !midGetManifestEnvironmentVariables || !midGetDisplayDPI ||
+       !midCreateCustomCursor || !midSetCustomCursor || !midSetSystemCursor) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLActivity.java?");
     }
 
@@ -2178,34 +2177,29 @@ int Android_JNI_CreateCustomCursor(SDL_Surface *surface, int hot_x, int hot_y)
 {
     JNIEnv *mEnv = Android_JNI_GetEnv();
     int custom_cursor = 0;
-    if (midCreateCustomCursor) {
-        jintArray pixels;
-        pixels = (*mEnv)->NewIntArray(mEnv, surface->w * surface->h);
-        if (!pixels) {
-            return 0;
-        }
+    jintArray pixels;
+    pixels = (*mEnv)->NewIntArray(mEnv, surface->w * surface->h);
+    if (pixels) {
         (*mEnv)->SetIntArrayRegion(mEnv, pixels, 0, surface->w * surface->h, (int *)surface->pixels);
         custom_cursor = (*mEnv)->CallStaticIntMethod(mEnv, mActivityClass, midCreateCustomCursor, pixels, surface->w, surface->h, hot_x, hot_y);
         (*mEnv)->DeleteLocalRef(mEnv, pixels);
+    } else {
+        SDL_OutOfMemory();
     }
     return custom_cursor;
 }
 
 
-void Android_JNI_SetCustomCursor(int cursorID)
+SDL_bool Android_JNI_SetCustomCursor(int cursorID)
 {
     JNIEnv *mEnv = Android_JNI_GetEnv();
-    if (midSetCustomCursor) {
-        (*mEnv)->CallStaticVoidMethod(mEnv, mActivityClass, midSetCustomCursor, cursorID);
-    }
+    return (*mEnv)->CallStaticBooleanMethod(mEnv, mActivityClass, midSetCustomCursor, cursorID);
 }
 
-void Android_JNI_SetSystemCursor(int cursorID)
+SDL_bool Android_JNI_SetSystemCursor(int cursorID)
 {
     JNIEnv *mEnv = Android_JNI_GetEnv();
-    if (midSetSystemCursor) {
-        (*mEnv)->CallStaticVoidMethod(mEnv, mActivityClass, midSetSystemCursor, cursorID);
-    }
+    return (*mEnv)->CallStaticBooleanMethod(mEnv, mActivityClass, midSetSystemCursor, cursorID);
 }
 
 #endif /* __ANDROID__ */

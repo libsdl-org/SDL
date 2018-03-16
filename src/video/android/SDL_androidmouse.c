@@ -121,12 +121,18 @@ Android_ShowCursor(SDL_Cursor * cursor)
     if (cursor) {
         SDL_AndroidCursorData *data = (SDL_AndroidCursorData*)cursor->driverdata;
         if (data->custom_cursor) {
-            Android_JNI_SetCustomCursor(data->custom_cursor);
+            if (!Android_JNI_SetCustomCursor(data->custom_cursor)) {
+                return SDL_Unsupported();
+            }
         } else {
-            Android_JNI_SetSystemCursor(data->system_cursor);
+            if (!Android_JNI_SetSystemCursor(data->system_cursor)) {
+                return SDL_Unsupported();
+            }
         }
     } else {
-        Android_JNI_SetSystemCursor(-1);
+        if (!Android_JNI_SetSystemCursor(-1)) {
+            return SDL_Unsupported();
+        }
     }
     return 0;
 }

@@ -77,10 +77,8 @@ public class SDLActivity extends Activity {
     protected static boolean mScreenKeyboardShown;
     protected static ViewGroup mLayout;
     protected static SDLClipboardHandler mClipboardHandler;
-    //#CURSORIMPLEENTATION
-    //protected static Hashtable<Integer, PointerIcon> mCursors;
-    //protected static int mLastCursorID;
-    //protected static PointerIcon mActiveCursor;
+    protected static Hashtable<Integer, Object> mCursors;
+    protected static int mLastCursorID;
 
 
     // This is what SDL runs in. It invokes SDL_main(), eventually
@@ -153,10 +151,8 @@ public class SDLActivity extends Activity {
         mTextEdit = null;
         mLayout = null;
         mClipboardHandler = null;
-        //#CURSORIMPLEENTATION
-        //mCursors = new Hashtable<Integer, PointerIcon>();
-        //mLastCursorID = 0;
-        //mActiveCursor = null;
+        mCursors = new Hashtable<Integer, Object>();
+        mLastCursorID = 0;
         mSDLThread = null;
         mExitCalledFromJava = false;
         mBrokenLibraries = false;
@@ -1093,69 +1089,91 @@ public class SDLActivity extends Activity {
     /**
      * This method is called by SDL using JNI.
      */
-    /**
-     * #CURSORIMPLEENTATION
-     * The cursor implementation requires API 24 or above
-     *
     public static int createCustomCursor(int[] colors, int width, int height, int hotSpotX, int hotSpotY) {
         Bitmap bitmap = Bitmap.createBitmap(colors, width, height, Bitmap.Config.ARGB_8888);
         ++mLastCursorID;
-        mCursors.put(mLastCursorID, PointerIcon.create(bitmap, hotSpotX, hotSpotY));
+        // This requires API 24, so use reflection to implement this
+        try {
+            Class PointerIconClass = Class.forName("android.view.PointerIcon");
+            Class[] arg_types = new Class[] { Bitmap.class, float.class, float.class };
+            Method create = PointerIconClass.getMethod("create", arg_types);
+            mCursors.put(mLastCursorID, create.invoke(null, bitmap, hotSpotX, hotSpotY));
+        } catch (Exception e) {
+            return 0;
+        }
         return mLastCursorID;
     }
 
-    public static void setCustomCursor(int cursorID) {
-        mActiveCursor = mCursors.get(cursorID);
+    /**
+     * This method is called by SDL using JNI.
+     */
+    public static boolean setCustomCursor(int cursorID) {
+        // This requires API 24, so use reflection to implement this
+        try {
+            Class PointerIconClass = Class.forName("android.view.PointerIcon");
+            Method setPointerIcon = SDLSurface.class.getMethod("setPointerIcon", PointerIconClass);
+            setPointerIcon.invoke(mSurface, mCursors.get(cursorID));
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
     }
 
-    public static void setSystemCursor(int cursorID) {
+    /**
+     * This method is called by SDL using JNI.
+     */
+    public static boolean setSystemCursor(int cursorID) {
+        int cursor_type = 0; //PointerIcon.TYPE_NULL;
         switch (cursorID) {
-        case SDL_SYSTEM_CURSOR_NONE:
-            mActiveCursor = PointerIcon.getSystemIcon(SDL.getContext(), PointerIcon.TYPE_NULL);
-            break;
         case SDL_SYSTEM_CURSOR_ARROW:
-            mActiveCursor = PointerIcon.getSystemIcon(SDL.getContext(), PointerIcon.TYPE_ARROW);
+            cursor_type = 1000; //PointerIcon.TYPE_ARROW;
             break;
         case SDL_SYSTEM_CURSOR_IBEAM:
-            mActiveCursor = PointerIcon.getSystemIcon(SDL.getContext(), PointerIcon.TYPE_TEXT);
+            cursor_type = 1008; //PointerIcon.TYPE_TEXT;
             break;
         case SDL_SYSTEM_CURSOR_WAIT:
-            mActiveCursor = PointerIcon.getSystemIcon(SDL.getContext(), PointerIcon.TYPE_WAIT);
+            cursor_type = 1004; //PointerIcon.TYPE_WAIT;
             break;
         case SDL_SYSTEM_CURSOR_CROSSHAIR:
-            mActiveCursor = PointerIcon.getSystemIcon(SDL.getContext(), PointerIcon.TYPE_CROSSHAIR);
+            cursor_type = 1007; //PointerIcon.TYPE_CROSSHAIR;
             break;
         case SDL_SYSTEM_CURSOR_WAITARROW:
-            mActiveCursor = PointerIcon.getSystemIcon(SDL.getContext(), PointerIcon.TYPE_WAIT);
+            cursor_type = 1004; //PointerIcon.TYPE_WAIT;
             break;
         case SDL_SYSTEM_CURSOR_SIZENWSE:
-            mActiveCursor = PointerIcon.getSystemIcon(SDL.getContext(), PointerIcon.TYPE_TOP_LEFT_DIAGONAL_DOUBLE_ARROW);
+            cursor_type = 1017; //PointerIcon.TYPE_TOP_LEFT_DIAGONAL_DOUBLE_ARROW;
             break;
         case SDL_SYSTEM_CURSOR_SIZENESW:
-            mActiveCursor = PointerIcon.getSystemIcon(SDL.getContext(), PointerIcon.TYPE_TOP_RIGHT_DIAGONAL_DOUBLE_ARROW);
+            cursor_type = 1016; //PointerIcon.TYPE_TOP_RIGHT_DIAGONAL_DOUBLE_ARROW;
             break;
         case SDL_SYSTEM_CURSOR_SIZEWE:
-            mActiveCursor = PointerIcon.getSystemIcon(SDL.getContext(), PointerIcon.TYPE_HORIZONTAL_DOUBLE_ARROW);
+            cursor_type = 1014; //PointerIcon.TYPE_HORIZONTAL_DOUBLE_ARROW;
             break;
         case SDL_SYSTEM_CURSOR_SIZENS:
-            mActiveCursor = PointerIcon.getSystemIcon(SDL.getContext(), PointerIcon.TYPE_VERTICAL_DOUBLE_ARROW);
+            cursor_type = 1015; //PointerIcon.TYPE_VERTICAL_DOUBLE_ARROW;
             break;
         case SDL_SYSTEM_CURSOR_SIZEALL:
-            mActiveCursor = PointerIcon.getSystemIcon(SDL.getContext(), PointerIcon.TYPE_GRAB);
+            cursor_type = 1020; //PointerIcon.TYPE_GRAB;
             break;
         case SDL_SYSTEM_CURSOR_NO:
-            mActiveCursor = PointerIcon.getSystemIcon(SDL.getContext(), PointerIcon.TYPE_NO_DROP);
+            cursor_type = 1012; //PointerIcon.TYPE_NO_DROP;
             break;
         case SDL_SYSTEM_CURSOR_HAND:
-            mActiveCursor = PointerIcon.getSystemIcon(SDL.getContext(), PointerIcon.TYPE_HAND);
+            cursor_type = 1002; //PointerIcon.TYPE_HAND;
             break;
         }
+        // This requires API 24, so use reflection to implement this
+        try {
+            Class PointerIconClass = Class.forName("android.view.PointerIcon");
+            Class[] arg_types = new Class[] { Context.class, int.class };
+            Method getSystemIcon = PointerIconClass.getMethod("getSystemIcon", arg_types);
+            Method setPointerIcon = SDLSurface.class.getMethod("setPointerIcon", PointerIconClass);
+            setPointerIcon.invoke(mSurface, getSystemIcon.invoke(null, SDL.getContext(), cursor_type));
+        } catch (Exception e) {
+            return false;
+        }
+        return true;
     }
-
-    public static PointerIcon getCursor() {
-        return mActiveCursor;
-    }
-    */
 }
 
 /**
@@ -1547,14 +1565,6 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                                       event.values[2] / SensorManager.GRAVITY_EARTH);
         }
     }
-
-    /**
-     * #CURSORIMPLEENTATION
-    @Override
-    public PointerIcon onResolvePointerIcon(MotionEvent event, int pointerIndex) {
-        return SDLActivity.getCursor();
-    }
-    */
 }
 
 /* This is a fake invisible editor view that receives the input and defines the
