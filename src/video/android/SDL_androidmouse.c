@@ -42,12 +42,107 @@
 #define BUTTON_BACK 8
 #define BUTTON_FORWARD 16
 
+typedef struct
+{
+    int custom_cursor;
+    int system_cursor;
+
+} SDL_AndroidCursorData;
+
 /* Last known Android mouse button state (includes all buttons) */
 static int last_state;
+
+
+static SDL_Cursor *
+Android_WrapCursor(int custom_cursor, int system_cursor)
+{
+    SDL_Cursor *cursor;
+
+    cursor = SDL_calloc(1, sizeof(*cursor));
+    if (cursor) {
+        SDL_AndroidCursorData *data = (SDL_AndroidCursorData*)SDL_calloc(1, sizeof(*data));
+        if (data) {
+            data->custom_cursor = custom_cursor;
+            data->system_cursor = system_cursor;
+            cursor->driverdata = data;
+        } else {
+            SDL_free(cursor);
+            cursor = NULL;
+            SDL_OutOfMemory();
+        }
+    } else {
+        SDL_OutOfMemory();
+    }
+
+    return cursor;
+}
+
+static SDL_Cursor *
+Android_CreateDefaultCursor()
+{
+    return Android_WrapCursor(0, SDL_SYSTEM_CURSOR_ARROW);
+}
+
+static SDL_Cursor *
+Android_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
+{
+    int custom_cursor;
+    SDL_Surface *converted;
+
+    converted = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_ARGB8888, 0);
+    if (!converted) {
+        return NULL;
+    }
+    custom_cursor = Android_JNI_CreateCustomCursor(converted, hot_x, hot_y);
+    SDL_FreeSurface(converted);
+    if (!custom_cursor) {
+        SDL_Unsupported();
+        return NULL;
+    }
+    return Android_WrapCursor(custom_cursor, 0);
+}
+
+static SDL_Cursor *
+Android_CreateSystemCursor(SDL_SystemCursor id)
+{
+    return Android_WrapCursor(0, id);
+}
+
+static void
+Android_FreeCursor(SDL_Cursor * cursor)
+{
+    SDL_free(cursor->driverdata);
+    SDL_free(cursor);
+}
+
+static int
+Android_ShowCursor(SDL_Cursor * cursor)
+{
+    if (cursor) {
+        SDL_AndroidCursorData *data = (SDL_AndroidCursorData*)cursor->driverdata;
+        if (data->custom_cursor) {
+            Android_JNI_SetCustomCursor(data->custom_cursor);
+        } else {
+            Android_JNI_SetSystemCursor(data->system_cursor);
+        }
+    } else {
+        Android_JNI_SetSystemCursor(-1);
+    }
+    return 0;
+}
 
 void
 Android_InitMouse(void)
 {
+    SDL_Mouse *mouse = SDL_GetMouse();
+
+    mouse->CreateCursor = Android_CreateCursor;
+    mouse->CreateSystemCursor = Android_CreateSystemCursor;
+    mouse->ShowCursor = Android_ShowCursor;
+    mouse->FreeCursor = Android_FreeCursor;
+
+    SDL_SetDefaultCursor(Android_CreateDefaultCursor());
+
     last_state = 0;
 }
 

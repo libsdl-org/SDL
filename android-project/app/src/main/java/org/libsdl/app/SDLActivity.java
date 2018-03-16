@@ -3,6 +3,7 @@ package org.libsdl.app;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Hashtable;
 import java.lang.reflect.Method;
 
 import android.app.*;
@@ -37,6 +38,21 @@ public class SDLActivity extends Activity {
 
     public static boolean mIsResumedCalled, mIsSurfaceReady, mHasFocus;
 
+    // Cursor types
+    private static final int SDL_SYSTEM_CURSOR_NONE = -1;
+    private static final int SDL_SYSTEM_CURSOR_ARROW = 0;
+    private static final int SDL_SYSTEM_CURSOR_IBEAM = 1;
+    private static final int SDL_SYSTEM_CURSOR_WAIT = 2;
+    private static final int SDL_SYSTEM_CURSOR_CROSSHAIR = 3;
+    private static final int SDL_SYSTEM_CURSOR_WAITARROW = 4;
+    private static final int SDL_SYSTEM_CURSOR_SIZENWSE = 5;
+    private static final int SDL_SYSTEM_CURSOR_SIZENESW = 6;
+    private static final int SDL_SYSTEM_CURSOR_SIZEWE = 7;
+    private static final int SDL_SYSTEM_CURSOR_SIZENS = 8;
+    private static final int SDL_SYSTEM_CURSOR_SIZEALL = 9;
+    private static final int SDL_SYSTEM_CURSOR_NO = 10;
+    private static final int SDL_SYSTEM_CURSOR_HAND = 11;
+
     // Handle the state of the native layer
     public enum NativeState {
            INIT, RESUMED, PAUSED
@@ -61,6 +77,10 @@ public class SDLActivity extends Activity {
     protected static boolean mScreenKeyboardShown;
     protected static ViewGroup mLayout;
     protected static SDLClipboardHandler mClipboardHandler;
+    //#CURSORIMPLEENTATION
+    //protected static Hashtable<Integer, PointerIcon> mCursors;
+    //protected static int mLastCursorID;
+    //protected static PointerIcon mActiveCursor;
 
 
     // This is what SDL runs in. It invokes SDL_main(), eventually
@@ -133,6 +153,10 @@ public class SDLActivity extends Activity {
         mTextEdit = null;
         mLayout = null;
         mClipboardHandler = null;
+        //#CURSORIMPLEENTATION
+        //mCursors = new Hashtable<Integer, PointerIcon>();
+        //mLastCursorID = 0;
+        //mActiveCursor = null;
         mSDLThread = null;
         mExitCalledFromJava = false;
         mBrokenLibraries = false;
@@ -1051,7 +1075,7 @@ public class SDLActivity extends Activity {
     public static boolean clipboardHasText() {
         return mClipboardHandler.clipboardHasText();
     }
-    
+
     /**
      * This method is called by SDL using JNI.
      */
@@ -1065,6 +1089,73 @@ public class SDLActivity extends Activity {
     public static void clipboardSetText(String string) {
         mClipboardHandler.clipboardSetText(string);
     }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
+    /**
+     * #CURSORIMPLEENTATION
+     * The cursor implementation requires API 24 or above
+     *
+    public static int createCustomCursor(int[] colors, int width, int height, int hotSpotX, int hotSpotY) {
+        Bitmap bitmap = Bitmap.createBitmap(colors, width, height, Bitmap.Config.ARGB_8888);
+        ++mLastCursorID;
+        mCursors.put(mLastCursorID, PointerIcon.create(bitmap, hotSpotX, hotSpotY));
+        return mLastCursorID;
+    }
+
+    public static void setCustomCursor(int cursorID) {
+        mActiveCursor = mCursors.get(cursorID);
+    }
+
+    public static void setSystemCursor(int cursorID) {
+        switch (cursorID) {
+        case SDL_SYSTEM_CURSOR_NONE:
+            mActiveCursor = PointerIcon.getSystemIcon(SDL.getContext(), PointerIcon.TYPE_NULL);
+            break;
+        case SDL_SYSTEM_CURSOR_ARROW:
+            mActiveCursor = PointerIcon.getSystemIcon(SDL.getContext(), PointerIcon.TYPE_ARROW);
+            break;
+        case SDL_SYSTEM_CURSOR_IBEAM:
+            mActiveCursor = PointerIcon.getSystemIcon(SDL.getContext(), PointerIcon.TYPE_TEXT);
+            break;
+        case SDL_SYSTEM_CURSOR_WAIT:
+            mActiveCursor = PointerIcon.getSystemIcon(SDL.getContext(), PointerIcon.TYPE_WAIT);
+            break;
+        case SDL_SYSTEM_CURSOR_CROSSHAIR:
+            mActiveCursor = PointerIcon.getSystemIcon(SDL.getContext(), PointerIcon.TYPE_CROSSHAIR);
+            break;
+        case SDL_SYSTEM_CURSOR_WAITARROW:
+            mActiveCursor = PointerIcon.getSystemIcon(SDL.getContext(), PointerIcon.TYPE_WAIT);
+            break;
+        case SDL_SYSTEM_CURSOR_SIZENWSE:
+            mActiveCursor = PointerIcon.getSystemIcon(SDL.getContext(), PointerIcon.TYPE_TOP_LEFT_DIAGONAL_DOUBLE_ARROW);
+            break;
+        case SDL_SYSTEM_CURSOR_SIZENESW:
+            mActiveCursor = PointerIcon.getSystemIcon(SDL.getContext(), PointerIcon.TYPE_TOP_RIGHT_DIAGONAL_DOUBLE_ARROW);
+            break;
+        case SDL_SYSTEM_CURSOR_SIZEWE:
+            mActiveCursor = PointerIcon.getSystemIcon(SDL.getContext(), PointerIcon.TYPE_HORIZONTAL_DOUBLE_ARROW);
+            break;
+        case SDL_SYSTEM_CURSOR_SIZENS:
+            mActiveCursor = PointerIcon.getSystemIcon(SDL.getContext(), PointerIcon.TYPE_VERTICAL_DOUBLE_ARROW);
+            break;
+        case SDL_SYSTEM_CURSOR_SIZEALL:
+            mActiveCursor = PointerIcon.getSystemIcon(SDL.getContext(), PointerIcon.TYPE_GRAB);
+            break;
+        case SDL_SYSTEM_CURSOR_NO:
+            mActiveCursor = PointerIcon.getSystemIcon(SDL.getContext(), PointerIcon.TYPE_NO_DROP);
+            break;
+        case SDL_SYSTEM_CURSOR_HAND:
+            mActiveCursor = PointerIcon.getSystemIcon(SDL.getContext(), PointerIcon.TYPE_HAND);
+            break;
+        }
+    }
+
+    public static PointerIcon getCursor() {
+        return mActiveCursor;
+    }
+    */
 }
 
 /**
@@ -1456,6 +1547,14 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                                       event.values[2] / SensorManager.GRAVITY_EARTH);
         }
     }
+
+    /**
+     * #CURSORIMPLEENTATION
+    @Override
+    public PointerIcon onResolvePointerIcon(MotionEvent event, int pointerIndex) {
+        return SDLActivity.getCursor();
+    }
+    */
 }
 
 /* This is a fake invisible editor view that receives the input and defines the
