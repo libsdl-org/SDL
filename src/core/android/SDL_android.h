@@ -102,6 +102,11 @@ JNIEXPORT void JNICALL SDL_Android_Init(JNIEnv* mEnv, jclass cls);
 #include "SDL_messagebox.h"
 int Android_JNI_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid);
 
+/* Cursor support */
+int Android_JNI_CreateCustomCursor(SDL_Surface *surface, int hot_x, int hot_y);
+void Android_JNI_SetCustomCursor(int cursorID);
+void Android_JNI_SetSystemCursor(int cursorID);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 /* *INDENT-OFF* */
