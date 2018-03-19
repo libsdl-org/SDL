@@ -31,7 +31,6 @@
 #include "SDL_joystick.h"
 #include "SDL_hints.h"
 #include "SDL_stdinc.h"
-#include "SDL_timer.h"
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
 #include "../steam/SDL_steamcontroller.h"
@@ -560,8 +559,6 @@ SDL_SYS_MFIJoystickUpdate(SDL_Joystick * joystick)
         Uint8 hatstate = SDL_HAT_CENTERED;
         int i;
         int updateplayerindex = 0;
-        const Uint8 pausebutton = joystick->nbuttons - 1; /* The pause button is always last. */
-        const Uint32 PAUSE_RELEASE_DELAY_MS = 100;
 
         if (controller.extendedGamepad) {
             GCExtendedGamepad *gamepad = controller.extendedGamepad;
@@ -650,20 +647,12 @@ SDL_SYS_MFIJoystickUpdate(SDL_Joystick * joystick)
         }
 
         for (i = 0; i < joystick->hwdata->num_pause_presses; i++) {
+            const Uint8 pausebutton = joystick->nbuttons - 1; /* The pause button is always last. */
             SDL_PrivateJoystickButton(joystick, pausebutton, SDL_PRESSED);
-            joystick->hwdata->pause_button_down_time = SDL_GetTicks();
-            if (!joystick->hwdata->pause_button_down_time) {
-                joystick->hwdata->pause_button_down_time = 1;
-            }
+            SDL_PrivateJoystickButton(joystick, pausebutton, SDL_RELEASED);
             updateplayerindex = YES;
         }
         joystick->hwdata->num_pause_presses = 0;
-
-        if (joystick->hwdata->pause_button_down_time &&
-            SDL_TICKS_PASSED(SDL_GetTicks(), joystick->hwdata->pause_button_down_time + PAUSE_RELEASE_DELAY_MS)) {
-            SDL_PrivateJoystickButton(joystick, pausebutton, SDL_RELEASED);
-            joystick->hwdata->pause_button_down_time = 0;
-        }
 
         if (updateplayerindex && controller.playerIndex == -1) {
             BOOL usedPlayerIndexSlots[4] = {NO, NO, NO, NO};
