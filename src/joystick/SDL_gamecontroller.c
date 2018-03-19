@@ -1976,12 +1976,12 @@ SDL_PrivateGameControllerButton(SDL_GameController * gamecontroller, SDL_GameCon
 
             if (gamecontroller->joystick->delayed_guide_button) {
                 /* Skip duplicate press */
-                return;
+                return (0);
             }
         } else {
             if (!SDL_TICKS_PASSED(now, gamecontroller->guide_button_down+SDL_MINIMUM_GUIDE_BUTTON_DELAY_MS) && !gamecontroller->joystick->force_recentering) {
                 gamecontroller->joystick->delayed_guide_button = SDL_TRUE;
-                return;
+                return (0);
             }
             gamecontroller->joystick->delayed_guide_button = SDL_FALSE;
         }
