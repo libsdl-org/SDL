@@ -42,6 +42,9 @@ extern SDL_bool SDL_IsGameControllerNameAndGUID(const char *name, SDL_JoystickGU
 /* Function to return whether a game controller should be ignored */
 extern SDL_bool SDL_ShouldIgnoreGameController(const char *name, SDL_JoystickGUID guid);
 
+/* Handle delayed guide button on a game controller */
+extern void SDL_GameControllerHandleDelayedGuideButton(SDL_Joystick *joystick);
+
 /* Internal event queueing functions */
 extern void SDL_PrivateJoystickAdded(int device_index);
 extern void SDL_PrivateJoystickRemoved(SDL_JoystickID device_instance);

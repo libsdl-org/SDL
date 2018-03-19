@@ -25,6 +25,7 @@
 #include "SDL_events.h"
 #include "SDL_assert.h"
 #include "SDL_hints.h"
+#include "SDL_timer.h"
 #include "SDL_sysjoystick.h"
 #include "SDL_joystick_c.h"
 #include "SDL_gamecontrollerdb.h"
@@ -37,6 +38,9 @@
 #include "SDL_system.h"
 #endif
 
+
+/* Many controllers turn the center button into an instantaneous button press */
+#define SDL_MINIMUM_GUIDE_BUTTON_DELAY_MS   100
 
 #define SDL_CONTROLLER_PLATFORM_FIELD "platform:"
 
@@ -112,6 +116,7 @@ struct _SDL_GameController
     SDL_ExtendedGameControllerBind *bindings;
     SDL_ExtendedGameControllerBind **last_match_axis;
     Uint8 *last_hat_mask;
+    Uint32 guide_button_down;
 
     struct _SDL_GameController *next; /* pointer to next game controller we have allocated */
 };
@@ -1964,6 +1969,24 @@ SDL_PrivateGameControllerButton(SDL_GameController * gamecontroller, SDL_GameCon
     }
 #endif /* !SDL_EVENTS_DISABLED */
 
+    if (button == SDL_CONTROLLER_BUTTON_GUIDE) {
+        Uint32 now = SDL_GetTicks();
+        if (state == SDL_PRESSED) {
+            gamecontroller->guide_button_down = now;
+
+            if (gamecontroller->joystick->delayed_guide_button) {
+                /* Skip duplicate press */
+                return;
+            }
+        } else {
+            if (!SDL_TICKS_PASSED(now, gamecontroller->guide_button_down+SDL_MINIMUM_GUIDE_BUTTON_DELAY_MS) && !gamecontroller->joystick->force_recentering) {
+                gamecontroller->joystick->delayed_guide_button = SDL_TRUE;
+                return;
+            }
+            gamecontroller->joystick->delayed_guide_button = SDL_FALSE;
+        }
+    }
+
     /* translate the event, if desired */
     posted = 0;
 #if !SDL_EVENTS_DISABLED
@@ -2010,6 +2033,19 @@ SDL_GameControllerEventState(int state)
     }
     return (state);
 #endif /* SDL_EVENTS_DISABLED */
+}
+
+void
+SDL_GameControllerHandleDelayedGuideButton(SDL_Joystick *joystick)
+{
+    SDL_GameController *controllerlist = SDL_gamecontrollers;
+    while (controllerlist) {
+        if (controllerlist->joystick == joystick) {
+            SDL_PrivateGameControllerButton(controllerlist, SDL_CONTROLLER_BUTTON_GUIDE, SDL_RELEASED);
+            break;
+        }
+        controllerlist = controllerlist->next;
+    }
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

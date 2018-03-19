@@ -874,6 +874,10 @@ SDL_JoystickUpdate(void)
     for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
         SDL_SYS_JoystickUpdate(joystick);
 
+        if (joystick->delayed_guide_button) {
+            SDL_GameControllerHandleDelayedGuideButton(joystick);
+        }
+
         if (joystick->force_recentering) {
             int i;
 
