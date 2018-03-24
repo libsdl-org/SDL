@@ -3774,6 +3774,8 @@ SDL_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 
     if (!messageboxdata) {
         return SDL_InvalidParamError("messageboxdata");
+    } else if (messageboxdata->numbuttons < 0) {
+        return SDL_SetError("Invalid number of buttons");
     }
 
     current_window = SDL_GetKeyboardFocus();

@@ -22,6 +22,14 @@
 
 #if SDL_VIDEO_DRIVER_WINDOWS
 
+#ifdef HAVE_LIMITS_H
+#include <limits.h>
+#else
+#ifndef SIZE_MAX
+#define SIZE_MAX ((size_t)-1)
+#endif
+#endif
+
 #include "../../core/windows/SDL_windows.h"
 
 #include "SDL_assert.h"
@@ -31,6 +39,34 @@
 #ifndef SS_EDITCONTROL
 #define SS_EDITCONTROL  0x2000
 #endif
+
+#ifndef IDOK
+#define IDOK 1
+#endif
+
+#ifndef IDCANCEL
+#define IDCANCEL 2
+#endif
+
+/* Custom dialog return codes */
+#define IDCLOSED 20
+#define IDINVALPTRINIT 50
+#define IDINVALPTRCOMMAND 51
+#define IDINVALPTRSETFOCUS 52
+#define IDINVALPTRDLGITEM 53
+/* First button ID */
+#define IDBUTTONINDEX0 100
+
+#define DLGITEMTYPEBUTTON 0x0080
+#define DLGITEMTYPESTATIC 0x0082
+
+/* Windows only sends the lower 16 bits of the control ID when a button
+ * gets clicked. There are also some predefined and custom IDs that lower
+ * the available number further. 2^16 - 101 buttons should be enough for
+ * everyone, no need to make the code more complex.
+ */
+#define MAX_BUTTONS (0xffff - 100)
+
 
 /* Display a Windows message box */
 
@@ -70,15 +106,79 @@ typedef struct
     Uint8 *data;
     size_t size;
     size_t used;
+    WORD numbuttons;
 } WIN_DialogData;
 
+static SDL_bool GetButtonIndex(const SDL_MessageBoxData *messageboxdata, Uint32 flags, size_t *i)
+{
+    for (*i = 0; *i < (size_t)messageboxdata->numbuttons; ++*i) {
+        if (messageboxdata->buttons[*i].flags & flags) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
 
 static INT_PTR MessageBoxDialogProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPARAM lParam)
 {
+    const SDL_MessageBoxData *messageboxdata;
+    size_t buttonindex;
+
     switch ( iMessage ) {
+    case WM_INITDIALOG:
+        if (lParam == 0) {
+            EndDialog(hDlg, IDINVALPTRINIT);
+            return TRUE;
+        }
+        messageboxdata = (const SDL_MessageBoxData *)lParam;
+        SetWindowLongPtr(hDlg, GWLP_USERDATA, lParam);
+
+        if (GetButtonIndex(messageboxdata, SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, &buttonindex)) {
+            /* Focus on the first default return-key button */
+            HWND buttonctl = GetDlgItem(hDlg, (int)(IDBUTTONINDEX0 + buttonindex));
+            if (buttonctl == NULL) {
+                EndDialog(hDlg, IDINVALPTRDLGITEM);
+            }
+            PostMessage(hDlg, WM_NEXTDLGCTL, (WPARAM)buttonctl, TRUE);
+        } else {
+            /* Give the focus to the dialog window instead */
+            SetFocus(hDlg);
+        }
+        return FALSE;
+    case WM_SETFOCUS:
+        messageboxdata = (const SDL_MessageBoxData *)GetWindowLongPtr(hDlg, GWLP_USERDATA);
+        if (messageboxdata == NULL) {
+            EndDialog(hDlg, IDINVALPTRSETFOCUS);
+            return TRUE;
+        }
+
+        /* Let the default button be focused if there is one. Otherwise, prevent any initial focus. */
+        if (GetButtonIndex(messageboxdata, SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, &buttonindex)) {
+            return FALSE;
+        }
+        return TRUE;
     case WM_COMMAND:
+        messageboxdata = (const SDL_MessageBoxData *)GetWindowLongPtr(hDlg, GWLP_USERDATA);
+        if (messageboxdata == NULL) {
+            EndDialog(hDlg, IDINVALPTRCOMMAND);
+            return TRUE;
+        }
+
         /* Return the ID of the button that was pushed */
-        EndDialog(hDlg, LOWORD(wParam));
+        if (wParam == IDOK) {
+            if (GetButtonIndex(messageboxdata, SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT, &buttonindex)) {
+                EndDialog(hDlg, IDBUTTONINDEX0 + buttonindex);
+            }
+        } else if (wParam == IDCANCEL) {
+            if (GetButtonIndex(messageboxdata, SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT, &buttonindex)) {
+                EndDialog(hDlg, IDBUTTONINDEX0 + buttonindex);
+            } else {
+                /* Closing of window was requested by user or system. It would be rude not to comply. */
+                EndDialog(hDlg, IDCLOSED);
+            }
+        } else if (wParam >= IDBUTTONINDEX0 && (int)wParam - IDBUTTONINDEX0 < messageboxdata->numbuttons) {
+            EndDialog(hDlg, wParam);
+        }
         return TRUE;
 
     default:
@@ -89,15 +189,30 @@ static INT_PTR MessageBoxDialogProc(HWND hDlg, UINT iMessage, WPARAM wParam, LPA
 
 static SDL_bool ExpandDialogSpace(WIN_DialogData *dialog, size_t space)
 {
+    /* Growing memory in 64 KiB steps. */
+    const size_t sizestep = 0x10000;
     size_t size = dialog->size;
 
     if (size == 0) {
-        size = space;
-    } else {
-        while ((dialog->used + space) > size) {
-            size *= 2;
+        /* Start with 4 KiB or a multiple of 64 KiB to fit the data. */
+        size = 0x1000;
+        if (SIZE_MAX - sizestep < space) {
+            size = space;
+        } else if (space > size) {
+            size = (space + sizestep) & ~(sizestep - 1);
         }
+    } else if (SIZE_MAX - dialog->used < space) {
+        SDL_OutOfMemory();
+        return SDL_FALSE;
+    } else if (SIZE_MAX - (dialog->used + space) < sizestep) {
+        /* Close to the maximum. */
+        size = dialog->used + space;
+    } else if (size < dialog->used + space) {
+        /* Round up to the next 64 KiB block. */
+        size = dialog->used + space;
+        size += sizestep - size % sizestep;
     }
+
     if (size > dialog->size) {
         void *data = SDL_realloc(dialog->data, size);
         if (!data) {
@@ -175,7 +290,7 @@ static void Vec2ToDLU(short *x, short *y)
 }
 
 
-static SDL_bool AddDialogControl(WIN_DialogData *dialog, WORD type, DWORD style, DWORD exStyle, int x, int y, int w, int h, int id, const char *caption)
+static SDL_bool AddDialogControl(WIN_DialogData *dialog, WORD type, DWORD style, DWORD exStyle, int x, int y, int w, int h, int id, const char *caption, WORD ordinal)
 {
     DLGITEMTEMPLATEEX item;
     WORD marker = 0xFFFF;
@@ -205,32 +320,54 @@ static SDL_bool AddDialogControl(WIN_DialogData *dialog, WORD type, DWORD style,
     if (!AddDialogData(dialog, &type, sizeof(type))) {
         return SDL_FALSE;
     }
-    if (!AddDialogString(dialog, caption)) {
-        return SDL_FALSE;
+    if (type == DLGITEMTYPEBUTTON || (type == DLGITEMTYPESTATIC && caption != NULL)) {
+        if (!AddDialogString(dialog, caption)) {
+            return SDL_FALSE;
+        }
+    } else {
+        if (!AddDialogData(dialog, &marker, sizeof(marker))) {
+            return SDL_FALSE;
+        }
+        if (!AddDialogData(dialog, &ordinal, sizeof(ordinal))) {
+            return SDL_FALSE;
+        }
     }
     if (!AddDialogData(dialog, &extraData, sizeof(extraData))) {
         return SDL_FALSE;
+    }
+    if (type == DLGITEMTYPEBUTTON) {
+        dialog->numbuttons++;
     }
     ++dialog->lpDialog->cDlgItems;
 
     return SDL_TRUE;
 }
 
-static SDL_bool AddDialogStatic(WIN_DialogData *dialog, int x, int y, int w, int h, const char *text)
+static SDL_bool AddDialogStaticText(WIN_DialogData *dialog, int x, int y, int w, int h, const char *text)
 {
-    DWORD style = WS_VISIBLE | WS_CHILD | SS_LEFT | SS_NOPREFIX | SS_EDITCONTROL;
-    return AddDialogControl(dialog, 0x0082, style, 0, x, y, w, h, -1, text);
+    DWORD style = WS_VISIBLE | WS_CHILD | SS_LEFT | SS_NOPREFIX | SS_EDITCONTROL | WS_GROUP;
+    return AddDialogControl(dialog, DLGITEMTYPESTATIC, style, 0, x, y, w, h, -1, text, 0);
+}
+
+static SDL_bool AddDialogStaticIcon(WIN_DialogData *dialog, int x, int y, int w, int h, Uint16 ordinal)
+{
+    DWORD style = WS_VISIBLE | WS_CHILD | SS_ICON | WS_GROUP;
+    return AddDialogControl(dialog, DLGITEMTYPESTATIC, style, 0, x, y, w, h, -2, NULL, ordinal);
 }
 
 static SDL_bool AddDialogButton(WIN_DialogData *dialog, int x, int y, int w, int h, const char *text, int id, SDL_bool isDefault)
 {
-    DWORD style = WS_VISIBLE | WS_CHILD;
+    DWORD style = WS_VISIBLE | WS_CHILD | WS_TABSTOP;
     if (isDefault) {
         style |= BS_DEFPUSHBUTTON;
     } else {
         style |= BS_PUSHBUTTON;
     }
-    return AddDialogControl(dialog, 0x0080, style, 0, x, y, w, h, id, text);
+    /* The first button marks the start of the group. */
+    if (dialog->numbuttons == 0) {
+        style |= WS_GROUP;
+    }
+    return AddDialogControl(dialog, DLGITEMTYPEBUTTON, style, 0, x, y, w, h, IDBUTTONINDEX0 + dialog->numbuttons, text, 0);
 }
 
 static void FreeDialogData(WIN_DialogData *dialog)
@@ -341,18 +478,87 @@ static WIN_DialogData *CreateDialogData(int w, int h, const char *caption)
     return dialog;
 }
 
+/* Escaping ampersands is necessary to disable mnemonics in dialog controls.
+ * The caller provides a char** for dst and a size_t* for dstlen where the
+ * address of the work buffer and its size will be stored. Their values must be
+ * NULL and 0 on the first call. src is the string to be escaped. On error, the
+ * function returns NULL and, on success, returns a pointer to the escaped
+ * sequence as a read-only string that is valid until the next call or until the
+ * work buffer is freed. Once all strings have been processed, it's the caller's
+ * responsibilty to free the work buffer with SDL_free, even on errors.
+ */
+static const char *EscapeAmpersands(char **dst, size_t *dstlen, const char *src)
+{
+    char *newdst;
+    size_t ampcount = 0;
+    size_t srclen = 0;
+
+    if (src == NULL) {
+        return NULL;
+    }
+
+    while (src[srclen]) {
+        if (src[srclen] == '&') {
+            ampcount++;
+        }
+        srclen++;
+    }
+    srclen++;
+
+    if (ampcount == 0) {
+        /* Nothing to do. */
+        return src;
+    }
+    if (SIZE_MAX - srclen < ampcount) {
+        return NULL;
+    }
+    if (*dst == NULL || *dstlen < srclen + ampcount) {
+        /* Allocating extra space in case the next strings are a bit longer. */
+        size_t extraspace = SIZE_MAX - (srclen + ampcount);
+        if (extraspace > 512) {
+            extraspace = 512;
+        }
+        *dstlen = srclen + ampcount + extraspace;
+        SDL_free(*dst);
+        *dst = NULL;
+        newdst = SDL_malloc(*dstlen);
+        if (newdst == NULL) {
+            return NULL;
+        }
+        *dst = newdst;
+    } else {
+        newdst = *dst;
+    }
+
+    /* The escape character is the ampersand itself. */
+    while (srclen--) {
+        if (*src == '&') {
+            *newdst++ = '&';
+        }
+        *newdst++ = *src++;
+    }
+
+    return *dst;
+}
+
 /* This function is called if a Task Dialog is unsupported. */
 static int
 WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 {
     WIN_DialogData *dialog;
-    int i, x, y;
+    int i, x, y, retval;
     const SDL_MessageBoxButtonData *buttons = messageboxdata->buttons;
     HFONT DialogFont;
     SIZE Size;
     RECT TextSize;
     wchar_t* wmessage;
     TEXTMETRIC TM;
+    HDC FontDC;
+    INT_PTR result;
+    char *ampescape = NULL;
+    size_t ampescapesize = 0;
+    Uint16 defbuttoncount = 0;
+    Uint16 icon = 0;
 
     HWND ParentWindow = NULL;
 
@@ -360,7 +566,25 @@ WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     const int ButtonHeight = 26;
     const int TextMargin = 16;
     const int ButtonMargin = 12;
+    const int IconWidth = GetSystemMetrics(SM_CXICON);
+    const int IconHeight = GetSystemMetrics(SM_CYICON);
+    const int IconMargin = 20;
 
+    if (messageboxdata->numbuttons > MAX_BUTTONS) {
+        return SDL_SetError("Number of butons exceeds limit of %d", MAX_BUTTONS);
+    }
+
+    switch (messageboxdata->flags) {
+    case SDL_MESSAGEBOX_ERROR:
+        icon = (Uint16)IDI_ERROR;
+        break;
+    case SDL_MESSAGEBOX_WARNING:
+        icon = (Uint16)IDI_WARNING;
+        break;
+    case SDL_MESSAGEBOX_INFORMATION:
+        icon = (Uint16)IDI_INFORMATION;
+        break;
+    }
 
     /* Jan 25th, 2013 - dant@fleetsa.com
      *
@@ -394,7 +618,7 @@ WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
      * In order to get text dimensions we need to have a DC with the desired font.
      * I'm assuming a dialog box in SDL is rare enough we can to the create.
      */
-    HDC FontDC = CreateCompatibleDC(0);
+    FontDC = CreateCompatibleDC(0);
 
     {
         /* Create a duplicate of the font used in system message boxes. */
@@ -429,11 +653,13 @@ WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     /* Measure the *pixel* size of the string. */
     wmessage = WIN_UTF8ToString(messageboxdata->message);
     SDL_zero(TextSize);
-    DrawText(FontDC, wmessage, -1, &TextSize, DT_CALCRECT);
+    DrawText(FontDC, wmessage, -1, &TextSize, DT_CALCRECT | DT_LEFT | DT_NOPREFIX | DT_EDITCONTROL);
 
-    /* Add some padding for hangs, etc. */
-    TextSize.right += 2;
-    TextSize.bottom += 2;
+    /* Add margins and some padding for hangs, etc. */
+    TextSize.left += TextMargin;
+    TextSize.right += TextMargin + 2;
+    TextSize.top += TextMargin;
+    TextSize.bottom += TextMargin + 2;
 
     /* Done with the DC, and the string */
     DeleteDC(FontDC);
@@ -445,9 +671,21 @@ WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     Size.cx += TextMargin * 2;
     Size.cy += TextMargin * 2;
 
+    /* Make dialog wider and shift text over for the icon. */
+    if (icon) {
+        Size.cx += IconMargin + IconWidth;
+        TextSize.left += IconMargin + IconWidth;
+        TextSize.right += IconMargin + IconWidth;
+    }
+
     /* Ensure the size is wide enough for all of the buttons. */
     if (Size.cx < messageboxdata->numbuttons * (ButtonWidth + ButtonMargin) + ButtonMargin)
         Size.cx = messageboxdata->numbuttons * (ButtonWidth + ButtonMargin) + ButtonMargin;
+
+    /* Reset the height to the icon size if it is actually bigger than the text. */
+    if (icon && Size.cy < IconMargin * 2 + IconHeight) {
+        Size.cy = IconMargin * 2 + IconHeight;
+    }
 
     /* Add vertical space for the buttons and border. */
     Size.cy += ButtonHeight + TextMargin;
@@ -457,7 +695,12 @@ WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         return -1;
     }
 
-    if (!AddDialogStatic(dialog, TextMargin, TextMargin, TextSize.right - TextSize.left, TextSize.bottom - TextSize.top, messageboxdata->message)) {
+    if (icon && ! AddDialogStaticIcon(dialog, IconMargin, IconMargin, IconWidth, IconHeight, icon)) {
+        FreeDialogData(dialog);
+        return -1;
+    }
+
+    if (!AddDialogStaticText(dialog, TextSize.left, TextSize.top, TextSize.right - TextSize.left, TextSize.bottom - TextSize.top, messageboxdata->message)) {
         FreeDialogData(dialog);
         return -1;
     }
@@ -466,19 +709,25 @@ WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     x = Size.cx - (ButtonWidth + ButtonMargin) * messageboxdata->numbuttons;
     y = Size.cy - ButtonHeight - ButtonMargin;
     for (i = messageboxdata->numbuttons - 1; i >= 0; --i) {
-        SDL_bool isDefault;
+        SDL_bool isdefault = SDL_FALSE;
+        const char *buttontext;
 
         if (buttons[i].flags & SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT) {
-            isDefault = SDL_TRUE;
-        } else {
-            isDefault = SDL_FALSE;
+            defbuttoncount++;
+            if (defbuttoncount == 1) {
+                isdefault = SDL_TRUE;
+            }
         }
-        if (!AddDialogButton(dialog, x, y, ButtonWidth, ButtonHeight, buttons[i].text, buttons[i].buttonid, isDefault)) {
+
+        buttontext = EscapeAmpersands(&ampescape, &ampescapesize, buttons[i].text);
+        if (buttontext == NULL || !AddDialogButton(dialog, x, y, ButtonWidth, ButtonHeight, buttontext, buttons[i].buttonid, isdefault)) {
             FreeDialogData(dialog);
+            SDL_free(ampescape);
             return -1;
         }
         x += ButtonWidth + ButtonMargin;
     }
+    SDL_free(ampescape);
 
     /* If we have a parent window, get the Instance and HWND for them
      * so that our little dialog gets exclusive focus at all times. */
@@ -486,10 +735,32 @@ WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
         ParentWindow = ((SDL_WindowData*)messageboxdata->window->driverdata)->hwnd;
     }
 
-    *buttonid = (int)DialogBoxIndirect(NULL, (DLGTEMPLATE*)dialog->lpDialog, ParentWindow, (DLGPROC)MessageBoxDialogProc);
+    result = DialogBoxIndirectParam(NULL, (DLGTEMPLATE*)dialog->lpDialog, ParentWindow, (DLGPROC)MessageBoxDialogProc, (LPARAM)messageboxdata);
+    if (result >= IDBUTTONINDEX0 && result - IDBUTTONINDEX0 < messageboxdata->numbuttons) {
+        *buttonid = messageboxdata->buttons[(messageboxdata->numbuttons - 1) - (result - IDBUTTONINDEX0)].buttonid;
+        retval = 0;
+    } else if (result == IDCLOSED) {
+        /* Dialog window closed by user or system. */
+        /* This could use a special return code. */
+        retval = 0;
+        *buttonid = -1;
+    } else {
+        if (result == 0) {
+            SDL_SetError("Invalid parent window handle");
+        } else if (result == -1) {
+            SDL_SetError("The message box encountered an error.");
+        } else if (result == IDINVALPTRINIT || result == IDINVALPTRSETFOCUS || result == IDINVALPTRCOMMAND) {
+            SDL_SetError("Invalid message box pointer in dialog procedure");
+        } else if (result == IDINVALPTRDLGITEM) {
+            SDL_SetError("Couldn't find dialog control of the default enter-key button");
+        } else {
+            SDL_SetError("An unknown error occured");
+        }
+        retval = -1;
+    }
 
     FreeDialogData(dialog);
-    return 0;
+    return retval;
 }
 
 /* TaskDialogIndirect procedure
@@ -509,16 +780,22 @@ WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     HMODULE hComctl32;
     TASKDIALOGINDIRECTPROC pfnTaskDialogIndirect;
     HRESULT hr;
+    char *ampescape = NULL;
+    size_t ampescapesize = 0;
     int nButton;
     int nCancelButton;
     int i;
 
+    if (SIZE_MAX / sizeof(TASKDIALOG_BUTTON) < messageboxdata->numbuttons) {
+        return SDL_OutOfMemory();
+    }
+
     /* If we cannot load comctl32.dll use the old messagebox! */
     hComctl32 = LoadLibrary(TEXT("Comctl32.dll"));
     if (hComctl32 == NULL) {
-        return WIN_ShowOldMessageBox(messageboxdata,buttonid);
+        return WIN_ShowOldMessageBox(messageboxdata, buttonid);
     }
-    
+
     /* If TaskDialogIndirect doesn't exist use the old messagebox!
        This will fail prior to Windows Vista.
        The manifest file in the application may require targeting version 6 of comctl32.dll, even
@@ -563,6 +840,7 @@ WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     nCancelButton = 0;
     for (i = 0; i < messageboxdata->numbuttons; i++)
     {
+        const char *buttontext;
         pButton = &pButtons[messageboxdata->numbuttons-1-i];
         if (messageboxdata->buttons[i].flags & SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT) {
             nCancelButton = messageboxdata->buttons[i].buttonid;
@@ -573,7 +851,20 @@ WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
                 pButton->nButtonID++;
             }
         }
-        pButton->pszButtonText = WIN_UTF8ToString(messageboxdata->buttons[i].text);
+        buttontext = EscapeAmpersands(&ampescape, &ampescapesize, messageboxdata->buttons[i].text);
+        if (buttontext == NULL) {
+            int j;
+            FreeLibrary(hComctl32);
+            SDL_free(ampescape);
+            SDL_free(wmessage);
+            SDL_free(wtitle);
+            for (j = 0; j < i; j++) {
+                SDL_free((wchar_t *) pButtons[j].pszButtonText);
+            }
+            SDL_free(pButtons);
+            return -1;
+        }
+        pButton->pszButtonText = WIN_UTF8ToString(buttontext);
         if (messageboxdata->buttons[i].flags & SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT) {
             TaskConfig.nDefaultButton = pButton->nButtonID;
         }
@@ -585,6 +876,7 @@ WIN_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 
     /* Free everything */
     FreeLibrary(hComctl32);
+    SDL_free(ampescape);
     SDL_free(wmessage);
     SDL_free(wtitle);
     for (i = 0; i < messageboxdata->numbuttons; i++) {
