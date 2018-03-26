@@ -421,6 +421,11 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             POINT cursorPos;
             BOOL minimized;
 
+            /* Don't mark the window as shown if it's activated before being shown */
+            if (!IsWindowVisible(hwnd)) {
+                break;
+            }
+
             minimized = HIWORD(wParam);
             if (!minimized && (LOWORD(wParam) != WA_INACTIVE)) {
                 if (LOWORD(wParam) == WA_CLICKACTIVE) {
