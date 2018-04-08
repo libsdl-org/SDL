@@ -75,12 +75,15 @@ int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rec
         var w = $0;
         var h = $1;
         var pixels = $2;
+        var canvasId = UTF8ToString($3);
+        var canvas = document.querySelector(canvasId);
 
+        //TODO: this should store a context per canvas
         if (!Module['SDL2']) Module['SDL2'] = {};
         var SDL2 = Module['SDL2'];
-        if (SDL2.ctxCanvas !== Module['canvas']) {
-            SDL2.ctx = Module['createContext'](Module['canvas'], false, true);
-            SDL2.ctxCanvas = Module['canvas'];
+        if (SDL2.ctxCanvas !== canvas) {
+            SDL2.ctx = Module['createContext'](canvas, false, true);
+            SDL2.ctxCanvas = canvas;
         }
         if (SDL2.w !== w || SDL2.h !== h || SDL2.imageCtx !== SDL2.ctx) {
             SDL2.image = SDL2.ctx.createImageData(w, h);
@@ -156,7 +159,7 @@ int Emscripten_UpdateWindowFramebuffer(_THIS, SDL_Window * window, const SDL_Rec
         }
 
         SDL2.ctx.putImageData(SDL2.image, 0, 0);
-    }, surface->w, surface->h, surface->pixels);
+    }, surface->w, surface->h, surface->pixels, data->canvas_id);
 
     if (emscripten_has_asyncify() && SDL_GetHintBoolean(SDL_HINT_EMSCRIPTEN_ASYNCIFY, SDL_TRUE)) {
         /* give back control to browser for screen refresh */
