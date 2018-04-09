@@ -546,8 +546,17 @@ WIN_GetWindowBordersSize(_THIS, SDL_Window * window, int *top, int *left, int *b
 void
 WIN_ShowWindow(_THIS, SDL_Window * window)
 {
-    HWND hwnd = ((SDL_WindowData *) window->driverdata)->hwnd;
-    ShowWindow(hwnd, SW_SHOW);
+	DWORD style;
+	HWND hwnd;
+	int nCmdShow;
+	
+	hwnd = ( (SDL_WindowData *)window->driverdata )->hwnd;
+	nCmdShow = SW_SHOW;
+	style = GetWindowLong(hwnd, GWL_EXSTYLE);
+	if ( style & WS_EX_NOACTIVATE )
+		nCmdShow = SW_SHOWNOACTIVATE;
+	
+    ShowWindow(hwnd, nCmdShow );
 }
 
 void
