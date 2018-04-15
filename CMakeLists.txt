@@ -1808,6 +1808,13 @@ endforeach()
 list(APPEND INCLUDE_FILES ${BIN_INCLUDE_FILES})
 install(FILES ${INCLUDE_FILES} DESTINATION include/SDL2)
 
+string(TOUPPER "${CMAKE_BUILD_TYPE}" UPPER_BUILD_TYPE)
+if (UPPER_BUILD_TYPE MATCHES DEBUG)
+  set(SOPOSTFIX "${SDL_CMAKE_DEBUG_POSTFIX}")
+else()
+  set(SOPOSTFIX "")
+endif()
+
 if(NOT (WINDOWS OR CYGWIN))
   if(SDL_SHARED)
     if (APPLE)
@@ -1818,7 +1825,8 @@ if(NOT (WINDOWS OR CYGWIN))
     if(NOT ANDROID)
         install(CODE "
           execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-            \"${SDL2_BINARY_DIR}/libSDL2-2.0${SDL_CMAKE_DEBUG_POSTFIX}.${SOEXT}\" \"${SDL2_BINARY_DIR}/libSDL2.${SOEXT}\")")
+            \"libSDL2-2.0${SOPOSTFIX}.${SOEXT}\" \"libSDL2.${SOEXT}\")"
+            WORKING_DIR "${SDL2_BINARY_DIR}")
         install(FILES ${SDL2_BINARY_DIR}/libSDL2.${SOEXT} DESTINATION "lib${LIB_SUFFIX}")
     endif()
   endif()
