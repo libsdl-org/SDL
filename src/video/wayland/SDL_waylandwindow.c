@@ -113,6 +113,9 @@ handle_configure_zxdg_shell_surface(void *data, struct zxdg_surface_v6 *zxdg, ui
     SDL_WindowData *wind = (SDL_WindowData *)data;
     SDL_Window *window = wind->sdlwindow;
     struct wl_region *region;
+
+    wind->shell_surface.zxdg.initial_configure_seen = SDL_TRUE;
+
     WAYLAND_wl_egl_window_resize(wind->egl_window, window->w, window->h, 0, 0);
 
     region = wl_compositor_create_region(wind->waylandData->compositor);
@@ -476,6 +479,17 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
 
     wl_surface_commit(data->surface);
     WAYLAND_wl_display_flush(c->display);
+
+    /* we have to wait until the surface gets a "configure" event, or
+       use of this surface will fail. This is a new rule for xdg_shell. */
+    if (c->shell.zxdg) {
+        if (data->shell_surface.zxdg.surface) {
+            while (!data->shell_surface.zxdg.initial_configure_seen) {
+                WAYLAND_wl_display_flush(c->display);
+                WAYLAND_wl_display_dispatch(c->display);
+            }
+        }
+    }
 
     return 0;
 }
