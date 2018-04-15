@@ -37,6 +37,7 @@ typedef struct {
         struct zxdg_toplevel_v6 *toplevel;
         struct zxdg_popup_v6 *popup;
     } roleobj;
+    SDL_bool initial_configure_seen;
 } SDL_zxdg_shell_surface;
 
 typedef struct {
