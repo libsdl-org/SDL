@@ -123,10 +123,17 @@ EXTRA_LDFLAGS="$BASE_LDFLAGS"
 #    fi
 #done
 SDL_CFLAGS="$BASE_CFLAGS"
-SDL_LIBS="-lSDL2 $BASE_LDFLAGS"
-CPPFLAGS="$CPPFLAGS $EXTRA_CFLAGS"
-CFLAGS="$CFLAGS $EXTRA_CFLAGS"
-LDFLAGS="$LDFLAGS $EXTRA_LDFLAGS"
+SDL_LIBS="-lSDL2"
+if [ "$BASE_LDFLAGS" != "" ]; then
+    SDL_LIBS="$SDL_LIBS $BASE_LDFLAGS"
+fi
+if [ "$EXTRA_CFLAGS" != "" ]; then
+    CPPFLAGS="$CPPFLAGS $EXTRA_CFLAGS"
+    CFLAGS="$CFLAGS $EXTRA_CFLAGS"
+fi
+if [ "$EXTRA_LDFLAGS" != "" ]; then
+    LDFLAGS="$LDFLAGS $EXTRA_LDFLAGS"
+fi
 
 dnl set this to use on systems that use lib64 instead of lib
 base_libdir=`echo \${libdir} | sed 's/.*\/\(.*\)/\1/; q'`
