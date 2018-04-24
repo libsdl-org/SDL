@@ -38,6 +38,7 @@ getprioritystr(SDL_ThreadPriority priority)
     case SDL_THREAD_PRIORITY_LOW: return "SDL_THREAD_PRIORITY_LOW";
     case SDL_THREAD_PRIORITY_NORMAL: return "SDL_THREAD_PRIORITY_NORMAL";
     case SDL_THREAD_PRIORITY_HIGH: return "SDL_THREAD_PRIORITY_HIGH";
+    case SDL_THREAD_PRIORITY_TIME_CRITICAL: return "SDL_THREAD_PRIORITY_TIME_CRITICAL";
     }
 
     return "???";
@@ -56,7 +57,7 @@ ThreadFunc(void *data)
 
         if (testprio) {
             SDL_Log("SDL_SetThreadPriority(%s):%d\n", getprioritystr(prio), SDL_SetThreadPriority(prio));
-            if (++prio > SDL_THREAD_PRIORITY_HIGH)
+            if (++prio > SDL_THREAD_PRIORITY_TIME_CRITICAL)
                 prio = SDL_THREAD_PRIORITY_LOW;
         }
 
