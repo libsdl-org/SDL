@@ -1000,7 +1000,7 @@ SDL_SetDisplayModeForDisplay(SDL_VideoDisplay * display, const SDL_DisplayMode *
 
     /* Actually change the display mode */
     if (!_this->SetDisplayMode) {
-        return SDL_SetError("Video driver doesn't support changing display mode");
+        return SDL_SetError("SDL video driver doesn't support changing display mode");
     }
     if (_this->SetDisplayMode(_this, display, &display_mode) < 0) {
         return -1;
@@ -1383,7 +1383,9 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
 #endif
     if (flags & SDL_WINDOW_OPENGL) {
         if (!_this->GL_CreateContext) {
-            SDL_SetError("No OpenGL support in video driver");
+            SDL_SetError("OpenGL support is either not configured in SDL "
+                         "or not available in current SDL video driver "
+                         "(%s) or platform", _this->name);
             return NULL;
         }
         if (SDL_GL_LoadLibrary(NULL) < 0) {
@@ -1394,7 +1396,8 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
     if (flags & SDL_WINDOW_VULKAN) {
         if (!_this->Vulkan_CreateSurface) {
             SDL_SetError("Vulkan support is either not configured in SDL "
-                         "or not available in video driver");
+                         "or not available in current SDL video driver "
+                         "(%s) or platform", _this->name);
             return NULL;
         }
         if (flags & SDL_WINDOW_OPENGL) {
@@ -1544,7 +1547,9 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
     SDL_bool loaded_opengl = SDL_FALSE;
 
     if ((flags & SDL_WINDOW_OPENGL) && !_this->GL_CreateContext) {
-        return SDL_SetError("No OpenGL support in video driver");
+        return SDL_SetError("OpenGL support is either not configured in SDL "
+                            "or not available in current SDL video driver "
+                            "(%s) or platform", _this->name);
     }
 
     if (window->flags & SDL_WINDOW_FOREIGN) {
@@ -2787,7 +2792,7 @@ SDL_GL_LoadLibrary(const char *path)
         retval = 0;
     } else {
         if (!_this->GL_LoadLibrary) {
-            return SDL_SetError("No dynamic GL support in video driver");
+            return SDL_SetError("No dynamic GL support in current SDL video driver (%s)", _this->name);
         }
         retval = _this->GL_LoadLibrary(_this, path);
     }
@@ -2818,7 +2823,7 @@ SDL_GL_GetProcAddress(const char *proc)
             SDL_SetError("No GL driver has been loaded");
         }
     } else {
-        SDL_SetError("No dynamic GL support in video driver");
+        SDL_SetError("No dynamic GL support in current SDL video driver (%s)", _this->name);
     }
     return func;
 }
@@ -3985,7 +3990,9 @@ int SDL_Vulkan_LoadLibrary(const char *path)
         retval = 0;
     } else {
         if (!_this->Vulkan_LoadLibrary) {
-            return SDL_SetError("No Vulkan support in video driver");
+            return SDL_SetError("Vulkan support is either not configured in SDL "
+                                "or not available in current SDL video driver "
+                                "(%s) or platform", _this->name);
         }
         retval = _this->Vulkan_LoadLibrary(_this, path);
     }
