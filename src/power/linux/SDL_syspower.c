@@ -608,12 +608,12 @@ SDL_GetPowerInfo_Linux_org_freedesktop_upower(SDL_PowerState *state, int *second
 {
     SDL_bool retval = SDL_FALSE;
 
-    #if SDL_USE_LIBDBUS
+#if SDL_USE_LIBDBUS
     SDL_DBusContext *dbus = SDL_DBus_GetContext();
     char **paths = NULL;
     int i, numpaths = 0;
 
-    if (!SDL_DBus_CallMethodOnConnection(dbus->system_conn, UPOWER_DBUS_NODE, UPOWER_DBUS_PATH, UPOWER_DBUS_INTERFACE, "EnumerateDevices",
+    if (!dbus || !SDL_DBus_CallMethodOnConnection(dbus->system_conn, UPOWER_DBUS_NODE, UPOWER_DBUS_PATH, UPOWER_DBUS_INTERFACE, "EnumerateDevices",
             DBUS_TYPE_INVALID,
             DBUS_TYPE_ARRAY, DBUS_TYPE_OBJECT_PATH, &paths, &numpaths, DBUS_TYPE_INVALID)) {
         return SDL_FALSE;  /* try a different approach than UPower. */
@@ -631,7 +631,7 @@ SDL_GetPowerInfo_Linux_org_freedesktop_upower(SDL_PowerState *state, int *second
     if (dbus) {
         dbus->free_string_array(paths);
     }
-    #endif  /* SDL_USE_LIBDBUS */
+#endif  /* SDL_USE_LIBDBUS */
 
     return retval;
 }
