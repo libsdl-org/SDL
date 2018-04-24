@@ -231,6 +231,8 @@ SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
         value = THREAD_PRIORITY_LOWEST;
     } else if (priority == SDL_THREAD_PRIORITY_HIGH) {
         value = THREAD_PRIORITY_HIGHEST;
+    } else if (priority == SDL_THREAD_PRIORITY_TIME_CRITICAL) {
+        value = THREAD_PRIORITY_TIME_CRITICAL;
     } else {
         value = THREAD_PRIORITY_NORMAL;
     }

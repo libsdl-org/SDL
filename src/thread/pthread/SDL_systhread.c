@@ -275,6 +275,8 @@ SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
     if (priority == SDL_THREAD_PRIORITY_LOW) {
         value = 19;
     } else if (priority == SDL_THREAD_PRIORITY_HIGH) {
+        value = -10;
+    } else if (priority == SDL_THREAD_PRIORITY_TIME_CRITICAL) {
         value = -20;
     } else {
         value = 0;
@@ -290,12 +292,15 @@ SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
     }
     if (priority == SDL_THREAD_PRIORITY_LOW) {
         sched.sched_priority = sched_get_priority_min(policy);
-    } else if (priority == SDL_THREAD_PRIORITY_HIGH) {
+    } else if (priority == SDL_THREAD_PRIORITY_TIME_CRITICAL) {
         sched.sched_priority = sched_get_priority_max(policy);
     } else {
         int min_priority = sched_get_priority_min(policy);
         int max_priority = sched_get_priority_max(policy);
         sched.sched_priority = (min_priority + (max_priority - min_priority) / 2);
+        if (priority == SDL_THREAD_PRIORITY_HIGH) {
+            sched.sched_priority += (max_priority - min_priority) / 4);
+        }
     }
     if (pthread_setschedparam(thread, policy, &sched) != 0) {
         return SDL_SetError("pthread_setschedparam() failed");
