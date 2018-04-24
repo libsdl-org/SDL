@@ -299,7 +299,7 @@ SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
         int max_priority = sched_get_priority_max(policy);
         sched.sched_priority = (min_priority + (max_priority - min_priority) / 2);
         if (priority == SDL_THREAD_PRIORITY_HIGH) {
-            sched.sched_priority += (max_priority - min_priority) / 4);
+            sched.sched_priority += ((max_priority - min_priority) / 4);
         }
     }
     if (pthread_setschedparam(thread, policy, &sched) != 0) {
