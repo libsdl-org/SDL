@@ -34,6 +34,9 @@
 #include <sys/resource.h>
 #include <sys/syscall.h>
 #include <unistd.h>
+#include <errno.h>
+
+#include "../../core/linux/SDL_dbus.h"
 #endif /* __LINUX__ */
 
 #if defined(__LINUX__) || defined(__MACOSX__) || defined(__IPHONEOS__)
@@ -43,6 +46,7 @@
 #endif
 #endif
 
+#include "SDL_log.h"
 #include "SDL_platform.h"
 #include "SDL_thread.h"
 #include "../SDL_thread_c.h"
@@ -180,6 +184,60 @@ SDL_ThreadID(void)
     return ((SDL_threadID) pthread_self());
 }
 
+/* d-bus queries to org.freedesktop.RealtimeKit1. */
+#if SDL_USE_LIBDBUS
+
+#define RTKIT_DBUS_NODE "org.freedesktop.RealtimeKit1"
+#define RTKIT_DBUS_PATH "/org/freedesktop/RealtimeKit1"
+#define RTKIT_DBUS_INTERFACE "org.freedesktop.RealtimeKit1"
+
+static pthread_once_t rtkit_initialize_once = PTHREAD_ONCE_INIT;
+static Sint32 rtkit_min_nice_level = -20;
+
+static void
+rtkit_initialize()
+{
+    SDL_DBusContext *dbus = SDL_DBus_GetContext();
+
+    /* Try getting minimum nice level: this is often greater than PRIO_MIN (-20). */
+    if (!SDL_DBus_QueryPropertyOnConnection(dbus->system_conn, RTKIT_DBUS_NODE, RTKIT_DBUS_PATH, RTKIT_DBUS_INTERFACE, "MinNiceLevel",
+                                            DBUS_TYPE_INT32, &rtkit_min_nice_level)) {
+        rtkit_min_nice_level = -20;
+    }
+}
+
+static SDL_bool
+rtkit_setpriority(pid_t thread, int nice_level)
+{
+    Uint64 ui64 = (Uint64)thread;
+    Sint32 si32 = (Sint32)nice_level;
+    SDL_DBusContext *dbus = SDL_DBus_GetContext();
+
+    pthread_once(&rtkit_initialize_once, rtkit_initialize);
+
+    if (si32 < rtkit_min_nice_level)
+        si32 = rtkit_min_nice_level;
+
+    if (!SDL_DBus_CallMethodOnConnection(dbus->system_conn,
+            RTKIT_DBUS_NODE, RTKIT_DBUS_PATH, RTKIT_DBUS_INTERFACE, "MakeThreadHighPriority",
+            DBUS_TYPE_UINT64, &ui64, DBUS_TYPE_INT32, &si32, DBUS_TYPE_INVALID,
+            DBUS_TYPE_INVALID)) {
+        return SDL_FALSE;
+    }
+
+    return SDL_TRUE;
+}
+
+#else
+
+static SDL_bool
+rtkit_setpriority(pid_t thread, int nice_level)
+{
+    return SDL_FALSE;
+}
+
+#endif /* !SDL_USE_LIBDBUS */
+
 int
 SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 {
@@ -188,6 +246,7 @@ SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
     return 0;
 #elif __LINUX__
     int value;
+    pid_t thread = syscall(SYS_gettid);
 
     if (priority == SDL_THREAD_PRIORITY_LOW) {
         value = 19;
@@ -196,15 +255,22 @@ SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
     } else {
         value = 0;
     }
-    if (setpriority(PRIO_PROCESS, syscall(SYS_gettid), value) < 0) {
+    if (setpriority(PRIO_PROCESS, thread, value) < 0) {
         /* Note that this fails if you're trying to set high priority
            and you don't have root permission. BUT DON'T RUN AS ROOT!
 
            You can grant the ability to increase thread priority by
            running the following command on your application binary:
                sudo setcap 'cap_sys_nice=eip' <application>
+
+           Let's try setting priority with RealtimeKit...
+
+           README and sample code at:
+             http://git.0pointer.net/rtkit.git
          */
-        return SDL_SetError("setpriority() failed");
+        if (rtkit_setpriority(thread, value) == SDL_FALSE) {
+            return SDL_SetError("setpriority() failed");
+        }
     }
     return 0;
 #else
