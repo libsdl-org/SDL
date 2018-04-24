@@ -238,6 +238,31 @@ rtkit_setpriority(pid_t thread, int nice_level)
 
 #endif /* !SDL_USE_LIBDBUS */
 
+#if __LINUX__
+int
+SDL_LinuxSetThreadPriority(Sint64 threadID, int priority)
+{
+    if (setpriority(PRIO_PROCESS, (id_t)threadID, priority) < 0) {
+        /* Note that this fails if you're trying to set high priority
+           and you don't have root permission. BUT DON'T RUN AS ROOT!
+
+           You can grant the ability to increase thread priority by
+           running the following command on your application binary:
+               sudo setcap 'cap_sys_nice=eip' <application>
+
+           Let's try setting priority with RealtimeKit...
+
+           README and sample code at:
+             http://git.0pointer.net/rtkit.git
+         */
+        if (rtkit_setpriority((pid_t)threadID, priority) == SDL_FALSE) {
+            return SDL_SetError("setpriority() failed");
+        }
+    }
+    return 0;
+}
+#endif /* __LINUX__ */
+
 int
 SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
 {
@@ -255,24 +280,7 @@ SDL_SYS_SetThreadPriority(SDL_ThreadPriority priority)
     } else {
         value = 0;
     }
-    if (setpriority(PRIO_PROCESS, thread, value) < 0) {
-        /* Note that this fails if you're trying to set high priority
-           and you don't have root permission. BUT DON'T RUN AS ROOT!
-
-           You can grant the ability to increase thread priority by
-           running the following command on your application binary:
-               sudo setcap 'cap_sys_nice=eip' <application>
-
-           Let's try setting priority with RealtimeKit...
-
-           README and sample code at:
-             http://git.0pointer.net/rtkit.git
-         */
-        if (rtkit_setpriority(thread, value) == SDL_FALSE) {
-            return SDL_SetError("setpriority() failed");
-        }
-    }
-    return 0;
+    return SDL_LinuxSetThreadPriority(thread, value);
 #else
     struct sched_param sched;
     int policy;
