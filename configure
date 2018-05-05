@@ -15753,14 +15753,14 @@ EXTRA_LDFLAGS="$BASE_LDFLAGS"
 #done
 SDL_CFLAGS="$BASE_CFLAGS"
 SDL_LIBS="-lSDL2"
-if  "$BASE_LDFLAGS" != "" ; then
+if test "x$BASE_LDFLAGS" != x; then
     SDL_LIBS="$SDL_LIBS $BASE_LDFLAGS"
 fi
-if  "$EXTRA_CFLAGS" != "" ; then
+if test "x$EXTRA_CFLAGS" != x; then
     CPPFLAGS="$CPPFLAGS $EXTRA_CFLAGS"
     CFLAGS="$CFLAGS $EXTRA_CFLAGS"
 fi
-if  "$EXTRA_LDFLAGS" != "" ; then
+if test "x$EXTRA_LDFLAGS" != x; then
     LDFLAGS="$LDFLAGS $EXTRA_LDFLAGS"
 fi
 
