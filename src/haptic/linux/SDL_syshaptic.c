@@ -801,7 +801,8 @@ SDL_SYS_ToFFEffect(struct ff_effect *dest, SDL_HapticEffect * src)
         else if (periodic->type == SDL_HAPTIC_SAWTOOTHDOWN)
             dest->u.periodic.waveform = FF_SAW_DOWN;
         dest->u.periodic.period = CLAMP(periodic->period);
-        dest->u.periodic.magnitude = periodic->magnitude;
+        /* Linux expects 0-65535, so multiply by 2 */
+        dest->u.periodic.magnitude = CLAMP(periodic->magnitude) * 2;
         dest->u.periodic.offset = periodic->offset;
         /* Linux phase is defined in interval "[0x0000, 0x10000[", corresponds with "[0deg, 360deg[" phase shift. */
         dest->u.periodic.phase = ((Uint32)periodic->phase * 0x10000U) / 36000;
@@ -908,9 +909,9 @@ SDL_SYS_ToFFEffect(struct ff_effect *dest, SDL_HapticEffect * src)
         dest->trigger.button = 0;
         dest->trigger.interval = 0;
 
-        /* Rumble */
-        dest->u.rumble.strong_magnitude = leftright->large_magnitude;
-        dest->u.rumble.weak_magnitude = leftright->small_magnitude;
+        /* Rumble (Linux expects 0-65535, so multiply by 2) */
+        dest->u.rumble.strong_magnitude = CLAMP(leftright->large_magnitude) * 2;
+        dest->u.rumble.weak_magnitude = CLAMP(leftright->small_magnitude) * 2;
 
         break;
 
