@@ -664,18 +664,6 @@ D3D_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode)
     return SDL_TRUE;
 }
 
-static D3DTEXTUREFILTERTYPE
-GetScaleQuality(void)
-{
-    const char *hint = SDL_GetHint(SDL_HINT_RENDER_SCALE_QUALITY);
-
-    if (!hint || *hint == '0' || SDL_strcasecmp(hint, "nearest") == 0) {
-        return D3DTEXF_POINT;
-    } else /* if (*hint == '1' || SDL_strcasecmp(hint, "linear") == 0) */ {
-        return D3DTEXF_LINEAR;
-    }
-}
-
 static int
 D3D_CreateTextureRep(IDirect3DDevice9 *device, D3D_TextureRep *texture, DWORD usage, Uint32 format, D3DFORMAT d3dfmt, int w, int h)
 {
@@ -829,7 +817,7 @@ D3D_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     if (!texturedata) {
         return SDL_OutOfMemory();
     }
-    texturedata->scaleMode = GetScaleQuality();
+    texturedata->scaleMode = (texture->scaleMode == SDL_ScaleModeNearest) ? D3DTEXF_POINT : D3DTEXF_LINEAR;
 
     texture->driverdata = texturedata;
 

@@ -187,18 +187,6 @@ TextureNextPow2(unsigned int w)
 
 
 static int
-GetScaleQuality(void)
-{
-    const char *hint = SDL_GetHint(SDL_HINT_RENDER_SCALE_QUALITY);
-
-    if (!hint || *hint == '0' || SDL_strcasecmp(hint, "nearest") == 0) {
-        return GU_NEAREST; /* GU_NEAREST good for tile-map */
-    } else {
-        return GU_LINEAR; /* GU_LINEAR good for scaling */
-    }
-}
-
-static int
 PixelFormatToPSPFMT(Uint32 format)
 {
     switch (format) {
@@ -514,7 +502,7 @@ void
 TextureActivate(SDL_Texture * texture)
 {
     PSP_TextureData *psp_texture = (PSP_TextureData *) texture->driverdata;
-    int scaleMode = GetScaleQuality();
+    int scaleMode = (texture->scaleMode == SDL_ScaleModeNearest) ? GU_NEAREST : GU_LINEAR;
 
     /* Swizzling is useless with small textures. */
     if (texture->w >= 16 || texture->h >= 16)

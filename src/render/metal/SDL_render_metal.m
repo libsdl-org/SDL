@@ -853,8 +853,7 @@ METAL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     }
 
     METAL_TextureData *texturedata = [[METAL_TextureData alloc] init];
-    const char *hint = SDL_GetHint(SDL_HINT_RENDER_SCALE_QUALITY);
-    if (!hint || *hint == '0' || SDL_strcasecmp(hint, "nearest") == 0) {
+    if (texture->scaleMode == SDL_ScaleModeNearest) {
         texturedata.mtlsampler = data.mtlsamplernearest;
     } else {
         texturedata.mtlsampler = data.mtlsamplerlinear;
