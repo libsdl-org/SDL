@@ -524,18 +524,6 @@ power_of_2(int input)
     return value;
 }
 
-static GLenum
-GetScaleQuality(void)
-{
-    const char *hint = SDL_GetHint(SDL_HINT_RENDER_SCALE_QUALITY);
-
-    if (!hint || *hint == '0' || SDL_strcasecmp(hint, "nearest") == 0) {
-        return GL_NEAREST;
-    } else {
-        return GL_LINEAR;
-    }
-}
-
 static int
 GLES_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
@@ -603,7 +591,7 @@ GLES_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 
     data->format = format;
     data->formattype = type;
-    scaleMode = GetScaleQuality();
+    scaleMode = (texture->scaleMode == SDL_ScaleModeNearest) ? GL_NEAREST : GL_LINEAR;
     renderdata->glBindTexture(data->type, data->texture);
     renderdata->glTexParameteri(data->type, GL_TEXTURE_MIN_FILTER, scaleMode);
     renderdata->glTexParameteri(data->type, GL_TEXTURE_MAG_FILTER, scaleMode);

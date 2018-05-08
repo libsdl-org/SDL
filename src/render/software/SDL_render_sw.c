@@ -588,18 +588,6 @@ SW_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
 }
 
 static int
-GetScaleQuality(void)
-{
-    const char *hint = SDL_GetHint(SDL_HINT_RENDER_SCALE_QUALITY);
-
-    if (!hint || *hint == '0' || SDL_strcasecmp(hint, "nearest") == 0) {
-        return 0;
-    } else {
-        return 1;
-    }
-}
-
-static int
 SW_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
                 const SDL_Rect * srcrect, const SDL_FRect * dstrect,
                 const double angle, const SDL_FPoint * center, const SDL_RendererFlip flip)
@@ -717,7 +705,7 @@ SW_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
 
     if (!retval) {
         SDLgfx_rotozoomSurfaceSizeTrig(tmp_rect.w, tmp_rect.h, angle, &dstwidth, &dstheight, &cangle, &sangle);
-        src_rotated = SDLgfx_rotateSurface(src_clone, angle, dstwidth/2, dstheight/2, GetScaleQuality(), flip & SDL_FLIP_HORIZONTAL, flip & SDL_FLIP_VERTICAL, dstwidth, dstheight, cangle, sangle);
+        src_rotated = SDLgfx_rotateSurface(src_clone, angle, dstwidth/2, dstheight/2, (texture->scaleMode == SDL_ScaleModeNearest) ? 0 : 1, flip & SDL_FLIP_HORIZONTAL, flip & SDL_FLIP_VERTICAL, dstwidth, dstheight, cangle, sangle);
         if (src_rotated == NULL) {
             retval = -1;
         }
