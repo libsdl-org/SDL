@@ -1319,7 +1319,18 @@ SDL_snprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL_PRINTF_FORMAT_
     return retval;
 }
 
-#ifdef HAVE_VSNPRINTF
+#if defined(HAVE_LIBC) && defined(__WATCOMC__)
+/* _vsnprintf() doesn't ensure nul termination */
+int SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, va_list ap)
+{
+    int retval;
+    if (!fmt) fmt = "";
+    retval = _vsnprintf(text, maxlen, fmt, ap);
+    if (maxlen > 0) text[maxlen-1] = '\0';
+    if (retval < 0) retval = (int) maxlen;
+    return retval;
+}
+#elif defined(HAVE_VSNPRINTF)
 int SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, va_list ap)
 {
     if (!fmt) {
