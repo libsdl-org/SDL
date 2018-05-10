@@ -1275,6 +1275,7 @@ UpdateLogicalSize(SDL_Renderer *renderer)
 
     hint = SDL_GetHint(SDL_HINT_RENDER_LOGICAL_SIZE_MODE);
     if (hint && (*hint == '1' || SDL_strcasecmp(hint, "overscan") == 0))  {
+#if SDL_VIDEO_RENDER_D3D
         SDL_bool overscan_supported = SDL_TRUE;
         /* Unfortunately, Direct3D 9 doesn't support negative viewport numbers
            which the overscan implementation relies on.
@@ -1285,6 +1286,9 @@ UpdateLogicalSize(SDL_Renderer *renderer)
         if (overscan_supported) {
             scale_policy = 1;
         }
+#else
+        scale_policy = 1;
+#endif
     }
 
     want_aspect = (float)renderer->logical_w / renderer->logical_h;
