@@ -86,6 +86,28 @@
 #ifdef HAVE_FLOAT_H
 # include <float.h>
 #endif
+#if defined(HAVE_ALLOCA) && !defined(alloca)
+# if defined(HAVE_ALLOCA_H)
+#  include <alloca.h>
+# elif defined(__GNUC__)
+#  define alloca __builtin_alloca
+# elif defined(_MSC_VER)
+#  include <malloc.h>
+#  define alloca _alloca
+# elif defined(__WATCOMC__)
+#  include <malloc.h>
+# elif defined(__BORLANDC__)
+#  include <malloc.h>
+# elif defined(__DMC__)
+#  include <stdlib.h>
+# elif defined(__AIX__)
+#pragma alloca
+# elif defined(__MRC__)
+void *alloca(unsigned);
+# else
+char *alloca();
+# endif
+#endif
 
 /**
  *  The number of elements in an array.
@@ -328,28 +350,6 @@ SDL_COMPILE_TIME_ASSERT(enum, sizeof(SDL_DUMMY_ENUM) == sizeof(int));
 extern "C" {
 #endif
 
-#if defined(HAVE_ALLOCA) && !defined(alloca)
-# if defined(HAVE_ALLOCA_H)
-#  include <alloca.h>
-# elif defined(__GNUC__)
-#  define alloca __builtin_alloca
-# elif defined(_MSC_VER)
-#  include <malloc.h>
-#  define alloca _alloca
-# elif defined(__WATCOMC__)
-#  include <malloc.h>
-# elif defined(__BORLANDC__)
-#  include <malloc.h>
-# elif defined(__DMC__)
-#  include <stdlib.h>
-# elif defined(__AIX__)
-#pragma alloca
-# elif defined(__MRC__)
-void *alloca(unsigned);
-# else
-char *alloca();
-# endif
-#endif
 #ifdef HAVE_ALLOCA
 #define SDL_stack_alloc(type, count)    (type*)alloca(sizeof(type)*(count))
 #define SDL_stack_free(data)
@@ -444,7 +444,6 @@ SDL_FORCE_INLINE void SDL_memset4(void *dst, Uint32 val, size_t dwords)
     }
 #endif
 }
-
 
 extern DECLSPEC void *SDLCALL SDL_memcpy(SDL_OUT_BYTECAP(len) void *dst, SDL_IN_BYTECAP(len) const void *src, size_t len);
 
