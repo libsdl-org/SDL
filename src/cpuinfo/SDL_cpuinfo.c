@@ -77,18 +77,18 @@
 #endif
 #endif
 
-#define CPU_HAS_RDTSC   0x00000001
-#define CPU_HAS_ALTIVEC 0x00000002
-#define CPU_HAS_MMX     0x00000004
-#define CPU_HAS_3DNOW   0x00000008
-#define CPU_HAS_SSE     0x00000010
-#define CPU_HAS_SSE2    0x00000020
-#define CPU_HAS_SSE3    0x00000040
-#define CPU_HAS_SSE41   0x00000100
-#define CPU_HAS_SSE42   0x00000200
-#define CPU_HAS_AVX     0x00000400
-#define CPU_HAS_AVX2    0x00000800
-#define CPU_HAS_NEON    0x00001000
+#define CPU_HAS_RDTSC   (1 << 0)
+#define CPU_HAS_ALTIVEC (1 << 1)
+#define CPU_HAS_MMX     (1 << 2)
+#define CPU_HAS_3DNOW   (1 << 3)
+#define CPU_HAS_SSE     (1 << 4)
+#define CPU_HAS_SSE2    (1 << 5)
+#define CPU_HAS_SSE3    (1 << 6)
+#define CPU_HAS_SSE41   (1 << 7)
+#define CPU_HAS_SSE42   (1 << 8)
+#define CPU_HAS_AVX     (1 << 9)
+#define CPU_HAS_AVX2    (1 << 10)
+#define CPU_HAS_NEON    (1 << 11)
 
 #if SDL_ALTIVEC_BLITTERS && HAVE_SETJMP && !__MACOSX__ && !__OpenBSD__
 /* This is the brute force way of detecting instruction sets...
