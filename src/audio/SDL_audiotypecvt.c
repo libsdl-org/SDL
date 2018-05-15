@@ -174,7 +174,7 @@ SDL_Convert_F32_to_S8_Scalar(SDL_AudioCVT *cvt, SDL_AudioFormat format)
         if (sample >= 1.0f) {
             *dst = 127;
         } else if (sample <= -1.0f) {
-            *dst = -127;
+            *dst = -128;
         } else {
             *dst = (Sint8)(sample * 127.0f);
         }
@@ -226,7 +226,7 @@ SDL_Convert_F32_to_S16_Scalar(SDL_AudioCVT *cvt, SDL_AudioFormat format)
         if (sample >= 1.0f) {
             *dst = 32767;
         } else if (sample <= -1.0f) {
-            *dst = -32767;
+            *dst = -32768;
         } else {
             *dst = (Sint16)(sample * 32767.0f);
         }
@@ -250,7 +250,7 @@ SDL_Convert_F32_to_U16_Scalar(SDL_AudioCVT *cvt, SDL_AudioFormat format)
     for (i = cvt->len_cvt / sizeof (float); i; --i, ++src, ++dst) {
         const float sample = *src;
         if (sample >= 1.0f) {
-            *dst = 65534;
+            *dst = 65535;
         } else if (sample <= -1.0f) {
             *dst = 0;
         } else {
@@ -278,7 +278,7 @@ SDL_Convert_F32_to_S32_Scalar(SDL_AudioCVT *cvt, SDL_AudioFormat format)
         if (sample >= 1.0f) {
             *dst = 2147483647;
         } else if (sample <= -1.0f) {
-            *dst = -2147483647;
+            *dst = -2147483648;
         } else {
             *dst = ((Sint32)(sample * 8388607.0f)) << 8;
         }
