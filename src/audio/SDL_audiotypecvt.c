@@ -62,7 +62,7 @@ SDL_AudioFilter SDL_Convert_F32_to_S32 = NULL;
 
 #define DIVBY128 0.0078125f
 #define DIVBY32768 0.000030517578125f
-#define DIVBY2147483648 0.00000000046566128730773926
+#define DIVBY8388607 0.00000011920930376163766f
 
 
 #if NEED_SCALAR_CONVERTER_FALLBACKS
@@ -152,7 +152,7 @@ SDL_Convert_S32_to_F32_Scalar(SDL_AudioCVT *cvt, SDL_AudioFormat format)
     LOG_DEBUG_CONVERT("AUDIO_S32", "AUDIO_F32");
 
     for (i = cvt->len_cvt / sizeof (Sint32); i; --i, ++src, ++dst) {
-        *dst = (float) (((double) *src) * DIVBY2147483648);
+        *dst = ((float) (*src>>8)) * DIVBY8388607;
     }
 
     if (cvt->filters[++cvt->filter_index]) {
@@ -280,7 +280,7 @@ SDL_Convert_F32_to_S32_Scalar(SDL_AudioCVT *cvt, SDL_AudioFormat format)
         } else if (sample < -1.0f) {
             *dst = -2147483647;
         } else {
-            *dst = (Sint32)((double)sample * 2147483647.0);
+            *dst = ((Sint32)(sample * 8388607.0f)) << 8;
         }
     }
 
@@ -509,16 +509,6 @@ SDL_Convert_U16_to_F32_SSE2(SDL_AudioCVT *cvt, SDL_AudioFormat format)
     }
 }
 
-#if defined(__GNUC__) && (__GNUC__ < 4)
-/* these were added as of gcc-4.0: http://gcc.gnu.org/bugzilla/show_bug.cgi?id=19418 */
-static inline __m128 _mm_castsi128_ps(__m128i __A) {
-  return (__m128) __A;
-}
-static inline __m128i _mm_castps_si128(__m128 __A) {
-  return (__m128i) __A;
-}
-#endif
-
 static void SDLCALL
 SDL_Convert_S32_to_F32_SSE2(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 {
@@ -530,7 +520,7 @@ SDL_Convert_S32_to_F32_SSE2(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 
     /* Get dst aligned to 16 bytes */
     for (i = cvt->len_cvt / sizeof (Sint32); i && (((size_t) dst) & 15); --i, ++src, ++dst) {
-        *dst = (float) (((double) *src) * DIVBY2147483648);
+        *dst = ((float) (*src>>8)) * DIVBY8388607;
     }
 
     SDL_assert(!i || ((((size_t) dst) & 15) == 0));
@@ -538,15 +528,11 @@ SDL_Convert_S32_to_F32_SSE2(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 
     {
         /* Aligned! Do SSE blocks as long as we have 16 bytes available. */
-        const __m128d divby2147483648 = _mm_set1_pd(DIVBY2147483648);
+        const __m128 divby8388607 = _mm_set1_ps(DIVBY8388607);
         const __m128i *mmsrc = (const __m128i *) src;
         while (i >= 4) {   /* 4 * sint32 */
-            const __m128i ints = _mm_load_si128(mmsrc);
-            /* bitshift the whole register over, so _mm_cvtepi32_pd can read the top ints in the bottom of the vector. */
-            const __m128d doubles1 = _mm_mul_pd(_mm_cvtepi32_pd(_mm_srli_si128(ints, 8)), divby2147483648);
-            const __m128d doubles2 = _mm_mul_pd(_mm_cvtepi32_pd(ints), divby2147483648);
-            /* convert to float32, bitshift/or to get these into a vector to store. */
-            _mm_store_ps(dst, _mm_castsi128_ps(_mm_or_si128(_mm_slli_si128(_mm_castps_si128(_mm_cvtpd_ps(doubles1)), 8), _mm_castps_si128(_mm_cvtpd_ps(doubles2)))));
+            /* shift out lowest bits so int fits in a float32. Small precision loss, but much faster. */
+            _mm_store_ps(dst, _mm_mul_ps(_mm_cvtepi32_ps(_mm_srli_epi32(_mm_load_si128(mmsrc), 8)), divby8388607));
             i -= 4; mmsrc++; dst += 4;
         }
         src = (const Sint32 *) mmsrc;
@@ -554,7 +540,7 @@ SDL_Convert_S32_to_F32_SSE2(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 
     /* Finish off any leftovers with scalar operations. */
     while (i) {
-        *dst = (float) (((double) *src) * DIVBY2147483648);
+        *dst = ((float) (*src>>8)) * DIVBY8388607;
         i--; src++; dst++;
     }
 
@@ -755,7 +741,7 @@ SDL_Convert_F32_to_S32_SSE2(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 
     /* Get dst aligned to 16 bytes */
     for (i = cvt->len_cvt / sizeof (float); i && (((size_t) dst) & 15); --i, ++src, ++dst) {
-        *dst = (Sint32) (((double) *src) * 2147483647.0);
+        *dst = ((Sint32)(*src * 8388607.0f)) << 8;
     }
 
     SDL_assert(!i || ((((size_t) dst) & 15) == 0));
@@ -763,14 +749,10 @@ SDL_Convert_F32_to_S32_SSE2(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 
     {
         /* Aligned! Do SSE blocks as long as we have 16 bytes available. */
-        const __m128d mulby2147483647 = _mm_set1_pd(2147483647.0);
+        const __m128 mulby8388607 = _mm_set1_ps(8388607.0f);
         __m128i *mmdst = (__m128i *) dst;
         while (i >= 4) {   /* 4 * float32 */
-            const __m128 floats = _mm_load_ps(src);
-            /* bitshift the whole register over, so _mm_cvtps_pd can read the top floats in the bottom of the vector. */
-            const __m128d doubles1 = _mm_mul_pd(_mm_cvtps_pd(_mm_castsi128_ps(_mm_srli_si128(_mm_castps_si128(floats), 8))), mulby2147483647);
-            const __m128d doubles2 = _mm_mul_pd(_mm_cvtps_pd(floats), mulby2147483647);
-            _mm_store_si128(mmdst, _mm_or_si128(_mm_slli_si128(_mm_cvtpd_epi32(doubles1), 8), _mm_cvtpd_epi32(doubles2)));
+            _mm_store_si128(mmdst, _mm_slli_epi32(_mm_cvtps_epi32(_mm_mul_ps(_mm_load_ps(src), mulby8388607)), 8));
             i -= 4; src += 4; mmdst++;
         }
         dst = (Sint32 *) mmdst;
@@ -778,7 +760,7 @@ SDL_Convert_F32_to_S32_SSE2(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 
     /* Finish off any leftovers with scalar operations. */
     while (i) {
-        *dst = (Sint32) (((double) *src) * 2147483647.0);
+        *dst = ((Sint32)(*src * 8388607.0f)) << 8;
         i--; src++; dst++;
     }
 
