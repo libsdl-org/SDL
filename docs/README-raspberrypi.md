@@ -27,6 +27,16 @@ OpenGL ES 2.x, it usually comes pre-installed, but in any case:
     
 sudo apt-get install libraspberrypi0 libraspberrypi-bin libraspberrypi-dev
 
+
+================================================================================
+ NEON
+================================================================================
+
+If your Pi has NEON support, make sure you add -mfpu=neon to your CFLAGS so
+that SDL will select some otherwise-disabled highly-optimized code. The
+original Pi units don't have NEON, the Pi2 probably does, and the Pi3
+definitely does.
+
 ================================================================================
  Cross compiling from x86 Linux
 ================================================================================
