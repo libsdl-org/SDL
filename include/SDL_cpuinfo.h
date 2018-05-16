@@ -57,6 +57,9 @@
 #undef bool
 #endif
 #endif
+#if defined(__ARM_NEON__) && !defined(SDL_DISABLE_ARM_NEON_H)
+#include <arm_neon.h>
+#endif
 #if defined(__3dNOW__) && !defined(SDL_DISABLE_MM3DNOW_H)
 #include <mm3dnow.h>
 #endif
