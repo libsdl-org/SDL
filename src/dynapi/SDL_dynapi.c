@@ -167,15 +167,10 @@ SDL_DYNAPI_VARARGS(,,)
 #error Write me.
 #endif
 
-
-
-/* Here's the exported entry point that fills in the jump table. */
-/*  Use specific types when an "int" might suffice to keep this sane. */
-typedef Sint32 (SDLCALL *SDL_DYNAPI_ENTRYFN)(Uint32 apiver, void *table, Uint32 tablesize);
-extern DECLSPEC Sint32 SDLCALL SDL_DYNAPI_entry(Uint32, void *, Uint32);
-
-Sint32
-SDL_DYNAPI_entry(Uint32 apiver, void *table, Uint32 tablesize)
+/* we make this a static function so we can call the correct one without the
+   system's dynamic linker resolving to the wrong version of this. */
+static Sint32
+initialize_jumptable(Uint32 apiver, void *table, Uint32 tablesize)
 {
     SDL_DYNAPI_jump_table *output_jump_table = (SDL_DYNAPI_jump_table *) table;
 
@@ -199,6 +194,18 @@ SDL_DYNAPI_entry(Uint32 apiver, void *table, Uint32 tablesize)
     /* Safe to call SDL functions now; jump table is initialized! */
 
     return 0;  /* success! */
+}
+
+
+/* Here's the exported entry point that fills in the jump table. */
+/*  Use specific types when an "int" might suffice to keep this sane. */
+typedef Sint32 (SDLCALL *SDL_DYNAPI_ENTRYFN)(Uint32 apiver, void *table, Uint32 tablesize);
+extern DECLSPEC Sint32 SDLCALL SDL_DYNAPI_entry(Uint32, void *, Uint32);
+
+Sint32
+SDL_DYNAPI_entry(Uint32 apiver, void *table, Uint32 tablesize)
+{
+    return initialize_jumptable(apiver, table, tablesize);
 }
 
 
@@ -260,7 +267,7 @@ static void
 SDL_InitDynamicAPILocked(void)
 {
     const char *libname = SDL_getenv_REAL("SDL_DYNAMIC_API");
-    SDL_DYNAPI_ENTRYFN entry = SDL_DYNAPI_entry;  /* funcs from here by default. */
+    SDL_DYNAPI_ENTRYFN entry = NULL;  /* funcs from here by default. */
 
     if (libname) {
         entry = (SDL_DYNAPI_ENTRYFN) get_sdlapi_entry(libname, "SDL_DYNAPI_entry");
@@ -268,16 +275,15 @@ SDL_InitDynamicAPILocked(void)
             /* !!! FIXME: fail to startup here instead? */
             /* !!! FIXME: definitely warn user. */
             /* Just fill in the function pointers from this library. */
-            entry = SDL_DYNAPI_entry;
         }
     }
 
-    if (entry(SDL_DYNAPI_VERSION, &jump_table, sizeof (jump_table)) < 0) {
+    if (!entry || (entry(SDL_DYNAPI_VERSION, &jump_table, sizeof (jump_table)) < 0)) {
         /* !!! FIXME: fail to startup here instead? */
         /* !!! FIXME: definitely warn user. */
         /* Just fill in the function pointers from this library. */
-        if (entry != SDL_DYNAPI_entry) {
-            if (!SDL_DYNAPI_entry(SDL_DYNAPI_VERSION, &jump_table, sizeof (jump_table))) {
+        if (!entry) {
+            if (!initialize_jumptable(SDL_DYNAPI_VERSION, &jump_table, sizeof (jump_table))) {
                 /* !!! FIXME: now we're screwed. Should definitely abort now. */
             }
         }
