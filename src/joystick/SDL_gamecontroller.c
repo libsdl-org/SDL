@@ -40,7 +40,7 @@
 
 
 /* Many controllers turn the center button into an instantaneous button press */
-#define SDL_MINIMUM_GUIDE_BUTTON_DELAY_MS   100
+#define SDL_MINIMUM_GUIDE_BUTTON_DELAY_MS   250
 
 #define SDL_CONTROLLER_PLATFORM_FIELD "platform:"
 
@@ -929,6 +929,7 @@ static ControllerMapping_t *SDL_CreateMappingForAndroidController(const char *na
     if (button_mask & (1 << SDL_CONTROLLER_BUTTON_BACK)) {
         SDL_strlcat(mapping_string, "back:b4,", sizeof(mapping_string));
     }
+#if 0 /* The guide button generally isn't functional (or acts as a home button) on most Android controllers */
     if (button_mask & (1 << SDL_CONTROLLER_BUTTON_GUIDE)) {
         SDL_strlcat(mapping_string, "guide:b5,", sizeof(mapping_string));
 #if 0 /* Actually this will be done in Steam */
@@ -940,6 +941,7 @@ static ControllerMapping_t *SDL_CreateMappingForAndroidController(const char *na
         button_mask &= ~(1 << SDL_CONTROLLER_BUTTON_START);
 #endif
     }
+#endif
     if (button_mask & (1 << SDL_CONTROLLER_BUTTON_START)) {
         SDL_strlcat(mapping_string, "start:b6,", sizeof(mapping_string));
     }
