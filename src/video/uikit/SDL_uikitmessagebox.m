@@ -109,6 +109,7 @@ UIKit_ShowMessageBoxAlertController(const SDL_MessageBoxData *messageboxdata, in
         alertwindow.hidden = YES;
     }
 
+#if !TARGET_OS_TV
     /* Force the main SDL window to re-evaluate home indicator state */
     SDL_Window *focus = SDL_GetFocusWindow();
     if (focus) {
@@ -120,6 +121,7 @@ UIKit_ShowMessageBoxAlertController(const SDL_MessageBoxData *messageboxdata, in
             }
         }
     }
+#endif /* !TARGET_OS_TV */
 
     *buttonid = messageboxdata->buttons[clickedindex].buttonid;
     return YES;

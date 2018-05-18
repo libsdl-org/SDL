@@ -446,6 +446,64 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
     return 0;
 }
 
+#ifdef DUMP_EGL_CONFIG
+
+#define ATTRIBUTE(_attr) { _attr, #_attr }
+
+typedef struct {
+    EGLint attribute;
+    char const* name;
+} Attribute;
+
+Attribute attributes[] = {
+        ATTRIBUTE( EGL_BUFFER_SIZE ),
+        ATTRIBUTE( EGL_ALPHA_SIZE ),
+        ATTRIBUTE( EGL_BLUE_SIZE ),
+        ATTRIBUTE( EGL_GREEN_SIZE ),
+        ATTRIBUTE( EGL_RED_SIZE ),
+        ATTRIBUTE( EGL_DEPTH_SIZE ),
+        ATTRIBUTE( EGL_STENCIL_SIZE ),
+        ATTRIBUTE( EGL_CONFIG_CAVEAT ),
+        ATTRIBUTE( EGL_CONFIG_ID ),
+        ATTRIBUTE( EGL_LEVEL ),
+        ATTRIBUTE( EGL_MAX_PBUFFER_HEIGHT ),
+        ATTRIBUTE( EGL_MAX_PBUFFER_WIDTH ),
+        ATTRIBUTE( EGL_MAX_PBUFFER_PIXELS ),
+        ATTRIBUTE( EGL_NATIVE_RENDERABLE ),
+        ATTRIBUTE( EGL_NATIVE_VISUAL_ID ),
+        ATTRIBUTE( EGL_NATIVE_VISUAL_TYPE ),
+        ATTRIBUTE( EGL_SAMPLES ),
+        ATTRIBUTE( EGL_SAMPLE_BUFFERS ),
+        ATTRIBUTE( EGL_SURFACE_TYPE ),
+        ATTRIBUTE( EGL_TRANSPARENT_TYPE ),
+        ATTRIBUTE( EGL_TRANSPARENT_BLUE_VALUE ),
+        ATTRIBUTE( EGL_TRANSPARENT_GREEN_VALUE ),
+        ATTRIBUTE( EGL_TRANSPARENT_RED_VALUE ),
+        ATTRIBUTE( EGL_BIND_TO_TEXTURE_RGB ),
+        ATTRIBUTE( EGL_BIND_TO_TEXTURE_RGBA ),
+        ATTRIBUTE( EGL_MIN_SWAP_INTERVAL ),
+        ATTRIBUTE( EGL_MAX_SWAP_INTERVAL ),
+        ATTRIBUTE( EGL_LUMINANCE_SIZE ),
+        ATTRIBUTE( EGL_ALPHA_MASK_SIZE ),
+        ATTRIBUTE( EGL_COLOR_BUFFER_TYPE ),
+        ATTRIBUTE( EGL_RENDERABLE_TYPE ),
+        ATTRIBUTE( EGL_MATCH_NATIVE_PIXMAP ),
+        ATTRIBUTE( EGL_CONFORMANT ),
+};
+
+
+static void dumpconfig(_THIS, EGLConfig config)
+{
+    int attr;
+    for (attr = 0 ; attr<sizeof(attributes)/sizeof(Attribute) ; attr++) {
+        EGLint value;
+        _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display, config, attributes[attr].attribute, &value);
+        SDL_Log("\t%-32s: %10d (0x%08x)\n", attributes[attr].name, value, value);
+    }
+}
+
+#endif /* DUMP_EGL_CONFIG */
+
 int
 SDL_EGL_ChooseConfig(_THIS) 
 {
@@ -570,6 +628,10 @@ SDL_EGL_ChooseConfig(_THIS)
             break; /* we found an exact match! */
         }
     }
+
+#ifdef DUMP_EGL_CONFIG
+    dumpconfig(_this, _this->egl_data->egl_config);
+#endif
     
     return 0;
 }
