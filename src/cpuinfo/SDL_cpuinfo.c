@@ -38,6 +38,7 @@
 /* CPU feature detection for SDL */
 
 #include "SDL_cpuinfo.h"
+#include "SDL_assert.h"
 
 #ifdef HAVE_SYSCONF
 #include <unistd.h>
@@ -571,6 +572,7 @@ SDL_GetCPUCacheLineSize(void)
 }
 
 static Uint32 SDL_CPUFeatures = 0xFFFFFFFF;
+static Uint32 SDL_SIMDAlignment = 0xFFFFFFFF;
 
 static Uint32
 SDL_GetCPUFeatures(void)
@@ -578,41 +580,53 @@ SDL_GetCPUFeatures(void)
     if (SDL_CPUFeatures == 0xFFFFFFFF) {
         CPU_calcCPUIDFeatures();
         SDL_CPUFeatures = 0;
+        SDL_SIMDAlignment = 4;  /* a good safe base value */
         if (CPU_haveRDTSC()) {
             SDL_CPUFeatures |= CPU_HAS_RDTSC;
         }
         if (CPU_haveAltiVec()) {
             SDL_CPUFeatures |= CPU_HAS_ALTIVEC;
+            SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 16);
         }
         if (CPU_haveMMX()) {
             SDL_CPUFeatures |= CPU_HAS_MMX;
+            SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 8);
         }
         if (CPU_have3DNow()) {
             SDL_CPUFeatures |= CPU_HAS_3DNOW;
+            SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 8);
         }
         if (CPU_haveSSE()) {
             SDL_CPUFeatures |= CPU_HAS_SSE;
+            SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 16);
         }
         if (CPU_haveSSE2()) {
             SDL_CPUFeatures |= CPU_HAS_SSE2;
+            SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 16);
         }
         if (CPU_haveSSE3()) {
             SDL_CPUFeatures |= CPU_HAS_SSE3;
+            SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 16);
         }
         if (CPU_haveSSE41()) {
             SDL_CPUFeatures |= CPU_HAS_SSE41;
+            SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 16);
         }
         if (CPU_haveSSE42()) {
             SDL_CPUFeatures |= CPU_HAS_SSE42;
+            SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 16);
         }
         if (CPU_haveAVX()) {
             SDL_CPUFeatures |= CPU_HAS_AVX;
+            SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 32);
         }
         if (CPU_haveAVX2()) {
             SDL_CPUFeatures |= CPU_HAS_AVX2;
+            SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 32);
         }
         if (CPU_haveNEON()) {
             SDL_CPUFeatures |= CPU_HAS_NEON;
+            SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 16);
         }
     }
     return SDL_CPUFeatures;
@@ -742,6 +756,44 @@ SDL_GetSystemRAM(void)
 #endif
     }
     return SDL_SystemRAM;
+}
+
+
+size_t
+SDL_SIMDGetAlignment(void)
+{
+    if (SDL_SIMDAlignment == 0xFFFFFFFF) {
+        SDL_GetCPUFeatures();  /* make sure this has been calculated */
+    }
+    SDL_assert(SDL_SIMDAlignment != 0);
+    return SDL_SIMDAlignment;
+}
+
+void *
+SDL_SIMDAlloc(const size_t len)
+{
+    const size_t alignment = SDL_SIMDGetAlignment();
+    const size_t padding = alignment - (len % alignment);
+    const size_t padded = (padding != alignment) ? (len + padding) : len;
+    Uint8 *retval = NULL;
+    Uint8 *ptr = (Uint8 *) SDL_malloc(padded + alignment + sizeof (void *));
+    if (ptr) {
+        /* store the actual malloc pointer right before our aligned pointer. */
+        retval = ptr + sizeof (void *);
+        retval += alignment - (((size_t) retval) % alignment);
+        *(((void **) retval) - 1) = ptr;
+    }
+    return retval;
+}
+
+void
+SDL_SIMDFree(void *ptr)
+{
+    if (ptr) {
+        void **realptr = (void **) ptr;
+        realptr--;
+        SDL_free(*(((void **) ptr) - 1));
+    }
 }
 
 
