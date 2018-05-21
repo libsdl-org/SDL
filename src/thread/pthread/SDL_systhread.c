@@ -184,6 +184,7 @@ SDL_ThreadID(void)
     return ((SDL_threadID) pthread_self());
 }
 
+#if __LINUX__
 /* d-bus queries to org.freedesktop.RealtimeKit1. */
 #if SDL_USE_LIBDBUS
 
@@ -237,7 +238,6 @@ rtkit_setpriority(pid_t thread, int nice_level)
 
 #endif /* !SDL_USE_LIBDBUS */
 
-#if __LINUX__
 int
 SDL_LinuxSetThreadPriority(Sint64 threadID, int priority)
 {
