@@ -809,7 +809,7 @@ SDL_Convert_F32_to_S32_SSE2(SDL_AudioCVT *cvt, SDL_AudioFormat format)
         if (sample >= 1.0f) {
             *dst = 2147483647;
         } else if (sample <= -1.0f) {
-            *dst = -2147483648;
+            *dst = (Sint32) -2147483648LL;
         } else {
             *dst = ((Sint32)(sample * 8388607.0f)) << 8;
         }
@@ -837,7 +837,7 @@ SDL_Convert_F32_to_S32_SSE2(SDL_AudioCVT *cvt, SDL_AudioFormat format)
         if (sample >= 1.0f) {
             *dst = 2147483647;
         } else if (sample <= -1.0f) {
-            *dst = -2147483648;
+            *dst = (Sint32) -2147483648LL;
         } else {
             *dst = ((Sint32)(sample * 8388607.0f)) << 8;
         }
