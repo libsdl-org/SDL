@@ -671,3 +671,4 @@
 #define SDL_log10f SDL_log10f_REAL
 #define SDL_GameControllerMappingForDeviceIndex SDL_GameControllerMappingForDeviceIndex_REAL
 #define SDL_LinuxSetThreadPriority SDL_LinuxSetThreadPriority_REAL
+#define SDL_HasAVX512F SDL_HasAVX512F_REAL

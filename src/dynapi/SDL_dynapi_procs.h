@@ -711,3 +711,4 @@ SDL_DYNAPI_PROC(char*,SDL_GameControllerMappingForDeviceIndex,(int a),(a),return
 #ifdef __LINUX__
 SDL_DYNAPI_PROC(int,SDL_LinuxSetThreadPriority,(Sint64 a, int b),(a,b),return)
 #endif
+SDL_DYNAPI_PROC(SDL_bool,SDL_HasAVX512F,(void),(),return)

@@ -160,6 +160,11 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasAVX(void);
 extern DECLSPEC SDL_bool SDLCALL SDL_HasAVX2(void);
 
 /**
+ *  This function returns true if the CPU has AVX-512F (foundation) features.
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_HasAVX512F(void);
+
+/**
  *  This function returns true if the CPU has NEON (ARM SIMD) features.
  */
 extern DECLSPEC SDL_bool SDLCALL SDL_HasNEON(void);
