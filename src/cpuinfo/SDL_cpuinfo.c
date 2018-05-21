@@ -89,6 +89,7 @@
 #define CPU_HAS_AVX     (1 << 9)
 #define CPU_HAS_AVX2    (1 << 10)
 #define CPU_HAS_NEON    (1 << 11)
+#define CPU_HAS_AVX512F (1 << 12)
 
 #if SDL_ALTIVEC_BLITTERS && HAVE_SETJMP && !__MACOSX__ && !__OpenBSD__
 /* This is the brute force way of detecting instruction sets...
@@ -247,6 +248,7 @@ done:
 static int CPU_CPUIDFeatures[4];
 static int CPU_CPUIDMaxFunction = 0;
 static SDL_bool CPU_OSSavesYMM = SDL_FALSE;
+static SDL_bool CPU_OSSavesZMM = SDL_FALSE;
 
 static void
 CPU_calcCPUIDFeatures(void)
@@ -267,7 +269,7 @@ CPU_calcCPUIDFeatures(void)
 
                 /* Check to make sure we can call xgetbv */
                 if (c & 0x08000000) {
-                    /* Call xgetbv to see if YMM register state is saved */
+                    /* Call xgetbv to see if YMM (etc) register state is saved */
 #if defined(__GNUC__) && (defined(i386) || defined(__x86_64__))
                     __asm__(".byte 0x0f, 0x01, 0xd0" : "=a" (a) : "c" (0) : "%edx");
 #elif defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64)) && (_MSC_FULL_VER >= 160040219) /* VS2010 SP1 */
@@ -281,6 +283,7 @@ CPU_calcCPUIDFeatures(void)
                     }
 #endif
                     CPU_OSSavesYMM = ((a & 6) == 6) ? SDL_TRUE : SDL_FALSE;
+                    CPU_OSSavesZMM = (CPU_OSSavesYMM && ((a & 0xe0) == 0xe0)) ? SDL_TRUE : SDL_FALSE;
                 }
             }
         }
@@ -397,6 +400,18 @@ CPU_haveAVX2(void)
         (void) a; (void) b; (void) c; (void) d;  /* compiler warnings... */
         cpuid(7, a, b, c, d);
         return (b & 0x00000020);
+    }
+    return 0;
+}
+
+static int
+CPU_haveAVX512F(void)
+{
+    if (CPU_OSSavesZMM && (CPU_CPUIDMaxFunction >= 7)) {
+        int a, b, c, d;
+        (void) a; (void) b; (void) c; (void) d;  /* compiler warnings... */
+        cpuid(7, a, b, c, d);
+        return (b & 0x00010000);
     }
     return 0;
 }
@@ -624,6 +639,10 @@ SDL_GetCPUFeatures(void)
             SDL_CPUFeatures |= CPU_HAS_AVX2;
             SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 32);
         }
+        if (CPU_haveAVX512F()) {
+            SDL_CPUFeatures |= CPU_HAS_AVX512F;
+            SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 64);
+        }
         if (CPU_haveNEON()) {
             SDL_CPUFeatures |= CPU_HAS_NEON;
             SDL_SIMDAlignment = SDL_max(SDL_SIMDAlignment, 16);
@@ -697,6 +716,12 @@ SDL_bool
 SDL_HasAVX2(void)
 {
     return CPU_FEATURE_AVAILABLE(CPU_HAS_AVX2);
+}
+
+SDL_bool
+SDL_HasAVX512F(void)
+{
+    return CPU_FEATURE_AVAILABLE(CPU_HAS_AVX512F);
 }
 
 SDL_bool
@@ -819,6 +844,7 @@ main()
     printf("SSE4.2: %d\n", SDL_HasSSE42());
     printf("AVX: %d\n", SDL_HasAVX());
     printf("AVX2: %d\n", SDL_HasAVX2());
+    printf("AVX-512F: %d\n", SDL_HasAVX512F());
     printf("NEON: %d\n", SDL_HasNEON());
     printf("RAM: %d MB\n", SDL_GetSystemRAM());
     return 0;
