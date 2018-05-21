@@ -169,7 +169,6 @@ extern DECLSPEC SDL_bool SDLCALL SDL_HasNEON(void);
  */
 extern DECLSPEC int SDLCALL SDL_GetSystemRAM(void);
 
-
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }
