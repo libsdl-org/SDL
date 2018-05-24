@@ -982,10 +982,10 @@ static ControllerMapping_t *SDL_CreateMappingForAndroidController(const char *na
         SDL_strlcat(mapping_string, "righty:a3,", sizeof(mapping_string));
     }
     if (axis_mask & (1 << SDL_CONTROLLER_AXIS_TRIGGERLEFT)) {
-        SDL_strlcat(mapping_string, "lefttrigger:a5,", sizeof(mapping_string));
+        SDL_strlcat(mapping_string, "lefttrigger:a4,", sizeof(mapping_string));
     }
     if (axis_mask & (1 << SDL_CONTROLLER_AXIS_TRIGGERRIGHT)) {
-        SDL_strlcat(mapping_string, "righttrigger:a4,", sizeof(mapping_string));
+        SDL_strlcat(mapping_string, "righttrigger:a5,", sizeof(mapping_string));
     }
     return SDL_PrivateAddMappingForGUID(guid, mapping_string,
                       &existing, SDL_CONTROLLER_MAPPING_PRIORITY_DEFAULT);
