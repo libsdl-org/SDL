@@ -144,7 +144,21 @@ class SDLJoystickHandler_API12 extends SDLJoystickHandler {
     static class RangeComparator implements Comparator<InputDevice.MotionRange> {
         @Override
         public int compare(InputDevice.MotionRange arg0, InputDevice.MotionRange arg1) {
-            return arg0.getAxis() - arg1.getAxis();
+            // Some controllers, like the Moga Pro 2, return AXIS_GAS (22) for right trigger and AXIS_BRAKE (23) for left trigger - swap them so they're sorted in the right order for SDL
+            int arg0Axis = arg0.getAxis();
+            int arg1Axis = arg1.getAxis();
+            if (arg0Axis == MotionEvent.AXIS_GAS) {
+                arg0Axis = MotionEvent.AXIS_BRAKE;
+            } else if (arg0Axis == MotionEvent.AXIS_BRAKE) {
+                arg0Axis = MotionEvent.AXIS_GAS;
+            }
+            if (arg1Axis == MotionEvent.AXIS_GAS) {
+                arg1Axis = MotionEvent.AXIS_BRAKE;
+            } else if (arg1Axis == MotionEvent.AXIS_BRAKE) {
+                arg1Axis = MotionEvent.AXIS_GAS;
+            }
+
+            return arg0Axis - arg1Axis;
         }
     }
 
