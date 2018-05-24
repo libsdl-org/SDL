@@ -355,7 +355,7 @@ static BOOL update_audio_session(_THIS, SDL_bool open)
             return NO;
         }
 
-        if (open_playback_devices + open_capture_devices == 1) {
+        if (open && (open_playback_devices + open_capture_devices) == 1) {
             if (![session setActive:YES error:&err]) {
                 NSString *desc = err.description;
                 SDL_SetError("Could not activate Audio Session: %s", desc.UTF8String);
@@ -392,10 +392,10 @@ static BOOL update_audio_session(_THIS, SDL_bool open)
             if (this->hidden->interruption_listener != NULL) {
                 SDLInterruptionListener *listener = nil;
                 listener = (SDLInterruptionListener *) CFBridgingRelease(this->hidden->interruption_listener);
+                [center removeObserver:listener];
                 @synchronized (listener) {
                     listener.device = NULL;
                 }
-                [center removeObserver:listener];
             }
         }
     }
