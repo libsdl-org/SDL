@@ -49,8 +49,8 @@
 {
     if ((self = [super initWithFrame:frame])) {
         self.tag = METALVIEW_TAG;
-        /* Set the desired scale. The default drawableSize of a CAMetalLayer
-         * is its bounds x its scale so nothing further needs to be done. */
+        /* Set the desired scale. */
+        ((CAMetalLayer *) self.layer).drawableSize = self.bounds.size;
         self.layer.contentsScale = scale;
     }
 
