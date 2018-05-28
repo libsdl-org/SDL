@@ -66,11 +66,10 @@
         /* Allow resize. */
         self.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
 
-        /* Set the desired scale. The default drawableSize of a CAMetalLayer
-         * is its bounds x its scale so nothing further needs to be done.
-         */
+        /* Set the desired scale. */
+        ((CAMetalLayer *) self.layer).drawableSize = NSSizeToCGSize([self bounds].size);
         self.layer.contentsScale = scale;
-	}
+    }
   
 	return self;
 }
