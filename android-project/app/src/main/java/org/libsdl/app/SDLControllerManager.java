@@ -534,14 +534,14 @@ class SDLGenericMotionListener_API12 implements View.OnGenericMotionListener {
                     case MotionEvent.ACTION_SCROLL:
                         x = event.getAxisValue(MotionEvent.AXIS_HSCROLL, 0);
                         y = event.getAxisValue(MotionEvent.AXIS_VSCROLL, 0);
-                        SDLActivity.onNativeMouse(0, action, x, y);
+                        SDLActivity.onNativeMouse(0, action, x, y, false);
                         return true;
 
                     case MotionEvent.ACTION_HOVER_MOVE:
                         x = event.getX(0);
                         y = event.getY(0);
 
-                        SDLActivity.onNativeMouse(0, action, x, y);
+                        SDLActivity.onNativeMouse(0, action, x, y, false);
                         return true;
 
                     default:
@@ -555,6 +555,113 @@ class SDLGenericMotionListener_API12 implements View.OnGenericMotionListener {
 
         // Event was not managed
         return false;
+    }
+
+    public boolean supportsRelativeMouse() {
+        return false;
+    }
+
+    public boolean inRelativeMode() {
+        return false;
+    }
+
+    public boolean setRelativeMouseEnabled(boolean enabled) {
+        return false;
+    }
+
+    public float getEventX(MotionEvent event) {
+        return event.getX(0);
+    }
+
+    public float getEventY(MotionEvent event) {
+        return event.getY(0);
+    }
+
+}
+
+class SDLGenericMotionListener_API24 extends SDLGenericMotionListener_API12 {
+    // Generic Motion (mouse hover, joystick...) events go here
+
+    private boolean mRelativeModeEnabled;
+
+    @Override
+    public boolean onGenericMotion(View v, MotionEvent event) {
+        float x, y;
+        int action;
+
+        switch ( event.getSource() ) {
+            case InputDevice.SOURCE_JOYSTICK:
+            case InputDevice.SOURCE_GAMEPAD:
+            case InputDevice.SOURCE_DPAD:
+                return SDLControllerManager.handleJoystickMotionEvent(event);
+                
+            case InputDevice.SOURCE_MOUSE:
+                if (!SDLActivity.mSeparateMouseAndTouch) {
+                    break;
+                }
+                action = event.getActionMasked();
+                switch (action) {
+                    case MotionEvent.ACTION_SCROLL:
+                        x = event.getAxisValue(MotionEvent.AXIS_HSCROLL, 0);
+                        y = event.getAxisValue(MotionEvent.AXIS_VSCROLL, 0);
+                        SDLActivity.onNativeMouse(0, action, x, y, false);
+                        return true;
+
+                    case MotionEvent.ACTION_HOVER_MOVE:
+                        if (mRelativeModeEnabled) {
+                            x = event.getAxisValue(MotionEvent.AXIS_RELATIVE_X);
+                            y = event.getAxisValue(MotionEvent.AXIS_RELATIVE_Y);
+                        }
+                        else {
+                            x = event.getX(0);
+                            y = event.getY(0);
+                        }
+
+                        SDLActivity.onNativeMouse(0, action, x, y, mRelativeModeEnabled);
+                        return true;
+
+                    default:
+                        break;
+                }
+                break;
+
+            default:
+                break;
+        }
+
+        // Event was not managed
+        return false;
+    }
+
+    public boolean supportsRelativeMouse() {
+        return true;
+    }
+
+    public boolean inRelativeMode() {
+        return mRelativeModeEnabled;
+    }
+
+    public boolean setRelativeMouseEnabled(boolean enabled) {
+        mRelativeModeEnabled = enabled;
+        return true;
+    }
+
+    public float getEventX(MotionEvent event) {
+        if (mRelativeModeEnabled) {
+            return event.getAxisValue(MotionEvent.AXIS_RELATIVE_X);
+        }
+        else {
+            return event.getX(0);
+        }
+    }
+
+    public float getEventY(MotionEvent event) {
+        if (mRelativeModeEnabled) {
+            return event.getAxisValue(MotionEvent.AXIS_RELATIVE_Y);
+        }
+        else {
+            return event.getY(0);
+        }
     }
 }
 
