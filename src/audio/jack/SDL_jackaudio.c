@@ -44,7 +44,9 @@ static const char ** (*JACK_jack_get_ports) (jack_client_t *, const char *, cons
 static jack_nframes_t (*JACK_jack_get_sample_rate) (jack_client_t *);
 static jack_nframes_t (*JACK_jack_get_buffer_size) (jack_client_t *);
 static jack_port_t * (*JACK_jack_port_register) (jack_client_t *, const char *, const char *, unsigned long, unsigned long);
+static jack_port_t * (*JACK_jack_port_by_name) (jack_client_t *, const char *);
 static const char * (*JACK_jack_port_name) (const jack_port_t *);
+static const char * (*JACK_jack_port_type) (const jack_port_t *);
 static int (*JACK_jack_connect) (jack_client_t *, const char *, const char *);
 static int (*JACK_jack_set_process_callback) (jack_client_t *, JackProcessCallback, void *);
 
@@ -135,7 +137,9 @@ load_jack_syms(void)
     SDL_JACK_SYM(jack_get_sample_rate);
     SDL_JACK_SYM(jack_get_buffer_size);
     SDL_JACK_SYM(jack_port_register);
+    SDL_JACK_SYM(jack_port_by_name);
     SDL_JACK_SYM(jack_port_name);
+    SDL_JACK_SYM(jack_port_type);
     SDL_JACK_SYM(jack_connect);
     SDL_JACK_SYM(jack_set_process_callback);
     return 0;
@@ -273,10 +277,6 @@ JACK_CloseDevice(_THIS)
         SDL_DestroySemaphore(this->hidden->iosem);
     }
 
-    if (this->hidden->devports) {
-        JACK_jack_free(this->hidden->devports);
-    }
-
     SDL_free(this->hidden->iobuffer);
 }
 
@@ -292,9 +292,11 @@ JACK_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     const JackProcessCallback callback = iscapture ? jackProcessCaptureCallback : jackProcessPlaybackCallback;
     const char *sdlportstr = iscapture ? "input" : "output";
     const char **devports = NULL;
+    int *audio_ports;
     jack_client_t *client = NULL;
     jack_status_t status;
     int channels = 0;
+    int ports = 0;
     int i;
 
     /* Initialize all variables that we clean on shutdown */
@@ -311,14 +313,29 @@ JACK_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     }
 
     devports = JACK_jack_get_ports(client, NULL, NULL, JackPortIsPhysical | sysportflags);
-    this->hidden->devports = devports;
     if (!devports || !devports[0]) {
         return SDL_SetError("No physical JACK ports available");
     }
 
-    while (devports[++channels]) {
+    while (devports[++ports]) {
         /* spin to count devports */
     }
+
+    /* Filter out non-audio ports */
+    audio_ports = SDL_calloc(ports, sizeof *audio_ports);
+    for (i = 0; i < ports; i++) {
+        const jack_port_t *dport = JACK_jack_port_by_name(client, devports[i]);
+        const char *type = JACK_jack_port_type(dport);
+        const int len = SDL_strlen(type);
+        /* See if type ends with "audio" */
+        if (len >= 5 && !SDL_memcmp(type+len-5, "audio", 5)) {
+            audio_ports[channels++] = i;
+        }
+    }
+    if (channels == 0) {
+        return SDL_SetError("No physical JACK ports available");
+    }
+
 
     /* !!! FIXME: docs say about buffer size: "This size may change, clients that depend on it must register a bufsize_callback so they will be notified if it does." */
 
@@ -368,16 +385,16 @@ JACK_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
     /* once activated, we can connect all the ports. */
     for (i = 0; i < channels; i++) {
         const char *sdlport = JACK_jack_port_name(this->hidden->sdlports[i]);
-        const char *srcport = iscapture ? devports[i] : sdlport;
-        const char *dstport = iscapture ? sdlport : devports[i];
+        const char *srcport = iscapture ? devports[audio_ports[i]] : sdlport;
+        const char *dstport = iscapture ? sdlport : devports[audio_ports[i]];
         if (JACK_jack_connect(client, srcport, dstport) != 0) {
             return SDL_SetError("Couldn't connect JACK ports: %s => %s", srcport, dstport);
         }
     }
 
     /* don't need these anymore. */
-    this->hidden->devports = NULL;
     JACK_jack_free(devports);
+    SDL_free(audio_ports);
 
     /* We're ready to rock and roll. :-) */
     return 0;
