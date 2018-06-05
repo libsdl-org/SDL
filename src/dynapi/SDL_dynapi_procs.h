@@ -712,3 +712,6 @@ SDL_DYNAPI_PROC(char*,SDL_GameControllerMappingForDeviceIndex,(int a),(a),return
 SDL_DYNAPI_PROC(int,SDL_LinuxSetThreadPriority,(Sint64 a, int b),(a,b),return)
 #endif
 SDL_DYNAPI_PROC(SDL_bool,SDL_HasAVX512F,(void),(),return)
+#ifdef __ANDROID__
+SDL_DYNAPI_PROC(SDL_bool,SDL_IsChromebook,(void),(),return)
+#endif

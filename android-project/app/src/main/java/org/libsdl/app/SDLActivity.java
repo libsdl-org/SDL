@@ -698,6 +698,13 @@ public class SDLActivity extends Activity {
     /**
      * This method is called by SDL using JNI.
      */
+    public static boolean isChromebook() {
+        return getContext().getPackageManager().hasSystemFeature("org.chromium.arc.device_management");
+    }    
+
+    /**
+     * This method is called by SDL using JNI.
+     */
     public static DisplayMetrics getDisplayDPI() {
         return getContext().getResources().getDisplayMetrics();
     }

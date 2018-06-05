@@ -126,6 +126,11 @@ extern DECLSPEC void * SDLCALL SDL_AndroidGetActivity(void);
 extern DECLSPEC SDL_bool SDLCALL SDL_IsAndroidTV(void);
 
 /**
+   \brief Return true if the application is running on a Chromebook
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_IsChromebook(void);
+
+/**
    See the official Android developer guide for more information:
    http://developer.android.com/guide/topics/data/data-storage.html
 */
