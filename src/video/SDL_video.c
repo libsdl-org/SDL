@@ -1322,7 +1322,7 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
 }
 
 #define CREATE_FLAGS \
-    (SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_SKIP_TASKBAR | SDL_WINDOW_POPUP_MENU | SDL_WINDOW_UTILITY | SDL_WINDOW_TOOLTIP | SDL_WINDOW_VULKAN)
+    (SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_SKIP_TASKBAR | SDL_WINDOW_POPUP_MENU | SDL_WINDOW_UTILITY | SDL_WINDOW_TOOLTIP | SDL_WINDOW_VULKAN | SDL_WINDOW_MINIMIZED)
 
 static void
 SDL_FinishWindowCreation(SDL_Window *window, Uint32 flags)
@@ -1479,6 +1479,13 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
         SDL_DestroyWindow(window);
         return NULL;
     }
+
+	// Clear minimized if not on windows, only windows handles it at create rather than FinishWindowCreation,
+	// but it's important or window focus will get broken on windows!
+#if !defined(__WIN32__)
+	if ( window->flags & SDL_WINDOW_MINIMIZED )
+		window->flags &= ~SDL_WINDOW_MINIMIZED;
+#endif
 
 #if __WINRT__ && (NTDDI_VERSION < NTDDI_WIN10)
     /* HACK: WinRT 8.x apps can't choose whether or not they are fullscreen
