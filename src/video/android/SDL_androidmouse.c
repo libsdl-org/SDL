@@ -137,6 +137,20 @@ Android_ShowCursor(SDL_Cursor * cursor)
     return 0;
 }
 
+static int
+Android_SetRelativeMouseMode(SDL_bool enabled)
+{
+    if (!Android_JNI_SupportsRelativeMouse()) {
+        return SDL_Unsupported();
+    }
+
+    if (!Android_JNI_SetRelativeMouseEnabled(enabled)) {
+        return SDL_Unsupported();
+    }
+
+    return 0;
+}
+
 void
 Android_InitMouse(void)
 {
@@ -146,6 +160,7 @@ Android_InitMouse(void)
     mouse->CreateSystemCursor = Android_CreateSystemCursor;
     mouse->ShowCursor = Android_ShowCursor;
     mouse->FreeCursor = Android_FreeCursor;
+    mouse->SetRelativeMouseMode = Android_SetRelativeMouseMode;
 
     SDL_SetDefaultCursor(Android_CreateDefaultCursor());
 
@@ -172,7 +187,7 @@ TranslateButton(int state)
 }
 
 void
-Android_OnMouse(int state, int action, float x, float y)
+Android_OnMouse(int state, int action, float x, float y, SDL_bool relative)
 {
     int changes;
     Uint8 button;
@@ -186,7 +201,7 @@ Android_OnMouse(int state, int action, float x, float y)
             changes = state & ~last_state;
             button = TranslateButton(changes);
             last_state = state;
-            SDL_SendMouseMotion(Android_Window, 0, 0, x, y);
+            SDL_SendMouseMotion(Android_Window, 0, relative, x, y);
             SDL_SendMouseButton(Android_Window, 0, SDL_PRESSED, button);
             break;
 
@@ -194,13 +209,13 @@ Android_OnMouse(int state, int action, float x, float y)
             changes = last_state & ~state;
             button = TranslateButton(changes);
             last_state = state;
-            SDL_SendMouseMotion(Android_Window, 0, 0, x, y);
+            SDL_SendMouseMotion(Android_Window, 0, relative, x, y);
             SDL_SendMouseButton(Android_Window, 0, SDL_RELEASED, button);
             break;
 
         case ACTION_MOVE:
         case ACTION_HOVER_MOVE:
-            SDL_SendMouseMotion(Android_Window, 0, 0, x, y);
+            SDL_SendMouseMotion(Android_Window, 0, relative, x, y);
             break;
 
         case ACTION_SCROLL:

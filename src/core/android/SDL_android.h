@@ -107,6 +107,10 @@ int Android_JNI_CreateCustomCursor(SDL_Surface *surface, int hot_x, int hot_y);
 SDL_bool Android_JNI_SetCustomCursor(int cursorID);
 SDL_bool Android_JNI_SetSystemCursor(int cursorID);
 
+/* Relative mouse support */
+SDL_bool Android_JNI_SupportsRelativeMouse();
+SDL_bool Android_JNI_SetRelativeMouseEnabled(SDL_bool enabled);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 /* *INDENT-OFF* */
