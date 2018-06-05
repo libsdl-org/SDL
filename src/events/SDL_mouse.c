@@ -688,6 +688,7 @@ static SDL_bool
 ShouldUseRelativeModeWarp(SDL_Mouse *mouse)
 {
     if (!mouse->SetRelativeMouseMode) {
+        SDL_assert(mouse->WarpMouse);   /* Need this functionality for relative mode warp implementation */
         return SDL_TRUE;
     }
 

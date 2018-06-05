@@ -102,7 +102,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeTouch)(
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeMouse)(
         JNIEnv* env, jclass jcls,
-        jint button, jint action, jfloat x, jfloat y);
+        jint button, jint action, jfloat x, jfloat y, jboolean relative);
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeAccel)(
         JNIEnv* env, jclass jcls,
@@ -226,6 +226,8 @@ static jmethodID midGetDisplayDPI;
 static jmethodID midCreateCustomCursor;
 static jmethodID midSetCustomCursor;
 static jmethodID midSetSystemCursor;
+static jmethodID midSupportsRelativeMouse;
+static jmethodID midSetRelativeMouseEnabled;
 
 /* audio manager */
 static jclass mAudioManagerClass;
@@ -339,12 +341,15 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv* mEnv, jclass c
     midSetCustomCursor = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass, "setCustomCursor", "(I)Z");
     midSetSystemCursor = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass, "setSystemCursor", "(I)Z");
 
+    midSupportsRelativeMouse = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass, "supportsRelativeMouse", "()Z");
+    midSetRelativeMouseEnabled = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass, "setRelativeMouseEnabled", "(Z)Z");
+
     if (!midGetNativeSurface ||
        !midSetActivityTitle || !midSetWindowStyle || !midSetOrientation || !midGetContext || !midIsAndroidTV || !midInputGetInputDeviceIds ||
        !midSendMessage || !midShowTextInput || !midIsScreenKeyboardShown ||
        !midClipboardSetText || !midClipboardGetText || !midClipboardHasText ||
        !midOpenAPKExpansionInputStream || !midGetManifestEnvironmentVariables || !midGetDisplayDPI ||
-       !midCreateCustomCursor || !midSetCustomCursor || !midSetSystemCursor) {
+       !midCreateCustomCursor || !midSetCustomCursor || !midSetSystemCursor || !midSupportsRelativeMouse || !midSetRelativeMouseEnabled) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLActivity.java?");
     }
 
@@ -682,9 +687,9 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeTouch)(
 /* Mouse */
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeMouse)(
                                     JNIEnv* env, jclass jcls,
-                                    jint button, jint action, jfloat x, jfloat y)
+                                    jint button, jint action, jfloat x, jfloat y, jboolean relative)
 {
-    Android_OnMouse(button, action, x, y);
+    Android_OnMouse(button, action, x, y, relative);
 }
 
 /* Accelerometer */
@@ -2201,6 +2206,19 @@ SDL_bool Android_JNI_SetSystemCursor(int cursorID)
     JNIEnv *mEnv = Android_JNI_GetEnv();
     return (*mEnv)->CallStaticBooleanMethod(mEnv, mActivityClass, midSetSystemCursor, cursorID);
 }
+
+SDL_bool Android_JNI_SupportsRelativeMouse()
+{
+    JNIEnv *mEnv = Android_JNI_GetEnv();
+    return (*mEnv)->CallStaticBooleanMethod(mEnv, mActivityClass, midSupportsRelativeMouse);
+}
+
+SDL_bool Android_JNI_SetRelativeMouseEnabled(SDL_bool enabled)
+{
+    JNIEnv *mEnv = Android_JNI_GetEnv();
+    return (*mEnv)->CallStaticBooleanMethod(mEnv, mActivityClass, midSetRelativeMouseEnabled, (enabled == 1));
+}
+
 
 #endif /* __ANDROID__ */
 
