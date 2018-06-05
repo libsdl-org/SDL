@@ -97,6 +97,10 @@ GetWindowStyle(SDL_Window * window)
         if (window->flags & SDL_WINDOW_RESIZABLE) {
             style |= STYLE_RESIZABLE;
         }
+
+		/* Need to set initialize minimize style, or when we call ShowWindow with WS_MINIMIZE it will activate a random window */
+		if ( window->flags & SDL_WINDOW_MINIMIZED )
+			style |= WS_MINIMIZE;
     }
     return style;
 }
@@ -334,6 +338,9 @@ WIN_CreateWindow(_THIS, SDL_Window * window)
 
     /* Inform Windows of the frame change so we can respond to WM_NCCALCSIZE */
     SetWindowPos(hwnd, NULL, 0, 0, 0, 0, SWP_FRAMECHANGED | SWP_NOSIZE | SWP_NOZORDER | SWP_NOMOVE | SWP_NOACTIVATE);
+
+	if ( window->flags & SDL_WINDOW_MINIMIZED )
+		ShowWindow( hwnd, SW_SHOWMINNOACTIVE );
 
     if (!(window->flags & SDL_WINDOW_OPENGL)) {
         return 0;
