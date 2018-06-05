@@ -87,6 +87,9 @@ public class SDLActivity extends Activity {
 
     protected static SDLGenericMotionListener_API12 getMotionListener() {
         if (mMotionListener == null) {
+            if (Build.VERSION.SDK_INT >= 26) {
+                mMotionListener = new SDLGenericMotionListener_API26();
+            } else 
             if (Build.VERSION.SDK_INT >= 24) {
                 mMotionListener = new SDLGenericMotionListener_API24();
             } else {
@@ -301,6 +304,7 @@ public class SDLActivity extends Activity {
         SDLActivity.mHasFocus = hasFocus;
         if (hasFocus) {
            mNextNativeState = NativeState.RESUMED;
+           SDLActivity.getMotionListener().reclaimRelativeMouseModeIfNeeded();
         } else {
            mNextNativeState = NativeState.PAUSED;
         }
@@ -635,7 +639,6 @@ public class SDLActivity extends Activity {
         }
     }
 
-
     /**
      * This method is called by SDL using JNI.
      */
@@ -734,6 +737,12 @@ public class SDLActivity extends Activity {
            Log.v("SDL", "exception " + e.toString());
         }
         return false;
+    }
+
+    // This method is called by SDLControllerManager's API 26 Generic Motion Handler.
+    public static View getContentView() 
+    {
+        return mSingleton.mLayout;
     }
 
     static class ShowTextInputTask implements Runnable {
@@ -1268,6 +1277,10 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
 
         if (Build.VERSION.SDK_INT >= 12) {
             setOnGenericMotionListener(SDLActivity.getMotionListener());
+        }
+
+        if (Build.VERSION.SDK_INT >= 26) {
+            setOnCapturedPointerListener(new SDLCapturedPointerListener_API26());
         }
 
         // Some arbitrary defaults to avoid a potential division by zero
