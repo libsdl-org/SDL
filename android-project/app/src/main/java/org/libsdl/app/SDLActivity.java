@@ -556,7 +556,7 @@ public class SDLActivity extends Activity {
     public static native void nativePause();
     public static native void nativeResume();
     public static native void onNativeDropFile(String filename);
-    public static native void onNativeResize(int x, int y, int format, float rate);
+    public static native void onNativeResize(int surfaceWidth, int surfaceHeight, int deviceWidth, int deviceHeight, int format, float rate);
     public static native void onNativeKeyDown(int keycode);
     public static native void onNativeKeyUp(int keycode);
     public static native void onNativeKeyboardFocusLost();
@@ -1378,8 +1378,23 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
 
         mWidth = width;
         mHeight = height;
-        SDLActivity.onNativeResize(width, height, sdlFormat, mDisplay.getRefreshRate());
-        Log.v("SDL", "Window size: " + width + "x" + height);
+		int nDeviceWidth = width;
+		int nDeviceHeight = height;
+		try
+		{
+			if ( android.os.Build.VERSION.SDK_INT >= 17 )
+			{
+				android.util.DisplayMetrics realMetrics = new android.util.DisplayMetrics();
+				mDisplay.getRealMetrics( realMetrics );
+				nDeviceWidth = realMetrics.widthPixels;
+				nDeviceHeight = realMetrics.heightPixels;
+			}
+		}
+		catch ( java.lang.Throwable throwable ) {}
+
+		Log.v("SDL", "Window size: " + width + "x" + height);
+		Log.v("SDL", "Device size: " + nDeviceWidth + "x" + nDeviceHeight);
+        SDLActivity.onNativeResize(width, height, nDeviceWidth, nDeviceHeight, sdlFormat, mDisplay.getRefreshRate());
 
 
         boolean skip = false;
