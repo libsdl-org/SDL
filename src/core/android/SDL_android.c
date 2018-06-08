@@ -76,7 +76,8 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeDropFile)(
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeResize)(
         JNIEnv* env, jclass jcls,
-        jint width, jint height, jint format, jfloat rate);
+        jint surfaceWidth, jint surfaceHeight,
+		jint deviceWidth, jint deviceHeight, jint format, jfloat rate);
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceChanged)(
         JNIEnv* env, jclass jcls);
@@ -518,9 +519,10 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeDropFile)(
 /* Resize */
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeResize)(
                                     JNIEnv* env, jclass jcls,
-                                    jint width, jint height, jint format, jfloat rate)
+                                    jint surfaceWidth, jint surfaceHeight,
+									jint deviceWidth, jint deviceHeight, jint format, jfloat rate)
 {
-    Android_SetScreenResolution(width, height, format, rate);
+    Android_SetScreenResolution(surfaceWidth, surfaceHeight, deviceWidth, deviceHeight, format, rate);
 }
 
 /* Paddown */
