@@ -427,7 +427,10 @@ public class SDLActivity extends Activity {
     /* The native thread has finished */
     public static void handleNativeExit() {
         SDLActivity.mSDLThread = null;
-        mSingleton.finish();
+
+        // Make sure we currently have a singleton before we try to call it.
+        if (mSingleton != null)
+            mSingleton.finish();
     }
 
 
