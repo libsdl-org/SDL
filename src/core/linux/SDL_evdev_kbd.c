@@ -609,7 +609,10 @@ SDL_EVDEV_kbd_keycode(SDL_EVDEV_keyboard_state *kbd, unsigned int keycode, int d
     shift_final = (kbd->shift_state | kbd->slockstate) ^ kbd->lockstate;
     key_map = kbd->key_maps[shift_final];
     if (!key_map) {
+        /* Unsupported shift state (e.g. ctrl = 4, alt = 8), just reset to the default state */
+        kbd->shift_state = 0;
         kbd->slockstate = 0;
+        kbd->lockstate = 0;
         return;
     }
 
