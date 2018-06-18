@@ -670,6 +670,17 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
      */
     public static boolean supportsRelativeMouse()
     {
+        // ChromeOS doesn't provide relative mouse motion via the Android 7 APIs
+        if (isChromebook()) {
+            return false;
+        }
+
+        // Samsung DeX mode doesn't support relative mice properly under Android 7 APIs,
+        // and simply returns no data under Android 8 APIs.
+        if (isDeXMode()) {
+            return false;
+        }
+
         return SDLActivity.getMotionListener().supportsRelativeMouse();
     }
 
@@ -678,6 +689,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
      */
     public static boolean setRelativeMouseEnabled(boolean enabled)
     {
+        if (enabled && !supportsRelativeMouse()) {
+            return false;
+        }
+
         return SDLActivity.getMotionListener().setRelativeMouseEnabled(enabled);
     }
 
@@ -712,6 +727,23 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static boolean isChromebook() {
         return getContext().getPackageManager().hasSystemFeature("org.chromium.arc.device_management");
     }    
+
+    /**
+     * This method is called by SDL using JNI.
+     */
+    public static boolean isDeXMode() {
+        if (Build.VERSION.SDK_INT < 24) {
+            return false;
+        }
+        try {
+            final Configuration config = getContext().getResources().getConfiguration();
+            final Class configClass = config.getClass();
+            return configClass.getField("SEM_DESKTOP_MODE_ENABLED").getInt(configClass)
+                    == configClass.getField("semDesktopModeEnabled").getInt(config);
+        } catch(Exception ignored) {
+            return false;
+        }
+    }
 
     /**
      * This method is called by SDL using JNI.
@@ -1313,7 +1345,7 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
             setOnGenericMotionListener(SDLActivity.getMotionListener());
         }
 
-        if (Build.VERSION.SDK_INT >= 26) {
+        if ((Build.VERSION.SDK_INT >= 26) && !SDLActivity.isDeXMode()) {
             setOnCapturedPointerListener(new SDLCapturedPointerListener_API26());
         }
 
@@ -1544,7 +1576,8 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         float x,y,p;
 
         // !!! FIXME: dump this SDK check after 2.0.4 ships and require API14.
-        if (event.getSource() == InputDevice.SOURCE_MOUSE && SDLActivity.mSeparateMouseAndTouch) {
+        // 12290 = Samsung DeX mode desktop mouse
+        if ((event.getSource() == InputDevice.SOURCE_MOUSE || event.getSource() == 12290) && SDLActivity.mSeparateMouseAndTouch) {
             if (Build.VERSION.SDK_INT < 14) {
                 mouseButton = 1; // all mouse buttons are the left button
             } else {

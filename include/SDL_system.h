@@ -131,6 +131,11 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IsAndroidTV(void);
 extern DECLSPEC SDL_bool SDLCALL SDL_IsChromebook(void);
 
 /**
+  \brief Return true is the application is running on a Samsung DeX docking station
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_IsDeXMode(void);
+
+/**
    See the official Android developer guide for more information:
    http://developer.android.com/guide/topics/data/data-storage.html
 */
