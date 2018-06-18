@@ -721,6 +721,9 @@ SDL_SetRelativeMouseMode(SDL_bool enabled)
     } else if (mouse->SetRelativeMouseMode(enabled) < 0) {
         if (enabled) {
             /* Fall back to warp mode if native relative mode failed */
+            if (!mouse->WarpMouse) {
+                return SDL_SetError("No relative mode implementation available");
+            }
             mouse->relative_mode_warp = SDL_TRUE;
         }
     }

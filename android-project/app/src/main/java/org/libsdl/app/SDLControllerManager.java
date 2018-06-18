@@ -692,6 +692,7 @@ class SDLGenericMotionListener_API26 extends SDLGenericMotionListener_API24 {
                 return SDLControllerManager.handleJoystickMotionEvent(event);
                 
             case InputDevice.SOURCE_MOUSE:
+            case 12290: // DeX desktop mouse cursor is a separate non-standard input type.
                 if (!SDLActivity.mSeparateMouseAndTouch) {
                     break;
                 }

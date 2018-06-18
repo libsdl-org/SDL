@@ -714,4 +714,5 @@ SDL_DYNAPI_PROC(int,SDL_LinuxSetThreadPriority,(Sint64 a, int b),(a,b),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_HasAVX512F,(void),(),return)
 #ifdef __ANDROID__
 SDL_DYNAPI_PROC(SDL_bool,SDL_IsChromebook,(void),(),return)
+SDL_DYNAPI_PROC(SDL_bool,SDL_IsDeXMode,(void),(),return)
 #endif

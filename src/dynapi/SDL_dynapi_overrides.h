@@ -673,3 +673,4 @@
 #define SDL_LinuxSetThreadPriority SDL_LinuxSetThreadPriority_REAL
 #define SDL_HasAVX512F SDL_HasAVX512F_REAL
 #define SDL_IsChromebook SDL_IsChromebook_REAL
+#define SDL_IsDeXMode SDL_IsDeXMode_REAL
