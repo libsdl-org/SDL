@@ -444,6 +444,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
     protected static final int COMMAND_USER = 0x8000;
 
+    protected static boolean mFullscreenModeActive;
+
     /**
      * This method is called by SDL if SDL did not handle a message itself.
      * This happens if a received message contains an unsupported command.
@@ -495,11 +497,13 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                             window.getDecorView().setSystemUiVisibility(flags);        
                             window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
                             window.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
+                            SDLActivity.mFullscreenModeActive = true;
                         } else {
                             int flags = View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.SYSTEM_UI_FLAG_VISIBLE;
                             window.getDecorView().setSystemUiVisibility(flags);
                             window.addFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
                             window.clearFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
+                            SDLActivity.mFullscreenModeActive = false;
                         }
                     }
                 } else {
@@ -1129,7 +1133,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     };
 
     public void onSystemUiVisibilityChange(int visibility) {
-        if ((visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0 || (visibility & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) == 0) {
+        if (SDLActivity.mFullscreenModeActive && (visibility & View.SYSTEM_UI_FLAG_FULLSCREEN) == 0 || (visibility & View.SYSTEM_UI_FLAG_HIDE_NAVIGATION) == 0) {
 
             Handler handler = getWindow().getDecorView().getHandler();
             if (handler != null) {
