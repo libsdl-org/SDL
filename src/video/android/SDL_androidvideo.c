@@ -201,6 +201,7 @@ Android_VideoInit(_THIS)
 void
 Android_VideoQuit(_THIS)
 {
+    Android_QuitMouse();
     Android_QuitTouch();
 }
 
