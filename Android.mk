@@ -51,7 +51,9 @@ LOCAL_SRC_FILES := \
 LOCAL_CFLAGS += -DGL_GLEXT_PROTOTYPES
 LOCAL_LDLIBS := -ldl -lGLESv1_CM -lGLESv2 -llog -landroid
 
-cmd-strip := 
+ifeq ($(NDK_DEBUG),1)
+    cmd-strip :=
+endif
 
 include $(BUILD_SHARED_LIBRARY)
 
