@@ -719,6 +719,10 @@ GLES2_TexSubImage2D(GLES2_DriverContext *data, GLenum target, GLint xoffset, GLi
     int src_pitch;
     int y;
 
+    if ((width == 0) || (height == 0) || (bpp == 0)) {
+        return;  /* nothing to do */
+    }
+
     /* Reformat the texture data into a tightly packed array */
     src_pitch = width * bpp;
     src = (Uint8 *)pixels;
@@ -1928,6 +1932,7 @@ GLES2_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
 {
     GLES2_DriverContext *data = (GLES2_DriverContext *)renderer->driverdata;
     Uint32 temp_format = renderer->target ? renderer->target->format : SDL_PIXELFORMAT_ABGR8888;
+    size_t buflen;
     void *temp_pixels;
     int temp_pitch;
     Uint8 *src, *dst, *tmp;
@@ -1937,7 +1942,12 @@ GLES2_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     GLES2_ActivateRenderer(renderer);
 
     temp_pitch = rect->w * SDL_BYTESPERPIXEL(temp_format);
-    temp_pixels = SDL_malloc(rect->h * temp_pitch);
+    buflen = (size_t) (rect->h * temp_pitch);
+    if (buflen == 0) {
+        return 0;  /* nothing to do. */
+    }
+
+    temp_pixels = SDL_malloc(buflen);
     if (!temp_pixels) {
         return SDL_OutOfMemory();
     }
