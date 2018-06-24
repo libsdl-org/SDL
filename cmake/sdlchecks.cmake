@@ -381,9 +381,21 @@ macro(CheckX11)
         FindLibraryAndSONAME("${_LIB}")
     endforeach()
 
-    find_path(X_INCLUDEDIR X11/Xlib.h)
+    find_path(X_INCLUDEDIR X11/Xlib.h
+        /usr/pkg/xorg/include
+        /usr/X11R6/include
+        /usr/X11R7/include
+        /usr/local/include/X11
+        /usr/include/X11
+        /usr/openwin/include
+        /usr/openwin/share/include
+        /opt/graphics/OpenGL/include
+        /opt/X11/include
+    )
+
     if(X_INCLUDEDIR)
-      set(X_CFLAGS "-I${X_INCLUDEDIR}")
+      list(APPEND EXTRA_CFLAGS "-I${X_INCLUDEDIR}")
+      list(APPEND CMAKE_REQUIRED_INCLUDES "${X_INCLUDEDIR}")
     endif()
 
     check_include_file(X11/Xcursor/Xcursor.h HAVE_XCURSOR_H)
@@ -420,7 +432,7 @@ macro(CheckX11)
         endif()
         if(NOT HAVE_SHMAT)
           add_definitions(-DNO_SHARED_MEMORY)
-          set(X_CFLAGS "${X_CFLAGS} -DNO_SHARED_MEMORY")
+          list(APPEND EXTRA_CFLAGS "-DNO_SHARED_MEMORY")
         endif()
       endif()
 
@@ -438,8 +450,6 @@ macro(CheckX11)
           list(APPEND EXTRA_LIBS ${X11_LIB} ${XEXT_LIB})
         endif()
       endif()
-
-      set(SDL_CFLAGS "${SDL_CFLAGS} ${X_CFLAGS}")
 
       set(CMAKE_REQUIRED_LIBRARIES ${X11_LIB} ${X11_LIB})
       check_c_source_compiles("
