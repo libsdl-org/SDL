@@ -41,11 +41,20 @@ typedef struct {
 } SDL_zxdg_shell_surface;
 
 typedef struct {
+    struct xdg_surface *surface;
+    union {
+        struct xdg_toplevel *toplevel;
+        struct xdg_popup *popup;
+    } roleobj;
+    SDL_bool initial_configure_seen;
+} SDL_xdg_shell_surface;
+
+typedef struct {
     SDL_Window *sdlwindow;
     SDL_VideoData *waylandData;
     struct wl_surface *surface;
     union {
-        /* !!! FIXME: add stable xdg_shell from 1.12 */
+        SDL_xdg_shell_surface xdg;
         SDL_zxdg_shell_surface zxdg;
         struct wl_shell_surface *wl;
     } shell_surface;
