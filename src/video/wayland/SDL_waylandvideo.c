@@ -45,6 +45,7 @@
 #include "SDL_waylanddyn.h"
 #include <wayland-util.h>
 
+#include "xdg-shell-client-protocol.h"
 #include "xdg-shell-unstable-v6-client-protocol.h"
 
 #define WAYLANDVID_DRIVER_NAME "wayland"
@@ -328,6 +329,17 @@ static const struct zxdg_shell_v6_listener shell_listener_zxdg = {
 
 
 static void
+handle_ping_xdg_wm_base(void *data, struct xdg_wm_base *xdg, uint32_t serial)
+{
+    xdg_wm_base_pong(xdg, serial);
+}
+
+static const struct xdg_wm_base_listener shell_listener_xdg = {
+    handle_ping_xdg_wm_base
+};
+
+
+static void
 display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
                       const char *interface, uint32_t version)
 {
@@ -339,6 +351,9 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
         Wayland_add_display(d, id);
     } else if (strcmp(interface, "wl_seat") == 0) {
         Wayland_display_add_input(d, id);
+    } else if (strcmp(interface, "xdg_wm_base") == 0) {
+        d->shell.xdg = wl_registry_bind(d->registry, id, &xdg_wm_base_interface, 1);
+        xdg_wm_base_add_listener(d->shell.xdg, &shell_listener_xdg, NULL);
     } else if (strcmp(interface, "zxdg_shell_v6") == 0) {
         d->shell.zxdg = wl_registry_bind(d->registry, id, &zxdg_shell_v6_interface, 1);
         zxdg_shell_v6_add_listener(d->shell.zxdg, &shell_listener_zxdg, NULL);
@@ -474,6 +489,9 @@ Wayland_VideoQuit(_THIS)
 
     if (data->shell.wl)
         wl_shell_destroy(data->shell.wl);
+
+    if (data->shell.xdg)
+        xdg_wm_base_destroy(data->shell.xdg);
 
     if (data->shell.zxdg)
         zxdg_shell_v6_destroy(data->shell.zxdg);

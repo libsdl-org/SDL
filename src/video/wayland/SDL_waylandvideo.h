@@ -24,6 +24,16 @@
 #ifndef SDL_waylandvideo_h_
 #define SDL_waylandvideo_h_
 
+
+/*
+!!! FIXME: xdg_wm_base is the stable replacement for zxdg_shell_v6. While it's
+!!! FIXME:  harmless to leave it here, consider deleting the obsolete codepath
+!!! FIXME:  soon, since Wayland (with xdg_wm_base) will probably be mainline
+!!! FIXME:  by the time people are relying on this SDL target. It's available
+!!! FIXME:  in Ubuntu 18.04 (and other distros).
+*/
+
+
 #include <EGL/egl.h>
 #include "wayland-util.h"
 
@@ -44,7 +54,7 @@ typedef struct {
     struct wl_cursor_theme *cursor_theme;
     struct wl_pointer *pointer;
     struct {
-        /* !!! FIXME: add stable xdg_shell from 1.12 */
+        struct xdg_wm_base *xdg;
         struct zxdg_shell_v6 *zxdg;
         struct wl_shell *wl;
     } shell;
