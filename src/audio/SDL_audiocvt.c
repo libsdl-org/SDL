@@ -724,7 +724,7 @@ SDL_ResampleCVT(SDL_AudioCVT *cvt, const int chans, const SDL_AudioFormat format
     SDL_assert(format == AUDIO_F32SYS);
 
     /* we keep no streaming state here, so pad with silence on both ends. */
-    padding = (float *) SDL_calloc(paddingsamples, sizeof (float));
+    padding = (float *) SDL_calloc(paddingsamples ? paddingsamples : 1, sizeof (float));
     if (!padding) {
         SDL_OutOfMemory();
         return;
@@ -1291,7 +1291,7 @@ SDL_NewAudioStream(const SDL_AudioFormat src_format,
     retval->packetlen = packetlen;
     retval->rate_incr = ((double) dst_rate) / ((double) src_rate);
     retval->resampler_padding_samples = ResamplerPadding(retval->src_rate, retval->dst_rate) * pre_resample_channels;
-    retval->resampler_padding = (float *) SDL_calloc(retval->resampler_padding_samples, sizeof (float));
+    retval->resampler_padding = (float *) SDL_calloc(retval->resampler_padding_samples ? retval->resampler_padding_samples : 1, sizeof (float));
 
     if (retval->resampler_padding == NULL) {
         SDL_FreeAudioStream(retval);
