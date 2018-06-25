@@ -635,35 +635,6 @@ macro(CheckWayland)
   if(VIDEO_WAYLAND)
     pkg_check_modules(WAYLAND wayland-client wayland-scanner wayland-protocols wayland-egl wayland-cursor egl xkbcommon)
 
-    # We have to generate some protocol interface code for some various Wayland features.
-    if(WAYLAND_FOUND)
-      execute_process(
-        COMMAND ${PKG_CONFIG_EXECUTABLE} --variable=pkgdatadir wayland-client
-        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-        RESULT_VARIABLE WAYLAND_CORE_PROTOCOL_DIR_RC
-        OUTPUT_VARIABLE WAYLAND_CORE_PROTOCOL_DIR
-        ERROR_QUIET
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-      )
-      if(NOT WAYLAND_CORE_PROTOCOL_DIR_RC EQUAL 0)
-        set(WAYLAND_FOUND FALSE)
-      endif()
-    endif()
-
-    if(WAYLAND_FOUND)
-      execute_process(
-        COMMAND ${PKG_CONFIG_EXECUTABLE} --variable=pkgdatadir wayland-protocols
-        WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
-        RESULT_VARIABLE WAYLAND_PROTOCOLS_DIR_RC
-        OUTPUT_VARIABLE WAYLAND_PROTOCOLS_DIR
-        ERROR_QUIET
-        OUTPUT_STRIP_TRAILING_WHITESPACE
-      )
-      if(NOT WAYLAND_PROTOCOLS_DIR_RC EQUAL 0)
-        set(WAYLAND_FOUND FALSE)
-      endif()
-    endif()
-
     if(WAYLAND_FOUND)
       execute_process(
         COMMAND ${PKG_CONFIG_EXECUTABLE} --variable=wayland_scanner wayland-scanner
@@ -695,11 +666,10 @@ macro(CheckWayland)
       file(MAKE_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/wayland-generated-protocols")
       include_directories("${CMAKE_CURRENT_BINARY_DIR}/wayland-generated-protocols")
 
-      WaylandProtocolGen("${WAYLAND_SCANNER}" "${WAYLAND_CORE_PROTOCOL_DIR}/wayland.xml" "wayland")
-
-      foreach(_PROTL relative-pointer-unstable-v1 pointer-constraints-unstable-v1 xdg-shell-unstable-v6)
-        string(REGEX REPLACE "\\-unstable\\-.*$" "" PROTSUBDIR ${_PROTL})
-        WaylandProtocolGen("${WAYLAND_SCANNER}" "${WAYLAND_PROTOCOLS_DIR}/unstable/${PROTSUBDIR}/${_PROTL}.xml" "${_PROTL}")
+      file(GLOB WAYLAND_PROTOCOLS_XML RELATIVE "${SDL2_SOURCE_DIR}/wayland-protocols/" "${SDL2_SOURCE_DIR}/wayland-protocols/*.xml")
+      foreach(_XML ${WAYLAND_PROTOCOLS_XML})
+        string(REGEX REPLACE "\\.xml$" "" _PROTL "${_XML}")
+        WaylandProtocolGen("${WAYLAND_SCANNER}" "${SDL2_SOURCE_DIR}/wayland-protocols/${_XML}" "${_PROTL}")
       endforeach()
 
       if(VIDEO_WAYLAND_QT_TOUCH)
