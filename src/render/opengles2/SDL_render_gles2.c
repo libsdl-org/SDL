@@ -720,7 +720,7 @@ GLES2_TexSubImage2D(GLES2_DriverContext *data, GLenum target, GLint xoffset, GLi
     int y;
 
     if ((width == 0) || (height == 0) || (bpp == 0)) {
-        return;  /* nothing to do */
+        return 0;  /* nothing to do */
     }
 
     /* Reformat the texture data into a tightly packed array */
