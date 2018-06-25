@@ -1403,8 +1403,6 @@ AC_HELP_STRING([--enable-video-wayland-qt-touch], [QtWayland server support for 
                 WAYLAND_CFLAGS=`$PKG_CONFIG --cflags wayland-client wayland-egl wayland-cursor xkbcommon`
                 WAYLAND_LIBS=`$PKG_CONFIG --libs wayland-client wayland-egl wayland-cursor xkbcommon`
                 WAYLAND_SCANNER=`$PKG_CONFIG --variable=wayland_scanner wayland-scanner`
-                WAYLAND_CORE_PROTOCOL_DIR=`$PKG_CONFIG --variable=pkgdatadir wayland-client`
-                WAYLAND_PROTOCOLS_DIR=`$PKG_CONFIG --variable=pkgdatadir wayland-protocols`
                 video_wayland=yes
             fi
         fi
@@ -1415,9 +1413,6 @@ AC_HELP_STRING([--enable-video-wayland-qt-touch], [QtWayland server support for 
             if test x$enable_video_wayland_qt_touch = xyes; then
                 AC_DEFINE(SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH, 1, [ ])
             fi
-
-            WAYLAND_PROTOCOLS_UNSTABLE="relative-pointer-unstable-v1 pointer-constraints-unstable-v1 xdg-shell-unstable-v6"
-            WAYLAND_PROTOCOLS_STABLE="xdg-shell"
 
             SOURCES="$SOURCES $srcdir/src/video/wayland/*.c"
             EXTRA_CFLAGS="$EXTRA_CFLAGS $WAYLAND_CFLAGS -I\$(gen)"
@@ -3978,74 +3973,25 @@ fi
 SDLTEST_SOURCES="$srcdir/src/test/*.c"
 
 if test x$video_wayland = xyes; then
-    WAYLAND_CORE_PROTOCOL_SOURCE='$(gen)/wayland-protocol.c'
-    WAYLAND_CORE_PROTOCOL_HEADER='$(gen)/wayland-client-protocol.h'
-    WAYLAND_PROTOCOLS_SOURCES=`echo $WAYLAND_PROTOCOLS_UNSTABLE $WAYLAND_PROTOCOLS_STABLE |\
-        sed 's,[[^ ]]\+,\\$(gen)/&-protocol.c,g'`
-    WAYLAND_PROTOCOLS_HEADERS=`echo $WAYLAND_PROTOCOLS_UNSTABLE $WAYLAND_PROTOCOLS_STABLE |\
-        sed 's,[[^ ]]\+,\\$(gen)/&-client-protocol.h,g'`
-    GEN_SOURCES="$GEN_SOURCES $WAYLAND_CORE_PROTOCOL_SOURCE $WAYLAND_PROTOCOLS_SOURCES"
-    GEN_HEADERS="$GEN_HEADERS $WAYLAND_CORE_PROTOCOL_HEADER $WAYLAND_PROTOCOLS_HEADERS"
+    WAYLAND_PROTOCOLS=`cd $srcdir/wayland-protocols ; for p in *.xml ; do echo -n "\$p" |sed 's,\\.xml\$, ,g' ; done`
+    WAYLAND_PROTOCOLS_SOURCES=`for p in $WAYLAND_PROTOCOLS ; do echo -n "\\$(gen)/\$p-protocol.c " ; done`
+    WAYLAND_PROTOCOLS_HEADERS=`for p in $WAYLAND_PROTOCOLS ; do echo -n "\\$(gen)/\$p-client-protocol.h " ; done`
+    GEN_SOURCES="$GEN_SOURCES $WAYLAND_PROTOCOLS_SOURCES"
+    GEN_HEADERS="$GEN_HEADERS $WAYLAND_PROTOCOLS_HEADERS"
 
-    WAYLAND_CORE_PROTOCOL_SOURCE_DEPENDS="
-$WAYLAND_CORE_PROTOCOL_SOURCE: $WAYLAND_CORE_PROTOCOL_DIR/wayland.xml
-	@\$(SHELL) \$(auxdir)/mkinstalldirs \$(gen)
-	\$(RUN_CMD_GEN)\$(WAYLAND_SCANNER) code \$< \$@"
-
-    WAYLAND_CORE_PROTOCOL_HEADER_DEPENDS="
-$WAYLAND_CORE_PROTOCOL_HEADER: $WAYLAND_CORE_PROTOCOL_DIR/wayland.xml
-	@\$(SHELL) \$(auxdir)/mkinstalldirs \$(gen)
-	\$(RUN_CMD_GEN)\$(WAYLAND_SCANNER) client-header \$< \$@"
-
-    WAYLAND_CORE_PROTOCOL_OBJECT="
-\$(objects)/`echo $WAYLAND_CORE_PROTOCOL_SOURCE | sed 's/\$(gen)\/\(.*\).c$/\1.lo/'`: $WAYLAND_CORE_PROTOCOL_SOURCE
-	\$(RUN_CMD_CC)\$(LIBTOOL) --tag=CC --mode=compile \$(CC) \$(CFLAGS) \$(EXTRA_CFLAGS) $DEPENDENCY_TRACKING_OPTIONS -c \$< -o \$@"
-
-    WAYLAND_PROTOCOLS_CLIENT_HEADER_UNSTABLE_DEPENDS=`for p in $WAYLAND_PROTOCOLS_UNSTABLE;\
-        do echo ; echo \$p | sed\
-        "s,^\\([[a-z\\-]]\\+\\)-unstable-\\(v[[0-9]]\+\\)\$,\\$(gen)/&-client-protocol.h: $WAYLAND_PROTOCOLS_DIR/unstable/\1/&.xml\\\\
-	@\\$(SHELL) \\$(auxdir)/mkinstalldirs \\$(gen)\\\\
-	\\$(RUN_CMD_GEN)\\$(WAYLAND_SCANNER) client-header \\$< \\$@," ; done`
-
-    WAYLAND_PROTOCOLS_CLIENT_HEADER_STABLE_DEPENDS=`for p in $WAYLAND_PROTOCOLS_STABLE;\
-        do echo ; echo \$p | sed\
-        "s,^\\([[a-z\\-]]\\+\\)\$,\\$(gen)/&-client-protocol.h: $WAYLAND_PROTOCOLS_DIR/stable/\1/&.xml\\\\
-	@\\$(SHELL) \\$(auxdir)/mkinstalldirs \\$(gen)\\\\
-	\\$(RUN_CMD_GEN)\\$(WAYLAND_SCANNER) client-header \\$< \\$@," ; done`
-
-    WAYLAND_PROTOCOLS_CODE_UNSTABLE_DEPENDS=`for p in $WAYLAND_PROTOCOLS_UNSTABLE;\
-        do echo ; echo \$p | sed\
-        "s,^\\([[a-z\\-]]\\+\\)-unstable-\\(v[[0-9]]\+\\)\$,\\$(gen)/&-protocol.c: $WAYLAND_PROTOCOLS_DIR/unstable/\1/&.xml\\\\
-	@\\$(SHELL) \\$(auxdir)/mkinstalldirs \\$(gen)\\\\
-	\\$(RUN_CMD_GEN)\\$(WAYLAND_SCANNER) code \\$< \\$@," ; done`
-
-    WAYLAND_PROTOCOLS_CODE_STABLE_DEPENDS=`for p in $WAYLAND_PROTOCOLS_STABLE;\
-        do echo ; echo \$p | sed\
-        "s,^\\([[a-z\\-]]\\+\\)\$,\\$(gen)/&-protocol.c: $WAYLAND_PROTOCOLS_DIR/stable/\1/&.xml\\\\
-	@\\$(SHELL) \\$(auxdir)/mkinstalldirs \\$(gen)\\\\
-	\\$(RUN_CMD_GEN)\\$(WAYLAND_SCANNER) code \\$< \\$@," ; done`
-
-    WAYLAND_PROTOCOLS_OBJECTS_UNSTABLE=`for p in $WAYLAND_PROTOCOLS_UNSTABLE;\
-        do echo ; echo \$p | sed\
-        "s,^\\([[a-z\\-]]\\+\\)-unstable-\\(v[[0-9]]\+\\)\$,\\\$(objects)/&-protocol.lo: \\$(gen)/&-protocol.c \\$(gen)/&-client-protocol.h\\\\
-	\\$(RUN_CMD_CC)\\$(LIBTOOL) --tag=CC --mode=compile \\$(CC) \\$(CFLAGS) \\$(EXTRA_CFLAGS) $DEPENDENCY_TRACKING_OPTIONS -c \\$< -o \\$@," ; done`
-
-    WAYLAND_PROTOCOLS_OBJECTS_STABLE=`for p in $WAYLAND_PROTOCOLS_STABLE;\
-        do echo ; echo \$p | sed\
-        "s,^\\([[a-z\\-]]\\+\\)\$,\\\$(objects)/&-protocol.lo: \\$(gen)/&-protocol.c \\$(gen)/&-client-protocol.h\\\\
-	\\$(RUN_CMD_CC)\\$(LIBTOOL) --tag=CC --mode=compile \\$(CC) \\$(CFLAGS) \\$(EXTRA_CFLAGS) $DEPENDENCY_TRACKING_OPTIONS -c \\$< -o \\$@," ; done`
-
-    WAYLAND_PROTOCOLS_DEPENDS="
-$WAYLAND_CORE_PROTOCOL_SOURCE_DEPENDS
-$WAYLAND_CORE_PROTOCOL_HEADER_DEPENDS
-$WAYLAND_CORE_PROTOCOL_OBJECT
-$WAYLAND_PROTOCOLS_CLIENT_HEADER_UNSTABLE_DEPENDS
-$WAYLAND_PROTOCOLS_CLIENT_HEADER_STABLE_DEPENDS
-$WAYLAND_PROTOCOLS_CODE_UNSTABLE_DEPENDS
-$WAYLAND_PROTOCOLS_CODE_STABLE_DEPENDS
-$WAYLAND_PROTOCOLS_OBJECTS_UNSTABLE
-$WAYLAND_PROTOCOLS_OBJECTS_STABLE
-"
+    WAYLAND_PROTOCOLS_DEPENDS=`for p in $WAYLAND_PROTOCOLS ; do\
+        echo ;\
+        echo "\\$(gen)/\$p-client-protocol.h: \\$(srcdir)/wayland-protocols/\$p.xml" ;\
+        echo "	@\\$(SHELL) \\$(auxdir)/mkinstalldirs \\$(gen)" ;\
+        echo "	\\$(RUN_CMD_GEN)\\$(WAYLAND_SCANNER) client-header \\$< \\$@" ;\
+        echo ;\
+        echo "\\$(gen)/\$p-protocol.c: \\$(srcdir)/wayland-protocols/\$p.xml" ;\
+        echo "	@\\$(SHELL) \\$(auxdir)/mkinstalldirs \\$(gen)" ;\
+        echo "	\\$(RUN_CMD_GEN)\\$(WAYLAND_SCANNER) code \\$< \\$@" ;\
+        echo ;\
+        echo "\\$(objects)/\$p-protocol.lo: \\$(gen)/\$p-protocol.c \\$(gen)/\$p-client-protocol.h" ;\
+        echo "	\\$(RUN_CMD_CC)\\$(LIBTOOL) --tag=CC --mode=compile \\$(CC) \\$(CFLAGS) \\$(EXTRA_CFLAGS) $DEPENDENCY_TRACKING_OPTIONS -c \\$< -o \\$@" ;\
+        done`
 fi
 
 OBJECTS=`echo $SOURCES`
