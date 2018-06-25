@@ -32,6 +32,10 @@
 #include <atomic.h>
 #endif
 
+#if defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64))
+#include <xmmintrin.h>
+#endif
+
 #if defined(__WATCOMC__) && defined(__386__)
 SDL_COMPILE_TIME_ASSERT(locksize, 4==sizeof(SDL_SpinLock));
 extern _inline int _SDL_xchg_watcom(volatile int *a, int v);
@@ -116,12 +120,31 @@ SDL_AtomicTryLock(SDL_SpinLock *lock)
 #endif
 }
 
+/* "REP NOP" is PAUSE, coded for tools that don't know it by that name. */
+#if (defined(__GNUC__) || defined(__clang__)) && (defined(__i386__) || defined(__x86_64__))
+    #define PAUSE_INSTRUCTION() __asm__ __volatile__("rep nop\n")
+#elif defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64))
+    #define PAUSE_INSRUCTION() _mm_pause()  /* this is actually "rep nop" and not a SIMD instruction. */
+#elif defined(__WATCOMC__) && defined(__386__)
+    extern _inline void PAUSE_INSTRUCTION(void);
+    #pragma aux PAUSE_INSTRUCTION = "rep nop"
+#else
+    #define PAUSE_INSTRUCTION()
+#endif
+
 void
 SDL_AtomicLock(SDL_SpinLock *lock)
 {
+    int iterations = 0;
     /* FIXME: Should we have an eventual timeout? */
     while (!SDL_AtomicTryLock(lock)) {
-        SDL_Delay(0);
+        if (iterations < 32) {
+            iterations++;
+            PAUSE_INSTRUCTION();
+        } else {
+            /* !!! FIXME: this doesn't definitely give up the current timeslice, it does different things on various platforms. */
+            SDL_Delay(0);
+        }
     }
 }
 
