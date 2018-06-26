@@ -124,7 +124,7 @@ SDL_AtomicTryLock(SDL_SpinLock *lock)
 #if (defined(__GNUC__) || defined(__clang__)) && (defined(__i386__) || defined(__x86_64__))
     #define PAUSE_INSTRUCTION() __asm__ __volatile__("pause\n")  /* Clang lets you do REP NOP, GCC wants PAUSE. */
 #elif defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64))
-    #define PAUSE_INSRUCTION() _mm_pause()  /* this is actually "rep nop" and not a SIMD instruction. No inline asm in MSVC x86-64! */
+    #define PAUSE_INSTRUCTION() _mm_pause()  /* this is actually "rep nop" and not a SIMD instruction. No inline asm in MSVC x86-64! */
 #elif defined(__WATCOMC__) && defined(__386__)
     /* watcom assembler won't let you do PAUSE, but refuses REP NOP as an invalid combination. Hardcode the bytes. */
     extern _inline void PAUSE_INSTRUCTION(void);
