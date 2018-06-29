@@ -210,6 +210,12 @@ endif()
 set(SDL_LIBS "-lSDL2")
 set(SDL_CFLAGS "")
 
+# When building shared lib for Windows with MinGW,
+# avoid the DLL having a "lib" prefix
+if(WIN32)
+  set(CMAKE_SHARED_LIBRARY_PREFIX "")
+endif()
+
 # Emscripten toolchain has a nonempty default value for this, and the checks
 # in this file need to change that, so remember the original value, and
 # restore back to that afterwards. For check_function_exists() to work in
