@@ -576,13 +576,13 @@ WIN_ShowOldMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
 
     switch (messageboxdata->flags) {
     case SDL_MESSAGEBOX_ERROR:
-        icon = (Uint16)IDI_ERROR;
+        icon = (Uint16)(size_t)IDI_ERROR;
         break;
     case SDL_MESSAGEBOX_WARNING:
-        icon = (Uint16)IDI_WARNING;
+        icon = (Uint16)(size_t)IDI_WARNING;
         break;
     case SDL_MESSAGEBOX_INFORMATION:
-        icon = (Uint16)IDI_INFORMATION;
+        icon = (Uint16)(size_t)IDI_INFORMATION;
         break;
     }
 
