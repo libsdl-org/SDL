@@ -129,7 +129,7 @@ typedef struct _TASKDIALOGCONFIG
     {
         HICON   hMainIcon;
         PCWSTR  pszMainIcon;
-    } DUMMYUNIONNAME;
+    } /*DUMMYUNIONNAME*/;
     PCWSTR      pszMainInstruction;
     PCWSTR      pszContent;
     UINT        cButtons;
@@ -146,7 +146,7 @@ typedef struct _TASKDIALOGCONFIG
     {
         HICON   hFooterIcon;
         PCWSTR  pszFooterIcon;
-    } DUMMYUNIONNAME2;
+    } /*DUMMYUNIONNAME2*/;
     PCWSTR      pszFooter;
     PFTASKDIALOGCALLBACK pfCallback;
     LONG_PTR    lpCallbackData;
