@@ -126,7 +126,7 @@ SDL_AtomicTryLock(SDL_SpinLock *lock)
 #elif defined(_MSC_VER) && (defined(_M_IX86) || defined(_M_X64))
     #define PAUSE_INSTRUCTION() _mm_pause()  /* this is actually "rep nop" and not a SIMD instruction. No inline asm in MSVC x86-64! */
 #elif defined(__WATCOMC__) && defined(__386__)
-    /* watcom assembler rejects PAUSE if cpu <= i686, and it refuses REP NOP as an invalid combination. Hardcode the bytes. */
+    /* watcom assembler rejects PAUSE if CPU < i686, and it refuses REP NOP as an invalid combination. Hardcode the bytes.  */
     extern _inline void PAUSE_INSTRUCTION(void);
     #pragma aux PAUSE_INSTRUCTION = "db 0f3h,90h"
 #else
