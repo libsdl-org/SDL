@@ -3079,6 +3079,10 @@ XINPUT_STATE_EX s1;
         SUMMARY_video="${SUMMARY_video} directx"
         SUMMARY_audio="${SUMMARY_audio} directx"
 
+        AC_ARG_ENABLE(audio-wasapi,
+AC_HELP_STRING([--enable-audio-wasapi], [use the Windows WASAPI audio driver [[default=yes]]]),
+                                , enable_audio_wasapi=yes)
+
         # FIXME: latest Cygwin finds dinput headers, but we die on other win32 headers.
         # FIXME:  ...so force it off for now.
         case "$host" in
@@ -3547,8 +3551,9 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
                 AC_DEFINE(SDL_AUDIO_DRIVER_DSOUND, 1, [ ])
                 SOURCES="$SOURCES $srcdir/src/audio/directsound/*.c"
             fi
-            if test x$have_wasapi = xyes; then
+            if test x$have_wasapi = xyes -a x$enable_audio_wasapi = xyes; then
                 AC_DEFINE(SDL_AUDIO_DRIVER_WASAPI, 1, [ ])
+                SUMMARY_audio="${SUMMARY_audio} wasapi"
                 SOURCES="$SOURCES $srcdir/src/audio/wasapi/*.c"
             fi
             have_audio=yes
