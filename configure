@@ -866,7 +866,7 @@ enable_input_tslib
 enable_pthreads
 enable_pthread_sem
 enable_directx
-enable_audio_wasapi
+enable_wasapi
 enable_sdl_dlopen
 enable_clock_gettime
 enable_rpath
@@ -1621,7 +1621,7 @@ Optional Features:
                           [[default=yes]]
   --enable-pthread-sem    use pthread semaphores [[default=yes]]
   --enable-directx        use DirectX for Windows audio/video [[default=yes]]
-  --enable-audio-wasapi   use the Windows WASAPI audio driver [[default=yes]]
+  --enable-wasapi         use the Windows WASAPI audio driver [[default=yes]]
   --enable-sdl-dlopen     use dlopen for shared object loading [[default=yes]]
   --enable-clock_gettime  use clock_gettime() instead of gettimeofday() on
                           UNIX [[default=yes]]
@@ -23233,11 +23233,11 @@ $as_echo "#define HAVE_XINPUT_STATE_EX 1" >>confdefs.h
         SUMMARY_video="${SUMMARY_video} directx"
         SUMMARY_audio="${SUMMARY_audio} directx"
 
-        # Check whether --enable-audio-wasapi was given.
-if test "${enable_audio_wasapi+set}" = set; then :
-  enableval=$enable_audio_wasapi;
+        # Check whether --enable-wasapi was given.
+if test "${enable_wasapi+set}" = set; then :
+  enableval=$enable_wasapi;
 else
-  enable_audio_wasapi=yes
+  enable_wasapi=yes
 fi
 
 
@@ -24144,7 +24144,7 @@ $as_echo "#define SDL_AUDIO_DRIVER_DSOUND 1" >>confdefs.h
 
                 SOURCES="$SOURCES $srcdir/src/audio/directsound/*.c"
             fi
-            if test x$have_wasapi = xyes -a x$enable_audio_wasapi = xyes; then
+            if test x$have_wasapi = xyes -a x$enable_wasapi = xyes; then
 
 $as_echo "#define SDL_AUDIO_DRIVER_WASAPI 1" >>confdefs.h
 
