@@ -533,7 +533,7 @@ SDL_Convert_S32_to_F32_SSE2(SDL_AudioCVT *cvt, SDL_AudioFormat format)
         const __m128i *mmsrc = (const __m128i *) src;
         while (i >= 4) {   /* 4 * sint32 */
             /* shift out lowest bits so int fits in a float32. Small precision loss, but much faster. */
-            _mm_store_ps(dst, _mm_mul_ps(_mm_cvtepi32_ps(_mm_srli_epi32(_mm_load_si128(mmsrc), 8)), divby8388607));
+            _mm_store_ps(dst, _mm_mul_ps(_mm_cvtepi32_ps(_mm_srai_epi32(_mm_load_si128(mmsrc), 8)), divby8388607));
             i -= 4; mmsrc++; dst += 4;
         }
         src = (const Sint32 *) mmsrc;
