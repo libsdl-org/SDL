@@ -765,6 +765,7 @@ SDL_HapticRumbleInit(SDL_Haptic * haptic)
     SDL_zerop(efx);
     if (haptic->supported & SDL_HAPTIC_SINE) {
         efx->type = SDL_HAPTIC_SINE;
+        efx->periodic.direction.type = SDL_HAPTIC_CARTESIAN;
         efx->periodic.period = 1000;
         efx->periodic.magnitude = 0x4000;
         efx->periodic.length = 5000;
