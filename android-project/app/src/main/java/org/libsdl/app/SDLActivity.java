@@ -363,6 +363,43 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     }
 
     @Override
+    public void onBackPressed() {
+        // Check if we want to block the back button in case of mouse right click.
+        //
+        // If we do, the normal hardware back button will no longer work and people have to use home,
+        // but the mouse right click will work.
+        //
+        String trapBack = SDLActivity.nativeGetHint("SDL_ANDROID_TRAP_BACK_BUTTON");
+        if ((trapBack != null) && trapBack.equals("1")) {
+            // Exit and let the mouse handler handle this button (if appropriate)
+            return;
+        }
+
+        // Default system back button behavior.
+        super.onBackPressed();
+    }
+
+    // Called by JNI from SDL.
+    public static void manualBackButton() {
+        mSingleton.pressBackButton();
+    }
+
+    // Used to get us onto the activity's main thread
+    public void pressBackButton() {
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                SDLActivity.this.superOnBackPressed();
+            }
+        });
+    }
+
+    // Used to access the system back behavior.
+    public void superOnBackPressed() {
+        super.onBackPressed();
+    }
+
+    @Override
     public boolean dispatchKeyEvent(KeyEvent event) {
 
         if (SDLActivity.mBrokenLibraries) {

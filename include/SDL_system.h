@@ -136,6 +136,11 @@ extern DECLSPEC SDL_bool SDLCALL SDL_IsChromebook(void);
 extern DECLSPEC SDL_bool SDLCALL SDL_IsDeXMode(void);
 
 /**
+ \brief Trigger the Android system back button behavior.
+ */
+extern DECLSPEC void SDLCALL SDL_AndroidBackButton(void);
+
+/**
    See the official Android developer guide for more information:
    http://developer.android.com/guide/topics/data/data-storage.html
 */
