@@ -716,3 +716,6 @@ SDL_DYNAPI_PROC(SDL_bool,SDL_HasAVX512F,(void),(),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_IsChromebook,(void),(),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_IsDeXMode,(void),(),return)
 #endif
+#ifdef __ANDROID__
+SDL_DYNAPI_PROC(void,SDL_AndroidBackButton,(void),(),return)
+#endif
