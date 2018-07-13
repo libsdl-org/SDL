@@ -173,17 +173,29 @@ SDL_DBus_CallMethodInternal(DBusConnection *conn, const char *node, const char *
     if (conn) {
         DBusMessage *msg = dbus.message_new_method_call(node, path, interface, method);
         if (msg) {
-            int firstarg = va_arg(ap, int);
+            int firstarg;
+            va_list ap_reply;
+            va_copy(ap_reply, ap);  /* copy the arg list so we don't compete with D-Bus for it */
+            firstarg = va_arg(ap, int);
             if ((firstarg == DBUS_TYPE_INVALID) || dbus.message_append_args_valist(msg, firstarg, ap)) {
                 DBusMessage *reply = dbus.connection_send_with_reply_and_block(conn, msg, 300, NULL);
                 if (reply) {
-                    firstarg = va_arg(ap, int);
-                    if ((firstarg == DBUS_TYPE_INVALID) || dbus.message_get_args_valist(reply, NULL, firstarg, ap)) {
+                    /* skip any input args, get to output args. */
+                    while ((firstarg = va_arg(ap_reply, int)) != DBUS_TYPE_INVALID) {
+                        /* we assume D-Bus already validated all this. */
+                        { void *dumpptr = va_arg(ap_reply, void*); (void) dumpptr; }
+                        if (firstarg == DBUS_TYPE_ARRAY) {
+                            { const int dumpint = va_arg(ap_reply, int); (void) dumpint; }
+                        }
+                    }
+                    firstarg = va_arg(ap_reply, int);
+                    if ((firstarg == DBUS_TYPE_INVALID) || dbus.message_get_args_valist(reply, NULL, firstarg, ap_reply)) {
                         retval = SDL_TRUE;
                     }
                     dbus.message_unref(reply);
                 }
             }
+            va_end(ap_reply);
             dbus.message_unref(msg);
         }
     }
