@@ -749,7 +749,7 @@ class SDLGenericMotionListener_API26 extends SDLGenericMotionListener_API24 {
 
     @Override
     public boolean supportsRelativeMouse() {
-        return true;
+        return !SDLActivity.isDeXMode();
     }
 
     @Override
@@ -759,20 +759,26 @@ class SDLGenericMotionListener_API26 extends SDLGenericMotionListener_API24 {
 
     @Override
     public boolean setRelativeMouseEnabled(boolean enabled) {
-        if (enabled) {
-            SDLActivity.getContentView().requestPointerCapture();
+        if (!SDLActivity.isDeXMode()) {
+            if (enabled) {
+                SDLActivity.getContentView().requestPointerCapture();
+            }
+            else {
+                SDLActivity.getContentView().releasePointerCapture();            
+            }
+            mRelativeModeEnabled = enabled;
+            return true;
         }
-        else {
-            SDLActivity.getContentView().releasePointerCapture();            
+        else 
+        {
+            return false;
         }
-        mRelativeModeEnabled = enabled;
-        return true;
     }
 
     @Override
     public void reclaimRelativeMouseModeIfNeeded()
     {
-        if (mRelativeModeEnabled) {
+        if (mRelativeModeEnabled && !SDLActivity.isDeXMode()) {
             SDLActivity.getContentView().requestPointerCapture();
         }
     }
@@ -789,50 +795,3 @@ class SDLGenericMotionListener_API26 extends SDLGenericMotionListener_API24 {
         return event.getY(0);
     }
 }
-
-class SDLCapturedPointerListener_API26 implements View.OnCapturedPointerListener
-{
-    @Override
-    public boolean onCapturedPointer(View view, MotionEvent event)
-    {
-        int action = event.getActionMasked();
-
-        float x, y;
-        switch (action) {
-            case MotionEvent.ACTION_SCROLL:
-                x = event.getAxisValue(MotionEvent.AXIS_HSCROLL, 0);
-                y = event.getAxisValue(MotionEvent.AXIS_VSCROLL, 0);
-                SDLActivity.onNativeMouse(0, action, x, y, false);
-                return true;
-
-            case MotionEvent.ACTION_HOVER_MOVE:
-            case MotionEvent.ACTION_MOVE:
-                x = event.getX(0);
-                y = event.getY(0);
-                SDLActivity.onNativeMouse(0, action, x, y, true);
-                return true;
-
-            case MotionEvent.ACTION_BUTTON_PRESS:
-            case MotionEvent.ACTION_BUTTON_RELEASE:
-
-                // Change our action value to what SDL's code expects.
-                if (action == MotionEvent.ACTION_BUTTON_PRESS) {
-                    action = MotionEvent.ACTION_DOWN;
-                }
-                else if (action == MotionEvent.ACTION_BUTTON_RELEASE) {
-                    action = MotionEvent.ACTION_UP;
-                }
-
-                x = event.getX(0);
-                y = event.getY(0);
-                int button = event.getButtonState();
-
-                SDLActivity.onNativeMouse(button, action, x, y, true);
-                return true;
-
-        }
-
-        return false;
-    }
-}
-
