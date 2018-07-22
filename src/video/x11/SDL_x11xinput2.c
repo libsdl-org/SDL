@@ -83,8 +83,16 @@ xinput2_normalize_touch_coordinates(SDL_VideoData *videodata, Window window,
     for (i = 0; i < videodata->numwindows; i++) {
         SDL_WindowData *d = videodata->windowlist[i];
         if (d->xwindow == window) {
-            *out_x = in_x / d->window->w;
-            *out_y = in_y / d->window->h;
+            if (d->window->w == 1) {
+                *out_x = 0.5f;
+            } else {
+                *out_x = in_x / (d->window->w - 1);
+            }
+            if (d->window->h == 1) {
+                *out_y = 0.5f;
+            } else {
+                *out_y = in_y / (d->window->h - 1);
+            }
             return;
         }
     }
