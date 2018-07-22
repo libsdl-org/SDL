@@ -366,10 +366,7 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
 
     /* joystick hat events */
     if (joyinfo.dwFlags & JOY_RETURNPOV) {
-        Uint8 pos;
-
-        pos = TranslatePOV(joyinfo.dwPOV);
-        SDL_PrivateJoystickHat(joystick, 0, pos);
+        SDL_PrivateJoystickHat(joystick, 0, TranslatePOV(joyinfo.dwPOV));
     }
 }
 
