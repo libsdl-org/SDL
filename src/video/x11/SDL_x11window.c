@@ -390,7 +390,6 @@ X11_CreateWindow(_THIS, SDL_Window * window)
     const char *wintype_name = NULL;
     long compositor = 1;
     Atom _NET_WM_PID;
-    Atom XdndAware, xdnd_version = 5;
     long fevent = 0;
 
 #if SDL_VIDEO_OPENGL_GLX || SDL_VIDEO_OPENGL_EGL
@@ -650,11 +649,6 @@ X11_CreateWindow(_THIS, SDL_Window * window)
                  PointerMotionMask | KeyPressMask | KeyReleaseMask |
                  PropertyChangeMask | StructureNotifyMask |
                  KeymapStateMask | fevent));
-
-    XdndAware = X11_XInternAtom(display, "XdndAware", False);
-    X11_XChangeProperty(display, w, XdndAware, XA_ATOM, 32,
-                 PropModeReplace,
-                 (unsigned char*)&xdnd_version, 1);
 
     X11_XFlush(display);
 
@@ -1602,6 +1596,22 @@ int
 X11_SetWindowHitTest(SDL_Window *window, SDL_bool enabled)
 {
     return 0;  /* just succeed, the real work is done elsewhere. */
+}
+
+void
+X11_AcceptDragAndDrop(SDL_Window * window, SDL_bool accept)
+{
+    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    Display *display = data->videodata->display;
+    Atom XdndAware = X11_XInternAtom(display, "XdndAware", False);
+
+    if (accept) {
+        Atom xdnd_version = 5;
+        X11_XChangeProperty(display, data->xwindow, XdndAware, XA_ATOM, 32,
+                     PropModeReplace, (unsigned char*)&xdnd_version, 1);
+    } else {
+        X11_XDeleteProperty(display, data->xwindow, XdndAware);
+    }
 }
 
 #endif /* SDL_VIDEO_DRIVER_X11 */

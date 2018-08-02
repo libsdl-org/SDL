@@ -1331,9 +1331,43 @@ SDL_UpdateFullscreenMode(SDL_Window * window, SDL_bool fullscreen)
 #define CREATE_FLAGS \
     (SDL_WINDOW_OPENGL | SDL_WINDOW_BORDERLESS | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI | SDL_WINDOW_ALWAYS_ON_TOP | SDL_WINDOW_SKIP_TASKBAR | SDL_WINDOW_POPUP_MENU | SDL_WINDOW_UTILITY | SDL_WINDOW_TOOLTIP | SDL_WINDOW_VULKAN | SDL_WINDOW_MINIMIZED)
 
+static SDL_INLINE SDL_bool
+IsAcceptingDragAndDrop(void)
+{
+    if ((SDL_GetEventState(SDL_DROPFILE) == SDL_ENABLE) ||
+        (SDL_GetEventState(SDL_DROPTEXT) == SDL_ENABLE)) {
+        return SDL_TRUE;
+    }
+    return SDL_FALSE;
+}
+
+/* prepare a newly-created window */
+static SDL_INLINE void
+PrepareDragAndDropSupport(SDL_Window *window)
+{
+    if (_this->AcceptDragAndDrop) {
+        _this->AcceptDragAndDrop(window, IsAcceptingDragAndDrop());
+    }
+}
+
+/* toggle d'n'd for all existing windows. */
+void
+SDL_ToggleDragAndDropSupport(void)
+{
+    if (_this && _this->AcceptDragAndDrop) {
+        const SDL_bool enable = IsAcceptingDragAndDrop();
+        SDL_Window *window;
+        for (window = _this->windows; window; window = window->next) {
+            _this->AcceptDragAndDrop(window, enable);
+        }
+    }
+}
+
 static void
 SDL_FinishWindowCreation(SDL_Window *window, Uint32 flags)
 {
+    PrepareDragAndDropSupport(window);
+
     if (flags & SDL_WINDOW_MAXIMIZED) {
         SDL_MaximizeWindow(window);
     }
@@ -1552,6 +1586,9 @@ SDL_CreateWindowFrom(const void *data)
         SDL_DestroyWindow(window);
         return NULL;
     }
+
+    PrepareDragAndDropSupport(window);
+
     return window;
 }
 

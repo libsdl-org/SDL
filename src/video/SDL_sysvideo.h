@@ -304,6 +304,9 @@ struct SDL_VideoDevice
     /* Hit-testing */
     int (*SetWindowHitTest)(SDL_Window * window, SDL_bool enabled);
 
+    /* Tell window that app enabled drag'n'drop events */
+    void (*AcceptDragAndDrop)(SDL_Window * window, SDL_bool accept);
+
     /* * * */
     /* Data common to all drivers */
     SDL_bool is_dummy;
@@ -453,6 +456,8 @@ extern void SDL_OnApplicationWillResignActive(void);
 extern void SDL_OnApplicationDidEnterBackground(void);
 extern void SDL_OnApplicationWillEnterForeground(void);
 extern void SDL_OnApplicationDidBecomeActive(void);
+
+extern void SDL_ToggleDragAndDropSupport(void);
 
 #endif /* SDL_sysvideo_h_ */
 

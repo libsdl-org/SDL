@@ -417,6 +417,8 @@ SDL_StartEventLoop(void)
     SDL_EventState(SDL_TEXTINPUT, SDL_DISABLE);
     SDL_EventState(SDL_TEXTEDITING, SDL_DISABLE);
     SDL_EventState(SDL_SYSWMEVENT, SDL_DISABLE);
+    SDL_EventState(SDL_DROPFILE, SDL_DISABLE);
+    SDL_EventState(SDL_DROPTEXT, SDL_DISABLE);
 
     SDL_AtomicSet(&SDL_EventQ.active, 1);
 
@@ -604,6 +606,10 @@ SDL_FlushEvent(Uint32 type)
 void
 SDL_FlushEvents(Uint32 minType, Uint32 maxType)
 {
+    /* !!! FIXME: we need to manually SDL_free() the strings in TEXTINPUT and
+       drag'n'drop events if we're flushing them without passing them to the
+       app, but I don't know if this is the right place to do that. */
+
     /* Don't look after we've quit */
     if (!SDL_AtomicGet(&SDL_EventQ.active)) {
         return;
@@ -863,6 +869,8 @@ SDL_FilterEvents(SDL_EventFilter filter, void *userdata)
 Uint8
 SDL_EventState(Uint32 type, int state)
 {
+    const SDL_bool isdnd = ((state == SDL_DISABLE) || (state == SDL_ENABLE)) &&
+                           ((type == SDL_DROPFILE) || (type == SDL_DROPTEXT));
     Uint8 current_state;
     Uint8 hi = ((type >> 8) & 0xff);
     Uint8 lo = (type & 0xff);
@@ -896,6 +904,12 @@ SDL_EventState(Uint32 type, int state)
             /* Querying state... */
             break;
         }
+    }
+
+    /* turn off drag'n'drop support if we've disabled the events.
+       This might change some UI details at the OS level. */
+    if (isdnd) {
+        SDL_ToggleDragAndDropSupport();
     }
 
     return current_state;
