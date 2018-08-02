@@ -212,7 +212,7 @@ set(SDL_CFLAGS "")
 
 # When building shared lib for Windows with MinGW,
 # avoid the DLL having a "lib" prefix
-if(WIN32)
+if(WINDOWS)
   set(CMAKE_SHARED_LIBRARY_PREFIX "")
 endif()
 
