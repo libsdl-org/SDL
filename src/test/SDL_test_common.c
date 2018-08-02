@@ -1349,7 +1349,18 @@ SDLTest_PrintEvent(SDL_Event * event)
     case SDL_APP_DIDENTERFOREGROUND:
         SDL_Log("SDL EVENT: App entered the foreground");
         break;
-
+    case SDL_DROPBEGIN:
+        SDL_Log("SDL EVENT: Drag and drop beginning");
+        break;
+    case SDL_DROPFILE:
+        SDL_Log("SDL EVENT: Drag and drop file: '%s'", event->drop.file);
+        break;
+    case SDL_DROPTEXT:
+        SDL_Log("SDL EVENT: Drag and drop text: '%s'", event->drop.file);
+        break;
+    case SDL_DROPCOMPLETE:
+        SDL_Log("SDL EVENT: Drag and drop ending");
+        break;
     case SDL_QUIT:
         SDL_Log("SDL EVENT: Quit requested");
         break;
@@ -1743,6 +1754,11 @@ SDLTest_CommonEvent(SDLTest_CommonState * state, SDL_Event * event, int *done)
         break;
     case SDL_MOUSEMOTION:
         lastEvent = event->motion;
+        break;
+
+    case SDL_DROPFILE:
+    case SDL_DROPTEXT:
+        SDL_free(event->drop.file);
         break;
     }
 }

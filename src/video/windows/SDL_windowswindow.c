@@ -289,9 +289,6 @@ SetupWindowData(_THIS, SDL_Window * window, HWND hwnd, HWND parent, SDL_bool cre
         videodata->RegisterTouchWindow(hwnd, (TWF_FINETOUCH|TWF_WANTPALM));
     }
 
-    /* Enable dropping files */
-    DragAcceptFiles(hwnd, TRUE);
-
     data->initializing = SDL_FALSE;
 
     /* All done! */
@@ -977,6 +974,13 @@ WIN_SetWindowOpacity(_THIS, SDL_Window * window, float opacity)
     }
 
     return 0;
+}
+
+void
+WIN_AcceptDragAndDrop(SDL_Window * window, SDL_bool accept)
+{
+    const SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+    DragAcceptFiles(data->hwnd, accept ? TRUE : FALSE);
 }
 
 #endif /* SDL_VIDEO_DRIVER_WINDOWS */

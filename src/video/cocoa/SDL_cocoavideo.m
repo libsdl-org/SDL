@@ -105,6 +105,7 @@ Cocoa_CreateDevice(int devindex)
     device->DestroyWindow = Cocoa_DestroyWindow;
     device->GetWindowWMInfo = Cocoa_GetWindowWMInfo;
     device->SetWindowHitTest = Cocoa_SetWindowHitTest;
+    device->AcceptDragAndDrop = Cocoa_AcceptDragAndDrop;
 
     device->shape_driver.CreateShaper = Cocoa_CreateShaper;
     device->shape_driver.SetWindowShape = Cocoa_SetWindowShape;
