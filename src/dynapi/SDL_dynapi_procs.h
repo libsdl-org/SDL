@@ -719,3 +719,5 @@ SDL_DYNAPI_PROC(SDL_bool,SDL_IsDeXMode,(void),(),return)
 #ifdef __ANDROID__
 SDL_DYNAPI_PROC(void,SDL_AndroidBackButton,(void),(),return)
 #endif
+SDL_DYNAPI_PROC(double,SDL_exp,(double a),(a),return)
+SDL_DYNAPI_PROC(float,SDL_expf,(float a),(a),return)

@@ -35,6 +35,7 @@ typedef unsigned int u_int32_t;
 #define __ieee754_atan2 SDL_uclibc_atan2
 #define copysign        SDL_uclibc_copysign
 #define cos             SDL_uclibc_cos
+#define __ieee754_exp   SDL_uclibc_exp
 #define fabs            SDL_uclibc_fabs
 #define floor           SDL_uclibc_floor
 #define __ieee754_fmod  SDL_uclibc_fmod

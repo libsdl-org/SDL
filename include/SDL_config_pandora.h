@@ -90,6 +90,7 @@
 #define HAVE_COPYSIGN 1
 #define HAVE_COS 1
 #define HAVE_COSF 1
+#define HAVE_EXP 1
 #define HAVE_FABS 1
 #define HAVE_FLOOR 1
 #define HAVE_LOG 1

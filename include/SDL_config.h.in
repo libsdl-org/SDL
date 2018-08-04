@@ -149,6 +149,8 @@
 #undef HAVE_COPYSIGNF
 #undef HAVE_COS
 #undef HAVE_COSF
+#undef HAVE_EXP
+#undef HAVE_EXPF
 #undef HAVE_FABS
 #undef HAVE_FABSF
 #undef HAVE_FLOOR
