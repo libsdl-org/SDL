@@ -155,6 +155,8 @@ typedef unsigned int uintptr_t;
 #define HAVE__COPYSIGN 1
 #define HAVE_COS    1
 #define HAVE_COSF   1
+#define HAVE_EXP    1
+#define HAVE_EXPF   1
 #define HAVE_FABS   1
 #define HAVE_FABSF  1
 #define HAVE_FLOOR  1

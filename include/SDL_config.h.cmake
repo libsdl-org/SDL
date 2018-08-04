@@ -144,6 +144,8 @@
 #cmakedefine HAVE_COPYSIGNF 1
 #cmakedefine HAVE_COS 1
 #cmakedefine HAVE_COSF 1
+#cmakedefine HAVE_EXP 1
+#cmakedefine HAVE_EXPF 1
 #cmakedefine HAVE_FABS 1
 #cmakedefine HAVE_FABSF 1
 #cmakedefine HAVE_FLOOR 1

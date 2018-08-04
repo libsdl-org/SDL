@@ -201,6 +201,26 @@ SDL_cosf(float x)
 }
 
 double
+SDL_exp(double x)
+{
+#if defined(HAVE_EXP)
+    return exp(x);
+#else
+    return SDL_uclibc_exp(x);
+#endif
+}
+
+float
+SDL_expf(float x)
+{
+#if defined(HAVE_EXPF)
+    return expf(x);
+#else
+    return (float)SDL_uclibc_exp((double)x);
+#endif
+}
+
+double
 SDL_fabs(double x)
 {
 #if defined(HAVE_FABS)

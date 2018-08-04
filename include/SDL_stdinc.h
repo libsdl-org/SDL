@@ -513,6 +513,8 @@ extern DECLSPEC double SDLCALL SDL_copysign(double x, double y);
 extern DECLSPEC float SDLCALL SDL_copysignf(float x, float y);
 extern DECLSPEC double SDLCALL SDL_cos(double x);
 extern DECLSPEC float SDLCALL SDL_cosf(float x);
+extern DECLSPEC double SDLCALL SDL_exp(double x);
+extern DECLSPEC float SDLCALL SDL_expf(float x);
 extern DECLSPEC double SDLCALL SDL_fabs(double x);
 extern DECLSPEC float SDLCALL SDL_fabsf(float x);
 extern DECLSPEC double SDLCALL SDL_floor(double x);
