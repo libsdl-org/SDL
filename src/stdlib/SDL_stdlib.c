@@ -216,7 +216,7 @@ SDL_expf(float x)
 #if defined(HAVE_EXPF)
     return expf(x);
 #else
-    return (float)SDL_uclibc_exp((double)x);
+    return (float)SDL_exp((double)x);
 #endif
 }
 
@@ -224,7 +224,7 @@ double
 SDL_fabs(double x)
 {
 #if defined(HAVE_FABS)
-    return fabs(x); 
+    return fabs(x);
 #else
     return SDL_uclibc_fabs(x);
 #endif
@@ -234,7 +234,7 @@ float
 SDL_fabsf(float x)
 {
 #if defined(HAVE_FABSF)
-    return fabsf(x); 
+    return fabsf(x);
 #else
     return (float)SDL_fabs((double)x);
 #endif
