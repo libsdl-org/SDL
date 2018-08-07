@@ -28,7 +28,7 @@
 extern "C" {
 #endif
 
-extern void BE_PumpEvents(_THIS);
+extern void HAIKU_PumpEvents(_THIS);
 
 #ifdef __cplusplus
 }

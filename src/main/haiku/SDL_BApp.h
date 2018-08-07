@@ -231,7 +231,7 @@ private:
         SDL_SendMouseMotion(win, 0, 0, x, y);
 
         /* Tell the application that the mouse passed over, redraw needed */
-        BE_UpdateWindowFramebuffer(NULL,win,NULL,-1);
+        HAIKU_UpdateWindowFramebuffer(NULL,win,NULL,-1);
     }
 
     void _HandleMouseButton(BMessage *msg) {
@@ -274,11 +274,11 @@ private:
         }
 
         /* Make sure this isn't a repeated event (key pressed and held) */
-        if(state == SDL_PRESSED && BE_GetKeyState(scancode) == SDL_PRESSED) {
+        if(state == SDL_PRESSED && HAIKU_GetKeyState(scancode) == SDL_PRESSED) {
             return;
         }
-        BE_SetKeyState(scancode, state);
-        SDL_SendKeyboardKey(state, BE_GetScancodeFromBeKey(scancode));
+        HAIKU_SetKeyState(scancode, state);
+        SDL_SendKeyboardKey(state, HAIKU_GetScancodeFromBeKey(scancode));
         
         if (state == SDL_PRESSED && SDL_EventState(SDL_TEXTINPUT, SDL_QUERY)) {
             const int8 *keyUtf8;

@@ -132,7 +132,7 @@ void _SpoutModeData(display_mode *bmode) {
 
 
 
-int32 BE_ColorSpaceToBitsPerPixel(uint32 colorspace)
+int32 HAIKU_ColorSpaceToBitsPerPixel(uint32 colorspace)
 {
 	int bitsperpixel;
 
@@ -163,7 +163,7 @@ int32 BE_ColorSpaceToBitsPerPixel(uint32 colorspace)
 	return(bitsperpixel);
 }
 
-int32 BE_BPPToSDLPxFormat(int32 bpp) {
+int32 HAIKU_BPPToSDLPxFormat(int32 bpp) {
 	/* Translation taken from SDL_windowsmodes.c */
 	switch (bpp) {
 	case 32:
@@ -210,8 +210,8 @@ static void _BDisplayModeToSdlDisplayMode(display_mode *bmode,
 #endif
 
 	/* Set the format */
-	int32 bpp = BE_ColorSpaceToBitsPerPixel(bmode->space);
-	mode->format = BE_BPPToSDLPxFormat(bpp);
+	int32 bpp = HAIKU_ColorSpaceToBitsPerPixel(bmode->space);
+	mode->format = HAIKU_BPPToSDLPxFormat(bpp);
 }
 
 /* Later, there may be more than one monitor available */
@@ -235,7 +235,7 @@ static void _AddDisplay(BScreen *screen) {
  * Functions called by SDL
  */
 
-int BE_InitModes(_THIS) {
+int HAIKU_InitModes(_THIS) {
 	BScreen screen;
 
 	/* TODO: When Haiku supports multiple display screens, call
@@ -244,13 +244,13 @@ int BE_InitModes(_THIS) {
 	return 0;
 }
 
-int BE_QuitModes(_THIS) {
+int HAIKU_QuitModes(_THIS) {
 	/* FIXME: Nothing really needs to be done here at the moment? */
 	return 0;
 }
 
 
-int BE_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect) {
+int HAIKU_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect) {
 	BScreen bscreen;
 	BRect rc = bscreen.Frame();
 	rect->x = (int)rc.left;
@@ -260,7 +260,7 @@ int BE_GetDisplayBounds(_THIS, SDL_VideoDisplay *display, SDL_Rect *rect) {
 	return 0;
 }
 
-void BE_GetDisplayModes(_THIS, SDL_VideoDisplay *display) {
+void HAIKU_GetDisplayModes(_THIS, SDL_VideoDisplay *display) {
 	/* Get the current screen */
 	BScreen bscreen;
 
@@ -285,7 +285,7 @@ void BE_GetDisplayModes(_THIS, SDL_VideoDisplay *display) {
 }
 
 
-int BE_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode){
+int HAIKU_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode){
 	/* Get the current screen */
 	BScreen bscreen;
 	if(!bscreen.IsValid()) {
@@ -318,7 +318,7 @@ int BE_SetDisplayMode(_THIS, SDL_VideoDisplay *display, SDL_DisplayMode *mode){
 #if SDL_VIDEO_OPENGL
 	/* FIXME: Is there some way to reboot the OpenGL context?  This doesn't
 	   help */
-//	BE_GL_RebootContexts(_this);
+//	HAIKU_GL_RebootContexts(_this);
 #endif
 
 	return 0;

@@ -28,7 +28,7 @@
 extern "C" {
 #endif
 
-void BE_PumpEvents(_THIS) {
+void HAIKU_PumpEvents(_THIS) {
 	/* Since the event thread is its own thread, this isn't really necessary */
 }
 
