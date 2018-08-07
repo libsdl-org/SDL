@@ -451,7 +451,11 @@ void SDL_OpenedAudioDeviceDisconnected(SDL_AudioDevice *device)
     SDL_assert(get_audio_device(device->id) == device);
 
     if (!SDL_AtomicGet(&device->enabled)) {
-        return;
+        return;  /* don't report disconnects more than once. */
+    }
+
+    if (SDL_AtomicGet(&device->shutdown)) {
+        return;  /* don't report disconnect if we're trying to close device. */
     }
 
     /* Ends the audio callback and mark the device as STOPPED, but the
@@ -1056,16 +1060,14 @@ close_audio_device(SDL_AudioDevice * device)
         return;
     }
 
-    if (device->id > 0) {
-        SDL_AudioDevice *opendev = open_devices[device->id - 1];
-        SDL_assert((opendev == device) || (opendev == NULL));
-        if (opendev == device) {
-            open_devices[device->id - 1] = NULL;
-        }
-    }
-
+    /* make sure the device is paused before we do anything else, so the
+       audio callback definitely won't fire again. */
+    current_audio.impl.LockDevice(device);
+    SDL_AtomicSet(&device->paused, 1);
     SDL_AtomicSet(&device->shutdown, 1);
     SDL_AtomicSet(&device->enabled, 0);
+    current_audio.impl.UnlockDevice(device);
+
     if (device->thread != NULL) {
         SDL_WaitThread(device->thread, NULL);
     }
@@ -1075,6 +1077,14 @@ close_audio_device(SDL_AudioDevice * device)
 
     SDL_free(device->work_buffer);
     SDL_FreeAudioStream(device->stream);
+
+    if (device->id > 0) {
+        SDL_AudioDevice *opendev = open_devices[device->id - 1];
+        SDL_assert((opendev == device) || (opendev == NULL));
+        if (opendev == device) {
+            open_devices[device->id - 1] = NULL;
+        }
+    }
 
     if (device->hidden != NULL) {
         current_audio.impl.CloseDevice(device);
