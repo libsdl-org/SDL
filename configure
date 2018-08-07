@@ -19227,7 +19227,8 @@ $as_echo "#define SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH 1" >>confdefs.h
 
             fi
 
-            SOURCES="$SOURCES $srcdir/src/video/wayland/*.c"
+            WAYLAND_SOURCES="$srcdir/src/video/wayland/*.c"
+            SOURCES="$SOURCES $WAYLAND_SOURCES"
             EXTRA_CFLAGS="$EXTRA_CFLAGS $WAYLAND_CFLAGS -I\$(gen)"
             # Check whether --enable-wayland-shared was given.
 if test "${enable_wayland_shared+set}" = set; then :
@@ -24735,7 +24736,9 @@ if test x$video_wayland = xyes; then
         echo ;\
         echo "\\$(objects)/\$p-protocol.lo: \\$(gen)/\$p-protocol.c \\$(gen)/\$p-client-protocol.h" ;\
         echo "	\\$(RUN_CMD_CC)\\$(LIBTOOL) --tag=CC --mode=compile \\$(CC) \\$(CFLAGS) \\$(EXTRA_CFLAGS) $DEPENDENCY_TRACKING_OPTIONS -c \\$< -o \\$@" ;\
-        done`
+        done ;\
+        echo ;\
+        for s in $WAYLAND_SOURCES ; do echo -n "\$s:" ; for p in $WAYLAND_PROTOCOLS ; do echo -n " \\$(gen)/\$p-client-protocol.h" ; done ; echo ; done ; echo`
 fi
 
 OBJECTS=`echo $SOURCES`
