@@ -181,6 +181,9 @@ SDL_SYS_HapticInit(void)
         SDL_UDEV_Quit();
         return SDL_SetError("Could not setup haptic <-> udev callback");
     }
+
+    /* Force a scan to build the initial device list */
+    SDL_UDEV_Scan();
 #endif /* SDL_USE_LIBUDEV */
 
     return numhaptics;
