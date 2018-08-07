@@ -88,7 +88,7 @@ class SDL_BWin:public BDirectWindow
         _clips = NULL;
 
 #ifdef DRAWTHREAD
-        _draw_thread_id = spawn_thread(BE_DrawThread, "drawing_thread",
+        _draw_thread_id = spawn_thread(HAIKU_DrawThread, "drawing_thread",
                             B_NORMAL_PRIORITY, (void*) this);
         resume_thread(_draw_thread_id);
 #endif

@@ -75,7 +75,7 @@ static int _InitWindow(_THIS, SDL_Window *window) {
     return 0;
 }
 
-int BE_CreateWindow(_THIS, SDL_Window *window) {
+int HAIKU_CreateWindow(_THIS, SDL_Window *window) {
     if (_InitWindow(_this, window) < 0) {
         return -1;
     }
@@ -85,7 +85,7 @@ int BE_CreateWindow(_THIS, SDL_Window *window) {
     return 0;
 }
 
-int BE_CreateWindowFrom(_THIS, SDL_Window * window, const void *data) {
+int HAIKU_CreateWindowFrom(_THIS, SDL_Window * window, const void *data) {
 
 	SDL_BWin *otherBWin = (SDL_BWin*)data;
 	if(!otherBWin->LockLooper())
@@ -117,73 +117,73 @@ int BE_CreateWindowFrom(_THIS, SDL_Window * window, const void *data) {
     return 0;
 }
 
-void BE_SetWindowTitle(_THIS, SDL_Window * window) {
+void HAIKU_SetWindowTitle(_THIS, SDL_Window * window) {
 	BMessage msg(BWIN_SET_TITLE);
 	msg.AddString("window-title", window->title);
 	_ToBeWin(window)->PostMessage(&msg);
 }
 
-void BE_SetWindowIcon(_THIS, SDL_Window * window, SDL_Surface * icon) {
+void HAIKU_SetWindowIcon(_THIS, SDL_Window * window, SDL_Surface * icon) {
 	/* FIXME: Icons not supported by Haiku */
 }
 
-void BE_SetWindowPosition(_THIS, SDL_Window * window) {
+void HAIKU_SetWindowPosition(_THIS, SDL_Window * window) {
 	BMessage msg(BWIN_MOVE_WINDOW);
 	msg.AddInt32("window-x", window->x);
 	msg.AddInt32("window-y", window->y);
 	_ToBeWin(window)->PostMessage(&msg);
 }
 
-void BE_SetWindowSize(_THIS, SDL_Window * window) {
+void HAIKU_SetWindowSize(_THIS, SDL_Window * window) {
 	BMessage msg(BWIN_RESIZE_WINDOW);
 	msg.AddInt32("window-w", window->w - 1);
 	msg.AddInt32("window-h", window->h - 1);
 	_ToBeWin(window)->PostMessage(&msg);
 }
 
-void BE_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered) {
+void HAIKU_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered) {
 	BMessage msg(BWIN_SET_BORDERED);
 	msg.AddBool("window-border", bordered != SDL_FALSE);
 	_ToBeWin(window)->PostMessage(&msg);
 }
 
-void BE_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizable) {
+void HAIKU_SetWindowResizable(_THIS, SDL_Window * window, SDL_bool resizable) {
 	BMessage msg(BWIN_SET_RESIZABLE);
 	msg.AddBool("window-resizable", resizable != SDL_FALSE);
 	_ToBeWin(window)->PostMessage(&msg);
 }
 
-void BE_ShowWindow(_THIS, SDL_Window * window) {
+void HAIKU_ShowWindow(_THIS, SDL_Window * window) {
 	BMessage msg(BWIN_SHOW_WINDOW);
 	_ToBeWin(window)->PostMessage(&msg);
 }
 
-void BE_HideWindow(_THIS, SDL_Window * window) {
+void HAIKU_HideWindow(_THIS, SDL_Window * window) {
 	BMessage msg(BWIN_HIDE_WINDOW);
 	_ToBeWin(window)->PostMessage(&msg);
 }
 
-void BE_RaiseWindow(_THIS, SDL_Window * window) {
+void HAIKU_RaiseWindow(_THIS, SDL_Window * window) {
 	BMessage msg(BWIN_SHOW_WINDOW);	/* Activate this window and move to front */
 	_ToBeWin(window)->PostMessage(&msg);
 }
 
-void BE_MaximizeWindow(_THIS, SDL_Window * window) {
+void HAIKU_MaximizeWindow(_THIS, SDL_Window * window) {
 	BMessage msg(BWIN_MAXIMIZE_WINDOW);
 	_ToBeWin(window)->PostMessage(&msg);
 }
 
-void BE_MinimizeWindow(_THIS, SDL_Window * window) {
+void HAIKU_MinimizeWindow(_THIS, SDL_Window * window) {
 	BMessage msg(BWIN_MINIMIZE_WINDOW);
 	_ToBeWin(window)->PostMessage(&msg);
 }
 
-void BE_RestoreWindow(_THIS, SDL_Window * window) {
+void HAIKU_RestoreWindow(_THIS, SDL_Window * window) {
 	BMessage msg(BWIN_RESTORE_WINDOW);
 	_ToBeWin(window)->PostMessage(&msg);
 }
 
-void BE_SetWindowFullscreen(_THIS, SDL_Window * window,
+void HAIKU_SetWindowFullscreen(_THIS, SDL_Window * window,
 		SDL_VideoDisplay * display, SDL_bool fullscreen) {
 	/* Haiku tracks all video display information */
 	BMessage msg(BWIN_FULLSCREEN);
@@ -192,29 +192,29 @@ void BE_SetWindowFullscreen(_THIS, SDL_Window * window,
 	
 }
 
-int BE_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp) {
+int HAIKU_SetWindowGammaRamp(_THIS, SDL_Window * window, const Uint16 * ramp) {
 	/* FIXME: Not Haiku supported */
 	return -1;
 }
 
-int BE_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp) {
+int HAIKU_GetWindowGammaRamp(_THIS, SDL_Window * window, Uint16 * ramp) {
 	/* FIXME: Not Haiku supported */
 	return -1;
 }
 
 
-void BE_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed) {
+void HAIKU_SetWindowGrab(_THIS, SDL_Window * window, SDL_bool grabbed) {
 	/* TODO: Implement this! */
 }
 
-void BE_DestroyWindow(_THIS, SDL_Window * window) {
+void HAIKU_DestroyWindow(_THIS, SDL_Window * window) {
 	_ToBeWin(window)->LockLooper();	/* This MUST be locked */
 	_GetBeApp()->ClearID(_ToBeWin(window));
 	_ToBeWin(window)->Quit();
 	window->driverdata = NULL;
 }
 
-SDL_bool BE_GetWindowWMInfo(_THIS, SDL_Window * window,
+SDL_bool HAIKU_GetWindowWMInfo(_THIS, SDL_Window * window,
                                     struct SDL_SysWMinfo *info) {
 	/* FIXME: What is the point of this? What information should be included? */
 	return SDL_FALSE;

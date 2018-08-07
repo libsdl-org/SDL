@@ -36,7 +36,7 @@ extern "C" {
 #endif
 
 #ifndef DRAWTHREAD
-static int32 BE_UpdateOnce(SDL_Window *window);
+static int32 HAIKU_UpdateOnce(SDL_Window *window);
 #endif
 
 static SDL_INLINE SDL_BWin *_ToBeWin(SDL_Window *window) {
@@ -47,7 +47,7 @@ static SDL_INLINE SDL_BApp *_GetBeApp() {
 	return ((SDL_BApp*)be_app);
 }
 
-int BE_CreateWindowFramebuffer(_THIS, SDL_Window * window,
+int HAIKU_CreateWindowFramebuffer(_THIS, SDL_Window * window,
                                        Uint32 * format,
                                        void ** pixels, int *pitch) {
 	SDL_BWin *bwin = _ToBeWin(window);
@@ -64,8 +64,8 @@ int BE_CreateWindowFramebuffer(_THIS, SDL_Window * window,
 	/* format */
 	display_mode bmode;
 	bscreen.GetMode(&bmode);
-	int32 bpp = BE_ColorSpaceToBitsPerPixel(bmode.space);
-	*format = BE_BPPToSDLPxFormat(bpp);
+	int32 bpp = HAIKU_ColorSpaceToBitsPerPixel(bmode.space);
+	*format = HAIKU_BPPToSDLPxFormat(bpp);
 
 	/* Create the new bitmap object */
 	BBitmap *bitmap = bwin->GetBitmap();
@@ -99,7 +99,7 @@ int BE_CreateWindowFramebuffer(_THIS, SDL_Window * window,
 
 
 
-int BE_UpdateWindowFramebuffer(_THIS, SDL_Window * window,
+int HAIKU_UpdateWindowFramebuffer(_THIS, SDL_Window * window,
                                       const SDL_Rect * rects, int numrects) {
 	if(!window)
 		return 0;
@@ -112,13 +112,13 @@ int BE_UpdateWindowFramebuffer(_THIS, SDL_Window * window,
 	bwin->UnlockBuffer();
 #else
 	bwin->SetBufferDirty(true);
-	BE_UpdateOnce(window);
+	HAIKU_UpdateOnce(window);
 #endif
 
 	return 0;
 }
 
-int32 BE_DrawThread(void *data) {
+int32 HAIKU_DrawThread(void *data) {
 	SDL_BWin *bwin = (SDL_BWin*)data;
 	
 	BScreen bscreen;
@@ -181,7 +181,7 @@ escape:
 	return B_OK;
 }
 
-void BE_DestroyWindowFramebuffer(_THIS, SDL_Window * window) {
+void HAIKU_DestroyWindowFramebuffer(_THIS, SDL_Window * window) {
 	SDL_BWin *bwin = _ToBeWin(window);
 	
 	bwin->LockBuffer();
@@ -202,7 +202,7 @@ void BE_DestroyWindowFramebuffer(_THIS, SDL_Window * window) {
  * solved, but I doubt it- they were pretty sporadic before now.
  */
 #ifndef DRAWTHREAD
-static int32 BE_UpdateOnce(SDL_Window *window) {
+static int32 HAIKU_UpdateOnce(SDL_Window *window) {
 	SDL_BWin *bwin = _ToBeWin(window);
 	BScreen bscreen;
 	if(!bscreen.IsValid()) {

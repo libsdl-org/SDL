@@ -37,17 +37,17 @@ extern "C" {
 #include "SDL_bevents.h"
 
 /* FIXME: Undefined functions */
-//    #define BE_PumpEvents NULL
-    #define BE_StartTextInput NULL
-    #define BE_StopTextInput NULL
-    #define BE_SetTextInputRect NULL
+//    #define HAIKU_PumpEvents NULL
+    #define HAIKU_StartTextInput NULL
+    #define HAIKU_StopTextInput NULL
+    #define HAIKU_SetTextInputRect NULL
 
-//    #define BE_DeleteDevice NULL
+//    #define HAIKU_DeleteDevice NULL
 
 /* End undefined functions */
 
 static SDL_VideoDevice *
-BE_CreateDevice(int devindex)
+HAIKU_CreateDevice(int devindex)
 {
     SDL_VideoDevice *device;
     /*SDL_VideoData *data;*/
@@ -61,78 +61,78 @@ BE_CreateDevice(int devindex)
 /* TODO: Figure out if any initialization needs to go here */
 
     /* Set the function pointers */
-    device->VideoInit = BE_VideoInit;
-    device->VideoQuit = BE_VideoQuit;
-    device->GetDisplayBounds = BE_GetDisplayBounds;
-    device->GetDisplayModes = BE_GetDisplayModes;
-    device->SetDisplayMode = BE_SetDisplayMode;
-    device->PumpEvents = BE_PumpEvents;
+    device->VideoInit = HAIKU_VideoInit;
+    device->VideoQuit = HAIKU_VideoQuit;
+    device->GetDisplayBounds = HAIKU_GetDisplayBounds;
+    device->GetDisplayModes = HAIKU_GetDisplayModes;
+    device->SetDisplayMode = HAIKU_SetDisplayMode;
+    device->PumpEvents = HAIKU_PumpEvents;
 
-    device->CreateSDLWindow = BE_CreateWindow;
-    device->CreateSDLWindowFrom = BE_CreateWindowFrom;
-    device->SetWindowTitle = BE_SetWindowTitle;
-    device->SetWindowIcon = BE_SetWindowIcon;
-    device->SetWindowPosition = BE_SetWindowPosition;
-    device->SetWindowSize = BE_SetWindowSize;
-    device->ShowWindow = BE_ShowWindow;
-    device->HideWindow = BE_HideWindow;
-    device->RaiseWindow = BE_RaiseWindow;
-    device->MaximizeWindow = BE_MaximizeWindow;
-    device->MinimizeWindow = BE_MinimizeWindow;
-    device->RestoreWindow = BE_RestoreWindow;
-    device->SetWindowBordered = BE_SetWindowBordered;
-    device->SetWindowResizable = BE_SetWindowResizable;
-    device->SetWindowFullscreen = BE_SetWindowFullscreen;
-    device->SetWindowGammaRamp = BE_SetWindowGammaRamp;
-    device->GetWindowGammaRamp = BE_GetWindowGammaRamp;
-    device->SetWindowGrab = BE_SetWindowGrab;
-    device->DestroyWindow = BE_DestroyWindow;
-    device->GetWindowWMInfo = BE_GetWindowWMInfo;
-    device->CreateWindowFramebuffer = BE_CreateWindowFramebuffer;
-    device->UpdateWindowFramebuffer = BE_UpdateWindowFramebuffer;
-    device->DestroyWindowFramebuffer = BE_DestroyWindowFramebuffer;
+    device->CreateSDLWindow = HAIKU_CreateWindow;
+    device->CreateSDLWindowFrom = HAIKU_CreateWindowFrom;
+    device->SetWindowTitle = HAIKU_SetWindowTitle;
+    device->SetWindowIcon = HAIKU_SetWindowIcon;
+    device->SetWindowPosition = HAIKU_SetWindowPosition;
+    device->SetWindowSize = HAIKU_SetWindowSize;
+    device->ShowWindow = HAIKU_ShowWindow;
+    device->HideWindow = HAIKU_HideWindow;
+    device->RaiseWindow = HAIKU_RaiseWindow;
+    device->MaximizeWindow = HAIKU_MaximizeWindow;
+    device->MinimizeWindow = HAIKU_MinimizeWindow;
+    device->RestoreWindow = HAIKU_RestoreWindow;
+    device->SetWindowBordered = HAIKU_SetWindowBordered;
+    device->SetWindowResizable = HAIKU_SetWindowResizable;
+    device->SetWindowFullscreen = HAIKU_SetWindowFullscreen;
+    device->SetWindowGammaRamp = HAIKU_SetWindowGammaRamp;
+    device->GetWindowGammaRamp = HAIKU_GetWindowGammaRamp;
+    device->SetWindowGrab = HAIKU_SetWindowGrab;
+    device->DestroyWindow = HAIKU_DestroyWindow;
+    device->GetWindowWMInfo = HAIKU_GetWindowWMInfo;
+    device->CreateWindowFramebuffer = HAIKU_CreateWindowFramebuffer;
+    device->UpdateWindowFramebuffer = HAIKU_UpdateWindowFramebuffer;
+    device->DestroyWindowFramebuffer = HAIKU_DestroyWindowFramebuffer;
     
     device->shape_driver.CreateShaper = NULL;
     device->shape_driver.SetWindowShape = NULL;
     device->shape_driver.ResizeWindowShape = NULL;
 
 #if SDL_VIDEO_OPENGL
-    device->GL_LoadLibrary = BE_GL_LoadLibrary;
-    device->GL_GetProcAddress = BE_GL_GetProcAddress;
-    device->GL_UnloadLibrary = BE_GL_UnloadLibrary;
-    device->GL_CreateContext = BE_GL_CreateContext;
-    device->GL_MakeCurrent = BE_GL_MakeCurrent;
-    device->GL_SetSwapInterval = BE_GL_SetSwapInterval;
-    device->GL_GetSwapInterval = BE_GL_GetSwapInterval;
-    device->GL_SwapWindow = BE_GL_SwapWindow;
-    device->GL_DeleteContext = BE_GL_DeleteContext;
+    device->GL_LoadLibrary = HAIKU_GL_LoadLibrary;
+    device->GL_GetProcAddress = HAIKU_GL_GetProcAddress;
+    device->GL_UnloadLibrary = HAIKU_GL_UnloadLibrary;
+    device->GL_CreateContext = HAIKU_GL_CreateContext;
+    device->GL_MakeCurrent = HAIKU_GL_MakeCurrent;
+    device->GL_SetSwapInterval = HAIKU_GL_SetSwapInterval;
+    device->GL_GetSwapInterval = HAIKU_GL_GetSwapInterval;
+    device->GL_SwapWindow = HAIKU_GL_SwapWindow;
+    device->GL_DeleteContext = HAIKU_GL_DeleteContext;
 #endif
 
-    device->StartTextInput = BE_StartTextInput;
-    device->StopTextInput = BE_StopTextInput;
-    device->SetTextInputRect = BE_SetTextInputRect;
+    device->StartTextInput = HAIKU_StartTextInput;
+    device->StopTextInput = HAIKU_StopTextInput;
+    device->SetTextInputRect = HAIKU_SetTextInputRect;
 
-    device->SetClipboardText = BE_SetClipboardText;
-    device->GetClipboardText = BE_GetClipboardText;
-    device->HasClipboardText = BE_HasClipboardText;
+    device->SetClipboardText = HAIKU_SetClipboardText;
+    device->GetClipboardText = HAIKU_GetClipboardText;
+    device->HasClipboardText = HAIKU_HasClipboardText;
 
-    device->free = BE_DeleteDevice;
+    device->free = HAIKU_DeleteDevice;
 
     return device;
 }
 
 VideoBootStrap HAIKU_bootstrap = {
 	"haiku", "Haiku graphics",
-	BE_Available, BE_CreateDevice
+	HAIKU_Available, HAIKU_CreateDevice
 };
 
-void BE_DeleteDevice(SDL_VideoDevice * device)
+void HAIKU_DeleteDevice(SDL_VideoDevice * device)
 {
 	SDL_free(device->driverdata);
 	SDL_free(device);
 }
 
-int BE_VideoInit(_THIS)
+int HAIKU_VideoInit(_THIS)
 {
 	/* Initialize the Be Application for appserver interaction */
 	if (SDL_InitBeApp() < 0) {
@@ -140,31 +140,31 @@ int BE_VideoInit(_THIS)
 	}
 	
 	/* Initialize video modes */
-	BE_InitModes(_this);
+	HAIKU_InitModes(_this);
 
 	/* Init the keymap */
-	BE_InitOSKeymap();
+	HAIKU_InitOSKeymap();
 	
 	
 #if SDL_VIDEO_OPENGL
         /* testgl application doesn't load library, just tries to load symbols */
         /* is it correct? if so we have to load library here */
-    BE_GL_LoadLibrary(_this, NULL);
+    HAIKU_GL_LoadLibrary(_this, NULL);
 #endif
 
         /* We're done! */
     return (0);
 }
 
-int BE_Available(void)
+int HAIKU_Available(void)
 {
     return (1);
 }
 
-void BE_VideoQuit(_THIS)
+void HAIKU_VideoQuit(_THIS)
 {
 
-    BE_QuitModes(_this);
+    HAIKU_QuitModes(_this);
 
     SDL_QuitBeApp();
 }
