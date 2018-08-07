@@ -22,6 +22,10 @@
 
 #if SDL_AUDIO_DRIVER_ALSA
 
+#ifndef SDL_ALSA_NON_BLOCKING
+#define SDL_ALSA_NON_BLOCKING 0
+#endif
+
 /* Allow access to a raw mixing buffer */
 
 #include <sys/types.h>
@@ -90,6 +94,7 @@ static int (*ALSA_snd_pcm_reset)(snd_pcm_t *);
 static int (*ALSA_snd_device_name_hint) (int, const char *, void ***);
 static char* (*ALSA_snd_device_name_get_hint) (const void *, const char *);
 static int (*ALSA_snd_device_name_free_hint) (void **);
+static snd_pcm_sframes_t (*ALSA_snd_pcm_avail)(snd_pcm_t *);
 #ifdef SND_CHMAP_API_VERSION
 static snd_pcm_chmap_t* (*ALSA_snd_pcm_get_chmap) (snd_pcm_t *);
 static int (*ALSA_snd_pcm_chmap_print) (const snd_pcm_chmap_t *map, size_t maxlen, char *buf);
@@ -158,6 +163,7 @@ load_alsa_syms(void)
     SDL_ALSA_SYM(snd_device_name_hint);
     SDL_ALSA_SYM(snd_device_name_get_hint);
     SDL_ALSA_SYM(snd_device_name_free_hint);
+    SDL_ALSA_SYM(snd_pcm_avail);
 #ifdef SND_CHMAP_API_VERSION
     SDL_ALSA_SYM(snd_pcm_get_chmap);
     SDL_ALSA_SYM(snd_pcm_chmap_print);
@@ -243,7 +249,24 @@ get_audio_device(void *handle, const int channels)
 static void
 ALSA_WaitDevice(_THIS)
 {
-    /* We're in blocking mode, so there's nothing to do here */
+#if SDL_ALSA_NON_BLOCKING
+    const snd_pcm_sframes_t needed = (snd_pcm_sframes_t) this->spec.samples;
+    while (SDL_AtomicGet(&this->enabled)) {
+        const snd_pcm_sframes_t rc = ALSA_snd_pcm_avail(this->hidden->pcm_handle);
+        if ((rc < 0) && (rc != -EAGAIN)) {
+            /* Hmm, not much we can do - abort */
+            fprintf(stderr, "ALSA snd_pcm_avail failed (unrecoverable): %s\n",
+                        ALSA_snd_strerror(rc));
+            SDL_OpenedAudioDeviceDisconnected(this);
+            return;
+        } else if (rc < needed) {
+            const Uint32 delay = ((needed - (SDL_max(rc, 0))) * 1000) / this->spec.freq;
+            SDL_Delay(SDL_max(delay, 10));
+        } else {
+            break;  /* ready to go! */
+        }
+    }
+#endif
 }
 
 
@@ -672,9 +695,11 @@ ALSA_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         SDL_memset(this->hidden->mixbuf, this->spec.silence, this->hidden->mixlen);
     }
 
+    #if !SDL_ALSA_NON_BLOCKING
     if (!iscapture) {
         ALSA_snd_pcm_nonblock(pcm_handle, 0);
     }
+    #endif
 
     /* We're ready to rock and roll. :-) */
     return 0;
