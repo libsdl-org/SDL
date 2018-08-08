@@ -117,7 +117,12 @@ double __ieee754_exp(double x)	/* default IEEE double exp */
 		     return x+x; 		/* NaN */
 		else return (xsb==0)? x:0.0;	/* exp(+-inf)={inf,0} */
 	    }
-	    if(x > o_threshold) return huge*huge; /* overflow */
+		#if 0
+		if(x > o_threshold) return huge*huge; /* overflow */
+		#else  /* !!! FIXME: check this: "huge * huge" is a compiler warning, maybe they wanted +Inf? */
+		if(x > o_threshold) return INFINITY; /* overflow */
+		#endif
+
 	    if(x < u_threshold) return twom1000*twom1000; /* underflow */
 	}
 
