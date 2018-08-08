@@ -126,7 +126,7 @@ double __ieee754_exp(double x)	/* default IEEE double exp */
 	    if(hx < 0x3FF0A2B2) {	/* and |x| < 1.5 ln2 */
 		hi = x-ln2HI[xsb]; lo=ln2LO[xsb]; k = 1-xsb-xsb;
 	    } else {
-		k  = invln2*x+halF[xsb];
+		k  = (int32_t) (invln2*x+halF[xsb]);
 		t  = k;
 		hi = x - t*ln2HI[0];	/* t*ln2HI is exact here */
 		lo = t*ln2LO[0];
