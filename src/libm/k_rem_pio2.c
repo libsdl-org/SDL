@@ -172,7 +172,9 @@ int32_t attribute_hidden __kernel_rem_pio2(double *x, double *y, int e0, int nx,
     /* set up f[0] to f[jx+jk] where f[jx+jk] = ipio2[jv+jk] */
 	j = jv-jx; m = jx+jk;
 	for(i=0;i<=m;i++,j++) f[i] = (j<0)? zero : (double) ipio2[j];
-	for(i=m+1;i<SDL_arraysize(f);i++) f[i] = zero;
+	if ((m+1) < SDL_arraysize(f)) {
+        SDL_memset(&f[m+1], 0, sizeof (f) - ((m+1) * sizeof (f[0])));
+    }
 
     /* compute q[0],q[1],...q[jk] */
 	for (i=0;i<=jk;i++) {
