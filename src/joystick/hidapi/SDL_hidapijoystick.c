@@ -79,6 +79,20 @@ static SDL_HIDAPI_Device *SDL_HIDAPI_devices;
 static int SDL_HIDAPI_numjoysticks = 0;
 static Uint32 SDL_HIDAPI_last_detect = 0;
 
+static SDL_bool
+HIDAPI_IsDeviceSupported(Uint16 vendor_id, Uint16 product_id)
+{
+    int i;
+
+    for (i = 0; i < SDL_arraysize(SDL_HIDAPI_drivers); ++i) {
+        SDL_HIDAPI_DeviceDriver *driver = SDL_HIDAPI_drivers[i];
+        if (driver->enabled && driver->IsSupportedDevice(vendor_id, product_id, -1, 0, 0)) {
+            return SDL_TRUE;
+        }
+    }
+    return SDL_FALSE;
+}
+
 static SDL_HIDAPI_DeviceDriver *
 HIDAPI_GetDeviceDriver(SDL_HIDAPI_Device *device)
 {
@@ -387,6 +401,11 @@ SDL_bool
 HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id)
 {
     SDL_HIDAPI_Device *device;
+
+    /* Don't update the device list for devices we know aren't supported */
+    if (!HIDAPI_IsDeviceSupported(vendor_id, product_id)) {
+        return SDL_FALSE;
+    }
 
     /* Make sure the device list is completely up to date when we check for device presence */
     HIDAPI_UpdateDeviceList();
