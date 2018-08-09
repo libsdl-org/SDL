@@ -42,6 +42,7 @@ struct _SDL_Joystick
 {
     SDL_JoystickID instance_id; /* Device instance, monotonically increasing from 0 */
     char *name;                 /* Joystick name - system dependent */
+    SDL_JoystickGUID guid;      /* Joystick guid */
 
     int naxes;                  /* Number of axis controls on the joystick */
     SDL_JoystickAxisInfo *axes;
@@ -58,69 +59,95 @@ struct _SDL_Joystick
     int nbuttons;               /* Number of buttons on the joystick */
     Uint8 *buttons;             /* Current button states */
 
-    struct joystick_hwdata *hwdata;     /* Driver dependent information */
-
-    int ref_count;              /* Reference count for multiple opens */
-
     SDL_bool is_game_controller;
     SDL_bool delayed_guide_button; /* SDL_TRUE if this device has the guide button event delayed */
     SDL_bool force_recentering; /* SDL_TRUE if this device needs to have its state reset to 0 */
     SDL_JoystickPowerLevel epowerlevel; /* power level of this joystick, SDL_JOYSTICK_POWER_UNKNOWN if not supported */
+    struct _SDL_JoystickDriver *driver;
+
+    struct joystick_hwdata *hwdata;     /* Driver dependent information */
+
+    int ref_count;              /* Reference count for multiple opens */
+
     struct _SDL_Joystick *next; /* pointer to next joystick we have allocated */
 };
+
+#if defined(__IPHONEOS__) || defined(__ANDROID__)
+#define HAVE_STEAMCONTROLLERS
+#define USE_STEAMCONTROLLER_HIDAPI
+#elif defined(__LINUX__)
+#define HAVE_STEAMCONTROLLERS
+#define USE_STEAMCONTROLLER_LINUX
+#endif
+
+/* Device bus definitions */
+#define SDL_HARDWARE_BUS_USB        0x03
+#define SDL_HARDWARE_BUS_BLUETOOTH  0x05
 
 /* Macro to combine a USB vendor ID and product ID into a single Uint32 value */
 #define MAKE_VIDPID(VID, PID)   (((Uint32)(VID))<<16|(PID))
 
-/* Function to scan the system for joysticks.
- * Joystick 0 should be the system default joystick.
- * This function should return the number of available joysticks, or -1
- * on an unrecoverable fatal error.
- */
-extern int SDL_SYS_JoystickInit(void);
+typedef struct _SDL_JoystickDriver
+{
+    /* Function to scan the system for joysticks.
+     * Joystick 0 should be the system default joystick.
+     * This function should return 0, or -1 on an unrecoverable error.
+     */
+    int (*Init)(void);
 
-/* Function to return the number of joystick devices plugged in right now */
-extern int SDL_SYS_NumJoysticks(void);
+    /* Function to return the number of joystick devices plugged in right now */
+    int (*GetCount)(void);
 
-/* Function to cause any queued joystick insertions to be processed */
-extern void SDL_SYS_JoystickDetect(void);
+    /* Function to cause any queued joystick insertions to be processed */
+    void (*Detect)(void);
 
-/* Function to get the device-dependent name of a joystick */
-extern const char *SDL_SYS_JoystickNameForDeviceIndex(int device_index);
+    /* Function to get the device-dependent name of a joystick */
+    const char *(*GetDeviceName)(int device_index);
 
-/* Function to get the current instance id of the joystick located at device_index */
-extern SDL_JoystickID SDL_SYS_GetInstanceIdOfDeviceIndex(int device_index);
+    /* Function to return the stable GUID for a plugged in device */
+    SDL_JoystickGUID (*GetDeviceGUID)(int device_index);
 
-/* Function to open a joystick for use.
-   The joystick to open is specified by the device index.
-   This should fill the nbuttons and naxes fields of the joystick structure.
-   It returns 0, or -1 if there is an error.
- */
-extern int SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index);
+    /* Function to get the current instance id of the joystick located at device_index */
+    SDL_JoystickID (*GetDeviceInstanceID)(int device_index);
 
-/* Function to query if the joystick is currently attached
- * It returns SDL_TRUE if attached, SDL_FALSE otherwise.
- */
-extern SDL_bool SDL_SYS_JoystickAttached(SDL_Joystick * joystick);
+    /* Function to open a joystick for use.
+       The joystick to open is specified by the device index.
+       This should fill the nbuttons and naxes fields of the joystick structure.
+       It returns 0, or -1 if there is an error.
+     */
+    int (*Open)(SDL_Joystick * joystick, int device_index);
 
-/* Function to update the state of a joystick - called as a device poll.
- * This function shouldn't update the joystick structure directly,
- * but instead should call SDL_PrivateJoystick*() to deliver events
- * and update joystick device state.
- */
-extern void SDL_SYS_JoystickUpdate(SDL_Joystick * joystick);
+    /* Function to query if the joystick is currently attached
+     * It returns SDL_TRUE if attached, SDL_FALSE otherwise.
+     */
+    SDL_bool (*IsAttached)(SDL_Joystick * joystick);
 
-/* Function to close a joystick after use */
-extern void SDL_SYS_JoystickClose(SDL_Joystick * joystick);
+    /* Rumble functionality */
+    int (*Rumble)(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms);
 
-/* Function to perform any system-specific joystick related cleanup */
-extern void SDL_SYS_JoystickQuit(void);
+    /* Function to update the state of a joystick - called as a device poll.
+     * This function shouldn't update the joystick structure directly,
+     * but instead should call SDL_PrivateJoystick*() to deliver events
+     * and update joystick device state.
+     */
+    void (*Update)(SDL_Joystick * joystick);
 
-/* Function to return the stable GUID for a plugged in device */
-extern SDL_JoystickGUID SDL_SYS_JoystickGetDeviceGUID(int device_index);
+    /* Function to close a joystick after use */
+    void (*Close)(SDL_Joystick * joystick);
 
-/* Function to return the stable GUID for a opened joystick */
-extern SDL_JoystickGUID SDL_SYS_JoystickGetGUID(SDL_Joystick * joystick);
+    /* Function to perform any system-specific joystick related cleanup */
+    void (*Quit)(void);
+
+} SDL_JoystickDriver;
+
+/* The available joystick drivers */
+extern SDL_JoystickDriver SDL_ANDROID_JoystickDriver;
+extern SDL_JoystickDriver SDL_DARWIN_JoystickDriver;
+extern SDL_JoystickDriver SDL_DUMMY_JoystickDriver;
+extern SDL_JoystickDriver SDL_HIDAPI_JoystickDriver;
+extern SDL_JoystickDriver SDL_IOS_JoystickDriver;
+extern SDL_JoystickDriver SDL_LINUX_JoystickDriver;
+extern SDL_JoystickDriver SDL_WINDOWS_JoystickDriver;
 
 #endif /* SDL_sysjoystick_h_ */
 

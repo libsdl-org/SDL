@@ -90,6 +90,10 @@ loop(void *arg)
             case SDL_JOYBUTTONDOWN:
                 SDL_Log("Joystick %d button %d down\n",
                        event.jbutton.which, event.jbutton.button);
+                /* First button triggers a 0.5 second full strength rumble */
+                if (event.jbutton.button == 0) {
+                    SDL_JoystickRumble(joystick, 0xFFFF, 0xFFFF, 500);
+                }
                 break;
             case SDL_JOYBUTTONUP:
                 SDL_Log("Joystick %d button %d up\n",

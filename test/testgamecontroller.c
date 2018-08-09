@@ -114,6 +114,11 @@ loop(void *arg)
         case SDL_CONTROLLERBUTTONDOWN:
         case SDL_CONTROLLERBUTTONUP:
             SDL_Log("Controller button %s %s\n", SDL_GameControllerGetStringForButton((SDL_GameControllerButton)event.cbutton.button), event.cbutton.state ? "pressed" : "released");
+            /* First button triggers a 0.5 second full strength rumble */
+            if (event.type == SDL_CONTROLLERBUTTONDOWN &&
+                event.cbutton.button == SDL_CONTROLLER_BUTTON_A) {
+                SDL_GameControllerRumble(gamecontroller, 0xFFFF, 0xFFFF, 500);
+            }
             break;
         case SDL_KEYDOWN:
             if (event.key.keysym.sym != SDLK_ESCAPE) {

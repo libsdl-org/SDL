@@ -97,10 +97,10 @@ typedef enum
 typedef enum
 {
     SDL_JOYSTICK_POWER_UNKNOWN = -1,
-    SDL_JOYSTICK_POWER_EMPTY,
-    SDL_JOYSTICK_POWER_LOW,
-    SDL_JOYSTICK_POWER_MEDIUM,
-    SDL_JOYSTICK_POWER_FULL,
+    SDL_JOYSTICK_POWER_EMPTY,   /* <= 5% */
+    SDL_JOYSTICK_POWER_LOW,     /* <= 20% */
+    SDL_JOYSTICK_POWER_MEDIUM,  /* <= 70% */
+    SDL_JOYSTICK_POWER_FULL,    /* <= 100% */
     SDL_JOYSTICK_POWER_WIRED,
     SDL_JOYSTICK_POWER_MAX
 } SDL_JoystickPowerLevel;
@@ -360,6 +360,19 @@ extern DECLSPEC int SDLCALL SDL_JoystickGetBall(SDL_Joystick * joystick,
  */
 extern DECLSPEC Uint8 SDLCALL SDL_JoystickGetButton(SDL_Joystick * joystick,
                                                     int button);
+
+/**
+ *  Trigger a rumble effect
+ *  Each call to this function cancels any previous rumble effect, and calling it with 0 intensity stops any rumbling.
+ *
+ *  \param joystick The joystick to vibrate
+ *  \param low_frequency_rumble The intensity of the low frequency (left) rumble motor, from 0 to 0xFFFF
+ *  \param high_frequency_rumble The intensity of the high frequency (right) rumble motor, from 0 to 0xFFFF
+ *  \param duration_ms The duration of the rumble effect, in milliseconds
+ *
+ *  \return 0, or -1 if rumble isn't supported on this joystick
+ */
+extern DECLSPEC int SDLCALL SDL_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms);
 
 /**
  *  Close a joystick previously opened with SDL_JoystickOpen().

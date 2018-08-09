@@ -22,20 +22,18 @@
 
 #ifdef SDL_JOYSTICK_IOKIT
 
-#include <IOKit/hid/IOHIDLib.h>
-
-/* For force feedback testing. */
-#include <ForceFeedback/ForceFeedback.h>
-#include <ForceFeedback/ForceFeedbackConstants.h>
-
+#include "SDL_events.h"
 #include "SDL_joystick.h"
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
 #include "SDL_sysjoystick_c.h"
-#include "SDL_events.h"
+#include "../hidapi/SDL_hidapijoystick_c.h"
 #include "../../haptic/darwin/SDL_syshaptic_c.h"    /* For haptic hot plugging */
 
+
 #define SDL_JOYSTICK_RUNLOOP_MODE CFSTR("SDLJoystick")
+
+#define CONVERT_MAGNITUDE(x)    (((x)*10000) / 0x7FFF)
 
 /* The base object of the HID Manager API */
 static IOHIDManagerRef hidman = NULL;
@@ -43,8 +41,60 @@ static IOHIDManagerRef hidman = NULL;
 /* Linked list of all available devices */
 static recDevice *gpDeviceList = NULL;
 
-/* static incrementing counter for new joystick devices seen on the system. Devices should start with index 0 */
-static int s_joystick_instance_id = -1;
+void FreeRumbleEffectData(FFEFFECT *effect)
+{
+    if (!effect) {
+        return;
+    }
+    SDL_free(effect->rgdwAxes);
+    SDL_free(effect->rglDirection);
+    SDL_free(effect->lpvTypeSpecificParams);
+    SDL_free(effect);
+}
+
+FFEFFECT *CreateRumbleEffectData(Sint16 magnitude, Uint32 duration_ms)
+{
+    FFEFFECT *effect;
+    FFPERIODIC *periodic;
+
+    /* Create the effect */
+    effect = (FFEFFECT *)SDL_calloc(1, sizeof(*effect));
+    if (!effect) {
+        return NULL;
+    }
+    effect->dwSize = sizeof(*effect);
+    effect->dwGain = 10000;
+    effect->dwFlags = FFEFF_OBJECTOFFSETS;
+    effect->dwDuration = duration_ms * 1000; /* In microseconds. */
+    effect->dwTriggerButton = FFEB_NOTRIGGER;
+
+    effect->cAxes = 2;
+    effect->rgdwAxes = (DWORD *)SDL_calloc(effect->cAxes, sizeof(DWORD));
+    if (!effect->rgdwAxes) {
+        FreeRumbleEffectData(effect);
+        return NULL;
+    }
+
+    effect->rglDirection = (LONG *)SDL_calloc(effect->cAxes, sizeof(LONG));
+    if (!effect->rglDirection) {
+        FreeRumbleEffectData(effect);
+        return NULL;
+    }
+    effect->dwFlags |= FFEFF_CARTESIAN;
+
+    periodic = (FFPERIODIC *)SDL_calloc(1, sizeof(*periodic));
+    if (!periodic) {
+        FreeRumbleEffectData(effect);
+        return NULL;
+    }
+    periodic->dwMagnitude = CONVERT_MAGNITUDE(magnitude);
+    periodic->dwPeriod = 1000000;
+
+    effect->cbTypeSpecificParams = sizeof(*periodic);
+    effect->lpvTypeSpecificParams = periodic;
+
+    return effect;
+}
 
 static recDevice *GetDeviceForIndex(int device_index)
 {
@@ -157,6 +207,19 @@ JoystickDeviceWasRemovedCallback(void *ctx, IOReturn result, void *sender)
     recDevice *device = (recDevice *) ctx;
     device->removed = SDL_TRUE;
     device->deviceRef = NULL; // deviceRef was invalidated due to the remove
+    if (device->ffeffect_ref) {
+        FFDeviceReleaseEffect(device->ffdevice, device->ffeffect_ref);
+        device->ffeffect_ref = NULL;
+    }
+    if (device->ffeffect) {
+        FreeRumbleEffectData(device->ffeffect);
+        device->ffeffect = NULL;
+    }
+    if (device->ffdevice) {
+        FFReleaseDevice(device->ffdevice);
+        device->ffdevice = NULL;
+        device->ff_initialized = SDL_FALSE;
+    }
 #if SDL_HAPTIC_IOKIT
     MacHaptic_MaybeRemoveDevice(device->ffservice);
 #endif
@@ -333,8 +396,6 @@ AddHIDElement(const void *value, void *parameter)
 static SDL_bool
 GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
 {
-    const Uint16 BUS_USB = 0x03;
-    const Uint16 BUS_BLUETOOTH = 0x05;
     Sint32 vendor = 0;
     Sint32 product = 0;
     Sint32 version = 0;
@@ -389,10 +450,17 @@ GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
         CFNumberGetValue(refCF, kCFNumberSInt32Type, &version);
     }
 
+#ifdef SDL_JOYSTICK_HIDAPI
+    if (HIDAPI_IsDevicePresent(vendor, product)) {
+        /* The HIDAPI driver is taking care of this device */
+        return 0;
+    }
+#endif
+
     SDL_memset(pDevice->guid.data, 0, sizeof(pDevice->guid.data));
 
     if (vendor && product) {
-        *guid16++ = SDL_SwapLE16(BUS_USB);
+        *guid16++ = SDL_SwapLE16(SDL_HARDWARE_BUS_USB);
         *guid16++ = 0;
         *guid16++ = SDL_SwapLE16((Uint16)vendor);
         *guid16++ = 0;
@@ -401,7 +469,7 @@ GetDeviceInfo(IOHIDDeviceRef hidDevice, recDevice *pDevice)
         *guid16++ = SDL_SwapLE16((Uint16)version);
         *guid16++ = 0;
     } else {
-        *guid16++ = SDL_SwapLE16(BUS_BLUETOOTH);
+        *guid16++ = SDL_SwapLE16(SDL_HARDWARE_BUS_BLUETOOTH);
         *guid16++ = 0;
         SDL_strlcpy((char*)guid16, pDevice->product, sizeof(pDevice->guid.data) - 4);
     }
@@ -444,7 +512,6 @@ JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender, IOHIDDevic
     }
 
     device = (recDevice *) SDL_calloc(1, sizeof(recDevice));
-
     if (!device) {
         SDL_OutOfMemory();
         return;
@@ -455,8 +522,7 @@ JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender, IOHIDDevic
         return;   /* not a device we care about, probably. */
     }
 
-    if (SDL_IsGameControllerNameAndGUID(device->product, device->guid) &&
-        SDL_ShouldIgnoreGameController(device->product, device->guid)) {
+    if (SDL_ShouldIgnoreJoystick(device->product, device->guid)) {
         SDL_free(device);
         return;
     }
@@ -466,16 +532,16 @@ JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender, IOHIDDevic
     IOHIDDeviceScheduleWithRunLoop(ioHIDDeviceObject, CFRunLoopGetCurrent(), SDL_JOYSTICK_RUNLOOP_MODE);
 
     /* Allocate an instance ID for this device */
-    device->instance_id = ++s_joystick_instance_id;
+    device->instance_id = SDL_GetNextJoystickInstanceID();
 
     /* We have to do some storage of the io_service_t for SDL_HapticOpenFromJoystick */
     ioservice = IOHIDDeviceGetService(ioHIDDeviceObject);
-#if SDL_HAPTIC_IOKIT
     if ((ioservice) && (FFIsForceFeedback(ioservice) == FF_OK)) {
         device->ffservice = ioservice;
+#if SDL_HAPTIC_IOKIT
         MacHaptic_MaybeAddDevice(ioservice);
-    }
 #endif
+    }
 
     /* Add device to the end of the list */
     if ( !gpDeviceList ) {
@@ -492,7 +558,7 @@ JoystickDeviceWasAddedCallback(void *ctx, IOReturn res, void *sender, IOHIDDevic
         ++device_index;  /* bump by one since we counted by pNext. */
     }
 
-    SDL_PrivateJoystickAdded(device_index);
+    SDL_PrivateJoystickAdded(device->instance_id);
 }
 
 static SDL_bool
@@ -577,13 +643,8 @@ CreateHIDManager(void)
 }
 
 
-/* Function to scan the system for joysticks.
- * Joystick 0 should be the system default joystick.
- * This function should return the number of available joysticks, or -1
- * on an unrecoverable fatal error.
- */
-int
-SDL_SYS_JoystickInit(void)
+static int
+DARWIN_JoystickInit(void)
 {
     if (gpDeviceList) {
         return SDL_SetError("Joystick: Device list already inited.");
@@ -593,12 +654,11 @@ SDL_SYS_JoystickInit(void)
         return SDL_SetError("Joystick: Couldn't initialize HID Manager");
     }
 
-    return SDL_SYS_NumJoysticks();
+    return 0;
 }
 
-/* Function to return the number of joystick devices plugged in right now */
-int
-SDL_SYS_NumJoysticks(void)
+static int
+DARWIN_JoystickGetCount(void)
 {
     recDevice *device = gpDeviceList;
     int nJoySticks = 0;
@@ -613,10 +673,8 @@ SDL_SYS_NumJoysticks(void)
     return nJoySticks;
 }
 
-/* Function to cause any queued joystick insertions to be processed
- */
-void
-SDL_SYS_JoystickDetect(void)
+static void
+DARWIN_JoystickDetect(void)
 {
     recDevice *device = gpDeviceList;
     while (device) {
@@ -627,37 +685,43 @@ SDL_SYS_JoystickDetect(void)
         }
     }
 
-	/* run this after the checks above so we don't set device->removed and delete the device before
-	   SDL_SYS_JoystickUpdate can run to clean up the SDL_Joystick object that owns this device */
-	while (CFRunLoopRunInMode(SDL_JOYSTICK_RUNLOOP_MODE,0,TRUE) == kCFRunLoopRunHandledSource) {
-		/* no-op. Pending callbacks will fire in CFRunLoopRunInMode(). */
-	}
+    /* run this after the checks above so we don't set device->removed and delete the device before
+       DARWIN_JoystickUpdate can run to clean up the SDL_Joystick object that owns this device */
+    while (CFRunLoopRunInMode(SDL_JOYSTICK_RUNLOOP_MODE,0,TRUE) == kCFRunLoopRunHandledSource) {
+        /* no-op. Pending callbacks will fire in CFRunLoopRunInMode(). */
+    }
 }
 
 /* Function to get the device-dependent name of a joystick */
 const char *
-SDL_SYS_JoystickNameForDeviceIndex(int device_index)
+DARWIN_JoystickGetDeviceName(int device_index)
 {
     recDevice *device = GetDeviceForIndex(device_index);
     return device ? device->product : "UNKNOWN";
 }
 
-/* Function to return the instance id of the joystick at device_index
- */
-SDL_JoystickID
-SDL_SYS_GetInstanceIdOfDeviceIndex(int device_index)
+static SDL_JoystickGUID
+DARWIN_JoystickGetDeviceGUID( int device_index )
+{
+    recDevice *device = GetDeviceForIndex(device_index);
+    SDL_JoystickGUID guid;
+    if (device) {
+        guid = device->guid;
+    } else {
+        SDL_zero(guid);
+    }
+    return guid;
+}
+
+static SDL_JoystickID
+DARWIN_JoystickGetDeviceInstanceID(int device_index)
 {
     recDevice *device = GetDeviceForIndex(device_index);
     return device ? device->instance_id : 0;
 }
 
-/* Function to open a joystick for use.
- * The joystick to open is specified by the device index.
- * This should fill the nbuttons and naxes fields of the joystick structure.
- * It returns 0, or -1 if there is an error.
- */
-int
-SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
+static int
+DARWIN_JoystickOpen(SDL_Joystick * joystick, int device_index)
 {
     recDevice *device = GetDeviceForIndex(device_index);
 
@@ -672,22 +736,144 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
     return 0;
 }
 
-/* Function to query if the joystick is currently attached
- * It returns SDL_TRUE if attached, SDL_FALSE otherwise.
- */
-SDL_bool
-SDL_SYS_JoystickAttached(SDL_Joystick * joystick)
+static SDL_bool
+DARWIN_JoystickIsAttached(SDL_Joystick * joystick)
 {
     return joystick->hwdata != NULL;
 }
 
-/* Function to update the state of a joystick - called as a device poll.
- * This function shouldn't update the joystick structure directly,
- * but instead should call SDL_PrivateJoystick*() to deliver events
- * and update joystick device state.
+/*
+ * Like strerror but for force feedback errors.
  */
-void
-SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
+static const char *
+FFStrError(unsigned int err)
+{
+    switch (err) {
+    case FFERR_DEVICEFULL:
+        return "device full";
+    /* This should be valid, but for some reason isn't defined... */
+    /* case FFERR_DEVICENOTREG:
+        return "device not registered"; */
+    case FFERR_DEVICEPAUSED:
+        return "device paused";
+    case FFERR_DEVICERELEASED:
+        return "device released";
+    case FFERR_EFFECTPLAYING:
+        return "effect playing";
+    case FFERR_EFFECTTYPEMISMATCH:
+        return "effect type mismatch";
+    case FFERR_EFFECTTYPENOTSUPPORTED:
+        return "effect type not supported";
+    case FFERR_GENERIC:
+        return "undetermined error";
+    case FFERR_HASEFFECTS:
+        return "device has effects";
+    case FFERR_INCOMPLETEEFFECT:
+        return "incomplete effect";
+    case FFERR_INTERNAL:
+        return "internal fault";
+    case FFERR_INVALIDDOWNLOADID:
+        return "invalid download id";
+    case FFERR_INVALIDPARAM:
+        return "invalid parameter";
+    case FFERR_MOREDATA:
+        return "more data";
+    case FFERR_NOINTERFACE:
+        return "interface not supported";
+    case FFERR_NOTDOWNLOADED:
+        return "effect is not downloaded";
+    case FFERR_NOTINITIALIZED:
+        return "object has not been initialized";
+    case FFERR_OUTOFMEMORY:
+        return "out of memory";
+    case FFERR_UNPLUGGED:
+        return "device is unplugged";
+    case FFERR_UNSUPPORTED:
+        return "function call unsupported";
+    case FFERR_UNSUPPORTEDAXIS:
+        return "axis unsupported";
+
+    default:
+        return "unknown error";
+    }
+}
+
+static int
+DARWIN_JoystickInitRumble(recDevice *device, Sint16 magnitude, Uint32 duration_ms)
+{
+    HRESULT result;
+
+    if (!device->ffdevice) {
+        result = FFCreateDevice(device->ffservice, &device->ffdevice);
+        if (result != FF_OK) {
+            return SDL_SetError("Unable to create force feedback device from service: %s", FFStrError(result));
+        }
+    }
+
+    /* Reset and then enable actuators */
+    result = FFDeviceSendForceFeedbackCommand(device->ffdevice, FFSFFC_RESET);
+    if (result != FF_OK) {
+        return SDL_SetError("Unable to reset force feedback device: %s", FFStrError(result));
+    }
+
+    result = FFDeviceSendForceFeedbackCommand(device->ffdevice, FFSFFC_SETACTUATORSON);
+    if (result != FF_OK) {
+        return SDL_SetError("Unable to enable force feedback actuators: %s", FFStrError(result));
+    }
+
+    /* Create the effect */
+    device->ffeffect = CreateRumbleEffectData(magnitude, duration_ms);
+    if (!device->ffeffect) {
+        return SDL_OutOfMemory();
+    }
+
+    result = FFDeviceCreateEffect(device->ffdevice, kFFEffectType_Sine_ID,
+                               device->ffeffect, &device->ffeffect_ref);
+    if (result != FF_OK) {
+        return SDL_SetError("Haptic: Unable to create effect: %s", FFStrError(result));
+    }
+    return 0;
+}
+
+static int
+DARWIN_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
+{
+    HRESULT result;
+    recDevice *device = joystick->hwdata;
+
+    /* Scale and average the two rumble strengths */
+    Sint16 magnitude = (Sint16)(((low_frequency_rumble / 2) + (high_frequency_rumble / 2)) / 2);
+
+    if (!device->ffservice) {
+        return SDL_Unsupported();
+    }
+
+    if (device->ff_initialized) {
+        FFPERIODIC *periodic = ((FFPERIODIC *)device->ffeffect->lpvTypeSpecificParams);
+        device->ffeffect->dwDuration = duration_ms * 1000; /* In microseconds. */
+        periodic->dwMagnitude = CONVERT_MAGNITUDE(magnitude);
+
+        result = FFEffectSetParameters(device->ffeffect_ref, device->ffeffect,
+                                    (FFEP_DURATION | FFEP_TYPESPECIFICPARAMS));
+        if (result != FF_OK) {
+            return SDL_SetError("Unable to update rumble effect: %s", FFStrError(result));
+        }
+    } else {
+        if (DARWIN_JoystickInitRumble(device, magnitude, duration_ms) < 0) {
+            return -1;
+        }
+        device->ff_initialized = SDL_TRUE;
+    }
+
+    result = FFEffectStart(device->ffeffect_ref, 1, 0);
+    if (result != FF_OK) {
+        return SDL_SetError("Unable to run the rumble effect: %s", FFStrError(result));
+    }
+    return 0;
+}
+
+static void
+DARWIN_JoystickUpdate(SDL_Joystick * joystick)
 {
     recDevice *device = joystick->hwdata;
     recElement *element;
@@ -792,15 +978,13 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
     }
 }
 
-/* Function to close a joystick after use */
-void
-SDL_SYS_JoystickClose(SDL_Joystick * joystick)
+static void
+DARWIN_JoystickClose(SDL_Joystick * joystick)
 {
 }
 
-/* Function to perform any system-specific joystick related cleanup */
-void
-SDL_SYS_JoystickQuit(void)
+static void
+DARWIN_JoystickQuit(void)
 {
     while (FreeDevice(gpDeviceList)) {
         /* spin */
@@ -814,23 +998,21 @@ SDL_SYS_JoystickQuit(void)
     }
 }
 
-
-SDL_JoystickGUID SDL_SYS_JoystickGetDeviceGUID( int device_index )
+SDL_JoystickDriver SDL_DARWIN_JoystickDriver =
 {
-    recDevice *device = GetDeviceForIndex(device_index);
-    SDL_JoystickGUID guid;
-    if (device) {
-        guid = device->guid;
-    } else {
-        SDL_zero(guid);
-    }
-    return guid;
-}
-
-SDL_JoystickGUID SDL_SYS_JoystickGetGUID(SDL_Joystick *joystick)
-{
-    return joystick->hwdata->guid;
-}
+    DARWIN_JoystickInit,
+    DARWIN_JoystickGetCount,
+    DARWIN_JoystickDetect,
+    DARWIN_JoystickGetDeviceName,
+    DARWIN_JoystickGetDeviceGUID,
+    DARWIN_JoystickGetDeviceInstanceID,
+    DARWIN_JoystickOpen,
+    DARWIN_JoystickIsAttached,
+    DARWIN_JoystickRumble,
+    DARWIN_JoystickUpdate,
+    DARWIN_JoystickClose,
+    DARWIN_JoystickQuit,
+};
 
 #endif /* SDL_JOYSTICK_IOKIT */
 
