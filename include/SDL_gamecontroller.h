@@ -354,6 +354,19 @@ extern DECLSPEC Uint8 SDLCALL SDL_GameControllerGetButton(SDL_GameController *ga
                                                           SDL_GameControllerButton button);
 
 /**
+ *  Trigger a rumble effect
+ *  Each call to this function cancels any previous rumble effect, and calling it with 0 intensity stops any rumbling.
+ *
+ *  \param gamecontroller The controller to vibrate
+ *  \param low_frequency_rumble The intensity of the low frequency (left) rumble motor, from 0 to 0xFFFF
+ *  \param high_frequency_rumble The intensity of the high frequency (right) rumble motor, from 0 to 0xFFFF
+ *  \param duration_ms The duration of the rumble effect, in milliseconds
+ *
+ *  \return 0, or -1 if rumble isn't supported on this joystick
+ */
+extern DECLSPEC int SDLCALL SDL_GameControllerRumble(SDL_GameController *gamecontroller, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms);
+
+/**
  *  Close a controller previously opened with SDL_GameControllerOpen().
  */
 extern DECLSPEC void SDLCALL SDL_GameControllerClose(SDL_GameController *gamecontroller);

@@ -47,9 +47,6 @@ typedef struct SDL_joylist_item
     int nbuttons, naxes, nhats, nballs;
     int dpad_state;
     
-    /* Steam Controller support */
-    SDL_bool m_bSteamController;
-
     struct SDL_joylist_item *next;
 } SDL_joylist_item;
 

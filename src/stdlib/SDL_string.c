@@ -416,6 +416,17 @@ SDL_strlen(const char *string)
 #endif /* HAVE_STRLEN */
 }
 
+wchar_t *
+SDL_wcsdup(const wchar_t *string)
+{
+    size_t len = ((SDL_wcslen(string) + 1) * sizeof(wchar_t));
+    wchar_t *newstr = (wchar_t *)SDL_malloc(len);
+    if (newstr) {
+        SDL_memcpy(newstr, string, len);
+    }
+    return newstr;
+}
+
 size_t
 SDL_wcslen(const wchar_t * string)
 {
@@ -562,7 +573,7 @@ char *
 SDL_strdup(const char *string)
 {
     size_t len = SDL_strlen(string) + 1;
-    char *newstr = SDL_malloc(len);
+    char *newstr = (char *)SDL_malloc(len);
     if (newstr) {
         SDL_memcpy(newstr, string, len);
     }

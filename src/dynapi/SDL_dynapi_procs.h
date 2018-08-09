@@ -715,9 +715,10 @@ SDL_DYNAPI_PROC(SDL_bool,SDL_HasAVX512F,(void),(),return)
 #ifdef __ANDROID__
 SDL_DYNAPI_PROC(SDL_bool,SDL_IsChromebook,(void),(),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_IsDeXMode,(void),(),return)
-#endif
-#ifdef __ANDROID__
 SDL_DYNAPI_PROC(void,SDL_AndroidBackButton,(void),(),return)
 #endif
 SDL_DYNAPI_PROC(double,SDL_exp,(double a),(a),return)
 SDL_DYNAPI_PROC(float,SDL_expf,(float a),(a),return)
+SDL_DYNAPI_PROC(wchar_t*,SDL_wcsdup,(const wchar_t *a),(a),return)
+SDL_DYNAPI_PROC(int,SDL_GameControllerRumble,(SDL_GameController *a, Uint16 b, Uint16 c, Uint32 d),(a,b,c,d),return)
+SDL_DYNAPI_PROC(int,SDL_JoystickRumble,(SDL_Joystick *a, Uint16 b, Uint16 c, Uint32 d),(a,b,c,d),return)

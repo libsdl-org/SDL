@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+???<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="API Headers">
@@ -313,6 +313,8 @@
     <ClInclude Include="..\..\src\video\yuv2rgb\yuv_rgb.h" />
     <ClInclude Include="..\..\src\render\direct3d11\SDL_shaders_d3d11.h" />
     <ClInclude Include="..\..\src\render\direct3d\SDL_shaders_d3d.h" />
+    <ClInclude Include="..\..\src\joystick\hidapi\controller_type.h" />
+    <ClInclude Include="..\..\src\joystick\hidapi\SDL_hidapijoystick_c.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\libm\e_atan2.c" />
@@ -454,6 +456,12 @@
     <ClCompile Include="..\..\src\video\yuv2rgb\yuv_rgb.c" />
     <ClCompile Include="..\..\src\render\direct3d11\SDL_shaders_d3d11.c" />
     <ClCompile Include="..\..\src\render\direct3d\SDL_shaders_d3d.c" />
+    <ClCompile Include="..\..\src\hidapi\windows\hid.c" />
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_ps4.c" />
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_switch.c" />
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_xbox360.c" />
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapi_xboxone.c" />
+    <ClCompile Include="..\..\src\joystick\hidapi\SDL_hidapijoystick.c" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\src\main\windows\version.rc" />

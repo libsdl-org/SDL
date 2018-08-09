@@ -28,99 +28,92 @@
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
 
-/* Function to scan the system for joysticks.
- * It should return 0, or -1 on an unrecoverable fatal error.
- */
-int
-SDL_SYS_JoystickInit(void)
+
+static int
+DUMMY_JoystickInit(void)
 {
     return 0;
 }
 
-int
-SDL_SYS_NumJoysticks(void)
+static int
+DUMMY_JoystickGetCount(void)
 {
     return 0;
 }
 
-void
-SDL_SYS_JoystickDetect(void)
+static void
+DUMMY_JoystickDetect(void)
 {
 }
 
-/* Function to get the device-dependent name of a joystick */
-const char *
-SDL_SYS_JoystickNameForDeviceIndex(int device_index)
+static const char *
+DUMMY_JoystickGetDeviceName(int device_index)
 {
-    SDL_SetError("Logic error: No joysticks available");
-    return (NULL);
+    return NULL;
 }
 
-/* Function to perform the mapping from device index to the instance id for this index */
-SDL_JoystickID SDL_SYS_GetInstanceIdOfDeviceIndex(int device_index)
+static SDL_JoystickGUID
+DUMMY_JoystickGetDeviceGUID(int device_index)
 {
-    return device_index;
+    SDL_JoystickGUID guid;
+    SDL_zero(guid);
+    return guid;
 }
 
-/* Function to open a joystick for use.
-   The joystick to open is specified by the device index.
-   This should fill the nbuttons and naxes fields of the joystick structure.
-   It returns 0, or -1 if there is an error.
- */
-int
-SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
+static SDL_JoystickID
+DUMMY_JoystickGetDeviceInstanceID(int device_index)
+{
+    return -1;
+}
+
+static int
+DUMMY_JoystickOpen(SDL_Joystick * joystick, int device_index)
 {
     return SDL_SetError("Logic error: No joysticks available");
 }
 
-/* Function to determine if this joystick is attached to the system right now */
-SDL_bool SDL_SYS_JoystickAttached(SDL_Joystick *joystick)
+static SDL_bool
+DUMMY_JoystickIsAttached(SDL_Joystick *joystick)
 {
-    return SDL_TRUE;
+    return SDL_FALSE;
 }
 
-/* Function to update the state of a joystick - called as a device poll.
- * This function shouldn't update the joystick structure directly,
- * but instead should call SDL_PrivateJoystick*() to deliver events
- * and update joystick device state.
- */
-void
-SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
+static int
+DUMMY_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
 {
+    return SDL_Unsupported();
 }
 
-/* Function to close a joystick after use */
-void
-SDL_SYS_JoystickClose(SDL_Joystick * joystick)
+static void
+DUMMY_JoystickUpdate(SDL_Joystick * joystick)
 {
 }
 
-/* Function to perform any system-specific joystick related cleanup */
-void
-SDL_SYS_JoystickQuit(void)
+static void
+DUMMY_JoystickClose(SDL_Joystick * joystick)
 {
 }
 
-SDL_JoystickGUID SDL_SYS_JoystickGetDeviceGUID( int device_index )
+static void
+DUMMY_JoystickQuit(void)
 {
-    SDL_JoystickGUID guid;
-    /* the GUID is just the first 16 chars of the name for now */
-    const char *name = SDL_SYS_JoystickNameForDeviceIndex( device_index );
-    SDL_zero( guid );
-    SDL_memcpy( &guid, name, SDL_min( sizeof(guid), SDL_strlen( name ) ) );
-    return guid;
 }
 
-
-SDL_JoystickGUID SDL_SYS_JoystickGetGUID(SDL_Joystick * joystick)
+SDL_JoystickDriver SDL_DUMMY_JoystickDriver =
 {
-    SDL_JoystickGUID guid;
-    /* the GUID is just the first 16 chars of the name for now */
-    const char *name = joystick->name;
-    SDL_zero( guid );
-    SDL_memcpy( &guid, name, SDL_min( sizeof(guid), SDL_strlen( name ) ) );
-    return guid;
-}
+    DUMMY_JoystickInit,
+    DUMMY_JoystickGetCount,
+    DUMMY_JoystickDetect,
+    DUMMY_JoystickGetDeviceName,
+    DUMMY_JoystickGetDeviceGUID,
+    DUMMY_JoystickGetDeviceInstanceID,
+    DUMMY_JoystickOpen,
+    DUMMY_JoystickIsAttached,
+    DUMMY_JoystickRumble,
+    DUMMY_JoystickUpdate,
+    DUMMY_JoystickClose,
+    DUMMY_JoystickQuit,
+};
 
 #endif /* SDL_JOYSTICK_DUMMY || SDL_JOYSTICK_DISABLED */
 

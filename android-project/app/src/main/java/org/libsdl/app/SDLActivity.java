@@ -80,7 +80,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     protected static Hashtable<Integer, Object> mCursors;
     protected static int mLastCursorID;
     protected static SDLGenericMotionListener_API12 mMotionListener;
-
+    protected static HIDDeviceManager mHIDDeviceManager;
 
     // This is what SDL runs in. It invokes SDL_main(), eventually
     protected static Thread mSDLThread;
@@ -241,6 +241,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             mClipboardHandler = new SDLClipboardHandler_Old();
         }
 
+        mHIDDeviceManager = new HIDDeviceManager(this);
+
         // Set up the surface
         mSurface = new SDLSurface(getApplication());
 
@@ -276,6 +278,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
            return;
         }
 
+        if (mHIDDeviceManager != null) {
+            mHIDDeviceManager.setFrozen(true);
+        }
+
         SDLActivity.handleNativeState();
     }
 
@@ -288,6 +294,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
         if (SDLActivity.mBrokenLibraries) {
            return;
+        }
+
+        if (mHIDDeviceManager != null) {
+            mHIDDeviceManager.setFrozen(false);
         }
 
         SDLActivity.handleNativeState();
@@ -329,6 +339,11 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     @Override
     protected void onDestroy() {
         Log.v(TAG, "onDestroy()");
+
+        if (mHIDDeviceManager != null) {
+            mHIDDeviceManager.close();
+            mHIDDeviceManager = null;
+        }
 
         if (SDLActivity.mBrokenLibraries) {
            super.onDestroy();
@@ -466,10 +481,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     /* The native thread has finished */
     public static void handleNativeExit() {
         SDLActivity.mSDLThread = null;
-
-        // Make sure we currently have a singleton before we try to call it.
-        if (mSingleton != null)
-            mSingleton.finish();
+        mSingleton.finish();
     }
 
 

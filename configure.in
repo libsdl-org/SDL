@@ -285,7 +285,7 @@ if test x$enable_libc = xyes; then
 
     AC_CHECK_MEMBER(struct sigaction.sa_sigaction,[AC_DEFINE([HAVE_SA_SIGACTION], 1, [ ])], ,[#include <signal.h>])
 
-	dnl Check for additional non-standard headers
+    dnl Check for additional non-standard headers
     AC_CHECK_HEADERS(libunwind.h)
 fi
 
@@ -963,7 +963,7 @@ AC_HELP_STRING([--enable-pulseaudio], [use PulseAudio [[default=yes]]]),
         AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
         AC_MSG_CHECKING(for PulseAudio $PULSEAUDIO_REQUIRED_VERSION support)
         if test x$PKG_CONFIG != xno; then
-        if $PKG_CONFIG --atleast-pkgconfig-version 0.7 && $PKG_CONFIG --atleast-version $PULSEAUDIO_REQUIRED_VERSION libpulse-simple; then
+            if $PKG_CONFIG --atleast-pkgconfig-version 0.7 && $PKG_CONFIG --atleast-version $PULSEAUDIO_REQUIRED_VERSION libpulse-simple; then
                 PULSEAUDIO_CFLAGS=`$PKG_CONFIG --cflags libpulse-simple`
                 PULSEAUDIO_LIBS=`$PKG_CONFIG --libs libpulse-simple`
                 audio_pulseaudio=yes
@@ -1748,7 +1748,7 @@ AC_HELP_STRING([--enable-x11-shared], [dynamically load X11 support [[default=ma
             AC_MSG_CHECKING([for XGenericEvent])
             have_XGenericEvent=no
             AC_TRY_COMPILE([
-              	#include <X11/Xlib.h>
+                #include <X11/Xlib.h>
             ],[
 Display *display;
 XEvent event;
@@ -1862,20 +1862,20 @@ AC_HELP_STRING([--enable-video-x11-xinput], [enable X11 XInput extension for man
                 SUMMARY_video_x11="${SUMMARY_video_x11} xinput2"
                 AC_DEFINE(SDL_VIDEO_DRIVER_X11_XINPUT2, 1, [ ])
                 AC_MSG_CHECKING(for xinput2 multitouch)
-            	have_xinput2_multitouch=no
-            	AC_TRY_COMPILE([
-              		#include <X11/Xlib.h>
-             		#include <X11/Xproto.h>
-			#include <X11/extensions/XInput2.h>
-            	],[
+                have_xinput2_multitouch=no
+                AC_TRY_COMPILE([
+                    #include <X11/Xlib.h>
+                    #include <X11/Xproto.h>
+                    #include <X11/extensions/XInput2.h>
+                    ],[
 int event_type = XI_TouchBegin;
 XITouchClassInfo *t;
-            	],[
-            	have_xinput2_multitouch=yes
-            	AC_DEFINE([SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH], 1, [])
-                SUMMARY_video_x11="${SUMMARY_video_x11} xinput2_multitouch"
-            	])
-            	AC_MSG_RESULT($have_xinput2_multitouch)
+                    ],[
+                    have_xinput2_multitouch=yes
+                    AC_DEFINE([SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH], 1, [])
+                    SUMMARY_video_x11="${SUMMARY_video_x11} xinput2_multitouch"
+                    ])
+                AC_MSG_RESULT($have_xinput2_multitouch)
             fi
             AC_ARG_ENABLE(video-x11-xrandr,
 AC_HELP_STRING([--enable-video-x11-xrandr], [enable X11 Xrandr extension for fullscreen [[default=yes]]]),
@@ -3265,6 +3265,41 @@ CheckUSBHID()
     esac
 }
 
+dnl Check for HIDAPI joystick drivers
+CheckHIDAPI()
+{
+    # The hidraw support doesn't catch Xbox, PS4 and Nintendo controllers,
+    # so we'll just use libusb when it's available.
+    #
+    # Except that libusb requires root permissions to open devices, so that's not generally useful, and we'll disable this by default.
+    AC_ARG_ENABLE(hidapi,
+AC_HELP_STRING([--enable-hidapi], [use HIDAPI for low level joystick drivers [[default=no]]]),
+                  , enable_hidapi=no)
+    if test x$enable_joystick = xyes -a x$enable_hidapi = xyes; then
+        hidapi_support=no
+        AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
+        if test x$PKG_CONFIG != xno; then
+            LIBUSB_CFLAGS=`$PKG_CONFIG --cflags libusb-1.0`
+            LIBUSB_LDFLAGS=`$PKG_CONFIG --libs libusb-1.0`
+            save_CFLAGS="$CFLAGS"
+            CFLAGS="$save_CFLAGS $LIBUSB_CFLAGS"
+            AC_CHECK_HEADER(libusb.h, have_libusb_h=yes)
+            CFLAGS="$save_CFLAGS"
+        fi
+        if test x$have_libusb_h = xyes; then
+            hidapi_support=yes
+            AC_DEFINE(SDL_JOYSTICK_HIDAPI, 1, [ ])
+            EXTRA_CFLAGS="$EXTRA_CFLAGS -I$srcdir/src/hidapi/hidapi"
+            SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
+            SOURCES="$SOURCES $srcdir/src/hidapi/libusb/hid.c"
+            EXTRA_CFLAGS="$EXTRA_CFLAGS $LIBUSB_CFLAGS"
+            EXTRA_LDFLAGS="$EXTRA_LDFLAGS $LIBUSB_LDFLAGS"
+        fi
+        AC_MSG_CHECKING(for hidapi support)
+        AC_MSG_RESULT($hidapi_support)
+    fi
+}
+
 dnl Check for clock_gettime()
 CheckClockGettime()
 {
@@ -3386,6 +3421,7 @@ case "$host" in
         esac
         CheckTslib
         CheckUSBHID
+        CheckHIDAPI
         CheckPTHREAD
         CheckClockGettime
         CheckLinuxVersion
@@ -3811,7 +3847,11 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         # Set up files for the joystick library
         if test x$enable_joystick = xyes; then
             AC_DEFINE(SDL_JOYSTICK_IOKIT, 1, [ ])
+            AC_DEFINE(SDL_JOYSTICK_HIDAPI, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/joystick/darwin/*.c"
+            SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
+            SOURCES="$SOURCES $srcdir/src/hidapi/mac/hid.c"
+            EXTRA_CFLAGS="$EXTRA_CFLAGS -I$srcdir/src/hidapi/hidapi"
             have_joystick=yes
         fi
         # Set up files for the haptic library

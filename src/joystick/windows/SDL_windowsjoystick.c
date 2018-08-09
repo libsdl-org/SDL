@@ -61,7 +61,6 @@
 /* local variables */
 static SDL_bool s_bDeviceAdded = SDL_FALSE;
 static SDL_bool s_bDeviceRemoved = SDL_FALSE;
-static SDL_JoystickID s_nInstanceID = -1;
 static SDL_cond *s_condJoystickThread = NULL;
 static SDL_mutex *s_mutexJoyStickEnum = NULL;
 static SDL_Thread *s_threadJoystick = NULL;
@@ -271,30 +270,33 @@ SDL_JoystickThread(void *_data)
     return 1;
 }
 
-void SDL_SYS_AddJoystickDevice(JoyStick_DeviceData *device)
+void WINDOWS_AddJoystickDevice(JoyStick_DeviceData *device)
 {
     device->send_add_event = SDL_TRUE;
-    device->nInstanceID = ++s_nInstanceID;
+    device->nInstanceID = SDL_GetNextJoystickInstanceID();
     device->pNext = SYS_Joystick;
     SYS_Joystick = device;
 
     s_bDeviceAdded = SDL_TRUE;
 }
 
+static void WINDOWS_JoystickDetect(void);
+static void WINDOWS_JoystickQuit(void);
+
 /* Function to scan the system for joysticks.
  * Joystick 0 should be the system default joystick.
  * It should return 0, or -1 on an unrecoverable fatal error.
  */
-int
-SDL_SYS_JoystickInit(void)
+static int
+WINDOWS_JoystickInit(void)
 {
     if (SDL_DINPUT_JoystickInit() < 0) {
-        SDL_SYS_JoystickQuit();
+        WINDOWS_JoystickQuit();
         return -1;
     }
 
     if (SDL_XINPUT_JoystickInit() < 0) {
-        SDL_SYS_JoystickQuit();
+        WINDOWS_JoystickQuit();
         return -1;
     }
 
@@ -302,19 +304,19 @@ SDL_SYS_JoystickInit(void)
     s_condJoystickThread = SDL_CreateCond();
     s_bDeviceAdded = SDL_TRUE; /* force a scan of the system for joysticks this first time */
 
-    SDL_SYS_JoystickDetect();
+    WINDOWS_JoystickDetect();
 
     if (!s_threadJoystick) {
         /* spin up the thread to detect hotplug of devices */
         s_bJoystickThreadQuit = SDL_FALSE;
         s_threadJoystick = SDL_CreateThreadInternal(SDL_JoystickThread, "SDL_joystick", 64 * 1024, NULL);
     }
-    return SDL_SYS_NumJoysticks();
+    return 0;
 }
 
 /* return the number of joysticks that are connected right now */
-int
-SDL_SYS_NumJoysticks(void)
+static int
+WINDOWS_JoystickGetCount(void)
 {
     int nJoysticks = 0;
     JoyStick_DeviceData *device = SYS_Joystick;
@@ -327,8 +329,8 @@ SDL_SYS_NumJoysticks(void)
 }
 
 /* detect any new joysticks being inserted into the system */
-void
-SDL_SYS_JoystickDetect(void)
+static void
+WINDOWS_JoystickDetect(void)
 {
     JoyStick_DeviceData *pCurList = NULL;
 
@@ -383,7 +385,7 @@ SDL_SYS_JoystickDetect(void)
                     SDL_DINPUT_MaybeAddDevice(&pNewJoystick->dxdevice);
                 }
 
-                SDL_PrivateJoystickAdded(device_index);
+                SDL_PrivateJoystickAdded(pNewJoystick->nInstanceID);
 
                 pNewJoystick->send_add_event = SDL_FALSE;
             }
@@ -394,8 +396,8 @@ SDL_SYS_JoystickDetect(void)
 }
 
 /* Function to get the device-dependent name of a joystick */
-const char *
-SDL_SYS_JoystickNameForDeviceIndex(int device_index)
+static const char *
+WINDOWS_JoystickGetDeviceName(int device_index)
 {
     JoyStick_DeviceData *device = SYS_Joystick;
 
@@ -405,9 +407,22 @@ SDL_SYS_JoystickNameForDeviceIndex(int device_index)
     return device->joystickname;
 }
 
+/* return the stable device guid for this device index */
+static SDL_JoystickGUID
+WINDOWS_JoystickGetDeviceGUID(int device_index)
+{
+    JoyStick_DeviceData *device = SYS_Joystick;
+    int index;
+
+    for (index = device_index; index > 0; index--)
+        device = device->pNext;
+
+    return device->guid;
+}
+
 /* Function to perform the mapping between current device instance and this joysticks instance id */
-SDL_JoystickID
-SDL_SYS_GetInstanceIdOfDeviceIndex(int device_index)
+static SDL_JoystickID
+WINDOWS_JoystickGetDeviceInstanceID(int device_index)
 {
     JoyStick_DeviceData *device = SYS_Joystick;
     int index;
@@ -423,8 +438,8 @@ SDL_SYS_GetInstanceIdOfDeviceIndex(int device_index)
    This should fill the nbuttons and naxes fields of the joystick structure.
    It returns 0, or -1 if there is an error.
  */
-int
-SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
+static int
+WINDOWS_JoystickOpen(SDL_Joystick * joystick, int device_index)
 {
     JoyStick_DeviceData *joystickdevice = SYS_Joystick;
 
@@ -449,14 +464,24 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
 }
 
 /* return true if this joystick is plugged in right now */
-SDL_bool 
-SDL_SYS_JoystickAttached(SDL_Joystick * joystick)
+static SDL_bool 
+WINDOWS_JoystickIsAttached(SDL_Joystick * joystick)
 {
     return joystick->hwdata && !joystick->hwdata->removed;
 }
 
-void
-SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
+static int
+WINDOWS_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
+{
+    if (joystick->hwdata->bXInputDevice) {
+        return SDL_XINPUT_JoystickRumble(joystick, low_frequency_rumble, high_frequency_rumble, duration_ms);
+    } else {
+        return SDL_DINPUT_JoystickRumble(joystick, low_frequency_rumble, high_frequency_rumble, duration_ms);
+    }
+}
+
+static void
+WINDOWS_JoystickUpdate(SDL_Joystick * joystick)
 {
     if (!joystick->hwdata || joystick->hwdata->removed) {
         return;
@@ -474,8 +499,8 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
 }
 
 /* Function to close a joystick after use */
-void
-SDL_SYS_JoystickClose(SDL_Joystick * joystick)
+static void
+WINDOWS_JoystickClose(SDL_Joystick * joystick)
 {
     if (joystick->hwdata->bXInputDevice) {
         SDL_XINPUT_JoystickClose(joystick);
@@ -487,8 +512,8 @@ SDL_SYS_JoystickClose(SDL_Joystick * joystick)
 }
 
 /* Function to perform any system-specific joystick related cleanup */
-void
-SDL_SYS_JoystickQuit(void)
+static void
+WINDOWS_JoystickQuit(void)
 {
     JoyStick_DeviceData *device = SYS_Joystick;
 
@@ -524,24 +549,21 @@ SDL_SYS_JoystickQuit(void)
     s_bDeviceRemoved = SDL_FALSE;
 }
 
-/* return the stable device guid for this device index */
-SDL_JoystickGUID
-SDL_SYS_JoystickGetDeviceGUID(int device_index)
+SDL_JoystickDriver SDL_WINDOWS_JoystickDriver =
 {
-    JoyStick_DeviceData *device = SYS_Joystick;
-    int index;
-
-    for (index = device_index; index > 0; index--)
-        device = device->pNext;
-
-    return device->guid;
-}
-
-SDL_JoystickGUID
-SDL_SYS_JoystickGetGUID(SDL_Joystick * joystick)
-{
-    return joystick->hwdata->guid;
-}
+    WINDOWS_JoystickInit,
+    WINDOWS_JoystickGetCount,
+    WINDOWS_JoystickDetect,
+    WINDOWS_JoystickGetDeviceName,
+    WINDOWS_JoystickGetDeviceGUID,
+    WINDOWS_JoystickGetDeviceInstanceID,
+    WINDOWS_JoystickOpen,
+    WINDOWS_JoystickIsAttached,
+    WINDOWS_JoystickRumble,
+    WINDOWS_JoystickUpdate,
+    WINDOWS_JoystickClose,
+    WINDOWS_JoystickQuit,
+};
 
 #endif /* SDL_JOYSTICK_DINPUT || SDL_JOYSTICK_XINPUT */
 

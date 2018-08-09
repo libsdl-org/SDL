@@ -46,9 +46,6 @@ typedef struct joystick_hwdata
     int nbuttons;
     int nhats;
 
-    /* Steam Controller support */
-    SDL_bool m_bSteamController;
-
     struct joystick_hwdata *next;
 } joystick_hwdata;
 

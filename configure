@@ -868,6 +868,7 @@ enable_pthread_sem
 enable_directx
 enable_wasapi
 enable_sdl_dlopen
+enable_hidapi
 enable_clock_gettime
 enable_rpath
 enable_render_d3d
@@ -1623,6 +1624,8 @@ Optional Features:
   --enable-directx        use DirectX for Windows audio/video [[default=yes]]
   --enable-wasapi         use the Windows WASAPI audio driver [[default=yes]]
   --enable-sdl-dlopen     use dlopen for shared object loading [[default=yes]]
+  --enable-hidapi         use HIDAPI for low level joystick drivers
+                          [[default=no]]
   --enable-clock_gettime  use clock_gettime() instead of gettimeofday() on
                           UNIX [[default=yes]]
   --enable-rpath          use an rpath when linking SDL [[default=yes]]
@@ -16773,7 +16776,7 @@ $as_echo "#define HAVE_SA_SIGACTION 1" >>confdefs.h
 fi
 
 
-	    for ac_header in libunwind.h
+        for ac_header in libunwind.h
 do :
   ac_fn_c_check_header_mongrel "$LINENO" "libunwind.h" "ac_cv_header_libunwind_h" "$ac_includes_default"
 if test "x$ac_cv_header_libunwind_h" = xyes; then :
@@ -18377,7 +18380,7 @@ fi
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for PulseAudio $PULSEAUDIO_REQUIRED_VERSION support" >&5
 $as_echo_n "checking for PulseAudio $PULSEAUDIO_REQUIRED_VERSION support... " >&6; }
         if test x$PKG_CONFIG != xno; then
-        if $PKG_CONFIG --atleast-pkgconfig-version 0.7 && $PKG_CONFIG --atleast-version $PULSEAUDIO_REQUIRED_VERSION libpulse-simple; then
+            if $PKG_CONFIG --atleast-pkgconfig-version 0.7 && $PKG_CONFIG --atleast-version $PULSEAUDIO_REQUIRED_VERSION libpulse-simple; then
                 PULSEAUDIO_CFLAGS=`$PKG_CONFIG --cflags libpulse-simple`
                 PULSEAUDIO_LIBS=`$PKG_CONFIG --libs libpulse-simple`
                 audio_pulseaudio=yes
@@ -20463,7 +20466,7 @@ $as_echo_n "checking for XGenericEvent... " >&6; }
             cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-              	#include <X11/Xlib.h>
+                #include <X11/Xlib.h>
 
 int
 main ()
@@ -20807,13 +20810,13 @@ $as_echo "#define SDL_VIDEO_DRIVER_X11_XINPUT2 1" >>confdefs.h
 
                 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for xinput2 multitouch" >&5
 $as_echo_n "checking for xinput2 multitouch... " >&6; }
-            	have_xinput2_multitouch=no
-            	cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+                have_xinput2_multitouch=no
+                cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
-              		#include <X11/Xlib.h>
-             		#include <X11/Xproto.h>
-			#include <X11/extensions/XInput2.h>
+                    #include <X11/Xlib.h>
+                    #include <X11/Xproto.h>
+                    #include <X11/extensions/XInput2.h>
 
 int
 main ()
@@ -20828,14 +20831,14 @@ XITouchClassInfo *t;
 _ACEOF
 if ac_fn_c_try_compile "$LINENO"; then :
 
-            	have_xinput2_multitouch=yes
-            	$as_echo "#define SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH 1" >>confdefs.h
+                    have_xinput2_multitouch=yes
+                    $as_echo "#define SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH 1" >>confdefs.h
 
-                SUMMARY_video_x11="${SUMMARY_video_x11} xinput2_multitouch"
+                    SUMMARY_video_x11="${SUMMARY_video_x11} xinput2_multitouch"
 
 fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
-            	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_xinput2_multitouch" >&5
+                { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_xinput2_multitouch" >&5
 $as_echo "$have_xinput2_multitouch" >&6; }
             fi
             # Check whether --enable-video-x11-xrandr was given.
@@ -23728,6 +23731,93 @@ $as_echo "#define SDL_JOYSTICK_USBHID 1" >>confdefs.h
     esac
 }
 
+CheckHIDAPI()
+{
+    # The hidraw support doesn't catch Xbox, PS4 and Nintendo controllers,
+    # so we'll just use libusb when it's available.
+    #
+    # Except that libusb requires root permissions to open devices, so that's not generally useful, and we'll disable this by default.
+    # Check whether --enable-hidapi was given.
+if test "${enable_hidapi+set}" = set; then :
+  enableval=$enable_hidapi;
+else
+  enable_hidapi=no
+fi
+
+    if test x$enable_joystick = xyes -a x$enable_hidapi = xyes; then
+        hidapi_support=no
+        # Extract the first word of "pkg-config", so it can be a program name with args.
+set dummy pkg-config; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_path_PKG_CONFIG+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  case $PKG_CONFIG in
+  [\\/]* | ?:[\\/]*)
+  ac_cv_path_PKG_CONFIG="$PKG_CONFIG" # Let the user override the test with a path.
+  ;;
+  *)
+  as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_path_PKG_CONFIG="$as_dir/$ac_word$ac_exec_ext"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+  test -z "$ac_cv_path_PKG_CONFIG" && ac_cv_path_PKG_CONFIG="no"
+  ;;
+esac
+fi
+PKG_CONFIG=$ac_cv_path_PKG_CONFIG
+if test -n "$PKG_CONFIG"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $PKG_CONFIG" >&5
+$as_echo "$PKG_CONFIG" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+        if test x$PKG_CONFIG != xno; then
+            LIBUSB_CFLAGS=`$PKG_CONFIG --cflags libusb-1.0`
+            LIBUSB_LDFLAGS=`$PKG_CONFIG --libs libusb-1.0`
+            save_CFLAGS="$CFLAGS"
+            CFLAGS="$save_CFLAGS $LIBUSB_CFLAGS"
+            ac_fn_c_check_header_mongrel "$LINENO" "libusb.h" "ac_cv_header_libusb_h" "$ac_includes_default"
+if test "x$ac_cv_header_libusb_h" = xyes; then :
+  have_libusb_h=yes
+fi
+
+
+            CFLAGS="$save_CFLAGS"
+        fi
+        if test x$have_libusb_h = xyes; then
+            hidapi_support=yes
+
+$as_echo "#define SDL_JOYSTICK_HIDAPI 1" >>confdefs.h
+
+            EXTRA_CFLAGS="$EXTRA_CFLAGS -I$srcdir/src/hidapi/hidapi"
+            SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
+            SOURCES="$SOURCES $srcdir/src/hidapi/libusb/hid.c"
+            EXTRA_CFLAGS="$EXTRA_CFLAGS $LIBUSB_CFLAGS"
+            EXTRA_LDFLAGS="$EXTRA_LDFLAGS $LIBUSB_LDFLAGS"
+        fi
+        { $as_echo "$as_me:${as_lineno-$LINENO}: checking for hidapi support" >&5
+$as_echo_n "checking for hidapi support... " >&6; }
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: $hidapi_support" >&5
+$as_echo "$hidapi_support" >&6; }
+    fi
+}
+
 CheckClockGettime()
 {
     # Check whether --enable-clock_gettime was given.
@@ -23939,6 +24029,7 @@ case "$host" in
         esac
         CheckTslib
         CheckUSBHID
+        CheckHIDAPI
         CheckPTHREAD
         CheckClockGettime
         CheckLinuxVersion
@@ -24514,7 +24605,13 @@ $as_echo "#define SDL_AUDIO_DRIVER_COREAUDIO 1" >>confdefs.h
 
 $as_echo "#define SDL_JOYSTICK_IOKIT 1" >>confdefs.h
 
+
+$as_echo "#define SDL_JOYSTICK_HIDAPI 1" >>confdefs.h
+
             SOURCES="$SOURCES $srcdir/src/joystick/darwin/*.c"
+            SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
+            SOURCES="$SOURCES $srcdir/src/hidapi/mac/hid.c"
+            EXTRA_CFLAGS="$EXTRA_CFLAGS -I$srcdir/src/hidapi/hidapi"
             have_joystick=yes
         fi
         # Set up files for the haptic library

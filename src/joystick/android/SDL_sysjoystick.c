@@ -36,7 +36,7 @@
 #include "../SDL_joystick_c.h"
 #include "../../events/SDL_keyboard_c.h"
 #include "../../core/android/SDL_android.h"
-#include "../steam/SDL_steamcontroller.h"
+#include "../hidapi/SDL_hidapijoystick_c.h"
 
 #include "android/keycodes.h"
 
@@ -69,7 +69,6 @@ static SDL_joylist_item * JoystickByDeviceId(int device_id);
 static SDL_joylist_item *SDL_joylist = NULL;
 static SDL_joylist_item *SDL_joylist_tail = NULL;
 static int numjoysticks = 0;
-static int instance_counter = 0;
 
 
 /* Public domain CRC implementation adapted from:
@@ -326,7 +325,6 @@ Android_OnHat(int device_id, int hat_id, int x, int y)
 int
 Android_AddJoystick(int device_id, const char *name, const char *desc, int vendor_id, int product_id, SDL_bool is_accelerometer, int button_mask, int naxes, int nhats, int nballs)
 {
-    const Uint16 BUS_BLUETOOTH = 0x05;
     SDL_joylist_item *item;
     SDL_JoystickGUID guid;
     Uint16 *guid16 = (Uint16 *)guid.data;
@@ -344,7 +342,14 @@ Android_AddJoystick(int device_id, const char *name, const char *desc, int vendo
     if (JoystickByDeviceId(device_id) != NULL || name == NULL) {
         return -1;
     }
-    
+
+#ifdef SDL_JOYSTICK_HIDAPI
+    if (HIDAPI_IsDevicePresent(vendor_id, product_id)) {
+        /* The HIDAPI driver is taking care of this device */
+        return -1;
+    }
+#endif
+
 #ifdef DEBUG_JOYSTICK
     SDL_Log("Joystick: %s, descriptor %s, vendor = 0x%.4x, product = 0x%.4x, %d axes, %d hats\n", name, desc, vendor_id, product_id, naxes, nhats);
 #endif
@@ -378,7 +383,7 @@ Android_AddJoystick(int device_id, const char *name, const char *desc, int vendo
 
     /* We only need 16 bits for each of these; space them out to fill 128. */
     /* Byteswap so devices get same GUID on little/big endian platforms. */
-    *guid16++ = SDL_SwapLE16(BUS_BLUETOOTH);
+    *guid16++ = SDL_SwapLE16(SDL_HARDWARE_BUS_BLUETOOTH);
     *guid16++ = 0;
 
     if (vendor_id && product_id) {
@@ -424,7 +429,7 @@ Android_AddJoystick(int device_id, const char *name, const char *desc, int vendo
     item->naxes = naxes;
     item->nhats = nhats;
     item->nballs = nballs;
-    item->device_instance = instance_counter++;
+    item->device_instance = SDL_GetNextJoystickInstanceID();
     if (SDL_joylist_tail == NULL) {
         SDL_joylist = SDL_joylist_tail = item;
     } else {
@@ -435,7 +440,7 @@ Android_AddJoystick(int device_id, const char *name, const char *desc, int vendo
     /* Need to increment the joystick count before we post the event */
     ++numjoysticks;
 
-    SDL_PrivateJoystickAdded(numjoysticks - 1);
+    SDL_PrivateJoystickAdded(item->device_instance);
 
 #ifdef DEBUG_JOYSTICK
     SDL_Log("Added joystick %s with device_id %d", name, device_id);
@@ -492,104 +497,29 @@ Android_RemoveJoystick(int device_id)
 }
 
 
-static SDL_bool SteamControllerConnectedCallback(const char *name, SDL_JoystickGUID guid, int *device_instance)
+static void ANDROID_JoystickDetect();
+
+static int
+ANDROID_JoystickInit(void)
 {
-    SDL_joylist_item *item;
-    
-    item = (SDL_joylist_item *)SDL_calloc(1, sizeof (SDL_joylist_item));
-    if (item == NULL) {
-        return SDL_FALSE;
-    }
-
-    *device_instance = item->device_instance = instance_counter++;
-    item->device_id = -1;
-    item->name = SDL_strdup(name);
-    item->guid = guid;
-    SDL_GetSteamControllerInputs(&item->nbuttons,
-                                 &item->naxes,
-                                 &item->nhats);
-    item->m_bSteamController = SDL_TRUE;
-
-    if (SDL_joylist_tail == NULL) {
-        SDL_joylist = SDL_joylist_tail = item;
-    } else {
-        SDL_joylist_tail->next = item;
-        SDL_joylist_tail = item;
-    }
-
-    /* Need to increment the joystick count before we post the event */
-    ++numjoysticks;
-
-    SDL_PrivateJoystickAdded(numjoysticks - 1);
-
-    return SDL_TRUE;
-}
-
-static void SteamControllerDisconnectedCallback(int device_instance)
-{
-    SDL_joylist_item *item = SDL_joylist;
-    SDL_joylist_item *prev = NULL;
-    
-    while (item != NULL) {
-        if (item->device_instance == device_instance) {
-            break;
-        }
-        prev = item;
-        item = item->next;
-    }
-    
-    if (item == NULL) {
-        return;
-    }
-
-    if (item->joystick) {
-        item->joystick->hwdata = NULL;
-    }
-        
-    if (prev != NULL) {
-        prev->next = item->next;
-    } else {
-        SDL_assert(SDL_joylist == item);
-        SDL_joylist = item->next;
-    }
-    if (item == SDL_joylist_tail) {
-        SDL_joylist_tail = prev;
-    }
-
-    /* Need to decrement the joystick count before we post the event */
-    --numjoysticks;
-
-    SDL_PrivateJoystickRemoved(item->device_instance);
-
-    SDL_free(item->name);
-    SDL_free(item);
-}
-
-int
-SDL_SYS_JoystickInit(void)
-{
-    SDL_SYS_JoystickDetect();
+    ANDROID_JoystickDetect();
     
     if (SDL_GetHintBoolean(SDL_HINT_ACCELEROMETER_AS_JOYSTICK, SDL_TRUE)) {
         /* Default behavior, accelerometer as joystick */
         Android_AddJoystick(ANDROID_ACCELEROMETER_DEVICE_ID, ANDROID_ACCELEROMETER_NAME, ANDROID_ACCELEROMETER_NAME, 0, 0, SDL_TRUE, 0, 3, 0, 0);
     }
-   
-    SDL_InitSteamControllers(SteamControllerConnectedCallback,
-                             SteamControllerDisconnectedCallback);
-
-    return (numjoysticks);
+    return 0;
 
 }
 
-int
-SDL_SYS_NumJoysticks(void)
+static int
+ANDROID_JoystickGetCount(void)
 {
     return numjoysticks;
 }
 
-void
-SDL_SYS_JoystickDetect(void)
+static void
+ANDROID_JoystickDetect(void)
 {
     /* Support for device connect/disconnect is API >= 16 only,
      * so we poll every three seconds
@@ -600,8 +530,6 @@ SDL_SYS_JoystickDetect(void)
         timeout = SDL_GetTicks() + 3000;
         Android_JNI_PollInputDevices();
     }
-
-    SDL_UpdateSteamControllers();
 }
 
 static SDL_joylist_item *
@@ -635,7 +563,7 @@ JoystickByDeviceId(int device_id)
     }
     
     /* Joystick not found, try adding it */
-    SDL_SYS_JoystickDetect();
+    ANDROID_JoystickDetect();
     
     while (item != NULL) {
         if (item->device_id == device_id) {
@@ -647,26 +575,26 @@ JoystickByDeviceId(int device_id)
     return NULL;
 }
 
-/* Function to get the device-dependent name of a joystick */
-const char *
-SDL_SYS_JoystickNameForDeviceIndex(int device_index)
+static const char *
+ANDROID_JoystickGetDeviceName(int device_index)
 {
     return JoystickByDevIndex(device_index)->name;
 }
 
-/* Function to perform the mapping from device index to the instance id for this index */
-SDL_JoystickID SDL_SYS_GetInstanceIdOfDeviceIndex(int device_index)
+static SDL_JoystickGUID
+ANDROID_JoystickGetDeviceGUID(int device_index)
+{
+    return JoystickByDevIndex(device_index)->guid;
+}
+
+static SDL_JoystickID
+ANDROID_JoystickGetDeviceInstanceID(int device_index)
 {
     return JoystickByDevIndex(device_index)->device_instance;
 }
 
-/* Function to open a joystick for use.
-   The joystick to open is specified by the device index.
-   This should fill the nbuttons and naxes fields of the joystick structure.
-   It returns 0, or -1 if there is an error.
- */
-int
-SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
+static int
+ANDROID_JoystickOpen(SDL_Joystick * joystick, int device_index)
 {
     SDL_joylist_item *item = JoystickByDevIndex(device_index);
 
@@ -689,14 +617,20 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
     return (0);
 }
 
-/* Function to determine if this joystick is attached to the system right now */
-SDL_bool SDL_SYS_JoystickAttached(SDL_Joystick *joystick)
+static SDL_bool
+ANDROID_JoystickIsAttached(SDL_Joystick *joystick)
 {
     return joystick->hwdata != NULL;
 }
 
-void
-SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
+static int
+ANDROID_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
+{
+    return SDL_Unsupported();
+}
+
+static void
+ANDROID_JoystickUpdate(SDL_Joystick * joystick)
 {
     SDL_joylist_item *item = (SDL_joylist_item *) joystick->hwdata;
 
@@ -704,11 +638,6 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
         return;
     }
  
-    if (item->m_bSteamController) {
-        SDL_UpdateSteamController(joystick);
-        return;
-    }
-
     if (item->is_accelerometer) {
         int i;
         Sint16 value;
@@ -729,9 +658,8 @@ SDL_SYS_JoystickUpdate(SDL_Joystick * joystick)
     }
 }
 
-/* Function to close a joystick after use */
-void
-SDL_SYS_JoystickClose(SDL_Joystick * joystick)
+static void
+ANDROID_JoystickClose(SDL_Joystick * joystick)
 {
     SDL_joylist_item *item = (SDL_joylist_item *) joystick->hwdata;
     if (item) {
@@ -739,9 +667,8 @@ SDL_SYS_JoystickClose(SDL_Joystick * joystick)
     }
 }
 
-/* Function to perform any system-specific joystick related cleanup */
-void
-SDL_SYS_JoystickQuit(void)
+static void
+ANDROID_JoystickQuit(void)
 {
 /* We don't have any way to scan for joysticks at init, so don't wipe the list
  * of joysticks here in case this is a reinit.
@@ -759,28 +686,24 @@ SDL_SYS_JoystickQuit(void)
     SDL_joylist = SDL_joylist_tail = NULL;
 
     numjoysticks = 0;
-    instance_counter = 0;
 #endif /* 0 */
-
-    SDL_QuitSteamControllers();
 }
 
-SDL_JoystickGUID SDL_SYS_JoystickGetDeviceGUID(int device_index)
+SDL_JoystickDriver SDL_ANDROID_JoystickDriver =
 {
-    return JoystickByDevIndex(device_index)->guid;
-}
-
-SDL_JoystickGUID SDL_SYS_JoystickGetGUID(SDL_Joystick * joystick)
-{
-    SDL_JoystickGUID guid;
-    
-    if (joystick->hwdata != NULL) {
-        return ((SDL_joylist_item*)joystick->hwdata)->guid;
-    }
-    
-    SDL_zero(guid);
-    return guid;
-}
+    ANDROID_JoystickInit,
+    ANDROID_JoystickGetCount,
+    ANDROID_JoystickDetect,
+    ANDROID_JoystickGetDeviceName,
+    ANDROID_JoystickGetDeviceGUID,
+    ANDROID_JoystickGetDeviceInstanceID,
+    ANDROID_JoystickOpen,
+    ANDROID_JoystickIsAttached,
+    ANDROID_JoystickRumble,
+    ANDROID_JoystickUpdate,
+    ANDROID_JoystickClose,
+    ANDROID_JoystickQuit,
+};
 
 #endif /* SDL_JOYSTICK_ANDROID */
 

@@ -466,6 +466,84 @@ extern "C" {
 #define SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS "SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS"
 
 /**
+ *  \brief  A variable controlling whether the HIDAPI joystick drivers should be used.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - HIDAPI drivers are not used
+ *    "1"       - HIDAPI drivers are used (the default)
+ *
+ *  This variable is the default for all drivers, but can be overridden by the hints for specific drivers below.
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI "SDL_JOYSTICK_HIDAPI"
+
+/**
+ *  \brief  A variable controlling whether the HIDAPI driver for PS4 controllers should be used.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - HIDAPI driver is not used
+ *    "1"       - HIDAPI driver is used
+ *
+ *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_PS4 "SDL_JOYSTICK_HIDAPI_PS4"
+
+/**
+ *  \brief  A variable controlling whether the HIDAPI driver for Steam Controllers should be used.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - HIDAPI driver is not used
+ *    "1"       - HIDAPI driver is used
+ *
+ *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_STEAM "SDL_JOYSTICK_HIDAPI_STEAM"
+
+/**
+ *  \brief  A variable controlling whether the HIDAPI driver for Nintendo Switch controllers should be used.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - HIDAPI driver is not used
+ *    "1"       - HIDAPI driver is used
+ *
+ *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_SWITCH "SDL_JOYSTICK_HIDAPI_SWITCH"
+
+/**
+ *  \brief  A variable controlling whether the HIDAPI driver for XBox 360 controllers should be used.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - HIDAPI driver is not used
+ *    "1"       - HIDAPI driver is used
+ *
+ *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_XBOX360 "SDL_JOYSTICK_HIDAPI_XBOX360"
+
+/**
+ *  \brief  A variable controlling whether the HIDAPI driver for XBox One controllers should be used.
+ *
+ *  This variable can be set to the following values:
+ *    "0"       - HIDAPI driver is not used
+ *    "1"       - HIDAPI driver is used
+ *
+ *  The default is the value of SDL_HINT_JOYSTICK_HIDAPI
+ */
+#define SDL_HINT_JOYSTICK_HIDAPI_XBOXONE "SDL_JOYSTICK_HIDAPI_XBOXONE"
+
+/**
+ *  \brief  A variable that controls whether Steam Controllers should be exposed using the SDL joystick and game controller APIs
+ *
+ *  The variable can be set to the following values:
+ *    "0"       - Do not scan for Steam Controllers
+ *    "1"       - Scan for Steam Controllers (the default)
+ *
+ *  The default value is "1".  This hint must be set before initializing the joystick subsystem.
+ */
+#define SDL_HINT_ENABLE_STEAM_CONTROLLERS "SDL_ENABLE_STEAM_CONTROLLERS"
+
+
+/**
  *  \brief If set to "0" then never set the top most bit on a SDL Window, even if the video mode expects it.
  *      This is a debugging aid for developers and not expected to be used by end users. The default is "1"
  *

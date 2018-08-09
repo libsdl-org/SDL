@@ -462,6 +462,30 @@
 		5C2EF6FE1FC9EE65003F5197 /* SDL_egl.c in Sources */ = {isa = PBXBuildFile; fileRef = 5C2EF6F51FC9EE35003F5197 /* SDL_egl.c */; };
 		5C2EF6FF1FC9EE65003F5197 /* SDL_rect_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 5C2EF6F41FC9EE34003F5197 /* SDL_rect_c.h */; };
 		5C2EF7011FC9EF10003F5197 /* SDL_egl.h in Headers */ = {isa = PBXBuildFile; fileRef = 5C2EF7001FC9EF0F003F5197 /* SDL_egl.h */; };
+		A704170920F09A9800A82227 /* hid.c in Sources */ = {isa = PBXBuildFile; fileRef = A704170820F09A9800A82227 /* hid.c */; };
+		A704170A20F09A9800A82227 /* hid.c in Sources */ = {isa = PBXBuildFile; fileRef = A704170820F09A9800A82227 /* hid.c */; };
+		A704170B20F09A9800A82227 /* hid.c in Sources */ = {isa = PBXBuildFile; fileRef = A704170820F09A9800A82227 /* hid.c */; };
+		A704171420F09AC900A82227 /* SDL_hidapijoystick.c in Sources */ = {isa = PBXBuildFile; fileRef = A704170D20F09AC800A82227 /* SDL_hidapijoystick.c */; };
+		A704171520F09AC900A82227 /* SDL_hidapijoystick.c in Sources */ = {isa = PBXBuildFile; fileRef = A704170D20F09AC800A82227 /* SDL_hidapijoystick.c */; };
+		A704171620F09AC900A82227 /* SDL_hidapijoystick.c in Sources */ = {isa = PBXBuildFile; fileRef = A704170D20F09AC800A82227 /* SDL_hidapijoystick.c */; };
+		A704171720F09AC900A82227 /* SDL_hidapijoystick_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A704170E20F09AC800A82227 /* SDL_hidapijoystick_c.h */; };
+		A704171820F09AC900A82227 /* SDL_hidapijoystick_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A704170E20F09AC800A82227 /* SDL_hidapijoystick_c.h */; };
+		A704171920F09AC900A82227 /* SDL_hidapijoystick_c.h in Headers */ = {isa = PBXBuildFile; fileRef = A704170E20F09AC800A82227 /* SDL_hidapijoystick_c.h */; };
+		A704171A20F09AC900A82227 /* SDL_hidapi_switch.c in Sources */ = {isa = PBXBuildFile; fileRef = A704170F20F09AC800A82227 /* SDL_hidapi_switch.c */; };
+		A704171B20F09AC900A82227 /* SDL_hidapi_switch.c in Sources */ = {isa = PBXBuildFile; fileRef = A704170F20F09AC800A82227 /* SDL_hidapi_switch.c */; };
+		A704171C20F09AC900A82227 /* SDL_hidapi_switch.c in Sources */ = {isa = PBXBuildFile; fileRef = A704170F20F09AC800A82227 /* SDL_hidapi_switch.c */; };
+		A704171D20F09AC900A82227 /* controller_type.h in Headers */ = {isa = PBXBuildFile; fileRef = A704171020F09AC900A82227 /* controller_type.h */; };
+		A704171E20F09AC900A82227 /* controller_type.h in Headers */ = {isa = PBXBuildFile; fileRef = A704171020F09AC900A82227 /* controller_type.h */; };
+		A704171F20F09AC900A82227 /* controller_type.h in Headers */ = {isa = PBXBuildFile; fileRef = A704171020F09AC900A82227 /* controller_type.h */; };
+		A704172020F09AC900A82227 /* SDL_hidapi_ps4.c in Sources */ = {isa = PBXBuildFile; fileRef = A704171120F09AC900A82227 /* SDL_hidapi_ps4.c */; };
+		A704172120F09AC900A82227 /* SDL_hidapi_ps4.c in Sources */ = {isa = PBXBuildFile; fileRef = A704171120F09AC900A82227 /* SDL_hidapi_ps4.c */; };
+		A704172220F09AC900A82227 /* SDL_hidapi_ps4.c in Sources */ = {isa = PBXBuildFile; fileRef = A704171120F09AC900A82227 /* SDL_hidapi_ps4.c */; };
+		A704172320F09AC900A82227 /* SDL_hidapi_xboxone.c in Sources */ = {isa = PBXBuildFile; fileRef = A704171220F09AC900A82227 /* SDL_hidapi_xboxone.c */; };
+		A704172420F09AC900A82227 /* SDL_hidapi_xboxone.c in Sources */ = {isa = PBXBuildFile; fileRef = A704171220F09AC900A82227 /* SDL_hidapi_xboxone.c */; };
+		A704172520F09AC900A82227 /* SDL_hidapi_xboxone.c in Sources */ = {isa = PBXBuildFile; fileRef = A704171220F09AC900A82227 /* SDL_hidapi_xboxone.c */; };
+		A704172620F09AC900A82227 /* SDL_hidapi_xbox360.c in Sources */ = {isa = PBXBuildFile; fileRef = A704171320F09AC900A82227 /* SDL_hidapi_xbox360.c */; };
+		A704172720F09AC900A82227 /* SDL_hidapi_xbox360.c in Sources */ = {isa = PBXBuildFile; fileRef = A704171320F09AC900A82227 /* SDL_hidapi_xbox360.c */; };
+		A704172820F09AC900A82227 /* SDL_hidapi_xbox360.c in Sources */ = {isa = PBXBuildFile; fileRef = A704171320F09AC900A82227 /* SDL_hidapi_xbox360.c */; };
 		A7381E961D8B69D600B177DD /* CoreAudio.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A7381E951D8B69D600B177DD /* CoreAudio.framework */; };
 		A7381E971D8B6A0300B177DD /* AudioToolbox.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = A7381E931D8B69C300B177DD /* AudioToolbox.framework */; };
 		A77E6EB4167AB0A90010E40B /* SDL_gamecontroller.h in Headers */ = {isa = PBXBuildFile; fileRef = A77E6EB3167AB0A90010E40B /* SDL_gamecontroller.h */; settings = {ATTRIBUTES = (Public, ); }; };
@@ -1114,6 +1138,14 @@
 		5C2EF6F51FC9EE35003F5197 /* SDL_egl.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_egl.c; sourceTree = "<group>"; };
 		5C2EF6F61FC9EE35003F5197 /* SDL_egl_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_egl_c.h; sourceTree = "<group>"; };
 		5C2EF7001FC9EF0F003F5197 /* SDL_egl.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_egl.h; sourceTree = "<group>"; };
+		A704170820F09A9800A82227 /* hid.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = hid.c; sourceTree = "<group>"; };
+		A704170D20F09AC800A82227 /* SDL_hidapijoystick.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapijoystick.c; sourceTree = "<group>"; };
+		A704170E20F09AC800A82227 /* SDL_hidapijoystick_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_hidapijoystick_c.h; sourceTree = "<group>"; };
+		A704170F20F09AC800A82227 /* SDL_hidapi_switch.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_switch.c; sourceTree = "<group>"; };
+		A704171020F09AC900A82227 /* controller_type.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = controller_type.h; sourceTree = "<group>"; };
+		A704171120F09AC900A82227 /* SDL_hidapi_ps4.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_ps4.c; sourceTree = "<group>"; };
+		A704171220F09AC900A82227 /* SDL_hidapi_xboxone.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_xboxone.c; sourceTree = "<group>"; };
+		A704171320F09AC900A82227 /* SDL_hidapi_xbox360.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_xbox360.c; sourceTree = "<group>"; };
 		A7381E931D8B69C300B177DD /* AudioToolbox.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = AudioToolbox.framework; path = System/Library/Frameworks/AudioToolbox.framework; sourceTree = SDKROOT; };
 		A7381E951D8B69D600B177DD /* CoreAudio.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreAudio.framework; path = System/Library/Frameworks/CoreAudio.framework; sourceTree = SDKROOT; };
 		A77E6EB3167AB0A90010E40B /* SDL_gamecontroller.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_gamecontroller.h; sourceTree = "<group>"; };
@@ -1536,6 +1568,7 @@
 		04BDFDFF12E6671700899322 /* joystick */ = {
 			isa = PBXGroup;
 			children = (
+				A704170C20F09AA600A82227 /* hidapi */,
 				04BDFE0612E6671700899322 /* darwin */,
 				04BDFE1612E6671700899322 /* SDL_joystick.c */,
 				04BDFE1712E6671700899322 /* SDL_joystick_c.h */,
@@ -1818,6 +1851,7 @@
 				567E2F1F17C44BBB005F1892 /* filesystem */,
 				04BDFDEC12E6671700899322 /* file */,
 				04BDFDF112E6671700899322 /* haptic */,
+				A73EBCD520F099C10043B449 /* hidapi */,
 				04BDFDFF12E6671700899322 /* joystick */,
 				04BDFE2F12E6671700899322 /* loadso */,
 				04BDFE4512E6671700899322 /* power */,
@@ -1878,6 +1912,37 @@
 			);
 			path = opengles2;
 			sourceTree = "<group>";
+		};
+		A704170720F09A6700A82227 /* mac */ = {
+			isa = PBXGroup;
+			children = (
+				A704170820F09A9800A82227 /* hid.c */,
+			);
+			path = mac;
+			sourceTree = "<group>";
+		};
+		A704170C20F09AA600A82227 /* hidapi */ = {
+			isa = PBXGroup;
+			children = (
+				A704171020F09AC900A82227 /* controller_type.h */,
+				A704171120F09AC900A82227 /* SDL_hidapi_ps4.c */,
+				A704170F20F09AC800A82227 /* SDL_hidapi_switch.c */,
+				A704171320F09AC900A82227 /* SDL_hidapi_xbox360.c */,
+				A704171220F09AC900A82227 /* SDL_hidapi_xboxone.c */,
+				A704170E20F09AC800A82227 /* SDL_hidapijoystick_c.h */,
+				A704170D20F09AC800A82227 /* SDL_hidapijoystick.c */,
+			);
+			path = hidapi;
+			sourceTree = "<group>";
+		};
+		A73EBCD520F099C10043B449 /* hidapi */ = {
+			isa = PBXGroup;
+			children = (
+				A704170720F09A6700A82227 /* mac */,
+			);
+			name = hidapi;
+			path = ../../src/hidapi;
+			sourceTree = SOURCE_ROOT;
 		};
 		AA9A7F0E1FB0200B00FED37F /* yuv2rgb */ = {
 			isa = PBXGroup;
@@ -1993,6 +2058,7 @@
 				AA7558421595D4D800BBD41B /* SDL_revision.h in Headers */,
 				AA7558441595D4D800BBD41B /* SDL_rwops.h in Headers */,
 				AA7558461595D4D800BBD41B /* SDL_scancode.h in Headers */,
+				A704171720F09AC900A82227 /* SDL_hidapijoystick_c.h in Headers */,
 				AA7558481595D4D800BBD41B /* SDL_shape.h in Headers */,
 				AA75584A1595D4D800BBD41B /* SDL_stdinc.h in Headers */,
 				AA75584C1595D4D800BBD41B /* SDL_surface.h in Headers */,
@@ -2083,6 +2149,7 @@
 				04BD01F912E6671800899322 /* SDL_x11window.h in Headers */,
 				041B2CA612FA0D680087D585 /* SDL_sysrender.h in Headers */,
 				AA9A7F161FB0209D00FED37F /* SDL_yuv_c.h in Headers */,
+				A704171D20F09AC900A82227 /* controller_type.h in Headers */,
 				04409B9312FA97ED00FB9AA8 /* SDL_yuv_sw_c.h in Headers */,
 				04F7803912FB748500FC43C0 /* SDL_nullframebuffer_c.h in Headers */,
 				04F7804A12FB74A200FC43C0 /* SDL_blendfillrect.h in Headers */,
@@ -2132,6 +2199,7 @@
 				AA75581F1595D4D800BBD41B /* SDL_joystick.h in Headers */,
 				AA7558211595D4D800BBD41B /* SDL_keyboard.h in Headers */,
 				AA7558231595D4D800BBD41B /* SDL_keycode.h in Headers */,
+				A704171E20F09AC900A82227 /* controller_type.h in Headers */,
 				AA7558251595D4D800BBD41B /* SDL_loadso.h in Headers */,
 				AA7558271595D4D800BBD41B /* SDL_log.h in Headers */,
 				AA7558291595D4D800BBD41B /* SDL_main.h in Headers */,
@@ -2207,6 +2275,7 @@
 				04BD02DC12E6671800899322 /* SDL_systhread_c.h in Headers */,
 				04BD02E312E6671800899322 /* SDL_systhread.h in Headers */,
 				04BD02E512E6671800899322 /* SDL_thread_c.h in Headers */,
+				A704171820F09AC900A82227 /* SDL_hidapijoystick_c.h in Headers */,
 				04BD02F212E6671800899322 /* SDL_timer_c.h in Headers */,
 				04BD030D12E6671800899322 /* SDL_cocoaclipboard.h in Headers */,
 				04BD030F12E6671800899322 /* SDL_cocoaevents.h in Headers */,
@@ -2296,6 +2365,7 @@
 				DB313FD917554B71006C0E22 /* SDL_joystick.h in Headers */,
 				DB313FDA17554B71006C0E22 /* SDL_keyboard.h in Headers */,
 				DB313FDB17554B71006C0E22 /* SDL_keycode.h in Headers */,
+				A704171F20F09AC900A82227 /* controller_type.h in Headers */,
 				DB313FDC17554B71006C0E22 /* SDL_loadso.h in Headers */,
 				DB313FDD17554B71006C0E22 /* SDL_log.h in Headers */,
 				DB313FDE17554B71006C0E22 /* SDL_main.h in Headers */,
@@ -2371,6 +2441,7 @@
 				DB313F9317554B71006C0E22 /* SDL_systhread_c.h in Headers */,
 				DB313F9417554B71006C0E22 /* SDL_systhread.h in Headers */,
 				DB313F9517554B71006C0E22 /* SDL_thread_c.h in Headers */,
+				A704171920F09AC900A82227 /* SDL_hidapijoystick_c.h in Headers */,
 				DB313F9617554B71006C0E22 /* SDL_timer_c.h in Headers */,
 				DB313F9717554B71006C0E22 /* SDL_cocoaclipboard.h in Headers */,
 				DB313F9817554B71006C0E22 /* SDL_cocoaevents.h in Headers */,
@@ -2602,6 +2673,7 @@
 				04BD004112E6671800899322 /* SDL_cpuinfo.c in Sources */,
 				04BD004812E6671800899322 /* SDL_clipboardevents.c in Sources */,
 				04BD004A12E6671800899322 /* SDL_events.c in Sources */,
+				A704172620F09AC900A82227 /* SDL_hidapi_xbox360.c in Sources */,
 				04BD004C12E6671800899322 /* SDL_gesture.c in Sources */,
 				04BD004E12E6671800899322 /* SDL_keyboard.c in Sources */,
 				04BD005012E6671800899322 /* SDL_mouse.c in Sources */,
@@ -2640,6 +2712,7 @@
 				04BD00F612E6671800899322 /* SDL_cocoaevents.m in Sources */,
 				04BD00F812E6671800899322 /* SDL_cocoakeyboard.m in Sources */,
 				AA9A7F151FB0209D00FED37F /* SDL_yuv.c in Sources */,
+				A704171A20F09AC900A82227 /* SDL_hidapi_switch.c in Sources */,
 				04BD00FA12E6671800899322 /* SDL_cocoamodes.m in Sources */,
 				4D16644F1EDD6023003DE88E /* SDL_vulkan_utils.c in Sources */,
 				04BD00FC12E6671800899322 /* SDL_cocoamouse.m in Sources */,
@@ -2648,6 +2721,7 @@
 				04BD010212E6671800899322 /* SDL_cocoavideo.m in Sources */,
 				04BD010412E6671800899322 /* SDL_cocoawindow.m in Sources */,
 				04BD011712E6671800899322 /* SDL_nullevents.c in Sources */,
+				A704172320F09AC900A82227 /* SDL_hidapi_xboxone.c in Sources */,
 				04BD011B12E6671800899322 /* SDL_nullvideo.c in Sources */,
 				04BD017512E6671800899322 /* SDL_blit.c in Sources */,
 				04BD017712E6671800899322 /* SDL_blit_0.c in Sources */,
@@ -2656,6 +2730,8 @@
 				04BD017912E6671800899322 /* SDL_blit_A.c in Sources */,
 				04BD017A12E6671800899322 /* SDL_blit_auto.c in Sources */,
 				04BD017C12E6671800899322 /* SDL_blit_copy.c in Sources */,
+				A704172020F09AC900A82227 /* SDL_hidapi_ps4.c in Sources */,
+				A704170920F09A9800A82227 /* hid.c in Sources */,
 				04BD017E12E6671800899322 /* SDL_blit_N.c in Sources */,
 				04BD017F12E6671800899322 /* SDL_blit_slow.c in Sources */,
 				04BD018112E6671800899322 /* SDL_bmp.c in Sources */,
@@ -2664,6 +2740,7 @@
 				04BD018C12E6671800899322 /* SDL_pixels.c in Sources */,
 				04BD018E12E6671800899322 /* SDL_rect.c in Sources */,
 				04BD019612E6671800899322 /* SDL_RLEaccel.c in Sources */,
+				A704171420F09AC900A82227 /* SDL_hidapijoystick.c in Sources */,
 				04BD019812E6671800899322 /* SDL_shape.c in Sources */,
 				04BD019A12E6671800899322 /* SDL_stretch.c in Sources */,
 				04BD019B12E6671800899322 /* SDL_surface.c in Sources */,
@@ -2731,6 +2808,7 @@
 				04BD024812E6671800899322 /* SDL_audiotypecvt.c in Sources */,
 				04BD024912E6671800899322 /* SDL_mixer.c in Sources */,
 				04BD025112E6671800899322 /* SDL_wave.c in Sources */,
+				A704172720F09AC900A82227 /* SDL_hidapi_xbox360.c in Sources */,
 				04BD025C12E6671800899322 /* SDL_cpuinfo.c in Sources */,
 				04BD026312E6671800899322 /* SDL_clipboardevents.c in Sources */,
 				04BD026512E6671800899322 /* SDL_events.c in Sources */,
@@ -2769,6 +2847,7 @@
 				04BD02E412E6671800899322 /* SDL_thread.c in Sources */,
 				04BD02F112E6671800899322 /* SDL_timer.c in Sources */,
 				04BD02F312E6671800899322 /* SDL_systimer.c in Sources */,
+				A704171B20F09AC900A82227 /* SDL_hidapi_switch.c in Sources */,
 				04BD030E12E6671800899322 /* SDL_cocoaclipboard.m in Sources */,
 				04BD031012E6671800899322 /* SDL_cocoaevents.m in Sources */,
 				04BD031212E6671800899322 /* SDL_cocoakeyboard.m in Sources */,
@@ -2777,6 +2856,7 @@
 				5C2EF6A31FC98B38003F5197 /* SDL_yuv.c in Sources */,
 				5C2EF6F11FC9D181003F5197 /* SDL_cocoaopengles.m in Sources */,
 				04BD031812E6671800899322 /* SDL_cocoaopengl.m in Sources */,
+				A704172420F09AC900A82227 /* SDL_hidapi_xboxone.c in Sources */,
 				04BD031A12E6671800899322 /* SDL_cocoashape.m in Sources */,
 				04BD031C12E6671800899322 /* SDL_cocoavideo.m in Sources */,
 				04BD031E12E6671800899322 /* SDL_cocoawindow.m in Sources */,
@@ -2785,6 +2865,8 @@
 				5C2EF6A51FC98B6B003F5197 /* yuv_rgb.c in Sources */,
 				04BD038F12E6671800899322 /* SDL_blit.c in Sources */,
 				04BD039112E6671800899322 /* SDL_blit_0.c in Sources */,
+				A704172120F09AC900A82227 /* SDL_hidapi_ps4.c in Sources */,
+				A704170A20F09A9800A82227 /* hid.c in Sources */,
 				04BD039212E6671800899322 /* SDL_blit_1.c in Sources */,
 				04BD039312E6671800899322 /* SDL_blit_A.c in Sources */,
 				04BD039412E6671800899322 /* SDL_blit_auto.c in Sources */,
@@ -2793,6 +2875,7 @@
 				04BD039912E6671800899322 /* SDL_blit_slow.c in Sources */,
 				04BD039B12E6671800899322 /* SDL_bmp.c in Sources */,
 				04BD039C12E6671800899322 /* SDL_clipboard.c in Sources */,
+				A704171520F09AC900A82227 /* SDL_hidapijoystick.c in Sources */,
 				04BD03A112E6671800899322 /* SDL_fillrect.c in Sources */,
 				04BD03A612E6671800899322 /* SDL_pixels.c in Sources */,
 				04BD03A812E6671800899322 /* SDL_rect.c in Sources */,
@@ -2860,6 +2943,7 @@
 				DB31400617554B71006C0E22 /* SDL_audiotypecvt.c in Sources */,
 				DB31400717554B71006C0E22 /* SDL_mixer.c in Sources */,
 				DB31400817554B71006C0E22 /* SDL_wave.c in Sources */,
+				A704172820F09AC900A82227 /* SDL_hidapi_xbox360.c in Sources */,
 				DB31400917554B71006C0E22 /* SDL_cpuinfo.c in Sources */,
 				DB31400A17554B71006C0E22 /* SDL_clipboardevents.c in Sources */,
 				DB31400B17554B71006C0E22 /* SDL_events.c in Sources */,
@@ -2898,6 +2982,7 @@
 				DB31402B17554B71006C0E22 /* SDL_thread.c in Sources */,
 				DB31402C17554B71006C0E22 /* SDL_timer.c in Sources */,
 				DB31402D17554B71006C0E22 /* SDL_systimer.c in Sources */,
+				A704171C20F09AC900A82227 /* SDL_hidapi_switch.c in Sources */,
 				DB31402E17554B71006C0E22 /* SDL_cocoaclipboard.m in Sources */,
 				DB31402F17554B71006C0E22 /* SDL_cocoaevents.m in Sources */,
 				DB31403017554B71006C0E22 /* SDL_cocoakeyboard.m in Sources */,
@@ -2906,6 +2991,7 @@
 				5C2EF6A41FC98B39003F5197 /* SDL_yuv.c in Sources */,
 				5C2EF6F31FC9D182003F5197 /* SDL_cocoaopengles.m in Sources */,
 				DB31403317554B71006C0E22 /* SDL_cocoaopengl.m in Sources */,
+				A704172520F09AC900A82227 /* SDL_hidapi_xboxone.c in Sources */,
 				DB31403417554B71006C0E22 /* SDL_cocoashape.m in Sources */,
 				DB31403517554B71006C0E22 /* SDL_cocoavideo.m in Sources */,
 				DB31403617554B71006C0E22 /* SDL_cocoawindow.m in Sources */,
@@ -2914,6 +3000,8 @@
 				5C2EF6A61FC98B6C003F5197 /* yuv_rgb.c in Sources */,
 				DB31403917554B71006C0E22 /* SDL_blit.c in Sources */,
 				DB31403A17554B71006C0E22 /* SDL_blit_0.c in Sources */,
+				A704172220F09AC900A82227 /* SDL_hidapi_ps4.c in Sources */,
+				A704170B20F09A9800A82227 /* hid.c in Sources */,
 				DB31403B17554B71006C0E22 /* SDL_blit_1.c in Sources */,
 				DB31403C17554B71006C0E22 /* SDL_blit_A.c in Sources */,
 				DB31403D17554B71006C0E22 /* SDL_blit_auto.c in Sources */,
@@ -2922,6 +3010,7 @@
 				DB31404017554B71006C0E22 /* SDL_blit_slow.c in Sources */,
 				DB31404117554B71006C0E22 /* SDL_bmp.c in Sources */,
 				DB31404217554B71006C0E22 /* SDL_clipboard.c in Sources */,
+				A704171620F09AC900A82227 /* SDL_hidapijoystick.c in Sources */,
 				DB31404317554B71006C0E22 /* SDL_fillrect.c in Sources */,
 				DB31404417554B71006C0E22 /* SDL_pixels.c in Sources */,
 				DB31404517554B71006C0E22 /* SDL_rect.c in Sources */,
@@ -3019,6 +3108,7 @@
 					/usr/X11R6/include,
 					"$(VULKAN_SDK)/include",
 					../../src/video/khronos,
+					../../src/hidapi/hidapi,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				SDKROOT = macosx;
@@ -3114,6 +3204,7 @@
 					/usr/X11R6/include,
 					"$(VULKAN_SDK)/include",
 					../../src/video/khronos,
+					../../src/hidapi/hidapi,
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.6;
 				ONLY_ACTIVE_ARCH = YES;
