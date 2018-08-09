@@ -39,7 +39,7 @@
 
 #ifdef __WIN32__
 /* Needed for checking for input remapping programs */
-#include "../../core/windows/SDL_windows.h"
+#include "../core/windows/SDL_windows.h"
 
 #undef UNICODE          /* We want ASCII functions */
 #include <tlhelp32.h>
