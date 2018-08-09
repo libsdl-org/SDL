@@ -59,6 +59,7 @@ struct _SDL_Joystick
     int nbuttons;               /* Number of buttons on the joystick */
     Uint8 *buttons;             /* Current button states */
 
+    SDL_bool attached;
     SDL_bool is_game_controller;
     SDL_bool delayed_guide_button; /* SDL_TRUE if this device has the guide button event delayed */
     SDL_bool force_recentering; /* SDL_TRUE if this device needs to have its state reset to 0 */
@@ -116,11 +117,6 @@ typedef struct _SDL_JoystickDriver
        It returns 0, or -1 if there is an error.
      */
     int (*Open)(SDL_Joystick * joystick, int device_index);
-
-    /* Function to query if the joystick is currently attached
-     * It returns SDL_TRUE if attached, SDL_FALSE otherwise.
-     */
-    SDL_bool (*IsAttached)(SDL_Joystick * joystick);
 
     /* Rumble functionality */
     int (*Rumble)(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms);

@@ -279,12 +279,6 @@ SDL_SYS_JoystickOpen(SDL_Joystick * joystick, int device_index)
     return (0);
 }
 
-/* Function to determine if this joystick is attached to the system right now */
-SDL_bool SDL_SYS_JoystickAttached(SDL_Joystick *joystick)
-{
-    return SDL_TRUE;
-}
-
 static Uint8
 TranslatePOV(DWORD value)
 {

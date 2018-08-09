@@ -463,13 +463,6 @@ WINDOWS_JoystickOpen(SDL_Joystick * joystick, int device_index)
     }
 }
 
-/* return true if this joystick is plugged in right now */
-static SDL_bool 
-WINDOWS_JoystickIsAttached(SDL_Joystick * joystick)
-{
-    return joystick->hwdata && !joystick->hwdata->removed;
-}
-
 static int
 WINDOWS_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
 {
@@ -483,7 +476,7 @@ WINDOWS_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uin
 static void
 WINDOWS_JoystickUpdate(SDL_Joystick * joystick)
 {
-    if (!joystick->hwdata || joystick->hwdata->removed) {
+    if (!joystick->hwdata) {
         return;
     }
 
@@ -491,10 +484,6 @@ WINDOWS_JoystickUpdate(SDL_Joystick * joystick)
         SDL_XINPUT_JoystickUpdate(joystick);
     } else {
         SDL_DINPUT_JoystickUpdate(joystick);
-    }
-
-    if (joystick->hwdata->removed) {
-        joystick->force_recentering = SDL_TRUE;
     }
 }
 
@@ -558,7 +547,6 @@ SDL_JoystickDriver SDL_WINDOWS_JoystickDriver =
     WINDOWS_JoystickGetDeviceGUID,
     WINDOWS_JoystickGetDeviceInstanceID,
     WINDOWS_JoystickOpen,
-    WINDOWS_JoystickIsAttached,
     WINDOWS_JoystickRumble,
     WINDOWS_JoystickUpdate,
     WINDOWS_JoystickClose,

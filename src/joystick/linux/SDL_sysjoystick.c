@@ -809,13 +809,6 @@ LINUX_JoystickOpen(SDL_Joystick * joystick, int device_index)
     return (0);
 }
 
-/* Function to determine if this joystick is attached to the system right now */
-static SDL_bool
-LINUX_JoystickIsAttached(SDL_Joystick *joystick)
-{
-    return joystick->hwdata->item != NULL;
-}
-
 static int
 LINUX_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
 {
@@ -1112,7 +1105,6 @@ SDL_JoystickDriver SDL_LINUX_JoystickDriver =
     LINUX_JoystickGetDeviceGUID,
     LINUX_JoystickGetDeviceInstanceID,
     LINUX_JoystickOpen,
-    LINUX_JoystickIsAttached,
     LINUX_JoystickRumble,
     LINUX_JoystickUpdate,
     LINUX_JoystickClose,

@@ -617,12 +617,6 @@ ANDROID_JoystickOpen(SDL_Joystick * joystick, int device_index)
     return (0);
 }
 
-static SDL_bool
-ANDROID_JoystickIsAttached(SDL_Joystick *joystick)
-{
-    return joystick->hwdata != NULL;
-}
-
 static int
 ANDROID_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
 {
@@ -698,7 +692,6 @@ SDL_JoystickDriver SDL_ANDROID_JoystickDriver =
     ANDROID_JoystickGetDeviceGUID,
     ANDROID_JoystickGetDeviceInstanceID,
     ANDROID_JoystickOpen,
-    ANDROID_JoystickIsAttached,
     ANDROID_JoystickRumble,
     ANDROID_JoystickUpdate,
     ANDROID_JoystickClose,

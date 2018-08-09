@@ -270,6 +270,15 @@ AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pContext)
     WINDOWS_AddJoystickDevice(pNewJoystick);
 }
 
+static void
+DelXInputDevice(Uint8 userid)
+{
+    if (s_arrXInputDevicePath[userid]) {
+        SDL_free(s_arrXInputDevicePath[userid]);
+        s_arrXInputDevicePath[userid] = NULL;
+    }
+}
+
 void
 SDL_XINPUT_JoystickDetect(JoyStick_DeviceData **pContext)
 {
@@ -285,6 +294,8 @@ SDL_XINPUT_JoystickDetect(JoyStick_DeviceData **pContext)
         XINPUT_CAPABILITIES capabilities;
         if (XINPUTGETCAPABILITIES(userid, XINPUT_FLAG_GAMEPAD, &capabilities) == ERROR_SUCCESS) {
             AddXInputDevice(userid, capabilities.SubType, pContext);
+        } else {
+            DelXInputDevice(userid);
         }
     }
 }
@@ -456,14 +467,6 @@ SDL_XINPUT_JoystickUpdate(SDL_Joystick * joystick)
 
     result = XINPUTGETSTATE(joystick->hwdata->userid, &XInputState);
     if (result == ERROR_DEVICE_NOT_CONNECTED) {
-        Uint8 userid = joystick->hwdata->userid;
-
-        joystick->hwdata->send_remove_event = SDL_TRUE;
-        joystick->hwdata->removed = SDL_TRUE;
-        if (s_arrXInputDevicePath[userid]) {
-            SDL_free(s_arrXInputDevicePath[userid]);
-            s_arrXInputDevicePath[userid] = NULL;
-        }
         return;
     }
 

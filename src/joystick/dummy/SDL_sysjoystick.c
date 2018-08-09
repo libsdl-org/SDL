@@ -72,12 +72,6 @@ DUMMY_JoystickOpen(SDL_Joystick * joystick, int device_index)
     return SDL_SetError("Logic error: No joysticks available");
 }
 
-static SDL_bool
-DUMMY_JoystickIsAttached(SDL_Joystick *joystick)
-{
-    return SDL_FALSE;
-}
-
 static int
 DUMMY_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
 {
@@ -108,7 +102,6 @@ SDL_JoystickDriver SDL_DUMMY_JoystickDriver =
     DUMMY_JoystickGetDeviceGUID,
     DUMMY_JoystickGetDeviceInstanceID,
     DUMMY_JoystickOpen,
-    DUMMY_JoystickIsAttached,
     DUMMY_JoystickRumble,
     DUMMY_JoystickUpdate,
     DUMMY_JoystickClose,

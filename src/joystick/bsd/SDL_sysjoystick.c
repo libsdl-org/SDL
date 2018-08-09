@@ -467,12 +467,6 @@ desc_failed:
     return (-1);
 }
 
-/* Function to determine if this joystick is attached to the system right now */
-SDL_bool SDL_SYS_JoystickAttached(SDL_Joystick *joystick)
-{
-    return SDL_TRUE;
-}
-
 void
 SDL_SYS_JoystickUpdate(SDL_Joystick * joy)
 {

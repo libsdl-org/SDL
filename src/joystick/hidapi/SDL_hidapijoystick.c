@@ -458,21 +458,6 @@ HIDAPI_JoystickOpen(SDL_Joystick * joystick, int device_index)
     return 0;
 }
 
-static SDL_bool
-HIDAPI_JoystickIsAttached(SDL_Joystick *joystick)
-{
-    SDL_HIDAPI_Device *device = SDL_HIDAPI_devices;
-    while (device) {
-        if (device->driver) {
-            if (joystick->instance_id == device->instance_id) {
-                return SDL_TRUE;
-            }
-        }
-        device = device->next;
-    }
-    return SDL_FALSE;
-}
-
 static int
 HIDAPI_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
 {
@@ -529,7 +514,6 @@ SDL_JoystickDriver SDL_HIDAPI_JoystickDriver =
     HIDAPI_JoystickGetDeviceGUID,
     HIDAPI_JoystickGetDeviceInstanceID,
     HIDAPI_JoystickOpen,
-    HIDAPI_JoystickIsAttached,
     HIDAPI_JoystickRumble,
     HIDAPI_JoystickUpdate,
     HIDAPI_JoystickClose,

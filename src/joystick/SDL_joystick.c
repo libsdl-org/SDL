@@ -297,6 +297,7 @@ SDL_JoystickOpen(int device_index)
     }
     joystick->driver = driver;
     joystick->instance_id = instance_id;
+    joystick->attached = SDL_TRUE;
 
     if (driver->Open(joystick, device_index) < 0) {
         SDL_free(joystick);
@@ -545,7 +546,7 @@ SDL_JoystickGetAttached(SDL_Joystick * joystick)
         return SDL_FALSE;
     }
 
-    return joystick->driver->IsAttached(joystick);
+    return joystick->attached;
 }
 
 /*
@@ -765,6 +766,8 @@ static void UpdateEventsForDeviceRemoval()
 
 void SDL_PrivateJoystickRemoved(SDL_JoystickID device_instance)
 {
+    SDL_Joystick *joystick;
+
 #if !SDL_EVENTS_DISABLED
     SDL_Event event;
 
@@ -777,6 +780,15 @@ void SDL_PrivateJoystickRemoved(SDL_JoystickID device_instance)
 
     UpdateEventsForDeviceRemoval();
 #endif /* !SDL_EVENTS_DISABLED */
+
+    /* Mark this joystick as no longer attached */
+    for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
+        if (joystick->instance_id == device_instance) {
+            joystick->attached = SDL_FALSE;
+            joystick->force_recentering = SDL_TRUE;
+            break;
+        }
+    }
 }
 
 int
@@ -984,10 +996,12 @@ SDL_JoystickUpdate(void)
     SDL_UnlockJoysticks();
 
     for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
-        joystick->driver->Update(joystick);
+        if (joystick->attached) {
+            joystick->driver->Update(joystick);
 
-        if (joystick->delayed_guide_button) {
-            SDL_GameControllerHandleDelayedGuideButton(joystick);
+            if (joystick->delayed_guide_button) {
+                SDL_GameControllerHandleDelayedGuideButton(joystick);
+            }
         }
 
         if (joystick->force_recentering) {
