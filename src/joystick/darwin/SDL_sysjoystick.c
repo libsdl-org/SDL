@@ -736,12 +736,6 @@ DARWIN_JoystickOpen(SDL_Joystick * joystick, int device_index)
     return 0;
 }
 
-static SDL_bool
-DARWIN_JoystickIsAttached(SDL_Joystick * joystick)
-{
-    return joystick->hwdata != NULL;
-}
-
 /*
  * Like strerror but for force feedback errors.
  */
@@ -1007,7 +1001,6 @@ SDL_JoystickDriver SDL_DARWIN_JoystickDriver =
     DARWIN_JoystickGetDeviceGUID,
     DARWIN_JoystickGetDeviceInstanceID,
     DARWIN_JoystickOpen,
-    DARWIN_JoystickIsAttached,
     DARWIN_JoystickRumble,
     DARWIN_JoystickUpdate,
     DARWIN_JoystickClose,

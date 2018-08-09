@@ -66,8 +66,6 @@ typedef struct input_t
 struct joystick_hwdata
 {
     SDL_JoystickGUID guid;
-    SDL_bool removed;
-    SDL_bool send_remove_event;
     Uint32 rumble_expiration;
 
 #if SDL_JOYSTICK_DINPUT

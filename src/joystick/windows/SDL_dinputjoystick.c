@@ -955,8 +955,6 @@ UpdateDINPUTJoystickState_Buffered(SDL_Joystick * joystick)
 
     /* Handle the events or punt */
     if (FAILED(result)) {
-        joystick->hwdata->send_remove_event = SDL_TRUE;
-        joystick->hwdata->removed = SDL_TRUE;
         return;
     }
 
@@ -1011,8 +1009,6 @@ UpdateDINPUTJoystickState_Polled(SDL_Joystick * joystick)
     }
 
     if (result != DI_OK) {
-        joystick->hwdata->send_remove_event = SDL_TRUE;
-        joystick->hwdata->removed = SDL_TRUE;
         return;
     }
 

@@ -425,12 +425,6 @@ IOS_JoystickOpen(SDL_Joystick * joystick, int device_index)
     return 0;
 }
 
-static SDL_bool
-IOS_JoystickIsAttached(SDL_Joystick *joystick)
-{
-    return joystick->hwdata != NULL;
-}
-
 static void
 IOS_AccelerometerUpdate(SDL_Joystick * joystick)
 {
@@ -724,7 +718,6 @@ SDL_JoystickDriver SDL_IOS_JoystickDriver =
     IOS_JoystickGetDeviceGUID,
     IOS_JoystickGetDeviceInstanceID,
     IOS_JoystickOpen,
-    IOS_JoystickIsAttached,
     IOS_JoystickRumble,
     IOS_JoystickUpdate,
     IOS_JoystickClose,
