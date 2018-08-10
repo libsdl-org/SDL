@@ -61,6 +61,9 @@ static SDL_JoystickDriver *SDL_joystick_drivers[] = {
 #ifdef SDL_JOYSTICK_ANDROID
     &SDL_ANDROID_JoystickDriver,
 #endif
+#ifdef SDL_JOYSTICK_EMSCRIPTEN
+    &SDL_EMSCRIPTEN_JoystickDriver,
+#endif
 #ifdef SDL_JOYSTICK_HIDAPI
     &SDL_HIDAPI_JoystickDriver,
 #endif
