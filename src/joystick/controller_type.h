@@ -26,7 +26,7 @@
 
 #ifndef __cplusplus
 typedef enum { false, true } bool;
-#define inline
+#define inline SDL_INLINE
 #endif
 
 //-----------------------------------------------------------------------------
