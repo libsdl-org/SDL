@@ -68,14 +68,15 @@ typedef enum
 	k_eControllertype_GenericMouse = 800,
 } EControllerType;
 
-static inline bool BIsSteamHardwareDevice( EControllerType eType )
-{
-	return ( eType == k_eControllerType_SteamController || eType == k_eControllerType_SteamControllerV2 || eType == k_eControllerType_FrontPanelBoard );
-}
-
 static inline bool BIsSteamController( EControllerType eType )
 {
 	return ( eType == k_eControllerType_SteamController || eType == k_eControllerType_SteamControllerV2 );
+}
+
+#if 0  /* these are currently unused, so #if 0'd out to prevent compiler warnings for now */
+static inline bool BIsSteamHardwareDevice( EControllerType eType )
+{
+	return ( eType == k_eControllerType_SteamController || eType == k_eControllerType_SteamControllerV2 || eType == k_eControllerType_FrontPanelBoard );
 }
 
 static inline bool BIsXInputController( EControllerType eType )
@@ -113,6 +114,7 @@ static inline bool BIsCompatibleType( EControllerType eTypeA, EControllerType eT
 		return true;
 	return false;
 }
+#endif
 
 #define MAKE_CONTROLLER_ID( nVID, nPID )	(unsigned int)( nVID << 16 | nPID )
 typedef struct
@@ -427,11 +429,13 @@ static const ControllerDescription_t arrControllers[] = {
 };
 
 
+#if 0  /* these are currently unused, so #if 0'd out to prevent compiler warnings for now */
 static inline const ControllerDescription_t * GetControllerArray( int* nLength /* Out */)
 {
 	*nLength = sizeof( arrControllers ) / sizeof( arrControllers[0] );
 	return arrControllers;
 }
+#endif
 
 static inline EControllerType GuessControllerType( int nVID, int nPID )
 {
