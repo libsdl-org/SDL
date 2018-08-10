@@ -163,6 +163,9 @@ static void report_free(struct report *);
 
 static int numjoysticks = 0;
 
+static int BSD_JoystickOpen(SDL_Joystick * joy, int device_index);
+static void BSD_JoystickClose(SDL_Joystick * joy);
+
 static int
 BSD_JoystickInit(void)
 {
@@ -611,7 +614,7 @@ BSD_JoystickGetDeviceGUID( int device_index )
 {
     SDL_JoystickGUID guid;
     /* the GUID is just the first 16 chars of the name for now */
-    const char *name = BSD_JoystickNameForDeviceIndex( device_index );
+    const char *name = BSD_JoystickGetDeviceName( device_index );
     SDL_zero( guid );
     SDL_memcpy( &guid, name, SDL_min( sizeof(guid), SDL_strlen( name ) ) );
     return guid;
