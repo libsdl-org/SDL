@@ -144,9 +144,9 @@ static Uint32 crc32(Uint32 crc, const void *data, int count)
 #undef _WIN32_WINNT
 #define _WIN32_WINNT _WIN32_WINNT_VISTA
 #define COBJMACROS
-#include <Mmdeviceapi.h>
-#include <Audioclient.h>
-#include <Endpointvolume.h>
+#include <mmdeviceapi.h>
+#include <audioclient.h>
+#include <endpointvolume.h>
 
 #undef DEFINE_GUID
 #define DEFINE_GUID(n,l,w1,w2,b1,b2,b3,b4,b5,b6,b7,b8) static const GUID n = {l,w1,w2,{b1,b2,b3,b4,b5,b6,b7,b8}}
