@@ -190,7 +190,9 @@ recompute:
 	    iq[i] =  (int32_t)(z-two24*fw);
 	    z     =  q[j-1]+fw;
 	}
-	iq[jz] = 0;
+	if (jz < SDL_arraysize(iq)) {
+        SDL_memset(&iq[jz], 0, sizeof (q) - (jz * sizeof (iq[0])));
+    }
 
     /* compute n */
 	z  = scalbn(z,q0);		/* actual value of z */
@@ -273,6 +275,9 @@ recompute:
 	    for(fw=0.0,k=0;k<=jp&&k<=jz-i;k++) fw += PIo2[k]*q[i+k];
 	    fq[jz-i] = fw;
 	}
+	if ((jz+1) < SDL_arraysize(f)) {
+        SDL_memset(&fq[jz+1], 0, sizeof (fq) - ((jz+1) * sizeof (fq[0])));
+    }
 
     /* compress fq[] into y[] */
 	switch(prec) {
