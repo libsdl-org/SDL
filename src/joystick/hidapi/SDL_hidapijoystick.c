@@ -605,7 +605,6 @@ HIDAPI_AddDevice(struct hid_device_info *info)
         return;
     }
 
-#define DEBUG_HIDAPI
 #ifdef DEBUG_HIDAPI
     SDL_Log("Adding HIDAPI device '%s' interface %d, usage page 0x%.4x, usage 0x%.4x\n", device->name, device->interface_number, device->usage_page, device->usage);
 #endif

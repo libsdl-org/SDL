@@ -871,6 +871,7 @@ HIDAPI_DriverSwitch_Update(SDL_Joystick *joystick, hid_device *dev, void *contex
             HIDAPI_DriverSwitch_Rumble(joystick, dev, context, 0, 0, 0);
         }
     }
+
 	return (size >= 0);
 }
 
