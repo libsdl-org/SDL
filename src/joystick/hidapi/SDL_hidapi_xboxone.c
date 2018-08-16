@@ -301,7 +301,7 @@ HIDAPI_DriverXboxOne_Quit(SDL_Joystick *joystick, hid_device *dev, void *context
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXboxOne =
 {
-    SDL_HINT_JOYSTICK_HIDAPI_XBOXONE,
+    SDL_HINT_JOYSTICK_HIDAPI_XBOX,
     SDL_TRUE,
     HIDAPI_DriverXboxOne_IsSupportedDevice,
     HIDAPI_DriverXboxOne_GetDeviceName,

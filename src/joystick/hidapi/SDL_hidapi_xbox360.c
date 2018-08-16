@@ -444,7 +444,7 @@ HIDAPI_DriverXbox360_Quit(SDL_Joystick *joystick, hid_device *dev, void *context
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360 =
 {
-    SDL_HINT_JOYSTICK_HIDAPI_XBOX360,
+    SDL_HINT_JOYSTICK_HIDAPI_XBOX,
     SDL_TRUE,
     HIDAPI_DriverXbox360_IsSupportedDevice,
     HIDAPI_DriverXbox360_GetDeviceName,
