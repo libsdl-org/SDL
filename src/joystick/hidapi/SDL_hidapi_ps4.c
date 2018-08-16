@@ -479,7 +479,7 @@ HIDAPI_DriverPS4_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, SDL_
     SDL_memcpy(&ctx->last_state, packet, sizeof(ctx->last_state));
 }
 
-static void
+static SDL_bool
 HIDAPI_DriverPS4_Update(SDL_Joystick *joystick, hid_device *dev, void *context)
 {
     SDL_DriverPS4_Context *ctx = (SDL_DriverPS4_Context *)context;
@@ -509,6 +509,8 @@ HIDAPI_DriverPS4_Update(SDL_Joystick *joystick, hid_device *dev, void *context)
             HIDAPI_DriverPS4_Rumble(joystick, dev, context, 0, 0, 0);
         }
     }
+
+	return (size >= 0);
 }
 
 static void

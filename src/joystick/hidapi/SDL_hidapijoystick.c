@@ -146,7 +146,7 @@ typedef struct  _DEV_BROADCAST_HDR      DEV_BROADCAST_HDR;
 #define DBT_DEVNODES_CHANGED            0x0007
 #define DBT_CONFIGCHANGED               0x0018
 #define DBT_DEVICETYPESPECIFIC          0x8005  /* type specific event */
-#define DBT_DEVINSTSTARTED               0x8008  /* device installed and started */
+#define DBT_DEVINSTSTARTED              0x8008  /* device installed and started */
 
 #include <initguid.h>
 DEFINE_GUID(GUID_DEVINTERFACE_USB_DEVICE, 0xA5DCBF10L, 0x6530, 0x11D2, 0x90, 0x1F, 0x00, 0xC0, 0x4F, 0xB9, 0x51, 0xED);
@@ -605,6 +605,7 @@ HIDAPI_AddDevice(struct hid_device_info *info)
         return;
     }
 
+#define DEBUG_HIDAPI
 #ifdef DEBUG_HIDAPI
     SDL_Log("Adding HIDAPI device '%s' interface %d, usage page 0x%.4x, usage 0x%.4x\n", device->name, device->interface_number, device->usage_page, device->usage);
 #endif
@@ -786,7 +787,15 @@ HIDAPI_JoystickUpdate(SDL_Joystick * joystick)
 {
     struct joystick_hwdata *hwdata = joystick->hwdata;
     SDL_HIDAPI_DeviceDriver *driver = hwdata->driver;
-    driver->Update(joystick, hwdata->dev, hwdata->context);
+    if (!driver->Update(joystick, hwdata->dev, hwdata->context)) {
+		SDL_HIDAPI_Device *device;
+		for (device = SDL_HIDAPI_devices; device; device = device->next) {
+			if (device->instance_id == joystick->instance_id) {
+				HIDAPI_DelDevice(device, SDL_TRUE);
+				break;
+			}
+		}
+	}
 }
 
 static void

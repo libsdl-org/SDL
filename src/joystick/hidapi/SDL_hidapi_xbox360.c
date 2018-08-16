@@ -310,7 +310,7 @@ HIDAPI_DriverXbox360_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, 
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
 }
 
-static void
+static SDL_bool
 HIDAPI_DriverXbox360_Update(SDL_Joystick *joystick, hid_device *dev, void *context)
 {
     SDL_DriverXbox360_Context *ctx = (SDL_DriverXbox360_Context *)context;
@@ -336,6 +336,8 @@ HIDAPI_DriverXbox360_Update(SDL_Joystick *joystick, hid_device *dev, void *conte
             HIDAPI_DriverXbox360_Rumble(joystick, dev, context, 0, 0, 0);
         }
     }
+
+	return (size >= 0);
 }
 
 static void

@@ -50,7 +50,7 @@ typedef struct _SDL_HIDAPI_DeviceDriver
     const char *(*GetDeviceName)(Uint16 vendor_id, Uint16 product_id);
     SDL_bool (*Init)(SDL_Joystick *joystick, hid_device *dev, Uint16 vendor_id, Uint16 product_id, void **context);
     int (*Rumble)(SDL_Joystick *joystick, hid_device *dev, void *context, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms);
-    void (*Update)(SDL_Joystick *joystick, hid_device *dev, void *context);
+    SDL_bool (*Update)(SDL_Joystick *joystick, hid_device *dev, void *context);
     void (*Quit)(SDL_Joystick *joystick, hid_device *dev, void *context);
 
 } SDL_HIDAPI_DeviceDriver;
