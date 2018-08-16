@@ -64,6 +64,7 @@ typedef struct _SDL_HIDAPI_Device
     char *path;
     Uint16 vendor_id;
     Uint16 product_id;
+	Uint16 version;
     SDL_JoystickGUID guid;
     int interface_number;   /* Available on Windows and Linux */
     Uint16 usage_page;      /* Available on Windows and Mac OS X */
@@ -378,13 +379,13 @@ HIDAPI_ShutdownDiscovery()
 
 
 static SDL_bool
-HIDAPI_IsDeviceSupported(Uint16 vendor_id, Uint16 product_id)
+HIDAPI_IsDeviceSupported(Uint16 vendor_id, Uint16 product_id, Uint16 version)
 {
     int i;
 
     for (i = 0; i < SDL_arraysize(SDL_HIDAPI_drivers); ++i) {
         SDL_HIDAPI_DeviceDriver *driver = SDL_HIDAPI_drivers[i];
-        if (driver->enabled && driver->IsSupportedDevice(vendor_id, product_id, -1, 0, 0)) {
+        if (driver->enabled && driver->IsSupportedDevice(vendor_id, product_id, version, -1, 0, 0)) {
             return SDL_TRUE;
         }
     }
@@ -402,7 +403,7 @@ HIDAPI_GetDeviceDriver(SDL_HIDAPI_Device *device)
 
     for (i = 0; i < SDL_arraysize(SDL_HIDAPI_drivers); ++i) {
         SDL_HIDAPI_DeviceDriver *driver = SDL_HIDAPI_drivers[i];
-        if (driver->enabled && driver->IsSupportedDevice(device->vendor_id, device->product_id, device->interface_number, device->usage_page, device->usage)) {
+        if (driver->enabled && driver->IsSupportedDevice(device->vendor_id, device->product_id, device->version, device->interface_number, device->usage_page, device->usage)) {
             return driver;
         }
     }
@@ -532,6 +533,7 @@ HIDAPI_AddDevice(struct hid_device_info *info)
     device->seen = SDL_TRUE;
     device->vendor_id = info->vendor_id;
     device->product_id = info->product_id;
+	device->version = info->release_number;
     device->interface_number = info->interface_number;
     device->usage_page = info->usage_page;
     device->usage = info->usage;
@@ -539,7 +541,7 @@ HIDAPI_AddDevice(struct hid_device_info *info)
         /* FIXME: Is there any way to tell whether this is a Bluetooth device? */
         const Uint16 vendor = device->vendor_id;
         const Uint16 product = device->product_id;
-        const Uint16 version = 0;
+        const Uint16 version = device->version;
         Uint16 *guid16 = (Uint16 *)device->guid.data;
 
         *guid16++ = SDL_SwapLE16(SDL_HARDWARE_BUS_USB);
@@ -608,7 +610,7 @@ HIDAPI_AddDevice(struct hid_device_info *info)
     }
 
 #ifdef DEBUG_HIDAPI
-    SDL_Log("Adding HIDAPI device '%s' interface %d, usage page 0x%.4x, usage 0x%.4x\n", device->name, device->interface_number, device->usage_page, device->usage);
+    SDL_Log("Adding HIDAPI device '%s' VID 0x%.4x, PID 0x%.4x, version %d, interface %d, usage page 0x%.4x, usage 0x%.4x\n", device->name, device->vendor_id, device->product_id, device->version, device->interface_number, device->usage_page, device->usage);
 #endif
 
     /* Add it to the list */
@@ -696,12 +698,12 @@ HIDAPI_UpdateDeviceList(void)
 }
 
 SDL_bool
-HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id)
+HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version)
 {
     SDL_HIDAPI_Device *device;
 
     /* Don't update the device list for devices we know aren't supported */
-    if (!HIDAPI_IsDeviceSupported(vendor_id, product_id)) {
+    if (!HIDAPI_IsDeviceSupported(vendor_id, product_id, version)) {
         return SDL_FALSE;
     }
 
