@@ -25,11 +25,29 @@
 #include "SDL_endian.h"
 #include "SDL_hints.h"
 #include "SDL_log.h"
+#include "SDL_thread.h"
 #include "SDL_timer.h"
 #include "SDL_joystick.h"
 #include "../SDL_sysjoystick.h"
 #include "SDL_hidapijoystick_c.h"
 
+#if defined(__WIN32__)
+#include "../../core/windows/SDL_windows.h"
+#endif
+
+#if defined(__MACOSX__)
+#include <CoreFoundation/CoreFoundation.h>
+#include <mach/mach.h>
+#include <IOKit/IOKitLib.h>
+#include <IOKit/usb/USBSpec.h>
+#endif
+
+#if defined(__LINUX__)
+#include "../../core/linux/SDL_udev.h"
+#ifdef SDL_USE_LIBUDEV
+#include <poll.h>
+#endif
+#endif
 
 struct joystick_hwdata
 {
@@ -77,7 +95,282 @@ static SDL_HIDAPI_DeviceDriver *SDL_HIDAPI_drivers[] = {
 };
 static SDL_HIDAPI_Device *SDL_HIDAPI_devices;
 static int SDL_HIDAPI_numjoysticks = 0;
-static Uint32 SDL_HIDAPI_last_detect = 0;
+
+static struct
+{
+    SDL_bool m_bHaveDevicesChanged;
+    SDL_bool m_bCanGetNotifications;
+    Uint32 m_unLastDetect;
+
+#if defined(__WIN32__)
+	SDL_threadID m_nThreadID;
+    WNDCLASSEXA m_wndClass;
+    HWND m_hwndMsg;
+    HDEVNOTIFY m_hNotify;
+    double m_flLastWin32MessageCheck;
+#endif
+
+#if defined(__MACOSX__)
+    IONotificationPortRef m_notificationPort;
+    mach_port_t m_notificationMach;
+#endif
+
+#if defined(SDL_USE_LIBUDEV)
+    struct udev *m_pUdev;
+    struct udev_monitor *m_pUdevMonitor;
+    int m_nUdevFd;
+#endif
+} SDL_HIDAPI_discovery;
+
+
+#ifdef __WIN32__
+struct _DEV_BROADCAST_HDR
+{
+    DWORD       dbch_size;
+    DWORD       dbch_devicetype;
+    DWORD       dbch_reserved;
+};
+
+typedef struct _DEV_BROADCAST_DEVICEINTERFACE_A
+{
+    DWORD       dbcc_size;
+    DWORD       dbcc_devicetype;
+    DWORD       dbcc_reserved;
+    GUID        dbcc_classguid;
+    char        dbcc_name[ 1 ];
+} DEV_BROADCAST_DEVICEINTERFACE_A, *PDEV_BROADCAST_DEVICEINTERFACE_A;
+
+typedef struct  _DEV_BROADCAST_HDR      DEV_BROADCAST_HDR;
+#define DBT_DEVICEARRIVAL               0x8000  /* system detected a new device */
+#define DBT_DEVTYP_DEVICEINTERFACE      0x00000005  /* device interface class */
+#define DBT_DEVNODES_CHANGED            0x0007
+#define DBT_CONFIGCHANGED               0x0018
+#define DBT_DEVICETYPESPECIFIC          0x8005  /* type specific event */
+#define DBT_DEVINSTSTARTED               0x8008  /* device installed and started */
+
+#include <initguid.h>
+DEFINE_GUID(GUID_DEVINTERFACE_USB_DEVICE, 0xA5DCBF10L, 0x6530, 0x11D2, 0x90, 0x1F, 0x00, 0xC0, 0x4F, 0xB9, 0x51, 0xED);
+
+static LRESULT CALLBACK ControllerWndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+    switch (message) {
+    case WM_DEVICECHANGE:
+        switch (wParam) {
+        case DBT_DEVICEARRIVAL:
+            if (((DEV_BROADCAST_HDR*)lParam)->dbch_devicetype == DBT_DEVTYP_DEVICEINTERFACE) {
+				SDL_HIDAPI_discovery.m_bHaveDevicesChanged = SDL_TRUE;
+            }
+            break;
+        }
+        return 0;
+    }
+
+    return DefWindowProc(hwnd, message, wParam, lParam);
+}
+#endif /* __WIN32__ */
+
+
+#if defined(__MACOSX__)
+static void CallbackIOServiceFUNC(void *context, io_iterator_t portIterator)
+{
+    /* Must drain the iterator, or we won't receive new notifications */
+    while ((io_object_t entry = IOIteratorNext(portIterator)) != NULL) {
+        IOObjectRelease(entry);
+        *(SDL_bool*)context = SDL_TRUE;
+    }
+}
+#endif /* __MACOSX__ */
+
+static void
+HIDAPI_InitializeDiscovery()
+{
+    SDL_HIDAPI_discovery.m_bHaveDevicesChanged = SDL_TRUE;
+    SDL_HIDAPI_discovery.m_bCanGetNotifications = SDL_FALSE;
+    SDL_HIDAPI_discovery.m_unLastDetect = 0;
+
+#if defined(__WIN32__)
+    SDL_HIDAPI_discovery.m_nThreadID = SDL_ThreadID();
+
+    SDL_memset(&SDL_HIDAPI_discovery.m_wndClass, 0x0, sizeof(SDL_HIDAPI_discovery.m_wndClass));
+    SDL_HIDAPI_discovery.m_wndClass.hInstance = GetModuleHandle(NULL);
+    SDL_HIDAPI_discovery.m_wndClass.lpszClassName = "ControllerDetect";
+    SDL_HIDAPI_discovery.m_wndClass.lpfnWndProc = ControllerWndProc;      /* This function is called by windows */
+    SDL_HIDAPI_discovery.m_wndClass.cbSize = sizeof(WNDCLASSEX);
+
+    RegisterClassExA(&SDL_HIDAPI_discovery.m_wndClass);
+    SDL_HIDAPI_discovery.m_hwndMsg = CreateWindowExA(0, "ControllerDetect", NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, NULL, NULL);
+
+	{
+		DEV_BROADCAST_DEVICEINTERFACE_A devBroadcast;
+		SDL_memset( &devBroadcast, 0x0, sizeof( devBroadcast ) );
+
+		devBroadcast.dbcc_size = sizeof( devBroadcast );
+		devBroadcast.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
+		devBroadcast.dbcc_classguid = GUID_DEVINTERFACE_USB_DEVICE;
+
+		/* DEVICE_NOTIFY_ALL_INTERFACE_CLASSES is important, makes GUID_DEVINTERFACE_USB_DEVICE ignored,
+		 * but that seems to be necessary to get a notice after each individual usb input device actually
+		 * installs, rather than just as the composite device is seen.
+		 */
+		SDL_HIDAPI_discovery.m_hNotify = RegisterDeviceNotification( SDL_HIDAPI_discovery.m_hwndMsg, &devBroadcast, DEVICE_NOTIFY_WINDOW_HANDLE | DEVICE_NOTIFY_ALL_INTERFACE_CLASSES );
+		SDL_HIDAPI_discovery.m_bCanGetNotifications = ( SDL_HIDAPI_discovery.m_hNotify != 0 );
+	}
+#endif /* __WIN32__ */
+
+#if defined(__MACOSX__)
+    SDL_HIDAPI_discovery.m_notificationPort = IONotificationPortCreate(kIOMasterPortDefault);
+    if (SDL_HIDAPI_discovery.m_notificationPort) {
+        {
+            CFMutableDictionaryRef matchingDict = IOServiceMatching("IOUSBDevice");
+
+            /* Note: IOServiceAddMatchingNotification consumes the reference to matchingDict */
+            io_iterator_t portIterator = 0;
+            if (IOServiceAddMatchingNotification(SDL_HIDAPI_discovery.m_notificationPort, kIOMatchedNotification, matchingDict, CallbackIOServiceFunc, &SDL_HIDAPI_discovery.m_bHaveDevicesChanged, &portIterator) == 0) {
+                /* Must drain the existing iterator, or we won't receive new notifications */
+                while (io_object_t entry = IOIteratorNext(portIterator)) {
+                    IOObjectRelease(entry);
+                }
+            } else {
+                IONotificationPortDestroy(SDL_HIDAPI_discovery.m_notificationPort);
+                SDL_HIDAPI_discovery.m_notificationPort = nil;
+            }
+        }
+        {
+            CFMutableDictionaryRef matchingDict = IOServiceMatching("IOBluetoothDevice");
+
+            /* Note: IOServiceAddMatchingNotification consumes the reference to matchingDict */
+            io_iterator_t portIterator = 0;
+            if (IOServiceAddMatchingNotification(SDL_HIDAPI_discovery.m_notificationPort, kIOMatchedNotification, matchingDict, CallbackIOServiceFunc, &SDL_HIDAPI_discovery.m_bHaveDevicesChanged, &portIterator) == 0) {
+                /* Must drain the existing iterator, or we won't receive new notifications */
+                while (io_object_t entry = IOIteratorNext(portIterator)) {
+                    IOObjectRelease(entry);
+                }
+            } else {
+                IONotificationPortDestroy(SDL_HIDAPI_discovery.m_notificationPort);
+                SDL_HIDAPI_discovery.m_notificationPort = nil;
+            }
+        }
+    }
+
+    SDL_HIDAPI_discovery.m_notificationMach = MACH_PORT_NULL;
+    if (SDL_HIDAPI_discovery.m_notificationPort) {
+        SDL_HIDAPI_discovery.m_notificationMach = IONotificationPortGetMachPort(SDL_HIDAPI_discovery.m_notificationPort);
+    }
+
+    SDL_HIDAPI_discovery.m_bCanGetNotifications = (SDL_HIDAPI_discovery.m_notificationMach != MACH_PORT_NULL);
+
+#endif // __MACOSX__
+
+#if defined(SDL_USE_LIBUDEV)
+    SDL_HIDAPI_discovery.m_pUdev = NULL;
+    SDL_HIDAPI_discovery.m_pUdevMonitor = NULL;
+    SDL_HIDAPI_discovery.m_nUdevFd = -1;
+
+    SDL_HIDAPI_discovery.m_pUdev = udev_new();
+    if (SDL_HIDAPI_discovery.m_pUdev) {
+        SDL_HIDAPI_discovery.m_pUdevMonitor = udev_monitor_new_from_netlink(SDL_HIDAPI_discovery.m_pUdev, "udev");
+        if (SDL_HIDAPI_discovery.m_pUdevMonitor) {
+            udev_monitor_enable_receiving(SDL_HIDAPI_discovery.m_pUdevMonitor);
+            SDL_HIDAPI_discovery.m_nUdevFd = udev_monitor_get_fd(SDL_HIDAPI_discovery.m_pUdevMonitor);
+            SDL_HIDAPI_discovery.m_bCanGetNotifications = true;
+        }
+    }
+
+#endif /* SDL_USE_LIBUDEV */
+}
+
+static void
+HIDAPI_UpdateDiscovery()
+{
+    if (!SDL_HIDAPI_discovery.m_bCanGetNotifications) {
+        const Uint32 SDL_HIDAPI_DETECT_INTERVAL_MS = 3000;  /* Update every 3 seconds */
+        Uint32 now = SDL_GetTicks();
+        if (!SDL_HIDAPI_discovery.m_unLastDetect || SDL_TICKS_PASSED(now, SDL_HIDAPI_discovery.m_unLastDetect + SDL_HIDAPI_DETECT_INTERVAL_MS)) {
+            SDL_HIDAPI_discovery.m_bHaveDevicesChanged = SDL_TRUE;
+            SDL_HIDAPI_discovery.m_unLastDetect = now;
+        }
+        return;
+    }
+
+#if defined(__WIN32__)
+    /* We'll only get messages on the same thread that created the window */
+    if (SDL_ThreadID() == SDL_HIDAPI_discovery.m_nThreadID) {
+        MSG msg;
+        while (PeekMessage(&msg, SDL_HIDAPI_discovery.m_hwndMsg, 0, 0, PM_NOREMOVE)) {
+            if (GetMessageA(&msg, SDL_HIDAPI_discovery.m_hwndMsg, 0, 0) != 0) {
+                TranslateMessage(&msg);
+                DispatchMessage(&msg);
+            }
+        }
+    }
+#endif
+
+#if defined(__MACOSX__)
+    if (SDL_HIDAPI_discovery.m_notificationPort) {
+        struct { mach_msg_header_t hdr; char payload[ 4096 ]; } msg;
+        while (mach_msg(&msg.hdr, MACH_RCV_MSG | MACH_RCV_TIMEOUT, 0, sizeof(msg), SDL_HIDAPI_discovery.m_notificationMach, 0, MACH_PORT_NULL) == KERN_SUCCESS) {
+            IODispatchCalloutFromMessage(NULL, &msg.hdr, SDL_HIDAPI_discovery.m_notificationPort);
+        }
+    }
+#endif
+
+#if defined(SDL_USE_LIBUDEV)
+    if (SDL_HIDAPI_discovery.m_nUdevFd >= 0) {
+        /* Drain all notification events.
+         * We don't expect a lot of device notifications so just
+         * do a new discovery on any kind or number of notifications.
+         * This could be made more restrictive if necessary.
+         */
+        for (;;) {
+            struct pollfd PollUdev;
+
+            PollUdev.fd = SDL_HIDAPI_discovery.m_nUdevFd;
+            PollUdev.events = POLLIN;
+            if (poll(&PollUdev, 1, 0) != 1) {
+                break;
+            }
+
+            SDL_HIDAPI_discovery.m_bHaveDevicesChanged = true;
+
+            struct udev_device *pUdevDevice = udev_monitor_receive_device(SDL_HIDAPI_discovery.m_pUdevMonitor);
+            if (pUdevDevice) {
+                udev_device_unref(pUdevDevice);
+            }
+        }
+    }
+#endif
+}
+
+static void
+HIDAPI_ShutdownDiscovery()
+{
+#if defined(__WIN32__)
+    if (SDL_HIDAPI_discovery.m_hNotify)
+        UnregisterDeviceNotification(SDL_HIDAPI_discovery.m_hNotify);
+
+    if (SDL_HIDAPI_discovery.m_hwndMsg) {
+        DestroyWindow(SDL_HIDAPI_discovery.m_hwndMsg);
+    }
+
+    UnregisterClassA(SDL_HIDAPI_discovery.m_wndClass.lpszClassName, SDL_HIDAPI_discovery.m_wndClass.hInstance);
+#endif
+
+#if defined(__MACOSX__)
+    if (SDL_HIDAPI_discovery.m_notificationPort) {
+        IONotificationPortDestroy(SDL_HIDAPI_discovery.m_notificationPort);
+    }
+#endif
+
+#if defined(SDL_USE_LIBUDEV)
+    if (SDL_HIDAPI_discovery.m_pUdevMonitor) {
+        udev_monitor_unref(SDL_HIDAPI_discovery.m_pUdevMonitor);
+    }
+    if (SDL_HIDAPI_discovery.m_pUdev) {
+        udev_unref(SDL_HIDAPI_discovery.m_pUdev);
+    }
+#endif
+}
+
 
 static SDL_bool
 HIDAPI_IsDeviceSupported(Uint16 vendor_id, Uint16 product_id)
@@ -205,7 +498,7 @@ HIDAPI_JoystickInit(void)
     }
     SDL_AddHintCallback(SDL_HINT_JOYSTICK_HIDAPI,
                         SDL_HIDAPIDriverHintChanged, NULL);
-    SDL_HIDAPI_last_detect = 0;
+    HIDAPI_InitializeDiscovery();
     HIDAPI_JoystickDetect();
     return 0;
 }
@@ -423,11 +716,11 @@ HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id)
 static void
 HIDAPI_JoystickDetect(void)
 {
-    const Uint32 SDL_HIDAPI_DETECT_INTERVAL_MS = 3000;  /* Update every 3 seconds */
-    Uint32 now = SDL_GetTicks();
-    if (!SDL_HIDAPI_last_detect || SDL_TICKS_PASSED(now, SDL_HIDAPI_last_detect + SDL_HIDAPI_DETECT_INTERVAL_MS)) {
+    HIDAPI_UpdateDiscovery();
+    if (SDL_HIDAPI_discovery.m_bHaveDevicesChanged) {
+        /* FIXME: We probably need to schedule an update in a few seconds as well */
         HIDAPI_UpdateDeviceList();
-        SDL_HIDAPI_last_detect = now;
+        SDL_HIDAPI_discovery.m_bHaveDevicesChanged = SDL_FALSE;
     }
 }
 
