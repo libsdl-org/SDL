@@ -142,6 +142,7 @@ typedef struct _DEV_BROADCAST_DEVICEINTERFACE_A
 
 typedef struct  _DEV_BROADCAST_HDR      DEV_BROADCAST_HDR;
 #define DBT_DEVICEARRIVAL               0x8000  /* system detected a new device */
+#define DBT_DEVICEREMOVECOMPLETE		0x8004  /* device was removed from the system */
 #define DBT_DEVTYP_DEVICEINTERFACE      0x00000005  /* device interface class */
 #define DBT_DEVNODES_CHANGED            0x0007
 #define DBT_CONFIGCHANGED               0x0018
@@ -157,12 +158,13 @@ static LRESULT CALLBACK ControllerWndProc(HWND hwnd, UINT message, WPARAM wParam
     case WM_DEVICECHANGE:
         switch (wParam) {
         case DBT_DEVICEARRIVAL:
+		case DBT_DEVICEREMOVECOMPLETE:
             if (((DEV_BROADCAST_HDR*)lParam)->dbch_devicetype == DBT_DEVTYP_DEVICEINTERFACE) {
                 SDL_HIDAPI_discovery.m_bHaveDevicesChanged = SDL_TRUE;
             }
             break;
         }
-        return 0;
+        return TRUE;
     }
 
     return DefWindowProc(hwnd, message, wParam, lParam);
