@@ -32,8 +32,7 @@
 #define SDL_JOYSTICK_HIDAPI_XBOXONE
 
 #ifdef __WINDOWS__
-/* On Windows, Xbox controllers are handled by the XInput driver */
-//#undef SDL_JOYSTICK_HIDAPI_XBOX360
+/* On Windows, Xbox One controllers are handled by the Xbox 360 driver */
 #undef SDL_JOYSTICK_HIDAPI_XBOXONE
 #endif
 
