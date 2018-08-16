@@ -261,7 +261,7 @@ AddXInputDevice(Uint8 userid, BYTE SubType, JoyStick_DeviceData **pContext)
 
 #if 0 /* There's no controller that's supported by both XInput and HIDAPI */
 #ifdef SDL_JOYSTICK_HIDAPI
-    if (HIDAPI_IsDevicePresent(vendor, product)) {
+    if (HIDAPI_IsDevicePresent(vendor, product, version)) {
         /* The HIDAPI driver is taking care of this device */
         SDL_free(pNewJoystick);
         return;

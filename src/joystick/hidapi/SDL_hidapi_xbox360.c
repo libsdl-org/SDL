@@ -170,9 +170,13 @@ typedef struct {
 
 
 static SDL_bool
-HIDAPI_DriverXbox360_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, int interface_number, Uint16 usage_page, Uint16 usage)
+HIDAPI_DriverXbox360_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, Uint16 usage_page, Uint16 usage)
 {
 #ifdef __MACOSX__
+	if (vendor_id == 0x045e && product_id == 0x028e && version == 1) {
+		/* This is the Steam Virtual Gamepad, which isn't supported by this driver */
+		return SDL_FALSE;
+	}
     return SDL_IsJoystickXbox360(vendor_id, product_id) || SDL_IsJoystickXboxOne(vendor_id, product_id);
 #else
     return SDL_IsJoystickXbox360(vendor_id, product_id);

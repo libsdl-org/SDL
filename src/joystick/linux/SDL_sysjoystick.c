@@ -211,7 +211,7 @@ IsJoystick(int fd, char *namebuf, const size_t namebuflen, SDL_JoystickGUID *gui
     }
 
 #ifdef SDL_JOYSTICK_HIDAPI
-    if (HIDAPI_IsDevicePresent(inpid.vendor, inpid.product)) {
+    if (HIDAPI_IsDevicePresent(inpid.vendor, inpid.product, inpid.version)) {
         /* The HIDAPI driver is taking care of this device */
         return 0;
     }
