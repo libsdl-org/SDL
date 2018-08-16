@@ -196,12 +196,12 @@ HIDAPI_InitializeDiscovery()
 
     SDL_memset(&SDL_HIDAPI_discovery.m_wndClass, 0x0, sizeof(SDL_HIDAPI_discovery.m_wndClass));
     SDL_HIDAPI_discovery.m_wndClass.hInstance = GetModuleHandle(NULL);
-    SDL_HIDAPI_discovery.m_wndClass.lpszClassName = "ControllerDetect";
+    SDL_HIDAPI_discovery.m_wndClass.lpszClassName = "SDL_HIDAPI_DEVICE_DETECTION";
     SDL_HIDAPI_discovery.m_wndClass.lpfnWndProc = ControllerWndProc;      /* This function is called by windows */
     SDL_HIDAPI_discovery.m_wndClass.cbSize = sizeof(WNDCLASSEX);
 
     RegisterClassExA(&SDL_HIDAPI_discovery.m_wndClass);
-    SDL_HIDAPI_discovery.m_hwndMsg = CreateWindowExA(0, "ControllerDetect", NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, NULL, NULL);
+    SDL_HIDAPI_discovery.m_hwndMsg = CreateWindowExA(0, "SDL_HIDAPI_DEVICE_DETECTION", NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, NULL, NULL);
 
     {
         DEV_BROADCAST_DEVICEINTERFACE_A devBroadcast;
