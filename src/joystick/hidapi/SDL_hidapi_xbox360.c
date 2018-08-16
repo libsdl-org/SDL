@@ -34,23 +34,86 @@
 
 #ifdef SDL_JOYSTICK_HIDAPI_XBOX360
 
+#ifdef __WIN32__
+#include "../../core/windows/SDL_xinput.h"
+#endif
+
 #define USB_PACKET_LENGTH   64
 
 
 typedef struct {
     Uint8 last_state[USB_PACKET_LENGTH];
     Uint32 rumble_expiration;
+#ifdef __WIN32__
+    SDL_bool xinput_enabled;
+    Uint8 xinput_slot;
+#endif
 } SDL_DriverXbox360_Context;
 
+
+#ifdef __WIN32__
+static Uint8 xinput_slots;
+
+static void
+HIDAPI_DriverXbox360_MarkXInputSlotUsed(Uint8 xinput_slot)
+{
+    if (xinput_slot != XUSER_INDEX_ANY) {
+        xinput_slots |= (0x01 << xinput_slot);
+    }
+}
+
+static void
+HIDAPI_DriverXbox360_MarkXInputSlotFree(Uint8 xinput_slot)
+{
+    if (xinput_slot != XUSER_INDEX_ANY) {
+        xinput_slots &= ~(0x01 << xinput_slot);
+    }
+}
+
+static SDL_bool
+HIDAPI_DriverXbox360_MissingXInputSlot()
+{
+    return xinput_slots != 0x0F;
+}
+
+static Uint8
+HIDAPI_DriverXbox360_GuessXInputSlot(WORD wButtons)
+{
+    DWORD user_index;
+    int match_count;
+    Uint8 match_slot;
+
+    if (!XINPUTGETSTATE) {
+        return XUSER_INDEX_ANY;
+    }
+
+    match_count = 0;
+    for (user_index = 0; user_index < XUSER_MAX_COUNT; ++user_index) {
+        XINPUT_STATE_EX xinput_state;
+
+        if (XINPUTGETSTATE(user_index, &xinput_state) == ERROR_SUCCESS) {
+            if (xinput_state.Gamepad.wButtons == wButtons) {
+                ++match_count;
+                match_slot = (Uint8)user_index;
+            }
+        }
+    }
+    if (match_count == 1) {
+        return match_slot;
+    }
+    return XUSER_INDEX_ANY;
+}
+
+#endif /* __WIN32__ */
 
 static SDL_bool
 HIDAPI_DriverXbox360_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, Uint16 usage_page, Uint16 usage)
 {
 #if defined(__MACOSX__) || defined(__WIN32__)
-	if (vendor_id == 0x045e && product_id == 0x028e && version == 1) {
-		/* This is the Steam Virtual Gamepad, which isn't supported by this driver */
-		return SDL_FALSE;
-	}
+    if (vendor_id == 0x045e && product_id == 0x028e && version == 1) {
+        /* This is the Steam Virtual Gamepad, which isn't supported by this driver */
+        return SDL_FALSE;
+    }
     return SDL_IsJoystickXbox360(vendor_id, product_id) || SDL_IsJoystickXboxOne(vendor_id, product_id);
 #else
     return SDL_IsJoystickXbox360(vendor_id, product_id);
@@ -68,9 +131,9 @@ static SDL_bool SetSlotLED(hid_device *dev, Uint8 slot)
     const Uint8 led_packet[] = { 0x01, 0x03, (2 + slot) };
 
     if (hid_write(dev, led_packet, sizeof(led_packet)) != sizeof(led_packet)) {
-		return SDL_FALSE;
-	}
-	return SDL_TRUE;
+        return SDL_FALSE;
+    }
+    return SDL_TRUE;
 }
 
 static SDL_bool
@@ -83,10 +146,17 @@ HIDAPI_DriverXbox360_Init(SDL_Joystick *joystick, hid_device *dev, Uint16 vendor
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
+#ifdef __WIN32__
+    ctx->xinput_enabled = SDL_GetHintBoolean(SDL_HINT_XINPUT_ENABLED, SDL_TRUE);
+    if (ctx->xinput_enabled && WIN_LoadXInputDLL() < 0) {
+        ctx->xinput_enabled = SDL_FALSE;
+    }
+    ctx->xinput_slot = XUSER_INDEX_ANY;
+#endif
     *context = ctx;
 
     /* Set the controller LED */
-	SetSlotLED(dev, (joystick->instance_id % 4));
+    SetSlotLED(dev, (joystick->instance_id % 4));
 
     /* Initialize the joystick capabilities */
     joystick->nbuttons = SDL_CONTROLLER_BUTTON_MAX;
@@ -100,6 +170,21 @@ static int
 HIDAPI_DriverXbox360_Rumble(SDL_Joystick *joystick, hid_device *dev, void *context, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
 {
     SDL_DriverXbox360_Context *ctx = (SDL_DriverXbox360_Context *)context;
+#ifdef __WIN32__
+    if (ctx->xinput_slot != XUSER_INDEX_ANY) {
+        XINPUT_VIBRATION XVibration;
+
+        if (!XINPUTSETSTATE) {
+            return SDL_Unsupported();
+        }
+
+        XVibration.wLeftMotorSpeed = low_frequency_rumble;
+        XVibration.wRightMotorSpeed = high_frequency_rumble;
+        if (XINPUTSETSTATE(ctx->xinput_slot, &XVibration) != ERROR_SUCCESS) {
+            return SDL_SetError("XInputSetState() failed");
+        }
+    }
+#else
 #ifdef __MACOSX__
     /* On Mac OS X the 360Controller driver uses this short report,
        and we need to prefix it with a magic token so hidapi passes it through untouched
@@ -118,6 +203,7 @@ HIDAPI_DriverXbox360_Rumble(SDL_Joystick *joystick, hid_device *dev, void *conte
     if (hid_write(dev, rumble_packet, sizeof(rumble_packet)) != sizeof(rumble_packet)) {
         return SDL_SetError("Couldn't send rumble packet");
     }
+#endif /* __WIN32__ */
 
     if ((low_frequency_rumble || high_frequency_rumble) && duration_ms) {
         ctx->rumble_expiration = SDL_GetTicks() + duration_ms;
@@ -204,16 +290,50 @@ HIDAPI_DriverXbox360_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, 
     axis = (int)*(Uint16*)(&data[6]) - 0x8000;
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTY, axis);
 
-    axis = (data[9] * 257) - 32768;
-    if (data[9] < 0x80) {
-        axis = -axis * 2 - 32769;
-        SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, axis);
-    } else if (data[9] > 0x80) {
-        axis = axis * 2 - 32767;
-        SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, axis);
+    if (ctx->xinput_slot == XUSER_INDEX_ANY && HIDAPI_DriverXbox360_MissingXInputSlot()) {
+        WORD wButtons = 0;
+
+        if (data[10] & 0x01) {
+            wButtons |= XINPUT_GAMEPAD_A;
+        }
+        if (data[10] & 0x02) {
+            wButtons |= XINPUT_GAMEPAD_B;
+        }
+        if (data[10] & 0x04) {
+            wButtons |= XINPUT_GAMEPAD_X;
+        }
+        if (data[10] & 0x08) {
+            wButtons |= XINPUT_GAMEPAD_Y;
+        }
+        if (wButtons != 0) {
+            Uint8 xinput_slot = HIDAPI_DriverXbox360_GuessXInputSlot(wButtons);
+            if (xinput_slot != XUSER_INDEX_ANY) {
+                HIDAPI_DriverXbox360_MarkXInputSlotUsed(xinput_slot);
+                ctx->xinput_slot = xinput_slot;
+            }
+        }
+    }
+
+    if (ctx->xinput_slot == XUSER_INDEX_ANY) {
+        axis = (data[9] * 257) - 32768;
+        if (data[9] < 0x80) {
+            axis = -axis * 2 - 32769;
+            SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, axis);
+        } else if (data[9] > 0x80) {
+            axis = axis * 2 - 32767;
+            SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, axis);
+        } else {
+            SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, SDL_MIN_SINT16);
+            SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, SDL_MIN_SINT16);
+        }
     } else {
-        SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, SDL_MIN_SINT16);
-        SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, SDL_MIN_SINT16);
+        XINPUT_STATE_EX xinput_state;
+
+        if (XINPUTGETSTATE(ctx->xinput_slot, &xinput_state) == ERROR_SUCCESS) {
+            SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_GUIDE, (xinput_state.Gamepad.wButtons & XINPUT_GAMEPAD_GUIDE) ? SDL_PRESSED : SDL_RELEASED);
+            SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, ((int)xinput_state.Gamepad.bLeftTrigger * 257) - 32768);
+            SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, ((int)xinput_state.Gamepad.bRightTrigger * 257) - 32768);
+        }
     }
 
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
@@ -225,9 +345,9 @@ HIDAPI_DriverXbox360_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, 
 {
     Sint16 axis;
 #ifdef __MACOSX__
-	const SDL_bool invert_y_axes = SDL_FALSE;
+    const SDL_bool invert_y_axes = SDL_FALSE;
 #else
-	const SDL_bool invert_y_axes = SDL_TRUE;
+    const SDL_bool invert_y_axes = SDL_TRUE;
 #endif
 
     if (ctx->last_state[2] != data[2]) {
@@ -258,16 +378,16 @@ HIDAPI_DriverXbox360_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, 
     axis = *(Sint16*)(&data[6]);
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX, axis);
     axis = *(Sint16*)(&data[8]);
-	if (invert_y_axes) {
-		axis = ~axis;
-	}
+    if (invert_y_axes) {
+        axis = ~axis;
+    }
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTY, axis);
     axis = *(Sint16*)(&data[10]);
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTX, axis);
     axis = *(Sint16*)(&data[12]);
-	if (invert_y_axes) {
-		axis = ~axis;
-	}
+    if (invert_y_axes) {
+        axis = ~axis;
+    }
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_RIGHTY, axis);
 
     SDL_memcpy(ctx->last_state, data, SDL_min(size, sizeof(ctx->last_state)));
@@ -305,12 +425,20 @@ HIDAPI_DriverXbox360_Update(SDL_Joystick *joystick, hid_device *dev, void *conte
         }
     }
 
-	return (size >= 0);
+    return (size >= 0);
 }
 
 static void
 HIDAPI_DriverXbox360_Quit(SDL_Joystick *joystick, hid_device *dev, void *context)
 {
+#ifdef __WIN32__
+    SDL_DriverXbox360_Context *ctx = (SDL_DriverXbox360_Context *)context;
+
+    if (ctx->xinput_enabled) {
+        HIDAPI_DriverXbox360_MarkXInputSlotFree(ctx->xinput_slot);
+        WIN_UnloadXInputDLL();
+    }
+#endif
     SDL_free(context);
 }
 
