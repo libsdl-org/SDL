@@ -138,6 +138,13 @@ static Uint32 crc32(Uint32 crc, const void *data, int count)
 #ifdef __WIN32__
 #include "../../core/windows/SDL_windows.h"
 
+#ifndef NTDDI_VISTA
+#define NTDDI_VISTA    0x06000000
+#endif
+#ifndef _WIN32_WINNT_VISTA
+#define _WIN32_WINNT_VISTA 0x0600
+#endif
+
 /* Define Vista for the Audio related includes below to work */
 #undef NTDDI_VERSION
 #define NTDDI_VERSION NTDDI_VISTA
