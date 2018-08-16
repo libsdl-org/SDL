@@ -103,7 +103,7 @@ static struct
     Uint32 m_unLastDetect;
 
 #if defined(__WIN32__)
-	SDL_threadID m_nThreadID;
+    SDL_threadID m_nThreadID;
     WNDCLASSEXA m_wndClass;
     HWND m_hwndMsg;
     HDEVNOTIFY m_hNotify;
@@ -158,7 +158,7 @@ static LRESULT CALLBACK ControllerWndProc(HWND hwnd, UINT message, WPARAM wParam
         switch (wParam) {
         case DBT_DEVICEARRIVAL:
             if (((DEV_BROADCAST_HDR*)lParam)->dbch_devicetype == DBT_DEVTYP_DEVICEINTERFACE) {
-				SDL_HIDAPI_discovery.m_bHaveDevicesChanged = SDL_TRUE;
+                SDL_HIDAPI_discovery.m_bHaveDevicesChanged = SDL_TRUE;
             }
             break;
         }
@@ -171,10 +171,11 @@ static LRESULT CALLBACK ControllerWndProc(HWND hwnd, UINT message, WPARAM wParam
 
 
 #if defined(__MACOSX__)
-static void CallbackIOServiceFUNC(void *context, io_iterator_t portIterator)
+static void CallbackIOServiceFunc(void *context, io_iterator_t portIterator)
 {
     /* Must drain the iterator, or we won't receive new notifications */
-    while ((io_object_t entry = IOIteratorNext(portIterator)) != NULL) {
+    io_object_t entry;
+    while ((entry = IOIteratorNext(portIterator)) != 0) {
         IOObjectRelease(entry);
         *(SDL_bool*)context = SDL_TRUE;
     }
@@ -200,21 +201,21 @@ HIDAPI_InitializeDiscovery()
     RegisterClassExA(&SDL_HIDAPI_discovery.m_wndClass);
     SDL_HIDAPI_discovery.m_hwndMsg = CreateWindowExA(0, "ControllerDetect", NULL, 0, 0, 0, 0, 0, HWND_MESSAGE, NULL, NULL, NULL);
 
-	{
-		DEV_BROADCAST_DEVICEINTERFACE_A devBroadcast;
-		SDL_memset( &devBroadcast, 0x0, sizeof( devBroadcast ) );
+    {
+        DEV_BROADCAST_DEVICEINTERFACE_A devBroadcast;
+        SDL_memset( &devBroadcast, 0x0, sizeof( devBroadcast ) );
 
-		devBroadcast.dbcc_size = sizeof( devBroadcast );
-		devBroadcast.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
-		devBroadcast.dbcc_classguid = GUID_DEVINTERFACE_USB_DEVICE;
+        devBroadcast.dbcc_size = sizeof( devBroadcast );
+        devBroadcast.dbcc_devicetype = DBT_DEVTYP_DEVICEINTERFACE;
+        devBroadcast.dbcc_classguid = GUID_DEVINTERFACE_USB_DEVICE;
 
-		/* DEVICE_NOTIFY_ALL_INTERFACE_CLASSES is important, makes GUID_DEVINTERFACE_USB_DEVICE ignored,
-		 * but that seems to be necessary to get a notice after each individual usb input device actually
-		 * installs, rather than just as the composite device is seen.
-		 */
-		SDL_HIDAPI_discovery.m_hNotify = RegisterDeviceNotification( SDL_HIDAPI_discovery.m_hwndMsg, &devBroadcast, DEVICE_NOTIFY_WINDOW_HANDLE | DEVICE_NOTIFY_ALL_INTERFACE_CLASSES );
-		SDL_HIDAPI_discovery.m_bCanGetNotifications = ( SDL_HIDAPI_discovery.m_hNotify != 0 );
-	}
+        /* DEVICE_NOTIFY_ALL_INTERFACE_CLASSES is important, makes GUID_DEVINTERFACE_USB_DEVICE ignored,
+         * but that seems to be necessary to get a notice after each individual usb input device actually
+         * installs, rather than just as the composite device is seen.
+         */
+        SDL_HIDAPI_discovery.m_hNotify = RegisterDeviceNotification( SDL_HIDAPI_discovery.m_hwndMsg, &devBroadcast, DEVICE_NOTIFY_WINDOW_HANDLE | DEVICE_NOTIFY_ALL_INTERFACE_CLASSES );
+        SDL_HIDAPI_discovery.m_bCanGetNotifications = ( SDL_HIDAPI_discovery.m_hNotify != 0 );
+    }
 #endif /* __WIN32__ */
 
 #if defined(__MACOSX__)
@@ -225,9 +226,10 @@ HIDAPI_InitializeDiscovery()
 
             /* Note: IOServiceAddMatchingNotification consumes the reference to matchingDict */
             io_iterator_t portIterator = 0;
+            io_object_t entry;
             if (IOServiceAddMatchingNotification(SDL_HIDAPI_discovery.m_notificationPort, kIOMatchedNotification, matchingDict, CallbackIOServiceFunc, &SDL_HIDAPI_discovery.m_bHaveDevicesChanged, &portIterator) == 0) {
                 /* Must drain the existing iterator, or we won't receive new notifications */
-                while (io_object_t entry = IOIteratorNext(portIterator)) {
+                while ((entry = IOIteratorNext(portIterator)) != 0) {
                     IOObjectRelease(entry);
                 }
             } else {
@@ -240,9 +242,10 @@ HIDAPI_InitializeDiscovery()
 
             /* Note: IOServiceAddMatchingNotification consumes the reference to matchingDict */
             io_iterator_t portIterator = 0;
+            io_object_t entry;
             if (IOServiceAddMatchingNotification(SDL_HIDAPI_discovery.m_notificationPort, kIOMatchedNotification, matchingDict, CallbackIOServiceFunc, &SDL_HIDAPI_discovery.m_bHaveDevicesChanged, &portIterator) == 0) {
                 /* Must drain the existing iterator, or we won't receive new notifications */
-                while (io_object_t entry = IOIteratorNext(portIterator)) {
+                while ((entry = IOIteratorNext(portIterator)) != 0) {
                     IOObjectRelease(entry);
                 }
             } else {
@@ -802,6 +805,8 @@ static void
 HIDAPI_JoystickQuit(void)
 {
     int i;
+
+    HIDAPI_ShutdownDiscovery();
 
     while (SDL_HIDAPI_devices) {
         HIDAPI_DelDevice(SDL_HIDAPI_devices, SDL_FALSE);
