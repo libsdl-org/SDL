@@ -308,7 +308,7 @@ HIDAPI_DriverXboxOne_HandleModePacket(SDL_Joystick *joystick, hid_device *dev, S
     SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_GUIDE, (data[4] & 0x01) ? SDL_PRESSED : SDL_RELEASED);
 }
 
-static void
+static SDL_bool
 HIDAPI_DriverXboxOne_Update(SDL_Joystick *joystick, hid_device *dev, void *context)
 {
     SDL_DriverXboxOne_Context *ctx = (SDL_DriverXboxOne_Context *)context;
@@ -337,6 +337,8 @@ HIDAPI_DriverXboxOne_Update(SDL_Joystick *joystick, hid_device *dev, void *conte
             HIDAPI_DriverXboxOne_Rumble(joystick, dev, context, 0, 0, 0);
         }
     }
+
+	return (size >= 0);
 }
 
 static void
