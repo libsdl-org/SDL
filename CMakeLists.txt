@@ -1727,7 +1727,9 @@ endif()
 if(SDL_SHARED)
   add_library(SDL2 SHARED ${SOURCE_FILES} ${VERSION_SOURCES})
   if(APPLE)
-    set_target_properties(SDL2 PROPERTIES MACOSX_RPATH 1)
+    set_target_properties(SDL2 PROPERTIES
+      MACOSX_RPATH 1
+      OUTPUT_NAME "SDL2-${LT_RELEASE}")
   elseif(UNIX AND NOT ANDROID)
     set_target_properties(SDL2 PROPERTIES
       VERSION ${LT_VERSION}
@@ -1840,17 +1842,14 @@ endif()
 
 if(NOT (WINDOWS OR CYGWIN))
   if(SDL_SHARED)
-    if (APPLE)
-        set(SOEXT "dylib")
-    else()
-        set(SOEXT "so")
-    endif()
+    set(SOEXT ${CMAKE_SHARED_LIBRARY_SUFFIX}) # ".so", ".dylib", etc.
+    get_target_property(SONAME SDL2 OUTPUT_NAME)
     if(NOT ANDROID)
         install(CODE "
           execute_process(COMMAND ${CMAKE_COMMAND} -E create_symlink
-            \"libSDL2-2.0${SOPOSTFIX}.${SOEXT}\" \"libSDL2.${SOEXT}\")"
+            \"lib${SONAME}${SOPOSTFIX}${SOEXT}\" \"libSDL2${SOPOSTFIX}${SOEXT}\")"
             WORKING_DIR "${SDL2_BINARY_DIR}")
-        install(FILES ${SDL2_BINARY_DIR}/libSDL2.${SOEXT} DESTINATION "lib${LIB_SUFFIX}")
+        install(FILES ${SDL2_BINARY_DIR}/libSDL2${SOPOSTFIX}${SOEXT} DESTINATION "lib${LIB_SUFFIX}")
     endif()
   endif()
   if(FREEBSD)
