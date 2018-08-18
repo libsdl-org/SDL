@@ -165,6 +165,7 @@ Emscripten_CreateSystemCursor(SDL_SystemCursor id)
             cursor_name = "ns-resize";
             break;
         case SDL_SYSTEM_CURSOR_SIZEALL:
+            cursor_name = "move";
             break;
         case SDL_SYSTEM_CURSOR_NO:
             cursor_name = "not-allowed";
