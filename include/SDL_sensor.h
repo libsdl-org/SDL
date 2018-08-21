@@ -57,8 +57,7 @@ typedef struct _SDL_Sensor SDL_Sensor;
  *
  * The ID value starts at 0 and increments from there. The value -1 is an invalid ID.
  */
-typedef Sint32 SDL_JoystickID;
-typedef int SDL_SensorID;
+typedef Sint32 SDL_SensorID;
 
 /* The different sensor types */
 typedef enum
