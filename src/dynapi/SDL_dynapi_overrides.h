@@ -680,3 +680,4 @@
 #define SDL_wcsdup SDL_wcsdup_REAL
 #define SDL_GameControllerRumble SDL_GameControllerRumble_REAL
 #define SDL_JoystickRumble SDL_JoystickRumble_REAL
+#define SDL_IsTablet SDL_IsTablet_REAL

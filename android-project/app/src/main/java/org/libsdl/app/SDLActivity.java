@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.Hashtable;
 import java.lang.reflect.Method;
+import java.lang.Math;
 
 import android.app.*;
 import android.content.*;
@@ -774,6 +775,23 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             return true;
         }
         return false;
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
+    public static boolean isTablet() {
+        DisplayMetrics metrics = new DisplayMetrics();
+        Activity sdlActivity = (Activity)getContext();
+        sdlActivity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+
+        double dWidthInches = metrics.widthPixels / (double)metrics.densityDpi;
+        double dHeightInches = metrics.heightPixels / (double)metrics.densityDpi;
+
+        double dDiagonal = Math.sqrt((dWidthInches * dWidthInches) + (dHeightInches * dHeightInches));
+
+        // If our diagonal size is seven inches or greater, we consider ourselves a tablet.
+        return (dDiagonal > 7.0);
     }
 
     /**

@@ -233,6 +233,17 @@ void SDL_NSLog(const char *text)
     NSLog(@"%s", text);
 }
 
+/*
+ * iOS Tablet detection
+ *
+ * This doesn't really have aything to do with the interfaces of the SDL video
+ *  subsystem, but we need to stuff this into an Objective-C source code file.
+ */
+SDL_bool SDL_IsTablet(void)
+{
+    return (UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad);
+}
+
 #endif /* SDL_VIDEO_DRIVER_UIKIT */
 
 /* vi: set ts=4 sw=4 expandtab: */

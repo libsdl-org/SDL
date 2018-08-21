@@ -232,6 +232,7 @@ static jmethodID midSetCustomCursor;
 static jmethodID midSetSystemCursor;
 static jmethodID midSupportsRelativeMouse;
 static jmethodID midSetRelativeMouseEnabled;
+static jmethodID midIsTablet;
 
 /* audio manager */
 static jclass mAudioManagerClass;
@@ -354,13 +355,15 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv* mEnv, jclass c
     midSupportsRelativeMouse = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass, "supportsRelativeMouse", "()Z");
     midSetRelativeMouseEnabled = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass, "setRelativeMouseEnabled", "(Z)Z");
 
+    midIsTablet = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass, "isTablet", "()Z");
+
     if (!midGetNativeSurface ||
        !midSetActivityTitle || !midSetWindowStyle || !midSetOrientation || !midGetContext || !midIsAndroidTV || !midInputGetInputDeviceIds ||
        !midSendMessage || !midShowTextInput || !midIsScreenKeyboardShown ||
        !midClipboardSetText || !midClipboardGetText || !midClipboardHasText ||
        !midOpenAPKExpansionInputStream || !midGetManifestEnvironmentVariables || !midGetDisplayDPI ||
        !midCreateCustomCursor || !midSetCustomCursor || !midSetSystemCursor || !midSupportsRelativeMouse || !midSetRelativeMouseEnabled ||
-       !midIsChromebook || !midIsDeXMode || !midManualBackButton) {
+       !midIsChromebook || !midIsDeXMode || !midManualBackButton || !midIsTablet) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLActivity.java?");
     }
 
@@ -2046,6 +2049,12 @@ SDL_bool SDL_IsDeXMode(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midIsDeXMode);
+}
+
+SDL_bool SDL_IsTablet(void)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    return (*env)->CallStaticBooleanMethod(env, mActivityClass, midIsTablet);
 }
 
 void SDL_AndroidBackButton(void)
