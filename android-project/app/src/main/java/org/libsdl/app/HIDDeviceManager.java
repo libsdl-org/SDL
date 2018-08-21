@@ -11,6 +11,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.hardware.usb.*;
 import android.os.Handler;
 import android.os.Looper;
@@ -315,6 +316,11 @@ public class HIDDeviceManager {
 
     protected void initializeBluetooth() {
         Log.d(TAG, "Initializing Bluetooth");
+
+        if (mContext.getPackageManager().checkPermission(android.Manifest.permission.BLUETOOTH, mContext.getPackageName()) != PackageManager.PERMISSION_GRANTED) {
+            Log.d(TAG, "Couldn't initialize Bluetooth, missing android.permission.BLUETOOTH");
+            return;
+        }
 
         // Find bonded bluetooth controllers and create SteamControllers for them
         mBluetoothManager = (BluetoothManager)mContext.getSystemService(Context.BLUETOOTH_SERVICE);
