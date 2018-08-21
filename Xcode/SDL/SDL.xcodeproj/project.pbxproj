@@ -397,12 +397,6 @@
 		5646243A1FF821FF0074AC87 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 564624371FF821CB0074AC87 /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		5646243B1FF822100074AC87 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 564624351FF821B80074AC87 /* QuartzCore.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		5646243C1FF822170074AC87 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 564624371FF821CB0074AC87 /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
-		565AF96A1FF8238D0077498A /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 565AF9691FF823840077498A /* QuartzCore.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
-		565AF96B1FF8238E0077498A /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 565AF9691FF823840077498A /* QuartzCore.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
-		565AF96C1FF8238E0077498A /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 565AF9691FF823840077498A /* QuartzCore.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
-		565AF96D1FF823980077498A /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 565AF9681FF8237A0077498A /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
-		565AF96E1FF823980077498A /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 565AF9681FF8237A0077498A /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
-		565AF96F1FF823990077498A /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 565AF9681FF8237A0077498A /* Metal.framework */; settings = {ATTRIBUTES = (Weak, ); }; };
 		566CDE8F148F0AC200C5A9BB /* SDL_dropevents_c.h in Headers */ = {isa = PBXBuildFile; fileRef = 566CDE8D148F0AC200C5A9BB /* SDL_dropevents_c.h */; };
 		566CDE90148F0AC200C5A9BB /* SDL_dropevents.c in Sources */ = {isa = PBXBuildFile; fileRef = 566CDE8E148F0AC200C5A9BB /* SDL_dropevents.c */; };
 		567E2F1C17C44BB2005F1892 /* SDL_sysfilesystem.m in Sources */ = {isa = PBXBuildFile; fileRef = 567E2F1B17C44BB2005F1892 /* SDL_sysfilesystem.m */; };
@@ -939,12 +933,12 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		0073179D0858DECD00B2BC32 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = /System/Library/Frameworks/Cocoa.framework; sourceTree = "<absolute>"; };
-		0073179F0858DECD00B2BC32 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = /System/Library/Frameworks/IOKit.framework; sourceTree = "<absolute>"; };
-		007317C10858E15000B2BC32 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = /System/Library/Frameworks/Carbon.framework; sourceTree = "<absolute>"; };
+		0073179D0858DECD00B2BC32 /* Cocoa.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Cocoa.framework; path = System/Library/Frameworks/Cocoa.framework; sourceTree = SDKROOT; };
+		0073179F0858DECD00B2BC32 /* IOKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = IOKit.framework; path = System/Library/Frameworks/IOKit.framework; sourceTree = SDKROOT; };
+		007317C10858E15000B2BC32 /* Carbon.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Carbon.framework; path = System/Library/Frameworks/Carbon.framework; sourceTree = SDKROOT; };
 		00794D3F09D0C461003FC8A1 /* License.txt */ = {isa = PBXFileReference; lastKnownFileType = text; path = License.txt; sourceTree = "<group>"; };
-		00CFA89C106B4BA100758660 /* ForceFeedback.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ForceFeedback.framework; path = /System/Library/Frameworks/ForceFeedback.framework; sourceTree = "<absolute>"; };
-		00D0D08310675DD9004B05EF /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = /System/Library/Frameworks/CoreFoundation.framework; sourceTree = "<absolute>"; };
+		00CFA89C106B4BA100758660 /* ForceFeedback.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ForceFeedback.framework; path = System/Library/Frameworks/ForceFeedback.framework; sourceTree = SDKROOT; };
+		00D0D08310675DD9004B05EF /* CoreFoundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreFoundation.framework; path = System/Library/Frameworks/CoreFoundation.framework; sourceTree = SDKROOT; };
 		04043BBA12FEB1BE0076DB1F /* SDL_glfuncs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_glfuncs.h; sourceTree = "<group>"; };
 		041B2C9E12FA0D680087D585 /* SDL_render.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_render.c; sourceTree = "<group>"; };
 		041B2C9F12FA0D680087D585 /* SDL_sysrender.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_sysrender.h; sourceTree = "<group>"; };
@@ -957,8 +951,8 @@
 		0442EC1B12FE1BCB004C9285 /* SDL_render_sw.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_render_sw.c; sourceTree = "<group>"; };
 		0442EC5812FE1C60004C9285 /* SDL_x11framebuffer.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_x11framebuffer.c; sourceTree = "<group>"; };
 		0442EC5912FE1C60004C9285 /* SDL_x11framebuffer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_x11framebuffer.h; sourceTree = "<group>"; };
-		0442EC5E12FE1C75004C9285 /* SDL_hints.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_hints.c; path = ../../src/SDL_hints.c; sourceTree = SOURCE_ROOT; };
-		04BAC0C71300C2160055DE28 /* SDL_log.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_log.c; path = ../../src/SDL_log.c; sourceTree = SOURCE_ROOT; };
+		0442EC5E12FE1C75004C9285 /* SDL_hints.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hints.c; sourceTree = "<group>"; };
+		04BAC0C71300C2160055DE28 /* SDL_log.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_log.c; sourceTree = "<group>"; };
 		04BDFD7412E6671700899322 /* SDL_atomic.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_atomic.c; sourceTree = "<group>"; };
 		04BDFD7512E6671700899322 /* SDL_spinlock.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_spinlock.c; sourceTree = "<group>"; };
 		04BDFD8812E6671700899322 /* SDL_diskaudio.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_diskaudio.c; sourceTree = "<group>"; };
@@ -1013,11 +1007,11 @@
 		04BDFE3312E6671700899322 /* SDL_sysloadso.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_sysloadso.c; sourceTree = "<group>"; };
 		04BDFE4B12E6671700899322 /* SDL_syspower.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_syspower.c; sourceTree = "<group>"; };
 		04BDFE4E12E6671700899322 /* SDL_power.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_power.c; sourceTree = "<group>"; };
-		04BDFE5512E6671700899322 /* SDL_assert_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_assert_c.h; path = ../../src/SDL_assert_c.h; sourceTree = SOURCE_ROOT; };
-		04BDFE5612E6671700899322 /* SDL_assert.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_assert.c; path = ../../src/SDL_assert.c; sourceTree = SOURCE_ROOT; };
-		04BDFE5812E6671700899322 /* SDL_error_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_error_c.h; path = ../../src/SDL_error_c.h; sourceTree = SOURCE_ROOT; };
-		04BDFE5912E6671700899322 /* SDL_error.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_error.c; path = ../../src/SDL_error.c; sourceTree = SOURCE_ROOT; };
-		04BDFE5C12E6671700899322 /* SDL.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL.c; path = ../../src/SDL.c; sourceTree = SOURCE_ROOT; };
+		04BDFE5512E6671700899322 /* SDL_assert_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_assert_c.h; sourceTree = "<group>"; };
+		04BDFE5612E6671700899322 /* SDL_assert.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_assert.c; sourceTree = "<group>"; };
+		04BDFE5812E6671700899322 /* SDL_error_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_error_c.h; sourceTree = "<group>"; };
+		04BDFE5912E6671700899322 /* SDL_error.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_error.c; sourceTree = "<group>"; };
+		04BDFE5C12E6671700899322 /* SDL.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL.c; sourceTree = "<group>"; };
 		04BDFE5E12E6671700899322 /* SDL_getenv.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_getenv.c; sourceTree = "<group>"; };
 		04BDFE5F12E6671700899322 /* SDL_iconv.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_iconv.c; sourceTree = "<group>"; };
 		04BDFE6012E6671700899322 /* SDL_malloc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_malloc.c; sourceTree = "<group>"; };
@@ -1131,21 +1125,19 @@
 		4D1664521EDD60AD003DE88E /* SDL_cocoavulkan.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_cocoavulkan.m; sourceTree = "<group>"; };
 		4D4820431F0F10B400EDC31C /* SDL_vulkan.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SDL_vulkan.h; sourceTree = "<group>"; };
 		4D7517281EE2562B00820EEA /* SDL_cocoametalview.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_cocoametalview.h; sourceTree = "<group>"; };
-		56115BB91DF72C6D00F47E1E /* SDL_dataqueue.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_dataqueue.c; path = ../../src/SDL_dataqueue.c; sourceTree = "<group>"; };
-		56115BBA1DF72C6D00F47E1E /* SDL_dataqueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_dataqueue.h; path = ../../src/SDL_dataqueue.h; sourceTree = "<group>"; };
+		56115BB91DF72C6D00F47E1E /* SDL_dataqueue.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_dataqueue.c; sourceTree = "<group>"; };
+		56115BBA1DF72C6D00F47E1E /* SDL_dataqueue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_dataqueue.h; sourceTree = "<group>"; };
 		564624351FF821B80074AC87 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		564624371FF821CB0074AC87 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
-		565AF9681FF8237A0077498A /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; path = Metal.framework; sourceTree = "<group>"; };
-		565AF9691FF823840077498A /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX.sdk/System/Library/Frameworks/QuartzCore.framework; sourceTree = DEVELOPER_DIR; };
 		566CDE8D148F0AC200C5A9BB /* SDL_dropevents_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_dropevents_c.h; sourceTree = "<group>"; };
 		566CDE8E148F0AC200C5A9BB /* SDL_dropevents.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_dropevents.c; sourceTree = "<group>"; };
-		567E2F1B17C44BB2005F1892 /* SDL_sysfilesystem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SDL_sysfilesystem.m; path = ../../src/filesystem/cocoa/SDL_sysfilesystem.m; sourceTree = "<group>"; };
+		567E2F1B17C44BB2005F1892 /* SDL_sysfilesystem.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = SDL_sysfilesystem.m; path = cocoa/SDL_sysfilesystem.m; sourceTree = "<group>"; };
 		567E2F2017C44C35005F1892 /* SDL_filesystem.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_filesystem.h; sourceTree = "<group>"; };
-		56A670081856545C0007D20F /* SDL_internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_internal.h; path = ../../src/SDL_internal.h; sourceTree = "<group>"; };
-		56A6701D185654B40007D20F /* SDL_dynapi_procs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_dynapi_procs.h; path = ../../src/dynapi/SDL_dynapi_procs.h; sourceTree = "<group>"; };
-		56A6701E185654B40007D20F /* SDL_dynapi.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = SDL_dynapi.c; path = ../../src/dynapi/SDL_dynapi.c; sourceTree = "<group>"; };
-		56A6701F185654B40007D20F /* SDL_dynapi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_dynapi.h; path = ../../src/dynapi/SDL_dynapi.h; sourceTree = "<group>"; };
-		56A67020185654B40007D20F /* SDL_dynapi_overrides.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = SDL_dynapi_overrides.h; path = ../../src/dynapi/SDL_dynapi_overrides.h; sourceTree = "<group>"; };
+		56A670081856545C0007D20F /* SDL_internal.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_internal.h; sourceTree = "<group>"; };
+		56A6701D185654B40007D20F /* SDL_dynapi_procs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_dynapi_procs.h; sourceTree = "<group>"; };
+		56A6701E185654B40007D20F /* SDL_dynapi.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_dynapi.c; sourceTree = "<group>"; };
+		56A6701F185654B40007D20F /* SDL_dynapi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_dynapi.h; sourceTree = "<group>"; };
+		56A67020185654B40007D20F /* SDL_dynapi_overrides.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_dynapi_overrides.h; sourceTree = "<group>"; };
 		5C2EF69B1FC987C6003F5197 /* SDL_gles2funcs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_gles2funcs.h; sourceTree = "<group>"; };
 		5C2EF69C1FC987C6003F5197 /* SDL_render_gles2.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_render_gles2.c; sourceTree = "<group>"; };
 		5C2EF69D1FC987C6003F5197 /* SDL_shaders_gles2.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_shaders_gles2.h; sourceTree = "<group>"; };
@@ -1256,7 +1248,7 @@
 		F59C710300D5CB5801000001 /* ReadMe.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = ReadMe.txt; sourceTree = "<group>"; };
 		F59C710600D5CB5801000001 /* SDL.info */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = SDL.info; sourceTree = "<group>"; };
 		F5A2EF3900C6A39A01000001 /* BUGS.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = BUGS.txt; path = ../../BUGS.txt; sourceTree = SOURCE_ROOT; };
-		FA73671C19A540EF004122E4 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = /System/Library/Frameworks/CoreVideo.framework; sourceTree = "<absolute>"; };
+		FA73671C19A540EF004122E4 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
 		FABA34C61D8B5DB100915323 /* SDL_coreaudio.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_coreaudio.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -1268,14 +1260,12 @@
 				564624381FF821DA0074AC87 /* Metal.framework in Frameworks */,
 				564624361FF821C20074AC87 /* QuartzCore.framework in Frameworks */,
 				A7381E971D8B6A0300B177DD /* AudioToolbox.framework in Frameworks */,
-				565AF96A1FF8238D0077498A /* QuartzCore.framework in Frameworks */,
 				00D0D0D810675E46004B05EF /* Carbon.framework in Frameworks */,
 				007317A40858DECD00B2BC32 /* Cocoa.framework in Frameworks */,
 				A7381E961D8B69D600B177DD /* CoreAudio.framework in Frameworks */,
 				00D0D08410675DD9004B05EF /* CoreFoundation.framework in Frameworks */,
 				FA73671D19A540EF004122E4 /* CoreVideo.framework in Frameworks */,
 				00CFA89D106B4BA100758660 /* ForceFeedback.framework in Frameworks */,
-				565AF96D1FF823980077498A /* Metal.framework in Frameworks */,
 				007317A60858DECD00B2BC32 /* IOKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1287,14 +1277,12 @@
 				5646243A1FF821FF0074AC87 /* Metal.framework in Frameworks */,
 				564624391FF821EF0074AC87 /* QuartzCore.framework in Frameworks */,
 				56C5237E1D8F4985001F2F30 /* CoreAudio.framework in Frameworks */,
-				565AF96B1FF8238E0077498A /* QuartzCore.framework in Frameworks */,
 				FA73671E19A54140004122E4 /* CoreVideo.framework in Frameworks */,
 				007317AB0858DECD00B2BC32 /* Cocoa.framework in Frameworks */,
 				007317AD0858DECD00B2BC32 /* IOKit.framework in Frameworks */,
 				56C523801D8F498B001F2F30 /* CoreFoundation.framework in Frameworks */,
 				007317C30858E15000B2BC32 /* Carbon.framework in Frameworks */,
 				DB31408B17554D37006C0E22 /* ForceFeedback.framework in Frameworks */,
-				565AF96E1FF823980077498A /* Metal.framework in Frameworks */,
 				562C4AE91D8F496200AF9EBE /* AudioToolbox.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1306,14 +1294,12 @@
 				5646243C1FF822170074AC87 /* Metal.framework in Frameworks */,
 				5646243B1FF822100074AC87 /* QuartzCore.framework in Frameworks */,
 				56C5237F1D8F4985001F2F30 /* CoreAudio.framework in Frameworks */,
-				565AF96C1FF8238E0077498A /* QuartzCore.framework in Frameworks */,
 				FA73671F19A54144004122E4 /* CoreVideo.framework in Frameworks */,
 				DB31406E17554B71006C0E22 /* Cocoa.framework in Frameworks */,
 				DB31407017554B71006C0E22 /* IOKit.framework in Frameworks */,
 				56C523811D8F498C001F2F30 /* CoreFoundation.framework in Frameworks */,
 				DB31407217554B71006C0E22 /* Carbon.framework in Frameworks */,
 				DB31408D17554D3C006C0E22 /* ForceFeedback.framework in Frameworks */,
-				565AF96F1FF823990077498A /* Metal.framework in Frameworks */,
 				562C4AEA1D8F496300AF9EBE /* AudioToolbox.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1394,7 +1380,6 @@
 		034768DDFF38A45A11DB9C8B /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				089C1665FE841158C02AAC07 /* Resources */,
 				BECDF66C0761BA81005FE872 /* SDL2.framework */,
 				BECDF6B30761BA81005FE872 /* libSDL2.a */,
 				BECDF6BE0761BA81005FE872 /* Standard DMG */,
@@ -1415,9 +1400,8 @@
 				04409B8F12FA97ED00FB9AA8 /* SDL_yuv_sw_c.h */,
 				04409B9012FA97ED00FB9AA8 /* SDL_yuv_sw.c */,
 			);
-			name = render;
-			path = ../../src/render;
-			sourceTree = SOURCE_ROOT;
+			path = render;
+			sourceTree = "<group>";
 		};
 		041B2C9A12FA0D680087D585 /* opengl */ = {
 			isa = PBXGroup;
@@ -1458,9 +1442,8 @@
 				04BDFD7412E6671700899322 /* SDL_atomic.c */,
 				04BDFD7512E6671700899322 /* SDL_spinlock.c */,
 			);
-			name = atomic;
-			path = ../../src/atomic;
-			sourceTree = SOURCE_ROOT;
+			path = atomic;
+			sourceTree = "<group>";
 		};
 		04BDFD7612E6671700899322 /* audio */ = {
 			isa = PBXGroup;
@@ -1479,9 +1462,8 @@
 				04BDFDC312E6671700899322 /* SDL_wave.c */,
 				04BDFDC412E6671700899322 /* SDL_wave.h */,
 			);
-			name = audio;
-			path = ../../src/audio;
-			sourceTree = SOURCE_ROOT;
+			path = audio;
+			sourceTree = "<group>";
 		};
 		04BDFD8712E6671700899322 /* disk */ = {
 			isa = PBXGroup;
@@ -1515,9 +1497,8 @@
 			children = (
 				04BDFDD412E6671700899322 /* SDL_cpuinfo.c */,
 			);
-			name = cpuinfo;
-			path = ../../src/cpuinfo;
-			sourceTree = SOURCE_ROOT;
+			path = cpuinfo;
+			sourceTree = "<group>";
 		};
 		04BDFDD512E6671700899322 /* events */ = {
 			isa = PBXGroup;
@@ -1546,9 +1527,8 @@
 				04BDFDEA12E6671700899322 /* SDL_windowevents.c */,
 				04BDFDEB12E6671700899322 /* SDL_windowevents_c.h */,
 			);
-			name = events;
-			path = ../../src/events;
-			sourceTree = SOURCE_ROOT;
+			path = events;
+			sourceTree = "<group>";
 		};
 		04BDFDEC12E6671700899322 /* file */ = {
 			isa = PBXGroup;
@@ -1556,9 +1536,8 @@
 				04BDFDED12E6671700899322 /* cocoa */,
 				04BDFDF012E6671700899322 /* SDL_rwops.c */,
 			);
-			name = file;
-			path = ../../src/file;
-			sourceTree = SOURCE_ROOT;
+			path = file;
+			sourceTree = "<group>";
 		};
 		04BDFDED12E6671700899322 /* cocoa */ = {
 			isa = PBXGroup;
@@ -1577,9 +1556,8 @@
 				04BDFDFB12E6671700899322 /* SDL_haptic_c.h */,
 				04BDFDFC12E6671700899322 /* SDL_syshaptic.h */,
 			);
-			name = haptic;
-			path = ../../src/haptic;
-			sourceTree = SOURCE_ROOT;
+			path = haptic;
+			sourceTree = "<group>";
 		};
 		04BDFDF212E6671700899322 /* darwin */ = {
 			isa = PBXGroup;
@@ -1600,9 +1578,8 @@
 				BBFC088A164C6514003E6A99 /* SDL_gamecontroller.c */,
 				04BDFE1812E6671700899322 /* SDL_sysjoystick.h */,
 			);
-			name = joystick;
-			path = ../../src/joystick;
-			sourceTree = SOURCE_ROOT;
+			path = joystick;
+			sourceTree = "<group>";
 		};
 		04BDFE0612E6671700899322 /* darwin */ = {
 			isa = PBXGroup;
@@ -1618,9 +1595,8 @@
 			children = (
 				04BDFE3212E6671700899322 /* dlopen */,
 			);
-			name = loadso;
-			path = ../../src/loadso;
-			sourceTree = SOURCE_ROOT;
+			path = loadso;
+			sourceTree = "<group>";
 		};
 		04BDFE3212E6671700899322 /* dlopen */ = {
 			isa = PBXGroup;
@@ -1636,9 +1612,8 @@
 				04BDFE4A12E6671700899322 /* macosx */,
 				04BDFE4E12E6671700899322 /* SDL_power.c */,
 			);
-			name = power;
-			path = ../../src/power;
-			sourceTree = SOURCE_ROOT;
+			path = power;
+			sourceTree = "<group>";
 		};
 		04BDFE4A12E6671700899322 /* macosx */ = {
 			isa = PBXGroup;
@@ -1658,9 +1633,8 @@
 				04BDFE6212E6671700899322 /* SDL_stdlib.c */,
 				04BDFE6312E6671700899322 /* SDL_string.c */,
 			);
-			name = stdlib;
-			path = ../../src/stdlib;
-			sourceTree = SOURCE_ROOT;
+			path = stdlib;
+			sourceTree = "<group>";
 		};
 		04BDFE6412E6671800899322 /* thread */ = {
 			isa = PBXGroup;
@@ -1670,9 +1644,8 @@
 				04BDFE8C12E6671800899322 /* SDL_thread.c */,
 				04BDFE8D12E6671800899322 /* SDL_thread_c.h */,
 			);
-			name = thread;
-			path = ../../src/thread;
-			sourceTree = SOURCE_ROOT;
+			path = thread;
+			sourceTree = "<group>";
 		};
 		04BDFE7D12E6671800899322 /* pthread */ = {
 			isa = PBXGroup;
@@ -1695,9 +1668,8 @@
 				04BDFE9F12E6671800899322 /* SDL_timer.c */,
 				04BDFEA012E6671800899322 /* SDL_timer_c.h */,
 			);
-			name = timer;
-			path = ../../src/timer;
-			sourceTree = SOURCE_ROOT;
+			path = timer;
+			sourceTree = "<group>";
 		};
 		04BDFEA112E6671800899322 /* unix */ = {
 			isa = PBXGroup;
@@ -1748,9 +1720,8 @@
 				AA9A7F141FB0209C00FED37F /* SDL_yuv_c.h */,
 				AA9A7F131FB0209C00FED37F /* SDL_yuv.c */,
 			);
-			name = video;
-			path = ../../src/video;
-			sourceTree = SOURCE_ROOT;
+			path = video;
+			sourceTree = "<group>";
 		};
 		04BDFEC112E6671800899322 /* cocoa */ = {
 			isa = PBXGroup;
@@ -1848,7 +1819,6 @@
 				08FB77ACFE841707C02AAC07 /* Library Source */,
 				034768DDFF38A45A11DB9C8B /* Products */,
 				BECDF66B0761BA81005FE872 /* Info-Framework.plist */,
-				BEC562FE0761C0E800A33029 /* Linked Frameworks */,
 				564624341FF821B70074AC87 /* Frameworks */,
 			);
 			comments = "To build Universal Binaries, we have experimented with a variety of different options.\nThe complication is that we must retain compatibility with at least 10.2. \nThe Universal Binary defaults only work for > 10.3.9\n\nSo far, we have found:\ngcc 4.0.0 with Xcode 2.1 always links against libgcc_s. gcc 4.0.1 from Xcode 2.2 fixes this problem.\n\nBut gcc 4.0 will not work with < 10.3.9 because we continue to get an undefined symbol to _fprintf$LDBL128.\nSo we must use gcc 3.3 on PPC to accomplish 10.2 support. (But 4.0 is required for i386.)\n\nSetting the deployment target to 10.4 will disable prebinding, so for PPC, we set it less than 10.4 to preserve prebinding for legacy support.\n\nSetting the PPC SDKROOT to /Developers/SDKs/MacOSX10.2.8.sdk will link to 63.0.0 libSystem.B.dylib. Leaving it at current or 10.4u links to 88.1.2. However, as long as we are using gcc 3.3, it doesn't seem to matter as testing has demonstrated both will run. We have decided not to invoke the 10.2.8 SDK because it is not a default installed component with Xcode which will probably cause most people problems. However, rather than deleting the SDKROOT_ppc entry entirely, we have mapped it to 10.4u in case we decide we need to change this setting.\n\nTo use Altivec or SSE, we needed architecture specific flags:\nOTHER_CFLAGS_ppc\nOTHER_CFLAGS_i386\nOTHER_CFLAGS=$(OTHER_CFLAGS_($CURRENT_ARCH))\n\nThe general OTHER_CFLAGS needed to be manually mapped to architecture specific options because Xcode didn't do this automatically for us.\n\n\n";
@@ -1857,13 +1827,6 @@
 			sourceTree = "<group>";
 			tabWidth = 4;
 			usesTabs = 0;
-		};
-		089C1665FE841158C02AAC07 /* Resources */ = {
-			isa = PBXGroup;
-			children = (
-			);
-			name = Resources;
-			sourceTree = "<group>";
 		};
 		08FB77ACFE841707C02AAC07 /* Library Source */ = {
 			isa = PBXGroup;
@@ -1898,11 +1861,20 @@
 				04BDFE5C12E6671700899322 /* SDL.c */,
 			);
 			name = "Library Source";
+			path = ../../src;
 			sourceTree = "<group>";
 		};
 		564624341FF821B70074AC87 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				A7381E931D8B69C300B177DD /* AudioToolbox.framework */,
+				007317C10858E15000B2BC32 /* Carbon.framework */,
+				0073179D0858DECD00B2BC32 /* Cocoa.framework */,
+				A7381E951D8B69D600B177DD /* CoreAudio.framework */,
+				00D0D08310675DD9004B05EF /* CoreFoundation.framework */,
+				FA73671C19A540EF004122E4 /* CoreVideo.framework */,
+				00CFA89C106B4BA100758660 /* ForceFeedback.framework */,
+				0073179F0858DECD00B2BC32 /* IOKit.framework */,
 				564624371FF821CB0074AC87 /* Metal.framework */,
 				564624351FF821B80074AC87 /* QuartzCore.framework */,
 			);
@@ -1914,7 +1886,7 @@
 			children = (
 				567E2F1B17C44BB2005F1892 /* SDL_sysfilesystem.m */,
 			);
-			name = filesystem;
+			path = filesystem;
 			sourceTree = "<group>";
 		};
 		56A6701C1856549B0007D20F /* dynapi */ = {
@@ -1925,7 +1897,7 @@
 				56A6701F185654B40007D20F /* SDL_dynapi.h */,
 				56A67020185654B40007D20F /* SDL_dynapi_overrides.h */,
 			);
-			name = dynapi;
+			path = dynapi;
 			sourceTree = "<group>";
 		};
 		5C2EF6921FC986D8003F5197 /* opengles2 */ = {
@@ -1966,9 +1938,8 @@
 			children = (
 				A704170720F09A6700A82227 /* mac */,
 			);
-			name = hidapi;
-			path = ../../src/hidapi;
-			sourceTree = SOURCE_ROOT;
+			path = hidapi;
+			sourceTree = "<group>";
 		};
 		AA9A7F0E1FB0200B00FED37F /* yuv2rgb */ = {
 			isa = PBXGroup;
@@ -1976,9 +1947,8 @@
 				AA9A7F101FB0206300FED37F /* yuv_rgb.c */,
 				AA9A7F0F1FB0206300FED37F /* yuv_rgb.h */,
 			);
-			name = yuv2rgb;
-			path = ../../src/video/yuv2rgb;
-			sourceTree = SOURCE_ROOT;
+			path = yuv2rgb;
+			sourceTree = "<group>";
 		};
 		AADC5A401FDA030E00960936 /* metal */ = {
 			isa = PBXGroup;
@@ -3196,10 +3166,7 @@
 				FRAMEWORK_VERSION = A;
 				INFOPLIST_FILE = "Info-Framework.plist";
 				INSTALL_PATH = "@rpath";
-				OTHER_LDFLAGS = (
-					"-Wl,-weak_framework,Metal",
-					"-liconv",
-				);
+				OTHER_LDFLAGS = "-liconv";
 				PRODUCT_BUNDLE_IDENTIFIER = org.libsdl.SDL2;
 				PRODUCT_NAME = SDL2;
 				PROVISIONING_PROFILE = "";
@@ -3293,10 +3260,7 @@
 				FRAMEWORK_VERSION = A;
 				INFOPLIST_FILE = "Info-Framework.plist";
 				INSTALL_PATH = "@rpath";
-				OTHER_LDFLAGS = (
-					"-Wl,-weak_framework,Metal",
-					"-liconv",
-				);
+				OTHER_LDFLAGS = "-liconv";
 				PRODUCT_BUNDLE_IDENTIFIER = org.libsdl.SDL2;
 				PRODUCT_NAME = SDL2;
 				PROVISIONING_PROFILE = "";
