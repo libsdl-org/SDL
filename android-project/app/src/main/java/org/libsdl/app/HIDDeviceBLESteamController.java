@@ -13,7 +13,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
-import com.android.internal.util.HexDump;
+//import com.android.internal.util.HexDump;
 
 import java.lang.Runnable;
 import java.lang.reflect.InvocationTargetException;
