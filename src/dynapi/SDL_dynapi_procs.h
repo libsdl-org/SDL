@@ -722,3 +722,6 @@ SDL_DYNAPI_PROC(float,SDL_expf,(float a),(a),return)
 SDL_DYNAPI_PROC(wchar_t*,SDL_wcsdup,(const wchar_t *a),(a),return)
 SDL_DYNAPI_PROC(int,SDL_GameControllerRumble,(SDL_GameController *a, Uint16 b, Uint16 c, Uint32 d),(a,b,c,d),return)
 SDL_DYNAPI_PROC(int,SDL_JoystickRumble,(SDL_Joystick *a, Uint16 b, Uint16 c, Uint32 d),(a,b,c,d),return)
+#if defined(__ANDROID__) || defined(__IPHONEOS__)
+SDL_DYNAPI_PROC(SDL_bool,SDL_IsTablet,(void),(),return)
+#endif
