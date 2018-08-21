@@ -93,5 +93,6 @@ typedef struct _SDL_SensorDriver
 
 /* The available sensor drivers */
 extern SDL_SensorDriver SDL_ANDROID_SensorDriver;
+extern SDL_SensorDriver SDL_DUMMY_SensorDriver;
 
 /* vi: set ts=4 sw=4 expandtab: */

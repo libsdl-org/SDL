@@ -223,6 +223,7 @@
 #undef SDL_FILE_DISABLED
 #undef SDL_JOYSTICK_DISABLED
 #undef SDL_HAPTIC_DISABLED
+#undef SDL_SENSOR_DISABLED
 #undef SDL_LOADSO_DISABLED
 #undef SDL_RENDER_DISABLED
 #undef SDL_THREADS_DISABLED
@@ -287,6 +288,10 @@
 #undef SDL_HAPTIC_IOKIT
 #undef SDL_HAPTIC_DINPUT
 #undef SDL_HAPTIC_XINPUT
+
+/* Enable various sensor drivers */
+#undef SDL_SENSOR_ANDROID
+#undef SDL_SENSOR_DUMMY
 
 /* Enable various shared object loading systems */
 #undef SDL_LOADSO_DLOPEN

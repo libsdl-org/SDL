@@ -3503,6 +3503,16 @@ case "$host" in
             ;;
           esac
         fi
+        # Set up files for the sensor library
+        if test x$enable_sensor = xyes; then
+          case $ARCH in
+            android)
+                AC_DEFINE(SDL_SENSOR_ANDROID, 1, [ ])
+                SOURCES="$SOURCES $srcdir/src/sensor/android/*.c"
+                have_sensor=yes
+            ;;
+          esac
+        fi
         # Set up files for the power library
         if test x$enable_power = xyes; then
              case $ARCH in
@@ -3997,6 +4007,12 @@ if test x$have_haptic != xyes; then
         AC_DEFINE(SDL_HAPTIC_DISABLED, 1, [ ])
     fi
     SOURCES="$SOURCES $srcdir/src/haptic/dummy/*.c"
+fi
+if test x$have_sensor != xyes; then
+    if test x$enable_sensor = xyes; then
+        AC_DEFINE(SDL_SENSOR_DISABLED, 1, [ ])
+    fi
+    SOURCES="$SOURCES $srcdir/src/sensor/dummy/*.c"
 fi
 if test x$have_threads != xyes; then
     if test x$enable_threads = xyes; then

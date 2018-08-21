@@ -192,6 +192,9 @@ typedef unsigned int uintptr_t;
 #define SDL_HAPTIC_XINPUT   1
 #endif
 
+/* Enable the dummy sensor driver */
+#define SDL_SENSOR_DUMMY  1
+
 /* Enable various shared object loading systems */
 #define SDL_LOADSO_WINDOWS  1
 
