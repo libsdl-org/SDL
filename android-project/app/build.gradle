@@ -21,6 +21,7 @@ android {
         externalNativeBuild {
             ndkBuild {
                 arguments "APP_PLATFORM=android-14"
+                abiFilters 'armeabi-v7a', 'x86'
             }
         }
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
