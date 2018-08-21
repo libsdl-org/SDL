@@ -33,11 +33,11 @@
 #endif
 
 static SDL_SensorDriver *SDL_sensor_drivers[] = {
-#if 0 //defined(__IPHONEOS__) || defined(__TVOS__)
-    &SDL_IOS_SensorDriver,
-#endif
 #ifdef SDL_SENSOR_ANDROID
     &SDL_ANDROID_SensorDriver,
+#endif
+#if defined(SDL_SENSOR_DUMMY) || defined(SDL_SENSOR_DISABLED)
+    &SDL_DUMMY_SensorDriver
 #endif
 };
 static SDL_Sensor *SDL_sensors = NULL;
@@ -77,11 +77,6 @@ SDL_SensorInit(void)
         return -1;
     }
 #endif /* !SDL_EVENTS_DISABLED */
-
-    if (SDL_arraysize(SDL_sensor_drivers) == 0) {
-        /* What should we return here? We'll just return 0 with no sensors for now. */
-        status = 0;
-    }
 
     status = -1;
     for (i = 0; i < SDL_arraysize(SDL_sensor_drivers); ++i) {

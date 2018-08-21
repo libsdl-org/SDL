@@ -24135,6 +24135,18 @@ $as_echo "#define SDL_HAPTIC_ANDROID 1" >>confdefs.h
             ;;
           esac
         fi
+        # Set up files for the sensor library
+        if test x$enable_sensor = xyes; then
+          case $ARCH in
+            android)
+
+$as_echo "#define SDL_SENSOR_ANDROID 1" >>confdefs.h
+
+                SOURCES="$SOURCES $srcdir/src/sensor/android/*.c"
+                have_sensor=yes
+            ;;
+          esac
+        fi
         # Set up files for the power library
         if test x$enable_power = xyes; then
              case $ARCH in
@@ -24793,6 +24805,14 @@ $as_echo "#define SDL_HAPTIC_DISABLED 1" >>confdefs.h
 
     fi
     SOURCES="$SOURCES $srcdir/src/haptic/dummy/*.c"
+fi
+if test x$have_sensor != xyes; then
+    if test x$enable_sensor = xyes; then
+
+$as_echo "#define SDL_SENSOR_DISABLED 1" >>confdefs.h
+
+    fi
+    SOURCES="$SOURCES $srcdir/src/sensor/dummy/*.c"
 fi
 if test x$have_threads != xyes; then
     if test x$enable_threads = xyes; then

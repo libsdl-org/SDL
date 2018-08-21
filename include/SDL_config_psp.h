@@ -128,22 +128,25 @@
 /* PSP isn't that sophisticated */
 #define LACKS_SYS_MMAN_H 1
 
-/* Enable the stub thread support (src/thread/psp/\*.c) */
+/* Enable the PSP thread support (src/thread/psp/\*.c) */
 #define SDL_THREAD_PSP  1
 
-/* Enable the stub timer support (src/timer/psp/\*.c) */
+/* Enable the PSP timer support (src/timer/psp/\*.c) */
 #define SDL_TIMERS_PSP  1
 
-/* Enable the stub joystick driver (src/joystick/psp/\*.c) */
+/* Enable the PSP joystick driver (src/joystick/psp/\*.c) */
 #define SDL_JOYSTICK_PSP        1
 
-/* Enable the stub audio driver (src/audio/psp/\*.c) */
+/* Enable the dummy sensor driver */
+#define SDL_SENSOR_DUMMY  1
+
+/* Enable the PSP audio driver (src/audio/psp/\*.c) */
 #define SDL_AUDIO_DRIVER_PSP    1
 
-/* PSP video dirver */
+/* PSP video driver */
 #define SDL_VIDEO_DRIVER_PSP   1
 
-/* PSP render dirver */
+/* PSP render driver */
 #define SDL_VIDEO_RENDER_PSP   1
 
 #define SDL_POWER_PSP          1
