@@ -55,6 +55,7 @@ TARGETS = \
 	testrumble$(EXE) \
 	testscale$(EXE) \
 	testsem$(EXE) \
+	testsensor$(EXE) \
 	testshader$(EXE) \
 	testshape$(EXE) \
 	testsprite2$(EXE) \
@@ -238,6 +239,9 @@ testscale$(EXE): $(srcdir)/testscale.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testsem$(EXE): $(srcdir)/testsem.c
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+
+testsensor$(EXE): $(srcdir)/testsensor.c
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 testshader$(EXE): $(srcdir)/testshader.c

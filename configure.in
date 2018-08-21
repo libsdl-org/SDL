@@ -346,6 +346,7 @@ SOURCES="$SOURCES $srcdir/src/power/*.c"
 #SOURCES="$SOURCES $srcdir/src/filesystem/*.c"
 SOURCES="$SOURCES $srcdir/src/render/*.c"
 SOURCES="$SOURCES $srcdir/src/render/*/*.c"
+SOURCES="$SOURCES $srcdir/src/sensor/*.c"
 SOURCES="$SOURCES $srcdir/src/stdlib/*.c"
 SOURCES="$SOURCES $srcdir/src/thread/*.c"
 SOURCES="$SOURCES $srcdir/src/timer/*.c"
@@ -409,6 +410,14 @@ if test x$enable_haptic != xyes; then
     AC_DEFINE(SDL_HAPTIC_DISABLED, 1, [ ])
 else
     SUMMARY_modules="${SUMMARY_modules} haptic"
+fi
+AC_ARG_ENABLE(sensor,
+AC_HELP_STRING([--enable-sensor], [Enable the sensor subsystem [[default=yes]]]),
+              , enable_sensor=yes)
+if test x$enable_sensor != xyes; then
+    AC_DEFINE(SDL_SENSOR_DISABLED, 1, [ ])
+else
+    SUMMARY_modules="${SUMMARY_modules} sensor"
 fi
 AC_ARG_ENABLE(power,
 AC_HELP_STRING([--enable-power], [Enable the power subsystem [[default=yes]]]),

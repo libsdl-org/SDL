@@ -112,6 +112,7 @@ test/testresample
 test/testrumble
 test/testscale
 test/testsem
+test/testsensor
 test/testshader
 test/testshape
 test/testsprite2
