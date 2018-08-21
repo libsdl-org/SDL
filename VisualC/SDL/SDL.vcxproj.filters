@@ -153,6 +153,9 @@
     <ClInclude Include="..\..\include\SDL_scancode.h">
       <Filter>API Headers</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\SDL_sensor.h">
+      <Filter>API Headers</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\include\SDL_shape.h">
       <Filter>API Headers</Filter>
     </ClInclude>
