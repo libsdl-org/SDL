@@ -582,12 +582,11 @@ SDL_JoystickFromInstanceID(SDL_JoystickID joyid)
     SDL_LockJoysticks();
     for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
         if (joystick->instance_id == joyid) {
-            SDL_UnlockJoysticks();
-            return joystick;
+            break;
         }
     }
     SDL_UnlockJoysticks();
-    return NULL;
+    return joystick;
 }
 
 /*
