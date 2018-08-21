@@ -366,7 +366,11 @@ public class HIDDeviceManager {
     }
 
     protected void shutdownBluetooth() {
-        mContext.unregisterReceiver(mBluetoothBroadcast);
+        try {
+            mContext.unregisterReceiver(mBluetoothBroadcast);
+        } catch (Exception e) {
+            // We may not have registered, that's okay
+        }
     }
 
     // Chromebooks do not pass along ACTION_ACL_CONNECTED / ACTION_ACL_DISCONNECTED properly.
