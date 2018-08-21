@@ -144,6 +144,9 @@ typedef enum
     SDL_AUDIODEVICEADDED = 0x1100, /**< A new audio device is available */
     SDL_AUDIODEVICEREMOVED,        /**< An audio device has been removed. */
 
+    /* Sensor events */
+    SDL_SENSORUPDATE = 0x1200,     /**< A sensor was updated */
+
     /* Render events */
     SDL_RENDER_TARGETS_RESET = 0x2000, /**< The render targets have been reset and their contents need to be updated */
     SDL_RENDER_DEVICE_RESET, /**< The device has been reset and all textures need to be recreated */
@@ -472,6 +475,17 @@ typedef struct SDL_DropEvent
 
 
 /**
+ *  \brief Sensor event structure (event.sensor.*)
+ */
+typedef struct SDL_SensorEvent
+{
+    Uint32 type;        /**< ::SDL_SENSORUPDATE */
+    Uint32 timestamp;   /**< In milliseconds, populated using SDL_GetTicks() */
+    Sint32 which;       /**< The instance ID of the sensor */
+    float data[6];      /**< Up to 6 values from the sensor - additional values can be queried using SDL_SensorGetData() */
+} SDL_SensorEvent;
+
+/**
  *  \brief The "quit requested" event
  */
 typedef struct SDL_QuitEvent
@@ -542,6 +556,7 @@ typedef union SDL_Event
     SDL_ControllerButtonEvent cbutton;  /**< Game Controller button event data */
     SDL_ControllerDeviceEvent cdevice;  /**< Game Controller device event data */
     SDL_AudioDeviceEvent adevice;   /**< Audio device event data */
+    SDL_SensorEvent sensor;         /**< Sensor event data */
     SDL_QuitEvent quit;             /**< Quit request event data */
     SDL_UserEvent user;             /**< Custom event data */
     SDL_SysWMEvent syswm;           /**< System dependent window event data */

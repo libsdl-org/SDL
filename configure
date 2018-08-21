@@ -785,6 +785,7 @@ enable_render
 enable_events
 enable_joystick
 enable_haptic
+enable_sensor
 enable_power
 enable_filesystem
 enable_threads
@@ -1523,6 +1524,7 @@ Optional Features:
   --enable-joystick       Enable the joystick subsystem [[default=yes]]
   --enable-haptic         Enable the haptic (force feedback) subsystem
                           [[default=yes]]
+  --enable-sensor         Enable the sensor subsystem [[default=yes]]
   --enable-power          Enable the power subsystem [[default=yes]]
   --enable-filesystem     Enable the filesystem subsystem [[default=yes]]
   --enable-threads        Enable the threading subsystem [[default=yes]]
@@ -16884,6 +16886,7 @@ SOURCES="$SOURCES $srcdir/src/power/*.c"
 #SOURCES="$SOURCES $srcdir/src/filesystem/*.c"
 SOURCES="$SOURCES $srcdir/src/render/*.c"
 SOURCES="$SOURCES $srcdir/src/render/*/*.c"
+SOURCES="$SOURCES $srcdir/src/sensor/*.c"
 SOURCES="$SOURCES $srcdir/src/stdlib/*.c"
 SOURCES="$SOURCES $srcdir/src/thread/*.c"
 SOURCES="$SOURCES $srcdir/src/timer/*.c"
@@ -16988,6 +16991,20 @@ $as_echo "#define SDL_HAPTIC_DISABLED 1" >>confdefs.h
 
 else
     SUMMARY_modules="${SUMMARY_modules} haptic"
+fi
+# Check whether --enable-sensor was given.
+if test "${enable_sensor+set}" = set; then :
+  enableval=$enable_sensor;
+else
+  enable_sensor=yes
+fi
+
+if test x$enable_sensor != xyes; then
+
+$as_echo "#define SDL_SENSOR_DISABLED 1" >>confdefs.h
+
+else
+    SUMMARY_modules="${SUMMARY_modules} sensor"
 fi
 # Check whether --enable-power was given.
 if test "${enable_power+set}" = set; then :

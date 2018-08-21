@@ -657,6 +657,13 @@ SDL_PumpEvents(void)
     }
 #endif
 
+#if !SDL_SENSOR_DISABLED
+    /* Check for sensor state change */
+    if (!SDL_disabled_events[SDL_SENSORUPDATE >> 8]) {
+        SDL_SensorUpdate();
+    }
+#endif
+
     SDL_SendPendingQuit();  /* in case we had a signal handler fire, etc. */
 }
 

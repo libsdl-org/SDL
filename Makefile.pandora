@@ -13,7 +13,7 @@ CFLAGS  = -O3 -march=armv7-a -mcpu=cortex-a8 -mtune=cortex-a8 -mfloat-abi=softfp
 TARGET  = libSDL.a
 
 SOURCES = ./src/*.c ./src/audio/*.c ./src/cpuinfo/*.c ./src/events/*.c \
-	./src/file/*.c ./src/stdlib/*.c ./src/thread/*.c ./src/timer/*.c ./src/video/*.c \
+	./src/file/*.c ./src/sensor/*.c ./src/stdlib/*.c ./src/thread/*.c ./src/timer/*.c ./src/video/*.c \
 	./src/joystick/*.c ./src/haptic/*.c ./src/power/*.c ./src/video/dummy/*.c ./src/audio/disk/*.c \
 	./src/audio/dummy/*.c ./src/loadso/dlopen/*.c ./src/audio/dsp/*.c \
 	./src/thread/pthread/SDL_systhread.c ./src/thread/pthread/SDL_syssem.c \

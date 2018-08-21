@@ -33,6 +33,7 @@
 #include "events/SDL_events_c.h"
 #include "haptic/SDL_haptic_c.h"
 #include "joystick/SDL_joystick_c.h"
+#include "sensor/SDL_sensor_c.h"
 
 /* Initialization/Cleanup routines */
 #if !SDL_TIMERS_DISABLED
@@ -232,6 +233,20 @@ SDL_InitSubSystem(Uint32 flags)
 #endif
     }
 
+    /* Initialize the sensor subsystem */
+    if ((flags & SDL_INIT_SENSOR)){
+#if !SDL_SENSOR_DISABLED
+        if (SDL_PrivateShouldInitSubsystem(SDL_INIT_SENSOR)) {
+            if (SDL_SensorInit() < 0) {
+                return (-1);
+            }
+        }
+        SDL_PrivateSubsystemRefCountIncr(SDL_INIT_SENSOR);
+#else
+        return SDL_SetError("SDL not built with sensor support");
+#endif
+    }
+
     return (0);
 }
 
@@ -245,6 +260,15 @@ void
 SDL_QuitSubSystem(Uint32 flags)
 {
     /* Shut down requested initialized subsystems */
+#if !SDL_SENSOR_DISABLED
+    if ((flags & SDL_INIT_SENSOR)) {
+        if (SDL_PrivateShouldQuitSubsystem(SDL_INIT_SENSOR)) {
+			SDL_SensorQuit();
+		}
+        SDL_PrivateSubsystemRefCountDecr(SDL_INIT_SENSOR);
+    }
+#endif
+
 #if !SDL_JOYSTICK_DISABLED
     if ((flags & SDL_INIT_GAMECONTROLLER)) {
         /* game controller implies joystick */

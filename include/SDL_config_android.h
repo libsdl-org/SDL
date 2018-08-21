@@ -137,6 +137,9 @@
 #define SDL_JOYSTICK_HIDAPI    1
 #define SDL_HAPTIC_ANDROID    1
 
+/* Enable sensor driver */
+#define SDL_SENSOR_ANDROID  1
+
 /* Enable various shared object loading systems */
 #define SDL_LOADSO_DLOPEN   1
 
