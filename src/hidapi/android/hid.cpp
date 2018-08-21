@@ -10,6 +10,7 @@
 #include <android/log.h>
 #include <pthread.h>
 #include <errno.h>	// For ETIMEDOUT and ECONNRESET
+#include <stdlib.h> // For malloc() and free()
 
 #define TAG "hidapi"
 #ifdef DEBUG
