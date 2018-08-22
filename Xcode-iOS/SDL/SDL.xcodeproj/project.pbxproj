@@ -203,7 +203,8 @@
 		F30D9CA5212CD0BF0047DF2E /* SDL_coremotionsensor.m in Sources */ = {isa = PBXBuildFile; fileRef = F30D9CA3212CD0BF0047DF2E /* SDL_coremotionsensor.m */; };
 		F30D9CA6212CD0BF0047DF2E /* SDL_coremotionsensor.m in Sources */ = {isa = PBXBuildFile; fileRef = F30D9CA3212CD0BF0047DF2E /* SDL_coremotionsensor.m */; };
 		F30D9CA7212CD0BF0047DF2E /* SDL_coremotionsensor.h in Headers */ = {isa = PBXBuildFile; fileRef = F30D9CA4212CD0BF0047DF2E /* SDL_coremotionsensor.h */; };
-		F3BDD77620F51C3C004ECBF3 /* hid.mm in Sources */ = {isa = PBXBuildFile; fileRef = F3BDD77520F51C3C004ECBF3 /* hid.mm */; };
+		F30D9CC6212CE92C0047DF2E /* hid.m in Sources */ = {isa = PBXBuildFile; fileRef = F30D9CC5212CE92C0047DF2E /* hid.m */; };
+		F30D9CC7212CE92C0047DF2E /* hid.m in Sources */ = {isa = PBXBuildFile; fileRef = F30D9CC5212CE92C0047DF2E /* hid.m */; };
 		F3BDD79220F51CB8004ECBF3 /* SDL_hidapi_xbox360.c in Sources */ = {isa = PBXBuildFile; fileRef = F3BDD78B20F51CB8004ECBF3 /* SDL_hidapi_xbox360.c */; };
 		F3BDD79320F51CB8004ECBF3 /* SDL_hidapi_xbox360.c in Sources */ = {isa = PBXBuildFile; fileRef = F3BDD78B20F51CB8004ECBF3 /* SDL_hidapi_xbox360.c */; };
 		F3BDD79420F51CB8004ECBF3 /* SDL_hidapi_switch.c in Sources */ = {isa = PBXBuildFile; fileRef = F3BDD78C20F51CB8004ECBF3 /* SDL_hidapi_switch.c */; };
@@ -535,7 +536,7 @@
 		F30D9C9D212CD0990047DF2E /* SDL_sensor.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_sensor.c; sourceTree = "<group>"; };
 		F30D9CA3212CD0BF0047DF2E /* SDL_coremotionsensor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_coremotionsensor.m; sourceTree = "<group>"; };
 		F30D9CA4212CD0BF0047DF2E /* SDL_coremotionsensor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_coremotionsensor.h; sourceTree = "<group>"; };
-		F3BDD77520F51C3C004ECBF3 /* hid.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = hid.mm; sourceTree = "<group>"; };
+		F30D9CC5212CE92C0047DF2E /* hid.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = hid.m; sourceTree = "<group>"; };
 		F3BDD78B20F51CB8004ECBF3 /* SDL_hidapi_xbox360.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_xbox360.c; sourceTree = "<group>"; };
 		F3BDD78C20F51CB8004ECBF3 /* SDL_hidapi_switch.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_switch.c; sourceTree = "<group>"; };
 		F3BDD78D20F51CB8004ECBF3 /* SDL_hidapi_xboxone.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_xboxone.c; sourceTree = "<group>"; };
@@ -859,7 +860,7 @@
 		F3BDD77420F51C18004ECBF3 /* ios */ = {
 			isa = PBXGroup;
 			children = (
-				F3BDD77520F51C3C004ECBF3 /* hid.mm */,
+				F30D9CC5212CE92C0047DF2E /* hid.m */,
 			);
 			path = ios;
 			sourceTree = "<group>";
@@ -1520,6 +1521,7 @@
 				FAB598421BB5C31500BE72C5 /* SDL_quit.c in Sources */,
 				FAB598441BB5C31500BE72C5 /* SDL_touch.c in Sources */,
 				FAB598461BB5C31500BE72C5 /* SDL_windowevents.c in Sources */,
+				F30D9CC7212CE92C0047DF2E /* hid.m in Sources */,
 				FAB598491BB5C31600BE72C5 /* SDL_rwopsbundlesupport.m in Sources */,
 				FAB5984A1BB5C31600BE72C5 /* SDL_rwops.c in Sources */,
 				FAB5984B1BB5C31600BE72C5 /* SDL_sysfilesystem.m in Sources */,
@@ -1631,6 +1633,7 @@
 				FD6526750DE8FCDD002AD96B /* SDL_windowevents.c in Sources */,
 				4D7516FB1EE1C28A00820EEA /* SDL_uikitmetalview.m in Sources */,
 				FD6526760DE8FCDD002AD96B /* SDL_rwops.c in Sources */,
+				F30D9CC6212CE92C0047DF2E /* hid.m in Sources */,
 				4D7517201EE1D98200820EEA /* SDL_vulkan_utils.c in Sources */,
 				FD6526780DE8FCDD002AD96B /* SDL_error.c in Sources */,
 				FD65267A0DE8FCDD002AD96B /* SDL.c in Sources */,
@@ -1716,7 +1719,6 @@
 				AA628ADB159369E3005138DD /* SDL_rotate.c in Sources */,
 				AA126AD51617C5E7005ABC8F /* SDL_uikitmodes.m in Sources */,
 				AA704DD7162AA90A0076D1C1 /* SDL_dropevents.c in Sources */,
-				F3BDD77620F51C3C004ECBF3 /* hid.mm in Sources */,
 				AABCC3951640643D00AB8930 /* SDL_uikitmessagebox.m in Sources */,
 				AA0AD06216647BBB00CE5896 /* SDL_gamecontroller.c in Sources */,
 				AA0F8495178D5F1A00823F9D /* SDL_systls.c in Sources */,
