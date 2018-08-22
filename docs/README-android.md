@@ -14,10 +14,10 @@ supported, but you can use the "android-project-ant" directory as a template.
  Requirements
 ================================================================================
 
-Android SDK (version 19 or later)
+Android SDK (version 26 or later)
 https://developer.android.com/sdk/index.html
 
-Android NDK r10e or later
+Android NDK r15c or later
 https://developer.android.com/tools/sdk/ndk/index.html
 
 Minimum API level supported by SDL: 14 (Android 4.0.1)
