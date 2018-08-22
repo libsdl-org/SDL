@@ -213,6 +213,7 @@ static jmethodID midSetActivityTitle;
 static jmethodID midSetWindowStyle;
 static jmethodID midSetOrientation;
 static jmethodID midGetContext;
+static jmethodID midIsTablet;
 static jmethodID midIsAndroidTV;
 static jmethodID midIsChromebook;
 static jmethodID midIsDeXMode;
@@ -232,7 +233,6 @@ static jmethodID midSetCustomCursor;
 static jmethodID midSetSystemCursor;
 static jmethodID midSupportsRelativeMouse;
 static jmethodID midSetRelativeMouseEnabled;
-static jmethodID midIsTablet;
 
 /* audio manager */
 static jclass mAudioManagerClass;
@@ -319,6 +319,8 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv* mEnv, jclass c
                                 "setOrientation","(IIZLjava/lang/String;)V");
     midGetContext = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
                                 "getContext","()Landroid/content/Context;");
+    midIsTablet = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
+                                "isTablet", "()Z");
     midIsAndroidTV = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
                                 "isAndroidTV","()Z");
     midIsChromebook = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
@@ -355,15 +357,14 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv* mEnv, jclass c
     midSupportsRelativeMouse = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass, "supportsRelativeMouse", "()Z");
     midSetRelativeMouseEnabled = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass, "setRelativeMouseEnabled", "(Z)Z");
 
-    midIsTablet = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass, "isTablet", "()Z");
 
     if (!midGetNativeSurface ||
-       !midSetActivityTitle || !midSetWindowStyle || !midSetOrientation || !midGetContext || !midIsAndroidTV || !midInputGetInputDeviceIds ||
+       !midSetActivityTitle || !midSetWindowStyle || !midSetOrientation || !midGetContext || !midIsTablet || !midIsAndroidTV || !midInputGetInputDeviceIds ||
        !midSendMessage || !midShowTextInput || !midIsScreenKeyboardShown ||
        !midClipboardSetText || !midClipboardGetText || !midClipboardHasText ||
        !midOpenAPKExpansionInputStream || !midGetManifestEnvironmentVariables || !midGetDisplayDPI ||
        !midCreateCustomCursor || !midSetCustomCursor || !midSetSystemCursor || !midSupportsRelativeMouse || !midSetRelativeMouseEnabled ||
-       !midIsChromebook || !midIsDeXMode || !midManualBackButton || !midIsTablet) {
+       !midIsChromebook || !midIsDeXMode || !midManualBackButton) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLActivity.java?");
     }
 
@@ -2033,6 +2034,12 @@ void *SDL_AndroidGetActivity(void)
     return (*env)->CallStaticObjectMethod(env, mActivityClass, midGetContext);
 }
 
+SDL_bool SDL_IsAndroidTablet(void)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    return (*env)->CallStaticBooleanMethod(env, mActivityClass, midIsTablet);
+}
+
 SDL_bool SDL_IsAndroidTV(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
@@ -2049,12 +2056,6 @@ SDL_bool SDL_IsDeXMode(void)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     return (*env)->CallStaticBooleanMethod(env, mActivityClass, midIsDeXMode);
-}
-
-SDL_bool SDL_IsTablet(void)
-{
-    JNIEnv *env = Android_JNI_GetEnv();
-    return (*env)->CallStaticBooleanMethod(env, mActivityClass, midIsTablet);
 }
 
 void SDL_AndroidBackButton(void)

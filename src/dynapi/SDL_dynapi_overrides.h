@@ -680,8 +680,6 @@
 #define SDL_wcsdup SDL_wcsdup_REAL
 #define SDL_GameControllerRumble SDL_GameControllerRumble_REAL
 #define SDL_JoystickRumble SDL_JoystickRumble_REAL
-#define SDL_IsTablet SDL_IsTablet_REAL
-#define SDL_IsTablet SDL_IsTablet_REAL
 #define SDL_NumSensors SDL_NumSensors_REAL
 #define SDL_SensorGetDeviceName SDL_SensorGetDeviceName_REAL
 #define SDL_SensorGetDeviceType SDL_SensorGetDeviceType_REAL
@@ -696,3 +694,4 @@
 #define SDL_SensorGetData SDL_SensorGetData_REAL
 #define SDL_SensorClose SDL_SensorClose_REAL
 #define SDL_SensorUpdate SDL_SensorUpdate_REAL
+#define SDL_IsTablet SDL_IsTablet_REAL

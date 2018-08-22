@@ -174,15 +174,6 @@ extern DECLSPEC const char * SDLCALL SDL_AndroidGetExternalStoragePath(void);
 
 #endif /* __ANDROID__ */
 
-#if defined(__ANDROID__) || defined(__IPHONEOS__)
-
-/**
- \brief Return true if the current device is a tablet.
- */
-extern DECLSPEC SDL_bool SDLCALL SDL_IsTablet(void);
-
-#endif
-
 /* Platform specific functions for WinRT */
 #if defined(__WINRT__) && __WINRT__
 
@@ -271,6 +262,11 @@ extern DECLSPEC const char * SDLCALL SDL_WinRTGetFSPathUTF8(SDL_WinRT_Path pathT
 extern DECLSPEC SDL_WinRT_DeviceFamily SDLCALL SDL_WinRTGetDeviceFamily();
 
 #endif /* __WINRT__ */
+
+/**
+ \brief Return true if the current device is a tablet.
+ */
+extern DECLSPEC SDL_bool SDLCALL SDL_IsTablet(void);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
