@@ -67,6 +67,7 @@
     <ClInclude Include="..\..\include\SDL_revision.h" />
     <ClInclude Include="..\..\include\SDL_rwops.h" />
     <ClInclude Include="..\..\include\SDL_scancode.h" />
+    <ClInclude Include="..\..\include\SDL_sensor.h" />
     <ClInclude Include="..\..\include\SDL_shape.h" />
     <ClInclude Include="..\..\include\SDL_stdinc.h" />
     <ClInclude Include="..\..\include\SDL_surface.h" />
@@ -136,6 +137,9 @@
     <ClInclude Include="..\..\src\SDL_fatal.h" />
     <ClInclude Include="..\..\src\SDL_hints_c.h" />
     <ClInclude Include="..\..\src\SDL_internal.h" />
+    <ClInclude Include="..\..\src\sensor\dummy\SDL_dummysensor.h" />
+    <ClInclude Include="..\..\src\sensor\SDL_sensor_c.h" />
+    <ClInclude Include="..\..\src\sensor\SDL_syssensor.h" />
     <ClInclude Include="..\..\src\thread\SDL_systhread.h" />
     <ClInclude Include="..\..\src\thread\SDL_thread_c.h" />
     <ClInclude Include="..\..\src\thread\stdcpp\SDL_sysmutex_c.h" />
@@ -271,6 +275,8 @@
     <ClCompile Include="..\..\src\SDL_error.c" />
     <ClCompile Include="..\..\src\SDL_hints.c" />
     <ClCompile Include="..\..\src\SDL_log.c" />
+    <ClCompile Include="..\..\src\sensor\dummy\SDL_dummysensor.c" />
+    <ClCompile Include="..\..\src\sensor\SDL_sensor.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_getenv.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_iconv.c" />
     <ClCompile Include="..\..\src\stdlib\SDL_malloc.c" />
