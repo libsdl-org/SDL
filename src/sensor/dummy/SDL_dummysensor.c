@@ -76,12 +76,12 @@ SDL_DUMMY_SensorOpen(SDL_Sensor *sensor, int device_index)
 }
     
 static void
-SDL_DUMMY_SensorUpdate(SDL_Sensor* sensor)
+SDL_DUMMY_SensorUpdate(SDL_Sensor *sensor)
 {
 }
 
 static void
-SDL_DUMMY_SensorClose(SDL_Sensor * sensor)
+SDL_DUMMY_SensorClose(SDL_Sensor *sensor)
 {
 }
 

@@ -195,6 +195,14 @@
 		AADC5A631FDA10C800960936 /* SDL_shaders_metal_ios.h in Headers */ = {isa = PBXBuildFile; fileRef = AADC5A611FDA10C800960936 /* SDL_shaders_metal_ios.h */; };
 		AADC5A641FDA10C800960936 /* SDL_render_metal.m in Sources */ = {isa = PBXBuildFile; fileRef = AADC5A621FDA10C800960936 /* SDL_render_metal.m */; };
 		AADC5A651FDA10CB00960936 /* SDL_render_metal.m in Sources */ = {isa = PBXBuildFile; fileRef = AADC5A621FDA10C800960936 /* SDL_render_metal.m */; };
+		F30D9C99212CD0360047DF2E /* SDL_sensor.h in Headers */ = {isa = PBXBuildFile; fileRef = F30D9C98212CD0360047DF2E /* SDL_sensor.h */; };
+		F30D9C9E212CD0990047DF2E /* SDL_sensor_c.h in Headers */ = {isa = PBXBuildFile; fileRef = F30D9C9B212CD0980047DF2E /* SDL_sensor_c.h */; };
+		F30D9C9F212CD0990047DF2E /* SDL_syssensor.h in Headers */ = {isa = PBXBuildFile; fileRef = F30D9C9C212CD0990047DF2E /* SDL_syssensor.h */; };
+		F30D9CA0212CD0990047DF2E /* SDL_sensor.c in Sources */ = {isa = PBXBuildFile; fileRef = F30D9C9D212CD0990047DF2E /* SDL_sensor.c */; };
+		F30D9CA1212CD0990047DF2E /* SDL_sensor.c in Sources */ = {isa = PBXBuildFile; fileRef = F30D9C9D212CD0990047DF2E /* SDL_sensor.c */; };
+		F30D9CA5212CD0BF0047DF2E /* SDL_coremotionsensor.m in Sources */ = {isa = PBXBuildFile; fileRef = F30D9CA3212CD0BF0047DF2E /* SDL_coremotionsensor.m */; };
+		F30D9CA6212CD0BF0047DF2E /* SDL_coremotionsensor.m in Sources */ = {isa = PBXBuildFile; fileRef = F30D9CA3212CD0BF0047DF2E /* SDL_coremotionsensor.m */; };
+		F30D9CA7212CD0BF0047DF2E /* SDL_coremotionsensor.h in Headers */ = {isa = PBXBuildFile; fileRef = F30D9CA4212CD0BF0047DF2E /* SDL_coremotionsensor.h */; };
 		F3BDD77620F51C3C004ECBF3 /* hid.mm in Sources */ = {isa = PBXBuildFile; fileRef = F3BDD77520F51C3C004ECBF3 /* hid.mm */; };
 		F3BDD79220F51CB8004ECBF3 /* SDL_hidapi_xbox360.c in Sources */ = {isa = PBXBuildFile; fileRef = F3BDD78B20F51CB8004ECBF3 /* SDL_hidapi_xbox360.c */; };
 		F3BDD79320F51CB8004ECBF3 /* SDL_hidapi_xbox360.c in Sources */ = {isa = PBXBuildFile; fileRef = F3BDD78B20F51CB8004ECBF3 /* SDL_hidapi_xbox360.c */; };
@@ -521,6 +529,12 @@
 		AADA5B8E16CCAB7C00107CF7 /* SDL_bits.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_bits.h; sourceTree = "<group>"; };
 		AADC5A611FDA10C800960936 /* SDL_shaders_metal_ios.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_shaders_metal_ios.h; sourceTree = "<group>"; };
 		AADC5A621FDA10C800960936 /* SDL_render_metal.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_render_metal.m; sourceTree = "<group>"; };
+		F30D9C98212CD0360047DF2E /* SDL_sensor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_sensor.h; sourceTree = "<group>"; };
+		F30D9C9B212CD0980047DF2E /* SDL_sensor_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_sensor_c.h; sourceTree = "<group>"; };
+		F30D9C9C212CD0990047DF2E /* SDL_syssensor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_syssensor.h; sourceTree = "<group>"; };
+		F30D9C9D212CD0990047DF2E /* SDL_sensor.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_sensor.c; sourceTree = "<group>"; };
+		F30D9CA3212CD0BF0047DF2E /* SDL_coremotionsensor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = SDL_coremotionsensor.m; sourceTree = "<group>"; };
+		F30D9CA4212CD0BF0047DF2E /* SDL_coremotionsensor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_coremotionsensor.h; sourceTree = "<group>"; };
 		F3BDD77520F51C3C004ECBF3 /* hid.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; path = hid.mm; sourceTree = "<group>"; };
 		F3BDD78B20F51CB8004ECBF3 /* SDL_hidapi_xbox360.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_xbox360.c; sourceTree = "<group>"; };
 		F3BDD78C20F51CB8004ECBF3 /* SDL_hidapi_switch.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_switch.c; sourceTree = "<group>"; };
@@ -814,6 +828,26 @@
 			path = metal;
 			sourceTree = "<group>";
 		};
+		F30D9C9A212CD0590047DF2E /* sensor */ = {
+			isa = PBXGroup;
+			children = (
+				F30D9CA2212CD09E0047DF2E /* coremotion */,
+				F30D9C9B212CD0980047DF2E /* SDL_sensor_c.h */,
+				F30D9C9D212CD0990047DF2E /* SDL_sensor.c */,
+				F30D9C9C212CD0990047DF2E /* SDL_syssensor.h */,
+			);
+			path = sensor;
+			sourceTree = "<group>";
+		};
+		F30D9CA2212CD09E0047DF2E /* coremotion */ = {
+			isa = PBXGroup;
+			children = (
+				F30D9CA4212CD0BF0047DF2E /* SDL_coremotionsensor.h */,
+				F30D9CA3212CD0BF0047DF2E /* SDL_coremotionsensor.m */,
+			);
+			path = coremotion;
+			sourceTree = "<group>";
+		};
 		F35CEA6E20F51B7F003ECE98 /* hidapi */ = {
 			isa = PBXGroup;
 			children = (
@@ -976,6 +1010,7 @@
 				AA7558891595D55500BBD41B /* SDL_revision.h */,
 				AA75588A1595D55500BBD41B /* SDL_rwops.h */,
 				AA75588B1595D55500BBD41B /* SDL_scancode.h */,
+				F30D9C98212CD0360047DF2E /* SDL_sensor.h */,
 				AA75588C1595D55500BBD41B /* SDL_shape.h */,
 				AA75588D1595D55500BBD41B /* SDL_stdinc.h */,
 				AA75588E1595D55500BBD41B /* SDL_surface.h */,
@@ -1009,6 +1044,7 @@
 				FD8BD8150E27E25900B52CD5 /* loadso */,
 				56ED04DE118A8E9A00A56AA6 /* power */,
 				041B2CE312FA0F680087D585 /* render */,
+				F30D9C9A212CD0590047DF2E /* sensor */,
 				FD3F4A6F0DEA620800C5B771 /* stdlib */,
 				FD99B9E00DD52EDC00FB1D6B /* thread */,
 				FD99BA1E0DD52EDC00FB1D6B /* timer */,
@@ -1263,6 +1299,7 @@
 				AA75589C1595D55500BBD41B /* SDL_audio.h in Headers */,
 				55FFA91A2122302B00D7CBED /* SDL_syspower.h in Headers */,
 				AA75589D1595D55500BBD41B /* SDL_blendmode.h in Headers */,
+				F30D9C9E212CD0990047DF2E /* SDL_sensor_c.h in Headers */,
 				AA75589E1595D55500BBD41B /* SDL_clipboard.h in Headers */,
 				AA75589F1595D55500BBD41B /* SDL_config_iphoneos.h in Headers */,
 				AA7558A01595D55500BBD41B /* SDL_config.h in Headers */,
@@ -1277,6 +1314,7 @@
 				AA7558A71595D55500BBD41B /* SDL_haptic.h in Headers */,
 				AA7558A81595D55500BBD41B /* SDL_hints.h in Headers */,
 				566726461DF72CF5001DD3DB /* SDL_dataqueue.h in Headers */,
+				F30D9C9F212CD0990047DF2E /* SDL_syssensor.h in Headers */,
 				AA7558AA1595D55500BBD41B /* SDL_joystick.h in Headers */,
 				AA13B34B1FB8B27800D9FEE6 /* SDL_shape_internals.h in Headers */,
 				AA7558AB1595D55500BBD41B /* SDL_keyboard.h in Headers */,
@@ -1284,6 +1322,7 @@
 				AA7558AC1595D55500BBD41B /* SDL_keycode.h in Headers */,
 				AA7558AD1595D55500BBD41B /* SDL_loadso.h in Headers */,
 				AA7558AE1595D55500BBD41B /* SDL_log.h in Headers */,
+				F30D9CA7212CD0BF0047DF2E /* SDL_coremotionsensor.h in Headers */,
 				AA7558AF1595D55500BBD41B /* SDL_main.h in Headers */,
 				AA7558B01595D55500BBD41B /* SDL_mouse.h in Headers */,
 				AA7558B11595D55500BBD41B /* SDL_mutex.h in Headers */,
@@ -1306,6 +1345,7 @@
 				FAD4F7021BA3C4E8008346CE /* SDL_sysjoystick_c.h in Headers */,
 				AA7558C11595D55500BBD41B /* SDL_surface.h in Headers */,
 				AA7558C21595D55500BBD41B /* SDL_system.h in Headers */,
+				F30D9C99212CD0360047DF2E /* SDL_sensor.h in Headers */,
 				AA7558C31595D55500BBD41B /* SDL_syswm.h in Headers */,
 				AA7558C41595D55500BBD41B /* SDL_thread.h in Headers */,
 				AA7558C51595D55500BBD41B /* SDL_timer.h in Headers */,
@@ -1495,9 +1535,11 @@
 				AADC5A651FDA10CB00960936 /* SDL_render_metal.m in Sources */,
 				FAB598561BB5C31600BE72C5 /* SDL_sysloadso.c in Sources */,
 				FAB598571BB5C31600BE72C5 /* SDL_power.c in Sources */,
+				F30D9CA1212CD0990047DF2E /* SDL_sensor.c in Sources */,
 				FAB598581BB5C31600BE72C5 /* SDL_syspower.m in Sources */,
 				56F9D5601DF73BA400C15B5D /* SDL_dataqueue.c in Sources */,
 				FAB598591BB5C31600BE72C5 /* SDL_render_gles.c in Sources */,
+				F30D9CA6212CD0BF0047DF2E /* SDL_coremotionsensor.m in Sources */,
 				FAB5985A1BB5C31600BE72C5 /* SDL_render_gles2.c in Sources */,
 				FAB5985B1BB5C31600BE72C5 /* SDL_shaders_gles2.c in Sources */,
 				FAB5985D1BB5C31600BE72C5 /* SDL_blendfillrect.c in Sources */,
@@ -1570,6 +1612,7 @@
 			files = (
 				FD6526810DE8FCDD002AD96B /* SDL_systimer.c in Sources */,
 				FD6526800DE8FCDD002AD96B /* SDL_timer.c in Sources */,
+				F30D9CA5212CD0BF0047DF2E /* SDL_coremotionsensor.m in Sources */,
 				FD3F4A7B0DEA620800C5B771 /* SDL_string.c in Sources */,
 				FD6526660DE8FCDD002AD96B /* SDL_dummyaudio.c in Sources */,
 				FD6526670DE8FCDD002AD96B /* SDL_audio.c in Sources */,
@@ -1667,6 +1710,7 @@
 				0402A85912FE70C600CECEE3 /* SDL_shaders_gles2.c in Sources */,
 				04BAC09D1300C1290055DE28 /* SDL_log.c in Sources */,
 				56EA86FB13E9EC2B002E47EB /* SDL_coreaudio.m in Sources */,
+				F30D9CA0212CD0990047DF2E /* SDL_sensor.c in Sources */,
 				F3BDD79420F51CB8004ECBF3 /* SDL_hidapi_switch.c in Sources */,
 				93CB792613FC5F5300BD3E05 /* SDL_uikitviewcontroller.m in Sources */,
 				AA628ADB159369E3005138DD /* SDL_rotate.c in Sources */,
