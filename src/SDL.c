@@ -475,6 +475,20 @@ SDL_GetPlatform()
 #endif
 }
 
+SDL_bool
+SDL_IsTablet()
+{
+#if __ANDROID__
+    extern SDL_bool SDL_IsAndroidTablet(void);
+    return SDL_IsAndroidTablet();
+#elif __IPHONEOS__
+    extern SDL_bool SDL_IsIPad(void);
+    return SDL_IsIPad();
+#else
+    return SDL_FALSE;
+#endif
+}
+
 #if defined(__WIN32__)
 
 #if (!defined(HAVE_LIBC) || defined(__WATCOMC__)) && !defined(SDL_STATIC_LIB)
