@@ -156,7 +156,7 @@ SDL_ANDROID_SensorOpen(SDL_Sensor *sensor, int device_index)
 }
     
 static void
-SDL_ANDROID_SensorUpdate(SDL_Sensor* sensor)
+SDL_ANDROID_SensorUpdate(SDL_Sensor *sensor)
 {
     int events;
     ASensorEvent event;
@@ -171,7 +171,7 @@ SDL_ANDROID_SensorUpdate(SDL_Sensor* sensor)
 }
 
 static void
-SDL_ANDROID_SensorClose(SDL_Sensor * sensor)
+SDL_ANDROID_SensorClose(SDL_Sensor *sensor)
 {
     if (sensor->hwdata) {
         ASensorEventQueue_disableSensor(sensor->hwdata->eventqueue, sensor->hwdata->asensor);

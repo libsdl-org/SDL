@@ -36,6 +36,9 @@ static SDL_SensorDriver *SDL_sensor_drivers[] = {
 #ifdef SDL_SENSOR_ANDROID
     &SDL_ANDROID_SensorDriver,
 #endif
+#ifdef SDL_SENSOR_COREMOTION
+    &SDL_COREMOTION_SensorDriver,
+#endif
 #if defined(SDL_SENSOR_DUMMY) || defined(SDL_SENSOR_DISABLED)
     &SDL_DUMMY_SensorDriver
 #endif

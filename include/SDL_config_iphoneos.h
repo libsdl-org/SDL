@@ -139,8 +139,8 @@
 #define SDL_JOYSTICK_MFI 1
 #define SDL_JOYSTICK_HIDAPI 1
 
-/* Enable the dummy sensor driver */
-#define SDL_SENSOR_DUMMY  1
+/* Enable the CoreMotion sensor driver */
+#define SDL_SENSOR_COREMOTION   1
 
 /* Enable Unix style SO loading */
 #define SDL_LOADSO_DLOPEN 1
