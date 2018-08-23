@@ -1049,6 +1049,22 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
 }
 
 static const char *
+DisplayOrientationName(int orientation)
+{
+    switch (orientation)
+    {
+#define CASE(X) case SDL_ORIENTATION_##X: return #X
+        CASE(UNKNOWN);
+        CASE(LANDSCAPE);
+        CASE(LANDSCAPE_FLIPPED);
+        CASE(PORTRAIT);
+        CASE(PORTRAIT_FLIPPED);
+#undef CASE
+default: return "???";
+    }
+}
+
+static const char *
 ControllerAxisName(const SDL_GameControllerAxis axis)
 {
     switch (axis)
@@ -1102,6 +1118,17 @@ SDLTest_PrintEvent(SDL_Event * event)
     }
 
     switch (event->type) {
+    case SDL_DISPLAYEVENT:
+        switch (event->display.event) {
+        case SDL_DISPLAYEVENT_ORIENTATION:
+            SDL_Log("SDL EVENT: Display %d changed orientation to %s", event->display.display, DisplayOrientationName(event->display.data1));
+            break;
+        default:
+            SDL_Log("SDL EVENT: Display %d got unknown event 0x%4.4x",
+                    event->display.display, event->display.event);
+            break;
+        }
+        break;
     case SDL_WINDOWEVENT:
         switch (event->window.event) {
         case SDL_WINDOWEVENT_SHOWN:

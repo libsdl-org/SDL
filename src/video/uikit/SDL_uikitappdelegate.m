@@ -451,6 +451,7 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
     if (_this && _this->num_displays > 0) {
         SDL_DisplayMode *desktopmode = &_this->displays[0].desktop_mode;
         SDL_DisplayMode *currentmode = &_this->displays[0].current_mode;
+        SDL_DisplayOrientation orientation = SDL_ORIENTATION_UNKNOWN;
 
         /* The desktop display mode should be kept in sync with the screen
          * orientation so that updating a window's fullscreen state to
@@ -468,6 +469,26 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
             currentmode->w = currentmode->h;
             currentmode->h = height;
         }
+
+        switch (application.statusBarOrientation) {
+        case UIInterfaceOrientationPortrait:
+            orientation = SDL_ORIENTATION_PORTRAIT;
+            break;
+        case UIInterfaceOrientationPortraitUpsideDown:
+            orientation = SDL_ORIENTATION_PORTRAIT_FLIPPED;
+            break;
+        case UIInterfaceOrientationLandscapeLeft:
+            /* Bug: UIInterfaceOrientationLandscapeLeft/Right are reversed - http://openradar.appspot.com/7216046 */
+            orientation = SDL_ORIENTATION_LANDSCAPE_FLIPPED;
+            break;
+        case UIInterfaceOrientationLandscapeRight:
+            /* Bug: UIInterfaceOrientationLandscapeLeft/Right are reversed - http://openradar.appspot.com/7216046 */
+            orientation = SDL_ORIENTATION_LANDSCAPE;
+            break;
+        default:
+            break;
+        }
+        SDL_SendDisplayEvent(&_this->displays[0], SDL_DISPLAYEVENT_ORIENTATION, orientation);
     }
 }
 #endif

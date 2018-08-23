@@ -119,8 +119,8 @@ struct SDL_Window
      !((W)->flags & SDL_WINDOW_MINIMIZED))
 
 /*
- * Define the SDL display structure This corresponds to physical monitors
- * attached to the system.
+ * Define the SDL display structure.
+ * This corresponds to physical monitors attached to the system.
  */
 struct SDL_VideoDisplay
 {
@@ -130,6 +130,7 @@ struct SDL_VideoDisplay
     SDL_DisplayMode *display_modes;
     SDL_DisplayMode desktop_mode;
     SDL_DisplayMode current_mode;
+    SDL_DisplayOrientation orientation;
 
     SDL_Window *fullscreen_window;
 
@@ -181,14 +182,14 @@ struct SDL_VideoDevice
     int (*GetDisplayBounds) (_THIS, SDL_VideoDisplay * display, SDL_Rect * rect);
 
     /*
-     * Get the dots/pixels-per-inch of a display
-     */
-    int (*GetDisplayDPI) (_THIS, SDL_VideoDisplay * display, float * ddpi, float * hdpi, float * vdpi);
-
-    /*
      * Get the usable bounds of a display (bounds minus menubar or whatever)
      */
     int (*GetDisplayUsableBounds) (_THIS, SDL_VideoDisplay * display, SDL_Rect * rect);
+
+    /*
+     * Get the dots/pixels-per-inch of a display
+     */
+    int (*GetDisplayDPI) (_THIS, SDL_VideoDisplay * display, float * ddpi, float * hdpi, float * vdpi);
 
     /*
      * Get a list of the available display modes for a display.
@@ -426,6 +427,8 @@ extern SDL_VideoDevice *SDL_GetVideoDevice(void);
 extern int SDL_AddBasicVideoDisplay(const SDL_DisplayMode * desktop_mode);
 extern int SDL_AddVideoDisplay(const SDL_VideoDisplay * display);
 extern SDL_bool SDL_AddDisplayMode(SDL_VideoDisplay *display, const SDL_DisplayMode * mode);
+extern int SDL_GetIndexOfDisplay(SDL_VideoDisplay *display);
+extern SDL_VideoDisplay *SDL_GetDisplay(int displayIndex);
 extern SDL_VideoDisplay *SDL_GetDisplayForWindow(SDL_Window *window);
 extern void *SDL_GetDisplayDriverData( int displayIndex );
 

@@ -695,3 +695,4 @@
 #define SDL_SensorClose SDL_SensorClose_REAL
 #define SDL_SensorUpdate SDL_SensorUpdate_REAL
 #define SDL_IsTablet SDL_IsTablet_REAL
+#define SDL_GetDisplayOrientation SDL_GetDisplayOrientation_REAL

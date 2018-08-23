@@ -641,7 +641,7 @@ SDL_GetNumVideoDisplays(void)
     return _this->num_displays;
 }
 
-static int
+int
 SDL_GetIndexOfDisplay(SDL_VideoDisplay *display)
 {
     int displayIndex;
@@ -737,6 +737,17 @@ SDL_GetDisplayDPI(int displayIndex, float * ddpi, float * hdpi, float * vdpi)
     }
 
     return -1;
+}
+
+SDL_DisplayOrientation
+SDL_GetDisplayOrientation(int displayIndex)
+{
+    SDL_VideoDisplay *display;
+
+    CHECK_DISPLAY_INDEX(displayIndex, SDL_ORIENTATION_UNKNOWN);
+
+    display = &_this->displays[displayIndex];
+    return display->orientation;
 }
 
 SDL_bool
@@ -1007,6 +1018,14 @@ SDL_SetDisplayModeForDisplay(SDL_VideoDisplay * display, const SDL_DisplayMode *
     }
     display->current_mode = display_mode;
     return 0;
+}
+
+SDL_VideoDisplay *
+SDL_GetDisplay(int displayIndex)
+{
+    CHECK_DISPLAY_INDEX(displayIndex, NULL);
+
+    return &_this->displays[displayIndex];
 }
 
 int
