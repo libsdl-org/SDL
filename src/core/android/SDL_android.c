@@ -135,6 +135,10 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetenv)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeEnvironmentVariablesSet)(
         JNIEnv* env, jclass cls);
 
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeOrientationChanged)(
+        JNIEnv* env, jclass cls,
+        jint orientation);
+
 /* Java class SDLInputConnection */
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeCommitText)(
         JNIEnv* env, jclass cls,
@@ -533,6 +537,14 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeResize)(
 									jint deviceWidth, jint deviceHeight, jint format, jfloat rate)
 {
     Android_SetScreenResolution(surfaceWidth, surfaceHeight, deviceWidth, deviceHeight, format, rate);
+}
+
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeOrientationChanged)(
+                                    JNIEnv *env, jclass jcls,
+                                    jint orientation)
+{
+    SDL_VideoDisplay *display = SDL_GetDisplay(0);
+    SDL_SendDisplayEvent(display, SDL_DISPLAYEVENT_ORIENTATION, orientation);
 }
 
 /* Paddown */

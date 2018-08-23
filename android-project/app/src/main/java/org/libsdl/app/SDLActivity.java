@@ -54,6 +54,14 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     private static final int SDL_SYSTEM_CURSOR_NO = 10;
     private static final int SDL_SYSTEM_CURSOR_HAND = 11;
 
+    protected static final int SDL_ORIENTATION_UNKNOWN = 0;
+    protected static final int SDL_ORIENTATION_LANDSCAPE = 1;
+    protected static final int SDL_ORIENTATION_LANDSCAPE_FLIPPED = 2;
+    protected static final int SDL_ORIENTATION_PORTRAIT = 3;
+    protected static final int SDL_ORIENTATION_PORTRAIT_FLIPPED = 4;
+
+    protected static int mCurrentOrientation;
+
     // Handle the state of the native layer
     public enum NativeState {
            INIT, RESUMED, PAUSED
@@ -250,6 +258,10 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         mLayout = new RelativeLayout(this);
         mLayout.addView(mSurface);
 
+        // Get our current screen orientation and pass it down.
+        mCurrentOrientation = SDLActivity.getCurrentOrientation();
+        SDLActivity.onNativeOrientationChanged(mCurrentOrientation);
+
         setContentView(mLayout);
 
         setWindowStyle(false);
@@ -304,6 +316,32 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         SDLActivity.handleNativeState();
     }
 
+    public static int getCurrentOrientation() {
+        final Context context = SDLActivity.getContext();
+        final Display display = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+
+        int result = SDL_ORIENTATION_UNKNOWN;
+
+        switch (display.getRotation()) {
+            case Surface.ROTATION_0:
+                result = SDL_ORIENTATION_PORTRAIT;
+                break;
+    
+            case Surface.ROTATION_90:
+                result = SDL_ORIENTATION_LANDSCAPE;
+                break;
+    
+            case Surface.ROTATION_180:
+                result = SDL_ORIENTATION_PORTRAIT_FLIPPED;
+                break;
+    
+            case Surface.ROTATION_270:
+                result = SDL_ORIENTATION_LANDSCAPE_FLIPPED;
+                break;
+        }
+
+        return result;
+    }
 
     @Override
     public void onWindowFocusChanged(boolean hasFocus) {
@@ -628,6 +666,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static native void onNativeSurfaceDestroyed();
     public static native String nativeGetHint(String name);
     public static native void nativeSetenv(String name, String value);
+    public static native void onNativeOrientationChanged(int orientation);
 
     /**
      * This method is called by SDL using JNI.
@@ -1748,28 +1787,45 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
     @Override
     public void onSensorChanged(SensorEvent event) {
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
+
+            // Since we may have an orientation set, we won't receive onConfigurationChanged events.
+            // We thus should check here.
+            int newOrientation = SDLActivity.SDL_ORIENTATION_UNKNOWN;
+    
             float x, y;
             switch (mDisplay.getRotation()) {
                 case Surface.ROTATION_90:
                     x = -event.values[1];
                     y = event.values[0];
+                    newOrientation = SDLActivity.SDL_ORIENTATION_LANDSCAPE;
                     break;
                 case Surface.ROTATION_270:
                     x = event.values[1];
                     y = -event.values[0];
+                    newOrientation = SDLActivity.SDL_ORIENTATION_LANDSCAPE_FLIPPED;
                     break;
                 case Surface.ROTATION_180:
                     x = -event.values[1];
                     y = -event.values[0];
+                    newOrientation = SDLActivity.SDL_ORIENTATION_PORTRAIT_FLIPPED;
                     break;
                 default:
                     x = event.values[0];
                     y = event.values[1];
+                    newOrientation = SDLActivity.SDL_ORIENTATION_PORTRAIT;
                     break;
             }
+
+            if (newOrientation != SDLActivity.mCurrentOrientation) {
+                SDLActivity.mCurrentOrientation = newOrientation;
+                SDLActivity.onNativeOrientationChanged(newOrientation);
+            }
+
             SDLActivity.onNativeAccel(-x / SensorManager.GRAVITY_EARTH,
                                       y / SensorManager.GRAVITY_EARTH,
                                       event.values[2] / SensorManager.GRAVITY_EARTH);
+
+            
         }
     }
 
