@@ -25,6 +25,8 @@
 #include "SDL_assert.h"
 #include "SDL_uikitmodes.h"
 
+#include "../../events/SDL_events_c.h"
+
 @implementation SDL_DisplayData
 
 @synthesize uiscreen;
@@ -188,6 +190,9 @@ UIKit_InitModes(_THIS)
                 return -1;
             }
         }
+#if !TARGET_OS_TV
+		SDL_OnApplicationDidChangeStatusBarOrientation();
+#endif
     }
 
     return 0;
@@ -316,6 +321,55 @@ UIKit_QuitModes(_THIS)
                 display->driverdata = NULL;
             }
         }
+    }
+}
+
+void SDL_OnApplicationDidChangeStatusBarOrientation()
+{
+    BOOL isLandscape = UIInterfaceOrientationIsLandscape([UIApplication sharedApplication].statusBarOrientation);
+    SDL_VideoDisplay *display = SDL_GetDisplay(0);
+
+    if (display) {
+        SDL_DisplayMode *desktopmode = &display->desktop_mode;
+        SDL_DisplayMode *currentmode = &display->current_mode;
+        SDL_DisplayOrientation orientation = SDL_ORIENTATION_UNKNOWN;
+
+        /* The desktop display mode should be kept in sync with the screen
+         * orientation so that updating a window's fullscreen state to
+         * SDL_WINDOW_FULLSCREEN_DESKTOP keeps the window dimensions in the
+         * correct orientation. */
+        if (isLandscape != (desktopmode->w > desktopmode->h)) {
+            int height = desktopmode->w;
+            desktopmode->w = desktopmode->h;
+            desktopmode->h = height;
+        }
+
+        /* Same deal with the current mode + SDL_GetCurrentDisplayMode. */
+        if (isLandscape != (currentmode->w > currentmode->h)) {
+            int height = currentmode->w;
+            currentmode->w = currentmode->h;
+            currentmode->h = height;
+        }
+
+        switch ([UIApplication sharedApplication].statusBarOrientation) {
+        case UIInterfaceOrientationPortrait:
+            orientation = SDL_ORIENTATION_PORTRAIT;
+            break;
+        case UIInterfaceOrientationPortraitUpsideDown:
+            orientation = SDL_ORIENTATION_PORTRAIT_FLIPPED;
+            break;
+        case UIInterfaceOrientationLandscapeLeft:
+            /* Bug: UIInterfaceOrientationLandscapeLeft/Right are reversed - http://openradar.appspot.com/7216046 */
+            orientation = SDL_ORIENTATION_LANDSCAPE_FLIPPED;
+            break;
+        case UIInterfaceOrientationLandscapeRight:
+            /* Bug: UIInterfaceOrientationLandscapeLeft/Right are reversed - http://openradar.appspot.com/7216046 */
+            orientation = SDL_ORIENTATION_LANDSCAPE;
+            break;
+        default:
+            break;
+        }
+        SDL_SendDisplayEvent(display, SDL_DISPLAYEVENT_ORIENTATION, orientation);
     }
 }
 

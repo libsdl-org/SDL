@@ -45,6 +45,10 @@ extern int UIKit_SetDisplayMode(_THIS, SDL_VideoDisplay * display, SDL_DisplayMo
 extern void UIKit_QuitModes(_THIS);
 extern int UIKit_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay * display, SDL_Rect * rect);
 
+#if !TARGET_OS_TV
+extern void SDL_OnApplicationDidChangeStatusBarOrientation(void);
+#endif
+
 #endif /* SDL_uikitmodes_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
