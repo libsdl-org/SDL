@@ -23,8 +23,6 @@
 #ifndef SDL_displayevents_c_h_
 #define SDL_displayevents_c_h_
 
-typedef struct SDL_VideoDisplay SDL_VideoDisplay;
-
 extern int SDL_SendDisplayEvent(SDL_VideoDisplay *display, Uint8 displayevent, int data1);
 
 #endif /* SDL_displayevents_c_h_ */

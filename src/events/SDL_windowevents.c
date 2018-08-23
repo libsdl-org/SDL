@@ -25,7 +25,6 @@
 #include "SDL_events.h"
 #include "SDL_events_c.h"
 #include "SDL_mouse_c.h"
-#include "../video/SDL_sysvideo.h"
 
 
 static int SDLCALL
