@@ -426,6 +426,9 @@
     <ClInclude Include="..\..\src\sensor\dummy\SDL_dummysensor.h">
       <Filter>Source Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\src\events\SDL_displayevents_c.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\src\atomic\SDL_atomic.c">
@@ -762,6 +765,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="..\..\src\sensor\dummy\SDL_dummysensor.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\events\SDL_displayevents.c">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

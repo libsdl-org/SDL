@@ -98,6 +98,7 @@
     <ClInclude Include="..\..\src\events\blank_cursor.h" />
     <ClInclude Include="..\..\src\events\default_cursor.h" />
     <ClInclude Include="..\..\src\events\SDL_clipboardevents_c.h" />
+    <ClInclude Include="..\..\src\events\SDL_displayevents_c.h" />
     <ClInclude Include="..\..\src\events\SDL_dropevents_c.h" />
     <ClInclude Include="..\..\src\events\SDL_events_c.h" />
     <ClInclude Include="..\..\src\events\SDL_keyboard_c.h" />
@@ -214,6 +215,7 @@
     <ClCompile Include="..\..\src\cpuinfo\SDL_cpuinfo.c" />
     <ClCompile Include="..\..\src\dynapi\SDL_dynapi.c" />
     <ClCompile Include="..\..\src\events\SDL_clipboardevents.c" />
+    <ClCompile Include="..\..\src\events\SDL_displayevents.c" />
     <ClCompile Include="..\..\src\events\SDL_dropevents.c" />
     <ClCompile Include="..\..\src\events\SDL_events.c" />
     <ClCompile Include="..\..\src\events\SDL_gesture.c" />
