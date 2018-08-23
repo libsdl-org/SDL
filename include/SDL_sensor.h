@@ -59,7 +59,13 @@ typedef struct _SDL_Sensor SDL_Sensor;
  */
 typedef Sint32 SDL_SensorID;
 
-/* The different sensor types */
+/* The different sensors defined by SDL
+ *
+ * Additional sensors may be available, using platform dependent semanticsx
+ *
+ * Hare are the additional Android sensors:
+ * https://developer.android.com/reference/android/hardware/SensorEvent.html#values
+ */
 typedef enum
 {
     SDL_SENSOR_INVALID = -1,    /**< Returned for an invalid sensor */
