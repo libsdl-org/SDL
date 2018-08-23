@@ -178,6 +178,8 @@ Wayland_PumpEvents(_THIS)
 {
     SDL_VideoData *d = _this->driverdata;
 
+    WAYLAND_wl_display_flush(d->display);
+
     if (SDL_IOReady(WAYLAND_wl_display_get_fd(d->display), SDL_FALSE, 0)) {
         WAYLAND_wl_display_dispatch(d->display);
     }
