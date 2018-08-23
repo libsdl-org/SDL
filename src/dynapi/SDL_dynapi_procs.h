@@ -737,3 +737,4 @@ SDL_DYNAPI_PROC(int,SDL_SensorGetData,(SDL_Sensor *a, float *b, int c),(a,b,c),r
 SDL_DYNAPI_PROC(void,SDL_SensorClose,(SDL_Sensor *a),(a),)
 SDL_DYNAPI_PROC(void,SDL_SensorUpdate,(void),(),)
 SDL_DYNAPI_PROC(SDL_bool,SDL_IsTablet,(void),(),return)
+SDL_DYNAPI_PROC(SDL_DisplayOrientation,SDL_GetDisplayOrientation,(int a),(a),return)

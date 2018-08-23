@@ -20,31 +20,42 @@
 */
 #include "../SDL_internal.h"
 
-/* Useful functions and variables from SDL_events.c */
+/* Display event handling code for SDL */
+
 #include "SDL_events.h"
-#include "SDL_thread.h"
-#include "SDL_clipboardevents_c.h"
-#include "SDL_displayevents_c.h"
-#include "SDL_dropevents_c.h"
-#include "SDL_gesture_c.h"
-#include "SDL_keyboard_c.h"
-#include "SDL_mouse_c.h"
-#include "SDL_touch_c.h"
-#include "SDL_windowevents_c.h"
+#include "SDL_events_c.h"
+#include "../video/SDL_sysvideo.h"
 
-/* Start and stop the event processing loop */
-extern int SDL_StartEventLoop(void);
-extern void SDL_StopEventLoop(void);
-extern void SDL_QuitInterrupt(void);
 
-extern int SDL_SendAppEvent(SDL_EventType eventType);
-extern int SDL_SendSysWMEvent(SDL_SysWMmsg * message);
-extern int SDL_SendKeymapChangedEvent(void);
+int
+SDL_SendDisplayEvent(SDL_VideoDisplay *display, Uint8 displayevent, int data1)
+{
+    int posted;
 
-extern int SDL_QuitInit(void);
-extern int SDL_SendQuit(void);
-extern void SDL_QuitQuit(void);
+    if (!display) {
+        return 0;
+    }
+    switch (displayevent) {
+    case SDL_DISPLAYEVENT_ORIENTATION:
+        if (data1 == SDL_ORIENTATION_UNKNOWN || data1 == display->orientation) {
+            return 0;
+        }
+        display->orientation = (SDL_DisplayOrientation)data1;
+        break;
+    }
 
-extern void SDL_SendPendingQuit(void);
+    /* Post the event, if desired */
+    posted = 0;
+    if (SDL_GetEventState(SDL_DISPLAYEVENT) == SDL_ENABLE) {
+        SDL_Event event;
+        event.type = SDL_DISPLAYEVENT;
+        event.display.event = displayevent;
+        event.display.display = SDL_GetIndexOfDisplay(display);
+        event.display.data1 = data1;
+        posted = (SDL_PushEvent(&event) > 0);
+    }
+
+    return (posted);
+}
 
 /* vi: set ts=4 sw=4 expandtab: */

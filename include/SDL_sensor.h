@@ -68,6 +68,51 @@ typedef enum
     SDL_SENSOR_GYRO,            /**< Gyroscope */
 } SDL_SensorType;
 
+/**
+ * Accelerometer sensor
+ *
+ * The accelerometer returns the current acceleration in SI meters per
+ * second squared. This includes gravity, so a device at rest will have
+ * an acceleration of SDL_STANDARD_GRAVITY straight down.
+ *
+ * values[0]: Acceleration on the x axis
+ * values[1]: Acceleration on the y axis
+ * values[2]: Acceleration on the z axis
+ *
+ * For phones held in portrait mode, the axes are defined as follows:
+ * -X ... +X : left ... right
+ * -Y ... +Y : bottom ... top
+ * -Z ... +Z : farther ... closer
+ * 
+ * The axis data is not changed when the phone is rotated.
+ *
+ * \sa SDL_GetDisplayOrientation()
+ */
+#define SDL_STANDARD_GRAVITY    9.80665f
+
+/**
+ * Gyroscope sensor
+ *
+ * The gyroscope returns the current rate of rotation in radians per second.
+ * The rotation is positive in the counter-clockwise direction. That is,
+ * an observer looking from a positive location on one of the axes would
+ * see positive rotation on that axis when it appeared to be rotating
+ * counter-clockwise.
+ *
+ * values[0]: Angular speed around the x axis
+ * values[1]: Angular speed around the y axis
+ * values[2]: Angular speed around the z axis
+ *
+ * For phones held in portrait mode, the axes are defined as follows:
+ * -X ... +X : left ... right
+ * -Y ... +Y : bottom ... top
+ * -Z ... +Z : farther ... closer
+ * 
+ * The axis data is not changed when the phone is rotated.
+ *
+ * \sa SDL_GetDisplayOrientation()
+ */
+
 /* Function prototypes */
 
 /**
