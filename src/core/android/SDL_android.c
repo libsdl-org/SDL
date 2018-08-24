@@ -258,6 +258,7 @@ static jclass mControllerManagerClass;
 static jmethodID midPollInputDevices;
 static jmethodID midPollHapticDevices;
 static jmethodID midHapticRun;
+static jmethodID midHapticStop;
 
 /* static fields */
 static jfieldID fidSeparateMouseAndTouch;
@@ -430,8 +431,10 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(JNIEnv* mEn
                                 "pollHapticDevices", "()V");
     midHapticRun = (*mEnv)->GetStaticMethodID(mEnv, mControllerManagerClass,
                                 "hapticRun", "(II)V");
+    midHapticStop = (*mEnv)->GetStaticMethodID(mEnv, mControllerManagerClass,
+                                "hapticStop", "(I)V");
 
-    if (!midPollInputDevices || !midPollHapticDevices || !midHapticRun) {
+    if (!midPollInputDevices || !midPollHapticDevices || !midHapticRun || !midHapticStop) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLControllerManager.java?");
     }
 
@@ -1892,6 +1895,11 @@ void Android_JNI_HapticRun(int device_id, int length)
     (*env)->CallStaticVoidMethod(env, mControllerManagerClass, midHapticRun, device_id, length);
 }
 
+void Android_JNI_HapticStop(int device_id)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    (*env)->CallStaticVoidMethod(env, mControllerManagerClass, midHapticStop, device_id);
+}
 
 /* See SDLActivity.java for constants. */
 #define COMMAND_SET_KEEP_SCREEN_ON    5

@@ -79,6 +79,7 @@ void Android_JNI_PollInputDevices(void);
 /* Haptic support */
 void Android_JNI_PollHapticDevices(void);
 void Android_JNI_HapticRun(int device_id, int length);
+void Android_JNI_HapticStop(int device_id);
 
 /* Video */
 void Android_JNI_SuspendScreenSaver(SDL_bool suspend);
