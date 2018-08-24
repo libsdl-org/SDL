@@ -255,7 +255,7 @@ static void createInstance(void)
     appInfo.apiVersion = VK_API_VERSION_1_0;
     instanceCreateInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     instanceCreateInfo.pApplicationInfo = &appInfo;
-    if(!SDL_Vulkan_GetInstanceExtensions(state->windows[0], &extensionCount, NULL))
+    if(!SDL_Vulkan_GetInstanceExtensions(NULL, &extensionCount, NULL))
     {
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,
                      "SDL_Vulkan_GetInstanceExtensions(): %s\n",
@@ -268,7 +268,7 @@ static void createInstance(void)
         SDL_OutOfMemory();
         quit(2);
     }
-    if(!SDL_Vulkan_GetInstanceExtensions(state->windows[0], &extensionCount, extensions))
+    if(!SDL_Vulkan_GetInstanceExtensions(NULL, &extensionCount, extensions))
     {
         SDL_free((void*)extensions);
         SDL_LogError(SDL_LOG_CATEGORY_APPLICATION,

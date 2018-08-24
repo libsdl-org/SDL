@@ -4103,11 +4103,14 @@ void SDL_Vulkan_UnloadLibrary(void)
 
 SDL_bool SDL_Vulkan_GetInstanceExtensions(SDL_Window *window, unsigned *count, const char **names)
 {
-    CHECK_WINDOW_MAGIC(window, SDL_FALSE);
+    if (window) {
+        CHECK_WINDOW_MAGIC(window, SDL_FALSE);
 
-    if (!(window->flags & SDL_WINDOW_VULKAN)) {
-        SDL_SetError(NOT_A_VULKAN_WINDOW);
-        return SDL_FALSE;
+        if (!(window->flags & SDL_WINDOW_VULKAN))
+        {
+            SDL_SetError(NOT_A_VULKAN_WINDOW);
+            return SDL_FALSE;
+        }
     }
 
     if (!count) {
