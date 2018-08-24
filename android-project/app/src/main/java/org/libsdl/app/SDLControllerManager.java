@@ -81,6 +81,14 @@ public class SDLControllerManager
         mHapticHandler.run(device_id, length);
     }
 
+    /**
+     * This method is called by SDL using JNI.
+     */
+    public static void hapticStop(int device_id)
+    {
+        mHapticHandler.stop(device_id);
+    }
+
     // Check if a given device is considered a possible SDL joystick
     public static boolean isDeviceSDLJoystick(int deviceId) {
         InputDevice device = InputDevice.getDevice(deviceId);
@@ -419,6 +427,13 @@ class SDLHapticHandler {
         SDLHaptic haptic = getHaptic(device_id);
         if (haptic != null) {
             haptic.vib.vibrate (length);
+        }
+    }
+
+    public void stop(int device_id) {
+        SDLHaptic haptic = getHaptic(device_id);
+        if (haptic != null) {
+            haptic.vib.cancel();
         }
     }
 

@@ -238,6 +238,7 @@ SDL_SYS_HapticRunEffect(SDL_Haptic * haptic, struct haptic_effect *effect,
 int
 SDL_SYS_HapticStopEffect(SDL_Haptic * haptic, struct haptic_effect *effect)
 {
+    Android_JNI_HapticStop (((SDL_hapticlist_item *)haptic->hwdata)->device_id);
     return 0;
 }
 
