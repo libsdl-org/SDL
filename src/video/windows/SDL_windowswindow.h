@@ -46,6 +46,7 @@ typedef struct
     Uint8 focus_click_pending;
     SDL_bool windowed_mode_was_maximized;
     SDL_bool in_window_deactivation;
+    RECT cursor_clipped_rect;
     struct SDL_VideoData *videodata;
 #if SDL_VIDEO_OPENGL_EGL  
     EGLSurface egl_surface;

@@ -1543,8 +1543,9 @@ SDL_CreateWindow(const char *title, int x, int y, int w, int h, Uint32 flags)
 	// Clear minimized if not on windows, only windows handles it at create rather than FinishWindowCreation,
 	// but it's important or window focus will get broken on windows!
 #if !defined(__WIN32__)
-	if ( window->flags & SDL_WINDOW_MINIMIZED )
+	if (window->flags & SDL_WINDOW_MINIMIZED) {
 		window->flags &= ~SDL_WINDOW_MINIMIZED;
+    }
 #endif
 
 #if __WINRT__ && (NTDDI_VERSION < NTDDI_WIN10)

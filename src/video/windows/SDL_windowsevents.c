@@ -228,9 +228,7 @@ WIN_CheckWParamMouseButton(SDL_bool bwParamMousePressed, SDL_bool bSDLMousePress
         /* Ignore the button click for activation */
         if (!bwParamMousePressed) {
             data->focus_click_pending &= ~SDL_BUTTON(button);
-            if (!data->focus_click_pending) {
-                WIN_UpdateClipCursor(data->window);
-            }
+            WIN_UpdateClipCursor(data->window);
         }
         if (WIN_ShouldIgnoreFocusClick()) {
             return;
@@ -401,6 +399,11 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     }
 #endif /* WMMSG_DEBUG */
 
+    /* Update the clipping rect in case someone else has stolen it */
+    /* FIXME: Is this function cheap enough to call this frequently?
+    WIN_UpdateClipCursor(data->window);
+    */
+
     if (IME_HandleMessage(hwnd, msg, wParam, &lParam, data->videodata))
         return 0;
 
@@ -465,6 +468,8 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 SDL_ToggleModState(KMOD_CAPS, (GetKeyState(VK_CAPITAL) & 0x0001) != 0);
                 SDL_ToggleModState(KMOD_NUM, (GetKeyState(VK_NUMLOCK) & 0x0001) != 0);
             } else {
+                RECT rect;
+
                 data->in_window_deactivation = SDL_TRUE;
 
                 if (SDL_GetKeyboardFocus() == data->window) {
@@ -472,7 +477,11 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     WIN_ResetDeadKeys();
                 }
 
-                ClipCursor(NULL);
+                if (GetClipCursor(&rect) && SDL_memcmp(&rect, &data->cursor_clipped_rect, sizeof(rect) == 0)) {
+SDL_Log("Windows deactivate, ClipCursor(NULL)\n");
+                    ClipCursor(NULL);
+                    SDL_zero(data->cursor_clipped_rect);
+                }
 
                 data->in_window_deactivation = SDL_FALSE;
             }
@@ -653,7 +662,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         break;
 
     case WM_UNICHAR:
-        if ( wParam == UNICODE_NOCHAR ) {
+        if (wParam == UNICODE_NOCHAR) {
             returnCode = 1;
             break;
         }
@@ -661,8 +670,8 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     case WM_CHAR:
         {
             char text[5];
-            if ( WIN_ConvertUTF32toUTF8( (UINT32)wParam, text ) ) {
-                SDL_SendKeyboardText( text );
+            if (WIN_ConvertUTF32toUTF8((UINT32)wParam, text)) {
+                SDL_SendKeyboardText(text);
             }
         }
         returnCode = 0;
@@ -1099,9 +1108,9 @@ IsWin10FCUorNewer(void)
             SDL_zero(info);
             info.dwOSVersionInfoSize = sizeof(info);
             if (getVersionPtr(&info) == 0) { /* STATUS_SUCCESS == 0 */
-                if (   (info.dwMajorVersion == 10 && info.dwMinorVersion == 0 && info.dwBuildNumber >= 16299)
-                    || (info.dwMajorVersion == 10 && info.dwMinorVersion > 0)
-                    || (info.dwMajorVersion > 10) )
+                if ((info.dwMajorVersion == 10 && info.dwMinorVersion == 0 && info.dwBuildNumber >= 16299) ||
+                    (info.dwMajorVersion == 10 && info.dwMinorVersion > 0) ||
+                    (info.dwMajorVersion > 10))
                 {
                     return SDL_TRUE;
                 }
