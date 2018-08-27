@@ -21501,6 +21501,9 @@ fi
 
 $as_echo "#define SDL_VIDEO_DRIVER_DIRECTFB 1" >>confdefs.h
 
+
+$as_echo "#define SDL_VIDEO_RENDER_DIRECTFB 1" >>confdefs.h
+
             SOURCES="$SOURCES $srcdir/src/video/directfb/*.c"
             EXTRA_CFLAGS="$EXTRA_CFLAGS $DIRECTFB_CFLAGS"
 
