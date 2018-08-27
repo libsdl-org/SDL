@@ -399,11 +399,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     }
 #endif /* WMMSG_DEBUG */
 
-    /* Update the clipping rect in case someone else has stolen it */
-    /* FIXME: Is this function cheap enough to call this frequently?
-    WIN_UpdateClipCursor(data->window);
-    */
-
     if (IME_HandleMessage(hwnd, msg, wParam, &lParam, data->videodata))
         return 0;
 
@@ -478,7 +473,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                 }
 
                 if (GetClipCursor(&rect) && SDL_memcmp(&rect, &data->cursor_clipped_rect, sizeof(rect) == 0)) {
-SDL_Log("Windows deactivate, ClipCursor(NULL)\n");
                     ClipCursor(NULL);
                     SDL_zero(data->cursor_clipped_rect);
                 }
@@ -1036,6 +1030,20 @@ SDL_Log("Windows deactivate, ClipCursor(NULL)\n");
     }
 }
 
+static void WIN_UpdateClipCursorForWindows()
+{
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    SDL_Window *window;
+
+    if (_this) {
+        for (window = _this->windows; window; window = window->next) {
+            if (window->driverdata) {
+                WIN_UpdateClipCursor(window);
+            }
+        }
+    }
+}
+
 /* A message hook called before TranslateMessage() */
 static SDL_WindowsMessageHook g_WindowsMessageHook = NULL;
 static void *g_WindowsMessageHookData = NULL;
@@ -1081,6 +1089,9 @@ WIN_PumpEvents(_THIS)
     if ((keystate[SDL_SCANCODE_RSHIFT] == SDL_PRESSED) && !(GetKeyState(VK_RSHIFT) & 0x8000)) {
         SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_RSHIFT);
     }
+
+    /* Update the clipping rect in case someone else has stolen it */
+    WIN_UpdateClipCursorForWindows();
 }
 
 /* to work around #3931, a bug introduced in Win10 Fall Creators Update (build nr. 16299)
