@@ -2163,6 +2163,7 @@ AC_HELP_STRING([--enable-directfb-shared], [dynamically load directfb support [[
                               , enable_directfb_shared=yes)
 
             AC_DEFINE(SDL_VIDEO_DRIVER_DIRECTFB, 1, [ ])
+            AC_DEFINE(SDL_VIDEO_RENDER_DIRECTFB, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/video/directfb/*.c"
             EXTRA_CFLAGS="$EXTRA_CFLAGS $DIRECTFB_CFLAGS"
 
