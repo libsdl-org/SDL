@@ -101,6 +101,7 @@ typedef struct SDL_EVDEV_PrivateData
     SDL_EVDEV_keyboard_state *kbd;
 } SDL_EVDEV_PrivateData;
 
+#undef _THIS
 #define _THIS SDL_EVDEV_PrivateData *_this
 static _THIS = NULL;
 
