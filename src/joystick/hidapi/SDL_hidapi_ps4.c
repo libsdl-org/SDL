@@ -107,6 +107,7 @@ typedef struct {
     SDL_bool is_dongle;
     SDL_bool is_bluetooth;
     SDL_bool audio_supported;
+    SDL_bool rumble_supported;
     Uint8 volume;
     Uint32 last_volume_check;
     Uint32 rumble_expiration;
@@ -297,6 +298,12 @@ HIDAPI_DriverPS4_Init(SDL_Joystick *joystick, hid_device *dev, Uint16 vendor_id,
         ctx->audio_supported = SDL_TRUE;
     }
 
+    if (ctx->is_bluetooth) {
+        ctx->rumble_supported = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, SDL_FALSE);
+    } else {
+        ctx->rumble_supported = SDL_TRUE;
+    }
+
     /* Initialize LED and effect state */
     HIDAPI_DriverPS4_Rumble(joystick, dev, ctx, 0, 0, 0);
 
@@ -315,6 +322,10 @@ HIDAPI_DriverPS4_Rumble(SDL_Joystick *joystick, hid_device *dev, void *context, 
     DS4EffectsState_t *effects;
     Uint8 data[78];
     int report_size, offset;
+
+    if (!ctx->rumble_supported) {
+        return SDL_Unsupported();
+    }
 
     /* In order to send rumble, we have to send a complete effect packet */
     SDL_memset(data, 0, sizeof(data));
@@ -517,7 +528,7 @@ HIDAPI_DriverPS4_Update(SDL_Joystick *joystick, hid_device *dev, void *context)
         }
     }
 
-	return (size >= 0);
+    return (size >= 0);
 }
 
 static void
