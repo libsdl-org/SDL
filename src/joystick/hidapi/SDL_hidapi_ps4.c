@@ -216,9 +216,11 @@ static uint8_t GetPlaystationVolumeFromFloat(float fVolume)
 static SDL_bool
 HIDAPI_DriverPS4_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number, Uint16 usage_page, Uint16 usage)
 {
-    /* The Revolution Pro Controller exposes multiple interfaces on Windows */
+    /* The Revolution Pro Controller and Razer Raiju expose multiple interfaces on Windows */
     const Uint16 NACON_USB_VID = 0x146b;
-    if (vendor_id == NACON_USB_VID && usage_page != 0 && usage_page != 1) {
+    const Uint16 RAZER_USB_VID = 0x1532;
+    if ((vendor_id == NACON_USB_VID || vendor_id == RAZER_USB_VID) &&
+        (usage_page != 0 && usage_page != 1)) {
         return SDL_FALSE;
     }
 
