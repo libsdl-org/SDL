@@ -232,8 +232,14 @@ HIDAPI_DriverXboxOne_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, 
     }
 
     axis = ((int)*(Sint16*)(&data[6]) * 64) - 32768;
+    if (axis == 32704) {
+        axis = 32767;
+    }
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, axis);
     axis = ((int)*(Sint16*)(&data[8]) * 64) - 32768;
+    if (axis == 32704) {
+        axis = 32767;
+    }
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, axis);
     axis = *(Sint16*)(&data[10]);
     SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_LEFTX, axis);
