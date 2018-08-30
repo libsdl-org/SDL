@@ -64,7 +64,7 @@ typedef struct _SDL_HIDAPI_Device
     char *path;
     Uint16 vendor_id;
     Uint16 product_id;
-	Uint16 version;
+    Uint16 version;
     SDL_JoystickGUID guid;
     int interface_number;   /* Available on Windows and Linux */
     Uint16 usage_page;      /* Available on Windows and Mac OS X */
@@ -143,7 +143,7 @@ typedef struct _DEV_BROADCAST_DEVICEINTERFACE_A
 
 typedef struct  _DEV_BROADCAST_HDR      DEV_BROADCAST_HDR;
 #define DBT_DEVICEARRIVAL               0x8000  /* system detected a new device */
-#define DBT_DEVICEREMOVECOMPLETE		0x8004  /* device was removed from the system */
+#define DBT_DEVICEREMOVECOMPLETE        0x8004  /* device was removed from the system */
 #define DBT_DEVTYP_DEVICEINTERFACE      0x00000005  /* device interface class */
 #define DBT_DEVNODES_CHANGED            0x0007
 #define DBT_CONFIGCHANGED               0x0018
@@ -159,7 +159,7 @@ static LRESULT CALLBACK ControllerWndProc(HWND hwnd, UINT message, WPARAM wParam
     case WM_DEVICECHANGE:
         switch (wParam) {
         case DBT_DEVICEARRIVAL:
-		case DBT_DEVICEREMOVECOMPLETE:
+        case DBT_DEVICEREMOVECOMPLETE:
             if (((DEV_BROADCAST_HDR*)lParam)->dbch_devicetype == DBT_DEVTYP_DEVICEINTERFACE) {
                 SDL_HIDAPI_discovery.m_bHaveDevicesChanged = SDL_TRUE;
             }
@@ -700,7 +700,7 @@ HIDAPI_AddDevice(struct hid_device_info *info)
     device->seen = SDL_TRUE;
     device->vendor_id = info->vendor_id;
     device->product_id = info->product_id;
-	device->version = info->release_number;
+    device->version = info->release_number;
     device->interface_number = info->interface_number;
     device->usage_page = info->usage_page;
     device->usage = info->usage;
@@ -958,14 +958,14 @@ HIDAPI_JoystickUpdate(SDL_Joystick * joystick)
     struct joystick_hwdata *hwdata = joystick->hwdata;
     SDL_HIDAPI_DeviceDriver *driver = hwdata->driver;
     if (!driver->Update(joystick, hwdata->dev, hwdata->context)) {
-		SDL_HIDAPI_Device *device;
-		for (device = SDL_HIDAPI_devices; device; device = device->next) {
-			if (device->instance_id == joystick->instance_id) {
-				HIDAPI_DelDevice(device, SDL_TRUE);
-				break;
-			}
-		}
-	}
+        SDL_HIDAPI_Device *device;
+        for (device = SDL_HIDAPI_devices; device; device = device->next) {
+            if (device->instance_id == joystick->instance_id) {
+                HIDAPI_DelDevice(device, SDL_TRUE);
+                break;
+            }
+        }
+    }
 }
 
 static void

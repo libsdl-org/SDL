@@ -296,7 +296,7 @@ HIDAPI_DriverXboxOne_Update(SDL_Joystick *joystick, hid_device *dev, void *conte
         }
     }
 
-	return (size >= 0);
+    return (size >= 0);
 }
 
 static void
