@@ -1857,8 +1857,6 @@ GLES2_RenderCopy(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect *s
     return GL_CheckError("", renderer);
 }
 
-#define PI 3.14159265f
-
 static int
 GLES2_RenderCopyEx(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect *srcrect,
                  const SDL_FRect *dstrect, const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip)
@@ -1880,7 +1878,7 @@ GLES2_RenderCopyEx(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect 
     data->glEnableVertexAttribArray(GLES2_ATTRIBUTE_CENTER);
     data->glEnableVertexAttribArray(GLES2_ATTRIBUTE_ANGLE);
 
-    radian_angle = PI * (360.0f - angle) / 180.f;
+    radian_angle = (float)(M_PI * (360.0 - angle) / 180.0);
     fAngle[0] = fAngle[2] = fAngle[4] = fAngle[6] = (GLfloat)SDL_sin(radian_angle);
     /* render expects cos value - 1 (see GLES2_VertexSrc_Default_) */
     fAngle[1] = fAngle[3] = fAngle[5] = fAngle[7] = (GLfloat)SDL_cos(radian_angle) - 1.0f;
