@@ -552,7 +552,7 @@ HIDAPI_IsDeviceSupported(Uint16 vendor_id, Uint16 product_id, Uint16 version)
 
     for (i = 0; i < SDL_arraysize(SDL_HIDAPI_drivers); ++i) {
         SDL_HIDAPI_DeviceDriver *driver = SDL_HIDAPI_drivers[i];
-        if (driver->enabled && driver->IsSupportedDevice(vendor_id, product_id, version, -1, 0, 0)) {
+        if (driver->enabled && driver->IsSupportedDevice(vendor_id, product_id, version, -1)) {
             return SDL_TRUE;
         }
     }
@@ -562,15 +562,26 @@ HIDAPI_IsDeviceSupported(Uint16 vendor_id, Uint16 product_id, Uint16 version)
 static SDL_HIDAPI_DeviceDriver *
 HIDAPI_GetDeviceDriver(SDL_HIDAPI_Device *device)
 {
+    const Uint16 USAGE_PAGE_GENERIC_DESKTOP = 0x0001;
+    const Uint16 USAGE_JOYSTICK = 0x0004;
+    const Uint16 USAGE_GAMEPAD = 0x0005;
+    const Uint16 USAGE_MULTIAXISCONTROLLER = 0x0008;
     int i;
 
     if (SDL_ShouldIgnoreJoystick(device->name, device->guid)) {
         return NULL;
     }
 
+    if (device->usage_page && device->usage_page != USAGE_PAGE_GENERIC_DESKTOP) {
+        return NULL;
+    }
+    if (device->usage && device->usage != USAGE_JOYSTICK && device->usage != USAGE_GAMEPAD && device->usage != USAGE_MULTIAXISCONTROLLER) {
+        return NULL;
+    }
+
     for (i = 0; i < SDL_arraysize(SDL_HIDAPI_drivers); ++i) {
         SDL_HIDAPI_DeviceDriver *driver = SDL_HIDAPI_drivers[i];
-        if (driver->enabled && driver->IsSupportedDevice(device->vendor_id, device->product_id, device->version, device->interface_number, device->usage_page, device->usage)) {
+        if (driver->enabled && driver->IsSupportedDevice(device->vendor_id, device->product_id, device->version, device->interface_number)) {
             return driver;
         }
     }
