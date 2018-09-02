@@ -317,7 +317,10 @@ distclean: clean
 %.wav: $(srcdir)/%.wav
 	cp $< $@
 
-copydatafiles: copybmpfiles copywavfiles
+%.dat: $(srcdir)/%.dat
+	cp $< $@
+
+copydatafiles: copybmpfiles copywavfiles copydatfiles
 .PHONY : copydatafiles
 
 copybmpfiles: $(foreach bmp,$(wildcard $(srcdir)/*.bmp),$(notdir $(bmp)))
@@ -325,4 +328,7 @@ copybmpfiles: $(foreach bmp,$(wildcard $(srcdir)/*.bmp),$(notdir $(bmp)))
 
 copywavfiles: $(foreach wav,$(wildcard $(srcdir)/*.wav),$(notdir $(wav)))
 .PHONY : copywavfiles
+
+copydatfiles: $(foreach dat,$(wildcard $(srcdir)/*.dat),$(notdir $(dat)))
+.PHONY : copydatfiles
 
