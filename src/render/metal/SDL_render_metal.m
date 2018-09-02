@@ -956,8 +956,8 @@ METAL_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
                     const Uint8 *Vplane, int Vpitch)
 { @autoreleasepool {
     METAL_TextureData *texturedata = (__bridge METAL_TextureData *)texture->driverdata;
-    int Uslice = texture->format == SDL_PIXELFORMAT_YV12 ? 1 : 0;
-    int Vslice = texture->format == SDL_PIXELFORMAT_YV12 ? 0 : 1;
+    const int Uslice = 0;
+    const int Vslice = 1;
 
     /* Bail out if we're supposed to update an empty rectangle */
     if (rect->w <= 0 || rect->h <= 0) {
