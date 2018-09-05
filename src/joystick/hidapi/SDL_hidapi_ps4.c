@@ -44,6 +44,7 @@
 
 #define RAZER_USB_VID       0x1532
 #define RAZER_PANTHERA_PID  0X0401
+#define RAZER_PANTHERA_EVO_PID  0x1008
 
 #define USB_PACKET_LENGTH   64
 
@@ -264,7 +265,8 @@ static SDL_bool CheckUSBConnected(hid_device *dev)
 static SDL_bool HIDAPI_DriverPS4_CanRumble(Uint16 vendor_id, Uint16 product_id)
 {
     /* The Razer Panthera fight stick hangs when trying to rumble */
-    if (vendor_id == RAZER_USB_VID && product_id == RAZER_PANTHERA_PID) {
+    if (vendor_id == RAZER_USB_VID &&
+        (product_id == RAZER_PANTHERA_PID || product_id == RAZER_PANTHERA_EVO_PID)) {
         return SDL_FALSE;
     }
     return SDL_TRUE;
