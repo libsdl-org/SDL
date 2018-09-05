@@ -42,6 +42,9 @@
 #define SONY_DS4_DONGLE_PID 0x0BA0
 #define SONY_DS4_SLIM_PID   0x09CC
 
+#define RAZER_USB_VID       0x1532
+#define RAZER_PANTHERA_PID  0X0401
+
 #define USB_PACKET_LENGTH   64
 
 #define VOLUME_CHECK_INTERVAL_MS    (10 * 1000)
@@ -258,6 +261,15 @@ static SDL_bool CheckUSBConnected(hid_device *dev)
     return SDL_FALSE;
 }
 
+static SDL_bool HIDAPI_DriverPS4_CanRumble(Uint16 vendor_id, Uint16 product_id)
+{
+    /* The Razer Panthera fight stick hangs when trying to rumble */
+    if (vendor_id == RAZER_USB_VID && product_id == RAZER_PANTHERA_PID) {
+        return SDL_FALSE;
+    }
+    return SDL_TRUE;
+}
+
 static int HIDAPI_DriverPS4_Rumble(SDL_Joystick *joystick, hid_device *dev, void *context, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms);
 
 static SDL_bool
@@ -292,10 +304,12 @@ HIDAPI_DriverPS4_Init(SDL_Joystick *joystick, hid_device *dev, Uint16 vendor_id,
         ctx->audio_supported = SDL_TRUE;
     }
 
-    if (ctx->is_bluetooth) {
-        ctx->rumble_supported = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, SDL_FALSE);
-    } else {
-        ctx->rumble_supported = SDL_TRUE;
+    if (HIDAPI_DriverPS4_CanRumble(vendor_id, product_id)) {
+        if (ctx->is_bluetooth) {
+            ctx->rumble_supported = SDL_GetHintBoolean(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, SDL_FALSE);
+        } else {
+            ctx->rumble_supported = SDL_TRUE;
+        }
     }
 
     /* Initialize LED and effect state */
