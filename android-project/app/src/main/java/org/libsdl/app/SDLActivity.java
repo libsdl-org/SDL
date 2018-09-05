@@ -121,7 +121,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         } else {
             library = "libmain.so";
         }
-        return library;
+        return getContext().getApplicationInfo().nativeLibraryDir + "/" + library;
     }
 
     /**
