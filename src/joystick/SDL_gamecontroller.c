@@ -422,7 +422,7 @@ static int SDLCALL SDL_GameControllerEventWatcher(void *userdata, SDL_Event * ev
 /*
  * Helper function to scan the mappings database for a controller with the specified GUID
  */
-static ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickGUID *guid)
+static ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickGUID *guid, SDL_bool exact_match)
 {
     ControllerMapping_t *pSupportedController = s_pSupportedControllers;
     while (pSupportedController) {
@@ -431,16 +431,18 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickG
         }
         pSupportedController = pSupportedController->next;
     }
-    if (guid->data[14] == 'h') {
-        /* This is a HIDAPI device */
-        return s_pHIDAPIMapping;
-    }
+    if (!exact_match) {
+        if (guid->data[14] == 'h') {
+            /* This is a HIDAPI device */
+            return s_pHIDAPIMapping;
+        }
 #if SDL_JOYSTICK_XINPUT
-    if (guid->data[14] == 'x') {
-        /* This is an XInput device */
-        return s_pXInputMapping;
-    }
+        if (guid->data[14] == 'x') {
+            /* This is an XInput device */
+            return s_pXInputMapping;
+        }
 #endif
+    }
     return NULL;
 }
 
@@ -836,7 +838,7 @@ SDL_PrivateAddMappingForGUID(SDL_JoystickGUID jGUID, const char *mappingString, 
         return NULL;
     }
 
-    pControllerMapping = SDL_PrivateGetControllerMappingForGUID(&jGUID);
+    pControllerMapping = SDL_PrivateGetControllerMappingForGUID(&jGUID, SDL_TRUE);
     if (pControllerMapping) {
         /* Only overwrite the mapping if the priority is the same or higher. */
         if (pControllerMapping->priority <= priority) {
@@ -1005,7 +1007,7 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForNameAndGUID(const 
 {
     ControllerMapping_t *mapping;
 
-    mapping = SDL_PrivateGetControllerMappingForGUID(&guid);
+    mapping = SDL_PrivateGetControllerMappingForGUID(&guid, SDL_FALSE);
 #ifdef __LINUX__
     if (!mapping && name) {
         if (SDL_strstr(name, "Xbox 360 Wireless Receiver")) {
@@ -1244,7 +1246,7 @@ char *
 SDL_GameControllerMappingForGUID(SDL_JoystickGUID guid)
 {
     char *pMappingString = NULL;
-    ControllerMapping_t *mapping = SDL_PrivateGetControllerMappingForGUID(&guid);
+    ControllerMapping_t *mapping = SDL_PrivateGetControllerMappingForGUID(&guid, SDL_FALSE);
     if (mapping) {
         char pchGUID[33];
         size_t needed;
