@@ -752,8 +752,12 @@ METAL_ActivateRenderCommandEncoder(SDL_Renderer * renderer, MTLLoadAction load)
 static void
 METAL_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
 {
-    if (event->event == SDL_WINDOWEVENT_SIZE_CHANGED ||
-        event->event == SDL_WINDOWEVENT_SHOWN ||
+    if (event->event == SDL_WINDOWEVENT_SIZE_CHANGED) {
+        METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
+        data.mtllayer.drawableSize = CGSizeMake(event->data1, event->data2);
+    }
+
+    if (event->event == SDL_WINDOWEVENT_SHOWN ||
         event->event == SDL_WINDOWEVENT_HIDDEN) {
         // !!! FIXME: write me
     }
