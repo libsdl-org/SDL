@@ -61,7 +61,7 @@ typedef Sint32 SDL_SensorID;
 
 /* The different sensors defined by SDL
  *
- * Additional sensors may be available, using platform dependent semanticsx
+ * Additional sensors may be available, using platform dependent semantics.
  *
  * Hare are the additional Android sensors:
  * https://developer.android.com/reference/android/hardware/SensorEvent.html#values
