@@ -278,7 +278,7 @@ HIDAPI_InitializeDiscovery()
         if (SDL_HIDAPI_discovery.m_pUdevMonitor) {
             udev_monitor_enable_receiving(SDL_HIDAPI_discovery.m_pUdevMonitor);
             SDL_HIDAPI_discovery.m_nUdevFd = udev_monitor_get_fd(SDL_HIDAPI_discovery.m_pUdevMonitor);
-            SDL_HIDAPI_discovery.m_bCanGetNotifications = true;
+            SDL_HIDAPI_discovery.m_bCanGetNotifications = SDL_TRUE;
         }
     }
 
@@ -329,6 +329,7 @@ HIDAPI_UpdateDiscovery()
          */
         for (;;) {
             struct pollfd PollUdev;
+            struct udev_device *pUdevDevice;
 
             PollUdev.fd = SDL_HIDAPI_discovery.m_nUdevFd;
             PollUdev.events = POLLIN;
@@ -336,9 +337,9 @@ HIDAPI_UpdateDiscovery()
                 break;
             }
 
-            SDL_HIDAPI_discovery.m_bHaveDevicesChanged = true;
+            SDL_HIDAPI_discovery.m_bHaveDevicesChanged = SDL_TRUE;
 
-            struct udev_device *pUdevDevice = udev_monitor_receive_device(SDL_HIDAPI_discovery.m_pUdevMonitor);
+            pUdevDevice = udev_monitor_receive_device(SDL_HIDAPI_discovery.m_pUdevMonitor);
             if (pUdevDevice) {
                 udev_device_unref(pUdevDevice);
             }
