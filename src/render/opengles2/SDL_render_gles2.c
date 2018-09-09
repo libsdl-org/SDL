@@ -196,6 +196,7 @@ typedef struct GLES2_RenderCommand
             SDL_Texture *texture;
         } draw;
     } data;
+    struct GLES2_RenderCommand *next;
 } GLES2_RenderCommand;
 
 typedef struct GLES2_DriverContext
@@ -220,16 +221,48 @@ typedef struct GLES2_DriverContext
     GLuint vertex_buffers[4];
     GLsizeiptr vertex_buffer_size[4];
     int current_vertex_buffer;
-    GLES2_RenderCommand render_commands[1024 * 10];
-    int current_render_command;
+    GLES2_RenderCommand *render_commands;
+    GLES2_RenderCommand *render_commands_tail;
+    GLES2_RenderCommand *render_commands_pool;
     int current_vertex_data;
     Uint32 command_generation;
-    GLfloat vertex_data[1024 * 1024 * 5];
+    GLfloat *vertex_data;
+    GLsizeiptr vertex_data_allocation;
 } GLES2_DriverContext;
 
 #define GLES2_MAX_CACHED_PROGRAMS 8
 
 static const float inv255f = 1.0f / 255.0f;
+
+static GLES2_RenderCommand *
+GLES2_AllocateRenderCommand(SDL_Renderer *renderer)
+{
+    GLES2_DriverContext *data = (GLES2_DriverContext *) renderer->driverdata;
+    GLES2_RenderCommand *retval = NULL;
+
+    /* !!! FIXME: are there threading limitations in SDL's render API? */
+    retval = data->render_commands_pool;
+    if (retval != NULL) {
+        data->render_commands_pool = retval->next;
+        retval->next = NULL;
+    } else {
+        retval = SDL_calloc(1, sizeof (*retval));
+        if (!retval) {
+            SDL_OutOfMemory();
+            return NULL;
+        }
+    }
+
+    SDL_assert((data->render_commands == NULL) == (data->render_commands_tail == NULL));
+    if (data->render_commands_tail != NULL) {
+        data->render_commands_tail->next = retval;
+    } else {
+        data->render_commands = retval;
+    }
+    data->render_commands_tail = retval;
+
+    return retval;
+}
 
 static SDL_bool
 CompareColors(const Uint8 r1, const Uint8 g1, const Uint8 b1, const Uint8 a1,
@@ -481,8 +514,9 @@ GLES2_FlushCommands(SDL_Renderer *renderer)
     const int vboidx = data->current_vertex_buffer;
     const GLuint vbo = data->vertex_buffers[vboidx];
     const GLsizeiptr dataSizeInBytes = data->current_vertex_data * sizeof (float);
-    const int totalcmds = data->current_render_command;
     Uint8 enabled_attrs = (1 << GLES2_ATTRIBUTE_POSITION);
+    GLES2_RenderCommand *cmd;
+    GLES2_RenderCommand *next;
     SDL_Rect viewport;
     SDL_Texture *bound_texture = NULL;
     SDL_BlendMode blend = SDL_BLENDMODE_INVALID;
@@ -491,11 +525,10 @@ GLES2_FlushCommands(SDL_Renderer *renderer)
     GLfloat projection[4][4];
     SDL_bool cliprect_enabled = SDL_FALSE;
     SDL_Rect cliprect;
-    int i;
 
     GLES2_ActivateRenderer(renderer);
 
-    if (totalcmds == 0) {  /* nothing to do! */
+    if (data->render_commands == NULL) {  /* nothing to do! */
         SDL_assert(data->current_vertex_data == 0);
         return 0;
     }
@@ -506,7 +539,9 @@ GLES2_FlushCommands(SDL_Renderer *renderer)
         data->current_vertex_buffer = 0;
     }
     data->current_vertex_data = 0;  /* start next VBO at start. */
-    data->current_render_command = 0;
+    cmd = data->render_commands;
+    data->render_commands = NULL;
+    data->render_commands_tail = NULL;
 
     SDL_zero(projection);
     projection[3][0] = -1.0f;
@@ -555,8 +590,7 @@ GLES2_FlushCommands(SDL_Renderer *renderer)
         data->glScissor(viewport.x + cliprect.x, drawableh - viewport.y - cliprect.y - cliprect.h, cliprect.w, cliprect.h);
     }
 
-    for (i = 0; i < totalcmds; i++) {
-        const GLES2_RenderCommand *cmd = &data->render_commands[i];
+    while (cmd != NULL) {
         switch (cmd->cmd) {
             case GLES2_RENDERCMD_VIEWPORT:
                 if (SDL_memcmp(&cmd->data.viewport, &viewport, sizeof (SDL_Rect)) != 0) {
@@ -713,6 +747,12 @@ GLES2_FlushCommands(SDL_Renderer *renderer)
 
             default: SDL_assert(!"Unknown rendering command"); break;
         }
+
+        /* put this command in the pool for reuse, move on to next one. */
+        next = cmd->next;
+        cmd->next = data->render_commands_pool;
+        data->render_commands_pool = cmd;
+        cmd = next;
     }
 
     data->command_generation++;
@@ -734,8 +774,10 @@ GLES2_FlushCommandsIfTextureNeeded(SDL_Renderer *renderer, SDL_Texture *texture)
 static int
 GLES2_UpdateViewport(SDL_Renderer * renderer)
 {
-    GLES2_DriverContext *data = (GLES2_DriverContext *)renderer->driverdata;
-    GLES2_RenderCommand *cmd = &data->render_commands[data->current_render_command++];
+    GLES2_RenderCommand *cmd = GLES2_AllocateRenderCommand(renderer);
+    if (cmd == NULL) {
+        return -1;
+    }
     cmd->cmd = GLES2_RENDERCMD_VIEWPORT;
     SDL_memcpy(&cmd->data.viewport, &renderer->viewport, sizeof (SDL_Rect));
     return 0;
@@ -744,8 +786,10 @@ GLES2_UpdateViewport(SDL_Renderer * renderer)
 static int
 GLES2_UpdateClipRect(SDL_Renderer * renderer)
 {
-    GLES2_DriverContext *data = (GLES2_DriverContext *)renderer->driverdata;
-    GLES2_RenderCommand *cmd = &data->render_commands[data->current_render_command++];
+    GLES2_RenderCommand *cmd = GLES2_AllocateRenderCommand(renderer);
+    if (cmd == NULL) {
+        return -1;
+    }
     cmd->cmd = GLES2_RENDERCMD_CLIPRECT;
     cmd->data.cliprect.enabled = renderer->clipping_enabled;
     SDL_memcpy(&cmd->data.cliprect.rect, &renderer->clip_rect, sizeof (SDL_Rect));
@@ -759,7 +803,24 @@ GLES2_DestroyRenderer(SDL_Renderer *renderer)
 
     /* Deallocate everything */
     if (data) {
+        GLES2_RenderCommand *cmd;
+
         GLES2_ActivateRenderer(renderer);
+
+        if (data->render_commands_tail != NULL) {
+            data->render_commands_tail->next = data->render_commands_pool;
+        } else {
+            data->render_commands = data->render_commands_pool;
+        }
+
+        cmd = data->render_commands;
+        while (cmd != NULL) {
+            GLES2_RenderCommand *next = cmd->next;
+            SDL_free(cmd);
+            cmd = next;
+        }
+
+        SDL_free(data->vertex_data);
 
         {
             GLES2_ShaderCacheEntry *entry;
@@ -1625,8 +1686,10 @@ static void GLES2_RenderPresent(SDL_Renderer *renderer);
 static int
 GLES2_RenderClear(SDL_Renderer * renderer)
 {
-    GLES2_DriverContext *data = (GLES2_DriverContext *)renderer->driverdata;
-    GLES2_RenderCommand *cmd = &data->render_commands[data->current_render_command++];
+    GLES2_RenderCommand *cmd = GLES2_AllocateRenderCommand(renderer);
+    if (cmd == NULL) {
+        return -1;
+    }
     cmd->cmd = GLES2_RENDERCMD_CLEAR;
     cmd->data.clear.r = renderer->r;
     cmd->data.clear.g = renderer->g;
@@ -1635,25 +1698,48 @@ GLES2_RenderClear(SDL_Renderer * renderer)
     return 0;
 }
 
-static void
+static int
 GLES2_AddVertices(SDL_Renderer *renderer, const GLES2_Attribute attr, const float *vertexData, size_t dataSizeInElements)
 {
     GLES2_DriverContext *data = (GLES2_DriverContext *)renderer->driverdata;
-    GLES2_RenderCommand *cmd = &data->render_commands[data->current_render_command++];
-    GLfloat *vdata = &data->vertex_data[data->current_vertex_data];
+    const GLsizeiptr needed = data->current_vertex_data + dataSizeInElements;
+    GLES2_RenderCommand *cmd;
+    GLfloat *vdata;
+
+    if (needed > data->vertex_data_allocation) {
+        const GLsizeiptr newsize = data->vertex_data_allocation * 2;
+printf("realloc'ing %p to %d\n", data->vertex_data, (int) newsize);
+        void *ptr = SDL_realloc(data->vertex_data, newsize * sizeof (GLfloat));
+        if (ptr == NULL) {
+            SDL_OutOfMemory();
+            return -1;
+        }
+        data->vertex_data = (GLfloat *) ptr;
+        data->vertex_data_allocation = newsize;
+    }
+
+    cmd = GLES2_AllocateRenderCommand(renderer);
+    if (cmd == NULL) {
+        return -1;
+    }
+
+    vdata = &data->vertex_data[data->current_vertex_data];
     SDL_memcpy(vdata, vertexData, dataSizeInElements * sizeof (GLfloat));
     cmd->cmd = GLES2_RENDERCMD_ATTR;
     cmd->data.attr.attr = attr;
     cmd->data.attr.offset = data->current_vertex_data * sizeof (GLfloat);
     cmd->data.attr.count = dataSizeInElements;
     data->current_vertex_data += dataSizeInElements;
+    return 0;
 }
 
-static GLES2_RenderCommand *
-GLES2_InitSolidDrawCommand(SDL_Renderer *renderer, const GLenum mode, const GLint first, const GLsizei count)
+static int
+GLES2_AddSolidDrawCommand(SDL_Renderer *renderer, const GLenum mode, const GLint first, const GLsizei count)
 {
-    GLES2_DriverContext *data = (GLES2_DriverContext *)renderer->driverdata;
-    GLES2_RenderCommand *cmd = &data->render_commands[data->current_render_command++];
+    GLES2_RenderCommand *cmd = GLES2_AllocateRenderCommand(renderer);
+    if (cmd == NULL) {
+        return -1;
+    }
     cmd->cmd = GLES2_RENDERCMD_DRAW;
     cmd->data.draw.mode = mode;
     cmd->data.draw.first = first;
@@ -1666,7 +1752,7 @@ GLES2_InitSolidDrawCommand(SDL_Renderer *renderer, const GLenum mode, const GLin
     cmd->data.draw.blend = renderer->blendMode;
     cmd->data.draw.imgsrc = GLES2_IMAGESOURCE_SOLID;
     cmd->data.draw.texture = NULL;
-    return cmd;
+    return 0;
 }
 
 static int
@@ -1674,6 +1760,7 @@ GLES2_RenderDrawPoints(SDL_Renderer *renderer, const SDL_FPoint *points, int cou
 {
     GLfloat *vertices = SDL_stack_alloc(GLfloat, count * 2);  /* !!! FIXME: We could do this without a stack_alloc... */
     int idx;
+    int rc;
 
     /* Emit the specified vertices as points */
     for (idx = 0; idx < count; ++idx) {
@@ -1681,10 +1768,14 @@ GLES2_RenderDrawPoints(SDL_Renderer *renderer, const SDL_FPoint *points, int cou
         vertices[(idx * 2) + 1] = points[idx].y + 0.5f;
     }
 
-    GLES2_AddVertices(renderer, GLES2_ATTRIBUTE_POSITION, vertices, count * 2);
-    GLES2_InitSolidDrawCommand(renderer, GL_POINTS, 0, count);
+    rc = GLES2_AddVertices(renderer, GLES2_ATTRIBUTE_POSITION, vertices, count * 2);
     SDL_stack_free(vertices);
-    return 0;
+
+    if (rc == 0) {
+        rc = GLES2_AddSolidDrawCommand(renderer, GL_POINTS, 0, count);
+    }
+
+    return rc;
 }
 
 static int
@@ -1692,6 +1783,7 @@ GLES2_RenderDrawLines(SDL_Renderer *renderer, const SDL_FPoint *points, int coun
 {
     GLfloat *vertices = SDL_stack_alloc(GLfloat, count * 2);  /* !!! FIXME: We could do this without a stack_alloc... */
     int idx;
+    int rc;
 
     /* Emit a line strip including the specified vertices */
     for (idx = 0; idx < count; ++idx) {
@@ -1699,8 +1791,10 @@ GLES2_RenderDrawLines(SDL_Renderer *renderer, const SDL_FPoint *points, int coun
         vertices[(idx * 2) + 1] = points[idx].y + 0.5f;
     }
 
-    GLES2_AddVertices(renderer, GLES2_ATTRIBUTE_POSITION, vertices, count * 2);
-    GLES2_InitSolidDrawCommand(renderer, GL_LINE_STRIP, 0, count);
+    rc = GLES2_AddVertices(renderer, GLES2_ATTRIBUTE_POSITION, vertices, count * 2);
+    if (rc == 0) {
+        rc = GLES2_AddSolidDrawCommand(renderer, GL_LINE_STRIP, 0, count);
+    }
 
 #if 0  /* !!! FIXME: ugh */
     /* We need to close the endpoint of the line */
@@ -1711,7 +1805,7 @@ GLES2_RenderDrawLines(SDL_Renderer *renderer, const SDL_FPoint *points, int coun
 #endif
 
     SDL_stack_free(vertices);
-    return 0;
+    return rc;
 }
 
 static int
@@ -1719,9 +1813,10 @@ GLES2_RenderFillRects(SDL_Renderer *renderer, const SDL_FRect *rects, int count)
 {
     GLfloat vertices[8];
     int idx;
+    int rc = 0;
 
     /* Emit a line loop for each rectangle */
-    for (idx = 0; idx < count; ++idx) {
+    for (idx = 0; (rc == 0) && (idx < count); ++idx) {
         const SDL_FRect *rect = &rects[idx];
 
         GLfloat xMin = rect->x;
@@ -1738,16 +1833,18 @@ GLES2_RenderFillRects(SDL_Renderer *renderer, const SDL_FRect *rects, int count)
         vertices[6] = xMax;
         vertices[7] = yMax;
 
-        GLES2_AddVertices(renderer, GLES2_ATTRIBUTE_POSITION, vertices, 8);
-        GLES2_InitSolidDrawCommand(renderer, GL_TRIANGLE_STRIP, 0, 4);
+        rc = GLES2_AddVertices(renderer, GLES2_ATTRIBUTE_POSITION, vertices, 8);
+        if (rc == 0) {
+            rc = GLES2_AddSolidDrawCommand(renderer, GL_TRIANGLE_STRIP, 0, 4);
+        }
     }
 
     return 0;
 }
 
 
-static GLES2_RenderCommand *
-GLES2_InitCopyDrawCommand(SDL_Renderer *renderer, SDL_Texture *texture, const Uint8 attrs)
+static int
+GLES2_AddCopyDrawCommand(SDL_Renderer *renderer, SDL_Texture *texture, const Uint8 attrs)
 {
     GLES2_RenderCommand *cmd = NULL;
     GLES2_DriverContext *data = (GLES2_DriverContext *)renderer->driverdata;
@@ -1820,8 +1917,7 @@ GLES2_InitCopyDrawCommand(SDL_Renderer *renderer, SDL_Texture *texture, const Ui
                 sourceType = GLES2_IMAGESOURCE_TEXTURE_EXTERNAL_OES;
                 break;
             default:
-                SDL_SetError("Unsupported texture format");
-                return NULL;
+                return SDL_SetError("Unsupported texture format");
             }
         } else {
             sourceType = GLES2_IMAGESOURCE_TEXTURE_ABGR;   /* Texture formats match, use the non color mapping shader (even if the formats are not ABGR) */
@@ -1854,14 +1950,16 @@ GLES2_InitCopyDrawCommand(SDL_Renderer *renderer, SDL_Texture *texture, const Ui
                 sourceType = GLES2_IMAGESOURCE_TEXTURE_EXTERNAL_OES;
                 break;
             default:
-                SDL_SetError("Unsupported texture format");
-                return NULL;
+                return SDL_SetError("Unsupported texture format");
         }
     }
 
     ((GLES2_TextureData *)texture->driverdata)->last_cmd_generation = data->command_generation;
 
-    cmd = &data->render_commands[data->current_render_command++];
+    cmd = GLES2_AllocateRenderCommand(renderer);
+    if (cmd == NULL) {
+        return -1;
+    }
     cmd->cmd = GLES2_RENDERCMD_DRAW;
     cmd->data.draw.mode = GL_TRIANGLE_STRIP;
     cmd->data.draw.first = 0;
@@ -1875,7 +1973,7 @@ GLES2_InitCopyDrawCommand(SDL_Renderer *renderer, SDL_Texture *texture, const Ui
     cmd->data.draw.imgsrc = sourceType;
     cmd->data.draw.texture = texture;
 
-    return cmd;
+    return 0;
 }
 
 static int
@@ -1883,6 +1981,7 @@ GLES2_RenderCopy(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect *s
                  const SDL_FRect *dstrect)
 {
     GLfloat vertices[8];
+    int rc;
 
     /* Emit the textured quad */
     vertices[0] = dstrect->x;
@@ -1893,20 +1992,25 @@ GLES2_RenderCopy(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect *s
     vertices[5] = (dstrect->y + dstrect->h);
     vertices[6] = (dstrect->x + dstrect->w);
     vertices[7] = (dstrect->y + dstrect->h);
-    GLES2_AddVertices(renderer, GLES2_ATTRIBUTE_POSITION, vertices, 8);
+    rc = GLES2_AddVertices(renderer, GLES2_ATTRIBUTE_POSITION, vertices, 8);
 
-    vertices[0] = srcrect->x / (GLfloat)texture->w;
-    vertices[1] = srcrect->y / (GLfloat)texture->h;
-    vertices[2] = (srcrect->x + srcrect->w) / (GLfloat)texture->w;
-    vertices[3] = srcrect->y / (GLfloat)texture->h;
-    vertices[4] = srcrect->x / (GLfloat)texture->w;
-    vertices[5] = (srcrect->y + srcrect->h) / (GLfloat)texture->h;
-    vertices[6] = (srcrect->x + srcrect->w) / (GLfloat)texture->w;
-    vertices[7] = (srcrect->y + srcrect->h) / (GLfloat)texture->h;
-    GLES2_AddVertices(renderer, GLES2_ATTRIBUTE_TEXCOORD, vertices, 8);
+    if (rc == 0) {
+        vertices[0] = srcrect->x / (GLfloat)texture->w;
+        vertices[1] = srcrect->y / (GLfloat)texture->h;
+        vertices[2] = (srcrect->x + srcrect->w) / (GLfloat)texture->w;
+        vertices[3] = srcrect->y / (GLfloat)texture->h;
+        vertices[4] = srcrect->x / (GLfloat)texture->w;
+        vertices[5] = (srcrect->y + srcrect->h) / (GLfloat)texture->h;
+        vertices[6] = (srcrect->x + srcrect->w) / (GLfloat)texture->w;
+        vertices[7] = (srcrect->y + srcrect->h) / (GLfloat)texture->h;
+        rc = GLES2_AddVertices(renderer, GLES2_ATTRIBUTE_TEXCOORD, vertices, 8);
 
-    GLES2_InitCopyDrawCommand(renderer, texture, 0);
-    return 0;
+        if (rc == 0) {
+            rc = GLES2_AddCopyDrawCommand(renderer, texture, 0);
+        }
+    }
+
+    return rc;
 }
 
 static int
@@ -1915,50 +2019,60 @@ GLES2_RenderCopyEx(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_Rect 
 {
     const float radian_angle = (float)(M_PI * (360.0 - angle) / 180.0);
     GLfloat vertices[8];
+    int rc;
 
     vertices[0] = vertices[2] = vertices[4] = vertices[6] = (GLfloat)SDL_sin(radian_angle);
     /* render expects cos value - 1 (see GLES2_VertexSrc_Default_) */
     vertices[1] = vertices[3] = vertices[5] = vertices[7] = (GLfloat)SDL_cos(radian_angle) - 1.0f;
-    GLES2_AddVertices(renderer, GLES2_ATTRIBUTE_ANGLE, vertices, 8);
+    rc = GLES2_AddVertices(renderer, GLES2_ATTRIBUTE_ANGLE, vertices, 8);
 
     /* Calculate the center of rotation */
-    vertices[0] = vertices[2] = vertices[4] = vertices[6] = (center->x + dstrect->x);
-    vertices[1] = vertices[3] = vertices[5] = vertices[7] = (center->y + dstrect->y);
-    GLES2_AddVertices(renderer, GLES2_ATTRIBUTE_CENTER, vertices, 8);
+    if (rc == 0) {
+        vertices[0] = vertices[2] = vertices[4] = vertices[6] = (center->x + dstrect->x);
+        vertices[1] = vertices[3] = vertices[5] = vertices[7] = (center->y + dstrect->y);
+        rc = GLES2_AddVertices(renderer, GLES2_ATTRIBUTE_CENTER, vertices, 8);
+    
+        if (rc == 0) {
+            /* Emit the textured quad */
+            vertices[0] = dstrect->x;
+            vertices[1] = dstrect->y;
+            vertices[2] = (dstrect->x + dstrect->w);
+            vertices[3] = dstrect->y;
+            vertices[4] = dstrect->x;
+            vertices[5] = (dstrect->y + dstrect->h);
+            vertices[6] = (dstrect->x + dstrect->w);
+            vertices[7] = (dstrect->y + dstrect->h);
+            if (flip & SDL_FLIP_HORIZONTAL) {
+                const GLfloat tmp = vertices[0];
+                vertices[0] = vertices[4] = vertices[2];
+                vertices[2] = vertices[6] = tmp;
+            }
+            if (flip & SDL_FLIP_VERTICAL) {
+                const GLfloat tmp = vertices[1];
+                vertices[1] = vertices[3] = vertices[5];
+                vertices[5] = vertices[7] = tmp;
+            }
+            rc = GLES2_AddVertices(renderer, GLES2_ATTRIBUTE_POSITION, vertices, 8);
 
-    /* Emit the textured quad */
-    vertices[0] = dstrect->x;
-    vertices[1] = dstrect->y;
-    vertices[2] = (dstrect->x + dstrect->w);
-    vertices[3] = dstrect->y;
-    vertices[4] = dstrect->x;
-    vertices[5] = (dstrect->y + dstrect->h);
-    vertices[6] = (dstrect->x + dstrect->w);
-    vertices[7] = (dstrect->y + dstrect->h);
-    if (flip & SDL_FLIP_HORIZONTAL) {
-        const GLfloat tmp = vertices[0];
-        vertices[0] = vertices[4] = vertices[2];
-        vertices[2] = vertices[6] = tmp;
+            if (rc == 0) {
+                vertices[0] = srcrect->x / (GLfloat)texture->w;
+                vertices[1] = srcrect->y / (GLfloat)texture->h;
+                vertices[2] = (srcrect->x + srcrect->w) / (GLfloat)texture->w;
+                vertices[3] = srcrect->y / (GLfloat)texture->h;
+                vertices[4] = srcrect->x / (GLfloat)texture->w;
+                vertices[5] = (srcrect->y + srcrect->h) / (GLfloat)texture->h;
+                vertices[6] = (srcrect->x + srcrect->w) / (GLfloat)texture->w;
+                vertices[7] = (srcrect->y + srcrect->h) / (GLfloat)texture->h;
+                rc = GLES2_AddVertices(renderer, GLES2_ATTRIBUTE_TEXCOORD, vertices, 8);
+
+                if (rc == 0) {
+                    GLES2_AddCopyDrawCommand(renderer, texture, (1 << GLES2_ATTRIBUTE_CENTER) | (1 << GLES2_ATTRIBUTE_ANGLE));
+                }
+            }
+        }
     }
-    if (flip & SDL_FLIP_VERTICAL) {
-        const GLfloat tmp = vertices[1];
-        vertices[1] = vertices[3] = vertices[5];
-        vertices[5] = vertices[7] = tmp;
-    }
-    GLES2_AddVertices(renderer, GLES2_ATTRIBUTE_POSITION, vertices, 8);
 
-    vertices[0] = srcrect->x / (GLfloat)texture->w;
-    vertices[1] = srcrect->y / (GLfloat)texture->h;
-    vertices[2] = (srcrect->x + srcrect->w) / (GLfloat)texture->w;
-    vertices[3] = srcrect->y / (GLfloat)texture->h;
-    vertices[4] = srcrect->x / (GLfloat)texture->w;
-    vertices[5] = (srcrect->y + srcrect->h) / (GLfloat)texture->h;
-    vertices[6] = (srcrect->x + srcrect->w) / (GLfloat)texture->w;
-    vertices[7] = (srcrect->y + srcrect->h) / (GLfloat)texture->h;
-    GLES2_AddVertices(renderer, GLES2_ATTRIBUTE_TEXCOORD, vertices, 8);
-
-    GLES2_InitCopyDrawCommand(renderer, texture, (1 << GLES2_ATTRIBUTE_CENTER) | (1 << GLES2_ATTRIBUTE_ANGLE));
-    return 0;
+    return rc;
 }
 
 static int
@@ -2157,6 +2271,15 @@ GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->info.flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
     renderer->driverdata = data;
     renderer->window = window;
+
+    data->vertex_data_allocation = 512;
+    data->vertex_data = (GLfloat *) SDL_malloc(data->vertex_data_allocation * sizeof (GLfloat));
+    if (data->vertex_data == NULL) {
+        GLES2_DestroyRenderer(renderer);
+        SDL_OutOfMemory();
+        goto error;
+    }
+printf("malloc'd %p\n", data->vertex_data);
 
     /* Create an OpenGL ES 2.0 context */
     data->context = SDL_GL_CreateContext(window);
