@@ -736,15 +736,8 @@ HIDAPI_AddDevice(struct hid_device_info *info)
         device->guid.data[14] = 'h';
         device->guid.data[15] = 0;
     }
-    device->driver = HIDAPI_GetDeviceDriver(device);
 
-    if (device->driver) {
-        const char *name = device->driver->GetDeviceName(device->vendor_id, device->product_id);
-        if (name) {
-            device->name = SDL_strdup(name);
-        }
-    }
-
+    /* Need the device name before getting the driver to know whether to ignore this device */
     if (!device->name && info->manufacturer_string && info->product_string) {
         char *manufacturer_string = SDL_iconv_string("UTF-8", "WCHAR_T", (char*)info->manufacturer_string, (SDL_wcslen(info->manufacturer_string)+1)*sizeof(wchar_t));
         char *product_string = SDL_iconv_string("UTF-8", "WCHAR_T", (char*)info->product_string, (SDL_wcslen(info->product_string)+1)*sizeof(wchar_t));
@@ -781,6 +774,16 @@ HIDAPI_AddDevice(struct hid_device_info *info)
         SDL_snprintf(device->name, name_size, "0x%.4x/0x%.4x", info->vendor_id, info->product_id);
     }
 
+    device->driver = HIDAPI_GetDeviceDriver(device);
+
+    if (device->driver) {
+        const char *name = device->driver->GetDeviceName(device->vendor_id, device->product_id);
+        if (name) {
+            SDL_free(device->name);
+            device->name = SDL_strdup(name);
+        }
+    }
+
     device->path = SDL_strdup(info->path);
     if (!device->path) {
         SDL_free(device->name);
@@ -789,7 +792,7 @@ HIDAPI_AddDevice(struct hid_device_info *info)
     }
 
 #ifdef DEBUG_HIDAPI
-    SDL_Log("Adding HIDAPI device '%s' VID 0x%.4x, PID 0x%.4x, version %d, interface %d, usage page 0x%.4x, usage 0x%.4x\n", device->name, device->vendor_id, device->product_id, device->version, device->interface_number, device->usage_page, device->usage);
+    SDL_Log("Adding HIDAPI device '%s' VID 0x%.4x, PID 0x%.4x, version %d, interface %d, usage page 0x%.4x, usage 0x%.4x, driver = %s\n", device->name, device->vendor_id, device->product_id, device->version, device->interface_number, device->usage_page, device->usage, device->driver ? device->driver->hint : "NONE");
 #endif
 
     /* Add it to the list */
