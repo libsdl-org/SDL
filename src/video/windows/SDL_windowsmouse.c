@@ -304,8 +304,6 @@ WIN_InitMouse(_THIS)
     mouse->GetGlobalMouseState = WIN_GetGlobalMouseState;
 
     SDL_SetDefaultCursor(WIN_CreateDefaultCursor());
-
-    SDL_SetDoubleClickTime(GetDoubleClickTime());
 }
 
 void
