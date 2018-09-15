@@ -479,7 +479,7 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
     // Enable this for verbose logging of controller input reports
         //Log.v(TAG, "onCharacteristicChanged uuid=" + characteristic.getUuid() + " data=" + HexDump.dumpHexString(characteristic.getValue()));
 
-        if (characteristic.getUuid().equals(inputCharacteristic)) {
+        if (characteristic.getUuid().equals(inputCharacteristic) && !mFrozen) {
             mManager.HIDDeviceInputReport(getId(), characteristic.getValue());
         }
     }
