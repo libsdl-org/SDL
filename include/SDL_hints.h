@@ -263,6 +263,16 @@ extern "C" {
 #define SDL_HINT_GRAB_KEYBOARD              "SDL_GRAB_KEYBOARD"
 
 /**
+ *  \brief  A variable setting the double click time, in milliseconds.
+ */
+#define SDL_HINT_MOUSE_DOUBLE_CLICK_TIME    "SDL_MOUSE_DOUBLE_CLICK_TIME"
+
+/**
+ *  \brief  A variable setting the double click radius, in pixels.
+ */
+#define SDL_HINT_MOUSE_DOUBLE_CLICK_RADIUS    "SDL_MOUSE_DOUBLE_CLICK_RADIUS"
+
+/**
  *  \brief  A variable setting the speed scale for mouse motion, in floating point, when the mouse is not in relative mode
  */
 #define SDL_HINT_MOUSE_NORMAL_SPEED_SCALE    "SDL_MOUSE_NORMAL_SPEED_SCALE"
