@@ -29,7 +29,7 @@
 
 #include <wchar.h>
 
-#if defined(_WIN32) && !defined(NAMESPACE)
+#if defined(_WIN32) && !defined(NAMESPACE) && (0) /* SDL: don't export hidapi syms */
       #define HID_API_EXPORT __declspec(dllexport)
       #define HID_API_CALL
 #else
