@@ -9,6 +9,7 @@
 #include <jni.h>
 #include <android/log.h>
 #include <pthread.h>
+#include <stdlib.h>
 #include <errno.h>	// For ETIMEDOUT and ECONNRESET
 #include <stdlib.h> // For malloc() and free()
 
@@ -27,6 +28,7 @@
 #define HID_DEVICE_MANAGER_JAVA_INTERFACE(function)     CONCAT1(SDL_JAVA_PREFIX, HIDDeviceManager, function)
 
 #include "../hidapi/hidapi.h"
+
 typedef uint32_t uint32;
 typedef uint64_t uint64;
 
@@ -364,12 +366,20 @@ public:
 
 	int IncrementRefCount()
 	{
-		return ++m_nRefCount;
+		int nValue;
+		pthread_mutex_lock( &m_refCountLock );
+		nValue = ++m_nRefCount;
+		pthread_mutex_unlock( &m_refCountLock );
+		return nValue;
 	}
 
 	int DecrementRefCount()
 	{
-		return --m_nRefCount;
+		int nValue;
+		pthread_mutex_lock( &m_refCountLock );
+		nValue = --m_nRefCount;
+		pthread_mutex_unlock( &m_refCountLock );
+		return nValue;
 	}
 
 	int GetId()
@@ -394,12 +404,20 @@ public:
 
 	int IncrementDeviceRefCount()
 	{
-		return ++m_nDeviceRefCount;
+		int nValue;
+		pthread_mutex_lock( &m_refCountLock );
+		nValue = ++m_nDeviceRefCount;
+		pthread_mutex_unlock( &m_refCountLock );
+		return nValue;
 	}
 
 	int DecrementDeviceRefCount()
 	{
-		return --m_nDeviceRefCount;
+		int nValue;
+		pthread_mutex_lock( &m_refCountLock );
+		nValue = --m_nDeviceRefCount;
+		pthread_mutex_unlock( &m_refCountLock );
+		return nValue;
 	}
 
 	bool BOpen()
@@ -644,6 +662,7 @@ public:
 	}
 
 private:
+	pthread_mutex_t m_refCountLock = PTHREAD_MUTEX_INITIALIZER;
 	int m_nRefCount = 0;
 	int m_nId = 0;
 	hid_device_info *m_pInfo = nullptr;
