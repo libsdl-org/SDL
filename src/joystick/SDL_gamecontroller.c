@@ -432,12 +432,12 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForGUID(SDL_JoystickG
         pSupportedController = pSupportedController->next;
     }
     if (!exact_match) {
-        if (guid->data[14] == 'h') {
+        if (SDL_IsJoystickHIDAPI(*guid)) {
             /* This is a HIDAPI device */
             return s_pHIDAPIMapping;
         }
 #if SDL_JOYSTICK_XINPUT
-        if (guid->data[14] == 'x') {
+        if (SDL_IsJoystickXInput(*guid)) {
             /* This is an XInput device */
             return s_pXInputMapping;
         }
@@ -1026,8 +1026,8 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForNameAndGUID(const 
         }
     }
 #ifdef __ANDROID__
-    if (!mapping) {
-        mapping = SDL_CreateMappingForAndroidController(name, guid);
+    if (!mapping && name && !SDL_IsJoystickHIDAPI(guid)) {
+		mapping = SDL_CreateMappingForAndroidController(name, guid);
     }
 #endif
     if (!mapping) {
