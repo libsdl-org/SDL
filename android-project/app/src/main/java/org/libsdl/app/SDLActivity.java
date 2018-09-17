@@ -520,7 +520,9 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     /* The native thread has finished */
     public static void handleNativeExit() {
         SDLActivity.mSDLThread = null;
-        mSingleton.finish();
+        if (mSingleton != null) {
+            mSingleton.finish();
+        }
     }
 
 
