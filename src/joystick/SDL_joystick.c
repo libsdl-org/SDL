@@ -1157,6 +1157,18 @@ SDL_IsJoystickXboxOne(Uint16 vendor, Uint16 product)
     return (GuessControllerType(vendor, product) == k_eControllerType_XBoxOneController);
 }
 
+SDL_bool
+SDL_IsJoystickXInput(SDL_JoystickGUID guid)
+{
+    return (guid.data[14] == 'x') ? SDL_TRUE : SDL_FALSE;
+}
+
+SDL_bool
+SDL_IsJoystickHIDAPI(SDL_JoystickGUID guid)
+{
+    return (guid.data[14] == 'h') ? SDL_TRUE : SDL_FALSE;
+}
+
 static SDL_bool SDL_IsJoystickProductWheel(Uint32 vidpid)
 {
     static Uint32 wheel_joysticks[] = {
@@ -1222,7 +1234,7 @@ static SDL_JoystickType SDL_GetJoystickGUIDType(SDL_JoystickGUID guid)
     Uint16 product;
     Uint32 vidpid;
 
-    if (guid.data[14] == 'x') {
+    if (SDL_IsJoystickXInput(guid)) {
         /* XInput GUID, get the type based on the XInput device subtype */
         switch (guid.data[15]) {
         case 0x01:  /* XINPUT_DEVSUBTYPE_GAMEPAD */

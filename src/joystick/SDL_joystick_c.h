@@ -62,6 +62,12 @@ extern SDL_bool SDL_IsJoystickXbox360(Uint16 vendor_id, Uint16 product_id);
 /* Function to return whether a joystick is an Xbox One controller */
 extern SDL_bool SDL_IsJoystickXboxOne(Uint16 vendor_id, Uint16 product_id);
 
+/* Function to return whether a joystick guid comes from the XInput driver */
+extern SDL_bool SDL_IsJoystickXInput(SDL_JoystickGUID guid);
+
+/* Function to return whether a joystick guid comes from the HIDAPI driver */
+extern SDL_bool SDL_IsJoystickHIDAPI(SDL_JoystickGUID guid);
+
 /* Function to return whether a joystick should be ignored */
 extern SDL_bool SDL_ShouldIgnoreJoystick(const char *name, SDL_JoystickGUID guid);
 
