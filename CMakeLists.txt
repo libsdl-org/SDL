@@ -1544,6 +1544,7 @@ endif()
 
 if(VIDEO_VULKAN)
   set(SDL_VIDEO_VULKAN 1)
+  set(HAVE_VIDEO_VULKAN TRUE)
 endif()
 
 # Dummies
