@@ -140,20 +140,21 @@ HIDAPI_DriverXbox360_InitWindowsGamingInput(SDL_DriverXbox360_Context *ctx)
         HRESULT hr;
         HMODULE hModule = LoadLibraryA("combase.dll");
         if (hModule != NULL) {
-            typedef HRESULT(WINAPI *WindowsCreateString_t)(PCNZWCH sourceString, UINT32 length, HSTRING* string);
-            typedef HRESULT(WINAPI *RoGetActivationFactory_t)(HSTRING activatableClassId, REFIID iid, void** factory);
+            typedef HRESULT (WINAPI *WindowsCreateString_t)(PCNZWCH sourceString, UINT32 length, HSTRING* string);
+            typedef HRESULT (WINAPI *WindowsDeleteString_t)(HSTRING string);
+            typedef HRESULT (WINAPI *RoGetActivationFactory_t)(HSTRING activatableClassId, REFIID iid, void** factory);
 
             WindowsCreateString_t WindowsCreateStringFunc = (WindowsCreateString_t)GetProcAddress(hModule, "WindowsCreateString");
+            WindowsDeleteString_t WindowsDeleteStringFunc = (WindowsDeleteString_t)GetProcAddress(hModule, "WindowsDeleteString");
             RoGetActivationFactory_t RoGetActivationFactoryFunc = (RoGetActivationFactory_t)GetProcAddress(hModule, "RoGetActivationFactory");
-            if (WindowsCreateStringFunc && RoGetActivationFactoryFunc) {
+            if (WindowsCreateStringFunc && WindowsDeleteStringFunc && RoGetActivationFactoryFunc) {
                 LPTSTR pNamespace = L"Windows.Gaming.Input.Gamepad";
                 HSTRING hNamespaceString;
 
                 hr = WindowsCreateStringFunc(pNamespace, SDL_wcslen(pNamespace), &hNamespaceString);
                 if (SUCCEEDED(hr)) {
-                    hr = RoGetActivationFactoryFunc(hNamespaceString, &SDL_IID_IGamepadStatics, &ctx->gamepad_statics);
-                    if (SUCCEEDED(hr)) {
-                    }
+                    RoGetActivationFactoryFunc(hNamespaceString, &SDL_IID_IGamepadStatics, &ctx->gamepad_statics);
+                    WindowsDeleteStringFunc(hNamespaceString);
                 }
             }
             FreeLibrary(hModule);
