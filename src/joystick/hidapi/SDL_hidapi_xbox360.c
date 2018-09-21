@@ -485,7 +485,6 @@ HIDAPI_DriverXbox360_HandleStatePacket(SDL_Joystick *joystick, hid_device *dev, 
         
         hr = __x_ABI_CWindows_CGaming_CInput_CIGamepad_GetCurrentReading(ctx->gamepad, &state);
         if (SUCCEEDED(hr)) {
-            SDL_Log("Windows.Gaming.Input buttons: 0x%x\n", state.Buttons);
             SDL_PrivateJoystickButton(joystick, SDL_CONTROLLER_BUTTON_GUIDE, (state.Buttons & 0x40000000) ? SDL_PRESSED : SDL_RELEASED);
             SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERLEFT, ((int)(state.LeftTrigger * SDL_MAX_UINT16)) - 32768);
             SDL_PrivateJoystickAxis(joystick, SDL_CONTROLLER_AXIS_TRIGGERRIGHT, ((int)(state.RightTrigger * SDL_MAX_UINT16)) - 32768);
