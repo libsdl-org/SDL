@@ -326,7 +326,7 @@ SDL_MasksToPixelFormatEnum(int bpp, Uint32 Rmask, Uint32 Gmask, Uint32 Bmask,
         if (Rmask == 0) {
             return SDL_PIXELFORMAT_RGB555;
         }
-	/* fallthrough */
+    /* fallthrough */
     case 16:
         if (Rmask == 0) {
             return SDL_PIXELFORMAT_RGB565;

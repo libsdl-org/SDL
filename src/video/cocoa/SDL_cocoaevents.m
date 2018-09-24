@@ -390,8 +390,8 @@ Cocoa_RegisterApp(void)
 
         if (!SDL_GetHintBoolean(SDL_HINT_MAC_BACKGROUND_APP, SDL_FALSE)) {
             [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular];
-		}
-		
+        }
+
         if ([NSApp mainMenu] == nil) {
             CreateApplicationMenus();
         }

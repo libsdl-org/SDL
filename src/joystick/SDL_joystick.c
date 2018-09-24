@@ -1141,13 +1141,13 @@ SDL_IsJoystickSteamController(Uint16 vendor, Uint16 product)
 SDL_bool
 SDL_IsJoystickXbox360(Uint16 vendor, Uint16 product)
 {
-	/* Filter out some bogus values here */
-	if (vendor == 0x0000 && product == 0x0000) {
-		return SDL_FALSE;
-	}
-	if (vendor == 0x0001 && product == 0x0001) {
-		return SDL_FALSE;
-	}
+    /* Filter out some bogus values here */
+    if (vendor == 0x0000 && product == 0x0000) {
+        return SDL_FALSE;
+    }
+    if (vendor == 0x0001 && product == 0x0001) {
+        return SDL_FALSE;
+    }
     return (GuessControllerType(vendor, product) == k_eControllerType_XBox360Controller);
 }
 

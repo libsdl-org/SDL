@@ -211,7 +211,7 @@ Cocoa_InitMouseEventTap(SDL_MouseData* driverdata)
             tapdata->thread = SDL_CreateThreadInternal(&Cocoa_MouseTapThread, "Event Tap Loop", 512 * 1024, tapdata);
             if (tapdata->thread) {
                 /* Success - early out. Ownership transferred to thread. */
-            	return;
+                return;
             }
             CFRelease(tapdata->tap);
         }

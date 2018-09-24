@@ -134,10 +134,10 @@ static const struct zxdg_surface_v6_listener shell_surface_listener_zxdg = {
 
 static void
 handle_configure_zxdg_toplevel(void *data,
-			  struct zxdg_toplevel_v6 *zxdg_toplevel_v6,
-			  int32_t width,
-			  int32_t height,
-			  struct wl_array *states)
+              struct zxdg_toplevel_v6 *zxdg_toplevel_v6,
+              int32_t width,
+              int32_t height,
+              struct wl_array *states)
 {
     SDL_WindowData *wind = (SDL_WindowData *)data;
     SDL_Window *window = wind->sdlwindow;
@@ -213,10 +213,10 @@ static const struct xdg_surface_listener shell_surface_listener_xdg = {
 
 static void
 handle_configure_xdg_toplevel(void *data,
-			  struct xdg_toplevel *xdg_toplevel,
-			  int32_t width,
-			  int32_t height,
-			  struct wl_array *states)
+              struct xdg_toplevel *xdg_toplevel,
+              int32_t width,
+              int32_t height,
+              struct wl_array *states)
 {
     SDL_WindowData *wind = (SDL_WindowData *)data;
     SDL_Window *window = wind->sdlwindow;

@@ -343,17 +343,17 @@ RPI_DestroyWindow(_THIS, SDL_Window * window)
     SDL_DisplayData *displaydata = (SDL_DisplayData *) display->driverdata;
 
     if(data) {
-	if (data->double_buffer) {
-	    /* Wait for vsync, and then stop vsync callbacks and destroy related stuff, if needed */
-	    SDL_LockMutex(data->vsync_cond_mutex);
-	    SDL_CondWait(data->vsync_cond, data->vsync_cond_mutex);
-	    SDL_UnlockMutex(data->vsync_cond_mutex);
+        if (data->double_buffer) {
+            /* Wait for vsync, and then stop vsync callbacks and destroy related stuff, if needed */
+            SDL_LockMutex(data->vsync_cond_mutex);
+            SDL_CondWait(data->vsync_cond, data->vsync_cond_mutex);
+            SDL_UnlockMutex(data->vsync_cond_mutex);
 
-	    vc_dispmanx_vsync_callback(displaydata->dispman_display, NULL, NULL);
+            vc_dispmanx_vsync_callback(displaydata->dispman_display, NULL, NULL);
 
-	    SDL_DestroyCond(data->vsync_cond);
-	    SDL_DestroyMutex(data->vsync_cond_mutex);
-	}
+            SDL_DestroyCond(data->vsync_cond);
+            SDL_DestroyMutex(data->vsync_cond_mutex);
+        }
 
 #if SDL_VIDEO_OPENGL_EGL
         if (data->egl_surface != EGL_NO_SURFACE) {

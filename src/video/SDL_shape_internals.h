@@ -36,21 +36,21 @@ extern "C" {
 #endif
 
 typedef struct {
-	struct SDL_ShapeTree *upleft,*upright,*downleft,*downright;
+    struct SDL_ShapeTree *upleft,*upright,*downleft,*downright;
 } SDL_QuadTreeChildren;
 
 typedef union {
-	SDL_QuadTreeChildren children;
-	SDL_Rect shape;
+    SDL_QuadTreeChildren children;
+    SDL_Rect shape;
 } SDL_ShapeUnion;
 
 typedef enum { QuadShape,TransparentShape,OpaqueShape } SDL_ShapeKind;
 
 typedef struct {
-	SDL_ShapeKind kind;
-	SDL_ShapeUnion data;
+    SDL_ShapeKind kind;
+    SDL_ShapeUnion data;
 } SDL_ShapeTree;
-	
+
 typedef void(*SDL_TraversalFunction)(SDL_ShapeTree*,void*);
 
 extern void SDL_CalculateShapeBitmap(SDL_WindowShapeMode mode,SDL_Surface *shape,Uint8* bitmap,Uint8 ppb);

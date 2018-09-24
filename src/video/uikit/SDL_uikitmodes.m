@@ -191,7 +191,7 @@ UIKit_InitModes(_THIS)
             }
         }
 #if !TARGET_OS_TV
-		SDL_OnApplicationDidChangeStatusBarOrientation();
+        SDL_OnApplicationDidChangeStatusBarOrientation();
 #endif
     }
 
