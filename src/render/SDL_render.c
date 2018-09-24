@@ -109,7 +109,10 @@ static char texture_magic;
 static int
 FlushRenderCommands(SDL_Renderer *renderer)
 {
+    SDL_AllocVertGap *prevgap = &renderer->vertex_data_gaps;
+    SDL_AllocVertGap *gap = prevgap;
     int retval;
+
     SDL_assert((renderer->render_commands == NULL) == (renderer->render_commands_tail == NULL));
 
     if (renderer->render_commands == NULL) {  /* nothing to do! */
@@ -118,6 +121,14 @@ FlushRenderCommands(SDL_Renderer *renderer)
     }
 
     retval = renderer->RunCommandQueue(renderer, renderer->render_commands, renderer->vertex_data, renderer->vertex_data_used);
+
+    while (gap) {
+        prevgap = gap;
+        gap = gap->next;
+    }
+    prevgap->next = renderer->vertex_data_gaps_pool;
+    renderer->vertex_data_gaps_pool = renderer->vertex_data_gaps.next;
+    renderer->vertex_data_gaps.next = NULL;
 
     /* Move the whole render command queue to the unused pool so we can reuse them next time. */
     if (renderer->render_commands_tail != NULL) {
@@ -128,6 +139,9 @@ FlushRenderCommands(SDL_Renderer *renderer)
     }
     renderer->vertex_data_used = 0;
     renderer->render_command_generation++;
+    renderer->color_queued = SDL_FALSE;
+    renderer->viewport_queued = SDL_FALSE;
+    renderer->cliprect_queued = SDL_FALSE;
     return retval;
 }
 
@@ -148,14 +162,77 @@ FlushRenderCommandsIfNotBatching(SDL_Renderer *renderer)
     return renderer->batching ? 0 : FlushRenderCommands(renderer);
 }
 
-void *
-SDL_AllocateRenderVertices(SDL_Renderer *renderer, const size_t numbytes, size_t *offset)
+static SDL_AllocVertGap *
+AllocateVertexGap(SDL_Renderer *renderer)
 {
-    const size_t needed = renderer->vertex_data_used + numbytes;
+    SDL_AllocVertGap *retval = renderer->vertex_data_gaps_pool;
+    if (retval) {
+        renderer->vertex_data_gaps_pool = retval->next;
+        retval->next = NULL;
+    } else {
+        retval = (SDL_AllocVertGap *) SDL_malloc(sizeof (SDL_AllocVertGap));
+        if (!retval) {
+            SDL_OutOfMemory();
+        }
+    }
+    return retval;
+}
+
+
+void *
+SDL_AllocateRenderVertices(SDL_Renderer *renderer, const size_t numbytes, const size_t alignment, size_t *offset)
+{
+    const size_t needed = renderer->vertex_data_used + numbytes + alignment;
+    size_t aligner, aligned;
     void *retval;
 
+    SDL_AllocVertGap *prevgap = &renderer->vertex_data_gaps;
+    SDL_AllocVertGap *gap = prevgap->next;
+    while (gap) {
+        const size_t gapoffset = gap->offset;
+        aligner = (alignment && ((gap->offset % alignment) != 0)) ? (alignment - (gap->offset % alignment)) : 0;
+        aligned = gapoffset + aligner;
+
+        /* Can we use this gap? */
+        if ((aligner < gap->len) && ((gap->len - aligner) >= numbytes)) {
+            /* we either finished this gap off, trimmed the left, trimmed the right, or split it into two gaps. */
+            if (gap->len == numbytes) {  /* finished it off, remove it */
+                SDL_assert(aligned == gapoffset);
+                prevgap->next = gap->next;
+                gap->next = renderer->vertex_data_gaps_pool;
+                renderer->vertex_data_gaps_pool = gap;
+            } else if (aligned == gapoffset) {  /* trimmed the left */
+                gap->offset += numbytes;
+                gap->len -= numbytes;
+            } else if (((aligned - gapoffset) + numbytes) == gap->len) {  /* trimmed the right */
+                gap->len -= numbytes;
+            } else {  /* split into two gaps */
+                SDL_AllocVertGap *newgap = AllocateVertexGap(renderer);
+                if (!newgap) {
+                    return NULL;
+                }
+                newgap->offset = aligned + numbytes;
+                newgap->len = gap->len - (aligner + numbytes);
+                newgap->next = gap->next;
+                // gap->offset doesn't change.
+                gap->len = aligner;
+                gap->next = newgap;
+            }
+
+            if (offset) {
+                *offset = aligned;
+            }
+            return ((Uint8 *) renderer->vertex_data) + aligned;
+        }
+
+        /* Try the next gap */
+        prevgap = gap;
+        gap = gap->next;
+    }
+
+    /* no gaps with enough space; get a new piece of the vertex buffer */
     while (needed > renderer->vertex_data_allocation) {
-        const size_t current_allocation = renderer->vertex_data ? renderer->vertex_data_allocation : 128;
+        const size_t current_allocation = renderer->vertex_data ? renderer->vertex_data_allocation : 1024;
         const size_t newsize = current_allocation * 2;
         void *ptr = SDL_realloc(renderer->vertex_data, newsize);
         if (ptr == NULL) {
@@ -166,12 +243,26 @@ SDL_AllocateRenderVertices(SDL_Renderer *renderer, const size_t numbytes, size_t
         renderer->vertex_data_allocation = newsize;
     }
 
-    retval = ((Uint8 *) renderer->vertex_data) + renderer->vertex_data_used;
+    aligner = (alignment && ((renderer->vertex_data_used % alignment) != 0)) ? (alignment - (renderer->vertex_data_used % alignment)) : 0;
+    aligned = renderer->vertex_data_used + aligner;
+
+    retval = ((Uint8 *) renderer->vertex_data) + aligned;
     if (offset) {
-        *offset = renderer->vertex_data_used;
+        *offset = aligned;
     }
 
-    renderer->vertex_data_used += numbytes;
+    if (aligner) {  /* made a new gap... */
+        SDL_AllocVertGap *newgap = AllocateVertexGap(renderer);
+        if (newgap) {  /* just let it slide as lost space if malloc fails. */
+            newgap->offset = renderer->vertex_data_used;
+            newgap->len = aligner;
+            newgap->next = NULL;
+            prevgap->next = newgap;
+        }
+    }
+
+    renderer->vertex_data_used += aligner + numbytes;
+
     return retval;
 }
 
@@ -205,30 +296,77 @@ AllocateRenderCommand(SDL_Renderer *renderer)
 }
 
 static int
-QueueCmdUpdateViewport(SDL_Renderer *renderer)
+QueueCmdSetViewport(SDL_Renderer *renderer)
 {
-    SDL_RenderCommand *cmd = AllocateRenderCommand(renderer);
-    if (cmd == NULL) {
-        return -1;
+    int retval = 0;
+    if (!renderer->viewport_queued || (SDL_memcmp(&renderer->viewport, &renderer->last_queued_viewport, sizeof (SDL_Rect)) != 0)) {
+        SDL_RenderCommand *cmd = AllocateRenderCommand(renderer);
+        retval = -1;
+        if (cmd != NULL) {
+            cmd->command = SDL_RENDERCMD_SETVIEWPORT;
+            cmd->data.viewport.first = 0;  /* render backend will fill this in. */
+            SDL_memcpy(&cmd->data.viewport.rect, &renderer->viewport, sizeof (renderer->viewport));
+            retval = renderer->QueueSetViewport(renderer, cmd);
+            if (retval < 0) {
+                cmd->command = SDL_RENDERCMD_NO_OP;
+            } else {
+                SDL_memcpy(&renderer->last_queued_viewport, &renderer->viewport, sizeof (SDL_Rect));
+                renderer->viewport_queued = SDL_TRUE;
+            }
+        }
     }
-
-    cmd->command = SDL_RENDERCMD_SETVIEWPORT;
-    SDL_memcpy(&cmd->data.viewport, &renderer->viewport, sizeof (cmd->data.viewport));
-    return FlushRenderCommandsIfNotBatching(renderer);
+    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
 static int
-QueueCmdUpdateClipRect(SDL_Renderer *renderer)
+QueueCmdSetClipRect(SDL_Renderer *renderer)
 {
-    SDL_RenderCommand *cmd = AllocateRenderCommand(renderer);
-    if (cmd == NULL) {
-        return -1;
+    int retval = 0;
+    if ((!renderer->cliprect_queued) ||
+         (renderer->clipping_enabled != renderer->last_queued_cliprect_enabled) ||
+         (SDL_memcmp(&renderer->clip_rect, &renderer->last_queued_cliprect, sizeof (SDL_Rect)) != 0)) {
+        SDL_RenderCommand *cmd = AllocateRenderCommand(renderer);
+        if (cmd == NULL) {
+            retval = -1;
+        } else {
+            cmd->command = SDL_RENDERCMD_SETCLIPRECT;
+            cmd->data.cliprect.enabled = renderer->clipping_enabled;
+            SDL_memcpy(&cmd->data.cliprect.rect, &renderer->clip_rect, sizeof (cmd->data.cliprect.rect));
+            SDL_memcpy(&renderer->last_queued_cliprect, &renderer->clip_rect, sizeof (SDL_Rect));
+            renderer->last_queued_cliprect_enabled = renderer->clipping_enabled;
+            renderer->cliprect_queued = SDL_TRUE;
+        }
     }
+    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
+}
 
-    cmd->command = SDL_RENDERCMD_SETCLIPRECT;
-    cmd->data.cliprect.enabled = renderer->clipping_enabled;
-    SDL_memcpy(&cmd->data.cliprect.rect, &renderer->clip_rect, sizeof (cmd->data.cliprect.rect));
-    return FlushRenderCommandsIfNotBatching(renderer);
+static int
+QueueCmdSetDrawColor(SDL_Renderer *renderer, const Uint8 r, const Uint8 g, const Uint8 b, const Uint8 a)
+{
+    const Uint32 color = ((a << 24) | (r << 16) | (g << 8) | b);
+    int retval = 0;
+    
+    if (!renderer->color_queued || (color != renderer->last_queued_color)) {
+        SDL_RenderCommand *cmd = AllocateRenderCommand(renderer);
+        retval = -1;
+
+        if (cmd != NULL) {
+            cmd->command = SDL_RENDERCMD_SETDRAWCOLOR;
+            cmd->data.color.first = 0;  /* render backend will fill this in. */
+            cmd->data.color.r = r;
+            cmd->data.color.g = g;
+            cmd->data.color.b = b;
+            cmd->data.color.a = a;
+            retval = renderer->QueueSetDrawColor(renderer, cmd);
+            if (retval < 0) {
+                cmd->command = SDL_RENDERCMD_NO_OP;
+            } else {
+                renderer->last_queued_color = color;
+                renderer->color_queued = SDL_TRUE;
+            }
+        }
+    }
+    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
 static int
@@ -240,6 +378,7 @@ QueueCmdClear(SDL_Renderer *renderer)
     }
 
     cmd->command = SDL_RENDERCMD_CLEAR;
+    cmd->data.color.first = 0;
     cmd->data.color.r = renderer->r;
     cmd->data.color.g = renderer->g;
     cmd->data.color.b = renderer->b;
@@ -247,20 +386,39 @@ QueueCmdClear(SDL_Renderer *renderer)
     return FlushRenderCommandsIfNotBatching(renderer);
 }
 
+static int
+PrepQueueCmdDraw(SDL_Renderer *renderer, const Uint8 r, const Uint8 g, const Uint8 b, const Uint8 a)
+{
+    int retval = 0;
+    if (retval == 0) {
+        retval = QueueCmdSetDrawColor(renderer, r, g, b, a);
+    }
+    if (retval == 0) {
+        retval = QueueCmdSetViewport(renderer);
+    }
+    if (retval == 0) {
+        retval = QueueCmdSetClipRect(renderer);
+    }
+    return retval;
+}
+
 static SDL_RenderCommand *
 PrepQueueCmdDrawSolid(SDL_Renderer *renderer, const SDL_RenderCommandType cmdtype)
 {
-    SDL_RenderCommand *cmd = AllocateRenderCommand(renderer);
-    if (cmd != NULL) {
-        cmd->command = cmdtype;
-        cmd->data.draw.first = 0;  /* render backend will fill this in. */
-        cmd->data.draw.count = 0;  /* render backend will fill this in. */
-        cmd->data.draw.r = renderer->r;
-        cmd->data.draw.g = renderer->g;
-        cmd->data.draw.b = renderer->b;
-        cmd->data.draw.a = renderer->a;
-        cmd->data.draw.blend = renderer->blendMode;
-        cmd->data.draw.texture = NULL;  /* no texture. */
+    SDL_RenderCommand *cmd = NULL;
+    if (PrepQueueCmdDraw(renderer, renderer->r, renderer->g, renderer->b, renderer->a) == 0) {
+        cmd = AllocateRenderCommand(renderer);
+        if (cmd != NULL) {
+            cmd->command = cmdtype;
+            cmd->data.draw.first = 0;  /* render backend will fill this in. */
+            cmd->data.draw.count = 0;  /* render backend will fill this in. */
+            cmd->data.draw.r = renderer->r;
+            cmd->data.draw.g = renderer->g;
+            cmd->data.draw.b = renderer->b;
+            cmd->data.draw.a = renderer->a;
+            cmd->data.draw.blend = renderer->blendMode;
+            cmd->data.draw.texture = NULL;  /* no texture. */
+        }
     }
     return cmd;
 }
@@ -310,17 +468,20 @@ QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect * rects, const int cou
 static SDL_RenderCommand *
 PrepQueueCmdDrawTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_RenderCommandType cmdtype)
 {
-    SDL_RenderCommand *cmd = AllocateRenderCommand(renderer);
-    if (cmd != NULL) {
-        cmd->command = cmdtype;
-        cmd->data.draw.first = 0;  /* render backend will fill this in. */
-        cmd->data.draw.count = 0;  /* render backend will fill this in. */
-        cmd->data.draw.r = texture->r;
-        cmd->data.draw.g = texture->g;
-        cmd->data.draw.b = texture->b;
-        cmd->data.draw.a = texture->a;
-        cmd->data.draw.blend = texture->blendMode;
-        cmd->data.draw.texture = texture;
+    SDL_RenderCommand *cmd = NULL;
+    if (PrepQueueCmdDraw(renderer, texture->r, texture->g, texture->b, texture->a) == 0) {
+        cmd = AllocateRenderCommand(renderer);
+        if (cmd != NULL) {
+            cmd->command = cmdtype;
+            cmd->data.draw.first = 0;  /* render backend will fill this in. */
+            cmd->data.draw.count = 0;  /* render backend will fill this in. */
+            cmd->data.draw.r = texture->r;
+            cmd->data.draw.g = texture->g;
+            cmd->data.draw.b = texture->b;
+            cmd->data.draw.a = texture->a;
+            cmd->data.draw.blend = texture->blendMode;
+            cmd->data.draw.texture = texture;
+        }
     }
     return cmd;
 }
@@ -435,7 +596,7 @@ SDL_RendererEventWatch(void *userdata, SDL_Event *event)
                         renderer->viewport.y = 0;
                         renderer->viewport.w = w;
                         renderer->viewport.h = h;
-                        QueueCmdUpdateViewport(renderer);
+                        QueueCmdSetViewport(renderer);
                     }
                 }
 
@@ -557,6 +718,8 @@ void VerifyDrawQueueFunctions(const SDL_Renderer *renderer)
 {
     /* all of these functions are required to be implemented, even as no-ops, so we don't
         have to check that they aren't NULL over and over. */
+    SDL_assert(renderer->QueueSetViewport != NULL);
+    SDL_assert(renderer->QueueSetDrawColor != NULL);
     SDL_assert(renderer->QueueDrawPoints != NULL);
     SDL_assert(renderer->QueueDrawLines != NULL);
     SDL_assert(renderer->QueueFillRects != NULL);
@@ -641,7 +804,9 @@ SDL_CreateRenderer(SDL_Window * window, int index, Uint32 flags)
         VerifyDrawQueueFunctions(renderer);
 
         /* let app/user override batching decisions. */
-        if (SDL_GetHint(SDL_HINT_RENDER_BATCHING)) {
+        if (renderer->always_batch) {
+            batching = SDL_TRUE;
+        } else if (SDL_GetHint(SDL_HINT_RENDER_BATCHING)) {
             batching = SDL_GetHintBoolean(SDL_HINT_RENDER_BATCHING, SDL_TRUE);
         }
 
@@ -1557,10 +1722,10 @@ SDL_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
 
     SDL_UnlockMutex(renderer->target_mutex);
 
-    if (QueueCmdUpdateViewport(renderer) < 0) {
+    if (QueueCmdSetViewport(renderer) < 0) {
         return -1;
     }
-    if (QueueCmdUpdateClipRect(renderer) < 0) {
+    if (QueueCmdSetClipRect(renderer) < 0) {
         return -1;
     }
 
@@ -1751,7 +1916,7 @@ SDL_RenderSetViewport(SDL_Renderer * renderer, const SDL_Rect * rect)
             return -1;
         }
     }
-    return QueueCmdUpdateViewport(renderer);
+    return QueueCmdSetViewport(renderer);
 }
 
 void
@@ -1782,7 +1947,7 @@ SDL_RenderSetClipRect(SDL_Renderer * renderer, const SDL_Rect * rect)
         renderer->clipping_enabled = SDL_FALSE;
         SDL_zero(renderer->clip_rect);
     }
-    return QueueCmdUpdateClipRect(renderer);
+    return QueueCmdSetClipRect(renderer);
 }
 
 void
@@ -2412,6 +2577,8 @@ void
 SDL_DestroyRenderer(SDL_Renderer * renderer)
 {
     SDL_RenderCommand *cmd;
+    SDL_AllocVertGap *gap;
+    SDL_AllocVertGap *nextgap;
 
     CHECK_RENDERER_MAGIC(renderer, );
 
@@ -2435,6 +2602,16 @@ SDL_DestroyRenderer(SDL_Renderer * renderer)
     }
 
     SDL_free(renderer->vertex_data);
+
+    for (gap = renderer->vertex_data_gaps.next; gap; gap = nextgap) {
+        nextgap = gap->next;
+        SDL_free(gap);
+    }
+
+    for (gap = renderer->vertex_data_gaps_pool; gap; gap = nextgap) {
+        nextgap = gap->next;
+        SDL_free(gap);
+    }
 
     /* Free existing textures for this renderer */
     while (renderer->textures) {
