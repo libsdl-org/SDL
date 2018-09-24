@@ -88,6 +88,7 @@ typedef enum
     SDL_RENDERCMD_NO_OP,
     SDL_RENDERCMD_SETVIEWPORT,
     SDL_RENDERCMD_SETCLIPRECT,
+    SDL_RENDERCMD_SETDRAWCOLOR,
     SDL_RENDERCMD_CLEAR,
     SDL_RENDERCMD_DRAW_POINTS,
     SDL_RENDERCMD_DRAW_LINES,
@@ -100,7 +101,10 @@ typedef struct SDL_RenderCommand
 {
     SDL_RenderCommandType command;
     union {
-        SDL_Rect viewport;
+        struct {
+            size_t first;
+            SDL_Rect rect;
+        } viewport;
         struct {
             SDL_bool enabled;
             SDL_Rect rect;
@@ -113,11 +117,19 @@ typedef struct SDL_RenderCommand
             SDL_Texture *texture;
         } draw;
         struct {
+            size_t first;
             Uint8 r, g, b, a;
         } color;
     } data;
     struct SDL_RenderCommand *next;
 } SDL_RenderCommand;
+
+typedef struct SDL_AllocVertGap
+{
+    size_t offset;
+    size_t len;
+    struct SDL_AllocVertGap *next;
+} SDL_AllocVertGap;
 
 
 /* Define the SDL renderer structure */
@@ -129,6 +141,8 @@ struct SDL_Renderer
     int (*GetOutputSize) (SDL_Renderer * renderer, int *w, int *h);
     SDL_bool (*SupportsBlendMode)(SDL_Renderer * renderer, SDL_BlendMode blendMode);
     int (*CreateTexture) (SDL_Renderer * renderer, SDL_Texture * texture);
+    int (*QueueSetViewport) (SDL_Renderer * renderer, SDL_RenderCommand *cmd);
+    int (*QueueSetDrawColor) (SDL_Renderer * renderer, SDL_RenderCommand *cmd);
     int (*QueueDrawPoints) (SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points,
                              int count);
     int (*QueueDrawLines) (SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points,
@@ -209,15 +223,25 @@ struct SDL_Renderer
     Uint8 r, g, b, a;                   /**< Color for drawing operations values */
     SDL_BlendMode blendMode;            /**< The drawing blend mode */
 
+    SDL_bool always_batch;
     SDL_bool batching;
     SDL_RenderCommand *render_commands;
     SDL_RenderCommand *render_commands_tail;
     SDL_RenderCommand *render_commands_pool;
     Uint32 render_command_generation;
+    Uint32 last_queued_color;
+    SDL_Rect last_queued_viewport;
+    SDL_Rect last_queued_cliprect;
+    SDL_bool last_queued_cliprect_enabled;
+    SDL_bool color_queued;
+    SDL_bool viewport_queued;
+    SDL_bool cliprect_queued;
 
     void *vertex_data;
     size_t vertex_data_used;
     size_t vertex_data_allocation;
+    SDL_AllocVertGap vertex_data_gaps;
+    SDL_AllocVertGap *vertex_data_gaps_pool;
 
     void *driverdata;
 };
@@ -253,7 +277,7 @@ extern SDL_BlendOperation SDL_GetBlendModeAlphaOperation(SDL_BlendMode blendMode
 /* drivers call this during their Queue*() methods to make space in a array that are used
    for a vertex buffer during RunCommandQueue(). Pointers returned here are only valid until
    the next call, because it might be in an array that gets realloc()'d. */
-extern void *SDL_AllocateRenderVertices(SDL_Renderer *renderer, const size_t numbytes, size_t *offset);
+extern void *SDL_AllocateRenderVertices(SDL_Renderer *renderer, const size_t numbytes, const size_t alignment, size_t *offset);
 
 #endif /* SDL_sysrender_h_ */
 
