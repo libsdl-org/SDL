@@ -97,6 +97,10 @@ static SDL_HIDAPI_DeviceDriver *SDL_HIDAPI_drivers[] = {
 static SDL_HIDAPI_Device *SDL_HIDAPI_devices;
 static int SDL_HIDAPI_numjoysticks = 0;
 
+#if defined(SDL_USE_LIBUDEV)
+static const SDL_UDEV_Symbols * usyms = NULL;
+#endif
+
 static struct
 {
     SDL_bool m_bHaveDevicesChanged;
@@ -272,12 +276,15 @@ HIDAPI_InitializeDiscovery()
     SDL_HIDAPI_discovery.m_pUdevMonitor = NULL;
     SDL_HIDAPI_discovery.m_nUdevFd = -1;
 
-    SDL_HIDAPI_discovery.m_pUdev = udev_new();
+    usyms = SDL_UDEV_GetUdevSyms();
+    if (usyms) {
+        SDL_HIDAPI_discovery.m_pUdev = usyms->udev_new();
+    }
     if (SDL_HIDAPI_discovery.m_pUdev) {
-        SDL_HIDAPI_discovery.m_pUdevMonitor = udev_monitor_new_from_netlink(SDL_HIDAPI_discovery.m_pUdev, "udev");
+        SDL_HIDAPI_discovery.m_pUdevMonitor = usyms->udev_monitor_new_from_netlink(SDL_HIDAPI_discovery.m_pUdev, "udev");
         if (SDL_HIDAPI_discovery.m_pUdevMonitor) {
-            udev_monitor_enable_receiving(SDL_HIDAPI_discovery.m_pUdevMonitor);
-            SDL_HIDAPI_discovery.m_nUdevFd = udev_monitor_get_fd(SDL_HIDAPI_discovery.m_pUdevMonitor);
+            usyms->udev_monitor_enable_receiving(SDL_HIDAPI_discovery.m_pUdevMonitor);
+            SDL_HIDAPI_discovery.m_nUdevFd = usyms->udev_monitor_get_fd(SDL_HIDAPI_discovery.m_pUdevMonitor);
             SDL_HIDAPI_discovery.m_bCanGetNotifications = SDL_TRUE;
         }
     }
@@ -339,9 +346,9 @@ HIDAPI_UpdateDiscovery()
 
             SDL_HIDAPI_discovery.m_bHaveDevicesChanged = SDL_TRUE;
 
-            pUdevDevice = udev_monitor_receive_device(SDL_HIDAPI_discovery.m_pUdevMonitor);
+            pUdevDevice = usyms->udev_monitor_receive_device(SDL_HIDAPI_discovery.m_pUdevMonitor);
             if (pUdevDevice) {
-                udev_device_unref(pUdevDevice);
+                usyms->udev_device_unref(pUdevDevice);
             }
         }
     }
@@ -370,10 +377,14 @@ HIDAPI_ShutdownDiscovery()
 
 #if defined(SDL_USE_LIBUDEV)
     if (SDL_HIDAPI_discovery.m_pUdevMonitor) {
-        udev_monitor_unref(SDL_HIDAPI_discovery.m_pUdevMonitor);
+        usyms->udev_monitor_unref(SDL_HIDAPI_discovery.m_pUdevMonitor);
     }
     if (SDL_HIDAPI_discovery.m_pUdev) {
-        udev_unref(SDL_HIDAPI_discovery.m_pUdev);
+        usyms->udev_unref(SDL_HIDAPI_discovery.m_pUdev);
+    }
+    if (usyms) {
+        SDL_UDEV_ReleaseUdevSyms();
+        usyms = NULL;
     }
 #endif
 }
