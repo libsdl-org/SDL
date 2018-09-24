@@ -766,9 +766,14 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             return false;
         }
 
-        // Samsung DeX mode doesn't support relative mice properly under Android 7 APIs,
-        // and simply returns no data under Android 8 APIs.
-        if (isDeXMode()) {
+        // DeX mode in Samsung Experience 9.0 and earlier doesn't support relative mice properly under 
+        // Android 7 APIs, and simply returns no data under Android 8 APIs.
+        //
+        // This is fixed in Samsung Experience 9.5, which corresponds to Android 8.1.0, and
+        // thus SDK version 27.  If we are in DeX mode and not API 27 or higher, as a result,
+        // we should stick to relative mode.
+        //
+        if ((Build.VERSION.SDK_INT < 27) && isDeXMode()) {
             return false;
         }
 
