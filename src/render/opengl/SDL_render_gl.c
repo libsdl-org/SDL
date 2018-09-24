@@ -51,54 +51,6 @@ extern int SDL_RecreateWindow(SDL_Window * window, Uint32 flags);
 
 static const float inv255f = 1.0f / 255.0f;
 
-/* !!! FIXME: delete these predeclarations and just move the functions before their use. */
-static SDL_Renderer *GL_CreateRenderer(SDL_Window * window, Uint32 flags);
-static int GL_GetOutputSize(SDL_Renderer * renderer, int *w, int *h);
-static SDL_bool GL_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode);
-static int GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture);
-static int GL_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
-                            const SDL_Rect * rect, const void *pixels,
-                            int pitch);
-static int GL_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
-                               const SDL_Rect * rect,
-                               const Uint8 *Yplane, int Ypitch,
-                               const Uint8 *Uplane, int Upitch,
-                               const Uint8 *Vplane, int Vpitch);
-static int GL_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
-                          const SDL_Rect * rect, void **pixels, int *pitch);
-static void GL_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture);
-static int GL_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture);
-static int GL_QueueSetViewport(SDL_Renderer * renderer, SDL_RenderCommand *cmd);
-static int GL_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd,
-                              const SDL_FPoint * points, int count);
-static int GL_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd,
-                             const SDL_FRect * rects, int count);
-static int GL_QueueCopy(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-                        const SDL_Rect *srcrect, const SDL_FRect *dstrect);
-static int GL_QueueCopyEx(SDL_Renderer *renderer, SDL_RenderCommand *cmd, SDL_Texture *texture,
-                          const SDL_Rect *srcquad, const SDL_FRect *dstrect,
-                          const double angle, const SDL_FPoint *center,
-                          const SDL_RendererFlip flip);
-static int GL_RunCommandQueue(SDL_Renderer *renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize);
-static int GL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
-                               Uint32 pixel_format, void * pixels, int pitch);
-static void GL_RenderPresent(SDL_Renderer * renderer);
-static void GL_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture);
-static void GL_DestroyRenderer(SDL_Renderer * renderer);
-static int GL_BindTexture (SDL_Renderer * renderer, SDL_Texture *texture, float *texw, float *texh);
-static int GL_UnbindTexture (SDL_Renderer * renderer, SDL_Texture *texture);
-
-SDL_RenderDriver GL_RenderDriver = {
-    GL_CreateRenderer,
-    {
-     "opengl",
-     (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE),
-     1,
-     {SDL_PIXELFORMAT_ARGB8888},
-     0,
-     0}
-};
-
 typedef struct GL_FBOList GL_FBOList;
 
 struct GL_FBOList
@@ -341,203 +293,6 @@ GL_GetFBO(GL_RenderData *data, Uint32 w, Uint32 h)
         }
     }
     return result;
-}
-
-SDL_Renderer *
-GL_CreateRenderer(SDL_Window * window, Uint32 flags)
-{
-    SDL_Renderer *renderer;
-    GL_RenderData *data;
-    GLint value;
-    Uint32 window_flags;
-    int profile_mask = 0, major = 0, minor = 0;
-    SDL_bool changed_window = SDL_FALSE;
-
-    SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &profile_mask);
-    SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
-    SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor);
-    
-    window_flags = SDL_GetWindowFlags(window);
-    if (!(window_flags & SDL_WINDOW_OPENGL) ||
-        profile_mask == SDL_GL_CONTEXT_PROFILE_ES || major != RENDERER_CONTEXT_MAJOR || minor != RENDERER_CONTEXT_MINOR) {
-
-        changed_window = SDL_TRUE;
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, 0);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, RENDERER_CONTEXT_MAJOR);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, RENDERER_CONTEXT_MINOR);
-
-        if (SDL_RecreateWindow(window, window_flags | SDL_WINDOW_OPENGL) < 0) {
-            goto error;
-        }
-    }
-
-    renderer = (SDL_Renderer *) SDL_calloc(1, sizeof(*renderer));
-    if (!renderer) {
-        SDL_OutOfMemory();
-        goto error;
-    }
-
-    data = (GL_RenderData *) SDL_calloc(1, sizeof(*data));
-    if (!data) {
-        GL_DestroyRenderer(renderer);
-        SDL_OutOfMemory();
-        goto error;
-    }
-
-    renderer->GetOutputSize = GL_GetOutputSize;
-    renderer->SupportsBlendMode = GL_SupportsBlendMode;
-    renderer->CreateTexture = GL_CreateTexture;
-    renderer->UpdateTexture = GL_UpdateTexture;
-    renderer->UpdateTextureYUV = GL_UpdateTextureYUV;
-    renderer->LockTexture = GL_LockTexture;
-    renderer->UnlockTexture = GL_UnlockTexture;
-    renderer->SetRenderTarget = GL_SetRenderTarget;
-    renderer->QueueSetViewport = GL_QueueSetViewport;
-    renderer->QueueSetDrawColor = GL_QueueSetViewport;  /* SetViewport and SetDrawColor are (currently) no-ops. */
-    renderer->QueueDrawPoints = GL_QueueDrawPoints;
-    renderer->QueueDrawLines = GL_QueueDrawPoints;  /* lines and points queue vertices the same way. */
-    renderer->QueueFillRects = GL_QueueFillRects;
-    renderer->QueueCopy = GL_QueueCopy;
-    renderer->QueueCopyEx = GL_QueueCopyEx;
-    renderer->RunCommandQueue = GL_RunCommandQueue;
-    renderer->RenderReadPixels = GL_RenderReadPixels;
-    renderer->RenderPresent = GL_RenderPresent;
-    renderer->DestroyTexture = GL_DestroyTexture;
-    renderer->DestroyRenderer = GL_DestroyRenderer;
-    renderer->GL_BindTexture = GL_BindTexture;
-    renderer->GL_UnbindTexture = GL_UnbindTexture;
-    renderer->info = GL_RenderDriver.info;
-    renderer->info.flags = SDL_RENDERER_ACCELERATED;
-    renderer->driverdata = data;
-    renderer->window = window;
-
-    data->context = SDL_GL_CreateContext(window);
-    if (!data->context) {
-        GL_DestroyRenderer(renderer);
-        goto error;
-    }
-    if (SDL_GL_MakeCurrent(window, data->context) < 0) {
-        GL_DestroyRenderer(renderer);
-        goto error;
-    }
-
-    if (GL_LoadFunctions(data) < 0) {
-        GL_DestroyRenderer(renderer);
-        goto error;
-    }
-
-#ifdef __MACOSX__
-    /* Enable multi-threaded rendering */
-    /* Disabled until Ryan finishes his VBO/PBO code...
-       CGLEnable(CGLGetCurrentContext(), kCGLCEMPEngine);
-     */
-#endif
-
-    if (flags & SDL_RENDERER_PRESENTVSYNC) {
-        SDL_GL_SetSwapInterval(1);
-    } else {
-        SDL_GL_SetSwapInterval(0);
-    }
-    if (SDL_GL_GetSwapInterval() > 0) {
-        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
-    }
-
-    /* Check for debug output support */
-    if (SDL_GL_GetAttribute(SDL_GL_CONTEXT_FLAGS, &value) == 0 &&
-        (value & SDL_GL_CONTEXT_DEBUG_FLAG)) {
-        data->debug_enabled = SDL_TRUE;
-    }
-    if (data->debug_enabled && SDL_GL_ExtensionSupported("GL_ARB_debug_output")) {
-        PFNGLDEBUGMESSAGECALLBACKARBPROC glDebugMessageCallbackARBFunc = (PFNGLDEBUGMESSAGECALLBACKARBPROC) SDL_GL_GetProcAddress("glDebugMessageCallbackARB");
-
-        data->GL_ARB_debug_output_supported = SDL_TRUE;
-        data->glGetPointerv(GL_DEBUG_CALLBACK_FUNCTION_ARB, (GLvoid **)(char *)&data->next_error_callback);
-        data->glGetPointerv(GL_DEBUG_CALLBACK_USER_PARAM_ARB, &data->next_error_userparam);
-        glDebugMessageCallbackARBFunc(GL_HandleDebugMessage, renderer);
-
-        /* Make sure our callback is called when errors actually happen */
-        data->glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
-    }
-
-    data->textype = GL_TEXTURE_2D;
-    if (SDL_GL_ExtensionSupported("GL_ARB_texture_non_power_of_two")) {
-        data->GL_ARB_texture_non_power_of_two_supported = SDL_TRUE;
-    } else if (SDL_GL_ExtensionSupported("GL_ARB_texture_rectangle") ||
-               SDL_GL_ExtensionSupported("GL_EXT_texture_rectangle")) {
-        data->GL_ARB_texture_rectangle_supported = SDL_TRUE;
-        data->textype = GL_TEXTURE_RECTANGLE_ARB;
-    }
-    if (data->GL_ARB_texture_rectangle_supported) {
-        data->glGetIntegerv(GL_MAX_RECTANGLE_TEXTURE_SIZE_ARB, &value);
-        renderer->info.max_texture_width = value;
-        renderer->info.max_texture_height = value;
-    } else {
-        data->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &value);
-        renderer->info.max_texture_width = value;
-        renderer->info.max_texture_height = value;
-    }
-
-    /* Check for multitexture support */
-    if (SDL_GL_ExtensionSupported("GL_ARB_multitexture")) {
-        data->glActiveTextureARB = (PFNGLACTIVETEXTUREARBPROC) SDL_GL_GetProcAddress("glActiveTextureARB");
-        if (data->glActiveTextureARB) {
-            data->GL_ARB_multitexture_supported = SDL_TRUE;
-            data->glGetIntegerv(GL_MAX_TEXTURE_UNITS_ARB, &data->num_texture_units);
-        }
-    }
-
-    /* Check for shader support */
-    if (SDL_GetHintBoolean(SDL_HINT_RENDER_OPENGL_SHADERS, SDL_TRUE)) {
-        data->shaders = GL_CreateShaderContext();
-    }
-    SDL_LogInfo(SDL_LOG_CATEGORY_RENDER, "OpenGL shaders: %s",
-                data->shaders ? "ENABLED" : "DISABLED");
-
-    /* We support YV12 textures using 3 textures and a shader */
-    if (data->shaders && data->num_texture_units >= 3) {
-        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_YV12;
-        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_IYUV;
-        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV12;
-        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV21;
-    }
-
-#ifdef __MACOSX__
-    renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_UYVY;
-#endif
-
-    if (SDL_GL_ExtensionSupported("GL_EXT_framebuffer_object")) {
-        data->GL_EXT_framebuffer_object_supported = SDL_TRUE;
-        data->glGenFramebuffersEXT = (PFNGLGENFRAMEBUFFERSEXTPROC)
-            SDL_GL_GetProcAddress("glGenFramebuffersEXT");
-        data->glDeleteFramebuffersEXT = (PFNGLDELETEFRAMEBUFFERSEXTPROC)
-            SDL_GL_GetProcAddress("glDeleteFramebuffersEXT");
-        data->glFramebufferTexture2DEXT = (PFNGLFRAMEBUFFERTEXTURE2DEXTPROC)
-            SDL_GL_GetProcAddress("glFramebufferTexture2DEXT");
-        data->glBindFramebufferEXT = (PFNGLBINDFRAMEBUFFEREXTPROC)
-            SDL_GL_GetProcAddress("glBindFramebufferEXT");
-        data->glCheckFramebufferStatusEXT = (PFNGLCHECKFRAMEBUFFERSTATUSEXTPROC)
-            SDL_GL_GetProcAddress("glCheckFramebufferStatusEXT");
-        renderer->info.flags |= SDL_RENDERER_TARGETTEXTURE;
-    }
-    data->framebuffers = NULL;
-
-    /* Set up parameters for rendering */
-    data->glDisable(GL_DEPTH_TEST);
-    data->glDisable(GL_CULL_FACE);
-    /* This ended up causing video discrepancies between OpenGL and Direct3D */
-    /* data->glEnable(GL_LINE_SMOOTH); */
-
-    return renderer;
-
-error:
-    if (changed_window) {
-        /* Uh oh, better try to put it back... */
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, profile_mask);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, major);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, minor);
-        SDL_RecreateWindow(window, window_flags);
-    }
-    return NULL;
 }
 
 static int
@@ -1691,6 +1446,217 @@ GL_UnbindTexture (SDL_Renderer * renderer, SDL_Texture *texture)
 
     return 0;
 }
+
+
+SDL_Renderer *
+GL_CreateRenderer(SDL_Window * window, Uint32 flags)
+{
+    SDL_Renderer *renderer;
+    GL_RenderData *data;
+    GLint value;
+    Uint32 window_flags;
+    int profile_mask = 0, major = 0, minor = 0;
+    SDL_bool changed_window = SDL_FALSE;
+
+    SDL_GL_GetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, &profile_mask);
+    SDL_GL_GetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, &major);
+    SDL_GL_GetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, &minor);
+    
+    window_flags = SDL_GetWindowFlags(window);
+    if (!(window_flags & SDL_WINDOW_OPENGL) ||
+        profile_mask == SDL_GL_CONTEXT_PROFILE_ES || major != RENDERER_CONTEXT_MAJOR || minor != RENDERER_CONTEXT_MINOR) {
+
+        changed_window = SDL_TRUE;
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, 0);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, RENDERER_CONTEXT_MAJOR);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, RENDERER_CONTEXT_MINOR);
+
+        if (SDL_RecreateWindow(window, window_flags | SDL_WINDOW_OPENGL) < 0) {
+            goto error;
+        }
+    }
+
+    renderer = (SDL_Renderer *) SDL_calloc(1, sizeof(*renderer));
+    if (!renderer) {
+        SDL_OutOfMemory();
+        goto error;
+    }
+
+    data = (GL_RenderData *) SDL_calloc(1, sizeof(*data));
+    if (!data) {
+        GL_DestroyRenderer(renderer);
+        SDL_OutOfMemory();
+        goto error;
+    }
+
+    renderer->GetOutputSize = GL_GetOutputSize;
+    renderer->SupportsBlendMode = GL_SupportsBlendMode;
+    renderer->CreateTexture = GL_CreateTexture;
+    renderer->UpdateTexture = GL_UpdateTexture;
+    renderer->UpdateTextureYUV = GL_UpdateTextureYUV;
+    renderer->LockTexture = GL_LockTexture;
+    renderer->UnlockTexture = GL_UnlockTexture;
+    renderer->SetRenderTarget = GL_SetRenderTarget;
+    renderer->QueueSetViewport = GL_QueueSetViewport;
+    renderer->QueueSetDrawColor = GL_QueueSetViewport;  /* SetViewport and SetDrawColor are (currently) no-ops. */
+    renderer->QueueDrawPoints = GL_QueueDrawPoints;
+    renderer->QueueDrawLines = GL_QueueDrawPoints;  /* lines and points queue vertices the same way. */
+    renderer->QueueFillRects = GL_QueueFillRects;
+    renderer->QueueCopy = GL_QueueCopy;
+    renderer->QueueCopyEx = GL_QueueCopyEx;
+    renderer->RunCommandQueue = GL_RunCommandQueue;
+    renderer->RenderReadPixels = GL_RenderReadPixels;
+    renderer->RenderPresent = GL_RenderPresent;
+    renderer->DestroyTexture = GL_DestroyTexture;
+    renderer->DestroyRenderer = GL_DestroyRenderer;
+    renderer->GL_BindTexture = GL_BindTexture;
+    renderer->GL_UnbindTexture = GL_UnbindTexture;
+    renderer->info = GL_RenderDriver.info;
+    renderer->info.flags = SDL_RENDERER_ACCELERATED;
+    renderer->driverdata = data;
+    renderer->window = window;
+
+    data->context = SDL_GL_CreateContext(window);
+    if (!data->context) {
+        GL_DestroyRenderer(renderer);
+        goto error;
+    }
+    if (SDL_GL_MakeCurrent(window, data->context) < 0) {
+        GL_DestroyRenderer(renderer);
+        goto error;
+    }
+
+    if (GL_LoadFunctions(data) < 0) {
+        GL_DestroyRenderer(renderer);
+        goto error;
+    }
+
+#ifdef __MACOSX__
+    /* Enable multi-threaded rendering */
+    /* Disabled until Ryan finishes his VBO/PBO code...
+       CGLEnable(CGLGetCurrentContext(), kCGLCEMPEngine);
+     */
+#endif
+
+    if (flags & SDL_RENDERER_PRESENTVSYNC) {
+        SDL_GL_SetSwapInterval(1);
+    } else {
+        SDL_GL_SetSwapInterval(0);
+    }
+    if (SDL_GL_GetSwapInterval() > 0) {
+        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
+    }
+
+    /* Check for debug output support */
+    if (SDL_GL_GetAttribute(SDL_GL_CONTEXT_FLAGS, &value) == 0 &&
+        (value & SDL_GL_CONTEXT_DEBUG_FLAG)) {
+        data->debug_enabled = SDL_TRUE;
+    }
+    if (data->debug_enabled && SDL_GL_ExtensionSupported("GL_ARB_debug_output")) {
+        PFNGLDEBUGMESSAGECALLBACKARBPROC glDebugMessageCallbackARBFunc = (PFNGLDEBUGMESSAGECALLBACKARBPROC) SDL_GL_GetProcAddress("glDebugMessageCallbackARB");
+
+        data->GL_ARB_debug_output_supported = SDL_TRUE;
+        data->glGetPointerv(GL_DEBUG_CALLBACK_FUNCTION_ARB, (GLvoid **)(char *)&data->next_error_callback);
+        data->glGetPointerv(GL_DEBUG_CALLBACK_USER_PARAM_ARB, &data->next_error_userparam);
+        glDebugMessageCallbackARBFunc(GL_HandleDebugMessage, renderer);
+
+        /* Make sure our callback is called when errors actually happen */
+        data->glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
+    }
+
+    data->textype = GL_TEXTURE_2D;
+    if (SDL_GL_ExtensionSupported("GL_ARB_texture_non_power_of_two")) {
+        data->GL_ARB_texture_non_power_of_two_supported = SDL_TRUE;
+    } else if (SDL_GL_ExtensionSupported("GL_ARB_texture_rectangle") ||
+               SDL_GL_ExtensionSupported("GL_EXT_texture_rectangle")) {
+        data->GL_ARB_texture_rectangle_supported = SDL_TRUE;
+        data->textype = GL_TEXTURE_RECTANGLE_ARB;
+    }
+    if (data->GL_ARB_texture_rectangle_supported) {
+        data->glGetIntegerv(GL_MAX_RECTANGLE_TEXTURE_SIZE_ARB, &value);
+        renderer->info.max_texture_width = value;
+        renderer->info.max_texture_height = value;
+    } else {
+        data->glGetIntegerv(GL_MAX_TEXTURE_SIZE, &value);
+        renderer->info.max_texture_width = value;
+        renderer->info.max_texture_height = value;
+    }
+
+    /* Check for multitexture support */
+    if (SDL_GL_ExtensionSupported("GL_ARB_multitexture")) {
+        data->glActiveTextureARB = (PFNGLACTIVETEXTUREARBPROC) SDL_GL_GetProcAddress("glActiveTextureARB");
+        if (data->glActiveTextureARB) {
+            data->GL_ARB_multitexture_supported = SDL_TRUE;
+            data->glGetIntegerv(GL_MAX_TEXTURE_UNITS_ARB, &data->num_texture_units);
+        }
+    }
+
+    /* Check for shader support */
+    if (SDL_GetHintBoolean(SDL_HINT_RENDER_OPENGL_SHADERS, SDL_TRUE)) {
+        data->shaders = GL_CreateShaderContext();
+    }
+    SDL_LogInfo(SDL_LOG_CATEGORY_RENDER, "OpenGL shaders: %s",
+                data->shaders ? "ENABLED" : "DISABLED");
+
+    /* We support YV12 textures using 3 textures and a shader */
+    if (data->shaders && data->num_texture_units >= 3) {
+        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_YV12;
+        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_IYUV;
+        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV12;
+        renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_NV21;
+    }
+
+#ifdef __MACOSX__
+    renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_UYVY;
+#endif
+
+    if (SDL_GL_ExtensionSupported("GL_EXT_framebuffer_object")) {
+        data->GL_EXT_framebuffer_object_supported = SDL_TRUE;
+        data->glGenFramebuffersEXT = (PFNGLGENFRAMEBUFFERSEXTPROC)
+            SDL_GL_GetProcAddress("glGenFramebuffersEXT");
+        data->glDeleteFramebuffersEXT = (PFNGLDELETEFRAMEBUFFERSEXTPROC)
+            SDL_GL_GetProcAddress("glDeleteFramebuffersEXT");
+        data->glFramebufferTexture2DEXT = (PFNGLFRAMEBUFFERTEXTURE2DEXTPROC)
+            SDL_GL_GetProcAddress("glFramebufferTexture2DEXT");
+        data->glBindFramebufferEXT = (PFNGLBINDFRAMEBUFFEREXTPROC)
+            SDL_GL_GetProcAddress("glBindFramebufferEXT");
+        data->glCheckFramebufferStatusEXT = (PFNGLCHECKFRAMEBUFFERSTATUSEXTPROC)
+            SDL_GL_GetProcAddress("glCheckFramebufferStatusEXT");
+        renderer->info.flags |= SDL_RENDERER_TARGETTEXTURE;
+    }
+    data->framebuffers = NULL;
+
+    /* Set up parameters for rendering */
+    data->glDisable(GL_DEPTH_TEST);
+    data->glDisable(GL_CULL_FACE);
+    /* This ended up causing video discrepancies between OpenGL and Direct3D */
+    /* data->glEnable(GL_LINE_SMOOTH); */
+
+    return renderer;
+
+error:
+    if (changed_window) {
+        /* Uh oh, better try to put it back... */
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, profile_mask);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, major);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, minor);
+        SDL_RecreateWindow(window, window_flags);
+    }
+    return NULL;
+}
+
+
+SDL_RenderDriver GL_RenderDriver = {
+    GL_CreateRenderer,
+    {
+     "opengl",
+     (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE),
+     1,
+     {SDL_PIXELFORMAT_ARGB8888},
+     0,
+     0}
+};
+
 
 #endif /* SDL_VIDEO_RENDER_OGL && !SDL_RENDER_DISABLED */
 
