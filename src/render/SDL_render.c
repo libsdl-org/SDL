@@ -105,6 +105,96 @@ static const SDL_RenderDriver *render_drivers[] = {
 static char renderer_magic;
 static char texture_magic;
 
+static SDL_INLINE void
+DebugLogRenderCommands(const SDL_RenderCommand *cmd)
+{
+#if 0
+    unsigned int i = 1;
+    SDL_Log("Render commands to flush:");
+    while (cmd) {
+        switch (cmd->command) {
+            case SDL_RENDERCMD_NO_OP:
+                SDL_Log(" %u. no-op", i++);
+                break;
+
+            case SDL_RENDERCMD_SETVIEWPORT:
+                SDL_Log(" %u. set viewport (first=%u, rect={(%d, %d), %dx%d})", i++,
+                        (unsigned int) cmd->data.viewport.first,
+                        cmd->data.viewport.rect.x, cmd->data.viewport.rect.y,
+                        cmd->data.viewport.rect.w, cmd->data.viewport.rect.h);
+                break;
+
+            case SDL_RENDERCMD_SETCLIPRECT:
+                SDL_Log(" %u. set cliprect (enabled=%s, rect={(%d, %d), %dx%d})", i++,
+                        cmd->data.cliprect.enabled ? "true" : "false",
+                        cmd->data.cliprect.rect.x, cmd->data.cliprect.rect.y,
+                        cmd->data.cliprect.rect.w, cmd->data.cliprect.rect.h);
+                break;
+
+            case SDL_RENDERCMD_SETDRAWCOLOR:
+                SDL_Log(" %u. set draw color (first=%u, r=%d, g=%d, b=%d, a=%d)", i++,
+                        (unsigned int) cmd->data.color.first,
+                        (int) cmd->data.color.r, (int) cmd->data.color.g,
+                        (int) cmd->data.color.b, (int) cmd->data.color.a);
+                break;
+
+            case SDL_RENDERCMD_CLEAR:
+                SDL_Log(" %u. clear (first=%u, r=%d, g=%d, b=%d, a=%d)", i++,
+                        (unsigned int) cmd->data.color.first,
+                        (int) cmd->data.color.r, (int) cmd->data.color.g,
+                        (int) cmd->data.color.b, (int) cmd->data.color.a);
+                break;
+
+            case SDL_RENDERCMD_DRAW_POINTS:
+                SDL_Log(" %u. draw points (first=%u, count=%u, r=%d, g=%d, b=%d, a=%d, blend=%d)", i++,
+                        (unsigned int) cmd->data.draw.first,
+                        (unsigned int) cmd->data.draw.count,
+                        (int) cmd->data.draw.r, (int) cmd->data.draw.g,
+                        (int) cmd->data.draw.b, (int) cmd->data.draw.a,
+                        (int) cmd->data.draw.blend);
+                break;
+
+            case SDL_RENDERCMD_DRAW_LINES:
+                SDL_Log(" %u. draw lines (first=%u, count=%u, r=%d, g=%d, b=%d, a=%d, blend=%d)", i++,
+                        (unsigned int) cmd->data.draw.first,
+                        (unsigned int) cmd->data.draw.count,
+                        (int) cmd->data.draw.r, (int) cmd->data.draw.g,
+                        (int) cmd->data.draw.b, (int) cmd->data.draw.a,
+                        (int) cmd->data.draw.blend);
+                break;
+
+            case SDL_RENDERCMD_FILL_RECTS:
+                SDL_Log(" %u. fill rects (first=%u, count=%u, r=%d, g=%d, b=%d, a=%d, blend=%d)", i++,
+                        (unsigned int) cmd->data.draw.first,
+                        (unsigned int) cmd->data.draw.count,
+                        (int) cmd->data.draw.r, (int) cmd->data.draw.g,
+                        (int) cmd->data.draw.b, (int) cmd->data.draw.a,
+                        (int) cmd->data.draw.blend);
+                break;
+
+            case SDL_RENDERCMD_COPY:
+                SDL_Log(" %u. copy (first=%u, count=%u, r=%d, g=%d, b=%d, a=%d, blend=%d, tex=%p)", i++,
+                        (unsigned int) cmd->data.draw.first,
+                        (unsigned int) cmd->data.draw.count,
+                        (int) cmd->data.draw.r, (int) cmd->data.draw.g,
+                        (int) cmd->data.draw.b, (int) cmd->data.draw.a,
+                        (int) cmd->data.draw.blend, cmd->data.draw.texture);
+                break;
+
+
+            case SDL_RENDERCMD_COPY_EX:
+                SDL_Log(" %u. copyex (first=%u, count=%u, r=%d, g=%d, b=%d, a=%d, blend=%d, tex=%p)", i++,
+                        (unsigned int) cmd->data.draw.first,
+                        (unsigned int) cmd->data.draw.count,
+                        (int) cmd->data.draw.r, (int) cmd->data.draw.g,
+                        (int) cmd->data.draw.b, (int) cmd->data.draw.a,
+                        (int) cmd->data.draw.blend, cmd->data.draw.texture);
+                break;
+        }
+        cmd = cmd->next;
+    }
+#endif
+}
 
 static int
 FlushRenderCommands(SDL_Renderer *renderer)
@@ -119,6 +209,8 @@ FlushRenderCommands(SDL_Renderer *renderer)
         SDL_assert(renderer->vertex_data_used == 0);
         return 0;
     }
+
+    DebugLogRenderCommands(renderer->render_commands);
 
     retval = renderer->RunCommandQueue(renderer, renderer->render_commands, renderer->vertex_data, renderer->vertex_data_used);
 
