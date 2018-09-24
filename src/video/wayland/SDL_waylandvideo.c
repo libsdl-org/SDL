@@ -68,10 +68,10 @@ static char *
 get_classname()
 {
 /* !!! FIXME: this is probably wrong, albeit harmless in many common cases. From protocol spec:
-	"The surface class identifies the general class of applications
-	to which the surface belongs. A common convention is to use the
-	file name (or the full path if it is a non-standard location) of
-	the application's .desktop file as the class." */
+    "The surface class identifies the general class of applications
+    to which the surface belongs. A common convention is to use the
+    file name (or the full path if it is a non-standard location) of
+    the application's .desktop file as the class." */
 
     char *spot;
 #if defined(__LINUX__) || defined(__FREEBSD__)

@@ -36,7 +36,7 @@ extern "C"
 
 
 /* The maximum number of joysticks we'll detect */
-#define MAX_JOYSTICKS	16
+#define MAX_JOYSTICKS   16
 
 /* A list of available joysticks */
     static char *SDL_joyport[MAX_JOYSTICKS];

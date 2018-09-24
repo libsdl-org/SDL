@@ -1027,7 +1027,7 @@ static ControllerMapping_t *SDL_PrivateGetControllerMappingForNameAndGUID(const 
     }
 #ifdef __ANDROID__
     if (!mapping && name && !SDL_IsJoystickHIDAPI(guid)) {
-		mapping = SDL_CreateMappingForAndroidController(name, guid);
+        mapping = SDL_CreateMappingForAndroidController(name, guid);
     }
 #endif
     if (!mapping) {

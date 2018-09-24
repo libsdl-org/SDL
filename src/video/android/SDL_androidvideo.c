@@ -214,12 +214,12 @@ Android_GetDisplayDPI(_THIS, SDL_VideoDisplay * display, float * ddpi, float * h
 void
 Android_SetScreenResolution(int surfaceWidth, int surfaceHeight, int deviceWidth, int deviceHeight, Uint32 format, float rate)
 {
-	SDL_VideoDevice* device;
-	SDL_VideoDisplay *display;
+    SDL_VideoDevice* device;
+    SDL_VideoDisplay *display;
     Android_SurfaceWidth = surfaceWidth;
     Android_SurfaceHeight = surfaceHeight;
-	Android_DeviceWidth = deviceWidth;
-	Android_DeviceHeight = deviceHeight;
+    Android_DeviceWidth = deviceWidth;
+    Android_DeviceHeight = deviceHeight;
     Android_ScreenFormat = format;
     Android_ScreenRate = rate;
 

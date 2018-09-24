@@ -39,7 +39,7 @@
 /* Return a Metal-compatible layer. */
 + (Class)layerClass
 {
-	return NSClassFromString(@"CAMetalLayer");
+    return NSClassFromString(@"CAMetalLayer");
 }
 
 /* Indicate the view wants to draw using a backing layer instead of drawRect. */
@@ -59,7 +59,7 @@
 - (instancetype)initWithFrame:(NSRect)frame
                         scale:(CGFloat)scale
 {
-	if ((self = [super initWithFrame:frame])) {
+    if ((self = [super initWithFrame:frame])) {
         _tag = METALVIEW_TAG;
         self.wantsLayer = YES;
 
@@ -71,7 +71,7 @@
         self.layer.contentsScale = scale;
     }
   
-	return self;
+    return self;
 }
 
 /* Set the size of the metal drawables when the view is resized. */

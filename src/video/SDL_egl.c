@@ -836,7 +836,7 @@ SDL_EGL_CreateSurface(_THIS, NativeWindowType nw)
     /* max 2 values plus terminator. */
     EGLint attribs[3];
     int attr = 0;
-	
+
     EGLSurface * surface;
 
     if (SDL_EGL_ChooseConfig(_this) != 0) {
@@ -868,7 +868,7 @@ SDL_EGL_CreateSurface(_THIS, NativeWindowType nw)
             return EGL_NO_SURFACE;
         }
     }
-	
+
     attribs[attr++] = EGL_NONE;
     
     surface = _this->egl_data->eglCreateWindowSurface(

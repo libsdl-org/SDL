@@ -255,7 +255,7 @@ SDL_JoystickThread(void *_data)
             /* WM_DEVICECHANGE not working, no XINPUT, no point in keeping thread alive */
             break;
 #endif /* SDL_JOYSTICK_XINPUT */
-		}
+        }
 
         if (s_bWindowsDeviceChanged || bXInputChanged) {
             s_bDeviceRemoved = SDL_TRUE;

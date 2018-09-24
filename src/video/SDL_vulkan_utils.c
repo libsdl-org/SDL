@@ -123,10 +123,10 @@ VkExtensionProperties *SDL_Vulkan_CreateInstanceExtensionsList(
     {
         retval = SDL_calloc(1, sizeof(VkExtensionProperties)); // so we can return non-null
     }
-	else
-	{
-		retval = SDL_calloc(count, sizeof(VkExtensionProperties));
-	}
+    else
+    {
+        retval = SDL_calloc(count, sizeof(VkExtensionProperties));
+    }
     if(!retval)
     {
         SDL_OutOfMemory();
