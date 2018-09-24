@@ -764,7 +764,7 @@ class SDLGenericMotionListener_API26 extends SDLGenericMotionListener_API24 {
 
     @Override
     public boolean supportsRelativeMouse() {
-        return !SDLActivity.isDeXMode();
+        return (!SDLActivity.isDeXMode() || (Build.VERSION.SDK_INT >= 27));
     }
 
     @Override
@@ -774,7 +774,7 @@ class SDLGenericMotionListener_API26 extends SDLGenericMotionListener_API24 {
 
     @Override
     public boolean setRelativeMouseEnabled(boolean enabled) {
-        if (!SDLActivity.isDeXMode()) {
+        if (!SDLActivity.isDeXMode() || (Build.VERSION.SDK_INT >= 27)) {
             if (enabled) {
                 SDLActivity.getContentView().requestPointerCapture();
             }
