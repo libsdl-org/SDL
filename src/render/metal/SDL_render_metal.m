@@ -46,62 +46,6 @@
 
 /* Apple Metal renderer implementation */
 
-static SDL_Renderer *METAL_CreateRenderer(SDL_Window * window, Uint32 flags);
-static void METAL_WindowEvent(SDL_Renderer * renderer,
-                           const SDL_WindowEvent *event);
-static int METAL_GetOutputSize(SDL_Renderer * renderer, int *w, int *h);
-static SDL_bool METAL_SupportsBlendMode(SDL_Renderer * renderer, SDL_BlendMode blendMode);
-static int METAL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture);
-static int METAL_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
-                            const SDL_Rect * rect, const void *pixels,
-                            int pitch);
-static int METAL_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
-                               const SDL_Rect * rect,
-                               const Uint8 *Yplane, int Ypitch,
-                               const Uint8 *Uplane, int Upitch,
-                               const Uint8 *Vplane, int Vpitch);
-static int METAL_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
-                          const SDL_Rect * rect, void **pixels, int *pitch);
-static void METAL_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture);
-static int METAL_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture);
-static int METAL_QueueSetViewport(SDL_Renderer * renderer, SDL_RenderCommand *cmd);
-static int METAL_QueueSetDrawColor(SDL_Renderer * renderer, SDL_RenderCommand *cmd);
-static int METAL_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points,
-                             int count);
-static int METAL_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRect * rects,
-                            int count);
-static int METAL_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
-                       const SDL_Rect * srcrect, const SDL_FRect * dstrect);
-static int METAL_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
-                        const SDL_Rect * srcquad, const SDL_FRect * dstrect,
-                        const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip);
-static int METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize);
-static int METAL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
-                               Uint32 pixel_format, void * pixels, int pitch);
-static void METAL_RenderPresent(SDL_Renderer * renderer);
-static void METAL_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture);
-static void METAL_DestroyRenderer(SDL_Renderer * renderer);
-static void *METAL_GetMetalLayer(SDL_Renderer * renderer);
-static void *METAL_GetMetalCommandEncoder(SDL_Renderer * renderer);
-
-SDL_RenderDriver METAL_RenderDriver = {
-    METAL_CreateRenderer,
-    {
-        "metal",
-        (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE),
-        6,
-        {
-            SDL_PIXELFORMAT_ARGB8888,
-            SDL_PIXELFORMAT_ABGR8888,
-            SDL_PIXELFORMAT_YV12,
-            SDL_PIXELFORMAT_IYUV,
-            SDL_PIXELFORMAT_NV12,
-            SDL_PIXELFORMAT_NV21
-        },
-    0, 0,
-    }
-};
-
 /* macOS requires constants in a buffer to have a 256 byte alignment. */
 #ifdef __MACOSX__
 #define CONSTANT_ALIGN 256
@@ -455,251 +399,6 @@ ChoosePipelineState(METAL_RenderData *data, METAL_ShaderPipelines *pipelines, SD
 
     return MakePipelineState(data, cache, [NSString stringWithFormat:@" (blend=custom 0x%x)", blendmode], blendmode);
 }
-
-static SDL_Renderer *
-METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
-{ @autoreleasepool {
-    SDL_Renderer *renderer = NULL;
-    METAL_RenderData *data = NULL;
-    id<MTLDevice> mtldevice = nil;
-    SDL_SysWMinfo syswm;
-
-    SDL_VERSION(&syswm.version);
-    if (!SDL_GetWindowWMInfo(window, &syswm)) {
-        return NULL;
-    }
-
-    if (IsMetalAvailable(&syswm) == -1) {
-        return NULL;
-    }
-
-    renderer = (SDL_Renderer *) SDL_calloc(1, sizeof(*renderer));
-    if (!renderer) {
-        SDL_OutOfMemory();
-        return NULL;
-    }
-
-    // !!! FIXME: MTLCopyAllDevices() can find other GPUs on macOS...
-    mtldevice = MTLCreateSystemDefaultDevice();
-
-    if (mtldevice == nil) {
-        SDL_free(renderer);
-        SDL_SetError("Failed to obtain Metal device");
-        return NULL;
-    }
-
-    // !!! FIXME: error checking on all of this.
-    data = [[METAL_RenderData alloc] init];
-
-    renderer->driverdata = (void*)CFBridgingRetain(data);
-    renderer->window = window;
-
-#ifdef __MACOSX__
-    NSView *view = Cocoa_Mtl_AddMetalView(window);
-    CAMetalLayer *layer = (CAMetalLayer *)[view layer];
-
-    layer.device = mtldevice;
-
-    //layer.colorspace = nil;
-
-#else
-    UIView *view = UIKit_Mtl_AddMetalView(window);
-    CAMetalLayer *layer = (CAMetalLayer *)[view layer];
-#endif
-
-    // Necessary for RenderReadPixels.
-    layer.framebufferOnly = NO;
-
-    data.mtldevice = layer.device;
-    data.mtllayer = layer;
-    id<MTLCommandQueue> mtlcmdqueue = [data.mtldevice newCommandQueue];
-    data.mtlcmdqueue = mtlcmdqueue;
-    data.mtlcmdqueue.label = @"SDL Metal Renderer";
-    data.mtlpassdesc = [MTLRenderPassDescriptor renderPassDescriptor];
-
-    NSError *err = nil;
-
-    // The compiled .metallib is embedded in a static array in a header file
-    // but the original shader source code is in SDL_shaders_metal.metal.
-    dispatch_data_t mtllibdata = dispatch_data_create(sdl_metallib, sdl_metallib_len, dispatch_get_global_queue(0, 0), ^{});
-    id<MTLLibrary> mtllibrary = [data.mtldevice newLibraryWithData:mtllibdata error:&err];
-    data.mtllibrary = mtllibrary;
-    SDL_assert(err == nil);
-#if !__has_feature(objc_arc)
-    dispatch_release(mtllibdata);
-#endif
-    data.mtllibrary.label = @"SDL Metal renderer shader library";
-
-    /* Do some shader pipeline state loading up-front rather than on demand. */
-    data.pipelinescount = 0;
-    data.allpipelines = NULL;
-    ChooseShaderPipelines(data, MTLPixelFormatBGRA8Unorm);
-
-    MTLSamplerDescriptor *samplerdesc = [[MTLSamplerDescriptor alloc] init];
-
-    samplerdesc.minFilter = MTLSamplerMinMagFilterNearest;
-    samplerdesc.magFilter = MTLSamplerMinMagFilterNearest;
-    id<MTLSamplerState> mtlsamplernearest = [data.mtldevice newSamplerStateWithDescriptor:samplerdesc];
-    data.mtlsamplernearest = mtlsamplernearest;
-
-    samplerdesc.minFilter = MTLSamplerMinMagFilterLinear;
-    samplerdesc.magFilter = MTLSamplerMinMagFilterLinear;
-    id<MTLSamplerState> mtlsamplerlinear = [data.mtldevice newSamplerStateWithDescriptor:samplerdesc];
-    data.mtlsamplerlinear = mtlsamplerlinear;
-
-    /* Note: matrices are column major. */
-    float identitytransform[16] = {
-        1.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 1.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 1.0f, 0.0f,
-        0.0f, 0.0f, 0.0f, 1.0f,
-    };
-
-    float halfpixeltransform[16] = {
-        1.0f, 0.0f, 0.0f, 0.0f,
-        0.0f, 1.0f, 0.0f, 0.0f,
-        0.0f, 0.0f, 1.0f, 0.0f,
-        0.5f, 0.5f, 0.0f, 1.0f,
-    };
-
-    /* Metal pads float3s to 16 bytes. */
-    float decodetransformJPEG[4*4] = {
-        0.0, -0.501960814, -0.501960814, 0.0, /* offset */
-        1.0000,  0.0000,  1.4020, 0.0,        /* Rcoeff */
-        1.0000, -0.3441, -0.7141, 0.0,        /* Gcoeff */
-        1.0000,  1.7720,  0.0000, 0.0,        /* Bcoeff */
-    };
-
-    float decodetransformBT601[4*4] = {
-        -0.0627451017, -0.501960814, -0.501960814, 0.0, /* offset */
-        1.1644,  0.0000,  1.5960, 0.0,                  /* Rcoeff */
-        1.1644, -0.3918, -0.8130, 0.0,                  /* Gcoeff */
-        1.1644,  2.0172,  0.0000, 0.0,                  /* Bcoeff */
-    };
-
-    float decodetransformBT709[4*4] = {
-        0.0, -0.501960814, -0.501960814, 0.0, /* offset */
-        1.0000,  0.0000,  1.4020, 0.0,        /* Rcoeff */
-        1.0000, -0.3441, -0.7141, 0.0,        /* Gcoeff */
-        1.0000,  1.7720,  0.0000, 0.0,        /* Bcoeff */
-    };
-
-    float clearverts[6] = {0.0f, 0.0f,  0.0f, 2.0f,  2.0f, 0.0f};
-
-    id<MTLBuffer> mtlbufconstantstaging = [data.mtldevice newBufferWithLength:CONSTANTS_LENGTH options:MTLResourceStorageModeShared];
-    #if !__has_feature(objc_arc)
-    [mtlbufconstantstaging autorelease];
-    #endif
-    mtlbufconstantstaging.label = @"SDL constant staging data";
-
-    id<MTLBuffer> mtlbufconstants = [data.mtldevice newBufferWithLength:CONSTANTS_LENGTH options:MTLResourceStorageModePrivate];
-    data.mtlbufconstants = mtlbufconstants;
-    data.mtlbufconstants.label = @"SDL constant data";
-
-    char *constantdata = [mtlbufconstantstaging contents];
-    SDL_memcpy(constantdata + CONSTANTS_OFFSET_IDENTITY, identitytransform, sizeof(identitytransform));
-    SDL_memcpy(constantdata + CONSTANTS_OFFSET_HALF_PIXEL_TRANSFORM, halfpixeltransform, sizeof(halfpixeltransform));
-    SDL_memcpy(constantdata + CONSTANTS_OFFSET_DECODE_JPEG, decodetransformJPEG, sizeof(decodetransformJPEG));
-    SDL_memcpy(constantdata + CONSTANTS_OFFSET_DECODE_BT601, decodetransformBT601, sizeof(decodetransformBT601));
-    SDL_memcpy(constantdata + CONSTANTS_OFFSET_DECODE_BT709, decodetransformBT709, sizeof(decodetransformBT709));
-    SDL_memcpy(constantdata + CONSTANTS_OFFSET_CLEAR_VERTS, clearverts, sizeof(clearverts));
-
-    id<MTLCommandBuffer> cmdbuffer = [data.mtlcmdqueue commandBuffer];
-    id<MTLBlitCommandEncoder> blitcmd = [cmdbuffer blitCommandEncoder];
-
-    [blitcmd copyFromBuffer:mtlbufconstantstaging sourceOffset:0 toBuffer:data.mtlbufconstants destinationOffset:0 size:CONSTANTS_LENGTH];
-
-    [blitcmd endEncoding];
-    [cmdbuffer commit];
-
-    // !!! FIXME: force more clears here so all the drawables are sane to start, and our static buffers are definitely flushed.
-
-    renderer->WindowEvent = METAL_WindowEvent;
-    renderer->GetOutputSize = METAL_GetOutputSize;
-    renderer->SupportsBlendMode = METAL_SupportsBlendMode;
-    renderer->CreateTexture = METAL_CreateTexture;
-    renderer->UpdateTexture = METAL_UpdateTexture;
-    renderer->UpdateTextureYUV = METAL_UpdateTextureYUV;
-    renderer->LockTexture = METAL_LockTexture;
-    renderer->UnlockTexture = METAL_UnlockTexture;
-    renderer->SetRenderTarget = METAL_SetRenderTarget;
-    renderer->QueueSetViewport = METAL_QueueSetViewport;
-    renderer->QueueSetDrawColor = METAL_QueueSetDrawColor;
-    renderer->QueueDrawPoints = METAL_QueueDrawPoints;
-    renderer->QueueDrawLines = METAL_QueueDrawPoints;  // lines and points queue the same way.
-    renderer->QueueFillRects = METAL_QueueFillRects;
-    renderer->QueueCopy = METAL_QueueCopy;
-    renderer->QueueCopyEx = METAL_QueueCopyEx;
-    renderer->RunCommandQueue = METAL_RunCommandQueue;
-    renderer->RenderReadPixels = METAL_RenderReadPixels;
-    renderer->RenderPresent = METAL_RenderPresent;
-    renderer->DestroyTexture = METAL_DestroyTexture;
-    renderer->DestroyRenderer = METAL_DestroyRenderer;
-    renderer->GetMetalLayer = METAL_GetMetalLayer;
-    renderer->GetMetalCommandEncoder = METAL_GetMetalCommandEncoder;
-
-    renderer->info = METAL_RenderDriver.info;
-    renderer->info.flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
-
-    renderer->always_batch = SDL_TRUE;
-
-#if defined(__MACOSX__) && defined(MAC_OS_X_VERSION_10_13)
-    if (@available(macOS 10.13, *)) {
-        data.mtllayer.displaySyncEnabled = (flags & SDL_RENDERER_PRESENTVSYNC) != 0;
-    } else
-#endif
-    {
-        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
-    }
-
-    /* https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf */
-    int maxtexsize = 4096;
-#if defined(__MACOSX__)
-    maxtexsize = 16384;
-#elif defined(__TVOS__)
-    maxtexsize = 8192;
-#ifdef __TVOS_11_0
-    if (@available(tvOS 11.0, *)) {
-        if ([mtldevice supportsFeatureSet:MTLFeatureSet_tvOS_GPUFamily2_v1]) {
-            maxtexsize = 16384;
-        }
-    }
-#endif
-#else
-#ifdef __IPHONE_11_0
-    if ([mtldevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily4_v1]) {
-        maxtexsize = 16384;
-    } else
-#endif
-#ifdef __IPHONE_10_0
-    if ([mtldevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily3_v1]) {
-        maxtexsize = 16384;
-    } else
-#endif
-    if ([mtldevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily2_v2] || [mtldevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily1_v2]) {
-        maxtexsize = 8192;
-    } else {
-        maxtexsize = 4096;
-    }
-#endif
-
-    renderer->info.max_texture_width = maxtexsize;
-    renderer->info.max_texture_height = maxtexsize;
-
-#if !__has_feature(objc_arc)
-    [mtlcmdqueue release];
-    [mtllibrary release];
-    [samplerdesc release];
-    [mtlsamplernearest release];
-    [mtlsamplerlinear release];
-    [mtlbufconstants release];
-    [view release];
-    [data release];
-    [mtldevice release];
-#endif
-
-    return renderer;
-}}
 
 static void
 METAL_ActivateRenderCommandEncoder(SDL_Renderer * renderer, MTLLoadAction load, MTLClearColor *clear_color)
@@ -1572,6 +1271,269 @@ METAL_GetMetalCommandEncoder(SDL_Renderer * renderer)
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
     return (__bridge void*)data.mtlcmdencoder;
 }}
+
+static SDL_Renderer *
+METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
+{ @autoreleasepool {
+    SDL_Renderer *renderer = NULL;
+    METAL_RenderData *data = NULL;
+    id<MTLDevice> mtldevice = nil;
+    SDL_SysWMinfo syswm;
+
+    SDL_VERSION(&syswm.version);
+    if (!SDL_GetWindowWMInfo(window, &syswm)) {
+        return NULL;
+    }
+
+    if (IsMetalAvailable(&syswm) == -1) {
+        return NULL;
+    }
+
+    renderer = (SDL_Renderer *) SDL_calloc(1, sizeof(*renderer));
+    if (!renderer) {
+        SDL_OutOfMemory();
+        return NULL;
+    }
+
+    // !!! FIXME: MTLCopyAllDevices() can find other GPUs on macOS...
+    mtldevice = MTLCreateSystemDefaultDevice();
+
+    if (mtldevice == nil) {
+        SDL_free(renderer);
+        SDL_SetError("Failed to obtain Metal device");
+        return NULL;
+    }
+
+    // !!! FIXME: error checking on all of this.
+    data = [[METAL_RenderData alloc] init];
+
+    renderer->driverdata = (void*)CFBridgingRetain(data);
+    renderer->window = window;
+
+#ifdef __MACOSX__
+    NSView *view = Cocoa_Mtl_AddMetalView(window);
+    CAMetalLayer *layer = (CAMetalLayer *)[view layer];
+
+    layer.device = mtldevice;
+
+    //layer.colorspace = nil;
+
+#else
+    UIView *view = UIKit_Mtl_AddMetalView(window);
+    CAMetalLayer *layer = (CAMetalLayer *)[view layer];
+#endif
+
+    // Necessary for RenderReadPixels.
+    layer.framebufferOnly = NO;
+
+    data.mtldevice = layer.device;
+    data.mtllayer = layer;
+    id<MTLCommandQueue> mtlcmdqueue = [data.mtldevice newCommandQueue];
+    data.mtlcmdqueue = mtlcmdqueue;
+    data.mtlcmdqueue.label = @"SDL Metal Renderer";
+    data.mtlpassdesc = [MTLRenderPassDescriptor renderPassDescriptor];
+
+    NSError *err = nil;
+
+    // The compiled .metallib is embedded in a static array in a header file
+    // but the original shader source code is in SDL_shaders_metal.metal.
+    dispatch_data_t mtllibdata = dispatch_data_create(sdl_metallib, sdl_metallib_len, dispatch_get_global_queue(0, 0), ^{});
+    id<MTLLibrary> mtllibrary = [data.mtldevice newLibraryWithData:mtllibdata error:&err];
+    data.mtllibrary = mtllibrary;
+    SDL_assert(err == nil);
+#if !__has_feature(objc_arc)
+    dispatch_release(mtllibdata);
+#endif
+    data.mtllibrary.label = @"SDL Metal renderer shader library";
+
+    /* Do some shader pipeline state loading up-front rather than on demand. */
+    data.pipelinescount = 0;
+    data.allpipelines = NULL;
+    ChooseShaderPipelines(data, MTLPixelFormatBGRA8Unorm);
+
+    MTLSamplerDescriptor *samplerdesc = [[MTLSamplerDescriptor alloc] init];
+
+    samplerdesc.minFilter = MTLSamplerMinMagFilterNearest;
+    samplerdesc.magFilter = MTLSamplerMinMagFilterNearest;
+    id<MTLSamplerState> mtlsamplernearest = [data.mtldevice newSamplerStateWithDescriptor:samplerdesc];
+    data.mtlsamplernearest = mtlsamplernearest;
+
+    samplerdesc.minFilter = MTLSamplerMinMagFilterLinear;
+    samplerdesc.magFilter = MTLSamplerMinMagFilterLinear;
+    id<MTLSamplerState> mtlsamplerlinear = [data.mtldevice newSamplerStateWithDescriptor:samplerdesc];
+    data.mtlsamplerlinear = mtlsamplerlinear;
+
+    /* Note: matrices are column major. */
+    float identitytransform[16] = {
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.0f, 0.0f, 0.0f, 1.0f,
+    };
+
+    float halfpixeltransform[16] = {
+        1.0f, 0.0f, 0.0f, 0.0f,
+        0.0f, 1.0f, 0.0f, 0.0f,
+        0.0f, 0.0f, 1.0f, 0.0f,
+        0.5f, 0.5f, 0.0f, 1.0f,
+    };
+
+    /* Metal pads float3s to 16 bytes. */
+    float decodetransformJPEG[4*4] = {
+        0.0, -0.501960814, -0.501960814, 0.0, /* offset */
+        1.0000,  0.0000,  1.4020, 0.0,        /* Rcoeff */
+        1.0000, -0.3441, -0.7141, 0.0,        /* Gcoeff */
+        1.0000,  1.7720,  0.0000, 0.0,        /* Bcoeff */
+    };
+
+    float decodetransformBT601[4*4] = {
+        -0.0627451017, -0.501960814, -0.501960814, 0.0, /* offset */
+        1.1644,  0.0000,  1.5960, 0.0,                  /* Rcoeff */
+        1.1644, -0.3918, -0.8130, 0.0,                  /* Gcoeff */
+        1.1644,  2.0172,  0.0000, 0.0,                  /* Bcoeff */
+    };
+
+    float decodetransformBT709[4*4] = {
+        0.0, -0.501960814, -0.501960814, 0.0, /* offset */
+        1.0000,  0.0000,  1.4020, 0.0,        /* Rcoeff */
+        1.0000, -0.3441, -0.7141, 0.0,        /* Gcoeff */
+        1.0000,  1.7720,  0.0000, 0.0,        /* Bcoeff */
+    };
+
+    float clearverts[6] = {0.0f, 0.0f,  0.0f, 2.0f,  2.0f, 0.0f};
+
+    id<MTLBuffer> mtlbufconstantstaging = [data.mtldevice newBufferWithLength:CONSTANTS_LENGTH options:MTLResourceStorageModeShared];
+    #if !__has_feature(objc_arc)
+    [mtlbufconstantstaging autorelease];
+    #endif
+    mtlbufconstantstaging.label = @"SDL constant staging data";
+
+    id<MTLBuffer> mtlbufconstants = [data.mtldevice newBufferWithLength:CONSTANTS_LENGTH options:MTLResourceStorageModePrivate];
+    data.mtlbufconstants = mtlbufconstants;
+    data.mtlbufconstants.label = @"SDL constant data";
+
+    char *constantdata = [mtlbufconstantstaging contents];
+    SDL_memcpy(constantdata + CONSTANTS_OFFSET_IDENTITY, identitytransform, sizeof(identitytransform));
+    SDL_memcpy(constantdata + CONSTANTS_OFFSET_HALF_PIXEL_TRANSFORM, halfpixeltransform, sizeof(halfpixeltransform));
+    SDL_memcpy(constantdata + CONSTANTS_OFFSET_DECODE_JPEG, decodetransformJPEG, sizeof(decodetransformJPEG));
+    SDL_memcpy(constantdata + CONSTANTS_OFFSET_DECODE_BT601, decodetransformBT601, sizeof(decodetransformBT601));
+    SDL_memcpy(constantdata + CONSTANTS_OFFSET_DECODE_BT709, decodetransformBT709, sizeof(decodetransformBT709));
+    SDL_memcpy(constantdata + CONSTANTS_OFFSET_CLEAR_VERTS, clearverts, sizeof(clearverts));
+
+    id<MTLCommandBuffer> cmdbuffer = [data.mtlcmdqueue commandBuffer];
+    id<MTLBlitCommandEncoder> blitcmd = [cmdbuffer blitCommandEncoder];
+
+    [blitcmd copyFromBuffer:mtlbufconstantstaging sourceOffset:0 toBuffer:data.mtlbufconstants destinationOffset:0 size:CONSTANTS_LENGTH];
+
+    [blitcmd endEncoding];
+    [cmdbuffer commit];
+
+    // !!! FIXME: force more clears here so all the drawables are sane to start, and our static buffers are definitely flushed.
+
+    renderer->WindowEvent = METAL_WindowEvent;
+    renderer->GetOutputSize = METAL_GetOutputSize;
+    renderer->SupportsBlendMode = METAL_SupportsBlendMode;
+    renderer->CreateTexture = METAL_CreateTexture;
+    renderer->UpdateTexture = METAL_UpdateTexture;
+    renderer->UpdateTextureYUV = METAL_UpdateTextureYUV;
+    renderer->LockTexture = METAL_LockTexture;
+    renderer->UnlockTexture = METAL_UnlockTexture;
+    renderer->SetRenderTarget = METAL_SetRenderTarget;
+    renderer->QueueSetViewport = METAL_QueueSetViewport;
+    renderer->QueueSetDrawColor = METAL_QueueSetDrawColor;
+    renderer->QueueDrawPoints = METAL_QueueDrawPoints;
+    renderer->QueueDrawLines = METAL_QueueDrawPoints;  // lines and points queue the same way.
+    renderer->QueueFillRects = METAL_QueueFillRects;
+    renderer->QueueCopy = METAL_QueueCopy;
+    renderer->QueueCopyEx = METAL_QueueCopyEx;
+    renderer->RunCommandQueue = METAL_RunCommandQueue;
+    renderer->RenderReadPixels = METAL_RenderReadPixels;
+    renderer->RenderPresent = METAL_RenderPresent;
+    renderer->DestroyTexture = METAL_DestroyTexture;
+    renderer->DestroyRenderer = METAL_DestroyRenderer;
+    renderer->GetMetalLayer = METAL_GetMetalLayer;
+    renderer->GetMetalCommandEncoder = METAL_GetMetalCommandEncoder;
+
+    renderer->info = METAL_RenderDriver.info;
+    renderer->info.flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+
+    renderer->always_batch = SDL_TRUE;
+
+#if defined(__MACOSX__) && defined(MAC_OS_X_VERSION_10_13)
+    if (@available(macOS 10.13, *)) {
+        data.mtllayer.displaySyncEnabled = (flags & SDL_RENDERER_PRESENTVSYNC) != 0;
+    } else
+#endif
+    {
+        renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
+    }
+
+    /* https://developer.apple.com/metal/Metal-Feature-Set-Tables.pdf */
+    int maxtexsize = 4096;
+#if defined(__MACOSX__)
+    maxtexsize = 16384;
+#elif defined(__TVOS__)
+    maxtexsize = 8192;
+#ifdef __TVOS_11_0
+    if (@available(tvOS 11.0, *)) {
+        if ([mtldevice supportsFeatureSet:MTLFeatureSet_tvOS_GPUFamily2_v1]) {
+            maxtexsize = 16384;
+        }
+    }
+#endif
+#else
+#ifdef __IPHONE_11_0
+    if ([mtldevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily4_v1]) {
+        maxtexsize = 16384;
+    } else
+#endif
+#ifdef __IPHONE_10_0
+    if ([mtldevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily3_v1]) {
+        maxtexsize = 16384;
+    } else
+#endif
+    if ([mtldevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily2_v2] || [mtldevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily1_v2]) {
+        maxtexsize = 8192;
+    } else {
+        maxtexsize = 4096;
+    }
+#endif
+
+    renderer->info.max_texture_width = maxtexsize;
+    renderer->info.max_texture_height = maxtexsize;
+
+#if !__has_feature(objc_arc)
+    [mtlcmdqueue release];
+    [mtllibrary release];
+    [samplerdesc release];
+    [mtlsamplernearest release];
+    [mtlsamplerlinear release];
+    [mtlbufconstants release];
+    [view release];
+    [data release];
+    [mtldevice release];
+#endif
+
+    return renderer;
+}}
+
+SDL_RenderDriver METAL_RenderDriver = {
+    METAL_CreateRenderer,
+    {
+        "metal",
+        (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE),
+        6,
+        {
+            SDL_PIXELFORMAT_ARGB8888,
+            SDL_PIXELFORMAT_ABGR8888,
+            SDL_PIXELFORMAT_YV12,
+            SDL_PIXELFORMAT_IYUV,
+            SDL_PIXELFORMAT_NV12,
+            SDL_PIXELFORMAT_NV21
+        },
+    0, 0,
+    }
+};
 
 #endif /* SDL_VIDEO_RENDER_METAL && !SDL_RENDER_DISABLED */
 
