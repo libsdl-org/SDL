@@ -292,6 +292,20 @@ SDL_SetColorKey(SDL_Surface * surface, int flag, Uint32 key)
     return 0;
 }
 
+SDL_bool
+SDL_HasColorKey(SDL_Surface * surface)
+{
+    if (!surface) {
+        return SDL_FALSE;
+    }
+
+    if (!(surface->map->info.flags & SDL_COPY_COLORKEY)) {
+        return SDL_FALSE;
+    }
+
+	return SDL_TRUE;
+}
+
 int
 SDL_GetColorKey(SDL_Surface * surface, Uint32 * key)
 {
