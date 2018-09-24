@@ -68,6 +68,7 @@ static int GL_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                           const SDL_Rect * rect, void **pixels, int *pitch);
 static void GL_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture);
 static int GL_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture);
+static int GL_QueueSetViewport(SDL_Renderer * renderer, SDL_RenderCommand *cmd);
 static int GL_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd,
                               const SDL_FPoint * points, int count);
 static int GL_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd,
@@ -391,6 +392,8 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->LockTexture = GL_LockTexture;
     renderer->UnlockTexture = GL_UnlockTexture;
     renderer->SetRenderTarget = GL_SetRenderTarget;
+    renderer->QueueSetViewport = GL_QueueSetViewport;
+    renderer->QueueSetDrawColor = GL_QueueSetViewport;  /* SetViewport and SetDrawColor are (currently) no-ops. */
     renderer->QueueDrawPoints = GL_QueueDrawPoints;
     renderer->QueueDrawLines = GL_QueueDrawPoints;  /* lines and points queue vertices the same way. */
     renderer->QueueFillRects = GL_QueueFillRects;
@@ -1010,9 +1013,15 @@ GL_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
    !!! FIXME:  renderer wants it, but this might want to operate differently if we move to
    !!! FIXME:  VBOs at some point. */
 static int
+GL_QueueSetViewport(SDL_Renderer * renderer, SDL_RenderCommand *cmd)
+{
+    return 0;  /* nothing to do in this backend. */
+}
+
+static int
 GL_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
 {
-    GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, count * 2 * sizeof (GLfloat), &cmd->data.draw.first);
+    GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, count * 2 * sizeof (GLfloat), 0, &cmd->data.draw.first);
     size_t i;
 
     if (!verts) {
@@ -1031,7 +1040,7 @@ GL_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FP
 static int
 GL_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRect * rects, int count)
 {
-    GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, count * 4 * sizeof (GLfloat), &cmd->data.draw.first);
+    GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, count * 4 * sizeof (GLfloat), 0, &cmd->data.draw.first);
     size_t i;
 
     if (!verts) {
@@ -1057,7 +1066,7 @@ GL_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * text
     GL_TextureData *texturedata = (GL_TextureData *) texture->driverdata;
     GLfloat minx, miny, maxx, maxy;
     GLfloat minu, maxu, minv, maxv;
-    GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, 8 * sizeof (GLfloat), &cmd->data.draw.first);
+    GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, 8 * sizeof (GLfloat), 0, &cmd->data.draw.first);
 
     if (!verts) {
         return -1;
@@ -1100,7 +1109,7 @@ GL_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * te
     GLfloat minx, miny, maxx, maxy;
     GLfloat centerx, centery;
     GLfloat minu, maxu, minv, maxv;
-    GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, 11 * sizeof (GLfloat), &cmd->data.draw.first);
+    GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, 11 * sizeof (GLfloat), 0, &cmd->data.draw.first);
 
     if (!verts) {
         return -1;
@@ -1338,9 +1347,14 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
 
     while (cmd) {
         switch (cmd->command) {
+            case SDL_RENDERCMD_SETDRAWCOLOR: {
+                // !!! FIXME: use this.
+                break;
+            }
+
             case SDL_RENDERCMD_SETVIEWPORT: {
-                if (SDL_memcmp(&cmd->data.viewport, &viewport, sizeof (SDL_Rect)) != 0) {
-                    SDL_memcpy(&viewport, &cmd->data.viewport, sizeof (SDL_Rect));
+                if (SDL_memcmp(&cmd->data.viewport.rect, &viewport, sizeof (viewport)) != 0) {
+                    SDL_memcpy(&viewport, &cmd->data.viewport.rect, sizeof (viewport));
                     data->glMatrixMode(GL_PROJECTION);
                     data->glLoadIdentity();
                     data->glViewport(viewport.x,

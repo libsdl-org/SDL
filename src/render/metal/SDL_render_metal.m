@@ -64,6 +64,8 @@ static int METAL_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                           const SDL_Rect * rect, void **pixels, int *pitch);
 static void METAL_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture);
 static int METAL_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture);
+static int METAL_QueueSetViewport(SDL_Renderer * renderer, SDL_RenderCommand *cmd);
+static int METAL_QueueSetDrawColor(SDL_Renderer * renderer, SDL_RenderCommand *cmd);
 static int METAL_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points,
                              int count);
 static int METAL_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRect * rects,
@@ -621,6 +623,8 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     renderer->LockTexture = METAL_LockTexture;
     renderer->UnlockTexture = METAL_UnlockTexture;
     renderer->SetRenderTarget = METAL_SetRenderTarget;
+    renderer->QueueSetViewport = METAL_QueueSetViewport;
+    renderer->QueueSetDrawColor = METAL_QueueSetDrawColor;
     renderer->QueueDrawPoints = METAL_QueueDrawPoints;
     renderer->QueueDrawLines = METAL_QueueDrawPoints;  // lines and points queue the same way.
     renderer->QueueFillRects = METAL_QueueFillRects;
@@ -636,6 +640,8 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
 
     renderer->info = METAL_RenderDriver.info;
     renderer->info.flags = (SDL_RENDERER_ACCELERATED | SDL_RENDERER_TARGETTEXTURE);
+
+    renderer->always_batch = SDL_TRUE;
 
 #if defined(__MACOSX__) && defined(MAC_OS_X_VERSION_10_13)
     if (@available(macOS 10.13, *)) {
@@ -740,6 +746,11 @@ METAL_ActivateRenderCommandEncoder(SDL_Renderer * renderer, MTLLoadAction load, 
         }
 
         data.activepipelines = ChooseShaderPipelines(data, mtltexture.pixelFormat);
+
+        // make sure this has a definite place in the queue. This way it will
+        //  execute reliably whether the app tries to make its own command buffers
+        //  or whatever. This means we can _always_ batch rendering commands!
+        [data.mtlcmdbuffer enqueue];
     }
 }
 
@@ -1027,10 +1038,50 @@ normtex(const float _val, const float len)
 }
 
 static int
+METAL_QueueSetViewport(SDL_Renderer * renderer, SDL_RenderCommand *cmd)
+{
+    float projection[4][4];    /* Prepare an orthographic projection */
+    const int w = cmd->data.viewport.rect.w;
+    const int h = cmd->data.viewport.rect.h;
+    const size_t matrixlen = sizeof (projection);
+    float *matrix = (float *) SDL_AllocateRenderVertices(renderer, matrixlen, CONSTANT_ALIGN, &cmd->data.viewport.first);
+    if (!matrix) {
+        return -1;
+    }
+
+    SDL_memset(projection, '\0', matrixlen);
+    if (w && h) {
+        projection[0][0] = 2.0f / w;
+        projection[1][1] = -2.0f / h;
+        projection[3][0] = -1.0f;
+        projection[3][1] = 1.0f;
+        projection[3][3] = 1.0f;
+    }
+    SDL_memcpy(matrix, projection, matrixlen);
+
+    return 0;
+}
+
+static int
+METAL_QueueSetDrawColor(SDL_Renderer *renderer, SDL_RenderCommand *cmd)
+{
+    const size_t vertlen = sizeof (float) * 4;
+    float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, CONSTANT_ALIGN, &cmd->data.color.first);
+    if (!verts) {
+        return -1;
+    }
+    *(verts++) = ((float)cmd->data.color.r) / 255.0f;
+    *(verts++) = ((float)cmd->data.color.g) / 255.0f;
+    *(verts++) = ((float)cmd->data.color.b) / 255.0f;
+    *(verts++) = ((float)cmd->data.color.a) / 255.0f;
+    return 0;
+}
+
+static int
 METAL_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FPoint * points, int count)
 {
     const size_t vertlen = (sizeof (float) * 2) * count;
-    float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, &cmd->data.draw.first);
+    float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, 0, &cmd->data.draw.first);
     if (!verts) {
         return -1;
     }
@@ -1044,7 +1095,7 @@ METAL_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_
 {
     // !!! FIXME: use an index buffer
     const size_t vertlen = (sizeof (float) * 8) * count;
-    float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, &cmd->data.draw.first);
+    float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, 0, &cmd->data.draw.first);
     if (!verts) {
         return -1;
     }
@@ -1082,7 +1133,7 @@ METAL_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * t
     const float texh = (float) texturedata.mtltexture.height;
     // !!! FIXME: use an index buffer
     const size_t vertlen = (sizeof (float) * 16);
-    float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, &cmd->data.draw.first);
+    float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, 0, &cmd->data.draw.first);
     if (!verts) {
         return -1;
     }
@@ -1123,7 +1174,7 @@ METAL_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture *
     float minu, maxu, minv, maxv;
     // !!! FIXME: use an index buffer
     const size_t vertlen = (sizeof (float) * 32);
-    float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, &cmd->data.draw.first);
+    float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, 0, &cmd->data.draw.first);
     if (!verts) {
         return -1;
     }
@@ -1185,16 +1236,21 @@ METAL_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture *
 
 typedef struct
 {
+    #if __has_feature(objc_arc)
+    __unsafe_unretained id<MTLRenderPipelineState> pipeline;
+    #else
     id<MTLRenderPipelineState> pipeline;
+    #endif
     size_t constants_offset;
     SDL_Texture *texture;
-    Uint32 color;
-    SDL_bool color_dirty;
     SDL_bool cliprect_dirty;
     SDL_bool cliprect_enabled;
+    SDL_Rect cliprect;
     SDL_bool viewport_dirty;
     SDL_Rect viewport;
-    SDL_Rect cliprect;
+    size_t projection_offset;
+    SDL_bool color_dirty;
+    size_t color_offset;
 } METAL_DrawStateCache;
 
 static void
@@ -1202,12 +1258,8 @@ SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const SDL_Met
              const size_t constants_offset, id<MTLBuffer> mtlbufvertex, METAL_DrawStateCache *statecache)
 {
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
-    const Uint8 r = cmd->data.draw.r;
-    const Uint8 g = cmd->data.draw.g;
-    const Uint8 b = cmd->data.draw.b;
-    const Uint8 a = cmd->data.draw.a;
-    const Uint32 color = ((a << 24) | (r << 16) | (g << 8) | b);
     const SDL_BlendMode blend = cmd->data.draw.blend;
+    size_t first = cmd->data.draw.first;
     id<MTLRenderPipelineState> newpipeline;
 
     METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad, NULL);
@@ -1221,20 +1273,7 @@ SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const SDL_Met
         viewport.znear = 0.0;
         viewport.zfar = 1.0;
         [data.mtlcmdencoder setViewport:viewport];
-
-        float projection[4][4];    /* Prepare an orthographic projection */
-        SDL_memset(projection, '\0', sizeof (projection));
-
-        if (statecache->viewport.w && statecache->viewport.h) {
-            projection[0][0] = 2.0f / statecache->viewport.w;
-            projection[1][1] = -2.0f / statecache->viewport.h;
-            projection[3][0] = -1.0f;
-            projection[3][1] = 1.0f;
-            projection[3][3] = 1.0f;
-        }
-
-        // !!! FIXME: This should be in a buffer...
-        [data.mtlcmdencoder setVertexBytes:projection length:sizeof(float)*16 atIndex:2];
+        [data.mtlcmdencoder setVertexBuffer:mtlbufvertex offset:statecache->projection_offset atIndex:2];  // projection
         statecache->viewport_dirty = SDL_FALSE;
     }
 
@@ -1258,11 +1297,9 @@ SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const SDL_Met
         statecache->cliprect_dirty = SDL_FALSE;
     }
 
-    if (statecache->color_dirty || (color != statecache->color)) {
-        const float colorf[4] = { ((float)r) / 255.0f, ((float)g) / 255.0f, ((float)b) / 255.0f, ((float)a) / 255.0f };
-        [data.mtlcmdencoder setFragmentBytes:colorf length:sizeof(colorf) atIndex:0];
+    if (statecache->color_dirty) {
+        [data.mtlcmdencoder setFragmentBuffer:mtlbufvertex offset:statecache->color_offset atIndex:0];
         statecache->color_dirty = SDL_FALSE;
-        statecache->color = color;
     }
 
     newpipeline = ChoosePipelineState(data, data.activepipelines, shader, blend);
@@ -1278,7 +1315,7 @@ SetDrawState(SDL_Renderer *renderer, const SDL_RenderCommand *cmd, const SDL_Met
         statecache->constants_offset = constants_offset;
     }
 
-    [data.mtlcmdencoder setVertexBuffer:mtlbufvertex offset:cmd->data.draw.first atIndex:0];  // position
+    [data.mtlcmdencoder setVertexBuffer:mtlbufvertex offset:first atIndex:0];  // position
 }
 
 static void
@@ -1320,13 +1357,11 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
     statecache.pipeline = nil;
     statecache.constants_offset = CONSTANTS_OFFSET_INVALID;
     statecache.texture = NULL;
-    statecache.color = ((renderer->a << 24) | (renderer->r << 16) | (renderer->g << 8) | renderer->b);
     statecache.color_dirty = SDL_TRUE;
     statecache.cliprect_dirty = SDL_TRUE;
-    statecache.viewport_dirty = SDL_TRUE;  // TRUE so we set ortho matrix
-    statecache.cliprect_enabled = renderer->clipping_enabled;
-    SDL_memcpy(&statecache.viewport, &renderer->viewport, sizeof (statecache.viewport));
-    SDL_memcpy(&statecache.cliprect, &renderer->clip_rect, sizeof (statecache.cliprect));
+    statecache.viewport_dirty = SDL_TRUE;
+    statecache.projection_offset = 0;
+    statecache.color_offset = 0;
 
     // !!! FIXME: have a ring of pre-made MTLBuffers we cycle through? How expensive is creation?
     id<MTLBuffer> mtlbufvertexstaging = [data.mtldevice newBufferWithLength:vertsize options:MTLResourceStorageModeShared];
@@ -1357,20 +1392,22 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
     while (cmd) {
         switch (cmd->command) {
             case SDL_RENDERCMD_SETVIEWPORT: {
-                if (SDL_memcmp(&statecache.viewport, &cmd->data.viewport, sizeof (statecache.viewport)) != 0) {
-                    SDL_memcpy(&statecache.viewport, &cmd->data.viewport, sizeof (statecache.viewport));
-                    statecache.viewport_dirty = SDL_TRUE;
-                }
+                SDL_memcpy(&statecache.viewport, &cmd->data.viewport.rect, sizeof (statecache.viewport));
+                statecache.projection_offset = cmd->data.viewport.first;
+                statecache.viewport_dirty = SDL_TRUE;
                 break;
             }
 
             case SDL_RENDERCMD_SETCLIPRECT: {
-                if ((statecache.cliprect_enabled != cmd->data.cliprect.enabled) ||
-                    (SDL_memcmp(&statecache.cliprect, &cmd->data.cliprect.rect, sizeof (statecache.cliprect)) != 0)) {
-                    SDL_memcpy(&statecache.cliprect, &cmd->data.cliprect.rect, sizeof (statecache.cliprect));
-                    statecache.cliprect_enabled = cmd->data.cliprect.enabled;
-                    statecache.cliprect_dirty = SDL_TRUE;
-                }
+                SDL_memcpy(&statecache.cliprect, &cmd->data.cliprect.rect, sizeof (statecache.cliprect));
+                statecache.cliprect_enabled = cmd->data.cliprect.enabled;
+                statecache.cliprect_dirty = SDL_TRUE;
+                break;
+            }
+
+            case SDL_RENDERCMD_SETDRAWCOLOR: {
+                statecache.color_offset = cmd->data.color.first;
+                statecache.color_dirty = SDL_TRUE;
                 break;
             }
 
@@ -1380,15 +1417,12 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                     operation via MTLLoadActionClear. */
                 if (data.mtlcmdencoder != nil) {
                     [data.mtlcmdencoder endEncoding];
+
+                    // !!! FIXME: have to commit, or an uncommitted but enqueued buffer will prevent the frame from finishing.
+                    [data.mtlcmdbuffer commit];
                     data.mtlcmdencoder = nil;
                     data.mtlcmdbuffer = nil;
                 }
-
-                const Uint8 r = cmd->data.color.r;
-                const Uint8 g = cmd->data.color.g;
-                const Uint8 b = cmd->data.color.b;
-                const Uint8 a = cmd->data.color.a;
-                MTLClearColor color = MTLClearColorMake(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
 
                 // force all this state to be reconfigured on next command buffer.
                 statecache.pipeline = nil;
@@ -1397,6 +1431,12 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 statecache.color_dirty = SDL_TRUE;
                 statecache.cliprect_dirty = SDL_TRUE;
                 statecache.viewport_dirty = SDL_TRUE;
+
+                const Uint8 r = cmd->data.color.r;
+                const Uint8 g = cmd->data.color.g;
+                const Uint8 b = cmd->data.color.b;
+                const Uint8 a = cmd->data.color.a;
+                MTLClearColor color = MTLClearColorMake(r / 255.0f, g / 255.0f, b / 255.0f, a / 255.0f);
 
                 // get new command encoder, set up with an initial clear operation.
                 METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionClear, &color);
