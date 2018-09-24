@@ -649,7 +649,7 @@ SDL_CreateTextureFromSurface(SDL_Renderer * renderer, SDL_Surface * surface)
 
     /* See what the best texture format is */
     fmt = surface->format;
-    if (fmt->Amask || SDL_GetColorKey(surface, NULL) == 0) {
+    if (fmt->Amask || (SDL_HasColorKey(surface) && SDL_GetColorKey(surface, NULL) == 0)) {
         needAlpha = SDL_TRUE;
     } else {
         needAlpha = SDL_FALSE;
