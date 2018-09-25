@@ -405,12 +405,6 @@ WASAPI_PlatformDeleteActivationHandler(void *handler)
     SDL_assert(!"This function should have only been called on WinRT.");
 }
 
-void
-WASAPI_BeginLoopIteration(_THIS)
-{
-    /* no-op. */
-}
-
 #endif  /* SDL_AUDIO_DRIVER_WASAPI && !defined(__WINRT__) */
 
 /* vi: set ts=4 sw=4 expandtab: */
