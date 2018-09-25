@@ -376,13 +376,13 @@ HIDAPI_ShutdownDiscovery()
 #endif
 
 #if defined(SDL_USE_LIBUDEV)
-    if (SDL_HIDAPI_discovery.m_pUdevMonitor) {
-        usyms->udev_monitor_unref(SDL_HIDAPI_discovery.m_pUdevMonitor);
-    }
-    if (SDL_HIDAPI_discovery.m_pUdev) {
-        usyms->udev_unref(SDL_HIDAPI_discovery.m_pUdev);
-    }
     if (usyms) {
+        if (SDL_HIDAPI_discovery.m_pUdevMonitor) {
+            usyms->udev_monitor_unref(SDL_HIDAPI_discovery.m_pUdevMonitor);
+        }
+        if (SDL_HIDAPI_discovery.m_pUdev) {
+            usyms->udev_unref(SDL_HIDAPI_discovery.m_pUdev);
+        }
         SDL_UDEV_ReleaseUdevSyms();
         usyms = NULL;
     }
