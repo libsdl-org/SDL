@@ -556,7 +556,7 @@ static int
 GLES_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
                           const SDL_Rect * srcrect, const SDL_FRect * dstrect)
 {
-    GL_TextureData *texturedata = (GL_TextureData *) texture->driverdata;
+    GLES_TextureData *texturedata = (GLES_TextureData *) texture->driverdata;
     GLfloat minx, miny, maxx, maxy;
     GLfloat minu, maxu, minv, maxv;
     GLfloat *verts = (GLfloat *) SDL_AllocateRenderVertices(renderer, 16 * sizeof (GLfloat), 0, &cmd->data.draw.first);
@@ -607,7 +607,7 @@ GLES_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * 
                         const SDL_Rect * srcquad, const SDL_FRect * dstrect,
                         const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip)
 {
-    GL_TextureData *texturedata = (GL_TextureData *) texture->driverdata;
+    GLES_TextureData *texturedata = (GLES_TextureData *) texture->driverdata;
     GLfloat minx, miny, maxx, maxy;
     GLfloat centerx, centery;
     GLfloat minu, maxu, minv, maxv;
@@ -638,13 +638,13 @@ GLES_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * 
         maxy =  dstrect->h - centery;
     }
 
-    minu = (GLfloat) srcrect->x / texture->w;
+    minu = (GLfloat) srcquad->x / texture->w;
     minu *= texturedata->texw;
-    maxu = (GLfloat) (srcrect->x + srcrect->w) / texture->w;
+    maxu = (GLfloat) (srcquad->x + srcquad->w) / texture->w;
     maxu *= texturedata->texw;
-    minv = (GLfloat) srcrect->y / texture->h;
+    minv = (GLfloat) srcquad->y / texture->h;
     minv *= texturedata->texh;
-    maxv = (GLfloat) (srcrect->y + srcrect->h) / texture->h;
+    maxv = (GLfloat) (srcquad->y + srcquad->h) / texture->h;
     maxv *= texturedata->texh;
 
     cmd->data.draw.count = 1;
@@ -723,10 +723,11 @@ SetCopyState(const GLES_RenderData *data, const SDL_RenderCommand *cmd,
              SDL_Texture **current_texture)
 {
     SDL_Texture *texture = cmd->data.draw.texture;
-    SetDrawState(data, cmd, shader, current_blend, current_texturing);
+    SetDrawState(data, cmd, current_blend, current_texturing);
 
     if (texture != *current_texture) {
-        data->glBindTexture(textype, texturedata->texture);
+        GLES_TextureData *texturedata = (GLES_TextureData *) texture->driverdata;
+        data->glBindTexture(GL_TEXTURE_2D, texturedata->texture);
         *current_texture = texture;
     }
 }
@@ -738,7 +739,6 @@ GLES_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
     SDL_Rect viewport;
     SDL_Texture *bound_texture = NULL;
     SDL_BlendMode blend = SDL_BLENDMODE_INVALID;
-    GLES_Shader shader = SHADER_INVALID;
     int drawablew = 0, drawableh = 0;
     SDL_bool cliprect_enabled = SDL_FALSE;
     const SDL_bool istarget = renderer->target != NULL;
@@ -824,24 +824,23 @@ GLES_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
                 const size_t count = cmd->data.draw.count;
                 const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
                 SetDrawState(data, cmd, &blend, &texturing);
-                data->glVertexPointer(2, GL_FLOAT, 0, vertices);
+                data->glVertexPointer(2, GL_FLOAT, 0, verts);
                 data->glDrawArrays(GL_POINTS, 0, count);
                 break;
             }
 
             case SDL_RENDERCMD_DRAW_LINES: {
                 const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
-                size_t count = cmd->data.draw.count;
+                const size_t count = cmd->data.draw.count;
                 SetDrawState(data, cmd, &blend, &texturing);
                 data->glVertexPointer(2, GL_FLOAT, 0, verts);
-                if (count > 2 && points[0].x == points[count-1].x && points[0].y == points[count-1].y) {
+                if (count > 2 && (verts[0] == verts[(count-1)*2]) && (verts[1] == verts[(count*2)-1])) {
                     /* GL_LINE_LOOP takes care of the final segment */
-                    --count;
-                    data->glDrawArrays(GL_LINE_LOOP, 0, count);
+                    data->glDrawArrays(GL_LINE_LOOP, 0, count - 1);
                 } else {
                     data->glDrawArrays(GL_LINE_STRIP, 0, count);
                     /* We need to close the endpoint of the line */
-                    data->glDrawArrays(GL_POINTS, count-1, 1);
+                    data->glDrawArrays(GL_POINTS, count - 1, 1);
                 }
                 break;
             }
@@ -892,7 +891,7 @@ GLES_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
         cmd = cmd->next;
     }
 
-    return GL_CheckError("", renderer);
+    return 0;
 }
 
 static int
