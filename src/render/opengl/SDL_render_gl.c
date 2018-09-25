@@ -62,6 +62,19 @@ struct GL_FBOList
 
 typedef struct
 {
+    SDL_Rect viewport;
+    SDL_Texture *texture;
+    SDL_BlendMode blend;
+    GL_Shader shader;
+    SDL_bool cliprect_enabled;
+    SDL_Rect cliprect;
+    SDL_bool texturing;
+    Uint32 color;
+    Uint32 clear_color;
+} GL_DrawStateCache;
+
+typedef struct
+{
     SDL_GLContext context;
 
     SDL_bool debug_enabled;
@@ -97,6 +110,7 @@ typedef struct
     /* Shader support */
     GL_ShaderContext *shaders;
 
+    GL_DrawStateCache drawstate;
 } GL_RenderData;
 
 typedef struct
@@ -916,13 +930,11 @@ GL_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * te
 }
 
 static void
-SetDrawState(const GL_RenderData *data, const SDL_RenderCommand *cmd,
-             const GL_Shader shader, SDL_BlendMode *current_blend,
-             GL_Shader *current_shader, SDL_bool *current_texturing)
+SetDrawState(GL_RenderData *data, const SDL_RenderCommand *cmd, const GL_Shader shader)
 {
     const SDL_BlendMode blend = cmd->data.draw.blend;
 
-    if (blend != *current_blend) {
+    if (blend != data->drawstate.blend) {
         if (blend == SDL_BLENDMODE_NONE) {
             data->glDisable(GL_BLEND);
         } else {
@@ -933,29 +945,27 @@ SetDrawState(const GL_RenderData *data, const SDL_RenderCommand *cmd,
                                       GetBlendFunc(SDL_GetBlendModeDstAlphaFactor(blend)));
             data->glBlendEquation(GetBlendEquation(SDL_GetBlendModeColorOperation(blend)));
         }
-        *current_blend = blend;
+        data->drawstate.blend = blend;
     }
 
-    if (data->shaders && (shader != *current_shader)) {
+    if (data->shaders && (shader != data->drawstate.shader)) {
         GL_SelectShader(data->shaders, shader);
-        *current_shader = shader;
+        data->drawstate.shader = shader;
     }
 
-    if ((cmd->data.draw.texture != NULL) != *current_texturing) {
+    if ((cmd->data.draw.texture != NULL) != data->drawstate.texturing) {
         if (cmd->data.draw.texture == NULL) {
             data->glDisable(data->textype);
-            *current_texturing = SDL_FALSE;
+            data->drawstate.texturing = SDL_FALSE;
         } else {
             data->glEnable(data->textype);
-            *current_texturing = SDL_FALSE;
+            data->drawstate.texturing = SDL_TRUE;
         }
     }
 }
 
 static void
-SetCopyState(const GL_RenderData *data, const SDL_RenderCommand *cmd,
-             SDL_BlendMode *current_blend, GL_Shader *current_shader,
-             SDL_bool *current_texturing, SDL_Texture **current_texture)
+SetCopyState(GL_RenderData *data, const SDL_RenderCommand *cmd)
 {
     SDL_Texture *texture = cmd->data.draw.texture;
     const GL_TextureData *texturedata = (GL_TextureData *) texture->driverdata;
@@ -998,9 +1008,9 @@ SetCopyState(const GL_RenderData *data, const SDL_RenderCommand *cmd,
         }
     }
 
-    SetDrawState(data, cmd, shader, current_blend, current_shader, current_texturing);
+    SetDrawState(data, cmd, shader);
 
-    if (texture != *current_texture) {
+    if (texture != data->drawstate.texture) {
         const GLenum textype = data->textype;
         if (texturedata->yuv) {
             data->glActiveTextureARB(GL_TEXTURE2_ARB);
@@ -1016,7 +1026,7 @@ SetCopyState(const GL_RenderData *data, const SDL_RenderCommand *cmd,
         data->glActiveTextureARB(GL_TEXTURE0_ARB);
         data->glBindTexture(textype, texturedata->texture);
 
-        *current_texture = texture;
+        data->drawstate.texture = texture;
     }
 }
 
@@ -1025,14 +1035,8 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
 {
     /* !!! FIXME: it'd be nice to use a vertex buffer instead of immediate mode... */
     GL_RenderData *data = (GL_RenderData *) renderer->driverdata;
-    SDL_Rect viewport;
-    SDL_Texture *bound_texture = NULL;
-    SDL_BlendMode blend = SDL_BLENDMODE_INVALID;
-    GL_Shader shader = SHADER_INVALID;
     int drawablew = 0, drawableh = 0;
-    SDL_bool cliprect_enabled = SDL_FALSE;
     const SDL_bool istarget = renderer->target != NULL;
-    SDL_bool texturing = SDL_FALSE;
     size_t i;
 
     if (GL_ActivateRenderer(renderer) < 0) {
@@ -1043,68 +1047,86 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
         SDL_GL_GetDrawableSize(renderer->window, &drawablew, &drawableh);
     }
 
-    data->glDisable(data->textype);
-    data->glMatrixMode(GL_MODELVIEW);
-    data->glLoadIdentity();
-
     while (cmd) {
         switch (cmd->command) {
             case SDL_RENDERCMD_SETDRAWCOLOR: {
-                data->glColor4f((GLfloat) cmd->data.color.r * inv255f,
-                                (GLfloat) cmd->data.color.g * inv255f,
-                                (GLfloat) cmd->data.color.b * inv255f,
-                                (GLfloat) cmd->data.color.a * inv255f);
+                const Uint8 r = cmd->data.color.r;
+                const Uint8 g = cmd->data.color.g;
+                const Uint8 b = cmd->data.color.b;
+                const Uint8 a = cmd->data.color.a;
+                const Uint32 color = ((a << 24) | (r << 16) | (g << 8) | b);
+                if (color != data->drawstate.color) {
+                    data->glColor4f((GLfloat) r * inv255f,
+                                    (GLfloat) g * inv255f,
+                                    (GLfloat) b * inv255f,
+                                    (GLfloat) a * inv255f);
+                    data->drawstate.color = color;
+                }
                 break;
             }
 
             case SDL_RENDERCMD_SETVIEWPORT: {
-                SDL_memcpy(&viewport, &cmd->data.viewport.rect, sizeof (viewport));
-                data->glMatrixMode(GL_PROJECTION);
-                data->glLoadIdentity();
-                data->glViewport(viewport.x,
-                        istarget ? viewport.y : (drawableh - viewport.y - viewport.h),
-                        viewport.w, viewport.h);
-                if (viewport.w && viewport.h) {
-                    data->glOrtho((GLdouble) 0, (GLdouble) renderer->viewport.w,
-                                  (GLdouble) istarget ? 0 : renderer->viewport.h,
-                                  (GLdouble) istarget ? renderer->viewport.h : 0,
-                                  0.0, 1.0);
+                SDL_Rect *viewport = &data->drawstate.viewport;
+                if (SDL_memcmp(viewport, &cmd->data.viewport.rect, sizeof (SDL_Rect)) != 0) {
+                    SDL_memcpy(viewport, &cmd->data.viewport.rect, sizeof (SDL_Rect));
+                    data->glMatrixMode(GL_PROJECTION);
+                    data->glLoadIdentity();
+                    data->glViewport(viewport->x,
+                            istarget ? viewport->y : (drawableh - viewport->y - viewport->h),
+                            viewport->w, viewport->h);
+                    if (viewport->w && viewport->h) {
+                        data->glOrtho((GLdouble) 0, (GLdouble) viewport->w,
+                                      (GLdouble) istarget ? 0 : viewport->h,
+                                      (GLdouble) istarget ? viewport->h : 0,
+                                      0.0, 1.0);
+                    }
+                    data->glMatrixMode(GL_MODELVIEW);
                 }
-                data->glMatrixMode(GL_MODELVIEW);
                 break;
             }
 
             case SDL_RENDERCMD_SETCLIPRECT: {
                 const SDL_Rect *rect = &cmd->data.cliprect.rect;
-                cliprect_enabled = cmd->data.cliprect.enabled;
-                if (cliprect_enabled) {
-                    data->glEnable(GL_SCISSOR_TEST);
-                } else {
-                    data->glDisable(GL_SCISSOR_TEST);
-                }
-
-                if (cliprect_enabled) {
-                    data->glScissor(viewport.x + rect->x,
-                                    istarget ? viewport.y + rect->y : drawableh - viewport.y - rect->y - rect->h,
-                                    rect->w, rect->h);
+                if (data->drawstate.cliprect_enabled != cmd->data.cliprect.enabled) {
+                    data->drawstate.cliprect_enabled = cmd->data.cliprect.enabled;
+                    if (!data->drawstate.cliprect_enabled) {
+                        data->glDisable(GL_SCISSOR_TEST);
+                    } else {
+                        const SDL_Rect *viewport = &data->drawstate.viewport;
+                        data->glEnable(GL_SCISSOR_TEST);
+                        if (SDL_memcmp(&data->drawstate.cliprect, rect, sizeof (SDL_Rect)) != 0) {
+                            data->glScissor(viewport->x + rect->x,
+                                            istarget ? viewport->y + rect->y : drawableh - viewport->y - rect->y - rect->h,
+                                            rect->w, rect->h);
+                            SDL_memcpy(&data->drawstate.cliprect, rect, sizeof (SDL_Rect));
+                        }
+                    }
                 }
                 break;
             }
 
             case SDL_RENDERCMD_CLEAR: {
-                const GLfloat r = ((GLfloat) cmd->data.color.r) * inv255f;
-                const GLfloat g = ((GLfloat) cmd->data.color.g) * inv255f;
-                const GLfloat b = ((GLfloat) cmd->data.color.b) * inv255f;
-                const GLfloat a = ((GLfloat) cmd->data.color.a) * inv255f;
-                data->glClearColor(r, g, b, a);
+                const Uint8 r = cmd->data.color.r;
+                const Uint8 g = cmd->data.color.g;
+                const Uint8 b = cmd->data.color.b;
+                const Uint8 a = cmd->data.color.a;
+                const Uint32 color = ((a << 24) | (r << 16) | (g << 8) | b);
+                if (color != data->drawstate.clear_color) {
+                    const GLfloat fr = ((GLfloat) r) * inv255f;
+                    const GLfloat fg = ((GLfloat) g) * inv255f;
+                    const GLfloat fb = ((GLfloat) b) * inv255f;
+                    const GLfloat fa = ((GLfloat) a) * inv255f;
+                    data->glClearColor(fr, fg, fb, fa);
+                    data->drawstate.clear_color = color;
+                }
 
-                if (cliprect_enabled) {
+                if (data->drawstate.cliprect_enabled) {
                     data->glDisable(GL_SCISSOR_TEST);
                 }
 
                 data->glClear(GL_COLOR_BUFFER_BIT);
 
-                if (cliprect_enabled) {
+                if (data->drawstate.cliprect_enabled) {
                     data->glEnable(GL_SCISSOR_TEST);
                 }
                 break;
@@ -1113,7 +1135,7 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
             case SDL_RENDERCMD_DRAW_POINTS: {
                 const size_t count = cmd->data.draw.count;
                 const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
-                SetDrawState(data, cmd, SHADER_SOLID, &blend, &shader, &texturing);
+                SetDrawState(data, cmd, SHADER_SOLID);
                 data->glBegin(GL_POINTS);
                 for (i = 0; i < count; i++, verts += 2) {
                     data->glVertex2f(verts[0], verts[1]);
@@ -1124,12 +1146,12 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
 
             case SDL_RENDERCMD_DRAW_LINES: {
                 const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
-                size_t count = cmd->data.draw.count;
-                SetDrawState(data, cmd, SHADER_SOLID, &blend, &shader, &texturing);
+                const size_t count = cmd->data.draw.count;
+                SetDrawState(data, cmd, SHADER_SOLID);
                 if (count > 2 && (verts[0] == verts[(count-1)*2]) && (verts[1] == verts[(count*2)-1])) {
-                    --count;  /* GL_LINE_LOOP takes care of the final segment */
                     data->glBegin(GL_LINE_LOOP);
-                    for (i = 0; i < count; ++i, verts += 2) {
+                    /* GL_LINE_LOOP takes care of the final segment */
+                    for (i = 1; i < count; ++i, verts += 2) {
                         data->glVertex2f(verts[0], verts[1]);
                     }
                     data->glEnd();
@@ -1183,7 +1205,7 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
             case SDL_RENDERCMD_FILL_RECTS: {
                 const size_t count = cmd->data.draw.count;
                 const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
-                SetDrawState(data, cmd, SHADER_SOLID, &blend, &shader, &texturing);
+                SetDrawState(data, cmd, SHADER_SOLID);
                 for (i = 0; i < count; ++i, verts += 4) {
                     data->glRectf(verts[0], verts[1], verts[2], verts[3]);
                 }
@@ -1200,7 +1222,7 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 const GLfloat maxu = verts[5];
                 const GLfloat minv = verts[6];
                 const GLfloat maxv = verts[7];
-                SetCopyState(data, cmd, &blend, &shader, &texturing, &bound_texture);
+                SetCopyState(data, cmd);
                 data->glBegin(GL_TRIANGLE_STRIP);
                 data->glTexCoord2f(minu, minv);
                 data->glVertex2f(minx, miny);
@@ -1227,7 +1249,7 @@ GL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 const GLfloat translatex = verts[8];
                 const GLfloat translatey = verts[9];
                 const GLdouble angle = verts[10];
-                SetCopyState(data, cmd, &blend, &shader, &texturing, &bound_texture);
+                SetCopyState(data, cmd);
 
                 /* Translate to flip, rotate, translate to position */
                 data->glPushMatrix();
@@ -1627,10 +1649,21 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     data->framebuffers = NULL;
 
     /* Set up parameters for rendering */
+    data->glMatrixMode(GL_MODELVIEW);
+    data->glLoadIdentity();
     data->glDisable(GL_DEPTH_TEST);
     data->glDisable(GL_CULL_FACE);
+    data->glDisable(GL_SCISSOR_TEST);
+    data->glDisable(data->textype);
+    data->glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+    data->glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
     /* This ended up causing video discrepancies between OpenGL and Direct3D */
     /* data->glEnable(GL_LINE_SMOOTH); */
+
+    data->drawstate.blend = SDL_BLENDMODE_INVALID;
+    data->drawstate.shader = SHADER_INVALID;
+    data->drawstate.color = 0xFFFFFFFF;
+    data->drawstate.clear_color = 0xFFFFFFFF;
 
     return renderer;
 
