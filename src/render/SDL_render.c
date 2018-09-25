@@ -407,7 +407,7 @@ QueueCmdSetViewport(SDL_Renderer *renderer)
             }
         }
     }
-    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
+    return retval;
 }
 
 static int
@@ -429,7 +429,7 @@ QueueCmdSetClipRect(SDL_Renderer *renderer)
             renderer->cliprect_queued = SDL_TRUE;
         }
     }
-    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
+    return retval;
 }
 
 static int
@@ -458,7 +458,7 @@ QueueCmdSetDrawColor(SDL_Renderer *renderer, const Uint8 r, const Uint8 g, const
             }
         }
     }
-    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
+    return retval;
 }
 
 static int
@@ -475,7 +475,7 @@ QueueCmdClear(SDL_Renderer *renderer)
     cmd->data.color.g = renderer->g;
     cmd->data.color.b = renderer->b;
     cmd->data.color.a = renderer->a;
-    return FlushRenderCommandsIfNotBatching(renderer);
+    return 0;
 }
 
 static int
@@ -526,7 +526,7 @@ QueueCmdDrawPoints(SDL_Renderer *renderer, const SDL_FPoint * points, const int 
             cmd->command = SDL_RENDERCMD_NO_OP;
         }
     }
-    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
+    return retval;
 }
 
 static int
@@ -540,7 +540,7 @@ QueueCmdDrawLines(SDL_Renderer *renderer, const SDL_FPoint * points, const int c
             cmd->command = SDL_RENDERCMD_NO_OP;
         }
     }
-    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
+    return retval;
 }
 
 static int
@@ -554,7 +554,7 @@ QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect * rects, const int cou
             cmd->command = SDL_RENDERCMD_NO_OP;
         }
     }
-    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
+    return retval;
 }
 
 static SDL_RenderCommand *
@@ -589,7 +589,7 @@ QueueCmdCopy(SDL_Renderer *renderer, SDL_Texture * texture, const SDL_Rect * src
             cmd->command = SDL_RENDERCMD_NO_OP;
         }
     }
-    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
+    return retval;
 }
 
 static int
@@ -606,7 +606,7 @@ QueueCmdCopyEx(SDL_Renderer *renderer, SDL_Texture * texture,
             cmd->command = SDL_RENDERCMD_NO_OP;
         }
     }
-    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
+    return retval;
 }
 
 
@@ -689,6 +689,7 @@ SDL_RendererEventWatch(void *userdata, SDL_Event *event)
                         renderer->viewport.w = w;
                         renderer->viewport.h = h;
                         QueueCmdSetViewport(renderer);
+                        FlushRenderCommandsIfNotBatching(renderer);
                     }
                 }
 
@@ -1822,7 +1823,7 @@ SDL_SetRenderTarget(SDL_Renderer *renderer, SDL_Texture *texture)
     }
 
     /* All set! */
-    return 0;
+    return FlushRenderCommandsIfNotBatching(renderer);
 }
 
 SDL_Texture *
@@ -1994,6 +1995,7 @@ SDLCALL SDL_RenderGetIntegerScale(SDL_Renderer * renderer)
 int
 SDL_RenderSetViewport(SDL_Renderer * renderer, const SDL_Rect * rect)
 {
+    int retval;
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     if (rect) {
@@ -2008,7 +2010,8 @@ SDL_RenderSetViewport(SDL_Renderer * renderer, const SDL_Rect * rect)
             return -1;
         }
     }
-    return QueueCmdSetViewport(renderer);
+    retval = QueueCmdSetViewport(renderer);
+    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
 void
@@ -2027,6 +2030,7 @@ SDL_RenderGetViewport(SDL_Renderer * renderer, SDL_Rect * rect)
 int
 SDL_RenderSetClipRect(SDL_Renderer * renderer, const SDL_Rect * rect)
 {
+    int retval;
     CHECK_RENDERER_MAGIC(renderer, -1)
 
     if (rect) {
@@ -2039,7 +2043,9 @@ SDL_RenderSetClipRect(SDL_Renderer * renderer, const SDL_Rect * rect)
         renderer->clipping_enabled = SDL_FALSE;
         SDL_zero(renderer->clip_rect);
     }
-    return QueueCmdSetClipRect(renderer);
+
+    retval = QueueCmdSetClipRect(renderer);
+    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
 void
@@ -2143,18 +2149,22 @@ SDL_GetRenderDrawBlendMode(SDL_Renderer * renderer, SDL_BlendMode *blendMode)
 int
 SDL_RenderClear(SDL_Renderer * renderer)
 {
+    int retval;
     CHECK_RENDERER_MAGIC(renderer, -1);
-    return QueueCmdClear(renderer);
+    retval = QueueCmdClear(renderer);
+    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
 int
 SDL_RenderDrawPoint(SDL_Renderer * renderer, int x, int y)
 {
     SDL_Point point;
+    int retval;
 
     point.x = x;
     point.y = y;
-    return SDL_RenderDrawPoints(renderer, &point, 1);
+    retval = SDL_RenderDrawPoints(renderer, &point, 1);
+    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
 static int
@@ -2163,7 +2173,7 @@ RenderDrawPointsWithRects(SDL_Renderer * renderer,
 {
     SDL_FRect *frects;
     int i;
-    int status = -1;
+    int retval = -1;
 
     frects = SDL_stack_alloc(SDL_FRect, count);
     if (!frects) {
@@ -2176,11 +2186,11 @@ RenderDrawPointsWithRects(SDL_Renderer * renderer,
         frects[i].h = renderer->scale.y;
     }
 
-    status = QueueCmdFillRects(renderer, frects, count);
+    retval = QueueCmdFillRects(renderer, frects, count);
 
     SDL_stack_free(frects);
 
-    return status;
+    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
 int
@@ -2189,7 +2199,7 @@ SDL_RenderDrawPoints(SDL_Renderer * renderer,
 {
     SDL_FPoint *fpoints;
     int i;
-    int status;
+    int retval;
 
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -2218,11 +2228,11 @@ SDL_RenderDrawPoints(SDL_Renderer * renderer,
         fpoints[i].y = points[i].y * renderer->scale.y;
     }
 
-    status = QueueCmdDrawPoints(renderer, fpoints, count);
+    retval = QueueCmdDrawPoints(renderer, fpoints, count);
 
     SDL_stack_free(fpoints);
 
-    return status;
+    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
 int
@@ -2245,7 +2255,7 @@ RenderDrawLinesWithRects(SDL_Renderer * renderer,
     SDL_FRect *frects;
     SDL_FPoint fpoints[2];
     int i, nrects = 0;
-    int status = 0;
+    int retval = 0;
 
     frects = SDL_stack_alloc(SDL_FRect, count-1);
     if (!frects) {
@@ -2277,18 +2287,18 @@ RenderDrawLinesWithRects(SDL_Renderer * renderer,
             fpoints[0].y = points[i].y * renderer->scale.y;
             fpoints[1].x = points[i+1].x * renderer->scale.x;
             fpoints[1].y = points[i+1].y * renderer->scale.y;
-            status += QueueCmdDrawLines(renderer, fpoints, 2);
+            retval += QueueCmdDrawLines(renderer, fpoints, 2);
         }
     }
 
-    status += QueueCmdFillRects(renderer, frects, nrects);
+    retval += QueueCmdFillRects(renderer, frects, nrects);
 
     SDL_stack_free(frects);
 
-    if (status < 0) {
-        status = -1;
+    if (retval < 0) {
+        retval = -1;
     }
-    return status;
+    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
 int
@@ -2297,7 +2307,7 @@ SDL_RenderDrawLines(SDL_Renderer * renderer,
 {
     SDL_FPoint *fpoints;
     int i;
-    int status;
+    int retval;
 
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -2326,11 +2336,11 @@ SDL_RenderDrawLines(SDL_Renderer * renderer,
         fpoints[i].y = points[i].y * renderer->scale.y;
     }
 
-    status = QueueCmdDrawLines(renderer, fpoints, count);
+    retval = QueueCmdDrawLines(renderer, fpoints, count);
 
     SDL_stack_free(fpoints);
 
-    return status;
+    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
 int
@@ -2413,7 +2423,7 @@ SDL_RenderFillRects(SDL_Renderer * renderer,
 {
     SDL_FRect *frects;
     int i;
-    int status;
+    int retval;
 
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -2440,11 +2450,11 @@ SDL_RenderFillRects(SDL_Renderer * renderer,
         frects[i].h = rects[i].h * renderer->scale.y;
     }
 
-    status = QueueCmdFillRects(renderer, frects, count);
+    retval = QueueCmdFillRects(renderer, frects, count);
 
     SDL_stack_free(frects);
 
-    return status;
+    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
 int
@@ -2454,6 +2464,7 @@ SDL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
     SDL_Rect real_srcrect = { 0, 0, 0, 0 };
     SDL_Rect real_dstrect = { 0, 0, 0, 0 };
     SDL_FRect frect;
+    int retval;
 
     CHECK_RENDERER_MAGIC(renderer, -1);
     CHECK_TEXTURE_MAGIC(texture, -1);
@@ -2498,7 +2509,8 @@ SDL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
 
     texture->last_command_generation = renderer->render_command_generation;
 
-    return QueueCmdCopy(renderer, texture, &real_srcrect, &frect);
+    retval = QueueCmdCopy(renderer, texture, &real_srcrect, &frect);
+    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
 
