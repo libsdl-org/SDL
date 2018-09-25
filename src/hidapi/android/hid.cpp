@@ -9,9 +9,9 @@
 #include <jni.h>
 #include <android/log.h>
 #include <pthread.h>
-#include <stdlib.h>
 #include <errno.h>	// For ETIMEDOUT and ECONNRESET
 #include <stdlib.h> // For malloc() and free()
+#include <string.h>	// For memcpy()
 
 #define TAG "hidapi"
 #ifdef DEBUG
