@@ -1397,8 +1397,8 @@ SDL_PrintString(char *text, size_t maxlen, SDL_FormatInfo *info, const char *str
     length += SDL_min(slen, maxlen);
 
     if (info) {
-        if (info->precision >= 0 && info->precision < sz) {
-            slen = info->precision;
+        if (info->precision >= 0 && (size_t)info->precision < sz) {
+            slen = (size_t)info->precision;
             if (slen < maxlen) {
                 text[slen] = 0;
                 length -= (sz - slen);
