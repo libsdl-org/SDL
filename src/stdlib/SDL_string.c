@@ -1618,6 +1618,9 @@ SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, 
                 } else {
                     info.precision = 0;
                 }
+                if (info.precision < 0) {
+                    info.precision = 0;
+                }
             }
 
             while (!done) {
