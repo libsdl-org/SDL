@@ -1360,9 +1360,9 @@ typedef enum
 
 typedef struct
 {
-    SDL_bool left_justify;
-    SDL_bool force_sign;
-    SDL_bool force_type;
+    SDL_bool left_justify; /* for now: ignored. */
+    SDL_bool force_sign;   /* for now: used only by float printer, ignored otherwise. */
+    SDL_bool force_type;   /* for now: used only by float printer, ignored otherwise. */
     SDL_bool pad_zeroes;
     SDL_letter_case force_case;
     int width;
