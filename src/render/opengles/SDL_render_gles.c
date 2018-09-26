@@ -63,6 +63,18 @@ struct GLES_FBOList
 
 typedef struct
 {
+    SDL_Rect viewport;
+    SDL_Texture *texture;
+    SDL_BlendMode blend;
+    SDL_bool cliprect_enabled;
+    SDL_Rect cliprect;
+    SDL_bool texturing;
+    Uint32 color;
+    Uint32 clear_color;
+} GLES_DrawStateCache;
+
+typedef struct
+{
     SDL_GLContext context;
 
 #define SDL_PROC(ret,func,params) ret (APIENTRY *func) params;
@@ -77,6 +89,8 @@ typedef struct
     SDL_bool GL_OES_blend_func_separate_supported;
     SDL_bool GL_OES_blend_equation_separate_supported;
     SDL_bool GL_OES_blend_subtract_supported;
+
+    GLES_DrawStateCache drawstate;
 } GLES_RenderData;
 
 typedef struct
@@ -675,12 +689,11 @@ GLES_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * 
 }
 
 static void
-SetDrawState(const GLES_RenderData *data, const SDL_RenderCommand *cmd,
-             SDL_BlendMode *current_blend, SDL_bool *current_texturing)
+SetDrawState(GLES_RenderData *data, const SDL_RenderCommand *cmd)
 {
     const SDL_BlendMode blend = cmd->data.draw.blend;
 
-    if (blend != *current_blend) {
+    if (blend != data->drawstate.blend) {
         if (blend == SDL_BLENDMODE_NONE) {
             data->glDisable(GL_BLEND);
         } else {
@@ -701,34 +714,32 @@ SetDrawState(const GLES_RenderData *data, const SDL_RenderCommand *cmd,
                 data->glBlendEquationOES(GetBlendEquation(SDL_GetBlendModeColorOperation(blend)));
             }
         }
-        *current_blend = blend;
+        data->drawstate.blend = blend;
     }
 
-    if ((cmd->data.draw.texture != NULL) != *current_texturing) {
+    if ((cmd->data.draw.texture != NULL) != data->drawstate.texturing) {
         if (cmd->data.draw.texture == NULL) {
             data->glDisable(GL_TEXTURE_2D);
             data->glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-            *current_texturing = SDL_FALSE;
+            data->drawstate.texturing = SDL_FALSE;
         } else {
             data->glEnable(GL_TEXTURE_2D);
             data->glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-            *current_texturing = SDL_FALSE;
+            data->drawstate.texturing = SDL_TRUE;
         }
     }
 }
 
 static void
-SetCopyState(const GLES_RenderData *data, const SDL_RenderCommand *cmd,
-             SDL_BlendMode *current_blend, SDL_bool *current_texturing,
-             SDL_Texture **current_texture)
+SetCopyState(const GLES_RenderData *data, const SDL_RenderCommand *cmd)
 {
     SDL_Texture *texture = cmd->data.draw.texture;
-    SetDrawState(data, cmd, current_blend, current_texturing);
+    SetDrawState(data, cmd);
 
-    if (texture != *current_texture) {
+    if (texture != data->drawstate.texture) {
         GLES_TextureData *texturedata = (GLES_TextureData *) texture->driverdata;
         data->glBindTexture(GL_TEXTURE_2D, texturedata->texture);
-        *current_texture = texture;
+        data->drawstate.texture = texture;
     }
 }
 
@@ -736,13 +747,8 @@ static int
 GLES_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
 {
     GLES_RenderData *data = (GLES_RenderData *) renderer->driverdata;
-    SDL_Rect viewport;
-    SDL_Texture *bound_texture = NULL;
-    SDL_BlendMode blend = SDL_BLENDMODE_INVALID;
     int drawablew = 0, drawableh = 0;
-    SDL_bool cliprect_enabled = SDL_FALSE;
     const SDL_bool istarget = renderer->target != NULL;
-    SDL_bool texturing = SDL_FALSE;
     size_t i;
 
     if (GLES_ActivateRenderer(renderer) < 0) {
@@ -753,60 +759,77 @@ GLES_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
         SDL_GL_GetDrawableSize(renderer->window, &drawablew, &drawableh);
     }
 
-    data->glDisable(GL_TEXTURE_2D);
-    data->glMatrixMode(GL_MODELVIEW);
-    data->glLoadIdentity();
-
     while (cmd) {
         switch (cmd->command) {
             case SDL_RENDERCMD_SETDRAWCOLOR: {
-                data->glColor4f((GLfloat) cmd->data.color.r * inv255f,
-                                (GLfloat) cmd->data.color.g * inv255f,
-                                (GLfloat) cmd->data.color.b * inv255f,
-                                (GLfloat) cmd->data.color.a * inv255f);
+                const Uint8 r = cmd->data.color.r;
+                const Uint8 g = cmd->data.color.g;
+                const Uint8 b = cmd->data.color.b;
+                const Uint8 a = cmd->data.color.a;
+                const Uint32 color = ((a << 24) | (r << 16) | (g << 8) | b);
+                if (color != data->drawstate.color) {
+                    data->glColor4f((GLfloat) r * inv255f,
+                                    (GLfloat) g * inv255f,
+                                    (GLfloat) b * inv255f,
+                                    (GLfloat) a * inv255f);
+                    data->drawstate.color = color;
+                }
                 break;
             }
 
             case SDL_RENDERCMD_SETVIEWPORT: {
-                SDL_memcpy(&viewport, &cmd->data.viewport.rect, sizeof (viewport));
-                data->glMatrixMode(GL_PROJECTION);
-                data->glLoadIdentity();
-                data->glViewport(viewport.x,
-                        istarget ? viewport.y : (drawableh - viewport.y - viewport.h),
-                        viewport.w, viewport.h);
-                if (viewport.w && viewport.h) {
-                    data->glOrthof((GLfloat) 0, (GLfloat) renderer->viewport.w,
-                                  (GLfloat) istarget ? 0 : renderer->viewport.h,
-                                  (GLfloat) istarget ? renderer->viewport.h : 0,
-                                  0.0, 1.0);
-                }
-                data->glMatrixMode(GL_MODELVIEW);
+                SDL_Rect *viewport = &data->drawstate.viewport;
+                if (SDL_memcmp(viewport, &cmd->data.viewport.rect, sizeof (SDL_Rect)) != 0) {
+                    SDL_memcpy(viewport, &cmd->data.viewport.rect, sizeof (SDL_Rect));
+                    data->glMatrixMode(GL_PROJECTION);
+                    data->glLoadIdentity();
+                    data->glViewport(viewport->x,
+                            istarget ? viewport->y : (drawableh - viewport->y - viewport->h),
+                            viewport->w, viewport->h);
+                    if (viewport->w && viewport->h) {
+                        data->glOrthof((GLfloat) 0, (GLfloat) viewport->w,
+                                      (GLfloat) istarget ? 0 : viewport->h,
+                                      (GLfloat) istarget ? viewport->h : 0,
+                                      0.0, 1.0);
+                    }
+                    data->glMatrixMode(GL_MODELVIEW);
                 break;
             }
 
             case SDL_RENDERCMD_SETCLIPRECT: {
                 const SDL_Rect *rect = &cmd->data.cliprect.rect;
-                cliprect_enabled = cmd->data.cliprect.enabled;
-                if (cliprect_enabled) {
-                    data->glEnable(GL_SCISSOR_TEST);
-                } else {
-                    data->glDisable(GL_SCISSOR_TEST);
-                }
-
-                if (cliprect_enabled) {
-                    data->glScissor(viewport.x + rect->x,
-                                    istarget ? viewport.y + rect->y : drawableh - viewport.y - rect->y - rect->h,
-                                    rect->w, rect->h);
+                if (data->drawstate.cliprect_enabled != cmd->data.cliprect.enabled) {
+                    data->drawstate.cliprect_enabled = cmd->data.cliprect.enabled;
+                    if (!data->drawstate.cliprect_enabled) {
+                        data->glDisable(GL_SCISSOR_TEST);
+                    } else {
+                        const SDL_Rect *viewport = &data->drawstate.viewport;
+                        data->glEnable(GL_SCISSOR_TEST);
+                        if (SDL_memcmp(&data->drawstate.cliprect, rect, sizeof (SDL_Rect)) != 0) {
+                            data->glScissor(viewport->x + rect->x,
+                                            istarget ? viewport->y + rect->y : drawableh - viewport->y - rect->y - rect->h,
+                                            rect->w, rect->h);
+                            SDL_memcpy(&data->drawstate.cliprect, rect, sizeof (SDL_Rect));
+                        }
+                    }
                 }
                 break;
             }
 
             case SDL_RENDERCMD_CLEAR: {
-                const GLfloat r = ((GLfloat) cmd->data.color.r) * inv255f;
-                const GLfloat g = ((GLfloat) cmd->data.color.g) * inv255f;
-                const GLfloat b = ((GLfloat) cmd->data.color.b) * inv255f;
-                const GLfloat a = ((GLfloat) cmd->data.color.a) * inv255f;
-                data->glClearColor(r, g, b, a);
+                const Uint8 r = cmd->data.color.r;
+                const Uint8 g = cmd->data.color.g;
+                const Uint8 b = cmd->data.color.b;
+                const Uint8 a = cmd->data.color.a;
+                const Uint32 color = ((a << 24) | (r << 16) | (g << 8) | b);
+                if (color != data->drawstate.clear_color) {
+                    const GLfloat fr = ((GLfloat) r) * inv255f;
+                    const GLfloat fg = ((GLfloat) g) * inv255f;
+                    const GLfloat fb = ((GLfloat) b) * inv255f;
+                    const GLfloat fa = ((GLfloat) a) * inv255f;
+                    data->glClearColor(fr, fg, fb, fa);
+                    data->drawstate.clear_color = color;
+                }
 
                 if (cliprect_enabled) {
                     data->glDisable(GL_SCISSOR_TEST);
@@ -823,7 +846,7 @@ GLES_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
             case SDL_RENDERCMD_DRAW_POINTS: {
                 const size_t count = cmd->data.draw.count;
                 const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
-                SetDrawState(data, cmd, &blend, &texturing);
+                SetDrawState(data, cmd);
                 data->glVertexPointer(2, GL_FLOAT, 0, verts);
                 data->glDrawArrays(GL_POINTS, 0, count);
                 break;
@@ -832,7 +855,7 @@ GLES_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
             case SDL_RENDERCMD_DRAW_LINES: {
                 const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
                 const size_t count = cmd->data.draw.count;
-                SetDrawState(data, cmd, &blend, &texturing);
+                SetDrawState(data, cmd);
                 data->glVertexPointer(2, GL_FLOAT, 0, verts);
                 if (count > 2 && (verts[0] == verts[(count-1)*2]) && (verts[1] == verts[(count*2)-1])) {
                     /* GL_LINE_LOOP takes care of the final segment */
@@ -849,7 +872,7 @@ GLES_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
                 const size_t count = cmd->data.draw.count;
                 const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
                 size_t offset = 0;
-                SetDrawState(data, cmd, &blend, &texturing);
+                SetDrawState(data, cmd);
                 data->glVertexPointer(2, GL_FLOAT, 0, verts);
                 for (i = 0; i < count; ++i, offset += 4) {
                     data->glDrawArrays(GL_TRIANGLE_STRIP, offset, 4);
@@ -859,7 +882,7 @@ GLES_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
 
             case SDL_RENDERCMD_COPY: {
                 const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
-                SetCopyState(data, cmd, &blend, &texturing, &bound_texture);
+                SetCopyState(data, cmd);
                 data->glVertexPointer(2, GL_FLOAT, 0, verts);
                 data->glTexCoordPointer(2, GL_FLOAT, 0, verts + 8);
                 data->glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
@@ -871,7 +894,7 @@ GLES_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
                 const GLfloat translatex = verts[16];
                 const GLfloat translatey = verts[17];
                 const GLfloat angle = verts[18];
-                SetCopyState(data, cmd, &blend, &texturing, &bound_texture);
+                SetCopyState(data, cmd);
                 data->glVertexPointer(2, GL_FLOAT, 0, verts);
                 data->glTexCoordPointer(2, GL_FLOAT, 0, verts + 8);
 
