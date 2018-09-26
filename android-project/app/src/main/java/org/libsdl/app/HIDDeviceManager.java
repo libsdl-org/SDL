@@ -504,7 +504,7 @@ public class HIDDeviceManager {
     ////////// JNI interface functions
     //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    boolean openDevice(int deviceID) {
+    public boolean openDevice(int deviceID) {
         // Look to see if this is a USB device and we have permission to access it
         for (HIDDeviceUSB device : mUSBDevices.values()) {
             if (deviceID == device.getId()) {
@@ -539,7 +539,7 @@ public class HIDDeviceManager {
         return false;
     }
 
-    int sendOutputReport(int deviceID, byte[] report) {
+    public int sendOutputReport(int deviceID, byte[] report) {
         try {
             Log.v(TAG, "sendOutputReport deviceID=" + deviceID + " length=" + report.length);
             HIDDevice device;
@@ -556,7 +556,7 @@ public class HIDDeviceManager {
         return -1;
     }
 
-    int sendFeatureReport(int deviceID, byte[] report) {
+    public int sendFeatureReport(int deviceID, byte[] report) {
         try {
             Log.v(TAG, "sendFeatureReport deviceID=" + deviceID + " length=" + report.length);
             HIDDevice device;
@@ -573,7 +573,7 @@ public class HIDDeviceManager {
         return -1;
     }
 
-    boolean getFeatureReport(int deviceID, byte[] report) {
+    public boolean getFeatureReport(int deviceID, byte[] report) {
         try {
             Log.v(TAG, "getFeatureReport deviceID=" + deviceID);
             HIDDevice device;
@@ -590,7 +590,7 @@ public class HIDDeviceManager {
         return false;
     }
 
-    void closeDevice(int deviceID) {
+    public void closeDevice(int deviceID) {
         try {
             Log.v(TAG, "closeDevice deviceID=" + deviceID);
             HIDDevice device;
