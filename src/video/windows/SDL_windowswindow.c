@@ -904,7 +904,11 @@ WIN_UpdateClipCursor(SDL_Window *window)
     SDL_Mouse *mouse = SDL_GetMouse();
     RECT rect;
 
-    if (data->focus_click_pending) {
+    if (data->in_title_click || data->focus_click_pending) {
+        return;
+    }
+    if (data->skip_update_clipcursor) {
+        data->skip_update_clipcursor = SDL_FALSE;
         return;
     }
 
