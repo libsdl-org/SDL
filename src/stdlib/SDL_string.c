@@ -1413,12 +1413,36 @@ SDL_PrintString(char *text, size_t maxlen, SDL_FormatInfo *info, const char *str
     return length;
 }
 
+static void
+SDL_IntPrecisionAdjust(char *num, size_t maxlen, SDL_FormatInfo *info)
+{/* left-pad num with zeroes, if needed. */
+    size_t sz, pad, i;
+
+    if (!info || info->precision < 0)
+        return;
+
+    if (*num == '-')
+        ++num;
+    sz = SDL_strlen(num);
+    if (sz < (size_t)info->precision) {
+        pad = (size_t)info->precision - sz;
+        if (pad + sz + 1 <= maxlen) { /* otherwise ignore the precision */
+            SDL_memmove(num + pad, num, sz + 1);
+            for(i = 0; i < pad; ++i) {
+                num[i] = '0';
+            }
+        }
+    }
+    info->precision = -1;/* so that SDL_PrintString() doesn't make a mess. */
+}
+
 static size_t
 SDL_PrintLong(char *text, size_t maxlen, SDL_FormatInfo *info, long value)
 {
     char num[130];
 
     SDL_ltoa(value, num, info ? info->radix : 10);
+    SDL_IntPrecisionAdjust(num, maxlen, info);
     return SDL_PrintString(text, maxlen, info, num);
 }
 
@@ -1428,6 +1452,7 @@ SDL_PrintUnsignedLong(char *text, size_t maxlen, SDL_FormatInfo *info, unsigned 
     char num[130];
 
     SDL_ultoa(value, num, info ? info->radix : 10);
+    SDL_IntPrecisionAdjust(num, maxlen, info);
     return SDL_PrintString(text, maxlen, info, num);
 }
 
@@ -1437,6 +1462,7 @@ SDL_PrintLongLong(char *text, size_t maxlen, SDL_FormatInfo *info, Sint64 value)
     char num[130];
 
     SDL_lltoa(value, num, info ? info->radix : 10);
+    SDL_IntPrecisionAdjust(num, maxlen, info);
     return SDL_PrintString(text, maxlen, info, num);
 }
 
@@ -1446,6 +1472,7 @@ SDL_PrintUnsignedLongLong(char *text, size_t maxlen, SDL_FormatInfo *info, Uint6
     char num[130];
 
     SDL_ulltoa(value, num, info ? info->radix : 10);
+    SDL_IntPrecisionAdjust(num, maxlen, info);
     return SDL_PrintString(text, maxlen, info, num);
 }
 
