@@ -1046,8 +1046,8 @@ static jobject captureBuffer = NULL;
 
 int Android_JNI_OpenAudioDevice(int iscapture, int sampleRate, int is16Bit, int channelCount, int desiredBufferFrames)
 {
-    jboolean audioBufferStereo;
-    int audioBufferFrames;
+    jboolean isStereo;
+    int numBufferFrames;
     jobject jbufobj = NULL;
     jboolean isCopy;
 
@@ -1058,12 +1058,12 @@ int Android_JNI_OpenAudioDevice(int iscapture, int sampleRate, int is16Bit, int 
     }
     Android_JNI_SetupThread();
 
-    audioBufferStereo = channelCount > 1;
+    isStereo = channelCount > 1;
 
     if (iscapture) {
         __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "SDL audio: opening device for capture");
         captureBuffer16Bit = is16Bit;
-        if ((*env)->CallStaticIntMethod(env, mAudioManagerClass, midCaptureOpen, sampleRate, audioBuffer16Bit, audioBufferStereo, desiredBufferFrames) != 0) {
+        if ((*env)->CallStaticIntMethod(env, mAudioManagerClass, midCaptureOpen, sampleRate, is16Bit, isStereo, desiredBufferFrames) != 0) {
             /* Error during audio initialization */
             __android_log_print(ANDROID_LOG_WARN, "SDL", "SDL audio: error on AudioRecord initialization!");
             return 0;
@@ -1071,7 +1071,7 @@ int Android_JNI_OpenAudioDevice(int iscapture, int sampleRate, int is16Bit, int 
     } else {
         __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "SDL audio: opening device for output");
         audioBuffer16Bit = is16Bit;
-        if ((*env)->CallStaticIntMethod(env, mAudioManagerClass, midAudioOpen, sampleRate, audioBuffer16Bit, audioBufferStereo, desiredBufferFrames) != 0) {
+        if ((*env)->CallStaticIntMethod(env, mAudioManagerClass, midAudioOpen, sampleRate, is16Bit, isStereo, desiredBufferFrames) != 0) {
             /* Error during audio initialization */
             __android_log_print(ANDROID_LOG_WARN, "SDL", "SDL audio: error on AudioTrack initialization!");
             return 0;
@@ -1082,14 +1082,14 @@ int Android_JNI_OpenAudioDevice(int iscapture, int sampleRate, int is16Bit, int 
      * Android >= 4.2 due to a "stale global reference" error. So now we allocate this buffer directly from this side. */
 
     if (is16Bit) {
-        jshortArray audioBufferLocal = (*env)->NewShortArray(env, desiredBufferFrames * (audioBufferStereo ? 2 : 1));
+        jshortArray audioBufferLocal = (*env)->NewShortArray(env, desiredBufferFrames * (isStereo ? 2 : 1));
         if (audioBufferLocal) {
             jbufobj = (*env)->NewGlobalRef(env, audioBufferLocal);
             (*env)->DeleteLocalRef(env, audioBufferLocal);
         }
     }
     else {
-        jbyteArray audioBufferLocal = (*env)->NewByteArray(env, desiredBufferFrames * (audioBufferStereo ? 2 : 1));
+        jbyteArray audioBufferLocal = (*env)->NewByteArray(env, desiredBufferFrames * (isStereo ? 2 : 1));
         if (audioBufferLocal) {
             jbufobj = (*env)->NewGlobalRef(env, audioBufferLocal);
             (*env)->DeleteLocalRef(env, audioBufferLocal);
@@ -1110,22 +1110,26 @@ int Android_JNI_OpenAudioDevice(int iscapture, int sampleRate, int is16Bit, int 
     isCopy = JNI_FALSE;
 
     if (is16Bit) {
-        if (!iscapture) {
+        if (iscapture) {
+            numBufferFrames = (*env)->GetArrayLength(env, (jshortArray)captureBuffer);
+        } else {
             audioBufferPinned = (*env)->GetShortArrayElements(env, (jshortArray)audioBuffer, &isCopy);
+            numBufferFrames = (*env)->GetArrayLength(env, (jshortArray)audioBuffer);
         }
-        audioBufferFrames = (*env)->GetArrayLength(env, (jshortArray)audioBuffer);
     } else {
-        if (!iscapture) {
+        if (iscapture) {
+            numBufferFrames = (*env)->GetArrayLength(env, (jbyteArray)captureBuffer);
+        } else {
             audioBufferPinned = (*env)->GetByteArrayElements(env, (jbyteArray)audioBuffer, &isCopy);
+            numBufferFrames = (*env)->GetArrayLength(env, (jbyteArray)audioBuffer);
         }
-        audioBufferFrames = (*env)->GetArrayLength(env, (jbyteArray)audioBuffer);
     }
 
-    if (audioBufferStereo) {
-        audioBufferFrames /= 2;
+    if (isStereo) {
+        numBufferFrames /= 2;
     }
 
-    return audioBufferFrames;
+    return numBufferFrames;
 }
 
 int Android_JNI_GetDisplayDPI(float *ddpi, float *xdpi, float *ydpi)
