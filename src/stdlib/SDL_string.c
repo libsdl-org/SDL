@@ -1416,7 +1416,7 @@ SDL_PrintString(char *text, size_t maxlen, SDL_FormatInfo *info, const char *str
 static void
 SDL_IntPrecisionAdjust(char *num, size_t maxlen, SDL_FormatInfo *info)
 {/* left-pad num with zeroes, if needed. */
-    size_t sz, pad, i;
+    size_t sz, pad;
 
     if (!info || info->precision < 0)
         return;
@@ -1428,9 +1428,7 @@ SDL_IntPrecisionAdjust(char *num, size_t maxlen, SDL_FormatInfo *info)
         pad = (size_t)info->precision - sz;
         if (pad + sz + 1 <= maxlen) { /* otherwise ignore the precision */
             SDL_memmove(num + pad, num, sz + 1);
-            for(i = 0; i < pad; ++i) {
-                num[i] = '0';
-            }
+            SDL_memset(num, '0', pad);
         }
     }
     info->precision = -1;/* so that SDL_PrintString() doesn't make a mess. */
