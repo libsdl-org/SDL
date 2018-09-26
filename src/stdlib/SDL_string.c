@@ -1374,15 +1374,18 @@ static size_t
 SDL_PrintString(char *text, size_t maxlen, SDL_FormatInfo *info, const char *string)
 {
     size_t length = 0;
-    size_t slen;
+    size_t slen, sz;
 
     if (string == NULL) {
         string = "(null)";
     }
 
-    if (info && info->width && (size_t)info->width > SDL_strlen(string)) {
+    sz = SDL_strlen(string);
+    if (info && info->width > 0 && (size_t)info->width > sz) {
         char fill = info->pad_zeroes ? '0' : ' ';
-        size_t width = info->width - SDL_strlen(string);
+        size_t width = info->width - sz;
+        if (info->precision >= 0 && (size_t)info->precision < sz)
+            width += sz - (size_t)info->precision;
         while (width-- > 0 && maxlen > 0) {
             *text++ = fill;
             ++length;
@@ -1394,6 +1397,13 @@ SDL_PrintString(char *text, size_t maxlen, SDL_FormatInfo *info, const char *str
     length += SDL_min(slen, maxlen);
 
     if (info) {
+        if (info->precision >= 0 && info->precision < sz) {
+            slen = info->precision;
+            if (slen < maxlen) {
+                text[slen] = 0;
+                length -= (sz - slen);
+            }
+        }
         if (info->force_case == SDL_CASE_LOWER) {
             SDL_strlwr(text);
         } else if (info->force_case == SDL_CASE_UPPER) {
