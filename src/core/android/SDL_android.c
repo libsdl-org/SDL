@@ -144,6 +144,10 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeCommitText)(
         JNIEnv* env, jclass cls,
         jstring text, jint newCursorPosition);
 
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeGenerateScancodeForUnichar)(
+        JNIEnv* env, jclass cls,
+        jchar chUnicode);
+
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeSetComposingText)(
         JNIEnv* env, jclass cls,
         jstring text, jint newCursorPosition);
@@ -195,6 +199,7 @@ JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveHaptic)(
 /* #define DEBUG_JNI */
 
 static void Android_JNI_ThreadDestroyed(void*);
+static void checkJNIReady(void);
 
 /*******************************************************************************
  This file links the Java side of Android with libsdl

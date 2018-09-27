@@ -37,7 +37,7 @@ SDL_COMPILE_TIME_ASSERT(surface_size_assumptions,
 /*
  * Calculate the pad-aligned scanline width of a surface
  */
-int
+static int
 SDL_CalculatePitch(Uint32 format, int width)
 {
     int pitch;

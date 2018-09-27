@@ -2333,6 +2333,30 @@ BlitNtoNKey(SDL_BlitInfo * info)
     /* Set up some basic variables */
     ckey &= rgbmask;
 
+    /* Fastpath: same source/destination format, no Amask, bpp 32, loop is vectorized. ~10x faster */
+    if (srcfmt->format == dstfmt->format &&
+        (srcfmt->format == SDL_PIXELFORMAT_RGB888 || srcfmt->format == SDL_PIXELFORMAT_BGR888)) {
+        Uint32 *src32 = (Uint32*)src;
+        Uint32 *dst32 = (Uint32*)dst;
+        srcskip /= sizeof(Uint32);
+        dstskip /= sizeof(Uint32);
+        while (height--) {
+            /* *INDENT-OFF* */
+            DUFFS_LOOP(
+            {
+                Uint32 Pixel = (*src32 == ckey) ? *dst32 : *src32;
+                *dst32 = Pixel;
+                ++src32;
+                ++dst32;
+            },
+            width);
+            /* *INDENT-ON* */
+            src32 += srcskip;
+            dst32 += dstskip;
+        }
+        return;
+    }
+
     while (height--) {
         /* *INDENT-OFF* */
         DUFFS_LOOP(
@@ -2379,6 +2403,33 @@ BlitNtoNKeyCopyAlpha(SDL_BlitInfo * info)
     srcbpp = srcfmt->BytesPerPixel;
     dstbpp = dstfmt->BytesPerPixel;
     ckey &= rgbmask;
+
+    /* Fastpath: same source/destination format, with Amask, bpp 32, loop is vectorized. ~10x faster */
+    if (srcfmt->format == dstfmt->format &&
+        (srcfmt->format == SDL_PIXELFORMAT_ARGB8888 ||
+         srcfmt->format == SDL_PIXELFORMAT_ABGR8888 ||
+         srcfmt->format == SDL_PIXELFORMAT_BGRA8888 ||
+         srcfmt->format == SDL_PIXELFORMAT_RGBA8888)) {
+        Uint32 *src32 = (Uint32*)src;
+        Uint32 *dst32 = (Uint32*)dst;
+        srcskip /= sizeof(Uint32);
+        dstskip /= sizeof(Uint32);
+        while (height--) {
+            /* *INDENT-OFF* */
+            DUFFS_LOOP(
+            {
+                Uint32 Pixel = ((*src32 & rgbmask) == ckey) ? *dst32 : *src32;
+                *dst32 = Pixel;
+                ++src32;
+                ++dst32;
+            },
+            width);
+            /* *INDENT-ON* */
+            src32 += srcskip;
+            dst32 += dstskip;
+        }
+        return;
+    }
 
     while (height--) {
         /* *INDENT-OFF* */

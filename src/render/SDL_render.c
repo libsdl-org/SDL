@@ -521,7 +521,8 @@ GetClosestSupportedFormat(SDL_Renderer * renderer, Uint32 format)
     return renderer->info.texture_formats[0];
 }
 
-SDL_ScaleMode SDL_GetScaleMode(void)
+
+static SDL_ScaleMode SDL_GetScaleMode(void)
 {
     const char *hint = SDL_GetHint(SDL_HINT_RENDER_SCALE_QUALITY);
 
