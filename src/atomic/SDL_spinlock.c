@@ -40,7 +40,7 @@
 SDL_COMPILE_TIME_ASSERT(locksize, 4==sizeof(SDL_SpinLock));
 extern _inline int _SDL_xchg_watcom(volatile int *a, int v);
 #pragma aux _SDL_xchg_watcom = \
-  "xchg [ecx], eax" \
+  "lock xchg [ecx], eax" \
   parm [ecx] [eax] \
   value [eax] \
   modify exact [eax];
