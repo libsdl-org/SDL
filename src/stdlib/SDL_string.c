@@ -1415,7 +1415,7 @@ SDL_PrintString(char *text, size_t maxlen, SDL_FormatInfo *info, const char *str
 
 static void
 SDL_IntPrecisionAdjust(char *num, size_t maxlen, SDL_FormatInfo *info)
-{/* left-pad num with zeroes, if needed. */
+{/* left-pad num with zeroes. */
     size_t sz, pad;
 
     if (!info || info->precision < 0)
@@ -1681,6 +1681,9 @@ SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, 
                     break;
                 case 'i':
                 case 'd':
+                    if (info.precision >= 0) {
+                        info.pad_zeroes = SDL_FALSE;
+                    }
                     switch (inttype) {
                     case DO_INT:
                         len = SDL_PrintLong(text, left, &info,
@@ -1718,7 +1721,9 @@ SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, 
                     }
                     /* Fall through to unsigned handling */
                 case 'u':
-                    info.pad_zeroes = SDL_TRUE;
+                    if (info.precision >= 0) {
+                        info.pad_zeroes = SDL_FALSE;
+                    }
                     switch (inttype) {
                     case DO_INT:
                         len = SDL_PrintUnsignedLong(text, left, &info,
@@ -1745,12 +1750,14 @@ SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, 
                         /* In practice this is used on Windows for WCHAR strings */
                         wchar_t *wide_arg = va_arg(ap, wchar_t *);
                         char *arg = SDL_iconv_string("UTF-8", "UTF-16LE", (char *)(wide_arg), (SDL_wcslen(wide_arg)+1)*sizeof(*wide_arg));
+                        info.pad_zeroes = SDL_FALSE;
                         len = SDL_PrintString(text, left, &info, arg);
                         SDL_free(arg);
                         done = SDL_TRUE;
                     }
                     break;
                 case 's':
+                    info.pad_zeroes = SDL_FALSE;
                     len = SDL_PrintString(text, left, &info, va_arg(ap, char *));
                     done = SDL_TRUE;
                     break;
