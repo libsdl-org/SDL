@@ -632,6 +632,8 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     const unsigned int newflags = [NSEvent modifierFlags] & NSEventModifierFlagCapsLock;
     _data->videodata->modifierFlags = (_data->videodata->modifierFlags & ~NSEventModifierFlagCapsLock) | newflags;
     SDL_ToggleModState(KMOD_CAPS, newflags != 0);
+
+    ScheduleContextUpdates(_data);
 }
 
 - (void)windowDidResignKey:(NSNotification *)aNotification
