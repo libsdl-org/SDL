@@ -24299,6 +24299,13 @@ $as_echo "#define SDL_JOYSTICK_WINMM 1" >>confdefs.h
             SOURCES="$SOURCES $srcdir/src/joystick/windows/*.c"
             have_joystick=yes
         fi
+        if test x$enable_joystick = xyes -a x$enable_hidapi = xyes; then
+
+$as_echo "#define SDL_JOYSTICK_HIDAPI 1" >>confdefs.h
+
+            EXTRA_CFLAGS="$EXTRA_CFLAGS -I$srcdir/src/hidapi/hidapi"
+            SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
+        fi
         if test x$enable_haptic = xyes; then
             if test x$have_dinput = xyes -o x$have_xinput = xyes; then
                 if test x$have_xinput = xyes; then
