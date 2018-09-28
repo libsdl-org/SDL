@@ -23258,12 +23258,29 @@ if test "x$ac_cv_header_mmdeviceapi_h" = xyes; then :
 fi
 
 
+    if test x$have_wasapi = xyes; then
+        $as_echo "#define HAVE_MMDEVICEAPI_H 1" >>confdefs.h
+
+    fi
     ac_fn_c_check_header_mongrel "$LINENO" "audioclient.h" "ac_cv_header_audioclient_h" "$ac_includes_default"
 if test "x$ac_cv_header_audioclient_h" = xyes; then :
 
 else
   have_wasapi=no
 fi
+
+
+    if test x$have_wasapi = xyes; then
+        $as_echo "#define HAVE_AUDIOCLIENT_H 1" >>confdefs.h
+
+    fi
+
+    ac_fn_c_check_header_mongrel "$LINENO" "endpointvolume.h" "ac_cv_header_endpointvolume_h" "$ac_includes_default"
+if test "x$ac_cv_header_endpointvolume_h" = xyes; then :
+  $as_echo "#define HAVE_ENDPOINTVOLUME_H 1" >>confdefs.h
+
+fi
+
 
 
     # Check whether --enable-wasapi was given.
