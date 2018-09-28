@@ -23165,20 +23165,6 @@ if test "x$ac_cv_header_xinput_h" = xyes; then :
 fi
 
 
-        ac_fn_c_check_header_mongrel "$LINENO" "mmdeviceapi.h" "ac_cv_header_mmdeviceapi_h" "$ac_includes_default"
-if test "x$ac_cv_header_mmdeviceapi_h" = xyes; then :
-  have_wasapi=yes
-fi
-
-
-        ac_fn_c_check_header_mongrel "$LINENO" "audioclient.h" "ac_cv_header_audioclient_h" "$ac_includes_default"
-if test "x$ac_cv_header_audioclient_h" = xyes; then :
-
-else
-  have_wasapi=no
-fi
-
-
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -23257,14 +23243,6 @@ $as_echo "#define HAVE_XINPUT_STATE_EX 1" >>confdefs.h
         SUMMARY_video="${SUMMARY_video} directx"
         SUMMARY_audio="${SUMMARY_audio} directx"
 
-        # Check whether --enable-wasapi was given.
-if test "${enable_wasapi+set}" = set; then :
-  enableval=$enable_wasapi;
-else
-  enable_wasapi=yes
-fi
-
-
         # FIXME: latest Cygwin finds dinput headers, but we die on other win32 headers.
         # FIXME:  ...so force it off for now.
         case "$host" in
@@ -23273,6 +23251,28 @@ fi
             ;;
         esac
     fi
+
+    ac_fn_c_check_header_mongrel "$LINENO" "mmdeviceapi.h" "ac_cv_header_mmdeviceapi_h" "$ac_includes_default"
+if test "x$ac_cv_header_mmdeviceapi_h" = xyes; then :
+  have_wasapi=yes
+fi
+
+
+    ac_fn_c_check_header_mongrel "$LINENO" "audioclient.h" "ac_cv_header_audioclient_h" "$ac_includes_default"
+if test "x$ac_cv_header_audioclient_h" = xyes; then :
+
+else
+  have_wasapi=no
+fi
+
+
+    # Check whether --enable-wasapi was given.
+if test "${enable_wasapi+set}" = set; then :
+  enableval=$enable_wasapi;
+else
+  enable_wasapi=yes
+fi
+
 }
 
 CheckDLOPEN()

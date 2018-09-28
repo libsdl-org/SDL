@@ -3052,8 +3052,6 @@ AC_HELP_STRING([--enable-directx], [use DirectX for Windows audio/video [[defaul
         AC_CHECK_HEADER(dinput.h, have_dinput=yes)
         AC_CHECK_HEADER(dxgi.h, have_dxgi=yes)
         AC_CHECK_HEADER(xinput.h, have_xinput=yes)
-        AC_CHECK_HEADER(mmdeviceapi.h, have_wasapi=yes)
-        AC_CHECK_HEADER(audioclient.h,,have_wasapi=no)
         AC_TRY_COMPILE([
 #include <windows.h>
 #include <xinput.h>
@@ -3090,10 +3088,6 @@ XINPUT_STATE_EX s1;
         SUMMARY_video="${SUMMARY_video} directx"
         SUMMARY_audio="${SUMMARY_audio} directx"
 
-        AC_ARG_ENABLE(wasapi,
-AC_HELP_STRING([--enable-wasapi], [use the Windows WASAPI audio driver [[default=yes]]]),
-                                , enable_wasapi=yes)
-
         # FIXME: latest Cygwin finds dinput headers, but we die on other win32 headers.
         # FIXME:  ...so force it off for now.
         case "$host" in
@@ -3102,6 +3096,12 @@ AC_HELP_STRING([--enable-wasapi], [use the Windows WASAPI audio driver [[default
             ;;
         esac
     fi
+
+    AC_CHECK_HEADER(mmdeviceapi.h, have_wasapi=yes)
+    AC_CHECK_HEADER(audioclient.h,,have_wasapi=no)
+    AC_ARG_ENABLE(wasapi,
+AC_HELP_STRING([--enable-wasapi], [use the Windows WASAPI audio driver [[default=yes]]]),
+                                , enable_wasapi=yes)
 }
 
 dnl Check for the dlfcn.h interface for dynamically loading objects
