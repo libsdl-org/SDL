@@ -913,6 +913,8 @@ HID_API_EXPORT const wchar_t * HID_API_CALL  hid_error(hid_device *dev)
 }
 
 
+#if 0
+
 /*#define PICPGM*/
 /*#define S11*/
 #define P32
@@ -932,8 +934,6 @@ HID_API_EXPORT const wchar_t * HID_API_CALL  hid_error(hid_device *dev)
   unsigned short ProductID = 0x0033;
 #endif
 
-
-#if 0
 int __cdecl main(int argc, char* argv[])
 {
 	int res;
