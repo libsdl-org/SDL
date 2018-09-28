@@ -1176,6 +1176,10 @@ GLES_CreateRenderer(SDL_Window * window, Uint32 flags)
     data->glEnableClientState(GL_VERTEX_ARRAY);
     data->glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 
+    data->drawstate.blend = SDL_BLENDMODE_INVALID;
+    data->drawstate.color = 0xFFFFFFFF;
+    data->drawstate.clear_color = 0xFFFFFFFF;
+
     return renderer;
 
 error:
