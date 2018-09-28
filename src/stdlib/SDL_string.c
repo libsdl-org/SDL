@@ -1416,15 +1416,19 @@ SDL_PrintString(char *text, size_t maxlen, SDL_FormatInfo *info, const char *str
 static void
 SDL_IntPrecisionAdjust(char *num, size_t maxlen, SDL_FormatInfo *info)
 {/* left-pad num with zeroes. */
-    size_t sz, pad;
+    size_t sz, pad, have_sign;
 
-    if (!info || info->precision < 0)
+    if (!info)
         return;
 
-    if (*num == '-')
+    have_sign = 0;
+    if (*num == '-' || *num == '+') {
+        have_sign = 1;
         ++num;
+        --maxlen;
+    }
     sz = SDL_strlen(num);
-    if (sz < (size_t)info->precision) {
+    if (info->precision > 0 && sz < (size_t)info->precision) {
         pad = (size_t)info->precision - sz;
         if (pad + sz + 1 <= maxlen) { /* otherwise ignore the precision */
             SDL_memmove(num + pad, num, sz + 1);
@@ -1432,6 +1436,18 @@ SDL_IntPrecisionAdjust(char *num, size_t maxlen, SDL_FormatInfo *info)
         }
     }
     info->precision = -1;/* so that SDL_PrintString() doesn't make a mess. */
+
+    if (info->pad_zeroes && info->width > 0 && (size_t)info->width > sz + have_sign) {
+    /* handle here: spaces are added before the sign
+       but zeroes must be placed _after_ the sign. */
+    /* sz hasn't changed: we ignore pad_zeroes if a precision is given. */
+        pad = (size_t)info->width - sz - have_sign;
+        if (pad + sz + 1 <= maxlen) {
+            SDL_memmove(num + pad, num, sz + 1);
+            SDL_memset(num, '0', pad);
+        }
+        info->width = 0; /* so that SDL_PrintString() doesn't make a mess. */
+    }
 }
 
 static size_t
