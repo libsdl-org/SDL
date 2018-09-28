@@ -1361,7 +1361,7 @@ typedef enum
 typedef struct
 {
     SDL_bool left_justify; /* for now: ignored. */
-    SDL_bool force_sign;   /* for now: used only by float printer, ignored otherwise. */
+    SDL_bool force_sign;
     SDL_bool force_type;   /* for now: used only by float printer, ignored otherwise. */
     SDL_bool pad_zeroes;
     SDL_letter_case force_case;
@@ -1453,9 +1453,13 @@ SDL_IntPrecisionAdjust(char *num, size_t maxlen, SDL_FormatInfo *info)
 static size_t
 SDL_PrintLong(char *text, size_t maxlen, SDL_FormatInfo *info, long value)
 {
-    char num[130];
+    char num[130], *p = num;
 
-    SDL_ltoa(value, num, info ? info->radix : 10);
+    if (info->force_sign && value >= 0L) {
+        *p++ = '+';
+    }
+
+    SDL_ltoa(value, p, info ? info->radix : 10);
     SDL_IntPrecisionAdjust(num, maxlen, info);
     return SDL_PrintString(text, maxlen, info, num);
 }
@@ -1473,9 +1477,13 @@ SDL_PrintUnsignedLong(char *text, size_t maxlen, SDL_FormatInfo *info, unsigned 
 static size_t
 SDL_PrintLongLong(char *text, size_t maxlen, SDL_FormatInfo *info, Sint64 value)
 {
-    char num[130];
+    char num[130], *p = num;
 
-    SDL_lltoa(value, num, info ? info->radix : 10);
+    if (info->force_sign && value >= (Sint64)0) {
+        *p++ = '+';
+    }
+
+    SDL_lltoa(value, p, info ? info->radix : 10);
     SDL_IntPrecisionAdjust(num, maxlen, info);
     return SDL_PrintString(text, maxlen, info, num);
 }
@@ -1737,6 +1745,7 @@ SDL_vsnprintf(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, const char *fmt, 
                     }
                     /* Fall through to unsigned handling */
                 case 'u':
+                    info.force_sign = SDL_FALSE;
                     if (info.precision >= 0) {
                         info.pad_zeroes = SDL_FALSE;
                     }
