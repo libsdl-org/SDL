@@ -1212,6 +1212,11 @@ elseif(WINDOWS)
     set(CMAKE_REQUIRED_FLAGS ${ORIG_CMAKE_REQUIRED_FLAGS})
   endif()
 
+  # headers needed elsewhere ...
+  check_include_file(mmdeviceapi.h HAVE_MMDEVICEAPI_H)
+  check_include_file(audioclient.h HAVE_AUDIOCLIENT_H)
+  check_include_file(endpointvolume.h HAVE_ENDPOINTVOLUME_H)
+
   if(SDL_AUDIO)
     set(SDL_AUDIO_DRIVER_WINMM 1)
     file(GLOB WINMM_AUDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/winmm/*.c)
@@ -1223,10 +1228,6 @@ elseif(WINDOWS)
       file(GLOB DSOUND_AUDIO_SOURCES ${SDL2_SOURCE_DIR}/src/audio/directsound/*.c)
       set(SOURCE_FILES ${SOURCE_FILES} ${DSOUND_AUDIO_SOURCES})
     endif()
-
-    # headers needed for WASAPI support:
-    check_include_file(mmdeviceapi.h HAVE_MMDEVICEAPI_H)
-    check_include_file(audioclient.h HAVE_AUDIOCLIENT_H)
 
     if(WASAPI AND HAVE_AUDIOCLIENT_H AND HAVE_MMDEVICEAPI_H)
       set(SDL_AUDIO_DRIVER_WASAPI 1)
