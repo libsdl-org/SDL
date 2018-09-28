@@ -1135,7 +1135,7 @@ SDL_IsJoystickNintendoSwitchPro(Uint16 vendor, Uint16 product)
 SDL_bool
 SDL_IsJoystickSteamController(Uint16 vendor, Uint16 product)
 {
-    return BIsSteamController(GuessControllerType(vendor, product)) ? SDL_TRUE : SDL_FALSE;
+    return BIsSteamController(GuessControllerType(vendor, product));
 }
 
 SDL_bool

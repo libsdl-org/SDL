@@ -25,7 +25,6 @@
 #endif
 
 #ifndef __cplusplus
-typedef enum { false, true } bool;
 #define inline SDL_INLINE
 #endif
 
@@ -65,7 +64,7 @@ typedef enum
 	k_eControllertype_GenericMouse = 800,
 } EControllerType;
 
-static inline bool BIsSteamController( EControllerType eType )
+static inline SDL_bool BIsSteamController( EControllerType eType )
 {
 	return ( eType == k_eControllerType_SteamController || eType == k_eControllerType_SteamControllerV2 );
 }
