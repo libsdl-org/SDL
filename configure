@@ -24296,15 +24296,14 @@ $as_echo "#define SDL_JOYSTICK_DINPUT 1" >>confdefs.h
 $as_echo "#define SDL_JOYSTICK_WINMM 1" >>confdefs.h
 
             fi
-            SOURCES="$SOURCES $srcdir/src/joystick/windows/*.c"
-            have_joystick=yes
-        fi
-        if test x$enable_joystick = xyes -a x$enable_hidapi = xyes; then
 
 $as_echo "#define SDL_JOYSTICK_HIDAPI 1" >>confdefs.h
 
-            EXTRA_CFLAGS="$EXTRA_CFLAGS -I$srcdir/src/hidapi/hidapi"
+            SOURCES="$SOURCES $srcdir/src/joystick/windows/*.c"
             SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
+            SOURCES="$SOURCES $srcdir/src/hidapi/windows/hid.c"
+            EXTRA_CFLAGS="$EXTRA_CFLAGS -I$srcdir/src/hidapi/hidapi"
+            have_joystick=yes
         fi
         if test x$enable_haptic = xyes; then
             if test x$have_dinput = xyes -o x$have_xinput = xyes; then
@@ -24367,7 +24366,7 @@ $as_echo "#define SDL_LOADSO_WINDOWS 1" >>confdefs.h
         else
             LIBUUID=-luuid
         fi
-        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -luser32 -lgdi32 -lwinmm -limm32 -lole32 -loleaut32 -lshell32 -lversion $LIBUUID -static-libgcc"
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -luser32 -lgdi32 -lwinmm -limm32 -lole32 -loleaut32 -lshell32 -lsetupapi -lversion $LIBUUID -static-libgcc"
         # The Windows platform requires special setup
         VERSION_SOURCES="$srcdir/src/main/windows/*.rc"
         SDLMAIN_SOURCES="$srcdir/src/main/windows/*.c"

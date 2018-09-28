@@ -37,6 +37,7 @@ typedef LONG NTSTATUS;
 #endif
 
 /* SDL C runtime functions */
+#include "../../SDL_internal.h"
 #include "SDL_stdinc.h"
 
 #define calloc SDL_calloc
