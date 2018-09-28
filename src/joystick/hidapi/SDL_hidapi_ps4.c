@@ -140,7 +140,7 @@ static Uint32 crc32(Uint32 crc, const void *data, int count)
     return crc;
 }
 
-#ifdef __WIN32__
+#if defined(__WIN32__) && defined(HAVE_ENDPOINTVOLUME_H)
 #include "../../core/windows/SDL_windows.h"
 
 #ifndef NTDDI_VISTA
@@ -173,7 +173,7 @@ static float GetSystemVolume(void)
 {
     float volume = -1.0f;    /* Return this if we can't get system volume */
 
-#ifdef __WIN32__
+#if defined(__WIN32__) && defined(HAVE_ENDPOINTVOLUME_H)
     HRESULT hr = WIN_CoInitialize();
     if (SUCCEEDED(hr)) {
         IMMDeviceEnumerator *pEnumerator;
