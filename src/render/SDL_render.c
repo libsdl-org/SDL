@@ -497,6 +497,7 @@ PrepQueueCmdDraw(SDL_Renderer *renderer, const Uint8 r, const Uint8 g, const Uin
 static SDL_RenderCommand *
 PrepQueueCmdDrawSolid(SDL_Renderer *renderer, const SDL_RenderCommandType cmdtype)
 {
+    /* !!! FIXME: drop this draw if viewport w or h is zero. */
     SDL_RenderCommand *cmd = NULL;
     if (PrepQueueCmdDraw(renderer, renderer->r, renderer->g, renderer->b, renderer->a) == 0) {
         cmd = AllocateRenderCommand(renderer);
@@ -560,6 +561,7 @@ QueueCmdFillRects(SDL_Renderer *renderer, const SDL_FRect * rects, const int cou
 static SDL_RenderCommand *
 PrepQueueCmdDrawTexture(SDL_Renderer *renderer, SDL_Texture *texture, const SDL_RenderCommandType cmdtype)
 {
+    /* !!! FIXME: drop this draw if viewport w or h is zero. */
     SDL_RenderCommand *cmd = NULL;
     if (PrepQueueCmdDraw(renderer, texture->r, texture->g, texture->b, texture->a) == 0) {
         cmd = AllocateRenderCommand(renderer);
