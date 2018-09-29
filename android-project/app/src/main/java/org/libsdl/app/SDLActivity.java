@@ -843,16 +843,16 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
      */
     public static boolean isTablet() {
         DisplayMetrics metrics = new DisplayMetrics();
-        Activity sdlActivity = (Activity)getContext();
-        sdlActivity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
+        Activity activity = (Activity)getContext();
+        activity.getWindowManager().getDefaultDisplay().getMetrics(metrics);
 
-        double dWidthInches = metrics.widthPixels / (double)metrics.densityDpi;
-        double dHeightInches = metrics.heightPixels / (double)metrics.densityDpi;
+        double dWidthInches = metrics.widthPixels / (double)metrics.xdpi;
+        double dHeightInches = metrics.heightPixels / (double)metrics.ydpi;
 
         double dDiagonal = Math.sqrt((dWidthInches * dWidthInches) + (dHeightInches * dHeightInches));
 
         // If our diagonal size is seven inches or greater, we consider ourselves a tablet.
-        return (dDiagonal > 7.0);
+        return (dDiagonal >= 7.0);
     }
 
     /**
