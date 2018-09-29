@@ -271,12 +271,16 @@ SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len)
     size_t left;
     Uint32 *dstp4;
     Uint8 *dstp1 = (Uint8 *) dst;
-    Uint32 value4 = (c | (c << 8) | (c << 16) | (c << 24));
-    Uint8 value1 = (Uint8) c;
+    Uint8 value1;
+    Uint32 value4;
+
+    /* The value used in memset() is a byte, passed as an int */
+    c &= 0xff;
 
     /* The destination pointer needs to be aligned on a 4-byte boundary to
      * execute a 32-bit set. Set first bytes manually if needed until it is
      * aligned. */
+    value1 = (Uint8)c;
     while ((intptr_t)dstp1 & 0x3) {
         if (len--) {
             *dstp1++ = value1;
@@ -285,6 +289,7 @@ SDL_memset(SDL_OUT_BYTECAP(len) void *dst, int c, size_t len)
         }
     }
 
+    value4 = (c | (c << 8) | (c << 16) | (c << 24));
     dstp4 = (Uint32 *) dstp1;
     left = (len % 4);
     len /= 4;
