@@ -731,7 +731,7 @@ SetDrawState(GLES_RenderData *data, const SDL_RenderCommand *cmd)
 }
 
 static void
-SetCopyState(const GLES_RenderData *data, const SDL_RenderCommand *cmd)
+SetCopyState(GLES_RenderData *data, const SDL_RenderCommand *cmd)
 {
     SDL_Texture *texture = cmd->data.draw.texture;
     SetDrawState(data, cmd);
@@ -793,6 +793,7 @@ GLES_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
                                       0.0, 1.0);
                     }
                     data->glMatrixMode(GL_MODELVIEW);
+                }
                 break;
             }
 
@@ -831,13 +832,13 @@ GLES_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
                     data->drawstate.clear_color = color;
                 }
 
-                if (cliprect_enabled) {
+                if (data->drawstate.cliprect_enabled) {
                     data->glDisable(GL_SCISSOR_TEST);
                 }
 
                 data->glClear(GL_COLOR_BUFFER_BIT);
 
-                if (cliprect_enabled) {
+                if (data->drawstate.cliprect_enabled) {
                     data->glEnable(GL_SCISSOR_TEST);
                 }
                 break;
@@ -919,7 +920,7 @@ GLES_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
 
 static int
 GLES_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
-                    Uint32 pixel_format, void * pixels, int pitch)
+                      Uint32 pixel_format, void * pixels, int pitch)
 {
     GLES_RenderData *data = (GLES_RenderData *) renderer->driverdata;
     Uint32 temp_format = renderer->target ? renderer->target->format : SDL_PIXELFORMAT_ABGR8888;

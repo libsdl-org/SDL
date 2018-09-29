@@ -600,8 +600,8 @@ QueueCmdCopyEx(SDL_Renderer *renderer, SDL_Texture * texture,
                const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip)
 {
     SDL_RenderCommand *cmd = PrepQueueCmdDrawTexture(renderer, texture, SDL_RENDERCMD_COPY_EX);
-    SDL_assert(renderer->QueueCopyEx != NULL);  /* should have caught at higher level. */
     int retval = -1;
+    SDL_assert(renderer->QueueCopyEx != NULL);  /* should have caught at higher level. */
     if (cmd != NULL) {
         retval = renderer->QueueCopyEx(renderer, cmd, texture, srcquad, dstrect, angle, center, flip);
         if (retval < 0) {
@@ -1287,11 +1287,8 @@ SDL_QueryTexture(SDL_Texture * texture, Uint32 * format, int *access,
 int
 SDL_SetTextureColorMod(SDL_Texture * texture, Uint8 r, Uint8 g, Uint8 b)
 {
-    SDL_Renderer *renderer;
-
     CHECK_TEXTURE_MAGIC(texture, -1);
 
-    renderer = texture->renderer;
     if (r < 255 || g < 255 || b < 255) {
         texture->modMode |= SDL_TEXTUREMODULATE_COLOR;
     } else {
@@ -1327,11 +1324,8 @@ SDL_GetTextureColorMod(SDL_Texture * texture, Uint8 * r, Uint8 * g,
 int
 SDL_SetTextureAlphaMod(SDL_Texture * texture, Uint8 alpha)
 {
-    SDL_Renderer *renderer;
-
     CHECK_TEXTURE_MAGIC(texture, -1);
 
-    renderer = texture->renderer;
     if (alpha < 255) {
         texture->modMode |= SDL_TEXTUREMODULATE_ALPHA;
     } else {
