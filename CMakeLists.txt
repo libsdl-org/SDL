@@ -1059,6 +1059,12 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID)
         include_directories(${IBUS_INCLUDE_DIRS})
         list(APPEND EXTRA_LIBS ${IBUS_LIBRARIES})
       endif()
+      if(HAVE_LIBUNWIND_H)
+        # We've already found the header, so REQUIRE the lib to be present
+        pkg_search_module(UNWIND REQUIRED libunwind)
+        pkg_search_module(UNWIND_GENERIC REQUIRED libunwind-generic)
+        list(APPEND EXTRA_LIBS ${UNWIND_LIBRARIES} ${UNWIND_GENERIC_LIBRARIES})
+      endif()
     endif()
 
     check_include_file("fcitx/frontend.h" HAVE_FCITX_FRONTEND_H)
