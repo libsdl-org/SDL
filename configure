@@ -24819,7 +24819,7 @@ esac
 if test x$have_joystick != xyes; then
     if test x$enable_joystick = xyes; then
 
-$as_echo "#define SDL_JOYSTICK_DISABLED 1" >>confdefs.h
+$as_echo "#define SDL_JOYSTICK_DUMMY 1" >>confdefs.h
 
     fi
     SOURCES="$SOURCES $srcdir/src/joystick/dummy/*.c"
@@ -24827,7 +24827,7 @@ fi
 if test x$have_haptic != xyes; then
     if test x$enable_haptic = xyes; then
 
-$as_echo "#define SDL_HAPTIC_DISABLED 1" >>confdefs.h
+$as_echo "#define SDL_HAPTIC_DUMMY 1" >>confdefs.h
 
     fi
     SOURCES="$SOURCES $srcdir/src/haptic/dummy/*.c"
@@ -24835,7 +24835,7 @@ fi
 if test x$have_sensor != xyes; then
     if test x$enable_sensor = xyes; then
 
-$as_echo "#define SDL_SENSOR_DISABLED 1" >>confdefs.h
+$as_echo "#define SDL_SENSOR_DUMMY 1" >>confdefs.h
 
     fi
     SOURCES="$SOURCES $srcdir/src/sensor/dummy/*.c"

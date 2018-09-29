@@ -4012,19 +4012,19 @@ esac
 
 if test x$have_joystick != xyes; then
     if test x$enable_joystick = xyes; then
-        AC_DEFINE(SDL_JOYSTICK_DISABLED, 1, [ ])
+        AC_DEFINE(SDL_JOYSTICK_DUMMY, 1, [ ])
     fi
     SOURCES="$SOURCES $srcdir/src/joystick/dummy/*.c"
 fi
 if test x$have_haptic != xyes; then
     if test x$enable_haptic = xyes; then
-        AC_DEFINE(SDL_HAPTIC_DISABLED, 1, [ ])
+        AC_DEFINE(SDL_HAPTIC_DUMMY, 1, [ ])
     fi
     SOURCES="$SOURCES $srcdir/src/haptic/dummy/*.c"
 fi
 if test x$have_sensor != xyes; then
     if test x$enable_sensor = xyes; then
-        AC_DEFINE(SDL_SENSOR_DISABLED, 1, [ ])
+        AC_DEFINE(SDL_SENSOR_DUMMY, 1, [ ])
     fi
     SOURCES="$SOURCES $srcdir/src/sensor/dummy/*.c"
 fi
