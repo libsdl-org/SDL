@@ -643,7 +643,22 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         Message msg = commandHandler.obtainMessage();
         msg.arg1 = command;
         msg.obj = data;
-        return commandHandler.sendMessage(msg);
+        boolean result = commandHandler.sendMessage(msg);
+
+        // Ensure we don't return until the resize has actually happened,
+        // or 250ms have passed.
+        if (command == COMMAND_CHANGE_WINDOW_STYLE) {
+            synchronized(SDLActivity.getContext()) {
+                try {
+                    SDLActivity.getContext().wait(250);
+                }
+                catch (InterruptedException ie) {
+                    ie.printStackTrace();
+                }
+            }
+        }
+
+        return result;
     }
 
     // C functions we call
@@ -1576,6 +1591,10 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
             }
         }
         catch ( java.lang.Throwable throwable ) {}
+
+        synchronized(SDLActivity.getContext()) {
+            SDLActivity.getContext().notifyAll();
+        }
 
         Log.v("SDL", "Window size: " + width + "x" + height);
         Log.v("SDL", "Device size: " + nDeviceWidth + "x" + nDeviceHeight);

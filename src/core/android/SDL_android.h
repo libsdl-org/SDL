@@ -19,6 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 #include "../../SDL_internal.h"
+#include "SDL_system.h"
 
 /* Set up for C function definitions, even when using C++ */
 #ifdef __cplusplus
@@ -52,6 +53,10 @@ extern void Android_JNI_WriteAudioBuffer(void);
 extern int Android_JNI_CaptureAudioBuffer(void *buffer, int buflen);
 extern void Android_JNI_FlushCapturedAudio(void);
 extern void Android_JNI_CloseAudioDevice(const int iscapture);
+
+/* Detecting device type */
+extern SDL_bool Android_IsDeXMode();
+extern SDL_bool Android_IsChromebook();
 
 #include "SDL_rwops.h"
 

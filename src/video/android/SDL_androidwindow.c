@@ -27,6 +27,7 @@
 #include "../../events/SDL_keyboard_c.h"
 #include "../../events/SDL_mouse_c.h"
 #include "../../events/SDL_windowevents_c.h"
+#include "../../core/android/SDL_android.h"
 
 #include "SDL_androidvideo.h"
 #include "SDL_androidwindow.h"
@@ -109,6 +110,10 @@ Android_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * displ
     // Samsung DeX or Chromebooks or other windowed Android environemtns, our window may 
     // still not be the full display size.
     //
+    if (!SDL_IsDeXMode() && !SDL_IsChromebook()) {
+        return;
+    }
+
     SDL_WindowData * data = (SDL_WindowData *)window->driverdata;
 
     if (!data || !data->native_window) {
