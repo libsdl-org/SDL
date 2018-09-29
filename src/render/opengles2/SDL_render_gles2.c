@@ -939,6 +939,7 @@ SetDrawState(GLES2_RenderData *data, const SDL_RenderCommand *cmd, const GLES2_I
     const SDL_bool was_copy_ex = data->drawstate.is_copy_ex;
     const SDL_bool is_copy_ex = (cmd->command == SDL_RENDERCMD_COPY_EX);
     SDL_Texture *texture = cmd->data.draw.texture;
+    const SDL_BlendMode blend = cmd->data.draw.blend;
     GLES2_ProgramCacheEntry *program;
 
     SDL_assert((texture != NULL) == (imgsrc != GLES2_IMAGESOURCE_SOLID));
@@ -1001,7 +1002,6 @@ SetDrawState(GLES2_RenderData *data, const SDL_RenderCommand *cmd, const GLES2_I
         }
     }
 
-    const SDL_BlendMode blend = cmd->data.draw.blend;
     if (blend != data->drawstate.blend) {
         if (blend == SDL_BLENDMODE_NONE) {
             data->glDisable(GL_BLEND);
