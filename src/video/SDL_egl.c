@@ -406,6 +406,9 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
         }
     }
 
+    _this->egl_data->egl_version_major = egl_version_major;
+    _this->egl_data->egl_version_minor = egl_version_minor;
+
     if (egl_version_major == 1 && egl_version_minor == 5) {
         LOAD_FUNC(eglGetPlatformDisplay);
     }
@@ -657,6 +660,24 @@ SDL_EGL_CreateContext(_THIS, EGLSurface egl_surface)
     if (_this->gl_config.share_with_current_context) {
         share_context = (EGLContext)SDL_GL_GetCurrentContext();
     }
+
+#if SDL_VIDEO_DRIVER_ANDROID
+    if ((_this->gl_config.flags & SDL_GL_CONTEXT_DEBUG_FLAG) != 0) {
+        /* If SDL_GL_CONTEXT_DEBUG_FLAG is set but EGL_KHR_debug unsupported, unset.
+         * This is required because some Android devices like to complain about it
+         * by "silently" failing, logging a hint which could be easily overlooked:
+         * E/libEGL  (26984): validate_display:255 error 3008 (EGL_BAD_DISPLAY)
+         * The following explicitly checks for EGL_KHR_debug before EGL 1.5
+         */
+        int egl_version_major = _this->egl_data->egl_version_major;
+        int egl_version_minor = _this->egl_data->egl_version_minor;
+        if (((egl_version_major < 1) || (egl_version_major == 1 && egl_version_minor < 5)) &&
+            !SDL_EGL_HasExtension(_this, SDL_EGL_DISPLAY_EXTENSION, "EGL_KHR_debug")) {
+            /* SDL profile bits match EGL profile bits. */
+            _this->gl_config.flags &= ~SDL_GL_CONTEXT_DEBUG_FLAG;
+        }
+    }
+#endif
 
     /* Set the context version and other attributes. */
     if ((major_version < 3 || (minor_version == 0 && profile_es)) &&
