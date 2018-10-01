@@ -2344,8 +2344,9 @@ BlitNtoNKey(SDL_BlitInfo * info)
             /* *INDENT-OFF* */
             DUFFS_LOOP(
             {
-                Uint32 Pixel = (*src32 == ckey) ? *dst32 : *src32;
-                *dst32 = Pixel;
+                if (*src32 != ckey) {
+                    *dst32 = *src32;
+                }
                 ++src32;
                 ++dst32;
             },
@@ -2418,8 +2419,9 @@ BlitNtoNKeyCopyAlpha(SDL_BlitInfo * info)
             /* *INDENT-OFF* */
             DUFFS_LOOP(
             {
-                Uint32 Pixel_ = ((*src32 & rgbmask) == ckey) ? *dst32 : *src32;
-                *dst32 = Pixel_;
+                if ((*src32 & rgbmask) != ckey) {
+                    *dst32 = *src32;
+                }
                 ++src32;
                 ++dst32;
             },
