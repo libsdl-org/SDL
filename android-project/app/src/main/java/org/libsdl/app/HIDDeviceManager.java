@@ -80,6 +80,14 @@ public class HIDDeviceManager {
     public HIDDeviceManager(Context context) {
         mContext = context;
 
+	// Make sure we have the HIDAPI library loaded with the native functions
+        try {
+            System.loadLibrary("hidapi");
+        } catch (Exception e) {
+            Log.w(TAG, "Couldn't load hidapi: " + e.toString());
+            return;
+        }
+	
         HIDDeviceRegisterCallback(this);
 
         mSharedPreferences = mContext.getSharedPreferences("hidapi", Context.MODE_PRIVATE);
@@ -180,7 +188,11 @@ public class HIDDeviceManager {
     }
 
     protected void shutdownUSB() {
-        mContext.unregisterReceiver(mUsbBroadcast);
+        try {
+            mContext.unregisterReceiver(mUsbBroadcast);
+        } catch (Exception e) {
+            // We may not have registered, that's okay
+        }
     }
 
     protected boolean isHIDDeviceUSB(UsbDevice usbDevice) {
