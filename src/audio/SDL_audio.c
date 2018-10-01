@@ -1324,15 +1324,12 @@ open_audio_device(const char *devname, int iscapture,
             build_stream = SDL_TRUE;
         }
     }
-
-    /* !!! FIXME in 2.1: add SDL_AUDIO_ALLOW_SAMPLES_CHANGE flag?
-       As of 2.0.6, we will build a stream to buffer the difference between
-       what the app wants to feed and the device wants to eat, so everyone
-       gets their way. In prior releases, SDL would force the callback to
-       feed at the rate the device requested, adjusted for resampling.
-     */
     if (device->spec.samples != obtained->samples) {
-        build_stream = SDL_TRUE;
+        if (allowed_changes & SDL_AUDIO_ALLOW_SAMPLES_CHANGE) {
+            obtained->samples = device->spec.samples;
+        } else {
+            build_stream = SDL_TRUE;
+        }
     }
 
     SDL_CalculateAudioSpec(obtained);  /* recalc after possible changes. */
