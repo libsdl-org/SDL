@@ -70,7 +70,6 @@ typedef struct
     SDL_bool updateSize;
     SDL_bool beginScene;
     SDL_bool enableSeparateAlphaBlend;
-    SDL_bool supportsStreamOffset;
     D3DTEXTUREFILTERTYPE scaleMode[8];
     IDirect3DSurface9 *defaultRenderTarget;
     IDirect3DSurface9 *currentRenderTarget;
@@ -1199,44 +1198,40 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
     }
 
     /* upload the new VBO data for this set of commands. */
-    if (data->supportsStreamOffset) {
-        vbo = data->vertexBuffers[vboidx];
-        if (!vbo || (data->vertexBufferSize[vboidx] < vertsize)) {
-            const DWORD usage = D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY;
-            const DWORD fvf = D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1;
-            if (vbo) {
-                IDirect3DVertexBuffer9_Release(vbo);
-            }
-
-            if (FAILED(IDirect3DDevice9_CreateVertexBuffer(data->device, vertsize, usage, fvf, D3DPOOL_DEFAULT, &vbo, NULL))) {
-                vbo = NULL;
-            }
-            data->vertexBuffers[vboidx] = vbo;
-            data->vertexBufferSize[vboidx] = vbo ? vertsize : 0;
+    vbo = data->vertexBuffers[vboidx];
+    if (!vbo || (data->vertexBufferSize[vboidx] < vertsize)) {
+        const DWORD usage = D3DUSAGE_DYNAMIC | D3DUSAGE_WRITEONLY;
+        const DWORD fvf = D3DFVF_XYZ | D3DFVF_DIFFUSE | D3DFVF_TEX1;
+        if (vbo) {
+            IDirect3DVertexBuffer9_Release(vbo);
         }
 
-        if (vbo) {
-            void *ptr;
-            if (FAILED(IDirect3DVertexBuffer9_Lock(vbo, 0, vertsize, &ptr, D3DLOCK_DISCARD))) {
+        if (FAILED(IDirect3DDevice9_CreateVertexBuffer(data->device, vertsize, usage, fvf, D3DPOOL_DEFAULT, &vbo, NULL))) {
+            vbo = NULL;
+        }
+        data->vertexBuffers[vboidx] = vbo;
+        data->vertexBufferSize[vboidx] = vbo ? vertsize : 0;
+    }
+
+    if (vbo) {
+        void *ptr;
+        if (FAILED(IDirect3DVertexBuffer9_Lock(vbo, 0, vertsize, &ptr, D3DLOCK_DISCARD))) {
+            vbo = NULL;  /* oh well, we'll do immediate mode drawing.  :(  */
+        } else {
+            SDL_memcpy(ptr, vertices, vertsize);
+            if (FAILED(IDirect3DVertexBuffer9_Unlock(vbo))) {
                 vbo = NULL;  /* oh well, we'll do immediate mode drawing.  :(  */
-            } else {
-                SDL_memcpy(ptr, vertices, vertsize);
-                if (FAILED(IDirect3DVertexBuffer9_Unlock(vbo))) {
-                    vbo = NULL;  /* oh well, we'll do immediate mode drawing.  :(  */
-                }
-            }
-        }
-
-        /* cycle through a few VBOs so D3D has some time with the data before we replace it. */
-        if (vbo) {
-            data->currentVertexBuffer++;
-            if (data->currentVertexBuffer >= SDL_arraysize(data->vertexBuffers)) {
-                data->currentVertexBuffer = 0;
             }
         }
     }
 
-    if (!vbo && !data->reportedVboProblem) {
+    /* cycle through a few VBOs so D3D has some time with the data before we replace it. */
+    if (vbo) {
+        data->currentVertexBuffer++;
+        if (data->currentVertexBuffer >= SDL_arraysize(data->vertexBuffers)) {
+            data->currentVertexBuffer = 0;
+        }
+    } else if (!data->reportedVboProblem) {
         SDL_LogError(SDL_LOG_CATEGORY_RENDER, "SDL failed to get a vertex buffer for this Direct3D 9 rendering batch!");
         SDL_LogError(SDL_LOG_CATEGORY_RENDER, "Dropping back to a slower method.");
         SDL_LogError(SDL_LOG_CATEGORY_RENDER, "This might be a brief hiccup, but if performance is bad, this is probably why.");
@@ -1708,8 +1703,6 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
     if (SDL_GetHintBoolean(SDL_HINT_RENDER_DIRECT3D_THREADSAFE, SDL_FALSE)) {
         device_flags |= D3DCREATE_MULTITHREADED;
     }
-
-    data->supportsStreamOffset = ((caps.DevCaps2 & D3DDEVCAPS2_STREAMOFFSET) == D3DDEVCAPS2_STREAMOFFSET);
 
     result = IDirect3D9_CreateDevice(data->d3d, data->adapter,
                                      D3DDEVTYPE_HAL,
