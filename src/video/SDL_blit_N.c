@@ -2418,8 +2418,8 @@ BlitNtoNKeyCopyAlpha(SDL_BlitInfo * info)
             /* *INDENT-OFF* */
             DUFFS_LOOP(
             {
-                Uint32 Pixel = ((*src32 & rgbmask) == ckey) ? *dst32 : *src32;
-                *dst32 = Pixel;
+                Uint32 Pixel_ = ((*src32 & rgbmask) == ckey) ? *dst32 : *src32;
+                *dst32 = Pixel_;
                 ++src32;
                 ++dst32;
             },
