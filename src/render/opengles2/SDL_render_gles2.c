@@ -951,7 +951,7 @@ SetDrawState(GLES2_RenderData *data, const SDL_RenderCommand *cmd, const GLES2_I
                 data->drawstate.texturing = SDL_FALSE;
             } else {
                 data->glEnableVertexAttribArray((GLenum) GLES2_ATTRIBUTE_TEXCOORD);
-                data->glVertexAttribPointer(GLES2_ATTRIBUTE_TEXCOORD, 2, GL_FLOAT, GL_FALSE, 0, (const GLvoid *) cmd->data.draw.first + (sizeof (GLfloat) * 8));
+                data->glVertexAttribPointer(GLES2_ATTRIBUTE_TEXCOORD, 2, GL_FLOAT, GL_FALSE, 0, (const GLvoid *) (cmd->data.draw.first + (sizeof (GLfloat) * 8)));
                 data->drawstate.texturing = SDL_TRUE;
             }
         }

@@ -30,6 +30,8 @@
 #include "SDL_hints.h"
 #include "SDL_loadso.h"
 #include "SDL_syswm.h"
+#include "SDL_log.h"
+#include "SDL_assert.h"
 #include "../SDL_sysrender.h"
 #include "../SDL_d3dmath.h"
 #include "../../video/windows/SDL_windowsvideo.h"
@@ -74,8 +76,8 @@ typedef struct
     IDirect3DSurface9 *currentRenderTarget;
     void* d3dxDLL;
     LPDIRECT3DPIXELSHADER9 shaders[NUM_SHADERS];
-    IDirect3DVertexBuffer9 vertexBuffers[8];
-    GLsizeiptr vertexBufferSize[8];
+    LPDIRECT3DVERTEXBUFFER9 vertexBuffers[8];
+    size_t vertexBufferSize[8];
     int currentVertexBuffer;
     SDL_bool reportedVboProblem;
     D3D_DrawStateCache drawstate;
@@ -282,63 +284,7 @@ D3D_InitRenderState(D3D_RenderData *data)
     data->beginScene = SDL_TRUE;
 }
 
-static int
-D3D_Reset(SDL_Renderer * renderer)
-{
-    D3D_RenderData *data = (D3D_RenderData *) renderer->driverdata;
-    HRESULT result;
-    SDL_Texture *texture;
-
-    /* Release the default render target before reset */
-    if (data->defaultRenderTarget) {
-        IDirect3DSurface9_Release(data->defaultRenderTarget);
-        data->defaultRenderTarget = NULL;
-    }
-    if (data->currentRenderTarget != NULL) {
-        IDirect3DSurface9_Release(data->currentRenderTarget);
-        data->currentRenderTarget = NULL;
-    }
-
-    /* Release application render targets */
-    for (texture = renderer->textures; texture; texture = texture->next) {
-        if (texture->access == SDL_TEXTUREACCESS_TARGET) {
-            D3D_DestroyTexture(renderer, texture);
-        } else {
-            D3D_RecreateTexture(renderer, texture);
-        }
-    }
-
-    result = IDirect3DDevice9_Reset(data->device, &data->pparams);
-    if (FAILED(result)) {
-        if (result == D3DERR_DEVICELOST) {
-            /* Don't worry about it, we'll reset later... */
-            return 0;
-        } else {
-            return D3D_SetError("Reset()", result);
-        }
-    }
-
-    /* Allocate application render targets */
-    for (texture = renderer->textures; texture; texture = texture->next) {
-        if (texture->access == SDL_TEXTUREACCESS_TARGET) {
-            D3D_CreateTexture(renderer, texture);
-        }
-    }
-
-    IDirect3DDevice9_GetRenderTarget(data->device, 0, &data->defaultRenderTarget);
-    D3D_InitRenderState(data);
-    D3D_SetRenderTargetInternal(renderer, renderer->target);
-    D3D_UpdateViewport(renderer);
-
-    /* Let the application know that render targets were reset */
-    {
-        SDL_Event event;
-        event.type = SDL_RENDER_TARGETS_RESET;
-        SDL_PushEvent(&event);
-    }
-
-    return 0;
-}
+static int D3D_Reset(SDL_Renderer * renderer);
 
 static int
 D3D_ActivateRenderer(SDL_Renderer * renderer)
@@ -933,8 +879,6 @@ D3D_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * tex
     minv = (float) srcrect->y / texture->h;
     maxv = (float) (srcrect->y + srcrect->h) / texture->h;
 
-    color = D3DCOLOR_ARGB(texture->a, texture->r, texture->g, texture->b);
-
     verts->x = minx;
     verts->y = miny;
     verts->z = 0.0f;
@@ -1141,7 +1085,7 @@ SetupTextureState(D3D_RenderData *data, SDL_Texture * texture, LPDIRECT3DPIXELSH
 }
 
 static int
-SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd, const D3D_ImageSource imgsrc)
+SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
 {
     const SDL_bool was_copy_ex = data->drawstate.is_copy_ex;
     const SDL_bool is_copy_ex = (cmd->command == SDL_RENDERCMD_COPY_EX);
@@ -1161,12 +1105,13 @@ SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd, const D3D_Image
             IDirect3DDevice9_SetTexture(data->device, 1, NULL);
             IDirect3DDevice9_SetTexture(data->device, 2, NULL);
         }
-        if (texture && RenderSetupTextureState(renderer, texture, &shader) < 0) {
+        if (texture && SetupTextureState(data, texture, &shader) < 0) {
             return -1;
         }
 
-        if (shader != data->drawstate.shader)
-            if (FAILED(IDirect3DDevice9_SetPixelShader(data->device, shader))) {
+        if (shader != data->drawstate.shader) {
+            const HRESULT result = IDirect3DDevice9_SetPixelShader(data->device, shader);
+            if (FAILED(result)) {
                 return D3D_SetError("IDirect3DDevice9_SetPixelShader()", result);
             }
             data->drawstate.shader = shader;
@@ -1181,14 +1126,14 @@ SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd, const D3D_Image
         } else {
             IDirect3DDevice9_SetRenderState(data->device, D3DRS_ALPHABLENDENABLE, TRUE);
             IDirect3DDevice9_SetRenderState(data->device, D3DRS_SRCBLEND,
-                                            GetBlendFunc(SDL_GetBlendModeSrcColorFactor(blendMode)));
+                                            GetBlendFunc(SDL_GetBlendModeSrcColorFactor(blend)));
             IDirect3DDevice9_SetRenderState(data->device, D3DRS_DESTBLEND,
-                                            GetBlendFunc(SDL_GetBlendModeDstColorFactor(blendMode)));
+                                            GetBlendFunc(SDL_GetBlendModeDstColorFactor(blend)));
             if (data->enableSeparateAlphaBlend) {
                 IDirect3DDevice9_SetRenderState(data->device, D3DRS_SRCBLENDALPHA,
-                                                GetBlendFunc(SDL_GetBlendModeSrcAlphaFactor(blendMode)));
+                                                GetBlendFunc(SDL_GetBlendModeSrcAlphaFactor(blend)));
                 IDirect3DDevice9_SetRenderState(data->device, D3DRS_DESTBLENDALPHA,
-                                                GetBlendFunc(SDL_GetBlendModeDstAlphaFactor(blendMode)));
+                                                GetBlendFunc(SDL_GetBlendModeDstAlphaFactor(blend)));
             }
         }
 
@@ -1263,16 +1208,16 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                 IDirect3DVertexBuffer9_Release(vbo);
             }
 
-            if (FAILED(IDirect3DVertexBuffer9_CreateVertexBuffer(vertsize, usage, fvf, D3DPOOL_DEFAULT, &vbo, NULL))) {
+            if (FAILED(IDirect3DDevice9_CreateVertexBuffer(data->device, vertsize, usage, fvf, D3DPOOL_MANAGED, &vbo, NULL))) {
                 vbo = NULL;
             }
             data->vertexBuffers[vboidx] = vbo;
-            data->vertex_buffer_size[vboidx] = vbo ? vertsize : 0;
+            data->vertexBufferSize[vboidx] = vbo ? vertsize : 0;
         }
 
         if (vbo) {
             void *ptr;
-            if (FAILED(IDirect3DVertexBuffer9_Lock(vbo, 0, vertsize, &ptr, D3DLOCK_DISCARD)) {
+            if (FAILED(IDirect3DVertexBuffer9_Lock(vbo, 0, vertsize, &ptr, D3DLOCK_DISCARD))) {
                 vbo = NULL;  /* oh well, we'll do immediate mode drawing.  :(  */
             } else {
                 SDL_memcpy(ptr, vertices, vertsize);
@@ -1321,7 +1266,7 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                 const SDL_Rect *rect = &cmd->data.cliprect.rect;
                 if (data->drawstate.cliprect_enabled != cmd->data.cliprect.enabled) {
                     data->drawstate.cliprect_enabled = cmd->data.cliprect.enabled;
-                    data->drawstate.cliprect_enabled_dirty = true;
+                    data->drawstate.cliprect_enabled_dirty = SDL_TRUE;
                 }
 
                 if (SDL_memcmp(&data->drawstate.cliprect, rect, sizeof (SDL_Rect)) != 0) {
@@ -1335,16 +1280,16 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                 const DWORD color = D3DCOLOR_ARGB(cmd->data.color.a, cmd->data.color.r, cmd->data.color.g, cmd->data.color.b);
                 const SDL_Rect *viewport = &data->drawstate.viewport;
                 const int backw = istarget ? renderer->target->w : data->pparams.BackBufferWidth;
-                const int backh = istarget ? renderer->target->h : data->pparams.backh;
+                const int backh = istarget ? renderer->target->h : data->pparams.BackBufferHeight;
 
-                if (data->drawstate.clipping_enabled) {
+                if (data->drawstate.cliprect_enabled) {
                     IDirect3DDevice9_SetRenderState(data->device, D3DRS_SCISSORTESTENABLE, FALSE);
                     data->drawstate.cliprect_enabled_dirty = SDL_TRUE;
                 }
 
                 /* Don't reset the viewport if we don't have to! */
-                if (!viewport->.x && !viewport->y && (viewport->w == backw) && (viewport->h == backh)) {
-                    result = IDirect3DDevice9_Clear(data->device, 0, NULL, D3DCLEAR_TARGET, color, 0.0f, 0);
+                if (!viewport->x && !viewport->y && (viewport->w == backw) && (viewport->h == backh)) {
+                    IDirect3DDevice9_Clear(data->device, 0, NULL, D3DCLEAR_TARGET, color, 0.0f, 0);
                 } else {
                     /* Clear is defined to clear the entire render target */
                     const D3DVIEWPORT9 wholeviewport = { 0, 0, backw, backh, 0.0f, 1.0f };
@@ -1371,9 +1316,9 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
             }
 
             case SDL_RENDERCMD_DRAW_LINES: {
-                const Vertex *verts = (Vertex *) (((Uint8 *) vertices) + first);
                 const size_t count = cmd->data.draw.count;
                 const size_t first = cmd->data.draw.first;
+                const Vertex *verts = (Vertex *) (((Uint8 *) vertices) + first);
 
                 /* DirectX 9 has the same line rasterization semantics as GDI,
                    so we need to close the endpoint of the line with a second draw call. */
@@ -1435,6 +1380,7 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
             }
 
             case SDL_RENDERCMD_COPY_EX: {
+                const size_t first = cmd->data.draw.first;
                 const Vertex *verts = (Vertex *) (((Uint8 *) vertices) + first);
                 const Vertex *transvert = verts + 4;
                 const float translatex = transvert->x;
@@ -1602,6 +1548,64 @@ D3D_DestroyRenderer(SDL_Renderer * renderer)
     SDL_free(renderer);
 }
 
+static int
+D3D_Reset(SDL_Renderer * renderer)
+{
+    D3D_RenderData *data = (D3D_RenderData *) renderer->driverdata;
+    HRESULT result;
+    SDL_Texture *texture;
+
+    /* Release the default render target before reset */
+    if (data->defaultRenderTarget) {
+        IDirect3DSurface9_Release(data->defaultRenderTarget);
+        data->defaultRenderTarget = NULL;
+    }
+    if (data->currentRenderTarget != NULL) {
+        IDirect3DSurface9_Release(data->currentRenderTarget);
+        data->currentRenderTarget = NULL;
+    }
+
+    /* Release application render targets */
+    for (texture = renderer->textures; texture; texture = texture->next) {
+        if (texture->access == SDL_TEXTUREACCESS_TARGET) {
+            D3D_DestroyTexture(renderer, texture);
+        } else {
+            D3D_RecreateTexture(renderer, texture);
+        }
+    }
+
+    result = IDirect3DDevice9_Reset(data->device, &data->pparams);
+    if (FAILED(result)) {
+        if (result == D3DERR_DEVICELOST) {
+            /* Don't worry about it, we'll reset later... */
+            return 0;
+        } else {
+            return D3D_SetError("Reset()", result);
+        }
+    }
+
+    /* Allocate application render targets */
+    for (texture = renderer->textures; texture; texture = texture->next) {
+        if (texture->access == SDL_TEXTUREACCESS_TARGET) {
+            D3D_CreateTexture(renderer, texture);
+        }
+    }
+
+    IDirect3DDevice9_GetRenderTarget(data->device, 0, &data->defaultRenderTarget);
+    D3D_InitRenderState(data);
+    D3D_SetRenderTargetInternal(renderer, renderer->target);
+    data->drawstate.viewport_dirty = SDL_TRUE;
+
+    /* Let the application know that render targets were reset */
+    {
+        SDL_Event event;
+        event.type = SDL_RENDER_TARGETS_RESET;
+        SDL_PushEvent(&event);
+    }
+
+    return 0;
+}
+
 SDL_Renderer *
 D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
 {
@@ -1708,7 +1712,7 @@ D3D_CreateRenderer(SDL_Window * window, Uint32 flags)
         device_flags |= D3DCREATE_MULTITHREADED;
     }
 
-    data->supportsStreamOffset = ((caps.Caps2 & D3DDEVCAPS2_STREAMOFFSET) == D3DDEVCAPS2_STREAMOFFSET);
+    data->supportsStreamOffset = ((caps.DevCaps2 & D3DDEVCAPS2_STREAMOFFSET) == D3DDEVCAPS2_STREAMOFFSET);
 
     result = IDirect3D9_CreateDevice(data->d3d, data->adapter,
                                      D3DDEVTYPE_HAL,
