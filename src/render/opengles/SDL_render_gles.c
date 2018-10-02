@@ -64,9 +64,15 @@ struct GLES_FBOList
 typedef struct
 {
     SDL_Rect viewport;
+    SDL_bool viewport_dirty;
     SDL_Texture *texture;
+    SDL_Texture *target;
+    int drawablew;
+    int drawableh;
     SDL_BlendMode blend;
+    SDL_bool cliprect_enabled_dirty;
     SDL_bool cliprect_enabled;
+    SDL_bool cliprect_dirty;
     SDL_Rect cliprect;
     SDL_bool texturing;
     Uint32 color;
@@ -692,6 +698,57 @@ static void
 SetDrawState(GLES_RenderData *data, const SDL_RenderCommand *cmd)
 {
     const SDL_BlendMode blend = cmd->data.draw.blend;
+    const Uint8 r = cmd->data.color.r;
+    const Uint8 g = cmd->data.color.g;
+    const Uint8 b = cmd->data.color.b;
+    const Uint8 a = cmd->data.color.a;
+    const Uint32 color = ((a << 24) | (r << 16) | (g << 8) | b);
+
+    if (color != data->drawstate.color) {
+        const GLfloat fr = ((GLfloat) r) * inv255f;
+        const GLfloat fg = ((GLfloat) g) * inv255f;
+        const GLfloat fb = ((GLfloat) b) * inv255f;
+        const GLfloat fa = ((GLfloat) a) * inv255f;
+        data->glColor4f(fr, fg, fb, fa);
+        data->drawstate.color = color;
+    }
+
+    if (data->drawstate.viewport_dirty) {
+        const SDL_Rect *viewport = &data->drawstate.viewport;
+        const SDL_bool istarget = (data->drawstate.target != NULL);
+        data->glMatrixMode(GL_PROJECTION);
+        data->glLoadIdentity();
+        data->glViewport(viewport->x,
+                         istarget ? viewport->y : (data->drawstate.drawableh - viewport->y - viewport->h),
+                         viewport->w, viewport->h);
+        if (viewport->w && viewport->h) {
+            data->glOrthof((GLfloat) 0, (GLfloat) viewport->w,
+                           (GLfloat) istarget ? 0 : viewport->h,
+                           (GLfloat) istarget ? viewport->h : 0,
+                           0.0, 1.0);
+        }
+        data->glMatrixMode(GL_MODELVIEW);
+        data->drawstate.viewport_dirty = SDL_FALSE;
+    }
+
+    if (data->drawstate.cliprect_enabled_dirty) {
+        if (data->drawstate.cliprect_enabled) {
+            data->glEnable(GL_SCISSOR_TEST);
+        } else {
+            data->glDisable(GL_SCISSOR_TEST);
+        }
+        data->drawstate.cliprect_enabled_dirty = SDL_FALSE;
+    }
+
+    if (data->drawstate.cliprect_enabled && data->drawstate.cliprect_dirty) {
+        const SDL_Rect *viewport = &data->drawstate.viewport;
+        const SDL_Rect *rect = &data->drawstate.cliprect;
+        const SDL_bool istarget = (data->drawstate.target != NULL);
+        data->glScissor(viewport->x + rect->x,
+                        istarget ? viewport->y + rect->y : data->drawstate.drawableh - viewport->y - rect->y - rect->h,
+                        rect->w, rect->h);
+        data->drawstate.cliprect_dirty = SDL_FALSE;
+    }
 
     if (blend != data->drawstate.blend) {
         if (blend == SDL_BLENDMODE_NONE) {
@@ -747,52 +804,29 @@ static int
 GLES_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
 {
     GLES_RenderData *data = (GLES_RenderData *) renderer->driverdata;
-    int drawablew = 0, drawableh = 0;
-    const SDL_bool istarget = renderer->target != NULL;
     size_t i;
 
     if (GLES_ActivateRenderer(renderer) < 0) {
         return -1;
     }
 
-    if (!istarget) {
-        SDL_GL_GetDrawableSize(renderer->window, &drawablew, &drawableh);
+    data->drawstate.target = renderer->target;
+
+    if (!renderer->target) {
+        SDL_GL_GetDrawableSize(renderer->window, &data->drawstate.drawablew, &data->drawstate.drawableh);
     }
 
     while (cmd) {
         switch (cmd->command) {
             case SDL_RENDERCMD_SETDRAWCOLOR: {
-                const Uint8 r = cmd->data.color.r;
-                const Uint8 g = cmd->data.color.g;
-                const Uint8 b = cmd->data.color.b;
-                const Uint8 a = cmd->data.color.a;
-                const Uint32 color = ((a << 24) | (r << 16) | (g << 8) | b);
-                if (color != data->drawstate.color) {
-                    data->glColor4f((GLfloat) r * inv255f,
-                                    (GLfloat) g * inv255f,
-                                    (GLfloat) b * inv255f,
-                                    (GLfloat) a * inv255f);
-                    data->drawstate.color = color;
-                }
-                break;
+                break;  /* not used in this render backend. */
             }
 
             case SDL_RENDERCMD_SETVIEWPORT: {
                 SDL_Rect *viewport = &data->drawstate.viewport;
                 if (SDL_memcmp(viewport, &cmd->data.viewport.rect, sizeof (SDL_Rect)) != 0) {
                     SDL_memcpy(viewport, &cmd->data.viewport.rect, sizeof (SDL_Rect));
-                    data->glMatrixMode(GL_PROJECTION);
-                    data->glLoadIdentity();
-                    data->glViewport(viewport->x,
-                            istarget ? viewport->y : (drawableh - viewport->y - viewport->h),
-                            viewport->w, viewport->h);
-                    if (viewport->w && viewport->h) {
-                        data->glOrthof((GLfloat) 0, (GLfloat) viewport->w,
-                                      (GLfloat) istarget ? 0 : viewport->h,
-                                      (GLfloat) istarget ? viewport->h : 0,
-                                      0.0, 1.0);
-                    }
-                    data->glMatrixMode(GL_MODELVIEW);
+                    data->drawstate.viewport_dirty = SDL_TRUE;
                 }
                 break;
             }
@@ -801,18 +835,11 @@ GLES_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
                 const SDL_Rect *rect = &cmd->data.cliprect.rect;
                 if (data->drawstate.cliprect_enabled != cmd->data.cliprect.enabled) {
                     data->drawstate.cliprect_enabled = cmd->data.cliprect.enabled;
-                    if (!data->drawstate.cliprect_enabled) {
-                        data->glDisable(GL_SCISSOR_TEST);
-                    } else {
-                        const SDL_Rect *viewport = &data->drawstate.viewport;
-                        data->glEnable(GL_SCISSOR_TEST);
-                        if (SDL_memcmp(&data->drawstate.cliprect, rect, sizeof (SDL_Rect)) != 0) {
-                            data->glScissor(viewport->x + rect->x,
-                                            istarget ? viewport->y + rect->y : drawableh - viewport->y - rect->y - rect->h,
-                                            rect->w, rect->h);
-                            SDL_memcpy(&data->drawstate.cliprect, rect, sizeof (SDL_Rect));
-                        }
-                    }
+                    data->drawstate.cliprect_enabled_dirty = SDL_TRUE;
+                }
+                if (SDL_memcmp(&data->drawstate.cliprect, rect, sizeof (SDL_Rect)) != 0) {
+                    SDL_memcpy(&data->drawstate.cliprect, rect, sizeof (SDL_Rect));
+                    data->drawstate.cliprect_dirty = SDL_TRUE;
                 }
                 break;
             }
@@ -834,13 +861,11 @@ GLES_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
 
                 if (data->drawstate.cliprect_enabled) {
                     data->glDisable(GL_SCISSOR_TEST);
+                    data->drawstate.cliprect_enabled_dirty = SDL_TRUE;
                 }
 
                 data->glClear(GL_COLOR_BUFFER_BIT);
 
-                if (data->drawstate.cliprect_enabled) {
-                    data->glEnable(GL_SCISSOR_TEST);
-                }
                 break;
             }
 
