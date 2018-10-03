@@ -154,6 +154,7 @@ typedef struct
     SDL_Rect currentViewport;
     int currentViewportRotation;
     SDL_bool viewportDirty;
+    Float4X4 identity;
 } D3D11_RenderData;
 
 
@@ -215,6 +216,8 @@ SDLPixelFormatToDXGIFormat(Uint32 sdlFormat)
             return DXGI_FORMAT_UNKNOWN;
     }
 }
+
+static void D3D11_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture);
 
 static void
 D3D11_ReleaseAll(SDL_Renderer * renderer)
@@ -338,7 +341,7 @@ static D3D11_BLEND_OP GetBlendEquation(SDL_BlendOperation operation)
     }
 }
 
-static SDL_bool
+static ID3D11BlendState *
 D3D11_CreateBlendState(SDL_Renderer * renderer, SDL_BlendMode blendMode)
 {
     D3D11_RenderData *data = (D3D11_RenderData *) renderer->driverdata;
@@ -367,21 +370,21 @@ D3D11_CreateBlendState(SDL_Renderer * renderer, SDL_BlendMode blendMode)
     result = ID3D11Device_CreateBlendState(data->d3dDevice, &blendDesc, &blendState);
     if (FAILED(result)) {
         WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateBlendState"), result);
-        return SDL_FALSE;
+        return NULL;
     }
 
     blendModes = (D3D11_BlendMode *)SDL_realloc(data->blendModes, (data->blendModesCount + 1) * sizeof(*blendModes));
     if (!blendModes) {
         SAFE_RELEASE(blendState);
         SDL_OutOfMemory();
-        return SDL_FALSE;
+        return NULL;
     }
     blendModes[data->blendModesCount].blendMode = blendMode;
     blendModes[data->blendModesCount].blendState = blendState;
     data->blendModes = blendModes;
     ++data->blendModesCount;
 
-    return SDL_TRUE;
+    return blendState;
 }
 
 /* Create resources that depend on the device. */
@@ -825,6 +828,45 @@ done:
     return result;
 }
 
+static void
+D3D11_ReleaseMainRenderTargetView(SDL_Renderer * renderer)
+{
+    D3D11_RenderData *data = (D3D11_RenderData *)renderer->driverdata;
+    ID3D11DeviceContext_OMSetRenderTargets(data->d3dContext, 0, NULL, NULL);
+    SAFE_RELEASE(data->mainRenderTargetView);
+}
+
+static HRESULT D3D11_UpdateForWindowSizeChange(SDL_Renderer * renderer);
+
+
+HRESULT
+D3D11_HandleDeviceLost(SDL_Renderer * renderer)
+{
+    HRESULT result = S_OK;
+
+    D3D11_ReleaseAll(renderer);
+
+    result = D3D11_CreateDeviceResources(renderer);
+    if (FAILED(result)) {
+        /* D3D11_CreateDeviceResources will set the SDL error */
+        return result;
+    }
+
+    result = D3D11_UpdateForWindowSizeChange(renderer);
+    if (FAILED(result)) {
+        /* D3D11_UpdateForWindowSizeChange will set the SDL error */
+        return result;
+    }
+
+    /* Let the application know that the device has been reset */
+    {
+        SDL_Event event;
+        event.type = SDL_RENDER_DEVICE_RESET;
+        SDL_PushEvent(&event);
+    }
+
+    return S_OK;
+}
 
 /* Initialize all resources that change when the window's size changes. */
 static HRESULT
@@ -939,35 +981,6 @@ static HRESULT
 D3D11_UpdateForWindowSizeChange(SDL_Renderer * renderer)
 {
     return D3D11_CreateWindowSizeDependentResources(renderer);
-}
-
-HRESULT
-D3D11_HandleDeviceLost(SDL_Renderer * renderer)
-{
-    HRESULT result = S_OK;
-
-    D3D11_ReleaseAll(renderer);
-
-    result = D3D11_CreateDeviceResources(renderer);
-    if (FAILED(result)) {
-        /* D3D11_CreateDeviceResources will set the SDL error */
-        return result;
-    }
-
-    result = D3D11_UpdateForWindowSizeChange(renderer);
-    if (FAILED(result)) {
-        /* D3D11_UpdateForWindowSizeChange will set the SDL error */
-        return result;
-    }
-
-    /* Let the application know that the device has been reset */
-    {
-        SDL_Event event;
-        event.type = SDL_RENDER_DEVICE_RESET;
-        SDL_PushEvent(&event);
-    }
-
-    return S_OK;
 }
 
 void
@@ -1551,13 +1564,13 @@ D3D11_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL
     for (i = 0; i < count; i++) {
         verts->pos.x = points[i].x + 0.5f;
         verts->pos.y = points[i].y + 0.5f;
-        verts->pos.z = 0.0f
-        verts->tex.u = 0.0f
-        verts->tex.v = 0.0f
-        verts->color.r = r;
-        verts->color.g = g;
-        verts->color.b = b;
-        verts->color.a = a;
+        verts->pos.z = 0.0f;
+        verts->tex.x = 0.0f;
+        verts->tex.y = 0.0f;
+        verts->color.x = r;
+        verts->color.y = g;
+        verts->color.z = b;
+        verts->color.w = a;
         verts++;
     }
 
@@ -1581,46 +1594,46 @@ D3D11_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_
     for (i = 0; i < count; i++) {
         verts->pos.x = rects[i].x;
         verts->pos.y = rects[i].y;
-        verts->pos.z = 0.0f
-        verts->tex.u = 0.0f
-        verts->tex.v = 0.0f
-        verts->color.r = r;
-        verts->color.g = g;
-        verts->color.b = b;
-        verts->color.a = a;
+        verts->pos.z = 0.0f;
+        verts->tex.x = 0.0f;
+        verts->tex.y = 0.0f;
+        verts->color.x = r;
+        verts->color.y = g;
+        verts->color.z = b;
+        verts->color.w = a;
         verts++;
 
         verts->pos.x = rects[i].x;
         verts->pos.y = rects[i].y + rects[i].h;
-        verts->pos.z = 0.0f
-        verts->tex.u = 0.0f
-        verts->tex.v = 0.0f
-        verts->color.r = r;
-        verts->color.g = g;
-        verts->color.b = b;
-        verts->color.a = a;
+        verts->pos.z = 0.0f;
+        verts->tex.x = 0.0f;
+        verts->tex.y = 0.0f;
+        verts->color.x = r;
+        verts->color.y = g;
+        verts->color.z = b;
+        verts->color.w = a;
         verts++;
 
         verts->pos.x = rects[i].x + rects[i].w;
         verts->pos.y = rects[i].y;
-        verts->pos.z = 0.0f
-        verts->tex.u = 0.0f
-        verts->tex.v = 0.0f
-        verts->color.r = r;
-        verts->color.g = g;
-        verts->color.b = b;
-        verts->color.a = a;
+        verts->pos.z = 0.0f;
+        verts->tex.x = 0.0f;
+        verts->tex.y = 0.0f;
+        verts->color.x = r;
+        verts->color.y = g;
+        verts->color.z = b;
+        verts->color.w = a;
         verts++;
 
         verts->pos.x = rects[i].x + rects[i].w;
         verts->pos.y = rects[i].y + rects[i].h;
-        verts->pos.z = 0.0f
-        verts->tex.u = 0.0f
-        verts->tex.v = 0.0f
-        verts->color.r = r;
-        verts->color.g = g;
-        verts->color.b = b;
-        verts->color.a = a;
+        verts->pos.z = 0.0f;
+        verts->tex.x = 0.0f;
+        verts->tex.y = 0.0f;
+        verts->color.x = r;
+        verts->color.y = g;
+        verts->color.z = b;
+        verts->color.w = a;
         verts++;
     }
 
@@ -1631,7 +1644,7 @@ static int
 D3D11_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
              const SDL_Rect * srcrect, const SDL_FRect * dstrect)
 {
-    VertexPositionColor *verts = (VertexPositionColor *) SDL_AllocateRenderVertices(renderer, count * 4 * sizeof (VertexPositionColor), 0, &cmd->data.draw.first);
+    VertexPositionColor *verts = (VertexPositionColor *) SDL_AllocateRenderVertices(renderer, 4 * sizeof (VertexPositionColor), 0, &cmd->data.draw.first);
     const float r = (float)(cmd->data.draw.r / 255.0f);
     const float g = (float)(cmd->data.draw.g / 255.0f);
     const float b = (float)(cmd->data.draw.b / 255.0f);
@@ -1650,10 +1663,10 @@ D3D11_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * t
     verts->pos.z = 0.0f;
     verts->tex.x = minu;
     verts->tex.y = minv;
-    verts->color.r = r;
-    verts->color.g = g;
-    verts->color.b = b;
-    verts->color.a = a;
+    verts->color.x = r;
+    verts->color.y = g;
+    verts->color.z = b;
+    verts->color.w = a;
     verts++;
 
     verts->pos.x = dstrect->x;
@@ -1661,10 +1674,10 @@ D3D11_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * t
     verts->pos.z = 0.0f;
     verts->tex.x = minu;
     verts->tex.y = maxv;
-    verts->color.r = r;
-    verts->color.g = g;
-    verts->color.b = b;
-    verts->color.a = a;
+    verts->color.x = r;
+    verts->color.y = g;
+    verts->color.z = b;
+    verts->color.w = a;
     verts++;
 
     verts->pos.x = dstrect->x + dstrect->w;
@@ -1672,10 +1685,10 @@ D3D11_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * t
     verts->pos.z = 0.0f;
     verts->tex.x = maxu;
     verts->tex.y = minv;
-    verts->color.r = r;
-    verts->color.g = g;
-    verts->color.b = b;
-    verts->color.a = a;
+    verts->color.x = r;
+    verts->color.y = g;
+    verts->color.z = b;
+    verts->color.w = a;
     verts++;
 
     verts->pos.x = dstrect->x + dstrect->w;
@@ -1683,10 +1696,10 @@ D3D11_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * t
     verts->pos.z = 0.0f;
     verts->tex.x = maxu;
     verts->tex.y = maxv;
-    verts->color.r = r;
-    verts->color.g = g;
-    verts->color.b = b;
-    verts->color.a = a;
+    verts->color.x = r;
+    verts->color.y = g;
+    verts->color.z = b;
+    verts->color.w = a;
     verts++;
 
     return 0;
@@ -1697,7 +1710,7 @@ D3D11_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture *
                const SDL_Rect * srcrect, const SDL_FRect * dstrect,
                const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip)
 {
-    VertexPositionColor *verts = (VertexPositionColor *) SDL_AllocateRenderVertices(renderer, count * 5 * sizeof (VertexPositionColor), 0, &cmd->data.draw.first);
+    VertexPositionColor *verts = (VertexPositionColor *) SDL_AllocateRenderVertices(renderer, 5 * sizeof (VertexPositionColor), 0, &cmd->data.draw.first);
     const float r = (float)(cmd->data.draw.r / 255.0f);
     const float g = (float)(cmd->data.draw.g / 255.0f);
     const float b = (float)(cmd->data.draw.b / 255.0f);
@@ -1713,7 +1726,6 @@ D3D11_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture *
         maxu = (float) srcrect->x / texture->w;
     }
 
-    }
     if (flip & SDL_FLIP_VERTICAL) {
         minv = (float) srcrect->y / texture->h;
         maxv = (float) (srcrect->y + srcrect->h) / texture->h;
@@ -1732,10 +1744,10 @@ D3D11_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture *
     verts->pos.z = 0.0f;
     verts->tex.x = minu;
     verts->tex.y = minv;
-    verts->color.r = r;
-    verts->color.g = g;
-    verts->color.b = b;
-    verts->color.a = a;
+    verts->color.x = r;
+    verts->color.y = g;
+    verts->color.z = b;
+    verts->color.w = a;
     verts++;
 
     verts->pos.x = minx;
@@ -1743,10 +1755,10 @@ D3D11_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture *
     verts->pos.z = 0.0f;
     verts->tex.x = minu;
     verts->tex.y = maxv;
-    verts->color.r = r;
-    verts->color.g = g;
-    verts->color.b = b;
-    verts->color.a = a;
+    verts->color.x = r;
+    verts->color.y = g;
+    verts->color.z = b;
+    verts->color.w = a;
     verts++;
 
     verts->pos.x = maxx;
@@ -1754,10 +1766,10 @@ D3D11_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture *
     verts->pos.z = 0.0f;
     verts->tex.x = maxu;
     verts->tex.y = minv;
-    verts->color.r = r;
-    verts->color.g = g;
-    verts->color.b = b;
-    verts->color.a = a;
+    verts->color.x = r;
+    verts->color.y = g;
+    verts->color.z = b;
+    verts->color.w = a;
     verts++;
 
     verts->pos.x = maxx;
@@ -1765,21 +1777,21 @@ D3D11_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture *
     verts->pos.z = 0.0f;
     verts->tex.x = maxu;
     verts->tex.y = maxv;
-    verts->color.r = r;
-    verts->color.g = g;
-    verts->color.b = b;
-    verts->color.a = a;
+    verts->color.x = r;
+    verts->color.y = g;
+    verts->color.z = b;
+    verts->color.w = a;
     verts++;
 
     verts->pos.x = dstrect->x + center->x;  /* X translation */
     verts->pos.y = dstrect->y + center->y;  /* Y translation */
     verts->pos.z = (float)(M_PI * (float) angle / 180.0f);  /* rotation */
-    verts->tex.u = 0.0f;
-    verts->tex.v = 0.0f;
-    verts->color.r = 0;
-    verts->color.g = 0;
-    verts->color.b = 0;
-    verts->color.a = 0;
+    verts->tex.x = 0.0f;
+    verts->tex.y = 0.0f;
+    verts->color.x = 0;
+    verts->color.y = 0;
+    verts->color.z = 0;
+    verts->color.w = 0;
     verts++;
 
     return 0;
@@ -1947,6 +1959,18 @@ D3D11_UpdateViewport(SDL_Renderer * renderer)
     return 0;
 }
 
+static ID3D11RenderTargetView *
+D3D11_GetCurrentRenderTargetView(SDL_Renderer * renderer)
+{
+    D3D11_RenderData *data = (D3D11_RenderData *)renderer->driverdata;
+    if (data->currentOffscreenRenderTargetView) {
+        return data->currentOffscreenRenderTargetView;
+    }
+    else {
+        return data->mainRenderTargetView;
+    }
+}
+
 static int
 D3D11_SetDrawState(SDL_Renderer * renderer, const SDL_RenderCommand *cmd, ID3D11PixelShader * shader,
                      const int numShaderResources, ID3D11ShaderResourceView ** shaderResources,
@@ -1954,8 +1978,7 @@ D3D11_SetDrawState(SDL_Renderer * renderer, const SDL_RenderCommand *cmd, ID3D11
 
 {
     D3D11_RenderData *rendererData = (D3D11_RenderData *)renderer->driverdata;
-    static const Float4X4 identity = MatrixIdentity();
-    const Float4X4 *newmatrix = matrix ? matrix : &identity;
+    const Float4X4 *newmatrix = matrix ? matrix : &rendererData->identity;
     ID3D11RasterizerState *rasterizerState;
     ID3D11RenderTargetView *renderTargetView = D3D11_GetCurrentRenderTargetView(renderer);
     ID3D11ShaderResourceView *shaderResource;
@@ -1984,7 +2007,7 @@ D3D11_SetDrawState(SDL_Renderer * renderer, const SDL_RenderCommand *cmd, ID3D11
                 /* D3D11_GetViewportAlignedD3DRect will have set the SDL error */
                 return -1;
             }
-            ID3D11DeviceContext_RSSetScissorRects(data->d3dContext, 1, &scissorRect);
+            ID3D11DeviceContext_RSSetScissorRects(rendererData->d3dContext, 1, &scissorRect);
         }
         rendererData->cliprectDirty = SDL_FALSE;
     }
@@ -2008,11 +2031,10 @@ D3D11_SetDrawState(SDL_Renderer * renderer, const SDL_RenderCommand *cmd, ID3D11
             }
         }
         if (!blendState) {
-            if (D3D11_CreateBlendState(renderer, blendMode)) {
-                /* Successfully created the blend state, try again */
-                D3D11_RenderSetBlendMode(renderer, blendMode);
+            blendState = D3D11_CreateBlendState(renderer, blendMode);
+            if (!blendState) {
+                return -1;
             }
-            return;
         }
     }
     if (blendState != rendererData->currentBlendState) {
@@ -2038,13 +2060,13 @@ D3D11_SetDrawState(SDL_Renderer * renderer, const SDL_RenderCommand *cmd, ID3D11
         rendererData->currentSampler = sampler;
     }
 
-    if (SDL_memcmp(&data->vertexShaderConstantsData.model, newmatrix, sizeof (*newmatrix)) != 0) {
-        SDL_memcpy(&data->vertexShaderConstantsData.model, newmatrix, sizeof (*newmatrix));
-        ID3D11DeviceContext_UpdateSubresource(data->d3dContext,
-            (ID3D11Resource *)data->vertexShaderConstants,
+    if (SDL_memcmp(&rendererData->vertexShaderConstantsData.model, newmatrix, sizeof (*newmatrix)) != 0) {
+        SDL_memcpy(&rendererData->vertexShaderConstantsData.model, newmatrix, sizeof (*newmatrix));
+        ID3D11DeviceContext_UpdateSubresource(rendererData->d3dContext,
+            (ID3D11Resource *)rendererData->vertexShaderConstants,
             0,
             NULL,
-            &data->vertexShaderConstantsData,
+            &rendererData->vertexShaderConstantsData,
             0,
             0
             );
@@ -2123,16 +2145,16 @@ D3D11_SetCopyState(SDL_Renderer * renderer, const SDL_RenderCommand *cmd, const 
 
     }
 
-    return D3D11_SetDrawState(renderer, cmd,  renderer, rendererData->pixelShaders[SHADER_RGB],
+    return D3D11_SetDrawState(renderer, cmd, rendererData->pixelShaders[SHADER_RGB],
                               1, &textureData->mainTextureResourceView, textureSampler, matrix);
 }
 
 static void
-D3D11_DrawPrimitives(SDL_Renderer * renderer, D3D11_PRIMITIVE_TOPOLOGY primitiveTopology, const UINT vertexStart, const UINT vertexCount)
+D3D11_DrawPrimitives(SDL_Renderer * renderer, D3D11_PRIMITIVE_TOPOLOGY primitiveTopology, const size_t vertexStart, const size_t vertexCount)
 {
     D3D11_RenderData *rendererData = (D3D11_RenderData *) renderer->driverdata;
     ID3D11DeviceContext_IASetPrimitiveTopology(rendererData->d3dContext, primitiveTopology);
-    ID3D11DeviceContext_Draw(rendererData->d3dContext, vertexCount, vertexStart);
+    ID3D11DeviceContext_Draw(rendererData->d3dContext, (UINT) vertexCount, (UINT) vertexStart);
 }
 
 static int
@@ -2161,7 +2183,7 @@ D3D11_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 SDL_Rect *viewport = &rendererData->currentViewport;
                 if (SDL_memcmp(viewport, &cmd->data.viewport.rect, sizeof (SDL_Rect)) != 0) {
                     SDL_memcpy(viewport, &cmd->data.viewport.rect, sizeof (SDL_Rect));
-                    data->drawstate.viewportDirty = SDL_TRUE;
+                    rendererData->viewportDirty = SDL_TRUE;
                 }
                 break;
             }
@@ -2186,7 +2208,7 @@ D3D11_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                     (cmd->data.color.b / 255.0f),
                     (cmd->data.color.a / 255.0f)
                 };
-                ID3D11DeviceContext_ClearRenderTargetView(data->d3dContext, D3D11_GetCurrentRenderTargetView(renderer), colorRGBA);
+                ID3D11DeviceContext_ClearRenderTargetView(rendererData->d3dContext, D3D11_GetCurrentRenderTargetView(renderer), colorRGBA);
                 break;
             }
 
@@ -2206,7 +2228,7 @@ D3D11_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 const VertexPositionColor *verts = (VertexPositionColor *) (((Uint8 *) vertices) + first);
                 D3D11_SetDrawState(renderer, cmd, rendererData->pixelShaders[SHADER_SOLID], 0, NULL, NULL, NULL);
                 D3D11_DrawPrimitives(renderer, D3D11_PRIMITIVE_TOPOLOGY_LINESTRIP, start, count);
-                if (verts[0].x != verts[count - 1].x || verts[0].y != verts[count - 1].y) {
+                if (verts[0].pos.x != verts[count - 1].pos.x || verts[0].pos.y != verts[count - 1].pos.y) {
                     D3D11_DrawPrimitives(renderer, D3D11_PRIMITIVE_TOPOLOGY_POINTLIST, start + (count-1), 1);
                 }
                 break;
@@ -2227,7 +2249,7 @@ D3D11_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
             case SDL_RENDERCMD_COPY: {
                 const size_t first = cmd->data.draw.first;
                 const size_t start = first / sizeof (VertexPositionColor);
-                D3D11_SetCopyState(data, cmd, NULL);
+                D3D11_SetCopyState(renderer, cmd, NULL);
                 D3D11_DrawPrimitives(renderer, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, start, 4);
                 break;
             }
@@ -2236,12 +2258,12 @@ D3D11_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 const size_t first = cmd->data.draw.first;
                 const size_t start = first / sizeof (VertexPositionColor);
                 const VertexPositionColor *verts = (VertexPositionColor *) (((Uint8 *) vertices) + first);
-                const Vertex *transvert = verts + 4;
+                const VertexPositionColor *transvert = verts + 4;
                 const float translatex = transvert->pos.x;
                 const float translatey = transvert->pos.y;
                 const float rotation = transvert->pos.z;
                 const Float4X4 matrix = MatrixMultiply(MatrixRotationZ(rotation), MatrixTranslation(translatex, translatey, 0));
-                D3D11_SetCopyState(data, cmd, &matrix);
+                D3D11_SetCopyState(renderer, cmd, &matrix);
                 D3D11_DrawPrimitives(renderer, D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP, start, 4);
                 break;
             }
@@ -2254,26 +2276,6 @@ D3D11_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
     }
 
     return 0;
-}
-
-
-static void
-D3D11_ReleaseMainRenderTargetView(SDL_Renderer * renderer)
-{
-    D3D11_RenderData *data = (D3D11_RenderData *)renderer->driverdata;
-    ID3D11DeviceContext_OMSetRenderTargets(data->d3dContext, 0, NULL, NULL);
-    SAFE_RELEASE(data->mainRenderTargetView);
-}
-
-static ID3D11RenderTargetView *
-D3D11_GetCurrentRenderTargetView(SDL_Renderer * renderer)
-{
-    D3D11_RenderData *data = (D3D11_RenderData *) renderer->driverdata;
-    if (data->currentOffscreenRenderTargetView) {
-        return data->currentOffscreenRenderTargetView;
-    } else {
-        return data->mainRenderTargetView;
-    }
 }
 
 static int
@@ -2457,6 +2459,8 @@ D3D11_CreateRenderer(SDL_Window * window, Uint32 flags)
         SDL_OutOfMemory();
         return NULL;
     }
+
+    data->identity = MatrixIdentity();
 
     renderer->WindowEvent = D3D11_WindowEvent;
     renderer->SupportsBlendMode = D3D11_SupportsBlendMode;
