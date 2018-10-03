@@ -123,7 +123,8 @@ typedef struct
     ID3D11RenderTargetView *mainRenderTargetView;
     ID3D11RenderTargetView *currentOffscreenRenderTargetView;
     ID3D11InputLayout *inputLayout;
-    ID3D11Buffer *vertexBuffer;
+    ID3D11Buffer *vertexBuffers[8];
+    size_t vertexBufferSizes[8];
     ID3D11VertexShader *vertexShader;
     ID3D11PixelShader *pixelShaders[NUM_SHADERS];
     int blendModesCount;
@@ -155,6 +156,7 @@ typedef struct
     int currentViewportRotation;
     SDL_bool viewportDirty;
     Float4X4 identity;
+    int currentVertexBuffer;
 } D3D11_RenderData;
 
 
@@ -242,7 +244,9 @@ D3D11_ReleaseAll(SDL_Renderer * renderer)
         SAFE_RELEASE(data->mainRenderTargetView);
         SAFE_RELEASE(data->currentOffscreenRenderTargetView);
         SAFE_RELEASE(data->inputLayout);
-        SAFE_RELEASE(data->vertexBuffer);
+        for (i = 0; i < SDL_arraysize(data->vertexBuffers); ++i) {
+            SAFE_RELEASE(data->vertexBuffers[i]);
+        }
         SAFE_RELEASE(data->vertexShader);
         for (i = 0; i < SDL_arraysize(data->pixelShaders); ++i) {
             SAFE_RELEASE(data->pixelShaders[i]);
@@ -1798,28 +1802,18 @@ D3D11_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture *
 }
 
 
-/* !!! FIXME: rotate through a few vertex buffers so the GPU has time to finish using them */
 static int
 D3D11_UpdateVertexBuffer(SDL_Renderer *renderer,
                          const void * vertexData, size_t dataSizeInBytes)
 {
     D3D11_RenderData *rendererData = (D3D11_RenderData *) renderer->driverdata;
-    D3D11_BUFFER_DESC vertexBufferDesc;
     HRESULT result = S_OK;
-    D3D11_SUBRESOURCE_DATA vertexBufferData;
-    const UINT stride = sizeof(VertexPositionColor);
-    const UINT offset = 0;
+    const int vbidx = rendererData->currentVertexBuffer;
 
-    if (rendererData->vertexBuffer) {
-        ID3D11Buffer_GetDesc(rendererData->vertexBuffer, &vertexBufferDesc);
-    } else {
-        SDL_zero(vertexBufferDesc);
-    }
-
-    if (rendererData->vertexBuffer && vertexBufferDesc.ByteWidth >= dataSizeInBytes) {
+    if (rendererData->vertexBuffers[vbidx] && rendererData->vertexBufferSizes[vbidx] >= dataSizeInBytes) {
         D3D11_MAPPED_SUBRESOURCE mappedResource;
         result = ID3D11DeviceContext_Map(rendererData->d3dContext,
-            (ID3D11Resource *)rendererData->vertexBuffer,
+            (ID3D11Resource *)rendererData->vertexBuffers[vbidx],
             0,
             D3D11_MAP_WRITE_DISCARD,
             0,
@@ -1830,10 +1824,16 @@ D3D11_UpdateVertexBuffer(SDL_Renderer *renderer,
             return -1;
         }
         SDL_memcpy(mappedResource.pData, vertexData, dataSizeInBytes);
-        ID3D11DeviceContext_Unmap(rendererData->d3dContext, (ID3D11Resource *)rendererData->vertexBuffer, 0);
+        ID3D11DeviceContext_Unmap(rendererData->d3dContext, (ID3D11Resource *)rendererData->vertexBuffers[vbidx], 0);
     } else {
-        SAFE_RELEASE(rendererData->vertexBuffer);
+        D3D11_BUFFER_DESC vertexBufferDesc;
+        D3D11_SUBRESOURCE_DATA vertexBufferData;
+        const UINT stride = sizeof(VertexPositionColor);
+        const UINT offset = 0;
 
+        SAFE_RELEASE(rendererData->vertexBuffers[vbidx]);
+
+        SDL_zero(vertexBufferDesc);
         vertexBufferDesc.ByteWidth = (UINT) dataSizeInBytes;
         vertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
         vertexBufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
@@ -1847,7 +1847,7 @@ D3D11_UpdateVertexBuffer(SDL_Renderer *renderer,
         result = ID3D11Device_CreateBuffer(rendererData->d3dDevice,
             &vertexBufferDesc,
             &vertexBufferData,
-            &rendererData->vertexBuffer
+            &rendererData->vertexBuffers[vbidx]
             );
         if (FAILED(result)) {
             WIN_SetErrorFromHRESULT(SDL_COMPOSE_ERROR("ID3D11Device1::CreateBuffer [vertex buffer]"), result);
@@ -1857,10 +1857,15 @@ D3D11_UpdateVertexBuffer(SDL_Renderer *renderer,
         ID3D11DeviceContext_IASetVertexBuffers(rendererData->d3dContext,
             0,
             1,
-            &rendererData->vertexBuffer,
+            &rendererData->vertexBuffers[vbidx],
             &stride,
             &offset
             );
+    }
+
+    rendererData->currentVertexBuffer++;
+    if (rendererData->currentVertexBuffer >= SDL_arraysize(rendererData->vertexBuffers)) {
+        rendererData->currentVertexBuffer = 0;
     }
 
     return 0;
