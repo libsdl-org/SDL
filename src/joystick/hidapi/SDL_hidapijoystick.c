@@ -25,6 +25,7 @@
 #include "SDL_endian.h"
 #include "SDL_hints.h"
 #include "SDL_log.h"
+#include "SDL_mutex.h"
 #include "SDL_thread.h"
 #include "SDL_timer.h"
 #include "SDL_joystick.h"
@@ -54,6 +55,7 @@ struct joystick_hwdata
     SDL_HIDAPI_DeviceDriver *driver;
     void *context;
 
+    SDL_mutex *mutex;
     hid_device *dev;
 };
 
@@ -959,6 +961,7 @@ HIDAPI_JoystickOpen(SDL_Joystick * joystick, int device_index)
         SDL_free(hwdata);
         return SDL_SetError("Couldn't open HID device %s", device->path);
     }
+    hwdata->mutex = SDL_CreateMutex();
 
     if (!device->driver->Init(joystick, hwdata->dev, device->vendor_id, device->product_id, &hwdata->context)) {
         hid_close(hwdata->dev);
@@ -975,7 +978,12 @@ HIDAPI_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint
 {
     struct joystick_hwdata *hwdata = joystick->hwdata;
     SDL_HIDAPI_DeviceDriver *driver = hwdata->driver;
-    return driver->Rumble(joystick, hwdata->dev, hwdata->context, low_frequency_rumble, high_frequency_rumble, duration_ms);
+    int result;
+
+    SDL_LockMutex(hwdata->mutex);
+    result = driver->Rumble(joystick, hwdata->dev, hwdata->context, low_frequency_rumble, high_frequency_rumble, duration_ms);
+    SDL_UnlockMutex(hwdata->mutex);
+    return result;
 }
 
 static void
@@ -983,7 +991,13 @@ HIDAPI_JoystickUpdate(SDL_Joystick * joystick)
 {
     struct joystick_hwdata *hwdata = joystick->hwdata;
     SDL_HIDAPI_DeviceDriver *driver = hwdata->driver;
-    if (!driver->Update(joystick, hwdata->dev, hwdata->context)) {
+    SDL_bool succeeded;
+
+    SDL_LockMutex(hwdata->mutex);
+    succeeded = driver->Update(joystick, hwdata->dev, hwdata->context);
+    SDL_UnlockMutex(hwdata->mutex);
+    
+    if (!succeeded) {
         SDL_HIDAPI_Device *device;
         for (device = SDL_HIDAPI_devices; device; device = device->next) {
             if (device->instance_id == joystick->instance_id) {
@@ -1002,6 +1016,7 @@ HIDAPI_JoystickClose(SDL_Joystick * joystick)
     driver->Quit(joystick, hwdata->dev, hwdata->context);
 
     hid_close(hwdata->dev);
+    SDL_DestroyMutex(hwdata->mutex);
     SDL_free(hwdata);
     joystick->hwdata = NULL;
 }
