@@ -198,7 +198,7 @@ static SDL_EVDEV_keyboard_state * kbd_cleanup_state = NULL;
 static int kbd_cleanup_sigactions_installed = 0;
 static int kbd_cleanup_atexit_installed = 0;
 
-static struct sigaction old_sigaction[NSIG] = { 0 };
+static struct sigaction old_sigaction[NSIG];
 
 static int fatal_signals[] =
 {
