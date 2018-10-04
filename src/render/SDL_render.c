@@ -254,6 +254,12 @@ FlushRenderCommandsIfNotBatching(SDL_Renderer *renderer)
     return renderer->batching ? 0 : FlushRenderCommands(renderer);
 }
 
+int
+SDL_RenderFlush(SDL_Renderer * renderer)
+{
+    return FlushRenderCommands(renderer);
+}
+
 static SDL_AllocVertGap *
 AllocateVertexGap(SDL_Renderer *renderer)
 {
