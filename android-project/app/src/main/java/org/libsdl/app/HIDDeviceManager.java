@@ -80,14 +80,14 @@ public class HIDDeviceManager {
     public HIDDeviceManager(Context context) {
         mContext = context;
 
-	// Make sure we have the HIDAPI library loaded with the native functions
+        // Make sure we have the HIDAPI library loaded with the native functions
         try {
-            System.loadLibrary("hidapi");
+            SDL.loadLibrary("hidapi");
         } catch (Exception e) {
             Log.w(TAG, "Couldn't load hidapi: " + e.toString());
             return;
         }
-	
+
         HIDDeviceRegisterCallback(this);
 
         mSharedPreferences = mContext.getSharedPreferences("hidapi", Context.MODE_PRIVATE);

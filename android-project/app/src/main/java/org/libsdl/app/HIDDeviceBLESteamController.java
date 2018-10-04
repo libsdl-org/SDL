@@ -577,7 +577,7 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
         }
 
         // We need to skip the first byte, as that doesn't go over the air
-	byte[] actual_report = Arrays.copyOfRange(report, 1, report.length - 1);
+        byte[] actual_report = Arrays.copyOfRange(report, 1, report.length - 1);
         //Log.v(TAG, "sendFeatureReport " + HexDump.dumpHexString(actual_report));
         writeCharacteristic(reportCharacteristic, actual_report);
         return report.length;
