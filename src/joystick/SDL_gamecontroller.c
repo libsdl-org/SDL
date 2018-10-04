@@ -111,7 +111,6 @@ struct _SDL_GameController
     SDL_Joystick *joystick; /* underlying joystick device */
     int ref_count;
 
-    SDL_JoystickGUID guid;
     const char *name;
     int num_bindings;
     SDL_ExtendedGameControllerBind *bindings;
@@ -683,11 +682,10 @@ SDL_PrivateGameControllerParseControllerConfigString(SDL_GameController *gamecon
 /*
  * Make a new button mapping struct
  */
-static void SDL_PrivateLoadButtonMapping(SDL_GameController *gamecontroller, SDL_JoystickGUID guid, const char *pchName, const char *pchMapping)
+static void SDL_PrivateLoadButtonMapping(SDL_GameController *gamecontroller, const char *pchName, const char *pchMapping)
 {
     int i;
 
-    gamecontroller->guid = guid;
     gamecontroller->name = pchName;
     gamecontroller->num_bindings = 0;
     SDL_memset(gamecontroller->last_match_axis, 0, gamecontroller->joystick->naxes * sizeof(*gamecontroller->last_match_axis));
@@ -801,14 +799,16 @@ static void SDL_PrivateGameControllerRefreshMapping(ControllerMapping_t *pContro
 {
     SDL_GameController *gamecontrollerlist = SDL_gamecontrollers;
     while (gamecontrollerlist) {
-        if (!SDL_memcmp(&gamecontrollerlist->guid, &pControllerMapping->guid, sizeof(pControllerMapping->guid))) {
-            SDL_Event event;
-            event.type = SDL_CONTROLLERDEVICEREMAPPED;
-            event.cdevice.which = gamecontrollerlist->joystick->instance_id;
-            SDL_PushEvent(&event);
-
+        if (!SDL_memcmp(&gamecontrollerlist->joystick->guid, &pControllerMapping->guid, sizeof(pControllerMapping->guid))) {
             /* Not really threadsafe.  Should this lock access within SDL_GameControllerEventWatcher? */
-            SDL_PrivateLoadButtonMapping(gamecontrollerlist, pControllerMapping->guid, pControllerMapping->name, pControllerMapping->mapping);
+            SDL_PrivateLoadButtonMapping(gamecontrollerlist, pControllerMapping->name, pControllerMapping->mapping);
+
+            {
+                SDL_Event event;
+                event.type = SDL_CONTROLLERDEVICEREMAPPED;
+                event.cdevice.which = gamecontrollerlist->joystick->instance_id;
+                SDL_PushEvent(&event);
+            }
         }
 
         gamecontrollerlist = gamecontrollerlist->next;
@@ -1273,7 +1273,7 @@ SDL_GameControllerMapping(SDL_GameController * gamecontroller)
         return NULL;
     }
 
-    return SDL_GameControllerMappingForGUID(gamecontroller->guid);
+    return SDL_GameControllerMappingForGUID(gamecontroller->joystick->guid);
 }
 
 static void
@@ -1582,7 +1582,7 @@ SDL_GameControllerOpen(int device_index)
         }
     }
 
-    SDL_PrivateLoadButtonMapping(gamecontroller, pSupportedController->guid, pSupportedController->name, pSupportedController->mapping);
+    SDL_PrivateLoadButtonMapping(gamecontroller, pSupportedController->name, pSupportedController->mapping);
 
     /* Add the controller to list */
     ++gamecontroller->ref_count;
