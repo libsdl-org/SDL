@@ -1052,6 +1052,7 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
 { @autoreleasepool {
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
     METAL_DrawStateCache statecache;
+    id<MTLBuffer> mtlbufvertex = nil;
 
     statecache.pipeline = nil;
     statecache.constants_offset = CONSTANTS_OFFSET_INVALID;
@@ -1063,24 +1064,26 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
     statecache.color_offset = 0;
 
     // !!! FIXME: have a ring of pre-made MTLBuffers we cycle through? How expensive is creation?
-    id<MTLBuffer> mtlbufvertexstaging = [data.mtldevice newBufferWithLength:vertsize options:MTLResourceStorageModeShared];
-    #if !__has_feature(objc_arc)
-    [mtlbufvertexstaging autorelease];
-    #endif
-    mtlbufvertexstaging.label = @"SDL vertex staging data";
-    SDL_memcpy([mtlbufvertexstaging contents], vertices, vertsize);
+    if (vertsize > 0) {
+        id<MTLBuffer> mtlbufvertexstaging = [data.mtldevice newBufferWithLength:vertsize options:MTLResourceStorageModeShared];
+        #if !__has_feature(objc_arc)
+        [mtlbufvertexstaging autorelease];
+        #endif
+        mtlbufvertexstaging.label = @"SDL vertex staging data";
+        SDL_memcpy([mtlbufvertexstaging contents], vertices, vertsize);
 
-    // Move our new vertex buffer from system RAM to GPU memory so any draw calls can use it.
-    id<MTLBuffer> mtlbufvertex = [data.mtldevice newBufferWithLength:vertsize options:MTLResourceStorageModePrivate];
-    #if !__has_feature(objc_arc)
-    [mtlbufvertex autorelease];
-    #endif
-    mtlbufvertex.label = @"SDL vertex data";
-    id<MTLCommandBuffer> cmdbuffer = [data.mtlcmdqueue commandBuffer];
-    id<MTLBlitCommandEncoder> blitcmd = [cmdbuffer blitCommandEncoder];
-    [blitcmd copyFromBuffer:mtlbufvertexstaging sourceOffset:0 toBuffer:mtlbufvertex destinationOffset:0 size:vertsize];
-    [blitcmd endEncoding];
-    [cmdbuffer commit];
+        // Move our new vertex buffer from system RAM to GPU memory so any draw calls can use it.
+        mtlbufvertex = [data.mtldevice newBufferWithLength:vertsize options:MTLResourceStorageModePrivate];
+        #if !__has_feature(objc_arc)
+        [mtlbufvertex autorelease];
+        #endif
+        mtlbufvertex.label = @"SDL vertex data";
+        id<MTLCommandBuffer> cmdbuffer = [data.mtlcmdqueue commandBuffer];
+        id<MTLBlitCommandEncoder> blitcmd = [cmdbuffer blitCommandEncoder];
+        [blitcmd copyFromBuffer:mtlbufvertexstaging sourceOffset:0 toBuffer:mtlbufvertex destinationOffset:0 size:vertsize];
+        [blitcmd endEncoding];
+        [cmdbuffer commit];
+    }
 
     // If there's a command buffer here unexpectedly (app requested one?). Commit it so we can start fresh.
     [data.mtlcmdencoder endEncoding];
