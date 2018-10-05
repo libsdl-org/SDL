@@ -871,14 +871,33 @@ METAL_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture *
     const float rads = (float)(M_PI * (float) angle / 180.0f);
     const float c = cosf(rads), s = sinf(rads);
     float minu, maxu, minv, maxv;
-    // !!! FIXME: use an index buffer
     const size_t vertlen = (sizeof (float) * 32);
-    float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, 0, &cmd->data.draw.first);
+    float *verts;
+
+    // cheat and store this offset in (count) because it needs to be aligned in ways other fields don't and we aren't using count otherwise.
+    verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, CONSTANT_ALIGN, &cmd->data.draw.count);
     if (!verts) {
         return -1;
     }
 
-    cmd->data.draw.count = 1;
+    // transform matrix
+    SDL_memset(verts, '\0', sizeof (*verts) * 16);
+    verts[10] = verts[15] = 1.0f;
+    // rotation
+    verts[0] = c;
+    verts[1] = s;
+    verts[4] = -s;
+    verts[5] = c;
+
+    // translation
+    verts[12] = dstrect->x + center->x;
+    verts[13] = dstrect->y + center->y;
+
+    // rest of the vertices don't need the aggressive alignment. Pack them in.
+    verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, 0, &cmd->data.draw.first);
+    if (!verts) {
+        return -1;
+    }
 
     minu = normtex(srcquad->x, texw);
     maxu = normtex(srcquad->x + srcquad->w, texw);
@@ -915,19 +934,6 @@ METAL_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture *
     *(verts++) = maxv;
     *(verts++) = maxu;
     *(verts++) = minv;
-
-    // transform matrix
-    SDL_memset(verts, '\0', sizeof (*verts) * 16);
-    verts[10] = verts[15] = 1.0f;
-    // rotation
-    verts[0] = c;
-    verts[1] = s;
-    verts[4] = -s;
-    verts[5] = c;
-
-    // translation
-    verts[12] = dstrect->x + center->x;
-    verts[13] = dstrect->y + center->y;
 
     return 0;
 }
@@ -1172,7 +1178,7 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
 
             case SDL_RENDERCMD_COPY_EX: {
                 SetCopyState(renderer, cmd, CONSTANTS_OFFSET_INVALID, mtlbufvertex, &statecache);
-                [data.mtlcmdencoder setVertexBuffer:mtlbufvertex offset:cmd->data.draw.first+(16*sizeof (float)) atIndex:3];  // transform
+                [data.mtlcmdencoder setVertexBuffer:mtlbufvertex offset:cmd->data.draw.count atIndex:3];  // transform
                 [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:0 vertexCount:4];
                 break;
             }
