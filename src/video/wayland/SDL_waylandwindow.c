@@ -79,19 +79,15 @@ handle_configure_wl_shell_surface(void *data, struct wl_shell_surface *shell_sur
         }
     }
 
-    if (width == window->w && height == window->h) {
-        return;
-    }
-
-    window->w = width;
-    window->h = height;
-    WAYLAND_wl_egl_window_resize(wind->egl_window, window->w, window->h, 0, 0);
-
+    WAYLAND_wl_egl_window_resize(wind->egl_window, width, height, 0, 0);
     region = wl_compositor_create_region(wind->waylandData->compositor);
-    wl_region_add(region, 0, 0, window->w, window->h);
+    wl_region_add(region, 0, 0, width, height);
     wl_surface_set_opaque_region(wind->surface, region);
     wl_region_destroy(region);
-    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, window->w, window->h);
+
+    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, width, height);
+    window->w = width;
+    window->h = height;
 }
 
 static void
@@ -123,7 +119,6 @@ handle_configure_zxdg_shell_surface(void *data, struct zxdg_surface_v6 *zxdg, ui
     wl_region_add(region, 0, 0, window->w, window->h);
     wl_surface_set_opaque_region(wind->surface, region);
     wl_region_destroy(region);
-    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, window->w, window->h);
     zxdg_surface_v6_ack_configure(zxdg, serial);
 }
 
@@ -165,10 +160,7 @@ handle_configure_zxdg_toplevel(void *data,
         }
     }
 
-    if (width == window->w && height == window->h) {
-        return;
-    }
-
+    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, width, height);
     window->w = width;
     window->h = height;
 }
@@ -202,7 +194,6 @@ handle_configure_xdg_shell_surface(void *data, struct xdg_surface *xdg, uint32_t
     wl_region_add(region, 0, 0, window->w, window->h);
     wl_surface_set_opaque_region(wind->surface, region);
     wl_region_destroy(region);
-    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, window->w, window->h);
     xdg_surface_ack_configure(xdg, serial);
 }
 
@@ -248,6 +239,7 @@ handle_configure_xdg_toplevel(void *data,
         return;
     }
 
+    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, width, height);
     window->w = width;
     window->h = height;
 }
