@@ -969,7 +969,7 @@ SetDrawState(GLES2_RenderData *data, const SDL_RenderCommand *cmd, const GLES2_I
         } else {
             data->glEnable(GL_SCISSOR_TEST);
         }
-        data->drawstate.cliprect_enabled_dirty = SDL_TRUE;
+        data->drawstate.cliprect_enabled_dirty = SDL_FALSE;
     }
 
     if (data->drawstate.cliprect_enabled && data->drawstate.cliprect_dirty) {
@@ -979,6 +979,7 @@ SetDrawState(GLES2_RenderData *data, const SDL_RenderCommand *cmd, const GLES2_I
                         data->drawstate.target ? viewport->y + rect->y : data->drawstate.drawableh - viewport->y - rect->y - rect->h,
                         rect->w, rect->h);
         SDL_memcpy(&data->drawstate.cliprect, rect, sizeof (SDL_Rect));
+        data->drawstate.cliprect_dirty = SDL_FALSE;
     }
 
     if (texture != data->drawstate.texture) {
