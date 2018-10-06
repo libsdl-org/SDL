@@ -566,6 +566,10 @@ KMSDRM_DestroyWindow(_THIS, SDL_Window * window)
     if(data) {
         /* Wait for any pending page flips and unlock buffer */
         KMSDRM_WaitPageFlip(_this, data, -1);
+        if (data->crtc_bo != NULL) {
+            KMSDRM_gbm_surface_release_buffer(data->gs, data->crtc_bo);
+            data->crtc_bo = NULL;
+        }
         if (data->next_bo != NULL) {
             KMSDRM_gbm_surface_release_buffer(data->gs, data->next_bo);
             data->next_bo = NULL;

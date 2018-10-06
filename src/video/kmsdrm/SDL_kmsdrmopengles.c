@@ -54,13 +54,13 @@ KMSDRM_GLES_SetupCrtc(_THIS, SDL_Window * window) {
         return SDL_FALSE;
     }
 
-    wdata->next_bo = KMSDRM_gbm_surface_lock_front_buffer(wdata->gs);
-    if (wdata->next_bo == NULL) {
+    wdata->crtc_bo = KMSDRM_gbm_surface_lock_front_buffer(wdata->gs);
+    if (wdata->crtc_bo == NULL) {
         SDL_LogError(SDL_LOG_CATEGORY_VIDEO, "Could not lock GBM surface front buffer on CRTC setup");
         return SDL_FALSE;
     }
 
-    fb_info = KMSDRM_FBFromBO(_this, wdata->next_bo);
+    fb_info = KMSDRM_FBFromBO(_this, wdata->crtc_bo);
     if (fb_info == NULL) {
         return SDL_FALSE;
     }
