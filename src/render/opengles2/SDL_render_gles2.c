@@ -878,8 +878,7 @@ GLES2_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture *
     if (flip & SDL_FLIP_HORIZONTAL) {
         minx = dstrect->x + dstrect->w;
         maxx = dstrect->x;
-    }
-    else {
+    } else {
         minx = dstrect->x;
         maxx = dstrect->x + dstrect->w;
     }
@@ -887,16 +886,16 @@ GLES2_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture *
     if (flip & SDL_FLIP_VERTICAL) {
         miny = dstrect->y + dstrect->h;
         maxy = dstrect->y;
-    }
-    else {
+    } else {
         miny = dstrect->y;
         maxy = dstrect->y + dstrect->h;
     }
 
-    minu = (GLfloat) (srcquad->x / texture->w);
-    maxu = (GLfloat) ((srcquad->x + srcquad->w) / texture->w);
-    minv = (GLfloat) (srcquad->y / texture->h);
-    maxv = (GLfloat) ((srcquad->y + srcquad->h) / texture->h);
+    minu = ((GLfloat) srcquad->x) / ((GLfloat) texture->w);
+    maxu = ((GLfloat) (srcquad->x + srcquad->w)) / ((GLfloat) texture->w);
+    minv = ((GLfloat) srcquad->y) / ((GLfloat) texture->h);
+    maxv = ((GLfloat) (srcquad->y + srcquad->h)) / ((GLfloat) texture->h);
+
 
     cmd->data.draw.count = 1;
 
@@ -988,7 +987,6 @@ SetDrawState(GLES2_RenderData *data, const SDL_RenderCommand *cmd, const GLES2_I
                 data->drawstate.texturing = SDL_FALSE;
             } else {
                 data->glEnableVertexAttribArray((GLenum) GLES2_ATTRIBUTE_TEXCOORD);
-                data->glVertexAttribPointer(GLES2_ATTRIBUTE_TEXCOORD, 2, GL_FLOAT, GL_FALSE, 0, (const GLvoid *) (cmd->data.draw.first + (sizeof (GLfloat) * 8)));
                 data->drawstate.texturing = SDL_TRUE;
             }
         }
@@ -1013,6 +1011,10 @@ SetDrawState(GLES2_RenderData *data, const SDL_RenderCommand *cmd, const GLES2_I
         }
 
         data->drawstate.texture = texture;
+    }
+
+    if (texture) {
+        data->glVertexAttribPointer(GLES2_ATTRIBUTE_TEXCOORD, 2, GL_FLOAT, GL_FALSE, 0, (const GLvoid *) (cmd->data.draw.first + (sizeof (GLfloat) * 8)));
     }
 
     if (GLES2_SelectProgram(data, imgsrc, texture ? texture->w : 0, texture ? texture->h : 0) < 0) {
@@ -1061,13 +1063,16 @@ SetDrawState(GLES2_RenderData *data, const SDL_RenderCommand *cmd, const GLES2_I
         if (is_copy_ex) {
             data->glEnableVertexAttribArray((GLenum) GLES2_ATTRIBUTE_ANGLE);
             data->glEnableVertexAttribArray((GLenum) GLES2_ATTRIBUTE_CENTER);
-            data->glVertexAttribPointer(GLES2_ATTRIBUTE_ANGLE, 2, GL_FLOAT, GL_FALSE, 0, (const GLvoid *) (cmd->data.draw.first + (sizeof (GLfloat) * 16)));
-            data->glVertexAttribPointer(GLES2_ATTRIBUTE_CENTER, 2, GL_FLOAT, GL_FALSE, 0, (const GLvoid *) (cmd->data.draw.first + (sizeof (GLfloat) * 24)));
         } else {
             data->glDisableVertexAttribArray((GLenum) GLES2_ATTRIBUTE_ANGLE);
             data->glDisableVertexAttribArray((GLenum) GLES2_ATTRIBUTE_CENTER);
         }
         data->drawstate.is_copy_ex = is_copy_ex;
+    }
+
+    if (is_copy_ex) {
+        data->glVertexAttribPointer(GLES2_ATTRIBUTE_ANGLE, 2, GL_FLOAT, GL_FALSE, 0, (const GLvoid *) (cmd->data.draw.first + (sizeof (GLfloat) * 16)));
+        data->glVertexAttribPointer(GLES2_ATTRIBUTE_CENTER, 2, GL_FLOAT, GL_FALSE, 0, (const GLvoid *) (cmd->data.draw.first + (sizeof (GLfloat) * 24)));
     }
 
     return 0;
