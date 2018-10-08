@@ -102,14 +102,17 @@ Android_SetWindowTitle(_THIS, SDL_Window * window)
 void
 Android_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen)
 {
-    Android_JNI_SetWindowStyle(fullscreen);
+    /* If the window is being destroyed don't change visible state */
+    if (!window->is_destroying) {
+        Android_JNI_SetWindowStyle(fullscreen);
+    }
 
-    // Ensure our size matches reality after we've executed the window style change.
-    //
-    // It is possible that we've set width and height to the full-size display, but on
-    // Samsung DeX or Chromebooks or other windowed Android environemtns, our window may 
-    // still not be the full display size.
-    //
+    /* Ensure our size matches reality after we've executed the window style change.
+     *
+     * It is possible that we've set width and height to the full-size display, but on
+     * Samsung DeX or Chromebooks or other windowed Android environemtns, our window may 
+     * still not be the full display size.
+     */
     if (!SDL_IsDeXMode() && !SDL_IsChromebook()) {
         return;
     }
