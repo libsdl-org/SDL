@@ -276,7 +276,16 @@ class HIDDeviceUSB implements HIDDevice {
             int packetSize = mInputEndpoint.getMaxPacketSize();
             byte[] packet = new byte[packetSize];
             while (mRunning) {
-                int r = mConnection.bulkTransfer(mInputEndpoint, packet, packetSize, 1000);
+                int r;
+                try
+                {
+                    r = mConnection.bulkTransfer(mInputEndpoint, packet, packetSize, 1000);
+                }
+                catch (Exception e)
+                {
+                    Log.v(TAG, "Exception in UsbDeviceConnection bulktransfer: " + e);
+                    break;
+                }
                 if (r < 0) {
                     // Could be a timeout or an I/O error
                 }
