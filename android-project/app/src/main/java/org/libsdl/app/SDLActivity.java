@@ -250,7 +250,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             mClipboardHandler = new SDLClipboardHandler_Old();
         }
 
-        mHIDDeviceManager = new HIDDeviceManager(this);
+        mHIDDeviceManager = HIDDeviceManager.acquire(this);
 
         // Set up the surface
         mSurface = new SDLSurface(getApplication());
@@ -380,7 +380,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         Log.v(TAG, "onDestroy()");
 
         if (mHIDDeviceManager != null) {
-            mHIDDeviceManager.close();
+            HIDDeviceManager.release(mHIDDeviceManager);
             mHIDDeviceManager = null;
         }
 
