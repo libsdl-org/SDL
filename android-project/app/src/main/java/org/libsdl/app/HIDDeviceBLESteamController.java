@@ -624,6 +624,8 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
 
     @Override
     public void shutdown() {
+        close();
+
         BluetoothGatt g = mGatt;
         if (g != null) {
             g.disconnect();
