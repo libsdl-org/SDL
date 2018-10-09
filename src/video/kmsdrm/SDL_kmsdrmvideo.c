@@ -41,20 +41,27 @@
 #include "SDL_kmsdrmopengles.h"
 #include "SDL_kmsdrmmouse.h"
 #include "SDL_kmsdrmdyn.h"
+#include <sys/stat.h>
+#include <dirent.h>
+#include <errno.h>
 
-#define KMSDRM_DRI_CARD_0 "/dev/dri/card0"
+#define KMSDRM_DRI_PATH "/dev/dri/"
 
 static int
-KMSDRM_Available(void)
+check_modestting(int devindex)
 {
-    int available = 0;
+    SDL_bool available = SDL_FALSE;
+    char device[512];
+    int drm_fd;
 
-    int drm_fd = open(KMSDRM_DRI_CARD_0, O_RDWR | O_CLOEXEC);
+    SDL_snprintf(device, sizeof (device), "%scard%d", KMSDRM_DRI_PATH, devindex);
+
+    drm_fd = open(device, O_RDWR | O_CLOEXEC);
     if (drm_fd >= 0) {
         if (SDL_KMSDRM_LoadSymbols()) {
             drmModeRes *resources = KMSDRM_drmModeGetResources(drm_fd);
             if (resources != NULL) {
-                available = 1;
+                available = SDL_TRUE;
                 KMSDRM_drmModeFreeResources(resources);
             }
             SDL_KMSDRM_UnloadSymbols();
@@ -63,6 +70,66 @@ KMSDRM_Available(void)
     }
 
     return available;
+}
+
+static int get_dricount(void)
+{
+    int devcount = 0;
+    struct dirent *res;
+    struct stat sb;
+    DIR *folder;
+
+    if (!(stat(KMSDRM_DRI_PATH, &sb) == 0
+                && S_ISDIR(sb.st_mode))) {
+        printf("The path %s cannot be opened or is not available\n",
+               KMSDRM_DRI_PATH);
+        return 0;
+    }
+
+    if (access(KMSDRM_DRI_PATH, F_OK) == -1) {
+        printf("The path %s cannot be opened\n",
+               KMSDRM_DRI_PATH);
+        return 0;
+    }
+
+    folder = opendir(KMSDRM_DRI_PATH);
+    if (folder) {
+        while ((res = readdir(folder))) {
+            if (res->d_type == DT_CHR) {
+                devcount++;
+            }
+        }
+        closedir(folder);
+    }
+
+    return devcount;
+}
+
+static int
+get_driindex(void)
+{
+    const int devcount = get_dricount();
+    int i;
+
+    for (i = 0; i < devcount; i++) {
+        if (check_modestting(i)) {
+            return i;
+        }
+    }
+
+    return -ENOENT;
+}
+
+static int
+KMSDRM_Available(void)
+{
+    int ret = -ENOENT;
+
+    ret = get_driindex();
+    if (ret >= 0)
+        return 1;
+
+    return ret;
 }
 
 static void
@@ -83,7 +150,11 @@ KMSDRM_Create(int devindex)
     SDL_VideoDevice *device;
     SDL_VideoData *vdata;
 
-    if (devindex < 0 || devindex > 99) {
+    if (!devindex || (devindex > 99)) {
+        devindex = get_driindex();
+    }
+
+    if (devindex < 0) {
         SDL_SetError("devindex (%d) must be between 0 and 99.\n", devindex);
         return NULL;
     }
