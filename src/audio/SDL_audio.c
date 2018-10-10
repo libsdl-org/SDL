@@ -1003,7 +1003,6 @@ SDL_GetNumAudioDevices(int iscapture)
 
     if (!iscapture && current_audio.outputDevicesRemoved) {
         clean_out_device_list(&current_audio.outputDevices, &current_audio.outputDeviceCount, &current_audio.outputDevicesRemoved);
-        current_audio.outputDevicesRemoved = SDL_FALSE;
     }
 
     retval = iscapture ? current_audio.inputDeviceCount : current_audio.outputDeviceCount;
