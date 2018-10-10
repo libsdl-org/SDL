@@ -31,6 +31,7 @@ extern "C" {
 #include <EGL/eglplatform.h>
 #include <android/native_window_jni.h>
 
+#include "SDL_audio.h"
 #include "SDL_rect.h"
 
 /* Interface from the SDL library into the Android Java activity */
@@ -47,7 +48,7 @@ extern ANativeWindow* Android_JNI_GetNativeWindow(void);
 extern int Android_JNI_GetDisplayDPI(float *ddpi, float *xdpi, float *ydpi);
 
 /* Audio support */
-extern int Android_JNI_OpenAudioDevice(int iscapture, int sampleRate, int is16Bit, int channelCount, int desiredBufferFrames);
+extern int Android_JNI_OpenAudioDevice(int iscapture, SDL_AudioSpec *spec);
 extern void* Android_JNI_GetAudioBuffer(void);
 extern void Android_JNI_WriteAudioBuffer(void);
 extern int Android_JNI_CaptureAudioBuffer(void *buffer, int buflen);
