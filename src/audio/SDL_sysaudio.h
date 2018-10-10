@@ -98,8 +98,10 @@ typedef struct SDL_AudioDriverImpl
 typedef struct SDL_AudioDeviceItem
 {
     void *handle;
+    char *name;
+    char *original_name;
+    int dupenum;
     struct SDL_AudioDeviceItem *next;
-    char name[SDL_VARIABLE_LENGTH_ARRAY];
 } SDL_AudioDeviceItem;
 
 
