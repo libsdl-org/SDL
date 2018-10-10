@@ -378,21 +378,57 @@ static int
 add_audio_device(const char *name, void *handle, SDL_AudioDeviceItem **devices, int *devCount)
 {
     int retval = -1;
-    const size_t size = sizeof (SDL_AudioDeviceItem) + SDL_strlen(name) + 1;
-    SDL_AudioDeviceItem *item = (SDL_AudioDeviceItem *) SDL_malloc(size);
-    if (item == NULL) {
-        return -1;
-    }
+    SDL_AudioDeviceItem *item;
+    const SDL_AudioDeviceItem *i;
+    int dupenum = 0;
 
     SDL_assert(handle != NULL);  /* we reserve NULL, audio backends can't use it. */
+    SDL_assert(name != NULL);
 
+    item = (SDL_AudioDeviceItem *) SDL_malloc(sizeof (SDL_AudioDeviceItem));
+    if (!item) {
+        return SDL_OutOfMemory();
+    }
+
+    item->original_name = SDL_strdup(name);
+    if (!item->original_name) {
+        SDL_free(item);
+        return SDL_OutOfMemory();
+    }
+
+    item->dupenum = 0;
+    item->name = item->original_name;
     item->handle = handle;
-    SDL_strlcpy(item->name, name, size - sizeof (SDL_AudioDeviceItem));
 
     SDL_LockMutex(current_audio.detectionLock);
+
+    for (i = *devices; i != NULL; i = i->next) {
+        if (SDL_strcmp(name, i->original_name) == 0) {
+            dupenum = i->dupenum + 1;
+            break;  /* stop at the highest-numbered dupe. */
+        }
+    }
+
+    if (dupenum) {
+        const size_t len = SDL_strlen(name) + 16;
+        char *replacement = (char *) SDL_malloc(len);
+        if (!replacement) {
+            SDL_UnlockMutex(current_audio.detectionLock);
+            SDL_free(item->original_name);
+            SDL_free(item);
+            SDL_OutOfMemory();
+            return -1;
+        }
+
+        SDL_snprintf(replacement, len, "%s (%d)", name, dupenum + 1);
+        item->dupenum = dupenum;
+        item->name = replacement;
+    }
+
     item->next = *devices;
     *devices = item;
-    retval = (*devCount)++;
+    retval = (*devCount)++;   /* !!! FIXME: this should be an atomic increment */
+
     SDL_UnlockMutex(current_audio.detectionLock);
 
     return retval;
@@ -420,6 +456,11 @@ free_device_list(SDL_AudioDeviceItem **devices, int *devCount)
         if (item->handle != NULL) {
             current_audio.impl.FreeDeviceHandle(item->handle);
         }
+        /* these two pointers are the same if not a duplicate devname */
+        if (item->name != item->original_name) {
+            SDL_free(item->name);
+        }
+        SDL_free(item->original_name);
         SDL_free(item);
     }
     *devices = NULL;
@@ -977,6 +1018,11 @@ clean_out_device_list(SDL_AudioDeviceItem **devices, int *devCount, SDL_bool *re
             } else {
                 *devices = next;
             }
+            /* these two pointers are the same if not a duplicate devname */
+            if (item->name != item->original_name) {
+                SDL_free(item->name);
+            }
+            SDL_free(item->original_name);
             SDL_free(item);
         }
         item = next;
