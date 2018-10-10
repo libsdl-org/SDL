@@ -191,8 +191,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     // Setup
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Log.v(TAG, "Device: " + android.os.Build.DEVICE);
-        Log.v(TAG, "Model: " + android.os.Build.MODEL);
+        Log.v(TAG, "Device: " + Build.DEVICE);
+        Log.v(TAG, "Model: " + Build.MODEL);
         Log.v(TAG, "onCreate()");
         super.onCreate(savedInstanceState);
 
@@ -1585,8 +1585,7 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         int nDeviceHeight = height;
         try
         {
-            if ( android.os.Build.VERSION.SDK_INT >= 17 )
-            {
+            if (Build.VERSION.SDK_INT >= 17) {
                 android.util.DisplayMetrics realMetrics = new android.util.DisplayMetrics();
                 mDisplay.getRealMetrics( realMetrics );
                 nDeviceWidth = realMetrics.widthPixels;
