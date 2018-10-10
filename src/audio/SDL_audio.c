@@ -1130,8 +1130,9 @@ prepare_audiospec(const SDL_AudioSpec * orig, SDL_AudioSpec * prepared)
         }
     case 1:                    /* Mono */
     case 2:                    /* Stereo */
-    case 4:                    /* surround */
-    case 6:                    /* surround with center and lfe */
+    case 4:                    /* Quadrophonic */
+    case 6:                    /* 5.1 surround */
+    case 8:                    /* 7.1 surround */
         break;
     default:
         SDL_SetError("Unsupported number of audio channels.");
