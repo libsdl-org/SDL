@@ -739,3 +739,16 @@ SDL_DYNAPI_PROC(void,SDL_SensorUpdate,(void),(),)
 SDL_DYNAPI_PROC(SDL_bool,SDL_IsTablet,(void),(),return)
 SDL_DYNAPI_PROC(SDL_DisplayOrientation,SDL_GetDisplayOrientation,(int a),(a),return)
 SDL_DYNAPI_PROC(SDL_bool,SDL_HasColorKey,(SDL_Surface *a),(a),return)
+
+#ifdef SDL_CreateThreadWithStackSize
+#undef SDL_CreateThreadWithStackSize
+#endif
+
+#if defined(__WIN32__) && !defined(HAVE_LIBC)
+SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThreadWithStackSize,(SDL_ThreadFunction a, const char *b, const size_t c, void *d, pfnSDL_CurrentBeginThread e, pfnSDL_CurrentEndThread f),(a,b,c,d,e,f),return)
+#elif defined(__OS2__)
+SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThreadWithStackSize,(SDL_ThreadFunction a, const char *b, const size_t c, void *d, pfnSDL_CurrentBeginThread e, pfnSDL_CurrentEndThread f),(a,b,c,d,e,f),return)
+#else
+SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThreadWithStackSize,(SDL_ThreadFunction a, const char *b, const size_t c, void *d),(a,b,c,d),return)
+#endif
+

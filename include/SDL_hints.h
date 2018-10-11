@@ -619,6 +619,10 @@ extern "C" {
 *  This is specially useful if you build SDL against a non glibc libc library (such as musl) which
 *  provides a relatively small default thread stack size (a few kilobytes versus the default 8MB glibc uses).
 *  Support for this hint is currently available only in the pthread, Windows, and PSP backend.
+*
+*  Instead of this hint, in 2.0.9 and later, you can use
+*  SDL_CreateThreadWithStackSize(). This hint only works with the classic
+*  SDL_CreateThread().
 */
 #define SDL_HINT_THREAD_STACK_SIZE              "SDL_THREAD_STACK_SIZE"
 
