@@ -195,6 +195,10 @@ SDL_SYS_HapticClose(SDL_Haptic * haptic)
 void
 SDL_SYS_HapticQuit(void)
 {
+/* We don't have any way to scan for joysticks (and their vibrators) at init, so don't wipe the list
+ * of joysticks here in case this is a reinit.
+ */
+#if 0
     SDL_hapticlist_item *item = NULL;
     SDL_hapticlist_item *next = NULL;
 
@@ -206,6 +210,7 @@ SDL_SYS_HapticQuit(void)
     SDL_hapticlist = SDL_hapticlist_tail = NULL;
     numhaptics = 0;
     return;
+#endif
 }
 
 
