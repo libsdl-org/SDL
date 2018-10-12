@@ -49,9 +49,8 @@
 {
     if ((self = [super initWithFrame:frame])) {
         self.tag = METALVIEW_TAG;
-        /* Set the desired scale. */
-        ((CAMetalLayer *) self.layer).drawableSize = self.bounds.size;
         self.layer.contentsScale = scale;
+        [self updateDrawableSize];
     }
 
     return self;
@@ -60,14 +59,16 @@
 /* Set the size of the metal drawables when the view is resized. */
 - (void)layoutSubviews
 {
-    CGSize bounds;
-
     [super layoutSubviews];
+    [self updateDrawableSize];
+}
 
-    bounds = [self bounds].size;
-    bounds.width *= self.layer.contentsScale;
-    bounds.height *= self.layer.contentsScale;
-    ((CAMetalLayer *) self.layer).drawableSize = bounds;
+- (void)updateDrawableSize
+{
+    CGSize size = self.bounds.size;
+    size.width *= self.layer.contentsScale;
+    size.height *= self.layer.contentsScale;
+    ((CAMetalLayer *)self.layer).drawableSize = size;
 }
 
 @end
