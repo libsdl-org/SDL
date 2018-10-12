@@ -33,9 +33,6 @@
 
 @implementation SDL_cocoametalview
 
-/* The synthesized getter should be called by super's viewWithTag. */
-@synthesize tag = _tag;
-
 /* Return a Metal-compatible layer. */
 + (Class)layerClass
 {
@@ -57,27 +54,48 @@
 }
 
 - (instancetype)initWithFrame:(NSRect)frame
-                        scale:(CGFloat)scale
+                      highDPI:(BOOL)highDPI
 {
     if ((self = [super initWithFrame:frame])) {
-        _tag = METALVIEW_TAG;
+        self.highDPI = highDPI;
         self.wantsLayer = YES;
 
         /* Allow resize. */
         self.autoresizingMask = NSViewWidthSizable | NSViewHeightSizable;
 
-        /* Set the desired scale. */
-        ((CAMetalLayer *) self.layer).drawableSize = NSSizeToCGSize([self bounds].size);
-        self.layer.contentsScale = scale;
+        [self updateDrawableSize];
     }
   
     return self;
+}
+
+- (NSInteger)tag
+{
+    return METALVIEW_TAG;
+}
+
+- (void)updateDrawableSize
+{
+    CAMetalLayer *metalLayer = (CAMetalLayer *)self.layer;
+    CGSize size = self.bounds.size;
+    CGSize backingSize = size;
+
+    if (self.highDPI) {
+        /* Note: NSHighResolutionCapable must be set to true in the app's
+         * Info.plist in order for the backing size to be high res.
+         */
+        backingSize = [self convertSizeToBacking:size];
+    }
+
+    metalLayer.contentsScale = backingSize.height / size.height;
+    metalLayer.drawableSize = backingSize;
 }
 
 /* Set the size of the metal drawables when the view is resized. */
 - (void)resizeWithOldSuperviewSize:(NSSize)oldSize
 {
     [super resizeWithOldSuperviewSize:oldSize];
+    [self updateDrawableSize];
 }
 
 @end
@@ -87,24 +105,10 @@ Cocoa_Mtl_AddMetalView(SDL_Window* window)
 {
     SDL_WindowData* data = (__bridge SDL_WindowData *)window->driverdata;
     NSView *view = data->nswindow.contentView;
-    CGFloat scale = 1.0;
+    BOOL highDPI = (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) != 0;
+    SDL_cocoametalview *metalview;
 
-    if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
-        /* Set the scale to the natural scale factor of the screen - then
-         * the backing dimensions of the Metal view will match the pixel
-         * dimensions of the screen rather than the dimensions in points
-         * yielding high resolution on retine displays.
-         *
-         * N.B. In order for backingScaleFactor to be > 1,
-         * NSHighResolutionCapable must be set to true in the app's Info.plist.
-         */
-        NSWindow* nswindow = data->nswindow;
-        if ([nswindow.screen respondsToSelector:@selector(backingScaleFactor)])
-            scale = data->nswindow.screen.backingScaleFactor;
-    }
-        
-    SDL_cocoametalview *metalview
-        = [[SDL_cocoametalview alloc] initWithFrame:view.frame scale:scale];
+    metalview = [[SDL_cocoametalview alloc] initWithFrame:view.frame highDPI:highDPI];
     [view addSubview:metalview];
     return metalview;
 }

@@ -752,11 +752,6 @@ METAL_ActivateRenderCommandEncoder(SDL_Renderer * renderer, MTLLoadAction load)
 static void
 METAL_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
 {
-    if (event->event == SDL_WINDOWEVENT_SIZE_CHANGED) {
-        METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
-        data.mtllayer.drawableSize = CGSizeMake(event->data1, event->data2);
-    }
-
     if (event->event == SDL_WINDOWEVENT_SHOWN ||
         event->event == SDL_WINDOWEVENT_HIDDEN) {
         // !!! FIXME: write me
@@ -848,12 +843,20 @@ METAL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         mtltexdesc.height = (texture->h + 1) / 2;
         mtltexdesc.textureType = MTLTextureType2DArray;
         mtltexdesc.arrayLength = 2;
-        mtltexture_uv = [data.mtldevice newTextureWithDescriptor:mtltexdesc];
     } else if (nv12) {
         mtltexdesc.pixelFormat = MTLPixelFormatRG8Unorm;
         mtltexdesc.width = (texture->w + 1) / 2;
         mtltexdesc.height = (texture->h + 1) / 2;
+    }
+
+    if (yuv || nv12) {
         mtltexture_uv = [data.mtldevice newTextureWithDescriptor:mtltexdesc];
+        if (mtltexture_uv == nil) {
+#if !__has_feature(objc_arc)
+            [mtltexture release];
+#endif
+            return SDL_SetError("Texture allocation failed");
+        }
     }
 
     METAL_TextureData *texturedata = [[METAL_TextureData alloc] init];
