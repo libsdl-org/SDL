@@ -60,7 +60,9 @@ Emscripten_GLES_LoadLibrary(_THIS, const char *path) {
     LOAD_FUNC(eglWaitNative);
     LOAD_FUNC(eglWaitGL);
     LOAD_FUNC(eglBindAPI);
-    
+    LOAD_FUNC(eglQueryString);
+    LOAD_FUNC(eglGetError);
+
     _this->egl_data->egl_display = _this->egl_data->eglGetDisplay(EGL_DEFAULT_DISPLAY);
     if (!_this->egl_data->egl_display) {
         return SDL_SetError("Could not get EGL display");
