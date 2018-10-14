@@ -40,7 +40,9 @@ SDL_bool SDL_GetPowerInfo_Android(SDL_PowerState *, int *, int *);
 SDL_bool SDL_GetPowerInfo_PSP(SDL_PowerState *, int *, int *);
 SDL_bool SDL_GetPowerInfo_WinRT(SDL_PowerState *, int *, int *);
 SDL_bool SDL_GetPowerInfo_Emscripten(SDL_PowerState *, int *, int *);
-SDL_bool SDL_GetPowerInfo_Hardwired(SDL_PowerState *, int *, int *);
+
+/* this one is static in SDL_power.c */
+/* SDL_bool SDL_GetPowerInfo_Hardwired(SDL_PowerState *, int *, int *);*/
 
 #endif /* SDL_syspower_h_ */
 
