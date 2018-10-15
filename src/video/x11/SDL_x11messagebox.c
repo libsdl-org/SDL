@@ -44,7 +44,6 @@
 #endif
 
 #define MAX_BUTTONS             8       /* Maximum number of buttons supported */
-#define MAX_TEXT_LINES          32      /* Maximum number of text lines supported */
 #define MIN_BUTTON_WIDTH        64      /* Minimum button width */
 #define MIN_DIALOG_WIDTH        200     /* Minimum dialog width */
 #define MIN_DIALOG_HEIGHT       100     /* Minimum dialog height */
@@ -101,7 +100,7 @@ typedef struct SDL_MessageBoxDataX11
     int xtext, ytext;                   /* Text position to start drawing at. */
     int numlines;                       /* Count of Text lines. */
     int text_height;                    /* Height for text lines. */
-    TextLineData linedata[ MAX_TEXT_LINES ];
+    TextLineData *linedata;
 
     int *pbuttonid;                     /* Pointer to user return buttonid value. */
 
@@ -223,6 +222,18 @@ X11_MessageBoxInit( SDL_MessageBoxDataX11 *data, const SDL_MessageBoxData * mess
     return 0;
 }
 
+static int
+CountLinesOfText(const char *text)
+{
+    int retval = 0;
+    while (text && *text) {
+        const char *lf = SDL_strchr(text, '\n');
+        retval++;  /* even without an endline, this counts as a line. */
+        text = lf ? lf + 1 : NULL;
+    }
+    return retval;
+}
+
 /* Calculate and initialize text and button locations. */
 static int
 X11_MessageBoxInitPositions( SDL_MessageBoxDataX11 *data )
@@ -237,29 +248,35 @@ X11_MessageBoxInitPositions( SDL_MessageBoxDataX11 *data )
     /* Go over text and break linefeeds into separate lines. */
     if ( messageboxdata->message && messageboxdata->message[ 0 ] ) {
         const char *text = messageboxdata->message;
-        TextLineData *plinedata = data->linedata;
+        const int linecount = CountLinesOfText(text);
+        TextLineData *plinedata = (TextLineData *) SDL_malloc(sizeof (TextLineData) * linecount);
 
-        for ( i = 0; i < MAX_TEXT_LINES; i++, plinedata++ ) {
+        if (!plinedata) {
+            return SDL_OutOfMemory();
+        }
+
+        data->linedata = plinedata;
+        data->numlines = linecount;
+
+        for ( i = 0; i < linecount; i++, plinedata++ ) {
+            const char *lf = SDL_strchr( text, '\n' );
+            const int length = lf ? ( lf - text ) : SDL_strlen( text );
             int height;
-            char *lf = SDL_strchr( ( char * )text, '\n' );
 
-            data->numlines++;
-
-            /* Only grab length up to lf if it exists and isn't the last line. */
-            plinedata->length = ( lf && ( i < MAX_TEXT_LINES - 1 ) ) ? ( lf - text ) : SDL_strlen( text );
             plinedata->text = text;
 
-            GetTextWidthHeight( data, text, plinedata->length, &plinedata->width, &height );
+            GetTextWidthHeight( data, text, length, &plinedata->width, &height );
 
             /* Text and widths are the largest we've ever seen. */
             data->text_height = IntMax( data->text_height, height );
             text_width_max = IntMax( text_width_max, plinedata->width );
 
+            plinedata->length = length;
             if (lf && (lf > text) && (lf[-1] == '\r')) {
                 plinedata->length--;
             }
 
-            text += plinedata->length + 1;
+            text += length + 1;
 
             /* Break if there are no more linefeeds. */
             if ( !lf )
@@ -369,6 +386,8 @@ X11_MessageBoxShutdown( SDL_MessageBoxDataX11 *data )
         X11_XCloseDisplay( data->display );
         data->display = NULL;
     }
+
+    SDL_free(data->linedata);
 }
 
 /* Create and set up our X11 dialog box indow. */
