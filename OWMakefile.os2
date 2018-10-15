@@ -19,15 +19,6 @@ CFLAGS+= $(INCPATH)
 # building SDL itself:
 CFLAGS+= -DBUILD_SDL
 
-# this is so that build doesn't fail with E1112:
-#CFLAGS+= -DSDL_POWER_DISABLED
-CFLAGS+= -DSDL_POWER_HARDWIRED
-
-.extensions:
-.extensions: .lib .dll .obj .c .asm
-
-.c: ./src;./src/dynapi;./src/audio;./src/cpuinfo;./src/events;./src/file;./src/haptic;./src/joystick;./src/power;./src/render;./src/render/software;./src/sensor;./src/stdlib;./src/thread;./src/timer;./src/video;./src/video/yuv2rgb;./src/haptic/dummy;./src/joystick/dummy;./src/loadso/dummy;./src/filesystem/dummy;./src/thread/generic;./src/timer/dummy;./src/power;./src/power/os2;./src/atomic;./src/audio/dummy;./src/audio/disk;./src/video/dummy;./src/sensor/dummy;./src/test;
-
 SRCS = SDL.c SDL_assert.c SDL_error.c SDL_log.c SDL_dataqueue.c SDL_hints.c
 SRCS+= SDL_getenv.c SDL_iconv.c SDL_malloc.c SDL_qsort.c SDL_stdlib.c SDL_string.c
 SRCS+= SDL_cpuinfo.c SDL_atomic.c SDL_spinlock.c SDL_thread.c SDL_timer.c
@@ -57,6 +48,11 @@ SRCS+= SDL_dummysensor.c
 SRCS+= SDL_dynapi.c
 
 OBJS = $(SRCS:.c=.obj)
+
+.extensions:
+.extensions: .lib .dll .obj .c .asm
+
+.c: ./src;./src/dynapi;./src/audio;./src/cpuinfo;./src/events;./src/file;./src/haptic;./src/joystick;./src/power;./src/render;./src/render/software;./src/sensor;./src/stdlib;./src/thread;./src/timer;./src/video;./src/video/yuv2rgb;./src/haptic/dummy;./src/joystick/dummy;./src/loadso/dummy;./src/filesystem/dummy;./src/thread/generic;./src/timer/dummy;./src/power;./src/power/os2;./src/atomic;./src/audio/dummy;./src/audio/disk;./src/video/dummy;./src/sensor/dummy;./src/test;
 
 all: $(DLLFILE) $(LIBFILE) .symbolic
 
