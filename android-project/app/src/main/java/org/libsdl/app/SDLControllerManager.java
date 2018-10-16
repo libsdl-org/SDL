@@ -1,5 +1,6 @@
 package org.libsdl.app;
 
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -77,8 +78,8 @@ public class SDLControllerManager
     /**
      * This method is called by SDL using JNI.
      */
-    public static void hapticRun(int device_id, int length) {
-        mHapticHandler.run(device_id, length);
+    public static void hapticRun(int device_id, float intensity, int length) {
+        mHapticHandler.run(device_id, intensity, length);
     }
 
     /**
@@ -423,10 +424,50 @@ class SDLHapticHandler {
         mHaptics = new ArrayList<SDLHaptic>();
     }
 
-    public void run(int device_id, int length) {
+    public void run(int device_id, float intensity, int length) {
         SDLHaptic haptic = getHaptic(device_id);
         if (haptic != null) {
-            haptic.vib.vibrate (length);
+
+            Log.d("SDL", "Rtest: Vibe with intensity " + intensity + " for " + length);
+            if (intensity == 0.0f) {
+                stop(device_id);
+                return;
+            }
+
+            if (Build.VERSION.SDK_INT >= 26) {
+                // We have to do this dynamically to avoid issues on earlier SDKs.
+                // But we want to use the VibrationEffect so we can set amplitude.
+
+                try {
+                    int vibeValue = Math.round(intensity * 255);
+
+                    if (vibeValue > 255) {
+                        vibeValue = 255;
+                    }
+                    if (vibeValue < 1) {
+                        stop(device_id);
+                        return;
+                    }
+
+                    long longLength = length;
+                    Class vibrationEffectClass = Class.forName("android.os.VibrationEffect");
+                    Method oneShotMethod = vibrationEffectClass.getMethod("createOneShot", long.class, int.class);
+                    Object effect = oneShotMethod.invoke(null, longLength, vibeValue);
+                    Method vibeEffect = android.os.Vibrator.class.getMethod("vibrate", vibrationEffectClass);
+                    vibeEffect.invoke(haptic.vib, vibrationEffectClass.cast(effect));
+                }
+                catch (Exception e) {
+                    // Fall back to the generic method, which uses DEFAULT_AMPLITUDE, but works even if
+                    // something went horribly wrong with the Android 8.0 APIs.
+                    haptic.vib.vibrate(length);
+                }
+            }
+            else {
+                // Fall back to the generic method, which uses DEFAULT_AMPLITUDE, but exists
+                // on earlier SDKs.
+
+                haptic.vib.vibrate (length);
+            }
         }
     }
 
