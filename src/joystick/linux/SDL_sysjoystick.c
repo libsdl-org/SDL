@@ -814,26 +814,24 @@ LINUX_JoystickRumble(SDL_Joystick * joystick, Uint16 low_frequency_rumble, Uint1
 {
     struct input_event event;
 
-    if (joystick->hwdata->effect.id < 0) {
-        if (joystick->hwdata->ff_rumble) {
-            struct ff_effect *effect = &joystick->hwdata->effect;
+    if (joystick->hwdata->ff_rumble) {
+        struct ff_effect *effect = &joystick->hwdata->effect;
 
-            effect->type = FF_RUMBLE;
-            effect->replay.length = SDL_min(duration_ms, 32767);
-            effect->u.rumble.strong_magnitude = low_frequency_rumble;
-            effect->u.rumble.weak_magnitude = high_frequency_rumble;
-        } else if (joystick->hwdata->ff_sine) {
-            /* Scale and average the two rumble strengths */
-            Sint16 magnitude = (Sint16)(((low_frequency_rumble / 2) + (high_frequency_rumble / 2)) / 2);
-            struct ff_effect *effect = &joystick->hwdata->effect;
+        effect->type = FF_RUMBLE;
+        effect->replay.length = SDL_min(duration_ms, 32767);
+        effect->u.rumble.strong_magnitude = low_frequency_rumble;
+        effect->u.rumble.weak_magnitude = high_frequency_rumble;
+    } else if (joystick->hwdata->ff_sine) {
+        /* Scale and average the two rumble strengths */
+        Sint16 magnitude = (Sint16)(((low_frequency_rumble / 2) + (high_frequency_rumble / 2)) / 2);
+        struct ff_effect *effect = &joystick->hwdata->effect;
 
-            effect->type = FF_PERIODIC;
-            effect->replay.length = SDL_min(duration_ms, 32767);
-            effect->u.periodic.waveform = FF_SINE;
-            effect->u.periodic.magnitude = magnitude;
-        } else {
-            return SDL_Unsupported();
-        }
+        effect->type = FF_PERIODIC;
+        effect->replay.length = SDL_min(duration_ms, 32767);
+        effect->u.periodic.waveform = FF_SINE;
+        effect->u.periodic.magnitude = magnitude;
+    } else {
+        return SDL_Unsupported();
     }
 
     if (ioctl(joystick->hwdata->fd, EVIOCSFF, &joystick->hwdata->effect) < 0) {
