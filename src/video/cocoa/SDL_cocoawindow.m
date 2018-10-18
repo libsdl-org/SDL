@@ -632,8 +632,6 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     const unsigned int newflags = [NSEvent modifierFlags] & NSEventModifierFlagCapsLock;
     _data->videodata->modifierFlags = (_data->videodata->modifierFlags & ~NSEventModifierFlagCapsLock) | newflags;
     SDL_ToggleModState(KMOD_CAPS, newflags != 0);
-
-    ScheduleContextUpdates(_data);
 }
 
 - (void)windowDidResignKey:(NSNotification *)aNotification
@@ -1145,14 +1143,18 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 - (BOOL)mouseDownCanMoveWindow;
 - (void)drawRect:(NSRect)dirtyRect;
 - (BOOL)acceptsFirstMouse:(NSEvent *)theEvent;
+- (BOOL)wantsUpdateLayer;
+- (void)updateLayer;
 @end
 
 @implementation SDLView
+
 - (void)setSDLWindow:(SDL_Window*)window
 {
     _sdlWindow = window;
 }
 
+/* this is used on older macOS revisions. 10.8 and later use updateLayer. */
 - (void)drawRect:(NSRect)dirtyRect
 {
     /* Force the graphics context to clear to black so we don't get a flash of
@@ -1160,6 +1162,21 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
        only gets called for window creation and other extraordinary events. */
     [[NSColor blackColor] setFill];
     NSRectFill(dirtyRect);
+    SDL_SendWindowEvent(_sdlWindow, SDL_WINDOWEVENT_EXPOSED, 0, 0);
+}
+
+-(BOOL) wantsUpdateLayer
+{
+    return YES;
+}
+
+-(void) updateLayer
+{
+    /* Force the graphics context to clear to black so we don't get a flash of
+       white until the app is ready to draw. In practice on modern macOS, this
+       only gets called for window creation and other extraordinary events. */
+    self.layer.backgroundColor = NSColor.blackColor.CGColor;
+    ScheduleContextUpdates((SDL_WindowData *) _sdlWindow->driverdata);
     SDL_SendWindowEvent(_sdlWindow, SDL_WINDOWEVENT_EXPOSED, 0, 0);
 }
 
@@ -1345,6 +1362,7 @@ Cocoa_CreateWindow(_THIS, SDL_Window * window)
             [contentView setWantsBestResolutionOpenGLSurface:YES];
         }
     }
+
 #if SDL_VIDEO_OPENGL_ES2
 #if SDL_VIDEO_OPENGL_EGL
     if ((window->flags & SDL_WINDOW_OPENGL) &&
