@@ -410,8 +410,14 @@ Cocoa_GL_SwapWindow(_THIS, SDL_Window * window)
 { @autoreleasepool
 {
     SDLOpenGLContext* nscontext = (SDLOpenGLContext*)SDL_GL_GetCurrentContext();
+    SDL_VideoData *videodata = (SDL_VideoData *) _this->driverdata;
+
+    /* on 10.14 ("Mojave") and later, this deadlocks if two contexts in two
+       threads try to swap at the same time, so put a mutex around it. */
+    SDL_LockMutex(videodata->swaplock);
     [nscontext flushBuffer];
     [nscontext updateIfNeeded];
+    SDL_UnlockMutex(videodata->swaplock);
     return 0;
 }}
 
