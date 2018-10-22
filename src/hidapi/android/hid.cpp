@@ -14,6 +14,10 @@
 #include <string.h>	// For memcpy()
 
 #define TAG "hidapi"
+
+// Have error log always available
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, TAG, __VA_ARGS__)
+
 #ifdef DEBUG
 #define LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, TAG, __VA_ARGS__)
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, TAG, __VA_ARGS__)
@@ -398,6 +402,33 @@ public:
 		return m_pDevice;
 	}
 
+	void ExceptionCheck( JNIEnv *env, const char *pszMethodName )
+	{
+		if ( env->ExceptionCheck() )
+		{
+			// Get our exception
+			jthrowable jExcept = env->ExceptionOccurred();
+
+			// Clear the exception so we can call JNI again
+			env->ExceptionClear();
+
+			// Get our exception message
+			jclass jExceptClass = env->GetObjectClass( jExcept );
+			jmethodID jMessageMethod = env->GetMethodID( jExceptClass, "getMessage", "()Ljava/lang/String;" );
+			jstring jMessage = (jstring)( env->CallObjectMethod( jExcept, jMessageMethod ) );
+			const char *pszMessage = env->GetStringUTFChars( jMessage, NULL );
+
+			// ...and log it.
+			LOGE( "CHIDDevice::%s threw an exception: %s", pszMethodName, pszMessage );
+
+			// Cleanup
+			env->ReleaseStringUTFChars( jMessage, pszMessage );
+			env->DeleteLocalRef( jMessage );
+			env->DeleteLocalRef( jExceptClass );
+			env->DeleteLocalRef( jExcept );
+		}
+	}
+
 	bool BOpen()
 	{
 		// Make sure thread is attached to JVM/env
@@ -407,6 +438,7 @@ public:
 
 		m_bIsWaitingForOpen = false;
 		m_bOpenResult = env->CallBooleanMethod( g_HIDDeviceManagerCallbackHandler, g_midHIDDeviceManagerOpen, m_nId );
+		ExceptionCheck( env, "BOpen" );
 
 		if ( m_bIsWaitingForOpen )
 		{
@@ -515,6 +547,8 @@ public:
 
 		jbyteArray pBuf = NewByteArray( env, pData, nDataLen );
 		int nRet = env->CallIntMethod( g_HIDDeviceManagerCallbackHandler, g_midHIDDeviceManagerSendOutputReport, m_nId, pBuf );
+		ExceptionCheck( env, "SendOutputReport" );
+
 		env->DeleteLocalRef( pBuf );
 		return nRet;
 	}
@@ -528,6 +562,7 @@ public:
 
 		jbyteArray pBuf = NewByteArray( env, pData, nDataLen );
 		int nRet = env->CallIntMethod( g_HIDDeviceManagerCallbackHandler, g_midHIDDeviceManagerSendFeatureReport, m_nId, pBuf );
+		ExceptionCheck( env, "SendFeatureReport" );
 		env->DeleteLocalRef( pBuf );
 		return nRet;
 	}
@@ -564,6 +599,7 @@ public:
 
 		jbyteArray pBuf = NewByteArray( env, pData, nDataLen );
 		int nRet = env->CallBooleanMethod( g_HIDDeviceManagerCallbackHandler, g_midHIDDeviceManagerGetFeatureReport, m_nId, pBuf ) ? 0 : -1;
+		ExceptionCheck( env, "GetFeatureReport" );
 		env->DeleteLocalRef( pBuf );
 		if ( nRet < 0 )
 		{
@@ -622,7 +658,8 @@ public:
 		pthread_setspecific( g_ThreadKey, (void*)env );
 
 		env->CallVoidMethod( g_HIDDeviceManagerCallbackHandler, g_midHIDDeviceManagerClose, m_nId );
-
+		ExceptionCheck( env, "Close" );
+	
 		hid_mutex_guard dataLock( &m_dataLock );
 		m_vecData.clear();
 
