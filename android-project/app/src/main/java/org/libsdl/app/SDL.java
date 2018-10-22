@@ -66,7 +66,7 @@ public class SDL {
             Method loadMethod = relinkInstanceClass.getDeclaredMethod("loadLibrary", contextClass, stringClass, stringClass, relinkListenerClass);
             loadMethod.invoke(relinkInstance, mContext, libraryName, null, null);
         }
-        catch (final Exception e) {
+        catch (final Throwable e) {
             // Fall back
             try {
                 System.loadLibrary(libraryName);
