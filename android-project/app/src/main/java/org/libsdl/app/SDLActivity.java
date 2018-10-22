@@ -645,15 +645,54 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         msg.obj = data;
         boolean result = commandHandler.sendMessage(msg);
 
-        // Ensure we don't return until the resize has actually happened,
-        // or 250ms have passed.
-        if (command == COMMAND_CHANGE_WINDOW_STYLE) {
-            synchronized(SDLActivity.getContext()) {
-                try {
-                    SDLActivity.getContext().wait(250);
+        if ((Build.VERSION.SDK_INT >= 19) && (command == COMMAND_CHANGE_WINDOW_STYLE)) {
+            // Ensure we don't return until the resize has actually happened,
+            // or 500ms have passed.
+
+            boolean bShouldWait = false;
+            
+            if (data instanceof Integer) {
+                // Let's figure out if we're already laid out fullscreen or not.
+                Display display = ((WindowManager)getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
+                android.util.DisplayMetrics realMetrics = new android.util.DisplayMetrics();
+                display.getRealMetrics( realMetrics );
+        
+                boolean bFullscreenLayout = ((realMetrics.widthPixels == mSurface.getWidth()) && 
+                                             (realMetrics.heightPixels == mSurface.getHeight()));
+
+                if (((Integer)data).intValue() == 1) {
+                    // If we aren't laid out fullscreen or actively in fullscreen mode already, we're going
+                    // to change size and should wait for surfaceChanged() before we return, so the size
+                    // is right back in native code.  If we're already laid out fullscreen, though, we're
+                    // not going to change size even if we change decor modes, so we shouldn't wait for
+                    // surfaceChanged() -- which may not even happen -- and should return immediately.
+                    bShouldWait = !bFullscreenLayout;
                 }
-                catch (InterruptedException ie) {
-                    ie.printStackTrace();
+                else {
+                    // If we're laid out fullscreen (even if the status bar and nav bar are present),
+                    // or are actively in fullscreen, we're going to change size and should wait for
+                    // surfaceChanged before we return, so the size is right back in native code.
+                    bShouldWait = bFullscreenLayout;
+                }
+            }
+
+            if (bShouldWait) {
+                // We'll wait for the surfaceChanged() method, which will notify us
+                // when called.  That way, we know our current size is really the
+                // size we need, instead of grabbing a size that's still got
+                // the navigation and/or status bars before they're hidden.
+                //
+                // We'll wait for up to half a second, because some devices 
+                // take a surprisingly long time for the surface resize, but
+                // then we'll just give up and return.
+                //
+                synchronized(SDLActivity.getContext()) {
+                    try {
+                        SDLActivity.getContext().wait(500);
+                    }
+                    catch (InterruptedException ie) {
+                        ie.printStackTrace();
+                    }
                 }
             }
         }
@@ -1595,6 +1634,7 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         catch ( java.lang.Throwable throwable ) {}
 
         synchronized(SDLActivity.getContext()) {
+            // In case we're waiting on a size change after going fullscreen, send a notification.
             SDLActivity.getContext().notifyAll();
         }
 
