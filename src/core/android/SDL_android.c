@@ -466,10 +466,11 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv* env, jclass cls,
             int argc;
             int len;
             char **argv;
+            SDL_bool isstack;
 
             /* Prepare the arguments. */
             len = (*env)->GetArrayLength(env, array);
-            argv = SDL_stack_alloc(char*, 1 + len + 1);
+            argv = SDL_small_alloc(char*, 1 + len + 1, &isstack);  /* !!! FIXME: check for NULL */
             argc = 0;
             /* Use the name "app_process" so PHYSFS_platformCalcBaseDir() works.
                https://bitbucket.org/MartinFelis/love-android-sdl2/issue/23/release-build-crash-on-start
@@ -502,7 +503,7 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv* env, jclass cls,
             for (i = 0; i < argc; ++i) {
                 SDL_free(argv[i]);
             }
-            SDL_stack_free(argv);
+            SDL_small_free(argv, isstack);
 
         } else {
             __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): Couldn't find function %s in library %s", function_name, library_file);

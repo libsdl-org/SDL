@@ -282,6 +282,7 @@ SDL_LogMessageV(int category, SDL_LogPriority priority, const char *fmt, va_list
         return;
     }
 
+    /* !!! FIXME: why not just "char message[SDL_MAX_LOG_MESSAGE];" ? */
     message = SDL_stack_alloc(char, SDL_MAX_LOG_MESSAGE);
     if (!message) {
         return;
@@ -321,6 +322,7 @@ SDL_LogOutput(void *userdata, int category, SDL_LogPriority priority,
         char *output;
         size_t length;
         LPTSTR tstr;
+        SDL_bool isstack;
 
 #if !defined(HAVE_STDIO_H) && !defined(__WINRT__)
         BOOL attachResult;
@@ -364,7 +366,7 @@ SDL_LogOutput(void *userdata, int category, SDL_LogPriority priority,
 #endif /* !defined(HAVE_STDIO_H) && !defined(__WINRT__) */
 
         length = SDL_strlen(SDL_priority_prefixes[priority]) + 2 + SDL_strlen(message) + 1 + 1 + 1;
-        output = SDL_stack_alloc(char, length);
+        output = SDL_small_alloc(char, length, &isstack);
         SDL_snprintf(output, length, "%s: %s\r\n", SDL_priority_prefixes[priority], message);
         tstr = WIN_UTF8ToString(output);
         
@@ -389,7 +391,7 @@ SDL_LogOutput(void *userdata, int category, SDL_LogPriority priority,
 #endif /* !defined(HAVE_STDIO_H) && !defined(__WINRT__) */
 
         SDL_free(tstr);
-        SDL_stack_free(output);
+        SDL_small_free(output, isstack);
     }
 #elif defined(__ANDROID__)
     {
@@ -404,7 +406,7 @@ SDL_LogOutput(void *userdata, int category, SDL_LogPriority priority,
     extern void SDL_NSLog(const char *text);
     {
         char *text;
-
+        /* !!! FIXME: why not just "char text[SDL_MAX_LOG_MESSAGE];" ? */
         text = SDL_stack_alloc(char, SDL_MAX_LOG_MESSAGE);
         if (text) {
             SDL_snprintf(text, SDL_MAX_LOG_MESSAGE, "%s: %s", SDL_priority_prefixes[priority], message);

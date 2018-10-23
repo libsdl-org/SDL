@@ -528,6 +528,7 @@ SDL_RWFromFile(const char *file, const char *mode)
         char *path;
         FILE *fp;
 
+        /* !!! FIXME: why not just "char path[PATH_MAX];" ? */
         path = SDL_stack_alloc(char, PATH_MAX);
         if (path) {
             SDL_snprintf(path, PATH_MAX, "%s/%s",

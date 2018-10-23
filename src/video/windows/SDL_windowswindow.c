@@ -380,10 +380,11 @@ WIN_CreateWindowFrom(_THIS, SDL_Window * window, const void *data)
     HWND hwnd = (HWND) data;
     LPTSTR title;
     int titleLen;
+    SDL_bool isstack;
 
     /* Query the title from the existing window */
     titleLen = GetWindowTextLength(hwnd);
-    title = SDL_stack_alloc(TCHAR, titleLen + 1);
+    title = SDL_small_alloc(TCHAR, titleLen + 1, &isstack);
     if (title) {
         titleLen = GetWindowText(hwnd, title, titleLen);
     } else {
@@ -393,7 +394,7 @@ WIN_CreateWindowFrom(_THIS, SDL_Window * window, const void *data)
         window->title = WIN_StringToUTF8(title);
     }
     if (title) {
-        SDL_stack_free(title);
+        SDL_small_free(title, isstack);
     }
 
     if (SetupWindowData(_this, window, hwnd, GetParent(hwnd), SDL_FALSE) < 0) {
@@ -443,14 +444,15 @@ WIN_SetWindowIcon(_THIS, SDL_Window * window, SDL_Surface * icon)
     BYTE *icon_bmp;
     int icon_len, mask_len, y;
     SDL_RWops *dst;
+    SDL_bool isstack;
 
     /* Create temporary buffer for ICONIMAGE structure */
     mask_len = (icon->h * (icon->w + 7)/8);
     icon_len = 40 + icon->h * icon->w * sizeof(Uint32) + mask_len;
-    icon_bmp = SDL_stack_alloc(BYTE, icon_len);
+    icon_bmp = SDL_small_alloc(BYTE, icon_len, &isstack);
     dst = SDL_RWFromMem(icon_bmp, icon_len);
     if (!dst) {
-        SDL_stack_free(icon_bmp);
+        SDL_small_free(icon_bmp, isstack);
         return;
     }
 
@@ -481,7 +483,7 @@ WIN_SetWindowIcon(_THIS, SDL_Window * window, SDL_Surface * icon)
     hicon = CreateIconFromResource(icon_bmp, icon_len, TRUE, 0x00030000);
 
     SDL_RWclose(dst);
-    SDL_stack_free(icon_bmp);
+    SDL_small_free(icon_bmp, isstack);
 
     /* Set the icon for the window */
     SendMessage(hwnd, WM_SETICON, ICON_SMALL, (LPARAM) hicon);

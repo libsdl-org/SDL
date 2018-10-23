@@ -340,11 +340,12 @@ CompileShader(GL_ShaderContext *ctx, GLhandleARB shader, const char *defines, co
     ctx->glCompileShaderARB(shader);
     ctx->glGetObjectParameterivARB(shader, GL_OBJECT_COMPILE_STATUS_ARB, &status);
     if (status == 0) {
+        SDL_bool isstack;
         GLint length;
         char *info;
 
         ctx->glGetObjectParameterivARB(shader, GL_OBJECT_INFO_LOG_LENGTH_ARB, &length);
-        info = SDL_stack_alloc(char, length+1);
+        info = SDL_small_alloc(char, length+1, &isstack);
         ctx->glGetInfoLogARB(shader, length, NULL, info);
         SDL_LogError(SDL_LOG_CATEGORY_RENDER,
             "Failed to compile shader:\n%s%s\n%s", defines, source, info);
@@ -352,7 +353,7 @@ CompileShader(GL_ShaderContext *ctx, GLhandleARB shader, const char *defines, co
         fprintf(stderr,
             "Failed to compile shader:\n%s%s\n%s", defines, source, info);
 #endif
-        SDL_stack_free(info);
+        SDL_small_free(info, isstack);
 
         return SDL_FALSE;
     } else {

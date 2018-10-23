@@ -203,13 +203,14 @@ static void UpdateEventsForDeviceRemoval()
 {
     int i, num_events;
     SDL_Event *events;
+    SDL_bool isstack;
 
     num_events = SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, SDL_CONTROLLERDEVICEADDED, SDL_CONTROLLERDEVICEADDED);
     if (num_events <= 0) {
         return;
     }
 
-    events = SDL_stack_alloc(SDL_Event, num_events);
+    events = SDL_small_alloc(SDL_Event, num_events, &isstack);
     if (!events) {
         return;
     }
@@ -220,7 +221,7 @@ static void UpdateEventsForDeviceRemoval()
     }
     SDL_PeepEvents(events, num_events, SDL_ADDEVENT, 0, 0);
 
-    SDL_stack_free(events);
+    SDL_small_free(events, isstack);
 }
 
 static SDL_bool HasSameOutput(SDL_ExtendedGameControllerBind *a, SDL_ExtendedGameControllerBind *b)
