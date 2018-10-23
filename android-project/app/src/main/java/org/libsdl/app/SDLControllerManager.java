@@ -36,27 +36,24 @@ public class SDLControllerManager
     private static final String TAG = "SDLControllerManager";
 
     public static void initialize() {
-        mJoystickHandler = null;
-        mHapticHandler = null;
-
-        SDLControllerManager.setup();
-    }
-
-    public static void setup() {
-        if (Build.VERSION.SDK_INT >= 19) {
-            mJoystickHandler = new SDLJoystickHandler_API19();
-        } else if (Build.VERSION.SDK_INT >= 16) {
-            mJoystickHandler = new SDLJoystickHandler_API16();
-        } else if (Build.VERSION.SDK_INT >= 12) {
-            mJoystickHandler = new SDLJoystickHandler_API12();
-        } else {
-            mJoystickHandler = new SDLJoystickHandler();
+        if (mJoystickHandler == null) {
+            if (Build.VERSION.SDK_INT >= 19) {
+                mJoystickHandler = new SDLJoystickHandler_API19();
+            } else if (Build.VERSION.SDK_INT >= 16) {
+                mJoystickHandler = new SDLJoystickHandler_API16();
+            } else if (Build.VERSION.SDK_INT >= 12) {
+                mJoystickHandler = new SDLJoystickHandler_API12();
+            } else {
+                mJoystickHandler = new SDLJoystickHandler();
+            }
         }
 
-        if (Build.VERSION.SDK_INT >= 26) {
-            mHapticHandler = new SDLHapticHandler_API26();
-        } else {
-            mHapticHandler = new SDLHapticHandler();
+        if (mHapticHandler == null) {
+            if (Build.VERSION.SDK_INT >= 26) {
+                mHapticHandler = new SDLHapticHandler_API26();
+            } else {
+                mHapticHandler = new SDLHapticHandler();
+            }
         }
     }
 
