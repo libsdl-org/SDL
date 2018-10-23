@@ -40,7 +40,7 @@ extern "C" {
 #endif
 
 /**
- *  \brief  The structure that defines a point
+ *  \brief  The structure that defines a point (integer)
  *
  *  \sa SDL_EnclosePoints
  *  \sa SDL_PointInRect
@@ -52,7 +52,20 @@ typedef struct SDL_Point
 } SDL_Point;
 
 /**
- *  \brief A rectangle, with the origin at the upper left.
+ *  \brief  The structure that defines a point (floating point)
+ *
+ *  \sa SDL_EnclosePoints
+ *  \sa SDL_PointInRect
+ */
+typedef struct SDL_FPoint
+{
+    float x;
+    float y;
+} SDL_FPoint;
+
+
+/**
+ *  \brief A rectangle, with the origin at the upper left (integer).
  *
  *  \sa SDL_RectEmpty
  *  \sa SDL_RectEquals
@@ -66,6 +79,19 @@ typedef struct SDL_Rect
     int x, y;
     int w, h;
 } SDL_Rect;
+
+
+/**
+ *  \brief A rectangle, with the origin at the upper left (floating point).
+ */
+typedef struct SDL_FRect
+{
+    float x;
+    float y;
+    float w;
+    float h;
+} SDL_FRect;
+
 
 /**
  *  \brief Returns true if point resides inside a rectangle.

@@ -39,20 +39,6 @@ typedef enum
     SDL_ScaleModeBest
 } SDL_ScaleMode;
 
-typedef struct
-{
-    float x;
-    float y;
-} SDL_FPoint;
-
-typedef struct
-{
-    float x;
-    float y;
-    float w;
-    float h;
-} SDL_FRect;
-
 /* Define the SDL texture structure */
 struct SDL_Texture
 {

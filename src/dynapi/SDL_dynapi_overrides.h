@@ -697,3 +697,13 @@
 #define SDL_IsTablet SDL_IsTablet_REAL
 #define SDL_GetDisplayOrientation SDL_GetDisplayOrientation_REAL
 #define SDL_RenderFlush SDL_RenderFlush_REAL
+#define SDL_RenderDrawPointF SDL_RenderDrawPointF_REAL
+#define SDL_RenderDrawPointsF SDL_RenderDrawPointsF_REAL
+#define SDL_RenderDrawLineF SDL_RenderDrawLineF_REAL
+#define SDL_RenderDrawLinesF SDL_RenderDrawLinesF_REAL
+#define SDL_RenderDrawRectF SDL_RenderDrawRectF_REAL
+#define SDL_RenderDrawRectsF SDL_RenderDrawRectsF_REAL
+#define SDL_RenderFillRectF SDL_RenderFillRectF_REAL
+#define SDL_RenderFillRectsF SDL_RenderFillRectsF_REAL
+#define SDL_RenderCopyF SDL_RenderCopyF_REAL
+#define SDL_RenderCopyExF SDL_RenderCopyExF_REAL
