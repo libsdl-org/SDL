@@ -2176,8 +2176,9 @@ RenderDrawPointsWithRects(SDL_Renderer * renderer,
     SDL_FRect *frects;
     int i;
     int retval = -1;
+    SDL_bool isstack;
 
-    frects = SDL_stack_alloc(SDL_FRect, count);
+    frects = SDL_small_alloc(SDL_FRect, count, &isstack);
     if (!frects) {
         return SDL_OutOfMemory();
     }
@@ -2190,7 +2191,7 @@ RenderDrawPointsWithRects(SDL_Renderer * renderer,
 
     retval = QueueCmdFillRects(renderer, frects, count);
 
-    SDL_stack_free(frects);
+    SDL_small_free(frects, isstack);
 
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
@@ -2202,6 +2203,7 @@ SDL_RenderDrawPoints(SDL_Renderer * renderer,
     SDL_FPoint *fpoints;
     int i;
     int retval;
+    SDL_bool isstack;
 
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -2221,7 +2223,7 @@ SDL_RenderDrawPoints(SDL_Renderer * renderer,
         return RenderDrawPointsWithRects(renderer, points, count);
     }
 
-    fpoints = SDL_stack_alloc(SDL_FPoint, count);
+    fpoints = SDL_small_alloc(SDL_FPoint, count, &isstack);
     if (!fpoints) {
         return SDL_OutOfMemory();
     }
@@ -2232,7 +2234,7 @@ SDL_RenderDrawPoints(SDL_Renderer * renderer,
 
     retval = QueueCmdDrawPoints(renderer, fpoints, count);
 
-    SDL_stack_free(fpoints);
+    SDL_small_free(fpoints, isstack);
 
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
@@ -2258,8 +2260,9 @@ RenderDrawLinesWithRects(SDL_Renderer * renderer,
     SDL_FPoint fpoints[2];
     int i, nrects = 0;
     int retval = 0;
+    SDL_bool isstack;
 
-    frects = SDL_stack_alloc(SDL_FRect, count-1);
+    frects = SDL_small_alloc(SDL_FRect, count-1, &isstack);
     if (!frects) {
         return SDL_OutOfMemory();
     }
@@ -2295,7 +2298,7 @@ RenderDrawLinesWithRects(SDL_Renderer * renderer,
 
     retval += QueueCmdFillRects(renderer, frects, nrects);
 
-    SDL_stack_free(frects);
+    SDL_small_free(frects, isstack);
 
     if (retval < 0) {
         retval = -1;
@@ -2310,6 +2313,7 @@ SDL_RenderDrawLines(SDL_Renderer * renderer,
     SDL_FPoint *fpoints;
     int i;
     int retval;
+    SDL_bool isstack;
 
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -2329,7 +2333,7 @@ SDL_RenderDrawLines(SDL_Renderer * renderer,
         return RenderDrawLinesWithRects(renderer, points, count);
     }
 
-    fpoints = SDL_stack_alloc(SDL_FPoint, count);
+    fpoints = SDL_small_alloc(SDL_FPoint, count, &isstack);
     if (!fpoints) {
         return SDL_OutOfMemory();
     }
@@ -2340,7 +2344,7 @@ SDL_RenderDrawLines(SDL_Renderer * renderer,
 
     retval = QueueCmdDrawLines(renderer, fpoints, count);
 
-    SDL_stack_free(fpoints);
+    SDL_small_free(fpoints, isstack);
 
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
@@ -2426,6 +2430,7 @@ SDL_RenderFillRects(SDL_Renderer * renderer,
     SDL_FRect *frects;
     int i;
     int retval;
+    SDL_bool isstack;
 
     CHECK_RENDERER_MAGIC(renderer, -1);
 
@@ -2441,7 +2446,7 @@ SDL_RenderFillRects(SDL_Renderer * renderer,
         return 0;
     }
 
-    frects = SDL_stack_alloc(SDL_FRect, count);
+    frects = SDL_small_alloc(SDL_FRect, count, &isstack);
     if (!frects) {
         return SDL_OutOfMemory();
     }
@@ -2454,7 +2459,7 @@ SDL_RenderFillRects(SDL_Renderer * renderer,
 
     retval = QueueCmdFillRects(renderer, frects, count);
 
-    SDL_stack_free(frects);
+    SDL_small_free(frects, isstack);
 
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }

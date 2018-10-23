@@ -131,6 +131,7 @@ main_utf8(int argc, char *argv[])
 static int
 main_getcmdline()
 {
+    SDL_bool isstack;
     char **argv;
     int argc;
     char *cmdline;
@@ -150,7 +151,7 @@ main_getcmdline()
 
     /* Parse it into argv and argc */
     argc = ParseCommandLine(cmdline, NULL);
-    argv = SDL_stack_alloc(char *, argc + 1);
+    argv = SDL_small_alloc(char *, argc + 1, &isstack);
     if (argv == NULL) {
         return OutOfMemory();
     }
@@ -158,7 +159,7 @@ main_getcmdline()
 
     retval = main_utf8(argc, argv);
 
-    SDL_stack_free(argv);
+    SDL_small_free(argv, isstack);
     SDL_free(cmdline);
 
     return retval;
@@ -177,8 +178,9 @@ console_ansi_main(int argc, char *argv[])
 int
 console_wmain(int argc, wchar_t *wargv[], wchar_t *wenvp)
 {
+    SDL_bool isstack;
     int retval = 0;
-    char **argv = SDL_stack_alloc(char*, argc + 1);
+    char **argv = SDL_small_alloc(char*, argc + 1, &isstack);
     int i;
 
     for (i = 0; i < argc; ++i) {
@@ -189,7 +191,7 @@ console_wmain(int argc, wchar_t *wargv[], wchar_t *wenvp)
     retval = main_utf8(argc, argv);
 
     /* !!! FIXME: we are leaking all the elements of argv we allocated. */
-    SDL_stack_free(argv);
+    SDL_small_free(argv, isstack);
 
     return retval;
 }

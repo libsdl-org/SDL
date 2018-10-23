@@ -187,6 +187,7 @@ Cocoa_InitModes(_THIS)
     CGDisplayErr result;
     CGDirectDisplayID *displays;
     CGDisplayCount numDisplays;
+    SDL_bool isstack;
     int pass, i;
 
     result = CGGetOnlineDisplayList(0, NULL, &numDisplays);
@@ -194,11 +195,11 @@ Cocoa_InitModes(_THIS)
         CG_SetError("CGGetOnlineDisplayList()", result);
         return;
     }
-    displays = SDL_stack_alloc(CGDirectDisplayID, numDisplays);
+    displays = SDL_small_alloc(CGDirectDisplayID, numDisplays, &isstack);
     result = CGGetOnlineDisplayList(numDisplays, displays, &numDisplays);
     if (result != kCGErrorSuccess) {
         CG_SetError("CGGetOnlineDisplayList()", result);
-        SDL_stack_free(displays);
+        SDL_small_free(displays, isstack);
         return;
     }
 
@@ -260,7 +261,7 @@ Cocoa_InitModes(_THIS)
             SDL_free(display.name);
         }
     }
-    SDL_stack_free(displays);
+    SDL_small_free(displays, isstack);
 }}
 
 int
