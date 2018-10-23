@@ -2157,31 +2157,37 @@ SDL_RenderClear(SDL_Renderer * renderer)
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
+
+/* !!! FIXME: delete all the duplicate code for the integer versions in 2.1,
+   !!! FIXME:  making the floating point versions the only available APIs. */
+
 int
 SDL_RenderDrawPoint(SDL_Renderer * renderer, int x, int y)
 {
-    SDL_Point point;
-    int retval;
+    const SDL_FPoint fpoint = { (float) x, (float) y };
+    return SDL_RenderDrawPointsF(renderer, &fpoint, 1);
+}
 
-    point.x = x;
-    point.y = y;
-    retval = SDL_RenderDrawPoints(renderer, &point, 1);
-    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
+int
+SDL_RenderDrawPointF(SDL_Renderer * renderer, float x, float y)
+{
+    const SDL_FPoint fpoint = { x, y };
+    return SDL_RenderDrawPointsF(renderer, &fpoint, 1);
 }
 
 static int
 RenderDrawPointsWithRects(SDL_Renderer * renderer,
-                     const SDL_Point * points, int count)
+                          const SDL_Point * points, const int count)
 {
-    SDL_FRect *frects;
-    int i;
     int retval = -1;
     SDL_bool isstack;
+    SDL_FRect *frects = SDL_small_alloc(SDL_FRect, count, &isstack);
+    int i;
 
-    frects = SDL_small_alloc(SDL_FRect, count, &isstack);
     if (!frects) {
         return SDL_OutOfMemory();
     }
+
     for (i = 0; i < count; ++i) {
         frects[i].x = points[i].x * renderer->scale.x;
         frects[i].y = points[i].y * renderer->scale.y;
@@ -2239,21 +2245,148 @@ SDL_RenderDrawPoints(SDL_Renderer * renderer,
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
+static int
+RenderDrawPointsWithRectsF(SDL_Renderer * renderer,
+                           const SDL_FPoint * fpoints, const int count)
+{
+    int retval = -1;
+    SDL_bool isstack;
+    SDL_FRect *frects = SDL_small_alloc(SDL_FRect, count, &isstack);
+    int i;
+
+    if (!frects) {
+        return SDL_OutOfMemory();
+    }
+
+    for (i = 0; i < count; ++i) {
+        frects[i].x = fpoints[i].x * renderer->scale.x;
+        frects[i].y = fpoints[i].y * renderer->scale.y;
+        frects[i].w = renderer->scale.x;
+        frects[i].h = renderer->scale.y;
+    }
+
+    retval = QueueCmdFillRects(renderer, frects, count);
+
+    SDL_small_free(frects, isstack);
+
+    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
+}
+
+int
+SDL_RenderDrawPointsF(SDL_Renderer * renderer,
+                      const SDL_FPoint * points, int count)
+{
+    SDL_FPoint *fpoints;
+    int i;
+    int retval;
+    SDL_bool isstack;
+
+    CHECK_RENDERER_MAGIC(renderer, -1);
+
+    if (!points) {
+        return SDL_SetError("SDL_RenderDrawFPoints(): Passed NULL points");
+    }
+    if (count < 1) {
+        return 0;
+    }
+
+    /* Don't draw while we're hidden */
+    if (renderer->hidden) {
+        return 0;
+    }
+
+    if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f) {
+        return RenderDrawPointsWithRectsF(renderer, points, count);
+    }
+
+    fpoints = SDL_small_alloc(SDL_FPoint, count, &isstack);
+    if (!fpoints) {
+        return SDL_OutOfMemory();
+    }
+    for (i = 0; i < count; ++i) {
+        fpoints[i].x = points[i].x * renderer->scale.x;
+        fpoints[i].y = points[i].y * renderer->scale.y;
+    }
+
+    retval = QueueCmdDrawPoints(renderer, fpoints, count);
+
+    SDL_small_free(fpoints, isstack);
+
+    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
+}
+
 int
 SDL_RenderDrawLine(SDL_Renderer * renderer, int x1, int y1, int x2, int y2)
 {
-    SDL_Point points[2];
+    const SDL_FPoint points[2] = { { (float) x1, (float) y1 }, { (float) x2, (float) y2 } };
+    return SDL_RenderDrawLinesF(renderer, points, 2);
+}
 
-    points[0].x = x1;
-    points[0].y = y1;
-    points[1].x = x2;
-    points[1].y = y2;
-    return SDL_RenderDrawLines(renderer, points, 2);
+int
+SDL_RenderDrawLineF(SDL_Renderer * renderer, float x1, float y1, float x2, float y2)
+{
+    const SDL_FPoint points[2] = { { x1, y1 }, { x2, y2 } };
+    return SDL_RenderDrawLinesF(renderer, points, 2);
 }
 
 static int
 RenderDrawLinesWithRects(SDL_Renderer * renderer,
-                     const SDL_Point * points, int count)
+                     const SDL_Point * points, const int count)
+{
+    SDL_FRect *frect;
+    SDL_FRect *frects;
+    SDL_FPoint fpoints[2];
+    int i, nrects = 0;
+    int retval = 0;
+    SDL_bool isstack;
+
+    frects = SDL_small_alloc(SDL_FRect, count-1, &isstack);
+    if (!frects) {
+        return SDL_OutOfMemory();
+    }
+
+    for (i = 0; i < count-1; ++i) {
+        if (points[i].x == points[i+1].x) {
+            const int minY = SDL_min(points[i].y, points[i+1].y);
+            const int maxY = SDL_max(points[i].y, points[i+1].y);
+
+            frect = &frects[nrects++];
+            frect->x = points[i].x * renderer->scale.x;
+            frect->y = minY * renderer->scale.y;
+            frect->w = renderer->scale.x;
+            frect->h = (maxY - minY + 1) * renderer->scale.y;
+        } else if (points[i].y == points[i+1].y) {
+            const int minX = SDL_min(points[i].x, points[i+1].x);
+            const int maxX = SDL_max(points[i].x, points[i+1].x);
+
+            frect = &frects[nrects++];
+            frect->x = minX * renderer->scale.x;
+            frect->y = points[i].y * renderer->scale.y;
+            frect->w = (maxX - minX + 1) * renderer->scale.x;
+            frect->h = renderer->scale.y;
+        } else {
+            /* FIXME: We can't use a rect for this line... */
+            fpoints[0].x = points[i].x * renderer->scale.x;
+            fpoints[0].y = points[i].y * renderer->scale.y;
+            fpoints[1].x = points[i+1].x * renderer->scale.x;
+            fpoints[1].y = points[i+1].y * renderer->scale.y;
+            retval += QueueCmdDrawLines(renderer, fpoints, 2);
+        }
+    }
+
+    retval += QueueCmdFillRects(renderer, frects, nrects);
+
+    SDL_small_free(frects, isstack);
+
+    if (retval < 0) {
+        retval = -1;
+    }
+    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
+}
+
+static int
+RenderDrawLinesWithRectsF(SDL_Renderer * renderer,
+                          const SDL_FPoint * points, const int count)
 {
     SDL_FRect *frect;
     SDL_FRect *frects;
@@ -2350,19 +2483,82 @@ SDL_RenderDrawLines(SDL_Renderer * renderer,
 }
 
 int
+SDL_RenderDrawLinesF(SDL_Renderer * renderer,
+                     const SDL_FPoint * points, int count)
+{
+    SDL_FPoint *fpoints;
+    int i;
+    int retval;
+    SDL_bool isstack;
+
+    CHECK_RENDERER_MAGIC(renderer, -1);
+
+    if (!points) {
+        return SDL_SetError("SDL_RenderDrawLines(): Passed NULL points");
+    }
+    if (count < 2) {
+        return 0;
+    }
+
+    /* Don't draw while we're hidden */
+    if (renderer->hidden) {
+        return 0;
+    }
+
+    if (renderer->scale.x != 1.0f || renderer->scale.y != 1.0f) {
+        return RenderDrawLinesWithRectsF(renderer, points, count);
+    }
+
+    fpoints = SDL_small_alloc(SDL_FPoint, count, &isstack);
+    if (!fpoints) {
+        return SDL_OutOfMemory();
+    }
+    for (i = 0; i < count; ++i) {
+        fpoints[i].x = points[i].x * renderer->scale.x;
+        fpoints[i].y = points[i].y * renderer->scale.y;
+    }
+
+    retval = QueueCmdDrawLines(renderer, fpoints, count);
+
+    SDL_small_free(fpoints, isstack);
+
+    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
+}
+
+int
 SDL_RenderDrawRect(SDL_Renderer * renderer, const SDL_Rect * rect)
 {
-    SDL_Rect full_rect;
-    SDL_Point points[5];
+    SDL_FRect frect;
+    SDL_FRect *prect = NULL;
+
+    if (rect) {
+        frect.x = (float) rect->x;
+        frect.y = (float) rect->y;
+        frect.w = (float) rect->w;
+        frect.h = (float) rect->h;
+        prect = &frect;
+    }
+
+    return SDL_RenderDrawRectF(renderer, prect);
+}
+
+int
+SDL_RenderDrawRectF(SDL_Renderer * renderer, const SDL_FRect * rect)
+{
+    SDL_FRect frect;
+    SDL_FPoint points[5];
 
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     /* If 'rect' == NULL, then outline the whole surface */
     if (!rect) {
-        SDL_RenderGetViewport(renderer, &full_rect);
-        full_rect.x = 0;
-        full_rect.y = 0;
-        rect = &full_rect;
+        SDL_Rect r;
+        SDL_RenderGetViewport(renderer, &r);
+        frect.x = 0.0f;
+        frect.y = 0.0f;
+        frect.w = (float) r.w;
+        frect.h = (float) r.h;
+        rect = &frect;
     }
 
     points[0].x = rect->x;
@@ -2375,7 +2571,7 @@ SDL_RenderDrawRect(SDL_Renderer * renderer, const SDL_Rect * rect)
     points[3].y = rect->y+rect->h-1;
     points[4].x = rect->x;
     points[4].y = rect->y;
-    return SDL_RenderDrawLines(renderer, points, 5);
+    return SDL_RenderDrawLinesF(renderer, points, 5);
 }
 
 int
@@ -2407,20 +2603,75 @@ SDL_RenderDrawRects(SDL_Renderer * renderer,
 }
 
 int
+SDL_RenderDrawRectsF(SDL_Renderer * renderer,
+                     const SDL_FRect * rects, int count)
+{
+    int i;
+
+    CHECK_RENDERER_MAGIC(renderer, -1);
+
+    if (!rects) {
+        return SDL_SetError("SDL_RenderDrawRects(): Passed NULL rects");
+    }
+    if (count < 1) {
+        return 0;
+    }
+
+    /* Don't draw while we're hidden */
+    if (renderer->hidden) {
+        return 0;
+    }
+
+    for (i = 0; i < count; ++i) {
+        if (SDL_RenderDrawRectF(renderer, &rects[i]) < 0) {
+            return -1;
+        }
+    }
+    return 0;
+}
+
+int
 SDL_RenderFillRect(SDL_Renderer * renderer, const SDL_Rect * rect)
 {
-    SDL_Rect full_rect = { 0, 0, 0, 0 };
+    SDL_FRect frect;
+
+    CHECK_RENDERER_MAGIC(renderer, -1);
+
+    /* If 'rect' == NULL, then outline the whole surface */
+    if (rect) {
+        frect.x = (float) rect->x;
+        frect.y = (float) rect->y;
+        frect.w = (float) rect->w;
+        frect.h = (float) rect->h;
+    } else {
+        SDL_Rect r;
+        SDL_RenderGetViewport(renderer, &r);
+        frect.x = 0.0f;
+        frect.y = 0.0f;
+        frect.w = (float) r.w;
+        frect.h = (float) r.h;
+    }
+    return SDL_RenderFillRectsF(renderer, &frect, 1);
+}
+
+int
+SDL_RenderFillRectF(SDL_Renderer * renderer, const SDL_FRect * rect)
+{
+    SDL_FRect frect;
 
     CHECK_RENDERER_MAGIC(renderer, -1);
 
     /* If 'rect' == NULL, then outline the whole surface */
     if (!rect) {
-        SDL_RenderGetViewport(renderer, &full_rect);
-        full_rect.x = 0;
-        full_rect.y = 0;
-        rect = &full_rect;
+        SDL_Rect r;
+        SDL_RenderGetViewport(renderer, &r);
+        frect.x = 0.0f;
+        frect.y = 0.0f;
+        frect.w = (float) r.w;
+        frect.h = (float) r.h;
+        rect = &frect;
     }
-    return SDL_RenderFillRects(renderer, rect, 1);
+    return SDL_RenderFillRectsF(renderer, rect, 1);
 }
 
 int
@@ -2465,12 +2716,123 @@ SDL_RenderFillRects(SDL_Renderer * renderer,
 }
 
 int
+SDL_RenderFillRectsF(SDL_Renderer * renderer,
+                     const SDL_FRect * rects, int count)
+{
+    SDL_FRect *frects;
+    int i;
+    int retval;
+    SDL_bool isstack;
+
+    CHECK_RENDERER_MAGIC(renderer, -1);
+
+    if (!rects) {
+        return SDL_SetError("SDL_RenderFillFRects(): Passed NULL rects");
+    }
+    if (count < 1) {
+        return 0;
+    }
+
+    /* Don't draw while we're hidden */
+    if (renderer->hidden) {
+        return 0;
+    }
+
+    frects = SDL_small_alloc(SDL_FRect, count, &isstack);
+    if (!frects) {
+        return SDL_OutOfMemory();
+    }
+    for (i = 0; i < count; ++i) {
+        frects[i].x = rects[i].x * renderer->scale.x;
+        frects[i].y = rects[i].y * renderer->scale.y;
+        frects[i].w = rects[i].w * renderer->scale.x;
+        frects[i].h = rects[i].h * renderer->scale.y;
+    }
+
+    retval = QueueCmdFillRects(renderer, frects, count);
+
+    SDL_small_free(frects, isstack);
+
+    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
+}
+
+/* !!! FIXME: move this to a public API if we want to do float versions of all of these later */
+SDL_FORCE_INLINE SDL_bool SDL_FRectEmpty(const SDL_FRect *r)
+{
+    return ((!r) || (r->w <= 0.0f) || (r->h <= 0.0f)) ? SDL_TRUE : SDL_FALSE;
+}
+
+/* !!! FIXME: move this to a public API if we want to do float versions of all of these later */
+static SDL_bool
+SDL_HasIntersectionF(const SDL_FRect * A, const SDL_FRect * B)
+{
+    float Amin, Amax, Bmin, Bmax;
+
+    if (!A) {
+        SDL_InvalidParamError("A");
+        return SDL_FALSE;
+    }
+
+    if (!B) {
+        SDL_InvalidParamError("B");
+        return SDL_FALSE;
+    }
+
+    /* Special cases for empty rects */
+    if (SDL_FRectEmpty(A) || SDL_FRectEmpty(B)) {
+        return SDL_FALSE;
+    }
+
+    /* Horizontal intersection */
+    Amin = A->x;
+    Amax = Amin + A->w;
+    Bmin = B->x;
+    Bmax = Bmin + B->w;
+    if (Bmin > Amin)
+        Amin = Bmin;
+    if (Bmax < Amax)
+        Amax = Bmax;
+    if (Amax <= Amin)
+        return SDL_FALSE;
+
+    /* Vertical intersection */
+    Amin = A->y;
+    Amax = Amin + A->h;
+    Bmin = B->y;
+    Bmax = Bmin + B->h;
+    if (Bmin > Amin)
+        Amin = Bmin;
+    if (Bmax < Amax)
+        Amax = Bmax;
+    if (Amax <= Amin)
+        return SDL_FALSE;
+
+    return SDL_TRUE;
+}
+
+int
 SDL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
                const SDL_Rect * srcrect, const SDL_Rect * dstrect)
 {
-    SDL_Rect real_srcrect = { 0, 0, 0, 0 };
-    SDL_Rect real_dstrect = { 0, 0, 0, 0 };
-    SDL_FRect frect;
+    SDL_FRect dstfrect;
+    SDL_FRect *pdstfrect = NULL;
+    if (dstrect) {
+        dstfrect.x = (float) dstrect->x;
+        dstfrect.y = (float) dstrect->y;
+        dstfrect.w = (float) dstrect->w;
+        dstfrect.h = (float) dstrect->h;
+        pdstfrect = &dstfrect;
+    }
+    return SDL_RenderCopyF(renderer, texture, srcrect, pdstfrect);
+}
+
+int
+SDL_RenderCopyF(SDL_Renderer * renderer, SDL_Texture * texture,
+                const SDL_Rect * srcrect, const SDL_FRect * dstrect)
+{
+    SDL_Rect real_srcrect;
+    SDL_FRect real_dstrect;
+    SDL_Rect r;
     int retval;
 
     CHECK_RENDERER_MAGIC(renderer, -1);
@@ -2495,11 +2857,13 @@ SDL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
         }
     }
 
-    SDL_RenderGetViewport(renderer, &real_dstrect);
-    real_dstrect.x = 0;
-    real_dstrect.y = 0;
+    SDL_RenderGetViewport(renderer, &r);
+    real_dstrect.x = 0.0f;
+    real_dstrect.y = 0.0f;
+    real_dstrect.w = (float) r.w;
+    real_dstrect.h = (float) r.h;
     if (dstrect) {
-        if (!SDL_HasIntersection(dstrect, &real_dstrect)) {
+        if (!SDL_HasIntersectionF(dstrect, &real_dstrect)) {
             return 0;
         }
         real_dstrect = *dstrect;
@@ -2509,31 +2873,56 @@ SDL_RenderCopy(SDL_Renderer * renderer, SDL_Texture * texture,
         texture = texture->native;
     }
 
-    frect.x = real_dstrect.x * renderer->scale.x;
-    frect.y = real_dstrect.y * renderer->scale.y;
-    frect.w = real_dstrect.w * renderer->scale.x;
-    frect.h = real_dstrect.h * renderer->scale.y;
+    real_dstrect.x *= renderer->scale.x;
+    real_dstrect.y *= renderer->scale.y;
+    real_dstrect.w *= renderer->scale.x;
+    real_dstrect.h *= renderer->scale.y;
 
     texture->last_command_generation = renderer->render_command_generation;
 
-    retval = QueueCmdCopy(renderer, texture, &real_srcrect, &frect);
+    retval = QueueCmdCopy(renderer, texture, &real_srcrect, &real_dstrect);
     return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
-
 
 int
 SDL_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
                const SDL_Rect * srcrect, const SDL_Rect * dstrect,
                const double angle, const SDL_Point *center, const SDL_RendererFlip flip)
 {
-    SDL_Rect real_srcrect = { 0, 0, 0, 0 };
-    SDL_Rect real_dstrect = { 0, 0, 0, 0 };
-    SDL_Point real_center;
-    SDL_FRect frect;
+    SDL_FRect dstfrect;
+    SDL_FRect *pdstfrect = NULL;
     SDL_FPoint fcenter;
+    SDL_FPoint *pfcenter = NULL;
+
+    if (dstrect) {
+        dstfrect.x = (float) dstrect->x;
+        dstfrect.y = (float) dstrect->y;
+        dstfrect.w = (float) dstrect->w;
+        dstfrect.h = (float) dstrect->h;
+        pdstfrect = &dstfrect;
+    }
+
+    if (center) {
+        fcenter.x = (float) center->x;
+        fcenter.y = (float) center->y;
+        pfcenter = &fcenter;
+    }
+
+    return SDL_RenderCopyExF(renderer, texture, srcrect, pdstfrect, angle, pfcenter, flip);
+}
+
+int
+SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
+               const SDL_Rect * srcrect, const SDL_FRect * dstrect,
+               const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip)
+{
+    SDL_Rect real_srcrect;
+    SDL_FRect real_dstrect;
+    SDL_FPoint real_center;
+    int retval;
 
     if (flip == SDL_FLIP_NONE && (int)(angle/360) == angle/360) { /* fast path when we don't need rotation or flipping */
-        return SDL_RenderCopy(renderer, texture, srcrect, dstrect);
+        return SDL_RenderCopyF(renderer, texture, srcrect, dstrect);
     }
 
     CHECK_RENDERER_MAGIC(renderer, -1);
@@ -2565,9 +2954,12 @@ SDL_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
     if (dstrect) {
         real_dstrect = *dstrect;
     } else {
-        SDL_RenderGetViewport(renderer, &real_dstrect);
-        real_dstrect.x = 0;
-        real_dstrect.y = 0;
+        SDL_Rect r;
+        SDL_RenderGetViewport(renderer, &r);
+        real_dstrect.x = 0.0f;
+        real_dstrect.y = 0.0f;
+        real_dstrect.w = (float) r.w;
+        real_dstrect.h = (float) r.h;
     }
 
     if (texture->native) {
@@ -2577,21 +2969,22 @@ SDL_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
     if (center) {
         real_center = *center;
     } else {
-        real_center.x = real_dstrect.w/2;
-        real_center.y = real_dstrect.h/2;
+        real_center.x = real_dstrect.w / 2.0f;
+        real_center.y = real_dstrect.h / 2.0f;
     }
 
-    frect.x = real_dstrect.x * renderer->scale.x;
-    frect.y = real_dstrect.y * renderer->scale.y;
-    frect.w = real_dstrect.w * renderer->scale.x;
-    frect.h = real_dstrect.h * renderer->scale.y;
+    real_dstrect.x *= renderer->scale.x;
+    real_dstrect.y *= renderer->scale.y;
+    real_dstrect.w *= renderer->scale.x;
+    real_dstrect.h *= renderer->scale.y;
 
-    fcenter.x = real_center.x * renderer->scale.x;
-    fcenter.y = real_center.y * renderer->scale.y;
+    real_center.x *= renderer->scale.x;
+    real_center.y *= renderer->scale.y;
 
     texture->last_command_generation = renderer->render_command_generation;
 
-    return QueueCmdCopyEx(renderer, texture, &real_srcrect, &frect, angle, &fcenter, flip);
+    retval = QueueCmdCopyEx(renderer, texture, &real_srcrect, &real_dstrect, angle, &real_center, flip);
+    return retval < 0 ? retval : FlushRenderCommandsIfNotBatching(renderer);
 }
 
 int
