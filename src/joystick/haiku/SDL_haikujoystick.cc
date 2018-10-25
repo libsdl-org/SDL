@@ -99,6 +99,11 @@ extern "C"
         return SDL_joyname[device_index];
     }
 
+    static int HAIKU_JoystickGetDevicePlayerIndex(int device_index)
+    {
+        return -1;
+    }
+
 /* Function to perform the mapping from device index to the instance id for this index */
     static SDL_JoystickID HAIKU_JoystickGetDeviceInstanceID(int device_index)
     {
@@ -256,6 +261,7 @@ extern "C"
         HAIKU_JoystickGetCount,
         HAIKU_JoystickDetect,
         HAIKU_JoystickGetDeviceName,
+        HAIKU_JoystickGetDevicePlayerIndex,
         HAIKU_JoystickGetDeviceGUID,
         HAIKU_JoystickGetDeviceInstanceID,
         HAIKU_JoystickOpen,

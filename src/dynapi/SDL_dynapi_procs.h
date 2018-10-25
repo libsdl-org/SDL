@@ -752,4 +752,6 @@ SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThreadWithStackSize,(SDL_ThreadFunction a,
 SDL_DYNAPI_PROC(SDL_Thread*,SDL_CreateThreadWithStackSize,(SDL_ThreadFunction a, const char *b, const size_t c, void *d),(a,b,c,d),return)
 #endif
 
-SDL_DYNAPI_PROC(int,SDL_JoystickGetXInputUserIndex,(SDL_Joystick *a),(a),return)
+SDL_DYNAPI_PROC(int,SDL_JoystickGetDevicePlayerIndex,(int a),(a),return)
+SDL_DYNAPI_PROC(int,SDL_JoystickGetPlayerIndex,(SDL_Joystick *a),(a),return)
+SDL_DYNAPI_PROC(int,SDL_GameControllerGetPlayerIndex,(SDL_GameController *a),(a),return)

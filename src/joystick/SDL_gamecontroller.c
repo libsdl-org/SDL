@@ -1716,6 +1716,12 @@ SDL_GameControllerName(SDL_GameController * gamecontroller)
     }
 }
 
+int
+SDL_GameControllerGetPlayerIndex(SDL_GameController *gamecontroller)
+{
+    return SDL_JoystickGetPlayerIndex(SDL_GameControllerGetJoystick(gamecontroller));
+}
+
 Uint16
 SDL_GameControllerGetVendor(SDL_GameController * gamecontroller)
 {

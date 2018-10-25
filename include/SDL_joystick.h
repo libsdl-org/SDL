@@ -133,6 +133,12 @@ extern DECLSPEC int SDLCALL SDL_NumJoysticks(void);
 extern DECLSPEC const char *SDLCALL SDL_JoystickNameForIndex(int device_index);
 
 /**
+ *  Get the player index of a joystick, or -1 if it's not available
+ *  This can be called before any joysticks are opened.
+ */
+extern DECLSPEC int SDLCALL SDL_JoystickGetDevicePlayerIndex(int device_index);
+
+/**
  *  Return the GUID for the joystick at this index
  *  This can be called before any joysticks are opened.
  */
@@ -193,6 +199,13 @@ extern DECLSPEC SDL_Joystick *SDLCALL SDL_JoystickFromInstanceID(SDL_JoystickID 
  *  If no name can be found, this function returns NULL.
  */
 extern DECLSPEC const char *SDLCALL SDL_JoystickName(SDL_Joystick * joystick);
+
+/**
+ *  Get the player index of an opened joystick, or -1 if it's not available
+ *
+ *  For XInput controllers this returns the XInput user index.
+ */
+extern DECLSPEC int SDLCALL SDL_JoystickGetPlayerIndex(SDL_Joystick * joystick);
 
 /**
  *  Return the GUID for this opened joystick
@@ -383,11 +396,6 @@ extern DECLSPEC void SDLCALL SDL_JoystickClose(SDL_Joystick * joystick);
  *  Return the battery level of this joystick
  */
 extern DECLSPEC SDL_JoystickPowerLevel SDLCALL SDL_JoystickCurrentPowerLevel(SDL_Joystick * joystick);
-
-/**
- *  Return the XInput user index for this joystick, or -1 if it's not available
- */
-extern DECLSPEC int SDLCALL SDL_JoystickGetXInputUserIndex(SDL_Joystick * joystick);
 
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
