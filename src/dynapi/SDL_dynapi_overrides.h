@@ -698,3 +698,4 @@
 #define SDL_GetDisplayOrientation SDL_GetDisplayOrientation_REAL
 #define SDL_HasColorKey SDL_HasColorKey_REAL
 #define SDL_CreateThreadWithStackSize SDL_CreateThreadWithStackSize_REAL
+#define SDL_JoystickGetXInputUserIndex SDL_JoystickGetXInputUserIndex_REAL

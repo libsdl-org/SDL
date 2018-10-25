@@ -322,6 +322,7 @@ SDL_JoystickOpen(int device_index)
     }
 
     joystick->guid = driver->GetDeviceGUID(device_index);
+    joystick->userid = -1;
 
     if (joystick->naxes > 0) {
         joystick->axes = (SDL_JoystickAxisInfo *) SDL_calloc(joystick->naxes, sizeof(SDL_JoystickAxisInfo));
@@ -1554,6 +1555,14 @@ SDL_JoystickPowerLevel SDL_JoystickCurrentPowerLevel(SDL_Joystick * joystick)
         return SDL_JOYSTICK_POWER_UNKNOWN;
     }
     return joystick->epowerlevel;
+}
+
+int SDL_JoystickGetXInputUserIndex(SDL_Joystick * joystick)
+{
+    if (!SDL_PrivateJoystickValid(joystick)) {
+        return -1;
+    }
+    return joystick->userid;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
