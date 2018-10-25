@@ -407,6 +407,18 @@ WINDOWS_JoystickGetDeviceName(int device_index)
     return device->joystickname;
 }
 
+static int
+WINDOWS_JoystickGetDevicePlayerIndex(int device_index)
+{
+    JoyStick_DeviceData *device = SYS_Joystick;
+    int index;
+
+    for (index = device_index; index > 0; index--)
+        device = device->pNext;
+
+    return device->bXInputDevice ? (int)device->XInputUserId : -1;
+}
+
 /* return the stable device guid for this device index */
 static SDL_JoystickGUID
 WINDOWS_JoystickGetDeviceGUID(int device_index)
@@ -544,6 +556,7 @@ SDL_JoystickDriver SDL_WINDOWS_JoystickDriver =
     WINDOWS_JoystickGetCount,
     WINDOWS_JoystickDetect,
     WINDOWS_JoystickGetDeviceName,
+    WINDOWS_JoystickGetDevicePlayerIndex,
     WINDOWS_JoystickGetDeviceGUID,
     WINDOWS_JoystickGetDeviceInstanceID,
     WINDOWS_JoystickOpen,

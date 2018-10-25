@@ -312,6 +312,8 @@ SDL_XINPUT_JoystickOpen(SDL_Joystick * joystick, JoyStick_DeviceData *joystickde
     SDL_assert(XINPUTSETSTATE);
     SDL_assert(userId < XUSER_MAX_COUNT);
 
+    joystick->player_index = userId;
+
     joystick->hwdata->bXInputDevice = SDL_TRUE;
 
     if (XINPUTGETCAPABILITIES(userId, XINPUT_FLAG_GAMEPAD, &capabilities) != ERROR_SUCCESS) {
@@ -322,7 +324,6 @@ SDL_XINPUT_JoystickOpen(SDL_Joystick * joystick, JoyStick_DeviceData *joystickde
     SDL_zero(state);
     joystick->hwdata->bXInputHaptic = (XINPUTSETSTATE(userId, &state) == ERROR_SUCCESS);
     joystick->hwdata->userid = userId;
-    joystick->userid = userId;
 
     /* The XInput API has a hard coded button/axis mapping, so we just match it */
     if (SDL_XInputUseOldJoystickMapping()) {

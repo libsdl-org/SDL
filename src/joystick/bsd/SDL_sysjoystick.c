@@ -227,6 +227,12 @@ BSD_JoystickGetDeviceName(int device_index)
     return (joynames[device_index]);
 }
 
+static int
+BSD_JoystickGetDevicePlayerIndex(int device_index)
+{
+    return -1;
+}
+
 /* Function to perform the mapping from device index to the instance id for this index */
 static SDL_JoystickID
 BSD_JoystickGetDeviceInstanceID(int device_index)
@@ -687,6 +693,7 @@ SDL_JoystickDriver SDL_BSD_JoystickDriver =
     BSD_JoystickGetCount,
     BSD_JoystickDetect,
     BSD_JoystickGetDeviceName,
+    BSD_JoystickGetDevicePlayerIndex,
     BSD_JoystickGetDeviceGUID,
     BSD_JoystickGetDeviceInstanceID,
     BSD_JoystickOpen,

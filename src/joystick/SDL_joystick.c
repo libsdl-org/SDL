@@ -227,6 +227,21 @@ SDL_JoystickNameForIndex(int device_index)
     return name;
 }
 
+int
+SDL_JoystickGetDevicePlayerIndex(int device_index)
+{
+    SDL_JoystickDriver *driver;
+    int player_index = -1;
+
+    SDL_LockJoysticks();
+    if (SDL_GetDriverAndJoystickIndex(device_index, &driver, &device_index)) {
+        player_index = driver->GetDevicePlayerIndex(device_index);
+    }
+    SDL_UnlockJoysticks();
+
+    return player_index;
+}
+
 /*
  * Return true if this joystick is known to have all axes centered at zero
  * This isn't generally needed unless the joystick never generates an initial axis value near zero,
@@ -307,7 +322,7 @@ SDL_JoystickOpen(int device_index)
     joystick->driver = driver;
     joystick->instance_id = instance_id;
     joystick->attached = SDL_TRUE;
-    joystick->userid = -1;
+    joystick->player_index = -1;
 
     if (driver->Open(joystick, device_index) < 0) {
         SDL_free(joystick);
@@ -601,6 +616,15 @@ SDL_JoystickName(SDL_Joystick * joystick)
     }
 
     return SDL_FixupJoystickName(joystick->name);
+}
+
+int
+SDL_JoystickGetPlayerIndex(SDL_Joystick * joystick)
+{
+    if (!SDL_PrivateJoystickValid(joystick)) {
+        return -1;
+    }
+    return joystick->player_index;
 }
 
 int
@@ -1555,14 +1579,6 @@ SDL_JoystickPowerLevel SDL_JoystickCurrentPowerLevel(SDL_Joystick * joystick)
         return SDL_JOYSTICK_POWER_UNKNOWN;
     }
     return joystick->epowerlevel;
-}
-
-int SDL_JoystickGetXInputUserIndex(SDL_Joystick * joystick)
-{
-    if (!SDL_PrivateJoystickValid(joystick)) {
-        return -1;
-    }
-    return joystick->userid;
 }
 
 /* vi: set ts=4 sw=4 expandtab: */

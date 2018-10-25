@@ -582,6 +582,12 @@ LINUX_JoystickGetDeviceName(int device_index)
     return JoystickByDevIndex(device_index)->name;
 }
 
+static int
+LINUX_JoystickGetDevicePlayerIndex(int device_index)
+{
+    return -1;
+}
+
 static SDL_JoystickGUID
 LINUX_JoystickGetDeviceGUID( int device_index )
 {
@@ -1100,6 +1106,7 @@ SDL_JoystickDriver SDL_LINUX_JoystickDriver =
     LINUX_JoystickGetCount,
     LINUX_JoystickDetect,
     LINUX_JoystickGetDeviceName,
+    LINUX_JoystickGetDevicePlayerIndex,
     LINUX_JoystickGetDeviceGUID,
     LINUX_JoystickGetDeviceInstanceID,
     LINUX_JoystickOpen,

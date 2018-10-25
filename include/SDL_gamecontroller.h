@@ -205,6 +205,13 @@ extern DECLSPEC SDL_GameController *SDLCALL SDL_GameControllerFromInstanceID(SDL
 extern DECLSPEC const char *SDLCALL SDL_GameControllerName(SDL_GameController *gamecontroller);
 
 /**
+ *  Get the player index of an opened game controller, or -1 if it's not available
+ *
+ *  For XInput controllers this returns the XInput user index.
+ */
+extern DECLSPEC int SDLCALL SDL_GameControllerGetPlayerIndex(SDL_GameController *gamecontroller);
+
+/**
  *  Get the USB vendor ID of an opened controller, if available.
  *  If the vendor ID isn't available this function returns 0.
  */

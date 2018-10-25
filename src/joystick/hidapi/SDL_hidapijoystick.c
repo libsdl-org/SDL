@@ -932,6 +932,12 @@ HIDAPI_JoystickGetDeviceName(int device_index)
     return HIDAPI_GetJoystickByIndex(device_index)->name;
 }
 
+static int
+HIDAPI_JoystickGetDevicePlayerIndex(int device_index)
+{
+    return -1;
+}
+
 static SDL_JoystickGUID
 HIDAPI_JoystickGetDeviceGUID(int device_index)
 {
@@ -1048,6 +1054,7 @@ SDL_JoystickDriver SDL_HIDAPI_JoystickDriver =
     HIDAPI_JoystickGetCount,
     HIDAPI_JoystickDetect,
     HIDAPI_JoystickGetDeviceName,
+    HIDAPI_JoystickGetDevicePlayerIndex,
     HIDAPI_JoystickGetDeviceGUID,
     HIDAPI_JoystickGetDeviceInstanceID,
     HIDAPI_JoystickOpen,

@@ -279,6 +279,12 @@ EMSCRIPTEN_JoystickGetDeviceName(int device_index)
     return JoystickByDeviceIndex(device_index)->name;
 }
 
+static int
+EMSCRIPTEN_JoystickGetDevicePlayerIndex(int device_index)
+{
+    return -1;
+}
+
 static SDL_JoystickID
 EMSCRIPTEN_JoystickGetDeviceInstanceID(int device_index)
 {
@@ -394,6 +400,7 @@ SDL_JoystickDriver SDL_EMSCRIPTEN_JoystickDriver =
     EMSCRIPTEN_JoystickGetCount,
     EMSCRIPTEN_JoystickDetect,
     EMSCRIPTEN_JoystickGetDeviceName,
+    EMSCRIPTEN_JoystickGetDevicePlayerIndex,
     EMSCRIPTEN_JoystickGetDeviceGUID,
     EMSCRIPTEN_JoystickGetDeviceInstanceID,
     EMSCRIPTEN_JoystickOpen,

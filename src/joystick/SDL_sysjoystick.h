@@ -42,8 +42,8 @@ struct _SDL_Joystick
 {
     SDL_JoystickID instance_id; /* Device instance, monotonically increasing from 0 */
     char *name;                 /* Joystick name - system dependent */
+    int player_index;           /* Joystick player index, or -1 if unavailable */
     SDL_JoystickGUID guid;      /* Joystick guid */
-    int userid;                 /* XInput user index, if any */
 
     int naxes;                  /* Number of axis controls on the joystick */
     SDL_JoystickAxisInfo *axes;
@@ -105,6 +105,9 @@ typedef struct _SDL_JoystickDriver
 
     /* Function to get the device-dependent name of a joystick */
     const char *(*GetDeviceName)(int device_index);
+
+    /* Function to get the player index of a joystick */
+    int (*GetDevicePlayerIndex)(int device_index);
 
     /* Function to return the stable GUID for a plugged in device */
     SDL_JoystickGUID (*GetDeviceGUID)(int device_index);
