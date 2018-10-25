@@ -43,6 +43,7 @@ struct _SDL_Joystick
     SDL_JoystickID instance_id; /* Device instance, monotonically increasing from 0 */
     char *name;                 /* Joystick name - system dependent */
     SDL_JoystickGUID guid;      /* Joystick guid */
+    int userid;                 /* XInput user index, if any */
 
     int naxes;                  /* Number of axis controls on the joystick */
     SDL_JoystickAxisInfo *axes;

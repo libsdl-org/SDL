@@ -384,6 +384,11 @@ extern DECLSPEC void SDLCALL SDL_JoystickClose(SDL_Joystick * joystick);
  */
 extern DECLSPEC SDL_JoystickPowerLevel SDLCALL SDL_JoystickCurrentPowerLevel(SDL_Joystick * joystick);
 
+/**
+ *  Return the XInput user index for this joystick, or -1 if it's not available
+ */
+extern DECLSPEC int SDLCALL SDL_JoystickGetXInputUserIndex(SDL_Joystick * joystick);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 }
