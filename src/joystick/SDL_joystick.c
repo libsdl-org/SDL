@@ -307,6 +307,7 @@ SDL_JoystickOpen(int device_index)
     joystick->driver = driver;
     joystick->instance_id = instance_id;
     joystick->attached = SDL_TRUE;
+    joystick->userid = -1;
 
     if (driver->Open(joystick, device_index) < 0) {
         SDL_free(joystick);
@@ -322,7 +323,6 @@ SDL_JoystickOpen(int device_index)
     }
 
     joystick->guid = driver->GetDeviceGUID(device_index);
-    joystick->userid = -1;
 
     if (joystick->naxes > 0) {
         joystick->axes = (SDL_JoystickAxisInfo *) SDL_calloc(joystick->naxes, sizeof(SDL_JoystickAxisInfo));
