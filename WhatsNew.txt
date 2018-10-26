@@ -12,6 +12,7 @@ General:
 * Added an event SDL_DISPLAYEVENT which is sent when the display orientation changes
 * Added HIDAPI joystick drivers for more consistent support for Xbox, PS4 and Nintendo Switch Pro controller support across platforms. (Thanks to Valve for contributing the PS4 and Nintendo Switch Pro controller support)
 * Added support for many other popular game controllers
+* Added SDL_JoystickGetDevicePlayerIndex(), SDL_JoystickGetPlayerIndex(), and SDL_GameControllerGetPlayerIndex() to get the player index for a controller. For XInput controllers this returns the XInput index for the controller.
 * Added SDL_GameControllerRumble() and SDL_JoystickRumble() which allow simple rumble without using the haptics API
 * Added SDL_GameControllerMappingForDeviceIndex() to get the mapping for a controller before it's opened
 * Added the hint SDL_HINT_MOUSE_DOUBLE_CLICK_TIME to control the mouse double-click time
