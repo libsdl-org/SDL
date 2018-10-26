@@ -19,6 +19,9 @@
  code repository located at:
         http://github.com/signal11/hidapi .
 ********************************************************/
+#include "../../SDL_internal.h"
+
+#ifdef SDL_JOYSTICK_HIDAPI
 
 #include <windows.h>
 
@@ -39,7 +42,6 @@ typedef LONG NTSTATUS;
 #endif
 
 /* SDL C runtime functions */
-#include "../../SDL_internal.h"
 #include "SDL_stdinc.h"
 
 #define calloc SDL_calloc
@@ -982,3 +984,5 @@ int __cdecl main(int argc, char* argv[])
 #ifdef __cplusplus
 } /* extern "C" */
 #endif
+
+#endif /* SDL_JOYSTICK_HIDAPI */
