@@ -10,13 +10,6 @@
 		1D3623EC0D0F72F000981E51 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D3623EB0D0F72F000981E51 /* CoreGraphics.framework */; };
 		1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
 		1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
-		8A476D2B217923FE00FAEF79 /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A476D27217923FE00FAEF79 /* CoreBluetooth.framework */; };
-		8A680883217924680074BD9A /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A476D27217923FE00FAEF79 /* CoreBluetooth.framework */; };
-		8A680886217924B60074BD9A /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A476D27217923FE00FAEF79 /* CoreBluetooth.framework */; };
-		8A680887217924D70074BD9A /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A476D27217923FE00FAEF79 /* CoreBluetooth.framework */; };
-		8A680888217924F00074BD9A /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A476D27217923FE00FAEF79 /* CoreBluetooth.framework */; };
-		8A6808892179250B0074BD9A /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A476D27217923FE00FAEF79 /* CoreBluetooth.framework */; };
-		8A68088A217925270074BD9A /* CoreBluetooth.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 8A476D27217923FE00FAEF79 /* CoreBluetooth.framework */; };
 		FA30DEB01BBF5A8F009C397F /* common.c in Sources */ = {isa = PBXBuildFile; fileRef = FD77A0060E26BC0500F39101 /* common.c */; };
 		FA30DEB11BBF5A93009C397F /* happy.c in Sources */ = {isa = PBXBuildFile; fileRef = FD77A0080E26BC0500F39101 /* happy.c */; };
 		FA30DEB31BBF5AD7009C397F /* icon.bmp in Resources */ = {isa = PBXBuildFile; fileRef = FDB651CC0E43D19800F688B5 /* icon.bmp */; };
@@ -232,7 +225,6 @@
 		1D3623EB0D0F72F000981E51 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = System/Library/Frameworks/CoreGraphics.framework; sourceTree = SDKROOT; };
 		1D6058910D05DD3D006BFB54 /* Rectangles.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Rectangles.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1DF5F4DF0D08C38300B7A737 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
-		8A476D27217923FE00FAEF79 /* CoreBluetooth.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreBluetooth.framework; path = System/Library/Frameworks/CoreBluetooth.framework; sourceTree = SDKROOT; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		FA30DE961BBF59D9009C397F /* Happy-TV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Happy-TV.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA86C0361D9765BA009CB637 /* iOS Launch Screen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = "iOS Launch Screen.storyboard"; sourceTree = "<group>"; };
@@ -279,7 +271,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8A476D2B217923FE00FAEF79 /* CoreBluetooth.framework in Frameworks */,
 				FABA34D41D8B5E5600915323 /* AVFoundation.framework in Frameworks */,
 				FD1B48DD0E313255007AB34E /* libSDL2.a in Frameworks */,
 				FAE0E96A1BAF96A00098DFA4 /* GameController.framework in Frameworks */,
@@ -315,7 +306,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8A680883217924680074BD9A /* CoreBluetooth.framework in Frameworks */,
 				FABA34D61D8B5E5A00915323 /* AVFoundation.framework in Frameworks */,
 				FD1B49980E313261007AB34E /* libSDL2.a in Frameworks */,
 				FAE0E96C1BAF96A90098DFA4 /* GameController.framework in Frameworks */,
@@ -334,7 +324,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8A680886217924B60074BD9A /* CoreBluetooth.framework in Frameworks */,
 				FABA34D91D8B5E7B00915323 /* AVFoundation.framework in Frameworks */,
 				FD1B499C0E313269007AB34E /* libSDL2.a in Frameworks */,
 				FAE0E96D1BAF96AF0098DFA4 /* GameController.framework in Frameworks */,
@@ -353,7 +342,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8A68088A217925270074BD9A /* CoreBluetooth.framework in Frameworks */,
 				FABA34DD1D8B5E8D00915323 /* AVFoundation.framework in Frameworks */,
 				FDB652000E43D1F300F688B5 /* libSDL2.a in Frameworks */,
 				FAE0E9711BAF96BB0098DFA4 /* GameController.framework in Frameworks */,
@@ -372,7 +360,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8A680887217924D70074BD9A /* CoreBluetooth.framework in Frameworks */,
 				FABA34DA1D8B5E7F00915323 /* AVFoundation.framework in Frameworks */,
 				FD1B499E0E31326C007AB34E /* libSDL2.a in Frameworks */,
 				FAE0E96E1BAF96B10098DFA4 /* GameController.framework in Frameworks */,
@@ -391,7 +378,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8A6808892179250B0074BD9A /* CoreBluetooth.framework in Frameworks */,
 				FABA34DC1D8B5E8900915323 /* AVFoundation.framework in Frameworks */,
 				FD1B49A20E313273007AB34E /* libSDL2.a in Frameworks */,
 				FAE0E9701BAF96B80098DFA4 /* GameController.framework in Frameworks */,
@@ -410,7 +396,6 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				8A680888217924F00074BD9A /* CoreBluetooth.framework in Frameworks */,
 				FABA34DB1D8B5E8500915323 /* AVFoundation.framework in Frameworks */,
 				FD1B49A00E313270007AB34E /* libSDL2.a in Frameworks */,
 				FAE0E96F1BAF96B50098DFA4 /* GameController.framework in Frameworks */,
@@ -470,7 +455,6 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
-				8A476D27217923FE00FAEF79 /* CoreBluetooth.framework */,
 				FABA34D71D8B5E7700915323 /* AVFoundation.framework */,
 				FABA34D31D8B5E5600915323 /* AVFoundation.framework */,
 				FAE0E9691BAF96A00098DFA4 /* GameController.framework */,
