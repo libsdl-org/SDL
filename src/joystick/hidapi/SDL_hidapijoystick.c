@@ -307,7 +307,7 @@ HIDAPI_UpdateDiscovery()
         return;
     }
 
-#if defined(__WIN32__)
+#if 0 /* just let the usual SDL_PumpEvents loop dispatch these. --ryan.   defined(__WIN32__)*/
     /* We'll only get messages on the same thread that created the window */
     if (SDL_ThreadID() == SDL_HIDAPI_discovery.m_nThreadID) {
         MSG msg;
