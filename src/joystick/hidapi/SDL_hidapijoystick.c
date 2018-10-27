@@ -307,7 +307,8 @@ HIDAPI_UpdateDiscovery()
         return;
     }
 
-#if 0 /* just let the usual SDL_PumpEvents loop dispatch these. --ryan.   defined(__WIN32__)*/
+#if defined(__WIN32__)
+#if 0 /* just let the usual SDL_PumpEvents loop dispatch these, fixing bug 4286. --ryan. */
     /* We'll only get messages on the same thread that created the window */
     if (SDL_ThreadID() == SDL_HIDAPI_discovery.m_nThreadID) {
         MSG msg;
@@ -319,6 +320,7 @@ HIDAPI_UpdateDiscovery()
         }
     }
 #endif
+#endif /* __WIN32__ */
 
 #if defined(__MACOSX__)
     if (SDL_HIDAPI_discovery.m_notificationPort) {
