@@ -18,8 +18,14 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
+#ifndef SDL_blit_slow_h_
+#define SDL_blit_slow_h_
+
 #include "../SDL_internal.h"
 
 extern void SDL_Blit_Slow(SDL_BlitInfo * info);
+
+#endif /* SDL_blit_slow_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

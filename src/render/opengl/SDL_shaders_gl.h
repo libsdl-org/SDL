@@ -18,6 +18,10 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
+#ifndef SDL_shaders_gl_h_
+#define SDL_shaders_gl_h_
+
 #include "../../SDL_internal.h"
 
 /* OpenGL shader implementation */
@@ -43,5 +47,7 @@ typedef struct GL_ShaderContext GL_ShaderContext;
 extern GL_ShaderContext * GL_CreateShaderContext(void);
 extern void GL_SelectShader(GL_ShaderContext *ctx, GL_Shader shader);
 extern void GL_DestroyShaderContext(GL_ShaderContext *ctx);
+
+#endif /* SDL_shaders_gl_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
