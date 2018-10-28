@@ -19,6 +19,11 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+#ifndef SDL_render_sw_c_h_
+#define SDL_render_sw_c_h_
+
 extern SDL_Renderer * SW_CreateRendererForSurface(SDL_Surface * surface);
+
+#endif /* SDL_render_sw_c_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

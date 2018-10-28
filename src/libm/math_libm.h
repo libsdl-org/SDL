@@ -18,6 +18,10 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
+#ifndef math_libm_h_
+#define math_libm_h_
+
 #include "../SDL_internal.h"
 
 /* Math routines from uClibc: http://www.uclibc.org */
@@ -37,5 +41,7 @@ double SDL_uclibc_scalbn(double x, int n);
 double SDL_uclibc_sin(double x);
 double SDL_uclibc_sqrt(double x);
 double SDL_uclibc_tan(double x);
+
+#endif /* math_libm_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

@@ -18,6 +18,10 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
+#ifndef SDL_audiodev_c_h_
+#define SDL_audiodev_c_h_
+
 #include "SDL.h"
 #include "../SDL_internal.h"
 #include "SDL_sysaudio.h"
@@ -34,5 +38,7 @@
 #endif
 
 extern void SDL_EnumUnixAudioDevices(const int classic, int (*test)(int));
+
+#endif /* SDL_audiodev_c_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

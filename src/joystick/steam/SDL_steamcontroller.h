@@ -18,6 +18,10 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
+#ifndef SDL_steamcontroller_h_
+#define SDL_steamcontroller_h_
+
 #include "../../SDL_internal.h"
 
 typedef SDL_bool (*SteamControllerConnectedCallback_t)(const char *name, SDL_JoystickGUID guid, int *device_instance);
@@ -29,5 +33,7 @@ void SDL_GetSteamControllerInputs(int *nbuttons, int *naxes, int *nhats);
 void SDL_UpdateSteamControllers(void);
 void SDL_UpdateSteamController(SDL_Joystick *joystick);
 void SDL_QuitSteamControllers(void);
+
+#endif /* SDL_steamcontroller_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

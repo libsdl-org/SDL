@@ -18,6 +18,10 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
+#ifndef SDL_events_c_h_
+#define SDL_events_c_h_
+
 #include "../SDL_internal.h"
 
 /* Useful functions and variables from SDL_events.c */
@@ -48,5 +52,7 @@ extern int SDL_SendQuit(void);
 extern void SDL_QuitQuit(void);
 
 extern void SDL_SendPendingQuit(void);
+
+#endif /* SDL_events_c_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
