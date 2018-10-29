@@ -229,6 +229,22 @@ Loading Shared Objects:
 	This is disabled by default since it seems to break the terms of the iOS SDK agreement for iOS versions prior to iOS 8. It can be re-enabled in SDL_config_iphoneos.h.
 
 ==============================================================================
+Notes -- CoreBluetooth.framework
+==============================================================================
+
+SDL_JOYSTICK_HIDAPI is disabled by default. It can give you access to a lot
+more game controller devices, but it requires permission from the user before
+your app will be able to talk to the Bluetooth hardware. "Made For iOS"
+branded controllers do not need this as we don't have to speak to them
+directly with raw bluetooth, so many apps can live without this.
+
+You'll need to link with CoreBluetooth.framework and add something like this
+to your Info.plist:
+
+<key>NSBluetoothPeripheralUsageDescription</key>
+<string>MyApp would like to remain connected to nearby bluetooth Game Controllers and Game Pads even when you're not using the app.</string>
+
+==============================================================================
 Game Center 
 ==============================================================================
 
