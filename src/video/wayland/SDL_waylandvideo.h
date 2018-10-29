@@ -61,6 +61,7 @@ typedef struct {
     struct zwp_relative_pointer_manager_v1 *relative_pointer_manager;
     struct zwp_pointer_constraints_v1 *pointer_constraints;
     struct wl_data_device_manager *data_device_manager;
+    struct org_kde_kwin_server_decoration_manager *kwin_server_decoration_manager;
 
     EGLDisplay edpy;
     EGLContext context;

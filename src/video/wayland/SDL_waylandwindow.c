@@ -35,6 +35,7 @@
 
 #include "xdg-shell-client-protocol.h"
 #include "xdg-shell-unstable-v6-client-protocol.h"
+#include "org-kde-kwin-server-decoration-manager-client-protocol.h"
 
 /* On modern desktops, we probably will use the xdg-shell protocol instead
    of wl_shell, but wl_shell might be useful on older Wayland installs that
@@ -460,6 +461,17 @@ Wayland_RestoreWindow(_THIS, SDL_Window * window)
 }
 
 void
+Wayland_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
+{
+    SDL_WindowData *wind = window->driverdata;
+    const SDL_VideoData *viddata = (const SDL_VideoData *) _this->driverdata;
+    if ((viddata->kwin_server_decoration_manager) && (wind->kwin_server_decoration)) {
+        const enum org_kde_kwin_server_decoration_mode mode = bordered ? ORG_KDE_KWIN_SERVER_DECORATION_MANAGER_MODE_SERVER : ORG_KDE_KWIN_SERVER_DECORATION_MANAGER_MODE_NONE;
+        org_kde_kwin_server_decoration_request_mode(wind->kwin_server_decoration, mode);
+    }
+}
+
+void
 Wayland_MaximizeWindow(_THIS, SDL_Window * window)
 {
     SDL_WindowData *wind = window->driverdata;
@@ -570,6 +582,15 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
     }
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
 
+    if (c->kwin_server_decoration_manager) {
+        data->kwin_server_decoration = org_kde_kwin_server_decoration_manager_create(c->kwin_server_decoration_manager, data->surface);
+        if (data->kwin_server_decoration) {
+            const SDL_bool bordered = (window->flags & SDL_WINDOW_BORDERLESS) == 0;
+            const enum org_kde_kwin_server_decoration_mode mode = bordered ? ORG_KDE_KWIN_SERVER_DECORATION_MANAGER_MODE_SERVER : ORG_KDE_KWIN_SERVER_DECORATION_MANAGER_MODE_NONE;
+            org_kde_kwin_server_decoration_request_mode(data->kwin_server_decoration, mode);
+        }
+    }
+
     region = wl_compositor_create_region(c->compositor);
     wl_region_add(region, 0, 0, window->w, window->h);
     wl_surface_set_opaque_region(data->surface, region);
@@ -643,6 +664,10 @@ void Wayland_DestroyWindow(_THIS, SDL_Window *window)
     if (data) {
         SDL_EGL_DestroySurface(_this, wind->egl_surface);
         WAYLAND_wl_egl_window_destroy(wind->egl_window);
+
+        if (wind->kwin_server_decoration) {
+            org_kde_kwin_server_decoration_release(wind->kwin_server_decoration);
+        }
 
         if (data->shell.xdg) {
             if (wind->shell_surface.xdg.roleobj.toplevel) {
