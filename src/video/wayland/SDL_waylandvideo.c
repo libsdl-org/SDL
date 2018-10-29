@@ -47,6 +47,7 @@
 
 #include "xdg-shell-client-protocol.h"
 #include "xdg-shell-unstable-v6-client-protocol.h"
+#include "org-kde-kwin-server-decoration-manager-client-protocol.h"
 
 #define WAYLANDVID_DRIVER_NAME "wayland"
 
@@ -182,6 +183,7 @@ Wayland_CreateDevice(int devindex)
     device->SetWindowFullscreen = Wayland_SetWindowFullscreen;
     device->MaximizeWindow = Wayland_MaximizeWindow;
     device->RestoreWindow = Wayland_RestoreWindow;
+    device->SetWindowBordered = Wayland_SetWindowBordered;
     device->SetWindowSize = Wayland_SetWindowSize;
     device->SetWindowTitle = Wayland_SetWindowTitle;
     device->DestroyWindow = Wayland_DestroyWindow;
@@ -345,6 +347,8 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
 {
     SDL_VideoData *d = data;
 
+    /*printf("WAYLAND INTERFACE: %s\n", interface);*/
+
     if (strcmp(interface, "wl_compositor") == 0) {
         d->compositor = wl_registry_bind(d->registry, id, &wl_compositor_interface, 1);
     } else if (strcmp(interface, "wl_output") == 0) {
@@ -368,6 +372,8 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
         Wayland_display_add_pointer_constraints(d, id);
     } else if (strcmp(interface, "wl_data_device_manager") == 0) {
         d->data_device_manager = wl_registry_bind(d->registry, id, &wl_data_device_manager_interface, 3);
+    } else if (strcmp(interface, "org_kde_kwin_server_decoration_manager") == 0) {
+        d->kwin_server_decoration_manager = wl_registry_bind(d->registry, id, &org_kde_kwin_server_decoration_manager_interface, 1);
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
     } else if (strcmp(interface, "qt_touch_extension") == 0) {
