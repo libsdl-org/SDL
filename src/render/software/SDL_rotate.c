@@ -83,7 +83,9 @@ static Uint32
 _colorkey(SDL_Surface *src)
 {
     Uint32 key = 0;
-    SDL_GetColorKey(src, &key);
+    if (SDL_HasColorKey(src)) {
+        SDL_GetColorKey(src, &key);
+    }
     return key;
 }
 
@@ -150,17 +152,17 @@ SDLgfx_rotozoomSurfaceSizeTrig(int width, int height, double angle,
 /* Computes source pointer X/Y increments for a rotation that's a multiple of 90 degrees. */
 static void
 computeSourceIncrements90(SDL_Surface * src, int bpp, int angle, int flipx, int flipy,
-                          int *sincx, int *sincy, int *signx, int *signy, SDL_Surface *dst)
+                          int *sincx, int *sincy, int *signx, int *signy)
 {
     int pitch = flipy ? -src->pitch : src->pitch;
     if (flipx) {
         bpp = -bpp;
     }
     switch (angle) { /* 0:0 deg, 1:90 deg, 2:180 deg, 3:270 deg */
-    case 0: *sincx = bpp; *sincy = pitch - dst->w * *sincx; *signx = *signy = 1; break;
-    case 1: *sincx = -pitch; *sincy = bpp - *sincx * dst->h; *signx = 1; *signy = -1; break;
-    case 2: *sincx = -bpp; *sincy = -dst->w * *sincx - pitch; *signx = *signy = -1; break;
-    case 3: default: *sincx = pitch; *sincy = -*sincx * dst->h - bpp; *signx = -1; *signy = 1; break;
+    case 0: *sincx = bpp; *sincy = pitch - src->w * *sincx; *signx = *signy = 1; break;
+    case 1: *sincx = -pitch; *sincy = bpp - *sincx * src->h; *signx = 1; *signy = -1; break;
+    case 2: *sincx = -bpp; *sincy = -src->w * *sincx - pitch; *signx = *signy = -1; break;
+    case 3: default: *sincx = pitch; *sincy = -*sincx * src->h - bpp; *signx = -1; *signy = 1; break;
     }
     if (flipx) {
         *signx = -*signx;
@@ -175,9 +177,10 @@ computeSourceIncrements90(SDL_Surface * src, int bpp, int angle, int flipx, int 
     int dy, dincy = dst->pitch - dst->w*sizeof(pixelType), sincx, sincy, signx, signy;                      \
     Uint8 *sp = (Uint8*)src->pixels, *dp = (Uint8*)dst->pixels, *de;                                        \
                                                                                                             \
-    computeSourceIncrements90(src, sizeof(pixelType), angle, flipx, flipy, &sincx, &sincy, &signx, &signy, dst); \
-    if (signx < 0) sp += (dst->w-1)*sizeof(pixelType);                                                      \
-    if (signy < 0) sp += (dst->h-1)*src->pitch;                                                             \
+    computeSourceIncrements90(src, sizeof(pixelType), angle, flipx, flipy, &sincx, &sincy, &signx, &signy); \
+    if (signx < 0) sp += (src->w-1)*sizeof(pixelType);                                                      \
+    if (signy < 0) sp += (src->h-1)*src->pitch;                                                             \
+                                                                                                            \
     for (dy = 0; dy < dst->h; sp += sincy, dp += dincy, dy++) {                                             \
         if (sincx == sizeof(pixelType)) { /* if advancing src and dest equally, use memcpy */               \
             SDL_memcpy(dp, sp, dst->w*sizeof(pixelType));                                                   \
@@ -423,8 +426,10 @@ SDLgfx_rotateSurface(SDL_Surface * src, double angle, int centerx, int centery, 
     if (src == NULL)
         return NULL;
 
-    if (SDL_GetColorKey(src, &colorkey) == 0) {
-        colorKeyAvailable = SDL_TRUE;
+    if (SDL_HasColorKey(src)) {
+        if (SDL_GetColorKey(src, &colorkey) == 0) {
+            colorKeyAvailable = SDL_TRUE;
+        }
     }
 
     /* This function requires a 32-bit surface or 8-bit surface with a colorkey */
