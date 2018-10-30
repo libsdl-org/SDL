@@ -145,8 +145,9 @@ main_getcmdline()
         cmdalloc = rc + (sizeof (char *) * argc_guess);
         argv = (char **) VirtualAlloc(NULL, cmdalloc, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
         if (argv) {
+            int rc2;
             cmdline = (char *) (argv + argc_guess);
-            const int rc2 = WideCharToMultiByte(CP_UTF8, 0, text, -1, cmdline, rc, NULL, NULL);
+            rc2 = WideCharToMultiByte(CP_UTF8, 0, text, -1, cmdline, rc, NULL, NULL);
             SDL_assert(rc2 == rc);
         }
     }
