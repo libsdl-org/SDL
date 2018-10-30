@@ -1,13 +1,21 @@
-# Open Watcom Makefile to build a minimal OS/2 SDL2.dll
+# Open Watcom makefile to build SDL2.dll for OS/2:
+# wmake -f Makefile.os2
 
-DLLFILE = SDL2.dll
-IMPLIB  = SDL2.lib
-MAPFILE = SDL2.map
-EXPFILE = SDL2.exp
-LNKFILE = SDL2.lnk
+LIBNAME = SDL2
+VERSION = 2.0.9
+DESCRIPTION = Simple DirectMedia Layer 2
+
+LIBHOME = .
+LIBPATH = $(LIBHOME)/lib
+DLLFILE = $(LIBHOME)/$(LIBNAME).dll
+LIBFILE = $(LIBHOME)/$(LIBNAME).lib
+LNKFILE = $(LIBNAME).lnk
 
 INCPATH = -I"$(%WATCOM)/h/os2" -I"$(%WATCOM)/h"
+INCPATH+= -I"$(LIBHOME)/h"
 INCPATH+= -Iinclude
+
+LIBS = mmpm2.lib libuls.lib libconv.lib
 
 CFLAGS = -bt=os2 -d0 -q -bm -5s -fp5 -fpi87 -sg -oteanbmier -ei
 # max warnings:
@@ -52,14 +60,18 @@ OBJS = $(SRCS:.c=.obj)
 .extensions:
 .extensions: .lib .dll .obj .c .asm
 
-.c: ./src;./src/dynapi;./src/audio;./src/cpuinfo;./src/events;./src/file;./src/haptic;./src/joystick;./src/power;./src/render;./src/render/software;./src/sensor;./src/stdlib;./src/thread;./src/timer;./src/video;./src/video/yuv2rgb;./src/haptic/dummy;./src/joystick/dummy;./src/loadso/dummy;./src/filesystem/dummy;./src/thread/generic;./src/timer/dummy;./src/power;./src/power/os2;./src/atomic;./src/audio/dummy;./src/audio/disk;./src/video/dummy;./src/sensor/dummy;./src/test;
+.c: ./src;./src/dynapi;./src/audio;./src/cpuinfo;./src/events;./src/file;./src/haptic;./src/joystick;./src/power;./src/render;./src/render/software;./src/sensor;./src/stdlib;./src/thread;./src/timer;./src/video;./src/video/yuv2rgb;./src/atomic;./src/audio/disk;
+.c: ./src/haptic/dummy;./src/joystick/dummy;./src/audio/dummy;./src/video/dummy;./src/sensor/dummy;
+.c: ./src/loadso/dummy;./src/filesystem/dummy;./src/timer/dummy;./src/thread/generic;
 
 all: $(DLLFILE) $(LIBFILE) .symbolic
 
 $(DLLFILE): $(OBJS) $(LNKFILE)
+    @echo * Linking: $@
     wlink @$(LNKFILE)
 
-$(IMPLIB): $(DLLFILE)
+$(LIBFILE): $(DLLFILE)
+    @echo * Creating LIB file: $@
     wlib -q -b -n -c -pa -s -t -zld -ii -io $* $(DLLFILE)
 
 .c.obj:
@@ -84,13 +96,17 @@ SDL_RLEaccel.obj: SDL_RLEaccel.c
     wcc386 $(CFLAGS) -wcd=201 -fo=$^@ $<
 
 $(LNKFILE):
+    @echo * Creating linker file: $@
     @%create $@
     @%append $@ SYSTEM os2v2_dll INITINSTANCE TERMINSTANCE
     @%append $@ NAME $(DLLFILE)
     @for %i in ($(OBJS)) do @%append $@ FILE %i
+    @%append $@ LIBPATH $(%LIB);$(LIBPATH)
+    @for %i in ($(LIBS)) do @%append $@ LIB %i
     @%append $@ OPTION QUIET
-    @%append $@ OPTION IMPF=$(EXPFILE)
-    @%append $@ OPTION MAP=$(MAPFILE)
+    @%append $@ OPTION IMPF=$(LIBHOME)/$^&.exp
+    @%append $@ OPTION MAP=$(LIBHOME)/$^&.map
+    @%append $@ OPTION DESCRIPTION '@$#libsdl org:$(VERSION)$#@$(DESCRIPTION)'
     @%append $@ OPTION QUIET
     @%append $@ OPTION ELIMINATE
     @%append $@ OPTION MANYAUTODATA
@@ -104,7 +120,7 @@ clean: .SYMBOLIC
     @if exist $(LNKFILE) rm $(LNKFILE)
 
 distclean: .SYMBOLIC clean
-    @if exist $(MAPFILE) rm $(MAPFILE)
-    @if exist $(EXPFILE) rm $(EXPFILE)
-    @if exist $(IMPLIB) rm $(IMPLIB)
+    @if exist $(LIBHOME)/*.exp rm $(LIBHOME)/*.exp
+    @if exist $(LIBHOME)/*.map rm $(LIBHOME)/*.map
+    @if exist $(LIBFILE) rm $(LIBFILE)
     @if exist $(DLLFILE) rm $(DLLFILE)
