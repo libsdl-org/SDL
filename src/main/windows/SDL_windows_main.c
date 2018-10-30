@@ -116,50 +116,65 @@ OutOfMemory(void)
 # endif
 #endif
 
-/* WinMain, main, and wmain eventually call into here. */
-static int
-main_utf8(int argc, char *argv[])
-{
-    SDL_SetMainReady();
-
-    /* Run the application main() code */
-    return SDL_main(argc, argv);
-}
-
 /* Gets the arguments with GetCommandLine, converts them to argc and argv
-   and calls main_utf8 */
+   and calls SDL_main */
 static int
 main_getcmdline()
 {
     char **argv;
     int argc;
-    char *cmdline;
+    char *cmdline = NULL;
     int retval = 0;
+    int cmdalloc = 0;
+    const TCHAR *text = GetCommandLine();
+    const TCHAR *ptr;
+    int argc_guess = 2;  /* space for NULL and initial argument. */
+    int rc;
 
-    /* Grab the command line */
-    TCHAR *text = GetCommandLine();
+    /* make a rough guess of command line arguments. Overestimates if there
+       are quoted things. */
+    for (ptr = text; *ptr; ptr++) {
+        if ((*ptr == ' ') || (*ptr == '\t')) {
+            argc_guess++;
+        }
+    }
+
 #if UNICODE
-    cmdline = WIN_StringToUTF8(text);
+    rc = WideCharToMultiByte(CP_UTF8, 0, text, -1, NULL, 0, NULL, NULL);
+    if (rc > 0) {
+        cmdalloc = rc + (sizeof (char *) * argc_guess);
+        argv = (char **) VirtualAlloc(NULL, cmdalloc, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
+        if (argv) {
+            cmdline = (char *) (argv + argc_guess);
+            const int rc2 = WideCharToMultiByte(CP_UTF8, 0, text, -1, cmdline, rc, NULL, NULL);
+            SDL_assert(rc2 == rc);
+        }
+    }
 #else
     /* !!! FIXME: are these in the system codepage? We need to convert to UTF-8. */
-    cmdline = SDL_strdup(text);
+    rc = ((int) SDL_strlen(text)) + 1;
+    cmdalloc = rc + (sizeof (char *) * argc_guess);
+    argv = (char **) VirtualAlloc(NULL, cmdalloc, MEM_RESERVE|MEM_COMMIT, PAGE_READWRITE);
+    if (argv) {
+        cmdline = (char *) (argv + argc_guess);
+        SDL_strcpy(cmdline, text);
+    }
 #endif
     if (cmdline == NULL) {
         return OutOfMemory();
     }
 
     /* Parse it into argv and argc */
-    argc = ParseCommandLine(cmdline, NULL);
-    argv = SDL_stack_alloc(char *, argc + 1);
-    if (argv == NULL) {
-        return OutOfMemory();
-    }
-    ParseCommandLine(cmdline, argv);
+    SDL_assert(ParseCommandLine(cmdline, NULL) <= argc_guess);
+    argc = ParseCommandLine(cmdline, argv);
 
-    retval = main_utf8(argc, argv);
+    SDL_SetMainReady();
 
-    SDL_stack_free(argv);
-    SDL_free(cmdline);
+    /* Run the application main() code */
+    retval = SDL_main(argc, argv);
+
+    VirtualFree(argv, cmdalloc, MEM_DECOMMIT);
+    VirtualFree(argv, 0, MEM_RELEASE);
 
     return retval;
 }
@@ -177,21 +192,7 @@ console_ansi_main(int argc, char *argv[])
 int
 console_wmain(int argc, wchar_t *wargv[], wchar_t *wenvp)
 {
-    int retval = 0;
-    char **argv = SDL_stack_alloc(char*, argc + 1);
-    int i;
-
-    for (i = 0; i < argc; ++i) {
-        argv[i] = WIN_StringToUTF8(wargv[i]);
-    }
-    argv[argc] = NULL;
-
-    retval = main_utf8(argc, argv);
-
-    /* !!! FIXME: we are leaking all the elements of argv we allocated. */
-    SDL_stack_free(argv);
-
-    return retval;
+    return main_getcmdline();
 }
 #endif
 
