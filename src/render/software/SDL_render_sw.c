@@ -657,6 +657,11 @@ SW_RenderCopyEx(SDL_Renderer * renderer, SDL_Texture * texture,
         blitRequired = SDL_TRUE;
     }
 
+    /* srcrect is not selecting the whole src surface, so cropping is needed */
+    if (!(srcrect->w == src->w && srcrect->h == src->h && srcrect->x == 0 && srcrect->y == 0)) {
+        blitRequired = SDL_TRUE;
+    }
+
     /* The color and alpha modulation has to be applied before the rotation when using the NONE and MOD blend modes. */
     if ((blendmode == SDL_BLENDMODE_NONE || blendmode == SDL_BLENDMODE_MOD) && (alphaMod & rMod & gMod & bMod) != 255) {
         applyModulation = SDL_TRUE;
