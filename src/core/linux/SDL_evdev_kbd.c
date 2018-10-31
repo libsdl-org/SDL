@@ -510,17 +510,19 @@ static unsigned int handle_diacr(SDL_EVDEV_keyboard_state *kbd, unsigned int ch)
 
 static int vc_kbd_led(SDL_EVDEV_keyboard_state *kbd, int flag)
 {
-    return ((kbd->ledflagstate >> flag) & 1);
+    return (kbd->ledflagstate & flag) != 0;
 }
 
 static void set_vc_kbd_led(SDL_EVDEV_keyboard_state *kbd, int flag)
 {
-    kbd->ledflagstate |= 1 << flag;
+    kbd->ledflagstate |= flag;
+    ioctl(kbd->console_fd, KDSETLED, (unsigned long)(kbd->ledflagstate));
 }
 
 static void clr_vc_kbd_led(SDL_EVDEV_keyboard_state *kbd, int flag)
 {
-    kbd->ledflagstate &= ~(1 << flag);
+    kbd->ledflagstate &= ~flag;
+    ioctl(kbd->console_fd, KDSETLED, (unsigned long)(kbd->ledflagstate));
 }
 
 static void chg_vc_kbd_lock(SDL_EVDEV_keyboard_state *kbd, int flag)
@@ -535,7 +537,8 @@ static void chg_vc_kbd_slock(SDL_EVDEV_keyboard_state *kbd, int flag)
 
 static void chg_vc_kbd_led(SDL_EVDEV_keyboard_state *kbd, int flag)
 {
-    kbd->ledflagstate ^= 1 << flag;
+    kbd->ledflagstate ^= flag;
+    ioctl(kbd->console_fd, KDSETLED, (unsigned long)(kbd->ledflagstate));
 }
 
 /*
