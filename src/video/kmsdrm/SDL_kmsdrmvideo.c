@@ -587,6 +587,7 @@ KMSDRM_CreateWindow(_THIS, SDL_Window * window)
             goto error;
         }
     }
+    SDL_EGL_SetRequiredVisualId(_this, surface_fmt);
     wdata->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType) wdata->gs);
 
     if (wdata->egl_surface == EGL_NO_SURFACE) {

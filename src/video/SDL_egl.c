@@ -449,6 +449,12 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
     return 0;
 }
 
+void
+SDL_EGL_SetRequiredVisualId(_THIS, int visual_id) 
+{
+    _this->egl_data->egl_required_visual_id=visual_id;
+}
+
 #ifdef DUMP_EGL_CONFIG
 
 #define ATTRIBUTE(_attr) { _attr, #_attr }
@@ -513,14 +519,8 @@ SDL_EGL_ChooseConfig(_THIS)
 /* 64 seems nice. */
     EGLint attribs[64];
     EGLint found_configs = 0, value;
-#ifdef SDL_VIDEO_DRIVER_KMSDRM
-    /* Intel EGL on KMS/DRM (al least) returns invalid configs that confuse the bitdiff search used */
-    /* later in this function, so we simply use the first one when using the KMSDRM driver for now. */
-    EGLConfig configs[1];
-#else
     /* 128 seems even nicer here */
     EGLConfig configs[128];
-#endif
     int i, j, best_bitdiff = -1, bitdiff;
    
     if (!_this->egl_data) {
@@ -603,6 +603,16 @@ SDL_EGL_ChooseConfig(_THIS)
     /* From those, we select the one that matches our requirements more closely via a makeshift algorithm */
 
     for (i = 0; i < found_configs; i++ ) {
+        if (_this->egl_data->egl_required_visual_id)
+        {
+            EGLint format;
+            _this->egl_data->eglGetConfigAttrib(_this->egl_data->egl_display,
+                                            configs[i], 
+                                            EGL_NATIVE_VISUAL_ID, &format);
+            if (_this->egl_data->egl_required_visual_id != format)
+                continue;
+        }
+
         bitdiff = 0;
         for (j = 0; j < SDL_arraysize(attribs) - 1; j += 2) {
             if (attribs[j] == EGL_NONE) {
