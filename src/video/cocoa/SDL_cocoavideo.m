@@ -175,15 +175,23 @@ Cocoa_VideoInit(_THIS)
     /* The IOPM assertion API can disable the screensaver as of 10.7. */
     data->screensaver_use_iopm = floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6;
 
+    data->swaplock = SDL_CreateMutex();
+    if (!data->swaplock) {
+        return -1;
+    }
+
     return 0;
 }
 
 void
 Cocoa_VideoQuit(_THIS)
 {
+    SDL_VideoData *data = (SDL_VideoData *) _this->driverdata;
     Cocoa_QuitModes(_this);
     Cocoa_QuitKeyboard(_this);
     Cocoa_QuitMouse(_this);
+    SDL_DestroyMutex(data->swaplock);
+    data->swaplock = NULL;
 }
 
 /* This function assumes that it's called from within an autorelease pool */

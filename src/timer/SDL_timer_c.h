@@ -18,6 +18,10 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
+#ifndef SDL_timer_c_h_
+#define SDL_timer_c_h_
+
 #include "../SDL_internal.h"
 
 /* Useful functions and variables from SDL_timer.c */
@@ -30,5 +34,7 @@ extern void SDL_TicksInit(void);
 extern void SDL_TicksQuit(void);
 extern int SDL_TimerInit(void);
 extern void SDL_TimerQuit(void);
+
+#endif /* SDL_timer_c_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

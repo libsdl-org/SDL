@@ -31,7 +31,7 @@
 #include <storage/File.h>
 #include <unistd.h>
 
-#include "SDL_BApp.h"	/* SDL_BApp class definition */
+#include "SDL_BApp.h"   /* SDL_BApp class definition */
 #include "SDL_BeApp.h"
 #include "SDL_timer.h"
 #include "SDL_error.h"
@@ -53,24 +53,24 @@ StartBeApp(void *unused)
 {
     BApplication *App;
 
-	// default application signature
-	const char *signature = "application/x-SDL-executable";
-	// dig resources for correct signature
-	image_info info;
-	int32 cookie = 0;
-	if (get_next_image_info(B_CURRENT_TEAM, &cookie, &info) == B_OK) {
-		BFile f(info.name, O_RDONLY);
-		if (f.InitCheck() == B_OK) {
-			BAppFileInfo app_info(&f);
-			if (app_info.InitCheck() == B_OK) {
-				char sig[B_MIME_TYPE_LENGTH];
-				if (app_info.GetSignature(sig) == B_OK)
-					signature = strndup(sig, B_MIME_TYPE_LENGTH);
-			}
-		}
-	}
+    // default application signature
+    const char *signature = "application/x-SDL-executable";
+    // dig resources for correct signature
+    image_info info;
+    int32 cookie = 0;
+    if (get_next_image_info(B_CURRENT_TEAM, &cookie, &info) == B_OK) {
+        BFile f(info.name, O_RDONLY);
+        if (f.InitCheck() == B_OK) {
+            BAppFileInfo app_info(&f);
+            if (app_info.InitCheck() == B_OK) {
+                char sig[B_MIME_TYPE_LENGTH];
+                if (app_info.GetSignature(sig) == B_OK)
+                    signature = strndup(sig, B_MIME_TYPE_LENGTH);
+            }
+        }
+    }
 
-	App = new SDL_BApp(signature);
+    App = new SDL_BApp(signature);
 
     App->Run();
     delete App;
@@ -144,12 +144,12 @@ SDL_QuitBeApp(void)
 
 /* SDL_BApp functions */
 void SDL_BApp::ClearID(SDL_BWin *bwin) {
-	_SetSDLWindow(NULL, bwin->GetID());
-	int32 i = _GetNumWindowSlots() - 1;
-	while(i >= 0 && GetSDLWindow(i) == NULL) {
-		_PopBackWindow();
-		--i;
-	}
+    _SetSDLWindow(NULL, bwin->GetID());
+    int32 i = _GetNumWindowSlots() - 1;
+    while(i >= 0 && GetSDLWindow(i) == NULL) {
+        _PopBackWindow();
+        --i;
+    }
 }
 
 #endif /* __HAIKU__ */

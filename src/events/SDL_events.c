@@ -417,8 +417,10 @@ SDL_StartEventLoop(void)
     SDL_EventState(SDL_TEXTINPUT, SDL_DISABLE);
     SDL_EventState(SDL_TEXTEDITING, SDL_DISABLE);
     SDL_EventState(SDL_SYSWMEVENT, SDL_DISABLE);
+#if 0 /* Leave these events enabled so apps can respond to items being dragged onto them at startup */
     SDL_EventState(SDL_DROPFILE, SDL_DISABLE);
     SDL_EventState(SDL_DROPTEXT, SDL_DISABLE);
+#endif
 
     SDL_AtomicSet(&SDL_EventQ.active, 1);
 

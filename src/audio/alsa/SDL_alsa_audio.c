@@ -445,7 +445,7 @@ static void
 ALSA_CloseDevice(_THIS)
 {
     if (this->hidden->pcm_handle) {
-	/* Wait for the submitted audio to drain
+        /* Wait for the submitted audio to drain
            ALSA_snd_pcm_drop() can hang, so don't use that.
          */
         Uint32 delay = ((this->spec.samples * 1000) / this->spec.freq) * 2;

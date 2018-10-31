@@ -63,7 +63,7 @@ SDL_UDEV_load_syms(void)
 {
     /* cast funcs to char* first, to please GCC's strict aliasing rules. */
     #define SDL_UDEV_SYM(x) \
-        if (!SDL_UDEV_load_sym(#x, (void **) (char *) & _this->x)) return -1
+        if (!SDL_UDEV_load_sym(#x, (void **) (char *) & _this->syms.x)) return -1
 
     SDL_UDEV_SYM(udev_device_get_action);
     SDL_UDEV_SYM(udev_device_get_devnode);
@@ -100,7 +100,7 @@ static SDL_bool
 SDL_UDEV_hotplug_update_available(void)
 {
     if (_this->udev_mon != NULL) {
-        const int fd = _this->udev_monitor_get_fd(_this->udev_mon);
+        const int fd = _this->syms.udev_monitor_get_fd(_this->udev_mon);
         if (SDL_IOReady(fd, SDL_FALSE, 0)) {
             return SDL_TRUE;
         }
@@ -130,21 +130,21 @@ SDL_UDEV_Init(void)
          * Listen for input devices (mouse, keyboard, joystick, etc) and sound devices
          */
         
-        _this->udev = _this->udev_new();
+        _this->udev = _this->syms.udev_new();
         if (_this->udev == NULL) {
             SDL_UDEV_Quit();
             return SDL_SetError("udev_new() failed");
         }
 
-        _this->udev_mon = _this->udev_monitor_new_from_netlink(_this->udev, "udev");
+        _this->udev_mon = _this->syms.udev_monitor_new_from_netlink(_this->udev, "udev");
         if (_this->udev_mon == NULL) {
             SDL_UDEV_Quit();
             return SDL_SetError("udev_monitor_new_from_netlink() failed");
         }
         
-        _this->udev_monitor_filter_add_match_subsystem_devtype(_this->udev_mon, "input", NULL);
-        _this->udev_monitor_filter_add_match_subsystem_devtype(_this->udev_mon, "sound", NULL);
-        _this->udev_monitor_enable_receiving(_this->udev_mon);
+        _this->syms.udev_monitor_filter_add_match_subsystem_devtype(_this->udev_mon, "input", NULL);
+        _this->syms.udev_monitor_filter_add_match_subsystem_devtype(_this->udev_mon, "sound", NULL);
+        _this->syms.udev_monitor_enable_receiving(_this->udev_mon);
         
         /* Do an initial scan of existing devices */
         SDL_UDEV_Scan();
@@ -170,11 +170,11 @@ SDL_UDEV_Quit(void)
     if (_this->ref_count < 1) {
         
         if (_this->udev_mon != NULL) {
-            _this->udev_monitor_unref(_this->udev_mon);
+            _this->syms.udev_monitor_unref(_this->udev_mon);
             _this->udev_mon = NULL;
         }
         if (_this->udev != NULL) {
-            _this->udev_unref(_this->udev);
+            _this->syms.udev_unref(_this->udev);
             _this->udev = NULL;
         }
         
@@ -202,28 +202,28 @@ SDL_UDEV_Scan(void)
         return;
     }
    
-    enumerate = _this->udev_enumerate_new(_this->udev);
+    enumerate = _this->syms.udev_enumerate_new(_this->udev);
     if (enumerate == NULL) {
         SDL_UDEV_Quit();
         SDL_SetError("udev_enumerate_new() failed");
         return;
     }
     
-    _this->udev_enumerate_add_match_subsystem(enumerate, "input");
-    _this->udev_enumerate_add_match_subsystem(enumerate, "sound");
+    _this->syms.udev_enumerate_add_match_subsystem(enumerate, "input");
+    _this->syms.udev_enumerate_add_match_subsystem(enumerate, "sound");
     
-    _this->udev_enumerate_scan_devices(enumerate);
-    devs = _this->udev_enumerate_get_list_entry(enumerate);
-    for (item = devs; item; item = _this->udev_list_entry_get_next(item)) {
-        const char *path = _this->udev_list_entry_get_name(item);
-        struct udev_device *dev = _this->udev_device_new_from_syspath(_this->udev, path);
+    _this->syms.udev_enumerate_scan_devices(enumerate);
+    devs = _this->syms.udev_enumerate_get_list_entry(enumerate);
+    for (item = devs; item; item = _this->syms.udev_list_entry_get_next(item)) {
+        const char *path = _this->syms.udev_list_entry_get_name(item);
+        struct udev_device *dev = _this->syms.udev_device_new_from_syspath(_this->udev, path);
         if (dev != NULL) {
             device_event(SDL_UDEV_DEVICEADDED, dev);
-            _this->udev_device_unref(dev);
+            _this->syms.udev_device_unref(dev);
         }
     }
 
-    _this->udev_enumerate_unref(enumerate);
+    _this->syms.udev_enumerate_unref(enumerate);
 }
 
 
@@ -305,7 +305,7 @@ static void get_caps(struct udev_device *dev, struct udev_device *pdev, const ch
     unsigned long v;
 
     SDL_memset(bitmask, 0, bitmask_len*sizeof(*bitmask));
-    value = _this->udev_device_get_sysattr_value(pdev, attr);
+    value = _this->syms.udev_device_get_sysattr_value(pdev, attr);
     if (!value) {
         return;
     }
@@ -340,8 +340,8 @@ guess_device_class(struct udev_device *dev)
     /* walk up the parental chain until we find the real input device; the
      * argument is very likely a subdevice of this, like eventN */
     pdev = dev;
-    while (pdev && !_this->udev_device_get_sysattr_value(pdev, "capabilities/ev")) {
-        pdev = _this->udev_device_get_parent_with_subsystem_devtype(pdev, "input", NULL);
+    while (pdev && !_this->syms.udev_device_get_sysattr_value(pdev, "capabilities/ev")) {
+        pdev = _this->syms.udev_device_get_parent_with_subsystem_devtype(pdev, "input", NULL);
     }
     if (!pdev) {
         return 0;
@@ -405,28 +405,28 @@ device_event(SDL_UDEV_deviceevent type, struct udev_device *dev)
     const char *path;
     SDL_UDEV_CallbackList *item;
     
-    path = _this->udev_device_get_devnode(dev);
+    path = _this->syms.udev_device_get_devnode(dev);
     if (path == NULL) {
         return;
     }
     
-    subsystem = _this->udev_device_get_subsystem(dev);
+    subsystem = _this->syms.udev_device_get_subsystem(dev);
     if (SDL_strcmp(subsystem, "sound") == 0) {
         devclass = SDL_UDEV_DEVICE_SOUND;
     } else if (SDL_strcmp(subsystem, "input") == 0) {
         /* udev rules reference: http://cgit.freedesktop.org/systemd/systemd/tree/src/udev/udev-builtin-input_id.c */
         
-        val = _this->udev_device_get_property_value(dev, "ID_INPUT_JOYSTICK");
+        val = _this->syms.udev_device_get_property_value(dev, "ID_INPUT_JOYSTICK");
         if (val != NULL && SDL_strcmp(val, "1") == 0 ) {
             devclass |= SDL_UDEV_DEVICE_JOYSTICK;
         }
         
-        val = _this->udev_device_get_property_value(dev, "ID_INPUT_MOUSE");
+        val = _this->syms.udev_device_get_property_value(dev, "ID_INPUT_MOUSE");
         if (val != NULL && SDL_strcmp(val, "1") == 0 ) {
             devclass |= SDL_UDEV_DEVICE_MOUSE;
         }
         
-        val = _this->udev_device_get_property_value(dev, "ID_INPUT_TOUCHSCREEN");
+        val = _this->syms.udev_device_get_property_value(dev, "ID_INPUT_TOUCHSCREEN");
         if (val != NULL && SDL_strcmp(val, "1") == 0 ) {
             devclass |= SDL_UDEV_DEVICE_TOUCHSCREEN;
         }
@@ -437,14 +437,14 @@ device_event(SDL_UDEV_deviceevent type, struct udev_device *dev)
            
            Ref: http://cgit.freedesktop.org/systemd/systemd/tree/src/udev/udev-builtin-input_id.c#n183
         */
-        val = _this->udev_device_get_property_value(dev, "ID_INPUT_KEY");
+        val = _this->syms.udev_device_get_property_value(dev, "ID_INPUT_KEY");
         if (val != NULL && SDL_strcmp(val, "1") == 0 ) {
             devclass |= SDL_UDEV_DEVICE_KEYBOARD;
         }
 
         if (devclass == 0) {
             /* Fall back to old style input classes */
-            val = _this->udev_device_get_property_value(dev, "ID_CLASS");
+            val = _this->syms.udev_device_get_property_value(dev, "ID_CLASS");
             if (val != NULL) {
                 if (SDL_strcmp(val, "joystick") == 0) {
                     devclass = SDL_UDEV_DEVICE_JOYSTICK;
@@ -481,11 +481,11 @@ SDL_UDEV_Poll(void)
     }
 
     while (SDL_UDEV_hotplug_update_available()) {
-        dev = _this->udev_monitor_receive_device(_this->udev_mon);
+        dev = _this->syms.udev_monitor_receive_device(_this->udev_mon);
         if (dev == NULL) {
             break;
         }
-        action = _this->udev_device_get_action(dev);
+        action = _this->syms.udev_device_get_action(dev);
 
         if (SDL_strcmp(action, "add") == 0) {
             /* Wait for the device to finish initialization */
@@ -496,7 +496,7 @@ SDL_UDEV_Poll(void)
             device_event(SDL_UDEV_DEVICEREMOVED, dev);
         }
         
-        _this->udev_device_unref(dev);
+        _this->syms.udev_device_unref(dev);
     }
 }
 
@@ -547,6 +547,22 @@ SDL_UDEV_DelCallback(SDL_UDEV_Callback cb)
     
 }
 
+const SDL_UDEV_Symbols *
+SDL_UDEV_GetUdevSyms(void)
+{
+    if (SDL_UDEV_Init() < 0) {
+        SDL_SetError("Could not initialize UDEV");
+        return NULL;
+    }
+
+    return &_this->syms;
+}
+
+void
+SDL_UDEV_ReleaseUdevSyms(void)
+{
+    SDL_UDEV_Quit();
+}
 
 #endif /* SDL_USE_LIBUDEV */
 

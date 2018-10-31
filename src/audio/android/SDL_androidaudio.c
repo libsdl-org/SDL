@@ -57,7 +57,9 @@ ANDROIDAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 
     test_format = SDL_FirstAudioFormat(this->spec.format);
     while (test_format != 0) { /* no "UNKNOWN" constant */
-        if ((test_format == AUDIO_U8) || (test_format == AUDIO_S16LSB)) {
+        if ((test_format == AUDIO_U8) ||
+			(test_format == AUDIO_S16) ||
+			(test_format == AUDIO_F32)) {
             this->spec.format = test_format;
             break;
         }
@@ -69,25 +71,8 @@ ANDROIDAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         return SDL_SetError("No compatible audio format!");
     }
 
-    if (this->spec.channels > 1) {
-        this->spec.channels = 2;
-    } else {
-        this->spec.channels = 1;
-    }
-
-    if (this->spec.freq < 8000) {
-        this->spec.freq = 8000;
-    }
-    if (this->spec.freq > 48000) {
-        this->spec.freq = 48000;
-    }
-
-    /* TODO: pass in/return a (Java) device ID */
-    this->spec.samples = Android_JNI_OpenAudioDevice(iscapture, this->spec.freq, this->spec.format == AUDIO_U8 ? 0 : 1, this->spec.channels, this->spec.samples);
-
-    if (this->spec.samples == 0) {
-        /* Init failed? */
-        return SDL_SetError("Java-side initialization failed!");
+    if (Android_JNI_OpenAudioDevice(iscapture, &this->spec) < 0) {
+        return -1;
     }
 
     SDL_CalculateAudioSpec(&this->spec);

@@ -227,6 +227,21 @@ SDL_JoystickNameForIndex(int device_index)
     return name;
 }
 
+int
+SDL_JoystickGetDevicePlayerIndex(int device_index)
+{
+    SDL_JoystickDriver *driver;
+    int player_index = -1;
+
+    SDL_LockJoysticks();
+    if (SDL_GetDriverAndJoystickIndex(device_index, &driver, &device_index)) {
+        player_index = driver->GetDevicePlayerIndex(device_index);
+    }
+    SDL_UnlockJoysticks();
+
+    return player_index;
+}
+
 /*
  * Return true if this joystick is known to have all axes centered at zero
  * This isn't generally needed unless the joystick never generates an initial axis value near zero,
@@ -307,6 +322,7 @@ SDL_JoystickOpen(int device_index)
     joystick->driver = driver;
     joystick->instance_id = instance_id;
     joystick->attached = SDL_TRUE;
+    joystick->player_index = -1;
 
     if (driver->Open(joystick, device_index) < 0) {
         SDL_free(joystick);
@@ -600,6 +616,15 @@ SDL_JoystickName(SDL_Joystick * joystick)
     }
 
     return SDL_FixupJoystickName(joystick->name);
+}
+
+int
+SDL_JoystickGetPlayerIndex(SDL_Joystick * joystick)
+{
+    if (!SDL_PrivateJoystickValid(joystick)) {
+        return -1;
+    }
+    return joystick->player_index;
 }
 
 int
@@ -1136,19 +1161,19 @@ SDL_IsJoystickNintendoSwitchPro(Uint16 vendor, Uint16 product)
 SDL_bool
 SDL_IsJoystickSteamController(Uint16 vendor, Uint16 product)
 {
-    return BIsSteamController(GuessControllerType(vendor, product)) ? SDL_TRUE : SDL_FALSE;
+    return BIsSteamController(GuessControllerType(vendor, product));
 }
 
 SDL_bool
 SDL_IsJoystickXbox360(Uint16 vendor, Uint16 product)
 {
-	/* Filter out some bogus values here */
-	if (vendor == 0x0000 && product == 0x0000) {
-		return SDL_FALSE;
-	}
-	if (vendor == 0x0001 && product == 0x0001) {
-		return SDL_FALSE;
-	}
+    /* Filter out some bogus values here */
+    if (vendor == 0x0000 && product == 0x0000) {
+        return SDL_FALSE;
+    }
+    if (vendor == 0x0001 && product == 0x0001) {
+        return SDL_FALSE;
+    }
     return (GuessControllerType(vendor, product) == k_eControllerType_XBox360Controller);
 }
 
@@ -1156,6 +1181,18 @@ SDL_bool
 SDL_IsJoystickXboxOne(Uint16 vendor, Uint16 product)
 {
     return (GuessControllerType(vendor, product) == k_eControllerType_XBoxOneController);
+}
+
+SDL_bool
+SDL_IsJoystickXInput(SDL_JoystickGUID guid)
+{
+    return (guid.data[14] == 'x') ? SDL_TRUE : SDL_FALSE;
+}
+
+SDL_bool
+SDL_IsJoystickHIDAPI(SDL_JoystickGUID guid)
+{
+    return (guid.data[14] == 'h') ? SDL_TRUE : SDL_FALSE;
 }
 
 static SDL_bool SDL_IsJoystickProductWheel(Uint32 vidpid)
@@ -1223,7 +1260,7 @@ static SDL_JoystickType SDL_GetJoystickGUIDType(SDL_JoystickGUID guid)
     Uint16 product;
     Uint32 vidpid;
 
-    if (guid.data[14] == 'x') {
+    if (SDL_IsJoystickXInput(guid)) {
         /* XInput GUID, get the type based on the XInput device subtype */
         switch (guid.data[15]) {
         case 0x01:  /* XINPUT_DEVSUBTYPE_GAMEPAD */

@@ -36,7 +36,7 @@ extern "C"
 
 
 /* The maximum number of joysticks we'll detect */
-#define MAX_JOYSTICKS	16
+#define MAX_JOYSTICKS   16
 
 /* A list of available joysticks */
     static char *SDL_joyport[MAX_JOYSTICKS];
@@ -97,6 +97,11 @@ extern "C"
     static const char *HAIKU_JoystickGetDeviceName(int device_index)
     {
         return SDL_joyname[device_index];
+    }
+
+    static int HAIKU_JoystickGetDevicePlayerIndex(int device_index)
+    {
+        return -1;
     }
 
 /* Function to perform the mapping from device index to the instance id for this index */
@@ -256,6 +261,7 @@ extern "C"
         HAIKU_JoystickGetCount,
         HAIKU_JoystickDetect,
         HAIKU_JoystickGetDeviceName,
+        HAIKU_JoystickGetDevicePlayerIndex,
         HAIKU_JoystickGetDeviceGUID,
         HAIKU_JoystickGetDeviceInstanceID,
         HAIKU_JoystickOpen,

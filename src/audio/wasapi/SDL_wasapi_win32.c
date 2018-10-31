@@ -351,10 +351,42 @@ WASAPI_ActivateDevice(_THIS, const SDL_bool isrecovery)
 }
 
 
+typedef struct
+{
+    LPWSTR devid;
+    char *devname;
+} EndpointItem;
+
+static int sort_endpoints(const void *_a, const void *_b)
+{
+    LPWSTR a = ((const EndpointItem *) _a)->devid;
+    LPWSTR b = ((const EndpointItem *) _b)->devid;
+    if (!a && b) {
+        return -1;
+    } else if (a && !b) {
+        return 1;
+    }
+
+    while (SDL_TRUE) {
+        if (*a < *b) {
+            return -1;
+        } else if (*a > *b) {
+            return 1;
+        } else if (*a == 0) {
+            break;
+        }
+        a++;
+        b++;
+    }
+
+    return 0;
+}
+
 static void
 WASAPI_EnumerateEndpointsForFlow(const SDL_bool iscapture)
 {
     IMMDeviceCollection *collection = NULL;
+    EndpointItem *items;
     UINT i, total;
 
     /* Note that WASAPI separates "adapter devices" from "audio endpoint devices"
@@ -369,22 +401,36 @@ WASAPI_EnumerateEndpointsForFlow(const SDL_bool iscapture)
         return;
     }
 
+    items = (EndpointItem *) SDL_calloc(total, sizeof (EndpointItem));
+    if (!items) {
+        return;  /* oh well. */
+    }
+
     for (i = 0; i < total; i++) {
+        EndpointItem *item = items + i;
         IMMDevice *device = NULL;
         if (SUCCEEDED(IMMDeviceCollection_Item(collection, i, &device))) {
-            LPWSTR devid = NULL;
-            if (SUCCEEDED(IMMDevice_GetId(device, &devid))) {
-                char *devname = GetWasapiDeviceName(device);
-                if (devname) {
-                    WASAPI_AddDevice(iscapture, devname, devid);
-                    SDL_free(devname);
-                }
-                CoTaskMemFree(devid);
+            if (SUCCEEDED(IMMDevice_GetId(device, &item->devid))) {
+                item->devname = GetWasapiDeviceName(device);
             }
             IMMDevice_Release(device);
         }
     }
 
+    /* sort the list of devices by their guid so list is consistent between runs */
+    SDL_qsort(items, total, sizeof (*items), sort_endpoints);
+
+    /* Send the sorted list on to the SDL's higher level. */
+    for (i = 0; i < total; i++) {
+        EndpointItem *item = items + i;
+        if ((item->devid) && (item->devname)) {
+            WASAPI_AddDevice(iscapture, item->devname, item->devid);
+        }
+        SDL_free(item->devname);
+        CoTaskMemFree(item->devid);
+    }
+
+    SDL_free(items);
     IMMDeviceCollection_Release(collection);
 }
 
@@ -403,12 +449,6 @@ WASAPI_PlatformDeleteActivationHandler(void *handler)
 {
     /* not asynchronous. */
     SDL_assert(!"This function should have only been called on WinRT.");
-}
-
-void
-WASAPI_BeginLoopIteration(_THIS)
-{
-    /* no-op. */
 }
 
 #endif  /* SDL_AUDIO_DRIVER_WASAPI && !defined(__WINRT__) */

@@ -107,7 +107,7 @@ typedef struct SDL_VideoData
     Uint32 screensaver_activity;
     BOOL screensaver_use_iopm;
     IOPMAssertionID screensaver_assertion;
-
+    SDL_mutex *swaplock;
 } SDL_VideoData;
 
 /* Utility functions */

@@ -1942,7 +1942,7 @@ GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
 
     data = (GLES2_RenderData *)SDL_calloc(1, sizeof(GLES2_RenderData));
     if (!data) {
-        GLES2_DestroyRenderer(renderer);
+        SDL_free(renderer);
         SDL_OutOfMemory();
         goto error;
     }
@@ -1954,16 +1954,21 @@ GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
     /* Create an OpenGL ES 2.0 context */
     data->context = SDL_GL_CreateContext(window);
     if (!data->context) {
-        GLES2_DestroyRenderer(renderer);
+        SDL_free(renderer);
+        SDL_free(data);
         goto error;
     }
     if (SDL_GL_MakeCurrent(window, data->context) < 0) {
-        GLES2_DestroyRenderer(renderer);
+        SDL_GL_DeleteContext(data->context);
+        SDL_free(renderer);
+        SDL_free(data);
         goto error;
     }
 
     if (GLES2_LoadFunctions(data) < 0) {
-        GLES2_DestroyRenderer(renderer);
+        SDL_GL_DeleteContext(data->context);
+        SDL_free(renderer);
+        SDL_free(data);
         goto error;
     }
 

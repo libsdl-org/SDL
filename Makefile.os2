@@ -1,0 +1,126 @@
+# Open Watcom makefile to build SDL2.dll for OS/2:
+# wmake -f Makefile.os2
+
+LIBNAME = SDL2
+VERSION = 2.0.9
+DESCRIPTION = Simple DirectMedia Layer 2
+
+LIBHOME = .
+LIBPATH = $(LIBHOME)/lib
+DLLFILE = $(LIBHOME)/$(LIBNAME).dll
+LIBFILE = $(LIBHOME)/$(LIBNAME).lib
+LNKFILE = $(LIBNAME).lnk
+
+INCPATH = -I"$(%WATCOM)/h/os2" -I"$(%WATCOM)/h"
+INCPATH+= -I"$(LIBHOME)/h"
+INCPATH+= -Iinclude
+
+LIBS = mmpm2.lib libuls.lib libconv.lib
+
+CFLAGS = -bt=os2 -d0 -q -bm -5s -fp5 -fpi87 -sg -oteanbmier -ei
+# max warnings:
+CFLAGS+= -wx
+# building dll:
+CFLAGS+= -bd
+# the include paths :
+CFLAGS+= $(INCPATH)
+# building SDL itself:
+CFLAGS+= -DBUILD_SDL
+
+SRCS = SDL.c SDL_assert.c SDL_error.c SDL_log.c SDL_dataqueue.c SDL_hints.c
+SRCS+= SDL_getenv.c SDL_iconv.c SDL_malloc.c SDL_qsort.c SDL_stdlib.c SDL_string.c
+SRCS+= SDL_cpuinfo.c SDL_atomic.c SDL_spinlock.c SDL_thread.c SDL_timer.c
+SRCS+= SDL_rwops.c SDL_power.c
+SRCS+= SDL_audio.c SDL_audiocvt.c SDL_audiodev.c SDL_audiotypecvt.c SDL_mixer.c SDL_wave.c
+SRCS+= SDL_events.c SDL_quit.c SDL_keyboard.c SDL_mouse.c SDL_windowevents.c &
+       SDL_clipboardevents.c SDL_dropevents.c SDL_displayevents.c SDL_gesture.c &
+       SDL_sensor.c SDL_touch.c
+SRCS+= SDL_haptic.c SDL_gamecontroller.c SDL_joystick.c
+SRCS+= SDL_render.c yuv_rgb.c SDL_yuv.c SDL_yuv_sw.c SDL_blendfillrect.c &
+       SDL_blendline.c SDL_blendpoint.c SDL_drawline.c SDL_drawpoint.c &
+       SDL_render_sw.c SDL_rotate.c
+SRCS+= SDL_blit.c SDL_blit_0.c SDL_blit_1.c SDL_blit_A.c SDL_blit_auto.c &
+       SDL_blit_copy.c SDL_blit_N.c SDL_blit_slow.c SDL_fillrect.c SDL_bmp.c &
+       SDL_pixels.c SDL_rect.c SDL_RLEaccel.c SDL_shape.c SDL_stretch.c &
+       SDL_surface.c SDL_video.c SDL_clipboard.c SDL_vulkan_utils.c SDL_egl.c
+
+SRCS+= SDL_syscond.c SDL_sysmutex.c SDL_syssem.c SDL_systhread.c SDL_systls.c
+SRCS+= SDL_systimer.c
+SRCS+= SDL_sysloadso.c
+SRCS+= SDL_sysfilesystem.c
+SRCS+= SDL_syshaptic.c SDL_sysjoystick.c
+SRCS+= SDL_dummyaudio.c SDL_diskaudio.c
+SRCS+= SDL_nullvideo.c SDL_nullframebuffer.c SDL_nullevents.c
+SRCS+= SDL_dummysensor.c
+
+SRCS+= SDL_dynapi.c
+
+OBJS = $(SRCS:.c=.obj)
+
+.extensions:
+.extensions: .lib .dll .obj .c .asm
+
+.c: ./src;./src/dynapi;./src/audio;./src/cpuinfo;./src/events;./src/file;./src/haptic;./src/joystick;./src/power;./src/render;./src/render/software;./src/sensor;./src/stdlib;./src/thread;./src/timer;./src/video;./src/video/yuv2rgb;./src/atomic;./src/audio/disk;
+.c: ./src/haptic/dummy;./src/joystick/dummy;./src/audio/dummy;./src/video/dummy;./src/sensor/dummy;
+.c: ./src/loadso/dummy;./src/filesystem/dummy;./src/timer/dummy;./src/thread/generic;
+
+all: $(DLLFILE) $(LIBFILE) .symbolic
+
+$(DLLFILE): $(OBJS) $(LNKFILE)
+    @echo * Linking: $@
+    wlink @$(LNKFILE)
+
+$(LIBFILE): $(DLLFILE)
+    @echo * Creating LIB file: $@
+    wlib -q -b -n -c -pa -s -t -zld -ii -io $* $(DLLFILE)
+
+.c.obj:
+    wcc386 $(CFLAGS) -fo=$^@ $<
+
+SDL_cpuinfo.obj: SDL_cpuinfo.c
+    wcc386 $(CFLAGS) -wcd=200 -fo=$^@ $<
+
+SDL_rwops.obj: SDL_rwops.c
+    wcc386 $(CFLAGS) -wcd=136 -fo=$^@ $<
+
+SDL_blendfillrect.obj: SDL_blendfillrect.c
+    wcc386 $(CFLAGS) -wcd=200 -fo=$^@ $<
+
+SDL_blendline.obj: SDL_blendline.c
+    wcc386 $(CFLAGS) -wcd=200 -fo=$^@ $<
+
+SDL_blendpoint.obj: SDL_blendpoint.c
+    wcc386 $(CFLAGS) -wcd=200 -fo=$^@ $<
+
+SDL_RLEaccel.obj: SDL_RLEaccel.c
+    wcc386 $(CFLAGS) -wcd=201 -fo=$^@ $<
+
+$(LNKFILE):
+    @echo * Creating linker file: $@
+    @%create $@
+    @%append $@ SYSTEM os2v2_dll INITINSTANCE TERMINSTANCE
+    @%append $@ NAME $(DLLFILE)
+    @for %i in ($(OBJS)) do @%append $@ FILE %i
+    @%append $@ LIBPATH $(%LIB);$(LIBPATH)
+    @for %i in ($(LIBS)) do @%append $@ LIB %i
+    @%append $@ OPTION QUIET
+    @%append $@ OPTION IMPF=$(LIBHOME)/$^&.exp
+    @%append $@ OPTION MAP=$(LIBHOME)/$^&.map
+    @%append $@ OPTION DESCRIPTION '@$#libsdl org:$(VERSION)$#@$(DESCRIPTION)'
+    @%append $@ OPTION QUIET
+    @%append $@ OPTION ELIMINATE
+    @%append $@ OPTION MANYAUTODATA
+    @%append $@ OPTION OSNAME='OS/2 and eComStation'
+    @%append $@ OPTION SHOWDEAD
+
+clean: .SYMBOLIC
+    @ echo * Clean: $(LIBNAME)
+    @if exist *.obj rm *.obj
+    @if exist *.err rm *.err
+    @if exist $(LNKFILE) rm $(LNKFILE)
+
+distclean: .SYMBOLIC clean
+    @if exist $(LIBHOME)/*.exp rm $(LIBHOME)/*.exp
+    @if exist $(LIBHOME)/*.map rm $(LIBHOME)/*.map
+    @if exist $(LIBFILE) rm $(LIBFILE)
+    @if exist $(DLLFILE) rm $(DLLFILE)

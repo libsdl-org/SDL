@@ -23,6 +23,7 @@
 #include "SDL_endian.h"
 #include "SDL_video.h"
 #include "SDL_pixels_c.h"
+#include "SDL_yuv_c.h"
 
 #include "yuv2rgb/yuv_rgb.h"
 
@@ -89,10 +90,10 @@ static SDL_bool IsPacked4Format(Uint32 format)
 }
 
 static int GetYUVPlanes(int width, int height, Uint32 format, const void *yuv, int yuv_pitch,
-	                    const Uint8 **y, const Uint8 **u, const Uint8 **v, Uint32 *y_stride, Uint32 *uv_stride)
+                        const Uint8 **y, const Uint8 **u, const Uint8 **v, Uint32 *y_stride, Uint32 *uv_stride)
 {
-	const Uint8 *planes[3] = { NULL, NULL, NULL };
-	int pitches[3] = { 0, 0, 0 };
+    const Uint8 *planes[3] = { NULL, NULL, NULL };
+    int pitches[3] = { 0, 0, 0 };
 
     switch (format) {
     case SDL_PIXELFORMAT_YV12:
@@ -180,10 +181,10 @@ static int GetYUVPlanes(int width, int height, Uint32 format, const void *yuv, i
 
 static SDL_bool yuv_rgb_sse(
     Uint32 src_format, Uint32 dst_format,
-	Uint32 width, Uint32 height, 
-	const Uint8 *y, const Uint8 *u, const Uint8 *v, Uint32 y_stride, Uint32 uv_stride, 
-	Uint8 *rgb, Uint32 rgb_stride, 
-	YCbCrType yuv_type)
+    Uint32 width, Uint32 height, 
+    const Uint8 *y, const Uint8 *u, const Uint8 *v, Uint32 y_stride, Uint32 uv_stride, 
+    Uint8 *rgb, Uint32 rgb_stride, 
+    YCbCrType yuv_type)
 {
 #ifdef __SSE2__
     if (!SDL_HasSSE2()) {
@@ -289,10 +290,10 @@ static SDL_bool yuv_rgb_sse(
 
 static SDL_bool yuv_rgb_std(
     Uint32 src_format, Uint32 dst_format,
-	Uint32 width, Uint32 height, 
-	const Uint8 *y, const Uint8 *u, const Uint8 *v, Uint32 y_stride, Uint32 uv_stride, 
-	Uint8 *rgb, Uint32 rgb_stride, 
-	YCbCrType yuv_type)
+    Uint32 width, Uint32 height, 
+    const Uint8 *y, const Uint8 *u, const Uint8 *v, Uint32 y_stride, Uint32 uv_stride, 
+    Uint8 *rgb, Uint32 rgb_stride, 
+    YCbCrType yuv_type)
 {
     if (src_format == SDL_PIXELFORMAT_YV12 ||
         src_format == SDL_PIXELFORMAT_IYUV) {
@@ -395,7 +396,7 @@ SDL_ConvertPixels_YUV_to_RGB(int width, int height,
          Uint32 src_format, const void *src, int src_pitch,
          Uint32 dst_format, void *dst, int dst_pitch)
 {
-	const Uint8 *y = NULL;
+    const Uint8 *y = NULL;
     const Uint8 *u = NULL;
     const Uint8 *v = NULL;
     Uint32 y_stride = 0;
@@ -553,7 +554,7 @@ SDL_ConvertPixels_ARGB8888_to_YUV(int width, int height, const void *src, int sr
             Uint32 y_stride, uv_stride, y_skip, uv_skip;
 
             GetYUVPlanes(width, height, dst_format, dst, dst_pitch,
-	                     (const Uint8 **)&plane_y, (const Uint8 **)&plane_u, (const Uint8 **)&plane_v,
+                         (const Uint8 **)&plane_y, (const Uint8 **)&plane_u, (const Uint8 **)&plane_v,
                          &y_stride, &uv_stride);
             plane_interleaved_uv = (plane_y + height * y_stride);
             y_skip = (y_stride - width);

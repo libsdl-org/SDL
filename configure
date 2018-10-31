@@ -2719,9 +2719,9 @@ orig_CFLAGS="$CFLAGS"
 #
 SDL_MAJOR_VERSION=2
 SDL_MINOR_VERSION=0
-SDL_MICRO_VERSION=8
+SDL_MICRO_VERSION=9
 SDL_INTERFACE_AGE=0
-SDL_BINARY_AGE=8
+SDL_BINARY_AGE=9
 SDL_VERSION=$SDL_MAJOR_VERSION.$SDL_MINOR_VERSION.$SDL_MICRO_VERSION
 
 
@@ -23165,20 +23165,6 @@ if test "x$ac_cv_header_xinput_h" = xyes; then :
 fi
 
 
-        ac_fn_c_check_header_mongrel "$LINENO" "mmdeviceapi.h" "ac_cv_header_mmdeviceapi_h" "$ac_includes_default"
-if test "x$ac_cv_header_mmdeviceapi_h" = xyes; then :
-  have_wasapi=yes
-fi
-
-
-        ac_fn_c_check_header_mongrel "$LINENO" "audioclient.h" "ac_cv_header_audioclient_h" "$ac_includes_default"
-if test "x$ac_cv_header_audioclient_h" = xyes; then :
-
-else
-  have_wasapi=no
-fi
-
-
         cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
@@ -23257,14 +23243,6 @@ $as_echo "#define HAVE_XINPUT_STATE_EX 1" >>confdefs.h
         SUMMARY_video="${SUMMARY_video} directx"
         SUMMARY_audio="${SUMMARY_audio} directx"
 
-        # Check whether --enable-wasapi was given.
-if test "${enable_wasapi+set}" = set; then :
-  enableval=$enable_wasapi;
-else
-  enable_wasapi=yes
-fi
-
-
         # FIXME: latest Cygwin finds dinput headers, but we die on other win32 headers.
         # FIXME:  ...so force it off for now.
         case "$host" in
@@ -23273,6 +23251,45 @@ fi
             ;;
         esac
     fi
+
+    ac_fn_c_check_header_mongrel "$LINENO" "mmdeviceapi.h" "ac_cv_header_mmdeviceapi_h" "$ac_includes_default"
+if test "x$ac_cv_header_mmdeviceapi_h" = xyes; then :
+  have_wasapi=yes
+fi
+
+
+    if test x$have_wasapi = xyes; then
+        $as_echo "#define HAVE_MMDEVICEAPI_H 1" >>confdefs.h
+
+    fi
+    ac_fn_c_check_header_mongrel "$LINENO" "audioclient.h" "ac_cv_header_audioclient_h" "$ac_includes_default"
+if test "x$ac_cv_header_audioclient_h" = xyes; then :
+
+else
+  have_wasapi=no
+fi
+
+
+    if test x$have_wasapi = xyes; then
+        $as_echo "#define HAVE_AUDIOCLIENT_H 1" >>confdefs.h
+
+    fi
+
+    ac_fn_c_check_header_mongrel "$LINENO" "endpointvolume.h" "ac_cv_header_endpointvolume_h" "$ac_includes_default"
+if test "x$ac_cv_header_endpointvolume_h" = xyes; then :
+  $as_echo "#define HAVE_ENDPOINTVOLUME_H 1" >>confdefs.h
+
+fi
+
+
+
+    # Check whether --enable-wasapi was given.
+if test "${enable_wasapi+set}" = set; then :
+  enableval=$enable_wasapi;
+else
+  enable_wasapi=yes
+fi
+
 }
 
 CheckDLOPEN()
@@ -24296,7 +24313,13 @@ $as_echo "#define SDL_JOYSTICK_DINPUT 1" >>confdefs.h
 $as_echo "#define SDL_JOYSTICK_WINMM 1" >>confdefs.h
 
             fi
+
+$as_echo "#define SDL_JOYSTICK_HIDAPI 1" >>confdefs.h
+
             SOURCES="$SOURCES $srcdir/src/joystick/windows/*.c"
+            SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
+            SOURCES="$SOURCES $srcdir/src/hidapi/windows/hid.c"
+            EXTRA_CFLAGS="$EXTRA_CFLAGS -I$srcdir/src/hidapi/hidapi"
             have_joystick=yes
         fi
         if test x$enable_haptic = xyes; then
@@ -24360,7 +24383,7 @@ $as_echo "#define SDL_LOADSO_WINDOWS 1" >>confdefs.h
         else
             LIBUUID=-luuid
         fi
-        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -luser32 -lgdi32 -lwinmm -limm32 -lole32 -loleaut32 -lshell32 -lversion $LIBUUID -static-libgcc"
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -luser32 -lgdi32 -lwinmm -limm32 -lole32 -loleaut32 -lshell32 -lsetupapi -lversion $LIBUUID -static-libgcc"
         # The Windows platform requires special setup
         VERSION_SOURCES="$srcdir/src/main/windows/*.rc"
         SDLMAIN_SOURCES="$srcdir/src/main/windows/*.c"
@@ -24796,7 +24819,7 @@ esac
 if test x$have_joystick != xyes; then
     if test x$enable_joystick = xyes; then
 
-$as_echo "#define SDL_JOYSTICK_DISABLED 1" >>confdefs.h
+$as_echo "#define SDL_JOYSTICK_DUMMY 1" >>confdefs.h
 
     fi
     SOURCES="$SOURCES $srcdir/src/joystick/dummy/*.c"
@@ -24804,7 +24827,7 @@ fi
 if test x$have_haptic != xyes; then
     if test x$enable_haptic = xyes; then
 
-$as_echo "#define SDL_HAPTIC_DISABLED 1" >>confdefs.h
+$as_echo "#define SDL_HAPTIC_DUMMY 1" >>confdefs.h
 
     fi
     SOURCES="$SOURCES $srcdir/src/haptic/dummy/*.c"
@@ -24812,7 +24835,7 @@ fi
 if test x$have_sensor != xyes; then
     if test x$enable_sensor = xyes; then
 
-$as_echo "#define SDL_SENSOR_DISABLED 1" >>confdefs.h
+$as_echo "#define SDL_SENSOR_DUMMY 1" >>confdefs.h
 
     fi
     SOURCES="$SOURCES $srcdir/src/sensor/dummy/*.c"

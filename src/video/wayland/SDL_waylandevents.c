@@ -178,6 +178,8 @@ Wayland_PumpEvents(_THIS)
 {
     SDL_VideoData *d = _this->driverdata;
 
+    WAYLAND_wl_display_flush(d->display);
+
     if (SDL_IOReady(WAYLAND_wl_display_get_fd(d->display), SDL_FALSE, 0)) {
         WAYLAND_wl_display_dispatch(d->display);
     }
@@ -747,7 +749,7 @@ static const struct wl_data_offer_listener data_offer_listener = {
 
 static void
 data_device_handle_data_offer(void *data, struct wl_data_device *wl_data_device,
-			                  struct wl_data_offer *id)
+                              struct wl_data_offer *id)
 {
     SDL_WaylandDataOffer *data_offer = NULL;
 
@@ -765,7 +767,7 @@ data_device_handle_data_offer(void *data, struct wl_data_device *wl_data_device,
 
 static void
 data_device_handle_enter(void *data, struct wl_data_device *wl_data_device,
-		                 uint32_t serial, struct wl_surface *surface,
+                         uint32_t serial, struct wl_surface *surface,
                          wl_fixed_t x, wl_fixed_t y, struct wl_data_offer *id)
 {
     SDL_WaylandDataDevice *data_device = data;
@@ -808,7 +810,7 @@ data_device_handle_leave(void *data, struct wl_data_device *wl_data_device)
 
 static void
 data_device_handle_motion(void *data, struct wl_data_device *wl_data_device,
-		                  uint32_t time, wl_fixed_t x, wl_fixed_t y)
+                          uint32_t time, wl_fixed_t x, wl_fixed_t y)
 {
 }
 
@@ -847,7 +849,7 @@ data_device_handle_drop(void *data, struct wl_data_device *wl_data_device)
 
 static void
 data_device_handle_selection(void *data, struct wl_data_device *wl_data_device,
-			                 struct wl_data_offer *id)
+                             struct wl_data_offer *id)
 {    
     SDL_WaylandDataDevice *data_device = data;
     SDL_WaylandDataOffer *offer = NULL;

@@ -227,6 +227,12 @@ BSD_JoystickGetDeviceName(int device_index)
     return (joynames[device_index]);
 }
 
+static int
+BSD_JoystickGetDevicePlayerIndex(int device_index)
+{
+    return -1;
+}
+
 /* Function to perform the mapping from device index to the instance id for this index */
 static SDL_JoystickID
 BSD_JoystickGetDeviceInstanceID(int device_index)
@@ -293,6 +299,10 @@ BSD_JoystickOpen(SDL_Joystick * joy, int device_index)
     struct hid_item hitem;
     struct hid_data *hdata;
     struct report *rep = NULL;
+#if defined(__NetBSD__)
+    usb_device_descriptor_t udd;
+    struct usb_string_desc usd;
+#endif
     int fd;
     int i;
 
@@ -344,8 +354,6 @@ BSD_JoystickOpen(SDL_Joystick * joy, int device_index)
         rep->rid = -1;          /* XXX */
     }
 #if defined(__NetBSD__)
-    usb_device_descriptor_t udd;
-    struct usb_string_desc usd;
     if (ioctl(fd, USB_GET_DEVICE_DESC, &udd) == -1)
         goto desc_failed;
 
@@ -687,6 +695,7 @@ SDL_JoystickDriver SDL_BSD_JoystickDriver =
     BSD_JoystickGetCount,
     BSD_JoystickDetect,
     BSD_JoystickGetDeviceName,
+    BSD_JoystickGetDevicePlayerIndex,
     BSD_JoystickGetDeviceGUID,
     BSD_JoystickGetDeviceInstanceID,
     BSD_JoystickOpen,

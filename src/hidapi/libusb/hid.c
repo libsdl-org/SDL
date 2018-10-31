@@ -22,6 +22,9 @@
  code repository located at:
         http://github.com/signal11/hidapi .
 ********************************************************/
+#include "../../SDL_internal.h"
+
+#ifdef SDL_JOYSTICK_HIDAPI
 
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE /* needed for wcsdup() before glibc 2.10 */
@@ -1613,3 +1616,5 @@ uint16_t get_usb_code_for_current_locale(void)
 #ifdef NAMESPACE
 }
 #endif
+
+#endif /* SDL_JOYSTICK_HIDAPI */
