@@ -29,7 +29,7 @@ extern "C" {
 #endif
 
 void HAIKU_PumpEvents(_THIS) {
-	/* Since the event thread is its own thread, this isn't really necessary */
+    /* Since the event thread is its own thread, this isn't really necessary */
 }
 
 #ifdef __cplusplus

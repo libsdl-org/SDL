@@ -414,6 +414,13 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         }
         break;
 
+    case WM_NCACTIVATE:
+        {
+            /* Don't immediately clip the cursor in case we're clicking minimize/maximize buttons */
+            data->skip_update_clipcursor = SDL_TRUE;
+        }
+        break;
+
     case WM_ACTIVATE:
         {
             POINT cursorPos;

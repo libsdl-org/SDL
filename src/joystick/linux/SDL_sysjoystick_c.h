@@ -19,6 +19,9 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+#ifndef SDL_sysjoystick_c_h_
+#define SDL_sysjoystick_c_h_
+
 #include <linux/input.h>
 
 struct SDL_joylist_item;
@@ -60,5 +63,7 @@ struct joystick_hwdata
     /* Steam Controller support */
     SDL_bool m_bSteamController;
 };
+
+#endif /* SDL_sysjoystick_c_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

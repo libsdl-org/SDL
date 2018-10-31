@@ -19,12 +19,12 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
+#ifndef SDL_waylandtouch_h_
+#define SDL_waylandtouch_h_
+
 #include "../../SDL_internal.h"
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH
-
-#ifndef SDL_waylandtouch_h_
-#define SDL_waylandtouch_h_
 
 #include "SDL_waylandvideo.h"
 #include <stdint.h>
@@ -347,6 +347,6 @@ qt_windowmanager_open_url(struct qt_windowmanager *qt_windowmanager, uint32_t re
              QT_WINDOWMANAGER_OPEN_URL, remaining, url);
 }
 
-#endif /* SDL_waylandtouch_h_ */
-
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
+
+#endif /* SDL_waylandtouch_h_ */

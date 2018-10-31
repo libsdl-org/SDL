@@ -137,9 +137,9 @@ extern DECLSPEC void SDLCALL SDL_Vulkan_UnloadLibrary(void);
  *
  *  \param [in]     \c NULL or window Window for which the required Vulkan instance
  *                  extensions should be retrieved
- *  \param [in,out] count pointer to an \c unsigned related to the number of
+ *  \param [in,out] pCount pointer to an \c unsigned related to the number of
  *                  required Vulkan instance extensions
- *  \param [out]    names \c NULL or a pointer to an array to be filled with the
+ *  \param [out]    pNames \c NULL or a pointer to an array to be filled with the
  *                  required Vulkan instance extensions
  *
  *  \return \c SDL_TRUE on success, \c SDL_FALSE on error.

@@ -198,7 +198,7 @@ public:
             _current_context->UnlockGL();
         _current_context = newContext;
         if (_current_context)
-	        _current_context->LockGL();
+            _current_context->LockGL();
     }
 #endif
 

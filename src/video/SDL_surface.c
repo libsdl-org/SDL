@@ -37,7 +37,7 @@ SDL_COMPILE_TIME_ASSERT(surface_size_assumptions,
 /*
  * Calculate the pad-aligned scanline width of a surface
  */
-int
+static int
 SDL_CalculatePitch(Uint32 format, int width)
 {
     int pitch;
@@ -290,6 +290,20 @@ SDL_SetColorKey(SDL_Surface * surface, int flag, Uint32 key)
     }
 
     return 0;
+}
+
+SDL_bool
+SDL_HasColorKey(SDL_Surface * surface)
+{
+    if (!surface) {
+        return SDL_FALSE;
+    }
+
+    if (!(surface->map->info.flags & SDL_COPY_COLORKEY)) {
+        return SDL_FALSE;
+    }
+
+	return SDL_TRUE;
 }
 
 int

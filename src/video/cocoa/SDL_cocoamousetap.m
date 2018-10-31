@@ -211,7 +211,7 @@ Cocoa_InitMouseEventTap(SDL_MouseData* driverdata)
             tapdata->thread = SDL_CreateThreadInternal(&Cocoa_MouseTapThread, "Event Tap Loop", 512 * 1024, tapdata);
             if (tapdata->thread) {
                 /* Success - early out. Ownership transferred to thread. */
-            	return;
+                return;
             }
             CFRelease(tapdata->tap);
         }
@@ -236,6 +236,13 @@ Cocoa_QuitMouseEventTap(SDL_MouseData *driverdata)
 {
     SDL_MouseEventTapData *tapdata = (SDL_MouseEventTapData*)driverdata->tapdata;
     int status;
+
+    if (tapdata == NULL) {
+        /* event tap was already cleaned up (possibly due to CGEventTapCreate
+         * returning null.)
+         */
+        return;
+    }
 
     /* Ensure that the runloop has been started first.
      * TODO: Move this to InitMouseEventTap, check for error conditions that can

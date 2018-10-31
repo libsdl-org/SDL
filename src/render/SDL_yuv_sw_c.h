@@ -18,6 +18,10 @@
      misrepresented as being the original software.
   3. This notice may not be removed or altered from any source distribution.
 */
+
+#ifndef SDL_yuv_sw_c_h_
+#define SDL_yuv_sw_c_h_
+
 #include "../SDL_internal.h"
 
 #include "SDL_video.h"
@@ -63,5 +67,7 @@ void SDL_SW_DestroyYUVTexture(SDL_SW_YUVTexture * swdata);
 #if 0 /* (__GNUC__ > 2) && defined(__i386__) && __OPTIMIZE__ && SDL_ASSEMBLY_ROUTINES && !defined(__clang__) */
 #define USE_MMX_ASSEMBLY 1
 #endif
+
+#endif /* SDL_yuv_sw_c_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */

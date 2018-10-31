@@ -299,19 +299,21 @@ SDL_RunThread(void *data)
 
 #ifdef SDL_CreateThread
 #undef SDL_CreateThread
+#undef SDL_CreateThreadWithStackSize
 #endif
 #if SDL_DYNAMIC_API
 #define SDL_CreateThread SDL_CreateThread_REAL
+#define SDL_CreateThreadWithStackSize SDL_CreateThreadWithStackSize_REAL
 #endif
 
 #ifdef SDL_PASSED_BEGINTHREAD_ENDTHREAD
-static SDL_Thread *
+SDL_Thread *
 SDL_CreateThreadWithStackSize(int (SDLCALL * fn) (void *),
                  const char *name, const size_t stacksize, void *data,
                  pfnSDL_CurrentBeginThread pfnBeginThread,
                  pfnSDL_CurrentEndThread pfnEndThread)
 #else
-static SDL_Thread *
+SDL_Thread *
 SDL_CreateThreadWithStackSize(int (SDLCALL * fn) (void *),
                 const char *name, const size_t stacksize, void *data)
 #endif

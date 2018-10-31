@@ -78,7 +78,7 @@ static void DetectWave##typ##Devs(void) { \
     capstyp##2W caps; \
     UINT i; \
     for (i = 0; i < devcount; i++) { \
-	if (wave##typ##GetDevCaps(i,(LP##capstyp##W)&caps,sizeof(caps))==MMSYSERR_NOERROR) { \
+        if (wave##typ##GetDevCaps(i,(LP##capstyp##W)&caps,sizeof(caps))==MMSYSERR_NOERROR) { \
             char *name = WIN_LookupAudioDeviceName(caps.szPname,&caps.NameGuid); \
             if (name != NULL) { \
                 SDL_AddAudioDevice((int) iscapture, name, (void *) ((size_t) i+1)); \
@@ -375,8 +375,7 @@ WINMM_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 #endif
 
     /* Create the audio buffer semaphore */
-    this->hidden->audio_sem =
-		CreateSemaphore(NULL, iscapture ? 0 : NUM_BUFFERS - 1, NUM_BUFFERS, NULL);
+    this->hidden->audio_sem = CreateSemaphore(NULL, iscapture ? 0 : NUM_BUFFERS - 1, NUM_BUFFERS, NULL);
     if (this->hidden->audio_sem == NULL) {
         return SDL_SetError("Couldn't create semaphore");
     }

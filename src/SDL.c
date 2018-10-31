@@ -124,11 +124,11 @@ SDL_InitSubSystem(Uint32 flags)
     }
 
 #if SDL_VIDEO_DRIVER_WINDOWS
-	if ((flags & (SDL_INIT_HAPTIC|SDL_INIT_JOYSTICK))) {
-		if (SDL_HelperWindowCreate() < 0) {
-			return -1;
-		}
-	}
+    if ((flags & (SDL_INIT_HAPTIC|SDL_INIT_JOYSTICK))) {
+        if (SDL_HelperWindowCreate() < 0) {
+            return -1;
+        }
+    }
 #endif
 
 #if !SDL_TIMERS_DISABLED
@@ -263,8 +263,8 @@ SDL_QuitSubSystem(Uint32 flags)
 #if !SDL_SENSOR_DISABLED
     if ((flags & SDL_INIT_SENSOR)) {
         if (SDL_PrivateShouldQuitSubsystem(SDL_INIT_SENSOR)) {
-			SDL_SensorQuit();
-		}
+            SDL_SensorQuit();
+        }
         SDL_PrivateSubsystemRefCountDecr(SDL_INIT_SENSOR);
     }
 #endif

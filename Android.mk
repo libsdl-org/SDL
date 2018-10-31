@@ -102,7 +102,7 @@ include $(CLEAR_VARS)
 
 LOCAL_CPPFLAGS += -std=c++11
 
-LOCAL_SRC_FILES := $(LOCAL_PATH)/src/hidapi/android/hid.cpp
+LOCAL_SRC_FILES := src/hidapi/android/hid.cpp
 
 LOCAL_MODULE := libhidapi
 LOCAL_LDLIBS := -llog

@@ -445,7 +445,7 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 #if !TARGET_OS_TV
 - (void)application:(UIApplication *)application didChangeStatusBarOrientation:(UIInterfaceOrientation)oldStatusBarOrientation
 {
-	SDL_OnApplicationDidChangeStatusBarOrientation();
+    SDL_OnApplicationDidChangeStatusBarOrientation();
 }
 #endif
 

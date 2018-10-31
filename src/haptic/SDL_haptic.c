@@ -389,9 +389,11 @@ SDL_HapticClose(SDL_Haptic * haptic)
 void
 SDL_HapticQuit(void)
 {
+    while (SDL_haptics) {
+        SDL_HapticClose(SDL_haptics);
+    }
+
     SDL_SYS_HapticQuit();
-    SDL_assert(SDL_haptics == NULL);
-    SDL_haptics = NULL;
 }
 
 /*

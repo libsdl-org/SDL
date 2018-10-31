@@ -4040,6 +4040,7 @@
 		002A85B21073008E007319AE /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SRCROOT)/../SDL/build/$(CONFIGURATION)",
 					"$(HOME)/Library/Frameworks",
@@ -4166,6 +4167,7 @@
 		002A85D41073009D007319AE /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
 				FRAMEWORK_SEARCH_PATHS = (
 					"$(SRCROOT)/../SDL/build/$(CONFIGURATION)",
 					"$(HOME)/Library/Frameworks",

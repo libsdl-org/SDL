@@ -252,34 +252,34 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 
 - (void)pressesBegan:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event
 {
-	if (!SDL_AppleTVRemoteOpenedAsJoystick) {
-    	for (UIPress *press in presses) {
-        	SDL_Scancode scancode = [self scancodeFromPressType:press.type];
-        	SDL_SendKeyboardKey(SDL_PRESSED, scancode);
-    	}
-	}
+    if (!SDL_AppleTVRemoteOpenedAsJoystick) {
+        for (UIPress *press in presses) {
+            SDL_Scancode scancode = [self scancodeFromPressType:press.type];
+            SDL_SendKeyboardKey(SDL_PRESSED, scancode);
+        }
+    }
     [super pressesBegan:presses withEvent:event];
 }
 
 - (void)pressesEnded:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event
 {
-	if (!SDL_AppleTVRemoteOpenedAsJoystick) {
-		for (UIPress *press in presses) {
-			SDL_Scancode scancode = [self scancodeFromPressType:press.type];
-			SDL_SendKeyboardKey(SDL_RELEASED, scancode);
-		}
-	}
+    if (!SDL_AppleTVRemoteOpenedAsJoystick) {
+        for (UIPress *press in presses) {
+            SDL_Scancode scancode = [self scancodeFromPressType:press.type];
+            SDL_SendKeyboardKey(SDL_RELEASED, scancode);
+        }
+    }
     [super pressesEnded:presses withEvent:event];
 }
 
 - (void)pressesCancelled:(NSSet<UIPress *> *)presses withEvent:(UIPressesEvent *)event
 {
-	if (!SDL_AppleTVRemoteOpenedAsJoystick) {
-		for (UIPress *press in presses) {
-			SDL_Scancode scancode = [self scancodeFromPressType:press.type];
-			SDL_SendKeyboardKey(SDL_RELEASED, scancode);
-		}
-	}
+    if (!SDL_AppleTVRemoteOpenedAsJoystick) {
+        for (UIPress *press in presses) {
+            SDL_Scancode scancode = [self scancodeFromPressType:press.type];
+            SDL_SendKeyboardKey(SDL_RELEASED, scancode);
+        }
+    }
     [super pressesCancelled:presses withEvent:event];
 }
 

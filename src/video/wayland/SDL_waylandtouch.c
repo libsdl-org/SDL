@@ -89,9 +89,9 @@ touch_handle_touch(void *data,
     */
 
     SDL_TouchID deviceId = 1;
-	if (SDL_AddTouch(deviceId, "qt_touch_extension") < 0) {
-		 SDL_Log("error: can't add touch %s, %d", __FILE__, __LINE__);
-	}
+    if (SDL_AddTouch(deviceId, "qt_touch_extension") < 0) {
+         SDL_Log("error: can't add touch %s, %d", __FILE__, __LINE__);
+    }
 
     switch (touchState) {
         case QtWaylandTouchPointPressed:

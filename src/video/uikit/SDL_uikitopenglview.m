@@ -101,7 +101,7 @@
                 SDL_SetError("sRGB drawables are not supported.");
                 return nil;
             }
-        } else if (rBits >= 8 || gBits >= 8 || bBits >= 8) {
+        } else if (rBits >= 8 || gBits >= 8 || bBits >= 8 || aBits > 0) {
             /* if user specifically requests rbg888 or some color format higher than 16bpp */
             colorFormat = kEAGLColorFormatRGBA8;
             colorBufferFormat = GL_RGBA8;

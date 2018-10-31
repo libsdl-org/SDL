@@ -117,6 +117,17 @@
 extern "C" {
 #endif /* __cplusplus */
 
+/* FIXME: For SDL 2.1, adjust all the magnitude variables to be Uint16 (0xFFFF).
+ *
+ * At the moment the magnitude variables are mixed between signed/unsigned, and
+ * it is also not made clear that ALL of those variables expect a max of 0x7FFF.
+ *
+ * Some platforms may have higher precision than that (Linux FF, Windows XInput)
+ * so we should fix the inconsistency in favor of higher possible precision,
+ * adjusting for platforms that use different scales.
+ * -flibit
+ */
+
 /**
  *  \typedef SDL_Haptic
  *

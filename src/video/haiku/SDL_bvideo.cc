@@ -56,7 +56,7 @@ HAIKU_CreateDevice(int devindex)
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
 
     device->driverdata = NULL; /* FIXME: Is this the cause of some of the
-    							  SDL_Quit() errors? */
+                                  SDL_Quit() errors? */
 
 /* TODO: Figure out if any initialization needs to go here */
 
@@ -122,37 +122,36 @@ HAIKU_CreateDevice(int devindex)
 }
 
 VideoBootStrap HAIKU_bootstrap = {
-	"haiku", "Haiku graphics",
-	HAIKU_Available, HAIKU_CreateDevice
+    "haiku", "Haiku graphics",
+    HAIKU_Available, HAIKU_CreateDevice
 };
 
 void HAIKU_DeleteDevice(SDL_VideoDevice * device)
 {
-	SDL_free(device->driverdata);
-	SDL_free(device);
+    SDL_free(device->driverdata);
+    SDL_free(device);
 }
 
 int HAIKU_VideoInit(_THIS)
 {
-	/* Initialize the Be Application for appserver interaction */
-	if (SDL_InitBeApp() < 0) {
-		return -1;
-	}
-	
-	/* Initialize video modes */
-	HAIKU_InitModes(_this);
+    /* Initialize the Be Application for appserver interaction */
+    if (SDL_InitBeApp() < 0) {
+        return -1;
+    }
+    
+    /* Initialize video modes */
+    HAIKU_InitModes(_this);
 
-	/* Init the keymap */
-	HAIKU_InitOSKeymap();
-	
-	
+    /* Init the keymap */
+    HAIKU_InitOSKeymap();
+
 #if SDL_VIDEO_OPENGL
         /* testgl application doesn't load library, just tries to load symbols */
         /* is it correct? if so we have to load library here */
     HAIKU_GL_LoadLibrary(_this, NULL);
 #endif
 
-        /* We're done! */
+    /* We're done! */
     return (0);
 }
 

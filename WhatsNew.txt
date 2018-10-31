@@ -6,7 +6,40 @@ This is a list of major changes in SDL's version history.
 ---------------------------------------------------------------------------
 
 General:
+* Added a new sensor API, initialized by passing SDL_INIT_SENSOR to SDL_Init(), and defined in SDL_sensor.h
+* Added an event SDL_SENSORUPDATE which is sent when a sensor is updated
+* Added SDL_GetDisplayOrientation() to return the current display orientation
+* Added an event SDL_DISPLAYEVENT which is sent when the display orientation changes
+* Added HIDAPI joystick drivers for more consistent support for Xbox, PS4 and Nintendo Switch Pro controller support across platforms. (Thanks to Valve for contributing the PS4 and Nintendo Switch Pro controller support)
+* Added support for many other popular game controllers
+* Added SDL_JoystickGetDevicePlayerIndex(), SDL_JoystickGetPlayerIndex(), and SDL_GameControllerGetPlayerIndex() to get the player index for a controller. For XInput controllers this returns the XInput index for the controller.
+* Added SDL_GameControllerRumble() and SDL_JoystickRumble() which allow simple rumble without using the haptics API
 * Added SDL_GameControllerMappingForDeviceIndex() to get the mapping for a controller before it's opened
+* Added the hint SDL_HINT_MOUSE_DOUBLE_CLICK_TIME to control the mouse double-click time
+* Added the hint SDL_HINT_MOUSE_DOUBLE_CLICK_RADIUS to control the mouse double-click radius, in pixels
+* Added SDL_HasColorKey() to return whether a surface has a colorkey active
+* Added SDL_HasAVX512F() to return whether the CPU has AVX-512F features
+* Added SDL_IsTablet() to return whether the application is running on a tablet
+* Added SDL_THREAD_PRIORITY_TIME_CRITICAL for threads that must run at the highest priority
+
+Mac OS X:
+* Fixed black screen at start on Mac OS X Mojave
+
+Linux:
+* Added SDL_LinuxSetThreadPriority() to allow adjusting the thread priority of native threads using RealtimeKit if available.
+
+iOS:
+* Fixed Asian IME input
+
+Android:
+* Updated required Android SDK to API 26, to match Google's new App Store requirements
+* Added support for wired USB Xbox, PS4, and Nintendo Switch Pro controllers
+* Added support for relative mouse mode on Android 7.0 and newer (except where it's broken, on Chromebooks and when in DeX mode with Samsung Experience 9.0)
+* Added support for custom mouse cursors on Android 7.0 and newer
+* Added the hint SDL_HINT_ANDROID_TRAP_BACK_BUTTON to control whether the back button will back out of the app (the default) or be passed to the application as SDL_SCANCODE_AC_BACK
+* Added SDL_AndroidBackButton() to trigger the Android system back button behavior when handling the back button in the application
+* Added SDL_IsChromebook() to return whether the app is running in the Chromebook Android runtime
+* Added SDL_IsDeXMode() to return whether the app is running while docked in the Samsung DeX
 
 
 ---------------------------------------------------------------------------

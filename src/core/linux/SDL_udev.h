@@ -64,22 +64,13 @@ typedef struct SDL_UDEV_CallbackList {
     struct SDL_UDEV_CallbackList *next;
 } SDL_UDEV_CallbackList;
 
-typedef struct SDL_UDEV_PrivateData
-{
-    const char *udev_library;
-    void *udev_handle;
-    struct udev *udev;
-    struct udev_monitor *udev_mon;
-    int ref_count;
-    SDL_UDEV_CallbackList *first, *last;
-    
-    /* Function pointers */
+typedef struct SDL_UDEV_Symbols {
     const char *(*udev_device_get_action)(struct udev_device *);
     const char *(*udev_device_get_devnode)(struct udev_device *);
     const char *(*udev_device_get_subsystem)(struct udev_device *);
-	struct udev_device *(*udev_device_get_parent_with_subsystem_devtype)(struct udev_device *udev_device, const char *subsystem, const char *devtype);
+    struct udev_device *(*udev_device_get_parent_with_subsystem_devtype)(struct udev_device *udev_device, const char *subsystem, const char *devtype);
     const char *(*udev_device_get_property_value)(struct udev_device *, const char *);
-	const char *(*udev_device_get_sysattr_value)(struct udev_device *udev_device, const char *sysattr);
+    const char *(*udev_device_get_sysattr_value)(struct udev_device *udev_device, const char *sysattr);
     struct udev_device *(*udev_device_new_from_syspath)(struct udev *, const char *);
     void (*udev_device_unref)(struct udev_device *);
     int (*udev_enumerate_add_match_property)(struct udev_enumerate *, const char *, const char *);
@@ -100,6 +91,19 @@ typedef struct SDL_UDEV_PrivateData
     void (*udev_unref)(struct udev *);
     struct udev_device * (*udev_device_new_from_devnum)(struct udev *udev, char type, dev_t devnum);
     dev_t (*udev_device_get_devnum) (struct udev_device *udev_device);
+} SDL_UDEV_Symbols;
+
+typedef struct SDL_UDEV_PrivateData
+{
+    const char *udev_library;
+    void *udev_handle;
+    struct udev *udev;
+    struct udev_monitor *udev_mon;
+    int ref_count;
+    SDL_UDEV_CallbackList *first, *last;
+    
+    /* Function pointers */
+    SDL_UDEV_Symbols syms;
 } SDL_UDEV_PrivateData;
 
 extern int SDL_UDEV_Init(void);
@@ -110,8 +114,8 @@ extern void SDL_UDEV_Poll(void);
 extern void SDL_UDEV_Scan(void);
 extern int SDL_UDEV_AddCallback(SDL_UDEV_Callback cb);
 extern void SDL_UDEV_DelCallback(SDL_UDEV_Callback cb);
-
-
+extern const SDL_UDEV_Symbols *SDL_UDEV_GetUdevSyms(void);
+extern void SDL_UDEV_ReleaseUdevSyms(void);
 
 
 #endif /* HAVE_LIBUDEV_H */

@@ -185,20 +185,9 @@ struct SDL_WasapiActivationHandler : public RuntimeClass< RuntimeClassFlags< Cla
 HRESULT
 SDL_WasapiActivationHandler::ActivateCompleted(IActivateAudioInterfaceAsyncOperation *async)
 {
-    HRESULT result = S_OK;
-    IUnknown *iunknown = nullptr;
-    const HRESULT ret = async->GetActivateResult(&result, &iunknown);
-
-    if (SUCCEEDED(ret) && SUCCEEDED(result)) {
-        iunknown->QueryInterface(IID_PPV_ARGS(&device->hidden->client));
-        if (device->hidden->client) {
-            // Just set a flag, since we're probably in a different thread. We'll pick it up and init everything on our own thread to prevent races.
-            SDL_AtomicSet(&device->hidden->just_activated, 1);
-        }
-    }
-
+    // Just set a flag, since we're probably in a different thread. We'll pick it up and init everything on our own thread to prevent races.
+    SDL_AtomicSet(&device->hidden->just_activated, 1);
     WASAPI_UnrefDevice(device);
-
     return S_OK;
 }
 
@@ -236,27 +225,47 @@ WASAPI_ActivateDevice(_THIS, const SDL_bool isrecovery)
     IActivateAudioInterfaceAsyncOperation *async = nullptr;
     const HRESULT ret = ActivateAudioInterfaceAsync(devid, __uuidof(IAudioClient), nullptr, handler.Get(), &async);
 
-    if (async != nullptr) {
-        async->Release();
-    }
-
-    if (FAILED(ret)) {
+    if (FAILED(ret) || async == nullptr) {
+        if (async != nullptr) {
+            async->Release();
+        }
         handler.Get()->Release();
         WASAPI_UnrefDevice(_this);
         return WIN_SetErrorFromHRESULT("WASAPI can't activate requested audio endpoint", ret);
     }
 
-    return 0;
-}
-
-void
-WASAPI_BeginLoopIteration(_THIS)
-{
-    if (SDL_AtomicCAS(&_this->hidden->just_activated, 1, 0)) {
-        if (WASAPI_PrepDevice(_this, SDL_TRUE) == -1) {
-            SDL_OpenedAudioDeviceDisconnected(_this);
-        } 
+    /* Spin until the async operation is complete.
+     * If we don't PrepDevice before leaving this function, the bug list gets LONG:
+     * - device.spec is not filled with the correct information
+     * - The 'obtained' spec will be wrong for ALLOW_CHANGE properties
+     * - SDL_AudioStreams will/will not be allocated at the right time
+     * - SDL_assert(device->callbackspec.size == device->spec.size) will fail
+     * - When the assert is ignored, skipping or a buffer overflow will occur
+     */
+    while (!SDL_AtomicCAS(&_this->hidden->just_activated, 1, 0)) {
+        SDL_Delay(1);
     }
+
+    HRESULT activateRes = S_OK;
+    IUnknown *iunknown = nullptr;
+    const HRESULT getActivateRes = async->GetActivateResult(&activateRes, &iunknown);
+    async->Release();
+    if (FAILED(getActivateRes)) {
+        return WIN_SetErrorFromHRESULT("Failed to get WASAPI activate result", getActivateRes);
+    } else if (FAILED(activateRes)) {
+        return WIN_SetErrorFromHRESULT("Failed to activate WASAPI device", activateRes);
+    }
+
+    iunknown->QueryInterface(IID_PPV_ARGS(&_this->hidden->client));
+    if (!_this->hidden->client) {
+        return SDL_SetError("Failed to query WASAPI client interface");
+    }
+
+    if (WASAPI_PrepDevice(_this, isrecovery) == -1) {
+        return -1;
+    }
+
+    return 0;
 }
 
 void

@@ -29,7 +29,7 @@
 
 #include <wchar.h>
 
-#if defined(_WIN32) && !defined(NAMESPACE)
+#if defined(_WIN32) && !defined(NAMESPACE) && (0) /* SDL: don't export hidapi syms */
       #define HID_API_EXPORT __declspec(dllexport)
       #define HID_API_CALL
 #else
@@ -225,7 +225,7 @@ namespace NAMESPACE {
 				-1 on error. If no packet was available to be read within
 				the timeout period, this function returns 0.
 		*/
-		int HID_API_EXPORT HID_API_CALL hid_read_timeout(hid_device *dev, unsigned char *data, size_t length, int milliseconds);
+		int HID_API_EXPORT HID_API_CALL hid_read_timeout(hid_device *device, unsigned char *data, size_t length, int milliseconds);
 
 		/** @brief Read an Input report from a HID device.
 
