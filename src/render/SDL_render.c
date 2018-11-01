@@ -2165,14 +2165,18 @@ SDL_RenderClear(SDL_Renderer * renderer)
 int
 SDL_RenderDrawPoint(SDL_Renderer * renderer, int x, int y)
 {
-    const SDL_FPoint fpoint = { (float) x, (float) y };
+    SDL_FPoint fpoint;
+    fpoint.x = (float) x;
+    fpoint.y = (float) y;
     return SDL_RenderDrawPointsF(renderer, &fpoint, 1);
 }
 
 int
 SDL_RenderDrawPointF(SDL_Renderer * renderer, float x, float y)
 {
-    const SDL_FPoint fpoint = { x, y };
+    SDL_FPoint fpoint;
+    fpoint.x = x;
+    fpoint.y = y;
     return SDL_RenderDrawPointsF(renderer, &fpoint, 1);
 }
 
@@ -2319,14 +2323,22 @@ SDL_RenderDrawPointsF(SDL_Renderer * renderer,
 int
 SDL_RenderDrawLine(SDL_Renderer * renderer, int x1, int y1, int x2, int y2)
 {
-    const SDL_FPoint points[2] = { { (float) x1, (float) y1 }, { (float) x2, (float) y2 } };
+    SDL_FPoint points[2];
+    points[0].x = (float) x1;
+    points[0].y = (float) y1;
+    points[1].x = (float) x2;
+    points[1].y = (float) y2;
     return SDL_RenderDrawLinesF(renderer, points, 2);
 }
 
 int
 SDL_RenderDrawLineF(SDL_Renderer * renderer, float x1, float y1, float x2, float y2)
 {
-    const SDL_FPoint points[2] = { { x1, y1 }, { x2, y2 } };
+    SDL_FPoint points[2];
+    points[0].x = x1;
+    points[0].y = y1;
+    points[1].x = x2;
+    points[1].y = y2;
     return SDL_RenderDrawLinesF(renderer, points, 2);
 }
 
