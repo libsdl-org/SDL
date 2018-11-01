@@ -1073,24 +1073,19 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
 
     // !!! FIXME: have a ring of pre-made MTLBuffers we cycle through? How expensive is creation?
     if (vertsize > 0) {
-        id<MTLBuffer> mtlbufvertexstaging = [data.mtldevice newBufferWithLength:vertsize options:MTLResourceStorageModeShared];
-        #if !__has_feature(objc_arc)
-        [mtlbufvertexstaging autorelease];
-        #endif
-        mtlbufvertexstaging.label = @"SDL vertex staging data";
-        SDL_memcpy([mtlbufvertexstaging contents], vertices, vertsize);
-
-        // Move our new vertex buffer from system RAM to GPU memory so any draw calls can use it.
-        mtlbufvertex = [data.mtldevice newBufferWithLength:vertsize options:MTLResourceStorageModePrivate];
+        /* We can memcpy to a shared buffer from the CPU and read it from the GPU
+         * without any extra copying. It's a bit slower on macOS to read shared
+         * data from the GPU than to read managed/private data, but we avoid the
+         * cost of copying the data and the code's simpler. Apple's best
+         * practices guide recommends this approach for streamed vertex data.
+         * TODO: this buffer is also used for constants. Is performance still
+         * good for those, or should we have a managed buffer for them? */
+        mtlbufvertex = [data.mtldevice newBufferWithLength:vertsize options:MTLResourceStorageModeShared];
         #if !__has_feature(objc_arc)
         [mtlbufvertex autorelease];
         #endif
         mtlbufvertex.label = @"SDL vertex data";
-        id<MTLCommandBuffer> cmdbuffer = [data.mtlcmdqueue commandBuffer];
-        id<MTLBlitCommandEncoder> blitcmd = [cmdbuffer blitCommandEncoder];
-        [blitcmd copyFromBuffer:mtlbufvertexstaging sourceOffset:0 toBuffer:mtlbufvertex destinationOffset:0 size:vertsize];
-        [blitcmd endEncoding];
-        [cmdbuffer commit];
+        SDL_memcpy([mtlbufvertex contents], vertices, vertsize);
     }
 
     // If there's a command buffer here unexpectedly (app requested one?). Commit it so we can start fresh.
