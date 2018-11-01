@@ -299,6 +299,10 @@ BSD_JoystickOpen(SDL_Joystick * joy, int device_index)
     struct hid_item hitem;
     struct hid_data *hdata;
     struct report *rep = NULL;
+#if defined(__NetBSD__)
+    usb_device_descriptor_t udd;
+    struct usb_string_desc usd;
+#endif
     int fd;
     int i;
 
@@ -350,8 +354,6 @@ BSD_JoystickOpen(SDL_Joystick * joy, int device_index)
         rep->rid = -1;          /* XXX */
     }
 #if defined(__NetBSD__)
-    usb_device_descriptor_t udd;
-    struct usb_string_desc usd;
     if (ioctl(fd, USB_GET_DEVICE_DESC, &udd) == -1)
         goto desc_failed;
 
