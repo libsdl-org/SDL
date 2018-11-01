@@ -599,7 +599,11 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 SDL_assert(viewport != NULL);
                 cliprect = cmd->data.cliprect.enabled ? &cmd->data.cliprect.rect : NULL;
                 if (cliprect) {
-                    SDL_Rect clip_rect = { cliprect->x + viewport->x, cliprect->y + viewport->y, cliprect->w, cliprect->h };
+                    SDL_Rect clip_rect;
+                    clip_rect.x = cliprect->x + viewport->x;
+                    clip_rect.y = cliprect->y + viewport->y;
+                    clip_rect.w = cliprect->w;
+                    clip_rect.h = cliprect->h;
                     SDL_IntersectRect(viewport, &clip_rect, &clip_rect);
                     SDL_SetClipRect(surface, &clip_rect);
                 } else {
