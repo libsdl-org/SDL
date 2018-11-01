@@ -1297,11 +1297,11 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 if (SetDrawState(data, cmd, GLES2_IMAGESOURCE_SOLID) == 0) {
                     if (count > 2 && (verts[0] == verts[(count-1)*2]) && (verts[1] == verts[(count*2)-1])) {
                         /* GL_LINE_LOOP takes care of the final segment */
-                        data->glDrawArrays(GL_LINE_LOOP, 0, count - 1);
+                        data->glDrawArrays(GL_LINE_LOOP, 0, (GLsizei) (count - 1));
                     } else {
-                        data->glDrawArrays(GL_LINE_STRIP, 0, count);
+                        data->glDrawArrays(GL_LINE_STRIP, 0, (GLsizei) count);
                         /* We need to close the endpoint of the line */
-                        data->glDrawArrays(GL_POINTS, count - 1, 1);
+                        data->glDrawArrays(GL_POINTS, (GLsizei) (count - 1), 1);
                     }
                 }
                 break;
@@ -1312,7 +1312,7 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
                 size_t offset = 0;
                 if (SetDrawState(data, cmd, GLES2_IMAGESOURCE_SOLID) == 0) {
                     for (i = 0; i < count; ++i, offset += 4) {
-                        data->glDrawArrays(GL_TRIANGLE_STRIP, offset, 4);
+                        data->glDrawArrays(GL_TRIANGLE_STRIP, (GLsizei) offset, 4);
                     }
                 }
                 break;

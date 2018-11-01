@@ -2858,6 +2858,7 @@ SDL_RenderCopyF(SDL_Renderer * renderer, SDL_Texture * texture,
         }
     }
 
+    SDL_zero(r);
     SDL_RenderGetViewport(renderer, &r);
     real_dstrect.x = 0.0f;
     real_dstrect.y = 0.0f;
@@ -2956,6 +2957,7 @@ SDL_RenderCopyExF(SDL_Renderer * renderer, SDL_Texture * texture,
         real_dstrect = *dstrect;
     } else {
         SDL_Rect r;
+        SDL_zero(r);
         SDL_RenderGetViewport(renderer, &r);
         real_dstrect.x = 0.0f;
         real_dstrect.y = 0.0f;
