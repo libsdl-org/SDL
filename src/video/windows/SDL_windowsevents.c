@@ -962,7 +962,6 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         {
             UINT i;
             HDROP drop = (HDROP) wParam;
-            SDL_bool isstack;
             UINT count = DragQueryFile(drop, 0xFFFFFFFF, NULL, 0);
             for (i = 0; i < count; ++i) {
                 SDL_bool isstack;

@@ -113,7 +113,7 @@ WIN_CreateCursor(SDL_Surface * surface, int hot_x, int hot_y)
     bmh.bV4BlueMask  = 0x000000FF;
 
     maskbitslen = ((surface->w + (pad - (surface->w % pad))) / 8) * surface->h;
-    maskbits = SDL_small_alloc(Uint8,maskbitslen);
+    maskbits = SDL_small_alloc(Uint8, maskbitslen, &isstack);
     if (maskbits == NULL) {
         SDL_OutOfMemory();
         return NULL;

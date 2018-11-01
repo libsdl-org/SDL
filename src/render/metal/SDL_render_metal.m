@@ -553,7 +553,7 @@ METAL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         mtltexdesc.height = (texture->h + 1) / 2;
     }
 
-    if (yuv || nc12) {
+    if (yuv || nv12) {
         mtltexture_uv = [data.mtldevice newTextureWithDescriptor:mtltexdesc];
         if (mtltexture_uv == nil) {
 #if !__has_feature(objc_arc)

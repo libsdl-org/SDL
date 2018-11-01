@@ -1306,7 +1306,7 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                     IDirect3DDevice9_DrawPrimitive(data->device, D3DPT_POINTLIST, first / sizeof (Vertex), count);
                 } else {
                     const Vertex *verts = (Vertex *) (((Uint8 *) vertices) + first);
-                    IDirect3DDevice9_DrawPrimitiveUP(data->device, D3DPT_POINTLIST, count, vertices, sizeof (Vertex));
+                    IDirect3DDevice9_DrawPrimitiveUP(data->device, D3DPT_POINTLIST, count, verts, sizeof (Vertex));
                 }
                 break;
             }
