@@ -61,8 +61,7 @@ static const size_t CONSTANTS_OFFSET_HALF_PIXEL_TRANSFORM = ALIGN_CONSTANTS(CONS
 static const size_t CONSTANTS_OFFSET_DECODE_JPEG = ALIGN_CONSTANTS(CONSTANTS_OFFSET_HALF_PIXEL_TRANSFORM + sizeof(float) * 16);
 static const size_t CONSTANTS_OFFSET_DECODE_BT601 = ALIGN_CONSTANTS(CONSTANTS_OFFSET_DECODE_JPEG + sizeof(float) * 4 * 4);
 static const size_t CONSTANTS_OFFSET_DECODE_BT709 = ALIGN_CONSTANTS(CONSTANTS_OFFSET_DECODE_BT601 + sizeof(float) * 4 * 4);
-static const size_t CONSTANTS_OFFSET_CLEAR_VERTS = ALIGN_CONSTANTS(CONSTANTS_OFFSET_DECODE_BT709 + sizeof(float) * 4 * 4);
-static const size_t CONSTANTS_LENGTH = CONSTANTS_OFFSET_CLEAR_VERTS + sizeof(float) * 6;
+static const size_t CONSTANTS_LENGTH = CONSTANTS_OFFSET_DECODE_BT709 + sizeof(float) * 6;
 
 typedef enum SDL_MetalVertexFunction
 {
@@ -1412,8 +1411,6 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
         1.0000,  1.7720,  0.0000, 0.0,        /* Bcoeff */
     };
 
-    float clearverts[6] = {0.0f, 0.0f,  0.0f, 2.0f,  2.0f, 0.0f};
-
     id<MTLBuffer> mtlbufconstantstaging = [data.mtldevice newBufferWithLength:CONSTANTS_LENGTH options:MTLResourceStorageModeShared];
     #if !__has_feature(objc_arc)
     [mtlbufconstantstaging autorelease];
@@ -1430,7 +1427,6 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     SDL_memcpy(constantdata + CONSTANTS_OFFSET_DECODE_JPEG, decodetransformJPEG, sizeof(decodetransformJPEG));
     SDL_memcpy(constantdata + CONSTANTS_OFFSET_DECODE_BT601, decodetransformBT601, sizeof(decodetransformBT601));
     SDL_memcpy(constantdata + CONSTANTS_OFFSET_DECODE_BT709, decodetransformBT709, sizeof(decodetransformBT709));
-    SDL_memcpy(constantdata + CONSTANTS_OFFSET_CLEAR_VERTS, clearverts, sizeof(clearverts));
 
     id<MTLCommandBuffer> cmdbuffer = [data.mtlcmdqueue commandBuffer];
     id<MTLBlitCommandEncoder> blitcmd = [cmdbuffer blitCommandEncoder];
