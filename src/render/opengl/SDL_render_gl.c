@@ -420,7 +420,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
 
     data = (GL_RenderData *) SDL_calloc(1, sizeof(*data));
     if (!data) {
-        GL_DestroyRenderer(renderer);
+        SDL_free(renderer);
         SDL_OutOfMemory();
         goto error;
     }
@@ -455,16 +455,21 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
 
     data->context = SDL_GL_CreateContext(window);
     if (!data->context) {
-        GL_DestroyRenderer(renderer);
+        SDL_free(renderer);
+        SDL_free(data);
         goto error;
     }
     if (SDL_GL_MakeCurrent(window, data->context) < 0) {
-        GL_DestroyRenderer(renderer);
+        SDL_GL_DeleteContext(data->context);
+        SDL_free(renderer);
+        SDL_free(data);
         goto error;
     }
 
     if (GL_LoadFunctions(data) < 0) {
-        GL_DestroyRenderer(renderer);
+        SDL_GL_DeleteContext(data->context);
+        SDL_free(renderer);
+        SDL_free(data);
         goto error;
     }
 
