@@ -1261,7 +1261,7 @@ int Android_JNI_CaptureAudioBuffer(void *buffer, int buflen)
 {
     JNIEnv *env = Android_JNI_GetEnv();
     jboolean isCopy = JNI_FALSE;
-    jint br;
+    jint br = -1;
 
     switch (captureBufferFormat) {
     case ENCODING_PCM_8BIT:
