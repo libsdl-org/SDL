@@ -86,7 +86,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     protected static boolean mScreenKeyboardShown;
     protected static ViewGroup mLayout;
     protected static SDLClipboardHandler mClipboardHandler;
-    protected static Hashtable<Integer, Object> mCursors;
+    protected static Hashtable<Integer, PointerIcon> mCursors;
     protected static int mLastCursorID;
     protected static SDLGenericMotionListener_API12 mMotionListener;
     protected static HIDDeviceManager mHIDDeviceManager;
@@ -176,7 +176,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         mTextEdit = null;
         mLayout = null;
         mClipboardHandler = null;
-        mCursors = new Hashtable<Integer, Object>();
+        mCursors = new Hashtable<Integer, PointerIcon>();
         mLastCursorID = 0;
         mSDLThread = null;
         mExitCalledFromJava = false;
@@ -1379,13 +1379,14 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static int createCustomCursor(int[] colors, int width, int height, int hotSpotX, int hotSpotY) {
         Bitmap bitmap = Bitmap.createBitmap(colors, width, height, Bitmap.Config.ARGB_8888);
         ++mLastCursorID;
-        // This requires API 24, so use reflection to implement this
-        try {
-            Class PointerIconClass = Class.forName("android.view.PointerIcon");
-            Class[] arg_types = new Class[] { Bitmap.class, float.class, float.class };
-            Method create = PointerIconClass.getMethod("create", arg_types);
-            mCursors.put(mLastCursorID, create.invoke(null, bitmap, hotSpotX, hotSpotY));
-        } catch (Exception e) {
+
+        if (Build.VERSION.SDK_INT >= 24) {
+            try {
+                mCursors.put(mLastCursorID, PointerIcon.create(bitmap, hotSpotX, hotSpotY));
+            } catch (Exception e) {
+                return 0;
+            }
+        } else {
             return 0;
         }
         return mLastCursorID;
@@ -1395,12 +1396,14 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
      * This method is called by SDL using JNI.
      */
     public static boolean setCustomCursor(int cursorID) {
-        // This requires API 24, so use reflection to implement this
-        try {
-            Class PointerIconClass = Class.forName("android.view.PointerIcon");
-            Method setPointerIcon = SDLSurface.class.getMethod("setPointerIcon", PointerIconClass);
-            setPointerIcon.invoke(mSurface, mCursors.get(cursorID));
-        } catch (Exception e) {
+
+        if (Build.VERSION.SDK_INT >= 24) {
+            try {
+                mSurface.setPointerIcon(mCursors.get(cursorID));
+            } catch (Exception e) {
+                return false;
+            }
+        } else {
             return false;
         }
         return true;
@@ -1449,15 +1452,12 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             cursor_type = 1002; //PointerIcon.TYPE_HAND;
             break;
         }
-        // This requires API 24, so use reflection to implement this
-        try {
-            Class PointerIconClass = Class.forName("android.view.PointerIcon");
-            Class[] arg_types = new Class[] { Context.class, int.class };
-            Method getSystemIcon = PointerIconClass.getMethod("getSystemIcon", arg_types);
-            Method setPointerIcon = SDLSurface.class.getMethod("setPointerIcon", PointerIconClass);
-            setPointerIcon.invoke(mSurface, getSystemIcon.invoke(null, SDL.getContext(), cursor_type));
-        } catch (Exception e) {
-            return false;
+        if (Build.VERSION.SDK_INT >= 24) {
+            try {
+                mSurface.setPointerIcon(PointerIcon.getSystemIcon(SDL.getContext(), cursor_type));
+            } catch (Exception e) {
+                return false;
+            }
         }
         return true;
     }
