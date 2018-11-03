@@ -53,6 +53,22 @@ LOCAL_SRC_FILES := \
 LOCAL_SHARED_LIBRARIES := hidapi
 
 LOCAL_CFLAGS += -DGL_GLEXT_PROTOTYPES
+LOCAL_CFLAGS += \
+	-Wall -Wextra \
+	-Wdocumentation \
+	-Wdocumentation-unknown-command \
+	-Wmissing-prototypes \
+	-Wunreachable-code-break \
+	-Wunneeded-internal-declaration \
+	-Wmissing-variable-declarations \
+	-Wfloat-conversion \
+	-Wshorten-64-to-32 \
+	-Wunreachable-code-return
+
+# Warnings we haven't fixed (yet)
+LOCAL_CFLAGS += -Wno-unused-parameter -Wno-sign-compare
+ 
+
 LOCAL_LDLIBS := -ldl -lGLESv1_CM -lGLESv2 -llog -landroid
 
 ifeq ($(NDK_DEBUG),1)
