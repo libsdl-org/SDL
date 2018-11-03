@@ -232,6 +232,57 @@ case "$host" in
 esac
 AC_MSG_RESULT($have_no_undefined)
 
+AC_MSG_CHECKING(for linker option --dynamicbase)
+have_dynamicbase=no
+case "$host" in
+    *)
+        save_LDFLAGS="$LDFLAGS"
+        LDFLAGS="$LDFLAGS -Wl,--dynamicbase"
+        AC_TRY_LINK([
+        ],[
+        ],[
+        have_dynamicbase=yes
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,--dynamicbase"
+        ])
+        LDFLAGS="$save_LDFLAGS"
+        ;;
+esac
+AC_MSG_RESULT($have_dynamicbase)
+
+AC_MSG_CHECKING(for linker option --nxcompat)
+have_nxcompat=no
+case "$host" in
+    *)
+        save_LDFLAGS="$LDFLAGS"
+        LDFLAGS="$LDFLAGS -Wl,--nxcompat"
+        AC_TRY_LINK([
+        ],[
+        ],[
+        have_nxcompat=yes
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,--nxcompat"
+        ])
+        LDFLAGS="$save_LDFLAGS"
+        ;;
+esac
+AC_MSG_RESULT($have_nxcompat)
+
+AC_MSG_CHECKING(for linker option --high-entropy-va)
+have_high_entropy_va=no
+case "$host" in
+    *)
+        save_LDFLAGS="$LDFLAGS"
+        LDFLAGS="$LDFLAGS -Wl,--high-entropy-va"
+        AC_TRY_LINK([
+        ],[
+        ],[
+        have_high_entropy_va=yes
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,--high-entropy-va"
+        ])
+        LDFLAGS="$save_LDFLAGS"
+        ;;
+esac
+AC_MSG_RESULT($have_high_entropy_va)
+
 dnl See whether we are allowed to use the system C library
 AC_ARG_ENABLE(libc,
 AC_HELP_STRING([--enable-libc], [Use the system C library [[default=yes]]]),
