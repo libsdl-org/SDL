@@ -12,12 +12,11 @@ import android.bluetooth.BluetoothGattService;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+import android.os.*;
 
 //import com.android.internal.util.HexDump;
 
 import java.lang.Runnable;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.UUID;
@@ -186,10 +185,13 @@ class HIDDeviceBLESteamController extends BluetoothGattCallback implements HIDDe
     // Because on Chromebooks we show up as a dual-mode device, it will attempt to connect TRANSPORT_AUTO, which will use TRANSPORT_BREDR instead
     // of TRANSPORT_LE.  Let's force ourselves to connect low energy.
     private BluetoothGatt connectGatt(boolean managed) {
-        try {
-            Method m = mDevice.getClass().getDeclaredMethod("connectGatt", Context.class, boolean.class, BluetoothGattCallback.class, int.class);
-            return (BluetoothGatt) m.invoke(mDevice, mManager.getContext(), managed, this, TRANSPORT_LE);
-        } catch (Exception e) {
+        if (Build.VERSION.SDK_INT >= 23) {
+            try {
+                return mDevice.connectGatt(mManager.getContext(), managed, this, TRANSPORT_LE);
+            } catch (Exception e) {
+                return mDevice.connectGatt(mManager.getContext(), managed, this);
+            }
+        } else {
             return mDevice.connectGatt(mManager.getContext(), managed, this);
         }
     }
