@@ -564,46 +564,6 @@ macro(CheckX11)
   endif()
 endmacro()
 
-# Requires:
-# - EGL
-# - PkgCheckModules
-# Optional:
-# - MIR_SHARED opt
-# - HAVE_DLOPEN opt
-macro(CheckMir)
-    if(VIDEO_MIR)
-        find_library(MIR_LIB mirclient mircommon egl)
-        pkg_check_modules(MIR_TOOLKIT mirclient>=0.26 mircommon)
-        pkg_check_modules(EGL egl)
-        pkg_check_modules(XKB xkbcommon)
-
-        if (MIR_LIB AND MIR_TOOLKIT_FOUND AND EGL_FOUND AND XKB_FOUND)
-            set(HAVE_VIDEO_MIR TRUE)
-            set(HAVE_SDL_VIDEO TRUE)
-
-            file(GLOB MIR_SOURCES ${SDL2_SOURCE_DIR}/src/video/mir/*.c)
-            set(SOURCE_FILES ${SOURCE_FILES} ${MIR_SOURCES})
-            set(SDL_VIDEO_DRIVER_MIR 1)
-
-            list(APPEND EXTRA_CFLAGS ${MIR_TOOLKIT_CFLAGS} ${EGL_CFLAGS} ${XKB_CFLAGS})
-
-            if(MIR_SHARED)
-                if(NOT HAVE_DLOPEN)
-                    message_warn("You must have SDL_LoadObject() support for dynamic Mir loading")
-                else()
-                    FindLibraryAndSONAME(mirclient)
-                    FindLibraryAndSONAME(xkbcommon)
-                    set(SDL_VIDEO_DRIVER_MIR_DYNAMIC "\"${MIRCLIENT_LIB_SONAME}\"")
-                    set(SDL_VIDEO_DRIVER_MIR_DYNAMIC_XKBCOMMON "\"${XKBCOMMON_LIB_SONAME}\"")
-                    set(HAVE_MIR_SHARED TRUE)
-                endif()
-            else()
-                set(EXTRA_LIBS ${MIR_TOOLKIT_LIBRARIES} ${EXTRA_LIBS})
-            endif()
-        endif()
-    endif()
-endmacro()
-
 macro(WaylandProtocolGen _SCANNER _XML _PROTL)
     set(_WAYLAND_PROT_C_CODE "${CMAKE_CURRENT_BINARY_DIR}/wayland-generated-protocols/${_PROTL}-protocol.c")
     set(_WAYLAND_PROT_H_CODE "${CMAKE_CURRENT_BINARY_DIR}/wayland-generated-protocols/${_PROTL}-client-protocol.h")

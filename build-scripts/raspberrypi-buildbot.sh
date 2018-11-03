@@ -42,7 +42,7 @@ SYSROOT="/opt/rpi-sysroot"
 export CC="ccache /opt/rpi-tools/arm-bcm2708/gcc-linaro-arm-linux-gnueabihf-raspbian/bin/arm-linux-gnueabihf-gcc --sysroot=$SYSROOT -I$SYSROOT/opt/vc/include -I$SYSROOT/usr/include -I$SYSROOT/opt/vc/include/interface/vcos/pthreads -I$SYSROOT/opt/vc/include/interface/vmcs_host/linux -L$SYSROOT/opt/vc/lib"
 # -L$SYSROOT/usr/lib/arm-linux-gnueabihf"
 # !!! FIXME: shouldn't have to --disable-* things here.
-../configure --with-sysroot=$SYSROOT --host=arm-raspberry-linux-gnueabihf --prefix=$PWD/rpi-sdl2-installed --disable-pulseaudio --disable-esd --disable-video-mir --disable-video-wayland
+../configure --with-sysroot=$SYSROOT --host=arm-raspberry-linux-gnueabihf --prefix=$PWD/rpi-sdl2-installed --disable-pulseaudio --disable-esd --disable-video-wayland
 $MAKE
 $MAKE install
 # Fix up a few things to a real install path on a real Raspberry Pi...

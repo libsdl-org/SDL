@@ -122,7 +122,7 @@ typedef enum
     SDL_SYSWM_COCOA,
     SDL_SYSWM_UIKIT,
     SDL_SYSWM_WAYLAND,
-    SDL_SYSWM_MIR,
+    SDL_SYSWM_MIR,  /* no longer available, left for API/ABI compatibility. Remove in 2.1! */
     SDL_SYSWM_WINRT,
     SDL_SYSWM_ANDROID,
     SDL_SYSWM_VIVANTE,
@@ -257,11 +257,11 @@ struct SDL_SysWMinfo
             struct wl_shell_surface *shell_surface; /**< Wayland shell_surface (window manager handle) */
         } wl;
 #endif
-#if defined(SDL_VIDEO_DRIVER_MIR)
+#if defined(SDL_VIDEO_DRIVER_MIR)  /* no longer available, left for API/ABI compatibility. Remove in 2.1! */
         struct
         {
-            struct MirConnection *connection;  /**< Mir display server connection */
-            struct MirSurface *surface;  /**< Mir surface */
+            void *connection;  /**< Mir display server connection */
+            void *surface;  /**< Mir surface */
         } mir;
 #endif
 
