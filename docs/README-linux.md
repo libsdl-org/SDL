@@ -25,9 +25,6 @@ fcitx-libs-dev libsamplerate0-dev libsndio-dev
 Ubuntu 16.04+ can also add "libwayland-dev libxkbcommon-dev wayland-protocols"
 to that command line for Wayland support.
 
-Ubuntu 16.10 can also add "libmirclient-dev libxkbcommon-dev" to that command
-line for Mir support.
-
 NOTES:
 - This includes all the audio targets except arts, because Ubuntu pulled the 
   artsc0-dev package, but in theory SDL still supports it.
