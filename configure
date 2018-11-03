@@ -16063,6 +16063,108 @@ esac
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_no_undefined" >&5
 $as_echo "$have_no_undefined" >&6; }
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for linker option --dynamicbase" >&5
+$as_echo_n "checking for linker option --dynamicbase... " >&6; }
+have_dynamicbase=no
+case "$host" in
+    *)
+        save_LDFLAGS="$LDFLAGS"
+        LDFLAGS="$LDFLAGS -Wl,--dynamicbase"
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+
+        have_dynamicbase=yes
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,--dynamicbase"
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+        LDFLAGS="$save_LDFLAGS"
+        ;;
+esac
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_dynamicbase" >&5
+$as_echo "$have_dynamicbase" >&6; }
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for linker option --nxcompat" >&5
+$as_echo_n "checking for linker option --nxcompat... " >&6; }
+have_nxcompat=no
+case "$host" in
+    *)
+        save_LDFLAGS="$LDFLAGS"
+        LDFLAGS="$LDFLAGS -Wl,--nxcompat"
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+
+        have_nxcompat=yes
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,--nxcompat"
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+        LDFLAGS="$save_LDFLAGS"
+        ;;
+esac
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_nxcompat" >&5
+$as_echo "$have_nxcompat" >&6; }
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for linker option --high-entropy-va" >&5
+$as_echo_n "checking for linker option --high-entropy-va... " >&6; }
+have_high_entropy_va=no
+case "$host" in
+    *)
+        save_LDFLAGS="$LDFLAGS"
+        LDFLAGS="$LDFLAGS -Wl,--high-entropy-va"
+        cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+
+int
+main ()
+{
+
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+
+        have_high_entropy_va=yes
+        EXTRA_LDFLAGS="$EXTRA_LDFLAGS -Wl,--high-entropy-va"
+
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+        LDFLAGS="$save_LDFLAGS"
+        ;;
+esac
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $have_high_entropy_va" >&5
+$as_echo "$have_high_entropy_va" >&6; }
+
 # Check whether --enable-libc was given.
 if test "${enable_libc+set}" = set; then :
   enableval=$enable_libc;
