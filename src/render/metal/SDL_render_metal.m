@@ -1465,6 +1465,9 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
 #if defined(__MACOSX__) && defined(MAC_OS_X_VERSION_10_13)
     if (@available(macOS 10.13, *)) {
         data.mtllayer.displaySyncEnabled = (flags & SDL_RENDERER_PRESENTVSYNC) != 0;
+        if (data.mtllayer.displaySyncEnabled) {
+            renderer->info.flags |= SDL_RENDERER_PRESENTVSYNC;
+        }
     } else
 #endif
     {
