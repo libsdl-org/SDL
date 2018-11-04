@@ -1196,14 +1196,28 @@ METAL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
     METAL_ActivateRenderCommandEncoder(renderer, MTLLoadActionLoad, NULL);
 
-    // Commit any current command buffer, and waitUntilCompleted, so any output is ready to be read.
     [data.mtlcmdencoder endEncoding];
+    id<MTLTexture> mtltexture = data.mtlpassdesc.colorAttachments[0].texture;
+
+#ifdef __MACOSX__
+    /* on macOS with managed-storage textures, we need to tell the driver to
+     * update the CPU-side copy of the texture data.
+     * NOTE: Currently all of our textures are managed on macOS. We'll need some
+     * extra copying for any private textures. */
+    if (mtltexture.storageMode == MTLStorageModeManaged) {
+        id<MTLBlitCommandEncoder> blit = [data.mtlcmdbuffer blitCommandEncoder];
+        [blit synchronizeResource:mtltexture];
+        [blit endEncoding];
+    }
+#endif
+
+    /* Commit the current command buffer and wait until it's completed, to make
+     * sure the GPU has finished rendering to it by the time we read it. */
     [data.mtlcmdbuffer commit];
     [data.mtlcmdbuffer waitUntilCompleted];
     data.mtlcmdencoder = nil;
     data.mtlcmdbuffer = nil;
 
-    id<MTLTexture> mtltexture = data.mtlpassdesc.colorAttachments[0].texture;
     MTLRegion mtlregion = MTLRegionMake2D(rect->x, rect->y, rect->w, rect->h);
 
     // we only do BGRA8 or RGBA8 at the moment, so 4 will do.
