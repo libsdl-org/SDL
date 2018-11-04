@@ -47,6 +47,7 @@
 
 #include "xdg-shell-client-protocol.h"
 #include "xdg-shell-unstable-v6-client-protocol.h"
+#include "xdg-decoration-unstable-v1-client-protocol.h"
 #include "org-kde-kwin-server-decoration-manager-client-protocol.h"
 
 #define WAYLANDVID_DRIVER_NAME "wayland"
@@ -372,6 +373,8 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
         Wayland_display_add_pointer_constraints(d, id);
     } else if (strcmp(interface, "wl_data_device_manager") == 0) {
         d->data_device_manager = wl_registry_bind(d->registry, id, &wl_data_device_manager_interface, 3);
+    } else if (strcmp(interface, "zxdg_decoration_manager_v1") == 0) {
+        d->decoration_manager = wl_registry_bind(d->registry, id, &zxdg_decoration_manager_v1_interface, 1);
     } else if (strcmp(interface, "org_kde_kwin_server_decoration_manager") == 0) {
         d->kwin_server_decoration_manager = wl_registry_bind(d->registry, id, &org_kde_kwin_server_decoration_manager_interface, 1);
 

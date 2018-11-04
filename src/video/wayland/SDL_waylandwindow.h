@@ -62,6 +62,7 @@ typedef struct {
     struct SDL_WaylandInput *keyboard_device;
     EGLSurface egl_surface;
     struct zwp_locked_pointer_v1 *locked_pointer;
+    struct zxdg_toplevel_decoration_v1 *server_decoration;
     struct org_kde_kwin_server_decoration *kwin_server_decoration;
 
 #ifdef SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH

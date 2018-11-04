@@ -35,6 +35,7 @@
 
 #include "xdg-shell-client-protocol.h"
 #include "xdg-shell-unstable-v6-client-protocol.h"
+#include "xdg-decoration-unstable-v1-client-protocol.h"
 #include "org-kde-kwin-server-decoration-manager-client-protocol.h"
 
 /* On modern desktops, we probably will use the xdg-shell protocol instead
@@ -498,7 +499,10 @@ Wayland_SetWindowBordered(_THIS, SDL_Window * window, SDL_bool bordered)
 {
     SDL_WindowData *wind = window->driverdata;
     const SDL_VideoData *viddata = (const SDL_VideoData *) _this->driverdata;
-    if ((viddata->kwin_server_decoration_manager) && (wind->kwin_server_decoration)) {
+    if ((viddata->decoration_manager) && (wind->server_decoration)) {
+        const enum zxdg_toplevel_decoration_v1_mode mode = bordered ? ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE : ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE;
+        zxdg_toplevel_decoration_v1_set_mode(wind->server_decoration, mode);
+    } else if ((viddata->kwin_server_decoration_manager) && (wind->kwin_server_decoration)) {
         const enum org_kde_kwin_server_decoration_mode mode = bordered ? ORG_KDE_KWIN_SERVER_DECORATION_MANAGER_MODE_SERVER : ORG_KDE_KWIN_SERVER_DECORATION_MANAGER_MODE_NONE;
         org_kde_kwin_server_decoration_request_mode(wind->kwin_server_decoration, mode);
     }
@@ -617,7 +621,14 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
     }
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
 
-    if (c->kwin_server_decoration_manager) {
+    if (c->decoration_manager && c->shell.xdg && data->shell_surface.xdg.surface) {
+        data->server_decoration = zxdg_decoration_manager_v1_get_toplevel_decoration(c->decoration_manager, data->shell_surface.xdg.roleobj.toplevel);
+        if (data->server_decoration) {
+            const SDL_bool bordered = (window->flags & SDL_WINDOW_BORDERLESS) == 0;
+            const enum zxdg_toplevel_decoration_v1_mode mode = bordered ? ZXDG_TOPLEVEL_DECORATION_V1_MODE_SERVER_SIDE : ZXDG_TOPLEVEL_DECORATION_V1_MODE_CLIENT_SIDE;
+            zxdg_toplevel_decoration_v1_set_mode(data->server_decoration, mode);
+        }
+    } else if (c->kwin_server_decoration_manager) {
         data->kwin_server_decoration = org_kde_kwin_server_decoration_manager_create(c->kwin_server_decoration_manager, data->surface);
         if (data->kwin_server_decoration) {
             const SDL_bool bordered = (window->flags & SDL_WINDOW_BORDERLESS) == 0;
@@ -699,6 +710,10 @@ void Wayland_DestroyWindow(_THIS, SDL_Window *window)
     if (data) {
         SDL_EGL_DestroySurface(_this, wind->egl_surface);
         WAYLAND_wl_egl_window_destroy(wind->egl_window);
+
+        if (wind->server_decoration) {
+           zxdg_toplevel_decoration_v1_destroy(wind->server_decoration);
+        }
 
         if (wind->kwin_server_decoration) {
             org_kde_kwin_server_decoration_release(wind->kwin_server_decoration);
