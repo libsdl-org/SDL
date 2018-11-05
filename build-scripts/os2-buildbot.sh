@@ -36,7 +36,7 @@ mv SDL2.lib SDL2.dll $ZIPDIR/
 cp -R include $ZIPDIR/
 zip -9r "$ZIPFILE" $ZIPDIR
 
-rm -f *.obj SDL2.exp SDL2.map SDL2.lnk
+wmake -f Makefile.os2 distclean
 
 set +x
 echo "All done. Final installable is in $ZIPFILE ...";
