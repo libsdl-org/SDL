@@ -41,9 +41,9 @@
  *  an unhandled window event occurs.  This event is ignored by default, but
  *  you can enable it with SDL_EventState().
  */
-#ifdef SDL_PROTOTYPES_ONLY
 struct SDL_SysWMinfo;
-#else
+
+#if !defined(SDL_PROTOTYPES_ONLY)
 
 #if defined(SDL_VIDEO_DRIVER_WINDOWS)
 #ifndef WIN32_LEAN_AND_MEAN
@@ -103,6 +103,8 @@ typedef void *EGLSurface;
 #if defined(SDL_VIDEO_DRIVER_VIVANTE)
 #include "SDL_egl.h"
 #endif
+#endif /* SDL_PROTOTYPES_ONLY */
+
 
 #include "begin_code.h"
 /* Set up for C function definitions, even when using C++ */
@@ -110,6 +112,7 @@ typedef void *EGLSurface;
 extern "C" {
 #endif
 
+#if !defined(SDL_PROTOTYPES_ONLY)
 /**
  *  These are the various supported windowing subsystems
  */
