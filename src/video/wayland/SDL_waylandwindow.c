@@ -55,7 +55,6 @@ handle_configure_wl_shell_surface(void *data, struct wl_shell_surface *shell_sur
 {
     SDL_WindowData *wind = (SDL_WindowData *)data;
     SDL_Window *window = wind->sdlwindow;
-    struct wl_region *region;
 
     /* wl_shell_surface spec states that this is a suggestion.
        Ignore if less than or greater than max/min size. */
@@ -68,7 +67,7 @@ handle_configure_wl_shell_surface(void *data, struct wl_shell_surface *shell_sur
         if ((window->flags & SDL_WINDOW_RESIZABLE)) {
             if (window->max_w > 0) {
                 width = SDL_min(width, window->max_w);
-            } 
+            }
             width = SDL_max(width, window->min_w);
 
             if (window->max_h > 0) {
@@ -80,15 +79,9 @@ handle_configure_wl_shell_surface(void *data, struct wl_shell_surface *shell_sur
         }
     }
 
-    WAYLAND_wl_egl_window_resize(wind->egl_window, width, height, 0, 0);
-    region = wl_compositor_create_region(wind->waylandData->compositor);
-    wl_region_add(region, 0, 0, width, height);
-    wl_surface_set_opaque_region(wind->surface, region);
-    wl_region_destroy(region);
-
-    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, width, height);
-    window->w = width;
-    window->h = height;
+    wind->resize.width = width;
+    wind->resize.height = height;
+    wind->resize.pending = SDL_TRUE;
 }
 
 static void
@@ -112,15 +105,25 @@ handle_configure_zxdg_shell_surface(void *data, struct zxdg_surface_v6 *zxdg, ui
     SDL_Window *window = wind->sdlwindow;
     struct wl_region *region;
 
-    wind->shell_surface.zxdg.initial_configure_seen = SDL_TRUE;
+    if (!wind->shell_surface.zxdg.initial_configure_seen) {
+        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, wind->resize.width, wind->resize.height);
+        window->w = wind->resize.width;
+        window->h = wind->resize.height;
 
-    WAYLAND_wl_egl_window_resize(wind->egl_window, window->w, window->h, 0, 0);
+        WAYLAND_wl_egl_window_resize(wind->egl_window, window->w, window->h, 0, 0);
 
-    region = wl_compositor_create_region(wind->waylandData->compositor);
-    wl_region_add(region, 0, 0, window->w, window->h);
-    wl_surface_set_opaque_region(wind->surface, region);
-    wl_region_destroy(region);
-    zxdg_surface_v6_ack_configure(zxdg, serial);
+        zxdg_surface_v6_ack_configure(zxdg, serial);
+
+        region = wl_compositor_create_region(wind->waylandData->compositor);
+        wl_region_add(region, 0, 0, window->w, window->h);
+        wl_surface_set_opaque_region(wind->surface, region);
+        wl_region_destroy(region);
+
+        wind->shell_surface.zxdg.initial_configure_seen = SDL_TRUE;
+    } else {
+        wind->resize.pending = SDL_TRUE;
+        wind->resize.serial = serial;
+    }
 }
 
 static const struct zxdg_surface_v6_listener shell_surface_listener_zxdg = {
@@ -138,18 +141,27 @@ handle_configure_zxdg_toplevel(void *data,
     SDL_WindowData *wind = (SDL_WindowData *)data;
     SDL_Window *window = wind->sdlwindow;
 
-    /* wl_shell_surface spec states that this is a suggestion.
-       Ignore if less than or greater than max/min size. */
-
-    if (width == 0 || height == 0) {
-        return;
+    enum zxdg_toplevel_v6_state *state;
+    SDL_bool fullscreen = SDL_FALSE;
+    wl_array_for_each(state, states) {
+        if (*state == ZXDG_TOPLEVEL_V6_STATE_FULLSCREEN) {
+            fullscreen = SDL_TRUE;
+        }
     }
 
-    if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
+    if (!fullscreen) {
+        if (width == 0 || height == 0) {
+            width = window->windowed.w;
+            height = window->windowed.h;
+        }
+
+        /* zxdg_toplevel spec states that this is a suggestion.
+           Ignore if less than or greater than max/min size. */
+
         if ((window->flags & SDL_WINDOW_RESIZABLE)) {
             if (window->max_w > 0) {
                 width = SDL_min(width, window->max_w);
-            } 
+            }
             width = SDL_max(width, window->min_w);
 
             if (window->max_h > 0) {
@@ -157,13 +169,20 @@ handle_configure_zxdg_toplevel(void *data,
             }
             height = SDL_max(height, window->min_h);
         } else {
+            wind->resize.width = window->w;
+            wind->resize.height = window->h;
             return;
         }
     }
 
-    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, width, height);
-    window->w = width;
-    window->h = height;
+    if (width == 0 || height == 0) {
+        wind->resize.width = window->w;
+        wind->resize.height = window->h;
+        return;
+    }
+
+    wind->resize.width = width;
+    wind->resize.height = height;
 }
 
 static void
@@ -187,15 +206,25 @@ handle_configure_xdg_shell_surface(void *data, struct xdg_surface *xdg, uint32_t
     SDL_Window *window = wind->sdlwindow;
     struct wl_region *region;
 
-    wind->shell_surface.xdg.initial_configure_seen = SDL_TRUE;
+    if (!wind->shell_surface.xdg.initial_configure_seen) {
+        SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, wind->resize.width, wind->resize.height);
+        window->w = wind->resize.width;
+        window->h = wind->resize.height;
 
-    WAYLAND_wl_egl_window_resize(wind->egl_window, window->w, window->h, 0, 0);
+        WAYLAND_wl_egl_window_resize(wind->egl_window, window->w, window->h, 0, 0);
 
-    region = wl_compositor_create_region(wind->waylandData->compositor);
-    wl_region_add(region, 0, 0, window->w, window->h);
-    wl_surface_set_opaque_region(wind->surface, region);
-    wl_region_destroy(region);
-    xdg_surface_ack_configure(xdg, serial);
+        xdg_surface_ack_configure(xdg, serial);
+
+        region = wl_compositor_create_region(wind->waylandData->compositor);
+        wl_region_add(region, 0, 0, window->w, window->h);
+        wl_surface_set_opaque_region(wind->surface, region);
+        wl_region_destroy(region);
+
+        wind->shell_surface.xdg.initial_configure_seen = SDL_TRUE;
+    } else {
+        wind->resize.pending = SDL_TRUE;
+        wind->resize.serial = serial;
+    }
 }
 
 static const struct xdg_surface_listener shell_surface_listener_xdg = {
@@ -213,18 +242,27 @@ handle_configure_xdg_toplevel(void *data,
     SDL_WindowData *wind = (SDL_WindowData *)data;
     SDL_Window *window = wind->sdlwindow;
 
-    /* wl_shell_surface spec states that this is a suggestion.
-       Ignore if less than or greater than max/min size. */
+    enum xdg_toplevel_state *state;
+    SDL_bool fullscreen = SDL_FALSE;
+    wl_array_for_each(state, states) {
+        if (*state == XDG_TOPLEVEL_STATE_FULLSCREEN) {
+            fullscreen = SDL_TRUE;
+        }
+     }
 
-    if (width == 0 || height == 0) {
-        return;
-    }
+    if (!fullscreen) {
+        if (width == 0 || height == 0) {
+            width = window->windowed.w;
+            height = window->windowed.h;
+        }
 
-    if (!(window->flags & SDL_WINDOW_FULLSCREEN)) {
+        /* xdg_toplevel spec states that this is a suggestion.
+           Ignore if less than or greater than max/min size. */
+
         if ((window->flags & SDL_WINDOW_RESIZABLE)) {
             if (window->max_w > 0) {
                 width = SDL_min(width, window->max_w);
-            } 
+            }
             width = SDL_max(width, window->min_w);
 
             if (window->max_h > 0) {
@@ -232,17 +270,20 @@ handle_configure_xdg_toplevel(void *data,
             }
             height = SDL_max(height, window->min_h);
         } else {
+            wind->resize.width = window->w;
+            wind->resize.height = window->h;
             return;
         }
     }
 
-    if (width == window->w && height == window->h) {
+    if (width == 0 || height == 0) {
+        wind->resize.width = window->w;
+        wind->resize.height = window->h;
         return;
     }
 
-    SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, width, height);
-    window->w = width;
-    window->h = height;
+    wind->resize.width = width;
+    wind->resize.height = height;
 }
 
 static void
@@ -507,6 +548,8 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
 
     data->waylandData = c;
     data->sdlwindow = window;
+
+    data->resize.pending = SDL_FALSE;
 
     data->surface =
         wl_compositor_create_surface(c->compositor);
