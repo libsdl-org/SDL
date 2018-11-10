@@ -244,6 +244,7 @@ X11_InitXinput2Multitouch(_THIS)
         XIDeviceInfo *dev = &info[i];
         for (j = 0; j < dev->num_classes; j++) {
             SDL_TouchID touchId;
+            SDL_TouchDeviceType touchType;
             XIAnyClassInfo *class = dev->classes[j];
             XITouchClassInfo *t = (XITouchClassInfo*)class;
 
@@ -251,8 +252,14 @@ X11_InitXinput2Multitouch(_THIS)
             if (class->type != XITouchClass)
                 continue;
 
+            if (t->mode == XIDependentTouch) {
+                touchType = SDL_TOUCH_DEVICE_INDIRECT_RELATIVE;
+            } else { /* XIDirectTouch */
+                touchType = SDL_TOUCH_DEVICE_DIRECT;
+            }
+
             touchId = t->sourceid;
-            SDL_AddTouch(touchId, dev->name);
+            SDL_AddTouch(touchId, touchType, dev->name);
         }
     }
     X11_XIFreeDeviceInfo(info);

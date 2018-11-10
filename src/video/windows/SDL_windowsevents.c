@@ -932,7 +932,11 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     PTOUCHINPUT input = &inputs[i];
 
                     const SDL_TouchID touchId = (SDL_TouchID)((size_t)input->hSource);
-                    if (SDL_AddTouch(touchId, "") < 0) {
+
+                    /* TODO: Can we use GetRawInputDeviceInfo and HID info to
+                       determine if this is a direct or indirect touch device?
+                     */
+                    if (SDL_AddTouch(touchId, SDL_TOUCH_DEVICE_DIRECT, "") < 0) {
                         continue;
                     }
 

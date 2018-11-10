@@ -712,3 +712,4 @@
 #define SDL_RenderFillRectsF SDL_RenderFillRectsF_REAL
 #define SDL_RenderCopyF SDL_RenderCopyF_REAL
 #define SDL_RenderCopyExF SDL_RenderCopyExF_REAL
+#define SDL_GetTouchDeviceType SDL_GetTouchDeviceType_REAL

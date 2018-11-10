@@ -72,7 +72,7 @@ void Android_InitTouch(void)
 
     if (0 < number) {
         for (i = 0; i < number; ++i) {
-            SDL_AddTouch((SDL_TouchID) ids[i], ""); /* no error handling */
+            SDL_AddTouch((SDL_TouchID) ids[i], SDL_TOUCH_DEVICE_DIRECT, ""); /* no error handling */
         }
         SDL_free(ids);
     }
@@ -97,7 +97,7 @@ void Android_OnTouch(int touch_device_id_in, int pointer_finger_id_in, int actio
     }
 
     touchDeviceId = (SDL_TouchID)touch_device_id_in;
-    if (SDL_AddTouch(touchDeviceId, "") < 0) {
+    if (SDL_AddTouch(touchDeviceId, SDL_TOUCH_DEVICE_DIRECT, "") < 0) {
         SDL_Log("error: can't add touch %s, %d", __FILE__, __LINE__);
     }
 
