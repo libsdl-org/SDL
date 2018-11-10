@@ -41,6 +41,14 @@ extern "C" {
 typedef Sint64 SDL_TouchID;
 typedef Sint64 SDL_FingerID;
 
+typedef enum
+{
+    SDL_TOUCH_DEVICE_INVALID = -1,
+    SDL_TOUCH_DEVICE_DIRECT,            /* touch screen with window-relative coordinates */
+    SDL_TOUCH_DEVICE_INDIRECT_ABSOLUTE, /* trackpad with absolute device coordinates */
+    SDL_TOUCH_DEVICE_INDIRECT_RELATIVE, /* trackpad with screen cursor-relative coordinates */
+} SDL_TouchDeviceType;
+
 typedef struct SDL_Finger
 {
     SDL_FingerID id;
@@ -64,6 +72,11 @@ extern DECLSPEC int SDLCALL SDL_GetNumTouchDevices(void);
  *  \brief Get the touch ID with the given index, or 0 if the index is invalid.
  */
 extern DECLSPEC SDL_TouchID SDLCALL SDL_GetTouchDevice(int index);
+
+/**
+ * \brief Get the type of the given touch device.
+ */
+extern DECLSPEC SDL_TouchDeviceType SDLCALL SDL_GetTouchDeviceType(SDL_TouchID touchID);
 
 /**
  *  \brief Get the number of active fingers for a given touch device.

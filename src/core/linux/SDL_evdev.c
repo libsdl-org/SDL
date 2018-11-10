@@ -475,6 +475,7 @@ SDL_EVDEV_init_touchscreen(SDL_evdevlist_item* item)
     }
 
     ret = SDL_AddTouch(item->fd, /* I guess our fd is unique enough */
+        SDL_TOUCH_DEVICE_DIRECT,
         item->touchscreen_data->name);
     if (ret < 0) {
         SDL_free(item->touchscreen_data->slots);

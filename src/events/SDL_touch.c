@@ -86,6 +86,16 @@ SDL_GetTouch(SDL_TouchID id)
     return SDL_touchDevices[index];
 }
 
+SDL_TouchDeviceType
+SDL_GetTouchDeviceType(SDL_TouchID id)
+{
+    SDL_Touch *touch = SDL_GetTouch(id);
+    if (touch) {
+        return touch->type;
+    }
+    return SDL_TOUCH_DEVICE_INVALID;
+}
+
 static int
 SDL_GetFingerIndex(const SDL_Touch * touch, SDL_FingerID fingerid)
 {
@@ -133,7 +143,7 @@ SDL_GetTouchFinger(SDL_TouchID touchID, int index)
 }
 
 int
-SDL_AddTouch(SDL_TouchID touchID, const char *name)
+SDL_AddTouch(SDL_TouchID touchID, SDL_TouchDeviceType type, const char *name)
 {
     SDL_Touch **touchDevices;
     int index;
@@ -163,6 +173,7 @@ SDL_AddTouch(SDL_TouchID touchID, const char *name)
 
     /* we're setting the touch properties */
     SDL_touchDevices[index]->id = touchID;
+    SDL_touchDevices[index]->type = type;
     SDL_touchDevices[index]->num_fingers = 0;
     SDL_touchDevices[index]->max_fingers = 0;
     SDL_touchDevices[index]->fingers = NULL;

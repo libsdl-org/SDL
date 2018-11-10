@@ -39,7 +39,9 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 @implementation SDL_uikitview {
     SDL_Window *sdlwindow;
 
-    SDL_TouchID touchId;
+    SDL_TouchID directTouchId;
+    SDL_TouchID indirectTouchId;
+
     UITouch * __weak firstFingerDown;
 }
 
@@ -68,12 +70,13 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
         self.autoresizingMask = UIViewAutoresizingFlexibleWidth | UIViewAutoresizingFlexibleHeight;
         self.autoresizesSubviews = YES;
 
+        directTouchId = 1;
+        indirectTouchId = 2;
+
 #if !TARGET_OS_TV
         self.multipleTouchEnabled = YES;
+        SDL_AddTouch(directTouchId, SDL_TOUCH_DEVICE_DIRECT, "");
 #endif
-
-        touchId = 1;
-        SDL_AddTouch(touchId, "");
     }
 
     return self;
@@ -135,6 +138,30 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
     sdlwindow = window;
 }
 
+- (SDL_TouchDeviceType)touchTypeForTouch:(UITouch *)touch
+{
+#ifdef __IPHONE_9_0
+    if ([touch respondsToSelector:@selector((type))]) {
+        if (touch.type == UITouchTypeIndirect) {
+            return SDL_TOUCH_DEVICE_INDIRECT_RELATIVE;
+        }
+    }
+#endif
+
+    return SDL_TOUCH_DEVICE_DIRECT;
+}
+
+- (SDL_TouchID)touchIdForType:(SDL_TouchDeviceType)type
+{
+    switch (type) {
+        case SDL_TOUCH_DEVICE_DIRECT:
+        default:
+            return directTouchId;
+        case SDL_TOUCH_DEVICE_INDIRECT_RELATIVE:
+            return indirectTouchId;
+    }
+}
+
 - (CGPoint)touchLocation:(UITouch *)touch shouldNormalize:(BOOL)normalize
 {
     CGPoint point = [touch locationInView:self];
@@ -162,7 +189,13 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 - (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
     for (UITouch *touch in touches) {
+        SDL_TouchDeviceType touchType = [self touchTypeForTouch:touch];
+        SDL_TouchID touchId = [self touchIdForType:touchType];
         float pressure = [self pressureForTouch:touch];
+
+        if (SDL_AddTouch(touchId, touchType, "") < 0) {
+            continue;
+        }
 
         if (!firstFingerDown) {
             CGPoint locationInView = [self touchLocation:touch shouldNormalize:NO];
@@ -186,7 +219,13 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 - (void)touchesEnded:(NSSet *)touches withEvent:(UIEvent *)event
 {
     for (UITouch *touch in touches) {
+        SDL_TouchDeviceType touchType = [self touchTypeForTouch:touch];
+        SDL_TouchID touchId = [self touchIdForType:touchType];
         float pressure = [self pressureForTouch:touch];
+
+        if (SDL_AddTouch(touchId, touchType, "") < 0) {
+            continue;
+        }
 
         if (touch == firstFingerDown) {
             /* send mouse up */
@@ -209,7 +248,13 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
 - (void)touchesMoved:(NSSet *)touches withEvent:(UIEvent *)event
 {
     for (UITouch *touch in touches) {
+        SDL_TouchDeviceType touchType = [self touchTypeForTouch:touch];
+        SDL_TouchID touchId = [self touchIdForType:touchType];
         float pressure = [self pressureForTouch:touch];
+
+        if (SDL_AddTouch(touchId, touchType, "") < 0) {
+            continue;
+        }
 
         if (touch == firstFingerDown) {
             CGPoint locationInView = [self touchLocation:touch shouldNormalize:NO];

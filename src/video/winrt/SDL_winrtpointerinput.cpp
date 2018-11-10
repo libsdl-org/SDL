@@ -44,7 +44,7 @@ static unsigned int WINRT_LeftFingerDown = 0;
 void
 WINRT_InitTouch(_THIS)
 {
-    SDL_AddTouch(WINRT_TouchID, "");
+    SDL_AddTouch(WINRT_TouchID, SDL_TOUCH_DEVICE_DIRECT, "");
 }
 
 
