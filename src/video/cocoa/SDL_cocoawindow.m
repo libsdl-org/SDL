@@ -1185,7 +1185,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     /* Force the graphics context to clear to black so we don't get a flash of
        white until the app is ready to draw. In practice on modern macOS, this
        only gets called for window creation and other extraordinary events. */
-    self.layer.backgroundColor = NSColor.blackColor.CGColor;
+    self.layer.backgroundColor = CGColorGetConstantColor(kCGColorBlack);
     ScheduleContextUpdates((SDL_WindowData *) _sdlWindow->driverdata);
     SDL_SendWindowEvent(_sdlWindow, SDL_WINDOWEVENT_EXPOSED, 0, 0);
 }
