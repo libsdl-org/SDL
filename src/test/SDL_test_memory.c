@@ -109,7 +109,7 @@ static void SDL_TrackAllocation(void *mem, size_t size)
             entry->stack[stack_index] = pc;
 
             if (unw_get_proc_name(&cursor, sym, sizeof(sym), &offset) == 0) {
-                snprintf(entry->stack_names[stack_index], sizeof(entry->stack_names[stack_index]), "%s+0x%llx", sym, offset);
+                snprintf(entry->stack_names[stack_index], sizeof(entry->stack_names[stack_index]), "%s+0x%llx", sym, (unsigned long long)offset);
             }
             ++stack_index;
 
