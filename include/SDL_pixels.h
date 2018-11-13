@@ -168,7 +168,7 @@ enum
     ((format) && (SDL_PIXELFLAG(format) != 1))
 
 /* Note: If you modify this list, update SDL_GetPixelFormatName() */
-enum
+typedef enum
 {
     SDL_PIXELFORMAT_UNKNOWN,
     SDL_PIXELFORMAT_INDEX1LSB =
@@ -290,7 +290,7 @@ enum
         SDL_DEFINE_PIXELFOURCC('N', 'V', '2', '1'),
     SDL_PIXELFORMAT_EXTERNAL_OES =      /**< Android video texture format */
         SDL_DEFINE_PIXELFOURCC('O', 'E', 'S', ' ')
-};
+} SDL_PixelFormatEnum;
 
 typedef struct SDL_Color
 {
