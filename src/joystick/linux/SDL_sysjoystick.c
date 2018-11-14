@@ -776,6 +776,7 @@ LINUX_JoystickOpen(SDL_Joystick * joystick, int device_index)
     joystick->hwdata->guid = item->guid;
     joystick->hwdata->effect.id = -1;
     joystick->hwdata->m_bSteamController = item->m_bSteamController;
+    SDL_memset(joystick->hwdata->abs_map, 0xFF, sizeof(joystick->hwdata->abs_map));
 
     if (item->m_bSteamController) {
         joystick->hwdata->fd = -1;
@@ -989,11 +990,13 @@ HandleInputEvents(SDL_Joystick * joystick)
                     HandleHat(joystick, code / 2, code % 2, events[i].value);
                     break;
                 default:
-                    events[i].value =
-                        AxisCorrect(joystick, code, events[i].value);
-                    SDL_PrivateJoystickAxis(joystick,
-                                            joystick->hwdata->abs_map[code],
-                                            events[i].value);
+                    if (joystick->hwdata->abs_map[code] != 0xFF) {
+                        events[i].value =
+                            AxisCorrect(joystick, code, events[i].value);
+                        SDL_PrivateJoystickAxis(joystick,
+                                                joystick->hwdata->abs_map[code],
+                                                events[i].value);
+                    }
                     break;
                 }
                 break;
