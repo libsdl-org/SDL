@@ -554,20 +554,17 @@ PrepTextureForCopy(const SDL_RenderCommand *cmd)
     const SDL_BlendMode blend = cmd->data.draw.blend;
     SDL_Texture *texture = cmd->data.draw.texture;
     SDL_Surface *surface = (SDL_Surface *) texture->driverdata;
+    const SDL_bool colormod = ((r & g & b) != 0xFF);
+    const SDL_bool alphamod = (a != 0xFF);
+    const SDL_bool blending = ((blend == SDL_BLENDMODE_ADD) || (blend == SDL_BLENDMODE_MOD));
 
-    if (texture->modMode & SDL_TEXTUREMODULATE_COLOR) {
-        SDL_SetSurfaceRLE(surface, 0);
-        SDL_SetSurfaceColorMod(surface, r, g, b);
-    }
-
-    if ((texture->modMode & SDL_TEXTUREMODULATE_ALPHA) && surface->format->Amask) {
-        SDL_SetSurfaceRLE(surface, 0);
-        SDL_SetSurfaceAlphaMod(surface, a);
-    }
-
-    if ((blend == SDL_BLENDMODE_ADD) || (blend == SDL_BLENDMODE_MOD)) {
+    if (colormod || alphamod || blending) {
         SDL_SetSurfaceRLE(surface, 0);
     }
+
+    /* !!! FIXME: we can probably avoid some of these calls. */
+    SDL_SetSurfaceColorMod(surface, r, g, b);
+    SDL_SetSurfaceAlphaMod(surface, a);
     SDL_SetSurfaceBlendMode(surface, blend);
 }
 
