@@ -246,6 +246,7 @@ EMSCRIPTENAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscaptu
     }
     SDL_zerop(this->hidden);
 #endif
+    this->hidden = (struct SDL_PrivateAudioData *)0x1;
 
     /* limit to native freq */
     this->spec.freq = EM_ASM_INT_V({ return SDL2.audioContext.sampleRate; });
