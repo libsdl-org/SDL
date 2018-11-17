@@ -627,7 +627,7 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 const Uint8 g = cmd->data.draw.g;
                 const Uint8 b = cmd->data.draw.b;
                 const Uint8 a = cmd->data.draw.a;
-                const size_t count = cmd->data.draw.count;
+                const int count = (int) cmd->data.draw.count;
                 const SDL_Point *verts = (SDL_Point *) (((Uint8 *) vertices) + cmd->data.draw.first);
                 const SDL_BlendMode blend = cmd->data.draw.blend;
                 if (blend == SDL_BLENDMODE_NONE) {
@@ -643,7 +643,7 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 const Uint8 g = cmd->data.draw.g;
                 const Uint8 b = cmd->data.draw.b;
                 const Uint8 a = cmd->data.draw.a;
-                const size_t count = cmd->data.draw.count;
+                const int count = (int) cmd->data.draw.count;
                 const SDL_Point *verts = (SDL_Point *) (((Uint8 *) vertices) + cmd->data.draw.first);
                 const SDL_BlendMode blend = cmd->data.draw.blend;
                 if (blend == SDL_BLENDMODE_NONE) {
@@ -659,7 +659,7 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 const Uint8 g = cmd->data.draw.g;
                 const Uint8 b = cmd->data.draw.b;
                 const Uint8 a = cmd->data.draw.a;
-                const size_t count = cmd->data.draw.count;
+                const int count = (int) cmd->data.draw.count;
                 const SDL_Rect *verts = (SDL_Rect *) (((Uint8 *) vertices) + cmd->data.draw.first);
                 const SDL_BlendMode blend = cmd->data.draw.blend;
                 if (blend == SDL_BLENDMODE_NONE) {
