@@ -1688,7 +1688,7 @@ GL_CreateRenderer(SDL_Window * window, Uint32 flags)
     /* This ended up causing video discrepancies between OpenGL and Direct3D */
     /* data->glEnable(GL_LINE_SMOOTH); */
 
-    data->drawstate.blend = SDL_BLENDMODE_NONE;
+    data->drawstate.blend = SDL_BLENDMODE_INVALID;
     data->drawstate.shader = SHADER_INVALID;
     data->drawstate.color = 0xFFFFFFFF;
     data->drawstate.clear_color = 0xFFFFFFFF;
