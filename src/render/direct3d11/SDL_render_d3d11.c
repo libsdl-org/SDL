@@ -1565,6 +1565,8 @@ D3D11_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL
         return -1;
     }
 
+    cmd->data.draw.count = count;
+
     for (i = 0; i < count; i++) {
         verts->pos.x = points[i].x + 0.5f;
         verts->pos.y = points[i].y + 0.5f;
@@ -1594,6 +1596,8 @@ D3D11_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_
     if (!verts) {
         return -1;
     }
+
+    cmd->data.draw.count = count;
 
     for (i = 0; i < count; i++) {
         verts->pos.x = rects[i].x;
@@ -1661,6 +1665,8 @@ D3D11_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * t
     if (!verts) {
         return -1;
     }
+
+    cmd->data.draw.count = 1;
 
     verts->pos.x = dstrect->x;
     verts->pos.y = dstrect->y;
@@ -1742,6 +1748,8 @@ D3D11_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture *
     maxx = dstrect->w - center->x;
     miny = -center->y;
     maxy = dstrect->h - center->y;
+
+    cmd->data.draw.count = 1;
 
     verts->pos.x = minx;
     verts->pos.y = miny;
