@@ -173,7 +173,7 @@ typedef struct GLES2_RenderData
     Uint8 clear_r, clear_g, clear_b, clear_a;
 
     GLuint vertex_buffers[8];
-    GLsizeiptr vertex_buffer_size[8];
+    size_t vertex_buffer_size[8];
     int current_vertex_buffer;
     GLES2_DrawStateCache drawstate;
 } GLES2_RenderData;
@@ -1286,7 +1286,7 @@ GLES2_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
 
             case SDL_RENDERCMD_DRAW_POINTS: {
                 if (SetDrawState(data, cmd, GLES2_IMAGESOURCE_SOLID) == 0) {
-                    data->glDrawArrays(GL_POINTS, 0, cmd->data.draw.count);
+                    data->glDrawArrays(GL_POINTS, 0, (GLsizei) cmd->data.draw.count);
                 }
                 break;
             }
