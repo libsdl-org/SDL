@@ -723,8 +723,8 @@ SetDrawState(GLES_RenderData *data, const SDL_RenderCommand *cmd)
                          viewport->w, viewport->h);
         if (viewport->w && viewport->h) {
             data->glOrthof((GLfloat) 0, (GLfloat) viewport->w,
-                           (GLfloat) istarget ? 0 : viewport->h,
-                           (GLfloat) istarget ? viewport->h : 0,
+                           (GLfloat) (istarget ? 0 : viewport->h),
+                           (GLfloat) (istarget ? viewport->h : 0),
                            0.0, 1.0);
         }
         data->glMatrixMode(GL_MODELVIEW);
@@ -874,7 +874,7 @@ GLES_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
                 const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
                 SetDrawState(data, cmd);
                 data->glVertexPointer(2, GL_FLOAT, 0, verts);
-                data->glDrawArrays(GL_POINTS, 0, count);
+                data->glDrawArrays(GL_POINTS, 0, (GLsizei) count);
                 break;
             }
 
@@ -885,11 +885,11 @@ GLES_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
                 data->glVertexPointer(2, GL_FLOAT, 0, verts);
                 if (count > 2 && (verts[0] == verts[(count-1)*2]) && (verts[1] == verts[(count*2)-1])) {
                     /* GL_LINE_LOOP takes care of the final segment */
-                    data->glDrawArrays(GL_LINE_LOOP, 0, count - 1);
+                    data->glDrawArrays(GL_LINE_LOOP, 0, (GLsizei) (count - 1));
                 } else {
-                    data->glDrawArrays(GL_LINE_STRIP, 0, count);
+                    data->glDrawArrays(GL_LINE_STRIP, 0, (GLsizei) count);
                     /* We need to close the endpoint of the line */
-                    data->glDrawArrays(GL_POINTS, count - 1, 1);
+                    data->glDrawArrays(GL_POINTS, (GLsizei) (count - 1), 1);
                 }
                 break;
             }
@@ -897,7 +897,7 @@ GLES_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vert
             case SDL_RENDERCMD_FILL_RECTS: {
                 const size_t count = cmd->data.draw.count;
                 const GLfloat *verts = (GLfloat *) (((Uint8 *) vertices) + cmd->data.draw.first);
-                size_t offset = 0;
+                GLsizei offset = 0;
                 SetDrawState(data, cmd);
                 data->glVertexPointer(2, GL_FLOAT, 0, verts);
                 for (i = 0; i < count; ++i, offset += 4) {
@@ -1073,7 +1073,7 @@ static int GLES_UnbindTexture (SDL_Renderer * renderer, SDL_Texture *texture)
     return 0;
 }
 
-SDL_Renderer *
+static SDL_Renderer *
 GLES_CreateRenderer(SDL_Window * window, Uint32 flags)
 {
     SDL_Renderer *renderer;
@@ -1228,7 +1228,8 @@ SDL_RenderDriver GLES_RenderDriver = {
      1,
      {SDL_PIXELFORMAT_ABGR8888},
      0,
-     0}
+     0
+    }
 };
 
 #endif /* SDL_VIDEO_RENDER_OGL_ES && !SDL_RENDER_DISABLED */
