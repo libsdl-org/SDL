@@ -15,7 +15,8 @@ INCPATH = -I"$(%WATCOM)/h/os2" -I"$(%WATCOM)/h"
 INCPATH+= -I"$(LIBHOME)/h"
 INCPATH+= -Iinclude
 
-LIBS = mmpm2.lib libuls.lib libconv.lib
+LIBM = libm.lib
+LIBS = mmpm2.lib libuls.lib libconv.lib $(LIBM)
 
 CFLAGS = -bt=os2 -d0 -q -bm -5s -fp5 -fpi87 -sg -oteanbmier -ei
 # max warnings:
@@ -26,6 +27,10 @@ CFLAGS+= -bd
 CFLAGS+= $(INCPATH)
 # building SDL itself:
 CFLAGS+= -DBUILD_SDL
+
+MSRCS= e_atan2.c e_exp.c e_fmod.c e_log10.c e_log.c e_pow.c e_rem_pio2.c e_sqrt.c &
+       k_cos.c k_rem_pio2.c k_sin.c k_tan.c &
+       s_atan.c s_copysign.c s_cos.c s_fabs.c s_floor.c s_scalbn.c s_sin.c s_tan.c
 
 SRCS = SDL.c SDL_assert.c SDL_error.c SDL_log.c SDL_dataqueue.c SDL_hints.c
 SRCS+= SDL_getenv.c SDL_iconv.c SDL_malloc.c SDL_qsort.c SDL_stdlib.c SDL_string.c
@@ -56,6 +61,7 @@ SRCS+= SDL_dummysensor.c
 SRCS+= SDL_dynapi.c
 
 OBJS = $(SRCS:.c=.obj)
+MOBJS= $(MSRCS:.c=.obj)
 
 .extensions:
 .extensions: .lib .dll .obj .c .asm
@@ -66,7 +72,7 @@ OBJS = $(SRCS:.c=.obj)
 
 all: $(DLLFILE) $(LIBFILE) .symbolic
 
-$(DLLFILE): $(OBJS) $(LNKFILE)
+$(DLLFILE): $(OBJS) $(LIBM) $(LNKFILE)
     @echo * Linking: $@
     wlink @$(LNKFILE)
 
@@ -95,6 +101,10 @@ SDL_blendpoint.obj: SDL_blendpoint.c
 SDL_RLEaccel.obj: SDL_RLEaccel.c
     wcc386 $(CFLAGS) -wcd=201 -fo=$^@ $<
 
+.c: ./src/libm;
+$(LIBM): $(MOBJS)
+    wlib -q -b -n -c -pa -s -t -zld -ii -io $@ $(MOBJS)
+
 $(LNKFILE):
     @echo * Creating linker file: $@
     @%create $@
@@ -118,6 +128,7 @@ clean: .SYMBOLIC
     @if exist *.obj rm *.obj
     @if exist *.err rm *.err
     @if exist $(LNKFILE) rm $(LNKFILE)
+    @if exist $(LIBM) rm $(LIBM)
 
 distclean: .SYMBOLIC clean
     @if exist $(LIBHOME)/*.exp rm $(LIBHOME)/*.exp
