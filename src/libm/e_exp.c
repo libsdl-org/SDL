@@ -75,6 +75,10 @@
 #include "math_libm.h"
 #include "math_private.h"
 
+#ifdef __WATCOMC__ /* Watcom defines huge=__huge */
+#undef huge
+#endif
+
 static const double
 one	= 1.0,
 halF[2]	= {0.5,-0.5,},
