@@ -502,6 +502,14 @@ DEFAULT_MMAP_THRESHOLD       default: 256K
 #define MMAP_CLEARS 0           /* WINCE and some others apparently don't clear */
 #endif /* WIN32 */
 
+#ifdef __OS2__
+#define INCL_DOS
+#include <os2.h>
+#define HAVE_MMAP 1
+#define HAVE_MORECORE 0
+#define LACKS_SYS_MMAN_H
+#endif  /* __OS2__ */
+
 #if defined(DARWIN) || defined(_DARWIN)
 /* Mac OSX docs advise not to use sbrk; it seems better to use mmap */
 #ifndef HAVE_MORECORE
@@ -1342,7 +1350,7 @@ extern size_t getpagesize();
 #define IS_MMAPPED_BIT       (SIZE_T_ONE)
 #define USE_MMAP_BIT         (SIZE_T_ONE)
 
-#ifndef WIN32
+#if !defined(WIN32) && !defined (__OS2__)
 #define CALL_MUNMAP(a, s)    munmap((a), (s))
 #define MMAP_PROT            (PROT_READ|PROT_WRITE)
 #if !defined(MAP_ANONYMOUS) && defined(MAP_ANON)
@@ -1365,6 +1373,42 @@ static int dev_zero_fd = -1;    /* Cached file descriptor for /dev/zero. */
 #endif /* MAP_ANONYMOUS */
 
 #define DIRECT_MMAP(s)       CALL_MMAP(s)
+
+#elif defined(__OS2__)
+
+/* OS/2 MMAP via DosAllocMem */
+static void* os2mmap(size_t size) {
+  void* ptr;
+  if (DosAllocMem(&ptr, size, OBJ_ANY|PAG_COMMIT|PAG_READ|PAG_WRITE) &&
+      DosAllocMem(&ptr, size, PAG_COMMIT|PAG_READ|PAG_WRITE))
+    return MFAIL;
+  return ptr;
+}
+
+#define os2direct_mmap(n)     os2mmap(n)
+
+/* This function supports releasing coalesed segments */
+static int os2munmap(void* ptr, size_t size) {
+  while (size) {
+    ULONG ulSize = size;
+    ULONG ulFlags = 0;
+    if (DosQueryMem(ptr, &ulSize, &ulFlags) != 0)
+      return -1;
+    if ((ulFlags & PAG_BASE) == 0 ||(ulFlags & PAG_COMMIT) == 0 ||
+        ulSize > size)
+      return -1;
+    if (DosFreeMem(ptr) != 0)
+      return -1;
+    ptr = ( void * ) ( ( char * ) ptr + ulSize );
+    size -= ulSize;
+  }
+  return 0;
+}
+
+#define CALL_MMAP(s)         os2mmap(s)
+#define CALL_MUNMAP(a, s)    os2munmap((a), (s))
+#define DIRECT_MMAP(s)       os2direct_mmap(s)
+
 #else /* WIN32 */
 
 /* Win32 MMAP via VirtualAlloc */
@@ -1448,7 +1492,7 @@ win32munmap(void *ptr, size_t size)
     unique mparams values are initialized only once.
 */
 
-#ifndef WIN32
+#if !defined(WIN32) && !defined(__OS2__)
 /* By default use posix locks */
 #include <pthread.h>
 #define MLOCK_T pthread_mutex_t
@@ -1461,6 +1505,16 @@ static MLOCK_T morecore_mutex = PTHREAD_MUTEX_INITIALIZER;
 #endif /* HAVE_MORECORE */
 
 static MLOCK_T magic_init_mutex = PTHREAD_MUTEX_INITIALIZER;
+
+#elif defined(__OS2__)
+#define MLOCK_T HMTX
+#define INITIAL_LOCK(l)      DosCreateMutexSem(0, l, 0, FALSE)
+#define ACQUIRE_LOCK(l)      DosRequestMutexSem(*l, SEM_INDEFINITE_WAIT)
+#define RELEASE_LOCK(l)      DosReleaseMutexSem(*l)
+#if HAVE_MORECORE
+static MLOCK_T morecore_mutex;
+#endif /* HAVE_MORECORE */
+static MLOCK_T magic_init_mutex;
 
 #else /* WIN32 */
 /*
@@ -2532,10 +2586,15 @@ init_mparams(void)
         }
         RELEASE_MAGIC_INIT_LOCK();
 
-#ifndef WIN32
+#if !defined(WIN32) && !defined(__OS2__)
         mparams.page_size = malloc_getpagesize;
         mparams.granularity = ((DEFAULT_GRANULARITY != 0) ?
                                DEFAULT_GRANULARITY : mparams.page_size);
+#elif defined (__OS2__)
+        /* if low-memory is used, os2munmap() would break
+           if it were anything other than 64k */
+        mparams.page_size = 4096u;
+        mparams.granularity = 65536u;
 #else /* WIN32 */
         {
             SYSTEM_INFO system_info;
