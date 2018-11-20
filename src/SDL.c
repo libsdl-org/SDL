@@ -348,6 +348,12 @@ SDL_WasInit(Uint32 flags)
     int num_subsystems = SDL_arraysize(SDL_SubsystemRefCount);
     Uint32 initialized = 0;
 
+    /* Fast path for checking one flag */
+    if (SDL_HasExactlyOneBitSet32(flags)) {
+        int subsystem_index = SDL_MostSignificantBitIndex32(flags);
+        return SDL_SubsystemRefCount[subsystem_index] ? flags : 0;
+    }
+
     if (!flags) {
         flags = SDL_INIT_EVERYTHING;
     }

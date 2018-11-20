@@ -505,6 +505,10 @@ SDL_SensorUpdate(void)
     int i;
     SDL_Sensor *sensor;
 
+    if (!SDL_WasInit(SDL_INIT_SENSOR)) {
+        return;
+    }
+
     SDL_LockSensors();
 
     if (SDL_updating_sensor) {
