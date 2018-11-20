@@ -1016,6 +1016,10 @@ SDL_JoystickUpdate(void)
     int i;
     SDL_Joystick *joystick;
 
+    if (!SDL_WasInit(SDL_INIT_JOYSTICK)) {
+        return;
+    }
+
     SDL_LockJoysticks();
 
     if (SDL_updating_joystick) {
