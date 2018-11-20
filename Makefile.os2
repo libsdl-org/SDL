@@ -25,7 +25,7 @@ CFLAGS+= -wx
 CFLAGS+= -bd
 # the include paths :
 CFLAGS+= $(INCPATH)
-# building SDL itself:
+# building SDL itself (for DECLSPEC):
 CFLAGS+= -DBUILD_SDL
 
 MSRCS= e_atan2.c e_exp.c e_fmod.c e_log10.c e_log.c e_pow.c e_rem_pio2.c e_sqrt.c &
