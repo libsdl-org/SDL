@@ -224,6 +224,10 @@ static void ConvertNSRect(NSScreen *screen, BOOL fullscreen, NSRect *r)
 static void
 ScheduleContextUpdates(SDL_WindowData *data)
 {
+    if (!data || !data->nscontexts) {
+        return;
+    }
+
     NSOpenGLContext *currentContext = [NSOpenGLContext currentContext];
     NSMutableArray *contexts = data->nscontexts;
     @synchronized (contexts) {
