@@ -50,12 +50,9 @@
 #elif defined(__MINGW64_VERSION_MAJOR)
 #include <intrin.h>
 #else
-#ifdef __ALTIVEC__
-#if defined(HAVE_ALTIVEC_H) && !defined(__APPLE_ALTIVEC__) && !defined(SDL_DISABLE_ALTIVEC_H)
+/* altivec.h redefining bool causes a number of problems, see bugs 3993 and 4392, so you need to explicitly define SDL_ENABLE_ALTIVEC_H to have it included. */
+#if defined(HAVE_ALTIVEC_H) && defined(__ALTIVEC__) && !defined(__APPLE_ALTIVEC__) && defined(SDL_ENABLE_ALTIVEC_H)
 #include <altivec.h>
-#undef pixel
-#undef bool
-#endif
 #endif
 #if defined(__ARM_NEON__) && !defined(SDL_DISABLE_ARM_NEON_H)
 #include <arm_neon.h>
