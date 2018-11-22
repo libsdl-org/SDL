@@ -117,6 +117,7 @@ typedef struct METAL_ShaderPipelines
     @property (nonatomic, retain) id<MTLSamplerState> mtlsamplernearest;
     @property (nonatomic, retain) id<MTLSamplerState> mtlsamplerlinear;
     @property (nonatomic, retain) id<MTLBuffer> mtlbufconstants;
+    @property (nonatomic, retain) id<MTLBuffer> mtlbufquadindices;
     @property (nonatomic, retain) CAMetalLayer *mtllayer;
     @property (nonatomic, retain) MTLRenderPassDescriptor *mtlpassdesc;
     @property (nonatomic, assign) METAL_ShaderPipelines *activepipelines;
@@ -137,6 +138,7 @@ typedef struct METAL_ShaderPipelines
     [_mtlsamplernearest release];
     [_mtlsamplerlinear release];
     [_mtlbufconstants release];
+    [_mtlbufquadindices release];
     [_mtllayer release];
     [_mtlpassdesc release];
     [super dealloc];
@@ -794,7 +796,6 @@ METAL_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL
 static int
 METAL_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FRect * rects, int count)
 {
-    // !!! FIXME: use an index buffer
     const size_t vertlen = (sizeof (float) * 8) * count;
     float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, 0, &cmd->data.draw.first);
     if (!verts) {
@@ -803,6 +804,11 @@ METAL_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_
 
     cmd->data.draw.count = count;
 
+    /* Quads in the following vertex order (matches the quad index buffer):
+     * 1---3
+     * | \ |
+     * 0---2
+     */
     for (int i = 0; i < count; i++, rects++) {
         if ((rects->w <= 0.0f) || (rects->h <= 0.0f)) {
             cmd->data.draw.count--;
@@ -829,9 +835,8 @@ static int
 METAL_QueueCopy(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * texture,
                 const SDL_Rect * srcrect, const SDL_FRect * dstrect)
 {
-    METAL_TextureData *texturedata = (__bridge METAL_TextureData *)texture->driverdata;
-    const float texw = (float) texturedata.mtltexture.width;
-    const float texh = (float) texturedata.mtltexture.height;
+    const float texw = (float) texture->w;
+    const float texh = (float) texture->h;
     // !!! FIXME: use an index buffer
     const size_t vertlen = (sizeof (float) * 16);
     float *verts = (float *) SDL_AllocateRenderVertices(renderer, vertlen, 0, &cmd->data.draw.first);
@@ -867,9 +872,8 @@ METAL_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture *
                   const SDL_Rect * srcquad, const SDL_FRect * dstrect,
                   const double angle, const SDL_FPoint *center, const SDL_RendererFlip flip)
 {
-    METAL_TextureData *texturedata = (__bridge METAL_TextureData *)texture->driverdata;
-    const float texw = (float) texturedata.mtltexture.width;
-    const float texh = (float) texturedata.mtltexture.height;
+    const float texw = (float) texture->w;
+    const float texh = (float) texture->h;
     const float rads = (float)(M_PI * (float) angle / 180.0f);
     const float c = cosf(rads), s = sinf(rads);
     float minu, maxu, minv, maxv;
@@ -1159,10 +1163,19 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
 
             case SDL_RENDERCMD_FILL_RECTS: {
                 const size_t count = cmd->data.draw.count;
-                size_t start = 0;
+                const size_t maxcount = UINT16_MAX / 6;
                 SetDrawState(renderer, cmd, SDL_METAL_FRAGMENT_SOLID, CONSTANTS_OFFSET_IDENTITY, mtlbufvertex, &statecache);
-                for (size_t i = 0; i < count; i++, start += 4) {   // !!! FIXME: can we do all of these this with a single draw call, using MTLPrimitiveTypeTriangle and an index buffer?
-                    [data.mtlcmdencoder drawPrimitives:MTLPrimitiveTypeTriangleStrip vertexStart:start vertexCount:4];
+                /* Our index buffer has 16 bit indices, so we can only draw 65k
+                 * vertices (16k rects) at a time. */
+                for (size_t i = 0; i < count; i += maxcount) {
+                    /* Set the vertex buffer offset for our current positions.
+                     * The vertex buffer itself was bound in SetDrawState. */
+                    [data.mtlcmdencoder setVertexBufferOffset:cmd->data.draw.first + i*sizeof(float)*8 atIndex:0];
+                    [data.mtlcmdencoder drawIndexedPrimitives:MTLPrimitiveTypeTriangle
+                                                   indexCount:SDL_min(maxcount, count - i) * 6
+                                                    indexType:MTLIndexTypeUInt16
+                                                  indexBuffer:data.mtlbufquadindices
+                                            indexBufferOffset:0];
                 }
                 break;
             }
@@ -1424,11 +1437,6 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     #if !__has_feature(objc_arc)
     [mtlbufconstantstaging autorelease];
     #endif
-    mtlbufconstantstaging.label = @"SDL constant staging data";
-
-    id<MTLBuffer> mtlbufconstants = [data.mtldevice newBufferWithLength:CONSTANTS_LENGTH options:MTLResourceStorageModePrivate];
-    data.mtlbufconstants = mtlbufconstants;
-    data.mtlbufconstants.label = @"SDL constant data";
 
     char *constantdata = [mtlbufconstantstaging contents];
     SDL_memcpy(constantdata + CONSTANTS_OFFSET_IDENTITY, identitytransform, sizeof(identitytransform));
@@ -1437,10 +1445,42 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     SDL_memcpy(constantdata + CONSTANTS_OFFSET_DECODE_BT601, decodetransformBT601, sizeof(decodetransformBT601));
     SDL_memcpy(constantdata + CONSTANTS_OFFSET_DECODE_BT709, decodetransformBT709, sizeof(decodetransformBT709));
 
+    int quadcount = UINT16_MAX / 4;
+    size_t indicessize = sizeof(UInt16) * quadcount * 6;
+    id<MTLBuffer> mtlbufquadindicesstaging = [data.mtldevice newBufferWithLength:indicessize options:MTLResourceStorageModeShared];
+#if !__has_feature(objc_arc)
+    [mtlbufquadindicesstaging autorelease];
+#endif
+
+    /* Quads in the following vertex order (matches the FillRects vertices):
+     * 1---3
+     * | \ |
+     * 0---2
+     */
+    UInt16 *indexdata = [mtlbufquadindicesstaging contents];
+    for (int i = 0; i < quadcount; i++) {
+        indexdata[i * 6 + 0] = i * 4 + 0;
+        indexdata[i * 6 + 1] = i * 4 + 1;
+        indexdata[i * 6 + 2] = i * 4 + 2;
+
+        indexdata[i * 6 + 3] = i * 4 + 2;
+        indexdata[i * 6 + 4] = i * 4 + 1;
+        indexdata[i * 6 + 5] = i * 4 + 3;
+    }
+
+    id<MTLBuffer> mtlbufconstants = [data.mtldevice newBufferWithLength:CONSTANTS_LENGTH options:MTLResourceStorageModePrivate];
+    data.mtlbufconstants = mtlbufconstants;
+    data.mtlbufconstants.label = @"SDL constant data";
+
+    id<MTLBuffer> mtlbufquadindices = [data.mtldevice newBufferWithLength:indicessize options:MTLResourceStorageModePrivate];
+    data.mtlbufquadindices = mtlbufquadindices;
+    data.mtlbufquadindices.label = @"SDL quad index buffer";
+
     id<MTLCommandBuffer> cmdbuffer = [data.mtlcmdqueue commandBuffer];
     id<MTLBlitCommandEncoder> blitcmd = [cmdbuffer blitCommandEncoder];
 
-    [blitcmd copyFromBuffer:mtlbufconstantstaging sourceOffset:0 toBuffer:data.mtlbufconstants destinationOffset:0 size:CONSTANTS_LENGTH];
+    [blitcmd copyFromBuffer:mtlbufconstantstaging sourceOffset:0 toBuffer:mtlbufconstants destinationOffset:0 size:CONSTANTS_LENGTH];
+    [blitcmd copyFromBuffer:mtlbufquadindicesstaging sourceOffset:0 toBuffer:mtlbufquadindices destinationOffset:0 size:indicessize];
 
     [blitcmd endEncoding];
     [cmdbuffer commit];
@@ -1503,8 +1543,10 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
 #endif
 #else
 #ifdef __IPHONE_11_0
-    if ([mtldevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily4_v1]) {
-        maxtexsize = 16384;
+    if (@available(iOS 11.0, *)) {
+        if ([mtldevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily4_v1]) {
+            maxtexsize = 16384;
+        }
     } else
 #endif
 #ifdef __IPHONE_10_0
@@ -1529,6 +1571,7 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
     [mtlsamplernearest release];
     [mtlsamplerlinear release];
     [mtlbufconstants release];
+    [mtlbufquadindices release];
     [view release];
     [data release];
     [mtldevice release];
