@@ -1163,7 +1163,7 @@ METAL_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *ver
 
             case SDL_RENDERCMD_FILL_RECTS: {
                 const size_t count = cmd->data.draw.count;
-                const size_t maxcount = UINT16_MAX / 6;
+                const size_t maxcount = UINT16_MAX / 4;
                 SetDrawState(renderer, cmd, SDL_METAL_FRAGMENT_SOLID, CONSTANTS_OFFSET_IDENTITY, mtlbufvertex, &statecache);
                 /* Our index buffer has 16 bit indices, so we can only draw 65k
                  * vertices (16k rects) at a time. */
