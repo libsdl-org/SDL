@@ -15786,6 +15786,14 @@ find_lib()
             return
         fi
     done
+    # Try again, this time allowing more than one version digit after the .so
+    for path in $env_lib_path $gcc_bin_path $gcc_lib_path $host_lib_path; do
+        lib=`ls -- $path/$1 2>/dev/null | sed -e 's,.*/,,' | sort | tail -1`
+        if test x$lib != x; then
+            echo $lib
+            return
+        fi
+    done
 }
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for an ANSI C-conforming const" >&5
@@ -19417,6 +19425,7 @@ _ACEOF
         fi
     fi
 }
+
 
 CheckNativeClient()
 {
