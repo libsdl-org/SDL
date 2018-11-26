@@ -154,6 +154,7 @@ typedef struct METAL_ShaderPipelines
     @property (nonatomic, assign) BOOL yuv;
     @property (nonatomic, assign) BOOL nv12;
     @property (nonatomic, assign) size_t conversionBufferOffset;
+    @property (nonatomic, assign) BOOL hasdata;
 @end
 
 @implementation METAL_TextureData
@@ -609,53 +610,140 @@ METAL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     return 0;
 }}
 
+static void
+METAL_UploadTextureData(id<MTLTexture> texture, SDL_Rect rect, int slice,
+                        const void * pixels, int pitch)
+{
+    [texture replaceRegion:MTLRegionMake2D(rect.x, rect.y, rect.w, rect.h)
+               mipmapLevel:0
+                     slice:slice
+                 withBytes:pixels
+               bytesPerRow:pitch
+             bytesPerImage:0];
+}
+
+static MTLStorageMode
+METAL_GetStorageMode(id<MTLResource> resource)
+{
+    /* iOS 8 does not have this method. */
+    if ([resource respondsToSelector:@selector(storageMode)]) {
+        return resource.storageMode;
+    }
+    return MTLStorageModeShared;
+}
+
+static int
+METAL_UpdateTextureInternal(SDL_Renderer * renderer, METAL_TextureData *texturedata,
+                            id<MTLTexture> texture, SDL_Rect rect, int slice,
+                            const void * pixels, int pitch)
+{
+    METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
+    SDL_Rect stagingrect = {0, 0, rect.w, rect.h};
+    MTLTextureDescriptor *desc;
+
+    /* If the texture is managed or shared and this is the first upload, we can
+     * use replaceRegion to upload to it directly. Otherwise we upload the data
+     * to a staging texture and copy that over. */
+    if (!texturedata.hasdata && METAL_GetStorageMode(texture) != MTLStorageModePrivate) {
+        METAL_UploadTextureData(texture, rect, slice, pixels, pitch);
+        return 0;
+    }
+
+    desc = [MTLTextureDescriptor texture2DDescriptorWithPixelFormat:texture.pixelFormat
+                                                              width:rect.w
+                                                             height:rect.h
+                                                          mipmapped:NO];
+
+    if (desc == nil) {
+        return SDL_OutOfMemory();
+    }
+
+    /* TODO: We could have a pool of textures or a MTLHeap we allocate from,
+     * and release a staging texture back to the pool in the command buffer's
+     * completion handler. */
+    id<MTLTexture> stagingtex = [data.mtldevice newTextureWithDescriptor:desc];
+    if (stagingtex == nil) {
+        return SDL_OutOfMemory();
+    }
+
+#if !__has_feature(objc_arc)
+    [stagingtex autorelease];
+#endif
+
+    METAL_UploadTextureData(stagingtex, stagingrect, 0, pixels, pitch);
+
+    if (data.mtlcmdencoder != nil) {
+        [data.mtlcmdencoder endEncoding];
+        data.mtlcmdencoder = nil;
+    }
+
+    if (data.mtlcmdbuffer == nil) {
+        data.mtlcmdbuffer = [data.mtlcmdqueue commandBuffer];
+    }
+
+    id<MTLBlitCommandEncoder> blitcmd = [data.mtlcmdbuffer blitCommandEncoder];
+
+    [blitcmd copyFromTexture:stagingtex
+                 sourceSlice:0
+                 sourceLevel:0
+                sourceOrigin:MTLOriginMake(0, 0, 0)
+                  sourceSize:MTLSizeMake(rect.w, rect.h, 1)
+                   toTexture:texture
+            destinationSlice:slice
+            destinationLevel:0
+           destinationOrigin:MTLOriginMake(rect.x, rect.y, 0)];
+
+    [blitcmd endEncoding];
+
+    /* TODO: This isn't very efficient for the YUV formats, which call
+     * UpdateTextureInternal multiple times in a row. */
+    [data.mtlcmdbuffer commit];
+    data.mtlcmdbuffer = nil;
+
+    return 0;
+}
+
 static int
 METAL_UpdateTexture(SDL_Renderer * renderer, SDL_Texture * texture,
-                 const SDL_Rect * rect, const void *pixels, int pitch)
+                    const SDL_Rect * rect, const void *pixels, int pitch)
 { @autoreleasepool {
     METAL_TextureData *texturedata = (__bridge METAL_TextureData *)texture->driverdata;
 
-    /* !!! FIXME: replaceRegion does not do any synchronization, so it might
-     * !!! FIXME: stomp on a previous frame's data that's currently being read
-     * !!! FIXME: by the GPU. */
-    [texturedata.mtltexture replaceRegion:MTLRegionMake2D(rect->x, rect->y, rect->w, rect->h)
-                              mipmapLevel:0
-                                withBytes:pixels
-                              bytesPerRow:pitch];
+    if (METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltexture, *rect, 0, pixels, pitch) < 0) {
+        return -1;
+    }
 
     if (texturedata.yuv) {
         int Uslice = texture->format == SDL_PIXELFORMAT_YV12 ? 1 : 0;
         int Vslice = texture->format == SDL_PIXELFORMAT_YV12 ? 0 : 1;
+        int UVpitch = (pitch + 1) / 2;
+        SDL_Rect UVrect = {rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2};
 
         /* Skip to the correct offset into the next texture */
         pixels = (const void*)((const Uint8*)pixels + rect->h * pitch);
-        [texturedata.mtltexture_uv replaceRegion:MTLRegionMake2D(rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2)
-                                     mipmapLevel:0
-                                           slice:Uslice
-                                       withBytes:pixels
-                                     bytesPerRow:(pitch + 1) / 2
-                                   bytesPerImage:0];
+        if (METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltexture_uv, UVrect, Uslice, pixels, UVpitch) < 0) {
+            return -1;
+        }
 
         /* Skip to the correct offset into the next texture */
-        pixels = (const void*)((const Uint8*)pixels + ((rect->h + 1) / 2) * ((pitch + 1)/2));
-        [texturedata.mtltexture_uv replaceRegion:MTLRegionMake2D(rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2)
-                                     mipmapLevel:0
-                                           slice:Vslice
-                                       withBytes:pixels
-                                     bytesPerRow:(pitch + 1) / 2
-                                   bytesPerImage:0];
+        pixels = (const void*)((const Uint8*)pixels + UVrect.h * UVpitch);
+        if (METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltexture_uv, UVrect, Vslice, pixels, UVpitch) < 0) {
+            return -1;
+        }
     }
 
     if (texturedata.nv12) {
+        SDL_Rect UVrect = {rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2};
+        int UVpitch = 2 * ((pitch + 1) / 2);
+
         /* Skip to the correct offset into the next texture */
         pixels = (const void*)((const Uint8*)pixels + rect->h * pitch);
-        [texturedata.mtltexture_uv replaceRegion:MTLRegionMake2D(rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2)
-                                     mipmapLevel:0
-                                           slice:0
-                                       withBytes:pixels
-                                     bytesPerRow:2 * ((pitch + 1) / 2)
-                                   bytesPerImage:0];
+        if (METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltexture_uv, UVrect, 0, pixels, UVpitch) < 0) {
+            return -1;
+        }
     }
+
+    texturedata.hasdata = YES;
 
     return 0;
 }}
@@ -670,30 +758,24 @@ METAL_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
     METAL_TextureData *texturedata = (__bridge METAL_TextureData *)texture->driverdata;
     const int Uslice = 0;
     const int Vslice = 1;
+    SDL_Rect UVrect = {rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2};
 
     /* Bail out if we're supposed to update an empty rectangle */
     if (rect->w <= 0 || rect->h <= 0) {
         return 0;
     }
 
-    [texturedata.mtltexture replaceRegion:MTLRegionMake2D(rect->x, rect->y, rect->w, rect->h)
-                              mipmapLevel:0
-                                withBytes:Yplane
-                              bytesPerRow:Ypitch];
+    if (METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltexture, *rect, 0, Yplane, Ypitch) < 0) {
+        return -1;
+    }
+    if (METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltexture_uv, UVrect, Uslice, Uplane, Upitch)) {
+        return -1;
+    }
+    if (METAL_UpdateTextureInternal(renderer, texturedata, texturedata.mtltexture_uv, UVrect, Vslice, Vplane, Vpitch)) {
+        return -1;
+    }
 
-    [texturedata.mtltexture_uv replaceRegion:MTLRegionMake2D(rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2)
-                                 mipmapLevel:0
-                                       slice:Uslice
-                                   withBytes:Uplane
-                                 bytesPerRow:Upitch
-                               bytesPerImage:0];
-
-    [texturedata.mtltexture_uv replaceRegion:MTLRegionMake2D(rect->x / 2, rect->y / 2, (rect->w + 1) / 2, (rect->h + 1) / 2)
-                                 mipmapLevel:0
-                                       slice:Vslice
-                                   withBytes:Vplane
-                                 bytesPerRow:Vpitch
-                               bytesPerImage:0];
+    texturedata.hasdata = YES;
 
     return 0;
 }}
@@ -1217,7 +1299,7 @@ METAL_RenderReadPixels(SDL_Renderer * renderer, const SDL_Rect * rect,
      * update the CPU-side copy of the texture data.
      * NOTE: Currently all of our textures are managed on macOS. We'll need some
      * extra copying for any private textures. */
-    if (mtltexture.storageMode == MTLStorageModeManaged) {
+    if (METAL_GetStorageMode(mtltexture) == MTLStorageModeManaged) {
         id<MTLBlitCommandEncoder> blit = [data.mtlcmdbuffer blitCommandEncoder];
         [blit synchronizeResource:mtltexture];
         [blit endEncoding];
