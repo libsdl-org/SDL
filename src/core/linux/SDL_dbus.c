@@ -24,6 +24,8 @@
 #if !SDL_THREADS_DISABLED
 #include <sys/time.h>
 #include <sys/resource.h>
+#include <pthread.h>
+#include "SDL_system.h"
 #endif
 
 #if SDL_USE_LIBDBUS
