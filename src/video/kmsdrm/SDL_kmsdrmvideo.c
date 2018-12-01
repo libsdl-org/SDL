@@ -61,7 +61,13 @@ check_modestting(int devindex)
         if (SDL_KMSDRM_LoadSymbols()) {
             drmModeRes *resources = KMSDRM_drmModeGetResources(drm_fd);
             if (resources != NULL) {
-                available = SDL_TRUE;
+                SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "%scard%d connector, encoder and CRTC counts are: %d %d %d",
+                             KMSDRM_DRI_PATH, devindex,
+                             resources->count_connectors, resources->count_encoders, resources->count_crtcs);
+
+                if (resources->count_connectors > 0 && resources->count_encoders > 0 && resources->count_crtcs > 0) {
+                    available = SDL_TRUE;
+                }
                 KMSDRM_drmModeFreeResources(resources);
             }
             SDL_KMSDRM_UnloadSymbols();
@@ -358,6 +364,7 @@ KMSDRM_VideoInit(_THIS)
         ret = SDL_OutOfMemory();
         goto cleanup;
     }
+    SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Opening device /dev/dri/card%d", vdata->devindex);
     SDL_snprintf(devname, 16, "/dev/dri/card%d", vdata->devindex);
     vdata->drm_fd = open(devname, O_RDWR | O_CLOEXEC);
     SDL_free(devname);
