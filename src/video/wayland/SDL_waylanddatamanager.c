@@ -53,7 +53,11 @@ write_pipe(int fd, const void* buffer, size_t total_length, size_t *pos)
     sigemptyset(&sig_set);
     sigaddset(&sig_set, SIGPIPE);  
 
-    pthread_sigmask(SIG_BLOCK, &sig_set, &old_sig_set); 
+#if SDL_THREADS_DISABLED
+    sigprocmask(SIG_BLOCK, &sig_set, &old_sig_set);
+#else
+    pthread_sigmask(SIG_BLOCK, &sig_set, &old_sig_set);
+#endif
 
     if (ready == 0) {
         bytes_written = SDL_SetError("Pipe timeout");
@@ -70,7 +74,12 @@ write_pipe(int fd, const void* buffer, size_t total_length, size_t *pos)
     }
 
     sigtimedwait(&sig_set, 0, &zerotime);
+
+#if SDL_THREADS_DISABLED
+    sigprocmask(SIG_SETMASK, &old_sig_set, NULL);
+#else
     pthread_sigmask(SIG_SETMASK, &old_sig_set, NULL);
+#endif
 
     return bytes_written;
 }
