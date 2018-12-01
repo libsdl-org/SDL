@@ -78,6 +78,12 @@
 #endif
 #endif
 
+#if defined(__ANDROID__) && defined(__ARM_ARCH) && !defined(HAVE_GETAUXVAL)
+#if __ARM_ARCH < 8
+#include <cpu-features.h>
+#endif
+#endif
+
 #define CPU_HAS_RDTSC   (1 << 0)
 #define CPU_HAS_ALTIVEC (1 << 1)
 #define CPU_HAS_MMX     (1 << 2)
@@ -320,7 +326,7 @@ CPU_haveAltiVec(void)
     return altivec;
 }
 
-#if (defined(__LINUX__) || defined(__ANDROID__)) && defined(__ARM_ARCH) && !defined(HAVE_GETAUXVAL)
+#if defined(__LINUX__) && defined(__ARM_ARCH) && !defined(HAVE_GETAUXVAL)
 static int
 readProcAuxvForNeon(void)
 {
@@ -359,8 +365,20 @@ CPU_haveNEON(void)
     return SYSPAGE_ENTRY(cpuinfo)->flags & ARM_CPU_FLAG_NEON;
 #elif (defined(__LINUX__) || defined(__ANDROID__)) && defined(HAVE_GETAUXVAL)
     return ((getauxval(AT_HWCAP) & HWCAP_NEON) == HWCAP_NEON);
-#elif (defined(__LINUX__) || defined(__ANDROID__))
-    return readProcAuxvForNeon();   /* Android offers a static library for this, but it just parses /proc/self/auxv */
+#elif defined(__LINUX__)
+    return readProcAuxvForNeon();
+#elif defined(__ANDROID__)
+    /* Use NDK cpufeatures to read either /proc/self/auxv or /proc/cpuinfo */
+    {
+        AndroidCpuFamily cpu_family = android_getCpuFamily();
+        if (cpu_family == ANDROID_CPU_FAMILY_ARM) {
+            uint64_t cpu_features = android_getCpuFeatures();
+            if ((cpu_features & ANDROID_CPU_ARM_FEATURE_NEON) != 0) {
+                return 1;
+            }
+        }
+        return 0;
+    }
 #elif (defined(__WINDOWS__) || defined(__WINRT__)) && defined(_M_ARM)
     /* All WinRT ARM devices are required to support NEON, but just in case. */
     return IsProcessorFeaturePresent(PF_ARM_NEON_INSTRUCTIONS_AVAILABLE) != 0;
