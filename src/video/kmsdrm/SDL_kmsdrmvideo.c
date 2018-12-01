@@ -333,7 +333,8 @@ KMSDRM_FlipHandler(int fd, unsigned int frame, unsigned int sec, unsigned int us
 int
 KMSDRM_VideoInit(_THIS)
 {
-    int i;
+    int i, j;
+    SDL_bool found;
     int ret = 0;
     char *devname;
     SDL_VideoData *vdata = ((SDL_VideoData *)_this->driverdata);
@@ -402,6 +403,8 @@ KMSDRM_VideoInit(_THIS)
         goto cleanup;
     }
 
+    found = SDL_FALSE;
+
     for (i = 0; i < resources->count_encoders; i++) {
         encoder = KMSDRM_drmModeGetEncoder(vdata->drm_fd, resources->encoders[i]);
 
@@ -409,8 +412,20 @@ KMSDRM_VideoInit(_THIS)
             continue;
 
         if (encoder->encoder_id == connector->encoder_id) {
-            SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Found encoder %d.", encoder->encoder_id);
             data->encoder_id = encoder->encoder_id;
+            found = SDL_TRUE;
+        } else {
+            for (j = 0; j < connector->count_encoders; j++) {
+                if (connector->encoders[j] == encoder->encoder_id) {
+                    data->encoder_id = encoder->encoder_id;
+                    found = SDL_TRUE;
+                    break;
+                }
+            }
+        }
+
+        if (found == SDL_TRUE) {
+            SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Found encoder %d.", data->encoder_id);
             break;
         }
 
@@ -424,6 +439,18 @@ KMSDRM_VideoInit(_THIS)
     }
 
     vdata->saved_crtc = KMSDRM_drmModeGetCrtc(vdata->drm_fd, encoder->crtc_id);
+
+    if (vdata->saved_crtc == NULL) {
+        for (i = 0; i < resources->count_crtcs; i++) {
+            if (encoder->possible_crtcs & (1 << i)) {
+                encoder->crtc_id = resources->crtcs[i];
+                SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Set encoder's CRTC to %d.", encoder->crtc_id);
+                vdata->saved_crtc = KMSDRM_drmModeGetCrtc(vdata->drm_fd, encoder->crtc_id);
+                break;
+            }
+        }
+    }
+
     if (vdata->saved_crtc == NULL) {
         ret = SDL_SetError("No CRTC found.");
         goto cleanup;
@@ -435,11 +462,18 @@ KMSDRM_VideoInit(_THIS)
     data->cur_mode = vdata->saved_crtc->mode;
     vdata->crtc_id = encoder->crtc_id;
 
+    // select default mode if this one is not valid
+    if (vdata->saved_crtc->mode_valid == 0) {
+        SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO,
+            "Current mode is invalid, selecting connector's mode #0.");
+        data->cur_mode = connector->modes[0];
+    }
+
     SDL_zero(current_mode);
 
-    current_mode.w = vdata->saved_crtc->mode.hdisplay;
-    current_mode.h = vdata->saved_crtc->mode.vdisplay;
-    current_mode.refresh_rate = vdata->saved_crtc->mode.vrefresh;
+    current_mode.w = data->cur_mode.hdisplay;
+    current_mode.h = data->cur_mode.vdisplay;
+    current_mode.refresh_rate = data->cur_mode.vrefresh;
 
     /* FIXME ?
     drmModeFB *fb = drmModeGetFB(vdata->drm_fd, vdata->saved_crtc->buffer_id);
