@@ -690,7 +690,7 @@ D3D_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
 static void
 D3D_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
-    /*D3D_RenderData *data = (D3D_RenderData *)renderer->driverdata;*/
+    D3D_RenderData *data = (D3D_RenderData *)renderer->driverdata;
     D3D_TextureData *texturedata = (D3D_TextureData *)texture->driverdata;
 
     if (!texturedata) {
@@ -706,6 +706,9 @@ D3D_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     } else {
         IDirect3DTexture9_UnlockRect(texturedata->texture.staging, 0);
         texturedata->texture.dirty = SDL_TRUE;
+        if (data->drawstate.texture == texture) {
+            data->drawstate.texture = NULL;
+        }
    }
 }
 
@@ -1097,13 +1100,6 @@ SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
     const SDL_bool is_copy_ex = (cmd->command == SDL_RENDERCMD_COPY_EX);
     SDL_Texture *texture = cmd->data.draw.texture;
     const SDL_BlendMode blend = cmd->data.draw.blend;
-
-    if (texture) {
-        D3D_TextureData *texturedata = (D3D_TextureData *)texture->driverdata;
-        if (texturedata) {
-            UpdateDirtyTexture(data->device, &texturedata->texture);
-        }
-    }
 
     if (texture != data->drawstate.texture) {
         D3D_TextureData *oldtexturedata = data->drawstate.texture ? (D3D_TextureData *) data->drawstate.texture->driverdata : NULL;
@@ -1558,6 +1554,7 @@ static int
 D3D_Reset(SDL_Renderer * renderer)
 {
     D3D_RenderData *data = (D3D_RenderData *) renderer->driverdata;
+    const Float4X4 d3dmatrix = MatrixIdentity();
     HRESULT result;
     SDL_Texture *texture;
     int i;
@@ -1610,6 +1607,13 @@ D3D_Reset(SDL_Renderer * renderer)
     D3D_InitRenderState(data);
     D3D_SetRenderTargetInternal(renderer, renderer->target);
     data->drawstate.viewport_dirty = SDL_TRUE;
+    data->drawstate.cliprect_dirty = SDL_TRUE;
+    data->drawstate.cliprect_enabled_dirty = SDL_TRUE;
+    data->drawstate.texture = NULL;
+    data->drawstate.shader = NULL;
+    data->drawstate.blend = SDL_BLENDMODE_INVALID;
+    data->drawstate.is_copy_ex = SDL_FALSE;
+    IDirect3DDevice9_SetTransform(data->device, D3DTS_VIEW, (D3DMATRIX*)&d3dmatrix);
 
     /* Let the application know that render targets were reset */
     {
