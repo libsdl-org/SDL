@@ -995,11 +995,10 @@ D3D_QueueCopyEx(SDL_Renderer * renderer, SDL_RenderCommand *cmd, SDL_Texture * t
 }
 
 static int
-BindTextureRep(IDirect3DDevice9 *device, D3D_TextureRep *texture, DWORD sampler)
+UpdateDirtyTexture(IDirect3DDevice9 *device, D3D_TextureRep *texture)
 {
-    HRESULT result;
-
     if (texture->dirty && texture->staging) {
+        HRESULT result;
         if (!texture->texture) {
             result = IDirect3DDevice9_CreateTexture(device, texture->w, texture->h, 1, texture->usage,
                 PixelFormatToD3DFMT(texture->format), D3DPOOL_DEFAULT, &texture->texture, NULL);
@@ -1014,6 +1013,14 @@ BindTextureRep(IDirect3DDevice9 *device, D3D_TextureRep *texture, DWORD sampler)
         }
         texture->dirty = SDL_FALSE;
     }
+    return 0;
+}
+
+static int
+BindTextureRep(IDirect3DDevice9 *device, D3D_TextureRep *texture, DWORD sampler)
+{
+    HRESULT result;
+    UpdateDirtyTexture(device, texture);
     result = IDirect3DDevice9_SetTexture(device, sampler, (IDirect3DBaseTexture9 *)texture->texture);
     if (FAILED(result)) {
         return D3D_SetError("SetTexture()", result);
@@ -1090,6 +1097,13 @@ SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
     const SDL_bool is_copy_ex = (cmd->command == SDL_RENDERCMD_COPY_EX);
     SDL_Texture *texture = cmd->data.draw.texture;
     const SDL_BlendMode blend = cmd->data.draw.blend;
+
+    if (texture) {
+        D3D_TextureData *texturedata = (D3D_TextureData *)texture->driverdata;
+        if (texturedata) {
+            UpdateDirtyTexture(data->device, &texturedata->texture);
+        }
+    }
 
     if (texture != data->drawstate.texture) {
         D3D_TextureData *oldtexturedata = data->drawstate.texture ? (D3D_TextureData *) data->drawstate.texture->driverdata : NULL;
