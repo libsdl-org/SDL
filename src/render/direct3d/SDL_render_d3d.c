@@ -1566,6 +1566,15 @@ D3D_Reset(SDL_Renderer * renderer)
         }
     }
 
+	/* Release all vertex buffers */
+    int i;
+    for (i = 0; i < SDL_arraysize(data->vertexBuffers); ++i) {
+        if (data->vertexBuffers[i]) {
+            IDirect3DVertexBuffer9_Release(data->vertexBuffers[i]);
+        }
+        data->vertexBuffers[i] = NULL;
+    }
+
     result = IDirect3DDevice9_Reset(data->device, &data->pparams);
     if (FAILED(result)) {
         if (result == D3DERR_DEVICELOST) {
