@@ -1546,6 +1546,7 @@ D3D_Reset(SDL_Renderer * renderer)
     D3D_RenderData *data = (D3D_RenderData *) renderer->driverdata;
     HRESULT result;
     SDL_Texture *texture;
+    int i;
 
     /* Release the default render target before reset */
     if (data->defaultRenderTarget) {
@@ -1567,7 +1568,6 @@ D3D_Reset(SDL_Renderer * renderer)
     }
 
 	/* Release all vertex buffers */
-    int i;
     for (i = 0; i < SDL_arraysize(data->vertexBuffers); ++i) {
         if (data->vertexBuffers[i]) {
             IDirect3DVertexBuffer9_Release(data->vertexBuffers[i]);
