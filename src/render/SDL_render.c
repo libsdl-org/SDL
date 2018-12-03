@@ -2658,6 +2658,7 @@ SDL_RenderFillRect(SDL_Renderer * renderer, const SDL_Rect * rect)
         frect.h = (float) rect->h;
     } else {
         SDL_Rect r;
+        SDL_zero(r);
         SDL_RenderGetViewport(renderer, &r);
         frect.x = 0.0f;
         frect.y = 0.0f;
@@ -2677,6 +2678,7 @@ SDL_RenderFillRectF(SDL_Renderer * renderer, const SDL_FRect * rect)
     /* If 'rect' == NULL, then outline the whole surface */
     if (!rect) {
         SDL_Rect r;
+        SDL_zero(r);
         SDL_RenderGetViewport(renderer, &r);
         frect.x = 0.0f;
         frect.y = 0.0f;
