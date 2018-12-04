@@ -58,7 +58,7 @@
 #  if defined(__ARM_NEON)
 #    include <arm_neon.h>
 #  elif defined(__WINDOWS__) || defined(__WINRT__)
-/* Visual Studio doesn't define __ARM_ARCH, but _M_ARM (if set, always 7), and _M_ARM64 (if set, always 1).
+/* Visual Studio doesn't define __ARM_ARCH, but _M_ARM (if set, always 7), and _M_ARM64 (if set, always 1). */
 #    if defined(_M_ARM)
 #      include <armintr.h>
 #      include <arm_neon.h>
