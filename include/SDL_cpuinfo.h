@@ -54,7 +54,7 @@
 #if defined(HAVE_ALTIVEC_H) && defined(__ALTIVEC__) && !defined(__APPLE_ALTIVEC__) && defined(SDL_ENABLE_ALTIVEC_H)
 #include <altivec.h>
 #endif
-#if defined(__ARM_NEON__) && !defined(SDL_DISABLE_ARM_NEON_H)
+#if defined(__ARM_NEON) && !defined(SDL_DISABLE_ARM_NEON_H)
 #include <arm_neon.h>
 #endif
 #if defined(__3dNOW__) && !defined(SDL_DISABLE_MM3DNOW_H)
