@@ -352,8 +352,18 @@ CPU_haveNEON(void)
 {
 /* The way you detect NEON is a privileged instruction on ARM, so you have
    query the OS kernel in a platform-specific way. :/ */
-#if defined(SDL_CPUINFO_DISABLED) || !defined(__ARM_ARCH)
-    return 0;  /* disabled or not an ARM CPU at all. */
+#if defined(SDL_CPUINFO_DISABLED)
+   return 0; /* disabled */
+#elif (defined(__WINDOWS__) || defined(__WINRT__)) && (defined(_M_ARM) || defined(_M_ARM64))
+/* Visual Studio, for ARM, doesn't define __ARM_ARCH. Handle this first. */
+/* Seems to have been removed */
+#  if !defined(PF_ARM_NEON_INSTRUCTIONS_AVAILABLE)
+#    define PF_ARM_NEON_INSTRUCTIONS_AVAILABLE 19
+#  endif
+/* All WinRT ARM devices are required to support NEON, but just in case. */
+    return IsProcessorFeaturePresent(PF_ARM_NEON_INSTRUCTIONS_AVAILABLE) != 0;
+#elif !defined(__ARM_ARCH)
+    return 0;  /* not an ARM CPU at all. */
 #elif __ARM_ARCH >= 8
     return 1;  /* ARMv8 always has non-optional NEON support. */
 #elif defined(__APPLE__) && (__ARM_ARCH >= 7)
@@ -379,9 +389,6 @@ CPU_haveNEON(void)
         }
         return 0;
     }
-#elif (defined(__WINDOWS__) || defined(__WINRT__)) && defined(_M_ARM)
-    /* All WinRT ARM devices are required to support NEON, but just in case. */
-    return IsProcessorFeaturePresent(PF_ARM_NEON_INSTRUCTIONS_AVAILABLE) != 0;
 #else
 #warning SDL_HasNEON is not implemented for this ARM platform. Write me.
     return 0;
