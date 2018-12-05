@@ -24182,6 +24182,7 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
             SOURCES="$SOURCES $srcdir/src/core/linux/SDL_evdev*.c"
         fi
         # Set up other core UNIX files
+        SOURCES="$SOURCES $srcdir/src/core/linux/SDL_threadprio.c"
         SOURCES="$SOURCES $srcdir/src/core/unix/*.c"
         ;;
     *-*-cygwin* | *-*-mingw32*)
