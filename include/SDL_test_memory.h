@@ -42,14 +42,14 @@ extern "C" {
  * 
  * \note This should be called before any other SDL functions for complete tracking coverage
  */
-int SDLTest_TrackAllocations();
+int SDLTest_TrackAllocations(void);
 
 /**
  * \brief Print a log of any outstanding allocations
  *
  * \note This can be called after SDL_Quit()
  */
-void SDLTest_LogAllocations();
+void SDLTest_LogAllocations(void);
 
 
 /* Ends C function definitions when using C++ */

@@ -34,7 +34,7 @@
 #include "SDL_version.h"
 
 /**
- *  \file SDL_syswm.h
+ *  \brief SDL_syswm.h
  *
  *  Your application has access to a special type of event ::SDL_SYSWMEVENT,
  *  which contains window-manager specific information and arrives whenever
