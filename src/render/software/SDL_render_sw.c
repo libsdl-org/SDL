@@ -820,7 +820,7 @@ SW_CreateRendererForSurface(SDL_Surface * surface)
     return renderer;
 }
 
-SDL_Renderer *
+static SDL_Renderer *
 SW_CreateRenderer(SDL_Window * window, Uint32 flags)
 {
     SDL_Surface *surface;
