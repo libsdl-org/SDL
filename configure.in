@@ -2340,6 +2340,7 @@ CheckOpenGLESX11()
         AC_TRY_COMPILE([
           #define LINUX
           #define EGL_API_FB
+          #define MESA_EGL_NO_X11_HEADERS
           #include <EGL/egl.h>
           #include <EGL/eglext.h>
         ],[
