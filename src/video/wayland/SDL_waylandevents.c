@@ -1104,6 +1104,9 @@ int Wayland_input_lock_pointer(struct SDL_WaylandInput *input)
     if (!d->pointer_constraints)
         return -1;
 
+    if (!input->pointer)
+        return -1;
+
     if (!input->relative_pointer) {
         relative_pointer =
             zwp_relative_pointer_manager_v1_get_relative_pointer(
