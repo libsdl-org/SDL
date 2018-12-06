@@ -88,7 +88,6 @@ static int
 IsJoystick(int fd, char *namebuf, const size_t namebuflen, SDL_JoystickGUID *guid)
 {
     struct input_id inpid;
-    Uint32 id;
     Uint16 *guid16 = (Uint16 *)guid->data;
 
 #if !SDL_USE_LIBUDEV
