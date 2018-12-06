@@ -64,7 +64,7 @@ int Android_SurfaceWidth = 0;
 int Android_SurfaceHeight = 0;
 int Android_DeviceWidth = 0;
 int Android_DeviceHeight = 0;
-Uint32 Android_ScreenFormat = SDL_PIXELFORMAT_UNKNOWN;
+static Uint32 Android_ScreenFormat = SDL_PIXELFORMAT_UNKNOWN;
 static int Android_ScreenRate = 0;
 
 SDL_sem *Android_PauseSem = NULL, *Android_ResumeSem = NULL;
@@ -221,7 +221,7 @@ Android_SetScreenResolution(int surfaceWidth, int surfaceHeight, int deviceWidth
     Android_DeviceWidth = deviceWidth;
     Android_DeviceHeight = deviceHeight;
     Android_ScreenFormat = format;
-    Android_ScreenRate = rate;
+    Android_ScreenRate = (int)rate;
 
     /*
       Update the resolution of the desktop mode, so that the window
@@ -247,7 +247,7 @@ Android_SetScreenResolution(int surfaceWidth, int surfaceHeight, int deviceWidth
         display->display_modes[0].format = format;
         display->display_modes[0].w = Android_DeviceWidth;
         display->display_modes[0].h = Android_DeviceHeight;
-        display->display_modes[0].refresh_rate = rate;
+        display->display_modes[0].refresh_rate = (int)rate;
         display->current_mode = display->display_modes[0];
 
         SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_RESIZED, surfaceWidth, surfaceHeight);

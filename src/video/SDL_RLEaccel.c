@@ -1510,8 +1510,9 @@ UnRLEAlpha(SDL_Surface * surface)
             if (run) {
                 srcbuf += uncopy_opaque(dst + ofs, srcbuf, run, df, sf);
                 ofs += run;
-            } else if (!ofs)
-                return (SDL_TRUE);
+            } else if (!ofs) {
+                goto end_function;
+            }
         } while (ofs < w);
 
         /* skip padding if needed */
@@ -1532,7 +1533,8 @@ UnRLEAlpha(SDL_Surface * surface)
         } while (ofs < w);
         dst += surface->pitch >> 2;
     }
-    /* Make the compiler happy */
+
+end_function:
     return (SDL_TRUE);
 }
 

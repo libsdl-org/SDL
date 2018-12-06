@@ -50,7 +50,6 @@
 #include "SDL_log.h"
 #include "SDL_platform.h"
 #include "SDL_thread.h"
-#include "SDL_system.h"
 #include "../SDL_thread_c.h"
 #include "../SDL_systhread.h"
 #ifdef __ANDROID__

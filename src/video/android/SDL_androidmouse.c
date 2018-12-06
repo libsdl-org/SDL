@@ -234,7 +234,7 @@ Android_OnMouse(int state, int action, float x, float y, SDL_bool relative)
             changes = state & ~last_state;
             button = TranslateButton(changes);
             last_state = state;
-            SDL_SendMouseMotion(Android_Window, 0, relative, x, y);
+            SDL_SendMouseMotion(Android_Window, 0, relative, (int)x, (int)y);
             SDL_SendMouseButton(Android_Window, 0, SDL_PRESSED, button);
             break;
 
@@ -242,13 +242,13 @@ Android_OnMouse(int state, int action, float x, float y, SDL_bool relative)
             changes = last_state & ~state;
             button = TranslateButton(changes);
             last_state = state;
-            SDL_SendMouseMotion(Android_Window, 0, relative, x, y);
+            SDL_SendMouseMotion(Android_Window, 0, relative, (int)x, (int)y);
             SDL_SendMouseButton(Android_Window, 0, SDL_RELEASED, button);
             break;
 
         case ACTION_MOVE:
         case ACTION_HOVER_MOVE:
-            SDL_SendMouseMotion(Android_Window, 0, relative, x, y);
+            SDL_SendMouseMotion(Android_Window, 0, relative, (int)x, (int)y);
             break;
 
         case ACTION_SCROLL:
