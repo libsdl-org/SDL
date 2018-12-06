@@ -942,11 +942,6 @@ static void LocalReferenceHolder_Cleanup(struct LocalReferenceHolder *refholder)
     }
 }
 
-static SDL_bool LocalReferenceHolder_IsActive(void)
-{
-    return s_active > 0;
-}
-
 ANativeWindow* Android_JNI_GetNativeWindow(void)
 {
     ANativeWindow* anw;
@@ -1372,7 +1367,8 @@ static SDL_bool Android_JNI_ExceptionOccurred(SDL_bool silent)
     JNIEnv *mEnv = Android_JNI_GetEnv();
     jthrowable exception;
 
-    SDL_assert(LocalReferenceHolder_IsActive());
+    /* Detect mismatch LocalReferenceHolder_Init/Cleanup */
+    SDL_assert((s_active > 0));
 
     exception = (*mEnv)->ExceptionOccurred(mEnv);
     if (exception != NULL) {
@@ -1455,13 +1451,13 @@ static int Internal_Android_JNI_FileOpen(SDL_RWops* ctx)
     }
 
     mid = (*mEnv)->GetMethodID(mEnv, (*mEnv)->GetObjectClass(mEnv, inputStream), "getStartOffset", "()J");
-    ctx->hidden.androidio.offset = (*mEnv)->CallLongMethod(mEnv, inputStream, mid);
+    ctx->hidden.androidio.offset = (long)(*mEnv)->CallLongMethod(mEnv, inputStream, mid);
     if (Android_JNI_ExceptionOccurred(SDL_TRUE)) {
         goto fallback;
     }
 
     mid = (*mEnv)->GetMethodID(mEnv, (*mEnv)->GetObjectClass(mEnv, inputStream), "getDeclaredLength", "()J");
-    ctx->hidden.androidio.size = (*mEnv)->CallLongMethod(mEnv, inputStream, mid);
+    ctx->hidden.androidio.size = (long)(*mEnv)->CallLongMethod(mEnv, inputStream, mid);
     if (Android_JNI_ExceptionOccurred(SDL_TRUE)) {
         goto fallback;
     }
@@ -1779,7 +1775,7 @@ Sint64 Android_JNI_FileSeek(SDL_RWops* ctx, Sint64 offset, int whence)
                 if (amount > movement) {
                     amount = movement;
                 }
-                result = Android_JNI_FileRead(ctx, buffer, 1, amount);
+                result = Android_JNI_FileRead(ctx, buffer, 1, (size_t)amount);
                 if (result <= 0) {
                     /* Failed to read/skip the required amount, so fail */
                     return -1;

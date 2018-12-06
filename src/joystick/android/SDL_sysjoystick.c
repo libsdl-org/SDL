@@ -83,7 +83,7 @@ static Uint32 crc32_for_byte(Uint32 r)
     return r ^ (Uint32)0xFF000000L;
 }
 
-static Uint32 crc32(const void *data, int count)
+static Uint32 crc32(const void *data, size_t count)
 {
     Uint32 crc = 0;
     int i;

@@ -112,8 +112,7 @@ SDL_GetTicks(void)
 #if HAVE_CLOCK_GETTIME
         struct timespec now;
         clock_gettime(SDL_MONOTONIC_CLOCK, &now);
-        ticks = (now.tv_sec - start_ts.tv_sec) * 1000 + (now.tv_nsec -
-                                                 start_ts.tv_nsec) / 1000000;
+        ticks = (Uint32)((now.tv_sec - start_ts.tv_sec) * 1000 + (now.tv_nsec - start_ts.tv_nsec) / 1000000);
 #elif defined(__APPLE__)
         uint64_t now = mach_absolute_time();
         ticks = (Uint32)((((now - start_mach) * mach_base_info.numer) / mach_base_info.denom) / 1000000);
