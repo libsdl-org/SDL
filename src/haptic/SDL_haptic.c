@@ -26,7 +26,11 @@
 #include "SDL_assert.h"
 
 /* Global for SDL_windowshaptic.c */
+#if (defined(SDL_HAPTIC_DINPUT) && SDL_HAPTIC_DINPUT) || (defined(SDL_HAPTIC_XINPUT) && SDL_HAPTIC_XINPUT)
 SDL_Haptic *SDL_haptics = NULL;
+#else 
+static SDL_Haptic *SDL_haptics = NULL;
+#endif
 
 /*
  * Initializes the Haptic devices.

@@ -999,7 +999,7 @@ SDLTest_CommonInit(SDLTest_CommonState * state)
                 }
                 if (state->logical_w && state->logical_h) {
                     SDL_RenderSetLogicalSize(state->renderers[i], state->logical_w, state->logical_h);
-                } else if (state->scale) {
+                } else if (state->scale != 0.) {
                     SDL_RenderSetScale(state->renderers[i], state->scale, state->scale);
                 }
                 if (state->verbose & VERBOSE_RENDER) {

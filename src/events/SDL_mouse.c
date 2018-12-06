@@ -545,7 +545,7 @@ SDL_SendMouseWheel(SDL_Window * window, SDL_MouseID mouseID, float x, float y, S
         SDL_SetMouseFocus(window);
     }
 
-    if (!x && !y) {
+    if (x == 0. && y == 0.) {
         return 0;
     }
 
