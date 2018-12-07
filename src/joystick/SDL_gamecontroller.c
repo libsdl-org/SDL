@@ -1308,15 +1308,17 @@ SDL_GameControllerLoadHints()
 
 /*
  * Fill the given buffer with the expected controller mapping filepath. 
- * Usually this will just be CONTROLLER_MAPPING_FILE, but for Android,
- * we want to get the internal storage path.
+ * Usually this will just be SDL_HINT_GAMECONTROLLERCONFIG_FILE, but for
+ * Android, we want to get the internal storage path.
  */
 static SDL_bool SDL_GetControllerMappingFilePath(char *path, size_t size)
 {
-#ifdef CONTROLLER_MAPPING_FILE
-#define STRING(X) SDL_STRINGIFY_ARG(X)
-    return SDL_strlcpy(path, STRING(CONTROLLER_MAPPING_FILE), size) < size;
-#elif defined(__ANDROID__)
+    const char *hint = SDL_GetHint(SDL_HINT_GAMECONTROLLERCONFIG_FILE);
+    if (hint && *hint) {
+        return SDL_strlcpy(path, hint, size) < size;
+    }
+
+#if defined(__ANDROID__)
     return SDL_snprintf(path, size, "%s/controller_map.txt", SDL_AndroidGetInternalStoragePath()) < size;
 #else
     return SDL_FALSE;
