@@ -275,7 +275,6 @@ CreateApplicationMenus(void)
     NSMenu *appleMenu;
     NSMenu *serviceMenu;
     NSMenu *windowMenu;
-    NSMenu *viewMenu;
     NSMenuItem *menuItem;
     NSMenu *mainMenu;
 
@@ -342,9 +341,22 @@ CreateApplicationMenus(void)
     windowMenu = [[NSMenu alloc] initWithTitle:@"Window"];
 
     /* Add menu items */
+    [windowMenu addItemWithTitle:@"Close" action:@selector(performClose:) keyEquivalent:@"w"];
+
     [windowMenu addItemWithTitle:@"Minimize" action:@selector(performMiniaturize:) keyEquivalent:@"m"];
 
     [windowMenu addItemWithTitle:@"Zoom" action:@selector(performZoom:) keyEquivalent:@""];
+    
+    /* Add the fullscreen toggle menu option, if supported */
+    if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6) {
+        /* Cocoa should update the title to Enter or Exit Full Screen automatically.
+         * But if not, then just fallback to Toggle Full Screen.
+         */
+        menuItem = [[NSMenuItem alloc] initWithTitle:@"Toggle Full Screen" action:@selector(toggleFullScreen:) keyEquivalent:@"f"];
+        [menuItem setKeyEquivalentModifierMask:NSEventModifierFlagControl | NSEventModifierFlagCommand];
+        [windowMenu addItem:menuItem];
+        [menuItem release];
+    }
 
     /* Put menu into the menubar */
     menuItem = [[NSMenuItem alloc] initWithTitle:@"Window" action:nil keyEquivalent:@""];
@@ -355,25 +367,6 @@ CreateApplicationMenus(void)
     /* Tell the application object that this is now the window menu */
     [NSApp setWindowsMenu:windowMenu];
     [windowMenu release];
-
-
-    /* Add the fullscreen view toggle menu option, if supported */
-    if (floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6) {
-        /* Create the view menu */
-        viewMenu = [[NSMenu alloc] initWithTitle:@"View"];
-
-        /* Add menu items */
-        menuItem = [viewMenu addItemWithTitle:@"Toggle Full Screen" action:@selector(toggleFullScreen:) keyEquivalent:@"f"];
-        [menuItem setKeyEquivalentModifierMask:NSEventModifierFlagControl | NSEventModifierFlagCommand];
-
-        /* Put menu into the menubar */
-        menuItem = [[NSMenuItem alloc] initWithTitle:@"View" action:nil keyEquivalent:@""];
-        [menuItem setSubmenu:viewMenu];
-        [[NSApp mainMenu] addItem:menuItem];
-        [menuItem release];
-
-        [viewMenu release];
-    }
 }
 
 void
