@@ -125,7 +125,7 @@ LT_RELEASE  = @LT_RELEASE@
 LT_REVISION = @LT_REVISION@
 LT_LDFLAGS  = -no-undefined -rpath $(libdir) -release $(LT_RELEASE) -version-info $(LT_CURRENT):$(LT_REVISION):$(LT_AGE)
 
-all: $(srcdir)/configure Makefile $(objects) $(objects)/$(TARGET) $(objects)/$(SDLMAIN_TARGET) $(objects)/$(SDLTEST_TARGET)
+all: $(srcdir)/configure Makefile $(objects)/$(TARGET) $(objects)/$(SDLMAIN_TARGET) $(objects)/$(SDLTEST_TARGET)
 
 $(srcdir)/configure: $(srcdir)/configure.in
 	@echo "Warning, configure is out of date, please re-run autogen.sh"
@@ -135,8 +135,9 @@ Makefile: $(srcdir)/Makefile.in
 
 Makefile.in:;
 
-$(objects):
-	$(SHELL) $(auxdir)/mkinstalldirs $@
+$(objects)/.created:
+	$(SHELL) $(auxdir)/mkinstalldirs $(objects)
+	touch $@
 
 update-revision:
 	$(SHELL) $(auxdir)/updaterev.sh
