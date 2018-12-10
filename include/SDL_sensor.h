@@ -26,8 +26,8 @@
  *
  */
 
-#ifndef _SDL_sensor_h
-#define _SDL_sensor_h
+#ifndef SDL_sensor_h_
+#define SDL_sensor_h_
 
 #include "SDL_stdinc.h"
 #include "SDL_error.h"
@@ -246,6 +246,6 @@ extern DECLSPEC void SDLCALL SDL_SensorUpdate(void);
 #endif
 #include "close_code.h"
 
-#endif /* _SDL_sensor_h */
+#endif /* SDL_sensor_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
