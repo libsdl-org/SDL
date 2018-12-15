@@ -97,7 +97,7 @@ Emscripten_JoyStickConnected(int eventType, const EmscriptenGamepadEvent *gamepa
 
     ++numjoysticks;
 
-    SDL_PrivateJoystickAdded(numjoysticks - 1);
+    SDL_PrivateJoystickAdded(item->device_instance);
 
 #ifdef DEBUG_JOYSTICK
     SDL_Log("Number of joysticks is %d", numjoysticks);
