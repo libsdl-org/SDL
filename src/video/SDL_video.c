@@ -1636,6 +1636,7 @@ SDL_RecreateWindow(SDL_Window * window, Uint32 flags)
         window->surface->flags &= ~SDL_DONTFREE;
         SDL_FreeSurface(window->surface);
         window->surface = NULL;
+        window->surface_valid = SDL_FALSE;
     }
     if (_this->DestroyWindowFramebuffer) {
         _this->DestroyWindowFramebuffer(_this, window);
