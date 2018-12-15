@@ -1205,6 +1205,18 @@ SDL_CreateTextureFromSurface(SDL_Renderer * renderer, SDL_Surface * surface)
     } else {
         needAlpha = SDL_FALSE;
     }
+
+    /* If Palette contains alpha values, promotes to alpha format */
+    if (fmt->palette) {
+        for (i = 0; i < fmt->palette->ncolors; i++) {
+            Uint8 alpha_value = fmt->palette->colors[i].a;
+            if (alpha_value != 0 || alpha_value != SDL_ALPHA_OPAQUE) {
+                needAlpha = SDL_TRUE;
+                break;
+            }
+        }
+    }
+
     format = renderer->info.texture_formats[0];
     for (i = 0; i < renderer->info.num_texture_formats; ++i) {
         if (!SDL_ISPIXELFORMAT_FOURCC(renderer->info.texture_formats[i]) &&
