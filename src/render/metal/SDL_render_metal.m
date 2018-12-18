@@ -155,6 +155,9 @@ typedef struct METAL_ShaderPipelines
     @property (nonatomic, assign) BOOL nv12;
     @property (nonatomic, assign) size_t conversionBufferOffset;
     @property (nonatomic, assign) BOOL hasdata;
+
+    @property (nonatomic, retain) id<MTLBuffer> lockedbuffer;
+    @property (nonatomic, assign) SDL_Rect lockedrect;
 @end
 
 @implementation METAL_TextureData
@@ -783,15 +786,72 @@ METAL_UpdateTextureYUV(SDL_Renderer * renderer, SDL_Texture * texture,
 static int
 METAL_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
                const SDL_Rect * rect, void **pixels, int *pitch)
-{
-    return SDL_Unsupported();   // !!! FIXME: write me
-}
+{ @autoreleasepool {
+    METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
+    METAL_TextureData *texturedata = (__bridge METAL_TextureData *)texture->driverdata;
+
+    if (texturedata.yuv || texturedata.nv12) {
+        /* FIXME: write me */
+        return SDL_Unsupported();
+    }
+
+    *pitch = SDL_BYTESPERPIXEL(texture->format) * rect->w;
+
+    texturedata.lockedrect = *rect;
+    texturedata.lockedbuffer = [data.mtldevice newBufferWithLength:(*pitch)*rect->h options:MTLResourceStorageModeShared];
+    if (texturedata.lockedbuffer == nil) {
+        return SDL_OutOfMemory();
+    }
+
+    *pixels = [texturedata.lockedbuffer contents];
+
+    return 0;
+}}
 
 static void
 METAL_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
-{
-    // !!! FIXME: write me
-}
+{ @autoreleasepool {
+    METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
+    METAL_TextureData *texturedata = (__bridge METAL_TextureData *)texture->driverdata;
+    SDL_Rect rect = texturedata.lockedrect;
+
+    if (texturedata.lockedbuffer == nil) {
+        return;
+    }
+
+    if (data.mtlcmdencoder != nil) {
+        [data.mtlcmdencoder endEncoding];
+        data.mtlcmdencoder = nil;
+    }
+
+    if (data.mtlcmdbuffer == nil) {
+        data.mtlcmdbuffer = [data.mtlcmdqueue commandBuffer];
+    }
+
+    id<MTLBlitCommandEncoder> blitcmd = [data.mtlcmdbuffer blitCommandEncoder];
+
+    [blitcmd copyFromBuffer:texturedata.lockedbuffer
+               sourceOffset:0
+          sourceBytesPerRow:SDL_BYTESPERPIXEL(texture->format) * rect.w
+        sourceBytesPerImage:0
+                 sourceSize:MTLSizeMake(rect.w, rect.h, 1)
+                  toTexture:texturedata.mtltexture
+           destinationSlice:0
+           destinationLevel:0
+          destinationOrigin:MTLOriginMake(rect.x, rect.y, 0)];
+
+    [blitcmd endEncoding];
+
+    [data.mtlcmdbuffer commit];
+    data.mtlcmdbuffer = nil;
+
+#if !__has_feature(objc_arc)
+    [texturedata.lockedbuffer release];
+#endif
+
+    texturedata.lockedbuffer = nil;
+    texturedata.hasdata = YES;
+}}
 
 static int
 METAL_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
