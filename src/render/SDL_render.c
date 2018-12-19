@@ -80,6 +80,9 @@ static const SDL_RenderDriver *render_drivers[] = {
 #if SDL_VIDEO_RENDER_D3D11
     &D3D11_RenderDriver,
 #endif
+#if SDL_VIDEO_RENDER_METAL
+    &METAL_RenderDriver,
+#endif
 #if SDL_VIDEO_RENDER_OGL
     &GL_RenderDriver,
 #endif
@@ -91,9 +94,6 @@ static const SDL_RenderDriver *render_drivers[] = {
 #endif
 #if SDL_VIDEO_RENDER_DIRECTFB
     &DirectFB_RenderDriver,
-#endif
-#if SDL_VIDEO_RENDER_METAL
-    &METAL_RenderDriver,
 #endif
 #if SDL_VIDEO_RENDER_PSP
     &PSP_RenderDriver,
