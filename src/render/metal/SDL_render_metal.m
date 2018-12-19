@@ -789,16 +789,22 @@ METAL_LockTexture(SDL_Renderer * renderer, SDL_Texture * texture,
 { @autoreleasepool {
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
     METAL_TextureData *texturedata = (__bridge METAL_TextureData *)texture->driverdata;
+    int buffersize = 0;
 
-    if (texturedata.yuv || texturedata.nv12) {
-        /* FIXME: write me */
-        return SDL_Unsupported();
+    if (rect->w <= 0 || rect->h <= 0) {
+        return SDL_SetError("Invalid rectangle dimensions for LockTexture.");
     }
 
     *pitch = SDL_BYTESPERPIXEL(texture->format) * rect->w;
 
+    if (texturedata.yuv || texturedata.nv12) {
+        buffersize = ((*pitch) * rect->h) + (2 * (*pitch + 1) / 2) * ((rect->h + 1) / 2);
+    } else {
+        buffersize = (*pitch) * rect->h;
+    }
+
     texturedata.lockedrect = *rect;
-    texturedata.lockedbuffer = [data.mtldevice newBufferWithLength:(*pitch)*rect->h options:MTLResourceStorageModeShared];
+    texturedata.lockedbuffer = [data.mtldevice newBufferWithLength:buffersize options:MTLResourceStorageModeShared];
     if (texturedata.lockedbuffer == nil) {
         return SDL_OutOfMemory();
     }
@@ -814,6 +820,8 @@ METAL_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     METAL_RenderData *data = (__bridge METAL_RenderData *) renderer->driverdata;
     METAL_TextureData *texturedata = (__bridge METAL_TextureData *)texture->driverdata;
     SDL_Rect rect = texturedata.lockedrect;
+    int pitch = SDL_BYTESPERPIXEL(texture->format) * rect.w;
+    SDL_Rect UVrect = {rect.x / 2, rect.y / 2, (rect.w + 1) / 2, (rect.h + 1) / 2};
 
     if (texturedata.lockedbuffer == nil) {
         return;
@@ -832,13 +840,53 @@ METAL_UnlockTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 
     [blitcmd copyFromBuffer:texturedata.lockedbuffer
                sourceOffset:0
-          sourceBytesPerRow:SDL_BYTESPERPIXEL(texture->format) * rect.w
+          sourceBytesPerRow:pitch
         sourceBytesPerImage:0
                  sourceSize:MTLSizeMake(rect.w, rect.h, 1)
                   toTexture:texturedata.mtltexture
            destinationSlice:0
            destinationLevel:0
           destinationOrigin:MTLOriginMake(rect.x, rect.y, 0)];
+
+    if (texturedata.yuv) {
+        int Uslice = texture->format == SDL_PIXELFORMAT_YV12 ? 1 : 0;
+        int Vslice = texture->format == SDL_PIXELFORMAT_YV12 ? 0 : 1;
+        int UVpitch = (pitch + 1) / 2;
+
+        [blitcmd copyFromBuffer:texturedata.lockedbuffer
+                   sourceOffset:rect.h * pitch
+              sourceBytesPerRow:UVpitch
+            sourceBytesPerImage:UVpitch * UVrect.h
+                     sourceSize:MTLSizeMake(UVrect.w, UVrect.h, 1)
+                      toTexture:texturedata.mtltexture_uv
+               destinationSlice:Uslice
+               destinationLevel:0
+              destinationOrigin:MTLOriginMake(UVrect.x, UVrect.y, 0)];
+
+        [blitcmd copyFromBuffer:texturedata.lockedbuffer
+                   sourceOffset:(rect.h * pitch) + UVrect.h * UVpitch
+              sourceBytesPerRow:UVpitch
+            sourceBytesPerImage:UVpitch * UVrect.h
+                     sourceSize:MTLSizeMake(UVrect.w, UVrect.h, 1)
+                      toTexture:texturedata.mtltexture_uv
+               destinationSlice:Vslice
+               destinationLevel:0
+              destinationOrigin:MTLOriginMake(UVrect.x, UVrect.y, 0)];
+    }
+
+    if (texturedata.nv12) {
+        int UVpitch = 2 * ((pitch + 1) / 2);
+
+        [blitcmd copyFromBuffer:texturedata.lockedbuffer
+                   sourceOffset:rect.h * pitch
+              sourceBytesPerRow:UVpitch
+            sourceBytesPerImage:0
+                     sourceSize:MTLSizeMake(UVrect.w, UVrect.h, 1)
+                      toTexture:texturedata.mtltexture_uv
+               destinationSlice:0
+               destinationLevel:0
+              destinationOrigin:MTLOriginMake(UVrect.x, UVrect.y, 0)];
+    }
 
     [blitcmd endEncoding];
 
