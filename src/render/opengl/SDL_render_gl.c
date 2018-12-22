@@ -1388,6 +1388,13 @@ GL_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 
     GL_ActivateRenderer(renderer);
 
+    if (renderdata->drawstate.texture == texture) {
+        renderdata->drawstate.texture = NULL;
+    }
+    if (renderdata->drawstate.target == texture) {
+        renderdata->drawstate.target = NULL;
+    }
+
     if (!data) {
         return;
     }

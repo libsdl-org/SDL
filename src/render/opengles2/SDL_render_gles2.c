@@ -1766,6 +1766,13 @@ GLES2_DestroyTexture(SDL_Renderer *renderer, SDL_Texture *texture)
 
     GLES2_ActivateRenderer(renderer);
 
+    if (data->drawstate.texture == texture) {
+        data->drawstate.texture = NULL;
+    }
+    if (data->drawstate.target == texture) {
+        data->drawstate.target = NULL;
+    }
+
     /* Destroy the texture */
     if (tdata) {
         data->glDeleteTextures(1, &tdata->texture);
