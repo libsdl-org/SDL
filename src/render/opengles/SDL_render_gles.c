@@ -698,10 +698,10 @@ static void
 SetDrawState(GLES_RenderData *data, const SDL_RenderCommand *cmd)
 {
     const SDL_BlendMode blend = cmd->data.draw.blend;
-    const Uint8 r = cmd->data.color.r;
-    const Uint8 g = cmd->data.color.g;
-    const Uint8 b = cmd->data.color.b;
-    const Uint8 a = cmd->data.color.a;
+    const Uint8 r = cmd->data.draw.r;
+    const Uint8 g = cmd->data.draw.g;
+    const Uint8 b = cmd->data.draw.b;
+    const Uint8 a = cmd->data.draw.a;
     const Uint32 color = ((a << 24) | (r << 16) | (g << 8) | b);
 
     if (color != data->drawstate.color) {
