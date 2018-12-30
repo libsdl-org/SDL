@@ -409,6 +409,24 @@ Reference: http://www.khronos.org/registry/egl/specs/EGLTechNote0001.html
 
 
 ================================================================================
+ Ending your application
+================================================================================
+
+Two legitimate ways:
+
+- return from your main() function. Java side will automatically terminate the
+Activity by calling Activity.finish().
+
+- Android OS can decide to terminate your application by calling onDestroy()
+(see Activity life cycle). Your application will receive a SDL_QUIT event you 
+can handle to save things and quit.
+
+Don't call exit() as it stops the activity badly.
+
+NB: "Back button" can be handled as a SDL_KEYDOWN/UP events, with Keycode
+SDLK_AC_BACK, for any purpose.
+
+================================================================================
  Known issues
 ================================================================================
 
