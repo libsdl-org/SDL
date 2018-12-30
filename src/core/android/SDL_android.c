@@ -309,11 +309,11 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* reserved)
 void checkJNIReady()
 {
     if (!mActivityClass || !mAudioManagerClass || !mControllerManagerClass) {
-        // We aren't fully initialized, let's just return.
+        /* We aren't fully initialized, let's just return. */
         return;
     }
 
-    SDL_SetMainReady();    
+    SDL_SetMainReady();
 }
 
 /* Activity initialization -- called before SDL_main() to initialize JNI bindings */
@@ -842,7 +842,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeGenerateScancod
     SDL_Scancode code = SDL_SCANCODE_UNKNOWN;
     uint16_t mod = 0;
 
-    // We do not care about bigger than 127.
+    /* We do not care about bigger than 127. */
     if (chUnicode < 127) {
         AndroidKeyInfo info = unicharToAndroidKeyInfoTable[chUnicode];
         code = info.code;
@@ -1823,7 +1823,7 @@ char* Android_JNI_GetClipboardText(void)
     JNIEnv* env = Android_JNI_GetEnv();
     char* text = NULL;
     jstring string;
-    
+
     string = (*env)->CallStaticObjectMethod(env, mActivityClass, midClipboardGetText);
     if (string) {
         const char* utf = (*env)->GetStringUTFChars(env, string, 0);
@@ -1833,7 +1833,7 @@ char* Android_JNI_GetClipboardText(void)
         }
         (*env)->DeleteLocalRef(env, string);
     }
-    
+
     return (text == NULL) ? SDL_strdup("") : text;
 }
 
