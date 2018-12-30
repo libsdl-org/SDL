@@ -951,13 +951,15 @@ static void LocalReferenceHolder_Cleanup(struct LocalReferenceHolder *refholder)
 
 ANativeWindow* Android_JNI_GetNativeWindow(void)
 {
-    ANativeWindow* anw;
+    ANativeWindow *anw = NULL;
     jobject s;
     JNIEnv *env = Android_JNI_GetEnv();
 
     s = (*env)->CallStaticObjectMethod(env, mActivityClass, midGetNativeSurface);
-    anw = ANativeWindow_fromSurface(env, s);
-    (*env)->DeleteLocalRef(env, s);
+    if (s) {
+        anw = ANativeWindow_fromSurface(env, s);
+        (*env)->DeleteLocalRef(env, s);
+    }
 
     return anw;
 }
