@@ -222,6 +222,7 @@ static jclass mActivityClass;
 
 /* method signatures */
 static jmethodID midGetNativeSurface;
+static jmethodID midSetSurfaceViewFormat;
 static jmethodID midSetActivityTitle;
 static jmethodID midSetWindowStyle;
 static jmethodID midSetOrientation;
@@ -327,6 +328,8 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv* mEnv, jclass c
 
     midGetNativeSurface = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
                                 "getNativeSurface","()Landroid/view/Surface;");
+    midSetSurfaceViewFormat = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
+                                "setSurfaceViewFormat","(I)V");
     midSetActivityTitle = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
                                 "setActivityTitle","(Ljava/lang/String;)Z");
     midSetWindowStyle = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
@@ -374,7 +377,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv* mEnv, jclass c
     midSetRelativeMouseEnabled = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass, "setRelativeMouseEnabled", "(Z)Z");
 
 
-    if (!midGetNativeSurface ||
+    if (!midGetNativeSurface || !midSetSurfaceViewFormat ||
        !midSetActivityTitle || !midSetWindowStyle || !midSetOrientation || !midGetContext || !midIsTablet || !midIsAndroidTV || !midInputGetInputDeviceIds ||
        !midSendMessage || !midShowTextInput || !midIsScreenKeyboardShown ||
        !midClipboardSetText || !midClipboardGetText || !midClipboardHasText ||
@@ -962,6 +965,26 @@ ANativeWindow* Android_JNI_GetNativeWindow(void)
     }
 
     return anw;
+}
+
+void Android_JNI_SetSurfaceViewFormat(int format)
+{
+    JNIEnv *mEnv = Android_JNI_GetEnv();
+    int new_format = 0;
+
+    /* Format from android/native_window.h,
+     * convert to temporary arbitrary values,
+     * then to java PixelFormat */
+    if (format == WINDOW_FORMAT_RGBA_8888) {
+        new_format = 1;
+    } else if (format == WINDOW_FORMAT_RGBX_8888) {
+        new_format = 2;
+    } else if (format == WINDOW_FORMAT_RGB_565) {
+        /* Default */
+        new_format = 0;
+    }
+
+    (*mEnv)->CallStaticVoidMethod(mEnv, mActivityClass, midSetSurfaceViewFormat, new_format);
 }
 
 void Android_JNI_SetActivityTitle(const char *title)
