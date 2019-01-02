@@ -27,6 +27,7 @@
 #endif
 #if SDL_VIDEO_DRIVER_ANDROID
 #include <android/native_window.h>
+#include "../core/android/SDL_android.h"
 #endif
 
 #include "SDL_sysvideo.h"
@@ -885,6 +886,10 @@ SDL_EGL_CreateSurface(_THIS, NativeWindowType nw)
                                             EGL_NATIVE_VISUAL_ID, &format);
 
         ANativeWindow_setBuffersGeometry(nw, 0, 0, format);
+
+        /* Update SurfaceView holder format.
+         * May triggers a sequence surfaceDestroyed(), surfaceCreated(), surfaceChanged(). */
+        Android_JNI_SetSurfaceViewFormat(format);
     }
 #endif    
     if (_this->gl_config.framebuffer_srgb_capable) {
