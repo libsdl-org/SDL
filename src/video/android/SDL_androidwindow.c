@@ -33,6 +33,9 @@
 #include "SDL_androidwindow.h"
 #include "SDL_hints.h"
 
+/* Currently only one window */
+SDL_Window *Android_Window = NULL;
+
 int
 Android_CreateWindow(_THIS, SDL_Window * window)
 {
@@ -94,13 +97,13 @@ Android_CreateWindow(_THIS, SDL_Window * window)
 }
 
 void
-Android_SetWindowTitle(_THIS, SDL_Window * window)
+Android_SetWindowTitle(_THIS, SDL_Window *window)
 {
     Android_JNI_SetActivityTitle(window->title);
 }
 
 void
-Android_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * display, SDL_bool fullscreen)
+Android_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *display, SDL_bool fullscreen)
 {
     /* If the window is being destroyed don't change visible state */
     if (!window->is_destroying) {
@@ -117,7 +120,7 @@ Android_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * displ
         return;
     }
 
-    SDL_WindowData * data = (SDL_WindowData *)window->driverdata;
+    SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
 
     if (!data || !data->native_window) {
         return;
@@ -135,7 +138,7 @@ Android_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * displ
 }
 
 void
-Android_DestroyWindow(_THIS, SDL_Window * window)
+Android_DestroyWindow(_THIS, SDL_Window *window)
 {
     SDL_WindowData *data;
     
@@ -161,7 +164,7 @@ Android_DestroyWindow(_THIS, SDL_Window * window)
 }
 
 SDL_bool
-Android_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
+Android_GetWindowWMInfo(_THIS, SDL_Window *window, SDL_SysWMinfo *info)
 {
     SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
 

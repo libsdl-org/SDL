@@ -62,7 +62,7 @@ Android_WrapCursor(int custom_cursor, int system_cursor)
 
     cursor = SDL_calloc(1, sizeof(*cursor));
     if (cursor) {
-        SDL_AndroidCursorData *data = (SDL_AndroidCursorData*)SDL_calloc(1, sizeof(*data));
+        SDL_AndroidCursorData *data = (SDL_AndroidCursorData *)SDL_calloc(1, sizeof(*data));
         if (data) {
             data->custom_cursor = custom_cursor;
             data->system_cursor = system_cursor;
@@ -141,13 +141,13 @@ Android_DestroyEmptyCursor()
 }
 
 static int
-Android_ShowCursor(SDL_Cursor * cursor)
+Android_ShowCursor(SDL_Cursor *cursor)
 {
     if (!cursor) {
         cursor = Android_CreateEmptyCursor();
     }
     if (cursor) {
-        SDL_AndroidCursorData *data = (SDL_AndroidCursorData*)cursor->driverdata;
+        SDL_AndroidCursorData *data = (SDL_AndroidCursorData *)cursor->driverdata;
         if (data->custom_cursor) {
             if (!Android_JNI_SetCustomCursor(data->custom_cursor)) {
                 return SDL_Unsupported();
@@ -220,12 +220,12 @@ TranslateButton(int state)
 }
 
 void
-Android_OnMouse(int state, int action, float x, float y, SDL_bool relative)
+Android_OnMouse(SDL_Window *window, int state, int action, float x, float y, SDL_bool relative)
 {
     int changes;
     Uint8 button;
 
-    if (!Android_Window) {
+    if (!window) {
         return;
     }
 
@@ -234,25 +234,25 @@ Android_OnMouse(int state, int action, float x, float y, SDL_bool relative)
             changes = state & ~last_state;
             button = TranslateButton(changes);
             last_state = state;
-            SDL_SendMouseMotion(Android_Window, 0, relative, (int)x, (int)y);
-            SDL_SendMouseButton(Android_Window, 0, SDL_PRESSED, button);
+            SDL_SendMouseMotion(window, 0, relative, (int)x, (int)y);
+            SDL_SendMouseButton(window, 0, SDL_PRESSED, button);
             break;
 
         case ACTION_UP:
             changes = last_state & ~state;
             button = TranslateButton(changes);
             last_state = state;
-            SDL_SendMouseMotion(Android_Window, 0, relative, (int)x, (int)y);
-            SDL_SendMouseButton(Android_Window, 0, SDL_RELEASED, button);
+            SDL_SendMouseMotion(window, 0, relative, (int)x, (int)y);
+            SDL_SendMouseButton(window, 0, SDL_RELEASED, button);
             break;
 
         case ACTION_MOVE:
         case ACTION_HOVER_MOVE:
-            SDL_SendMouseMotion(Android_Window, 0, relative, (int)x, (int)y);
+            SDL_SendMouseMotion(window, 0, relative, (int)x, (int)y);
             break;
 
         case ACTION_SCROLL:
-            SDL_SendMouseWheel(Android_Window, 0, x, y, SDL_MOUSEWHEEL_NORMAL);
+            SDL_SendMouseWheel(window, 0, x, y, SDL_MOUSEWHEEL_NORMAL);
             break;
 
         default:
