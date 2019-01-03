@@ -42,7 +42,7 @@ Android_CreateWindow(_THIS, SDL_Window * window)
     SDL_WindowData *data;
     int retval = 0;
 
-    SDL_SemWait(Android_ActivitySem);
+    SDL_LockMutex(Android_ActivityMutex);
 
     if (Android_Window) {
         retval = SDL_SetError("Android only supports one window");
@@ -102,7 +102,7 @@ Android_CreateWindow(_THIS, SDL_Window * window)
 
 endfunction:
 
-    SDL_SemPost(Android_ActivitySem);
+    SDL_UnlockMutex(Android_ActivityMutex);
 
     return retval;
 }
@@ -151,7 +151,7 @@ Android_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *display
 void
 Android_DestroyWindow(_THIS, SDL_Window *window)
 {
-    SDL_SemWait(Android_ActivitySem);
+    SDL_LockMutex(Android_ActivityMutex);
 
     if (window == Android_Window) {
         Android_Window = NULL;
@@ -173,7 +173,7 @@ Android_DestroyWindow(_THIS, SDL_Window *window)
         }
     }
 
-    SDL_SemPost(Android_ActivitySem);
+    SDL_UnlockMutex(Android_ActivityMutex);
 }
 
 SDL_bool
