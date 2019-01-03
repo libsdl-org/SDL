@@ -42,14 +42,22 @@ SDL_EGL_MakeCurrent_impl(Android)
 int
 Android_GLES_SwapWindow(_THIS, SDL_Window * window)
 {
+    int retval;
+
+    SDL_LockMutex(Android_ActivityMutex);
+
     /* The following two calls existed in the original Java code
      * If you happen to have a device that's affected by their removal,
      * please report to Bugzilla. -- Gabriel
      */
-    
+
     /*_this->egl_data->eglWaitNative(EGL_CORE_NATIVE_ENGINE);
     _this->egl_data->eglWaitGL();*/
-    return SDL_EGL_SwapBuffers(_this, ((SDL_WindowData *) window->driverdata)->egl_surface);
+    retval = SDL_EGL_SwapBuffers(_this, ((SDL_WindowData *) window->driverdata)->egl_surface);
+
+    SDL_UnlockMutex(Android_ActivityMutex);
+
+    return retval;
 }
 
 int
