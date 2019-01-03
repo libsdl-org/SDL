@@ -40,9 +40,11 @@ int
 Android_CreateWindow(_THIS, SDL_Window * window)
 {
     SDL_WindowData *data;
+    int retval = 0;
     
     if (Android_Window) {
-        return SDL_SetError("Android only supports one window");
+        retval = SDL_SetError("Android only supports one window");
+        goto endfunction;
     }
     
     Android_PauseSem = SDL_CreateSemaphore(0);
@@ -68,14 +70,16 @@ Android_CreateWindow(_THIS, SDL_Window * window)
     
     data = (SDL_WindowData *) SDL_calloc(1, sizeof(*data));
     if (!data) {
-        return SDL_OutOfMemory();
+        retval = SDL_OutOfMemory();
+        goto endfunction;
     }
     
     data->native_window = Android_JNI_GetNativeWindow();
     
     if (!data->native_window) {
         SDL_free(data);
-        return SDL_SetError("Could not fetch native window");
+        retval = SDL_SetError("Could not fetch native window");
+        goto endfunction;
     }
 
     /* Do not create EGLSurface for Vulkan window since it will then make the window
@@ -86,14 +90,17 @@ Android_CreateWindow(_THIS, SDL_Window * window)
         if (data->egl_surface == EGL_NO_SURFACE) {
             ANativeWindow_release(data->native_window);
             SDL_free(data);
-            return SDL_SetError("Could not create GLES window surface");
+            retval = SDL_SetError("Could not create GLES window surface");
+            goto endfunction;
         }
     }
 
     window->driverdata = data;
     Android_Window = window;
+
+endfunction:
     
-    return 0;
+    return retval;
 }
 
 void
@@ -139,9 +146,7 @@ Android_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *display
 
 void
 Android_DestroyWindow(_THIS, SDL_Window *window)
-{
-    SDL_WindowData *data;
-    
+{ 
     if (window == Android_Window) {
         Android_Window = NULL;
         if (Android_PauseSem) SDL_DestroySemaphore(Android_PauseSem);
@@ -149,8 +154,8 @@ Android_DestroyWindow(_THIS, SDL_Window *window)
         Android_PauseSem = NULL;
         Android_ResumeSem = NULL;
         
-        if(window->driverdata) {
-            data = (SDL_WindowData *) window->driverdata;
+        if (window->driverdata) {
+            SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
             if (data->egl_surface != EGL_NO_SURFACE) {
                 SDL_EGL_DestroySurface(_this, data->egl_surface);
             }
