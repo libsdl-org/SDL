@@ -92,7 +92,7 @@ Android_CreateWindow(_THIS, SDL_Window * window)
         if (data->egl_surface == EGL_NO_SURFACE) {
             ANativeWindow_release(data->native_window);
             SDL_free(data);
-            retval = SDL_SetError("Could not create GLES window surface");
+            retval = -1;
             goto endfunction;
         }
     }
