@@ -322,6 +322,17 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *mEnv, jclass c
 {
     __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeSetupJNI()");
 
+    /* Use a semaphore to prevent concurrency issues between Java Activity and Native thread code, when using 'Android_Window'.
+     * (Eg. Java sending Touch events, while native code is destroying the main SDL_Window. )
+     */
+    if (Android_ActivitySem == NULL) {
+        Android_ActivitySem = SDL_CreateSemaphore(1); /* Could this be created twice if onCreate() is called a second time ? */
+    }
+
+    if (Android_ActivitySem == NULL) {
+        __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "failed to create Android_ActivitySem semaphore");
+    }
+
     Android_JNI_SetupThread();
 
     mActivityClass = (jclass)((*mEnv)->NewGlobalRef(mEnv, cls));
@@ -558,7 +569,11 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeResize)(
                                     jint surfaceWidth, jint surfaceHeight,
                                     jint deviceWidth, jint deviceHeight, jint format, jfloat rate)
 {
+    SDL_SemWait(Android_ActivitySem);
+
     Android_SetScreenResolution(Android_Window, surfaceWidth, surfaceHeight, deviceWidth, deviceHeight, format, rate);
+
+    SDL_SemPost(Android_ActivitySem);
 }
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeOrientationChanged)(
@@ -650,6 +665,8 @@ JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveHaptic)(
 /* Surface Created */
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceChanged)(JNIEnv *env, jclass jcls)
 {
+    SDL_SemWait(Android_ActivitySem);
+
     if (Android_Window && Android_Window->driverdata)
     {
         SDL_VideoDevice *_this = SDL_GetVideoDevice();
@@ -666,11 +683,15 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceChanged)(JNIEnv *env, j
 
         /* GL Context handling is done in the event loop because this function is run from the Java thread */
     }
+
+    SDL_SemPost(Android_ActivitySem);
 }
 
 /* Surface Destroyed */
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceDestroyed)(JNIEnv *env, jclass jcls)
 {
+    SDL_SemWait(Android_ActivitySem);
+
     if (Android_Window && Android_Window->driverdata)
     {
         SDL_VideoDevice *_this = SDL_GetVideoDevice();
@@ -689,6 +710,8 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceDestroyed)(JNIEnv *env,
 
         /* GL Context handling is done in the event loop because this function is run from the Java thread */
     }
+
+    SDL_SemPost(Android_ActivitySem);
 }
 
 /* Keydown */
@@ -722,7 +745,11 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeTouch)(
                                     jint touch_device_id_in, jint pointer_finger_id_in,
                                     jint action, jfloat x, jfloat y, jfloat p)
 {
+    SDL_SemWait(Android_ActivitySem);
+
     Android_OnTouch(Android_Window, touch_device_id_in, pointer_finger_id_in, action, x, y, p);
+
+    SDL_SemPost(Android_ActivitySem);
 }
 
 /* Mouse */
@@ -730,7 +757,11 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeMouse)(
                                     JNIEnv *env, jclass jcls,
                                     jint button, jint action, jfloat x, jfloat y, jboolean relative)
 {
+    SDL_SemWait(Android_ActivitySem);
+
     Android_OnMouse(Android_Window, button, action, x, y, relative);
+
+    SDL_SemPost(Android_ActivitySem);
 }
 
 /* Accelerometer */
@@ -778,6 +809,8 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeQuit)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePause)(
                                     JNIEnv *env, jclass cls)
 {
+    SDL_SemWait(Android_ActivitySem);
+
     __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativePause()");
 
     if (Android_Window) {
@@ -790,12 +823,16 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePause)(
          * so the event loop knows to pause and (optionally) block itself */
         if (!SDL_SemValue(Android_PauseSem)) SDL_SemPost(Android_PauseSem);
     }
+
+    SDL_SemPost(Android_ActivitySem);
 }
 
 /* Resume */
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeResume)(
                                     JNIEnv *env, jclass cls)
 {
+    SDL_SemWait(Android_ActivitySem);
+
     __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeResume()");
 
     if (Android_Window) {
@@ -816,6 +853,8 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeResume)(
          */
         if (!SDL_SemValue(Android_ResumeSem)) SDL_SemPost(Android_ResumeSem);
     }
+
+    SDL_SemPost(Android_ActivitySem);
 }
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeCommitText)(
