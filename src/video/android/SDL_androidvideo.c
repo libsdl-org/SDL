@@ -66,7 +66,8 @@ int Android_DeviceHeight = 0;
 static Uint32 Android_ScreenFormat = SDL_PIXELFORMAT_UNKNOWN;
 static int Android_ScreenRate = 0;
 
-SDL_sem *Android_PauseSem = NULL, *Android_ResumeSem = NULL, *Android_ActivitySem = NULL;
+SDL_sem *Android_PauseSem = NULL, *Android_ResumeSem = NULL;
+SDL_mutex *Android_ActivityMutex = NULL;
 
 static int
 Android_Available(void)
