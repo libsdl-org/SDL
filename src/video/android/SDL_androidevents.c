@@ -63,35 +63,37 @@ android_egl_context_backup(SDL_Window *window)
     SDL_GL_MakeCurrent(window, NULL);
 }
 
+
+/*
+ * Android_ResumeSem and Android_PauseSem are signaled from Java_org_libsdl_app_SDLActivity_nativePause and Java_org_libsdl_app_SDLActivity_nativeResume
+ * When the pause semaphore is signaled, if SDL_ANDROID_BLOCK_ON_PAUSE is defined the event loop will block until the resume signal is emitted.
+ *
+ * No polling necessary
+ */
+
+#if SDL_ANDROID_BLOCK_ON_PAUSE
+
 void
 Android_PumpEvents(_THIS)
 {
     static int isPaused = 0;
-#if SDL_ANDROID_BLOCK_ON_PAUSE
     static int isPausing = 0;
-#endif
-    /* No polling necessary */
 
-    /*
-     * Android_ResumeSem and Android_PauseSem are signaled from Java_org_libsdl_app_SDLActivity_nativePause and Java_org_libsdl_app_SDLActivity_nativeResume
-     * When the pause semaphore is signaled, if SDL_ANDROID_BLOCK_ON_PAUSE is defined the event loop will block until the resume signal is emitted.
-     */
-
-#if SDL_ANDROID_BLOCK_ON_PAUSE
     if (isPaused && !isPausing) {
+
         /* Make sure this is the last thing we do before pausing */
         SDL_LockMutex(Android_ActivityMutex);
         android_egl_context_backup(Android_Window);
         SDL_UnlockMutex(Android_ActivityMutex);
 
         ANDROIDAUDIO_PauseDevices();
+
         if (SDL_SemWait(Android_ResumeSem) == 0) {
-#else
-    if (isPaused) {
-        if (SDL_SemTryWait(Android_ResumeSem) == 0) {
-#endif
+
             isPaused = 0;
+
             ANDROIDAUDIO_ResumeDevices();
+
             /* Restore the GL Context from here, as this operation is thread dependent */
             if (!SDL_HasEvent(SDL_QUIT)) {
                 SDL_LockMutex(Android_ActivityMutex);
@@ -99,11 +101,9 @@ Android_PumpEvents(_THIS)
                 SDL_UnlockMutex(Android_ActivityMutex);
             }
         }
-    }
-    else {
-#if SDL_ANDROID_BLOCK_ON_PAUSE
+    } else {
         if (isPausing || SDL_SemTryWait(Android_PauseSem) == 0) {
-            /* We've been signaled to pause, but before we block ourselves, 
+            /* We've been signaled to pause, but before we block ourselves,
             we need to make sure that certain key events have reached the app */
             if (SDL_HasEvent(SDL_WINDOWEVENT) || SDL_HasEvent(SDL_APP_WILLENTERBACKGROUND) || SDL_HasEvent(SDL_APP_DIDENTERBACKGROUND) ) {
                 isPausing = 1;
@@ -113,18 +113,45 @@ Android_PumpEvents(_THIS)
                 isPaused = 1;
             }
         }
+    }
+}
+
 #else
+
+void
+Android_PumpEvents(_THIS)
+{
+    static int isPaused = 0;
+
+    if (isPaused) {
+        if (SDL_SemTryWait(Android_ResumeSem) == 0) {
+
+            isPaused = 0;
+
+            ANDROIDAUDIO_ResumeDevices();
+
+            /* Restore the GL Context from here, as this operation is thread dependent */
+            if (!SDL_HasEvent(SDL_QUIT)) {
+                SDL_LockMutex(Android_ActivityMutex);
+                android_egl_context_restore(Android_Window);
+                SDL_UnlockMutex(Android_ActivityMutex);
+            }
+        }
+    } else {
         if (SDL_SemTryWait(Android_PauseSem) == 0) {
+
             SDL_LockMutex(Android_ActivityMutex);
             android_egl_context_backup(Android_Window);
             SDL_UnlockMutex(Android_ActivityMutex);
 
             ANDROIDAUDIO_PauseDevices();
+
             isPaused = 1;
         }
-#endif
     }
 }
+
+#endif
 
 #endif /* SDL_VIDEO_DRIVER_ANDROID */
 
