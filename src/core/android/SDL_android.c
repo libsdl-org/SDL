@@ -820,8 +820,10 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePause)(
         SDL_SendAppEvent(SDL_APP_DIDENTERBACKGROUND);
 
         /* *After* sending the relevant events, signal the pause semaphore
-         * so the event loop knows to pause and (optionally) block itself */
-        if (!SDL_SemValue(Android_PauseSem)) SDL_SemPost(Android_PauseSem);
+         * so the event loop knows to pause and (optionally) block itself.
+         * Sometimes 2 pauses can be queued (eg pause/resume/pause), so it's
+         * always increased. */
+        SDL_SemPost(Android_PauseSem);
     }
 
     SDL_UnlockMutex(Android_ActivityMutex);
