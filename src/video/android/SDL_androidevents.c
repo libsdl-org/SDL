@@ -39,9 +39,9 @@ static void ANDROIDAUDIO_ResumeDevices(void) {}
 static void ANDROIDAUDIO_PauseDevices(void) {}
 #endif
 
-/* Number of event types in the event queue */
+/* Number of 'type' events in the event queue */
 static int
-SDL_NumberOfEvent(Uint32 type)
+SDL_NumberOfEvents(Uint32 type)
 {
     return SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, type, type);
 }
@@ -86,7 +86,7 @@ Android_PumpEvents(_THIS)
     static int isPaused = 0;
     static int isPausing = 0;
 
-    if (isPaused && !isPausing) {
+    if (isPaused) {
 
         /* Make sure this is the last thing we do before pausing */
         SDL_LockMutex(Android_ActivityMutex);
@@ -113,7 +113,7 @@ Android_PumpEvents(_THIS)
             /* We've been signaled to pause (potentially several times), but before we block ourselves,
              * we need to make sure that the very last event (of the first pause sequence, if several)
              * has reached the app */
-            if (SDL_NumberOfEvent(SDL_APP_DIDENTERBACKGROUND) > SDL_SemValue(Android_PauseSem)) {
+            if (SDL_NumberOfEvents(SDL_APP_DIDENTERBACKGROUND) > SDL_SemValue(Android_PauseSem)) {
                 isPausing = 1;
             }
             else {
