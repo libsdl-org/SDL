@@ -107,6 +107,12 @@ Android_PumpEvents(_THIS)
                 android_egl_context_restore(Android_Window);
                 SDL_UnlockMutex(Android_ActivityMutex);
             }
+
+            /* Make sure SW Keyboard is restored when an app becomes foreground */
+            if (SDL_IsTextInputActive()) {
+                SDL_VideoDevice *_this = SDL_GetVideoDevice();
+                Android_StartTextInput(_this); /* Only showTextInput */
+            }
         }
     } else {
         if (isPausing || SDL_SemTryWait(Android_PauseSem) == 0) {
@@ -143,6 +149,12 @@ Android_PumpEvents(_THIS)
                 SDL_LockMutex(Android_ActivityMutex);
                 android_egl_context_restore(Android_Window);
                 SDL_UnlockMutex(Android_ActivityMutex);
+            }
+
+            /* Make sure SW Keyboard is restored when an app becomes foreground */
+            if (SDL_IsTextInputActive()) {
+                SDL_VideoDevice *_this = SDL_GetVideoDevice();
+                Android_StartTextInput(_this); /* Only showTextInput */
             }
         }
     } else {
