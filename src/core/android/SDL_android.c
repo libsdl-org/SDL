@@ -802,7 +802,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeQuit)(
     SDL_SendAppEvent(SDL_APP_TERMINATING);
     /* Resume the event loop so that the app can catch SDL_QUIT which
      * should now be the top event in the event queue. */
-    if (!SDL_SemValue(Android_ResumeSem)) SDL_SemPost(Android_ResumeSem);
+    SDL_SemPost(Android_ResumeSem);
 }
 
 /* Pause */
@@ -853,7 +853,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeResume)(
          * We can't restore the GL Context here because it needs to be done on the SDL main thread
          * and this function will be called from the Java thread instead.
          */
-        if (!SDL_SemValue(Android_ResumeSem)) SDL_SemPost(Android_ResumeSem);
+        SDL_SemPost(Android_ResumeSem);
     }
 
     SDL_UnlockMutex(Android_ActivityMutex);
