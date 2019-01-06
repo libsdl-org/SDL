@@ -838,13 +838,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeResume)(
     __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeResume()");
 
     if (Android_Window) {
-
-        /* Make sure SW Keyboard is restored when an app becomes foreground */
-        if (SDL_IsTextInputActive()) {
-            SDL_VideoDevice *_this = SDL_GetVideoDevice();
-            Android_StartTextInput(_this); /* Only showTextInput */
-        }
-
         SDL_SendAppEvent(SDL_APP_WILLENTERFOREGROUND);
         SDL_SendAppEvent(SDL_APP_DIDENTERFOREGROUND);
         SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_FOCUS_GAINED, 0, 0);
