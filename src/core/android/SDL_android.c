@@ -800,6 +800,10 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeQuit)(
     /* Inject a SDL_QUIT event */
     SDL_SendQuit();
     SDL_SendAppEvent(SDL_APP_TERMINATING);
+    /* Robustness: clear any pending Pause */
+    while (SDL_SemTryWait(Android_PauseSem) == 0) {
+        /* empty */
+    }
     /* Resume the event loop so that the app can catch SDL_QUIT which
      * should now be the top event in the event queue. */
     SDL_SemPost(Android_ResumeSem);
