@@ -386,8 +386,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
         if (SDLActivity.mBrokenLibraries) {
            super.onDestroy();
-           // Reset everything in case the user re opens the app
-           SDLActivity.initialize();
            return;
         }
 
@@ -405,15 +403,9 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             } catch(Exception e) {
                 Log.v(TAG, "Problem stopping thread: " + e);
             }
-            SDLActivity.mSDLThread = null;
-
-            //Log.v(TAG, "Finished waiting for SDL thread");
         }
 
         super.onDestroy();
-
-        // Reset everything in case the user re opens the app
-        SDLActivity.initialize();
     }
 
     @Override
@@ -1711,11 +1703,11 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
            return;
         }
 
-        /* Surface is ready */
-        SDLActivity.mIsSurfaceReady = true;
-
         /* If the surface has been previously destroyed by onNativeSurfaceDestroyed, recreate it here */
         SDLActivity.onNativeSurfaceChanged();
+
+        /* Surface is ready */
+        SDLActivity.mIsSurfaceReady = true;
 
         SDLActivity.mNextNativeState = SDLActivity.NativeState.RESUMED;
         SDLActivity.handleNativeState();
