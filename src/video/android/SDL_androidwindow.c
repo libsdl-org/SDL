@@ -138,6 +138,9 @@ Android_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *display
         SDL_WindowData *data = (SDL_WindowData *)window->driverdata;
 
         if (!data || !data->native_window) {
+            if (data && !data->native_window) {
+                SDL_SetError("Missing native window");
+            }
             goto endfunction;
         }
 
@@ -146,6 +149,10 @@ Android_SetWindowFullscreen(_THIS, SDL_Window *window, SDL_VideoDisplay *display
 
         int new_w = ANativeWindow_getWidth(data->native_window);
         int new_h = ANativeWindow_getHeight(data->native_window);
+
+        if (new_w < 0 || new_h < 0) {
+            SDL_SetError("ANativeWindow_getWidth/Height() fails");
+        }
 
         if (old_w != new_w || old_h != new_h) {
             SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, new_w, new_h);
