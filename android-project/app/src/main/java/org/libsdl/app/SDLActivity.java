@@ -260,6 +260,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
         // Get our current screen orientation and pass it down.
         mCurrentOrientation = SDLActivity.getCurrentOrientation();
+        // FIXME: with only one activity, SDL Thread is not yet started and this onNativeOrientationChanged() is ignored
         SDLActivity.onNativeOrientationChanged(mCurrentOrientation);
 
         setContentView(mLayout);
