@@ -583,8 +583,11 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeOrientationChanged)(
                                     JNIEnv *env, jclass jcls,
                                     jint orientation)
 {
-    SDL_VideoDisplay *display = SDL_GetDisplay(0);
-    SDL_SendDisplayEvent(display, SDL_DISPLAYEVENT_ORIENTATION, orientation);
+    SDL_VideoDevice *_this = SDL_GetVideoDevice();
+    if (_this) {
+        SDL_VideoDisplay *display = SDL_GetDisplay(0);
+        SDL_SendDisplayEvent(display, SDL_DISPLAYEVENT_ORIENTATION, orientation);
+    }
 }
 
 /* Paddown */
