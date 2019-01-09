@@ -83,6 +83,9 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeResize)(
         jint surfaceWidth, jint surfaceHeight,
         jint deviceWidth, jint deviceHeight, jint format, jfloat rate);
 
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceCreated)(
+        JNIEnv *env, jclass jcls);
+
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceChanged)(
         JNIEnv *env, jclass jcls);
 
@@ -661,8 +664,25 @@ JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveHaptic)(
     return Android_RemoveHaptic(device_id);
 }
 
+/* Called from surfaceCreated() */
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceCreated)(JNIEnv *env, jclass jcls)
+{
+    SDL_LockMutex(Android_ActivityMutex);
 
-/* Surface Created */
+    if (Android_Window && Android_Window->driverdata)
+    {
+        SDL_WindowData *data = (SDL_WindowData *) Android_Window->driverdata;
+
+        data->native_window = Android_JNI_GetNativeWindow();
+        if (data->native_window == NULL) {
+            SDL_SetError("Could not fetch native window from UI thread");
+        }
+    }
+
+    SDL_UnlockMutex(Android_ActivityMutex);
+}
+
+/* Called from surfaceChanged() */
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceChanged)(JNIEnv *env, jclass jcls)
 {
     SDL_LockMutex(Android_ActivityMutex);
@@ -674,10 +694,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceChanged)(JNIEnv *env, j
 
         /* If the surface has been previously destroyed by onNativeSurfaceDestroyed, recreate it here */
         if (data->egl_surface == EGL_NO_SURFACE) {
-            if (data->native_window) {
-                ANativeWindow_release(data->native_window);
-            }
-            data->native_window = Android_JNI_GetNativeWindow();
             data->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType) data->native_window);
         }
 
@@ -687,7 +703,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceChanged)(JNIEnv *env, j
     SDL_UnlockMutex(Android_ActivityMutex);
 }
 
-/* Surface Destroyed */
+/* Called from surfaceDestroyed() */
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceDestroyed)(JNIEnv *env, jclass jcls)
 {
     SDL_LockMutex(Android_ActivityMutex);
@@ -707,6 +723,11 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceDestroyed)(JNIEnv *env,
             SDL_EGL_DestroySurface(_this, data->egl_surface);
             data->egl_surface = EGL_NO_SURFACE;
         }
+
+        if (data->native_window) {
+            ANativeWindow_release(data->native_window);
+        }
+        data->native_window = NULL;
 
         /* GL Context handling is done in the event loop because this function is run from the Java thread */
     }

@@ -737,6 +737,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                                             float y, float p);
     public static native void onNativeAccel(float x, float y, float z);
     public static native void onNativeClipboardChanged();
+    public static native void onNativeSurfaceCreated();
     public static native void onNativeSurfaceChanged();
     public static native void onNativeSurfaceDestroyed();
     public static native String nativeGetHint(String name);
@@ -1574,6 +1575,7 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
     @Override
     public void surfaceCreated(SurfaceHolder holder) {
         Log.v("SDL", "surfaceCreated()");
+        SDLActivity.onNativeSurfaceCreated();
     }
 
     // Called when we lose the surface
