@@ -149,6 +149,10 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeOrientationChanged)(
         JNIEnv *env, jclass cls,
         jint orientation);
 
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeAddTouch)(
+        JNIEnv* env, jclass cls,
+        jint touchId, jstring name);
+
 /* Java class SDLInputConnection */
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE_INPUT_CONNECTION(nativeCommitText)(
         JNIEnv *env, jclass cls,
@@ -238,7 +242,7 @@ static jmethodID midIsAndroidTV;
 static jmethodID midIsChromebook;
 static jmethodID midIsDeXMode;
 static jmethodID midManualBackButton;
-static jmethodID midInputGetInputDeviceIds;
+static jmethodID midInitTouch;
 static jmethodID midSendMessage;
 static jmethodID midShowTextInput;
 static jmethodID midIsScreenKeyboardShown;
@@ -366,8 +370,8 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *mEnv, jclass c
                                 "isDeXMode", "()Z");
     midManualBackButton = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
                                 "manualBackButton", "()V");
-    midInputGetInputDeviceIds = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
-                                "inputGetInputDeviceIds", "(I)[I");
+    midInitTouch = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
+                                "initTouch", "()V");
     midSendMessage = (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
                                 "sendMessage", "(II)Z");
     midShowTextInput =  (*mEnv)->GetStaticMethodID(mEnv, mActivityClass,
@@ -396,7 +400,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *mEnv, jclass c
 
 
     if (!midGetNativeSurface || !midSetSurfaceViewFormat ||
-       !midSetActivityTitle || !midSetWindowStyle || !midSetOrientation || !midGetContext || !midIsTablet || !midIsAndroidTV || !midInputGetInputDeviceIds ||
+       !midSetActivityTitle || !midSetWindowStyle || !midSetOrientation || !midGetContext || !midIsTablet || !midIsAndroidTV || !midInitTouch ||
        !midSendMessage || !midShowTextInput || !midIsScreenKeyboardShown ||
        !midClipboardSetText || !midClipboardGetText || !midClipboardHasText ||
        !midOpenAPKExpansionInputStream || !midGetManifestEnvironmentVariables || !midGetDisplayDPI ||
@@ -594,6 +598,17 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeOrientationChanged)(
         SDL_VideoDisplay *display = SDL_GetDisplay(0);
         SDL_SendDisplayEvent(display, SDL_DISPLAYEVENT_ORIENTATION, orientation);
     }
+}
+
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeAddTouch)(
+        JNIEnv* env, jclass cls,
+        jint touchId, jstring name)
+{
+    const char *utfname = (*env)->GetStringUTFChars(env, name, NULL);
+
+    SDL_AddTouch((SDL_TouchID) touchId, SDL_TOUCH_DEVICE_DIRECT, utfname);
+
+    (*env)->ReleaseStringUTFChars(env, name, utfname);
 }
 
 /* Paddown */
@@ -2074,29 +2089,10 @@ int Android_JNI_GetPowerInfo(int *plugged, int *charged, int *battery, int *seco
     return 0;
 }
 
-/* returns number of found touch devices as return value and ids in parameter ids */
-int Android_JNI_GetTouchDeviceIds(int **ids) {
-    JNIEnv *env = Android_JNI_GetEnv();
-    jint sources = 4098; /* == InputDevice.SOURCE_TOUCHSCREEN */
-    jintArray array = (jintArray) (*env)->CallStaticObjectMethod(env, mActivityClass, midInputGetInputDeviceIds, sources);
-    int number = 0;
-    *ids = NULL;
-    if (array) {
-        number = (int) (*env)->GetArrayLength(env, array);
-        if (0 < number) {
-            jint *elements = (*env)->GetIntArrayElements(env, array, NULL);
-            if (elements) {
-                int i;
-                *ids = SDL_malloc(number * sizeof (**ids));
-                for (i = 0; i < number; ++i) { /* not assuming sizeof (jint) == sizeof (int) */
-                    (*ids)[i] = elements[i];
-                }
-                (*env)->ReleaseIntArrayElements(env, array, elements, JNI_ABORT);
-            }
-        }
-        (*env)->DeleteLocalRef(env, array);
-    }
-    return number;
+/* Add all touch devices */
+int Android_JNI_InitTouch() {
+     JNIEnv *env = Android_JNI_GetEnv();
+    (*env)->CallStaticVoidMethod(env, mActivityClass, midInitTouch);
 }
 
 /* sets the mSeparateMouseAndTouch field */
