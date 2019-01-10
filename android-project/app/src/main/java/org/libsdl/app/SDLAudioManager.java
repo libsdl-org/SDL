@@ -73,7 +73,7 @@ public class SDLAudioManager
             sampleSize = 2;
             break;
         }
- 
+
         if (isCapture) {
             switch (desiredChannels) {
             case 1:
@@ -298,7 +298,7 @@ public class SDLAudioManager
             Log.e(TAG, "Attempted to make audio call with uninitialized audio!");
             return;
         }
-        
+
         for (int i = 0; i < buffer.length; ) {
             int result = mAudioTrack.write(buffer, i, buffer.length - i);
             if (result > 0) {
@@ -361,6 +361,25 @@ public class SDLAudioManager
             mAudioRecord.stop();
             mAudioRecord.release();
             mAudioRecord = null;
+        }
+    }
+
+    /** This method is called by SDL using JNI. */
+    public static void audioSetThreadPriority(boolean iscapture, int device_id) {
+        try {
+
+            /* Set thread name */
+            if (iscapture) {
+                Thread.currentThread().setName("SDLAudioC" + device_id);
+            } else {
+                Thread.currentThread().setName("SDLAudioP" + device_id);
+            }
+
+            /* Set thread priority */
+            android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_AUDIO);
+
+        } catch (Exception e) {
+            Log.v(TAG, "modify thread properties failed " + e.toString());
         }
     }
 
