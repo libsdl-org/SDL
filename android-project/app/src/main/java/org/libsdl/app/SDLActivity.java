@@ -98,7 +98,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         if (mMotionListener == null) {
             if (Build.VERSION.SDK_INT >= 26) {
                 mMotionListener = new SDLGenericMotionListener_API26();
-            } else 
+            } else
             if (Build.VERSION.SDK_INT >= 24) {
                 mMotionListener = new SDLGenericMotionListener_API24();
             } else {
@@ -327,15 +327,15 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             case Surface.ROTATION_0:
                 result = SDL_ORIENTATION_PORTRAIT;
                 break;
-    
+
             case Surface.ROTATION_90:
                 result = SDL_ORIENTATION_LANDSCAPE;
                 break;
-    
+
             case Surface.ROTATION_180:
                 result = SDL_ORIENTATION_PORTRAIT_FLIPPED;
                 break;
-    
+
             case Surface.ROTATION_270:
                 result = SDL_ORIENTATION_LANDSCAPE_FLIPPED;
                 break;
@@ -389,9 +389,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
            super.onDestroy();
            return;
         }
-
-        mNextNativeState = NativeState.PAUSED;
-        SDLActivity.handleNativeState();
 
         // Send a quit message to the application
         SDLActivity.mExitCalledFromJava = true;
@@ -483,9 +480,12 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
         // Try a transition to paused state
         if (mNextNativeState == NativeState.PAUSED) {
-            nativePause();
-            if (mSurface != null)
+            if (mSDLThread != null) {
+                nativePause();
+            }
+            if (mSurface != null) {
                 mSurface.handlePause();
+            }
             mCurrentNativeState = mNextNativeState;
             return;
         }
