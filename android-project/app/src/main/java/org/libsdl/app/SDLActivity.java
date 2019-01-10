@@ -390,16 +390,18 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
            return;
         }
 
-        // Send a quit message to the application
         SDLActivity.mExitCalledFromJava = true;
-        SDLActivity.nativeQuit();
 
-        // Now wait for the SDL thread to quit
         if (SDLActivity.mSDLThread != null) {
+
+            // Send Quit event to "SDLThread" thread
+            SDLActivity.nativeSendQuit();
+
+            // Wait for "SDLThread" thread to end
             try {
                 SDLActivity.mSDLThread.join();
             } catch(Exception e) {
-                Log.v(TAG, "Problem stopping thread: " + e);
+                Log.v(TAG, "Problem stopping SDLThread: " + e);
             }
         }
 
@@ -724,7 +726,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static native int nativeSetupJNI();
     public static native int nativeRunMain(String library, String function, Object arguments);
     public static native void nativeLowMemory();
-    public static native void nativeQuit();
+    public static native void nativeSendQuit();
     public static native void nativePause();
     public static native void nativeResume();
     public static native void onNativeDropFile(String filename);
