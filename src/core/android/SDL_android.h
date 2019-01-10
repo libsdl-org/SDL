@@ -93,7 +93,7 @@ void Android_JNI_HapticStop(int device_id);
 void Android_JNI_SuspendScreenSaver(SDL_bool suspend);
 
 /* Touch support */
-int Android_JNI_InitTouch(void);
+void Android_JNI_InitTouch(void);
 void Android_JNI_SetSeparateMouseAndTouch(SDL_bool new_value);
 
 /* Threads */
