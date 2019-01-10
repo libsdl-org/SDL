@@ -125,6 +125,9 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeLowMemory)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSendQuit)(
         JNIEnv *env, jclass cls);
 
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeQuit)(
+        JNIEnv *env, jclass cls);
+
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePause)(
         JNIEnv *env, jclass cls);
 
@@ -831,6 +834,25 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSendQuit)(
     /* Resume the event loop so that the app can catch SDL_QUIT which
      * should now be the top event in the event queue. */
     SDL_SemPost(Android_ResumeSem);
+}
+
+/* Activity ends */
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeQuit)(
+                                    JNIEnv *env, jclass cls)
+{
+    const char *str;
+
+    if (Android_ActivityMutex) {
+        SDL_DestroyMutex(Android_ActivityMutex);
+        Android_ActivityMutex = NULL;
+    }
+
+    str = SDL_GetError();
+    if (str && str[0]) {
+        __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "SDLActivity thread ends (error=%s)", str);
+    } else {
+        __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "SDLActivity thread ends");
+    }
 }
 
 /* Pause */
