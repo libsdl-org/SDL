@@ -268,6 +268,7 @@ static jmethodID midCaptureReadByteBuffer;
 static jmethodID midCaptureReadShortBuffer;
 static jmethodID midCaptureReadFloatBuffer;
 static jmethodID midCaptureClose;
+static jmethodID midAudioSetThreadPriority;
 
 /* controller manager */
 static jclass mControllerManagerClass;
@@ -442,9 +443,11 @@ JNIEXPORT void JNICALL SDL_JAVA_AUDIO_INTERFACE(nativeSetupJNI)(JNIEnv *mEnv, jc
                                 "captureReadFloatBuffer", "([FZ)I");
     midCaptureClose = (*mEnv)->GetStaticMethodID(mEnv, mAudioManagerClass,
                                 "captureClose", "()V");
+    midAudioSetThreadPriority = (*mEnv)->GetStaticMethodID(mEnv, mAudioManagerClass,
+                                "audioSetThreadPriority", "(ZI)V");
 
     if (!midAudioOpen || !midAudioWriteByteBuffer || !midAudioWriteShortBuffer || !midAudioWriteFloatBuffer || !midAudioClose ||
-       !midCaptureOpen || !midCaptureReadByteBuffer || !midCaptureReadShortBuffer || !midCaptureReadFloatBuffer || !midCaptureClose) {
+       !midCaptureOpen || !midCaptureReadByteBuffer || !midCaptureReadShortBuffer || !midCaptureReadFloatBuffer || !midCaptureClose || !midAudioSetThreadPriority) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLAudioManager.java?");
     }
 
@@ -1465,6 +1468,12 @@ void Android_JNI_CloseAudioDevice(const int iscapture)
             audioBufferPinned = NULL;
         }
     }
+}
+
+void Android_JNI_AudioSetThreadPriority(int iscapture, int device_id)
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    (*env)->CallStaticVoidMethod(env, mAudioManagerClass, midAudioSetThreadPriority, iscapture, device_id);
 }
 
 /* Test for an exception and call SDL_SetError with its detail if one occurs */

@@ -695,8 +695,16 @@ SDL_RunAudio(void *devicep)
 
     SDL_assert(!device->iscapture);
 
+#if SDL_AUDIO_DRIVER_ANDROID
+    {
+        /* Set thread priority to THREAD_PRIORITY_AUDIO */
+        extern void Android_JNI_AudioSetThreadPriority(int, int);
+        Android_JNI_AudioSetThreadPriority(device->iscapture, device->id);
+    }
+#else
     /* The audio mixing is always a high priority thread */
     SDL_SetThreadPriority(SDL_THREAD_PRIORITY_TIME_CRITICAL);
+#endif
 
     /* Perform any thread setup */
     device->threadid = SDL_ThreadID();
@@ -792,8 +800,16 @@ SDL_CaptureAudio(void *devicep)
 
     SDL_assert(device->iscapture);
 
+#if SDL_AUDIO_DRIVER_ANDROID
+    {
+        /* Set thread priority to THREAD_PRIORITY_AUDIO */
+        extern void Android_JNI_AudioSetThreadPriority(int, int);
+        Android_JNI_AudioSetThreadPriority(device->iscapture, device->id);
+    }
+#else
     /* The audio mixing is always a high priority thread */
     SDL_SetThreadPriority(SDL_THREAD_PRIORITY_HIGH);
+#endif
 
     /* Perform any thread setup */
     device->threadid = SDL_ThreadID();
