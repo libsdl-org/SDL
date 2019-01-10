@@ -70,8 +70,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static NativeState mNextNativeState;
     public static NativeState mCurrentNativeState;
 
-    public static boolean mExitCalledFromJava;
-
     /** If shared libraries (e.g. SDL or the native application) could not be loaded. */
     public static boolean mBrokenLibraries;
 
@@ -179,7 +177,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         mCursors = new Hashtable<Integer, PointerIcon>();
         mLastCursorID = 0;
         mSDLThread = null;
-        mExitCalledFromJava = false;
         mBrokenLibraries = false;
         mIsResumedCalled = false;
         mIsSurfaceReady = false;
@@ -390,8 +387,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
            return;
         }
 
-        SDLActivity.mExitCalledFromJava = true;
-
         if (SDLActivity.mSDLThread != null) {
 
             // Send Quit event to "SDLThread" thread
@@ -513,15 +508,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             }
         }
     }
-
-    /* The native thread has finished */
-    public static void handleNativeExit() {
-        SDLActivity.mSDLThread = null;
-        if (mSingleton != null) {
-            mSingleton.finish();
-        }
-    }
-
 
     // Messages from the SDLMain thread
     static final int COMMAND_CHANGE_TITLE = 1;
@@ -1513,9 +1499,12 @@ class SDLMain implements Runnable {
 
         Log.v("SDL", "Finished main function");
 
-        // Native thread has finished, let's finish the Activity
-        if (!SDLActivity.mExitCalledFromJava) {
-            SDLActivity.handleNativeExit();
+        if (SDLActivity.mSingleton.isFinishing()) {
+            // Activity is already being destroyed
+        } else {
+            // Let's finish the Activity
+            SDLActivity.mSDLThread = null;
+            SDLActivity.mSingleton.finish();
         }
     }
 }
