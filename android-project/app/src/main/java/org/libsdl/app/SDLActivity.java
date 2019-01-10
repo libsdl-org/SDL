@@ -741,6 +741,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static native String nativeGetHint(String name);
     public static native void nativeSetenv(String name, String value);
     public static native void onNativeOrientationChanged(int orientation);
+    public static native void nativeAddTouch(int touchId, String name);
 
     /**
      * This method is called by SDL using JNI.
@@ -1062,16 +1063,14 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
     /**
      * This method is called by SDL using JNI.
-     * @return an array which may be empty but is never null.
      */
-    public static int[] inputGetInputDeviceIds(int sources) {
+    public static void initTouch() {
         int[] ids = InputDevice.getDeviceIds();
-        int[] filtered = new int[ids.length];
-        int used = 0;
+
         for (int i = 0; i < ids.length; ++i) {
             InputDevice device = InputDevice.getDevice(ids[i]);
-            if ((device != null) && ((device.getSources() & sources) != 0)) {
-                filtered[used++] = device.getId();
+            if (device != null && (device.getSources() & InputDevice.SOURCE_TOUCHSCREEN) != 0) {
+                nativeAddTouch(device.getId(), device.getName());
             }
         }
         return Arrays.copyOf(filtered, used);

@@ -95,7 +95,6 @@ void Android_JNI_SuspendScreenSaver(SDL_bool suspend);
 /* Touch support */
 int Android_JNI_InitTouch(void);
 void Android_JNI_SetSeparateMouseAndTouch(SDL_bool new_value);
-int Android_JNI_GetTouchDeviceIds(int **ids);
 
 /* Threads */
 #include <jni.h>

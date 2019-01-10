@@ -63,19 +63,11 @@ SeparateEventsHintWatcher(void *userdata, const char *name,
 
 void Android_InitTouch(void)
 {
-    int i;
-    int *ids;
-    const int number = Android_JNI_GetTouchDeviceIds(&ids);
-
     SDL_AddHintCallback(SDL_HINT_ANDROID_SEPARATE_MOUSE_AND_TOUCH,
                         SeparateEventsHintWatcher, NULL);
 
-    if (0 < number) {
-        for (i = 0; i < number; ++i) {
-            SDL_AddTouch((SDL_TouchID) ids[i], SDL_TOUCH_DEVICE_DIRECT, ""); /* no error handling */
-        }
-        SDL_free(ids);
-    }
+    /* Add all touch devices */
+    Android_JNI_InitTouch();
 }
 
 void Android_QuitTouch(void)
