@@ -405,6 +405,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             }
         }
 
+        SDLActivity.nativeQuit();
+
         super.onDestroy();
     }
 
@@ -727,6 +729,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static native int nativeRunMain(String library, String function, Object arguments);
     public static native void nativeLowMemory();
     public static native void nativeSendQuit();
+    public static native void nativeQuit();
     public static native void nativePause();
     public static native void nativeResume();
     public static native void onNativeDropFile(String filename);
