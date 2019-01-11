@@ -292,6 +292,9 @@ static SDL_bool bHasNewData;
 
 static SDL_bool bHasEnvironmentVariables = SDL_FALSE;
 
+
+static void Android_JNI_SetEnv(JNIEnv *env);
+
 /*******************************************************************************
                  Functions called by JNI
 *******************************************************************************/
@@ -558,6 +561,10 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
         __android_log_print(ANDROID_LOG_ERROR, "SDL", "nativeRunMain(): Couldn't load library %s", library_file);
     }
     (*env)->ReleaseStringUTFChars(env, library, library_file);
+
+    /* This is a Java thread, it doesn't need to be Detached from the JVM. 
+     * Set to mThreadKey value to NULL not to call pthread_create destructor 'Android_JNI_ThreadDestroyed' */
+    Android_JNI_SetEnv(NULL);
 
     /* Do not issue an exit or the whole application will terminate instead of just the SDL thread */
     /* exit(status); */
@@ -1126,7 +1133,14 @@ static void Android_JNI_ThreadDestroyed(void *value)
     JNIEnv *env = (JNIEnv *) value;
     if (env != NULL) {
         (*mJavaVM)->DetachCurrentThread(mJavaVM);
-        pthread_setspecific(mThreadKey, NULL);
+        Android_JNI_SetEnv(NULL);
+    }
+}
+
+static void Android_JNI_SetEnv(JNIEnv *env) {
+    int status = pthread_setspecific(mThreadKey, env);
+    if (status < 0) {
+        __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed pthread_setspecific() in Android_JNI_SetEnv() (err=%d)", status);
     }
 }
 
@@ -1160,7 +1174,7 @@ JNIEnv* Android_JNI_GetEnv(void)
      * Note: You can call this function any number of times for the same thread, there's no harm in it
      *       (except for some lost CPU cycles)
      */
-    pthread_setspecific(mThreadKey, (void *)env);
+    Android_JNI_SetEnv(env);
 
     return env;
 }
