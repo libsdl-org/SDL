@@ -1073,7 +1073,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                 nativeAddTouch(device.getId(), device.getName());
             }
         }
-        return Arrays.copyOf(filtered, used);
     }
 
     // APK expansion files support
