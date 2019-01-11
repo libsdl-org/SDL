@@ -294,7 +294,7 @@ static SDL_bool bHasNewData;
 static SDL_bool bHasEnvironmentVariables = SDL_FALSE;
 
 
-static void Android_JNI_SetEnv(JNIEnv *env);
+static int Android_JNI_SetEnv(JNIEnv *env);
 
 /*******************************************************************************
                  Functions called by JNI
@@ -321,21 +321,7 @@ Android_JNI_CreateKey_once()
 /* Library init */
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
 {
-    JNIEnv *env;
     mJavaVM = vm;
-    LOGI("JNI_OnLoad called");
-    if ((*mJavaVM)->GetEnv(mJavaVM, (void **) &env, JNI_VERSION_1_4) != JNI_OK) {
-        LOGE("Failed to get the environment using GetEnv()");
-        return -1;
-    }
-    /*
-     * Create mThreadKey so we can keep track of the JNIEnv assigned to each thread
-     * Refer to http://developer.android.com/guide/practices/design/jni.html for the rationale behind this
-     */
-    Android_JNI_CreateKey_once();
-    
-    Android_JNI_SetupThread();
-
     return JNI_VERSION_1_4;
 }
 
@@ -354,6 +340,19 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
 {
     __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeSetupJNI()");
 
+    /*
+     * Create mThreadKey so we can keep track of the JNIEnv assigned to each thread
+     * Refer to http://developer.android.com/guide/practices/design/jni.html for the rationale behind this
+     */
+    Android_JNI_CreateKey_once();
+
+    /* Save JNIEnv of SDLActivity */
+    Android_JNI_SetEnv(env);
+
+    if (mJavaVM == NULL) {
+        __android_log_print(ANDROID_LOG_ERROR, "SDL", "failed to found a JavaVM");
+    }
+
     /* Use a mutex to prevent concurrency issues between Java Activity and Native thread code, when using 'Android_Window'.
      * (Eg. Java sending Touch events, while native code is destroying the main SDL_Window. )
      */
@@ -364,8 +363,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
     if (Android_ActivityMutex == NULL) {
         __android_log_print(ANDROID_LOG_ERROR, "SDL", "failed to create Android_ActivityMutex mutex");
     }
-
-    Android_JNI_SetupThread();
 
     mActivityClass = (jclass)((*env)->NewGlobalRef(env, cls));
 
@@ -444,8 +441,6 @@ JNIEXPORT void JNICALL SDL_JAVA_AUDIO_INTERFACE(nativeSetupJNI)(JNIEnv *env, jcl
 {
     __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "AUDIO nativeSetupJNI()");
 
-    Android_JNI_SetupThread();
-
     mAudioManagerClass = (jclass)((*env)->NewGlobalRef(env, cls));
 
     midAudioOpen = (*env)->GetStaticMethodID(env, mAudioManagerClass,
@@ -484,8 +479,6 @@ JNIEXPORT void JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeSetupJNI)(JNIEnv *env
 {
     __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "CONTROLLER nativeSetupJNI()");
 
-    Android_JNI_SetupThread();
-
     mControllerManagerClass = (jclass)((*env)->NewGlobalRef(env, cls));
 
     midPollInputDevices = (*env)->GetStaticMethodID(env, mControllerManagerClass,
@@ -515,6 +508,9 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
     void *library_handle;
 
     __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeRunMain()");
+
+    /* Save JNIEnv of SDLThread */
+    Android_JNI_SetEnv(env);
 
     library_file = (*env)->GetStringUTFChars(env, library, NULL);
     library_handle = dlopen(library_file, RTLD_GLOBAL);
@@ -1155,11 +1151,12 @@ static void Android_JNI_ThreadDestroyed(void *value)
     }
 }
 
-static void Android_JNI_SetEnv(JNIEnv *env) {
+static int Android_JNI_SetEnv(JNIEnv *env) {
     int status = pthread_setspecific(mThreadKey, env);
     if (status < 0) {
         __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed pthread_setspecific() in Android_JNI_SetEnv() (err=%d)", status);
     }
+    return status;
 }
 
 JNIEnv* Android_JNI_GetEnv(void)
@@ -1176,13 +1173,6 @@ JNIEnv* Android_JNI_GetEnv(void)
      * Note: You can call this function any number of times for the same thread, there's no harm in it
      */
 
-    JNIEnv *env;
-    int status = (*mJavaVM)->AttachCurrentThread(mJavaVM, &env, NULL);
-    if (status < 0) {
-        LOGE("failed to attach current thread");
-        return 0;
-    }
-
     /* From http://developer.android.com/guide/practices/jni.html
      * Threads attached through JNI must call DetachCurrentThread before they exit. If coding this directly is awkward,
      * in Android 2.0 (Eclair) and higher you can use pthread_key_create to define a destructor function that will be
@@ -1192,14 +1182,43 @@ JNIEnv* Android_JNI_GetEnv(void)
      * Note: You can call this function any number of times for the same thread, there's no harm in it
      *       (except for some lost CPU cycles)
      */
-    Android_JNI_SetEnv(env);
+
+
+
+    /* Get JNIEnv from the Thread local storage */
+    JNIEnv *env = pthread_getspecific(mThreadKey);
+    if (env == NULL) {
+        __android_log_print(ANDROID_LOG_ERROR, "SDL", "JNIEnv is NULL. Call Android_JNI_SetupThread() first.");
+    }
 
     return env;
 }
 
 int Android_JNI_SetupThread(void)
 {
-    Android_JNI_GetEnv();
+    JNIEnv *env;
+    int status;
+
+    /* There should be a JVM */
+    if (mJavaVM == NULL) {
+        __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed, there is no JavaVM");
+        return 0;
+    }
+
+    /* Attach the current thread to the JVM and get a JNIEnv.
+     * It will be detached by pthread_create destructor 'Android_JNI_ThreadDestroyed'
+     */
+    status = (*mJavaVM)->AttachCurrentThread(mJavaVM, &env, NULL);
+    if (status < 0) {
+        __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed to attach current thread (err=%d)", status);
+        return 0;
+    }
+
+    /* Save JNIEnv into the Thread local storage */
+    if (Android_JNI_SetEnv(env) < 0) {
+        return 0;
+    }
+
     return 1;
 }
 
