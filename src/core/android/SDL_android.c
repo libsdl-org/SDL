@@ -225,7 +225,8 @@ static void checkJNIReady(void);
                                Globals
 *******************************************************************************/
 static pthread_key_t mThreadKey;
-static JavaVM *mJavaVM;
+static pthread_once_t key_once = PTHREAD_ONCE_INIT;
+static JavaVM *mJavaVM = NULL;
 
 /* Main activity */
 static jclass mActivityClass;
@@ -299,6 +300,24 @@ static void Android_JNI_SetEnv(JNIEnv *env);
                  Functions called by JNI
 *******************************************************************************/
 
+static void
+Android_JNI_CreateKey()
+{
+    int status = pthread_key_create(&mThreadKey, Android_JNI_ThreadDestroyed);
+    if (status < 0) {
+        __android_log_print(ANDROID_LOG_ERROR, "SDL", "Error initializing mThreadKey with pthread_key_create() (err=%d)", status);
+    }
+}
+
+static void 
+Android_JNI_CreateKey_once()
+{
+    int status = pthread_once(&key_once, Android_JNI_CreateKey);
+    if (status < 0) {
+        __android_log_print(ANDROID_LOG_ERROR, "SDL", "Error initializing mThreadKey with pthread_once() (err=%d)", status);
+    }
+}
+
 /* Library init */
 JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
 {
@@ -313,9 +332,8 @@ JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM *vm, void *reserved)
      * Create mThreadKey so we can keep track of the JNIEnv assigned to each thread
      * Refer to http://developer.android.com/guide/practices/design/jni.html for the rationale behind this
      */
-    if (pthread_key_create(&mThreadKey, Android_JNI_ThreadDestroyed) != 0) {
-        __android_log_print(ANDROID_LOG_ERROR, "SDL", "Error initializing pthread key");
-    }
+    Android_JNI_CreateKey_once();
+    
     Android_JNI_SetupThread();
 
     return JNI_VERSION_1_4;
@@ -344,7 +362,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *mEnv, jclass c
     }
 
     if (Android_ActivityMutex == NULL) {
-        __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "failed to create Android_ActivityMutex mutex");
+        __android_log_print(ANDROID_LOG_ERROR, "SDL", "failed to create Android_ActivityMutex mutex");
     }
 
     Android_JNI_SetupThread();
