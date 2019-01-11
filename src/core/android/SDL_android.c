@@ -1223,11 +1223,6 @@ int Android_JNI_OpenAudioDevice(int iscapture, SDL_AudioSpec *spec)
 
     JNIEnv *env = Android_JNI_GetEnv();
 
-    if (!env) {
-        LOGE("callback_handler: failed to attach current thread");
-    }
-    Android_JNI_SetupThread();
-
     switch (spec->format) {
     case AUDIO_U8:
         audioformat = ENCODING_PCM_8BIT;
@@ -1386,20 +1381,20 @@ void * Android_JNI_GetAudioBuffer(void)
 
 void Android_JNI_WriteAudioBuffer(void)
 {
-    JNIEnv *mAudioEnv = Android_JNI_GetEnv();
+    JNIEnv *env = Android_JNI_GetEnv();
 
     switch (audioBufferFormat) {
     case ENCODING_PCM_8BIT:
-        (*mAudioEnv)->ReleaseByteArrayElements(mAudioEnv, (jbyteArray)audioBuffer, (jbyte *)audioBufferPinned, JNI_COMMIT);
-        (*mAudioEnv)->CallStaticVoidMethod(mAudioEnv, mAudioManagerClass, midAudioWriteByteBuffer, (jbyteArray)audioBuffer);
+        (*env)->ReleaseByteArrayElements(env, (jbyteArray)audioBuffer, (jbyte *)audioBufferPinned, JNI_COMMIT);
+        (*env)->CallStaticVoidMethod(env, mAudioManagerClass, midAudioWriteByteBuffer, (jbyteArray)audioBuffer);
         break;
     case ENCODING_PCM_16BIT:
-        (*mAudioEnv)->ReleaseShortArrayElements(mAudioEnv, (jshortArray)audioBuffer, (jshort *)audioBufferPinned, JNI_COMMIT);
-        (*mAudioEnv)->CallStaticVoidMethod(mAudioEnv, mAudioManagerClass, midAudioWriteShortBuffer, (jshortArray)audioBuffer);
+        (*env)->ReleaseShortArrayElements(env, (jshortArray)audioBuffer, (jshort *)audioBufferPinned, JNI_COMMIT);
+        (*env)->CallStaticVoidMethod(env, mAudioManagerClass, midAudioWriteShortBuffer, (jshortArray)audioBuffer);
         break;
     case ENCODING_PCM_FLOAT:
-        (*mAudioEnv)->ReleaseFloatArrayElements(mAudioEnv, (jfloatArray)audioBuffer, (jfloat *)audioBufferPinned, JNI_COMMIT);
-        (*mAudioEnv)->CallStaticVoidMethod(mAudioEnv, mAudioManagerClass, midAudioWriteFloatBuffer, (jfloatArray)audioBuffer);
+        (*env)->ReleaseFloatArrayElements(env, (jfloatArray)audioBuffer, (jfloat *)audioBufferPinned, JNI_COMMIT);
+        (*env)->CallStaticVoidMethod(env, mAudioManagerClass, midAudioWriteFloatBuffer, (jfloatArray)audioBuffer);
         break;
     default:
         __android_log_print(ANDROID_LOG_WARN, "SDL", "SDL audio: unhandled audio buffer format");
