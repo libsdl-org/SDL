@@ -46,12 +46,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <dlfcn.h>
-/* #define LOG_TAG "SDL_android" */
-/* #define LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__) */
-/* #define LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__) */
-#define LOGI(...) do {} while (0)
-#define LOGE(...) do {} while (0)
-
 
 #define SDL_JAVA_PREFIX                                 org_libsdl_app
 #define CONCAT1(prefix, class, function)                CONCAT2(prefix, class, function)
@@ -212,7 +206,6 @@ JNIEXPORT jint JNICALL SDL_JAVA_CONTROLLER_INTERFACE(nativeRemoveHaptic)(
 /* Uncomment this to log messages entering and exiting methods in this file */
 /* #define DEBUG_JNI */
 
-static void Android_JNI_ThreadDestroyed(void *);
 static void checkJNIReady(void);
 
 /*******************************************************************************
@@ -293,13 +286,95 @@ static SDL_bool bHasNewData;
 
 static SDL_bool bHasEnvironmentVariables = SDL_FALSE;
 
-
-static int Android_JNI_SetEnv(JNIEnv *env);
-
 /*******************************************************************************
                  Functions called by JNI
 *******************************************************************************/
 
+/* From http://developer.android.com/guide/practices/jni.html
+ * All threads are Linux threads, scheduled by the kernel.
+ * They're usually started from managed code (using Thread.start), but they can also be created elsewhere and then
+ * attached to the JavaVM. For example, a thread started with pthread_create can be attached with the
+ * JNI AttachCurrentThread or AttachCurrentThreadAsDaemon functions. Until a thread is attached, it has no JNIEnv,
+ * and cannot make JNI calls.
+ * Attaching a natively-created thread causes a java.lang.Thread object to be constructed and added to the "main"
+ * ThreadGroup, making it visible to the debugger. Calling AttachCurrentThread on an already-attached thread
+ * is a no-op.
+ * Note: You can call this function any number of times for the same thread, there's no harm in it
+ */
+
+/* From http://developer.android.com/guide/practices/jni.html
+ * Threads attached through JNI must call DetachCurrentThread before they exit. If coding this directly is awkward,
+ * in Android 2.0 (Eclair) and higher you can use pthread_key_create to define a destructor function that will be
+ * called before the thread exits, and call DetachCurrentThread from there. (Use that key with pthread_setspecific
+ * to store the JNIEnv in thread-local-storage; that way it'll be passed into your destructor as the argument.)
+ * Note: The destructor is not called unless the stored value is != NULL
+ * Note: You can call this function any number of times for the same thread, there's no harm in it
+ *       (except for some lost CPU cycles)
+ */
+
+/* Set local storage value */
+static int
+Android_JNI_SetEnv(JNIEnv *env) {
+    int status = pthread_setspecific(mThreadKey, env);
+    if (status < 0) {
+        __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed pthread_setspecific() in Android_JNI_SetEnv() (err=%d)", status);
+    }
+    return status;
+}
+
+/* Get local storage value */
+JNIEnv* Android_JNI_GetEnv(void)
+{
+    /* Get JNIEnv from the Thread local storage */
+    JNIEnv *env = pthread_getspecific(mThreadKey);
+    if (env == NULL) {
+        __android_log_print(ANDROID_LOG_ERROR, "SDL", "JNIEnv is NULL. Call Android_JNI_SetupThread() first.");
+    }
+
+    return env;
+}
+
+/* Set up an external thread for using JNI with Android_JNI_GetEnv() */
+int Android_JNI_SetupThread(void)
+{
+    JNIEnv *env;
+    int status;
+
+    /* There should be a JVM */
+    if (mJavaVM == NULL) {
+        __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed, there is no JavaVM");
+        return 0;
+    }
+
+    /* Attach the current thread to the JVM and get a JNIEnv.
+     * It will be detached by pthread_create destructor 'Android_JNI_ThreadDestroyed' */
+    status = (*mJavaVM)->AttachCurrentThread(mJavaVM, &env, NULL);
+    if (status < 0) {
+        __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed to attach current thread (err=%d)", status);
+        return 0;
+    }
+
+    /* Save JNIEnv into the Thread local storage */
+    if (Android_JNI_SetEnv(env) < 0) {
+        return 0;
+    }
+
+    return 1;
+}
+
+/* Destructor called for each thread where mThreadKey is not NULL */
+static void
+Android_JNI_ThreadDestroyed(void *value)
+{
+    /* The thread is being destroyed, detach it from the Java VM and set the mThreadKey value to NULL as required */
+    JNIEnv *env = (JNIEnv *) value;
+    if (env != NULL) {
+        (*mJavaVM)->DetachCurrentThread(mJavaVM);
+        Android_JNI_SetEnv(NULL);
+    }
+}
+
+/* Creation of local storage mThreadKey */
 static void
 Android_JNI_CreateKey()
 {
@@ -309,7 +384,7 @@ Android_JNI_CreateKey()
     }
 }
 
-static void 
+static void
 Android_JNI_CreateKey_once()
 {
     int status = pthread_once(&key_once, Android_JNI_CreateKey);
@@ -576,7 +651,7 @@ JNIEXPORT int JNICALL SDL_JAVA_INTERFACE(nativeRunMain)(JNIEnv *env, jclass cls,
     }
     (*env)->ReleaseStringUTFChars(env, library, library_file);
 
-    /* This is a Java thread, it doesn't need to be Detached from the JVM. 
+    /* This is a Java thread, it doesn't need to be Detached from the JVM.
      * Set to mThreadKey value to NULL not to call pthread_create destructor 'Android_JNI_ThreadDestroyed' */
     Android_JNI_SetEnv(NULL);
 
@@ -888,7 +963,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeQuit)(
 
     str = SDL_GetError();
     if (str && str[0]) {
-        __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "SDLActivity thread ends (error=%s)", str);
+        __android_log_print(ANDROID_LOG_ERROR, "SDL", "SDLActivity thread ends (error=%s)", str);
     } else {
         __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "SDLActivity thread ends");
     }
@@ -1139,87 +1214,6 @@ SDL_bool Android_JNI_GetAccelerometerValues(float values[3])
     }
 
     return retval;
-}
-
-static void Android_JNI_ThreadDestroyed(void *value)
-{
-    /* The thread is being destroyed, detach it from the Java VM and set the mThreadKey value to NULL as required */
-    JNIEnv *env = (JNIEnv *) value;
-    if (env != NULL) {
-        (*mJavaVM)->DetachCurrentThread(mJavaVM);
-        Android_JNI_SetEnv(NULL);
-    }
-}
-
-static int Android_JNI_SetEnv(JNIEnv *env) {
-    int status = pthread_setspecific(mThreadKey, env);
-    if (status < 0) {
-        __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed pthread_setspecific() in Android_JNI_SetEnv() (err=%d)", status);
-    }
-    return status;
-}
-
-JNIEnv* Android_JNI_GetEnv(void)
-{
-    /* From http://developer.android.com/guide/practices/jni.html
-     * All threads are Linux threads, scheduled by the kernel.
-     * They're usually started from managed code (using Thread.start), but they can also be created elsewhere and then
-     * attached to the JavaVM. For example, a thread started with pthread_create can be attached with the
-     * JNI AttachCurrentThread or AttachCurrentThreadAsDaemon functions. Until a thread is attached, it has no JNIEnv,
-     * and cannot make JNI calls.
-     * Attaching a natively-created thread causes a java.lang.Thread object to be constructed and added to the "main"
-     * ThreadGroup, making it visible to the debugger. Calling AttachCurrentThread on an already-attached thread
-     * is a no-op.
-     * Note: You can call this function any number of times for the same thread, there's no harm in it
-     */
-
-    /* From http://developer.android.com/guide/practices/jni.html
-     * Threads attached through JNI must call DetachCurrentThread before they exit. If coding this directly is awkward,
-     * in Android 2.0 (Eclair) and higher you can use pthread_key_create to define a destructor function that will be
-     * called before the thread exits, and call DetachCurrentThread from there. (Use that key with pthread_setspecific
-     * to store the JNIEnv in thread-local-storage; that way it'll be passed into your destructor as the argument.)
-     * Note: The destructor is not called unless the stored value is != NULL
-     * Note: You can call this function any number of times for the same thread, there's no harm in it
-     *       (except for some lost CPU cycles)
-     */
-
-
-
-    /* Get JNIEnv from the Thread local storage */
-    JNIEnv *env = pthread_getspecific(mThreadKey);
-    if (env == NULL) {
-        __android_log_print(ANDROID_LOG_ERROR, "SDL", "JNIEnv is NULL. Call Android_JNI_SetupThread() first.");
-    }
-
-    return env;
-}
-
-int Android_JNI_SetupThread(void)
-{
-    JNIEnv *env;
-    int status;
-
-    /* There should be a JVM */
-    if (mJavaVM == NULL) {
-        __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed, there is no JavaVM");
-        return 0;
-    }
-
-    /* Attach the current thread to the JVM and get a JNIEnv.
-     * It will be detached by pthread_create destructor 'Android_JNI_ThreadDestroyed'
-     */
-    status = (*mJavaVM)->AttachCurrentThread(mJavaVM, &env, NULL);
-    if (status < 0) {
-        __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed to attach current thread (err=%d)", status);
-        return 0;
-    }
-
-    /* Save JNIEnv into the Thread local storage */
-    if (Android_JNI_SetEnv(env) < 0) {
-        return 0;
-    }
-
-    return 1;
 }
 
 /*
