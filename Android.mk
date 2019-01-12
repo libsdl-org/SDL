@@ -20,6 +20,7 @@ LOCAL_SRC_FILES := \
 	$(wildcard $(LOCAL_PATH)/src/audio/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/audio/android/*.c) \
 	$(wildcard $(LOCAL_PATH)/src/audio/dummy/*.c) \
+	$(wildcard $(LOCAL_PATH)/src/audio/openslES/*.c) \
 	$(LOCAL_PATH)/src/atomic/SDL_atomic.c.arm \
 	$(LOCAL_PATH)/src/atomic/SDL_spinlock.c.arm \
 	$(wildcard $(LOCAL_PATH)/src/core/android/*.c) \
@@ -69,7 +70,7 @@ LOCAL_CFLAGS += \
 LOCAL_CFLAGS += -Wno-unused-parameter -Wno-sign-compare
  
 
-LOCAL_LDLIBS := -ldl -lGLESv1_CM -lGLESv2 -llog -landroid
+LOCAL_LDLIBS := -ldl -lGLESv1_CM -lGLESv2 -lOpenSLES -llog -landroid
 
 ifeq ($(NDK_DEBUG),1)
     cmd-strip :=
