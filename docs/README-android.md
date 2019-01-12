@@ -20,7 +20,7 @@ https://developer.android.com/sdk/index.html
 Android NDK r15c or later
 https://developer.android.com/tools/sdk/ndk/index.html
 
-Minimum API level supported by SDL: 14 (Android 4.0.1)
+Minimum API level supported by SDL: 16 (Android 4.1)
 
 
 ================================================================================
@@ -380,13 +380,13 @@ https://developer.nvidia.com/tegra-graphics-debugger
 
 
 ================================================================================
- Why is API level 14 the minimum required?
+ Why is API level 16 the minimum required?
 ================================================================================
 
-The latest NDK toolchain doesn't support targeting earlier than API level 14.
+The latest NDK toolchain doesn't support targeting earlier than API level 16.
 As of this writing, according to https://developer.android.com/about/dashboards/index.html
-about 99% of the Android devices accessing Google Play support API level 14 or
-higher (October 2017).
+about 99% of the Android devices accessing Google Play support API level 16 or
+higher (January 2018).
 
 
 ================================================================================
