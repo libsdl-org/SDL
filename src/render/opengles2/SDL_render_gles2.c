@@ -30,7 +30,7 @@
 #include "SDL_shaders_gles2.h"
 
 /* To prevent unnecessary window recreation,
- * these should match the defaults selected in SDL_GL_ResetAttributes 
+ * these should match the defaults selected in SDL_GL_ResetAttributes
  */
 #define RENDERER_CONTEXT_MAJOR 2
 #define RENDERER_CONTEXT_MINOR 0
@@ -2076,12 +2076,15 @@ GLES2_CreateRenderer(SDL_Window *window, Uint32 flags)
     renderer->info.texture_formats[renderer->info.num_texture_formats++] = SDL_PIXELFORMAT_EXTERNAL_OES;
 #endif
 
+    /* Set up parameters for rendering */
     data->glActiveTexture(GL_TEXTURE0);
     data->glPixelStorei(GL_PACK_ALIGNMENT, 1);
     data->glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
 
     data->glEnableVertexAttribArray(GLES2_ATTRIBUTE_POSITION);
     data->glDisableVertexAttribArray(GLES2_ATTRIBUTE_TEXCOORD);
+
+    data->glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 
     data->drawstate.blend = SDL_BLENDMODE_INVALID;
     data->drawstate.color = 0xFFFFFFFF;
