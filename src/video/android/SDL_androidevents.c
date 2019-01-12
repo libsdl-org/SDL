@@ -27,6 +27,7 @@
 
 #include "SDL_androidevents.h"
 #include "SDL_events.h"
+#include "SDL_androidkeyboard.h"
 #include "SDL_androidwindow.h"
 
 #if !SDL_AUDIO_DISABLED
