@@ -235,8 +235,7 @@ openslES_DestroyPCMRecorder(void)
 }
 
 static int
-openslES_CreatePCMPlayer(
-      _THIS)
+openslES_CreatePCMPlayer(_THIS)
 {
     SLDataFormat_PCM format_pcm;
 
@@ -463,6 +462,11 @@ openslES_DestroyPCMPlayer(void)
 static int
 openslES_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
 {
+    this->hidden = (struct SDL_PrivateAudioData *) SDL_calloc(1, (sizeof *this->hidden));
+    if (this->hidden == NULL) {
+        return SDL_OutOfMemory();
+    }
+
     if (iscapture) {
         LOGI("openslES_OpenDevice( ) %s for capture", devname);
         return openslES_CreatePCMRecorder(this);
@@ -480,8 +484,11 @@ openslES_CloseDevice(_THIS)
         openslES_DestroyPCMRecorder();
     } else {
         LOGI("openslES_CloseDevice( ) for playing");
+        SDL_Log("openslES_CloseDevice( ) for playing");
         openslES_DestroyPCMPlayer();
     }
+
+    SDL_free(this->hidden);
 
     return;
 }
@@ -553,6 +560,7 @@ openslES_Init(SDL_AudioDriverImpl * impl)
     /* Set the function pointers */
     // impl->DetectDevices = openslES_DetectDevices;
     impl->OpenDevice    = openslES_OpenDevice;
+    impl->CloseDevice   = openslES_CloseDevice;
     impl->PlayDevice    = openslES_PlayDevice;
     impl->GetDeviceBuf  = openslES_GetDeviceBuf;
     impl->Deinitialize  = openslES_DestroyEngine;
