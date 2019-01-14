@@ -34,12 +34,15 @@
 
 #define LOG_TAG "SDL_openslES"
 
-/*#define LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__) */
-/*#define LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__) */
-/*#define LOGI(...) do {} while (0) */
-/*#define LOGE(...) do {} while (0) */
+#if 0
+#define LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
+#define LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
+// #define LOGI(...) do {} while (0)
+// #define LOGE(...) do {} while (0)
+#else
 #define LOGI(...)
 #define LOGE(...)
+#endif
 
 /* engine interfaces */
 static SLObjectItf engineObject = NULL;
@@ -54,7 +57,7 @@ static SLObjectItf outputMixObject = NULL;
 
 /* buffer queue player interfaces */
 static SLObjectItf                   bqPlayerObject = NULL;
-static SLPlayItf                     bqPlayerPlay;
+static SLPlayItf                     bqPlayerItf;
 static SLAndroidSimpleBufferQueueItf bqPlayerBufferQueue;
 /*static SLEffectSendItf          bqPlayerEffectSend; */
 static SLMuteSoloItf                 bqPlayerMuteSolo;
@@ -162,7 +165,7 @@ static void openslES_DestroyPCMRecorder(_THIS);
 static void openslES_DestroyEngine()
 {
     LOGI("openslES_DestroyEngine()");
-   
+
 //        openslES_DestroyPCMPlayer(this);
 //    openslES_DestroyPCMRecorder(this);
 
@@ -236,11 +239,12 @@ openslES_CreatePCMPlayer(_THIS)
 
     SLDataFormat_PCM format_pcm;
 
+    SDL_AudioFormat test_format = 0;
     SLresult result;
     int i;
 
 #if 0
-      SDL_AudioFormat test_format;
+
       test_format = SDL_FirstAudioFormat( this->spec.format );
 
       while (test_format != 0) {
@@ -349,7 +353,7 @@ openslES_CreatePCMPlayer(_THIS)
     }
 
     /* get the play interface */
-    result = (*bqPlayerObject)->GetInterface(bqPlayerObject, SL_IID_PLAY, &bqPlayerPlay);
+    result = (*bqPlayerObject)->GetInterface(bqPlayerObject, SL_IID_PLAY, &bqPlayerItf);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("SL_IID_PLAY interface get failed");
         goto failed;
@@ -396,7 +400,7 @@ openslES_CreatePCMPlayer(_THIS)
     }
 
     /* set the player's state to playing */
-    result = (*bqPlayerPlay)->SetPlayState(bqPlayerPlay, SL_PLAYSTATE_PLAYING);
+    result = (*bqPlayerItf)->SetPlayState(bqPlayerItf, SL_PLAYSTATE_PLAYING);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("Play set state failed");
         goto failed;
@@ -433,6 +437,13 @@ static void
 openslES_DestroyPCMPlayer(_THIS)
 {
     struct SDL_PrivateAudioData *audiodata = (struct SDL_PrivateAudioData *) this->hidden;
+    SLresult result;
+
+    /* set the player's state to 'stopped' */
+    result = (*bqPlayerItf)->SetPlayState(bqPlayerItf, SL_PLAYSTATE_STOPPED);
+    if (SL_RESULT_SUCCESS != result) {
+        SDL_SetError("Stopped set state failed");
+    }
 
     /* destroy buffer queue audio player object, and invalidate all associated interfaces */
     if (bqPlayerObject != NULL) {
@@ -440,7 +451,7 @@ openslES_DestroyPCMPlayer(_THIS)
         (*bqPlayerObject)->Destroy(bqPlayerObject);
 
         bqPlayerObject = NULL;
-        bqPlayerPlay = NULL;
+        bqPlayerItf = NULL;
         bqPlayerBufferQueue = NULL;
         /* bqPlayerEffectSend = NULL; */
         bqPlayerMuteSolo = NULL;
@@ -488,7 +499,7 @@ openslES_CloseDevice(_THIS)
         LOGI("openslES_CloseDevice( ) for playing");
         openslES_DestroyPCMPlayer(this);
     }
-    
+
     SDL_free(this->hidden);
 
     return;
@@ -586,6 +597,28 @@ openslES_Init(SDL_AudioDriverImpl * impl)
 AudioBootStrap openslES_bootstrap = {
     "openslES", "opensl ES audio driver", openslES_Init, 0
 };
+
+void openslES_ResumeDevices()
+{
+    SLresult result;
+
+    /* set the player's state to 'playing' */
+    result = (*bqPlayerItf)->SetPlayState(bqPlayerItf, SL_PLAYSTATE_PLAYING);
+    if (SL_RESULT_SUCCESS != result) {
+        SDL_SetError("Play set state failed");
+    }
+}
+
+void openslES_PauseDevices()
+{
+    SLresult result;
+
+    /* set the player's state to 'paused' */
+    result = (*bqPlayerItf)->SetPlayState(bqPlayerItf, SL_PLAYSTATE_PAUSED);
+    if (SL_RESULT_SUCCESS != result) {
+        SDL_SetError("Playe set state failed");
+    }
+}
 
 #endif /* SDL_AUDIO_DRIVER_OPENSLES */
 
