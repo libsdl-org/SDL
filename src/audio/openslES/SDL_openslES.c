@@ -602,23 +602,23 @@ AudioBootStrap openslES_bootstrap = {
 
 void openslES_ResumeDevices()
 {
-    SLresult result;
-
-    /* set the player's state to 'playing' */
-    result = (*bqPlayerPlay)->SetPlayState(bqPlayerPlay, SL_PLAYSTATE_PLAYING);
-    if (SL_RESULT_SUCCESS != result) {
-        SDL_SetError("Play set state failed");
+    if (bqPlayerPlay != NULL) {
+        /* set the player's state to 'playing' */
+        SLresult result = (*bqPlayerPlay)->SetPlayState(bqPlayerPlay, SL_PLAYSTATE_PLAYING);
+        if (SL_RESULT_SUCCESS != result) {
+            SDL_SetError("openslES_ResumeDevices failed");
+        }
     }
 }
 
 void openslES_PauseDevices()
 {
-    SLresult result;
-
-    /* set the player's state to 'paused' */
-    result = (*bqPlayerPlay)->SetPlayState(bqPlayerPlay, SL_PLAYSTATE_PAUSED);
-    if (SL_RESULT_SUCCESS != result) {
-        SDL_SetError("Playe set state failed");
+    if (bqPlayerPlay != NULL) {
+        /* set the player's state to 'paused' */
+        SLresult result = (*bqPlayerPlay)->SetPlayState(bqPlayerPlay, SL_PLAYSTATE_PAUSED);
+        if (SL_RESULT_SUCCESS != result) {
+            SDL_SetError("openslES_PauseDevices failed");
+        }
     }
 }
 
