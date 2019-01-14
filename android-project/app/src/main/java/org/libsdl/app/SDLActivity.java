@@ -37,7 +37,7 @@ import android.content.pm.ApplicationInfo;
 public class SDLActivity extends Activity implements View.OnSystemUiVisibilityChangeListener {
     private static final String TAG = "SDL";
 
-    public static boolean mIsResumedCalled, mIsSurfaceReady, mHasFocus;
+    public static boolean mIsResumedCalled, mHasFocus;
 
     // Cursor types
     private static final int SDL_SYSTEM_CURSOR_NONE = -1;
@@ -179,7 +179,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         mSDLThread = null;
         mBrokenLibraries = false;
         mIsResumedCalled = false;
-        mIsSurfaceReady = false;
         mHasFocus = true;
         mNextNativeState = NativeState.INIT;
         mCurrentNativeState = NativeState.INIT;
@@ -497,7 +496,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
         // Try a transition to resumed state
         if (mNextNativeState == NativeState.RESUMED) {
-            if (mIsSurfaceReady && mHasFocus && mIsResumedCalled) {
+            if (mSurface.mIsSurfaceReady && mHasFocus && mIsResumedCalled) {
                 if (mSDLThread == null) {
                     // This is the entry point to the C app.
                     // Start up the C app thread and enable sensor input for the first time
@@ -1531,11 +1530,14 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
     View.OnKeyListener, View.OnTouchListener, SensorEventListener  {
 
     // Sensors
-    protected static SensorManager mSensorManager;
-    protected static Display mDisplay;
+    protected SensorManager mSensorManager;
+    protected Display mDisplay;
 
     // Keep track of the surface size to normalize touch events
-    protected static float mWidth, mHeight;
+    protected float mWidth, mHeight;
+
+    // Is SurfaceView ready for rendering
+    public boolean mIsSurfaceReady;
 
     // Startup
     public SDLSurface(Context context) {
@@ -1558,6 +1560,8 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         // Some arbitrary defaults to avoid a potential division by zero
         mWidth = 1.0f;
         mHeight = 1.0f;
+
+        mIsSurfaceReady = false;
     }
 
     public void handlePause() {
@@ -1593,7 +1597,7 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         SDLActivity.mNextNativeState = SDLActivity.NativeState.PAUSED;
         SDLActivity.handleNativeState();
 
-        SDLActivity.mIsSurfaceReady = false;
+        mIsSurfaceReady = false;
         SDLActivity.onNativeSurfaceDestroyed();
     }
 
@@ -1686,7 +1690,7 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
 
         if (skip) {
            Log.v("SDL", "Skip .. Surface is not ready.");
-           SDLActivity.mIsSurfaceReady = false;
+           mIsSurfaceReady = false;
            return;
         }
 
@@ -1694,7 +1698,7 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         SDLActivity.onNativeSurfaceChanged();
 
         /* Surface is ready */
-        SDLActivity.mIsSurfaceReady = true;
+        mIsSurfaceReady = true;
 
         SDLActivity.mNextNativeState = SDLActivity.NativeState.RESUMED;
         SDLActivity.handleNativeState();
