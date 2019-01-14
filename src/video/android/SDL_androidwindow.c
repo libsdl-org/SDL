@@ -49,9 +49,6 @@ Android_CreateWindow(_THIS, SDL_Window * window)
         goto endfunction;
     }
 
-    Android_PauseSem = SDL_CreateSemaphore(0);
-    Android_ResumeSem = SDL_CreateSemaphore(0);
-
     /* Set orientation */
     Android_JNI_SetOrientation(window->w, window->h, window->flags & SDL_WINDOW_RESIZABLE, SDL_GetHint(SDL_HINT_ORIENTATIONS));
 
@@ -171,10 +168,6 @@ Android_DestroyWindow(_THIS, SDL_Window *window)
 
     if (window == Android_Window) {
         Android_Window = NULL;
-        if (Android_PauseSem) SDL_DestroySemaphore(Android_PauseSem);
-        if (Android_ResumeSem) SDL_DestroySemaphore(Android_ResumeSem);
-        Android_PauseSem = NULL;
-        Android_ResumeSem = NULL;
 
         if (window->driverdata) {
             SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
