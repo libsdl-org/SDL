@@ -439,6 +439,17 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
         __android_log_print(ANDROID_LOG_ERROR, "SDL", "failed to create Android_ActivityMutex mutex");
     }
 
+
+    Android_PauseSem = SDL_CreateSemaphore(0);
+    if (Android_PauseSem == NULL) {
+        __android_log_print(ANDROID_LOG_ERROR, "SDL", "failed to create Android_PauseSem semaphore");
+    }
+
+    Android_ResumeSem = SDL_CreateSemaphore(0);
+    if (Android_ResumeSem == NULL) {
+        __android_log_print(ANDROID_LOG_ERROR, "SDL", "failed to create Android_ResumeSem semaphore");
+    }
+
     mActivityClass = (jclass)((*env)->NewGlobalRef(env, cls));
 
     midGetNativeSurface = (*env)->GetStaticMethodID(env, mActivityClass,
@@ -961,6 +972,16 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeQuit)(
         Android_ActivityMutex = NULL;
     }
 
+    if (Android_PauseSem) {
+        SDL_DestroySemaphore(Android_PauseSem);
+        Android_PauseSem = NULL;
+    }
+
+    if (Android_ResumeSem) {
+        SDL_DestroySemaphore(Android_ResumeSem);
+        Android_ResumeSem = NULL;
+    }
+
     str = SDL_GetError();
     if (str && str[0]) {
         __android_log_print(ANDROID_LOG_ERROR, "SDL", "SDLActivity thread ends (error=%s)", str);
@@ -982,13 +1003,13 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePause)(
         SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_MINIMIZED, 0, 0);
         SDL_SendAppEvent(SDL_APP_WILLENTERBACKGROUND);
         SDL_SendAppEvent(SDL_APP_DIDENTERBACKGROUND);
-
-        /* *After* sending the relevant events, signal the pause semaphore
-         * so the event loop knows to pause and (optionally) block itself.
-         * Sometimes 2 pauses can be queued (eg pause/resume/pause), so it's
-         * always increased. */
-        SDL_SemPost(Android_PauseSem);
     }
+
+    /* *After* sending the relevant events, signal the pause semaphore
+     * so the event loop knows to pause and (optionally) block itself.
+     * Sometimes 2 pauses can be queued (eg pause/resume/pause), so it's
+     * always increased. */
+    SDL_SemPost(Android_PauseSem);
 
     SDL_UnlockMutex(Android_ActivityMutex);
 }
@@ -1006,12 +1027,13 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeResume)(
         SDL_SendAppEvent(SDL_APP_DIDENTERFOREGROUND);
         SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_FOCUS_GAINED, 0, 0);
         SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_RESTORED, 0, 0);
-        /* Signal the resume semaphore so the event loop knows to resume and restore the GL Context
-         * We can't restore the GL Context here because it needs to be done on the SDL main thread
-         * and this function will be called from the Java thread instead.
-         */
-        SDL_SemPost(Android_ResumeSem);
     }
+
+    /* Signal the resume semaphore so the event loop knows to resume and restore the GL Context
+     * We can't restore the GL Context here because it needs to be done on the SDL main thread
+     * and this function will be called from the Java thread instead.
+     */
+    SDL_SemPost(Android_ResumeSem);
 
     SDL_UnlockMutex(Android_ActivityMutex);
 }

@@ -505,10 +505,14 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                     mSDLThread = new Thread(new SDLMain(), "SDLThread");
                     mSurface.enableSensor(Sensor.TYPE_ACCELEROMETER, true);
                     mSDLThread.start();
+                    
+                    // No nativeResume(), don't signal Android_ResumeSem
+                    mSurface.handleResume();
+                } else {
+                    nativeResume();
+                    mSurface.handleResume();
                 }
 
-                nativeResume();
-                mSurface.handleResume();
                 mCurrentNativeState = mNextNativeState;
             }
         }
