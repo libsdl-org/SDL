@@ -399,13 +399,6 @@ openslES_CreatePCMPlayer(_THIS)
         /* goto failed; */
     }
 
-    /* set the player's state to playing */
-    result = (*bqPlayerItf)->SetPlayState(bqPlayerItf, SL_PLAYSTATE_PLAYING);
-    if (SL_RESULT_SUCCESS != result) {
-        LOGE("Play set state failed");
-        goto failed;
-    }
-
     /* Create the audio buffer semaphore */
     audiodata->playsem = SDL_CreateSemaphore(NUM_BUFFERS - 1);
     if (!audiodata->playsem) {
@@ -422,6 +415,13 @@ openslES_CreatePCMPlayer(_THIS)
 
     for (i = 0; i < NUM_BUFFERS; i++) {
         audiodata->pmixbuff[i] = audiodata->mixbuff + i * this->spec.size;
+    }
+
+    /* set the player's state to playing */
+    result = (*bqPlayerItf)->SetPlayState(bqPlayerItf, SL_PLAYSTATE_PLAYING);
+    if (SL_RESULT_SUCCESS != result) {
+        LOGE("Play set state failed");
+        goto failed;
     }
 
     return 0;
