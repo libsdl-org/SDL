@@ -30,14 +30,23 @@
 #include "SDL_androidkeyboard.h"
 #include "SDL_androidwindow.h"
 
-#if !SDL_AUDIO_DISABLED
 /* Can't include sysaudio "../../audio/android/SDL_androidaudio.h"
  * because of THIS redefinition */
+
+#if !SDL_AUDIO_DISABLED && SDL_AUDIO_DRIVER_ANDROID
 extern void ANDROIDAUDIO_ResumeDevices(void);
 extern void ANDROIDAUDIO_PauseDevices(void);
 #else
 static void ANDROIDAUDIO_ResumeDevices(void) {}
 static void ANDROIDAUDIO_PauseDevices(void) {}
+#endif
+
+#if !SDL_AUDIO_DISABLED && SDL_AUDIO_DRIVER_OPENSLES
+extern void openslES_ResumeDevices(void);
+extern void openslES_PauseDevices(void);
+#else
+static void openslES_ResumeDevices(void) {}
+static void openslES_PauseDevices(void) {}
 #endif
 
 /* Number of 'type' events in the event queue */
@@ -95,12 +104,14 @@ Android_PumpEvents(_THIS)
         SDL_UnlockMutex(Android_ActivityMutex);
 
         ANDROIDAUDIO_PauseDevices();
+        openslES_PauseDevices();
 
         if (SDL_SemWait(Android_ResumeSem) == 0) {
 
             isPaused = 0;
 
             ANDROIDAUDIO_ResumeDevices();
+            openslES_ResumeDevices();
 
             /* Restore the GL Context from here, as this operation is thread dependent */
             if (!SDL_HasEvent(SDL_QUIT)) {
@@ -111,7 +122,6 @@ Android_PumpEvents(_THIS)
 
             /* Make sure SW Keyboard is restored when an app becomes foreground */
             if (SDL_IsTextInputActive()) {
-                SDL_VideoDevice *_this = SDL_GetVideoDevice();
                 Android_StartTextInput(_this); /* Only showTextInput */
             }
         }
@@ -144,6 +154,7 @@ Android_PumpEvents(_THIS)
             isPaused = 0;
 
             ANDROIDAUDIO_ResumeDevices();
+            openslES_ResumeDevices();
 
             /* Restore the GL Context from here, as this operation is thread dependent */
             if (!SDL_HasEvent(SDL_QUIT)) {
@@ -154,7 +165,6 @@ Android_PumpEvents(_THIS)
 
             /* Make sure SW Keyboard is restored when an app becomes foreground */
             if (SDL_IsTextInputActive()) {
-                SDL_VideoDevice *_this = SDL_GetVideoDevice();
                 Android_StartTextInput(_this); /* Only showTextInput */
             }
         }
@@ -166,6 +176,7 @@ Android_PumpEvents(_THIS)
             SDL_UnlockMutex(Android_ActivityMutex);
 
             ANDROIDAUDIO_PauseDevices();
+            openslES_PauseDevices();
 
             isPaused = 1;
         }
