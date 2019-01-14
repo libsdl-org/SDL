@@ -56,12 +56,12 @@ static SLObjectItf outputMixObject = NULL;
 /* static const SLEnvironmentalReverbSettings reverbSettings = SL_I3DL2_ENVIRONMENT_PRESET_STONECORRIDOR; */
 
 /* buffer queue player interfaces */
-static SLObjectItf                   bqPlayerObject = NULL;
-static SLPlayItf                     bqPlayerItf;
-static SLAndroidSimpleBufferQueueItf bqPlayerBufferQueue;
-/*static SLEffectSendItf          bqPlayerEffectSend; */
-static SLMuteSoloItf                 bqPlayerMuteSolo;
-static SLVolumeItf                   bqPlayerVolume;
+static SLObjectItf                   bqPlayerObject      = NULL;
+static SLPlayItf                     bqPlayerPlay        = NULL;
+static SLAndroidSimpleBufferQueueItf bqPlayerBufferQueue = NULL;
+/*static SLEffectSendItf          bqPlayerEffectSend = NULL; */
+static SLMuteSoloItf                 bqPlayerMuteSolo    = NULL;
+static SLVolumeItf                   bqPlayerVolume      = NULL;
 
 #if 0
 /* recorder interfaces TODO */
@@ -353,7 +353,7 @@ openslES_CreatePCMPlayer(_THIS)
     }
 
     /* get the play interface */
-    result = (*bqPlayerObject)->GetInterface(bqPlayerObject, SL_IID_PLAY, &bqPlayerItf);
+    result = (*bqPlayerObject)->GetInterface(bqPlayerObject, SL_IID_PLAY, &bqPlayerPlay);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("SL_IID_PLAY interface get failed");
         goto failed;
@@ -418,7 +418,7 @@ openslES_CreatePCMPlayer(_THIS)
     }
 
     /* set the player's state to playing */
-    result = (*bqPlayerItf)->SetPlayState(bqPlayerItf, SL_PLAYSTATE_PLAYING);
+    result = (*bqPlayerPlay)->SetPlayState(bqPlayerPlay, SL_PLAYSTATE_PLAYING);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("Play set state failed");
         goto failed;
@@ -440,9 +440,11 @@ openslES_DestroyPCMPlayer(_THIS)
     SLresult result;
 
     /* set the player's state to 'stopped' */
-    result = (*bqPlayerItf)->SetPlayState(bqPlayerItf, SL_PLAYSTATE_STOPPED);
-    if (SL_RESULT_SUCCESS != result) {
-        SDL_SetError("Stopped set state failed");
+    if (bqPlayerPlay != NULL) {
+        result = (*bqPlayerPlay)->SetPlayState(bqPlayerPlay, SL_PLAYSTATE_STOPPED);
+        if (SL_RESULT_SUCCESS != result) {
+            SDL_SetError("Stopped set state failed");
+        }
     }
 
     /* destroy buffer queue audio player object, and invalidate all associated interfaces */
@@ -451,7 +453,7 @@ openslES_DestroyPCMPlayer(_THIS)
         (*bqPlayerObject)->Destroy(bqPlayerObject);
 
         bqPlayerObject = NULL;
-        bqPlayerItf = NULL;
+        bqPlayerPlay = NULL;
         bqPlayerBufferQueue = NULL;
         /* bqPlayerEffectSend = NULL; */
         bqPlayerMuteSolo = NULL;
@@ -603,7 +605,7 @@ void openslES_ResumeDevices()
     SLresult result;
 
     /* set the player's state to 'playing' */
-    result = (*bqPlayerItf)->SetPlayState(bqPlayerItf, SL_PLAYSTATE_PLAYING);
+    result = (*bqPlayerPlay)->SetPlayState(bqPlayerPlay, SL_PLAYSTATE_PLAYING);
     if (SL_RESULT_SUCCESS != result) {
         SDL_SetError("Play set state failed");
     }
@@ -614,7 +616,7 @@ void openslES_PauseDevices()
     SLresult result;
 
     /* set the player's state to 'paused' */
-    result = (*bqPlayerItf)->SetPlayState(bqPlayerItf, SL_PLAYSTATE_PAUSED);
+    result = (*bqPlayerPlay)->SetPlayState(bqPlayerPlay, SL_PLAYSTATE_PAUSED);
     if (SL_RESULT_SUCCESS != result) {
         SDL_SetError("Playe set state failed");
     }
