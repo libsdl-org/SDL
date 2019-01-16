@@ -118,7 +118,6 @@ public class SDLControllerManager
 
 }
 
-/* A null joystick handler for API level < 12 devices (the accelerometer is handled separately) */
 class SDLJoystickHandler {
 
     /**
@@ -138,7 +137,7 @@ class SDLJoystickHandler {
 }
 
 /* Actual joystick functionality available for API >= 12 devices */
-class SDLJoystickHandler_API12 extends SDLJoystickHandler {
+class SDLJoystickHandler_API16 extends SDLJoystickHandler {
 
     static class SDLJoystick {
         public int device_id;
@@ -170,7 +169,7 @@ class SDLJoystickHandler_API12 extends SDLJoystickHandler {
 
     private ArrayList<SDLJoystick> mJoysticks;
 
-    public SDLJoystickHandler_API12() {
+    public SDLJoystickHandler_API16() {
 
         mJoysticks = new ArrayList<SDLJoystick>();
     }
@@ -274,6 +273,12 @@ class SDLJoystickHandler_API12 extends SDLJoystickHandler {
     }
 
     public String getJoystickDescriptor(InputDevice joystickDevice) {
+        String desc = joystickDevice.getDescriptor();
+
+        if (desc != null && !desc.isEmpty()) {
+            return desc;
+        }
+
         return joystickDevice.getName();
     }
     public int getProductId(InputDevice joystickDevice) {
@@ -284,20 +289,6 @@ class SDLJoystickHandler_API12 extends SDLJoystickHandler {
     }
     public int getButtonMask(InputDevice joystickDevice) {
         return -1;
-    }
-}
-
-class SDLJoystickHandler_API16 extends SDLJoystickHandler_API12 {
-
-    @Override
-    public String getJoystickDescriptor(InputDevice joystickDevice) {
-        String desc = joystickDevice.getDescriptor();
-
-        if (desc != null && !desc.isEmpty()) {
-            return desc;
-        }
-
-        return super.getJoystickDescriptor(joystickDevice);
     }
 }
 
