@@ -245,12 +245,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         mSingleton = this;
         SDL.setContext(this);
 
-        if (Build.VERSION.SDK_INT >= 11) {
-            mClipboardHandler = new SDLClipboardHandler_API11();
-        } else {
-            /* Before API 11, no clipboard notification (eg no SDL_CLIPBOARDUPDATE) */
-            mClipboardHandler = new SDLClipboardHandler_Old();
-        }
+        mClipboardHandler = new SDLClipboardHandler_API11();
 
         mHIDDeviceManager = HIDDeviceManager.acquire(this);
 
@@ -1035,10 +1030,8 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static boolean isTextInputEvent(KeyEvent event) {
       
         // Key pressed with Ctrl should be sent as SDL_KEYDOWN/SDL_KEYUP and not SDL_TEXTINPUT
-        if (Build.VERSION.SDK_INT >= 11) {
-            if (event.isCtrlPressed()) {
-                return false;
-            }  
+        if (event.isCtrlPressed()) {
+            return false;
         }
 
         return event.isPrintingKey() || event.getKeyCode() == KeyEvent.KEYCODE_SPACE;
@@ -1557,9 +1550,7 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         mDisplay = ((WindowManager)context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
         mSensorManager = (SensorManager)context.getSystemService(Context.SENSOR_SERVICE);
 
-        if (Build.VERSION.SDK_INT >= 12) {
-            setOnGenericMotionListener(SDLActivity.getMotionListener());
-        }
+        setOnGenericMotionListener(SDLActivity.getMotionListener());
 
         // Some arbitrary defaults to avoid a potential division by zero
         mWidth = 1.0f;
@@ -1776,17 +1767,12 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         int i = -1;
         float x,y,p;
 
-        // !!! FIXME: dump this SDK check after 2.0.4 ships and require API14.
         // 12290 = Samsung DeX mode desktop mouse
         if ((event.getSource() == InputDevice.SOURCE_MOUSE || event.getSource() == 12290) && SDLActivity.mSeparateMouseAndTouch) {
-            if (Build.VERSION.SDK_INT < 14) {
-                mouseButton = 1; // all mouse buttons are the left button
-            } else {
-                try {
-                    mouseButton = (Integer) event.getClass().getMethod("getButtonState").invoke(event);
-                } catch(Exception e) {
-                    mouseButton = 1;    // oh well.
-                }
+            try {
+                mouseButton = (Integer) event.getClass().getMethod("getButtonState").invoke(event);
+            } catch(Exception e) {
+                mouseButton = 1;    // oh well.
             }
 
             // We need to check if we're in relative mouse mode and get the axis offset rather than the x/y values
@@ -2162,35 +2148,5 @@ class SDLClipboardHandler_API11 implements
         SDLActivity.onNativeClipboardChanged();
     }
 
-}
-
-class SDLClipboardHandler_Old implements
-    SDLClipboardHandler {
-   
-    protected android.text.ClipboardManager mClipMgrOld;
-  
-    SDLClipboardHandler_Old() {
-       mClipMgrOld = (android.text.ClipboardManager) SDL.getContext().getSystemService(Context.CLIPBOARD_SERVICE);
-    }
-
-    @Override
-    public boolean clipboardHasText() {
-       return mClipMgrOld.hasText();
-    }
-
-    @Override
-    public String clipboardGetText() {
-       CharSequence text;
-       text = mClipMgrOld.getText();
-       if (text != null) {
-          return text.toString();
-       }
-       return null;
-    }
-
-    @Override
-    public void clipboardSetText(String string) {
-       mClipMgrOld.setText(string);
-    }
 }
 

@@ -13,13 +13,13 @@ android {
         if (buildAsApplication) {
             applicationId "org.libsdl.app"
         }
-        minSdkVersion 14
+        minSdkVersion 16
         targetSdkVersion 26
         versionCode 1
         versionName "1.0"
         externalNativeBuild {
             ndkBuild {
-                arguments "APP_PLATFORM=android-14"
+                arguments "APP_PLATFORM=android-16"
                 abiFilters 'armeabi-v7a', 'arm64-v8a', 'x86', 'x86_64'
             }
         }

@@ -39,12 +39,8 @@ public class SDLControllerManager
         if (mJoystickHandler == null) {
             if (Build.VERSION.SDK_INT >= 19) {
                 mJoystickHandler = new SDLJoystickHandler_API19();
-            } else if (Build.VERSION.SDK_INT >= 16) {
-                mJoystickHandler = new SDLJoystickHandler_API16();
-            } else if (Build.VERSION.SDK_INT >= 12) {
-                mJoystickHandler = new SDLJoystickHandler_API12();
             } else {
-                mJoystickHandler = new SDLJoystickHandler();
+                mJoystickHandler = new SDLJoystickHandler_API16();
             }
         }
 
@@ -482,21 +478,18 @@ class SDLHapticHandler {
         // so the first controller seen by SDL matches what the receiver
         // considers to be the first controller
 
-        if (Build.VERSION.SDK_INT >= 16)
-        {
-            for (int i = deviceIds.length - 1; i > -1; i--) {
-                SDLHaptic haptic = getHaptic(deviceIds[i]);
-                if (haptic == null) {
-                    InputDevice device = InputDevice.getDevice(deviceIds[i]);
-                    Vibrator vib = device.getVibrator();
-                    if (vib.hasVibrator()) {
-                        haptic = new SDLHaptic();
-                        haptic.device_id = deviceIds[i];
-                        haptic.name = device.getName();
-                        haptic.vib = vib;
-                        mHaptics.add(haptic);
-                        SDLControllerManager.nativeAddHaptic(haptic.device_id, haptic.name);
-                    }
+        for (int i = deviceIds.length - 1; i > -1; i--) {
+            SDLHaptic haptic = getHaptic(deviceIds[i]);
+            if (haptic == null) {
+                InputDevice device = InputDevice.getDevice(deviceIds[i]);
+                Vibrator vib = device.getVibrator();
+                if (vib.hasVibrator()) {
+                    haptic = new SDLHaptic();
+                    haptic.device_id = deviceIds[i];
+                    haptic.name = device.getName();
+                    haptic.vib = vib;
+                    mHaptics.add(haptic);
+                    SDLControllerManager.nativeAddHaptic(haptic.device_id, haptic.name);
                 }
             }
         }
@@ -504,11 +497,7 @@ class SDLHapticHandler {
         /* Check VIBRATOR_SERVICE */
         Vibrator vib = (Vibrator) SDL.getContext().getSystemService(Context.VIBRATOR_SERVICE);
         if (vib != null) {
-            if (Build.VERSION.SDK_INT >= 11) {
-                hasVibratorService = vib.hasVibrator();
-            } else {
-                hasVibratorService = true;
-            }
+            hasVibratorService = vib.hasVibrator();
 
             if (hasVibratorService) {
                 SDLHaptic haptic = getHaptic(deviceId_VIBRATOR_SERVICE);
