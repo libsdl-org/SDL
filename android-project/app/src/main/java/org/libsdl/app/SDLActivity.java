@@ -500,7 +500,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                     mSDLThread = new Thread(new SDLMain(), "SDLThread");
                     mSurface.enableSensor(Sensor.TYPE_ACCELEROMETER, true);
                     mSDLThread.start();
-                    
+
                     // No nativeResume(), don't signal Android_ResumeSem
                     mSurface.handleResume();
                 } else {
@@ -572,7 +572,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                                         View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN |
                                         View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION |
                                         View.SYSTEM_UI_FLAG_LAYOUT_STABLE | View.INVISIBLE;
-                            window.getDecorView().setSystemUiVisibility(flags);        
+                            window.getDecorView().setSystemUiVisibility(flags);
                             window.addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN);
                             window.clearFlags(WindowManager.LayoutParams.FLAG_FORCE_NOT_FULLSCREEN);
                             SDLActivity.mFullscreenModeActive = true;
@@ -597,7 +597,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
                     InputMethodManager imm = (InputMethodManager) context.getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.hideSoftInputFromWindow(mTextEdit.getWindowToken(), 0);
-                    
+
                     mScreenKeyboardShown = false;
                 }
                 break;
@@ -664,14 +664,14 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             // or 500ms have passed.
 
             boolean bShouldWait = false;
-            
+
             if (data instanceof Integer) {
                 // Let's figure out if we're already laid out fullscreen or not.
                 Display display = ((WindowManager)getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
                 android.util.DisplayMetrics realMetrics = new android.util.DisplayMetrics();
                 display.getRealMetrics( realMetrics );
-        
-                boolean bFullscreenLayout = ((realMetrics.widthPixels == mSurface.getWidth()) && 
+
+                boolean bFullscreenLayout = ((realMetrics.widthPixels == mSurface.getWidth()) &&
                                              (realMetrics.heightPixels == mSurface.getHeight()));
 
                 if (((Integer)data).intValue() == 1) {
@@ -696,7 +696,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                 // size we need, instead of grabbing a size that's still got
                 // the navigation and/or status bars before they're hidden.
                 //
-                // We'll wait for up to half a second, because some devices 
+                // We'll wait for up to half a second, because some devices
                 // take a surprisingly long time for the surface resize, but
                 // then we'll just give up and return.
                 //
@@ -760,7 +760,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     /**
      * This method is called by SDL using JNI.
      * This is a static method for JNI convenience, it calls a non-static method
-     * so that is can be overridden  
+     * so that is can be overridden
      */
     public static void setOrientation(int w, int h, boolean resizable, String hint)
     {
@@ -768,11 +768,11 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             mSingleton.setOrientationBis(w, h, resizable, hint);
         }
     }
-   
+
     /**
      * This can be overridden
      */
-    public void setOrientationBis(int w, int h, boolean resizable, String hint) 
+    public void setOrientationBis(int w, int h, boolean resizable, String hint)
     {
         int orientation = -1;
 
@@ -812,7 +812,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     /**
      * This method is called by SDL using JNI.
      */
-    public static boolean isScreenKeyboardShown() 
+    public static boolean isScreenKeyboardShown()
     {
         if (mTextEdit == null) {
             return false;
@@ -837,7 +837,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             return false;
         }
 
-        // DeX mode in Samsung Experience 9.0 and earlier doesn't support relative mice properly under 
+        // DeX mode in Samsung Experience 9.0 and earlier doesn't support relative mice properly under
         // Android 7 APIs, and simply returns no data under Android 8 APIs.
         //
         // This is fixed in Samsung Experience 9.5, which corresponds to Android 8.1.0, and
@@ -919,7 +919,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
      */
     public static boolean isChromebook() {
         return getContext().getPackageManager().hasSystemFeature("org.chromium.arc.device_management");
-    }    
+    }
 
     /**
      * This method is called by SDL using JNI.
@@ -965,7 +965,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
                 }
             }
             /* environment variables set! */
-            return true; 
+            return true;
         } catch (Exception e) {
            Log.v("SDL", "exception " + e.toString());
         }
@@ -973,7 +973,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     }
 
     // This method is called by SDLControllerManager's API 26 Generic Motion Handler.
-    public static View getContentView() 
+    public static View getContentView()
     {
         return mSingleton.mLayout;
     }
@@ -1028,7 +1028,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     }
 
     public static boolean isTextInputEvent(KeyEvent event) {
-      
+
         // Key pressed with Ctrl should be sent as SDL_KEYDOWN/SDL_KEYUP and not SDL_TEXTINPUT
         if (event.isCtrlPressed()) {
             return false;
@@ -1370,7 +1370,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             }
 
         }
-    }    
+    }
 
     /**
      * This method is called by SDL using JNI.
@@ -1870,7 +1870,7 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
             // Since we may have an orientation set, we won't receive onConfigurationChanged events.
             // We thus should check here.
             int newOrientation = SDLActivity.SDL_ORIENTATION_UNKNOWN;
-    
+
             float x, y;
             switch (mDisplay.getRotation()) {
                 case Surface.ROTATION_90:
@@ -1904,7 +1904,7 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                                       y / SensorManager.GRAVITY_EARTH,
                                       event.values[2] / SensorManager.GRAVITY_EARTH);
 
-            
+
         }
     }
 
@@ -1972,7 +1972,7 @@ class DummyEdit extends View implements View.OnKeyListener {
 
     @Override
     public boolean onKey(View v, int keyCode, KeyEvent event) {
-        /* 
+        /*
          * This handles the hardware keyboard input
          */
         if (event.getAction() == KeyEvent.ACTION_DOWN) {
@@ -2092,7 +2092,7 @@ class SDLInputConnection extends BaseInputConnection {
             while (beforeLength-- > 0) {
                boolean ret_key = sendKeyEvent(new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DEL))
                               && sendKeyEvent(new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DEL));
-               ret = ret && ret_key; 
+               ret = ret && ret_key;
             }
             return ret;
         }
@@ -2111,7 +2111,7 @@ interface SDLClipboardHandler {
 
 
 class SDLClipboardHandler_API11 implements
-    SDLClipboardHandler, 
+    SDLClipboardHandler,
     android.content.ClipboardManager.OnPrimaryClipChangedListener {
 
     protected android.content.ClipboardManager mClipMgr;
@@ -2142,7 +2142,7 @@ class SDLClipboardHandler_API11 implements
        mClipMgr.setText(string);
        mClipMgr.addPrimaryClipChangedListener(this);
     }
-    
+
     @Override
     public void onPrimaryClipChanged() {
         SDLActivity.onNativeClipboardChanged();
