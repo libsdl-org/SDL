@@ -34,7 +34,9 @@ extern void Android_SetScreenResolution(SDL_Window *window, int surfaceWidth, in
 
 typedef struct SDL_VideoData
 {
-    SDL_Rect        textRect;
+    SDL_Rect textRect;
+    int      isPaused;
+    int      isPausing;
 } SDL_VideoData;
 
 extern int Android_SurfaceWidth;

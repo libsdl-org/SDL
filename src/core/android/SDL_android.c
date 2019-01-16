@@ -800,7 +800,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceCreated)(JNIEnv *env, j
 {
     SDL_LockMutex(Android_ActivityMutex);
 
-    if (Android_Window && Android_Window->driverdata)
+    if (Android_Window)
     {
         SDL_WindowData *data = (SDL_WindowData *) Android_Window->driverdata;
 
@@ -818,7 +818,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceChanged)(JNIEnv *env, j
 {
     SDL_LockMutex(Android_ActivityMutex);
 
-    if (Android_Window && Android_Window->driverdata)
+    if (Android_Window)
     {
         SDL_VideoDevice *_this = SDL_GetVideoDevice();
         SDL_WindowData  *data  = (SDL_WindowData *) Android_Window->driverdata;
@@ -839,7 +839,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceDestroyed)(JNIEnv *env,
 {
     SDL_LockMutex(Android_ActivityMutex);
 
-    if (Android_Window && Android_Window->driverdata)
+    if (Android_Window)
     {
         SDL_VideoDevice *_this = SDL_GetVideoDevice();
         SDL_WindowData  *data  = (SDL_WindowData *) Android_Window->driverdata;
