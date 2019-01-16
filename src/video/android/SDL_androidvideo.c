@@ -172,7 +172,11 @@ VideoBootStrap Android_bootstrap = {
 int
 Android_VideoInit(_THIS)
 {
-    SDL_DisplayMode mode;
+    SDL_VideoData   *videodata = (SDL_VideoData *)_this->driverdata;
+    SDL_DisplayMode  mode;
+
+    videodata->isPaused  = SDL_FALSE;
+    videodata->isPausing = SDL_FALSE;
 
     mode.format = Android_ScreenFormat;
     mode.w = Android_DeviceWidth;

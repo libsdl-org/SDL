@@ -59,25 +59,29 @@ SDL_NumberOfEvents(Uint32 type)
 static void
 android_egl_context_restore(SDL_Window *window)
 {
-    SDL_Event event;
-    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-    if (SDL_GL_MakeCurrent(window, (SDL_GLContext) data->egl_context) < 0) {
-        /* The context is no longer valid, create a new one */
-        data->egl_context = (EGLContext) SDL_GL_CreateContext(window);
-        SDL_GL_MakeCurrent(window, (SDL_GLContext) data->egl_context);
-        event.type = SDL_RENDER_DEVICE_RESET;
-        SDL_PushEvent(&event);
+    if (window) {
+        SDL_Event event;
+        SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+        if (SDL_GL_MakeCurrent(window, (SDL_GLContext) data->egl_context) < 0) {
+            /* The context is no longer valid, create a new one */
+            data->egl_context = (EGLContext) SDL_GL_CreateContext(window);
+            SDL_GL_MakeCurrent(window, (SDL_GLContext) data->egl_context);
+            event.type = SDL_RENDER_DEVICE_RESET;
+            SDL_PushEvent(&event);
+        }
     }
 }
 
 static void
 android_egl_context_backup(SDL_Window *window)
 {
-    /* Keep a copy of the EGL Context so we can try to restore it when we resume */
-    SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
-    data->egl_context = SDL_GL_GetCurrentContext();
-    /* We need to do this so the EGLSurface can be freed */
-    SDL_GL_MakeCurrent(window, NULL);
+    if (window) {
+        /* Keep a copy of the EGL Context so we can try to restore it when we resume */
+        SDL_WindowData *data = (SDL_WindowData *) window->driverdata;
+        data->egl_context = SDL_GL_GetCurrentContext();
+        /* We need to do this so the EGLSurface can be freed */
+        SDL_GL_MakeCurrent(window, NULL);
+    }
 }
 
 
@@ -93,10 +97,9 @@ android_egl_context_backup(SDL_Window *window)
 void
 Android_PumpEvents(_THIS)
 {
-    static int isPaused = 0;
-    static int isPausing = 0;
+    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
 
-    if (isPaused) {
+    if (videodata->isPaused) {
 
         /* Make sure this is the last thing we do before pausing */
         SDL_LockMutex(Android_ActivityMutex);
@@ -108,7 +111,7 @@ Android_PumpEvents(_THIS)
 
         if (SDL_SemWait(Android_ResumeSem) == 0) {
 
-            isPaused = 0;
+            videodata->isPaused = 0;
 
             ANDROIDAUDIO_ResumeDevices();
             openslES_ResumeDevices();
@@ -126,16 +129,16 @@ Android_PumpEvents(_THIS)
             }
         }
     } else {
-        if (isPausing || SDL_SemTryWait(Android_PauseSem) == 0) {
+        if (videodata->isPausing || SDL_SemTryWait(Android_PauseSem) == 0) {
             /* We've been signaled to pause (potentially several times), but before we block ourselves,
              * we need to make sure that the very last event (of the first pause sequence, if several)
              * has reached the app */
             if (SDL_NumberOfEvents(SDL_APP_DIDENTERBACKGROUND) > SDL_SemValue(Android_PauseSem)) {
-                isPausing = 1;
+                videodata->isPausing = 1;
             }
             else {
-                isPausing = 0;
-                isPaused = 1;
+                videodata->isPausing = 0;
+                videodata->isPaused = 1;
             }
         }
     }
@@ -146,12 +149,12 @@ Android_PumpEvents(_THIS)
 void
 Android_PumpEvents(_THIS)
 {
-    static int isPaused = 0;
+    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
 
-    if (isPaused) {
+    if (videodata->isPaused) {
         if (SDL_SemTryWait(Android_ResumeSem) == 0) {
 
-            isPaused = 0;
+            videodata->isPaused = 0;
 
             ANDROIDAUDIO_ResumeDevices();
             openslES_ResumeDevices();
@@ -178,7 +181,7 @@ Android_PumpEvents(_THIS)
             ANDROIDAUDIO_PauseDevices();
             openslES_PauseDevices();
 
-            isPaused = 1;
+            videodata->isPaused = 1;
         }
     }
 }
