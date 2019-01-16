@@ -20,7 +20,7 @@ def save_controller(line):
     bindings = sorted(match.group(4).split(","))
     if (bindings[0] == ""):
         bindings.pop(0)
-    entry.extend(",".join(bindings) + ",")
+    entry.extend(",".join(bindings))
     entry.append(match.group(5))
     controllers.append(entry)
 
