@@ -1770,7 +1770,10 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         float x,y,p;
 
         // 12290 = Samsung DeX mode desktop mouse
-        if ((event.getSource() == InputDevice.SOURCE_MOUSE || event.getSource() == 12290) && SDLActivity.mSeparateMouseAndTouch) {
+        // 12290 = 0x3002 = 0x2002 | 0x1002 = SOURCE_MOUSE | SOURCE_TOUCHSCREEN
+        // 0x2   = SOURCE_CLASS_POINTER
+        if ((event.getSource() == InputDevice.SOURCE_MOUSE || event.getSource() == (InputDevice.SOURCE_MOUSE | InputDevice.SOURCE_TOUCHSCREEN))
+                && SDLActivity.mSeparateMouseAndTouch) {
             try {
                 mouseButton = (Integer) event.getClass().getMethod("getButtonState").invoke(event);
             } catch(Exception e) {
