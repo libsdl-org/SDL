@@ -72,10 +72,13 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeDropFile)(
         JNIEnv *env, jclass jcls,
         jstring filename);
 
-JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeResize)(
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetScreenResolution)(
         JNIEnv *env, jclass jcls,
         jint surfaceWidth, jint surfaceHeight,
         jint deviceWidth, jint deviceHeight, jint format, jfloat rate);
+
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeResize)(
+        JNIEnv *env, jclass cls);
 
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeSurfaceCreated)(
         JNIEnv *env, jclass jcls);
@@ -683,15 +686,29 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeDropFile)(
     SDL_SendDropComplete(NULL);
 }
 
-/* Resize */
-JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeResize)(
+/* Set screen resolution */
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetScreenResolution)(
                                     JNIEnv *env, jclass jcls,
                                     jint surfaceWidth, jint surfaceHeight,
                                     jint deviceWidth, jint deviceHeight, jint format, jfloat rate)
 {
     SDL_LockMutex(Android_ActivityMutex);
 
-    Android_SetScreenResolution(Android_Window, surfaceWidth, surfaceHeight, deviceWidth, deviceHeight, format, rate);
+    Android_SetScreenResolution(surfaceWidth, surfaceHeight, deviceWidth, deviceHeight, format, rate);
+
+    SDL_UnlockMutex(Android_ActivityMutex);
+}
+
+/* Resize */
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeResize)(
+                                    JNIEnv *env, jclass jcls)
+{
+    SDL_LockMutex(Android_ActivityMutex);
+
+    if (Android_Window)
+    {
+        Android_SendResize(Android_Window);
+    }
 
     SDL_UnlockMutex(Android_ActivityMutex);
 }
