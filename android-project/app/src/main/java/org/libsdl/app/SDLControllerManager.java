@@ -620,51 +620,24 @@ class SDLGenericMotionListener_API24 extends SDLGenericMotionListener_API12 {
 
     @Override
     public boolean onGenericMotion(View v, MotionEvent event) {
-        float x, y;
-        int action;
 
-        switch ( event.getSource() ) {
-            case InputDevice.SOURCE_JOYSTICK:
-            case InputDevice.SOURCE_GAMEPAD:
-            case InputDevice.SOURCE_DPAD:
-                return SDLControllerManager.handleJoystickMotionEvent(event);
-
-            case InputDevice.SOURCE_MOUSE:
-                if (!SDLActivity.mSeparateMouseAndTouch) {
-                    break;
-                }
-                action = event.getActionMasked();
-                switch (action) {
-                    case MotionEvent.ACTION_SCROLL:
-                        x = event.getAxisValue(MotionEvent.AXIS_HSCROLL, 0);
-                        y = event.getAxisValue(MotionEvent.AXIS_VSCROLL, 0);
-                        SDLActivity.onNativeMouse(0, action, x, y, false);
+        // Handle relative mouse mode
+        if (mRelativeModeEnabled) {
+            if (event.getSource() == InputDevice.SOURCE_MOUSE) {
+                if (SDLActivity.mSeparateMouseAndTouch) {
+                    int action = event.getActionMasked();
+                    if (action == MotionEvent.ACTION_HOVER_MOVE) {
+                        float x = event.getAxisValue(MotionEvent.AXIS_RELATIVE_X);
+                        float y = event.getAxisValue(MotionEvent.AXIS_RELATIVE_Y);
+                        SDLActivity.onNativeMouse(0, action, x, y, true);
                         return true;
-
-                    case MotionEvent.ACTION_HOVER_MOVE:
-                        if (mRelativeModeEnabled) {
-                            x = event.getAxisValue(MotionEvent.AXIS_RELATIVE_X);
-                            y = event.getAxisValue(MotionEvent.AXIS_RELATIVE_Y);
-                        }
-                        else {
-                            x = event.getX(0);
-                            y = event.getY(0);
-                        }
-
-                        SDLActivity.onNativeMouse(0, action, x, y, mRelativeModeEnabled);
-                        return true;
-
-                    default:
-                        break;
+                    }
                 }
-                break;
-
-            default:
-                break;
+            }
         }
 
-        // Event was not managed
-        return false;
+        // Event was not managed, call SDLGenericMotionListener_API12 method
+        return super.onGenericMotion(v, event);
     }
 
     @Override
