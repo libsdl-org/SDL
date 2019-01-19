@@ -1187,6 +1187,7 @@ SDL_CreateTextureFromSurface(SDL_Renderer * renderer, SDL_Surface * surface)
 {
     const SDL_PixelFormat *fmt;
     SDL_bool needAlpha;
+    SDL_bool direct_update;
     Uint32 i;
     Uint32 format;
     SDL_Texture *texture;
@@ -1233,6 +1234,20 @@ SDL_CreateTextureFromSurface(SDL_Renderer * renderer, SDL_Surface * surface)
     }
 
     if (format == surface->format->format) {
+        if (surface->format->Amask && SDL_HasColorKey(surface)) {
+            /* Surface and Renderer formats are identicals. 
+             * Intermediate conversion is needed to convert color key to alpha (SDL_ConvertColorkeyToAlpha()). */
+            direct_update = SDL_FALSE;
+        } else {
+            /* Update Texture directly */
+            direct_update = SDL_TRUE;
+        }
+    } else {
+        /* Surface and Renderer formats are differents, it needs an intermediate conversion. */
+        direct_update = SDL_FALSE;
+    }
+
+    if (direct_update) {
         if (SDL_MUSTLOCK(surface)) {
             SDL_LockSurface(surface);
             SDL_UpdateTexture(texture, NULL, surface->pixels, surface->pitch);
