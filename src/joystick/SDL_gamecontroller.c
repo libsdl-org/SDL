@@ -998,7 +998,7 @@ static ControllerMapping_t *SDL_CreateMappingForAndroidController(const char *na
 
     /* Remove trailing comma */
     {
-        int pos = strlen(mapping_string) - 1;
+        int pos = (int)SDL_strlen(mapping_string) - 1;
         if (pos >= 0) {
             if (mapping_string[pos] == ',') {
                 mapping_string[pos] = '\0';
