@@ -331,13 +331,13 @@ JNIEnv* Android_JNI_GetEnv(void)
     /* Get JNIEnv from the Thread local storage */
     JNIEnv *env = pthread_getspecific(mThreadKey);
     if (env == NULL) {
-        /* If it fails, try to attach ! (e.g the thread isn't * created with SDL_CreateThread() */
+        /* If it fails, try to attach ! (e.g the thread isn't created with SDL_CreateThread() */
         int status;
 
         /* There should be a JVM */
         if (mJavaVM == NULL) {
             __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed, there is no JavaVM");
-            return 0;
+            return NULL;
         }
 
         /* Attach the current thread to the JVM and get a JNIEnv.
