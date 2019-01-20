@@ -49,12 +49,14 @@ static void openslES_ResumeDevices(void) {}
 static void openslES_PauseDevices(void) {}
 #endif
 
+#if SDL_ANDROID_BLOCK_ON_PAUSE
 /* Number of 'type' events in the event queue */
 static int
 SDL_NumberOfEvents(Uint32 type)
 {
     return SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, type, type);
 }
+#endif /* SDL_ANDROID_BLOCK_ON_PAUSE */
 
 static void
 android_egl_context_restore(SDL_Window *window)
@@ -186,7 +188,7 @@ Android_PumpEvents(_THIS)
     }
 }
 
-#endif
+#endif /* SDL_ANDROID_BLOCK_ON_PAUSE */
 
 #endif /* SDL_VIDEO_DRIVER_ANDROID */
 
