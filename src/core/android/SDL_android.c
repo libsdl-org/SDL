@@ -331,7 +331,27 @@ JNIEnv* Android_JNI_GetEnv(void)
     /* Get JNIEnv from the Thread local storage */
     JNIEnv *env = pthread_getspecific(mThreadKey);
     if (env == NULL) {
-        __android_log_print(ANDROID_LOG_ERROR, "SDL", "JNIEnv is NULL. Call Android_JNI_SetupThread() first.");
+        /* If it fails, try to attach ! (e.g the thread isn't * created with SDL_CreateThread() */
+        int status;
+
+        /* There should be a JVM */
+        if (mJavaVM == NULL) {
+            __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed, there is no JavaVM");
+            return 0;
+        }
+
+        /* Attach the current thread to the JVM and get a JNIEnv.
+         * It will be detached by pthread_create destructor 'Android_JNI_ThreadDestroyed' */
+        status = (*mJavaVM)->AttachCurrentThread(mJavaVM, &env, NULL);
+        if (status < 0) {
+            __android_log_print(ANDROID_LOG_ERROR, "SDL", "Failed to attach current thread (err=%d)", status);
+            return NULL;
+        }
+
+        /* Save JNIEnv into the Thread local storage */
+        if (Android_JNI_SetEnv(env) < 0) {
+            return NULL;
+        }
     }
 
     return env;
