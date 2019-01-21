@@ -676,8 +676,10 @@ SDL_PrivateGameControllerParseControllerConfigString(SDL_GameController *gamecon
         pchPos++;
     }
 
-    SDL_PrivateGameControllerParseElement(gamecontroller, szGameButton, szJoystickButton);
-
+    /* No more values if the string was terminated by a comma. Don't report an error. */
+    if (szGameButton[0] != '\0' || szJoystickButton[0] != '\0') {
+        SDL_PrivateGameControllerParseElement(gamecontroller, szGameButton, szJoystickButton);
+    }
 }
 
 /*
