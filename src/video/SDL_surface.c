@@ -268,21 +268,7 @@ SDL_SetColorKey(SDL_Surface * surface, int flag, Uint32 key)
     if (flag) {
         surface->map->info.flags |= SDL_COPY_COLORKEY;
         surface->map->info.colorkey = key;
-        if (surface->format->palette) {
-            surface->format->palette->colors[surface->map->info.colorkey].a = SDL_ALPHA_TRANSPARENT;
-            ++surface->format->palette->version;
-            if (!surface->format->palette->version) {
-                surface->format->palette->version = 1;
-            }
-        }
     } else {
-        if (surface->format->palette) {
-            surface->format->palette->colors[surface->map->info.colorkey].a = SDL_ALPHA_OPAQUE;
-            ++surface->format->palette->version;
-            if (!surface->format->palette->version) {
-                surface->format->palette->version = 1;
-            }
-        }
         surface->map->info.flags &= ~SDL_COPY_COLORKEY;
     }
     if (surface->map->info.flags != flags) {
@@ -325,7 +311,7 @@ SDL_GetColorKey(SDL_Surface * surface, Uint32 * key)
 
 /* This is a fairly slow function to switch from colorkey to alpha */
 static void
-SDL_ConvertColorkeyToAlpha(SDL_Surface * surface)
+SDL_ConvertColorkeyToAlpha(SDL_Surface * surface, SDL_bool ignore_alpha)
 {
     int x, y;
 
@@ -347,18 +333,32 @@ SDL_ConvertColorkeyToAlpha(SDL_Surface * surface)
             Uint16 ckey = (Uint16) surface->map->info.colorkey;
             Uint16 mask = (Uint16) (~surface->format->Amask);
 
-            /* Ignore alpha in colorkey comparison */
-            ckey &= mask;
-            row = (Uint16 *) surface->pixels;
-            for (y = surface->h; y--;) {
-                spot = row;
-                for (x = surface->w; x--;) {
-                    if ((*spot & mask) == ckey) {
-                        *spot &= mask;
+            /* Ignore, or not, alpha in colorkey comparison */
+            if (ignore_alpha) {
+                ckey &= mask;
+                row = (Uint16 *) surface->pixels;
+                for (y = surface->h; y--;) {
+                    spot = row;
+                    for (x = surface->w; x--;) {
+                        if ((*spot & mask) == ckey) {
+                            *spot &= mask;
+                        }
+                        ++spot;
                     }
-                    ++spot;
+                    row += surface->pitch / 2;
                 }
-                row += surface->pitch / 2;
+            } else {
+                row = (Uint16 *) surface->pixels;
+                for (y = surface->h; y--;) {
+                    spot = row;
+                    for (x = surface->w; x--;) {
+                        if (*spot == ckey) {
+                            *spot &= mask;
+                        }
+                        ++spot;
+                    }
+                    row += surface->pitch / 2;
+                }
             }
         }
         break;
@@ -371,18 +371,32 @@ SDL_ConvertColorkeyToAlpha(SDL_Surface * surface)
             Uint32 ckey = surface->map->info.colorkey;
             Uint32 mask = ~surface->format->Amask;
 
-            /* Ignore alpha in colorkey comparison */
-            ckey &= mask;
-            row = (Uint32 *) surface->pixels;
-            for (y = surface->h; y--;) {
-                spot = row;
-                for (x = surface->w; x--;) {
-                    if ((*spot & mask) == ckey) {
-                        *spot &= mask;
+            /* Ignore, or not, alpha in colorkey comparison */
+            if (ignore_alpha) {
+                ckey &= mask;
+                row = (Uint32 *) surface->pixels;
+                for (y = surface->h; y--;) {
+                    spot = row;
+                    for (x = surface->w; x--;) {
+                        if ((*spot & mask) == ckey) {
+                            *spot &= mask;
+                        }
+                        ++spot;
                     }
-                    ++spot;
+                    row += surface->pitch / 4;
                 }
-                row += surface->pitch / 4;
+            } else {
+                row = (Uint32 *) surface->pixels;
+                for (y = surface->h; y--;) {
+                    spot = row;
+                    for (x = surface->w; x--;) {
+                        if (*spot == ckey) {
+                            *spot &= mask;
+                        }
+                        ++spot;
+                    }
+                    row += surface->pitch / 4;
+                }
             }
         }
         break;
@@ -1023,6 +1037,7 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
     SDL_InvalidateMap(surface->map);
     if (copy_flags & SDL_COPY_COLORKEY) {
         SDL_bool set_colorkey_by_color = SDL_FALSE;
+        SDL_bool ignore_alpha          = SDL_TRUE;  /* Ignore, or not, alpha in colorkey comparison */
 
         if (surface->format->palette) {
             if (format->palette &&
@@ -1032,7 +1047,8 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
                 /* The palette is identical, just set the same colorkey */
                 SDL_SetColorKey(convert, 1, surface->map->info.colorkey);
             } else if (format->Amask) {
-                /* The alpha was set in the destination from the palette */
+                set_colorkey_by_color = SDL_TRUE;
+                ignore_alpha = SDL_FALSE;
             } else {
                 set_colorkey_by_color = SDL_TRUE;
             }
@@ -1055,7 +1071,7 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
             if (surface->format->palette) {
                 SDL_SetSurfacePalette(tmp, surface->format->palette);
             }
-            
+
             SDL_FillRect(tmp, NULL, surface->map->info.colorkey);
 
             tmp->map->info.flags &= ~SDL_COPY_COLORKEY;
@@ -1073,7 +1089,7 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
             SDL_SetColorKey(convert, 1, converted_colorkey);
 
             /* This is needed when converting for 3D texture upload */
-            SDL_ConvertColorkeyToAlpha(convert);
+            SDL_ConvertColorkeyToAlpha(convert, ignore_alpha);
         }
     }
     SDL_SetClipRect(convert, &surface->clip_rect);
