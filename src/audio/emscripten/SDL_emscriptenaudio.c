@@ -291,7 +291,7 @@ EMSCRIPTENAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscaptu
                     if ((SDL2 === undefined) || (SDL2.capture === undefined)) { return; }
                     audioProcessingEvent.outputBuffer.getChannelData(0).fill(0.0);
                     SDL2.capture.currentCaptureBuffer = audioProcessingEvent.inputBuffer;
-                    Runtime.dynCall('vi', $2, [$3]);
+                    dynCall('vi', $2, [$3]);
                 };
                 SDL2.capture.mediaStreamNode.connect(SDL2.capture.scriptProcessorNode);
                 SDL2.capture.scriptProcessorNode.connect(SDL2.audioContext.destination);
@@ -307,7 +307,7 @@ EMSCRIPTENAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscaptu
             SDL2.capture.silenceBuffer.getChannelData(0).fill(0.0);
             var silence_callback = function() {
                 SDL2.capture.currentCaptureBuffer = SDL2.capture.silenceBuffer;
-                Runtime.dynCall('vi', $2, [$3]);
+                dynCall('vi', $2, [$3]);
             };
 
             SDL2.capture.silenceTimer = setTimeout(silence_callback, ($1 / SDL2.audioContext.sampleRate) * 1000);
@@ -326,7 +326,7 @@ EMSCRIPTENAUDIO_OpenDevice(_THIS, void *handle, const char *devname, int iscaptu
             SDL2.audio.scriptProcessorNode['onaudioprocess'] = function (e) {
                 if ((SDL2 === undefined) || (SDL2.audio === undefined)) { return; }
                 SDL2.audio.currentOutputBuffer = e['outputBuffer'];
-                Runtime.dynCall('vi', $2, [$3]);
+                dynCall('vi', $2, [$3]);
             };
             SDL2.audio.scriptProcessorNode['connect'](SDL2.audioContext['destination']);
         }, this->spec.channels, this->spec.samples, HandleAudioProcess, this);
