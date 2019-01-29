@@ -345,6 +345,7 @@ Emscripten_HandleMouseButton(int eventType, const EmscriptenMouseEvent *mouseEve
     Uint8 sdl_button;
     Uint8 sdl_button_state;
     SDL_EventType sdl_event_type;
+    double css_w, css_h;
 
     switch (mouseEvent->button) {
         case 0:
@@ -371,6 +372,14 @@ Emscripten_HandleMouseButton(int eventType, const EmscriptenMouseEvent *mouseEve
         sdl_event_type = SDL_MOUSEBUTTONUP;
     }
     SDL_SendMouseButton(window_data->window, 0, sdl_button_state, sdl_button);
+
+    /* Do not consume the event if the mouse is outside of the canvas. */
+    emscripten_get_element_css_size(NULL, &css_w, &css_h);
+    if (mouseEvent->canvasX < 0 || mouseEvent->canvasX >= css_w ||
+        mouseEvent->canvasY < 0 || mouseEvent->canvasY >= css_h) {
+        return 0;
+    }
+
     return SDL_GetEventState(sdl_event_type) == SDL_ENABLE;
 }
 
