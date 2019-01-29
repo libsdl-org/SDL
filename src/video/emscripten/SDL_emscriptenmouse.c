@@ -210,7 +210,7 @@ Emscripten_ShowCursor(SDL_Cursor* cursor)
             if(curdata->system_cursor) {
                 EM_ASM_INT({
                     if (Module['canvas']) {
-                        Module['canvas'].style['cursor'] = Module['Pointer_stringify']($0);
+                        Module['canvas'].style['cursor'] = UTF8ToString($0);
                     }
                     return 0;
                 }, curdata->system_cursor);
