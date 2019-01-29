@@ -189,12 +189,15 @@ EMSCRIPTEN_JoystickInit(void)
     EmscriptenGamepadEvent gamepadState;
 
     numjoysticks = 0;
-    numjs = emscripten_get_num_gamepads();
+
+    retval = emscripten_sample_gamepad_data();
 
     /* Check if gamepad is supported by browser */
-    if (numjs == EMSCRIPTEN_RESULT_NOT_SUPPORTED) {
+    if (retval == EMSCRIPTEN_RESULT_NOT_SUPPORTED) {
         return SDL_SetError("Gamepads not supported");
     }
+
+    numjs = emscripten_get_num_gamepads();
 
     /* handle already connected gamepads */
     if (numjs > 0) {
@@ -334,6 +337,8 @@ EMSCRIPTEN_JoystickUpdate(SDL_Joystick * joystick)
     EmscriptenGamepadEvent gamepadState;
     SDL_joylist_item *item = (SDL_joylist_item *) joystick->hwdata;
     int i, result, buttonState;
+
+    emscripten_sample_gamepad_data();
 
     if (item) {
         result = emscripten_get_gamepad_status(item->index, &gamepadState);
