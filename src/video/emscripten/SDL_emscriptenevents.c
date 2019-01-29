@@ -458,6 +458,7 @@ Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent *touchEvent, vo
             }
             SDL_SendTouch(deviceId, id, SDL_TRUE, x, y, 1.0f);
 
+            /* disable browser scrolling/pinch-to-zoom if app handles touch events */
             if (!preventDefault && SDL_GetEventState(SDL_FINGERDOWN) == SDL_ENABLE) {
                 preventDefault = 1;
             }
@@ -466,10 +467,6 @@ Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent *touchEvent, vo
                 SDL_SendMouseMotion(window_data->window, SDL_TOUCH_MOUSEID, 0, mx, my);
             }
             SDL_SendTouchMotion(deviceId, id, x, y, 1.0f);
-
-            if (!preventDefault && SDL_GetEventState(SDL_FINGERMOTION) == SDL_ENABLE) {
-                preventDefault = 1;
-            }
         } else {
             if ((window_data->finger_touching) && (window_data->first_finger == id)) {
                 SDL_SendMouseButton(window_data->window, SDL_TOUCH_MOUSEID, SDL_RELEASED, SDL_BUTTON_LEFT);
@@ -477,9 +474,8 @@ Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent *touchEvent, vo
             }
             SDL_SendTouch(deviceId, id, SDL_FALSE, x, y, 1.0f);
 
-            if (!preventDefault && SDL_GetEventState(SDL_FINGERUP) == SDL_ENABLE) {
-                preventDefault = 1;
-            }
+            /* block browser's simulated mousedown/mouseup on touchscreen devices */
+            preventDefault = 1;
         }
     }
 
