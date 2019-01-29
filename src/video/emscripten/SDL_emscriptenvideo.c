@@ -344,7 +344,7 @@ static void
 Emscripten_SetWindowTitle(_THIS, SDL_Window * window) {
     EM_ASM_INT({
       if (typeof Module['setWindowTitle'] !== 'undefined') {
-        Module['setWindowTitle'](Module['Pointer_stringify']($0));
+        Module['setWindowTitle'](UTF8ToString($0));
       }
       return 0;
     }, window->title);
