@@ -551,6 +551,8 @@ static EM_BOOL
 Emscripten_HandleFullscreenChange(int eventType, const EmscriptenFullscreenChangeEvent *fullscreenChangeEvent, void *userData)
 {
     SDL_WindowData *window_data = userData;
+    SDL_VideoDisplay *display;
+
     if(fullscreenChangeEvent->isFullscreen)
     {
         window_data->window->flags |= window_data->requested_fullscreen_mode;
@@ -563,6 +565,13 @@ Emscripten_HandleFullscreenChange(int eventType, const EmscriptenFullscreenChang
     else
     {
         window_data->window->flags &= ~FULLSCREEN_MASK;
+
+        /* reset fullscreen window if the browser left fullscreen */
+        display = SDL_GetDisplayForWindow(window_data->window);
+
+        if (display->fullscreen_window == window_data->window) {
+            display->fullscreen_window = NULL;
+        }
     }
 
     return 0;
