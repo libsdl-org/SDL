@@ -2532,16 +2532,16 @@ Blit_3or4_to_3or4__same_rgb(SDL_BlitInfo * info)
 
     if (dstfmt->Amask) {
         /* SET_ALPHA */
-        unsigned alpha = info->a;
-        int alphashift = alpha << 24;
+        Uint32 alpha = info->a;
+        Uint32 alphashift = alpha << 24;
         while (height--) {
             /* *INDENT-OFF* */
             DUFFS_LOOP(
             {
                 Uint32  *dst32 = (Uint32*)dst;
-                unsigned s0 = src[0];
-                unsigned s1 = src[1];
-                unsigned s2 = src[2];
+                Uint8 s0 = src[0];
+                Uint8 s1 = src[1];
+                Uint8 s2 = src[2];
                 *dst32 = (s0) | (s1 << 8) | (s2 << 16) | alphashift;
                 dst += dstbpp;
                 src += srcbpp;
@@ -2557,9 +2557,9 @@ Blit_3or4_to_3or4__same_rgb(SDL_BlitInfo * info)
             DUFFS_LOOP(
             {
                 Uint32  *dst32 = (Uint32*)dst;
-                unsigned s0 = src[0];
-                unsigned s1 = src[1];
-                unsigned s2 = src[2];
+                Uint8 s0 = src[0];
+                Uint8 s1 = src[1];
+                Uint8 s2 = src[2];
                 *dst32 = (s0) | (s1 << 8) | (s2 << 16);
                 dst += dstbpp;
                 src += srcbpp;
@@ -2597,10 +2597,10 @@ Blit_3or4_to_3or4__inversed_rgb(SDL_BlitInfo * info)
                 DUFFS_LOOP(
                 {
                     Uint32  *dst32 = (Uint32*)dst;
-                    unsigned s0 = src[0];
-                    unsigned s1 = src[1];
-                    unsigned s2 = src[2];
-                    unsigned alphashift = src[3] << 24;
+                    Uint8 s0 = src[0];
+                    Uint8 s1 = src[1];
+                    Uint8 s2 = src[2];
+                    Uint32 alphashift = src[3] << 24;
                     /* inversed, compared to Blit_3or4_to_3or4__same_rgb */
                     *dst32 = (s0 << 16) | (s1 << 8) | (s2) | alphashift;
                     dst += dstbpp;
@@ -2612,16 +2612,16 @@ Blit_3or4_to_3or4__inversed_rgb(SDL_BlitInfo * info)
             }
         } else {
             /* SET_ALPHA */
-            unsigned alpha = info->a;
-            int alphashift = alpha << 24;
+            Uint32 alpha = info->a;
+            Uint32 alphashift = alpha << 24;
             while (height--) {
                 /* *INDENT-OFF* */
                 DUFFS_LOOP(
                 {
                     Uint32  *dst32 = (Uint32*)dst;
-                    unsigned s0 = src[0];
-                    unsigned s1 = src[1];
-                    unsigned s2 = src[2];
+                    Uint8 s0 = src[0];
+                    Uint8 s1 = src[1];
+                    Uint8 s2 = src[2];
                     /* inversed, compared to Blit_3or4_to_3or4__same_rgb */
                     *dst32 = (s0 << 16) | (s1 << 8) | (s2) | alphashift;
                     dst += dstbpp;
@@ -2639,9 +2639,9 @@ Blit_3or4_to_3or4__inversed_rgb(SDL_BlitInfo * info)
             DUFFS_LOOP(
             {
                 Uint32  *dst32 = (Uint32*)dst;
-                unsigned s0 = src[0];
-                unsigned s1 = src[1];
-                unsigned s2 = src[2];
+                Uint8 s0 = src[0];
+                Uint8 s1 = src[1];
+                Uint8 s2 = src[2];
                 /* inversed, compared to Blit_3or4_to_3or4__same_rgb */
                 *dst32 = (s0 << 16) | (s1 << 8) | (s2);
                 dst += dstbpp;
