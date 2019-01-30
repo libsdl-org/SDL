@@ -2515,6 +2515,146 @@ BlitNto2101010(SDL_BlitInfo * info)
     }
 }
 
+/* Blit_3or4_to_3or4__same_rgb: 3 or 4 bpp, same RGB triplet */
+static void
+Blit_3or4_to_3or4__same_rgb(SDL_BlitInfo * info)
+{
+    int width = info->dst_w;
+    int height = info->dst_h;
+    Uint8 *src = info->src;
+    int srcskip = info->src_skip;
+    Uint8 *dst = info->dst;
+    int dstskip = info->dst_skip;
+    SDL_PixelFormat *srcfmt = info->src_fmt;
+    int srcbpp = srcfmt->BytesPerPixel;
+    SDL_PixelFormat *dstfmt = info->dst_fmt;
+    int dstbpp = dstfmt->BytesPerPixel;
+
+    if (dstfmt->Amask) {
+        /* SET_ALPHA */
+        unsigned alpha = info->a;
+        int alphashift = alpha << 24;
+        while (height--) {
+            /* *INDENT-OFF* */
+            DUFFS_LOOP(
+            {
+                Uint32  *dst32 = (Uint32*)dst;
+                unsigned s0 = src[0];
+                unsigned s1 = src[1];
+                unsigned s2 = src[2];
+                *dst32 = (s0) | (s1 << 8) | (s2 << 16) | alphashift;
+                dst += dstbpp;
+                src += srcbpp;
+            }, width);
+            /* *INDENT-ON* */
+            src += srcskip;
+            dst += dstskip;
+        }
+    } else {
+        /* NO_ALPHA */
+        while (height--) {
+            /* *INDENT-OFF* */
+            DUFFS_LOOP(
+            {
+                Uint32  *dst32 = (Uint32*)dst;
+                unsigned s0 = src[0];
+                unsigned s1 = src[1];
+                unsigned s2 = src[2];
+                *dst32 = (s0) | (s1 << 8) | (s2 << 16);
+                dst += dstbpp;
+                src += srcbpp;
+            }, width);
+            /* *INDENT-ON* */
+            src += srcskip;
+            dst += dstskip;
+        }
+    }
+    return;
+}
+
+/* Blit_3or4_to_3or4__inversed_rgb: 3 or 4 bpp, inversed RGB triplet */
+static void
+Blit_3or4_to_3or4__inversed_rgb(SDL_BlitInfo * info)
+{
+    int width = info->dst_w;
+    int height = info->dst_h;
+    Uint8 *src = info->src;
+    int srcskip = info->src_skip;
+    Uint8 *dst = info->dst;
+    int dstskip = info->dst_skip;
+    SDL_PixelFormat *srcfmt = info->src_fmt;
+    int srcbpp = srcfmt->BytesPerPixel;
+    SDL_PixelFormat *dstfmt = info->dst_fmt;
+    int dstbpp = dstfmt->BytesPerPixel;
+
+    if (dstfmt->Amask) {
+
+        if (srcfmt->Amask) {
+            /* COPY_ALPHA */
+            /* Only to switch ABGR8888 <-> ARGB8888 */
+            while (height--) {
+                /* *INDENT-OFF* */
+                DUFFS_LOOP(
+                {
+                    Uint32  *dst32 = (Uint32*)dst;
+                    unsigned s0 = src[0];
+                    unsigned s1 = src[1];
+                    unsigned s2 = src[2];
+                    unsigned alphashift = src[3] << 24;
+                    /* inversed, compared to Blit_3or4_to_3or4__same_rgb */
+                    *dst32 = (s0 << 16) | (s1 << 8) | (s2) | alphashift;
+                    dst += dstbpp;
+                    src += srcbpp;
+                }, width);
+                /* *INDENT-ON* */
+                src += srcskip;
+                dst += dstskip;
+            }
+        } else {
+            /* SET_ALPHA */
+            unsigned alpha = info->a;
+            int alphashift = alpha << 24;
+            while (height--) {
+                /* *INDENT-OFF* */
+                DUFFS_LOOP(
+                {
+                    Uint32  *dst32 = (Uint32*)dst;
+                    unsigned s0 = src[0];
+                    unsigned s1 = src[1];
+                    unsigned s2 = src[2];
+                    /* inversed, compared to Blit_3or4_to_3or4__same_rgb */
+                    *dst32 = (s0 << 16) | (s1 << 8) | (s2) | alphashift;
+                    dst += dstbpp;
+                    src += srcbpp;
+                }, width);
+                /* *INDENT-ON* */
+                src += srcskip;
+                dst += dstskip;
+            }
+        }
+    } else {
+        /* NO_ALPHA */
+        while (height--) {
+            /* *INDENT-OFF* */
+            DUFFS_LOOP(
+            {
+                Uint32  *dst32 = (Uint32*)dst;
+                unsigned s0 = src[0];
+                unsigned s1 = src[1];
+                unsigned s2 = src[2];
+                /* inversed, compared to Blit_3or4_to_3or4__same_rgb */
+                *dst32 = (s0 << 16) | (s1 << 8) | (s2);
+                dst += dstbpp;
+                src += srcbpp;
+            }, width);
+            /* *INDENT-ON* */
+            src += srcskip;
+            dst += dstskip;
+        }
+    }
+    return;
+}
+
 /* Normal N to N optimized blitters */
 #define NO_ALPHA   1
 #define SET_ALPHA  2
@@ -2555,6 +2695,23 @@ static const struct blit_table normal_blit_2[] = {
 };
 
 static const struct blit_table normal_blit_3[] = {
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+    /* 3->4 with same rgb triplet */
+    {0x000000FF, 0x0000FF00, 0x00FF0000, 4, 0x000000FF, 0x0000FF00, 0x00FF0000,
+     0, Blit_3or4_to_3or4__same_rgb, NO_ALPHA | SET_ALPHA},
+    {0x00FF0000, 0x0000FF00, 0x000000FF, 4, 0x00FF0000, 0x0000FF00, 0x000000FF,
+     0, Blit_3or4_to_3or4__same_rgb, NO_ALPHA | SET_ALPHA},
+    /* 3->4 with inversed rgb triplet */
+    {0x000000FF, 0x0000FF00, 0x00FF0000, 4, 0x00FF0000, 0x0000FF00, 0x000000FF,
+     0, Blit_3or4_to_3or4__inversed_rgb, NO_ALPHA | SET_ALPHA},
+    {0x00FF0000, 0x0000FF00, 0x000000FF, 4, 0x000000FF, 0x0000FF00, 0x00FF0000,
+     0, Blit_3or4_to_3or4__inversed_rgb, NO_ALPHA | SET_ALPHA},
+    /* 3->3 to switch RGB 24 <-> BGR 24 */
+    {0x000000FF, 0x0000FF00, 0x00FF0000, 3, 0x00FF0000, 0x0000FF00, 0x000000FF,
+     0, Blit_3or4_to_3or4__inversed_rgb, NO_ALPHA },
+    {0x00FF0000, 0x0000FF00, 0x000000FF, 3, 0x000000FF, 0x0000FF00, 0x00FF0000,
+     0, Blit_3or4_to_3or4__inversed_rgb, NO_ALPHA },
+#endif
     /* Default for 24-bit RGB source, never optimized */
     {0, 0, 0, 0, 0, 0, 0, 0, BlitNtoN, 0}
 };
@@ -2571,6 +2728,24 @@ static const struct blit_table normal_blit_4[] = {
     {0x00000000, 0x00000000, 0x00000000, 2, 0x0000F800, 0x000007E0, 0x0000001F,
      2, Blit_RGB888_RGB565Altivec, NO_ALPHA},
 #endif
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+    /* 4->3 with same rgb triplet */
+    {0x000000FF, 0x0000FF00, 0x00FF0000, 3, 0x000000FF, 0x0000FF00, 0x00FF0000,
+     0, Blit_3or4_to_3or4__same_rgb, NO_ALPHA | SET_ALPHA},
+    {0x00FF0000, 0x0000FF00, 0x000000FF, 3, 0x00FF0000, 0x0000FF00, 0x000000FF,
+     0, Blit_3or4_to_3or4__same_rgb, NO_ALPHA | SET_ALPHA},
+    /* 4->3 with inversed rgb triplet */
+    {0x000000FF, 0x0000FF00, 0x00FF0000, 3, 0x00FF0000, 0x0000FF00, 0x000000FF,
+     0, Blit_3or4_to_3or4__inversed_rgb, NO_ALPHA | SET_ALPHA},
+    {0x00FF0000, 0x0000FF00, 0x000000FF, 3, 0x000000FF, 0x0000FF00, 0x00FF0000,
+     0, Blit_3or4_to_3or4__inversed_rgb, NO_ALPHA | SET_ALPHA},
+#endif
+    /* 4->4 with inversed rgb triplet, and COPY_ALPHA to switch ABGR8888 <-> ARGB8888 */
+    {0x000000FF, 0x0000FF00, 0x00FF0000, 4, 0x00FF0000, 0x0000FF00, 0x000000FF,
+     0, Blit_3or4_to_3or4__inversed_rgb, NO_ALPHA | SET_ALPHA | COPY_ALPHA},
+    {0x00FF0000, 0x0000FF00, 0x000000FF, 4, 0x000000FF, 0x0000FF00, 0x00FF0000,
+     0, Blit_3or4_to_3or4__inversed_rgb, NO_ALPHA | SET_ALPHA | COPY_ALPHA},
+    /* RBG 888 and RGB 565 */
     {0x00FF0000, 0x0000FF00, 0x000000FF, 2, 0x0000F800, 0x000007E0, 0x0000001F,
      0, Blit_RGB888_RGB565, NO_ALPHA},
     {0x00FF0000, 0x0000FF00, 0x000000FF, 2, 0x00007C00, 0x000003E0, 0x0000001F,
@@ -2623,7 +2798,7 @@ SDL_CalculateBlitN(SDL_Surface * surface)
             }
         } else {
             /* Now the meat, choose the blitter we want */
-            int a_need = NO_ALPHA;
+            Uint32 a_need = NO_ALPHA;
             if (dstfmt->Amask)
                 a_need = srcfmt->Amask ? COPY_ALPHA : SET_ALPHA;
             table = normal_blit[srcfmt->BytesPerPixel - 1];
