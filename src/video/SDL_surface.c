@@ -957,6 +957,7 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
     Uint32 copy_flags;
     SDL_Color copy_color;
     SDL_Rect bounds;
+    int ret;
 
     if (!surface) {
         SDL_InvalidParamError("surface");
@@ -1017,7 +1018,7 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
     bounds.y = 0;
     bounds.w = surface->w;
     bounds.h = surface->h;
-    SDL_LowerBlit(surface, &bounds, convert, &bounds);
+    ret = SDL_LowerBlit(surface, &bounds, convert, &bounds);
 
     /* Clean up the original surface, and update converted surface */
     convert->map->info.r = copy_color.r;
@@ -1035,6 +1036,13 @@ SDL_ConvertSurface(SDL_Surface * surface, const SDL_PixelFormat * format,
     surface->map->info.a = copy_color.a;
     surface->map->info.flags = copy_flags;
     SDL_InvalidateMap(surface->map);
+
+    /* SDL_LowerBlit failed, and so the conversion */
+    if (ret < 0) {
+        SDL_FreeSurface(convert);
+        return NULL;
+    }
+
     if (copy_flags & SDL_COPY_COLORKEY) {
         SDL_bool set_colorkey_by_color = SDL_FALSE;
         SDL_bool ignore_alpha          = SDL_TRUE;  /* Ignore, or not, alpha in colorkey comparison */
