@@ -1276,7 +1276,12 @@ SDL_CalculateBlitA(SDL_Surface * surface)
         /* Per-pixel alpha blits */
         switch (df->BytesPerPixel) {
         case 1:
-            return BlitNto1PixelAlpha;
+            if (df->palette != NULL) {
+                return BlitNto1PixelAlpha;
+            } else {
+                /* RGB332 has no palette ! */
+                return BlitNtoNPixelAlpha;
+            }
 
         case 2:
                 if (sf->BytesPerPixel == 4 && sf->Amask == 0xff000000
@@ -1326,7 +1331,12 @@ SDL_CalculateBlitA(SDL_Surface * surface)
             /* Per-surface alpha blits */
             switch (df->BytesPerPixel) {
             case 1:
-                return BlitNto1SurfaceAlpha;
+                if (df->palette != NULL) {
+                    return BlitNto1SurfaceAlpha;
+                } else {
+                    /* RGB332 has no palette ! */
+                    return BlitNtoNSurfaceAlpha;
+                }
 
             case 2:
                 if (surface->map->identity) {
@@ -1374,7 +1384,13 @@ SDL_CalculateBlitA(SDL_Surface * surface)
     case SDL_COPY_COLORKEY | SDL_COPY_MODULATE_ALPHA | SDL_COPY_BLEND:
         if (sf->Amask == 0) {
             if (df->BytesPerPixel == 1) {
-                return BlitNto1SurfaceAlphaKey;
+
+                if (df->palette != NULL) {
+                    return BlitNto1SurfaceAlphaKey;
+                } else {
+                    /* RGB332 has no palette ! */
+                    return BlitNtoNSurfaceAlphaKey;
+                }
             } else {
                 return BlitNtoNSurfaceAlphaKey;
             }
