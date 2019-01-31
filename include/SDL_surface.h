@@ -53,6 +53,7 @@ extern "C" {
 #define SDL_PREALLOC        0x00000001  /**< Surface uses preallocated memory */
 #define SDL_RLEACCEL        0x00000002  /**< Surface is RLE encoded */
 #define SDL_DONTFREE        0x00000004  /**< Surface is referenced internally */
+#define SDL_MEMALIGNED      0x00000008  /**< Surface uses aligned memory */
 /* @} *//* Surface flags */
 
 /**
