@@ -530,6 +530,7 @@ IOS_MFIJoystickUpdate(SDL_Joystick * joystick)
                 gamepad.buttonX.isPressed, gamepad.buttonY.isPressed,
                 gamepad.leftShoulder.isPressed,
                 gamepad.rightShoulder.isPressed,
+                joystick->delayed_guide_button,
             };
 
             hatstate = IOS_MFIJoystickHatStateForDPad(gamepad.dpad);
@@ -557,6 +558,7 @@ IOS_MFIJoystickUpdate(SDL_Joystick * joystick)
                 gamepad.buttonX.isPressed, gamepad.buttonY.isPressed,
                 gamepad.leftShoulder.isPressed,
                 gamepad.rightShoulder.isPressed,
+                joystick->delayed_guide_button,
             };
 
             hatstate = IOS_MFIJoystickHatStateForDPad(gamepad.dpad);
@@ -583,6 +585,7 @@ IOS_MFIJoystickUpdate(SDL_Joystick * joystick)
             Uint8 buttons[] = {
                 gamepad.buttonA.isPressed,
                 gamepad.buttonX.isPressed,
+                joystick->delayed_guide_button,
             };
 
             for (i = 0; i < SDL_arraysize(buttons); i++) {
