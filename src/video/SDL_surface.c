@@ -26,6 +26,7 @@
 #include "SDL_RLEaccel_c.h"
 #include "SDL_pixels_c.h"
 #include "SDL_yuv_c.h"
+#include "../../cpuinfo/SDL_simd.h"
 
 
 /* Check to make sure we can safely check multiplication of surface w and pitch and it won't overflow size_t */
@@ -289,7 +290,7 @@ SDL_HasColorKey(SDL_Surface * surface)
         return SDL_FALSE;
     }
 
-	return SDL_TRUE;
+    return SDL_TRUE;
 }
 
 int
@@ -1258,7 +1259,13 @@ SDL_FreeSurface(SDL_Surface * surface)
         SDL_FreeFormat(surface->format);
         surface->format = NULL;
     }
-    if (!(surface->flags & SDL_PREALLOC)) {
+    if (surface->flags & SDL_PREALLOC) {
+        /* Don't free */
+    } else if (surface->flags & SDL_MEMALIGNED) {
+        /* Free aligned */
+        SDL_SIMDFree(surface->pixels);
+    } else {
+        /* Normal */
         SDL_free(surface->pixels);
     }
     if (surface->map) {
