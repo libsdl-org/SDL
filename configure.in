@@ -56,6 +56,7 @@ AC_PROG_CXX
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AC_CHECK_TOOL(WINDRES, [windres], [:])
+PKG_PROG_PKG_CONFIG
 
 dnl Make sure that srcdir is a full pathname
 case "$host" in
@@ -932,20 +933,7 @@ CheckJACK()
 AC_HELP_STRING([--enable-jack], [use JACK audio [[default=yes]]]),
                   , enable_jack=yes)
     if test x$enable_audio = xyes -a x$enable_jack = xyes; then
-        audio_jack=no
-
-        JACK_REQUIRED_VERSION=0.125
-
-        AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
-        AC_MSG_CHECKING(for JACK $JACK_REQUIRED_VERSION support)
-        if test x$PKG_CONFIG != xno; then
-        if $PKG_CONFIG --atleast-pkgconfig-version 0.7 && $PKG_CONFIG --atleast-version $JACK_REQUIRED_VERSION jack; then
-                JACK_CFLAGS=`$PKG_CONFIG --cflags jack`
-                JACK_LIBS=`$PKG_CONFIG --libs jack`
-                audio_jack=yes
-            fi
-        fi
-        AC_MSG_RESULT($audio_jack)
+        PKG_CHECK_MODULES([JACK], [jack >= 0.125], audio_jack=yes, audio_jack=no)
 
         if test x$audio_jack = xyes; then
             AC_ARG_ENABLE(jack-shared,
@@ -1024,20 +1012,7 @@ CheckPulseAudio()
 AC_HELP_STRING([--enable-pulseaudio], [use PulseAudio [[default=yes]]]),
                   , enable_pulseaudio=yes)
     if test x$enable_audio = xyes -a x$enable_pulseaudio = xyes; then
-        audio_pulseaudio=no
-
-        PULSEAUDIO_REQUIRED_VERSION=0.9
-
-        AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
-        AC_MSG_CHECKING(for PulseAudio $PULSEAUDIO_REQUIRED_VERSION support)
-        if test x$PKG_CONFIG != xno; then
-            if $PKG_CONFIG --atleast-pkgconfig-version 0.7 && $PKG_CONFIG --atleast-version $PULSEAUDIO_REQUIRED_VERSION libpulse-simple; then
-                PULSEAUDIO_CFLAGS=`$PKG_CONFIG --cflags libpulse-simple`
-                PULSEAUDIO_LIBS=`$PKG_CONFIG --libs libpulse-simple`
-                audio_pulseaudio=yes
-            fi
-        fi
-        AC_MSG_RESULT($audio_pulseaudio)
+        PKG_CHECK_MODULES([PULSEAUDIO], [libpulse-simple >= 0.9], audio_pulseaudio=yes, audio_pulseaudio=no)
 
         if test x$audio_pulseaudio = xyes; then
             AC_ARG_ENABLE(pulseaudio-shared,
@@ -1236,20 +1211,7 @@ CheckFusionSound()
 AC_HELP_STRING([--enable-fusionsound], [use FusionSound audio driver [[default=no]]]),
                   , enable_fusionsound=no)
     if test x$enable_audio = xyes -a x$enable_fusionsound = xyes; then
-        fusionsound=no
-
-        FUSIONSOUND_REQUIRED_VERSION=1.1.1
-
-        AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
-        AC_MSG_CHECKING(for FusionSound $FUSIONSOUND_REQUIRED_VERSION support)
-        if test x$PKG_CONFIG != xno; then
-            if $PKG_CONFIG --atleast-pkgconfig-version 0.7 && $PKG_CONFIG --atleast-version $FUSIONSOUND_REQUIRED_VERSION fusionsound; then
-                FUSIONSOUND_CFLAGS=`$PKG_CONFIG --cflags fusionsound`
-                FUSIONSOUND_LIBS=`$PKG_CONFIG --libs fusionsound`
-                fusionsound=yes
-            fi
-        fi
-        AC_MSG_RESULT($fusionsound)
+        PKG_CHECK_MODULES([FUSIONSOUND], [fusionsound >= 1.1.1], fusionsound=yes, fusionsound=no)
 
         if test x$fusionsound = xyes; then
             AC_DEFINE(SDL_AUDIO_DRIVER_FUSIONSOUND, 1, [ ])
@@ -1461,11 +1423,9 @@ AC_HELP_STRING([--enable-video-wayland-qt-touch], [QtWayland server support for 
                   ,enable_video_wayland_qt_touch=yes)
 
     if test x$enable_video = xyes -a x$enable_video_wayland = xyes; then
-        AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
         AC_MSG_CHECKING(for Wayland support)
         video_wayland=no
-        if  test x$PKG_CONFIG != xno && \
-            test x$video_opengl_egl = xyes && \
+        if  test x$video_opengl_egl = xyes && \
             test x$video_opengles_v2 = xyes; then
             if $PKG_CONFIG --exists wayland-client wayland-scanner wayland-protocols wayland-egl wayland-cursor egl xkbcommon ; then
                 WAYLAND_CFLAGS=`$PKG_CONFIG --cflags wayland-client wayland-egl wayland-cursor xkbcommon`
@@ -1567,26 +1527,26 @@ CheckNativeClient()
 CheckRPI()
 {
     AC_ARG_ENABLE(video-rpi,
-AC_HELP_STRING([--enable-video-rpi], [use Raspberry Pi video driver [[default=yes]]]),
-                  , enable_video_rpi=yes)
+AC_HELP_STRING([--enable-video-rpi], [use Raspberry Pi video driver [[default=no]]]),
+                  , enable_video_rpi=no)
     if test x$enable_video = xyes -a x$enable_video_rpi = xyes; then
-        AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
-        if test x$PKG_CONFIG != xno && $PKG_CONFIG --exists bcm_host; then
-            RPI_CFLAGS=`$PKG_CONFIG --cflags bcm_host brcmegl`
-            RPI_LDFLAGS=`$PKG_CONFIG --libs bcm_host brcmegl`
-        elif test x$ARCH = xnetbsd; then
-            RPI_CFLAGS="-I/usr/pkg/include -I/usr/pkg/include/interface/vcos/pthreads -I/usr/pkg/include/interface/vmcs_host/linux"
-            RPI_LDFLAGS="-Wl,-R/usr/pkg/lib -L/usr/pkg/lib -lbcm_host"
-        else
-            RPI_CFLAGS="-I/opt/vc/include -I/opt/vc/include/interface/vcos/pthreads -I/opt/vc/include/interface/vmcs_host/linux"
-            RPI_LDFLAGS="-Wl,-rpath,/opt/vc/lib -L/opt/vc/lib -lbcm_host"
+        PKG_CHECK_MODULES([RPI], [bcm_host brcmegl], video_rpi=yes, video_rpi=no)
+
+        if test x$video_rpi = xno; then
+            if test x$ARCH = xnetbsd; then
+                RPI_CFLAGS="-I/usr/pkg/include -I/usr/pkg/include/interface/vcos/pthreads -I/usr/pkg/include/interface/vmcs_host/linux"
+                RPI_LIBS="-Wl,-R/usr/pkg/lib -L/usr/pkg/lib -lbcm_host"
+            else
+                RPI_CFLAGS="-I/opt/vc/include -I/opt/vc/include/interface/vcos/pthreads -I/opt/vc/include/interface/vmcs_host/linux"
+                RPI_LIBS="-Wl,-rpath,/opt/vc/lib -L/opt/vc/lib -lbcm_host"
+            fi
         fi
 
         # Save the original compiler flags and libraries
         ac_save_cflags="$CFLAGS"; ac_save_libs="$LIBS"
 
         # Add the Raspberry Pi compiler flags and libraries
-        CFLAGS="$CFLAGS $RPI_CFLAGS"; LIBS="$LIBS $RPI_LDFLAGS"
+        CFLAGS="$CFLAGS $RPI_CFLAGS"; LIBS="$LIBS $RPI_LIBS"
 
         AC_MSG_CHECKING(for Raspberry Pi)
         have_video_rpi=no
@@ -1607,7 +1567,7 @@ AC_HELP_STRING([--enable-video-rpi], [use Raspberry Pi video driver [[default=ye
             CFLAGS="$CFLAGS $RPI_CFLAGS"
             SDL_CFLAGS="$SDL_CFLAGS $RPI_CFLAGS"
             EXTRA_CFLAGS="$EXTRA_CFLAGS $RPI_CFLAGS"
-            EXTRA_LDFLAGS="$EXTRA_LDFLAGS $RPI_LDFLAGS"
+            EXTRA_LDFLAGS="$EXTRA_LDFLAGS $RPI_LIBS"
             SOURCES="$SOURCES $srcdir/src/video/raspberry/*.c"
             AC_DEFINE(SDL_VIDEO_DRIVER_RPI, 1, [ ])
             SUMMARY_video="${SUMMARY_video} rpi"
@@ -2106,32 +2066,8 @@ CheckDirectFB()
 AC_HELP_STRING([--enable-video-directfb], [use DirectFB video driver [[default=no]]]),
                   , enable_video_directfb=no)
     if test x$enable_video = xyes -a x$enable_video_directfb = xyes; then
-        video_directfb=no
+        PKG_CHECK_MODULES([DIRECTFB], [directfb >= 1.0.0], video_directfb=yes, video_directfb=no)
 
-        DIRECTFB_REQUIRED_VERSION=1.0.0
-        AC_PATH_PROGS(DIRECTFBCONFIG, directfb-config, no, [$prefix/bin:$PATH])
-        if test x$DIRECTFBCONFIG = xno; then
-            AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
-            if test x$PKG_CONFIG != xno; then
-                if $PKG_CONFIG --atleast-pkgconfig-version 0.7 && $PKG_CONFIG --atleast-version $DIRECTFB_REQUIRED_VERSION directfb; then
-                    DIRECTFB_CFLAGS=`$PKG_CONFIG --cflags directfb`
-                    DIRECTFB_LIBS=`$PKG_CONFIG --libs directfb`
-                    DIRECTFB_PREFIX=`$PKG_CONFIG --variable=prefix directfb`
-                    video_directfb=yes
-                fi
-            fi
-        else
-            set -- `echo $DIRECTFB_REQUIRED_VERSION | sed 's/\./ /g'`
-            NEED_VERSION=`expr $1 \* 10000 + $2 \* 100 + $3`
-            set -- `$DIRECTFBCONFIG --version | sed 's/\./ /g'`
-            HAVE_VERSION=`expr $1 \* 10000 + $2 \* 100 + $3`
-            if test $HAVE_VERSION -ge $NEED_VERSION; then
-                DIRECTFB_CFLAGS=`$DIRECTFBCONFIG --cflags`
-                DIRECTFB_LIBS=`$DIRECTFBCONFIG --libs`
-                DIRECTFB_PREFIX=`$DIRECTFBCONFIG --prefix`
-                video_directfb=yes
-            fi
-        fi
         if test x$video_directfb = xyes; then
             # SuSE 11.1 installs directfb-config without directfb-devel
             save_CPPFLAGS="$CPPFLAGS"
@@ -2140,8 +2076,6 @@ AC_HELP_STRING([--enable-video-directfb], [use DirectFB video driver [[default=n
             CPPFLAGS="$save_CPPFLAGS"
             video_directfb=$have_directfb_hdr
         fi
-        AC_MSG_CHECKING(for DirectFB $DIRECTFB_REQUIRED_VERSION support)
-        AC_MSG_RESULT($video_directfb)
 
         if test x$video_directfb = xyes; then
             AC_ARG_ENABLE(directfb-shared,
@@ -2188,68 +2122,44 @@ AC_HELP_STRING([--enable-video-kmsdrm], [use KMSDRM video driver [[default=no]]]
 
     if test x$enable_video = xyes -a x$enable_video_kmsdrm = xyes; then
         video_kmsdrm=no
-        libdrm_avail=no
-        libgbm_avail=no
 
-        LIBDRM_REQUIRED_VERSION=2.4.46
-        LIBGBM_REQUIRED_VERSION=9.0.0
+        PKG_CHECK_MODULES([LIBDRM], [libdrm >= 2.4.46], libdrm_avail=yes, libdrm_avail=no)
+        PKG_CHECK_MODULES([LIBGBM], [gbm >= 9.0.0], libgbm_avail=yes, libgbm_avail=no)
 
-        AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
-        if test x$PKG_CONFIG != xno; then
-            if $PKG_CONFIG --atleast-pkgconfig-version 0.7; then
-                if $PKG_CONFIG --atleast-version $LIBDRM_REQUIRED_VERSION libdrm; then
-                    LIBDRM_CFLAGS=`$PKG_CONFIG --cflags libdrm`
-                    LIBDRM_LIBS=`$PKG_CONFIG --libs libdrm`
-                    LIBDRM_PREFIX=`$PKG_CONFIG --variable=prefix libdrm`
-                    libdrm_avail=yes
-                fi
-                if $PKG_CONFIG --atleast-version $LIBGBM_REQUIRED_VERSION gbm; then
-                    LIBGBM_CFLAGS=`$PKG_CONFIG --cflags gbm`
-                    LIBGBM_LIBS=`$PKG_CONFIG --libs gbm`
-                    LIBGBM_PREFIX=`$PKG_CONFIG --variable=prefix gbm`
-                    libgbm_avail=yes
-                fi
-                if test x$libdrm_avail = xyes -a x$libgbm_avail = xyes; then
-                    video_kmsdrm=yes
-                fi
- 
-                AC_MSG_CHECKING(for libdrm $LIBDRM_REQUIRED_VERSION library for kmsdrm support)
-                AC_MSG_RESULT($libdrm_avail)
-                AC_MSG_CHECKING(for libgbm $LIBGBM_REQUIRED_VERSION library for kmsdrm support)
-                AC_MSG_RESULT($libgbm_avail)
+        if test x$libdrm_avail = xyes -a x$libgbm_avail = xyes; then
+            video_kmsdrm=yes
+        fi
 
-                if test x$video_kmsdrm = xyes; then
-                    AC_ARG_ENABLE(kmsdrm-shared,
+        if test x$video_kmsdrm = xyes; then
+            AC_ARG_ENABLE(kmsdrm-shared,
 AC_HELP_STRING([--enable-kmsdrm-shared], [dynamically load kmsdrm support [[default=yes]]]),
-                              , enable_kmsdrm_shared=yes)
+                , enable_kmsdrm_shared=yes)
 
-                    AC_DEFINE(SDL_VIDEO_DRIVER_KMSDRM, 1, [ ])
-                    SOURCES="$SOURCES $srcdir/src/video/kmsdrm/*.c"
-                    EXTRA_CFLAGS="$EXTRA_CFLAGS $LIBDRM_CFLAGS $LIBGBM_CFLAGS"
+            AC_DEFINE(SDL_VIDEO_DRIVER_KMSDRM, 1, [ ])
+            SOURCES="$SOURCES $srcdir/src/video/kmsdrm/*.c"
+            EXTRA_CFLAGS="$EXTRA_CFLAGS $LIBDRM_CFLAGS $LIBGBM_CFLAGS"
 
-                    AC_MSG_CHECKING(for kmsdrm dynamic loading support)
-                    kmsdrm_shared=no
-                    drm_lib=[`find_lib "libdrm.so.*" "$DRM_LIBS"`]
-                    gbm_lib=[`find_lib "libgbm.so.*" "$DRM_LIBS"`]
-                    if test x$have_loadso != xyes && \
-                       test x$enable_kmsdrm_shared = xyes; then
-                        AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic kmsdrm loading])
-                    fi
-                    if test x$have_loadso = xyes && \
-                       test x$enable_kmsdrm_shared = xyes && test x$drm_lib != x && test x$gbm_lib != x; then
-                        kmsdrm_shared=yes
-                        AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC, "$drm_lib", [ ])
-                        AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC_GBM, "$gbm_lib", [ ])
-                        AC_DEFINE_UNQUOTED(HAVE_KMSDRM_SHARED, "TRUE", [ ])
-                        SUMMARY_video="${SUMMARY_video} kmsdrm(dynamic)"
-                    else
-                        EXTRA_LDFLAGS="$EXTRA_LDFLAGS $LIBDRM_LIBS $LIBGBM_LIBS"
-                        SUMMARY_video="${SUMMARY_video} kmsdrm"
-                    fi
-                    AC_MSG_RESULT($kmsdrm_shared)
-                    have_video=yes
-                fi
+            AC_MSG_CHECKING(for kmsdrm dynamic loading support)
+            kmsdrm_shared=no
+            drm_lib=[`find_lib "libdrm.so.*" "$DRM_LIBS"`]
+            gbm_lib=[`find_lib "libgbm.so.*" "$DRM_LIBS"`]
+            if test x$have_loadso != xyes && \
+               test x$enable_kmsdrm_shared = xyes; then
+                AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic kmsdrm loading])
             fi
+            if test x$have_loadso = xyes && \
+               test x$enable_kmsdrm_shared = xyes && test x$drm_lib != x && test x$gbm_lib != x; then
+                kmsdrm_shared=yes
+                AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC, "$drm_lib", [ ])
+                AC_DEFINE_UNQUOTED(SDL_VIDEO_DRIVER_KMSDRM_DYNAMIC_GBM, "$gbm_lib", [ ])
+                AC_DEFINE_UNQUOTED(HAVE_KMSDRM_SHARED, "TRUE", [ ])
+                SUMMARY_video="${SUMMARY_video} kmsdrm(dynamic)"
+            else
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS $LIBDRM_LIBS $LIBGBM_LIBS"
+                SUMMARY_video="${SUMMARY_video} kmsdrm"
+            fi
+            AC_MSG_RESULT($kmsdrm_shared)
+            have_video=yes
         fi
     fi
 }
@@ -2639,20 +2549,17 @@ CheckDBus()
 AC_HELP_STRING([--enable-dbus], [enable D-Bus support [[default=yes]]]),
                         , enable_dbus=yes)
     if test x$enable_dbus = xyes; then
-        AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
-        if test x$PKG_CONFIG != xno; then
-            DBUS_CFLAGS=`$PKG_CONFIG --cflags dbus-1`
-            save_CFLAGS="$CFLAGS"
-            CFLAGS="$save_CFLAGS $DBUS_CFLAGS"
-            AC_CHECK_HEADER(dbus/dbus.h,
-                            have_dbus_dbus_h_hdr=yes,
-                            have_dbus_dbus_h_hdr=no)
-            CFLAGS="$save_CFLAGS"
-            if test x$have_dbus_dbus_h_hdr = xyes; then
-                AC_DEFINE(HAVE_DBUS_DBUS_H, 1, [ ])
-                EXTRA_CFLAGS="$EXTRA_CFLAGS $DBUS_CFLAGS"
-                SOURCES="$SOURCES $srcdir/src/core/linux/SDL_dbus.c"
-            fi
+        PKG_CHECK_MODULES([DBUS], [dbus-1])
+        save_CFLAGS="$CFLAGS"
+        CFLAGS="$save_CFLAGS $DBUS_CFLAGS"
+        AC_CHECK_HEADER(dbus/dbus.h,
+                        have_dbus_dbus_h_hdr=yes,
+                        have_dbus_dbus_h_hdr=no)
+        CFLAGS="$save_CFLAGS"
+        if test x$have_dbus_dbus_h_hdr = xyes; then
+            AC_DEFINE(HAVE_DBUS_DBUS_H, 1, [ ])
+            EXTRA_CFLAGS="$EXTRA_CFLAGS $DBUS_CFLAGS"
+            SOURCES="$SOURCES $srcdir/src/core/linux/SDL_dbus.c"
         fi
     fi
 }
@@ -2676,33 +2583,30 @@ CheckIBus()
 AC_HELP_STRING([--enable-ibus], [enable IBus support [[default=yes]]]),
                   , enable_ibus=yes)
     if test x$enable_ibus = xyes; then
-        AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
-        if test x$PKG_CONFIG != xno; then
-            IBUS_CFLAGS=`$PKG_CONFIG --cflags ibus-1.0`
-            save_CFLAGS="$CFLAGS"
-            CFLAGS="$save_CFLAGS $IBUS_CFLAGS"
-            AC_CHECK_HEADER(ibus-1.0/ibus.h,
-                            have_ibus_ibus_h_hdr=yes,
-                            have_ibus_ibus_h_hdr=no)
-            AC_CHECK_HEADER(sys/inotify.h,
-                            have_inotify_inotify_h_hdr=yes,
-                            have_inotify_inotify_h_hdr=no)
-            CFLAGS="$save_CFLAGS"
-            if test x$have_ibus_ibus_h_hdr = xyes; then
-                if test x$enable_ime != xyes; then
-                    AC_MSG_WARN([IME support is required for IBus.])
-                    have_ibus_ibus_h_hdr=no
-                elif test x$enable_dbus != xyes; then
-                    AC_MSG_WARN([DBus support is required for IBus.])
-                    have_ibus_ibus_h_hdr=no
-                elif test x$have_inotify_inotify_h_hdr != xyes; then
-                    AC_MSG_WARN([INotify support is required for IBus.])
-                    have_ibus_ibus_h_hdr=no
-                else
-                    AC_DEFINE(HAVE_IBUS_IBUS_H, 1, [ ])
-                    EXTRA_CFLAGS="$EXTRA_CFLAGS $IBUS_CFLAGS"
-                    SOURCES="$SOURCES $srcdir/src/core/linux/SDL_ibus.c"
-               fi
+        PKG_CHECK_MODULES([IBUS], [ibus-1.0])
+        save_CFLAGS="$CFLAGS"
+        CFLAGS="$save_CFLAGS $IBUS_CFLAGS"
+        AC_CHECK_HEADER(ibus-1.0/ibus.h,
+                        have_ibus_ibus_h_hdr=yes,
+                        have_ibus_ibus_h_hdr=no)
+        AC_CHECK_HEADER(sys/inotify.h,
+                        have_inotify_inotify_h_hdr=yes,
+                        have_inotify_inotify_h_hdr=no)
+        CFLAGS="$save_CFLAGS"
+        if test x$have_ibus_ibus_h_hdr = xyes; then
+            if test x$enable_ime != xyes; then
+                AC_MSG_WARN([IME support is required for IBus.])
+                have_ibus_ibus_h_hdr=no
+            elif test x$enable_dbus != xyes; then
+                AC_MSG_WARN([DBus support is required for IBus.])
+                have_ibus_ibus_h_hdr=no
+            elif test x$have_inotify_inotify_h_hdr != xyes; then
+                AC_MSG_WARN([INotify support is required for IBus.])
+                have_ibus_ibus_h_hdr=no
+            else
+                AC_DEFINE(HAVE_IBUS_IBUS_H, 1, [ ])
+                EXTRA_CFLAGS="$EXTRA_CFLAGS $IBUS_CFLAGS"
+                SOURCES="$SOURCES $srcdir/src/core/linux/SDL_ibus.c"
             fi
         fi
     fi
@@ -2715,26 +2619,23 @@ CheckFcitx()
 AC_HELP_STRING([--enable-fcitx], [enable fcitx support [[default=yes]]]),
                   , enable_fcitx=yes)
     if test x$enable_fcitx = xyes; then
-        AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
-        if test x$PKG_CONFIG != xno; then
-            FCITX_CFLAGS=`$PKG_CONFIG --cflags fcitx`
-            CFLAGS="$CFLAGS $FCITX_CFLAGS"
-            AC_CHECK_HEADER(fcitx/frontend.h,
-                            have_fcitx_frontend_h_hdr=yes,
-                            have_fcitx_frontend_h_hdr=no)
-            CFLAGS="$save_CFLAGS"
-            if test x$have_fcitx_frontend_h_hdr = xyes; then
-                if test x$enable_ime != xyes; then
-                    AC_MSG_WARN([IME support is required for fcitx.])
-                    have_fcitx_frontend_h_hdr=no
-                elif test x$enable_dbus != xyes; then
-                    AC_MSG_WARN([DBus support is required for fcitx.])
-                    have_fcitx_frontend_h_hdr=no
-                else
-                    AC_DEFINE(HAVE_FCITX_FRONTEND_H, 1, [ ])
-                    EXTRA_CFLAGS="$EXTRA_CFLAGS $FCITX_CFLAGS"
-                    SOURCES="$SOURCES $srcdir/src/core/linux/SDL_fcitx.c"
-               fi
+        PKG_CHECK_MODULES([FCITX], [fcitx])
+        CFLAGS="$CFLAGS $FCITX_CFLAGS"
+        AC_CHECK_HEADER(fcitx/frontend.h,
+                        have_fcitx_frontend_h_hdr=yes,
+                        have_fcitx_frontend_h_hdr=no)
+        CFLAGS="$save_CFLAGS"
+        if test x$have_fcitx_frontend_h_hdr = xyes; then
+            if test x$enable_ime != xyes; then
+                AC_MSG_WARN([IME support is required for fcitx.])
+                have_fcitx_frontend_h_hdr=no
+            elif test x$enable_dbus != xyes; then
+                AC_MSG_WARN([DBus support is required for fcitx.])
+                have_fcitx_frontend_h_hdr=no
+            else
+                AC_DEFINE(HAVE_FCITX_FRONTEND_H, 1, [ ])
+                EXTRA_CFLAGS="$EXTRA_CFLAGS $FCITX_CFLAGS"
+                SOURCES="$SOURCES $srcdir/src/core/linux/SDL_fcitx.c"
             fi
         fi
     fi
@@ -3282,16 +3183,13 @@ CheckHIDAPI()
 AC_HELP_STRING([--enable-hidapi], [use HIDAPI for low level joystick drivers [[default=no]]]),
                   , enable_hidapi=no)
     if test x$enable_joystick = xyes -a x$enable_hidapi = xyes; then
+        PKG_CHECK_MODULES([LIBUSB], [libusb-1.0])
         hidapi_support=no
-        AC_PATH_PROG(PKG_CONFIG, pkg-config, no)
-        if test x$PKG_CONFIG != xno; then
-            LIBUSB_CFLAGS=`$PKG_CONFIG --cflags libusb-1.0`
-            LIBUSB_LDFLAGS=`$PKG_CONFIG --libs libusb-1.0`
-            save_CFLAGS="$CFLAGS"
-            CFLAGS="$save_CFLAGS $LIBUSB_CFLAGS"
-            AC_CHECK_HEADER(libusb.h, have_libusb_h=yes)
-            CFLAGS="$save_CFLAGS"
-        fi
+        save_CFLAGS="$CFLAGS"
+        CFLAGS="$save_CFLAGS $LIBUSB_CFLAGS"
+        AC_CHECK_HEADER(libusb.h, have_libusb_h=yes)
+        CFLAGS="$save_CFLAGS"
+
         if test x$have_libusb_h = xyes; then
             hidapi_support=yes
             AC_DEFINE(SDL_JOYSTICK_HIDAPI, 1, [ ])
@@ -3299,7 +3197,7 @@ AC_HELP_STRING([--enable-hidapi], [use HIDAPI for low level joystick drivers [[d
             SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
             SOURCES="$SOURCES $srcdir/src/hidapi/libusb/hid.c"
             EXTRA_CFLAGS="$EXTRA_CFLAGS $LIBUSB_CFLAGS"
-            EXTRA_LDFLAGS="$EXTRA_LDFLAGS $LIBUSB_LDFLAGS"
+            EXTRA_LDFLAGS="$EXTRA_LDFLAGS $LIBUSB_LIBS"
         fi
         AC_MSG_CHECKING(for hidapi support)
         AC_MSG_RESULT($hidapi_support)
