@@ -120,12 +120,13 @@ SDL_CreateRGBSurfaceWithFormat(Uint32 flags, int width, int height, int depth,
             return NULL;
         }
 
-        surface->pixels = SDL_malloc((size_t)size);
+        surface->pixels = SDL_SIMDAlloc((size_t)size);
         if (!surface->pixels) {
             SDL_FreeSurface(surface);
             SDL_OutOfMemory();
             return NULL;
         }
+        surface->flags |= SDL_SIMD_ALIGNED;
         /* This is important for bitmaps */
         SDL_memset(surface->pixels, 0, surface->h * surface->pitch);
     }
