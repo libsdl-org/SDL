@@ -1261,7 +1261,7 @@ SDL_FreeSurface(SDL_Surface * surface)
     }
     if (surface->flags & SDL_PREALLOC) {
         /* Don't free */
-    } else if (surface->flags & SDL_MEMALIGNED) {
+    } else if (surface->flags & SDL_SIMD_ALIGNED) {
         /* Free aligned */
         SDL_SIMDFree(surface->pixels);
     } else {
