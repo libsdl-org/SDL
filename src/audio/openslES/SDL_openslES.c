@@ -272,8 +272,7 @@ openslES_CreatePCMPlayer(_THIS)
           this->spec.channels, (test_format & 0x1000) ? "BE" : "LE", this->spec.samples);
 
     /* configure audio source */
-    SLDataLocator_AndroidSimpleBufferQueue loc_bufq = { SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, 2 };
-    /* SLDataLocator_AndroidSimpleBufferQueue loc_bufq = { SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, OPENSLES_BUFFERS }; */
+    SLDataLocator_AndroidSimpleBufferQueue loc_bufq = { SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, NUM_BUFFERS };
 
     format_pcm.formatType    = SL_DATAFORMAT_PCM;
     format_pcm.numChannels   = this->spec.channels;
