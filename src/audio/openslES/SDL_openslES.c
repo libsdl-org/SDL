@@ -46,7 +46,7 @@
 
 /* engine interfaces */
 static SLObjectItf engineObject = NULL;
-static SLEngineItf engineEngine;
+static SLEngineItf engineEngine = NULL;
 
 /* output mix interfaces */
 static SLObjectItf outputMixObject = NULL;
@@ -59,9 +59,11 @@ static SLObjectItf outputMixObject = NULL;
 static SLObjectItf                   bqPlayerObject      = NULL;
 static SLPlayItf                     bqPlayerPlay        = NULL;
 static SLAndroidSimpleBufferQueueItf bqPlayerBufferQueue = NULL;
-/*static SLEffectSendItf          bqPlayerEffectSend = NULL; */
+#if 0
+static SLEffectSendItf               bqPlayerEffectSend  = NULL;
 static SLMuteSoloItf                 bqPlayerMuteSolo    = NULL;
 static SLVolumeItf                   bqPlayerVolume      = NULL;
+#endif
 
 #if 0
 /* recorder interfaces TODO */
@@ -191,26 +193,7 @@ static void
 bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *context)
 {
     struct SDL_PrivateAudioData *audiodata = (struct SDL_PrivateAudioData *) context;
-    static int t = 0;
-
-    /* assert(bq == bqPlayerBufferQueue); */
-    /* assert(NULL == context); */
-
-    /* for streaming playback, replace this test by logic to find and fill the next buffer */
-#if 0
-    if (--nextCount > 0 && NULL != nextBuffer && 0 != nextSize)
-    {
-        SLresult result;
-
-        /* enqueue another buffer */
-        result = (*bqPlayerBufferQueue)->Enqueue(bqPlayerBufferQueue, nextBuffer, nextSize);
-        /* the most likely other result is SL_RESULT_BUFFER_INSUFFICIENT, */
-        /* which for this code example would indicate a programming error */
-        assert(SL_RESULT_SUCCESS == result);
-        (void) result;
-    }
-#endif
-    LOGI("SLES: Playback Callmeback %u", t++);
+    LOGI("SLES: Playback Callmeback");
     SDL_SemPost(audiodata->playsem);
     return;
 }
@@ -236,14 +219,12 @@ static int
 openslES_CreatePCMPlayer(_THIS)
 {
     struct SDL_PrivateAudioData *audiodata = (struct SDL_PrivateAudioData *) this->hidden;
-
     SLDataFormat_PCM format_pcm;
-
-    SDL_AudioFormat test_format = 0;
     SLresult result;
     int i;
 
 #if 0
+    SDL_AudioFormat test_format = 0;
 
       test_format = SDL_FirstAudioFormat( this->spec.format );
 
@@ -391,12 +372,14 @@ openslES_CreatePCMPlayer(_THIS)
     (void) result;
 #endif
 
+#if 0
     /* get the volume interface */
     result = (*bqPlayerObject)->GetInterface(bqPlayerObject, SL_IID_VOLUME, &bqPlayerVolume);
     if (SL_RESULT_SUCCESS != result) {
         LOGE("SL_IID_VOLUME interface get failed");
         /* goto failed; */
     }
+#endif
 
     /* Create the audio buffer semaphore */
     audiodata->playsem = SDL_CreateSemaphore(NUM_BUFFERS - 1);
@@ -454,9 +437,11 @@ openslES_DestroyPCMPlayer(_THIS)
         bqPlayerObject = NULL;
         bqPlayerPlay = NULL;
         bqPlayerBufferQueue = NULL;
-        /* bqPlayerEffectSend = NULL; */
+#if 0
+        bqPlayerEffectSend = NULL;
         bqPlayerMuteSolo = NULL;
         bqPlayerVolume = NULL;
+#endif
     }
 
     if (audiodata->playsem) {
