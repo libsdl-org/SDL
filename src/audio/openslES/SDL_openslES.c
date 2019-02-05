@@ -549,17 +549,19 @@ openslES_PlayDevice(_THIS)
     SLresult result;
 
     LOGI("======openslES_PlayDevice( )======");
-    /* Queue it up */
 
+    /* Queue it up */
     result = (*bqPlayerBufferQueue)->Enqueue(bqPlayerBufferQueue, audiodata->pmixbuff[audiodata->next_buffer], this->spec.size);
-    if (SL_RESULT_SUCCESS != result) {
-        /* just puk here */
-        /* next ! */
-    }
 
     audiodata->next_buffer++;
     if (audiodata->next_buffer >= NUM_BUFFERS) {
         audiodata->next_buffer = 0;
+    }
+
+    /* If Enqueue fails, callback won't be called.
+     * Post the semphore, not to run out of buffer */
+    if (SL_RESULT_SUCCESS != result) {
+        SDL_SemPost(audiodata->playsem);
     }
 
     return;
