@@ -2379,6 +2379,123 @@ BlitNtoNKey(SDL_BlitInfo * info)
         }
     }
 
+    /* Any src/dst 8888, not CopyAlpha, no ARGB2101010 */
+    if (srcbpp == 4 && dstbpp == 4 &&
+        srcfmt->format != SDL_PIXELFORMAT_ARGB2101010 &&
+        dstfmt->format != SDL_PIXELFORMAT_ARGB2101010) {
+
+        Uint32 *src32 = (Uint32*)src;
+        Uint32 *dst32 = (Uint32*)dst;
+        
+        if (dstfmt->Amask) {
+            /* Find the appropriate permutation */
+            int missing = 0, r, g, b, a;
+            int Pixel = 0x03020100;
+            RGB_FROM_PIXEL(Pixel, srcfmt, r, g, b);
+            PIXEL_FROM_RGBA(Pixel, dstfmt, r, g, b, 255);
+            r = Pixel & 0xFF;
+            g = (Pixel >> 8) & 0xFF;
+            b = (Pixel >> 16) & 0xFF;
+            a = (Pixel >> 24) & 0xFF;
+
+            {
+                int val;
+                for (val = 0; val <= 3; val++) {
+                    if (r != val && g != val && b != val && a != val) {
+                        missing = val;
+                    }
+                }
+            }
+
+            if (r == 255) {
+                r = missing;
+                missing = 0;
+            } else if (g == 255) {
+                g = missing;
+                missing = 1;
+            } else if (b == 255) {
+                b = missing;
+                missing = 2;
+            } else if (a == 255) {
+                a = missing;
+                missing = 3;
+            }
+
+            while (height--) {
+                /* *INDENT-OFF* */
+                DUFFS_LOOP(
+                {
+                    if ((*src32 & rgbmask) != ckey) {
+                        Uint8 *s8 = (Uint8 *)src32;
+                        Uint8 *d8 = (Uint8 *)dst32;
+                        d8[0] = s8[r];
+                        d8[1] = s8[g];
+                        d8[2] = s8[b];
+                        d8[3] = s8[a];
+                        d8[missing] = alpha;
+                    }
+                    ++src32;
+                    ++dst32;
+                }, width);
+                /* *INDENT-ON* */
+                src32 = (Uint32 *)((Uint8 *)src32 + srcskip);
+                dst32 = (Uint32 *)((Uint8 *)dst32 + dstskip);
+            }
+        
+            return;
+        } else {
+            /* Find the appropriate permutation */
+            int missing = 0, r, g, b, a;
+            int Pixel = 0x04030201; /* +1 */
+            RGBA_FROM_PIXEL(Pixel, srcfmt, r, g, b, a);
+            missing = a;
+            PIXEL_FROM_RGB(Pixel, dstfmt, r, g, b);
+            r = Pixel & 0xFF;
+            g = (Pixel >> 8) & 0xFF;
+            b = (Pixel >> 16) & 0xFF;
+            a = (Pixel >> 24) & 0xFF;
+
+            if (r == 0) {
+                r = missing;
+                missing = 0;
+            } else if (g == 0) {
+                g = missing;
+                missing = 1;
+            } else if (b == 0) {
+                b = missing;
+                missing = 2;
+            } else if (a == 0) {
+                a = missing;
+                missing = 3;
+            }
+        
+            /* -1 */
+            r -= 1; g -= 1; b -= 1; a -= 1;
+
+            while (height--) {
+                /* *INDENT-OFF* */
+                DUFFS_LOOP(
+                {
+                    if ((*src32 & rgbmask) != ckey) {
+                        Uint8 *s8 = (Uint8 *)src32;
+                        Uint8 *d8 = (Uint8 *)dst32;
+                        d8[0] = s8[r];
+                        d8[1] = s8[g];
+                        d8[2] = s8[b];
+                        d8[3] = s8[a];
+                        d8[missing] = 0;
+                    }
+                    ++src32;
+                    ++dst32;
+                }, width);
+                /* *INDENT-ON* */
+                src32 = (Uint32 *)((Uint8 *)src32 + srcskip);
+                dst32 = (Uint32 *)((Uint8 *)dst32 + dstskip);
+            }
+            return;
+        }
+    }
+
     /* BPP 3, same rgb triplet */
     if ((sfmt == SDL_PIXELFORMAT_RGB24 && dfmt == SDL_PIXELFORMAT_RGB24) ||
         (sfmt == SDL_PIXELFORMAT_BGR24 && dfmt == SDL_PIXELFORMAT_BGR24)) {
