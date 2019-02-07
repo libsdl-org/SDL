@@ -2542,8 +2542,8 @@ BlitNtoNKeyCopyAlpha(SDL_BlitInfo * info)
             DUFFS_LOOP(
             {
                 if ((*src32 & rgbmask) != ckey) {
-                    Uint8 *s8 = src32;
-                    Uint8 *d8 = dst32;
+                    Uint8 *s8 = (Uint8 *)src32;
+                    Uint8 *d8 = (Uint8 *)dst32;
                     d8[0] = s8[r];
                     d8[1] = s8[g];
                     d8[2] = s8[b];
