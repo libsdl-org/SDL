@@ -2339,7 +2339,7 @@ BlitNtoNKey(SDL_BlitInfo * info)
     if (srcbpp == 4 && dstbpp == 4 && srcfmt->Rmask == dstfmt->Rmask && srcfmt->Gmask == dstfmt->Gmask && srcfmt->Bmask == dstfmt->Bmask) {
         Uint32 *src32 = (Uint32*)src;
         Uint32 *dst32 = (Uint32*)dst;
- 
+
         if (dstfmt->Amask) {
             /* RGB->RGBA, SET_ALPHA */
             Uint32 mask = info->a << dstfmt->Ashift;
@@ -2441,8 +2441,8 @@ BlitNtoNKey(SDL_BlitInfo * info)
             dst += dstskip;
         }
         return;
-    } 
-   
+    }
+
     while (height--) {
         /* *INDENT-OFF* */
         DUFFS_LOOP(
@@ -2515,6 +2515,46 @@ BlitNtoNKeyCopyAlpha(SDL_BlitInfo * info)
                 src32 = (Uint32 *)((Uint8 *)src32 + srcskip);
                 dst32 = (Uint32 *)((Uint8 *)dst32 + dstskip);
             }
+        }
+        return;
+    }
+
+    /* Any src/dst 8888 for CopyAlpha, no ARGB2101010 */
+    if (srcbpp == 4 && dstbpp == 4 &&
+        srcfmt->format != SDL_PIXELFORMAT_ARGB2101010 &&
+        dstfmt->format != SDL_PIXELFORMAT_ARGB2101010) {
+
+        Uint32 *src32 = (Uint32*)src;
+        Uint32 *dst32 = (Uint32*)dst;
+
+        /* Find the appropriate permutation */
+        int r, g, b, a;
+        Pixel = 0x03020100;
+        RGBA_FROM_PIXEL(Pixel, srcfmt, r, g, b, a);
+        PIXEL_FROM_RGBA(Pixel, dstfmt, r, g, b, a);
+        r = Pixel & 0xFF;
+        g = (Pixel >> 8) & 0xFF;
+        b = (Pixel >> 16) & 0xFF;
+        a = (Pixel >> 24) & 0xFF;
+
+        while (height--) {
+            /* *INDENT-OFF* */
+            DUFFS_LOOP(
+            {
+                if ((*src32 & rgbmask) != ckey) {
+                    Uint8 *s8 = src32;
+                    Uint8 *d8 = dst32;
+                    d8[0] = s8[r];
+                    d8[1] = s8[g];
+                    d8[2] = s8[b];
+                    d8[3] = s8[a];
+                }
+                ++src32;
+                ++dst32;
+            }, width);
+            /* *INDENT-ON* */
+            src32 = (Uint32 *)((Uint8 *)src32 + srcskip);
+            dst32 = (Uint32 *)((Uint8 *)dst32 + dstskip);
         }
         return;
     }
