@@ -2164,7 +2164,7 @@ BlitNtoN(SDL_BlitInfo * info)
     int dstbpp = dstfmt->BytesPerPixel;
     unsigned alpha = dstfmt->Amask ? info->a : 0;
     
-    /* Any src/dst 8888 for CopyAlpha, no ARGB2101010 */
+    /* Any src/dst 8888, no ARGB2101010 */
     if (srcbpp == 4 && dstbpp == 4 &&
         srcfmt->format != SDL_PIXELFORMAT_ARGB2101010 &&
         dstfmt->format != SDL_PIXELFORMAT_ARGB2101010) {
