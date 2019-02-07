@@ -2149,6 +2149,71 @@ Blit4to4CopyAlpha(SDL_BlitInfo * info)
     }
 }
 
+/* permutation for mapping srcfmt to dstfmt, overloading or not the alpha channel */
+static void
+get_permutation(SDL_PixelFormat *srcfmt, SDL_PixelFormat *dstfmt, 
+        int *_r , int *_g, int *_b, int *_a, int *_missing) 
+{
+    int missing = 0, r, g, b, a = 0;
+    int Pixel = 0x04030201; /* identity permutation */
+
+    if (srcfmt->Amask) {
+        RGBA_FROM_PIXEL(Pixel, srcfmt, r, g, b, a);
+    } else {
+        RGB_FROM_PIXEL(Pixel, srcfmt, r, g, b);
+    }
+    
+    if (dstfmt->Amask) {
+        if (srcfmt->Amask) {
+            PIXEL_FROM_RGBA(Pixel, dstfmt, r, g, b, a);
+        } else {
+            PIXEL_FROM_RGBA(Pixel, dstfmt, r, g, b, 0);
+        }
+    } else {
+        PIXEL_FROM_RGB(Pixel, dstfmt, r, g, b);
+    }
+
+    r = Pixel & 0xFF;
+    g = (Pixel >> 8) & 0xFF;
+    b = (Pixel >> 16) & 0xFF;
+    a = (Pixel >> 24) & 0xFF;
+
+    {
+        int val;
+        for (val = 0; val <= 3; val++) {
+            if (r != val && g != val && b != val && a != val) {
+                missing = val;
+                break;
+            }
+        }
+    }
+
+    if (r == 0) {
+        r = missing;
+        missing = 0;
+    } else if (g == 0) {
+        g = missing;
+        missing = 1;
+    } else if (b == 0) {
+        b = missing;
+        missing = 2;
+    } else if (a == 0) {
+        a = missing;
+        missing = 3;
+    }
+
+    *_r = r - 1;
+    *_g = g - 1;
+    *_b = b - 1;
+    *_a = a - 1;
+
+    if (missing) {
+        *_missing = missing;
+    }
+    return;
+}
+
+
 static void
 BlitNtoN(SDL_BlitInfo * info)
 {
@@ -2174,45 +2239,8 @@ BlitNtoN(SDL_BlitInfo * info)
 
         /* Find the appropriate permutation */
         int missing = 0, r, g, b, a;
-        int Pixel = 0x04030201; /* +1 */
-        RGB_FROM_PIXEL(Pixel, srcfmt, r, g, b);
-
-        if (dstfmt->Amask) {
-            PIXEL_FROM_RGBA(Pixel, dstfmt, r, g, b, 0);
-        } else {
-            PIXEL_FROM_RGB(Pixel, dstfmt, r, g, b);
-        }
-        r = Pixel & 0xFF;
-        g = (Pixel >> 8) & 0xFF;
-        b = (Pixel >> 16) & 0xFF;
-        a = (Pixel >> 24) & 0xFF;
-
-        {
-            int val;
-            for (val = 0; val <= 3; val++) {
-                if (r != val && g != val && b != val && a != val) {
-                    missing = val;
-                }
-            }
-        }
-
-        if (r == 0) {
-            r = missing;
-            missing = 0;
-        } else if (g == 0) {
-            g = missing;
-            missing = 1;
-        } else if (b == 0) {
-            b = missing;
-            missing = 2;
-        } else if (a == 0) {
-            a = missing;
-            missing = 3;
-        }
-
-        /* -1 */
-        r -= 1; g -= 1; b -= 1; a -= 1;
-
+        get_permutation(srcfmt, dstfmt, &r, &g, &b, &a, &missing);
+        
         while (height--) {
             /* *INDENT-OFF* */
             DUFFS_LOOP(
@@ -2456,41 +2484,12 @@ BlitNtoNKey(SDL_BlitInfo * info)
 
         Uint32 *src32 = (Uint32*)src;
         Uint32 *dst32 = (Uint32*)dst;
-        
+ 
+        /* Find the appropriate permutation */
+        int missing = 0, r, g, b, a;
+        get_permutation(srcfmt, dstfmt, &r, &g, &b, &a, &missing);
+       
         if (dstfmt->Amask) {
-            /* Find the appropriate permutation */
-            int missing = 0, r, g, b, a;
-            int Pixel = 0x03020100;
-            RGB_FROM_PIXEL(Pixel, srcfmt, r, g, b);
-            PIXEL_FROM_RGBA(Pixel, dstfmt, r, g, b, 255);
-            r = Pixel & 0xFF;
-            g = (Pixel >> 8) & 0xFF;
-            b = (Pixel >> 16) & 0xFF;
-            a = (Pixel >> 24) & 0xFF;
-
-            {
-                int val;
-                for (val = 0; val <= 3; val++) {
-                    if (r != val && g != val && b != val && a != val) {
-                        missing = val;
-                    }
-                }
-            }
-
-            if (r == 255) {
-                r = missing;
-                missing = 0;
-            } else if (g == 255) {
-                g = missing;
-                missing = 1;
-            } else if (b == 255) {
-                b = missing;
-                missing = 2;
-            } else if (a == 255) {
-                a = missing;
-                missing = 3;
-            }
-
             while (height--) {
                 /* *INDENT-OFF* */
                 DUFFS_LOOP(
@@ -2514,34 +2513,6 @@ BlitNtoNKey(SDL_BlitInfo * info)
         
             return;
         } else {
-            /* Find the appropriate permutation */
-            int missing = 0, r, g, b, a;
-            int Pixel = 0x04030201; /* +1 */
-            RGBA_FROM_PIXEL(Pixel, srcfmt, r, g, b, a);
-            missing = a;
-            PIXEL_FROM_RGB(Pixel, dstfmt, r, g, b);
-            r = Pixel & 0xFF;
-            g = (Pixel >> 8) & 0xFF;
-            b = (Pixel >> 16) & 0xFF;
-            a = (Pixel >> 24) & 0xFF;
-
-            if (r == 0) {
-                r = missing;
-                missing = 0;
-            } else if (g == 0) {
-                g = missing;
-                missing = 1;
-            } else if (b == 0) {
-                b = missing;
-                missing = 2;
-            } else if (a == 0) {
-                a = missing;
-                missing = 3;
-            }
-        
-            /* -1 */
-            r -= 1; g -= 1; b -= 1; a -= 1;
-
             while (height--) {
                 /* *INDENT-OFF* */
                 DUFFS_LOOP(
@@ -2716,13 +2687,7 @@ BlitNtoNKeyCopyAlpha(SDL_BlitInfo * info)
 
         /* Find the appropriate permutation */
         int r, g, b, a;
-        Pixel = 0x03020100;
-        RGBA_FROM_PIXEL(Pixel, srcfmt, r, g, b, a);
-        PIXEL_FROM_RGBA(Pixel, dstfmt, r, g, b, a);
-        r = Pixel & 0xFF;
-        g = (Pixel >> 8) & 0xFF;
-        b = (Pixel >> 16) & 0xFF;
-        a = (Pixel >> 24) & 0xFF;
+        get_permutation(srcfmt, dstfmt, &r, &g, &b, &a, NULL);
 
         while (height--) {
             /* *INDENT-OFF* */
