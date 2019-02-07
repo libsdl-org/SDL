@@ -2163,7 +2163,77 @@ BlitNtoN(SDL_BlitInfo * info)
     SDL_PixelFormat *dstfmt = info->dst_fmt;
     int dstbpp = dstfmt->BytesPerPixel;
     unsigned alpha = dstfmt->Amask ? info->a : 0;
+    
+    /* Any src/dst 8888 for CopyAlpha, no ARGB2101010 */
+    if (srcbpp == 4 && dstbpp == 4 &&
+        srcfmt->format != SDL_PIXELFORMAT_ARGB2101010 &&
+        dstfmt->format != SDL_PIXELFORMAT_ARGB2101010) {
 
+        Uint32 *src32 = (Uint32*)src;
+        Uint32 *dst32 = (Uint32*)dst;
+
+        /* Find the appropriate permutation */
+        int missing = 0, r, g, b, a;
+        int Pixel = 0x04030201; /* +1 */
+        RGB_FROM_PIXEL(Pixel, srcfmt, r, g, b);
+
+        if (dstfmt->Amask) {
+            PIXEL_FROM_RGBA(Pixel, dstfmt, r, g, b, 0);
+        } else {
+            PIXEL_FROM_RGB(Pixel, dstfmt, r, g, b);
+        }
+        r = Pixel & 0xFF;
+        g = (Pixel >> 8) & 0xFF;
+        b = (Pixel >> 16) & 0xFF;
+        a = (Pixel >> 24) & 0xFF;
+
+        {
+            int val;
+            for (val = 0; val <= 3; val++) {
+                if (r != val && g != val && b != val && a != val) {
+                    missing = val;
+                }
+            }
+        }
+
+        if (r == 0) {
+            r = missing;
+            missing = 0;
+        } else if (g == 0) {
+            g = missing;
+            missing = 1;
+        } else if (b == 0) {
+            b = missing;
+            missing = 2;
+        } else if (a == 0) {
+            a = missing;
+            missing = 3;
+        }
+
+        /* -1 */
+        r -= 1; g -= 1; b -= 1; a -= 1;
+
+        while (height--) {
+            /* *INDENT-OFF* */
+            DUFFS_LOOP(
+            {
+                Uint8 *s8 = (Uint8 *)src32;
+                Uint8 *d8 = (Uint8 *)dst32;
+                d8[0] = s8[r];
+                d8[1] = s8[g];
+                d8[2] = s8[b];
+                d8[3] = s8[a];
+                d8[missing] = alpha;
+                ++src32;
+                ++dst32;
+            }, width);
+            /* *INDENT-ON* */
+            src32 = (Uint32 *)((Uint8 *)src32 + srcskip);
+            dst32 = (Uint32 *)((Uint8 *)dst32 + dstskip);
+        }
+        return;
+    }
+    
     while (height--) {
         /* *INDENT-OFF* */
         DUFFS_LOOP(
