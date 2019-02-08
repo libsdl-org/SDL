@@ -2178,27 +2178,17 @@ get_permutation(SDL_PixelFormat *srcfmt, SDL_PixelFormat *dstfmt,
     b = (Pixel >> 16) & 0xFF;
     a = (Pixel >> 24) & 0xFF;
 
-    {
-        int val;
-        for (val = 0; val <= 3; val++) {
-            if (r != val && g != val && b != val && a != val) {
-                missing = val;
-                break;
-            }
-        }
-    }
-
     if (r == 0) {
-        r = missing;
+        r = 1;
         missing = 0;
     } else if (g == 0) {
-        g = missing;
+        g = 1;
         missing = 1;
     } else if (b == 0) {
-        b = missing;
+        b = 1;
         missing = 2;
     } else if (a == 0) {
-        a = missing;
+        a = 1;
         missing = 3;
     }
 
@@ -2207,7 +2197,7 @@ get_permutation(SDL_PixelFormat *srcfmt, SDL_PixelFormat *dstfmt,
     *_b = b - 1;
     *_a = a - 1;
 
-    if (missing) {
+    if (_missing) {
         *_missing = missing;
     }
     return;
