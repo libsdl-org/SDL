@@ -2152,53 +2152,54 @@ Blit4to4CopyAlpha(SDL_BlitInfo * info)
 /* permutation for mapping srcfmt to dstfmt, overloading or not the alpha channel */
 static void
 get_permutation(SDL_PixelFormat *srcfmt, SDL_PixelFormat *dstfmt,
-        int *_r , int *_g, int *_b, int *_a, int *_missing)
+        int *_p0 , int *_p1, int *_p2, int *_p3, int *_alpha_channel)
 {
-    int missing = 0, r, g, b, a = 0;
+    int alpha_channel = 0, p0, p1, p2, p3;
     int Pixel = 0x04030201; /* identity permutation */
 
     if (srcfmt->Amask) {
-        RGBA_FROM_PIXEL(Pixel, srcfmt, r, g, b, a);
+        RGBA_FROM_PIXEL(Pixel, srcfmt, p0, p1, p2, p3);
     } else {
-        RGB_FROM_PIXEL(Pixel, srcfmt, r, g, b);
+        RGB_FROM_PIXEL(Pixel, srcfmt, p0, p1, p2);
+        p3 = 0;
     }
 
     if (dstfmt->Amask) {
         if (srcfmt->Amask) {
-            PIXEL_FROM_RGBA(Pixel, dstfmt, r, g, b, a);
+            PIXEL_FROM_RGBA(Pixel, dstfmt, p0, p1, p2, p3);
         } else {
-            PIXEL_FROM_RGBA(Pixel, dstfmt, r, g, b, 0);
+            PIXEL_FROM_RGBA(Pixel, dstfmt, p0, p1, p2, 0);
         }
     } else {
-        PIXEL_FROM_RGB(Pixel, dstfmt, r, g, b);
+        PIXEL_FROM_RGB(Pixel, dstfmt, p0, p1, p2);
     }
 
-    r = Pixel & 0xFF;
-    g = (Pixel >> 8) & 0xFF;
-    b = (Pixel >> 16) & 0xFF;
-    a = (Pixel >> 24) & 0xFF;
+    p0 = Pixel & 0xFF;
+    p1 = (Pixel >> 8) & 0xFF;
+    p2 = (Pixel >> 16) & 0xFF;
+    p3 = (Pixel >> 24) & 0xFF;
 
-    if (r == 0) {
-        r = 1;
-        missing = 0;
-    } else if (g == 0) {
-        g = 1;
-        missing = 1;
-    } else if (b == 0) {
-        b = 1;
-        missing = 2;
-    } else if (a == 0) {
-        a = 1;
-        missing = 3;
+    if (p0 == 0) {
+        p0 = 1;
+        alpha_channel = 0;
+    } else if (p1 == 0) {
+        p1 = 1;
+        alpha_channel = 1;
+    } else if (p2 == 0) {
+        p2 = 1;
+        alpha_channel = 2;
+    } else if (p3 == 0) {
+        p3 = 1;
+        alpha_channel = 3;
     }
 
-    *_r = r - 1;
-    *_g = g - 1;
-    *_b = b - 1;
-    *_a = a - 1;
+    *_p0 = p0 - 1;
+    *_p1 = p1 - 1;
+    *_p2 = p2 - 1;
+    *_p3 = p3 - 1;
 
-    if (_missing) {
-        *_missing = missing;
+    if (_alpha_channel) {
+        *_alpha_channel = alpha_channel;
     }
     return;
 }
@@ -2228,8 +2229,8 @@ BlitNtoN(SDL_BlitInfo * info)
         Uint32 *dst32 = (Uint32*)dst;
 
         /* Find the appropriate permutation */
-        int missing = 0, r, g, b, a;
-        get_permutation(srcfmt, dstfmt, &r, &g, &b, &a, &missing);
+        int alpha_channel, p0, p1, p2, p3;
+        get_permutation(srcfmt, dstfmt, &p0, &p1, &p2, &p3, &alpha_channel);
 
         while (height--) {
             /* *INDENT-OFF* */
@@ -2237,11 +2238,11 @@ BlitNtoN(SDL_BlitInfo * info)
             {
                 Uint8 *s8 = (Uint8 *)src32;
                 Uint8 *d8 = (Uint8 *)dst32;
-                d8[0] = s8[r];
-                d8[1] = s8[g];
-                d8[2] = s8[b];
-                d8[3] = s8[a];
-                d8[missing] = alpha;
+                d8[0] = s8[p0];
+                d8[1] = s8[p1];
+                d8[2] = s8[p2];
+                d8[3] = s8[p3];
+                d8[alpha_channel] = alpha;
                 ++src32;
                 ++dst32;
             }, width);
@@ -2259,17 +2260,17 @@ BlitNtoN(SDL_BlitInfo * info)
         Uint32 *src32 = (Uint32*)src;
 
         /* Find the appropriate permutation */
-        int r, g, b, a;
-        get_permutation(srcfmt, dstfmt, &r, &g, &b, &a, NULL);
+        int p0, p1, p2, p3;
+        get_permutation(srcfmt, dstfmt, &p0, &p1, &p2, &p3, NULL);
 
         while (height--) {
             /* *INDENT-OFF* */
             DUFFS_LOOP(
             {
                 Uint8 *s8 = (Uint8 *)src32;
-                dst[0] = s8[r];
-                dst[1] = s8[g];
-                dst[2] = s8[b];
+                dst[0] = s8[p0];
+                dst[1] = s8[p1];
+                dst[2] = s8[p2];
                 ++src32;
                 dst += 3;
             }, width);
@@ -2287,19 +2288,19 @@ BlitNtoN(SDL_BlitInfo * info)
         Uint32 *dst32 = (Uint32*)dst;
 
         /* Find the appropriate permutation */
-        int missing = 0, r, g, b, a;
-        get_permutation(srcfmt, dstfmt, &r, &g, &b, &a, &missing);
+        int alpha_channel, p0, p1, p2, p3;
+        get_permutation(srcfmt, dstfmt, &p0, &p1, &p2, &p3, &alpha_channel);
 
         while (height--) {
             /* *INDENT-OFF* */
             DUFFS_LOOP(
             {
                 Uint8 *d8 = (Uint8 *)dst32;
-                d8[0] = src[r];
-                d8[1] = src[g];
-                d8[2] = src[b];
-                d8[3] = src[a];
-                d8[missing] = alpha;
+                d8[0] = src[p0];
+                d8[1] = src[p1];
+                d8[2] = src[p2];
+                d8[3] = src[p3];
+                d8[alpha_channel] = alpha;
                 src += 3;
                 ++dst32;
             }, width);
@@ -2354,8 +2355,8 @@ BlitNtoNCopyAlpha(SDL_BlitInfo * info)
         Uint32 *dst32 = (Uint32*)dst;
 
         /* Find the appropriate permutation */
-        int r, g, b, a;
-        get_permutation(srcfmt, dstfmt, &r, &g, &b, &a, NULL);
+        int p0, p1, p2, p3;
+        get_permutation(srcfmt, dstfmt, &p0, &p1, &p2, &p3, NULL);
 
         while (height--) {
             /* *INDENT-OFF* */
@@ -2363,10 +2364,10 @@ BlitNtoNCopyAlpha(SDL_BlitInfo * info)
             {
                 Uint8 *s8 = (Uint8 *)src32;
                 Uint8 *d8 = (Uint8 *)dst32;
-                d8[0] = s8[r];
-                d8[1] = s8[g];
-                d8[2] = s8[b];
-                d8[3] = s8[a];
+                d8[0] = s8[p0];
+                d8[1] = s8[p1];
+                d8[2] = s8[p2];
+                d8[3] = s8[p3];
                 ++src32;
                 ++dst32;
             }, width);
@@ -2566,8 +2567,8 @@ BlitNtoNKey(SDL_BlitInfo * info)
         Uint32 *dst32 = (Uint32*)dst;
 
         /* Find the appropriate permutation */
-        int missing = 0, r, g, b, a;
-        get_permutation(srcfmt, dstfmt, &r, &g, &b, &a, &missing);
+        int alpha_channel, p0, p1, p2, p3;
+        get_permutation(srcfmt, dstfmt, &p0, &p1, &p2, &p3, &alpha_channel);
 
         while (height--) {
             /* *INDENT-OFF* */
@@ -2576,11 +2577,11 @@ BlitNtoNKey(SDL_BlitInfo * info)
                 if ((*src32 & rgbmask) != ckey) {
                     Uint8 *s8 = (Uint8 *)src32;
                     Uint8 *d8 = (Uint8 *)dst32;
-                    d8[0] = s8[r];
-                    d8[1] = s8[g];
-                    d8[2] = s8[b];
-                    d8[3] = s8[a];
-                    d8[missing] = alpha;
+                    d8[0] = s8[p0];
+                    d8[1] = s8[p1];
+                    d8[2] = s8[p2];
+                    d8[3] = s8[p3];
+                    d8[alpha_channel] = alpha;
                 }
                 ++src32;
                 ++dst32;
@@ -2663,8 +2664,8 @@ BlitNtoNKey(SDL_BlitInfo * info)
         Uint32 *src32 = (Uint32*)src;
 
         /* Find the appropriate permutation */
-        int r, g, b, a;
-        get_permutation(srcfmt, dstfmt, &r, &g, &b, &a, NULL);
+        int p0, p1, p2, p3;
+        get_permutation(srcfmt, dstfmt, &p0, &p1, &p2, &p3, NULL);
 
         while (height--) {
             /* *INDENT-OFF* */
@@ -2672,9 +2673,9 @@ BlitNtoNKey(SDL_BlitInfo * info)
             {
                 if ((*src32 & rgbmask) != ckey) {
                     Uint8 *s8 = (Uint8 *)src32;
-                    dst[0] = s8[r];
-                    dst[1] = s8[g];
-                    dst[2] = s8[b];
+                    dst[0] = s8[p0];
+                    dst[1] = s8[p1];
+                    dst[2] = s8[p2];
                 }
                 ++src32;
                 dst += 3;
@@ -2697,8 +2698,8 @@ BlitNtoNKey(SDL_BlitInfo * info)
         Uint8 k2 = (ckey >> 16) & 0xFF;
 
         /* Find the appropriate permutation */
-        int missing = 0, r, g, b, a;
-        get_permutation(srcfmt, dstfmt, &r, &g, &b, &a, &missing);
+        int alpha_channel, p0, p1, p2, p3;
+        get_permutation(srcfmt, dstfmt, &p0, &p1, &p2, &p3, &alpha_channel);
 
         while (height--) {
             /* *INDENT-OFF* */
@@ -2710,11 +2711,11 @@ BlitNtoNKey(SDL_BlitInfo * info)
 
                 if (k0 != s0 || k1 != s1 || k2 != s2) {
                     Uint8 *d8 = (Uint8 *)dst32;
-                    d8[0] = src[r];
-                    d8[1] = src[g];
-                    d8[2] = src[b];
-                    d8[3] = src[a];
-                    d8[missing] = alpha;
+                    d8[0] = src[p0];
+                    d8[1] = src[p1];
+                    d8[2] = src[p2];
+                    d8[3] = src[p3];
+                    d8[alpha_channel] = alpha;
                 }
                 src += 3;
                 ++dst32;
@@ -2812,8 +2813,8 @@ BlitNtoNKeyCopyAlpha(SDL_BlitInfo * info)
         Uint32 *dst32 = (Uint32*)dst;
 
         /* Find the appropriate permutation */
-        int r, g, b, a;
-        get_permutation(srcfmt, dstfmt, &r, &g, &b, &a, NULL);
+        int p0, p1, p2, p3;
+        get_permutation(srcfmt, dstfmt, &p0, &p1, &p2, &p3, NULL);
 
         while (height--) {
             /* *INDENT-OFF* */
@@ -2822,10 +2823,10 @@ BlitNtoNKeyCopyAlpha(SDL_BlitInfo * info)
                 if ((*src32 & rgbmask) != ckey) {
                     Uint8 *s8 = (Uint8 *)src32;
                     Uint8 *d8 = (Uint8 *)dst32;
-                    d8[0] = s8[r];
-                    d8[1] = s8[g];
-                    d8[2] = s8[b];
-                    d8[3] = s8[a];
+                    d8[0] = s8[p0];
+                    d8[1] = s8[p1];
+                    d8[2] = s8[p2];
+                    d8[3] = s8[p3];
                 }
                 ++src32;
                 ++dst32;
