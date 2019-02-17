@@ -2938,15 +2938,54 @@ Blit_3or4_to_3or4__same_rgb(SDL_BlitInfo * info)
     if (dstfmt->Amask) {
         /* SET_ALPHA */
         Uint32 mask = info->a << dstfmt->Ashift;
+        int last_line = 0;
+        if (srcbpp == 3 && height) {
+            height -= 1;
+            last_line = 1;
+        }
+
         while (height--) {
             /* *INDENT-OFF* */
             DUFFS_LOOP(
             {
                 Uint32  *dst32 = (Uint32*)dst;
+                Uint32  *src32 = (Uint32*)src;
+                *dst32 = *src32 | mask;
+                dst += 4;
+                src += srcbpp;
+            }, width);
+            /* *INDENT-ON* */
+            src += srcskip;
+            dst += dstskip;
+        }
+
+        if (last_line) {
+            while (width--) {
+                Uint32  *dst32 = (Uint32*)dst;
                 Uint8 s0 = src[0];
                 Uint8 s1 = src[1];
                 Uint8 s2 = src[2];
                 *dst32 = (s0) | (s1 << 8) | (s2 << 16) | mask;
+                dst += 4;
+                src += srcbpp;
+            }
+        }
+    } else {
+        /* NO_ALPHA */
+        int mask = srcfmt->Rmask | srcfmt->Gmask | srcfmt->Bmask;
+        int last_line = 0;
+        if ((dstbpp == 3 || srcbpp == 3) && height) {
+            height -= 1;
+            last_line = 1;
+        }
+
+        while (height--) {
+            /* *INDENT-OFF* */
+            DUFFS_LOOP(
+            {
+                Uint32  *dst32 = (Uint32*)dst;
+                Uint32  *src32 = (Uint32*)src;
+                *dst32 = *src32 & mask;
                 dst += dstbpp;
                 src += srcbpp;
             }, width);
@@ -2954,23 +2993,18 @@ Blit_3or4_to_3or4__same_rgb(SDL_BlitInfo * info)
             src += srcskip;
             dst += dstskip;
         }
-    } else {
-        /* NO_ALPHA */
-        while (height--) {
-            /* *INDENT-OFF* */
-            DUFFS_LOOP(
-            {
-                Uint32  *dst32 = (Uint32*)dst;
+
+        if (last_line) {
+            while (width--) {
                 Uint8 s0 = src[0];
                 Uint8 s1 = src[1];
                 Uint8 s2 = src[2];
-                *dst32 = (s0) | (s1 << 8) | (s2 << 16);
+                dst[0] = s0;
+                dst[1] = s1;
+                dst[2] = s2;
                 dst += dstbpp;
                 src += srcbpp;
-            }, width);
-            /* *INDENT-ON* */
-            src += srcskip;
-            dst += dstskip;
+            }
         }
     }
     return;
@@ -3036,6 +3070,12 @@ Blit_3or4_to_3or4__inversed_rgb(SDL_BlitInfo * info)
         }
     } else {
         /* NO_ALPHA */
+        int last_line = 0;
+        if (dstbpp == 3 && height) {
+            height -= 1;
+            last_line = 1;
+        }
+
         while (height--) {
             /* *INDENT-OFF* */
             DUFFS_LOOP(
@@ -3052,6 +3092,20 @@ Blit_3or4_to_3or4__inversed_rgb(SDL_BlitInfo * info)
             /* *INDENT-ON* */
             src += srcskip;
             dst += dstskip;
+        }
+
+        if (last_line) {
+            while (width--) {
+                Uint8 s0 = src[0];
+                Uint8 s1 = src[1];
+                Uint8 s2 = src[2];
+                /* inversed, compared to Blit_3or4_to_3or4__same_rgb */
+                dst[0] = s2;
+                dst[1] = s1;
+                dst[2] = s0;
+                dst += dstbpp;
+                src += srcbpp;
+            }
         }
     }
     return;
