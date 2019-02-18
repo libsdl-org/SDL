@@ -2155,7 +2155,13 @@ get_permutation(SDL_PixelFormat *srcfmt, SDL_PixelFormat *dstfmt,
         int *_p0 , int *_p1, int *_p2, int *_p3, int *_alpha_channel)
 {
     int alpha_channel = 0, p0, p1, p2, p3;
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
     int Pixel = 0x04030201; /* identity permutation */
+#else
+    int Pixel = 0x01020304; /* identity permutation */
+    int srcbpp = srcfmt->BytesPerPixel;
+    int dstbpp = dstfmt->BytesPerPixel;
+#endif
 
     if (srcfmt->Amask) {
         RGBA_FROM_PIXEL(Pixel, srcfmt, p0, p1, p2, p3);
@@ -2174,10 +2180,17 @@ get_permutation(SDL_PixelFormat *srcfmt, SDL_PixelFormat *dstfmt,
         PIXEL_FROM_RGB(Pixel, dstfmt, p0, p1, p2);
     }
 
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
     p0 = Pixel & 0xFF;
     p1 = (Pixel >> 8) & 0xFF;
     p2 = (Pixel >> 16) & 0xFF;
     p3 = (Pixel >> 24) & 0xFF;
+#else
+    p3 = Pixel & 0xFF;
+    p2 = (Pixel >> 8) & 0xFF;
+    p1 = (Pixel >> 16) & 0xFF;
+    p0 = (Pixel >> 24) & 0xFF;
+#endif
 
     if (p0 == 0) {
         p0 = 1;
@@ -2193,6 +2206,19 @@ get_permutation(SDL_PixelFormat *srcfmt, SDL_PixelFormat *dstfmt,
         alpha_channel = 3;
     }
 
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+#else
+    if (srcbpp == 3 && dstbpp == 4) {
+        if (p0 != 1) p0--;
+        if (p1 != 1) p1--;
+        if (p2 != 1) p2--;
+        if (p3 != 1) p3--;
+    } else if (srcbpp == 4 && dstbpp == 3) {
+        p0 = p1;
+        p1 = p2;
+        p2 = p3;
+    }
+#endif
     *_p0 = p0 - 1;
     *_p1 = p1 - 1;
     *_p2 = p2 - 1;
@@ -2597,9 +2623,15 @@ BlitNtoNKey(SDL_BlitInfo * info)
     if ((sfmt == SDL_PIXELFORMAT_RGB24 && dfmt == SDL_PIXELFORMAT_RGB24) ||
         (sfmt == SDL_PIXELFORMAT_BGR24 && dfmt == SDL_PIXELFORMAT_BGR24)) {
 
-        Uint8 k0 = ckey & 0x000000FF;
-        Uint8 k1 = (ckey & 0x0000FF00) >> 8;
-        Uint8 k2 = (ckey & 0x00FF0000) >> 16;
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+        Uint8 k0 = ckey & 0xFF;
+        Uint8 k1 = (ckey >> 8)  & 0xFF;
+        Uint8 k2 = (ckey >> 16) & 0xFF;
+#else
+        Uint8 k0 = (ckey >> 16) & 0xFF;
+        Uint8 k1 = (ckey >> 8) & 0xFF;
+        Uint8 k2 = ckey & 0xFF;
+#endif
 
         while (height--) {
             /* *INDENT-OFF* */
@@ -2629,9 +2661,15 @@ BlitNtoNKey(SDL_BlitInfo * info)
     if ((sfmt == SDL_PIXELFORMAT_RGB24 && dfmt == SDL_PIXELFORMAT_BGR24) ||
         (sfmt == SDL_PIXELFORMAT_BGR24 && dfmt == SDL_PIXELFORMAT_RGB24)) {
 
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
         Uint8 k0 = ckey & 0xFF;
         Uint8 k1 = (ckey >> 8)  & 0xFF;
         Uint8 k2 = (ckey >> 16) & 0xFF;
+#else
+        Uint8 k0 = (ckey >> 16) & 0xFF;
+        Uint8 k1 = (ckey >> 8) & 0xFF;
+        Uint8 k2 = ckey & 0xFF;
+#endif
 
         while (height--) {
             /* *INDENT-OFF* */
@@ -2693,9 +2731,15 @@ BlitNtoNKey(SDL_BlitInfo * info)
 
         Uint32 *dst32 = (Uint32*)dst;
 
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
         Uint8 k0 = ckey & 0xFF;
         Uint8 k1 = (ckey >> 8)  & 0xFF;
         Uint8 k2 = (ckey >> 16) & 0xFF;
+#else
+        Uint8 k0 = (ckey >> 16) & 0xFF;
+        Uint8 k1 = (ckey >> 8) & 0xFF;
+        Uint8 k2 = ckey  & 0xFF;
+#endif
 
         /* Find the appropriate permutation */
         int alpha_channel, p0, p1, p2, p3;
@@ -2939,6 +2983,13 @@ Blit_3or4_to_3or4__same_rgb(SDL_BlitInfo * info)
         /* SET_ALPHA */
         Uint32 mask = info->a << dstfmt->Ashift;
         int last_line = 0;
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+#else
+        int i0 = srcbpp - 1 - 0;
+        int i1 = srcbpp - 1 - 1;
+        int i2 = srcbpp - 1 - 2;
+#endif
+
         if (srcbpp == 3 && height) {
             height -= 1;
             last_line = 1;
@@ -2949,8 +3000,15 @@ Blit_3or4_to_3or4__same_rgb(SDL_BlitInfo * info)
             DUFFS_LOOP(
             {
                 Uint32  *dst32 = (Uint32*)dst;
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
                 Uint32  *src32 = (Uint32*)src;
                 *dst32 = *src32 | mask;
+#else
+                Uint8 s0 = src[i0];
+                Uint8 s1 = src[i1];
+                Uint8 s2 = src[i2];
+                *dst32 = (s0) | (s1 << 8) | (s2 << 16) | mask;
+#endif
                 dst += 4;
                 src += srcbpp;
             }, width);
@@ -2962,9 +3020,15 @@ Blit_3or4_to_3or4__same_rgb(SDL_BlitInfo * info)
         if (last_line) {
             while (width--) {
                 Uint32  *dst32 = (Uint32*)dst;
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
                 Uint8 s0 = src[0];
                 Uint8 s1 = src[1];
                 Uint8 s2 = src[2];
+#else
+                Uint8 s0 = src[i0];
+                Uint8 s1 = src[i1];
+                Uint8 s2 = src[i2];
+#endif
                 *dst32 = (s0) | (s1 << 8) | (s2 << 16) | mask;
                 dst += 4;
                 src += srcbpp;
@@ -2972,8 +3036,28 @@ Blit_3or4_to_3or4__same_rgb(SDL_BlitInfo * info)
         }
     } else {
         /* NO_ALPHA */
-        int mask = srcfmt->Rmask | srcfmt->Gmask | srcfmt->Bmask;
         int last_line = 0;
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+        int mask = srcfmt->Rmask | srcfmt->Gmask | srcfmt->Bmask;
+#else
+        int i0 = srcbpp - 1 - 0;
+        int i1 = srcbpp - 1 - 1;
+        int i2 = srcbpp - 1 - 2;
+        int j0 = dstbpp - 1 - 0;
+        int j1 = dstbpp - 1 - 1;
+        int j2 = dstbpp - 1 - 2;
+        int shift0, shift1, shift2;
+        if (dstbpp == 4) {
+            shift2 = 16;
+            shift1 = 8;
+            shift0 = 0;
+        } else { /* dstbpp 3 */
+            shift2 = 24;
+            shift1 = 16;
+            shift0 = 8;
+        }
+#endif
+
         if ((dstbpp == 3 || srcbpp == 3) && height) {
             height -= 1;
             last_line = 1;
@@ -2984,8 +3068,15 @@ Blit_3or4_to_3or4__same_rgb(SDL_BlitInfo * info)
             DUFFS_LOOP(
             {
                 Uint32  *dst32 = (Uint32*)dst;
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
                 Uint32  *src32 = (Uint32*)src;
                 *dst32 = *src32 & mask;
+#else
+                Uint8 s0 = src[i0];
+                Uint8 s1 = src[i1];
+                Uint8 s2 = src[i2];
+                *dst32 = (s0 << shift0) | (s1 << shift1) | (s2 << shift2);
+#endif
                 dst += dstbpp;
                 src += srcbpp;
             }, width);
@@ -2996,12 +3087,21 @@ Blit_3or4_to_3or4__same_rgb(SDL_BlitInfo * info)
 
         if (last_line) {
             while (width--) {
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
                 Uint8 s0 = src[0];
                 Uint8 s1 = src[1];
                 Uint8 s2 = src[2];
                 dst[0] = s0;
                 dst[1] = s1;
                 dst[2] = s2;
+#else
+                Uint8 s0 = src[i0];
+                Uint8 s1 = src[i1];
+                Uint8 s2 = src[i2];
+                dst[j0] = s0;
+                dst[j1] = s1;
+                dst[j2] = s2;
+#endif
                 dst += dstbpp;
                 src += srcbpp;
             }
@@ -3034,10 +3134,17 @@ Blit_3or4_to_3or4__inversed_rgb(SDL_BlitInfo * info)
                 DUFFS_LOOP(
                 {
                     Uint32 *dst32 = (Uint32*)dst;
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
                     Uint8 s0 = src[0];
                     Uint8 s1 = src[1];
                     Uint8 s2 = src[2];
                     Uint32 alphashift = src[3] << dstfmt->Ashift;
+#else
+                    Uint8 s0 = src[3];
+                    Uint8 s1 = src[2];
+                    Uint8 s2 = src[1];
+                    Uint32 alphashift = src[0] << dstfmt->Ashift;
+#endif
                     /* inversed, compared to Blit_3or4_to_3or4__same_rgb */
                     *dst32 = (s0 << 16) | (s1 << 8) | (s2) | alphashift;
                     dst += dstbpp;
@@ -3050,14 +3157,27 @@ Blit_3or4_to_3or4__inversed_rgb(SDL_BlitInfo * info)
         } else {
             /* SET_ALPHA */
             Uint32 mask = info->a << dstfmt->Ashift;
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+#else
+            int i0 = srcbpp - 1 - 0;
+            int i1 = srcbpp - 1 - 1;
+            int i2 = srcbpp - 1 - 2;
+#endif
+
             while (height--) {
                 /* *INDENT-OFF* */
                 DUFFS_LOOP(
                 {
                     Uint32 *dst32 = (Uint32*)dst;
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
                     Uint8 s0 = src[0];
                     Uint8 s1 = src[1];
                     Uint8 s2 = src[2];
+#else
+                    Uint8 s0 = src[i0];
+                    Uint8 s1 = src[i1];
+                    Uint8 s2 = src[i2];
+#endif
                     /* inversed, compared to Blit_3or4_to_3or4__same_rgb */
                     *dst32 = (s0 << 16) | (s1 << 8) | (s2) | mask;
                     dst += dstbpp;
@@ -3071,6 +3191,23 @@ Blit_3or4_to_3or4__inversed_rgb(SDL_BlitInfo * info)
     } else {
         /* NO_ALPHA */
         int last_line = 0;
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
+#else
+        int i0 = srcbpp - 1 - 0;
+        int i1 = srcbpp - 1 - 1;
+        int i2 = srcbpp - 1 - 2;
+        int shift0, shift1, shift2;
+        if (dstbpp == 4) {
+            shift0 = 16;
+            shift1 = 8;
+            shift2 = 0;
+        } else { /* dstbpp 3 */
+            shift0 = 24;
+            shift1 = 16;
+            shift2 = 8;
+        }
+#endif
+
         if (dstbpp == 3 && height) {
             height -= 1;
             last_line = 1;
@@ -3081,11 +3218,18 @@ Blit_3or4_to_3or4__inversed_rgb(SDL_BlitInfo * info)
             DUFFS_LOOP(
             {
                 Uint32 *dst32 = (Uint32*)dst;
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
                 Uint8 s0 = src[0];
                 Uint8 s1 = src[1];
                 Uint8 s2 = src[2];
                 /* inversed, compared to Blit_3or4_to_3or4__same_rgb */
                 *dst32 = (s0 << 16) | (s1 << 8) | (s2);
+#else
+                Uint8 s0 = src[i0];
+                Uint8 s1 = src[i1];
+                Uint8 s2 = src[i2];
+                *dst32 = (s0 << shift0) | (s1 << shift1) | (s2 << shift2);
+#endif
                 dst += dstbpp;
                 src += srcbpp;
             }, width);
@@ -3096,6 +3240,7 @@ Blit_3or4_to_3or4__inversed_rgb(SDL_BlitInfo * info)
 
         if (last_line) {
             while (width--) {
+#if SDL_BYTEORDER == SDL_LIL_ENDIAN
                 Uint8 s0 = src[0];
                 Uint8 s1 = src[1];
                 Uint8 s2 = src[2];
@@ -3103,6 +3248,15 @@ Blit_3or4_to_3or4__inversed_rgb(SDL_BlitInfo * info)
                 dst[0] = s2;
                 dst[1] = s1;
                 dst[2] = s0;
+#else
+                Uint8 s0 = src[i0];
+                Uint8 s1 = src[i1];
+                Uint8 s2 = src[i2];
+                /* inversed, compared to Blit_3or4_to_3or4__same_rgb */
+                dst[0] = s0;
+                dst[1] = s1;
+                dst[2] = s2;
+#endif
                 dst += dstbpp;
                 src += srcbpp;
             }
@@ -3151,7 +3305,6 @@ static const struct blit_table normal_blit_2[] = {
 };
 
 static const struct blit_table normal_blit_3[] = {
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
     /* 3->4 with same rgb triplet */
     {0x000000FF, 0x0000FF00, 0x00FF0000, 4, 0x000000FF, 0x0000FF00, 0x00FF0000,
      0, Blit_3or4_to_3or4__same_rgb, NO_ALPHA | SET_ALPHA},
@@ -3167,7 +3320,6 @@ static const struct blit_table normal_blit_3[] = {
      0, Blit_3or4_to_3or4__inversed_rgb, NO_ALPHA },
     {0x00FF0000, 0x0000FF00, 0x000000FF, 3, 0x000000FF, 0x0000FF00, 0x00FF0000,
      0, Blit_3or4_to_3or4__inversed_rgb, NO_ALPHA },
-#endif
     /* Default for 24-bit RGB source, never optimized */
     {0, 0, 0, 0, 0, 0, 0, 0, BlitNtoN, 0}
 };
@@ -3184,7 +3336,6 @@ static const struct blit_table normal_blit_4[] = {
     {0x00000000, 0x00000000, 0x00000000, 2, 0x0000F800, 0x000007E0, 0x0000001F,
      2, Blit_RGB888_RGB565Altivec, NO_ALPHA},
 #endif
-#if SDL_BYTEORDER == SDL_LIL_ENDIAN
     /* 4->3 with same rgb triplet */
     {0x000000FF, 0x0000FF00, 0x00FF0000, 3, 0x000000FF, 0x0000FF00, 0x00FF0000,
      0, Blit_3or4_to_3or4__same_rgb, NO_ALPHA | SET_ALPHA},
@@ -3195,7 +3346,6 @@ static const struct blit_table normal_blit_4[] = {
      0, Blit_3or4_to_3or4__inversed_rgb, NO_ALPHA | SET_ALPHA},
     {0x00FF0000, 0x0000FF00, 0x000000FF, 3, 0x000000FF, 0x0000FF00, 0x00FF0000,
      0, Blit_3or4_to_3or4__inversed_rgb, NO_ALPHA | SET_ALPHA},
-#endif
     /* 4->4 with inversed rgb triplet, and COPY_ALPHA to switch ABGR8888 <-> ARGB8888 */
     {0x000000FF, 0x0000FF00, 0x00FF0000, 4, 0x00FF0000, 0x0000FF00, 0x000000FF,
      0, Blit_3or4_to_3or4__inversed_rgb, NO_ALPHA | SET_ALPHA | COPY_ALPHA},
