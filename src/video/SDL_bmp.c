@@ -313,6 +313,10 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
         SDL_assert(biBitCount <= 8);
         if (biClrUsed == 0) {
             biClrUsed = 1 << biBitCount;
+		} else if (biClrUsed > (1 << biBitCount)) {
+			SDL_SetError("BMP file has an invalid number of colors");
+			was_error = SDL_TRUE;
+			goto done;
         }
         if ((int) biClrUsed > palette->ncolors) {
             SDL_Color *colors;
