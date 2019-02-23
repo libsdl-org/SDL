@@ -27,6 +27,15 @@
 
 #include "SDL_assert.h"
 
+/* General optimized routines that write char by char */
+#define HAVE_FAST_WRITE_INT8 1
+
+/* On some CPU, it's slower than combining and write a word */
+#if defined(__MIPS__) 
+#  undef  HAVE_FAST_WRITE_INT8
+#  define HAVE_FAST_WRITE_INT8 0
+#endif
+
 /* Functions to blit from N-bit surfaces to other surfaces */
 
 #if SDL_ALTIVEC_BLITTERS
@@ -2246,6 +2255,7 @@ BlitNtoN(SDL_BlitInfo * info)
     int dstbpp = dstfmt->BytesPerPixel;
     unsigned alpha = dstfmt->Amask ? info->a : 0;
 
+#if HAVE_FAST_WRITE_INT8
     /* Blit with permutation: 4->4 */
     if (srcbpp == 4 && dstbpp == 4 &&
         srcfmt->format != SDL_PIXELFORMAT_ARGB2101010 &&
@@ -2273,6 +2283,7 @@ BlitNtoN(SDL_BlitInfo * info)
         }
         return;
     }
+#endif
 
     /* Blit with permutation: 4->3 */
     if (srcbpp == 4 && dstbpp == 3 &&
@@ -2299,6 +2310,7 @@ BlitNtoN(SDL_BlitInfo * info)
         return;
     }
 
+#if HAVE_FAST_WRITE_INT8
     /* Blit with permutation: 3->4 */
     if (srcbpp == 3 && dstbpp == 4 &&
         dstfmt->format != SDL_PIXELFORMAT_ARGB2101010) {
@@ -2325,6 +2337,7 @@ BlitNtoN(SDL_BlitInfo * info)
         }
         return;
     }
+#endif
 
     while (height--) {
         /* *INDENT-OFF* */
@@ -2361,6 +2374,7 @@ BlitNtoNCopyAlpha(SDL_BlitInfo * info)
     int dstbpp = dstfmt->BytesPerPixel;
     int c;
 
+#if HAVE_FAST_WRITE_INT8
     /* Blit with permutation: 4->4 */
     if (srcbpp == 4 && dstbpp == 4 &&
         srcfmt->format != SDL_PIXELFORMAT_ARGB2101010 &&
@@ -2387,6 +2401,7 @@ BlitNtoNCopyAlpha(SDL_BlitInfo * info)
         }
         return;
     }
+#endif
 
     while (height--) {
         for (c = width; c; --c) {
@@ -2568,6 +2583,7 @@ BlitNtoNKey(SDL_BlitInfo * info)
         }
     }
 
+#if HAVE_FAST_WRITE_INT8
     /* Blit with permutation: 4->4 */
     if (srcbpp == 4 && dstbpp == 4 &&
         srcfmt->format != SDL_PIXELFORMAT_ARGB2101010 &&
@@ -2599,6 +2615,7 @@ BlitNtoNKey(SDL_BlitInfo * info)
         }
         return;
     }
+#endif
 
     /* BPP 3, same rgb triplet */
     if ((sfmt == SDL_PIXELFORMAT_RGB24 && dfmt == SDL_PIXELFORMAT_RGB24) ||
@@ -2704,6 +2721,7 @@ BlitNtoNKey(SDL_BlitInfo * info)
         return;
     }
 
+#if HAVE_FAST_WRITE_INT8
     /* Blit with permutation: 3->4 */
     if (srcbpp == 3 && dstbpp == 4 &&
         dstfmt->format != SDL_PIXELFORMAT_ARGB2101010) {
@@ -2746,6 +2764,7 @@ BlitNtoNKey(SDL_BlitInfo * info)
         }
         return;
     }
+#endif
 
     while (height--) {
         /* *INDENT-OFF* */
@@ -2823,6 +2842,7 @@ BlitNtoNKeyCopyAlpha(SDL_BlitInfo * info)
         return;
     }
 
+#if HAVE_FAST_WRITE_INT8
     /* Blit with permutation: 4->4 */
     if (srcbpp == 4 && dstbpp == 4 &&
         srcfmt->format != SDL_PIXELFORMAT_ARGB2101010 &&
@@ -2852,6 +2872,7 @@ BlitNtoNKeyCopyAlpha(SDL_BlitInfo * info)
         }
         return;
     }
+#endif
 
     while (height--) {
         /* *INDENT-OFF* */
@@ -2964,7 +2985,7 @@ Blit_3or4_to_3or4__same_rgb(SDL_BlitInfo * info)
             /* *INDENT-OFF* */
             DUFFS_LOOP(
             {
-                Uint32  *dst32 = (Uint32*)dst;
+                Uint32 *dst32 = (Uint32*)dst;
                 Uint8 s0 = src[i0];
                 Uint8 s1 = src[i1];
                 Uint8 s2 = src[i2];
@@ -3157,14 +3178,30 @@ static const struct blit_table normal_blit_2[] = {
 static const struct blit_table normal_blit_3[] = {
     /* 3->4 with same rgb triplet */
     {0x000000FF, 0x0000FF00, 0x00FF0000, 4, 0x000000FF, 0x0000FF00, 0x00FF0000,
-     0, Blit_3or4_to_3or4__same_rgb, NO_ALPHA | SET_ALPHA},
+     0, Blit_3or4_to_3or4__same_rgb,
+#if HAVE_FAST_WRITE_INT8
+        NO_ALPHA |
+#endif
+        SET_ALPHA},
     {0x00FF0000, 0x0000FF00, 0x000000FF, 4, 0x00FF0000, 0x0000FF00, 0x000000FF,
-     0, Blit_3or4_to_3or4__same_rgb, NO_ALPHA | SET_ALPHA},
+     0, Blit_3or4_to_3or4__same_rgb,
+#if HAVE_FAST_WRITE_INT8
+        NO_ALPHA |
+#endif
+        SET_ALPHA},
     /* 3->4 with inversed rgb triplet */
     {0x000000FF, 0x0000FF00, 0x00FF0000, 4, 0x00FF0000, 0x0000FF00, 0x000000FF,
-     0, Blit_3or4_to_3or4__inversed_rgb, NO_ALPHA | SET_ALPHA},
+     0, Blit_3or4_to_3or4__inversed_rgb,
+#if HAVE_FAST_WRITE_INT8
+        NO_ALPHA |
+#endif
+        SET_ALPHA},
     {0x00FF0000, 0x0000FF00, 0x000000FF, 4, 0x000000FF, 0x0000FF00, 0x00FF0000,
-     0, Blit_3or4_to_3or4__inversed_rgb, NO_ALPHA | SET_ALPHA},
+     0, Blit_3or4_to_3or4__inversed_rgb,
+#if HAVE_FAST_WRITE_INT8
+        NO_ALPHA |
+#endif
+        SET_ALPHA},
     /* 3->3 to switch RGB 24 <-> BGR 24 */
     {0x000000FF, 0x0000FF00, 0x00FF0000, 3, 0x00FF0000, 0x0000FF00, 0x000000FF,
      0, Blit_3or4_to_3or4__inversed_rgb, NO_ALPHA },
@@ -3198,9 +3235,17 @@ static const struct blit_table normal_blit_4[] = {
      0, Blit_3or4_to_3or4__inversed_rgb, NO_ALPHA | SET_ALPHA},
     /* 4->4 with inversed rgb triplet, and COPY_ALPHA to switch ABGR8888 <-> ARGB8888 */
     {0x000000FF, 0x0000FF00, 0x00FF0000, 4, 0x00FF0000, 0x0000FF00, 0x000000FF,
-     0, Blit_3or4_to_3or4__inversed_rgb, NO_ALPHA | SET_ALPHA | COPY_ALPHA},
+     0, Blit_3or4_to_3or4__inversed_rgb,
+#if HAVE_FAST_WRITE_INT8
+        NO_ALPHA |
+#endif
+        SET_ALPHA | COPY_ALPHA},
     {0x00FF0000, 0x0000FF00, 0x000000FF, 4, 0x000000FF, 0x0000FF00, 0x00FF0000,
-     0, Blit_3or4_to_3or4__inversed_rgb, NO_ALPHA | SET_ALPHA | COPY_ALPHA},
+     0, Blit_3or4_to_3or4__inversed_rgb,
+#if HAVE_FAST_WRITE_INT8
+        NO_ALPHA |
+#endif
+        SET_ALPHA | COPY_ALPHA},
     /* RGB 888 and RGB 565 */
     {0x00FF0000, 0x0000FF00, 0x000000FF, 2, 0x0000F800, 0x000007E0, 0x0000001F,
      0, Blit_RGB888_RGB565, NO_ALPHA},
