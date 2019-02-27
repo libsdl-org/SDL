@@ -352,12 +352,7 @@ Emscripten_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * di
 
 static void
 Emscripten_SetWindowTitle(_THIS, SDL_Window * window) {
-    EM_ASM_INT({
-      if (typeof setWindowTitle !== 'undefined') {
-        setWindowTitle(UTF8ToString($0));
-      }
-      return 0;
-    }, window->title);
+    emscripten_set_window_title(window->title);
 }
 
 #endif /* SDL_VIDEO_DRIVER_EMSCRIPTEN */
