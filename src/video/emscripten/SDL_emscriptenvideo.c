@@ -137,14 +137,7 @@ Emscripten_VideoInit(_THIS)
 
     /* Use a fake 32-bpp desktop mode */
     mode.format = SDL_PIXELFORMAT_RGB888;
-
-    mode.w = EM_ASM_INT_V({
-        return screen.width;
-    });
-
-    mode.h = EM_ASM_INT_V({
-        return screen.height;
-    });
+    emscripten_get_screen_size(&mode.w, &mode.h);
 
     mode.refresh_rate = 0;
     mode.driverdata = NULL;
