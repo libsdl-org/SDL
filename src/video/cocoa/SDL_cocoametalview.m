@@ -121,7 +121,7 @@ Cocoa_Mtl_GetDrawableSize(SDL_Window * window, int * w, int * h)
     SDL_cocoametalview* metalview = [view viewWithTag:METALVIEW_TAG];
     if (metalview) {
         CAMetalLayer *layer = (CAMetalLayer*)metalview.layer;
-        assert(layer != NULL);
+        SDL_assert(layer != NULL);
         if (w) {
             *w = layer.drawableSize.width;
         }
