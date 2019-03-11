@@ -607,6 +607,7 @@ SDL_MouseQuit(void)
         cursor = next;
     }
     mouse->cursors = NULL;
+    mouse->cur_cursor = NULL;
 
     if (mouse->def_cursor && mouse->FreeCursor) {
         mouse->FreeCursor(mouse->def_cursor);
