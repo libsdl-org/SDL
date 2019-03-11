@@ -255,7 +255,7 @@ KMSDRM_FBDestroyCallback(struct gbm_bo *bo, void *data)
         SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Delete DRM FB %u", fb_info->fb_id);
     }
 
-    free(fb_info);
+    SDL_free(fb_info);
 }
 
 KMSDRM_FBInfo *
@@ -287,7 +287,7 @@ KMSDRM_FBFromBO(_THIS, struct gbm_bo *bo)
 
     ret = KMSDRM_drmModeAddFB(vdata->drm_fd, w, h, 24, 32, stride, handle, &fb_info->fb_id);
     if (ret < 0) {
-       free(fb_info);
+       SDL_free(fb_info);
        return NULL;
     }
     SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "New DRM FB (%u): %ux%u, stride %u from BO %p", fb_info->fb_id, w, h, stride, (void *)bo);
