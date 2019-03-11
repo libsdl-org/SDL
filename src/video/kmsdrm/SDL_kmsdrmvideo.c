@@ -511,6 +511,8 @@ KMSDRM_VideoInit(_THIS)
 
     KMSDRM_InitMouse(_this);
 
+    return ret;
+
 cleanup:
     if (encoder != NULL)
         KMSDRM_drmModeFreeEncoder(encoder);
