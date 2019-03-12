@@ -1748,6 +1748,8 @@ GLES2_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
     GLES2_TextureData *texturedata = NULL;
     GLenum status;
 
+    data->drawstate.viewport_dirty = SDL_TRUE;
+
     if (texture == NULL) {
         data->glBindFramebuffer(GL_FRAMEBUFFER, data->window_framebuffer);
     } else {

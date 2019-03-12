@@ -503,6 +503,8 @@ GLES_SetRenderTarget(SDL_Renderer * renderer, SDL_Texture * texture)
         return SDL_SetError("Can't enable render target support in this renderer");
     }
 
+    data->drawstate.viewport_dirty = SDL_TRUE;
+
     if (texture == NULL) {
         data->glBindFramebufferOES(GL_FRAMEBUFFER_OES, data->window_framebuffer);
         return 0;
