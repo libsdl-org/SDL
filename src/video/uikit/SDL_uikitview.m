@@ -82,6 +82,27 @@ extern int SDL_AppleTVRemoteOpenedAsJoystick;
     return self;
 }
 
+- (void)layoutSubviews
+{
+	// Fix for touch ios.
+#if TARGET_OS_IOS
+	// on ios, a metal view gets added to our parent, and covers this for touch events.
+	// So set ourselves to user interact, and siblings false. johna
+	NSArray<UIView*>* subviews = [self.superview subviews];
+	for (int i=0; i<[subviews count]; i++)
+	{
+		UIView *view = [subviews objectAtIndex:i];
+		if (view == self) {
+			[view setUserInteractionEnabled:YES];  // set our user interaction to true.
+		} else {
+			[view setUserInteractionEnabled:NO];  // siblings to false.
+		}
+	}
+#endif
+    [super layoutSubviews];
+}
+
+
 - (void)setSDLWindow:(SDL_Window *)window
 {
     SDL_WindowData *data = nil;
