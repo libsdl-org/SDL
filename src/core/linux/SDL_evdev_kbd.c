@@ -345,7 +345,7 @@ SDL_EVDEV_kbd_init(void)
     SDL_EVDEV_keyboard_state *kbd;
     int i;
     char flag_state;
-    char shift_state[2] = {TIOCL_GETSHIFTSTATE, 0};
+    char shift_state[ sizeof (long) ] = {TIOCL_GETSHIFTSTATE, 0};
 
     kbd = (SDL_EVDEV_keyboard_state *)SDL_calloc(1, sizeof(*kbd));
     if (!kbd) {
