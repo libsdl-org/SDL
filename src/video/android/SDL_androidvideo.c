@@ -172,8 +172,10 @@ VideoBootStrap Android_bootstrap = {
 int
 Android_VideoInit(_THIS)
 {
-    SDL_VideoData   *videodata = (SDL_VideoData *)_this->driverdata;
-    SDL_DisplayMode  mode;
+    SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+    int display_index;
+    SDL_VideoDisplay *display;
+    SDL_DisplayMode mode;
 
     videodata->isPaused  = SDL_FALSE;
     videodata->isPausing = SDL_FALSE;
@@ -184,9 +186,12 @@ Android_VideoInit(_THIS)
     mode.refresh_rate    = Android_ScreenRate;
     mode.driverdata      = NULL;
 
-    if (SDL_AddBasicVideoDisplay(&mode) < 0) {
+    display_index = SDL_AddBasicVideoDisplay(&mode);
+    if (display_index < 0) {
         return -1;
     }
+    display = SDL_GetDisplay(display_index);
+    display->orientation = Android_JNI_GetDisplayOrientation();    
 
     SDL_AddDisplayMode(&_this->displays[0], &mode);
 
