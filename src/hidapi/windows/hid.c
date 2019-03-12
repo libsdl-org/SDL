@@ -309,7 +309,6 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 	SP_DEVICE_INTERFACE_DETAIL_DATA_A *device_interface_detail_data = NULL;
 	HDEVINFO device_info_set = INVALID_HANDLE_VALUE;
 	int device_index = 0;
-	int i;
 
 	if (hid_init() < 0)
 		return NULL;
@@ -373,12 +372,16 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 
 		/* Make sure this device is of Setup Class "HIDClass" and has a
 		   driver bound to it. */
-		for (i = 0; ; i++) {
+		/* In the main HIDAPI tree this is a loop which will erroneously open 
+			devices that aren't HID class. Please preserve this delta if we ever
+			update to take new changes */
+		{
 			char driver_name[256];
 
 			/* Populate devinfo_data. This function will return failure
 			   when there are no more interfaces left. */
-			res = SetupDiEnumDeviceInfo(device_info_set, i, &devinfo_data);
+			res = SetupDiEnumDeviceInfo(device_info_set, device_index, &devinfo_data);
+
 			if (!res)
 				goto cont;
 
@@ -391,8 +394,12 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 				/* See if there's a driver bound. */
 				res = SetupDiGetDeviceRegistryPropertyA(device_info_set, &devinfo_data,
 				           SPDRP_DRIVER, NULL, (PBYTE)driver_name, sizeof(driver_name), NULL);
-				if (res)
-					break;
+				if (!res)
+					goto cont;
+			}
+			else
+			{
+				goto cont;
 			}
 		}
 
