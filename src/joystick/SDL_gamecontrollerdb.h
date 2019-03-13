@@ -564,6 +564,7 @@ static const char *s_ControllerMappings [] =
     "03000000b50700001503000010010000,impact,a:b2,b:b3,back:b8,dpdown:h0.4,dpleft:h0.8,dpright:h0.2,dpup:h0.1,leftshoulder:b4,leftstick:b10,lefttrigger:b5,leftx:a0,lefty:a1,rightshoulder:b6,rightstick:b11,righttrigger:b7,rightx:a3,righty:a2,start:b9,x:b0,y:b1,",
     "030000009b2800000300000001010000,raphnet.net 4nes4snes v1.5,a:b0,b:b4,back:b2,leftshoulder:b6,leftx:a0,lefty:a1,rightshoulder:b7,start:b3,x:b1,y:b5,",
     "03000000d80400008200000003000000,IMS PCU#0 Gamepad Interface,platform:Linux,a:b1,b:b0,x:b3,y:b2,back:b4,start:b5,dpup:-a1,dpdown:+a1,dpleft:-a0,dpright:+a0,",
+    "030000007e0500003703000000016800,Nintendo GameCube Controller,platform:Linux,a:b0,b:b2,x:b1,y:b3,start:b8,rightshoulder:b9,dpup:b7,dpdown:b6,dpleft:b4,dpright:b5,leftx:a0,lefty:a1~,rightx:a2,righty:a3~,lefttrigger:a4,righttrigger:a5,",
 #endif
 #if defined(__ANDROID__)
     "05000000d6020000e5890000dfff3f00,GPD XD Plus,a:b0,b:b1,back:b4,dpdown:b12,dpleft:b13,dpright:b14,dpup:b11,leftshoulder:b9,leftstick:b7,lefttrigger:a3,leftx:a0,lefty:a1,rightshoulder:b10,rightstick:b8,righttrigger:a4,rightx:a2,righty:a5,start:b6,x:b2,y:b3,",

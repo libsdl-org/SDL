@@ -152,6 +152,9 @@ extern SDL_JoystickDriver SDL_IOS_JoystickDriver;
 extern SDL_JoystickDriver SDL_LINUX_JoystickDriver;
 extern SDL_JoystickDriver SDL_WINDOWS_JoystickDriver;
 
+/* Special function to update HIDAPI devices */
+extern void SDL_HIDAPI_UpdateDevices(void);
+
 #endif /* SDL_sysjoystick_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
