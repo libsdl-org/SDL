@@ -741,7 +741,12 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeOrientationChanged)(
     SDL_LockMutex(Android_ActivityMutex);
 
     displayOrientation = (SDL_DisplayOrientation)orientation;
-    SDL_SendDisplayEvent(SDL_GetDisplay(0), SDL_DISPLAYEVENT_ORIENTATION, orientation);
+
+    if (Android_Window)
+    {
+        SDL_VideoDisplay *display = SDL_GetDisplay(0);
+        SDL_SendDisplayEvent(display, SDL_DISPLAYEVENT_ORIENTATION, orientation);
+    }
 
     SDL_UnlockMutex(Android_ActivityMutex);
 }
