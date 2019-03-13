@@ -250,7 +250,7 @@ KMSDRM_FBDestroyCallback(struct gbm_bo *bo, void *data)
 {
     KMSDRM_FBInfo *fb_info = (KMSDRM_FBInfo *)data;
 
-    if (fb_info && fb_info->drm_fd > 0 && fb_info->fb_id != 0) {
+    if (fb_info && fb_info->drm_fd >= 0 && fb_info->fb_id != 0) {
         KMSDRM_drmModeRmFB(fb_info->drm_fd, fb_info->fb_id);
         SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "Delete DRM FB %u", fb_info->fb_id);
     }
@@ -552,7 +552,7 @@ KMSDRM_VideoQuit(_THIS)
     }
 
     if(vdata->saved_crtc != NULL) {
-        if(vdata->drm_fd > 0 && vdata->saved_conn_id > 0) {
+        if(vdata->drm_fd >= 0 && vdata->saved_conn_id > 0) {
             /* Restore saved CRTC settings */
             drmModeCrtc *crtc = vdata->saved_crtc;
             if(KMSDRM_drmModeSetCrtc(vdata->drm_fd, crtc->crtc_id, crtc->buffer_id,
