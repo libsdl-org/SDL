@@ -30,6 +30,7 @@
 #define SDL_JOYSTICK_HIDAPI_SWITCH
 #define SDL_JOYSTICK_HIDAPI_XBOX360
 #define SDL_JOYSTICK_HIDAPI_XBOXONE
+#define SDL_JOYSTICK_HIDAPI_GAMECUBE
 
 #ifdef __WINDOWS__
 /* On Windows, Xbox One controllers are handled by the Xbox 360 driver */
@@ -43,16 +44,36 @@
 #undef SDL_JOYSTICK_HIDAPI_XBOXONE
 #endif
 
+typedef struct _SDL_HIDAPI_DriverData
+{
+    hid_device *device;
+    void *context;
+} SDL_HIDAPI_DriverData;
+
 typedef struct _SDL_HIDAPI_DeviceDriver
 {
     const char *hint;
     SDL_bool enabled;
     SDL_bool (*IsSupportedDevice)(Uint16 vendor_id, Uint16 product_id, Uint16 version, int interface_number);
     const char *(*GetDeviceName)(Uint16 vendor_id, Uint16 product_id);
-    SDL_bool (*Init)(SDL_Joystick *joystick, hid_device *dev, Uint16 vendor_id, Uint16 product_id, void **context);
-    int (*Rumble)(SDL_Joystick *joystick, hid_device *dev, void *context, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms);
-    SDL_bool (*Update)(SDL_Joystick *joystick, hid_device *dev, void *context);
-    void (*Quit)(SDL_Joystick *joystick, hid_device *dev, void *context);
+
+    SDL_bool       (*InitDriver)(SDL_HIDAPI_DriverData *context,
+                                 Uint16 vendor_id, Uint16 product_id, int *num_joysticks);
+    void           (*QuitDriver)(SDL_HIDAPI_DriverData *context,
+                                 SDL_bool send_event,
+                                 int *num_joysticks);
+    SDL_bool       (*UpdateDriver)(SDL_HIDAPI_DriverData *context,
+                                   int *num_joysticks);
+    int            (*NumJoysticks)(SDL_HIDAPI_DriverData *context);
+    SDL_JoystickID (*InstanceIDForIndex)(SDL_HIDAPI_DriverData *context,
+                                         int index);
+    SDL_bool       (*OpenJoystick)(SDL_HIDAPI_DriverData *context,
+                                   SDL_Joystick *joystick);
+    int            (*Rumble)(SDL_HIDAPI_DriverData *context,
+                             SDL_Joystick *joystick,
+                             Uint16 low_frequency_rumble,
+                             Uint16 high_frequency_rumble,
+                             Uint32 duration_ms);
 
 } SDL_HIDAPI_DeviceDriver;
 
@@ -62,6 +83,7 @@ extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSteam;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXbox360;
 extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXboxOne;
+extern SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverGameCube;
 
 /* Return true if a HID device is present and supported as a joystick */
 extern SDL_bool HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version);

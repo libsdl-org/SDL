@@ -183,6 +183,7 @@ typedef struct
 #pragma pack()
 
 typedef struct {
+    SDL_JoystickID joystickID;
     hid_device *dev;
     SDL_bool m_bIsUsingBluetooth;
     Uint8 m_nCommandNumber;
@@ -570,7 +571,7 @@ static Sint16 ApplyStickCalibration(SDL_DriverSwitch_Context *ctx, int nStick, i
 }
 
 static SDL_bool
-HIDAPI_DriverSwitch_Init(SDL_Joystick *joystick, hid_device *dev, Uint16 vendor_id, Uint16 product_id, void **context)
+HIDAPI_DriverSwitch_InitDriver(SDL_HIDAPI_DriverData *context, Uint16 vendor_id, Uint16 product_id, int *num_joysticks)
 {
     SDL_DriverSwitch_Context *ctx;
     Uint8 input_mode;
@@ -580,9 +581,9 @@ HIDAPI_DriverSwitch_Init(SDL_Joystick *joystick, hid_device *dev, Uint16 vendor_
         SDL_OutOfMemory();
         return SDL_FALSE;
     }
-    ctx->dev = dev;
+    ctx->dev = context->device;
 
-    *context = ctx;
+    context->context = ctx;
 
     /* Initialize rumble data */
     SetNeutralRumble(&ctx->m_RumblePacket.rumbleData[0]);
@@ -627,6 +628,18 @@ HIDAPI_DriverSwitch_Init(SDL_Joystick *joystick, hid_device *dev, Uint16 vendor_
         }
     }
 
+    ctx->joystickID = SDL_GetNextJoystickInstanceID();
+    *num_joysticks += 1;
+    SDL_PrivateJoystickAdded(ctx->joystickID);
+
+    return SDL_TRUE;
+}
+
+static SDL_bool
+HIDAPI_DriverSwitch_OpenJoystick(SDL_HIDAPI_DriverData *context, SDL_Joystick *joystick)
+{
+    SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)context->context;
+
     /* Set the LED state */
     SetHomeLED(ctx, 100);
     SetSlotLED(ctx, (joystick->instance_id % 4));
@@ -640,9 +653,9 @@ HIDAPI_DriverSwitch_Init(SDL_Joystick *joystick, hid_device *dev, Uint16 vendor_
 }
 
 static int
-HIDAPI_DriverSwitch_Rumble(SDL_Joystick *joystick, hid_device *dev, void *context, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
+HIDAPI_DriverSwitch_Rumble(SDL_HIDAPI_DriverData *context, SDL_Joystick *joystick, Uint16 low_frequency_rumble, Uint16 high_frequency_rumble, Uint32 duration_ms)
 {
-    SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)context;
+    SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)context->context;
 
     /* Experimentally determined rumble values. These will only matter on some controllers as tested ones
      * seem to disregard these and just use any non-zero rumble values as a binary flag for constant rumble
@@ -847,10 +860,15 @@ static void HandleFullControllerState(SDL_Joystick *joystick, SDL_DriverSwitch_C
 }
 
 static SDL_bool
-HIDAPI_DriverSwitch_Update(SDL_Joystick *joystick, hid_device *dev, void *context)
+HIDAPI_DriverSwitch_UpdateDriver(SDL_HIDAPI_DriverData *context, int *num_joysticks)
 {
-    SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)context;
+    SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)context->context;
+    SDL_Joystick *joystick = SDL_JoystickFromInstanceID(ctx->joystickID);
     int size;
+
+    if (joystick == NULL) {
+        return SDL_TRUE; /* Nothing to do right now! */
+    }
 
     while ((size = ReadInput(ctx)) > 0) {
         switch (ctx->m_rgucReadBuffer[0]) {
@@ -868,7 +886,7 @@ HIDAPI_DriverSwitch_Update(SDL_Joystick *joystick, hid_device *dev, void *contex
     if (ctx->m_nRumbleExpiration) {
         Uint32 now = SDL_GetTicks();
         if (SDL_TICKS_PASSED(now, ctx->m_nRumbleExpiration)) {
-            HIDAPI_DriverSwitch_Rumble(joystick, dev, context, 0, 0, 0);
+            HIDAPI_DriverSwitch_Rumble(context, joystick, 0, 0, 0);
         }
     }
 
@@ -876,14 +894,31 @@ HIDAPI_DriverSwitch_Update(SDL_Joystick *joystick, hid_device *dev, void *contex
 }
 
 static void
-HIDAPI_DriverSwitch_Quit(SDL_Joystick *joystick, hid_device *dev, void *context)
+HIDAPI_DriverSwitch_QuitDriver(SDL_HIDAPI_DriverData *context, SDL_bool send_event, int *num_joysticks)
 {
-    SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)context;
+    SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)context->context;
 
     /* Restore simple input mode for other applications */
     SetInputMode(ctx, k_eSwitchInputReportIDs_SimpleControllerState);
 
-    SDL_free(context);
+    *num_joysticks -= 1;
+    if (send_event) {
+        SDL_PrivateJoystickRemoved(ctx->joystickID);
+    }
+    SDL_free(context->context);
+}
+
+static int
+HIDAPI_DriverSwitch_NumJoysticks(SDL_HIDAPI_DriverData *context)
+{
+    return 1;
+}
+
+static SDL_JoystickID
+HIDAPI_DriverSwitch_InstanceIDForIndex(SDL_HIDAPI_DriverData *context, int index)
+{
+    SDL_DriverSwitch_Context *ctx = (SDL_DriverSwitch_Context *)context->context;
+    return ctx->joystickID;
 }
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch =
@@ -892,10 +927,13 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch =
     SDL_TRUE,
     HIDAPI_DriverSwitch_IsSupportedDevice,
     HIDAPI_DriverSwitch_GetDeviceName,
-    HIDAPI_DriverSwitch_Init,
-    HIDAPI_DriverSwitch_Rumble,
-    HIDAPI_DriverSwitch_Update,
-    HIDAPI_DriverSwitch_Quit
+    HIDAPI_DriverSwitch_InitDriver,
+    HIDAPI_DriverSwitch_QuitDriver,
+    HIDAPI_DriverSwitch_UpdateDriver,
+    HIDAPI_DriverSwitch_NumJoysticks,
+    HIDAPI_DriverSwitch_InstanceIDForIndex,
+    HIDAPI_DriverSwitch_OpenJoystick,
+    HIDAPI_DriverSwitch_Rumble
 };
 
 #endif /* SDL_JOYSTICK_HIDAPI_SWITCH */
