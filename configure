@@ -870,6 +870,8 @@ enable_sdl_dlopen
 enable_hidapi
 enable_clock_gettime
 enable_rpath
+enable_backgrounding_signal
+enable_foregrounding_signal
 enable_render_d3d
 '
       ac_precious_vars='build_alias
@@ -1627,6 +1629,12 @@ Optional Features:
   --enable-clock_gettime  use clock_gettime() instead of gettimeofday() on
                           UNIX [[default=yes]]
   --enable-rpath          use an rpath when linking SDL [[default=yes]]
+  --enable-backgrounding-signal
+                          number to use for magic backgrounding signal or 'no'
+                          [[default=no]]
+  --enable-foregrounding-signal
+                          number to use for magic foregrounding signal or 'no'
+                          [[default=no]]
   --enable-render-d3d     enable the Direct3D render driver [[default=yes]]
 
 Optional Packages:
@@ -23947,7 +23955,36 @@ fi
 
 }
 
+CheckEventSignals()
+{
+    # Check whether --enable-backgrounding-signal was given.
+if test "${enable_backgrounding_signal+set}" = set; then :
+  enableval=$enable_backgrounding_signal;
+else
+  enable_backgrounding_signal=no
+fi
+
+    if test x$enable_backgrounding_signal != xno; then
+        EXTRA_CFLAGS="$EXTRA_CFLAGS -DSDL_BACKGROUNDING_SIGNAL=$enable_backgrounding_signal"
+    fi
+
+    # Check whether --enable-foregrounding-signal was given.
+if test "${enable_foregrounding_signal+set}" = set; then :
+  enableval=$enable_foregrounding_signal;
+else
+  enable_foregrounding_signal=no
+fi
+
+    if test x$enable_foregrounding_signal != xno; then
+        EXTRA_CFLAGS="$EXTRA_CFLAGS -DSDL_FOREGROUNDING_SIGNAL=$enable_foregrounding_signal"
+    fi
+}
+
+
+
 CheckWarnAll
+
+CheckEventSignals
 
 case "$host" in
     *-*-linux*|*-*-uclinux*|*-*-gnu*|*-*-k*bsd*-gnu|*-*-bsdi*|*-*-freebsd*|*-*-dragonfly*|*-*-netbsd*|*-*-openbsd*|*-*-sysv5*|*-*-solaris*|*-*-hpux*|*-*-aix*|*-*-minix*|*-*-nto*)

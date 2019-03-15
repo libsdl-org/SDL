@@ -3344,8 +3344,33 @@ AC_HELP_STRING([--enable-rpath], [use an rpath when linking SDL [[default=yes]]]
                   , enable_rpath=yes)
 }
 
+dnl Check if we want to use custom signals to fake iOS/Android's backgrounding
+dnl  events. These could be useful if you're building a custom embedded
+dnl  environment, etc, but most people don't need this.
+CheckEventSignals()
+{
+    AC_ARG_ENABLE(backgrounding-signal,
+AC_HELP_STRING([--enable-backgrounding-signal], [number to use for magic backgrounding signal or 'no' [[default=no]]]),
+                  , enable_backgrounding_signal=no)
+    if test x$enable_backgrounding_signal != xno; then
+        EXTRA_CFLAGS="$EXTRA_CFLAGS -DSDL_BACKGROUNDING_SIGNAL=$enable_backgrounding_signal"
+    fi
+
+    AC_ARG_ENABLE(foregrounding-signal,
+AC_HELP_STRING([--enable-foregrounding-signal], [number to use for magic foregrounding signal or 'no' [[default=no]]]),
+                  , enable_foregrounding_signal=no)
+    if test x$enable_foregrounding_signal != xno; then
+        EXTRA_CFLAGS="$EXTRA_CFLAGS -DSDL_FOREGROUNDING_SIGNAL=$enable_foregrounding_signal"
+    fi
+}
+
+
+
 dnl Do this on all platforms, before everything else (other things might want to override it).
 CheckWarnAll
+
+dnl Do this for every platform, but for some it doesn't mean anything, but better to catch it here anyhow.
+CheckEventSignals
 
 dnl Set up the configuration based on the host platform!
 case "$host" in
@@ -3923,7 +3948,7 @@ AC_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         CheckDummyVideo
         CheckInputEvents
         CheckPTHREAD
-        
+
         # Set up files for the timer library
         if test x$enable_timers = xyes; then
             AC_DEFINE(SDL_TIMER_UNIX, 1, [ ])

@@ -689,7 +689,7 @@ SDL_PumpEvents(void)
     }
 #endif
 
-    SDL_SendPendingQuit();  /* in case we had a signal handler fire, etc. */
+    SDL_SendPendingSignalEvents();  /* in case we had a signal handler fire, etc. */
 }
 
 /* Public functions */

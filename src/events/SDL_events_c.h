@@ -52,7 +52,7 @@ extern int SDL_SendQuit(void);
 extern int SDL_EventsInit(void);
 extern void SDL_EventsQuit(void);
 
-extern void SDL_SendPendingQuit(void);
+extern void SDL_SendPendingSignalEvents(void);
 
 #endif /* SDL_events_c_h_ */
 
