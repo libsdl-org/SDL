@@ -31,6 +31,11 @@
 #include "SDL_events.h"
 #include "SDL_events_c.h"
 
+#if defined(HAVE_SIGNAL_H) || defined(HAVE_SIGACTION)
+#define HAVE_SIGNAL_SUPPORT 1
+#endif
+
+#ifdef HAVE_SIGNAL_SUPPORT
 static SDL_bool disable_signals = SDL_FALSE;
 static SDL_bool send_quit_pending = SDL_FALSE;
 
@@ -42,7 +47,6 @@ static SDL_bool send_backgrounding_pending = SDL_FALSE;
 static SDL_bool send_foregrounding_pending = SDL_FALSE;
 #endif
 
-#ifdef HAVE_SIGNAL_H
 static void
 SDL_HandleSIG(int sig)
 {
@@ -67,7 +71,6 @@ SDL_HandleSIG(int sig)
     }
     #endif
 }
-#endif /* HAVE_SIGNAL_H */
 
 static void
 SDL_EventSignal_Init(const int sig)
@@ -131,15 +134,6 @@ SDL_QuitInit_Internal(void)
     return 0;
 }
 
-int
-SDL_QuitInit(void)
-{
-    if (!SDL_GetHintBoolean(SDL_HINT_NO_SIGNAL_HANDLERS, SDL_FALSE)) {
-        return SDL_QuitInit_Internal();
-    }
-    return 0;
-}
-
 static void
 SDL_QuitQuit_Internal(void)
 {
@@ -154,26 +148,33 @@ SDL_QuitQuit_Internal(void)
     SDL_EventSignal_Quit(SDL_FOREGROUNDING_SIGNAL);
     #endif
 }
+#endif
+
+int
+SDL_QuitInit(void)
+{
+#ifdef HAVE_SIGNAL_SUPPORT
+    if (!SDL_GetHintBoolean(SDL_HINT_NO_SIGNAL_HANDLERS, SDL_FALSE)) {
+        return SDL_QuitInit_Internal();
+    }
+#endif
+    return 0;
+}
 
 void
 SDL_QuitQuit(void)
 {
+#ifdef HAVE_SIGNAL_SUPPORT
     if (!disable_signals) {
         SDL_QuitQuit_Internal();
     }
-}
-
-/* This function returns 1 if it's okay to close the application window */
-int
-SDL_SendQuit(void)
-{
-    send_quit_pending = SDL_FALSE;
-    return SDL_SendAppEvent(SDL_QUIT);
+#endif
 }
 
 void
 SDL_SendPendingSignalEvents(void)
 {
+#ifdef HAVE_SIGNAL_SUPPORT
     if (send_quit_pending) {
         SDL_SendQuit();
         SDL_assert(!send_quit_pending);
@@ -192,6 +193,17 @@ SDL_SendPendingSignalEvents(void)
         SDL_OnApplicationDidBecomeActive();
     }
     #endif
+#endif
+}
+
+/* This function returns 1 if it's okay to close the application window */
+int
+SDL_SendQuit(void)
+{
+#ifdef HAVE_SIGNAL_SUPPORT
+    send_quit_pending = SDL_FALSE;
+#endif
+    return SDL_SendAppEvent(SDL_QUIT);
 }
 
 /* vi: set ts=4 sw=4 expandtab: */
