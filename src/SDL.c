@@ -139,10 +139,9 @@ SDL_InitSubSystem(Uint32 flags)
     if ((flags & SDL_INIT_EVENTS)) {
 #if !SDL_EVENTS_DISABLED
         if (SDL_PrivateShouldInitSubsystem(SDL_INIT_EVENTS)) {
-            if (SDL_StartEventLoop() < 0) {
+            if (SDL_EventsInit() < 0) {
                 return (-1);
             }
-            SDL_QuitInit();
         }
         SDL_PrivateSubsystemRefCountIncr(SDL_INIT_EVENTS);
 #else
@@ -333,8 +332,7 @@ SDL_QuitSubSystem(Uint32 flags)
 #if !SDL_EVENTS_DISABLED
     if ((flags & SDL_INIT_EVENTS)) {
         if (SDL_PrivateShouldQuitSubsystem(SDL_INIT_EVENTS)) {
-            SDL_QuitQuit();
-            SDL_StopEventLoop();
+            SDL_EventsQuit();
         }
         SDL_PrivateSubsystemRefCountDecr(SDL_INIT_EVENTS);
     }
