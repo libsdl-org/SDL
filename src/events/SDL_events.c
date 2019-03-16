@@ -998,10 +998,6 @@ SDL_SendKeymapChangedEvent(void)
     return SDL_SendAppEvent(SDL_KEYMAPCHANGED);
 }
 
-
-extern int SDL_QuitInit(void);
-extern void SDL_QuitQuit(void);
-
 int
 SDL_EventsInit(void)
 {

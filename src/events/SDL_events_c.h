@@ -54,6 +54,9 @@ extern void SDL_EventsQuit(void);
 
 extern void SDL_SendPendingSignalEvents(void);
 
+extern int SDL_QuitInit(void);
+extern void SDL_QuitQuit(void);
+
 #endif /* SDL_events_c_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
