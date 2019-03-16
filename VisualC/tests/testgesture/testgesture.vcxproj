@@ -189,6 +189,12 @@
       <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
       <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
     </ProjectReference>
+    <ProjectReference Include="..\..\SDLtest\SDLtest.vcxproj">
+      <Project>{da956fd3-e143-46f2-9fe5-c77bebc56b1a}</Project>
+      <Private>false</Private>
+      <CopyLocalSatelliteAssemblies>false</CopyLocalSatelliteAssemblies>
+      <ReferenceOutputAssembly>true</ReferenceOutputAssembly>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\test\testgesture.c" />
