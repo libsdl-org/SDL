@@ -22,6 +22,9 @@
 #include <emscripten/emscripten.h>
 #endif
 
+#include "SDL_test.h"
+#include "SDL_test_common.h"
+
 #define WIDTH 640
 #define HEIGHT 480
 #define BPP 4
@@ -32,6 +35,7 @@
 
 #define VERBOSE 0
 
+static SDLTest_CommonState *state;
 static SDL_Event events[EVENT_BUF_SIZE];
 static int eventWrite;
 
@@ -40,7 +44,7 @@ static int colors[7] = {0xFF,0xFF00,0xFF0000,0xFFFF00,0x00FFFF,0xFF00FF,0xFFFFFF
 
 SDL_Surface *screen;
 SDL_Window *window;
-SDL_bool quitting = SDL_FALSE;
+int quitting = 0;
 
 typedef struct {
   float x,y;
@@ -113,9 +117,15 @@ void drawKnob(SDL_Surface* screen,Knob k) {
                 (k.p.y+k.r/2*SDL_sinf(k.ang))*screen->h,k.r/4*screen->w,0);
 }
 
-void DrawScreen(SDL_Surface* screen, SDL_Window* window)
+void DrawScreen(SDL_Window* window)
 {
+  SDL_Surface* screen = SDL_GetWindowSurface(window);
   int i;
+
+  if (!screen) {
+    return;
+  }
+
 #if 1
   SDL_FillRect(screen, NULL, 0);
 #else
@@ -155,33 +165,22 @@ void DrawScreen(SDL_Surface* screen, SDL_Window* window)
   SDL_UpdateWindowSurface(window);
 }
 
-/* Returns a new SDL_Window if window is NULL or window if not. */
-SDL_Window* initWindow(SDL_Window *window, int width,int height)
-{
-  if (!window) {
-    window = SDL_CreateWindow("Gesture Test",
-                              SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
-                              width, height, SDL_WINDOW_RESIZABLE);
-  }
-  return window;
-}
-
 void loop()
 {
     SDL_Event event;
     SDL_RWops *stream;
+    int i;
 
     while(SDL_PollEvent(&event))
     {
+        SDLTest_CommonEvent(state, &event, &quitting);
+
     /* Record _all_ events */
     events[eventWrite & (EVENT_BUF_SIZE-1)] = event;
     eventWrite++;
 
     switch (event.type)
       {
-      case SDL_QUIT:
-        quitting = SDL_TRUE;
-        break;
       case SDL_KEYDOWN:
         switch (event.key.keysym.sym)
           {
@@ -207,21 +206,9 @@ void loop()
         SDL_Log("Loaded: %i", SDL_LoadDollarTemplates(-1, stream));
         SDL_RWclose(stream);
         break;
-          case SDLK_ESCAPE:
-        quitting = SDL_TRUE;
-        break;
         }
         break;
-      case SDL_WINDOWEVENT:
-            if (event.window.event == SDL_WINDOWEVENT_RESIZED) {
-          if (!(window = initWindow(window, event.window.data1, event.window.data2)) ||
-              !(screen = SDL_GetWindowSurface(window)))
-          {
-        SDL_Quit();
-        exit(1);
-          }
-            }
-        break;
+
       case SDL_FINGERMOTION:
 #if VERBOSE
         SDL_Log("Finger: %"SDL_PRIs64",x: %f, y: %f",event.tfinger.fingerId,
@@ -264,7 +251,12 @@ void loop()
         break;
       }
     }
-    DrawScreen(screen, window);
+
+    for (i = 0; i < state->num_windows; ++i) {
+        if (state->windows[i]) {
+          DrawScreen(state->windows[i]);
+        }
+    }
 
 #ifdef __EMSCRIPTEN__
     if (quitting) {
@@ -275,24 +267,36 @@ void loop()
 
 int main(int argc, char* argv[])
 {
-  window = NULL;
-  screen = NULL;
-  quitting = SDL_FALSE;
+  int i;
 
-  /* Enable standard application logging */
-  SDL_LogSetPriority(SDL_LOG_CATEGORY_APPLICATION, SDL_LOG_PRIORITY_INFO);
+  quitting = 0;
 
   /* gesture variables */
   knob.r = .1f;
   knob.ang = 0;
 
-  if (SDL_Init(SDL_INIT_VIDEO) < 0 ) return 1;
+  /* !!! FIXME: there should be an SDLTest_CommonDefaultArgs() so apps don't need this. */
+  state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
+  if (!state) {
+    return 1;
+  }
 
-  if (!(window = initWindow(window, WIDTH, HEIGHT)) ||
-      !(screen = SDL_GetWindowSurface(window)))
-  {
-      SDL_Quit();
+  state->window_title = "Gesture Test";
+  state->window_w = WIDTH;
+  state->window_h = HEIGHT;
+  state->skip_renderer = SDL_TRUE;
+
+  for (i = 1; i < argc;) {
+    const int consumed = SDLTest_CommonArg(state, i);
+    if (consumed == 0) {
+      SDL_Log("Usage: %s %s\n", argv[0], SDLTest_CommonUsage(state));
       return 1;
+    }
+    i += consumed;
+  }
+
+  if (!SDLTest_CommonInit(state)) {
+    return 1;
   }
 
 #ifdef __EMSCRIPTEN__
@@ -303,7 +307,7 @@ int main(int argc, char* argv[])
     }
 #endif
 
-  SDL_Quit();
+  SDLTest_CommonQuit(state);
   return 0;
 }
 
