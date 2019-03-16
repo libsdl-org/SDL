@@ -42,9 +42,7 @@ static int eventWrite;
 
 static int colors[7] = {0xFF,0xFF00,0xFF0000,0xFFFF00,0x00FFFF,0xFF00FF,0xFFFFFF};
 
-SDL_Surface *screen;
-SDL_Window *window;
-int quitting = 0;
+static int quitting = 0;
 
 typedef struct {
   float x,y;
@@ -267,10 +265,6 @@ void loop()
 
 int main(int argc, char* argv[])
 {
-  int i;
-
-  quitting = 0;
-
   /* gesture variables */
   knob.r = .1f;
   knob.ang = 0;
