@@ -22630,37 +22630,17 @@ fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$DBUS_PKG_ERRORS" >&5
 
-	as_fn_error $? "Package requirements (dbus-1) were not met:
-
-$DBUS_PKG_ERRORS
-
-Consider adjusting the PKG_CONFIG_PATH environment variable if you
-installed software in a non-standard prefix.
-
-Alternatively, you may set the environment variables DBUS_CFLAGS
-and DBUS_LIBS to avoid the need to call pkg-config.
-See the pkg-config man page for more details." "$LINENO" 5
+	have_dbus=no
 elif test $pkg_failed = untried; then
      	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-	{ { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "The pkg-config script could not be found or is too old.  Make sure it
-is in your PATH or set the PKG_CONFIG environment variable to the full
-path to pkg-config.
-
-Alternatively, you may set the environment variables DBUS_CFLAGS
-and DBUS_LIBS to avoid the need to call pkg-config.
-See the pkg-config man page for more details.
-
-To get pkg-config, see <http://pkg-config.freedesktop.org/>.
-See \`config.log' for more details" "$LINENO" 5; }
+	have_dbus=no
 else
 	DBUS_CFLAGS=$pkg_cv_DBUS_CFLAGS
 	DBUS_LIBS=$pkg_cv_DBUS_LIBS
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-
+	have_dbus=yes
 fi
         save_CFLAGS="$CFLAGS"
         CFLAGS="$save_CFLAGS $DBUS_CFLAGS"
@@ -22767,37 +22747,17 @@ fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$IBUS_PKG_ERRORS" >&5
 
-	as_fn_error $? "Package requirements (ibus-1.0) were not met:
-
-$IBUS_PKG_ERRORS
-
-Consider adjusting the PKG_CONFIG_PATH environment variable if you
-installed software in a non-standard prefix.
-
-Alternatively, you may set the environment variables IBUS_CFLAGS
-and IBUS_LIBS to avoid the need to call pkg-config.
-See the pkg-config man page for more details." "$LINENO" 5
+	have_ibus=no
 elif test $pkg_failed = untried; then
      	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-	{ { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "The pkg-config script could not be found or is too old.  Make sure it
-is in your PATH or set the PKG_CONFIG environment variable to the full
-path to pkg-config.
-
-Alternatively, you may set the environment variables IBUS_CFLAGS
-and IBUS_LIBS to avoid the need to call pkg-config.
-See the pkg-config man page for more details.
-
-To get pkg-config, see <http://pkg-config.freedesktop.org/>.
-See \`config.log' for more details" "$LINENO" 5; }
+	have_ibus=no
 else
 	IBUS_CFLAGS=$pkg_cv_IBUS_CFLAGS
 	IBUS_LIBS=$pkg_cv_IBUS_LIBS
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-
+	have_ibus=yes
 fi
         save_CFLAGS="$CFLAGS"
         CFLAGS="$save_CFLAGS $IBUS_CFLAGS"
@@ -22909,37 +22869,17 @@ fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$FCITX_PKG_ERRORS" >&5
 
-	as_fn_error $? "Package requirements (fcitx) were not met:
-
-$FCITX_PKG_ERRORS
-
-Consider adjusting the PKG_CONFIG_PATH environment variable if you
-installed software in a non-standard prefix.
-
-Alternatively, you may set the environment variables FCITX_CFLAGS
-and FCITX_LIBS to avoid the need to call pkg-config.
-See the pkg-config man page for more details." "$LINENO" 5
+	have_fcitx=no
 elif test $pkg_failed = untried; then
      	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-	{ { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "The pkg-config script could not be found or is too old.  Make sure it
-is in your PATH or set the PKG_CONFIG environment variable to the full
-path to pkg-config.
-
-Alternatively, you may set the environment variables FCITX_CFLAGS
-and FCITX_LIBS to avoid the need to call pkg-config.
-See the pkg-config man page for more details.
-
-To get pkg-config, see <http://pkg-config.freedesktop.org/>.
-See \`config.log' for more details" "$LINENO" 5; }
+	have_fcitx=no
 else
 	FCITX_CFLAGS=$pkg_cv_FCITX_CFLAGS
 	FCITX_LIBS=$pkg_cv_FCITX_LIBS
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-
+	have_fcitx=yes
 fi
         CFLAGS="$CFLAGS $FCITX_CFLAGS"
         ac_fn_c_check_header_mongrel "$LINENO" "fcitx/frontend.h" "ac_cv_header_fcitx_frontend_h" "$ac_includes_default"
@@ -24195,37 +24135,17 @@ fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$LIBUSB_PKG_ERRORS" >&5
 
-	as_fn_error $? "Package requirements (libusb-1.0) were not met:
-
-$LIBUSB_PKG_ERRORS
-
-Consider adjusting the PKG_CONFIG_PATH environment variable if you
-installed software in a non-standard prefix.
-
-Alternatively, you may set the environment variables LIBUSB_CFLAGS
-and LIBUSB_LIBS to avoid the need to call pkg-config.
-See the pkg-config man page for more details." "$LINENO" 5
+	have_libusb=no
 elif test $pkg_failed = untried; then
      	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
-	{ { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
-$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
-as_fn_error $? "The pkg-config script could not be found or is too old.  Make sure it
-is in your PATH or set the PKG_CONFIG environment variable to the full
-path to pkg-config.
-
-Alternatively, you may set the environment variables LIBUSB_CFLAGS
-and LIBUSB_LIBS to avoid the need to call pkg-config.
-See the pkg-config man page for more details.
-
-To get pkg-config, see <http://pkg-config.freedesktop.org/>.
-See \`config.log' for more details" "$LINENO" 5; }
+	have_libusb=no
 else
 	LIBUSB_CFLAGS=$pkg_cv_LIBUSB_CFLAGS
 	LIBUSB_LIBS=$pkg_cv_LIBUSB_LIBS
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-
+	have_libusb=yes
 fi
         hidapi_support=no
         save_CFLAGS="$CFLAGS"

@@ -2549,7 +2549,7 @@ CheckDBus()
 AS_HELP_STRING([--enable-dbus], [enable D-Bus support [[default=yes]]]),
                         , enable_dbus=yes)
     if test x$enable_dbus = xyes; then
-        PKG_CHECK_MODULES([DBUS], [dbus-1])
+        PKG_CHECK_MODULES([DBUS], [dbus-1], have_dbus=yes, have_dbus=no)
         save_CFLAGS="$CFLAGS"
         CFLAGS="$save_CFLAGS $DBUS_CFLAGS"
         AC_CHECK_HEADER(dbus/dbus.h,
@@ -2583,7 +2583,7 @@ CheckIBus()
 AS_HELP_STRING([--enable-ibus], [enable IBus support [[default=yes]]]),
                   , enable_ibus=yes)
     if test x$enable_ibus = xyes; then
-        PKG_CHECK_MODULES([IBUS], [ibus-1.0])
+        PKG_CHECK_MODULES([IBUS], [ibus-1.0], have_ibus=yes, have_ibus=no)
         save_CFLAGS="$CFLAGS"
         CFLAGS="$save_CFLAGS $IBUS_CFLAGS"
         AC_CHECK_HEADER(ibus-1.0/ibus.h,
@@ -2619,7 +2619,7 @@ CheckFcitx()
 AS_HELP_STRING([--enable-fcitx], [enable fcitx support [[default=yes]]]),
                   , enable_fcitx=yes)
     if test x$enable_fcitx = xyes; then
-        PKG_CHECK_MODULES([FCITX], [fcitx])
+        PKG_CHECK_MODULES([FCITX], [fcitx], have_fcitx=yes, have_fcitx=no)
         CFLAGS="$CFLAGS $FCITX_CFLAGS"
         AC_CHECK_HEADER(fcitx/frontend.h,
                         have_fcitx_frontend_h_hdr=yes,
@@ -3183,7 +3183,7 @@ CheckHIDAPI()
 AS_HELP_STRING([--enable-hidapi], [use HIDAPI for low level joystick drivers [[default=no]]]),
                   , enable_hidapi=no)
     if test x$enable_joystick = xyes -a x$enable_hidapi = xyes; then
-        PKG_CHECK_MODULES([LIBUSB], [libusb-1.0])
+        PKG_CHECK_MODULES([LIBUSB], [libusb-1.0], have_libusb=yes, have_libusb=no)
         hidapi_support=no
         save_CFLAGS="$CFLAGS"
         CFLAGS="$save_CFLAGS $LIBUSB_CFLAGS"
