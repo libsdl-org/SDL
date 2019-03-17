@@ -788,7 +788,7 @@ ALSA_HotplugThread(void *arg)
         ALSA_Device *seen;
         ALSA_Device *prev;
 
-        if (ALSA_snd_device_name_hint(-1, "pcm", &hints) != -1) {
+        if (ALSA_snd_device_name_hint(-1, "pcm", &hints) == 0) {
             int i, j;
             const char *match = NULL;
             int bestmatch = 0xFFFF;
