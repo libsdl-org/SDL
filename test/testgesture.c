@@ -134,7 +134,7 @@ DrawScreen(SDL_Window *window)
         return;
     }
 
-    SDL_FillRect(screen, NULL, 0);
+    SDL_FillRect(screen, NULL, SDL_MapRGB(screen->format, 75, 75, 75));
 
     /* draw Touch History */
     for (i = eventWrite; i < eventWrite + EVENT_BUF_SIZE; ++i) {
