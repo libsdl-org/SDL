@@ -1658,6 +1658,8 @@ SDL_GameControllerGetAxis(SDL_GameController * gamecontroller, SDL_GameControlle
                         float normalized_value = (float)(value - binding->input.axis.axis_min) / (binding->input.axis.axis_max - binding->input.axis.axis_min);
                         value = binding->output.axis.axis_min + (int)(normalized_value * (binding->output.axis.axis_max - binding->output.axis.axis_min));
                     }
+                } else {
+                    value = 0;
                 }
             } else if (binding->inputType == SDL_CONTROLLER_BINDTYPE_BUTTON) {
                 value = SDL_JoystickGetButton(gamecontroller->joystick, binding->input.button);
