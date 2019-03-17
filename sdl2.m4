@@ -74,7 +74,7 @@ AC_ARG_VAR(SDL2_FRAMEWORK, [Path to SDL2.framework])
         done
       fi
 
-      if test -d $sdl_framework; then
+      if test x"$sdl_framework" != x && test -d "$sdl_framework"; then
         AC_MSG_RESULT($sdl_framework)
         sdl_framework_dir=`dirname $sdl_framework`
         SDL_CFLAGS="-F$sdl_framework_dir -Wl,-framework,SDL2 -I$sdl_framework/include"
