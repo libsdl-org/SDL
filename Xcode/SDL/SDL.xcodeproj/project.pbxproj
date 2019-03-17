@@ -468,9 +468,6 @@
 		A704171A20F09AC900A82227 /* SDL_hidapi_switch.c in Sources */ = {isa = PBXBuildFile; fileRef = A704170F20F09AC800A82227 /* SDL_hidapi_switch.c */; };
 		A704171B20F09AC900A82227 /* SDL_hidapi_switch.c in Sources */ = {isa = PBXBuildFile; fileRef = A704170F20F09AC800A82227 /* SDL_hidapi_switch.c */; };
 		A704171C20F09AC900A82227 /* SDL_hidapi_switch.c in Sources */ = {isa = PBXBuildFile; fileRef = A704170F20F09AC800A82227 /* SDL_hidapi_switch.c */; };
-		A704171D20F09AC900A82227 /* controller_type.h in Headers */ = {isa = PBXBuildFile; fileRef = A704171020F09AC900A82227 /* controller_type.h */; };
-		A704171E20F09AC900A82227 /* controller_type.h in Headers */ = {isa = PBXBuildFile; fileRef = A704171020F09AC900A82227 /* controller_type.h */; };
-		A704171F20F09AC900A82227 /* controller_type.h in Headers */ = {isa = PBXBuildFile; fileRef = A704171020F09AC900A82227 /* controller_type.h */; };
 		A704172020F09AC900A82227 /* SDL_hidapi_ps4.c in Sources */ = {isa = PBXBuildFile; fileRef = A704171120F09AC900A82227 /* SDL_hidapi_ps4.c */; };
 		A704172120F09AC900A82227 /* SDL_hidapi_ps4.c in Sources */ = {isa = PBXBuildFile; fileRef = A704171120F09AC900A82227 /* SDL_hidapi_ps4.c */; };
 		A704172220F09AC900A82227 /* SDL_hidapi_ps4.c in Sources */ = {isa = PBXBuildFile; fileRef = A704171120F09AC900A82227 /* SDL_hidapi_ps4.c */; };
@@ -922,6 +919,9 @@
 		F3950CD8212BC88D00F51292 /* SDL_sensor.h in Headers */ = {isa = PBXBuildFile; fileRef = F3950CD7212BC88D00F51292 /* SDL_sensor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3950CD9212BC88D00F51292 /* SDL_sensor.h in Headers */ = {isa = PBXBuildFile; fileRef = F3950CD7212BC88D00F51292 /* SDL_sensor.h */; settings = {ATTRIBUTES = (Public, ); }; };
 		F3950CDA212BC88D00F51292 /* SDL_sensor.h in Headers */ = {isa = PBXBuildFile; fileRef = F3950CD7212BC88D00F51292 /* SDL_sensor.h */; settings = {ATTRIBUTES = (Public, ); }; };
+		F3E3C559223DEBC7007D243C /* SDL_hidapi_gamecube.c in Sources */ = {isa = PBXBuildFile; fileRef = F3E3C558223DEBC7007D243C /* SDL_hidapi_gamecube.c */; };
+		F3E3C55A223DEBC7007D243C /* SDL_hidapi_gamecube.c in Sources */ = {isa = PBXBuildFile; fileRef = F3E3C558223DEBC7007D243C /* SDL_hidapi_gamecube.c */; };
+		F3E3C55B223DEBC7007D243C /* SDL_hidapi_gamecube.c in Sources */ = {isa = PBXBuildFile; fileRef = F3E3C558223DEBC7007D243C /* SDL_hidapi_gamecube.c */; };
 		FA73671D19A540EF004122E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA73671C19A540EF004122E4 /* CoreVideo.framework */; };
 		FA73671E19A54140004122E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA73671C19A540EF004122E4 /* CoreVideo.framework */; };
 		FA73671F19A54144004122E4 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA73671C19A540EF004122E4 /* CoreVideo.framework */; };
@@ -1158,7 +1158,6 @@
 		A704170D20F09AC800A82227 /* SDL_hidapijoystick.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapijoystick.c; sourceTree = "<group>"; };
 		A704170E20F09AC800A82227 /* SDL_hidapijoystick_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_hidapijoystick_c.h; sourceTree = "<group>"; };
 		A704170F20F09AC800A82227 /* SDL_hidapi_switch.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_switch.c; sourceTree = "<group>"; };
-		A704171020F09AC900A82227 /* controller_type.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = controller_type.h; sourceTree = "<group>"; };
 		A704171120F09AC900A82227 /* SDL_hidapi_ps4.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_ps4.c; sourceTree = "<group>"; };
 		A704171220F09AC900A82227 /* SDL_hidapi_xboxone.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_xboxone.c; sourceTree = "<group>"; };
 		A704171320F09AC900A82227 /* SDL_hidapi_xbox360.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_xbox360.c; sourceTree = "<group>"; };
@@ -1253,6 +1252,7 @@
 		F30D9CCB212EB4810047DF2E /* SDL_displayevents_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_displayevents_c.h; sourceTree = "<group>"; };
 		F30D9CCC212EB4810047DF2E /* SDL_displayevents.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_displayevents.c; sourceTree = "<group>"; };
 		F3950CD7212BC88D00F51292 /* SDL_sensor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_sensor.h; sourceTree = "<group>"; };
+		F3E3C558223DEBC7007D243C /* SDL_hidapi_gamecube.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_gamecube.c; sourceTree = "<group>"; };
 		F59C710300D5CB5801000001 /* ReadMe.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = ReadMe.txt; sourceTree = "<group>"; };
 		F59C710600D5CB5801000001 /* SDL.info */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; path = SDL.info; sourceTree = "<group>"; };
 		F5A2EF3900C6A39A01000001 /* BUGS.txt */ = {isa = PBXFileReference; fileEncoding = 30; lastKnownFileType = text; name = BUGS.txt; path = ../../BUGS.txt; sourceTree = SOURCE_ROOT; };
@@ -1932,7 +1932,7 @@
 		A704170C20F09AA600A82227 /* hidapi */ = {
 			isa = PBXGroup;
 			children = (
-				A704171020F09AC900A82227 /* controller_type.h */,
+				F3E3C558223DEBC7007D243C /* SDL_hidapi_gamecube.c */,
 				A704171120F09AC900A82227 /* SDL_hidapi_ps4.c */,
 				A704170F20F09AC800A82227 /* SDL_hidapi_switch.c */,
 				A704171320F09AC900A82227 /* SDL_hidapi_xbox360.c */,
@@ -2163,7 +2163,6 @@
 				04BD01F912E6671800899322 /* SDL_x11window.h in Headers */,
 				041B2CA612FA0D680087D585 /* SDL_sysrender.h in Headers */,
 				AA9A7F161FB0209D00FED37F /* SDL_yuv_c.h in Headers */,
-				A704171D20F09AC900A82227 /* controller_type.h in Headers */,
 				04409B9312FA97ED00FB9AA8 /* SDL_yuv_sw_c.h in Headers */,
 				04F7803912FB748500FC43C0 /* SDL_nullframebuffer_c.h in Headers */,
 				04F7804A12FB74A200FC43C0 /* SDL_blendfillrect.h in Headers */,
@@ -2215,7 +2214,6 @@
 				AA75581F1595D4D800BBD41B /* SDL_joystick.h in Headers */,
 				AA7558211595D4D800BBD41B /* SDL_keyboard.h in Headers */,
 				AA7558231595D4D800BBD41B /* SDL_keycode.h in Headers */,
-				A704171E20F09AC900A82227 /* controller_type.h in Headers */,
 				AA7558251595D4D800BBD41B /* SDL_loadso.h in Headers */,
 				AA7558271595D4D800BBD41B /* SDL_log.h in Headers */,
 				AA7558291595D4D800BBD41B /* SDL_main.h in Headers */,
@@ -2386,7 +2384,6 @@
 				DB313FD917554B71006C0E22 /* SDL_joystick.h in Headers */,
 				DB313FDA17554B71006C0E22 /* SDL_keyboard.h in Headers */,
 				DB313FDB17554B71006C0E22 /* SDL_keycode.h in Headers */,
-				A704171F20F09AC900A82227 /* controller_type.h in Headers */,
 				DB313FDC17554B71006C0E22 /* SDL_loadso.h in Headers */,
 				DB313FDD17554B71006C0E22 /* SDL_log.h in Headers */,
 				DB313FDE17554B71006C0E22 /* SDL_main.h in Headers */,
@@ -2710,6 +2707,7 @@
 				04BD005B12E6671800899322 /* SDL_syshaptic.c in Sources */,
 				04BD005F12E6671800899322 /* SDL_haptic.c in Sources */,
 				4D1664551EDD60AD003DE88E /* SDL_cocoavulkan.m in Sources */,
+				F3E3C559223DEBC7007D243C /* SDL_hidapi_gamecube.c in Sources */,
 				04BD006612E6671800899322 /* SDL_sysjoystick.c in Sources */,
 				04BD007012E6671800899322 /* SDL_joystick.c in Sources */,
 				04BD008812E6671800899322 /* SDL_sysloadso.c in Sources */,
@@ -2848,6 +2846,7 @@
 				04BD026D12E6671800899322 /* SDL_quit.c in Sources */,
 				04BD026F12E6671800899322 /* SDL_touch.c in Sources */,
 				04BD027112E6671800899322 /* SDL_windowevents.c in Sources */,
+				F3E3C55A223DEBC7007D243C /* SDL_hidapi_gamecube.c in Sources */,
 				04BD027412E6671800899322 /* SDL_rwopsbundlesupport.m in Sources */,
 				04BD027512E6671800899322 /* SDL_rwops.c in Sources */,
 				04BD027612E6671800899322 /* SDL_syshaptic.c in Sources */,
@@ -2986,6 +2985,7 @@
 				DB31401017554B71006C0E22 /* SDL_quit.c in Sources */,
 				DB31401117554B71006C0E22 /* SDL_touch.c in Sources */,
 				DB31401217554B71006C0E22 /* SDL_windowevents.c in Sources */,
+				F3E3C55B223DEBC7007D243C /* SDL_hidapi_gamecube.c in Sources */,
 				DB31401317554B71006C0E22 /* SDL_rwopsbundlesupport.m in Sources */,
 				DB31401417554B71006C0E22 /* SDL_rwops.c in Sources */,
 				DB31401517554B71006C0E22 /* SDL_syshaptic.c in Sources */,
