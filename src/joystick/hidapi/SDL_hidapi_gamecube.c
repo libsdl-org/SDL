@@ -209,7 +209,12 @@ HIDAPI_DriverGameCube_UpdateDriver(SDL_HIDAPI_DriverData *context, int *num_joys
             READ_BUTTON(1, 0x80, 7) /* DPAD_UP */
             READ_BUTTON(2, 0x01, 8) /* START */
             READ_BUTTON(2, 0x02, 9) /* RIGHTSHOULDER */
-            /* [2] 0x04 - R, [2] 0x08 - L */
+            /* These two buttons are for the bottoms of the analog triggers.
+             * More than likely, you're going to want to read the axes instead!
+             * -flibit
+             */
+            READ_BUTTON(2, 0x04, 10) /* TRIGGERRIGHT */
+            READ_BUTTON(2, 0x08, 11) /* TRIGGERLEFT */
             #undef READ_BUTTON
 
             /* Axis math taken from SDL_xinputjoystick.c */
@@ -286,7 +291,7 @@ HIDAPI_DriverGameCube_OpenJoystick(SDL_HIDAPI_DriverData *context, SDL_Joystick 
     Uint8 i;
     for (i = 0; i < 4; i += 1) {
         if (instance == ctx->joysticks[i]) {
-            joystick->nbuttons = 10;
+            joystick->nbuttons = 12;
             joystick->naxes = 6;
             joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
             return SDL_TRUE;
