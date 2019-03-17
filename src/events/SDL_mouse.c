@@ -28,6 +28,9 @@
 #include "SDL_events.h"
 #include "SDL_events_c.h"
 #include "../video/SDL_sysvideo.h"
+#ifdef __WIN32__
+#include "../core/windows/SDL_windows.h"    // For GetDoubleClickTime()
+#endif
 
 /* #define DEBUG_MOUSE */
 
