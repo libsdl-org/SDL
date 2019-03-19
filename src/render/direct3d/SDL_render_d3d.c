@@ -791,7 +791,7 @@ D3D_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_F
     const DWORD color = D3DCOLOR_ARGB(cmd->data.draw.a, cmd->data.draw.r, cmd->data.draw.g, cmd->data.draw.b);
     const size_t vertslen = count * sizeof (Vertex);
     Vertex *verts = (Vertex *) SDL_AllocateRenderVertices(renderer, vertslen, 0, &cmd->data.draw.first);
-    size_t i;
+    int i;
 
     if (!verts) {
         return -1;
@@ -815,7 +815,7 @@ D3D_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_FR
     const DWORD color = D3DCOLOR_ARGB(cmd->data.draw.a, cmd->data.draw.r, cmd->data.draw.g, cmd->data.draw.b);
     const size_t vertslen = count * sizeof (Vertex) * 4;
     Vertex *verts = (Vertex *) SDL_AllocateRenderVertices(renderer, vertslen, 0, &cmd->data.draw.first);
-    size_t i;
+    int i;
 
     if (!verts) {
         return -1;

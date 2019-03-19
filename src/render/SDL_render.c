@@ -1188,7 +1188,7 @@ SDL_CreateTextureFromSurface(SDL_Renderer * renderer, SDL_Surface * surface)
     const SDL_PixelFormat *fmt;
     SDL_bool needAlpha;
     SDL_bool direct_update;
-    Uint32 i;
+    int i;
     Uint32 format;
     SDL_Texture *texture;
 
@@ -1219,7 +1219,7 @@ SDL_CreateTextureFromSurface(SDL_Renderer * renderer, SDL_Surface * surface)
     }
 
     format = renderer->info.texture_formats[0];
-    for (i = 0; i < renderer->info.num_texture_formats; ++i) {
+    for (i = 0; i < (int)renderer->info.num_texture_formats; ++i) {
         if (!SDL_ISPIXELFORMAT_FOURCC(renderer->info.texture_formats[i]) &&
             SDL_ISPIXELFORMAT_ALPHA(renderer->info.texture_formats[i]) == needAlpha) {
             format = renderer->info.texture_formats[i];

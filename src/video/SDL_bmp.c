@@ -321,7 +321,7 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
         SDL_assert(biBitCount <= 8);
         if (biClrUsed == 0) {
             biClrUsed = 1 << biBitCount;
-		} else if (biClrUsed > (1 << biBitCount)) {
+		} else if (biClrUsed > (Uint32)(1 << biBitCount)) {
 			SDL_SetError("BMP file has an invalid number of colors");
 			was_error = SDL_TRUE;
 			goto done;
@@ -423,7 +423,7 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
                 was_error = SDL_TRUE;
                 goto done;
             }
-			if (biBitCount == 8 && palette && biClrUsed < (1 << biBitCount)) {
+			if (biBitCount == 8 && palette && biClrUsed < (Uint32)(1 << biBitCount)) {
 				for (i = 0; i < surface->w; ++i) {
 					if (bits[i] >= biClrUsed) {
 						SDL_SetError("A BMP image contains a pixel with a color out of the palette");

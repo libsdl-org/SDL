@@ -1559,7 +1559,7 @@ D3D11_QueueDrawPoints(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL
     const float g = (float)(cmd->data.draw.g / 255.0f);
     const float b = (float)(cmd->data.draw.b / 255.0f);
     const float a = (float)(cmd->data.draw.a / 255.0f);
-    size_t i;
+    int i;
 
     if (!verts) {
         return -1;
@@ -1591,7 +1591,7 @@ D3D11_QueueFillRects(SDL_Renderer * renderer, SDL_RenderCommand *cmd, const SDL_
     const float g = (float)(cmd->data.draw.g / 255.0f);
     const float b = (float)(cmd->data.draw.b / 255.0f);
     const float a = (float)(cmd->data.draw.a / 255.0f);
-    size_t i;
+    int i;
 
     if (!verts) {
         return -1;
