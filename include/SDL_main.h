@@ -55,6 +55,10 @@
 /* On iOS SDL provides a main function that creates an application delegate
    and starts the iOS application run loop.
 
+   If you link with SDL dynamically on iOS, the main function can't be in a
+   shared library, so you need to link with libSDLmain.a, which includes a
+   stub main function that calls into the shared library to start execution.
+
    See src/video/uikit/SDL_uikitappdelegate.m for more details.
  */
 #define SDL_MAIN_NEEDED
@@ -114,6 +118,7 @@
 /**
  *  The prototype for the application's main() function
  */
+typedef C_LINKAGE SDLMAIN_DECLSPEC int (*SDL_main_func)(int argc, char *argv[]);
 extern C_LINKAGE SDLMAIN_DECLSPEC int SDL_main(int argc, char *argv[]);
 
 
@@ -136,8 +141,7 @@ extern DECLSPEC void SDLCALL SDL_SetMainReady(void);
 /**
  *  This can be called to set the application class at startup
  */
-extern DECLSPEC int SDLCALL SDL_RegisterApp(char *name, Uint32 style,
-                                            void *hInst);
+extern DECLSPEC int SDLCALL SDL_RegisterApp(char *name, Uint32 style, void *hInst);
 extern DECLSPEC void SDLCALL SDL_UnregisterApp(void);
 
 #endif /* __WIN32__ */
@@ -153,9 +157,23 @@ extern DECLSPEC void SDLCALL SDL_UnregisterApp(void);
  *  \return 0 on success, -1 on failure.  On failure, use SDL_GetError to retrieve more
  *      information on the failure.
  */
-extern DECLSPEC int SDLCALL SDL_WinRTRunApp(int (*mainFunction)(int, char **), void * reserved);
+extern DECLSPEC int SDLCALL SDL_WinRTRunApp(SDL_main_func mainFunction, void * reserved);
 
 #endif /* __WINRT__ */
+
+#if defined(__IPHONEOS__)
+
+/**
+ *  \brief Initializes and launches an SDL application.
+ *
+ *  \param argc The argc parameter from the application's main() function
+ *  \param argv The argv parameter from the application's main() function
+ *  \param mainFunction The SDL app's C-style main().
+ *  \return the return value from mainFunction
+ */
+extern DECLSPEC int SDLCALL SDL_UIKitRunApp(int argc, char *argv[], SDL_main_func mainFunction);
+
+#endif /* __IPHONEOS__ */
 
 
 #ifdef __cplusplus
