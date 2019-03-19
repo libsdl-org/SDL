@@ -86,12 +86,6 @@
 #endif
 #endif /* SDL_MAIN_HANDLED */
 
-#ifdef __cplusplus
-#define C_LINKAGE   "C"
-#else
-#define C_LINKAGE
-#endif /* __cplusplus */
-
 #ifndef SDLMAIN_DECLSPEC
 #define SDLMAIN_DECLSPEC
 #endif
@@ -115,20 +109,17 @@
 #define main    SDL_main
 #endif
 
-/**
- *  The prototype for the application's main() function
- */
-#ifdef __cplusplus
-extern "C"
-#endif
-typedef int (*SDL_main_func)(int argc, char *argv[]);
-extern C_LINKAGE SDLMAIN_DECLSPEC int SDL_main(int argc, char *argv[]);
-
-
 #include "begin_code.h"
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/**
+ *  The prototype for the application's main() function
+ */
+typedef int (*SDL_main_func)(int argc, char *argv[]);
+extern C_LINKAGE SDLMAIN_DECLSPEC int SDL_main(int argc, char *argv[]);
+
 
 /**
  *  This is called by the real SDL main function to let the rest of the
