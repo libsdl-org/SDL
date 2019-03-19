@@ -2990,7 +2990,6 @@
 				MACH_O_TYPE = mh_dylib;
 				PRODUCT_MODULE_NAME = SDL2;
 				PRODUCT_NAME = SDL2;
-				SKIP_INSTALL = YES;
 			};
 			name = Debug;
 		};
@@ -3012,7 +3011,6 @@
 				MACH_O_TYPE = mh_dylib;
 				PRODUCT_MODULE_NAME = SDL2;
 				PRODUCT_NAME = SDL2;
-				SKIP_INSTALL = YES;
 			};
 			name = Release;
 		};
@@ -3176,7 +3174,6 @@
 				PRODUCT_MODULE_NAME = SDL2;
 				PRODUCT_NAME = SDL2;
 				SDKROOT = appletvos;
-				SKIP_INSTALL = YES;
 			};
 			name = Debug;
 		};
@@ -3199,7 +3196,6 @@
 				PRODUCT_MODULE_NAME = SDL2;
 				PRODUCT_NAME = SDL2;
 				SDKROOT = appletvos;
-				SKIP_INSTALL = YES;
 			};
 			name = Release;
 		};
