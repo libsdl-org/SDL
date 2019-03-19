@@ -38,15 +38,25 @@
 #undef main
 #endif
 
+static SDL_main_func forward_main;
 static int forward_argc;
 static char **forward_argv;
 static int exit_status;
 
-int main(int argc, char **argv)
+#if defined(SDL_MAIN_NEEDED) && !defined(IOS_DYLIB)
+/* SDL is being built as a static library, include main() */
+int main(int argc, char *argv[])
+{
+	return SDL_UIKitRunApp(argc, argv, SDL_main);
+}
+#endif /* SDL_MAIN_NEEDED && !IOS_DYLIB */
+
+int SDL_UIKitRunApp(int argc, char *argv[], SDL_main_func mainFunction)
 {
     int i;
 
     /* store arguments */
+	forward_main = mainFunction;
     forward_argc = argc;
     forward_argv = (char **)malloc((argc+1) * sizeof(char *));
     for (i = 0; i < argc; i++) {
@@ -344,7 +354,7 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
 
     /* run the user's application, passing argc and argv */
     SDL_iPhoneSetEventPump(SDL_TRUE);
-    exit_status = SDL_main(forward_argc, forward_argv);
+    exit_status = forward_main(forward_argc, forward_argv);
     SDL_iPhoneSetEventPump(SDL_FALSE);
 
     if (launchWindow) {

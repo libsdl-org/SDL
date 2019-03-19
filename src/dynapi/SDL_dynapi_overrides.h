@@ -713,3 +713,4 @@
 #define SDL_RenderCopyF SDL_RenderCopyF_REAL
 #define SDL_RenderCopyExF SDL_RenderCopyExF_REAL
 #define SDL_GetTouchDeviceType SDL_GetTouchDeviceType_REAL
+#define SDL_UIKitRunApp SDL_UIKitRunApp_REAL
