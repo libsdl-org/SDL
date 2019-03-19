@@ -25,7 +25,7 @@
 #include "SDL_simd.h"
 #endif
 
-#if defined(__WIN32__)
+#if defined(__WIN32__) || defined(__WINRT__)
 #include "../core/windows/SDL_windows.h"
 #endif
 #if defined(__OS2__)

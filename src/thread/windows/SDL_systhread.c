@@ -29,6 +29,7 @@
 #include "../SDL_thread_c.h"
 #include "../SDL_systhread.h"
 #include "SDL_systhread_c.h"
+#include "../../core/windows/SDL_windows.h"
 
 #ifndef SDL_PASSED_BEGINTHREAD_ENDTHREAD
 /* We'll use the C library from this DLL */
