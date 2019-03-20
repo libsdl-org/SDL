@@ -28,7 +28,7 @@
 #include "SDL_thread.h"
 #include "../SDL_thread_c.h"
 
-#if WINAPI_FAMILY_PARTITION(WINAPI_PARTITION_APP)
+#if WINAPI_FAMILY_WINRT
 #define TLS_OUT_OF_INDEXES  FLS_OUT_OF_INDEXES
 #define TlsAlloc()  FlsAlloc(NULL)
 #define TlsSetValue FlsSetValue
