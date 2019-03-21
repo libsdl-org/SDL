@@ -529,8 +529,10 @@ GLES2_CacheProgram(GLES2_RenderData *data, GLES2_ShaderCacheEntry *vertex,
         }
         data->glDeleteProgram(data->program_cache.tail->id);
         data->program_cache.tail = data->program_cache.tail->prev;
-        SDL_free(data->program_cache.tail->next);
-        data->program_cache.tail->next = NULL;
+        if (data->program_cache.tail != NULL) {
+            SDL_free(data->program_cache.tail->next);
+            data->program_cache.tail->next = NULL;
+        }
         --data->program_cache.count;
     }
     return entry;
