@@ -728,6 +728,8 @@ audioqueue_thread(void *arg)
         return 0;
     }
 
+    SDL_SetThreadPriority(SDL_THREAD_PRIORITY_HIGH);
+
     /* init was successful, alert parent thread and start running... */
     SDL_SemPost(this->hidden->ready_semaphore);
     while (!SDL_AtomicGet(&this->hidden->shutdown)) {
