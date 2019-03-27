@@ -699,9 +699,12 @@ SDL_JoystickQuit(void)
     int i;
 
     /* Make sure we're not getting called in the middle of updating joysticks */
-    SDL_assert(!SDL_updating_joystick);
-
     SDL_LockJoysticks();
+    while (SDL_updating_joystick) {
+        SDL_UnlockJoysticks();
+        SDL_Delay(1);
+        SDL_LockJoysticks();
+    }
 
     /* Stop the event polling */
     while (SDL_joysticks) {
@@ -724,8 +727,9 @@ SDL_JoystickQuit(void)
                         SDL_JoystickAllowBackgroundEventsChanged, NULL);
 
     if (SDL_joystick_lock) {
-        SDL_DestroyMutex(SDL_joystick_lock);
+        SDL_mutex *mutex = SDL_joystick_lock;
         SDL_joystick_lock = NULL;
+        SDL_DestroyMutex(mutex);
     }
 
     SDL_GameControllerQuitMappings();
