@@ -407,13 +407,6 @@ touch_handler_down(void *data, struct wl_touch *touch, unsigned int serial,
 
     touch_add(id, x, y, surface);
 
-    if (!window_data->finger_touching) {
-        window_data->finger_touching = SDL_TRUE;
-        window_data->first_finger = id;
-        SDL_SendMouseMotion(window_data->sdlwindow, SDL_TOUCH_MOUSEID, 0, (int) dblx, (int) dbly);
-        SDL_SendMouseButton(window_data->sdlwindow, SDL_TOUCH_MOUSEID, SDL_PRESSED, SDL_BUTTON_LEFT);
-    }
-
     SDL_SendTouch(1, (SDL_FingerID)id, SDL_TRUE, x, y, 1.0f);
 }
 
@@ -423,11 +416,6 @@ touch_handler_up(void *data, struct wl_touch *touch, unsigned int serial,
 {
     SDL_WindowData *window_data = (SDL_WindowData *)wl_surface_get_user_data(touch_surface(id));
     float x = 0, y = 0;
-
-    if ((window_data->finger_touching) && (window_data->first_finger == id)) {
-        SDL_SendMouseButton(window_data->sdlwindow, SDL_TOUCH_MOUSEID, SDL_RELEASED, SDL_BUTTON_LEFT);
-        window_data->finger_touching = SDL_FALSE;
-    }
 
     touch_del(id, &x, &y);
     SDL_SendTouch(1, (SDL_FingerID)id, SDL_FALSE, x, y, 0.0f);
@@ -442,10 +430,6 @@ touch_handler_motion(void *data, struct wl_touch *touch, unsigned int timestamp,
     const double dbly = wl_fixed_to_double(fy);
     const float x = dblx / window_data->sdlwindow->w;
     const float y = dbly / window_data->sdlwindow->h;
-
-    if ((window_data->finger_touching) && (window_data->first_finger == id)) {
-        SDL_SendMouseMotion(window_data->sdlwindow, SDL_TOUCH_MOUSEID, 0, (int) dblx, (int) dbly);
-    }
 
     touch_update(id, x, y);
     SDL_SendTouchMotion(1, (SDL_FingerID)id, x, y, 1.0f);

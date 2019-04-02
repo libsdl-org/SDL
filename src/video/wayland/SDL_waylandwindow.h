@@ -76,8 +76,6 @@ typedef struct {
         int width, height;
     } resize;
 
-    SDL_bool finger_touching;  /* for mapping touch events to mice */
-    SDL_FingerID first_finger;
 } SDL_WindowData;
 
 extern void Wayland_ShowWindow(_THIS, SDL_Window *window);
