@@ -494,18 +494,20 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         {
             SDL_Mouse *mouse = SDL_GetMouse();
             if (!mouse->relative_mode || mouse->relative_mode_warp) {
-                SDL_MouseID mouseID = (((GetMessageExtraInfo() & MOUSEEVENTF_FROMTOUCH) == MOUSEEVENTF_FROMTOUCH) ? SDL_TOUCH_MOUSEID : 0);
-                SDL_SendMouseMotion(data->window, mouseID, 0, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
-                if (isWin10FCUorNewer && mouseID != SDL_TOUCH_MOUSEID && mouse->relative_mode_warp) {
-                    /* To work around #3931, Win10 bug introduced in Fall Creators Update, where
-                       SetCursorPos() (SDL_WarpMouseInWindow()) doesn't reliably generate mouse events anymore,
-                       after each windows mouse event generate a fake event for the middle of the window
-                       if relative_mode_warp is used */
-                    int center_x = 0, center_y = 0;
-                    SDL_GetWindowSize(data->window, &center_x, &center_y);
-                    center_x /= 2;
-                    center_y /= 2;
-                    SDL_SendMouseMotion(data->window, mouseID, 0, center_x, center_y);
+                /* Only generate mouse events for real mouse */
+                if ((GetMessageExtraInfo() & MOUSEEVENTF_FROMTOUCH) != MOUSEEVENTF_FROMTOUCH) {
+                    SDL_SendMouseMotion(data->window, 0, 0, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+                    if (isWin10FCUorNewer && mouse->relative_mode_warp) {
+                        /* To work around #3931, Win10 bug introduced in Fall Creators Update, where
+                           SetCursorPos() (SDL_WarpMouseInWindow()) doesn't reliably generate mouse events anymore,
+                           after each windows mouse event generate a fake event for the middle of the window
+                           if relative_mode_warp is used */
+                        int center_x = 0, center_y = 0;
+                        SDL_GetWindowSize(data->window, &center_x, &center_y);
+                        center_x /= 2;
+                        center_y /= 2;
+                        SDL_SendMouseMotion(data->window, 0, 0, center_x, center_y);
+                    }
                 }
             }
         }
@@ -525,8 +527,9 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
         {
             SDL_Mouse *mouse = SDL_GetMouse();
             if (!mouse->relative_mode || mouse->relative_mode_warp) {
-                SDL_MouseID mouseID = (((GetMessageExtraInfo() & MOUSEEVENTF_FROMTOUCH) == MOUSEEVENTF_FROMTOUCH) ? SDL_TOUCH_MOUSEID : 0);
-                WIN_CheckWParamMouseButtons(wParam, data, mouseID);
+                if ((GetMessageExtraInfo() & MOUSEEVENTF_FROMTOUCH) != MOUSEEVENTF_FROMTOUCH) {
+                    WIN_CheckWParamMouseButtons(wParam, data, mouseID);
+                }
             }
         }
         break;
