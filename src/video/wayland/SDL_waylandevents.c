@@ -414,7 +414,6 @@ static void
 touch_handler_up(void *data, struct wl_touch *touch, unsigned int serial,
                  unsigned int timestamp, int id)
 {
-    SDL_WindowData *window_data = (SDL_WindowData *)wl_surface_get_user_data(touch_surface(id));
     float x = 0, y = 0;
 
     touch_del(id, &x, &y);
