@@ -25159,7 +25159,7 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
         ;;
     *)
         as_fn_error $? "
-*** Unsupported host:  Please add to configure.in
+*** Unsupported host:  Please add to configure.ac
         " "$LINENO" 5
         ;;
 esac
