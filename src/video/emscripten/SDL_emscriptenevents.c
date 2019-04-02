@@ -431,7 +431,6 @@ Emscripten_HandleFocus(int eventType, const EmscriptenFocusEvent *wheelEvent, vo
 static EM_BOOL
 Emscripten_HandleTouch(int eventType, const EmscriptenTouchEvent *touchEvent, void *userData)
 {
-    SDL_WindowData *window_data = userData;
     int i;
     double client_w, client_h;
     int preventDefault = 0;

@@ -528,7 +528,7 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
             SDL_Mouse *mouse = SDL_GetMouse();
             if (!mouse->relative_mode || mouse->relative_mode_warp) {
                 if ((GetMessageExtraInfo() & MOUSEEVENTF_FROMTOUCH) != MOUSEEVENTF_FROMTOUCH) {
-                    WIN_CheckWParamMouseButtons(wParam, data, mouseID);
+                    WIN_CheckWParamMouseButtons(wParam, data, 0);
                 }
             }
         }

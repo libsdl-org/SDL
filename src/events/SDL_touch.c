@@ -253,8 +253,8 @@ SDL_SendTouch(SDL_TouchID id, SDL_FingerID fingerid,
         if (window) {
             if (down) {
                 if (finger_touching == SDL_FALSE) {
-                    int pos_x = x * window->w;
-                    int pos_y = y * window->y;
+                    int pos_x = (int)(x * (float)window->w);
+                    int pos_y = (int)(y * (float)window->y);
                     finger_touching = SDL_TRUE;
                     first_finger = fingerid;
                     SDL_SendMouseMotion(window, SDL_TOUCH_MOUSEID, 0, pos_x, pos_y);
@@ -339,8 +339,8 @@ SDL_SendTouchMotion(SDL_TouchID id, SDL_FingerID fingerid,
         SDL_Window *window = SDL_GetMouseFocus();
         if (window) {
             if (finger_touching == SDL_TRUE && first_finger == fingerid) {
-                int pos_x = x * window->w;
-                int pos_y = y * window->y;
+                int pos_x = (int)(x * (float)window->w);
+                int pos_y = (int)(y * (float)window->y);
                 SDL_SendMouseMotion(window, SDL_TOUCH_MOUSEID, 0, pos_x, pos_y);
             }
         }
