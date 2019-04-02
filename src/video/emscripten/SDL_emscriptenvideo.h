@@ -47,9 +47,6 @@ typedef struct SDL_WindowData
     int requested_fullscreen_mode;
     SDL_bool fullscreen_resize;
 
-    SDL_bool finger_touching;  /* for mapping touch events to mice */
-    SDL_FingerID first_finger;
-
     SDL_bool has_pointer_lock;
 } SDL_WindowData;
 
