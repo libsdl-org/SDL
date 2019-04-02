@@ -90,7 +90,6 @@ typedef struct SDL_evdevlist_item
             int x, y, pressure;
         } * slots;
 
-        int pointerFingerID;
     } * touchscreen_data;
 
     struct SDL_evdevlist_item *next;
@@ -234,7 +233,6 @@ SDL_EVDEV_Poll(void)
     int mouse_button;
     SDL_Mouse *mouse;
     float norm_x, norm_y, norm_pressure;
-    int abs_x, abs_y;
 
     if (!_this) {
         return;
@@ -383,36 +381,17 @@ SDL_EVDEV_Poll(void)
                                 norm_pressure = 1.0f;
                             }
 
-                            abs_x = item->touchscreen_data->slots[j].x;
-                            abs_y = item->touchscreen_data->slots[j].y;
-
                             switch(item->touchscreen_data->slots[j].delta) {
                             case EVDEV_TOUCH_SLOTDELTA_DOWN:
-                                if (item->touchscreen_data->pointerFingerID == -1) {
-                                    SDL_SendMouseMotion(mouse->focus, SDL_TOUCH_MOUSEID, 0, abs_x, abs_y);
-
-                                    SDL_SendMouseButton(mouse->focus, SDL_TOUCH_MOUSEID, SDL_PRESSED, SDL_BUTTON_LEFT);
-                                    item->touchscreen_data->pointerFingerID = item->touchscreen_data->slots[j].tracking_id;
-                                }
-
                                 SDL_SendTouch(item->fd, item->touchscreen_data->slots[j].tracking_id, SDL_TRUE, norm_x, norm_y, norm_pressure);
                                 item->touchscreen_data->slots[j].delta = EVDEV_TOUCH_SLOTDELTA_NONE;
                                 break;
                             case EVDEV_TOUCH_SLOTDELTA_UP:
-                                if (item->touchscreen_data->pointerFingerID == item->touchscreen_data->slots[j].tracking_id) {
-                                    SDL_SendMouseButton(mouse->focus, SDL_TOUCH_MOUSEID, SDL_RELEASED, SDL_BUTTON_LEFT);
-                                    item->touchscreen_data->pointerFingerID = -1;
-                                }
-
                                 SDL_SendTouch(item->fd, item->touchscreen_data->slots[j].tracking_id, SDL_FALSE, norm_x, norm_y, norm_pressure);
                                 item->touchscreen_data->slots[j].tracking_id = -1;
                                 item->touchscreen_data->slots[j].delta = EVDEV_TOUCH_SLOTDELTA_NONE;
                                 break;
                             case EVDEV_TOUCH_SLOTDELTA_MOVE:
-                                if (item->touchscreen_data->pointerFingerID == item->touchscreen_data->slots[j].tracking_id) {
-                                    SDL_SendMouseMotion(mouse->focus, SDL_TOUCH_MOUSEID, 0, abs_x, abs_y);
-                                }
-
                                 SDL_SendTouchMotion(item->fd, item->touchscreen_data->slots[j].tracking_id, norm_x, norm_y, norm_pressure);
                                 item->touchscreen_data->slots[j].delta = EVDEV_TOUCH_SLOTDELTA_NONE;
                                 break;
@@ -539,8 +518,6 @@ SDL_EVDEV_init_touchscreen(SDL_evdevlist_item* item)
     for(i = 0; i < item->touchscreen_data->max_slots; i++) {
         item->touchscreen_data->slots[i].tracking_id = -1;
     }
-
-    item->touchscreen_data->pointerFingerID = -1;
 
     ret = SDL_AddTouch(item->fd, /* I guess our fd is unique enough */
         SDL_TOUCH_DEVICE_DIRECT,
