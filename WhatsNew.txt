@@ -2,6 +2,15 @@
 This is a list of major changes in SDL's version history.
 
 ---------------------------------------------------------------------------
+2.0.10:
+---------------------------------------------------------------------------
+* Added the hint SDL_HINT_MOUSE_TOUCH_EVENTS to control whether SDL will synthesize touch events from mouse events
+
+Android:
+* Removed SDL_HINT_ANDROID_SEPARATE_MOUSE_AND_TOUCH (replaced by SDL_HINT_MOUSE_TOUCH_EVENTS and SDL_HINT_TOUCH_MOUSE_EVENTS)
+
+
+---------------------------------------------------------------------------
 2.0.9:
 ---------------------------------------------------------------------------
 
