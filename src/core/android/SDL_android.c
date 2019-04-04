@@ -280,9 +280,6 @@ static jmethodID midPollHapticDevices;
 static jmethodID midHapticRun;
 static jmethodID midHapticStop;
 
-/* static fields */
-static jfieldID fidSeparateMouseAndTouch;
-
 /* Accelerometer data storage */
 static SDL_DisplayOrientation displayOrientation;
 static float fLastAccelerometer[3];
@@ -535,12 +532,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
        !midCreateCustomCursor || !midSetCustomCursor || !midSetSystemCursor || !midSupportsRelativeMouse || !midSetRelativeMouseEnabled ||
        !midIsChromebook || !midIsDeXMode || !midManualBackButton) {
         __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java callbacks, do you have the latest version of SDLActivity.java?");
-    }
-
-    fidSeparateMouseAndTouch = (*env)->GetStaticFieldID(env, mActivityClass, "mSeparateMouseAndTouch", "Z");
-
-    if (!fidSeparateMouseAndTouch) {
-        __android_log_print(ANDROID_LOG_WARN, "SDL", "Missing some Java static fields, do you have the latest version of SDLActivity.java?");
     }
 
     checkJNIReady();
@@ -2204,13 +2195,6 @@ int Android_JNI_GetPowerInfo(int *plugged, int *charged, int *battery, int *seco
 void Android_JNI_InitTouch() {
      JNIEnv *env = Android_JNI_GetEnv();
     (*env)->CallStaticVoidMethod(env, mActivityClass, midInitTouch);
-}
-
-/* sets the mSeparateMouseAndTouch field */
-void Android_JNI_SetSeparateMouseAndTouch(SDL_bool new_value)
-{
-    JNIEnv *env = Android_JNI_GetEnv();
-    (*env)->SetStaticBooleanField(env, mActivityClass, fidSeparateMouseAndTouch, new_value ? JNI_TRUE : JNI_FALSE);
 }
 
 void Android_JNI_PollInputDevices(void)
