@@ -73,10 +73,6 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     /** If shared libraries (e.g. SDL or the native application) could not be loaded. */
     public static boolean mBrokenLibraries;
 
-    // If we want to separate mouse and touch events.
-    //  This is only toggled in native code when a hint is set!
-    public static boolean mSeparateMouseAndTouch;
-
     // Main components
     protected static SDLActivity mSingleton;
     protected static SDLSurface mSurface;
@@ -1772,8 +1768,7 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         // 12290 = Samsung DeX mode desktop mouse
         // 12290 = 0x3002 = 0x2002 | 0x1002 = SOURCE_MOUSE | SOURCE_TOUCHSCREEN
         // 0x2   = SOURCE_CLASS_POINTER
-        if ((event.getSource() == InputDevice.SOURCE_MOUSE || event.getSource() == (InputDevice.SOURCE_MOUSE | InputDevice.SOURCE_TOUCHSCREEN))
-                && SDLActivity.mSeparateMouseAndTouch) {
+        if (event.getSource() == InputDevice.SOURCE_MOUSE || event.getSource() == (InputDevice.SOURCE_MOUSE | InputDevice.SOURCE_TOUCHSCREEN)) {
             try {
                 mouseButton = (Integer) event.getClass().getMethod("getButtonState").invoke(event);
             } catch(Exception e) {

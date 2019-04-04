@@ -40,28 +40,15 @@
 #define ACTION_POINTER_DOWN 5
 #define ACTION_POINTER_UP 6
 
-static void SDLCALL
-SeparateEventsHintWatcher(void *userdata, const char *name,
-                          const char *oldValue, const char *newValue)
-{
-    SDL_bool separate_mouse_and_touch = (newValue && (SDL_strcmp(newValue, "1") == 0));
-
-    Android_JNI_SetSeparateMouseAndTouch(separate_mouse_and_touch);
-}
-
 void Android_InitTouch(void)
 {
-    SDL_AddHintCallback(SDL_HINT_ANDROID_SEPARATE_MOUSE_AND_TOUCH,
-                        SeparateEventsHintWatcher, NULL);
-
     /* Add all touch devices */
     Android_JNI_InitTouch();
 }
 
 void Android_QuitTouch(void)
 {
-    SDL_DelHintCallback(SDL_HINT_ANDROID_SEPARATE_MOUSE_AND_TOUCH,
-                        SeparateEventsHintWatcher, NULL);
+    return;
 }
 
 void Android_OnTouch(SDL_Window *window, int touch_device_id_in, int pointer_finger_id_in, int action, float x, float y, float p)

@@ -555,9 +555,6 @@ class SDLGenericMotionListener_API12 implements View.OnGenericMotionListener {
                 return SDLControllerManager.handleJoystickMotionEvent(event);
 
             case InputDevice.SOURCE_MOUSE:
-                if (!SDLActivity.mSeparateMouseAndTouch) {
-                    break;
-                }
                 action = event.getActionMasked();
                 switch (action) {
                     case MotionEvent.ACTION_SCROLL:
@@ -624,14 +621,12 @@ class SDLGenericMotionListener_API24 extends SDLGenericMotionListener_API12 {
         // Handle relative mouse mode
         if (mRelativeModeEnabled) {
             if (event.getSource() == InputDevice.SOURCE_MOUSE) {
-                if (SDLActivity.mSeparateMouseAndTouch) {
-                    int action = event.getActionMasked();
-                    if (action == MotionEvent.ACTION_HOVER_MOVE) {
-                        float x = event.getAxisValue(MotionEvent.AXIS_RELATIVE_X);
-                        float y = event.getAxisValue(MotionEvent.AXIS_RELATIVE_Y);
-                        SDLActivity.onNativeMouse(0, action, x, y, true);
-                        return true;
-                    }
+                int action = event.getActionMasked();
+                if (action == MotionEvent.ACTION_HOVER_MOVE) {
+                    float x = event.getAxisValue(MotionEvent.AXIS_RELATIVE_X);
+                    float y = event.getAxisValue(MotionEvent.AXIS_RELATIVE_Y);
+                    SDLActivity.onNativeMouse(0, action, x, y, true);
+                    return true;
                 }
             }
         }
@@ -696,10 +691,6 @@ class SDLGenericMotionListener_API26 extends SDLGenericMotionListener_API24 {
             case InputDevice.SOURCE_MOUSE:
             // DeX desktop mouse cursor is a separate non-standard input type.
             case InputDevice.SOURCE_MOUSE | InputDevice.SOURCE_TOUCHSCREEN:
-                if (!SDLActivity.mSeparateMouseAndTouch) {
-                    break;
-                }
-
                 action = event.getActionMasked();
                 switch (action) {
                     case MotionEvent.ACTION_SCROLL:
@@ -720,9 +711,6 @@ class SDLGenericMotionListener_API26 extends SDLGenericMotionListener_API24 {
                 break;
 
             case InputDevice.SOURCE_MOUSE_RELATIVE:
-                if (!SDLActivity.mSeparateMouseAndTouch) {
-                    break;
-                }
                 action = event.getActionMasked();
                 switch (action) {
                     case MotionEvent.ACTION_SCROLL:
