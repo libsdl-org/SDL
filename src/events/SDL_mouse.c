@@ -298,10 +298,6 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
     int xrel;
     int yrel;
 
-    if (mouseID == SDL_TOUCH_MOUSEID && !mouse->touch_mouse_events) {
-        return 0;
-    }
-
     if (mouseID != SDL_TOUCH_MOUSEID && mouse->relative_mode_warp) {
         int center_x = 0, center_y = 0;
         SDL_GetWindowSize(window, &center_x, &center_y);
@@ -447,10 +443,6 @@ SDL_PrivateSendMouseButton(SDL_Window * window, SDL_MouseID mouseID, Uint8 state
     Uint32 type;
     Uint32 buttonstate = mouse->buttonstate;
 
-    if (mouseID == SDL_TOUCH_MOUSEID && !mouse->touch_mouse_events) {
-        return 0;
-    }
-
     /* Figure out which event to perform */
     switch (state) {
     case SDL_PRESSED:
@@ -520,7 +512,7 @@ SDL_PrivateSendMouseButton(SDL_Window * window, SDL_MouseID mouseID, Uint8 state
     if (window && state == SDL_RELEASED) {
         SDL_UpdateMouseFocus(window, mouse->x, mouse->y, buttonstate);
     }
-    
+
     return posted;
 }
 
