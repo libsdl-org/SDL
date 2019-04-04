@@ -37,6 +37,9 @@
 /* The mouse state */
 static SDL_Mouse SDL_mouse;
 
+/* for mapping mouse events to touch */
+static SDL_bool track_mouse_down = SDL_FALSE;
+
 static int
 SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relative, int x, int y);
 
@@ -104,6 +107,21 @@ SDL_TouchMouseEventsChanged(void *userdata, const char *name, const char *oldVal
     }
 }
 
+static void SDLCALL
+SDL_MouseTouchEventsChanged(void *userdata, const char *name, const char *oldValue, const char *hint)
+{
+    SDL_Mouse *mouse = (SDL_Mouse *)userdata;
+
+    if (hint && (*hint == '1' || SDL_strcasecmp(hint, "true") == 0)) {
+
+        SDL_AddTouch(SDL_MOUSE_TOUCHID, SDL_TOUCH_DEVICE_DIRECT, "mouse_input");
+
+        mouse->mouse_touch_events = SDL_TRUE;
+    } else {
+        mouse->mouse_touch_events = SDL_FALSE;
+    }
+}
+
 /* Public functions */
 int
 SDL_MouseInit(void)
@@ -126,6 +144,9 @@ SDL_MouseInit(void)
 
     SDL_AddHintCallback(SDL_HINT_TOUCH_MOUSE_EVENTS,
                         SDL_TouchMouseEventsChanged, mouse);
+
+    SDL_AddHintCallback(SDL_HINT_MOUSE_TOUCH_EVENTS,
+                        SDL_MouseTouchEventsChanged, mouse);
 
     mouse->cursor_shown = SDL_TRUE;
 
@@ -298,6 +319,17 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
     int xrel;
     int yrel;
 
+    /* SDL_HINT_MOUSE_TOUCH_EVENTS: controlling whether mouse events should generate synthetic touch events */
+    if (mouse->mouse_touch_events) {
+        if (mouseID != SDL_TOUCH_MOUSEID && !relative && track_mouse_down) {
+            if (window) {
+                float fx = (float)x / (float)window->w;
+                float fy = (float)y / (float)window->h;
+                SDL_SendTouchMotion(SDL_MOUSE_TOUCHID, 0, fx, fy, 1.0f);
+            }
+        }
+    }
+
     if (mouseID != SDL_TOUCH_MOUSEID && mouse->relative_mode_warp) {
         int center_x = 0, center_y = 0;
         SDL_GetWindowSize(window, &center_x, &center_y);
@@ -442,6 +474,22 @@ SDL_PrivateSendMouseButton(SDL_Window * window, SDL_MouseID mouseID, Uint8 state
     int posted;
     Uint32 type;
     Uint32 buttonstate = mouse->buttonstate;
+
+    /* SDL_HINT_MOUSE_TOUCH_EVENTS: controlling whether mouse events should generate synthetic touch events */
+    if (mouse->mouse_touch_events) {
+        if (mouseID != SDL_TOUCH_MOUSEID && button == SDL_BUTTON_LEFT) {
+            if (window) {
+                float fx = (float)mouse->x / (float)window->w;
+                float fy = (float)mouse->y / (float)window->h;
+                if (state == SDL_PRESSED) {
+                    track_mouse_down = SDL_TRUE;
+                } else {
+                    track_mouse_down = SDL_FALSE;
+                }
+                SDL_SendTouch(SDL_MOUSE_TOUCHID, 0, track_mouse_down, fx, fy, 1.0f);
+            }
+        }
+    }
 
     /* Figure out which event to perform */
     switch (state) {
