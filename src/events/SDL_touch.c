@@ -32,11 +32,9 @@ static int SDL_num_touch = 0;
 static SDL_Touch **SDL_touchDevices = NULL;
 
 /* for mapping touch events to mice */
-#define DUPLICATE_TO_MOUSE_EVENT
-#if defined(DUPLICATE_TO_MOUSE_EVENT)
 static SDL_bool finger_touching = SDL_FALSE;
-static SDL_FingerID first_finger;
-#endif
+static SDL_FingerID track_fingerid;
+static SDL_TouchID  track_touchid;
 
 /* Public functions */
 int
@@ -247,28 +245,31 @@ SDL_SendTouch(SDL_TouchID id, SDL_FingerID fingerid,
         return -1;
     }
 
-#if defined(DUPLICATE_TO_MOUSE_EVENT)
+    /* SDL_HINT_TOUCH_MOUSE_EVENTS: controlling whether touch events should generate synthetic mouse events */
     {
-        SDL_Window *window = SDL_GetMouseFocus();
-        if (window) {
-            if (down) {
-                if (finger_touching == SDL_FALSE) {
-                    int pos_x = (int)(x * (float)window->w);
-                    int pos_y = (int)(y * (float)window->h);
-                    finger_touching = SDL_TRUE;
-                    first_finger = fingerid;
-                    SDL_SendMouseMotion(window, SDL_TOUCH_MOUSEID, 0, pos_x, pos_y);
-                    SDL_SendMouseButton(window, SDL_TOUCH_MOUSEID, SDL_PRESSED, SDL_BUTTON_LEFT);
-                }
-            } else {
-                if (finger_touching == SDL_TRUE && first_finger == fingerid) {
-                    SDL_SendMouseButton(window, SDL_TOUCH_MOUSEID, SDL_RELEASED, SDL_BUTTON_LEFT);
-                    finger_touching = SDL_FALSE;
+        SDL_Mouse *mouse = SDL_GetMouse();
+        if (mouse->touch_mouse_events) {
+            SDL_Window *window = SDL_GetMouseFocus();
+            if (window) {
+                if (down) {
+                    if (finger_touching == SDL_FALSE) {
+                        int pos_x = (int)(x * (float)window->w);
+                        int pos_y = (int)(y * (float)window->h);
+                        finger_touching = SDL_TRUE;
+                        track_touchid = id;
+                        track_fingerid = fingerid;
+                        SDL_SendMouseMotion(window, SDL_TOUCH_MOUSEID, 0, pos_x, pos_y);
+                        SDL_SendMouseButton(window, SDL_TOUCH_MOUSEID, SDL_PRESSED, SDL_BUTTON_LEFT);
+                    }
+                } else {
+                    if (finger_touching == SDL_TRUE && track_touchid == id && track_fingerid == fingerid) {
+                        SDL_SendMouseButton(window, SDL_TOUCH_MOUSEID, SDL_RELEASED, SDL_BUTTON_LEFT);
+                        finger_touching = SDL_FALSE;
+                    }
                 }
             }
         }
     }
-#endif
 
     finger = SDL_GetFinger(touch, fingerid);
     if (down) {
@@ -334,18 +335,20 @@ SDL_SendTouchMotion(SDL_TouchID id, SDL_FingerID fingerid,
         return -1;
     }
 
-#if defined(DUPLICATE_TO_MOUSE_EVENT)
+    /* SDL_HINT_TOUCH_MOUSE_EVENTS: controlling whether touch events should generate synthetic mouse events */
     {
-        SDL_Window *window = SDL_GetMouseFocus();
-        if (window) {
-            if (finger_touching == SDL_TRUE && first_finger == fingerid) {
-                int pos_x = (int)(x * (float)window->w);
-                int pos_y = (int)(y * (float)window->h);
-                SDL_SendMouseMotion(window, SDL_TOUCH_MOUSEID, 0, pos_x, pos_y);
+        SDL_Mouse *mouse = SDL_GetMouse();
+        if (mouse->touch_mouse_events) {
+            SDL_Window *window = SDL_GetMouseFocus();
+            if (window) {
+                if (finger_touching == SDL_TRUE && track_touchid == id && track_fingerid == fingerid) {
+                    int pos_x = (int)(x * (float)window->w);
+                    int pos_y = (int)(y * (float)window->h);
+                    SDL_SendMouseMotion(window, SDL_TOUCH_MOUSEID, 0, pos_x, pos_y);
+                }
             }
         }
     }
-#endif
 
     finger = SDL_GetFinger(touch,fingerid);
     if (!finger) {

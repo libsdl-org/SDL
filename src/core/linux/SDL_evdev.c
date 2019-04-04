@@ -270,9 +270,7 @@ SDL_EVDEV_Poll(void)
                     /* BTH_TOUCH event value 1 indicates there is contact with
                        a touchscreen or trackpad (earlist finger's current
                        position is sent in EV_ABS ABS_X/ABS_Y, switching to
-                       next finger after earlist is released) however using it
-                       for virtual mouse SDL_TOUCH_MOUSEID would differ from
-                       other SDL backends which require a new finger touch. */
+                       next finger after earlist is released) */
                     if (item->is_touchscreen && events[i].code == BTN_TOUCH) {
                         break;
                     }
