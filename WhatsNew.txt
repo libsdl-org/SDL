@@ -8,7 +8,8 @@ This is a list of major changes in SDL's version history.
 
 Android:
 * Removed SDL_HINT_ANDROID_SEPARATE_MOUSE_AND_TOUCH (replaced by SDL_HINT_MOUSE_TOUCH_EVENTS and SDL_HINT_TOUCH_MOUSE_EVENTS)
-  (Changed old default behavior from hardware mouse triggering touch events to now not doing so (SDL_MOUSE_TOUCH_EVENTS=0) to match the default behavior of other platforms")
+  SDL_HINT_ANDROID_SEPARATE_MOUSE_AND_TOUCH=1, should be replaced by setting both previous hints to 0.
+  SDL_HINT_ANDROID_SEPARATE_MOUSE_AND_TOUCH=0, should be replaced by setting both previous hints to 1.
 
 
 ---------------------------------------------------------------------------
