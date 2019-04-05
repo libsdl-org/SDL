@@ -112,13 +112,21 @@ SDL_MouseTouchEventsChanged(void *userdata, const char *name, const char *oldVal
 {
     SDL_Mouse *mouse = (SDL_Mouse *)userdata;
 
-    if (hint && (*hint == '1' || SDL_strcasecmp(hint, "true") == 0)) {
-
-        SDL_AddTouch(SDL_MOUSE_TOUCHID, SDL_TOUCH_DEVICE_DIRECT, "mouse_input");
-
+    if (hint == NULL || *hint == '\0') {
+        /* Default */
+#if defined(__ANDROID__)
+        mouse->mouse_touch_events = SDL_TRUE;
+#else
+        mouse->mouse_touch_events = SDL_FALSE;
+#endif
+    } else if (*hint == '1' || SDL_strcasecmp(hint, "true") == 0) {
         mouse->mouse_touch_events = SDL_TRUE;
     } else {
         mouse->mouse_touch_events = SDL_FALSE;
+    }
+
+    if (mouse->mouse_touch_events) {
+        SDL_AddTouch(SDL_MOUSE_TOUCHID, SDL_TOUCH_DEVICE_DIRECT, "mouse_input");
     }
 }
 
