@@ -114,7 +114,7 @@ SDL_MouseTouchEventsChanged(void *userdata, const char *name, const char *oldVal
 
     if (hint == NULL || *hint == '\0') {
         /* Default */
-#if defined(__ANDROID__)
+#if defined(__ANDROID__) || (defined(__IPHONEOS__) && !defined(__TVOS__))
         mouse->mouse_touch_events = SDL_TRUE;
 #else
         mouse->mouse_touch_events = SDL_FALSE;
