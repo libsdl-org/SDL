@@ -174,7 +174,7 @@ http://ponystyle.com/blog/2010/03/26/dealing-with-asset-compression-in-android-a
  Pause / Resume behaviour
 ================================================================================
 
-If SDL is compiled with SDL_ANDROID_BLOCK_ON_PAUSE defined (the default),
+If SDL_HINT_ANDROID_BLOCK_ON_PAUSE hint is set (the default),
 the event loop will block itself when the app is paused (ie, when the user
 returns to the main Android dashboard). Blocking is better in terms of battery
 use, and it allows your app to spring back to life instantaneously after resume

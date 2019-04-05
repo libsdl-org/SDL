@@ -26,6 +26,7 @@
 
 #include "SDL_video.h"
 #include "SDL_mouse.h"
+#include "SDL_hints.h"
 #include "../SDL_sysvideo.h"
 #include "../SDL_pixels_c.h"
 #include "../../events/SDL_events_c.h"
@@ -93,6 +94,7 @@ Android_CreateDevice(int devindex)
 {
     SDL_VideoDevice *device;
     SDL_VideoData *data;
+    SDL_bool block_on_pause;
 
     /* Initialize all variables that we clean on shutdown */
     device = (SDL_VideoDevice *) SDL_calloc(1, sizeof(SDL_VideoDevice));
@@ -113,7 +115,12 @@ Android_CreateDevice(int devindex)
     /* Set the function pointers */
     device->VideoInit = Android_VideoInit;
     device->VideoQuit = Android_VideoQuit;
-    device->PumpEvents = Android_PumpEvents;
+    block_on_pause = SDL_GetHintBoolean(SDL_HINT_ANDROID_BLOCK_ON_PAUSE, SDL_TRUE);
+    if (block_on_pause) {
+        device->PumpEvents = Android_PumpEvents_Blocking;
+    } else {
+        device->PumpEvents = Android_PumpEvents_NonBlocking;
+    }
 
     device->GetDisplayDPI = Android_GetDisplayDPI;
 
