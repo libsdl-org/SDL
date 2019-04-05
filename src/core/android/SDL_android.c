@@ -1156,7 +1156,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetenv)(
              Functions called by SDL into Java
 *******************************************************************************/
 
-static int s_active = 0;
+static SDL_atomic_t s_active;
 struct LocalReferenceHolder
 {
     JNIEnv *m_env;
@@ -1181,7 +1181,7 @@ static SDL_bool LocalReferenceHolder_Init(struct LocalReferenceHolder *refholder
         SDL_SetError("Failed to allocate enough JVM local references");
         return SDL_FALSE;
     }
-    ++s_active;
+    SDL_AtomicIncRef(&s_active);
     refholder->m_env = env;
     return SDL_TRUE;
 }
@@ -1194,8 +1194,13 @@ static void LocalReferenceHolder_Cleanup(struct LocalReferenceHolder *refholder)
     if (refholder->m_env) {
         JNIEnv *env = refholder->m_env;
         (*env)->PopLocalFrame(env, NULL);
-        --s_active;
+        SDL_AtomicDecRef(&s_active);
     }
+}
+
+static SDL_bool LocalReferenceHolder_IsActive(void)
+{
+    return (SDL_AtomicGet(&s_active) > 0);
 }
 
 ANativeWindow* Android_JNI_GetNativeWindow(void)
@@ -1601,7 +1606,7 @@ static SDL_bool Android_JNI_ExceptionOccurred(SDL_bool silent)
     jthrowable exception;
 
     /* Detect mismatch LocalReferenceHolder_Init/Cleanup */
-    SDL_assert((s_active > 0));
+    SDL_assert(LocalReferenceHolder_IsActive());
 
     exception = (*env)->ExceptionOccurred(env);
     if (exception != NULL) {
