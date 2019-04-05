@@ -216,17 +216,18 @@ UIKit_GetDisplayModes(_THIS, SDL_VideoDisplay * display)
         availableModes = data.uiscreen.availableModes;
 #endif
 
-#ifdef __IPHONE_8_0
-        /* The UIScreenMode of an iPhone 6 Plus should be 1080x1920 rather than
-         * 1242x2208 (414x736@3x), so we should use the native scale. */
-        if ([data.uiscreen respondsToSelector:@selector(nativeScale)]) {
-            scale = data.uiscreen.nativeScale;
-        }
-#endif
-
         for (UIScreenMode *uimode in availableModes) {
             /* The size of a UIScreenMode is in pixels, but we deal exclusively
-             * in points (except in SDL_GL_GetDrawableSize.) */
+             * in points (except in SDL_GL_GetDrawableSize.)
+             *
+             * For devices such as iPhone 6/7/8 Plus, the UIScreenMode reported
+             * by iOS is not in physical pixels of the display, but rather the
+             * point size times the scale.  For example, on iOS 12.2 on iPhone 8
+             * Plus the uimode.size is 1242x2208 and the uiscreen.scale is 3
+             * thus this will give the size in points which is 414x736. The code
+             * used to use the nativeScale, assuming UIScreenMode returned raw
+             * physical pixels (as suggested by its documentation, but in
+             * practice it is returning the retina pixels). */
             int w = (int)(uimode.size.width / scale);
             int h = (int)(uimode.size.height / scale);
 
