@@ -22,9 +22,6 @@
 
 #if SDL_VIDEO_DRIVER_ANDROID
 
-/* We're going to do this by default */
-#define SDL_ANDROID_BLOCK_ON_PAUSE  1
-
 #include "SDL_androidevents.h"
 #include "SDL_events.h"
 #include "SDL_androidkeyboard.h"
@@ -49,14 +46,12 @@ static void openslES_ResumeDevices(void) {}
 static void openslES_PauseDevices(void) {}
 #endif
 
-#if SDL_ANDROID_BLOCK_ON_PAUSE
 /* Number of 'type' events in the event queue */
 static int
 SDL_NumberOfEvents(Uint32 type)
 {
     return SDL_PeepEvents(NULL, 0, SDL_PEEKEVENT, type, type);
 }
-#endif /* SDL_ANDROID_BLOCK_ON_PAUSE */
 
 static void
 android_egl_context_restore(SDL_Window *window)
@@ -89,15 +84,13 @@ android_egl_context_backup(SDL_Window *window)
 
 /*
  * Android_ResumeSem and Android_PauseSem are signaled from Java_org_libsdl_app_SDLActivity_nativePause and Java_org_libsdl_app_SDLActivity_nativeResume
- * When the pause semaphore is signaled, if SDL_ANDROID_BLOCK_ON_PAUSE is defined the event loop will block until the resume signal is emitted.
+ * When the pause semaphore is signaled, if Android_PumpEvents_Blocking is used, the event loop will block until the resume signal is emitted.
  *
  * No polling necessary
  */
 
-#if SDL_ANDROID_BLOCK_ON_PAUSE
-
 void
-Android_PumpEvents(_THIS)
+Android_PumpEvents_Blocking(_THIS)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
 
@@ -146,10 +139,8 @@ Android_PumpEvents(_THIS)
     }
 }
 
-#else
-
 void
-Android_PumpEvents(_THIS)
+Android_PumpEvents_NonBlocking(_THIS)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
 
@@ -187,8 +178,6 @@ Android_PumpEvents(_THIS)
         }
     }
 }
-
-#endif /* SDL_ANDROID_BLOCK_ON_PAUSE */
 
 #endif /* SDL_VIDEO_DRIVER_ANDROID */
 
