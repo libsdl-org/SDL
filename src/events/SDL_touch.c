@@ -257,17 +257,24 @@ SDL_SendTouch(SDL_TouchID id, SDL_FingerID fingerid,
                         if (finger_touching == SDL_FALSE) {
                             int pos_x = (int)(x * (float)window->w);
                             int pos_y = (int)(y * (float)window->h);
-                            finger_touching = SDL_TRUE;
-                            track_touchid = id;
-                            track_fingerid = fingerid;
                             SDL_SendMouseMotion(window, SDL_TOUCH_MOUSEID, 0, pos_x, pos_y);
                             SDL_SendMouseButton(window, SDL_TOUCH_MOUSEID, SDL_PRESSED, SDL_BUTTON_LEFT);
                         }
                     } else {
                         if (finger_touching == SDL_TRUE && track_touchid == id && track_fingerid == fingerid) {
                             SDL_SendMouseButton(window, SDL_TOUCH_MOUSEID, SDL_RELEASED, SDL_BUTTON_LEFT);
-                            finger_touching = SDL_FALSE;
                         }
+                    }
+                }
+                if (down) {
+                    if (finger_touching == SDL_FALSE) {
+                        finger_touching = SDL_TRUE;
+                        track_touchid = id;
+                        track_fingerid = fingerid;
+                    }
+                } else {
+                    if (finger_touching == SDL_TRUE && track_touchid == id && track_fingerid == fingerid) {
+                        finger_touching = SDL_FALSE;
                     }
                 }
             }
