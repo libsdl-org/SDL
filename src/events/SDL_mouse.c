@@ -486,14 +486,14 @@ SDL_PrivateSendMouseButton(SDL_Window * window, SDL_MouseID mouseID, Uint8 state
     /* SDL_HINT_MOUSE_TOUCH_EVENTS: controlling whether mouse events should generate synthetic touch events */
     if (mouse->mouse_touch_events) {
         if (mouseID != SDL_TOUCH_MOUSEID && button == SDL_BUTTON_LEFT) {
+            if (state == SDL_PRESSED) {
+                track_mouse_down = SDL_TRUE;
+            } else {
+                track_mouse_down = SDL_FALSE;
+            }
             if (window) {
                 float fx = (float)mouse->x / (float)window->w;
                 float fy = (float)mouse->y / (float)window->h;
-                if (state == SDL_PRESSED) {
-                    track_mouse_down = SDL_TRUE;
-                } else {
-                    track_mouse_down = SDL_FALSE;
-                }
                 SDL_SendTouch(SDL_MOUSE_TOUCHID, 0, track_mouse_down, fx, fy, 1.0f);
             }
         }
