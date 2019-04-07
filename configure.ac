@@ -3919,6 +3919,22 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         ;;
 esac
 
+# Check whether to install sdl2-config
+AC_MSG_CHECKING(whether to install sdl2-config)
+AC_ARG_ENABLE([sdl2-config],
+    AS_HELP_STRING([--enable-sdl2-config], [Install sdl2-config [default=yes]]),
+    [case "${enableval}" in
+        yes) enable_sdl2_config="TRUE" ;;
+        no) enable_sdl2_config="FALSE" ;;
+        *) AC_MSG_ERROR([bad value '${enableval}' for --enable-sdl2-config]) ;;
+    esac], [enable_sdl2_config="TRUE"])
+if test "$enable_sdl2_config" = "TRUE"; then
+    AC_MSG_RESULT(yes)
+else
+    AC_MSG_RESULT(no)
+fi
+AC_SUBST([INSTALL_SDL2_CONFIG], [$enable_sdl2_config])
+
 # Verify that we have all the platform specific files we need
 
 if test x$have_joystick != xyes; then
