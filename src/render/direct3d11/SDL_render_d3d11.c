@@ -1897,7 +1897,7 @@ D3D11_UpdateViewport(SDL_Renderer * renderer)
          * with a non-empty viewport.
          */
         /* SDL_Log("%s, no viewport was set!\n", __FUNCTION__); */
-        return 0;
+        return -1;
     }
 
     /* Make sure the SDL viewport gets rotated to that of the physical display's rotation.
@@ -1997,6 +1997,7 @@ D3D11_SetDrawState(SDL_Renderer * renderer, const SDL_RenderCommand *cmd, ID3D11
     ID3D11ShaderResourceView *shaderResource;
     const SDL_BlendMode blendMode = cmd->data.draw.blend;
     ID3D11BlendState *blendState = NULL;
+    SDL_bool updateSubresource = SDL_FALSE;
 
     if (renderTargetView != rendererData->currentRenderTargetView) {
         ID3D11DeviceContext_OMSetRenderTargets(rendererData->d3dContext,
@@ -2008,7 +2009,10 @@ D3D11_SetDrawState(SDL_Renderer * renderer, const SDL_RenderCommand *cmd, ID3D11
     }
 
     if (rendererData->viewportDirty) {
-        D3D11_UpdateViewport(renderer);
+        if (D3D11_UpdateViewport(renderer) == 0) {
+            /* vertexShaderConstantsData.projectionAndView has changed */
+            updateSubresource = SDL_TRUE;
+        }
     }
 
     if (rendererData->cliprectDirty) {
@@ -2073,7 +2077,7 @@ D3D11_SetDrawState(SDL_Renderer * renderer, const SDL_RenderCommand *cmd, ID3D11
         rendererData->currentSampler = sampler;
     }
 
-    if (SDL_memcmp(&rendererData->vertexShaderConstantsData.model, newmatrix, sizeof (*newmatrix)) != 0) {
+    if (updateSubresource == SDL_TRUE || SDL_memcmp(&rendererData->vertexShaderConstantsData.model, newmatrix, sizeof (*newmatrix)) != 0) {
         SDL_memcpy(&rendererData->vertexShaderConstantsData.model, newmatrix, sizeof (*newmatrix));
         ID3D11DeviceContext_UpdateSubresource(rendererData->d3dContext,
             (ID3D11Resource *)rendererData->vertexShaderConstants,
