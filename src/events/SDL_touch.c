@@ -257,12 +257,18 @@ SDL_SendTouch(SDL_TouchID id, SDL_FingerID fingerid,
                         if (finger_touching == SDL_FALSE) {
                             int pos_x = (int)(x * (float)window->w);
                             int pos_y = (int)(y * (float)window->h);
-                            SDL_SendMouseMotion(window, SDL_TOUCH_MOUSEID, 0, pos_x, pos_y);
-                            SDL_SendMouseButton(window, SDL_TOUCH_MOUSEID, SDL_PRESSED, SDL_BUTTON_LEFT);
+                            if (pos_x >= 0 && pos_y >= 0 && pos_x < window->w && pos_y < window->h) {
+                                SDL_SendMouseMotion(window, SDL_TOUCH_MOUSEID, 0, pos_x, pos_y);
+                                SDL_SendMouseButton(window, SDL_TOUCH_MOUSEID, SDL_PRESSED, SDL_BUTTON_LEFT);
+                            }
                         }
                     } else {
                         if (finger_touching == SDL_TRUE && track_touchid == id && track_fingerid == fingerid) {
-                            SDL_SendMouseButton(window, SDL_TOUCH_MOUSEID, SDL_RELEASED, SDL_BUTTON_LEFT);
+                            int pos_x = (int)(x * (float)window->w);
+                            int pos_y = (int)(y * (float)window->h);
+                            if (pos_x >= 0 && pos_y >= 0 && pos_x < window->w && pos_y < window->h) {
+                                SDL_SendMouseButton(window, SDL_TOUCH_MOUSEID, SDL_RELEASED, SDL_BUTTON_LEFT);
+                            }
                         }
                     }
                 }
@@ -355,7 +361,9 @@ SDL_SendTouchMotion(SDL_TouchID id, SDL_FingerID fingerid,
                     if (finger_touching == SDL_TRUE && track_touchid == id && track_fingerid == fingerid) {
                         int pos_x = (int)(x * (float)window->w);
                         int pos_y = (int)(y * (float)window->h);
-                        SDL_SendMouseMotion(window, SDL_TOUCH_MOUSEID, 0, pos_x, pos_y);
+                        if (pos_x >= 0 && pos_y >= 0 && pos_x < window->w && pos_y < window->h) {
+                            SDL_SendMouseMotion(window, SDL_TOUCH_MOUSEID, 0, pos_x, pos_y);
+                        }
                     }
                 }
             }
