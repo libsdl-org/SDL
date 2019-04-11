@@ -40,7 +40,7 @@ static CVReturn
 DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeStamp* now, const CVTimeStamp* outputTime, CVOptionFlags flagsIn, CVOptionFlags* flagsOut, void* displayLinkContext)
 {
     SDLOpenGLContext *nscontext = (SDLOpenGLContext *) displayLinkContext;
-    
+
     /*printf("DISPLAY LINK! %u\n", (unsigned int) SDL_GetTicks()); */
     const int setting = SDL_AtomicGet(&nscontext->swapIntervalSetting);
     if (setting != 0) { /* nothing to do if vsync is disabled, don't even lock */
@@ -208,6 +208,7 @@ Cocoa_GL_CreateContext(_THIS, SDL_Window * window)
     const char *glversion;
     int glversion_major;
     int glversion_minor;
+    int interval;
 
     if (_this->gl_config.profile_mask == SDL_GL_CONTEXT_PROFILE_ES) {
 #if SDL_VIDEO_OPENGL_EGL
@@ -318,6 +319,10 @@ Cocoa_GL_CreateContext(_THIS, SDL_Window * window)
         SDL_SetError("Failed creating OpenGL context");
         return NULL;
     }
+
+    /* vsync is handled separately by synchronizing with a display link. */
+    interval = 0;
+    [context setValues:&interval forParameter:NSOpenGLContextParameterSwapInterval];
 
     if ( Cocoa_GL_MakeCurrent(_this, window, context) < 0 ) {
         Cocoa_GL_DeleteContext(_this, context);
