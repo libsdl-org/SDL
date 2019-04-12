@@ -130,8 +130,7 @@ Android_PumpEvents_Blocking(_THIS)
              * has reached the app */
             if (SDL_NumberOfEvents(SDL_APP_DIDENTERBACKGROUND) > SDL_SemValue(Android_PauseSem)) {
                 videodata->isPausing = 1;
-            }
-            else {
+            } else {
                 videodata->isPausing = 0;
                 videodata->isPaused = 1;
             }
@@ -143,8 +142,23 @@ void
 Android_PumpEvents_NonBlocking(_THIS)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
+    static int backup_context;
 
     if (videodata->isPaused) {
+
+        if (backup_context) {
+
+            SDL_LockMutex(Android_ActivityMutex);
+            android_egl_context_backup(Android_Window);
+            SDL_UnlockMutex(Android_ActivityMutex);
+
+            ANDROIDAUDIO_PauseDevices();
+            openslES_PauseDevices();
+
+            backup_context = 0;
+        }
+
+
         if (SDL_SemTryWait(Android_ResumeSem) == 0) {
 
             videodata->isPaused = 0;
@@ -165,16 +179,17 @@ Android_PumpEvents_NonBlocking(_THIS)
             }
         }
     } else {
-        if (SDL_SemTryWait(Android_PauseSem) == 0) {
-
-            SDL_LockMutex(Android_ActivityMutex);
-            android_egl_context_backup(Android_Window);
-            SDL_UnlockMutex(Android_ActivityMutex);
-
-            ANDROIDAUDIO_PauseDevices();
-            openslES_PauseDevices();
-
-            videodata->isPaused = 1;
+        if (videodata->isPausing || SDL_SemTryWait(Android_PauseSem) == 0) {
+            /* We've been signaled to pause (potentially several times), but before we block ourselves,
+             * we need to make sure that the very last event (of the first pause sequence, if several)
+             * has reached the app */
+            if (SDL_NumberOfEvents(SDL_APP_DIDENTERBACKGROUND) > SDL_SemValue(Android_PauseSem)) {
+                videodata->isPausing = 1;
+            } else {
+                videodata->isPausing = 0;
+                videodata->isPaused = 1;
+                backup_context = 1;
+            }
         }
     }
 }
