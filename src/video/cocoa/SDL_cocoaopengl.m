@@ -322,7 +322,7 @@ Cocoa_GL_CreateContext(_THIS, SDL_Window * window)
 
     /* vsync is handled separately by synchronizing with a display link. */
     interval = 0;
-    [context setValues:&interval forParameter:NSOpenGLContextParameterSwapInterval];
+    [context setValues:&interval forParameter:NSOpenGLCPSwapInterval];
 
     if ( Cocoa_GL_MakeCurrent(_this, window, context) < 0 ) {
         Cocoa_GL_DeleteContext(_this, context);
