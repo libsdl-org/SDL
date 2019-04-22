@@ -2216,9 +2216,10 @@ SDL_MinimizeWindow(SDL_Window * window)
         return;
     }
 
-    SDL_UpdateFullscreenMode(window, SDL_FALSE);
-
     if (_this->MinimizeWindow) {
+        /* Only leave fullscreen mode if we're actually going to minimize */
+        SDL_UpdateFullscreenMode(window, SDL_FALSE);
+
         _this->MinimizeWindow(_this, window);
     }
 }
