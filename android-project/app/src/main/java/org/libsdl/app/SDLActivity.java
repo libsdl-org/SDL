@@ -38,6 +38,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     private static final String TAG = "SDL";
 
     public static boolean mIsResumedCalled, mHasFocus;
+    public static final boolean mHasMultiWindow = (Build.VERSION.SDK_INT >= 24);
 
     // Cursor types
     private static final int SDL_SYSTEM_CURSOR_NONE = -1;
@@ -274,16 +275,12 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         }
     }
 
-    // Events
-    @Override
-    protected void onPause() {
-        Log.v(TAG, "onPause()");
-        super.onPause();
+    protected void pauseNativeThread() {
         mNextNativeState = NativeState.PAUSED;
         mIsResumedCalled = false;
 
         if (SDLActivity.mBrokenLibraries) {
-           return;
+            return;
         }
 
         if (mHIDDeviceManager != null) {
@@ -293,10 +290,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         SDLActivity.handleNativeState();
     }
 
-    @Override
-    protected void onResume() {
-        Log.v(TAG, "onResume()");
-        super.onResume();
+    protected void resumeNativeThread() {
         mNextNativeState = NativeState.RESUMED;
         mIsResumedCalled = true;
 
@@ -309,6 +303,43 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
         }
 
         SDLActivity.handleNativeState();
+    }
+
+    // Events
+    @Override
+    protected void onPause() {
+        Log.v(TAG, "onPause()");
+        super.onPause();
+        if (!mHasMultiWindow) {
+            pauseNativeThread();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        Log.v(TAG, "onResume()");
+        super.onResume();
+        if (!mHasMultiWindow) {
+            resumeNativeThread();
+        }
+    }
+
+    @Override
+    protected void onStop() {
+        Log.v(TAG, "onStop()");
+        super.onStop();
+        if (mHasMultiWindow) {
+            pauseNativeThread();
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        Log.v(TAG, "onStart()");
+        super.onStart();
+        if (mHasMultiWindow) {
+            resumeNativeThread();
+        }
     }
 
     public static int getCurrentOrientation() {
@@ -347,15 +378,21 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
            return;
         }
 
-        SDLActivity.mHasFocus = hasFocus;
+        mHasFocus = hasFocus;
         if (hasFocus) {
            mNextNativeState = NativeState.RESUMED;
            SDLActivity.getMotionListener().reclaimRelativeMouseModeIfNeeded();
-        } else {
-           mNextNativeState = NativeState.PAUSED;
-        }
 
-        SDLActivity.handleNativeState();
+           SDLActivity.handleNativeState();
+           nativeFocusChanged(true);
+
+        } else {
+           nativeFocusChanged(false);
+           if (!mHasMultiWindow) {
+               mNextNativeState = NativeState.PAUSED;
+               SDLActivity.handleNativeState();
+           }
+        }
     }
 
     @Override
@@ -719,6 +756,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     public static native void nativeQuit();
     public static native void nativePause();
     public static native void nativeResume();
+    public static native void nativeFocusChanged(boolean hasFocus);
     public static native void onNativeDropFile(String filename);
     public static native void nativeSetScreenResolution(int surfaceWidth, int surfaceHeight, int deviceWidth, int deviceHeight, int format, float rate);
     public static native void onNativeResize();
