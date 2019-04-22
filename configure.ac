@@ -2973,9 +2973,6 @@ XINPUT_STATE_EX s1;
             AC_DEFINE(HAVE_XINPUT_STATE_EX, 1, [ ])
         fi
 
-        SUMMARY_video="${SUMMARY_video} directx"
-        SUMMARY_audio="${SUMMARY_audio} directx"
-
         # FIXME: latest Cygwin finds dinput headers, but we die on other win32 headers.
         # FIXME:  ...so force it off for now.
         case "$host" in
@@ -3514,17 +3511,21 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
                                 , enable_render_d3d=yes)
             if test x$enable_render_d3d = xyes -a x$have_d3d = xyes; then
                 AC_DEFINE(SDL_VIDEO_RENDER_D3D, 1, [ ])
+                SUMMARY_video="${SUMMARY_video} d3d9"
             fi
             if test x$enable_render_d3d = xyes -a x$have_d3d11 = xyes; then
                 AC_DEFINE(SDL_VIDEO_RENDER_D3D11, 1, [ ])
+                SUMMARY_video="${SUMMARY_video} d3d11"
             fi
         fi
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
             AC_DEFINE(SDL_AUDIO_DRIVER_WINMM, 1, [ ])
+            SUMMARY_audio="${SUMMARY_audio} winmm"
             SOURCES="$SOURCES $srcdir/src/audio/winmm/*.c"
             if test x$have_dsound = xyes; then
                 AC_DEFINE(SDL_AUDIO_DRIVER_DSOUND, 1, [ ])
+                SUMMARY_audio="${SUMMARY_audio} directsound"
                 SOURCES="$SOURCES $srcdir/src/audio/directsound/*.c"
             fi
             if test x$have_wasapi = xyes -a x$enable_wasapi = xyes; then
