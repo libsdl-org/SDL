@@ -131,6 +131,9 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePause)(
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeResume)(
         JNIEnv *env, jclass cls);
 
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeFocusChanged)(
+        JNIEnv *env, jclass cls, jboolean hasFocus);
+
 JNIEXPORT jstring JNICALL SDL_JAVA_INTERFACE(nativeGetHint)(
         JNIEnv *env, jclass cls,
         jstring name);
@@ -1034,7 +1037,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativePause)(
     __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativePause()");
 
     if (Android_Window) {
-        SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_FOCUS_LOST, 0, 0);
         SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_MINIMIZED, 0, 0);
         SDL_SendAppEvent(SDL_APP_WILLENTERBACKGROUND);
         SDL_SendAppEvent(SDL_APP_DIDENTERBACKGROUND);
@@ -1060,7 +1062,6 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeResume)(
     if (Android_Window) {
         SDL_SendAppEvent(SDL_APP_WILLENTERFOREGROUND);
         SDL_SendAppEvent(SDL_APP_DIDENTERFOREGROUND);
-        SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_FOCUS_GAINED, 0, 0);
         SDL_SendWindowEvent(Android_Window, SDL_WINDOWEVENT_RESTORED, 0, 0);
     }
 
@@ -1069,6 +1070,19 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeResume)(
      * and this function will be called from the Java thread instead.
      */
     SDL_SemPost(Android_ResumeSem);
+
+    SDL_UnlockMutex(Android_ActivityMutex);
+}
+
+JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeFocusChanged)(
+                                    JNIEnv *env, jclass cls, jboolean hasFocus)
+{
+    SDL_LockMutex(Android_ActivityMutex);
+
+    if (Android_Window) {
+        __android_log_print(ANDROID_LOG_VERBOSE, "SDL", "nativeFocusChanged()");
+        SDL_SendWindowEvent(Android_Window, (hasFocus ? SDL_WINDOWEVENT_FOCUS_GAINED : SDL_WINDOWEVENT_FOCUS_LOST), 0, 0);
+    } 
 
     SDL_UnlockMutex(Android_ActivityMutex);
 }
