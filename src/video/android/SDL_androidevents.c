@@ -142,7 +142,7 @@ void
 Android_PumpEvents_NonBlocking(_THIS)
 {
     SDL_VideoData *videodata = (SDL_VideoData *)_this->driverdata;
-    static int backup_context;
+    static int backup_context = 0;
 
     if (videodata->isPaused) {
 
