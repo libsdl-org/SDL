@@ -41,11 +41,19 @@
 #else
 #include <intrin.h>
 #ifndef _WIN64
+#ifndef __MMX__
 #define __MMX__
+#endif
+#ifndef __3dNOW__
 #define __3dNOW__
 #endif
+#endif
+#ifndef __SSE__
 #define __SSE__
+#endif
+#ifndef __SSE2__
 #define __SSE2__
+#endif
 #endif /* __clang__ */
 #elif defined(__MINGW64_VERSION_MAJOR)
 #include <intrin.h>
