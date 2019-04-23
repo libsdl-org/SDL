@@ -189,6 +189,7 @@
 #undef HAVE_SEM_TIMEDWAIT
 #undef HAVE_GETAUXVAL
 #undef HAVE_POLL
+#undef HAVE__EXIT
 
 #else
 #define HAVE_STDARG_H   1
