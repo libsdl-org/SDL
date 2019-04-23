@@ -651,7 +651,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             }
             case COMMAND_CHANGE_SURFACEVIEW_FORMAT:
             {
-                int format = ((int)msg.obj);
+                int format = ((Integer) msg.obj).intValue();
                 int pf;
 
                 if (SDLActivity.mSurface == null) {
