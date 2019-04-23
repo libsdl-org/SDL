@@ -136,7 +136,11 @@ static void SDL_ExitProcess(int exitcode)
     emscripten_force_exit(exitcode);  /* this should "kill" the app. */
     exit(exitcode);
 #else
+#ifdef HAVE__EXIT /* Upper case _Exit() */
+    _Exit(exitcode);
+#else
     _exit(exitcode);
+#endif
 #endif
 }
 

@@ -651,6 +651,7 @@ SDL_RLD_FLAGS
 SDL_STATIC_LIBS
 SDL_LIBS
 SDL_CFLAGS
+INSTALL_SDL2_CONFIG
 LIBUSB_LIBS
 LIBUSB_CFLAGS
 FCITX_LIBS
@@ -896,6 +897,7 @@ enable_rpath
 enable_backgrounding_signal
 enable_foregrounding_signal
 enable_render_d3d
+enable_sdl2_config
 '
       ac_precious_vars='build_alias
 host_alias
@@ -1684,6 +1686,7 @@ Optional Features:
                           number to use for magic foregrounding signal or 'no'
                           [[default=no]]
   --enable-render-d3d     enable the Direct3D render driver [[default=yes]]
+  --enable-sdl2-config    Install sdl2-config [default=yes]
 
 Optional Packages:
   --with-PACKAGE[=ARG]    use PACKAGE [ARG=yes]
@@ -16969,7 +16972,7 @@ fi
 rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
 fi
 
-    for ac_func in malloc calloc realloc free getenv setenv putenv unsetenv qsort abs bcopy memset memcpy memmove wcslen wcscmp strlen strlcpy strlcat _strrev _strupr _strlwr strchr strrchr strstr itoa _ltoa _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction setjmp nanosleep sysconf sysctlbyname getauxval poll
+    for ac_func in malloc calloc realloc free getenv setenv putenv unsetenv qsort abs bcopy memset memcpy memmove wcslen wcscmp strlen strlcpy strlcat _strrev _strupr _strlwr strchr strrchr strstr itoa _ltoa _uitoa _ultoa strtol strtoul _i64toa _ui64toa strtoll strtoull atoi atof strcmp strncmp _stricmp strcasecmp _strnicmp strncasecmp vsscanf vsnprintf fopen64 fseeko fseeko64 sigaction setjmp nanosleep sysconf sysctlbyname getauxval poll _Exit
 do :
   as_ac_var=`$as_echo "ac_cv_func_$ac_func" | $as_tr_sh`
 ac_fn_c_check_func "$LINENO" "$ac_func" "$as_ac_var"
@@ -25164,6 +25167,30 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
         " "$LINENO" 5
         ;;
 esac
+
+# Check whether to install sdl2-config
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether to install sdl2-config" >&5
+$as_echo_n "checking whether to install sdl2-config... " >&6; }
+# Check whether --enable-sdl2-config was given.
+if test "${enable_sdl2_config+set}" = set; then :
+  enableval=$enable_sdl2_config; case "${enableval}" in
+        yes) enable_sdl2_config="TRUE" ;;
+        no) enable_sdl2_config="FALSE" ;;
+        *) as_fn_error $? "bad value '${enableval}' for --enable-sdl2-config" "$LINENO" 5 ;;
+    esac
+else
+  enable_sdl2_config="TRUE"
+fi
+
+if test "$enable_sdl2_config" = "TRUE"; then
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+else
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+INSTALL_SDL2_CONFIG=$enable_sdl2_config
+
 
 # Verify that we have all the platform specific files we need
 
