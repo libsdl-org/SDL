@@ -1816,6 +1816,8 @@ Cocoa_DestroyWindow(_THIS, SDL_Window * window)
         [data->listener close];
         [data->listener release];
         if (data->created) {
+            /* Release the content view to avoid further updateLayer callbacks */
+            [data->nswindow setContentView:nil];
             [data->nswindow close];
         }
 
