@@ -255,6 +255,10 @@ HIDAPI_DriverXbox360_IsSupportedDevice(Uint16 vendor_id, Uint16 product_id, Uint
         /* This is the Steam Virtual Gamepad, which isn't supported by this driver */
         return SDL_FALSE;
     }
+    if (vendor_id == 0x045e && product_id == 0x02e0) {
+        /* This is the old Bluetooth Xbox One S firmware, which isn't supported by this driver */
+        return SDL_FALSE;
+    }
     return SDL_IsJoystickXbox360(vendor_id, product_id) || SDL_IsJoystickXboxOne(vendor_id, product_id);
 #else
     return SDL_IsJoystickXbox360(vendor_id, product_id);
