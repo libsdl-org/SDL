@@ -40,6 +40,8 @@ typedef struct SDL_WindowData
     SDL_Window *window;
     SDL_Surface *surface;
 
+    char *canvas_id;
+
     float pixel_ratio;
 
     SDL_bool external_size;
