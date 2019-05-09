@@ -196,6 +196,8 @@ Emscripten_CreateWindow(_THIS, SDL_Window * window)
         return SDL_OutOfMemory();
     }
 
+    wdata->canvas_id = SDL_strdup("#canvas");
+
     if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
         wdata->pixel_ratio = emscripten_get_device_pixel_ratio();
     } else {
@@ -206,8 +208,8 @@ Emscripten_CreateWindow(_THIS, SDL_Window * window)
     scaled_h = SDL_floor(window->h * wdata->pixel_ratio);
 
     /* set a fake size to check if there is any CSS sizing the canvas */
-    emscripten_set_canvas_element_size(NULL, 1, 1);
-    emscripten_get_element_css_size(NULL, &css_w, &css_h);
+    emscripten_set_canvas_element_size(wdata->canvas_id, 1, 1);
+    emscripten_get_element_css_size(wdata->canvas_id, &css_w, &css_h);
 
     wdata->external_size = SDL_floor(css_w) != 1 || SDL_floor(css_h) != 1;
 
@@ -218,14 +220,13 @@ Emscripten_CreateWindow(_THIS, SDL_Window * window)
 
         SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, css_w, css_h);
     }
-
-    emscripten_set_canvas_element_size(NULL, scaled_w, scaled_h);
+    emscripten_set_canvas_element_size(wdata->canvas_id, scaled_w, scaled_h);
 
     /* if the size is not being controlled by css, we need to scale down for hidpi */
     if (!wdata->external_size) {
         if (wdata->pixel_ratio != 1.0f) {
             /*scale canvas down*/
-            emscripten_set_element_css_size(NULL, window->w, window->h);
+            emscripten_set_element_css_size(wdata->canvas_id, window->w, window->h);
         }
     }
 
@@ -269,11 +270,11 @@ static void Emscripten_SetWindowSize(_THIS, SDL_Window * window)
         if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
             data->pixel_ratio = emscripten_get_device_pixel_ratio();
         }
-        emscripten_set_canvas_element_size(NULL, window->w * data->pixel_ratio, window->h * data->pixel_ratio);
+        emscripten_set_canvas_element_size(data->canvas_id, window->w * data->pixel_ratio, window->h * data->pixel_ratio);
 
         /*scale canvas down*/
         if (!data->external_size && data->pixel_ratio != 1.0f) {
-            emscripten_set_element_css_size(NULL, window->w, window->h);
+            emscripten_set_element_css_size(data->canvas_id, window->w, window->h);
         }
     }
 }
@@ -295,7 +296,8 @@ Emscripten_DestroyWindow(_THIS, SDL_Window * window)
 #endif
 
         /* We can't destroy the canvas, so resize it to zero instead */
-        emscripten_set_canvas_element_size(NULL, 0, 0);
+        emscripten_set_canvas_element_size(data->canvas_id, 0, 0);
+        SDL_free(data->canvas_id);
 
         SDL_free(window->driverdata);
         window->driverdata = NULL;
@@ -332,7 +334,7 @@ Emscripten_SetWindowFullscreen(_THIS, SDL_Window * window, SDL_VideoDisplay * di
             data->requested_fullscreen_mode = window->flags & (SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN);
             data->fullscreen_resize = is_desktop_fullscreen;
 
-            res = emscripten_request_fullscreen_strategy(NULL, 1, &strategy);
+            res = emscripten_request_fullscreen_strategy(data->canvas_id, 1, &strategy);
             if(res != EMSCRIPTEN_RESULT_SUCCESS && res != EMSCRIPTEN_RESULT_DEFERRED) {
                 /* unset flags, fullscreen failed */
                 window->flags &= ~(SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN);
