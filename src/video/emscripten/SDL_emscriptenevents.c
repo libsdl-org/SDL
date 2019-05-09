@@ -643,34 +643,34 @@ Emscripten_RegisterEventHandlers(SDL_WindowData *data)
     emscripten_set_mousemove_callback(data->canvas_id, data, 0, Emscripten_HandleMouseMove);
 
     emscripten_set_mousedown_callback(data->canvas_id, data, 0, Emscripten_HandleMouseButton);
-    emscripten_set_mouseup_callback("#document", data, 0, Emscripten_HandleMouseButton);
+    emscripten_set_mouseup_callback(EMSCRIPTEN_EVENT_TARGET_DOCUMENT, data, 0, Emscripten_HandleMouseButton);
 
     emscripten_set_mouseenter_callback(data->canvas_id, data, 0, Emscripten_HandleMouseFocus);
     emscripten_set_mouseleave_callback(data->canvas_id, data, 0, Emscripten_HandleMouseFocus);
 
     emscripten_set_wheel_callback(data->canvas_id, data, 0, Emscripten_HandleWheel);
 
-    emscripten_set_focus_callback("#window", data, 0, Emscripten_HandleFocus);
-    emscripten_set_blur_callback("#window", data, 0, Emscripten_HandleFocus);
+    emscripten_set_focus_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, data, 0, Emscripten_HandleFocus);
+    emscripten_set_blur_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, data, 0, Emscripten_HandleFocus);
 
     emscripten_set_touchstart_callback(data->canvas_id, data, 0, Emscripten_HandleTouch);
     emscripten_set_touchend_callback(data->canvas_id, data, 0, Emscripten_HandleTouch);
     emscripten_set_touchmove_callback(data->canvas_id, data, 0, Emscripten_HandleTouch);
     emscripten_set_touchcancel_callback(data->canvas_id, data, 0, Emscripten_HandleTouch);
 
-    emscripten_set_pointerlockchange_callback("#document", data, 0, Emscripten_HandlePointerLockChange);
+    emscripten_set_pointerlockchange_callback(EMSCRIPTEN_EVENT_TARGET_DOCUMENT, data, 0, Emscripten_HandlePointerLockChange);
 
     /* Keyboard events are awkward */
     keyElement = SDL_GetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT);
-    if (!keyElement) keyElement = "#window";
+    if (!keyElement) keyElement = EMSCRIPTEN_EVENT_TARGET_WINDOW;
 
     emscripten_set_keydown_callback(keyElement, data, 0, Emscripten_HandleKey);
     emscripten_set_keyup_callback(keyElement, data, 0, Emscripten_HandleKey);
     emscripten_set_keypress_callback(keyElement, data, 0, Emscripten_HandleKeyPress);
 
-    emscripten_set_fullscreenchange_callback("#document", data, 0, Emscripten_HandleFullscreenChange);
+    emscripten_set_fullscreenchange_callback(EMSCRIPTEN_EVENT_TARGET_DOCUMENT, data, 0, Emscripten_HandleFullscreenChange);
 
-    emscripten_set_resize_callback("#window", data, 0, Emscripten_HandleResize);
+    emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, data, 0, Emscripten_HandleResize);
 
     emscripten_set_visibilitychange_callback(data, 0, Emscripten_HandleVisibilityChange);
 }
@@ -684,35 +684,35 @@ Emscripten_UnregisterEventHandlers(SDL_WindowData *data)
     emscripten_set_mousemove_callback(data->canvas_id, NULL, 0, NULL);
 
     emscripten_set_mousedown_callback(data->canvas_id, NULL, 0, NULL);
-    emscripten_set_mouseup_callback("#document", NULL, 0, NULL);
+    emscripten_set_mouseup_callback(EMSCRIPTEN_EVENT_TARGET_DOCUMENT, NULL, 0, NULL);
 
     emscripten_set_mouseenter_callback(data->canvas_id, NULL, 0, NULL);
     emscripten_set_mouseleave_callback(data->canvas_id, NULL, 0, NULL);
 
     emscripten_set_wheel_callback(data->canvas_id, NULL, 0, NULL);
 
-    emscripten_set_focus_callback("#window", NULL, 0, NULL);
-    emscripten_set_blur_callback("#window", NULL, 0, NULL);
+    emscripten_set_focus_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, 0, NULL);
+    emscripten_set_blur_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, 0, NULL);
 
     emscripten_set_touchstart_callback(data->canvas_id, NULL, 0, NULL);
     emscripten_set_touchend_callback(data->canvas_id, NULL, 0, NULL);
     emscripten_set_touchmove_callback(data->canvas_id, NULL, 0, NULL);
     emscripten_set_touchcancel_callback(data->canvas_id, NULL, 0, NULL);
 
-    emscripten_set_pointerlockchange_callback("#document", NULL, 0, NULL);
+    emscripten_set_pointerlockchange_callback(EMSCRIPTEN_EVENT_TARGET_DOCUMENT, NULL, 0, NULL);
 
     target = SDL_GetHint(SDL_HINT_EMSCRIPTEN_KEYBOARD_ELEMENT);
     if (!target) {
-        target = "#window";
+        target = EMSCRIPTEN_EVENT_TARGET_WINDOW;
     }
 
     emscripten_set_keydown_callback(target, NULL, 0, NULL);
     emscripten_set_keyup_callback(target, NULL, 0, NULL);
     emscripten_set_keypress_callback(target, NULL, 0, NULL);
 
-    emscripten_set_fullscreenchange_callback("#document", NULL, 0, NULL);
+    emscripten_set_fullscreenchange_callback(EMSCRIPTEN_EVENT_TARGET_DOCUMENT, NULL, 0, NULL);
 
-    emscripten_set_resize_callback("#window", NULL, 0, NULL);
+    emscripten_set_resize_callback(EMSCRIPTEN_EVENT_TARGET_WINDOW, NULL, 0, NULL);
 
     emscripten_set_visibilitychange_callback(NULL, 0, NULL);
 }
