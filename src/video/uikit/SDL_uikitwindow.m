@@ -67,6 +67,20 @@
 
 @implementation SDL_uikitwindow
 
+- (void)didAddSubview:(UIView *)subview
+{
+	[super didAddSubview:subview];
+	// We need to pach the enabled state in subviews as a Metal view gets added and covers up the SDL_uikitview that handles touch.
+	// So set needs layout so that the layout gets done (which is where we patch the flags) Johna.
+    NSArray<UIView*>* subviews = self.subviews;
+	for (int i=0; i<[subviews count]; i++)
+	{
+		UIView *view = [subviews objectAtIndex:i];
+		// NSLog( @"View %p enabled %d\n", view, view.userInteractionEnabled );
+		[view setNeedsLayout];  // force the subviews to layout.
+	}
+}
+
 - (void)layoutSubviews
 {
     /* Workaround to fix window orientation issues in iOS 8+. */
