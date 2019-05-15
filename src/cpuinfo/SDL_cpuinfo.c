@@ -602,7 +602,7 @@ SDL_GetCPUCacheLineSize(void)
     if (SDL_strcmp(cpuType, "GenuineIntel") == 0) {
         cpuid(0x00000001, a, b, c, d);
         return (((b >> 8) & 0xff) * 8);
-    } else if (SDL_strcmp(cpuType, "AuthenticAMD") == 0) {
+    } else if (SDL_strcmp(cpuType, "AuthenticAMD") == 0 || SDL_strcmp(cpuType, "HygonGenuine") == 0) {
         cpuid(0x80000005, a, b, c, d);
         return (c & 0xff);
     } else {
