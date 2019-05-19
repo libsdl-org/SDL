@@ -309,6 +309,20 @@ static void X11_HandleGenericEvent(SDL_VideoData *videodata, XEvent *xev)
     XGenericEventCookie *cookie = &xev->xcookie;
     if (X11_XGetEventData(videodata->display, cookie)) {
         X11_HandleXinput2Event(videodata, cookie);
+
+        /* Send a SDL_SYSWMEVENT if the application wants them.
+         * Since event data is only available until XFreeEventData is called,
+         * the *only* way for an application to access it is to register an event filter/watcher
+         * and do all the processing on the SDL_SYSWMEVENT inside the callback. */
+        if (SDL_GetEventState(SDL_SYSWMEVENT) == SDL_ENABLE) {
+            SDL_SysWMmsg wmmsg;
+
+            SDL_VERSION(&wmmsg.version);
+            wmmsg.subsystem = SDL_SYSWM_X11;
+            wmmsg.msg.x11.event = *xev;
+            SDL_SendSysWMEvent(&wmmsg);
+        }
+
         X11_XFreeEventData(videodata->display, cookie);
     }
 }
@@ -684,6 +698,13 @@ X11_DispatchEvent(_THIS)
         return;
     }
 
+#if SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS
+    if(xevent.type == GenericEvent) {
+        X11_HandleGenericEvent(videodata, &xevent);
+        return;
+    }
+#endif
+
     /* Send a SDL_SYSWMEVENT if the application wants them */
     if (SDL_GetEventState(SDL_SYSWMEVENT) == SDL_ENABLE) {
         SDL_SysWMmsg wmmsg;
@@ -693,13 +714,6 @@ X11_DispatchEvent(_THIS)
         wmmsg.msg.x11.event = xevent;
         SDL_SendSysWMEvent(&wmmsg);
     }
-
-#if SDL_VIDEO_DRIVER_X11_SUPPORTS_GENERIC_EVENTS
-    if(xevent.type == GenericEvent) {
-        X11_HandleGenericEvent(videodata, &xevent);
-        return;
-    }
-#endif
 
 #if 0
     printf("type = %d display = %d window = %d\n",
