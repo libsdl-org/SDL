@@ -174,18 +174,10 @@ main(int argc, char *argv[])
     if (!state) {
         return 1;
     }
-    for (i = 1; i < argc;) {
-        int consumed;
 
-        consumed = SDLTest_CommonArg(state, i);
-        if (consumed == 0) {
-            SDL_Log("Usage: %s %s\n", argv[0], SDLTest_CommonUsage(state));
-            return 1;
-        }
-        i += consumed;
-    }
-    if (!SDLTest_CommonInit(state)) {
-        quit(2);
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv) || !SDLTest_CommonInit(state)) {
+        SDLTest_CommonQuit(state);
+        return 1;
     }
 
     drawstates = SDL_stack_alloc(DrawState, state->num_windows);
