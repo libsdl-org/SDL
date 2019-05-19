@@ -405,8 +405,15 @@ convert_format(GL_RenderData *renderdata, Uint32 pixel_format,
 {
     switch (pixel_format) {
     case SDL_PIXELFORMAT_ARGB8888:
+    case SDL_PIXELFORMAT_RGB888:
         *internalFormat = GL_RGBA8;
         *format = GL_BGRA;
+        *type = GL_UNSIGNED_INT_8_8_8_8_REV;
+        break;
+    case SDL_PIXELFORMAT_ABGR8888:
+    case SDL_PIXELFORMAT_BGR888:
+        *internalFormat = GL_RGBA8;
+        *format = GL_RGBA;
         *type = GL_UNSIGNED_INT_8_8_8_8_REV;
         break;
     case SDL_PIXELFORMAT_YV12:
@@ -1019,7 +1026,13 @@ SetCopyState(GL_RenderData *data, const SDL_RenderCommand *cmd)
 {
     SDL_Texture *texture = cmd->data.draw.texture;
     const GL_TextureData *texturedata = (GL_TextureData *) texture->driverdata;
-    GL_Shader shader = SHADER_RGB;
+    GL_Shader shader;
+
+    if (texture->format == SDL_PIXELFORMAT_ABGR8888 || texture->format == SDL_PIXELFORMAT_ARGB8888) {
+        shader = SHADER_RGBA;
+    } else {
+        shader = SHADER_RGB;
+    }
 
     if (data->shaders) {
         if (texturedata->yuv || texturedata->nv12) {
@@ -1733,8 +1746,13 @@ SDL_RenderDriver GL_RenderDriver = {
     {
      "opengl",
      (SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC | SDL_RENDERER_TARGETTEXTURE),
-     1,
-     {SDL_PIXELFORMAT_ARGB8888},
+     4,
+     {
+         SDL_PIXELFORMAT_ARGB8888,
+         SDL_PIXELFORMAT_ABGR8888,
+         SDL_PIXELFORMAT_RGB888,
+         SDL_PIXELFORMAT_BGR888
+     },
      0,
      0}
 };

@@ -240,6 +240,23 @@ static const char *shader_source[NUM_SHADERS][2] =
 "\n"
 "void main()\n"
 "{\n"
+"    gl_FragColor = texture2D(tex0, v_texCoord);\n"
+"    gl_FragColor.a = 1.0;\n"
+"    gl_FragColor *= v_color;\n"
+"}"
+    },
+
+    /* SHADER_RGBA */
+    {
+        /* vertex shader */
+        TEXTURE_VERTEX_SHADER,
+        /* fragment shader */
+"varying vec4 v_color;\n"
+"varying vec2 v_texCoord;\n"
+"uniform sampler2D tex0;\n"
+"\n"
+"void main()\n"
+"{\n"
 "    gl_FragColor = texture2D(tex0, v_texCoord) * v_color;\n"
 "}"
     },
