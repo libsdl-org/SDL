@@ -28,9 +28,6 @@ TARGETS = \
 	testfilesystem$(EXE) \
 	testgamecontroller$(EXE) \
 	testgesture$(EXE) \
-	testgl2$(EXE) \
-	testgles$(EXE) \
-	testgles2$(EXE) \
 	testhaptic$(EXE) \
 	testhittesting$(EXE) \
 	testhotplug$(EXE) \
@@ -56,7 +53,6 @@ TARGETS = \
 	testscale$(EXE) \
 	testsem$(EXE) \
 	testsensor$(EXE) \
-	testshader$(EXE) \
 	testshape$(EXE) \
 	testsprite2$(EXE) \
 	testspriteminimal$(EXE) \
@@ -69,7 +65,13 @@ TARGETS = \
 	testwm2$(EXE) \
 	testyuv$(EXE) \
 	torturethread$(EXE) \
+
 	
+@OPENGL_TARGETS@ += testgl2$(EXE) testshader$(EXE)
+@OPENGLES1_TARGETS@ += testgles$(EXE)
+@OPENGLES2_TARGETS@ += testgles2$(EXE)
+
+
 all: Makefile $(TARGETS) copydatafiles
 
 Makefile: $(srcdir)/Makefile.in
