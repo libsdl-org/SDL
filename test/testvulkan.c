@@ -1119,7 +1119,7 @@ static SDL_bool render(void)
 int main(int argc, char *argv[])
 {
     int fsaa, accel;
-    int i, done;
+    int done;
     SDL_DisplayMode mode;
     SDL_Event event;
     Uint32 then, now, frames;
@@ -1138,27 +1138,15 @@ int main(int argc, char *argv[])
     {
         return 1;
     }
-    for(i = 1; i < argc;)
-    {
-        int consumed;
-
-        consumed = SDLTest_CommonArg(state, i);
-        if(consumed < 0)
-        {
-            SDL_Log("Usage: %s %s\n", argv[0], SDLTest_CommonUsage(state));
-            quit(1);
-        }
-        i += consumed;
-    }
 
     /* Set Vulkan parameters */
     state->window_flags |= SDL_WINDOW_VULKAN;
     state->num_windows = 1;
     state->skip_renderer = 1;
 
-    if(!SDLTest_CommonInit(state))
-    {
-        quit(2);
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv) || !SDLTest_CommonInit(state)) {
+        SDLTest_CommonQuit(state);
+        return 1;
     }
 
     SDL_GetCurrentDisplayMode(0, &mode);

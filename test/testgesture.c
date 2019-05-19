@@ -268,9 +268,6 @@ loop(void)
 
 int main(int argc, char* argv[])
 {
-    int i;
-
-    /* !!! FIXME: there should be an SDLTest_CommonDefaultArgs() so apps don't need this. */
     state = SDLTest_CommonCreateState(argv, SDL_INIT_VIDEO);
     if (!state) {
         return 1;
@@ -281,16 +278,8 @@ int main(int argc, char* argv[])
     state->window_h = HEIGHT;
     state->skip_renderer = SDL_TRUE;
 
-    for (i = 1; i < argc;) {
-        const int consumed = SDLTest_CommonArg(state, i);
-        if (consumed == 0) {
-            SDL_Log("Usage: %s %s\n", argv[0], SDLTest_CommonUsage(state));
-            return 1;
-        }
-        i += consumed;
-    }
-
-    if (!SDLTest_CommonInit(state)) {
+    if (!SDLTest_CommonDefaultArgs(state, argc, argv) || !SDLTest_CommonInit(state)) {
+        SDLTest_CommonQuit(state);
         return 1;
     }
 

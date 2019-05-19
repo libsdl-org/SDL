@@ -489,6 +489,21 @@ SDLTest_CommonUsage(SDLTest_CommonState * state)
     }
 }
 
+SDL_bool
+SDLTest_CommonDefaultArgs(SDLTest_CommonState *state, const int argc, char **argv)
+{
+    int i = 1;
+    while (i < argc) {
+        const int consumed = SDLTest_CommonArg(state, i);
+        if (consumed == 0) {
+            SDL_Log("Usage: %s %s\n", argv[0], SDLTest_CommonUsage(state));
+            return SDL_FALSE;
+        }
+        i += consumed;
+    }
+    return SDL_TRUE;
+}
+
 static void
 SDLTest_PrintRendererFlag(char *text, size_t maxlen, Uint32 flag)
 {
