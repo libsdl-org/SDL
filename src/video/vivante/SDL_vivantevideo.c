@@ -37,6 +37,7 @@
 #include "SDL_vivantevideo.h"
 #include "SDL_vivanteplatform.h"
 #include "SDL_vivanteopengles.h"
+#include "SDL_vivantevulkan.h"
 
 
 static int
@@ -107,6 +108,13 @@ VIVANTE_Create()
     device->GL_GetSwapInterval = VIVANTE_GLES_GetSwapInterval;
     device->GL_SwapWindow = VIVANTE_GLES_SwapWindow;
     device->GL_DeleteContext = VIVANTE_GLES_DeleteContext;
+#endif
+
+#if SDL_VIDEO_VULKAN
+    device->Vulkan_LoadLibrary = VIVANTE_Vulkan_LoadLibrary;
+    device->Vulkan_UnloadLibrary = VIVANTE_Vulkan_UnloadLibrary;
+    device->Vulkan_GetInstanceExtensions = VIVANTE_Vulkan_GetInstanceExtensions;
+    device->Vulkan_CreateSurface = VIVANTE_Vulkan_CreateSurface;
 #endif
 
     device->PumpEvents = VIVANTE_PumpEvents;

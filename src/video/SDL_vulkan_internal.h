@@ -73,6 +73,13 @@ extern SDL_bool SDL_Vulkan_GetInstanceExtensions_Helper(unsigned *userCount,
                                                         unsigned nameCount,
                                                         const char *const *names);
 
+/* Create a surface directly from a display connected to a physical device
+ * using the DisplayKHR extension.
+ * This needs to be passed an instance that was created with the VK_KHR_DISPLAY_EXTENSION_NAME
+ * exension. */
+extern SDL_bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr,
+                                                 VkInstance instance,
+                                                 VkSurfaceKHR *surface);
 #else
 
 /* No SDL Vulkan support, just include the header for typedefs */
