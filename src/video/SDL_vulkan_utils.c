@@ -467,7 +467,7 @@ SDL_bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
 
         /* Find a supported alpha mode. Not all planes support OPAQUE */
         createInfo.alphaMode = VK_DISPLAY_PLANE_ALPHA_OPAQUE_BIT_KHR;
-        for (uint32_t i = 0; i < SDL_arraysize(alphaModes); i++) {
+        for (i = 0; i < SDL_arraysize(alphaModes); i++) {
             if (planeCaps.supportedAlpha & alphaModes[i]) {
                 createInfo.alphaMode = alphaModes[i];
                 break;
