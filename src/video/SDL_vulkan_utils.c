@@ -192,7 +192,7 @@ SDL_bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
     VULKAN_INSTANCE_FUNCTION(vkGetDisplayPlaneSupportedDisplaysKHR);
     VULKAN_INSTANCE_FUNCTION(vkCreateDisplayPlaneSurfaceKHR);
 #undef VULKAN_INSTANCE_FUNCTION
-    VkDisplaySurfaceCreateInfoKHR createInfo = {};
+    VkDisplaySurfaceCreateInfoKHR createInfo;
     VkResult result;
     uint32_t physicalDeviceCount = 0;
     VkPhysicalDevice *physicalDevices = NULL;
@@ -346,6 +346,8 @@ SDL_bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
             SDL_free(displayModeProperties);
             goto error;
         }
+
+        SDL_zero(createInfo);
         createInfo.displayMode = displayModeProperties[bestMatchIndex].displayMode;
         SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "vulkandisplay: Matching mode %ux%u with refresh rate %u",
                 displayModeProperties[bestMatchIndex].parameters.visibleRegion.width,
