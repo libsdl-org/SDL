@@ -73,6 +73,7 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
 
 #if SDL_IPHONE_KEYBOARD
     UITextField *textField;
+    BOOL showingKeyboard;
     BOOL rotatingOrientation;
     NSString *changeText;
     NSString *obligateForBackspace;
@@ -328,7 +329,9 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
 {
     keyboardVisible = YES;
     if (textField.window) {
+        showingKeyboard = YES;
         [textField becomeFirstResponder];
+        showingKeyboard = NO;
     }
 }
 
@@ -354,7 +357,7 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
 
 - (void)keyboardWillHide:(NSNotification *)notification
 {
-    if (!rotatingOrientation) {
+    if (!showingKeyboard && !rotatingOrientation) {
         SDL_StopTextInput();
     }
     [self setKeyboardHeight:0];
