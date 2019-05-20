@@ -301,7 +301,7 @@ SDL_bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
         SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "vulkandisplay: Display: %s Native resolution: %ux%u",
                 displayProperties[displayId].displayName, extent.width, extent.height);
 
-        free(displayProperties);
+        SDL_free(displayProperties);
         displayProperties = NULL;
 
         /* Get display mode properties for the chosen display */
