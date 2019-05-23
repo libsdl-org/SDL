@@ -765,9 +765,9 @@ SDL_WarpMouseGlobal(int x, int y)
 static SDL_bool
 ShouldUseRelativeModeWarp(SDL_Mouse *mouse)
 {
-    if (!mouse->SetRelativeMouseMode) {
-        SDL_assert(mouse->WarpMouse);   /* Need this functionality for relative mode warp implementation */
-        return SDL_TRUE;
+    if (!mouse->WarpMouse) {
+        /* Need this functionality for relative mode warp implementation */
+        return SDL_FALSE;
     }
 
     return SDL_GetHintBoolean(SDL_HINT_MOUSE_RELATIVE_MODE_WARP, SDL_FALSE);
@@ -796,7 +796,7 @@ SDL_SetRelativeMouseMode(SDL_bool enabled)
         mouse->relative_mode_warp = SDL_FALSE;
     } else if (enabled && ShouldUseRelativeModeWarp(mouse)) {
         mouse->relative_mode_warp = SDL_TRUE;
-    } else if (mouse->SetRelativeMouseMode(enabled) < 0) {
+    } else if (!mouse->SetRelativeMouseMode || mouse->SetRelativeMouseMode(enabled) < 0) {
         if (enabled) {
             /* Fall back to warp mode if native relative mode failed */
             if (!mouse->WarpMouse) {
