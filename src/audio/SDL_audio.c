@@ -89,11 +89,11 @@ static const AudioBootStrap *const bootstrap[] = {
 #if SDL_AUDIO_DRIVER_FUSIONSOUND
     &FUSIONSOUND_bootstrap,
 #endif
-#if SDL_AUDIO_DRIVER_ANDROID
-    &ANDROIDAUDIO_bootstrap,
-#endif
 #if SDL_AUDIO_DRIVER_OPENSLES
     &openslES_bootstrap,
+#endif
+#if SDL_AUDIO_DRIVER_ANDROID
+    &ANDROIDAUDIO_bootstrap,
 #endif
 #if SDL_AUDIO_DRIVER_PSP
     &PSPAUDIO_bootstrap,
