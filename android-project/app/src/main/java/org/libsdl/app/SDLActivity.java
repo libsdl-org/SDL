@@ -1029,6 +1029,14 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
             this.y = y;
             this.w = w;
             this.h = h;
+
+            /* Minimum size of 1 pixel, so it takes focus. */
+            if (this.w <= 0) {
+                this.w = 1;
+            }
+            if (this.h + HEIGHT_PADDING <= 0) {
+                this.h = 1 - HEIGHT_PADDING;
+            }
         }
 
         @Override
