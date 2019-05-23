@@ -122,6 +122,8 @@ SDL_bool Android_JNI_SupportsRelativeMouse(void);
 SDL_bool Android_JNI_SetRelativeMouseEnabled(SDL_bool enabled);
 
 
+int SDL_GetAndroidSDKVersion(void);
+
 SDL_bool SDL_IsAndroidTablet(void);
 SDL_bool SDL_IsAndroidTV(void);
 SDL_bool SDL_IsChromebook(void);
