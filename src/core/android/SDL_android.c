@@ -42,6 +42,7 @@
 #include "../../haptic/android/SDL_syshaptic_c.h"
 
 #include <android/log.h>
+#include <sys/system_properties.h>
 #include <pthread.h>
 #include <sys/types.h>
 #include <unistd.h>
@@ -2404,6 +2405,18 @@ void *SDL_AndroidGetActivity(void)
 
     /* return SDLActivity.getContext(); */
     return (*env)->CallStaticObjectMethod(env, mActivityClass, midGetContext);
+}
+
+int SDL_GetAndroidSDKVersion(void)
+{
+    static int sdk_version;
+    if (!sdk_version) {
+        char sdk[PROP_VALUE_MAX] = {0};
+        if (__system_property_get("ro.build.version.sdk", sdk) != 0) {
+            sdk_version = SDL_atoi(sdk);
+        }
+    }
+    return sdk_version;
 }
 
 SDL_bool SDL_IsAndroidTablet(void)
