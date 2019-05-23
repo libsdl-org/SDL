@@ -35,13 +35,14 @@
 #define LOG_TAG "SDL_openslES"
 
 #if 0
-#define LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
 #define LOGE(...)  __android_log_print(ANDROID_LOG_ERROR,LOG_TAG,__VA_ARGS__)
-// #define LOGI(...) do {} while (0)
-// #define LOGE(...) do {} while (0)
+#define LOGI(...)  __android_log_print(ANDROID_LOG_INFO,LOG_TAG,__VA_ARGS__)
+//#define LOGV(...)  __android_log_print(ANDROID_LOG_VERBOSE,LOG_TAG,__VA_ARGS__)
+#define LOGV(...)
 #else
-#define LOGI(...)
 #define LOGE(...)
+#define LOGI(...)
+#define LOGV(...)
 #endif
 
 /* engine interfaces */
@@ -193,7 +194,7 @@ static void
 bqPlayerCallback(SLAndroidSimpleBufferQueueItf bq, void *context)
 {
     struct SDL_PrivateAudioData *audiodata = (struct SDL_PrivateAudioData *) context;
-    LOGI("SLES: Playback Callmeback");
+    LOGV("SLES: Playback Callmeback");
     SDL_SemPost(audiodata->playsem);
     return;
 }
@@ -223,26 +224,28 @@ openslES_CreatePCMPlayer(_THIS)
     SLresult result;
     int i;
 
-#if 0
-    SDL_AudioFormat test_format = 0;
+    /* If we want to add floating point audio support (requires API level 21)
+       it can be done as described here:
+        https://developer.android.com/ndk/guides/audio/opensl/android-extensions.html#floating-point
+    */
+#if 1
+    /* Just go with signed 16-bit audio as it's the most compatible */
+    this->spec.format = AUDIO_S16SYS;
+#else
+    SDL_AudioFormat test_format = SDL_FirstAudioFormat(this->spec.format);
+    while (test_format != 0) {
+        if (SDL_AUDIO_ISSIGNED(test_format) && SDL_AUDIO_ISINT(test_format)) {
+            break;
+        }
+        test_format = SDL_NextAudioFormat();
+    }
 
-      test_format = SDL_FirstAudioFormat( this->spec.format );
-
-      while (test_format != 0) {
-
-          if (SDL_AUDIO_ISSIGNED(test_format) && SDL_AUDIO_ISINT(test_format)) {
-              break;
-          }
-          test_format = SDL_NextAudioFormat();
-      }
-
-      if ( test_format == 0 ) {
-          /* Didn't find a compatible format : */
-          LOGI( "No compatible audio format!" );
-          return SDL_SetError("No compatible audio format!");
-      }
-
-      this->spec.format = test_format;
+    if (test_format == 0) {
+        /* Didn't find a compatible format : */
+        LOGI( "No compatible audio format, using signed 16-bit audio" );
+        test_format = AUDIO_S16SYS;
+    }
+    this->spec.format = test_format;
 #endif
 
     /* Update the fragment size as size in bytes */
@@ -250,7 +253,7 @@ openslES_CreatePCMPlayer(_THIS)
 
     LOGI("Try to open %u hz %u bit chan %u %s samples %u",
           this->spec.freq, SDL_AUDIO_BITSIZE(this->spec.format),
-          this->spec.channels, (test_format & 0x1000) ? "BE" : "LE", this->spec.samples);
+          this->spec.channels, (this->spec.format & 0x1000) ? "BE" : "LE", this->spec.samples);
 
     /* configure audio source */
     SLDataLocator_AndroidSimpleBufferQueue loc_bufq = { SL_DATALOCATOR_ANDROIDSIMPLEBUFFERQUEUE, NUM_BUFFERS };
@@ -496,7 +499,7 @@ openslES_WaitDevice(_THIS)
 {
     struct SDL_PrivateAudioData *audiodata = (struct SDL_PrivateAudioData *) this->hidden;
 
-    LOGI("openslES_WaitDevice( )");
+    LOGV("openslES_WaitDevice( )");
 
     /* Wait for an audio chunk to finish */
     /* WaitForSingleObject(this->hidden->audio_sem, INFINITE); */
@@ -522,7 +525,7 @@ openslES_GetDeviceBuf(_THIS)
 {
     struct SDL_PrivateAudioData *audiodata = (struct SDL_PrivateAudioData *) this->hidden;
 
-    LOGI("openslES_GetDeviceBuf( )");
+    LOGV("openslES_GetDeviceBuf( )");
     return audiodata->pmixbuff[audiodata->next_buffer];
 }
 
@@ -532,7 +535,7 @@ openslES_PlayDevice(_THIS)
     struct SDL_PrivateAudioData *audiodata = (struct SDL_PrivateAudioData *) this->hidden;
     SLresult result;
 
-    LOGI("======openslES_PlayDevice( )======");
+    LOGV("======openslES_PlayDevice( )======");
 
     /* Queue it up */
     result = (*bqPlayerBufferQueue)->Enqueue(bqPlayerBufferQueue, audiodata->pmixbuff[audiodata->next_buffer], this->spec.size);
