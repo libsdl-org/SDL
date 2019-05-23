@@ -73,6 +73,7 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
 
 #if SDL_IPHONE_KEYBOARD
     UITextField *textField;
+    BOOL hardwareKeyboard;
     BOOL showingKeyboard;
     BOOL rotatingOrientation;
     NSString *changeText;
@@ -89,7 +90,9 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
 
 #if SDL_IPHONE_KEYBOARD
         [self initKeyboard];
-        rotatingOrientation = FALSE;
+        hardwareKeyboard = NO;
+        showingKeyboard = NO;
+        rotatingOrientation = NO;
 #endif
 
 #if TARGET_OS_TV
@@ -280,6 +283,41 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
     [center addObserver:self selector:@selector(textFieldTextDidChange:) name:UITextFieldTextDidChangeNotification object:nil];
 }
 
+- (NSArray *) keyCommands {
+    NSMutableArray *commands = [[NSMutableArray alloc] init];
+    [commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputUpArrow modifierFlags:kNilOptions action:@selector(handleCommand:)]];
+    [commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputDownArrow modifierFlags:kNilOptions action:@selector(handleCommand:)]];
+    [commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputLeftArrow modifierFlags:kNilOptions action:@selector(handleCommand:)]];
+    [commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputRightArrow modifierFlags:kNilOptions action:@selector(handleCommand:)]];
+    [commands addObject:[UIKeyCommand keyCommandWithInput:UIKeyInputEscape modifierFlags:kNilOptions action:@selector(handleCommand:)]];
+    return [NSArray arrayWithArray:commands];
+}
+
+- (void) handleCommand: (UIKeyCommand *) keyCommand {
+    SDL_Scancode scancode = SDL_SCANCODE_UNKNOWN;
+
+    if (keyCommand.input == UIKeyInputUpArrow) {
+        scancode = SDL_SCANCODE_UP;
+    } else if (keyCommand.input == UIKeyInputDownArrow) {
+        scancode = SDL_SCANCODE_DOWN;
+    } else if (keyCommand.input == UIKeyInputLeftArrow) {
+        scancode = SDL_SCANCODE_LEFT;
+    } else if (keyCommand.input == UIKeyInputRightArrow) {
+        scancode = SDL_SCANCODE_RIGHT;
+    } else if (keyCommand.input == UIKeyInputEscape) {
+        scancode = SDL_SCANCODE_ESCAPE;
+    }
+
+    if (scancode != SDL_SCANCODE_UNKNOWN) {
+        SDL_SendKeyboardKey(SDL_PRESSED, scancode);
+        SDL_SendKeyboardKey(SDL_RELEASED, scancode);
+    }
+}
+
+- (void) downArrow: (UIKeyCommand *) keyCommand {
+    NSLog(@"down arrow!");
+}
+
 - (void)setView:(UIView *)view
 {
     [super setView:view];
@@ -296,21 +334,21 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
 - (void)viewWillTransitionToSize:(CGSize)size withTransitionCoordinator:(id<UIViewControllerTransitionCoordinator>)coordinator
 {
     [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
-    rotatingOrientation = TRUE;
+    rotatingOrientation = YES;
     [coordinator animateAlongsideTransition:^(id<UIViewControllerTransitionCoordinatorContext> context) {}
                                  completion:^(id<UIViewControllerTransitionCoordinatorContext> context) {
-                                     rotatingOrientation = FALSE;
+                                     rotatingOrientation = NO;
                                  }];
 }
 #else
 - (void)willRotateToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration {
     [super willRotateToInterfaceOrientation:toInterfaceOrientation duration:duration];
-    rotatingOrientation = TRUE;
+    rotatingOrientation = YES;
 }
 
 - (void)didRotateFromInterfaceOrientation:(UIInterfaceOrientation)fromInterfaceOrientation {
     [super didRotateFromInterfaceOrientation:fromInterfaceOrientation];
-    rotatingOrientation = FALSE;
+    rotatingOrientation = NO;
 }
 #endif /* TARGET_OS_TV || __IPHONE_OS_VERSION_MIN_REQUIRED >= 80000 */
 
@@ -466,7 +504,8 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
 {
     SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_RETURN);
     SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_RETURN);
-    if (SDL_GetHintBoolean(SDL_HINT_RETURN_KEY_HIDES_IME, SDL_FALSE)) {
+    if (keyboardVisible &&
+        SDL_GetHintBoolean(SDL_HINT_RETURN_KEY_HIDES_IME, SDL_FALSE)) {
          SDL_StopTextInput();
     }
     return YES;
