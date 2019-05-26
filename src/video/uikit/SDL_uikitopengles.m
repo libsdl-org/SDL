@@ -96,6 +96,8 @@ UIKit_GL_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h)
             if (h) {
                 *h = glview.backingHeight;
             }
+        } else {
+            SDL_GetWindowSize(window, w, h);
         }
     }
 }
