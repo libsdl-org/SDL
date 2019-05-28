@@ -140,14 +140,20 @@ SDLTest_CommonState *SDLTest_CommonCreateState(char **argv, Uint32 flags);
  */
 int SDLTest_CommonArg(SDLTest_CommonState * state, int index);
 
+
 /**
- * \brief Returns common usage information
+ * \brief Logs command line usage info.
  *
- * \param state The common state describing the test window to create.
+ * This logs the appropriate command line options for the subsystems in use
+ *  plus other common options, and then any application-specific options.
+ *  This uses the SDL_Log() function and splits up output to be friendly to
+ *  80-character-wide terminals.
  *
- * \returns String with usage information
+ * \param state The common state describing the test window for the app.
+ * \param argv0 argv[0], as passed to main/SDL_main.
+ * \param options an array of strings for application specific options. The last element of the array should be NULL.
  */
-const char *SDLTest_CommonUsage(SDLTest_CommonState * state);
+void SDLTest_CommonLogUsage(SDLTest_CommonState * state, const char *argv0, const char **options);
 
 /**
  * \brief Open test window.
