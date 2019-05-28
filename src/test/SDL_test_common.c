@@ -26,11 +26,22 @@
 
 #include <stdio.h>
 
-#define VIDEO_USAGE \
-"[--video driver] [--renderer driver] [--gldebug] [--info all|video|modes|render|event] [--log all|error|system|audio|video|render|input] [--display N] [--fullscreen | --fullscreen-desktop | --windows N] [--title title] [--icon icon.bmp] [--center | --position X,Y] [--geometry WxH] [--min-geometry WxH] [--max-geometry WxH] [--logical WxH] [--scale N] [--depth N] [--refresh R] [--vsync] [--noframe] [--resize] [--minimize] [--maximize] [--grab] [--allow-highdpi]"
+static const char *video_usage[] = {
+    "[--video driver]", "[--renderer driver]", "[--gldebug]",
+    "[--info all|video|modes|render|event]",
+    "[--log all|error|system|audio|video|render|input]", "[--display N]",
+    "[--fullscreen | --fullscreen-desktop | --windows N]", "[--title title]",
+    "[--icon icon.bmp]", "[--center | --position X,Y]", "[--geometry WxH]",
+    "[--min-geometry WxH]", "[--max-geometry WxH]", "[--logical WxH]",
+    "[--scale N]", "[--depth N]", "[--refresh R]", "[--vsync]", "[--noframe]",
+    "[--resize]", "[--minimize]", "[--maximize]", "[--grab]",
+    "[--allow-highdpi]"
+};
 
-#define AUDIO_USAGE \
-"[--rate N] [--format U8|S8|U16|U16LE|U16BE|S16|S16LE|S16BE] [--channels N] [--samples N]"
+static const char *audio_usage[] = {
+    "[--rate N]", "[--format U8|S8|U16|U16LE|U16BE|S16|S16LE|S16BE]",
+    "[--channels N]", "[--samples N]"
+};
 
 static void SDL_snprintfcat(SDL_OUT_Z_CAP(maxlen) char *text, size_t maxlen, SDL_PRINTF_FORMAT_STRING const char *fmt, ... )
 {
@@ -474,18 +485,30 @@ SDLTest_CommonArg(SDLTest_CommonState * state, int index)
     return 0;
 }
 
-const char *
-SDLTest_CommonUsage(SDLTest_CommonState * state)
+void
+SDLTest_CommonLogUsage(SDLTest_CommonState * state, const char *argv0, const char **options)
 {
-    switch (state->flags & (SDL_INIT_VIDEO | SDL_INIT_AUDIO)) {
-    case SDL_INIT_VIDEO:
-        return "[--trackmem] " VIDEO_USAGE;
-    case SDL_INIT_AUDIO:
-        return "[--trackmem] " AUDIO_USAGE;
-    case (SDL_INIT_VIDEO | SDL_INIT_AUDIO):
-        return "[--trackmem] " VIDEO_USAGE " " AUDIO_USAGE;
-    default:
-        return "[--trackmem]";
+    int i;
+
+    SDL_Log("USAGE: %s", argv0);
+    SDL_Log("    %s", "[--trackmem]");
+
+    if (state->flags & SDL_INIT_VIDEO) {
+        for (i = 0; i < SDL_arraysize(video_usage); i++) {
+            SDL_Log("    %s", video_usage[i]);
+        }
+    }
+
+    if (state->flags & SDL_INIT_AUDIO) {
+        for (i = 0; i < SDL_arraysize(audio_usage); i++) {
+            SDL_Log("    %s", audio_usage[i]);
+        }
+    }
+
+    if (options) {
+        for (i = 0; options[i] != NULL; i++) {
+            SDL_Log("    %s", options[i]);
+        }
     }
 }
 
@@ -496,7 +519,7 @@ SDLTest_CommonDefaultArgs(SDLTest_CommonState *state, const int argc, char **arg
     while (i < argc) {
         const int consumed = SDLTest_CommonArg(state, i);
         if (consumed == 0) {
-            SDL_Log("Usage: %s %s\n", argv[0], SDLTest_CommonUsage(state));
+            SDLTest_CommonLogUsage(state, argv[0], NULL);
             return SDL_FALSE;
         }
         i += consumed;

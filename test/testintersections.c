@@ -315,8 +315,8 @@ main(int argc, char *argv[])
             }
         }
         if (consumed < 0) {
-            SDL_Log("Usage: %s %s [--blend none|blend|add|mod] [--cyclecolor] [--cyclealpha]\n",
-                    argv[0], SDLTest_CommonUsage(state));
+            static const char *options[] = { "[--blend none|blend|add|mod]", "[--cyclecolor]", "[--cyclealpha]", NULL };
+            SDLTest_CommonLogUsage(state, argv[0], options);
             return 1;
         }
         i += consumed;

@@ -203,7 +203,7 @@ main(int argc, char *argv[])
             break;
         }
         if (consumed < 0) {
-            SDL_Log("Usage: %s %s\n", argv[0], SDLTest_CommonUsage(state));
+            SDLTest_CommonLogUsage(state, argv[0], NULL);
             quit(1);
         }
         i += consumed;

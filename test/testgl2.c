@@ -248,8 +248,8 @@ main(int argc, char *argv[])
             }
         }
         if (consumed < 0) {
-            SDL_Log("Usage: %s %s [--fsaa n] [--accel n]\n", argv[0],
-                    SDLTest_CommonUsage(state));
+            static const char *options[] = { "[--fsaa n]", "[--accel n]", NULL };
+            SDLTest_CommonLogUsage(state, argv[0], options);
             quit(1);
         }
         i += consumed;
