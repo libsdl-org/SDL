@@ -24403,13 +24403,13 @@ case "$host" in
         CheckVulkan
         CheckWayland
         CheckLibUDev
+        CheckInputEvents
         CheckDBus
         CheckIME
         CheckIBus
         CheckFcitx
         case $ARCH in
           linux)
-              CheckInputEvents
               CheckInputKD
           ;;
         esac

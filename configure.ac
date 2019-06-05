@@ -3333,6 +3333,7 @@ case "$host" in
         CheckOpenGLESX11
         CheckVulkan
         CheckWayland
+        CheckInputEvents
         CheckLibUDev
         CheckDBus
         CheckIME
@@ -3340,7 +3341,6 @@ case "$host" in
         CheckFcitx
         case $ARCH in
           linux)
-              CheckInputEvents
               CheckInputKD
           ;;
         esac
