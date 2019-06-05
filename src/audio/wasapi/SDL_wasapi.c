@@ -161,21 +161,6 @@ WASAPI_DetectDevices(void)
     WASAPI_EnumerateEndpoints();
 }
 
-static int
-WASAPI_GetPendingBytes(_THIS)
-{
-    UINT32 frames = 0;
-
-    /* it's okay to fail here; we'll deal with failures in the audio thread. */
-    /* FIXME: need a lock around checking this->hidden->client */
-    if (this->hidden->client != NULL) {  /* definitely activated? */
-        if (FAILED(IAudioClient_GetCurrentPadding(this->hidden->client, &frames))) {
-            return 0;  /* oh well. */
-        }
-    }
-    return ((int) frames) * this->hidden->framesize;
-}
-
 static SDL_INLINE SDL_bool
 WasapiFailed(_THIS, const HRESULT err)
 {
@@ -765,7 +750,6 @@ WASAPI_Init(SDL_AudioDriverImpl * impl)
     impl->OpenDevice = WASAPI_OpenDevice;
     impl->PlayDevice = WASAPI_PlayDevice;
     impl->WaitDevice = WASAPI_WaitDevice;
-    impl->GetPendingBytes = WASAPI_GetPendingBytes;
     impl->GetDeviceBuf = WASAPI_GetDeviceBuf;
     impl->CaptureFromDevice = WASAPI_CaptureFromDevice;
     impl->FlushCapture = WASAPI_FlushCapture;
