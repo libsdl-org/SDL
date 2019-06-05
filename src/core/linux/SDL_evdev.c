@@ -556,8 +556,8 @@ SDL_EVDEV_sync_device(SDL_evdevlist_item *item)
      *
      * this is the structure we're trying to emulate
      */
-    __u32* mt_req_code;
-    __s32* mt_req_values;
+    uint32_t* mt_req_code;
+    int32_t* mt_req_values;
     size_t mt_req_size;
 
     /* TODO: sync devices other than touchscreen */
@@ -572,7 +572,7 @@ SDL_EVDEV_sync_device(SDL_evdevlist_item *item)
         return;
     }
 
-    mt_req_values = (__s32*)mt_req_code + 1;
+    mt_req_values = (int32_t*)mt_req_code + 1;
 
     *mt_req_code = ABS_MT_TRACKING_ID;
     ret = ioctl(item->fd, EVIOCGMTSLOTS(mt_req_size), mt_req_code);
