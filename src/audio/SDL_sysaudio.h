@@ -71,7 +71,6 @@ typedef struct SDL_AudioDriverImpl
     void (*BeginLoopIteration)(_THIS);  /* Called by audio thread at top of loop */
     void (*WaitDevice) (_THIS);
     void (*PlayDevice) (_THIS);
-    int (*GetPendingBytes) (_THIS);
     Uint8 *(*GetDeviceBuf) (_THIS);
     int (*CaptureFromDevice) (_THIS, void *buffer, int buflen);
     void (*FlushCapture) (_THIS);

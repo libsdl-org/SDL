@@ -248,12 +248,6 @@ SDL_AudioPlayDevice_Default(_THIS)
 {                               /* no-op. */
 }
 
-static int
-SDL_AudioGetPendingBytes_Default(_THIS)
-{
-    return 0;
-}
-
 static Uint8 *
 SDL_AudioGetDeviceBuf_Default(_THIS)
 {
@@ -361,7 +355,6 @@ finish_audio_entry_points_init(void)
     FILL_STUB(BeginLoopIteration);
     FILL_STUB(WaitDevice);
     FILL_STUB(PlayDevice);
-    FILL_STUB(GetPendingBytes);
     FILL_STUB(GetDeviceBuf);
     FILL_STUB(CaptureFromDevice);
     FILL_STUB(FlushCapture);
@@ -654,11 +647,9 @@ SDL_GetQueuedAudioSize(SDL_AudioDeviceID devid)
     }
 
     /* Nothing to do unless we're set up for queueing. */
-    if (device->callbackspec.callback == SDL_BufferQueueDrainCallback) {
-        current_audio.impl.LockDevice(device);
-        retval = ((Uint32) SDL_CountDataQueue(device->buffer_queue)) + current_audio.impl.GetPendingBytes(device);
-        current_audio.impl.UnlockDevice(device);
-    } else if (device->callbackspec.callback == SDL_BufferQueueFillCallback) {
+    if (device->callbackspec.callback == SDL_BufferQueueDrainCallback ||
+        device->callbackspec.callback == SDL_BufferQueueFillCallback)
+    {
         current_audio.impl.LockDevice(device);
         retval = (Uint32) SDL_CountDataQueue(device->buffer_queue);
         current_audio.impl.UnlockDevice(device);
