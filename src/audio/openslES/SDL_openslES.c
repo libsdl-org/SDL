@@ -290,19 +290,41 @@ openslES_CreatePCMPlayer(_THIS)
 #define SL_SPEAKER_TOP_BACK_CENTER       ((SLuint32) 0x00010000)
 #define SL_SPEAKER_TOP_BACK_RIGHT        ((SLuint32) 0x00020000)
 */
+#define SL_ANDROID_SPEAKER_QUAD (SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT | SL_SPEAKER_BACK_LEFT | SL_SPEAKER_BACK_RIGHT)
+#define SL_ANDROID_SPEAKER_5DOT1 (SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT | SL_SPEAKER_FRONT_CENTER  | SL_SPEAKER_LOW_FREQUENCY| SL_SPEAKER_BACK_LEFT | SL_SPEAKER_BACK_RIGHT)
+#define SL_ANDROID_SPEAKER_7DOT1 (SL_ANDROID_SPEAKER_5DOT1 | SL_SPEAKER_SIDE_LEFT | SL_SPEAKER_SIDE_RIGHT)
 
-    if (this->spec.channels == 1) {
-        format_pcm.channelMask = SL_SPEAKER_FRONT_CENTER;
-    } else if (this->spec.channels == 2) {
+    switch (this->spec.channels)
+    {
+    case 1:
+        format_pcm.channelMask = SL_SPEAKER_FRONT_LEFT;
+        break;
+    case 2:
         format_pcm.channelMask = SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT;
-    } else if (this->spec.channels == 3) {
+        break;
+    case 3:
         format_pcm.channelMask = SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT | SL_SPEAKER_FRONT_CENTER;
-    } else if (this->spec.channels == 4) {
-        format_pcm.channelMask = SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT |
-              SL_SPEAKER_BACK_LEFT | SL_SPEAKER_BACK_RIGHT;
-    } else {
-        format_pcm.channelMask = SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT |
-              SL_SPEAKER_BACK_LEFT | SL_SPEAKER_BACK_RIGHT | SL_SPEAKER_FRONT_CENTER;
+        break;
+    case 4:
+        format_pcm.channelMask = SL_ANDROID_SPEAKER_QUAD;
+        break;
+    case 5:
+        format_pcm.channelMask = SL_ANDROID_SPEAKER_QUAD | SL_SPEAKER_FRONT_CENTER;
+        break;
+    case 6:
+        format_pcm.channelMask = SL_ANDROID_SPEAKER_5DOT1;
+        break;
+    case 7:
+        format_pcm.channelMask = SL_ANDROID_SPEAKER_5DOT1 | SL_SPEAKER_BACK_CENTER;
+        break;
+    case 8:
+        format_pcm.channelMask = SL_ANDROID_SPEAKER_7DOT1;
+        break;
+    default:
+        /* Unknown number of channels, fall back to stereo */
+        this->spec.channels = 2;
+        format_pcm.channelMask = SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT;
+        break;
     }
 
     SLDataSource audioSrc = { &loc_bufq, &format_pcm };
