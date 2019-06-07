@@ -1027,11 +1027,14 @@ HID_API_EXPORT hid_device * HID_API_CALL hid_open_path(const char *path, int bEx
 
 int  HID_API_EXPORT HID_API_CALL hid_write(hid_device *device, const unsigned char *data, size_t length)
 {
-	LOGV( "hid_write id=%d length=%u", device->m_nId, length );
-	hid_device_ref<CHIDDevice> pDevice = FindDevice( device->m_nId );
-	if ( pDevice )
+	if ( device )
 	{
-		return pDevice->SendOutputReport( data, length );
+		LOGV( "hid_write id=%d length=%u", device->m_nId, length );
+		hid_device_ref<CHIDDevice> pDevice = FindDevice( device->m_nId );
+		if ( pDevice )
+		{
+			return pDevice->SendOutputReport( data, length );
+		}
 	}
 	return -1; // Controller was disconnected
 }
@@ -1039,13 +1042,16 @@ int  HID_API_EXPORT HID_API_CALL hid_write(hid_device *device, const unsigned ch
 // TODO: Implement timeout?
 int HID_API_EXPORT HID_API_CALL hid_read_timeout(hid_device *device, unsigned char *data, size_t length, int milliseconds)
 {
-//	LOGV( "hid_read_timeout id=%d length=%u timeout=%d", device->m_nId, length, milliseconds );
-	hid_device_ref<CHIDDevice> pDevice = FindDevice( device->m_nId );
-	if ( pDevice )
+	if ( device )
 	{
-		return pDevice->GetInput( data, length );
+//		LOGV( "hid_read_timeout id=%d length=%u timeout=%d", device->m_nId, length, milliseconds );
+		hid_device_ref<CHIDDevice> pDevice = FindDevice( device->m_nId );
+		if ( pDevice )
+		{
+			return pDevice->GetInput( data, length );
+		}
+		LOGV( "controller was disconnected" );
 	}
-	LOGV( "controller was disconnected" );
 	return -1; // Controller was disconnected
 }
 
@@ -1064,11 +1070,14 @@ int  HID_API_EXPORT HID_API_CALL hid_set_nonblocking(hid_device *device, int non
 
 int HID_API_EXPORT HID_API_CALL hid_send_feature_report(hid_device *device, const unsigned char *data, size_t length)
 {
-	LOGV( "hid_send_feature_report id=%d length=%u", device->m_nId, length );
-	hid_device_ref<CHIDDevice> pDevice = FindDevice( device->m_nId );
-	if ( pDevice )
+	if ( device )
 	{
-		return pDevice->SendFeatureReport( data, length );
+		LOGV( "hid_send_feature_report id=%d length=%u", device->m_nId, length );
+		hid_device_ref<CHIDDevice> pDevice = FindDevice( device->m_nId );
+		if ( pDevice )
+		{
+			return pDevice->SendFeatureReport( data, length );
+		}
 	}
 	return -1; // Controller was disconnected
 }
@@ -1077,11 +1086,14 @@ int HID_API_EXPORT HID_API_CALL hid_send_feature_report(hid_device *device, cons
 // Synchronous operation. Will block until completed.
 int HID_API_EXPORT HID_API_CALL hid_get_feature_report(hid_device *device, unsigned char *data, size_t length)
 {
-	LOGV( "hid_get_feature_report id=%d length=%u", device->m_nId, length );
-	hid_device_ref<CHIDDevice> pDevice = FindDevice( device->m_nId );
-	if ( pDevice )
+	if ( device )
 	{
-		return pDevice->GetFeatureReport( data, length );
+		LOGV( "hid_get_feature_report id=%d length=%u", device->m_nId, length );
+		hid_device_ref<CHIDDevice> pDevice = FindDevice( device->m_nId );
+		if ( pDevice )
+		{
+			return pDevice->GetFeatureReport( data, length );
+		}
 	}
 	return -1; // Controller was disconnected
 }
@@ -1089,54 +1101,65 @@ int HID_API_EXPORT HID_API_CALL hid_get_feature_report(hid_device *device, unsig
 
 void HID_API_EXPORT HID_API_CALL hid_close(hid_device *device)
 {
-	LOGV( "hid_close id=%d", device->m_nId );
-	hid_mutex_guard r( &g_DevicesRefCountMutex );
-	LOGD("Decrementing device %d (%p), refCount = %d\n", device->m_nId, device, device->m_nDeviceRefCount - 1);
-	if ( --device->m_nDeviceRefCount == 0 )
+	if ( device )
 	{
-		hid_device_ref<CHIDDevice> pDevice = FindDevice( device->m_nId );
-		if ( pDevice )
+		LOGV( "hid_close id=%d", device->m_nId );
+		hid_mutex_guard r( &g_DevicesRefCountMutex );
+		LOGD("Decrementing device %d (%p), refCount = %d\n", device->m_nId, device, device->m_nDeviceRefCount - 1);
+		if ( --device->m_nDeviceRefCount == 0 )
 		{
-			pDevice->Close( true );
+			hid_device_ref<CHIDDevice> pDevice = FindDevice( device->m_nId );
+			if ( pDevice )
+			{
+				pDevice->Close( true );
+			}
+			else
+			{
+				delete device;
+			}
+			LOGD("Deleted device %p\n", device);
 		}
-		else
-		{
-			delete device;
-		}
-		LOGD("Deleted device %p\n", device);
 	}
-
 }
 
 int HID_API_EXPORT_CALL hid_get_manufacturer_string(hid_device *device, wchar_t *string, size_t maxlen)
 {
-	hid_device_ref<CHIDDevice> pDevice = FindDevice( device->m_nId );
-	if ( pDevice )
+	if ( device )
 	{
-		wcsncpy( string, pDevice->GetDeviceInfo()->manufacturer_string, maxlen );
-		return 0;
+		hid_device_ref<CHIDDevice> pDevice = FindDevice( device->m_nId );
+		if ( pDevice )
+		{
+			wcsncpy( string, pDevice->GetDeviceInfo()->manufacturer_string, maxlen );
+			return 0;
+		}
 	}
 	return -1;
 }
 
 int HID_API_EXPORT_CALL hid_get_product_string(hid_device *device, wchar_t *string, size_t maxlen)
 {
-	hid_device_ref<CHIDDevice> pDevice = FindDevice( device->m_nId );
-	if ( pDevice )
+	if ( device )
 	{
-		wcsncpy( string, pDevice->GetDeviceInfo()->product_string, maxlen );
-		return 0;
+		hid_device_ref<CHIDDevice> pDevice = FindDevice( device->m_nId );
+		if ( pDevice )
+		{
+			wcsncpy( string, pDevice->GetDeviceInfo()->product_string, maxlen );
+			return 0;
+		}
 	}
 	return -1;
 }
 
 int HID_API_EXPORT_CALL hid_get_serial_number_string(hid_device *device, wchar_t *string, size_t maxlen)
 {
-	hid_device_ref<CHIDDevice> pDevice = FindDevice( device->m_nId );
-	if ( pDevice )
+	if ( device )
 	{
-		wcsncpy( string, pDevice->GetDeviceInfo()->serial_number, maxlen );
-		return 0;
+		hid_device_ref<CHIDDevice> pDevice = FindDevice( device->m_nId );
+		if ( pDevice )
+		{
+			wcsncpy( string, pDevice->GetDeviceInfo()->serial_number, maxlen );
+			return 0;
+		}
 	}
 	return -1;
 }
