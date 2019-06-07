@@ -1044,7 +1044,10 @@ SDL_JoystickUpdate(void)
 
     for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
         if (joystick->attached) {
-            joystick->driver->Update(joystick);
+            /* This should always be true, but seeing a crash in the wild...? */
+            if (joystick->driver) {
+                joystick->driver->Update(joystick);
+            }
 
             if (joystick->delayed_guide_button) {
                 SDL_GameControllerHandleDelayedGuideButton(joystick);
