@@ -1226,11 +1226,6 @@ static void LocalReferenceHolder_Cleanup(struct LocalReferenceHolder *refholder)
     }
 }
 
-static SDL_bool LocalReferenceHolder_IsActive(void)
-{
-    return (SDL_AtomicGet(&s_active) > 0);
-}
-
 ANativeWindow* Android_JNI_GetNativeWindow(void)
 {
     ANativeWindow *anw = NULL;
@@ -1634,7 +1629,7 @@ static SDL_bool Android_JNI_ExceptionOccurred(SDL_bool silent)
     jthrowable exception;
 
     /* Detect mismatch LocalReferenceHolder_Init/Cleanup */
-    SDL_assert(LocalReferenceHolder_IsActive());
+    SDL_assert(SDL_AtomicGet(&s_active) > 0);
 
     exception = (*env)->ExceptionOccurred(env);
     if (exception != NULL) {
