@@ -279,16 +279,30 @@ SDL_EGL_LoadLibrary(_THIS, const char *egl_path, NativeDisplayType native_displa
 
 #if SDL_VIDEO_DRIVER_WINDOWS || SDL_VIDEO_DRIVER_WINRT
     d3dcompiler = SDL_GetHint(SDL_HINT_VIDEO_WIN_D3DCOMPILER);
-    if (!d3dcompiler) {
-        if (WIN_IsWindowsVistaOrGreater()) {
-            d3dcompiler = "d3dcompiler_46.dll";
-        } else {
-            d3dcompiler = "d3dcompiler_43.dll";
+    if (d3dcompiler) {
+        if (SDL_strcasecmp(d3dcompiler, "none") != 0) {
+            if (SDL_LoadObject(d3dcompiler) == NULL) {
+                SDL_ClearError();
+            }
         }
-    }
-    if (SDL_strcasecmp(d3dcompiler, "none") != 0) {
-        if (SDL_LoadObject(d3dcompiler) == NULL) {
-            SDL_ClearError();
+    } else {
+        if (WIN_IsWindowsVistaOrGreater()) {
+            /* Try the newer d3d compilers first */
+            const char *d3dcompiler_list[] = {
+                "d3dcompiler_47.dll", "d3dcompiler_46.dll",
+            };
+            int i;
+
+            for (i = 0; i < SDL_arraysize(d3dcompiler_list); ++i) {
+                if (SDL_LoadObject(d3dcompiler_list[i]) != NULL) {
+                    break;
+                }
+                SDL_ClearError();
+            }
+        } else {
+            if (SDL_LoadObject("d3dcompiler_43.dll") == NULL) {
+                SDL_ClearError();
+            }
         }
     }
 #endif
