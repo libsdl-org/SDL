@@ -10,6 +10,13 @@
 		1D3623EC0D0F72F000981E51 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D3623EB0D0F72F000981E51 /* CoreGraphics.framework */; };
 		1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1D30AB110D05D00D00671497 /* Foundation.framework */; };
 		1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 1DF5F4DF0D08C38300B7A737 /* UIKit.framework */; };
+		F3F7590022AC5EC7001D97F2 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3F758FF22AC5EC7001D97F2 /* Metal.framework */; };
+		F3F7590122AC5F00001D97F2 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3F758FF22AC5EC7001D97F2 /* Metal.framework */; };
+		F3F7590222AC5F3D001D97F2 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3F758FF22AC5EC7001D97F2 /* Metal.framework */; };
+		F3F7590322AC5F71001D97F2 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3F758FF22AC5EC7001D97F2 /* Metal.framework */; };
+		F3F7590422AC5F8D001D97F2 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3F758FF22AC5EC7001D97F2 /* Metal.framework */; };
+		F3F7590522AC5FB3001D97F2 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3F758FF22AC5EC7001D97F2 /* Metal.framework */; };
+		F3F7590622AC5FD1001D97F2 /* Metal.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F3F758FF22AC5EC7001D97F2 /* Metal.framework */; };
 		FA30DEB01BBF5A8F009C397F /* common.c in Sources */ = {isa = PBXBuildFile; fileRef = FD77A0060E26BC0500F39101 /* common.c */; };
 		FA30DEB11BBF5A93009C397F /* happy.c in Sources */ = {isa = PBXBuildFile; fileRef = FD77A0080E26BC0500F39101 /* happy.c */; };
 		FA30DEB31BBF5AD7009C397F /* icon.bmp in Resources */ = {isa = PBXBuildFile; fileRef = FDB651CC0E43D19800F688B5 /* icon.bmp */; };
@@ -40,7 +47,6 @@
 		FA8B4BA91967073D00F8EB7C /* CoreMotion.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FA8B4BA21967070A00F8EB7C /* CoreMotion.framework */; };
 		FABA34D41D8B5E5600915323 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FABA34D31D8B5E5600915323 /* AVFoundation.framework */; };
 		FABA34D61D8B5E5A00915323 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FABA34D31D8B5E5600915323 /* AVFoundation.framework */; };
-		FABA34D81D8B5E7700915323 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FABA34D71D8B5E7700915323 /* AVFoundation.framework */; };
 		FABA34D91D8B5E7B00915323 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FABA34D31D8B5E5600915323 /* AVFoundation.framework */; };
 		FABA34DA1D8B5E7F00915323 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FABA34D31D8B5E5600915323 /* AVFoundation.framework */; };
 		FABA34DB1D8B5E8500915323 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = FABA34D31D8B5E5600915323 /* AVFoundation.framework */; };
@@ -197,6 +203,34 @@
 			remoteGlobalIDString = FD6526620DE8FCCB002AD96B;
 			remoteInfo = libSDL;
 		};
+		F3F758F722AC5E8F001D97F2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FD1B48920E313154007AB34E /* SDL.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = 52ED1E5C222889500061FCE0;
+			remoteInfo = "libSDL-iOS-dylib";
+		};
+		F3F758F922AC5E8F001D97F2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FD1B48920E313154007AB34E /* SDL.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F3E3C7572241389A007D243C;
+			remoteInfo = "libSDL-tvOS-dylib";
+		};
+		F3F758FB22AC5E8F001D97F2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FD1B48920E313154007AB34E /* SDL.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F3E3C65222406928007D243C;
+			remoteInfo = "libSDLmain-iOS";
+		};
+		F3F758FD22AC5E8F001D97F2 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = FD1B48920E313154007AB34E /* SDL.xcodeproj */;
+			proxyType = 2;
+			remoteGlobalIDString = F3E3C75F224138AE007D243C;
+			remoteInfo = "libSDLmain-tvOS";
+		};
 		FA30DEAB1BBF59D9009C397F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = FD1B48920E313154007AB34E /* SDL.xcodeproj */;
@@ -226,6 +260,7 @@
 		1D6058910D05DD3D006BFB54 /* Rectangles.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Rectangles.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		1DF5F4DF0D08C38300B7A737 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		8D1107310486CEB800E47090 /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		F3F758FF22AC5EC7001D97F2 /* Metal.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Metal.framework; path = System/Library/Frameworks/Metal.framework; sourceTree = SDKROOT; };
 		FA30DE961BBF59D9009C397F /* Happy-TV.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Happy-TV.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		FA86C0361D9765BA009CB637 /* iOS Launch Screen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = "iOS Launch Screen.storyboard"; sourceTree = "<group>"; };
 		FA8B4BA21967070A00F8EB7C /* CoreMotion.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMotion.framework; path = System/Library/Frameworks/CoreMotion.framework; sourceTree = SDKROOT; };
@@ -271,17 +306,18 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FABA34D41D8B5E5600915323 /* AVFoundation.framework in Frameworks */,
 				FD1B48DD0E313255007AB34E /* libSDL2.a in Frameworks */,
-				FAE0E96A1BAF96A00098DFA4 /* GameController.framework in Frameworks */,
-				FA8B4BA31967070A00F8EB7C /* CoreMotion.framework in Frameworks */,
-				FDF0D7AB0E12D53800247964 /* CoreAudio.framework in Frameworks */,
 				FDF0D7AC0E12D53800247964 /* AudioToolbox.framework in Frameworks */,
-				1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */,
-				1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */,
+				FABA34D41D8B5E5600915323 /* AVFoundation.framework in Frameworks */,
+				FDF0D7AB0E12D53800247964 /* CoreAudio.framework in Frameworks */,
 				1D3623EC0D0F72F000981E51 /* CoreGraphics.framework in Frameworks */,
+				FA8B4BA31967070A00F8EB7C /* CoreMotion.framework in Frameworks */,
+				1D60589F0D05DD5A006BFB54 /* Foundation.framework in Frameworks */,
+				FAE0E96A1BAF96A00098DFA4 /* GameController.framework in Frameworks */,
+				F3F7590022AC5EC7001D97F2 /* Metal.framework in Frameworks */,
 				FDB96ED40DEFC9C700FAF19F /* OpenGLES.framework in Frameworks */,
 				FDB96EE00DEFC9DC00FAF19F /* QuartzCore.framework in Frameworks */,
+				1DF5F4E00D08C38300B7A737 /* UIKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -289,16 +325,15 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FABA34D81D8B5E7700915323 /* AVFoundation.framework in Frameworks */,
 				FA30DEB71BBF5BB8009C397F /* libSDL2.a in Frameworks */,
-				FA30DEC81BBF5C14009C397F /* GameController.framework in Frameworks */,
 				FA30DEC91BBF5C14009C397F /* AudioToolbox.framework in Frameworks */,
+				FA30DECF1BBF5C14009C397F /* CoreAudio.framework in Frameworks */,
+				FA30DECC1BBF5C14009C397F /* CoreGraphics.framework in Frameworks */,
+				FA30DECE1BBF5C14009C397F /* Foundation.framework in Frameworks */,
+				FA30DEC81BBF5C14009C397F /* GameController.framework in Frameworks */,
 				FA30DECA1BBF5C14009C397F /* QuartzCore.framework in Frameworks */,
 				FA30DECB1BBF5C14009C397F /* OpenGLES.framework in Frameworks */,
-				FA30DECC1BBF5C14009C397F /* CoreGraphics.framework in Frameworks */,
 				FA30DECD1BBF5C14009C397F /* UIKit.framework in Frameworks */,
-				FA30DECE1BBF5C14009C397F /* Foundation.framework in Frameworks */,
-				FA30DECF1BBF5C14009C397F /* CoreAudio.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -306,17 +341,18 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FABA34D61D8B5E5A00915323 /* AVFoundation.framework in Frameworks */,
 				FD1B49980E313261007AB34E /* libSDL2.a in Frameworks */,
-				FAE0E96C1BAF96A90098DFA4 /* GameController.framework in Frameworks */,
-				FA8B4BA41967071300F8EB7C /* CoreMotion.framework in Frameworks */,
-				FDF0D7A90E12D53500247964 /* CoreAudio.framework in Frameworks */,
 				FDF0D7AA0E12D53500247964 /* AudioToolbox.framework in Frameworks */,
-				FD15FD690E086911003BDF25 /* Foundation.framework in Frameworks */,
-				FD15FD6A0E086911003BDF25 /* UIKit.framework in Frameworks */,
+				FABA34D61D8B5E5A00915323 /* AVFoundation.framework in Frameworks */,
+				FDF0D7A90E12D53500247964 /* CoreAudio.framework in Frameworks */,
 				FD15FD6B0E086911003BDF25 /* CoreGraphics.framework in Frameworks */,
+				FA8B4BA41967071300F8EB7C /* CoreMotion.framework in Frameworks */,
+				FD15FD690E086911003BDF25 /* Foundation.framework in Frameworks */,
+				FAE0E96C1BAF96A90098DFA4 /* GameController.framework in Frameworks */,
+				F3F7590122AC5F00001D97F2 /* Metal.framework in Frameworks */,
 				FD15FD6C0E086911003BDF25 /* OpenGLES.framework in Frameworks */,
 				FD15FD6D0E086911003BDF25 /* QuartzCore.framework in Frameworks */,
+				FD15FD6A0E086911003BDF25 /* UIKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -324,17 +360,18 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FABA34D91D8B5E7B00915323 /* AVFoundation.framework in Frameworks */,
 				FD1B499C0E313269007AB34E /* libSDL2.a in Frameworks */,
-				FAE0E96D1BAF96AF0098DFA4 /* GameController.framework in Frameworks */,
-				FA8B4BA51967071A00F8EB7C /* CoreMotion.framework in Frameworks */,
-				FDF0D7A70E12D53200247964 /* CoreAudio.framework in Frameworks */,
 				FDF0D7A80E12D53200247964 /* AudioToolbox.framework in Frameworks */,
+				FABA34D91D8B5E7B00915323 /* AVFoundation.framework in Frameworks */,
+				FDF0D7A70E12D53200247964 /* CoreAudio.framework in Frameworks */,
+				FD5F9CEA0E0E0741008E885B /* CoreGraphics.framework in Frameworks */,
+				FA8B4BA51967071A00F8EB7C /* CoreMotion.framework in Frameworks */,
+				FD5F9CE80E0E0741008E885B /* Foundation.framework in Frameworks */,
+				FAE0E96D1BAF96AF0098DFA4 /* GameController.framework in Frameworks */,
+				F3F7590222AC5F3D001D97F2 /* Metal.framework in Frameworks */,
 				FD5F9CEB0E0E0741008E885B /* OpenGLES.framework in Frameworks */,
 				FD5F9CEC0E0E0741008E885B /* QuartzCore.framework in Frameworks */,
-				FD5F9CE80E0E0741008E885B /* Foundation.framework in Frameworks */,
 				FD5F9CE90E0E0741008E885B /* UIKit.framework in Frameworks */,
-				FD5F9CEA0E0E0741008E885B /* CoreGraphics.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -342,17 +379,18 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FABA34DD1D8B5E8D00915323 /* AVFoundation.framework in Frameworks */,
 				FDB652000E43D1F300F688B5 /* libSDL2.a in Frameworks */,
-				FAE0E9711BAF96BB0098DFA4 /* GameController.framework in Frameworks */,
+				FDB652080E43D1F300F688B5 /* AudioToolbox.framework in Frameworks */,
+				FABA34DD1D8B5E8D00915323 /* AVFoundation.framework in Frameworks */,
+				FDB652070E43D1F300F688B5 /* CoreAudio.framework in Frameworks */,
+				FDB652040E43D1F300F688B5 /* CoreGraphics.framework in Frameworks */,
 				FA8B4BA91967073D00F8EB7C /* CoreMotion.framework in Frameworks */,
 				FDB652020E43D1F300F688B5 /* Foundation.framework in Frameworks */,
-				FDB652030E43D1F300F688B5 /* UIKit.framework in Frameworks */,
-				FDB652040E43D1F300F688B5 /* CoreGraphics.framework in Frameworks */,
+				FAE0E9711BAF96BB0098DFA4 /* GameController.framework in Frameworks */,
+				F3F7590622AC5FD1001D97F2 /* Metal.framework in Frameworks */,
 				FDB652050E43D1F300F688B5 /* OpenGLES.framework in Frameworks */,
 				FDB652060E43D1F300F688B5 /* QuartzCore.framework in Frameworks */,
-				FDB652070E43D1F300F688B5 /* CoreAudio.framework in Frameworks */,
-				FDB652080E43D1F300F688B5 /* AudioToolbox.framework in Frameworks */,
+				FDB652030E43D1F300F688B5 /* UIKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -360,17 +398,18 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FABA34DA1D8B5E7F00915323 /* AVFoundation.framework in Frameworks */,
 				FD1B499E0E31326C007AB34E /* libSDL2.a in Frameworks */,
-				FAE0E96E1BAF96B10098DFA4 /* GameController.framework in Frameworks */,
-				FA8B4BA61967072100F8EB7C /* CoreMotion.framework in Frameworks */,
-				FDF0D7950E12D52900247964 /* CoreAudio.framework in Frameworks */,
 				FDF0D7960E12D52900247964 /* AudioToolbox.framework in Frameworks */,
-				FDC202E60E107B1200ABAC90 /* Foundation.framework in Frameworks */,
-				FDC202E70E107B1200ABAC90 /* UIKit.framework in Frameworks */,
+				FABA34DA1D8B5E7F00915323 /* AVFoundation.framework in Frameworks */,
+				FDF0D7950E12D52900247964 /* CoreAudio.framework in Frameworks */,
 				FDC202E80E107B1200ABAC90 /* CoreGraphics.framework in Frameworks */,
+				FA8B4BA61967072100F8EB7C /* CoreMotion.framework in Frameworks */,
+				FDC202E60E107B1200ABAC90 /* Foundation.framework in Frameworks */,
+				FAE0E96E1BAF96B10098DFA4 /* GameController.framework in Frameworks */,
+				F3F7590322AC5F71001D97F2 /* Metal.framework in Frameworks */,
 				FDC202E90E107B1200ABAC90 /* OpenGLES.framework in Frameworks */,
 				FDC202EA0E107B1200ABAC90 /* QuartzCore.framework in Frameworks */,
+				FDC202E70E107B1200ABAC90 /* UIKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -378,17 +417,18 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FABA34DC1D8B5E8900915323 /* AVFoundation.framework in Frameworks */,
 				FD1B49A20E313273007AB34E /* libSDL2.a in Frameworks */,
-				FAE0E9701BAF96B80098DFA4 /* GameController.framework in Frameworks */,
+				FDC52EDA0E2843D6008D768C /* AudioToolbox.framework in Frameworks */,
+				FABA34DC1D8B5E8900915323 /* AVFoundation.framework in Frameworks */,
+				FDC52ED90E2843D6008D768C /* CoreAudio.framework in Frameworks */,
+				FDC52ED60E2843D6008D768C /* CoreGraphics.framework in Frameworks */,
 				FA8B4BA81967073400F8EB7C /* CoreMotion.framework in Frameworks */,
 				FDC52ED40E2843D6008D768C /* Foundation.framework in Frameworks */,
-				FDC52ED50E2843D6008D768C /* UIKit.framework in Frameworks */,
-				FDC52ED60E2843D6008D768C /* CoreGraphics.framework in Frameworks */,
+				FAE0E9701BAF96B80098DFA4 /* GameController.framework in Frameworks */,
+				F3F7590522AC5FB3001D97F2 /* Metal.framework in Frameworks */,
 				FDC52ED70E2843D6008D768C /* OpenGLES.framework in Frameworks */,
 				FDC52ED80E2843D6008D768C /* QuartzCore.framework in Frameworks */,
-				FDC52ED90E2843D6008D768C /* CoreAudio.framework in Frameworks */,
-				FDC52EDA0E2843D6008D768C /* AudioToolbox.framework in Frameworks */,
+				FDC52ED50E2843D6008D768C /* UIKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -396,17 +436,18 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				FABA34DB1D8B5E8500915323 /* AVFoundation.framework in Frameworks */,
 				FD1B49A00E313270007AB34E /* libSDL2.a in Frameworks */,
-				FAE0E96F1BAF96B50098DFA4 /* GameController.framework in Frameworks */,
+				FDF0D7230E12D31800247964 /* AudioToolbox.framework in Frameworks */,
+				FABA34DB1D8B5E8500915323 /* AVFoundation.framework in Frameworks */,
+				FDF0D71E0E12D2AB00247964 /* CoreAudio.framework in Frameworks */,
+				FDF0D69E0E12D05400247964 /* CoreGraphics.framework in Frameworks */,
 				FA8B4BA71967072800F8EB7C /* CoreMotion.framework in Frameworks */,
 				FDF0D69C0E12D05400247964 /* Foundation.framework in Frameworks */,
-				FDF0D69D0E12D05400247964 /* UIKit.framework in Frameworks */,
-				FDF0D69E0E12D05400247964 /* CoreGraphics.framework in Frameworks */,
+				FAE0E96F1BAF96B50098DFA4 /* GameController.framework in Frameworks */,
+				F3F7590422AC5F8D001D97F2 /* Metal.framework in Frameworks */,
 				FDF0D69F0E12D05400247964 /* OpenGLES.framework in Frameworks */,
 				FDF0D6A00E12D05400247964 /* QuartzCore.framework in Frameworks */,
-				FDF0D71E0E12D2AB00247964 /* CoreAudio.framework in Frameworks */,
-				FDF0D7230E12D31800247964 /* AudioToolbox.framework in Frameworks */,
+				FDF0D69D0E12D05400247964 /* UIKit.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -455,6 +496,7 @@
 		29B97323FDCFA39411CA2CEA /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				F3F758FF22AC5EC7001D97F2 /* Metal.framework */,
 				FABA34D71D8B5E7700915323 /* AVFoundation.framework */,
 				FABA34D31D8B5E5600915323 /* AVFoundation.framework */,
 				FAE0E9691BAF96A00098DFA4 /* GameController.framework */,
@@ -474,7 +516,11 @@
 			isa = PBXGroup;
 			children = (
 				FD1B489E0E313154007AB34E /* libSDL2.a */,
+				F3F758F822AC5E8F001D97F2 /* libSDL2.dylib */,
 				FA30DEAC1BBF59D9009C397F /* libSDL2.a */,
+				F3F758FA22AC5E8F001D97F2 /* libSDL2.dylib */,
+				F3F758FC22AC5E8F001D97F2 /* libSDLmain.a */,
+				F3F758FE22AC5E8F001D97F2 /* libSDLmain.a */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -725,6 +771,34 @@
 /* End PBXProject section */
 
 /* Begin PBXReferenceProxy section */
+		F3F758F822AC5E8F001D97F2 /* libSDL2.dylib */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libSDL2.dylib;
+			remoteRef = F3F758F722AC5E8F001D97F2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		F3F758FA22AC5E8F001D97F2 /* libSDL2.dylib */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libSDL2.dylib;
+			remoteRef = F3F758F922AC5E8F001D97F2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		F3F758FC22AC5E8F001D97F2 /* libSDLmain.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libSDLmain.a;
+			remoteRef = F3F758FB22AC5E8F001D97F2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		F3F758FE22AC5E8F001D97F2 /* libSDLmain.a */ = {
+			isa = PBXReferenceProxy;
+			fileType = archive.ar;
+			path = libSDLmain.a;
+			remoteRef = F3F758FD22AC5E8F001D97F2 /* PBXContainerItemProxy */;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
 		FA30DEAC1BBF59D9009C397F /* libSDL2.a */ = {
 			isa = PBXReferenceProxy;
 			fileType = archive.ar;
@@ -957,6 +1031,7 @@
 		1D6058940D05DD3E006BFB54 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.Rectangles;
 				PRODUCT_NAME = Rectangles;
@@ -966,6 +1041,7 @@
 		1D6058950D05DD3E006BFB54 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.Rectangles;
 				PRODUCT_NAME = Rectangles;
@@ -1089,6 +1165,7 @@
 		FD15FCB50E086866003BDF25 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = "";
 				GCC_DYNAMIC_NO_PIC = NO;
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.Happy;
@@ -1100,6 +1177,7 @@
 		FD15FCB60E086866003BDF25 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.Happy;
 				PRODUCT_NAME = Happy;
@@ -1110,6 +1188,7 @@
 		FD5F9BE70E0DEBEB008E885B /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.Accel;
 				PRODUCT_NAME = Accel;
@@ -1120,6 +1199,7 @@
 		FD5F9BE80E0DEBEB008E885B /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.Accel;
 				PRODUCT_NAME = Accel;
@@ -1130,6 +1210,7 @@
 		FDB6520A0E43D1F300F688B5 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.Keyboard;
 				PRODUCT_NAME = Keyboard;
@@ -1140,6 +1221,7 @@
 		FDB6520B0E43D1F300F688B5 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.Keyboard;
 				PRODUCT_NAME = Keyboard;
@@ -1150,6 +1232,7 @@
 		FDC202EC0E107B1200ABAC90 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.Touch;
 				PRODUCT_NAME = Touch;
@@ -1160,6 +1243,7 @@
 		FDC202ED0E107B1200ABAC90 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.Touch;
 				PRODUCT_NAME = Touch;
@@ -1194,6 +1278,7 @@
 		FDF0D6A20E12D05400247964 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.Mixer;
 				PRODUCT_NAME = Mixer;
@@ -1204,6 +1289,7 @@
 		FDF0D6A30E12D05400247964 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = Info.plist;
 				PRODUCT_BUNDLE_IDENTIFIER = com.yourcompany.Mixer;
 				PRODUCT_NAME = Mixer;
