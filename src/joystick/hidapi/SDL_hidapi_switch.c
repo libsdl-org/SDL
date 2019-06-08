@@ -914,6 +914,12 @@ HIDAPI_DriverSwitch_NumJoysticks(SDL_HIDAPI_DriverData *context)
     return 1;
 }
 
+static int
+HIDAPI_DriverSwitch_PlayerIndexForIndex(SDL_HIDAPI_DriverData *context, int index)
+{
+    return -1;
+}
+
 static SDL_JoystickID
 HIDAPI_DriverSwitch_InstanceIDForIndex(SDL_HIDAPI_DriverData *context, int index)
 {
@@ -931,6 +937,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverSwitch =
     HIDAPI_DriverSwitch_QuitDriver,
     HIDAPI_DriverSwitch_UpdateDriver,
     HIDAPI_DriverSwitch_NumJoysticks,
+    HIDAPI_DriverSwitch_PlayerIndexForIndex,
     HIDAPI_DriverSwitch_InstanceIDForIndex,
     HIDAPI_DriverSwitch_OpenJoystick,
     HIDAPI_DriverSwitch_Rumble

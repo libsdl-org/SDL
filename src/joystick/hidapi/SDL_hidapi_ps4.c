@@ -338,6 +338,12 @@ HIDAPI_DriverPS4_NumJoysticks(SDL_HIDAPI_DriverData *context)
     return 1;
 }
 
+static int
+HIDAPI_DriverPS4_PlayerIndexForIndex(SDL_HIDAPI_DriverData *context, int index)
+{
+    return -1;
+}
+
 static SDL_JoystickID
 HIDAPI_DriverPS4_InstanceIDForIndex(SDL_HIDAPI_DriverData *context, int index)
 {
@@ -592,6 +598,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverPS4 =
     HIDAPI_DriverPS4_QuitDriver,
     HIDAPI_DriverPS4_UpdateDriver,
     HIDAPI_DriverPS4_NumJoysticks,
+    HIDAPI_DriverPS4_PlayerIndexForIndex,
     HIDAPI_DriverPS4_InstanceIDForIndex,
     HIDAPI_DriverPS4_OpenJoystick,
     HIDAPI_DriverPS4_Rumble
