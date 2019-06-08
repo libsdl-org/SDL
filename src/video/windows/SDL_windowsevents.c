@@ -86,7 +86,9 @@ static SDL_Scancode
 VKeytoScancode(WPARAM vkey)
 {
     switch (vkey) {
+/* Windows generates this virtual keycode for Keypad 5 when NumLock is off.
     case VK_CLEAR: return SDL_SCANCODE_CLEAR;
+*/
     case VK_MODECHANGE: return SDL_SCANCODE_MODE;
     case VK_SELECT: return SDL_SCANCODE_SELECT;
     case VK_EXECUTE: return SDL_SCANCODE_EXECUTE;
