@@ -770,3 +770,6 @@ SDL_DYNAPI_PROC(SDL_TouchDeviceType,SDL_GetTouchDeviceType,(SDL_TouchID a),(a),r
 #ifdef __IPHONEOS__
 SDL_DYNAPI_PROC(int,SDL_UIKitRunApp,(int a, char *b, SDL_main_func c),(a,b,c),return)
 #endif
+SDL_DYNAPI_PROC(size_t,SDL_SIMDGetAlignment,(void),(),return)
+SDL_DYNAPI_PROC(void*,SDL_SIMDAlloc,(const size_t a),(a),return)
+SDL_DYNAPI_PROC(void,SDL_SIMDFree,(void *a),(a),)

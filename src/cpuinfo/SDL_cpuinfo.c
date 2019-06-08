@@ -22,7 +22,6 @@
 #include "SDL_config.h"
 #else
 #include "../SDL_internal.h"
-#include "SDL_simd.h"
 #endif
 
 #if defined(__WIN32__) || defined(__WINRT__)
