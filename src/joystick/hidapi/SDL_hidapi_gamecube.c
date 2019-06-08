@@ -267,6 +267,22 @@ HIDAPI_DriverGameCube_NumJoysticks(SDL_HIDAPI_DriverData *context)
     return joysticks;
 }
 
+static int
+HIDAPI_DriverGameCube_PlayerIndexForIndex(SDL_HIDAPI_DriverData *context, int index)
+{
+    SDL_DriverGameCube_Context *ctx = (SDL_DriverGameCube_Context *)context->context;
+    Uint8 i;
+    for (i = 0; i < 4; i += 1) {
+        if (ctx->joysticks[i] != -1) {
+            if (index == 0) {
+                return i;
+            }
+            index -= 1;
+        }
+    }
+    return -1; /* Should never get here! */
+}
+
 static SDL_JoystickID
 HIDAPI_DriverGameCube_InstanceIDForIndex(SDL_HIDAPI_DriverData *context, int index)
 {
@@ -294,6 +310,7 @@ HIDAPI_DriverGameCube_OpenJoystick(SDL_HIDAPI_DriverData *context, SDL_Joystick 
             joystick->nbuttons = 12;
             joystick->naxes = 6;
             joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
+            joystick->player_index = i;
             return SDL_TRUE;
         }
     }
@@ -334,6 +351,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverGameCube =
     HIDAPI_DriverGameCube_QuitDriver,
     HIDAPI_DriverGameCube_UpdateDriver,
     HIDAPI_DriverGameCube_NumJoysticks,
+    HIDAPI_DriverGameCube_PlayerIndexForIndex,
     HIDAPI_DriverGameCube_InstanceIDForIndex,
     HIDAPI_DriverGameCube_OpenJoystick,
     HIDAPI_DriverGameCube_Rumble

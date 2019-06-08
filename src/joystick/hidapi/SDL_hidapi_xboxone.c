@@ -207,6 +207,12 @@ HIDAPI_DriverXboxOne_NumJoysticks(SDL_HIDAPI_DriverData *context)
     return 1;
 }
 
+static int
+HIDAPI_DriverXboxOne_PlayerIndexForIndex(SDL_HIDAPI_DriverData *context, int index)
+{
+    return -1;
+}
+
 static SDL_JoystickID
 HIDAPI_DriverXboxOne_InstanceIDForIndex(SDL_HIDAPI_DriverData *context, int index)
 {
@@ -350,6 +356,7 @@ SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverXboxOne =
     HIDAPI_DriverXboxOne_QuitDriver,
     HIDAPI_DriverXboxOne_UpdateDriver,
     HIDAPI_DriverXboxOne_NumJoysticks,
+    HIDAPI_DriverXboxOne_PlayerIndexForIndex,
     HIDAPI_DriverXboxOne_InstanceIDForIndex,
     HIDAPI_DriverXboxOne_OpenJoystick,
     HIDAPI_DriverXboxOne_Rumble

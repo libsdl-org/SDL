@@ -65,6 +65,8 @@ typedef struct _SDL_HIDAPI_DeviceDriver
     SDL_bool       (*UpdateDriver)(SDL_HIDAPI_DriverData *context,
                                    int *num_joysticks);
     int            (*NumJoysticks)(SDL_HIDAPI_DriverData *context);
+    int            (*PlayerIndexForIndex)(SDL_HIDAPI_DriverData *context,
+                                          int index);
     SDL_JoystickID (*InstanceIDForIndex)(SDL_HIDAPI_DriverData *context,
                                          int index);
     SDL_bool       (*OpenJoystick)(SDL_HIDAPI_DriverData *context,

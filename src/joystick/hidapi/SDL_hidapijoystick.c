@@ -948,7 +948,19 @@ HIDAPI_JoystickGetDeviceName(int device_index)
 static int
 HIDAPI_JoystickGetDevicePlayerIndex(int device_index)
 {
-    return -1;
+    SDL_HIDAPI_Device *device = SDL_HIDAPI_devices;
+    int joysticks;
+    while (device) {
+        if (device->driver) {
+            joysticks = device->driver->NumJoysticks(&device->devdata);
+            if (device_index < joysticks) {
+                break;
+            }
+            device_index -= joysticks;
+        }
+        device = device->next;
+    }
+    return device->driver->PlayerIndexForIndex(&device->devdata, device_index);
 }
 
 static SDL_JoystickGUID
