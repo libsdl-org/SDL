@@ -1831,9 +1831,7 @@ install(TARGETS ${_INSTALL_LIBS} EXPORT SDL2Targets
   RUNTIME DESTINATION bin)
 
 ##### Export files #####
-if (APPLE)
-  set(PKG_PREFIX "SDL2.framework/Resources")
-elseif (WINDOWS)
+if (WINDOWS)
   set(PKG_PREFIX "cmake")
 else ()
   set(PKG_PREFIX "lib/cmake/SDL2")
