@@ -22,6 +22,10 @@
 
 #if SDL_AUDIO_DRIVER_OPENSLES
 
+/* For more discussion of low latency audio on Android, see this:
+   https://googlesamples.github.io/android-audio-high-performance/guides/opensl_es.html
+*/
+
 #include "SDL_audio.h"
 #include "../SDL_audio_c.h"
 #include "SDL_openslES.h"
@@ -290,8 +294,9 @@ openslES_CreatePCMPlayer(_THIS)
 #define SL_SPEAKER_TOP_BACK_CENTER       ((SLuint32) 0x00010000)
 #define SL_SPEAKER_TOP_BACK_RIGHT        ((SLuint32) 0x00020000)
 */
-#define SL_ANDROID_SPEAKER_QUAD (SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT | SL_SPEAKER_BACK_LEFT | SL_SPEAKER_BACK_RIGHT)
-#define SL_ANDROID_SPEAKER_5DOT1 (SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT | SL_SPEAKER_FRONT_CENTER  | SL_SPEAKER_LOW_FREQUENCY| SL_SPEAKER_BACK_LEFT | SL_SPEAKER_BACK_RIGHT)
+#define SL_ANDROID_SPEAKER_STEREO (SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT)
+#define SL_ANDROID_SPEAKER_QUAD (SL_ANDROID_SPEAKER_STEREO | SL_SPEAKER_BACK_LEFT | SL_SPEAKER_BACK_RIGHT)
+#define SL_ANDROID_SPEAKER_5DOT1 (SL_ANDROID_SPEAKER_QUAD | SL_SPEAKER_FRONT_CENTER  | SL_SPEAKER_LOW_FREQUENCY)
 #define SL_ANDROID_SPEAKER_7DOT1 (SL_ANDROID_SPEAKER_5DOT1 | SL_SPEAKER_SIDE_LEFT | SL_SPEAKER_SIDE_RIGHT)
 
     switch (this->spec.channels)
@@ -300,10 +305,10 @@ openslES_CreatePCMPlayer(_THIS)
         format_pcm.channelMask = SL_SPEAKER_FRONT_LEFT;
         break;
     case 2:
-        format_pcm.channelMask = SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT;
+        format_pcm.channelMask = SL_ANDROID_SPEAKER_STEREO;
         break;
     case 3:
-        format_pcm.channelMask = SL_SPEAKER_FRONT_LEFT | SL_SPEAKER_FRONT_RIGHT | SL_SPEAKER_FRONT_CENTER;
+        format_pcm.channelMask = SL_ANDROID_SPEAKER_STEREO | SL_SPEAKER_FRONT_CENTER;
         break;
     case 4:
         format_pcm.channelMask = SL_ANDROID_SPEAKER_QUAD;
