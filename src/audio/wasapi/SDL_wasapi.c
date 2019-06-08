@@ -312,8 +312,8 @@ static void
 WASAPI_WaitDevice(_THIS)
 {
     while (RecoverWasapiIfLost(this) && this->hidden->client && this->hidden->event) {
-        /*SDL_Log("WAITDEVICE");*/
-        if (WaitForSingleObjectEx(this->hidden->event, INFINITE, FALSE) == WAIT_OBJECT_0) {
+        DWORD waitResult = WaitForSingleObjectEx(this->hidden->event, 200, FALSE);
+        if (waitResult == WAIT_OBJECT_0) {
             const UINT32 maxpadding = this->spec.samples;
             UINT32 padding = 0;
             if (!WasapiFailed(this, IAudioClient_GetCurrentPadding(this->hidden->client, &padding))) {
@@ -322,7 +322,7 @@ WASAPI_WaitDevice(_THIS)
                     break;
                 }
             }
-        } else {
+        } else if (waitResult != WAIT_TIMEOUT) {
             /*SDL_Log("WASAPI FAILED EVENT!");*/
             IAudioClient_Stop(this->hidden->client);
             SDL_OpenedAudioDeviceDisconnected(this);
