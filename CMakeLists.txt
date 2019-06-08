@@ -264,8 +264,23 @@ if(EMSCRIPTEN)
   set(SDL_DLOPEN_ENABLED_BY_DEFAULT OFF)
 endif()
 
+# When defined, respect CMake's BUILD_SHARED_LIBS setting:
+set(SDL_STATIC_ENABLED_BY_DEFAULT ON)
 if (NOT DEFINED SDL_SHARED_ENABLED_BY_DEFAULT)
+  # ...unless decided already (as for EMSCRIPTEN)
+
+  set(SDL_SHARED_ENABLED_BY_DEFAULT OFF)
+
+  if (NOT DEFINED BUILD_SHARED_LIBS)
+    # No preference? Build both, just like the AC/AM configure
     set(SDL_SHARED_ENABLED_BY_DEFAULT ON)
+
+  elseif (BUILD_SHARED_LIBS)
+    # In this case, we assume the user wants a shared lib and don't build
+    # the static one
+    set(SDL_SHARED_ENABLED_BY_DEFAULT ON)
+    set(SDL_STATIC_ENABLED_BY_DEFAULT OFF)
+  endif()
 endif()
 
 set(SDL_SUBSYSTEMS
@@ -344,10 +359,8 @@ dep_option(KMSDRM_SHARED       "Dynamically load KMS DRM support" ON "VIDEO_KMSD
 option_string(BACKGROUNDING_SIGNAL "number to use for magic backgrounding signal or 'OFF'" "OFF")
 option_string(FOREGROUNDING_SIGNAL "number to use for magic foregrounding signal or 'OFF'" "OFF")
 
-# TODO: We should (should we?) respect cmake's ${BUILD_SHARED_LIBS} flag here
-# The options below are for compatibility to configure's default behaviour.
 set(SDL_SHARED ${SDL_SHARED_ENABLED_BY_DEFAULT} CACHE BOOL "Build a shared version of the library")
-set(SDL_STATIC ON CACHE BOOL "Build a static version of the library")
+set(SDL_STATIC ${SDL_STATIC_ENABLED_BY_DEFAULT} CACHE BOOL "Build a static version of the library")
 
 dep_option(SDL_STATIC_PIC      "Static version of the library should be built with Position Independent Code" OFF "SDL_STATIC" OFF)
 set_option(SDL_TEST            "Build the test directory" OFF)
