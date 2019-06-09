@@ -1329,6 +1329,29 @@ CheckVisibilityHidden()
     fi
 }
 
+dnl See if GCC's -fno-strict-aliasingis supported.
+dnl  Reference: https://bugzilla.libsdl.org/show_bug.cgi?id=4254
+CheckNoStrictAliasing()
+{
+    AC_MSG_CHECKING(for GCC -fno-strict-aliasing option)
+    have_gcc_no_strict_aliasing=no
+
+    save_CFLAGS="$CFLAGS"
+    CFLAGS="$save_CFLAGS -fno-strict-aliasing"
+    AC_TRY_COMPILE([
+    int x = 0;
+    ],[
+    ],[
+    have_gcc_no_strict_aliasing=yes
+    ])
+    AC_MSG_RESULT($have_gcc_no_strict_aliasing)
+    CFLAGS="$save_CFLAGS"
+
+    if test x$have_gcc_no_strict_aliasing = xyes; then
+        EXTRA_CFLAGS="$EXTRA_CFLAGS -fno-strict-aliasing"
+    fi
+}
+
 dnl See if GCC's -mpreferred-stack-boundary is supported.
 dnl  Reference: http://bugzilla.libsdl.org/show_bug.cgi?id=1296
 CheckStackBoundary()
@@ -3263,6 +3286,7 @@ AS_HELP_STRING([--enable-foregrounding-signal], [number to use for magic foregro
 
 dnl Do this on all platforms, before everything else (other things might want to override it).
 CheckWarnAll
+CheckNoStrictAliasing
 
 dnl Do this for every platform, but for some it doesn't mean anything, but better to catch it here anyhow.
 CheckEventSignals
