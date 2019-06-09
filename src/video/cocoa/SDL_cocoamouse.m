@@ -408,7 +408,8 @@ Cocoa_HandleMouseEvent(_THIS, NSEvent *event)
         DLog("Motion was (%g, %g), offset to (%g, %g)", [event deltaX], [event deltaY], deltaX, deltaY);
     }
 
-    SDL_SendMouseMotion(mouse->focus, mouse->mouseID, 1, (int)deltaX, (int)deltaY);
+    const SDL_MouseID mouseID = ([event subtype] == NSEventSubtypeTouch) ? SDL_TOUCH_MOUSEID : mouse->mouseID;
+    SDL_SendMouseMotion(mouse->focus, mouseID, 1, (int)deltaX, (int)deltaY);
 }
 
 void
@@ -436,7 +437,8 @@ Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event)
     } else if (y < 0) {
         y = SDL_floor(y);
     }
-    SDL_SendMouseWheel(window, mouse->mouseID, x, y, direction);
+    const SDL_MouseID mouseID = ([event subtype] == NSEventSubtypeTouch) ? SDL_TOUCH_MOUSEID : mouse->mouseID;
+    SDL_SendMouseWheel(window, mouseID, x, y, direction);
 }
 
 void
