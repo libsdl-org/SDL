@@ -622,7 +622,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
         y = (int)(window->h - point.y);
 
         if (x >= 0 && x < window->w && y >= 0 && y < window->h) {
-            SDL_SendMouseMotion(window, 0, 0, x, y);
+            SDL_SendMouseMotion(window, mouse->mouseID, 0, x, y);
         }
     }
 
@@ -932,7 +932,16 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     }
 
     clicks = (int) [theEvent clickCount];
-    SDL_SendMouseButtonClicks(_data->window, 0, SDL_PRESSED, button, clicks);
+
+    SDL_MouseID mouseID;
+    if ([theEvent subtype] == NSEventSubtypeTouch) {
+        mouseID = SDL_TOUCH_MOUSEID;
+    } else {
+        SDL_Mouse *mouse = SDL_GetMouse();
+        mouseID = mouse ? mouse->mouseID : 0;
+    }
+
+    SDL_SendMouseButtonClicks(_data->window, mouseID, SDL_PRESSED, button, clicks);
 }
 
 - (void)rightMouseDown:(NSEvent *)theEvent
@@ -976,7 +985,16 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     }
 
     clicks = (int) [theEvent clickCount];
-    SDL_SendMouseButtonClicks(_data->window, 0, SDL_RELEASED, button, clicks);
+
+    SDL_MouseID mouseID;
+    if ([theEvent subtype] == NSEventSubtypeTouch) {
+        mouseID = SDL_TOUCH_MOUSEID;
+    } else {
+        SDL_Mouse *mouse = SDL_GetMouse();
+        mouseID = mouse ? mouse->mouseID : 0;
+    }
+
+    SDL_SendMouseButtonClicks(_data->window, mouseID, SDL_RELEASED, button, clicks);
 }
 
 - (void)rightMouseUp:(NSEvent *)theEvent
@@ -1039,7 +1057,9 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 #endif
         }
     }
-    SDL_SendMouseMotion(window, 0, 0, x, y);
+
+    const SDL_MouseID mouseID = ([theEvent subtype] == NSEventSubtypeTouch) ? SDL_TOUCH_MOUSEID : mouse->mouseID;
+    SDL_SendMouseMotion(window, mouseID, 0, x, y);
 }
 
 - (void)mouseDragged:(NSEvent *)theEvent
@@ -1073,7 +1093,8 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
         }
     }
     if (existingTouchCount == 0) {
-        SDL_TouchID touchID = (SDL_TouchID)(intptr_t)[[touches anyObject] device];
+        const BOOL ismouse = ([theEvent subtype] == NSEventSubtypeMouseEvent);
+        const SDL_TouchID touchID = ismouse ? SDL_MOUSE_TOUCHID : (SDL_TouchID)(intptr_t)[[touches anyObject] device];
         int numFingers = SDL_GetNumTouchFingers(touchID);
         DLog("Reset Lost Fingers: %d", numFingers);
         for (--numFingers; numFingers >= 0; --numFingers) {
@@ -1103,10 +1124,11 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 
 - (void)handleTouches:(NSTouchPhase) phase withEvent:(NSEvent *) theEvent
 {
+    const BOOL ismouse = ([theEvent subtype] == NSEventSubtypeMouseEvent);
     NSSet *touches = [theEvent touchesMatchingPhase:phase inView:nil];
 
     for (NSTouch *touch in touches) {
-        const SDL_TouchID touchId = (SDL_TouchID)(intptr_t)[touch device];
+        const SDL_TouchID touchId = ismouse ? SDL_MOUSE_TOUCHID : (SDL_TouchID)(intptr_t)[touch device];
         SDL_TouchDeviceType devtype = SDL_TOUCH_DEVICE_INDIRECT_ABSOLUTE;
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 101202 /* Added in the 10.12.2 SDK. */
