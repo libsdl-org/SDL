@@ -641,7 +641,9 @@ MS_ADPCM_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len)
     size_t bytesleft, outputsize;
     WaveChunk *chunk = &file->chunk;
     ADPCM_DecoderState state = {0};
-    MS_ADPCM_ChannelState cstate[2] = {0};
+    MS_ADPCM_ChannelState cstate[2];
+
+    SDL_memset(cstate, 0, sizeof(cstate));
 
     if (chunk->size != chunk->length) {
         /* Could not read everything. Recalculate number of sample frames. */
@@ -2075,7 +2077,9 @@ SDL_AudioSpec *
 SDL_LoadWAV_RW(SDL_RWops *src, int freesrc, SDL_AudioSpec *spec, Uint8 **audio_buf, Uint32 *audio_len)
 {
     int result;
-    WaveFile file = {0};
+    WaveFile file;
+
+    SDL_zero(file);
 
     /* Make sure we are passed a valid data source */
     if (src == NULL) {
