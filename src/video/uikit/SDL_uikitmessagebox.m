@@ -108,19 +108,7 @@ UIKit_ShowMessageBoxAlertController(const SDL_MessageBoxData *messageboxdata, in
         alertwindow.hidden = YES;
     }
 
-#if !TARGET_OS_TV
-    /* Force the main SDL window to re-evaluate home indicator state */
-    SDL_Window *focus = SDL_GetFocusWindow();
-    if (focus) {
-        SDL_WindowData *data = (__bridge SDL_WindowData *) focus->driverdata;
-        if (data != nil) {
-            if (@available(iOS 11.0, *)) {
-                [data.viewcontroller performSelectorOnMainThread:@selector(setNeedsUpdateOfHomeIndicatorAutoHidden) withObject:nil waitUntilDone:NO];
-                [data.viewcontroller performSelectorOnMainThread:@selector(setNeedsUpdateOfScreenEdgesDeferringSystemGestures) withObject:nil waitUntilDone:NO];
-            }
-        }
-    }
-#endif /* !TARGET_OS_TV */
+    UIKit_ForceUpdateHomeIndicator();
 
     *buttonid = messageboxdata->buttons[clickedindex].buttonid;
     return YES;
