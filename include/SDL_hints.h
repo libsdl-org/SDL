@@ -1122,6 +1122,70 @@ extern "C" {
 
 
 /**
+ *  \brief  Controls how the size of the RIFF chunk affects the loading of a WAVE file.
+ *
+ *  The size of the RIFF chunk (which includes all the sub-chunks of the WAVE
+ *  file) is not always reliable. In case the size is wrong, it's possible to
+ *  just ignore it and step through the chunks until a fixed limit is reached.
+ *
+ *  Note that files that have trailing data unrelated to the WAVE file or
+ *  corrupt files may slow down the loading process without a reliable boundary.
+ *  By default, SDL stops after 10000 chunks to prevent wasting time. Use the
+ *  environment variable SDL_WAVE_CHUNK_LIMIT to adjust this value.
+ *
+ *  This variable can be set to the following values:
+ *
+ *    "chunksearch"  - Use the RIFF chunk size as a boundary for the chunk search
+ *    "ignorezero"   - Like "chunksearch", but a zero size searches up to 4 GiB (default)
+ *    "ignore"       - Ignore the RIFF chunk size and always search up to 4 GiB
+ *    "maximum"      - Search for chunks until the end of file (not recommended)
+ */
+#define SDL_HINT_WAVE_RIFF_CHUNK_SIZE   "SDL_WAVE_RIFF_CHUNK_SIZE"
+
+/**
+ *  \brief  Controls how a truncated WAVE file is handled.
+ *
+ *  A WAVE file is considered truncated if any of the chunks are incomplete or
+ *  the data chunk size is not a multiple of the block size. By default, SDL
+ *  decodes until the first incomplete block, as most applications seem to do.
+ *
+ *  This variable can be set to the following values:
+ *
+ *    "verystrict" - Raise an error if the file is truncated
+ *    "strict"     - Like "verystrict", but the size of the RIFF chunk is ignored
+ *    "dropframe"  - Decode until the first incomplete sample frame
+ *    "dropblock"  - Decode until the first incomplete block (default)
+ */
+#define SDL_HINT_WAVE_TRUNCATION   "SDL_WAVE_TRUNCATION"
+
+/**
+ *  \brief  Controls how the fact chunk affects the loading of a WAVE file.
+ *
+ *  The fact chunk stores information about the number of samples of a WAVE
+ *  file. The Standards Update from Microsoft notes that this value can be used
+ *  to 'determine the length of the data in seconds'. This is especially useful
+ *  for compressed formats (for which this is a mandatory chunk) if they produce
+ *  multiple sample frames per block and truncating the block is not allowed.
+ *  The fact chunk can exactly specify how many sample frames there should be
+ *  in this case.
+ *
+ *  Unfortunately, most application seem to ignore the fact chunk and so SDL
+ *  ignores it by default as well.
+ *
+ *  This variable can be set to the following values:
+ *
+ *    "truncate"    - Use the number of samples to truncate the wave data if
+ *                    the fact chunk is present and valid
+ *    "strict"      - Like "truncate", but raise an error if the fact chunk
+ *                    is invalid, not present for non-PCM formats, or if the
+ *                    data chunk doesn't have that many samples
+ *    "ignorezero"  - Like "truncate", but ignore fact chunk if the number of
+ *                    samples is zero
+ *    "ignore"      - Ignore fact chunk entirely (default)
+ */
+#define SDL_HINT_WAVE_FACT_CHUNK   "SDL_WAVE_FACT_CHUNK"
+
+/**
  *  \brief  An enumeration of hint priorities
  */
 typedef enum
