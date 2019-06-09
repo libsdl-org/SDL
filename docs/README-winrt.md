@@ -296,7 +296,7 @@ A few files should be included directly in your app's MSVC project, specifically
    included, mouse-position reporting may fail if and when the cursor is
    hidden, due to possible bugs/design-oddities in Windows itself.*
 
-To include these files:
+To include these files for C/C++ projects:
 
 1. right-click on your project (again, in Visual C++'s Solution Explorer), 
    navigate to "Add", then choose "Existing Item...".
@@ -313,11 +313,14 @@ To include these files:
 7. change the setting for "Consume Windows Runtime Extension" to "Yes (/ZW)".
 8. click the OK button.  This will close the dialog.
 
-
 **NOTE: C++/CX compilation is currently required in at least one file of your 
 app's project.  This is to make sure that Visual C++'s linker builds a 'Windows 
 Metadata' file (.winmd) for your app.  Not doing so can lead to build errors.**
 
+For non-C++ projects, you will need to call SDL_WinRTRunApp from your language's
+main function, and generate SDL2-WinRTResources.res manually by using `rc` via
+the Developer Command Prompt and including it as a <Win32Resource> within the
+first <PropertyGroup> block in your Visual Studio project file.
 
 ### 6. Add app code and assets ###
 
