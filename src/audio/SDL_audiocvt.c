@@ -722,7 +722,7 @@ SDL_ResampleCVT(SDL_AudioCVT *cvt, const int chans, const SDL_AudioFormat format
     int paddingsamples;
     float *padding;
 
-    if (requestedpadding < INT32_MAX / chans) {
+    if (requestedpadding < SDL_MAX_SINT32 / chans) {
         paddingsamples = requestedpadding * chans;
     } else {
         paddingsamples = 0;
@@ -899,9 +899,9 @@ SDL_BuildAudioCVT(SDL_AudioCVT * cvt,
         return SDL_SetError("Source rate is equal to or less than zero");
     } else if (dst_rate <= 0) {
         return SDL_SetError("Destination rate is equal to or less than zero");
-    } else if (src_rate >= INT32_MAX / RESAMPLER_SAMPLES_PER_ZERO_CROSSING) {
+    } else if (src_rate >= SDL_MAX_SINT32 / RESAMPLER_SAMPLES_PER_ZERO_CROSSING) {
         return SDL_SetError("Source rate is too high");
-    } else if (dst_rate >= INT32_MAX / RESAMPLER_SAMPLES_PER_ZERO_CROSSING) {
+    } else if (dst_rate >= SDL_MAX_SINT32 / RESAMPLER_SAMPLES_PER_ZERO_CROSSING) {
         return SDL_SetError("Destination rate is too high");
     }
 
