@@ -343,6 +343,7 @@ SDL_LoadLaunchImageNamed(NSString *name, int screenh)
         window.alpha = 0.0;
     } completion:^(BOOL finished) {
         window.hidden = YES;
+        UIKit_ForceUpdateHomeIndicator(); /* Wait for launch screen to hide so settings are applied to the actual view controller. */
     }];
 }
 

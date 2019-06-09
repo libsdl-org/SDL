@@ -39,6 +39,8 @@ CGRect UIKit_ComputeViewFrame(SDL_Window *window, UIScreen *screen);
 
 void UIKit_SuspendScreenSaver(_THIS);
 
+void UIKit_ForceUpdateHomeIndicator(void);
+
 SDL_bool UIKit_IsSystemVersionAtLeast(double version);
 
 #endif /* SDL_uikitvideo_h_ */
