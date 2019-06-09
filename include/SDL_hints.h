@@ -1135,8 +1135,8 @@ extern "C" {
  *
  *  This variable can be set to the following values:
  *
- *    "chunksearch"  - Use the RIFF chunk size as a boundary for the chunk search
- *    "ignorezero"   - Like "chunksearch", but a zero size searches up to 4 GiB (default)
+ *    "force"        - Always use the RIFF chunk size as a boundary for the chunk search
+ *    "ignorezero"   - Like "force", but a zero size searches up to 4 GiB (default)
  *    "ignore"       - Ignore the RIFF chunk size and always search up to 4 GiB
  *    "maximum"      - Search for chunks until the end of file (not recommended)
  */

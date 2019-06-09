@@ -103,10 +103,10 @@ typedef struct WaveChunk
 /* Controls how the size of the RIFF chunk affects the loading of a WAVE file. */
 typedef enum WaveRiffSizeHint {
     RiffSizeNoHint,
-    RiffSizeChunkSearch,
+    RiffSizeForce,
     RiffSizeIgnoreZero,
     RiffSizeIgnore,
-    RiffSizeMaximum,
+    RiffSizeMaximum
 } WaveRiffSizeHint;
 
 /* Controls how a truncated WAVE file is handled. */
@@ -115,7 +115,7 @@ typedef enum WaveTruncationHint {
     TruncVeryStrict,
     TruncStrict,
     TruncDropFrame,
-    TruncDropBlock,
+    TruncDropBlock
 } WaveTruncationHint;
 
 /* Controls how the fact chunk affects the loading of a WAVE file. */
@@ -124,7 +124,7 @@ typedef enum WaveFactChunkHint {
     FactTruncate,
     FactStrict,
     FactIgnoreZero,
-    FactIgnore,
+    FactIgnore
 } WaveFactChunkHint;
 
 typedef struct WaveFile
