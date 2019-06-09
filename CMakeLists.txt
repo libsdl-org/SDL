@@ -418,6 +418,11 @@ if(USE_GCC OR USE_CLANG)
     endif()
   endif()
 
+  check_c_compiler_flag(-fno-strict-aliasing HAVE_GCC_NO_STRICT_ALIASING)
+  if(HAVE_GCC_NO_STRICT_ALIASING)
+    list(APPEND EXTRA_CFLAGS "-fno-strict-aliasing")
+  endif()
+
   check_c_compiler_flag(-Wdeclaration-after-statement HAVE_GCC_WDECLARATION_AFTER_STATEMENT)
   if(HAVE_GCC_WDECLARATION_AFTER_STATEMENT)
     check_c_compiler_flag(-Werror=declaration-after-statement HAVE_GCC_WERROR_DECLARATION_AFTER_STATEMENT)
