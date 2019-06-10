@@ -240,6 +240,8 @@ static jmethodID midSetSurfaceViewFormat;
 static jmethodID midSetActivityTitle;
 static jmethodID midSetWindowStyle;
 static jmethodID midSetOrientation;
+static jmethodID midMinimizeWindow;
+static jmethodID midShouldMinimizeOnFocusLoss;
 static jmethodID midGetContext;
 static jmethodID midIsTablet;
 static jmethodID midIsAndroidTV;
@@ -490,6 +492,10 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
                                 "setWindowStyle","(Z)V");
     midSetOrientation = (*env)->GetStaticMethodID(env, mActivityClass,
                                 "setOrientation","(IIZLjava/lang/String;)V");
+    midMinimizeWindow = (*env)->GetStaticMethodID(env, mActivityClass,
+                                "minimizeWindow","()V");
+    midShouldMinimizeOnFocusLoss = (*env)->GetStaticMethodID(env, mActivityClass,
+                                "shouldMinimizeOnFocusLoss","()Z");
     midGetContext = (*env)->GetStaticMethodID(env, mActivityClass,
                                 "getContext","()Landroid/content/Context;");
     midIsTablet = (*env)->GetStaticMethodID(env, mActivityClass,
@@ -532,7 +538,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetupJNI)(JNIEnv *env, jclass cl
 
 
     if (!midGetNativeSurface || !midSetSurfaceViewFormat ||
-       !midSetActivityTitle || !midSetWindowStyle || !midSetOrientation || !midGetContext || !midIsTablet || !midIsAndroidTV || !midInitTouch ||
+       !midSetActivityTitle || !midSetWindowStyle || !midSetOrientation || !midMinimizeWindow || !midShouldMinimizeOnFocusLoss || !midGetContext || !midIsTablet || !midIsAndroidTV || !midInitTouch ||
        !midSendMessage || !midShowTextInput || !midIsScreenKeyboardShown ||
        !midClipboardSetText || !midClipboardGetText || !midClipboardHasText ||
        !midOpenAPKExpansionInputStream || !midGetManifestEnvironmentVariables || !midGetDisplayDPI ||
@@ -1283,6 +1289,18 @@ void Android_JNI_SetOrientation(int w, int h, int resizable, const char *hint)
     jstring jhint = (jstring)((*env)->NewStringUTF(env, (hint ? hint : "")));
     (*env)->CallStaticVoidMethod(env, mActivityClass, midSetOrientation, w, h, (resizable? 1 : 0), jhint);
     (*env)->DeleteLocalRef(env, jhint);
+}
+
+void Android_JNI_MinizeWindow()
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    (*env)->CallStaticVoidMethod(env, mActivityClass, midMinimizeWindow);
+}
+
+SDL_bool Android_JNI_ShouldMinimizeOnFocusLoss()
+{
+    JNIEnv *env = Android_JNI_GetEnv();
+    return (*env)->CallStaticBooleanMethod(env, mActivityClass, midShouldMinimizeOnFocusLoss);
 }
 
 SDL_bool Android_JNI_GetAccelerometerValues(float values[3])
