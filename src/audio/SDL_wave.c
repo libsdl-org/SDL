@@ -110,7 +110,9 @@ WaveDebugLogFormat(WaveFile *file)
     const char *fmtstr = "WAVE file: %s, %u Hz, %s, %u bits, %u %s/s";
     const char *waveformat, *wavechannel, *wavebpsunit = "B";
     Uint32 wavebps = format->byterate;
-    char channelstr[64] = {0};
+    char channelstr[64];
+
+    SDL_zero(channelstr);
 
     switch (format->encoding) {
     case PCM_CODE:
@@ -641,10 +643,11 @@ MS_ADPCM_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len)
     int result;
     size_t bytesleft, outputsize;
     WaveChunk *chunk = &file->chunk;
-    ADPCM_DecoderState state = {0};
+    ADPCM_DecoderState state;
     MS_ADPCM_ChannelState cstate[2];
 
-    SDL_memset(cstate, 0, sizeof(cstate));
+    SDL_zero(state);
+    SDL_zero(cstate);
 
     if (chunk->size != chunk->length) {
         /* Could not read everything. Recalculate number of sample frames. */
