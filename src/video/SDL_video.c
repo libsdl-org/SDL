@@ -2664,6 +2664,15 @@ ShouldMinimizeOnFocusLoss(SDL_Window * window)
     }
 #endif
 
+#ifdef __ANDROID__
+    {
+        extern SDL_bool Android_JNI_ShouldMinimizeOnFocusLoss(void);
+        if (! Android_JNI_ShouldMinimizeOnFocusLoss()) {
+            return SDL_FALSE;
+        }
+    }
+#endif
+
     return SDL_GetHintBoolean(SDL_HINT_VIDEO_MINIMIZE_ON_FOCUS_LOSS, SDL_TRUE);
 }
 

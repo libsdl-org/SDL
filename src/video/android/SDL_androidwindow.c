@@ -161,6 +161,12 @@ endfunction:
 }
 
 void
+Android_MinimizeWindow(_THIS, SDL_Window *window)
+{
+    Android_JNI_MinizeWindow();
+}
+
+void
 Android_DestroyWindow(_THIS, SDL_Window *window)
 {
     SDL_LockMutex(Android_ActivityMutex);

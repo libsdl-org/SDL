@@ -849,6 +849,45 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
     /**
      * This method is called by SDL using JNI.
      */
+    public static void minimizeWindow() {
+
+        if (mSingleton == null) {
+            return;
+        }
+
+        Intent startMain = new Intent(Intent.ACTION_MAIN);
+        startMain.addCategory(Intent.CATEGORY_HOME);
+        startMain.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        mSingleton.startActivity(startMain);
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
+    public static boolean shouldMinimizeOnFocusLoss() {
+/*
+        if (Build.VERSION.SDK_INT >= 24) {
+            if (mSingleton == null) {
+                return true;
+            }
+
+            if (mSingleton.isInMultiWindowMode()) {
+                return false;
+            }
+
+            if (mSingleton.isInPictureInPictureMode()) {
+                return false;
+            }
+        }
+
+        return true;
+*/
+        return false;
+    }
+
+    /**
+     * This method is called by SDL using JNI.
+     */
     public static boolean isScreenKeyboardShown()
     {
         if (mTextEdit == null) {
