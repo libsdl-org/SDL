@@ -1501,7 +1501,12 @@ D3D_RenderPresent(SDL_Renderer * renderer)
 static void
 D3D_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 {
+    D3D_RenderData *renderdata = (D3D_RenderData *) renderer->driverdata;
     D3D_TextureData *data = (D3D_TextureData *) texture->driverdata;
+
+    if (renderdata->drawstate.texture == texture) {
+        renderdata->drawstate.texture = NULL;
+    }
 
     if (!data) {
         return;
