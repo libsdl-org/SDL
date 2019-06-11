@@ -473,7 +473,7 @@ public class SDLActivity extends Activity implements View.OnSystemUiVisibilityCh
 
     // Used to access the system back behavior.
     public void superOnBackPressed() {
-        onBackPressed();
+        super.onBackPressed();
     }
 
     @Override
