@@ -1971,8 +1971,8 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
                     newOrientation = SDLActivity.SDL_ORIENTATION_LANDSCAPE_FLIPPED;
                     break;
                 case Surface.ROTATION_180:
-                    x = -event.values[1];
-                    y = -event.values[0];
+                    x = -event.values[0];
+                    y = -event.values[1];
                     newOrientation = SDLActivity.SDL_ORIENTATION_PORTRAIT_FLIPPED;
                     break;
                 default:
