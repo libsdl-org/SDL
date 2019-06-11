@@ -113,6 +113,12 @@ typedef struct SDL_VideoData
 /* Utility functions */
 extern NSImage * Cocoa_CreateImage(SDL_Surface * surface);
 
+/* Fix build with the 10.10 SDK */
+#if MAC_OS_X_VERSION_MAX_ALLOWED < 101100
+#define NSEventSubtypeTouch NSTouchEventSubtype
+#define NSEventSubtypeMouseEvent NSMouseEventSubtype
+#endif
+
 #endif /* SDL_cocoavideo_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
