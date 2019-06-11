@@ -450,7 +450,8 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     GLint internalFormat;
     GLenum format, type;
     int texture_w, texture_h;
-    GLenum scaleMode;
+    GLenum magnificationScaleMode;
+    GLenum minificationScaleMode;
 
     GL_ActivateRenderer(renderer);
 
@@ -529,11 +530,33 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 
     data->format = format;
     data->formattype = type;
-    scaleMode = (texture->scaleMode == SDL_ScaleModeNearest) ? GL_NEAREST : GL_LINEAR;
+    switch(texture->scaleMode) {
+        case SDL_ScaleModeNearest:
+            magnificationScaleMode = GL_NEAREST;
+            minificationScaleMode = GL_NEAREST;
+            break;
+        case SDL_ScaleModeLinear:
+            magnificationScaleMode = GL_LINEAR;
+            minificationScaleMode = GL_LINEAR;
+            break;
+        case SDL_ScaleModeBest:
+            magnificationScaleMode = GL_LINEAR;
+            minificationScaleMode = GL_LINEAR_MIPMAP_LINEAR;
+            break;
+        default:
+            magnificationScaleMode = GL_NEAREST;
+            minificationScaleMode = GL_NEAREST;
+            break;
+    }
+
     renderdata->glEnable(textype);
     renderdata->glBindTexture(textype, data->texture);
-    renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, scaleMode);
-    renderdata->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, scaleMode);
+    /* Generate mipmaps for minification if scaling using mipmaps is enabled  */
+    if(texture->scaleMode == SDL_ScaleModeBest) {
+        renderdata->glTexParameteri(textype, GL_GENERATE_MIPMAP, GL_TRUE);
+    }
+    renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER, minificationScaleMode);
+    renderdata->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER, magnificationScaleMode);
     /* According to the spec, CLAMP_TO_EDGE is the default for TEXTURE_RECTANGLE
        and setting it causes an INVALID_ENUM error in the latest NVidia drivers.
     */
@@ -592,9 +615,9 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 
         renderdata->glBindTexture(textype, data->utexture);
         renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER,
-                                    scaleMode);
+                                    minificationScaleMode);
         renderdata->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER,
-                                    scaleMode);
+                                    magnificationScaleMode);
         renderdata->glTexParameteri(textype, GL_TEXTURE_WRAP_S,
                                     GL_CLAMP_TO_EDGE);
         renderdata->glTexParameteri(textype, GL_TEXTURE_WRAP_T,
@@ -604,9 +627,9 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
 
         renderdata->glBindTexture(textype, data->vtexture);
         renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER,
-                                    scaleMode);
+                                    minificationScaleMode);
         renderdata->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER,
-                                    scaleMode);
+                                    magnificationScaleMode);
         renderdata->glTexParameteri(textype, GL_TEXTURE_WRAP_S,
                                     GL_CLAMP_TO_EDGE);
         renderdata->glTexParameteri(textype, GL_TEXTURE_WRAP_T,
@@ -622,9 +645,9 @@ GL_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
         renderdata->glGenTextures(1, &data->utexture);
         renderdata->glBindTexture(textype, data->utexture);
         renderdata->glTexParameteri(textype, GL_TEXTURE_MIN_FILTER,
-                                    scaleMode);
+                                    minificationScaleMode);
         renderdata->glTexParameteri(textype, GL_TEXTURE_MAG_FILTER,
-                                    scaleMode);
+                                    magnificationScaleMode);
         renderdata->glTexParameteri(textype, GL_TEXTURE_WRAP_S,
                                     GL_CLAMP_TO_EDGE);
         renderdata->glTexParameteri(textype, GL_TEXTURE_WRAP_T,
