@@ -1216,7 +1216,7 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
             IDirect3DVertexBuffer9_Release(vbo);
         }
 
-        if (FAILED(IDirect3DDevice9_CreateVertexBuffer(data->device, (UINT) vertsize, usage, fvf, D3DPOOL_DEFAULT, &vbo, NULL))) {
+        if (FAILED(IDirect3DDevice9_CreateVertexBuffer(data->device, (UINT) vertsize, usage, fvf, D3DPOOL_MANAGED, &vbo, NULL))) {
             vbo = NULL;
         }
         data->vertexBuffers[vboidx] = vbo;
