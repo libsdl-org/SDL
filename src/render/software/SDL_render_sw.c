@@ -601,7 +601,6 @@ SetDrawState(SDL_Surface *surface, SW_DrawStateCache *drawstate)
 static int
 SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
 {
-    SW_RenderData *data = (SW_RenderData *) renderer->driverdata;
     SDL_Surface *surface = SW_ActivateRenderer(renderer);
     SW_DrawStateCache drawstate;
 
