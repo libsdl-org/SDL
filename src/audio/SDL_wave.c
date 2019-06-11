@@ -1039,7 +1039,7 @@ IMA_ADPCM_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len)
     int result;
     size_t bytesleft, outputsize;
     WaveChunk *chunk = &file->chunk;
-    ADPCM_DecoderState state = {0};
+    ADPCM_DecoderState state;
     Sint8 *cstate;
 
     if (chunk->size != chunk->length) {
@@ -1056,6 +1056,7 @@ IMA_ADPCM_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len)
         return 0;
     }
 
+    SDL_zero(state);
     state.channels = file->format.channels;
     state.blocksize = file->format.blockalign;
     state.blockheadersize = (size_t)state.channels * 4;
