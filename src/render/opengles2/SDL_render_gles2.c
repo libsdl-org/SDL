@@ -912,6 +912,11 @@ SetDrawState(GLES2_RenderData *data, const SDL_RenderCommand *cmd, const GLES2_I
         stride = sizeof(SDL_Vertex);
     } else {
         stride = sizeof(SDL_VertexSolid);
+
+            /* Generate mipmaps for minification if scaling using mipmaps is enabled */
+            if(texture->scaleMode == SDL_ScaleModeBest && tdata->texture_type == GL_TEXTURE_2D) {
+                data->glGenerateMipmap(tdata->texture_type);
+            }
     }
 
     if (texture) {
@@ -1348,7 +1353,8 @@ GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     GLES2_TextureData *data;
     GLenum format;
     GLenum type;
-    GLenum scaleMode;
+    GLenum magnificationScaleMode;
+    GLenum minificationScaleMode;
 
     GLES2_ActivateRenderer(renderer);
 
@@ -1405,7 +1411,25 @@ GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     data->texture_u = 0;
     data->texture_v = 0;
 #endif
-    scaleMode = (texture->scaleMode == SDL_ScaleModeNearest) ? GL_NEAREST : GL_LINEAR;
+    
+    switch(texture->scaleMode) {
+            case SDL_ScaleModeNearest:
+                magnificationScaleMode = GL_NEAREST;
+                minificationScaleMode = GL_NEAREST;
+                break;
+            case SDL_ScaleModeLinear:
+                magnificationScaleMode = GL_LINEAR;
+                minificationScaleMode = GL_LINEAR;
+                break;
+            case SDL_ScaleModeBest:
+                magnificationScaleMode = GL_LINEAR;
+                minificationScaleMode =  (data->texture_type == GL_TEXTURE_2D) ? GL_LINEAR_MIPMAP_LINEAR : GL_LINEAR;
+                break;
+            default:
+                magnificationScaleMode = GL_NEAREST;
+                minificationScaleMode = GL_NEAREST;
+                break;
+        }
 
     /* Allocate a blob for image renderdata */
     if (texture->access == SDL_TEXTUREACCESS_STREAMING) {
@@ -1439,8 +1463,8 @@ GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         }
         renderdata->glActiveTexture(GL_TEXTURE2);
         renderdata->glBindTexture(data->texture_type, data->texture_v);
-        renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MIN_FILTER, scaleMode);
-        renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MAG_FILTER, scaleMode);
+        renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MIN_FILTER, minificationScaleMode);
+        renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MAG_FILTER, magnificationScaleMode);
         renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         renderdata->glTexImage2D(data->texture_type, 0, format, (texture->w + 1) / 2, (texture->h + 1) / 2, 0, format, type, NULL);
@@ -1451,8 +1475,8 @@ GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         }
         renderdata->glActiveTexture(GL_TEXTURE1);
         renderdata->glBindTexture(data->texture_type, data->texture_u);
-        renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MIN_FILTER, scaleMode);
-        renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MAG_FILTER, scaleMode);
+        renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MIN_FILTER, minificationScaleMode);
+        renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MAG_FILTER, magnificationScaleMode);
         renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         renderdata->glTexImage2D(data->texture_type, 0, format, (texture->w + 1) / 2, (texture->h + 1) / 2, 0, format, type, NULL);
@@ -1466,8 +1490,8 @@ GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
         }
         renderdata->glActiveTexture(GL_TEXTURE1);
         renderdata->glBindTexture(data->texture_type, data->texture_u);
-        renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MIN_FILTER, scaleMode);
-        renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MAG_FILTER, scaleMode);
+        renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MIN_FILTER, minificationScaleMode);
+        renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MAG_FILTER, magnificationScaleMode);
         renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
         renderdata->glTexImage2D(data->texture_type, 0, GL_LUMINANCE_ALPHA, (texture->w + 1) / 2, (texture->h + 1) / 2, 0, GL_LUMINANCE_ALPHA, GL_UNSIGNED_BYTE, NULL);
@@ -1484,8 +1508,8 @@ GLES2_CreateTexture(SDL_Renderer *renderer, SDL_Texture *texture)
     texture->driverdata = data;
     renderdata->glActiveTexture(GL_TEXTURE0);
     renderdata->glBindTexture(data->texture_type, data->texture);
-    renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MIN_FILTER, scaleMode);
-    renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MAG_FILTER, scaleMode);
+    renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MIN_FILTER, minificationScaleMode);
+    renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_MAG_FILTER, magnificationScaleMode);
     renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     renderdata->glTexParameteri(data->texture_type, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     if (texture->format != SDL_PIXELFORMAT_EXTERNAL_OES) {
