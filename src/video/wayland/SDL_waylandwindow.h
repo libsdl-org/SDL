@@ -71,11 +71,16 @@ typedef struct {
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
 
     struct {
-        SDL_bool pending;
+        SDL_bool pending, configure;
         uint32_t serial;
         int width, height;
+        float scale_factor;
     } resize;
 
+    struct wl_output **outputs;
+    int num_outputs;
+
+    float scale_factor;
 } SDL_WindowData;
 
 extern void Wayland_ShowWindow(_THIS, SDL_Window *window);

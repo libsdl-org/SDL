@@ -82,6 +82,11 @@ typedef struct {
     int relative_mouse_mode;
 } SDL_VideoData;
 
+typedef struct {
+    struct wl_output *output;
+    float scale_factor;
+} SDL_WaylandOutputData;
+
 #endif /* SDL_waylandvideo_h_ */
 
 /* vi: set ts=4 sw=4 expandtab: */
