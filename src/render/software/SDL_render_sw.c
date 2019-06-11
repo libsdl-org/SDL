@@ -39,6 +39,13 @@
 
 typedef struct
 {
+    const SDL_Rect *viewport;
+    const SDL_Rect *cliprect;
+    SDL_bool surface_cliprect_dirty;
+} SW_DrawStateCache;
+
+typedef struct
+{
     SDL_Surface *surface;
     SDL_Surface *window;
 } SW_RenderData;
@@ -568,17 +575,43 @@ PrepTextureForCopy(const SDL_RenderCommand *cmd)
     SDL_SetSurfaceBlendMode(surface, blend);
 }
 
+static void
+SetDrawState(SDL_Surface *surface, SW_DrawStateCache *drawstate)
+{
+    if (drawstate->surface_cliprect_dirty) {
+        const SDL_Rect *viewport = drawstate->viewport;
+        const SDL_Rect *cliprect = drawstate->cliprect;
+        SDL_assert(viewport != NULL);  /* the higher level should have forced a SDL_RENDERCMD_SETVIEWPORT */
+
+        if (cliprect != NULL) {
+            SDL_Rect clip_rect;
+            clip_rect.x = cliprect->x + viewport->x;
+            clip_rect.y = cliprect->y + viewport->y;
+            clip_rect.w = cliprect->w;
+            clip_rect.h = cliprect->h;
+            SDL_IntersectRect(viewport, &clip_rect, &clip_rect);
+            SDL_SetClipRect(surface, &clip_rect);
+        } else {
+            SDL_SetClipRect(surface, drawstate->viewport);
+        }
+        drawstate->surface_cliprect_dirty = SDL_FALSE;
+    }
+}
+
 static int
 SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertices, size_t vertsize)
 {
     SW_RenderData *data = (SW_RenderData *) renderer->driverdata;
     SDL_Surface *surface = SW_ActivateRenderer(renderer);
-    const SDL_Rect *viewport = NULL;
-    const SDL_Rect *cliprect = NULL;
+    SW_DrawStateCache drawstate;
 
     if (!surface) {
         return -1;
     }
+
+    drawstate.viewport = NULL;
+    drawstate.cliprect = NULL;
+    drawstate.surface_cliprect_dirty = SDL_TRUE;
 
     while (cmd) {
         switch (cmd->command) {
@@ -587,25 +620,14 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
             }
 
             case SDL_RENDERCMD_SETVIEWPORT: {
-                viewport = &cmd->data.viewport.rect;
-                SDL_SetClipRect(data->surface, viewport);
+                drawstate.viewport = &cmd->data.viewport.rect;
+                drawstate.surface_cliprect_dirty = SDL_TRUE;
                 break;
             }
 
             case SDL_RENDERCMD_SETCLIPRECT: {
-                SDL_assert(viewport != NULL);
-                cliprect = cmd->data.cliprect.enabled ? &cmd->data.cliprect.rect : NULL;
-                if (cliprect) {
-                    SDL_Rect clip_rect;
-                    clip_rect.x = cliprect->x + viewport->x;
-                    clip_rect.y = cliprect->y + viewport->y;
-                    clip_rect.w = cliprect->w;
-                    clip_rect.h = cliprect->h;
-                    SDL_IntersectRect(viewport, &clip_rect, &clip_rect);
-                    SDL_SetClipRect(surface, &clip_rect);
-                } else {
-                    SDL_SetClipRect(surface, viewport);
-                }
+                drawstate.cliprect = cmd->data.cliprect.enabled ? &cmd->data.cliprect.rect : NULL;                
+                drawstate.surface_cliprect_dirty = SDL_TRUE;
                 break;
             }
 
@@ -614,11 +636,10 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 const Uint8 g = cmd->data.color.g;
                 const Uint8 b = cmd->data.color.b;
                 const Uint8 a = cmd->data.color.a;
-                const SDL_Rect clip_rect = surface->clip_rect;
                 /* By definition the clear ignores the clip rect */
                 SDL_SetClipRect(surface, NULL);
                 SDL_FillRect(surface, NULL, SDL_MapRGBA(surface->format, r, g, b, a));
-                SDL_SetClipRect(surface, &clip_rect);
+                drawstate.surface_cliprect_dirty = SDL_TRUE;
                 break;
             }
 
@@ -630,6 +651,7 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 const int count = (int) cmd->data.draw.count;
                 const SDL_Point *verts = (SDL_Point *) (((Uint8 *) vertices) + cmd->data.draw.first);
                 const SDL_BlendMode blend = cmd->data.draw.blend;
+                SetDrawState(surface, &drawstate);
                 if (blend == SDL_BLENDMODE_NONE) {
                     SDL_DrawPoints(surface, verts, count, SDL_MapRGBA(surface->format, r, g, b, a));
                 } else {
@@ -646,6 +668,7 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 const int count = (int) cmd->data.draw.count;
                 const SDL_Point *verts = (SDL_Point *) (((Uint8 *) vertices) + cmd->data.draw.first);
                 const SDL_BlendMode blend = cmd->data.draw.blend;
+                SetDrawState(surface, &drawstate);
                 if (blend == SDL_BLENDMODE_NONE) {
                     SDL_DrawLines(surface, verts, count, SDL_MapRGBA(surface->format, r, g, b, a));
                 } else {
@@ -662,6 +685,7 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 const int count = (int) cmd->data.draw.count;
                 const SDL_Rect *verts = (SDL_Rect *) (((Uint8 *) vertices) + cmd->data.draw.first);
                 const SDL_BlendMode blend = cmd->data.draw.blend;
+                SetDrawState(surface, &drawstate);
                 if (blend == SDL_BLENDMODE_NONE) {
                     SDL_FillRects(surface, verts, count, SDL_MapRGBA(surface->format, r, g, b, a));
                 } else {
@@ -676,6 +700,8 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
                 SDL_Rect *dstrect = verts + 1;
                 SDL_Texture *texture = cmd->data.draw.texture;
                 SDL_Surface *src = (SDL_Surface *) texture->driverdata;
+
+                SetDrawState(surface, &drawstate);
 
                 PrepTextureForCopy(cmd);
 
@@ -693,6 +719,7 @@ SW_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *vertic
 
             case SDL_RENDERCMD_COPY_EX: {
                 const CopyExData *copydata = (CopyExData *) (((Uint8 *) vertices) + cmd->data.draw.first);
+                SetDrawState(surface, &drawstate);
                 PrepTextureForCopy(cmd);
                 SW_RenderCopyEx(renderer, surface, cmd->data.draw.texture, &copydata->srcrect,
                                 &copydata->dstrect, copydata->angle, &copydata->center, copydata->flip);
