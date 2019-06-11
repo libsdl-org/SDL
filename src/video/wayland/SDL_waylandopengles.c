@@ -71,16 +71,24 @@ Wayland_GLES_SwapWindow(_THIS, SDL_Window *window)
 
     // Wayland-EGL forbids drawing calls in-between SwapBuffers and wl_egl_window_resize
     if (data->resize.pending) {
+        if (data->scale_factor != data->resize.scale_factor) {
+            window->w = 0;
+            window->h = 0;
+        }
         SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, data->resize.width, data->resize.height);
         window->w = data->resize.width;
         window->h = data->resize.height;
+        data->scale_factor = data->resize.scale_factor;
+        wl_surface_set_buffer_scale(data->surface, data->scale_factor);
+        WAYLAND_wl_egl_window_resize(data->egl_window, window->w * data->scale_factor, window->h * data->scale_factor, 0, 0);
 
-        WAYLAND_wl_egl_window_resize(data->egl_window, window->w, window->h, 0, 0);
-
-        if (data->waylandData->shell.xdg) {
-           xdg_surface_ack_configure(data->shell_surface.xdg.surface, data->resize.serial);
-        } else if (data->waylandData->shell.zxdg) {
-           zxdg_surface_v6_ack_configure(data->shell_surface.zxdg.surface, data->resize.serial);
+        if (data->resize.configure) {
+           if (data->waylandData->shell.xdg) {
+              xdg_surface_ack_configure(data->shell_surface.xdg.surface, data->resize.serial);
+           } else if (data->waylandData->shell.zxdg) {
+              zxdg_surface_v6_ack_configure(data->shell_surface.zxdg.surface, data->resize.serial);
+           }
+           data->resize.configure = SDL_FALSE;
         }
 
         region = wl_compositor_create_region(data->waylandData->compositor);
@@ -111,6 +119,23 @@ Wayland_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
     WAYLAND_wl_display_flush( ((SDL_VideoData*)_this->driverdata)->display );
     
     return ret;
+}
+
+void
+Wayland_GLES_GetDrawableSize(_THIS, SDL_Window * window, int * w, int * h)
+{
+    SDL_WindowData *data;
+    if (window->driverdata) {
+        data = (SDL_WindowData *) window->driverdata;
+
+        if (w) {
+            *w = window->w * data->scale_factor;
+        }
+
+        if (h) {
+            *h = window->h * data->scale_factor;
+        }
+    }
 }
 
 void 

@@ -38,6 +38,10 @@
 #include "xdg-decoration-unstable-v1-client-protocol.h"
 #include "org-kde-kwin-server-decoration-manager-client-protocol.h"
 
+static float get_window_scale_factor(SDL_Window *window) {
+      return ((SDL_WindowData*)window->driverdata)->scale_factor;
+}
+
 /* On modern desktops, we probably will use the xdg-shell protocol instead
    of wl_shell, but wl_shell might be useful on older Wayland installs that
    don't have the newer protocol, or embedded things that don't have a full
@@ -107,11 +111,14 @@ handle_configure_zxdg_shell_surface(void *data, struct zxdg_surface_v6 *zxdg, ui
     struct wl_region *region;
 
     if (!wind->shell_surface.zxdg.initial_configure_seen) {
+        window->w = 0;
+        window->h = 0;
         SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, wind->resize.width, wind->resize.height);
         window->w = wind->resize.width;
         window->h = wind->resize.height;
 
-        WAYLAND_wl_egl_window_resize(wind->egl_window, window->w, window->h, 0, 0);
+        wl_surface_set_buffer_scale(wind->surface, get_window_scale_factor(window));
+        WAYLAND_wl_egl_window_resize(wind->egl_window, window->w * get_window_scale_factor(window), window->h * get_window_scale_factor(window), 0, 0);
 
         zxdg_surface_v6_ack_configure(zxdg, serial);
 
@@ -123,6 +130,7 @@ handle_configure_zxdg_shell_surface(void *data, struct zxdg_surface_v6 *zxdg, ui
         wind->shell_surface.zxdg.initial_configure_seen = SDL_TRUE;
     } else {
         wind->resize.pending = SDL_TRUE;
+        wind->resize.configure = SDL_TRUE;
         wind->resize.serial = serial;
     }
 }
@@ -208,11 +216,14 @@ handle_configure_xdg_shell_surface(void *data, struct xdg_surface *xdg, uint32_t
     struct wl_region *region;
 
     if (!wind->shell_surface.xdg.initial_configure_seen) {
+        window->w = 0;
+        window->h = 0;
         SDL_SendWindowEvent(window, SDL_WINDOWEVENT_RESIZED, wind->resize.width, wind->resize.height);
         window->w = wind->resize.width;
         window->h = wind->resize.height;
 
-        WAYLAND_wl_egl_window_resize(wind->egl_window, window->w, window->h, 0, 0);
+        wl_surface_set_buffer_scale(wind->surface, get_window_scale_factor(window));
+        WAYLAND_wl_egl_window_resize(wind->egl_window, window->w * get_window_scale_factor(window), window->h * get_window_scale_factor(window), 0, 0);
 
         xdg_surface_ack_configure(xdg, serial);
 
@@ -224,6 +235,7 @@ handle_configure_xdg_shell_surface(void *data, struct xdg_surface *xdg, uint32_t
         wind->shell_surface.xdg.initial_configure_seen = SDL_TRUE;
     } else {
         wind->resize.pending = SDL_TRUE;
+        wind->resize.configure = SDL_TRUE;
         wind->resize.serial = serial;
     }
 }
@@ -329,6 +341,78 @@ static const struct qt_extended_surface_listener extended_surface_listener = {
     handle_close,
 };
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
+
+static void
+update_scale_factor(SDL_WindowData *window) {
+   float old_factor = window->scale_factor, new_factor = 0.0;
+
+   if (!(window->sdlwindow->flags & SDL_WINDOW_ALLOW_HIGHDPI)) {
+       return;
+   }
+
+   if (!window->num_outputs) {
+       new_factor = old_factor;
+   }
+
+   if (FULLSCREEN_VISIBLE(window->sdlwindow) && window->sdlwindow->fullscreen_mode.driverdata) {
+       new_factor = ((SDL_WaylandOutputData*)(wl_output_get_user_data(window->sdlwindow->fullscreen_mode.driverdata)))->scale_factor;
+   }
+
+   for (int i = 0; i < window->num_outputs; i++) {
+       float factor = ((SDL_WaylandOutputData*)(wl_output_get_user_data(window->outputs[i])))->scale_factor;
+       if (factor > new_factor) {
+           new_factor = factor;
+       }
+   }
+
+   if (new_factor != old_factor) {
+       /* force the resize event to trigger, as the logical size didn't change */
+       window->resize.width = window->sdlwindow->w;
+       window->resize.height = window->sdlwindow->h;
+       window->resize.scale_factor = new_factor;
+       window->resize.pending = SDL_TRUE;
+   }
+}
+
+static void
+handle_surface_enter(void *data, struct wl_surface *surface,
+        struct wl_output *output) {
+    SDL_WindowData *window = data;
+
+    window->outputs = SDL_realloc(window->outputs, (window->num_outputs + 1) * sizeof *window->outputs);
+    window->outputs[window->num_outputs++] = output;
+    update_scale_factor(window);
+}
+
+static void
+handle_surface_leave(void *data, struct wl_surface *surface,
+        struct wl_output *output) {
+    SDL_WindowData *window = data;
+
+    if (window->num_outputs > 1) {
+       struct wl_output **new_outputs = SDL_malloc((window->num_outputs - 1) * sizeof *window->outputs), **iter = new_outputs;
+       for (int i=0; i < window->num_outputs; i++) {
+           if (window->outputs[i] != output) {
+               *iter = window->outputs[i];
+               iter++;
+           }
+       }
+       SDL_free(window->outputs);
+       window->outputs = new_outputs;
+       window->num_outputs--;
+    } else {
+       window->num_outputs = 0;
+       SDL_free(window->outputs);
+       window->outputs = NULL;
+    }
+
+    update_scale_factor(window);
+}
+
+static const struct wl_surface_listener surface_listener = {
+    handle_surface_enter,
+    handle_surface_leave
+};
 
 SDL_bool
 Wayland_GetWindowWMInfo(_THIS, SDL_Window * window, SDL_SysWMinfo * info)
@@ -475,7 +559,7 @@ void
 Wayland_SetWindowFullscreen(_THIS, SDL_Window * window,
                             SDL_VideoDisplay * _display, SDL_bool fullscreen)
 {
-    struct wl_output *output = (struct wl_output *) _display->driverdata;
+    struct wl_output *output = ((SDL_WaylandOutputData*) _display->driverdata)->output;
     SetFullscreen(_this, window, fullscreen ? output : NULL);
 }
 
@@ -553,11 +637,28 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
     data->waylandData = c;
     data->sdlwindow = window;
 
+    data->scale_factor = 1.0;
+
+    if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
+        for (int i=0; i < SDL_GetVideoDevice()->num_displays; i++) {
+            float scale = ((SDL_WaylandOutputData*)SDL_GetVideoDevice()->displays[i].driverdata)->scale_factor;
+            if (scale > data->scale_factor) {
+                data->scale_factor = scale;
+            }
+        }
+    }
+
     data->resize.pending = SDL_FALSE;
+    data->resize.width = window->w;
+    data->resize.height = window->h;
+    data->resize.scale_factor = data->scale_factor;
+
+    data->outputs = NULL;
+    data->num_outputs = 0;
 
     data->surface =
         wl_compositor_create_surface(c->compositor);
-    wl_surface_set_user_data(data->surface, data);
+    wl_surface_add_listener(data->surface, &surface_listener, data);
 
     if (c->shell.xdg) {
         data->shell_surface.xdg.surface = xdg_wm_base_get_xdg_surface(c->shell.xdg, data->surface);
@@ -587,7 +688,7 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
 #endif /* SDL_VIDEO_DRIVER_WAYLAND_QT_TOUCH */
 
     data->egl_window = WAYLAND_wl_egl_window_create(data->surface,
-                                            window->w, window->h);
+                                            window->w * data->scale_factor, window->h * data->scale_factor);
 
     /* Create the GLES window surface */
     data->egl_surface = SDL_EGL_CreateSurface(_this, (NativeWindowType) data->egl_window);
@@ -676,9 +777,10 @@ void Wayland_SetWindowSize(_THIS, SDL_Window * window)
     SDL_WindowData *wind = window->driverdata;
     struct wl_region *region;
 
-    WAYLAND_wl_egl_window_resize(wind->egl_window, window->w, window->h, 0, 0);
+    wl_surface_set_buffer_scale(wind->surface, get_window_scale_factor(window));
+    WAYLAND_wl_egl_window_resize(wind->egl_window, window->w * get_window_scale_factor(window), window->h * get_window_scale_factor(window), 0, 0);
 
-    region =wl_compositor_create_region(data->compositor);
+    region = wl_compositor_create_region(data->compositor);
     wl_region_add(region, 0, 0, window->w, window->h);
     wl_surface_set_opaque_region(wind->surface, region);
     wl_region_destroy(region);

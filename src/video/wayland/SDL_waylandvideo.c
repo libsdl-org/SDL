@@ -172,6 +172,7 @@ Wayland_CreateDevice(int devindex)
     device->GL_SwapWindow = Wayland_GLES_SwapWindow;
     device->GL_GetSwapInterval = Wayland_GLES_GetSwapInterval;
     device->GL_SetSwapInterval = Wayland_GLES_SetSwapInterval;
+    device->GL_GetDrawableSize = Wayland_GLES_GetDrawableSize;
     device->GL_MakeCurrent = Wayland_GLES_MakeCurrent;
     device->GL_CreateContext = Wayland_GLES_CreateContext;
     device->GL_LoadLibrary = Wayland_GLES_LoadLibrary;
@@ -199,6 +200,7 @@ Wayland_CreateDevice(int devindex)
     device->Vulkan_UnloadLibrary = Wayland_Vulkan_UnloadLibrary;
     device->Vulkan_GetInstanceExtensions = Wayland_Vulkan_GetInstanceExtensions;
     device->Vulkan_CreateSurface = Wayland_Vulkan_CreateSurface;
+    device->Vulkan_GetDrawableSize = Wayland_Vulkan_GetDrawableSize;
 #endif
 
     device->free = Wayland_DeleteDevice;
@@ -226,7 +228,6 @@ display_handle_geometry(void *data,
     SDL_VideoDisplay *display = data;
 
     display->name = SDL_strdup(model);
-    display->driverdata = output;
 }
 
 static void
@@ -237,15 +238,15 @@ display_handle_mode(void *data,
                     int height,
                     int refresh)
 {
-    SDL_VideoDisplay *display = data;
     SDL_DisplayMode mode;
+    SDL_VideoDisplay *display = data;
 
     SDL_zero(mode);
     mode.format = SDL_PIXELFORMAT_RGB888;
     mode.w = width;
     mode.h = height;
     mode.refresh_rate = refresh / 1000; // mHz to Hz
-    mode.driverdata = display->driverdata;
+    mode.driverdata = ((SDL_WaylandOutputData*)display->driverdata)->output;
     SDL_AddDisplayMode(display, &mode);
 
     if (flags & WL_OUTPUT_MODE_CURRENT) {
@@ -258,8 +259,10 @@ static void
 display_handle_done(void *data,
                     struct wl_output *output)
 {
+    /* !!! FIXME: this will fail on any further property changes! */
     SDL_VideoDisplay *display = data;
     SDL_AddVideoDisplay(display);
+    wl_output_set_user_data(output, display->driverdata);
     SDL_free(display->name);
     SDL_free(display);
 }
@@ -269,7 +272,8 @@ display_handle_scale(void *data,
                      struct wl_output *output,
                      int32_t factor)
 {
-    // TODO: do HiDPI stuff.
+    SDL_VideoDisplay *display = data;
+    ((SDL_WaylandOutputData*)display->driverdata)->scale_factor = factor;
 }
 
 static const struct wl_output_listener output_listener = {
@@ -283,6 +287,7 @@ static void
 Wayland_add_display(SDL_VideoData *d, uint32_t id)
 {
     struct wl_output *output;
+    SDL_WaylandOutputData *data;
     SDL_VideoDisplay *display = SDL_malloc(sizeof *display);
     if (!display) {
         SDL_OutOfMemory();
@@ -296,6 +301,10 @@ Wayland_add_display(SDL_VideoData *d, uint32_t id)
         SDL_free(display);
         return;
     }
+    data = SDL_malloc(sizeof *data);
+    data->output = output;
+    data->scale_factor = 1.0;
+    display->driverdata = data;
 
     wl_output_add_listener(output, &output_listener, display);
 }
@@ -351,7 +360,7 @@ display_handle_global(void *data, struct wl_registry *registry, uint32_t id,
     /*printf("WAYLAND INTERFACE: %s\n", interface);*/
 
     if (strcmp(interface, "wl_compositor") == 0) {
-        d->compositor = wl_registry_bind(d->registry, id, &wl_compositor_interface, 1);
+        d->compositor = wl_registry_bind(d->registry, id, &wl_compositor_interface, SDL_min(3, version));
     } else if (strcmp(interface, "wl_output") == 0) {
         Wayland_add_display(d, id);
     } else if (strcmp(interface, "wl_seat") == 0) {
@@ -466,7 +475,9 @@ Wayland_VideoQuit(_THIS)
 
     for (i = 0; i < _this->num_displays; ++i) {
         SDL_VideoDisplay *display = &_this->displays[i];
-        wl_output_destroy(display->driverdata);
+
+        wl_output_destroy(((SDL_WaylandOutputData*)display->driverdata)->output);
+        SDL_free(display->driverdata);
         display->driverdata = NULL;
 
         for (j = display->num_display_modes; j--;) {
