@@ -1185,7 +1185,7 @@ SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
 
     if (data->drawstate.cliprect_dirty) {
         const SDL_Rect *viewport = &data->drawstate.viewport;
-        const SDL_Rect *rect = &cmd->data.cliprect.rect;
+        const SDL_Rect *rect = &data->drawstate.cliprect;
         const RECT d3drect = { viewport->x + rect->x, viewport->y + rect->y, viewport->x + rect->x + rect->w, viewport->y + rect->y + rect->h };
         IDirect3DDevice9_SetScissorRect(data->device, &d3drect);
         data->drawstate.cliprect_dirty = SDL_FALSE;
@@ -1511,6 +1511,7 @@ D3D_DestroyTexture(SDL_Renderer * renderer, SDL_Texture * texture)
     if (!data) {
         return;
     }
+
     D3D_DestroyTextureRep(&data->texture);
     D3D_DestroyTextureRep(&data->utexture);
     D3D_DestroyTextureRep(&data->vtexture);
