@@ -1216,7 +1216,7 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
             IDirect3DVertexBuffer9_Release(vbo);
         }
 
-        if (FAILED(IDirect3DDevice9_CreateVertexBuffer(data->device, vertsize, usage, fvf, D3DPOOL_DEFAULT, &vbo, NULL))) {
+        if (FAILED(IDirect3DDevice9_CreateVertexBuffer(data->device, (UINT) vertsize, usage, fvf, D3DPOOL_DEFAULT, &vbo, NULL))) {
             vbo = NULL;
         }
         data->vertexBuffers[vboidx] = vbo;
@@ -1225,7 +1225,7 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
 
     if (vbo) {
         void *ptr;
-        if (FAILED(IDirect3DVertexBuffer9_Lock(vbo, 0, vertsize, &ptr, D3DLOCK_DISCARD))) {
+        if (FAILED(IDirect3DVertexBuffer9_Lock(vbo, 0, (UINT) vertsize, &ptr, D3DLOCK_DISCARD))) {
             vbo = NULL;  /* oh well, we'll do immediate mode drawing.  :(  */
         } else {
             SDL_memcpy(ptr, vertices, vertsize);
@@ -1313,10 +1313,10 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                 const size_t first = cmd->data.draw.first;
                 SetDrawState(data, cmd);
                 if (vbo) {
-                    IDirect3DDevice9_DrawPrimitive(data->device, D3DPT_POINTLIST, first / sizeof (Vertex), count);
+                    IDirect3DDevice9_DrawPrimitive(data->device, D3DPT_POINTLIST, (UINT) (first / sizeof (Vertex)), (UINT) count);
                 } else {
                     const Vertex *verts = (Vertex *) (((Uint8 *) vertices) + first);
-                    IDirect3DDevice9_DrawPrimitiveUP(data->device, D3DPT_POINTLIST, count, verts, sizeof (Vertex));
+                    IDirect3DDevice9_DrawPrimitiveUP(data->device, D3DPT_POINTLIST, (UINT) count, verts, sizeof (Vertex));
                 }
                 break;
             }
@@ -1333,12 +1333,12 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                 SetDrawState(data, cmd);
 
                 if (vbo) {
-                    IDirect3DDevice9_DrawPrimitive(data->device, D3DPT_LINESTRIP, first / sizeof (Vertex), count - 1);
+                    IDirect3DDevice9_DrawPrimitive(data->device, D3DPT_LINESTRIP, (UINT) (first / sizeof (Vertex)), (UINT) (count - 1));
                     if (close_endpoint) {
-                        IDirect3DDevice9_DrawPrimitive(data->device, D3DPT_POINTLIST, (first / sizeof (Vertex)) + (count - 1), 1);
+                        IDirect3DDevice9_DrawPrimitive(data->device, D3DPT_POINTLIST, (UINT) ((first / sizeof (Vertex)) + (count - 1)), 1);
                     }
                 } else {
-                    IDirect3DDevice9_DrawPrimitiveUP(data->device, D3DPT_LINESTRIP, count - 1, verts, sizeof (Vertex));
+                    IDirect3DDevice9_DrawPrimitiveUP(data->device, D3DPT_LINESTRIP, (UINT) (count - 1), verts, sizeof (Vertex));
                     if (close_endpoint) {
                         IDirect3DDevice9_DrawPrimitiveUP(data->device, D3DPT_POINTLIST, 1, &verts[count-1], sizeof (Vertex));
                     }
@@ -1353,7 +1353,7 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                 if (vbo) {
                     size_t offset = 0;
                     for (i = 0; i < count; ++i, offset += 4) {
-                        IDirect3DDevice9_DrawPrimitive(data->device, D3DPT_TRIANGLEFAN, (first / sizeof (Vertex)) + offset, 2);
+                        IDirect3DDevice9_DrawPrimitive(data->device, D3DPT_TRIANGLEFAN, (UINT) ((first / sizeof (Vertex)) + offset), 2);
                     }
                 } else {
                     const Vertex *verts = (Vertex *) (((Uint8 *) vertices) + first);
@@ -1371,7 +1371,7 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                 if (vbo) {
                     size_t offset = 0;
                     for (i = 0; i < count; ++i, offset += 4) {
-                        IDirect3DDevice9_DrawPrimitive(data->device, D3DPT_TRIANGLEFAN, (first / sizeof (Vertex)) + offset, 2);
+                        IDirect3DDevice9_DrawPrimitive(data->device, D3DPT_TRIANGLEFAN, (UINT) ((first / sizeof (Vertex)) + offset), 2);
                     }
                 } else {
                     const Vertex *verts = (Vertex *) (((Uint8 *) vertices) + first);
@@ -1395,7 +1395,7 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
                 IDirect3DDevice9_SetTransform(data->device, D3DTS_VIEW, (D3DMATRIX*)&d3dmatrix);
 
                 if (vbo) {
-                    IDirect3DDevice9_DrawPrimitive(data->device, D3DPT_TRIANGLEFAN, first / sizeof (Vertex), 2);
+                    IDirect3DDevice9_DrawPrimitive(data->device, D3DPT_TRIANGLEFAN, (UINT) (first / sizeof (Vertex)), 2);
                 } else {
                     IDirect3DDevice9_DrawPrimitiveUP(data->device, D3DPT_TRIANGLEFAN, 2, verts, sizeof (Vertex));
                 }
