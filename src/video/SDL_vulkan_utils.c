@@ -24,6 +24,8 @@
 #include "SDL_error.h"
 #include "SDL_log.h"
 
+/* !!! FIXME: this file doesn't match coding standards for SDL (brace position, etc). */
+
 #if SDL_VIDEO_VULKAN
 
 const char *SDL_Vulkan_GetResultString(VkResult result)
@@ -274,7 +276,7 @@ SDL_bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
         SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "vulkandisplay: Number of display properties for device %u: %u",
                 physicalDeviceIndex, displayPropertiesCount);
 
-        if (displayId < 0 || displayId >= displayPropertiesCount)
+        if ( (displayId < 0) || (((uint32_t) displayId) >= displayPropertiesCount) )
         {
             /* Display id specified was higher than number of available displays, move to next physical device. */
             displayId -= displayPropertiesCount;
