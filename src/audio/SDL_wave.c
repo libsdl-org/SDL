@@ -1790,9 +1790,13 @@ WaveLoad(SDL_RWops *src, WaveFile *file, SDL_AudioSpec *spec, Uint8 **audio_buf,
     SDL_bool RIFFlengthknown = SDL_FALSE;
     WaveFormat *format = &file->format;
     WaveChunk *chunk = &file->chunk;
-    WaveChunk RIFFchunk = {0};
-    WaveChunk fmtchunk = {0};
-    WaveChunk datachunk = {0};
+    WaveChunk RIFFchunk;
+    WaveChunk fmtchunk;
+    WaveChunk datachunk;
+
+    SDL_zero(RIFFchunk);
+    SDL_zero(fmtchunk);
+    SDL_zero(datachunk);
 
     envchunkcountlimit = SDL_getenv("SDL_WAVE_CHUNK_LIMIT");
     if (envchunkcountlimit != NULL) {
