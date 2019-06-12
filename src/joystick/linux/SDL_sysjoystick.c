@@ -763,7 +763,7 @@ HandleHat(SDL_Joystick * stick, Uint8 hat, int axis, int value)
         {SDL_HAT_LEFTDOWN, SDL_HAT_DOWN, SDL_HAT_RIGHTDOWN}
     };
 
-    the_hat = &stick->hwdata->hats[stick->hwdata->hats_indices[hat]];
+    the_hat = &stick->hwdata->hats[hat];
     if (value < 0) {
         value = 0;
     } else if (value == 0) {
@@ -773,7 +773,7 @@ HandleHat(SDL_Joystick * stick, Uint8 hat, int axis, int value)
     }
     if (value != the_hat->axis[axis]) {
         the_hat->axis[axis] = value;
-        SDL_PrivateJoystickHat(stick, stick->hwdata->hats_indices[hat],
+        SDL_PrivateJoystickHat(stick, hat,
                                position_map[the_hat->axis[1]][the_hat->axis[0]]);
     }
 }
@@ -875,7 +875,7 @@ HandleInputEvents(SDL_Joystick * joystick)
                 case ABS_HAT3X:
                 case ABS_HAT3Y:
                     code -= ABS_HAT0X;
-                    HandleHat(joystick, code / 2, code % 2, events[i].value);
+                    HandleHat(joystick, joystick->hwdata->hats_indices[code / 2], code % 2, events[i].value);
                     break;
                 default:
                     if (joystick->hwdata->abs_map[code] != 0xFF) {
