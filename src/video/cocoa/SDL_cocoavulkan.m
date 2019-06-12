@@ -19,7 +19,7 @@
   3. This notice may not be removed or altered from any source distribution.
 */
 
-/* 
+/*
  * @author Mark Callow, www.edgewise-consulting.com. Based on Jacob Lifshay's
  * SDL_x11vulkan.c.
  */
@@ -42,6 +42,7 @@
 const char* defaultPaths[] = {
     "vulkan.framework/vulkan",
     "libvulkan.1.dylib",
+    "libvulkan.dylib",
     "MoltenVK.framework/MoltenVK",
     "libMoltenVK.dylib"
 };
@@ -58,7 +59,7 @@ int Cocoa_Vulkan_LoadLibrary(_THIS, const char *path)
     PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = NULL;
 
     if (_this->vulkan_config.loader_handle) {
-        return SDL_SetError("Vulkan/MoltenVK already loaded");
+        return SDL_SetError("Vulkan Portability library is already loaded.");
     }
 
     /* Load the Vulkan loader library */
@@ -67,9 +68,7 @@ int Cocoa_Vulkan_LoadLibrary(_THIS, const char *path)
     }
 
     if (!path) {
-        /* MoltenVK framework, currently, v0.17.0, has a static library and is
-         * the recommended way to use the package. There is likely no object to
-         * load. */
+        /* Handle the case where Vulkan Portability is linked statically. */
         vkGetInstanceProcAddr =
          (PFN_vkGetInstanceProcAddr)dlsym(DEFAULT_HANDLE,
                                           "vkGetInstanceProcAddr");
@@ -99,7 +98,7 @@ int Cocoa_Vulkan_LoadLibrary(_THIS, const char *path)
         }
 
         if (_this->vulkan_config.loader_handle == NULL) {
-            return SDL_SetError("Failed to load Vulkan/MoltenVK library");
+            return SDL_SetError("Failed to load Vulkan Portability library");
         }
 
         SDL_strlcpy(_this->vulkan_config.loader_path, foundPath,
@@ -139,11 +138,11 @@ int Cocoa_Vulkan_LoadLibrary(_THIS, const char *path)
     }
     SDL_free(extensions);
     if (!hasSurfaceExtension) {
-        SDL_SetError("Installed MoltenVK/Vulkan doesn't implement the "
+        SDL_SetError("Installed Vulkan Portability library doesn't implement the "
                      VK_KHR_SURFACE_EXTENSION_NAME " extension");
         goto fail;
     } else if (!hasMacOSSurfaceExtension) {
-        SDL_SetError("Installed MoltenVK/Vulkan doesn't implement the "
+        SDL_SetError("Installed Vulkan Portability library doesn't implement the "
                      VK_MVK_MACOS_SURFACE_EXTENSION_NAME "extension");
         goto fail;
     }
