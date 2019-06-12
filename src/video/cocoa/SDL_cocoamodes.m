@@ -300,13 +300,9 @@ Cocoa_GetDisplayUsableBounds(_THIS, SDL_VideoDisplay * display, SDL_Rect * rect)
         return -1;
     }
 
-    const CGRect cgrect = CGDisplayBounds(cgdisplay);
     const NSRect frame = [screen visibleFrame];
-
-    // !!! FIXME: I assume -[NSScreen visibleFrame] is relative to the origin of the screen in question and not the whole desktop.
-    // !!! FIXME: The math vs CGDisplayBounds might be incorrect if that's not the case, though. Check this.
-    rect->x = (int)(cgrect.origin.x + frame.origin.x);
-    rect->y = (int)(cgrect.origin.y + frame.origin.y);
+    rect->x = (int)frame.origin.x;
+    rect->y = (int)(CGDisplayPixelsHigh(kCGDirectMainDisplay) - frame.origin.y - frame.size.height);
     rect->w = (int)frame.size.width;
     rect->h = (int)frame.size.height;
 
