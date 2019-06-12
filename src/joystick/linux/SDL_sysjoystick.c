@@ -773,9 +773,8 @@ HandleHat(SDL_Joystick * stick, Uint8 hat, int axis, int value)
     }
     if (value != the_hat->axis[axis]) {
         the_hat->axis[axis] = value;
-        SDL_PrivateJoystickHat(stick, hat,
-                               position_map[the_hat->
-                                            axis[1]][the_hat->axis[0]]);
+        SDL_PrivateJoystickHat(stick, stick->hwdata->hats_indices[hat],
+                               position_map[the_hat->axis[1]][the_hat->axis[0]]);
     }
 }
 
