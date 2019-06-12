@@ -400,9 +400,7 @@ SDL_bool SDL_Vulkan_Display_CreateSurface(void *vkGetInstanceProcAddr_,
                 vkGetDisplayPlaneSupportedDisplaysKHR(physicalDevice, i, &planeSupportedDisplaysCount, NULL);
             if (result != VK_SUCCESS || planeSupportedDisplaysCount == 0)
             {
-                /* No supported displays, on to next plane. */
-                SDL_free(displayPlaneProperties);
-                continue;
+                continue;  /* No supported displays, on to next plane. */
             }
             SDL_LogDebug(SDL_LOG_CATEGORY_VIDEO, "vulkandisplay: Number of supported displays for plane %u: %u", i, planeSupportedDisplaysCount);
 
