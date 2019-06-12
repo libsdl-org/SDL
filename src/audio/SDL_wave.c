@@ -1107,9 +1107,11 @@ IMA_ADPCM_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len)
 
         /* Initialize decoder with the values from the block header. */
         result = IMA_ADPCM_DecodeBlockHeader(&state);
+        if (result == 0) {
+            /* Decode the block data. It stores the samples directly in the output. */
+            result = IMA_ADPCM_DecodeBlockData(&state);
+        }
 
-        /* Decode the block data. It stores the samples directly in the output. */
-        result = IMA_ADPCM_DecodeBlockData(&state);
         if (result == -1) {
             /* Unexpected end. Stop decoding and return partial data if necessary. */
             if (file->trunchint == TruncVeryStrict || file->trunchint == TruncVeryStrict) {
