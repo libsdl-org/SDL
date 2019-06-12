@@ -272,6 +272,12 @@ SDL_EVDEV_Poll(void)
                        position is sent in EV_ABS ABS_X/ABS_Y, switching to
                        next finger after earlist is released) */
                     if (item->is_touchscreen && events[i].code == BTN_TOUCH) {
+                        if (item->touchscreen_data->max_slots == 1) {
+                            if (events[i].value)
+                                item->touchscreen_data->slots[0].delta = EVDEV_TOUCH_SLOTDELTA_DOWN;
+                            else
+                                item->touchscreen_data->slots[0].delta = EVDEV_TOUCH_SLOTDELTA_UP;
+                        }
                         break;
                     }
 
@@ -328,14 +334,20 @@ SDL_EVDEV_Poll(void)
                         }
                         break;
                     case ABS_X:
-                        if (item->is_touchscreen) /* FIXME: temp hack */
-                            break;
-                        SDL_SendMouseMotion(mouse->focus, mouse->mouseID, SDL_FALSE, events[i].value, mouse->y);
+                        if (item->is_touchscreen) {
+                            if (item->touchscreen_data->max_slots != 1)
+                                break;
+                            item->touchscreen_data->slots[0].x = events[i].value;
+                        } else
+                            SDL_SendMouseMotion(mouse->focus, mouse->mouseID, SDL_FALSE, events[i].value, mouse->y);
                         break;
                     case ABS_Y:
-                        if (item->is_touchscreen) /* FIXME: temp hack */
-                            break;
-                        SDL_SendMouseMotion(mouse->focus, mouse->mouseID, SDL_FALSE, mouse->x, events[i].value);
+                        if (item->is_touchscreen) {
+                            if (item->touchscreen_data->max_slots != 1)
+                                break;
+                            item->touchscreen_data->slots[0].y = events[i].value;
+                        } else
+                            SDL_SendMouseMotion(mouse->focus, mouse->mouseID, SDL_FALSE, mouse->x, events[i].value);
                         break;
                     default:
                         break;
@@ -444,6 +456,7 @@ static int
 SDL_EVDEV_init_touchscreen(SDL_evdevlist_item* item)
 {
     int ret, i;
+    unsigned long xreq, yreq;
     char name[64];
     struct input_absinfo abs_info;
 
@@ -466,7 +479,24 @@ SDL_EVDEV_init_touchscreen(SDL_evdevlist_item* item)
         return SDL_OutOfMemory();
     }
 
-    ret = ioctl(item->fd, EVIOCGABS(ABS_MT_POSITION_X), &abs_info);
+    ret = ioctl(item->fd, EVIOCGABS(ABS_MT_SLOT), &abs_info);
+    if (ret < 0) {
+        SDL_free(item->touchscreen_data->name);
+        SDL_free(item->touchscreen_data);
+        return SDL_SetError("Failed to get evdev touchscreen limits");
+    }
+
+    if (abs_info.maximum == 0) {
+        item->touchscreen_data->max_slots = 1;
+        xreq = EVIOCGABS(ABS_X);
+        yreq = EVIOCGABS(ABS_Y);
+    } else {
+        item->touchscreen_data->max_slots = abs_info.maximum + 1;
+        xreq = EVIOCGABS(ABS_MT_POSITION_X);
+        yreq = EVIOCGABS(ABS_MT_POSITION_Y);
+    }
+
+    ret = ioctl(item->fd, xreq, &abs_info);
     if (ret < 0) {
         SDL_free(item->touchscreen_data->name);
         SDL_free(item->touchscreen_data);
@@ -476,7 +506,7 @@ SDL_EVDEV_init_touchscreen(SDL_evdevlist_item* item)
     item->touchscreen_data->max_x = abs_info.maximum;
     item->touchscreen_data->range_x = abs_info.maximum - abs_info.minimum;
 
-    ret = ioctl(item->fd, EVIOCGABS(ABS_MT_POSITION_Y), &abs_info);
+    ret = ioctl(item->fd, yreq, &abs_info);
     if (ret < 0) {
         SDL_free(item->touchscreen_data->name);
         SDL_free(item->touchscreen_data);
@@ -495,14 +525,6 @@ SDL_EVDEV_init_touchscreen(SDL_evdevlist_item* item)
     item->touchscreen_data->min_pressure = abs_info.minimum;
     item->touchscreen_data->max_pressure = abs_info.maximum;
     item->touchscreen_data->range_pressure = abs_info.maximum - abs_info.minimum;
-
-    ret = ioctl(item->fd, EVIOCGABS(ABS_MT_SLOT), &abs_info);
-    if (ret < 0) {
-        SDL_free(item->touchscreen_data->name);
-        SDL_free(item->touchscreen_data);
-        return SDL_SetError("Failed to get evdev touchscreen limits");
-    }
-    item->touchscreen_data->max_slots = abs_info.maximum + 1;
 
     item->touchscreen_data->slots = SDL_calloc(
         item->touchscreen_data->max_slots,
