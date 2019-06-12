@@ -137,12 +137,12 @@ static SDL_NORETURN void SDL_ExitProcess(int exitcode)
     emscripten_cancel_main_loop();  /* this should "kill" the app. */
     emscripten_force_exit(exitcode);  /* this should "kill" the app. */
     exit(exitcode);
-#else
-#ifdef HAVE__EXIT /* Upper case _Exit() */
+#elif defined(__HAIKU__)  /* Haiku has _Exit, but it's not marked noreturn. */
+    _exit(exitcode);
+#elif defined(HAVE__EXIT) /* Upper case _Exit() */
     _Exit(exitcode);
 #else
     _exit(exitcode);
-#endif
 #endif
 }
 
@@ -150,7 +150,7 @@ static SDL_NORETURN void SDL_ExitProcess(int exitcode)
 #if defined(__WATCOMC__)
 #pragma aux SDL_AbortAssertion aborts;
 #endif
-static void SDL_AbortAssertion(void)
+static SDL_NORETURN void SDL_AbortAssertion(void)
 {
     SDL_Quit();
     SDL_ExitProcess(42);
