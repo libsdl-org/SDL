@@ -103,7 +103,11 @@ SDL_TouchMouseEventsChanged(void *userdata, const char *name, const char *oldVal
     if (hint && (*hint == '0' || SDL_strcasecmp(hint, "false") == 0)) {
         mouse->touch_mouse_events = SDL_FALSE;
     } else {
+#if defined(__MACOSX__)  /* macOS synthesizes its own events for this. */
+        mouse->touch_mouse_events = SDL_FALSE;
+#else
         mouse->touch_mouse_events = SDL_TRUE;
+#endif
     }
 }
 
