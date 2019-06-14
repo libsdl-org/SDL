@@ -424,7 +424,11 @@ void
 Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
-    SDL_MouseID mouseID = mouse ? mouse->mouseID : 0;
+    if (!mouse) {
+        return;
+    }
+
+    SDL_MouseID mouseID = mouse->mouseID;
     if ([event subtype] == NSEventSubtypeTouch) {  /* this is a synthetic from the OS */
         if (mouse->touch_mouse_events) {
             mouseID = SDL_TOUCH_MOUSEID;   /* Hint is set */

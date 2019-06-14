@@ -1240,7 +1240,8 @@ LAW_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len)
         return SDL_SetError("WAVE file too big");
     }
 
-    src = (Uint8 *)SDL_realloc(chunk->data, expanded_len);
+    /* 1 to avoid allocating zero bytes, to keep static analysis happy. */
+    src = (Uint8 *)SDL_realloc(chunk->data, expanded_len ? expanded_len : 1);
     if (src == NULL) {
         return SDL_OutOfMemory();
     }
@@ -1371,7 +1372,8 @@ PCM_ConvertSint24ToSint32(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len)
         return SDL_SetError("WAVE file too big");
     }
 
-    ptr = (Uint8 *)SDL_realloc(chunk->data, expanded_len);
+    /* 1 to avoid allocating zero bytes, to keep static analysis happy. */
+    ptr = (Uint8 *)SDL_realloc(chunk->data, expanded_len ? expanded_len : 1);
     if (ptr == NULL) {
         return SDL_OutOfMemory();
     }
