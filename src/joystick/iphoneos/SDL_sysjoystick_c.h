@@ -34,6 +34,7 @@ typedef struct joystick_hwdata
     SDL_bool remote;
 
     GCController __unsafe_unretained *controller;
+    SDL_bool uses_pause_handler;
     int num_pause_presses;
     Uint32 pause_button_down_time;
 
@@ -45,6 +46,7 @@ typedef struct joystick_hwdata
     int naxes;
     int nbuttons;
     int nhats;
+    Uint16 button_mask;
 
     struct joystick_hwdata *next;
 } joystick_hwdata;
