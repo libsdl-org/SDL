@@ -526,8 +526,9 @@ SDL_Convert_S32_to_F32_SSE2(SDL_AudioCVT *cvt, SDL_AudioFormat format)
     }
 
     SDL_assert(!i || ((((size_t) dst) & 15) == 0));
-    SDL_assert(!i || ((((size_t) src) & 15) == 0));
 
+    /* Make sure src is aligned too. */
+    if ((((size_t) src) & 15) == 0) {
     {
         /* Aligned! Do SSE blocks as long as we have 16 bytes available. */
         const __m128 divby8388607 = _mm_set1_ps(DIVBY8388607);
@@ -1060,9 +1061,9 @@ SDL_Convert_S32_to_F32_NEON(SDL_AudioCVT *cvt, SDL_AudioFormat format)
     }
 
     SDL_assert(!i || ((((size_t) dst) & 15) == 0));
-    SDL_assert(!i || ((((size_t) src) & 15) == 0));
 
-    {
+    /* Make sure src is aligned too. */
+    if ((((size_t) src) & 15) == 0) {
         /* Aligned! Do NEON blocks as long as we have 16 bytes available. */
         const float32x4_t divby8388607 = vdupq_n_f32(DIVBY8388607);
         const int32_t *mmsrc = (const int32_t *) src;
