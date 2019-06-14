@@ -375,6 +375,15 @@ Cocoa_HandleMouseEvent(_THIS, NSEvent *event)
         return;  /* can happen when returning from fullscreen Space on shutdown */
     }
 
+    SDL_MouseID mouseID = mouse ? mouse->mouseID : 0;
+    if ([event subtype] == NSEventSubtypeTouch) {  /* this is a synthetic from the OS */
+        if (mouse->touch_mouse_events) {
+            mouseID = SDL_TOUCH_MOUSEID;   /* Hint is set */
+        } else {
+            return;  /* no hint set, drop this one. */
+        }
+    }
+
     const SDL_bool seenWarp = driverdata->seenWarp;
     driverdata->seenWarp = NO;
 
@@ -408,13 +417,21 @@ Cocoa_HandleMouseEvent(_THIS, NSEvent *event)
         DLog("Motion was (%g, %g), offset to (%g, %g)", [event deltaX], [event deltaY], deltaX, deltaY);
     }
 
-    SDL_SendMouseMotion(mouse->focus, mouse->mouseID, 1, (int)deltaX, (int)deltaY);
+    SDL_SendMouseMotion(mouse->focus, mouseID, 1, (int)deltaX, (int)deltaY);
 }
 
 void
 Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
+    SDL_MouseID mouseID = mouse ? mouse->mouseID : 0;
+    if ([event subtype] == NSEventSubtypeTouch) {  /* this is a synthetic from the OS */
+        if (mouse->touch_mouse_events) {
+            mouseID = SDL_TOUCH_MOUSEID;   /* Hint is set */
+        } else {
+            return;  /* no hint set, drop this one. */
+        }
+    }
 
     CGFloat x = -[event deltaX];
     CGFloat y = [event deltaY];
@@ -437,7 +454,7 @@ Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event)
         y = SDL_floor(y);
     }
 
-    SDL_SendMouseWheel(window, mouse->mouseID, x, y, direction);
+    SDL_SendMouseWheel(window, mouseID, x, y, direction);
 }
 
 void

@@ -893,8 +893,18 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 
 - (void)mouseDown:(NSEvent *)theEvent
 {
+    const SDL_Mouse *mouse = SDL_GetMouse();
+    SDL_MouseID mouseID = mouse ? mouse->mouseID : 0;
     int button;
     int clicks;
+
+    if ([theEvent subtype] == NSEventSubtypeTouch) {  /* this is a synthetic from the OS */
+        if (mouse->touch_mouse_events) {
+            mouseID = SDL_TOUCH_MOUSEID;   /* Hint is set */
+        } else {
+            return;  /* no hint set, drop this one. */
+        }
+    }
 
     /* Ignore events that aren't inside the client area (i.e. title bar.) */
     if ([theEvent window]) {
@@ -933,8 +943,6 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 
     clicks = (int) [theEvent clickCount];
 
-    const SDL_Mouse *mouse = SDL_GetMouse();
-    const SDL_MouseID mouseID = mouse ? mouse->mouseID : 0;
     SDL_SendMouseButtonClicks(_data->window, mouseID, SDL_PRESSED, button, clicks);
 }
 
@@ -950,8 +958,18 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 
 - (void)mouseUp:(NSEvent *)theEvent
 {
+    const SDL_Mouse *mouse = SDL_GetMouse();
+    SDL_MouseID mouseID = mouse ? mouse->mouseID : 0;
     int button;
     int clicks;
+
+    if ([theEvent subtype] == NSEventSubtypeTouch) {  /* this is a synthetic from the OS */
+        if (mouse->touch_mouse_events) {
+            mouseID = SDL_TOUCH_MOUSEID;   /* Hint is set */
+        } else {
+            return;  /* no hint set, drop this one. */
+        }
+    }
 
     if ([self processHitTest:theEvent]) {
         SDL_SendWindowEvent(_data->window, SDL_WINDOWEVENT_HIT_TEST, 0, 0);
@@ -980,8 +998,6 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 
     clicks = (int) [theEvent clickCount];
 
-    const SDL_Mouse *mouse = SDL_GetMouse();
-    const SDL_MouseID mouseID = mouse ? mouse->mouseID : 0;
     SDL_SendMouseButtonClicks(_data->window, mouseID, SDL_RELEASED, button, clicks);
 }
 
@@ -998,9 +1014,18 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 - (void)mouseMoved:(NSEvent *)theEvent
 {
     SDL_Mouse *mouse = SDL_GetMouse();
+    SDL_MouseID mouseID = mouse ? mouse->mouseID : 0;
     SDL_Window *window = _data->window;
     NSPoint point;
     int x, y;
+
+    if ([theEvent subtype] == NSEventSubtypeTouch) {  /* this is a synthetic from the OS */
+        if (mouse->touch_mouse_events) {
+            mouseID = SDL_TOUCH_MOUSEID;   /* Hint is set */
+        } else {
+            return;  /* no hint set, drop this one. */
+        }
+    }
 
     if ([self processHitTest:theEvent]) {
         SDL_SendWindowEvent(window, SDL_WINDOWEVENT_HIT_TEST, 0, 0);
@@ -1046,7 +1071,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
         }
     }
 
-    SDL_SendMouseMotion(window, mouse->mouseID, 0, x, y);
+    SDL_SendMouseMotion(window, mouseID, 0, x, y);
 }
 
 - (void)mouseDragged:(NSEvent *)theEvent
