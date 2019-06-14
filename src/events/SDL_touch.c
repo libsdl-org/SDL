@@ -32,9 +32,18 @@ static int SDL_num_touch = 0;
 static SDL_Touch **SDL_touchDevices = NULL;
 
 /* for mapping touch events to mice */
+
+#ifndef __MACOSX__  /* don't generate mouse events from touch on macOS, the OS handles that. */
+#define SYNTHESIZE_TOUCH_TO_MOUSE 1
+#else
+#define SYNTHESIZE_TOUCH_TO_MOUSE 0
+#endif
+
+#if SYNTHESIZE_TOUCH_TO_MOUSE
 static SDL_bool finger_touching = SDL_FALSE;
 static SDL_FingerID track_fingerid;
 static SDL_TouchID  track_touchid;
+#endif
 
 /* Public functions */
 int
@@ -245,6 +254,7 @@ SDL_SendTouch(SDL_TouchID id, SDL_FingerID fingerid,
         return -1;
     }
 
+#if SYNTHESIZE_TOUCH_TO_MOUSE
     /* SDL_HINT_TOUCH_MOUSE_EVENTS: controlling whether touch events should generate synthetic mouse events */
     {
         SDL_Mouse *mouse = SDL_GetMouse();
@@ -284,6 +294,7 @@ SDL_SendTouch(SDL_TouchID id, SDL_FingerID fingerid,
             }
         }
     }
+#endif
 
     finger = SDL_GetFinger(touch, fingerid);
     if (down) {
@@ -349,6 +360,7 @@ SDL_SendTouchMotion(SDL_TouchID id, SDL_FingerID fingerid,
         return -1;
     }
 
+#if SYNTHESIZE_TOUCH_TO_MOUSE
     /* SDL_HINT_TOUCH_MOUSE_EVENTS: controlling whether touch events should generate synthetic mouse events */
     {
         SDL_Mouse *mouse = SDL_GetMouse();
@@ -369,6 +381,7 @@ SDL_SendTouchMotion(SDL_TouchID id, SDL_FingerID fingerid,
             }
         }
     }
+#endif
 
     finger = SDL_GetFinger(touch,fingerid);
     if (!finger) {

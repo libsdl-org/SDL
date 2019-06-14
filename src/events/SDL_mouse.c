@@ -103,11 +103,7 @@ SDL_TouchMouseEventsChanged(void *userdata, const char *name, const char *oldVal
     if (hint && (*hint == '0' || SDL_strcasecmp(hint, "false") == 0)) {
         mouse->touch_mouse_events = SDL_FALSE;
     } else {
-#if defined(__MACOSX__)  /* macOS synthesizes its own events for this. */
-        mouse->touch_mouse_events = SDL_FALSE;
-#else
         mouse->touch_mouse_events = SDL_TRUE;
-#endif
     }
 }
 
@@ -387,11 +383,13 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
         mouse->has_position = SDL_TRUE;
     }
 
+#ifndef __MACOSX__  /* all your trackpad input would lack relative motion when not dragging in this case. */
     /* Ignore relative motion positioning the first touch */
     if (mouseID == SDL_TOUCH_MOUSEID && !mouse->buttonstate) {
         xrel = 0;
         yrel = 0;
     }
+#endif
 
     /* Update internal mouse coordinates */
     if (!mouse->relative_mode) {
