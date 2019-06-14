@@ -1733,11 +1733,12 @@ METAL_CreateRenderer(SDL_Window * window, Uint32 flags)
 #endif
 #else
 #ifdef __IPHONE_11_0
-    if (@available(iOS 11.0, *)) {
-        if ([mtldevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily4_v1]) {
-            maxtexsize = 16384;
-        }
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunguarded-availability-new"
+    if ([mtldevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily4_v1]) {
+        maxtexsize = 16384;
     } else
+#pragma clang diagnostic pop
 #endif
 #ifdef __IPHONE_10_0
     if ([mtldevice supportsFeatureSet:MTLFeatureSet_iOS_GPUFamily3_v1]) {

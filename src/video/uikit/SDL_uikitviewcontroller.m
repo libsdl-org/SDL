@@ -57,10 +57,13 @@ SDL_HideHomeIndicatorHintChanged(void *userdata, const char *name, const char *o
     @autoreleasepool {
         SDL_uikitviewcontroller *viewcontroller = (__bridge SDL_uikitviewcontroller *) userdata;
         viewcontroller.homeIndicatorHidden = (hint && *hint) ? SDL_atoi(hint) : -1;
-        if (@available(iOS 11.0, *)) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunguarded-availability-new"
+        if ([viewcontroller respondsToSelector:@selector(setNeedsUpdateOfHomeIndicatorAutoHidden)]) {
             [viewcontroller setNeedsUpdateOfHomeIndicatorAutoHidden];
             [viewcontroller setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
         }
+#pragma clang diagnostic pop
     }
 }
 #endif
