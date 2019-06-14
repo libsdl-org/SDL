@@ -529,7 +529,6 @@ SDL_Convert_S32_to_F32_SSE2(SDL_AudioCVT *cvt, SDL_AudioFormat format)
 
     /* Make sure src is aligned too. */
     if ((((size_t) src) & 15) == 0) {
-    {
         /* Aligned! Do SSE blocks as long as we have 16 bytes available. */
         const __m128 divby8388607 = _mm_set1_ps(DIVBY8388607);
         const __m128i *mmsrc = (const __m128i *) src;
