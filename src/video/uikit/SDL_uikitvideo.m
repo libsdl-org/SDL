@@ -230,10 +230,13 @@ UIKit_ForceUpdateHomeIndicator()
     if (focus) {
         SDL_WindowData *data = (__bridge SDL_WindowData *) focus->driverdata;
         if (data != nil) {
-            if (@available(iOS 11.0, *)) {
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wunguarded-availability-new"
+            if ([data.viewcontroller respondsToSelector:@selector(setNeedsUpdateOfHomeIndicatorAutoHidden)]) {
                 [data.viewcontroller performSelectorOnMainThread:@selector(setNeedsUpdateOfHomeIndicatorAutoHidden) withObject:nil waitUntilDone:NO];
                 [data.viewcontroller performSelectorOnMainThread:@selector(setNeedsUpdateOfScreenEdgesDeferringSystemGestures) withObject:nil waitUntilDone:NO];
             }
+#pragma clang diagnostic pop
         }
     }
 #endif /* !TARGET_OS_TV */
