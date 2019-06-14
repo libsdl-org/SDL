@@ -894,7 +894,11 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 - (void)mouseDown:(NSEvent *)theEvent
 {
     const SDL_Mouse *mouse = SDL_GetMouse();
-    SDL_MouseID mouseID = mouse ? mouse->mouseID : 0;
+    if (!mouse) {
+        return;
+    }
+
+    SDL_MouseID mouseID = mouse->mouseID;
     int button;
     int clicks;
 
@@ -959,7 +963,11 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 - (void)mouseUp:(NSEvent *)theEvent
 {
     const SDL_Mouse *mouse = SDL_GetMouse();
-    SDL_MouseID mouseID = mouse ? mouse->mouseID : 0;
+    if (!mouse) {
+        return;
+    }
+
+    SDL_MouseID mouseID = mouse->mouseID;
     int button;
     int clicks;
 
@@ -1014,7 +1022,11 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 - (void)mouseMoved:(NSEvent *)theEvent
 {
     SDL_Mouse *mouse = SDL_GetMouse();
-    SDL_MouseID mouseID = mouse ? mouse->mouseID : 0;
+    if (!mouse) {
+        return;
+    }
+
+    SDL_MouseID mouseID = mouse->mouseID;
     SDL_Window *window = _data->window;
     NSPoint point;
     int x, y;
