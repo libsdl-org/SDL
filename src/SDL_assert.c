@@ -378,7 +378,7 @@ SDL_ReportAssertion(SDL_assert_data *data, const char *func, const char *file,
     {
         case SDL_ASSERTION_ABORT:
             SDL_AbortAssertion();
-            return SDL_ASSERTION_IGNORE;  /* shouldn't return, but oh well. */
+            break;  /* shouldn't return, but oh well. */
 
         case SDL_ASSERTION_ALWAYS_IGNORE:
             state = SDL_ASSERTION_IGNORE;
