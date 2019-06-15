@@ -376,10 +376,6 @@ SDL_ReportAssertion(SDL_assert_data *data, const char *func, const char *file,
 
     switch (state)
     {
-        case SDL_ASSERTION_ABORT:
-            SDL_AbortAssertion();
-            break;  /* shouldn't return, but oh well. */
-
         case SDL_ASSERTION_ALWAYS_IGNORE:
             state = SDL_ASSERTION_IGNORE;
             data->always_ignore = 1;
@@ -389,6 +385,10 @@ SDL_ReportAssertion(SDL_assert_data *data, const char *func, const char *file,
         case SDL_ASSERTION_RETRY:
         case SDL_ASSERTION_BREAK:
             break;  /* macro handles these. */
+
+        case SDL_ASSERTION_ABORT:
+            SDL_AbortAssertion();
+            /*break;  ...shouldn't return, but oh well. */
     }
 
     assertion_running--;
