@@ -262,6 +262,15 @@ SDL_SendTouch(SDL_TouchID id, SDL_FingerID fingerid,
             /* FIXME: maybe we should only restrict to a few SDL_TouchDeviceType */
             if (id != SDL_MOUSE_TOUCHID) {
                 SDL_Window *window = SDL_GetMouseFocus();
+                if (window == NULL) {
+                    /* Mouse focus may have been lost by e.g. the window resizing
+                     * due to device orientation change while the mouse state is
+                     * pressed (because its position is now out of the window).
+                     * SendMouse* will update mouse focus again after that, but
+                     * if those are never called then SDL might think the
+                     * 'mouse' has no focus at all. */
+                    window = SDL_GetKeyboardFocus();
+                }
                 if (window) {
                     if (down) {
                         if (finger_touching == SDL_FALSE) {
