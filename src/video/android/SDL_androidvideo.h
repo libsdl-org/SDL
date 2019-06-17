@@ -44,6 +44,7 @@ extern int Android_SurfaceWidth;
 extern int Android_SurfaceHeight;
 extern SDL_sem *Android_PauseSem, *Android_ResumeSem;
 extern SDL_mutex *Android_ActivityMutex;
+extern int Android_send_resize;
 
 #endif /* SDL_androidvideo_h_ */
 
