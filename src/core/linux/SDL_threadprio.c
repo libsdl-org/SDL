@@ -22,6 +22,8 @@
 
 #ifdef __LINUX__
 
+#include "SDL_stdinc.h"
+
 #if !SDL_THREADS_DISABLED
 #include <sys/time.h>
 #include <sys/resource.h>
