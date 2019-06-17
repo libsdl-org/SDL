@@ -216,7 +216,6 @@ static void kbd_cleanup(void)
     }
     kbd_cleanup_state = NULL;
 
-    fprintf(stderr, "(SDL restoring keyboard) ");
     ioctl(kbd->console_fd, KDSKBMODE, kbd->old_kbd_mode);
 }
 
