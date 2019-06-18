@@ -66,11 +66,6 @@ android_egl_context_restore(SDL_Window *window)
             event.type = SDL_RENDER_DEVICE_RESET;
             SDL_PushEvent(&event);
         }
-
-        if (Android_send_resize) {
-            Android_send_resize = 0;
-            Android_SendResize(window);
-        }
     }
 }
 

@@ -732,7 +732,7 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeResize)(
 
     if (Android_Window)
     {
-        Android_send_resize = 1;
+        Android_SendResize(Android_Window);
     }
 
     SDL_UnlockMutex(Android_ActivityMutex);

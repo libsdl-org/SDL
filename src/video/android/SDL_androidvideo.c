@@ -69,7 +69,6 @@ static int Android_ScreenRate      = 0;
 SDL_sem *Android_PauseSem          = NULL;
 SDL_sem *Android_ResumeSem         = NULL;
 SDL_mutex *Android_ActivityMutex   = NULL;
-int Android_send_resize            = 0;
 
 static int
 Android_Available(void)
