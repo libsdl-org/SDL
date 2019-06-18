@@ -30,6 +30,7 @@
 /* Called by the JNI layer when the screen changes size or format */
 extern void Android_SetScreenResolution(int surfaceWidth, int surfaceHeight, int deviceWidth, int deviceHeight, Uint32 format, float rate);
 extern void Android_SendResize(SDL_Window *window);
+extern void Android_GetScreenResolution(int *w, int *h);
 
 /* Private display data */
 
