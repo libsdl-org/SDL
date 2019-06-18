@@ -237,18 +237,6 @@ Android_SetScreenResolution(int surfaceWidth, int surfaceHeight, int deviceWidth
     Android_ScreenRate    = (int)rate;
 }
 
-void
-Android_GetScreenResolution(int *w, int *h)
-{
-    if (w) {
-        *w = Android_SurfaceWidth;
-    }
-
-    if (h) {
-        *h = Android_SurfaceHeight;
-    }
-}
-
 void Android_SendResize(SDL_Window *window)
 {
     /*
