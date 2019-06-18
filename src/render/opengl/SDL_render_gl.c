@@ -178,7 +178,7 @@ GL_ClearErrors(SDL_Renderer *renderer)
             data->errors = 0;
             data->error_messages = NULL;
         }
-    } else {
+    } else if (data->glGetError != NULL) {
         while (data->glGetError() != GL_NO_ERROR) {
             continue;
         }
@@ -234,18 +234,19 @@ GL_LoadFunctions(GL_RenderData * data)
 #ifdef __SDL_NOGETPROCADDR__
 #define SDL_PROC(ret,func,params) data->func=func;
 #else
+    int retval = 0;
 #define SDL_PROC(ret,func,params) \
     do { \
         data->func = SDL_GL_GetProcAddress(#func); \
         if ( ! data->func ) { \
-            return SDL_SetError("Couldn't load GL function %s: %s", #func, SDL_GetError()); \
+            retval = SDL_SetError("Couldn't load GL function %s: %s", #func, SDL_GetError()); \
         } \
     } while ( 0 );
 #endif /* __SDL_NOGETPROCADDR__ */
 
 #include "SDL_glfuncs.h"
 #undef SDL_PROC
-    return 0;
+    return retval;
 }
 
 static int
