@@ -82,11 +82,6 @@ SW_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
 static int
 SW_GetOutputSize(SDL_Renderer * renderer, int *w, int *h)
 {
-#if defined(ANDROID)
-    extern void Android_GetScreenResolution(int *w, int *h);
-    Android_GetScreenResolution(w, h);
-    return 0;
-#else
     SDL_Surface *surface = SW_ActivateRenderer(renderer);
 
     if (surface) {
@@ -101,7 +96,6 @@ SW_GetOutputSize(SDL_Renderer * renderer, int *w, int *h)
         SDL_SetError("Software renderer doesn't have an output surface");
         return -1;
     }
-#endif
 }
 
 static int
