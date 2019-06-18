@@ -594,6 +594,9 @@ typedef union SDL_Event
     Uint8 padding[56];
 } SDL_Event;
 
+/* Make sure we haven't broken binary compatibility */
+SDL_COMPILE_TIME_ASSERT(SDL_Event, sizeof(SDL_Event) == 56);
+
 
 /* Function prototypes */
 
