@@ -4,13 +4,32 @@ This is a list of major changes in SDL's version history.
 ---------------------------------------------------------------------------
 2.0.10:
 ---------------------------------------------------------------------------
+
+General:
+* Added SDL_SIMDGetAlignment(), SDL_SIMDAlloc(), and SDL_SIMDFree(), to allocate memory aligned for SIMD operations for the current CPU
+* Added SDL_RenderDrawPointF(), SDL_RenderDrawPointsF(), SDL_RenderDrawLineF(), SDL_RenderDrawLinesF(), SDL_RenderDrawRectF(), SDL_RenderDrawRectsF(), SDL_RenderFillRectF(), SDL_RenderFillRectsF(), SDL_RenderCopyF(), SDL_RenderCopyExF(), to allow floating point precision in the SDL rendering API.
+* Added SDL_RenderFlush() to force batched render commands to execute, if you're going to use native rendering mixed with SDL rendering.
+* Added SDL_GetTouchDeviceType() to get the type of a touch device, which can be a touch screen or a trackpad in relative or absolute coordinate mode.
+* Added the hint SDL_HINT_RENDER_BATCHING to control whether batching should be used for the rendering API. This defaults to "1" if you don't specify what rendering driver to use when creating the renderer.
+* Added the hint SDL_HINT_EVENT_LOGGING to enable logging of SDL events for debugging purposes
+* Added the hint SDL_HINT_GAMECONTROLLERCONFIG_FILE to specify a file that will be loaded at joystick initialization with game controller bindings
 * Added the hint SDL_HINT_MOUSE_TOUCH_EVENTS to control whether SDL will synthesize touch events from mouse events
+* Improved handling of malformed WAVE and BMP files, fixing potential security exploits
+
+Linux:
+* Removed the Mir video driver in favor of Wayland
+
+iOS / tvOS:
+* Added support for Xbox and PS4 wireless controllers in iOS 13 and tvOS 13
+* Added support for text input using Bluetooth keyboards
 
 Android:
+* Added low latency audio using OpenSL ES
 * Removed SDL_HINT_ANDROID_SEPARATE_MOUSE_AND_TOUCH (replaced by SDL_HINT_MOUSE_TOUCH_EVENTS and SDL_HINT_TOUCH_MOUSE_EVENTS)
   SDL_HINT_ANDROID_SEPARATE_MOUSE_AND_TOUCH=1, should be replaced by setting both previous hints to 0.
   SDL_HINT_ANDROID_SEPARATE_MOUSE_AND_TOUCH=0, should be replaced by setting both previous hints to 1.
 * Added the hint SDL_HINT_ANDROID_BLOCK_ON_PAUSE to set whether the event loop will block itself when the app is paused.
+
 
 ---------------------------------------------------------------------------
 2.0.9:
