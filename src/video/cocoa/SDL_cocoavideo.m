@@ -168,7 +168,9 @@ Cocoa_VideoInit(_THIS)
 
     Cocoa_InitModes(_this);
     Cocoa_InitKeyboard(_this);
-    Cocoa_InitMouse(_this);
+    if (Cocoa_InitMouse(_this) < 0) {
+        return -1;
+    }
 
     data->allow_spaces = ((floor(NSAppKitVersionNumber) > NSAppKitVersionNumber10_6) && SDL_GetHintBoolean(SDL_HINT_VIDEO_MAC_FULLSCREEN_SPACES, SDL_TRUE));
 
