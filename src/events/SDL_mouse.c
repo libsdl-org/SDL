@@ -785,14 +785,6 @@ SDL_SetRelativeMouseMode(SDL_bool enabled)
         return 0;
     }
 
-    if (enabled && focusWindow) {
-        /* Center it in the focused window to prevent clicks from going through
-         * to background windows.
-         */
-        SDL_SetMouseFocus(focusWindow);
-        SDL_WarpMouseInWindow(focusWindow, focusWindow->w/2, focusWindow->h/2);
-    }
-
     /* Set the relative mode */
     if (!enabled && mouse->relative_mode_warp) {
         mouse->relative_mode_warp = SDL_FALSE;
@@ -810,6 +802,14 @@ SDL_SetRelativeMouseMode(SDL_bool enabled)
     mouse->relative_mode = enabled;
     mouse->scale_accum_x = 0.0f;
     mouse->scale_accum_y = 0.0f;
+
+    if (enabled && focusWindow) {
+        /* Center it in the focused window to prevent clicks from going through
+         * to background windows.
+         */
+        SDL_SetMouseFocus(focusWindow);
+        SDL_WarpMouseInWindow(focusWindow, focusWindow->w/2, focusWindow->h/2);
+    }
 
     if (mouse->focus) {
         SDL_UpdateWindowGrab(mouse->focus);
