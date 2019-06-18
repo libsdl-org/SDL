@@ -1739,6 +1739,8 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
         SDLActivity.nativeSetScreenResolution(width, height, nDeviceWidth, nDeviceHeight, sdlFormat, mDisplay.getRefreshRate());
         SDLActivity.onNativeResize();
 
+        // Prevent a screen distortion glitch,
+        // for instance when the device is in Landscape and a Portrait App is resumed.
         boolean skip = false;
         int requestedOrientation = SDLActivity.mSingleton.getRequestedOrientation();
 
@@ -1766,6 +1768,16 @@ class SDLSurface extends SurfaceView implements SurfaceHolder.Callback,
               Log.v("SDL", "Don't skip on such aspect-ratio. Could be a square resolution.");
               skip = false;
            }
+        }
+
+        // Don't skip in MultiWindow.
+        if (skip) {
+            if (Build.VERSION.SDK_INT >= 24) {
+                if (SDLActivity.mSingleton.isInMultiWindowMode()) {
+                    Log.v("SDL", "Don't skip in Multi-Window");
+                    skip = false;
+                }
+            }
         }
 
         if (skip) {
