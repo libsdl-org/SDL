@@ -79,7 +79,6 @@ SW_WindowEvent(SDL_Renderer * renderer, const SDL_WindowEvent *event)
     }
 }
 
-#if !defined(ANDROID)
 static int
 SW_GetOutputSize(SDL_Renderer * renderer, int *w, int *h)
 {
@@ -98,7 +97,6 @@ SW_GetOutputSize(SDL_Renderer * renderer, int *w, int *h)
         return -1;
     }
 }
-#endif
 
 static int
 SW_CreateTexture(SDL_Renderer * renderer, SDL_Texture * texture)
@@ -822,13 +820,7 @@ SW_CreateRendererForSurface(SDL_Surface * surface)
     data->window = surface;
 
     renderer->WindowEvent = SW_WindowEvent;
-#if defined(ANDROID)
-    /* Avoid using it with Android software renderer. While resizing in background,
-     * it ends up creating a broken texture because EGL context is not active. */
-    renderer->GetOutputSize = NULL;
-#else
     renderer->GetOutputSize = SW_GetOutputSize;
-#endif
     renderer->CreateTexture = SW_CreateTexture;
     renderer->UpdateTexture = SW_UpdateTexture;
     renderer->LockTexture = SW_LockTexture;
