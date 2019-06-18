@@ -8,8 +8,9 @@ This is a list of major changes in SDL's version history.
 General:
 * Added SDL_SIMDGetAlignment(), SDL_SIMDAlloc(), and SDL_SIMDFree(), to allocate memory aligned for SIMD operations for the current CPU
 * Added SDL_RenderDrawPointF(), SDL_RenderDrawPointsF(), SDL_RenderDrawLineF(), SDL_RenderDrawLinesF(), SDL_RenderDrawRectF(), SDL_RenderDrawRectsF(), SDL_RenderFillRectF(), SDL_RenderFillRectsF(), SDL_RenderCopyF(), SDL_RenderCopyExF(), to allow floating point precision in the SDL rendering API.
-* Added SDL_RenderFlush() to force batched render commands to execute, if you're going to use native rendering mixed with SDL rendering.
 * Added SDL_GetTouchDeviceType() to get the type of a touch device, which can be a touch screen or a trackpad in relative or absolute coordinate mode.
+* The SDL rendering API now uses batched rendering by default, for improved performance
+* Added SDL_RenderFlush() to force batched render commands to execute, if you're going to mix SDL rendering with native rendering
 * Added the hint SDL_HINT_RENDER_BATCHING to control whether batching should be used for the rendering API. This defaults to "1" if you don't specify what rendering driver to use when creating the renderer.
 * Added the hint SDL_HINT_EVENT_LOGGING to enable logging of SDL events for debugging purposes
 * Added the hint SDL_HINT_GAMECONTROLLERCONFIG_FILE to specify a file that will be loaded at joystick initialization with game controller bindings
