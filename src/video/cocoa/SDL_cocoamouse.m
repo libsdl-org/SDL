@@ -348,10 +348,9 @@ Cocoa_InitMouse(_THIS)
 
     Cocoa_InitMouseEventTap(mouse->driverdata);
 
-    SDL_MouseData *driverdata = (SDL_MouseData*)mouse->driverdata;
     const NSPoint location =  [NSEvent mouseLocation];
-    driverdata->lastMoveX = location.x;
-    driverdata->lastMoveY = location.y;
+    mouse->driverdata->lastMoveX = location.x;
+    mouse->driverdata->lastMoveY = location.y;
 }
 
 void
@@ -482,9 +481,10 @@ Cocoa_QuitMouse(_THIS)
     if (mouse) {
         if (mouse->driverdata) {
             Cocoa_QuitMouseEventTap(((SDL_MouseData*)mouse->driverdata));
-        }
 
-        SDL_free(mouse->driverdata);
+            SDL_free(mouse->driverdata);
+            mouse->driverdata = NULL;
+        }
     }
 }
 
