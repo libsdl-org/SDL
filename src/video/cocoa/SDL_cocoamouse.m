@@ -327,13 +327,16 @@ Cocoa_GetGlobalMouseState(int *x, int *y)
     return retval;
 }
 
-void
+int
 Cocoa_InitMouse(_THIS)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
+    SDL_MouseData *driverdata = (SDL_MouseData*) SDL_calloc(1, sizeof(SDL_MouseData));
+    if (driverdata == NULL) {
+        return SDL_OutOfMemory();
+    }
 
-    mouse->driverdata = SDL_calloc(1, sizeof(SDL_MouseData));
-
+    mouse->driverdata = driverdata;
     mouse->CreateCursor = Cocoa_CreateCursor;
     mouse->CreateSystemCursor = Cocoa_CreateSystemCursor;
     mouse->ShowCursor = Cocoa_ShowCursor;
@@ -346,11 +349,12 @@ Cocoa_InitMouse(_THIS)
 
     SDL_SetDefaultCursor(Cocoa_CreateDefaultCursor());
 
-    Cocoa_InitMouseEventTap(mouse->driverdata);
+    Cocoa_InitMouseEventTap(driverdata);
 
     const NSPoint location =  [NSEvent mouseLocation];
-    mouse->driverdata->lastMoveX = location.x;
-    mouse->driverdata->lastMoveY = location.y;
+    driverdata->lastMoveX = location.x;
+    driverdata->lastMoveY = location.y;
+    return 0;
 }
 
 void
