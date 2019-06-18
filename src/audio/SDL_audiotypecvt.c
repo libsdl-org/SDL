@@ -1340,11 +1340,7 @@ SDL_Convert_F32_to_S32_NEON(SDL_AudioCVT *cvt, SDL_AudioFormat format)
         if (sample >= 1.0f) {
             *dst = 2147483647;
         } else if (sample <= -1.0f) {
-            #ifdef _MSC_VER  /* !!! FIXME: bug in Visual Studio? */
             *dst = (-2147483647) - 1;
-            #else
-            *dst = -2147483648;
-            #endif
         } else {
             *dst = ((Sint32)(sample * 8388607.0f)) << 8;
         }
@@ -1372,11 +1368,7 @@ SDL_Convert_F32_to_S32_NEON(SDL_AudioCVT *cvt, SDL_AudioFormat format)
         if (sample >= 1.0f) {
             *dst = 2147483647;
         } else if (sample <= -1.0f) {
-            #ifdef _MSC_VER  /* !!! FIXME: bug in Visual Studio? */
             *dst = (-2147483647) - 1;
-            #else
-            *dst = -2147483648;
-            #endif
         } else {
             *dst = ((Sint32)(sample * 8388607.0f)) << 8;
         }
