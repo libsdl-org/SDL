@@ -37,6 +37,7 @@
 
 typedef struct {
     SDL_JoystickID joysticks[4];
+    Uint8 rumbleAllowed[4];
     Uint8 rumble[5];
     Uint32 rumbleExpiration[4];
     /* Without this variable, hid_write starts to lag a TON */
@@ -99,6 +100,9 @@ HIDAPI_DriverGameCube_InitDriver(SDL_HIDAPI_DriverData *context, Uint16 vendor_i
         /* Go through all 4 slots */
         curSlot = packet + 1;
         for (i = 0; i < 4; i += 1, curSlot += 9) {
+            /* Only allow rumble if the adapter's second USB cable is connected */
+            ctx->rumbleAllowed[i] = (curSlot[0] & 0x04) != 0;
+
             if (curSlot[0] & 0x30) { /* 0x10 - Wired, 0x20 - Wireless */
                 if (ctx->joysticks[i] == -1) {
                     ctx->joysticks[i] = SDL_GetNextJoystickInstanceID();
@@ -168,6 +172,9 @@ HIDAPI_DriverGameCube_UpdateDriver(SDL_HIDAPI_DriverData *context, int *num_joys
         /* Go through all 4 slots */
         curSlot = packet + 1;
         for (i = 0; i < 4; i += 1, curSlot += 9) {
+            /* Only allow rumble if the adapter's second USB cable is connected */
+            ctx->rumbleAllowed[i] = (curSlot[0] & 0x04) != 0;
+
             if (curSlot[0] & 0x30) { /* 0x10 - Wired, 0x20 - Wireless */
                 if (ctx->joysticks[i] == -1) {
                     ctx->joysticks[i] = SDL_GetNextJoystickInstanceID();
@@ -238,7 +245,7 @@ HIDAPI_DriverGameCube_UpdateDriver(SDL_HIDAPI_DriverData *context, int *num_joys
     now = SDL_GetTicks();
     for (i = 0; i < 4; i += 1) {
         if (ctx->rumbleExpiration[i] > 0) {
-            if (SDL_TICKS_PASSED(now, ctx->rumbleExpiration[i])) {
+            if (SDL_TICKS_PASSED(now, ctx->rumbleExpiration[i]) || !ctx->rumbleAllowed[i]) {
                 ctx->rumble[i + 1] = 0;
                 ctx->rumbleExpiration[i] = 0;
                 ctx->rumbleUpdate = 1;
@@ -325,6 +332,9 @@ HIDAPI_DriverGameCube_Rumble(SDL_HIDAPI_DriverData *context, SDL_Joystick *joyst
     Uint8 i, val;
     for (i = 0; i < 4; i += 1) {
         if (instance == ctx->joysticks[i]) {
+            if (!ctx->rumbleAllowed[i]) {
+                return SDL_SetError("Second USB cable for WUP-028 not connected");
+            }
             val = (low_frequency_rumble > 0 || high_frequency_rumble > 0);
             if (val != ctx->rumble[i + 1]) {
                 ctx->rumble[i + 1] = val;
@@ -338,7 +348,7 @@ HIDAPI_DriverGameCube_Rumble(SDL_HIDAPI_DriverData *context, SDL_Joystick *joyst
             return 0;
         }
     }
-    return -1;
+    return -1; /* Should never get here! */
 }
 
 SDL_HIDAPI_DeviceDriver SDL_HIDAPI_DriverGameCube =
