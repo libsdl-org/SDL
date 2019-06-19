@@ -323,6 +323,7 @@ SDL_JoystickOpen(int device_index)
     joystick->instance_id = instance_id;
     joystick->attached = SDL_TRUE;
     joystick->player_index = -1;
+    joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
 
     if (driver->Open(joystick, device_index) < 0) {
         SDL_free(joystick);
@@ -360,7 +361,6 @@ SDL_JoystickOpen(int device_index)
         SDL_UnlockJoysticks();
         return NULL;
     }
-    joystick->epowerlevel = SDL_JOYSTICK_POWER_UNKNOWN;
 
     /* If this joystick is known to have all zero centered axes, skip the auto-centering code */
     if (SDL_JoystickAxesCenteredAtZero(joystick)) {
