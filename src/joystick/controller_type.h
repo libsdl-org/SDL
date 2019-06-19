@@ -57,7 +57,6 @@ typedef enum
 	k_eControllerType_SwitchJoyConPair = 41,
     k_eControllerType_SwitchInputOnlyController = 42,
 	k_eControllerType_MobileTouch = 43,
-        k_eControllerType_GameCube = 44,
 	k_eControllerType_LastController,			// Don't add game controllers below this enumeration - this enumeration can change value
 
 	// Keyboards and Mice
@@ -387,8 +386,6 @@ static const ControllerDescription_t arrControllers[] = {
     { MAKE_CONTROLLER_ID( 0x0f0d, 0x00c1 ), k_eControllerType_SwitchInputOnlyController },  // HORIPAD for Nintendo Switch
     { MAKE_CONTROLLER_ID( 0x20d6, 0xa711 ), k_eControllerType_SwitchInputOnlyController },  // PowerA Wired Controller Plus
     { MAKE_CONTROLLER_ID( 0x0f0d, 0x0092 ), k_eControllerType_SwitchInputOnlyController },  // HORI Pokken Tournament DX Pro Pad
-
-    { MAKE_CONTROLLER_ID( 0x057e, 0x0337 ), k_eControllerType_GameCube }, // Nintendo Wii U/Switch GameCube USB Adapter
 
 
 	// Valve products - don't add to public list

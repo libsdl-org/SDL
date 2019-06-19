@@ -1037,11 +1037,6 @@ SDL_JoystickUpdate(void)
     /* Make sure the list is unlocked while dispatching events to prevent application deadlocks */
     SDL_UnlockJoysticks();
 
-    /* Special function for HIDAPI devices, as a single device can provide multiple SDL_Joysticks */
-#ifdef SDL_JOYSTICK_HIDAPI
-    SDL_HIDAPI_UpdateDevices();
-#endif /* SDL_JOYSTICK_HIDAPI */
-
     for (joystick = SDL_joysticks; joystick; joystick = joystick->next) {
         if (joystick->attached) {
             /* This should always be true, but seeing a crash in the wild...? */
@@ -1197,12 +1192,6 @@ SDL_bool
 SDL_IsJoystickXboxOne(Uint16 vendor, Uint16 product)
 {
     return (GuessControllerType(vendor, product) == k_eControllerType_XBoxOneController);
-}
-
-SDL_bool
-SDL_IsJoystickGameCube(Uint16 vendor, Uint16 product)
-{
-    return (GuessControllerType(vendor, product) == k_eControllerType_GameCube);
 }
 
 SDL_bool

@@ -66,9 +66,6 @@ extern SDL_bool SDL_IsJoystickXbox360(Uint16 vendor_id, Uint16 product_id);
 /* Function to return whether a joystick is an Xbox One controller */
 extern SDL_bool SDL_IsJoystickXboxOne(Uint16 vendor_id, Uint16 product_id);
 
-/* Function to return whether a joystick is a GameCube controller */
-extern SDL_bool SDL_IsJoystickGameCube(Uint16 vendor_id, Uint16 product_id);
-
 /* Function to return whether a joystick guid comes from the XInput driver */
 extern SDL_bool SDL_IsJoystickXInput(SDL_JoystickGUID guid);
 
