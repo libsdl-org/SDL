@@ -102,7 +102,7 @@ static int get_dricount(void)
     if (folder) {
         while ((res = readdir(folder))) {
             int len = SDL_strlen(res->d_name);
-            if (len > 4 && strncmp(res->d_name, "card", 4) == 0) {
+            if (len > 4 && SDL_strncmp(res->d_name, "card", 4) == 0) {
                 devcount++;
             }
         }
