@@ -37,6 +37,7 @@
 
 typedef struct {
     SDL_JoystickID joysticks[4];
+    Uint8 wireless[4];
     Uint8 rumbleAllowed[4];
     Uint8 rumble[5];
     Uint32 rumbleExpiration[4];
@@ -100,8 +101,10 @@ HIDAPI_DriverGameCube_InitDriver(SDL_HIDAPI_DriverData *context, Uint16 vendor_i
         /* Go through all 4 slots */
         curSlot = packet + 1;
         for (i = 0; i < 4; i += 1, curSlot += 9) {
+            ctx->wireless[i] = (curSlot[0] & 0x20) != 0;
+
             /* Only allow rumble if the adapter's second USB cable is connected */
-            ctx->rumbleAllowed[i] = (curSlot[0] & 0x04) != 0;
+            ctx->rumbleAllowed[i] = (curSlot[0] & 0x04) != 0 && !ctx->wireless[i];
 
             if (curSlot[0] & 0x30) { /* 0x10 - Wired, 0x20 - Wireless */
                 if (ctx->joysticks[i] == -1) {
@@ -172,8 +175,10 @@ HIDAPI_DriverGameCube_UpdateDriver(SDL_HIDAPI_DriverData *context, int *num_joys
         /* Go through all 4 slots */
         curSlot = packet + 1;
         for (i = 0; i < 4; i += 1, curSlot += 9) {
+            ctx->wireless[i] = (curSlot[0] & 0x20) != 0;
+
             /* Only allow rumble if the adapter's second USB cable is connected */
-            ctx->rumbleAllowed[i] = (curSlot[0] & 0x04) != 0;
+            ctx->rumbleAllowed[i] = (curSlot[0] & 0x04) != 0 && !ctx->wireless[i];
 
             if (curSlot[0] & 0x30) { /* 0x10 - Wired, 0x20 - Wireless */
                 if (ctx->joysticks[i] == -1) {
@@ -316,7 +321,7 @@ HIDAPI_DriverGameCube_OpenJoystick(SDL_HIDAPI_DriverData *context, SDL_Joystick 
         if (instance == ctx->joysticks[i]) {
             joystick->nbuttons = 12;
             joystick->naxes = 6;
-            joystick->epowerlevel = SDL_JOYSTICK_POWER_WIRED;
+            joystick->epowerlevel = ctx->wireless[i] ? SDL_JOYSTICK_POWER_UNKNOWN : SDL_JOYSTICK_POWER_WIRED;
             joystick->player_index = i;
             return SDL_TRUE;
         }
@@ -332,6 +337,9 @@ HIDAPI_DriverGameCube_Rumble(SDL_HIDAPI_DriverData *context, SDL_Joystick *joyst
     Uint8 i, val;
     for (i = 0; i < 4; i += 1) {
         if (instance == ctx->joysticks[i]) {
+            if (ctx->wireless[i]) {
+                return SDL_SetError("Ninteno GameCube WaveBird controllers do not support rumble");
+            }
             if (!ctx->rumbleAllowed[i]) {
                 return SDL_SetError("Second USB cable for WUP-028 not connected");
             }
