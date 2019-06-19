@@ -345,6 +345,7 @@ static const struct qt_extended_surface_listener extended_surface_listener = {
 static void
 update_scale_factor(SDL_WindowData *window) {
    float old_factor = window->scale_factor, new_factor = 0.0;
+   int i;
 
    if (!(window->sdlwindow->flags & SDL_WINDOW_ALLOW_HIGHDPI)) {
        return;
@@ -358,7 +359,7 @@ update_scale_factor(SDL_WindowData *window) {
        new_factor = ((SDL_WaylandOutputData*)(wl_output_get_user_data(window->sdlwindow->fullscreen_mode.driverdata)))->scale_factor;
    }
 
-   for (int i = 0; i < window->num_outputs; i++) {
+   for (i = 0; i < window->num_outputs; i++) {
        float factor = ((SDL_WaylandOutputData*)(wl_output_get_user_data(window->outputs[i])))->scale_factor;
        if (factor > new_factor) {
            new_factor = factor;
@@ -388,10 +389,11 @@ static void
 handle_surface_leave(void *data, struct wl_surface *surface,
         struct wl_output *output) {
     SDL_WindowData *window = data;
+    int i;
 
     if (window->num_outputs > 1) {
        struct wl_output **new_outputs = SDL_malloc((window->num_outputs - 1) * sizeof *window->outputs), **iter = new_outputs;
-       for (int i=0; i < window->num_outputs; i++) {
+       for (i=0; i < window->num_outputs; i++) {
            if (window->outputs[i] != output) {
                *iter = window->outputs[i];
                iter++;
@@ -640,7 +642,8 @@ int Wayland_CreateWindow(_THIS, SDL_Window *window)
     data->scale_factor = 1.0;
 
     if (window->flags & SDL_WINDOW_ALLOW_HIGHDPI) {
-        for (int i=0; i < SDL_GetVideoDevice()->num_displays; i++) {
+        int i;
+        for (i=0; i < SDL_GetVideoDevice()->num_displays; i++) {
             float scale = ((SDL_WaylandOutputData*)SDL_GetVideoDevice()->displays[i].driverdata)->scale_factor;
             if (scale > data->scale_factor) {
                 data->scale_factor = scale;
