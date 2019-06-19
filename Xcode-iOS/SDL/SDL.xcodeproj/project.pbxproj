@@ -468,9 +468,6 @@
 		F3BDD79B20F51CB8004ECBF3 /* SDL_hidapijoystick_c.h in Headers */ = {isa = PBXBuildFile; fileRef = F3BDD79020F51CB8004ECBF3 /* SDL_hidapijoystick_c.h */; };
 		F3BDD79C20F51CB8004ECBF3 /* SDL_hidapijoystick.c in Sources */ = {isa = PBXBuildFile; fileRef = F3BDD79120F51CB8004ECBF3 /* SDL_hidapijoystick.c */; };
 		F3BDD79D20F51CB8004ECBF3 /* SDL_hidapijoystick.c in Sources */ = {isa = PBXBuildFile; fileRef = F3BDD79120F51CB8004ECBF3 /* SDL_hidapijoystick.c */; };
-		F3E3C55D223DEC6C007D243C /* SDL_hidapi_gamecube.c in Sources */ = {isa = PBXBuildFile; fileRef = F3E3C55C223DEC6C007D243C /* SDL_hidapi_gamecube.c */; };
-		F3E3C55E223DEC6C007D243C /* SDL_hidapi_gamecube.c in Sources */ = {isa = PBXBuildFile; fileRef = F3E3C55C223DEC6C007D243C /* SDL_hidapi_gamecube.c */; };
-		F3E3C55F224065AE007D243C /* SDL_hidapi_gamecube.c in Sources */ = {isa = PBXBuildFile; fileRef = F3E3C55C223DEC6C007D243C /* SDL_hidapi_gamecube.c */; };
 		F3E3C658224069CE007D243C /* SDL_uikit_main.c in Sources */ = {isa = PBXBuildFile; fileRef = F3E3C657224069CE007D243C /* SDL_uikit_main.c */; };
 		F3E3C65B2241389A007D243C /* SDL_blit.h in Headers */ = {isa = PBXBuildFile; fileRef = FDA683010DF2374E00F98A1A /* SDL_blit.h */; };
 		F3E3C65C2241389A007D243C /* SDL_uikitmetalview.h in Headers */ = {isa = PBXBuildFile; fileRef = 4D7517191EE1D32200820EEA /* SDL_uikitmetalview.h */; };
@@ -657,7 +654,6 @@
 		F3E3C7122241389A007D243C /* SDL_uikitevents.m in Sources */ = {isa = PBXBuildFile; fileRef = FD689F0D0E26E5D900F90B21 /* SDL_uikitevents.m */; };
 		F3E3C7132241389A007D243C /* yuv_rgb.c in Sources */ = {isa = PBXBuildFile; fileRef = AA13B3561FB8B46300D9FEE6 /* yuv_rgb.c */; };
 		F3E3C7142241389A007D243C /* SDL_uikitopengles.m in Sources */ = {isa = PBXBuildFile; fileRef = FD689F0F0E26E5D900F90B21 /* SDL_uikitopengles.m */; };
-		F3E3C7152241389A007D243C /* SDL_hidapi_gamecube.c in Sources */ = {isa = PBXBuildFile; fileRef = F3E3C55C223DEC6C007D243C /* SDL_hidapi_gamecube.c */; };
 		F3E3C7162241389A007D243C /* SDL_uikitvideo.m in Sources */ = {isa = PBXBuildFile; fileRef = FD689F110E26E5D900F90B21 /* SDL_uikitvideo.m */; };
 		F3E3C7172241389A007D243C /* SDL_uikitview.m in Sources */ = {isa = PBXBuildFile; fileRef = FD689F130E26E5D900F90B21 /* SDL_uikitview.m */; };
 		F3E3C7182241389A007D243C /* SDL_displayevents.c in Sources */ = {isa = PBXBuildFile; fileRef = A7C19D28212E552B00DF2152 /* SDL_displayevents.c */; };
@@ -1062,7 +1058,6 @@
 		F3BDD78E20F51CB8004ECBF3 /* SDL_hidapi_ps4.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_ps4.c; sourceTree = "<group>"; };
 		F3BDD79020F51CB8004ECBF3 /* SDL_hidapijoystick_c.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SDL_hidapijoystick_c.h; sourceTree = "<group>"; };
 		F3BDD79120F51CB8004ECBF3 /* SDL_hidapijoystick.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapijoystick.c; sourceTree = "<group>"; };
-		F3E3C55C223DEC6C007D243C /* SDL_hidapi_gamecube.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_hidapi_gamecube.c; sourceTree = "<group>"; };
 		F3E3C65222406928007D243C /* libSDLmain.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSDLmain.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		F3E3C657224069CE007D243C /* SDL_uikit_main.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; path = SDL_uikit_main.c; sourceTree = "<group>"; };
 		F3E3C7572241389A007D243C /* libSDL2.dylib */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libSDL2.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -1463,7 +1458,6 @@
 		F3BDD78A20F51C8D004ECBF3 /* hidapi */ = {
 			isa = PBXGroup;
 			children = (
-				F3E3C55C223DEC6C007D243C /* SDL_hidapi_gamecube.c */,
 				F3BDD78E20F51CB8004ECBF3 /* SDL_hidapi_ps4.c */,
 				F3BDD78C20F51CB8004ECBF3 /* SDL_hidapi_switch.c */,
 				F3BDD78B20F51CB8004ECBF3 /* SDL_hidapi_xbox360.c */,
@@ -2518,7 +2512,6 @@
 				52ED1E24222889500061FCE0 /* SDL_uikitevents.m in Sources */,
 				52ED1E25222889500061FCE0 /* yuv_rgb.c in Sources */,
 				52ED1E26222889500061FCE0 /* SDL_uikitopengles.m in Sources */,
-				F3E3C55F224065AE007D243C /* SDL_hidapi_gamecube.c in Sources */,
 				52ED1E27222889500061FCE0 /* SDL_uikitvideo.m in Sources */,
 				52ED1E28222889500061FCE0 /* SDL_uikitview.m in Sources */,
 				52ED1E29222889500061FCE0 /* SDL_displayevents.c in Sources */,
@@ -2647,7 +2640,6 @@
 				F3E3C7122241389A007D243C /* SDL_uikitevents.m in Sources */,
 				F3E3C7132241389A007D243C /* yuv_rgb.c in Sources */,
 				F3E3C7142241389A007D243C /* SDL_uikitopengles.m in Sources */,
-				F3E3C7152241389A007D243C /* SDL_hidapi_gamecube.c in Sources */,
 				F3E3C7162241389A007D243C /* SDL_uikitvideo.m in Sources */,
 				F3E3C7172241389A007D243C /* SDL_uikitview.m in Sources */,
 				F3E3C7182241389A007D243C /* SDL_displayevents.c in Sources */,
@@ -2824,7 +2816,6 @@
 				FAB598BD1BB5C31600BE72C5 /* SDL_hints.c in Sources */,
 				FAB598BE1BB5C31600BE72C5 /* SDL_log.c in Sources */,
 				FAB598BF1BB5C31600BE72C5 /* SDL.c in Sources */,
-				F3E3C55E223DEC6C007D243C /* SDL_hidapi_gamecube.c in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2895,7 +2886,6 @@
 				FD689F1D0E26E5D900F90B21 /* SDL_uikitevents.m in Sources */,
 				AA13B35A1FB8B46400D9FEE6 /* yuv_rgb.c in Sources */,
 				FD689F1F0E26E5D900F90B21 /* SDL_uikitopengles.m in Sources */,
-				F3E3C55D223DEC6C007D243C /* SDL_hidapi_gamecube.c in Sources */,
 				FD689F210E26E5D900F90B21 /* SDL_uikitvideo.m in Sources */,
 				FD689F230E26E5D900F90B21 /* SDL_uikitview.m in Sources */,
 				A7C19D2A212E552C00DF2152 /* SDL_displayevents.c in Sources */,
