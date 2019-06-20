@@ -278,9 +278,9 @@ SDL_LogEvent(const SDL_Event *event)
         #undef PRINT_CONTROLLERDEV_EVENT
 
         #define PRINT_FINGER_EVENT(event) \
-            SDL_snprintf(details, sizeof (details), " (timestamp=%u touchid=%lld fingerid=%lld x=%f y=%f dx=%f dy=%f pressure=%f)", \
-                (uint) event->tfinger.timestamp, (long long) event->tfinger.touchId, \
-                (long long) event->tfinger.fingerId, event->tfinger.x, event->tfinger.y, \
+            SDL_snprintf(details, sizeof (details), " (timestamp=%u touchid=%"SDL_PRIs64" fingerid=%"SDL_PRIs64" x=%f y=%f dx=%f dy=%f pressure=%f)", \
+                (uint) event->tfinger.timestamp, event->tfinger.touchId, \
+                event->tfinger.fingerId, event->tfinger.x, event->tfinger.y, \
                 event->tfinger.dx, event->tfinger.dy, event->tfinger.pressure)
         SDL_EVENT_CASE(SDL_FINGERDOWN) PRINT_FINGER_EVENT(event); break;
         SDL_EVENT_CASE(SDL_FINGERUP) PRINT_FINGER_EVENT(event); break;
@@ -288,17 +288,17 @@ SDL_LogEvent(const SDL_Event *event)
         #undef PRINT_FINGER_EVENT
 
         #define PRINT_DOLLAR_EVENT(event) \
-            SDL_snprintf(details, sizeof (details), " (timestamp=%u touchid=%lld gestureid=%lld numfingers=%u error=%f x=%f y=%f)", \
-                (uint) event->dgesture.timestamp, (long long) event->dgesture.touchId, \
-                (long long) event->dgesture.gestureId, (uint) event->dgesture.numFingers, \
+            SDL_snprintf(details, sizeof (details), " (timestamp=%u touchid=%"SDL_PRIs64" gestureid=%"SDL_PRIs64" numfingers=%u error=%f x=%f y=%f)", \
+                (uint) event->dgesture.timestamp, event->dgesture.touchId, \
+                event->dgesture.gestureId, (uint) event->dgesture.numFingers, \
                 event->dgesture.error, event->dgesture.x, event->dgesture.y);
         SDL_EVENT_CASE(SDL_DOLLARGESTURE) PRINT_DOLLAR_EVENT(event); break;
         SDL_EVENT_CASE(SDL_DOLLARRECORD) PRINT_DOLLAR_EVENT(event); break;
         #undef PRINT_DOLLAR_EVENT
 
         SDL_EVENT_CASE(SDL_MULTIGESTURE)
-            SDL_snprintf(details, sizeof (details), " (timestamp=%u touchid=%lld dtheta=%f ddist=%f x=%f y=%f numfingers=%u)",
-                (uint) event->mgesture.timestamp, (long long) event->mgesture.touchId,
+            SDL_snprintf(details, sizeof (details), " (timestamp=%u touchid=%"SDL_PRIs64" dtheta=%f ddist=%f x=%f y=%f numfingers=%u)",
+                (uint) event->mgesture.timestamp, event->mgesture.touchId,
                 event->mgesture.dTheta, event->mgesture.dDist,
                 event->mgesture.x, event->mgesture.y, (uint) event->mgesture.numFingers);
             break;
