@@ -1127,6 +1127,13 @@ SetDrawState(D3D_RenderData *data, const SDL_RenderCommand *cmd)
         }
 
         data->drawstate.texture = texture;
+    } else if (texture) {
+        D3D_TextureData *texturedata = (D3D_TextureData *) texture->driverdata;
+        UpdateDirtyTexture(data->device, &texturedata->texture);
+        if (texturedata->yuv) {
+            UpdateDirtyTexture(data->device, &texturedata->utexture);
+            UpdateDirtyTexture(data->device, &texturedata->vtexture);
+        }
     }
 
     if (blend != data->drawstate.blend) {
