@@ -1223,7 +1223,7 @@ D3D_RunCommandQueue(SDL_Renderer * renderer, SDL_RenderCommand *cmd, void *verti
             IDirect3DVertexBuffer9_Release(vbo);
         }
 
-        if (FAILED(IDirect3DDevice9_CreateVertexBuffer(data->device, (UINT) vertsize, usage, fvf, D3DPOOL_MANAGED, &vbo, NULL))) {
+        if (FAILED(IDirect3DDevice9_CreateVertexBuffer(data->device, (UINT) vertsize, usage, fvf, D3DPOOL_DEFAULT, &vbo, NULL))) {
             vbo = NULL;
         }
         data->vertexBuffers[vboidx] = vbo;
@@ -1550,6 +1550,13 @@ D3D_DestroyRenderer(SDL_Renderer * renderer)
                 data->shaders[i] = NULL;
             }
         }
+        /* Release all vertex buffers */
+        for (i = 0; i < SDL_arraysize(data->vertexBuffers); ++i) {
+            if (data->vertexBuffers[i]) {
+                IDirect3DVertexBuffer9_Release(data->vertexBuffers[i]);
+            }
+            data->vertexBuffers[i] = NULL;
+        }
         if (data->device) {
             IDirect3DDevice9_Release(data->device);
             data->device = NULL;
@@ -1591,7 +1598,7 @@ D3D_Reset(SDL_Renderer * renderer)
         }
     }
 
-	/* Release all vertex buffers */
+    /* Release all vertex buffers */
     for (i = 0; i < SDL_arraysize(data->vertexBuffers); ++i) {
         if (data->vertexBuffers[i]) {
             IDirect3DVertexBuffer9_Release(data->vertexBuffers[i]);
