@@ -1550,8 +1550,8 @@ CheckNativeClient()
 CheckRPI()
 {
     AC_ARG_ENABLE(video-rpi,
-AS_HELP_STRING([--enable-video-rpi], [use Raspberry Pi video driver [[default=no]]]),
-                  , enable_video_rpi=no)
+AS_HELP_STRING([--enable-video-rpi], [use Raspberry Pi video driver [[default=yes]]]),
+                  , enable_video_rpi=yes)
     if test x$enable_video = xyes -a x$enable_video_rpi = xyes; then
         PKG_CHECK_MODULES([RPI], [bcm_host brcmegl], video_rpi=yes, video_rpi=no)
 
