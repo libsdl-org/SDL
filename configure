@@ -1626,7 +1626,7 @@ Optional Features:
                           QtWayland server support for Wayland video driver
                           [[default=yes]]
   --enable-wayland-shared dynamically load Wayland support [[default=maybe]]
-  --enable-video-rpi      use Raspberry Pi video driver [[default=no]]
+  --enable-video-rpi      use Raspberry Pi video driver [[default=yes]]
   --enable-video-x11      use X11 video driver [[default=yes]]
   --enable-x11-shared     dynamically load X11 support [[default=maybe]]
   --enable-video-x11-xcursor
@@ -19734,7 +19734,7 @@ CheckRPI()
 if test "${enable_video_rpi+set}" = set; then :
   enableval=$enable_video_rpi;
 else
-  enable_video_rpi=no
+  enable_video_rpi=yes
 fi
 
     if test x$enable_video = xyes -a x$enable_video_rpi = xyes; then
