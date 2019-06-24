@@ -131,6 +131,9 @@ SDL_bool SDL_IsAndroidTV(void);
 SDL_bool SDL_IsChromebook(void);
 SDL_bool SDL_IsDeXMode(void);
 
+void Android_ActivityMutex_Lock(void);
+void Android_ActivityMutex_Unlock(void);
+
 /* Ends C function definitions when using C++ */
 #ifdef __cplusplus
 /* *INDENT-OFF* */

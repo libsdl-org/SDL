@@ -711,6 +711,15 @@ JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(onNativeDropFile)(
     SDL_SendDropComplete(NULL);
 }
 
+/* Lock / Unlock Mutex */
+void Android_ActivityMutex_Lock() {
+    SDL_LockMutex(Android_ActivityMutex);
+}
+
+void Android_ActivityMutex_Unlock() {
+    SDL_UnlockMutex(Android_ActivityMutex);
+}
+
 /* Set screen resolution */
 JNIEXPORT void JNICALL SDL_JAVA_INTERFACE(nativeSetScreenResolution)(
                                     JNIEnv *env, jclass jcls,
