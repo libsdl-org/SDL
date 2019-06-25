@@ -34,11 +34,13 @@
 #include <limits.h>             /* For the definition of PATH_MAX */
 #include <sys/ioctl.h>
 #include <unistd.h>
+#include <dirent.h>
 #include <linux/joystick.h>
 
 #include "SDL_assert.h"
 #include "SDL_joystick.h"
 #include "SDL_endian.h"
+#include "SDL_timer.h"
 #include "../../events/SDL_events_c.h"
 #include "../SDL_sysjoystick.h"
 #include "../SDL_joystick_c.h"
@@ -56,9 +58,7 @@
 static int MaybeAddDevice(const char *path);
 #if SDL_USE_LIBUDEV
 static int MaybeRemoveDevice(const char *path);
-static void joystick_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_class, const char *devpath);
 #endif /* SDL_USE_LIBUDEV */
-
 
 /* A linked list of available joysticks */
 typedef struct SDL_joylist_item
@@ -79,6 +79,9 @@ static SDL_joylist_item *SDL_joylist = NULL;
 static SDL_joylist_item *SDL_joylist_tail = NULL;
 static int numjoysticks = 0;
 
+#if !SDL_USE_LIBUDEV
+static Uint32 last_joy_detect_time = 0;
+#endif
 
 #define test_bit(nr, addr) \
     (((1UL << ((nr) % (sizeof(long) * 8))) & ((addr)[(nr) / (sizeof(long) * 8)])) != 0)
@@ -177,8 +180,6 @@ static void joystick_udev_callback(SDL_UDEV_deviceevent udev_type, int udev_clas
 }
 #endif /* SDL_USE_LIBUDEV */
 
-
-/* !!! FIXME: I would love to dump this code and use libudev instead. */
 static int
 MaybeAddDevice(const char *path)
 {
@@ -254,7 +255,6 @@ MaybeAddDevice(const char *path)
 }
 
 #if SDL_USE_LIBUDEV
-/* !!! FIXME: I would love to dump this code and use libudev instead. */
 static int
 MaybeRemoveDevice(const char *path)
 {
@@ -299,45 +299,46 @@ MaybeRemoveDevice(const char *path)
 }
 #endif
 
-#if ! SDL_USE_LIBUDEV
-static int
-JoystickInitWithoutUdev(void)
+static void
+HandlePendingRemovals(void)
 {
-    int i;
-    char path[PATH_MAX];
+    SDL_joylist_item *prev = NULL;
+    SDL_joylist_item *item = SDL_joylist;
 
-    /* !!! FIXME: only finds sticks if they're called /dev/input/event[0..31] */
-    /* !!! FIXME:  we could at least readdir() through /dev/input...? */
-    /* !!! FIXME:  (or delete this and rely on libudev?) */
-    for (i = 0; i < 32; i++) {
-        SDL_snprintf(path, SDL_arraysize(path), "/dev/input/event%d", i);
-        MaybeAddDevice(path);
+    while (item != NULL) {
+        if (item->hwdata && item->hwdata->gone) {
+            item->hwdata->item = NULL;
+
+            if (prev != NULL) {
+                prev->next = item->next;
+            } else {
+                SDL_assert(SDL_joylist == item);
+                SDL_joylist = item->next;
+            }
+            if (item == SDL_joylist_tail) {
+                SDL_joylist_tail = prev;
+            }
+
+            /* Need to decrement the joystick count before we post the event */
+            --numjoysticks;
+
+            SDL_PrivateJoystickRemoved(item->device_instance);
+
+            SDL_free(item->path);
+            SDL_free(item->name);
+            SDL_free(item);
+
+            if (prev != NULL) {
+                item = prev->next;
+            } else {
+                item = SDL_joylist;
+            }
+        } else {
+            prev = item;
+            item = item->next;
+        }
     }
-
-    return 0;
 }
-#endif
-
-#if SDL_USE_LIBUDEV
-static int
-JoystickInitWithUdev(void)
-{
-    if (SDL_UDEV_Init() < 0) {
-        return SDL_SetError("Could not initialize UDEV");
-    }
-
-    /* Set up the udev callback */
-    if (SDL_UDEV_AddCallback(joystick_udev_callback) < 0) {
-        SDL_UDEV_Quit();
-        return SDL_SetError("Could not set up joystick <-> udev callback");
-    }
-    
-    /* Force a scan to build the initial device list */
-    SDL_UDEV_Scan();
-
-    return 0;
-}
-#endif
 
 static SDL_bool SteamControllerConnectedCallback(const char *name, SDL_JoystickGUID guid, int *device_instance)
 {
@@ -410,6 +411,42 @@ static void SteamControllerDisconnectedCallback(int device_instance)
     }
 }
 
+static void
+LINUX_JoystickDetect(void)
+{
+#if SDL_USE_LIBUDEV
+    SDL_UDEV_Poll();
+#else
+    const Uint32 SDL_JOY_DETECT_INTERVAL_MS = 3000;  /* Update every 3 seconds */
+    Uint32 now = SDL_GetTicks();
+
+    if (!last_joy_detect_time || SDL_TICKS_PASSED(now, last_joy_detect_time + SDL_JOY_DETECT_INTERVAL_MS)) {
+        DIR *folder;
+        struct dirent *dent;
+
+        folder = opendir("/dev/input");
+        if (folder) {
+            while ((dent = readdir(folder))) {
+                int len = SDL_strlen(dent->d_name);
+                if (len > 5 && SDL_strncmp(dent->d_name, "event", 5) == 0) {
+                    char path[PATH_MAX];
+                    SDL_snprintf(path, SDL_arraysize(path), "/dev/input/%s", dent->d_name);
+                    MaybeAddDevice(path);
+                }
+            }
+
+            closedir(folder);
+        }
+
+        last_joy_detect_time = now;
+    }
+#endif
+
+    HandlePendingRemovals();
+
+    SDL_UpdateSteamControllers();
+}
+
 static int
 LINUX_JoystickInit(void)
 {
@@ -433,26 +470,30 @@ LINUX_JoystickInit(void)
                              SteamControllerDisconnectedCallback);
 
 #if SDL_USE_LIBUDEV
-    return JoystickInitWithUdev();
-#else 
-    return JoystickInitWithoutUdev();
+    if (SDL_UDEV_Init() < 0) {
+        return SDL_SetError("Could not initialize UDEV");
+    }
+
+    /* Set up the udev callback */
+    if (SDL_UDEV_AddCallback(joystick_udev_callback) < 0) {
+        SDL_UDEV_Quit();
+        return SDL_SetError("Could not set up joystick <-> udev callback");
+    }
+
+    /* Force a scan to build the initial device list */
+    SDL_UDEV_Scan();
+#else
+    /* Report all devices currently present */
+    LINUX_JoystickDetect();
 #endif
+
+    return 0;
 }
 
 static int
 LINUX_JoystickGetCount(void)
 {
     return numjoysticks;
-}
-
-static void
-LINUX_JoystickDetect(void)
-{
-#if SDL_USE_LIBUDEV
-    SDL_UDEV_Poll();
-#endif
-
-    SDL_UpdateSteamControllers();
 }
 
 static SDL_joylist_item *
@@ -914,6 +955,11 @@ HandleInputEvents(SDL_Joystick * joystick)
                 break;
             }
         }
+    }
+
+    if (errno == ENODEV) {
+        /* We have to wait until the JoystickDetect callback to remove this */
+        joystick->hwdata->gone = SDL_TRUE;
     }
 }
 
