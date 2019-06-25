@@ -70,13 +70,13 @@
 #    if defined(_M_ARM)
 #      include <armintr.h>
 #      include <arm_neon.h>
+#      define __ARM_NEON 1 /* Set __ARM_NEON so that it can be used elsewhere, at compile time */
 #    endif
 #    if defined (_M_ARM64)
 #      include <armintr.h>
 #      include <arm_neon.h>
+#      define __ARM_NEON 1 /* Set __ARM_NEON so that it can be used elsewhere, at compile time */
 #    endif
-/* Set __ARM_NEON so that it can be used elsewhere, at compile time */
-#    define __ARM_NEON 1
 #  endif
 #endif
 #if defined(__3dNOW__) && !defined(SDL_DISABLE_MM3DNOW_H)
