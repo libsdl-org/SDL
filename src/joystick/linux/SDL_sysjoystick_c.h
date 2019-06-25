@@ -64,6 +64,9 @@ struct joystick_hwdata
     SDL_bool m_bSteamController;
     /* 4 = (ABS_HAT3X-ABS_HAT0X)/2 (see input-event-codes.h in kernel) */
     int hats_indices[4];
+
+    /* Set when gamepad is pending removal due to ENODEV read error */
+    SDL_bool gone;
 };
 
 #endif /* SDL_sysjoystick_c_h_ */
