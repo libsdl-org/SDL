@@ -54,6 +54,9 @@
 
 #define FULLSCREEN_MASK (SDL_WINDOW_FULLSCREEN_DESKTOP | SDL_WINDOW_FULLSCREEN)
 
+#ifndef MAC_OS_X_VERSION_10_12
+#define NSEventModifierFlagCapsLock NSAlphaShiftKeyMask
+#endif
 
 @interface SDLWindow : NSWindow <NSDraggingDestination>
 /* These are needed for borderless/fullscreen windows */
@@ -849,14 +852,21 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     }
 }
 
-
-/* We'll respond to key events by doing nothing so we don't beep.
+/* We'll respond to key events by mostly doing nothing so we don't beep.
  * We could handle key messages here, but we lose some in the NSApp dispatch,
  * where they get converted to action messages, etc.
  */
 - (void)flagsChanged:(NSEvent *)theEvent
 {
     /*Cocoa_HandleKeyEvent(SDL_GetVideoDevice(), theEvent);*/
+
+    /* Catch capslock in here as a special case:
+       https://developer.apple.com/library/archive/qa/qa1519/_index.html
+       Note that technote's check of keyCode doesn't work. At least on the
+       10.15 beta, capslock comes through here as keycode 255, but it's safe
+       to send duplicate key events; SDL filters them out quickly in
+       SDL_SendKeyboardKey(). */
+    SDL_SendKeyboardKey(([theEvent modifierFlags] & NSEventModifierFlagCapsLock) ? SDL_PRESSED : SDL_RELEASED, SDL_SCANCODE_CAPSLOCK);
 }
 - (void)keyDown:(NSEvent *)theEvent
 {
