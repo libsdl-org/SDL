@@ -386,7 +386,7 @@ WIN_CreateWindowFrom(_THIS, SDL_Window * window, const void *data)
     titleLen = GetWindowTextLength(hwnd);
     title = SDL_small_alloc(TCHAR, titleLen + 1, &isstack);
     if (title) {
-        titleLen = GetWindowText(hwnd, title, titleLen);
+        titleLen = GetWindowText(hwnd, title, titleLen + 1);
     } else {
         titleLen = 0;
     }
