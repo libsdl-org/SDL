@@ -839,12 +839,12 @@ SDL_CreateRenderer(SDL_Window * window, int index, Uint32 flags)
 
     if (!window) {
         SDL_SetError("Invalid window");
-        return NULL;
+        goto error;
     }
 
     if (SDL_GetRenderer(window)) {
         SDL_SetError("Renderer already associated with window");
-        return NULL;
+        goto error;
     }
 
     if (SDL_GetHint(SDL_HINT_RENDER_VSYNC)) {
@@ -888,67 +888,74 @@ SDL_CreateRenderer(SDL_Window * window, int index, Uint32 flags)
         }
         if (index == n) {
             SDL_SetError("Couldn't find matching render driver");
-            return NULL;
+            goto error;
         }
     } else {
         if (index >= SDL_GetNumRenderDrivers()) {
             SDL_SetError("index must be -1 or in the range of 0 - %d",
                          SDL_GetNumRenderDrivers() - 1);
-            return NULL;
+            goto error;
         }
         /* Create a new renderer instance */
         renderer = render_drivers[index]->CreateRenderer(window, flags);
         batching = SDL_FALSE;
     }
 
-    if (renderer) {
-        VerifyDrawQueueFunctions(renderer);
-
-        /* let app/user override batching decisions. */
-        if (renderer->always_batch) {
-            batching = SDL_TRUE;
-        } else if (SDL_GetHint(SDL_HINT_RENDER_BATCHING)) {
-            batching = SDL_GetHintBoolean(SDL_HINT_RENDER_BATCHING, SDL_TRUE);
-        }
-
-        renderer->batching = batching;
-        renderer->magic = &renderer_magic;
-        renderer->window = window;
-        renderer->target_mutex = SDL_CreateMutex();
-        renderer->scale.x = 1.0f;
-        renderer->scale.y = 1.0f;
-        renderer->dpi_scale.x = 1.0f;
-        renderer->dpi_scale.y = 1.0f;
-
-        /* new textures start at zero, so we start at 1 so first render doesn't flush by accident. */
-        renderer->render_command_generation = 1;
-
-        if (window && renderer->GetOutputSize) {
-            int window_w, window_h;
-            int output_w, output_h;
-            if (renderer->GetOutputSize(renderer, &output_w, &output_h) == 0) {
-                SDL_GetWindowSize(renderer->window, &window_w, &window_h);
-                renderer->dpi_scale.x = (float)window_w / output_w;
-                renderer->dpi_scale.y = (float)window_h / output_h;
-            }
-        }
-
-        if (SDL_GetWindowFlags(window) & (SDL_WINDOW_HIDDEN|SDL_WINDOW_MINIMIZED)) {
-            renderer->hidden = SDL_TRUE;
-        } else {
-            renderer->hidden = SDL_FALSE;
-        }
-
-        SDL_SetWindowData(window, SDL_WINDOWRENDERDATA, renderer);
-
-        SDL_RenderSetViewport(renderer, NULL);
-
-        SDL_AddEventWatch(SDL_RendererEventWatch, renderer);
-
-        SDL_LogInfo(SDL_LOG_CATEGORY_RENDER,
-                    "Created renderer: %s", renderer->info.name);
+    if (!renderer) {
+        goto error;
     }
+
+    VerifyDrawQueueFunctions(renderer);
+
+    /* let app/user override batching decisions. */
+    if (renderer->always_batch) {
+        batching = SDL_TRUE;
+    } else if (SDL_GetHint(SDL_HINT_RENDER_BATCHING)) {
+        batching = SDL_GetHintBoolean(SDL_HINT_RENDER_BATCHING, SDL_TRUE);
+    }
+
+    renderer->batching = batching;
+    renderer->magic = &renderer_magic;
+    renderer->window = window;
+    renderer->target_mutex = SDL_CreateMutex();
+    renderer->scale.x = 1.0f;
+    renderer->scale.y = 1.0f;
+    renderer->dpi_scale.x = 1.0f;
+    renderer->dpi_scale.y = 1.0f;
+
+    /* new textures start at zero, so we start at 1 so first render doesn't flush by accident. */
+    renderer->render_command_generation = 1;
+
+    if (window && renderer->GetOutputSize) {
+        int window_w, window_h;
+        int output_w, output_h;
+        if (renderer->GetOutputSize(renderer, &output_w, &output_h) == 0) {
+            SDL_GetWindowSize(renderer->window, &window_w, &window_h);
+            renderer->dpi_scale.x = (float)window_w / output_w;
+            renderer->dpi_scale.y = (float)window_h / output_h;
+        }
+    }
+
+    if (SDL_GetWindowFlags(window) & (SDL_WINDOW_HIDDEN|SDL_WINDOW_MINIMIZED)) {
+        renderer->hidden = SDL_TRUE;
+    } else {
+        renderer->hidden = SDL_FALSE;
+    }
+
+    SDL_SetWindowData(window, SDL_WINDOWRENDERDATA, renderer);
+
+    SDL_RenderSetViewport(renderer, NULL);
+
+    SDL_AddEventWatch(SDL_RendererEventWatch, renderer);
+
+    SDL_LogInfo(SDL_LOG_CATEGORY_RENDER,
+                "Created renderer: %s", renderer->info.name);
+
     return renderer;
+
+error:
+    return NULL;
+
 #else
     SDL_SetError("SDL not built with rendering support");
     return NULL;
