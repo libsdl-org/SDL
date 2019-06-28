@@ -29,6 +29,9 @@
 #include "SDL_sysrender.h"
 #include "software/SDL_render_sw_c.h"
 
+#if defined(__ANDROID__)
+#  include "../core/android/SDL_android.h"
+#endif
 
 #define SDL_WINDOWRENDERDATA    "_SDL_WindowRenderData"
 
@@ -837,6 +840,10 @@ SDL_CreateRenderer(SDL_Window * window, int index, Uint32 flags)
     SDL_bool batching = SDL_TRUE;
     const char *hint;
 
+#if defined(__ANDROID__)
+    Android_ActivityMutex_Lock_Running();
+#endif
+
     if (!window) {
         SDL_SetError("Invalid window");
         goto error;
@@ -951,9 +958,16 @@ SDL_CreateRenderer(SDL_Window * window, int index, Uint32 flags)
     SDL_LogInfo(SDL_LOG_CATEGORY_RENDER,
                 "Created renderer: %s", renderer->info.name);
 
+#if defined(__ANDROID__)
+    Android_ActivityMutex_Unlock();
+#endif
     return renderer;
 
 error:
+
+#if defined(__ANDROID__)
+    Android_ActivityMutex_Unlock();
+#endif
     return NULL;
 
 #else

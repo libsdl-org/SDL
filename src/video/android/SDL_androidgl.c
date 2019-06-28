@@ -49,7 +49,15 @@ Android_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
 SDL_GLContext
 Android_GLES_CreateContext(_THIS, SDL_Window * window)
 {
-    return SDL_EGL_CreateContext(_this, ((SDL_WindowData *) window->driverdata)->egl_surface);
+    SDL_GLContext ret;
+
+    Android_ActivityMutex_Lock_Running();
+
+    ret = SDL_EGL_CreateContext(_this, ((SDL_WindowData *) window->driverdata)->egl_surface);
+
+    SDL_UnlockMutex(Android_ActivityMutex);
+
+    return ret;
 }
 
 int
