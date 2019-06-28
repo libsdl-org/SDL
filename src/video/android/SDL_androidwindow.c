@@ -42,7 +42,7 @@ Android_CreateWindow(_THIS, SDL_Window * window)
     SDL_WindowData *data;
     int retval = 0;
 
-    SDL_LockMutex(Android_ActivityMutex);
+    Android_ActivityMutex_Lock_Running();
 
     if (Android_Window) {
         retval = SDL_SetError("Android only supports one window");
