@@ -36,8 +36,21 @@
 
 #include <dlfcn.h>
 
-SDL_EGL_CreateContext_impl(Android)
-SDL_EGL_MakeCurrent_impl(Android)
+int
+Android_GLES_MakeCurrent(_THIS, SDL_Window * window, SDL_GLContext context)
+{
+    if (window && context) {
+        return SDL_EGL_MakeCurrent(_this, ((SDL_WindowData *) window->driverdata)->egl_surface, context);
+    } else {
+        return SDL_EGL_MakeCurrent(_this, NULL, NULL);
+    }
+}
+
+SDL_GLContext
+Android_GLES_CreateContext(_THIS, SDL_Window * window)
+{
+    return SDL_EGL_CreateContext(_this, ((SDL_WindowData *) window->driverdata)->egl_surface);
+}
 
 int
 Android_GLES_SwapWindow(_THIS, SDL_Window * window)
