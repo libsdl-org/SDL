@@ -184,6 +184,7 @@ typedef void (*SDL_KernelMemoryBarrierFunc)();
 #elif defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6T2__) || defined(__ARM_ARCH_6Z__) || defined(__ARM_ARCH_6ZK__) || defined(__ARM_ARCH_5TE__)
 #ifdef __thumb__
 /* The mcr instruction isn't available in thumb mode, use real functions */
+#define SDL_MEMORY_BARRIER_USES_FUNCTION
 #define SDL_MemoryBarrierRelease()   SDL_MemoryBarrierReleaseFunction()
 #define SDL_MemoryBarrierAcquire()   SDL_MemoryBarrierAcquireFunction()
 #else
