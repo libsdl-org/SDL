@@ -162,6 +162,22 @@ extern DECLSPEC void SDLCALL SDL_MemoryBarrierAcquireFunction(void);
 #define SDL_MemoryBarrierRelease()   __asm__ __volatile__ ("dmb ish" : : : "memory")
 #define SDL_MemoryBarrierAcquire()   __asm__ __volatile__ ("dmb ish" : : : "memory")
 #elif defined(__GNUC__) && defined(__arm__)
+#if 0 /* defined(__LINUX__) || defined(__ANDROID__) */
+/* Information from:
+   https://chromium.googlesource.com/chromium/chromium/+/trunk/base/atomicops_internals_arm_gcc.h#19
+
+   The Linux kernel provides a helper function which provides the right code for a memory barrier,
+   hard-coded at address 0xffff0fa0
+*/
+typedef void (*SDL_KernelMemoryBarrierFunc)();
+#define SDL_MemoryBarrierRelease()	((SDL_KernelMemoryBarrierFunc)0xffff0fa0)()
+#define SDL_MemoryBarrierAcquire()	((SDL_KernelMemoryBarrierFunc)0xffff0fa0)()
+#elif 0 /* defined(__QNXNTO__) */
+#include <sys/cpuinline.h>
+
+#define SDL_MemoryBarrierRelease()   __cpu_membarrier()
+#define SDL_MemoryBarrierAcquire()   __cpu_membarrier()
+#else
 #if defined(__ARM_ARCH_7__) || defined(__ARM_ARCH_7A__) || defined(__ARM_ARCH_7EM__) || defined(__ARM_ARCH_7R__) || defined(__ARM_ARCH_7M__) || defined(__ARM_ARCH_7S__) || defined(__ARM_ARCH_8A__)
 #define SDL_MemoryBarrierRelease()   __asm__ __volatile__ ("dmb ish" : : : "memory")
 #define SDL_MemoryBarrierAcquire()   __asm__ __volatile__ ("dmb ish" : : : "memory")
@@ -177,6 +193,7 @@ extern DECLSPEC void SDLCALL SDL_MemoryBarrierAcquireFunction(void);
 #else
 #define SDL_MemoryBarrierRelease()   __asm__ __volatile__ ("" : : : "memory")
 #define SDL_MemoryBarrierAcquire()   __asm__ __volatile__ ("" : : : "memory")
+#endif /* __LINUX__ || __ANDROID__ */
 #endif /* __GNUC__ && __arm__ */
 #else
 #if (defined(__SUNPRO_C) && (__SUNPRO_C >= 0x5120))
