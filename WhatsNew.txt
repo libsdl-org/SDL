@@ -6,6 +6,7 @@ This is a list of major changes in SDL's version history.
 ---------------------------------------------------------------------------
 
 General:
+* The SDL_RW* macros are now functions that are linked from the SDL library
 * Added SDL_SIMDGetAlignment(), SDL_SIMDAlloc(), and SDL_SIMDFree(), to allocate memory aligned for SIMD operations for the current CPU
 * Added SDL_RenderDrawPointF(), SDL_RenderDrawPointsF(), SDL_RenderDrawLineF(), SDL_RenderDrawLinesF(), SDL_RenderDrawRectF(), SDL_RenderDrawRectsF(), SDL_RenderFillRectF(), SDL_RenderFillRectsF(), SDL_RenderCopyF(), SDL_RenderCopyExF(), to allow floating point precision in the SDL rendering API.
 * Added SDL_GetTouchDeviceType() to get the type of a touch device, which can be a touch screen or a trackpad in relative or absolute coordinate mode.
