@@ -289,7 +289,7 @@ SDL_AtomicGetPtr(void **a)
 #endif
 }
 
-#ifdef __thumb__
+#if defined(__thumb__) && (defined(__ARM_ARCH_6__) || defined(__ARM_ARCH_6J__) || defined(__ARM_ARCH_6K__) || defined(__ARM_ARCH_6T2__) || defined(__ARM_ARCH_6Z__) || defined(__ARM_ARCH_6ZK__) || defined(__ARM_ARCH_5TE__))
 #error This file should be built in arm mode so the mcr instruction is available for memory barriers
 #endif
 
