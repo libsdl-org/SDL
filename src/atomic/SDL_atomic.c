@@ -289,6 +289,10 @@ SDL_AtomicGetPtr(void **a)
 #endif
 }
 
+#ifdef __thumb__
+#error This file should be built in arm mode so the mcr instruction is available for memory barriers
+#endif
+
 void
 SDL_MemoryBarrierReleaseFunction(void)
 {
