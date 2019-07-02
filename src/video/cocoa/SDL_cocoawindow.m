@@ -922,6 +922,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     int button;
     int clicks;
 
+    #if TRACKPAD_REPORTS_TOUCH_MOUSEID
     if ([theEvent subtype] == NSEventSubtypeTouch) {  /* this is a synthetic from the OS */
         if (mouse->touch_mouse_events) {
             mouseID = SDL_TOUCH_MOUSEID;   /* Hint is set */
@@ -929,6 +930,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
             return;  /* no hint set, drop this one. */
         }
     }
+    #endif
 
     /* Ignore events that aren't inside the client area (i.e. title bar.) */
     if ([theEvent window]) {
@@ -991,6 +993,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     int button;
     int clicks;
 
+    #if TRACKPAD_REPORTS_TOUCH_MOUSEID
     if ([theEvent subtype] == NSEventSubtypeTouch) {  /* this is a synthetic from the OS */
         if (mouse->touch_mouse_events) {
             mouseID = SDL_TOUCH_MOUSEID;   /* Hint is set */
@@ -998,6 +1001,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
             return;  /* no hint set, drop this one. */
         }
     }
+    #endif
 
     if ([self processHitTest:theEvent]) {
         SDL_SendWindowEvent(_data->window, SDL_WINDOWEVENT_HIT_TEST, 0, 0);
@@ -1051,6 +1055,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
     NSPoint point;
     int x, y;
 
+    #if TRACKPAD_REPORTS_TOUCH_MOUSEID
     if ([theEvent subtype] == NSEventSubtypeTouch) {  /* this is a synthetic from the OS */
         if (mouse->touch_mouse_events) {
             mouseID = SDL_TOUCH_MOUSEID;   /* Hint is set */
@@ -1058,6 +1063,7 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
             return;  /* no hint set, drop this one. */
         }
     }
+    #endif
 
     if ([self processHitTest:theEvent]) {
         SDL_SendWindowEvent(window, SDL_WINDOWEVENT_HIT_TEST, 0, 0);
