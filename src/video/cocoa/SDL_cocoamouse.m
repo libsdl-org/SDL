@@ -38,6 +38,8 @@
 #define DLog(...) do { } while (0)
 #endif
 
+#define TRACKPAD_REPORTS_TOUCH_MOUSEID 0
+
 @implementation NSCursor (InvisibleCursor)
 + (NSCursor *)invisibleCursor
 {
@@ -379,6 +381,7 @@ Cocoa_HandleMouseEvent(_THIS, NSEvent *event)
     }
 
     SDL_MouseID mouseID = mouse ? mouse->mouseID : 0;
+    #if TRACKPAD_REPORTS_TOUCH_MOUSEID
     if ([event subtype] == NSEventSubtypeTouch) {  /* this is a synthetic from the OS */
         if (mouse->touch_mouse_events) {
             mouseID = SDL_TOUCH_MOUSEID;   /* Hint is set */
@@ -386,6 +389,7 @@ Cocoa_HandleMouseEvent(_THIS, NSEvent *event)
             return;  /* no hint set, drop this one. */
         }
     }
+    #endif
 
     const SDL_bool seenWarp = driverdata->seenWarp;
     driverdata->seenWarp = NO;
@@ -432,6 +436,7 @@ Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event)
     }
 
     SDL_MouseID mouseID = mouse->mouseID;
+    #if TRACKPAD_REPORTS_TOUCH_MOUSEID
     if ([event subtype] == NSEventSubtypeTouch) {  /* this is a synthetic from the OS */
         if (mouse->touch_mouse_events) {
             mouseID = SDL_TOUCH_MOUSEID;   /* Hint is set */
@@ -439,6 +444,7 @@ Cocoa_HandleMouseWheel(SDL_Window *window, NSEvent *event)
             return;  /* no hint set, drop this one. */
         }
     }
+    #endif
 
     CGFloat x = -[event deltaX];
     CGFloat y = [event deltaY];
