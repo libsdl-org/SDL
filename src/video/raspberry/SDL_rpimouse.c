@@ -128,10 +128,6 @@ RPI_ShowCursor(SDL_Cursor * cursor)
         return -1;
     }
     
-    if (cursor == global_cursor) {
-        return 0;
-    }
-
     if (cursor != global_cursor) {
         if (global_cursor != NULL) {
             curdata = (RPI_CursorData *) global_cursor->driverdata;
