@@ -129,6 +129,14 @@ static Uint8 EVDEV_MouseButtons[] = {
     SDL_BUTTON_X2 + 3           /*  BTN_TASK        0x117 */
 };
 
+static int
+SDL_EVDEV_SetRelativeMouseMode(SDL_bool enabled)
+{
+    /* Mice already send relative events through this interface */
+    return 0;
+}
+
+
 int
 SDL_EVDEV_Init(void)
 {
@@ -161,6 +169,8 @@ SDL_EVDEV_Init(void)
 
         _this->kbd = SDL_EVDEV_kbd_init();
     }
+
+    SDL_GetMouse()->SetRelativeMouseMode = SDL_EVDEV_SetRelativeMouseMode;
 
     _this->ref_count += 1;
 
