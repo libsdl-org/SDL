@@ -75,8 +75,6 @@ main(int argc, char *argv[])
     while (!done) {
         /* Check for events */
         while (SDL_PollEvent(&event)) {
-            SDLTest_CommonEvent(state, &event, &done);
-
             if (event.type == SDL_DROPBEGIN) {
                 SDL_Log("Drop beginning on window %u", (unsigned int) event.drop.windowID);
             } else if (event.type == SDL_DROPCOMPLETE) {
@@ -85,8 +83,11 @@ main(int argc, char *argv[])
                 const char *typestr = (event.type == SDL_DROPFILE) ? "File" : "Text";
                 char *dropped_filedir = event.drop.file;
                 SDL_Log("%s dropped on window %u: %s", typestr, (unsigned int) event.drop.windowID, dropped_filedir);
-                SDL_free(dropped_filedir);
+                /* Normally you'd have to do this, but this is freed in SDLTest_CommonEvent() */
+                /*SDL_free(dropped_filedir);*/
             }
+
+            SDLTest_CommonEvent(state, &event, &done);
         }
     }
 
