@@ -552,8 +552,8 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 
             GetRawInputData(hRawInput, RID_INPUT, &inp, &size, sizeof(RAWINPUTHEADER));
 
-            /* Mouse data */
-            if (inp.header.dwType == RIM_TYPEMOUSE) {
+            /* Mouse data (ignoring synthetic mouse events generated for touchscreens) */
+            if (inp.header.dwType == RIM_TYPEMOUSE && (GetMessageExtraInfo() & 0x80) == 0) {
                 if (isRelative) {
                     RAWMOUSE* rawmouse = &inp.data.mouse;
 
