@@ -1675,7 +1675,7 @@ Optional Features:
   --enable-wasapi         use the Windows WASAPI audio driver [[default=yes]]
   --enable-sdl-dlopen     use dlopen for shared object loading [[default=yes]]
   --enable-hidapi         use HIDAPI for low level joystick drivers
-                          [[default=no]]
+                          [[default=maybe]]
   --enable-clock_gettime  use clock_gettime() instead of gettimeofday() on
                           UNIX [[default=yes]]
   --enable-rpath          use an rpath when linking SDL [[default=yes]]
@@ -24107,14 +24107,32 @@ CheckHIDAPI()
     # so we'll just use libusb when it's available.
     #
     # Except that libusb requires root permissions to open devices, so that's not generally useful, and we'll disable this by default.
+    #
+    #  On macOS and Windows, where you don't need libusb or root, we default to yes.
+    skiplibusb=no
+    case "$host" in
+        *-*-cygwin* | *-*-mingw32* | *-*-darwin* )
+            skiplibusb=yes
+            ;;
+    esac
+
     # Check whether --enable-hidapi was given.
 if test "${enable_hidapi+set}" = set; then :
   enableval=$enable_hidapi;
 else
-  enable_hidapi=no
+  enable_hidapi=maybe
 fi
 
+    hidapi_support=no
+
+    if test x$enable_hidapi = xmaybe; then
+      enable_hidapi=$skiplibusb
+    fi
+
     if test x$enable_joystick = xyes -a x$enable_hidapi = xyes; then
+        if test x$skiplibusb = xyes; then
+            hidapi_support=yes
+        else
 
 pkg_failed=no
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for LIBUSB" >&5
@@ -24184,28 +24202,34 @@ else
 $as_echo "yes" >&6; }
 	have_libusb=yes
 fi
-        hidapi_support=no
-        save_CFLAGS="$CFLAGS"
-        CFLAGS="$save_CFLAGS $LIBUSB_CFLAGS"
-        ac_fn_c_check_header_mongrel "$LINENO" "libusb.h" "ac_cv_header_libusb_h" "$ac_includes_default"
+            save_CFLAGS="$CFLAGS"
+            CFLAGS="$save_CFLAGS $LIBUSB_CFLAGS"
+            ac_fn_c_check_header_mongrel "$LINENO" "libusb.h" "ac_cv_header_libusb_h" "$ac_includes_default"
 if test "x$ac_cv_header_libusb_h" = xyes; then :
   have_libusb_h=yes
 fi
 
 
-        CFLAGS="$save_CFLAGS"
+            CFLAGS="$save_CFLAGS"
+            if test x$have_libusb_h = xyes; then
+                hidapi_support=yes
+            fi
+        fi
 
-        if test x$have_libusb_h = xyes; then
-            hidapi_support=yes
+        if test x$hidapi_support = xyes; then
 
 $as_echo "#define SDL_JOYSTICK_HIDAPI 1" >>confdefs.h
 
             EXTRA_CFLAGS="$EXTRA_CFLAGS -I$srcdir/src/hidapi/hidapi"
             SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
-            SOURCES="$SOURCES $srcdir/src/hidapi/libusb/hid.c"
-            EXTRA_CFLAGS="$EXTRA_CFLAGS $LIBUSB_CFLAGS"
-            EXTRA_LDFLAGS="$EXTRA_LDFLAGS $LIBUSB_LIBS"
+
+            if test x$skiplibusb = xno; then
+                SOURCES="$SOURCES $srcdir/src/hidapi/libusb/hid.c"
+                EXTRA_CFLAGS="$EXTRA_CFLAGS $LIBUSB_CFLAGS"
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS $LIBUSB_LIBS"
+            fi
         fi
+
         { $as_echo "$as_me:${as_lineno-$LINENO}: checking for hidapi support" >&5
 $as_echo_n "checking for hidapi support... " >&6; }
         { $as_echo "$as_me:${as_lineno-$LINENO}: result: $hidapi_support" >&5
@@ -24632,6 +24656,7 @@ $as_echo "#define SDL_TIMER_UNIX 1" >>confdefs.h
         CheckWINDOWSGLES
         CheckVulkan
         CheckDIRECTX
+        CheckHIDAPI
 
         # Set up the core platform files
         SOURCES="$SOURCES $srcdir/src/core/windows/*.c"
@@ -24705,14 +24730,11 @@ $as_echo "#define SDL_JOYSTICK_DINPUT 1" >>confdefs.h
 $as_echo "#define SDL_JOYSTICK_WINMM 1" >>confdefs.h
 
             fi
-
-$as_echo "#define SDL_JOYSTICK_HIDAPI 1" >>confdefs.h
-
             SOURCES="$SOURCES $srcdir/src/joystick/windows/*.c"
-            SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
-            SOURCES="$SOURCES $srcdir/src/hidapi/windows/hid.c"
-            EXTRA_CFLAGS="$EXTRA_CFLAGS -I$srcdir/src/hidapi/hidapi"
             have_joystick=yes
+            if test x$hidapi_support = xyes; then
+                SOURCES="$SOURCES $srcdir/src/hidapi/windows/hid.c"
+            fi
         fi
         if test x$enable_haptic = xyes; then
             if test x$have_dinput = xyes -o x$have_xinput = xyes; then
@@ -25036,6 +25058,7 @@ $as_echo "#define SDL_VIDEO_RENDER_OGL_ES2 1" >>confdefs.h
         CheckOpenGLX11
         CheckVulkan
         CheckPTHREAD
+        CheckHIDAPI
 
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
@@ -25052,14 +25075,11 @@ $as_echo "#define SDL_AUDIO_DRIVER_COREAUDIO 1" >>confdefs.h
 
 $as_echo "#define SDL_JOYSTICK_IOKIT 1" >>confdefs.h
 
-
-$as_echo "#define SDL_JOYSTICK_HIDAPI 1" >>confdefs.h
-
             SOURCES="$SOURCES $srcdir/src/joystick/darwin/*.c"
-            SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
-            SOURCES="$SOURCES $srcdir/src/hidapi/mac/hid.c"
-            EXTRA_CFLAGS="$EXTRA_CFLAGS -I$srcdir/src/hidapi/hidapi"
             have_joystick=yes
+            if test x$hidapi_support = xyes; then
+                SOURCES="$SOURCES $srcdir/src/hidapi/mac/hid.c"
+            fi
         fi
         # Set up files for the haptic library
         if test x$enable_haptic = xyes; then

@@ -3199,26 +3199,50 @@ CheckHIDAPI()
     # so we'll just use libusb when it's available.
     #
     # Except that libusb requires root permissions to open devices, so that's not generally useful, and we'll disable this by default.
-    AC_ARG_ENABLE(hidapi,
-AS_HELP_STRING([--enable-hidapi], [use HIDAPI for low level joystick drivers [[default=no]]]),
-                  , enable_hidapi=no)
-    if test x$enable_joystick = xyes -a x$enable_hidapi = xyes; then
-        PKG_CHECK_MODULES([LIBUSB], [libusb-1.0], have_libusb=yes, have_libusb=no)
-        hidapi_support=no
-        save_CFLAGS="$CFLAGS"
-        CFLAGS="$save_CFLAGS $LIBUSB_CFLAGS"
-        AC_CHECK_HEADER(libusb.h, have_libusb_h=yes)
-        CFLAGS="$save_CFLAGS"
+    #
+    #  On macOS and Windows, where you don't need libusb or root, we default to yes.
+    skiplibusb=no
+    case "$host" in
+        *-*-cygwin* | *-*-mingw32* | *-*-darwin* )
+            skiplibusb=yes
+            ;;
+    esac
 
-        if test x$have_libusb_h = xyes; then
+    AC_ARG_ENABLE(hidapi,
+AS_HELP_STRING([--enable-hidapi], [use HIDAPI for low level joystick drivers [[default=maybe]]]),
+                  , enable_hidapi=maybe)
+    hidapi_support=no
+
+    if test x$enable_hidapi = xmaybe; then
+      enable_hidapi=$skiplibusb
+    fi
+
+    if test x$enable_joystick = xyes -a x$enable_hidapi = xyes; then
+        if test x$skiplibusb = xyes; then
             hidapi_support=yes
+        else
+            PKG_CHECK_MODULES([LIBUSB], [libusb-1.0], have_libusb=yes, have_libusb=no)
+            save_CFLAGS="$CFLAGS"
+            CFLAGS="$save_CFLAGS $LIBUSB_CFLAGS"
+            AC_CHECK_HEADER(libusb.h, have_libusb_h=yes)
+            CFLAGS="$save_CFLAGS"
+            if test x$have_libusb_h = xyes; then
+                hidapi_support=yes
+            fi
+        fi
+
+        if test x$hidapi_support = xyes; then
             AC_DEFINE(SDL_JOYSTICK_HIDAPI, 1, [ ])
             EXTRA_CFLAGS="$EXTRA_CFLAGS -I$srcdir/src/hidapi/hidapi"
             SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
-            SOURCES="$SOURCES $srcdir/src/hidapi/libusb/hid.c"
-            EXTRA_CFLAGS="$EXTRA_CFLAGS $LIBUSB_CFLAGS"
-            EXTRA_LDFLAGS="$EXTRA_LDFLAGS $LIBUSB_LIBS"
+
+            if test x$skiplibusb = xno; then
+                SOURCES="$SOURCES $srcdir/src/hidapi/libusb/hid.c"
+                EXTRA_CFLAGS="$EXTRA_CFLAGS $LIBUSB_CFLAGS"
+                EXTRA_LDFLAGS="$EXTRA_LDFLAGS $LIBUSB_LIBS"
+            fi
         fi
+
         AC_MSG_CHECKING(for hidapi support)
         AC_MSG_RESULT($hidapi_support)
     fi
@@ -3521,6 +3545,7 @@ case "$host" in
         CheckWINDOWSGLES
         CheckVulkan
         CheckDIRECTX
+        CheckHIDAPI
 
         # Set up the core platform files
         SOURCES="$SOURCES $srcdir/src/core/windows/*.c"
@@ -3572,12 +3597,11 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
             else
                 AC_DEFINE(SDL_JOYSTICK_WINMM, 1, [ ])
             fi
-            AC_DEFINE(SDL_JOYSTICK_HIDAPI, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/joystick/windows/*.c"
-            SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
-            SOURCES="$SOURCES $srcdir/src/hidapi/windows/hid.c"
-            EXTRA_CFLAGS="$EXTRA_CFLAGS -I$srcdir/src/hidapi/hidapi"
             have_joystick=yes
+            if test x$hidapi_support = xyes; then
+                SOURCES="$SOURCES $srcdir/src/hidapi/windows/hid.c"
+            fi
         fi
         if test x$enable_haptic = xyes; then
             if test x$have_dinput = xyes -o x$have_xinput = xyes; then
@@ -3803,6 +3827,7 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         CheckOpenGLX11
         CheckVulkan
         CheckPTHREAD
+        CheckHIDAPI
 
         # Set up files for the audio library
         if test x$enable_audio = xyes; then
@@ -3815,12 +3840,11 @@ AS_HELP_STRING([--enable-render-d3d], [enable the Direct3D render driver [[defau
         # Set up files for the joystick library
         if test x$enable_joystick = xyes; then
             AC_DEFINE(SDL_JOYSTICK_IOKIT, 1, [ ])
-            AC_DEFINE(SDL_JOYSTICK_HIDAPI, 1, [ ])
             SOURCES="$SOURCES $srcdir/src/joystick/darwin/*.c"
-            SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
-            SOURCES="$SOURCES $srcdir/src/hidapi/mac/hid.c"
-            EXTRA_CFLAGS="$EXTRA_CFLAGS -I$srcdir/src/hidapi/hidapi"
             have_joystick=yes
+            if test x$hidapi_support = xyes; then
+                SOURCES="$SOURCES $srcdir/src/hidapi/mac/hid.c"
+            fi
         fi
         # Set up files for the haptic library
         if test x$enable_haptic = xyes; then
