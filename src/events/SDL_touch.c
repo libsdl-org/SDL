@@ -33,11 +33,7 @@ static SDL_Touch **SDL_touchDevices = NULL;
 
 /* for mapping touch events to mice */
 
-#ifndef __MACOSX__  /* don't generate mouse events from touch on macOS, the OS handles that. */
 #define SYNTHESIZE_TOUCH_TO_MOUSE 1
-#else
-#define SYNTHESIZE_TOUCH_TO_MOUSE 0
-#endif
 
 #if SYNTHESIZE_TOUCH_TO_MOUSE
 static SDL_bool finger_touching = SDL_FALSE;
