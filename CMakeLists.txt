@@ -155,6 +155,20 @@ if(UNIX OR MINGW OR MSYS)
   set(OPT_DEF_LIBC ON)
 endif()
 
+# The hidraw support doesn't catch Xbox, PS4 and Nintendo controllers,
+#  so we'll just use libusb when it's available. Except that libusb
+#  requires root permissions to open devices, so that's not generally
+#  useful, and we'll disable this by default on Unix. Windows and macOS
+#  can use it without root access, though, so enable by default there.
+if(WINDOWS OR APPLE OR ANDROID)
+  set(HIDAPI_SKIP_LIBUSB TRUE)
+else()
+  set(HIDAPI_SKIP_LIBUSB FALSE)
+endif()
+if (HIDAPI_SKIP_LIBUSB)
+  set(OPT_DEF_HIDAPI ON)
+endif()
+
 # Compiler info
 if(CMAKE_COMPILER_IS_GNUCC)
   set(USE_GCC TRUE)
@@ -358,6 +372,7 @@ set_option(VIDEO_KMSDRM        "Use KMS DRM video driver" ${UNIX_SYS})
 dep_option(KMSDRM_SHARED       "Dynamically load KMS DRM support" ON "VIDEO_KMSDRM" OFF)
 option_string(BACKGROUNDING_SIGNAL "number to use for magic backgrounding signal or 'OFF'" "OFF")
 option_string(FOREGROUNDING_SIGNAL "number to use for magic foregrounding signal or 'OFF'" "OFF")
+set_option(HIDAPI              "Use HIDAPI for low level joystick drivers" ${OPT_DEF_HIDAPI})
 
 set(SDL_SHARED ${SDL_SHARED_ENABLED_BY_DEFAULT} CACHE BOOL "Build a shared version of the library")
 set(SDL_STATIC ${SDL_STATIC_ENABLED_BY_DEFAULT} CACHE BOOL "Build a static version of the library")
@@ -828,6 +843,7 @@ if(SDL_VIDEO)
   endif()
 endif()
 
+# Platform-specific options and settings
 if(ANDROID)
   file(GLOB ANDROID_CORE_SOURCES ${SDL2_SOURCE_DIR}/src/core/android/*.c)
   set(SOURCE_FILES ${SOURCE_FILES} ${ANDROID_CORE_SOURCES})
@@ -863,6 +879,7 @@ if(ANDROID)
     set(HAVE_SDL_HAPTIC TRUE)
   endif()
   if(SDL_JOYSTICK)
+    CheckHIDAPI()
     set(SDL_JOYSTICK_ANDROID 1)
     file(GLOB ANDROID_JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/android/*.c ${SDL2_SOURCE_DIR}/src/joystick/steam/*.c)
     set(SOURCE_FILES ${SOURCE_FILES} ${ANDROID_JOYSTICK_SOURCES})
@@ -934,14 +951,9 @@ if(ANDROID)
     endif()
   endif()
 
-  file(GLOB ANDROID_HIDAPI_SOURCES ${SDL2_SOURCE_DIR}/src/hidapi/android/*.cpp)
-
   CheckPTHREAD()
 
-endif()
-
-# Platform-specific options and settings
-if(EMSCRIPTEN)
+elseif(EMSCRIPTEN)
   # Hide noisy warnings that intend to aid mostly during initial stages of porting a new
   # project. Uncomment at will for verbose cross-compiling -I/../ path info.
   add_definitions(-Wno-warn-absolute-paths)
@@ -993,6 +1005,7 @@ if(EMSCRIPTEN)
       set(SDL_VIDEO_RENDER_OGL_ES2 1)
     endif()
   endif()
+
 elseif(UNIX AND NOT APPLE AND NOT ANDROID)
   if(SDL_AUDIO)
     if(SYSV5 OR SOLARIS OR HPUX)
@@ -1116,6 +1129,7 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID)
 
   if(SDL_JOYSTICK)
     CheckUSBHID()   # seems to be BSD specific - limit the test to BSD only?
+    CheckHIDAPI()
     if(LINUX AND NOT ANDROID)
       set(SDL_JOYSTICK_LINUX 1)
       file(GLOB JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/linux/*.c ${SDL2_SOURCE_DIR}/src/joystick/steam/*.c)
@@ -1359,6 +1373,10 @@ elseif(WINDOWS)
   endif()
 
   if(SDL_JOYSTICK)
+    CheckHIDAPI()
+    if(HAVE_HIDAPI)
+      set(SOURCE_FILES ${SOURCE_FILES} ${SDL2_SOURCE_DIR}/src/hidapi/windows/hid.c)
+    endif()
     file(GLOB JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/windows/*.c)
     set(SOURCE_FILES ${SOURCE_FILES} ${JOYSTICK_SOURCES})
     if(HAVE_DINPUT_H)
@@ -1404,6 +1422,7 @@ elseif(WINDOWS)
     set(SDL_CFLAGS "${SDL_CFLAGS} -Dmain=SDL_main")
     list(APPEND SDL_LIBS "-lmingw32" "-lSDL2main" "-mwindows")
   endif()
+
 elseif(APPLE)
   # TODO: rework this all for proper MacOS X, iOS and Darwin support
 
@@ -1441,6 +1460,14 @@ elseif(APPLE)
   endif()
 
   if(SDL_JOYSTICK)
+    CheckHIDAPI()
+    if(HAVE_HIDAPI)
+      if(IOS)
+        set(SOURCE_FILES ${SOURCE_FILES} ${SDL2_SOURCE_DIR}/src/hidapi/ios/hid.m)
+      else()
+        set(SOURCE_FILES ${SOURCE_FILES} ${SDL2_SOURCE_DIR}/src/hidapi/mac/hid.c)
+      endif()
+    endif()
     set(SDL_JOYSTICK_IOKIT 1)
     if (IOS)
       file(GLOB JOYSTICK_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/iphoneos/*.m ${SDL2_SOURCE_DIR}/src/joystick/steam/*.c)
@@ -1553,6 +1580,7 @@ elseif(APPLE)
   endif()
 
   CheckPTHREAD()
+
 elseif(HAIKU)
   if(SDL_VIDEO)
     set(SDL_VIDEO_DRIVER_HAIKU 1)
@@ -1799,7 +1827,10 @@ if(SDL_SHARED)
 endif()
 
 if(ANDROID)
-  add_library(hidapi SHARED ${ANDROID_HIDAPI_SOURCES})
+  if(HAVE_HIDAPI)
+    add_library(hidapi SHARED ${SDL2_SOURCE_DIR}/src/hidapi/android/hid.cpp)
+  endif()
+
   if(MSVC AND NOT LIBC)
     # Don't try to link with the default set of libraries.
     set_target_properties(hidapi PROPERTIES LINK_FLAGS_RELEASE "/NODEFAULTLIB")
