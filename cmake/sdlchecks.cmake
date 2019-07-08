@@ -1065,6 +1065,37 @@ macro(CheckUSBHID)
   endif()
 endmacro()
 
+# Check for HIDAPI joystick drivers. This is currently a Unix thing, not Windows or macOS!
+macro(CheckHIDAPI)
+  if(HIDAPI)
+    if(HIDAPI_SKIP_LIBUSB)
+      set(HAVE_HIDAPI TRUE)
+    else()
+      set(HAVE_HIDAPI FALSE)
+      pkg_check_modules(LIBUSB libusb)
+      if (LIBUSB_FOUND)
+        check_include_file(libusb.h HAVE_LIBUSB_H)
+        if (HAVE_LIBUSB_H)
+          set(HAVE_HIDAPI TRUE)
+        endif()
+      endif()
+    endif()
+
+    if(HAVE_HIDAPI)
+      set(SDL_JOYSTICK_HIDAPI 1)
+      set(HAVE_SDL_JOYSTICK TRUE)
+      file(GLOB HIDAPI_SOURCES ${SDL2_SOURCE_DIR}/src/joystick/hidapi/*.c)
+      set(SOURCE_FILES ${SOURCE_FILES} ${HIDAPI_SOURCES})
+      set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${LIBUSB_CFLAGS} -I${SDL2_SOURCE_DIR}/src/hidapi/hidapi")
+      if(NOT HIDAPI_SKIP_LIBUSB)
+        set(SOURCE_FILES ${SOURCE_FILES} ${SDL2_SOURCE_DIR}/src/hidapi/libusb/hid.c)
+        list(APPEND EXTRA_LIBS ${LIBUSB_LIBS})
+      endif()
+    endif()
+  endif()
+endmacro()
+
+
 # Requires:
 # - n/a
 macro(CheckRPI)
