@@ -918,19 +918,9 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
         return;
     }
 
-    SDL_MouseID mouseID = mouse->mouseID;
+    const SDL_MouseID mouseID = mouse->mouseID;
     int button;
     int clicks;
-
-    #if TRACKPAD_REPORTS_TOUCH_MOUSEID
-    if ([theEvent subtype] == NSEventSubtypeTouch) {  /* this is a synthetic from the OS */
-        if (mouse->touch_mouse_events) {
-            mouseID = SDL_TOUCH_MOUSEID;   /* Hint is set */
-        } else {
-            return;  /* no hint set, drop this one. */
-        }
-    }
-    #endif
 
     /* Ignore events that aren't inside the client area (i.e. title bar.) */
     if ([theEvent window]) {
@@ -989,19 +979,9 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
         return;
     }
 
-    SDL_MouseID mouseID = mouse->mouseID;
+    const SDL_MouseID mouseID = mouse->mouseID;
     int button;
     int clicks;
-
-    #if TRACKPAD_REPORTS_TOUCH_MOUSEID
-    if ([theEvent subtype] == NSEventSubtypeTouch) {  /* this is a synthetic from the OS */
-        if (mouse->touch_mouse_events) {
-            mouseID = SDL_TOUCH_MOUSEID;   /* Hint is set */
-        } else {
-            return;  /* no hint set, drop this one. */
-        }
-    }
-    #endif
 
     if ([self processHitTest:theEvent]) {
         SDL_SendWindowEvent(_data->window, SDL_WINDOWEVENT_HIT_TEST, 0, 0);
@@ -1050,20 +1030,10 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
         return;
     }
 
-    SDL_MouseID mouseID = mouse->mouseID;
+    const SDL_MouseID mouseID = mouse->mouseID;
     SDL_Window *window = _data->window;
     NSPoint point;
     int x, y;
-
-    #if TRACKPAD_REPORTS_TOUCH_MOUSEID
-    if ([theEvent subtype] == NSEventSubtypeTouch) {  /* this is a synthetic from the OS */
-        if (mouse->touch_mouse_events) {
-            mouseID = SDL_TOUCH_MOUSEID;   /* Hint is set */
-        } else {
-            return;  /* no hint set, drop this one. */
-        }
-    }
-    #endif
 
     if ([self processHitTest:theEvent]) {
         SDL_SendWindowEvent(window, SDL_WINDOWEVENT_HIT_TEST, 0, 0);
@@ -1134,7 +1104,12 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 
 - (void)touchesBeganWithEvent:(NSEvent *) theEvent
 {
+    /* probably a MacBook trackpad; make this look like a synthesized event.
+       This is backwards from reality, but better matches user expectations. */
+    const BOOL istrackpad = ([theEvent subtype] == NSEventSubtypeMouseEvent);
+
     NSSet *touches = [theEvent touchesMatchingPhase:NSTouchPhaseAny inView:nil];
+    const SDL_TouchID touchID = istrackpad ? SDL_MOUSE_TOUCHID : (SDL_TouchID)(intptr_t)[[touches anyObject] device];
     int existingTouchCount = 0;
 
     for (NSTouch* touch in touches) {
@@ -1143,7 +1118,6 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
         }
     }
     if (existingTouchCount == 0) {
-        const SDL_TouchID touchID = (SDL_TouchID)(intptr_t)[[touches anyObject] device];
         int numFingers = SDL_GetNumTouchFingers(touchID);
         DLog("Reset Lost Fingers: %d", numFingers);
         for (--numFingers; numFingers >= 0; --numFingers) {
@@ -1175,8 +1149,12 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 {
     NSSet *touches = [theEvent touchesMatchingPhase:phase inView:nil];
 
+    /* probably a MacBook trackpad; make this look like a synthesized event.
+       This is backwards from reality, but better matches user expectations. */
+    const BOOL istrackpad = ([theEvent subtype] == NSEventSubtypeMouseEvent);
+
     for (NSTouch *touch in touches) {
-        const SDL_TouchID touchId = (SDL_TouchID)(intptr_t)[touch device];
+        const SDL_TouchID touchId = istrackpad ? SDL_MOUSE_TOUCHID : (SDL_TouchID)(intptr_t)[touch device];
         SDL_TouchDeviceType devtype = SDL_TOUCH_DEVICE_INDIRECT_ABSOLUTE;
 
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 101202 /* Added in the 10.12.2 SDK. */
