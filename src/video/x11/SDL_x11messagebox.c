@@ -428,6 +428,19 @@ X11_MessageBoxCreateWindow( SDL_MessageBoxDataX11 *data )
     }
 
     if ( windowdata ) {
+        Atom _NET_WM_STATE = X11_XInternAtom(display, "_NET_WM_STATE", False);
+        Atom stateatoms[16];
+        size_t statecount = 0;
+        /* Set some message-boxy window states when attached to a parent window... */
+        /* we skip the taskbar since this will pop to the front when the parent window is clicked in the taskbar, etc */
+        stateatoms[statecount++] = X11_XInternAtom(display, "_NET_WM_STATE_SKIP_TASKBAR", False);
+        stateatoms[statecount++] = X11_XInternAtom(display, "_NET_WM_STATE_SKIP_PAGER", False);
+        stateatoms[statecount++] = X11_XInternAtom(display, "_NET_WM_STATE_FOCUSED", False);
+        stateatoms[statecount++] = X11_XInternAtom(display, "_NET_WM_STATE_MODAL", False);
+        SDL_assert(statecount <= SDL_arraysize(stateatoms));
+        X11_XChangeProperty(display, data->window, _NET_WM_STATE, XA_ATOM, 32,
+                            PropModeReplace, (unsigned char *)stateatoms, statecount);
+
         /* http://tronche.com/gui/x/icccm/sec-4.html#WM_TRANSIENT_FOR */
         X11_XSetTransientForHint( display, data->window, windowdata->xwindow );
     }
