@@ -244,16 +244,18 @@ SDL_SendTouch(SDL_TouchID id, SDL_FingerID fingerid,
 {
     int posted;
     SDL_Finger *finger;
+    SDL_Mouse *mouse;
 
     SDL_Touch* touch = SDL_GetTouch(id);
     if (!touch) {
         return -1;
     }
 
+    mouse = SDL_GetMouse();
+
 #if SYNTHESIZE_TOUCH_TO_MOUSE
     /* SDL_HINT_TOUCH_MOUSE_EVENTS: controlling whether touch events should generate synthetic mouse events */
     {
-        SDL_Mouse *mouse = SDL_GetMouse();
         if (mouse->touch_mouse_events) {
             /* FIXME: maybe we should only restrict to a few SDL_TouchDeviceType */
             if (id != SDL_MOUSE_TOUCHID) {
@@ -300,6 +302,13 @@ SDL_SendTouch(SDL_TouchID id, SDL_FingerID fingerid,
         }
     }
 #endif
+
+    /* SDL_HINT_MOUSE_TOUCH_EVENTS: if not set, discard synthetic touch events coming from platform layer */
+    if (mouse->mouse_touch_events == 0) {
+        if (id == SDL_MOUSE_TOUCHID) {
+            return 0;
+        }
+    }
 
     finger = SDL_GetFinger(touch, fingerid);
     if (down) {
@@ -357,6 +366,7 @@ SDL_SendTouchMotion(SDL_TouchID id, SDL_FingerID fingerid,
 {
     SDL_Touch *touch;
     SDL_Finger *finger;
+    SDL_Mouse *mouse;
     int posted;
     float xrel, yrel, prel;
 
@@ -365,10 +375,11 @@ SDL_SendTouchMotion(SDL_TouchID id, SDL_FingerID fingerid,
         return -1;
     }
 
+    mouse = SDL_GetMouse();
+
 #if SYNTHESIZE_TOUCH_TO_MOUSE
     /* SDL_HINT_TOUCH_MOUSE_EVENTS: controlling whether touch events should generate synthetic mouse events */
     {
-        SDL_Mouse *mouse = SDL_GetMouse();
         if (mouse->touch_mouse_events) {
             if (id != SDL_MOUSE_TOUCHID) {
                 SDL_Window *window = SDL_GetMouseFocus();
@@ -387,6 +398,13 @@ SDL_SendTouchMotion(SDL_TouchID id, SDL_FingerID fingerid,
         }
     }
 #endif
+
+    /* SDL_HINT_MOUSE_TOUCH_EVENTS: if not set, discard synthetic touch events coming from platform layer */
+    if (mouse->mouse_touch_events == 0) {
+        if (id == SDL_MOUSE_TOUCHID) {
+            return 0;
+        }
+    }
 
     finger = SDL_GetFinger(touch,fingerid);
     if (!finger) {
