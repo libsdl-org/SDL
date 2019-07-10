@@ -75,30 +75,38 @@ xinput2_version_atleast(const int version, const int wantmajor, const int wantmi
 }
 
 #if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
-static void
-xinput2_normalize_touch_coordinates(SDL_VideoData *videodata, Window window,
-    double in_x, double in_y, float *out_x, float *out_y)
+static SDL_Window *
+xinput2_get_sdlwindow(SDL_VideoData *videodata, Window window)
 {
     int i;
     for (i = 0; i < videodata->numwindows; i++) {
         SDL_WindowData *d = videodata->windowlist[i];
         if (d->xwindow == window) {
-            if (d->window->w == 1) {
-                *out_x = 0.5f;
-            } else {
-                *out_x = in_x / (d->window->w - 1);
-            }
-            if (d->window->h == 1) {
-                *out_y = 0.5f;
-            } else {
-                *out_y = in_y / (d->window->h - 1);
-            }
-            return;
+            return d->window;
         }
     }
-    // couldn't find the window...
-    *out_x = in_x;
-    *out_y = in_y;
+    return NULL;
+}
+
+static void
+xinput2_normalize_touch_coordinates(SDL_Window *window, double in_x, double in_y, float *out_x, float *out_y)
+{
+    if (window) {
+        if (window->w == 1) {
+            *out_x = 0.5f;
+        } else {
+            *out_x = in_x / (window->w - 1);
+        }
+        if (window->h == 1) {
+            *out_y = 0.5f;
+        } else {
+            *out_y = in_y / (window->h - 1);
+        }
+    } else {
+        // couldn't find the window...
+        *out_x = in_x;
+        *out_y = in_y;
+    }
 }
 #endif /* SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH */
 
@@ -198,11 +206,30 @@ X11_HandleXinput2Event(SDL_VideoData *videodata,XGenericEventCookie *cookie)
             break;
 
 #if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
+         /* With multitouch, register to receive XI_Motion (which desctivates MotionNotify),
+          * so that we can distinguish real mouse motions from synthetic one.  */
+        case XI_Motion: {
+            const XIDeviceEvent *xev = (const XIDeviceEvent *) cookie->data;
+            int pointer_emulated = (xev->flags & XIPointerEmulated);
+
+            if (! pointer_emulated) {
+                SDL_Mouse *mouse = SDL_GetMouse();
+                if(!mouse->relative_mode || mouse->relative_mode_warp) {
+                    SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
+                    if (window) {
+                        SDL_SendMouseMotion(window, 0, 0, xev->event_x, xev->event_y);
+                    }
+                }
+            }
+            return 1;
+            }
+            break;
+
         case XI_TouchBegin: {
             const XIDeviceEvent *xev = (const XIDeviceEvent *) cookie->data;
             float x, y;
-            xinput2_normalize_touch_coordinates(videodata, xev->event,
-                                  xev->event_x, xev->event_y, &x, &y);
+            SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
+            xinput2_normalize_touch_coordinates(window, xev->event_x, xev->event_y, &x, &y);
             SDL_SendTouch(xev->sourceid,xev->detail, SDL_TRUE, x, y, 1.0);
             return 1;
             }
@@ -210,8 +237,8 @@ X11_HandleXinput2Event(SDL_VideoData *videodata,XGenericEventCookie *cookie)
         case XI_TouchEnd: {
             const XIDeviceEvent *xev = (const XIDeviceEvent *) cookie->data;
             float x, y;
-            xinput2_normalize_touch_coordinates(videodata, xev->event,
-                                  xev->event_x, xev->event_y, &x, &y);
+            SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
+            xinput2_normalize_touch_coordinates(window, xev->event_x, xev->event_y, &x, &y);
             SDL_SendTouch(xev->sourceid,xev->detail, SDL_FALSE, x, y, 1.0);
             return 1;
             }
@@ -219,8 +246,8 @@ X11_HandleXinput2Event(SDL_VideoData *videodata,XGenericEventCookie *cookie)
         case XI_TouchUpdate: {
             const XIDeviceEvent *xev = (const XIDeviceEvent *) cookie->data;
             float x, y;
-            xinput2_normalize_touch_coordinates(videodata, xev->event,
-                                  xev->event_x, xev->event_y, &x, &y);
+            SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
+            xinput2_normalize_touch_coordinates(window, xev->event_x, xev->event_y, &x, &y);
             SDL_SendTouchMotion(xev->sourceid,xev->detail, x, y, 1.0);
             return 1;
             }
@@ -272,9 +299,9 @@ X11_Xinput2SelectTouch(_THIS, SDL_Window *window)
 #if SDL_VIDEO_DRIVER_X11_XINPUT2_SUPPORTS_MULTITOUCH
     SDL_VideoData *data = NULL;
     XIEventMask eventmask;
-    unsigned char mask[3] = { 0,0,0 };
+    unsigned char mask[4] = { 0, 0, 0, 0 };
     SDL_WindowData *window_data = NULL;
-    
+
     if (!X11_Xinput2IsMultitouchSupported()) {
         return;
     }
@@ -289,6 +316,7 @@ X11_Xinput2SelectTouch(_THIS, SDL_Window *window)
     XISetMask(mask, XI_TouchBegin);
     XISetMask(mask, XI_TouchUpdate);
     XISetMask(mask, XI_TouchEnd);
+    XISetMask(mask, XI_Motion);
 
     X11_XISelectEvents(data->display,window_data->xwindow,&eventmask,1);
 #endif
