@@ -866,7 +866,17 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
        10.15 beta, capslock comes through here as keycode 255, but it's safe
        to send duplicate key events; SDL filters them out quickly in
        SDL_SendKeyboardKey(). */
-    SDL_SendKeyboardKey(([theEvent modifierFlags] & NSEventModifierFlagCapsLock) ? SDL_PRESSED : SDL_RELEASED, SDL_SCANCODE_CAPSLOCK);
+
+    /* Also note that SDL_SendKeyboardKey expects all capslock events to be
+       keypresses; it won't toggle the mod state if you send a keyrelease.  */
+    const SDL_bool osenabled = ([theEvent modifierFlags] & NSEventModifierFlagCapsLock) ? SDL_TRUE : SDL_FALSE;
+    const SDL_bool sdlenabled = (SDL_GetModState() & KMOD_CAPS) ? SDL_TRUE : SDL_FALSE;
+    if (!osenabled && sdlenabled) {
+        SDL_ToggleModState(KMOD_CAPS, SDL_FALSE);
+        SDL_SendKeyboardKey(SDL_RELEASED, SDL_SCANCODE_CAPSLOCK);
+    } else if (osenabled && !sdlenabled) {
+        SDL_SendKeyboardKey(SDL_PRESSED, SDL_SCANCODE_CAPSLOCK);
+    }
 }
 - (void)keyDown:(NSEvent *)theEvent
 {
