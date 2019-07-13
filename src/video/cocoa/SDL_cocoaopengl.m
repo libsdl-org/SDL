@@ -95,6 +95,18 @@
 
     if (newWindow) {
         SDL_WindowData *windowdata = (SDL_WindowData *)newWindow->driverdata;
+        NSView *contentview = windowdata->sdlContentView;
+
+        /* This should never be nil since sdlContentView is only nil if the
+           window was created via SDL_CreateWindowFrom, and SDL doesn't allow
+           OpenGL contexts to be created in that case. However, it doesn't hurt
+           to check. */
+        if (contentview == nil) {
+            /* Prefer to access the cached content view above instead of this,
+               since as of Xcode 11 + SDK 10.15, [window contentView] causes
+               Apple's Main Thread Checker to output a warning. */
+            contentview = [windowdata->nswindow contentView];
+        }
 
         /* Now sign up for scheduled updates for the new window. */
         NSMutableArray *contexts = windowdata->nscontexts;
@@ -102,8 +114,8 @@
             [contexts addObject:self];
         }
 
-        if ([self view] != [windowdata->nswindow contentView]) {
-            [self setView:[windowdata->nswindow contentView]];
+        if ([self view] != contentview) {
+            [self setView:contentview];
             if (self == [NSOpenGLContext currentContext]) {
                 [self update];
             } else {
