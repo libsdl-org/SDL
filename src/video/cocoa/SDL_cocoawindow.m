@@ -1307,6 +1307,11 @@ SetupWindowData(_THIS, SDL_Window * window, NSWindow *nswindow, SDL_bool created
     data->videodata = videodata;
     data->nscontexts = [[NSMutableArray alloc] init];
 
+    /* Only store this for windows created by us since the content view might
+     * get replaced from under us otherwise, and we only need it when the
+     * window is guaranteed to be created by us (OpenGL contexts). */
+    data->sdlContentView = created ? [nswindow contentView] : nil;
+
     /* Create an event listener for the window */
     data->listener = [[Cocoa_WindowListener alloc] init];
 

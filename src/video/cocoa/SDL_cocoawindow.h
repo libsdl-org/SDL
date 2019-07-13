@@ -113,6 +113,7 @@ struct SDL_WindowData
 {
     SDL_Window *window;
     NSWindow *nswindow;
+    NSView *sdlContentView; /* nil if window is created via CreateWindowFrom */
     NSMutableArray *nscontexts;
     SDL_bool created;
     SDL_bool inWindowMove;
