@@ -296,6 +296,12 @@ int HID_API_EXPORT hid_exit(void)
 	return 0;
 }
 
+int hid_blacklist(unsigned short vendor_id, unsigned short product_id)
+{
+	return vendor_id == 0x1B1C && // (Corsair)
+		product_id == 0x1B3D; // Gaming keyboard?  Causes deadlock when asking for device details
+}
+
 struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned short vendor_id, unsigned short product_id)
 {
 	BOOL res;
@@ -424,7 +430,8 @@ struct hid_device_info HID_API_EXPORT * HID_API_CALL hid_enumerate(unsigned shor
 		/* Check the VID/PID to see if we should add this
 		   device to the enumeration list. */
 		if ((vendor_id == 0x0 || attrib.VendorID == vendor_id) &&
-		    (product_id == 0x0 || attrib.ProductID == product_id)) {
+		    (product_id == 0x0 || attrib.ProductID == product_id) &&
+			!hid_blacklist(attrib.VendorID, attrib.ProductID)) {
 
 			#define WSTR_LEN 512
 			const char *str;
