@@ -156,6 +156,8 @@ SDL_MouseInit(void)
     SDL_AddHintCallback(SDL_HINT_MOUSE_TOUCH_EVENTS,
                         SDL_MouseTouchEventsChanged, mouse);
 
+    mouse->was_touch_mouse_events = SDL_FALSE; /* no touch to mouse movement event pending */
+
     mouse->cursor_shown = SDL_TRUE;
 
     return (0);
@@ -244,7 +246,7 @@ SDL_SetMouseFocus(SDL_Window * window)
 
 /* Check to see if we need to synthesize focus events */
 static SDL_bool
-SDL_UpdateMouseFocus(SDL_Window * window, int x, int y, Uint32 buttonstate)
+SDL_UpdateMouseFocus(SDL_Window * window, int x, int y, Uint32 buttonstate, SDL_bool send_mouse_motion)
 {
     SDL_Mouse *mouse = SDL_GetMouse();
     SDL_bool inWindow = SDL_TRUE;
@@ -275,7 +277,9 @@ SDL_UpdateMouseFocus(SDL_Window * window, int x, int y, Uint32 buttonstate)
 #ifdef DEBUG_MOUSE
             printf("Mouse left window, synthesizing move & focus lost event\n");
 #endif
-            SDL_PrivateSendMouseMotion(window, mouse->mouseID, 0, x, y);
+            if (send_mouse_motion) {
+                SDL_PrivateSendMouseMotion(window, mouse->mouseID, 0, x, y);
+            }
             SDL_SetMouseFocus(NULL);
         }
         return SDL_FALSE;
@@ -286,7 +290,9 @@ SDL_UpdateMouseFocus(SDL_Window * window, int x, int y, Uint32 buttonstate)
         printf("Mouse entered window, synthesizing focus gain & move event\n");
 #endif
         SDL_SetMouseFocus(window);
-        SDL_PrivateSendMouseMotion(window, mouse->mouseID, 0, x, y);
+        if (send_mouse_motion) {
+            SDL_PrivateSendMouseMotion(window, mouse->mouseID, 0, x, y);
+        }
     }
     return SDL_TRUE;
 }
@@ -296,7 +302,7 @@ SDL_SendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relative, int 
 {
     if (window && !relative) {
         SDL_Mouse *mouse = SDL_GetMouse();
-        if (!SDL_UpdateMouseFocus(window, x, y, mouse->buttonstate)) {
+        if (!SDL_UpdateMouseFocus(window, x, y, mouse->buttonstate, (mouseID == SDL_TOUCH_MOUSEID) ? SDL_FALSE : SDL_TRUE)) {
             return 0;
         }
     }
@@ -446,6 +452,8 @@ SDL_PrivateSendMouseMotion(SDL_Window * window, SDL_MouseID mouseID, int relativ
         event.motion.type = SDL_MOUSEMOTION;
         event.motion.windowID = mouse->focus ? mouse->focus->id : 0;
         event.motion.which = mouseID;
+        /* Set us pending (or clear during a normal mouse movement event) as having triggered */
+        mouse->was_touch_mouse_events = (mouseID == SDL_TOUCH_MOUSEID)? SDL_TRUE : SDL_FALSE;
         event.motion.state = mouse->buttonstate;
         event.motion.x = mouse->x;
         event.motion.y = mouse->y;
@@ -530,7 +538,7 @@ SDL_PrivateSendMouseButton(SDL_Window * window, SDL_MouseID mouseID, Uint8 state
 
     /* We do this after calculating buttonstate so button presses gain focus */
     if (window && state == SDL_PRESSED) {
-        SDL_UpdateMouseFocus(window, mouse->x, mouse->y, buttonstate);
+        SDL_UpdateMouseFocus(window, mouse->x, mouse->y, buttonstate, SDL_TRUE);
     }
 
     if (buttonstate == mouse->buttonstate) {
@@ -580,7 +588,7 @@ SDL_PrivateSendMouseButton(SDL_Window * window, SDL_MouseID mouseID, Uint8 state
 
     /* We do this after dispatching event so button releases can lose focus */
     if (window && state == SDL_RELEASED) {
-        SDL_UpdateMouseFocus(window, mouse->x, mouse->y, buttonstate);
+        SDL_UpdateMouseFocus(window, mouse->x, mouse->y, buttonstate, SDL_TRUE);
     }
 
     return posted;
