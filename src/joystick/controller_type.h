@@ -57,17 +57,13 @@ typedef enum
 	k_eControllerType_SwitchJoyConPair = 41,
     k_eControllerType_SwitchInputOnlyController = 42,
 	k_eControllerType_MobileTouch = 43,
+	k_eControllerType_XInputSwitchController = 44,  // Client-side only, used to mark Switch-compatible controllers as not supporting Switch controller protocol
 	k_eControllerType_LastController,			// Don't add game controllers below this enumeration - this enumeration can change value
 
 	// Keyboards and Mice
 	k_eControllertype_GenericKeyboard = 400,
 	k_eControllertype_GenericMouse = 800,
 } EControllerType;
-
-static inline SDL_bool BIsSteamController( EControllerType eType )
-{
-	return ( eType == k_eControllerType_SteamController || eType == k_eControllerType_SteamControllerV2 );
-}
 
 #define MAKE_CONTROLLER_ID( nVID, nPID )	(unsigned int)( nVID << 16 | nPID )
 typedef struct
@@ -152,6 +148,9 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x6302 ), k_eControllerType_PS3Controller },		// From SDL
 	{ MAKE_CONTROLLER_ID( 0x056e, 0x200f ), k_eControllerType_PS3Controller },		// From SDL
 	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x1314 ), k_eControllerType_PS3Controller },		// PDP Afterglow Wireless PS3 controller
+	{ MAKE_CONTROLLER_ID( 0x0738, 0x3180 ), k_eControllerType_PS3Controller },		// Mad Catz Alpha PS3 mode
+	{ MAKE_CONTROLLER_ID( 0x0738, 0x8180 ), k_eControllerType_PS3Controller },		// Mad Catz Alpha PS4 mode (no touchpad on device)
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0203 ), k_eControllerType_PS3Controller },		// Victrix Pro FS (PS4 peripheral but no trackpad/lightbar)
 
 	{ MAKE_CONTROLLER_ID( 0x054c, 0x05c4 ), k_eControllerType_PS4Controller },		// Sony PS4 Controller
 	{ MAKE_CONTROLLER_ID( 0x054c, 0x09cc ), k_eControllerType_PS4Controller },		// Sony PS4 Slim Controller
@@ -185,6 +184,7 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x1004 ), k_eControllerType_PS4Controller },		// Razer Raiju 2 Ultimate USB - untested and added for razer
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x1009 ), k_eControllerType_PS4Controller },		// Razer Raiju 2 Ultimate BT - untested and added for razer
 	{ MAKE_CONTROLLER_ID( 0x1532, 0x1008 ), k_eControllerType_PS4Controller },		// Razer Panthera Evo Fightstick - untested and added for razer
+	{ MAKE_CONTROLLER_ID( 0x9886, 0x0025 ), k_eControllerType_PS4Controller },		// Astro C40
 
 	{ MAKE_CONTROLLER_ID( 0x056e, 0x2004 ), k_eControllerType_XBox360Controller },	// Elecom JC-U3613M
 	{ MAKE_CONTROLLER_ID( 0x06a3, 0xf51a ), k_eControllerType_XBox360Controller },	// Saitek P3600
@@ -319,6 +319,8 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0xfafc ), k_eControllerType_XBox360Controller },	// Afterglow Gamepad 1
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0xfafe ), k_eControllerType_XBox360Controller },	// Rock Candy Gamepad for Xbox 360
 	{ MAKE_CONTROLLER_ID( 0x24c6, 0xfafd ), k_eControllerType_XBox360Controller },	// Afterglow Gamepad 3
+	{ MAKE_CONTROLLER_ID( 0x0955, 0x7210 ), k_eControllerType_XBox360Controller },	// Nvidia Shield local controller
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0205 ), k_eControllerType_XBoxOneController },	// Victrix Pro FS Xbox One Edition
 	
 	// These have been added via Minidump for unrecognized Xinput controller assert
 	{ MAKE_CONTROLLER_ID( 0x0000, 0x0000 ), k_eControllerType_XBox360Controller },	// Unknown Controller
@@ -361,6 +363,24 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x0079, 0x189c ), k_eControllerType_XBox360Controller },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x0079, 0x1874 ), k_eControllerType_XBox360Controller },	// Unknown Controller
 
+	{ MAKE_CONTROLLER_ID( 0x2f24, 0x0050 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x24c6, 0x581a ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x2f24, 0x2e ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x9886, 0x24 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x2f24, 0x91 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0xe6f, 0x2a4 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x1430, 0x719 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0xf0d, 0xed ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x3eb, 0xff02 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0xf0d, 0xc0 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0xe6f, 0x152 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0xe6f, 0x2a7 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0xe6f, 0x2a6 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x46d, 0x1007 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0xe6f, 0x2b8 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0xe6f, 0x2a8 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x2c22, 0x2503 ), k_eControllerType_XBoxOneController },	// Unknown Controller
+	{ MAKE_CONTROLLER_ID( 0x79, 0x18a1 ), k_eControllerType_XBoxOneController },	// Unknown Controller
 	{ MAKE_CONTROLLER_ID( 0x1038, 0xb360 ), k_eControllerType_XBox360Controller },	// SteelSeries Nimbus/Stratus XL
 
 																					
@@ -384,28 +404,25 @@ static const ControllerDescription_t arrControllers[] = {
 	{ MAKE_CONTROLLER_ID( 0x057e, 0x2009 ), k_eControllerType_SwitchProController },        // Nintendo Switch Pro Controller
     
     { MAKE_CONTROLLER_ID( 0x0f0d, 0x00c1 ), k_eControllerType_SwitchInputOnlyController },  // HORIPAD for Nintendo Switch
-    { MAKE_CONTROLLER_ID( 0x20d6, 0xa711 ), k_eControllerType_SwitchInputOnlyController },  // PowerA Wired Controller Plus
     { MAKE_CONTROLLER_ID( 0x0f0d, 0x0092 ), k_eControllerType_SwitchInputOnlyController },  // HORI Pokken Tournament DX Pro Pad
+    { MAKE_CONTROLLER_ID( 0x0f0d, 0x00f6 ), k_eControllerType_SwitchProController },        // HORI Wireless Switch Pad
+	{ MAKE_CONTROLLER_ID( 0x0f0d, 0x00dc ), k_eControllerType_XInputSwitchController },     // HORI Battle Pad. Is a Switch controller but shows up through XInput on Windows.
+    { MAKE_CONTROLLER_ID( 0x20d6, 0xa711 ), k_eControllerType_SwitchInputOnlyController },  // PowerA Wired Controller Plus/PowerA Wired Controller Nintendo GameCube Style
+    { MAKE_CONTROLLER_ID( 0x0e6f, 0x0185 ), k_eControllerType_SwitchInputOnlyController },  // PDP Wired Fight Pad Pro for Nintendo Switch
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0180 ), k_eControllerType_SwitchInputOnlyController },  // PDP Faceoff Wired Pro Controller for Nintendo Switch
+	{ MAKE_CONTROLLER_ID( 0x0e6f, 0x0181 ), k_eControllerType_SwitchInputOnlyController },  // PDP Faceoff Deluxe Wired Pro Controller for Nintendo Switch
 
 
 	// Valve products - don't add to public list
     { MAKE_CONTROLLER_ID( 0x0000, 0x11fb ), k_eControllerType_MobileTouch },		// Streaming mobile touch virtual controls
 	{ MAKE_CONTROLLER_ID( 0x28de, 0x1101 ), k_eControllerType_SteamController },	// Valve Legacy Steam Controller (CHELL)
 	{ MAKE_CONTROLLER_ID( 0x28de, 0x1102 ), k_eControllerType_SteamController },	// Valve wired Steam Controller (D0G)
-	{ MAKE_CONTROLLER_ID( 0x28de, 0x1105 ), k_eControllerType_SteamControllerV2 },	// Valve Bluetooth Steam Controller (D0G)
-	{ MAKE_CONTROLLER_ID( 0x28de, 0x1106 ), k_eControllerType_SteamControllerV2 },	// Valve Bluetooth Steam Controller (D0G)
+	{ MAKE_CONTROLLER_ID( 0x28de, 0x1105 ), k_eControllerType_SteamController },	// Valve Bluetooth Steam Controller (D0G)
+	{ MAKE_CONTROLLER_ID( 0x28de, 0x1106 ), k_eControllerType_SteamController },	// Valve Bluetooth Steam Controller (D0G)
 	{ MAKE_CONTROLLER_ID( 0x28de, 0x1142 ), k_eControllerType_SteamController },	// Valve wireless Steam Controller
-	{ MAKE_CONTROLLER_ID( 0x28de, 0x1201 ), k_eControllerType_SteamController },	// Valve wired Steam Controller (HEADCRAB)
+	{ MAKE_CONTROLLER_ID( 0x28de, 0x1201 ), k_eControllerType_SteamControllerV2 },	// Valve wired Steam Controller (HEADCRAB)
+	{ MAKE_CONTROLLER_ID( 0x28de, 0x1202 ), k_eControllerType_SteamControllerV2 },	// Valve Bluetooth Steam Controller (HEADCRAB)
 };
-
-
-#if 0  /* these are currently unused, so #if 0'd out to prevent compiler warnings for now */
-static inline const ControllerDescription_t * GetControllerArray( int* nLength /* Out */)
-{
-	*nLength = sizeof( arrControllers ) / sizeof( arrControllers[0] );
-	return arrControllers;
-}
-#endif
 
 static inline EControllerType GuessControllerType( int nVID, int nPID )
 {
@@ -418,10 +435,12 @@ static inline EControllerType GuessControllerType( int nVID, int nPID )
 			return arrControllers[ iIndex ].m_eControllerType;
 		}
 	}
-#undef MAKE_CONTROLLER_ID
 
 	return k_eControllerType_UnknownNonSteamController;
+
 }
+
+#undef MAKE_CONTROLLER_ID
 
 #endif // CONSTANTS_H
 
