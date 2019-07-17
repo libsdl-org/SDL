@@ -1166,13 +1166,17 @@ SDL_IsJoystickPS4(Uint16 vendor, Uint16 product)
 SDL_bool
 SDL_IsJoystickNintendoSwitchPro(Uint16 vendor, Uint16 product)
 {
-    return (GuessControllerType(vendor, product) == k_eControllerType_SwitchProController);
+    EControllerType eType = GuessControllerType(vendor, product);
+    return (eType == k_eControllerType_SwitchProController ||
+            eType == k_eControllerType_SwitchInputOnlyController);
 }
 
 SDL_bool
 SDL_IsJoystickSteamController(Uint16 vendor, Uint16 product)
 {
-    return BIsSteamController(GuessControllerType(vendor, product));
+    EControllerType eType = GuessControllerType(vendor, product);
+    return (eType == k_eControllerType_SteamController ||
+            eType == k_eControllerType_SteamControllerV2);
 }
 
 SDL_bool
