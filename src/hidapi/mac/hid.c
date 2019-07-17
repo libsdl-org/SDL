@@ -121,15 +121,16 @@ struct hid_device_ {
 	pthread_barrier_t barrier; /* Ensures correct startup sequence */
 	pthread_barrier_t shutdown_barrier; /* Ensures correct shutdown sequence */
 	int shutdown_thread;
-	
-	hid_device *next;
 };
 
-/* Static list of all the devices open. This way when a device gets
- disconnected, its hid_device structure can be marked as disconnected
- from hid_device_removal_callback(). */
-static hid_device *device_list = NULL;
-static pthread_mutex_t device_list_mutex = PTHREAD_MUTEX_INITIALIZER;
+struct hid_device_list_node
+{
+	struct hid_device_ *dev;
+	struct hid_device_list_node *next;
+};
+
+static 	IOHIDManagerRef hid_mgr = 0x0;
+static 	hid_device_list_node *device_list = 0x0;
 
 static hid_device *new_hid_device(void)
 {
@@ -144,29 +145,12 @@ static hid_device *new_hid_device(void)
 	dev->input_report_buf = NULL;
 	dev->input_reports = NULL;
 	dev->shutdown_thread = 0;
-	dev->next = NULL;
 	
 	/* Thread objects */
 	pthread_mutex_init(&dev->mutex, NULL);
 	pthread_cond_init(&dev->condition, NULL);
 	pthread_barrier_init(&dev->barrier, NULL, 2);
 	pthread_barrier_init(&dev->shutdown_barrier, NULL, 2);
-	
-	/* Add the new record to the device_list. */
-	pthread_mutex_lock(&device_list_mutex);
-	if (!device_list)
-		device_list = dev;
-	else {
-		hid_device *d = device_list;
-		while (d) {
-			if (!d->next) {
-				d->next = dev;
-				break;
-			}
-			d = d->next;
-		}
-	}
-	pthread_mutex_unlock(&device_list_mutex);
 	
 	return dev;
 }
@@ -193,6 +177,25 @@ static void free_hid_device(hid_device *dev)
 	if (dev->source)
 		CFRelease(dev->source);
 	free(dev->input_report_buf);
+
+	if (device_list) {
+    	if (device_list->dev == dev) {
+    		device_list = device_list->next;
+    	}
+    	else {
+    		struct hid_device_list_node *node = device_list;
+    		while (node) {
+    			if (node->next && node->next->dev == dev) {
+    				hid_device_list_node *new_next = node->next->next;
+    				free(node->next);
+    				node->next = new_next;
+    				break;
+    			}
+
+    			node = node->next;
+    		}
+    	}
+	}
 	
 	/* Clean up the thread objects */
 	pthread_barrier_destroy(&dev->shutdown_barrier);
@@ -200,30 +203,9 @@ static void free_hid_device(hid_device *dev)
 	pthread_cond_destroy(&dev->condition);
 	pthread_mutex_destroy(&dev->mutex);
 	
-	/* Remove it from the device list. */
-	pthread_mutex_lock(&device_list_mutex);
-	hid_device *d = device_list;
-	if (d == dev) {
-		device_list = d->next;
-	}
-	else {
-		while (d) {
-			if (d->next == dev) {
-				d->next = d->next->next;
-				break;
-			}
-			
-			d = d->next;
-		}
-	}
-	pthread_mutex_unlock(&device_list_mutex);
-	
 	/* Free the structure itself. */
 	free(dev);
 }
-
-static 	IOHIDManagerRef hid_mgr = 0x0;
-
 
 #if 0
 static void register_error(hid_device *device, const char *op)
@@ -588,20 +570,27 @@ hid_device * HID_API_EXPORT hid_open(unsigned short vendor_id, unsigned short pr
 }
 
 static void hid_device_removal_callback(void *context, IOReturn result,
-                                        void *sender, IOHIDDeviceRef dev_ref)
+                                        void *sender)
 {
 	/* Stop the Run Loop for this device. */
-	pthread_mutex_lock(&device_list_mutex);
-	hid_device *d = device_list;
-	while (d) {
-		if (d->device_handle == dev_ref) {
-			d->disconnected = 1;
-			CFRunLoopStop(d->run_loop);
+	hid_device *dev = (hid_device *)context;
+
+	// The device removal callback is sometimes called even after being
+	// unregistered, leading to a crash when trying to access fields in
+	// the already freed hid_device. We keep a linked list of all created
+	// hid_device's so that the one being removed can be checked against
+	// the list to see if it really hasn't been closed yet and needs to
+	// be dealt with here.
+	hid_device_list_node *node = device_list;
+	while (node) {
+		if (node->dev == dev) {
+			dev->disconnected = 1;
+			CFRunLoopStop(dev->run_loop);
+			break;
 		}
-		
-		d = d->next;
+
+		node = node->next;
 	}
-	pthread_mutex_unlock(&device_list_mutex);
 }
 
 /* The Run Loop calls this function for each input report received.
@@ -777,8 +766,13 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 				IOHIDDeviceRegisterInputReportCallback(
 													   os_dev, dev->input_report_buf, dev->max_input_report_len,
 													   &hid_report_callback, dev);
-				IOHIDManagerRegisterDeviceRemovalCallback(hid_mgr, hid_device_removal_callback, NULL);
-				
+				IOHIDDeviceRegisterRemovalCallback(dev->device_handle, hid_device_removal_callback, dev);
+
+				hid_device_list_node *node = (hid_device_list_node *)calloc(1, sizeof(hid_device_list_node));
+				node->dev = dev;
+				node->next = device_list;
+				device_list = node;
+
 				/* Start the read thread */
 				pthread_create(&dev->thread, NULL, read_thread, dev);
 				
@@ -1048,7 +1042,7 @@ void HID_API_EXPORT hid_close(hid_device *dev)
 		IOHIDDeviceRegisterInputReportCallback(
 											   dev->device_handle, dev->input_report_buf, dev->max_input_report_len,
 											   NULL, dev);
-		IOHIDManagerRegisterDeviceRemovalCallback(hid_mgr, NULL, dev);
+		IOHIDDeviceRegisterRemovalCallback(dev->device_handle, NULL, dev);
 		IOHIDDeviceUnscheduleFromRunLoop(dev->device_handle, dev->run_loop, dev->run_loop_mode);
 		IOHIDDeviceScheduleWithRunLoop(dev->device_handle, CFRunLoopGetMain(), kCFRunLoopDefaultMode);
 	}
