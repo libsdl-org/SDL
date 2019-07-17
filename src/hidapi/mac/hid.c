@@ -130,7 +130,7 @@ struct hid_device_list_node
 };
 
 static 	IOHIDManagerRef hid_mgr = 0x0;
-static 	hid_device_list_node *device_list = 0x0;
+static 	struct hid_device_list_node *device_list = 0x0;
 
 static hid_device *new_hid_device(void)
 {
@@ -186,7 +186,7 @@ static void free_hid_device(hid_device *dev)
     		struct hid_device_list_node *node = device_list;
     		while (node) {
     			if (node->next && node->next->dev == dev) {
-    				hid_device_list_node *new_next = node->next->next;
+    				struct hid_device_list_node *new_next = node->next->next;
     				free(node->next);
     				node->next = new_next;
     				break;
@@ -581,7 +581,7 @@ static void hid_device_removal_callback(void *context, IOReturn result,
 	// hid_device's so that the one being removed can be checked against
 	// the list to see if it really hasn't been closed yet and needs to
 	// be dealt with here.
-	hid_device_list_node *node = device_list;
+	struct hid_device_list_node *node = device_list;
 	while (node) {
 		if (node->dev == dev) {
 			dev->disconnected = 1;
@@ -768,7 +768,7 @@ hid_device * HID_API_EXPORT hid_open_path(const char *path, int bExclusive)
 													   &hid_report_callback, dev);
 				IOHIDDeviceRegisterRemovalCallback(dev->device_handle, hid_device_removal_callback, dev);
 
-				hid_device_list_node *node = (hid_device_list_node *)calloc(1, sizeof(hid_device_list_node));
+				struct hid_device_list_node *node = (struct hid_device_list_node *)calloc(1, sizeof(struct hid_device_list_node));
 				node->dev = dev;
 				node->next = device_list;
 				device_list = node;
