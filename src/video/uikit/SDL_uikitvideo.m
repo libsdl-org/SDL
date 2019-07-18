@@ -247,12 +247,18 @@ UIKit_ForceUpdateHomeIndicator()
  *
  * This doesn't really have aything to do with the interfaces of the SDL video
  *  subsystem, but we need to stuff this into an Objective-C source code file.
+ *
+ * NOTE: This is copypasted from src/video/cocoa/SDL_cocoavideo.m! Thus, if
+ *  Cocoa is supported, we use that one instead. Be sure both versions remain
+ *  identical!
  */
 
+#if !defined(SDL_VIDEO_DRIVER_COCOA)
 void SDL_NSLog(const char *text)
 {
     NSLog(@"%s", text);
 }
+#endif /* SDL_VIDEO_DRIVER_COCOA */
 
 /*
  * iOS Tablet detection
