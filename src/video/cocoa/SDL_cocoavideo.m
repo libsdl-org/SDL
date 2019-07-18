@@ -252,6 +252,9 @@ Cocoa_CreateImage(SDL_Surface * surface)
  *
  * This doesn't really have aything to do with the interfaces of the SDL video
  *  subsystem, but we need to stuff this into an Objective-C source code file.
+ *
+ * NOTE: This is copypasted in src/video/uikit/SDL_uikitvideo.m! Be sure both
+ *  versions remain identical!
  */
 
 void SDL_NSLog(const char *text)
