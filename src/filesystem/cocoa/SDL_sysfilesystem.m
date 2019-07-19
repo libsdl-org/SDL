@@ -32,6 +32,7 @@
 #include "SDL_error.h"
 #include "SDL_stdinc.h"
 #include "SDL_filesystem.h"
+#include "SDL_log.h"
 
 char *
 SDL_GetBasePath(void)
@@ -80,7 +81,27 @@ SDL_GetPrefPath(const char *org, const char *app)
     }
 
     char *retval = NULL;
+#if !TARGET_OS_TV
     NSArray *array = NSSearchPathForDirectoriesInDomains(NSApplicationSupportDirectory, NSUserDomainMask, YES);
+#else
+    /* tvOS does not have persistent local storage!
+     * The only place on-device where we can store data is
+     * a cache directory that the OS can empty at any time.
+     *
+     * It's therefore very likely that save data will be erased
+     * between sessions. If you want your app's save data to
+     * actually stick around, you'll need to use iCloud storage.
+     */
+
+    static SDL_bool shown = SDL_FALSE;
+    if (!shown)
+    {
+        shown = SDL_TRUE;
+        SDL_LogCritical(SDL_LOG_CATEGORY_SYSTEM, "tvOS does not have persistent local storage! Use iCloud storage if you want your data to persist between sessions.\n");
+    }
+
+    NSArray *array = NSSearchPathForDirectoriesInDomains(NSCachesDirectory, NSUserDomainMask, YES);
+#endif /* !TARGET_OS_TV */
 
     if ([array count] > 0) {  /* we only want the first item in the list. */
         NSString *str = [array objectAtIndex:0];
