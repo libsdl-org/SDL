@@ -96,6 +96,7 @@ static SDL_HIDAPI_DeviceDriver *SDL_HIDAPI_drivers[] = {
     &SDL_HIDAPI_DriverXboxOne,
 #endif
 };
+static int SDL_HIDAPI_numdrivers = 0;
 static SDL_HIDAPI_Device *SDL_HIDAPI_devices;
 static int SDL_HIDAPI_numjoysticks = 0;
 
@@ -656,6 +657,14 @@ SDL_HIDAPIDriverHintChanged(void *userdata, const char *name, const char *oldVal
         }
     }
 
+    SDL_HIDAPI_numdrivers = 0;
+    for (i = 0; i < SDL_arraysize(SDL_HIDAPI_drivers); ++i) {
+        SDL_HIDAPI_DeviceDriver *driver = SDL_HIDAPI_drivers[i];
+        if (driver->enabled) {
+            ++SDL_HIDAPI_numdrivers;
+        }
+    }
+
     /* Update device list if driver availability changes */
     while (device) {
         if (device->driver) {
@@ -869,17 +878,19 @@ HIDAPI_UpdateDeviceList(void)
     }
 
     /* Enumerate the devices */
-    devs = hid_enumerate(0, 0);
-    if (devs) {
-        for (info = devs; info; info = info->next) {
-            device = HIDAPI_GetJoystickByInfo(info->path, info->vendor_id, info->product_id);
-            if (device) {
-                device->seen = SDL_TRUE;
-            } else {
-                HIDAPI_AddDevice(info);
+    if (SDL_HIDAPI_numdrivers > 0) {
+        devs = hid_enumerate(0, 0);
+        if (devs) {
+            for (info = devs; info; info = info->next) {
+                device = HIDAPI_GetJoystickByInfo(info->path, info->vendor_id, info->product_id);
+                if (device) {
+                    device->seen = SDL_TRUE;
+                } else {
+                    HIDAPI_AddDevice(info);
+                }
             }
+            hid_free_enumeration(devs);
         }
-        hid_free_enumeration(devs);
     }
 
     /* Remove any devices that weren't seen */
