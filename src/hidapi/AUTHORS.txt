@@ -12,5 +12,5 @@ Ludovic Rousseau <rousseau@debian.org>:
 
 
 For a comprehensive list of contributions, see the commit list at github:
-	http://github.com/signal11/hidapi/commits/master
+	https://github.com/libusb/hidapi/commits/master
 
