@@ -130,6 +130,8 @@
 #define HAVE_SYSCONF    1
 #define HAVE_SYSCTLBYNAME 1
 
+#define HAVE_GCC_ATOMICS 1
+
 /* Enable various audio drivers */
 #define SDL_AUDIO_DRIVER_COREAUDIO  1
 #define SDL_AUDIO_DRIVER_DISK   1
