@@ -226,6 +226,11 @@ SDL_LoadBMP_RW(SDL_RWops * src, int freesrc)
             SDL_RWseek(src, (biSize - headerSize), RW_SEEK_CUR);
         }
     }
+    if (biWidth <= 0 || biHeight == 0) {
+        SDL_SetError("BMP file with bad dimensions (%dx%d)", biWidth, biHeight);
+        was_error = SDL_TRUE;
+        goto done;
+    }
     if (biHeight < 0) {
         topDown = SDL_TRUE;
         biHeight = -biHeight;
