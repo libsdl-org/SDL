@@ -691,7 +691,7 @@ MS_ADPCM_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len)
         return SDL_OutOfMemory();
     }
 
-    state.cstate = &cstate;
+    state.cstate = cstate;
 
     /* Decode block by block. A truncated block will stop the decoding. */
     bytesleft = state.input.size - state.input.pos;
