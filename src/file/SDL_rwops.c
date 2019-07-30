@@ -585,7 +585,7 @@ SDL_RWFromFile(const char *file, const char *mode)
         if (fp == NULL) {
             SDL_SetError("Couldn't open %s", file);
         } else {
-            rwops = SDL_RWFromFP(fp, 1);
+            rwops = SDL_RWFromFP(fp, SDL_TRUE);
         }
     }
 #else
