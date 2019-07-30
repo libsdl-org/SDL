@@ -647,7 +647,7 @@ MS_ADPCM_Decode(WaveFile *file, Uint8 **audio_buf, Uint32 *audio_len)
     MS_ADPCM_ChannelState cstate[2];
 
     SDL_zero(state);
-    SDL_zero(cstate);
+    SDL_zeroa(cstate);
 
     if (chunk->size != chunk->length) {
         /* Could not read everything. Recalculate number of sample frames. */
