@@ -642,8 +642,8 @@ SDL_PrivateGameControllerParseControllerConfigString(SDL_GameController *gamecon
     int i = 0;
     const char *pchPos = pchString;
 
-    SDL_zero(szGameButton);
-    SDL_zero(szJoystickButton);
+    SDL_zeroa(szGameButton);
+    SDL_zeroa(szJoystickButton);
 
     while (pchPos && *pchPos) {
         if (*pchPos == ':') {
@@ -655,8 +655,8 @@ SDL_PrivateGameControllerParseControllerConfigString(SDL_GameController *gamecon
             i = 0;
             bGameButton = SDL_TRUE;
             SDL_PrivateGameControllerParseElement(gamecontroller, szGameButton, szJoystickButton);
-            SDL_zero(szGameButton);
-            SDL_zero(szJoystickButton);
+            SDL_zeroa(szGameButton);
+            SDL_zeroa(szJoystickButton);
 
         } else if (bGameButton) {
             if (i >= sizeof(szGameButton)) {
