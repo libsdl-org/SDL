@@ -44,8 +44,7 @@ main_getcmdline(void)
 {
     LPWSTR *argvw;
     char **argv;
-    int i, argc;
-	int result;
+    int i, argc, result;
 
     argvw = CommandLineToArgvW(GetCommandLineW(), &argc);
     if (argvw == NULL) {
@@ -71,13 +70,13 @@ main_getcmdline(void)
     /* Run the application main() code */
     result = SDL_main(argc, argv);
 
-	/* Free argv, to avoid memory leak */
+    /* Free argv, to avoid memory leak */
     for (i = 0; i < argc; ++i) {
         SDL_free(argv[i]);
     }
-	SDL_free(argv);
+    SDL_free(argv);
 
-	return result;
+    return result;
 }
 
 /* This is where execution begins [console apps, ansi] */
