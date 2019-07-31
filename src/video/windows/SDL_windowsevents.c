@@ -1161,14 +1161,6 @@ struct SDL_WIN_OSVERSIONINFOW {
 };
 
 static SDL_bool
-IsWinVistaOrNewer(void)
-{
-    DWORD version = GetVersion();
-    DWORD major = (DWORD)(LOBYTE(LOWORD(version)));
-    return (major >= 6)? SDL_TRUE : SDL_FALSE;
-}
-
-static SDL_bool
 IsWin10FCUorNewer(void)
 {
     HMODULE handle = GetModuleHandleW(L"ntdll.dll");
@@ -1256,7 +1248,7 @@ SDL_RegisterApp(char *name, Uint32 style, void *hInst)
         return SDL_SetError("Couldn't register application class");
     }
 
-    isVistaOrNewer = IsWinVistaOrNewer();
+    isVistaOrNewer = WIN_IsWindowsVistaOrGreater();
     isWin10FCUorNewer = IsWin10FCUorNewer();
 
     app_registered = 1;
