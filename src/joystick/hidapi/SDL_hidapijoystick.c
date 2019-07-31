@@ -918,6 +918,11 @@ HIDAPI_IsDevicePresent(Uint16 vendor_id, Uint16 product_id, Uint16 version)
 {
     SDL_HIDAPI_Device *device;
 
+    /* Make sure we're initialized, as this could be called from other drivers during startup */
+    if (HIDAPI_JoystickInit() < 0) {
+        return SDL_FALSE;
+    }
+
     /* Don't update the device list for devices we know aren't supported */
     if (!HIDAPI_IsDeviceSupported(vendor_id, product_id, version)) {
         return SDL_FALSE;
