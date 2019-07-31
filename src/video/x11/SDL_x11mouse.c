@@ -48,7 +48,7 @@ X11_CreateEmptyCursor()
         XColor color;
         Pixmap pixmap;
 
-        SDL_zero(data);
+        SDL_zeroa(data);
         color.red = color.green = color.blue = 0;
         pixmap = X11_XCreateBitmapFromData(display, DefaultRootWindow(display),
                                        data, 1, 1);

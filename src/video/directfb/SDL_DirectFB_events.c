@@ -236,7 +236,7 @@ ProcessWindowEvent(_THIS, SDL_Window *sdlwin, DFBWindowEvent * evt)
                 /* printf("Scancode %d  %d %d\n", keysym.scancode, evt->key_code, evt->key_id); */
                 SDL_SendKeyboardKey_ex(0, SDL_PRESSED, keysym.scancode);
                 if (SDL_EventState(SDL_TEXTINPUT, SDL_QUERY)) {
-                    SDL_zero(text);
+                    SDL_zeroa(text);
                     UnicodeToUtf8(unicode, text);
                     if (*text) {
                         SDL_SendKeyboardText_ex(0, text);
@@ -372,7 +372,7 @@ ProcessInputEvent(_THIS, DFBInputEvent * ievt)
             /* printf("Scancode %d  %d %d\n", keysym.scancode, evt->key_code, evt->key_id); */
             SDL_SendKeyboardKey_ex(kbd_idx, SDL_PRESSED, keysym.scancode);
             if (SDL_EventState(SDL_TEXTINPUT, SDL_QUERY)) {
-                SDL_zero(text);
+                SDL_zeroa(text);
                 UnicodeToUtf8(unicode, text);
                 if (*text) {
                     SDL_SendKeyboardText_ex(kbd_idx, text);

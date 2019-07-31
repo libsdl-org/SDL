@@ -223,7 +223,7 @@ SDL_JoystickThread(void *_data)
 
 #if SDL_JOYSTICK_XINPUT
     SDL_bool bOpenedXInputDevices[XUSER_MAX_COUNT];
-    SDL_zero(bOpenedXInputDevices);
+    SDL_zeroa(bOpenedXInputDevices);
 #endif
 
     if (SDL_CreateDeviceNotification(&notification_data) < 0) {
