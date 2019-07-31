@@ -1128,7 +1128,9 @@ elseif(UNIX AND NOT APPLE AND NOT ANDROID)
   endif()
 
   if(SDL_JOYSTICK)
-    CheckUSBHID()   # seems to be BSD specific - limit the test to BSD only?
+    if(FREEBSD OR NETBSD OR OPENBSD OR BSDI)
+      CheckUSBHID()
+    endif()
     CheckHIDAPI()
     if(LINUX AND NOT ANDROID)
       set(SDL_JOYSTICK_LINUX 1)
