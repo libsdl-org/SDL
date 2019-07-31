@@ -24106,13 +24106,21 @@ CheckHIDAPI()
     # The hidraw support doesn't catch Xbox, PS4 and Nintendo controllers,
     # so we'll just use libusb when it's available.
     #
-    # Except that libusb requires root permissions to open devices, so that's not generally useful, and we'll disable this by default.
-    #
-    #  On macOS and Windows, where you don't need libusb or root, we default to yes.
+    # libusb does not support iOS, so we default to yes on iOS.
+    # TODO: Windows can support libusb, the hid.c file just depends on Unix APIs
     skiplibusb=no
     case "$host" in
-        *-*-cygwin* | *-*-mingw32* | *-*-darwin* )
+        *-*-cygwin* | *-*-mingw32* | arm*-apple-darwin* | *-ios-* )
             skiplibusb=yes
+            ;;
+    esac
+
+    # On the other hand, *BSD specifically uses libusb only, so we make a
+    # special case just for them.
+    onlylibusb=no
+    case "$host" in
+        *-*-*bsd* )
+            onlylibusb=yes
             ;;
     esac
 
@@ -24224,9 +24232,35 @@ $as_echo "#define SDL_JOYSTICK_HIDAPI 1" >>confdefs.h
             SOURCES="$SOURCES $srcdir/src/joystick/hidapi/*.c"
 
             if test x$skiplibusb = xno; then
-                SOURCES="$SOURCES $srcdir/src/hidapi/libusb/hid.c"
                 EXTRA_CFLAGS="$EXTRA_CFLAGS $LIBUSB_CFLAGS"
-                EXTRA_LDFLAGS="$EXTRA_LDFLAGS $LIBUSB_LIBS"
+                if test x$onlylibusb = xyes; then
+                    SOURCES="$SOURCES $srcdir/src/hidapi/libusb/hid.c"
+                    EXTRA_LDFLAGS="$EXTRA_LDFLAGS $LIBUSB_LIBS"
+                else
+                    if test x$have_loadso != xyes; then
+                        { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: You must have SDL_LoadObject() support for dynamic libusb loading" >&5
+$as_echo "$as_me: WARNING: You must have SDL_LoadObject() support for dynamic libusb loading" >&2;}
+                    fi
+                    SOURCES="$SOURCES $srcdir/src/hidapi/SDL_hidapi.c"
+                    # libusb is loaded dynamically, so don't add it to LDFLAGS
+                    libusb_lib=""
+                    case "$host" in
+                        *-*-darwin* )
+                            libusb_lib="libusb-1.0.0.dylib"
+                            ;;
+                        *-*-cygwin* | *-*-mingw32* )
+                            libusb_lib="libusb-1.0.dll"
+                            ;;
+                    esac
+                    if test x$libusb_lib = x; then
+                        libusb_lib=`find_lib "libusb-1.0.so.*" "" | sed 's/.*\/\(.*\)/\1/; q'`
+                    fi
+
+cat >>confdefs.h <<_ACEOF
+#define SDL_LIBUSB_DYNAMIC "$libusb_lib"
+_ACEOF
+
+                fi
             fi
         fi
 
@@ -24732,6 +24766,7 @@ $as_echo "#define SDL_JOYSTICK_WINMM 1" >>confdefs.h
             fi
             SOURCES="$SOURCES $srcdir/src/joystick/windows/*.c"
             have_joystick=yes
+            # TODO: Remove this block once SDL_hidapi.c supports Windows!
             if test x$hidapi_support = xyes; then
                 SOURCES="$SOURCES $srcdir/src/hidapi/windows/hid.c"
             fi
@@ -25077,9 +25112,6 @@ $as_echo "#define SDL_JOYSTICK_IOKIT 1" >>confdefs.h
 
             SOURCES="$SOURCES $srcdir/src/joystick/darwin/*.c"
             have_joystick=yes
-            if test x$hidapi_support = xyes; then
-                SOURCES="$SOURCES $srcdir/src/hidapi/mac/hid.c"
-            fi
         fi
         # Set up files for the haptic library
         if test x$enable_haptic = xyes; then

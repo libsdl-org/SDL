@@ -156,17 +156,24 @@ if(UNIX OR MINGW OR MSYS)
 endif()
 
 # The hidraw support doesn't catch Xbox, PS4 and Nintendo controllers,
-#  so we'll just use libusb when it's available. Except that libusb
-#  requires root permissions to open devices, so that's not generally
-#  useful, and we'll disable this by default on Unix. Windows and macOS
-#  can use it without root access, though, so enable by default there.
-if(WINDOWS OR APPLE OR ANDROID)
+#  so we'll just use libusb when it's available. libusb does not support iOS,
+#  so we default to yes on iOS.
+#  TODO: Windows can support libusb, the hid.c file just depends on Unix APIs
+if(WINDOWS OR IOS OR ANDROID)
   set(HIDAPI_SKIP_LIBUSB TRUE)
 else()
   set(HIDAPI_SKIP_LIBUSB FALSE)
 endif()
 if (HIDAPI_SKIP_LIBUSB)
   set(OPT_DEF_HIDAPI ON)
+endif()
+
+# On the other hand, *BSD specifically uses libusb only, so we make a special
+#  case just for them.
+if(FREEBSD OR NETBSD OR OPENBSD OR BSDI)
+  set(HIDAPI_ONLY_LIBUSB TRUE)
+else()
+  set(HIDAPI_ONLY_LIBUSB FALSE)
 endif()
 
 # Compiler info
@@ -1376,6 +1383,7 @@ elseif(WINDOWS)
 
   if(SDL_JOYSTICK)
     CheckHIDAPI()
+    # TODO: Remove this hid.c block when SDL_hidapi.c is supported on Windows!
     if(HAVE_HIDAPI)
       set(SOURCE_FILES ${SOURCE_FILES} ${SDL2_SOURCE_DIR}/src/hidapi/windows/hid.c)
     endif()
@@ -1466,8 +1474,6 @@ elseif(APPLE)
     if(HAVE_HIDAPI)
       if(IOS)
         set(SOURCE_FILES ${SOURCE_FILES} ${SDL2_SOURCE_DIR}/src/hidapi/ios/hid.m)
-      else()
-        set(SOURCE_FILES ${SOURCE_FILES} ${SDL2_SOURCE_DIR}/src/hidapi/mac/hid.c)
       endif()
     endif()
     set(SDL_JOYSTICK_IOKIT 1)
