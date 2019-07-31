@@ -54,7 +54,7 @@ WIN_UpdateDisplayMode(_THIS, LPCTSTR deviceName, DWORD index, SDL_DisplayMode * 
         mode->w = logical_width;
         mode->h = logical_height;
         
-        SDL_zero(bmi_data);
+        SDL_zeroa(bmi_data);
         bmi = (LPBITMAPINFO) bmi_data;
         bmi->bmiHeader.biSize = sizeof(BITMAPINFOHEADER);
 

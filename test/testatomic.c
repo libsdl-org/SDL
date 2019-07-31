@@ -626,7 +626,7 @@ static void RunFIFOTest(SDL_bool lock_free)
 
     /* Start the readers first */
     SDL_Log("Starting %d readers\n", NUM_READERS);
-    SDL_zero(readerData);
+    SDL_zeroa(readerData);
     SDL_AtomicSet(&readersRunning, NUM_READERS);
     for (i = 0; i < NUM_READERS; ++i) {
         char name[64];
@@ -638,7 +638,7 @@ static void RunFIFOTest(SDL_bool lock_free)
 
     /* Start up the writers */
     SDL_Log("Starting %d writers\n", NUM_WRITERS);
-    SDL_zero(writerData);
+    SDL_zeroa(writerData);
     SDL_AtomicSet(&writersRunning, NUM_WRITERS);
     for (i = 0; i < NUM_WRITERS; ++i) {
         char name[64];

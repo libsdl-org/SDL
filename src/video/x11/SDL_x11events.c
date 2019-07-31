@@ -898,7 +898,7 @@ X11_DispatchEvent(_THIS)
             }
 #endif
             /* */
-            SDL_zero(text);
+            SDL_zeroa(text);
 #ifdef X_HAVE_UTF8_STRING
             if (data->ic) {
                 X11_Xutf8LookupString(data->ic, &xevent.xkey, text, sizeof(text),

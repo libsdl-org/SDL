@@ -90,7 +90,7 @@ static void SDL_TrackAllocation(void *mem, size_t size)
     entry->size = size;
 
     /* Generate the stack trace for the allocation */
-    SDL_zero(entry->stack);
+    SDL_zeroa(entry->stack);
 #ifdef HAVE_LIBUNWIND_H
     {
         int stack_index;

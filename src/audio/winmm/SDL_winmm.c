@@ -387,7 +387,7 @@ WINMM_OpenDevice(_THIS, void *handle, const char *devname, int iscapture)
         return SDL_OutOfMemory();
     }
 
-    SDL_zero(this->hidden->wavebuf);
+    SDL_zeroa(this->hidden->wavebuf);
     for (i = 0; i < NUM_BUFFERS; ++i) {
         this->hidden->wavebuf[i].dwBufferLength = this->spec.size;
         this->hidden->wavebuf[i].dwFlags = WHDR_DONE;

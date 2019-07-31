@@ -112,7 +112,7 @@ WaveDebugLogFormat(WaveFile *file)
     Uint32 wavebps = format->byterate;
     char channelstr[64];
 
-    SDL_zero(channelstr);
+    SDL_zeroa(channelstr);
 
     switch (format->encoding) {
     case PCM_CODE:

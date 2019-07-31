@@ -619,8 +619,8 @@ QSA_Deinitialize(void)
 {
     /* Clear devices array on shutdown */
     /* !!! FIXME: we zero these on init...any reason to do it here? */
-    SDL_zero(qsa_playback_device);
-    SDL_zero(qsa_capture_device);
+    SDL_zeroa(qsa_playback_device);
+    SDL_zeroa(qsa_capture_device);
     qsa_playback_devices = 0;
     qsa_capture_devices = 0;
 }
@@ -629,8 +629,8 @@ static int
 QSA_Init(SDL_AudioDriverImpl * impl)
 {
     /* Clear devices array */
-    SDL_zero(qsa_playback_device);
-    SDL_zero(qsa_capture_device);
+    SDL_zeroa(qsa_playback_device);
+    SDL_zeroa(qsa_capture_device);
     qsa_playback_devices = 0;
     qsa_capture_devices = 0;
 
