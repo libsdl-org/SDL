@@ -69,16 +69,16 @@ void Android_OnTouch(SDL_Window *window, int touch_device_id_in, int pointer_fin
     switch (action) {
         case ACTION_DOWN:
         case ACTION_POINTER_DOWN:
-            SDL_SendTouch(touchDeviceId, fingerId, SDL_TRUE, x, y, p);
+            SDL_SendTouch(touchDeviceId, fingerId, window, SDL_TRUE, x, y, p);
             break;
 
         case ACTION_MOVE:
-            SDL_SendTouchMotion(touchDeviceId, fingerId, x, y, p);
+            SDL_SendTouchMotion(touchDeviceId, fingerId, window, x, y, p);
             break;
 
         case ACTION_UP:
         case ACTION_POINTER_UP:
-            SDL_SendTouch(touchDeviceId, fingerId, SDL_FALSE, x, y, p);
+            SDL_SendTouch(touchDeviceId, fingerId, window, SDL_FALSE, x, y, p);
             break;
 
         default:

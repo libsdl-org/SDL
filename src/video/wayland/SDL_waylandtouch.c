@@ -96,12 +96,12 @@ touch_handle_touch(void *data,
     switch (touchState) {
         case QtWaylandTouchPointPressed:
         case QtWaylandTouchPointReleased:
-            SDL_SendTouch(deviceId, (SDL_FingerID)id,
+            SDL_SendTouch(deviceId, (SDL_FingerID)id, /* FIXME: window */,
                     (touchState == QtWaylandTouchPointPressed) ? SDL_TRUE : SDL_FALSE,
                     xf, yf, pressuref);
             break;
         case QtWaylandTouchPointMoved:
-            SDL_SendTouchMotion(deviceId, (SDL_FingerID)id, xf, yf, pressuref);
+            SDL_SendTouchMotion(deviceId, (SDL_FingerID)id, /* FIXME: window */, xf, yf, pressuref);
             break;
         default:
             /* Should not happen */

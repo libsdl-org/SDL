@@ -239,7 +239,7 @@ SDL_DelFinger(SDL_Touch* touch, SDL_FingerID fingerid)
 }
 
 int
-SDL_SendTouch(SDL_TouchID id, SDL_FingerID fingerid,
+SDL_SendTouch(SDL_TouchID id, SDL_FingerID fingerid, SDL_Window * window,
               SDL_bool down, float x, float y, float pressure)
 {
     int posted;
@@ -259,16 +259,6 @@ SDL_SendTouch(SDL_TouchID id, SDL_FingerID fingerid,
         if (mouse->touch_mouse_events) {
             /* FIXME: maybe we should only restrict to a few SDL_TouchDeviceType */
             if (id != SDL_MOUSE_TOUCHID) {
-                SDL_Window *window = SDL_GetMouseFocus();
-                if (window == NULL) {
-                    /* Mouse focus may have been lost by e.g. the window resizing
-                     * due to device orientation change while the mouse state is
-                     * pressed (because its position is now out of the window).
-                     * SendMouse* will update mouse focus again after that, but
-                     * if those are never called then SDL might think the
-                     * 'mouse' has no focus at all. */
-                    window = SDL_GetKeyboardFocus();
-                }
                 if (window) {
                     if (down) {
                         if (finger_touching == SDL_FALSE) {
@@ -332,6 +322,7 @@ SDL_SendTouch(SDL_TouchID id, SDL_FingerID fingerid,
             event.tfinger.dx = 0;
             event.tfinger.dy = 0;
             event.tfinger.pressure = pressure;
+            event.tfinger.windowID = window ? SDL_GetWindowID(window) : 0;
             posted = (SDL_PushEvent(&event) > 0);
         }
     } else {
@@ -344,7 +335,7 @@ SDL_SendTouch(SDL_TouchID id, SDL_FingerID fingerid,
         if (SDL_GetEventState(SDL_FINGERUP) == SDL_ENABLE) {
             SDL_Event event;
             event.tfinger.type = SDL_FINGERUP;
-            event.tfinger.touchId =  id;
+            event.tfinger.touchId = id;
             event.tfinger.fingerId = fingerid;
             /* I don't trust the coordinates passed on fingerUp */
             event.tfinger.x = finger->x;
@@ -352,6 +343,7 @@ SDL_SendTouch(SDL_TouchID id, SDL_FingerID fingerid,
             event.tfinger.dx = 0;
             event.tfinger.dy = 0;
             event.tfinger.pressure = pressure;
+            event.tfinger.windowID = window ? SDL_GetWindowID(window) : 0;
             posted = (SDL_PushEvent(&event) > 0);
         }
 
@@ -361,7 +353,7 @@ SDL_SendTouch(SDL_TouchID id, SDL_FingerID fingerid,
 }
 
 int
-SDL_SendTouchMotion(SDL_TouchID id, SDL_FingerID fingerid,
+SDL_SendTouchMotion(SDL_TouchID id, SDL_FingerID fingerid, SDL_Window * window,
                     float x, float y, float pressure)
 {
     SDL_Touch *touch;
@@ -382,7 +374,6 @@ SDL_SendTouchMotion(SDL_TouchID id, SDL_FingerID fingerid,
     {
         if (mouse->touch_mouse_events) {
             if (id != SDL_MOUSE_TOUCHID) {
-                SDL_Window *window = SDL_GetMouseFocus();
                 if (window) {
                     if (finger_touching == SDL_TRUE && track_touchid == id && track_fingerid == fingerid) {
                         int pos_x = (int)(x * (float)window->w);
@@ -408,7 +399,7 @@ SDL_SendTouchMotion(SDL_TouchID id, SDL_FingerID fingerid,
 
     finger = SDL_GetFinger(touch,fingerid);
     if (!finger) {
-        return SDL_SendTouch(id, fingerid, SDL_TRUE, x, y, pressure);
+        return SDL_SendTouch(id, fingerid, window, SDL_TRUE, x, y, pressure);
     }
 
     xrel = x - finger->x;
@@ -440,6 +431,7 @@ SDL_SendTouchMotion(SDL_TouchID id, SDL_FingerID fingerid,
         event.tfinger.dx = xrel;
         event.tfinger.dy = yrel;
         event.tfinger.pressure = pressure;
+        event.tfinger.windowID = window ? SDL_GetWindowID(window) : 0;
         posted = (SDL_PushEvent(&event) > 0);
     }
     return posted;

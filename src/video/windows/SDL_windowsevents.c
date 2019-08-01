@@ -985,13 +985,13 @@ WIN_WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
                     y = (float)(input->y - rect.top)/(rect.bottom - rect.top);
 
                     if (input->dwFlags & TOUCHEVENTF_DOWN) {
-                        SDL_SendTouch(touchId, input->dwID, SDL_TRUE, x, y, 1.0f);
+                        SDL_SendTouch(touchId, input->dwID, data->window, SDL_TRUE, x, y, 1.0f);
                     }
                     if (input->dwFlags & TOUCHEVENTF_MOVE) {
-                        SDL_SendTouchMotion(touchId, input->dwID, x, y, 1.0f);
+                        SDL_SendTouchMotion(touchId, input->dwID, data->window, x, y, 1.0f);
                     }
                     if (input->dwFlags & TOUCHEVENTF_UP) {
-                        SDL_SendTouch(touchId, input->dwID, SDL_FALSE, x, y, 1.0f);
+                        SDL_SendTouch(touchId, input->dwID, data->window, SDL_FALSE, x, y, 1.0f);
                     }
                 }
             }

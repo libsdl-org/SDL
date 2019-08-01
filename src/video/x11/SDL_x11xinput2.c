@@ -230,7 +230,7 @@ X11_HandleXinput2Event(SDL_VideoData *videodata,XGenericEventCookie *cookie)
             float x, y;
             SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
             xinput2_normalize_touch_coordinates(window, xev->event_x, xev->event_y, &x, &y);
-            SDL_SendTouch(xev->sourceid,xev->detail, SDL_TRUE, x, y, 1.0);
+            SDL_SendTouch(xev->sourceid,xev->detail, /* FIXME: window */, SDL_TRUE, x, y, 1.0);
             return 1;
             }
             break;
@@ -239,7 +239,7 @@ X11_HandleXinput2Event(SDL_VideoData *videodata,XGenericEventCookie *cookie)
             float x, y;
             SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
             xinput2_normalize_touch_coordinates(window, xev->event_x, xev->event_y, &x, &y);
-            SDL_SendTouch(xev->sourceid,xev->detail, SDL_FALSE, x, y, 1.0);
+            SDL_SendTouch(xev->sourceid,xev->detail, /* FIXME: window */, SDL_FALSE, x, y, 1.0);
             return 1;
             }
             break;
@@ -248,7 +248,7 @@ X11_HandleXinput2Event(SDL_VideoData *videodata,XGenericEventCookie *cookie)
             float x, y;
             SDL_Window *window = xinput2_get_sdlwindow(videodata, xev->event);
             xinput2_normalize_touch_coordinates(window, xev->event_x, xev->event_y, &x, &y);
-            SDL_SendTouchMotion(xev->sourceid,xev->detail, x, y, 1.0);
+            SDL_SendTouchMotion(xev->sourceid,xev->detail, /* FIXME: window */, x, y, 1.0);
             return 1;
             }
             break;
