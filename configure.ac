@@ -3236,6 +3236,12 @@ AS_HELP_STRING([--enable-hidapi], [use HIDAPI for low level joystick drivers [[d
             CFLAGS="$save_CFLAGS"
             if test x$have_libusb_h = xyes; then
                 hidapi_support=yes
+            elif test x$onlylibusb = xno; then
+                case "$host" in
+                *-*-darwin* )
+                    hidapi_support=yes
+                    ;;
+                esac
             fi
         fi
 
@@ -3249,6 +3255,12 @@ AS_HELP_STRING([--enable-hidapi], [use HIDAPI for low level joystick drivers [[d
                 if test x$onlylibusb = xyes; then
                     SOURCES="$SOURCES $srcdir/src/hidapi/libusb/hid.c"
                     EXTRA_LDFLAGS="$EXTRA_LDFLAGS $LIBUSB_LIBS"
+                elif test x$have_libusb_h != xyes ; then
+                    case "$host" in
+                    *-*-darwin* )
+                        SOURCES="$SOURCES $srcdir/src/hidapi/mac/hid.c"
+                        ;;
+                    esac
                 else
                     if test x$have_loadso != xyes; then
                         AC_MSG_WARN([You must have SDL_LoadObject() support for dynamic libusb loading])
