@@ -1132,7 +1132,13 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
         DLog("Reset Lost Fingers: %d", numFingers);
         for (--numFingers; numFingers >= 0; --numFingers) {
             SDL_Finger* finger = SDL_GetTouchFinger(touchID, numFingers);
-            SDL_SendTouch(touchID, finger->id, SDL_FALSE, 0, 0, 0);
+            /* trackpad touches have no window. If we really wanted one we could
+             * use the window that has mouse or keyboard focus.
+             * Sending a null window currently also prevents synthetic mouse
+             * events from being generated from touch events.
+             */
+            SDL_Window *window = NULL;
+            SDL_SendTouch(touchID, finger->id, window, SDL_FALSE, 0, 0, 0);
         }
     }
 
@@ -1167,10 +1173,24 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
         const SDL_TouchID touchId = istrackpad ? SDL_MOUSE_TOUCHID : (SDL_TouchID)(intptr_t)[touch device];
         SDL_TouchDeviceType devtype = SDL_TOUCH_DEVICE_INDIRECT_ABSOLUTE;
 
+        /* trackpad touches have no window. If we really wanted one we could
+         * use the window that has mouse or keyboard focus.
+         * Sending a null window currently also prevents synthetic mouse events
+         * from being generated from touch events.
+         */
+        SDL_Window *window = NULL;
+
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 101202 /* Added in the 10.12.2 SDK. */
         if ([touch respondsToSelector:@selector(type)]) {
+            /* TODO: Before implementing direct touch support here, we need to
+             * figure out whether the OS generates mouse events from them on its
+             * own. If it does, we should prevent SendTouch from generating
+             * synthetic mouse events for these touches itself (while also
+             * sending a window.) It will also need to use normalized window-
+             * relative coordinates via [touch locationInView:].
+             */
             if ([touch type] == NSTouchTypeDirect) {
-                devtype = SDL_TOUCH_DEVICE_DIRECT;
+                return;
             }
         }
 #endif
@@ -1187,14 +1207,14 @@ SetWindowStyle(SDL_Window * window, NSUInteger style)
 
         switch (phase) {
         case NSTouchPhaseBegan:
-            SDL_SendTouch(touchId, fingerId, SDL_TRUE, x, y, 1.0f);
+            SDL_SendTouch(touchId, fingerId, window, SDL_TRUE, x, y, 1.0f);
             break;
         case NSTouchPhaseEnded:
         case NSTouchPhaseCancelled:
-            SDL_SendTouch(touchId, fingerId, SDL_FALSE, x, y, 1.0f);
+            SDL_SendTouch(touchId, fingerId, window, SDL_FALSE, x, y, 1.0f);
             break;
         case NSTouchPhaseMoved:
-            SDL_SendTouchMotion(touchId, fingerId, x, y, 1.0f);
+            SDL_SendTouchMotion(touchId, fingerId, window, x, y, 1.0f);
             break;
         default:
             break;
