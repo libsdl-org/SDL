@@ -334,7 +334,11 @@ X11_MessageBoxInitPositions( SDL_MessageBoxDataX11 *data )
         data->dialog_height = IntMax( data->dialog_height, ybuttons + 2 * button_height );
 
         /* Location for first button. */
-        x = ( data->dialog_width - width_of_buttons ) / 2;
+        if ( messageboxdata->flags & SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT ) {
+			x = data->dialog_width - ( data->dialog_width - width_of_buttons ) / 2 - ( button_width + button_spacing );
+		} else {
+			x = ( data->dialog_width - width_of_buttons ) / 2;
+		}
         y = ybuttons + ( data->dialog_height - ybuttons - button_height ) / 2;
 
         for ( i = 0; i < data->numbuttons; i++ ) {
@@ -349,7 +353,11 @@ X11_MessageBoxInitPositions( SDL_MessageBoxDataX11 *data )
             data->buttonpos[ i ].y = y + ( button_height - button_text_height - 1 ) / 2 + button_text_height;
 
             /* Scoot over for next button. */
-            x += button_width + button_spacing;
+			if ( messageboxdata->flags & SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT ) {
+				x -= button_width + button_spacing;
+			} else {
+				x += button_width + button_spacing;
+			}
         }
     }
 

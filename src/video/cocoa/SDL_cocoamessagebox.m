@@ -112,10 +112,19 @@ Cocoa_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     const SDL_MessageBoxButtonData *buttons = messageboxdata->buttons;
     int i;
     for (i = 0; i < messageboxdata->numbuttons; ++i) {
-        NSButton *button = [alert addButtonWithTitle:[NSString stringWithUTF8String:buttons[i].text]];
-        if (buttons[i].flags & SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT) {
+        const SDL_MessageBoxButtonData *sdlButton;
+		NSButton *button;
+
+        if (messageboxdata->flags & SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT) {
+            sdlButton = &messageboxdata->buttons[messageboxdata->numbuttons - 1 - i];
+        } else {
+            sdlButton = &messageboxdata->buttons[i];
+        }
+
+        button = [alert addButtonWithTitle:[NSString stringWithUTF8String:sdlButton->text]];
+        if (sdlButton->flags & SDL_MESSAGEBOX_BUTTON_RETURNKEY_DEFAULT) {
             [button setKeyEquivalent:@"\r"];
-        } else if (buttons[i].flags & SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT) {
+        } else if (sdlButton->flags & SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT) {
             [button setKeyEquivalent:@"\033"];
         } else {
             [button setKeyEquivalent:@""];
@@ -132,6 +141,9 @@ Cocoa_ShowMessageBox(const SDL_MessageBoxData *messageboxdata, int *buttonid)
     NSInteger clicked = presenter->clicked;
     if (clicked >= NSAlertFirstButtonReturn) {
         clicked -= NSAlertFirstButtonReturn;
+        if (messageboxdata->flags & SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT) {
+			clicked = messageboxdata->numbuttons - 1 - clicked;
+		}
         *buttonid = buttons[clicked].buttonid;
     } else {
         returnValue = SDL_SetError("Did not get a valid `clicked button' id: %ld", (long)clicked);
