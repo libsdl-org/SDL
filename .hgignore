@@ -59,6 +59,8 @@ VisualC/visualtest/testsprite2_sample.parameters
 android-project/local.properties
 
 sdl.pc
+
+test/aclocal.m4
 test/autom4te*
 test/config.cache
 test/config.log
