@@ -73,15 +73,22 @@ UIKit_ShowMessageBoxAlertController(const SDL_MessageBoxData *messageboxdata, in
     for (i = 0; i < messageboxdata->numbuttons; i++) {
         UIAlertAction *action;
         UIAlertActionStyle style = UIAlertActionStyleDefault;
+        const SDL_MessageBoxButtonData *sdlButton;
 
-        if (buttons[i].flags & SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT) {
+        if (messageboxdata->flags & SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT) {
+            sdlButton = &messageboxdata->buttons[messageboxdata->numbuttons - 1 - i];
+        } else {
+            sdlButton = &messageboxdata->buttons[i];
+        }
+
+        if (sdlButton->flags & SDL_MESSAGEBOX_BUTTON_ESCAPEKEY_DEFAULT) {
             style = UIAlertActionStyleCancel;
         }
 
-        action = [UIAlertAction actionWithTitle:@(buttons[i].text)
+        action = [UIAlertAction actionWithTitle:@(sdlButton->text)
                                           style:style
                                         handler:^(UIAlertAction *action) {
-                                            clickedindex = i;
+				                            clickedindex = (int)(sdlButton - messageboxdata->buttons);
                                         }];
         [alert addAction:action];
     }
@@ -150,7 +157,13 @@ UIKit_ShowMessageBoxAlertView(const SDL_MessageBoxData *messageboxdata, int *but
     alert.message = @(messageboxdata->message);
 
     for (i = 0; i < messageboxdata->numbuttons; i++) {
-        [alert addButtonWithTitle:@(buttons[i].text)];
+        const SDL_MessageBoxButtonData *sdlButton;
+        if (messageboxdata->flags & SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT) {
+            sdlButton = &messageboxdata->buttons[messageboxdata->numbuttons - 1 - i];
+        } else {
+            sdlButton = &messageboxdata->buttons[i];
+        }
+        [alert addButtonWithTitle:@(sdlButton->text)];
     }
 
     delegate.clickedIndex = &clickedindex;
@@ -161,6 +174,9 @@ UIKit_ShowMessageBoxAlertView(const SDL_MessageBoxData *messageboxdata, int *but
 
     alert.delegate = nil;
 
+	if (messageboxdata->flags & SDL_MESSAGEBOX_BUTTONS_RIGHT_TO_LEFT) {
+		clickedindex = messageboxdata->numbuttons - 1 - clickedindex;
+	}
     *buttonid = messageboxdata->buttons[clickedindex].buttonid;
     return YES;
 #else
